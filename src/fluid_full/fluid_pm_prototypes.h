@@ -21,6 +21,9 @@ Maintainer: Ulrich Kuettler
  ************************************************************************/
 void fluid_pm();
 
+void fluid_pm_cont_laplace();
+
+void fluid_pm_cont();
 
 /************************************************************************
  | fluid_pm_service.c                                                   |
@@ -68,6 +71,17 @@ void pm_calelm(FIELD *actfield,
                DOUBLE* lmass_vec
 #endif
   );
+void pm_calelm_cont(FIELD *actfield,
+		    PARTITION *actpart,
+		    INT vel_dis,
+		    INT press_dis,
+		    SOLVAR *actsolv,
+		    INT sysarray,
+		    INTRA *actintra,
+		    ARRAY_POSITION *ipos,
+		    TRILINOSMATRIX* grad,
+		    TRILINOSMATRIX* lmass
+  );
 
 void pm_calprhs(FIELD *actfield,
                 PARTITION *actpart,
@@ -76,6 +90,12 @@ void pm_calprhs(FIELD *actfield,
                 ARRAY_POSITION *ipos,
                 INT numpdof,
                 DIST_VECTOR* rhs);
+void pm_calprhs_cont(FIELD *actfield,
+		     PARTITION *actpart,
+		     INT disnum,
+		     INTRA *actintra,
+		     ARRAY_POSITION *ipos,
+		     DIST_VECTOR* rhs);
 
 void pm_press_update(FIELD *actfield,
                      PARTITION *actpart,

@@ -27,6 +27,7 @@ Maintainer: Michael Gee
 #endif
 #include "Epetra_Map.h"
 #include "Epetra_CrsMatrix.h"
+#include "EpetraExt_MatrixMatrix.h"
 #include "mrtr_utils.H"
 
 
@@ -1008,7 +1009,7 @@ void mult_trilinos_mmm(TRILINOSMATRIX* dest,
                        TRILINOSMATRIX* C,
                        INT transC)
 {
-  DSTraceHelper dst("invert_trilinos_diagonal_matrix");
+  DSTraceHelper dst("mult_trilinos_mmm");
 
   if (!A->matrix) dserror("Matrix is NULL");
   Epetra_CrsMatrix* Amat = (Epetra_CrsMatrix*)A->matrix;
@@ -1027,6 +1028,61 @@ void mult_trilinos_mmm(TRILINOSMATRIX* dest,
   // if these are ever used, we can set them
   dest->epetracomm = NULL;
   dest->rowmap = NULL;
+
+  dest->is_init=1;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief matrix-matrix-matrix multiplication
+
+  Needed for a particular implementation of the projection method. The
+  middle matrix is diagonal, the first is the transposed of the
+  last within that method. But this routine works with any set of
+  matrices with matching dimensions.
+
+  \param dest   (o) destination matrix
+  \param A      (i) input matrix
+  \param transA (i) transposed flag of A
+  \param B      (i) input matrix
+  \param transB (i) transposed flag of B
+  \param C      (i) input matrix
+  \param transC (i) transposed flag of C
+
+  \warning the ccarat wrapper dest is not filled completely, comm and
+  rowmap are missing. You probably do not need them.
+
+  \author u.kue
+  \date 10/06
+ */
+/*----------------------------------------------------------------------*/
+void mult_trilinos_mmm_cont(TRILINOSMATRIX* dest,
+                            TRILINOSMATRIX* A,
+                            INT transA,
+                            TRILINOSMATRIX* B,
+                            INT transB,
+                            TRILINOSMATRIX* C,
+                            INT transC)
+{
+  DSTraceHelper dst("mult_trilinos_mmm_cont");
+
+  if (!A->matrix) dserror("Matrix is NULL");
+  Epetra_CrsMatrix* Amat = (Epetra_CrsMatrix*)A->matrix;
+  if (!B->matrix) dserror("Matrix is NULL");
+  Epetra_CrsMatrix* Bmat = (Epetra_CrsMatrix*)B->matrix;
+  if (!C->matrix) dserror("Matrix is NULL");
+  Epetra_CrsMatrix* Cmat = (Epetra_CrsMatrix*)C->matrix;
+
+  if (!dest->matrix) dserror("destination matrix must be set");
+
+  RefCountPtr<Epetra_CrsMatrix> AB = rcp(MOERTEL::MatMatMult(*Amat,transA,*Bmat,transB,0));
+
+  Epetra_CrsMatrix* ABC = (Epetra_CrsMatrix*)dest->matrix;
+  int err = EpetraExt::MatrixMatrix::Multiply(*AB,false,*Cmat,transC,*ABC);
+  if (err) dserror("error %d in MatrixMatrix()",err);
+
+  // We expect to obtain the same RowMap, but we do not check that.
 
   dest->is_init=1;
 }

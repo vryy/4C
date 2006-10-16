@@ -1045,6 +1045,10 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
       if (frwordcmp(buffer,"Projection_Method")==0)
 	fdyn->dyntyp=dyntyp_pm_discont;
+      else if (frwordcmp(buffer,"PM_discont")==0)
+	fdyn->dyntyp=dyntyp_pm_discont;
+      else if (frwordcmp(buffer,"PM_cont")==0)
+	fdyn->dyntyp=dyntyp_pm_cont;
       else if (frwordcmp(buffer,"PM_Laplace")==0)
 	fdyn->dyntyp=dyntyp_pm_cont_laplace;
       else if (frwordcmp(buffer,"Nlin_Time_Int")==0)

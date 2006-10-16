@@ -134,9 +134,11 @@ case dyntyp_nln_time_int:
 case dyntyp_pm_discont:
   fluid_pm();
   break;
-
+case dyntyp_pm_cont:
+  fluid_pm_cont();
+  break;
 case dyntyp_pm_cont_laplace:
-  dserror("PM Laplace not yet implemented");
+  fluid_pm_cont_laplace();
   break;
 #endif
 

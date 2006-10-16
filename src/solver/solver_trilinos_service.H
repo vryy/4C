@@ -73,6 +73,10 @@ void mult_trilinos_mmm(TRILINOSMATRIX* dest,
                        TRILINOSMATRIX* A, INT transA,
                        TRILINOSMATRIX* B, INT transB,
                        TRILINOSMATRIX* C, INT transC);
+void mult_trilinos_mmm_cont(TRILINOSMATRIX* dest,
+                            TRILINOSMATRIX* A, INT transA,
+                            TRILINOSMATRIX* B, INT transB,
+                            TRILINOSMATRIX* C, INT transC);
 
 #ifdef __cplusplus
 }

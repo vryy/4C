@@ -797,7 +797,11 @@ void pm_calelm(FIELD *actfield,
 		 * the non-trilinos version! */
 		add_trilinos_value(grad,
 				   gradopr_global.a.da[actnode->numdf*j+dof][k],
-				   actele->e.f2pro->ldof[k],
+				   /*
+				    * I suppose trilinos expects the
+				    * global dof number... */
+				   /*actele->e.f2pro->ldof[k],*/
+				   actele->e.f2pro->dof[k],
 				   actnode->dof[dof]);
 #else
                 *sparse_entry(&(grad->slice),
@@ -815,7 +819,8 @@ void pm_calelm(FIELD *actfield,
 		 * the non-trilinos version! */
 		add_trilinos_value(grad,
 				   gradopr_global.a.da[actnode->numdf*j+dof][k],
-				   actele->e.f2pro->ldof[k],
+				   /*actele->e.f3pro->ldof[k],*/
+				   actele->e.f3pro->dof[k],
 				   actnode->dof[dof]);
 #else
                 *sparse_entry(&(grad->slice),
@@ -895,6 +900,223 @@ void pm_calelm(FIELD *actfield,
   dstrc_exit();
 #endif
 }
+
+
+#ifdef PM_TRILINOS
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief call elements to create gradient and mass matrix
+
+  All the element call and element matrix assembling is in here. We do
+  not use global_calelm because it is such a mess and our requirements
+  are specific. We have to build the inverted diagonalized mass
+  matrix, too.
+
+  \param actfield           (i) actual field
+  \param actpart            (i) actual partition
+  \param disnum             (i) number of discretization
+  \param actsolv            (i) solver
+  \param sysarray           (i) solver type
+  \param actintra           (i) communicator
+  \param ipos               (i) node positions
+  \param numpdof            (i) number of pressure dofs
+  \param grad             (i/o) sparse pressure gradient
+  \param lmass_vec          (o) inverted diagonal mass matrix
+
+  \author u.kue
+  \date 12/05
+ */
+/*----------------------------------------------------------------------*/
+void pm_calelm_cont(FIELD *actfield,
+		    PARTITION *actpart,
+		    INT vel_dis,
+		    INT press_dis,
+		    SOLVAR *actsolv,
+		    INT sysarray,
+		    INTRA *actintra,
+		    ARRAY_POSITION *ipos,
+		    TRILINOSMATRIX* grad,
+		    TRILINOSMATRIX* lmass
+  )
+{
+  INT i;
+#ifdef PM_TRILINOS
+#else
+  DOUBLE* lmass;
+#endif
+
+  /* Variables from global_calelm. These are filled by the element
+   * routines. */
+  extern struct _ARRAY emass_global;
+  extern struct _ARRAY lmass_global;
+  extern struct _ARRAY gradopr_global;
+
+#ifdef DEBUG
+  dstrc_enter("pm_calelm_cont");
+#endif
+
+  /* calculate matrix values */
+  for (i=0; i<actpart->pdis[vel_dis].numele; ++i)
+  {
+    INT j;
+    ELEMENT* vele;
+    ELEMENT* pele;
+    vele = actpart->pdis[vel_dis].element[i];
+    pele = actpart->pdis[press_dis].element[i];
+
+    /* We need to assemble the global mass matrix. To do this in
+     * parallel we cannot calculate the local elements only but have
+     * to calculate any neighbouring elements. This in turn demands
+     * that these elements know their pressure values. That is a
+     * truely data parallel approach for discontinuous pressure
+     * demands for element based communication (in contrast to the
+     * node based communication we get by with in the continuous
+     * case.) */
+
+    /* Calculate gradient and mass matrix */
+    switch (vele->eltyp)
+    {
+#ifdef D_FLUID2_PRO
+    case el_fluid2_pro:
+      f2pro_calgradp(vele, ipos);
+      break;
+#endif
+#ifdef D_FLUID3_PRO
+    case el_fluid3_pro:
+      f3pro_calgradp(vele, ipos);
+      break;
+#endif
+    default:
+      dserror("element type %d unsupported", vele->eltyp);
+    }
+
+    /* Assemble */
+
+    /* At first lets do the global mass matrix */
+    /*
+     * We do this just once, thus there is no need to have this inside
+     * the fluid element... */
+    assemble(sysarray,
+             &emass_global,
+             -1,
+             NULL,
+             actpart,
+             actsolv,
+             actintra,
+             vele,
+             assemble_one_matrix,
+             NULL);
+
+    /* And now the lumped mass matrix (in vector form) and the
+     * gradient matrix. */
+    for (j=0; j<vele->numnp; ++j)
+    {
+      INT dof;
+      NODE* vnode = vele->node[j];
+
+      for (dof=0; dof<vnode->numdf; ++dof)
+      {
+	/* non-dirichlet dofs */
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
+	if ((vnode->gnode->dirich==NULL) ||
+	    (vnode->gnode->dirich->dirich_onoff.a.iv[dof]==0))
+#else
+        if (vnode->dof[dof] < actfield->dis[vel_dis].numeq)
+#endif
+        {
+          INT l;
+
+          /* But of course we assemble just to those nodes that belong to us. */
+          if (vnode->proc == actintra->intra_rank)
+          {
+	    add_trilinos_value(lmass,
+			       lmass_global.a.dv[j*vnode->numdf+dof],
+			       vnode->dof[dof],
+			       vnode->dof[dof]);
+          }
+
+	  for (l=0; l<pele->numnp; ++l)
+	  {
+	    NODE* pnode = pele->node[l];
+	    if (pnode->proc == actintra->intra_rank)
+	    {
+	      /* Now we have the entry (actnode->dof[dof],
+	       * actele->ldof[k]) to be stored. */
+	      /*
+	       * Again: We access the columns via the local dof numbers. */
+	      switch (vele->eltyp)
+	      {
+#ifdef D_FLUID2_PRO
+	      case el_fluid2_pro:
+		/*
+		 * The orientation of the gradient matrix differs from
+		 * the non-trilinos version! */
+		add_trilinos_value(grad,
+				   gradopr_global.a.da[vnode->numdf*j+dof][l],
+				   /*
+				    * I suppose trilinos expects the
+				    * global dof number... */
+				   pnode->dof[0],
+				   vnode->dof[dof]);
+		break;
+#endif
+#ifdef D_FLUID3_PRO
+	      case el_fluid3_pro:
+		/*
+		 * The orientation of the gradient matrix differs from
+		 * the non-trilinos version! */
+		add_trilinos_value(grad,
+				   gradopr_global.a.da[vnode->numdf*j+dof][l],
+				   pnode->dof[0],
+				   vnode->dof[dof]);
+		break;
+#endif
+	      default:
+		dserror("element type %d unsupported", vele->eltyp);
+	      }
+	    }
+	  }
+        }
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
+	/* dirichlet dofs */
+	else
+	{
+          if (vnode->proc == actintra->intra_rank)
+          {
+	    add_trilinos_value(lmass,
+			       1,
+			       vnode->dof[dof],
+			       vnode->dof[dof]);
+          }
+	}
+#endif
+      }
+    }
+  }
+
+  close_nonquad_trilinos_matrix(grad,lmass);
+  close_trilinos_matrix(lmass);
+  invert_trilinos_diagonal_matrix(lmass);
+
+  /* Close the full mass matrix to enable the trilinos matrix-vector
+   * product. */
+
+  if (actsolv->sysarray_typ[sysarray]==trilinos)
+  {
+    close_trilinos_matrix(actsolv->sysarray[sysarray].trilinos);
+  }
+  else
+  {
+    dserror("trilinos matrix expected");
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+#endif
 
 
 /*----------------------------------------------------------------------*/
@@ -985,6 +1207,109 @@ void pm_calprhs(FIELD *actfield,
       default:
         dserror("element type %d unsupported", actele->eltyp);
       }
+    }
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief call elements to create gradient
+
+  Calculate pressure discrete gradient. For simplicity we do it
+  elementwise here. Maybe a global matrix-vector multiplication would
+  be faster. Could be improved.
+
+  \param actfield           (i) actual field
+  \param actpart            (i) actual partition
+  \param disnum             (i) number of discretization
+  \param actintra           (i) communicator
+  \param ipos               (i) node positions
+  \param numpdof            (i) number of pressure dofs
+  \param rhs                (o) result vector
+
+  \author u.kue
+  \date 12/05
+ */
+/*----------------------------------------------------------------------*/
+void pm_calprhs_cont(FIELD *actfield,
+		     PARTITION *actpart,
+		     INT disnum,
+		     INTRA *actintra,
+		     ARRAY_POSITION *ipos,
+		     DIST_VECTOR* rhs)
+{
+  INT i;
+
+  /* Variables from global_calelm. These are filled by the element
+   * routines. */
+  extern struct _ARRAY eforce_global;
+
+#ifdef DEBUG
+  dstrc_enter("pm_calprhs");
+#endif
+
+  /* calculate matrix values */
+  for (i=0; i<actpart->pdis[disnum].numele; ++i)
+  {
+    INT k;
+    ELEMENT* actele = actpart->pdis[disnum].element[i];
+
+    /* Calculate gradient and mass matrix */
+    switch (actele->eltyp)
+    {
+#ifdef D_FLUID2_PRO
+    case el_fluid2_pro:
+      f2pro_calprhs(actele, ipos);
+
+      /* Assemble */
+      /* We have discontinuous pressure here. No need to loop the
+       * nodes. */
+      for (k=0; k<actele->numnp; ++k)
+      {
+	NODE* node = actele->node[k];
+
+	if (node->proc == actintra->intra_rank)
+	{
+          /* there are no dirichlet conditions on the pressure dofs
+           * allowed... currently. */
+          dsassert((node->dof[0] >= 0) &&
+                   (node->dof[0] < rhs->numeq),
+                   "local dof number out of range");
+          rhs->vec.a.dv[node->dof[0]] += eforce_global.a.dv[k];
+	}
+      }
+      break;
+#endif
+#ifdef D_FLUID3_PRO
+    case el_fluid3_pro:
+      f3pro_calprhs(actele, ipos);
+
+      /* Assemble */
+      /* We have discontinuous pressure here. No need to loop the
+       * nodes. */
+      for (k=0; k<actele->numnp; ++k)
+      {
+	NODE* node = actele->node[k];
+
+	if (node->proc == actintra->intra_rank)
+	{
+          /* there are no dirichlet conditions on the pressure dofs
+           * allowed... currently. */
+          dsassert((node->dof[0] >= 0) &&
+                   (node->dof[0] < rhs->numeq),
+                   "local dof number out of range");
+          rhs->vec.a.dv[node->dof[0]] += eforce_global.a.dv[k];
+	}
+      }
+      break;
+#endif
+    default:
+      dserror("element type %d unsupported", actele->eltyp);
     }
   }
 

@@ -23,7 +23,7 @@ if grep '^TRILINOS_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
   fi
 fi
 
-
+magic_string='# DO NOT DELETE'
 
 # build the Makefile
 # This is done in three steps
@@ -83,38 +83,61 @@ all: \$(PROGRAM) post_gid_txt post_out post_monitor post_file_manager
 		$OBJECTS \\
 		\$(LIBS)  -o \$(PROGRAM)
 		@echo "\$(PROGRAM) successfully built"
+
+reconfig:
+	$0 $@
+
 EOF
 
+# Include the (crude) commands to generate make dependencies
+# in the makefile. This is quite obscure because we need to
+# quote (a) for the shell that executes this script and (b)
+# for make. The commands that reach the final shell when
+# executing 'make depend' are supposed to be the same that
+# we had in this file before.
+#
+# Inspired by gccmakedep.
+#
+# you can skip this step by saying
+# $ NODEPS=yes ./configure ...
+#
+if [ x$NODEPS != "xyes" ] ; then
+    cat >> $makefile <<EOF
+depend:
+# cut off all previous dependencies
+	@if grep "^$magic_string" $makefile >& /dev/null ; then \
+	sed -e "/^$magic_string/,\\\$\$d" < $makefile > .makefile.\$\$\$\$ ; \
+	mv .makefile.\$\$\$\$ $makefile ; \
+	fi
+	@echo "$magic_string" >> $makefile
+# search the c files
+	@if which gcc >& /dev/null ; then \
+	for file in \`find $SRC/src -name "*.c"\` ; do \
+	echo "build deps for" \$\$file ; \
+	gcc -D$PLATFORM $DEFINES -MM -MT \`echo \$\$file|sed -e 's,c\$\$,o,' -e "s,$SRC,$DEST,"\` -I\`dirname \$\$file|sed -e "s,$SRC,$DEST,"\` $INCLUDEDIRS \$\$file >> $makefile ; \
+	done ; \
+	else \
+	echo $0: gcc not found. No dependencies generated. Use Makefile with care. ; \
+	fi
+# search the c++ files
+	@if which g++ >& /dev/null ; then \
+	for file in \`find $SRC/src -name "*.cpp"\` ; do \
+	echo "build deps for" \$\$file ; \
+	g++ -D$PLATFORM $DEFINES -MM -MT \`echo \$\$file|sed -e 's,cpp\$\$,o,' -e "s,$SRC,$DEST,"\` -I\`dirname \$\$file|sed -e "s,$SRC,$DEST,"\` $INCLUDEDIRS \$\$file >> $makefile ; \
+	done ; \
+	else \
+	echo $0: g++ not found. No dependencies generated. Use Makefile with care. ; \
+	fi
+
+EOF
+fi
 
 # step 2: copy Makefile.in
 cat $SRC/Makefile.in >> $makefile
 #awk '$1 !~ /include/ { print $0 } $1 ~ /include/ { system("cat " $2)}' Makefile.in >> Makefile
 
 # step 3: build dependencies if gcc can be found
-#
-# you can skip this step by saying
-# $ NODEPS=yes ./configure ...
-#
+
 if [ x$NODEPS != "xyes" ] ; then
-  # hopefully nobody translates which's messages...
-  #if which makedepend | grep '^no ' 2>&1 > /dev/null ; then
-  #  echo $0: makedepend not found. Use gcc to create dependencies.
-    if which gcc | grep '^no ' 2>&1 > /dev/null ; then
-       echo $0: gcc not found. No dependencies generated. Use Makefile with care.
-    else
-      for file in `find $SRC/src -name "*.c"` ; do
-        echo "build deps for" $file
-        gcc -D$PLATFORM $DEFINES -MM -MT `echo $file|sed -e 's,c$,o,' -e "s,$SRC,$DEST,"` -I`dirname $file|sed -e "s,$SRC,$DEST,"` $INCLUDEDIRS $file >> $makefile
-      done
-    fi
-
-  if which g++ | grep '^no ' 2>&1 > /dev/null ; then
-     echo $0: g++ not found. No dependencies generated. Use Makefile with care.
-  else
-    for file in `find $SRC/src -name "*.cpp"` ; do
-      echo "build deps for" $file
-      g++ -D$PLATFORM $DEFINES -MM -MT `echo $file|sed -e 's,cpp$,o,' -e "s,$SRC,$DEST,"` -I`dirname $file|sed -e "s,$SRC,$DEST,"` $INCLUDEDIRS $file >> $makefile
-    done
-  fi
-
+make -f $makefile depend
 fi

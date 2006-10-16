@@ -79,7 +79,9 @@ typedef enum _DISMODE
                       dm_none,  /* unknown type of discretisation */
                       dm_q1p0,
                       dm_q2q1,  /* Taylor-Hood */
-                      dm_q2pm1 	/* discontinuous pressure */
+                      dm_q2pm1,	/* discontinuous pressure */
+		      dm_q1q1,
+		      dm_q2q2
 } DISMODE;
 
 

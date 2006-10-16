@@ -16,26 +16,7 @@ that also introduces a nearly consistent mass matrix part 1 & part 2"
 International Journal for Numerical Methods in Fluids, VOL 11,
 pp. 587-659, (1990).
 
-We use discontinous pressure here with pressure dofs connected to the
-elements. The elements themselves are inf-sub stable, no pressure
-stabilization needed. Thus there is only one discretization. The
-pressure equation therefore cannot be attached to a matching
-discretization but must be expressed with stand alone sparse matrices.
-Additional these matrices must support the weird C^T*ML^-1*C
-product. This motivated a new sparse matrix type. The existing ones
-are not suitable because those are directly connected to
-discretizations, elements, nodes and such.
-
-One issue with the algorithm is parallelization. It does work. And it
-does make things complicated. In the end, because the pressure values
-belong to the elements here, we have to communicate element
-values. This differs from the normal behavior of ccarat where we
-communicate nodal data.
-
-The current implementation is a working version, however it is not
-optimized for speed. The fluid momentum equation is treated fully
-implicit. Work has to be done in this area to obtain a very fast
-algorithm.
+Here we have a continous pressure discretication.
 
 */
 /*!
@@ -52,7 +33,15 @@ algorithm.
 #include "fluid_pm_prototypes.h"
 #include "../io/io.h"
 
+#ifdef D_FLUID2_PRO
+#include "../fluid2_pro/fluid2pro.h"
+#include "../fluid2_pro/fluid2pro_prototypes.h"
+#endif
+
+#ifdef D_FLUID3_PRO
 #include "../fluid3_pro/fluid3pro.h"
+#include "../fluid3_pro/fluid3pro_prototypes.h"
+#endif
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -147,29 +136,30 @@ extern struct _FILES  allfiles;
 #ifndef TRILINOS_PACKAGE
 #error TRILINOS_PACKAGE required for PM_TRILINOS
 #endif
+#else
+#error PM_TRILINOS required
 #endif
 
 /*----------------------------------------------------------------------*/
 /*!
   \brief the projection method
 
-  In essence a copy of the global fluid algorithm.
-
-  We use discontinous pressure and just one discretization. The
-  pressure dofs are stored by the elements.
-
-  The old version done by basol has been merged with the new code.
 
   \author u.kue
-  \date 12/05
+  \date 10/06
  */
 /*----------------------------------------------------------------------*/
-void fluid_pm()
+void fluid_pm_cont()
 {
+#ifdef TRILINOS_PACKAGE
   INT             itnum;        /* counter for nonlinear iteration  */
   INT             i;            /* simply a counter                 */
   INT             numeq;        /* number of equations on this proc */
   INT             numeq_total;  /* total number of equations        */
+
+  INT             pnumeq;
+  INT             pnumeq_total;
+
   INT             init;         /* flag for solver_control call     */
   INT             actsysarray=0; /* number of actual sysarray        */
   INT             outstep=0;    /* counter for output control       */
@@ -213,26 +203,18 @@ void fluid_pm()
 
   INT             disnum_calc;
   INT             disnum_io;
+  INT             press_dis;
 
-  INT numpdof;
-
-#ifdef PM_TRILINOS
   TRILINOSMATRIX grad;
   TRILINOSMATRIX pmat;
   TRILINOSMATRIX lmass;
-#else
-  PARALLEL_SPARSE grad;
-  PARALLEL_SPARSE pmat;
 
-  DOUBLE* lmass;
-#endif
-
-  SOLVAR presolv;
-  INT pnumeq_total;
-  INT pnumeq;
+  DIST_VECTOR   *press_rhs;
+  DIST_VECTOR   *press_sol;
 
   INT stiff_array;              /* indice of the active system sparse matrix */
   INT mass_array;               /* indice of the active system sparse matrix */
+  INT press_array;
 
 #ifdef BINIO
   BIN_OUT_FIELD   out_context;
@@ -256,18 +238,19 @@ void fluid_pm()
 #ifdef SUBDIV
   if (actfield->subdivide > 0)
   {
+    dserror("not supported");
     disnum_calc = 1;
     disnum_io   = ioflags.output_dis;
   }
   else
 #endif
     disnum_calc = disnum_io = 0;
+  press_dis = 1;
 
   /*
    * This is again highly dangerous! We need an additional mass matrix
    * and assume we can enlarge the solver's matrix array by one to put
-   * it there. We also assume that the current stiffness matrix is the
-   * last matrix in that array.
+   * it there.
    *
    * Okay. The stiffness matrix used to be the only one in fluid
    * calculations. No need to worry. And the subdiscretization stuff
@@ -279,7 +262,8 @@ void fluid_pm()
    * These data structures need a clean-up badly! */
   actsysarray = disnum_calc;
   stiff_array = disnum_calc;
-  mass_array  = disnum_calc+1;
+  press_array = stiff_array+1;
+  mass_array  = press_array+1;
 
   container.disnum    = disnum_calc;
   container.turbu     = fdyn->turbu;
@@ -308,11 +292,6 @@ void fluid_pm()
   if (actintra->intra_fieldtyp != fluid) goto end;
 
   /* ------------------------------------------------ */
-  /* Enumerate discontinous pressure dofs */
-
-  numpdof = pm_assign_press_dof(actfield, actpart, disnum_calc, actintra);
-
-  /* ------------------------------------------------ */
   /* Allocate space for the additional mass matrix
    * This follows the structure code. The same ugliness here. */
 
@@ -333,13 +312,61 @@ void fluid_pm()
                               &(actsolv->sysarray_typ[mass_array]),
                               &(actsolv->sysarray[mass_array]));
 
+  /* change discretization type in main discretization */
+  for (i=0; i<actfield->dis[disnum_calc].numele; ++i)
+  {
+    ELEMENT* actele;
+    actele = &actfield->dis[disnum_calc].element[i];
+    switch (actele->eltyp)
+    {
+#ifdef D_FLUID2_PRO
+    case el_fluid2_pro:
+    {
+      FLUID2_PRO* f2pro;
+      f2pro = actele->e.f2pro;
+      switch (f2pro->dm)
+      {
+      case dm_q2pm1:
+	f2pro->dm = dm_q2q2;
+	break;
+      case dm_q1p0:
+	f2pro->dm = dm_q1q1;
+	break;
+      default:
+        dserror("discretization mode %d currently unsupported", f2pro->dm);
+      }
+      break;
+    }
+#endif
+#ifdef D_FLUID3_PRO
+    case el_fluid3_pro:
+    {
+      FLUID3_PRO* f3pro;
+      f3pro = actele->e.f3pro;
+      switch (f3pro->dm)
+      {
+      case dm_q2pm1:
+	f3pro->dm = dm_q2q2;
+	break;
+      case dm_q1p0:
+	f3pro->dm = dm_q1q1;
+	break;
+      default:
+        dserror("discretization mode %d currently unsupported", f3pro->dm);
+      }
+      break;
+    }
+#endif
+    default:
+      dserror("element type %d undefined",actele->eltyp);
+    }
+  }
+
   /* ------------------------------------------------ */
   /* The gradient matrix G */
   /* This is a parallel matrix, each processor owns a separate slice. */
 
-  /* the discontinuous pressure version */
-
-#ifdef PM_TRILINOS
+  /* the continuous pressure version */
 
   if (!genprob.usetrilinosalgebra)
   {
@@ -348,134 +375,48 @@ void fluid_pm()
 
   {
     TRILINOSMATRIX* global_stiff;
+    TRILINOSMATRIX* global_press;
 
-    /* we take the update map from our global velocity solver */
-    dsassert(actsolv->sysarray_typ[stiff_array]==trilinos,"fatal: trilinos solver expected");
+    /* we take the update map from our global solvers */
+    if (actsolv->sysarray_typ[stiff_array]!=trilinos)
+      dserror("fatal: trilinos solver expected");
+    if (actsolv->sysarray_typ[press_array]!=trilinos)
+      dserror("fatal: trilinos solver expected");
 
     global_stiff = actsolv->sysarray[stiff_array].trilinos;
+    global_press = actsolv->sysarray[press_array].trilinos;
 
+    /* setup diagonal mass matrix */
     memset(&lmass,0,sizeof(TRILINOSMATRIX));
     lmass.numeq_total = global_stiff->numeq_total;
     lmass.numeq       = global_stiff->numeq;
 
     am_alloc_copy(&global_stiff->update,&lmass.update);
     construct_trilinos_diagonal_matrix(actintra,&lmass);
+
+    /* setup rectangular gradient matrix (FillComplete with arguments
+     * needed.) */
+    memset(&grad,0,sizeof(TRILINOSMATRIX));
+    grad.numeq_total = global_press->numeq_total;
+    grad.numeq       = global_press->numeq;
+
+    am_alloc_copy(&global_press->update,&grad.update);
+    construct_trilinos_diagonal_matrix(actintra,&grad);
   }
-
-  /* We need to provide the update array ourselves. */
-  /* The domain map of this matrix is still undefined here. It needs
-   * to be set with FillComplete later... */
-
-  memset(&grad,0,sizeof(TRILINOSMATRIX));
-  grad.numeq_total = numpdof*actfield->dis[disnum_calc].numele;
-  grad.numeq       = numpdof*actpart->pdis[disnum_calc].numlele;
-  amdef("update",&grad.update,grad.numeq,1,"IV");
-  pm_fill_gradient_update(actpart, disnum_calc, actintra, numpdof,
-			  grad.update.fdim, grad.update.a.iv);
-
-  construct_trilinos_matrix(actintra,&grad);
-
-  /* No need to construct a trilinos object for the pressure
-   * matrix. It comes with the multiplication. But the ccarat
-   * surroundings are needed. */
-  memset(&pmat,0,sizeof(TRILINOSMATRIX));
-  pmat.numeq_total = grad.numeq_total;
-  pmat.numeq       = grad.numeq;
-  am_alloc_copy(&grad.update,&pmat.update);
-
-  parallel_sparse_convert(&pmat, &presolv);
-
-#else /* PM_TRILINOS */
-
-  /* inverted lumed masses in vector form */
-  lmass = (DOUBLE*)CCAMALLOC(actfield->dis[disnum_calc].numeq*sizeof(DOUBLE));
-
-  parallel_sparse_init(&grad,
-                       actfield->dis[disnum_calc].numeq,
-                       numpdof*actfield->dis[disnum_calc].numele,
-                       sd_slice_vertical,
-                       numpdof*actpart->pdis[disnum_calc].numlele);
-
-#ifdef PARALLEL
-
-  /* We need to provide the update array ourselves. */
-  pm_fill_gradient_update(actpart, disnum_calc, actintra, numpdof,
-			  grad.slice.cols, grad.update);
-
-#endif
-
-  /* Now build the mask. */
-  pm_gradient_mask_mat(actfield, actpart, disnum_calc, actintra, numpdof, &grad);
-
-  /* ------------------------------------------------ */
-  /* The pressure matrix D*ML^-1*G */
-  /* With D^T = G */
-
-  /* This one is horizontally sliced. In the huge matrix there are as
-   * many rows and columns as there are elements times the number of
-   * pressure dofs per element. No dirichlet conditions on the
-   * pressure supported right now. */
-  parallel_sparse_init(&pmat,
-                       numpdof*actpart->pdis[disnum_calc].numlele,
-                       numpdof*actfield->dis[disnum_calc].numele,
-                       sd_slice_horizontal,
-                       numpdof*actfield->dis[disnum_calc].numele);
-
-#ifdef PARALLEL
-
-  /*
-   * Here we slice horizontally and thus we have to remember the
-   * global row numbers */
-
-  /*
-   * We have the same slicing here as in the gradient matrix, only the
-   * direction changed. No need to repeat the above loop. */
-  memcpy(pmat.update, grad.update, pmat.slice.rows*sizeof(INT));
-
-#endif
-
-  /* create a matrix suitable for a solver */
-  /* We need two copies anyway, because our solvers are allowed to
-   * destroy their matrix on solving. So in order to keep the
-   * matrix-matrix multiplication simple and independent of the solver
-   * we first create an independent sparse and convert it afterwards. */
-
-  pm_build_pmat_sparse_mask(actfield, actpart, disnum_calc, actintra, numpdof, &pmat);
-
-  /* Convert the sparse matrix to something solvable. :) */
-  /* Concerns the sparse mask only. */
-  if (!genprob.usetrilinosalgebra)
-  {
-    parallel_sparse_convert_aztec(&pmat, &presolv);
-  }
-  else
-  {
-#ifdef TRILINOS_PACKAGE
-    parallel_sparse_convert_trilinos(&pmat, actintra, &presolv);
-#else
-    dserror("no trilinos support");
-#endif
-  }
-
-#endif /* PM_TRILINOS */
-
-  /* ------------------------------------------------ */
 
   /*---------------------------- get global and local number of equations */
-  solserv_getmatdims(&(presolv.sysarray[0]),
-                     presolv.sysarray_typ[0],
+  solserv_getmatdims(&(actsolv->sysarray[press_array]),
+                     actsolv->sysarray_typ[press_array],
                      &pnumeq,
                      &pnumeq_total);
 
   /*---------------------------------------- allocate dist. vectors 'rhs' */
-  presolv.nrhs = 1;
-  solserv_create_vec(&(presolv.rhs),presolv.nrhs,pnumeq_total,pnumeq,"DV");
-  solserv_zero_vec(&(presolv.rhs[0]));
+  solserv_create_vec(&press_rhs,1,pnumeq_total,pnumeq,"DV");
+  solserv_zero_vec(press_rhs);
 
   /*---------------------------------- allocate dist. solution vectors ---*/
-  presolv.nsol = 1;
-  solserv_create_vec(&(presolv.sol),presolv.nsol,pnumeq_total,pnumeq,"DV");
-  solserv_zero_vec(&(presolv.sol[0]));
+  solserv_create_vec(&press_sol,1,pnumeq_total,pnumeq,"DV");
+  solserv_zero_vec(press_sol);
 
   /*------------------------------------ prepare lift&drag calculation ---*/
   if (fdyn->liftdrag==ld_stress)
@@ -548,6 +489,13 @@ void fluid_pm()
   /*-------------------------------------- init the dirichlet-conditions -*/
   fluid_initdirich(actfield, disnum_calc, ipos);
 
+  /* we need two entries on the pressure discretization */
+  /*
+   * sol_increment[0]  ... phi
+   * sol_increment[1]  ... press
+   */
+  solserv_sol_zero(actfield,press_dis,node_array_sol_increment,1);
+
   /*---------------------------------- initialize solver on all matrices */
   /*
     NOTE: solver init phase has to be called with each matrix one wants to
@@ -563,6 +511,13 @@ void fluid_pm()
                  &(actsolv->sysarray[actsysarray]),
                  &(actsolv->sol[0]),
                  &(actsolv->rhs[0]),
+                 init);
+  /* initialize pressure matrix */
+  solver_control(actfield,disnum_calc,actsolv, actintra,
+                 &(actsolv->sysarray_typ[press_array]),
+                 &(actsolv->sysarray[press_array]),
+                 NULL,
+                 NULL,
                  init);
   /* initialize the mass matrix, too, so we can use the global
    * matrix-vector product */
@@ -671,41 +626,11 @@ void fluid_pm()
   solserv_zero_mat(actintra,&(actsolv->sysarray[mass_array]),
                    &(actsolv->sysarray_typ[mass_array]));
 
-#ifdef PM_TRILINOS
+  pm_calelm_cont(actfield, actpart, disnum_calc, press_dis,
+		 actsolv, mass_array,
+		 actintra, ipos, &grad, &lmass);
 
-  pm_calelm(actfield, actpart, disnum_calc,
-            actsolv, mass_array,
-            actintra, ipos, numpdof, &grad, &lmass);
-
-  mult_trilinos_mmm(&pmat,&grad,0,&lmass,0,&grad,1);
-
-#else /* PM_TRILINOS */
-
-  sparse_zero(&grad.slice);
-  pm_calelm(actfield, actpart, disnum_calc,
-            actsolv, mass_array,
-            actintra, ipos, numpdof, &grad, lmass);
-
-  /* Calculate global mass matrix */
-
-  /* matrix-matrix-matrix multiplication. */
-  /* Ok. We have sparse matrices and the inner one is diagonal. */
-
-  parallel_sparse_pm_matmat(&pmat, &grad, lmass, actintra);
-
-#endif /* PM_TRILINOS */
-
-  /* Setup the solver for the pressure matrix. That is again special
-   * because this matrix is not (directly) connected to a
-   * discretization. */
-  /* Do it very late so that the trilinos object already exists! */
-  solver_control(actfield,disnum_calc,
-		 &presolv, actintra,
-		 &(presolv.sysarray_typ[0]),
-		 &(presolv.sysarray[0]),
-		 &(presolv.sol[0]),
-		 &(presolv.rhs[0]),
-		 1);
+  mult_trilinos_mmm_cont(&pmat,&grad,0,&lmass,0,&grad,1);
 
   /*======================================================================*
    |                         T I M E L O O P                              |
@@ -837,8 +762,6 @@ void fluid_pm()
        * iteration, but maybe we'll do the convection explicit and
        * circumvent the iteration altogether.) */
 
-#ifdef PM_TRILINOS
-
       assemble_vec(actintra,
                    &(actsolv->sysarray_typ[actsysarray]),
                    &(actsolv->sysarray[actsysarray]),
@@ -852,54 +775,6 @@ void fluid_pm()
 		      &lmass);
 
       solserv_zero_vec(&(actsolv->rhs[0]));
-
-#else /* PM_TRILINOS */
-
-      /*
-       * We do ML^-1*G*p(n) at first because that results in a vector
-       * and we are left with an ordinary matrix-vector
-       * multiplication.
-       *
-       * We do the multiplication on the global level for
-       * simplicity. But still we only handle those dofs that belong
-       * to the local processor. */
-      for (i=0; i<actpart->pdis[disnum_calc].numnp; ++i)
-      {
-        INT dof;
-        NODE* actnode;
-        actnode = actpart->pdis[disnum_calc].node[i];
-        if (actnode->proc == actintra->intra_rank)
-        {
-          for (dof=0; dof<actnode->numdf; ++dof)
-          {
-            INT gdof;
-            gdof = actnode->dof[dof];
-            if (gdof < actfield->dis[disnum_calc].numeq)
-            {
-              fgradprhs[gdof] *= lmass[gdof];
-            }
-          }
-        }
-      }
-
-      /*
-       * Ok. We waste time and space here. The total vector fgradprhs
-       * (only the values that belong to this processor are filled!)
-       * is copied to a distributed one. The matrix-vector
-       * multiplication allreduces it, does its work and distributes
-       * it back.
-       *
-       * If this takes too much time we can optimize it, but not for
-       * all matrix types supported here. */
-      assemble_vec(actintra,
-                   &(actsolv->sysarray_typ[actsysarray]),
-                   &(actsolv->sysarray[actsysarray]),
-                   &(actsolv->rhs[1]),
-                   fgradprhs,
-                   -fdyn->thsr
-        );
-
-#endif /* PM_TRILINOS */
 
       solserv_sparsematvec(actintra,
                            &(actsolv->rhs[0]),
@@ -970,62 +845,36 @@ void fluid_pm()
      | -->  end of nonlinear iteration                                      |
      *----------------------------------------------------------------------*/
 
-#ifdef PM_TRILINOS
-
-    /* No need to copy anything. The solver object already points to
-     * our trilinos matrix. */
-    solserv_zero_vec(&(presolv.rhs[0]));
-
-#else /* PM_TRILINOS */
-
-    /* Now we need to solve the pressure equation. */
-    if (genprob.usetrilinosalgebra)
-    {
-#ifdef TRILINOS_PACKAGE
-      solserv_zero_vec(&(presolv.rhs[0]));
-      parallel_sparse_copy_trilinos(&pmat, &presolv);
-#else
-      dserror("trilinos missing");
-#endif
-    }
-    else
-    {
-#ifdef AZTEC_PACKAGE
-      solserv_zero_vec(&(presolv.rhs[0]));
-      parallel_sparse_copy_aztec(&pmat, &presolv);
-#else
-      dserror("aztec missing");
-#endif
-    }
-
-#endif /* PM_TRILINOS */
+    solserv_zero_vec(press_rhs);
 
     /* build up the rhs */
-    pm_calprhs(actfield, actpart, disnum_calc, actintra, ipos, numpdof, &(presolv.rhs[0]));
+    pm_calprhs_cont(actfield, actpart, disnum_calc, actintra, ipos, press_rhs);
 
     /* solve for the pressure increment */
-    solver_control(actfield,disnum_calc,&presolv, actintra,
-                   &(presolv.sysarray_typ[0]),
-                   &(presolv.sysarray[0]),
-                   &(presolv.sol[0]),
-                   &(presolv.rhs[0]),
+    solver_control(actfield,press_dis,actsolv,actintra,
+                   &(actsolv->sysarray_typ[press_array]),
+                   &(actsolv->sysarray[press_array]),
+                   press_sol,
+                   press_rhs,
                    0);
 
     /* update pressure */
-    pm_press_update(actfield, actpart, disnum_calc, actintra, ipos, numpdof, &(presolv.sol[0]), fdyn->dta);
+    solserv_result_incre(actfield,
+			 press_dis,actintra,press_sol,0,
+			 &(actsolv->sysarray[press_array]),
+			 &(actsolv->sysarray_typ[press_array]));
+    solserv_sol_add(actfield,
+		    press_dis,
+		    node_array_sol_increment,
+		    node_array_sol_increment,
+		    0,
+		    1,
+		    2./fdyn->dta);
 
     /* update velocity */
-#ifdef PM_TRILINOS
-
     pm_vel_update(actfield, actpart, disnum_calc, actintra, ipos,
 		  &lmass, actsolv, actsysarray,
 		  frhs, fgradprhs);
-
-#else /* PM_TRILINOS */
-
-    pm_vel_update(actfield, actpart, disnum_calc, actintra, ipos, lmass, frhs, fgradprhs);
-
-#endif /* PM_TRILINOS */
 
     /*---------- extrapolate from n+alpha_f to n+1 for generalised alpha ---*/
     if (fdyn->iop == 1)
@@ -1327,6 +1176,9 @@ end:
   dstrc_exit();
 #endif
   return;
+#else
+#error TRILINOS_PACKAGE required
+#endif
 }
 
 
