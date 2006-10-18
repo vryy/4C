@@ -736,6 +736,6 @@ dstrc_exit();
 #endif
 #endif
 return;
-} /* end of s8eleload */
+} /* end of s8fsiload */
 
 #endif
