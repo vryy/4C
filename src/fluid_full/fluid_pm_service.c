@@ -1054,9 +1054,8 @@ void pm_calelm_cont(FIELD *actfield,
 		 * the non-trilinos version! */
 		add_trilinos_value(grad,
 				   gradopr_global.a.da[vnode->numdf*j+dof][l],
-				   /*
-				    * I suppose trilinos expects the
-				    * global dof number... */
+				   /* trilinos expects the global dof
+				    * number... */
 				   pnode->dof[0],
 				   vnode->dof[dof]);
 		break;
@@ -1241,7 +1240,8 @@ void pm_calprhs_cont(FIELD *actfield,
 		     INT disnum,
 		     INTRA *actintra,
 		     ARRAY_POSITION *ipos,
-		     DIST_VECTOR* rhs)
+		     DIST_VECTOR* rhs,
+		     DOUBLE* full_rhs)
 {
   INT i;
 
@@ -1250,7 +1250,7 @@ void pm_calprhs_cont(FIELD *actfield,
   extern struct _ARRAY eforce_global;
 
 #ifdef DEBUG
-  dstrc_enter("pm_calprhs");
+  dstrc_enter("pm_calprhs_cont");
 #endif
 
   /* calculate matrix values */
@@ -1271,7 +1271,7 @@ void pm_calprhs_cont(FIELD *actfield,
        * nodes. */
       for (k=0; k<actele->numnp; ++k)
       {
-	NODE* node = actele->node[k];
+	NODE* node = actele->e.f2pro->other->node[k];
 
 	if (node->proc == actintra->intra_rank)
 	{
@@ -1280,7 +1280,7 @@ void pm_calprhs_cont(FIELD *actfield,
           dsassert((node->dof[0] >= 0) &&
                    (node->dof[0] < rhs->numeq),
                    "local dof number out of range");
-          rhs->vec.a.dv[node->dof[0]] += eforce_global.a.dv[k];
+          full_rhs[node->dof[0]] += eforce_global.a.dv[k];
 	}
       }
       break;
@@ -1294,7 +1294,7 @@ void pm_calprhs_cont(FIELD *actfield,
        * nodes. */
       for (k=0; k<actele->numnp; ++k)
       {
-	NODE* node = actele->node[k];
+	NODE* node = actele->e.f3pro->other->node[k];
 
 	if (node->proc == actintra->intra_rank)
 	{
@@ -1303,7 +1303,7 @@ void pm_calprhs_cont(FIELD *actfield,
           dsassert((node->dof[0] >= 0) &&
                    (node->dof[0] < rhs->numeq),
                    "local dof number out of range");
-          rhs->vec.a.dv[node->dof[0]] += eforce_global.a.dv[k];
+          full_rhs[node->dof[0]] += eforce_global.a.dv[k];
 	}
       }
       break;
@@ -1556,7 +1556,9 @@ void pm_vel_update(FIELD *actfield,
 {
   INT i;
   INT velnp;
+#ifndef PM_TRILINOS
   DOUBLE* gradip;
+#endif
 
 #ifdef DEBUG
   dstrc_enter("pm_vel_update");

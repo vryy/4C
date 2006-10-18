@@ -324,15 +324,33 @@ void f2pro_calgradp(
   case dm_q1p0:
     numpdof = 1;
     break;
+  case dm_q1q1:
+  case dm_q2q2:
+    numpdof = -1;
+    break;
   default:
     dserror("unsupported discretization mode %d", ele->e.f2pro->dm);
   }
 
-  for (i=0; i<numpdof; ++i)
+#if 0
+  /*---------------------------------------------- set pressures (n+1) ---*/
+  if (numpdof==-1)
   {
-    /*---------------------------------------------- set pressures (n+1) ---*/
-    epren[i]   = ele->e.f2pro->press[i];
+    ELEMENT* pele;
+    pele = ele->e.f2pro->other;
+    for (i=0; i<pele->numnp; ++i)
+    {
+      epren[i] = pele->node[i]->sol_increment.a.da[1][0];
+    }
   }
+  else
+  {
+    for (i=0; i<numpdof; ++i)
+    {
+      epren[i]   = ele->e.f2pro->press[i];
+    }
+  }
+#endif
 
   /*--------------------------------------------------- initialisation ---*/
   iel    = ele->numnp;
@@ -382,7 +400,8 @@ void f2pro_calgradp(
         e2   = data->qxg[ls][nis-1];
         facs = data->qwgt[ls][nis-1];
         f2_rec(funct,deriv,deriv2,e1,e2,typ,icode);
-        f2pro_prec(pfunct, pderiv, e1, e2, dm, &numpdof);
+	if (numpdof!=-1)
+	  f2pro_prec(pfunct, pderiv, e1, e2, dm, &numpdof);
         break;
       case tri3: case tri6:   /* --> tri - element */
         e1   = data->txgr[lr][intc];
@@ -407,10 +426,25 @@ void f2pro_calgradp(
       for (i=0; i<iel; i++)
       {
 	INT p;
-	for (p=0; p<numpdof; ++p)
+	if (numpdof==-1)
 	{
-	  gradopr[2*i  ][p] += fac*pfunct[p]*derxy[0][i] ;
-	  gradopr[2*i+1][p] += fac*pfunct[p]*derxy[1][i] ;
+	  /*
+	   * The number of nodes of the pressure element is supposed
+	   * to be equal to the number of my nodes. The shape
+	   * functions are supposed to be the same. */
+	  for (p=0; p<ele->e.f2pro->other->numnp; ++p)
+	  {
+	    gradopr[2*i  ][p] += fac*funct[p]*derxy[0][i] ;
+	    gradopr[2*i+1][p] += fac*funct[p]*derxy[1][i] ;
+	  }
+	}
+	else
+	{
+	  for (p=0; p<numpdof; ++p)
+	  {
+	    gradopr[2*i  ][p] += fac*pfunct[p]*derxy[0][i] ;
+	    gradopr[2*i+1][p] += fac*pfunct[p]*derxy[1][i] ;
+	  }
 	}
       }
 
@@ -527,6 +561,10 @@ void f2pro_calprhs(
   case dm_q1p0:
     numpdof = 1;
     break;
+  case dm_q1q1:
+  case dm_q2q2:
+    numpdof = -1;
+    break;
   default:
     dserror("unsupported discretization mode %d", ele->e.f2pro->dm);
   }
@@ -582,7 +620,8 @@ void f2pro_calprhs(
         e2   = data->qxg[ls][nis-1];
         facs = data->qwgt[ls][nis-1];
         f2_rec(funct,deriv,deriv2,e1,e2,typ,icode);
-        f2pro_prec(pfunct, pderiv, e1, e2, dm, &numpdof);
+	if (numpdof!=-1)
+	  f2pro_prec(pfunct, pderiv, e1, e2, dm, &numpdof);
         break;
       case tri3: case tri6:   /* --> tri - element */
         e1   = data->txgr[lr][intc];
@@ -607,10 +646,21 @@ void f2pro_calprhs(
       f2_vder(vderxy,derxy,evelng,iel);
       divu = vderxy[0][0] + vderxy[1][1];
 
-      /* loop over nodes of element */
-      for (p=0; p<numpdof; ++p)
+      if (numpdof==-1)
       {
-        eforce[p] -= fac*pfunct[p]*divu ;
+	ELEMENT* pele;
+	pele = ele->e.f2pro->other;
+	for (p=0; p<pele->numnp; ++p)
+	{
+	  eforce[p] -= fac*funct[p]*divu ;
+	}
+      }
+      else
+      {
+	for (p=0; p<numpdof; ++p)
+	{
+	  eforce[p] -= fac*pfunct[p]*divu ;
+	}
       }
     }
   }
@@ -677,14 +727,30 @@ void f2pro_calvelupdate(
   case dm_q1p0:
     numpdof = 1;
     break;
+  case dm_q1q1:
+  case dm_q2q2:
+    numpdof = -1;
+    break;
   default:
     dserror("unsupported discretization mode %d", ele->e.f2pro->dm);
   }
 
-  for (i=0; i<numpdof; ++i)
+  /*---------------------------------------------- set pressures (n+1) ---*/
+  if (numpdof==-1)
   {
-    /*---------------------------------------------- set pressures (n+1) ---*/
-    epren[i]   = ele->e.f2pro->phi[i];
+    ELEMENT* pele;
+    pele = ele->e.f2pro->other;
+    for (i=0; i<pele->numnp; ++i)
+    {
+      epren[i] = pele->node[i]->sol_increment.a.da[1][0];
+    }
+  }
+  else
+  {
+    for (i=0; i<numpdof; ++i)
+    {
+      epren[i]   = ele->e.f2pro->press[i];
+    }
   }
 
   /*--------------------------------------------------- initialisation ---*/
@@ -737,7 +803,8 @@ void f2pro_calvelupdate(
         e2   = data->qxg[ls][nis-1];
         facs = data->qwgt[ls][nis-1];
         f2_rec(funct,deriv,deriv2,e1,e2,typ,icode);
-        f2pro_prec(pfunct, pderiv, e1, e2, dm, &numpdof);
+	if (numpdof!=-1)
+	  f2pro_prec(pfunct, pderiv, e1, e2, dm, &numpdof);
         break;
       case tri3: case tri6:   /* --> tri - element */
         e1   = data->txgr[lr][intc];
@@ -763,8 +830,18 @@ void f2pro_calvelupdate(
        * for the velocity update. */
 
       ipress = 0;
-      for (i=0; i<numpdof; ++i)
-	ipress += pfunct[i] * epren[i];
+      if (numpdof==-1)
+      {
+	for (i=0; i<ele->e.f2pro->other->numnp; ++i)
+	{
+	  ipress += funct[i] * epren[i];
+	}
+      }
+      else
+      {
+	for (i=0; i<numpdof; ++i)
+	  ipress += pfunct[i] * epren[i];
+      }
 
       /* loop over nodes of element */
       for (i=0; i<iel; i++)

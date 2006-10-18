@@ -70,6 +70,7 @@ extern void trilinos_zero_matrix(TRILINOSMATRIX *tri);
 extern void add_trilinos_matrix(TRILINOSMATRIX* from, TRILINOSMATRIX* to, double factor);
 extern void close_trilinos_matrix(struct _TRILINOSMATRIX *tri);
 extern void matvec_trilinos(DIST_VECTOR* y, DIST_VECTOR* x, TRILINOSMATRIX* A);
+extern void matvec_trilinos_trans(DIST_VECTOR* y, DIST_VECTOR* x, TRILINOSMATRIX* A);
 extern void scale_trilinos_matrix(TRILINOSMATRIX* A, double factor);
 #endif
 
@@ -194,7 +195,7 @@ break;
 
 #ifdef TRILINOS_PACKAGE
 case trilinos:
-  close_trilinos_matrix(A->trilinos); 
+  close_trilinos_matrix(A->trilinos);
 break;
 #endif
 
@@ -473,7 +474,7 @@ case trilinos:
    *numeq       = mat->trilinos->numeq;
    *numeq_total = mat->trilinos->numeq_total;
 break;
-#endif 
+#endif
 
 case sparse_none:
    dserror("Unknown typ of sparse distributed system matrix");
@@ -1103,13 +1104,13 @@ if (*mattyp==trilinos)
   dstrc_exit();
 #endif
   return;
-}  
+}
 #endif
 /*----------------------------------------------------------------------*/
 /* these are redundant working vectors needed by some matvec versions */
 if (work1_a.Typ != cca_DV) work1 = amdef("work1",&work1_a,vec->numeq_total,1,"DV");
 if (work2_a.Typ != cca_DV) work2 = amdef("work2",&work2_a,vec->numeq_total,1,"DV");
-if (work1_a.fdim < vec->numeq_total) 
+if (work1_a.fdim < vec->numeq_total)
 {
   amdel(&work1_a); work1 = amdef("work1",&work1_a,vec->numeq_total,1,"DV");
   amdel(&work2_a); work2 = amdef("work2",&work2_a,vec->numeq_total,1,"DV");

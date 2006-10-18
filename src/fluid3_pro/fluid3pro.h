@@ -41,6 +41,7 @@ typedef struct _FLUID3_PRO
   INT*    dof;                  /* global dof numbers */
   INT*    ldof;                 /* processor local dof numbers */
 
+  ELEMENT* other;
 } FLUID3_PRO;
 
 #endif

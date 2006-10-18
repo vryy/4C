@@ -197,7 +197,6 @@ void fluid_pm_cont()
   INT             press_dis;
 
   TRILINOSMATRIX grad;
-  TRILINOSMATRIX pmat;
   TRILINOSMATRIX lmass;
 
   DIST_VECTOR   *press_rhs;
@@ -215,6 +214,11 @@ void fluid_pm_cont()
 #ifdef DEBUG
   dstrc_enter("fluid_pm");
 #endif
+
+#ifndef PM_TRILINOS
+  dserror("PM_TRILINOS required");
+#endif
+
 
   /*                    I N I T I A L I S A T I O N                       */
 
@@ -392,7 +396,7 @@ void fluid_pm_cont()
     grad.numeq       = global_press->numeq;
 
     am_alloc_copy(&global_press->update,&grad.update);
-    construct_trilinos_diagonal_matrix(actintra,&grad);
+    construct_trilinos_matrix(actintra,&grad);
   }
 
   /*---------------------------- get global and local number of equations */
@@ -487,6 +491,8 @@ void fluid_pm_cont()
    */
   solserv_sol_zero(actfield,press_dis,node_array_sol_increment,1);
 
+  solserv_sol_zero(actfield,press_dis,node_array_sol,0);
+
   /*---------------------------------- initialize solver on all matrices */
   /*
     NOTE: solver init phase has to be called with each matrix one wants to
@@ -572,7 +578,7 @@ void fluid_pm_cont()
     if (ioflags.fluid_sol==1)
     {
       out_gid_sol("velocity",actfield,disnum_io,actintra,fdyn->step,actpos,fdyn->acttime);
-      out_gid_sol("average_pressure",actfield,disnum_io,actintra,fdyn->step,actpos,fdyn->acttime);
+      out_gid_sol("projected_pressure",actfield,press_dis,actintra,fdyn->step,actpos,fdyn->acttime);
     }
     if (ioflags.fluid_stress==1)
     {
@@ -586,7 +592,7 @@ void fluid_pm_cont()
   {
     if (ioflags.fluid_sol==1)
     {
-      out_results(&out_context, fdyn->acttime, fdyn->step, actpos, OUTPUT_VELOCITY | OUTPUT_AV_PRESSURE);
+      out_results(&out_context, fdyn->acttime, fdyn->step, actpos, OUTPUT_VELOCITY);
     }
     if (ioflags.fluid_stress==1)
     {
@@ -621,7 +627,15 @@ void fluid_pm_cont()
 		 actsolv, mass_array,
 		 actintra, ipos, &grad, &lmass);
 
-  mult_trilinos_mmm_cont(&pmat,&grad,0,&lmass,0,&grad,1);
+  {
+    TRILINOSMATRIX* global_press;
+
+    if (actsolv->sysarray_typ[press_array]!=trilinos)
+      dserror("fatal: trilinos solver expected");
+
+    global_press = actsolv->sysarray[press_array].trilinos;
+    mult_trilinos_mmm_cont(global_press,&grad,0,&lmass,0,&grad,1);
+  }
 
   /*======================================================================*
    |                         T I M E L O O P                              |
@@ -837,9 +851,18 @@ void fluid_pm_cont()
      *----------------------------------------------------------------------*/
 
     solserv_zero_vec(press_rhs);
+    amzero(&frhs_a);
 
     /* build up the rhs */
-    pm_calprhs_cont(actfield, actpart, disnum_calc, actintra, ipos, press_rhs);
+    pm_calprhs_cont(actfield, actpart, disnum_calc, actintra, ipos, press_rhs, frhs);
+
+    assemble_vec(actintra,
+		 &(actsolv->sysarray_typ[press_array]),
+		 &(actsolv->sysarray[press_array]),
+		 press_rhs,
+		 frhs,
+		 1.0
+      );
 
     /* solve for the pressure increment */
     solver_control(actfield,press_dis,actsolv,actintra,
@@ -854,6 +877,7 @@ void fluid_pm_cont()
 			 press_dis,actintra,press_sol,0,
 			 &(actsolv->sysarray[press_array]),
 			 &(actsolv->sysarray_typ[press_array]));
+
     solserv_sol_add(actfield,
 		    press_dis,
 		    node_array_sol_increment,
@@ -866,6 +890,108 @@ void fluid_pm_cont()
     pm_vel_update(actfield, actpart, disnum_calc, actintra, ipos,
 		  &lmass, actsolv, actsysarray,
 		  frhs, fgradprhs);
+
+#if 1
+    fprintf(allfiles.gidres,"RESULT \"press_rhs\" \"ccarat\" 1 SCALAR ONNODES\n"
+	    "RESULTRANGESTABLE \"standard_fluid    \"\n"
+	    "COMPONENTNAMES \"pressure\"\n"
+	    "VALUES\n");
+
+    for (i=0; i<actfield->dis[press_dis].numnp; ++i)
+    {
+      NODE* n = &actfield->dis[press_dis].node[i];
+      fprintf(allfiles.gidres,"%d %f\n",
+	      n->Id+1-genprob.nodeshift,
+	      /* frhs[n->dof[0]]); */
+	      press_rhs->vec.a.dv[n->dof[0]]);
+    }
+
+    fprintf(allfiles.gidres,"END VALUES\n");
+
+    fprintf(allfiles.gidres,"RESULT \"press_sol\" \"ccarat\" 1 SCALAR ONNODES\n"
+	    "RESULTRANGESTABLE \"standard_fluid    \"\n"
+	    "COMPONENTNAMES \"pressure\"\n"
+	    "VALUES\n");
+
+    for (i=0; i<actfield->dis[press_dis].numnp; ++i)
+    {
+      NODE* n = &actfield->dis[press_dis].node[i];
+      fprintf(allfiles.gidres,"%d %f\n",
+	      n->Id+1-genprob.nodeshift,
+	      /* frhs[n->dof[0]]); */
+	      press_sol->vec.a.dv[n->dof[0]]);
+    }
+
+    fprintf(allfiles.gidres,"END VALUES\n");
+#endif
+
+#if 1
+    fprintf(allfiles.gidres,"RESULT \"elementcall\" \"ccarat\" 1 VECTOR ONNODES\n"
+	    "RESULTRANGESTABLE \"standard_fluid    \"\n"
+	    "COMPONENTNAMES \"e1\" \"e2\"\n"
+	    "VALUES\n");
+
+    for (i=0; i<actfield->dis[0].numnp; ++i)
+    {
+      DOUBLE d1,d2;
+      NODE* n = &actfield->dis[0].node[i];
+
+      d1 = frhs[n->dof[0]];
+      d2 = frhs[n->dof[1]];
+
+      if (n->gnode->dirich && n->gnode->dirich->dirich_onoff.a.iv[0])
+	d1 = 0;
+      if (n->gnode->dirich && n->gnode->dirich->dirich_onoff.a.iv[1])
+	d2 = 0;
+
+      fprintf(allfiles.gidres,"%d %e %e\n",n->Id+1,d1,d2);
+    }
+
+    fprintf(allfiles.gidres,"END VALUES\n");
+
+
+    fprintf(allfiles.gidres,"RESULT \"elementcall2\" \"ccarat\" 1 VECTOR ONNODES\n"
+	    "RESULTRANGESTABLE \"standard_fluid    \"\n"
+	    "COMPONENTNAMES \"e1\" \"e2\"\n"
+	    "VALUES\n");
+
+    for (i=0; i<actfield->dis[0].numnp; ++i)
+    {
+      DOUBLE d1,d2;
+      NODE* n = &actfield->dis[0].node[i];
+
+      d1 = fgradprhs[n->dof[0]];
+      d2 = fgradprhs[n->dof[1]];
+
+      if (n->gnode->dirich && n->gnode->dirich->dirich_onoff.a.iv[0])
+	d1 = 0;
+      if (n->gnode->dirich && n->gnode->dirich->dirich_onoff.a.iv[1])
+	d2 = 0;
+
+      fprintf(allfiles.gidres,"%d %e %e\n",n->Id+1,d1,d2);
+    }
+
+    fprintf(allfiles.gidres,"END VALUES\n");
+
+    solserv_zero_vec(&(actsolv->sol[0]));
+    matvec_trilinos_trans(&(actsolv->sol[0]),press_sol,&grad);
+
+    fprintf(allfiles.gidres,"RESULT \"matvec\" \"ccarat\" 1 VECTOR ONNODES\n"
+	    "RESULTRANGESTABLE \"standard_fluid    \"\n"
+	    "COMPONENTNAMES \"e1\" \"e2\"\n"
+	    "VALUES\n");
+
+    for (i=0; i<actfield->dis[0].numnp; ++i)
+    {
+      NODE* n = &actfield->dis[0].node[i];
+      fprintf(allfiles.gidres,"%d %e %e\n",
+	      n->Id+1,
+	      actsolv->sol[0].vec.a.dv[n->dof[0]]*2./fdyn->dta,
+	      actsolv->sol[0].vec.a.dv[n->dof[1]]*2./fdyn->dta);
+    }
+
+    fprintf(allfiles.gidres,"END VALUES\n");
+#endif
 
     /*---------- extrapolate from n+alpha_f to n+1 for generalised alpha ---*/
     if (fdyn->iop == 1)
@@ -996,6 +1122,12 @@ void fluid_pm_cont()
     solserv_sol_copy(actfield,0,node_array_sol_increment,
                      node_array_sol,ipos->veln,actpos);
 
+    solserv_sol_copy(actfield,press_dis,
+		     node_array_sol_increment,
+                     node_array_sol,
+		     1,
+		     actpos);
+
     /*---------------------------------------------- finalise this timestep */
     outstep++;
     pssstep++;
@@ -1030,7 +1162,7 @@ void fluid_pm_cont()
       if(ioflags.fluid_sol==1)
       {
         out_gid_sol("velocity",actfield,disnum_io,actintra,fdyn->step,actpos,fdyn->acttime);
-        out_gid_sol("average_pressure",actfield,disnum_io,actintra,fdyn->step,actpos,fdyn->acttime);
+	out_gid_sol("projected_pressure",actfield,press_dis,actintra,fdyn->step,actpos,fdyn->acttime);
       }
       if(ioflags.fluid_stress==1)
       {
@@ -1044,7 +1176,7 @@ void fluid_pm_cont()
     {
       if (ioflags.fluid_sol==1)
       {
-        out_results(&out_context, fdyn->acttime, fdyn->step, actpos, OUTPUT_VELOCITY | OUTPUT_AV_PRESSURE);
+        out_results(&out_context, fdyn->acttime, fdyn->step, actpos, OUTPUT_VELOCITY);
       }
       if (ioflags.fluid_stress==1)
       {

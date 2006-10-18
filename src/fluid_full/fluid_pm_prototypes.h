@@ -95,7 +95,8 @@ void pm_calprhs_cont(FIELD *actfield,
 		     INT disnum,
 		     INTRA *actintra,
 		     ARRAY_POSITION *ipos,
-		     DIST_VECTOR* rhs);
+		     DIST_VECTOR* rhs,
+		     DOUBLE* full_rhs);
 
 void pm_press_update(FIELD *actfield,
                      PARTITION *actpart,

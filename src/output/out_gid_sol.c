@@ -5186,6 +5186,69 @@ if (strncmp(string,"pressure",stringlenght)==0)
 
 
 /*========================================= result type is pressure */
+if (strncmp(string,"projected_pressure",stringlenght)==0)
+{
+   resulttype        = "SCALAR";
+   resultplace       = "ONNODES";
+   gpset             = "";
+   rangetable        = actgid->standardrangetable;
+   ncomponent        = 3;
+   componentnames[0] = "pressure";
+   /*-------------------------------------------------------------------*/
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"# RESULT %s on FIELD %s, DIS %1i\n",string,actgid->fieldname,disnum);
+   fprintf(out,"# TIME %18.5E \n",time);
+   fprintf(out,"# STEP %6d    \n",step);
+   fprintf(out,"#-------------------------------------------------------------------------------\n");
+   fprintf(out,"RESULT \"%s\" \"ccarat\" %d %s %s\n",
+	   string,
+	   step,
+	   resulttype,
+	   resultplace
+     );
+   fprintf(out,"RESULTRANGESTABLE \"%s\"\n", actgid->standardrangetable);
+   switch (genprob.ndim)
+   {
+     case 3:
+       fprintf(out,"COMPONENTNAMES \"%s\"\n",componentnames[0]);
+     break;
+     case 2:
+       fprintf(out,"COMPONENTNAMES \"%s\"\n",componentnames[0]);
+     break;
+     default:
+       dserror("Unknown numer of dimensions");
+     break;
+   }
+   fprintf(out,"VALUES\n");
+   for (i=0; i<actfield->dis[disnum].numnp; i++)
+   {
+      actnode = &(actfield->dis[disnum].node[i]);
+      switch (genprob.ndim)
+      {
+	case 3:
+        fprintf(out," %6d %22.9E \n",
+		actnode->Id+1-genprob.nodeshift,
+		actnode->sol.a.da[place][0]
+	  );
+	break;
+	case 2:
+        fprintf(out," %6d %22.9E \n",
+		actnode->Id+1-genprob.nodeshift,
+		actnode->sol.a.da[place][0]
+	  );
+        break;
+	default:
+	  dserror("Unknown number of dimensions");
+        break;
+      }
+   }
+   fprintf(out,"END VALUES\n");
+}
+
+
+
+
+/*========================================= result type is pressure */
 if (strncmp(string,"average_pressure",stringlenght)==0)
 {
   DOUBLE* pressure;

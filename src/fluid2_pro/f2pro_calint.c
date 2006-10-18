@@ -134,6 +134,22 @@ void f2pro_int_usfem(
   fdyn   = alldyn[genprob.numff].fdyn;
   data   = fdyn->data;
 
+  switch (ele->e.f2pro->dm)
+  {
+  case dm_q2pm1:
+    numpdof = 3;
+    break;
+  case dm_q1p0:
+    numpdof = 1;
+    break;
+  case dm_q1q1:
+  case dm_q2q2:
+    numpdof = -1;
+    break;
+  default:
+    dserror("unsupported discretization mode %d", ele->e.f2pro->dm);
+  }
+
 /*------- get integraton data and check if elements are "higher order" */
   switch (typ)
   {
@@ -177,7 +193,8 @@ void f2pro_int_usfem(
         e2   = data->qxg[ls][nis-1];
         facs = data->qwgt[ls][nis-1];
         f2_rec(funct,deriv,deriv2,e1,e2,typ,icode);
-        f2pro_prec(pfunct, pderiv, e1, e2, dm, &numpdof);
+	if (numpdof!=-1)
+	  f2pro_prec(pfunct, pderiv, e1, e2, dm, &numpdof);
         break;
       case tri3: case tri6:   /* --> tri - element */
         e1   = data->txgr[lr][intc];
@@ -197,7 +214,8 @@ void f2pro_int_usfem(
 
       /*----------------------------------- compute global derivates ---*/
       f2_gder(derxy,deriv,xjm,det,iel);
-      f2_gder(pderxy,pderiv,xjm,det,numpdof);
+      if (numpdof!=-1)
+	f2_gder(pderxy,pderiv,xjm,det,numpdof);
 
       /*---------------- get velocities (n+1,i) at integration point ---*/
       f2_veci(velint,funct,evelng,iel);
@@ -222,15 +240,27 @@ void f2pro_int_usfem(
       /*------------------------------------- get pressure gradients ---*/
       gradp[0] = gradp[1] = 0.0;
 
-      for (i=0; i<numpdof; i++)
+      if (numpdof==-1)
       {
-        gradp[0] += pderxy[0][i] * epren[i];
-        gradp[1] += pderxy[1][i] * epren[i];
+	for (i=0; i<iel; i++)
+	{
+	  gradp[0] += derxy[0][i] * epren[i];
+	  gradp[1] += derxy[1][i] * epren[i];
+	}
       }
+      else
+      {
+	for (i=0; i<numpdof; i++)
+	{
+	  gradp[0] += pderxy[0][i] * epren[i];
+	  gradp[1] += pderxy[1][i] * epren[i];
+	}
+      }
+
       /*-------------- perform integration for entire matrix and rhs ---*/
       f2pro_calmat(estif,eforce,velint,histvec,gridvelint,vderxy,
-                vderxy2,gradp,funct,derxy,derxy2,edeadng,fac,
-                visc,iel,hasext);
+		   vderxy2,gradp,funct,derxy,derxy2,edeadng,fac,
+		   visc,iel,hasext);
 
       /*
        * Now do the weak form of the pressure gradient. That is used
@@ -238,8 +268,16 @@ void f2pro_int_usfem(
        * to eforce here but have to handle it globally. */
 
       press = 0;
-      for (i=0; i<numpdof; ++i)
-	press += pfunct[i] * epren[i];
+      if (numpdof==-1)
+      {
+	for (i=0; i<iel; ++i)
+	  press += funct[i] * epren[i];
+      }
+      else
+      {
+	for (i=0; i<numpdof; ++i)
+	  press += pfunct[i] * epren[i];
+      }
 
       /* loop over nodes of element */
       for (i=0; i<iel; i++)

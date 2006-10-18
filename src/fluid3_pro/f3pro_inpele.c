@@ -244,6 +244,9 @@ void f3pro_dis(ELEMENT* vele, ELEMENT* pele, INT numele, INT nodeshift)
   pele->e.f3pro->nGP[0] = vele->e.f3pro->nGP[0];
   pele->e.f3pro->nGP[1] = vele->e.f3pro->nGP[1];
 
+  pele->e.f3pro->other = vele;
+  vele->e.f3pro->other = pele;
+
 #ifdef DEBUG
   dstrc_exit();
 #endif

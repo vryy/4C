@@ -38,6 +38,7 @@ typedef struct _FLUID2_PRO
   INT*    dof;                  /* global dof numbers */
   INT*    ldof;                 /* processor local dof numbers */
 
+  ELEMENT* other;
 } FLUID2_PRO;
 
 #endif

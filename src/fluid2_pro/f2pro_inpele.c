@@ -229,6 +229,8 @@ void f2pro_inp(ELEMENT *ele)
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void f2pro_dis(ELEMENT* vele, ELEMENT* pele, INT numele, INT nodeshift)
 {
   INT i;
@@ -253,6 +255,9 @@ void f2pro_dis(ELEMENT* vele, ELEMENT* pele, INT numele, INT nodeshift)
 
   pele->e.f2pro->nGP[0] = vele->e.f2pro->nGP[0];
   pele->e.f2pro->nGP[1] = vele->e.f2pro->nGP[1];
+
+  pele->e.f2pro->other = vele;
+  vele->e.f2pro->other = pele;
 
 #ifdef DEBUG
   dstrc_exit();

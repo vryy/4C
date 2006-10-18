@@ -100,14 +100,30 @@ void f2pro_calset(
   case dm_q1p0:
     numpdof = 1;
     break;
+  case dm_q1q1:
+  case dm_q2q2:
+    numpdof = -1;
+    break;
   default:
     dserror("unsupported discretization mode %d", ele->e.f2pro->dm);
   }
 
-  for (i=0; i<numpdof; ++i)
+  /*---------------------------------------------- set pressures (n+1) ---*/
+  if (numpdof==-1)
   {
-    /*---------------------------------------------- set pressures (n+1) ---*/
-    epren[i]   = ele->e.f2pro->press[i];
+    ELEMENT* pele;
+    pele = ele->e.f2pro->other;
+    for (i=0; i<pele->numnp; ++i)
+    {
+      epren[i] = pele->node[i]->sol_increment.a.da[1][0];
+    }
+  }
+  else
+  {
+    for (i=0; i<numpdof; ++i)
+    {
+      epren[i]   = ele->e.f2pro->press[i];
+    }
   }
 
 #ifdef DEBUG

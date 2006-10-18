@@ -67,6 +67,7 @@ void exchange_coup_trilinos(
 void add_trilinos_value(struct _TRILINOSMATRIX *tri, DOUBLE v, INT row, INT col);
 void add_trilinos_matrix(TRILINOSMATRIX* from, TRILINOSMATRIX* to, double factor);
 void matvec_trilinos(DIST_VECTOR* y, DIST_VECTOR* x, TRILINOSMATRIX* A);
+  void matvec_trilinos_trans(DIST_VECTOR* y, DIST_VECTOR* x, TRILINOSMATRIX* A);
 void scale_trilinos_matrix(TRILINOSMATRIX* A, double factor);
 void invert_trilinos_diagonal_matrix(TRILINOSMATRIX* A);
 void mult_trilinos_mmm(TRILINOSMATRIX* dest,
@@ -77,6 +78,10 @@ void mult_trilinos_mmm_cont(TRILINOSMATRIX* dest,
                             TRILINOSMATRIX* A, INT transA,
                             TRILINOSMATRIX* B, INT transB,
                             TRILINOSMATRIX* C, INT transC);
+
+#ifdef DEBUG
+void extractGlobalRow(FILE* out,TRILINOSMATRIX* mat,INT row);
+#endif
 
 #ifdef __cplusplus
 }

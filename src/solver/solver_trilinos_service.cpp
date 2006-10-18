@@ -15,6 +15,7 @@ Maintainer: Michael Gee
 #include <ctime>
 #include <cstdlib>
 #include <iostream>
+#include <vector>
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -409,12 +410,18 @@ void add_trilinos_value(struct _TRILINOSMATRIX *tri, DOUBLE v, INT row, INT col)
   Epetra_CrsMatrix* mat = (Epetra_CrsMatrix*)tri->matrix;
   if (mat->Filled())
     dserror("Epetra_CrsMatrix::FillComplete() has been called, cannot assemble anymore");
+  if (mat->IndicesAreLocal())
+    dserror("IndicesAreLocal()");
 
   int err = mat->SumIntoGlobalValues(row,1,&v,&col);
+  if (mat->IndicesAreLocal())
+    dserror("IndicesAreLocal()");
   if (err)
     err = mat->InsertGlobalValues(row,1,&v,&col);
+  if (mat->IndicesAreLocal())
+    dserror("IndicesAreLocal()");
   if (err<0)
-    dserror("Epetra_CrsMatrix::InsertGlobalValues returned error code");
+    dserror("Epetra_CrsMatrix::InsertGlobalValues returned error code %d",err);
 
 }
 
@@ -932,6 +939,33 @@ void matvec_trilinos(DIST_VECTOR* y, DIST_VECTOR* x, TRILINOSMATRIX* A)
 
 /*----------------------------------------------------------------------*
  |                                                            m.gee 9/06|
+ | computes y = A^T*x
+ *----------------------------------------------------------------------*/
+void matvec_trilinos_trans(DIST_VECTOR* y, DIST_VECTOR* x, TRILINOSMATRIX* A)
+{
+  DSTraceHelper dst("matvec_trilinos_trans");
+  /*----------------------------------------------------------------------*/
+  // get Epetra_CrsMatrix
+  if (!A->matrix) dserror("Matrix is NULL");
+  Epetra_CrsMatrix* Amat = (Epetra_CrsMatrix*)A->matrix;
+
+  // test Amat
+  if (!Amat->Filled()) dserror("FillComplete() was not called on Amat");
+
+  // wrap y and x in Epetra_Vector classes
+  Epetra_Vector ex(View,Amat->OperatorRangeMap(),x->vec.a.dv);
+  Epetra_Vector ey(View,Amat->OperatorDomainMap(),y->vec.a.dv);
+
+  // do multiply
+  int err = Amat->Multiply(true,ex,ey);
+  if (err) dserror("Epetra_CrsMatrix::Multiply returned an error");
+  /*----------------------------------------------------------------------*/
+  return;
+} /* end of matvec_trilinos_trans */
+
+
+/*----------------------------------------------------------------------*
+ |                                                            m.gee 9/06|
  | computes A = A*factor
  *----------------------------------------------------------------------*/
 void scale_trilinos_matrix(TRILINOSMATRIX* A, double factor)
@@ -1079,6 +1113,7 @@ void mult_trilinos_mmm_cont(TRILINOSMATRIX* dest,
   RefCountPtr<Epetra_CrsMatrix> AB = rcp(MOERTEL::MatMatMult(*Amat,transA,*Bmat,transB,0));
 
   Epetra_CrsMatrix* ABC = (Epetra_CrsMatrix*)dest->matrix;
+
   int err = EpetraExt::MatrixMatrix::Multiply(*AB,false,*Cmat,transC,*ABC);
   if (err) dserror("error %d in MatrixMatrix()",err);
 
@@ -1087,5 +1122,45 @@ void mult_trilinos_mmm_cont(TRILINOSMATRIX* dest,
   dest->is_init=1;
 }
 
+
+#ifdef DEBUG
+
+void extractGlobalRow(FILE* out,TRILINOSMATRIX* mat,INT row)
+{
+  DSTraceHelper dst("extractGlobalRow");
+
+  int length=1000;
+
+  vector<double> values(length);
+  vector<int> indices(length);
+  int NumEntries=0;
+
+  Epetra_CrsMatrix* A = (Epetra_CrsMatrix*)mat->matrix;
+  int err = A->ExtractGlobalRowCopy(row,length,NumEntries,&values[0],&indices[0]);
+  if (err)
+    dserror("ExtractGlobalRowCopy failed err=%d",err);
+
+  fprintf(out,"NumGlobalRows=%d\n",A->NumGlobalRows());
+  fprintf(out,"NumGlobalCols=%d\n",A->NumGlobalCols());
+  fprintf(out,"indices = ");
+  for (int i=0; i<NumEntries; ++i)
+  {
+    if (i>0)
+      fprintf(out,",");
+    fprintf(out,"%d",indices[i]);
+  }
+  fprintf(out,"\n");
+
+  fprintf(out,"values = ");
+  for (int i=0; i<NumEntries; ++i)
+  {
+    if (i>0)
+      fprintf(out,",");
+    fprintf(out,"%f",values[i]);
+  }
+  fprintf(out,"\n");
+}
+
+#endif
 
 #endif // TRILINOS_PACKAGE
