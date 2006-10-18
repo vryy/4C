@@ -4,9 +4,9 @@
 
 <pre>
 Maintainer: Michael Gee
-            gee@statik.uni-stuttgart.de
-            http://www.uni-stuttgart.de/ibs/members/gee/
-            0711 - 685-6572
+            gee@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15239
 </pre>
 
 *----------------------------------------------------------------------*/
