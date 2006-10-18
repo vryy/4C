@@ -93,8 +93,8 @@ dstrc_enter("c1_call_mat");
                    disd, stress, d, &strain[0]);
   break;
   case m_neohooke:/*------------------------------ kompressible neo-hooke */
-    c1_mat_neohook(mat->m.stvenant->youngs,
-                   mat->m.stvenant->possionratio,
+    c1_mat_neohook(mat->m.neohooke->youngs,
+                   mat->m.neohooke->possionratio,
                    disd,
                    stress,
                    d);
@@ -147,8 +147,19 @@ dstrc_enter("c1_call_mat");
   case m_pl_epc:/*---------- elastoplastic concrete material law ---*/
     dserror(" elastoplastic concrete material law not implemented for brick");
   break;
+  case m_hyper_polyconvex:
+    c1_mat_hyper_polyconvex(
+    					mat->m.hyper_polyconvex->c,
+    					mat->m.hyper_polyconvex->k1,
+    					mat->m.hyper_polyconvex->k2,
+    					mat->m.hyper_polyconvex->gamma,
+    					mat->m.hyper_polyconvex->epsilon,
+    					disd,
+    					stress,
+    					d);
+  break;
   default:
-    dserror(" unknown type of material law");
+    dserror("unknown type of material law");
   break;
   }
 /*----------------------------------------------------------------------*/
@@ -252,6 +263,9 @@ case m_neohooke:/*------------------------------ kompressible neo-hooke */
 break;
 case m_stvenpor:/*------------------------ porous linear elastic ---*/
    *density = mat->m.stvenpor->density;
+break;
+case m_hyper_polyconvex:/*--------------hyperelastic polyconvex material*/
+	*density = mat ->m.hyper_polyconvex->density;
 break;
 default:
    dserror("Ilegal typ of material for this element");

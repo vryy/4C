@@ -253,6 +253,7 @@ OBJS_BRICK1   = src/brick1/c1_out.o \
                 src/brick1/c1_mat_neohook.o \
                 src/brick1/c1_mat_plast_mises.o \
                 src/brick1/c1_mat_plast_mises_ls.o \
+		src/brick1/c1_mat_hyper_polyconvex.o \
                 src/brick1/c1_cal_eps.o \
                 src/brick1/c1_init.o \
                 src/brick1/c1_eas_service.o \

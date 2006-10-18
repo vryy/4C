@@ -669,6 +669,22 @@ void c1_mat_plast_hashdel
                         INT istore,     /* controls storing of stresses */
                         INT newval);    /* controls eval. of stresses   */
 /*----------------------------------------------------------------------*
+ | - polyconvex non linear material model                       br 06/06|
+ *----------------------------------------------------------------------*/
+void c1_mat_hyper_polyconvex (
+						DOUBLE c,
+						DOUBLE k1,
+						DOUBLE k2,
+						DOUBLE gamma,
+						DOUBLE epsilon,/*-------------------------------------------------Parameters for Material Law*/
+						DOUBLE *disd,/*-------------------------------------------Vector of Displacement Derrivatives*/
+						DOUBLE *stress,/*--------------------------------------------------------2nd PK Stress Vector*/
+						DOUBLE **d);
+						
+void c1_calc_invariants (DOUBLE **M, DOUBLE *Inv);
+void c1_calc_inverse (DOUBLE **M, DOUBLE **Minv, DOUBLE *Inv);
+void c1_calc_tensorproduct (DOUBLE **A, DOUBLE **B, DOUBLE **AB);             
+/*----------------------------------------------------------------------*
  |  integration routine for BRICK1 element                     al 6/01  |
  *----------------------------------------------------------------------*/
 void c1_oint(
