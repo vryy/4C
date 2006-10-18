@@ -128,20 +128,21 @@ void out_gid_msh()
       {
         if (actgid->is_shell8_4_22 || actgid->is_shell8_4_33)
         {
+          INT ii,jj;
           tot_numnp = genprob.nnode;
-          for (i=0; i<actfield->dis[j].numnp; i++)
+          for (ii=0; ii<actfield->dis[j].numnp; ii++)
           {
-            actnode = &(actfield->dis[j].node[i]);
+            actnode = &(actfield->dis[j].node[ii]);
             /* find the director */
             actele  = actnode->element[0];
-            for (j=0; j<actele->numnp; j++)
-              if (actele->node[j] == actnode) break;
-            if (j==4) dserror("Cannot find matching node in element");
+            for (jj=0; jj<actele->numnp; jj++)
+              if (actele->node[jj] == actnode) break;
+            if (jj==4) dserror("Cannot find matching node in element");
             thick = actele->e.s8->thick;
             scal  = 1.0;
-            a1 = actele->e.s8->a3ref.a.da[0][j]*thick*scal/2.0;
-            a2 = actele->e.s8->a3ref.a.da[1][j]*thick*scal/2.0;
-            a3 = actele->e.s8->a3ref.a.da[2][j]*thick*scal/2.0;
+            a1 = actele->e.s8->a3ref.a.da[0][jj]*thick*scal/2.0;
+            a2 = actele->e.s8->a3ref.a.da[1][jj]*thick*scal/2.0;
+            a3 = actele->e.s8->a3ref.a.da[2][jj]*thick*scal/2.0;
             /* the lower surface coordinate*/
             fprintf(out,"%6d %-18.5f %-18.5f %-18.5f\n",actnode->Id+1,
                 actnode->x[0]-a1,
@@ -167,7 +168,7 @@ void out_gid_msh()
       else
       {
         if (actgid->is_shell8_4_22 || actgid->is_shell8_4_33)
-          dserror("Shell 8 element smust be on the first mesh for hex8 output!!")
+          dserror("Shell8 element must be on the first mesh for hex8 output!!");
       }
 #endif  /* D_SHELL8 && S8_HEX8 */
 
@@ -588,7 +589,7 @@ elements:
       }
 
 #endif /* ifdef S8_HEX8 */
-
+end_shell8:;
 #endif /* ifdef D_SHELL8 */
 
 

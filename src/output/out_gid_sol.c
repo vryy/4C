@@ -920,7 +920,7 @@ for (i=0; i<genprob.numfld; i++)
    }
 
 #endif /* S8_HEX8 */
-
+end_s8_init:;
 #endif /* D_SHELL8 */
 
 
@@ -1794,7 +1794,7 @@ if (!actgid) dserror("Cannot find correct field");
          }
       }
       fprintf(out,"END VALUES\n");
-      goto end_8_domains;
+      goto end_s8_domains;
    }
 
 
@@ -1940,7 +1940,7 @@ if (actgid->is_shell8_3_11)
 }
 
 #endif /* S8_HEX8 */
-
+end_s8_domains:;
 #endif /* D_SHELL8 */
 
 
