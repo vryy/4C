@@ -12,6 +12,15 @@ Maintainer: Ulrich Kuettler
 
 #include "solver_sparse.h"
 
+/*----------------------------------------------------------------------*
+ | define the global structure solv                                     |
+ |                                                                      |
+ | global variable *solv, vector of lenght numfld of structures SOLVAR  |
+ |                                                       m.gee 11/00    |
+ *----------------------------------------------------------------------*/
+extern struct _SOLVAR  *solv;
+
+
 /*----------------------------------------------------------------------*/
 /*!
   \brief set up an empty parallel sparse matrix
@@ -1137,34 +1146,13 @@ void parallel_sparse_convert(TRILINOSMATRIX* pmat, SOLVAR* solvar)
   dstrc_enter("parallel_sparse_convert");
 #endif
 
-  /* Not very nice... */
-  solvar->fieldtyp = fluid;
+  /* copy solver variables that have been read */
+  *solvar = solv[1];
 
-  solvar->solvertyp = aztec_msr;
-  solvar->parttyp = cut_elements;
-  solvar->matrixtyp = matrix_none;
-  solvar->azvar = (AZVAR*)CCACALLOC(1,sizeof(AZVAR));
-
-  /* Default values. There is no input we could read... */
-
-  /*solvar->azvar->azsolvertyp = azsolv_CG;*/
-  solvar->azvar->azsolvertyp = azsolv_GMRES;
-  solvar->azvar->azprectyp = azprec_SymmGaussSeidel;
-
-  solvar->azvar->azreuse   = 0;
-  solvar->azvar->azgfill   = 0;
-  solvar->azvar->aziter    = 2500;
-  solvar->azvar->azsub     = 50;
-  solvar->azvar->azgraph   = 1;
-  solvar->azvar->azpoly    = 5;
-  solvar->azvar->blockdiag = 0;
-
-  solvar->azvar->azdrop  = 0.;
-  solvar->azvar->azfill  = 2.;
-  solvar->azvar->aztol   = 1.e-12;
-  solvar->azvar->azomega = 1.;
+  dsassert(solvar->fieldtyp == pressure, "expected to find pressure solver");
 
   /* We create one array */
+  /* This hasn't been done yet. */
 
   solvar->nsysarray = 1;
   solvar->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(solvar->nsysarray,sizeof(SPARSE_TYP));
@@ -1217,32 +1205,13 @@ void parallel_sparse_convert_aztec(PARALLEL_SPARSE* ps, SOLVAR* solvar)
 
 #endif
 
-  /* Not very nice... */
-  solvar->fieldtyp = fluid;
+  if (solv[1].solvertyp != aztec_msr)
+    dserror("aztec or trilinos solver for pressure system required");
 
-  solvar->solvertyp = aztec_msr;
-  solvar->parttyp = cut_elements;
-  solvar->matrixtyp = matrix_none;
-  solvar->azvar = (AZVAR*)CCACALLOC(1,sizeof(AZVAR));
+  /* copy solver variables that have been read */
+  *solvar = solv[1];
 
-  /* Default values. There is no input we could read... */
-
-  /*solvar->azvar->azsolvertyp = azsolv_CG;*/
-  solvar->azvar->azsolvertyp = azsolv_GMRES;
-  solvar->azvar->azprectyp = azprec_SymmGaussSeidel;
-
-  solvar->azvar->azreuse   = 0;
-  solvar->azvar->azgfill   = 0;
-  solvar->azvar->aziter    = 2500;
-  solvar->azvar->azsub     = 50;
-  solvar->azvar->azgraph   = 1;
-  solvar->azvar->azpoly    = 5;
-  solvar->azvar->blockdiag = 0;
-
-  solvar->azvar->azdrop  = 0.;
-  solvar->azvar->azfill  = 2.;
-  solvar->azvar->aztol   = 1.e-12;
-  solvar->azvar->azomega = 1.;
+  dsassert(solvar->fieldtyp == pressure, "expected to find pressure solver");
 
   /* We create one array */
 
@@ -1508,32 +1477,10 @@ void parallel_sparse_convert_trilinos(PARALLEL_SPARSE* ps,
 
 #endif
 
-  /* Not very nice... */
-  solvar->fieldtyp = fluid;
+  /* copy solver variables that have been read */
+  *solvar = solv[1];
 
-  solvar->solvertyp = aztec_msr;
-  solvar->parttyp = cut_elements;
-  solvar->matrixtyp = matrix_none;
-  solvar->azvar = (AZVAR*)CCACALLOC(1,sizeof(AZVAR));
-
-  /* Default values. There is no input we could read... */
-
-  /*solvar->azvar->azsolvertyp = azsolv_CG;*/
-  solvar->azvar->azsolvertyp = azsolv_GMRES;
-  solvar->azvar->azprectyp = azprec_SymmGaussSeidel;
-
-  solvar->azvar->azreuse   = 0;
-  solvar->azvar->azgfill   = 0;
-  solvar->azvar->aziter    = 2500;
-  solvar->azvar->azsub     = 50;
-  solvar->azvar->azgraph   = 1;
-  solvar->azvar->azpoly    = 5;
-  solvar->azvar->blockdiag = 0;
-
-  solvar->azvar->azdrop  = 0.;
-  solvar->azvar->azfill  = 2.;
-  solvar->azvar->aztol   = 1.e-12;
-  solvar->azvar->azomega = 1.;
+  dsassert(solvar->fieldtyp == pressure, "expected to find pressure solver");
 
   /* We create one array */
 

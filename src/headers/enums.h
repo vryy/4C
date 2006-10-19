@@ -21,13 +21,14 @@ typedef enum _PROBLEM_TYP
                        prb_fluid,     /*  fluid  problem */
                        prb_opt,       /*  strctural optimization  problem */
 		       prb_ale,       /*  pure ale problem */
-                       prb_tsi        /*  thermal structure interaction */
+                       prb_tsi,       /*  thermal structure interaction */
+		       prb_fluid_pm   /*  fluid with (any) projection method */
 } PROBLEM_TYP;
 /* Mapping from problem type numbers to printable names. To be used to
  * initialize static variables. Keep in sync!
  * The trailing NULL is essential for the filters to read the problem
  * type! */
-#define PROBLEMNAMES { "fsi","ssi","structure","fluid","opt","ale","tsi", NULL }
+#define PROBLEMNAMES { "fsi","ssi","structure","fluid","opt","ale","tsi","fluid_pm", NULL }
 /*----------------------------------------------------------------------*
  | TIME TYPES                                             m.gee 7/01    |
  *----------------------------------------------------------------------*/
@@ -47,11 +48,12 @@ typedef enum _FIELDTYP
                        fluid,       /* fluid field */
                        ale,         /* pseudo structural field */
                        structure,   /* structural field */
-                       thermal      /* thermal field */
+                       thermal,     /* thermal field */
+		       pressure     /* pure pressure field */
 } FIELDTYP;
 /* Mapping from fieldtyp numbers to printable names. To be used to
  * initialize static variables. Keep in sync! */
-#define FIELDNAMES {"none", "fluid", "ale", "structure", "thermal", NULL}
+#define FIELDNAMES {"none", "fluid", "ale", "structure", "thermal", "pressure", NULL}
 
 
 

@@ -176,6 +176,7 @@ void fluid_pm_cont()
   FLUID_STRESS    str;
 
   SOLVAR         *actsolv;      /* pointer to active sol. structure */
+  SOLVAR         *pressolv;
   PARTITION      *actpart;      /* pointer to active partition      */
   FIELD          *actfield;     /* pointer to active field          */
   INTRA          *actintra;     /* pointer to active intra-communic.*/
@@ -221,6 +222,7 @@ void fluid_pm_cont()
 
   actfield    = &(field[0]);
   actsolv     = &(solv[0]);
+  pressolv    = &(solv[1]);
   actpart     = &(partition[0]);
   action      = &(calc_action[0]);
   restart     = genprob.restart;
@@ -321,8 +323,8 @@ void fluid_pm_cont()
 	f2pro->dm = dm_q2q1;
 	break;
       case dm_q1p0:
-	/* f2pro->dm = dm_q1q1; */
-	dserror("here discontinous pressure would be needed");
+	f2pro->dm = dm_q1q1;
+	/* dserror("here discontinous pressure would be needed"); */
 	break;
       default:
         dserror("discretization mode %d currently unsupported", f2pro->dm);
@@ -377,6 +379,15 @@ void fluid_pm_cont()
 
     global_stiff = actsolv->sysarray[stiff_array].trilinos;
     global_press = actsolv->sysarray[press_array].trilinos;
+
+    /* Let the distinguished pressure solver point to the pressure's
+     * matrix. This way we can use the pressure solver's flags for
+     * solving the pressure equation. Yeah! What a hack! */
+
+    pressolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(1,sizeof(SPARSE_TYP));
+    pressolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(1,sizeof(SPARSE_ARRAY));
+    pressolv->sysarray_typ[0] = trilinos;
+    pressolv->sysarray[0].trilinos = global_press;
 
     /* setup diagonal mass matrix */
     memset(&lmass,0,sizeof(TRILINOSMATRIX));
@@ -507,7 +518,9 @@ void fluid_pm_cont()
                  &(actsolv->rhs[0]),
                  init);
   /* initialize pressure matrix */
-  solver_control(actfield,disnum_calc,actsolv, actintra,
+  /* We initialize the matrix in actsolv using the parameters from
+   * pressolv. */
+  solver_control(actfield,disnum_calc,pressolv, actintra,
                  &(actsolv->sysarray_typ[press_array]),
                  &(actsolv->sysarray[press_array]),
                  NULL,
@@ -862,7 +875,7 @@ void fluid_pm_cont()
       );
 
     /* solve for the pressure increment */
-    solver_control(actfield,press_dis,actsolv,actintra,
+    solver_control(actfield,press_dis,pressolv,actintra,
                    &(actsolv->sysarray_typ[press_array]),
                    &(actsolv->sysarray[press_array]),
                    press_sol,

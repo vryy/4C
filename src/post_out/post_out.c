@@ -109,6 +109,9 @@ static void post_out_general(FILE* out, PROBLEM_DATA* problem)
   case prb_fluid:
     fprintf(out,"Type of Problem                 : Fluid\n");
     break;
+  case prb_fluid_pm:
+    fprintf(out,"Type of Problem                 : Fluid Projection\n");
+    break;
   case prb_opt:
     fprintf(out,"Type of Problem                 : Optimization\n");
     break;

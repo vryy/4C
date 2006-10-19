@@ -254,6 +254,9 @@ void f2pro_dis(ELEMENT* vele, ELEMENT* pele, INT numele, INT nodeshift)
     pele->numnp = 4;
     pele->distyp = quad4;
     break;
+  case 4:
+    /* do nothing. this is not inf-sup stable, but it might work... */
+    break;
   default:
     dserror("only Taylor-Hood elements supported");
   }

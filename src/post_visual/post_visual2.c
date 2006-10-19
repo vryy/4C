@@ -2046,6 +2046,7 @@ int main(int argc, char** argv)
     break;
 #endif
   case prb_fluid:
+  case prb_fluid_pm:
     if (problem.num_discr == 1)
     {
       if (problem.discr[0].type != fluid)

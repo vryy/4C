@@ -2541,6 +2541,7 @@ int main(int argc, char** argv)
       break;
 
     case prb_fluid:
+    case prb_fluid_pm:
       if (problem.num_discr == 1)
       {
 

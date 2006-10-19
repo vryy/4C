@@ -170,6 +170,9 @@ void out_general()
       case prb_fluid:
         fprintf(out,"Type of Problem           : Fluid\n");
         break;
+      case prb_fluid_pm:
+        fprintf(out,"Type of Problem           : Fluid Projection\n");
+        break;
       case prb_opt:
         fprintf(out,"Type of Problem           : Optimization\n");
         break;
@@ -374,7 +377,7 @@ void out_general()
             fprintf(out,"NODE glob_Id %6d loc_Id %6d    %6d\n",
                 actnode->Id,actnode->Id_loc,actnode->dof[0]);
             break;
-#endif         
+#endif
           case 2:
             fprintf(out,"NODE glob_Id %6d loc_Id %6d    %6d    %6d\n",
                 actnode->Id,actnode->Id_loc,actnode->dof[0],actnode->dof[1]);
@@ -1508,19 +1511,19 @@ void out_tsi(FIELD *structfield)
       }
       else
       {
-        fprintf(out, "%-6d             ------\n", 
+        fprintf(out, "%-6d             ------\n",
                 actsnode->Id_loc);
       }
 
     }  /* end of for (i=0; i<structfield->dis[idis].numnp; i++) */
-    
+
     /* print footer */
     fprintf(out, "_______________________________________________________"
             "_________________________\n\n");
 
     /*------------------------------------------------------------------*/
     /* connectivity of elements */
-    
+
     /* print title */
     fprintf(out, "======================================================="
             "=========================\n");
@@ -1570,7 +1573,7 @@ void out_tsi(FIELD *structfield)
 
   } /* end of if (myrank==0 && imyrank==0) */
   /*----------------------------------------------------------------------*/
-  if (myrank == 0) 
+  if (myrank == 0)
   {
     fflush(out);
   }

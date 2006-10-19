@@ -93,7 +93,9 @@ dstrc_enter("inpctr");
    inpctrprob();
 /*---------------------------------------- input of general solver data */
    /* for FSI */
-   if (genprob.probtyp == prb_fsi)
+   switch (genprob.probtyp)
+   {
+   case prb_fsi:
    {
       if (genprob.numfld!=3) dserror("numfld != 3 for FSI");
 
@@ -107,9 +109,10 @@ dstrc_enter("inpctr");
 
       solv[genprob.numaf].fieldtyp = ale;
       inpctrsol(&(solv[genprob.numaf]));
+      break;
    }
    /* for SSI */
-   if (genprob.probtyp == prb_ssi)
+   case prb_ssi:
    {
       if (genprob.numfld!=2) dserror("numfld != 2 for SSI");
 
@@ -120,9 +123,10 @@ dstrc_enter("inpctr");
 
       solv[1].fieldtyp = structure;
       inpctrsol(&(solv[1]));
+      break;
    }
    /* for structure */
-   if (genprob.probtyp == prb_structure)
+   case prb_structure:
    {
       if (genprob.numfld!=1) dserror("numfld != 1 for Structural Problem");
 
@@ -130,9 +134,10 @@ dstrc_enter("inpctr");
 
       solv[genprob.numsf].fieldtyp = structure;
       inpctrsol(&(solv[genprob.numsf]));
+      break;
    }
    /* for optimisation */
-   if (genprob.probtyp == prb_opt)
+   case prb_opt:
    {
       if (genprob.numfld!=1) dserror("numfld != 1 for Structural Problem");
 
@@ -140,9 +145,10 @@ dstrc_enter("inpctr");
 
       solv[0].fieldtyp = structure;
       inpctrsol(&(solv[0]));
+      break;
    }
    /* for fluid */
-   if (genprob.probtyp == prb_fluid)
+   case prb_fluid:
    {
       solv = (SOLVAR*)CCACALLOC(genprob.numfld,sizeof(SOLVAR));
 
@@ -154,9 +160,26 @@ dstrc_enter("inpctr");
         solv[genprob.numaf].fieldtyp = ale;
 	inpctrsol(&(solv[genprob.numaf]));
       }
+      break;
+   }
+   /* for fluid with projection method */
+   case prb_fluid_pm:
+   {
+      solv = (SOLVAR*)CCACALLOC(genprob.numfld+1,sizeof(SOLVAR));
+
+      solv[genprob.numff].fieldtyp = fluid;
+      inpctrsol(&(solv[genprob.numff]));
+
+      /* We need to read the variables of the pressure solver. The
+       * actual pressure matrix is contained in the first solver
+       * object because it belongs to a discretization of the first
+       * field. */
+      solv[genprob.numff+1].fieldtyp = pressure;
+      inpctrsol(&(solv[genprob.numff+1]));
+      break;
    }
    /* for (plain) ALE */
-   if (genprob.probtyp == prb_ale)
+   case prb_ale:
    {
       if (genprob.numfld!=1) dserror("numfld != 1 for Ale Problem");
 
@@ -164,10 +187,11 @@ dstrc_enter("inpctr");
 
       solv[genprob.numaf].fieldtyp = ale;
       inpctrsol(&(solv[genprob.numaf]));
+      break;
    }
 #ifdef D_TSI
    /* for TSI */
-   if (genprob.probtyp == prb_tsi)
+   case prb_tsi:
    {
       if (genprob.numfld != 2)
       {
@@ -184,8 +208,13 @@ dstrc_enter("inpctr");
       /* set solver details of thermal solver */
       solv[genprob.numtf].fieldtyp = thermal;
       inpctrsol(&(solv[genprob.numtf]));
+      break;
    }
 #endif
+   default:
+     dserror("problem type %d unknown",genprob.probtyp);
+   }
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
 dstrc_exit();
@@ -271,14 +300,16 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
   if (ierr==1)
   {
     if (frwordcmp("Structure"                  ,buffer)==0) genprob.probtyp = prb_structure;
-    if (frwordcmp("Fluid"                      ,buffer)==0) genprob.probtyp = prb_fluid;
-    if (frwordcmp("Fluid_Structure_Interaction",buffer)==0) genprob.probtyp = prb_fsi;
-    if (frwordcmp("Structure_Structure_Interaction",buffer)==0) genprob.probtyp = prb_ssi;
-    if (frwordcmp("Optimisation"               ,buffer)==0) genprob.probtyp = prb_opt;
-    if (frwordcmp("Ale"                        ,buffer)==0) genprob.probtyp = prb_ale;
+    else if (frwordcmp("Fluid"                      ,buffer)==0) genprob.probtyp = prb_fluid;
+    else if (frwordcmp("Fluid_Projection"           ,buffer)==0) genprob.probtyp = prb_fluid_pm;
+    else if (frwordcmp("Fluid_Structure_Interaction",buffer)==0) genprob.probtyp = prb_fsi;
+    else if (frwordcmp("Structure_Structure_Interaction",buffer)==0) genprob.probtyp = prb_ssi;
+    else if (frwordcmp("Optimisation"               ,buffer)==0) genprob.probtyp = prb_opt;
+    else if (frwordcmp("Ale"                        ,buffer)==0) genprob.probtyp = prb_ale;
 #ifdef D_TSI
-    if (frwordcmp("Thermal_Structure_Interaction",buffer)==0) genprob.probtyp = prb_tsi;
+    else if (frwordcmp("Thermal_Structure_Interaction",buffer)==0) genprob.probtyp = prb_tsi;
 #endif
+    else dserror("problem type not recognized");
   }
 
   /* read time type : time-dependent/time-independent analysis */
@@ -322,32 +353,48 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 }
 
 /*----------------- set field numbers depending on problem type and numfld */
-if (genprob.probtyp==prb_fsi)
+switch (genprob.probtyp)
 {
-   genprob.numsf=0;
-   genprob.numff=1;
-   genprob.numaf=2;
-}
-if (genprob.probtyp==prb_fluid)
+case prb_fsi:
 {
-   genprob.numff=0;
-   if (genprob.numfld==2) genprob.numaf=1;
+  genprob.numsf=0;
+  genprob.numff=1;
+  genprob.numaf=2;
+  break;
 }
-if (genprob.probtyp==prb_ale) genprob.numaf=0;
-if (genprob.probtyp==prb_structure) genprob.numsf=0;
+case prb_fluid:
+{
+  genprob.numff=0;
+  if (genprob.numfld==2) genprob.numaf=1;
+  break;
+}
+case prb_fluid_pm:
+  genprob.numff=0;
+  break;
+case prb_ale:
+  genprob.numaf=0;
+  break;
+case prb_structure:
+  genprob.numsf=0;
+  break;
 #ifdef D_SSI
-if (genprob.probtyp==prb_ssi)
+case prb_ssi:
 {
-   genprob.numsf=0;
+  genprob.numsf=0;
+  break;
 }
 #endif
 #ifdef D_TSI
-if (genprob.probtyp == prb_tsi)
+case prb_tsi:
 {
-   genprob.numsf = 0;  /* structural field index */
-   genprob.numtf = 1;  /* thermal field index */
+  genprob.numsf = 0;  /* structural field index */
+  genprob.numtf = 1;  /* thermal field index */
+  break;
 }
 #endif
+default:
+  dserror("problem type %d unknown",genprob.probtyp);
+}
 
 /*----------------------------------------------------------------------*/
 /* input / output file choices */

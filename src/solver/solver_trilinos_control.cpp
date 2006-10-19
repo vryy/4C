@@ -33,7 +33,7 @@ Maintainer: Michael Gee
 #include "Amesos_Lapack.h"
 
 // Trilinos is configured SuperLUDIST only in the parallel version
-#ifdef PARALLEL 
+#ifdef PARALLEL
 #include "Amesos_Superludist.h"
 #endif
 
@@ -142,22 +142,22 @@ switch (actsolv->solvertyp)
     dserror("Superludist only with -DPARALLEL");
 #endif
   break;
-  
+
   //---------------------------------------------------------------------------
   case amesos_klu_sym:
     solve_amesos_klu(tri,sol,rhs,option,true);
   break;
-  
+
   //---------------------------------------------------------------------------
   case amesos_klu_nonsym:
     solve_amesos_klu(tri,sol,rhs,option,false);
   break;
-  
+
   //---------------------------------------------------------------------------
   case umfpack:
     solve_amesos_umfpack(tri,sol,rhs,option);
   break;
-  
+
   //---------------------------------------------------------------------------
   case lapack_sym:
     solve_amesos_lapack(tri,sol,rhs,option,true);
@@ -167,12 +167,12 @@ switch (actsolv->solvertyp)
   case lapack_nonsym:
     solve_amesos_lapack(tri,sol,rhs,option,false);
   break;
-  
+
   //---------------------------------------------------------------------------
   case aztec_msr:
     solve_aztecoo(tri,sol,rhs,option,actsolv,actfield,disnum);
   break;
-  
+
   //---------------------------------------------------------------------------
 #ifdef SPOOLES_PACKAGE
   case SPOOLES_nonsym:
@@ -195,7 +195,7 @@ switch (actsolv->solvertyp)
           !(tri->sysarray)                  ||
           !(tri->sysarray[0].spo)              )
         dserror("Init phase was not called properly");
-      
+
       Epetra_CrsMatrix* matrix = (Epetra_CrsMatrix*)tri->matrix;
       SPOOLMAT*         spo    = tri->sysarray[0].spo;
       if (spo->is_factored==0)
@@ -213,7 +213,7 @@ switch (actsolv->solvertyp)
     }
   break;
 #endif
-  
+
   //---------------------------------------------------------------------------
   default:
      cout << "solvertyp is " << actsolv->solvertyp << ", see headers/enums.h:SOLVER_TYP\n";
@@ -272,12 +272,12 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
       delete solver;
       tri->solver=NULL;
     }
-    
+
     // delete the nullspace if present
     if (tri->nullspace)
       delete tri->nullspace;
     tri->nullspace = NULL;
-    
+
     // create a teuchos parameter list to hold sublists for aztec, ml, etc
     if (tri->params)
     {
@@ -287,10 +287,10 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
     }
     ParameterList* list = new ParameterList();
     tri->params = (void*)list;
-    
+
     // set aztec parameters from azvar
     ParameterList& azlist = list->sublist("Aztec Parameters");
-    
+
     // set solver
     switch(azvar->azsolvertyp)
     {
@@ -306,39 +306,39 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
     // set preconditioner
     switch(azvar->azprectyp)
     {
-      case azprec_none:       
-        azlist.set("AZ_precond",AZ_none);       
+      case azprec_none:
+        azlist.set("AZ_precond",AZ_none);
       break;
       case azprec_ILUT:
         // using ifpack, see below
         azlist.set("AZ_precond",AZ_user_precond);
       break;
-      case azprec_ILU:       
+      case azprec_ILU:
         // using ifpack, see below
         azlist.set("AZ_precond",AZ_user_precond);
       break;
-      case azprec_Jacobi:       
-        azlist.set("AZ_precond",AZ_Jacobi);       
+      case azprec_Jacobi:
+        azlist.set("AZ_precond",AZ_Jacobi);
       break;
-      case azprec_Neumann:       
-        azlist.set("AZ_precond",AZ_Neumann);       
+      case azprec_Neumann:
+        azlist.set("AZ_precond",AZ_Neumann);
       break;
-      case azprec_Least_Squares:       
-        azlist.set("AZ_precond",AZ_ls);       
+      case azprec_Least_Squares:
+        azlist.set("AZ_precond",AZ_ls);
       break;
-      case azprec_SymmGaussSeidel:       
-        azlist.set("AZ_precond",AZ_sym_GS);       
+      case azprec_SymmGaussSeidel:
+        azlist.set("AZ_precond",AZ_sym_GS);
       break;
-      case azprec_LU:       
+      case azprec_LU:
         // using ifpack, see below
         azlist.set("AZ_precond",AZ_user_precond);
       break;
-      case azprec_RILU:       
-        azlist.set("AZ_precond",AZ_dom_decomp);       
-        azlist.set("AZ_subdomain_solve",AZ_rilu);       
-        azlist.set("AZ_graph_fill",azvar->azgfill);       
+      case azprec_RILU:
+        azlist.set("AZ_precond",AZ_dom_decomp);
+        azlist.set("AZ_subdomain_solve",AZ_rilu);
+        azlist.set("AZ_graph_fill",azvar->azgfill);
       break;
-      case azprec_ICC:       
+      case azprec_ICC:
         // using ifpack, see below
         azlist.set("AZ_precond",AZ_user_precond);
       break;
@@ -361,16 +361,16 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
     azlist.set("AZ_type_overlap",AZ_symmetric);
     azlist.set("AZ_poly_ord",azvar->azpoly);
     if (!azvar->azoutput)
-      azlist.set("AZ_output",AZ_none);             // AZ_none AZ_all AZ_warnings AZ_last 10 
+      azlist.set("AZ_output",AZ_none);             // AZ_none AZ_all AZ_warnings AZ_last 10
     else
       azlist.set("AZ_output",azvar->azoutput);
-    azlist.set("AZ_diagnostics",AZ_none);          // AZ_none AZ_all  
+    azlist.set("AZ_diagnostics",AZ_none);          // AZ_none AZ_all
     azlist.set("AZ_conv",AZ_noscaled);
     azlist.set("AZ_tol",azvar->aztol);
     azlist.set("AZ_drop",azvar->azdrop);
     azlist.set("AZ_scaling",AZ_none);              // use epetra scaling instead, see below
     azlist.set("AZ_keep_info",1);
-    
+
     // set flags
     tri->is_init=1;
     tri->ncall=0;
@@ -391,18 +391,18 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
       scaling_infnorm = true;
       scaling_symdiag = false;
     }
-    
+
     // get parameter list
     if (!tri->params) dserror("AztecOO parameters is NULL");
     ParameterList* list = (ParameterList*)tri->params;
-    
+
     //----------------------------------------- compute a recreation flag
     bool create = true;
     if (tri->ncall == 0)                       create = true;  // first time
     else if (azvar->azreuse==0)                create = true;  // no reuse from input
     else if (tri->ncall % azvar->azreuse == 0) create = true;  // modulo recreate is true
     else                                       create = false; // reuse
-    
+
     //----------------------------------------- prepare scaled linear system
     // wrap vectors
     Epetra_Vector x(View,matrix->OperatorDomainMap(),sol->vec.a.dv);
@@ -416,7 +416,7 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
     lp->SetOperator(matrix);
     // do symmetric infnorm scaling (note that ML hates this!)
     // most matrices experience slightly better performance with this
-    // than with symm. diagonal scaling (ML hates that as well). 
+    // than with symm. diagonal scaling (ML hates that as well).
     // Of course, the 2 scalings could be introduced as options....
     RefCountPtr<Epetra_Vector> rowsum;
     RefCountPtr<Epetra_Vector> colsum;
@@ -439,7 +439,7 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
       lp->LeftScale(invdiag);
       lp->RightScale(invdiag);
     }
-    
+
     //---- get solver and recreate it (currently dies when trying to reuse)
     if (tri->solver)
     {
@@ -454,7 +454,7 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
     solver->SetParameters(azlist,false);
     // pass linear problem to solver
     solver->SetProblem(*lp);
-    
+
     //-------------------------- get IFPACK preconditioner and (re)create it
     if (azvar->azprectyp == azprec_ILU  ||
         azvar->azprectyp == azprec_ILUT ||
@@ -491,7 +491,7 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
         // create copy of matrix
         Epetra_CrsMatrix* precmatrix = new Epetra_CrsMatrix(*matrix);
         tri->precmatrix = (void*)precmatrix;
-        
+
         // create the preconditioner
         string prectype = "";
         if      (azvar->azprectyp == azprec_ILU)  prectype = "ILU";
@@ -501,8 +501,8 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
         else dserror("Unknown type of ifpack asm subdomain preconditioner");
 
         Ifpack Factory;
-        Ifpack_Preconditioner* prec = 
-                Factory.Create(prectype,precmatrix,azvar->azoverlap);   
+        Ifpack_Preconditioner* prec =
+                Factory.Create(prectype,precmatrix,azvar->azoverlap);
         prec->SetParameters(ifpacklist);
         prec->Initialize();
         prec->Compute();
@@ -512,7 +512,7 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
       else // reuse
       {
         if (!tri->prec) dserror("Cannot reuse, prec is NULL");
-        Ifpack_Preconditioner* prec = 
+        Ifpack_Preconditioner* prec =
                              (Ifpack_Preconditioner*)tri->prec;
         solver->SetPrecOperator(prec);
       }
@@ -526,16 +526,16 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
       {
         if (tri->prec) // destroy ML preconditioner
         {
-          ML_Epetra::MultiLevelPreconditioner* prec = 
+          ML_Epetra::MultiLevelPreconditioner* prec =
            (ML_Epetra::MultiLevelPreconditioner*)tri->prec;
           delete prec;
           tri->prec = NULL;
         }
-        
+
         // create ML's parameter list and nullspace
         ParameterList& mllist = list->sublist("ML Parameters");
         create_ml_parameterlist(actsolv,mllist,actfield,disnum,*matrix,&(tri->nullspace));
-        
+
         // destroy the copy of the matrix we have stored and create a new copy
         // this is needed to reuse the ML operator
         if (tri->precmatrix)
@@ -544,12 +544,12 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
           delete tmp;
           tri->precmatrix=NULL;
         }
-        
+
         // create copy of matrix
         Epetra_CrsMatrix* precmatrix = new Epetra_CrsMatrix(*matrix);
         tri->precmatrix = (void*)precmatrix;
-        
-        ML_Epetra::MultiLevelPreconditioner* prec = 
+
+        ML_Epetra::MultiLevelPreconditioner* prec =
                new ML_Epetra::MultiLevelPreconditioner(*precmatrix,mllist,true);
         tri->prec = (void*)prec;
         solver->SetPrecOperator(prec);
@@ -557,12 +557,12 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
       else // reuse
       {
         if (!tri->prec) dserror("Cannot reuse, prec is NULL");
-        ML_Epetra::MultiLevelPreconditioner* prec = 
+        ML_Epetra::MultiLevelPreconditioner* prec =
                              (ML_Epetra::MultiLevelPreconditioner*)tri->prec;
         solver->SetPrecOperator(prec);
       }
     }
-    
+
     //-------------------------------------------- iterate a max of 5 times
     for (int i=0; i<5; ++i)
     {
@@ -610,10 +610,11 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
     if (actsolv->fieldtyp==structure) fprintf(allfiles.out_err,"Structure: ");
     if (actsolv->fieldtyp==fluid)     fprintf(allfiles.out_err,"Fluid: ");
     if (actsolv->fieldtyp==ale)       fprintf(allfiles.out_err,"Ale: ");
+    if (actsolv->fieldtyp==pressure)  fprintf(allfiles.out_err,"Pressure: ");
      fprintf(allfiles.out_err,"AztecOO: unknowns/iterations/time %d  %d  %f\n",
              sol->numeq_total,(int)status[AZ_its],status[AZ_solve_time]);
     }
-    
+
     //------------------------------------ undo scaling of linear problem
     if (scaling_infnorm)
     {
@@ -675,7 +676,7 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
           azvar->azprectyp == azprec_MLfluid ||
           azvar->azprectyp == azprec_MLfluid2 )
       {
-        ML_Epetra::MultiLevelPreconditioner* prec = 
+        ML_Epetra::MultiLevelPreconditioner* prec =
          (ML_Epetra::MultiLevelPreconditioner*)tri->prec;
         delete prec;
         tri->prec = NULL;
@@ -746,21 +747,21 @@ void solve_amesos_klu(TRILINOSMATRIX* tri,
   {
     // get matrix
     Epetra_CrsMatrix* matrix = (Epetra_CrsMatrix*)tri->matrix;
-    
+
     // wrap vectors
     Epetra_Vector x(View,matrix->OperatorDomainMap(),sol->vec.a.dv);
     Epetra_Vector b(View,matrix->OperatorDomainMap(),rhs->vec.a.dv);
-    
+
     // get solver
     Amesos_Klu* solver = (Amesos_Klu*)tri->solver;
-    
+
     // get linear problem
     Epetra_LinearProblem* lp = const_cast<Epetra_LinearProblem*>(solver->GetProblem());
-    
+
     // set vectors into linear problem
     lp->SetLHS(&x);
     lp->SetRHS(&b);
-    
+
     // matrix has not yet been factored
     if (!tri->is_factored)
     {
@@ -871,21 +872,21 @@ void solve_amesos_superlu(TRILINOSMATRIX* tri,
   {
     // get matrix
     Epetra_CrsMatrix* matrix = (Epetra_CrsMatrix*)tri->matrix;
-    
+
     // wrap vectors
     Epetra_Vector x(View,matrix->OperatorDomainMap(),sol->vec.a.dv);
     Epetra_Vector b(View,matrix->OperatorDomainMap(),rhs->vec.a.dv);
-    
+
     // get solver
     Amesos_Superludist* solver = (Amesos_Superludist*)tri->solver;
-    
+
     // get linear problem
     Epetra_LinearProblem* lp = const_cast<Epetra_LinearProblem*>(solver->GetProblem());
-    
+
     // set vectors into linear problem
     lp->SetLHS(&x);
     lp->SetRHS(&b);
-    
+
     // matrix has not yet been factored
     if (!tri->is_factored)
     {
@@ -999,21 +1000,21 @@ void solve_amesos_umfpack(TRILINOSMATRIX* tri,
   {
     // get matrix
     Epetra_CrsMatrix* matrix = (Epetra_CrsMatrix*)tri->matrix;
-    
+
     // wrap vectors
     Epetra_Vector x(View,matrix->OperatorDomainMap(),sol->vec.a.dv);
     Epetra_Vector b(View,matrix->OperatorDomainMap(),rhs->vec.a.dv);
-    
+
     // get solver
     Amesos_Umfpack* solver = (Amesos_Umfpack*)tri->solver;
-    
+
     // get linear problem
     Epetra_LinearProblem* lp = const_cast<Epetra_LinearProblem*>(solver->GetProblem());
-    
+
     // set vectors into linear problem
     lp->SetLHS(&x);
     lp->SetRHS(&b);
-    
+
     // matrix has not yet been factored
     if (!tri->is_factored)
     {
@@ -1127,21 +1128,21 @@ void solve_amesos_lapack(TRILINOSMATRIX* tri,
   {
     // get matrix
     Epetra_CrsMatrix* matrix = (Epetra_CrsMatrix*)tri->matrix;
-    
+
     // wrap vectors
     Epetra_Vector x(View,matrix->OperatorDomainMap(),sol->vec.a.dv);
     Epetra_Vector b(View,matrix->OperatorDomainMap(),rhs->vec.a.dv);
-    
+
     // get solver
     Amesos_Lapack* solver = (Amesos_Lapack*)tri->solver;
-    
+
     // get linear problem
     Epetra_LinearProblem* lp = const_cast<Epetra_LinearProblem*>(solver->GetProblem());
-    
+
     // set vectors into linear problem
     lp->SetLHS(&x);
     lp->SetRHS(&b);
-    
+
     // matrix has not yet been factored
     if (!tri->is_factored)
     {

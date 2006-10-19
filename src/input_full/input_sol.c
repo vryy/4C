@@ -85,8 +85,11 @@ case thermal:
 if (frfind("-THERMAL SOLVER")==0) goto end;
 break;
 #endif /* D_TSI */
+case pressure:
+if (frfind("-PRESSURE SOLVER")==0) goto end;
+break;
 default:
-   dserror("Unknown field typ in reading solver");
+  dserror("Unknown field typ in reading solver %d",solv->fieldtyp);
 break;
 }
 frread();

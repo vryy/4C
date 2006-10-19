@@ -197,6 +197,7 @@ case prb_structure:
 
 #ifdef D_FLUID
 case prb_fluid:
+case prb_fluid_pm:
   dyn_fluid();
   break;
 #endif

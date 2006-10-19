@@ -233,6 +233,19 @@ void inpfield()
   }
 
 
+  /* fluid type of problem:
+   * ----------------------
+   */
+  if (genprob.probtyp==prb_fluid_pm)
+  {
+    field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
+
+    field[genprob.numff].fieldtyp = fluid;
+    inpdis(&(field[genprob.numff]));
+    inp_fluid_field (&(field[genprob.numff]));
+  }
+
+
   /* ale type of problem:
    * --------------------
    */
