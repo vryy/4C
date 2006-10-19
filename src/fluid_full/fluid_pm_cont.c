@@ -142,7 +142,7 @@ extern struct _FILES  allfiles;
 /*----------------------------------------------------------------------*/
 void fluid_pm_cont()
 {
-#ifdef TRILINOS_PACKAGE
+#if defined(TRILINOS_PACKAGE) && defined(PM_TRILINOS)
   INT             itnum;        /* counter for nonlinear iteration  */
   INT             i;            /* simply a counter                 */
   INT             numeq;        /* number of equations on this proc */
@@ -214,11 +214,6 @@ void fluid_pm_cont()
 #ifdef DEBUG
   dstrc_enter("fluid_pm");
 #endif
-
-#ifndef PM_TRILINOS
-  dserror("PM_TRILINOS required");
-#endif
-
 
   /*                    I N I T I A L I S A T I O N                       */
 
@@ -1281,18 +1276,6 @@ end:
 #endif
 
   /*--------------------------------------------------- cleaning up phase */
-#ifdef PM_TRILINOS
-
-  /* How to clean this mess up? */
-
-#else
-
-  parallel_sparse_destroy(&grad);
-  parallel_sparse_destroy(&pmat);
-
-  CCAFREE(lmass);
-
-#endif
 
   amdel(&frhs_a);
   amdel(&fgradprhs_a);
@@ -1309,7 +1292,7 @@ end:
 #endif
   return;
 #else
-  dserror("TRILINOS_PACKAGE required");
+  dserror("TRILINOS_PACKAGE and PM_TRILINOS required");
 #endif
 }
 
