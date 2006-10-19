@@ -219,8 +219,10 @@ void f2pro_int_usfem(
 
       /*----------------------------------- compute global derivates ---*/
       f2_gder(derxy,deriv,xjm,det,iel);
-      if (numpdof!=-1)
+      if (numpdof>-1)
 	f2_gder(pderxy,pderiv,xjm,det,numpdof);
+      else if (numpdof==-2)
+	f2_gder(pderxy,pderiv,xjm,det,4);
 
       /*---------------- get velocities (n+1,i) at integration point ---*/
       f2_veci(velint,funct,evelng,iel);
@@ -288,7 +290,7 @@ void f2pro_int_usfem(
       }
       else if (numpdof==-2)
       {
-	for (i=0; i<iel; ++i)
+	for (i=0; i<ele->e.f2pro->other->numnp; ++i)
 	  press += pfunct[i] * epren[i];
       }
       else

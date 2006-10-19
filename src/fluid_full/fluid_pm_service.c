@@ -1676,7 +1676,17 @@ void pm_vel_update(FIELD *actfield,
     {
       INT gdof;
       gdof = actnode->dof[dof];
+
+      /*
+       * We do not want to change the prescribed boundaries. Do we
+       * have to worry because the calculated decrement would change
+       * them? */
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
+      if ((actnode->gnode->dirich==NULL) ||
+	  (actnode->gnode->dirich->dirich_onoff.a.iv[dof]==0))
+#else
       if (gdof < actfield->dis[disnum].numeq)
+#endif
       {
 #ifdef PM_TRILINOS
 
