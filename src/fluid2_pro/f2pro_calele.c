@@ -772,14 +772,14 @@ void f2pro_calvelupdate(
     pele = ele->e.f2pro->other;
     for (i=0; i<pele->numnp; ++i)
     {
-      epren[i] = pele->node[i]->sol_increment.a.da[1][0];
+      epren[i] = pele->node[i]->sol_increment.a.da[0][0];
     }
   }
   else
   {
     for (i=0; i<numpdof; ++i)
     {
-      epren[i]   = ele->e.f2pro->press[i];
+      epren[i]   = ele->e.f2pro->phi[i];
     }
   }
 
