@@ -243,8 +243,20 @@ void f2pro_dis(ELEMENT* vele, ELEMENT* pele, INT numele, INT nodeshift)
   pele->Id = vele->Id + numele;
   pele->mat = vele->mat;
   pele->e.f2pro->is_ale = vele->e.f2pro->is_ale;
-  pele->numnp = vele->numnp;
   pele->distyp = vele->distyp;
+  pele->numnp = vele->numnp;
+
+  /* Switch to Taylor-Hood here. This way quite some nodes remain
+   * unused. Another cheat... */
+  switch (pele->numnp)
+  {
+  case 9:
+    pele->numnp = 4;
+    pele->distyp = quad4;
+    break;
+  default:
+    dserror("only Taylor-Hood elements supported");
+  }
 
   pele->lm = (INT*)CCACALLOC(pele->numnp,sizeof(INT));
 

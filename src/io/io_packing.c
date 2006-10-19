@@ -3207,6 +3207,7 @@ static void out_pack_restart_element(BIN_OUT_CHUNK *chunk,
 	  break;
 	case dm_q1q1:
 	case dm_q2q2:
+	case dm_q2q1:
 	  break;
 	default:
 	  dserror("unsupported discretization mode %d", actele->e.f2pro->dm);
@@ -3246,6 +3247,7 @@ static void out_pack_restart_element(BIN_OUT_CHUNK *chunk,
 	  break;
 	case dm_q1q1:
 	case dm_q2q2:
+	case dm_q2q1:
 	  break;
 	default:
 	  dserror("unsupported discretization mode %d", actele->e.f3pro->dm);
@@ -4620,6 +4622,10 @@ static void in_unpack_restart_element(BIN_IN_FIELD *context,
         src_ptr = actele->e.f2pro->phi;
         *dst_ptr++ = *src_ptr++;
         break;
+      case dm_q1q1:
+      case dm_q2q2:
+      case dm_q2q1:
+	break;
       default:
 	dserror("unsupported discretization mode %d", actele->e.f2pro->dm);
       }
@@ -4657,6 +4663,10 @@ static void in_unpack_restart_element(BIN_IN_FIELD *context,
         src_ptr = actele->e.f3pro->phi;
         *dst_ptr++ = *src_ptr++;
         break;
+      case dm_q1q1:
+      case dm_q2q2:
+      case dm_q2q1:
+	break;
       default:
 	dserror("unsupported discretization mode %d", actele->e.f3pro->dm);
       }
@@ -5571,11 +5581,14 @@ void find_restart_item_length(struct _BIN_OUT_FIELD* context,
       case dm_q2q2:
 	numpdof = -1;
 	break;
+      case dm_q2q1:
+	numpdof = -2;
+	break;
       default:
 	dserror("unsupported discretization mode %d", actele->e.f2pro->dm);
       }
 
-      if (numpdof!=-1)
+      if (numpdof>-1)
 	*value_length = MAX(*value_length, 2*numpdof);
       break;
     }

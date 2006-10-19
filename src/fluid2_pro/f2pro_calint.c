@@ -146,6 +146,9 @@ void f2pro_int_usfem(
   case dm_q2q2:
     numpdof = -1;
     break;
+  case dm_q2q1:
+    numpdof = -2;
+    break;
   default:
     dserror("unsupported discretization mode %d", ele->e.f2pro->dm);
   }
@@ -193,8 +196,10 @@ void f2pro_int_usfem(
         e2   = data->qxg[ls][nis-1];
         facs = data->qwgt[ls][nis-1];
         f2_rec(funct,deriv,deriv2,e1,e2,typ,icode);
-	if (numpdof!=-1)
+	if (numpdof>-1)
 	  f2pro_prec(pfunct, pderiv, e1, e2, dm, &numpdof);
+	else if (numpdof==-2)
+	  f2_rec(pfunct,pderiv,NULL,e1,e2,quad4,2);
         break;
       case tri3: case tri6:   /* --> tri - element */
         e1   = data->txgr[lr][intc];
@@ -248,6 +253,14 @@ void f2pro_int_usfem(
 	  gradp[1] += derxy[1][i] * epren[i];
 	}
       }
+      else if (numpdof==-2)
+      {
+	for (i=0; i<ele->e.f2pro->other->numnp; i++)
+	{
+	  gradp[0] += pderxy[0][i] * epren[i];
+	  gradp[1] += pderxy[1][i] * epren[i];
+	}
+      }
       else
       {
 	for (i=0; i<numpdof; i++)
@@ -272,6 +285,11 @@ void f2pro_int_usfem(
       {
 	for (i=0; i<iel; ++i)
 	  press += funct[i] * epren[i];
+      }
+      else if (numpdof==-2)
+      {
+	for (i=0; i<iel; ++i)
+	  press += pfunct[i] * epren[i];
       }
       else
       {

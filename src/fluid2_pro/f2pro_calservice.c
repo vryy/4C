@@ -104,12 +104,15 @@ void f2pro_calset(
   case dm_q2q2:
     numpdof = -1;
     break;
+  case dm_q2q1:
+    numpdof = -2;
+    break;
   default:
     dserror("unsupported discretization mode %d", ele->e.f2pro->dm);
   }
 
   /*---------------------------------------------- set pressures (n+1) ---*/
-  if (numpdof==-1)
+  if ((numpdof==-1) || (numpdof==-2))
   {
     ELEMENT* pele;
     pele = ele->e.f2pro->other;
@@ -181,6 +184,8 @@ void f2pro_prec(DOUBLE* pfunct, DOUBLE** pderiv, DOUBLE r, DOUBLE s, DISMODE dm,
     DOUBLE rm;
     DOUBLE sp;
     DOUBLE sm;
+
+    dserror("not discontinuous!");
 
     rp=1.+r;
     rm=1.-r;

@@ -322,10 +322,12 @@ void fluid_pm_cont()
       switch (f2pro->dm)
       {
       case dm_q2pm1:
-	f2pro->dm = dm_q2q2;
+	/* switch to taylor-hood */
+	f2pro->dm = dm_q2q1;
 	break;
       case dm_q1p0:
-	f2pro->dm = dm_q1q1;
+	/* f2pro->dm = dm_q1q1; */
+	dserror("here discontinous pressure would be needed");
 	break;
       default:
         dserror("discretization mode %d currently unsupported", f2pro->dm);
@@ -873,18 +875,25 @@ void fluid_pm_cont()
                    0);
 
     /* update pressure */
-    solserv_result_incre(actfield,
-			 press_dis,actintra,press_sol,0,
+    /* solserv_result_incre does not work due to misleading dirichlet
+       conditions. The conditions on the velocity interfere. */
+    {
+      INT i;
+      amzero(&frhs_a);
+      solserv_reddistvec(press_sol,
 			 &(actsolv->sysarray[press_array]),
-			 &(actsolv->sysarray_typ[press_array]));
-
-    solserv_sol_add(actfield,
-		    press_dis,
-		    node_array_sol_increment,
-		    node_array_sol_increment,
-		    0,
-		    1,
-		    2./fdyn->dta);
+			 &(actsolv->sysarray_typ[press_array]),
+			 frhs,
+			 press_sol->numeq_total,
+			 actintra);
+      for (i=0; i<actfield->dis[press_dis].numnp; i++)
+      {
+	NODE* actnode;
+	actnode = &(actfield->dis[press_dis].node[i]);
+	actnode->sol_increment.a.da[0][0]  = frhs[actnode->dof[0]];
+	actnode->sol_increment.a.da[1][0] += frhs[actnode->dof[0]];
+      }
+    }
 
     /* update velocity */
     pm_vel_update(actfield, actpart, disnum_calc, actintra, ipos,
@@ -892,10 +901,10 @@ void fluid_pm_cont()
 		  frhs, fgradprhs);
 
 #if 1
-    fprintf(allfiles.gidres,"RESULT \"press_rhs\" \"ccarat\" 1 SCALAR ONNODES\n"
+    fprintf(allfiles.gidres,"RESULT \"press_rhs\" \"ccarat\" %d SCALAR ONNODES\n"
 	    "RESULTRANGESTABLE \"standard_fluid    \"\n"
 	    "COMPONENTNAMES \"pressure\"\n"
-	    "VALUES\n");
+	    "VALUES\n",fdyn->step);
 
     for (i=0; i<actfield->dis[press_dis].numnp; ++i)
     {
@@ -908,10 +917,10 @@ void fluid_pm_cont()
 
     fprintf(allfiles.gidres,"END VALUES\n");
 
-    fprintf(allfiles.gidres,"RESULT \"press_sol\" \"ccarat\" 1 SCALAR ONNODES\n"
+    fprintf(allfiles.gidres,"RESULT \"press_sol\" \"ccarat\" %d SCALAR ONNODES\n"
 	    "RESULTRANGESTABLE \"standard_fluid    \"\n"
 	    "COMPONENTNAMES \"pressure\"\n"
-	    "VALUES\n");
+	    "VALUES\n",fdyn->step);
 
     for (i=0; i<actfield->dis[press_dis].numnp; ++i)
     {
@@ -926,10 +935,10 @@ void fluid_pm_cont()
 #endif
 
 #if 1
-    fprintf(allfiles.gidres,"RESULT \"elementcall\" \"ccarat\" 1 VECTOR ONNODES\n"
+    fprintf(allfiles.gidres,"RESULT \"elementcall\" \"ccarat\" %d VECTOR ONNODES\n"
 	    "RESULTRANGESTABLE \"standard_fluid    \"\n"
 	    "COMPONENTNAMES \"e1\" \"e2\"\n"
-	    "VALUES\n");
+	    "VALUES\n",fdyn->step);
 
     for (i=0; i<actfield->dis[0].numnp; ++i)
     {
@@ -950,10 +959,10 @@ void fluid_pm_cont()
     fprintf(allfiles.gidres,"END VALUES\n");
 
 
-    fprintf(allfiles.gidres,"RESULT \"elementcall2\" \"ccarat\" 1 VECTOR ONNODES\n"
+    fprintf(allfiles.gidres,"RESULT \"elementcall2\" \"ccarat\" %d VECTOR ONNODES\n"
 	    "RESULTRANGESTABLE \"standard_fluid    \"\n"
 	    "COMPONENTNAMES \"e1\" \"e2\"\n"
-	    "VALUES\n");
+	    "VALUES\n",fdyn->step);
 
     for (i=0; i<actfield->dis[0].numnp; ++i)
     {
@@ -976,10 +985,10 @@ void fluid_pm_cont()
     solserv_zero_vec(&(actsolv->sol[0]));
     matvec_trilinos_trans(&(actsolv->sol[0]),press_sol,&grad);
 
-    fprintf(allfiles.gidres,"RESULT \"matvec\" \"ccarat\" 1 VECTOR ONNODES\n"
+    fprintf(allfiles.gidres,"RESULT \"matvec\" \"ccarat\" %d VECTOR ONNODES\n"
 	    "RESULTRANGESTABLE \"standard_fluid    \"\n"
 	    "COMPONENTNAMES \"e1\" \"e2\"\n"
-	    "VALUES\n");
+	    "VALUES\n",fdyn->step);
 
     for (i=0; i<actfield->dis[0].numnp; ++i)
     {

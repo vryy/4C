@@ -35,10 +35,6 @@ Maintainer: Malte Neumann
 #include "../wallge/wallge.h"
 #endif
 
-#ifdef D_FLUID2_PRO
-#include "../fluid2_pro/fluid2pro_prototypes.h"
-#endif
-
 #ifdef D_THERM2
 #include "../therm2/therm2.h"
 #endif

@@ -328,6 +328,9 @@ void f2pro_calgradp(
   case dm_q2q2:
     numpdof = -1;
     break;
+  case dm_q2q1:
+    numpdof = -2;
+    break;
   default:
     dserror("unsupported discretization mode %d", ele->e.f2pro->dm);
   }
@@ -400,8 +403,10 @@ void f2pro_calgradp(
         e2   = data->qxg[ls][nis-1];
         facs = data->qwgt[ls][nis-1];
         f2_rec(funct,deriv,deriv2,e1,e2,typ,icode);
-	if (numpdof!=-1)
+	if (numpdof>0)
 	  f2pro_prec(pfunct, pderiv, e1, e2, dm, &numpdof);
+	else if (numpdof==-2)
+	  f2_rec(pfunct,pderiv,NULL,e1,e2,quad4,2);
         break;
       case tri3: case tri6:   /* --> tri - element */
         e1   = data->txgr[lr][intc];
@@ -436,6 +441,14 @@ void f2pro_calgradp(
 	  {
 	    gradopr[2*i  ][p] += fac*funct[p]*derxy[0][i] ;
 	    gradopr[2*i+1][p] += fac*funct[p]*derxy[1][i] ;
+	  }
+	}
+	else if (numpdof==-2)
+	{
+	  for (p=0; p<ele->e.f2pro->other->numnp; ++p)
+	  {
+	    gradopr[2*i  ][p] += fac*pfunct[p]*derxy[0][i] ;
+	    gradopr[2*i+1][p] += fac*pfunct[p]*derxy[1][i] ;
 	  }
 	}
 	else
@@ -565,6 +578,9 @@ void f2pro_calprhs(
   case dm_q2q2:
     numpdof = -1;
     break;
+  case dm_q2q1:
+    numpdof = -2;
+    break;
   default:
     dserror("unsupported discretization mode %d", ele->e.f2pro->dm);
   }
@@ -620,8 +636,10 @@ void f2pro_calprhs(
         e2   = data->qxg[ls][nis-1];
         facs = data->qwgt[ls][nis-1];
         f2_rec(funct,deriv,deriv2,e1,e2,typ,icode);
-	if (numpdof!=-1)
+	if (numpdof>-1)
 	  f2pro_prec(pfunct, pderiv, e1, e2, dm, &numpdof);
+	else if (numpdof==-2)
+	  f2_rec(pfunct,pderiv,NULL,e1,e2,quad4,2);
         break;
       case tri3: case tri6:   /* --> tri - element */
         e1   = data->txgr[lr][intc];
@@ -653,6 +671,15 @@ void f2pro_calprhs(
 	for (p=0; p<pele->numnp; ++p)
 	{
 	  eforce[p] -= fac*funct[p]*divu ;
+	}
+      }
+      else if (numpdof==-2)
+      {
+	ELEMENT* pele;
+	pele = ele->e.f2pro->other;
+	for (p=0; p<pele->numnp; ++p)
+	{
+	  eforce[p] -= fac*pfunct[p]*divu ;
 	}
       }
       else
@@ -731,12 +758,15 @@ void f2pro_calvelupdate(
   case dm_q2q2:
     numpdof = -1;
     break;
+  case dm_q2q1:
+    numpdof = -2;
+    break;
   default:
     dserror("unsupported discretization mode %d", ele->e.f2pro->dm);
   }
 
   /*---------------------------------------------- set pressures (n+1) ---*/
-  if (numpdof==-1)
+  if ((numpdof==-1) || (numpdof==-2))
   {
     ELEMENT* pele;
     pele = ele->e.f2pro->other;
@@ -803,8 +833,10 @@ void f2pro_calvelupdate(
         e2   = data->qxg[ls][nis-1];
         facs = data->qwgt[ls][nis-1];
         f2_rec(funct,deriv,deriv2,e1,e2,typ,icode);
-	if (numpdof!=-1)
+	if (numpdof>-1)
 	  f2pro_prec(pfunct, pderiv, e1, e2, dm, &numpdof);
+	else if (numpdof==-2)
+	  f2_rec(pfunct,pderiv,NULL,e1,e2,quad4,2);
         break;
       case tri3: case tri6:   /* --> tri - element */
         e1   = data->txgr[lr][intc];
@@ -835,6 +867,13 @@ void f2pro_calvelupdate(
 	for (i=0; i<ele->e.f2pro->other->numnp; ++i)
 	{
 	  ipress += funct[i] * epren[i];
+	}
+      }
+      else if (numpdof==-2)
+      {
+	for (i=0; i<ele->e.f2pro->other->numnp; ++i)
+	{
+	  ipress += pfunct[i] * epren[i];
 	}
       }
       else

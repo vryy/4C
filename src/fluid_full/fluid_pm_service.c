@@ -1264,14 +1264,17 @@ void pm_calprhs_cont(FIELD *actfield,
     {
 #ifdef D_FLUID2_PRO
     case el_fluid2_pro:
+    {
+      ELEMENT* other;
+      other = actele->e.f2pro->other;
       f2pro_calprhs(actele, ipos);
 
       /* Assemble */
       /* We have discontinuous pressure here. No need to loop the
        * nodes. */
-      for (k=0; k<actele->numnp; ++k)
+      for (k=0; k<other->numnp; ++k)
       {
-	NODE* node = actele->e.f2pro->other->node[k];
+	NODE* node = other->node[k];
 
 	if (node->proc == actintra->intra_rank)
 	{
@@ -1284,17 +1287,21 @@ void pm_calprhs_cont(FIELD *actfield,
 	}
       }
       break;
+    }
 #endif
 #ifdef D_FLUID3_PRO
     case el_fluid3_pro:
+    {
+      ELEMENT* other;
+      other = actele->e.f3pro->other;
       f3pro_calprhs(actele, ipos);
 
       /* Assemble */
       /* We have discontinuous pressure here. No need to loop the
        * nodes. */
-      for (k=0; k<actele->numnp; ++k)
+      for (k=0; k<other->numnp; ++k)
       {
-	NODE* node = actele->e.f3pro->other->node[k];
+	NODE* node = other->node[k];
 
 	if (node->proc == actintra->intra_rank)
 	{
@@ -1307,6 +1314,7 @@ void pm_calprhs_cont(FIELD *actfield,
 	}
       }
       break;
+    }
 #endif
     default:
       dserror("element type %d unsupported", actele->eltyp);
