@@ -234,6 +234,21 @@ void f3pro_dis(ELEMENT* vele, ELEMENT* pele, INT numele, INT nodeshift)
   pele->numnp = vele->numnp;
   pele->distyp = vele->distyp;
 
+  /* Switch to "Taylor-Hood" here. This way quite some nodes remain
+   * unused. Another cheat... */
+  switch (pele->numnp)
+  {
+  case 27:
+    pele->numnp = 8;
+    pele->distyp = hex8;
+    break;
+  case 8:
+    /* do nothing. this is not inf-sup stable, but it might work... */
+    break;
+  default:
+    dserror("unsupported number of nodes %d",pele->numnp);
+  }
+
   pele->lm = (INT*)CCACALLOC(pele->numnp,sizeof(INT));
 
   for (i=0; i<pele->numnp; i++)

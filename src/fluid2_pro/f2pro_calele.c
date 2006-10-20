@@ -54,7 +54,7 @@ static ARRAY     evnng_a;     /* element normal vector at n+1           */
 static DOUBLE  **evnng;
 static ARRAY     evnn_a;      /* element normal vector at n             */
 static DOUBLE  **evnn;
-static ARRAY     epren_a;     /* element pressures at (n)	                */
+static ARRAY     epren_a;     /* element pressures at (n)               */
 static DOUBLE   *epren;
 static ARRAY     edeadn_a;    /* element dead load (selfweight)            */
 static DOUBLE   *edeadng;
@@ -335,26 +335,6 @@ void f2pro_calgradp(
     dserror("unsupported discretization mode %d", ele->e.f2pro->dm);
   }
 
-#if 0
-  /*---------------------------------------------- set pressures (n+1) ---*/
-  if (numpdof==-1)
-  {
-    ELEMENT* pele;
-    pele = ele->e.f2pro->other;
-    for (i=0; i<pele->numnp; ++i)
-    {
-      epren[i] = pele->node[i]->sol_increment.a.da[1][0];
-    }
-  }
-  else
-  {
-    for (i=0; i<numpdof; ++i)
-    {
-      epren[i]   = ele->e.f2pro->press[i];
-    }
-  }
-#endif
-
   /*--------------------------------------------------- initialisation ---*/
   iel    = ele->numnp;
   typ    = ele->distyp;
@@ -433,10 +413,6 @@ void f2pro_calgradp(
 	INT p;
 	if (numpdof==-1)
 	{
-	  /*
-	   * The number of nodes of the pressure element is supposed
-	   * to be equal to the number of my nodes. The shape
-	   * functions are supposed to be the same. */
 	  for (p=0; p<ele->e.f2pro->other->numnp; ++p)
 	  {
 	    gradopr[2*i  ][p] += fac*funct[p]*derxy[0][i] ;

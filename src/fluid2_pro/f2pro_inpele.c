@@ -258,7 +258,7 @@ void f2pro_dis(ELEMENT* vele, ELEMENT* pele, INT numele, INT nodeshift)
     /* do nothing. this is not inf-sup stable, but it might work... */
     break;
   default:
-    dserror("only Taylor-Hood elements supported");
+    dserror("unsupported number of nodes %d",pele->numnp);
   }
 
   pele->lm = (INT*)CCACALLOC(pele->numnp,sizeof(INT));

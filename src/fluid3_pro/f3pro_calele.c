@@ -54,7 +54,7 @@ static ARRAY     evnng_a;     /* element normal vector at n+1           */
 static DOUBLE  **evnng;
 static ARRAY     evnn_a;      /* element normal vector at n             */
 static DOUBLE  **evnn;
-static ARRAY     epren_a;     /* element pressures at (n)	                */
+static ARRAY     epren_a;     /* element pressures at (n)               */
 static DOUBLE   *epren;
 static ARRAY     edeadn_a;    /* element dead load (selfweight)            */
 static DOUBLE   *edeadng;
@@ -322,14 +322,15 @@ void f3pro_calgradp(
   case dm_q1p0:
     numpdof = 1;
     break;
+  case dm_q1q1:
+  case dm_q2q2:
+    numpdof = -1;
+    break;
+  case dm_q2q1:
+    numpdof = -2;
+    break;
   default:
     dserror("unsupported discretization mode %d", ele->e.f3pro->dm);
-  }
-
-  for (i=0; i<numpdof; ++i)
-  {
-    /*---------------------------------------------- set pressures (n+1) ---*/
-    epren[i]   = ele->e.f3pro->press[i];
   }
 
   /*--------------------------------------------------- initialisation ---*/
@@ -386,7 +387,10 @@ void f3pro_calgradp(
 	  e3   = data->qxg[lt][nit-1];
 	  fact = data->qwgt[lt][nit-1];
 	  f3_hex(funct,deriv,deriv2,e1,e2,e3,typ,icode);
-	  f3pro_phex(pfunct, pderiv, e1, e2, e3, dm, &numpdof);
+	  if (numpdof>0)
+	    f3pro_phex(pfunct, pderiv, e1, e2, e3, dm, &numpdof);
+	  else if (numpdof==-2)
+	    f3_hex(pfunct,pderiv,NULL,e1,e2,e3,hex8,2);
 	  break;
 	case tet4: case tet10:   /* --> tet - element */
 	  e1   = data->txgr[lr][intc];
@@ -413,11 +417,32 @@ void f3pro_calgradp(
 	for (i=0; i<iel; i++)
 	{
 	  INT p;
-	  for (p=0; p<numpdof; ++p)
+	  if (numpdof==-1)
 	  {
-	    gradopr[3*i  ][p] += fac*pfunct[p]*derxy[0][i] ;
-	    gradopr[3*i+1][p] += fac*pfunct[p]*derxy[1][i] ;
-	    gradopr[3*i+2][p] += fac*pfunct[p]*derxy[2][i] ;
+	    for (p=0; p<ele->e.f3pro->other->numnp; ++p)
+	    {
+	      gradopr[3*i  ][p] += fac*funct[p]*derxy[0][i] ;
+	      gradopr[3*i+1][p] += fac*funct[p]*derxy[1][i] ;
+	      gradopr[3*i+2][p] += fac*funct[p]*derxy[2][i] ;
+	    }
+	  }
+	  else if (numpdof==-2)
+	  {
+	    for (p=0; p<ele->e.f3pro->other->numnp; ++p)
+	    {
+	      gradopr[3*i  ][p] += fac*pfunct[p]*derxy[0][i] ;
+	      gradopr[3*i+1][p] += fac*pfunct[p]*derxy[1][i] ;
+	      gradopr[3*i+2][p] += fac*pfunct[p]*derxy[2][i] ;
+	    }
+	  }
+	  else
+	  {
+	    for (p=0; p<numpdof; ++p)
+	    {
+	      gradopr[3*i  ][p] += fac*pfunct[p]*derxy[0][i] ;
+	      gradopr[3*i+1][p] += fac*pfunct[p]*derxy[1][i] ;
+	      gradopr[3*i+2][p] += fac*pfunct[p]*derxy[2][i] ;
+	    }
 	  }
 	}
 
@@ -553,6 +578,13 @@ void f3pro_calprhs(
   case dm_q1p0:
     numpdof = 1;
     break;
+  case dm_q1q1:
+  case dm_q2q2:
+    numpdof = -1;
+    break;
+  case dm_q2q1:
+    numpdof = -2;
+    break;
   default:
     dserror("unsupported discretization mode %d", ele->e.f3pro->dm);
   }
@@ -614,7 +646,10 @@ void f3pro_calprhs(
 	  e3   = data->qxg[lt][nit-1];
 	  fact = data->qwgt[lt][nit-1];
 	  f3_hex(funct,deriv,deriv2,e1,e2,e3,typ,icode);
-	  f3pro_phex(pfunct, pderiv, e1, e2, e3, dm, &numpdof);
+	  if (numpdof>-1)
+	    f3pro_phex(pfunct, pderiv, e1, e2, e3, dm, &numpdof);
+	  else if (numpdof==-2)
+	    f3_hex(pfunct,pderiv,NULL,e1,e2,e3,hex8,2);
 	  break;
 	case tet4: case tet10:   /* --> tet - element */
 	  e1   = data->txgr[lr][intc];
@@ -641,10 +676,30 @@ void f3pro_calprhs(
 	f3_vder(vderxy,derxy,evelng,iel);
 	divu = vderxy[0][0] + vderxy[1][1] + vderxy[2][2];
 
-	/* loop over nodes of element */
-	for (p=0; p<numpdof; ++p)
+	if (numpdof==-1)
 	{
-	  eforce[p] -= fac*pfunct[p]*divu ;
+	  ELEMENT* pele;
+	  pele = ele->e.f3pro->other;
+	  for (p=0; p<pele->numnp; ++p)
+	  {
+	    eforce[p] -= fac*funct[p]*divu ;
+	  }
+	}
+	else if (numpdof==-2)
+	{
+	  ELEMENT* pele;
+	  pele = ele->e.f3pro->other;
+	  for (p=0; p<pele->numnp; ++p)
+	  {
+	    eforce[p] -= fac*pfunct[p]*divu ;
+	  }
+	}
+	else
+	{
+	  for (p=0; p<numpdof; ++p)
+	  {
+	    eforce[p] -= fac*pfunct[p]*divu ;
+	  }
 	}
       }
     }
@@ -713,14 +768,33 @@ void f3pro_calvelupdate(
   case dm_q1p0:
     numpdof = 1;
     break;
+  case dm_q1q1:
+  case dm_q2q2:
+    numpdof = -1;
+    break;
+  case dm_q2q1:
+    numpdof = -2;
+    break;
   default:
     dserror("unsupported discretization mode %d", ele->e.f3pro->dm);
   }
 
-  for (i=0; i<numpdof; ++i)
+  /*---------------------------------------------- set pressures (n+1) ---*/
+  if ((numpdof==-1) || (numpdof==-2))
   {
-    /*---------------------------------------------- set pressures (n+1) ---*/
-    epren[i]   = ele->e.f3pro->phi[i];
+    ELEMENT* pele;
+    pele = ele->e.f3pro->other;
+    for (i=0; i<pele->numnp; ++i)
+    {
+      epren[i] = pele->node[i]->sol_increment.a.da[0][0];
+    }
+  }
+  else
+  {
+    for (i=0; i<numpdof; ++i)
+    {
+      epren[i]   = ele->e.f3pro->phi[i];
+    }
   }
 
   /*--------------------------------------------------- initialisation ---*/
@@ -779,7 +853,10 @@ void f3pro_calvelupdate(
 	  e3   = data->qxg[lt][nit-1];
 	  fact = data->qwgt[lt][nit-1];
 	  f3_hex(funct,deriv,deriv2,e1,e2,e3,typ,icode);
-	  f3pro_phex(pfunct, pderiv, e1, e2, e3, dm, &numpdof);
+	  if (numpdof>-1)
+	    f3pro_phex(pfunct, pderiv, e1, e2, e3, dm, &numpdof);
+	  else if (numpdof==-2)
+	    f3_hex(pfunct,pderiv,NULL,e1,e2,e3,hex8,2);
 	  break;
 	case tet4: case tet10:   /* --> tet - element */
 	  e1   = data->txgr[lr][intc];
@@ -807,8 +884,25 @@ void f3pro_calvelupdate(
 	 * for the velocity update. */
 
 	ipress = 0;
-	for (i=0; i<numpdof; ++i)
-	  ipress += pfunct[i] * epren[i];
+	if (numpdof==-1)
+	{
+	  for (i=0; i<ele->e.f3pro->other->numnp; ++i)
+	  {
+	    ipress += funct[i] * epren[i];
+	  }
+	}
+	else if (numpdof==-2)
+	{
+	  for (i=0; i<ele->e.f3pro->other->numnp; ++i)
+	  {
+	    ipress += pfunct[i] * epren[i];
+	  }
+	}
+	else
+	{
+	  for (i=0; i<numpdof; ++i)
+	    ipress += pfunct[i] * epren[i];
+	}
 
 	/* loop over nodes of element */
 	for (i=0; i<iel; i++)

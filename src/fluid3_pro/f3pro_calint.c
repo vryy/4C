@@ -133,6 +133,25 @@ void f3pro_int_usfem(
   fdyn   = alldyn[genprob.numff].fdyn;
   data   = fdyn->data;
 
+  switch (ele->e.f3pro->dm)
+  {
+  case dm_q2pm1:
+    numpdof = 3;
+    break;
+  case dm_q1p0:
+    numpdof = 1;
+    break;
+  case dm_q1q1:
+  case dm_q2q2:
+    numpdof = -1;
+    break;
+  case dm_q2q1:
+    numpdof = -2;
+    break;
+  default:
+    dserror("unsupported discretization mode %d", ele->e.f3pro->dm);
+  }
+
 /*------- get integraton data and check if elements are "higher order" */
   switch (typ)
   {
@@ -182,7 +201,10 @@ void f3pro_int_usfem(
 	  e3   = data->qxg[lt][nit-1];
 	  fact = data->qwgt[lt][nit-1];
 	  f3_hex(funct,deriv,deriv2,e1,e2,e3,typ,icode);
-	  f3pro_phex(pfunct, pderiv, e1, e2, e3, dm, &numpdof);
+	  if (numpdof>-1)
+	    f3pro_phex(pfunct, pderiv, e1, e2, e3, dm, &numpdof);
+	  else if (numpdof==-2)
+	    f3_hex(pfunct,pderiv,NULL,e1,e2,e3,hex8,2);
 	  break;
 	case tet4: case tet10:   /* --> tet - element */
 	  e1   = data->txgr[lr][intc];
@@ -204,7 +226,10 @@ void f3pro_int_usfem(
 
 	/*----------------------------------- compute global derivates ---*/
 	f3_gder(derxy,deriv,xjm,wa1,det,iel);
-	f3_gder(pderxy,pderiv,xjm,wa1,det,numpdof);
+	if (numpdof>-1)
+	  f3_gder(pderxy,pderiv,xjm,wa1,det,numpdof);
+	else if (numpdof==-2)
+	  f3_gder(pderxy,pderiv,xjm,wa1,det,8);
 
 	/*---------------- get velocities (n+1,i) at integration point ---*/
 	f3_veci(velint,funct,evelng,iel);
@@ -225,11 +250,32 @@ void f3pro_int_usfem(
 	/*------------------------------------- get pressure gradients ---*/
 	gradp[0] = gradp[1] = gradp[2] = 0.0;
 
-	for (i=0; i<numpdof; i++)
+	if (numpdof==-1)
 	{
-	  gradp[0] += pderxy[0][i] * epren[i];
-	  gradp[1] += pderxy[1][i] * epren[i];
-	  gradp[2] += pderxy[2][i] * epren[i];
+	  for (i=0; i<iel; i++)
+	  {
+	    gradp[0] += derxy[0][i] * epren[i];
+	    gradp[1] += derxy[1][i] * epren[i];
+	    gradp[2] += derxy[2][i] * epren[i];
+	  }
+	}
+	else if (numpdof==-2)
+	{
+	  for (i=0; i<ele->e.f3pro->other->numnp; i++)
+	  {
+	    gradp[0] += pderxy[0][i] * epren[i];
+	    gradp[1] += pderxy[1][i] * epren[i];
+	    gradp[2] += pderxy[2][i] * epren[i];
+	  }
+	}
+	else
+	{
+	  for (i=0; i<numpdof; i++)
+	  {
+	    gradp[0] += pderxy[0][i] * epren[i];
+	    gradp[1] += pderxy[1][i] * epren[i];
+	    gradp[2] += pderxy[2][i] * epren[i];
+	  }
 	}
 	/*-------------- perform integration for entire matrix and rhs ---*/
 	f3pro_calmat(estif,eforce,velint,histvec,gridvelint,vderxy,
@@ -242,8 +288,21 @@ void f3pro_int_usfem(
 	 * to eforce here but have to handle it globally. */
 
 	press = 0;
-	for (i=0; i<numpdof; ++i)
-	  press += pfunct[i] * epren[i];
+	if (numpdof==-1)
+	{
+	  for (i=0; i<iel; ++i)
+	    press += funct[i] * epren[i];
+	}
+	else if (numpdof==-2)
+	{
+	  for (i=0; i<ele->e.f3pro->other->numnp; ++i)
+	    press += pfunct[i] * epren[i];
+	}
+	else
+	{
+	  for (i=0; i<numpdof; ++i)
+	    press += pfunct[i] * epren[i];
+	}
 
 	/* loop over nodes of element */
 	for (i=0; i<iel; i++)

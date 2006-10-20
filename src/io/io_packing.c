@@ -5609,11 +5609,14 @@ void find_restart_item_length(struct _BIN_OUT_FIELD* context,
       case dm_q2q2:
 	numpdof = -1;
 	break;
+      case dm_q2q1:
+	numpdof = -2;
+	break;
       default:
 	dserror("unsupported discretization mode %d", actele->e.f3pro->dm);
       }
 
-      if (numpdof!=-1)
+      if (numpdof>-1)
 	*value_length = MAX(*value_length, 2*numpdof);
       break;
     }

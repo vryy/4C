@@ -324,7 +324,6 @@ void fluid_pm_cont()
 	break;
       case dm_q1p0:
 	f2pro->dm = dm_q1q1;
-	/* dserror("here discontinous pressure would be needed"); */
 	break;
       default:
         dserror("discretization mode %d currently unsupported", f2pro->dm);
@@ -340,7 +339,8 @@ void fluid_pm_cont()
       switch (f3pro->dm)
       {
       case dm_q2pm1:
-	f3pro->dm = dm_q2q2;
+	/* switch to "taylor-hood" */
+	f3pro->dm = dm_q2q1;
 	break;
       case dm_q1p0:
 	f3pro->dm = dm_q1q1;
