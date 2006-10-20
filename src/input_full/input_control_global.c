@@ -392,6 +392,8 @@ case prb_tsi:
   break;
 }
 #endif
+case prb_opt:
+break;
 default:
   dserror("problem type %d unknown",genprob.probtyp);
 }
