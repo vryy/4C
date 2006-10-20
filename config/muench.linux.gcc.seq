@@ -40,7 +40,7 @@ VISUAL3_LIB="-L/usr/X11R6/lib -lVisual3 -lg2c -lGLU -lGL -lX11 -lXext -ldl -lpth
 LIBS="-llapack -lblas -lmetis"
 
 CFLAGS_OPT="-O2"
-CPFLAGS_OPT="-O2"
+CPFLAGS_OPT="-O0"
 FFLAGS_OPT="-O2"
 LDFLAGS_OPT="-O2"
 

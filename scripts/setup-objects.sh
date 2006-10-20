@@ -176,6 +176,11 @@ if grep '^[[:blank:]]*D_THERM2' "$definefile" 2>&1 > /dev/null ; then
     OBJECTS="$OBJECTS \$(OBJS_THERM2)"
 fi
 
+# THERM3
+if grep '^[[:blank:]]*D_THERM3' "$definefile" 2>&1 > /dev/null ; then
+    OBJECTS="$OBJECTS \$(OBJS_THERM3)"
+fi
+
 # FSI
 if grep '^[[:blank:]]*D_FSI' "$definefile" 2>&1 > /dev/null ; then
     OBJECTS="$OBJECTS \$(OBJS_FSI)"

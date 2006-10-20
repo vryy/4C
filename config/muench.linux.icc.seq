@@ -14,6 +14,7 @@ PROGRAMNAME=cca_icc_seq_linux
 #LD=$F77
 CC="$INTELDIR/bin/icc"
 F77="$INTELDIR/bin/ifort"
+CP="$INTELDIR/bin/icc"
 LD=$F77
 
 INCLUDEDIRS="-I$MPIDIR/include -I$MKLDIR/include -I/lnm/include"

@@ -75,6 +75,7 @@ Input/shell9_kreuz_easnl.dat            x        x        x        x        -   
 Input/shell9_matnl.dat                  x        x        x        x        -        -
 Input/ssi_mortar_canti.dat              x        -        x        -        -        -
 Input/struct2ml_ifvers.dat              x        -        x        -        -        -
+Input/tsi_th2sta_w1dyn_3ele.dat         x        -        x        -        -        -
 Input/w1_3DmisGF.dat                    x        x        x        x        -        -
 Input/w1_Eulerstab.dat                  x        x        x        x        -        -
 Input/w1_Eulerstab_sd.dat               x        x        x        x        -        -

@@ -258,7 +258,8 @@ OBJS_BRICK1   = src/brick1/c1_out.o \
                 src/brick1/c1_init.o \
                 src/brick1/c1_eas_service.o \
                 src/brick1/c1_cstr.o \
-                src/brick1/c1_load.o
+                src/brick1/c1_load.o \
+		src/brick1/c1_tsi.o
 #               math
 OBJS_MATH     = src/math/sort_find.o \
                 src/math/math1.o \
@@ -578,7 +579,7 @@ OBJS_F3PRO    = src/fluid3_pro/f3pro_inpele.o \
                 src/fluid3_pro/f3pro_calint.o \
                 src/fluid3_pro/f3pro_calservice.o \
                 src/fluid3_pro/f3pro_main.o
-#                interf
+#               interf
 OBJS_IF       = src/interf/if_inpele.o \
                 src/interf/if_main.o \
                 src/interf/if_init.o \
@@ -593,7 +594,7 @@ OBJS_IF       = src/interf/if_inpele.o \
                 src/interf/if_service.o \
                 src/interf/if_funcderiv.o \
                 src/interf/if_restart.o
-#                gradient enhanced wall
+#               gradient enhanced wall
 OBJS_WALLGE   = src/wallge/wge_setdof.o \
                 src/wallge/wge_inpele.o \
                 src/wallge/wge_main.o \
@@ -608,12 +609,13 @@ OBJS_WALLGE   = src/wallge/wge_setdof.o \
                 src/wallge/wge_stiff.o \
                 src/wallge/wge_stress.o \
                 src/wallge/wge_fext.o
-#                thermal structure interaction
+#               thermal structure interaction
 OBJS_TSI      = src/tsi_full/tsi_coupling.o \
                 src/tsi_full/tsi_dyn.o \
                 src/tsi_full/tsi_dyn_struct.o \
+		src/tsi_full/tsi_init.o \
                 src/tsi_full/tsi_stat_therm.o
-#                planar thermal
+#               planar thermal
 OBJS_THERM2   = src/therm2/th2_bop.o \
                 src/therm2/th2_cfg.o \
                 src/therm2/th2_hflux.o \
@@ -627,6 +629,19 @@ OBJS_THERM2   = src/therm2/th2_bop.o \
                 src/therm2/th2_matlin.o \
                 src/therm2/th2_shape.o \
                 src/therm2/th2_temper.o
+#               spatial thermal
+OBJS_THERM3   = src/therm3/th3_bop.o \
+                src/therm3/th3_cfg.o \
+                src/therm3/th3_inp.o \
+                src/therm3/th3_intg.o \
+                src/therm3/th3_lin.o \
+                src/therm3/th3_load.o \
+                src/therm3/th3_main.o \
+                src/therm3/th3_mat.o \
+                src/therm3/th3_matlin.o \
+                src/therm3/th3_metr.o \
+                src/therm3/th3_shape.o \
+		src/therm3/th3_temper.o
 #               visual
 OBJS_VISUAL   = src/visual/visual_global.o \
                 src/visual/visual_readflaviares.o \

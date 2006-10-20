@@ -25,6 +25,8 @@
 # D_INTERF           # interface element
 # D_WALLGE           # gradient enhanced wall element
 # D_MLSTRUCT         # 2D element for structural analysis with multiscale
+# D_THERM2           # planar thermal elment
+# D_THERM3           # spatial thermal element
 
 
 #   problem types
@@ -36,6 +38,7 @@
 # D_MORTAR           # mortar coupling problem (FSI/SSI)
 # D_OPTIM            # optimization
 # D_CONTACT          # contact problems
+# D_TSI              # thermal structure interaction problem
 
 
 #   additional features
