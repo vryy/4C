@@ -1542,7 +1542,6 @@ void parallel_sparse_copy_trilinos(PARALLEL_SPARSE* ps, SOLVAR* solvar)
 
   /* Just a few tests */
 
-  dsassert(solvar->solvertyp == aztec_msr, "wrong solver type");
   dsassert(solvar->sysarray_typ[0] == trilinos, "wrong sparse type");
 
   trimat = solvar->sysarray[0].trilinos;

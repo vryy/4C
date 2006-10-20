@@ -132,12 +132,18 @@ case dyntyp_nln_time_int:
 
 #ifdef D_FLUID_PM
 case dyntyp_pm_discont:
+  if (genprob.probtyp!=prb_fluid_pm)
+    dserror("fluid projection method expected");
   fluid_pm();
   break;
 case dyntyp_pm_cont:
+  if (genprob.probtyp!=prb_fluid_pm)
+    dserror("fluid projection method expected");
   fluid_pm_cont();
   break;
 case dyntyp_pm_cont_laplace:
+  if (genprob.probtyp!=prb_fluid_pm)
+    dserror("fluid projection method expected");
   fluid_pm_cont_laplace();
   break;
 #endif
