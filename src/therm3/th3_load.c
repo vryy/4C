@@ -329,22 +329,28 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
         case hex8: case hex20: case hex27:
           for (idim=0; idim<NDIM_THERM3; idim++)
           {
-            /* set number of Gauss points for side integration */
-            if (data->dirsidh[igsurf][idim] == 1)
+            gpsubnum[idim] = 1;
+            gpsubintc[idim] = 1;
+          }
+          for (idimsid=0; idimsid<DIMSID_THERM3; idimsid++)
+          {
+            for (idim=0; idim<NDIM_THERM3; idim++)
             {
-              gpsubnum[idim] = gpnum[idim];
-              gpsubintc[idim] = gpintc[idim];
-            }
-            else
-            {
-              gpsubnum[idim] = 1;
-              gpsubintc[idim] = 1;
+              /* set number of Gauss points for side integration */
+              if ((INT) data->dirsidh[igsurf][idimsid][idim] == 1)
+              {
+                gpsubnum[idim] = gpnum[idim];
+                gpsubintc[idim] = gpintc[idim];
+              }
             }
           }
           break;
         /* tetrahedron elements */
         case tet4: case tet10:
-          dserror("surface loads for tet.s are not available");
+          gpsubnum[0] = 1;
+          gpsubnum[1] = 1;
+          gpsubnum[2] = gpnum[2];
+          gpsubintc[2] = gpintc[2];
           break;
         /* catch dubious discretisation types */
         default:
@@ -353,7 +359,7 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
       /*----------------------------------------------------------------*/
       /* integration loops 
        * For each side one of the following loops is not repeated,
-       * but as all sides are generally integrated here. */
+       * but all sides are generally integrated here. */
       for (igp[0]=0; igp[0]<gpsubnum[0]; igp[0]++)
       {
         for (igp[1]=0; igp[1]<gpsubnum[1]; igp[1]++)
@@ -378,21 +384,23 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
             {
               /* hexahedra */
               case hex8: case hex20: case hex27:
-                /* initialise dimension reduction counter */
-                idimsid = 0;
                 /* loop potential basis vector directions */
-                for (idim=0; idim<NDIM_THERM3; idim++)
+                for (idimsid=0; idimsid<DIMSID_THERM3; idimsid++)
                 {
-                  if (data->dirsidh[igsurf][idim] == 1)
+                  for (idim=0; idim<NDIM_THERM3; idim++)
                   {
-                    /* add coordinate components */
-                    gpc[idim] = gpc[idim] 
-                              + data->ghlc[gpsubintc[idim]][igp[idim]];
-                    /* add weight */
-                    fac = fac * data->ghlw[gpsubintc[idim]][igp[idim]];
+                    if ((INT) data->dirsidh[igsurf][idimsid][idim] == 1)
+                    {
+                      /* add coordinate components */
+                      gpc[idim] = gpc[idim] 
+                        + data->ghlc[gpsubintc[idim]][igp[idim]];
+                      /* add weight */
+                      fac = fac 
+                        * data->ghlw[gpsubintc[idim]][igp[idim]];
+                    }
                     /* dimension reduction matrix */
-                    sidredm[idimsid][idim] = 1.0;
-                    idimsid = idimsid + 1;
+                    sidredm[idimsid][idim] 
+                      = data->dirsidh[igsurf][idimsid][idim];
                   }
                 }
                 break;
@@ -457,7 +465,7 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
           for (idim=0; idim<NDIM_THERM3; idim++)
           {
             /* set number of Gauss points for side integration */
-            if (data->dirsidh[igsurf][idim] == 1)
+            if ((INT) data->dirsidh[igsurf][idim] == 1)
             {
               gpsubnum[idim] = gpnum[idim];
               gpsubintc[idim] = gpintc[idim];
@@ -508,17 +516,17 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
                 /* loop potential basis vector directions */
                 for (idim=0; idim<NDIM_THERM3; idim++)
                 {
-                  if ( (data->dirsidh[igline][idim] == 1)
-                       || (data->dirsidh[igline][idim] == -1) )
+                  if ( ((INT) data->diredgh[igline][idim] == 1)
+                       || ((INT) data->diredgh[igline][idim] == -1) )
                   {
                     /* add coordinate components */
                     gpc[idim] = gpc[idim] 
                               + data->ghlc[gpsubintc[idim]][igp[idim]];
                     /* add weight */
                     fac = fac * data->ghlw[gpsubintc[idim]][igp[idim]];
-                    /* dimension reduction vector */
-                    linredv[idim] = 1.0;
                   }
+                  /* dimension reduction vector */
+                  linredv[idim] = data->diredgh[igline][idim];
                 }
                 break;
               /* tetrahedra */

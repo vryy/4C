@@ -21,6 +21,17 @@ Maintainer: Andreas Lipka
 \addtogroup BRICK1
 *//*! @{ (documentation module open)*/
 
+/*----------------------------------------------------------------------*/
+/*!
+\brief General problem data
+
+struct _GENPROB       genprob; defined in global_control.c 
+
+\author bborn
+\date 10/06
+*/
+extern GENPROB genprob;
+
 /*!----------------------------------------------------------------------
 \brief integration routine for BRICK1 element
 
@@ -34,6 +45,7 @@ This routine performs integration of an 3D-hex-element.
 \param    estif_global ARRAY*  (o)   element stiffness matrix
 \param          force DOUBLE*  (o)   vector for internal forces
 \param             init  INT*  (i)   flag for initialization (alloc mem...)
+\param   container CONTAINER*  (i)   container data
 
 
  *----------------------------------------------------------------------*
@@ -71,8 +83,9 @@ void c1_cint(
              ARRAY     *estif_global,
              ARRAY     *emass_global,
              DOUBLE    *force,
-             INT        init
-             )
+             INT        init,
+             CONTAINER *container
+            )
 {
 INT                 i,j,k;            /* some loopers */
 INT                 nir,nis,nit;      /* num GP in r/s/t direction */
@@ -417,6 +430,15 @@ for (lr=0; lr<nir; lr++)
       }
       /*------------------------------- get actual strains -> strain ---*/
       c1_eps (disd,strain,iform);
+      /*--------------------------------- add strain due to temperature */
+#ifdef D_TSI
+#ifdef D_THERM3
+      if (genprob.probtyp == prb_tsi)
+      {
+        c1_tsi_thstrain(container, ele, mat, e1, e2, e3, numeps, strain);
+      }
+#endif
+#endif
       /*--------------------------------------------------- eas part ---*/
       if(ihyb>0)
       {

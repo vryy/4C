@@ -27,13 +27,19 @@ Maintainer: Burkhard Bornemann
 /* header files */
 #include "../headers/standardtypes.h"  /* this includes enums.h */
 #include "../solver/solver.h"
+#include "tsi_prototypes.h"
 #ifdef D_WALL1
 #include "../wall1/wall1.h"
+#endif
+#ifdef D_BRICK1
+#include "../brick1/brick1.h"
 #endif
 #ifdef D_THERM2
 #include "../therm2/therm2.h"
 #endif
-#include "tsi_prototypes.h"
+#ifdef D_THERM3
+#include "../therm3/therm3.h"
+#endif
 
 
 /*----------------------------------------------------------------------*/
@@ -94,12 +100,10 @@ nodes of the other fields
 \date 03/06
 */
 /*-----------------------------------------------------------------------*/
-void tsi_initcoupling(
-  FIELD *structfield,
-  INT disnum_s,
-  FIELD *thermfield,
-  INT disnum_t
-)
+void tsi_coupling(FIELD *structfield,
+		    INT disnum_s,
+		    FIELD *thermfield,
+		    INT disnum_t)
 
 {
 
@@ -107,7 +111,7 @@ void tsi_initcoupling(
   INT numsnp;  /* number of structure nodes */
   INT numtnp;  /* number of thermal nodes */
   INT numdf;  /* number of dofs */
-  INT numc=0;  /* number of columns in mf */
+  INT numc = 0;  /* number of columns in mf */
   INT numsf;  /* number of structural fields */
   INT numtf;  /* number of thermal fields */
   INT e, i, ii, j, k;  /* simply some counters */
@@ -119,10 +123,10 @@ void tsi_initcoupling(
   DOUBLE tol = EPS4;  /* critcal tolerance for node distance
 
   /* declare and nullify actual nodes */
-  NODE *actsnode=NULL;  /* actual structure node */
-  NODE *acttnode=NULL;  /* actual thermal node */
-  GNODE *actsgnode=NULL;  /* actual structure geometry node */
-  GNODE *acttgnode=NULL;  /* actual thermal geometry node */
+  NODE *actsnode = NULL;  /* actual structure node */
+  NODE *acttnode = NULL;  /* actual thermal node */
+  GNODE *actsgnode = NULL;  /* actual structure geometry node */
+  GNODE *acttgnode = NULL;  /* actual thermal geometry node */
 
   /* actual element pointer */
   ELEMENT *actele;
@@ -301,7 +305,6 @@ void tsi_initcoupling(
 
       switch (actele->eltyp)
       {
-
 #ifdef D_WALL1
         case el_wall1:
           if (actele->e.w1->tsi_couptyp == tsi_coup_thermconf) 
@@ -310,24 +313,18 @@ void tsi_initcoupling(
           }
           break;
 #endif
-
-/*
 #ifdef D_BRICK1
         case el_brick1:
-          if (actele->e.c1->is_ale>0) is_ale++;
+          if (actele->e.c1->tsi_couptyp == tsi_coup_thermconf)
+          {
+            partner++;
+          }
           break;
 #endif
-*/
-
         default:
           dserror("eltyp unknown\n");
-
       }  /* switch (actele->eltyp) */
 
-/*       if (partner > 0)  */
-/*       { */
-/*         break; */
-/*       } */
       /* increment element counter */
       j++;
 
@@ -545,7 +542,7 @@ void tsi_initcoupling(
     }
     else
     {
-      printf("The ID: %d\n", actId);
+      /* printf("The ID: %d\n", actId); */
     }
     acttele = &(thermfield->dis[disnum_s].element[actId]);
 
@@ -559,6 +556,11 @@ void tsi_initcoupling(
           actsele->e.w1->therm_ele = acttele;
           break;
 #endif
+#ifdef D_BRICK1
+        case el_brick1:
+          actsele->e.c1->therm_ele = acttele;
+          break;
+#endif
         default:
           dserror("eltyp unknown\n");
     }  /* end of switch */
@@ -569,6 +571,11 @@ void tsi_initcoupling(
 #ifdef D_THERM2
         case el_therm2:
           acttele->e.th2->struct_ele = actsele;
+          break;
+#endif
+#ifdef D_THERM3
+        case el_therm3:
+          acttele->e.th3->struct_ele = actsele;
           break;
 #endif
         default:
@@ -600,7 +607,7 @@ void tsi_initcoupling(
 
   return;
 
-} /* end of fsi_initcoup*/
+} /* end of tsi_coupling */
 
 
 

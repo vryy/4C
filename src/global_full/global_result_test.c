@@ -360,10 +360,12 @@ void global_result_test()
   FIELD  *alefield     = NULL;
   FIELD  *structfield  = NULL;
   FIELD  *fluidfield   = NULL;
+  FIELD  *thermfield   = NULL;
 #endif
   PARTITION *alepart     = NULL;
   PARTITION *structpart  = NULL;
   PARTITION *fluidpart   = NULL;
+  PARTITION *thermpart   = NULL;
   NODE   *actnode;
   DOUBLE  actresult;
   FILE   *err = allfiles.out_err;
@@ -380,11 +382,13 @@ void global_result_test()
   if (genprob.numff>-1) fluidfield  = &(field[genprob.numff]);
   if (genprob.numsf>-1) structfield = &(field[genprob.numsf]);
   if (genprob.numaf>-1) alefield    = &(field[genprob.numaf]);
+  if (genprob.numtf>-1) thermfield  = &(field[genprob.numtf]);
 #endif
 
   if (genprob.numff>-1) fluidpart  = &(partition[genprob.numff]);
   if (genprob.numsf>-1) structpart = &(partition[genprob.numsf]);
   if (genprob.numaf>-1) alepart    = &(partition[genprob.numaf]);
+  if (genprob.numtf>-1) thermpart  = &(partition[genprob.numtf]);
 
   /* let's do it in a fancy style :) */
   printf("\n" GRAY_LIGHT "Checking results ..." END_COLOR "\n");
@@ -406,6 +410,9 @@ void global_result_test()
       break;
     case structure:
       actpart = structpart;
+      break;
+    case thermal:
+      actpart = thermpart;
       break;
     default:
       dserror("Unknown field typ");

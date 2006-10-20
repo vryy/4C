@@ -13,15 +13,15 @@ Maintainer: Burkhard Bornemann
 \author bborn
 \date 08/06
 */
-#ifdef D_WALL1
 #ifdef D_TSI
+#ifdef D_THERM3
 
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "../headers/standardtypes.h"
-#include "wall1.h"
-#include "wall1_prototypes.h"
-#include "../therm2/therm2.h"
+#include "brick1.h"
+#include "brick1_prototypes.h"
+#include "../therm3/therm3.h"
 
 /*======================================================================*/
 /*!
@@ -29,8 +29,9 @@ Maintainer: Burkhard Bornemann
 
 \param  *ele     ELEMENT     (i)    pointer to current (wall) element
 \param  *mat     MATERIAL    (i)    material type
-\param  r        DOUBLE      (i)    r-coord of (r,s)
-\param  s        DOUBLE      (i)    s-coord of (r,s)
+\param  r        DOUBLE      (i)    r-coord of (r,s,t)
+\param  s        DOUBLE      (i)    s-coord of (r,s,t)
+\param  t        DOUBLE      (i)    s-coord of (r,s,t)
 \param  numstr   INT         (i)    dimension of strain vector 'strain'
 \param  *strain  DOUBLE      (i/o)  strain vector
 
@@ -39,11 +40,12 @@ Maintainer: Burkhard Bornemann
 \author bborn
 \date 08/06
 */
-void w1_tsi_thstrain(CONTAINER *container,
+void c1_tsi_thstrain(CONTAINER *container,
                      ELEMENT *ele,
                      MATERIAL *mat, 
                      DOUBLE r, 
                      DOUBLE s,
+                     DOUBLE t,
                      INT numstr,
                      DOUBLE *strain)
 {
@@ -55,7 +57,7 @@ void w1_tsi_thstrain(CONTAINER *container,
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
-  dstrc_enter("w1_tsi_thstrain");
+  dstrc_enter("c1_tsi_thstrain");
 #endif
 
   /*--------------------------------------------------------------------*/
@@ -65,7 +67,7 @@ void w1_tsi_thstrain(CONTAINER *container,
 
   /*--------------------------------------------------------------------*/
   /* temperature at Gauss point (r,s) */
-  th2_temper_cal(container, ele->e.w1->therm_ele, r, s, &tem);
+  th3_temper_cal(container, ele->e.c1->therm_ele, r, s, t, &tem);
 
   /*--------------------------------------------------------------------*/
   /* type of material */
@@ -77,8 +79,10 @@ void w1_tsi_thstrain(CONTAINER *container,
         /* thermal strain vector */
         thstrain[0] = thermexpans * tem;  /* E_xx */
         thstrain[1] = thermexpans * tem;  /* E_yy */
-        thstrain[2] = 0.0;                /* E_xy */
-        thstrain[3] = 0.0;                /* E_yx */
+        thstrain[2] = thermexpans * tem;  /* E_zz */
+        thstrain[3] = 0.0;                /* E_xy */
+        thstrain[4] = 0.0;                /* E_yz */
+        thstrain[5] = 0.0;                /* E_zx */
         /* add thermal strain to kinematic strain */
         for (i=0; i<numstr; i++)
         {
@@ -103,5 +107,5 @@ void w1_tsi_thstrain(CONTAINER *container,
 
 
 /*======================================================================*/
+#endif  /* end of #ifdef D_THERM3 */
 #endif  /* end of #ifdef D_TSI */
-#endif  /* end of #ifdef D_WALL1 */

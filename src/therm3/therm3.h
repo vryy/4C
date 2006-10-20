@@ -84,6 +84,11 @@ Maintainer: Burkhard Bornemann
 #define GSMAXP_THERM3    (6)    /* max. number of Gauss points */
 #endif
 
+#ifdef DEBUG
+#define TEST_THERM3             /* compile test routines if ... */
+#undef TEST_THERM3              /* ... not undefined */
+#else
+#endif
 
 /*======================================================================*/
 /* global declarations, variables etc */
@@ -133,10 +138,10 @@ typedef struct _TH3_DATA
   /* anchor and span vectors for sides and edges in param. space */
   /* sides */
   DOUBLE ancsidh[MAXSID_THERM3][NDIM_THERM3];  /* anchors hex */
-  INT dirsidh[MAXSID_THERM3][NDIM_THERM3];  /* base vector directions */
+  DOUBLE dirsidh[MAXSID_THERM3][DIMSID_THERM3][NDIM_THERM3];  /* base vect. */
   /* edges */
   DOUBLE ancedgh[MAXEDG_THERM3][NDIM_THERM3];  /* anchors hex */
-  INT diredgh[MAXEDG_THERM3][NDIM_THERM3];  /* base vector direction */
+  DOUBLE diredgh[MAXEDG_THERM3][NDIM_THERM3];  /* base vector */
 } TH3_DATA;
 
 
@@ -222,7 +227,7 @@ typedef struct _THERM3
 void th3_bop(INT        enod,
              DOUBLE     deriv[MAXNOD_THERM3][NDIM_THERM3],
              DOUBLE     xji[NDIM_THERM3][NDIM_THERM3],
-             DOUBLE     bop[NDIM_THERM3][NUMDOF_THERM3*MAXNOD_THERM3]);
+             DOUBLE     bop[NUMTMGR_THERM3][NUMDOF_THERM3*MAXNOD_THERM3]);
 
 /*---------------------------------------------------------------------*/
 /* file th3_cfg.c */
@@ -232,6 +237,9 @@ void th3_cfg_noderst(ELEMENT *ele,
 		     TH3_DATA *data,
 		     INT inode,
 		     DOUBLE *rst);
+#ifdef TEST_THERM3
+void th3_cfg_test(TH3_DATA *data);
+#endif
 
 /*----------------------------------------------------------------------*/
 /* file th2_hflux.c */
@@ -373,12 +381,14 @@ void th3_shape_deriv(DIS_TYP     typ,
 
 /*----------------------------------------------------------------------*/
 /* file th2_temper.c */
-/* void th2_temper_init(); */
-/* void th2_temper_final(); */
-/* void th2_temper_cal(ELEMENT *ele, */
-/*                      DOUBLE r, */
-/*                      DOUBLE s, */
-/*                      DOUBLE *tem); */
+void th3_temper_init();
+void th3_temper_final();
+void th3_temper_cal(CONTAINER *container,
+                    ELEMENT *ele,
+                    DOUBLE r,
+                    DOUBLE s,
+                    DOUBLE t,
+                    DOUBLE *tem);
 
 /*----------------------------------------------------------------------*/
 #endif /*end of #ifdef D_THERM3 */

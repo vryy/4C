@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
-  \brief file pointers
+\brief file pointers
 
-  <pre>
+<pre>
 Maintainer: Malte Neumann
 neumann@statik.uni-stuttgart.de
 http://www.uni-stuttgart.de/ibs/members/neumann/
@@ -95,4 +95,8 @@ typedef struct _CONTAINER
   DOUBLE        *getvector;     /*!< optimization */
 #endif                        /* stop including optimization code to ccarat */
 
+#ifdef D_TSI
+  INT            disnum_s;   /* structure discretisation index ( ==0 ) */
+  INT            disnum_t;   /* thermo-discretisation index ( ==0 ) */
+#endif
 } CONTAINER;

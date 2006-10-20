@@ -377,44 +377,62 @@ void th3_cfg_init(TH3_DATA *data)
     data->ancsidh[0][0] = 0.0;  /* anchor r-coord */
     data->ancsidh[0][1] = 0.0;  /* anchor s-ccord */
     data->ancsidh[0][2] = -1.0;  /* anchor t-ccord */
-    data->dirsidh[0][0] = 1;  /* if 1 : span vector in r-direction */
-    data->dirsidh[0][1] = 1;  /* if 1 : span vector in s-direction */
-    data->dirsidh[0][2] = 0;  /* if 1 : span vector in t-direction */
+    data->dirsidh[0][0][0] = 1.0;  /* 1st span vector in r-direction */
+    data->dirsidh[0][0][1] = 0.0;  /* 1st span vector in r-direction */
+    data->dirsidh[0][0][2] = 0.0;  /* 1st span vector in r-direction */
+    data->dirsidh[0][1][0] = 0.0;  /* 2nd span vector in s-direction */
+    data->dirsidh[0][1][1] = 1.0;  /* 2nd span vector in s-direction */
+    data->dirsidh[0][1][2] = 0.0;  /* 2nd span vector in s-direction */
     /* side 5 */
     data->ancsidh[5][0] = 0.0;
     data->ancsidh[5][1] = 0.0;
     data->ancsidh[5][2] = 1.0;
-    data->dirsidh[5][0] = 1;
-    data->dirsidh[5][1] = 1;
-    data->dirsidh[5][2] = 0;
+    data->dirsidh[5][0][0] = 1.0;
+    data->dirsidh[5][0][1] = 0.0;
+    data->dirsidh[5][0][2] = 0.0;
+    data->dirsidh[5][1][0] = 0.0;
+    data->dirsidh[5][1][1] = 1.0;
+    data->dirsidh[5][1][2] = 0.0;
     /* side 1 */
     data->ancsidh[1][0] = 0.0;
     data->ancsidh[1][1] = -1.0;
     data->ancsidh[1][2] = 0.0;
-    data->dirsidh[1][0] = 1;
-    data->dirsidh[1][1] = 0;
-    data->dirsidh[1][2] = 1;
+    data->dirsidh[1][0][0] = 1.0;
+    data->dirsidh[1][0][1] = 0.0;
+    data->dirsidh[1][0][2] = 0.0;
+    data->dirsidh[1][1][0] = 0.0;
+    data->dirsidh[1][1][1] = 0.0;
+    data->dirsidh[1][1][2] = 1.0;
     /* side 2 */
     data->ancsidh[2][0] = 1.0;
     data->ancsidh[2][1] = 0.0;
     data->ancsidh[2][2] = 0.0;
-    data->dirsidh[2][0] = 0;
-    data->dirsidh[2][1] = 1;
-    data->dirsidh[2][2] = 1;
+    data->dirsidh[2][0][0] = 0.0;
+    data->dirsidh[2][0][1] = 1.0;
+    data->dirsidh[2][0][2] = 0.0;
+    data->dirsidh[2][1][0] = 0.0;
+    data->dirsidh[2][1][1] = 0.0;
+    data->dirsidh[2][1][2] = 1.0;
     /* side 3 */
     data->ancsidh[3][0] = 0.0;
     data->ancsidh[3][1] = 1.0;
     data->ancsidh[3][2] = 0.0;
-    data->dirsidh[3][0] = 1;
-    data->dirsidh[3][1] = 0;
-    data->dirsidh[3][2] = 1;
+    data->dirsidh[3][0][0] = 1.0;
+    data->dirsidh[3][0][1] = 0.0;
+    data->dirsidh[3][0][2] = 0.0;
+    data->dirsidh[3][1][0] = 0.0;
+    data->dirsidh[3][1][1] = 0.0;
+    data->dirsidh[3][1][2] = 1.0;
     /* side 4 */
     data->ancsidh[4][0] = -1.0;
     data->ancsidh[4][1] = 0.0;
     data->ancsidh[4][2] = 0.0;
-    data->dirsidh[4][0] = 0;
-    data->dirsidh[4][1] = 1;
-    data->dirsidh[4][2] = 1;
+    data->dirsidh[4][0][0] = 0.0;
+    data->dirsidh[4][0][1] = 1.0;
+    data->dirsidh[4][0][2] = 0.0;
+    data->dirsidh[4][1][0] = 0.0;
+    data->dirsidh[4][1][1] = 0.0;
+    data->dirsidh[4][1][2] = 1.0;
   }
     
 
@@ -548,86 +566,86 @@ void th3_cfg_init(TH3_DATA *data)
     data->ancedgh[0][0] = 0.0;
     data->ancedgh[0][1] = -1.0;
     data->ancedgh[0][2] = -1.0;
-    data->diredgh[0][0] = 1;  /* if +/-1 : span vector in pos/neg r-direction */
-    data->diredgh[0][1] = 0;  /* if +/-1 : span vector in pos/neg s-direction */
-    data->diredgh[0][2] = 0;  /* if +/-1 : span vector in pos/neg t-direction */
+    data->diredgh[0][0] = 1.0;  /* r-compo of base vector in direct. of edge */
+    data->diredgh[0][1] = 0.0;  /* s-compo of base vector in direct. of edge */
+    data->diredgh[0][2] = 0.0;  /* t-compo of base vector in direct. of edge */
     /* edge 1 */
     data->ancedgh[1][0] = 1.0;
     data->ancedgh[1][1] = 0.0;
     data->ancedgh[1][2] = -1.0;
-    data->diredgh[1][0] = 0;
-    data->diredgh[1][1] = 1;
-    data->diredgh[1][2] = 0;
+    data->diredgh[1][0] = 0.0;
+    data->diredgh[1][1] = 1.0;
+    data->diredgh[1][2] = 0.0;
     /* edge 2 */
     data->ancedgh[2][0] = 0.0;
     data->ancedgh[2][1] = 1.0;
     data->ancedgh[2][2] = -1.0;
-    data->diredgh[2][0] = -1;
-    data->diredgh[2][1] = 0;
-    data->diredgh[2][2] = 0;
+    data->diredgh[2][0] = -1.0;
+    data->diredgh[2][1] = 0.0;
+    data->diredgh[2][2] = 0.0;
     /* edge 3 */
     data->ancedgh[3][0] = -1.0;
     data->ancedgh[3][1] = 0.0;
     data->ancedgh[3][2] = -1.0;
-    data->diredgh[3][0] = 0;
-    data->diredgh[3][1] = -1;
-    data->diredgh[3][2] = 0;
+    data->diredgh[3][0] = 0.0;
+    data->diredgh[3][1] = -1.0;
+    data->diredgh[3][2] = 0.0;
     /* edge 8 */
     data->ancedgh[8][0] = 0.0;
     data->ancedgh[8][1] = -1.0;
     data->ancedgh[8][2] = 1.0;
-    data->diredgh[8][0] = 1;
-    data->diredgh[8][1] = 0;
-    data->diredgh[8][2] = 0;
+    data->diredgh[8][0] = 1.0;
+    data->diredgh[8][1] = 0.0;
+    data->diredgh[8][2] = 0.0;
     /* edge 9 */
     data->ancedgh[9][0] = 1.0;
     data->ancedgh[9][1] = 0.0;
     data->ancedgh[9][2] = 1.0;
-    data->diredgh[9][0] = 0;
-    data->diredgh[9][1] = 1;
-    data->diredgh[9][2] = 0;
+    data->diredgh[9][0] = 0.0;
+    data->diredgh[9][1] = 1.0;
+    data->diredgh[9][2] = 0.0;
     /* edge 10 */
     data->ancedgh[10][0] = 0.0;
     data->ancedgh[10][1] = 1.0;
     data->ancedgh[10][2] = 1.0;
-    data->diredgh[10][0] = -1;
-    data->diredgh[10][1] = 0;
-    data->diredgh[10][2] = 0;
+    data->diredgh[10][0] = -1.0;
+    data->diredgh[10][1] = 0.0;
+    data->diredgh[10][2] = 0.0;
     /* edge 11 */
     data->ancedgh[11][0] = -1.0;
     data->ancedgh[11][1] = 0.0;
     data->ancedgh[11][2] = 1.0;
-    data->diredgh[11][0] = 0;
-    data->diredgh[11][1] = -1;
-    data->diredgh[11][2] = 0;
+    data->diredgh[11][0] = 0.0;
+    data->diredgh[11][1] = -1.0;
+    data->diredgh[11][2] = 0.0;
     /* edge 4 */
     data->ancedgh[4][0] = -1.0;
     data->ancedgh[4][1] = -1.0;
     data->ancedgh[4][2] = 0.0;
-    data->diredgh[4][0] = 0;
-    data->diredgh[4][1] = 0;
-    data->diredgh[4][2] = 1;
+    data->diredgh[4][0] = 0.0;
+    data->diredgh[4][1] = 0.0;
+    data->diredgh[4][2] = 1.0;
     /* edge 5 */
     data->ancedgh[5][0] = 1.0;
     data->ancedgh[5][1] = -1.0;
     data->ancedgh[5][2] = 0.0;
-    data->diredgh[5][0] = 0;
-    data->diredgh[5][1] = 0;
-    data->diredgh[5][2] = 1;
+    data->diredgh[5][0] = 0.0;
+    data->diredgh[5][1] = 0.0;
+    data->diredgh[5][2] = 1.0;
     /* edge 6 */
     data->ancedgh[6][0] = 1.0;
     data->ancedgh[6][1] = 1.0;
     data->ancedgh[6][2] = 0.0;
-    data->diredgh[6][0] = 0;
-    data->diredgh[6][1] = 0;
-    data->diredgh[6][2] = 1;
+    data->diredgh[6][0] = 0.0;
+    data->diredgh[6][1] = 0.0;
+    data->diredgh[6][2] = 1.0;
     /* edge 7 */
     data->ancedgh[7][0] = -1.0;
     data->ancedgh[7][1] = 1.0;
     data->ancedgh[7][2] = 0.0;
-    data->diredgh[7][0] = 0;
-    data->diredgh[7][1] = 0;
-    data->diredgh[7][2] = 1;
+    data->diredgh[7][0] = 0.0;
+    data->diredgh[7][1] = 0.0;
+    data->diredgh[7][2] = 1.0;
   }
   
 
@@ -741,6 +759,111 @@ void th3_cfg_noderst(ELEMENT *ele,
   return;
 }  /* end of th3_cfg_noderst */
 
+
+/*======================================================================*/
+/*!
+\brief Test parametric geometry and topology of THERM3 element
+
+\author bborn
+\date 10/06
+*/
+#ifdef TEST_THERM3 
+
+void th3_cfg_test(TH3_DATA *data)
+{
+  FILE *filetest;
+  INT inod, jnod, idim, isid, iedg;
+
+    /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_enter("th3_cfg_test");
+#endif
+
+  /*--------------------------------------------------------------------*/
+  /* open test file */
+  filetest = fopen("th3_cfg_test.out", "w");
+
+  /*====================================================================*/
+  /* hexahedra geometry and topology */
+
+  /*--------------------------------------------------------------------*/
+  /* loop all nodes and write to file */
+  for (inod=0; inod<MAXNOD_THERM3; inod++)
+  {
+    fprintf(filetest, "# Node %i\n", inod);
+    for (idim=0; idim<NDIM_THERM3; idim++)
+    {
+      fprintf(filetest, " %e", data->nodhrst[inod][idim]);
+    }
+    fprintf(filetest, "\n");    
+  }
+  fprintf(filetest, "\n\n");
+
+  /*--------------------------------------------------------------------*/
+  /* loop sides */
+  for (isid=0; isid<MAXSID_THERM3; isid++)
+  {
+    fprintf(filetest, "# Side %i\n", isid);
+    for (inod=0; inod<MAXNS_THERM3; inod++)
+    {
+      jnod = data->nodsidh[isid][inod];
+      for (idim=0; idim<NDIM_THERM3; idim++)
+      {
+	fprintf(filetest, " %e", data->nodhrst[jnod][idim]);
+      }
+      fprintf(filetest, "\n");
+    }
+    fprintf(filetest, "\n\n");
+  }
+  fprintf(filetest, "\n\n");
+
+  /*--------------------------------------------------------------------*/
+  /* loop linear edges */
+  for (iedg=0; iedg<MAXEDG_THERM3; iedg++)
+  {
+    fprintf(filetest, "# Edge %i\n", iedg);
+    for (inod=0; inod<MAXNE_THERM3-1; inod++)
+    {
+      jnod = data->nodedghl[iedg][inod];
+      for (idim=0; idim<NDIM_THERM3; idim++)
+      {
+	fprintf(filetest, " %e", data->nodhrst[jnod][idim]);
+      }
+      fprintf(filetest, "\n");
+    }
+    fprintf(filetest, "\n\n");
+  }
+  fprintf(filetest, "\n\n");
+
+  /*--------------------------------------------------------------------*/
+  /* loop quadratic edges */
+  for (iedg=0; iedg<MAXEDG_THERM3; iedg++)
+  {
+    fprintf(filetest, "# Edge %i\n", iedg);
+    for (inod=0; inod<MAXNE_THERM3; inod++)
+    {
+      jnod = data->nodedghq[iedg][inod];
+      for (idim=0; idim<NDIM_THERM3; idim++)
+      {
+	fprintf(filetest, " %e", data->nodhrst[jnod][idim]);
+      }
+      fprintf(filetest, "\n");
+    }
+    fprintf(filetest, "\n\n");
+  }
+  fprintf(filetest, "\n\n");
+  
+  /*--------------------------------------------------------------------*/
+  fclose(filetest);
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}  /* end of th3_cfg_test */
+
+#endif  /* end of #ifdef TEST_THERM3 */
 
 /*======================================================================*/
 #endif  /* end of #ifdef D_THERM3 */

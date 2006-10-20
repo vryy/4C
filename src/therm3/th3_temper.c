@@ -1,8 +1,9 @@
 /*======================================================================*/
 /*!
 \file
-\brief contains the routine 'w1_funct_deriv' which calculates the shape
-       functions and derivatives for a wall element
+\brief Calculate the temperature at given point in parameter space.
+       This point is mostly a Gauss point of the BRICK1 element
+       stiffness matrix / internal force vector.
 
 <pre>
 Maintainer: Burkhard Bornemann
@@ -12,16 +13,16 @@ Maintainer: Burkhard Bornemann
 </pre>
 
 \author bborn
-\date 08/06
+\date 10/06
 */
 
 /*----------------------------------------------------------------------*/
-#ifdef D_THERM2
+#ifdef D_THERM3
 
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "../headers/standardtypes.h"
-#include "therm2.h"
+#include "therm3.h"
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -30,7 +31,7 @@ Maintainer: Burkhard Bornemann
 \author bborn
 \date 03/06
 */
-extern struct _GENPROB genprob;
+extern GENPROB genprob;
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -61,14 +62,14 @@ static DOUBLE **deriv;
 
 /*======================================================================*/
 /*!
-\brief Initialise locally globals
+\brief Initialise local globals
 
 Allocate local globals
 
 \author bborn
-\date 03/06
+\date 10/06
 */
-void th2_temper_init()
+void th3_temper_init()
 {
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -79,9 +80,9 @@ void th2_temper_init()
   /* allocation */
   if (allocated == 0)
   {
-    nodtem = amdef("nodtem", &nodtem_a, MAXNOD_THERM2, 1, "DV");
-    shape = amdef("shape", &shape_a, MAXNOD_THERM2, 1, "DV");
-    deriv = amdef("deriv", &deriv_a, NDIM_THERM2, MAXNOD_THERM2, "DA");
+    nodtem = amdef("nodtem", &nodtem_a, MAXNOD_THERM3, 1, "DV");
+    shape = amdef("shape", &shape_a, MAXNOD_THERM3, 1, "DV");
+    deriv = amdef("deriv", &deriv_a, NDIM_THERM3, MAXNOD_THERM3, "DA");
     /* flag alloaction */
     allocated = 1;
   }
@@ -96,19 +97,19 @@ void th2_temper_init()
 
 /*=====================================================================*/
 /*!
-\brief Finalise locally globals
+\brief Finalise local globals
 
 Deallocate local globals
 
 \author bborn
-\date 03/06
+\date 10/06
 */
-void th2_temper_final()
+void th3_temper_final()
 {
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
-  dstrc_enter("th2_temper_final");
+  dstrc_enter("th3_temper_final");
 #endif
 
   /*--------------------------------------------------------------------*/
@@ -127,7 +128,7 @@ void th2_temper_final()
   dstrc_exit();
 #endif
   return;
-}  /* end of th2_temper_final */
+}  /* end of th3_temper_final */
 
 
 /*======================================================================*/
@@ -139,36 +140,39 @@ for the linear planar heat conduction problem.
 
 \param   *container     CONTAINER   (i)   container data
 \param   *ele           ELEMENT     (i)   pointer to current element
-\param    r             DOUBLE      (i)   r-coord of parameter (r,s)
-\param    s             DOUBLE      (i)   s-coord of parameter (r,s)
+\param    r             DOUBLE      (i)   r-coord of parameter (r,s,t)
+\param    s             DOUBLE      (i)   s-coord of parameter (r,s,t)
+\param    t             DOUBLE      (i)   t-coord of parameter (r,s,t)
 \param   *tem           DOUBLE      (o)   temperature at (r,s)
 
 \return void
 
 \author bborn
-\date 08/06
+\date 10/06
 */
-void th2_temper_cal(CONTAINER *container,
+void th3_temper_cal(CONTAINER *container,
                     ELEMENT *ele,
                     DOUBLE r,
                     DOUBLE s,
+                    DOUBLE t,
                     DOUBLE *tem)
 {
   ARRAY_POSITION_SOL *isol 
     = &(field[genprob.numtf].dis[container->disnum_t].ipos.isol); 
   INT nelenod;
   INT neledof;
+  DOUBLE rr, ss, tt;  /* Gauss coordinate in THERM3 parameter space */
   INT k;  /* loop index */
 
   /*====================================================================*/
 #ifdef DEBUG
-  dstrc_enter("th2_temper_cal");
+  dstrc_enter("th3_temper_cal");
 #endif
 
   /*--------------------------------------------------------------------*/
   /* dimensions */
   nelenod = ele->numnp;
-  neledof = NUMDOF_THERM2 * nelenod;
+  neledof = NUMDOF_THERM3 * nelenod;
 
   /*--------------------------------------------------------------------*/
   /* reset to zero nodal temper., shape funct. and derivatives */
@@ -177,8 +181,31 @@ void th2_temper_cal(CONTAINER *container,
   amzero(&deriv_a);
 
   /*--------------------------------------------------------------------*/
+  /* transform parametric coordinates if necessary */
+  switch (ele->e.th3->struct_ele->eltyp)
+  {
+#ifdef D_BRICK1
+    case el_brick1:
+      rr = s;
+      ss = -r;
+      tt = t;
+      break;
+#endif
+#ifdef D_SOLID3
+    case el_solid3:
+      rr = r;
+      ss = s;
+      tt = t;
+      break;
+#endif
+    default:
+      dserror("Element type is not permissible!");
+      break;
+  }
+
+  /*--------------------------------------------------------------------*/
   /* get shape funtions at (r,s) */
-  th2_shape_deriv(shape, deriv, r, s, ele->distyp, 0);
+  th3_shape_deriv(ele->distyp, rr, ss, tt, 0, shape, deriv);
 
   /*--------------------------------------------------------------------*/
   /* current nodal temperature */
@@ -200,7 +227,7 @@ void th2_temper_cal(CONTAINER *container,
   dstrc_exit();
 #endif
   return;
-}  /* end of th2_temper_cal */
+}  /* end of th3_temper_cal */
 
 #endif /* end of #ifdef D_THERM2 */
 /*! @} (documentation module close)*/

@@ -119,8 +119,27 @@ if (ierr)
    if (strncmp(buffer,"ND123",3)==0)       ele->e.c1->stresstyp = c1_np123;
    if (strncmp(buffer,"NDEQS",3)==0)       ele->e.c1->stresstyp = c1_npeqs;
 }
+/*--------------------------------------------------- read TSI coupling */
+#ifdef D_TSI
+ele->e.c1->tsi_couptyp = tsi_coup_none;  /* default */
+frchar("TSI_COUPTYP",buffer,&ierr);
+if (ierr)
+{
+  if (strncmp(buffer,"None",4)==0)
+  {
+    ele->e.c1->tsi_couptyp = tsi_coup_none;
+  }
+  if (strncmp(buffer,"Thermconf",9)==0)
+  {
+    ele->e.c1->tsi_couptyp = tsi_coup_thermconf;
+  }
+  if (strncmp(buffer,"Thermcreate",11)==0)
+  {
+    ele->e.c1->tsi_couptyp = tsi_coup_thermcreate;
+  }
+}
+#endif
 /*----------------------------------------------------------------------*/
-
 #ifdef DEBUG
 dstrc_exit();
 #endif

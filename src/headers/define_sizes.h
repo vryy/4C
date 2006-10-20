@@ -234,45 +234,20 @@ Maintainer: Malte Neumann
 #define MAXNOD_WALL1     (9)
 #endif
 
+
 /*----------------------------------------------------------------------*
  | therm2                                                   bborn 03/06 |
+ *----------------------------------------------------------------------*
+ | all defines of THERM2 in therm2.h                                    |
  *----------------------------------------------------------------------*/
-#ifndef NDIM_THERM2
-#define NDIM_THERM2      (2)    /* planar problem also genprob.ndim */
-#endif
-#ifndef MAXNOD_THERM2
-#define MAXNOD_THERM2    (9)    /* maximum of element nodes :
-                                 * max quad9 */
-#endif
-#ifndef NUMDOF_THERM2
-#define NUMDOF_THERM2    (1)    /* number of thermal DOFs at each node :
-                                 * temperature */
-#endif
-#ifndef NUMPLST_THERM2
-#define NUMPLST_THERM2   (2)    /* number of plane states :
-                                 * plane temperature gradient,
-                                 * plane heat flux */
-#endif
-#ifndef NUMTMGR_THERM2
-#define NUMTMGR_THERM2   (2)    /* number of temperature gradients */
-#endif
-#ifndef NUMHFLX_THERM2
-#define NUMHFLX_THERM2   (3)    /* number of heat fluxes : q_x, q_y, q_z */
-#endif
-#ifndef GLINTC_THERM2
-#define GLINTC_THERM2    (6)    /* line domain Gauss integration cases */
-#endif
-#ifndef GLMAXP_THERM2
-#define GLMAXP_THERM2    (6)    /* line domain max. number of
-                                 * Gauss points */
-#endif
-#ifndef GTINTC_THERM2
-#define GTINTC_THERM2    (11)   /* triangle domain Gauss
-                                 * integration cases */
-#endif
-#ifndef GTMAXP_THERM2
-#define GTMAXP_THERM2    (13)   /* max. number of Gauss points */
-#endif
+
+
+/*----------------------------------------------------------------------*
+ | therm3                                                   bborn 09/06 |
+ *----------------------------------------------------------------------*
+ | all defines of THERM3 in therm3.h                                    |
+ *----------------------------------------------------------------------*/
+
 
 /*----------------------------------------------------------------------*
  | hex20 elements                                                      |

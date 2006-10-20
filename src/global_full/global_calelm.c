@@ -39,6 +39,10 @@
 #include "../therm2/therm2.h"
 #endif
 
+#ifdef D_THERM3
+#include "../therm3/therm3.h"
+#endif
+
 /*----------------------------------------------------------------------*
   |                                                       m.gee 06/01  |
   | general problem data                                               |
@@ -447,6 +451,17 @@ void calelm(FIELD        *actfield,     /* active field */
         break;
 #endif
 
+#ifdef D_THERM3
+      case el_therm3:
+        container->handsize = 0;
+        container->handles  = NULL;
+        therm3(actpart,actintra,actele,
+	       &estif_global,&emass_global,&intforce_global,
+	       action, container);
+        break;
+#endif
+
+
    case el_none:
       dserror("Typ of element unknown");
    break;
@@ -500,7 +515,7 @@ void calelm(FIELD        *actfield,     /* active field */
    case calc_fluid_amatrix          : assemble_action = assemble_do_nothing; break;
    case calc_fluid_f2pro_rhs_both   : assemble_action = assemble_two_matrix; break;
 #ifdef D_TSI
-   case calc_therm_stiff            : assemble_action = assemble_one_matrix; break;
+   case calc_therm_tang             : assemble_action = assemble_one_matrix; break;
    case calc_therm_heatload         : assemble_action = assemble_do_nothing; break;
    case calc_therm_heatflux         : assemble_action = assemble_do_nothing; break;
 #endif
@@ -681,8 +696,8 @@ case calc_fluid_shearvelo        : assemble_action = assemble_do_nothing;   brea
 case calc_fluid_f2pro            : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_amatrix          : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_f2pro_rhs_both   : assemble_action = assemble_two_exchange; break;
-#ifdef D_THERM2
-case calc_therm_stiff            : assemble_action = assemble_one_exchange; break;
+#ifdef D_TSI
+case calc_therm_tang             : assemble_action = assemble_one_exchange; break;
 case calc_therm_heatload         : assemble_action = assemble_do_nothing;   break;
 case calc_therm_heatflux         : assemble_action = assemble_do_nothing;   break;
 #endif
@@ -754,6 +769,11 @@ case calc_fluid_shearvelo        : assemble_action = assemble_do_nothing;   brea
 case calc_fluid_f2pro            : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_amatrix          : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_f2pro_rhs_both   : assemble_action = assemble_do_nothing;   break;
+#ifdef D_TSI
+case calc_therm_tang             : assemble_action = assemble_close_1matrix; break;
+case calc_therm_heatload         : assemble_action = assemble_do_nothing;   break;
+case calc_therm_heatflux         : assemble_action = assemble_do_nothing;   break;
+#endif
 default: dserror("Unknown type of assembly 3"); break;
 }
 assemble(sysarray1,
@@ -846,9 +866,8 @@ INT is_ale2=0;
 INT is_beam3=0;
 INT is_interf=0;
 INT is_wallge=0;
-#ifdef D_THERM2
 INT is_therm2=0;
-#endif
+INT is_therm3=0;
 
   ELEMENT *actele;              /* active element */
   /*----------------------------------------------------------------------*/
@@ -933,6 +952,11 @@ for (i=0; i<actfield->dis[disnum].numele; i++)
 #ifdef D_THERM2
    case el_therm2:
       is_therm2=1;
+   break;
+#endif
+#ifdef D_THERM3
+   case el_therm3:
+      is_therm3=1;
    break;
 #endif
    default:
@@ -1116,6 +1140,16 @@ container->kstep = 0;
         action,container);
   }
 #endif
+  /*------------------------------ init all kind of routines for therm2 */
+#ifdef D_THERM3
+  if (is_therm3==1)
+  {
+    container->handsize = 0;
+    container->handles  = NULL;
+    therm3(actpart,NULL,NULL,&estif_global,&emass_global,&intforce_global,
+	   action,container);
+  }
+#endif
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_exit();
@@ -1155,9 +1189,8 @@ void calreduce(
   INT is_beam3=0;
   INT is_interf=0;
   INT is_wallge=0;
-#ifdef D_THERM2
   INT is_therm2=0;
-#endif
+  INT is_therm3=0;
 
   ELEMENT *actele;
 
@@ -1209,6 +1242,11 @@ void calreduce(
 #ifdef D_THERM2
       case el_therm2:
         is_therm2=1;
+        break;
+#endif
+#ifdef D_THERM3
+      case el_therm3:
+        is_therm3=1;
         break;
 #endif
       default:
@@ -1278,6 +1316,12 @@ void calreduce(
   /*------------------------------------------- reduce results for therm2 */
 #ifdef D_THERM2
   if (is_therm2==1)
+  {
+  }
+#endif
+  /*------------------------------------------- reduce results for therm3 */
+#ifdef D_THERM3
+  if (is_therm3==1)
   {
   }
 #endif

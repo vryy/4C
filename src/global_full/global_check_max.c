@@ -70,6 +70,13 @@ Maintainer: Malte Neumann
 #include "../therm2/therm2.h"
 #endif
 
+#ifdef D_THERM3
+#include "../therm3/therm3.h"
+#endif
+
+
+
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -261,6 +268,14 @@ for(i=0; i<genprob.numfld; i++)  /* loop all fields */
 #ifdef D_THERM2
         case el_therm2:
           gauss = actele->e.th2->nGP[0]*actele->e.th2->nGP[1];
+          break;
+#endif
+
+#ifdef D_THERM3
+        case el_therm3:
+          gauss = actele->e.th3->gpnum[0]
+	        * actele->e.th3->gpnum[1]
+	        * actele->e.th3->gpnum[2];
           break;
 #endif
 

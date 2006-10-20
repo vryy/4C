@@ -69,7 +69,7 @@ void th3_inp(ELEMENT *ele)
     frint_n("HEX8", &(ele->lm[0]), ele->numnp, &ierr);
     if (ierr != 1)
     {
-      dserror("Reading of ELEMENT Topology failed");
+      dserror("Reading of THERM3 HEX8 element topology failed");
     }
   }
 
@@ -86,7 +86,7 @@ void th3_inp(ELEMENT *ele)
     frint_n("HEX20", &(ele->lm[0]), ele->numnp, &ierr);
     if (ierr != 1)
     {
-      dserror("Reading of ELEMENT Topology failed");
+      dserror("Reading of THERM3 HEX20 element topology failed");
     }
   }
   
@@ -103,7 +103,7 @@ void th3_inp(ELEMENT *ele)
     frint_n("HEX27", &(ele->lm[0]), ele->numnp, &ierr);
     if (ierr != 1) 
     {
-      dserror("Reading of ELEMENT Topology failed");
+      dserror("Reading of THERM3 HEX27 element topology failed");
     }
   }
 
@@ -120,7 +120,7 @@ void th3_inp(ELEMENT *ele)
     frint_n("TET4", &(ele->lm[0]), ele->numnp, &ierr);
     if (ierr != 1)
     {
-      dserror("Reading of ELEMENT Topology failed");
+      dserror("Reading of THERM3 TET10 element topology failed");
     }
   }
 
@@ -137,7 +137,7 @@ void th3_inp(ELEMENT *ele)
     frint_n("TET10", &(ele->lm[0]), ele->numnp, &ierr);
     if (ierr != 1)
     {
-      dserror("Reading of ELEMENT Topology failed");
+      dserror("Reading of THERM3 TET10 element topology failed");
     }
   }
 
@@ -153,7 +153,7 @@ void th3_inp(ELEMENT *ele)
   frint("MAT", &(ele->mat), &ierr);
   if (ierr != 1)
   {
-    dserror("Reading of BRICK1 element failed");
+    dserror("Reading of THERM3 element failed");
   }
   
   /*--------------------------------------------------------------------*/
@@ -161,7 +161,7 @@ void th3_inp(ELEMENT *ele)
   frint_n("GP", &(ele->e.th3->gpnum[0]), NDIM_THERM3, &ierr);
   if (ierr != 1)
   {
-    dserror("Reading of BRICK1 element failed: GP not found!");
+    dserror("Reading of THERM3 element failed: GP not found!");
   }
   th3_intg_eleinp(ele, &ierr);
   if (ierr != 1)
@@ -192,23 +192,6 @@ void th3_inp(ELEMENT *ele)
       dserror("Updated Lagrange for THERM3 is not implemented!");
     }
   }
-  /* OLD CODE SNIPPET --- REMOVE SOONISH */
-/*   frchk("KIN_GEOLIN", &ierr); */
-/*   if (ierr == 1) */
-/*   { */
-/*     ele->e.th3->kintype = th3_geo_lin; */
-/*   } */
-/*   frchk("KIN_TOTLAG", &ierr); */
-/*   if (ierr == 1) */
-/*   { */
-/*     ele->e.th3->kintype = th3_total_lagr; */
-/*   } */
-/*   frchk("KIN_UPDLAG", &ierr); */
-/*   if (ierr == 1) */
-/*   { */
-/*     ele->e.th3->kintype = th3_updated_lagr; */
-/*     dserror("Updated Lagrange for THERM2 is not implemented!"); */
-/*   } */
 
   /*--------------------------------------------------------------------*/
   /* read local or global stresses */
@@ -216,6 +199,10 @@ void th3_inp(ELEMENT *ele)
   frchar("HFLUX", buffer, &ierr);
   if (ierr == 1)
   {
+    if (strncmp(buffer,"None",4) == 0)
+    {
+      ele->e.th3->hfluxtype = th3_hflux_none;
+    }
     if (strncmp(buffer,"Gpxyz",5) == 0)
     {
       ele->e.th3->hfluxtype = th3_hflux_gpxyz;

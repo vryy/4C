@@ -82,38 +82,40 @@ switch (*action)
 /*------------------------------------------- init the element routines */
 case calc_struct_init:
    c1init(actpart, mat);
-   c1_cint(NULL,NULL,NULL,NULL,NULL,NULL,1);
+   c1_cint(NULL,NULL,NULL,NULL,NULL,NULL,1,NULL);
    c1_eleload(NULL,NULL,NULL,1);
 break;/*----------------------------------------------------------------*/
 /*----------------------------------- calculate linear stiffness matrix */
 case calc_struct_linstiff:
    actmat = &(mat[ele->mat-1]);
-   c1_cint(ele,&actdata,actmat,estif_global,NULL,NULL,0);
+   c1_cint(ele,&actdata,actmat,estif_global,NULL,NULL,0,container);
 break;/*----------------------------------------------------------------*/
 /*---------------------------------calculate nonlinear stiffness matrix */
 case calc_struct_nlnstiff:
    actmat = &(mat[ele->mat-1]);
-   c1_cint(ele,&actdata,actmat,estif_global,NULL,intforce,0);
+   c1_cint(ele,&actdata,actmat,estif_global,NULL,intforce,0,container);
 break;/*----------------------------------------------------------------*/
 /*--------------- calculate linear stiffness and consistent mass matrix */
 case calc_struct_linstiffmass:
    actmat = &(mat[ele->mat-1]);
-   c1_cint(ele,&actdata,actmat,estif_global,emass_global,intforce,5);
+   c1_cint(ele,&actdata,actmat,estif_global,emass_global,intforce,5,
+           container);
 break;/*----------------------------------------------------------------*/
 /*-------------------- calculate linear stiffness and lumpedmass matrix */
 case calc_struct_linstifflmass:
    actmat = &(mat[ele->mat-1]);
-   c1_cint(ele,&actdata,actmat,estif_global,NULL,intforce,4);
+   c1_cint(ele,&actdata,actmat,estif_global,NULL,intforce,4,container);
 break;/*----------------------------------------------------------------*/
 /*----------------------- calculate nonlinear stiffness and mass matrix */
 case calc_struct_nlnstiffmass:
    actmat = &(mat[ele->mat-1]);
-   c1_cint(ele,&actdata,actmat,estif_global,emass_global,intforce,5);
+   c1_cint(ele,&actdata,actmat,estif_global,emass_global,intforce,5,
+           container);
 break;/*----------------------------------------------------------------*/
 /*-------------------------------- calculate stresses in a certain step */
 case calc_struct_stress:
    actmat = &(mat[ele->mat-1]);
-   c1_cint(ele,&actdata,actmat,estif_global,NULL,NULL,3);
+   c1_cint(ele,&actdata,actmat,estif_global,NULL,NULL,3,container);
 break;/*----------------------------------------------------------------*/
 /*------------------------------ calculate load vector of element loads */
 case calc_struct_eleload:
@@ -128,7 +130,7 @@ case calc_struct_update_istep:
    if(actmat->mattyp == m_nhmfcc)   break;
    if(actmat->mattyp == m_neohooke) break;
    if(actmat->mattyp == m_fluid)    break;
-   c1_cint(ele,&actdata,actmat,estif_global,NULL,intforce,2);
+   c1_cint(ele,&actdata,actmat,estif_global,NULL,intforce,2,container);
 break;/*----------------------------------------------------------------*/
 #ifdef D_OPTIM                   /* include optimization code to ccarat */
 /*-------------- init the element integration routines for optimization */

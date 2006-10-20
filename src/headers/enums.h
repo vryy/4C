@@ -145,6 +145,8 @@ typedef enum _ELEMENT_TYP
                        el_wallge,      /* gradient enhanced wall element */
                        el_therm2,      /* 2D thermal element
                                         * (planar heat conduction) */
+                       el_therm3,      /* 3D thermal element 
+                                        * (spatial heat conduction) */
                        el_count        /* The number of known
                                         * elements. This must be the
                                         * last entry! */
@@ -169,8 +171,9 @@ typedef enum _ELEMENT_TYP
       "ale3",                                                           \
       "axishell",                                                       \
       "interf",                                                         \
-      "therm2",                                                         \
       "wallge",                                                         \
+      "therm2",                                                         \
+      "therm3",                                                         \
       NULL  }
 
 
@@ -346,7 +349,7 @@ typedef enum _CALC_ACTION
                        put_optvar,
                        /* thermal */
                        calc_therm_init,  /* initialise thermal calc. */
-                       calc_therm_stiff,  /* stiffness matrix */
+                       calc_therm_tang,  /* tangential matrix */
                        calc_therm_heatload,  /* external heat source + BC */
                        calc_therm_heatflux,  /* postproc. heat flux */
                        calc_therm_final  /* finalise thermal calc. */

@@ -211,14 +211,14 @@ this routine is a try to organise the integration parameters
 different. ALL paramters are stored in FLUID_DATA, so that this
 routine has to be (hopefully) called only once!!!
 
-\param  *data   THERM2_DATA  (o)  prepare quadrature data 
+\param  *data   TH2_DATA     (o)  prepare quadrature data 
 \return void
 
 \author bborn
 \date 03/06
 */
 /*----------------------------------------------------------------------*/
-void th2_intg_init(THERM2_DATA *data)
+void th2_intg_init(TH2_DATA *data)
 
 {
   INT i, k, intc;  /* counters */

@@ -20,7 +20,7 @@ Maintainer: Burkhard Bornemann
 
 /*!
 \addtogroup THERM2
-*//*! @{ (documentation module open)*/
+*//*! @{ (Documentation module open)*/
 
 
 /*----------------------------------------------------------------------*/
@@ -190,7 +190,7 @@ Useful for compass-based identification of element edges
 \date 03/06
 */
 void th2_load_heat(ELEMENT *ele,  /* actual element */
-                   THERM2_DATA *data,
+                   TH2_DATA *data,
                    DOUBLE *loadvec, /* global element load vector fext */
                    INT imyrank)
 {
@@ -222,8 +222,8 @@ void th2_load_heat(ELEMENT *ele,  /* actual element */
   /* variables for boundary integration */
   INT foundline;  /* flag for lineload present or not       */
   INT ngline;  /* number of geometrylines to the element */
-  GLINE *gline[4];  /* geometrylines of the element           */
-  NEUM_CONDITION *lineneum[4];  /* short grep on line-neum. conditions    */
+  GLINE *gline[MAXEDG_THERM2];  /* geometry lines of the element */
+  NEUM_CONDITION *lineneum[MAXEDG_THERM2]; /* short line-neum. conditions */
   INT line;  /* looper over lines                      */
   INT ngnode;  /* number of geometry-nodes on g-line     */
   INT nil;  /* number of GP's in for triangle  */
@@ -231,7 +231,7 @@ void th2_load_heat(ELEMENT *ele,  /* actual element */
   DOUBLE gls[GLINTC_THERM2];  /* GP s-coords on edge */
   DOUBLE glw[GLINTC_THERM2];  /* GP weight on edge */
   DOUBLE ds;  /* dx/dr line increment for line integration */
-  DOUBLE facline;  /*integration factor for line integration */
+  DOUBLE facline;  /* integration factor for line integration */
   INT loadadd;  /* flag ==1 load is going to be added */
   DOUBLE forceline[NUMDOF_THERM2];  /* lineload value in th-direction (inp) */
 
@@ -355,7 +355,7 @@ void th2_load_heat(ELEMENT *ele,  /* actual element */
   /* boundary load ==> heat flux on edge/line */
   /* integration of line loads on lines adjacent to this element */
   /*--------------------------------------------------------------------*/
-  /* check for presence of line loads */
+  /* check generally for presence of line loads */
   foundline = 0;
   /* total number of lines/edges of this element */
   ngline = ele->g.gsurf->ngline;
@@ -609,6 +609,9 @@ void th2_load_heat(ELEMENT *ele,  /* actual element */
     {
       for (idof=0; idof<numdf; idof++)
       {
+#ifdef PBB
+        printf("ele %d load %d %d : %f\n", ele->Id, idof, inode, eload[idof][inode]);
+#endif
         loadvec[inode*numdf+idof] += eload[idof][inode];
       }
     }

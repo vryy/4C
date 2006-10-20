@@ -42,8 +42,8 @@ void th2_inp(ELEMENT *ele)
   INT i;
   INT ierr=0;
   char buffer[50];
-  INT theGP[2];  /* the number of Gauss points */
 
+  /*--------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_enter("th2_inp");
 #endif
@@ -58,7 +58,7 @@ void th2_inp(ELEMENT *ele)
   }
 
   /*--------------------------------------------------------------------*/
-  /* read elements topology */
+  /* read element topology */
   frchk("QUAD4", &ierr);
   if (ierr == 1)
   {
@@ -254,9 +254,8 @@ void th2_inp(ELEMENT *ele)
   dstrc_exit();
 #endif
 
-return;
-
-} /* end of th2_inp() */
+return;}
+/* end of th2_inp() */
 
 /*======================================================================*/
 #endif /* end of #ifdef D_THERM2 */

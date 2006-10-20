@@ -37,6 +37,9 @@ Maintainer: Malte Neumann
 #ifdef D_THERM2
   #include "../therm2/therm2.h"
 #endif
+#ifdef D_THERM3
+  #include "../therm3/therm3.h"
+#endif
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | structure of flags to control output                                 |
@@ -330,6 +333,11 @@ void out_general()
 #ifdef D_THERM2
           case el_therm2:
             fprintf(out,"ELE glob_Id %6d loc_Id %6d THERM2\n",actele->Id,actele->Id_loc);
+            break;
+#endif
+#ifdef D_THERM3
+          case el_therm3:
+            fprintf(out,"ELE glob_Id %6d loc_Id %6d THERM3\n",actele->Id,actele->Id_loc);
             break;
 #endif
           default:
@@ -1546,6 +1554,11 @@ void out_tsi(FIELD *structfield)
 #ifdef D_WALL1
           case el_wall1:
             acttele = actsele->e.w1->therm_ele;
+            break;
+#endif
+#ifdef D_BRICK1
+          case el_brick1:
+            acttele = actsele->e.c1->therm_ele;
             break;
 #endif
           default:

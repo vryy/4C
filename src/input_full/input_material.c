@@ -75,7 +75,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       mat[i].m.stvenant = (STVENANT*)CCACALLOC(1,sizeof(STVENANT));
       frdouble("YOUNG"  ,&(mat[i].m.stvenant->youngs)      ,&ierr);
       frdouble("NUE"    ,&(mat[i].m.stvenant->possionratio),&ierr);
-      frdouble("DENS",&(mat[i].m.stvenant->density)     ,&ierr);
+      frdouble("DENS"   ,&(mat[i].m.stvenant->density)     ,&ierr);
+      frdouble("THEXPANS",&(mat[i].m.stvenant->thermexpans) ,&ierr);
    }
    frchk("MAT_Struct_Orthotropic",&ierr);
    if (ierr==1)
@@ -450,6 +451,26 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("EPSILON" ,&(mat[i].m.hyper_polyconvex->epsilon)    ,&ierr);
       frdouble("GAMMA"   ,&(mat[i].m.hyper_polyconvex->gamma)    ,&ierr);
       frdouble("DENS"    ,&(mat[i].m.hyper_polyconvex->density)     ,&ierr);
+   }
+   /* Fourier's law of isotropic heat conduction --> heat cond. coeff. */
+   frchk("MAT_Therm_Fourier_iso",&ierr);
+   if (ierr==1)
+   {
+     mat[i].mattyp = m_th_fourier_iso;
+     mat[i].m.th_fourier_iso = (TH_FOURIER_ISO*)CCACALLOC(1,sizeof(TH_FOURIER_ISO));
+     frdouble("CONDUCT"  ,&(mat[i].m.th_fourier_iso->conduct)   ,&ierr);
+   }
+   /* Fourier's law of general heat conduction --> heat cond. matrix */
+   frchk("MAT_Therm_Fourier_gen",&ierr);
+   if (ierr==1)
+   {
+     mat[i].mattyp = m_th_fourier_gen;
+     mat[i].m.th_fourier_gen = (TH_FOURIER_GEN*)CCACALLOC(1,sizeof(TH_FOURIER_GEN));
+     frdouble_n("CONDUCT"  ,&(mat[i].m.th_fourier_gen->conduct[0]), 9   ,&ierr);
+     if (ierr == 1)
+     {
+       dserror("Insufficient conduction parameters!");
+     }
    }
    /*multi layer material */
    frchk("MAT_Multilayer",&ierr);

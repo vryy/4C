@@ -137,6 +137,11 @@ enum
     }            stresstyp;
 struct _ARRAY4D  stress_GP;  /*!< array for stress values */
 struct _ARRAY4D  stress_ND;  /*!< array for stress values */
+
+#ifdef D_TSI
+  enum _TSI_COUPTYP tsi_couptyp;  /* TSI coupling type */
+  struct _ELEMENT *therm_ele;      /* pointer to conforming thermal2 element */
+#endif
 } BRICK1;
 #define BRICK1_STRESSTYPE { "c1_nostr", "c1_gpxyz", "c1_gprst", "c1_gp123", "c1_npxyz", "c1_nprst", "c1_np123", "c1_npeqs", NULL }
 /*!----------------------------------------------------------------------

@@ -548,9 +548,10 @@ void c1_cint(
              C1_DATA   *data,
              MATERIAL  *mat,
              ARRAY     *estif_global,
-             ARRAY      *emass_global,
+             ARRAY     *emass_global,
              DOUBLE    *force,  /* global vector for internal forces (initialized!) */
-             INT        init
+             INT        init,
+             CONTAINER *container
              );
 /*----------------------------------------------------------------------*
  | evaluates element forces                              al    9/01     |
@@ -727,6 +728,18 @@ void c1inv3(DOUBLE *A);
 void c1invf (DOUBLE *FN,DOUBLE *FNI,DOUBLE *DETF);
 void c1ab (DOUBLE *A,DOUBLE *B,DOUBLE *R,INT *NZA,INT *NSA,INT *NSB,
            DOUBLE *XNULL);
+/*----------------------------------------------------------------------*
+ | get thermal strain in thermo-structure-interaction       bborn 10/06 |
+ | defined in c1_tsi.c                                                  |
+ *----------------------------------------------------------------------*/
+void c1_tsi_thstrain(CONTAINER *container,  /* container data */
+                     ELEMENT *ele,  /* brick element */
+                     MATERIAL *mat,  /* material law */
+                     DOUBLE r,  /* Gauss point r-coordinate */
+                     DOUBLE s,  /* Gauss point s-coordinate */
+                     DOUBLE t,  /* Gauss point t-coordinate */
+                     INT numstr,  /* dimension of strain vector (6) */
+                     DOUBLE *strain);  /* strain vector */
 
 
 #endif

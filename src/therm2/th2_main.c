@@ -67,7 +67,7 @@ Contains Gauss point coordinates and weights
 \date 03/06
 */
 /*----------------------------------------------------------------------*/
-static THERM2_DATA th2_data;
+static TH2_DATA th2_data;
 
 
 /*----------------------------------------------------------------------*/
@@ -126,7 +126,7 @@ void therm2(PARTITION *actpart,
       th2_temper_init();
 #endif
       break;
-    case calc_therm_stiff:
+    case calc_therm_tang:
       actmat = &(mat[ele->mat-1]);
       th2_lin_stiff(ele, &(th2_data), actmat, estif_global, NULL, NULL);
       break;
@@ -141,6 +141,7 @@ void therm2(PARTITION *actpart,
       th2_hflux_cal(ele, &(th2_data), actmat, 0);
       break;
     case calc_therm_final:
+      /* these are only called once */
       th2_lin_final();
       th2_load_final();
       th2_hflux_final(actpart);

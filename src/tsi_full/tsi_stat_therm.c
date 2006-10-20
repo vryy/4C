@@ -38,7 +38,7 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 \date 03/06
 */
 /*----------------------------------------------------------------------*/
-extern struct _FILES allfiles;
+extern FILES allfiles;
 
 
 /*----------------------------------------------------------------------*/
@@ -51,7 +51,7 @@ struct _GENPROB       genprob; defined in global_control.c
 \date 03/06
 */
 /*----------------------------------------------------------------------*/
-extern struct _GENPROB genprob;
+extern GENPROB genprob;
 
 
 /*----------------------------------------------------------------------*/
@@ -64,7 +64,7 @@ vector of numfld FIELDs, defined in global_control.c
 \date 03/06
 */
 /*----------------------------------------------------------------------*/
-extern struct _FIELD *field;
+extern FIELD *field;
 
 
 /*----------------------------------------------------------------------*/
@@ -78,7 +78,7 @@ defined in solver_control.c
 \date 03/06
 */
 /*----------------------------------------------------------------------*/
-extern struct _SOLVAR *solv;
+extern SOLVAR *solv;
 
 
 /*----------------------------------------------------------------------*/
@@ -92,7 +92,7 @@ extern struct _SOLVAR *solv;
 \date 03/06
 */
 /*----------------------------------------------------------------------*/
-extern struct _PARTITION *partition;
+extern PARTITION *partition;
 
 
 /*----------------------------------------------------------------------*/
@@ -105,7 +105,7 @@ structure of flags to control output defined in out_global.c
 \date 03/06
 */
 /*----------------------------------------------------------------------*/
-extern struct _IO_FLAGS ioflags;
+extern IO_FLAGS ioflags;
 
 
 /*----------------------------------------------------------------------*/
@@ -119,7 +119,7 @@ and the type is in partition.h
 \date 03/06
 */
 /*----------------------------------------------------------------------*/
-extern struct _PAR par;
+extern PAR par;
 
 
 /*----------------------------------------------------------------------*/
@@ -152,7 +152,7 @@ struct _CURVE        *curve;
 */
 /*----------------------------------------------------------------------*/
 extern INT numcurve;
-extern struct _CURVE *curve;
+extern CURVE *curve;
 
 
 /*----------------------------------------------------------------------*/
@@ -167,7 +167,7 @@ defined globally in global_calelm.c
 \author bborn
 \date 03/06
 /*----------------------------------------------------------------------*/
-extern enum _CALC_ACTION calc_action[MAXFIELD];
+extern CALC_ACTION calc_action[MAXFIELD];
 
 
 /*---------------------------------------------------------------------*/
@@ -189,7 +189,8 @@ DOUBLE acttime;
 \date 03/06
 */
 /*----------------------------------------------------------------------*/
-void tsi_stat_therm()
+void tsi_stat_therm(INT disnum_s,
+                    INT disnum_t)
 {
 
   INT i;  /* a counter */
@@ -199,15 +200,18 @@ void tsi_stat_therm()
   INT actsysarray;  /* active sparse system matrix in 
                      * actsolv->sysarray[] */
   INT disnum;  /* index (number) of discretisation */
-  INT isol;  /* flag arraynum for SOLVER arrays */
-  INT iplace;  /* flag place for SOLVER arrays */
+  INT iplace;
   INT i2ndsysmat;  /* flag 2nd system matrix or not */
   DOUBLE rhsfact;  /* factor to multiply RHS */
 
   static ARRAY dirich_a;
   static DOUBLE *dirich;
 
-  static THERM_DYNAMIC *actdyn;  /* pointer to dynamic control -- OK static control */
+  ARRAY_POSITION solpos;  /* give human readable names to
+			   * indices of NODE's sol, sol_incr,
+			   * sol_resid and sol_mf arrays */
+  static THERM_DYNAMIC *actdyn;  /* pointer to dynamic control 
+				  * --- allright, static control */
   SOLVAR *actsolv;  /* pointer to field SOLVAR */
   PARTITION *actpart;  /* pointer to the fields PARTITION structure */
   INT numtf;  /* number (index) of thermal field */
@@ -220,6 +224,9 @@ void tsi_stat_therm()
   DOUBLE timstp;  /* current time step */
 
   CONTAINER container;  /* contains variables defined in container.h */
+
+  ARRAY_POSITION *ipos;  /* named positions of NODE sol etc. arrays */
+  ARRAY_POSITION_SOL *isol;  /* named positions (indices) of NODE sol array */
 
   SPARSE_TYP array_typ;  /* type of psarse system matrix */
 
@@ -240,7 +247,7 @@ void tsi_stat_therm()
   /* a word to the user */
   printf("==============================================================="
          "=========\n");
-  printf("You reached the TSI quasi static thermal solution routine.\n");
+  printf("TSI quasi static thermal solution routine reached.\n");
   printf("---------------------------------------------------------------"
          "---------\n");
 
@@ -255,19 +262,14 @@ void tsi_stat_therm()
   /* container */
   container.isdyn = 0;  /* static calculation */  /* ? */
   container.kintyp = 0;  /* kintyp  = 0: geo_lin */  /* ? */
-  if (actfield->ndis > 1)
-  {
-    dserror("More than 1 discretisation is not possible!");
-  }
-  else
-  {
-    disnum = 0;  /* only a single discretisation
-                  * this variable name is a little confusing
-                  * it sets an _actual_ number (better index?)
-                  * of one of the actfield->ndis discretisations.
-                  * Simply said: disnum != n(um)dis */
-    container.disnum = disnum;
-  }
+  disnum = disnum_t;  /* only a single discretisation
+                       * this variable name is a little confusing
+                       * it sets an _actual_ number (better index?)
+                       * of one of the actfield->ndis discretisations.
+                       * Simply said: disnum != n(um)dis */
+  container.disnum = disnum;
+  container.disnum_t = disnum_t;
+  container.disnum_s = disnum_s;
   /* distributed system matrix, which is used for solving */
   actsysarray = numtf;  /* ? */
   actsolv = &(solv[numtf]);
@@ -340,8 +342,7 @@ void tsi_stat_therm()
   /*-------------------------------------------------------------------*/
   /* initialize solver */
   init = 1;
-  solver_control(actsolv,
-                 actintra,
+  solver_control(actfield, disnum, actsolv, actintra,
                  &(actsolv->sysarray_typ[actsysarray]),
                  &(actsolv->sysarray[actsysarray]),
                  &(actsolv->sol[actsysarray]),
@@ -372,9 +373,17 @@ void tsi_stat_therm()
   }
 
   /*--------------------------------------------------------------------*/
+  /* sol indices */
+  ipos = &(actfield->dis[disnum].ipos);  /* position array */
+  isol = &(ipos->isol);  /* position array of sol */
+
+  /*--------------------------------------------------------------------*/
 #ifdef BINIO
   /* initialize binary output */
-  dserror("BINIO is not available!");
+  if (ioflags.output_bin == 1)
+  {
+    dserror("BINIO is not available!");
+  }
 #endif
 
   /*--------------------------------------------------------------------*/
@@ -392,13 +401,12 @@ void tsi_stat_therm()
    * in field sol (1st 0) at place 0 (2nd 0) together with 
    * free temperatures */
   /* HINT: time curve is called indirectly */
-  isol = 0;  /* write into ARRAY sol array */
-  iplace = 0;  /* row to put values in the ARRAY sol */
-  solserv_putdirich_to_dof(actfield, disnum, isol, iplace, timcur);
+  solserv_putdirich_to_dof(actfield, disnum, 
+                           node_array_sol, isol->tem, timcur);
 
   /*--------------------------------------------------------------------*/
-  /* call element routines to calculate & assemble stiffness matrix */
-  *action = calc_therm_stiff;
+  /* call element routines to calculate & assemble tangent matrix */
+  *action = calc_therm_tang;
   container.dvec = NULL;
   container.dirich = dirich;
   container.global_numeq = numeq_total;
@@ -413,8 +421,8 @@ void tsi_stat_therm()
   container.inherit = 1;  /* ? */
   container.point_neum = 1;  /* ? */
   *action = calc_therm_heatload;  /* set action before call of calrhs */
-  calrhs(actfield,actsolv,actpart,actintra,actsysarray,
-         &(actsolv->rhs[actsysarray]),action,&container);
+  calrhs(actfield, actsolv, actpart, actintra, actsysarray,
+         &(actsolv->rhs[actsysarray]), action, &container);
   rhsfact = -1.0;  /* multiply RHS by this factor */
   assemble_vec(actintra, &(actsolv->sysarray_typ[actsysarray]),
                &(actsolv->sysarray[actsysarray]),
@@ -423,8 +431,7 @@ void tsi_stat_therm()
   /*--------------------------------------------------------------------*/
   /* call solver */
   init = 0;
-  solver_control(actsolv,
-                 actintra,
+  solver_control(actfield, disnum, actsolv, actintra,
                  &(actsolv->sysarray_typ[actsysarray]),
                  &(actsolv->sysarray[actsysarray]),
                  &(actsolv->sol[actsysarray]),
@@ -433,25 +440,24 @@ void tsi_stat_therm()
 
   /*--------------------------------------------------------------------*/
   /* allreduce the result and put it to the nodes's sol array */
-  iplace = 0;  /* place values in the ARRAY node->sol[iplace][...] */
   solserv_result_total(actfield,
                        disnum,
                        actintra,
                        &(actsolv->sol[actsysarray]),
-                       iplace,
+                       isol->tem,
                        &(actsolv->sysarray[actsysarray]),
                        &(actsolv->sysarray_typ[actsysarray]));
 
   /*--------------------------------------------------------------------*/
   /* allreduce the result and put it to the nodes's sol_mf array */
-  iplace = 0;  /* place values in the ARRAY node->sol_mf[iplace][...] */
-  solserv_result_mf(actfield,
-                    disnum,
-                    actintra,
-                    &(actsolv->sol[actsysarray]),
-                    iplace,
-                    &(actsolv->sysarray[actsysarray]),
-                    &(actsolv->sysarray_typ[actsysarray]));
+  /* iplace = 0;  /\* place values in the ARRAY node->sol_mf[iplace][...] *\/ */
+/*   solserv_result_mf(actfield, */
+/*                     disnum, */
+/*                     actintra, */
+/*                     &(actsolv->sol[actsysarray]), */
+/*                     iplace, */
+/*                     &(actsolv->sysarray[actsysarray]), */
+/*                     &(actsolv->sysarray_typ[actsysarray])); */
 
   /*--------------------------------------------------------------------*/
   /* perform heat flux calculation */
@@ -477,17 +483,23 @@ void tsi_stat_therm()
   if ( (ioflags.output_out == 1) && (ioflags.therm_temper == 1) )
   {
     iplace = 0;  /* must be zero! used at heatflux arrays,
-                  * e.g. dynamic elementwise arrayh flux_gp is
+                  * e.g. dynamic elementwise array hflux_gp is
                   * allocated like hflux_gp[1][3*NUMHFLX][MAXGAUSS]
                   * and iplace==0 is used to access the first (left-most)
                   * index */
+    /* ATTENTION : iplace is also used for 
+     *             actnode->sol.a.da[iplace][nodeindex]
+     *             while printing the temperature */
     out_sol(actfield, actpart, disnum, actintra, timstp, iplace);
   }
 
   /*--------------------------------------------------------------------*/
   /* printout results to binary file */
 #ifdef BINIO
-  dserror("BINIO is not available!");
+  if (ioflags.output_bin == 1)
+  {
+    dserror("BINIO is not available!");
+  }
 #endif
 
   /*--------------------------------------------------------------------*/
@@ -517,14 +529,17 @@ void tsi_stat_therm()
   /* a sag-beim-abschied-leise-servus to the user */
   printf("---------------------------------------------------------------"
          "---------\n");
-  printf("You made it. TSI quasi static thermal solution routine left.\n");
+  printf("TSI quasi static thermal solution routine finished.\n");
   printf("==============================================================="
          "=========\n\n");
 
   end:
 
 #ifdef BINIO
-  destroy_bin_out_field(&out_context);
+  if (ioflags.output_bin == 1)
+  {
+    destroy_bin_out_field(&out_context);
+  }
 #endif
 
 #ifndef PARALLEL

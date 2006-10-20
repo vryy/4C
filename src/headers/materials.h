@@ -47,6 +47,8 @@ typedef struct _MATERIAL
      struct _DAM_MP           *dam_mp;       /* isotropic damage material (mazars-pijadier-cabot)*/
      struct _DAMAGE_GE        *damage_ge;    /* isotropic gradient enhanced damage material */
      struct _HYPER_POLYCONVEX *hyper_polyconvex; /* hyperelastic polyconvex energy strain function */
+     struct _TH_FOURIER_ISO   *th_fourier_iso;   /* isotropic Fourier's law of heat conduction */
+     struct _TH_FOURIER_GEN   *th_fourier_gen;   /* general heat conduction matrix of Fourier's (linear) law of heat conduction */
      }                         m;            /* union pointer to material specific structure */
 
 } MATERIAL;
@@ -63,6 +65,7 @@ typedef struct _STVENANT
      DOUBLE                    youngs;         /* Young's modulus */
      DOUBLE                    possionratio;   /* Possion ratio */
      DOUBLE                    density;        /* material specific weight */
+     DOUBLE                    thermexpans;    /* coefficient of thermal expansion */
 } STVENANT;
 
 
@@ -508,8 +511,8 @@ typedef struct _DAMAGE_GE
      DOUBLE                    k_fac;
 } DAMAGE_GE;
 /*----------------------------------------------------------------------*
- | hyperelastic polyconvex material based on 				br 06/06	|
- | Holzapfel, Balzani, Schroeder 2006 & Roehrnbauer 2006			    |
+ | hyperelastic polyconvex material based on                   br 06/06 |
+ | Holzapfel, Balzani, Schroeder 2006 & Roehrnbauer 2006                |
  *----------------------------------------------------------------------*/
 typedef struct _HYPER_POLYCONVEX
 {
@@ -520,3 +523,25 @@ typedef struct _HYPER_POLYCONVEX
      DOUBLE                    gamma;
      DOUBLE					   density;
 } HYPER_POLYCONVEX;
+
+/*----------------------------------------------------------------------*
+ | Isotropic heat conduction coefficient                    bborn 03/06 |
+ | of Fourier's law of heat conduction                                  |
+ *----------------------------------------------------------------------*/
+typedef struct _TH_FOURIER_ISO
+{
+     DOUBLE                    conduct;        /* heat conduction
+                                                * coefficient */
+} TH_FOURIER_ISO;
+/*----------------------------------------------------------------------*
+ | General heat conduction coefficient matrix               bborn 04/06 |
+ | of Fourier's law of heat conduction                                  |
+ *----------------------------------------------------------------------*/
+typedef struct _TH_FOURIER_GEN
+{
+     DOUBLE                    conduct[9];  /* heat conduction matrix
+                                             * 3 rows with 3 param. are
+                                             * stored consecutively in
+                                             * a vector */
+} TH_FOURIER_GEN;
+

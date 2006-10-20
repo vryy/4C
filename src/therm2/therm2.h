@@ -25,6 +25,54 @@ Maintainer: Burkhard Bornemann
 
 
 /*======================================================================*/
+/* defines constants of THERM2 */
+#define NDIM_THERM2      (2)    /* planar problem also genprob.ndim */
+
+
+#ifndef MAXNOD_THERM2
+#ifdef MAXNOD
+#define MAXNOD_THERM2    (MAXNOD)
+#else
+#define MAXNOD_THERM2    (9)    /* maximum of element nodes : max quad9 */
+#endif
+#endif
+
+#ifndef MAXEDG_THERM2
+#define MAXEDG_THERM2    (4)    /* maximal number element edges */
+#endif
+
+
+#define NUMDOF_THERM2    (1)    /* number of thermal DOFs at each node :
+                                 * temperature */
+
+#define NUMPLST_THERM2   (2)    /* number of plane states : 
+                                 * plane temperature gradient,
+                                 * plane heat flux */
+
+
+#define NUMTMGR_THERM2   (2)    /* number of temperature gradients */
+
+
+#define NUMHFLX_THERM2   (3)    /* number of heat fluxes : q_x, q_y, q_z */
+
+#ifndef GLINTC_THERM2
+#define GLINTC_THERM2    (6)    /* line domain Gauss integration cases */
+#endif
+
+#ifndef GLMAXP_THERM2
+#define GLMAXP_THERM2    (6)    /* line domain max. number of Gauss points */
+#endif
+
+#ifndef GTINTC_THERM2
+#define GTINTC_THERM2    (11)   /* triangle domain Gauss integration cases */
+#endif
+
+#ifndef GTMAXP_THERM2
+#define GTMAXP_THERM2    (13)   /* max. number of Gauss points */
+#endif
+
+
+/*======================================================================*/
 /* global declarations, variables etc */
 
 /*----------------------------------------------------------------------*/
@@ -36,7 +84,7 @@ The constants are defined in headers/define_sizes.h
 \author bborn
 \date 03/06
 */
-typedef struct _THERM2_DATA
+typedef struct _TH2_DATA
 {
   /* quadrilateral domain and edges --> line [-1,+1] */
   DOUBLE gqlc[GLMAXP_THERM2][GLINTC_THERM2];  /* coordinates on line [-1,+1] */
@@ -48,7 +96,7 @@ typedef struct _THERM2_DATA
   /* triangle edges --> line [0,+1] */
   DOUBLE gtlc[GLMAXP_THERM2][GLINTC_THERM2];  /* coordinates on line [0,+1] */
   DOUBLE gtlw[GLMAXP_THERM2][GLINTC_THERM2];  /* weights on line [0,+1] */
-} THERM2_DATA;
+} TH2_DATA;
 
 
 /*----------------------------------------------------------------------*/
@@ -115,9 +163,9 @@ typedef enum _TH2_HEATFLUXOUT_TYPE
 /*----------------------------------------------------------------------*/
 typedef struct _THERM2
 {
-  enum _TH2_PLANESTATES planestate;  /* type of plane state */
-  enum _TH2_KINEMATIK_TYPE kintype;  /* type of Kinematik */
-  enum _TH2_HEATFLUXOUT_TYPE hfluxtype;  /* output type of heat flux */
+  TH2_PLANESTATES planestate;  /* type of plane state */
+  TH2_KINEMATIK_TYPE kintype;  /* type of Kinematik */
+  TH2_HEATFLUXOUT_TYPE hfluxtype;  /* output type of heat flux */
 
   INT nGP[2];  /* number of Gauss points as obtained during read-in
                 * quads:
@@ -133,8 +181,8 @@ typedef struct _THERM2
     
   DOUBLE thick;  /* thickness */
 
-  struct _ARRAY4D hflux_gp;
-  struct _ARRAY4D hflux_nd;
+  ARRAY4D hflux_gp;
+  ARRAY4D hflux_nd;
 
 #ifdef D_TSI
   TSI_COUPTYP tsi_couptyp;
@@ -173,7 +221,7 @@ void th2_cfg_noders(ELEMENT *ele,
 void th2_hflux_init(PARTITION *actpart);
 void th2_hflux_final(PARTITION *actpart);
 void th2_hflux_cal(ELEMENT *ele,
-                   THERM2_DATA *data,
+                   TH2_DATA *data,
                    MATERIAL *mat,
                    INT kstep);
 void th2_hflux_steep(DOUBLE *hflux,
@@ -181,7 +229,7 @@ void th2_hflux_steep(DOUBLE *hflux,
                      DOUBLE *hfluxang,
                      DOUBLE *dum);
 void th2_hflux_extrpol(ELEMENT *ele,
-                       THERM2_DATA *data,
+                       TH2_DATA *data,
                        INT ngauss,
                        DOUBLE *hfluxgp,
                        DOUBLE *rs,
@@ -196,7 +244,7 @@ void th2_inp(ELEMENT *ele);
 /* file th2_intg.c */
 void th2_intg_eleinp(ELEMENT *actele, 
                      INT *ierr);
-void th2_intg_init(THERM2_DATA *data);
+void th2_intg_init(TH2_DATA *data);
 
 /*----------------------------------------------------------------------*/
 /* file th2_jaco.c */
@@ -211,7 +259,7 @@ void th2_jaco(DOUBLE **deriv,
 void th2_lin_init();
 void th2_lin_final();
 void th2_lin_stiff(ELEMENT *ele,
-                   THERM2_DATA *data,
+                   TH2_DATA *data,
                    MATERIAL *mat,
                    ARRAY *estif_global,
                    ARRAY *emass_global,
@@ -233,7 +281,7 @@ void th2_lin_fint(DOUBLE  *hflux,
 void th2_load_init();
 void th2_load_final();
 void th2_load_heat(ELEMENT *ele,
-                   THERM2_DATA *data,
+                   TH2_DATA *data,
                    DOUBLE *loadvec,
                    INT imyrank);
 void th2_load_heatsurf(ELEMENT *ele,
@@ -289,10 +337,11 @@ void th2_shape_deriv(DOUBLE     *shape,
 /* file th2_temper.c */
 void th2_temper_init();
 void th2_temper_final();
-void th2_temper_cal(ELEMENT *ele,
-                     DOUBLE r,
-                     DOUBLE s,
-                     DOUBLE *tem);
+void th2_temper_cal(CONTAINER *container,
+                    ELEMENT *ele,
+                    DOUBLE r,
+                    DOUBLE s,
+                    DOUBLE *tem);
 
 /*----------------------------------------------------------------------*/
 #endif /*end of #ifdef D_THERM2 */

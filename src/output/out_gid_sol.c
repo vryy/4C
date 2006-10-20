@@ -2581,14 +2581,6 @@ if (actgid->is_wall1_33)
    }
    fprintf(out,"END VALUES\n");
 }
-#endif
-
-
-
-
-
-   /* BEAM3 */
-   /*=======*/
 
 if (actgid->is_wall1_tri_31)
 {
@@ -2608,6 +2600,13 @@ if (actgid->is_wall1_tri_31)
    }
    fprintf(out,"END VALUES\n");
 }
+#endif
+
+
+   /* BEAM3 */
+   /*=======*/
+
+
 
 #ifdef D_BEAM3
 if (actgid->is_beam3_21)

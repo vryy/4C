@@ -228,7 +228,8 @@ void th3_metr_surf(ELEMENT *ele,
    *      = [ x_,r^2 + y_,r^2 + z_,r^2   x_,r*x_,s + y_,r*y_,s + y_,r*y_,s ]
    *        [          sym               (x_,s)^2 + (y_,s)^2 + (z_,s)^2    ]
    */
-  /* Tensor  g  might be swapped, but it does not affect its determinant
+  /* Tensor  g  might be swapped, but swapping does not affect its 
+   * determinant,
    * instead of [ m_00  m_01 ] swapped means [ m_11 m_10 ]
    *            [ m_10  m_11 ]               [ m_01 m_00 ]
    */

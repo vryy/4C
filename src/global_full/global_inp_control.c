@@ -310,42 +310,6 @@ void ntainp()
     CCAFREE(design->ndvol_fenode);
   }
 
-
-  /*--------------------------------------------------------------------*/
-  /* BEGIN --- QUICK AND DIRTY HACK */ 
-/*   for (i=0; i<field[0].dis[0].numnp; i++) */
-/*   { */
-/*     if ( (field[0].dis[0].gnode[i].ondesigntyp == ondline) */
-/*          && ( (field[0].dis[0].gnode[i].d.dline->Id == 5) */
-/*               || (field[0].dis[0].gnode[i].d.dline->Id == 5) ) ) */
-/*     { */
-/*       b_temp = (4.0-field[0].dis[0].gnode[i].node->x[0]) */
-/*           * (4.0-field[0].dis[0].gnode[i].node->x[0]) */
-/*         + field[0].dis[0].gnode[i].node->x[1] */
-/*           * field[0].dis[0].gnode[i].node->x[1]; */
-/*       printf("dl %d : node %d : (%e, %e) : Diff ? %e\n",  */
-/*              field[0].dis[0].gnode[i].d.dline->Id, */
-/*              field[0].dis[0].gnode[i].Id, */
-/*              field[0].dis[0].gnode[i].node->x[0], */
-/*              field[0].dis[0].gnode[i].node->x[1], */
-/*              1.0-b_temp); */
-/*       /\* modify y-coordinate *\/ */
-/*       b_temp = sqrt(1.0 - DSQR(4.0-field[0].dis[0].gnode[i].node->x[0])); */
-/*       field[0].dis[0].gnode[i].node->x[1] = b_temp; */
-/*       b_temp = (4.0-field[0].dis[0].gnode[i].node->x[0]) */
-/*           * (4.0-field[0].dis[0].gnode[i].node->x[0]) */
-/*         + field[0].dis[0].gnode[i].node->x[1] */
-/*           * field[0].dis[0].gnode[i].node->x[1]; */
-/*       printf("dl %d : node %d : (%e, %e) : Diff ? %e\n",  */
-/*              field[0].dis[0].gnode[i].d.dline->Id, */
-/*              field[0].dis[0].gnode[i].Id, */
-/*              field[0].dis[0].gnode[i].node->x[0], */
-/*              field[0].dis[0].gnode[i].node->x[1], */
-/*              1.0-b_temp); */
-/*     }     */
-/*   } */
-  /* END --- QUICK AND DIRTY HACK */ 
-
   /*--------------------------------------- input of general dynamic data */
   if (genprob.timetyp==time_dynamic) inpctrdyn();
   /*---------------------------------------- input of general static data */

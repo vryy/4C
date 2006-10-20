@@ -39,7 +39,7 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 \date 03/06
 */
 /*----------------------------------------------------------------------*/
-struct _FILES allfiles;
+FILES allfiles;
 
 
 /*----------------------------------------------------------------------*/
@@ -53,7 +53,7 @@ global variable GENPROB genprob is defined in global_control.c
 \date 03/06
 */
 /*----------------------------------------------------------------------*/
-extern struct _GENPROB genprob;
+extern GENPROB genprob;
 
 
 /*----------------------------------------------------------------------*/
@@ -66,7 +66,7 @@ defined in global_control.c
 \date 03/06
 */
 /*----------------------------------------------------------------------*/
-extern struct _FIELD *field;
+extern FIELD *field;
 
 
 /*----------------------------------------------------------------------*/
@@ -83,7 +83,7 @@ necessary.
 \date 03/06
 */
 /*----------------------------------------------------------------------*/
-extern struct _PAR par;
+extern PAR par;
 
 
 /*----------------------------------------------------------------------*/
@@ -115,112 +115,72 @@ void tsi_dyn()
 {
 
   /* fields */
-  static INT numfld;  /* total number of fields */
-  static INT numsf;  /* number (index) of structure field */
-  static INT numtf;  /* number (index) of thermal field */
-  static FIELD *structfield;  /* pointer to structure field */
-  static FIELD *thermfield;  /* pointer to thermal field */
+  INT numfld;  /* total number of fields */
+  INT numsf;  /* number (index) of structure field */
+  INT numtf;  /* number (index) of thermal field */
+  FIELD *structfield;  /* pointer to structure field */
+  FIELD *thermfield;  /* pointer to thermal field */
   
   /* discretisations */
-  INT s_disnum_calc = 0;
-  INT s_disnum_io = 0;
-  INT t_disnum_calc = 0;
-  INT t_disnum_io = 0;
+  INT disnum_s;
+  INT disnum_t;
 
   /* dynamic control */
-  static STRUCT_DYNAMIC *sdyn;
-  static THERM_DYNAMIC *tdyn;
-  static TSI_DYNAMIC *tsidyn;
-  INT itsidyn;
+  STRUCT_DYNAMIC *sdyn;
+  THERM_DYNAMIC *tdyn;
+  TSI_DYNAMIC *tsidyn;
 
   /* files */
   FILE *out = allfiles.out_out;  /* the OUT file */
 
 #ifdef DEBUG
-  dstrc_enter("dyn_tsi");
+  dstrc_enter("tsi_dyn");
 #endif
 
   /*--------------------------------------------------------------------*/
-  /* check input  of fields */
-  /* expected:    2 fields          0. structure
-   *                                1. thermal
-   */
-  numfld = genprob.numfld;  /* total number of fiels; should be 2 */
-  dsassert(numfld==2, "Two fields needed for TSI-problem!\n");
-  
-  /* set structure field */
-  numsf = 0;
-  if (&(field[numsf]) != NULL)
-  {
-    structfield = &(field[numsf]);
-  }
-  else
-  {
-    dserror("field[%d] is not allocated! Structure field expected.", 
-            &numsf);
-  }
-  dsassert(structfield->fieldtyp==structure, 
-           "FIELD 0 has to be structure\n");
-
-  /* set thermal field */
-  numtf = 1;
-  if (&(field[numsf]) != NULL)
-  {
-    thermfield = &(field[numtf]);
-  }
-  else
-  {
-    dserror("field[%d] is not allocated! Thermal field expected.", 
-            &numtf);
-  }
-  dsassert(thermfield->fieldtyp==thermal, 
-           "FIELD 1 has to be thermal\n");
-
+  /* check fields */
+  tsi_init_chkfld(&numfld, &numsf, &numtf, &structfield, &thermfield);
 
   /*--------------------------------------------------------------------*/
-  /* set pointers to dynamic controls */
-  sdyn= alldyn[numsf].sdyn;  /* structure */
-  tdyn= alldyn[numtf].tdyn;  /* thermal */
-  /* We have 2 fields, the first (0) is the structure, the second (1) is
-   * the thermal, ie genprob.numfld==2. Each field has a dynamic control 
-   * unit stored as alldyn[0] and alldyn[1], respectively. The dynamic
-   * control of the TSI coupling is kept at alldyn[2]. */
-  itsidyn = genprob.numfld;
-  tsidyn = alldyn[itsidyn].tsidyn;  /* TSI */
+  /* check discretisation */
+  tsi_init_chkdis(structfield, &disnum_s);
+  tsi_init_chkdis(thermfield, &disnum_t);
 
-  /* adjust/initialise dynamic controls */
-  tsidyn->time = 0.0;
-  sdyn->time = tsidyn->time;
-  tdyn->time = tsidyn->time;
-  tsidyn->step = 0;
-  sdyn->step = tsidyn->step;
-  tdyn->step = tsidyn->step;
+  /*--------------------------------------------------------------------*/
+  /* associate dynamic control parameters */
+  tsi_init_alldyn(numsf, numtf, &sdyn, &tdyn, &tsidyn);
   
-
-
   /*--------------------------------------------------------------------*/
   /* create coupling of structural and thermal field */
-  tsi_initcoupling(structfield, s_disnum_calc,
-                   thermfield, t_disnum_calc);
+  tsi_coupling(structfield, disnum_s,
+               thermfield, disnum_t);
+
+  /*--------------------------------------------------------------------*/
+  /* set named indices of NODE sol arrays */
+  tsi_init_nodsol(structfield, disnum_s,
+                  thermfield, disnum_t);
+
+  /*--------------------------------------------------------------------*/
+  /* initialise load curves */
+  tsi_init_curve();
 
   /*--------------------------------------------------------------------*/
   /* select different analyses */
   switch (tsidyn->kind)
   {
-    /* */
-    case tsi_full:
-      /* tsi_dyn_full(); */
-      break;
-    /* */
-    case tsi_therm_stat_struct_dyn: 
-      tsi_stat_therm();
-      tsi_dyn_struct();
-/*      dyn_nln_structural(); */
-      break;
-    /* */
+    /* prescribed TSI */
     case tsi_therm_pred_struct_dyn:
       break;
-    /* */
+    /* semi TSI : static thermal and dynamic structure field */
+    case tsi_therm_stat_struct_dyn: 
+      tsi_stat_therm(disnum_s, disnum_t);
+      tsi_dyn_struct(disnum_s, disnum_t);
+      break;
+    /* full TSI */
+    case tsi_full:
+      dserror("Full thermal-structure-interation is not implemented!\n");
+      break;
+    /* default */
     default:
       dserror("Unknown KIND of TSI");
       break;

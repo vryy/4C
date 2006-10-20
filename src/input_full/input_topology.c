@@ -1996,7 +1996,7 @@ void inp_detailed_topology(DISCRET   *actdis)
           actgsurf->gnode[3] = actele->node[4]->gnode;
           actgsurf->gnode[4] = actele->node[8]->gnode;
           actgsurf->gnode[5] = actele->node[13]->gnode;
-          actgsurf->gnode[6] = actele->node[15]->gnode;
+          actgsurf->gnode[6] = actele->node[16]->gnode;
           actgsurf->gnode[7] = actele->node[12]->gnode;
         }
         if (actgvol->gsurf[2]->ngnode == 0)

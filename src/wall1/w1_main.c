@@ -109,7 +109,7 @@ case calc_struct_init:
    {
      w1init(actpart, mat);
      w1static_ke(NULL,NULL,NULL,NULL,NULL,NULL,1);
-     w1static_keug(NULL,NULL,NULL,NULL,NULL,NULL,1);
+     w1static_keug(NULL,NULL,NULL,NULL,NULL,NULL,1,NULL);
      w1_cal_stress(NULL,NULL,NULL,0,1);
      w1_eleload(ele,&actdata,intforce,1,-1);
      w1_iedg(NULL,NULL,0,1);
@@ -136,7 +136,8 @@ case calc_struct_nlnstiff:
      actmat = &(mat[ele->mat-1]);
      if(ele->e.w1->kintype==total_lagr)
      {
-       w1static_keug(ele,&actdata,actmat,estif_global,NULL,intforce,0);
+       w1static_keug(ele,&actdata,actmat,estif_global,NULL,intforce,0,
+                     container);
      }
      else if(ele->e.w1->kintype==geo_lin)
      {
@@ -154,7 +155,8 @@ case calc_struct_internalforce:
    actmat = &(mat[ele->mat-1]);
    if(ele->e.w1->kintype==total_lagr)
    {
-     w1static_keug(ele,&actdata,actmat,estif_global,NULL,intforce,0);
+     w1static_keug(ele,&actdata,actmat,estif_global,NULL,intforce,0,
+                   container);
    }
    else 
    { 
@@ -179,7 +181,8 @@ case calc_struct_nlnstiffmass:
    actmat = &(mat[ele->mat-1]);
    if(ele->e.w1->kintype==total_lagr)
    {
-     w1static_keug(ele,&actdata,actmat,estif_global,emass_global,intforce,0);
+     w1static_keug(ele,&actdata,actmat,estif_global,emass_global,intforce,0,
+                   container);
    }
    else if(ele->e.w1->kintype==geo_lin)
    {
@@ -236,7 +239,8 @@ case calc_struct_update_istep:
      }
      else
      {
-       w1static_keug(ele,&actdata,actmat,estif_global,NULL,intforce,2);
+       w1static_keug(ele,&actdata,actmat,estif_global,NULL,intforce,2,
+                     container);
      }
      /* calculate mass matrix and kinetic energy (m.gee 4/03) */
      /* only mass matrix needed, it would be efficient to have a separate */
@@ -244,7 +248,8 @@ case calc_struct_update_istep:
      if (container->isdyn && ele->proc == actintra->intra_rank)
      {
        actmat = &(mat[ele->mat-1]);
-       w1static_keug(ele,&actdata,actmat,estif_global,emass_global,NULL,0);
+       w1static_keug(ele,&actdata,actmat,estif_global,emass_global,NULL,0,
+                     container);
        dyn_ekin_local(ele,emass_global,container);
      }
 #ifdef GEMM
@@ -350,7 +355,8 @@ case calc_struct_ssi_coup_force:
      if (ele->node[i]->gnode->ssicouple->ssi_couptyp == ssi_slave)
      {
        actmat = &(mat[ele->mat-1]);
-       w1static_keug(ele,&actdata,actmat,estif_global,emass_global,intforce,0);
+       w1static_keug(ele,&actdata,actmat,estif_global,emass_global,intforce,0,
+                     container);
        break;
      }
    }

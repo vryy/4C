@@ -85,7 +85,7 @@ void th3_lin_tang(ELEMENT *ele,
   DOUBLE xjm[NDIM_THERM3][NDIM_THERM3];  /* Jacobian matrix */
   DOUBLE det;  /* Jacobi determinant */
   DOUBLE xji[NDIM_THERM3][NDIM_THERM3];  /* inverse Jacobian matrix */
-  DOUBLE bop[NDIM_THERM3][NUMDOF_THERM3*MAXNOD_THERM3]; /* B-operator */
+  DOUBLE bop[NUMTMGR_THERM3][NUMDOF_THERM3*MAXNOD_THERM3]; /* B-operator */
   DOUBLE cmat[NUMHFLX_THERM3][NUMTMGR_THERM3];  /* conductivity matrix */
   DOUBLE hflux[NUMHFLX_THERM3];  /* heat flux */
 
@@ -103,7 +103,10 @@ void th3_lin_tang(ELEMENT *ele,
   amzero(estif_global);  /* element tangent matrix */
   estif = estif_global->a.da;
   /* element capacity (mass) matrix is not dealt with --- yet */
-  amzero(emass_global);
+  if (emass_global != NULL)
+  {
+    amzero(emass_global);
+  }
 
   /*--------------------------------------------------------------------*/
   /* element properties */
@@ -115,26 +118,26 @@ void th3_lin_tang(ELEMENT *ele,
   /* Gauss integraton data */
   switch (distyp)
   {
-      /* hexahedra elements */
-      case hex8: case hex20: case hex27:
-          gpnumr = ele->e.th3->gpnum[0];
-          gpintcr = ele->e.th3->gpintc[0];
-          gpnums = ele->e.th3->gpnum[1];
-          gpintcs = ele->e.th3->gpintc[1];
-          gpnumt = ele->e.th3->gpnum[2];
-          gpintct = ele->e.th3->gpintc[2];
-          break;
-      /* tetrahedra elements */
-      case tet4: case tet10:
-          gpnumr = 1;
-          gpnums = 1;
-          gpnumt = ele->e.th3->gpnum[0];
-          gpintcr = 1;
-          gpintcs = 1;
-          gpintct = ele->e.th3->gpintc[0];
-          break;
-      default:
-          dserror("distyp unknown!");
+    /* hexahedra elements */
+    case hex8: case hex20: case hex27:
+      gpnumr = ele->e.th3->gpnum[0];
+      gpintcr = ele->e.th3->gpintc[0];
+      gpnums = ele->e.th3->gpnum[1];
+      gpintcs = ele->e.th3->gpintc[1];
+      gpnumt = ele->e.th3->gpnum[2];
+      gpintct = ele->e.th3->gpintc[2];
+      break;
+    /* tetrahedra elements */
+    case tet4: case tet10:
+      gpnumr = 1;
+      gpnums = 1;
+      gpnumt = ele->e.th3->gpnum[0];
+      gpintcr = 1;
+      gpintcs = 1;
+      gpintct = ele->e.th3->gpintc[0];
+      break;
+    default:
+      dserror("distyp unknown!");
   }  /* end of switch(distyp) */
 
   /*--------------------------------------------------------------------*/
@@ -149,24 +152,24 @@ void th3_lin_tang(ELEMENT *ele,
         /* obtain current Gauss coordinates and weights */
         switch (distyp)
         {
-            /* hexahedra */
-            case hex8: case hex20: case hex27:
-              gpcr = data->ghlc[gpintcr][igpr];  /* r-coordinate */
-              gpcs = data->ghlc[gpintcs][igps];  /* s-coordinate */
-              gpct = data->ghlc[gpintct][igpt];  /* t-coordinate */
-              fac = data->ghlw[gpintcr][igpr]  /* weight */
-                  * data->ghlw[gpintcs][igps]
-                  * data->ghlw[gpintct][igpt];
-              break;
-            /* tetrahedra */
-            case tet4: case tet10:
-              gpcr = data->gtdcr[gpintct][igpt];  /* r-coordinate */
-              gpcs = data->gtdcs[gpintct][igpt];  /* s-coordinate */
-              gpct = data->gtdct[gpintct][igpt];  /* t-coordinate */
-              fac = data->gtdw[gpintct][igpt];  /* weight */
-              break;
-            default:
-              dserror("distyp unknown!");
+          /* hexahedra */
+	  case hex8: case hex20: case hex27:
+	    gpcr = data->ghlc[gpintcr][igpr];  /* r-coordinate */
+	    gpcs = data->ghlc[gpintcs][igps];  /* s-coordinate */
+	    gpct = data->ghlc[gpintct][igpt];  /* t-coordinate */
+	    fac = data->ghlw[gpintcr][igpr]  /* weight */
+	        * data->ghlw[gpintcs][igps]
+                * data->ghlw[gpintct][igpt];
+	    break;
+          /* tetrahedra */
+	  case tet4: case tet10:
+	    gpcr = data->gtdcr[gpintct][igpt];  /* r-coordinate */
+	    gpcs = data->gtdcs[gpintct][igpt];  /* s-coordinate */
+	    gpct = data->gtdct[gpintct][igpt];  /* t-coordinate */
+	    fac = data->gtdw[gpintct][igpt];  /* weight */
+	    break;
+	  default:
+	    dserror("distyp unknown!");
         }  /* end of switch (distyp) */
         /*--------------------------------------------------------------*/
         /* shape functions and their derivatives */
@@ -332,4 +335,4 @@ void th3_lin_fint(INT      neledof,
 
 /*======================================================================*/
 #endif /* end of #ifdef D_THERM3 */
-/*! @} (documentation module close)*/
+/*! @} (documentation module close) */

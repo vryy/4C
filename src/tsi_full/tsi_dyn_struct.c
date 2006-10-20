@@ -30,11 +30,11 @@ This structure struct _FILES allfiles is defined in input_control_global.c
 and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 
-\auther bborn
+\author bborn
 \date 03/06
 */
 /*----------------------------------------------------------------------*/
-extern struct _FILES allfiles;
+extern FILES allfiles;
 
 
 /*----------------------------------------------------------------------*/
@@ -46,7 +46,7 @@ struct _GENPROB       genprob; defined in global_control.c
 \author bborn
 \date 03/06
 */
-extern struct _GENPROB genprob;
+extern GENPROB genprob;
 
 
 /*----------------------------------------------------------------------*/
@@ -58,7 +58,7 @@ vector of numfld FIELDs, defined in global_control.c
 \author bborn
 \date 03/06
 */
-extern struct _FIELD *field;
+extern FIELD *field;
 
 
 /*----------------------------------------------------------------------*/
@@ -72,7 +72,7 @@ defined in solver_control.c
 \date 03/06
 */
 /*----------------------------------------------------------------------*/
-extern struct _SOLVAR *solv;
+extern SOLVAR *solv;
 
 
 /*----------------------------------------------------------------------*/
@@ -85,7 +85,7 @@ extern struct _SOLVAR *solv;
 \author bborn
 \date 03/06
 */
-extern struct _PARTITION *partition;
+extern PARTITION *partition;
 
 
 /*----------------------------------------------------------------------*/
@@ -97,7 +97,7 @@ structure of flags to control output defined in out_global.c
 \author bborn
 \date 03/06
 */
-extern struct _IO_FLAGS ioflags;
+extern IO_FLAGS ioflags;
 
 
 /*----------------------------------------------------------------------*/
@@ -110,7 +110,7 @@ and the type is in partition.h
 \author born
 \date 03/06
 */
-extern struct _PAR par;
+extern PAR par;
 
 
 /*----------------------------------------------------------------------*/
@@ -141,7 +141,7 @@ struct _CURVE        *curve;
 \date 03/06
 */
 extern INT numcurve;
-extern struct _CURVE *curve;
+extern CURVE *curve;
 
 
 /*----------------------------------------------------------------------*/
@@ -156,7 +156,7 @@ defined globally in global_calelm.c
 \author bborn
 \date 03/06
 */
-extern enum _CALC_ACTION calc_action[MAXFIELD];
+extern CALC_ACTION calc_action[MAXFIELD];
 
 
 /*---------------------------------------------------------------------*/
@@ -177,7 +177,8 @@ DOUBLE deltat;
 \author bborn
 \date 03/06
 */
-void tsi_dyn_struct()
+void tsi_dyn_struct(INT disnum_s,
+                    INT disnum_t)
 {
 
   INT i;  /* simply a counter */
@@ -186,15 +187,9 @@ void tsi_dyn_struct()
   INT init;  /* flag for solver_control call */
   INT mod_disp, mod_stress;
   INT mod_res_write;
-  INT restart;
-  DOUBLE t0_res,t1_res;
   INT disnum = 0;
-  INT iplace;  /* index of array in which data is copied etc */
   INT timeadapt;  /* flag to switch time adaption on/off */
 
-  DOUBLE dt;
-  DOUBLE dthalf;
-  INT nstep;
   DOUBLE deltaepot=0.0;
 
   INT convergence;  /* convergence flag */
@@ -231,12 +226,20 @@ void tsi_dyn_struct()
   
   STRUCT_DYN_CALC dynvar;  /* variables to perform dynamic structural simulation */
 
+  ARRAY_POSITION *ipos;   /* named positions of NODE sol etc. arrays */
+  ARRAY_POSITION_SOL *isol;  /* named positions (indices) of NODE sol array */
+  ARRAY_POSITION_SOLINC *isolinc;  /* named positions (indices) of 
+                                    * NODE sol_increment array */
+  ARRAY_POSITION_SOLRES *isolres;  /* named positions (indices) of 
+                                    * NODE sol_residual array */
+
 #ifdef BINIO
   BIN_OUT_FIELD out_context;
 #endif
 
-  CONTAINER container;  /* contains variables defined in container.h */
-
+  CONTAINER container;  /* transfers variables given
+                         * in (this) solution technique
+                         * to element level */
 
   /*====================================================================*/
   /* begin body */
@@ -249,7 +252,7 @@ void tsi_dyn_struct()
   /* a word to the user */
   printf("==============================================================="
          "=========\n");
-  printf("Hey dude, you reached the TSI structural time integration.\n");
+  printf("TSI structural time integration with generalised-alpha\n");
   printf("---------------------------------------------------------------"
          "---------\n");
 
@@ -263,19 +266,16 @@ void tsi_dyn_struct()
   container.fieldtyp = actfield->fieldtyp;  /* field type : structure */
   container.isdyn = 1;  /* dynamic calculation */
   container.kintyp = 2;  /* kintyp  = 2: total Lagrangean */  /* ??? */
-  if (actfield->ndis > 1)  /* number of discretisations in field */
-  {
-    dserror("More than 1 discretisation is not possible!");
-  }
-  else
-  {
-    disnum = 0;  /* only a single discretisation
-                  * this variable name is a little confusing
-                  * it sets an _actual_ number (better index?)
-                  * of one of the actfield->ndis discretisations.
-                  * Simply said: disnum != n(um)dis */
-    container.disnum = disnum;
-  }
+  disnum = disnum_s;  /* structure discretisation index:
+                       * disnum_s == 0,
+                       * as only a single discretisation
+                       * this variable name is a little confusing
+                       * it sets an _actual_ number (better index?)
+                       * of one of the actfield->ndis discretisations.
+                       * Simply said: disnum != n(um)dis */
+  container.disnum = disnum;
+  container.disnum_s = disnum_s;  /* structure discretisation index ( ==0 ) */
+  container.disnum_t = disnum_t;  /* thermo-discretisation index ( ==0 ) */
   actsysarray = numsf;  /* ? */
   actsolv = &(solv[numsf]);
   if (actsolv->nsysarray == 1)
@@ -462,17 +462,20 @@ void tsi_dyn_struct()
   /*--------------------------------------------------------------------*/
   /* initialize solver */
   init = 1;
-  solver_control(actsolv, actintra, &(actsolv->sysarray_typ[stiff_array]),
+  solver_control(actfield, disnum, actsolv, actintra, 
+		 &(actsolv->sysarray_typ[stiff_array]),
                  &(actsolv->sysarray[stiff_array]),
                  &(dispi[0]), &(actsolv->rhs[0]), init);
 
-  solver_control(actsolv, actintra, &(actsolv->sysarray_typ[mass_array]),
+  solver_control(actfield, disnum, actsolv, actintra, 
+		  &(actsolv->sysarray_typ[mass_array]),
                  &(actsolv->sysarray[mass_array]),
                  &work[0], &work[1], init);
 
   if (damp_array > 0)
   {
-    solver_control(actsolv, actintra, &(actsolv->sysarray_typ[damp_array]),
+    solver_control(actfield, disnum, actsolv, actintra, 
+		   &(actsolv->sysarray_typ[damp_array]),
                    &(actsolv->sysarray[damp_array]),
                    &work[0], &work[1], init);
   }
@@ -525,6 +528,9 @@ void tsi_dyn_struct()
                     &(actsolv->sysarray_typ[mass_array]),
                     &(actsolv->sysarray[mass_array]),
                     actdyn->m_damp);
+    solserv_close_mat(actintra,
+		      &(actsolv->sysarray_typ[damp_array]),
+		      &(actsolv->sysarray[damp_array]));
   }
 
   /*--------------------------------------------------------------------*/
@@ -540,18 +546,35 @@ void tsi_dyn_struct()
   }
 
   /*--------------------------------------------------------------------*/
-  /* put a zero to the place 12 in node->sol to init the 
+  /* sol indices */
+  ipos = &(actfield->dis[disnum].ipos);  /* position array */
+  isol = &(ipos->isol);
+  isolinc = &(ipos->isolinc);
+  isolres = &(ipos->isolres);
+
+  /*--------------------------------------------------------------------*/
+  /* put a zero to the place ipos->num=12 in node->sol to init the 
    * velocities and accels of prescribed displacements */
   /* HINT: This actually redefines/reallocates/enlarges the sol
    *       array of each structure node to dimension 12x2 (or 12x3)
    *       from originally 1x2 (or 1x3) */
-  solserv_sol_zero(actfield, disnum, node_array_sol, 12);
+  solserv_sol_zero(actfield, disnum, node_array_sol, ipos->num-1);
 
   /*--------------------------------------------------------------------*/
-  /* put a zero to the place 1 and 2 in sol_increment */
+  /* put a zero to the place ipos->numincr=2 in sol_increment of NODEs */
   /* later this will hold internal forces at t and t-dt */
-  solserv_sol_zero(actfield, disnum, node_array_sol_increment, 2);
-  solserv_sol_zero(actfield, disnum, node_array_sol_increment, 1);
+  /* HINT: This actually redefines/reallocates/enlarges the sol_increment
+   *       array at each structure node to dimenion 2x2 (or 2x3)
+   *       from originally 1x2 (or 1x3) */
+  solserv_sol_zero(actfield, disnum, node_array_sol_increment, 
+                   ipos->numincr-1);
+  /* initialise internal forces f_{int;n} to zero */
+  solserv_sol_zero(actfield, disnum, node_array_sol_increment, 
+                   isolinc->fint);
+  /* initialise internal forces f_{int;n+1} to zero */
+  solserv_sol_zero(actfield, disnum, node_array_sol_increment, 
+                   isolinc->fintn);
+
 
   /*--------------------------------------------------------------------*/
   /* WARNING : BINIO is not available --- work needs to be done */
@@ -645,8 +668,8 @@ void tsi_dyn_struct()
 
     /*------------------------------------------------------------------*/
     /* set residual displacements in nodes to zero */
-    iplace = 0;
-    solserv_result_resid(actfield, disnum, actintra, &dispi[0], iplace,
+    solserv_result_resid(actfield, disnum, actintra, &dispi[0], 
+                         isolres->disres,
                          &(actsolv->sysarray[stiff_array]),
                          &(actsolv->sysarray_typ[stiff_array]));
 
@@ -663,7 +686,7 @@ void tsi_dyn_struct()
     container.point_neum = 1;  /* ??? */
     *action = calc_struct_eleload;
     calrhs(actfield, actsolv, actpart, actintra, stiff_array,
-       &(actsolv->rhs[1]), action, &container);
+	   &(actsolv->rhs[1]), action, &container);
     
     /*------------------------------------------------------------------*/
     /* multiply rhs[1] by load factor based on factor rldfac of curve 0 */
@@ -678,7 +701,7 @@ void tsi_dyn_struct()
     /*------------------------------------------------------------------*/
     /* put the scaled prescribed displacements to the nodes in field sol
      * at place 4 separate of the free DOFs
-     * These are used to calculate the RHS due to the Dirchlet conditions */
+     * These are used to calculate the RHS due to the Dirichlet conditions */
     solserv_putdirich_to_dof(actfield, disnum, 0, 4, actdyn->time);
 
     /*------------------------------------------------------------------*/
@@ -799,7 +822,7 @@ void tsi_dyn_struct()
     /*------------------------------------------------------------------*/
     /* call for solution of system dispi[0] = Keff^-1 * rhs[0] */
     init = 0;
-    solver_control(actsolv, actintra,
+    solver_control(actfield, disnum, actsolv, actintra,
                    &(actsolv->sysarray_typ[stiff_array]),
                    &(actsolv->sysarray[stiff_array]),
                    &(dispi[0]), &(actsolv->rhs[0]), init);
@@ -816,22 +839,22 @@ void tsi_dyn_struct()
     /* put the scaled prescribed displacements to the nodes */
     /* in field sol (0) at place 0 together with free displacements
      * these are used to calculate the stiffness matrix */
-    iplace = 0;
-    solserv_putdirich_to_dof(actfield, disnum, 0, iplace, actdyn->time);
+    solserv_putdirich_to_dof(actfield, disnum, 
+                             node_array_sol, isol->disn, actdyn->time);
 
     /*------------------------------------------------------------------*/
     /* return total displacements to the nodes */
-    iplace = 0;
     solserv_result_total(actfield, disnum, actintra,
-                         &(actsolv->sol[1]), iplace, 
+                         &(actsolv->sol[1]),
+                         isol->disn, 
                          &(actsolv->sysarray[stiff_array]),
                          &(actsolv->sysarray_typ[stiff_array]));
 
     /*------------------------------------------------------------------*/
     /* return incremental displacements to the nodes */
-    iplace = 0;
     solserv_result_incre(actfield, disnum, actintra,
-                         &dispi[0], iplace,
+                         &dispi[0],
+                         isolinc->disinc,
                          &(actsolv->sysarray[stiff_array]),
                          &(actsolv->sysarray_typ[stiff_array]));
 
@@ -906,8 +929,8 @@ void tsi_dyn_struct()
       /* call element routines for calculation of 
        * tangential stiffness and intforce */
       *action = calc_struct_nlnstiffmass;
-      iplace = 2;
-      solserv_sol_zero(actfield, disnum, node_array_sol_increment, iplace);
+      solserv_sol_zero(actfield, disnum, node_array_sol_increment,
+                       isolinc->fintn);
       container.dvec          = intforce;
       container.dirich        = dirich;
       container.global_numeq  = numeq_total;
@@ -967,16 +990,16 @@ void tsi_dyn_struct()
       /* solve for residual displacements 
        * to correct iterative incremental displacements*/
       init = 0;
-      solver_control(actsolv, actintra,
+      solver_control(actfield, disnum, actsolv, actintra,
                      &(actsolv->sysarray_typ[stiff_array]),
                      &(actsolv->sysarray[stiff_array]),
                      &(work[0]), &(actsolv->rhs[0]), init);
 
       /*----------------------------------------------------------------*/
       /* return residual displacements to the nodes */
-      iplace = 0;
       solserv_result_resid(actfield, disnum, actintra, 
-                           &(work[0]), iplace, 
+                           &(work[0]),
+                           isolres->disres,
                            &(actsolv->sysarray[stiff_array]),
                            &(actsolv->sysarray_typ[stiff_array]));
 
@@ -995,16 +1018,17 @@ void tsi_dyn_struct()
 
       /*----------------------------------------------------------------*/
       /* return total displacements to the nodes */
-      iplace = 0;
       solserv_result_total(actfield, disnum, actintra, 
-                           &(actsolv->sol[1]), iplace,
+                           &(actsolv->sol[1]),
+                           isol->disn,
                            &(actsolv->sysarray[stiff_array]),
                            &(actsolv->sysarray_typ[stiff_array]));
 
       /*----------------------------------------------------------------*/
       /* return incremental displacements to the nodes */
       solserv_result_incre(actfield, disnum, actintra,
-                           &(dispi[0]), 0,
+                           &(dispi[0]),
+                           isolinc->disinc,
                            &(actsolv->sysarray[stiff_array]),
                            &(actsolv->sysarray_typ[stiff_array]));
 
@@ -1047,17 +1071,20 @@ void tsi_dyn_struct()
     /*------------------------------------------------------------------*/
     /*  copy disp from sol place 0 to place 10 */
     solserv_sol_copy(actfield, disnum, 
-                     node_array_sol, node_array_sol, 0, 10);
+                     node_array_sol, node_array_sol, 
+                     isol->disn, isol->dis);
 
     /*------------------------------------------------------------------*/
-    /* copy vels from sol place 1 to place 10 */
+    /* copy vels from sol place 1 to place 11 */
     solserv_sol_copy(actfield, disnum,
-                     node_array_sol, node_array_sol, 1, 11);
+                     node_array_sol, node_array_sol, 
+                     isol->veln, isol->vel);
 
     /*------------------------------------------------------------------*/
-    /* copy accs from sol place 2 to place 11 */
+    /* copy accs from sol place 2 to place 12 */
     solserv_sol_copy(actfield, disnum,
-                     node_array_sol, node_array_sol, 2, 12);
+                     node_array_sol, node_array_sol, 
+                     isol->accn, isol->acc);
     
     /*------------------------------------------------------------------*/
     /* update displacements, velocities and accelerations */
@@ -1077,24 +1104,28 @@ void tsi_dyn_struct()
     /*------------------------------------------------------------------*/
     /* return velocities to the nodes */
     solserv_result_total(actfield, disnum, actintra, 
-                         &(vel[0]), 1, 
+                         &(vel[0]), isol->veln, 
                          &(actsolv->sysarray[stiff_array]),
                          &(actsolv->sysarray_typ[stiff_array]));
 
     /*------------------------------------------------------------------*/
     /* velocities for prescribed dofs to velocities */
-    solserv_adddirich(actfield, disnum, 0, 6, 0, 1, 1.0, 0.0);
+    solserv_adddirich(actfield, disnum, 
+                      node_array_sol, isol->veldn, isol->disn, isol->veln, 
+                      1.0, 0.0);
 
     /*------------------------------------------------------------------*/
     /* return accel. to the nodes */
     solserv_result_total(actfield, disnum, actintra, 
-                         &(acc[0]), 2, 
+                         &(acc[0]), isol->accn, 
                          &(actsolv->sysarray[stiff_array]),
                          &(actsolv->sysarray_typ[stiff_array]));
     
     /*------------------------------------------------------------------*/
     /* accel. for prescribed dofs */
-    solserv_adddirich(actfield, disnum, 0, 7, 0, 2, 1.0, 0.0);
+    solserv_adddirich(actfield, disnum, 
+                      node_array_sol, isol->accdn, isol->disn, isol->accn, 
+                      1.0, 0.0);
 
     /*------------------------------------------------------------------*/
     /* It is a bit messed up, but anyway:
@@ -1151,7 +1182,7 @@ void tsi_dyn_struct()
     /* copy from sol_increment.a.da[2][i] to sol_increment.a.da[1][i] */
     solserv_sol_copy(actfield, disnum,
                      node_array_sol_increment, node_array_sol_increment,
-                     2, 1);
+                     isolinc->fintn, isolinc->fint);
 
     /*------------------------------------------------------------------*/
     /* check whether to write results or not */
@@ -1221,27 +1252,27 @@ void tsi_dyn_struct()
     {
 #ifdef BINIO
       restart_write_bin_nlnstructdyn(&out_context,
-                               actdyn, &dynvar,
-                               actsolv->nrhs, actsolv->rhs,
-                               actsolv->nsol, actsolv->sol,
-                               1            , dispi       ,
-                               1            , vel         ,
-                               1            , acc         ,
-                               3            , fie         ,
-                               3            , work);
+                                     actdyn, &dynvar,
+                                     actsolv->nrhs, actsolv->rhs,
+                                     actsolv->nsol, actsolv->sol,
+                                     1            , dispi       ,
+                                     1            , vel         ,
+                                     1            , acc         ,
+                                     3            , fie         ,
+                                     3            , work);
 #else
-      restart_write_nlnstructdyn(actdyn,&dynvar,actfield,actpart,
-                                 actintra,action,
-                           actsolv->nrhs, actsolv->rhs,
-                           actsolv->nsol, actsolv->sol,
-                           1            , dispi       ,
-                           1            , vel         ,
-                           1            , acc         ,
-                           3            , fie         ,
-                           3            , work        ,
-                           &intforce_a,
-                           &dirich_a,
-                           &container);     /* contains variables defined in container.h */
+      restart_write_nlnstructdyn(actdyn, &dynvar, actfield, actpart,
+                                 actintra, action,
+                                 actsolv->nrhs, actsolv->rhs,
+                                 actsolv->nsol, actsolv->sol,
+                                 1            , dispi       ,
+                                 1            , vel         ,
+                                 1            , acc         ,
+                                 3            , fie         ,
+                                 3            , work        ,
+                                 &intforce_a,
+                                 &dirich_a,
+                                 &container);
 #endif
     }
 
@@ -1289,7 +1320,7 @@ void tsi_dyn_struct()
   /* a last word to the nervously waiting user */
   printf("---------------------------------------------------------------"
          "---------\n");
-  printf("That's it. The TSI structural time integration was accomplished.\n");
+  printf("TSI structural time integration generalised-alpha finished.\n");
   printf("==============================================================="
          "=========\n");
 

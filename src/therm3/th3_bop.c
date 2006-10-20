@@ -10,7 +10,7 @@ Maintainer: Burkhard Bornemann
             089-289-15237
 </pre>
 */
-#ifdef D_THERM2
+#ifdef D_THERM3
 
 
 /*----------------------------------------------------------------------*/
@@ -41,7 +41,7 @@ Maintainer: Burkhard Bornemann
 void th3_bop(INT        enod,
              DOUBLE     deriv[MAXNOD_THERM3][NDIM_THERM3],
              DOUBLE     xji[NDIM_THERM3][NDIM_THERM3],
-             DOUBLE     bop[NDIM_THERM3][NUMDOF_THERM3*MAXNOD_THERM3])
+             DOUBLE     bop[NUMTMGR_THERM3][NUMDOF_THERM3*MAXNOD_THERM3])
 {
   /*--------------------------------------------------------------------*/
   INT i, j;  /* dimension indices */
@@ -58,7 +58,7 @@ void th3_bop(INT        enod,
   /* loop over element nodes */
   for (inod=0; inod<enod; inod++)
   {
-    for (i=0; i<NDIM_THERM3; i++)
+    for (i=0; i<NUMTMGR_THERM3; i++)
     {
       bopcomp = 0.0;
       for (j=0; j<NDIM_THERM3; j++)

@@ -42,7 +42,8 @@ void w1static_keug(ELEMENT   *ele,
                    ARRAY     *estif_global, /* global vector for stiffness ke+ku+kg */
                    ARRAY     *emass_global, /* global vector for mass */
                    DOUBLE    *force,        /* global vector for internal forces (initialized!)*/
-                   INT        init)
+                   INT        init,
+                   CONTAINER *container)    /* container data => container.h */
 {
 INT                 i,k,a,b;          /* some loopers              */
 INT                 nir=0;          /* num GP in r/s/t direction */
@@ -95,15 +96,6 @@ static DOUBLE **keu;
 static ARRAY    kg_a;    /* element stiffness matrix kg */
 static DOUBLE **kg;
 
-
-#ifdef D_TSI
-INT             numtf;     /* index of thermal field */
-NODE           *acttnode;  /* actual thermal node */
-static ARRAY    ndtemp_a;  /* nodal temperatures */
-static DOUBLE  *ndtemp;
-DOUBLE          tem;       /* temperature at Gauss point (r,s) */
-#endif
-
 static DOUBLE **estif;    /* element stiffness matrix keug */
 static DOUBLE **emass;    /* mass matrix */
 
@@ -134,9 +126,6 @@ if (init==1)
   stress    = amdef("stress" ,&stress_a ,numeps,numeps,"DA");
   kg        = amdef("kg"     ,&kg_a,2*MAXNOD_WALL1,2*MAXNOD_WALL1,"DA");
   keu       = amdef("keu"    ,&keu_a,2*MAXNOD_WALL1,2*MAXNOD_WALL1,"DA");
-#ifdef D_TSI
-  ndtemp     = amdef("ndtemp",&ndtemp_a,MAXNOD_WALL1,1,"DV");
-#endif
   goto end;
 }
 /*----------------------------------------------------------------------*/
@@ -158,9 +147,6 @@ else if (init==-1)
    amdel(&stress_a);
    amdel(&kg_a);
    amdel(&keu_a);
-#ifdef D_TSI
-   amdel(&ndtemp_a);
-#endif
    goto end;
 }
 
@@ -220,19 +206,6 @@ if(ele->e.w1->kintype==updated_lagr)
 {
  dserror("action unknown");
 }
-/*----------------------------------------------------------------------*/
-/* nodal temperatures of conforming thermal element */
-#ifdef D_TSI
-if (genprob.probtyp == prb_tsi)
-{
-  numtf = genprob.numtf;
-  for (k=0; k<iel; k++)
-  {
-    acttnode = ele->node[k]->gnode->mfcpnode[numtf];
-    ndtemp[k] = acttnode->sol_mf.a.da[0][0];
-  }
-}
-#endif
 /*------- get integraton data ---------------------------------------- */
 switch (ele->distyp)
 {
@@ -299,11 +272,11 @@ for (lr=0; lr<nir; lr++)
       amzero(&F_a);
       amzero(&strain_a);
       w1_defgrad(F,strain,xrefe,xcure,boplin,iel);
-#ifdef D_TSI
       /*--------------------------------- add strain due to temperature */
+#ifdef D_TSI
       if (genprob.probtyp == prb_tsi)
       {
-        w1_tsi_thstrain(ele, mat, e1, e2, numeps, strain);
+        w1_tsi_thstrain(container, ele, mat, e1, e2, numeps, strain);
       }
 #endif
       /*----------------------------------------calculate b_bar operator*/

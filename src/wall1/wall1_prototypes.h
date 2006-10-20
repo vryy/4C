@@ -720,7 +720,8 @@ void w1static_keug(ELEMENT  *ele,           /* actual element           */
                    ARRAY     *estif_global, /* element stiffness matrix */
                    ARRAY     *emass_global, /* element mass matrix      */
                    DOUBLE    *force,/* global vector for internal forces*/
-                   INT        init);        /* initialize this function */
+                   INT        init,         /* initialize this function */
+                   CONTAINER *container);   /* container data           */    
 /*-----------------------------------------------------------------------*
 |  w1_static_ke.c                                            al 9/01     |
 |  evaluates element forces                                              |
@@ -1238,7 +1239,8 @@ void w1_edgejaco(ELEMENT    *ele,
  |  w1_tsi.c                                                            |
  *----------------------------------------------------------------------*/
 #ifdef D_TSI
-void w1_tsi_thstrain(ELEMENT *ele,  /* pointer to current (wall) element */
+void w1_tsi_thstrain(CONTAINER *container,  /* container data */
+                     ELEMENT *ele,  /* pointer to current (wall) element */
                      MATERIAL *mat,  /* material type */
                      DOUBLE r,  /* r-coord of (r,s) */
                      DOUBLE s,  /* s-coord of (r,s) */

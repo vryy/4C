@@ -25,7 +25,7 @@ static INT iegt[4][4][2];
 
 /*======================================================================*/
 /*!
-\brief Initialise locally globals
+\brief Initialise local globals
 
 \author bborn
 \date 03/06

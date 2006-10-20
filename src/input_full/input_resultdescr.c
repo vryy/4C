@@ -82,7 +82,13 @@ void inp_resultdescr()
               resultdescr[i].field = ale;
             }
             else {
-              dserror("Unknown field type");
+              frchk("THERMAL",&ierr);
+              if (ierr==1) {
+                resultdescr[i].field = thermal;
+              }
+              else {
+                dserror("Unknown field type");
+              }
             }
           }
         }
@@ -142,7 +148,7 @@ void inp_resultdescr()
       }
     }
     else {
-      dserror("Unrelayable input. Panic.");
+      dserror("Unreliable input. Panic.");
     }
   }
   else {

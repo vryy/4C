@@ -21,6 +21,14 @@ Maintainer: Michael Gee
 #include "../interf/interf_prototypes.h"
 #endif
 
+#ifdef D_THERM2
+#include "../therm2/therm2.h"
+#endif
+
+#ifdef D_THERM3
+#include "../therm3/therm3.h"
+#endif
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -200,7 +208,22 @@ for (j=0; j<actfield->dis[0].numele; j++)
    case el_therm2:
      for (k=0; k<actele->numnp; k++)  
      {
+       /* NUMDOF_THERM2 is defined in therm2.h */
          if (actele->node[k]->numdf < NUMDOF_THERM2) actele->node[k]->numdf=NUMDOF_THERM2;
+     }
+     break;
+#endif
+
+#ifdef D_THERM3
+   case el_therm3:
+     for (k=0; k<actele->numnp; k++)  
+     {
+       /* The constant NUMDOF_THERM3 is defined in therm3.h .
+	* It is _not_ defined in the global file define_sizes.h ,
+	* which is indirectly included in this way
+	* "../headers/standardtypes.h" ==> "defines.h" ==> "define_sizes.h"
+	*/
+         if (actele->node[k]->numdf < NUMDOF_THERM3) actele->node[k]->numdf=NUMDOF_THERM3;
      }
      break;
 #endif

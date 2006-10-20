@@ -213,7 +213,7 @@ void th2_hflux_final(PARTITION *actpart)
 \date 03/06
 */
 void th2_hflux_cal(ELEMENT *ele,
-                   THERM2_DATA *data,
+                   TH2_DATA *data,
                    MATERIAL *mat,
                    INT kstep)  /* number of current load step */
 {
@@ -483,7 +483,7 @@ These procedure does not provide more accurate heat fluxes as the direct
 computation, but maybe saves a bit of computing time.
 
 \param  *ele     ELEMENT     (i)   pointer to active element
-\param  *data    THERM2_DATA (i)   pointer to THERM2 data (GPs coords etc)
+\param  *data    TH2_DATA    (i)   pointer to THERM2 data (GPs coords etc)
 \param  ngauss   INT         (i)   total number of Gauss points
 \param  *hfluxgp DOUBLE      (i)   heat flux at Gauss points
 \param  *rs      DOUBLE      (i)   element node natural coordinates
@@ -494,7 +494,7 @@ computation, but maybe saves a bit of computing time.
 \date 03/06
 */
 void th2_hflux_extrpol(ELEMENT *ele,
-                       THERM2_DATA *data,
+                       TH2_DATA *data,
                        INT ngauss,
                        DOUBLE *hfluxgp,
                        DOUBLE *rs,

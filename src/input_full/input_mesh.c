@@ -39,6 +39,11 @@ Maintainer: Malte Neumann
 #include "../therm2/therm2.h"
 #endif
 
+#ifdef D_THERM3
+#include "../therm3/therm3.h"
+#endif
+
+
 
 /*----------------------------------------------------------------------*
   |                                                       m.gee 06/01  |
@@ -285,15 +290,7 @@ void inpfield()
     inp_therm_field(&(field[genprob.numtf]));
 
     /* automatic creation of thermal mesh */
-    /* ---> stay tuned ---> needs to be accomplished */
-    /*
-    if (genprob.create_ale == 0)
-    {
-      field[genprob.numaf].fieldtyp = ale;
-      inpdis(&(field[genprob.numaf]));
-      inp_ale_field  (&(field[genprob.numaf]));
-    }
-    */
+    /* ==> needs to be accomplished */
   }
 #endif
 
@@ -1819,7 +1816,7 @@ void inp_therm_field(
 
 
     /*------------------------------------------------------------------*/
-    /* elementtype THERM2: */
+    /* element type : THERM2 */
     frchk("THERM2", &ierr);
     if (ierr == 1)
     {
@@ -1828,6 +1825,19 @@ void inp_therm_field(
 #else
       thermfield->dis[idis].element[elecounter].eltyp = el_therm2;
       th2_inp(&(thermfield->dis[idis].element[elecounter]));
+#endif
+    }
+
+    /*------------------------------------------------------------------*/
+    /*  element type : THERM3 */
+    frchk("THERM3", &ierr);
+    if (ierr == 1)
+    {
+#ifndef D_THERM3
+      dserror("THERM3 needed but not defined in Makefile");
+#else
+      thermfield->dis[idis].element[elecounter].eltyp = el_therm3;
+      th3_inp(&(thermfield->dis[idis].element[elecounter]));
 #endif
     }
 

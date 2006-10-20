@@ -36,7 +36,7 @@ struct _GENPROB       genprob; defined in global_control.c
 \date 09/06
 */
 /*----------------------------------------------------------------------*/
-/* extern struct _GENPROB genprob; */
+/* extern GENPROB genprob; */
 
 
 /*----------------------------------------------------------------------*/
@@ -49,7 +49,7 @@ defined in global_control.c
 \date 09/06
 */
 /*----------------------------------------------------------------------*/
-extern struct _MATERIAL *mat;
+extern MATERIAL *mat;
 
 
 /*----------------------------------------------------------------------*/
@@ -97,11 +97,15 @@ void therm3(PARTITION *actpart,
   /* switch according to ACTION */
   switch (*action)
   {
+    /* initialise generally element type */
     case calc_therm_init:
       /* these are only called once! */
       th3_cfg_chkdef();
       th3_intg_init(&(th3_data));
       th3_cfg_init(&(th3_data));
+#ifdef TEST_THERM3
+      th3_cfg_test(&(th3_data));
+#endif
 /*       th2_lin_init(); */
 /*       th2_load_init(); */
 /*       th2_hflux_init(actpart); */
@@ -111,6 +115,7 @@ void therm3(PARTITION *actpart,
 /*       th2_temper_init(); */
 #endif
       break;
+    /* determine tangent */
     case calc_therm_tang:
       actmat = &(mat[ele->mat-1]);
       th3_lin_tang(ele, &(th3_data), actmat, estif_global, NULL, NULL);
@@ -126,12 +131,6 @@ void therm3(PARTITION *actpart,
 /*       th2_hflux_cal(ele, &(th2_data), actmat, 0); */
       break;
     case calc_therm_final:
-/*       th2_lin_final(); */
-/*       th2_load_final(); */
-/*       th2_hflux_final(actpart); */
-#ifdef D_TSI
-/*       th2_temper_final(); */
-#endif
       break;
     default:
       dserror("action unknown");

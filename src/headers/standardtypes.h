@@ -101,13 +101,16 @@ Maintainer: Michael Gee
  | structures used for bug and time tracing               m.gee 10/02   |
  *----------------------------------------------------------------------*/
 #include "container.h"
-/*----------------------------------------------------------------------*/
-
 /*----------------------------------------------------------------------*
  | check_defines file                                       mn 01/04    |
  *----------------------------------------------------------------------*/
 #include "check_defines.h"
-
+/*----------------------------------------------------------------------*
+ | human readable notion of                              bborn 10/06    |
+ | the positions in NODE sol, sol_increment, sol_residual               |
+ | and sol_mf arrays                                                    |
+ *----------------------------------------------------------------------*/
+#include "array_position.h"
 
 
 /*!
@@ -211,58 +214,6 @@ INT               monitor;
 INT               relative_displ;         /* write relative displacements to .err */
 INT               steps_per_file;         /* number of result steps per binary file */
 } IO_FLAGS;
-
-
-
-/*----------------------------------------------------------------------*/
-/*!
-\brief positions of physical values in node arrays
-
-This structure contains the positions of the various fluid solutions
-within the nodal array of sol_increment.a.da[pos][dim].
-
-\author chfoe
-\date 11/04
-*/
-/*----------------------------------------------------------------------*/
-typedef struct _ARRAY_POSITION
-{
-  INT numincr; /*!< number of solution fields within sol_increment (fluid)*/
-  INT nummf;
-
-  INT accn;  /*!< position of sol_increment occupied by accel. at time n */
-  INT accnm; /*!< position of sol_increment occup. by accel. at time n-1 */
-  INT convn; /*!< position of convective velocity at n in sol vectors    */
-  INT convnp; /*!< position of convective velocity at n+1 in sol vectors */
-  INT dispn;
-  INT dispnp;
-  INT ddisp;
-  INT eddy;
-  INT gridv; /*!< position of grid velocity in solution vector order     */
-  INT hist;  /*!< pos. of lin. comb. of hist. values needed for mass rhs */
-  INT pred;  /*!< position of sol_increment occypied by predicted vels.  */
-  INT relax; /*!< position of relaxation parameter solution in sol vec's */
-  INT stresspro; /*! position to write projected stresses to */
-  INT terr;  /*!< position of sol_increment occypied by truncation error */
-  INT veln; /*!< position of sol_increment occupied by velocity at time n*/
-  INT velnm; /*!< position of sol_increment occupied by vel. at time n-1 */
-  INT velnp; /*!< position of sol_increment occupied by vel. at time n+1 */
-
-  INT residuum;
-
-  INT mf_dispn;
-  INT mf_dispnp;
-  INT mf_dispnm;
-  INT mf_dispi;
-  INT mf_posnp;
-  INT mf_forcenp;
-  INT mf_forcen;
-  INT mf_forcecpy;
-  INT mf_velnp;
-  INT mf_velcpy;
-  INT mf_reldisp;
-  INT mf_sd_g;
-} ARRAY_POSITION;
 
 
 /*----------------------------------------------------------------------*

@@ -111,6 +111,7 @@ typedef struct _ELEMENT
      struct _INTERF     *interf;                /* 1D interface */
      struct _WALLGE     *wallge;                /* gradient enhance wall element */
      struct _THERM2     *th2;                   /* 2D thermal element */
+     struct _THERM3     *th3;                   /* 3D thermal element */
      }                          e;              /* name of union */
 
      union
