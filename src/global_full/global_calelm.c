@@ -514,6 +514,8 @@ void calelm(FIELD        *actfield,     /* active field */
    case calc_fluid_f2pro            : assemble_action = assemble_two_matrix; break;
    case calc_fluid_amatrix          : assemble_action = assemble_do_nothing; break;
    case calc_fluid_f2pro_rhs_both   : assemble_action = assemble_two_matrix; break;
+   case calc_fluid_mass             : assemble_action = assemble_one_matrix; break;
+   case calc_fluid_pressure_laplace : assemble_action = assemble_one_matrix; break;
 #ifdef D_TSI
    case calc_therm_tang             : assemble_action = assemble_one_matrix; break;
    case calc_therm_heatload         : assemble_action = assemble_do_nothing; break;
@@ -696,6 +698,8 @@ case calc_fluid_shearvelo        : assemble_action = assemble_do_nothing;   brea
 case calc_fluid_f2pro            : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_amatrix          : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_f2pro_rhs_both   : assemble_action = assemble_two_exchange; break;
+case calc_fluid_mass             : assemble_action = assemble_one_exchange; break;
+case calc_fluid_pressure_laplace : assemble_action = assemble_one_exchange; break;
 #ifdef D_TSI
 case calc_therm_tang             : assemble_action = assemble_one_exchange; break;
 case calc_therm_heatload         : assemble_action = assemble_do_nothing;   break;
@@ -769,6 +773,8 @@ case calc_fluid_shearvelo        : assemble_action = assemble_do_nothing;   brea
 case calc_fluid_f2pro            : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_amatrix          : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_f2pro_rhs_both   : assemble_action = assemble_do_nothing;   break;
+case calc_fluid_mass             : assemble_action = assemble_close_1matrix; break;
+case calc_fluid_pressure_laplace : assemble_action = assemble_close_1matrix; break;
 #ifdef D_TSI
 case calc_therm_tang             : assemble_action = assemble_close_1matrix; break;
 case calc_therm_heatload         : assemble_action = assemble_do_nothing;   break;

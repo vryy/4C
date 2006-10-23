@@ -145,7 +145,7 @@ typedef enum _ELEMENT_TYP
                        el_wallge,      /* gradient enhanced wall element */
                        el_therm2,      /* 2D thermal element
                                         * (planar heat conduction) */
-                       el_therm3,      /* 3D thermal element 
+                       el_therm3,      /* 3D thermal element
                                         * (spatial heat conduction) */
                        el_count        /* The number of known
                                         * elements. This must be the
@@ -321,6 +321,8 @@ typedef enum _CALC_ACTION
 		       calc_fluid_normal,
                        calc_fluid_stressprojection,
                        calc_fluid_error,
+		       calc_fluid_mass,
+		       calc_fluid_pressure_laplace,
 		       /* ale */
 		       calc_ale_init,   	/* classic linear ale calculation */
 		       calc_ale_stiff,
