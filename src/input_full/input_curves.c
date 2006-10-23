@@ -218,6 +218,21 @@ for (i=0; i<counter; i++)
      frdouble("t2",&(actcurve->c2),&ierr);
      if (ierr!=1) dserror("cannot read CURVE");
    }
+   frchk("Lung",&ierr);
+   if (ierr==1)
+   {
+     actcurve->curvetyp = curve_explicit;
+     frchar("FUNC",buffer,&ierr);
+     if (ierr!=1) dserror("cannot read CURVE\n");
+	 actcurve->numex=-10;
+
+     frdouble("Frequ",&(actcurve->c1),&ierr);
+     if (ierr!=1) dserror("cannot read CURVE");
+     frdouble("pPEEP",&(actcurve->c2),&ierr);
+     if (ierr!=1) dserror("cannot read CURVE");
+	 frdouble("Phase",&(actcurve->c3),&ierr);
+     if (ierr!=1) dserror("cannot read CURVE");
+   }
 } /* end of loop over curve lines */
 /*----------------------------------------------------------------------*/
 end:

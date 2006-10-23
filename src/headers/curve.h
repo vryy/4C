@@ -37,6 +37,7 @@ ARRAY                  value;         /* array for values at time steps */
 DOUBLE                 T;             /* forgot about it..... */
 DOUBLE                 c1;            /* constant for explicit functions */
 DOUBLE                 c2;            /* constant for explicit functions */
+DOUBLE                 c3;            /* constant for explicit functions */
   struct _ST_NODE*       funct;	      /* function expression */
 } CURVE;
 

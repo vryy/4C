@@ -193,6 +193,11 @@ numex = -2: f(T) = exp(1-1/T) for T<c1 else f(T) = f(c1)
 numex = -3: f(T) = 1-cos(c1*PI*T)
 numex = -4: f(T) = exp(-c1*nu*d*d*T)                       beltrami flow
 numex = -5: f(T) = exp(-c1*a*a*PI*PI*nu*T)                 kim-moin flow
+numex = -6..-9 bitte unten schauen
+numex = -10: f(T) =  0.5*Ppeep*(1 - cos(1/Phase*PI*T)) for T < Phase
+                    else f(T) = 0.5*(1-Ppeep)*(1 - cos(2*PI*Freq*(T - Phase))) + Ppeep
+					lung load curve c1 = Freq, c2 = Ppeep, c3 = Phase
+					Maintainer: Robert Metzke (metzke@lnm.mw.tum.de)
 tbc
 
 </pre>
@@ -208,7 +213,7 @@ DOUBLE dyn_facexplcurve(INT actcurve,   /* number of actual time curve  */
 {
 INT numex;          /* number of explicit time curve                    */
 DOUBLE val1, fac=0.0;
-DOUBLE c1,c2;       /* function constants                               */
+DOUBLE c1,c2,c3;    /* function constants                               */
 DOUBLE d,visc;      /* parameters for Beltrami-flow                     */
 DOUBLE a;           /* parameters for Kim-Moin flow */
 DOUBLE s0;
@@ -221,6 +226,7 @@ dstrc_enter("dyn_facexplcurve");
 numex=curve[actcurve].numex;
 c1=curve[actcurve].c1;
 c2=curve[actcurve].c2;
+c3=curve[actcurve].c3;
 
 /*----------------------------------------------------------------------*/
 switch (numex)
@@ -291,6 +297,14 @@ case -9: /* f(t)=t:2-C1:(2PI)*cos(PI*t:C1-PI:2) */
    }
    else
       fac = T - c1 * 0.5;
+break;
+case -10:
+   if (c3 == 0.0) c3 = 1/c1;
+   if (T<=c3) {
+	 fac = 0.5*c2*(1 - cos(1/c3*PI*T));
+   } else {
+	 fac = 0.5*(1-c2)*(1 - cos(2*PI*c1*(T - c3))) + c2;
+   } 
 break;
 default:
    dserror("Number of explicit timecurve (NUMEX) unknown\n");
