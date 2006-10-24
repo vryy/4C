@@ -72,6 +72,7 @@ for a 3D hex element
 \param  lonoff      INT* (i)   flags if loads present or not
 \param    lval   DOUBLE* (i)   real load values
 \param   eload   DOUBLE**(o)   element load vector
+\param neum_type    INT  (i)   type of neumann condition (for othopressure)
 
 \warning There is nothing special to this routine
 \return void
@@ -85,7 +86,7 @@ void c1_lint(
              DOUBLE   *xyze, DOUBLE *funct, DOUBLE **deriv, DOUBLE **xjm,
              INT        iel,    INT ngnode,       INT *shn,  RSTF rstgeo,
              INT    *lonoff,  DOUBLE *lval,
-             DOUBLE **eload
+             DOUBLE **eload, INT neumtype
              )
 {
 /*----------------------------------------------------------------------*/
@@ -93,6 +94,7 @@ void c1_lint(
    DOUBLE e1, e2, e3, facr, facs, fact;
    DOUBLE det0, ds;
    DOUBLE ap[3], ar[3];
+   DOUBLE pressure;
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
 dstrc_enter("c1_lint");
@@ -151,12 +153,34 @@ dstrc_enter("c1_lint");
         ar[0]=ar[1]=ar[2]= 1.0 * det0;
       break;
       }
-      /*------------------------- loop the degrees of freedom of a node */
-      /*- ar[i] = ar[i] * facr * facs* da * onoffflag[i] * loadvalue[i] */
-      for (i=0; i<3; i++)
+
+      /*------------------------------------------------- ORTHOPRESSURE */
+      if (neumtype == neum_orthopressure)
       {
-         ar[i] *= facr * facs * fact * (DOUBLE)(lonoff[i]) * lval[i];
+        if (lonoff[2] != 1) dserror("pressure must be on third dof");
+
+        /* sign of pressure determined via orientation of normal */
+        if (rstgeo==nst || rstgeo==rpt || rstgeo==rsn)
+          pressure=lval[2];
+        else
+          pressure=-lval[2];
+
+        ar[0]=ap[0]*facr*facs*fact*pressure;
+        ar[1]=ap[1]*facr*facs*fact*pressure;
+        ar[2]=ap[2]*facr*facs*fact*pressure;
       }
+
+      /*----------------------------------------------------------------*/
+      else
+      {
+        /*----------------------- loop the degrees of freedom of a node */
+        /* ar[i] = ar[i] * facr * facs* da * onoffflag[i] * loadvalue[i]*/
+        for (i=0; i<3; i++)
+        {
+          ar[i] *= facr * facs * fact * (DOUBLE)(lonoff[i]) * lval[i];
+        }
+      }
+
       /*-------------------- add load components to element load vector */
       for (i=0; i<ngnode; i++)
       {
@@ -210,7 +234,10 @@ static ARRAY        deriv_a;          /* derivatives of shape functions */
 static DOUBLE     **deriv;
 static ARRAY        xjm_a;            /* jacobian matrix                */
 static DOUBLE     **xjm;
-DOUBLE              xyze[60];         /* element-node coordinates       */
+DOUBLE              xyze[60];         /* referential nodal coordinates  */
+DOUBLE              edis[60];         /* current nodal displacements    */
+DOUBLE          xyz_curr[60];         /* current nodal coordinates      */
+
 /* load specific */
 static ARRAY eload_a; static DOUBLE **eload;
 INT             idof,inode;
@@ -344,8 +371,8 @@ dstrc_enter("c1_eleload");
             xyze, funct, deriv, xjm,
             iel, ngnode, vhn, rstgeo,
             ele->g.gvol->neum->neum_onoff.a.iv, ele->g.gvol->neum->neum_val.a.dv,
-            eload );
-/* the volume load of this element has been done, so which the neumann */
+            eload, NULL);
+/* the volume load of this element has been done, so switch the neumann */
 /* condition off */
   ele->g.gvol->neum=NULL;
 /*----------------------------------------------------------------------*/
@@ -476,7 +503,7 @@ dstrc_enter("c1_eleload");
              xyze, funct, deriv, xjm,
              iel, ngnode, lhn, rstgeo,
              lineneum[line]->neum_onoff.a.iv, lineneum[line]->neum_val.a.dv,
-             eload );
+             eload, NULL);
     /* the line number lie has been done,
                                  so switch of the neumann pointer of it */
     ele->g.gvol->gline[line]->neum=NULL;
@@ -556,12 +583,32 @@ dstrc_enter("c1_eleload");
        rstgeo = rsp;
     break;
     }
-    /*------------------ perform integration over the element volume ---*/
-    c1_lint(ngr, ngs, ngt, xgp, wgx, ygp, wgy, zgp, wgz,
-            xyze, funct, deriv, xjm,
-            iel, ngnode, shn, rstgeo,
-            surfneum[surf]->neum_onoff.a.iv,surfneum[surf]->neum_val.a.dv,
-            eload );
+
+    /*----------------------------------------------------- ORTHOPRESSURE */
+    if (gsurf[surf]->neum->neum_type == neum_orthopressure)
+    {
+      cc=0;
+      for (i=0;i<iel;i++) for (j=0;j<3;j++) edis[cc++] = ele->node[i]->sol.a.da[0][j];
+      for (i=0;i<iel*3;i++) xyz_curr[i] = xyze[i]+edis[i];
+
+      c1_lint(ngr, ngs, ngt, xgp, wgx, ygp, wgy, zgp, wgz,
+              xyz_curr, funct, deriv, xjm,
+              iel, ngnode, shn, rstgeo,
+              surfneum[surf]->neum_onoff.a.iv,surfneum[surf]->neum_val.a.dv,
+              eload, surfneum[surf]->neum_type );
+    }
+
+    /*------------------------------------------------------------------*/
+    else
+    {
+      /*---------------- perform integration over the element volume ---*/
+      c1_lint(ngr, ngs, ngt, xgp, wgx, ygp, wgy, zgp, wgz,
+              xyze, funct, deriv, xjm,
+              iel, ngnode, shn, rstgeo,
+              surfneum[surf]->neum_onoff.a.iv,surfneum[surf]->neum_val.a.dv,
+              eload,NULL);
+    }
+
     /* the surf number lie has been done,
                                  so switch of the neumann pointer of it */
     ele->g.gvol->gsurf[surf]->neum=NULL;

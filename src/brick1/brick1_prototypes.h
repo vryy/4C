@@ -599,7 +599,7 @@ void c1_lint(
              DOUBLE   *xyze, DOUBLE *funct, DOUBLE **deriv, DOUBLE **xjm,
              INT        iel,    INT ngnode,       INT *shn,  RSTF rstgeo,
              INT    *lonoff,  DOUBLE *lval,
-             DOUBLE **eload
+             DOUBLE **eload, INT neumtype
              );
 /*----------------------------------------------------------------------*
  | calculate element loads (edge, surface, volume)              al 9/01 |
@@ -681,10 +681,10 @@ void c1_mat_hyper_polyconvex (
 						DOUBLE *disd,/*-------------------------------------------Vector of Displacement Derrivatives*/
 						DOUBLE *stress,/*--------------------------------------------------------2nd PK Stress Vector*/
 						DOUBLE **d);
-						
+
 void c1_calc_invariants (DOUBLE **M, DOUBLE *Inv);
 void c1_calc_inverse (DOUBLE **M, DOUBLE **Minv, DOUBLE *Inv);
-void c1_calc_tensorproduct (DOUBLE **A, DOUBLE **B, DOUBLE **AB);             
+void c1_calc_tensorproduct (DOUBLE **A, DOUBLE **B, DOUBLE **AB);
 /*----------------------------------------------------------------------*
  |  integration routine for BRICK1 element                     al 6/01  |
  *----------------------------------------------------------------------*/
