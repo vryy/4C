@@ -952,7 +952,7 @@ if (contactflag)
       /* or for the next predictor, which also uses the correct multipliers */
       actaug++;
       /* make augmentation for actaug = 0,1,2, where 0 is penalty method */
-      if (actaug<5)
+      if (actaug<2)
       {
          if (par.myrank==0) printf("\nAUGMENTATION %d\n",actaug);fflush(stdout);
          augon = 0;
