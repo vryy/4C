@@ -346,7 +346,10 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
       case azprec_MLfluid:
       case azprec_MLfluid2:
 #if (!defined(SOLVE_DIRICH)) || (!defined(SOLVE_DIRICH2))
-        dserror("You have to use SOLVE_DIRICH and SOLVE_DIRICH2 with ML");
+        printf("WARNING:\n");
+        printf("You should use SOLVE_DIRICH and SOLVE_DIRICH2 with ML\n");
+        printf("(Or have NO nodes with partial Dirichlet BCs)\n");
+        fflush(stdout);
 #endif
         azlist.set("AZ_precond",AZ_user_precond);
       break;
