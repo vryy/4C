@@ -12,7 +12,6 @@ extern "C"
 
 
 #ifdef __cplusplus
-
 /*----------------------------------------------------------------------*/
 /*!
   \brief Simplify dstrc_enter and dstrc_exit calls in c++
@@ -31,7 +30,6 @@ public:
     {}
 #endif
 };
-
 #endif
 
 
