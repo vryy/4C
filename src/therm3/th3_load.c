@@ -339,11 +339,8 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
             {
               for (igp[1]=0; igp[1]<gpnum[1]; igp[1]++)
               {
-                /* initialise integration factor */
-                fac = 1.0;
-                /* obtain current Gauss coordinates and weights 
-                 * and dimension reduction matrix */
-                /* loop potential basis vector directions */
+                /*------------------------------------------------------*/
+                /* obtain current Gauss coordinates */
                 for (idim=0; idim<NDIM_THERM3; idim++)
                 {
                   /* set anchor point in current side
@@ -355,12 +352,19 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
                     /* add coordinate components */
                     gpcidim = gpcidim 
                       + sidredm[idimsid][idim] 
-                      * data->ghlc[gpintc[idimsid]][igp[idimsid]];
-                    /* multiply weight */
-                    fac = fac 
-                      * data->ghlw[gpintc[idimsid]][igp[idimsid]];
+                        * data->ghlc[gpintc[idimsid]][igp[idimsid]];
                   }  /* end for */
+                  /* final set of idim-component */
+                  gpc[idim] = gpcidim;
                 }  /* end for */
+                /*------------------------------------------------------*/
+                /* Gauss weight */
+                fac = 1.0;  /* initialise integration factor */
+                for (idimsid=0; idimsid<DIMSID_THERM3; idimsid++)
+                {
+                  /* multiply weight */
+                  fac = fac * data->ghlw[gpintc[idimsid]][igp[idimsid]];
+                }
                 /*------------------------------------------------------*/
                 /* Shape functions at Gauss point */
                 th3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1, 
@@ -424,7 +428,7 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
                 {
                   gpcidim = gpcidim
                     + sidredm[idim][idimsid]
-                    * data->gtsc[gpintc[0]][igp[0]][idimsid];
+                      * data->gtsc[gpintc[0]][igp[0]][idimsid];
                 }  /* end for */
                 /* final set of idim-component */
                 gpc[idim] = gpcidim;
