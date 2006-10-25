@@ -110,13 +110,12 @@ typedef struct _TH3_DATA
   DOUBLE ghlc[GLINTC_THERM3][GLMAXP_THERM3];  /* coordinates */
   DOUBLE ghlw[GLINTC_THERM3][GLMAXP_THERM3];  /* weights */
   /* tetrahedron domain [T.J.R. Hughes, "The FEM", Dover 2000] */
-  DOUBLE gtdcr[GTINTC_THERM3][GTMAXP_THERM3];  /* coordinates in r */
-  DOUBLE gtdcs[GTINTC_THERM3][GTMAXP_THERM3];   /* coordinates in s */
-  DOUBLE gtdct[GTINTC_THERM3][GTMAXP_THERM3];  /* coordinates in t */
+  DOUBLE gtdc[GTINTC_THERM3][GTMAXP_THERM3][NDIM_THERM3];  /* coordinates 
+                                                            * in r,s,t */
   DOUBLE gtdw[GTINTC_THERM3][GTMAXP_THERM3];  /* weights */
   /* tetrahedron sides */
-  DOUBLE gtscr[GSINTC_THERM3][GSMAXP_THERM3];  /* coordinates in r */
-  DOUBLE gtscs[GSINTC_THERM3][GSMAXP_THERM3];  /* coordinates in s */
+  DOUBLE gtsc[GSINTC_THERM3][GSMAXP_THERM3][DIMSID_THERM3];  /* coordinates 
+                                                                in side */
   DOUBLE gtsw[GSINTC_THERM3][GSMAXP_THERM3];  /* weights */
   /* triangle edges --> line [0,+1] */
   DOUBLE gtlc[GLINTC_THERM3][GLMAXP_THERM3];  /* coordinates */
@@ -136,12 +135,24 @@ typedef struct _TH3_DATA
   INT nodedgtq[MAXEDG_THERM3][MAXNE_THERM3];  /* quadratic tet10 */
   /*--------------------------------------------------------------------*/
   /* anchor and span vectors for sides and edges in param. space */
-  /* sides */
+  /* sides hex */
   DOUBLE ancsidh[MAXSID_THERM3][NDIM_THERM3];  /* anchors hex */
-  DOUBLE dirsidh[MAXSID_THERM3][DIMSID_THERM3][NDIM_THERM3];  /* base vect. */
-  /* edges */
+  DOUBLE redsidh[MAXSID_THERM3][DIMSID_THERM3][NDIM_THERM3];  /* dim red 
+                                                               * matrix */
+  /* sides tet */
+  DOUBLE ancsidt[MAXSID_THERM3][NDIM_THERM3];  /* anchors tet */
+  DOUBLE redsidt[MAXSID_THERM3][DIMSID_THERM3][NDIM_THERM3];  /* dim red 
+							       * matrix */
+  /* edges hex */
   DOUBLE ancedgh[MAXEDG_THERM3][NDIM_THERM3];  /* anchors hex */
-  DOUBLE diredgh[MAXEDG_THERM3][NDIM_THERM3];  /* base vector */
+  DOUBLE rededgh[MAXEDG_THERM3][NDIM_THERM3];  /* dimension reduction
+                                                * matrix multiplied
+                                                * on Jacobi matrix */
+  /* edges tet */
+  DOUBLE ancedgt[MAXEDG_THERM3][NDIM_THERM3];  /* anchors tet */
+  DOUBLE rededgt[MAXEDG_THERM3][NDIM_THERM3];  /* dimension reduction
+                                                * matrix multiplied
+                                                * on Jacobi matrix */
 } TH3_DATA;
 
 

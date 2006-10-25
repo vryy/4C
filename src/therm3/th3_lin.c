@@ -163,9 +163,9 @@ void th3_lin_tang(ELEMENT *ele,
 	    break;
           /* tetrahedra */
 	  case tet4: case tet10:
-	    gpcr = data->gtdcr[gpintct][igpt];  /* r-coordinate */
-	    gpcs = data->gtdcs[gpintct][igpt];  /* s-coordinate */
-	    gpct = data->gtdct[gpintct][igpt];  /* t-coordinate */
+	    gpcr = data->gtdc[gpintct][igpt][0];  /* r-coordinate */
+	    gpcs = data->gtdc[gpintct][igpt][1];  /* s-coordinate */
+	    gpct = data->gtdc[gpintct][igpt][2];  /* t-coordinate */
 	    fac = data->gtdw[gpintct][igpt];  /* weight */
 	    break;
 	  default:

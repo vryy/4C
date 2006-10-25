@@ -80,6 +80,7 @@ frchk("TET4",&ierr);
 if (ierr==1)
 {
    ele->numnp=4;
+   ele->distyp = tet4;
    ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
    frint_n("TET4",&(ele->lm[0]),ele->numnp,&ierr);
@@ -89,6 +90,7 @@ frchk("TET10",&ierr);
 if (ierr==1)
 {
    ele->numnp=10;
+   ele->distyp = tet10;
    ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed");
    frint_n("TET10",&(ele->lm[0]),ele->numnp,&ierr);

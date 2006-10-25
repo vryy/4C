@@ -258,9 +258,9 @@ void th3_intg_init(TH3_DATA *data)
   {
     for (i=0; i<GTMAXP_THERM3; i++)
     {
-      data->gtdcr[k][i] = 0.0;
-      data->gtdcs[k][i] = 0.0;
-      data->gtdcr[k][i] = 0.0;
+      data->gtdc[k][i][0] = 0.0;
+      data->gtdc[k][i][1] = 0.0;
+      data->gtdc[k][i][2] = 0.0;
       data->gtdw[k][i] = 0.0;
     }
   }
@@ -269,8 +269,8 @@ void th3_intg_init(TH3_DATA *data)
   {
     for (i=0; i<GSMAXP_THERM3; i++)
     {
-      data->gtscr[k][i] = 0.0;
-      data->gtscs[k][i] = 0.0;
+      data->gtsc[k][i][0] = 0.0;
+      data->gtsc[k][i][1] = 0.0;
       data->gtsw[k][i] = 0.0;
     }
   }
@@ -348,53 +348,53 @@ void th3_intg_init(TH3_DATA *data)
   /* 1 Gauss point (1st order) */
   if ( (GTINTC_THERM3 >= 1) && (GTMAXP_THERM3 >= 1) )
   {
-    data->gtdcr[0][0] = 0.25;  /* r-coordinate */
-    data->gtdcs[0][0] = 0.25;  /* s-coordinate */
-    data->gtdct[0][0] = 0.25;  /* t-coordinate */
+    data->gtdc[0][0][0] = 0.25;  /* r-coordinate */
+    data->gtdc[0][0][1] = 0.25;  /* s-coordinate */
+    data->gtdc[0][0][2] = 0.25;  /* t-coordinate */
     data->gtdw[0][0]  = 1.0/6.0;  /* weight */
   }
   /* 4 Gauss points (2nd order) */
   if ( (GTINTC_THERM3 >= 2) && (GTMAXP_THERM3 >= 4) )
   {
-    data->gtdcr[1][0] = 0.13819660;
-    data->gtdcs[1][0] = 0.13819660;
-    data->gtdct[1][0] = 0.13819660;
+    data->gtdc[1][0][0] = 0.13819660;
+    data->gtdc[1][0][1] = 0.13819660;
+    data->gtdc[1][0][2] = 0.13819660;
     data->gtdw[1][0] = 1.0/24.0;
-    data->gtdcr[1][1] = 0.58541020;
-    data->gtdcs[1][1] = 0.13819660;
-    data->gtdct[1][1] = 0.13819660;
+    data->gtdc[1][1][0] = 0.58541020;
+    data->gtdc[1][1][1] = 0.13819660;
+    data->gtdc[1][1][2] = 0.13819660;
     data->gtdw[1][1] = 1.0/24.0;
-    data->gtdcr[1][2] = 0.13819660;
-    data->gtdcs[1][2] = 0.58541020;
-    data->gtdct[1][2] = 0.13819660;
+    data->gtdc[1][2][0] = 0.13819660;
+    data->gtdc[1][2][1] = 0.58541020;
+    data->gtdc[1][2][2] = 0.13819660;
     data->gtdw[1][2] = 1.0/24.0;
-    data->gtdcr[1][3] = 0.13819660;
-    data->gtdcs[1][3] = 0.13819660;
-    data->gtdct[1][3] = 0.58541020;
+    data->gtdc[1][3][0] = 0.13819660;
+    data->gtdc[1][3][1] = 0.13819660;
+    data->gtdc[1][3][2] = 0.58541020;
     data->gtdw[1][3] = 1.0/24.0;
   }
   /* 5 Gauss points (3rd order) */
   if ( (GTINTC_THERM3 >= 3) && (GTMAXP_THERM3 >= 5) )
   {
-    data->gtdcr[2][0] = 1.0/6.0;
-    data->gtdcs[2][0] = 1.0/6.0;
-    data->gtdct[2][0] = 1.0/6.0;
+    data->gtdc[2][0][0] = 1.0/6.0;
+    data->gtdc[2][0][1] = 1.0/6.0;
+    data->gtdc[2][0][2] = 1.0/6.0;
     data->gtdw[2][0] = 1.0/36.0;
-    data->gtdcr[2][1] = 1.0/2.0;
-    data->gtdcs[2][1] = 1.0/6.0;
-    data->gtdct[2][1] = 1.0/6.0;
+    data->gtdc[2][1][0] = 1.0/2.0;
+    data->gtdc[2][1][1] = 1.0/6.0;
+    data->gtdc[2][1][2] = 1.0/6.0;
     data->gtdw[2][1] = 1.0/36.0;
-    data->gtdcr[2][2] = 1.0/6.0;
-    data->gtdcs[2][2] = 1.0/2.0;
-    data->gtdct[2][2] = 1.0/6.0;
+    data->gtdc[2][2][0] = 1.0/6.0;
+    data->gtdc[2][2][1] = 1.0/2.0;
+    data->gtdc[2][2][2] = 1.0/6.0;
     data->gtdw[2][2] = 1.0/36.0;
-    data->gtdcr[2][3] = 1.0/6.0;
-    data->gtdcs[2][3] = 1.0/6.0;
-    data->gtdct[2][3] = 1.0/2.0;
+    data->gtdc[2][3][0] = 1.0/6.0;
+    data->gtdc[2][3][1] = 1.0/6.0;
+    data->gtdc[2][3][2] = 1.0/2.0;
     data->gtdw[2][3] = 1.0/36.0;
-    data->gtdcr[2][4] = 1.0/4.0;
-    data->gtdcs[2][4] = 1.0/4.0;
-    data->gtdct[2][4] = 1.0/4.0;
+    data->gtdc[2][4][0] = 1.0/4.0;
+    data->gtdc[2][4][1] = 1.0/4.0;
+    data->gtdc[2][4][2] = 1.0/4.0;
     data->gtdw[2][4] = -2.0/15.0;
   }
   /*--------------------------------------------------------------------*/
@@ -402,72 +402,72 @@ void th3_intg_init(TH3_DATA *data)
   /* 1 Gauss point (1st order) */
   if ( (GSINTC_THERM3 >= 1) && (GSMAXP_THERM3 >= 1) )
   {
-    data->gtscr[0][0] = 1.0/3.0;  /* r-coordinate (or other) */
-    data->gtscs[0][0] = 1.0/3.0;  /* s-coordinate (or other) */
+    data->gtsc[0][0][0] = 1.0/3.0;  /* r-coordinate (or other) */
+    data->gtsc[0][0][1] = 1.0/3.0;  /* s-coordinate (or other) */
     data->gtsw[0][0] = 1.0/2.0;  /* weight */
   }
   /* 3 Gauss points (2nd order) -- kind 1 */
   if ( (GTINTC_THERM3 >= 2) && (GTMAXP_THERM3 >= 3) )
   {
-    data->gtscr[1][0] = 1.0/6.0;
-    data->gtscs[1][0] = 1.0/6.0;
+    data->gtsc[1][0][0] = 1.0/6.0;
+    data->gtsc[1][0][1] = 1.0/6.0;
     data->gtsw[1][0] = 1.0/6.0;
-    data->gtscr[1][1] = 2.0/3.0;
-    data->gtscs[1][1] = 1.0/6.0; 
+    data->gtsc[1][1][0] = 2.0/3.0;
+    data->gtsc[1][1][1] = 1.0/6.0; 
     data->gtsw[1][1] = 1.0/6.0;
-    data->gtscr[1][2] = 1.0/6.0;
-    data->gtscs[1][2] = 2.0/3.0;
+    data->gtsc[1][2][0] = 1.0/6.0;
+    data->gtsc[1][2][1] = 2.0/3.0;
     data->gtsw[1][2] = 1.0/6.0;
   }
   /* 3 Gauss points (2nd order) -- kind 2 -- unused */
   if ( (GTINTC_THERM3 >= 3) && (GTMAXP_THERM3 >= 3) )
   {
-    data->gtscr[2][0] = 0.5;
-    data->gtscs[2][0] = 0.0;
+    data->gtsc[2][0][0] = 0.5;
+    data->gtsc[2][0][1] = 0.0;
     data->gtsw[2][0] = 1.0/6.0;
-    data->gtscr[2][1] = 0.5;
-    data->gtscs[2][1] = 0.5;
+    data->gtsc[2][1][0] = 0.5;
+    data->gtsc[2][1][1] = 0.5;
     data->gtsw[2][1] = 1.0/6.0;
-    data->gtscr[2][2] = 0.0;
-    data->gtscs[2][2] = 0.5;
+    data->gtsc[2][2][0] = 0.0;
+    data->gtsc[2][2][1] = 0.5;
     data->gtsw[2][2] = 1.0/6.0;
   }
   /* 4 Gauss points (3rd order) */
   if ( (GTINTC_THERM3 >= 4) && (GTMAXP_THERM3 >= 4) )
   {
-    data->gtscr[3][0] = 0.2;
-    data->gtscs[3][0] = 0.2;
+    data->gtsc[3][0][0] = 0.2;
+    data->gtsc[3][0][1] = 0.2;
     data->gtsw[3][0] = 25.0/96.0;
-    data->gtscr[3][1] = 0.6;
-    data->gtscs[3][1] = 0.2;
+    data->gtsc[3][1][0] = 0.6;
+    data->gtsc[3][1][1] = 0.2;
     data->gtsw[3][1] = 25.0/96.0;
-    data->gtscr[3][2] = 0.2;
-    data->gtscs[3][2] = 0.6;
+    data->gtsc[3][2][0] = 0.2;
+    data->gtsc[3][2][1] = 0.6;
     data->gtsw[3][2] = 25.0/96.0;
-    data->gtscr[3][3] = 1.0/3.0;
-    data->gtscs[3][3] = 1.0/3.0;
+    data->gtsc[3][3][0] = 1.0/3.0;
+    data->gtsc[3][3][1] = 1.0/3.0;
     data->gtsw[3][3] = 9.0/32.0;
   }
   /* 6 Gauss points (4th order) */
   if ( (GTINTC_THERM3 >= 5) && (GTMAXP_THERM3 >= 6) )
   {
-    data->gtscr[4][0] = 0.091576213509771;
-    data->gtscs[4][0] = 0.091576213509771;
+    data->gtsc[4][0][0] = 0.091576213509771;
+    data->gtsc[4][0][1] = 0.091576213509771;
     data->gtsw[4][0] = 0.05497587182766;
-    data->gtscr[4][1] = 0.81684757298045;
-    data->gtscs[4][1] = 0.091576213509771;
+    data->gtsc[4][1][0] = 0.81684757298045;
+    data->gtsc[4][1][1] = 0.091576213509771;
     data->gtsw[4][1] = 0.054975871827661;
-    data->gtscr[4][2] = 0.09157621350977;
-    data->gtscs[4][2] = 0.816847572980459;
+    data->gtsc[4][2][0] = 0.09157621350977;
+    data->gtsc[4][2][1] = 0.816847572980459;
     data->gtsw[4][2] = 0.054975871827661;
-    data->gtscr[4][3] = 0.445948490915965;
-    data->gtscs[4][3] = 0.108103018168070;
+    data->gtsc[4][3][0] = 0.445948490915965;
+    data->gtsc[4][3][1] = 0.108103018168070;
     data->gtsw[4][3] = 0.111690794839006;
-    data->gtscr[4][4] = 0.445948490915965;
-    data->gtscs[4][4] = 0.445948490915965;
+    data->gtsc[4][4][0] = 0.445948490915965;
+    data->gtsc[4][4][1] = 0.445948490915965;
     data->gtsw[4][4] = 0.111690794839006;
-    data->gtscr[4][5] = 0.108103018168070;
-    data->gtscs[4][5] = 0.445948490915965;
+    data->gtsc[4][5][0] = 0.108103018168070;
+    data->gtsc[4][5][1] = 0.445948490915965;
     data->gtsw[4][5] = 0.111690794839006;
   }
   /*--------------------------------------------------------------------*/
