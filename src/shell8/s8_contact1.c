@@ -15,6 +15,9 @@ Maintainer: Michael Gee
 #include "../solver/solver.h"
 #include "s8contact.h"
 #include "shell8.h"
+#ifdef TRILINOS_PACKAGE
+#include "../solver/solver_trilinos_service.H"
+#endif
 
 /*!
 \addtogroup CONTACTS8
@@ -56,7 +59,9 @@ INT              myrank,nproc;                     /* parallel stuff */
 INT              numeq,numeq_total;                /* number of equations in the global matrix and vector */
 INT              numnp;                            /* number of slave nodes (ususally all nodes) */
 INT              numele;                           /* number of elements adjacent to a closest node */
-SPOOLMAT        *K;                                /* the spooles matrix */
+SPOOLMAT        *K = NULL;                         /* the spooles matrix */
+TRILINOSMATRIX  *Ktri = NULL;                      /* the trilinos matrix */
+INT*             update;
 
 INT              one=1,mone=-1;                    /* toggles for top or bottom surface of shell element */
 
@@ -110,11 +115,36 @@ MPI_Status       status;                           /* parallel stuff */
 dstrc_enter("s8_contact_detection");
 #endif
 /*----------------------------------------------------------------------*/
+/* 
+  this routine can not handle defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
+  because it uses numeq_total to check for dirichlet BCs
+  (which is not very easy to change in this case
+*/
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
+dserror("Cannot use defines SOLVE_DIRICH and SOLVE_DIRICH2 with shell8 contact");
+#endif
+/*----------------------------------------------------------------------*/
 myrank      = actintra->intra_rank;
 nproc       = actintra->intra_nprocs;
-K           = matrix->spo;
-numeq       = K->numeq;
-numeq_total = K->numeq_total;
+if (*matrix_type==spoolmatrix)
+{
+  K           = matrix->spo;
+  numeq       = K->numeq;
+  numeq_total = K->numeq_total;
+  update      = K->update.a.iv;
+}
+else if (*matrix_type==trilinos)
+{
+#ifndef TRILINOS_PACKAGE
+  dserror("TRILINOS_PACKAGE not defined");
+#endif
+  Ktri        = matrix->trilinos;
+  numeq       = Ktri->numeq;
+  numeq_total = Ktri->numeq_total;
+  update      = Ktri->update.a.iv;
+}
+else
+  dserror("Use spooles matrix or trilinos algebra with shell8 contact only");
 *maxdt      = VERYLARGEREAL;
 /*--------------------------------------------------- get contact nodes */
 numnp = shellcontact.numnp;
@@ -861,7 +891,8 @@ for (i=0; i<numnp; i++)
 	          s8_contact_orthproject(actcnode,&ssurf,&mone,actelebot,xibot,&distance,&success,nue);
 		  if (success)
 		  {
-		     nearbotside==-1;
+		     /*nearbotside==-1;this was in the code before, bug?*/
+		     nearbotside=-1;
 		     s8_contact_gapfunction(actcnode,&ssurf,&one ,actelebot,xibot,&gtop);
 		     s8_contact_gapfunction(actcnode,&ssurf,&mone,actelebot,xibot,&gbot);
 		     tntop = actcnode->bot_ln + EPSN*gtop;
@@ -1032,16 +1063,25 @@ for (k=0; k<numnp; k++)
          {
             ii = actcnode->lmtop.a.iv[i];
             if (ii>=numeq_total) continue;
-            index = find_index(ii,K->update.a.iv,numeq);
+            index = find_index(ii,update,numeq);
             if (index==-1) continue;
             cforce[ii] += actcnode->forcetop.a.dv[i];
             for (j=0; j<30; j++)
             {
                jj = actcnode->lmtop.a.iv[j];
                if (jj>=numeq_total) continue;
+               if (K)
+               {;
 #ifdef SPOOLES_PACKAGE
-               add_val_spo(ii,index,jj,K,actcnode->stifftop.a.da[i][j],actintra);
+                 add_val_spo(ii,index,jj,K,actcnode->stifftop.a.da[i][j],actintra);
 #endif
+               }
+               else if (Ktri)
+               {;
+#ifdef TRILINOS_PACKAGE
+                 add_trilinos_value(Ktri,actcnode->stifftop.a.da[i][j],ii,jj);
+#endif
+               }
             }
          }
          /* delete all memory of top */
@@ -1103,16 +1143,25 @@ for (k=0; k<numnp; k++)
          {
             ii = actcnode->lmbot.a.iv[i];
             if (ii>=numeq_total) continue;
-            index = find_index(ii,K->update.a.iv,numeq);
+            index = find_index(ii,update,numeq);
             if (index==-1) continue;
             cforce[ii] += actcnode->forcebot.a.dv[i];
             for (j=0; j<30; j++)
             {
                jj = actcnode->lmbot.a.iv[j];
                if (jj>=numeq_total) continue;
+               if (K)
+               {;
 #ifdef SPOOLES_PACKAGE
-               add_val_spo(ii,index,jj,K,actcnode->stiffbot.a.da[i][j],actintra);
+                 add_val_spo(ii,index,jj,K,actcnode->stiffbot.a.da[i][j],actintra);
 #endif
+               }
+               else if (Ktri)
+               {;
+#ifdef TRILINOS_PACKAGE
+                 add_trilinos_value(Ktri,actcnode->stiffbot.a.da[i][j],ii,jj);
+#endif
+               }
             }
          }
          /* delete all memory of bot */
