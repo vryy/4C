@@ -357,6 +357,7 @@ void ml_compute_nullspace(DISCRET*          actdis,
       etype==el_ale2   )
   {
     count=0;
+    int numglobalrows = map.NumGlobalElements();
     for (int i=0; i<actdis->numnp; ++i)
     {
       if (actdis->node[i].proc!=myrank) continue;
@@ -364,6 +365,7 @@ void ml_compute_nullspace(DISCRET*          actdis,
       for (int j=0; j<actnode->numdf; ++j)
       {
         int dof   = actnode->dof[j];
+        if (dof>=numglobalrows) continue; // Dirichlet dofs are larger than numeq_total
         int index = map.LID(dof);
         if (index==-1) dserror("Cannot find local for global dof");
         switch(j) // j is the degree of freedom
