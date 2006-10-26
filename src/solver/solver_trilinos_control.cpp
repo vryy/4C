@@ -346,10 +346,13 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
       case azprec_MLfluid:
       case azprec_MLfluid2:
 #if (!defined(SOLVE_DIRICH)) || (!defined(SOLVE_DIRICH2))
-        printf("WARNING:\n");
-        printf("You should use SOLVE_DIRICH and SOLVE_DIRICH2 with ML\n");
-        printf("(Or have NO nodes with partial Dirichlet BCs)\n");
-        fflush(stdout);
+        if (matrix->Comm().MyPID()==0)
+        {
+          printf("WARNING:\n");
+          printf("You should use SOLVE_DIRICH and SOLVE_DIRICH2 with ML\n");
+          printf("(Or have NO nodes with partial Dirichlet BCs)\n");
+          fflush(stdout);
+        }
 #endif
         azlist.set("AZ_precond",AZ_user_precond);
       break;
@@ -566,31 +569,31 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
       }
     }
 
-    //-------------------------------------------- iterate a max of 5 times
-    for (int i=0; i<5; ++i)
-    {
-      solver->Iterate(azvar->aziter,azvar->aztol);
-      const double* status = solver->GetAztecStatus();
-      if (status[AZ_why] == AZ_breakdown)
-      {
-        if (matrix->Comm().MyPID()==0)
-          printf("Numerical breakdown in AztecOO, try again with refined initial guess...\n");
-      }
-      else break;
-    }
-    // check status of solve
+    //--------------------------------------------------------- iterate
+    solver->Iterate(azvar->aziter,azvar->aztol);
+
+    //------------------------------ check status of solve
     const double* status = solver->GetAztecStatus();
     if (status[AZ_why] != AZ_normal)
     {
+      bool resolve = false;
       if (status[AZ_why] == AZ_breakdown)
-        dserror("Numerical breakdown occured in solver AztecOO -> Abort");
+      {
+        if (matrix->Comm().MyPID()==0)
+          printf("Numerical breakdown in AztecOO, try again with SuperLU\n");
+        resolve = true;
+      }
       if (status[AZ_why] == AZ_loss)
+      {
         if (matrix->Comm().MyPID()==0)
         {
           printf("RANK 0: AztecOO: Numerical loss of precision occured! continue...\n");
           fprintf(allfiles.out_err,"RANK 0: AztecOO: Numerical loss of precision occured, continue...\n");
         }
+        resolve = true;
+      }
       if (status[AZ_why] == AZ_ill_cond)
+      {
         if (matrix->Comm().MyPID()==0)
         {
           printf("RANK 0: AztecOO: Preconditioning ill-conditioned or singular,\n");
@@ -598,7 +601,10 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
           fprintf(allfiles.out_err,"RANK 0: AztecOO: Preconditioning ill-conditioned or singular,\n");
           fprintf(allfiles.out_err,"                 solution is least square ! continue...\n");
         }
+        resolve = true;
+      }
       if (status[AZ_why] == AZ_maxits)
+      {
         if (matrix->Comm().MyPID()==0)
         {
          printf("RANK 0: AztecOO: Maximum number of iterations %d reached \n",azvar->aziter);
@@ -606,6 +612,18 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
          fflush(allfiles.out_err);
          fflush(stdout);
         }
+        resolve = true;
+      }
+      if (resolve)
+      {
+        Amesos_Superludist superlusolver(*lp);
+        int err = superlusolver.SymbolicFactorization();
+        if (err) dserror("SuperLU.SymbolicFactorization() returned %d",err);
+        err     = superlusolver.NumericFactorization();
+        if (err) dserror("SuperLU.NumericFactorization() returned %d",err);
+        err     = superlusolver.Solve();
+        if (err) dserror("SuperLU.Solve() returned %d",err);
+      }
     }
     // print some statistics
     if (matrix->Comm().MyPID()==0)
