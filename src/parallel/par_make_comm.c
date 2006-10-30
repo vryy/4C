@@ -91,12 +91,11 @@ dstrc_enter("create_communicators");
 #ifdef PARALLEL
 /*----------------------------------------------------------------------*/
 ranklist = (INT*)CCAMALLOC(par.nprocs*sizeof(INT));
-if (!ranklist) dserror("Allocation of memory failed");
 /*----------------------------------------------- save number of fields */
 par.numfld      = genprob.numfld;
 /*-------------- allocate a structure INTRA for each field on each proc */
 par.intra = (INTRA*)CCACALLOC(par.numfld,sizeof(INTRA));
-if (!par.intra) dserror("Allocation of memory failed");
+
 /*---------------- get the group definition belonging to MPI_COMM_WORLD */
    MPI_Comm_group(MPI_COMM_WORLD,&MPI_WORLD_GROUP);
 /*------------------------------------------------- now loop the fields */
