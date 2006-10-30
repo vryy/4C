@@ -891,7 +891,7 @@ for (i=0; i<numnp; i++)
 	          s8_contact_orthproject(actcnode,&ssurf,&mone,actelebot,xibot,&distance,&success,nue);
 		  if (success)
 		  {
-		     /*nearbotside==-1;this was in the code before, bug?*/
+		     /*nearbotside==-1;this was in the code before, bug? gee*/
 		     nearbotside=-1;
 		     s8_contact_gapfunction(actcnode,&ssurf,&one ,actelebot,xibot,&gtop);
 		     s8_contact_gapfunction(actcnode,&ssurf,&mone,actelebot,xibot,&gbot);
