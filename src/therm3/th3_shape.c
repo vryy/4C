@@ -75,7 +75,7 @@ void th3_shape_deriv(DIS_TYP     typ,
   /* switch according to discretisation type */
   switch (typ)
   {
-    /*------------------------------------------------------------------*/
+    /*==================================================================*/
     /* hexahedral elements */
     /* linear interpolation */
     case hex8:
@@ -94,31 +94,31 @@ void th3_shape_deriv(DIS_TYP     typ,
         deriv[0][0] = -0.125*sm*tm;  /* differentiated in r */
         deriv[0][1] = -0.125*rm*tm;  /* differentiated in s */
         deriv[0][2] = -0.125*rm*sm;  /* differentiated in t */
-        /* */
+        /* shape fct. assoc. to node 1 */
         deriv[1][0] = 0.125*sm*tm;
         deriv[1][1] = -0.125*rp*tm;
         deriv[1][2] = -0.125*rp*sm;
-
+        /* shape fct. assoc. to node 2 */
         deriv[2][0] = 0.125*sp*tm;
         deriv[2][1] = 0.125*rp*tm;
         deriv[2][2] = -0.125*rp*sp;
-
+        /* shape fct. assoc. to node 3 */
         deriv[3][0] = -0.125*sp*tm;
         deriv[3][1] = 0.125*rm*tm;
         deriv[3][2] = -0.125*rm*sp;
-
+        /* shape fct. assoc. to node 4 */
         deriv[4][0] = -0.125*sm*tp;
         deriv[4][1] = -0.125*rm*tp;
         deriv[4][2] = 0.125*rm*sm;
-
+        /* shape fct. assoc. to node 5 */
         deriv[5][0] = 0.125*sm*tp;
         deriv[5][1] = -0.125*rp*tp;
         deriv[5][2] = 0.125*rp*sp;
-
+        /* shape fct. assoc. to node 6 */
         deriv[6][0] = 0.125*sp*tp;
         deriv[6][1] = 0.125*rp*tp;
         deriv[6][2] = 0.125*rp*sp;
-
+        /* shape fct. assoc. to node 7 */
         deriv[7][0] = -0.125*sp*tp;
         deriv[7][1] = 0.125*rm*tp;
         deriv[7][2] = 0.125*rm*sp;
@@ -237,7 +237,7 @@ void th3_shape_deriv(DIS_TYP     typ,
         dserror("Derivatives of hex27 shape functions are not implemented");
       }
       break;
-    /*------------------------------------------------------------------*/
+    /*==================================================================*/
     /* tetrahedral elements */
     /* linear interpolation */
     case tet4:
