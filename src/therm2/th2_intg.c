@@ -221,7 +221,7 @@ routine has to be (hopefully) called only once!!!
 void th2_intg_init(TH2_DATA *data)
 
 {
-  INT i, k, intc;  /* counters */
+  INT i, k;  /* counters */
 
   DOUBLE zero = 0.0;
   DOUBLE one = 1.0;

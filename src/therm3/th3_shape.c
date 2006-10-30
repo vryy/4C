@@ -97,22 +97,28 @@ void th3_shape_deriv(DIS_TYP     typ,
         /* */
         deriv[1][0] = 0.125*sm*tm;
         deriv[1][1] = -0.125*rp*tm;
-        deriv[1][2] = -0.125*rp*tm;
+        deriv[1][2] = -0.125*rp*sm;
+
         deriv[2][0] = 0.125*sp*tm;
         deriv[2][1] = 0.125*rp*tm;
         deriv[2][2] = -0.125*rp*sp;
+
         deriv[3][0] = -0.125*sp*tm;
         deriv[3][1] = 0.125*rm*tm;
         deriv[3][2] = -0.125*rm*sp;
+
         deriv[4][0] = -0.125*sm*tp;
         deriv[4][1] = -0.125*rm*tp;
         deriv[4][2] = 0.125*rm*sm;
+
         deriv[5][0] = 0.125*sm*tp;
         deriv[5][1] = -0.125*rp*tp;
-        deriv[5][2] = 0.125*rp*tp;
+        deriv[5][2] = 0.125*rp*sp;
+
         deriv[6][0] = 0.125*sp*tp;
         deriv[6][1] = 0.125*rp*tp;
         deriv[6][2] = 0.125*rp*sp;
+
         deriv[7][0] = -0.125*sp*tp;
         deriv[7][1] = 0.125*rm*tp;
         deriv[7][2] = 0.125*rm*sp;

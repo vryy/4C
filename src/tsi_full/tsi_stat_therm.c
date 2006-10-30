@@ -207,9 +207,6 @@ void tsi_stat_therm(INT disnum_s,
   static ARRAY dirich_a;
   static DOUBLE *dirich;
 
-  ARRAY_POSITION solpos;  /* give human readable names to
-			   * indices of NODE's sol, sol_incr,
-			   * sol_resid and sol_mf arrays */
   static THERM_DYNAMIC *actdyn;  /* pointer to dynamic control 
 				  * --- allright, static control */
   SOLVAR *actsolv;  /* pointer to field SOLVAR */
@@ -490,7 +487,7 @@ void tsi_stat_therm(INT disnum_s,
     /* ATTENTION : iplace is also used for 
      *             actnode->sol.a.da[iplace][nodeindex]
      *             while printing the temperature */
-    out_sol(actfield, actpart, disnum, actintra, timstp, iplace);
+    out_sol(actfield, actpart, disnum, actintra, timstp, isol->tem);
   }
 
   /*--------------------------------------------------------------------*/

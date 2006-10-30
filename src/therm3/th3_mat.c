@@ -30,6 +30,7 @@ Maintainer: Burkhard Bornemann
 /*!
 \brief Select proper material law
 
+\param *cont      CONTAIMER (i)   container data
 \param *ele       ELEMENT   (i)   pointer to current element
 \param *mat       MATERIAL  (i)   pointer to current material
 \param **bop      DOUBLE    (i)   B-operator
@@ -41,7 +42,8 @@ Maintainer: Burkhard Bornemann
 \author bborn
 \date 03/06
 */
-void th3_mat_sel(ELEMENT *ele,
+void th3_mat_sel(CONTAINER *cont,
+                 ELEMENT *ele,
                  MATERIAL *mat,
                  DOUBLE bop[NDIM_THERM3][NUMDOF_THERM3*MAXNOD_THERM3],
                  INT ip,
@@ -58,7 +60,8 @@ void th3_mat_sel(ELEMENT *ele,
   switch (mat->mattyp)
   {
     case m_th_fourier_iso:
-      th3_matlin_iso(mat->m.th_fourier_iso->conduct,
+      th3_matlin_iso(cont,
+                     mat->m.th_fourier_iso->conduct,
                      ele,
                      bop,
                      heatflux,

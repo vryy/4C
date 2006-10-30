@@ -1048,74 +1048,23 @@ break;
 case thermal:
   if (ioflags.therm_heatflux == 1)
   {
+    /* browse elements in discretisation */
     for (j=0; j<actfield->dis[disnum].numele; j++)
     {
+      /* set pointer to current element in disc. */
       actele = &(actfield->dis[disnum].element[j]);
       switch (actele->eltyp)
       {
-        case el_therm2:
 #ifdef D_THERM2
-          /* print title */
-          fprintf(out, "_________________________________________________"
-                  "_______________________________\n");
-          fprintf(out, "Element glob_Id %d loc_Id %d"
-                  "                THERM2\n", actele->Id, actele->Id_loc);
-          fprintf(out, "\n");
-          /* check heat flux type */
-          switch (actele->e.th2->hfluxtype)
-          {
-            /* none */
-            case th2_hflux_none:
-              break;
-            /* at Gauss points */
-            case th2_hflux_gpxy:
-            case th2_hflux_gp12:
-            case th2_hflux_gpxy12:
-              fprintf(out, "Gaussian   "
-                      "  heatflux-x   heatflux-y   heatflux-z"
-                      "   abs.hflux        angle   heatflux-z\n");
-              /* loop all Gauss points */
-              for (i=0; i<actele->e.th2->gptotal; i++)
-              {
-                fprintf(out, "Gauss %2d   "
-                        "%12.3E %12.3E %12.3E"
-                        "%12.3E %12.3E %12.3E \n",
-                        i,
-                        actele->e.th2->hflux_gp.a.d3[place][0][i],
-                        actele->e.th2->hflux_gp.a.d3[place][1][i],
-                        actele->e.th2->hflux_gp.a.d3[place][2][i],
-                        actele->e.th2->hflux_gp.a.d3[place][3][i],
-                        actele->e.th2->hflux_gp.a.d3[place][4][i],
-                        actele->e.th2->hflux_gp.a.d3[place][5][i]);
-              }
-              break;
-            /* at element nodes */
-            case th2_hflux_ndxy:
-            case th2_hflux_nd12:
-            case th2_hflux_ndxy12:
-              fprintf(out, "Nodal      "
-                      "  heatflux-x   heatflux-y   heatflux-z"
-                      "   abs.hflux        angle   heatflux-z\n");
-              /* loop all element nodes */
-              for (i=0; i<actele->numnp; i++)
-              {
-                fprintf(out, "Node  %2d   "
-                        "%12.3E %12.3E %12.3E"
-                        "%12.3E %12.3E %12.3E \n",
-                        i,
-                        actele->e.th2->hflux_nd.a.d3[place][0][i],
-                        actele->e.th2->hflux_nd.a.d3[place][1][i],
-                        actele->e.th2->hflux_nd.a.d3[place][2][i],
-                        actele->e.th2->hflux_nd.a.d3[place][3][i],
-                        actele->e.th2->hflux_nd.a.d3[place][4][i],
-                        actele->e.th2->hflux_nd.a.d3[place][5][i]);
-              }
-              break;
-            default:
-              dserror("Heat flux type is not available for printing!");
-          }  /* end of */
-#endif  /* end of #ifdef D_THERM2 */
+        case el_therm2:
+	  th2_out_hflux(actele, out);
           break;
+#endif
+#ifdef D_THERM3
+        case el_therm3:
+	  th3_out_hflux(actele, out);
+          break;
+#endif
         default:
           dserror("Unknown element type!");
           break;

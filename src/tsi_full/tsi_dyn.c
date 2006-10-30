@@ -131,7 +131,7 @@ void tsi_dyn()
   TSI_DYNAMIC *tsidyn;
 
   /* files */
-  FILE *out = allfiles.out_out;  /* the OUT file */
+  /*FILE *out = allfiles.out_out;*/  /* the OUT file */ 
 
 #ifdef DEBUG
   dstrc_enter("tsi_dyn");

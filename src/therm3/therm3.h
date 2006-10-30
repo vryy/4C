@@ -73,15 +73,15 @@ Maintainer: Burkhard Bornemann
 #endif
 
 #ifndef GTMAXP_THERM3
-#define GTMAXP_THERM3    (5)    /* max. number of Gauss points */
+#define GTMAXP_THERM3    (5)    /* max. number of Gauss points tet domain */
 #endif
 
 #ifndef GSINTC_THERM3
-#define GSINTC_THERM3    (5)    /* triangle domain Gauss integration cases */
+#define GSINTC_THERM3    (5)    /* tet sides Gauss integration cases */
 #endif
 
 #ifndef GSMAXP_THERM3
-#define GSMAXP_THERM3    (6)    /* max. number of Gauss points */
+#define GSMAXP_THERM3    (6)    /* tet sides max. number of Gauss points */
 #endif
 
 #ifdef DEBUG
@@ -142,7 +142,7 @@ typedef struct _TH3_DATA
   /* sides tet */
   DOUBLE ancsidt[MAXSID_THERM3][NDIM_THERM3];  /* anchors tet */
   DOUBLE redsidt[MAXSID_THERM3][DIMSID_THERM3][NDIM_THERM3];  /* dim red 
-							       * matrix */
+                                                               * matrix */
   /* edges hex */
   DOUBLE ancedgh[MAXEDG_THERM3][NDIM_THERM3];  /* anchors hex */
   DOUBLE rededgh[MAXEDG_THERM3][NDIM_THERM3];  /* dimension reduction
@@ -216,8 +216,12 @@ typedef struct _THERM3
   INT gpnum[NDIM_THERM3];
   INT gpintc[NDIM_THERM3];
 
-  ARRAY4D hflux_gp;
-  ARRAY4D hflux_nd;
+  ARRAY4D hflux_gp_xyz;
+  ARRAY4D hflux_gp_rst;
+  ARRAY4D hflux_gp_123;
+  ARRAY4D hflux_nd_xyz;
+  ARRAY4D hflux_nd_rst;
+  ARRAY4D hflux_nd_123;
 
 #ifdef D_TSI
   TSI_COUPTYP tsi_couptyp;
@@ -245,31 +249,34 @@ void th3_bop(INT        enod,
 void th3_cfg_chkdef();
 void th3_cfg_init(TH3_DATA *data);
 void th3_cfg_noderst(ELEMENT *ele,
-		     TH3_DATA *data,
-		     INT inode,
-		     DOUBLE *rst);
+                     TH3_DATA *data,
+                     INT inode,
+                     DOUBLE *rst);
 #ifdef TEST_THERM3
 void th3_cfg_test(TH3_DATA *data);
 #endif
 
 /*----------------------------------------------------------------------*/
-/* file th2_hflux.c */
-/* void th2_hflux_init(PARTITION *actpart); */
-/* void th2_hflux_final(PARTITION *actpart); */
-/* void th2_hflux_cal(ELEMENT *ele, */
-/*                    THERM2_DATA *data, */
-/*                    MATERIAL *mat, */
-/*                    INT kstep); */
-/* void th2_hflux_steep(DOUBLE *hflux, */
-/*                      DOUBLE *hfluxmod, */
-/*                      DOUBLE *hfluxang, */
-/*                      DOUBLE *dum); */
-/* void th2_hflux_extrpol(ELEMENT *ele, */
-/*                        THERM2_DATA *data, */
-/*                        INT ngauss, */
-/*                        DOUBLE *hfluxgp, */
-/*                        DOUBLE *rs, */
-/*                        DOUBLE *hfluxnd); */
+/* file th3_hflux.c */
+void th3_hflux_init(PARTITION *actpart);
+void th3_hflux_final(PARTITION *actpart);
+void th3_hflux_cal(CONTAINER *cont,
+                   ELEMENT *ele,
+                   TH3_DATA *data,
+                   MATERIAL *mat);
+void th3_hflux_rst(DOUBLE xjm[NDIM_THERM3][NDIM_THERM3],
+                   DOUBLE *hflux,
+                   INT igp,
+                   DOUBLE **hfluxrst);
+void th3_hflux_modang(DOUBLE *hflux,
+                      INT igp,
+                      DOUBLE **hflux123);
+void th3_hflux_extrpol(ELEMENT *ele,
+                       TH3_DATA *data,
+                       INT ngauss,
+                       DOUBLE **hfluxgp,
+                       DOUBLE *rst,
+                       DOUBLE *hfluxnd);
 
 /*----------------------------------------------------------------------*/
 /* file th3_inp.c */
@@ -303,7 +310,8 @@ void th3_metr_line(ELEMENT *ele,
 
 /*----------------------------------------------------------------------*/
 /* file th2_lin.c */
-void th3_lin_tang(ELEMENT  *ele,
+void th3_lin_tang(CONTAINER *cont,
+                  ELEMENT  *ele,
                   TH3_DATA *data,
                   MATERIAL *mat,
                   ARRAY    *estif_global,
@@ -349,18 +357,19 @@ void th3_load_line(ELEMENT *ele,
 /*----------------------------------------------------------------------*/
 /* file th3_main.c */
 void therm3(PARTITION *actpart,
-	    INTRA *actintra,
-	    ELEMENT *ele,
-	    ARRAY *estif_global,
-	    ARRAY *emass_global,
-	    ARRAY *intforce_global,
-	    CALC_ACTION *action,
-	    CONTAINER *container);   /* contains variables defined 
-				      * in container.h */
+            INTRA *actintra,
+            ELEMENT *ele,
+            ARRAY *estif_global,
+            ARRAY *emass_global,
+            ARRAY *intforce_global,
+            CALC_ACTION *action,
+            CONTAINER *container);   /* contains variables defined 
+                                      * in container.h */
 
 /*----------------------------------------------------------------------*/
 /* file th3_mat.c */
-void th3_mat_sel(ELEMENT *ele,
+void th3_mat_sel(CONTAINER *cont,
+                 ELEMENT *ele,
                  MATERIAL *mat,
                  DOUBLE bop[NDIM_THERM3][NUMDOF_THERM3*MAXNOD_THERM3],
                  INT ip,
@@ -369,7 +378,8 @@ void th3_mat_sel(ELEMENT *ele,
 
 /*----------------------------------------------------------------------*/
 /* file th3_matlin.c */
-void th3_matlin_iso(DOUBLE con,
+void th3_matlin_iso(CONTAINER *cont,
+                    DOUBLE con,
                     ELEMENT *ele,
                     DOUBLE bop[NDIM_THERM3][NUMDOF_THERM3*MAXNOD_THERM3],
                     DOUBLE heatflux[NUMHFLX_THERM3],

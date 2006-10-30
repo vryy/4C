@@ -428,7 +428,7 @@ void th2_hflux_steep(DOUBLE *hflux,
   *hfluxmod = sqrt(*hfluxmod);
 
   /*--------------------------------------------------------------------*/
-  /* direction of steepest increase/decrease of heat flux */
+  /* direction of heat flux */
   if (hflux[0] != 0.0)
   {
     if (hflux[0] > 0.0)
@@ -560,9 +560,9 @@ void th2_hflux_extrpol(ELEMENT *ele,
         /* loop Gauss points in s-direction */
         for (ls=0; ls<nis; ls++)
         {
-          /* s-coordinate of currenr Gauss point */
+          /* s-coordinate of current Gauss point */
           gsls = data->gqlc[ls][nis-1];
-          /* determine fun increment due to extrapolation funct ion
+          /* determine func increment due to extrapolation function
            * at Gauss point */
           /* initialise increment/contribution of current Gauss point */
           /* IMPORTANT: The calling sequence of the nir*nis Gauss points

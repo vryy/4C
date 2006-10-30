@@ -6,8 +6,8 @@
 <pre>
 Maintainer: Burkhard Bornemann
             bornemann@lnm.mw.tum.de
-	    http://www.lnm.mw.tum.de/Members/bornemann
-	    089-289-15237
+            http://www.lnm.mw.tum.de/Members/bornemann
+            089-289-15237
 </pre>
 
 \author bborn
@@ -65,14 +65,14 @@ The ACTION keywords are defined in headers/enum.h.
 */
 /*----------------------------------------------------------------------*/
 void therm3(PARTITION *actpart,
-	    INTRA *actintra,
-	    ELEMENT *ele,
-	    ARRAY *estif_global,
-	    ARRAY *emass_global,
-	    ARRAY *intforce_global,
-	    CALC_ACTION *action,
-	    CONTAINER *container)   /* contains variables defined 
-				     * in container.h */
+            INTRA *actintra,
+            ELEMENT *ele,
+            ARRAY *estif_global,
+            ARRAY *emass_global,
+            ARRAY *intforce_global,
+            CALC_ACTION *action,
+            CONTAINER *container)   /* contains variables defined 
+                                     * in container.h */
 {
 
   static TH3_DATA th3_data; /* global variable th3_data */
@@ -106,19 +106,18 @@ void therm3(PARTITION *actpart,
 #ifdef TEST_THERM3
       th3_cfg_test(&(th3_data));
 #endif
-/*       th2_lin_init(); */
-/*       th2_load_init(); */
-/*       th2_hflux_init(actpart); */
+       th3_hflux_init(actpart);
 /*      th2_write_restart(NULL, NULL, 0, NULL, 1); */
 /*      th2_read_restart(NULL, NULL, NULL, 1); */
 #ifdef D_TSI
-/*       th2_temper_init(); */
+      th3_temper_init();
 #endif
       break;
     /* determine tangent */
     case calc_therm_tang:
       actmat = &(mat[ele->mat-1]);
-      th3_lin_tang(ele, &(th3_data), actmat, estif_global, NULL, NULL);
+      th3_lin_tang(container, ele, &(th3_data), actmat, 
+                   estif_global, NULL, NULL);
       break;
     case calc_therm_heatload:
       imyrank = actintra->intra_rank;
@@ -128,9 +127,13 @@ void therm3(PARTITION *actpart,
     case calc_therm_heatflux:
       imyrank = actintra->intra_rank;
       actmat = &(mat[ele->mat-1]);
-/*       th2_hflux_cal(ele, &(th2_data), actmat, 0); */
+      th3_hflux_cal(container, ele, &(th3_data), actmat);
       break;
     case calc_therm_final:
+      th3_hflux_final(actpart);
+#ifdef D_TSI
+      th3_temper_final();
+#endif
       break;
     default:
       dserror("action unknown");

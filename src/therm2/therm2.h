@@ -325,6 +325,11 @@ void th2_matlin_gen(DOUBLE **con,
                     DOUBLE **cmat);
 
 /*----------------------------------------------------------------------*/
+/* file th2_out.c */
+void th2_out_hflux(ELEMENT *actele,
+                   FILE *out);
+
+/*----------------------------------------------------------------------*/
 /* file th2_shape.c */
 void th2_shape_deriv(DOUBLE     *shape,
                      DOUBLE    **deriv,

@@ -6,8 +6,8 @@
 <pre>
 Maintainer: Burkhard Bornemann
             bornemann@lnm.mw.tum.de
-	    http://www.lnm.mw.tum.de/Members/bornemann
-	    089-289-15237
+            http://www.lnm.mw.tum.de/Members/bornemann
+            089-289-15237
 </pre>
 
 \author bborn
@@ -1121,9 +1121,9 @@ with 4,10)
 \date 09/06
 */
 void th3_cfg_noderst(ELEMENT *ele,
-		     TH3_DATA *data,
-		     INT inode,
-		     DOUBLE *rst)
+                     TH3_DATA *data,
+                     INT inode,
+                     DOUBLE *rst)
 {
 
   /*--------------------------------------------------------------------*/
@@ -1205,7 +1205,7 @@ void th3_cfg_test(TH3_DATA *data)
       jnod = data->nodsidh[isid][inod];
       for (idim=0; idim<NDIM_THERM3; idim++)
       {
-	fprintf(filetest, " %e", data->nodhrst[jnod][idim]);
+        fprintf(filetest, " %e", data->nodhrst[jnod][idim]);
       }
       fprintf(filetest, "\n");
     }
@@ -1223,7 +1223,7 @@ void th3_cfg_test(TH3_DATA *data)
       jnod = data->nodedghl[iedg][inod];
       for (idim=0; idim<NDIM_THERM3; idim++)
       {
-	fprintf(filetest, " %e", data->nodhrst[jnod][idim]);
+        fprintf(filetest, " %e", data->nodhrst[jnod][idim]);
       }
       fprintf(filetest, "\n");
     }
@@ -1241,7 +1241,7 @@ void th3_cfg_test(TH3_DATA *data)
       jnod = data->nodedghq[iedg][inod];
       for (idim=0; idim<NDIM_THERM3; idim++)
       {
-	fprintf(filetest, " %e", data->nodhrst[jnod][idim]);
+        fprintf(filetest, " %e", data->nodhrst[jnod][idim]);
       }
       fprintf(filetest, "\n");
     }

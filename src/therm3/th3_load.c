@@ -144,11 +144,11 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
   {
     switch (ele->g.gvol->neum->neum_type)
     {
-      case pres_domain_load:
+      case neum_dead:
         foundgvolneum = 1;
         break;
       default:
-        dserror("load case not implemented");
+        dserror("load type not implemented");
         foundgvolneum = 0;
         break;
     }
@@ -166,11 +166,11 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
     {
       switch (gsurf[igsurf]->neum->neum_type)
       {
-        case pres_domain_load:
+        case neum_dead:
           foundgsurfneum = 1;
           break;
         default:
-          dserror("Neumann BC type is not available!");
+          dserror("Neumann BC type is not available on side!");
           break;
       }
     }
@@ -188,11 +188,11 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
     {
       switch (gline[igline]->neum->neum_type)
       {
-        case pres_domain_load:
+        case neum_dead:
           foundglineneum = 1;
           break;
         default:
-          dserror("Neumann BC type is not available!");
+          dserror("Neumann BC type is not available on edge!");
           break;
       }
     }
@@ -265,7 +265,7 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
           }  /* end of switch */
           /*------------------------------------------------------------*/
           /* shape functions */
-          th3_shape_deriv(ele->distyp, gpc[0], gpc[1], gpc[2], 0, 
+          th3_shape_deriv(ele->distyp, gpc[0], gpc[1], gpc[2], 1, 
                           shape, deriv);
           /*------------------------------------------------------------*/
           /* compute Jacobian matrix, its determinant
@@ -624,6 +624,7 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
 
   /*====================================================================*/
   /* add eload to global load vector */
+  memset(loadvec, 0, sizeof(loadvec));
   if ( (foundgvolneum > 0) 
        || (foundgsurfneum > 0) 
        || (foundglineneum > 0) )
@@ -651,7 +652,7 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
 /*!
 \brief Determine load due to heat source on element domain (volume)
 
-\param	 *ele      ELEMENT      (i)    actual element
+\param   *ele      ELEMENT      (i)    actual element
 \param    nelenod  INT          (i)    number of element nodes
 \param   *shape    DOUBLE       (i)    shape function at Gauss point
 \param    fac      DOUBLE       (i)    integration factor
@@ -680,7 +681,7 @@ void th3_load_vol(ELEMENT *ele,
   {
     /*------------------------------------------------------------------*/
     /* uniform prescribed surface load */
-    case pres_domain_load:
+    case neum_dead:
       for (idof=0; idof<NUMDOF_THERM3; idof++)
       {
         heatsource[idof] = ele->g.gvol->neum->neum_val.a.dv[idof];
@@ -724,7 +725,7 @@ void th3_load_vol(ELEMENT *ele,
 /*!
 \brief Determine load due to heat fluxes on element sides (surfaces)
 
-\param	 *ele      ELEMENT      (i)    actual element
+\param   *ele      ELEMENT      (i)    actual element
 \param    nelenod  INT          (i)    number of element nodes
 \param   *gsurf    GSURF        (i)    current geometry surface
 \param   *shape    DOUBLE       (i)    shape function at Gauss point
@@ -756,7 +757,7 @@ void th3_load_surf(ELEMENT *ele,
   {
     /*------------------------------------------------------------------*/
     /* uniform prescribed surface load */
-    case pres_domain_load:
+    case neum_dead:
       for (idof=0; idof<NUMDOF_THERM3; idof++)
       {
         onoff[idof] = gsurf->neum->neum_onoff.a.iv[idof];
@@ -776,7 +777,7 @@ void th3_load_surf(ELEMENT *ele,
       }
       break;
     /*------------------------------------------------------------------*/
-    case neum_live:
+    case pres_domain_load:
       dserror("load case unknown");
       break;
     /*------------------------------------------------------------------*/
@@ -805,7 +806,7 @@ void th3_load_surf(ELEMENT *ele,
 /*!
 \brief Determine load due to heat fluxes on element edges (lines)
 
-\param	 *ele      ELEMENT      (i)    actual element
+\param   *ele      ELEMENT      (i)    actual element
 \param    nelenod  INT          (i)    number of element nodes
 \param   *igline   GLINE        (i)    current geometry line
 \param   *shape    DOUBLE       (i)    shape function at Gauss point
@@ -837,7 +838,7 @@ void th3_load_line(ELEMENT *ele,
   {
     /*------------------------------------------------------------------*/
     /* uniform prescribed surface load */
-    case pres_domain_load:
+    case neum_live:
       for (idof=0; idof<NUMDOF_THERM3; idof++)
       {
         onoff[idof] = gline->neum->neum_onoff.a.iv[idof];
@@ -857,7 +858,7 @@ void th3_load_line(ELEMENT *ele,
       }
       break;
     /*------------------------------------------------------------------*/
-    case neum_live:
+    case pres_domain_load:
       dserror("load case unknown");
       break;
     /*------------------------------------------------------------------*/

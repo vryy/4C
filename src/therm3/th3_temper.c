@@ -54,10 +54,6 @@ extern FIELD *field;
 static INT      allocated = 0;  /* allocation flag */
 static ARRAY    nodtem_a;
 static DOUBLE  *nodtem;  /* current temperature at element nodes */
-static ARRAY    shape_a;  /* shape functions */
-static DOUBLE  *shape;
-static ARRAY    deriv_a;  /* derivatives of shape functions */
-static DOUBLE **deriv;
 
 
 /*======================================================================*/
@@ -81,8 +77,6 @@ void th3_temper_init()
   if (allocated == 0)
   {
     nodtem = amdef("nodtem", &nodtem_a, MAXNOD_THERM3, 1, "DV");
-    shape = amdef("shape", &shape_a, MAXNOD_THERM3, 1, "DV");
-    deriv = amdef("deriv", &deriv_a, NDIM_THERM3, MAXNOD_THERM3, "DA");
     /* flag alloaction */
     allocated = 1;
   }
@@ -117,8 +111,6 @@ void th3_temper_final()
   if (allocated == 1)
   {
     amdel(&nodtem_a);
-    amdel(&shape_a);
-    amdel(&deriv_a);
     /* reset allocation flag */
     allocated = 0;
   }
@@ -162,6 +154,8 @@ void th3_temper_cal(CONTAINER *container,
   INT nelenod;
   INT neledof;
   DOUBLE rr, ss, tt;  /* Gauss coordinate in THERM3 parameter space */
+  DOUBLE shape[MAXNOD_THERM3];  /* shape functions */
+  DOUBLE deriv[MAXNOD_THERM3][NDIM_THERM3];  /* derivatives of shape fct */
   INT k;  /* loop index */
 
   /*====================================================================*/
@@ -177,8 +171,8 @@ void th3_temper_cal(CONTAINER *container,
   /*--------------------------------------------------------------------*/
   /* reset to zero nodal temper., shape funct. and derivatives */
   amzero(&nodtem_a);
-  amzero(&shape_a);
-  amzero(&deriv_a);
+  memset(shape, 0, sizeof(shape));
+  memset(deriv, 0, sizeof(deriv));
 
   /*--------------------------------------------------------------------*/
   /* transform parametric coordinates if necessary */
@@ -229,5 +223,5 @@ void th3_temper_cal(CONTAINER *container,
   return;
 }  /* end of th3_temper_cal */
 
-#endif /* end of #ifdef D_THERM2 */
+#endif /* end of #ifdef D_THERM3 */
 /*! @} (documentation module close)*/

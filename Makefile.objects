@@ -628,10 +628,12 @@ OBJS_THERM2   = src/therm2/th2_bop.o \
                 src/therm2/th2_mat.o \
                 src/therm2/th2_matlin.o \
                 src/therm2/th2_shape.o \
-                src/therm2/th2_temper.o
+                src/therm2/th2_temper.o  \
+		src/therm2/th2_out.o
 #               spatial thermal
 OBJS_THERM3   = src/therm3/th3_bop.o \
                 src/therm3/th3_cfg.o \
+                src/therm3/th3_hflux.o \
                 src/therm3/th3_inp.o \
                 src/therm3/th3_intg.o \
                 src/therm3/th3_lin.o \
@@ -640,6 +642,7 @@ OBJS_THERM3   = src/therm3/th3_bop.o \
                 src/therm3/th3_mat.o \
                 src/therm3/th3_matlin.o \
                 src/therm3/th3_metr.o \
+                src/therm3/th3_out.o \
                 src/therm3/th3_shape.o \
 		src/therm3/th3_temper.o
 #               visual

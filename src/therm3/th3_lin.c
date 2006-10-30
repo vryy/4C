@@ -22,6 +22,7 @@ Maintainer: Burkhard Bornemann
 #include "../headers/standardtypes.h"
 #include "therm3.h"
 
+/*----------------------------------------------------------------------*/
 /*!
 \addtogroup THERM3
 *//*! @{ (documentation module open)*/
@@ -57,7 +58,8 @@ for the linear, 3dim heat conduction
 \author bborn
 \date 09/06
 */
-void th3_lin_tang(ELEMENT *ele,
+void th3_lin_tang(CONTAINER *cont,
+                  ELEMENT *ele,
                   TH3_DATA *data,
                   MATERIAL *mat,
                   ARRAY *estif_global,
@@ -73,7 +75,7 @@ void th3_lin_tang(ELEMENT *ele,
   INT igpr, igps, igpt;  /* Gauss point indices */
   INT gpnumr, gpnums, gpnumt;  /* Gauss point numbers */
   INT gpintcr, gpintcs, gpintct;  /* Gauss point integration cases */
-  INT ip;  /* current total index of Gauss point */
+  INT igp;  /* current total index of Gauss point */
   DOUBLE fac;  /* integration factors */
   DOUBLE gpcr;  /* r-coord current GP */
   DOUBLE gpcs;  /* s-coord current GP */
@@ -153,23 +155,23 @@ void th3_lin_tang(ELEMENT *ele,
         switch (distyp)
         {
           /* hexahedra */
-	  case hex8: case hex20: case hex27:
-	    gpcr = data->ghlc[gpintcr][igpr];  /* r-coordinate */
-	    gpcs = data->ghlc[gpintcs][igps];  /* s-coordinate */
-	    gpct = data->ghlc[gpintct][igpt];  /* t-coordinate */
-	    fac = data->ghlw[gpintcr][igpr]  /* weight */
-	        * data->ghlw[gpintcs][igps]
+          case hex8: case hex20: case hex27:
+            gpcr = data->ghlc[gpintcr][igpr];  /* r-coordinate */
+            gpcs = data->ghlc[gpintcs][igps];  /* s-coordinate */
+            gpct = data->ghlc[gpintct][igpt];  /* t-coordinate */
+            fac = data->ghlw[gpintcr][igpr]  /* weight */
+                * data->ghlw[gpintcs][igps]
                 * data->ghlw[gpintct][igpt];
-	    break;
+            break;
           /* tetrahedra */
-	  case tet4: case tet10:
-	    gpcr = data->gtdc[gpintct][igpt][0];  /* r-coordinate */
-	    gpcs = data->gtdc[gpintct][igpt][1];  /* s-coordinate */
-	    gpct = data->gtdc[gpintct][igpt][2];  /* t-coordinate */
-	    fac = data->gtdw[gpintct][igpt];  /* weight */
-	    break;
-	  default:
-	    dserror("distyp unknown!");
+          case tet4: case tet10:
+            gpcr = data->gtdc[gpintct][igpt][0];  /* r-coordinate */
+            gpcs = data->gtdc[gpintct][igpt][1];  /* s-coordinate */
+            gpct = data->gtdc[gpintct][igpt][2];  /* t-coordinate */
+            fac = data->gtdw[gpintct][igpt];  /* weight */
+            break;
+          default:
+            dserror("distyp unknown!");
         }  /* end of switch (distyp) */
         /*--------------------------------------------------------------*/
         /* shape functions and their derivatives */
@@ -185,8 +187,7 @@ void th3_lin_tang(ELEMENT *ele,
         th3_bop(nelenod, deriv, xji, bop);
         /*--------------------------------------------------------------*/
         /* call material law */
-        ip = (igpr+1) * (igps+1) * (igpt+1);  /* total Gauss point index */
-	th3_mat_sel(ele, mat, bop, ip, hflux, cmat);
+        th3_mat_sel(cont, ele, mat, bop, igp, hflux, cmat);
         /*--------------------------------------------------------------*/
         /* element tangent matrix estif add contribution at Gauss point
          * (like element stiffness matrix) */
@@ -198,6 +199,9 @@ void th3_lin_tang(ELEMENT *ele,
         {
           th3_lin_fint(neledof, bop, hflux, fac, force);
         }
+        /*--------------------------------------------------------------*/
+        /* increment total Gauss point index */
+        igp++;
       }  /* end of for */
     }  /* end of for */
   }  /* end of for */
@@ -212,7 +216,7 @@ void th3_lin_tang(ELEMENT *ele,
   dstrc_exit();
 #endif
   return;
-} /* end of th2_lin_tang(...) */
+} /* end of th3_lin_tang(...) */
 
 
 /*======================================================================*/
@@ -277,7 +281,6 @@ void th3_lin_bcb(INT       neledof,
 #endif
    return;
 } /* end of th3_lin_bcb(...) */
-
 
 
 

@@ -7,8 +7,8 @@
 <pre>
 Maintainer: Burkhard Bornemann
             bornemann@lnm.mw.tum.de
-	    http://www.lnm.mw.tum.de/Members/bornemann
-	    089-289-15237
+            http://www.lnm.mw.tum.de/Members/bornemann
+            089-289-15237
 </pre>
 
 \author bborn
@@ -64,7 +64,7 @@ void th3_metr_jaco(ELEMENT *ele,
   /* initialise Jacobian to zero */
   for (i=0; i<NDIM_THERM3; i++)
   {
-    for (j=0; i<NDIM_THERM3; i++)
+    for (j=0; j<NDIM_THERM3; j++)
     {
       xjm[i][j] = 0.0;
     }
@@ -97,7 +97,7 @@ void th3_metr_jaco(ELEMENT *ele,
       nodxyz = ele->node[k]->x[i];
       for (j=0; j<NDIM_THERM3; j++)
       {
-         xjm[j][i] += deriv[k][j] * nodxyz;
+        xjm[j][i] += deriv[k][j] * nodxyz;
       }
     }
   }

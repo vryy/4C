@@ -207,25 +207,33 @@ void th3_inp(ELEMENT *ele)
     {
       ele->e.th3->hfluxtype = th3_hflux_gpxyz;
     }
-    if (strncmp(buffer,"Gprst",5) == 0)
-    {
-      ele->e.th3->hfluxtype = th3_hflux_gprst;
-    }
     if (strncmp(buffer,"Gp123",5) == 0)
     {
       ele->e.th3->hfluxtype = th3_hflux_gp123;
+    }
+    if (strncmp(buffer,"Gpxyz123",8) == 0)
+    {
+      ele->e.th3->hfluxtype = th3_hflux_gpxyz123;
+    }
+    if (strncmp(buffer,"Gprst",5) == 0)
+    {
+      ele->e.th3->hfluxtype = th3_hflux_gprst;
     }
     if (strncmp(buffer,"Ndxyz",5) == 0)
     {
       ele->e.th3->hfluxtype = th3_hflux_ndxyz;
     }
-    if (strncmp(buffer,"Ndrst",5) == 0)
-    {
-      ele->e.th3->hfluxtype = th3_hflux_ndrst;
-    }
     if (strncmp(buffer,"Nd123",5) == 0)
     {
       ele->e.th3->hfluxtype = th3_hflux_nd123;
+    }
+    if (strncmp(buffer,"Ndxyz123",8) == 0)
+    {
+      ele->e.th3->hfluxtype = th3_hflux_ndxyz123;
+    }
+    if (strncmp(buffer,"Ndrst",5) == 0)
+    {
+      ele->e.th3->hfluxtype = th3_hflux_ndrst;
     }
   }
 
