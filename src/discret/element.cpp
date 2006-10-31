@@ -59,6 +59,19 @@ ostream& operator << (ostream& os, const CCADISCRETIZATION::Element& element)
 }
 
 
+/*----------------------------------------------------------------------*
+ |  read element input dummy (public)                        mwgee 11/06|
+ |  this is a base class dummy for elements that do not need            |
+ |  a reading method
+ *----------------------------------------------------------------------*/
+bool CCADISCRETIZATION::Element::ReadElement()
+{
+  cout << "CCADISCRETIZATION::Element::ReadElement:\n"
+       << "Base class dummy routine Element::ReadElement() called\n"
+       << __FILE__ << ":" << __LINE__ << endl;
+  return false;
+}
+
 
 
 

@@ -223,10 +223,10 @@ void input_structural_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm)
   
   /* allocate discretizations */
   //structfield->dis = (DISCRET*)CCACALLOC(structfield->ndis,sizeof(DISCRET));
-  structfield->dis = NULL; // not using this here!
-  structfield->dis[0].disclass = dc_normal;
+  //structfield->dis[0].disclass = dc_normal;
   /* initialize array positions with -1 */
-  memset(&structfield->dis[0].ipos, 0xff, sizeof(ARRAY_POSITION));
+  //memset(&structfield->dis[0].ipos, 0xff, sizeof(ARRAY_POSITION));
+  structfield->dis = NULL; // not using this here!
 
   // allocate the discretizations
   vector<RefCountPtr<CCADISCRETIZATION::Discretization> >* discretization = 
@@ -236,6 +236,7 @@ void input_structural_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm)
     (*discretization)[i] = rcp(new CCADISCRETIZATION::Discretization(comm));
 
   // count number of elements
+  int numele = 0;
   {
     int counter=0;
     if (frfind("--STRUCTURE ELEMENTS")==1)
@@ -247,7 +248,7 @@ void input_structural_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm)
         frread();
       }
     }
-    structfield->dis[0].numele = counter;
+    numele = counter;
   }
 
   // read elements  

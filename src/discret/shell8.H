@@ -101,13 +101,41 @@ public:
   */
   void Print() const;
 
+  //@}
+
+  // @{ \name Other
+
+  /*!
+  \brief Read input for this element
+  */
+  bool ReadElement();
 
   //@}
+
 
 private:
 
   // don't want = operator
   Shell8 operator = (const Shell8& old);
+
+  // element specific data
+  
+  enum ForceType
+  {
+    s8_none,
+    s8_xyz,
+    s8_rst,
+    s8_rst_ortho
+  };
+  ForceType        forcetype_;  // type of force calculation
+  double           thickness_;  // shell thickness
+  int              ngp_[3];     // no. gaussian points in each spatial dimension
+  int              ngptri_;     // no. gaussian points for triangle elements
+  int              nhyb_;       // no. of internal dofs
+  int              eas_[5];     // eas parameters
+  int              ans_;        // type of ANS: 0=none 1=Q 2=T 3=QT  
+  double           sdc_;        // scaled director conditioning
+  int              material_;   // number of the material law
 
 }; // class Shell8
 } // namespace CCADISCRET

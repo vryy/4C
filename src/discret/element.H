@@ -106,6 +106,15 @@ public:
 
   //@}
 
+  // @{ \name Other
+
+  /*!
+  \brief Read input for this element
+  */
+  virtual bool ReadElement();
+
+  //@}
+
 protected:
 
   int         id_;       // a unique global element id
