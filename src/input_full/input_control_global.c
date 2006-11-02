@@ -1098,7 +1098,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 	fdyn->dyntyp=dyntyp_pm_discont;
       else if (frwordcmp(buffer,"PM_cont")==0)
 	fdyn->dyntyp=dyntyp_pm_cont;
-      else if (frwordcmp(buffer,"PM_Laplace")==0)
+      else if (frwordcmp(buffer,"PM_laplace")==0)
 	fdyn->dyntyp=dyntyp_pm_cont_laplace;
       else if (frwordcmp(buffer,"Nlin_Time_Int")==0)
 	fdyn->dyntyp=dyntyp_nln_time_int;

@@ -216,12 +216,19 @@ void f2pro_calprhs(
   ARRAY_POSITION *ipos
   );
 
+void f2pro_calvrhs(ELEMENT* ele, ARRAY_POSITION *ipos);
+
 void f2pro_calvelupdate(
   ELEMENT* ele,
   ARRAY_POSITION *ipos
   );
 
 void f2pro_addnodepressure(ELEMENT* ele, INT k, DOUBLE* pressure);
+
+void f2pro_calpress(ELEMENT* ele,
+		    ARRAY* estif_global,
+		    ARRAY* emass_global,
+		    ARRAY_POSITION* ipos);
 
 #if defined(DEBUG) && !defined(PARALLEL)
 

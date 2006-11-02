@@ -676,6 +676,230 @@ void f2pro_calprhs(
 
 /*----------------------------------------------------------------------*/
 /*!
+  \brief calculate rhs
+ */
+/*----------------------------------------------------------------------*/
+void f2pro_calvrhs(ELEMENT* ele, ARRAY_POSITION *ipos)
+{
+  INT i;
+  INT numpdof;
+  INT velnp;
+  INT       iel;        /* number of nodes                                */
+  INT       intc;       /* "integration case" for tri for further infos
+                           see f2_inpele.c and f2_intg.c                 */
+  INT       nir,nis;    /* number of integration nodesin r,s direction    */
+  INT       ihoel=0;    /* flag for higher order elements                 */
+  INT       icode=2;    /* flag for eveluation of shape functions         */
+  INT       lr, ls;     /* counter for integration                        */
+  DOUBLE    fac;        /* total integration vactor                       */
+  DOUBLE    facr, facs; /* integration weights                            */
+  DOUBLE    det;        /* determinant of jacobian matrix at time (n+1)   */
+  DOUBLE    e1,e2;      /* natural coordinates of integr. point           */
+  DIS_TYP   typ;        /* element type                                   */
+  DISMODE   dm;
+
+  FLUID_DATA      *data;
+  DOUBLE gradp[2];
+  DOUBLE    velint[2];  /* velocity vector at integration point           */
+
+#ifdef DEBUG
+  dstrc_enter("f2pro_calvrhs");
+#endif
+
+  /* There is not that much to do, so we don't introduce subfunctions
+   * here. */
+
+  /* Initialize the fast way. We don't have the array at hand, so
+   * amzero is out of reach.
+   * Caution! The size here must match the size in calinit! */
+  memset(eforce,0,(MAXNOD*MAXDOFPERNODE)*sizeof(DOUBLE));
+
+  /* set element coordinates */
+  for(i=0;i<ele->numnp;i++)
+  {
+    xyze[0][i]=ele->node[i]->x[0];
+    xyze[1][i]=ele->node[i]->x[1];
+  }
+
+  velnp = ipos->velnp;
+  for(i=0;i<ele->numnp;i++)
+  {
+    NODE* actnode;
+    actnode=ele->node[i];
+
+    /*----------------------------------- set element velocities (n+gamma) */
+    evelng[0][i]=actnode->sol_increment.a.da[velnp][0];
+    evelng[1][i]=actnode->sol_increment.a.da[velnp][1];
+  }
+
+  switch (ele->e.f2pro->dm)
+  {
+  case dm_q2pm1:
+    numpdof = 3;
+    break;
+  case dm_q1p0:
+    numpdof = 1;
+    break;
+  case dm_q1q1:
+  case dm_q2q2:
+    numpdof = -1;
+    break;
+  case dm_q2q1:
+    numpdof = -2;
+    break;
+  default:
+    dserror("unsupported discretization mode %d", ele->e.f2pro->dm);
+  }
+
+  /*---------------------------------------------- set pressures (n+1) ---*/
+  if ((numpdof==-1) || (numpdof==-2))
+  {
+    ELEMENT* pele;
+    pele = ele->e.f2pro->other;
+    for (i=0; i<pele->numnp; ++i)
+    {
+      epren[i] = pele->node[i]->sol_increment.a.da[0][0];
+    }
+  }
+  else
+  {
+    for (i=0; i<numpdof; ++i)
+    {
+      epren[i]   = ele->e.f2pro->phi[i];
+    }
+  }
+
+  /*--------------------------------------------------- initialisation ---*/
+  iel    = ele->numnp;
+  typ    = ele->distyp;
+  dm     = ele->e.f2pro->dm;
+  fdyn   = alldyn[genprob.numff].fdyn;
+  data   = fdyn->data;
+
+  /*------- get integraton data and check if elements are "higher order" */
+  switch (typ)
+  {
+  case quad4: case quad8: case quad9:  /* --> quad - element */
+    icode   = 3;
+    ihoel   = 1;
+    /* initialise integration */
+    nir = ele->e.f2pro->nGP[0];
+    nis = ele->e.f2pro->nGP[1];
+    break;
+  case tri6: /* --> tri - element */
+    icode   = 3;
+    ihoel   = 1;
+    /* do NOT break at this point!!! */
+  case tri3:
+    /* initialise integration */
+    nir  = ele->e.f2pro->nGP[0];
+    nis  = 1;
+    intc = ele->e.f2pro->nGP[1];
+    break;
+  default:
+    dserror("typ unknown!");
+  } /* end switch(typ) */
+
+
+  /*----------------------------------------------------------------------*
+   |               start loop over integration points                     |
+   *----------------------------------------------------------------------*/
+  for (lr=0;lr<nir;lr++)
+  {
+    for (ls=0;ls<nis;ls++)
+    {
+      /*------------- get values of  shape functions and their derivatives ---*/
+      switch(typ)
+      {
+      case quad4: case quad8: case quad9:   /* --> quad - element */
+        e1   = data->qxg[lr][nir-1];
+        facr = data->qwgt[lr][nir-1];
+        e2   = data->qxg[ls][nis-1];
+        facs = data->qwgt[ls][nis-1];
+        f2_rec(funct,deriv,deriv2,e1,e2,typ,icode);
+	if (numpdof>-1)
+	  f2pro_prec(pfunct, pderiv, e1, e2, dm, &numpdof);
+	else if (numpdof==-2)
+	  f2_rec(pfunct,pderiv,NULL,e1,e2,quad4,2);
+        break;
+      case tri3: case tri6:   /* --> tri - element */
+        e1   = data->txgr[lr][intc];
+        facr = data->twgt[lr][intc];
+        e2   = data->txgs[lr][intc];
+        facs = ONE;
+        f2_tri(funct,deriv,deriv2,e1,e2,typ,icode);
+        dserror("illegal discretisation mode %d", dm);
+        break;
+      default:
+        dserror("typ unknown!");
+      } /* end switch(typ) */
+
+      /*------------------------ compute Jacobian matrix at time n+1 ---*/
+      f2_jaco(xyze,deriv,xjm,&det,iel,ele);
+      fac = facr * facs * det;
+
+      /*----------------------------------- compute global derivates ---*/
+      f2_gder(derxy,deriv,xjm,det,iel);
+
+      /*---------------- get velocities (n+1,i) at integration point ---*/
+      f2_veci(velint,funct,evelng,iel);
+
+      /*
+       * Now do the weak form of the pressure increment gradient. Used
+       * for the velocity update. */
+
+      /*------------------------------------- get pressure gradients ---*/
+      gradp[0] = gradp[1] = 0.0;
+
+      if (numpdof==-1)
+      {
+	for (i=0; i<iel; i++)
+	{
+	  gradp[0] += derxy[0][i] * epren[i];
+	  gradp[1] += derxy[1][i] * epren[i];
+	}
+      }
+      else if (numpdof==-2)
+      {
+	for (i=0; i<ele->e.f2pro->other->numnp; i++)
+	{
+	  gradp[0] += pderxy[0][i] * epren[i];
+	  gradp[1] += pderxy[1][i] * epren[i];
+	}
+      }
+      else
+      {
+	for (i=0; i<numpdof; i++)
+	{
+	  gradp[0] += pderxy[0][i] * epren[i];
+	  gradp[1] += pderxy[1][i] * epren[i];
+	}
+      }
+
+      for (i=0; i<iel; i++)
+      {
+	eforce[2*i  ] += -gradp[0]*fac*funct[i] ;
+	eforce[2*i+1] += -gradp[1]*fac*funct[i] ;
+      }
+
+#if 0
+      for (i=0; i<iel; i++)
+      {
+	eforce[2*i  ] += fac*funct[i]*velint[0] ;
+	eforce[2*i+1] += fac*funct[i]*velint[1] ;
+      }
+#endif
+    }
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
   \brief calculate the gradient of the pressure increment for the
   final velocity update
  */
@@ -964,6 +1188,175 @@ void f2pro_addnodepressure(ELEMENT* ele, INT k, DOUBLE* pressure)
   dstrc_exit();
 #endif
 }
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief calculate laplacian pressure matrix
+
+  \param ele       (i) the element
+ */
+/*----------------------------------------------------------------------*/
+void f2pro_calpress(ELEMENT* ele,
+		    ARRAY* estif_global,
+		    ARRAY* emass_global,
+		    ARRAY_POSITION* ipos)
+{
+  INT i;
+  INT numpdof;
+  INT       iel;        /* number of nodes                                */
+  INT       intc;       /* "integration case" for tri for further infos
+                           see f2_inpele.c and f2_intg.c                 */
+  INT       nir,nis;    /* number of integration nodesin r,s direction    */
+  INT       ihoel=0;    /* flag for higher order elements                 */
+  INT       icode=2;    /* flag for eveluation of shape functions         */
+  INT       lr, ls;     /* counter for integration                        */
+  DOUBLE    fac;        /* total integration vactor                       */
+  DOUBLE    facr, facs; /* integration weights                            */
+  DOUBLE    det;        /* determinant of jacobian matrix at time (n+1)   */
+  DOUBLE    e1,e2;      /* natural coordinates of integr. point           */
+  DIS_TYP   typ;        /* element type                                   */
+  DISMODE   dm;
+
+  FLUID_DATA      *data;
+
+#ifdef DEBUG
+  dstrc_enter("f2pro_calpress");
+#endif
+
+  amzero(estif_global);
+  amzero(emass_global);
+
+  /* set element coordinates */
+  for(i=0;i<ele->numnp;i++)
+  {
+    xyze[0][i]=ele->node[i]->x[0];
+    xyze[1][i]=ele->node[i]->x[1];
+  }
+
+  switch (ele->e.f2pro->dm)
+  {
+  case dm_q2pm1:
+    numpdof = 3;
+    break;
+  case dm_q1p0:
+    numpdof = 1;
+    break;
+  case dm_q1q1:
+  case dm_q2q2:
+    numpdof = -1;
+    break;
+  case dm_q2q1:
+    numpdof = -2;
+    break;
+  default:
+    dserror("unsupported discretization mode %d", ele->e.f2pro->dm);
+  }
+
+  /*--------------------------------------------------- initialisation ---*/
+  iel    = ele->numnp;
+  typ    = ele->distyp;
+  dm     = ele->e.f2pro->dm;
+  fdyn   = alldyn[genprob.numff].fdyn;
+  data   = fdyn->data;
+
+  /*------- get integraton data and check if elements are "higher order" */
+  switch (typ)
+  {
+  case quad4: case quad8: case quad9:  /* --> quad - element */
+    icode   = 3;
+    ihoel   = 1;
+    /* initialise integration */
+    nir = ele->e.f2pro->nGP[0];
+    nis = ele->e.f2pro->nGP[1];
+    break;
+  case tri6: /* --> tri - element */
+    icode   = 3;
+    ihoel   = 1;
+    /* do NOT break at this point!!! */
+  case tri3:
+    /* initialise integration */
+    nir  = ele->e.f2pro->nGP[0];
+    nis  = 1;
+    intc = ele->e.f2pro->nGP[1];
+    break;
+  default:
+    dserror("typ unknown!");
+  } /* end switch(typ) */
+
+  for (lr=0;lr<nir;lr++)
+  {
+    for (ls=0;ls<nis;ls++)
+    {
+      /*------------- get values of  shape functions and their derivatives ---*/
+      switch(typ)
+      {
+      case quad4: case quad8: case quad9:   /* --> quad - element */
+        e1   = data->qxg[lr][nir-1];
+        facr = data->qwgt[lr][nir-1];
+        e2   = data->qxg[ls][nis-1];
+        facs = data->qwgt[ls][nis-1];
+        f2_rec(funct,deriv,deriv2,e1,e2,typ,icode);
+	if (numpdof>0)
+	  f2pro_prec(pfunct, pderiv, e1, e2, dm, &numpdof);
+	else if (numpdof==-2)
+	  f2_rec(pfunct,pderiv,NULL,e1,e2,quad4,2);
+        break;
+      case tri3: case tri6:   /* --> tri - element */
+        e1   = data->txgr[lr][intc];
+        facr = data->twgt[lr][intc];
+        e2   = data->txgs[lr][intc];
+        facs = ONE;
+        f2_tri(funct,deriv,deriv2,e1,e2,typ,icode);
+        dserror("illegal discretisation mode %d", dm);
+        break;
+      default:
+        dserror("typ unknown!");
+      } /* end switch(typ) */
+
+      /*------------------------ compute Jacobian matrix at time n+1 ---*/
+      f2_jaco(xyze,deriv,xjm,&det,iel,ele);
+      fac = facr * facs * det;
+
+      /* build mass matrix */
+      for (i=0; i<iel; ++i)
+      {
+	INT j;
+	for (j=0; j<iel; ++j)
+	{
+          DOUBLE aux = fac*funct[i]*funct[j];
+          emass[2*i  ][2*j  ] += aux ;
+          emass[2*i+1][2*j+1] += aux ;
+        }
+      }
+
+      if (numpdof == -2)
+      {
+	/*----------------------------------- compute global derivates ---*/
+	f2_gder(derxy,pderiv,xjm,det,4);
+
+	for (i=0; i<4; i++)
+	{
+	  INT j;
+	  for (j=0; j<4; j++)
+	  {
+	    estif[i][j] += fac*(derxy[0][i]*derxy[0][j] +
+				derxy[1][i]*derxy[1][j]) ;
+	  }
+	}
+      }
+      else
+      {
+	dserror("not supported");
+      }
+    }
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
 
 #if defined(DEBUG) && !defined(PARALLEL)
 

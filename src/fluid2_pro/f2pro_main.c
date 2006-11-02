@@ -104,10 +104,9 @@ void fluid2_pro(     PARTITION     *actpart,
                  lmass_global,gradopr_global,eforce_global,
                  edforce_global,gforce_global,ipos,hasdirich,hasext);
     break;
-/*----------------------------------------------------------------------*/
 
-/* integrate errors for beltrami and kim-moin */
   case calc_fluid_error:
+    /* integrate errors for beltrami and kim-moin */
     dserror("Error integration not yet implemented for fluid2pro!!");
     break;
 
@@ -116,17 +115,15 @@ void fluid2_pro(     PARTITION     *actpart,
     break;
 
   default:
-    dserror("action unknown");
+    dserror("action %d unknown", *action);
     break;
-  } /* end swtich (*action) */
+  }
 
-/*----------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_exit();
 #endif
 /*----------------------------------------------------------------------*/
 #endif
-/*----------------------------------------------------------------------*/
   return;
 }
 /*! @} (documentation module close)*/

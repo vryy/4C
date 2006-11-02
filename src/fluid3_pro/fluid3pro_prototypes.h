@@ -217,12 +217,19 @@ void f3pro_calprhs(
   ARRAY_POSITION *ipos
   );
 
+void f3pro_calvrhs(ELEMENT* ele, ARRAY_POSITION *ipos);
+
 void f3pro_calvelupdate(
   ELEMENT* ele,
   ARRAY_POSITION *ipos
   );
 
 void f3pro_addnodepressure(ELEMENT* ele, INT k, DOUBLE* pressure);
+
+void f3pro_calpress(ELEMENT* ele,
+		    ARRAY* estif_global,
+		    ARRAY* emass_global,
+		    ARRAY_POSITION* ipos);
 
 
 #endif

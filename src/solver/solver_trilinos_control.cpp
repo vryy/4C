@@ -616,6 +616,7 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
       }
       if (resolve)
       {
+#ifdef PARALLEL
         Amesos_Superludist superlusolver(*lp);
         int err = superlusolver.SymbolicFactorization();
         if (err) dserror("SuperLU.SymbolicFactorization() returned %d",err);
@@ -623,6 +624,9 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
         if (err) dserror("SuperLU.NumericFactorization() returned %d",err);
         err     = superlusolver.Solve();
         if (err) dserror("SuperLU.Solve() returned %d",err);
+#else
+        dserror("Superludist not available");
+#endif
       }
     }
     // print some statistics

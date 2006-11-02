@@ -600,58 +600,9 @@ void fluid_pm_cont_laplace()
   /* -------------------------------------------------------------------- */
   /* Create the pressure Laplace matrix. */
 
-#ifdef PERF
-  perf_begin(81);
-#endif
-
-  *action = calc_fluid_pressure_laplace;
-  t1=ds_cputime();
-  container.dvec         = NULL;
-  container.frhs         = frhs;
-  container.fgradprhs    = fgradprhs;
-  container.global_numeq = pnumeq_total;
-  container.nii          = fdyn->nii;
-  container.kstep        = 0;
-  container.is_relax     = 0;
-  container.disnum       = press_dis;
-  calelm(actfield,actsolv,actpart,actintra,press_array,-1,
-	 &container,action);
-  te=ds_cputime()-t1;
-  tes+=te;
-
-#ifdef PERF
-  perf_end(81);
-#endif
-
-  /*------------------------------------------- initialise iterations-rhs */
-  amzero(&frhs_a);
-  amzero(&fgradprhs_a);
-
-  /* -------------------------------------------------------------------- */
-  /* Create the global mass matrix. */
-
-#ifdef PERF
-  perf_begin(81);
-#endif
-
-  *action = calc_fluid_mass;
-  t1=ds_cputime();
-  container.dvec         = NULL;
-  container.frhs         = frhs;
-  container.fgradprhs    = fgradprhs;
-  container.global_numeq = numeq_total;
-  container.nii          = fdyn->nii;
-  container.kstep        = 0;
-  container.is_relax     = 0;
-  container.disnum       = disnum_calc;
-  calelm(actfield,actsolv,actpart,actintra,mass_array,-1,
-	 &container,action);
-  te=ds_cputime()-t1;
-  tes+=te;
-
-#ifdef PERF
-  perf_end(81);
-#endif
+  pm_calelm_laplace(actfield,actpart,disnum_calc,press_dis,
+		    actsolv,press_array,mass_array,
+		    actintra,ipos);
 
   /*======================================================================*
    |                         T I M E L O O P                              |
@@ -894,19 +845,44 @@ void fluid_pm_cont_laplace()
 	NODE* actnode;
 	actnode = &(actfield->dis[press_dis].node[i]);
 	actnode->sol_increment.a.da[0][0]  = frhs[actnode->dof[0]];
-	actnode->sol_increment.a.da[1][0] += frhs[actnode->dof[0]];
+	actnode->sol_increment.a.da[1][0] += 2./fdyn->dta*frhs[actnode->dof[0]];
+	/*actnode->sol_increment.a.da[1][0] += frhs[actnode->dof[0]];*/
       }
     }
 
-    /* update velocity */
-#if 0
-    pm_vel_update(actfield, actpart, disnum_calc, actintra, ipos,
-		  &lmass, actsolv, actsysarray,
-		  frhs, fgradprhs);
+#if 1
+    fprintf(allfiles.gidres,"RESULT \"vel_star\" \"ccarat\" %d VECTOR ONNODES\n"
+	    "RESULTRANGESTABLE \"standard_fluid    \"\n"
+	    "COMPONENTNAMES \"e1\" \"e2\"\n"
+	    "VALUES\n",fdyn->step);
+
+    for (i=0; i<actfield->dis[0].numnp; ++i)
+    {
+      NODE* n = &actfield->dis[0].node[i];
+      fprintf(allfiles.gidres,"%d %e %e\n",n->Id+1,
+	      n->sol_increment.a.da[ipos->velnp][0],
+	      n->sol_increment.a.da[ipos->velnp][1]);
+    }
+
+    fprintf(allfiles.gidres,"END VALUES\n");
 #endif
+
+    /* update velocity */
 
     solserv_zero_vec(&actsolv->sol[0]);
     solserv_zero_vec(&actsolv->rhs[0]);
+    amzero(&frhs_a);
+
+    /* build up rhs off velocity corretion */
+    pm_calvrhs(actfield, actpart, disnum_calc, actintra, ipos, &actsolv->rhs[0], frhs);
+
+    assemble_vec(actintra,
+		 &(actsolv->sysarray_typ[mass_array]),
+		 &(actsolv->sysarray[mass_array]),
+		 &actsolv->rhs[0],
+		 frhs,
+		 1
+      );
 
     /*-------------------------------------------------------- solve system */
 #ifdef PERF
@@ -928,8 +904,38 @@ void fluid_pm_cont_laplace()
     perf_end(80);
 #endif
 
+    solserv_sol_zero(actfield,disnum_calc,node_array_sol_increment,ipos->velnm);
 
-#if 0
+    fluid_result_incre(actfield,disnum_calc,actintra,&(actsolv->sol[0]),
+		       ipos->velnm,
+		       &(actsolv->sysarray[actsysarray]),
+		       &(actsolv->sysarray_typ[actsysarray]),
+		       &vrat,NULL,NULL);
+
+    solserv_sol_add(actfield,disnum_calc,
+		    node_array_sol_increment,
+		    node_array_sol_increment,
+		    ipos->velnm,
+		    ipos->velnp,1);
+
+#if 1
+    fprintf(allfiles.gidres,"RESULT \"vel_star_star\" \"ccarat\" %d VECTOR ONNODES\n"
+	    "RESULTRANGESTABLE \"standard_fluid    \"\n"
+	    "COMPONENTNAMES \"e1\" \"e2\"\n"
+	    "VALUES\n",fdyn->step);
+
+    for (i=0; i<actfield->dis[0].numnp; ++i)
+    {
+      NODE* n = &actfield->dis[0].node[i];
+      fprintf(allfiles.gidres,"%d %e %e\n",n->Id+1,
+	      n->sol_increment.a.da[ipos->velnm][0],
+	      n->sol_increment.a.da[ipos->velnm][1]);
+    }
+
+    fprintf(allfiles.gidres,"END VALUES\n");
+#endif
+
+#if 1
     fprintf(allfiles.gidres,"RESULT \"press_rhs\" \"ccarat\" %d SCALAR ONNODES\n"
 	    "RESULTRANGESTABLE \"standard_fluid    \"\n"
 	    "COMPONENTNAMES \"pressure\"\n"
@@ -1007,25 +1013,6 @@ void fluid_pm_cont_laplace()
 	d2 = 0;
 
       fprintf(allfiles.gidres,"%d %e %e\n",n->Id+1,d1,d2);
-    }
-
-    fprintf(allfiles.gidres,"END VALUES\n");
-
-    solserv_zero_vec(&(actsolv->sol[0]));
-    matvec_trilinos_trans(&(actsolv->sol[0]),press_sol,&grad);
-
-    fprintf(allfiles.gidres,"RESULT \"matvec\" \"ccarat\" %d VECTOR ONNODES\n"
-	    "RESULTRANGESTABLE \"standard_fluid    \"\n"
-	    "COMPONENTNAMES \"e1\" \"e2\"\n"
-	    "VALUES\n",fdyn->step);
-
-    for (i=0; i<actfield->dis[0].numnp; ++i)
-    {
-      NODE* n = &actfield->dis[0].node[i];
-      fprintf(allfiles.gidres,"%d %e %e\n",
-	      n->Id+1,
-	      actsolv->sol[0].vec.a.dv[n->dof[0]]*2./fdyn->dta,
-	      actsolv->sol[0].vec.a.dv[n->dof[1]]*2./fdyn->dta);
     }
 
     fprintf(allfiles.gidres,"END VALUES\n");

@@ -1115,6 +1115,282 @@ void pm_calelm_cont(FIELD *actfield,
 #endif
 }
 
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief call elements to create gradient and mass matrix
+
+  All the element call and element matrix assembling is in here. We do
+  not use global_calelm because it is such a mess and our requirements
+  are specific. We have to build the inverted diagonalized mass
+  matrix, too.
+
+  \param actfield           (i) actual field
+  \param actpart            (i) actual partition
+  \param disnum             (i) number of discretization
+  \param actsolv            (i) solver
+  \param sysarray           (i) solver type
+  \param actintra           (i) communicator
+  \param ipos               (i) node positions
+  \param numpdof            (i) number of pressure dofs
+  \param grad             (i/o) sparse pressure gradient
+  \param lmass_vec          (o) inverted diagonal mass matrix
+
+  \author u.kue
+  \date 12/05
+ */
+/*----------------------------------------------------------------------*/
+void pm_calelm_laplace(FIELD *actfield,
+		       PARTITION *actpart,
+		       INT vdisnum,
+		       INT pdisnum,
+		       SOLVAR *actsolv,
+		       INT press_array,
+		       INT mass_array,
+		       INTRA *actintra,
+		       ARRAY_POSITION *ipos
+  )
+{
+  INT i;
+  TRILINOSMATRIX *press_mat;
+
+  /* Variables from global_calelm. These are filled by the element
+   * routines. */
+  extern struct _ARRAY emass_global;
+  extern struct _ARRAY estif_global;
+
+#ifdef DEBUG
+  dstrc_enter("pm_calelm_laplace");
+#endif
+
+  if (genprob.usetrilinosalgebra)
+  {
+    if (actsolv->sysarray_typ[press_array]==trilinos)
+    {
+#ifdef TRILINOS_PACKAGE
+      press_mat = actsolv->sysarray[press_array].trilinos;
+#else
+      dserror("trilinos missing");
+#endif
+    }
+  }
+
+  /* calculate matrix values */
+  for (i=0; i<actpart->pdis[vdisnum].numele; ++i)
+  {
+    INT j;
+    ELEMENT* other = NULL;
+    ELEMENT* actele = actpart->pdis[vdisnum].element[i];
+
+    /* We need to assemble the global mass matrix. To do this in
+     * parallel we cannot calculate the local elements only but have
+     * to calculate any neighbouring elements. This in turn demands
+     * that these elements know their pressure values. That is a
+     * truely data parallel approach for discontinuous pressure
+     * demands for element based communication (in contrast to the
+     * node based communication we get by with in the continuous
+     * case.) */
+
+    /* Calculate gradient and mass matrix */
+    switch (actele->eltyp)
+    {
+#ifdef D_FLUID2_PRO
+    case el_fluid2_pro:
+      other = actele->e.f2pro->other;
+      f2pro_calpress(actele, &estif_global, &emass_global, ipos);
+      break;
+#endif
+#ifdef D_FLUID3_PRO
+    case el_fluid3_pro:
+      other = actele->e.f3pro->other;
+      f3pro_calpress(actele, &estif_global, &emass_global, ipos);
+      break;
+#endif
+    default:
+      dserror("element type %d unsupported", actele->eltyp);
+    }
+
+    /* Assemble */
+
+    /* At first lets do the global mass matrix */
+    /*
+     * We do this just once, thus there is no need to have this inside
+     * the fluid element... */
+#if 1
+    /*
+     * We need a different set of boundary conditions here, so we do
+     * the assembling by hand. */
+    assemble(mass_array,
+             &emass_global,
+             -1,
+             NULL,
+             actpart,
+             actsolv,
+             actintra,
+             actele,
+             assemble_one_matrix,
+             NULL);
+#endif
+
+#if 0
+    for (j=0; j<actele->numnp; ++j)
+    {
+      NODE* actnode = actele->node[j];
+
+      if (actele->proc == actintra->intra_rank)
+      {
+	INT dj;
+	for (dj=0; dj<actnode->numdf; ++dj)
+	{
+	  add_trilinos_value(actsolv->sysarray[mass_array].trilinos,
+			     1,
+			     actnode->dof[dj],
+			     actnode->dof[dj]);
+	}
+      }
+    }
+#endif
+
+#if 0
+    for (j=0; j<actele->numnp; ++j)
+    {
+      NODE* actnode = actele->node[j];
+
+      if (actele->proc == actintra->intra_rank)
+      {
+	INT dj;
+	for (dj=0; dj<actnode->numdf; ++dj)
+	{
+	  INT k;
+
+	  /* only normal dirichlet hack! */
+	  if ((dj==1) &&
+	      (actnode->gnode->dirich!=NULL) &&
+	      (actnode->gnode->dirich->dirich_onoff.a.iv[0]!=0) &&
+	      (actnode->gnode->dirich->dirich_onoff.a.iv[1]!=0) &&
+	      (actnode->gnode->dirich->dirich_val.a.dv[0]==0) &&
+	      (actnode->gnode->dirich->dirich_val.a.dv[1]==0))
+	  {
+	    add_trilinos_value(actsolv->sysarray[mass_array].trilinos,
+			       1,
+			       actnode->dof[dj],
+			       actnode->dof[dj]);
+	  }
+	  else if ((dj==0) &&
+	      (actnode->gnode->dirich!=NULL) &&
+	      (actnode->gnode->dirich->dirich_onoff.a.iv[0]!=0) &&
+	      (actnode->gnode->dirich->dirich_onoff.a.iv[1]!=0) &&
+	      (actnode->gnode->dirich->dirich_val.a.dv[0]==1) &&
+	      (actnode->gnode->dirich->dirich_val.a.dv[1]==0))
+	  {
+	    add_trilinos_value(actsolv->sysarray[mass_array].trilinos,
+			       1,
+			       actnode->dof[dj],
+			       actnode->dof[dj]);
+	  }
+	  else
+	  {
+	    for (k=0; k<actele->numnp; ++k)
+	    {
+	      NODE* actnode2 = actele->node[k];
+	      INT dk;
+	      for (dk=0; dk<actnode->numdf; ++dk)
+	      {
+		if ((dk==1) &&
+		    (actnode2->gnode->dirich!=NULL) &&
+		    (actnode2->gnode->dirich->dirich_onoff.a.iv[0]!=0) &&
+		    (actnode2->gnode->dirich->dirich_onoff.a.iv[1]!=0) &&
+		    (actnode2->gnode->dirich->dirich_val.a.dv[0]==0) &&
+		    (actnode2->gnode->dirich->dirich_val.a.dv[1]==0))
+		{
+		}
+		else if ((dk==0) &&
+		    (actnode2->gnode->dirich!=NULL) &&
+		    (actnode2->gnode->dirich->dirich_onoff.a.iv[0]!=0) &&
+		    (actnode2->gnode->dirich->dirich_onoff.a.iv[1]!=0) &&
+		    (actnode2->gnode->dirich->dirich_val.a.dv[0]==1) &&
+		    (actnode2->gnode->dirich->dirich_val.a.dv[1]==0))
+		{
+		}
+		else
+		{
+		  add_trilinos_value(actsolv->sysarray[mass_array].trilinos,
+				     emass_global.a.da[j*actnode->numdf+dj][k*actnode->numdf+dk],
+				     actnode->dof[dj],
+				     actnode2->dof[dk]);
+		}
+	      }
+	    }
+	  }
+	}
+      }
+    }
+#endif
+
+    /* laplace pressure matrix */
+    for (j=0; j<other->numnp; ++j)
+    {
+      NODE* actnode = other->node[j];
+
+      if (actele->proc == actintra->intra_rank)
+      {
+	/* non-dirichlet dofs */
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
+	if ((actnode->gnode->dirich==NULL) ||
+	    (actnode->gnode->dirich->dirich_onoff.a.iv[genprob.ndim]==0))
+#else
+	  dserror("not implemented");
+        if (actnode->dof[0] < actfield->dis[pdisnum].numeq)
+#endif
+	{
+	  INT k;
+	  for (k=0; k<other->numnp; ++k)
+	  {
+	    NODE* node2 = other->node[k];
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
+	    if ((node2->gnode->dirich==NULL) ||
+		(node2->gnode->dirich->dirich_onoff.a.iv[genprob.ndim]==0))
+#else
+	      dserror("not implemented");
+	    if (node2->dof[0] < actfield->dis[pdisnum].numeq)
+#endif
+	    {
+	      add_trilinos_value(press_mat,
+				 estif_global.a.da[j][k],
+				 actnode->dof[0],
+				 node2->dof[0]);
+	    }
+	  }
+	}
+	else
+	{
+	  add_trilinos_value(press_mat,
+			     1,
+			     actnode->dof[0],
+			     actnode->dof[0]);
+	}
+      }
+    }
+  }
+
+  if (genprob.usetrilinosalgebra)
+  {
+    if (actsolv->sysarray_typ[mass_array]==trilinos)
+    {
+#ifdef TRILINOS_PACKAGE
+      close_trilinos_matrix(actsolv->sysarray[mass_array].trilinos);
+      close_trilinos_matrix(actsolv->sysarray[press_array].trilinos);
+#else
+      dserror("trilinos missing");
+#endif
+    }
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
 #endif
 
 
@@ -1318,6 +1594,97 @@ void pm_calprhs_cont(FIELD *actfield,
 #endif
     default:
       dserror("element type %d unsupported", actele->eltyp);
+    }
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief call elements to create rhs for velocity correction
+
+  This is used if we do not lump the mass matrix and have to solve for
+  the velocity correction...
+
+  \param actfield           (i) actual field
+  \param actpart            (i) actual partition
+  \param disnum             (i) number of discretization
+  \param actintra           (i) communicator
+  \param ipos               (i) node positions
+  \param numpdof            (i) number of pressure dofs
+  \param rhs                (o) result vector
+
+  \author u.kue
+  \date 12/05
+ */
+/*----------------------------------------------------------------------*/
+void pm_calvrhs(FIELD *actfield,
+		PARTITION *actpart,
+		INT disnum,
+		INTRA *actintra,
+		ARRAY_POSITION *ipos,
+		DIST_VECTOR* rhs,
+		DOUBLE* full_rhs)
+{
+  INT i;
+
+  /* Variables from global_calelm. These are filled by the element
+   * routines. */
+  extern struct _ARRAY eforce_global;
+
+#ifdef DEBUG
+  dstrc_enter("pm_calvrhs");
+#endif
+
+  /* calculate matrix values */
+  for (i=0; i<actpart->pdis[disnum].numele; ++i)
+  {
+    INT k;
+    ELEMENT* actele = actpart->pdis[disnum].element[i];
+
+    /* Calculate gradient and mass matrix */
+    switch (actele->eltyp)
+    {
+#ifdef D_FLUID2_PRO
+    case el_fluid2_pro:
+    {
+      f2pro_calvrhs(actele, ipos);
+      break;
+    }
+#endif
+#ifdef D_FLUID3_PRO
+    case el_fluid3_pro:
+    {
+      f3pro_calvrhs(actele, ipos);
+      break;
+    }
+#endif
+    default:
+      dserror("element type %d unsupported", actele->eltyp);
+    }
+
+    /* Assemble */
+    /* We have discontinuous pressure here. No need to loop the
+     * nodes. */
+    for (k=0; k<actele->numnp; ++k)
+    {
+      NODE* node = actele->node[k];
+
+      if (node->proc == actintra->intra_rank)
+      {
+	INT j;
+	for (j=0; j<node->numdf; ++j)
+	{
+	  dsassert((node->dof[j] >= 0) &&
+		   (node->dof[j] < rhs->numeq),
+		   "dof number out of range");
+	  full_rhs[node->dof[j]] += eforce_global.a.dv[node->numdf*k+j];
+	}
+      }
     }
   }
 

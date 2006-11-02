@@ -321,8 +321,6 @@ typedef enum _CALC_ACTION
 		       calc_fluid_normal,
                        calc_fluid_stressprojection,
                        calc_fluid_error,
-		       calc_fluid_mass,
-		       calc_fluid_pressure_laplace,
 		       /* ale */
 		       calc_ale_init,   	/* classic linear ale calculation */
 		       calc_ale_stiff,

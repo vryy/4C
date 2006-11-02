@@ -82,6 +82,16 @@ void pm_calelm_cont(FIELD *actfield,
 		    TRILINOSMATRIX* grad,
 		    TRILINOSMATRIX* lmass
   );
+void pm_calelm_laplace(FIELD *actfield,
+		       PARTITION *actpart,
+		       INT vdisnum,
+		       INT pdisnum,
+		       SOLVAR *actsolv,
+		       INT press_array,
+		       INT mass_array,
+		       INTRA *actintra,
+		       ARRAY_POSITION *ipos
+  );
 
 void pm_calprhs(FIELD *actfield,
                 PARTITION *actpart,
@@ -97,6 +107,13 @@ void pm_calprhs_cont(FIELD *actfield,
 		     ARRAY_POSITION *ipos,
 		     DIST_VECTOR* rhs,
 		     DOUBLE* full_rhs);
+void pm_calvrhs(FIELD *actfield,
+		PARTITION *actpart,
+		INT disnum,
+		INTRA *actintra,
+		ARRAY_POSITION *ipos,
+		DIST_VECTOR* rhs,
+		DOUBLE* full_rhs);
 
 void pm_press_update(FIELD *actfield,
                      PARTITION *actpart,

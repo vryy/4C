@@ -713,6 +713,246 @@ void f3pro_calprhs(
 
 /*----------------------------------------------------------------------*/
 /*!
+  \brief calculate rhs
+ */
+/*----------------------------------------------------------------------*/
+void f3pro_calvrhs(ELEMENT* ele, ARRAY_POSITION *ipos)
+{
+  INT i;
+  INT numpdof;
+  INT velnp;
+  INT       iel;        /* number of nodes                                */
+  INT       intc;       /* "integration case" for tri for further infos
+                           see f2_inpele.c and f2_intg.c                 */
+  INT       nir,nis,nit;/* number of integration nodesin r,s direction    */
+  INT       ihoel=0;    /* flag for higher order elements                 */
+  INT       icode=2;    /* flag for eveluation of shape functions         */
+  INT       lr, ls, lt; /* counter for integration                        */
+  DOUBLE    fac;        /* total integration vactor                       */
+  DOUBLE    facr, facs, fact; /* integration weights                            */
+  DOUBLE    det;        /* determinant of jacobian matrix at time (n+1)   */
+  DOUBLE    e1,e2,e3;   /* natural coordinates of integr. point           */
+  DIS_TYP   typ;        /* element type                                   */
+  DISMODE   dm;
+
+  FLUID_DATA      *data;
+  DOUBLE gradp[3];
+  DOUBLE velint[3];     /* velocity vector at integration point           */
+
+#ifdef DEBUG
+  dstrc_enter("f3pro_calvrhs");
+#endif
+
+  /* There is not that much to do, so we don't introduce subfunctions
+   * here. */
+
+  /* Initialize the fast way. We don't have the array at hand, so
+   * amzero is out of reach.
+   * Caution! The size here must match the size in calinit! */
+  memset(eforce,0,(MAXNOD*MAXDOFPERNODE)*sizeof(DOUBLE));
+
+  /* set element coordinates */
+  for(i=0;i<ele->numnp;i++)
+  {
+    xyze[0][i]=ele->node[i]->x[0];
+    xyze[1][i]=ele->node[i]->x[1];
+    xyze[2][i]=ele->node[i]->x[2];
+  }
+
+  velnp = ipos->velnp;
+  for(i=0;i<ele->numnp;i++)
+  {
+    NODE* actnode;
+    actnode=ele->node[i];
+
+    /*----------------------------------- set element velocities (n+gamma) */
+    evelng[0][i]=actnode->sol_increment.a.da[velnp][0];
+    evelng[1][i]=actnode->sol_increment.a.da[velnp][1];
+    evelng[2][i]=actnode->sol_increment.a.da[velnp][2];
+  }
+
+  switch (ele->e.f3pro->dm)
+  {
+  case dm_q2pm1:
+    numpdof = 3;
+    break;
+  case dm_q1p0:
+    numpdof = 1;
+    break;
+  case dm_q1q1:
+  case dm_q2q2:
+    numpdof = -1;
+    break;
+  case dm_q2q1:
+    numpdof = -2;
+    break;
+  default:
+    dserror("unsupported discretization mode %d", ele->e.f3pro->dm);
+  }
+
+  /*---------------------------------------------- set pressures (n+1) ---*/
+  if ((numpdof==-1) || (numpdof==-2))
+  {
+    ELEMENT* pele;
+    pele = ele->e.f3pro->other;
+    for (i=0; i<pele->numnp; ++i)
+    {
+      epren[i] = pele->node[i]->sol_increment.a.da[0][0];
+    }
+  }
+  else
+  {
+    for (i=0; i<numpdof; ++i)
+    {
+      epren[i]   = ele->e.f3pro->phi[i];
+    }
+  }
+
+  /*--------------------------------------------------- initialisation ---*/
+  iel    = ele->numnp;
+  typ    = ele->distyp;
+  dm     = ele->e.f3pro->dm;
+  fdyn   = alldyn[genprob.numff].fdyn;
+  data   = fdyn->data;
+
+  /*------- get integraton data and check if elements are "higher order" */
+  switch (typ)
+  {
+  case hex8: case hex20: case hex27:  /* --> hex - element */
+    icode   = 3;
+    ihoel   = 1;
+    /* initialise integration */
+    nir = ele->e.f3pro->nGP[0];
+    nis = ele->e.f3pro->nGP[1];
+    nit = ele->e.f3pro->nGP[2];
+    intc= 0;
+    break;
+  case tet10: /* --> tet - element */
+    icode   = 3;
+    ihoel   = 1;
+    /* do NOT break at this point!!! */
+  case tet4:    /* initialise integration */
+    nir  = ele->e.f3pro->nGP[0];
+    nis  = 1;
+    nit  = 1;
+    intc = ele->e.f3pro->nGP[1];
+    break;
+  default:
+    dserror("typ unknown!");
+  } /* end switch(typ) */
+
+
+  /*----------------------------------------------------------------------*
+   |               start loop over integration points                     |
+   *----------------------------------------------------------------------*/
+  for (lr=0;lr<nir;lr++)
+  {
+    for (ls=0;ls<nis;ls++)
+    {
+      for (lt=0;lt<nit;lt++)
+      {
+	/*------------- get values of  shape functions and their derivatives ---*/
+	switch(typ)
+	{
+	case hex8: case hex20: case hex27:   /* --> hex - element */
+	  e1   = data->qxg[lr][nir-1];
+	  facr = data->qwgt[lr][nir-1];
+	  e2   = data->qxg[ls][nis-1];
+	  facs = data->qwgt[ls][nis-1];
+	  e3   = data->qxg[lt][nit-1];
+	  fact = data->qwgt[lt][nit-1];
+	  f3_hex(funct,deriv,deriv2,e1,e2,e3,typ,icode);
+	  if (numpdof>-1)
+	    f3pro_phex(pfunct, pderiv, e1, e2, e3, dm, &numpdof);
+	  else if (numpdof==-2)
+	    f3_hex(pfunct,pderiv,NULL,e1,e2,e3,hex8,2);
+	  break;
+	case tet4: case tet10:   /* --> tet - element */
+	  e1   = data->txgr[lr][intc];
+	  facr = data->twgt[lr][intc];
+	  e2   = data->txgs[lr][intc];
+	  facs = ONE;
+	  e3   = data->txgt[lr][intc];
+	  fact = ONE;
+	  f3_tet(funct,deriv,deriv2,e1,e2,e3,typ,icode);
+	  dserror("illegal discretisation mode %d", dm);
+	  break;
+	default:
+	  dserror("typ unknown!");
+	}
+
+	/*------------------------ compute Jacobian matrix at time n+1 ---*/
+	f3_jaco(xyze,deriv,xjm,&det,ele,iel);
+	fac = facr*facs*fact*det;
+
+	/*----------------------------------- compute global derivates ---*/
+	f3_gder(derxy,deriv,xjm,wa1,det,iel);
+
+	/*---------------- get velocities (n+1,i) at integration point ---*/
+	f3_veci(velint,funct,evelng,iel);
+
+	/*
+	 * Now do the weak form of the pressure increment gradient. Used
+	 * for the velocity update. */
+
+	/*------------------------------------- get pressure gradients ---*/
+	gradp[0] = gradp[1] = gradp[2] = 0.0;
+
+	if (numpdof==-1)
+	{
+	  for (i=0; i<iel; i++)
+	  {
+	    gradp[0] += derxy[0][i] * epren[i];
+	    gradp[1] += derxy[1][i] * epren[i];
+	    gradp[2] += derxy[2][i] * epren[i];
+	  }
+	}
+	else if (numpdof==-2)
+	{
+	  for (i=0; i<ele->e.f3pro->other->numnp; i++)
+	  {
+	    gradp[0] += pderxy[0][i] * epren[i];
+	    gradp[1] += pderxy[1][i] * epren[i];
+	    gradp[2] += pderxy[2][i] * epren[i];
+	  }
+	}
+	else
+	{
+	  for (i=0; i<numpdof; i++)
+	  {
+	    gradp[0] += pderxy[0][i] * epren[i];
+	    gradp[1] += pderxy[1][i] * epren[i];
+	    gradp[2] += pderxy[2][i] * epren[i];
+	  }
+	}
+
+	for (i=0; i<iel; i++)
+	{
+	  eforce[3*i  ] += -gradp[0]*fac*funct[i] ;
+	  eforce[3*i+1] += -gradp[1]*fac*funct[i] ;
+	  eforce[3*i+2] += -gradp[2]*fac*funct[i] ;
+	}
+
+#if 0
+	for (i=0; i<iel; i++)
+	{
+	  eforce[3*i  ] += fac*funct[i]*velint[0] ;
+	  eforce[3*i+1] += fac*funct[i]*velint[1] ;
+	  eforce[3*i+2] += fac*funct[i]*velint[2] ;
+	}
+#endif
+      }
+    }
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
   \brief calculate the gradient of the pressure increment for the
   final velocity update
  */
@@ -1034,6 +1274,186 @@ void f3pro_addnodepressure(ELEMENT* ele, INT k, DOUBLE* pressure)
       press += pfunct[i] * epren[i];
 
     *pressure = press/ele->node[k]->numele;
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief calculate laplacian pressure matrix
+
+  \param ele       (i) the element
+ */
+/*----------------------------------------------------------------------*/
+void f3pro_calpress(ELEMENT* ele,
+		    ARRAY* estif_global,
+		    ARRAY* emass_global,
+		    ARRAY_POSITION* ipos)
+{
+  INT i;
+  INT numpdof;
+  INT       iel;        /* number of nodes                                */
+  INT       intc;       /* "integration case" for tri for further infos
+                           see f2_inpele.c and f2_intg.c                 */
+  INT       nir,nis,nit;/* number of integration nodesin r,s direction    */
+  INT       ihoel=0;    /* flag for higher order elements                 */
+  INT       icode=2;    /* flag for eveluation of shape functions         */
+  INT       lr,ls,lt;   /* counter for integration                        */
+  DOUBLE    fac;        /* total integration vactor                       */
+  DOUBLE    facr, facs, fact; /* integration weights                            */
+  DOUBLE    det;        /* determinant of jacobian matrix at time (n+1)   */
+  DOUBLE    e1,e2,e3;   /* natural coordinates of integr. point           */
+  DIS_TYP   typ;        /* element type                                   */
+  DISMODE   dm;
+
+  FLUID_DATA      *data;
+
+#ifdef DEBUG
+  dstrc_enter("f3pro_calpress");
+#endif
+
+  amzero(estif_global);
+  amzero(emass_global);
+
+  /* set element coordinates */
+  for(i=0;i<ele->numnp;i++)
+  {
+    xyze[0][i]=ele->node[i]->x[0];
+    xyze[1][i]=ele->node[i]->x[1];
+    xyze[2][i]=ele->node[i]->x[2];
+  }
+
+  switch (ele->e.f3pro->dm)
+  {
+  case dm_q2pm1:
+    numpdof = 3;
+    break;
+  case dm_q1p0:
+    numpdof = 1;
+    break;
+  case dm_q1q1:
+  case dm_q2q2:
+    numpdof = -1;
+    break;
+  case dm_q2q1:
+    numpdof = -2;
+    break;
+  default:
+    dserror("unsupported discretization mode %d", ele->e.f3pro->dm);
+  }
+
+  /*--------------------------------------------------- initialisation ---*/
+  iel    = ele->numnp;
+  typ    = ele->distyp;
+  dm     = ele->e.f3pro->dm;
+  fdyn   = alldyn[genprob.numff].fdyn;
+  data   = fdyn->data;
+
+  /*------- get integraton data and check if elements are "higher order" */
+  switch (typ)
+  {
+  case hex8: case hex20: case hex27:  /* --> hex - element */
+    icode   = 3;
+    ihoel   = 1;
+    /* initialise integration */
+    nir = ele->e.f3pro->nGP[0];
+    nis = ele->e.f3pro->nGP[1];
+    nit = ele->e.f3pro->nGP[2];
+    intc= 0;
+    break;
+  case tet10: /* --> tet - element */
+    icode   = 3;
+    ihoel   = 1;
+    /* do NOT break at this point!!! */
+  case tet4:    /* initialise integration */
+    nir  = ele->e.f3pro->nGP[0];
+    nis  = 1;
+    nit  = 1;
+    intc = ele->e.f3pro->nGP[1];
+    break;
+  default:
+    dserror("typ unknown!");
+  }
+
+  for (lr=0;lr<nir;lr++)
+  {
+    for (ls=0;ls<nis;ls++)
+    {
+      for (lt=0;lt<nit;lt++)
+      {
+	/*------------- get values of  shape functions and their derivatives ---*/
+	switch(typ)
+	{
+	case hex8: case hex20: case hex27:   /* --> hex - element */
+	  e1   = data->qxg[lr][nir-1];
+	  facr = data->qwgt[lr][nir-1];
+	  e2   = data->qxg[ls][nis-1];
+	  facs = data->qwgt[ls][nis-1];
+	  e3   = data->qxg[lt][nit-1];
+	  fact = data->qwgt[lt][nit-1];
+	  f3_hex(funct,deriv,deriv2,e1,e2,e3,typ,icode);
+	  if (numpdof>-1)
+	    f3pro_phex(pfunct, pderiv, e1, e2, e3, dm, &numpdof);
+	  else if (numpdof==-2)
+	    f3_hex(pfunct,pderiv,NULL,e1,e2,e3,hex8,2);
+	  break;
+	case tet4: case tet10:   /* --> tet - element */
+	  e1   = data->txgr[lr][intc];
+	  facr = data->twgt[lr][intc];
+	  e2   = data->txgs[lr][intc];
+	  facs = ONE;
+	  e3   = data->txgt[lr][intc];
+	  fact = ONE;
+	  f3_tet(funct,deriv,deriv2,e1,e2,e3,typ,icode);
+	  dserror("illegal discretisation mode %d", dm);
+	  break;
+	default:
+	  dserror("typ unknown!");
+	}
+
+	/*------------------------ compute Jacobian matrix at time n+1 ---*/
+	f3_jaco(xyze,deriv,xjm,&det,ele,iel);
+	fac = facr*facs*fact*det;
+
+	/* build mass matrix */
+	for (i=0; i<iel; ++i)
+	{
+	  INT j;
+	  for (j=0; j<iel; ++j)
+	  {
+	    DOUBLE aux = fac*funct[i]*funct[j];
+	    emass[3*i  ][3*j  ] += aux ;
+	    emass[3*i+1][3*j+1] += aux ;
+	    emass[3*i+2][3*j+2] += aux ;
+	  }
+	}
+
+	if (numpdof == -2)
+	{
+	  /*----------------------------------- compute global derivates ---*/
+	  f3_gder(derxy,pderiv,xjm,wa1,det,8);
+
+	  for (i=0; i<8; i++)
+	  {
+	    INT j;
+	    for (j=0; j<8; j++)
+	    {
+	      estif[i][j] += fac*(derxy[0][i]*derxy[0][j] +
+				  derxy[1][i]*derxy[1][j] +
+				  derxy[2][i]*derxy[2][j]) ;
+	    }
+	  }
+	}
+	else
+	{
+	  dserror("not supported");
+	}
+      }
+    }
   }
 
 #ifdef DEBUG
