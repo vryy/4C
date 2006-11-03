@@ -19,6 +19,7 @@ Maintainer: Michael Gee
 #ifndef PAROBJECT_H
 #define PAROBJECT_H
 
+#include "vector"
 
 using namespace std;
 
@@ -60,6 +61,16 @@ public:
   ParObject(const CCADISCRETIZATION::ParObject& old);
 
   /*!
+  \brief Destructor
+
+  */
+  virtual ~ParObject();
+
+  //@}
+
+  // @{ \name virtual Packing and Unpacking
+
+  /*!
   \brief Pack this class so it can be communicated
   
   \ref Pack and \ref Unpack are used to communicate this element
@@ -75,19 +86,125 @@ public:
   */
   virtual bool Unpack(const char* data) = 0;
 
-  /*!
-  \brief Destructor
-
-  */
-  virtual ~ParObject();
-
-  //@}
-
-  // @{ \name Acess methods
 
   //@}
 
 protected:
+
+  // @{ \name Routines to help pack stuff into a char string
+
+  /*!
+  \brief return size of a char vector used for communication
+  
+  The size of a char vector used for communication should ALWAYS be stored
+  at the beginning of the vector
+
+  */
+  inline int Size(const char* data) const { int s = ((int*)data)[0]; return s; }
+
+  /*!
+  \brief Add stuff to a char vector data and increment position
+  
+  This method is templated for all basic type int char double enum.
+  \param position : place in data where to add stuff. Position will be incremented by this method.
+  \param data     : char string stuff shall be added to
+  \param stuff    : basic data type (float int double char) that get's added to stuff
+  
+  */
+  template<typename kind> void AddtoPack(int& position, char* data, kind& stuff) const
+  {
+    int size = sizeof(kind);
+    memcpy(&data[position],&stuff,size);
+    position += size;
+    return;
+  }
+  
+  /*!
+  \brief Add stuff to a char vector data and increment position
+  
+  This method adds an array to data
+  \param position : place in data where to add stuff. Position will be incremented by this method.
+  \param data     : char string stuff shall be added to
+  \param stuff    : array of total length stuffsize (in byte)
+  \param stuffsize: length of stuff in byte
+  */
+  template<typename kind> void AddtoPack(int& position, char* data, kind* stuff, int stuffsize) const
+  {
+    memcpy(&data[position],stuff,stuffsize);
+    position += stuffsize;
+    return;
+  }
+
+  /*!
+  \brief Add a vector of a basic type to a char vector data and increment position
+  
+  This method adds a vector to data
+  \param position : place in data where to add stuff. Position will be incremented by this method.
+  \param data     : char string stuff shall be added to
+  \param stuff    : vector of things of total length stuffsize
+  */
+  template<typename kind> void AddVectortoPack(int& position, char* data, vector<kind> stuff) const
+  {
+    int numele = stuff.size();
+    AddtoPack(position,data,numele);
+    AddtoPack(position,data,&stuff[0],numele*sizeof(kind));
+    return;
+  }
+
+  /*!
+  \brief Extract stuff from a char vector data and increment position
+  
+  This method is templated for all basic type like int char double enum.
+  \param position : place in data where to extract stuff. Position will be incremented by this method by sizeof(kind).
+  \param data     : char string where stuff is extracted from
+  \param stuff    : basic data type (float int double char ...) to extract from data
+  
+  */
+  template<typename kind> void ExtractfromPack(int& position, const char* data, kind& stuff) const
+  {
+    int size = sizeof(kind);
+    memcpy(&stuff,&data[position],size);
+    position += size;
+    return;
+  }
+
+  /*!
+  \brief Extract stuff from a char vector data and increment position
+  
+  This method extracts an array from data
+  \param position : place in data where to extract stuff. Position will be incremented by this method by stuffsize.
+  \param data     : char string where stuff is extracted from
+  \param stuff    : array of total length stuffsize (in byte)
+  \param stuffsize: length of stuff in byte
+  */
+  template<typename kind> void ExtractfromPack(int& position, const char* data, kind* stuff, int stuffsize) const
+  {
+    memcpy(stuff,&data[position],stuffsize);
+    position += stuffsize;
+    return;
+  }
+
+  /*!
+  \brief Extract a vector of a basic type from a char vector data and increment position
+  
+  This method extracts an array from data
+  \param position : place in data where to extract stuff. Position will be incremented by this method by stuffsize.
+  \param data     : char string where stuff is extracted from
+  \param stuff    : array of total length stuffsize (in byte)
+  */
+  template<typename kind> void ExtractVectorfromPack(int& position, const char* data, vector<kind>& stuff) const
+  {
+    int dim = 0;
+    ExtractfromPack(position,data,dim);
+    stuff.resize(dim);
+    int size = dim*sizeof(kind);
+    ExtractfromPack(position,data,&stuff[0],size);
+    return;
+  }
+
+  //@}
+
+
 
 }; // class ParObject
 } // namespace CCADISCRETIZATION

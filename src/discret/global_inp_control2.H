@@ -26,6 +26,10 @@ Maintainer: Michael Gee
 #endif
 #include "Teuchos_RefCountPtr.hpp"
 
+#include "discret.H"
+#ifdef D_SHELL8
+#include "shell8.H"
+#endif
 
 using namespace std;
 using namespace Teuchos;
@@ -42,10 +46,6 @@ extern "C"
 
 #include "../headers/standardtypes.h"
 #include "dstrc.H"
-#include "discret.H"
-#ifdef D_SHELL8
-#include "shell8.H"
-#endif
 
 
 void ntainp_ccadiscret();

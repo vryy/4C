@@ -43,6 +43,5 @@ CCADISCRETIZATION::ParObject::~ParObject()
 
 
 
-
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

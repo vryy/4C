@@ -23,9 +23,17 @@ Maintainer: Michael Gee
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 CCADISCRETIZATION::Shell8::Shell8(int id) :
-CCADISCRETIZATION::Element(id,element_shell8)
+CCADISCRETIZATION::Element(id,element_shell8),
+forcetype_(s8_none),
+thickness_(0.0),
+ngptri_(0),
+nhyb_(0),
+ans_(0),
+sdc_(1.0),
+material_(0)
 {
-
+  ngp_[0] = ngp_[1] = ngp_[2] = 0;
+  eas_[0] = eas_[1] = eas_[2] = eas_[3] = eas_[4] = 0;
   return;
 }
 
@@ -34,9 +42,17 @@ CCADISCRETIZATION::Element(id,element_shell8)
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 CCADISCRETIZATION::Shell8::Shell8(const CCADISCRETIZATION::Shell8& old) :
-CCADISCRETIZATION::Element(old)
+CCADISCRETIZATION::Element(old),
+forcetype_(old.forcetype_),
+thickness_(old.thickness_),
+ngptri_(old.ngptri_),
+nhyb_(old.nhyb_),
+ans_(old.ans_),
+sdc_(old.sdc_),
+material_(old.material_)
 {
-
+  for (int i=0; i<3; ++i) ngp_[i] = old.ngp_[i];
+  for (int i=0; i<5; ++i) eas_[i] = old.eas_[i];
   return;
 }
 
@@ -57,15 +73,27 @@ CCADISCRETIZATION::Element* CCADISCRETIZATION::Shell8::Clone() const
 const char* CCADISCRETIZATION::Shell8::Pack(int& size) const
 {
   const int sizeint    = sizeof(int);
-  const int sizetype   = sizeof(enum ElementType);
-  //const int sizedouble = sizeof(double);
+  const int sizeforcetype = sizeof(enum ForceType);
+  const int sizedouble = sizeof(double);
   //const int sizechar   = sizeof(char);
+
+  // pack base class
+  int         basesize = 0;
+  const char* basedata = Element::Pack(basesize);
    
-  // calculate size of vector
+  // calculate size of vector data
   size = 
-  sizeint +     // holds size itself
-  sizeint +     // holds Id()
-  sizetype +    // holds type of element
+  sizeint +        // size itself
+  basesize +       // base class data
+  sizeforcetype +  // forcetype_
+  sizedouble +     // thickness_
+  3*sizeint +      // ngp_
+  sizeint +        // ngptri_  
+  sizeint +        // nhyb_
+  5*sizeint +      // eas_
+  sizeint +        // ans_
+  sizedouble +     // sdc_
+  sizeint +        // material_
   0;            // continue to add data here...
   
   char* data = new char[size];
@@ -74,21 +102,38 @@ const char* CCADISCRETIZATION::Shell8::Pack(int& size) const
   int position = 0;
   
   // add size
-  memcpy(&data[position],&size,sizeint);
-  position += sizeint;
-  
-  // add Id()
-  const int id = Id();
-  memcpy(&data[position],&id,sizeint);
-  position += sizeint;
-  
-  // add type
-  ElementType etype = Type();
-  memcpy(&data[position],&etype,sizetype);
-  position += sizeint;
-    
+  AddtoPack(position,data,size);
+  // add base class
+  AddtoPack(position,data,basedata,basesize);
+  delete [] basedata;
+  // forcetype_
+  AddtoPack(position,data,&forcetype_,sizeof(enum ForceType));
+  // thickness_
+  AddtoPack(position,data,thickness_);
+  // ngp_
+  AddtoPack(position,data,ngp_,3*sizeint);
+  // ngptri_
+  AddtoPack(position,data,ngptri_);
+  // nhyb_
+  AddtoPack(position,data,nhyb_);
+  // eas_
+  AddtoPack(position,data,eas_,5*sizeint);
+  // ans_
+  AddtoPack(position,data,ans_);
+  // sdc_
+  AddtoPack(position,data,sdc_);
+  // material_
+  AddtoPack(position,data,material_);
   // continue to add stuff here  
     
+  if (position != size)
+  {
+    cout << "CCADISCRETIZATION::Shell8::Pack:\n"
+         << "Mismatch in size of data " << size << " <-> " << position << endl
+         << __FILE__ << ":" << __LINE__ << endl;
+    exit(EXIT_FAILURE);
+  }
+
   return data;
 }
 
@@ -99,7 +144,7 @@ const char* CCADISCRETIZATION::Shell8::Pack(int& size) const
 bool CCADISCRETIZATION::Shell8::Unpack(const char* data)
 {
   const int sizeint    = sizeof(int);
-  const int sizetype   = sizeof(enum ElementType);
+  //const int sizeforcetype = sizeof(enum ForceType);
   //const int sizedouble = sizeof(double);
   //const int sizechar   = sizeof(char);
 
@@ -107,24 +152,32 @@ bool CCADISCRETIZATION::Shell8::Unpack(const char* data)
 
   // extract size
   int size = 0;
-  memcpy(&size,&data[position],sizeint);
-  position += sizeint;
+  ExtractfromPack(position,data,size);
   
-  // extract id
-  int id = 0;
-  memcpy(&id,&data[position],sizeint);
-  position += sizeint;
-  id_ = id;
+  // extract base class
+  int basesize = Size(&data[position]);
+  Element::Unpack(&data[position]);
+  position += basesize;
   
-  // extract type
-  ElementType etype = element_none;
-  memcpy(&etype,&data[position],sizetype);
-  position += sizeint;
-  etype_ = etype;
-
+  // forcetype_
+  ExtractfromPack(position,data,forcetype_);
+  // thickness_
+  ExtractfromPack(position,data,thickness_);
+  // ngp_
+  ExtractfromPack(position,data,ngp_,3*sizeint);
+  // ngptri_
+  ExtractfromPack(position,data,ngptri_);
+  // nhyb_
+  ExtractfromPack(position,data,nhyb_);
+  // eas_
+  ExtractfromPack(position,data,eas_,5*sizeint);
+  // ans_
+  ExtractfromPack(position,data,ans_);
+  // sdc_
+  ExtractfromPack(position,data,sdc_);
+  // material_
+  ExtractfromPack(position,data,material_);
   // extract more stuff here
-
-
 
   if (position != size)
   {

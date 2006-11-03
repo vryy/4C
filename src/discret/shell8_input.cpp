@@ -87,7 +87,7 @@ bool CCADISCRETIZATION::Shell8::ReadElement()
   // reduce node numbers by one
   for (int i=0; i<nnode; ++i) nodes[i]--;
   
-  store nodal information
+  SetNodes(nnode,nodes);
   
   // read number of material model
   material_ = 0;

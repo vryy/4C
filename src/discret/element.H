@@ -85,6 +85,22 @@ public:
   */
   virtual ~Element();
 
+  /*!
+  \brief Pack this class so it can be communicated
+  
+  \ref Pack and \ref Unpack are used to communicate this element
+  
+  */
+  virtual const char* Pack(int& size) const;
+
+  /*!
+  \brief Unpack data from a char vector into this class
+  
+  \ref Pack and \ref Unpack are used to communicate this element
+
+  */
+  virtual bool Unpack(const char* data);
+
   //@}
 
   // @{ \name Acess methods
@@ -92,12 +108,17 @@ public:
   /*!
   \brief Return global id of this element
   */
-  inline const int Id() const { return id_; }
+  inline int Id() const { return id_; }
 
   /*!
   \brief Get type of element
   */
   inline ElementType Type() const { return etype_; }
+
+  /*!
+  \brief Return number of nodes of this element
+  */
+  inline int NumNode() const { return node_.size(); }
 
   /*!
   \brief Print this element (pure virtual)
@@ -106,19 +127,32 @@ public:
 
   //@}
 
-  // @{ \name Other
+  // @{ \name Construction
 
   /*!
   \brief Read input for this element
   */
   virtual bool ReadElement();
 
+  /*!
+  \brief Set a list of node ids this element is connected to
+  
+  Sets the nodal ids of the nodes adjacent to this element and the number
+  of nodes
+  
+  \param nnode : number of nodes
+  \param nodes : list of unique global nodal ids
+  
+  */
+  void SetNodes(const int nnode, const int* nodes);
+
   //@}
 
-protected:
+private:
 
   int         id_;       // a unique global element id
   ElementType etype_;    // type of element
+  vector<int> node_;     // list of my nodal ids
 
 }; // class Element
 } // namespace CCADISCRETIZATION

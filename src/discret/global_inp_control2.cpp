@@ -270,9 +270,16 @@ void input_structural_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm)
 #ifndef D_SHELL8
         dserror("SHELL8 needed but not defined in Makefile");
 #else  
-        RefCountPtr<CCADISCRETIZATION::Shell8> shell8 = 
+        RefCountPtr<CCADISCRETIZATION::Shell8> ele = 
                               rcp(new CCADISCRETIZATION::Shell8(elenumber));
-        shell8->ReadElement();
+        ele->ReadElement();
+        
+        int size = 0;
+        const char* data = ele->Pack(size);
+        
+        CCADISCRETIZATION::Shell8 ele2(5);
+        ele2.Unpack(data);
+        
 #endif        
       }
 

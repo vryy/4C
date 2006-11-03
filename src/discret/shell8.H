@@ -76,7 +76,7 @@ public:
   \ref Pack and \ref Unpack are used to communicate this element
   
   */
-  const char* Pack(int& size) const;
+  virtual const char* Pack(int& size) const;
 
   /*!
   \brief Unpack data from a char vector into this class
@@ -84,7 +84,7 @@ public:
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
-  bool Unpack(const char* data);
+  virtual bool Unpack(const char* data);
 
   /*!
   \brief Destructor
