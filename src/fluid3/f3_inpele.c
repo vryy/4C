@@ -72,7 +72,6 @@ void f3inp(
 
   /* allocate the element */
   ele->e.f3 = (FLUID3*)CCACALLOC(1,sizeof(FLUID3));
-  if (ele->e.f3==NULL) dserror("Allocation of element FLUID3 failed\n");
 
 
   /* read the element nodes */
@@ -82,7 +81,6 @@ void f3inp(
     ele->numnp=8;
     ele->distyp=hex8;
     ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
-    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
     frint_n("HEX8",&(ele->lm[0]),ele->numnp,&ierr);
     if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
   }
@@ -94,7 +92,6 @@ void f3inp(
     ele->numnp=20;
     ele->distyp=hex20;
     ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
-    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
     frint_n("HEX20",&(ele->lm[0]),ele->numnp,&ierr);
     if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
   }
@@ -102,11 +99,9 @@ void f3inp(
   frchk("HEX27",&ierr);
   if (ierr==1)
   {
-    dserror("HEX27 element not yet tested!!!\n");
     ele->numnp=27;
     ele->distyp=hex27;
     ele->lm = (INT*)CCACALLOC(ele->numnp,sizeof(INT));
-    if (ele->lm==NULL) dserror("Allocation of lm in ELEMENT failed\n");
     frint_n("HEX27",&(ele->lm[0]),ele->numnp,&ierr);
     if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
   }

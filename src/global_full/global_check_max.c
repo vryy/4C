@@ -201,7 +201,7 @@ for(i=0; i<genprob.numfld; i++)  /* loop all fields */
         case el_fluid3:
           if (actele->distyp == tet4 || actele->distyp == tet10)
             gauss = actele->e.f3->nGP[0];
-          if (actele->distyp == hex8 || actele->distyp == hex20)
+          if (actele->distyp == hex8 || actele->distyp == hex20 || actele->distyp == hex27)
             gauss = actele->e.f3->nGP[0]*actele->e.f3->nGP[1]*actele->e.f3->nGP[2];
           break;
 #endif
