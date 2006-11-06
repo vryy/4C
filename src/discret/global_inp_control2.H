@@ -52,7 +52,7 @@ void ntainp_ccadiscret();
 void inpfield_ccadiscret();
 void inpnodes_ccadiscret(Epetra_SerialDenseMatrix& tmpnodes);
 void input_structural_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm);
-
+void input_assign_nodes(CCADISCRETIZATION::Discretization& actdis,Epetra_SerialDenseMatrix& tmpnodes);
 
 
 #ifdef __cplusplus

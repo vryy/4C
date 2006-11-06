@@ -163,7 +163,7 @@ void inpfield_ccadiscret()
 
   // read nodal coords in temporary array (proc 0 only)
   // allocate temporary array for nodal coords
-  RefCountPtr<Epetra_SerialDenseMatrix> tmpnodes;
+  RefCountPtr<Epetra_SerialDenseMatrix> tmpnodes = null;
   if (myrank==0)
   {
     tmpnodes = rcp(new Epetra_SerialDenseMatrix(genprob.nnode,3));
@@ -192,6 +192,27 @@ void inpfield_ccadiscret()
     inpdis(&(field[genprob.numsf]));
     input_structural_field(&(field[genprob.numsf]),comm);
   }
+  
+  // assign nodes to the fields
+  int nnode_total = 0;
+  for (int i=0; i<genprob.numfld; i++)
+  {
+    vector<RefCountPtr<CCADISCRETIZATION::Discretization> >* discretization = 
+      (vector<RefCountPtr<CCADISCRETIZATION::Discretization> >*)field[i].ccadis;
+    for (int j=0;j<field[i].ndis;j++)
+    {
+      RefCountPtr<CCADISCRETIZATION::Discretization> actdis = (*discretization)[i];
+      input_assign_nodes(*actdis,*tmpnodes);
+      nnode_total += actdis->NumGlobalNodes();
+      actdis->FillComplete();
+    }
+  }
+  // store total number of nodes
+  genprob.nnode = nnode_total;
+  
+  
+  cout << "Reached regular exit\n"; fflush(stdout);
+  exit(0);
 
 
 
@@ -199,6 +220,52 @@ void inpfield_ccadiscret()
   comm->Barrier(); // everybody wait for proc 0
   return;
 } // void inpfield_ccadiscret()
+
+
+/*-----------------------------------------------------------------------*/
+/*!
+  \brief sort nodes to the fields
+
+  \author m.gee
+  \date   11/06
+
+ */
+/*-----------------------------------------------------------------------*/
+void input_assign_nodes(CCADISCRETIZATION::Discretization& actdis,Epetra_SerialDenseMatrix& tmpnodes)
+{
+  DSTraceHelper dst("input_assign_nodes");
+  
+  // assign nodes on proc 0 only
+  if (actdis.Comm().MyPID()==0)
+  {
+  
+    // allocate a temporary flag array
+    vector<int> nodeflag(genprob.nnode);
+    for (int i=0; i< genprob.nnode; ++i) nodeflag[i] = -1;
+    
+    // set flag for each node in this discretization
+    for (int i=0; i<actdis.NumMyElements(); ++i)
+    {
+      const CCADISCRETIZATION::Element* actele = actdis.Element(i);
+      const int  nnode = actele->NumNode();
+      const int* nodes = actele->NodeIds();
+      for (int j=0; j<nnode; ++j)
+        nodeflag[nodes[j]] = nodes[j];
+    }
+    
+    // create the nodes and add them to actdis
+    for (int i=0; i<genprob.nnode; ++i)
+    {
+      if (nodeflag[i]==-1) continue;
+      double coords[3];
+      for (int j=0; j<3; ++j) coords[j] = tmpnodes(i,j);
+      RefCountPtr<CCADISCRETIZATION::Node> node = 
+        rcp(new CCADISCRETIZATION::Node(nodeflag[i],coords));
+      actdis.AddNode(node);
+    }
+  } // if (actdis.Comm().MyPID()==0)
+  return;
+}
 
 
 /*-----------------------------------------------------------------------*/
@@ -221,11 +288,6 @@ void input_structural_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm)
 {
   DSTraceHelper dst("input_structural_field");
   
-  /* allocate discretizations */
-  //structfield->dis = (DISCRET*)CCACALLOC(structfield->ndis,sizeof(DISCRET));
-  //structfield->dis[0].disclass = dc_normal;
-  /* initialize array positions with -1 */
-  //memset(&structfield->dis[0].ipos, 0xff, sizeof(ARRAY_POSITION));
   structfield->dis = NULL; // not using this here!
 
   // allocate the discretizations
@@ -251,7 +313,7 @@ void input_structural_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm)
     numele = counter;
   }
 
-  // read elements  
+  // read elements (proc 0 only) 
   RefCountPtr<CCADISCRETIZATION::Discretization> actdis = (*discretization)[0];
   if (actdis->Comm().MyPID()==0)
   {
@@ -272,22 +334,17 @@ void input_structural_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm)
 #else  
         RefCountPtr<CCADISCRETIZATION::Shell8> ele = 
                               rcp(new CCADISCRETIZATION::Shell8(elenumber));
+        
+        // read input for this element
         ele->ReadElement();
         
-        int size = 0;
-        const char* data = ele->Pack(size);
-        
-        CCADISCRETIZATION::Shell8 ele2(5);
-        ele2.Unpack(data);
-        
+        // add element to discretization (discretization takes ownership)
+        actdis->AddElement(ele);
 #endif        
       }
 
-
       // elementtyp brick1
-      
-      
-      
+      // not yet impl...
 
       frread();
     } // while(strncmp(allfiles.actplace,"------",6)!=0)  
@@ -296,6 +353,7 @@ void input_structural_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm)
   frrewind();
   return;
 } // void input_structural_field
+
 
 /*----------------------------------------------------------------------*
   | input of nodal coords (proc 0 only)                    m.gee 10/06  |

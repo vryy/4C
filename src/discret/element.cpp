@@ -25,6 +25,7 @@ ParObject(),
 id_(id),
 etype_(etype)
 {
+  nodeid_.resize(0);
   node_.resize(0);
   return;
 }
@@ -36,6 +37,7 @@ CCADISCRETIZATION::Element::Element(const CCADISCRETIZATION::Element& old) :
 ParObject(old),
 id_(old.id_),
 etype_(old.etype_),
+nodeid_(old.nodeid_),
 node_(old.node_)
 {
 
@@ -47,6 +49,7 @@ node_(old.node_)
  *----------------------------------------------------------------------*/
 CCADISCRETIZATION::Element::~Element()
 {
+  nodeid_.clear();
   node_.clear();
   return;
 }
@@ -78,12 +81,25 @@ bool CCADISCRETIZATION::Element::ReadElement()
 /*----------------------------------------------------------------------*
  |  set node numbers to element (public)                     mwgee 11/06|
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Element::SetNodes(const int nnode, const int* nodes)
+void CCADISCRETIZATION::Element::SetNodeIds(const int nnode, const int* nodes)
 {
-  node_.resize(nnode);
-  for (int i=0; i<nnode; ++i) node_[i] = nodes[i];
+  nodeid_.resize(nnode);
+  for (int i=0; i<nnode; ++i) nodeid_[i] = nodes[i];
+  node_.resize(0);
   return;
 }
+
+/*----------------------------------------------------------------------*
+ |  Get reference to nodes (public)                          mwgee 11/06|
+ *----------------------------------------------------------------------*/
+/*
+RefCountPtr<vector<const CCADISCRETIZATION::Node*> > 
+  CCADISCRETIZATION::Element::Nodes(const CCADISCRETIZATION::Discretization& dis) const
+{
+  vector<>* nodes = new vector<>
+  return null;
+}
+*/
 
 /*----------------------------------------------------------------------*
  |  Pack data from this element into vector of length size     (public) |
@@ -98,12 +114,12 @@ const char* CCADISCRETIZATION::Element::Pack(int& size) const
 
   // calculate size of vector
   size = 
-  sizeint               +   // holds size itself
-  sizeint               +   // holds Id()
-  sizetype              +   // holds type of element
-  sizeint               +   // holds size of vector node_
-  node_.size()*sizeint  +   // holds vector node_
-  0;                        // continue to add data here...
+  sizeint                +   // holds size itself
+  sizeint                +   // holds Id()
+  sizetype               +   // holds type of element
+  sizeint                +   // holds size of vector nodeid_
+  nodeid_.size()*sizeint +   // holds vector nodeid_
+  0;                         // continue to add data here...
 
   char* data = new char[size];
   
@@ -118,8 +134,8 @@ const char* CCADISCRETIZATION::Element::Pack(int& size) const
   // add type of element
   ElementType etype = Type();
   AddtoPack(position,data,etype);
-  // add vector node_
-  AddVectortoPack(position,data,node_);
+  // add vector nodeid_
+  AddVectortoPack(position,data,nodeid_);
   // continue to add stuff here
 
   return data;
@@ -141,8 +157,10 @@ bool CCADISCRETIZATION::Element::Unpack(const char* data)
   ExtractfromPack(position,data,id_);
   // extract type
   ExtractfromPack(position,data,etype_);
-  // extract node_
-  ExtractVectorfromPack(position,data,node_);
+  // extract nodeid_
+  ExtractVectorfromPack(position,data,nodeid_);
+  // node_ is NOT communicated
+  node_.resize(0);
 
   if (position != size)
   {
@@ -156,6 +174,23 @@ bool CCADISCRETIZATION::Element::Unpack(const char* data)
 }
 
 
+/*----------------------------------------------------------------------*
+ |  Build nodal pointers                                       (public) |
+ |                                                            gee 11/06 |
+ *----------------------------------------------------------------------*/
+bool CCADISCRETIZATION::Element::BuildNodalPointers(map<int,RefCountPtr<CCADISCRETIZATION::Node> >& nodes)
+{
+  int        nnode   = NumNode();
+  const int* nodeids = NodeIds();
+  node_.resize(nnode);
+  for (int i=0; i<nnode; ++i)
+  {
+    map<int,RefCountPtr<CCADISCRETIZATION::Node> >::iterator curr = nodes.find(nodeids[i]);
+    if (curr==nodes.end()) return false;
+    node_[i] = curr->second.get();
+  } 
+  return true;
+}
 
 
 

@@ -28,7 +28,7 @@ using namespace Teuchos;
 
 
 /*!
-\brief CCADISCRET: namespace of the ccarat discretization module
+\brief CCADISCRETIZATION: namespace of the ccarat discretization module
 
 */
 namespace CCADISCRETIZATION

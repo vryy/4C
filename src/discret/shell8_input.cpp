@@ -47,7 +47,7 @@ bool CCADISCRETIZATION::Shell8::ReadElement()
   // read element's nodes
   int ierr=0;
   int nnode=0;
-  int nodes[9];
+  int nodes[9]; 
   frchk("QUAD4",&ierr);
   if (ierr==1)
   {
@@ -87,7 +87,7 @@ bool CCADISCRETIZATION::Shell8::ReadElement()
   // reduce node numbers by one
   for (int i=0; i<nnode; ++i) nodes[i]--;
   
-  SetNodes(nnode,nodes);
+  SetNodeIds(nnode,nodes);
   
   // read number of material model
   material_ = 0;

@@ -1,9 +1,9 @@
 /*!----------------------------------------------------------------------
 \file element.H
 
-\class CCADISCRETIZATION::Shell8
+\class CCADISCRETIZATION::Element
 
-\brief A C++ wrapper for the shell8 element
+\brief A pure virtual element class
 
 <pre>
 Maintainer: Michael Gee
@@ -24,12 +24,17 @@ using namespace std;
 using namespace Teuchos;
 #include "parobject.H"
 
+
 /*!
 \brief CCADISCRET: namespace of the ccarat discretization module
 
 */
 namespace CCADISCRETIZATION
 {
+
+// forward declarations
+class Discretization;
+class Node;
 
 /*!
 \class Element
@@ -42,6 +47,12 @@ class Element : public CCADISCRETIZATION::ParObject
 {
 public:
 
+  
+  /*!
+  \brief The Discretization is a friend of Element
+  */
+  friend class Discretization;
+  
   /*!
   \brief Type of element
          
@@ -118,7 +129,19 @@ public:
   /*!
   \brief Return number of nodes of this element
   */
-  inline int NumNode() const { return node_.size(); }
+  inline int NumNode() const { return nodeid_.size(); }
+
+  /*!
+  \brief Return id's of nodes adjacent to this element
+  */
+  inline const int* NodeIds() const { if (nodeid_.size()) return &nodeid_[0]; 
+                                      else                return NULL;     }
+
+  /*!
+  \brief Return ptrs to nodes adjacent to this element
+  
+  */
+  //RefCountPtr<vector<const CCADISCRETIZATION::Node*> > Nodes(const CCADISCRETIZATION::Discretization& dis) const;
 
   /*!
   \brief Print this element (pure virtual)
@@ -144,22 +167,31 @@ public:
   \param nodes : list of unique global nodal ids
   
   */
-  void SetNodes(const int nnode, const int* nodes);
+  void SetNodeIds(const int nnode, const int* nodes);
 
   //@}
 
 private:
 
-  int         id_;       // a unique global element id
-  ElementType etype_;    // type of element
-  vector<int> node_;     // list of my nodal ids
+  /*!
+  \brief Build pointer vector from map of nodes
+  
+  \return Returns true on success and false if nodes from NodeIds() cannot be found
+          in map
+  */
+  bool BuildNodalPointers(map<int,RefCountPtr<CCADISCRETIZATION::Node> >& nodes);
+
+  int                              id_;       // a unique global element id
+  ElementType                      etype_;    // type of element
+  vector<int>                      nodeid_;   // list of my nodal ids
+  vector<CCADISCRETIZATION::Node*> node_;     // pointers to adjacent nodes
 
 }; // class Element
 } // namespace CCADISCRETIZATION
 
 
 // << operator
-ostream& operator << (ostream& os, const CCADISCRETIZATION::Element& seg);
+ostream& operator << (ostream& os, const CCADISCRETIZATION::Element& ele);
 
 
 
