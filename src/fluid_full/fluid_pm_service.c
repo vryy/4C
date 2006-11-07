@@ -1332,7 +1332,7 @@ void pm_calelm_laplace(FIELD *actfield,
     {
       NODE* actnode = other->node[j];
 
-      if (actele->proc == actintra->intra_rank)
+      if (actnode->proc == actintra->intra_rank)
       {
 	/* non-dirichlet dofs */
 #if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
@@ -1347,19 +1347,22 @@ void pm_calelm_laplace(FIELD *actfield,
 	  for (k=0; k<other->numnp; ++k)
 	  {
 	    NODE* node2 = other->node[k];
+            if (node2->proc == actintra->intra_rank)
+            {
 #if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
-	    if ((node2->gnode->dirich==NULL) ||
-		(node2->gnode->dirich->dirich_onoff.a.iv[genprob.ndim]==0))
+              if ((node2->gnode->dirich==NULL) ||
+                  (node2->gnode->dirich->dirich_onoff.a.iv[genprob.ndim]==0))
 #else
-	      dserror("not implemented");
-	    if (node2->dof[0] < actfield->dis[pdisnum].numeq)
+                dserror("not implemented");
+              if (node2->dof[0] < actfield->dis[pdisnum].numeq)
 #endif
-	    {
-	      add_trilinos_value(press_mat,
-				 estif_global.a.da[j][k],
-				 actnode->dof[0],
-				 node2->dof[0]);
-	    }
+              {
+                add_trilinos_value(press_mat,
+                                   estif_global.a.da[j][k],
+                                   actnode->dof[0],
+                                   node2->dof[0]);
+              }
+            }
 	  }
 	}
 	else
@@ -1552,12 +1555,12 @@ void pm_calprhs_cont(FIELD *actfield,
       {
 	NODE* node = other->node[k];
 
-	if (node->proc == actintra->intra_rank)
+	/* if (node->proc == actintra->intra_rank) */
 	{
           /* there are no dirichlet conditions on the pressure dofs
            * allowed... currently. */
           dsassert((node->dof[0] >= 0) &&
-                   (node->dof[0] < rhs->numeq),
+                   (node->dof[0] < rhs->numeq_total),
                    "local dof number out of range");
           full_rhs[node->dof[0]] += eforce_global.a.dv[k];
 	}
@@ -1579,12 +1582,12 @@ void pm_calprhs_cont(FIELD *actfield,
       {
 	NODE* node = other->node[k];
 
-	if (node->proc == actintra->intra_rank)
+	/* if (node->proc == actintra->intra_rank) */
 	{
           /* there are no dirichlet conditions on the pressure dofs
            * allowed... currently. */
           dsassert((node->dof[0] >= 0) &&
-                   (node->dof[0] < rhs->numeq),
+                   (node->dof[0] < rhs->numeq_total),
                    "local dof number out of range");
           full_rhs[node->dof[0]] += eforce_global.a.dv[k];
 	}
@@ -1680,7 +1683,7 @@ void pm_calvrhs(FIELD *actfield,
 	for (j=0; j<node->numdf; ++j)
 	{
 	  dsassert((node->dof[j] >= 0) &&
-		   (node->dof[j] < rhs->numeq),
+		   (node->dof[j] < rhs->numeq_total),
 		   "dof number out of range");
 	  full_rhs[node->dof[j]] += eforce_global.a.dv[node->numdf*k+j];
 	}
@@ -1931,9 +1934,7 @@ void pm_vel_update(FIELD *actfield,
 {
   INT i;
   INT velnp;
-#ifndef PM_TRILINOS
   DOUBLE* gradip;
-#endif
 
 #ifdef DEBUG
   dstrc_enter("pm_vel_update");
@@ -1993,6 +1994,14 @@ void pm_vel_update(FIELD *actfield,
     }
   }
 
+#ifdef PARALLEL
+  MPI_Allreduce(rhs1, rhs2, actfield->dis[disnum].numeq, MPI_DOUBLE, MPI_SUM,
+                actintra->MPI_INTRA_COMM);
+  gradip = rhs2;
+#else
+  gradip = rhs1;
+#endif
+
 #ifdef PM_TRILINOS
 
   /* multiply the new rhs with lmass and allreduce the result */
@@ -2004,7 +2013,7 @@ void pm_vel_update(FIELD *actfield,
 	       &(actsolv->sysarray_typ[actsysarray]),
 	       &(actsolv->sysarray[actsysarray]),
 	       &(actsolv->rhs[0]),
-	       rhs1,
+	       gradip,
 	       1.0
     );
 
@@ -2020,14 +2029,6 @@ void pm_vel_update(FIELD *actfield,
 		     actintra);
 
 #else /* PM_TRILINOS */
-
-#ifdef PARALLEL
-  MPI_Allreduce(rhs1, rhs2, actfield->dis[disnum].numeq, MPI_DOUBLE, MPI_SUM,
-                actintra->MPI_INTRA_COMM);
-  gradip = rhs2;
-#else
-  gradip = rhs1;
-#endif
 
 #endif /* PM_TRILINOS */
 

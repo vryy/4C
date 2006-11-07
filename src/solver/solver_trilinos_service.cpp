@@ -414,12 +414,8 @@ void add_trilinos_value(struct _TRILINOSMATRIX *tri, DOUBLE v, INT row, INT col)
     dserror("IndicesAreLocal()");
 
   int err = mat->SumIntoGlobalValues(row,1,&v,&col);
-  if (mat->IndicesAreLocal())
-    dserror("IndicesAreLocal()");
   if (err)
     err = mat->InsertGlobalValues(row,1,&v,&col);
-  if (mat->IndicesAreLocal())
-    dserror("IndicesAreLocal()");
   if (err<0)
     dserror("Epetra_CrsMatrix::InsertGlobalValues returned error code %d",err);
 

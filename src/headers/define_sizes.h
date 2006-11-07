@@ -11,7 +11,10 @@ Maintainer: Malte Neumann
 
 ---------------------------------------------------------------------*/
 
+#if 0
+/* This hurts xref. Each reconfigure requires a (very slow) rescan... */
 #include "compile_settings.h"
+#endif
 
 /*----------------------------------------------------------------------*
  *                                                                      *

@@ -910,86 +910,92 @@ void fluid_pm_cont()
 		  frhs, fgradprhs);
 
 #if 1
-    fprintf(allfiles.gidres,"RESULT \"press_rhs\" \"ccarat\" %d SCALAR ONNODES\n"
-	    "RESULTRANGESTABLE \"standard_fluid    \"\n"
-	    "COMPONENTNAMES \"pressure\"\n"
-	    "VALUES\n",fdyn->step);
-
-    for (i=0; i<actfield->dis[press_dis].numnp; ++i)
+    if (actintra->intra_rank==0)
     {
-      NODE* n = &actfield->dis[press_dis].node[i];
-      fprintf(allfiles.gidres,"%d %f\n",
-	      n->Id+1-genprob.nodeshift,
-	      /* frhs[n->dof[0]]); */
-	      press_rhs->vec.a.dv[n->dof[0]]);
+      fprintf(allfiles.gidres,"RESULT \"press_rhs\" \"ccarat\" %d SCALAR ONNODES\n"
+              "RESULTRANGESTABLE \"standard_fluid    \"\n"
+              "COMPONENTNAMES \"pressure\"\n"
+              "VALUES\n",fdyn->step);
+
+      for (i=0; i<actfield->dis[press_dis].numnp; ++i)
+      {
+        NODE* n = &actfield->dis[press_dis].node[i];
+        fprintf(allfiles.gidres,"%d %f\n",
+                n->Id+1-genprob.nodeshift,
+                /* frhs[n->dof[0]]); */
+                press_rhs->vec.a.dv[n->dof[0]]);
+      }
+
+      fprintf(allfiles.gidres,"END VALUES\n");
+
+      fprintf(allfiles.gidres,"RESULT \"press_sol\" \"ccarat\" %d SCALAR ONNODES\n"
+              "RESULTRANGESTABLE \"standard_fluid    \"\n"
+              "COMPONENTNAMES \"pressure\"\n"
+              "VALUES\n",fdyn->step);
+
+      for (i=0; i<actfield->dis[press_dis].numnp; ++i)
+      {
+        NODE* n = &actfield->dis[press_dis].node[i];
+        fprintf(allfiles.gidres,"%d %f\n",
+                n->Id+1-genprob.nodeshift,
+                /* frhs[n->dof[0]]); */
+                press_sol->vec.a.dv[n->dof[0]]);
+      }
+
+      fprintf(allfiles.gidres,"END VALUES\n");
     }
-
-    fprintf(allfiles.gidres,"END VALUES\n");
-
-    fprintf(allfiles.gidres,"RESULT \"press_sol\" \"ccarat\" %d SCALAR ONNODES\n"
-	    "RESULTRANGESTABLE \"standard_fluid    \"\n"
-	    "COMPONENTNAMES \"pressure\"\n"
-	    "VALUES\n",fdyn->step);
-
-    for (i=0; i<actfield->dis[press_dis].numnp; ++i)
-    {
-      NODE* n = &actfield->dis[press_dis].node[i];
-      fprintf(allfiles.gidres,"%d %f\n",
-	      n->Id+1-genprob.nodeshift,
-	      /* frhs[n->dof[0]]); */
-	      press_sol->vec.a.dv[n->dof[0]]);
-    }
-
-    fprintf(allfiles.gidres,"END VALUES\n");
 #endif
 
 #if 1
-    fprintf(allfiles.gidres,"RESULT \"elementcall\" \"ccarat\" %d VECTOR ONNODES\n"
-	    "RESULTRANGESTABLE \"standard_fluid    \"\n"
-	    "COMPONENTNAMES \"e1\" \"e2\"\n"
-	    "VALUES\n",fdyn->step);
-
-    for (i=0; i<actfield->dis[0].numnp; ++i)
+    if (actintra->intra_rank==0)
     {
-      DOUBLE d1,d2;
-      NODE* n = &actfield->dis[0].node[i];
+      fprintf(allfiles.gidres,"RESULT \"elementcall\" \"ccarat\" %d VECTOR ONNODES\n"
+              "RESULTRANGESTABLE \"standard_fluid    \"\n"
+              "COMPONENTNAMES \"e1\" \"e2\"\n"
+              "VALUES\n",fdyn->step);
 
-      d1 = frhs[n->dof[0]];
-      d2 = frhs[n->dof[1]];
+      for (i=0; i<actfield->dis[0].numnp; ++i)
+      {
+        DOUBLE d1,d2;
+        NODE* n = &actfield->dis[0].node[i];
 
-      if (n->gnode->dirich && n->gnode->dirich->dirich_onoff.a.iv[0])
-	d1 = 0;
-      if (n->gnode->dirich && n->gnode->dirich->dirich_onoff.a.iv[1])
-	d2 = 0;
+        d1 = frhs[n->dof[0]];
+        d2 = frhs[n->dof[1]];
 
-      fprintf(allfiles.gidres,"%d %e %e\n",n->Id+1,d1,d2);
+        if (n->gnode->dirich && n->gnode->dirich->dirich_onoff.a.iv[0])
+          d1 = 0;
+        if (n->gnode->dirich && n->gnode->dirich->dirich_onoff.a.iv[1])
+          d2 = 0;
+
+        fprintf(allfiles.gidres,"%d %e %e\n",n->Id+1,d1,d2);
+      }
+
+      fprintf(allfiles.gidres,"END VALUES\n");
+
+
+      fprintf(allfiles.gidres,"RESULT \"elementcall2\" \"ccarat\" %d VECTOR ONNODES\n"
+              "RESULTRANGESTABLE \"standard_fluid    \"\n"
+              "COMPONENTNAMES \"e1\" \"e2\"\n"
+              "VALUES\n",fdyn->step);
+
+      for (i=0; i<actfield->dis[0].numnp; ++i)
+      {
+        DOUBLE d1,d2;
+        NODE* n = &actfield->dis[0].node[i];
+
+        d1 = fgradprhs[n->dof[0]];
+        d2 = fgradprhs[n->dof[1]];
+
+        if (n->gnode->dirich && n->gnode->dirich->dirich_onoff.a.iv[0])
+          d1 = 0;
+        if (n->gnode->dirich && n->gnode->dirich->dirich_onoff.a.iv[1])
+          d2 = 0;
+
+        fprintf(allfiles.gidres,"%d %e %e\n",n->Id+1,d1,d2);
+      }
+
+      fprintf(allfiles.gidres,"END VALUES\n");
     }
-
-    fprintf(allfiles.gidres,"END VALUES\n");
-
-
-    fprintf(allfiles.gidres,"RESULT \"elementcall2\" \"ccarat\" %d VECTOR ONNODES\n"
-	    "RESULTRANGESTABLE \"standard_fluid    \"\n"
-	    "COMPONENTNAMES \"e1\" \"e2\"\n"
-	    "VALUES\n",fdyn->step);
-
-    for (i=0; i<actfield->dis[0].numnp; ++i)
-    {
-      DOUBLE d1,d2;
-      NODE* n = &actfield->dis[0].node[i];
-
-      d1 = fgradprhs[n->dof[0]];
-      d2 = fgradprhs[n->dof[1]];
-
-      if (n->gnode->dirich && n->gnode->dirich->dirich_onoff.a.iv[0])
-	d1 = 0;
-      if (n->gnode->dirich && n->gnode->dirich->dirich_onoff.a.iv[1])
-	d2 = 0;
-
-      fprintf(allfiles.gidres,"%d %e %e\n",n->Id+1,d1,d2);
-    }
-
-    fprintf(allfiles.gidres,"END VALUES\n");
 #endif
 
     /*---------- extrapolate from n+alpha_f to n+1 for generalised alpha ---*/
