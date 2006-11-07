@@ -64,7 +64,7 @@ void so3_metr_jaco(const ELEMENT *ele,
   /* initialise Jacobian to zero */
   for (i=0; i<NDIM_SOLID3; i++)
   {
-    for (j=0; i<NDIM_SOLID3; i++)
+    for (j=0; j<NDIM_SOLID3; j++)
     {
       xjm[i][j] = 0.0;
     }

@@ -180,6 +180,9 @@ void inp_fluid_field(
 void inp_ale_field(
     FIELD         *alefield);
 
+void inp_therm_field(
+    FIELD         *thermfield);
+
 
 /*----------------------------------------------------------------------*
  | input of submesh: input_submesh.c                         ah 4/04    |

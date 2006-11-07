@@ -76,8 +76,13 @@ void out_gid_domains_ssi(
 /*----------------------------------------------------------------------*
  |  out_gid_soldyn.c                                     m.gee 5/03     |
  *----------------------------------------------------------------------*/
-void out_gid_soldyn(char string[], FIELD *actfield, INTRA  *actintra, INT step,
-                   INT place, DOUBLE totaltime);
+void out_gid_soldyn(char string[], 
+                    FIELD *actfield, 
+                    INT disnum,
+                    INTRA *actintra, 
+                    INT step,
+                    INT place, 
+                    DOUBLE totaltime);
 /*----------------------------------------------------------------------*
  |  out_gid_solssi.c                                    chfoe 07/04     |
  *----------------------------------------------------------------------*/

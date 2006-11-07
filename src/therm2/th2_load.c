@@ -226,7 +226,7 @@ void th2_load_heat(ELEMENT *ele,  /* actual element */
   NEUM_CONDITION *lineneum[MAXEDG_THERM2]; /* short line-neum. conditions */
   INT line;  /* looper over lines                      */
   INT ngnode;  /* number of geometry-nodes on g-line     */
-  INT nil;  /* number of GP's in for triangle  */
+  INT nil = 0;  /* number of GP's in for triangle  */
   DOUBLE glr[GLINTC_THERM2];  /* GP r-coords on edge */
   DOUBLE gls[GLINTC_THERM2];  /* GP s-coords on edge */
   DOUBLE glw[GLINTC_THERM2];  /* GP weight on edge */

@@ -52,25 +52,15 @@ void th3_shape_deriv(DIS_TYP     typ,
                      DOUBLE      shape[MAXNOD_THERM3],
                      DOUBLE      deriv[MAXNOD_THERM3][NDIM_THERM3])
 {
-  DOUBLE rp, sp, tp, rm, sm, tm, rrm, ssm, ttm;
-  DOUBLE u;
+  DOUBLE rp, sp, tp, rm, sm, tm;  /* auxiliary variables 1 */
+  DOUBLE rrm, ssm, ttm, rrp, ssp, ttp;  /* auxiliary variables 2 */
+  DOUBLE u, r4, s4, t4, u4;  /* auxiliary variables 3 */
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_enter("th3_shape_deriv");
 #endif
 
-  /*--------------------------------------------------------------------*/
-  /* a few parameters depending on coord of current point (r,s) */
-  rm  = 1.0 - r;
-  rp  = 1.0 + r;
-  sm  = 1.0 - s;
-  sp  = 1.0 + s;
-  tm  = 1.0 - t;
-  tp  = 1.0 + t;
-  rrm = 1.0 - r*r;
-  ssm = 1.0 - s*s;
-  ttm = 1.0 - t*t;
   /*--------------------------------------------------------------------*/
   /* switch according to discretisation type */
   switch (typ)
@@ -79,6 +69,14 @@ void th3_shape_deriv(DIS_TYP     typ,
     /* hexahedral elements */
     /* linear interpolation */
     case hex8:
+      /* auxiliary variables */
+      rm  = 1.0 - r;
+      rp  = 1.0 + r;
+      sm  = 1.0 - s;
+      sp  = 1.0 + s;
+      tm  = 1.0 - t;
+      tp  = 1.0 + t;
+      /* shape functions at (r,s,t) */
       shape[0] = 0.125*rm*sm*tm;  /* shape fct. assoc. to node 0 */
       shape[1] = 0.125*rp*sm*tm;
       shape[2] = 0.125*rp*sp*tm;
@@ -124,8 +122,18 @@ void th3_shape_deriv(DIS_TYP     typ,
         deriv[7][2] = 0.125*rm*sp;
       }
       break;
-    /* quadratic interpolation without central nodes (serendipity) */
+    /* serendipity quadratic interpolation */
     case hex20:
+      /* auxiliary variables */
+      rm  = 1.0 - r;
+      rp  = 1.0 + r;
+      sm  = 1.0 - s;
+      sp  = 1.0 + s;
+      tm  = 1.0 - t;
+      tp  = 1.0 + t;
+      rrm = 1.0 - r*r;
+      ssm = 1.0 - s*s;
+      ttm = 1.0 - t*t;
       /* shape functions associated to vertex nodes k=1,...,8
        * N^k = 1/8 (1 + r^k r) (1 + s^k s) (1 + t^k k) 
        *           (r^k r + s^k s + t^k t - 2)
@@ -228,13 +236,163 @@ void th3_shape_deriv(DIS_TYP     typ,
         deriv[15][2] = 0.5*rm*sp*(tm-1.0);
       }
       break;
-    /* quadratic interpolation with central node (Lagrangian) */
+    /* Lagrange quadratic interpolation */
     case hex27:
-      dserror("hex27 shape functions are not implemented");
+      /* auxiliary variables */
+      rm  = 1.0 - r;
+      rp  = 1.0 + r;
+      sm  = 1.0 - s;
+      sp  = 1.0 + s;
+      tm  = 1.0 - t;
+      tp  = 1.0 + t;
+      rrm = 1.0 - 2.0*r;
+      rrp = 1.0 + 2.0*r;
+      ssm = 1.0 - 2.0*s;
+      ssp = 1.0 + 2.0*s;
+      ttm = 1.0 - 2.0*t;
+      ttp = 1.0 + 2.0*t;
+      /* corner nodes */
+      shape[0] = -0.125* r*rm * s*sm * t*tm;
+      shape[1] = 0.125 * r*rp * s*sm * t*tm;
+      shape[2] = -0.125 * r*rp * s*sp * t*tm;
+      shape[3] = 0.125 * r*rm * s*sp * t*tm;
+      shape[4] = 0.125 * r*rm * s*sm * t*tp;
+      shape[5] = -0.125 * r*rp * s*sm * t*tp;
+      shape[6] = 0.125 * r*rp * s*sp * t*tp;
+      shape[7] = -0.125 * r*rm * s*sp * t*tp; 
+      /* edge centre nodes */
+      shape[8] = 0.25 * rm*rp * s*sm * t*tm;
+      shape[9] = -0.25 * r*rp * sm*sp * t*tm;
+      shape[10] = -0.25 * rm*rp * s*sp * t*tm;
+      shape[11] = 0.25 * r*rm * sm*sp * t*tm;
+      shape[12] = -0.5 * rm*rp * s*sm * tm*tp;
+      shape[13] = 0.5 * r*rp * sm*sp * tm*tp;
+      shape[14] = 0.5 * rm*rp * s*sp * tm*tp;
+      shape[15] = -0.5 * r*rm * sm*sp * tm*tp;
+      shape[16] = -0.25 * rm*rp * s*sm * t*tp;
+      shape[17] = 0.25 * r*rp * sm*sp * t*tp;
+      shape[18] = 0.25 * rm*rp * s*sp * t*tp;
+      shape[19] = -0.25 * r*rm * sm*sp * t*tp;
+      /* side centre nodes */
+      shape[20] = -0.5 * rm*rp * sm*sp * t*tm;
+      shape[21] = -0.5 * rm*rp * s*sm * tm*tp;
+      shape[22] = 0.5 * r*rp * sm*sp * tm*tp;
+      shape[23] = 0.5 * rm*rp * s*sp * tm*tp;
+      shape[24] = -0.5 * r*rm * sm*sp * tm*tp;
+      shape[25] = 0.5 * rm*rp * sm*sp * t*tp;
+      /* volume centre node */
+      shape[26] = rm*rp * sm*sp * tm*tp;
       /* optionally include derivatives */
       if (option == 1)
       {
-        dserror("Derivatives of hex27 shape functions are not implemented");
+        /* shape fct. assoc. to node 0 */
+        deriv[0][0] = -0.125 * rrm * s*sm * t*tm;
+        deriv[0][1] = -0.125 * r*rm * ssm * t*tm;
+        deriv[0][2] = -0.125 * r*rm * s*sm * ttm;
+        /* shape fct. assoc. to node 1 */
+        deriv[1][0] = 0.125 * rrp * s*sm * t*tm;
+        deriv[1][1] = 0.125 * r*rp * ssm * t*tm;
+        deriv[1][2] = 0.125 * r*rp * s*sm * ttm;
+        /* shape fct. assoc. to node 2 */
+        deriv[2][0] = -0.125 * rrp * s*sp * t*tm;
+        deriv[2][1] = -0.125 * r*rp * ssp * t*tm;
+        deriv[2][2] = -0.125 * r*rp * s*sp * ttm;
+        /* shape fct. assoc. to node 3 */
+        deriv[3][0] = 0.125 * rrm * s*sp * t*tm;
+        deriv[3][1] = 0.125 * r*rm * ssp * t*tm;
+        deriv[3][2] = 0.125 * r*rm * s*sp * ttm;
+        /* shape fct. assoc. to node 4 */
+        deriv[4][0] = 0.125 * rrm * s*sm * t*tp;
+        deriv[4][1] = 0.125 * r*rm * ssm * t*tp;
+        deriv[4][2] = 0.125 * r*rm * s*sm * ttp;
+        /* shape fct. assoc. to node 5 */
+        deriv[5][0] = -0.125 * rrp * s*sm * t*tp;
+        deriv[5][1] = -0.125 * r*rp * ssm * t*tp;
+        deriv[5][2] = -0.125 * r*rp * s*sm * ttp;
+        /* shape fct. assoc. to node 6 */
+        deriv[6][0] = 0.125 * rrp * s*sp * t*tp;
+        deriv[6][1] = 0.125 * r*rp * ssp * t*tp;
+        deriv[6][2] = 0.125 * r*rp * s*sp * ttp;
+        /* shape fct. assoc. to node 7 */
+        deriv[7][0] = -0.125 * rrm * s*sp * t*tp;
+        deriv[7][1] = -0.125 * r*rm * ssp * t*tp;
+        deriv[7][2] = -0.125 * r*rm * s*sp * ttp;
+        /* shape fct. assoc. to node 8 */
+        deriv[8][0] = -0.5 * r * s*sm * t*tm;
+        deriv[8][1] = 0.25 * rm*rp * ssm * t*tm;
+        deriv[8][2] = 0.25 * rm*rp * s*sm * ttm;
+        /* shape fct. assoc. to node 9 */
+        deriv[9][0] = -0.25 * rrp * sm*sp * t*tm;
+        deriv[9][1] = 0.5 * r*rp * s * t*tm;
+        deriv[9][2] = -0.25 * r*rp * sm*sp * ttm;
+        /* shape fct. assoc. to node 10 */
+        deriv[10][0] = 0.5 * r * s*sp * t*tm;
+        deriv[10][1] = -0.25 * rm*rp * ssp * t*tm;
+        deriv[10][2] = -0.25 * rm*rp * s*sp * ttm;
+        /* shape fct. assoc. to node 11 */
+        deriv[11][0] = 0.25 * rrm * sm*sp * t*tm;
+        deriv[11][1] = -0.5 * r*rm * s * t*tm;
+        deriv[11][2] = 0.25 * r*rm * sm*sp * ttm;
+        /* shape fct. assoc. to node 12 */
+        deriv[12][0] = r * s*sm * tm*tp;
+        deriv[12][1] = -0.5 * rm*rp * ssm * tm*tp;
+        deriv[12][2] = rm*rp * s*sm * t;
+        /* shape fct. assoc. to node 13 */
+        deriv[13][0] = 0.5 * rrp * sm*sp * tm*tp;
+        deriv[13][1] = -r*rp * s * tm*tp;
+        deriv[13][2] = -r*rp * sm*sp * t;
+        /* shape fct. assoc. to node 14 */
+        deriv[14][0] = -r * s*sp * tm*tp;
+        deriv[14][1] = 0.5 * rm*rp * ssp * tm*tp;
+        deriv[14][2] = -rm*rp * s*sp * t;
+        /* shape fct. assoc. to node 15 */
+        deriv[15][0] = -0.5 * rrm * sm*sp * tm*tp;
+        deriv[15][1] = r*rm * s * tm*tp;
+        deriv[15][2] = r*rm * sm*sp * t;
+        /* shape fct. assoc. to node 16 */
+        deriv[16][0] = 0.5 * r * s*sm * t*tp;
+        deriv[16][1] = -0.25 * rm*rp * ssm * t*tp;
+        deriv[16][2] = -0.25 * rm*rp * s*sm * ttp;
+        /* shape fct. assoc. to node 17 */
+        deriv[17][0] = 0.25 * rrp * sm*sp * t*tp;
+        deriv[17][1] = -0.5 * r*rp * s * t*tp;
+        deriv[17][2] = 0.25 * r*rp * sm*sp * ttp;
+        /* shape fct. assoc. to node 18 */
+        deriv[18][0] = -0.5 * r * s*sp * t*tp;
+        deriv[18][1] = 0.25 * rm*rp * ssp * t*tp;
+        deriv[18][2] = 0.25 * rm*rp * s*sp * ttp;
+        /* shape fct. assoc. to node 19 */
+        deriv[19][0] = -0.25 * rrm * sm*sp * t*tp;
+        deriv[19][1] = 0.5 * r*rm * s * t*tp;
+        deriv[19][2] = -0.25 * r*rm * sm*sp * ttp;
+        /* shape fct. assoc. to node 20 */
+        deriv[20][0] = r * sm*sp * t*tm;
+        deriv[20][1] = rm*rp * s * t*tm;
+        deriv[20][2] = -0.5 * rm*rp * sm*sp * ttm;
+        /* shape fct. assoc. to node 21 */
+        deriv[21][0] = r * s*sm * tm*tp;
+        deriv[21][1] = -0.5 * rm*rp * ssm * tm*tp;
+        deriv[21][2] = rm*rp * s*sm * t;
+        /* shape fct. assoc. to node 22 */
+        deriv[22][0] = 0.5 * rrp * sm*sp * tm*tp;
+        deriv[22][1] = -r*rp * s * tm*tp;
+        deriv[22][2] = -r*rp * sm*sp * t;
+        /* shape fct. assoc. to node 23 */
+        deriv[23][0] = -r * s*sp * tm*tp;
+        deriv[23][1] = 0.5 * rm*rp * ssp * tm*tp;
+        deriv[23][2] = -rm*rp * s*sp * t;
+        /* shape fct. assoc. to node 24 */
+        deriv[24][0] = -0.5 * rrm * sm*sp * tm*tp;
+        deriv[24][1] = r*rm * s * tm*tp;
+        deriv[24][2] = r*rm * sm*sp * t;
+        /* shape fct. assoc. to node 25 */
+        deriv[25][0] = -r * sm*sp * t*tp;
+        deriv[25][1] = -rm*rp * s * t*tp;
+        deriv[25][2] = 0.5 * rm*rp * sm*sp * ttp;
+        /* shape fct. assoc. to node 26 */
+        deriv[26][0] = -2.0 * r * sm*sp * tm*tp;
+        deriv[26][1] = -2.0 * rm*rp * s * tm*tp;
+        deriv[26][2] = -2.0 * rm*rp * sm*sp * t;
       }
       break;
     /*==================================================================*/
@@ -264,12 +422,69 @@ void th3_shape_deriv(DIS_TYP     typ,
       break;
     /* Quadratic interpolation */
     case tet10:
-      u = 1.0-r-s-t;
-      dserror("tet10 shape functions are not implemented");
+      /* auxiliary variables */
+      u = 1.0 - r - s - t;
+      r4 = 4.0*r;
+      s4 = 4.0*s;
+      t4 = 4.0*t;
+      u4 = 4.0*u;
+      /* shape functions at (r,s,t)
+       * [T.J.R. Hughes, The finite element method, Dover, 2000] */
+      /* corner nodes */
+      shape[0] = r*(2.0*r - 1.0);
+      shape[1] = s*(2.0*s - 1.0);
+      shape[2] = t*(2.0*t - 1.0);
+      shape[3] = u*(2.0*u - 1.0);
+      /* middle nodes */
+      shape[4] = r4*s;
+      shape[5] = s4*t;
+      shape[6] = r4*t;
+      shape[7] = r4*u;
+      shape[8] = s4*u;
+      shape[9] = t4*u;
       /* optionally include derivatives */
       if (option == 1)
       {
-        dserror("Derivatives of tet10 shape functions are not implemented");
+        /* shape fct. assoc. to node 0 */
+        deriv[0][0] = r4 - 1.0;  /* differentiated with respect to r */
+        deriv[0][1] = 0.0;       /* differentiated with respect to s */
+        deriv[0][2] = 0.0;       /* differentiated with respect to t */
+        /* shape fct. assoc. to node 1 */
+        deriv[1][0] = 0.0;
+        deriv[1][1] = s4 - 1.0;
+        deriv[1][2] = 0.0;
+        /* shape fct. assoc. to node 2 */
+        deriv[2][0] = 0.0;
+        deriv[2][1] = 0.0;
+        deriv[2][2] = t4 - 1.0;
+        /* shape fct. assoc. to node 3 */
+        deriv[3][0] = 1.0 - u4;
+        deriv[3][1] = 1.0 - u4;
+        deriv[3][2] = 1.0 - u4;
+        /* shape fct. assoc. to node 4 */
+        deriv[4][0] = s4;
+        deriv[4][1] = r4;
+        deriv[4][2] = 0.0;
+        /* shape fct. assoc. to node 5 */
+        deriv[5][0] = 0.0;
+        deriv[5][1] = t4;
+        deriv[5][2] = s4;
+        /* shape fct. assoc. to node 6 */
+        deriv[6][0] = t4;
+        deriv[6][1] = 0.0;
+        deriv[6][2] = r4;
+        /* shape fct. assoc. to node 7 */
+        deriv[7][0] = u4 - r4;
+        deriv[7][1] = -r4;
+        deriv[7][2] = -r4;
+        /* shape fct. assoc. to node 8 */
+        deriv[8][0] = -s4;
+        deriv[8][1] = u4 - s4;
+        deriv[8][2] = -s4;
+        /* shape fct. assoc. to node 9 */
+        deriv[9][0] = -t4;
+        deriv[9][1] = -t4;
+        deriv[9][2] = u4 - t4;
       }
       break;
     /* catch erroneous discretisation types */

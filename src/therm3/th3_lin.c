@@ -73,8 +73,12 @@ void th3_lin_tang(CONTAINER *cont,
 
   /* integration */
   INT igpr, igps, igpt;  /* Gauss point indices */
-  INT gpnumr, gpnums, gpnumt;  /* Gauss point numbers */
-  INT gpintcr, gpintcs, gpintct;  /* Gauss point integration cases */
+  INT gpnumr = 0;  /* Gauss points in r-direction */
+  INT gpnums = 0;  /* Gauss points in s-direction */
+  INT gpnumt = 0;  /* Gauss points in t-direction */
+  INT gpintcr = 0;  /* GP integration case in r-direction */
+  INT gpintcs = 0;  /* GP integration case in s-direction */
+  INT gpintct = 0;  /* GP integration case in t-direction */
   INT igp;  /* current total index of Gauss point */
   DOUBLE fac;  /* integration factors */
   DOUBLE gpcr;  /* r-coord current GP */

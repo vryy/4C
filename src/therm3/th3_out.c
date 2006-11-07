@@ -59,7 +59,7 @@ void th3_out_hflux(ELEMENT *actele,
                    FILE *out)
 {
   const INT place = 0;
-  INT gptotal;  /* total number of Gauss points in element domain */
+  INT gptotal = 0;  /* total number of Gauss points in element domain */
   INT nelenod;  /* number of element nodes */
   INT igp;  /* Gauss point counter */
   INT inod;  /* node counter */
@@ -257,7 +257,7 @@ void th3_out_hflux(ELEMENT *actele,
   dstrc_exit();
 #endif
   return;
-}  /* end of th2_out_hflux */
+}  /* end of th3_out_hflux */
 
 #endif /* end of #ifdef D_THERM2 */
 /*! @} (documentation module close)*/

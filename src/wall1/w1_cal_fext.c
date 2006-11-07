@@ -91,14 +91,14 @@ void w1_eleload(ELEMENT  *ele,     /* actual element                  */
                 INT       imyrank)
 {
 INT          lr,ls;              /* integration directions          */
-INT          i,j,a;                /* some loopers                    */
+INT          i,j,a;              /* some loopers                    */
 INT          inode,idof;         /* some loopers                    */
-INT          nir=0;            /* number of GP's in r-s direction */
-INT          nis=0;            /* number of GP's in r-s direction */
+INT          nir=0;              /* number of GP's in r-s direction */
+INT          nis=0;              /* number of GP's in r-s direction */
 INT          nil;                /* number of GP's in for triangle  */
 INT          iel;                /* number of element nodes         */
 INT          nd;                 /* element DOF                     */
-INT          intc=0;               /* "integratsion case" for tri-element */
+INT          intc=0;             /* "integratsion case" for tri-element */
 const INT    numdf  = 2;         /* dof per node                    */
 INT          foundsurface;       /* flag for surfaceload present    */
 INT          iedgnod[3];
@@ -107,7 +107,7 @@ INT          irow;
 /* DOUBLE       thickness;            */
 DOUBLE       e1=0.0;              /* GP-koordinates in r-s-system   */
 DOUBLE       e2=0.0;              /* GP-koordinates in r-s-system   */
-DOUBLE       fac;      /* integration factor  GP-info    */
+DOUBLE       fac=1.0;      /* integration factor  GP-info    */
 DOUBLE       facr=0.0;      /* integration factor  GP-info    */
 DOUBLE       facs=0.0;      /* integration factor  GP-info    */
 DOUBLE       det;                /* det of jacobian matrix         */
@@ -125,7 +125,7 @@ DOUBLE          xgp[3];      /* Coordinates of GP'es                   */
 DOUBLE          ygp[3];      /* Coordinates of GP'es                   */
 DOUBLE          wgx[3];      /* weights at GP'es                       */
 DOUBLE          wgy[3];      /* weights at GP'es                       */
-DOUBLE          ds;       /* dx/dr line increment for line integration */
+DOUBLE          ds=1.0;      /* dx/dr line increment for line integration */
 DOUBLE          facline;     /*integration factor for line integration */
 DOUBLE          forceline[2];/* lineload value in x and y direction(inp)*/
 RSF rsgeo;                   /* integration direction on line          */

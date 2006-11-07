@@ -39,7 +39,7 @@ INT                 lr, ls;           /* loopers over GP */
 INT                 iel;              /* numnp to this element */
 INT                 nd;
 INT                 ip;
-INT                 intc;      /* "integration case" for tri-element     */
+INT                 intc=0;      /* "integration case" for tri-element     */
 INT                 lanz, maxreb;
 INT                 istore = 0;/* controls storing of new stresses to wa */
 INT                 newval = 0;/* controls evaluation of new stresses    */

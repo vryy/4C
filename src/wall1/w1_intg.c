@@ -469,14 +469,14 @@ else
           /* obsolete ?
            * This block is only kept for consistency, but should be
            * dropped in favour of the version used with 'tri6' */
-     for (i=0;i<MAXQINTP;i++)
-     {
-      for (k=0;k<MAXQINTC;k++)
-      {
-        data->qxg[i][k]=xg[i][k];
-        data->qwgt[i][k]=wgt[i][k];
-      } /* end loop over k */
-     } /* end loop over i */
+          for (i=0;i<MAXQINTP;i++)
+          {
+            for (k=0;k<MAXQINTC;k++)
+            {
+              data->qxg[i][k]=xg[i][k];
+              data->qwgt[i][k]=wgt[i][k];
+            } /* end loop over k */
+          } /* end loop over i */
           break;
         case tri6:
           /*------------------------------------------------------------*/
@@ -489,6 +489,8 @@ else
               data->qxg[i][intc] = (1.0 + xg[i][k])/2.0;
               data->qwgt[i][intc] = wgt[i][k]/2.0;
           }
+          break;
+        default:
           break;
       }  /* end switch (ele->distyp) */
 /*----------------------------------------------------------------------*/

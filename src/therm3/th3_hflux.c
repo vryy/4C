@@ -207,9 +207,13 @@ void th3_hflux_cal(CONTAINER *cont,
   INT neledof;  /* total number of element DOFs */
   DIS_TYP distyp;  /* type of discretisation */
   
-  INT gpnumr, gpnums, gpnumt;  /* Gauss points in r-, s- and t-direction */
-  INT gpintcr, gpintcs, gpintct;  /* GP integration case in r,s,t-direct. */
-  INT gpnum;  /* total number of Gauss points in element domain */
+  INT gpnumr = 0;  /* Gauss points in r-direction */
+  INT gpnums = 0;  /* Gauss points in s-direction */
+  INT gpnumt = 0;  /* Gauss points in t-direction */
+  INT gpintcr = 0;  /* GP integration case in r-direction */
+  INT gpintcs = 0;  /* GP integration case in s-direction */
+  INT gpintct = 0;  /* GP integration case in t-direction */
+  INT gpnum = 0;  /* total number of Gauss points in element domain */
   INT igpr, igps, igpt;  /* Gauss point index in r-, s- and t-direction */
   INT igp;  /* total index Gauss point */
   DOUBLE fac;  /* a factor */
@@ -509,9 +513,13 @@ void th3_hflux_extrpol(ELEMENT *ele,
                        DOUBLE *rst,
                        DOUBLE *hfluxnd)
 {
-  INT gpnumr, gpnums, gpnumt;  /* Gauss points in r-, s- and t-direction */
-  INT gpnum;  /* total number of GPs */
-  INT gpintcr, gpintcs, gpintct;  /* GP integration case in r,s,t-direct. */
+  INT gpnumr = 0;  /* Gauss points in r-direction */
+  INT gpnums = 0;  /* Gauss points in s-direction */
+  INT gpnumt = 0;  /* Gauss points in t-direction */
+  INT gpintcr = 0;  /* GP integration case in r-direction */
+  INT gpintcs = 0;  /* GP integration case in s-direction */
+  INT gpintct = 0;  /* GP integration case in t-direction */
+  INT gpnum = 0;  /* total number of Gauss points in element domain */
   INT igpr, igps, igpt;  /* Gauss point loop counter */
   INT igauss;  /* total Gauss point counter */
   DOUBLE gpcr, gpcs, gpct;  /* GP (r,s,t) co-ordinate */

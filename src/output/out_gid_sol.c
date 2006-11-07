@@ -33,6 +33,9 @@ Maintainer: Malte Neumann
 #ifdef D_THERM2
 #include "../therm2/therm2.h"
 #endif
+#ifdef D_THERM3
+#include "../therm3/therm3.h"
+#endif
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | structure of flags to control output                                 |
@@ -282,18 +285,20 @@ for (i=0; i<genprob.numfld; i++)
 #ifdef D_BRICK1
       case el_brick1:
          /*--- initialize stress output for hex ---*/
-         c1_out_gid_sol_str(NULL, actfield, 0, 1);
+         c1_out_gid_sol_str(NULL, actfield, j, 0, 1);
+         /* set used gid set */
+         c1_gid_init(actele, actgid);
 
-         if (actele->numnp==8)
-         {
-            actgid->is_brick1_222   = 1;
-            actgid->brick1_222_name = "brick1_222";
-         }
-         if (actele->numnp==20 || actele->numnp==27)
-         {
-            actgid->is_brick1_333   = 1;
-            actgid->brick1_333_name = "brick1_333";
-         }
+/*          if (actele->numnp==8) */
+/*          { */
+/*             actgid->is_brick1_222   = 1; */
+/*             actgid->brick1_222_name = "brick1_222"; */
+/*          } */
+/*          if (actele->numnp==20 || actele->numnp==27) */
+/*          { */
+/*             actgid->is_brick1_333   = 1; */
+/*             actgid->brick1_333_name = "brick1_333"; */
+/*          } */
       break;
 #endif /*D_BRICK1*/
 
@@ -719,51 +724,23 @@ for (i=0; i<genprob.numfld; i++)
 
 
 
-
    /* THERM2 */
    /* ====== */
 #ifdef D_THERM2
      case el_therm2:
-       switch (actele->distyp)
-       {
-           case quad4:
-             if (actele->e.th2->nGP[0] == 1)
-             {
-               actgid->is_therm2_q_11 = 1;
-               actgid->therm2_q_11_name = "therm2_q_11";
-             }
-             if (actele->e.th2->nGP[0] == 2)
-             {
-               actgid->is_therm2_q_22 = 1;
-               actgid->therm2_q_22_name = "therm2_q_22";
-             }
-           case quad8: case quad9:
-             if (actele->e.th2->nGP[0] == 3)
-             {
-               actgid->is_therm2_q_33 = 1;
-               actgid->therm2_q_33_name = "therm2_q_33";
-             }
-             break;
-           case tri3:
-             if (actele->e.th2->nGP[0]==1)
-	     {
-               actgid->is_therm2_t_11 = 1;
-               actgid->therm2_t_11_name = "therm2_t_11";
-             }
-           case tri6:
-             if (actele->e.th2->nGP[0]==3)
-             {
-               actgid->is_therm2_t_31 = 1;
-               actgid->therm2_t_31_name = "therm2_t_31";
-             }
-             break;
-           default:
-             dserror("Discretisation type is impossible!");
-             break;
-       }  /* end of switch (actele->distyp) */
+       th2_gid_init(actele, actgid);
      break;
 #endif
 
+
+
+   /* THERM3 */
+   /* ====== */
+#ifdef D_THERM3
+     case el_therm3:
+       th3_gid_init(actele, actgid);
+     break;
+#endif
 
 
 
@@ -1013,30 +990,36 @@ end_s8_init:;
    /*========*/
 
 #ifdef D_BRICK1
-   if (actgid->is_brick1_222)
+   if ( (actgid->is_brick1_222)
+        || (actgid->is_brick1_333) )
    {
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s DIS %1i BRICK1 2x2x2 GP\n",actgid->fieldname,j);
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"GAUSSPOINTS %c%s_dis_%1i%c ELEMTYPE Hexahedra %c%s_dis_%1i%c\n",
-       sign,actgid->brick1_222_name,j,sign,
-       sign,actgid->brick1_222_name,j,sign);
-   fprintf(out,"NUMBER OF GAUSS POINTS: 8\n");
-   fprintf(out,"NATURAL COORDINATES: Internal\n");
-   fprintf(out,"END GAUSSPOINTS\n");
+     c1_gid_gpset(j, actgid, out);
    }
-   if (actgid->is_brick1_333)
-   {
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s DIS %1i BRICK1 3x3x3 GP\n",actgid->fieldname,j);
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"GAUSSPOINTS %c%s_dis_%1i%c ELEMTYPE Hexahedra %c%s_dis_%1i%c\n",
-       sign,actgid->brick1_333_name,j,sign,
-       sign,actgid->brick1_333_name,j,sign);
-   fprintf(out,"NUMBER OF GAUSS POINTS: 27\n");
-   fprintf(out,"NATURAL COORDINATES: Internal\n");
-   fprintf(out,"END GAUSSPOINTS\n");
-   }
+
+/*    if (actgid->is_brick1_222) */
+/*    { */
+/*    fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*    fprintf(out,"# GAUSSPOINTSET FOR FIELD %s DIS %1i BRICK1 2x2x2 GP\n",actgid->fieldname,j); */
+/*    fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*    fprintf(out,"GAUSSPOINTS %c%s_dis_%1i%c ELEMTYPE Hexahedra %c%s_dis_%1i%c\n", */
+/*        sign,actgid->brick1_222_name,j,sign, */
+/*        sign,actgid->brick1_222_name,j,sign); */
+/*    fprintf(out,"NUMBER OF GAUSS POINTS: 8\n"); */
+/*    fprintf(out,"NATURAL COORDINATES: Internal\n"); */
+/*    fprintf(out,"END GAUSSPOINTS\n"); */
+/*    } */
+/*    if (actgid->is_brick1_333) */
+/*    { */
+/*    fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*    fprintf(out,"# GAUSSPOINTSET FOR FIELD %s DIS %1i BRICK1 3x3x3 GP\n",actgid->fieldname,j); */
+/*    fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*    fprintf(out,"GAUSSPOINTS %c%s_dis_%1i%c ELEMTYPE Hexahedra %c%s_dis_%1i%c\n", */
+/*        sign,actgid->brick1_333_name,j,sign, */
+/*        sign,actgid->brick1_333_name,j,sign); */
+/*    fprintf(out,"NUMBER OF GAUSS POINTS: 27\n"); */
+/*    fprintf(out,"NATURAL COORDINATES: Internal\n"); */
+/*    fprintf(out,"END GAUSSPOINTS\n"); */
+/*    } */
 #endif
 
 
@@ -1627,67 +1610,18 @@ end_s8_init:;
    /* THERM2 */
    /*========*/
    /* bborn 03/06 */
-
-
 #ifdef D_THERM2
-   /*-------------------------------------------------------------------*/
-   /* quadrilateral element with 4 nodes and 2x2 Gauss points */
-   if (actgid->is_therm2_q_22)
-   {
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s DIS %1i THERM2 2x2 GP\n",actgid->fieldname,j);
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"GAUSSPOINTS %c%s_dis_%1i%c ELEMTYPE Quadrilateral %c%s_dis_%1i%c\n",
-       sign,actgid->therm2_q_22_name,j,sign,
-       sign,actgid->therm2_q_22_name,j,sign);
-   fprintf(out,"NUMBER OF GAUSS POINTS: 4\n");
-   fprintf(out,"NATURAL COORDINATES: Internal\n");
-   fprintf(out,"END GAUSSPOINTS\n");
-   }
-   /*-------------------------------------------------------------------*/
-   /* quadrilateral element with 8/9 nodes and 3x3 Gauss points */
-   if (actgid->is_therm2_q_33)
-   {
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s DIS %1i THERM2 3x3 GP\n",actgid->fieldname,j);
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"GAUSSPOINTS %c%s_dis_%1i%c ELEMTYPE Quadrilateral %c%s_dis_%1i%c\n",
-       sign,actgid->therm2_q_33_name,j,sign,
-       sign,actgid->therm2_q_33_name,j,sign);
-   fprintf(out,"NUMBER OF GAUSS POINTS: 9\n");
-   fprintf(out,"NATURAL COORDINATES: Internal\n");
-   fprintf(out,"END GAUSSPOINTS\n");
-   }
-   /*-------------------------------------------------------------------*/
-   /* triangular element with 3 nodes and 1 Gauss point */
-   if (actgid->is_therm2_t_11)
-   {
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s DIS %1i THERM2 1x1/ GP\n",actgid->fieldname,j);
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"GAUSSPOINTS %c%s_dis_%1i%c ELEMTYPE Triangle %c%s_dis_%1i%c\n",
-       sign,actgid->therm2_t_11_name,j,sign,
-       sign,actgid->therm2_t_11_name,j,sign);
-   fprintf(out,"NUMBER OF GAUSS POINTS: 1\n");
-   fprintf(out,"NATURAL COORDINATES: Internal\n");
-   fprintf(out,"END GAUSSPOINTS\n");
-   }
-   /*-------------------------------------------------------------------*/
-   /* triangular element with 6 nodes and 3 Gauss point */
-   if (actgid->is_therm2_t_31)
-   {
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"# GAUSSPOINTSET FOR FIELD %s THERM2 3x1/ GP\n",actgid->fieldname);
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"GAUSSPOINTS %c%s%c ELEMTYPE Triangle %c%s%c\n",
-                                                                   sign,actgid->therm2_t_31_name,sign,
-                                                                   sign,actgid->therm2_t_31_name,sign);
-   fprintf(out,"NUMBER OF GAUSS POINTS: 3\n");
-   fprintf(out,"NATURAL COORDINATES: Internal\n");
-   fprintf(out,"END GAUSSPOINTS\n");
-   }
+   th2_gid_gpset(j, actgid, out);
 #endif
 
+
+
+   /* THERM3 */
+   /*========*/
+   /* bborn 11/06 */
+#ifdef D_THERM3
+   th3_gid_gpset(j, actgid, out);
+#endif
 
 
   }  /* for (j=0; j<actfield->ndis; j++) */
@@ -2078,44 +2012,50 @@ if (actgid->is_shell9_9_33)
    /*========*/
 
 #ifdef D_BRICK1
-if (actgid->is_brick1_222)
+if ( (actgid->is_brick1_222)
+     || (actgid->is_brick1_333) )
 {
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"# RESULT Domains on DIS %1i, MESH %s\n",disnum,actgid->brick1_222_name);
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s_dis_%1i%c\n",
-       sign,sign,sign,sign,sign,actgid->brick1_222_name,disnum,sign);
-   fprintf(out,"VALUES\n");
-   for (i=0; i<actfield->dis[disnum].numele; i++)
-   {
-      actele = &(actfield->dis[disnum].element[i]);
-      if (actele->eltyp != el_brick1 || actele->numnp != 8) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
-      for (j=1; j<8; j++)
-      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
-   }
-   fprintf(out,"END VALUES\n");
+  c1_gid_dom(actfield, disnum, actgid, out);
 }
 
+/* if (actgid->is_brick1_222) */
+/* { */
+/*    fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*    fprintf(out,"# RESULT Domains on DIS %1i, MESH %s\n",disnum,actgid->brick1_222_name); */
+/*    fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*    fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s_dis_%1i%c\n", */
+/*        sign,sign,sign,sign,sign,actgid->brick1_222_name,disnum,sign); */
+/*    fprintf(out,"VALUES\n"); */
+/*    for (i=0; i<actfield->dis[disnum].numele; i++) */
+/*    { */
+/*       actele = &(actfield->dis[disnum].element[i]); */
+/*       if (actele->eltyp != el_brick1 || actele->numnp != 8) continue; */
+/*       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc); */
+/*       for (j=1; j<8; j++) */
+/*       fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); */
+/*    } */
+/*    fprintf(out,"END VALUES\n"); */
+/* } */
 
-if (actgid->is_brick1_333)
-{
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"# RESULT Domains on DIS %1i, MESH %s\n",disnum,actgid->brick1_333_name);
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s_dis_%1i%c\n",
-       sign,sign,sign,sign,sign,actgid->brick1_333_name,disnum,sign);
-   fprintf(out,"VALUES\n");
-   for (i=0; i<actfield->dis[disnum].numele; i++)
-   {
-      actele = &(actfield->dis[disnum].element[i]);
-      if (actele->eltyp != el_brick1 || (actele->numnp != 20 || actele->numnp != 27)) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
-      for (j=1; j<27; j++)
-      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
-   }
-   fprintf(out,"END VALUES\n");
-}
+
+/* if (actgid->is_brick1_333) */
+/* { */
+/*    fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*    fprintf(out,"# RESULT Domains on DIS %1i, MESH %s\n",disnum,actgid->brick1_333_name); */
+/*    fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*    fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s_dis_%1i%c\n", */
+/*        sign,sign,sign,sign,sign,actgid->brick1_333_name,disnum,sign); */
+/*    fprintf(out,"VALUES\n"); */
+/*    for (i=0; i<actfield->dis[disnum].numele; i++) */
+/*    { */
+/*       actele = &(actfield->dis[disnum].element[i]); */
+/*       if (actele->eltyp != el_brick1 || (actele->numnp != 20 || actele->numnp != 27)) continue; */
+/*       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc); */
+/*       for (j=1; j<27; j++) */
+/*       fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); */
+/*    } */
+/*    fprintf(out,"END VALUES\n"); */
+/* } */
 #endif
 
 
@@ -2717,66 +2657,32 @@ if (actgid->is_beam3_33)
    /* bborn 03/06 */
 
 #ifdef D_THERM2
-/*----------------------------------------------------------------------*/
-/* triangular element with 3 nodes and 1 Gauss point */
-if (actgid->is_therm2_t_11)
+if ( (actgid->is_therm2_q4_22)
+     || (actgid->is_therm2_q8_33)
+     || (actgid->is_therm2_q9_33)
+     || (actgid->is_therm2_t3_1)
+     || (actgid->is_therm2_t6_3) )
 {
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"# RESULT Domains on DIS %1i, MESH %s\n",disnum,actgid->therm2_t_11_name);
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s_dis_%1i%c\n",
-       sign,sign,sign,sign,sign,actgid->therm2_t_11_name,disnum,sign);
-   fprintf(out,"VALUES\n");
-   for (i=0; i<actfield->dis[disnum].numele; i++)
-   {
-      actele = &(actfield->dis[disnum].element[i]);
-      if (actele->eltyp != el_therm2 || actele->numnp != 3) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(double)actele->proc);
-   }
-   fprintf(out,"END VALUES\n");
-}
-/*----------------------------------------------------------------------*/
-/* quadrilateral element with 4 nodes and 2x2 Gauss points */
-if (actgid->is_therm2_q_22)
-{
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"# RESULT Domains on DIS %1i, MESH %s\n",disnum,actgid->therm2_q_22_name);
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s_dis_%1i%c\n",
-       sign,sign,sign,sign,sign,actgid->therm2_q_22_name,disnum,sign);
-   fprintf(out,"VALUES\n");
-   for (i=0; i<actfield->dis[disnum].numele; i++)
-   {
-      actele = &(actfield->dis[disnum].element[i]);
-      if (actele->eltyp != el_therm2) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
-      for (j=1; j<4; j++)
-      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
-   }
-   fprintf(out,"END VALUES\n");
-}
-/*----------------------------------------------------------------------*/
-/* quadrilateral element with 8/9 nodes and 3x3 Gauss points */
-if (actgid->is_therm2_q_33)
-{
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"# RESULT Domains on DIS %1i, MESH %s\n",disnum,actgid->therm2_q_33_name);
-   fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s_dis_%1i%c\n",
-       sign,sign,sign,sign,sign,actgid->therm2_q_33_name,disnum,sign);
-   fprintf(out,"VALUES\n");
-   for (i=0; i<actfield->dis[disnum].numele; i++)
-   {
-      actele = &(actfield->dis[disnum].element[i]);
-      if (actele->eltyp != el_therm2) continue;
-      fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
-      for (j=1; j<9; j++)
-      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
-   }
-   fprintf(out,"END VALUES\n");
+  th2_gid_dom(actfield, disnum, actgid, out);
 }
 #endif
 
+
+
+   /* THERM3 */
+   /*========*/
+   /* bborn 11/06 */
+
+#ifdef D_THERM3
+if ( (actgid->is_therm3_h8_222)
+     || (actgid->is_therm3_h20_333)
+     || (actgid->is_therm3_h27_333)
+     || (actgid->is_therm3_t4_1)
+     || (actgid->is_therm3_t10_4) )
+{
+  th3_gid_dom(actfield, disnum, actgid, out);
+}
+#endif
 
 
 fflush(out);
@@ -2923,10 +2829,6 @@ INT           tot_numnp;
 #ifdef D_AXISHELL
 DOUBLE        pv,ph,pw,px;
 DOUBLE        thick;
-#endif
-
-#ifdef D_THERM2
-DOUBLE      **heatflux;
 #endif
 
 /*
@@ -4003,125 +3905,130 @@ if (strncmp(string,"stress",stringlenght)==0)
    }
 #endif
 #ifdef D_BRICK1
-   /* bricks have 6 stress - use 3D matrix */
-   if (actgid->is_brick1_222)
+   if ( (actgid->is_brick1_222)
+        || (actgid->is_brick1_333) )
    {
-      /*check only first element and assume, that the others are the same*/
-     actele = &(actfield->dis[disnum].element[0]);
-     switch(actele->e.c1->stresstyp)
-     {
-     case c1_npeqs:
-      resulttype                             = "SCALAR";
-      resultplace                            = "ONNODES";                 /*extrapolated to nodal points!*/
-      gpset             = actgid->brick1_222_name;
-      rangetable        = actgid->standardrangetable;
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"# RESULT Brick1_forces on FIELD %s, DIS %1i\n",actgid->fieldname,disnum);
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n",
-                   sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,disnum,sign );
-        fprintf(out,"COMPONENTNAMES %cequivStress%c\n", sign,sign);
-        fprintf(out,"VALUES\n");
-          c1_out_gid_sol_str(out,actfield,place,0); /*extrapolated to nodal points!*/
-        fprintf(out,"END VALUES\n");
-     break;
-     case c1_npxyz:
-      resulttype                             = "MATRIX";
-      resultplace                            = "ONNODES";                 /*extrapolated to nodal points!*/
-      gpset             = actgid->brick1_222_name;
-      rangetable        = actgid->standardrangetable;
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"# RESULT Brick1_forces on FIELD %s, DIS %1i\n",actgid->fieldname,disnum);
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n",
-                   sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,disnum,sign );
-        fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-zz%c,%cStress-xy%c,%cStress-xz%c,%cStress-yz%c\n",
-               sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
-        fprintf(out,"VALUES\n");
-          c1_out_gid_sol_str(out,actfield,place,0); /*extrapolated to nodal points!*/
-        fprintf(out,"END VALUES\n");
-     break;
-     case c1_nprst:
-      resulttype                             = "MATRIX";
-      resultplace                            = "ONNODES";                 /*extrapolated to nodal points!*/
-      gpset             = actgid->brick1_222_name;
-      rangetable        = actgid->standardrangetable;
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"# RESULT Brick1_forces on FIELD %s, DIS %1i\n",actgid->fieldname,disnum);
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n",
-                   sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,disnum,sign );
-        fprintf(out,"COMPONENTNAMES %cStress-rr%c,%cStress-ss%c,%cStress-tt%c,%cStress-rs%c,%cStress-st%c,%cStress-tr%c\n",
-               sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
-        fprintf(out,"VALUES\n");
-          c1_out_gid_sol_str(out,actfield,place,0); /*extrapolated to nodal points!*/
-        fprintf(out,"END VALUES\n");
-     break;
-     /*-----------------------------------*/
-     default:
-       fprintf(out,"no stresses available\n");
-     break;
-     }
+     c1_gid_stress(string, actfield, disnum, step, actgid, out);
    }
-   if (actgid->is_brick1_333)
-   {
-      /*check only first element and assume, that the others are the same*/
-     actele = &(actfield->dis[disnum].element[0]);
-     switch(actele->e.c1->stresstyp)
-     {
-     case c1_npeqs:
-      resulttype                             = "SCALAR";
-      resultplace                            = "ONNODES";                 /*extrapolated to nodal points!*/
-      gpset             = actgid->brick1_333_name;
-      rangetable        = actgid->standardrangetable;
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"# RESULT Brick1_forces on FIELD %s, DIS %1i\n",actgid->fieldname,disnum);
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n",
-                   sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,disnum,sign );
-        fprintf(out,"COMPONENTNAMES %cequivStress%c\n", sign,sign);
-        fprintf(out,"VALUES\n");
-          c1_out_gid_sol_str(out,actfield,place,0); /*extrapolated to nodal points!*/
-        fprintf(out,"END VALUES\n");
-     break;
-     case c1_npxyz:
-      resulttype                             = "MATRIX";
-      resultplace                            = "ONNODES";                 /*extrapolated to nodal points!*/
-      gpset             = actgid->brick1_333_name;
-      rangetable        = actgid->standardrangetable;
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"# RESULT Brick1_forces on FIELD %s, DIS %1i\n",actgid->fieldname,disnum);
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n",
-                   sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,disnum,sign );
-        fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-zz%c,%cStress-xy%c,%cStress-xz%c,%cStress-yz%c\n",
-               sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
-        fprintf(out,"VALUES\n");
-          c1_out_gid_sol_str(out,actfield,place,0); /*extrapolated to nodal points!*/
-        fprintf(out,"END VALUES\n");
-     break;
-     case c1_nprst:
-      resulttype                             = "MATRIX";
-      resultplace                            = "ONNODES";                 /*extrapolated to nodal points!*/
-      gpset             = actgid->brick1_333_name;
-      rangetable        = actgid->standardrangetable;
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"# RESULT Brick1_forces on FIELD %s, DIS %1i\n",actgid->fieldname,disnum);
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n",
-                   sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,disnum,sign );
-        fprintf(out,"COMPONENTNAMES %cStress-rr%c,%cStress-ss%c,%cStress-tt%c,%cStress-rs%c,%cStress-st%c,%cStress-tr%c\n",
-               sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
-        fprintf(out,"VALUES\n");
-          c1_out_gid_sol_str(out,actfield,place,0); /*extrapolated to nodal points!*/
-        fprintf(out,"END VALUES\n");
-     break;
-     /*-----------------------------------*/
-     default:
-       fprintf(out,"no stresses available\n");
-     break;
-     }
-   }
+/*    /\* bricks have 6 stress - use 3D matrix *\/ */
+/*    if (actgid->is_brick1_222) */
+/*    { */
+/*       /\*check only first element and assume, that the others are the same*\/ */
+/*      actele = &(actfield->dis[disnum].element[0]); */
+/*      switch(actele->e.c1->stresstyp) */
+/*      { */
+/*      case c1_npeqs: */
+/*       resulttype                             = "SCALAR"; */
+/*       resultplace                            = "ONNODES";                 /\*extrapolated to nodal points!*\/ */
+/*       gpset             = actgid->brick1_222_name; */
+/*       rangetable        = actgid->standardrangetable; */
+/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*       fprintf(out,"# RESULT Brick1_forces on FIELD %s, DIS %1i\n",actgid->fieldname,disnum); */
+/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*       fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n", */
+/*                    sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,disnum,sign ); */
+/*         fprintf(out,"COMPONENTNAMES %cequivStress%c\n", sign,sign); */
+/*         fprintf(out,"VALUES\n"); */
+/*         c1_out_gid_sol_str(out,actfield,disnum,place,0); /\*extrapolated to nodal points!*\/ */
+/*         fprintf(out,"END VALUES\n"); */
+/*      break; */
+/*      case c1_npxyz: */
+/*       resulttype                             = "MATRIX"; */
+/*       resultplace                            = "ONNODES";                 /\*extrapolated to nodal points!*\/ */
+/*       gpset             = actgid->brick1_222_name; */
+/*       rangetable        = actgid->standardrangetable; */
+/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*       fprintf(out,"# RESULT Brick1_forces on FIELD %s, DIS %1i\n",actgid->fieldname,disnum); */
+/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*       fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n", */
+/*                    sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,disnum,sign ); */
+/*         fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-zz%c,%cStress-xy%c,%cStress-xz%c,%cStress-yz%c\n", */
+/*                sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign); */
+/*         fprintf(out,"VALUES\n"); */
+/*         c1_out_gid_sol_str(out,actfield,disnum,place,0); /\*extrapolated to nodal points!*\/ */
+/*         fprintf(out,"END VALUES\n"); */
+/*      break; */
+/*      case c1_nprst: */
+/*       resulttype                             = "MATRIX"; */
+/*       resultplace                            = "ONNODES";                 /\*extrapolated to nodal points!*\/ */
+/*       gpset             = actgid->brick1_222_name; */
+/*       rangetable        = actgid->standardrangetable; */
+/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*       fprintf(out,"# RESULT Brick1_forces on FIELD %s, DIS %1i\n",actgid->fieldname,disnum); */
+/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*       fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n", */
+/*                    sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,disnum,sign ); */
+/*         fprintf(out,"COMPONENTNAMES %cStress-rr%c,%cStress-ss%c,%cStress-tt%c,%cStress-rs%c,%cStress-st%c,%cStress-tr%c\n", */
+/*                sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign); */
+/*         fprintf(out,"VALUES\n"); */
+/*         c1_out_gid_sol_str(out,actfield,disnum,place,0); /\*extrapolated to nodal points!*\/ */
+/*         fprintf(out,"END VALUES\n"); */
+/*      break; */
+/*      /\*-----------------------------------*\/ */
+/*      default: */
+/*        fprintf(out,"no stresses available\n"); */
+/*      break; */
+/*      } */
+/*    } */
+/*    if (actgid->is_brick1_333) */
+/*    { */
+/*       /\*check only first element and assume, that the others are the same*\/ */
+/*      actele = &(actfield->dis[disnum].element[0]); */
+/*      switch(actele->e.c1->stresstyp) */
+/*      { */
+/*      case c1_npeqs: */
+/*       resulttype                             = "SCALAR"; */
+/*       resultplace                            = "ONNODES";                 /\*extrapolated to nodal points!*\/ */
+/*       gpset             = actgid->brick1_333_name; */
+/*       rangetable        = actgid->standardrangetable; */
+/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*       fprintf(out,"# RESULT Brick1_forces on FIELD %s, DIS %1i\n",actgid->fieldname,disnum); */
+/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*       fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n", */
+/*                    sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,disnum,sign ); */
+/*         fprintf(out,"COMPONENTNAMES %cequivStress%c\n", sign,sign); */
+/*         fprintf(out,"VALUES\n"); */
+/*         c1_out_gid_sol_str(out,actfield,disnum,place,0); /\*extrapolated to nodal points!*\/ */
+/*         fprintf(out,"END VALUES\n"); */
+/*      break; */
+/*      case c1_npxyz: */
+/*       resulttype                             = "MATRIX"; */
+/*       resultplace                            = "ONNODES";                 /\*extrapolated to nodal points!*\/ */
+/*       gpset             = actgid->brick1_333_name; */
+/*       rangetable        = actgid->standardrangetable; */
+/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*       fprintf(out,"# RESULT Brick1_forces on FIELD %s, DIS %1i\n",actgid->fieldname,disnum); */
+/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*       fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n", */
+/*                    sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,disnum,sign ); */
+/*         fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-zz%c,%cStress-xy%c,%cStress-xz%c,%cStress-yz%c\n", */
+/*                sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign); */
+/*         fprintf(out,"VALUES\n"); */
+/*         c1_out_gid_sol_str(out,actfield,disnum,place,0); /\*extrapolated to nodal points!*\/ */
+/*         fprintf(out,"END VALUES\n"); */
+/*      break; */
+/*      case c1_nprst: */
+/*       resulttype                             = "MATRIX"; */
+/*       resultplace                            = "ONNODES";                 /\*extrapolated to nodal points!*\/ */
+/*       gpset             = actgid->brick1_333_name; */
+/*       rangetable        = actgid->standardrangetable; */
+/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*       fprintf(out,"# RESULT Brick1_forces on FIELD %s, DIS %1i\n",actgid->fieldname,disnum); */
+/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*       fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n", */
+/*                    sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,disnum,sign ); */
+/*         fprintf(out,"COMPONENTNAMES %cStress-rr%c,%cStress-ss%c,%cStress-tt%c,%cStress-rs%c,%cStress-st%c,%cStress-tr%c\n", */
+/*                sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign); */
+/*         fprintf(out,"VALUES\n"); */
+/*         c1_out_gid_sol_str(out,actfield,disnum,place,0); /\*extrapolated to nodal points!*\/ */
+/*         fprintf(out,"END VALUES\n"); */
+/*      break; */
+/*      /\*-----------------------------------*\/ */
+/*      default: */
+/*        fprintf(out,"no stresses available\n"); */
+/*      break; */
+/*      } */
+/*    } */
 #endif
 
 #ifdef D_FLUID3
@@ -5251,7 +5158,7 @@ if (strncmp(string,"projected_pressure",stringlenght)==0)
 if (strncmp(string,"average_pressure",stringlenght)==0)
 {
   DOUBLE* pressure;
-  DOUBLE el_press[MAXNOD];
+  /* DOUBLE el_press[MAXNOD]; */
 
   resulttype        = "SCALAR";
   resultplace       = "ONNODES";
@@ -5288,7 +5195,6 @@ if (strncmp(string,"average_pressure",stringlenght)==0)
 
   for (i=0; i<actfield->dis[disnum].numele; i++)
   {
-    INT j;
     INT l;
     DOUBLE el_press;
     ELEMENT* actele;
@@ -5533,250 +5439,33 @@ if (strncmp(string,"temperature",stringlenght)==0)
 #ifdef D_TSI
 if (strncmp(string,"heatflux",stringlenght)==0)
 {
+
   /*--------------------------------------------------------------------*/
-  /* element switch */
+  /* element THERM2 */
 #ifdef D_THERM2
-  /*--------------------------------------------------------------------*/
-  /* quadrilateral element with 4 nodes and 2x2 Gauss points */
-  if (actgid->is_therm2_q_22)
+  if ( (actgid->is_therm2_q4_22)
+       || (actgid->is_therm2_q8_33)
+       || (actgid->is_therm2_q9_33)
+       || (actgid->is_therm2_t3_1)
+       || (actgid->is_therm2_t6_3) )
   {
-      ngauss            = 4;
-      resulttype        = "VECTOR";
-      resultplace       = "ONGAUSSPOINTS";
-      gpset             = actgid->therm2_q_22_name;
-      rangetable        = actgid->standardrangetable;
-      ncomponent        = 3;
-      componentnames[0] = "heatflux-x";
-      componentnames[1] = "heatflux-y";
-      componentnames[2] = "heatflux-z";
-      /*----------------------------------------------------------------*/
-      /* print title */
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"# RESULT %s on FIELD %s, DIS %1i\n",
-              string,actgid->fieldname,disnum);
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"RESULT %c%s%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n",
-              sign,string,sign,
-              sign,sign,
-              step,
-              resulttype,
-              resultplace,
-              sign,gpset,disnum,sign);
-      fprintf(out,"COMPONENTNAMES %c%s%c,%c%s%c,%c%s%c\n",
-               sign,componentnames[0],sign,
-               sign,componentnames[1],sign,
-               sign,componentnames[2],sign);
-      fprintf(out,"VALUES\n");
-      /*----------------------------------------------------------------*/
-      /* print values */
-      /* step through all elements */
-      for (i=0; i<actfield->dis[disnum].numele; i++)
-      {
-        /* pointer to current element */
-        actele = &(actfield->dis[disnum].element[i]);
-        /* jump to loop head if this is not a THERM2 element */
-        if (actele->eltyp == el_therm2)
-        {
-          heatflux = actele->e.th2->hflux_gp.a.d3[place];
-          /* print values at first Gauss point _with_ element index */
-          fprintf(out," %6d %18.5E %18.5E %18.5E \n",
-                  actele->Id+1,
-                  heatflux[0][gaussperm4[0]],
-                  heatflux[1][gaussperm4[0]],
-                  heatflux[2][gaussperm4[0]]);
-          /* print values of second to ... Gauss point */
-          for (j=1; j<ngauss; j++)
-          {
-            fprintf(out,"        %18.5E %18.5E %18.5E \n",
-                    heatflux[0][gaussperm4[j]],
-                    heatflux[1][gaussperm4[j]],
-                    heatflux[2][gaussperm4[j]]);
-          }
-        }  /* end of if (actele->eltyp == el_therm2) */
-      }
-      /*----------------------------------------------------------------*/
-      /* print footer */
-      fprintf(out,"END VALUES\n");
-  }  /* end of if (actgid->is_therm2_q_22) */
-  /*--------------------------------------------------------------------*/
-  /* quadrilateral element with 8/9 nodes and 3x3 Gauss points */
-  if (actgid->is_therm2_q_33)
-  {
-      ngauss            = 9;
-      resulttype        = "VECTOR";
-      resultplace       = "ONGAUSSPOINTS";
-      gpset             = actgid->therm2_q_33_name;
-      rangetable        = actgid->standardrangetable;
-      ncomponent        = 3;
-      componentnames[0] = "heatflux-x";
-      componentnames[1] = "heatflux-y";
-      componentnames[2] = "heatflux-z";
-      /*----------------------------------------------------------------*/
-      /* print title */
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"# RESULT %s on FIELD %s, DIS %1i\n",
-              string,actgid->fieldname,disnum);
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"RESULT %c%s%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n",
-              sign,string,sign,
-              sign,sign,
-              step,
-              resulttype,
-              resultplace,
-              sign,gpset,disnum,sign);
-      fprintf(out,"COMPONENTNAMES %c%s%c,%c%s%c,%c%s%c\n",
-               sign,componentnames[0],sign,
-               sign,componentnames[1],sign,
-               sign,componentnames[2],sign);
-      fprintf(out,"VALUES\n");
-      /*----------------------------------------------------------------*/
-      /* print values */
-      /* step through all elements */
-      for (i=0; i<actfield->dis[disnum].numele; i++)
-      {
-        /* pointer to current element */
-        actele = &(actfield->dis[disnum].element[i]);
-        /* jump to loop head if this is not a THERM2 element */
-        if (actele->eltyp == el_therm2)
-        {
-          heatflux = actele->e.th2->hflux_gp.a.d3[place];
-          /* print values at first Gauss point _with_ element index */
-          fprintf(out," %6d %18.5E %18.5E %18.5E \n",
-                  actele->Id+1,
-                  heatflux[0][gaussperm4[0]],
-                  heatflux[1][gaussperm4[0]],
-                  heatflux[2][gaussperm4[0]]);
-          /* print values of second to ... Gauss point */
-          for (j=1; j<ngauss; j++)
-          {
-            fprintf(out,"        %18.5E %18.5E %18.5E \n",
-                    heatflux[0][gaussperm4[j]],
-                    heatflux[1][gaussperm4[j]],
-                    heatflux[2][gaussperm4[j]]);
-          }
-        }  /* end of if (actele->eltyp == el_therm2) */
-      }
-      /*----------------------------------------------------------------*/
-      /* print footer */
-      fprintf(out,"END VALUES\n");
-  }  /* end of if (actgid->is_therm2_q_33) */
-  /*--------------------------------------------------------------------*/
-  /* triangular element with 3 nodes and 1 Gauss point */
-  if (actgid->is_therm2_t_11)
-  {
-      ngauss            = 1;
-      resulttype        = "VECTOR";
-      resultplace       = "ONGAUSSPOINTS";
-      gpset             = actgid->therm2_t_11_name;
-      rangetable        = actgid->standardrangetable;
-      ncomponent        = 3;
-      componentnames[0] = "heatflux-x";
-      componentnames[1] = "heatflux-y";
-      componentnames[2] = "heatflux-z";
-      /*----------------------------------------------------------------*/
-      /* print title */
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"# RESULT %s on FIELD %s, DIS %1i\n",
-              string,actgid->fieldname,disnum);
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"RESULT %c%s%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n",
-              sign,string,sign,
-              sign,sign,
-              step,
-              resulttype,
-              resultplace,
-              sign,gpset,disnum,sign);
-      fprintf(out,"COMPONENTNAMES %c%s%c,%c%s%c,%c%s%c\n",
-               sign,componentnames[0],sign,
-               sign,componentnames[1],sign,
-               sign,componentnames[2],sign);
-      fprintf(out,"VALUES\n");
-      /*----------------------------------------------------------------*/
-      /* print values */
-      /* step through all elements */
-      for (i=0; i<actfield->dis[disnum].numele; i++)
-      {
-        /* pointer to current element */
-        actele = &(actfield->dis[disnum].element[i]);
-        /* jump to loop head if this is not a THERM2 element */
-        if (actele->eltyp == el_therm2)
-        {
-          heatflux = actele->e.th2->hflux_gp.a.d3[place];
-          /* print values at the Gauss point _with_ element index */
-          fprintf(out," %6d %18.5E %18.5E %18.5E \n",
-                  actele->Id+1,
-                  heatflux[0][gaussperm4[0]],
-                  heatflux[1][gaussperm4[0]],
-                  heatflux[2][gaussperm4[0]]);
-        }  /* end of if (actele->eltyp == el_therm2) */
-      }
-      /*----------------------------------------------------------------*/
-      /* print footer */
-      fprintf(out,"END VALUES\n");
-  }  /* end of if (actgid->is_therm2_t_11) */
-  /*--------------------------------------------------------------------*/
-  /* triangular element with 6 nodes and 3 Gauss points */
-  if (actgid->is_therm2_t_31)
-  {
-      ngauss            = 3;
-      resulttype        = "VECTOR";
-      resultplace       = "ONGAUSSPOINTS";
-      gpset             = actgid->therm2_t_31_name;
-      rangetable        = actgid->standardrangetable;
-      ncomponent        = 3;
-      componentnames[0] = "heatflux-x";
-      componentnames[1] = "heatflux-y";
-      componentnames[2] = "heatflux-z";
-      /*----------------------------------------------------------------*/
-      /* print title */
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"# RESULT %s on FIELD %s, DIS %1i\n",
-              string,actgid->fieldname,disnum);
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"RESULT %c%s%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n",
-              sign,string,sign,
-              sign,sign,
-              step,
-              resulttype,
-              resultplace,
-              sign,gpset,disnum,sign);
-      fprintf(out,"COMPONENTNAMES %c%s%c,%c%s%c,%c%s%c\n",
-               sign,componentnames[0],sign,
-               sign,componentnames[1],sign,
-               sign,componentnames[2],sign);
-      fprintf(out,"VALUES\n");
-      /*----------------------------------------------------------------*/
-      /* print values */
-      /* step through all elements */
-      for (i=0; i<actfield->dis[disnum].numele; i++)
-      {
-        /* pointer to current element */
-        actele = &(actfield->dis[disnum].element[i]);
-        /* jump to loop head if this is not a THERM2 element */
-        if (actele->eltyp == el_therm2)
-        {
-          heatflux = actele->e.th2->hflux_gp.a.d3[place];
-          /* print values at first Gauss point _with_ element index */
-          fprintf(out," %6d %18.5E %18.5E %18.5E \n",
-                  actele->Id+1,
-                  heatflux[0][gaussperm4[0]],
-                  heatflux[1][gaussperm4[0]],
-                  heatflux[2][gaussperm4[0]]);
-          /* print values of second to ... Gauss point */
-          for (j=1; j<ngauss; j++)
-          {
-            fprintf(out,"        %18.5E %18.5E %18.5E \n",
-                    heatflux[0][gaussperm4[j]],
-                    heatflux[1][gaussperm4[j]],
-                    heatflux[2][gaussperm4[j]]);
-          }
-        }  /* end of if (actele->eltyp == el_therm2) */
-      }
-      /*----------------------------------------------------------------*/
-      /* print footer */
-      fprintf(out,"END VALUES\n");
-  }  /* end of if (actgid->is_therm2_q_33) */
+    th2_gid_hflux(string, actfield, disnum, step, actgid, out);
+  }
 #endif  /* end of #ifdef D_THERM2 */
+
+  /*--------------------------------------------------------------------*/
+  /* element THERM3 */
+#ifdef D_THERM3
+  if ( (actgid->is_therm3_h8_222)
+       || (actgid->is_therm3_h20_333)
+       || (actgid->is_therm3_h27_333)
+       || (actgid->is_therm3_t4_1)
+       || (actgid->is_therm3_t10_4) )
+  {
+    th3_gid_hflux(string, actfield, disnum, step, actgid, out);
+  }
+#endif  /* end of #ifdef D_THERM3 */
+
 }  /* end of (strncmp(string,"heatflux",stringlenght)==0) */
 #endif  /* end of #ifdef D_TSI */
 

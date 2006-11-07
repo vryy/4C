@@ -164,37 +164,37 @@ void th3_intg_eleinp(ELEMENT *actele,
       /* Domain Gauss point numbers to index of corresponding GP set */
       switch (actGP[0])
       {
-          case 1: 
-            gintc[0] = 0;
-            break;
-          case 4:
-            gintc[0] = 1;
-            break;
-          case 5:
-            gintc[0] = 2;
-            break;
-          default:
-            dserror("Impermissible Gauss point number");
-            break;
+        case 1: 
+          gintc[0] = 0;
+          break;
+        case 4:
+          gintc[0] = 1;
+          break;
+        case 5:
+          gintc[0] = 2;
+          break;
+        default:
+          dserror("Impermissible Gauss point number");
+          break;
       }
       /* Side Gauss point numbers to index of corresponding GP set */
       switch (actGP[1])
       {
-          case 1:
-            gintc[1] = 0;
-            break;
-          case 3:
-            gintc[1] = 1;
-            break;
-          case 4:
-            gintc[1] = 3;
-            break;
-          case 6:
-            gintc[1] = 4;
-            break;
-          default:
-            dserror("Impermissible Gauss point number");
-            break;
+        case 1:
+          gintc[1] = 0;
+          break;
+        case 3:
+          gintc[1] = 1;
+          break;
+        case 4:
+          gintc[1] = 3;
+          break;
+        case 6:
+          gintc[1] = 4;
+          break;
+        default:
+          dserror("Impermissible Gauss point number");
+          break;
       }
       /* Edge Gauss point numbers to index of corresponding GP set */
       gintc[2] = actGP[2] - 1;
@@ -396,6 +396,51 @@ void th3_intg_init(TH3_DATA *data)
     data->gtdc[2][4][1] = 1.0/4.0;
     data->gtdc[2][4][2] = 1.0/4.0;
     data->gtdw[2][4] = -2.0/15.0;
+  }
+  /* 10 Gauss points (Gid) */
+  if ( (GTINTC_THERM3 >= 4) && (GTMAXP_THERM3 >= 10) )
+  {
+    dserror("The weights are not defined properly\n");
+    data->gtdc[3][0][0] = 0.10810301;
+    data->gtdc[3][0][1] = 0.10810301;
+    data->gtdc[3][0][2] = 0.10810301;
+    data->gtdw[3][0] = 1.0;
+    data->gtdc[3][1][0] = 0.81684757;
+    data->gtdc[3][1][1] = 0.10810301;
+    data->gtdc[3][1][2] = 0.10810301;
+    data->gtdw[3][1] = 1.0;
+    data->gtdc[3][2][0] = 0.10810301;
+    data->gtdc[3][2][1] = 0.81684757;
+    data->gtdc[3][2][2] = 0.10810301;
+    data->gtdw[3][2] = 1.0;
+    data->gtdc[3][3][0] = 0.10810301;
+    data->gtdc[3][3][1] = 0.10810301;
+    data->gtdc[3][3][2] = 0.81684757;
+    data->gtdw[3][3] = 1.0;
+    data->gtdc[3][4][0] = 0.44594849;
+    data->gtdc[3][4][1] = 0.10810301;
+    data->gtdc[3][4][2] = 0.10810301;
+    data->gtdw[3][4] = 1.0;
+    data->gtdc[3][5][0] = 0.44594849;
+    data->gtdc[3][5][1] = 0.44594849;
+    data->gtdc[3][5][2] = 0.10810301;
+    data->gtdw[3][5] = 1.0;
+    data->gtdc[3][6][0] = 0.10810301;
+    data->gtdc[3][6][1] = 0.44594849;
+    data->gtdc[3][6][2] = 0.10810301;
+    data->gtdw[3][6] = 1.0;
+    data->gtdc[3][7][0] = 0.10810301;
+    data->gtdc[3][7][1] = 0.10810301;
+    data->gtdc[3][7][2] = 0.44594849;
+    data->gtdw[3][7] = 1.0;
+    data->gtdc[3][8][0] = 0.44594849;
+    data->gtdc[3][8][1] = 0.10810301;
+    data->gtdc[3][8][2] = 0.44594849;
+    data->gtdw[3][8] = 1.0;
+    data->gtdc[3][9][0] = 0.10810301;
+    data->gtdc[3][9][1] = 0.44594849;
+    data->gtdc[3][9][2] = 0.44594849;
+    data->gtdw[3][9] = 1.0;
   }
   /*--------------------------------------------------------------------*/
   /* tetrahedron sides */

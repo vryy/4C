@@ -239,6 +239,7 @@ OBJS_PAR      = src/parallel/par_initmetis.o \
                 src/parallel/par_assignmesh.o
 #               brick1
 OBJS_BRICK1   = src/brick1/c1_out.o \
+                src/brick1/c1_gid.o \
                 src/brick1/c1_bop.o \
                 src/brick1/c1_call_mat.o \
                 src/brick1/c1_call_stiff.o \
@@ -618,6 +619,7 @@ OBJS_TSI      = src/tsi_full/tsi_coupling.o \
 #               planar thermal
 OBJS_THERM2   = src/therm2/th2_bop.o \
                 src/therm2/th2_cfg.o \
+		src/therm2/th2_gid.o \
                 src/therm2/th2_hflux.o \
                 src/therm2/th2_inp.o \
 		src/therm2/th2_intg.o \
@@ -633,6 +635,7 @@ OBJS_THERM2   = src/therm2/th2_bop.o \
 #               spatial thermal
 OBJS_THERM3   = src/therm3/th3_bop.o \
                 src/therm3/th3_cfg.o \
+                src/therm3/th3_gid.o \
                 src/therm3/th3_hflux.o \
                 src/therm3/th3_inp.o \
                 src/therm3/th3_intg.o \

@@ -22,9 +22,10 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "../headers/standardtypes.h"
+#include "../output/gid.h"
 
 /*======================================================================*/
-/* defines constants of THERM3 */
+/* define constants of THERM3 */
 #define NDIM_THERM3      (3)    /* 3dim problem */
 
 #ifndef MAXNOD_THERM3
@@ -206,16 +207,25 @@ typedef struct _THERM3
 
   /* number of Gauss points as obtained at read-in
    * hexahedra:
-   *       nGP[0] : in r-direction : 1,2,3,4,5,6 : read-in
-   *       nGP[1] : in s-direction : 1,2,3,4,5,6 : read-in/set
-   *       nGP[2] : in t-direction : 1,2,3,4,5,6 : read-in/set
+   *    gpnum[0] : in r-direction : 1,2,3,4,5,6 : read-in
+   *    gpnum[1] : in s-direction : 1,2,3,4,5,6 : read-in/set
+   *    gpnum[2] : in t-direction : 1,2,3,4,5,6 : read-in/set
    * tetrahedra:
-   *       nGP[0] : total number of GPs in domain: 1,4,5 : read-in
-   *       nGP[1] : total number of GPs on sides: 1,3,4,6 : read-in/set
-   *       nGP[2] : total number of GPs on edges: 1,2,3,4,5,6 : read-in/set */
+   *    gpnum[0] : total number of GPs in domain: 1,4,5 : read-in
+   *    gpnum[1] : total number of GPs on sides: 1,3,4,6 : read-in/set
+   *    gpnum[2] : total number of GPs on edges: 1,2,3,4,5,6 : read-in/set */
   INT gpnum[NDIM_THERM3];
+  /* Gauss integration case
+   * hexahedra:
+   *    intc[i] = gpnum[0] - 1
+   * tetrahedra:
+   *    ... */
   INT gpintc[NDIM_THERM3];
 
+  /* heat flux vector at Gauss points or nodes
+   *    hflux_gp_xyz : at Gauss points in global XYZ-components
+   *    hflux_gp_rst : at Gauss points in parameter rst-compoonents
+   *    hflux_gp_123 : at Gauss points modulus and angles vs XYZ-direct. */
   ARRAY4D hflux_gp_xyz;
   ARRAY4D hflux_gp_rst;
   ARRAY4D hflux_gp_123;
@@ -255,6 +265,28 @@ void th3_cfg_noderst(ELEMENT *ele,
 #ifdef TEST_THERM3
 void th3_cfg_test(TH3_DATA *data);
 #endif
+
+/*----------------------------------------------------------------------*/
+/* file th3_gid.c */
+void th3_gid_init(ELEMENT *actele,
+                  GIDSET *actgid);
+void th3_gid_msh(FIELD *actfield,
+                 INT ldis,
+                 GIDSET *actgid,
+                 FILE *out);
+void th3_gid_gpset(INT jdis,
+                   GIDSET *actgid,
+                   FILE *out);
+void th3_gid_dom(FIELD *actfield,
+                 INT disnum,
+                 GIDSET *actgid,
+                 FILE *out);
+void th3_gid_hflux(char resstring[],
+                   FIELD *actfield,
+                   INT disnum,
+                   INT step,
+                   GIDSET *actgid,
+                   FILE *out);
 
 /*----------------------------------------------------------------------*/
 /* file th3_hflux.c */
@@ -389,6 +421,11 @@ void th3_matlin_gen(DOUBLE **con,
                     DOUBLE bop[NDIM_THERM3][NUMDOF_THERM3*MAXNOD_THERM3],
                     DOUBLE heatflux[NUMHFLX_THERM3],
                     DOUBLE cmat[NUMHFLX_THERM3][NUMTMGR_THERM3]);
+
+/*----------------------------------------------------------------------*/
+/* file th3_out.c */
+void th3_out_hflux(ELEMENT *actele,
+                   FILE *out);
 
 /*----------------------------------------------------------------------*/
 /* file th3_shape.c */

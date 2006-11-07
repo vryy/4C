@@ -502,7 +502,7 @@ void th2_hflux_extrpol(ELEMENT *ele,
 {
   INT i, j;  /* loop counter */
   INT lr, ls;  /* Gauss point loop counter */
-  INT nir, nis;  /* Gauss point numbers in r-/s-direction */
+  INT nir=0, nis=0;  /* Gauss point numbers in r-/s-direction */
   INT intc;  /* Gauss piont integration set for tri elements */
   INT igauss;  /* total Gauss point counter */
   DOUBLE grlr;  /* r-coord of current Gauss point */

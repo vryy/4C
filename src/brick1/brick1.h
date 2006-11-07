@@ -12,6 +12,7 @@ Maintainer: Andreas Lipka
 *----------------------------------------------------------------------*/
 #ifdef D_BRICK1
 #include "brick1_doxygen.h"
+#include "../output/gid.h"
 /*!
 \addtogroup BRICK1
 *//*! @{ (documentation module open)*/
@@ -109,8 +110,8 @@ INT           form;      /*!< ==2: T.L.  */
 C1_ELE_WA     *elewa;                        /*!< element working array */
 /*----------------------------- stresses in local and global systems ---*/
 /*
-stress_GP[place][ 0.. 5][gp] stress-xx stress-yy stress-zz stress-xy stress-yz stress-xz
-stress_GP[place][ 6..11][gp] stress-rr stress-ss stress-tt stress-rs stress-st stress-tr
+stress_GP[place][ 6..11][gp] stress-xx stress-yy stress-zz stress-xy stress-yz stress-xz
+stress_GP[place][ 0.. 5][gp] stress-rr stress-ss stress-tt stress-rs stress-st stress-tr
 stress_GP[place][12..14][gp] stress-11 stress-22 stress-33
 stress_GP[place][15..23][gp] ang-r1  ang-s1  ang-t1  ang-r2  ang-s2  ang-t2  ang-r3  ang-s3  ang-t3
 stress_GP[place][24..26][gp] x-coord.    y-coord.    z-coord.
@@ -183,8 +184,57 @@ void c1inp(ELEMENT *ele);
 void c1_out_gid_sol_str(
                         FILE       *out, /* File pointer to flavia.res */
                         FIELD *actfield, /* active field               */
+                        INT      disnum, /* discretisation index       */
                         INT       place, /* current solution           */
                         INT         init /* allocate/free memory       */
                         );
+/*----------------------------------------------------------------------*
+ |  print stress in element (at Gauss points, nodes) in different       |
+ |  orientations (global, parametric, principal) in ordinary output     |
+ |  file.                                                  bborn 11/06  |
+ *----------------------------------------------------------------------*/
+void c1_out_stress(ELEMENT *actele,
+                   INT place,
+                   FILE *out);
+/*----------------------------------------------------------------------*
+ |  print BRICK1 related data to Gid output file                        |
+ |  ==> active cases                                       bborn 11/06  |
+ *----------------------------------------------------------------------*/
+void c1_gid_init(ELEMENT *actele,
+                 GIDSET *actgid);
+/*----------------------------------------------------------------------*
+ |  print BRICK1 related data to Gid output file                        |
+ |  ==>   mesh                                             bborn 11/06  |
+ *----------------------------------------------------------------------*/
+void c1_gid_msh(FIELD *actfield,
+                INT ldis,
+                GIDSET *actgid,
+                FILE *out);
+/*----------------------------------------------------------------------*
+ |  print BRICK1 related data to Gid output file                        |
+ |  ==> Gauss point sets                                   bborn 11/06  |
+ *----------------------------------------------------------------------*/
+void c1_gid_gpset(INT jdis,
+                  GIDSET *actgid,
+                  FILE *out);
+/*----------------------------------------------------------------------*
+ |  print BRICK1 related data to Gid output file                        |
+ |  ==> domains                                            bborn 11/06  |
+ *----------------------------------------------------------------------*/
+void c1_gid_dom(FIELD *actfield,
+                INT disnum,
+                GIDSET *actgid,
+                FILE *out);
+/*----------------------------------------------------------------------*
+ |  print BRICK1 related data to Gid output file                        |
+ |  ==> stresses                                           bborn 11/06  |
+ *----------------------------------------------------------------------*/
+void c1_gid_stress(char resstring[],
+                   FIELD *actfield,
+                   INT disnum,
+                   INT step,
+                   GIDSET *actgid,
+                   FILE *out);
+
 #endif
 /*! @} (documentation module close)*/

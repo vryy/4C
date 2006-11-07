@@ -19,6 +19,12 @@ Maintainer: Malte Neumann
 #ifdef D_SHELL9
   #include "../shell9/shell9.h"
 #endif /*D_SHELL9*/
+#ifdef D_THERM2
+  #include "../therm2/therm2.h"
+#endif
+#ifdef D_THERM3
+  #include "../therm3/therm3.h"
+#endif
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | structure of flags to control output                                 |
@@ -706,54 +712,60 @@ end_shell8:;
       /* BRICK1 */
       /*========*/
 
-      if (actgid->is_brick1_222)
+      if ( (actgid->is_brick1_222)
+           || (actgid->is_brick1_333) )
       {
-        fprintf(out,"#-------------------------------------------------------------------------------\n");
-        fprintf(out,"# MESH %s FOR FIELD %s, DIS %1i: BRICK1 2x2x2 GP\n",
-            actgid->brick1_222_name,actgid->fieldname,l);
-        fprintf(out,"#-------------------------------------------------------------------------------\n");
-        fprintf(out,"MESH %s_dis_%1i DIMENSION 3 ELEMTYPE Hexahedra NNODE 8\n",
-            actgid->brick1_222_name,l);
-        /*------------------------------------------------ print elements */
-        fprintf(out,"ELEMENTS\n");
-        for (j=0; j<actfield->dis[l].numele; j++)
-        {
-          actele = &(actfield->dis[l].element[j]);
-          if (actele->eltyp != el_brick1 || actele->numnp !=8) continue;
-          fprintf(out," %6d ",actele->Id+1);
-          for (k=0; k<actele->numnp; k++)
-            fprintf(out,"%6d ",actele->node[k]->Id+1);
-          fprintf(out,"\n");
-        }
-        fprintf(out,"END ELEMENTS\n");
+        c1_gid_msh(actfield, l, actgid, out);
       }
 
+/*       if (actgid->is_brick1_222) */
+/*       { */
+/*         fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*         fprintf(out,"# MESH %s FOR FIELD %s, DIS %1i: BRICK1 2x2x2 GP\n", */
+/*             actgid->brick1_222_name,actgid->fieldname,l); */
+/*         fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*         fprintf(out,"MESH %s_dis_%1i DIMENSION 3 ELEMTYPE Hexahedra NNODE 8\n", */
+/*             actgid->brick1_222_name,l); */
+/*         /\*------------------------------------------------ print elements *\/ */
+/*         fprintf(out,"ELEMENTS\n"); */
+/*         for (j=0; j<actfield->dis[l].numele; j++) */
+/*         { */
+/*           actele = &(actfield->dis[l].element[j]); */
+/*           if (actele->eltyp != el_brick1 || actele->numnp !=8) continue; */
+/*           fprintf(out," %6d ",actele->Id+1); */
+/*           for (k=0; k<actele->numnp; k++) */
+/*             fprintf(out,"%6d ",actele->node[k]->Id+1); */
+/*           fprintf(out,"\n"); */
+/*         } */
+/*         fprintf(out,"END ELEMENTS\n"); */
+/*       } */
 
-      if (actgid->is_brick1_333)
-      {
-        fprintf(out,"#-------------------------------------------------------------------------------\n");
-        fprintf(out,"# MESH %s FOR FIELD %s, DIS %1i: BRICK1 3x3x3 GP as HEX8!\n",
-            actgid->brick1_333_name,actgid->fieldname,l);
-        fprintf(out,"#-------------------------------------------------------------------------------\n");
-        /*fprintf(out,"MESH %s_dis_%1i DIMENSION 3 ELEMTYPE Hexahedra NNODE 20\n",actgid->brick1_333_name,l);*/
-        fprintf(out,"MESH %s_dis_%1i DIMENSION 3 ELEMTYPE Hexahedra NNODE 8\n",
-            actgid->brick1_333_name,l);
-        /*------------------------------------------------ print elements */
-        /* gid shows Hex20 as Hex with eight nodes only,
-           so the output is reduced */
-        fprintf(out,"ELEMENTS\n");
-        for (j=0; j<actfield->dis[l].numele; j++)
-        {
-          actele = &(actfield->dis[l].element[j]);
-          if (actele->eltyp != el_brick1 || actele->numnp !=20) continue;
-          fprintf(out," %6d ",actele->Id+1);
-          /*for (k=0; k<actele->numnp; k++)*/
-          for (k=0; k<8; k++)
-            fprintf(out,"%6d ",actele->node[k]->Id+1);
-          fprintf(out,"\n");
-        }
-        fprintf(out,"END ELEMENTS\n");
-      }
+
+/*       if (actgid->is_brick1_333) */
+/*       { */
+/*         fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*         fprintf(out,"# MESH %s FOR FIELD %s, DIS %1i: BRICK1 3x3x3 GP as HEX8!\n", */
+/*             actgid->brick1_333_name,actgid->fieldname,l); */
+/*         fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*         /\*fprintf(out,"MESH %s_dis_%1i DIMENSION 3 ELEMTYPE Hexahedra NNODE 20\n",actgid->brick1_333_name,l);*\/ */
+/*         fprintf(out,"MESH %s_dis_%1i DIMENSION 3 ELEMTYPE Hexahedra NNODE 8\n", */
+/*             actgid->brick1_333_name,l); */
+/*         /\*------------------------------------------------ print elements *\/ */
+/*         /\* gid shows Hex20 as Hex with eight nodes only, */
+/*            so the output is reduced *\/ */
+/*         fprintf(out,"ELEMENTS\n"); */
+/*         for (j=0; j<actfield->dis[l].numele; j++) */
+/*         { */
+/*           actele = &(actfield->dis[l].element[j]); */
+/*           if (actele->eltyp != el_brick1 || actele->numnp !=20) continue; */
+/*           fprintf(out," %6d ",actele->Id+1); */
+/*           /\*for (k=0; k<actele->numnp; k++)*\/ */
+/*           for (k=0; k<8; k++) */
+/*             fprintf(out,"%6d ",actele->node[k]->Id+1); */
+/*           fprintf(out,"\n"); */
+/*         } */
+/*         fprintf(out,"END ELEMENTS\n"); */
+/*       } */
 
 
 
@@ -1987,117 +1999,29 @@ end_shell8:;
       /*========*/
       /* bborn 03/06 */
 
-      /*----------------------------------------------------------------*/
-      /* quadrilateral element with 4 nodes and 2x2 Gauss points */
-      if (actgid->is_therm2_q_22)
+      if ( (actgid->is_therm2_q4_22)
+           || (actgid->is_therm2_q8_33)
+           || (actgid->is_therm2_q9_33)
+           || (actgid->is_therm2_t3_1)
+           || (actgid->is_therm2_t6_3) )
       {
-        /*-NNODE is only checked for first element,if you use different wall-types this will be a problem -*/
-        firstele = &(actfield->dis[l].element[0]);
-        fprintf(out,"#-------------------------------------------------------------------------------\n");
-        fprintf(out,"# MESH %s FOR FIELD %s, DIS %1i: THERM2 2x2 GP\n",
-            actgid->therm2_q_22_name,actgid->fieldname,l);
-        fprintf(out,"#-------------------------------------------------------------------------------\n");
-        fprintf(out,"MESH %s_dis_%1i DIMENSION 2 ELEMTYPE Quadrilateral NNODE %d \n",
-            actgid->therm2_q_22_name,l,firstele->numnp);
-        /*------------------------------------------------ print elements */
-        fprintf(out,"ELEMENTS\n");
-        for (j=0; j<actfield->dis[l].numele; j++)
-        {
-          actele = &(actfield->dis[l].element[j]);
-          if (actele->eltyp != el_therm2) continue;
-          fprintf(out," %6d ",actele->Id+1);
-          for (k=0; k<actele->numnp; k++)
-            fprintf(out,"%6d ",actele->node[k]->Id+1);
-          fprintf(out,"\n");
-        }
-        fprintf(out,"END ELEMENTS\n");
+        th2_gid_msh(actfield, l, actgid, out);
       }
 
-      /*----------------------------------------------------------------*/
-      /* quadrilateral element with 8 nodes and 3x3 Gauss points */
-      if (actgid->is_therm2_q_33)
+
+
+      /* THERM3 */
+      /*========*/
+      /* bborn 11/06 */
+
+      if ( (actgid->is_therm3_h8_222)
+           || (actgid->is_therm3_h20_333)
+           || (actgid->is_therm3_h27_333)
+           || (actgid->is_therm3_t4_1)
+           || (actgid->is_therm3_t10_4) )
       {
-        /*-NNODE is only checked for first element,if you use different wall-types this will be a problem -*/
-        firstele = &(actfield->dis[l].element[0]);
-        fprintf(out,"#-------------------------------------------------------------------------------\n");
-        fprintf(out,"# MESH %s FOR FIELD %s, DIS %1i: THERM2 3x3 GP\n",
-            actgid->therm2_q_33_name,actgid->fieldname,l);
-        fprintf(out,"#-------------------------------------------------------------------------------\n");
-        fprintf(out,"MESH %s_dis_%1i DIMENSION 3 ELEMTYPE Quadrilateral NNODE  %d \n",
-            actgid->therm2_q_33_name,l,firstele->numnp);
-        /*------------------------------------------------ print elements */
-        fprintf(out,"ELEMENTS\n");
-        for (j=0; j<actfield->dis[l].numele; j++)
-        {
-          actele = &(actfield->dis[l].element[j]);
-          if (actele->eltyp != el_therm2 || actele->numnp < 8) continue;
-          fprintf(out," %6d ",actele->Id+1);
-          for (k=0; k<actele->numnp; k++)
-            fprintf(out,"%6d ",actele->node[k]->Id+1);
-          fprintf(out,"\n");
-        }
-        fprintf(out,"END ELEMENTS\n");
+        th3_gid_msh(actfield, l, actgid, out);
       }
-
-      /*----------------------------------------------------------------*/
-      /* triangular element with 3 nodes and 1 Gauss point */
-      if (actgid->is_therm2_t_11)
-      {
-        fprintf(out,"#-------------------------------------------------------------------------------\n");
-        fprintf(out,"# MESH %s FOR FIELD %s, DIS %1i: THERM2 1x1 GP\n",
-            actgid->therm2_t_11_name,actgid->fieldname,l);
-        fprintf(out,"#-------------------------------------------------------------------------------\n");
-        fprintf(out,"MESH %s_dis_%1i DIMENSION 2 ELEMTYPE Triangle NNODE 3\n",
-            actgid->therm2_t_11_name,l);
-        /*------------------------------------------------ print elements */
-        fprintf(out,"ELEMENTS\n");
-        for (j=0; j<actfield->dis[l].numele; j++)
-        {
-          actele = &(actfield->dis[l].element[j]);
-          if (actele->eltyp != el_therm2 || actele->numnp !=3) continue;
-          fprintf(out," %6d ",actele->Id+1);
-          for (k=0; k<actele->numnp; k++)
-            fprintf(out,"%6d ",actele->node[k]->Id+1);
-          fprintf(out,"\n");
-        }
-        fprintf(out,"END ELEMENTS\n");
-      }  /* end of if (actgid->is_therm_t_11) */
-
-      /*----------------------------------------------------------------*/
-      /* triangular element with 6 nodes and 3 Gauss points */
-      if (actgid->is_therm2_t_31)
-      {
-        /*- NNODE is only checked for first element,if you use different wall-types this will be a problem -*/
-        firstele = &(actfield->dis[0].element[0]);
-        fprintf(out,"#-------------------------------------------------------------------------------\n");
-        fprintf(out,"# MESH %s FOR FIELD %s THERM2 3x1 GP\n",actgid->therm2_t_31_name,actgid->fieldname);
-        fprintf(out,"#-------------------------------------------------------------------------------\n");
-        fprintf(out,"MESH %s DIMENSION 2 ELEMTYPE Triangle NNODE  %d \n",actgid->wall1_tri_31_name,firstele->numnp);
-        /*-------------- if this is first mesh, print coodinates of nodes */
-        if (is_firstmesh)
-        {
-          is_firstmesh=0;
-          fprintf(out,"# printout ALL nodal coordinates of ALL fields in first mesh only\n");
-          fprintf(out,"COORDINATES\n");
-          out_gid_allcoords(out);
-          fprintf(out,"END COORDINATES\n");
-        }
-        /*------------------------------------------------ print elements */
-        fprintf(out,"ELEMENTS\n");
-        for (j=0; j<actfield->dis[0].numele; j++)
-        {
-          actele = &(actfield->dis[0].element[j]);
-          if (actele->eltyp != el_therm2 || actele->numnp != 6) continue;
-          fprintf(out," %6d ",actele->Id+1);
-          for (k=0; k<actele->numnp; k++)
-            fprintf(out,"%6d ",actele->node[k]->Id+1);
-          fprintf(out,"\n");
-        }
-        fprintf(out,"END ELEMENTS\n");
-      }  /* end of if (actgid->is_therm2_t_31) */
-
-
-
 
 
     }  /* for(l=0; l<actfield->ndis; l++) */

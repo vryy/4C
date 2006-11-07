@@ -1145,23 +1145,27 @@ if (par.myrank==0 &&ioflags.output_gid==1)
    if (mod_disp==0)
    if (ioflags.struct_disp==1)
    {
-      out_gid_soldyn("displacement",actfield,actintra,sdyn->step,0,sdyn->time);
-      /*out_gid_soldyn("velocity",actfield,actintra,sdyn->step,1,sdyn->time);*/
-      /*out_gid_soldyn("accelerations",actfield,actintra,sdyn->step,2,sdyn->time);*/
+      out_gid_soldyn("displacement",actfield,disnum,actintra,sdyn->step,0,sdyn->time);
+      /*out_gid_soldyn("velocity",actfield,disnum,actintra,sdyn->step,1,sdyn->time);*/
+      /*out_gid_soldyn("accelerations",actfield,disnum,actintra,sdyn->step,2,sdyn->time);*/
 #ifdef S8CONTACT
       if (contactflag)
-      out_gid_soldyn("contact",actfield,actintra,sdyn->step,9,sdyn->time);
+      {
+        out_gid_soldyn("contact",actfield,disnum,actintra,sdyn->step,9,sdyn->time);
+      }
 #endif
 #ifdef WALLCONTACT
       if (contactflag)
-      out_gid_soldyn("contact",actfield,actintra,sdyn->step,9,sdyn->time);
+      {
+        out_gid_soldyn("contact",actfield,disnum,actintra,sdyn->step,9,sdyn->time);
+      }
 #endif
 
    }
    if (mod_stress==0)
    if (ioflags.struct_stress==1)
    {
-      out_gid_soldyn("stress"      ,actfield,actintra,sdyn->step,0,sdyn->time);
+      out_gid_soldyn("stress"      ,actfield,disnum,actintra,sdyn->step,0,sdyn->time);
    }
 }
 /*-------------------------------------- write restart data to pss file */

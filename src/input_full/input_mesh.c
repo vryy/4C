@@ -1730,11 +1730,10 @@ end:
 
  */
 /*-----------------------------------------------------------------------*/
-#ifdef D_TSI
 void inp_therm_field(
   FIELD *thermfield)
 {
-  INT idis;  /* index of "current" discretisation */
+  INT idis = 0;  /* index of "current" discretisation */
   INT ierr;
   INT elecounter;  /* all element counter */
   INT elenumber;  /* index/ID of currently read element */
@@ -1856,4 +1855,3 @@ end:
 
   return;
 } /* end of inp_therm_field */
-#endif  /* end of #ifdef D_TSI */

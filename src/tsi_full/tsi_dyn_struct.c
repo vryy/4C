@@ -1234,14 +1234,14 @@ void tsi_dyn_struct(INT disnum_s,
     {
       if ( (mod_disp == 0) && (ioflags.struct_disp == 1) )
       {
-        out_gid_soldyn("displacement", actfield, actintra, 
+        out_gid_soldyn("displacement", actfield, disnum_s, actintra, 
                        actdyn->step, 0, actdyn->time);
-        /*out_gid_soldyn("velocity",actfield,actintra,actdyn->step,1,actdyn->time);*/
-        /*out_gid_soldyn("accelerations",actfield,actintra,actdyn->step,2,actdyn->time);*/
+        /*out_gid_soldyn("velocity",actfield,disnum_s,actintra,actdyn->step,1,actdyn->time);*/
+        /*out_gid_soldyn("accelerations",actfield,disnum_s,actintra,actdyn->step,2,actdyn->time);*/
       }  /* end of if */
       if ( (mod_stress == 0) && (ioflags.struct_stress == 1) )
       {
-        out_gid_soldyn("stress", actfield, actintra, 
+        out_gid_soldyn("stress", actfield, disnum_s, actintra, 
                        actdyn->step, 0, actdyn->time);
       }  /* end of if */
     }  /* end of if  */

@@ -22,6 +22,7 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "../headers/standardtypes.h"
+#include "../output/gid.h"
 
 
 /*======================================================================*/
@@ -194,8 +195,8 @@ typedef struct _THERM2
 
 /*======================================================================*/
 /* Declarations of functions in therm2 directory
- * Order: Firstly, alphabetically list file names, secondly, list
- *        functions in file according to appearance */
+ * Order: Firstly, alphabetically list file names, 
+ *        secondly, list functions in file according to appearance */
 
 
 /*----------------------------------------------------------------------*/
@@ -215,6 +216,28 @@ void th2_cfg_iedg(INT *iegnod,
 void th2_cfg_noders(ELEMENT *ele,
                     INT inode,
                     DOUBLE *rs);
+
+/*----------------------------------------------------------------------*/
+/* file th2_gid.c */
+void th2_gid_init(ELEMENT *actele,
+                  GIDSET *actgid);
+void th2_gid_msh(FIELD *actfield,
+                 INT ldis,
+                 GIDSET *actgid,
+                 FILE *out);
+void th2_gid_gpset(INT jdis,
+                   GIDSET *actgid,
+                   FILE *out);
+void th2_gid_dom(FIELD *actfield,
+                 INT disnum,
+                 GIDSET *actgid,
+                 FILE *out);
+void th2_gid_hflux(char resstring[],
+                   FIELD *actfield,
+                   INT disnum,
+                   INT step,
+                   GIDSET *actgid,
+                   FILE *out);
 
 /*----------------------------------------------------------------------*/
 /* file th2_hflux.c */

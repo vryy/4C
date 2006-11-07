@@ -436,7 +436,7 @@ void tsi_stat_therm(INT disnum_s,
                  init);
 
   /*--------------------------------------------------------------------*/
-  /* allreduce the result and put it to the nodes's sol array */
+  /* allreduce the result and put it to the node sol arrays */
   solserv_result_total(actfield,
                        disnum,
                        actintra,
@@ -446,7 +446,7 @@ void tsi_stat_therm(INT disnum_s,
                        &(actsolv->sysarray_typ[actsysarray]));
 
   /*--------------------------------------------------------------------*/
-  /* allreduce the result and put it to the nodes's sol_mf array */
+  /* allreduce the result and put it to the node sol_mf arrays */
   /* iplace = 0;  /\* place values in the ARRAY node->sol_mf[iplace][...] *\/ */
 /*   solserv_result_mf(actfield, */
 /*                     disnum, */

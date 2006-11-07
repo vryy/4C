@@ -158,16 +158,29 @@ typedef struct _GIDSET
      INT                        is_wallge_33;           /* gradient enhanced wall 3x3 GP */
      char                      *wallge_33_name;
 
-     INT                        is_therm2_q_11;            /* 4-noded therm2 1x1 GP */
-     char                      *therm2_q_11_name;
-     INT                        is_therm2_q_22;            /* 4-noded wall1 2x2 GP */
-     char                      *therm2_q_22_name;
-     INT                        is_therm2_q_33;            /* 8/9-noded wall1 3x3 GP */
-     char                      *therm2_q_33_name;
-     INT                        is_therm2_t_11;            /* 3-noded wall1 1x1 GP */
-     char                      *therm2_t_11_name;
-     INT                        is_therm2_t_31;            /* 6-noded wall1 3x1 GP */
-     char                      *therm2_t_31_name;
+     INT                        is_therm2_q4_11;            /* 4-noded therm2 1x1 GP */
+     char                      *therm2_q4_11_name;
+     INT                        is_therm2_q4_22;            /* 4-noded wall1 2x2 GP */
+     char                      *therm2_q4_22_name;
+     INT                        is_therm2_q8_33;            /* 8-noded wall1 3x3 GP */
+     char                      *therm2_q8_33_name;
+     INT                        is_therm2_q9_33;            /* 9-noded wall1 3x3 GP */
+     char                      *therm2_q9_33_name;
+     INT                        is_therm2_t3_1;            /* 3-noded wall1 1 GP */
+     char                      *therm2_t3_1_name;
+     INT                        is_therm2_t6_3;            /* 6-noded wall1 3 GP */
+     char                      *therm2_t6_3_name;
+
+     INT                        is_therm3_h8_222;          /* 8-noded therm3 2x2x2 GP */
+     char                      *therm3_h8_222_name;
+     INT                        is_therm3_h20_333;          /* 20-noded therm3 3x3x3 GP */
+     char                      *therm3_h20_333_name;
+     INT                        is_therm3_h27_333;          /* 27-noded therm3 3x3x3 GP */
+     char                      *therm3_h27_333_name;
+     INT                        is_therm3_t4_1;          /* 4-noded therm3 1 GP */
+     char                      *therm3_t4_1_name;
+     INT                        is_therm3_t10_4;          /* 10-noded therm3 4 GP */
+     char                      *therm3_t10_4_name;
 
 } GIDSET;
 

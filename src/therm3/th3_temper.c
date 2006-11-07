@@ -153,7 +153,7 @@ void th3_temper_cal(CONTAINER *container,
     = &(field[genprob.numtf].dis[container->disnum_t].ipos.isol); 
   INT nelenod;
   INT neledof;
-  DOUBLE rr, ss, tt;  /* Gauss coordinate in THERM3 parameter space */
+  DOUBLE rr=0.0, ss=0.0, tt=0.0;  /* Gauss coordinate in THERM3 parameter space */
   DOUBLE shape[MAXNOD_THERM3];  /* shape functions */
   DOUBLE deriv[MAXNOD_THERM3][NDIM_THERM3];  /* derivatives of shape fct */
   INT k;  /* loop index */

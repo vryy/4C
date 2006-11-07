@@ -44,8 +44,13 @@ extern struct _FILES  allfiles;
 /*----------------------------------------------------------------------*
  |  routine to write solution of a step to GID           m.gee 12/01    |
  *----------------------------------------------------------------------*/
-void out_gid_soldyn(char string[], FIELD *actfield, INTRA  *actintra, INT step,
-                   INT place, DOUBLE totaltime)
+void out_gid_soldyn(char string[],  /* output type given textually */
+                    FIELD *actfield,  /* current field */
+                    INT disnum,  /* current discretisation index */
+                    INTRA *actintra,  /* current intra communicator */
+                    INT step,  /* current time step */
+                    INT place,  /* place in NODE sol array */
+                    DOUBLE totaltime)  /* current time */
 {
 #ifndef NO_TEXT_OUTPUT
 INT           i,j;
@@ -94,9 +99,9 @@ dstrc_enter("out_gid_soldyn");
 /*-------------------------------------- find the correct gid structure */
 for (i=0; i<genprob.numfld; i++)
 {
-   if (gid[i][0].fieldtyp == actfield->fieldtyp)
+   if (gid[i][disnum].fieldtyp == actfield->fieldtyp)
    {
-      actgid = &(gid[i][0]);
+      actgid = &(gid[i][disnum]);
       break;
    }
 }
@@ -120,8 +125,9 @@ if (strncmp(string,"displacement",stringlenght)==0)
    fprintf(out,"#-------------------------------------------------------------------------------\n");
    fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
    fprintf(out,"# TIME %20.10f\n",totaltime);
+   fprintf(out,"# STEP %20d\n",step);
    fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %c%s%c %cpcarat%c %d %s %s\n",sign,string,sign,sign,sign,step,resulttype,resultplace);
+   fprintf(out,"RESULT %c%s%c %cccarat%c %d %s %s\n",sign,string,sign,sign,sign,step,resulttype,resultplace);
    fprintf(out,"RESULTRANGESTABLE %c%s%c\n",sign,actgid->standardrangetable,sign);
    switch (genprob.ndim)
    {
@@ -138,14 +144,14 @@ if (strncmp(string,"displacement",stringlenght)==0)
    fprintf(out,"VALUES\n");
 #ifdef D_SHELL8
 #ifdef S8_HEX8  /* output of shell8 as hexahedra version, only hex8 */
-   if (actfield->dis[0].element[0].eltyp == el_shell8 && actfield->dis[0].element[0].distyp == quad4)
+   if (actfield->dis[disnum].element[0].eltyp == el_shell8 && actfield->dis[disnum].element[0].distyp == quad4)
    {
       tot_numnp = genprob.nnode;
       scal = 1.0;
-      sdc  = actfield->dis[0].element[0].e.s8->sdc;
-      for (i=0; i<actfield->dis[0].numnp; i++)
+      sdc  = actfield->dis[disnum].element[0].e.s8->sdc;
+      for (i=0; i<actfield->dis[disnum].numnp; i++)
       {
-         actnode = &(actfield->dis[0].node[i]);
+         actnode = &(actfield->dis[disnum].node[i]);
          /* the lower surface */
          fprintf(out," %6d %23.15E %23.15E %23.15E\n",actnode->Id+1,
                                                       actnode->sol.a.da[place][0]-actnode->sol.a.da[place][3]*scal/sdc,
@@ -161,9 +167,9 @@ if (strncmp(string,"displacement",stringlenght)==0)
    else
 #endif /*S8_HEX8*/
 #endif /*D_SHELL8*/
-   for (i=0; i<actfield->dis[0].numnp; i++)
+   for (i=0; i<actfield->dis[disnum].numnp; i++)
    {
-      actnode = &(actfield->dis[0].node[i]);
+      actnode = &(actfield->dis[disnum].node[i]);
       switch (genprob.ndim)
       {
 	case 3:
@@ -199,7 +205,7 @@ if (strncmp(string,"contact",stringlenght)==0)
    fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
    fprintf(out,"# TIME %20.10f\n",totaltime);
    fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %c%s%c %cpcarat%c %d %s %s\n",sign,string,sign,sign,sign,step,resulttype,resultplace);
+   fprintf(out,"RESULT %c%s%c %cccarat%c %d %s %s\n",sign,string,sign,sign,sign,step,resulttype,resultplace);
    fprintf(out,"RESULTRANGESTABLE %c%s%c\n",sign,actgid->standardrangetable,sign);
    switch (genprob.ndim)
    {
@@ -216,14 +222,14 @@ if (strncmp(string,"contact",stringlenght)==0)
    fprintf(out,"VALUES\n");
 #ifdef D_SHELL8
 #ifdef S8_HEX8  /* output of shell8 as hexahedra version, only hex8 */
-   if (actfield->dis[0].element[0].eltyp == el_shell8 && actfield->dis[0].element[0].distyp == quad4)
+   if (actfield->dis[disnum].element[0].eltyp == el_shell8 && actfield->dis[disnum].element[0].distyp == quad4)
    {
       tot_numnp = genprob.nnode;
       scal = 1.0;
-      sdc  = actfield->dis[0].element[0].e.s8->sdc;
-      for (i=0; i<actfield->dis[0].numnp; i++)
+      sdc  = actfield->dis[disnum].element[0].e.s8->sdc;
+      for (i=0; i<actfield->dis[disnum].numnp; i++)
       {
-         actnode = &(actfield->dis[0].node[i]);
+         actnode = &(actfield->dis[disnum].node[i]);
          /* the lower surface */
          fprintf(out," %6d %23.15E %23.15E %23.15E\n",actnode->Id+1,
                                                     -actnode->sol.a.da[place][0]+actnode->sol.a.da[place][3]*scal/sdc,
@@ -239,9 +245,9 @@ if (strncmp(string,"contact",stringlenght)==0)
    else
 #endif /*S8_HEX8*/
 #endif /*D_SHELL8*/
-   for (i=0; i<actfield->dis[0].numnp; i++)
+   for (i=0; i<actfield->dis[disnum].numnp; i++)
    {
-      actnode = &(actfield->dis[0].node[i]);
+      actnode = &(actfield->dis[disnum].node[i]);
       switch (genprob.ndim)
       {
 	case 3:
@@ -282,12 +288,12 @@ if (strncmp(string,"stress",stringlenght)==0)
       fprintf(out,"# RESULT shell8_forces on FIELD %s\n",actgid->fieldname);
       fprintf(out,"# TIME %20.10f\n",totaltime);
       fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"RESULT %cshell8_forces%c %cpcarat%c %d %s %s %c%s_dis_%1i%c\n",sign,sign,sign,sign,step,resulttype,resultplace,sign,gpset,0,sign);
+      fprintf(out,"RESULT %cshell8_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n",sign,sign,sign,sign,step,resulttype,resultplace,sign,gpset,disnum,sign);
       fprintf(out,"COMPONENTNAMES %cForce-11%c,%cForce-22%c,%cForce-33%c,%cForce-12%c,%cForce-23%c,%cForce-13%c\n",sign,sign,sign,sign,sign,sign,sign,sign,sign,sign,sign,sign);
       fprintf(out,"VALUES\n");
-      for (i=0; i<actfield->dis[0].numele; i++)
+      for (i=0; i<actfield->dis[disnum].numele; i++)
       {
-         actele = &(actfield->dis[0].element[i]);
+         actele = &(actfield->dis[disnum].element[i]);
          if (actele->eltyp != el_shell8 || actele->numnp !=4) continue;
          forces = actele->e.s8->forces.a.d3[place];
          fprintf(out," %6d %18.5e %18.5e %18.5e %18.5e %18.5e %18.5e \n",actele->Id+1,
@@ -313,19 +319,19 @@ if (strncmp(string,"stress",stringlenght)==0)
       fprintf(out,"# RESULT shell8_moments on FIELD %s\n",actgid->fieldname);
       fprintf(out,"# TIME %20.10f\n",totaltime);
       fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"RESULT %cshell8_moments%c %cpcarat%c %d %s %s %c%s_dis_%1i%c\n",
+      fprintf(out,"RESULT %cshell8_moments%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n",
                                                              sign,sign,
                                                              sign,sign,
                                                              step,
                                                              resulttype,
                                                              resultplace,
-                                                             sign,gpset,0,sign
+                                                             sign,gpset,disnum,sign
                                                              );
       fprintf(out,"COMPONENTNAMES %cMoment-11%c,%cMoment-22%c,%cMoment-33%c,%cMoment-12%c,%cMoment-23%c,%cMoment-13%c\n",sign,sign,sign,sign,sign,sign,sign,sign,sign,sign,sign,sign);
       fprintf(out,"VALUES\n");
-      for (i=0; i<actfield->dis[0].numele; i++)
+      for (i=0; i<actfield->dis[disnum].numele; i++)
       {
-         actele = &(actfield->dis[0].element[i]);
+         actele = &(actfield->dis[disnum].element[i]);
          if (actele->eltyp != el_shell8 || actele->numnp !=4) continue;
          forces = actele->e.s8->forces.a.d3[place];
          fprintf(out," %6d %18.5e %18.5e %18.5e %18.5e %18.5e %18.5e \n",actele->Id+1,
@@ -363,12 +369,12 @@ if (strncmp(string,"stress",stringlenght)==0)
       fprintf(out,"# RESULT shell8_forces on FIELD %s\n",actgid->fieldname);
       fprintf(out,"# TIME %20.10f\n",totaltime);
       fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"RESULT %cshell8_forces%c %cpcarat%c %d %s %s %c%s_dis_%1i%c\n",sign,sign,sign,sign,step,resulttype,resultplace,sign,gpset,0,sign);
+      fprintf(out,"RESULT %cshell8_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n",sign,sign,sign,sign,step,resulttype,resultplace,sign,gpset,disnum,sign);
       fprintf(out,"COMPONENTNAMES %cForce-11%c,%cForce-22%c,%cForce-33%c,%cForce-12%c,%cForce-23%c,%cForce-13%c\n",sign,sign,sign,sign,sign,sign,sign,sign,sign,sign,sign,sign);
       fprintf(out,"VALUES\n");
-      for (i=0; i<actfield->dis[0].numele; i++)
+      for (i=0; i<actfield->dis[disnum].numele; i++)
       {
-         actele = &(actfield->dis[0].element[i]);
+         actele = &(actfield->dis[disnum].element[i]);
          if (actele->eltyp != el_shell8 || actele->numnp !=9) continue;
          forces = actele->e.s8->forces.a.d3[place];
          fprintf(out," %6d %18.5e %18.5e %18.5e %18.5e %18.5e %18.5e \n",actele->Id+1,
@@ -394,12 +400,12 @@ if (strncmp(string,"stress",stringlenght)==0)
       fprintf(out,"# RESULT shell8_moments on FIELD %s\n",actgid->fieldname);
       fprintf(out,"# TIME %20.10f\n",totaltime);
       fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"RESULT %cshell8_moments%c %cpcarat%c %d %s %s %c%s_dis_%1i%c\n",sign,sign,sign,sign,step,resulttype,resultplace,sign,gpset,0,sign);
+      fprintf(out,"RESULT %cshell8_moments%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n",sign,sign,sign,sign,step,resulttype,resultplace,sign,gpset,disnum,sign);
       fprintf(out,"COMPONENTNAMES %cMoment-11%c,%cMoment-22%c,%cMoment-33%c,%cMoment-12%c,%cMoment-23%c,%cMoment-13%c\n",sign,sign,sign,sign,sign,sign,sign,sign,sign,sign,sign,sign);
       fprintf(out,"VALUES\n");
-      for (i=0; i<actfield->dis[0].numele; i++)
+      for (i=0; i<actfield->dis[disnum].numele; i++)
       {
-         actele = &(actfield->dis[0].element[i]);
+         actele = &(actfield->dis[disnum].element[i]);
          if (actele->eltyp != el_shell8 || actele->numnp !=9) continue;
          forces = actele->e.s8->forces.a.d3[place];
          fprintf(out," %6d %18.5e %18.5e %18.5e %18.5e %18.5e %18.5e \n",actele->Id+1,
@@ -440,12 +446,12 @@ if (strncmp(string,"stress",stringlenght)==0)
       fprintf(out,"# RESULT shell8_forces on FIELD %s\n",actgid->fieldname);
       fprintf(out,"# TIME %20.10f\n",totaltime);
       fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"RESULT %cshell8_forces%c %cpcarat%c %d %s %s %c%s_dis_%1i%c\n",sign,sign,sign,sign,step,resulttype,resultplace,sign,gpset,0,sign);
+      fprintf(out,"RESULT %cshell8_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n",sign,sign,sign,sign,step,resulttype,resultplace,sign,gpset,disnum,sign);
       fprintf(out,"COMPONENTNAMES %cForce-11%c,%cForce-22%c,%cForce-33%c,%cForce-12%c,%cForce-23%c,%cForce-13%c\n",sign,sign,sign,sign,sign,sign,sign,sign,sign,sign,sign,sign);
       fprintf(out,"VALUES\n");
-      for (i=0; i<actfield->dis[0].numele; i++)
+      for (i=0; i<actfield->dis[disnum].numele; i++)
       {
-         actele = &(actfield->dis[0].element[i]);
+         actele = &(actfield->dis[disnum].element[i]);
          if (actele->eltyp != el_shell8 || actele->numnp !=3)
          {
            fprintf(out, "Kacke am Dampfen\n");
@@ -475,19 +481,19 @@ if (strncmp(string,"stress",stringlenght)==0)
       fprintf(out,"# RESULT shell8_moments on FIELD %s\n",actgid->fieldname);
       fprintf(out,"# TIME %20.10f\n",totaltime);
       fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"RESULT %cshell8_moments%c %cpcarat%c %d %s %s %c%s_dis_%1i%c\n",
+      fprintf(out,"RESULT %cshell8_moments%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n",
                                                              sign,sign,
                                                              sign,sign,
                                                              step,
                                                              resulttype,
                                                              resultplace,
-                                                             sign,gpset,0,sign
+                                                             sign,gpset,disnum,sign
                                                              );
       fprintf(out,"COMPONENTNAMES %cMoment-11%c,%cMoment-22%c,%cMoment-33%c,%cMoment-12%c,%cMoment-23%c,%cMoment-13%c\n",sign,sign,sign,sign,sign,sign,sign,sign,sign,sign,sign,sign);
       fprintf(out,"VALUES\n");
-      for (i=0; i<actfield->dis[0].numele; i++)
+      for (i=0; i<actfield->dis[disnum].numele; i++)
       {
-         actele = &(actfield->dis[0].element[i]);
+         actele = &(actfield->dis[disnum].element[i]);
          if (actele->eltyp != el_shell8 || actele->numnp !=3) continue;
          forces = actele->e.s8->forces.a.d3[place];
          fprintf(out," %6d %18.5e %18.5e %18.5e %18.5e %18.5e %18.5e \n",actele->Id+1,
@@ -529,12 +535,12 @@ if (strncmp(string,"stress",stringlenght)==0)
       fprintf(out,"# RESULT wall1_forces on FIELD %s\n",actgid->fieldname);
       fprintf(out,"# TIME %20.10f\n",totaltime);
       fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"RESULT %cwall1_forces%c %cpcarat%c %d %s %s %c%s_dis_%1i%c\n",sign,sign,sign,sign,step,resulttype, resultplace,sign,gpset,0,sign);
+      fprintf(out,"RESULT %cwall1_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n",sign,sign,sign,sign,step,resulttype, resultplace,sign,gpset,disnum,sign);
       fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-xy%c,%cStress-zz%c,%cdummy%c,%cdummy%c\n",sign,sign,sign,sign,sign,sign,sign,sign,sign,sign,sign,sign);
       fprintf(out,"VALUES\n");
-      for (i=0; i<actfield->dis[0].numele; i++)
+      for (i=0; i<actfield->dis[disnum].numele; i++)
       {
-         actele = &(actfield->dis[0].element[i]);
+         actele = &(actfield->dis[disnum].element[i]);
    /*---------------|| actele->numnp !=4--- */
          if (actele->eltyp != el_wall1 ) continue;
          stress=actele->e.w1->stress_GP.a.d3[place];
@@ -573,12 +579,12 @@ if (strncmp(string,"stress",stringlenght)==0)
       fprintf(out,"# RESULT wall1_forces on FIELD %s\n",actgid->fieldname);
       fprintf(out,"# TIME %20.10f\n",totaltime);
       fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"RESULT %cwall1_forces%c %cpcarat%c %d %s %s %c%s_dis_%1i%c\n",sign,sign,sign,sign,step,resulttype,resultplace,sign,gpset,0,sign);
+      fprintf(out,"RESULT %cwall1_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n",sign,sign,sign,sign,step,resulttype,resultplace,sign,gpset,disnum,sign);
       fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-xy%c,%cStress-zz%c,%cdummy%c,%cdummy%c\n",sign,sign,sign,sign,sign,sign,sign,sign,sign,sign,sign,sign);
       fprintf(out,"VALUES\n");
-      for (i=0; i<actfield->dis[0].numele; i++)
+      for (i=0; i<actfield->dis[disnum].numele; i++)
       {
-         actele = &(actfield->dis[0].element[i]);
+         actele = &(actfield->dis[disnum].element[i]);
 /*---------------|| actele->numnp < 8--- */
          if (actele->eltyp != el_wall1 ) continue;
          stress=actele->e.w1->stress_GP.a.d3[place];
@@ -618,15 +624,15 @@ if (strncmp(string,"stress",stringlenght)==0)
       fprintf(out,"# RESULT INTERFACE on FIELD %s\n",actgid->fieldname);
       fprintf(out,"# TIME %20.10f\n",totaltime);
       fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"RESULT %cinterface_stresses%c %cpcarat%c %d %s %s %c%s_dis_%1i%c\n",
+      fprintf(out,"RESULT %cinterface_stresses%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n",
                                                              sign,sign,
                                                              sign,sign,
                                                              step,
                                                              resulttype,
                                                              resultplace,
-                                                             sign,gpset,0,sign
+                                                             sign,gpset,disnum,sign
                                                              );
-      actele = &(actfield->dis[0].element[0]);
+      actele = &(actfield->dis[disnum].element[0]);
       switch(actele->e.interf->stresstyp)
       {
       /*---------------------------------- local stresses are asked for ---*/
@@ -643,9 +649,9 @@ if (strncmp(string,"stress",stringlenght)==0)
         break;
       }
       fprintf(out,"VALUES\n");
-      for (i=0; i<actfield->dis[0].numele; i++)
+      for (i=0; i<actfield->dis[disnum].numele; i++)
       {
-         actele = &(actfield->dis[0].element[i]);
+         actele = &(actfield->dis[disnum].element[i]);
          if (actele->eltyp != el_interf || actele->numnp !=4) continue;
 
          /* ----------------------- gid's 1.and 4.GP get values of my 1.GP-- */
@@ -691,126 +697,132 @@ if (strncmp(string,"stress",stringlenght)==0)
 #endif
 
 #ifdef D_BRICK1
-   /* STRESS output for Gid for BRICK1 elements (pbb 30.11.2004) */
-   /* bricks have 6 stress - use 3D matrix */
-   if (actgid->is_brick1_222)
+   if ( (actgid->is_brick1_222)
+        || (actgid->is_brick1_333) )
    {
-      /*check only first element and assume, that the others are the same*/
-     actele = &(actfield->dis[0].element[0]);
-     switch(actele->e.c1->stresstyp)
-     {
-     case c1_npeqs:
-      resulttype                             = "SCALAR";
-      resultplace                            = "ONNODES";                 /*extrapolated to nodal points!*/
-      gpset             = actgid->brick1_222_name;
-      rangetable        = actgid->standardrangetable;
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"# RESULT Brick1_forces on FIELD %s\n",actgid->fieldname);
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"RESULT %cbrick1_forces%c %cpcarat%c %d %s %s %c%s_dis_%1i%c\n",
-                   sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,0,sign );
-        fprintf(out,"COMPONENTNAMES %cequivStress%c\n", sign,sign);
-        fprintf(out,"VALUES\n");
-          c1_out_gid_sol_str(out,actfield,place,0); /*extrapolated to nodal points!*/
-        fprintf(out,"END VALUES\n");
-     break;
-     case c1_npxyz:
-      resulttype                             = "MATRIX";
-      resultplace                            = "ONNODES";                 /*extrapolated to nodal points!*/
-      gpset             = actgid->brick1_222_name;
-      rangetable        = actgid->standardrangetable;
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"# RESULT Brick1_forces on FIELD %s\n",actgid->fieldname);
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"RESULT %cbrick1_forces%c %cpcarat%c %d %s %s %c%s_dis_%1i%c\n",
-                   sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,0,sign );
-        fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-zz%c,%cStress-xy%c,%cStress-xz%c,%cStress-yz%c\n",
-               sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
-        fprintf(out,"VALUES\n");
-          c1_out_gid_sol_str(out,actfield,place,0); /*extrapolated to nodal points!*/
-        fprintf(out,"END VALUES\n");
-     break;
-     case c1_nprst:
-      resulttype                             = "MATRIX";
-      resultplace                            = "ONNODES";                 /*extrapolated to nodal points!*/
-      gpset             = actgid->brick1_222_name;
-      rangetable        = actgid->standardrangetable;
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"# RESULT Brick1_forces on FIELD %s\n",actgid->fieldname);
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"RESULT %cbrick1_forces%c %cpcarat%c %d %s %s %c%s_dis_%1i%c\n",
-                   sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,0,sign );
-        fprintf(out,"COMPONENTNAMES %cStress-rr%c,%cStress-ss%c,%cStress-tt%c,%cStress-rs%c,%cStress-st%c,%cStress-tr%c\n",
-               sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
-        fprintf(out,"VALUES\n");
-          c1_out_gid_sol_str(out,actfield,place,0); /*extrapolated to nodal points!*/
-        fprintf(out,"END VALUES\n");
-     break;
-     /*-----------------------------------*/
-     default:
-       fprintf(out,"no stresses available\n");
-     break;
-     }
+     c1_gid_stress(string, actfield, disnum, step, actgid, out);
    }
-   if (actgid->is_brick1_333)
-   {
-      /*check only first element and assume, that the others are the same*/
-     actele = &(actfield->dis[0].element[0]);
-     switch(actele->e.c1->stresstyp)
-     {
-     case c1_npeqs:
-      resulttype                             = "SCALAR";
-      resultplace                            = "ONNODES";                 /*extrapolated to nodal points!*/
-      gpset             = actgid->brick1_333_name;
-      rangetable        = actgid->standardrangetable;
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"# RESULT Brick1_forces on FIELD %s\n",actgid->fieldname);
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"RESULT %cbrick1_forces%c %cpcarat%c %d %s %s %c%s_dis_%1i%c\n",
-                   sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,0,sign );
-        fprintf(out,"COMPONENTNAMES %cequivStress%c\n", sign,sign);
-        fprintf(out,"VALUES\n");
-          c1_out_gid_sol_str(out,actfield,place,0); /*extrapolated to nodal points!*/
-        fprintf(out,"END VALUES\n");
-     break;
-     case c1_npxyz:
-      resulttype                             = "MATRIX";
-      resultplace                            = "ONNODES";                 /*extrapolated to nodal points!*/
-      gpset             = actgid->brick1_333_name;
-      rangetable        = actgid->standardrangetable;
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"# RESULT Brick1_forces on FIELD %s\n",actgid->fieldname);
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"RESULT %cbrick1_forces%c %cpcarat%c %d %s %s %c%s_dis_%1i%c\n",
-                   sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,0,sign );
-        fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-zz%c,%cStress-xy%c,%cStress-xz%c,%cStress-yz%c\n",
-               sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
-        fprintf(out,"VALUES\n");
-          c1_out_gid_sol_str(out,actfield,place,0); /*extrapolated to nodal points!*/
-        fprintf(out,"END VALUES\n");
-     break;
-     case c1_nprst:
-      resulttype                             = "MATRIX";
-      resultplace                            = "ONNODES";                 /*extrapolated to nodal points!*/
-      gpset             = actgid->brick1_333_name;
-      rangetable        = actgid->standardrangetable;
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"# RESULT Brick1_forces on FIELD %s\n",actgid->fieldname);
-      fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out,"RESULT %cbrick1_forces%c %cpcarat%c %d %s %s %c%s_dis_%1i%c\n",
-                   sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,0,sign );
-        fprintf(out,"COMPONENTNAMES %cStress-rr%c,%cStress-ss%c,%cStress-tt%c,%cStress-rs%c,%cStress-st%c,%cStress-tr%c\n",
-               sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign);
-        fprintf(out,"VALUES\n");
-          c1_out_gid_sol_str(out,actfield,place,0); /*extrapolated to nodal points!*/
-        fprintf(out,"END VALUES\n");
-     break;
-     /*-----------------------------------*/
-     default:
-       fprintf(out,"no stresses available\n");
-     break;
-     }
-   }
+
+/*    /\* STRESS output for Gid for BRICK1 elements *\/ */
+/*    /\* bricks have 6 stress - use 3D matrix *\/ */
+/*    if (actgid->is_brick1_222) */
+/*    { */
+/*       /\*check only first element and assume, that the others are the same*\/ */
+/*      actele = &(actfield->dis[disnum].element[0]); */
+/*      switch(actele->e.c1->stresstyp) */
+/*      { */
+/*      case c1_npeqs: */
+/*       resulttype                             = "SCALAR"; */
+/*       resultplace                            = "ONNODES";                 /\*extrapolated to nodal points!*\/ */
+/*       gpset             = actgid->brick1_222_name; */
+/*       rangetable        = actgid->standardrangetable; */
+/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*       fprintf(out,"# RESULT Brick1_forces on FIELD %s\n",actgid->fieldname); */
+/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*       fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n", */
+/*                    sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,disnum,sign ); */
+/*         fprintf(out,"COMPONENTNAMES %cequivStress%c\n", sign,sign); */
+/*         fprintf(out,"VALUES\n"); */
+/*         c1_out_gid_sol_str(out,actfield,disnum,place,0); /\*extrapolated to nodal points!*\/ */
+/*         fprintf(out,"END VALUES\n"); */
+/*      break; */
+/*      case c1_npxyz: */
+/*       resulttype                             = "MATRIX"; */
+/*       resultplace                            = "ONNODES";                 /\*extrapolated to nodal points!*\/ */
+/*       gpset             = actgid->brick1_222_name; */
+/*       rangetable        = actgid->standardrangetable; */
+/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*       fprintf(out,"# RESULT Brick1_forces on FIELD %s\n",actgid->fieldname); */
+/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*       fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n", */
+/*                    sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,disnum,sign ); */
+/*         fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-zz%c,%cStress-xy%c,%cStress-xz%c,%cStress-yz%c\n", */
+/*                sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign); */
+/*         fprintf(out,"VALUES\n"); */
+/*         c1_out_gid_sol_str(out,actfield,disnum,place,0); /\*extrapolated to nodal points!*\/ */
+/*         fprintf(out,"END VALUES\n"); */
+/*      break; */
+/*      case c1_nprst: */
+/*       resulttype                             = "MATRIX"; */
+/*       resultplace                            = "ONNODES";                 /\*extrapolated to nodal points!*\/ */
+/*       gpset             = actgid->brick1_222_name; */
+/*       rangetable        = actgid->standardrangetable; */
+/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*       fprintf(out,"# RESULT Brick1_forces on FIELD %s\n",actgid->fieldname); */
+/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*       fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n", */
+/*                    sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,disnum,sign ); */
+/*         fprintf(out,"COMPONENTNAMES %cStress-rr%c,%cStress-ss%c,%cStress-tt%c,%cStress-rs%c,%cStress-st%c,%cStress-tr%c\n", */
+/*                sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign); */
+/*         fprintf(out,"VALUES\n"); */
+/*         c1_out_gid_sol_str(out,actfield,disnum,place,0); /\*extrapolated to nodal points!*\/ */
+/*         fprintf(out,"END VALUES\n"); */
+/*      break; */
+/*      /\*-----------------------------------*\/ */
+/*      default: */
+/*        fprintf(out,"no stresses available\n"); */
+/*      break; */
+/*      } */
+/*    } */
+/*    if (actgid->is_brick1_333) */
+/*    { */
+/*       /\*check only first element and assume, that the others are the same*\/ */
+/*      actele = &(actfield->dis[disnum].element[0]); */
+/*      switch(actele->e.c1->stresstyp) */
+/*      { */
+/*      case c1_npeqs: */
+/*       resulttype                             = "SCALAR"; */
+/*       resultplace                            = "ONNODES";                 /\*extrapolated to nodal points!*\/ */
+/*       gpset             = actgid->brick1_333_name; */
+/*       rangetable        = actgid->standardrangetable; */
+/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*       fprintf(out,"# RESULT Brick1_forces on FIELD %s\n",actgid->fieldname); */
+/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*       fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n", */
+/*                    sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,disnum,sign ); */
+/*         fprintf(out,"COMPONENTNAMES %cequivStress%c\n", sign,sign); */
+/*         fprintf(out,"VALUES\n"); */
+/*         c1_out_gid_sol_str(out,actfield,disnum,place,0); /\*extrapolated to nodal points!*\/ */
+/*         fprintf(out,"END VALUES\n"); */
+/*      break; */
+/*      case c1_npxyz: */
+/*       resulttype                             = "MATRIX"; */
+/*       resultplace                            = "ONNODES";                 /\*extrapolated to nodal points!*\/ */
+/*       gpset             = actgid->brick1_333_name; */
+/*       rangetable        = actgid->standardrangetable; */
+/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*       fprintf(out,"# RESULT Brick1_forces on FIELD %s\n",actgid->fieldname); */
+/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*       fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n", */
+/*                    sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,disnum,sign ); */
+/*         fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-zz%c,%cStress-xy%c,%cStress-xz%c,%cStress-yz%c\n", */
+/*                sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign); */
+/*         fprintf(out,"VALUES\n"); */
+/*         c1_out_gid_sol_str(out,actfield,disnum,place,0); /\*extrapolated to nodal points!*\/ */
+/*         fprintf(out,"END VALUES\n"); */
+/*      break; */
+/*      case c1_nprst: */
+/*       resulttype                             = "MATRIX"; */
+/*       resultplace                            = "ONNODES";                 /\*extrapolated to nodal points!*\/ */
+/*       gpset             = actgid->brick1_333_name; */
+/*       rangetable        = actgid->standardrangetable; */
+/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*       fprintf(out,"# RESULT Brick1_forces on FIELD %s\n",actgid->fieldname); */
+/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
+/*       fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n", */
+/*                    sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,disnum,sign ); */
+/*         fprintf(out,"COMPONENTNAMES %cStress-rr%c,%cStress-ss%c,%cStress-tt%c,%cStress-rs%c,%cStress-st%c,%cStress-tr%c\n", */
+/*                sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign); */
+/*         fprintf(out,"VALUES\n"); */
+/*         c1_out_gid_sol_str(out,actfield,disnum,place,0); /\*extrapolated to nodal points!*\/ */
+/*         fprintf(out,"END VALUES\n"); */
+/*      break; */
+/*      /\*-----------------------------------*\/ */
+/*      default: */
+/*        fprintf(out,"no stresses available\n"); */
+/*      break; */
+/*      } */
+/*    } */
 #endif
 
 } /* end of (strncmp(string,"stress",stringlenght)==0) */
@@ -832,7 +844,7 @@ if (strncmp(string,"velocity",stringlenght)==0)
    fprintf(out,"# RESULT %s on FIELD %s\n",string,actgid->fieldname);
    fprintf(out,"# TIME %20.10f\n",totaltime);
    fprintf(out,"#-------------------------------------------------------------------------------\n");
-   fprintf(out,"RESULT %c%s%c %cpcarat%c %d %s %s\n",sign,string,sign,sign,sign,step,resulttype,resultplace);
+   fprintf(out,"RESULT %c%s%c %cccarat%c %d %s %s\n",sign,string,sign,sign,sign,step,resulttype,resultplace);
    fprintf(out,"RESULTRANGESTABLE %c%s%c\n",sign,actgid->standardrangetable,sign);
    switch (genprob.ndim)
    {
@@ -847,9 +859,9 @@ if (strncmp(string,"velocity",stringlenght)==0)
      break;
    }
    fprintf(out,"VALUES\n");
-   for (i=0; i<actfield->dis[0].numnp; i++)
+   for (i=0; i<actfield->dis[disnum].numnp; i++)
    {
-      actnode = &(actfield->dis[0].node[i]);
+      actnode = &(actfield->dis[disnum].node[i]);
       switch (genprob.ndim)
       {
 	case 3:
