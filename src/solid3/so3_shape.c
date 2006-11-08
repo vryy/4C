@@ -57,7 +57,7 @@ void so3_shape_deriv(const DIS_TYP     typ,
   const DOUBLE rp=1.0+r, sp=1.0+s, tp=1.0+t;
   const DOUBLE rm=1.0-r, sm=1.0-s, tm=1.0-t;
   const DOUBLE rrm=1.0-r*r, ssm=1.0-s*s, ttm=1.0-t*t;
-  DOUBLE u;
+  DOUBLE u, r4, s4, t4, u4;  /* auxiliary variables 3 */
 
 
   /*--------------------------------------------------------------------*/
@@ -88,25 +88,31 @@ void so3_shape_deriv(const DIS_TYP     typ,
         deriv[0][0] = -0.125*sm*tm;  /* differentiated in r */
         deriv[0][1] = -0.125*rm*tm;  /* differentiated in s */
         deriv[0][2] = -0.125*rm*sm;  /* differentiated in t */
-        /* */
+        /* shape fct. assoc. to node 1 */
         deriv[1][0] = 0.125*sm*tm;
         deriv[1][1] = -0.125*rp*tm;
         deriv[1][2] = -0.125*rp*sm;
+        /* shape fct. assoc. to node 2 */
         deriv[2][0] = 0.125*sp*tm;
         deriv[2][1] = 0.125*rp*tm;
         deriv[2][2] = -0.125*rp*sp;
+        /* shape fct. assoc. to node 3 */
         deriv[3][0] = -0.125*sp*tm;
         deriv[3][1] = 0.125*rm*tm;
         deriv[3][2] = -0.125*rm*sp;
+        /* shape fct. assoc. to node 4 */
         deriv[4][0] = -0.125*sm*tp;
         deriv[4][1] = -0.125*rm*tp;
         deriv[4][2] = 0.125*rm*sm;
+        /* shape fct. assoc. to node 5 */
         deriv[5][0] = 0.125*sm*tp;
         deriv[5][1] = -0.125*rp*tp;
-        deriv[5][2] = 0.125*rp*sp;
+        deriv[5][2] = 0.125*rp*sm;
+        /* shape fct. assoc. to node 6 */
         deriv[6][0] = 0.125*sp*tp;
         deriv[6][1] = 0.125*rp*tp;
         deriv[6][2] = 0.125*rp*sp;
+        /* shape fct. assoc. to node 7 */
         deriv[7][0] = -0.125*sp*tp;
         deriv[7][1] = 0.125*rm*tp;
         deriv[7][2] = 0.125*rm*sp;
@@ -252,12 +258,69 @@ void so3_shape_deriv(const DIS_TYP     typ,
       break;
     /* Quadratic interpolation */
     case tet10:
-      u = 1.0-r-s-t;
-      dserror("tet10 shape functions are not implemented");
+      /* auxiliary variables */
+      u = 1.0 - r - s - t;
+      r4 = 4.0*r;
+      s4 = 4.0*s;
+      t4 = 4.0*t;
+      u4 = 4.0*u;
+      /* shape functions at (r,s,t)
+       * [T.J.R. Hughes, The finite element method, Dover, 2000] */
+      /* corner nodes */
+      shape[0] = r*(2.0*r - 1.0);
+      shape[1] = s*(2.0*s - 1.0);
+      shape[2] = t*(2.0*t - 1.0);
+      shape[3] = u*(2.0*u - 1.0);
+      /* middle nodes */
+      shape[4] = r4*s;
+      shape[5] = s4*t;
+      shape[6] = r4*t;
+      shape[7] = r4*u;
+      shape[8] = s4*u;
+      shape[9] = t4*u;
       /* optionally include derivatives */
       if (option == 1)
       {
-        dserror("Derivatives of tet10 shape functions are not implemented");
+        /* shape fct. assoc. to node 0 */
+        deriv[0][0] = r4 - 1.0;  /* differentiated with respect to r */
+        deriv[0][1] = 0.0;       /* differentiated with respect to s */
+        deriv[0][2] = 0.0;       /* differentiated with respect to t */
+        /* shape fct. assoc. to node 1 */
+        deriv[1][0] = 0.0;
+        deriv[1][1] = s4 - 1.0;
+        deriv[1][2] = 0.0;
+        /* shape fct. assoc. to node 2 */
+        deriv[2][0] = 0.0;
+        deriv[2][1] = 0.0;
+        deriv[2][2] = t4 - 1.0;
+        /* shape fct. assoc. to node 3 */
+        deriv[3][0] = 1.0 - u4;
+        deriv[3][1] = 1.0 - u4;
+        deriv[3][2] = 1.0 - u4;
+        /* shape fct. assoc. to node 4 */
+        deriv[4][0] = s4;
+        deriv[4][1] = r4;
+        deriv[4][2] = 0.0;
+        /* shape fct. assoc. to node 5 */
+        deriv[5][0] = 0.0;
+        deriv[5][1] = t4;
+        deriv[5][2] = s4;
+        /* shape fct. assoc. to node 6 */
+        deriv[6][0] = t4;
+        deriv[6][1] = 0.0;
+        deriv[6][2] = r4;
+        /* shape fct. assoc. to node 7 */
+        deriv[7][0] = u4 - r4;
+        deriv[7][1] = -r4;
+        deriv[7][2] = -r4;
+        /* shape fct. assoc. to node 8 */
+        deriv[8][0] = -s4;
+        deriv[8][1] = u4 - s4;
+        deriv[8][2] = -s4;
+        /* shape fct. assoc. to node 9 */
+        deriv[9][0] = -t4;
+        deriv[9][1] = -t4;
+        deriv[9][2] = u4 - t4;
       }
       break;
     /* catch erroneous discretisation types */

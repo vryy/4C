@@ -500,10 +500,10 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
             {
               /* set number of Gauss points for side integration
                * the anchor ancsidh is normal on the edge direction */
-              if ( (INT) data->ancsidh[igline][idim] == 0)
+              if ((INT) data->ancedgh[igline][idim] == 0)
               {
-                gpnum[0] = gpnum[idim];
-                gpintc[0] = gpintc[idim];
+                gpnum[0] = ele->e.th3->gpnum[idim];
+                gpintc[0] = ele->e.th3->gpintc[idim];
               }
             }  /* end for */
             /*----------------------------------------------------------*/
@@ -838,7 +838,7 @@ void th3_load_line(ELEMENT *ele,
   {
     /*------------------------------------------------------------------*/
     /* uniform prescribed surface load */
-    case neum_live:
+    case neum_dead:
       for (idof=0; idof<NUMDOF_THERM3; idof++)
       {
         onoff[idof] = gline->neum->neum_onoff.a.iv[idof];

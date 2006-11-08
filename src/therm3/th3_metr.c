@@ -210,13 +210,16 @@ void th3_metr_surf(ELEMENT *ele,
    * matrix (xjm) defined in FE-fashion (see th3_metr_jaco).
    * sidredm  depends on the surface parameter space (r,s). 
    */
+  /* set to zero */
+  memset(gamt, 0, sizeof(gamt));
+  /* matrix product */
   for (kdimsid=0; kdimsid<DIMSID_THERM3; kdimsid++)
   {
     for (idim=0; idim<NDIM_THERM3; idim++)
     {
       for (jdim=0; jdim<NDIM_THERM3; jdim++)
       {
-        gamt[kdimsid][jdim] = sidredm[kdimsid][idim] * xjm[idim][jdim];
+        gamt[kdimsid][jdim] += sidredm[kdimsid][idim] * xjm[idim][jdim];
       }
     }
   }
@@ -233,13 +236,16 @@ void th3_metr_surf(ELEMENT *ele,
    * instead of [ m_00  m_01 ] swapped means [ m_11 m_10 ]
    *            [ m_10  m_11 ]               [ m_01 m_00 ]
    */
+  /* set to zero */
+  memset(metm, 0, sizeof(metm));
+  /* matrix product */
   for (kdimsid=0; kdimsid<DIMSID_THERM3; kdimsid++)
   {
-    for (jdimsid=0; jdim<DIMSID_THERM3; jdim++)
+    for (jdimsid=0; jdimsid<DIMSID_THERM3; jdimsid++)
     {
       for (idim=0; idim<NDIM_THERM3; idim++)
       {
-        metm[kdimsid][jdimsid] = gamt[kdimsid][idim] * gamt[jdimsid][idim];
+        metm[kdimsid][jdimsid] += gamt[kdimsid][idim] * gamt[jdimsid][idim];
       }
     }
   }
@@ -302,11 +308,14 @@ void th3_metr_line(ELEMENT *ele,
 
   /*--------------------------------------------------------------------*/
   /* build gamma matrix */
+  /* set to zero */
+  memset(gamt, 0, sizeof(gamt));
+  /* matrix product */
   for (idim=0; idim<NDIM_THERM3; idim++)
   {
     for (jdim=0; jdim<NDIM_THERM3; jdim++)
     {
-      gamt[jdim] = linredv[idim] * xjm[idim][jdim];
+      gamt[jdim] += linredv[idim] * xjm[idim][jdim];
     }
   }
 
@@ -315,7 +324,7 @@ void th3_metr_line(ELEMENT *ele,
   mets = 0.0;
   for (idim=0; idim<NDIM_THERM3; idim++)
   {
-    mets = mets + gamt[idim] * gamt[idim];
+    mets += gamt[idim] * gamt[idim];
   }
 
   /*--------------------------------------------------------------------*/

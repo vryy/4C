@@ -190,7 +190,7 @@ DOUBLE acttime;
 */
 /*----------------------------------------------------------------------*/
 void tsi_th_stat(INT disnum_s,
-                  INT disnum_t)
+                 INT disnum_t)
 {
 
   INT i;  /* a counter */
@@ -237,7 +237,7 @@ void tsi_th_stat(INT disnum_s,
   /* begin body */
 
 #ifdef DEBUG
-  dstrc_enter("tsi_stat_therm");
+  dstrc_enter("tsi_th_stat");
 #endif
 
   /*--------------------------------------------------------------------*/

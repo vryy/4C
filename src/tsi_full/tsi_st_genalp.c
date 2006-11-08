@@ -245,7 +245,7 @@ void tsi_st_genalp(INT disnum_s,
   /* begin body */
 
 #ifdef DEBUG
-  dstrc_enter("tsi_dyn_struct");
+  dstrc_enter("tsi_st_genalp");
 #endif
 
   /*--------------------------------------------------------------------*/

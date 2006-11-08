@@ -111,7 +111,7 @@ void th3_shape_deriv(DIS_TYP     typ,
         /* shape fct. assoc. to node 5 */
         deriv[5][0] = 0.125*sm*tp;
         deriv[5][1] = -0.125*rp*tp;
-        deriv[5][2] = 0.125*rp*sp;
+        deriv[5][2] = 0.125*rp*sm;
         /* shape fct. assoc. to node 6 */
         deriv[6][0] = 0.125*sp*tp;
         deriv[6][1] = 0.125*rp*tp;
