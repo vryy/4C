@@ -113,8 +113,8 @@ void th3_out_hflux(ELEMENT *actele,
       /* loop all Gauss points */
       for (igp=0; igp<gptotal; igp++)
       {
-        fprintf(out, "      %2d   "
-                     "%12.3E %12.3E %12.3E\n",
+        fprintf(out, "      %2d"
+                     "   %12.3E %12.3E %12.3E\n",
                 igp,
                 actele->e.th3->hflux_gp_xyz.a.d3[place][igp][0],
                 actele->e.th3->hflux_gp_xyz.a.d3[place][igp][1],

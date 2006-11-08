@@ -626,7 +626,7 @@ void th3_gid_hflux(char resstring[],
 
   DOUBLE **heatflux;
 
-  INT jgp;  /* loop index */
+  INT jgp, igp;  /* loop index */
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -673,18 +673,20 @@ void th3_gid_hflux(char resstring[],
         {
           heatflux = actele->e.th3->hflux_gp_xyz.a.d3[place];
           /* print values at first Gauss point _with_ element index */
+          igp = gperm_h_222[0];
           fprintf(out, " %6d %18.5E %18.5E %18.5E \n",
                   actele->Id+1,
-                  heatflux[gperm_h_222[0]][0],  /* heatflux x-component */
-                  heatflux[gperm_h_222[0]][1],  /* heatflux y-component */
-                  heatflux[gperm_h_222[0]][2]);  /* heatflux z-component */
+                  heatflux[igp][0],  /* heatflux x-component */
+                  heatflux[igp][1],  /* heatflux y-component */
+                  heatflux[igp][2]);  /* heatflux z-component */
           /* print values of second to ... Gauss point */
           for (jgp=1; jgp<ngauss; jgp++)
           {
+            igp = gperm_h_222[jgp];
             fprintf(out, "        %18.5E %18.5E %18.5E \n",
-                    heatflux[gperm_h_222[jgp]][0],  /* heatflux x-component */
-                    heatflux[gperm_h_222[jgp]][1],  /* heatflux y-component */
-                    heatflux[gperm_h_222[jgp]][2]);  /* heatflux z-component */
+                    heatflux[igp][0],  /* heatflux x-component */
+                    heatflux[igp][1],  /* heatflux y-component */
+                    heatflux[igp][2]);  /* heatflux z-component */
           }
         }
       }

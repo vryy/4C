@@ -1995,9 +1995,9 @@ void inpctr_dyn_tsi(TSI_DYNAMIC *tsidyn)
       {
 	 tsidyn->kind = tsi_full;
       }
-      else if (frwordcmp(buffer, "thermal_static_structure_dynamic") == 0)
+      else if (frwordcmp(buffer, "thermal_static_structure_genalpha") == 0)
       {
-	 tsidyn->kind = tsi_therm_stat_struct_dyn;
+	 tsidyn->kind = tsi_therm_stat_struct_genalp;
       }
       else if (frwordcmp(buffer, "thermal_predefined_structure_dynamic") == 0)
       {

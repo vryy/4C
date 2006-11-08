@@ -177,8 +177,8 @@ DOUBLE deltat;
 \author bborn
 \date 03/06
 */
-void tsi_dyn_struct(INT disnum_s,
-                    INT disnum_t)
+void tsi_st_genalp(INT disnum_s,
+                   INT disnum_t)
 {
 
   INT i;  /* simply a counter */
@@ -1329,4 +1329,4 @@ void tsi_dyn_struct(INT disnum_s,
 #endif
 
   return;
-}  /* end of tsi_dyn_struct */
+}  /* end of tsi_st_genalp */

@@ -172,9 +172,9 @@ void tsi_dyn()
     case tsi_therm_pred_struct_dyn:
       break;
     /* semi TSI : static thermal and dynamic structure field */
-    case tsi_therm_stat_struct_dyn: 
-      tsi_stat_therm(disnum_s, disnum_t);
-      tsi_dyn_struct(disnum_s, disnum_t);
+    case tsi_therm_stat_struct_genalp: 
+      tsi_th_stat(disnum_s, disnum_t);
+      tsi_st_genalp(disnum_s, disnum_t);
       break;
     /* full TSI */
     case tsi_full:

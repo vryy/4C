@@ -35,12 +35,6 @@ void tsi_dyn();
 
 
 /*----------------------------------------------------------------------*/
-/* file tsi_dyn_struct.c */
-void tsi_dyn_struct(INT disnum_s,
-                    INT disnum_t);
-
-
-/*----------------------------------------------------------------------*/
 /* file tsi_init.c */
 void tsi_init_chkfld(INT *numfld, /* total number of fields */
                      INT *numsf,  /* number (index) of structure field */
@@ -62,6 +56,12 @@ void tsi_init_curve();
 
 
 /*----------------------------------------------------------------------*/
-/* file tsi_stat_therm.c */
-void tsi_stat_therm(INT disnum_s,
-                    INT disnum_t);
+/* file tsi_st_genalp.c */
+void tsi_st_genalp(INT disnum_s,
+                   INT disnum_t);
+
+
+/*----------------------------------------------------------------------*/
+/* file tsi_th_stat.c */
+void tsi_th_stat(INT disnum_s,
+                 INT disnum_t);

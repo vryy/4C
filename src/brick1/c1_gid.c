@@ -1,7 +1,7 @@
 /*======================================================================*/
 /*!
 \file
-\brief Print BRICK1 element data to Ccarat output file
+\brief Print BRICK1 element data to Ccarat Gid output file
 
 <pre>
 Maintainer: Burkhard Bornemann
@@ -107,7 +107,7 @@ void c1_gid_msh(FIELD *actfield,
   ELEMENT *actele;
   INT j, k;  /* loop index */
 
-  /*====================================================================*/
+  /*--------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_enter("c1_gid_msh");
 #endif
@@ -163,7 +163,7 @@ void c1_gid_msh(FIELD *actfield,
     fprintf(out,"END ELEMENTS\n");
   }
 
-  /*====================================================================*/
+  /*--------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_exit();
 #endif
@@ -690,8 +690,8 @@ void c1_gid_stress(char resstring[],
       default:
         fprintf(out,"no stresses available\n");
         break;
-    }
-  }
+    }  /* end switch */
+  }  /* end if */
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG

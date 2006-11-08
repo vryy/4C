@@ -189,8 +189,8 @@ DOUBLE acttime;
 \date 03/06
 */
 /*----------------------------------------------------------------------*/
-void tsi_stat_therm(INT disnum_s,
-                    INT disnum_t)
+void tsi_th_stat(INT disnum_s,
+                  INT disnum_t)
 {
 
   INT i;  /* a counter */
@@ -549,7 +549,7 @@ void tsi_stat_therm(INT disnum_s,
 
   return;
 
-}  /* end of tsi_stat_therm() */
+}  /* end of tsi_th_stat() */
 
 
 /*----------------------------------------------------------------------*/
