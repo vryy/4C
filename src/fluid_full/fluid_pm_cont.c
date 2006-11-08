@@ -862,9 +862,10 @@ void fluid_pm_cont()
 
     solserv_zero_vec(press_rhs);
     amzero(&frhs_a);
+    amzero(&fgradprhs_a);
 
     /* build up the rhs */
-    pm_calprhs_cont(actfield, actpart, disnum_calc, actintra, ipos, press_rhs, frhs);
+    pm_calprhs_cont(actfield, actpart, disnum_calc, actintra, ipos, press_rhs, fgradprhs, frhs);
 
     assemble_vec(actintra,
 		 &(actsolv->sysarray_typ[press_array]),

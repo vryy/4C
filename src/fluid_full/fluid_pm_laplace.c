@@ -808,9 +808,10 @@ void fluid_pm_cont_laplace()
 
     solserv_zero_vec(press_rhs);
     amzero(&frhs_a);
+    amzero(&fgradprhs_a);
 
     /* build up the rhs */
-    pm_calprhs_cont(actfield, actpart, disnum_calc, actintra, ipos, press_rhs, frhs);
+    pm_calprhs_cont(actfield, actpart, disnum_calc, actintra, ipos, press_rhs, fgradprhs, frhs);
 
     assemble_vec(actintra,
 		 &(actsolv->sysarray_typ[press_array]),
@@ -819,6 +820,26 @@ void fluid_pm_cont_laplace()
 		 frhs,
 		 1.0
       );
+
+#if 1
+    if (actintra->intra_rank==0)
+    {
+      fprintf(allfiles.gidres,"RESULT \"press_rhs\" \"ccarat\" %d SCALAR ONNODES\n"
+              "RESULTRANGESTABLE \"standard_fluid    \"\n"
+              "COMPONENTNAMES \"pressure\"\n"
+              "VALUES\n",fdyn->step);
+
+      for (i=0; i<actfield->dis[press_dis].numnp; ++i)
+      {
+        NODE* n = &actfield->dis[press_dis].node[i];
+        fprintf(allfiles.gidres,"%d %f\n",
+                n->Id+1-genprob.nodeshift,
+		frhs[n->dof[0]]);
+      }
+
+      fprintf(allfiles.gidres,"END VALUES\n");
+    }
+#endif
 
     /* solve for the pressure increment */
     solver_control(actfield,press_dis,pressolv,actintra,
@@ -849,6 +870,26 @@ void fluid_pm_cont_laplace()
 	/*actnode->sol_increment.a.da[1][0] += frhs[actnode->dof[0]];*/
       }
     }
+
+#if 1
+    if (actintra->intra_rank==0)
+    {
+      fprintf(allfiles.gidres,"RESULT \"press_sol\" \"ccarat\" %d SCALAR ONNODES\n"
+              "RESULTRANGESTABLE \"standard_fluid    \"\n"
+              "COMPONENTNAMES \"pressure\"\n"
+              "VALUES\n",fdyn->step);
+
+      for (i=0; i<actfield->dis[press_dis].numnp; ++i)
+      {
+        NODE* n = &actfield->dis[press_dis].node[i];
+        fprintf(allfiles.gidres,"%d %f\n",
+                n->Id+1-genprob.nodeshift,
+		frhs[n->dof[0]]);
+      }
+
+      fprintf(allfiles.gidres,"END VALUES\n");
+    }
+#endif
 
 #if 1
     if (actintra->intra_rank==0)
@@ -935,38 +976,6 @@ void fluid_pm_cont_laplace()
         fprintf(allfiles.gidres,"%d %e %e\n",n->Id+1,
                 n->sol_increment.a.da[ipos->velnm][0],
                 n->sol_increment.a.da[ipos->velnm][1]);
-      }
-
-      fprintf(allfiles.gidres,"END VALUES\n");
-
-      fprintf(allfiles.gidres,"RESULT \"press_rhs\" \"ccarat\" %d SCALAR ONNODES\n"
-              "RESULTRANGESTABLE \"standard_fluid    \"\n"
-              "COMPONENTNAMES \"pressure\"\n"
-              "VALUES\n",fdyn->step);
-
-      for (i=0; i<actfield->dis[press_dis].numnp; ++i)
-      {
-        NODE* n = &actfield->dis[press_dis].node[i];
-        fprintf(allfiles.gidres,"%d %f\n",
-                n->Id+1-genprob.nodeshift,
-                /* frhs[n->dof[0]]); */
-                press_rhs->vec.a.dv[n->dof[0]]);
-      }
-
-      fprintf(allfiles.gidres,"END VALUES\n");
-
-      fprintf(allfiles.gidres,"RESULT \"press_sol\" \"ccarat\" %d SCALAR ONNODES\n"
-              "RESULTRANGESTABLE \"standard_fluid    \"\n"
-              "COMPONENTNAMES \"pressure\"\n"
-              "VALUES\n",fdyn->step);
-
-      for (i=0; i<actfield->dis[press_dis].numnp; ++i)
-      {
-        NODE* n = &actfield->dis[press_dis].node[i];
-        fprintf(allfiles.gidres,"%d %f\n",
-                n->Id+1-genprob.nodeshift,
-                /* frhs[n->dof[0]]); */
-                press_sol->vec.a.dv[n->dof[0]]);
       }
 
       fprintf(allfiles.gidres,"END VALUES\n");

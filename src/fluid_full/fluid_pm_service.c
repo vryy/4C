@@ -1347,22 +1347,20 @@ void pm_calelm_laplace(FIELD *actfield,
 	  for (k=0; k<other->numnp; ++k)
 	  {
 	    NODE* node2 = other->node[k];
-            if (node2->proc == actintra->intra_rank)
-            {
+
 #if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
-              if ((node2->gnode->dirich==NULL) ||
-                  (node2->gnode->dirich->dirich_onoff.a.iv[genprob.ndim]==0))
+	    if ((node2->gnode->dirich==NULL) ||
+		(node2->gnode->dirich->dirich_onoff.a.iv[genprob.ndim]==0))
 #else
-                dserror("not implemented");
-              if (node2->dof[0] < actfield->dis[pdisnum].numeq)
+	      dserror("not implemented");
+	    if (node2->dof[0] < actfield->dis[pdisnum].numeq)
 #endif
-              {
-                add_trilinos_value(press_mat,
-                                   estif_global.a.da[j][k],
-                                   actnode->dof[0],
-                                   node2->dof[0]);
-              }
-            }
+	    {
+	      add_trilinos_value(press_mat,
+				 estif_global.a.da[j][k],
+				 actnode->dof[0],
+				 node2->dof[0]);
+	    }
 	  }
 	}
 	else
@@ -1520,8 +1518,10 @@ void pm_calprhs_cont(FIELD *actfield,
 		     INTRA *actintra,
 		     ARRAY_POSITION *ipos,
 		     DIST_VECTOR* rhs,
-		     DOUBLE* full_rhs)
+		     DOUBLE* full_rhs,
+		     DOUBLE* full_rhs2)
 {
+  DOUBLE* frhs;
   INT i;
 
   /* Variables from global_calelm. These are filled by the element
@@ -1532,73 +1532,81 @@ void pm_calprhs_cont(FIELD *actfield,
   dstrc_enter("pm_calprhs_cont");
 #endif
 
+#ifdef PARALLEL
+  frhs = full_rhs;
+#else
+  frhs = full_rhs2;
+#endif
+
   /* calculate matrix values */
   for (i=0; i<actpart->pdis[disnum].numele; ++i)
   {
     INT k;
     ELEMENT* actele = actpart->pdis[disnum].element[i];
 
-    /* Calculate gradient and mass matrix */
-    switch (actele->eltyp)
+    if (actele->proc==actintra->intra_rank)
     {
-#ifdef D_FLUID2_PRO
-    case el_fluid2_pro:
-    {
-      ELEMENT* other;
-      other = actele->e.f2pro->other;
-      f2pro_calprhs(actele, ipos);
 
-      /* Assemble */
-      /* We have discontinuous pressure here. No need to loop the
-       * nodes. */
-      for (k=0; k<other->numnp; ++k)
+      /* Calculate gradient and mass matrix */
+      switch (actele->eltyp)
       {
-	NODE* node = other->node[k];
+#ifdef D_FLUID2_PRO
+      case el_fluid2_pro:
+      {
+	ELEMENT* other;
+	other = actele->e.f2pro->other;
+	f2pro_calprhs(actele, ipos);
 
-	/* if (node->proc == actintra->intra_rank) */
+	/* Assemble */
+	/* We have discontinuous pressure here. No need to loop the
+	 * nodes. */
+	for (k=0; k<other->numnp; ++k)
 	{
-          /* there are no dirichlet conditions on the pressure dofs
-           * allowed... currently. */
-          dsassert((node->dof[0] >= 0) &&
-                   (node->dof[0] < rhs->numeq_total),
-                   "local dof number out of range");
-          full_rhs[node->dof[0]] += eforce_global.a.dv[k];
+	  NODE* node = other->node[k];
+
+	  /* there are no dirichlet conditions on the pressure dofs
+	   * allowed... currently. */
+	  dsassert((node->dof[0] >= 0) &&
+		   (node->dof[0] < rhs->numeq_total),
+		   "local dof number out of range");
+	  frhs[node->dof[0]] += eforce_global.a.dv[k];
 	}
+	break;
       }
-      break;
-    }
 #endif
 #ifdef D_FLUID3_PRO
-    case el_fluid3_pro:
-    {
-      ELEMENT* other;
-      other = actele->e.f3pro->other;
-      f3pro_calprhs(actele, ipos);
-
-      /* Assemble */
-      /* We have discontinuous pressure here. No need to loop the
-       * nodes. */
-      for (k=0; k<other->numnp; ++k)
+      case el_fluid3_pro:
       {
-	NODE* node = other->node[k];
+	ELEMENT* other;
+	other = actele->e.f3pro->other;
+	f3pro_calprhs(actele, ipos);
 
-	/* if (node->proc == actintra->intra_rank) */
+	/* Assemble */
+	/* We have discontinuous pressure here. No need to loop the
+	 * nodes. */
+	for (k=0; k<other->numnp; ++k)
 	{
-          /* there are no dirichlet conditions on the pressure dofs
-           * allowed... currently. */
-          dsassert((node->dof[0] >= 0) &&
-                   (node->dof[0] < rhs->numeq_total),
-                   "local dof number out of range");
-          full_rhs[node->dof[0]] += eforce_global.a.dv[k];
+	  NODE* node = other->node[k];
+
+	  /* there are no dirichlet conditions on the pressure dofs
+	   * allowed... currently. */
+	  dsassert((node->dof[0] >= 0) &&
+		   (node->dof[0] < rhs->numeq_total),
+		   "local dof number out of range");
+	  frhs[node->dof[0]] += eforce_global.a.dv[k];
 	}
+	break;
       }
-      break;
-    }
 #endif
-    default:
-      dserror("element type %d unsupported", actele->eltyp);
+      default:
+	dserror("element type %d unsupported", actele->eltyp);
+      }
     }
   }
+
+#ifdef PARALLEL
+  MPI_Allreduce(full_rhs,full_rhs2,rhs->numeq_total,MPI_DOUBLE,MPI_SUM,actintra->MPI_INTRA_COMM);
+#endif
 
 #ifdef DEBUG
   dstrc_exit();

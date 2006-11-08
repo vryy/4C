@@ -106,7 +106,8 @@ void pm_calprhs_cont(FIELD *actfield,
 		     INTRA *actintra,
 		     ARRAY_POSITION *ipos,
 		     DIST_VECTOR* rhs,
-		     DOUBLE* full_rhs);
+		     DOUBLE* full_rhs,
+		     DOUBLE* full_rhs2);
 void pm_calvrhs(FIELD *actfield,
 		PARTITION *actpart,
 		INT disnum,
