@@ -45,7 +45,7 @@ Maintainer: Michael Gee
 using namespace std;
 using namespace Teuchos;
 
-static void ml_compute_nullspace(DISCRET*          actdis, 
+static void ml_compute_nullspace(DISCRET*          actdis,
                                  ELEMENT_TYP       etype,
                                  const int         numdf,
                                  const int         dimns,
@@ -113,7 +113,7 @@ void create_ml_parameterlist(struct _SOLVAR         *actsolv,
     case 3:  mllist.set("aggregation: type","MIS");        break;
     default: dserror("Unknown type of coarsening for ML"); break;
   }
-  
+
 
   // set smoothers
   for (int i=0; i<azvar->mlmaxlevel-1; ++i)
@@ -122,70 +122,70 @@ void create_ml_parameterlist(struct _SOLVAR         *actsolv,
     sprintf(levelstr,"(level %d)",i);
     int type;
     double damp;
-    if (i==0)                         
+    if (i==0)
     {
       type = azvar->mlsmotype_fine;
       damp = azvar->mldamp_fine;
     }
-    else if (i < azvar->mlmaxlevel-1) 
+    else if (i < azvar->mlmaxlevel-1)
     {
       type = azvar->mlsmotype_med;
       damp = azvar->mldamp_med;
     }
-    else                              
+    else
     {
       type = azvar->mlsmotype_coarse;
       damp = azvar->mldamp_coarse;
     }
     switch (type)
     {
-      case 0:  
+      case 0:
         mllist.set("smoother: type "+(string)levelstr                    ,"symmetric Gauss-Seidel");
-        mllist.set("smoother: sweeps "+(string)levelstr                  ,azvar->mlsmotimes[i]);  
+        mllist.set("smoother: sweeps "+(string)levelstr                  ,azvar->mlsmotimes[i]);
         mllist.set("smoother: damping factor "+(string)levelstr          ,damp);
       break;
-      case 1:  
-        mllist.set("smoother: type "+(string)levelstr                    ,"Jacobi");      
-        mllist.set("smoother: sweeps "+(string)levelstr                  ,azvar->mlsmotimes[i]);  
+      case 1:
+        mllist.set("smoother: type "+(string)levelstr                    ,"Jacobi");
+        mllist.set("smoother: sweeps "+(string)levelstr                  ,azvar->mlsmotimes[i]);
         mllist.set("smoother: damping factor "+(string)levelstr          ,damp);
       break;
-      case 2:  
-        mllist.set("smoother: type "+(string)levelstr                    ,"MLS");    
+      case 2:
+        mllist.set("smoother: type "+(string)levelstr                    ,"MLS");
         mllist.set("smoother: MLS polynomial order "+(string)levelstr    ,azvar->mlsmotimes[i]);
       break;
-      case 3:  
-        mllist.set("smoother: type (level 0)"                            ,"MLS");        
+      case 3:
+        mllist.set("smoother: type (level 0)"                            ,"MLS");
         mllist.set("smoother: MLS polynomial order "+(string)levelstr    ,-azvar->mlsmotimes[i]);
       break;
-      case 4:  
-        mllist.set("smoother: type "+(string)levelstr                    ,"IFPACK");        
-        mllist.set("smoother: ifpack type "+(string)levelstr             ,"ILU");        
-        mllist.set("smoother: ifpack overlap "+(string)levelstr          ,0);        
+      case 4:
+        mllist.set("smoother: type "+(string)levelstr                    ,"IFPACK");
+        mllist.set("smoother: ifpack type "+(string)levelstr             ,"ILU");
+        mllist.set("smoother: ifpack overlap "+(string)levelstr          ,0);
         mllist.sublist("smoother: ifpack list").set("fact: level-of-fill",azvar->mlsmotimes[i]);
         mllist.sublist("smoother: ifpack list").set("schwarz: reordering type","rcm");
       break;
-      case 5:  
-        mllist.set("smoother: type "+(string)levelstr,"Amesos-KLU");        
+      case 5:
+        mllist.set("smoother: type "+(string)levelstr,"Amesos-KLU");
       break;
-      case 6:  
-        mllist.set("smoother: type "+(string)levelstr,"Amesos-Superludist");        
+      case 6:
+        mllist.set("smoother: type "+(string)levelstr,"Amesos-Superludist");
       break;
       default: dserror("Unknown type of smoother for ML"); break;
     }
   }
-  
+
   // set coarse grid solver
   const int coarse = azvar->mlmaxlevel-1;
   switch (azvar->mlsmotype_coarse)
   {
     case 0:
       mllist.set("coarse: type"          ,"symmetric Gauss-Seidel");
-      mllist.set("coarse: sweeps"        , azvar->mlsmotimes[coarse]);  
+      mllist.set("coarse: sweeps"        , azvar->mlsmotimes[coarse]);
       mllist.set("coarse: damping factor",azvar->mldamp_coarse);
     break;
     case 1:
       mllist.set("coarse: type"          ,"Jacobi");
-      mllist.set("coarse: sweeps"        , azvar->mlsmotimes[coarse]);  
+      mllist.set("coarse: sweeps"        , azvar->mlsmotimes[coarse]);
       mllist.set("coarse: damping factor",azvar->mldamp_coarse);
     break;
     case 2:
@@ -196,22 +196,22 @@ void create_ml_parameterlist(struct _SOLVAR         *actsolv,
       mllist.set("coarse: type"                ,"MLS");
       mllist.set("coarse: MLS polynomial order",-azvar->mlsmotimes[coarse]);
     break;
-    case 4:  
-      mllist.set("coarse: type"          ,"IFPACK");        
-      mllist.set("coarse: ifpack type"   ,"ILU");        
-      mllist.set("coarse: ifpack overlap",0);        
+    case 4:
+      mllist.set("coarse: type"          ,"IFPACK");
+      mllist.set("coarse: ifpack type"   ,"ILU");
+      mllist.set("coarse: ifpack overlap",0);
       mllist.sublist("coarse: ifpack list").set("fact: level-of-fill",azvar->mlsmotimes[coarse]);
       mllist.sublist("coarse: ifpack list").set("schwarz: reordering type","rcm");
     break;
-    case 5:  
-      mllist.set("coarse: type","Amesos-KLU");        
+    case 5:
+      mllist.set("coarse: type","Amesos-KLU");
     break;
-    case 6:  
-      mllist.set("coarse: type","Amesos-Superludist");        
+    case 6:
+      mllist.set("coarse: type","Amesos-Superludist");
     break;
     default: dserror("Unknown type of coarse solver for ML"); break;
   }
-  
+
   // set number of pde equations and nullspace dimension from fieldtyp and elementtyp
   // construct nullspace vectors
   int numdf=1; // default value
@@ -237,7 +237,7 @@ void create_ml_parameterlist(struct _SOLVAR         *actsolv,
     case el_wall1:
       numdf = 2;
       dimns = 3;
-    break; 
+    break;
     case el_ale2:
       numdf = 2;
       dimns = 3;
@@ -246,9 +246,17 @@ void create_ml_parameterlist(struct _SOLVAR         *actsolv,
       numdf = 3;
       dimns = 3;
     break;
+    case el_fluid2_pro:
+      numdf = 2;
+      dimns = 2;
+    break;
     case el_fluid3:
       numdf = 4;
       dimns = 4;
+    break;
+    case el_fluid3_pro:
+      numdf = 3;
+      dimns = 3;
     break;
     default: dserror("Unknown type of element or element not compiled in");
   }
@@ -275,7 +283,7 @@ void create_ml_parameterlist(struct _SOLVAR         *actsolv,
  |                                                           m.gee 9/06 |
  | compute the nullspace from the discretization                        |
  *----------------------------------------------------------------------*/
-void ml_compute_nullspace(DISCRET*          actdis, 
+void ml_compute_nullspace(DISCRET*          actdis,
                           ELEMENT_TYP       etype,
                           const int         numdf,
                           const int         dimns,
@@ -288,12 +296,12 @@ void ml_compute_nullspace(DISCRET*          actdis,
   //-----------------------------------------------------------------------
   const int  myrank = map.Comm().MyPID();
   const int  lrows  = map.NumMyElements();
-  
+
   double* mode[6];
   if (dimns>6) dserror("Only upto 6 nullspace modes supported");
   for (int i=0; i<dimns; ++i)
     mode[i] = &(nullspace[i*lrows]);
-  
+
   // nodal center of structure
   double x0[3] = {0.0,0.0,0.0};
   int    count = 0;
@@ -402,7 +410,7 @@ void ml_compute_nullspace(DISCRET*          actdis,
             mode[0][index] = 0.0;
             mode[1][index] = 0.0;
             mode[2][index] = 1.0;
-            mode[3][index] = actnode->x[1] - x0[1]; 
+            mode[3][index] = actnode->x[1] - x0[1];
             mode[4][index] = -actnode->x[0] + x0[0];
             mode[5][index] = 0.0;
         break;
@@ -411,7 +419,7 @@ void ml_compute_nullspace(DISCRET*          actdis,
             mode[1][index] = 0.0;
             mode[2][index] = 0.0;
 #ifdef D_SHELL8
-            mode[3][index] = 0.0; 
+            mode[3][index] = 0.0;
             mode[4][index] = dir(count,2);
             mode[5][index] = -dir(count,1);
 #endif
@@ -421,7 +429,7 @@ void ml_compute_nullspace(DISCRET*          actdis,
             mode[1][index] = 0.0;
             mode[2][index] = 0.0;
 #ifdef D_SHELL8
-            mode[3][index] = -dir(count,2); 
+            mode[3][index] = -dir(count,2);
             mode[4][index] = 0.0;
             mode[5][index] = dir(count,0);
 #endif
@@ -431,7 +439,7 @@ void ml_compute_nullspace(DISCRET*          actdis,
             mode[1][index] = 0.0;
             mode[2][index] = 0.0;
 #ifdef D_SHELL8
-            mode[3][index] = dir(count,1); 
+            mode[3][index] = dir(count,1);
             mode[4][index] = -dir(count,0);
             mode[5][index] = 0.0;
 #endif
@@ -442,15 +450,15 @@ void ml_compute_nullspace(DISCRET*          actdis,
       ++count;
     }
   }
-      
+
   /* the rigid body modes for fluids are:
         xtrans   ytrans  ztrans   pressure
-        mode[0]  mode[1] mode[2]  mode[3] 
+        mode[0]  mode[1] mode[2]  mode[3]
   ----------------------------------------
-  x   |    1       0       0       0      
-  y   |    0       1       0       0      
-  z   |    0       0       1       0      
-  p   |    0       0       0       1      
+  x   |    1       0       0       0
+  y   |    0       1       0       0
+  z   |    0       0       1       0
+  p   |    0       0       0       1
   */
   if (etype==el_fluid2 ||
       etype==el_fluid3 )

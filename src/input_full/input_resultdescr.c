@@ -20,6 +20,7 @@ Maintainer: Ulrich Kuettler
 extern struct _FILES allfiles;
 extern struct _GENPROB genprob;
 extern struct _RESULTDESCR* resultdescr;
+extern struct _PAR par;
 
 
 /*!
@@ -151,8 +152,12 @@ void inp_resultdescr()
       dserror("Unreliable input. Panic.");
     }
   }
-  else {
-    printf("\nNo result test section found. Skip testing.\n");
+  else
+  {
+    if (par.myrank==0)
+    {
+      printf("\n" MAGENTA_LIGHT "No result test section found. Skip testing." END_COLOR "\n");
+    }
   }
 
 end:
