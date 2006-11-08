@@ -27,6 +27,9 @@ Maintainer: Michael Gee
 #include "Teuchos_RefCountPtr.hpp"
 
 #include "discret.H"
+#include "design.H"
+#include "designelement.H"
+#include "designnode.H"
 #ifdef D_SHELL8
 #include "shell8.H"
 #endif
@@ -53,7 +56,8 @@ void inpfield_ccadiscret();
 void inpnodes_ccadiscret(Epetra_SerialDenseMatrix& tmpnodes);
 void input_structural_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm);
 void input_assign_nodes(CCADISCRETIZATION::Discretization& actdis,Epetra_SerialDenseMatrix& tmpnodes);
-
+void input_design();
+void input_design_topology_discretization();
 
 #ifdef __cplusplus
 }

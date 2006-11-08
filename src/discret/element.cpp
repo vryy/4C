@@ -60,7 +60,7 @@ CCADISCRETIZATION::Element::~Element()
  *----------------------------------------------------------------------*/
 ostream& operator << (ostream& os, const CCADISCRETIZATION::Element& element)
 {
-  element.Print(); 
+  element.Print(os); 
   return os;
 }
 

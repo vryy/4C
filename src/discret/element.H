@@ -56,12 +56,13 @@ public:
   /*!
   \brief Type of element
          
-   \param element_none : default value
-   \param element_shell8 :shell8 element
   */
   enum ElementType 
   {
     element_none,
+    element_designline,
+    element_designsurface,
+    element_designvolume,
     element_shell8
   };
 
@@ -146,7 +147,7 @@ public:
   /*!
   \brief Print this element (pure virtual)
   */
-  virtual void Print() const = 0;
+  virtual void Print(ostream& os) const = 0;
 
   //@}
 
@@ -171,7 +172,7 @@ public:
 
   //@}
 
-private:
+protected:
 
   /*!
   \brief Build pointer vector from map of nodes

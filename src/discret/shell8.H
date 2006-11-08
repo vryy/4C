@@ -99,7 +99,7 @@ public:
   /*!
   \brief Print this element
   */
-  void Print() const;
+  void Print(ostream& os) const;
 
   //@}
 

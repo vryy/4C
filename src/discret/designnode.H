@@ -1,9 +1,9 @@
 /*!----------------------------------------------------------------------
-\file node.H
+\file designnode.H
 
-\class CCADISCRETIZATION::Node
+\class CCADISCRETIZATION::DesignNode
 
-\brief A virtual class for a node
+\brief A node that is part of a CAD design description
 
 <pre>
 Maintainer: Michael Gee
@@ -15,16 +15,12 @@ Maintainer: Michael Gee
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
-#ifndef NODE_H
-#define NODE_H
+#ifndef DESIGN_NODE_H
+#define DESIGN_NODE_H
 
 
-#include "Teuchos_RefCountPtr.hpp"
 
-using namespace std;
-using namespace Teuchos;
-
-#include "parobject.H"
+#include "node.H"
 
 /*!
 \brief CCADISCRET: namespace of the ccarat discretization module
@@ -33,24 +29,16 @@ using namespace Teuchos;
 namespace CCADISCRETIZATION
 {
 
-// forward declarations
-class Element;
-
 /*!
-\class Node
+\class DesignNode
 
-\brief A virtual class all nodes that are used in CCADISCRETIZATION have to implement
+\brief A node that is part of a CAD design description
 
 \author gee (gee@lnm.mw.tum.de)
 */
-class Node : public CCADISCRETIZATION::ParObject
+class DesignNode : public CCADISCRETIZATION::Node
 {
 public:
-
-  /*!
-  \brief The Discretization is a friend of Element
-  */
-  friend class Discretization;
 
   // @{ \name Constructors and destructors
 
@@ -60,27 +48,27 @@ public:
   \param id    : A globally unique node id
   \param coords: vector of nodal coordinates, length 3
   */
-  Node(int id, const double* coords);
+  DesignNode(int id, const double* coords);
 
   /*!
   \brief Copy Constructor
 
-  Makes a deep copy of a Node
+  Makes a deep copy of a Design_Node
   
   */
-  Node(const CCADISCRETIZATION::Node& old);
+  DesignNode(const CCADISCRETIZATION::DesignNode& old);
 
   /*!
   \brief Deep copy the derived class and return pointer to it
   
   */
-  virtual CCADISCRETIZATION::Node* Clone() const;
+  virtual CCADISCRETIZATION::DesignNode* Clone() const;
 
   /*!
   \brief Destructor
 
   */
-  virtual ~Node();
+  virtual ~DesignNode();
 
   /*!
   \brief Pack this class so it can be communicated
@@ -103,17 +91,6 @@ public:
   // @{ \name Acess methods
 
   /*!
-  \brief Return global id
-  */
-  virtual inline int Id() const { return id_; }
-
-
-  /*!
-  \brief Return coordinates (length 3)
-  */
-  virtual inline const double* X() const { return x_; }
-
-  /*!
   \brief Print this element
   */
   virtual void Print(ostream& os) const ;
@@ -127,16 +104,11 @@ public:
 
 protected:
 
-  int                                 id_;      // a unique global id
-  double                              x_[3];    // nodal coords
-  vector<CCADISCRETIZATION::Element*> element_; // pointers to adjacent elements
 
-}; // class Node
+}; // class DesignNode
 } // namespace CCADISCRETIZATION
 
 
-// << operator
-ostream& operator << (ostream& os, const CCADISCRETIZATION::Node& node);
 
 
 
@@ -146,6 +118,6 @@ ostream& operator << (ostream& os, const CCADISCRETIZATION::Node& node);
 
 
 
-#endif  // #ifndef NODE_H
+#endif  // #ifndef DESIGN_NODE_H
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

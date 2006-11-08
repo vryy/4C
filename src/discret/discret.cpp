@@ -82,8 +82,29 @@ int CCADISCRETIZATION::Discretization::NumGlobalNodes() const
 /*----------------------------------------------------------------------*
  |  get element with global id (public)                      mwgee 11/06|
  *----------------------------------------------------------------------*/
-const CCADISCRETIZATION::Element* CCADISCRETIZATION::Discretization::Element(int gid) const
+CCADISCRETIZATION::Element* CCADISCRETIZATION::Discretization::gElement(int gid) const
 {
+  map<int,RefCountPtr<CCADISCRETIZATION::Element> >:: const_iterator curr = 
+    element_.find(gid);
+  if (curr == element_.end()) return NULL;
+  else                        return curr->second.get();
+  return NULL;
+}
+
+/*----------------------------------------------------------------------*
+ |  get element with local id (public)                      mwgee 11/06|
+ *----------------------------------------------------------------------*/
+CCADISCRETIZATION::Element* CCADISCRETIZATION::Discretization::lElement(int lid) const
+{
+  if (!Filled()) 
+  {
+    cout << "CCADISCRETIZATION::Discretization::lElement:\n"
+         << "Cannot return Element from local id as Discretization has Filled()==false"
+         << __FILE__ << ":" << __LINE__ << endl;
+    return NULL;
+  }
+  int gid = ElementMap()->GID(lid);
+  if (gid<0) return NULL;
   map<int,RefCountPtr<CCADISCRETIZATION::Element> >:: const_iterator curr = 
     element_.find(gid);
   if (curr == element_.end()) return NULL;
@@ -94,8 +115,29 @@ const CCADISCRETIZATION::Element* CCADISCRETIZATION::Discretization::Element(int
 /*----------------------------------------------------------------------*
  |  get node with global id (public)                         mwgee 11/06|
  *----------------------------------------------------------------------*/
-const CCADISCRETIZATION::Node* CCADISCRETIZATION::Discretization::Node(int gid) const
+CCADISCRETIZATION::Node* CCADISCRETIZATION::Discretization::gNode(int gid) const
 {
+  map<int,RefCountPtr<CCADISCRETIZATION::Node> >:: const_iterator curr = 
+    node_.find(gid);
+  if (curr == node_.end()) return NULL;
+  else                     return curr->second.get();
+  return NULL;
+}
+
+/*----------------------------------------------------------------------*
+ |  get node with local id (public)                         mwgee 11/06|
+ *----------------------------------------------------------------------*/
+CCADISCRETIZATION::Node* CCADISCRETIZATION::Discretization::lNode(int lid) const
+{
+  if (!Filled()) 
+  {
+    cout << "CCADISCRETIZATION::Discretization::lNode:\n"
+         << "Cannot return Node from local id as Discretization has Filled()==false"
+         << __FILE__ << ":" << __LINE__ << endl;
+    return NULL;
+  }
+  int gid = NodeMap()->GID(lid);
+  if (gid<0) return NULL;
   map<int,RefCountPtr<CCADISCRETIZATION::Node> >:: const_iterator curr = 
     node_.find(gid);
   if (curr == node_.end()) return NULL;
@@ -108,14 +150,14 @@ const CCADISCRETIZATION::Node* CCADISCRETIZATION::Discretization::Node(int gid) 
  *----------------------------------------------------------------------*/
 ostream& operator << (ostream& os, const CCADISCRETIZATION::Discretization& dis)
 {
-  dis.Print(); 
+  dis.Print(os); 
   return os;
 }
 
 /*----------------------------------------------------------------------*
  |  Print discretization (public)                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Discretization::Print() const
+void CCADISCRETIZATION::Discretization::Print(ostream& os) const
 {
   int numglobalelements = NumGlobalElements();
   int numglobalnodes    = NumGlobalNodes();
@@ -123,9 +165,9 @@ void CCADISCRETIZATION::Discretization::Print() const
   // print head
   if (Comm().MyPID()==0)
   {
-    cout << "--------------------------------------------------\n";
-    cout << numglobalelements << " Elements " << numglobalnodes << " Nodes (global)\n";
-    cout << "--------------------------------------------------\n";
+    os << "--------------------------------------------------\n";
+    os << numglobalelements << " Elements " << numglobalnodes << " Nodes (global)\n";
+    os << "--------------------------------------------------\n";
   }
   
   // print elements
@@ -133,15 +175,26 @@ void CCADISCRETIZATION::Discretization::Print() const
   {
     if (proc == Comm().MyPID())
     {
-      cout << "Proc " << proc << " :\n";
+      os << "Proc " << proc << " :\n";
       map<int,RefCountPtr<CCADISCRETIZATION::Element> >:: const_iterator curr;
       for (curr = element_.begin(); curr != element_.end(); ++curr)
-        cout << *(curr->second) << endl;
+        os << *(curr->second) << endl;
     }
     Comm().Barrier();
   }
   
   // print nodes
+  for (int proc=0; proc < Comm().NumProc(); ++proc)
+  {
+    if (proc == Comm().MyPID())
+    {
+      os << "Proc " << proc << " :\n";
+      map<int,RefCountPtr<CCADISCRETIZATION::Node> >:: const_iterator curr;
+      for (curr = node_.begin(); curr != node_.end(); ++curr)
+        os << *(curr->second) << endl;
+    }
+    Comm().Barrier();
+  }
     
   
   return;
@@ -150,7 +203,7 @@ void CCADISCRETIZATION::Discretization::Print() const
 /*----------------------------------------------------------------------*
  |  Finalize construction (public)                           mwgee 11/06|
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Discretization::FillComplete()
+int CCADISCRETIZATION::Discretization::FillComplete()
 {
   filled_ = false;  
 
@@ -160,14 +213,14 @@ void CCADISCRETIZATION::Discretization::FillComplete()
   // (re)build map of elements elemap_
   BuildElementMap();
   
-  // (re)construct element -> nodes pointers
+  // (re)construct element -> node pointers
   BuildElementToNodePointers();
 
   // (re)construct node -> element pointers
   BuildNodeToElementPointers();
   
   filled_ = true;  
-  return;
+  return 0;
 }
 
 
@@ -176,6 +229,10 @@ void CCADISCRETIZATION::Discretization::FillComplete()
  *----------------------------------------------------------------------*/
 void CCADISCRETIZATION::Discretization::BuildNodeToElementPointers()
 {
+  map<int,RefCountPtr<CCADISCRETIZATION::Node> >::iterator nodecurr;
+  for (nodecurr=node_.begin(); nodecurr != node_.end(); ++nodecurr)
+    nodecurr->second->element_.resize(0);
+  
   map<int,RefCountPtr<CCADISCRETIZATION::Element> >::iterator elecurr;
   for (elecurr=element_.begin(); elecurr != element_.end(); ++elecurr)
   {
@@ -183,7 +240,7 @@ void CCADISCRETIZATION::Discretization::BuildNodeToElementPointers()
     const int* nodes = elecurr->second->NodeIds();
     for (int j=0; j<nnode; ++j)
     {
-      const CCADISCRETIZATION::Node* node = Node(nodes[j]);
+      CCADISCRETIZATION::Node* node = gNode(nodes[j]);
       if (!node)
       {
         cout << "CCADISCRETIZATION::Discretization::BuildElementToNodePointers:\n"
@@ -192,7 +249,11 @@ void CCADISCRETIZATION::Discretization::BuildNodeToElementPointers()
         exit(EXIT_FAILURE);
       }
       else
-        node->AddElementPtr(elecurr->second.get());
+      {
+        int size = node->element_.size();
+        node->element_.resize(size+1);
+        node->element_[size] = elecurr->second.get();
+      }
     }
   }
   return;

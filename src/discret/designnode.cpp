@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
-\file node.cpp
-\brief A virtual class for a node
+\file designnode.cpp
+\brief A node that is part of a CAD design description
 
 <pre>
 Maintainer: Michael Gee
@@ -13,38 +13,32 @@ Maintainer: Michael Gee
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
-#include "node.H"
+#include "designnode.H"
 
 
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Node::Node(int id, const double* coords) :
-ParObject(),
-id_(id)
+CCADISCRETIZATION::DesignNode::DesignNode(int id, const double* coords) :
+Node(id,coords)
 {
-  for (int i=0; i<3; ++i) x_[i] = coords[i];
-  element_.resize(0);
   return;
 }
 
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Node::Node(const CCADISCRETIZATION::Node& old) :
-ParObject(old),
-id_(old.id_),
-element_(old.element_)
+CCADISCRETIZATION::DesignNode::DesignNode(const CCADISCRETIZATION::DesignNode& old) :
+Node(old)
 {
-  for (int i=0; i<3; ++i) x_[i] = old.x_[i];
   return;
 }
 
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Node::~Node()
+CCADISCRETIZATION::DesignNode::~DesignNode()
 {
   return;
 }
@@ -54,28 +48,18 @@ CCADISCRETIZATION::Node::~Node()
  |  Deep copy this instance of Node and return pointer to it (public)   |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Node* CCADISCRETIZATION::Node::Clone() const
+CCADISCRETIZATION::DesignNode* CCADISCRETIZATION::DesignNode::Clone() const
 {
-  CCADISCRETIZATION::Node* newnode = new CCADISCRETIZATION::Node(*this);
+  CCADISCRETIZATION::DesignNode* newnode = new CCADISCRETIZATION::DesignNode(*this);
   return newnode;
 }
 
 /*----------------------------------------------------------------------*
- |  << operator                                              mwgee 11/06|
- *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const CCADISCRETIZATION::Node& node)
-{
-  node.Print(os); 
-  return os;
-}
-
-
-/*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Node::Print(ostream& os) const
+void CCADISCRETIZATION::DesignNode::Print(ostream& os) const
 {
-  os << "Node " << Id() << " Coords " << X()[0] << " " << X()[1] << " " << X()[2];
+  Node::Print(os);
   return;
 }
 
@@ -83,39 +67,34 @@ void CCADISCRETIZATION::Node::Print(ostream& os) const
  |  Pack data from this element into vector of length size     (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-const char* CCADISCRETIZATION::Node::Pack(int& size) const
+const char* CCADISCRETIZATION::DesignNode::Pack(int& size) const
 {
   const int sizeint    = sizeof(int);
-  const int sizedouble = sizeof(double);
-  //const int sizechar   = sizeof(char);
 
-  size = 
-  sizeint               +   // holds size itself
-  sizeint               +   // holds id
-  sizedouble*3          +   // holds x_
-  0;                        // continue to add data here...
-
-  char* data = new char[size];
-
-  // pack stuff into vector
-  int position = 0;
-
-  // add size
-  AddtoPack(position,data,size);
-  // add id_
-  int id = Id();
-  AddtoPack(position,data,id);
-  // add x_
-  AddtoPack(position,data,x_,3*sizedouble);
+  int basesize=0;
+  const char* basedata = Node::Pack(basesize);
   
+  size = 
+  sizeint  + // holds size 
+  basesize + // holds basedata
+  0;         // continue to add stuff here
+  
+  char* data = new char[size];
+  int position=0;
+  
+  // add size
+  AddtoPack(position,data,size);    
+  // add basedata
+  AddtoPack(position,data,basedata,basesize);
+  delete [] basedata;  
+
   if (position != size)
   {
-    cout << "CCADISCRETIZATION::Node::Pack:\n"
+    cout << "CCADISCRETIZATION::DesignNode::Pack:\n"
          << "Mismatch in size of data " << size << " <-> " << position << endl
          << __FILE__ << ":" << __LINE__ << endl;
     exit(EXIT_FAILURE);
   }
-
   return data;
 }
 
@@ -124,38 +103,28 @@ const char* CCADISCRETIZATION::Node::Pack(int& size) const
  |  Unpack data into this element                              (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-bool CCADISCRETIZATION::Node::Unpack(const char* data)
+bool CCADISCRETIZATION::DesignNode::Unpack(const char* data)
 {
-  //const int sizeint    = sizeof(int);
-  const int sizedouble = sizeof(double);
-  //const int sizechar   = sizeof(char);
-
-  int position = 0;
+  int position=0;
   
   // extract size
-  int size = 0;
+  int size=0;
   ExtractfromPack(position,data,size);
-  // extract id_
-  ExtractfromPack(position,data,id_);
-  // extract x_
-  ExtractfromPack(position,data,x_,3*sizedouble);  
-
+  
+  // extract base class
+  int basesize = Size(&data[position]);
+  Node::Unpack(&data[position]);
+  position += basesize;
+  
   if (position != size)
   {
-    cout << "CCADISCRETIZATION::Node::Unpack:\n"
+    cout << "CCADISCRETIZATION::DesignNode::Unpack:\n"
          << "Mismatch in size of data " << size << " <-> " << position << endl
          << __FILE__ << ":" << __LINE__ << endl;
     exit(EXIT_FAILURE);
   }
   return true;
 }
-
-
-
-
-
-
-
 
 
 

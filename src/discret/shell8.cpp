@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file discret.cpp
+\file shell8.cpp
 \brief
 
 <pre>
@@ -203,13 +203,17 @@ CCADISCRETIZATION::Shell8::~Shell8()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Shell8::Print() const
+void CCADISCRETIZATION::Shell8::Print(ostream& os) const
 {
+  os << "Shell8 " << Id();
   const int nnode = NumNode();
   const int* nodes = NodeIds();
-  cout << "Shell8 " << Id() << " Nodes ";
-  for (int i=0; i<nnode; ++i) cout << nodes[i] << " ";
-  
+  if (nnode)
+  {
+    os << " Nodes ";
+    for (int i=0; i<nnode; ++i) os << nodes[i] << " ";
+  }
+  return;
   return;
 }
 
