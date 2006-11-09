@@ -150,11 +150,12 @@ void input_design_topology_discretization(CCADISCRETIZATION::Discretization& act
   
   
   // get the design discretizations
-  vector<RefCountPtr<CCADISCRETIZATION::Design> >* dptr = 
-    (vector<RefCountPtr<CCADISCRETIZATION::Design> >*)design->ccadesign;
-  RefCountPtr<CCADISCRETIZATION::Design> designlines = (*dptr)[0];
-  RefCountPtr<CCADISCRETIZATION::Design> designsurfs = (*dptr)[1];
-  RefCountPtr<CCADISCRETIZATION::Design> designvols  = (*dptr)[2];
+  RefCountPtr<CCADISCRETIZATION::Design>* tmp =
+    (RefCountPtr<CCADISCRETIZATION::Design>*)design->ccadesign;
+  CCADISCRETIZATION::Design& ccadesign = **tmp;   
+  RefCountPtr<CCADISCRETIZATION::DesignDiscretization> designlines = ccadesign[0];
+  RefCountPtr<CCADISCRETIZATION::DesignDiscretization> designsurfs = ccadesign[1];
+  RefCountPtr<CCADISCRETIZATION::DesignDiscretization> designvols  = ccadesign[2];
   
   // number of design points, lines, surfaces and volumes
   const int ndnode = designlines->NumGlobalNodes();
@@ -204,7 +205,7 @@ void input_design_topology_discretization(CCADISCRETIZATION::Discretization& act
     }
     
     // create topology node <-> design
-    topology_dnode_fenode(actdis,*designlines,ndnode_fenode,dnode_fenode,node_ind);
+    //topology_dnode_fenode(actdis,*designlines,ndnode_fenode,dnode_fenode,node_ind);
     
     
   
@@ -238,6 +239,8 @@ void input_design()
   }
   // allocate the design structure
   design = (DESIGN*)CCACALLOC(1,sizeof(DESIGN));
+
+  // allocate epetra communicator
 #ifdef PARALLEL
   Epetra_MpiComm* com = new Epetra_MpiComm(MPI_COMM_WORLD);
   RefCountPtr<Epetra_Comm> comm = rcp(com);
@@ -245,15 +248,16 @@ void input_design()
   Epetra_SerialComm* com = new Epetra_SerialComm();
   RefCountPtr<Epetra_Comm> comm = rcp(com);
 #endif
-  //------- allocate 3 discretizations for lines, surfaces and volumes
-  vector<RefCountPtr<CCADISCRETIZATION::Design> >* dptr = 
-                 new vector<RefCountPtr<CCADISCRETIZATION::Design> >(3);  
-  for (int i=0; i<3; ++i)
-    (*dptr)[i] = rcp(new CCADISCRETIZATION::Design(comm));
-  design->ccadesign = (void*)dptr;
-  RefCountPtr<CCADISCRETIZATION::Design> designlines = (*dptr)[0];
-  RefCountPtr<CCADISCRETIZATION::Design> designsurfs = (*dptr)[1];
-  RefCountPtr<CCADISCRETIZATION::Design> designvols  = (*dptr)[2];
+
+  // create the new style design structure and store in design
+  RefCountPtr<CCADISCRETIZATION::Design>* tmp = 
+                                  new RefCountPtr<CCADISCRETIZATION::Design>();
+  (*tmp) = rcp(new CCADISCRETIZATION::Design(comm));
+  design->ccadesign = (void*)tmp;
+  CCADISCRETIZATION::Design& ccadesign = **tmp;
+  RefCountPtr<CCADISCRETIZATION::DesignDiscretization> designlines = ccadesign[0];
+  RefCountPtr<CCADISCRETIZATION::DesignDiscretization> designsurfs = ccadesign[1];
+  RefCountPtr<CCADISCRETIZATION::DesignDiscretization> designvols  = ccadesign[2];
 
   int ierr=0;
   
@@ -491,9 +495,8 @@ void input_design()
   ierr += designlines->FillComplete(designsurfs.get(),NULL);
   if (ierr)
     dserror("FillComplete of Design returned %d",ierr);
-  
   return;
-}
+} // input_design()
 
 /*----------------------------------------------------------------------*
   | input of fields                                        m.gee 10/06  |

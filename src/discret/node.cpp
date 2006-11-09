@@ -14,6 +14,7 @@ Maintainer: Michael Gee
 #ifdef TRILINOS_PACKAGE
 
 #include "node.H"
+#include "dserror.H"
 
 
 
@@ -109,12 +110,7 @@ const char* CCADISCRETIZATION::Node::Pack(int& size) const
   AddtoPack(position,data,x_,3*sizedouble);
   
   if (position != size)
-  {
-    cout << "CCADISCRETIZATION::Node::Pack:\n"
-         << "Mismatch in size of data " << size << " <-> " << position << endl
-         << __FILE__ << ":" << __LINE__ << endl;
-    exit(EXIT_FAILURE);
-  }
+    dserror("Mismatch in size of data %d <-> %d",size,position);
 
   return data;
 }
@@ -141,12 +137,7 @@ bool CCADISCRETIZATION::Node::Unpack(const char* data)
   ExtractfromPack(position,data,x_,3*sizedouble);  
 
   if (position != size)
-  {
-    cout << "CCADISCRETIZATION::Node::Unpack:\n"
-         << "Mismatch in size of data " << size << " <-> " << position << endl
-         << __FILE__ << ":" << __LINE__ << endl;
-    exit(EXIT_FAILURE);
-  }
+    dserror("Mismatch in size of data %d <-> %d",size,position);
   return true;
 }
 

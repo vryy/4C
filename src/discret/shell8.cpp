@@ -15,6 +15,7 @@ Maintainer: Michael Gee
 #ifdef TRILINOS_PACKAGE
 
 #include "shell8.H"
+#include "dserror.H"
 
 
 
@@ -127,12 +128,7 @@ const char* CCADISCRETIZATION::Shell8::Pack(int& size) const
   // continue to add stuff here  
     
   if (position != size)
-  {
-    cout << "CCADISCRETIZATION::Shell8::Pack:\n"
-         << "Mismatch in size of data " << size << " <-> " << position << endl
-         << __FILE__ << ":" << __LINE__ << endl;
-    exit(EXIT_FAILURE);
-  }
+    dserror("Mismatch in size of data %d <-> %d",size,position);
 
   return data;
 }
@@ -180,12 +176,7 @@ bool CCADISCRETIZATION::Shell8::Unpack(const char* data)
   // extract more stuff here
 
   if (position != size)
-  {
-    cout << "CCADISCRETIZATION::Shell8::Unpack:\n"
-         << "Mismatch in size of data " << size << " <-> " << position << endl
-         << __FILE__ << ":" << __LINE__ << endl;
-    exit(EXIT_FAILURE);
-  }
+    dserror("Mismatch in size of data %d <-> %d",size,position);
 
   return true;
 }

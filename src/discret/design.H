@@ -3,7 +3,7 @@
 
 \class CCADISCRETIZATION::Design
 
-\brief A class to manage a CAD design description
+\brief A class to manage a CAD design
 
 <pre>
 Maintainer: Michael Gee
@@ -18,7 +18,7 @@ Maintainer: Michael Gee
 #ifndef DESIGN_H
 #define DESIGN_H
 
-#include "discret.H"
+#include "designdiscretization.H"
 #include "designelement.H"
 
 /*!
@@ -29,15 +29,13 @@ namespace CCADISCRETIZATION
 {
 
 /*!
-\class Design
+\class DesignDiscretization
 
-\brief A class to manage a CAD design description
-
-design inherits from Discretization
+\brief A class to manage a CAD design
 
 \author gee (gee@lnm.mw.tum.de)
 */
-class Design : public CCADISCRETIZATION::Discretization
+class Design
 {
 public:
 
@@ -53,8 +51,6 @@ public:
   /*!
   \brief Copy Constructor
 
-  Makes a deep copy of a Element
-  
   */
   Design(const CCADISCRETIZATION::Design& old);
 
@@ -66,42 +62,25 @@ public:
 
   //@}
 
-  // @{ \name Construction methods
+  // @{ \name Acess methods
 
-  /*!
-  \brief Complete construction of this design class
-  
-  This method calls the base class FillComplete() that creates maps and
-  pointers between the elements and the nodes
-  */
-  int FillComplete() { return Discretization::FillComplete();}
-
-  /*!
-  \brief Complete construction of this design class
-  
-  This method creates pointers between the design elements stored in 
-  the 'this' class and the elements stored in the lower class.
-  It is used to create pointers between
-  design-volumes <-> design-surfaces
-  design-surfaces <-> design-lines
-  It also calls the base class FillComplete method to create the element maps
-  and set the flag Filled() to indicate that this class is complete.
-
-  \param higher: Discretiztion holding the higher entities
-  \param lower:  Discretiztion holding the lower  entities
-  
-  \note NULL is a valid argument for upper and/or lower
-
-  */
-  int FillComplete(CCADISCRETIZATION::Discretization* higher, 
-                   CCADISCRETIZATION::Discretization* lower);
+  RefCountPtr<DesignDiscretization> operator [] (const int index) const
+  { return entity_[index]; }
 
   //@}
 
 protected:
 
+  // don't want = operator
+  Design operator = (const Design& old);
 
-
+  RefCountPtr<Epetra_Comm>          comm_;       // epetra communicator
+  /*! 
+  entity_[0]: lines and nodes
+  entity_[1]: surfaces
+  entity_[2]: volumes
+  */
+  RefCountPtr<DesignDiscretization> entity_[3];  
 
 }; // class Design
 } // namespace CCADISCRETIZATION

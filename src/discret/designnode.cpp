@@ -14,6 +14,7 @@ Maintainer: Michael Gee
 #ifdef TRILINOS_PACKAGE
 
 #include "designnode.H"
+#include "dserror.H"
 
 
 
@@ -89,12 +90,7 @@ const char* CCADISCRETIZATION::DesignNode::Pack(int& size) const
   delete [] basedata;  
 
   if (position != size)
-  {
-    cout << "CCADISCRETIZATION::DesignNode::Pack:\n"
-         << "Mismatch in size of data " << size << " <-> " << position << endl
-         << __FILE__ << ":" << __LINE__ << endl;
-    exit(EXIT_FAILURE);
-  }
+    dserror("Mismatch in size of data %d <-> %d",size,position);
   return data;
 }
 
@@ -117,12 +113,7 @@ bool CCADISCRETIZATION::DesignNode::Unpack(const char* data)
   position += basesize;
   
   if (position != size)
-  {
-    cout << "CCADISCRETIZATION::DesignNode::Unpack:\n"
-         << "Mismatch in size of data " << size << " <-> " << position << endl
-         << __FILE__ << ":" << __LINE__ << endl;
-    exit(EXIT_FAILURE);
-  }
+    dserror("Mismatch in size of data %d <-> %d",size,position);
   return true;
 }
 

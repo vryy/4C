@@ -14,6 +14,7 @@ Maintainer: Michael Gee
 #ifdef TRILINOS_PACKAGE
 
 #include "discret.H"
+#include "dserror.H"
 
 
 
@@ -99,12 +100,7 @@ CCADISCRETIZATION::Element* CCADISCRETIZATION::Discretization::gElement(int gid)
 CCADISCRETIZATION::Element* CCADISCRETIZATION::Discretization::lElement(int lid) const
 {
   if (!Filled()) 
-  {
-    cout << "CCADISCRETIZATION::Discretization::lElement:\n"
-         << "Cannot return Element from local id as Discretization has Filled()==false"
-         << __FILE__ << ":" << __LINE__ << endl;
-    return NULL;
-  }
+    dserror("CCADISCRETIZATION::Discretization::lElement: Filled() != true");
   int gid = ElementMap()->GID(lid);
   if (gid<0) return NULL;
   map<int,RefCountPtr<CCADISCRETIZATION::Element> >:: const_iterator curr = 
@@ -132,12 +128,7 @@ CCADISCRETIZATION::Node* CCADISCRETIZATION::Discretization::gNode(int gid) const
 CCADISCRETIZATION::Node* CCADISCRETIZATION::Discretization::lNode(int lid) const
 {
   if (!Filled()) 
-  {
-    cout << "CCADISCRETIZATION::Discretization::lNode:\n"
-         << "Cannot return Node from local id as Discretization has Filled()==false"
-         << __FILE__ << ":" << __LINE__ << endl;
-    return NULL;
-  }
+    dserror("CCADISCRETIZATION::Discretization::lElement: Filled() != true");
   int gid = NodeMap()->GID(lid);
   if (gid<0) return NULL;
   map<int,RefCountPtr<CCADISCRETIZATION::Node> >:: const_iterator curr = 
@@ -239,12 +230,7 @@ void CCADISCRETIZATION::Discretization::BuildNodeToElementPointers()
     {
       CCADISCRETIZATION::Node* node = gNode(nodes[j]);
       if (!node)
-      {
-        cout << "CCADISCRETIZATION::Discretization::BuildElementToNodePointers:\n"
-             << "Node is not on this proc\n"
-             << __FILE__ << ":" << __LINE__ << endl;
-        exit(EXIT_FAILURE);
-      }
+        dserror("Node %d is not on this proc %d",j,Comm().MyPID());
       else
       {
         int size = node->element_.size();
@@ -266,12 +252,7 @@ void CCADISCRETIZATION::Discretization::BuildElementToNodePointers()
   {
     bool success = elecurr->second->BuildNodalPointers(node_);
     if (!success)
-    {
-      cout << "CCADISCRETIZATION::Discretization::BuildElementToNodePointers:\n"
-           << "Building element <-> node topology failed\n"
-           << __FILE__ << ":" << __LINE__ << endl;
-      exit(EXIT_FAILURE);
-    }
+      dserror("Building element <-> node topology failed");
   }
   return;
 }

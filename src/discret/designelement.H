@@ -43,9 +43,9 @@ class DesignElement : public CCADISCRETIZATION::Element
 public:
 
   /*!
-  \brief The Design is a friend of DesignElement
+  \brief The DesignDiscretization is a friend of DesignElement
   */
-  friend class Design;
+  friend class DesignDiscretization;
 
   // @{ \name Constructors and destructors
 

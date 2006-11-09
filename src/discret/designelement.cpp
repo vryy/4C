@@ -14,7 +14,8 @@ Maintainer: Michael Gee
 #ifdef TRILINOS_PACKAGE
 
 #include "designelement.H"
-#include "design.H"
+#include "designdiscretization.H"
+#include "dserror.H"
 
 
 
@@ -103,12 +104,7 @@ const char* CCADISCRETIZATION::DesignElement::Pack(int& size) const
   // continue to add stuff here  
     
   if (position != size)
-  {
-    cout << "CCADISCRETIZATION::Design_Line::Pack:\n"
-         << "Mismatch in size of data " << size << " <-> " << position << endl
-         << __FILE__ << ":" << __LINE__ << endl;
-    exit(EXIT_FAILURE);
-  }
+    dserror("Mismatch in size of data %d <-> %d",size,position);
 
   return data;
 }
@@ -144,12 +140,7 @@ bool CCADISCRETIZATION::DesignElement::Unpack(const char* data)
   // extract more stuff here
 
   if (position != size)
-  {
-    cout << "CCADISCRETIZATION::Design_Line::Unpack:\n"
-         << "Mismatch in size of data " << size << " <-> " << position << endl
-         << __FILE__ << ":" << __LINE__ << endl;
-    exit(EXIT_FAILURE);
-  }
+    dserror("Mismatch in size of data %d <-> %d",size,position);
 
   return true;
 }

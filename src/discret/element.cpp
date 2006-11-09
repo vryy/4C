@@ -14,7 +14,7 @@ Maintainer: Michael Gee
 #ifdef TRILINOS_PACKAGE
 
 #include "element.H"
-
+#include "dserror.H"
 
 
 /*----------------------------------------------------------------------*
@@ -90,18 +90,6 @@ void CCADISCRETIZATION::Element::SetNodeIds(const int nnode, const int* nodes)
 }
 
 /*----------------------------------------------------------------------*
- |  Get reference to nodes (public)                          mwgee 11/06|
- *----------------------------------------------------------------------*/
-/*
-RefCountPtr<vector<const CCADISCRETIZATION::Node*> > 
-  CCADISCRETIZATION::Element::Nodes(const CCADISCRETIZATION::Discretization& dis) const
-{
-  vector<>* nodes = new vector<>
-  return null;
-}
-*/
-
-/*----------------------------------------------------------------------*
  |  Pack data from this element into vector of length size     (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
@@ -138,6 +126,8 @@ const char* CCADISCRETIZATION::Element::Pack(int& size) const
   AddVectortoPack(position,data,nodeid_);
   // continue to add stuff here
 
+  if (position != size)
+    dserror("Mismatch in size of data %d <-> %d",size,position);
   return data;
 }
 
@@ -163,12 +153,7 @@ bool CCADISCRETIZATION::Element::Unpack(const char* data)
   node_.resize(0);
 
   if (position != size)
-  {
-    cout << "CCADISCRETIZATION::Element::Unpack:\n"
-         << "Mismatch in size of data " << size << " <-> " << position << endl
-         << __FILE__ << ":" << __LINE__ << endl;
-    exit(EXIT_FAILURE);
-  }
+    dserror("Mismatch in size of data %d <-> %d",size,position);
 
   return true;
 }

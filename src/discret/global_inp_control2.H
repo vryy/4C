@@ -27,9 +27,10 @@ Maintainer: Michael Gee
 #include "Teuchos_RefCountPtr.hpp"
 
 #include "discret.H"
-#include "design.H"
+#include "designdiscretization.H"
 #include "designelement.H"
 #include "designnode.H"
+#include "design.H"
 #ifdef D_SHELL8
 #include "shell8.H"
 #endif
