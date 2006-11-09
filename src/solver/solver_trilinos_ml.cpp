@@ -264,7 +264,7 @@ void create_ml_parameterlist(struct _SOLVAR         *actsolv,
   mllist.set("null space: dimension",dimns);
   mllist.set("null space: type","pre-computed");
   mllist.set("null space: add default vectors",false);
-  if (*nullspace) delete (*nullspace);
+  if (*nullspace) delete [] (*nullspace);
   *nullspace = new double[ matrix.RowMap().NumMyElements()*dimns];
   ml_compute_nullspace(actdis,etype,numdf,dimns,matrix.RowMap(),*nullspace);
   mllist.set("null space: vectors",*nullspace);
