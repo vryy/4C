@@ -55,9 +55,17 @@ void ntainp_ccadiscret();
 void inpfield_ccadiscret();
 void inpnodes_ccadiscret(Epetra_SerialDenseMatrix& tmpnodes);
 void input_structural_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm);
-void input_assign_nodes(CCADISCRETIZATION::Discretization& actdis,Epetra_SerialDenseMatrix& tmpnodes);
+void input_assign_nodes(CCADISCRETIZATION::Discretization& actdis,Epetra_SerialDenseMatrix* tmpnodes);
 void input_design();
-void input_design_topology_discretization();
+void input_design_topology_discretization(CCADISCRETIZATION::Discretization& actdis);
+void input_design_dpoint_fenode_read(vector<vector<int> >& dnode_fenode,
+                                     vector<int>& ndnode_fenode);
+void input_design_dline_fenode_read(vector<vector<int> >& dline_fenode,
+                                     vector<int>& ndline_fenode);
+void input_design_dsurf_fenode_read(vector<vector<int> >& dsurf_fenode,
+                                     vector<int>& ndsurf_fenode);
+void input_design_dvol_fenode_read(vector<vector<int> >& dvol_fenode,
+                                   vector<int>& ndvol_fenode);
 
 #ifdef __cplusplus
 }

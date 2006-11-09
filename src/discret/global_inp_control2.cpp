@@ -114,7 +114,16 @@ void ntainp_ccadiscret()
   inpfield_ccadiscret();
 
   // read the design topology
-  input_design_topology_discretization();
+  for (int i=0; i<genprob.numfld; ++i)
+  {
+    vector<RefCountPtr<CCADISCRETIZATION::Discretization> >* discretization =
+      (vector<RefCountPtr<CCADISCRETIZATION::Discretization> >*)field[i].ccadis;
+    for (int j=0;j<field[i].ndis;j++)
+    {
+      RefCountPtr<CCADISCRETIZATION::Discretization> actdis = (*discretization)[j];
+      input_design_topology_discretization(*actdis);
+    }
+  }
 
 
   cout << "Reached regular exit\n"; fflush(stdout);
@@ -124,6 +133,88 @@ void ntainp_ccadiscret()
   return;
 } // end of ntainp_ccadiscret()
 
+
+/*-----------------------------------------------------------------------*/
+/*!
+  \brief read design <-> discretization topology
+
+  \author m.gee
+  \date   11/06
+
+ */
+/*-----------------------------------------------------------------------*/
+void input_design_topology_discretization(CCADISCRETIZATION::Discretization& actdis)
+{
+  DSTraceHelper dst("input_design_topology_discretization");
+  
+  
+  
+  // get the design discretizations
+  vector<RefCountPtr<CCADISCRETIZATION::Design> >* dptr = 
+    (vector<RefCountPtr<CCADISCRETIZATION::Design> >*)design->ccadesign;
+  RefCountPtr<CCADISCRETIZATION::Design> designlines = (*dptr)[0];
+  RefCountPtr<CCADISCRETIZATION::Design> designsurfs = (*dptr)[1];
+  RefCountPtr<CCADISCRETIZATION::Design> designvols  = (*dptr)[2];
+  
+  // number of design points, lines, surfaces and volumes
+  const int ndnode = designlines->NumGlobalNodes();
+  const int ndline = designlines->NumGlobalElements();
+  const int ndsurf = designsurfs->NumGlobalElements();
+  const int ndvol  = designvols->NumGlobalElements();
+
+  // on proc 0 only
+  if (designvols->Comm().MyPID()==0)
+  {
+    // read design nodes <-> nodes
+    vector<int> ndnode_fenode(ndnode);
+    vector<vector<int> > dnode_fenode(ndnode);
+    for (int i=0; i<ndnode; ++i) 
+      ndnode_fenode[i] = 0; 
+    input_design_dpoint_fenode_read(dnode_fenode,ndnode_fenode);
+    
+    // read design lines <-> nodes
+    vector<int> ndline_fenode(ndline);
+    vector<vector<int> > dline_fenode(ndline);
+    for (int i=0; i<ndline; ++i) 
+      ndline_fenode[i] = 0;
+    input_design_dline_fenode_read(dline_fenode,ndline_fenode); 
+  
+    // read design surfaces <-> nodes
+    vector<int> ndsurf_fenode(ndsurf);
+    vector<vector<int> > dsurf_fenode(ndsurf);
+    for (int i=0; i<ndsurf; ++i) 
+      ndsurf_fenode[i] = 0;
+    input_design_dsurf_fenode_read(dsurf_fenode,ndsurf_fenode);
+
+    // read design volumes <-> nodes
+    vector<int> ndvol_fenode(ndvol);
+    vector<vector<int> > dvol_fenode(ndvol);
+    for (int i=0; i<ndvol; ++i) 
+      ndvol_fenode[i] = 0;
+    input_design_dvol_fenode_read(dvol_fenode,ndvol_fenode);
+
+    // Allocate a node indicator
+    vector<int> node_ind(genprob.nnode);
+    for (int i=0; i<genprob.nnode; ++i) node_ind[i] = -1;
+    for (int i=0; i<actdis.NumMyNodes(); ++i)
+    {
+      int id = actdis.lNode(i)->Id();
+      dsassert(id<genprob.nnode,"Node id out of range");
+      node_ind[id] = i;
+    }
+    
+    // create topology node <-> design
+    topology_dnode_fenode(actdis,*designlines,ndnode_fenode,dnode_fenode,node_ind);
+    
+    
+  
+  } // if (designvols->Comm().MyPID()==0)
+
+
+
+
+  return;
+}
 
 /*-----------------------------------------------------------------------*/
 /*!
@@ -404,28 +495,6 @@ void input_design()
   return;
 }
 
-/*-----------------------------------------------------------------------*/
-/*!
-  \brief read design <-> discretization topology
-
-  \author m.gee
-  \date   11/06
-
- */
-/*-----------------------------------------------------------------------*/
-void input_design_topology_discretization()
-{
-  DSTraceHelper dst("input_design_topology_discretization");
-  
-
-
-
-
-
-
-  return;
-}
-
 /*----------------------------------------------------------------------*
   | input of fields                                        m.gee 10/06  |
   | This version of the routine uses the new discretization subsystem   |
@@ -496,8 +565,8 @@ void inpfield_ccadiscret()
       (vector<RefCountPtr<CCADISCRETIZATION::Discretization> >*)field[i].ccadis;
     for (int j=0;j<field[i].ndis;j++)
     {
-      RefCountPtr<CCADISCRETIZATION::Discretization> actdis = (*discretization)[i];
-      input_assign_nodes(*actdis,*tmpnodes);
+      RefCountPtr<CCADISCRETIZATION::Discretization> actdis = (*discretization)[j];
+      input_assign_nodes(*actdis,tmpnodes.get());
       nnode_total += actdis->NumGlobalNodes();
       int err = actdis->FillComplete();
       if (err)
@@ -521,7 +590,7 @@ void inpfield_ccadiscret()
 
  */
 /*-----------------------------------------------------------------------*/
-void input_assign_nodes(CCADISCRETIZATION::Discretization& actdis,Epetra_SerialDenseMatrix& tmpnodes)
+void input_assign_nodes(CCADISCRETIZATION::Discretization& actdis,Epetra_SerialDenseMatrix* tmpnodes)
 {
   DSTraceHelper dst("input_assign_nodes");
   
@@ -548,7 +617,7 @@ void input_assign_nodes(CCADISCRETIZATION::Discretization& actdis,Epetra_SerialD
     {
       if (nodeflag[i]==-1) continue;
       double coords[3];
-      for (int j=0; j<3; ++j) coords[j] = tmpnodes(i,j);
+      for (int j=0; j<3; ++j) coords[j] = (*tmpnodes)(i,j);
       RefCountPtr<CCADISCRETIZATION::Node> node = 
         rcp(new CCADISCRETIZATION::Node(nodeflag[i],coords));
       actdis.AddNode(node);

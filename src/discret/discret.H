@@ -155,7 +155,7 @@ public:
   \return Adress of node if node is owned by calling proc, returns NULL
           otherwise
   */
-  virtual CCADISCRETIZATION::Node* lNode(int gid) const;
+  virtual CCADISCRETIZATION::Node* lNode(int lid) const;
 
   /*!
   \brief Print this discretization to stdout
