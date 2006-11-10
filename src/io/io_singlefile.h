@@ -96,7 +96,7 @@ typedef struct _BIN_OUT_CHUNK {
   INT value_entry_length;       /* number of doubles per item */
   INT size_entry_length;        /* number of ints per item */
 #endif
-
+  
   INT value_count;              /* total number of doubles on this proc */
   INT size_count;               /* total number of ints on this proc */
 

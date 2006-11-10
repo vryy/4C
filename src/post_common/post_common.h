@@ -42,6 +42,10 @@ functions.
 #undef PARALLEL
 #endif
 
+#ifdef TRILINOS_PACKAGE
+#undef TRILINOS_PACKAGE
+#endif
+
 #ifdef SPOOLES_PACKAGE
 #undef SPOOLES_PACKAGE
 #endif

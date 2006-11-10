@@ -42,7 +42,7 @@ Maintainer: Michael Gee
 
 #include "../solver/solver_trilinos_ml.H"
 
-extern "C" 
+extern "C"
 {
 #include "../fluid2_pro/fluid2pro.h"
 #include "../fluid3_pro/fluid3pro.h"

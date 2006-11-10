@@ -247,7 +247,6 @@ void post_create_octree(POST_DISCRETIZATION *discret,
 {
   INT i;
   NODE *actnode;
-  NODELIST *nodelistmem;
 
 #ifdef DEBUG
   dstrc_enter("post_create_octree");
@@ -448,7 +447,6 @@ void post_fsi_initcoupling(POST_DISCRETIZATION* struct_discret,
 
   NODE   *actfnode=NULL,  *actanode=NULL;  /* actual nodes */
   OCTREE octree;                            /* head of the octree structure */
-  NODELIST *nodelisttemp,*nodelistmem;        /* temporary pointers */
 
 #ifdef DEBUG
   dstrc_enter("post_fsi_initcoupling");
