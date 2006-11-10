@@ -321,9 +321,11 @@ void fluid_pm_cont()
       case dm_q2pm1:
 	/* switch to taylor-hood */
 	f2pro->dm = dm_q2q1;
+	f2pro->other->e.f2pro->dm = dm_q2q1;
 	break;
       case dm_q1p0:
 	f2pro->dm = dm_q1q1;
+	f2pro->other->e.f2pro->dm = dm_q1q1;
 	break;
       default:
         dserror("discretization mode %d currently unsupported", f2pro->dm);
@@ -341,9 +343,11 @@ void fluid_pm_cont()
       case dm_q2pm1:
 	/* switch to "taylor-hood" */
 	f3pro->dm = dm_q2q1;
+	f3pro->other->e.f3pro->dm = dm_q2q1;
 	break;
       case dm_q1p0:
 	f3pro->dm = dm_q1q1;
+	f3pro->other->e.f3pro->dm = dm_q1q1;
 	break;
       default:
         dserror("discretization mode %d currently unsupported", f3pro->dm);
@@ -910,7 +914,7 @@ void fluid_pm_cont()
 		  &lmass, actsolv, actsysarray,
 		  frhs, fgradprhs);
 
-#if 1
+#if 0
     if (actintra->intra_rank==0)
     {
       fprintf(allfiles.gidres,"RESULT \"press_rhs\" \"ccarat\" %d SCALAR ONNODES\n"
@@ -947,7 +951,7 @@ void fluid_pm_cont()
     }
 #endif
 
-#if 1
+#if 0
     if (actintra->intra_rank==0)
     {
       fprintf(allfiles.gidres,"RESULT \"elementcall\" \"ccarat\" %d VECTOR ONNODES\n"

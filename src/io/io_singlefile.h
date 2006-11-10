@@ -89,8 +89,13 @@ typedef struct _BIN_OUT_CHUNK {
                                  * have one less. */
   INT first_id;                 /* the first id on this proc (Id_loc) */
 
+#ifdef PARALLEL
+  MPI_Offset value_entry_length;       /* number of doubles per item */
+  MPI_Offset size_entry_length;        /* number of ints per item */
+#else
   INT value_entry_length;       /* number of doubles per item */
   INT size_entry_length;        /* number of ints per item */
+#endif
 
   INT value_count;              /* total number of doubles on this proc */
   INT size_count;               /* total number of ints on this proc */
@@ -123,8 +128,13 @@ typedef struct _BIN_IN_CHUNK {
   INT fullarrays;
   INT first_id;
 
+#ifdef PARALLEL
+  MPI_Offset value_entry_length;       /* number of doubles per item */
+  MPI_Offset size_entry_length;        /* number of ints per item */
+#else
   INT value_entry_length;       /* number of doubles per item */
   INT size_entry_length;        /* number of ints per item */
+#endif
 
   INT value_count;              /* total number of doubles */
   INT size_count;               /* total number of ints */

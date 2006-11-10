@@ -110,9 +110,13 @@ typedef struct _BIN_DATA_FILES {
 #endif
 
   /* the position where to write new chunks */
+#ifdef PARALLEL
+  MPI_Offset value_file_offset;
+  MPI_Offset size_file_offset;
+#else
   INT value_file_offset;
   INT size_file_offset;
-
+#endif
 } BIN_DATA_FILES;
 
 

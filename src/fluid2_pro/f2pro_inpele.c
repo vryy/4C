@@ -243,6 +243,7 @@ void f2pro_dis(ELEMENT* vele, ELEMENT* pele, INT numele, INT nodeshift)
   pele->Id = vele->Id + numele;
   pele->mat = vele->mat;
   pele->e.f2pro->is_ale = vele->e.f2pro->is_ale;
+  pele->e.f2pro->dm = vele->e.f2pro->dm;
   pele->distyp = vele->distyp;
   pele->numnp = vele->numnp;
 

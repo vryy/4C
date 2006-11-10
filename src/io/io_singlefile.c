@@ -2155,7 +2155,11 @@ void out_write_chunk(BIN_OUT_FIELD *context,
                       MPI_SEEK_SET);
   if (err != 0)
   {
-    dserror("MPI_File_seek failed: %d", err);
+    dserror("MPI_File_seek(%d,%d) failed: %d", 
+	    context->out->value_file,
+	    context->out->value_file_offset +
+	    chunk->first_id*chunk->value_entry_length*sizeof(DOUBLE),
+	    err);
   }
   err = MPI_File_write(context->out->value_file, chunk->out_values,
                        chunk->value_count, MPI_DOUBLE, &status);

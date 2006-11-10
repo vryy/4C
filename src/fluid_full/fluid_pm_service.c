@@ -963,7 +963,8 @@ void pm_calelm_cont(FIELD *actfield,
     ELEMENT* vele;
     ELEMENT* pele;
     vele = actpart->pdis[vel_dis].element[i];
-    pele = actpart->pdis[press_dis].element[i];
+    /* this does not work... */
+    /*pele = actpart->pdis[press_dis].element[i];*/
 
     /* We need to assemble the global mass matrix. To do this in
      * parallel we cannot calculate the local elements only but have
@@ -979,11 +980,13 @@ void pm_calelm_cont(FIELD *actfield,
     {
 #ifdef D_FLUID2_PRO
     case el_fluid2_pro:
+      pele = vele->e.f2pro->other;
       f2pro_calgradp(vele, ipos);
       break;
 #endif
 #ifdef D_FLUID3_PRO
     case el_fluid3_pro:
+      pele = vele->e.f3pro->other;
       f3pro_calgradp(vele, ipos);
       break;
 #endif

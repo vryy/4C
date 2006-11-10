@@ -231,6 +231,7 @@ void f3pro_dis(ELEMENT* vele, ELEMENT* pele, INT numele, INT nodeshift)
   pele->Id = vele->Id + numele;
   pele->mat = vele->mat;
   pele->e.f3pro->is_ale = vele->e.f3pro->is_ale;
+  pele->e.f3pro->dm = vele->e.f3pro->dm;
   pele->numnp = vele->numnp;
   pele->distyp = vele->distyp;
 

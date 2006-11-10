@@ -42,6 +42,12 @@ Maintainer: Michael Gee
 
 #include "../solver/solver_trilinos_ml.H"
 
+extern "C" 
+{
+#include "../fluid2_pro/fluid2pro.h"
+#include "../fluid3_pro/fluid3pro.h"
+};
+
 using namespace std;
 using namespace Teuchos;
 
@@ -246,18 +252,70 @@ void create_ml_parameterlist(struct _SOLVAR         *actsolv,
       numdf = 3;
       dimns = 3;
     break;
+#ifdef D_FLUID2_PRO
     case el_fluid2_pro:
-      numdf = 2;
-      dimns = 2;
+      if (disnum==0)
+      {
+	numdf = 2;
+	dimns = 2;
+      }
+      else
+      {
+	switch (ele->e.f2pro->dm)
+	{
+	  case dm_q1p0:		// constant (discont) pressure
+	    dserror("currently not supported");
+	  case dm_q1q1:		// equal order interpolation
+	  case dm_q2q2:
+	  case dm_q2q1:		/* Taylor-Hood */
+	    numdf = 1;
+	    dimns = 1;
+	    break;
+	  case dm_q2pm1:	/* discontinuous pressure */
+	    dserror("currently not supported");
+	    numdf = 4;
+	    dimns = 4;
+	    break;
+	  default:
+	    dserror("unsupported element type %d",ele->e.f2pro->dm);
+	}
+      }
     break;
+#endif
     case el_fluid3:
       numdf = 4;
       dimns = 4;
     break;
+#ifdef D_FLUID3_PRO
     case el_fluid3_pro:
-      numdf = 3;
-      dimns = 3;
+      if (disnum==0)
+      {
+	numdf = 3;
+	dimns = 3;
+      }
+      else
+      {
+	switch (ele->e.f3pro->dm)
+	{
+	  case dm_q1p0:		// constant (discont) pressure
+	    dserror("currently not supported");
+	  case dm_q1q1:		// equal order interpolation
+	  case dm_q2q2:
+	  case dm_q2q1:		/* Taylor-Hood */
+	    numdf = 1;
+	    dimns = 1;
+	    break;
+	  case dm_q2pm1:	/* discontinuous pressure */
+	    dserror("currently not supported");
+	    numdf = 4;
+	    dimns = 4;
+	    break;
+	  default:
+	    dserror("unsupported element type %d",ele->e.f3pro->dm);
+	}
+      }
     break;
+#endif
     default: dserror("Unknown type of element or element not compiled in");
   }
   mllist.set("PDE equations",numdf);
@@ -461,7 +519,9 @@ void ml_compute_nullspace(DISCRET*          actdis,
   p   |    0       0       0       1
   */
   if (etype==el_fluid2 ||
-      etype==el_fluid3 )
+      etype==el_fluid3 ||
+      etype==el_fluid2_pro ||
+      etype==el_fluid3_pro)
   {
     for (int i=0; i<actdis->numnp; ++i)
     {
@@ -471,12 +531,14 @@ void ml_compute_nullspace(DISCRET*          actdis,
       {
         int dof   = actnode->dof[j];
         int index = map.LID(dof);
-        if (index==-1) dserror("Cannot find local for global dof");
+        if (index==-1) dserror("Cannot find local for global dof=%d, j=%d",dof,j);
         switch(j) // j is the degree of freedom
         {
         case 0:
             mode[0][index] = 1.0;
+          if (dimns>1)
             mode[1][index] = 0.0;
+          if (dimns>2)
             mode[2][index] = 0.0;
           if (dimns==4)
             mode[3][index] = 0.0;
@@ -484,6 +546,7 @@ void ml_compute_nullspace(DISCRET*          actdis,
         case 1:
             mode[0][index] = 0.0;
             mode[1][index] = 1.0;
+          if (dimns>2)
             mode[2][index] = 0.0;
           if (dimns==4)
             mode[3][index] = 0.0;
