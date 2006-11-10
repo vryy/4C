@@ -300,8 +300,28 @@ void CCADISCRETIZATION::Discretization::BuildElementMap()
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  node <-> design node topology (public)                   mwgee 11/06|
+ *----------------------------------------------------------------------*/
+void CCADISCRETIZATION::Discretization::SetDesignEntityIds(Node::OnDesignEntity type, 
+                                                           const vector<int>& nfenode, 
+                                                           const vector<vector<int> >& fenode)
+{
+  const int ndentity = nfenode.size();
+  for (int i=0; i<ndentity; ++i)
+  {
+    const int dentityid  = i;
+    const int numfenodes = nfenode[i];
+    for (int j=0; j<numfenodes; ++j)
+    {
+      Node* node = gNode(fenode[dentityid][j]);
+      if (!node) dserror("Node with gid %d is not on this proc",fenode[dentityid][j]);
+      node->SetDesignEntity(type,dentityid);
+    }
+  }
 
-
+  return;
+}
 
 
 

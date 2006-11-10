@@ -23,7 +23,9 @@ Maintainer: Michael Gee
  *----------------------------------------------------------------------*/
 CCADISCRETIZATION::Node::Node(int id, const double* coords) :
 ParObject(),
-id_(id)
+id_(id),
+dentitytype_(on_none),
+dentityid_(-1)
 {
   for (int i=0; i<3; ++i) x_[i] = coords[i];
   element_.resize(0);
@@ -36,7 +38,9 @@ id_(id)
 CCADISCRETIZATION::Node::Node(const CCADISCRETIZATION::Node& old) :
 ParObject(old),
 id_(old.id_),
-element_(old.element_)
+element_(old.element_),
+dentitytype_(old.dentitytype_),
+dentityid_(old.dentityid_)
 {
   for (int i=0; i<3; ++i) x_[i] = old.x_[i];
   return;
@@ -77,6 +81,10 @@ ostream& operator << (ostream& os, const CCADISCRETIZATION::Node& node)
 void CCADISCRETIZATION::Node::Print(ostream& os) const
 {
   os << "Node " << Id() << " Coords " << X()[0] << " " << X()[1] << " " << X()[2];
+  if (dentitytype_ != on_none)
+  {
+    bla;
+  }
   return;
 }
 
@@ -91,10 +99,12 @@ const char* CCADISCRETIZATION::Node::Pack(int& size) const
   //const int sizechar   = sizeof(char);
 
   size = 
-  sizeint               +   // holds size itself
-  sizeint               +   // holds id
-  sizedouble*3          +   // holds x_
-  0;                        // continue to add data here...
+  sizeint                +   // holds size itself
+  sizeint                +   // holds id
+  sizedouble*3           +   // holds x_
+  sizeof(OnDesignEntity) +   // dentitytype_
+  sizeint                +   // dentityid_
+  0;                         // continue to add data here...
 
   char* data = new char[size];
 
@@ -108,6 +118,10 @@ const char* CCADISCRETIZATION::Node::Pack(int& size) const
   AddtoPack(position,data,id);
   // add x_
   AddtoPack(position,data,x_,3*sizedouble);
+  // dentitytype_
+  AddtoPack(position,data,dentitytype_);
+  // dentityid_
+  AddtoPack(position,data,dentityid_);
   
   if (position != size)
     dserror("Mismatch in size of data %d <-> %d",size,position);
@@ -135,6 +149,10 @@ bool CCADISCRETIZATION::Node::Unpack(const char* data)
   ExtractfromPack(position,data,id_);
   // extract x_
   ExtractfromPack(position,data,x_,3*sizedouble);  
+  // dentitytype_
+  ExtractfromPack(position,data,dentitytype_);
+  // dentityid_
+  ExtractfromPack(position,data,dentityid_);
 
   if (position != size)
     dserror("Mismatch in size of data %d <-> %d",size,position);

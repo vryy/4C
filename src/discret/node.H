@@ -55,6 +55,19 @@ public:
   // @{ \name Constructors and destructors
 
   /*!
+  \brief Type of design entity this node is on
+         
+  */
+  enum OnDesignEntity 
+  {
+    on_none,
+    on_dnode,
+    on_dline,
+    on_dsurface,
+    on_dvolume,
+  };
+
+  /*!
   \brief Standard Constructor
   
   \param id    : A globally unique node id
@@ -123,13 +136,21 @@ public:
   // @{ \name Construction
 
 
+  /*!
+  \brief Print this element
+  */
+  virtual void SetDesignEntity(const OnDesignEntity type, const int gid)
+  { dentitytype_ = type; dentityid_ = gid; return; }
+
   //@}
 
 protected:
 
-  int                                 id_;      // a unique global id
-  double                              x_[3];    // nodal coords
-  vector<CCADISCRETIZATION::Element*> element_; // pointers to adjacent elements
+  int                                 id_;          // a unique global id
+  double                              x_[3];        // nodal coords
+  vector<CCADISCRETIZATION::Element*> element_;     // pointers to adjacent elements
+  OnDesignEntity                      dentitytype_; // type of design object I'm on
+  int                                 dentityid_;   // global id of design object I'm on
 
 }; // class Node
 } // namespace CCADISCRETIZATION

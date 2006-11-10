@@ -18,7 +18,6 @@ Maintainer: Michael Gee
 #ifndef DISCRET_H
 #define DISCRET_H
 
-
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_Comm.h"
 #include "Epetra_Map.h"
@@ -150,7 +149,7 @@ public:
   /*!
   \brief Get the node with local id lid
   
-  This is an individual call Filled()=true is a prerequisite
+  This is an individual call, Filled()=true is a prerequisite
   
   \return Adress of node if node is owned by calling proc, returns NULL
           otherwise
@@ -195,6 +194,21 @@ public:
   \note This is a collective call
   */
   virtual int FillComplete();
+
+  /*!
+  \brief Set Ids of design nodes in nodes
+  
+  On exit, each node in this that is positioned on a design node 
+  will store the global design node number that it concides to.
+  It will also store a flag indicating on what type of design entitty its on.
+  
+  \param type   : type of design entity (on_none, on_dnode, on_dline, on_dsurface, on_dvolume) that is set
+  \param nfenode: vector of length ndnode, nfenode[i] is number of fe nodes on design entity i
+  \param fenode: vector of length ndnode, fenode[i] is vector of global fe node ids that are on design entity i
+
+  \note this is an individual call
+  */
+  virtual void SetDesignEntityIds(Node::OnDesignEntity type, const vector<int>& nfenode, const vector<vector<int> >& fenode);
 
   //@}
 

@@ -194,19 +194,9 @@ void input_design_topology_discretization(CCADISCRETIZATION::Discretization& act
       ndvol_fenode[i] = 0;
     input_design_dvol_fenode_read(dvol_fenode,ndvol_fenode);
 
-    // Allocate a node indicator
-    vector<int> node_ind(genprob.nnode);
-    for (int i=0; i<genprob.nnode; ++i) node_ind[i] = -1;
-    for (int i=0; i<actdis.NumMyNodes(); ++i)
-    {
-      int id = actdis.lNode(i)->Id();
-      dsassert(id<genprob.nnode,"Node id out of range");
-      node_ind[id] = i;
-    }
-    
-    // create topology node <-> design
-    //topology_dnode_fenode(actdis,*designlines,ndnode_fenode,dnode_fenode,node_ind);
-    
+    // create topology node <-> designnode
+    CCADISCRETIZATION::Node::OnDesignEntity type = CCADISCRETIZATION::Node::on_dnode;
+    actdis.SetDesignEntityIds(type,ndnode_fenode,dnode_fenode);
     
   
   } // if (designvols->Comm().MyPID()==0)
