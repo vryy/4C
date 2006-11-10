@@ -283,8 +283,6 @@ break;
 }
 /*----------------------- allocate a new piece to the end of the chain */
 trace.endarraychain->next = (TRACEARRAY*)CCACALLOC(1,sizeof(TRACEARRAY));
-if (!trace.endarraychain->next)
-  dserror("Allocation of memory failed");
 /*---------------------------- set pointer backwards in this new piece */
 trace.endarraychain->next->prev = trace.endarraychain;
 /*------------------------------------- set endarraychain to new piece */
