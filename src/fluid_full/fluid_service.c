@@ -1332,7 +1332,11 @@ case fncc_no:
 #else
          if (dof>=numeq_total) continue;
 #endif
+#ifdef FLUID_INCREMENTAL
+         actnode->sol_increment.a.da[place][j] += result[dof];
+#else
          actnode->sol_increment.a.da[place][j] = result[dof];
+#endif
       } /* end of loop over dofs */
 
    } /* end of loop over nodes */
@@ -1363,24 +1367,45 @@ case fncc_Linf: /* L_infinity norm */
 #endif
          if (j==predof) /* pressure dof */
          {
+#ifdef FLUID_INCREMENTAL
+            pnorm = DMAX(dpnorm,
+                FABS(result[dof]+actnode->sol_increment.a.da[place][j]));
+            dpnorm  = DMAX(pnorm, FABS(result[dof]));
+            actnode->sol_increment.a.da[place][j] += result[dof];
+#else
             dpnorm = DMAX(dpnorm,
                 FABS(result[dof]-actnode->sol_increment.a.da[place][j]));
             pnorm  = DMAX(pnorm, FABS(result[dof]));
             actnode->sol_increment.a.da[place][j] = result[dof];
+#endif
          } /* endif pressure dof */
          else if (j>predof) /* grid velocity or height function dof */
          {
+#ifdef FLUID_INCREMENTAL
+            gnorm = DMAX(dpnorm,
+                FABS(result[dof]+actnode->sol_increment.a.da[place][j]));
+            dgnorm  = DMAX(pnorm, FABS(result[dof]));
+            actnode->sol_increment.a.da[place][j] += result[dof];
+#else
             dgnorm = DMAX(dgnorm,
                 FABS(result[dof]-actnode->sol_increment.a.da[place][j]));
             gnorm  = DMAX(gnorm,FABS(result[dof]));
             actnode->sol_increment.a.da[place][j] = result[dof];
+#endif
          }
          else /* vel - dof */
          {
+#ifdef FLUID_INCREMENTAL
+            vnorm = DMAX(dpnorm,
+                FABS(result[dof]+actnode->sol_increment.a.da[place][j]));
+            dvnorm  = DMAX(pnorm, FABS(result[dof]));
+            actnode->sol_increment.a.da[place][j] += result[dof];
+#else
             dvnorm = DMAX(dvnorm,
                 FABS(result[dof]-actnode->sol_increment.a.da[place][j]));
             vnorm  = DMAX(vnorm, FABS(result[dof]));
             actnode->sol_increment.a.da[place][j] = result[dof];
+#endif
          } /* endif vel dof */
       } /* end of loop over dofs */
    } /* end of loop over nodes */
@@ -1411,21 +1436,39 @@ case fncc_L1: /* L_1 norm */
 #endif
          if (j==predof) /* pressure dof */
          {
+#ifdef FLUID_INCREMENTAL
+            pnorm += FABS(result[dof]+actnode->sol_increment.a.da[place][j]);
+            dpnorm  += FABS(result[dof]);
+            actnode->sol_increment.a.da[place][j] += result[dof];
+#else
             dpnorm += FABS(result[dof]-actnode->sol_increment.a.da[place][j]);
             pnorm  += FABS(result[dof]);
             actnode->sol_increment.a.da[place][j] = result[dof];
+#endif
          } /* endif pressure dof */
          else if (j>predof) /* grid velocity or height function dof */
          {
+#ifdef FLUID_INCREMENTAL
+            gnorm += FABS(result[dof]+actnode->sol_increment.a.da[place][j]);
+            dgnorm  += FABS(result[dof]);
+            actnode->sol_increment.a.da[place][j] += result[dof];
+#else
             dgnorm += FABS(result[dof]-actnode->sol_increment.a.da[place][j]);
             gnorm  += FABS(result[dof]);
             actnode->sol_increment.a.da[place][j] = result[dof];
+#endif
          } /* endif grid velocity dofs */
          else /* vel - dof */
          {
+#ifdef FLUID_INCREMENTAL
+            vnorm += FABS(result[dof]+actnode->sol_increment.a.da[place][j]);
+            dvnorm  += FABS(result[dof]);
+            actnode->sol_increment.a.da[place][j] += result[dof];
+#else
             dvnorm += FABS(result[dof]-actnode->sol_increment.a.da[place][j]);
             vnorm  += FABS(result[dof]);
             actnode->sol_increment.a.da[place][j] = result[dof];
+#endif
          } /* endif vel dof */
       } /* end of loop over dofs */
    } /* end of loop over nodes */
@@ -1456,21 +1499,39 @@ case fncc_L2: /* L_2 norm */
 #endif
          if (j==predof) /* pressure dof */
          {
+#ifdef FLUID_INCREMENTAL
+            pnorm += DSQR(result[dof]+actnode->sol_increment.a.da[place][j]);
+            dpnorm  += DSQR(result[dof]);
+            actnode->sol_increment.a.da[place][j] += result[dof];
+#else
             dpnorm += DSQR(result[dof]-actnode->sol_increment.a.da[place][j]);
             pnorm  += DSQR(result[dof]);
             actnode->sol_increment.a.da[place][j] = result[dof];
+#endif
          } /* endif pressure dof */
          else if (j>predof) /* grid velocity or height function dof */
          {
+#ifdef FLUID_INCREMENTAL
+            gnorm += DSQR(result[dof]+actnode->sol_increment.a.da[place][j]);
+            dgnorm  += DSQR(result[dof]);
+            actnode->sol_increment.a.da[place][j] += result[dof];
+#else
             dgnorm += DSQR(result[dof]-actnode->sol_increment.a.da[place][j]);
             gnorm  += DSQR(result[dof]);
             actnode->sol_increment.a.da[place][j] = result[dof];
+#endif
          } /* endif grid velocity dofs */
          else /* vel - dof */
          {
+#ifdef FLUID_INCREMENTAL
+            vnorm += DSQR(result[dof]+actnode->sol_increment.a.da[place][j]);
+            dvnorm  += DSQR(result[dof]);
+            actnode->sol_increment.a.da[place][j] += result[dof];
+#else
             dvnorm += DSQR(result[dof]-actnode->sol_increment.a.da[place][j]);
             vnorm  += DSQR(result[dof]);
             actnode->sol_increment.a.da[place][j] = result[dof];
+#endif
          } /* endif vel dof */
       } /* end of loop over dofs */
    } /* end of loop over nodes */
