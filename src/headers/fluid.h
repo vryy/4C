@@ -128,6 +128,9 @@ INT    init;         /*!< initialisation of starting field              */
 INT    mlfem;        /*!< multilevel algorithm?                         */
 INT    numdf;        /*!< number of dofs of the fluid elements          */
 INT    ite;          /*!< nonlinear iteration scheme                    */
+#ifdef QUASI_NEWTON
+INT    qnewton;      /*!< quasi newton, one element call per time step  */
+#endif
 enum {
       fncc_no,       /*!< no convergence check                          */
       fncc_L1,       /*!< converg. check with L1 norm                   */

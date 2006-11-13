@@ -42,6 +42,9 @@ typedef struct _FLUID3_PRO
   INT*    ldof;                 /* processor local dof numbers */
 
   ELEMENT* other;
+#ifdef QUASI_NEWTON
+  struct _ARRAY  estif;
+#endif
 } FLUID3_PRO;
 
 #endif

@@ -1083,6 +1083,7 @@ fdyn->stepke=0;
 fdyn->sttol=EPS6;
 fdyn->ittol=EPS6;
 
+fdyn->qnewton = 0;
 
 if (frfind("-FLUID DYNAMIC")==0) goto end;
 frread();
@@ -1139,6 +1140,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       else
          dserror("NONLINITER-Type unknown!");
    }
+   frreadyes("QNEWTON",&(fdyn->qnewton));
    frchar("CONVCHECK"  ,buffer    ,&ierr);
    if (ierr==1)
    {

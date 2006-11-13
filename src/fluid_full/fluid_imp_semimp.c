@@ -689,6 +689,10 @@ inherit_design_dis_neum(&(actfield->dis[disnum_calc]));
 /*------------------------------------------- initialise iterations-rhs */
 amzero(&frhs_a);
 
+#ifdef QUASI_NEWTON
+fdyn->itnum = itnum;
+#endif
+
 /*-------------- form incremental matrices, residual and element forces */
 #ifdef PERF
   perf_begin(81);
@@ -725,18 +729,6 @@ assemble_vec(actintra,
 #endif
 
 
-
-#if 0
-  fprintf(sol,"\nval:\n====\n");
-  for (i=0; i<actsolv->sysarray[actsysarray].msr->val.fdim; i++)
-  fprintf(sol,"%12.4e\n",actsolv->sysarray[actsysarray].msr->val.a.dv[i]);
-
-  fprintf(sol,"\nrhs:\n====\n");
-  for (i=0; i<actsolv->rhs[0].vec.fdim; i++)
-  fprintf(sol,"%12.4e\n",actsolv->rhs[0].vec.a.dv[i]);
-#endif
-
-
 init=0;
 t1=ds_cputime();
 solver_control(actfield,disnum_calc,actsolv, actintra,
@@ -747,13 +739,6 @@ solver_control(actfield,disnum_calc,actsolv, actintra,
                init);
 ts=ds_cputime()-t1;
 tss+=ts;
-
-
-#if 0
-  fprintf(sol,"\nsol:\n====\n");
-  for (i=0; i<actsolv->sol[0].vec.fdim; i++)
-  fprintf(sol,"%12.4e\n",actsolv->sol[0].vec.a.dv[i]);
-#endif
 
 
 #ifdef PERF

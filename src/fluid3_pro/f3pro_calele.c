@@ -214,6 +214,11 @@ void f3pro_calele(
   dstrc_enter("f3pro_calele");
 #endif
 
+#ifdef QUASI_NEWTON
+    if (alldyn[genprob.numff].fdyn->qnewton && ele->e.f3pro->estif.fdim==0)
+      amdef("estif",&ele->e.f3pro->estif,estif_global->fdim,estif_global->sdim,"DA");
+#endif
+  
   iel=ele->numnp;
   /*------------------------------------------------ initialise with ZERO */
   amzero(estif_global);
@@ -244,6 +249,20 @@ void f3pro_calele(
                   evelng,eveln,
                   evhist,NULL,epren,edeadng,
                   vderxy,vderxy2,visc,wa1,wa2);
+
+#ifdef QUASI_NEWTON
+  if (fdyn->qnewton)
+  {
+    if (fdyn->itnum==1)
+    {
+      amcopy(estif_global, &ele->e.f3pro->estif);
+    }
+    else
+    {
+      amcopy(&ele->e.f3pro->estif, estif_global);
+    }
+  }
+#endif
 
   /*------------------------------------------------ condensation of DBCs */
   /* estif is in xyz* so edforce is also in xyz* (but DBCs have to be

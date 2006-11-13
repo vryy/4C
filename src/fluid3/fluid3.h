@@ -62,6 +62,10 @@ struct _ARRAY      solsmn;        /* sol. of last timestep                */
 /*--------------------------------------------- structure for sub-submesh */
 struct _ARRAY      xyzssm;        /* coordinates of sub-submeshnodes      */
 #endif
+
+#ifdef QUASI_NEWTON
+  struct _ARRAY  estif;
+#endif
 } FLUID3;
 
 

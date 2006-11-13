@@ -123,6 +123,9 @@ int main(int argc, char** argv)
           L2[k] = sqrt(L2[k]);
           printf("\t%c:\t%f\t%f\t%f\n", dir, L1[k], L2[k], Linf[k]);
         }
+
+        destroy_chunk_data(&chunk1);
+        destroy_chunk_data(&chunk2);
         break;
       }
       default:
@@ -134,6 +137,9 @@ int main(int argc, char** argv)
       
       resnum += 1;
     }
+
+    destroy_result_data(&result1);
+    destroy_result_data(&result2);
   }
   
   return 0;

@@ -666,6 +666,11 @@ void f3pro_calmat( DOUBLE **estif,
 #define visc_          visc
 #define thsl           timefac
 
+#ifdef QUASI_NEWTON
+  if (!fdyn->qnewton || fdyn->itnum==1)
+  {
+#endif
+    
 for (vi=0; vi<iel; ++vi)
 {
   for (ui=0; ui<iel; ++ui)
@@ -807,8 +812,13 @@ for (vi=0; vi<iel; ++vi)
 
     /* Viskositätsstabilisierung (b,-2*nu*div(epsilon((v))) */
   }
+}
+#ifdef QUASI_NEWTON
+  }
+#endif
 
-
+for (vi=0; vi<iel; ++vi)
+{
   /* Konvektionsterm (u*grad(u),v) */
   eforce_(vi*3) += timefacfac*funct_(vi)*conv_old_(0) ;
   eforce_(vi*3 + 1) += timefacfac*funct_(vi)*conv_old_(1) ;

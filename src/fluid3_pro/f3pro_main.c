@@ -16,6 +16,7 @@ Maintainer: Ulrich Kuettler
 #include "../headers/standardtypes.h"
 #include "../fluid3/fluid3_prototypes.h"
 #include "fluid3pro_prototypes.h"
+#include "fluid3pro.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
