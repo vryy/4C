@@ -227,23 +227,12 @@ void input_designnode_dirich(RefCountPtr<CCADISCRETIZATION::DesignDiscretization
     }
     
     // create boundary condition
-    CCADISCRETIZATION::Container cont;
-    cont.Add("onoff",dirich_onoff);
-    cont.Add("val",dirich_val);
-    cont.Add("curve",dirich_curve);
-    cont.Add("funct",dirich_funct);
-    cont.Add("funct2",dirich_funct);
-    cont.Delete("funct2");
-    cout << "Container 1\n" << cont;
-    int blasize=0;
-    const char* bla = cont.Pack(blasize);    
-    
-    CCADISCRETIZATION::Container cont2;
-    cont2.Unpack(bla);
-
-    cout << "Container 2\n" << cont2;
-    
-    cout << "Made it through experiments\n";
+    CCADISCRETIZATION::Condition condition(CCADISCRETIZATION::Condition::condition_Dirichlet);
+    condition.Add("onoff",dirich_onoff);
+    condition.Add("val",dirich_val);
+    condition.Add("curve",dirich_curve);
+    condition.Add("funct",dirich_funct);
+    cout << condition;
     
     //------------------------------- get the dnode from the discretization
     CCADISCRETIZATION::Node* node = designdis->gNode(dnodeid);

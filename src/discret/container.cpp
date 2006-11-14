@@ -171,7 +171,7 @@ void CCADISCRETIZATION::Container::Print(ostream& os) const
   for (curr = intdata_.begin(); curr != intdata_.end(); ++curr)
   {
     vector<int>& data = *(curr->second);
-    os << "Record " << curr->first << endl;
+    os << curr->first << " : ";
     for (int i=0; i<(int)data.size(); ++i) os << data[i] << " ";
     os << endl;
   }
@@ -179,7 +179,7 @@ void CCADISCRETIZATION::Container::Print(ostream& os) const
   for (dcurr = doubledata_.begin(); dcurr != doubledata_.end(); ++dcurr)
   {
     vector<double>& data = *(dcurr->second);
-    os << "Record " << dcurr->first << endl;
+    os << dcurr->first << " : ";
     for (int i=0; i<(int)data.size(); ++i) os << data[i] << " ";
     os << endl;
   }
