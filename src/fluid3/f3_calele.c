@@ -173,14 +173,13 @@ if (init==1) /* allocate working arrays and set pointers */
    edforce = edforce_global->a.dv;
 
    fdyn    = alldyn[genprob.numff].fdyn;
-
-#ifdef QUASI_NEWTON
-   if (fdyn->qnewton)
-     amdef("estif",&ele->e.f3->estif,estif_global->fdim,estif_global->sdim,"DA");
-#endif
-
    goto end;
 } /* endif (init==1) */
+
+#ifdef QUASI_NEWTON
+   if (fdyn->qnewton && ele->e.f3->estif.fdim==0)
+     amdef("estif",&ele->e.f3->estif,estif_global->fdim,estif_global->sdim,"DA");
+#endif
 
 /*------------------------------------------------ initialise with ZERO */
 amzero(estif_global);
@@ -301,20 +300,25 @@ if(ele->locsys==locsys_yes)
    locsys_trans(ele,estif,NULL,NULL,eforce);
 
 #ifdef QUASI_NEWTON
-if (!fdyn->qnewton || fdyn->itnum==1)
+if (fdyn->qnewton)
 {
-  amcopy(estif_global, &ele->e.f3->estif);
-}
-else
-{
-  amcopy(&ele->e.f3->estif, estif_global);
+  if (fdyn->itnum==1)
+  {
+    amcopy(estif_global, &ele->e.f3->estif);
+  }
+  else
+  {
+    amcopy(&ele->e.f3->estif, estif_global);
+  }
 }
 #endif
 
+#ifndef FLUID_INCREMENTAL
 /*------------------------------------------------ condensation of DBCs */
 /* estif is in xyz* so edforce is also in xyz* (but DBCs have to be
    tranformed before condensing the dofs                                */
 fluid_caldirich(ele,edforce,estif,hasdirich,ipos->velnp);
+#endif
 
 end:
 

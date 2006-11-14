@@ -218,7 +218,7 @@ void f3pro_calele(
     if (alldyn[genprob.numff].fdyn->qnewton && ele->e.f3pro->estif.fdim==0)
       amdef("estif",&ele->e.f3pro->estif,estif_global->fdim,estif_global->sdim,"DA");
 #endif
-  
+
   iel=ele->numnp;
   /*------------------------------------------------ initialise with ZERO */
   amzero(estif_global);
@@ -264,10 +264,12 @@ void f3pro_calele(
   }
 #endif
 
+#ifndef FLUID_INCREMENTAL
   /*------------------------------------------------ condensation of DBCs */
   /* estif is in xyz* so edforce is also in xyz* (but DBCs have to be
      tranformed before condensing the dofs                                */
   fluid_caldirich(ele,edforce,estif,hasdirich,ipos->velnp);
+#endif
 
   /*----------------------------------------------------- local co-system */
   dsassert(ele->locsys==locsys_no,"locsys not implemented for this element!\n");

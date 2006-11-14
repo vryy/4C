@@ -709,6 +709,10 @@ void fluid_pm_cont_laplace()
       amzero(&frhs_a);
       amzero(&fgradprhs_a);
 
+#ifdef QUASI_NEWTON
+      fdyn->itnum = itnum;
+#endif
+
       /*-------------- form incremental matrices, residual and element forces */
 #ifdef PERF
       perf_begin(81);
