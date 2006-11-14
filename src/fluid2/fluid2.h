@@ -72,6 +72,10 @@ struct _ARRAY      xyzssm;        /* coordinates of sub-submeshnodes      */
 struct _ARRAY      stress_ND;    /*!< nodal stresses                         */
 /*------------------------------------------------------- nodal curvature */
 struct _ARRAY      kappa_ND;
+
+#ifdef QUASI_NEWTON
+  struct _ARRAY  estif;
+#endif
 } FLUID2;
 
 

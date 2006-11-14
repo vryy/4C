@@ -212,6 +212,11 @@ if (init==1) /* allocate working arrays and set pointers */
    goto end;
 } /* endif (init==1) */
 
+#ifdef QUASI_NEWTON
+   if (fdyn->qnewton && ele->e.f2->estif.fdim==0)
+     amdef("estif",&ele->e.f2->estif,estif_global->fdim,estif_global->sdim,"DA");
+#endif
+
 /*------------------------------------------------ initialise with ZERO */
 amzero(estif_global);
 amzero(emass_global);
@@ -359,10 +364,26 @@ if (is_relax)			/* calculation for relaxation parameter	*/
 else				/* standard case			*/
    readfrom = ipos->velnp;
 
+#ifdef QUASI_NEWTON
+if (fdyn->qnewton)
+{
+  if (fdyn->itnum==1)
+  {
+    amcopy(estif_global, &ele->e.f2->estif);
+  }
+  else
+  {
+    amcopy(&ele->e.f2->estif, estif_global);
+  }
+}
+#endif
+
+#ifndef FLUID_INCREMENTAL
 /*------------------------------------------------ condensation of DBCs */
 /* estif is in xyz* so edforce is also in xyz* (but DBCs have to be
    tranformed before condensing the dofs                                */
 fluid_caldirich(ele,edforce,estif,hasdirich,readfrom);
+#endif
 
 end:
 /*----------------------------------------------------------------------*/
