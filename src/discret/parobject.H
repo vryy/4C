@@ -20,6 +20,7 @@ Maintainer: Michael Gee
 #define PAROBJECT_H
 
 #include "vector"
+#include "string"
 
 using namespace std;
 
@@ -100,7 +101,26 @@ protected:
   at the beginning of the vector
 
   */
-  inline int Size(const char* data) const { int s = ((int*)data)[0]; return s; }
+  inline int SizePack(const char* data) const 
+  { int s = ((int*)data)[0]; return s; }
+
+  /*!
+  \brief return packing size of a string
+  
+  Calculate the size it needs to pack a string
+  */
+  inline int SizeString(const string& data) const 
+  { return (sizeof(int)+data.size()*sizeof(char));}
+
+  /*!
+  \brief return packing size of a vector
+  
+  Calculate the size it needs to pack a string
+  
+  \note Only vectors of basic types allowed!
+  */
+  template<typename kind> int SizeVector(const vector<kind>& data) const 
+  { return (sizeof(int)+data.size()*sizeof(kind));}
 
   /*!
   \brief Add stuff to a char vector data and increment position
@@ -143,11 +163,27 @@ protected:
   \param data     : char string stuff shall be added to
   \param stuff    : vector of things of total length stuffsize
   */
-  template<typename kind> void AddVectortoPack(int& position, char* data, vector<kind> stuff) const
+  template<typename kind> void AddVectortoPack(int& position, char* data, const vector<kind>& stuff) const
   {
     int numele = stuff.size();
     AddtoPack(position,data,numele);
     AddtoPack(position,data,&stuff[0],numele*sizeof(kind));
+    return;
+  }
+
+  /*!
+  \brief Add a string to a char vector data and increment position
+  
+  This method adds a string to data
+  \param position : place in data where to add stuff. Position will be incremented by this method.
+  \param data     : char string stuff shall be added to
+  \param stuff    : string to add
+  */
+  void AddStringtoPack(int& position, char* data, const string& stuff) const
+  {
+    int numele = stuff.size();
+    AddtoPack(position,data,numele);
+    AddtoPack(position,data,&stuff[0],numele*sizeof(char));
     return;
   }
 
@@ -202,6 +238,23 @@ protected:
     return;
   }
 
+  /*!
+  \brief Extract a vector of a basic type from a char vector data and increment position
+  
+  This method extracts an array from data
+  \param position : place in data where to extract stuff. Position will be incremented by this method by stuffsize.
+  \param data     : char string where stuff is extracted from
+  \param stuff    : array of total length stuffsize (in byte)
+  */
+  void ExtractStringfromPack(int& position, const char* data, string& stuff) const
+  {
+    int dim = 0;
+    ExtractfromPack(position,data,dim);
+    stuff.resize(dim);
+    int size = dim*sizeof(char);
+    ExtractfromPack(position,data,&stuff[0],size);
+    return;
+  }
   //@}
 
 

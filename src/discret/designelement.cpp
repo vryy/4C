@@ -73,14 +73,10 @@ const char* CCADISCRETIZATION::DesignElement::Pack(int& size) const
   size = 
   sizeint +                     // size itself
   basesize +                    // base class data
-  sizeint +                     // sizeof lentityid_
-  lentityid_.size()*sizeint +      // lentityid_
-  sizeint +                     // sizeof lorientation_
-  lorientation_.size()*sizeint + // lorientation_
-  sizeint +                     // sizeof hentityid_
-  hentityid_.size()*sizeint +      // hentityid_
-  sizeint +                     // sizeof horientation_
-  horientation_.size()*sizeint + // horientation_
+  SizeVector(lentityid_) +      // lentityid_
+  SizeVector(lorientation_) +   // lorientation_
+  SizeVector(hentityid_) +      // hentityid_
+  SizeVector(horientation_) +   // horientation_
   0;                            // continue to add data here...
   
   char* data = new char[size];
@@ -126,7 +122,7 @@ bool CCADISCRETIZATION::DesignElement::Unpack(const char* data)
   int size = 0;
   ExtractfromPack(position,data,size);
   // extract base class
-  int basesize = Size(&data[position]);
+  int basesize = SizePack(&data[position]);
   Element::Unpack(&data[position]);
   position += basesize;
   // extract lentityid_

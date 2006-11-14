@@ -105,8 +105,7 @@ const char* CCADISCRETIZATION::Element::Pack(int& size) const
   sizeint                +   // holds size itself
   sizeint                +   // holds Id()
   sizetype               +   // holds type of element
-  sizeint                +   // holds size of vector nodeid_
-  nodeid_.size()*sizeint +   // holds vector nodeid_
+  SizeVector(nodeid_)    +   // nodeid_
   0;                         // continue to add data here...
 
   char* data = new char[size];

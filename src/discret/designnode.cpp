@@ -108,7 +108,7 @@ bool CCADISCRETIZATION::DesignNode::Unpack(const char* data)
   ExtractfromPack(position,data,size);
   
   // extract base class
-  int basesize = Size(&data[position]);
+  int basesize = SizePack(&data[position]);
   Node::Unpack(&data[position]);
   position += basesize;
   

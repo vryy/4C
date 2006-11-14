@@ -136,7 +136,6 @@ public:
   void Add(const string& name, const vector<double>& data)
   { Add(name,&data[0],data.size()); return;}
 
-
   /*!
   \brief Get vector of type int or double
   
@@ -172,6 +171,19 @@ public:
     return NULL;
   }
   
+  /*!
+  \brief Delete a record from the container
+  
+  \param name : Name of data
+
+  */
+  void Delete(const string& name);
+
+  /*!
+  \brief Delete everything in this container
+  */
+  void Clear() { intdata_.clear(); doubledata_.clear(); return;}
+
   //@}
 
 protected:
