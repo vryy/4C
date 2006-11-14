@@ -1140,7 +1140,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       else
          dserror("NONLINITER-Type unknown!");
    }
+#ifdef QUASI_NEWTON
    frreadyes("QNEWTON",&(fdyn->qnewton));
+#endif
    frchar("CONVCHECK"  ,buffer    ,&ierr);
    if (ierr==1)
    {
