@@ -1083,7 +1083,9 @@ fdyn->stepke=0;
 fdyn->sttol=EPS6;
 fdyn->ittol=EPS6;
 
+#ifdef QUASI_NEWTON
 fdyn->qnewton = 0;
+#endif
 
 if (frfind("-FLUID DYNAMIC")==0) goto end;
 frread();
