@@ -1,5 +1,5 @@
 # -*- shell-script -*-
-PLATFORM=SUSE73
+PLATFORM=LINUX
 PARALLEL=yes
 
 if [ x$BIT = "x64" ] ; then

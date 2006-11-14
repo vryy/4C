@@ -1263,8 +1263,8 @@ void  add_msr_fast2(
   DOUBLE    **dsend2 = NULL;        /* p to sendbuffer to communicate coupling cond */
   INT         nsend =0;
 
-  static INT  *invupdate = NULL;
-  static INT  *invbindx  = NULL;
+  INT        *invupdate = NULL;
+  INT        *invbindx  = NULL;
   INT index2;
 
 #ifdef DEBUG
@@ -1283,6 +1283,8 @@ void  add_msr_fast2(
   update     = msr1->update.a.iv;
   bindx      = msr1->bindx.a.iv;
   val1       = msr1->val.a.dv;
+  invupdate  = msr1->invupdate;
+  invbindx   = msr1->invbindx;
   if (msr2) val2 = msr2->val.a.dv;
   else      val2 = NULL;
   cdofs      = actpart->pdis[0].coupledofs.a.ia;

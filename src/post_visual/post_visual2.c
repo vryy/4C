@@ -1467,7 +1467,7 @@ static void post_visual2()
 
   /* These are hacks to make visual2 work in linux. There are hard
    * coded filenames in ccarat's fortran part (vis2_qat2v2.f) */
-#ifdef SUSE73
+#if defined(LINUX) || defined(LINUX64)
 bgcolour+=10;
 #endif
 #ifdef LINUX_MUENCH

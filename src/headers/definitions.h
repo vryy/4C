@@ -53,7 +53,7 @@ typedef char      CHAR;
  | our binary files are big endian                                      |
  *----------------------------------------------------------------------*/
 
-#ifdef SUSE73
+#if defined(LINUX) || defined(LINUX64)
 #define IS_LITTLE_ENDIAN
 #endif
 
@@ -76,7 +76,7 @@ typedef char      CHAR;
 #undef CCA_APPEND_U
 
 /* append underslash for gnu's linux compiler gcc and g77 */
-#ifdef SUSE73
+#if defined(LINUX) || defined(LINUX64)
 #define CCA_APPEND_U (1)
 #endif
 
@@ -160,15 +160,22 @@ typedef char      CHAR;
 #define v2grid              v2grid_
 #define v2scal              v2scal_
 #define v2vect              v2vect_
+
+
 /* The number of underscores your fortran requires might differ.
  * On i386 Linux we need 2. */
 #ifdef LINUX_MUENCH
+
 #define v2_cursor           v2_cursor__
 #define v3cell              v3cell_
 #define v3string            v3string_
+
 #else
+
 #define v2_cursor           v2_cursor_
+
 #endif
+
 #define v2update            v2update_
 #define qat2v2              qat2v2_
 #define v3call              v3call_
@@ -213,10 +220,8 @@ typedef char      CHAR;
 
 #define fadm               fadm_
 #define fadmp              fadmp_
-#define fadmd              fadmd_
-#define fadmdp             fadmdp_
-#define fadmd2             fadmd2_
-#define fadmd2p            fadmd2p_
+#define fastsd                fastsd_
+#define fastsd2               fastsd2_
 
 #endif
 

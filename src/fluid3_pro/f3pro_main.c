@@ -117,7 +117,7 @@ void fluid3_pro(     PARTITION     *actpart,
     break;
 
   default:
-    dserror("action unknown");
+    dserror("action %d unknown", *action);
     break;
   } /* end swtich (*action) */
 

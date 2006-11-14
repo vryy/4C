@@ -489,6 +489,12 @@ void vis3caf(INT numff, INT numaf, INT numsf)
             post_read_shell8_info(discret, node_director, struct_idx);
             break;
 
+          case el_brick1:
+            if (struct_idx==-1) dserror("Structure field needed");
+            node_director = NULL;
+            KNSURFT+=1;
+            break;
+
           default:
             dserror("eltyp in vis3caf no supported yet");
             break;
@@ -602,8 +608,8 @@ void v3surface(INT nsurf[][2], INT surf[], INT scel[][4], CHAR tsurf[][20])
     if (IOPT==2)
     {
       char *name = "frontside fluid     "
-                   "frontside struct    "
-                   "Default             ";
+        "frontside struct    "
+        "Default             ";
 
       strncpy((char*)tsurf, name, 60);
     }
@@ -614,74 +620,74 @@ void v3surface(INT nsurf[][2], INT surf[], INT scel[][4], CHAR tsurf[][20])
       actele=&(discret[fluid_idx].element[i]);
       switch (actele->distyp)
       {
-        case quad4: /* 4 node rectangle */
-          for(j=0;j<4;j++)
-          {
-            dsassert(actele->node[j]->Id_loc < numnp_fluid, "Ups");
-            scel[i][j] = actele->node[j]->Id_loc+1;
-          }
-          nsurf[0][0]=numele_fluid;
-          nsurf[0][1]=1;
-          FLUID_SURF_offset=numele_fluid;
-          FLUID_GROUP_offset=1;
-          break;
+      case quad4: /* 4 node rectangle */
+        for(j=0;j<4;j++)
+        {
+          dsassert(actele->node[j]->Id_loc < numnp_fluid, "Ups");
+          scel[i][j] = actele->node[j]->Id_loc+1;
+        }
+        nsurf[0][0]=numele_fluid;
+        nsurf[0][1]=1;
+        FLUID_SURF_offset=numele_fluid;
+        FLUID_GROUP_offset=1;
+        break;
 
-        case quad9:
-          inel = 0;
-          p=8*i;
-          /*----------------------------------------- sub-element 1 */
-          scel[p+inel][0] = actele->node[0]->Id_loc+1;
-          scel[p+inel][1] = actele->node[4]->Id_loc+1;
-          scel[p+inel][2] = actele->node[8]->Id_loc+1;
-          scel[p+inel][3] = actele->node[7]->Id_loc+1;
-          inel++;
-          scel[p+inel][0] = actele->node[0]->Id_loc+1+numnp_fluid;
-          scel[p+inel][1] = actele->node[4]->Id_loc+1+numnp_fluid;
-          scel[p+inel][2] = actele->node[8]->Id_loc+1+numnp_fluid;
-          scel[p+inel][3] = actele->node[7]->Id_loc+1+numnp_fluid;
-          inel++;
-          /*----------------------------------------- sub-element 2 */
-          scel[p+inel][0] = actele->node[4]->Id_loc+1;
-          scel[p+inel][1] = actele->node[1]->Id_loc+1;
-          scel[p+inel][2] = actele->node[5]->Id_loc+1;
-          scel[p+inel][3] = actele->node[8]->Id_loc+1;
-          inel++;
-          scel[p+inel][0] = actele->node[4]->Id_loc+1+numnp_fluid;
-          scel[p+inel][1] = actele->node[1]->Id_loc+1+numnp_fluid;
-          scel[p+inel][2] = actele->node[5]->Id_loc+1+numnp_fluid;
-          scel[p+inel][3] = actele->node[8]->Id_loc+1+numnp_fluid;
-          inel++;
-          /*----------------------------------------- sub-element 3 */
-          scel[p+inel][0] = actele->node[8]->Id_loc+1;
-          scel[p+inel][1] = actele->node[5]->Id_loc+1;
-          scel[p+inel][2] = actele->node[2]->Id_loc+1;
-          scel[p+inel][3] = actele->node[6]->Id_loc+1;
-          inel++;
-          scel[p+inel][0] = actele->node[8]->Id_loc+1+numnp_fluid;
-          scel[p+inel][1] = actele->node[5]->Id_loc+1+numnp_fluid;
-          scel[p+inel][2] = actele->node[2]->Id_loc+1+numnp_fluid;
-          scel[p+inel][3] = actele->node[6]->Id_loc+1+numnp_fluid;
-          inel++;
-          /*----------------------------------------- sub-element 4 */
-          scel[p+inel][0] = actele->node[7]->Id_loc+1;
-          scel[p+inel][1] = actele->node[8]->Id_loc+1;
-          scel[p+inel][2] = actele->node[6]->Id_loc+1;
-          scel[p+inel][3] = actele->node[3]->Id_loc+1;
-          inel++;
-          scel[p+inel][0] = actele->node[7]->Id_loc+1+numnp_fluid;
-          scel[p+inel][1] = actele->node[8]->Id_loc+1+numnp_fluid;
-          scel[p+inel][2] = actele->node[6]->Id_loc+1+numnp_fluid;
-          scel[p+inel][3] = actele->node[3]->Id_loc+1+numnp_fluid;
+      case quad9:
+        inel = 0;
+        p=8*i;
+        /*----------------------------------------- sub-element 1 */
+        scel[p+inel][0] = actele->node[0]->Id_loc+1;
+        scel[p+inel][1] = actele->node[4]->Id_loc+1;
+        scel[p+inel][2] = actele->node[8]->Id_loc+1;
+        scel[p+inel][3] = actele->node[7]->Id_loc+1;
+        inel++;
+        scel[p+inel][0] = actele->node[0]->Id_loc+1+numnp_fluid;
+        scel[p+inel][1] = actele->node[4]->Id_loc+1+numnp_fluid;
+        scel[p+inel][2] = actele->node[8]->Id_loc+1+numnp_fluid;
+        scel[p+inel][3] = actele->node[7]->Id_loc+1+numnp_fluid;
+        inel++;
+        /*----------------------------------------- sub-element 2 */
+        scel[p+inel][0] = actele->node[4]->Id_loc+1;
+        scel[p+inel][1] = actele->node[1]->Id_loc+1;
+        scel[p+inel][2] = actele->node[5]->Id_loc+1;
+        scel[p+inel][3] = actele->node[8]->Id_loc+1;
+        inel++;
+        scel[p+inel][0] = actele->node[4]->Id_loc+1+numnp_fluid;
+        scel[p+inel][1] = actele->node[1]->Id_loc+1+numnp_fluid;
+        scel[p+inel][2] = actele->node[5]->Id_loc+1+numnp_fluid;
+        scel[p+inel][3] = actele->node[8]->Id_loc+1+numnp_fluid;
+        inel++;
+        /*----------------------------------------- sub-element 3 */
+        scel[p+inel][0] = actele->node[8]->Id_loc+1;
+        scel[p+inel][1] = actele->node[5]->Id_loc+1;
+        scel[p+inel][2] = actele->node[2]->Id_loc+1;
+        scel[p+inel][3] = actele->node[6]->Id_loc+1;
+        inel++;
+        scel[p+inel][0] = actele->node[8]->Id_loc+1+numnp_fluid;
+        scel[p+inel][1] = actele->node[5]->Id_loc+1+numnp_fluid;
+        scel[p+inel][2] = actele->node[2]->Id_loc+1+numnp_fluid;
+        scel[p+inel][3] = actele->node[6]->Id_loc+1+numnp_fluid;
+        inel++;
+        /*----------------------------------------- sub-element 4 */
+        scel[p+inel][0] = actele->node[7]->Id_loc+1;
+        scel[p+inel][1] = actele->node[8]->Id_loc+1;
+        scel[p+inel][2] = actele->node[6]->Id_loc+1;
+        scel[p+inel][3] = actele->node[3]->Id_loc+1;
+        inel++;
+        scel[p+inel][0] = actele->node[7]->Id_loc+1+numnp_fluid;
+        scel[p+inel][1] = actele->node[8]->Id_loc+1+numnp_fluid;
+        scel[p+inel][2] = actele->node[6]->Id_loc+1+numnp_fluid;
+        scel[p+inel][3] = actele->node[3]->Id_loc+1+numnp_fluid;
 
-          nsurf[0][0]=8*numele_fluid;
-          nsurf[0][1]=1;
-          FLUID_SURF_offset=8*numele_fluid;
-          FLUID_GROUP_offset=1;
-          break;
+        nsurf[0][0]=8*numele_fluid;
+        nsurf[0][1]=1;
+        FLUID_SURF_offset=8*numele_fluid;
+        FLUID_GROUP_offset=1;
+        break;
 
-        default:
-          dserror("distyp not implemented yet");
-          break;
+      default:
+        dserror("distyp not implemented yet");
+        break;
       }
     }
   } /* ----------------------------------------------END OF FLUID SURFACES 2D*/
@@ -697,7 +703,8 @@ void v3surface(INT nsurf[][2], INT surf[], INT scel[][4], CHAR tsurf[][20])
 
 #ifdef DESIGN
     /* ----------------------------------------------------FLUID SURFACES 3D*/
-    if (map_find_int(fluid_field->group, "ndvol", &ndvol) && discret[fluid_idx].element[0].distyp != hex20)
+    if (map_find_int(fluid_field->group, "ndvol", &ndvol) &&
+        discret[fluid_idx].element[0].distyp != hex20)
     {
       for (i=0;i<ndsurf_tot;i++)
       {
@@ -723,7 +730,7 @@ void v3surface(INT nsurf[][2], INT surf[], INT scel[][4], CHAR tsurf[][20])
 
         }
         CCAFREE(tmp_array[i]);
-      }/*end of loop over all surfaces*/
+      }
       CCAFREE(counter_array);
       CCAFREE(surf_in);
       CCAFREE(tmp_array);
@@ -743,7 +750,7 @@ void v3surface(INT nsurf[][2], INT surf[], INT scel[][4], CHAR tsurf[][20])
   {
     char *name = "Structure           "
                  "Fluid               ";
-    strncpy((char*)tsurf, name, 40);
+    memcpy((char*)tsurf, name, 40);
 
     INT p=0;
 
@@ -753,153 +760,195 @@ void v3surface(INT nsurf[][2], INT surf[], INT scel[][4], CHAR tsurf[][20])
       switch (actele->distyp)
       {
 
-        case quad4: /* 4 node rectangle */
-          inel=0;
-          p=FLUID_SURF_offset+2*i;
-          scel[p+inel][0] = actele->node[0]->Id_loc+1+FLUID_NODE_offset;
-          scel[p+inel][1] = actele->node[1]->Id_loc+1+FLUID_NODE_offset;
-          scel[p+inel][2] = actele->node[2]->Id_loc+1+FLUID_NODE_offset;
-          scel[p+inel][3] = actele->node[3]->Id_loc+1+FLUID_NODE_offset;
-          inel++;
-          scel[p+inel][0] = actele->node[0]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          scel[p+inel][1] = actele->node[1]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          scel[p+inel][2] = actele->node[2]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          scel[p+inel][3] = actele->node[3]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          nsurf[FLUID_GROUP_offset][0]=FLUID_SURF_offset+2*numele_struct;
-          nsurf[FLUID_GROUP_offset][1]=1;
-          break;
+      case quad4: /* 4 node rectangle */
+        inel=0;
+        p=FLUID_SURF_offset+2*i;
+        scel[p+inel][0] = actele->node[0]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][1] = actele->node[1]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][2] = actele->node[2]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][3] = actele->node[3]->Id_loc+1+FLUID_NODE_offset;
+        inel++;
+        scel[p+inel][0] = actele->node[0]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        scel[p+inel][1] = actele->node[1]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        scel[p+inel][2] = actele->node[2]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        scel[p+inel][3] = actele->node[3]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        nsurf[FLUID_GROUP_offset][0]=FLUID_SURF_offset+2*numele_struct;
+        nsurf[FLUID_GROUP_offset][1]=1;
+        break;
 
-        case quad8:
-          inel=0;
-          p=FLUID_SURF_offset+10*i;
-          /*----------------------------------------- sub element 1*/
-          scel[p+inel][0] = actele->node[4]->Id_loc+1+FLUID_NODE_offset;
-          scel[p+inel][1] = actele->node[0]->Id_loc+1+FLUID_NODE_offset;
-          scel[p+inel][2] = actele->node[7]->Id_loc+1+FLUID_NODE_offset;
-          scel[p+inel][3] = 0;
-          inel++;
-          scel[p+inel][0] = actele->node[4]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          scel[p+inel][1] = actele->node[0]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          scel[p+inel][2] = actele->node[7]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          scel[p+inel][3] = 0;
-          inel++;
-          /*----------------------------------------- sub element 2*/
-          scel[p+inel][0] = actele->node[5]->Id_loc+1+FLUID_NODE_offset;
-          scel[p+inel][1] = actele->node[1]->Id_loc+1+FLUID_NODE_offset;
-          scel[p+inel][2] = actele->node[4]->Id_loc+1+FLUID_NODE_offset;
-          scel[p+inel][3] = 0;
-          inel++;
-          scel[p+inel][0] = actele->node[5]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          scel[p+inel][1] = actele->node[1]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          scel[p+inel][2] = actele->node[4]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          scel[p+inel][3] = 0;
-          inel++;
-          /*----------------------------------------- sub element 3*/
-          scel[p+inel][0] = actele->node[6]->Id_loc+1+FLUID_NODE_offset;
-          scel[p+inel][1] = actele->node[2]->Id_loc+1+FLUID_NODE_offset;
-          scel[p+inel][2] = actele->node[5]->Id_loc+1+FLUID_NODE_offset;
-          scel[p+inel][3] = 0;
-          inel++;
-          scel[p+inel][0] = actele->node[6]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          scel[p+inel][1] = actele->node[2]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          scel[p+inel][2] = actele->node[5]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          scel[p+inel][3] = 0;
-          inel++;
-          /*----------------------------------------- sub element 4*/
-          scel[p+inel][0] = actele->node[7]->Id_loc+1+FLUID_NODE_offset;
-          scel[p+inel][1] = actele->node[3]->Id_loc+1+FLUID_NODE_offset;
-          scel[p+inel][2] = actele->node[6]->Id_loc+1+FLUID_NODE_offset;
-          scel[p+inel][3] = 0;
-          inel++;
-          scel[p+inel][0] = actele->node[7]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          scel[p+inel][1] = actele->node[3]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          scel[p+inel][2] = actele->node[6]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          scel[p+inel][3] = 0;
-          inel++;
-          /*----------------------------------------- sub element 5*/
-          scel[p+inel][0] = actele->node[4]->Id_loc+1+FLUID_NODE_offset;
-          scel[p+inel][1] = actele->node[5]->Id_loc+1+FLUID_NODE_offset;
-          scel[p+inel][2] = actele->node[6]->Id_loc+1+FLUID_NODE_offset;
-          scel[p+inel][3] = actele->node[7]->Id_loc+1+FLUID_NODE_offset;
-          inel++;
-          scel[p+inel][0] = actele->node[4]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          scel[p+inel][1] = actele->node[5]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          scel[p+inel][2] = actele->node[6]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          scel[p+inel][3] = actele->node[7]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+      case quad8:
+        inel=0;
+        p=FLUID_SURF_offset+10*i;
+        /*----------------------------------------- sub element 1*/
+        scel[p+inel][0] = actele->node[4]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][1] = actele->node[0]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][2] = actele->node[7]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][3] = 0;
+        inel++;
+        scel[p+inel][0] = actele->node[4]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        scel[p+inel][1] = actele->node[0]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        scel[p+inel][2] = actele->node[7]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        scel[p+inel][3] = 0;
+        inel++;
+        /*----------------------------------------- sub element 2*/
+        scel[p+inel][0] = actele->node[5]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][1] = actele->node[1]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][2] = actele->node[4]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][3] = 0;
+        inel++;
+        scel[p+inel][0] = actele->node[5]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        scel[p+inel][1] = actele->node[1]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        scel[p+inel][2] = actele->node[4]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        scel[p+inel][3] = 0;
+        inel++;
+        /*----------------------------------------- sub element 3*/
+        scel[p+inel][0] = actele->node[6]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][1] = actele->node[2]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][2] = actele->node[5]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][3] = 0;
+        inel++;
+        scel[p+inel][0] = actele->node[6]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        scel[p+inel][1] = actele->node[2]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        scel[p+inel][2] = actele->node[5]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        scel[p+inel][3] = 0;
+        inel++;
+        /*----------------------------------------- sub element 4*/
+        scel[p+inel][0] = actele->node[7]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][1] = actele->node[3]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][2] = actele->node[6]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][3] = 0;
+        inel++;
+        scel[p+inel][0] = actele->node[7]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        scel[p+inel][1] = actele->node[3]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        scel[p+inel][2] = actele->node[6]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        scel[p+inel][3] = 0;
+        inel++;
+        /*----------------------------------------- sub element 5*/
+        scel[p+inel][0] = actele->node[4]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][1] = actele->node[5]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][2] = actele->node[6]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][3] = actele->node[7]->Id_loc+1+FLUID_NODE_offset;
+        inel++;
+        scel[p+inel][0] = actele->node[4]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        scel[p+inel][1] = actele->node[5]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        scel[p+inel][2] = actele->node[6]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        scel[p+inel][3] = actele->node[7]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
 
-          nsurf[FLUID_GROUP_offset][0]=FLUID_SURF_offset+10*numele_struct;
-          nsurf[FLUID_GROUP_offset][1]=1;
-          break;
+        nsurf[FLUID_GROUP_offset][0]=FLUID_SURF_offset+10*numele_struct;
+        nsurf[FLUID_GROUP_offset][1]=1;
+        break;
 
-        case quad9:
-          inel = 0;
-          p=FLUID_SURF_offset + 8*i;
-          /*----------------------------------------- sub-element 1 */
-          scel[p+inel][0] = actele->node[0]->Id_loc+1+FLUID_NODE_offset;
-          scel[p+inel][1] = actele->node[4]->Id_loc+1+FLUID_NODE_offset;
-          scel[p+inel][2] = actele->node[8]->Id_loc+1+FLUID_NODE_offset;
-          scel[p+inel][3] = actele->node[7]->Id_loc+1+FLUID_NODE_offset;
-          inel++;
-          scel[p+inel][0] = actele->node[0]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          scel[p+inel][1] = actele->node[4]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          scel[p+inel][2] = actele->node[8]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          scel[p+inel][3] = actele->node[7]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          inel++;
-          /*----------------------------------------- sub-element 2 */
-          scel[p+inel][0] = actele->node[4]->Id_loc+1+FLUID_NODE_offset;
-          scel[p+inel][1] = actele->node[1]->Id_loc+1+FLUID_NODE_offset;
-          scel[p+inel][2] = actele->node[5]->Id_loc+1+FLUID_NODE_offset;
-          scel[p+inel][3] = actele->node[8]->Id_loc+1+FLUID_NODE_offset;
-          inel++;
-          scel[p+inel][0] = actele->node[4]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          scel[p+inel][1] = actele->node[1]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          scel[p+inel][2] = actele->node[5]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          scel[p+inel][3] = actele->node[8]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          inel++;
-          /*----------------------------------------- sub-element 3 */
-          scel[p+inel][0] = actele->node[8]->Id_loc+1+FLUID_NODE_offset;
-          scel[p+inel][1] = actele->node[5]->Id_loc+1+FLUID_NODE_offset;
-          scel[p+inel][2] = actele->node[2]->Id_loc+1+FLUID_NODE_offset;
-          scel[p+inel][3] = actele->node[6]->Id_loc+1+FLUID_NODE_offset;
-          inel++;
-          scel[p+inel][0] = actele->node[8]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          scel[p+inel][1] = actele->node[5]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          scel[p+inel][2] = actele->node[2]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          scel[p+inel][3] = actele->node[6]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          inel++;
-          /*----------------------------------------- sub-element 4 */
-          scel[p+inel][0] = actele->node[7]->Id_loc+1+FLUID_NODE_offset;
-          scel[p+inel][1] = actele->node[8]->Id_loc+1+FLUID_NODE_offset;
-          scel[p+inel][2] = actele->node[6]->Id_loc+1+FLUID_NODE_offset;
-          scel[p+inel][3] = actele->node[3]->Id_loc+1+FLUID_NODE_offset;
-          inel++;
-          scel[p+inel][0] = actele->node[7]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          scel[p+inel][1] = actele->node[8]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          scel[p+inel][2] = actele->node[6]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          scel[p+inel][3] = actele->node[3]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+      case quad9:
+        inel = 0;
+        p=FLUID_SURF_offset + 8*i;
+        /*----------------------------------------- sub-element 1 */
+        scel[p+inel][0] = actele->node[0]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][1] = actele->node[4]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][2] = actele->node[8]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][3] = actele->node[7]->Id_loc+1+FLUID_NODE_offset;
+        inel++;
+        scel[p+inel][0] = actele->node[0]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        scel[p+inel][1] = actele->node[4]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        scel[p+inel][2] = actele->node[8]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        scel[p+inel][3] = actele->node[7]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        inel++;
+        /*----------------------------------------- sub-element 2 */
+        scel[p+inel][0] = actele->node[4]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][1] = actele->node[1]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][2] = actele->node[5]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][3] = actele->node[8]->Id_loc+1+FLUID_NODE_offset;
+        inel++;
+        scel[p+inel][0] = actele->node[4]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        scel[p+inel][1] = actele->node[1]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        scel[p+inel][2] = actele->node[5]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        scel[p+inel][3] = actele->node[8]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        inel++;
+        /*----------------------------------------- sub-element 3 */
+        scel[p+inel][0] = actele->node[8]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][1] = actele->node[5]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][2] = actele->node[2]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][3] = actele->node[6]->Id_loc+1+FLUID_NODE_offset;
+        inel++;
+        scel[p+inel][0] = actele->node[8]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        scel[p+inel][1] = actele->node[5]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        scel[p+inel][2] = actele->node[2]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        scel[p+inel][3] = actele->node[6]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        inel++;
+        /*----------------------------------------- sub-element 4 */
+        scel[p+inel][0] = actele->node[7]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][1] = actele->node[8]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][2] = actele->node[6]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][3] = actele->node[3]->Id_loc+1+FLUID_NODE_offset;
+        inel++;
+        scel[p+inel][0] = actele->node[7]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        scel[p+inel][1] = actele->node[8]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        scel[p+inel][2] = actele->node[6]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        scel[p+inel][3] = actele->node[3]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
 
-          nsurf[FLUID_GROUP_offset][0]=FLUID_SURF_offset+8*numele_struct;
-          nsurf[FLUID_GROUP_offset][1]=1;
-          break;
+        nsurf[FLUID_GROUP_offset][0]=FLUID_SURF_offset+8*numele_struct;
+        nsurf[FLUID_GROUP_offset][1]=1;
+        break;
 
-        case tri3:
-          inel = 0;
-          p= FLUID_SURF_offset + 2*i;
-          scel[p+inel][0] = actele->node[0]->Id_loc+1+FLUID_NODE_offset;
-          scel[p+inel][1] = actele->node[1]->Id_loc+1+FLUID_NODE_offset;
-          scel[p+inel][2] = actele->node[2]->Id_loc+1+FLUID_NODE_offset;
-          scel[p+inel][3] = 0;
-          inel++;
-          scel[p+inel][0] = actele->node[0]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          scel[p+inel][1] = actele->node[1]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          scel[p+inel][2] = actele->node[2]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
-          scel[p+inel][3] = 0;
-          nsurf[FLUID_GROUP_offset][0]=FLUID_SURF_offset+2*numele_struct;
-          nsurf[FLUID_GROUP_offset][1]=1;
-          break;
+      case tri3:
+        inel = 0;
+        p= FLUID_SURF_offset + 2*i;
+        scel[p+inel][0] = actele->node[0]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][1] = actele->node[1]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][2] = actele->node[2]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][3] = 0;
+        inel++;
+        scel[p+inel][0] = actele->node[0]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        scel[p+inel][1] = actele->node[1]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        scel[p+inel][2] = actele->node[2]->Id_loc+1+FLUID_NODE_offset+numnp_struct;
+        scel[p+inel][3] = 0;
+        nsurf[FLUID_GROUP_offset][0]=FLUID_SURF_offset+2*numele_struct;
+        nsurf[FLUID_GROUP_offset][1]=1;
+        break;
 
-        default:
-          break;
+      case hex8:
+        inel = 0;
+        p = FLUID_SURF_offset + 6*i;
+
+        scel[p+inel][0] = actele->node[0]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][1] = actele->node[1]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][2] = actele->node[2]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][3] = actele->node[3]->Id_loc+1+FLUID_NODE_offset;
+        inel++;
+
+        scel[p+inel][0] = actele->node[1]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][1] = actele->node[2]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][2] = actele->node[6]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][3] = actele->node[5]->Id_loc+1+FLUID_NODE_offset;
+        inel++;
+
+        scel[p+inel][0] = actele->node[2]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][1] = actele->node[3]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][2] = actele->node[7]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][3] = actele->node[6]->Id_loc+1+FLUID_NODE_offset;
+        inel++;
+
+        scel[p+inel][0] = actele->node[3]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][1] = actele->node[7]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][2] = actele->node[4]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][3] = actele->node[0]->Id_loc+1+FLUID_NODE_offset;
+        inel++;
+
+        scel[p+inel][0] = actele->node[4]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][1] = actele->node[5]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][2] = actele->node[6]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][3] = actele->node[7]->Id_loc+1+FLUID_NODE_offset;
+        inel++;
+
+        scel[p+inel][0] = actele->node[5]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][1] = actele->node[4]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][2] = actele->node[0]->Id_loc+1+FLUID_NODE_offset;
+        scel[p+inel][3] = actele->node[1]->Id_loc+1+FLUID_NODE_offset;
+        inel++;
+
+        nsurf[FLUID_GROUP_offset][0]=FLUID_SURF_offset+6*numele_struct;
+        nsurf[FLUID_GROUP_offset][1]=1;
+      default:
+        break;
       }
     }
   }/*end of for*/
@@ -1067,31 +1116,48 @@ void v3grid(float XYZ[][3])
                 XYZ[i][0] = actanode->x[0] + ale_displacement[3*actanode->Id_loc + 0];
                 XYZ[i][1] = actanode->x[1] + ale_displacement[3*actanode->Id_loc + 1];
                 XYZ[i][2] = actanode->x[2] + ale_displacement[3*actanode->Id_loc + 2];
-
               }
             }
             break;
           case structure:
-            for (i=0;i<discret[struct_idx].field->numnp;i++)
+            if (node_director!=NULL)
             {
-              actnode=&(discret[struct_idx].node[i]);
-              dvx=node_director[3*actnode->Id_loc];
-              dvy=node_director[3*actnode->Id_loc+1];
-              dvz=node_director[3*actnode->Id_loc+2];
+              for (i=0;i<discret[struct_idx].field->numnp;i++)
+              {
+                actnode=&(discret[struct_idx].node[i]);
+                dvx=node_director[3*actnode->Id_loc];
+                dvy=node_director[3*actnode->Id_loc+1];
+                dvz=node_director[3*actnode->Id_loc+2];
 
-              dx=displacement[dis_dim*i];
-              dy=displacement[dis_dim*i+1];
-              dz=displacement[dis_dim*i+2];
-              ddvx=displacement[dis_dim*i+3];
-              ddvy=displacement[dis_dim*i+4];
-              ddvz=displacement[dis_dim*i+5];
+                dx=displacement[dis_dim*i];
+                dy=displacement[dis_dim*i+1];
+                dz=displacement[dis_dim*i+2];
+                ddvx=displacement[dis_dim*i+3];
+                ddvy=displacement[dis_dim*i+4];
+                ddvz=displacement[dis_dim*i+5];
 
-              XYZ[numnp_fluid+i][0] = actnode->x[0]+dx+dvx+ddvx;
-              XYZ[numnp_fluid+i][1] = actnode->x[1]+dy+dvy+ddvy;
-              XYZ[numnp_fluid+i][2] = actnode->x[2]+dz+dvz+ddvz;
-              XYZ[numnp_fluid+numnp_struct+i][0] = actnode->x[0]+dx-dvx-ddvx;
-              XYZ[numnp_fluid+numnp_struct+i][1] = actnode->x[1]+dy-dvy-ddvx;
-              XYZ[numnp_fluid+numnp_struct+i][2] = actnode->x[2]+dz-dvz-ddvx;
+                XYZ[numnp_fluid+i][0] = actnode->x[0]+dx+dvx+ddvx;
+                XYZ[numnp_fluid+i][1] = actnode->x[1]+dy+dvy+ddvy;
+                XYZ[numnp_fluid+i][2] = actnode->x[2]+dz+dvz+ddvz;
+                XYZ[numnp_fluid+numnp_struct+i][0] = actnode->x[0]+dx-dvx-ddvx;
+                XYZ[numnp_fluid+numnp_struct+i][1] = actnode->x[1]+dy-dvy-ddvx;
+                XYZ[numnp_fluid+numnp_struct+i][2] = actnode->x[2]+dz-dvz-ddvx;
+              }
+            }
+            else
+            {
+              for (i=0;i<discret[struct_idx].field->numnp;i++)
+              {
+                actnode=&(discret[struct_idx].node[i]);
+
+                dx=displacement[dis_dim*i];
+                dy=displacement[dis_dim*i+1];
+                dz=displacement[dis_dim*i+2];
+
+                XYZ[numnp_fluid+i][0] = actnode->x[0]+dx;
+                XYZ[numnp_fluid+i][1] = actnode->x[1]+dy;
+                XYZ[numnp_fluid+i][2] = actnode->x[2]+dz;
+              }
             }
             break;
           default:

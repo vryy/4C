@@ -1270,7 +1270,7 @@ void set_VISUAL_values(int *numnp3D,
   dstrc_enter("set_VISUAL_values");
 #endif
 
-  if (discret->field->type!=2)
+  if (discret->field->type!=ale)
   {
     distyp=discret->element[0].distyp;
     actfield=discret->field;

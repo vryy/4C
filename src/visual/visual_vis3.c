@@ -343,7 +343,7 @@ default:
    printf("\nTry again!\n");
    goto input5;
 }
-#ifdef SUSE73
+#if defined(LINUX) || defined(LINUX64)
 bgcolour+=10;
 #endif
 
@@ -625,7 +625,7 @@ default:
    printf("\nTry again!\n");
    goto input5;
 }
-#ifdef SUSE73
+#if defined(LINUX) || defined(LINUX64)
 bgcolour+=10;
 #endif
 

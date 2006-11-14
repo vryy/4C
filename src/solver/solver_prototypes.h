@@ -1925,45 +1925,6 @@ void fadm(
     INT        *loopl,
     INT        *l);
 
-void fadmd(
-    DOUBLE     *estif_f,
-    INT        *lm,
-    INT        *owner,
-    INT        *dirich,
-    INT        *invupd,
-    INT        *bindx,
-    INT        *invbindx,
-    DOUBLE     *val,
-    INT        *myrank,
-    INT        *nprocs,
-    INT        *numeq_total,
-    INT        *numeq,
-    INT        *numnp,
-    INT        *nd,
-    INT        *aloopl,
-    INT        *loopl,
-    INT        *l);
-
-
-void fadmd2(
-    DOUBLE     *estif_f,
-    INT        *lm,
-    INT        *owner,
-    INT        *dirich,
-    INT        *invupd,
-    INT        *bindx,
-    INT        *invbindx,
-    DOUBLE     *val,
-    INT        *myrank,
-    INT        *nprocs,
-    INT        *numeq_total,
-    INT        *numeq,
-    INT        *numnp,
-    INT        *nd,
-    INT        *aloopl,
-    INT        *loopl,
-    INT        *l);
-
 
 void fadmp(
     DOUBLE     *estif_f,
@@ -1983,46 +1944,21 @@ void fadmp(
     INT        *loopl,
     INT        *l);
 
-void fadmdp(
-    DOUBLE     *estif_f,
-    INT        *lm,
-    INT        *owner,
-    INT        *dirich,
-    INT        *invupd,
-    INT        *bindx,
-    INT        *invbindx,
-    DOUBLE     *val,
-    INT        *myrank,
-    INT        *nprocs,
-    INT        *numeq_total,
-    INT        *numeq,
-    INT        *numnp,
-    INT        *nd,
-    INT        *aloopl,
-    INT        *loopl,
-    INT        *l);
+void fastsd(
+    DOUBLE      *estif,
+    INT         *dirich,
+    INT         *numnp,
+    INT         *nd,
+    INT         *loopl,
+    INT         *ele);
 
-
-void fadmd2p(
-    DOUBLE     *estif_f,
-    INT        *lm,
-    INT        *owner,
-    INT        *dirich,
-    INT        *invupd,
-    INT        *bindx,
-    INT        *invbindx,
-    DOUBLE     *val,
-    INT        *myrank,
-    INT        *nprocs,
-    INT        *numeq_total,
-    INT        *numeq,
-    INT        *numnp,
-    INT        *nd,
-    INT        *aloopl,
-    INT        *loopl,
-    INT        *l);
-
-
+void fastsd2(
+    DOUBLE      *estif,
+    INT         *dirich,
+    INT         *numnp,
+    INT         *nd,
+    INT         *loopl,
+    INT         *ele);
 
 #endif
 

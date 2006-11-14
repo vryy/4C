@@ -1441,7 +1441,8 @@ int main(int argc, char** argv)
   init_problem_data(&problem, argc, argv);
 
   sprintf(filename, "%s.flavia.res", problem.basename);
-  GiD_OpenPostResultFile(filename);
+  if (GiD_OpenPostResultFile(filename)!=0)
+    dserror("failed to open gid output file '%s'", filename);
 
   /* Some problem types have to be handled in a special way. The
    * default is to simply write the results as they are. */

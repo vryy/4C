@@ -34,7 +34,7 @@ Maintainer: Malte Neumann
 #include <aztec21/az_aztec.h>
 #endif
 
-#ifdef SUSE73
+#if defined(LINUX) || defined(LINUX64)
 #include <aztec21/az_aztec.h>
 #endif
 
@@ -88,7 +88,7 @@ Maintainer: Malte Neumann
 #include <aztec21/az_aztec.h>
 #endif
 
-#ifdef SUSE73
+#if defined(LINUX) || defined(LINUX64)
 #include <aztec21/az_aztec.h>
 #endif
 
@@ -166,7 +166,7 @@ Maintainer: Malte Neumann
 #include <spooles/MPI/spoolesMPI.h>
 #endif
 
-#ifdef SUSE73
+#if defined(LINUX) || defined(LINUX64)
 #include <spooles/MPI/spoolesMPI.h>
 #endif
 
@@ -206,7 +206,7 @@ Maintainer: Malte Neumann
  *----------------------------------------------------------------------*/
 #ifdef UMFPACK
 
-#ifdef SUSE73
+#if defined(LINUX) || defined(LINUX64)
 #include <umfpack/umfpack.h>
 #elif defined(LINUX_MUENCH)
 #include <umfpack.h>
@@ -698,6 +698,9 @@ typedef struct _AZ_ARRAY_MSR
   struct _ARRAY           bindx_backup;     /* backup of bindx, as bindx is altered by solver */
   struct _ARRAY           val;              /* values of matrix */
   struct _ARRAY           val_backup;       /* backup of values of matrix as val is altered by solver */
+
+  INT                    *invupdate;
+  INT                    *invbindx;
 
 #ifdef AZTEC_PACKAGE
   DOUBLE                  params[AZ_PARAMS_SIZE];    /* Aztec parameters */

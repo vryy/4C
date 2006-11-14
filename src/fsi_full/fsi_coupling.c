@@ -580,6 +580,7 @@ void fsi_initcoupling(
   INT     dim;                                 /* dimension of problem    */
   INT     sfound,afound;                       /* flag                    */
   INT     is_ale;
+  INT     ele;
 
   DOUBLE  tol=EPS4;                            /* tolerance for node dist */
 
@@ -861,33 +862,65 @@ perf_begin(56);
     {
       if (is_ale>0)
       {
-        for (j=0; j<actfnode->element[0]->numnp; j++)
+
+        /* find adjecent ale element */
+#ifdef D_FLUID3
+        if (actfnode->element[0]->e.f3->is_ale > 0)
+          ele = 0;
+        else if (actfnode->element[1]->e.f3->is_ale > 0)
+          ele = 1;
+        else if (actfnode->element[2]->e.f3->is_ale > 0)
+          ele = 2;
+        else if (actfnode->element[3]->e.f3->is_ale > 0)
+          ele = 3;
+        else if (actfnode->element[4]->e.f3->is_ale > 0)
+          ele = 4;
+        else if (actfnode->element[5]->e.f3->is_ale > 0)
+          ele = 5;
+        else if (actfnode->element[6]->e.f3->is_ale > 0)
+          ele = 6;
+        else if (actfnode->element[7]->e.f3->is_ale > 0)
+          ele = 7;
+#endif
+
+#ifdef D_FLUID2
+        if (actfnode->element[0]->e.f2->is_ale > 0)
+          ele = 0;
+        else if (actfnode->element[1]->e.f2->is_ale > 0)
+          ele = 1;
+        else if (actfnode->element[2]->e.f2->is_ale > 0)
+          ele = 2;
+        else if (actfnode->element[3]->e.f2->is_ale > 0)
+          ele = 3;
+#endif
+
+        for (j=0; j<actfnode->element[ele]->numnp; j++)
         {
-          if (actfnode->Id == actfnode->element[0]->node[j]->Id )
+          if (actfnode->Id == actfnode->element[ele]->node[j]->Id )
           {
-            switch (actfnode->element[0]->eltyp)
+            switch (actfnode->element[ele]->eltyp)
             {
 #ifdef D_FLUID3
               case el_fluid3:
               case el_fluid3_fast:
-                actanode = actfnode->element[0]->e.f3->ale_ele->node[j];
+                actanode = actfnode->element[ele]->e.f3->ale_ele->node[j];
                 break;
 #endif
 
 #ifdef D_FLUID2
               case el_fluid2:
-                actanode = actfnode->element[0]->e.f2->ale_ele->node[j];
+                actanode = actfnode->element[ele]->e.f2->ale_ele->node[j];
                 break;
 #endif
 
               default:
                 dserror("");
                 break;
-            }  /* switch (actfnode->element[0]->eltyp) */
+            }  /* switch (actfnode->element[ele]->eltyp) */
 
             break;  /* break the loop over the nodes of the element */
 
-          }  /* if (actfnode->Id == actfnode->element[0]->node[j]->Id ) */
+          }  /* if (actfnode->Id == actfnode->element[ele]->node[j]->Id ) */
         }
 
 

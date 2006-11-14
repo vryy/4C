@@ -454,7 +454,7 @@ default:
    printf("\nTry again!\n");
    goto input6;
 }
-#ifdef SUSE73
+#if defined(LINUX) || defined(LINUX64)
 bgcolour+=10;
 #endif
 #ifdef LINUX_MUENCH

@@ -234,97 +234,33 @@ static  INT        *invbindx = NULL;
           nd = counter;
 
 
-          /* now start looping the dofs */
-          /* loop over i (the element row) */
 
 
 
 
+          /* manipulate matrix for SOLVE_DIRICH */
 #if defined(SOLVE_DIRICH)
-
-#ifndef PARALLEL
-          fadmd(
+          fastsd(
               estif_f,
-              &lm[0],
-              &owner[0],
               &dirich[0],
-              invupd,
-              bindx,
-              invbindx,
-              val,
-              &myrank,
-              &nprocs,
-              &numeq_total,
-              &numeq,
               &numnp,
               &nd,
-              &aloopl,
               &loopl,
               &l);
-#else
-          fadmdp(
-              estif_f,
-              &lm[0],
-              &owner[0],
-              &dirich[0],
-              invupd,
-              bindx,
-              invbindx,
-              val,
-              &myrank,
-              &nprocs,
-              &numeq_total,
-              &numeq,
-              &numnp,
-              &nd,
-              &aloopl,
-              &loopl,
-              &l);
-#endif
-
 #elif defined(SOLVE_DIRICH2)
-
-#ifndef PARALLEL
-          fadmd2(
+          fastsd2(
               estif_f,
-              &lm[0],
-              &owner[0],
               &dirich[0],
-              invupd,
-              bindx,
-              invbindx,
-              val,
-              &myrank,
-              &nprocs,
-              &numeq_total,
-              &numeq,
               &numnp,
               &nd,
-              &aloopl,
-              &loopl,
-              &l);
-#else
-          fadmd2p(
-              estif_f,
-              &lm[0],
-              &owner[0],
-              &dirich[0],
-              invupd,
-              bindx,
-              invbindx,
-              val,
-              &myrank,
-              &nprocs,
-              &numeq_total,
-              &numeq,
-              &numnp,
-              &nd,
-              &aloopl,
               &loopl,
               &l);
 #endif
 
-#else
+
+
+
+
 
 #ifndef PARALLEL
           fadm(
@@ -364,7 +300,6 @@ static  INT        *invbindx = NULL;
               &l);
 #endif
 
-#endif
 
 
 

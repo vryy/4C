@@ -57,7 +57,7 @@ double cputime_thread(void);
 #include <sys/times.h>
 #endif
 
-#if defined(SUSE73)
+#if defined(LINUX) || defined(LINUX64)
 #include <unistd.h>
 #include <sys/times.h>
 #endif
@@ -225,7 +225,7 @@ DOUBLE perf_time ()
 #endif
 
 
-#ifdef SUSE73
+#if defined(LINUX) || defined(LINUX64)
   DOUBLE clk_tck;
   struct tms buf;
 
