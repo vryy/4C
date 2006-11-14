@@ -26,6 +26,7 @@ using namespace std;
 using namespace Teuchos;
 
 #include "parobject.H"
+#include "dserror.H"
 
 /*!
 \brief CCADISCRET: namespace of the ccarat discretization module
@@ -109,6 +110,15 @@ public:
   void Add(const string& name, const int* data, const int num);
 
   /*!
+  \brief Add vector of int to the container
+  
+  \param name : Name of data to store data with
+  \param data : vector of integers to be added
+  */
+  void Add(const string& name, const vector<int>& data)
+  { Add(name,&data[0],data.size()); return;}
+
+  /*!
   \brief Add vector of double to the container
   
   \param name : Name of data to store data with
@@ -117,6 +127,51 @@ public:
   */
   void Add(const string& name, const double* data, const int num);
 
+  /*!
+  \brief Add vector of double to the container
+  
+  \param name : Name of data to store data with
+  \param data : vector of doubles to be added
+  */
+  void Add(const string& name, const vector<double>& data)
+  { Add(name,&data[0],data.size()); return;}
+
+
+  /*!
+  \brief Get vector of type int or double
+  
+  Receive <int> or <double> data of a given name.
+  
+  \param name : Name of data to receive
+
+  \note Usage is<br> 
+        const vector<int>* ifool = Container::Get<int>("ifool_name");<br>
+        or <br> 
+        const vector<double>* dfool = Container::Get<double>("dfool_name");
+  
+  \return const ptr to vector if data with that name exists, NULL otherwise
+  */
+  template<typename T> const vector<T>* Get(const string& name) const
+  {
+    T tester;
+    if (IsInt(tester))
+    {
+      map<string,RefCountPtr<vector<int> > >::const_iterator icurr = intdata_.find(name);
+      if (icurr != intdata_.end())
+        return (const vector<T>*)icurr->second.get();
+      else return NULL;
+    }
+    else if (IsDouble(tester))
+    {
+      map<string,RefCountPtr<vector<double> > >::const_iterator dcurr = doubledata_.find(name);
+      if (dcurr != doubledata_.end())
+        return (const vector<T>*)dcurr->second.get();
+      else return NULL;
+    }
+    else dserror("Container takes <int> and <double> data only!");
+    return NULL;
+  }
+  
   //@}
 
 protected:
@@ -124,6 +179,27 @@ protected:
   // don't want = operator
   Container operator = (const Container& old);
   
+  /*!
+  \brief Detection of integer type
+  */
+  template<typename T> bool IsInt(const T& data) const { return false; }
+  /*!
+  \brief Detection of integer type
+  */
+  bool IsInt(const int& data) const { return true; }
+  
+  /*!
+  \brief Detection of double type
+  */
+  template<typename T> bool IsDouble(const T& data) const { return false; }
+  /*!
+  \brief Detection of double type
+  */
+  bool IsDouble(const double& data) const { return true; }
+    
+
+protected:
+
   map<string,RefCountPtr<vector<int> > >    intdata_;      // a map to store integer data in
   map<string,RefCountPtr<vector<double> > > doubledata_;   // a map to store double data in
 
