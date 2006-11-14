@@ -64,8 +64,20 @@ public:
 
   // @{ \name Acess methods
 
-  RefCountPtr<DesignDiscretization> operator [] (const int index) const
-  { return entity_[index]; }
+  /*!
+  \brief Get communicator associated with this class
+  */
+  virtual inline const Epetra_Comm& Comm() const {return *comm_;}
+
+  /*!
+  \brief Return one hierarchy level of entities
+  
+  Returns a handle to a design discretization entity level. 
+  That is, given index = 0, returns the discretization containing lines and nodes, 
+  index = 1 returns handle to surfaces, index = 2 returns handle to volumes.
+
+  */
+  RefCountPtr<DesignDiscretization> operator [] (const int index) const;
 
   //@}
 

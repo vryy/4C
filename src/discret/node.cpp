@@ -83,7 +83,11 @@ void CCADISCRETIZATION::Node::Print(ostream& os) const
   os << "Node " << Id() << " Coords " << X()[0] << " " << X()[1] << " " << X()[2];
   if (dentitytype_ != on_none)
   {
-    bla;
+    if      (dentitytype_==on_dnode) os << " on DNODE " << dentityid_;
+    else if (dentitytype_==on_dline) os << " on DLINE " << dentityid_;
+    else if (dentitytype_==on_dsurface) os << " on DSURF " << dentityid_;
+    else if (on_dsurface==on_dvolume) os << " on DVOL " << dentityid_;
+    else dserror("Unknown type of design entity");
   }
   return;
 }

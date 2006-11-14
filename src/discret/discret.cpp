@@ -64,6 +64,7 @@ void CCADISCRETIZATION::Discretization::AddNode(RefCountPtr<CCADISCRETIZATION::N
 int CCADISCRETIZATION::Discretization::NumGlobalElements() const
 {
   if (Filled()) return ElementMap()->NumGlobalElements();
+  else dserror("FillComplete() must be called before call to NumGlobalElements() is possible");
   int local = NumMyElements();
   int global = 0;
   Comm().SumAll(&local,&global,1);
@@ -76,6 +77,7 @@ int CCADISCRETIZATION::Discretization::NumGlobalElements() const
 int CCADISCRETIZATION::Discretization::NumGlobalNodes() const
 {
   if (Filled()) return NodeMap()->NumGlobalElements();
+  else dserror("FillComplete() must be called before call to NumGlobalNodes() is possible");
   int local = NumMyNodes();
   int global = 0;
   Comm().SumAll(&local,&global,1);
@@ -152,13 +154,31 @@ ostream& operator << (ostream& os, const CCADISCRETIZATION::Discretization& dis)
  *----------------------------------------------------------------------*/
 void CCADISCRETIZATION::Discretization::Print(ostream& os) const
 {
-  int numglobalelements = NumGlobalElements();
-  int numglobalnodes    = NumGlobalNodes();
+  int numglobalelements = 0;
+  int numglobalnodes    = 0;
+  if (Filled())
+  {
+    numglobalelements = NumGlobalElements();
+    numglobalnodes    = NumGlobalNodes();
+  }
+  else
+  {
+    int nummynodes = NumMyNodes();
+    int nummyele   = NumMyElements();
+    Comm().SumAll(&nummynodes,&numglobalnodes,1);
+    Comm().SumAll(&nummyele,&numglobalelements,1);
+  }
+
   // print head
   if (Comm().MyPID()==0)
   {
     os << "--------------------------------------------------\n";
     os << numglobalelements << " Elements " << numglobalnodes << " Nodes (global)\n";
+    os << "--------------------------------------------------\n";
+    if (Filled())
+    os << "Filled() = true\n";
+    else
+    os << "Filled() = false\n";
     os << "--------------------------------------------------\n";
   }
   // print elements
@@ -166,7 +186,8 @@ void CCADISCRETIZATION::Discretization::Print(ostream& os) const
   {
     if (proc == Comm().MyPID())
     {
-      os << "Proc " << proc << " :\n";
+      if (NumMyElements())
+        os << "Proc " << proc << " :\n";
       map<int,RefCountPtr<CCADISCRETIZATION::Element> >:: const_iterator curr;
       for (curr = element_.begin(); curr != element_.end(); ++curr)
         os << *(curr->second) << endl;
@@ -178,7 +199,8 @@ void CCADISCRETIZATION::Discretization::Print(ostream& os) const
   {
     if (proc == Comm().MyPID())
     {
-      os << "Proc " << proc << " :\n";
+      if (NumMyNodes())
+        os << "Proc " << proc << " :\n";
       map<int,RefCountPtr<CCADISCRETIZATION::Node> >:: const_iterator curr;
       for (curr = node_.begin(); curr != node_.end(); ++curr)
         os << *(curr->second) << endl;
@@ -263,7 +285,8 @@ void CCADISCRETIZATION::Discretization::BuildElementToNodePointers()
 void CCADISCRETIZATION::Discretization::BuildNodeMap()
 {
   int nummynodes = NumMyNodes();
-  int numglobalnodes = NumGlobalNodes();
+  int numglobalnodes = 0;
+  Comm().SumAll(&nummynodes,&numglobalnodes,1);
   
   vector<int> nodeids(nummynodes);
   
@@ -285,7 +308,8 @@ void CCADISCRETIZATION::Discretization::BuildNodeMap()
 void CCADISCRETIZATION::Discretization::BuildElementMap()
 {
   int nummyeles = NumMyElements();
-  int numglobaleles = NumGlobalElements();
+  int numglobaleles = 0;
+  Comm().SumAll(&nummyeles,&numglobaleles,1);
   
   vector<int> eleids(nummyeles);
   

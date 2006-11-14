@@ -14,6 +14,7 @@ Maintainer: Michael Gee
 #ifdef TRILINOS_PACKAGE
 
 #include "design.H"
+#include "designdiscretization.H"
 #include "dserror.H"
 
 /*----------------------------------------------------------------------*
@@ -46,6 +47,15 @@ CCADISCRETIZATION::Design::~Design()
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  dtor (public)                                            mwgee 11/06|
+ *----------------------------------------------------------------------*/
+RefCountPtr<CCADISCRETIZATION::DesignDiscretization> CCADISCRETIZATION::Design::operator [] (const int index) const
+{ 
+  if (index != 0 && index != 1 && index != 2)
+    dserror("index out of range, has to be 0 for lines/nodes, 1 for surfaces, 2 for volumes"); 
+  return entity_[index]; 
+}
 
 
 #endif  // #ifdef TRILINOS_PACKAGE

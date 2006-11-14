@@ -113,18 +113,33 @@ void ntainp_ccadiscret()
   /* input of fields */
   inpfield_ccadiscret();
 
-  // read the design topology
-  for (int i=0; i<genprob.numfld; ++i)
-  {
-    vector<RefCountPtr<CCADISCRETIZATION::Discretization> >* discretization =
-      (vector<RefCountPtr<CCADISCRETIZATION::Discretization> >*)field[i].ccadis;
-    for (int j=0;j<field[i].ndis;j++)
+  // read the design topology and make discretizations familiar with design
+  if (design)
+    for (int i=0; i<genprob.numfld; ++i)
     {
-      RefCountPtr<CCADISCRETIZATION::Discretization> actdis = (*discretization)[j];
-      input_design_topology_discretization(*actdis);
+      vector<RefCountPtr<CCADISCRETIZATION::Discretization> >* discretization =
+        (vector<RefCountPtr<CCADISCRETIZATION::Discretization> >*)field[i].ccadis;
+      for (int j=0;j<field[i].ndis;j++)
+      {
+        RefCountPtr<CCADISCRETIZATION::Discretization> actdis = (*discretization)[j];
+        input_design_topology_discretization(*actdis);
+      }
     }
-  }
-
+  
+  // read dynamic control data
+  if (genprob.timetyp==time_dynamic) inpctrdyn();
+  
+  // read static control data
+  else inpctrstat();
+  
+  // read input of eigensolution control data
+  inpctreig();
+  
+  // read all types of geometry related conditions (e.g. boundary conditions)
+  // Also read time and space functions and local coord systems
+  input_conditions();
+  
+  
 
   cout << "Reached regular exit\n"; fflush(stdout);
   exit(0);
@@ -197,13 +212,13 @@ void input_design_topology_discretization(CCADISCRETIZATION::Discretization& act
     // create topology node <-> designnode
     CCADISCRETIZATION::Node::OnDesignEntity type = CCADISCRETIZATION::Node::on_dnode;
     actdis.SetDesignEntityIds(type,ndnode_fenode,dnode_fenode);
-    
-  
+    type = CCADISCRETIZATION::Node::on_dline;
+    actdis.SetDesignEntityIds(type,ndline_fenode,dline_fenode);
+    type = CCADISCRETIZATION::Node::on_dsurface;
+    actdis.SetDesignEntityIds(type,ndsurf_fenode,dsurf_fenode);
+    type = CCADISCRETIZATION::Node::on_dvolume;
+    actdis.SetDesignEntityIds(type,ndvol_fenode,dvol_fenode);
   } // if (designvols->Comm().MyPID()==0)
-
-
-
-
   return;
 }
 
@@ -219,7 +234,6 @@ void input_design_topology_discretization(CCADISCRETIZATION::Discretization& act
 void input_design()
 {
   DSTraceHelper dst("input_design");
-  
 
   // if there's no design description, do nothing
   if (frfind("--DESIGN DESCRIPTION")==0)
@@ -560,10 +574,10 @@ void inpfield_ccadiscret()
     {
       RefCountPtr<CCADISCRETIZATION::Discretization> actdis = (*discretization)[j];
       input_assign_nodes(*actdis,tmpnodes.get());
-      nnode_total += actdis->NumGlobalNodes();
       int err = actdis->FillComplete();
       if (err)
         dserror("Fillcomplete() returned %d",err);
+      nnode_total += actdis->NumGlobalNodes();
     }
   }
   // store total number of nodes

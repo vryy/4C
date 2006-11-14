@@ -137,7 +137,10 @@ public:
 
 
   /*!
-  \brief Print this element
+  \brief Set a design relationship
+  
+  \param type: Type of design element this node is located on
+  \param gid: Global id of the design object this node is located on
   */
   virtual void SetDesignEntity(const OnDesignEntity type, const int gid)
   { dentitytype_ = type; dentityid_ = gid; return; }

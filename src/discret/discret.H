@@ -27,6 +27,7 @@ using namespace Teuchos;
 
 #include "element.H"
 #include "node.H"
+#include "dserror.H"
 
 /*!
 \brief CCADISCRET: namespace of the ccarat discretization module
@@ -77,7 +78,8 @@ public:
   Returns NULL if Filled() is false. A call to FillComplete() is a prerequisite.
   */
   virtual const Epetra_Map* ElementMap() const { if (Filled()) return elemap_.get();
-                                                 else return NULL; }
+                                                 else dserror("FillComplete() must e called before call to ElementMap()"); 
+                                                 return NULL; }
 
   /*!
   \brief Get map associated with the distribution of the nodes
@@ -85,7 +87,8 @@ public:
   Returns NULL if Filled() is false. A call to FillComplete() is a prerequisite.
   */
   virtual const Epetra_Map* NodeMap() const { if (Filled()) return nodemap_.get();
-                                              else return NULL; }
+                                              else dserror("FillComplete() must e called before call to NodeMap()"); 
+                                              return NULL; }
 
   /*!
   \brief Get flag indicating whether FillComplete() has been called
@@ -95,7 +98,8 @@ public:
   /*!
   \brief Get processor local number of elements
   */
-  virtual inline int NumMyElements() const {return element_.size();}
+  virtual inline int NumMyElements() const { if (Filled()) return elemap_->NumMyElements();
+                                             else          return element_.size();}
   
   /*!
   \brief Get global number of elements
@@ -107,7 +111,8 @@ public:
   /*!
   \brief Get processor local number of nodes
   */
-  virtual inline int NumMyNodes() const {return node_.size();}
+  virtual inline int NumMyNodes() const { if (Filled()) return nodemap_->NumMyElements();
+                                          else          return node_.size();}
   
   /*!
   \brief Get global number of nodes

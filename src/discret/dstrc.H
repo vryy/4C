@@ -33,4 +33,4 @@ public:
 };
 #endif
 
-#endif  // #ifndef DSTRC_H
+#endif  /* #ifndef DSTRC_H */

@@ -27,6 +27,7 @@ Maintainer: Michael Gee
 #include "Teuchos_RefCountPtr.hpp"
 
 #include "discret.H"
+#include "container.H"
 #include "designdiscretization.H"
 #include "designelement.H"
 #include "designnode.H"
@@ -67,6 +68,7 @@ void input_design_dsurf_fenode_read(vector<vector<int> >& dsurf_fenode,
                                      vector<int>& ndsurf_fenode);
 void input_design_dvol_fenode_read(vector<vector<int> >& dvol_fenode,
                                    vector<int>& ndvol_fenode);
+void input_conditions();                                
 
 #ifdef __cplusplus
 }
