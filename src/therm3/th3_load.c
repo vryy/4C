@@ -66,7 +66,6 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
 {
 
   /* general variables */
-  const INT heatminus = -1.0;  /* minus sign occuring in heat conduction */
   INT idim, inode, idof;  /* some counters */
   INT nelenod;  /* number of element nodes */
   INT neledof;  /* element DOF */
@@ -273,7 +272,7 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
           th3_metr_jaco(ele, nelenod, deriv, 0, xjm, &det, xji);
           /*------------------------------------------------------------*/
           /* integration (quadrature) factor */
-          fac = heatminus * fac * det;
+          fac = fac * det;
           /*------------------------------------------------------------*/
           /* volume-load  ==> eload modified */
           th3_load_vol(ele, nelenod, shape, fac, eload);
@@ -624,7 +623,6 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
 
   /*====================================================================*/
   /* add eload to global load vector */
-  memset(loadvec, 0, sizeof(loadvec));
   if ( (foundgvolneum > 0) 
        || (foundgsurfneum > 0) 
        || (foundglineneum > 0) )
@@ -633,7 +631,7 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
     {
       for (idof=0; idof<NUMDOF_THERM3; idof++)
       {
-        loadvec[inode*NUMDOF_THERM3+idof] += eload[idof][inode];
+        loadvec[inode*NUMDOF_THERM3+idof] = eload[idof][inode];
       }
     }
   }
@@ -668,6 +666,7 @@ void th3_load_vol(ELEMENT *ele,
                   DOUBLE fac,
                   DOUBLE eload[NUMDOF_THERM3][MAXNOD_THERM3])
 {
+  const INT heatminus = -1.0;  /* heat minus occuring in heat conduction */
   DOUBLE heatsource[NUMDOF_THERM3];
   INT idof, inode;  /* loopers (i = loaddirection x or y)(j=node) */
 
@@ -675,6 +674,9 @@ void th3_load_vol(ELEMENT *ele,
 #ifdef DEBUG
   dstrc_enter("th3_load_vol");
 #endif
+  /*--------------------------------------------------------------------*/
+  /* apply heat minus */
+  fac = heatminus * fac;
   /*--------------------------------------------------------------------*/
   /* distinguish load type */
   switch(ele->g.gvol->neum->neum_type)
@@ -743,6 +745,7 @@ void th3_load_surf(ELEMENT *ele,
                    DOUBLE fac,
                    DOUBLE eload[NUMDOF_THERM3][MAXNOD_THERM3])
 {
+  const INT heatminus = -1.0;
   INT onoff[NUMDOF_THERM3];
   DOUBLE heatflux[NUMDOF_THERM3];
   INT idof, inode;  /* loopers */
@@ -751,6 +754,9 @@ void th3_load_surf(ELEMENT *ele,
 #ifdef DEBUG
   dstrc_enter("th3_load_surf");
 #endif
+  /*--------------------------------------------------------------------*/
+  /* apply heat minus */
+  fac = heatminus * fac;
   /*--------------------------------------------------------------------*/
   /* distinguish load type */
   switch(gsurf->neum->neum_type)
@@ -824,6 +830,7 @@ void th3_load_line(ELEMENT *ele,
                    DOUBLE fac,
                    DOUBLE eload[NUMDOF_THERM3][MAXNOD_THERM3])
 {
+  const INT heatminus = -1.0;
   INT onoff[NUMDOF_THERM3];
   DOUBLE heatflux[NUMDOF_THERM3];
   INT idof, inode;  /* loopers */
@@ -832,6 +839,9 @@ void th3_load_line(ELEMENT *ele,
 #ifdef DEBUG
   dstrc_enter("th3_load_line");
 #endif
+  /*--------------------------------------------------------------------*/
+  /* apply heat minus */
+  fac = heatminus * fac;
   /*--------------------------------------------------------------------*/
   /* distinguish load type */
   switch(gline->neum->neum_type)
