@@ -92,7 +92,10 @@ void solserv_zero_vec(DIST_VECTOR *disvector)
 dstrc_enter("solserv_zero_vec");
 #endif
 /*----------------------------------------------------------------------*/
-amzero(&(disvector->vec));
+/* amzero seems to confuse valgrind. Whose bug is that? */
+/* but memset is faster anyway. */
+/*amzero(&(disvector->vec));*/
+memset(disvector->vec.a.dv, 0, disvector->vec.fdim*sizeof(DOUBLE));
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
 dstrc_exit();
