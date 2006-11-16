@@ -82,6 +82,17 @@ extern struct _FILES  allfiles;
  *----------------------------------------------------------------------*/
 extern struct _DESIGN *design;
 
+/*!----------------------------------------------------------------------
+\brief ranks and communicators
+
+<pre>                                                         m.gee 8/00
+This structure struct _PAR par; is defined in main_ccarat.c
+and the type is in partition.h
+</pre>
+
+*----------------------------------------------------------------------*/
+ extern struct _PAR   par;
+
 /*----------------------------------------------------------------------*
   | input of control, element and load information         m.gee 10/06  |
   | This version of the routine uses the new discretization subsystem   |
@@ -139,11 +150,23 @@ void ntainp_ccadiscret()
   // Also read time and space functions and local coord systems
   input_conditions();
   
+  // inherit conditions inside design
+  // Dirichlet conditions are inherited (vol->surf->line->node)
+  // Neumann conditions are additive and are therefore not inherited for now
+  inherit_conditions();
   
+  /*-------------------------------------------- input of monitoring data */
+  inp_monitor();
 
-  cout << "Reached regular exit\n"; fflush(stdout);
-  exit(0);
+#ifdef RESULTTEST
+  /*---------------------------------------- input of result descriptions */
+  inp_resultdescr();
+#endif
 
+  // all reading is done at this point!
+  // Note that all discretizations and designs have everything on proc 0 here
+  // Note that all discretizations and all design use MPI_COMM_WORLD here
+  // These things will be fixed in create_communicators_ccadiscret
 
   return;
 } // end of ntainp_ccadiscret()

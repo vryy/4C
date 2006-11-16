@@ -117,14 +117,25 @@ public:
   /*!
   \brief Get ids of lower entities adjacent to this element
   */
-  inline const int* LowerEntityIds() const { if (lentityid_.size()) return &lentityid_[0]; 
-                                             else return NULL; }
+  inline const int* LowerEntityIds() const 
+  { if (lentityid_.size()) return &lentityid_[0]; else return NULL; }
+
+  /*!
+  \brief Get ptrs to lower entities adjacent to this element
+  */
+  inline Element** LowerEntities()
+  { if (lentity_.size()) return &lentity_[0]; else return NULL; }
 
   /*!
   \brief Get ids of higher entities adjacent to this element
   */
-  inline const int* HigherEntityIds() const { if (hentityid_.size()) return &hentityid_[0]; 
-                                              else return NULL; }
+  inline const int* HigherEntityIds() const 
+  { if (hentityid_.size()) return &hentityid_[0]; else return NULL; }
+  /*!
+  \brief Get ptrs to higher entities adjacent to this element
+  */
+  inline Element** HigherEntities() 
+  { if (hentity_.size()) return &hentity_[0]; else return NULL; }
   //@}
 
   // @{ \name Construction methods

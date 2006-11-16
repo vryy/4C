@@ -23,6 +23,7 @@ Maintainer: Michael Gee
 using namespace std;
 using namespace Teuchos;
 #include "parobject.H"
+#include "condition.H"
 
 
 /*!
@@ -139,15 +140,25 @@ public:
                                       else                return NULL;     }
 
   /*!
-  \brief Return ptrs to nodes adjacent to this element
+  \brief Get a condition with a certain name
   
+  \param name : Name of condition
+  
+  \return Returns NULL if condition with that name does not exist
   */
-  //RefCountPtr<vector<const CCADISCRETIZATION::Node*> > Nodes(const CCADISCRETIZATION::Discretization& dis) const;
+  virtual const Condition* GetCondition(const string& name) const;
 
   /*!
-  \brief Print this element (pure virtual)
+  \brief Get vector of ptrs to nodes
+  
   */
-  virtual void Print(ostream& os) const = 0;
+  virtual Node** Nodes()
+  { if (node_.size()) return &node_[0]; else return NULL; }
+
+  /*!
+  \brief Print this element
+  */
+  virtual void Print(ostream& os) const;
 
   //@}
 
@@ -170,6 +181,21 @@ public:
   */
   void SetNodeIds(const int nnode, const int* nodes);
 
+  /*!
+  \brief Set a condition with a certain name
+  
+  \param name : Name of condition
+  \param cond : The Condition class
+  
+  \note this takes ownership of cond
+  
+  \warning If a condition with the exact same name already exists, it will be
+           overwritten
+  
+  */
+  virtual void SetCondition(const string& name,RefCountPtr<Condition> cond)
+  { condition_[name] = cond; return; }
+
   //@}
 
 protected:
@@ -182,10 +208,11 @@ protected:
   */
   bool BuildNodalPointers(map<int,RefCountPtr<CCADISCRETIZATION::Node> >& nodes);
 
-  int                              id_;       // a unique global element id
-  ElementType                      etype_;    // type of element
-  vector<int>                      nodeid_;   // list of my nodal ids
-  vector<CCADISCRETIZATION::Node*> node_;     // pointers to adjacent nodes
+  int                                 id_;        // a unique global element id
+  ElementType                         etype_;     // type of element
+  vector<int>                         nodeid_;    // list of my nodal ids
+  vector<CCADISCRETIZATION::Node*>    node_;      // pointers to adjacent nodes
+  map<string,RefCountPtr<Condition> > condition_; // some conditions e.g. BCs
 
 }; // class Element
 } // namespace CCADISCRETIZATION

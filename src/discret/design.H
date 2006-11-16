@@ -70,6 +70,17 @@ public:
   virtual inline const Epetra_Comm& Comm() const {return *comm_;}
 
   /*!
+  \brief Test whether all discretizations herein have been called FillComplete()
+  */
+  virtual bool Filled() const 
+  { 
+    for (int i=0; i<3; ++i)
+      if (!(entity_[i]->Filled())) 
+        return false;
+    return true;
+  }
+
+  /*!
   \brief Return one hierarchy level of entities
   
   Returns a handle to a design discretization entity level. 

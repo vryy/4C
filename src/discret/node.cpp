@@ -80,7 +80,9 @@ ostream& operator << (ostream& os, const CCADISCRETIZATION::Node& node)
  *----------------------------------------------------------------------*/
 void CCADISCRETIZATION::Node::Print(ostream& os) const
 {
+  // Print id and coordinates
   os << "Node " << Id() << " Coords " << X()[0] << " " << X()[1] << " " << X()[2];
+  // Print design entity if there is any
   if (dentitytype_ != on_none)
   {
     if      (dentitytype_==on_dnode) os << " on DNODE " << dentityid_;
@@ -88,6 +90,18 @@ void CCADISCRETIZATION::Node::Print(ostream& os) const
     else if (dentitytype_==on_dsurface) os << " on DSURF " << dentityid_;
     else if (on_dsurface==on_dvolume) os << " on DVOL " << dentityid_;
     else dserror("Unknown type of design entity");
+  }
+  // Print conditions if there are any
+  int numcond = condition_.size();
+  if (numcond)
+  {
+    os << endl; // end the previous line
+    map<string,RefCountPtr<Condition> >::const_iterator curr;
+    for (curr=condition_.begin(); curr != condition_.end(); ++curr)
+    {
+      os << "Condition : " << curr->first << endl;
+      os << *(curr->second);
+    }
   }
   return;
 }
@@ -102,12 +116,26 @@ const char* CCADISCRETIZATION::Node::Pack(int& size) const
   const int sizedouble = sizeof(double);
   //const int sizechar   = sizeof(char);
 
+  // get the size of all conditions
+  int condsize=0;
+  map<string,RefCountPtr<Condition> >::const_iterator curr;
+  for (curr=condition_.begin(); curr != condition_.end(); ++curr)
+  {
+    condsize += SizeString(curr->first);
+    int tmp=0;
+    const char* condpack = curr->second->Pack(tmp);
+    condsize += tmp;
+    delete [] condpack;
+  }
+
   size = 
   sizeint                +   // holds size itself
   sizeint                +   // holds id
   sizedouble*3           +   // holds x_
   sizeof(OnDesignEntity) +   // dentitytype_
   sizeint                +   // dentityid_
+  sizeint                +   // no. objects in condition_
+  condsize               +   // condition_
   0;                         // continue to add data here...
 
   char* data = new char[size];
@@ -126,6 +154,18 @@ const char* CCADISCRETIZATION::Node::Pack(int& size) const
   AddtoPack(position,data,dentitytype_);
   // dentityid_
   AddtoPack(position,data,dentityid_);
+  // condition_
+  int num = condition_.size(); // no. of objects
+  AddtoPack(position,data,num);
+  for (curr=condition_.begin(); curr != condition_.end(); ++curr)
+  {
+    AddStringtoPack(position,data,curr->first);
+    int tmp=0;
+    const char* condpack = curr->second->Pack(tmp);
+    AddtoPack(position,data,condpack,tmp);
+    delete [] condpack;
+  }
+  // continue to add stuff here
   
   if (position != size)
     dserror("Mismatch in size of data %d <-> %d",size,position);
@@ -157,6 +197,19 @@ bool CCADISCRETIZATION::Node::Unpack(const char* data)
   ExtractfromPack(position,data,dentitytype_);
   // dentityid_
   ExtractfromPack(position,data,dentityid_);
+  // condition_
+  int num=0;
+  ExtractfromPack(position,data,num);
+  for (int i=0; i<num; ++i)
+  {
+    string name;
+    ExtractStringfromPack(position,data,name);
+    RefCountPtr<Condition> cond = rcp(new Condition());
+    cond->Unpack(&data[position]);
+    int size = cond->SizePack(&data[position]);
+    position += size;
+    SetCondition(name,cond);
+  }
 
   if (position != size)
     dserror("Mismatch in size of data %d <-> %d",size,position);
@@ -164,6 +217,17 @@ bool CCADISCRETIZATION::Node::Unpack(const char* data)
 }
 
 
+/*----------------------------------------------------------------------*
+ |  Get a condition of a certain name                          (public) |
+ |                                                            gee 11/06 |
+ *----------------------------------------------------------------------*/
+const CCADISCRETIZATION::Condition* CCADISCRETIZATION::Node::GetCondition(const string& name) const
+{
+  map<string,RefCountPtr<Condition> >::const_iterator curr = condition_.find(name);
+  if (curr != condition_.end()) return curr->second.get();
+  else                          return NULL;
+  return NULL;
+}
 
 
 

@@ -69,6 +69,12 @@ public:
   Condition(ConditionType type);
 
   /*!
+  \brief Constructor with type condition_none
+  
+  */
+  Condition();
+
+  /*!
   \brief Copy Constructor
 
   Makes a deep copy of a Node

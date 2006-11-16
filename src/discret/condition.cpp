@@ -28,6 +28,16 @@ type_(type)
 }
 
 /*----------------------------------------------------------------------*
+ |  ctor (public)                                            mwgee 11/06|
+ *----------------------------------------------------------------------*/
+CCADISCRETIZATION::Condition::Condition() :
+Container(),
+type_(condition_none)
+{
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 11/06|
  *----------------------------------------------------------------------*/
 CCADISCRETIZATION::Condition::Condition(const CCADISCRETIZATION::Condition& old) :

@@ -88,12 +88,6 @@ public:
   virtual bool Unpack(const char* data) = 0;
 
 
-  //@}
-
-protected:
-
-  // @{ \name Routines to help pack stuff into a char string
-
   /*!
   \brief return size of a char vector used for communication
   
@@ -103,6 +97,12 @@ protected:
   */
   inline int SizePack(const char* data) const 
   { int s = ((int*)data)[0]; return s; }
+
+  //@}
+
+protected:
+
+  // @{ \name Routines to help pack stuff into a char string
 
   /*!
   \brief return packing size of a string

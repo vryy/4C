@@ -66,6 +66,36 @@ ostream& operator << (ostream& os, const CCADISCRETIZATION::Element& element)
 
 
 /*----------------------------------------------------------------------*
+ |  print element (public)                                   mwgee 11/06|
+ *----------------------------------------------------------------------*/
+void CCADISCRETIZATION::Element::Print(ostream& os) const
+{
+  os << Id();
+  const int nnode = NumNode();
+  const int* nodes = NodeIds();
+  if (nnode)
+  {
+    os << " Nodes ";
+    for (int i=0; i<nnode; ++i) os << nodes[i] << " ";
+  }
+  // Print conditions if there are any
+  int numcond = condition_.size();
+  if (numcond)
+  {
+    os << endl; // end the previous line
+    map<string,RefCountPtr<Condition> >::const_iterator curr;
+    for (curr=condition_.begin(); curr != condition_.end(); ++curr)
+    {
+      os << "Condition : " << curr->first << endl;
+      os << *(curr->second);
+    }
+  }
+  
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  read element input dummy (public)                        mwgee 11/06|
  |  this is a base class dummy for elements that do not need            |
  |  a reading method
@@ -100,12 +130,26 @@ const char* CCADISCRETIZATION::Element::Pack(int& size) const
   //const int sizedouble = sizeof(double);
   //const int sizechar   = sizeof(char);
 
+  // get the size of all conditions
+  int condsize=0;
+  map<string,RefCountPtr<Condition> >::const_iterator curr;
+  for (curr=condition_.begin(); curr != condition_.end(); ++curr)
+  {
+    condsize += SizeString(curr->first);
+    int tmp=0;
+    const char* condpack = curr->second->Pack(tmp);
+    condsize += tmp;
+    delete [] condpack;
+  }
+
   // calculate size of vector
   size = 
   sizeint                +   // holds size itself
   sizeint                +   // holds Id()
   sizetype               +   // holds type of element
   SizeVector(nodeid_)    +   // nodeid_
+  sizeint                +   // no. of objects in condition_
+  condsize               +   // condition_
   0;                         // continue to add data here...
 
   char* data = new char[size];
@@ -123,6 +167,17 @@ const char* CCADISCRETIZATION::Element::Pack(int& size) const
   AddtoPack(position,data,etype);
   // add vector nodeid_
   AddVectortoPack(position,data,nodeid_);
+  // condition_
+  int num = condition_.size(); // no. of objects
+  AddtoPack(position,data,num);
+  for (curr=condition_.begin(); curr != condition_.end(); ++curr)
+  {
+    AddStringtoPack(position,data,curr->first);
+    int tmp=0;
+    const char* condpack = curr->second->Pack(tmp);
+    AddtoPack(position,data,condpack,tmp);
+    delete [] condpack;
+  }
   // continue to add stuff here
 
   if (position != size)
@@ -148,6 +203,19 @@ bool CCADISCRETIZATION::Element::Unpack(const char* data)
   ExtractfromPack(position,data,etype_);
   // extract nodeid_
   ExtractVectorfromPack(position,data,nodeid_);
+  // extract condition_
+  int num=0;
+  ExtractfromPack(position,data,num);
+  for (int i=0; i<num; ++i)
+  {
+    string name;
+    ExtractStringfromPack(position,data,name);
+    RefCountPtr<Condition> cond = rcp(new Condition());
+    cond->Unpack(&data[position]);
+    int size = cond->SizePack(&data[position]);
+    position += size;
+    SetCondition(name,cond);
+  }
   // node_ is NOT communicated
   node_.resize(0);
 
@@ -159,7 +227,7 @@ bool CCADISCRETIZATION::Element::Unpack(const char* data)
 
 
 /*----------------------------------------------------------------------*
- |  Build nodal pointers                                       (public) |
+ |  Build nodal pointers                                    (protected) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
 bool CCADISCRETIZATION::Element::BuildNodalPointers(map<int,RefCountPtr<CCADISCRETIZATION::Node> >& nodes)
@@ -177,6 +245,17 @@ bool CCADISCRETIZATION::Element::BuildNodalPointers(map<int,RefCountPtr<CCADISCR
 }
 
 
+/*----------------------------------------------------------------------*
+ |  Get a condition of a certain name                          (public) |
+ |                                                            gee 11/06 |
+ *----------------------------------------------------------------------*/
+const CCADISCRETIZATION::Condition* CCADISCRETIZATION::Element::GetCondition(const string& name) const
+{
+  map<string,RefCountPtr<Condition> >::const_iterator curr = condition_.find(name);
+  if (curr != condition_.end()) return curr->second.get();
+  else                          return NULL;
+  return NULL;
+}
 
 
 

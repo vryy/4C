@@ -106,6 +106,8 @@ public:
   \param name : Name of data to store data with
   \param data : ptr to beginning of data
   \param num  : Number of objects in data
+  
+  \note If record with name name already exists, it will be overwritten
   */
   void Add(const string& name, const int* data, const int num);
 
@@ -114,6 +116,8 @@ public:
   
   \param name : Name of data to store data with
   \param data : vector of integers to be added
+
+  \note If record with name name already exists, it will be overwritten
   */
   void Add(const string& name, const vector<int>& data)
   { Add(name,&data[0],data.size()); return;}
@@ -124,6 +128,8 @@ public:
   \param name : Name of data to store data with
   \param data : ptr to beginning of data
   \param num  : Number of objects in data
+
+  \note If record with name name already exists, it will be overwritten
   */
   void Add(const string& name, const double* data, const int num);
 
@@ -132,9 +138,22 @@ public:
   
   \param name : Name of data to store data with
   \param data : vector of doubles to be added
+
+  \note If record with name name already exists, it will be overwritten
   */
   void Add(const string& name, const vector<double>& data)
   { Add(name,&data[0],data.size()); return;}
+
+  /*!
+  \brief Add a string to the container
+  
+  \param name : Name of data to store data with
+  \param data : string to store
+
+  \note If record with name name already exists, it will be overwritten
+  */
+  void Add(const string& name, const string& data);
+
 
   /*!
   \brief Get vector of type int or double
@@ -167,10 +186,22 @@ public:
         return (const vector<T>*)dcurr->second.get();
       else return NULL;
     }
-    else dserror("Container takes <int> and <double> data only!");
+    else dserror("This templated method returns <int> and <double> data only!");
     return NULL;
   }
   
+  /*!
+  \brief Get a string from the container of type int or double
+  
+  \param name : Name of data to receive
+
+  \note Usage is<br> 
+        const string* ifool = Container::GetString("ifool_name");
+  
+  \return const ptr to string if data with that name exists, NULL otherwise
+  */
+  const string* GetString(const string& name) const;
+
   /*!
   \brief Delete a record from the container
   
@@ -209,11 +240,20 @@ protected:
   */
   bool IsDouble(const double& data) const { return true; }
     
+  /*!
+  \brief Detection of double type
+  */
+  template<typename T> bool IsString(const T& data) const { return false; }
+  /*!
+  \brief Detection of double type
+  */
+  bool IsString(const string& data) const { return true; }
 
 protected:
 
   map<string,RefCountPtr<vector<int> > >    intdata_;      // a map to store integer data in
   map<string,RefCountPtr<vector<double> > > doubledata_;   // a map to store double data in
+  map<string,string>                        stringdata_;   // a map to store string data in
 
 }; // class Container
 } // namespace CCADISCRETIZATION

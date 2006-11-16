@@ -196,15 +196,8 @@ CCADISCRETIZATION::Shell8::~Shell8()
  *----------------------------------------------------------------------*/
 void CCADISCRETIZATION::Shell8::Print(ostream& os) const
 {
-  os << "Shell8 " << Id();
-  const int nnode = NumNode();
-  const int* nodes = NodeIds();
-  if (nnode)
-  {
-    os << " Nodes ";
-    for (int i=0; i<nnode; ++i) os << nodes[i] << " ";
-  }
-  return;
+  os << "Shell8 ";
+  Element::Print(os);
   return;
 }
 

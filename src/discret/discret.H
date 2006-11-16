@@ -173,6 +173,16 @@ public:
   // @{ \name Construction methods
 
   /*!
+  \brief Set an epetra_Commobject which can be either 
+         Epetra_SerialComm or Epetra_MpiComm
+  
+  \note Sets the Filled() flag to false, Fillcomplete must  be called 
+        afterwards to rebuild node and element map
+  */
+  virtual void SetComm(RefCountPtr<Epetra_Comm> comm)
+  { filled_=false; comm_ = comm; return; }
+
+  /*!
   \brief Add an element to the discretization
   
   The discretization takes ownership of the added element.
@@ -199,6 +209,40 @@ public:
   \note This is a collective call
   */
   virtual int FillComplete();
+
+  /*!
+  \brief Export the nodes to a different parallel layout
+  
+  The discretization has a parallel layout of nodes reflected in NodeMap().
+  This method communicates the nodes in this discretization such that after
+  the export the nodes are stored as provided in newmap.<br>
+  There are some important aspects to this method:<br>
+  - Filled()=false on exit. This means Fillcomplete() needs to be called again.<br>
+  - This is a dull export meaning that there is no notion of whether the
+    exported node distribution still matches the element distribution. A call
+    to FillComplete() might therefore not be possible until elements are
+    distributed accordingly.
+    
+  \note This is a collective call
+  */
+  virtual void ExportNodes(const Epetra_Map& newmap);
+
+  /*!
+  \brief Export the elements to a different parallel layout
+  
+  The discretization has a parallel layout of elements reflected in ElementMap().
+  This method communicates the elements in this discretization such that after
+  the export the elements are stored as provided in newmap.<br>
+  There are some important aspects to this method:<br>
+  - Filled()=false on exit. This means Fillcomplete() needs to be called again.<br>
+  - This is a dull export meaning that there is no notion of whether the
+    exported element distribution still matches the node distribution. A call
+    to FillComplete() might therefore not be possible until nodes are
+    distributed accordingly.
+    
+  \note This is a collective call
+  */
+  virtual void ExportElements(const Epetra_Map& newmap);
 
   /*!
   \brief Set Ids of design nodes in nodes

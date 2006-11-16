@@ -65,10 +65,7 @@ int CCADISCRETIZATION::Discretization::NumGlobalElements() const
 {
   if (Filled()) return ElementMap()->NumGlobalElements();
   else dserror("FillComplete() must be called before call to NumGlobalElements() is possible");
-  int local = NumMyElements();
-  int global = 0;
-  Comm().SumAll(&local,&global,1);
-  return global;
+  return -1;
 }
 
 /*----------------------------------------------------------------------*
@@ -78,10 +75,7 @@ int CCADISCRETIZATION::Discretization::NumGlobalNodes() const
 {
   if (Filled()) return NodeMap()->NumGlobalElements();
   else dserror("FillComplete() must be called before call to NumGlobalNodes() is possible");
-  int local = NumMyNodes();
-  int global = 0;
-  Comm().SumAll(&local,&global,1);
-  return global;
+  return -1;
 }
 
 /*----------------------------------------------------------------------*
@@ -251,8 +245,7 @@ void CCADISCRETIZATION::Discretization::BuildNodeToElementPointers()
     for (int j=0; j<nnode; ++j)
     {
       CCADISCRETIZATION::Node* node = gNode(nodes[j]);
-      if (!node)
-        dserror("Node %d is not on this proc %d",j,Comm().MyPID());
+      if (!node) dserror("Node %d is not on this proc %d",j,Comm().MyPID());
       else
       {
         int size = node->element_.size();
@@ -347,8 +340,65 @@ void CCADISCRETIZATION::Discretization::SetDesignEntityIds(Node::OnDesignEntity 
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  Export elements (public)                                 mwgee 11/06|
+ *----------------------------------------------------------------------*/
+void CCADISCRETIZATION::Discretization::ExportElements(const Epetra_Map& newmap)
+{
+  // build map of elements elemap_ if it does not exist
+  if (elemap_==null) BuildElementMap();
+  const Epetra_Map& oldmap = *elemap_;
 
 
+
+  filled_ = false;  
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Export nodes (public)                                    mwgee 11/06|
+ *----------------------------------------------------------------------*/
+void CCADISCRETIZATION::Discretization::ExportNodes(const Epetra_Map& newmap)
+{
+  // build map of nodes nodemap_ if it does not exist
+  if (nodemap_==null) BuildNodeMap();
+  const Epetra_Map& oldmap = *nodemap_;
+  
+  const int myrank  = Comm().MyPID();
+  const int numproc = Comm().NumProc();
+  
+  // loop procs, proc then is the sending old owner of a node
+  for (int proc=0; proc<numproc; ++proc)
+  {
+    // proc broadcasts its list of nodes
+    int nummynodes = oldmap.NumMyElements();
+    Comm().Broadcast(&nummynodes,1,proc);
+    vector<int> nodes(nummynodes);
+    if (proc==myrank) oldmap.MyGlobalElements(&nodes[0]);
+    Comm().Broadcast(&nodes[0],nummynodes,proc);
+    // loop all nodes and see who will be a new owner of a node
+    vector<int> newowner_send(nummynodes*numproc);
+    vector<int> newowner(nummynodes*numproc);
+    for (int i=0; i<nummynodes*numproc; ++i) newowner_send[i] = 0;    
+    int mystart = myrank*nummynodes;
+    for (int i=0; i<nummynodes; ++i)
+      if (newmap.MyGID(nodes[i])) 
+        newowner_send[mystart+i] = myrank;
+    Comm().SumAll(&newowner_send[0],&newowner[0],nummynodes*numproc);
+    // proc packs all its nodes
+    if (proc==myrank)
+    {
+    }
+    
+        
+  } // for (int proc=0; proc<Comm().NumProc(); ++proc)
+  
+
+
+  filled_ = false;  
+  return;
+}
 
 
 

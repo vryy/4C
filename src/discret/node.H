@@ -25,6 +25,7 @@ using namespace std;
 using namespace Teuchos;
 
 #include "parobject.H"
+#include "condition.H"
 
 /*!
 \brief CCADISCRET: namespace of the ccarat discretization module
@@ -48,7 +49,7 @@ class Node : public CCADISCRETIZATION::ParObject
 public:
 
   /*!
-  \brief The Discretization is a friend of Element
+  \brief The Discretization is a friend of Node
   */
   friend class Discretization;
 
@@ -127,7 +128,16 @@ public:
   virtual inline const double* X() const { return x_; }
 
   /*!
-  \brief Print this element
+  \brief Get a condition with a certain name
+  
+  \param name : Name of condition
+  
+  \return Returns NULL if condition with that name does not exist
+  */
+  virtual const Condition* GetCondition(const string& name) const;
+
+  /*!
+  \brief Print this node
   */
   virtual void Print(ostream& os) const ;
 
@@ -145,15 +155,31 @@ public:
   virtual void SetDesignEntity(const OnDesignEntity type, const int gid)
   { dentitytype_ = type; dentityid_ = gid; return; }
 
+  /*!
+  \brief Set a condition with a certain name
+  
+  \param name : Name of condition
+  \param cond : The Condition class
+  
+  \note this takes ownership of cond
+  
+  \warning If a condition with the exact same name already exists, it will be
+           overwritten
+  
+  */
+  virtual void SetCondition(const string& name,RefCountPtr<Condition> cond)
+  { condition_[name] = cond; return; }
+
   //@}
 
 protected:
 
   int                                 id_;          // a unique global id
   double                              x_[3];        // nodal coords
-  vector<CCADISCRETIZATION::Element*> element_;     // pointers to adjacent elements
+  vector<Element*>                    element_;     // pointers to adjacent elements
   OnDesignEntity                      dentitytype_; // type of design object I'm on
   int                                 dentityid_;   // global id of design object I'm on
+  map<string,RefCountPtr<Condition> > condition_;   // some conditions e.g. BCs
 
 }; // class Node
 } // namespace CCADISCRETIZATION

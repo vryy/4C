@@ -135,6 +135,10 @@ bool CCADISCRETIZATION::DesignElement::Unpack(const char* data)
   ExtractVectorfromPack(position,data,horientation_);
   // extract more stuff here
 
+  // ptrs to lower and higher entities are not valid anymore
+  lentity_.resize(0);
+  hentity_.resize(0);
+
   if (position != size)
     dserror("Mismatch in size of data %d <-> %d",size,position);
 
@@ -156,14 +160,8 @@ CCADISCRETIZATION::DesignElement::~DesignElement()
  *----------------------------------------------------------------------*/
 void CCADISCRETIZATION::DesignElement::Print(ostream& os) const
 {
-  os << "DesignElement " << Id();
-  const int nnode = NumNode();
-  const int* nodes = NodeIds();
-  if (nnode)
-  {
-    os << " Nodes ";
-    for (int i=0; i<nnode; ++i) os << nodes[i] << " ";
-  }
+  os << "DesignElement ";
+  Element::Print(os);
   if (NumHigherEntityIds())
   {
     os << " HigherEntities ";

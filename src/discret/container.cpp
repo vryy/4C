@@ -33,7 +33,8 @@ ParObject()
 CCADISCRETIZATION::Container::Container(const CCADISCRETIZATION::Container& old) :
 ParObject(old),
 intdata_(old.intdata_),
-doubledata_(old.doubledata_)
+doubledata_(old.doubledata_),
+stringdata_(old.stringdata_)
 {
   return;
 }
@@ -69,6 +70,7 @@ const char* CCADISCRETIZATION::Container::Pack(int& size) const
   sizeint +      // size itself 
   sizeint +      // number of entries in intdata_
   sizeint +      // number of entries in doubledata_
+  sizeint +      // number of entries in stringdata_
   0;             // continue to add data here...
   
   
@@ -85,6 +87,12 @@ const char* CCADISCRETIZATION::Container::Pack(int& size) const
     size += SizeString(dcurr->first);      // size of the key
     size += SizeVector(*(dcurr->second));  // size of data
   }
+  map<string,string>::const_iterator scurr;
+  for (scurr = stringdata_.begin(); scurr != stringdata_.end(); ++scurr)
+  {
+    size += SizeString(scurr->first);      // size of the key
+    size += SizeString(scurr->second);     // size of data
+  }
 
 
   char* data = new char[size];
@@ -99,6 +107,9 @@ const char* CCADISCRETIZATION::Container::Pack(int& size) const
   // doubledata_.size()
   tmp = (int)doubledata_.size();
   AddtoPack(position,data,tmp);
+  // stringdata_.size()
+  tmp = (int)stringdata_.size();
+  AddtoPack(position,data,tmp);
   
   // continue to pack data here...
   
@@ -111,6 +122,11 @@ const char* CCADISCRETIZATION::Container::Pack(int& size) const
   {
     AddStringtoPack(position,data,dcurr->first);
     AddVectortoPack(position,data,*(dcurr->second));
+  }
+  for (scurr = stringdata_.begin(); scurr != stringdata_.end(); ++scurr)
+  {
+    AddStringtoPack(position,data,scurr->first);
+    AddStringtoPack(position,data,scurr->second);
   }
     
   
@@ -183,6 +199,9 @@ void CCADISCRETIZATION::Container::Print(ostream& os) const
     for (int i=0; i<(int)data.size(); ++i) os << data[i] << " ";
     os << endl;
   }
+  map<string,string>::const_iterator scurr;
+  for (scurr = stringdata_.begin(); scurr != stringdata_.end(); ++scurr)
+    os << scurr->first << " : " << scurr->second << endl;
   return;
 }
 
@@ -192,10 +211,6 @@ void CCADISCRETIZATION::Container::Print(ostream& os) const
  *----------------------------------------------------------------------*/
 void CCADISCRETIZATION::Container::Add(const string& name, const int* data, const int num)
 {
-  // check whether this name was used before
-  map<string,RefCountPtr<vector<int> > >::iterator curr = intdata_.find(name);
-  if (curr != intdata_.end()) dserror("Record with name %s already exists",&name[0]);
-  
   // get data in a vector
   RefCountPtr<vector<int> > storage = rcp(new vector<int>(num));
   vector<int>& access = *storage;
@@ -212,10 +227,6 @@ void CCADISCRETIZATION::Container::Add(const string& name, const int* data, cons
  *----------------------------------------------------------------------*/
 void CCADISCRETIZATION::Container::Add(const string& name, const double* data, const int num)
 {
-  // check whether this name was used before
-  map<string,RefCountPtr<vector<double> > >::iterator curr = doubledata_.find(name);
-  if (curr != doubledata_.end()) dserror("Record with name %s already exists",&name[0]);
-
   // get data in a vector
   RefCountPtr<vector<double> > storage = rcp(new vector<double>(num));
   vector<double>& access = *storage;
@@ -223,6 +234,17 @@ void CCADISCRETIZATION::Container::Add(const string& name, const double* data, c
 
   // store the vector
   doubledata_[name] = storage;
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add stuff to the container                                 (public) |
+ |                                                            gee 11/06 |
+ *----------------------------------------------------------------------*/
+void CCADISCRETIZATION::Container::Add(const string& name, const string& data)
+{
+  // store the data
+  stringdata_[name] = data;
   return;
 }
 
@@ -245,10 +267,29 @@ void CCADISCRETIZATION::Container::Delete(const string& name)
     doubledata_.erase(name);
     return;
   }
+
+  map<string,string>::iterator scurr = stringdata_.find(name);
+  if (scurr != stringdata_.end()) 
+  {
+    stringdata_.erase(name);
+    return;
+  }
   return;
 }
 
 
+/*----------------------------------------------------------------------*
+ |  Get a string                                               (public) |
+ |                                                            gee 11/06 |
+ *----------------------------------------------------------------------*/
+const string* CCADISCRETIZATION::Container::GetString(const string& name) const
+{
+  map<string,string>::const_iterator curr = stringdata_.find(name);
+  if (curr != stringdata_.end())
+    return &(curr->second);
+  else return NULL;
+  return NULL;
+}
 
 
 
