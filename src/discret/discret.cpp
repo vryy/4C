@@ -14,6 +14,7 @@ Maintainer: Michael Gee
 #ifdef TRILINOS_PACKAGE
 
 #include "discret.H"
+#include "exporter.H"
 #include "dserror.H"
 
 
@@ -365,35 +366,28 @@ void CCADISCRETIZATION::Discretization::ExportNodes(const Epetra_Map& newmap)
   if (nodemap_==null) BuildNodeMap();
   const Epetra_Map& oldmap = *nodemap_;
   
-  const int myrank  = Comm().MyPID();
-  const int numproc = Comm().NumProc();
+  // create an exporter object that will figure out the communication pattern
+  //CCADISCRETIZATION::Exporter exporter(oldmap,newmap,Comm());
   
-  // loop procs, proc then is the sending old owner of a node
-  for (int proc=0; proc<numproc; ++proc)
-  {
-    // proc broadcasts its list of nodes
-    int nummynodes = oldmap.NumMyElements();
-    Comm().Broadcast(&nummynodes,1,proc);
-    vector<int> nodes(nummynodes);
-    if (proc==myrank) oldmap.MyGlobalElements(&nodes[0]);
-    Comm().Broadcast(&nodes[0],nummynodes,proc);
-    // loop all nodes and see who will be a new owner of a node
-    vector<int> newowner_send(nummynodes*numproc);
-    vector<int> newowner(nummynodes*numproc);
-    for (int i=0; i<nummynodes*numproc; ++i) newowner_send[i] = 0;    
-    int mystart = myrank*nummynodes;
-    for (int i=0; i<nummynodes; ++i)
-      if (newmap.MyGID(nodes[i])) 
-        newowner_send[mystart+i] = myrank;
-    Comm().SumAll(&newowner_send[0],&newowner[0],nummynodes*numproc);
-    // proc packs all its nodes
-    if (proc==myrank)
-    {
-    }
-    
-        
-  } // for (int proc=0; proc<Comm().NumProc(); ++proc)
+  int oldmyelements[4];
+  if (Comm().MyPID()==0)
+    for (int i=0; i<4; ++i) oldmyelements[i] = i;
+  else
+    for (int i=0; i<4; ++i) oldmyelements[i] = i+4;
+  int newmyelements[6];
+  if (Comm().MyPID()==0)
+    for (int i=0; i<6; ++i) newmyelements[i] = i;
+  else
+    for (int i=0; i<6; ++i) newmyelements[i] = i+2;
   
+  Epetra_Map o(-1,4,oldmyelements,0,Comm());
+  Epetra_Map n(-1,6,newmyelements,0,Comm());
+  cout << "old map\n" << o;
+  cout << "new map\n" << n;
+  
+  CCADISCRETIZATION::Exporter exporter(o,n,Comm());  
+  
+
 
 
   filled_ = false;  
