@@ -50,6 +50,8 @@ function calls.
 #include "../fluid2_pro/fluid2pro.h"
 #include "../fluid2_pro/fluid2pro_prototypes.h"
 #include "../fluid3_pro/fluid3pro.h"
+#include "../fluid2_is/fluid2_is.h"
+#include "../fluid3_is/fluid3_is.h"
 #include "../fluid3/fluid3.h"
 #include "../fluid3/fluid3_prototypes.h"
 #include "../fluid3_pro/fluid3pro_prototypes.h"
@@ -277,6 +279,14 @@ void out_element_control(struct _BIN_OUT_FIELD *context,
 #endif
 #ifdef D_FLUID3_PRO
       case el_fluid3_pro:
+        break;
+#endif
+#ifdef D_FLUID2_IS
+      case el_fluid2_is:
+        break;
+#endif
+#ifdef D_FLUID3_IS
+      case el_fluid3_is:
         break;
 #endif
 #ifdef D_FLUID2TU
@@ -953,6 +963,31 @@ static void out_pack_ele_params(BIN_OUT_CHUNK *chunk,
         size_ptr[vars->ep_size_nGP0] = f3pro->nGP[0];
         size_ptr[vars->ep_size_nGP1] = f3pro->nGP[1];
         size_ptr[vars->ep_size_nGP2] = f3pro->nGP[2];
+
+        break;
+      }
+#endif
+#ifdef D_FLUID2_IS
+      case el_fluid2_is:
+      {
+        FLUID2_IS* f2is = actele->e.f2is;
+        FLUID2_IS_VARIABLES* vars = &fluid2_is_variables;
+
+        size_ptr[vars->ep_size_nGP0] = f2is->nGP[0];
+        size_ptr[vars->ep_size_nGP1] = f2is->nGP[1];
+
+        break;
+      }
+#endif
+#ifdef D_FLUID3_IS
+      case el_fluid3_is:
+      {
+        FLUID3_IS* f3is = actele->e.f3is;
+        FLUID3_IS_VARIABLES* vars = &fluid3_is_variables;
+
+        size_ptr[vars->ep_size_nGP0] = f3is->nGP[0];
+        size_ptr[vars->ep_size_nGP1] = f3is->nGP[1];
+        size_ptr[vars->ep_size_nGP2] = f3is->nGP[2];
 
         break;
       }
@@ -3256,6 +3291,16 @@ static void out_pack_restart_element(BIN_OUT_CHUNK *chunk,
       }
 #endif
 
+#ifdef D_FLUID2_IS
+      case el_fluid2_is:
+	break;
+#endif
+
+#ifdef D_FLUID3_IS
+      case el_fluid3_is:
+	break;
+#endif
+
 #ifdef D_BRICK1
       case el_brick1:
         /* Nothing to do?! */
@@ -4674,6 +4719,16 @@ static void in_unpack_restart_element(BIN_IN_FIELD *context,
     }
 #endif
 
+#ifdef D_FLUID2_IS
+      case el_fluid2_is:
+	break;
+#endif
+
+#ifdef D_FLUID3_IS
+      case el_fluid3_is:
+	break;
+#endif
+
 #ifdef D_BRICK1
     case el_brick1:
       /* Nothing to do?! */
@@ -5001,6 +5056,18 @@ void find_ele_param_item_length(struct _BIN_OUT_FIELD* context,
       vlen = MAX(vlen, fluid3_pro_variables.ep_value_length);
       break;
 #endif
+#ifdef D_FLUID2_IS
+    case el_fluid2_is:
+      slen = MAX(slen, fluid2_is_variables.ep_size_length);
+      vlen = MAX(vlen, fluid2_is_variables.ep_value_length);
+      break;
+#endif
+#ifdef D_FLUID3_IS
+    case el_fluid3_is:
+      slen = MAX(slen, fluid3_is_variables.ep_size_length);
+      vlen = MAX(vlen, fluid3_is_variables.ep_value_length);
+      break;
+#endif
 #ifdef D_FLUID2TU
     case el_fluid2_tu:
       slen = MAX(slen, fluid2tu_variables.ep_size_length);
@@ -5062,7 +5129,10 @@ void find_ele_param_item_length(struct _BIN_OUT_FIELD* context,
       break;
 #endif
     default:
-      dserror("element type %d unsupported", actele->eltyp);
+    {
+      char* en[] = ELEMENTNAMES;
+      dserror("element '%s' unsupported", en[actele->eltyp]);
+    }
     }
   }
 
@@ -5633,6 +5703,16 @@ void find_restart_item_length(struct _BIN_OUT_FIELD* context,
 #ifdef D_FLUID3_F
     case el_fluid3_fast:
       *value_length = MAX(*value_length, 3);
+      break;
+#endif
+#ifdef D_FLUID2_IS
+    case el_fluid2_is:
+      /* *value_length = MAX(*value_length, 3);*/
+      break;
+#endif
+#ifdef D_FLUID3_IS
+    case el_fluid3_is:
+      /* *value_length = MAX(*value_length, 3);*/
       break;
 #endif
 #ifdef D_ALE

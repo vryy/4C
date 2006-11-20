@@ -10,6 +10,10 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
+
+#ifndef FLUID3_H
+#define FLUID3_H
+
 /*!---------------------------------------------------------------------
 \brief fluid2
 
@@ -69,4 +73,5 @@ struct _ARRAY      xyzssm;        /* coordinates of sub-submeshnodes      */
 } FLUID3;
 
 
+#endif
 #endif

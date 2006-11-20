@@ -312,6 +312,12 @@ void out_general()
           case el_fluid3_pro:
             fprintf(out,"ELE glob_Id %6d loc_Id %6d FLUID3_PRO\n",actele->Id,actele->Id_loc);
             break;
+          case el_fluid2_is:
+            fprintf(out,"ELE glob_Id %6d loc_Id %6d FLUID2_IS\n",actele->Id,actele->Id_loc);
+            break;
+          case el_fluid3_is:
+            fprintf(out,"ELE glob_Id %6d loc_Id %6d FLUID3_IS\n",actele->Id,actele->Id_loc);
+            break;
           case el_ale3:
             fprintf(out,"ELE glob_Id %6d loc_Id %6d ALE3\n",actele->Id,actele->Id_loc);
             break;

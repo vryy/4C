@@ -790,7 +790,7 @@ void fluid_pm_cont_laplace()
        * ridiculous if we use discontinuous pressure because there are
        * only genprob.ndim dofs per node. But it allows us to use the
        * ordinary fluid service functions. */
-      fluid_result_incre(actfield, 0,actintra,&(actsolv->sol[0]),
+      fluid_result_incre(actfield, 0,actintra,&(actsolv->sol[0]),&(actsolv->rhs[0]),
                          ipos->velnp,
                          &(actsolv->sysarray[actsysarray]),
                          &(actsolv->sysarray_typ[actsysarray]),
@@ -958,7 +958,7 @@ void fluid_pm_cont_laplace()
 
     solserv_sol_zero(actfield,disnum_calc,node_array_sol_increment,ipos->velnm);
 
-    fluid_result_incre(actfield,disnum_calc,actintra,&(actsolv->sol[0]),
+    fluid_result_incre(actfield,disnum_calc,actintra,&(actsolv->sol[0]),&(actsolv->rhs[0]),
 		       ipos->velnm,
 		       &(actsolv->sysarray[actsysarray]),
 		       &(actsolv->sysarray_typ[actsysarray]),

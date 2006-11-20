@@ -30,6 +30,8 @@
 #include "../interf/interf.h"
 #include "../wallge/wallge.h"
 #include "../fluid3_fast/f3f_prototypes.h"
+#include "../fluid2_is/fluid2_is.h"
+#include "../fluid3_is/fluid3_is.h"
 
 #ifdef D_SSI
 #include "../ssi_full/ssi_prototypes.h"
@@ -385,6 +387,16 @@ void calelm(FIELD        *actfield,     /* active field */
 #ifdef D_FLUID3_F
       case el_fluid3_fast:
         continue;
+        break;
+#endif
+
+#ifdef D_FLUID2_IS
+      case el_fluid2_is:
+        fluid2_is(
+            actpart,actintra,actele,NULL,
+            &estif_global,&emass_global,
+            &eforce_global,&edforce_global,
+            action,&hasdirich,&hasext,container);
         break;
 #endif
 
@@ -859,10 +871,12 @@ INT is_brick1=0;
 INT is_wall1 =0;
 INT is_fluid2=0;
 INT is_fluid2_pro=0;
+INT is_fluid2_is=0;
 INT is_fluid2_tu=0;
 INT is_fluid3=0;
 INT is_fluid3_fast=0;
 INT is_fluid3_pro=0;
+INT is_fluid3_is=0;
 INT is_ale3=0;
 INT is_ale2=0;
 INT is_beam3=0;
@@ -928,8 +942,14 @@ for (i=0; i<actfield->dis[disnum].numele; i++)
    case el_fluid2_pro:
       is_fluid2_pro=1;
    break;
+   case el_fluid2_is:
+      is_fluid2_is=1;
+   break;
    case el_fluid3_pro:
       is_fluid3_pro=1;
+   break;
+   case el_fluid3_is:
+      is_fluid3_is=1;
    break;
    case el_fluid2_tu:
       is_fluid2_tu=1;
@@ -1047,6 +1067,28 @@ container->kstep = 0;
                &estif_global,&emass_global,&lmass_global,&gradopr_global,
                &eforce_global,
                &edforce_global,&gforce_global,action,NULL,NULL);
+  }
+#endif
+  /*----------------------------- init all kind of routines for fluid2_is */
+#ifdef D_FLUID2_IS
+  if (is_fluid2_is==1)
+  {
+    fluid2_is(
+        actpart,NULL,NULL,NULL,
+        &estif_global,&emass_global,
+        &eforce_global,&edforce_global,
+        action,NULL,NULL,container
+        );
+  }
+#endif
+  /*----------------------------- init all kind of routines for fluid3_is */
+#ifdef D_FLUID3_IS
+  if (is_fluid3_is==1)
+  {
+    fluid3_is(actpart,NULL,NULL,
+        &estif_global,&emass_global,
+        &eforce_global,&edforce_global,
+        action,NULL,NULL,container);
   }
 #endif
   /*------------------------------ init all kind of routines for fluid2_tu */

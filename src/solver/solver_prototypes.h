@@ -807,7 +807,7 @@ void solver_spooles(
 /*----------------------------------------------------------------------*
  |  solver_control.c                                     m.gee 11/01    |
  *----------------------------------------------------------------------*/
-void solver_control(   
+void solver_control(
                        struct _FIELD          *actfield,
                        INT                     disnum,
                        struct _SOLVAR         *actsolv,
@@ -1367,6 +1367,7 @@ void fluid_result_incre(
                           INT                disnum,
                           INTRA             *actintra,
 			  DIST_VECTOR       *sol,
+			  DIST_VECTOR       *rhs,
                           INT                place,
 			  SPARSE_ARRAY      *sysarray,
 			  SPARSE_TYP        *sysarray_typ,

@@ -517,7 +517,7 @@ tss+=ts;
 fdyn->ishape=0;
 
 /*--- return solution to the nodes and calculate the convergence ratios */
-fluid_result_incre(actfield, 0,actintra,&(actsolv->sol[k_array]),ipos->velnp,
+fluid_result_incre(actfield, 0,actintra,&(actsolv->sol[k_array]),&(actsolv->rhs[k_array]),ipos->velnp,
                      &(actsolv->sysarray[k_array]),
                      &(actsolv->sysarray_typ[k_array]),
 		         &vrat,&prat,NULL);

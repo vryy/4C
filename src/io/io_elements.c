@@ -453,6 +453,121 @@ static void setup_fluid3_pro_variables(INT version, FLUID3_PRO_VARIABLES* vars)
 /*======================================================================*/
 /*======================================================================*/
 
+#ifdef D_FLUID2_IS
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Variables that describe the structure of the fluid2_is output.
+
+  The only instance of this structure.
+
+  \author u.kue
+  \date 11/06
+  \sa setup_fluid2_is_variables
+ */
+/*----------------------------------------------------------------------*/
+FLUID2_IS_VARIABLES fluid2_is_variables;
+
+
+static void setup_fluid2_is_variables(INT version, FLUID2_IS_VARIABLES* vars)
+{
+#ifdef DEBUG
+  dstrc_enter("setup_fluid2_is_variables");
+#endif
+
+  vars->init = 1;
+  vars->version = version;
+
+  switch (version)
+  {
+  case 1:
+    vars->ep_size_nGP0 = 4;
+    vars->ep_size_nGP1 = 5;
+
+    /* the length of the integer and the double entry */
+    vars->ep_size_length = 6;
+    vars->ep_value_length = 0;
+    break;
+
+  case 0:
+
+    /* Oh, no version. We are not initialized. */
+    vars->init = 0;
+    break;
+
+  default:
+    dserror("fluid2_is output version %d unknown", version);
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+#endif
+
+/*======================================================================*/
+/*======================================================================*/
+
+#ifdef D_FLUID3_IS
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Variables that describe the structure of the fluid3_is output.
+
+  The only instance of this structure.
+
+  \author u.kue
+  \date 11/04
+  \sa setup_fluid3_is_variables
+ */
+/*----------------------------------------------------------------------*/
+FLUID3_IS_VARIABLES fluid3_is_variables;
+
+
+static void setup_fluid3_is_variables(INT version, FLUID3_IS_VARIABLES* vars)
+{
+#ifdef DEBUG
+  dstrc_enter("setup_fluid3_is_variables");
+#endif
+
+  vars->init = 1;
+  vars->version = version;
+
+  switch (version)
+  {
+  case 1:
+    vars->ep_size_nGP0 = 4;
+    vars->ep_size_nGP1 = 5;
+    vars->ep_size_nGP2 = 6;
+
+    /* the length of the integer and the double entry */
+    vars->ep_size_length = 7;
+    vars->ep_value_length = 0;
+    break;
+
+  case 0:
+
+    /* Oh, no version. We are not initialized. */
+    vars->init = 0;
+    break;
+
+  default:
+    dserror("fluid3_is output version %d unknown", version);
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+#endif
+
+/*======================================================================*/
+/*======================================================================*/
+
 #ifdef D_FLUID2TU
 
 
@@ -1121,6 +1236,12 @@ void setup_element_variables_current()
 #ifdef D_FLUID3_PRO
   setup_fluid3_pro_variables(FLUID3_PRO_IO_VERSION, &fluid3_pro_variables);
 #endif
+#ifdef D_FLUID2_IS
+  setup_fluid2_is_variables(FLUID2_IS_IO_VERSION, &fluid2_is_variables);
+#endif
+#ifdef D_FLUID3_IS
+  setup_fluid3_is_variables(FLUID3_IS_IO_VERSION, &fluid3_is_variables);
+#endif
 #ifdef D_FLUID2TU
   setup_fluid2tu_variables(FLUID2TU_IO_VERSION, &fluid2tu_variables);
 #endif
@@ -1244,6 +1365,45 @@ void setup_element_variables_map(MAP* group)
     /* maybe the reader known more elements than ccarat when it wrote
      * the files */
     setup_fluid2_pro_variables(0, &fluid2_pro_variables);
+  }
+#endif
+#ifdef D_FLUID3_PRO
+  if (map_symbol_count(group, "fluid3_pro_version") > 0)
+  {
+    setup_fluid3_pro_variables(map_read_int(group, "fluid3_pro_version"),
+                           &fluid3_pro_variables);
+  }
+  else
+  {
+    /* maybe the reader known more elements than ccarat when it wrote
+     * the files */
+    setup_fluid3_pro_variables(0, &fluid3_pro_variables);
+  }
+#endif
+#ifdef D_FLUID2_IS
+  if (map_symbol_count(group, "fluid2_is_version") > 0)
+  {
+    setup_fluid2_is_variables(map_read_int(group, "fluid2_is_version"),
+                           &fluid2_is_variables);
+  }
+  else
+  {
+    /* maybe the reader known more elements than ccarat when it wrote
+     * the files */
+    setup_fluid2_is_variables(0, &fluid2_is_variables);
+  }
+#endif
+#ifdef D_FLUID3_IS
+  if (map_symbol_count(group, "fluid3_is_version") > 0)
+  {
+    setup_fluid3_is_variables(map_read_int(group, "fluid3_is_version"),
+                           &fluid3_is_variables);
+  }
+  else
+  {
+    /* maybe the reader known more elements than ccarat when it wrote
+     * the files */
+    setup_fluid3_is_variables(0, &fluid3_is_variables);
   }
 #endif
 #ifdef D_FLUID2TU
@@ -1415,6 +1575,15 @@ void out_print_element_versions(FILE* file)
 #endif
 #ifdef D_FLUID2_PRO
   fprintf(file, "fluid2_pro_version = %d\n", FLUID2_PRO_IO_VERSION);
+#endif
+#ifdef D_FLUID3_PRO
+  fprintf(file, "fluid2_pro_version = %d\n", FLUID3_PRO_IO_VERSION);
+#endif
+#ifdef D_FLUID2_IS
+  fprintf(file, "fluid2_is_version = %d\n", FLUID2_IS_IO_VERSION);
+#endif
+#ifdef D_FLUID3_IS
+  fprintf(file, "fluid2_is_version = %d\n", FLUID3_IS_IO_VERSION);
 #endif
 #ifdef D_FLUID2TU
   fprintf(file, "fluid2tu_version = %d\n", FLUID2TU_IO_VERSION);

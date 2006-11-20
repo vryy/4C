@@ -85,6 +85,12 @@ typedef struct _GIDSET
      char                      *fluid2_pro_22_name;
      INT                        is_fluid2_pro_33;       /* 8/9-noded fluid2 3x3 GP */
      char                      *fluid2_pro_33_name;
+
+     INT                        is_fluid2_is_22;       /* 4-noded fluid2_is 2x2 GP */
+     char                      *fluid2_is_22_name;
+     INT                        is_fluid2_is_33;       /* 8/9-noded fluid2 3x3 GP */
+     char                      *fluid2_is_33_name;
+
      INT                        is_fluid3_222;          /* 8-noded fluid3 2x2x2 GP */
      char                      *fluid3_222_name;
      INT                        is_fluid3_333;          /* 20/27-noded fluid3 3x3x3 GP */
@@ -94,6 +100,11 @@ typedef struct _GIDSET
      char                      *fluid3_pro_222_name;
      INT                        is_fluid3_pro_333;      /* 20/27-noded fluid3 3x3x3 GP */
      char                      *fluid3_pro_333_name;
+
+     INT                        is_fluid3_is_222;      /* 8-noded fluid3 2x2x2 GP */
+     char                      *fluid3_is_222_name;
+     INT                        is_fluid3_is_333;      /* 20/27-noded fluid3 3x3x3 GP */
+     char                      *fluid3_is_333_name;
 
      INT                        is_fluid3_tet4;
      char                      *fluid3_tet4_name;

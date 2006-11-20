@@ -135,9 +135,11 @@ typedef enum _ELEMENT_TYP
                        el_fluid2,      /* 2D fluid element */
                        el_fluid2_pro,  /* 2D fluid element */
                        el_fluid2_tu,   /* 2D fluid element for turbulence */
-                       el_fluid3,      /* 3D fluid element */
+		       el_fluid2_is,   /* 2D fluid element, inf-sup stable */
+		       el_fluid3,      /* 3D fluid element */
                        el_fluid3_fast,
 		       el_fluid3_pro,  /* 3D fluid element */
+		       el_fluid3_is,   /* 3D fluid element, inf-sup stable */
                        el_ale2,        /* 2D pseudo structural ale element */
                        el_ale3,        /* 3D pseudo structural ale element */
                        el_axishell,    /* 1D axisymmetrical shell element */
@@ -164,9 +166,11 @@ typedef enum _ELEMENT_TYP
       "fluid2",                                                         \
       "fluid2_pro",                                                     \
       "fluid2_tu",                                                      \
+      "fluid2_is",                                                      \
       "fluid3",                                                         \
       "fluid3_fast",                                                    \
       "fluid3_pro",                                                     \
+      "fluid3_is",                                                      \
       "ale2",                                                           \
       "ale3",                                                           \
       "axishell",                                                       \

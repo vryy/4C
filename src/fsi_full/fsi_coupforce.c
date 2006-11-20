@@ -247,7 +247,12 @@ void fsi_cbf(
           nfnode++;
         }
         /*--- get force vector ---*/
-        f2_caleleres(actele,&eforce_global,ipos,&hasdirich,&hasext);
+	if (actele->eltyp==el_fluid2)
+	  f2_caleleres(actele,&eforce_global,ipos,&hasdirich,&hasext);
+	else if (actele->eltyp==el_fluid2_is)
+	  f2is_caleleres(actele,&eforce_global,ipos,&hasdirich,&hasext);
+	else
+	  dserror("element type %d unsupported",actele->eltyp);
 
         for(j=0; j<nfnode; j++)
         {

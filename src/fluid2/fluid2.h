@@ -13,6 +13,10 @@ Maintainer: Steffen Genkinger
 /*!
 \addtogroup FLUID2
 *//*! @{ (documentation module open)*/
+
+#ifndef FLUID2_H
+#define FLUID2_H
+
 /*!---------------------------------------------------------------------
 \brief fluid2
 
@@ -79,5 +83,6 @@ struct _ARRAY      kappa_ND;
 } FLUID2;
 
 
+#endif
 #endif
 /*! @} (documentation module close)*/

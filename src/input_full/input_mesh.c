@@ -23,6 +23,8 @@ Maintainer: Michael Gee
 #include "../fluid2/fluid2.h"
 #include "../fluid2/fluid2_prototypes.h"
 #include "../fluid2_pro/fluid2pro_prototypes.h"
+#include "../fluid2_is/fluid2_is.h"
+#include "../fluid3_is/fluid3_is.h"
 #include "../ale3/ale3.h"
 #include "../ale2/ale2.h"
 #include "../axishell/axishell.h"
@@ -1326,6 +1328,36 @@ void inp_fluid_field(
       f3pro_dis(&(fluidfield->dis[0].element[counter]),
 		&(fluidfield->dis[1].element[counter]),
 		genprob.nele,genprob.nodeshift);
+#endif
+    }
+
+
+    /*   elementtyp is FLUID2_IS
+     *   -----------------------
+     */
+    frchk("FLUID2_IS",&ierr);
+    if (ierr==1)
+    {
+#ifndef D_FLUID2_IS
+      dserror("FLUID2_IS needed but not defined in Makefile");
+#else
+      fluidfield->dis[0].element[counter].eltyp = el_fluid2_is;
+      f2is_inp(&(fluidfield->dis[0].element[counter]));
+#endif
+    }
+
+
+    /*   elementtyp is FLUID3_IS
+     *   -----------------------
+     */
+    frchk("FLUID3_IS",&ierr);
+    if (ierr==1)
+    {
+#ifndef D_FLUID3_IS
+      dserror("FLUID3_IS needed but not defined in Makefile");
+#else
+      fluidfield->dis[0].element[counter].eltyp = el_fluid3_is;
+      f3is_inp(&(fluidfield->dis[0].element[counter]));
 #endif
     }
 

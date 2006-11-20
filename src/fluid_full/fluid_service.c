@@ -19,6 +19,8 @@ Maintainer: Steffen Genkinger
 #include "fluid_prototypes.h"
 #include "../fluid2/fluid2.h"
 #include "../fluid3/fluid3.h"
+#include "../fluid2_is/fluid2_is.h"
+#include "../fluid3_is/fluid3_is.h"
 #include "../io/io.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -653,6 +655,13 @@ void fluid_init(
           break;
 #endif
 
+#ifdef D_FLUID2_IS
+        case el_fluid2_is:
+          amdef("Stabpar",&(actele->e.f2is->tau_old),3,1,"DV");
+          amzero(&(actele->e.f2is->tau_old));
+          break;
+#endif
+
         default:
           dserror("wrong type of element for fluid init!");
           break;
@@ -1247,6 +1256,7 @@ void fluid_result_incre(
                           INT                disnum,
                           INTRA             *actintra,
 			  DIST_VECTOR       *sol,
+			  DIST_VECTOR       *rhs,
                           INT                place,
 			  SPARSE_ARRAY      *sysarray,
 			  SPARSE_TYP        *sysarray_typ,
@@ -1368,9 +1378,9 @@ case fncc_Linf: /* L_infinity norm */
          if (j==predof) /* pressure dof */
          {
 #ifdef FLUID_INCREMENTAL
-            pnorm = DMAX(dpnorm,
+            pnorm = DMAX(pnorm,
                 FABS(result[dof]+actnode->sol_increment.a.da[place][j]));
-            dpnorm  = DMAX(pnorm, FABS(result[dof]));
+            dpnorm  = DMAX(dpnorm, FABS(result[dof]));
             actnode->sol_increment.a.da[place][j] += result[dof];
 #else
             dpnorm = DMAX(dpnorm,
@@ -1382,9 +1392,9 @@ case fncc_Linf: /* L_infinity norm */
          else if (j>predof) /* grid velocity or height function dof */
          {
 #ifdef FLUID_INCREMENTAL
-            gnorm = DMAX(dpnorm,
+            gnorm = DMAX(gnorm,
                 FABS(result[dof]+actnode->sol_increment.a.da[place][j]));
-            dgnorm  = DMAX(pnorm, FABS(result[dof]));
+            dgnorm  = DMAX(dgnorm, FABS(result[dof]));
             actnode->sol_increment.a.da[place][j] += result[dof];
 #else
             dgnorm = DMAX(dgnorm,
@@ -1396,9 +1406,9 @@ case fncc_Linf: /* L_infinity norm */
          else /* vel - dof */
          {
 #ifdef FLUID_INCREMENTAL
-            vnorm = DMAX(dpnorm,
+            vnorm = DMAX(vnorm,
                 FABS(result[dof]+actnode->sol_increment.a.da[place][j]));
-            dvnorm  = DMAX(pnorm, FABS(result[dof]));
+            dvnorm  = DMAX(dvnorm, FABS(result[dof]));
             actnode->sol_increment.a.da[place][j] += result[dof];
 #else
             dvnorm = DMAX(dvnorm,
@@ -1500,8 +1510,8 @@ case fncc_L2: /* L_2 norm */
          if (j==predof) /* pressure dof */
          {
 #ifdef FLUID_INCREMENTAL
-            pnorm += DSQR(result[dof]+actnode->sol_increment.a.da[place][j]);
-            dpnorm  += DSQR(result[dof]);
+            pnorm  += DSQR(result[dof]+actnode->sol_increment.a.da[place][j]);
+            dpnorm += DSQR(result[dof]);
             actnode->sol_increment.a.da[place][j] += result[dof];
 #else
             dpnorm += DSQR(result[dof]-actnode->sol_increment.a.da[place][j]);
@@ -1512,8 +1522,8 @@ case fncc_L2: /* L_2 norm */
          else if (j>predof) /* grid velocity or height function dof */
          {
 #ifdef FLUID_INCREMENTAL
-            gnorm += DSQR(result[dof]+actnode->sol_increment.a.da[place][j]);
-            dgnorm  += DSQR(result[dof]);
+            gnorm  += DSQR(result[dof]+actnode->sol_increment.a.da[place][j]);
+            dgnorm += DSQR(result[dof]);
             actnode->sol_increment.a.da[place][j] += result[dof];
 #else
             dgnorm += DSQR(result[dof]-actnode->sol_increment.a.da[place][j]);
@@ -1524,8 +1534,8 @@ case fncc_L2: /* L_2 norm */
          else /* vel - dof */
          {
 #ifdef FLUID_INCREMENTAL
-            vnorm += DSQR(result[dof]+actnode->sol_increment.a.da[place][j]);
-            dvnorm  += DSQR(result[dof]);
+            vnorm  += DSQR(result[dof]+actnode->sol_increment.a.da[place][j]);
+            dvnorm += DSQR(result[dof]);
             actnode->sol_increment.a.da[place][j] += result[dof];
 #else
             dvnorm += DSQR(result[dof]-actnode->sol_increment.a.da[place][j]);
@@ -1979,18 +1989,21 @@ for (i=0; i<actdis->numnp; i++)
       dserror("Only 0,1,2,3 allowed for index to select sol, sol_increment, sol_residual, sol_mf");
    }
    dsassert(actpos<array->fdim,"cannot transform pressure\n");
-   dsassert(predof<array->sdim,"cannot transform pressure\n");
-   /*------------------------------------------ pressure transformation */
-   switch (option)
+   /*dsassert(predof<array->sdim,"cannot transform pressure\n");*/
+   if (predof<array->sdim)
    {
-   case 0: /*kinematic pressure -> real pressure  */
-      array->a.da[actpos][predof]*=dens;
-   break;
-   case 1: /*real pressure -> kinematic pressure  */
-      array->a.da[actpos][predof]/=dens;
-   break;
-   default:
-      dserror("option out of range: don't know what to do!\n");
+     /*------------------------------------------ pressure transformation */
+     switch (option)
+     {
+     case 0: /*kinematic pressure -> real pressure  */
+       array->a.da[actpos][predof]*=dens;
+       break;
+     case 1: /*real pressure -> kinematic pressure  */
+       array->a.da[actpos][predof]/=dens;
+       break;
+     default:
+       dserror("option out of range: don't know what to do!\n");
+     }
    }
 } /* end of loop over nodes */
 

@@ -366,6 +366,22 @@ for (i=0; i<genprob.numfld; i++)
 #endif
 
 
+#ifdef D_FLUID2_IS
+      case el_fluid2_is:
+         if (actele->numnp==4)
+         {
+            actgid->is_fluid2_is_22    = 1;
+            actgid->fluid2_is_22_name  = "fluid2_is_22";
+         }
+         if (actele->numnp==8  || actele->numnp==9)
+         {
+            actgid->is_fluid2_is_33    = 1;
+            actgid->fluid2_is_33_name  = "fluid2_is_33";
+         }
+      break;
+#endif
+
+
 
 
    /* FLUID3 */
@@ -412,6 +428,25 @@ for (i=0; i<genprob.numfld; i++)
          {
             actgid->is_fluid3_pro_333   = 1;
             actgid->fluid3_pro_333_name = "fluid3_pro_333";
+         }
+      break;
+#endif
+
+
+   /* FLUID3_IS */
+   /*============*/
+
+#ifdef D_FLUID3_IS
+      case el_fluid3_is:
+         if (actele->numnp==8)
+         {
+            actgid->is_fluid3_is_222   = 1;
+            actgid->fluid3_is_222_name = "fluid3_is_222";
+         }
+         if (actele->numnp==20 || actele->numnp==27)
+         {
+            actgid->is_fluid3_is_333   = 1;
+            actgid->fluid3_is_333_name = "fluid3_is_333";
          }
       break;
 #endif
@@ -5069,13 +5104,15 @@ if (strncmp(string,"pressure",stringlenght)==0)
       switch (genprob.ndim)
       {
 	case 3:
-        fprintf(out," %6d %22.9E \n",
+	  if (actnode->sol.sdim > 3)
+	    fprintf(out," %6d %22.9E \n",
                                                    actnode->Id+1,
                                                    actnode->sol.a.da[place][3]
                                                    );
 	break;
 	case 2:
-        fprintf(out," %6d %22.9E \n",
+	  if (actnode->sol.sdim > 2)
+	    fprintf(out," %6d %22.9E \n",
                                                    actnode->Id+1,
                                                    actnode->sol.a.da[place][2]
                                                    );

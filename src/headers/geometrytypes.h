@@ -103,8 +103,10 @@ typedef struct _ELEMENT
      struct _FLUID2     *f2;                    /* 2D fluid element */
      struct _FLUID2_PRO *f2pro;                 /* 2D fluid element projection method */
      struct _FLUID2_TU  *f2_tu;                 /* 2D fluid element for turbulence*/
+     struct _FLUID2     *f2is;                  /* 2D fluid element */
      struct _FLUID3     *f3;                    /* 3D fluid element */
      struct _FLUID3_PRO *f3pro;                 /* 3D fluid element projection method */
+     struct _FLUID3     *f3is;                  /* 3D fluid element */
      struct _ALE2       *ale2;                  /* pseudo structural 2D ale element */
      struct _ALE3       *ale3;                  /* pseudo structural 3D ale element */
      struct _AXISHELL   *saxi;                  /* axisymmetric shell */

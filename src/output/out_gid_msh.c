@@ -842,6 +842,52 @@ end_shell8:;
       }
 
 
+      if (actgid->is_fluid2_is_22)
+      {
+        fprintf(out,"#-------------------------------------------------------------------------------\n");
+        fprintf(out,"# MESH %s FOR FIELD %s, DIS %1i FLUID2_IS 2x2 GP\n",
+                actgid->fluid2_22_name,actgid->fieldname,l);
+        fprintf(out,"#-------------------------------------------------------------------------------\n");
+        fprintf(out,"MESH %s_dis_%1i DIMENSION 2 ELEMTYPE Quadrilateral NNODE 4\n",
+                actgid->fluid2_22_name,l);
+        /*------------------------------------------------ print elements */
+        fprintf(out,"ELEMENTS\n");
+        for (j=0; j<actfield->dis[l].numele; j++)
+        {
+          actele = &(actfield->dis[l].element[j]);
+          if (actele->eltyp != el_fluid2_is || actele->numnp !=4) continue;
+          fprintf(out," %6d ",actele->Id+1);
+          for (k=0; k<actele->numnp; k++)
+            fprintf(out,"%6d ",actele->node[k]->Id+1);
+          fprintf(out,"\n");
+        }
+        fprintf(out,"END ELEMENTS\n");
+      }
+
+
+      if (actgid->is_fluid2_is_33)
+      {
+        fprintf(out,"#-------------------------------------------------------------------------------\n");
+        fprintf(out,"# MESH %s FOR FIELD %s, DIS %1i FLUID2_IS 3x3 GP\n",
+                actgid->fluid2_33_name,actgid->fieldname,l);
+        fprintf(out,"#-------------------------------------------------------------------------------\n");
+        fprintf(out,"MESH %s_dis_%1i DIMENSION 2 ELEMTYPE Quadrilateral NNODE 9\n",
+                actgid->fluid2_33_name,l);
+        /*------------------------------------------------ print elements */
+        fprintf(out,"ELEMENTS\n");
+        for (j=0; j<actfield->dis[l].numele; j++)
+        {
+          actele = &(actfield->dis[l].element[j]);
+          if (actele->eltyp != el_fluid2_is || actele->numnp !=9) continue;
+          fprintf(out," %6d ",actele->Id+1);
+          for (k=0; k<actele->numnp; k++)
+            fprintf(out,"%6d ",actele->node[k]->Id+1);
+          fprintf(out,"\n");
+        }
+        fprintf(out,"END ELEMENTS\n");
+      }
+
+
       /* FLUID3 */
       /*========*/
 
@@ -975,6 +1021,58 @@ end_shell8:;
         {
           actele = &(actfield->dis[l].element[j]);
           if (actele->eltyp != el_fluid3_pro || actele->numnp !=27) continue;
+          fprintf(out," %6d ",actele->Id+1);
+          for (k=0; k<actele->numnp; k++)
+            fprintf(out,"%6d ",actele->node[k]->Id+1);
+          fprintf(out,"\n");
+        }
+        fprintf(out,"END ELEMENTS\n");
+      }
+#endif
+
+
+      /* FLUID3_IS */
+      /*============*/
+
+#ifdef D_FLUID3_IS
+
+      if (actgid->is_fluid3_is_222)
+      {
+        fprintf(out,"#-------------------------------------------------------------------------------\n");
+        fprintf(out,"# MESH %s FOR FIELD %s, DIS %1i: FLUID3_IS 2x2x2 GP\n",
+            actgid->fluid3_is_222_name,actgid->fieldname,l);
+        fprintf(out,"#-------------------------------------------------------------------------------\n");
+        fprintf(out,"MESH %s_dis_%1i DIMENSION 3 ELEMTYPE Hexahedra NNODE 8\n",
+            actgid->fluid3_is_222_name,l);
+        /*------------------------------------------------ print elements */
+        fprintf(out,"ELEMENTS\n");
+        for (j=0; j<actfield->dis[l].numele; j++)
+        {
+          actele = &(actfield->dis[l].element[j]);
+          if (actele->eltyp != el_fluid3_is || actele->numnp !=8) continue;
+          fprintf(out," %6d ",actele->Id+1);
+          for (k=0; k<actele->numnp; k++)
+            fprintf(out,"%6d ",actele->node[k]->Id+1);
+          fprintf(out,"\n");
+        }
+        fprintf(out,"END ELEMENTS\n");
+      }
+
+
+      if (actgid->is_fluid3_is_333)
+      {
+        fprintf(out,"#-------------------------------------------------------------------------------\n");
+        fprintf(out,"# MESH %s FOR FIELD %s, DIS %1i: FLUID3_IS 3x3x3 GP\n",
+            actgid->fluid3_is_333_name,actgid->fieldname,l);
+        fprintf(out,"#-------------------------------------------------------------------------------\n");
+        fprintf(out,"MESH %s_dis_%1i DIMENSION 3 ELEMTYPE Hexahedra NNODE 27\n",
+            actgid->fluid3_is_333_name,l);
+        /*------------------------------------------------ print elements */
+        fprintf(out,"ELEMENTS\n");
+        for (j=0; j<actfield->dis[l].numele; j++)
+        {
+          actele = &(actfield->dis[l].element[j]);
+          if (actele->eltyp != el_fluid3_is || actele->numnp !=27) continue;
           fprintf(out," %6d ",actele->Id+1);
           for (k=0; k<actele->numnp; k++)
             fprintf(out,"%6d ",actele->node[k]->Id+1);

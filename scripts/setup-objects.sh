@@ -108,6 +108,28 @@ if grep '^[[:blank:]]*D_FLUID3_PRO' "$definefile" 3>&1 > /dev/null ; then
     fi
 fi
 
+# FLUID2_IS
+if grep '^[[:blank:]]*D_FLUID2_IS' "$definefile" 2>&1 > /dev/null ; then
+    if [ "x$OBJ_FLUID" = "x0" ] ; then
+        OBJECTS="$OBJECTS \$(OBJS_F2IS) \$(OBJS_FLUID)"
+        DEFINES="$DEFINES -DD_FLUID"
+        OBJ_FLUID=1
+    else
+        OBJECTS="$OBJECTS \$(OBJS_F2IS)"
+    fi
+fi
+
+# FLUID3_IS
+if grep '^[[:blank:]]*D_FLUID3_IS' "$definefile" 3>&1 > /dev/null ; then
+    if [ "x$OBJ_FLUID" = "x0" ] ; then
+        OBJECTS="$OBJECTS \$(OBJS_F3IS) \$(OBJS_FLUID)"
+        DEFINES="$DEFINES -DD_FLUID"
+        OBJ_FLUID=1
+    else
+        OBJECTS="$OBJECTS \$(OBJS_F3IS)"
+    fi
+fi
+
 # SHELL8
 if grep '^[[:blank:]]*D_SHELL8' "$definefile" 2>&1 > /dev/null ; then
     OBJECTS="$OBJECTS \$(OBJS_SHELL8)"

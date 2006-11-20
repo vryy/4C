@@ -27,6 +27,8 @@ Maintainer: Steffen Genkinger
 #include "../solver/solver.h"
 #include "../fluid2/fluid2.h"
 #include "../fluid3/fluid3.h"
+#include "../fluid2_is/fluid2_is.h"
+#include "../fluid3_is/fluid3_is.h"
 #include "fsi_prototypes.h"
 
 
@@ -645,6 +647,7 @@ perf_begin(53);
     numdf = actfnode->numdf;
 
     if (numdf==3 || numdf==5) numc=numdf;
+    else if (numdf==2) numc=3;
     else if (numdf==4 || numdf==7) numc=IMAX(6,numdf);
     else  dserror("number of fluid dofs not possible!\n");
 
@@ -652,12 +655,6 @@ perf_begin(53);
     amzero(&(actfnode->sol_mf));
 
     actfgnode->mfcpnode=(NODE**)CCACALLOC(3,sizeof(NODE*));
-
-    if (actfgnode->mfcpnode==NULL)
-      dserror("Allocation of coupling node pointers failed");
-
-    for (j=0;j<3;j++) actfgnode->mfcpnode[j]=NULL;
-
   } /* end of loop over fluid nodes */
 
 
@@ -688,12 +685,6 @@ perf_begin(53);
     amzero(&(actsnode->sol_mf));
 
     actsgnode->mfcpnode=(NODE**)CCACALLOC(3,sizeof(NODE*));
-
-    if (actsgnode->mfcpnode==NULL)
-      dserror("Allocation of coupling node pointers failed");
-
-    for (j=0;j<3;j++) actsgnode->mfcpnode[j]=NULL;
-
   } /* end of loop over struct nodes */
 
 
@@ -715,12 +706,6 @@ perf_begin(53);
     amzero(&(actanode->sol_mf));
 
     actagnode->mfcpnode=(NODE**)CCACALLOC(3,sizeof(NODE*));
-
-    if (actagnode->mfcpnode==NULL)
-      dserror("Allocation of coupling node pointers failed");
-
-    for (j=0;j<3;j++) actagnode->mfcpnode[j]=NULL;
-
   } /* end of loop over ale nodes */
 
 
@@ -758,56 +743,51 @@ perf_begin(54);
 
     for (j=0;j<actfnode->numele;j++)
     {
-
       actele= actfnode->element[j];
-
       switch (actele->eltyp)
       {
-
 #ifdef D_FLUID2
         case el_fluid2:
           if (actele->e.f2->is_ale>0) is_ale++;
           break;
 #endif
-
-
 #ifdef D_FLUID3
         case el_fluid3:
           if (actele->e.f3->is_ale>0) is_ale++;
           break;
 #endif
-
-
 #ifdef D_FLUID3_F
         case el_fluid3_fast:
           if (actele->e.f3->is_ale>0) is_ale++;
           break;
 #endif
-
+#ifdef D_FLUID2_IS
+        case el_fluid2_is:
+          if (actele->e.f2is->is_ale>0) is_ale++;
+          break;
+#endif
+#ifdef D_FLUID3_IS
+        case el_fluid3_is:
+          if (actele->e.f3is->is_ale>0) is_ale++;
+          break;
+#endif
         default:
           dserror("eltyp unknow\n");
-
-      }  /* switch (actele->eltyp) */
-
+      }
       if (is_ale>0) break;
-
-    }  /* for (j=0;j<actfnode->numele;j++) */
-
+    }
 
     sfound=0;
     afound=0;
 
-
 #ifdef PERF
-perf_begin(56);
+    perf_begin(56);
 #endif
-
 
     /* loop struct nodes at interface and find corresponding node */
     if (actfgnode->fsicouple != NULL)
       for (j=0;j<numsnp;j++)
       {
-
         if (sindex[j]==0) continue;
 
         actsnode   = &(structfield->dis[disnum_s].node[j]);
@@ -822,14 +802,9 @@ perf_begin(56);
         break;
       } /* end of loop over structnodes */
 
-
 #ifdef PERF
     perf_end(56);
 #endif
-
-
-
-
 
 #ifdef PERF
     perf_begin(57);
@@ -841,7 +816,6 @@ perf_begin(56);
       if (is_ale>0)
         for (j=0;j<numanp;j++)
         {
-
           if (aindex[j]==0) continue;
 
           actanode  = &(alefield->dis[disnum_a].node[j]);
@@ -854,7 +828,6 @@ perf_begin(56);
           aindex[j]=0;
 
           break;
-
         } /* end of loop over ale nodes */
     }
 
@@ -862,7 +835,6 @@ perf_begin(56);
     {
       if (is_ale>0)
       {
-
         /* find adjecent ale element */
 #ifdef D_FLUID3
         if (actfnode->element[0]->e.f3->is_ale > 0)
@@ -923,23 +895,18 @@ perf_begin(56);
           }  /* if (actfnode->Id == actfnode->element[ele]->node[j]->Id ) */
         }
 
-
 #ifdef DEBUG
         cheque_distance(&(actfnode->x[0]),&(actanode->x[0]),tol,&ierr);
         if(ierr==0) dserror("Wrong node matching for fluid <-> ale!!!");
 #endif
-
         afound++;
         actagnode = actanode->gnode;
       }
     }
 
 #ifdef PERF
-perf_end(57);
+    perf_end(57);
 #endif
-
-
-
 
     /* set pointers to corresponding nodes */
     if(sfound>0)   actfgnode->mfcpnode[numsf]=actsnode;
@@ -1041,8 +1008,10 @@ perf_begin(55);
     if (actfgnode->dirich==NULL)
       dserror("No dirich condition for fsi-coupling fluid node #%d",actfnode->Id);
     if(actfgnode->dirich->dirich_type!=dirich_FSI) continue;
+#if 0
     if (actfnode->numdf!=dim+1)
       dserror("numdf not possible for fluid node #%d at FSI interface!", actfnode->Id);
+#endif
     for (j=0;j<dim;j++)
       if (actfgnode->dirich->dirich_onoff.a.iv[j]!=1)
         dserror("onoff(%d)=%d at fluid node #%d",

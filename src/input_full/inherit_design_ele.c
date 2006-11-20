@@ -16,6 +16,8 @@ Maintainer: Christiane Foerster
 #include "../headers/standardtypes.h"
 #include "../fluid2/fluid2.h"
 #include "../fluid3/fluid3.h"
+#include "../fluid2_is/fluid2_is.h"
+#include "../fluid3_is/fluid3_is.h"
 
 
 #ifdef D_FLUID
@@ -60,8 +62,8 @@ for (i=0; i<actdis->numele; i++)
   actele = &(actdis->element[i]);
   switch (actele->eltyp)
   {
-    case el_fluid2:
 #ifdef D_FLUID2
+    case el_fluid2:
       /*------------------------------------------ set some pointers ---*/
       fluid2 = actele->e.f2;
       actdsurf = actele->g.gsurf->dsurf;
@@ -96,8 +98,8 @@ for (i=0; i<actdis->numele; i++)
     case el_fluid3_pro:       /* projection method                      */
     break;
 #endif
-    case el_fluid3:
 #ifdef D_FLUID3
+    case el_fluid3:
       /*------------------------------------------ set some pointers ---*/
       fluid3 = actele->e.f3;
       actdvol = actele->g.gvol->dvol;
@@ -144,6 +146,34 @@ for (i=0; i<actdis->numele; i++)
         dserror("Unknown stabilisation for fluid3f!");
       }
     break;
+#endif
+
+#ifdef D_FLUID2_IS
+  case el_fluid2_is:
+  {
+    FLUID2_IS* f2is;
+    f2is = actele->e.f2is;
+    actdsurf = actele->g.gsurf->dsurf;
+
+    /*------------------- get type of stabilisation to the element ---*/
+    f2is->stab_type = actdsurf->stab_type;
+
+    /*--- assign pointer to corresponding stabilisation parameters ---*/
+    switch (f2is->stab_type)
+    {
+    case stab_gls:
+      dsassert(actdsurf->stabi.gls!=NULL,"no stabilisation at DSURF!\n");
+      f2is->stabi.gls = actdsurf->stabi.gls;
+      break;
+    case stab_usfem:
+    case stab_prespro:
+      /* nothing needs to be done at the moment (no parameters!) */
+      break;
+    default:
+      dserror("Unknown stabilisation");
+    }
+    break;
+  }
 #endif
 
     default: dserror("Unknown element (eltyp) in fluid field!");

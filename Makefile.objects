@@ -580,6 +580,15 @@ OBJS_F3PRO    = src/fluid3_pro/f3pro_inpele.o \
                 src/fluid3_pro/f3pro_calint.o \
                 src/fluid3_pro/f3pro_calservice.o \
                 src/fluid3_pro/f3pro_main.o
+#
+OBJS_F2IS     = src/fluid2_is/f2is_main.o \
+		src/fluid2_is/f2is_calele.o \
+		src/fluid2_is/f2is_calint.o \
+		src/fluid2_is/f2is_service.o \
+		src/fluid2_is/f2is_inpele.o
+#
+OBJS_F3IS     = src/fluid3_is/f3is_main.o \
+		src/fluid3_is/f3is_inpele.o
 #               interf
 OBJS_IF       = src/interf/if_inpele.o \
                 src/interf/if_main.o \

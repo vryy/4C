@@ -140,6 +140,26 @@ for (j=0; j<actfield->dis[0].numele; j++)
       break;
 #endif
 
+#ifdef D_FLUID2_IS
+   case el_fluid2_is:
+     switch (actele->distyp)
+     {
+     case quad9:
+       for (k=0; k<4; k++)
+	 actele->node[k]->numdf=MAX(actele->node[k]->numdf,3);
+       for (k=4; k<9; k++)
+	 actele->node[k]->numdf=MAX(actele->node[k]->numdf,2);
+       break;
+     default:
+     {
+       char* distnames[] = DISTYPENAMES;
+       dserror("unsupported dis type '%s' for 2d inf-sup fluid",
+	       distnames[actele->distyp]);
+     }
+     }
+     break;
+#endif
+
 #ifdef D_FLUID3
    case el_fluid3:
       for (k=0; k<actele->numnp; k++)
@@ -206,7 +226,7 @@ for (j=0; j<actfield->dis[0].numele; j++)
 
 #ifdef D_THERM2
    case el_therm2:
-     for (k=0; k<actele->numnp; k++)  
+     for (k=0; k<actele->numnp; k++)
      {
        /* NUMDOF_THERM2 is defined in therm2.h */
          if (actele->node[k]->numdf < NUMDOF_THERM2) actele->node[k]->numdf=NUMDOF_THERM2;
@@ -216,7 +236,7 @@ for (j=0; j<actfield->dis[0].numele; j++)
 
 #ifdef D_THERM3
    case el_therm3:
-     for (k=0; k<actele->numnp; k++)  
+     for (k=0; k<actele->numnp; k++)
      {
        /* The constant NUMDOF_THERM3 is defined in therm3.h .
 	* It is _not_ defined in the global file define_sizes.h ,

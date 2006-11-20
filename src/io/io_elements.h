@@ -455,6 +455,117 @@ extern FLUID3_PRO_VARIABLES fluid3_pro_variables;
 /*======================================================================*/
 /*======================================================================*/
 
+#ifdef D_FLUID2_IS
+
+/* output version of fluid2_is element */
+#define FLUID2_IS_IO_VERSION 1
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Variables that describe the structure of the fluid2_is output.
+
+  These variables depend on the output version of the element. There
+  is a function that sets there variables depending of the version
+  number. The idea is to allow element evolution and still be able to
+  read old output.
+
+  \author u.kue
+  \date 11/06
+  \sa setup_fluid2_is_variables
+ */
+/*----------------------------------------------------------------------*/
+typedef struct _FLUID2_IS_VARIABLES
+{
+  /* If there is no element version in the control file we cannot
+   * initialize this structure. It's illegal to use it then. */
+  INT init;
+
+  /* version for which the parameters are initialized */
+  INT version;
+
+  /* the length of the integer and the double entry */
+  INT ep_size_length;
+  INT ep_value_length;
+
+  INT ep_size_nGP0;
+  INT ep_size_nGP1;
+
+} FLUID2_IS_VARIABLES;
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Variables that describe the structure of the fluid2_is output.
+
+  The only instance of this structure.
+
+  \author u.kue
+  \date 11/06
+  \sa setup_fluid2_is_variables
+ */
+/*----------------------------------------------------------------------*/
+extern FLUID2_IS_VARIABLES fluid2_is_variables;
+
+#endif
+
+/*======================================================================*/
+/*======================================================================*/
+
+#ifdef D_FLUID3_IS
+
+/* output version of fluid3_is element */
+#define FLUID3_IS_IO_VERSION 1
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Variables that describe the structure of the fluid3_is output.
+
+  These variables depend on the output version of the element. There
+  is a function that sets there variables depending of the version
+  number. The idea is to allow element evolution and still be able to
+  read old output.
+
+  \author u.kue
+  \date 11/06
+  \sa setup_fluid3_is_variables
+ */
+/*----------------------------------------------------------------------*/
+typedef struct _FLUID3_IS_VARIABLES
+{
+  /* If there is no element version in the control file we cannot
+   * initialize this structure. It's illegal to use it then. */
+  INT init;
+
+  /* version for which the parameters are initialized */
+  INT version;
+
+  /* the length of the integer and the double entry */
+  INT ep_size_length;
+  INT ep_value_length;
+
+  INT ep_size_nGP0;
+  INT ep_size_nGP1;
+  INT ep_size_nGP2;
+
+} FLUID3_IS_VARIABLES;
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Variables that describe the structure of the fluid3_is output.
+
+  The only instance of this structure.
+
+  \author u.kue
+  \date 11/06
+  \sa setup_fluid3_is_variables
+ */
+/*----------------------------------------------------------------------*/
+extern FLUID3_IS_VARIABLES fluid3_is_variables;
+
+#endif
+
+/*======================================================================*/
+/*======================================================================*/
+
 #ifdef D_FLUID2TU
 
 /* output version of fluid2tu element */

@@ -308,6 +308,8 @@ void* am4redef(
     INT          newfodim);
 
 
+void amprint(FILE* err,ARRAY *a,INT fdim, INT sdim);
+
 
 /*----------------------------------------------------------------------*
  |  pss_ds.c                                             m.gee 11/01    |

@@ -62,6 +62,14 @@ Maintainer: Malte Neumann
 #include "../fluid3_pro/fluid3pro.h"
 #endif
 
+#ifdef D_FLUID2_IS
+#include "../fluid2_is/fluid2_is.h"
+#endif
+
+#ifdef D_FLUID3_IS
+#include "../fluid3_is/fluid3_is.h"
+#endif
+
 #ifdef D_FLUID2
 #include "../fluid2/fluid2_tu.h"
 #endif
@@ -254,6 +262,16 @@ for(i=0; i<genprob.numfld; i++)  /* loop all fields */
           gauss = actele->e.f3pro->nGP[0]*actele->e.f3pro->nGP[1]*actele->e.f3pro->nGP[2];
 
           /* check maxdofpernode for fluid3_pro */
+          if (3 > maxdofpernode)
+            maxdofpernode = 3;
+          break;
+#endif
+
+#ifdef D_FLUID2_IS
+        case el_fluid2_is:
+          gauss = actele->e.f2is->nGP[0]*actele->e.f2is->nGP[1];
+
+          /* check maxdofpernode for fluid2_is */
           if (3 > maxdofpernode)
             maxdofpernode = 3;
           break;

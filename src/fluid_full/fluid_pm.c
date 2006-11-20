@@ -950,7 +950,7 @@ void fluid_pm()
        * ridiculous if we use discontinuous pressure because there are
        * only genprob.ndim dofs per node. But it allows us to use the
        * ordinary fluid service functions. */
-      fluid_result_incre(actfield, 0,actintra,&(actsolv->sol[0]),
+      fluid_result_incre(actfield, 0,actintra,&(actsolv->sol[0]),&(actsolv->rhs[0]),
                          ipos->velnp,
                          &(actsolv->sysarray[actsysarray]),
                          &(actsolv->sysarray_typ[actsysarray]),
