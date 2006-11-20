@@ -353,6 +353,8 @@ void ntainp()
         inherit_design_ele(&(field[i].dis[j]));
   }
 #endif
+
+
   /*----- inherit the dirichlet and coupling conditions inside the design */
   /* conditions are inherited 'downwards': DVOL->DSURF->DLINE->DNODE      */
   /* BUT: if a 'lower object already has its own condition, it does NOT   */
@@ -360,8 +362,6 @@ void ntainp()
 #ifdef PERF
   perf_begin(11);
 #endif
-
-
   inherit_dirich_coup_indesign();
 
 
