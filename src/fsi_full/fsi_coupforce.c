@@ -249,8 +249,10 @@ void fsi_cbf(
         /*--- get force vector ---*/
 	if (actele->eltyp==el_fluid2)
 	  f2_caleleres(actele,&eforce_global,ipos,&hasdirich,&hasext);
+#ifdef D_FLUID2_IS
 	else if (actele->eltyp==el_fluid2_is)
 	  f2is_caleleres(actele,&eforce_global,ipos,&hasdirich,&hasext);
+#endif
 	else
 	  dserror("element type %d unsupported",actele->eltyp);
 
