@@ -72,6 +72,7 @@ const char* CCADISCRETIZATION::DesignElement::Pack(int& size) const
   // calculate size of vector data
   size = 
   sizeint +                     // size itself
+  sizeint +                     // type of this instance of ParObject, see top of ParObject.H
   basesize +                    // base class data
   SizeVector(lentityid_) +      // lentityid_
   SizeVector(lorientation_) +   // lorientation_
@@ -86,6 +87,9 @@ const char* CCADISCRETIZATION::DesignElement::Pack(int& size) const
   
   // add size
   AddtoPack(position,data,size);
+  // ParObject type
+  int type = ParObject_DesignElement;
+  AddtoPack(position,data,type);
   // add base class
   AddtoPack(position,data,basedata,basesize);
   delete [] basedata;
@@ -121,6 +125,10 @@ bool CCADISCRETIZATION::DesignElement::Unpack(const char* data)
   // extract size
   int size = 0;
   ExtractfromPack(position,data,size);
+  // ParObject instance type
+  int type=0;
+  ExtractfromPack(position,data,type);
+  if (type != ParObject_DesignElement) dserror("Wrong instance type in data");
   // extract base class
   int basesize = SizePack(&data[position]);
   Element::Unpack(&data[position]);

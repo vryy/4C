@@ -68,6 +68,7 @@ const char* CCADISCRETIZATION::Container::Pack(int& size) const
 
   size = 
   sizeint +      // size itself 
+  sizeint +      // type of this instance of ParObject, see top of ParObject.H
   sizeint +      // number of entries in intdata_
   sizeint +      // number of entries in doubledata_
   sizeint +      // number of entries in stringdata_
@@ -101,6 +102,9 @@ const char* CCADISCRETIZATION::Container::Pack(int& size) const
 
   // size
   AddtoPack(position,data,size);
+  // ParObject type
+  int type = ParObject_Container;
+  AddtoPack(position,data,type);
   // intdata_.size()
   int tmp = (int)intdata_.size();
   AddtoPack(position,data,tmp);
@@ -132,6 +136,7 @@ const char* CCADISCRETIZATION::Container::Pack(int& size) const
   
   if (position != size)
     dserror("Mismatch in size of data %d <-> %d",size,position);
+
   return data;
 }
 
@@ -147,12 +152,19 @@ bool CCADISCRETIZATION::Container::Unpack(const char* data)
   // extract size
   int size = 0;
   ExtractfromPack(position,data,size);
+  // ParObject instance type
+  int type=0;
+  ExtractfromPack(position,data,type);
+  if (type != ParObject_Container) dserror("Wrong instance type in data");
   // extract number of entries in intdata_
   int numintdata=0;
   ExtractfromPack(position,data,numintdata);
   // extract number of entries in doubledata_
   int numdoubledata=0;
   ExtractfromPack(position,data,numdoubledata);
+  // extract number of entries in stringdata_
+  int numstringdata=0;
+  ExtractfromPack(position,data,numstringdata);
   
   // iterate and extract
   for (int i=0; i<numintdata; ++i)
@@ -171,6 +183,14 @@ bool CCADISCRETIZATION::Container::Unpack(const char* data)
     vector<double> tmpvector;
     ExtractVectorfromPack(position,data,tmpvector);
     Add(tmp,tmpvector);
+  }  
+  for (int i=0; i<numstringdata; ++i)
+  {
+    string tmp;
+    ExtractStringfromPack(position,data,tmp);
+    string tmp2;
+    ExtractStringfromPack(position,data,tmp2);
+    Add(tmp,tmp2);
   }  
     
   if (position != size)

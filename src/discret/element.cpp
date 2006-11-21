@@ -145,6 +145,7 @@ const char* CCADISCRETIZATION::Element::Pack(int& size) const
   // calculate size of vector
   size = 
   sizeint                +   // holds size itself
+  sizeint                +   // type of this instance of ParObject, see top of ParObject.H
   sizeint                +   // holds Id()
   sizetype               +   // holds type of element
   SizeVector(nodeid_)    +   // nodeid_
@@ -159,6 +160,9 @@ const char* CCADISCRETIZATION::Element::Pack(int& size) const
 
   // add size
   AddtoPack(position,data,size);
+  // ParObject type
+  int type = ParObject_Element;
+  AddtoPack(position,data,type);
   // add Id()
   int id = Id();
   AddtoPack(position,data,id);
@@ -197,6 +201,10 @@ bool CCADISCRETIZATION::Element::Unpack(const char* data)
   // extract size
   int size = 0;
   ExtractfromPack(position,data,size);
+  // ParObject instance type
+  int type=0;
+  ExtractfromPack(position,data,type);
+  if (type != ParObject_Element) dserror("Wrong instance type in data");
   // extract id
   ExtractfromPack(position,data,id_);
   // extract type

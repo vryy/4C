@@ -77,6 +77,7 @@ const char* CCADISCRETIZATION::DesignNode::Pack(int& size) const
   
   size = 
   sizeint  + // holds size 
+  sizeint  + // type of this instance of ParObject, see top of ParObject.H
   basesize + // holds basedata
   0;         // continue to add stuff here
   
@@ -85,6 +86,9 @@ const char* CCADISCRETIZATION::DesignNode::Pack(int& size) const
   
   // add size
   AddtoPack(position,data,size);    
+  // ParObject type
+  int type = ParObject_DesignNode;
+  AddtoPack(position,data,type);
   // add basedata
   AddtoPack(position,data,basedata,basesize);
   delete [] basedata;  
@@ -106,6 +110,10 @@ bool CCADISCRETIZATION::DesignNode::Unpack(const char* data)
   // extract size
   int size=0;
   ExtractfromPack(position,data,size);
+  // ParObject instance type
+  int type=0;
+  ExtractfromPack(position,data,type);
+  if (type != ParObject_DesignNode) dserror("Wrong instance type in data");
   
   // extract base class
   int basesize = SizePack(&data[position]);

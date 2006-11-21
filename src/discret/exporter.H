@@ -19,11 +19,19 @@ Maintainer: Michael Gee
 #define EXPORTER_H
 
 #include "vector"
+#include "map"
 #include "Epetra_Map.h"
 #include "Epetra_Comm.h"
+#ifdef PARALLEL
+#include "Epetra_MpiComm.h"
+#endif
 #include "Epetra_SerialDenseMatrix.h"
+#include "Teuchos_RefCountPtr.hpp"
+
+#include "node.H"
 
 using namespace std;
+using namespace Teuchos;
 
 /*!
 \brief CCADISCRET: namespace of the ccarat discretization module
@@ -85,6 +93,21 @@ public:
 
   //@}
 
+  // @{ \name Communication methods
+
+  /*!
+  \brief Communicate nodes
+  
+  this method takes a map of nodes and redistirbutes them according to
+  the send and receive plans. It is implicitly assumed, that the map of nodes
+  pointwise matches SourceMap().
+  
+  */
+  void Export(map<int,RefCountPtr<CCADISCRETIZATION::Node> >& nodes);
+
+  //@}
+
+
 private:
 
   /*!
@@ -95,22 +118,59 @@ private:
   \brief Get no. of processors
   */
   inline int NumProc() const { return numproc_; }
+
   /*!
-  \brief Get sendpid_
+  \brief Get sendplan_
   */
-  inline vector<int>& SendPID() { return sendpid_; }
+  inline Epetra_SerialDenseMatrix& SendPlan() { return sendplan_; }
+
   /*!
-  \brief Get sendlid_
+  \brief Get recvplan_
   */
-  inline vector<int>& SendLID() { return sendlid_; }
+  inline Epetra_SerialDenseMatrix& RecvPlan() { return recvplan_; }
+
   /*!
-  \brief Get recvpid_
+  \brief Get sendbuff_
   */
-  inline vector<int>& RecvPID() { return recvpid_; }
+  inline vector<const char*>& SendBuff() { return sendbuff_; }
+
   /*!
-  \brief Get recvlid_
+  \brief Get sendsize_
   */
-  inline vector<int>& RecvLID() { return recvlid_; }
+  inline vector<int>& SendSize() { return sendsize_; }
+
+#ifdef PARALLEL
+  /*!
+  \brief Send data from one processor to another (nonblocking)
+
+  \note This is an individual call
+  */
+  void ISend(const int frompid, const int topid, const char* data, 
+            const int dsize, const int tag, MPI_Request& request);
+  /*!
+  \brief Receive anything joker (blocking)
+  
+  This method receives an MPI char string message from any source proc with
+  any message tag of any length. It simply takes the first message that's 
+  coming in. recvbuff is resized to fit received message.
+  the method is blocking for the calling proc.
+  It is used together with ISend and Wait to do nonblocking chaotic 
+  point to point communication.
+  
+  \param source (output): source the message came from
+  \param tag (output): message tag
+  \param recvbuff (output): buffer containing received data
+  \param length (output): length of message upon receive
+  */
+  void ReceiveAny(int& source, int&tag, vector<char>& recvbuff, int& length);
+  
+  /*!
+  \brief wait for nonblocking send to finish
+  */
+  void Wait(MPI_Request& request) { MPI_Status status; MPI_Wait(&request,&status); return;}
+
+            
+#endif
 
 private:
 
@@ -120,34 +180,13 @@ private:
   int                      myrank_;    // PID
   int                      numproc_;   // no. of processors
   
-  /*! 
-    length SourceMap().NumMyElements()
-    For each element in SourceMap, the target processor is stored.
-    Target processor might be herself as well.
-  */
-  vector <int>             sendpid_;   
+  Epetra_SerialDenseMatrix sendplan_;  // sending information
+  Epetra_SerialDenseMatrix recvplan_;  // receiving information
 
-  /*! 
-    length SourceMap().NumMyElements()
-    For each element in SourceMap, the local index lid on the target processor 
-    is stored. Target processor might be herself as well.
-  */
-  vector <int>             sendlid_;   // length SourceMap().NumMyElements()
+  vector<const char*>      sendbuff_;  // a sendbuffer
+  vector<int>              sendsize_;  // sendsize_[i] is length of sendbuff_[i]
   
-  /*! 
-    length TargetMap().NumMyElements()
-    For each element in TargetMap, the source processor is stored.
-    Source processor might be herself as well.
-  */
-  vector <int>             recvpid_;   // length TargetMap().NumMyElements()
-
-  /*! 
-    length TargetMap().NumMyElements()
-    For each element in TargetMap, the local index lid on the source 
-    processor is stored. Source processor might be herself as well.
-  */
-  vector <int>             recvlid_;   // length TargetMap().NumMyElements()
-
+  
 }; // class Exporter
 } // namespace CCADISCRETIZATION
 

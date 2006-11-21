@@ -130,6 +130,7 @@ const char* CCADISCRETIZATION::Node::Pack(int& size) const
 
   size = 
   sizeint                +   // holds size itself
+  sizeint                +   // type of this instance of ParObject, see top of ParObject.H
   sizeint                +   // holds id
   sizedouble*3           +   // holds x_
   sizeof(OnDesignEntity) +   // dentitytype_
@@ -145,6 +146,9 @@ const char* CCADISCRETIZATION::Node::Pack(int& size) const
 
   // add size
   AddtoPack(position,data,size);
+  // ParObject type
+  int type = ParObject_Node;
+  AddtoPack(position,data,type);
   // add id_
   int id = Id();
   AddtoPack(position,data,id);
@@ -189,6 +193,10 @@ bool CCADISCRETIZATION::Node::Unpack(const char* data)
   // extract size
   int size = 0;
   ExtractfromPack(position,data,size);
+  // ParObject instance type
+  int type=0;
+  ExtractfromPack(position,data,type);
+  if (type != ParObject_Node) dserror("Wrong instance type in data");
   // extract id_
   ExtractfromPack(position,data,id_);
   // extract x_

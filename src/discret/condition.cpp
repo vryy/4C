@@ -92,6 +92,7 @@ const char* CCADISCRETIZATION::Condition::Pack(int& size) const
   
   size = 
   sizeint +      // size itself 
+  sizeint +      // type of this instance of ParObject, see top of ParObject.H
   basesize +     // base class Container
   sizetype +     // type_
   0;             // continue to add data here...
@@ -103,6 +104,9 @@ const char* CCADISCRETIZATION::Condition::Pack(int& size) const
 
   // size
   AddtoPack(position,data,size);
+  // ParObject type
+  int type = ParObject_Condition;
+  AddtoPack(position,data,type);
   // add base class
   AddtoPack(position,data,basedata,basesize);
   delete [] basedata;
@@ -126,6 +130,10 @@ bool CCADISCRETIZATION::Condition::Unpack(const char* data)
   // extract size
   int size = 0;
   ExtractfromPack(position,data,size);
+  // ParObject instance type
+  int type=0;
+  ExtractfromPack(position,data,type);
+  if (type != ParObject_Condition) dserror("Wrong instance type in data");
   // extract base class
   int basesize = SizePack(&data[position]);
   Container::Unpack(&data[position]);

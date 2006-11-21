@@ -25,6 +25,21 @@ Maintainer: Michael Gee
 using namespace std;
 
 
+// These defines are sued to have a unique identifier for every class
+// that implements the pure virtual ParObject class.
+// The unique identifier is stored in a communcation array as an integer
+// so the receiving processor knows what type of class has been sent.
+// the method CCADISCRETIZATION::Factory(data) in utils.cpp can then be used to 
+// create an Unpack the correct instance of ParObject
+#define ParObject_Container       (int)1
+#define ParObject_Condition       (int)2
+#define ParObject_Node            (int)3
+#define ParObject_DesignNode      (int)4
+#define ParObject_Element         (int)5
+#define ParObject_DesignElement   (int)6
+#define ParObject_Shell8          (int)7
+
+
 /*!
 \brief CCADISCRET: namespace of the ccarat discretization module
 
@@ -74,7 +89,12 @@ public:
   /*!
   \brief Pack this class so it can be communicated
   
-  \ref Pack and \ref Unpack are used to communicate this element
+  Allocates a char array of size size and returns it as well as size.
+  Note that the first entry in the char array has to be the size itself.
+  Note that the second entry in the char array has to be the type of
+  instance of ParObject, also see top of this file.
+  
+  Pack and Unpack are used to communicate this element
   
   */
   virtual const char* Pack(int& size) const = 0;

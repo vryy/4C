@@ -85,6 +85,7 @@ const char* CCADISCRETIZATION::Shell8::Pack(int& size) const
   // calculate size of vector data
   size = 
   sizeint +        // size itself
+  sizeint +        // type of this instance of ParObject, see top of ParObject.H
   basesize +       // base class data
   sizeforcetype +  // forcetype_
   sizedouble +     // thickness_
@@ -104,6 +105,9 @@ const char* CCADISCRETIZATION::Shell8::Pack(int& size) const
   
   // add size
   AddtoPack(position,data,size);
+  // ParObject type
+  int type = ParObject_Shell8;
+  AddtoPack(position,data,type);
   // add base class
   AddtoPack(position,data,basedata,basesize);
   delete [] basedata;
@@ -149,6 +153,10 @@ bool CCADISCRETIZATION::Shell8::Unpack(const char* data)
   // extract size
   int size = 0;
   ExtractfromPack(position,data,size);
+  // ParObject instance type
+  int type=0;
+  ExtractfromPack(position,data,type);
+  if (type != ParObject_Shell8) dserror("Wrong instance type in data");
   
   // extract base class
   int basesize = SizePack(&data[position]);

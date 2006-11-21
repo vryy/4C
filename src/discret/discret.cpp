@@ -367,8 +367,12 @@ void CCADISCRETIZATION::Discretization::ExportNodes(const Epetra_Map& newmap)
   const Epetra_Map& oldmap = *nodemap_;
   
   // create an exporter object that will figure out the communication pattern
-  //CCADISCRETIZATION::Exporter exporter(oldmap,newmap,Comm());
+  CCADISCRETIZATION::Exporter exporter(oldmap,newmap,Comm());
   
+  // Do the communication
+  exporter.Export(node_);
+  
+/*
   int oldmyelements[4];
   if (Comm().MyPID()==0)
     for (int i=0; i<4; ++i) oldmyelements[i] = i;
@@ -384,12 +388,11 @@ void CCADISCRETIZATION::Discretization::ExportNodes(const Epetra_Map& newmap)
   Epetra_Map n(-1,6,newmyelements,0,Comm());
   cout << "old map\n" << o;
   cout << "new map\n" << n;
-  
   CCADISCRETIZATION::Exporter exporter(o,n,Comm());  
+*/  
+
+  cout << "Reached regular exit\n"; fflush(stdout); exit(0);
   
-
-
-
   filled_ = false;  
   return;
 }
