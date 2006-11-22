@@ -379,9 +379,12 @@ public:
   \brief Redistribute the current distribution of the discretization
          using metis
   
+  \param newnoderowmap: (output) nonoverlapping target nodal map
+  \param newelerowmap: (output) nonoverlapping target element map
   \return 0 on success, negative for error
   */
-  virtual int DistributeUsingMetis();
+  virtual int DistributeUsingMetis(RefCountPtr<Epetra_Map>& newnoderowmap,
+                                   RefCountPtr<Epetra_Map>& newelerowmap);
 
   /*!
   \brief Set Ids of design nodes in nodes

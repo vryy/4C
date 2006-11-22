@@ -407,19 +407,6 @@ void CCADISCRETIZATION::Discretization::ExportGhostNodes(const Epetra_Map& newma
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  redistribute discretization using metis (public)         mwgee 11/06|
- *----------------------------------------------------------------------*/
-int CCADISCRETIZATION::Discretization::DistributeUsingMetis()
-{
-  if (!Filled()) dserror("FillComplete() was not called on this discretization");
-
-  // we get everything on proc 0 here to do serial metis  
-  
-  
-  
-  return 0;
-}
 
 
 

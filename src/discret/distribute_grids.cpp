@@ -189,7 +189,11 @@ void distribute_grids_and_design()
       if (!actdis->Filled()) dserror("FillComplete() was not called on discretization");
       
       // partition the discretization using metis
-      ierr = actdis->DistributeUsingMetis();
+      // create a reasonable noderowmap and elerowmap using metis
+      // create column maps from them
+      RefCountPtr<Epetra_Map> noderowmap;
+      RefCountPtr<Epetra_Map> elerowmap;
+      ierr = actdis->DistributeUsingMetis(noderowmap,elerowmap);
       if (ierr) dserror("DistributeUsingMetis() returned %d",ierr);
       
       
