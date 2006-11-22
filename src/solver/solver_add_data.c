@@ -1328,7 +1328,6 @@ for (i=0; i<actele->numnp; i++)
       if (dof >= container->global_numeq) continue;
 #endif
        container->dvec[dof] += elevec[irow];
-/*      container->dvec[dof] += elevec[i*numdf+j]; */
    }
 }
 /*----------------------------------------------------------------------*/

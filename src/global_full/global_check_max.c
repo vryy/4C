@@ -277,6 +277,16 @@ for(i=0; i<genprob.numfld; i++)  /* loop all fields */
           break;
 #endif
 
+#ifdef D_FLUID3_IS
+        case el_fluid3_is:
+          gauss = actele->e.f3is->nGP[0]*actele->e.f3is->nGP[1]*actele->e.f3is->nGP[2];
+
+          /* check maxdofpernode for fluid3_is */
+          if (4 > maxdofpernode)
+            maxdofpernode = 4;
+          break;
+#endif
+
 #ifdef D_FLUID2
         case el_fluid2_tu:
           gauss = actele->e.f2_tu->nGP[0]*actele->e.f2_tu->nGP[1];

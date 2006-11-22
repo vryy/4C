@@ -22,6 +22,8 @@ Maintainer: Christiane Foerster
 #include "../fluid3/fluid3.h"
 #include "../fluid3/fluid3_prototypes.h"
 #include "../fluid3_fast/f3f_prototypes.h"
+#include "../fluid2_is/fluid2_is.h"
+#include "../fluid3_is/fluid3_is.h"
 #include "../shell8/shell8.h"
 #ifdef D_ALE
 #include "../ale2/ale2.h"

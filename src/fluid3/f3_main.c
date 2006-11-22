@@ -116,7 +116,7 @@ case calc_fluid_init:
 /*------------------------------------------- init the element routines */
   f3_intg(0);
   f3_calele(NULL,estif_global,emass_global,
-            eforce_global,edforce_global,ipos,NULL,NULL,1);
+            eforce_global,edforce_global,ipos,NULL,NULL,0,1);
 /*---------------------------------------------------- multi-level FEM? */
 #ifdef FLUID3_ML
   if (fdyn->mlfem==1)
@@ -165,7 +165,8 @@ if (fdyn->mlfem==1)
 else
 #endif
   f3_calele(ele,estif_global,emass_global,
-                 eforce_global,edforce_global,ipos,hasdirich,hasext,0);
+	    eforce_global,edforce_global,ipos,hasdirich,hasext,
+	    container->is_relax,0);
 
 break;
 

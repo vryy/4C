@@ -176,6 +176,34 @@ for (i=0; i<actdis->numele; i++)
   }
 #endif
 
+#ifdef D_FLUID3_IS
+  case el_fluid3_is:
+  {
+    FLUID3_IS* f3is;
+    f3is = actele->e.f3is;
+    actdvol = actele->g.gvol->dvol;
+
+    /*------------------- get type of stabilisation to the element ---*/
+    f3is->stab_type = actdvol->stab_type;
+
+    /*--- assign pointer to corresponding stabilisation parameters ---*/
+    switch (f3is->stab_type)
+    {
+    case stab_gls:
+      dsassert(actdvol->stabi.gls!=NULL,"no stabilisation at DSURF!\n");
+      f3is->stabi.gls = actdvol->stabi.gls;
+      break;
+    case stab_usfem:
+    case stab_prespro:
+      /* nothing needs to be done at the moment (no parameters!) */
+      break;
+    default:
+      dserror("Unknown stabilisation");
+    }
+    break;
+  }
+#endif
+
     default: dserror("Unknown element (eltyp) in fluid field!");
   }
 }

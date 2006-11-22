@@ -122,7 +122,7 @@ for (vi=0; vi<4; ++vi)
 
 for (vi=0; vi<4; ++vi)
 {
-  for (ui=4; ui<9; ++ui)
+  for (ui=4; ui<iel; ++ui)
   {
 #ifdef FLUID2_IS_TERM1
     /* Konvektionsterm */
@@ -231,7 +231,7 @@ for (vi=0; vi<4; ++vi)
   }
 }
 
-for (vi=4; vi<9; ++vi)
+for (vi=4; vi<iel; ++vi)
 {
   for (ui=0; ui<4; ++ui)
   {
@@ -342,9 +342,9 @@ for (vi=4; vi<9; ++vi)
   }
 }
 
-for (vi=4; vi<9; ++vi)
+for (vi=4; vi<iel; ++vi)
 {
-  for (ui=4; ui<9; ++ui)
+  for (ui=4; ui<iel; ++ui)
   {
 #ifdef FLUID2_IS_TERM1
     /* Konvektionsterm */

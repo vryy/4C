@@ -93,7 +93,8 @@ void f3_int_usfem(
                       DOUBLE         **vderxy2,
                       DOUBLE           visc,
 	              DOUBLE         **wa1,
-	              DOUBLE         **wa2
+	              DOUBLE         **wa2,
+		      INT              is_relax
 	             )
 {
 INT       i;          /* a couter                                       */
@@ -249,7 +250,7 @@ for (lt=0;lt<nit;lt++)
    /*-------------- perform integration for entire matrix and rhs ---*/
    f3_calmat(estif,force,velint,histvec,gridvelint,press,vderxy,
              vderxy2,gradp,funct,derxy,derxy2,edeadng,fac,
-                visc,iel,hasext,is_ale);
+	     visc,iel,hasext,is_ale,is_relax);
 } /* end of loop over integration points lt*/
 } /* end of loop over integration points ls */
 } /* end of loop over integration points lr */

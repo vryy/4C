@@ -400,6 +400,16 @@ void calelm(FIELD        *actfield,     /* active field */
         break;
 #endif
 
+#ifdef D_FLUID3_IS
+      case el_fluid3_is:
+        fluid3_is(
+            actpart,actintra,actele,
+            &estif_global,&emass_global,
+            &eforce_global,&edforce_global,
+            action,&hasdirich,&hasext,container);
+        break;
+#endif
+
 #endif   /* endif D_FLUID */
 
 

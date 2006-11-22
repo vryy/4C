@@ -85,7 +85,7 @@ for (vi=0; vi<4; ++vi)
 
 }
 
-for (vi=4; vi<9; ++vi)
+for (vi=4; vi<iel; ++vi)
 {
 #ifdef FLUID2_IS_TERM1
   /* Konvektionsterm */

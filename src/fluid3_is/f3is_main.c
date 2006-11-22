@@ -1,12 +1,12 @@
 /*!----------------------------------------------------------------------
 \file
-\brief main routine fluid3 element
+\brief main routine inf-sup fluid3 element
 
 <pre>
-Maintainer: Steffen Genkinger
-            genkinger@statik.uni-stuttgart.de
-            http://www.uni-stuttgart.de/ibs/members/genkinger/
-            0711 - 685-6127
+Maintainer: Ulrich Küttler
+            kuettler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/kuettler
+            089 - 289-15238
 </pre>
 
 ------------------------------------------------------------------------*/
@@ -89,33 +89,30 @@ void fluid3_is(PARTITION   *actpart,
 
   ipos = &(field[genprob.numff].dis[container->disnum].ipos);
 
-/*------------------------------------------------- switch to do option */
+  /*------------------------------------------------- switch to do option */
   switch (*action)
   {
-/*------------------------------------------------------ initialization */
   case calc_fluid_init:
-/* ----------------------------------------- find number of fluid field */
+    /*------------------------------------------------------ initialization */
+    /* ----------------------------------------- find number of fluid field */
     fdyn   = alldyn[genprob.numff].fdyn;
     viscstr= alldyn[genprob.numff].fdyn->viscstr;
 
-/*------------------------------------------- init the element routines */
+    /*------------------------------------------- init the element routines */
     f3_intg(0);
-#if 0
     f3is_calele(NULL,estif_global,emass_global,
-	      eforce_global,edforce_global,ipos,NULL,NULL,1);
-#endif
+		eforce_global,edforce_global,ipos,NULL,NULL,0,1);
     break;
 
-/* call the element routines */
   case calc_fluid:
-#if 0
-      f3is_calele(ele,estif_global,emass_global,
-		eforce_global,edforce_global,ipos,hasdirich,hasext,0);
-#endif
+    /* call the element routines */
+    f3is_calele(ele,estif_global,emass_global,
+		eforce_global,edforce_global,ipos,hasdirich,hasext,
+		container->is_relax,0);
     break;
 
   default:
-    dserror("action unknown\n");
+    dserror("action %d unknown",*action);
     break;
   }
 

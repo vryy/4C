@@ -144,6 +144,12 @@ for (j=0; j<actfield->dis[0].numele; j++)
    case el_fluid2_is:
      switch (actele->distyp)
      {
+     case quad8:
+       for (k=0; k<4; k++)
+	 actele->node[k]->numdf=MAX(actele->node[k]->numdf,3);
+       for (k=4; k<8; k++)
+	 actele->node[k]->numdf=MAX(actele->node[k]->numdf,2);
+       break;
      case quad9:
        for (k=0; k<4; k++)
 	 actele->node[k]->numdf=MAX(actele->node[k]->numdf,3);
@@ -178,6 +184,32 @@ for (j=0; j<actfield->dis[0].numele; j++)
         if (actele->node[k]->numdf < 4) actele->node[k]->numdf=4;
       }
       break;
+#endif
+
+#ifdef D_FLUID3_IS
+   case el_fluid3_is:
+     switch (actele->distyp)
+     {
+     case hex20:
+       for (k=0; k<8; k++)
+	 actele->node[k]->numdf=MAX(actele->node[k]->numdf,4);
+       for (k=8; k<20; k++)
+	 actele->node[k]->numdf=MAX(actele->node[k]->numdf,3);
+       break;
+     case hex27:
+       for (k=0; k<8; k++)
+	 actele->node[k]->numdf=MAX(actele->node[k]->numdf,4);
+       for (k=8; k<27; k++)
+	 actele->node[k]->numdf=MAX(actele->node[k]->numdf,3);
+       break;
+     default:
+     {
+       char* distnames[] = DISTYPENAMES;
+       dserror("unsupported dis type '%s' for 3d inf-sup fluid",
+	       distnames[actele->distyp]);
+     }
+     }
+     break;
 #endif
 
 #ifdef D_ALE

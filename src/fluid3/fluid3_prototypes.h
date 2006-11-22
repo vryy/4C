@@ -29,6 +29,7 @@ void f3_calele(
                 ARRAY_POSITION *ipos,
 		INT            *hasdirich,
 		INT            *hasext,
+		INT             is_relax,
 		INT             init
 	       );
 void f3_stress(FLUID_STRESS  str,
@@ -365,7 +366,8 @@ void f3_calmat( DOUBLE **estif,
 		DOUBLE   visc,
 		INT      iel,
                 INT     *hasext,
-                INT      isale
+                INT      isale,
+		INT      is_relax
               );
 void f3_calresvec(  DOUBLE  *eforce,
                     DOUBLE  *velint,
@@ -665,7 +667,8 @@ void f3_int_usfem(
                       DOUBLE         **vderxy2,
                       DOUBLE           visc,
 	              DOUBLE         **wa1,
-	              DOUBLE         **wa2
+	              DOUBLE         **wa2,
+		      INT              is_relax
 	             );
 void f3_int_res(
 	        ELEMENT         *ele,

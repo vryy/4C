@@ -28,7 +28,7 @@ void f2is_inp(ELEMENT* ele)
   INT        i;             /* simply a counter                           */
   INT        ierr=0;        /* error flag                                 */
   INT        create_ale;
-  char      buffer[50];
+  char       buffer[50];
   static INT cmat;
 
 #ifdef DEBUG

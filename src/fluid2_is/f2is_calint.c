@@ -620,7 +620,9 @@ void f2is_calmat( DOUBLE **estif,
   DOUBLE  tau_M, tau_C;             /* stabilisation parameter            */
   DOUBLE  tau_Mp;             /* stabilisation parameter            */
   DOUBLE  viscs2[2][2*MAXNOD]; /* viscous term incluiding 2nd derivatives */
+#if 0
   DOUBLE  viscous[2][2][2*MAXNOD];   /* viscous term partially integrated */
+#endif
   DOUBLE  conv_c[MAXNOD];    /* linearisation of convect, convective part */
   DOUBLE  conv_g[MAXNOD];          /* linearisation of convect, grid part */
   DOUBLE  conv_r[2][2*MAXNOD]; /* linearisation of convect, reactive part */
@@ -728,6 +730,7 @@ void f2is_calmat( DOUBLE **estif,
     viscs2[1][2*i]   = - 0.5 * ( derxy2[2][i] );
     viscs2[1][2*i+1] = - 0.5 * ( derxy2[0][i] + 2.0 * derxy2[1][i] );
 
+#if 0
     /*--- viscous term (after integr. by parts) -------------------------*/
     /*   /                            \
 	 1 |  2 N_x,x    N_x,y + N_y,x  |    with N_x .. x-line of N
@@ -742,6 +745,7 @@ void f2is_calmat( DOUBLE **estif,
     viscous[1][0][2*i+1] = 0.5 * derxy[0][i];  /* 3rd index:             */
     viscous[1][1][2*i+1] = derxy[1][i];        /*   elemental vel dof    */
     viscous[1][1][2*i]   = 0.0;
+#endif
 
     /* pressure gradient term derxy, funct without or with integration   *
      * by parts, respectively                                            */
@@ -768,7 +772,6 @@ void f2is_calmat( DOUBLE **estif,
       ugradv[i][2*j]   = derxy[0][i] * funct[j];
       ugradv[i][2*j+1] = derxy[1][i] * funct[j];
     }
-
   }
 
 /*--------------------------------- now build single stiffness terms ---*/
@@ -848,6 +851,10 @@ void f2is_calmat( DOUBLE **estif,
   }
 
 #else  /* FLUID_INCREMENTAL */
+
+#ifdef QUASI_NEWTON
+  dserror("quasi newton not possible with non-incremental elements");
+#endif
 
   if (isale)
   {

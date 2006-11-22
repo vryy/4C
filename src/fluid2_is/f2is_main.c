@@ -118,7 +118,7 @@ void fluid2_is(PARTITION   *actpart,
     break;
 
   default:
-    dserror("action unknown");
+    dserror("action %d unknown",*action);
     break;
   }
 

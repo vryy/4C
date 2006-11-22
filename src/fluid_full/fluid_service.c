@@ -657,8 +657,19 @@ void fluid_init(
 
 #ifdef D_FLUID2_IS
         case el_fluid2_is:
+#if 0
           amdef("Stabpar",&(actele->e.f2is->tau_old),3,1,"DV");
           amzero(&(actele->e.f2is->tau_old));
+#endif
+          break;
+#endif
+
+#ifdef D_FLUID3_IS
+        case el_fluid3_is:
+#if 0
+          amdef("Stabpar",&(actele->e.f3is->tau_old),3,1,"DV");
+          amzero(&(actele->e.f3is->tau_old));
+#endif
           break;
 #endif
 

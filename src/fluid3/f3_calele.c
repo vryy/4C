@@ -132,6 +132,7 @@ void f3_calele(
                 ARRAY_POSITION *ipos,
 		INT            *hasdirich,
 		INT            *hasext,
+		INT             is_relax,
 		INT             init
 	       )
 {
@@ -217,7 +218,7 @@ case 0:
       f3_int_usfem(ele,hasext,estif,eforce,xyze,
                    funct,deriv,deriv2,xjm,derxy,derxy2,evelng,
                    ehist,NULL,epren,edeadng,
-                   vderxy,vderxy2,visc,wa1,wa2);
+                   vderxy,vderxy2,visc,wa1,wa2,is_relax);
    break;
    default: dserror("unknown stabilisation type");
    }
@@ -249,7 +250,7 @@ case 1:
       f3_int_usfem(ele,hasext,estif,eforce,xyze,
                    funct,deriv,deriv2,xjm,derxy,derxy2,evelng,
                    ehist,egridv,epren,edeadng,
-                   vderxy,vderxy2,visc,wa1,wa2);
+                   vderxy,vderxy2,visc,wa1,wa2,is_relax);
       break;
       }
     default: dserror("unknown stabilisation type");
