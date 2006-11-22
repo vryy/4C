@@ -21,9 +21,10 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Node::Node(int id, const double* coords) :
+CCADISCRETIZATION::Node::Node(int id, const double* coords, const int owner) :
 ParObject(),
 id_(id),
+owner_(owner),
 dentitytype_(on_none),
 dentityid_(-1)
 {
@@ -38,9 +39,11 @@ dentityid_(-1)
 CCADISCRETIZATION::Node::Node(const CCADISCRETIZATION::Node& old) :
 ParObject(old),
 id_(old.id_),
+owner_(old.owner_),
 element_(old.element_),
 dentitytype_(old.dentitytype_),
-dentityid_(old.dentityid_)
+dentityid_(old.dentityid_),
+condition_(old.condition_)
 {
   for (int i=0; i<3; ++i) x_[i] = old.x_[i];
   return;
@@ -81,7 +84,9 @@ ostream& operator << (ostream& os, const CCADISCRETIZATION::Node& node)
 void CCADISCRETIZATION::Node::Print(ostream& os) const
 {
   // Print id and coordinates
-  os << "Node " << Id() << " Coords " << X()[0] << " " << X()[1] << " " << X()[2];
+  os << "Node " << Id()
+     << " Owner " << Owner() 
+     << " Coords " << X()[0] << " " << X()[1] << " " << X()[2];
   // Print design entity if there is any
   if (dentitytype_ != on_none)
   {
@@ -132,6 +137,7 @@ const char* CCADISCRETIZATION::Node::Pack(int& size) const
   sizeint                +   // holds size itself
   sizeint                +   // type of this instance of ParObject, see top of ParObject.H
   sizeint                +   // holds id
+  sizeint                +   // owner_
   sizedouble*3           +   // holds x_
   sizeof(OnDesignEntity) +   // dentitytype_
   sizeint                +   // dentityid_
@@ -152,6 +158,9 @@ const char* CCADISCRETIZATION::Node::Pack(int& size) const
   // add id_
   int id = Id();
   AddtoPack(position,data,id);
+  // add owner_
+  int owner = Owner();
+  AddtoPack(position,data,owner);
   // add x_
   AddtoPack(position,data,x_,3*sizedouble);
   // dentitytype_
@@ -199,6 +208,8 @@ bool CCADISCRETIZATION::Node::Unpack(const char* data)
   if (type != ParObject_Node) dserror("Wrong instance type in data");
   // extract id_
   ExtractfromPack(position,data,id_);
+  // extract id_
+  ExtractfromPack(position,data,owner_);
   // extract x_
   ExtractfromPack(position,data,x_,3*sizedouble);  
   // dentitytype_

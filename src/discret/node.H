@@ -74,7 +74,7 @@ public:
   \param id    : A globally unique node id
   \param coords: vector of nodal coordinates, length 3
   */
-  Node(int id, const double* coords);
+  Node(int id, const double* coords, const int owner);
 
   /*!
   \brief Copy Constructor
@@ -121,6 +121,10 @@ public:
   */
   virtual inline int Id() const { return id_; }
 
+  /*!
+  \brief Return owner of this node
+  */
+  virtual inline int Owner() const { return owner_; }
 
   /*!
   \brief Return coordinates (length 3)
@@ -145,6 +149,13 @@ public:
 
   // @{ \name Construction
 
+
+  /*!
+  \brief Set ownership
+  
+  \param owner: Proc owning this node
+  */
+  virtual inline void SetOwner(const int owner) { owner_ = owner; return; }
 
   /*!
   \brief Set a design relationship
@@ -175,6 +186,7 @@ public:
 protected:
 
   int                                 id_;          // a unique global id
+  int                                 owner_;       // proc owning this node
   double                              x_[3];        // nodal coords
   vector<Element*>                    element_;     // pointers to adjacent elements
   OnDesignEntity                      dentitytype_; // type of design object I'm on

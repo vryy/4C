@@ -48,7 +48,7 @@ public:
   \param id    : A globally unique node id
   \param coords: vector of nodal coordinates, length 3
   */
-  DesignNode(int id, const double* coords);
+  DesignNode(int id, const double* coords, const int owner);
 
   /*!
   \brief Copy Constructor

@@ -51,14 +51,6 @@ public:
   DesignDiscretization(RefCountPtr<Epetra_Comm> comm);
 
   /*!
-  \brief Copy Constructor
-
-  Makes a deep copy of a Element
-  
-  */
-  DesignDiscretization(const CCADISCRETIZATION::DesignDiscretization& old);
-
-  /*!
   \brief Destructor
 
   */
@@ -97,6 +89,12 @@ public:
                    CCADISCRETIZATION::DesignDiscretization* lower);
 
   //@}
+
+private:
+
+  // don't want copy-ctor
+  DesignDiscretization(const CCADISCRETIZATION::DesignDiscretization& old);
+
 
 protected:
 

@@ -25,10 +25,17 @@ Maintainer: Michael Gee
  *----------------------------------------------------------------------*/
 CCADISCRETIZATION::Discretization::Discretization(RefCountPtr<Epetra_Comm> comm) :
 comm_(comm),
-filled_(false),
-elemap_(null),
-nodemap_(null)
+filled_(false)
 {
+}
+
+/*----------------------------------------------------------------------*
+ |  copy-ctor (public)                                       mwgee 11/06|
+ *----------------------------------------------------------------------*/
+CCADISCRETIZATION::Discretization::Discretization(const CCADISCRETIZATION::Discretization& old)
+{
+  dserror("Discretization does not have a copy constructor");
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -60,33 +67,13 @@ void CCADISCRETIZATION::Discretization::AddNode(RefCountPtr<CCADISCRETIZATION::N
 }
 
 /*----------------------------------------------------------------------*
- |  get global number of elements (public)                   mwgee 11/06|
- *----------------------------------------------------------------------*/
-int CCADISCRETIZATION::Discretization::NumGlobalElements() const
-{
-  if (Filled()) return ElementMap()->NumGlobalElements();
-  else dserror("FillComplete() must be called before call to NumGlobalElements() is possible");
-  return -1;
-}
-
-/*----------------------------------------------------------------------*
- |  get global number of nodes (public)                      mwgee 11/06|
- *----------------------------------------------------------------------*/
-int CCADISCRETIZATION::Discretization::NumGlobalNodes() const
-{
-  if (Filled()) return NodeMap()->NumGlobalElements();
-  else dserror("FillComplete() must be called before call to NumGlobalNodes() is possible");
-  return -1;
-}
-
-/*----------------------------------------------------------------------*
  |  get element with global id (public)                      mwgee 11/06|
  *----------------------------------------------------------------------*/
 CCADISCRETIZATION::Element* CCADISCRETIZATION::Discretization::gElement(int gid) const
 {
   map<int,RefCountPtr<CCADISCRETIZATION::Element> >:: const_iterator curr = 
     element_.find(gid);
-  if (curr == element_.end()) return NULL;
+  if (curr == element_.end()) dserror("Element with gobal id gid=%d not stored on this proc",gid);
   else                        return curr->second.get();
   return NULL;
 }
@@ -94,16 +81,36 @@ CCADISCRETIZATION::Element* CCADISCRETIZATION::Discretization::gElement(int gid)
 /*----------------------------------------------------------------------*
  |  get element with local id (public)                      mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Element* CCADISCRETIZATION::Discretization::lElement(int lid) const
+CCADISCRETIZATION::Element* CCADISCRETIZATION::Discretization::lRowElement(int lid) const
 {
   if (!Filled()) 
-    dserror("CCADISCRETIZATION::Discretization::lElement: Filled() != true");
-  int gid = ElementMap()->GID(lid);
-  if (gid<0) return NULL;
+    dserror("CCADISCRETIZATION::Discretization::lRowElement: Filled() != true");
+  int gid = ElementRowMap()->GID(lid);
+  if (gid<0) dserror("Element with local row index lid=%d not on this proc",lid);
   map<int,RefCountPtr<CCADISCRETIZATION::Element> >:: const_iterator curr = 
     element_.find(gid);
-  if (curr == element_.end()) return NULL;
-  else                        return curr->second.get();
+  if (curr == element_.end()) 
+    dserror("Cannot find element with row index lid %d gid %d",lid,gid);
+  else                        
+    return curr->second.get();
+  return NULL;
+}
+
+/*----------------------------------------------------------------------*
+ |  get element with local id (public)                      mwgee 11/06|
+ *----------------------------------------------------------------------*/
+CCADISCRETIZATION::Element* CCADISCRETIZATION::Discretization::lColElement(int lid) const
+{
+  if (!Filled()) 
+    dserror("CCADISCRETIZATION::Discretization::lColElement: Filled() != true");
+  int gid = ElementColMap()->GID(lid);
+  if (gid<0) dserror("Element with local column index lid=%d not on this proc",lid);
+  map<int,RefCountPtr<CCADISCRETIZATION::Element> >:: const_iterator curr = 
+    element_.find(gid);
+  if (curr == element_.end()) 
+    dserror("Cannot find element with column index lid %d gid %d",lid,gid);
+  else                        
+    return curr->second.get();
   return NULL;
 }
 
@@ -114,7 +121,7 @@ CCADISCRETIZATION::Node* CCADISCRETIZATION::Discretization::gNode(int gid) const
 {
   map<int,RefCountPtr<CCADISCRETIZATION::Node> >:: const_iterator curr = 
     node_.find(gid);
-  if (curr == node_.end()) return NULL;
+  if (curr == node_.end()) dserror("Node with global id gid=%d not stored on this proc",gid);
   else                     return curr->second.get();
   return NULL;
 }
@@ -122,15 +129,31 @@ CCADISCRETIZATION::Node* CCADISCRETIZATION::Discretization::gNode(int gid) const
 /*----------------------------------------------------------------------*
  |  get node with local id (public)                         mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Node* CCADISCRETIZATION::Discretization::lNode(int lid) const
+CCADISCRETIZATION::Node* CCADISCRETIZATION::Discretization::lRowNode(int lid) const
 {
   if (!Filled()) 
-    dserror("CCADISCRETIZATION::Discretization::lElement: Filled() != true");
-  int gid = NodeMap()->GID(lid);
+    dserror("CCADISCRETIZATION::Discretization::lRowNode: Filled() != true");
+  int gid = NodeRowMap()->GID(lid);
   if (gid<0) return NULL;
   map<int,RefCountPtr<CCADISCRETIZATION::Node> >:: const_iterator curr = 
     node_.find(gid);
-  if (curr == node_.end()) return NULL;
+  if (curr == node_.end()) dserror("Cannot find node with lid=%d gid=%d",lid,gid);
+  else                     return curr->second.get();
+  return NULL;
+}
+
+/*----------------------------------------------------------------------*
+ |  get node with local id (public)                         mwgee 11/06|
+ *----------------------------------------------------------------------*/
+CCADISCRETIZATION::Node* CCADISCRETIZATION::Discretization::lColNode(int lid) const
+{
+  if (!Filled()) 
+    dserror("CCADISCRETIZATION::Discretization::lColNode: Filled() != true");
+  int gid = NodeColMap()->GID(lid);
+  if (gid<0) return NULL;
+  map<int,RefCountPtr<CCADISCRETIZATION::Node> >:: const_iterator curr = 
+    node_.find(gid);
+  if (curr == node_.end()) dserror("Cannot find node with lid=%d gid=%d",lid,gid);
   else                     return curr->second.get();
   return NULL;
 }
@@ -158,8 +181,16 @@ void CCADISCRETIZATION::Discretization::Print(ostream& os) const
   }
   else
   {
-    int nummynodes = NumMyNodes();
-    int nummyele   = NumMyElements();
+    int nummynodes = 0;
+    map<int,RefCountPtr<CCADISCRETIZATION::Node> >::const_iterator ncurr;
+    for (ncurr=node_.begin(); ncurr != node_.end(); ++ncurr)
+      if (ncurr->second->Owner() == Comm().MyPID()) nummynodes++;
+    
+    int nummyele   = 0;
+    map<int,RefCountPtr<CCADISCRETIZATION::Element> >::const_iterator ecurr;
+    for (ecurr=element_.begin(); ecurr != element_.end(); ++ecurr)
+      if (ecurr->second->Owner() == Comm().MyPID()) nummyele++;
+    
     Comm().SumAll(&nummynodes,&numglobalnodes,1);
     Comm().SumAll(&nummyele,&numglobalelements,1);
   }
@@ -181,11 +212,12 @@ void CCADISCRETIZATION::Discretization::Print(ostream& os) const
   {
     if (proc == Comm().MyPID())
     {
-      if (NumMyElements())
-        os << "Proc " << proc << " :\n";
+      if ((int)element_.size())
+        os << "-------------------------- Proc " << proc << " :\n";
       map<int,RefCountPtr<CCADISCRETIZATION::Element> >:: const_iterator curr;
       for (curr = element_.begin(); curr != element_.end(); ++curr)
         os << *(curr->second) << endl;
+      os << endl;
     }
     Comm().Barrier();
   }
@@ -194,129 +226,18 @@ void CCADISCRETIZATION::Discretization::Print(ostream& os) const
   {
     if (proc == Comm().MyPID())
     {
-      if (NumMyNodes())
-        os << "Proc " << proc << " :\n";
+      if ((int)node_.size())
+        os << "-------------------------- Proc " << proc << " :\n";
       map<int,RefCountPtr<CCADISCRETIZATION::Node> >:: const_iterator curr;
       for (curr = node_.begin(); curr != node_.end(); ++curr)
         os << *(curr->second) << endl;
+      os << endl;
     }
     Comm().Barrier();
   }
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  Finalize construction (public)                           mwgee 11/06|
- *----------------------------------------------------------------------*/
-int CCADISCRETIZATION::Discretization::FillComplete()
-{
-  filled_ = false;  
-
-  // (re)build map of nodes nodemap_
-  BuildNodeMap();
-  
-  // (re)build map of elements elemap_
-  BuildElementMap();
-  
-  // (re)construct element -> node pointers
-  BuildElementToNodePointers();
-
-  // (re)construct node -> element pointers
-  BuildNodeToElementPointers();
-  
-  filled_ = true;  
-  return 0;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Build ptrs node -> element (public)                      mwgee 11/06|
- *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Discretization::BuildNodeToElementPointers()
-{
-  map<int,RefCountPtr<CCADISCRETIZATION::Node> >::iterator nodecurr;
-  for (nodecurr=node_.begin(); nodecurr != node_.end(); ++nodecurr)
-    nodecurr->second->element_.resize(0);
-  
-  map<int,RefCountPtr<CCADISCRETIZATION::Element> >::iterator elecurr;
-  for (elecurr=element_.begin(); elecurr != element_.end(); ++elecurr)
-  {
-    const int  nnode = elecurr->second->NumNode();
-    const int* nodes = elecurr->second->NodeIds();
-    for (int j=0; j<nnode; ++j)
-    {
-      CCADISCRETIZATION::Node* node = gNode(nodes[j]);
-      if (!node) dserror("Node %d is not on this proc %d",j,Comm().MyPID());
-      else
-      {
-        int size = node->element_.size();
-        node->element_.resize(size+1);
-        node->element_[size] = elecurr->second.get();
-      }
-    }
-  }
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Build ptrs element -> node (public)                      mwgee 11/06|
- *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Discretization::BuildElementToNodePointers()
-{
-  map<int,RefCountPtr<CCADISCRETIZATION::Element> >::iterator elecurr;
-  for (elecurr=element_.begin(); elecurr != element_.end(); ++elecurr)
-  {
-    bool success = elecurr->second->BuildNodalPointers(node_);
-    if (!success)
-      dserror("Building element <-> node topology failed");
-  }
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Build nodemap_ (public)                                  mwgee 11/06|
- *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Discretization::BuildNodeMap()
-{
-  int nummynodes = NumMyNodes();
-  int numglobalnodes = 0;
-  Comm().SumAll(&nummynodes,&numglobalnodes,1);
-  
-  vector<int> nodeids(nummynodes);
-  
-  map<int,RefCountPtr<CCADISCRETIZATION::Node> >::iterator curr;
-  int count=0;
-  for (curr=node_.begin(); curr != node_.end(); ++curr)
-  {
-    nodeids[count] = curr->second->Id();
-    ++count;
-  }
-  nodemap_ = rcp(new Epetra_Map(numglobalnodes,nummynodes,&nodeids[0],0,Comm()));
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Build elemap_ (public)                                   mwgee 11/06|
- *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Discretization::BuildElementMap()
-{
-  int nummyeles = NumMyElements();
-  int numglobaleles = 0;
-  Comm().SumAll(&nummyeles,&numglobaleles,1);
-  
-  vector<int> eleids(nummyeles);
-  
-  map<int,RefCountPtr<CCADISCRETIZATION::Element> >::iterator curr;
-  int count=0;
-  for (curr=element_.begin(); curr != element_.end(); ++curr)
-  {
-    eleids[count] = curr->second->Id();
-    ++count;
-  }
-  elemap_ = rcp(new Epetra_Map(numglobaleles,nummyeles,&eleids[0],0,Comm()));
-  return;
-}
 
 /*----------------------------------------------------------------------*
  |  node <-> design node topology (public)                   mwgee 11/06|
@@ -346,58 +267,159 @@ void CCADISCRETIZATION::Discretization::SetDesignEntityIds(Node::OnDesignEntity 
  *----------------------------------------------------------------------*/
 void CCADISCRETIZATION::Discretization::ExportElements(const Epetra_Map& newmap)
 {
-  // build map of elements elemap_ if it does not exist
-  if (elemap_==null) BuildElementMap();
-  const Epetra_Map& oldmap = *elemap_;
+  // destroy all ghosted elements
+  const int myrank = Comm().MyPID();
+  map<int,RefCountPtr<CCADISCRETIZATION::Element> >::iterator curr;
+  for (curr=element_.begin(); curr!=element_.end(); ++curr)
+    if (curr->second->Owner() != myrank)
+      element_.erase(curr->first);
+  
+  // build map of elements elerowmap_ if it does not exist
+  if (elerowmap_==null) BuildElementRowMap();
+  const Epetra_Map& oldmap = *elerowmap_;
+  
+  // test whether newmap is non-overlapping
+  int oldmy = oldmap.NumMyElements();
+  int newmy = newmap.NumMyElements();
+  int oldglobal=0;
+  int newglobal=0;
+  Comm().SumAll(&oldmy,&oldglobal,1);
+  Comm().SumAll(&newmy,&newglobal,1);
+  if (oldglobal != newglobal) dserror("New map is likely not non-overlapping");
+  
+  // create an exporter object that will figure out the communication pattern
+  CCADISCRETIZATION::Exporter exporter(oldmap,newmap,Comm());
+  exporter.Export(element_);
+  
+  // update ownerships
+  for (curr=element_.begin(); curr!=element_.end(); ++curr)
+    curr->second->SetOwner(myrank);
+  
+  // maps and pointers are no longer correct and need rebuilding
+  filled_ = false;  
+  return;
+}
 
-
-
+/*----------------------------------------------------------------------*
+ |  Export elements (public)                                 mwgee 11/06|
+ *----------------------------------------------------------------------*/
+void CCADISCRETIZATION::Discretization::ExportGhostElements(const Epetra_Map& newmap)
+{
+  // destroy all ghosted elements
+  const int myrank = Comm().MyPID();
+  map<int,RefCountPtr<CCADISCRETIZATION::Element> >::iterator curr;
+  for (curr=element_.begin(); curr!=element_.end(); ++curr)
+    if (curr->second->Owner() != myrank)
+      element_.erase(curr->first);
+  
+  // build map of elements elerowmap_ if it does not exist
+  if (elerowmap_==null) BuildElementRowMap();
+  const Epetra_Map& oldmap = *elerowmap_;
+  
+  // test whether all elements in oldmap are also in newmap
+  // Otherwise, this would be a change of owner which is not allowed here
+  for (int i=0; i<oldmap.NumMyElements(); ++i)
+  {
+    int gid = oldmap.GID(i);
+    if (!(newmap.MyGID(gid))) dserror("Element gid=%d from oldmap is not in newmap",gid);
+  }
+  
+  // create an exporter object that will figure out the communication pattern
+  CCADISCRETIZATION::Exporter exporter(oldmap,newmap,Comm());
+  exporter.Export(element_);
+  
+  // maps and pointers are no longer correct and need rebuilding
   filled_ = false;  
   return;
 }
 
 
 /*----------------------------------------------------------------------*
- |  Export nodes (public)                                    mwgee 11/06|
+ |  Export nodes owned by a proc (public)                    mwgee 11/06|
  *----------------------------------------------------------------------*/
 void CCADISCRETIZATION::Discretization::ExportNodes(const Epetra_Map& newmap)
 {
-  // build map of nodes nodemap_ if it does not exist
-  if (nodemap_==null) BuildNodeMap();
-  const Epetra_Map& oldmap = *nodemap_;
+  // destroy all ghosted nodes
+  const int myrank = Comm().MyPID();
+  map<int,RefCountPtr<CCADISCRETIZATION::Node> >::iterator curr;
+  for (curr=node_.begin(); curr!=node_.end(); ++curr)
+    if (curr->second->Owner() != myrank)
+      node_.erase(curr->first);
   
+  // build rowmap of nodes noderowmap_ if it does not exist
+  if (noderowmap_==null) BuildNodeRowMap();
+  const Epetra_Map& oldmap = *noderowmap_;
+  
+  // test whether newmap is non-overlapping
+  int oldmy = oldmap.NumMyElements();
+  int newmy = newmap.NumMyElements();
+  int oldglobal=0;
+  int newglobal=0;
+  Comm().SumAll(&oldmy,&oldglobal,1);
+  Comm().SumAll(&newmy,&newglobal,1);
+  if (oldglobal != newglobal) dserror("New map is likely not non-overlapping");
+
   // create an exporter object that will figure out the communication pattern
   CCADISCRETIZATION::Exporter exporter(oldmap,newmap,Comm());
-  
   // Do the communication
   exporter.Export(node_);
   
-/*
-  int oldmyelements[4];
-  if (Comm().MyPID()==0)
-    for (int i=0; i<4; ++i) oldmyelements[i] = i;
-  else
-    for (int i=0; i<4; ++i) oldmyelements[i] = i+4;
-  int newmyelements[6];
-  if (Comm().MyPID()==0)
-    for (int i=0; i<6; ++i) newmyelements[i] = i;
-  else
-    for (int i=0; i<6; ++i) newmyelements[i] = i+2;
+  // update all ownership flags
+  for (curr=node_.begin(); curr!=node_.end(); ++curr)
+    curr->second->SetOwner(myrank);
   
-  Epetra_Map o(-1,4,oldmyelements,0,Comm());
-  Epetra_Map n(-1,6,newmyelements,0,Comm());
-  cout << "old map\n" << o;
-  cout << "new map\n" << n;
-  CCADISCRETIZATION::Exporter exporter(o,n,Comm());  
-*/  
-
-  cout << "Reached regular exit\n"; fflush(stdout); exit(0);
-  
+  // maps and pointers are no longer correct and need rebuilding
   filled_ = false;  
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  Export nodes owned by a proc (public)                    mwgee 11/06|
+ *----------------------------------------------------------------------*/
+void CCADISCRETIZATION::Discretization::ExportGhostNodes(const Epetra_Map& newmap)
+{
+  // destroy all ghosted nodes
+  const int myrank = Comm().MyPID();
+  map<int,RefCountPtr<CCADISCRETIZATION::Node> >::iterator curr;
+  for (curr=node_.begin(); curr!=node_.end(); ++curr)
+    if (curr->second->Owner() != myrank)
+      node_.erase(curr->first);
+  
+  // build rowmap of nodes noderowmap_ if it does not exist
+  if (noderowmap_==null) BuildNodeRowMap();
+  const Epetra_Map& oldmap = *noderowmap_;
+  
+  // test whether all nodes in oldmap are also in newmap, otherwise
+  // this would be a change of owner which is not allowed here
+  for (int i=0; i<oldmap.NumMyElements(); ++i)
+  {
+    int gid = oldmap.GID(i);
+    if (!(newmap.MyGID(gid))) dserror("Node gid=%d from oldmap is not in newmap",gid);
+  }
+  
+  // create an exporter object that will figure out the communication pattern
+  CCADISCRETIZATION::Exporter exporter(oldmap,newmap,Comm());
+  // Do the communication
+  exporter.Export(node_);
+  
+  // maps and pointers are no longer correct and need rebuilding
+  filled_ = false;  
+  return;
+}
 
+/*----------------------------------------------------------------------*
+ |  redistribute discretization using metis (public)         mwgee 11/06|
+ *----------------------------------------------------------------------*/
+int CCADISCRETIZATION::Discretization::DistributeUsingMetis()
+{
+  if (!Filled()) dserror("FillComplete() was not called on this discretization");
+
+  // we get everything on proc 0 here to do serial metis  
+  
+  
+  
+  return 0;
+}
 
 
 

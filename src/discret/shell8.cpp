@@ -23,8 +23,8 @@ Maintainer: Michael Gee
  |  ctor (public)                                            mwgee 11/06|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Shell8::Shell8(int id) :
-CCADISCRETIZATION::Element(id,element_shell8),
+CCADISCRETIZATION::Shell8::Shell8(int id, int owner) :
+CCADISCRETIZATION::Element(id,element_shell8,owner),
 forcetype_(s8_none),
 thickness_(0.0),
 ngptri_(0),

@@ -31,8 +31,9 @@ Discretization(comm)
  |  copy-ctor (public)                                       mwgee 11/06|
  *----------------------------------------------------------------------*/
 CCADISCRETIZATION::DesignDiscretization::DesignDiscretization(const CCADISCRETIZATION::DesignDiscretization& old) :
-Discretization(old)
+Discretization(old.comm_)
 {
+  dserror("Do not have copy-ctor");
   return;
 }
 
@@ -58,11 +59,11 @@ int CCADISCRETIZATION::DesignDiscretization::FillComplete(
 
   // loop elements in this and set pointers to lower elements
   // and set pointers to higher elements
-  for (int i=0; i<NumMyElements(); ++i)
+  for (int i=0; i<NumMyColElements(); ++i)
   {
     // we have to cast this to DesignElement
     CCADISCRETIZATION::DesignElement* element = 
-         dynamic_cast<CCADISCRETIZATION::DesignElement*>(lElement(i));
+         dynamic_cast<CCADISCRETIZATION::DesignElement*>(lColElement(i));
     if (!element) return -1;
     if (lower)
     {
@@ -80,9 +81,9 @@ int CCADISCRETIZATION::DesignDiscretization::FillComplete(
       element->hentityid_.resize(0);
       element->horientation_.resize(0);
       element->hentity_.resize(0);
-      for (int j=0; j<higher->NumMyElements(); ++j)
+      for (int j=0; j<higher->NumMyColElements(); ++j)
       {
-        DesignElement* highele = dynamic_cast<DesignElement*>(higher->lElement(j));
+        DesignElement* highele = dynamic_cast<DesignElement*>(higher->lColElement(j));
         if (!highele) return -1;
         int        nents = highele->NumLowerEntityIds();
         const int* ents  = highele->LowerEntityIds();

@@ -54,7 +54,7 @@ public:
   
   \param id : A unique global id
   */
-  DesignElement(int id, enum ElementType type);
+  DesignElement(int id, enum ElementType type, int owner);
 
   /*!
   \brief Copy Constructor

@@ -20,9 +20,10 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Element::Element(int id, ElementType etype) :
+CCADISCRETIZATION::Element::Element(int id, ElementType etype, int owner) :
 ParObject(),
 id_(id),
+owner_(owner),
 etype_(etype)
 {
   nodeid_.resize(0);
@@ -36,6 +37,7 @@ etype_(etype)
 CCADISCRETIZATION::Element::Element(const CCADISCRETIZATION::Element& old) :
 ParObject(old),
 id_(old.id_),
+owner_(old.owner_),
 etype_(old.etype_),
 nodeid_(old.nodeid_),
 node_(old.node_)
@@ -70,7 +72,7 @@ ostream& operator << (ostream& os, const CCADISCRETIZATION::Element& element)
  *----------------------------------------------------------------------*/
 void CCADISCRETIZATION::Element::Print(ostream& os) const
 {
-  os << Id();
+  os << Id() << " Owner " << Owner();
   const int nnode = NumNode();
   const int* nodes = NodeIds();
   if (nnode)
@@ -147,6 +149,7 @@ const char* CCADISCRETIZATION::Element::Pack(int& size) const
   sizeint                +   // holds size itself
   sizeint                +   // type of this instance of ParObject, see top of ParObject.H
   sizeint                +   // holds Id()
+  sizeint                +   // holds Owner()
   sizetype               +   // holds type of element
   SizeVector(nodeid_)    +   // nodeid_
   sizeint                +   // no. of objects in condition_
@@ -166,6 +169,9 @@ const char* CCADISCRETIZATION::Element::Pack(int& size) const
   // add Id()
   int id = Id();
   AddtoPack(position,data,id);
+  // add Id()
+  int owner = Owner();
+  AddtoPack(position,data,owner);
   // add type of element
   ElementType etype = Type();
   AddtoPack(position,data,etype);
@@ -207,6 +213,8 @@ bool CCADISCRETIZATION::Element::Unpack(const char* data)
   if (type != ParObject_Element) dserror("Wrong instance type in data");
   // extract id
   ExtractfromPack(position,data,id_);
+  // extract owner_
+  ExtractfromPack(position,data,owner_);
   // extract type
   ExtractfromPack(position,data,etype_);
   // extract nodeid_
@@ -246,8 +254,10 @@ bool CCADISCRETIZATION::Element::BuildNodalPointers(map<int,RefCountPtr<CCADISCR
   for (int i=0; i<nnode; ++i)
   {
     map<int,RefCountPtr<CCADISCRETIZATION::Node> >::iterator curr = nodes.find(nodeids[i]);
-    if (curr==nodes.end()) return false;
-    node_[i] = curr->second.get();
+    // this node is not on this proc
+    if (curr==nodes.end()) dserror("Element %d cannot find node %d",Id(),nodeids[i]);
+    else 
+      node_[i] = curr->second.get();
   } 
   return true;
 }

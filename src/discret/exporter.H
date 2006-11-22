@@ -29,6 +29,7 @@ Maintainer: Michael Gee
 #include "Teuchos_RefCountPtr.hpp"
 
 #include "node.H"
+#include "utils.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -96,14 +97,15 @@ public:
   // @{ \name Communication methods
 
   /*!
-  \brief Communicate nodes
+  \brief Communicate objects
   
-  this method takes a map of nodes and redistirbutes them according to
+  this method takes a map of objects and redistributes them according to
   the send and receive plans. It is implicitly assumed, that the map of nodes
-  pointwise matches SourceMap().
+  pointwise matches SourceMap(). It is also assumed (and tested), that type T 
+  implements the ParObject class.
   
   */
-  void Export(map<int,RefCountPtr<CCADISCRETIZATION::Node> >& nodes);
+  template<typename T> void Export(map<int,RefCountPtr<T> >& parobjects);
 
   //@}
 
@@ -193,6 +195,119 @@ private:
 
 
 
+/*----------------------------------------------------------------------*
+ |  communicate objects (public)                             mwgee 11/06|
+ *----------------------------------------------------------------------*/
+template<typename T> void CCADISCRETIZATION::Exporter::Export(
+                                     map<int,RefCountPtr<T> >& parobjects)
+{
+  // test whether type T implements ParObject
+  {
+    typename map<int,RefCountPtr<T> >::iterator curr = parobjects.begin();
+    if (curr != parobjects.end())
+    {
+      T* ptr = curr->second.get();
+      ParObject* tester = dynamic_cast<ParObject*>(ptr);
+      if (!tester) dserror("typename T in template does not implement ParObject (dynamic_cast failed)");
+    }
+  }
+  
+#ifdef PARALLEL
+  // allocate requests for unknown number of sends
+  vector<MPI_Request> request(200);
+  int nsend=0;
+  
+  //-------------------------------------------------------- do the sending
+  for (int i=0; i<SourceMap().NumMyElements(); ++i)
+  {
+    // get the global id
+    const int gid = SourceMap().MyGlobalElements()[i];
+    const int lid = i;
+    // check whether there will be any send to do at all 
+    bool issend = false;
+    for (int j=0; j<NumProc(); ++j)
+      if (MyPID() != j)
+        if (SendPlan()(lid,j)==1)
+        {
+          issend = true;
+          break;
+        }
+    if (!issend) continue;
+    
+    
+    // get the object to send
+    typename map<int,RefCountPtr<T> >::iterator curr = parobjects.find(gid);
+    if (curr==parobjects.end()) dserror("Cannot find object with gid %d",gid);
+    RefCountPtr<T> actobject = curr->second;
+    // pack the stuff
+    SendBuff()[lid] = actobject->Pack(SendSize()[lid]);
+    // do sending
+    for (int j=0; j<NumProc(); ++j)
+      if (j != MyPID() && SendPlan()(lid,j)==1)
+      {
+        if (nsend>=(int)request.size()) 
+          request.resize(request.size()+200);
+        ISend(MyPID(),j,SendBuff()[lid],SendSize()[lid],gid,request[nsend]);
+        ++nsend;
+      }
+  }
+  
+  //-------------------------------------------------------- do receiving
+  // count how many receives I want to do
+  int nrecv=0;
+  for (int i=0; i<RecvPlan().M(); ++i)
+    for (int j=0; j<RecvPlan().N(); ++j)
+      if (RecvPlan()(i,j)) ++nrecv;
+  vector<char> recvbuff(500);
+  while (nrecv)
+  {
+    int source = -1;
+    int gid = -1;
+    int length = 0;
+    ReceiveAny(source,gid,recvbuff,length);
+    --nrecv;
+    // check whether message was for me
+    if (!TargetMap().MyGID(gid))
+      dserror("Received object with gid that I did not want");
+    // check whether I already have this object
+    // This can happen if I've received it before from someone else
+    // In this case, do nothing (keep what I have)
+    typename map<int,RefCountPtr<T> >::iterator curr = parobjects.find(gid);
+    if (curr != parobjects.end()) 
+      continue;
+    // Create an empty object and unpack
+    CCADISCRETIZATION::ParObject* object = 
+                                 CCADISCRETIZATION::Factory(&(recvbuff[0]));
+    T* ptr = dynamic_cast<T*>(object);
+    if (!ptr) dserror("typename T in template does not implement ParObject (dynamic_cast failed)");
+    RefCountPtr<T> refptr = rcp(ptr);
+    // add object to the map
+    parobjects[gid] = refptr;
+  }
+  
+  //--------- loop map and kick out everything that's not in TargetMap()
+  typename map<int,RefCountPtr<T> >::iterator curr;
+  for (curr=parobjects.begin(); curr != parobjects.end(); ++curr)
+  {
+    if (TargetMap().MyGID(curr->first)) continue;
+    parobjects.erase(curr->first);
+  }
+  
+  //---------------------------------------------------------- do waiting
+  for (int i=0; i<nsend; ++i) Wait(request[i]);
+
+  //------------------------------------------------------ free sendbuffer
+  for (int i=0; i<(int)SendBuff().size(); ++i)
+    if (SendBuff()[i]) 
+    {
+      delete [] SendBuff()[i];
+      SendBuff()[i] = NULL;
+      SendSize()[i] = 0;
+    }
+    
+#endif  
+  return;
+}
 
 
 

@@ -118,10 +118,12 @@ void distribute_grids_and_design()
     for (int i=0; i<3; ++i)
     {
       RefCountPtr<CCADISCRETIZATION::DesignDiscretization> ddis = ccadesign[i];
-      const Epetra_Map*  nmap = ddis->NodeMap();
-      const Epetra_Map*  emap = ddis->ElementMap();
+      if (!ddis->Filled()) dserror("FillComplete() was not called on design discretization");
+      const Epetra_Map*  nmap = ddis->NodeColMap();
+      const Epetra_Map*  emap = ddis->ElementColMap();
       const Epetra_Comm& comm = ddis->Comm();
-      // make redundant map of nodes
+      
+      //--------------------------------------- make redundant map of nodes
       const int ngnodes = nmap->NumGlobalElements();
       vector<int> nodes(ngnodes);
       int start=0;
@@ -136,7 +138,8 @@ void distribute_grids_and_design()
       }
       RefCountPtr<Epetra_Map> rnmap = 
                         rcp(new Epetra_Map(ngnodes,ngnodes,&nodes[0],0,comm));
-      // make redundant map of elements
+
+      //------------------------------------ make redundant map of elements
       const int ngele = emap->NumGlobalElements();
       vector<int> ele(ngele);
       start=0;
@@ -150,20 +153,24 @@ void distribute_grids_and_design()
         start += nele;
       }
       RefCountPtr<Epetra_Map> remap = 
-        rcp(new Epetra_Map(ngele,ngele,&ele[0],0,comm));
+                             rcp(new Epetra_Map(ngele,ngele,&ele[0],0,comm));
       
-      // Export nodes
-      ddis->ExportNodes(*rnmap);
-      // Export elements
-      ddis->ExportElements(*remap);
-      
-      
+      // Export nodes to overlapping storage
+      ddis->ExportGhostNodes(*rnmap);
+      // Export elements to overlapping storage
+      ddis->ExportGhostElements(*remap);
     } // for (int i=0; i<3; ++i)
+    
+    // call FillComplete on all three discretizations again
+    int ierr=0;
+    ierr += ccadesign[2]->FillComplete(NULL,ccadesign[1].get());
+    ierr += ccadesign[1]->FillComplete(ccadesign[2].get(),ccadesign[0].get());
+    ierr += ccadesign[0]->FillComplete(ccadesign[1].get(),NULL);
+    if (ierr) dserror("FillComplete of Design returned %d",ierr);
   } // if (design)
   
   //the comm in the design can stay MPI_COMM_WORLD
   // get discretizations and replace their comm
-#ifdef PARALLEL
   for (int i=0; i<genprob.numfld; ++i)
   {
     vector<RefCountPtr<CCADISCRETIZATION::Discretization> >* discretization =
@@ -173,12 +180,21 @@ void distribute_grids_and_design()
     for (int j=0;j<field[i].ndis;j++)
     {
       RefCountPtr<CCADISCRETIZATION::Discretization> actdis = (*discretization)[j];
+#ifdef PARALLEL
       RefCountPtr<Epetra_MpiComm> comm = rcp(new Epetra_MpiComm(actintra->MPI_INTRA_COMM));
       actdis->SetComm(comm); 
-      actdis->FillComplete();     
-    }
-  }
+      int ierr = actdis->FillComplete();
+      if (ierr) dserror("FillComplete returned %d",ierr);
 #endif
+      if (!actdis->Filled()) dserror("FillComplete() was not called on discretization");
+      
+      // partition the discretization using metis
+      ierr = actdis->DistributeUsingMetis();
+      if (ierr) dserror("DistributeUsingMetis() returned %d",ierr);
+      
+      
+    } // for (int j=0;j<field[i].ndis;j++)
+  } // for (int i=0; i<genprob.numfld; ++i)
 
 
   cout << "Reach standard exit\n"; fflush(stdout); exit(0);

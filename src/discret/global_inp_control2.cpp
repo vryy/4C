@@ -353,7 +353,7 @@ void input_design()
     
       // create the design node and store it in ccadesign
       RefCountPtr<CCADISCRETIZATION::DesignNode> node = 
-                      rcp(new CCADISCRETIZATION::DesignNode(i,x));
+                  rcp(new CCADISCRETIZATION::DesignNode(i,x,comm->MyPID()));
       
       // we add the nodes to all of the design descriptions
       // this is not a problem as they are refcountpointed
@@ -393,7 +393,7 @@ void input_design()
       
       // create the design line element and store it in ccadesign
       RefCountPtr<CCADISCRETIZATION::DesignElement> line = 
-        rcp(new CCADISCRETIZATION::DesignElement(i,CCADISCRETIZATION::Element::element_designline)); 
+        rcp(new CCADISCRETIZATION::DesignElement(i,CCADISCRETIZATION::Element::element_designline,comm->MyPID())); 
       line->SetNodeIds(2,nodeids);     
       
       // Add the line to the lines description
@@ -447,7 +447,7 @@ void input_design()
       
       // create the design surface
       RefCountPtr<CCADISCRETIZATION::DesignElement> surf = 
-        rcp(new CCADISCRETIZATION::DesignElement(i,CCADISCRETIZATION::Element::element_designsurface));
+        rcp(new CCADISCRETIZATION::DesignElement(i,CCADISCRETIZATION::Element::element_designsurface,comm->MyPID()));
       surf->SetLowerEntities(numlines,&lineids[0],&orientation[0]);
       
       // Add the surface to the surfaces description
@@ -499,7 +499,7 @@ void input_design()
       
       // create the design volume
       RefCountPtr<CCADISCRETIZATION::DesignElement> vol = 
-        rcp(new CCADISCRETIZATION::DesignElement(i,CCADISCRETIZATION::Element::element_designsurface));
+        rcp(new CCADISCRETIZATION::DesignElement(i,CCADISCRETIZATION::Element::element_designsurface,comm->MyPID()));
       vol->SetLowerEntities(numsurfs,&surfids[0],&orientation[0]);
       
       // Add the volume to the volumes description
@@ -520,8 +520,7 @@ void input_design()
   ierr += designvols->FillComplete(NULL,designsurfs.get());
   ierr += designsurfs->FillComplete(designvols.get(),designlines.get());
   ierr += designlines->FillComplete(designsurfs.get(),NULL);
-  if (ierr)
-    dserror("FillComplete of Design returned %d",ierr);
+  if (ierr) dserror("FillComplete of Design returned %d",ierr);
   return;
 } // input_design()
 
@@ -633,7 +632,7 @@ void input_assign_nodes(CCADISCRETIZATION::Discretization& actdis,Epetra_SerialD
     for (int i=0; i< genprob.nnode; ++i) nodeflag[i] = -1;
     
     // set flag for each node in this discretization
-    for (int i=0; i<actdis.NumMyElements(); ++i)
+    for (int i=0; i<actdis.NumMyColElements(); ++i)
     {
       const CCADISCRETIZATION::Element* actele = actdis.gElement(i);
       const int  nnode = actele->NumNode();
@@ -649,7 +648,7 @@ void input_assign_nodes(CCADISCRETIZATION::Discretization& actdis,Epetra_SerialD
       double coords[3];
       for (int j=0; j<3; ++j) coords[j] = (*tmpnodes)(i,j);
       RefCountPtr<CCADISCRETIZATION::Node> node = 
-        rcp(new CCADISCRETIZATION::Node(nodeflag[i],coords));
+        rcp(new CCADISCRETIZATION::Node(nodeflag[i],coords,actdis.Comm().MyPID()));
       actdis.AddNode(node);
     }
   } // if (actdis.Comm().MyPID()==0)
@@ -722,7 +721,7 @@ void input_structural_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm)
         dserror("SHELL8 needed but not defined in Makefile");
 #else  
         RefCountPtr<CCADISCRETIZATION::Shell8> ele = 
-                              rcp(new CCADISCRETIZATION::Shell8(elenumber));
+                              rcp(new CCADISCRETIZATION::Shell8(elenumber,actdis->Comm().MyPID()));
         
         // read input for this element
         ele->ReadElement();

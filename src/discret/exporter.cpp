@@ -105,7 +105,7 @@ numproc_(comm.NumProc())
 
 
 
-#if 1
+#if 0
   // make test print of RecvPlan
   for (int proc=0; proc<NumProc(); ++proc)
   {
@@ -165,101 +165,6 @@ CCADISCRETIZATION::Exporter::~Exporter()
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  communicate nodes (public)                               mwgee 11/06|
- *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Exporter::Export(map<int,RefCountPtr<CCADISCRETIZATION::Node> >& nodes)
-{
-#ifdef PARALLEL
-  // do a simple test whether the map nodes matches the map dimensions
-  if ((int)nodes.size() != SourceMap().NumMyElements())
-    dserror("Mismatch in dimension of map and source map: %d <-> %d",
-            nodes.size(),SourceMap().NumMyElements());
-  
-  // allocate requests for unknown number of sends
-  vector<MPI_Request> request(200);
-  int nsend=0;
-  
-  //-------------------------------------------------------- do the sending
-  for (int i=0; i<SourceMap().NumMyElements(); ++i)
-  {
-    // get the global id
-    const int gid = SourceMap().MyGlobalElements()[i];
-    const int lid = i;
-    // check whether there will be any send to do at all 
-    bool issend = false;
-    for (int j=0; j<NumProc(); ++j)
-      if (MyPID() != j)
-        if (SendPlan()(lid,j)==1)
-        {
-          issend = true;
-          break;
-        }
-    if (!issend) continue;
-    // get the node to send
-    map<int,RefCountPtr<CCADISCRETIZATION::Node> >:: iterator curr = nodes.find(gid);
-    if (curr==nodes.end()) dserror("Cannot find object with gid %d",gid);
-    RefCountPtr<CCADISCRETIZATION::Node> actnode = curr->second;
-    // pack the node
-    SendBuff()[lid] = actnode->Pack(SendSize()[lid]);
-    // do sending
-    for (int j=0; j<NumProc(); ++j)
-      if (j != MyPID() && SendPlan()(lid,j)==1)
-      {
-        if (nsend>=(int)request.size()) 
-          request.resize(request.size()+200);
-        ISend(MyPID(),j,SendBuff()[lid],SendSize()[lid],gid,request[nsend]);
-        ++nsend;
-      }
-  }
-  
-  //-------------------------------------------------------- do receiving
-  // count how many receives I want to do
-  int nrecv=0;
-  for (int i=0; i<RecvPlan().M(); ++i)
-    for (int j=0; j<RecvPlan().N(); ++j)
-      if (RecvPlan()(i,j)) ++nrecv;
-  vector<char> recvbuff(500);
-  while (nrecv)
-  {
-    int source = -1;
-    int gid = -1;
-    int length = 0;
-    ReceiveAny(source,gid,recvbuff,length);
-    --nrecv;
-    // check whether message was for me
-    if (!TargetMap().MyGID(gid))
-      dserror("Received object with gid that I did not want");
-    // check whether I already have this object
-    // This can happen if I've received it before from someone else
-    // In this case, do nothing (keep what I have)
-    map<int,RefCountPtr<CCADISCRETIZATION::Node> >::iterator curr = 
-      nodes.find(gid);
-    if (curr != nodes.end()) 
-      continue;
-    // Create an empty object and unpack
-    RefCountPtr<CCADISCRETIZATION::ParObject> object = 
-                            rcp(CCADISCRETIZATION::Factory(&(recvbuff[0])));
-    // add node to the map
-    //nodes[node->Id()] = node;
-  }
-  
-  //---------------------------------------------------------- do waiting
-  for (int i=0; i<nsend; ++i) Wait(request[i]);
-
-  //------------------------------------------------------ free sendbuffer
-  for (int i=0; i<(int)SendBuff().size(); ++i)
-    if (SendBuff()[i]) 
-    {
-      delete [] SendBuff()[i];
-      SendBuff()[i] = NULL;
-      SendSize()[i] = 0;
-    }
-    
-  
-#endif  
-  return;
-}
 
 #ifdef PARALLEL
 /*----------------------------------------------------------------------*

@@ -51,7 +51,7 @@ public:
   
   \param id : A unique global id
   */
-  Shell8(int id);
+  Shell8(int id, int owner);
 
   /*!
   \brief Copy Constructor

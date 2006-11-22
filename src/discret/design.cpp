@@ -30,13 +30,9 @@ comm_(comm)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Design::Design(const CCADISCRETIZATION::Design& old) :
-comm_(old.comm_)
+CCADISCRETIZATION::Design::Design(const CCADISCRETIZATION::Design& old)
 {
-  // make a deep copy, do not share data between old and this
-  for (int i=0; i<3; ++i)
-    entity_[i] = rcp(new DesignDiscretization(*(old.entity_[i])));
-  return;
+  dserror("Do not have copy-ctor");
 }
 
 /*----------------------------------------------------------------------*

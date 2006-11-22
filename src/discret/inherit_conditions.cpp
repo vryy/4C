@@ -132,10 +132,10 @@ void inherit_dirichlet_element_to_node(
   DSTraceHelper dst("inherit_dirichlet_element_to_node");
   if (!dis->Filled()) dserror("FillComplete() must have been called before");
 
-  for (int i=0; i<dis->NumMyElements(); ++i)
+  for (int i=0; i<dis->NumMyColElements(); ++i)
   {
     // get high entity element
-    CCADISCRETIZATION::Element* ele = dis->lElement(i);
+    CCADISCRETIZATION::Element* ele = dis->lColElement(i);
     if (!ele) dserror("Cannot get lElement");
     
     // get dirichlet condition from high entity element
@@ -174,11 +174,11 @@ void inherit_dirichlet_high_to_low_entity_elements(
   if (!highdis->Filled()) dserror("FillComplete() must have been called before");
   if (!lowdis->Filled())  dserror("FillComplete() must have been called before");
 
-  for (int i=0; i<highdis->NumMyElements(); ++i)
+  for (int i=0; i<highdis->NumMyColElements(); ++i)
   {
     // get high entity element
     CCADISCRETIZATION::DesignElement* highele = 
-         dynamic_cast<CCADISCRETIZATION::DesignElement*>(highdis->lElement(i));
+         dynamic_cast<CCADISCRETIZATION::DesignElement*>(highdis->lColElement(i));
     if (!highele) dserror("dynamic_cast to DesignElement failed");
     
     // get dirichlet condition from high entity element

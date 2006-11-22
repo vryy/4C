@@ -17,7 +17,7 @@ Maintainer: Michael Gee
 #define GLOBAL_INP_CONTROL2_H
 
 
-#ifdef __cplusplus // stuff which is c++ specific
+#ifdef __cplusplus /* stuff which is c++ specific */
 
 #ifdef PARALLEL
 #include "Epetra_MpiComm.h"
@@ -36,29 +36,19 @@ Maintainer: Michael Gee
 #include "shell8.H"
 #endif
 
+extern "C" /* stuff which is c and is accessed from c++ */
+{
+#include "../headers/standardtypes.h"
+}
+#include "dstrc.H" /* needs standardtypes.h */
+
 using namespace std;
 using namespace Teuchos;
 
-#endif // end of #ifdef __cplusplus
-
-
-
-// headers and prototypes of functions also acessible from c
-#ifdef __cplusplus
-extern "C" 
-{
-#endif
-
-#include "../headers/standardtypes.h"
-#include "dstrc.H"
-
-
-void ntainp_ccadiscret();
-void inpfield_ccadiscret();
+// headers and prototypes of functions acessible from c++
 void inpnodes_ccadiscret(Epetra_SerialDenseMatrix& tmpnodes);
 void input_structural_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm);
 void input_assign_nodes(CCADISCRETIZATION::Discretization& actdis,Epetra_SerialDenseMatrix* tmpnodes);
-void input_design();
 void input_design_topology_discretization(CCADISCRETIZATION::Discretization& actdis);
 void input_design_dpoint_fenode_read(vector<vector<int> >& dnode_fenode,
                                      vector<int>& ndnode_fenode);
@@ -68,9 +58,26 @@ void input_design_dsurf_fenode_read(vector<vector<int> >& dsurf_fenode,
                                      vector<int>& ndsurf_fenode);
 void input_design_dvol_fenode_read(vector<vector<int> >& dvol_fenode,
                                    vector<int>& ndvol_fenode);
+
+
+#endif /* end of #ifdef __cplusplus */
+
+
+
+/* headers and prototypes of functions also acessible from c */
+#ifdef __cplusplus
+extern "C" 
+{
+#endif
+
+
+void ntainp_ccadiscret();
+void inpfield_ccadiscret();
+void input_design();
 void input_conditions();                                
 void inherit_conditions();
 void distribute_grids_and_design();
+
 
 #ifdef __cplusplus
 }
@@ -81,7 +88,7 @@ void distribute_grids_and_design();
 
 
 
-#endif  // #ifndef GLOBAL_INP_CONTROL2_H
+#endif  /* #ifndef GLOBAL_INP_CONTROL2_H */
 
-#endif  // #ifdef TRILINOS_PACKAGE
-#endif  // #ifdef CCADISCRET
+#endif  /* #ifdef TRILINOS_PACKAGE */
+#endif  /* #ifdef CCADISCRET */

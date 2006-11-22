@@ -76,7 +76,7 @@ public:
   \param id   : A globally unique element id
   \param etype: Type of element
   */
-  Element(int id, ElementType etype);
+  Element(int id, ElementType etype, int owner);
 
   /*!
   \brief Copy Constructor
@@ -122,6 +122,11 @@ public:
   \brief Return global id of this element
   */
   inline int Id() const { return id_; }
+
+  /*!
+  \brief Return owner of this element
+  */
+  virtual inline int Owner() const { return owner_; }
 
   /*!
   \brief Get type of element
@@ -170,6 +175,13 @@ public:
   virtual bool ReadElement();
 
   /*!
+  \brief Set ownership
+  
+  \param owner: Proc owning this node
+  */
+  virtual inline void SetOwner(const int owner) { owner_ = owner; return; }
+
+  /*!
   \brief Set a list of node ids this element is connected to
   
   Sets the nodal ids of the nodes adjacent to this element and the number
@@ -209,6 +221,7 @@ protected:
   bool BuildNodalPointers(map<int,RefCountPtr<CCADISCRETIZATION::Node> >& nodes);
 
   int                                 id_;        // a unique global element id
+  int                                 owner_;     // owner of this element
   ElementType                         etype_;     // type of element
   vector<int>                         nodeid_;    // list of my nodal ids
   vector<CCADISCRETIZATION::Node*>    node_;      // pointers to adjacent nodes

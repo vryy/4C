@@ -21,8 +21,8 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::DesignNode::DesignNode(int id, const double* coords) :
-Node(id,coords)
+CCADISCRETIZATION::DesignNode::DesignNode(int id, const double* coords, const int owner) :
+Node(id,coords,owner)
 {
   return;
 }

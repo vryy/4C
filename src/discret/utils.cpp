@@ -53,7 +53,7 @@ CCADISCRETIZATION::ParObject* CCADISCRETIZATION::Factory(const char* data)
     case ParObject_Node:
     {
       double dummycoord[3] = {999.,999.,999.};
-      CCADISCRETIZATION::Node* object = new CCADISCRETIZATION::Node(-1,dummycoord);
+      CCADISCRETIZATION::Node* object = new CCADISCRETIZATION::Node(-1,dummycoord,-1);
       object->Unpack(data);
       return object;
     }
@@ -61,7 +61,7 @@ CCADISCRETIZATION::ParObject* CCADISCRETIZATION::Factory(const char* data)
     case ParObject_DesignNode:
     {
       double dummycoord[3] = {999.,999.,999.};
-      CCADISCRETIZATION::DesignNode* object = new CCADISCRETIZATION::DesignNode(-1,dummycoord);
+      CCADISCRETIZATION::DesignNode* object = new CCADISCRETIZATION::DesignNode(-1,dummycoord,-1);
       object->Unpack(data);
       return object;
     }
@@ -74,14 +74,14 @@ CCADISCRETIZATION::ParObject* CCADISCRETIZATION::Factory(const char* data)
     case ParObject_DesignElement:
     {
       CCADISCRETIZATION::DesignElement* object = 
-        new CCADISCRETIZATION::DesignElement(-1,CCADISCRETIZATION::Element::element_none);
+        new CCADISCRETIZATION::DesignElement(-1,CCADISCRETIZATION::Element::element_none,-1);
       object->Unpack(data);
       return object;
     }
     break;
     case ParObject_Shell8:
     {
-      CCADISCRETIZATION::Shell8* object = new CCADISCRETIZATION::Shell8(-1);
+      CCADISCRETIZATION::Shell8* object = new CCADISCRETIZATION::Shell8(-1,-1);
       object->Unpack(data);
       return object;
     }

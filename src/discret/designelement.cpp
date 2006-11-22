@@ -23,8 +23,8 @@ Maintainer: Michael Gee
  |  ctor (public)                                            mwgee 11/06|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::DesignElement::DesignElement(int id, enum ElementType type) :
-Element(id,type)
+CCADISCRETIZATION::DesignElement::DesignElement(int id, enum ElementType type, int owner) :
+Element(id,type,owner)
 {
   return;
 }
