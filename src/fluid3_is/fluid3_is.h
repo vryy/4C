@@ -12,6 +12,8 @@ Maintainer: Ulrich Küttler
 </pre>
  */
 
+#ifdef D_FLUID3_IS
+
 #ifndef FLUID3_IS_H
 #define FLUID3_IS_H
 
@@ -126,4 +128,5 @@ void f3is_calmat( DOUBLE **estif,
 		  INT      is_relax
   );
 
+#endif
 #endif
