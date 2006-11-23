@@ -12,7 +12,7 @@ CP=g++
 LD=g77
 
 INCLUDEDIRS="-I$MPIDIR/include -I/lnm/include"
-LIBDIRS="-L/lnm/lib"
+LIBDIRS="-L/lnm/lib -L/usr/lib/gcc/i386-redhat-linux/3.4.6/"
 
 # aztec
 AZTEC_INC=""

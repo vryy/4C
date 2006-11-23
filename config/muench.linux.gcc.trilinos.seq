@@ -12,7 +12,7 @@ CP=g++
 LD=g++
 
 INCLUDEDIRS="-I$MPIDIR/include -I/lnm/include"
-LIBDIRS="-L/lnm/lib"
+LIBDIRS="-L/lnm/lib -L/usr/lib/gcc/i386-redhat-linux/3.4.6/"
 
 # Trilinos
 TRILINOS_HOME=/lnm/lib/Trilinos
@@ -57,7 +57,7 @@ LDFLAGS_OPT="-O"
 #FFLAGS_OPT="-g"
 #LDFLAGS_OPT="-g"
 
-# Alle Bibliotheken neu übersetzen?!
+# Alle Bibliotheken neu ï¿½bersetzen?!
 # -malign-double
 CFLAGS="-Wall -march=pentium4 -msse2 -mfpmath=sse -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
 CPFLAGS="-Wall -march=pentium4 -msse2 -mfpmath=sse -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
