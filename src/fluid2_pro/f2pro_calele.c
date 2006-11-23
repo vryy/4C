@@ -882,7 +882,7 @@ void f2pro_calvrhs(ELEMENT* ele, ARRAY_POSITION *ipos)
 	eforce[2*i+1] += -gradp[1]*fac*funct[i] ;
       }
 
-#if 0
+#if 1
       for (i=0; i<iel; i++)
       {
 	eforce[2*i  ] += fac*funct[i]*velint[0] ;
