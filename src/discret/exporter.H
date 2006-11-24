@@ -277,7 +277,7 @@ template<typename T> void CCADISCRETIZATION::Exporter::Export(
       continue;
     // Create an empty object and unpack
     CCADISCRETIZATION::ParObject* object = 
-                                 CCADISCRETIZATION::Factory(&(recvbuff[0]));
+                                 CCADISCRETIZATION::Utils::Factory(&(recvbuff[0]));
     T* ptr = dynamic_cast<T*>(object);
     if (!ptr) dserror("typename T in template does not implement ParObject (dynamic_cast failed)");
     RefCountPtr<T> refptr = rcp(ptr);

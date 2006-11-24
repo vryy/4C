@@ -189,19 +189,35 @@ void distribute_grids_and_design()
       if (!actdis->Filled()) dserror("FillComplete() was not called on discretization");
       
       // partition the discretization using metis
-      // create a reasonable noderowmap and elerowmap using metis
-      // create column maps from them
-      RefCountPtr<Epetra_Map> noderowmap;
-      RefCountPtr<Epetra_Map> elerowmap;
-      ierr = actdis->DistributeUsingMetis(noderowmap,elerowmap);
-      if (ierr) dserror("DistributeUsingMetis() returned %d",ierr);
+      // create nodal graph of problem
+      RefCountPtr<Epetra_CrsGraph> nodegraph = actdis->BuildNodeGraph(); 
       
+      // repartition the nodal graph using metis
+      Epetra_Vector weights(nodegraph->RowMap(),false);
+      weights.PutScalar(1.0);
+      RefCountPtr<Epetra_CrsGraph> newnodegraph = 
+              CCADISCRETIZATION::Utils::PartGraphUsingMetis(*nodegraph,weights);
+      
+      // the rowmap will become the new distribution of nodes
+      const Epetra_BlockMap rntmp = newnodegraph->RowMap();
+      Epetra_Map newnoderowmap(rntmp.NumGlobalElements(),rntmp.NumMyElements(),rntmp.MyGlobalElements(),0,actdis->Comm());
+
+      // the column map will become the new ghosted distribution of nodes
+      const Epetra_BlockMap cntmp = newnodegraph->ColMap();
+      Epetra_Map newnodecolmap(cntmp.NumGlobalElements(),cntmp.NumMyElements(),cntmp.MyGlobalElements(),0,actdis->Comm());
+      
+      // build overlapping element row and column map
+      RefCountPtr<Epetra_Map> elerowmap;
+      RefCountPtr<Epetra_Map> elecolmap;
+      actdis->BuildElementGhosting(newnoderowmap,newnodecolmap,elerowmap,elecolmap);
+                        
       
     } // for (int j=0;j<field[i].ndis;j++)
   } // for (int i=0; i<genprob.numfld; ++i)
 
 
-  cout << "Reach standard exit\n"; fflush(stdout); exit(0);
+  cout << "Reach standard exit\n"; fflush(stdout);
+  exit(0);
   return;
 } // void distribute_grids_and_design
 

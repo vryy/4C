@@ -22,6 +22,7 @@ Maintainer: Michael Gee
 #include "Epetra_Comm.h"
 #include "Epetra_Map.h"
 #include "Epetra_Vector.h"
+#include "Epetra_CrsGraph.h"
 using namespace std;
 using namespace Teuchos;
 
@@ -149,7 +150,7 @@ public:
                                          return -1;}
   
   /*!
-  \brief Get global number of nodes (true number of total nodes
+  \brief Get global number of nodes (true number of total nodes without ghosting)
   
   This is a collective call
   */
@@ -376,20 +377,37 @@ public:
   virtual void ExportGhostElements(const Epetra_Map& newmap);
 
   /*!
-  \brief Redistribute the current distribution of the discretization
-         using metis
+  \brief Build nodal graph of discretization
   
-  \param newnoderowmap: (output) nonoverlapping target nodal map
-  \param newelerowmap: (output) nonoverlapping target element map
-  \return 0 on success, negative for error
+  Build a nodal graph of the discretization in parallel.<br>
+  The graph has a row map of NodeRowMap().<br>
+  The graph is build from elements stored on each proc, nodes are
+  not referenced.<br>
+  If a proc stores the appropiate ghosted elements the resulting graph
+  will be the complete graph of the distributed discretization.<br>
+  If procs do not store appropiate ghosted elements, the resulting
+  graph is decoupled or partially decoupled among procs.<br>
+  This might also lead to an unsymmetric graph. 
+  
+  \note Filled()=true is a prerequisite
+  
+  \return Graph of discretization distributed across processors according to
+          the discretization distribution
   */
-  virtual int DistributeUsingMetis(RefCountPtr<Epetra_Map>& newnoderowmap,
-                                   RefCountPtr<Epetra_Map>& newelerowmap);
+  virtual RefCountPtr<Epetra_CrsGraph> BuildNodeGraph() const;
+
+  /*!
+  \brief Build element row and column map from nodal row and column map
+  */
+  virtual void BuildElementGhosting(const Epetra_Map& noderowmap,
+                                    const Epetra_Map& nodecolmap,
+                                    RefCountPtr<Epetra_Map>& elerowmap,
+                                    RefCountPtr<Epetra_Map>& elecolmap) const;
 
   /*!
   \brief Set Ids of design nodes in nodes
   
-  On exit, each node in this that is positioned on a design node 
+  On exit, each node in this that is positioned on a design entity 
   will store the global design node number that it concides to.
   It will also store a flag indicating on what type of design entitty its on.
   

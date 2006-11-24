@@ -32,6 +32,7 @@ Maintainer: Michael Gee
 #include "designelement.H"
 #include "designnode.H"
 #include "design.H"
+#include "utils.H"
 #ifdef D_SHELL8
 #include "shell8.H"
 #endif

@@ -15,7 +15,18 @@ Maintainer: Michael Gee
 #ifndef UTILS_H
 #define UTILS_H
 
+
+#include "Epetra_Comm.h"
+#include "Epetra_Map.h"
+#include "Epetra_CrsGraph.h"
+#include "Epetra_Vector.h"
+#include "Epetra_Export.h"
+#include "Teuchos_RefCountPtr.hpp"
+
 #include "parobject.H"
+
+using namespace std;
+using namespace Teuchos;
 
 /*!
 \brief CCADISCRET: namespace of the ccarat discretization module
@@ -23,7 +34,8 @@ Maintainer: Michael Gee
 */
 namespace CCADISCRETIZATION
 {
-
+namespace Utils
+{
   /*!
   \brief Create an instance of a ParObject depending on the type stored in data
   
@@ -41,8 +53,24 @@ namespace CCADISCRETIZATION
           freeing this instance!
   */
   ParObject* Factory(const char* data);
+  
+  /*!
+  \brief Partition a graph with metis
+  
+  Take an input graph with any row map and a vector of point weights with the same row
+  map and redistribute the graph using the partioning library metis.
+  The output graph has a row map according to the new distribution.
+  
+  \param graph : (in) any graph
+  \param weights: (int) a vector of weight factors for each row of graph. 
+                  Map of weights must be pointwise equal to graph.RowMap().
+                  
+  \return graph with new distribution                  
+  */
+  RefCountPtr<Epetra_CrsGraph> PartGraphUsingMetis(const Epetra_CrsGraph& graph,
+                                                   const Epetra_Vector& weights);
 
-
+} // namespace Utils
 } // namespace CCADISCRETIZATION
 
 
