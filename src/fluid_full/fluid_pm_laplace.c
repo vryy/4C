@@ -875,7 +875,6 @@ void fluid_pm_cont_laplace()
 	actnode = &(actfield->dis[press_dis].node[i]);
 	actnode->sol_increment.a.da[0][0]  = frhs[actnode->dof[0]];
 	actnode->sol_increment.a.da[1][0] += 2./fdyn->dta*frhs[actnode->dof[0]];
-	/*actnode->sol_increment.a.da[1][0] += frhs[actnode->dof[0]];*/
       }
     }
 
@@ -956,16 +955,6 @@ void fluid_pm_cont_laplace()
     perf_end(80);
 #endif
 
-#if 1
-
-    /* solserv_sol_zero(actfield,disnum_calc,node_array_sol_increment,ipos->velnp); */
-    fluid_result_incre(actfield,disnum_calc,actintra,&(actsolv->sol[0]),&(actsolv->rhs[0]),
-		       ipos->velnp,
-		       &(actsolv->sysarray[actsysarray]),
-		       &(actsolv->sysarray_typ[actsysarray]),
-		       &vrat,NULL,NULL);
-    
-#else
     solserv_sol_zero(actfield,disnum_calc,node_array_sol_increment,ipos->velnm);
 
     fluid_result_incre(actfield,disnum_calc,actintra,&(actsolv->sol[0]),&(actsolv->rhs[0]),
@@ -997,7 +986,6 @@ void fluid_pm_cont_laplace()
 
       fprintf(allfiles.gidres,"END VALUES\n");
     }
-#endif
 #endif
 
     /*---------- extrapolate from n+alpha_f to n+1 for generalised alpha ---*/

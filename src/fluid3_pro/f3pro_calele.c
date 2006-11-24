@@ -908,6 +908,7 @@ void f3pro_calvrhs(ELEMENT* ele, ARRAY_POSITION *ipos)
 
 	/*----------------------------------- compute global derivates ---*/
 	f3_gder(derxy,deriv,xjm,wa1,det,iel);
+        f3_gder(pderxy,pderiv,xjm,wa1,det,8);
 
 	/*---------------- get velocities (n+1,i) at integration point ---*/
 	f3_veci(velint,funct,evelng,iel);

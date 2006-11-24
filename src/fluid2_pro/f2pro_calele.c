@@ -700,7 +700,7 @@ void f2pro_calvrhs(ELEMENT* ele, ARRAY_POSITION *ipos)
 
   FLUID_DATA      *data;
   DOUBLE gradp[2];
-  DOUBLE    velint[2];  /* velocity vector at integration point           */
+  DOUBLE velint[2];  /* velocity vector at integration point           */
 
 #ifdef DEBUG
   dstrc_enter("f2pro_calvrhs");
@@ -840,6 +840,7 @@ void f2pro_calvrhs(ELEMENT* ele, ARRAY_POSITION *ipos)
 
       /*----------------------------------- compute global derivates ---*/
       f2_gder(derxy,deriv,xjm,det,iel);
+      f2_gder(pderxy,pderiv,xjm,det,4);
 
       /*---------------- get velocities (n+1,i) at integration point ---*/
       f2_veci(velint,funct,evelng,iel);
@@ -850,7 +851,7 @@ void f2pro_calvrhs(ELEMENT* ele, ARRAY_POSITION *ipos)
 
       /*------------------------------------- get pressure gradients ---*/
       gradp[0] = gradp[1] = 0.0;
-
+      
       if (numpdof==-1)
       {
 	for (i=0; i<iel; i++)
@@ -882,7 +883,7 @@ void f2pro_calvrhs(ELEMENT* ele, ARRAY_POSITION *ipos)
 	eforce[2*i+1] += -gradp[1]*fac*funct[i] ;
       }
 
-#if 1
+#if 0
       for (i=0; i<iel; i++)
       {
 	eforce[2*i  ] += fac*funct[i]*velint[0] ;
