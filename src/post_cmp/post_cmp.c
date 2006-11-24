@@ -46,7 +46,15 @@ int main(int argc, char** argv)
   init_problem_data(&problem2, argc-1, singleargs);
 
   if (problem1.type != problem2.type)
-    dserror("problem types differ");
+  {
+    if (((problem1.type == prb_fluid   ) && (problem2.type == prb_fluid_pm)) ||
+        ((problem1.type == prb_fluid_pm) && (problem2.type == prb_fluid   )))
+    {
+      /* fine */
+    }
+    else
+      dserror("problem types differ");
+  }
   
   if (problem1.ndim != problem2.ndim)
     dserror("dimensions differ");
@@ -82,6 +90,7 @@ int main(int argc, char** argv)
 
       switch (problem1.type)
       {
+      case prb_fluid:
       case prb_fluid_pm:
       {
         DOUBLE L1[3] = {0, 0, 0};

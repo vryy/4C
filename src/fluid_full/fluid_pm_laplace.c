@@ -829,7 +829,7 @@ void fluid_pm_cont_laplace()
 		 1.0
       );
 
-#if 1
+#if 0
     if (actintra->intra_rank==0)
     {
       fprintf(allfiles.gidres,"RESULT \"press_rhs\" \"ccarat\" %d SCALAR ONNODES\n"
@@ -849,6 +849,9 @@ void fluid_pm_cont_laplace()
     }
 #endif
 
+#ifdef PERF
+    perf_begin(80);
+#endif
     /* solve for the pressure increment */
     solver_control(actfield,press_dis,pressolv,actintra,
                    &(actsolv->sysarray_typ[press_array]),
@@ -856,6 +859,9 @@ void fluid_pm_cont_laplace()
                    press_sol,
                    press_rhs,
                    0);
+#ifdef PERF
+    perf_end(80);
+#endif
 
     /* update pressure */
     /* solserv_result_incre does not work due to misleading dirichlet
@@ -878,7 +884,7 @@ void fluid_pm_cont_laplace()
       }
     }
 
-#if 1
+#if 0
     if (actintra->intra_rank==0)
     {
       fprintf(allfiles.gidres,"RESULT \"press_sol\" \"ccarat\" %d SCALAR ONNODES\n"
@@ -898,7 +904,7 @@ void fluid_pm_cont_laplace()
     }
 #endif
 
-#if 1
+#if 0
     if (actintra->intra_rank==0)
     {
       fprintf(allfiles.gidres,"RESULT \"vel_star\" \"ccarat\" %d VECTOR ONNODES\n"
@@ -968,7 +974,7 @@ void fluid_pm_cont_laplace()
 		    node_array_sol_increment,
 		    ipos->velnm,
 		    ipos->velnp,1);
-#if 1
+#if 0
     if (actintra->intra_rank==0)
     {
       fprintf(allfiles.gidres,"RESULT \"vel_star_star\" \"ccarat\" %d VECTOR ONNODES\n"
