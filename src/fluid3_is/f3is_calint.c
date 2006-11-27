@@ -10,7 +10,7 @@ Maintainer: Ulrich Küttler
 </pre>
 
 ------------------------------------------------------------------------*/
-#ifdef D_FLUID3
+#ifdef D_FLUID3_IS
 #include "../headers/standardtypes.h"
 #include "fluid3_is.h"
 #include "../ale3/ale3.h"
@@ -263,7 +263,7 @@ void f3is_int_usfem(
 
 	/*-------------- perform integration for entire matrix and rhs ---*/
 	f3is_calmat(estif,force,velint,histvec,gridvelint,press,vderxy,
-		    vderxy2,gradp,funct,derxy,derxy2,pfunct,edeadng,fac,
+		    vderxy2,gradp,funct,derxy,derxy2,pfunct,pderxy,edeadng,fac,
 		    visc,iel,hasext,is_ale,is_relax);
       } /* end of loop over integration points lt*/
     } /* end of loop over integration points ls */
@@ -396,6 +396,7 @@ void f3is_calmat( DOUBLE **estif,
 		  DOUBLE **derxy,
 		  DOUBLE **derxy2,
 		  DOUBLE  *pfunct,
+		  DOUBLE **pderxy,
 		  DOUBLE  *edeadng,
 		  DOUBLE   fac,
 		  DOUBLE   visc,
@@ -666,6 +667,8 @@ void f3is_calmat( DOUBLE **estif,
 #define FLUID3_IS_TERM13
 #define FLUID3_IS_TERM14
 #define FLUID3_IS_TERM15
+#define FLUID3_IS_TERM16
+#define FLUID3_IS_TERM17
 
 #define estif_(i,j)    estif[i][j]
 #define eforce_(i)     eforce[i]
@@ -679,6 +682,7 @@ void f3is_calmat( DOUBLE **estif,
 #define conv_old_(j)   conv_old[j]
 #define conv_g_old_(j) conv_g_old[j]
 #define derxyz_(i,j)   derxy[i][j]
+#define pderxyz_(i,j)  pderxy[i][j]
 #define gridvint_(j)   gridvint[j]
 #define velint_(j)     velint[j]
 #define viscs2_(i,j,k) viscs2[i][3*(k)+j]
@@ -751,6 +755,7 @@ void f3is_calmat( DOUBLE **estif,
 #undef vconv_r_
 #undef conv_old_
 #undef conv_g_old_
+#undef pderxyz_
 #undef derxyz_
 #undef gridvint_
 #undef velint_

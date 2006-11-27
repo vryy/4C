@@ -11,7 +11,7 @@ Maintainer: Ulrich Küttler
 
 
  *----------------------------------------------------------------------*/
-#ifdef D_FLUID3
+#ifdef D_FLUID3_IS
 #include "../headers/standardtypes.h"
 #include "../fluid3/fluid3_prototypes.h"
 #include "fluid3_is.h"

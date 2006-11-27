@@ -250,7 +250,7 @@ void f2is_int_usfem(
 
       /*-------------- perform integration for entire matrix and rhs ---*/
       f2is_calmat(estif,eforce,velint,histvec,gridvelint,press,vderxy,
-		  vderxy2,gradp,funct,derxy,derxy2,pfunct,edeadng,fac,
+		  vderxy2,gradp,funct,derxy,derxy2,pfunct,pderxy,edeadng,fac,
 		  visc,iel,hasext,is_ale, is_relax);
     }
   }
@@ -602,6 +602,7 @@ void f2is_calmat( DOUBLE **estif,
 		DOUBLE **derxy,
 		DOUBLE **derxy2,
 		  DOUBLE          *pfunct,
+		  DOUBLE         **pderxy,
                 DOUBLE  *edeadng,
 		DOUBLE   fac,
 		DOUBLE   visc,
@@ -793,6 +794,8 @@ void f2is_calmat( DOUBLE **estif,
 #define FLUID2_IS_TERM13
 #define FLUID2_IS_TERM14
 #define FLUID2_IS_TERM15
+#define FLUID2_IS_TERM16
+#define FLUID2_IS_TERM17
 
 
 #define estif_(i,j)    estif[i][j]
@@ -805,6 +808,7 @@ void f2is_calmat( DOUBLE **estif,
 #define conv_r_(i,j,k) conv_r[i][2*(k)+j]
 #define conv_old_(j)   conv_old[j]
 #define derxy_(i,j)    derxy[i][j]
+#define pderxy_(i,j)   pderxy[i][j]
 #define gridvint_(j)   gridvint[j]
 #define velint_(j)     velint[j]
 #define viscs2_(i,j,k) viscs2[i][2*(k)+j]
@@ -876,6 +880,7 @@ void f2is_calmat( DOUBLE **estif,
 #undef conv_r_
 #undef conv_old_
 #undef derxy_
+#undef pderxy_
 #undef gridvint_
 #undef velint_
 #undef viscs2_
@@ -1143,6 +1148,8 @@ void f2is_calresvec(
 #define FLUID2_IS_TERM13
 #define FLUID2_IS_TERM14
 #define FLUID2_IS_TERM15
+#define FLUID2_IS_TERM16
+#define FLUID2_IS_TERM17
 
 
 #define estif_(i,j)    estif[i][j]
@@ -1155,6 +1162,7 @@ void f2is_calresvec(
 #define conv_r_(i,j,k) conv_r[i][2*(k)+j]
 #define conv_old_(j)   conv_old[j]
 #define derxy_(i,j)    derxy[i][j]
+#define pderxy_(i,j)   pderxy[i][j]
 #define gridvint_(j)   gridvint[j]
 #define velint_(j)     velint[j]
 #define viscs2_(i,j,k) viscs2[i][2*(k)+j]
@@ -1184,6 +1192,7 @@ void f2is_calresvec(
 #undef conv_r_
 #undef conv_old_
 #undef derxy_
+#undef pderxy_
 #undef gridvint_
 #undef velint_
 #undef viscs2_
