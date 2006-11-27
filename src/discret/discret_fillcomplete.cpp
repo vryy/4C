@@ -53,12 +53,10 @@ void CCADISCRETIZATION::Discretization::BuildNodeRowMap()
 {
   const int myrank = Comm().MyPID();
   int nummynodes     = 0;
-  int numglobalnodes = 0;
   map<int,RefCountPtr<CCADISCRETIZATION::Node> >::iterator curr;
   for (curr=node_.begin(); curr != node_.end(); ++curr)
     if (curr->second->Owner() == myrank)
       ++nummynodes;
-  Comm().SumAll(&nummynodes,&numglobalnodes,1);
   vector<int> nodeids(nummynodes);
   
   int count=0;
@@ -69,7 +67,7 @@ void CCADISCRETIZATION::Discretization::BuildNodeRowMap()
       ++count;
     }
   if (count != nummynodes) dserror("Mismatch in no. of nodes");
-  noderowmap_ = rcp(new Epetra_Map(numglobalnodes,nummynodes,&nodeids[0],0,Comm()));
+  noderowmap_ = rcp(new Epetra_Map(-1,nummynodes,&nodeids[0],0,Comm()));
   return;
 }
 
@@ -79,8 +77,6 @@ void CCADISCRETIZATION::Discretization::BuildNodeRowMap()
 void CCADISCRETIZATION::Discretization::BuildNodeColMap()
 {
   int nummynodes     = (int)node_.size();
-  int numglobalnodes = 0;
-  Comm().SumAll(&nummynodes,&numglobalnodes,1);
   vector<int> nodeids(nummynodes);
   
   int count=0;
@@ -91,33 +87,10 @@ void CCADISCRETIZATION::Discretization::BuildNodeColMap()
     ++count;
   }
   if (count != nummynodes) dserror("Mismatch in no. of nodes");
-  nodecolmap_ = rcp(new Epetra_Map(numglobalnodes,nummynodes,&nodeids[0],0,Comm()));
+  nodecolmap_ = rcp(new Epetra_Map(-1,nummynodes,&nodeids[0],0,Comm()));
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- |  Build elecolmap_ (public)                                mwgee 11/06|
- *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Discretization::BuildElementColMap()
-{
-  int nummyeles     = (int)element_.size();
-  int numglobaleles = 0;
-  Comm().SumAll(&nummyeles,&numglobaleles,1);
-  
-  vector<int> eleids(nummyeles);
-  
-  map<int,RefCountPtr<CCADISCRETIZATION::Element> >::iterator curr;
-  int count=0;
-  for (curr=element_.begin(); curr != element_.end(); ++curr)
-  {
-    eleids[count] = curr->second->Id();
-    ++count;
-  }
-  if (count != nummyeles) dserror("Mismatch in no. of elements");
-  elecolmap_ = rcp(new Epetra_Map(numglobaleles,nummyeles,&eleids[0],0,Comm()));
-  return;
-}
 
 /*----------------------------------------------------------------------*
  |  Build elecolmap_ (public)                                mwgee 11/06|
@@ -126,16 +99,11 @@ void CCADISCRETIZATION::Discretization::BuildElementRowMap()
 {
   const int myrank = Comm().MyPID();
   int nummyeles = 0;
-  int numglobaleles = 0;
   map<int,RefCountPtr<CCADISCRETIZATION::Element> >::iterator curr;
   for (curr=element_.begin(); curr != element_.end(); ++curr)
     if (curr->second->Owner()==myrank)
       nummyeles++;
-
-  Comm().SumAll(&nummyeles,&numglobaleles,1);
-  
   vector<int> eleids(nummyeles);
-  
   int count=0;
   for (curr=element_.begin(); curr != element_.end(); ++curr)
     if (curr->second->Owner()==myrank)
@@ -144,7 +112,26 @@ void CCADISCRETIZATION::Discretization::BuildElementRowMap()
       ++count;
     }
   if (count != nummyeles) dserror("Mismatch in no. of elements");
-  elerowmap_ = rcp(new Epetra_Map(numglobaleles,nummyeles,&eleids[0],0,Comm()));
+  elerowmap_ = rcp(new Epetra_Map(-1,nummyeles,&eleids[0],0,Comm()));
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Build elecolmap_ (public)                                mwgee 11/06|
+ *----------------------------------------------------------------------*/
+void CCADISCRETIZATION::Discretization::BuildElementColMap()
+{
+  int nummyeles     = (int)element_.size();
+  vector<int> eleids(nummyeles);
+  map<int,RefCountPtr<CCADISCRETIZATION::Element> >::iterator curr;
+  int count=0;
+  for (curr=element_.begin(); curr != element_.end(); ++curr)
+  {
+    eleids[count] = curr->second->Id();
+    ++count;
+  }
+  if (count != nummyeles) dserror("Mismatch in no. of elements");
+  elecolmap_ = rcp(new Epetra_Map(-1,nummyeles,&eleids[0],0,Comm()));
   return;
 }
 

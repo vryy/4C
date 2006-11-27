@@ -165,7 +165,7 @@ public:
                                       else dserror("FillComplete() must be called before call to NumMyRowNodes()");
                                       return -1; }
   
-  /*!
+  /*! 
   \brief Get processor local number of nodes including ghost nodes
   */
   virtual int NumMyColNodes() const { if (Filled()) return NodeColMap()->NumMyElements();
@@ -397,7 +397,23 @@ public:
   virtual RefCountPtr<Epetra_CrsGraph> BuildNodeGraph() const;
 
   /*!
-  \brief Build element row and column map from nodal row and column map
+  \brief Build element row and column map from nodal row and column maps
+  
+  Create a unique element map elerowmap assigning each element an owner.
+  Create an overlapping element map elecolmap representing a one layer
+  overlap of element.
+  Maps are created such that they match the nodal row and column maps provided.
+  
+  \param noderowmap (in): unique nodal row map of some distribution
+  \param nodecolmap (in): overlapping nodal column map
+  \param elerowmap (out): unique element row map
+  \param elecolmap (out): overlapping element column map
+  
+  \note The provided noderowmap and nodecolmap do not need to match the
+  distribution of nodes in this discretization class. Also, the output
+  element maps do not match the distribution of elements in this class.
+  Total numbers of nodes and elements have to match nodes and elements in 
+  this class.
   */
   virtual void BuildElementGhosting(const Epetra_Map& noderowmap,
                                     const Epetra_Map& nodecolmap,

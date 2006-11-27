@@ -252,6 +252,7 @@ template<typename T> void CCADISCRETIZATION::Exporter::Export(
       }
   }
   
+  
   //-------------------------------------------------------- do receiving
   // count how many receives I want to do
   int nrecv=0;
@@ -284,15 +285,19 @@ template<typename T> void CCADISCRETIZATION::Exporter::Export(
     // add object to the map
     parobjects[gid] = refptr;
   }
-  
+
   //--------- loop map and kick out everything that's not in TargetMap()
-  typename map<int,RefCountPtr<T> >::iterator curr;
-  for (curr=parobjects.begin(); curr != parobjects.end(); ++curr)
-  {
-    if (TargetMap().MyGID(curr->first)) continue;
-    parobjects.erase(curr->first);
-  }
-  
+  // (this is done strangely here because of a mysterious bug when 
+  //  deleting from the parobjects map)
+  map<int,RefCountPtr<T> > newmap;
+  typename map<int,RefCountPtr<T> >::iterator fool;
+  for (fool=parobjects.begin(); fool != parobjects.end(); ++fool)
+    if (TargetMap().MyGID(fool->first))
+      newmap[fool->first] = fool->second;
+  parobjects.clear();
+  for (fool=newmap.begin(); fool != newmap.end(); ++fool)
+    parobjects[fool->first] = fool->second;
+
   //---------------------------------------------------------- do waiting
   for (int i=0; i<nsend; ++i) Wait(request[i]);
 
@@ -305,6 +310,8 @@ template<typename T> void CCADISCRETIZATION::Exporter::Export(
       SendSize()[i] = 0;
     }
     
+
+
 #endif  
   return;
 }

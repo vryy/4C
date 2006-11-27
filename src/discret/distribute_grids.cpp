@@ -137,7 +137,7 @@ void distribute_grids_and_design()
         start += nele;
       }
       RefCountPtr<Epetra_Map> rnmap = 
-                        rcp(new Epetra_Map(ngnodes,ngnodes,&nodes[0],0,comm));
+                        rcp(new Epetra_Map(-1,ngnodes,&nodes[0],0,comm));
 
       //------------------------------------ make redundant map of elements
       const int ngele = emap->NumGlobalElements();
@@ -153,7 +153,7 @@ void distribute_grids_and_design()
         start += nele;
       }
       RefCountPtr<Epetra_Map> remap = 
-                             rcp(new Epetra_Map(ngele,ngele,&ele[0],0,comm));
+                             rcp(new Epetra_Map(-1,ngele,&ele[0],0,comm));
       
       // Export nodes to overlapping storage
       ddis->ExportGhostNodes(*rnmap);
@@ -200,18 +200,30 @@ void distribute_grids_and_design()
       
       // the rowmap will become the new distribution of nodes
       const Epetra_BlockMap rntmp = newnodegraph->RowMap();
-      Epetra_Map newnoderowmap(rntmp.NumGlobalElements(),rntmp.NumMyElements(),rntmp.MyGlobalElements(),0,actdis->Comm());
+      Epetra_Map newnoderowmap(-1,rntmp.NumMyElements(),rntmp.MyGlobalElements(),0,actdis->Comm());
 
       // the column map will become the new ghosted distribution of nodes
       const Epetra_BlockMap cntmp = newnodegraph->ColMap();
-      Epetra_Map newnodecolmap(cntmp.NumGlobalElements(),cntmp.NumMyElements(),cntmp.MyGlobalElements(),0,actdis->Comm());
+      Epetra_Map newnodecolmap(-1,cntmp.NumMyElements(),cntmp.MyGlobalElements(),0,actdis->Comm());
       
       // build overlapping element row and column map
       RefCountPtr<Epetra_Map> elerowmap;
       RefCountPtr<Epetra_Map> elecolmap;
       actdis->BuildElementGhosting(newnoderowmap,newnodecolmap,elerowmap,elecolmap);
-                        
+
+      // export elements with ownerships
+      actdis->ExportElements(*elerowmap);
+      // export ghosted elements
+      actdis->ExportGhostElements(*elecolmap);
+      // export nodes with ownerships
+      actdis->ExportNodes(newnoderowmap); 
+      // export ghost nodes
+      actdis->ExportGhostNodes(newnodecolmap);
       
+      // complete the discretization
+      int err = actdis->FillComplete();
+      if (err) dserror("discretization FillComplete() returned err=%d",err);
+ 
     } // for (int j=0;j<field[i].ndis;j++)
   } // for (int i=0; i<genprob.numfld; ++i)
 

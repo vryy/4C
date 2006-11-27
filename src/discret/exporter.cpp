@@ -38,22 +38,22 @@ numproc_(comm.NumProc())
   // SendPlan()(lid,MyPID()) = 0 always! (I never send to myself)
   SendPlan().Shape(SourceMap().NumMyElements(),NumProc());
   
-  // allocate a receive plan and init to MyPID()
+  // allocate a receive plan
   // RecvPlan():
   // RecvPlan()(lid,proc) = 1 data with local id lid will be received from proc
   // RecvPlan()(lid,proc) = 0 otherwise
   // RecvPlan()(lid,MyPID()) = 0 always! (I never receive from myself)
   RecvPlan().Shape(TargetMap().NumMyElements(),NumProc());
   
-  // allocate a send and a recvbuffer for ParObject packs
+  // allocate a send buffer for ParObject packs
   SendBuff().resize(SourceMap().NumMyElements());
   SendSize().resize(SourceMap().NumMyElements());
   for (int i=0; i<(int)SendSize().size(); ++i) SendSize()[i] = 0;
   
   // To build these plans, everybody has to communicate what he has and wants:
-  // we bundle this info to save on communication:
+  // bundle this info to save on communication:
   int sizes[2];
-  sizes[0] = SourceMap().NumMyElements();
+  sizes[0] = SourceMap().NumMyElements(); 
   sizes[1] = TargetMap().NumMyElements(); 
   const int sendsize = sizes[0]+sizes[1];
   vector<int> sendbuff(sendsize);
