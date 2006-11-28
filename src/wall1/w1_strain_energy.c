@@ -30,6 +30,11 @@ void w1_strain_energy(ELEMENT *ele, DOUBLE **stress, DOUBLE *strain, DOUBLE fac)
 DOUBLE strain_matrix[4][4];
 INT i, j, k, m;
 
+/*----------------------------------------------------------------------------------*/
+#ifdef DEBUG
+dstrc_enter("dyn_strain_energy");
+#endif
+
 for(i=0; i<4; i++)
   for(j=0; j<4; j++)
    strain_matrix[i][j] = 0.0;

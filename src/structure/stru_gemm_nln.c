@@ -192,6 +192,13 @@ BIN_OUT_FIELD   out_context;
 
 INT             disnum;             /* index of discretisation */
 
+INT             print_gemm_file_new_style = 0;  /* set this to 1 to achieve
+                                                 * reasonable printout of
+                                                 * energies and momenta to
+                                                 * xxx.gemm file (bborn)
+                                                 * Not utterly shure if original
+                                                 * code is alright in the end. */
+
 CONTAINER       container;          /* contains variables defined in container.h */
 container.isdyn = 1;                /* dynamic calculation */
 container.disnum  = 0;              /* only one discretisation */
@@ -379,8 +386,8 @@ solver_control(actfield,disnum,actsolv, actintra, &(actsolv->sysarray_typ[damp_a
                &work[0],&work[1],init);
 /*----------------- init the assembly for stiffness and for mass matrix */
 /*                                           (damping is not assembled) */
-init_assembly(actpart,actsolv,actintra,actfield,stiff_array,0);
-init_assembly(actpart,actsolv,actintra,actfield,mass_array,0);
+init_assembly(actpart,actsolv,actintra,actfield,stiff_array,disnum);
+init_assembly(actpart,actsolv,actintra,actfield,mass_array,disnum);
 
 /*------------------------------- init the element calculating routines */
 *action = calc_struct_init;
@@ -420,6 +427,10 @@ if (damp_array>0)
                    &(actsolv->sysarray_typ[mass_array]),
                    &(actsolv->sysarray[mass_array]),
                    sdyn->m_damp);
+   solserv_close_mat(actintra,
+                     &(actsolv->sysarray_typ[damp_array]),
+                     &(actsolv->sysarray[damp_array]));
+
 }
 /*----------------------- init the time curve applied to the loads here */
 /*-------------- this control routine at the moment always uses curve 0 */
@@ -434,8 +445,8 @@ solserv_sol_zero(actfield, 0, node_array_sol, 12);
 
 /*-------------------- put a zero to the place 1 and 2 in sol_increment */
 /*------------------ later this will hold internal forces at t and t-dt */
-solserv_sol_zero(actfield,0,node_array_sol_increment,2);
-solserv_sol_zero(actfield,0,node_array_sol_increment,1);
+solserv_sol_zero(actfield,disnum,node_array_sol_increment,2);
+solserv_sol_zero(actfield,disnum,node_array_sol_increment,1);
 
 #ifdef BINIO
 
@@ -1062,15 +1073,27 @@ container.kstep         = 0;
 calelm(actfield,actsolv,actpart,actintra,stiff_array,mass_array,&container,action);
 /* Calculate total energy and momenta(for wall element only for GEMM) and write to the output file*/
 total_energy(actpart,actintra,&dynvar);
+/*----------------------------- print energies and momenta to xxx.gemm */
+if (print_gemm_file_new_style == 1)
+{
+   /* (bborn) local_ or total_? see total_energy() serving WALL1 */
+   fprintf(allfiles.out_gemm,"%5d %16.9f %16.9f %16.9f %16.9f %16.9f %16.9f\n", ttt,
+           dynvar.local_strain_energy+dynvar.local_kinetic_energy,
+           dynvar.local_strain_energy, dynvar.local_kinetic_energy,
+           dynvar.local_linmom[0], dynvar.local_linmom[1], dynvar.local_angular_momentum);
+}
+else
+{
    fprintf(allfiles.out_gemm,"%5d %16.9f %16.9f %16.9f %16.9f %16.9f %16.9f\n", ttt,
            dynvar.total_strain_energy+dynvar.total_kinetic_energy,
            dynvar.total_strain_energy, dynvar.total_kinetic_energy,
            dynvar.total_linmom[0], dynvar.total_linmom[1], dynvar.total_angular_momentum);
+}
            ttt++;
            fflush(allfiles.out_gemm);
 /*------------------------------------------------------------------------------------------------*/
 /*---------------------- make incremental potential energy at the nodes */
-dyn_epot(actfield,0,actintra,&dynvar,&deltaepot);
+dyn_epot(actfield,disnum,actintra,&dynvar,&deltaepot);
 dynvar.epot += deltaepot;
 /*-------------------------------- make kinetic energy at element level */
 dyn_ekin(actfield,actsolv,actpart,actintra,action,&container,stiff_array,mass_array);
