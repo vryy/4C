@@ -711,15 +711,15 @@ for (vi=0; vi<iel; ++vi)
     estif_(vi*3 + 2, ui*3 + 2) += -2.0*visc_*ttimetauM*(-(conv_c_(vi)*viscs2_(2, 2, ui)) + funct_(ui)*visc_old_(2)*derxyz_(2, vi)) ;
 
     /* Stabilisierung der Konvektion (grad(p),u*grad(v)) */
-/*     estif_(vi*3, ui*3) += ttimetauM*funct_(ui)*gradp_(0)*derxyz_(0, vi) ; */
-/*     estif_(vi*3, ui*3 + 1) += ttimetauM*funct_(ui)*gradp_(0)*derxyz_(1, vi) ; */
-/*     estif_(vi*3, ui*3 + 2) += ttimetauM*funct_(ui)*gradp_(0)*derxyz_(2, vi) ; */
-/*     estif_(vi*3 + 1, ui*3) += ttimetauM*funct_(ui)*gradp_(1)*derxyz_(0, vi) ; */
-/*     estif_(vi*3 + 1, ui*3 + 1) += ttimetauM*funct_(ui)*gradp_(1)*derxyz_(1, vi) ; */
-/*     estif_(vi*3 + 1, ui*3 + 2) += ttimetauM*funct_(ui)*gradp_(1)*derxyz_(2, vi) ; */
-/*     estif_(vi*3 + 2, ui*3) += ttimetauM*funct_(ui)*gradp_(2)*derxyz_(0, vi) ; */
-/*     estif_(vi*3 + 2, ui*3 + 1) += ttimetauM*funct_(ui)*gradp_(2)*derxyz_(1, vi) ; */
-/*     estif_(vi*3 + 2, ui*3 + 2) += ttimetauM*funct_(ui)*gradp_(2)*derxyz_(2, vi) ; */
+    estif_(vi*3, ui*3) += ttimetauM*funct_(ui)*gradp_(0)*derxyz_(0, vi) ; 
+    estif_(vi*3, ui*3 + 1) += ttimetauM*funct_(ui)*gradp_(0)*derxyz_(1, vi) ; 
+    estif_(vi*3, ui*3 + 2) += ttimetauM*funct_(ui)*gradp_(0)*derxyz_(2, vi) ; 
+    estif_(vi*3 + 1, ui*3) += ttimetauM*funct_(ui)*gradp_(1)*derxyz_(0, vi) ; 
+    estif_(vi*3 + 1, ui*3 + 1) += ttimetauM*funct_(ui)*gradp_(1)*derxyz_(1, vi) ; 
+    estif_(vi*3 + 1, ui*3 + 2) += ttimetauM*funct_(ui)*gradp_(1)*derxyz_(2, vi) ; 
+    estif_(vi*3 + 2, ui*3) += ttimetauM*funct_(ui)*gradp_(2)*derxyz_(0, vi) ; 
+    estif_(vi*3 + 2, ui*3 + 1) += ttimetauM*funct_(ui)*gradp_(2)*derxyz_(1, vi) ; 
+    estif_(vi*3 + 2, ui*3 + 2) += ttimetauM*funct_(ui)*gradp_(2)*derxyz_(2, vi) ; 
 
     /* Viskositätsterm (2*nu*epsilon(u),epsilon(v)) */
     estif_(vi*3, ui*3) += fac*time2nue*derxyz_(0, ui)*derxyz_(0, vi) + visc_*timefacfac*derxyz_(1, ui)*derxyz_(1, vi) + visc_*timefacfac*derxyz_(2, ui)*derxyz_(2, vi) ;
@@ -824,9 +824,9 @@ for (vi=0; vi<iel; ++vi)
     eforce_(vi*3 + 2) += 2.0*visc_*ttimetauM*conv_c_(vi)*visc_old_(2) ;
 
     /* Stabilisierung der Konvektion (grad(p),u*grad(v)) */
-/*     eforce_(vi*3) += -(ttimetauM*conv_c_(vi)*gradp_(0)) ; */
-/*     eforce_(vi*3 + 1) += -(ttimetauM*conv_c_(vi)*gradp_(1)) ; */
-/*     eforce_(vi*3 + 2) += -(ttimetauM*conv_c_(vi)*gradp_(2)) ; */
+    eforce_(vi*3) += -(ttimetauM*conv_c_(vi)*gradp_(0)) ; 
+    eforce_(vi*3 + 1) += -(ttimetauM*conv_c_(vi)*gradp_(1)) ; 
+    eforce_(vi*3 + 2) += -(ttimetauM*conv_c_(vi)*gradp_(2)) ; 
 
     /* Viskositätsterm (2*nu*epsilon(u),epsilon(v)) */
     eforce_(vi*3) += -(visc_*timefacfac*(2.0*derxyz_(0, vi)*vderxyz_(0, 0) + derxyz_(1, vi)*vderxyz_(0, 1) + derxyz_(1, vi)*vderxyz_(1, 0) + derxyz_(2, vi)*vderxyz_(0, 2) + derxyz_(2, vi)*vderxyz_(2, 0))) ;
@@ -844,9 +844,9 @@ for (vi=0; vi<iel; ++vi)
     eforce_(vi*3 + 2) += 4.0*(visc_*visc_)*ttimetauM*(visc_old_(0)*viscs2_(0, 2, vi) + visc_old_(1)*viscs2_(1, 2, vi) + visc_old_(2)*viscs2_(2, 2, vi)) ;
 
     /* Stabilisierung der Viskosität (grad(p),-2*nu*div(epsilon((v)))) */
-/*     eforce_(vi*3) += -2.0*visc_*ttimetauM*(gradp_(0)*viscs2_(0, 0, vi) + gradp_(1)*viscs2_(0, 1, vi) + gradp_(2)*viscs2_(0, 2, vi)) ; */
-/*     eforce_(vi*3 + 1) += -2.0*visc_*ttimetauM*(gradp_(0)*viscs2_(0, 1, vi) + gradp_(1)*viscs2_(1, 1, vi) + gradp_(2)*viscs2_(1, 2, vi)) ; */
-/*     eforce_(vi*3 + 2) += -2.0*visc_*ttimetauM*(gradp_(0)*viscs2_(0, 2, vi) + gradp_(1)*viscs2_(1, 2, vi) + gradp_(2)*viscs2_(2, 2, vi)) ; */
+    eforce_(vi*3) += -2.0*visc_*ttimetauM*(gradp_(0)*viscs2_(0, 0, vi) + gradp_(1)*viscs2_(0, 1, vi) + gradp_(2)*viscs2_(0, 2, vi)) ; 
+    eforce_(vi*3 + 1) += -2.0*visc_*ttimetauM*(gradp_(0)*viscs2_(0, 1, vi) + gradp_(1)*viscs2_(1, 1, vi) + gradp_(2)*viscs2_(1, 2, vi)) ; 
+    eforce_(vi*3 + 2) += -2.0*visc_*ttimetauM*(gradp_(0)*viscs2_(0, 2, vi) + gradp_(1)*viscs2_(1, 2, vi) + gradp_(2)*viscs2_(2, 2, vi)) ; 
 
     /* Massenterm (u,v) */
     eforce_(vi*3) += -(fac*funct_(vi)*velint_(0)) ;
@@ -926,8 +926,6 @@ for (vi=0; vi<iel; ++vi)
 #define thsl           timefac
 
 #ifdef QUASI_NEWTON
-  if (!fdyn->qnewton || fdyn->itnum==1)
-  {
 #endif
 
 for (vi=0; vi<iel; ++vi)
@@ -984,15 +982,15 @@ for (vi=0; vi<iel; ++vi)
     estif_(vi*3 + 2, ui*3 + 2) += -2.0*visc_*ttimetauM*(-(conv_c_(vi)*viscs2_(2, 2, ui)) + funct_(ui)*visc_old_(2)*derxyz_(2, vi)) ;
 
     /* Stabilisierung der Konvektion (grad(p),u*grad(v)) */
-/*     estif_(vi*3, ui*3) += ttimetauM*funct_(ui)*gradp_(0)*derxyz_(0, vi) ; */
-/*     estif_(vi*3, ui*3 + 1) += ttimetauM*funct_(ui)*gradp_(0)*derxyz_(1, vi) ; */
-/*     estif_(vi*3, ui*3 + 2) += ttimetauM*funct_(ui)*gradp_(0)*derxyz_(2, vi) ; */
-/*     estif_(vi*3 + 1, ui*3) += ttimetauM*funct_(ui)*gradp_(1)*derxyz_(0, vi) ; */
-/*     estif_(vi*3 + 1, ui*3 + 1) += ttimetauM*funct_(ui)*gradp_(1)*derxyz_(1, vi) ; */
-/*     estif_(vi*3 + 1, ui*3 + 2) += ttimetauM*funct_(ui)*gradp_(1)*derxyz_(2, vi) ; */
-/*     estif_(vi*3 + 2, ui*3) += ttimetauM*funct_(ui)*gradp_(2)*derxyz_(0, vi) ; */
-/*     estif_(vi*3 + 2, ui*3 + 1) += ttimetauM*funct_(ui)*gradp_(2)*derxyz_(1, vi) ; */
-/*     estif_(vi*3 + 2, ui*3 + 2) += ttimetauM*funct_(ui)*gradp_(2)*derxyz_(2, vi) ; */
+    estif_(vi*3, ui*3) += ttimetauM*funct_(ui)*gradp_(0)*derxyz_(0, vi) ; 
+    estif_(vi*3, ui*3 + 1) += ttimetauM*funct_(ui)*gradp_(0)*derxyz_(1, vi) ; 
+    estif_(vi*3, ui*3 + 2) += ttimetauM*funct_(ui)*gradp_(0)*derxyz_(2, vi) ; 
+    estif_(vi*3 + 1, ui*3) += ttimetauM*funct_(ui)*gradp_(1)*derxyz_(0, vi) ; 
+    estif_(vi*3 + 1, ui*3 + 1) += ttimetauM*funct_(ui)*gradp_(1)*derxyz_(1, vi) ; 
+    estif_(vi*3 + 1, ui*3 + 2) += ttimetauM*funct_(ui)*gradp_(1)*derxyz_(2, vi) ; 
+    estif_(vi*3 + 2, ui*3) += ttimetauM*funct_(ui)*gradp_(2)*derxyz_(0, vi) ; 
+    estif_(vi*3 + 2, ui*3 + 1) += ttimetauM*funct_(ui)*gradp_(2)*derxyz_(1, vi) ; 
+    estif_(vi*3 + 2, ui*3 + 2) += ttimetauM*funct_(ui)*gradp_(2)*derxyz_(2, vi) ; 
 
     /* Viskositätsterm (2*nu*epsilon(u),epsilon(v)) */
     estif_(vi*3, ui*3) += fac*time2nue*derxyz_(0, ui)*derxyz_(0, vi) + visc_*timefacfac*derxyz_(1, ui)*derxyz_(1, vi) + visc_*timefacfac*derxyz_(2, ui)*derxyz_(2, vi) ;
@@ -1103,9 +1101,9 @@ for (vi=0; vi<iel; ++vi)
   /* Stabilisierung der Viskosität (-2*nu*div(epsilon((u))),-2*nu*div(epsilon((v)))) */
 
   /* Stabilisierung der Viskosität (grad(p),-2*nu*div(epsilon((v)))) */
-/*   eforce_(vi*3) += -2.0*visc_*ttimetauM*(gradp_(0)*viscs2_(0, 0, vi) + gradp_(1)*viscs2_(0, 1, vi) + gradp_(2)*viscs2_(0, 2, vi)) ; */
-/*   eforce_(vi*3 + 1) += -2.0*visc_*ttimetauM*(gradp_(0)*viscs2_(0, 1, vi) + gradp_(1)*viscs2_(1, 1, vi) + gradp_(2)*viscs2_(1, 2, vi)) ; */
-/*   eforce_(vi*3 + 2) += -2.0*visc_*ttimetauM*(gradp_(0)*viscs2_(0, 2, vi) + gradp_(1)*viscs2_(1, 2, vi) + gradp_(2)*viscs2_(2, 2, vi)) ; */
+  eforce_(vi*3) += -2.0*visc_*ttimetauM*(gradp_(0)*viscs2_(0, 0, vi) + gradp_(1)*viscs2_(0, 1, vi) + gradp_(2)*viscs2_(0, 2, vi)) ; 
+  eforce_(vi*3 + 1) += -2.0*visc_*ttimetauM*(gradp_(0)*viscs2_(0, 1, vi) + gradp_(1)*viscs2_(1, 1, vi) + gradp_(2)*viscs2_(1, 2, vi)) ; 
+  eforce_(vi*3 + 2) += -2.0*visc_*ttimetauM*(gradp_(0)*viscs2_(0, 2, vi) + gradp_(1)*viscs2_(1, 2, vi) + gradp_(2)*viscs2_(2, 2, vi)) ; 
 
   /* Massenterm (u,v) */
 
