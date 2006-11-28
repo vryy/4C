@@ -132,19 +132,25 @@ void increment_controlload(
 
 
 /*----------------------------------------------------------------------*
-  | stru_dyn_nln.c                                        m.gee 02/02    |
+ | stru_dyn_nln.c                                        m.gee 02/02    |
  *----------------------------------------------------------------------*/
 void dyn_nln_structural(void);
 
 
 /*----------------------------------------------------------------------*
-  | stru_dyn_nln_expl.c                                   m.gee 05/02    |
+ | stru_dyn_nln_expl.c                                   m.gee 05/02    |
  *----------------------------------------------------------------------*/
 void dyn_nln_stru_expl(void);
 
 
 /*----------------------------------------------------------------------*
-  | stru_dyn_service.c                                    m.gee 02/02    |
+ | stru_gemm_nln.c                                       bborn 11/06    |
+ *----------------------------------------------------------------------*/
+void dyn_nln_gemm(void);
+
+
+/*----------------------------------------------------------------------*
+ | stru_dyn_service.c                                    m.gee 02/02    |
  *----------------------------------------------------------------------*/
 void dyn_eigen(
     FIELD           *actfield,
@@ -284,6 +290,13 @@ void dyn_ekin_local(
     ARRAY           *emass,
     CONTAINER       *container);
 
+void total_energy(
+    PARTITION       *actpart,
+    INTRA           *actintra,
+    STRUCT_DYN_CALC *dynvar);
 
+void dyn_nlngemm_outhead(
+    STRUCT_DYN_CALC *dynvar, 
+    STRUCT_DYNAMIC  *sdyn);
 
 #endif

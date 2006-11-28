@@ -190,9 +190,12 @@ DOUBLE          tau,tau2,tau3,fac;
 BIN_OUT_FIELD   out_context;
 #endif
 
+INT             disnum;             /* index of discretisation */
+
 CONTAINER       container;          /* contains variables defined in container.h */
 container.isdyn = 1;                /* dynamic calculation */
 container.disnum  = 0;              /* only one discretisation */
+disnum = container.disnum;
 
 #ifdef DEBUG
 dstrc_enter("dyn_nln_gemm");
@@ -365,14 +368,14 @@ NOTE: solver init phase has to be called with each matrix one wants to
 */
 /*--------------------------------------------------- initialize solver */
 init=1;
-solver_control(actsolv, actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[stiff_array]),
+solver_control(actfield,disnum,actsolv, actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[stiff_array]),
                &(dispi[0]),&(actsolv->rhs[0]),init);
 
-solver_control(actsolv, actintra,&(actsolv->sysarray_typ[mass_array]),&(actsolv->sysarray[mass_array]),
+solver_control(actfield,disnum,actsolv, actintra,&(actsolv->sysarray_typ[mass_array]),&(actsolv->sysarray[mass_array]),
                &work[0],&work[1],init);
 
 if (damp_array>0)
-solver_control(actsolv, actintra, &(actsolv->sysarray_typ[damp_array]),&(actsolv->sysarray[damp_array]),
+solver_control(actfield,disnum,actsolv, actintra, &(actsolv->sysarray_typ[damp_array]),&(actsolv->sysarray[damp_array]),
                &work[0],&work[1],init);
 /*----------------- init the assembly for stiffness and for mass matrix */
 /*                                           (damping is not assembled) */
@@ -451,7 +454,7 @@ sdyn->time = 0.0;
 /*----------------------------------------- output to GID postprozessor */
 if (par.myrank==0 && ioflags.output_gid==1)
 {
-   out_gid_domains(actfield);
+  out_gid_domains(actfield, disnum);
 }
 /*------------------------------------------------------- printout head */
 if (par.myrank==0) dyn_nlngemm_outhead(&dynvar,sdyn);
@@ -587,7 +590,7 @@ dyn_setconstants(&dynvar,sdyn,sdyn->dt);
 /*store displacement of step n at midcon[1] and ARRAY.sol.a.da[13][....] */
 solserv_zero_vec(&(midcon[1]));
 solserv_copy_vec(&(actsolv->sol[1]),&midcon[1]);
-solserv_result_total(actfield,actintra, &midcon[1],13,
+solserv_result_total(actfield,disnum,actintra, &midcon[1],13,
                      &(actsolv->sysarray[stiff_array]),
                      &(actsolv->sysarray_typ[stiff_array]));
 /*----------------------------------------------------------------------*/
@@ -595,7 +598,7 @@ solserv_result_total(actfield,actintra, &midcon[1],13,
 solserv_zero_vec(&dispi[0]);
 
 /*------------------------- set residual displacements in nodes to zero */
-solserv_result_resid(actfield,actintra,&dispi[0],0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
+solserv_result_resid(actfield,disnum,actintra,&dispi[0],0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
 
 /*----------------------------------------------------------------------*/
 /*                     PREDICTOR                                        */
@@ -728,7 +731,7 @@ pefnln_struct(&dynvar,sdyn,actfield,actsolv,actintra,dispi,vel,acc,work,mass_arr
 kefnln_struct(&dynvar,sdyn,actfield,actsolv,actintra,work,stiff_array,mass_array,damp_array);
 /*------------- call for solution of system dispi[0] = Keff^-1 * rhs[0] */
 init=0;
-solver_control(actsolv, actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[stiff_array]),
+solver_control(actfield,disnum,actsolv, actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[stiff_array]),
                &(dispi[0]),&(actsolv->rhs[0]),init);
 
 /*------------------------------------------------ update displacements */
@@ -737,10 +740,12 @@ solserv_copy_vec(&(actsolv->sol[0]),&(actsolv->sol[1]));
 solserv_add_vec(&dispi[0],&(actsolv->sol[1]),1.0);
 
 /*----------------------------- return total displacements to the nodes */
-solserv_result_total(actfield,actintra, &(actsolv->sol[1]),0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
+solserv_result_total(actfield,disnum,actintra, &(actsolv->sol[1]),0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
 
 /*----------------------- return incremental displacements to the nodes */
-solserv_result_incre(actfield,actintra,&dispi[0],0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]),0);
+solserv_result_incre(actfield,disnum,actintra,&dispi[0],0,
+                     &(actsolv->sysarray[stiff_array]),
+                     &(actsolv->sysarray_typ[stiff_array]));
 
 /* here put incremental prescribed displacements from sol[5] to sol_increment[0] ? */
 
@@ -748,7 +753,7 @@ solserv_result_incre(actfield,actintra,&dispi[0],0,&(actsolv->sysarray[stiff_arr
 solserv_zero_vec(&(midcon[0]));
 solserv_copy_vec(&dispi[0],&midcon[0]);
 solserv_scalarprod_vec(&midcon[0],sdyn->alpha_f);
-solserv_result_total(actfield,actintra, &midcon[0],8,
+solserv_result_total(actfield,disnum,actintra, &midcon[0],8,
                      &(actsolv->sysarray[stiff_array]),
                      &(actsolv->sysarray_typ[stiff_array]));
 /*---------------------------------------------------------------------------------*/
@@ -843,11 +848,11 @@ kefnln_struct(&dynvar,sdyn,actfield,actsolv,actintra,work,stiff_array,mass_array
 /*---------------------------------------- solve keff * rsd[0] = rhs[0] */
 /* solve for residual displacements to correct incremental displacements*/
 init=0;
-solver_control(actsolv, actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[stiff_array]),
+solver_control(actfield,disnum,actsolv, actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[stiff_array]),
                &(work[0]),&(actsolv->rhs[0]),init);
 
 /*-------------------------- return residual displacements to the nodes */
-solserv_result_resid(actfield,actintra,&work[0],0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
+solserv_result_resid(actfield,disnum,actintra,&work[0],0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
 
 /*-- update the incremental displacements by the residual displacements */
 solserv_add_vec(&work[0],&dispi[0],1.0);
@@ -858,16 +863,16 @@ solserv_copy_vec(&(actsolv->sol[0]),&(actsolv->sol[1]));
 solserv_add_vec(&dispi[0],&(actsolv->sol[1]),1.0);
 
 /*----------------------------- return total displacements to the nodes */
-solserv_result_total(actfield,actintra, &(actsolv->sol[1]),0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
+solserv_result_total(actfield,disnum,actintra, &(actsolv->sol[1]),0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
 
 /*----------------------- return incremental displacements to the nodes */
-solserv_result_incre(actfield,actintra,&dispi[0],0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]),0);
+solserv_result_incre(actfield,disnum,actintra,&dispi[0],0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
 
 /*--------------------------------- update generalized mid-configuration*/
 solserv_zero_vec(&(midcon[0]));
 solserv_copy_vec(&dispi[0],&midcon[0]);
 solserv_scalarprod_vec(&midcon[0],sdyn->alpha_f);
-solserv_result_total(actfield,actintra, &midcon[0],8,
+solserv_result_total(actfield,disnum,actintra, &midcon[0],8,
                      &(actsolv->sysarray[stiff_array]),
                      &(actsolv->sysarray_typ[stiff_array]));
 
@@ -947,9 +952,9 @@ if (timeadapt)
       /* zero the incremental displacements */
       solserv_zero_vec(&dispi[0]);
       /* zero the residual displacements */
-      solserv_result_incre(actfield,actintra,&dispi[0],0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
+      solserv_result_incre(actfield,disnum,actintra,&dispi[0],0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
       /* set old total displacements */
-      solserv_result_total(actfield,actintra,&(actsolv->sol[0]),0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
+      solserv_result_total(actfield,disnum,actintra,&(actsolv->sol[0]),0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
       /* set element internal variables bacl to the last step */
       *action = calc_struct_update_stepback;
       container.dvec          = NULL;
@@ -977,7 +982,7 @@ if (contactflag){
 actaug = 0;
 /*------------------------ write contact forces to the nodes in place 9 */
 solserv_scalarprod_vec(&(con[0]),(-1.0));
-solserv_result_total(actfield,actintra, &(con[0]),9,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
+solserv_result_total(actfield,disnum,actintra, &(con[0]),9,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
 /*----------------------------------------------------------------------*/
 }
 #endif
@@ -1002,6 +1007,7 @@ solserv_sol_copy(actfield,0,node_array_sol,node_array_sol,1,11);
 solserv_sol_copy(actfield,0,node_array_sol,node_array_sol,2,12);
 /*------------------ update displacements, velocities and accelerations */
 dyn_nlnstructupd(actfield,
+                 disnum,
                  &dynvar,sdyn,actsolv,
                  &(actsolv->sol[0]),/* total displacements at time t-dt */
                  &(actsolv->sol[1]),/* total displacements at time t    */
@@ -1013,11 +1019,11 @@ dyn_nlnstructupd(actfield,
                  &work[1],          /* working arrays                   */
                  &work[2]);         /* working arrays                   */
 /*-------------------------------------- return velocities to the nodes */
-solserv_result_total(actfield,actintra, &vel[0],1,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
+solserv_result_total(actfield,disnum,actintra, &vel[0],1,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
 /*-------------------------velocities for prescribed dofs to velocities */
 solserv_adddirich(actfield,0,0,6,0,1,1.0,0.0);
 /*------------------------------------------ return accel. to the nodes */
-solserv_result_total(actfield,actintra, &acc[0],2,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
+solserv_result_total(actfield,disnum,actintra, &acc[0],2,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
 /*-------------------------------------------accel. for prescribed dofs */
 solserv_adddirich(actfield,0,0,7,0,2,1.0,0.0);
 /*
@@ -1095,13 +1101,13 @@ if (ioflags.struct_stress==1)
    /*-------------------------- reduce stresses, so they can be written */
    *action = calc_struct_stressreduce;
    container.kstep = 0;
-   calreduce(actfield,actpart,actintra,action,&container);
+   calreduce(actfield,actpart,disnum,actintra,action,&container);
 }
 /*-------------------------------------------- print out results to out */
 if (mod_stress==0 || mod_disp==0)
 if (ioflags.struct_stress==1 && ioflags.struct_disp==1 && ioflags.output_out==1)
 {
-  out_sol(actfield,actpart,actintra,sdyn->step,0);
+  out_sol(actfield,actpart,disnum,actintra,sdyn->step,0);
 }
 /*-------------------------- printout results to gid no time adaptivity */
 #ifdef BINIO
@@ -1130,19 +1136,19 @@ if (par.myrank==0 && ioflags.output_gid==1)
    if (mod_disp==0)
    if (ioflags.struct_disp==1)
    {
-      out_gid_soldyn("displacement",actfield,actintra,sdyn->step,0,sdyn->time);
+     out_gid_soldyn("displacement",actfield,disnum,actintra,sdyn->step,0,sdyn->time);
       /*out_gid_soldyn("velocity",actfield,actintra,sdyn->step,1,sdyn->time);*/
       /*out_gid_soldyn("accelerations",actfield,actintra,sdyn->step,2,sdyn->time);*/
 #ifdef WALLCONTACT
       if (contactflag)
-      out_gid_soldyn("contact",actfield,actintra,sdyn->step,9,sdyn->time);
+        out_gid_soldyn("contact",actfield,disnum,actintra,sdyn->step,9,sdyn->time);
 #endif
 
    }
    if (mod_stress==0)
    if (ioflags.struct_stress==1)
    {
-      out_gid_soldyn("stress"      ,actfield,actintra,sdyn->step,0,sdyn->time);
+     out_gid_soldyn("stress"      ,actfield,disnum,actintra,sdyn->step,0,sdyn->time);
    }
 }
 /*----------------------------- printout results to gid time adaptivity */
@@ -1175,10 +1181,10 @@ if (timeadapt)
        solserv_sol_add (actfield,0,0,0,2,8,fac);
        /* write displacements u_write */
        if (par.myrank==0)
-       out_gid_soldyn("displacement",actfield,actintra,sdyn->writecounter,8,writetime);
+         out_gid_soldyn("displacement",actfield,disnum,actintra,sdyn->writecounter,8,writetime);
        /* write contact forces */
        if (contactflag && par.myrank==0)
-       out_gid_soldyn("contact",actfield,actintra,sdyn->writecounter,9,writetime);
+         out_gid_soldyn("contact",actfield,disnum,actintra,sdyn->writecounter,9,writetime);
        sdyn->writecounter++;
    }
 }
