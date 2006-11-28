@@ -1,4 +1,3 @@
-
 for (vi=0; vi<iel; ++vi)
 {
   for (ui=0; ui<iel; ++ui)
@@ -34,18 +33,24 @@ for (vi=0; vi<iel; ++vi)
     estif_(vi*2 + 1, ui*2 + 1) += fac*time2nue*derxy_(1, ui)*derxy_(1, vi) + visc_*timefacfac*derxy_(0, ui)*derxy_(0, vi) ;
 
     /* Stabilisierung der Viskosität (u*grad(u),-2*nu*div(epsilon((v)))) */
-    estif_(vi*2, ui*2)         += 2.0*visc_*ttimetauM*(conv_c_(ui)*viscs2_(0, 0, vi) + viscs2_(0, 0, vi)*conv_r_(0, 0, ui) + viscs2_(0, 1, vi)*conv_r_(1, 0, ui)) ;
-    estif_(vi*2, ui*2 + 1)     += 2.0*visc_*ttimetauM*(conv_c_(ui)*viscs2_(0, 1, vi) + viscs2_(0, 0, vi)*conv_r_(0, 1, ui) + viscs2_(0, 1, vi)*conv_r_(1, 1, ui)) ;
-    estif_(vi*2 + 1, ui*2)     += 2.0*visc_*ttimetauM*(conv_c_(ui)*viscs2_(0, 1, vi) + viscs2_(0, 1, vi)*conv_r_(0, 0, ui) + viscs2_(1, 1, vi)*conv_r_(1, 0, ui)) ;
-    estif_(vi*2 + 1, ui*2 + 1) += 2.0*visc_*ttimetauM*(conv_c_(ui)*viscs2_(1, 1, vi) + viscs2_(0, 1, vi)*conv_r_(0, 1, ui) + viscs2_(1, 1, vi)*conv_r_(1, 1, ui)) ;
+    estif_(vi*2, ui*2)         += 2.0*visc_*ttimetauMp*(conv_c_(ui)*viscs2_(0, 0, vi) + viscs2_(0, 0, vi)*conv_r_(0, 0, ui) + viscs2_(0, 1, vi)*conv_r_(1, 0, ui)) ;
+    estif_(vi*2, ui*2 + 1)     += 2.0*visc_*ttimetauMp*(conv_c_(ui)*viscs2_(0, 1, vi) + viscs2_(0, 0, vi)*conv_r_(0, 1, ui) + viscs2_(0, 1, vi)*conv_r_(1, 1, ui)) ;
+    estif_(vi*2 + 1, ui*2)     += 2.0*visc_*ttimetauMp*(conv_c_(ui)*viscs2_(0, 1, vi) + viscs2_(0, 1, vi)*conv_r_(0, 0, ui) + viscs2_(1, 1, vi)*conv_r_(1, 0, ui)) ;
+    estif_(vi*2 + 1, ui*2 + 1) += 2.0*visc_*ttimetauMp*(conv_c_(ui)*viscs2_(1, 1, vi) + viscs2_(0, 1, vi)*conv_r_(0, 1, ui) + viscs2_(1, 1, vi)*conv_r_(1, 1, ui)) ;
 
     /* Stabilisierung der Viskosität (-2*nu*div(epsilon((u))),-2*nu*div(epsilon((v)))) */
-    estif_(vi*2, ui*2)         += 4.0*(visc_*visc_)*ttimetauM*(viscs2_(0, 0, ui)*viscs2_(0, 0, vi) + viscs2_(0, 1, ui)*viscs2_(0, 1, vi)) ;
-    estif_(vi*2, ui*2 + 1)     += 4.0*(visc_*visc_)*ttimetauM*(viscs2_(0, 0, vi)*viscs2_(0, 1, ui) + viscs2_(0, 1, vi)*viscs2_(1, 1, ui)) ;
-    estif_(vi*2 + 1, ui*2)     += 4.0*(visc_*visc_)*ttimetauM*(viscs2_(0, 0, ui)*viscs2_(0, 1, vi) + viscs2_(0, 1, ui)*viscs2_(1, 1, vi)) ;
-    estif_(vi*2 + 1, ui*2 + 1) += 4.0*(visc_*visc_)*ttimetauM*(viscs2_(0, 1, ui)*viscs2_(0, 1, vi) + viscs2_(1, 1, ui)*viscs2_(1, 1, vi)) ;
+    estif_(vi*2, ui*2)         += 4.0*(visc_*visc_)*ttimetauMp*(viscs2_(0, 0, ui)*viscs2_(0, 0, vi) + viscs2_(0, 1, ui)*viscs2_(0, 1, vi)) ;
+    estif_(vi*2, ui*2 + 1)     += 4.0*(visc_*visc_)*ttimetauMp*(viscs2_(0, 0, vi)*viscs2_(0, 1, ui) + viscs2_(0, 1, vi)*viscs2_(1, 1, ui)) ;
+    estif_(vi*2 + 1, ui*2)     += 4.0*(visc_*visc_)*ttimetauMp*(viscs2_(0, 0, ui)*viscs2_(0, 1, vi) + viscs2_(0, 1, ui)*viscs2_(1, 1, vi)) ;
+    estif_(vi*2 + 1, ui*2 + 1) += 4.0*(visc_*visc_)*ttimetauMp*(viscs2_(0, 1, ui)*viscs2_(0, 1, vi) + viscs2_(1, 1, ui)*viscs2_(1, 1, vi)) ;
 
     /* Stabilisierung der Viskosität (grad(p),-2*nu*div(epsilon((v)))) */
+
+    /* Kontinuitätsstabilisierung */
+    estif_(vi*2, ui*2)         += (thsl*thsl)*tau_C*derxy_(0, ui)*derxy_(0, vi) ;
+    estif_(vi*2, ui*2 + 1)     += (thsl*thsl)*tau_C*derxy_(0, vi)*derxy_(1, ui) ;
+    estif_(vi*2 + 1, ui*2)     += (thsl*thsl)*tau_C*derxy_(0, ui)*derxy_(1, vi) ;
+    estif_(vi*2 + 1, ui*2 + 1) += (thsl*thsl)*tau_C*derxy_(1, ui)*derxy_(1, vi) ;
 
     /* Massenterm (u,v) */
     estif_(vi*2, ui*2)         += fac*funct_(ui)*funct_(vi) ;
@@ -58,10 +63,10 @@ for (vi=0; vi<iel; ++vi)
     estif_(vi*2 + 1, ui*2 + 1) += timetauM*funct_(ui)*(conv_c_(vi) + velint_(1)*derxy_(1, vi)) ;
 
     /* Viskositätsstabilisierung (u,-2*nu*div(epsilon((v)))) */
-    estif_(vi*2, ui*2)         += tau_M*time2nue*funct_(ui)*viscs2_(0, 0, vi) ;
-    estif_(vi*2, ui*2 + 1)     += tau_M*time2nue*funct_(ui)*viscs2_(0, 1, vi) ;
-    estif_(vi*2 + 1, ui*2)     += tau_M*time2nue*funct_(ui)*viscs2_(0, 1, vi) ;
-    estif_(vi*2 + 1, ui*2 + 1) += tau_M*time2nue*funct_(ui)*viscs2_(1, 1, vi) ;
+    estif_(vi*2, ui*2)         += tau_Mp*time2nue*funct_(ui)*viscs2_(0, 0, vi) ;
+    estif_(vi*2, ui*2 + 1)     += tau_Mp*time2nue*funct_(ui)*viscs2_(0, 1, vi) ;
+    estif_(vi*2 + 1, ui*2)     += tau_Mp*time2nue*funct_(ui)*viscs2_(0, 1, vi) ;
+    estif_(vi*2 + 1, ui*2 + 1) += tau_Mp*time2nue*funct_(ui)*viscs2_(1, 1, vi) ;
 
     /* Quellterm der rechten Seite (b,v) */
 
