@@ -23,7 +23,7 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  Finalize construction (public)                           mwgee 11/06|
  *----------------------------------------------------------------------*/
-int CCADISCRETIZATION::Discretization::FillComplete()
+int DRT::Discretization::FillComplete()
 {
   filled_ = false;  
 
@@ -49,11 +49,11 @@ int CCADISCRETIZATION::Discretization::FillComplete()
 /*----------------------------------------------------------------------*
  |  Build noderowmap_ (public)                               mwgee 11/06|
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Discretization::BuildNodeRowMap()
+void DRT::Discretization::BuildNodeRowMap()
 {
   const int myrank = Comm().MyPID();
   int nummynodes     = 0;
-  map<int,RefCountPtr<CCADISCRETIZATION::Node> >::iterator curr;
+  map<int,RefCountPtr<DRT::Node> >::iterator curr;
   for (curr=node_.begin(); curr != node_.end(); ++curr)
     if (curr->second->Owner() == myrank)
       ++nummynodes;
@@ -74,13 +74,13 @@ void CCADISCRETIZATION::Discretization::BuildNodeRowMap()
 /*----------------------------------------------------------------------*
  |  Build noderowmap_ (public)                               mwgee 11/06|
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Discretization::BuildNodeColMap()
+void DRT::Discretization::BuildNodeColMap()
 {
   int nummynodes     = (int)node_.size();
   vector<int> nodeids(nummynodes);
   
   int count=0;
-  map<int,RefCountPtr<CCADISCRETIZATION::Node> >::iterator curr;
+  map<int,RefCountPtr<DRT::Node> >::iterator curr;
   for (curr=node_.begin(); curr != node_.end(); ++curr)
   {
     nodeids[count] = curr->second->Id();
@@ -95,11 +95,11 @@ void CCADISCRETIZATION::Discretization::BuildNodeColMap()
 /*----------------------------------------------------------------------*
  |  Build elecolmap_ (public)                                mwgee 11/06|
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Discretization::BuildElementRowMap()
+void DRT::Discretization::BuildElementRowMap()
 {
   const int myrank = Comm().MyPID();
   int nummyeles = 0;
-  map<int,RefCountPtr<CCADISCRETIZATION::Element> >::iterator curr;
+  map<int,RefCountPtr<DRT::Element> >::iterator curr;
   for (curr=element_.begin(); curr != element_.end(); ++curr)
     if (curr->second->Owner()==myrank)
       nummyeles++;
@@ -119,11 +119,11 @@ void CCADISCRETIZATION::Discretization::BuildElementRowMap()
 /*----------------------------------------------------------------------*
  |  Build elecolmap_ (public)                                mwgee 11/06|
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Discretization::BuildElementColMap()
+void DRT::Discretization::BuildElementColMap()
 {
   int nummyeles     = (int)element_.size();
   vector<int> eleids(nummyeles);
-  map<int,RefCountPtr<CCADISCRETIZATION::Element> >::iterator curr;
+  map<int,RefCountPtr<DRT::Element> >::iterator curr;
   int count=0;
   for (curr=element_.begin(); curr != element_.end(); ++curr)
   {
@@ -138,9 +138,9 @@ void CCADISCRETIZATION::Discretization::BuildElementColMap()
 /*----------------------------------------------------------------------*
  |  Build ptrs element -> node (public)                      mwgee 11/06|
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Discretization::BuildElementToNodePointers()
+void DRT::Discretization::BuildElementToNodePointers()
 {
-  map<int,RefCountPtr<CCADISCRETIZATION::Element> >::iterator elecurr;
+  map<int,RefCountPtr<DRT::Element> >::iterator elecurr;
   for (elecurr=element_.begin(); elecurr != element_.end(); ++elecurr)
   {
     bool success = elecurr->second->BuildNodalPointers(node_);
@@ -153,20 +153,20 @@ void CCADISCRETIZATION::Discretization::BuildElementToNodePointers()
 /*----------------------------------------------------------------------*
  |  Build ptrs node -> element (public)                      mwgee 11/06|
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Discretization::BuildNodeToElementPointers()
+void DRT::Discretization::BuildNodeToElementPointers()
 {
-  map<int,RefCountPtr<CCADISCRETIZATION::Node> >::iterator nodecurr;
+  map<int,RefCountPtr<DRT::Node> >::iterator nodecurr;
   for (nodecurr=node_.begin(); nodecurr != node_.end(); ++nodecurr)
     nodecurr->second->element_.resize(0);
   
-  map<int,RefCountPtr<CCADISCRETIZATION::Element> >::iterator elecurr;
+  map<int,RefCountPtr<DRT::Element> >::iterator elecurr;
   for (elecurr=element_.begin(); elecurr != element_.end(); ++elecurr)
   {
     const int  nnode = elecurr->second->NumNode();
     const int* nodes = elecurr->second->NodeIds();
     for (int j=0; j<nnode; ++j)
     {
-      CCADISCRETIZATION::Node* node = gNode(nodes[j]);
+      DRT::Node* node = gNode(nodes[j]);
       if (!node) dserror("Node %d is not on this proc %d",j,Comm().MyPID());
       else
       {

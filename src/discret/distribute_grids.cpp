@@ -106,9 +106,8 @@ void distribute_grids_and_design()
   //-------------------------------------- get the design if it exists
   if (design)
   {
-    RefCountPtr<CCADISCRETIZATION::Design>* tmp = 
-      (RefCountPtr<CCADISCRETIZATION::Design>*)design->ccadesign;
-    CCADISCRETIZATION::Design& ccadesign = *((*tmp).get());
+    RefCountPtr<DRT::Design>* tmp = (RefCountPtr<DRT::Design>*)design->ccadesign;
+    DRT::Design& ccadesign = *((*tmp).get());
     if (!ccadesign.Filled()) dserror("design was not filled");
     // ------------------------------------------------------------------
     // At this point, everything should be on proc 0
@@ -117,7 +116,7 @@ void distribute_grids_and_design()
     // loop over dlines, dsurfaces, dvolumes (lines contain nodes, the others don't)
     for (int i=0; i<3; ++i)
     {
-      RefCountPtr<CCADISCRETIZATION::DesignDiscretization> ddis = ccadesign[i];
+      RefCountPtr<DRT::DesignDiscretization> ddis = ccadesign[i];
       if (!ddis->Filled()) dserror("FillComplete() was not called on design discretization");
       const Epetra_Map*  nmap = ddis->NodeColMap();
       const Epetra_Map*  emap = ddis->ElementColMap();
@@ -156,9 +155,9 @@ void distribute_grids_and_design()
                              rcp(new Epetra_Map(-1,ngele,&ele[0],0,comm));
       
       // Export nodes to overlapping storage
-      ddis->ExportGhostNodes(*rnmap);
+      ddis->ExportColumnNodes(*rnmap);
       // Export elements to overlapping storage
-      ddis->ExportGhostElements(*remap);
+      ddis->ExportColumnElements(*remap);
     } // for (int i=0; i<3; ++i)
     
     // call FillComplete on all three discretizations again
@@ -173,15 +172,16 @@ void distribute_grids_and_design()
   // get discretizations and replace their comm
   for (int i=0; i<genprob.numfld; ++i)
   {
-    vector<RefCountPtr<CCADISCRETIZATION::Discretization> >* discretization =
-      (vector<RefCountPtr<CCADISCRETIZATION::Discretization> >*)field[i].ccadis;
+    vector<RefCountPtr<DRT::Discretization> >* discretization =
+      (vector<RefCountPtr<DRT::Discretization> >*)field[i].ccadis;
     
     INTRA* actintra = &(par.intra[i]);
     for (int j=0;j<field[i].ndis;j++)
     {
-      RefCountPtr<CCADISCRETIZATION::Discretization> actdis = (*discretization)[j];
+      RefCountPtr<DRT::Discretization> actdis = (*discretization)[j];
 #ifdef PARALLEL
-      RefCountPtr<Epetra_MpiComm> comm = rcp(new Epetra_MpiComm(actintra->MPI_INTRA_COMM));
+      RefCountPtr<Epetra_MpiComm> comm = 
+                           rcp(new Epetra_MpiComm(actintra->MPI_INTRA_COMM));
       actdis->SetComm(comm); 
       int ierr = actdis->FillComplete();
       if (ierr) dserror("FillComplete returned %d",ierr);
@@ -196,7 +196,8 @@ void distribute_grids_and_design()
       Epetra_Vector weights(nodegraph->RowMap(),false);
       weights.PutScalar(1.0);
       RefCountPtr<Epetra_CrsGraph> newnodegraph = 
-              CCADISCRETIZATION::Utils::PartGraphUsingMetis(*nodegraph,weights);
+                          DRT::Utils::PartGraphUsingMetis(*nodegraph,weights);
+      nodegraph = null;
       
       // the rowmap will become the new distribution of nodes
       const Epetra_BlockMap rntmp = newnodegraph->RowMap();
@@ -205,25 +206,11 @@ void distribute_grids_and_design()
       // the column map will become the new ghosted distribution of nodes
       const Epetra_BlockMap cntmp = newnodegraph->ColMap();
       Epetra_Map newnodecolmap(-1,cntmp.NumMyElements(),cntmp.MyGlobalElements(),0,actdis->Comm());
+      newnodegraph = null;
       
-      // build overlapping element row and column map
-      RefCountPtr<Epetra_Map> elerowmap;
-      RefCountPtr<Epetra_Map> elecolmap;
-      actdis->BuildElementGhosting(newnoderowmap,newnodecolmap,elerowmap,elecolmap);
-
-      // export elements with ownerships
-      actdis->ExportElements(*elerowmap);
-      // export ghosted elements
-      actdis->ExportGhostElements(*elecolmap);
-      // export nodes with ownerships
-      actdis->ExportNodes(newnoderowmap); 
-      // export ghost nodes
-      actdis->ExportGhostNodes(newnodecolmap);
+      // do the redistribution
+      actdis->Redistribute(newnoderowmap,newnodecolmap);
       
-      // complete the discretization
-      int err = actdis->FillComplete();
-      if (err) dserror("discretization FillComplete() returned err=%d",err);
- 
     } // for (int j=0;j<field[i].ndis;j++)
   } // for (int i=0; i<genprob.numfld; ++i)
 

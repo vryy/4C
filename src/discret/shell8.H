@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file shell8.H
 
-\class CCADISCRETIZATION::Shell8
+\class DRT::Shell8
 
 \brief A C++ wrapper for the shell8 element
 
@@ -28,10 +28,10 @@ using namespace Teuchos;
 
 
 /*!
-\brief CCADISCRETIZATION: namespace of the ccarat discretization module
+\brief DRT: namespace of the ccarat discretization module
 
 */
-namespace CCADISCRETIZATION
+namespace DRT
 {
 
 /*!
@@ -41,7 +41,7 @@ namespace CCADISCRETIZATION
 
 \author gee (gee@lnm.mw.tum.de)
 */
-class Shell8 : public CCADISCRETIZATION::Element
+class Shell8 : public DRT::Element
 {
 public:
   // @{ \name Constructors and destructors
@@ -59,7 +59,7 @@ public:
   Makes a deep copy of a Element
   
   */
-  Shell8(const CCADISCRETIZATION::Shell8& old);
+  Shell8(const DRT::Shell8& old);
 
   /*!
   \brief Deep copy this instance of Shell8 and return pointer to the copy
@@ -68,7 +68,7 @@ public:
   where the type of the derived class is unknown and a copy-ctor is needed
   
   */
-  CCADISCRETIZATION::Element* Clone() const;
+  DRT::Element* Clone() const;
 
   /*!
   \brief Pack this class so it can be communicated

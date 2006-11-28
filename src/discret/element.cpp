@@ -20,7 +20,7 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Element::Element(int id, ElementType etype, int owner) :
+DRT::Element::Element(int id, ElementType etype, int owner) :
 ParObject(),
 id_(id),
 owner_(owner),
@@ -34,7 +34,7 @@ etype_(etype)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Element::Element(const CCADISCRETIZATION::Element& old) :
+DRT::Element::Element(const DRT::Element& old) :
 ParObject(old),
 id_(old.id_),
 owner_(old.owner_),
@@ -49,7 +49,7 @@ node_(old.node_)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Element::~Element()
+DRT::Element::~Element()
 {
   nodeid_.clear();
   node_.clear();
@@ -60,7 +60,7 @@ CCADISCRETIZATION::Element::~Element()
 /*----------------------------------------------------------------------*
  |  << operator                                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const CCADISCRETIZATION::Element& element)
+ostream& operator << (ostream& os, const DRT::Element& element)
 {
   element.Print(os); 
   return os;
@@ -70,7 +70,7 @@ ostream& operator << (ostream& os, const CCADISCRETIZATION::Element& element)
 /*----------------------------------------------------------------------*
  |  print element (public)                                   mwgee 11/06|
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Element::Print(ostream& os) const
+void DRT::Element::Print(ostream& os) const
 {
   os << Id() << " Owner " << Owner();
   const int nnode = NumNode();
@@ -102,9 +102,9 @@ void CCADISCRETIZATION::Element::Print(ostream& os) const
  |  this is a base class dummy for elements that do not need            |
  |  a reading method
  *----------------------------------------------------------------------*/
-bool CCADISCRETIZATION::Element::ReadElement()
+bool DRT::Element::ReadElement()
 {
-  cout << "CCADISCRETIZATION::Element::ReadElement:\n"
+  cout << "DRT::Element::ReadElement:\n"
        << "Base class dummy routine Element::ReadElement() called\n"
        << __FILE__ << ":" << __LINE__ << endl;
   return false;
@@ -113,7 +113,7 @@ bool CCADISCRETIZATION::Element::ReadElement()
 /*----------------------------------------------------------------------*
  |  set node numbers to element (public)                     mwgee 11/06|
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Element::SetNodeIds(const int nnode, const int* nodes)
+void DRT::Element::SetNodeIds(const int nnode, const int* nodes)
 {
   nodeid_.resize(nnode);
   for (int i=0; i<nnode; ++i) nodeid_[i] = nodes[i];
@@ -125,7 +125,7 @@ void CCADISCRETIZATION::Element::SetNodeIds(const int nnode, const int* nodes)
  |  Pack data from this element into vector of length size     (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-const char* CCADISCRETIZATION::Element::Pack(int& size) const
+const char* DRT::Element::Pack(int& size) const
 {
   const int sizeint    = sizeof(int);
   const int sizetype   = sizeof(enum ElementType);
@@ -200,7 +200,7 @@ const char* CCADISCRETIZATION::Element::Pack(int& size) const
  |  Unpack data into this element                              (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-bool CCADISCRETIZATION::Element::Unpack(const char* data)
+bool DRT::Element::Unpack(const char* data)
 {
   int position = 0;
   
@@ -246,14 +246,14 @@ bool CCADISCRETIZATION::Element::Unpack(const char* data)
  |  Build nodal pointers                                    (protected) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-bool CCADISCRETIZATION::Element::BuildNodalPointers(map<int,RefCountPtr<CCADISCRETIZATION::Node> >& nodes)
+bool DRT::Element::BuildNodalPointers(map<int,RefCountPtr<DRT::Node> >& nodes)
 {
   int        nnode   = NumNode();
   const int* nodeids = NodeIds();
   node_.resize(nnode);
   for (int i=0; i<nnode; ++i)
   {
-    map<int,RefCountPtr<CCADISCRETIZATION::Node> >::iterator curr = nodes.find(nodeids[i]);
+    map<int,RefCountPtr<DRT::Node> >::iterator curr = nodes.find(nodeids[i]);
     // this node is not on this proc
     if (curr==nodes.end()) dserror("Element %d cannot find node %d",Id(),nodeids[i]);
     else 
@@ -267,7 +267,7 @@ bool CCADISCRETIZATION::Element::BuildNodalPointers(map<int,RefCountPtr<CCADISCR
  |  Get a condition of a certain name                          (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-const CCADISCRETIZATION::Condition* CCADISCRETIZATION::Element::GetCondition(const string& name) const
+const DRT::Condition* DRT::Element::GetCondition(const string& name) const
 {
   map<string,RefCountPtr<Condition> >::const_iterator curr = condition_.find(name);
   if (curr != condition_.end()) return curr->second.get();

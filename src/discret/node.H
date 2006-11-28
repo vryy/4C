@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file node.H
 
-\class CCADISCRETIZATION::Node
+\class DRT::Node
 
 \brief A virtual class for a node
 
@@ -28,10 +28,10 @@ using namespace Teuchos;
 #include "condition.H"
 
 /*!
-\brief CCADISCRET: namespace of the ccarat discretization module
+\brief DRT: namespace of the ccarat discretization module
 
 */
-namespace CCADISCRETIZATION
+namespace DRT
 {
 
 // forward declarations
@@ -40,11 +40,11 @@ class Element;
 /*!
 \class Node
 
-\brief A virtual class all nodes that are used in CCADISCRETIZATION have to implement
+\brief A virtual class all nodes that are used in DRT have to implement
 
 \author gee (gee@lnm.mw.tum.de)
 */
-class Node : public CCADISCRETIZATION::ParObject
+class Node : public DRT::ParObject
 {
 public:
 
@@ -82,13 +82,13 @@ public:
   Makes a deep copy of a Node
   
   */
-  Node(const CCADISCRETIZATION::Node& old);
+  Node(const DRT::Node& old);
 
   /*!
   \brief Deep copy the derived class and return pointer to it
   
   */
-  virtual CCADISCRETIZATION::Node* Clone() const;
+  virtual DRT::Node* Clone() const;
 
   /*!
   \brief Destructor
@@ -194,11 +194,11 @@ protected:
   map<string,RefCountPtr<Condition> > condition_;   // some conditions e.g. BCs
 
 }; // class Node
-} // namespace CCADISCRETIZATION
+} // namespace DRT
 
 
 // << operator
-ostream& operator << (ostream& os, const CCADISCRETIZATION::Node& node);
+ostream& operator << (ostream& os, const DRT::Node& node);
 
 
 

@@ -21,7 +21,7 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::DesignDiscretization::DesignDiscretization(RefCountPtr<Epetra_Comm> comm) :
+DRT::DesignDiscretization::DesignDiscretization(RefCountPtr<Epetra_Comm> comm) :
 Discretization(comm)
 {
   return;
@@ -30,7 +30,7 @@ Discretization(comm)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::DesignDiscretization::DesignDiscretization(const CCADISCRETIZATION::DesignDiscretization& old) :
+DRT::DesignDiscretization::DesignDiscretization(const DRT::DesignDiscretization& old) :
 Discretization(old.comm_)
 {
   dserror("Do not have copy-ctor");
@@ -40,7 +40,7 @@ Discretization(old.comm_)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::DesignDiscretization::~DesignDiscretization()
+DRT::DesignDiscretization::~DesignDiscretization()
 {
   return;
 }
@@ -48,9 +48,9 @@ CCADISCRETIZATION::DesignDiscretization::~DesignDiscretization()
 /*----------------------------------------------------------------------*
  |  Finalize construction (public)                           mwgee 11/06|
  *----------------------------------------------------------------------*/
-int CCADISCRETIZATION::DesignDiscretization::FillComplete(
-                                CCADISCRETIZATION::DesignDiscretization* higher, 
-                                CCADISCRETIZATION::DesignDiscretization* lower)
+int DRT::DesignDiscretization::FillComplete(
+                                       DRT::DesignDiscretization* higher, 
+                                       DRT::DesignDiscretization* lower)
 {
   // build element to node pointers and maps (there might not be nodes)
   int err = Discretization::FillComplete();
@@ -62,8 +62,8 @@ int CCADISCRETIZATION::DesignDiscretization::FillComplete(
   for (int i=0; i<NumMyColElements(); ++i)
   {
     // we have to cast this to DesignElement
-    CCADISCRETIZATION::DesignElement* element = 
-         dynamic_cast<CCADISCRETIZATION::DesignElement*>(lColElement(i));
+    DRT::DesignElement* element = 
+                    dynamic_cast<DRT::DesignElement*>(lColElement(i));
     if (!element) return -1;
     if (lower)
     {

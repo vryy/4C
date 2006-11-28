@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file parobject.H
 
-\class CCADISCRETIZATION::ParObject
+\class DRT::ParObject
 
 \brief A virtual class with functionality to pack, unpack and communicate
        classes in parallel
@@ -29,7 +29,7 @@ using namespace std;
 // that implements the pure virtual ParObject class.
 // The unique identifier is stored in a communcation array as an integer
 // so the receiving processor knows what type of class has been sent.
-// the method CCADISCRETIZATION::Factory(data) in utils.cpp can then be used to 
+// the method DRT::Factory(data) in utils.cpp can then be used to 
 // create an Unpack the correct instance of ParObject
 #define ParObject_Container       (int)1
 #define ParObject_Condition       (int)2
@@ -41,10 +41,10 @@ using namespace std;
 
 
 /*!
-\brief CCADISCRET: namespace of the ccarat discretization module
+\brief DRT: namespace of the ccarat discretization module
 
 */
-namespace CCADISCRETIZATION
+namespace DRT
 {
 
 /*!
@@ -74,7 +74,7 @@ public:
   Makes a deep copy of a Element
   
   */
-  ParObject(const CCADISCRETIZATION::ParObject& old);
+  ParObject(const DRT::ParObject& old);
 
   /*!
   \brief Destructor
@@ -280,7 +280,7 @@ protected:
 
 
 }; // class ParObject
-} // namespace CCADISCRETIZATION
+} // namespace DRT
 
 
 

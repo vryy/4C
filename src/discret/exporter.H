@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file exporter.H
 
-\class CCADISCRETIZATION::Exporter
+\class DRT::Exporter
 
 \brief A class to manage communcation patterns
 
@@ -35,10 +35,10 @@ using namespace std;
 using namespace Teuchos;
 
 /*!
-\brief CCADISCRET: namespace of the ccarat discretization module
+\brief DRT: namespace of the ccarat discretization module
 
 */
-namespace CCADISCRETIZATION
+namespace DRT
 {
 
 /*!
@@ -65,7 +65,7 @@ public:
   \brief Copy Constructor
 
   */
-  Exporter(const CCADISCRETIZATION::Exporter& old);
+  Exporter(const DRT::Exporter& old);
 
   /*!
   \brief Destructor
@@ -190,7 +190,7 @@ private:
   
   
 }; // class Exporter
-} // namespace CCADISCRETIZATION
+} // namespace DRT
 
 
 
@@ -198,7 +198,7 @@ private:
 /*----------------------------------------------------------------------*
  |  communicate objects (public)                             mwgee 11/06|
  *----------------------------------------------------------------------*/
-template<typename T> void CCADISCRETIZATION::Exporter::Export(
+template<typename T> void DRT::Exporter::Export(
                                      map<int,RefCountPtr<T> >& parobjects)
 {
   // test whether type T implements ParObject
@@ -208,7 +208,7 @@ template<typename T> void CCADISCRETIZATION::Exporter::Export(
     {
       T* ptr = curr->second.get();
       ParObject* tester = dynamic_cast<ParObject*>(ptr);
-      if (!tester) dserror("typename T in template does not implement ParObject (dynamic_cast failed)");
+      if (!tester) dserror("typename T in template does not implement class ParObject (dynamic_cast failed)");
     }
   }
   
@@ -277,8 +277,7 @@ template<typename T> void CCADISCRETIZATION::Exporter::Export(
     if (curr != parobjects.end()) 
       continue;
     // Create an empty object and unpack
-    CCADISCRETIZATION::ParObject* object = 
-                                 CCADISCRETIZATION::Utils::Factory(&(recvbuff[0]));
+    DRT::ParObject* object = DRT::Utils::Factory(&(recvbuff[0]));
     T* ptr = dynamic_cast<T*>(object);
     if (!ptr) dserror("typename T in template does not implement ParObject (dynamic_cast failed)");
     RefCountPtr<T> refptr = rcp(ptr);

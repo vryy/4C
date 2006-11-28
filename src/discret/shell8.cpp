@@ -23,8 +23,8 @@ Maintainer: Michael Gee
  |  ctor (public)                                            mwgee 11/06|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Shell8::Shell8(int id, int owner) :
-CCADISCRETIZATION::Element(id,element_shell8,owner),
+DRT::Shell8::Shell8(int id, int owner) :
+DRT::Element(id,element_shell8,owner),
 forcetype_(s8_none),
 thickness_(0.0),
 ngptri_(0),
@@ -42,8 +42,8 @@ material_(0)
  |  copy-ctor (public)                                       mwgee 11/06|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Shell8::Shell8(const CCADISCRETIZATION::Shell8& old) :
-CCADISCRETIZATION::Element(old),
+DRT::Shell8::Shell8(const DRT::Shell8& old) :
+DRT::Element(old),
 forcetype_(old.forcetype_),
 thickness_(old.thickness_),
 ngptri_(old.ngptri_),
@@ -61,9 +61,9 @@ material_(old.material_)
  |  Deep copy this instance of Shell8 and return pointer to it (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Element* CCADISCRETIZATION::Shell8::Clone() const
+DRT::Element* DRT::Shell8::Clone() const
 {
-  CCADISCRETIZATION::Shell8* newelement = new CCADISCRETIZATION::Shell8(*this);
+  DRT::Shell8* newelement = new DRT::Shell8(*this);
   return newelement;
 }
 
@@ -71,7 +71,7 @@ CCADISCRETIZATION::Element* CCADISCRETIZATION::Shell8::Clone() const
  |  Pack data from this element into vector of length size     (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-const char* CCADISCRETIZATION::Shell8::Pack(int& size) const
+const char* DRT::Shell8::Pack(int& size) const
 {
   const int sizeint    = sizeof(int);
   const int sizeforcetype = sizeof(enum ForceType);
@@ -141,7 +141,7 @@ const char* CCADISCRETIZATION::Shell8::Pack(int& size) const
  |  Unpack data into this element                              (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-bool CCADISCRETIZATION::Shell8::Unpack(const char* data)
+bool DRT::Shell8::Unpack(const char* data)
 {
   const int sizeint    = sizeof(int);
   //const int sizeforcetype = sizeof(enum ForceType);
@@ -193,7 +193,7 @@ bool CCADISCRETIZATION::Shell8::Unpack(const char* data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Shell8::~Shell8()
+DRT::Shell8::~Shell8()
 {
   return;
 }
@@ -202,7 +202,7 @@ CCADISCRETIZATION::Shell8::~Shell8()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Shell8::Print(ostream& os) const
+void DRT::Shell8::Print(ostream& os) const
 {
   os << "Shell8 ";
   Element::Print(os);

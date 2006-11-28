@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file discret.H
 
-\class CCADISCRETIZATION::Discretization
+\class DRT::Discretization
 
 \brief a class to manage one discretization
 
@@ -31,10 +31,10 @@ using namespace Teuchos;
 #include "dserror.H"
 
 /*!
-\brief CCADISCRET: namespace of the ccarat discretization module
+\brief DRT: namespace of the ccarat discretization module
 
 */
-namespace CCADISCRETIZATION
+namespace DRT
 {
 
 /*!
@@ -42,7 +42,7 @@ namespace CCADISCRETIZATION
 
 \brief A class to manage a discretization in parallel
 
-The \ref CCADISCRET::Discretization class supports the ostream& operator <<
+The \ref DRT::Discretization class supports the ostream& operator <<
 
 \author gee (gee@lnm.mw.tum.de)
 */
@@ -81,6 +81,7 @@ public:
 
   /*!
   \brief Get map associated with the distribution of the ownership of elements
+         (Filled()==true prerequisite)
   
   This map includes all elements stored on this proc and also owned by this proc.
   This map is non-ambiguous, meaning that it is a non-overlapping map.
@@ -92,6 +93,7 @@ public:
                                                     return NULL; }
   /*!
   \brief Get map associated with the distribution of elements including ghosted elements
+         (Filled()==true prerequisite)
   
   This map includes all elements stored on this proc including any ghosted elements
   This map is ambiguous, meaning that it is an overlapping map
@@ -104,6 +106,7 @@ public:
 
   /*!
   \brief Get map associated with the distribution of the ownership of nodes
+         (Filled()==true prerequisite)
 
   This map includes all nodes stored on this proc and also owned by this proc.
   This map is non-ambiguous, meaning that it is a non-overlapping map.
@@ -116,6 +119,7 @@ public:
 
   /*!
   \brief Get map associated with the distribution of nodes including ghosted nodes
+         (Filled()==true prerequisite)
 
   This map includes all nodes stored on this proc including any ghosted nodes
   This map is ambiguous, meaning that it is an overlapping map
@@ -128,6 +132,7 @@ public:
 
   /*!
   \brief Get global number of elements (true number of total elements)
+         (Filled()==true prerequisite)
   
   This is a collective call
   */
@@ -137,6 +142,7 @@ public:
   
   /*!
   \brief Get processor local number of elements owned by this processor
+         (Filled()==true prerequisite)
   */
   virtual int NumMyRowElements() const { if (Filled()) return ElementRowMap()->NumMyElements();
                                          else dserror("FillComplete() must be called before call to NumMyRowElements()"); 
@@ -144,6 +150,7 @@ public:
 
   /*!
   \brief Get processor local number of elements including ghost elements
+         (Filled()==true NOT prerequisite)
   */
   virtual int NumMyColElements() const { if (Filled()) return ElementColMap()->NumMyElements();
                                          else return (int)element_.size(); 
@@ -151,6 +158,7 @@ public:
   
   /*!
   \brief Get global number of nodes (true number of total nodes without ghosting)
+         (Filled()==true prerequisite)
   
   This is a collective call
   */
@@ -160,6 +168,7 @@ public:
 
   /*!
   \brief Get processor local number of nodes owned by this processor
+         (Filled()==true prerequisite)
   */
   virtual int NumMyRowNodes() const { if (Filled()) return NodeRowMap()->NumMyElements();
                                       else dserror("FillComplete() must be called before call to NumMyRowNodes()");
@@ -167,6 +176,7 @@ public:
   
   /*! 
   \brief Get processor local number of nodes including ghost nodes
+         (Filled()==true NOT prerequisite)
   */
   virtual int NumMyColNodes() const { if (Filled()) return NodeColMap()->NumMyElements();
                                       else return (int)node_.size();
@@ -174,7 +184,7 @@ public:
   
   
   /*!
-  \brief Get the element with global id gid
+  \brief Get the element with global id gid (Filled()==true NOT prerequisite)
   
   Returns the element with global row id gid if element is on this proc.
   Will return row or column element, ghosted or not.
@@ -183,10 +193,10 @@ public:
   \return Adress of element if element is owned by calling proc, returns NULL
           otherwise
   */
-  virtual CCADISCRETIZATION::Element* gElement(int gid) const;
+  virtual DRT::Element* gElement(int gid) const;
 
   /*!
-  \brief Get the element with local row id lid
+  \brief Get the element with local row id lid (Filled()==true prerequisite)
   
   Returns the element with local row index lid.
   Will not return any ghosted element.
@@ -194,10 +204,10 @@ public:
   
   \return Adress of element if element is owned by calling proc
   */
-  virtual CCADISCRETIZATION::Element* lRowElement(int lid) const;
+  virtual DRT::Element* lRowElement(int lid) const;
 
   /*!
-  \brief Get the element with local column id lid
+  \brief Get the element with local column id lid (Filled()==true prerequisite)
   
   Returns the element with local column index lid.
   Will also return any ghosted element.
@@ -205,10 +215,10 @@ public:
   
   \return Adress of element if element is stored by calling proc
   */
-  virtual CCADISCRETIZATION::Element* lColElement(int lid) const;
+  virtual DRT::Element* lColElement(int lid) const;
 
   /*!
-  \brief Get the node with global row id gid
+  \brief Get the node with global row id gid (Filled()==true NOT prerequisite)
   
   Returns the node with global row id gid if node is on this proc.
   Will return row or column node, ghosted or  not.
@@ -216,10 +226,10 @@ public:
   
   \return Adress of node if node is stored on calling proc
   */
-  virtual CCADISCRETIZATION::Node* gNode(int gid) const;
+  virtual DRT::Node* gNode(int gid) const;
 
   /*!
-  \brief Get the node with local row id lid
+  \brief Get the node with local row id lid (Filled()==true prerequisite)
   
   Returns the node with local row index lid.
   Will not return any ghosted node.
@@ -227,10 +237,10 @@ public:
   
   \return Adress of node if node is owned and stored by calling proc
   */
-  virtual CCADISCRETIZATION::Node* lRowNode(int lid) const;
+  virtual DRT::Node* lRowNode(int lid) const;
 
   /*!
-  \brief Get the node with local column id lid
+  \brief Get the node with local column id lid (Filled()==true prerequisite)
   
   Returns the node with local column index lid.
   Will return any node stored on this proc.
@@ -238,10 +248,10 @@ public:
   
   \return Adress of node if node is stored by calling proc
   */
-  virtual CCADISCRETIZATION::Node* lColNode(int lid) const;
+  virtual DRT::Node* lColNode(int lid) const;
 
   /*!
-  \brief Print this discretization to stdout
+  \brief Print this discretization to stdout (Filled()==true NOT prerequisite)
   
   \note This is a collective call
   */
@@ -252,45 +262,62 @@ public:
   // @{ \name Construction methods
 
   /*!
-  \brief Set an epetra_Commobject which can be either 
-         Epetra_SerialComm or Epetra_MpiComm
+  \brief Set an Epetra_Comm object which can be either 
+         Epetra_SerialComm or Epetra_MpiComm (Filled()==true NOT prerequisite)
   
-  \note Sets the Filled() flag to false, Fillcomplete must  be called 
-        afterwards to rebuild node and element map
+  \note Sets Filled()=false
   */
   virtual void SetComm(RefCountPtr<Epetra_Comm> comm)
   { filled_=false; comm_ = comm; return; }
 
   /*!
-  \brief Add an element to the discretization
+  \brief Add an element to the discretization (Filled()==true NOT prerequisite)
   
   The discretization takes ownership of the added element.
   Note that if an element with the same Id() exists, it will be 
   deleted and replaced by the new one.
+
+  \note Sets Filled()=false
   */
-  virtual void AddElement(RefCountPtr<CCADISCRETIZATION::Element> ele);
+  virtual void AddElement(RefCountPtr<DRT::Element> ele);
 
   /*!
-  \brief Add a node to the discretization
+  \brief Add a node to the discretization  (Filled()==true NOT prerequisite)
   
   The discretization takes ownership of the added node.
   Note that if a node with the same Id() exists, it will be 
   deleted and replaced by the new one.
+
+  \note Sets Filled()=false
   */
-  virtual void AddNode(RefCountPtr<CCADISCRETIZATION::Node> node);
+  virtual void AddNode(RefCountPtr<DRT::Node> node);
 
   /*!
-  \brief Complete construction of this discretization
+  \brief Complete construction of this discretization  (Filled()==true NOT prerequisite)
   
   after adding or deleting nodes or elements or redistributing them in parallel, 
   this method has to be called to (re)construct pointer topologies
   
-  \note This is a collective call
+  \note Sets Filled()=true
   */
   virtual int FillComplete();
 
   /*!
+  \brief Redistribute the discretization according to provided maps
+         (Filled()==true prerequisite)
+  
+  Steps taken in this method are:<br>
+  - build element maps (row and column)
+  - do export of row/col nodes and row/col elements
+  - call Fillcomplete()
+  
+  \note Filled()==true is a prerequisite, Filled()==true on exit
+  */
+  virtual void Redistribute(const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap);
+
+  /*!
   \brief Export the nodes to a different parallel layout
+         (Filled()==true NOT prerequisite)
   
   The discretization has a parallel layout of nodes reflected in NodeRowMap().
   This method communicates the nodes such that after
@@ -305,11 +332,15 @@ public:
     the ownership of an exported node changes to the receiving proc<br>
   - All ghosted nodes on all processors will be destroyed.
     Ghosting has to be recreated afterwards<br>
+
+  \note Sets Filled()=false and deletes noderowmap_ and nodecolmap_
   */
-  virtual void ExportNodes(const Epetra_Map& newmap);
+  virtual void ExportRowNodes(const Epetra_Map& newmap);
+
 
   /*!
-  \brief Create ghosting of nodes
+  \brief Export overlap of nodes
+        (Filled()==true NOT prerequisite)
   
   The discretization has a parallel layout of nodes reflected in NodeRowMap().
   This method communicates the nodes such that after
@@ -328,11 +359,14 @@ public:
   - newmap should be an overlapping map.<br>
   - The ownership of an exported node does not change on the receiving proc.<br>
     The received node becomes a ghost node.
+
+  \note Sets Filled()=false and deletes noderowmap_ and nodecolmap_
   */
-  virtual void ExportGhostNodes(const Epetra_Map& newmap);
+  virtual void ExportColumnNodes(const Epetra_Map& newmap);
 
   /*!
-  \brief Export the elements to a different parallel layout
+  \brief Export the elements to a different parallel row layout
+        (Filled()==true NOT prerequisite)
   
   The discretization has a parallel layout of elements reflected in ElementRowMap().
   This method communicates the elements in this discretization such that after
@@ -348,13 +382,13 @@ public:
   - All ghosted elements on all processors will be destroyed.
     Ghosting has to be recreated afterwards<br>
 
-    
-  \note This is a collective call
+  \note Sets Filled()=false and deletes elerowmap_ and elecolmap_
   */
-  virtual void ExportElements(const Epetra_Map& newmap);
+  virtual void ExportRowElements(const Epetra_Map& newmap);
 
   /*!
-  \brief Create ghosting of elements
+  \brief Export overlap of elements
+        (Filled()==true NOT prerequisite)
   
   The discretization has a parallel layout of elements reflected in ElementRowMap().
   This method communicates the elements such that after
@@ -373,11 +407,13 @@ public:
   - newmap should be an overlapping map<br>
   - The ownership of an exported element does not change on the receiving proc.<br>
     The received element becomes a ghost element.
+
+  \note Sets Filled()=false and deletes elerowmap_ and elecolmap_
   */
-  virtual void ExportGhostElements(const Epetra_Map& newmap);
+  virtual void ExportColumnElements(const Epetra_Map& newmap);
 
   /*!
-  \brief Build nodal graph of discretization
+  \brief Build nodal graph of discretization (Filled()==true prerequisite)
   
   Build a nodal graph of the discretization in parallel.<br>
   The graph has a row map of NodeRowMap().<br>
@@ -396,32 +432,9 @@ public:
   */
   virtual RefCountPtr<Epetra_CrsGraph> BuildNodeGraph() const;
 
-  /*!
-  \brief Build element row and column map from nodal row and column maps
-  
-  Create a unique element map elerowmap assigning each element an owner.
-  Create an overlapping element map elecolmap representing a one layer
-  overlap of element.
-  Maps are created such that they match the nodal row and column maps provided.
-  
-  \param noderowmap (in): unique nodal row map of some distribution
-  \param nodecolmap (in): overlapping nodal column map
-  \param elerowmap (out): unique element row map
-  \param elecolmap (out): overlapping element column map
-  
-  \note The provided noderowmap and nodecolmap do not need to match the
-  distribution of nodes in this discretization class. Also, the output
-  element maps do not match the distribution of elements in this class.
-  Total numbers of nodes and elements have to match nodes and elements in 
-  this class.
-  */
-  virtual void BuildElementGhosting(const Epetra_Map& noderowmap,
-                                    const Epetra_Map& nodecolmap,
-                                    RefCountPtr<Epetra_Map>& elerowmap,
-                                    RefCountPtr<Epetra_Map>& elecolmap) const;
 
   /*!
-  \brief Set Ids of design nodes in nodes
+  \brief Set Ids of design nodes in nodes (Filled()==true NOT prerequisite)
   
   On exit, each node in this that is positioned on a design entity 
   will store the global design node number that it concides to.
@@ -441,10 +454,10 @@ private:
 
   // don't want = operator and copy constructor
   Discretization operator = (const Discretization& old);
-  Discretization(const CCADISCRETIZATION::Discretization& old);
+  Discretization(const DRT::Discretization& old);
 
   /*!
-  \brief Build noderowmap_
+  \brief Build noderowmap_ (Filled()==true NOT prerequisite)
   
   Build the parallel layout of nodes in this
   discretization and store it as an Epetra_Map in noderowmap_
@@ -456,7 +469,7 @@ private:
   virtual void BuildNodeRowMap();
 
   /*!
-  \brief Build nodecolmap_
+  \brief Build nodecolmap_ (Filled()==true NOT prerequisite)
   
   Build the parallel layout of nodes in this
   discretization and store it as an Epetra_Map in nodecolmap_
@@ -468,7 +481,7 @@ private:
   virtual void BuildNodeColMap();
 
   /*!
-  \brief Build elerowmap_
+  \brief Build elerowmap_ (Filled()==true NOT prerequisite)
   
   Build the parallel layout of elements in this
   discretization and store it as an Epetra_Map in elerowmap_
@@ -481,7 +494,7 @@ private:
   virtual void BuildElementRowMap();
 
   /*!
-  \brief Build elecolmap_
+  \brief Build elecolmap_ (Filled()==true NOT prerequisite)
   
   Build the potentially overlapping parallel layout of elements in this
   discretization and store it as an Epetra_Map in elecolmap_
@@ -493,16 +506,43 @@ private:
   virtual void BuildElementColMap();
 
   /*!
-  \brief Build pointers elements -> Nodes
+  \brief Build pointers elements -> Nodes (Filled()==true NOT prerequisite)
   */
   virtual void BuildElementToNodePointers();
 
   /*!
-  \brief Build pointers Node -> Element
+  \brief Build pointers Node -> Element (Filled()==true NOT prerequisite)
   
   \note This is a collective call
   */
   virtual void BuildNodeToElementPointers();
+
+  /*!
+  \brief Build element row and column map from nodal row and column maps
+         (Filled()==true prerequisite)
+  
+  Create a unique element map elerowmap assigning each element an owner.
+  Create an overlapping element map elecolmap representing a one layer
+  overlap of element.
+  Maps are created such that they match the nodal row and column maps provided.
+  
+  \param noderowmap (in): unique nodal row map of some distribution
+  \param nodecolmap (in): overlapping nodal column map
+  \param elerowmap (out): unique element row map
+  \param elecolmap (out): overlapping element column map
+  
+  \note The provided noderowmap and nodecolmap do not need to match the
+  distribution of nodes in this discretization class. Also, the output
+  element maps do not match the distribution of elements in this class.
+  Total numbers of nodes and elements have to match nodes and elements in 
+  this class.
+  
+  \return Filled()==true on exit
+  */
+  virtual void BuildElementRowColumn(const Epetra_Map& noderowmap,
+                                     const Epetra_Map& nodecolmap,
+                                     RefCountPtr<Epetra_Map>& elerowmap,
+                                     RefCountPtr<Epetra_Map>& elecolmap) const;
 
 protected:
 
@@ -512,19 +552,19 @@ protected:
 
   RefCountPtr<Epetra_Map>                           elerowmap_;   // unique distribution of element ownerships
   RefCountPtr<Epetra_Map>                           elecolmap_;   // distribution of elements including ghost elements
-  map<int,RefCountPtr<CCADISCRETIZATION::Element> > element_;     // map of elements
+  map<int,RefCountPtr<DRT::Element> >               element_;     // map of elements
   
   RefCountPtr<Epetra_Map>                           noderowmap_;  // unique distribution of nodal ownerships
   RefCountPtr<Epetra_Map>                           nodecolmap_;  // distribution of nodes including ghost nodes
-  map<int,RefCountPtr<CCADISCRETIZATION::Node> >    node_;        // map of nodes
+  map<int,RefCountPtr<DRT::Node> >                  node_;        // map of nodes
 
 
 }; // class Discretization
-} // namespace CCADISCRET
+} // namespace DRT
 
 
 // << operator
-ostream& operator << (ostream& os, const CCADISCRETIZATION::Discretization& dis);
+ostream& operator << (ostream& os, const DRT::Discretization& dis);
 
 
 

@@ -49,8 +49,8 @@ using namespace Teuchos;
 // headers and prototypes of functions acessible from c++
 void inpnodes_ccadiscret(Epetra_SerialDenseMatrix& tmpnodes);
 void input_structural_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm);
-void input_assign_nodes(CCADISCRETIZATION::Discretization& actdis,Epetra_SerialDenseMatrix* tmpnodes);
-void input_design_topology_discretization(CCADISCRETIZATION::Discretization& actdis);
+void input_assign_nodes(DRT::Discretization& actdis,Epetra_SerialDenseMatrix* tmpnodes);
+void input_design_topology_discretization(DRT::Discretization& actdis);
 void input_design_dpoint_fenode_read(vector<vector<int> >& dnode_fenode,
                                      vector<int>& ndnode_fenode);
 void input_design_dline_fenode_read(vector<vector<int> >& dline_fenode,

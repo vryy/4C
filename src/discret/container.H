@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file container.H
 
-\class CCADISCRETIZATION::Container
+\class DRT::Container
 
 \brief A data storage container
 
@@ -29,10 +29,10 @@ using namespace Teuchos;
 #include "dserror.H"
 
 /*!
-\brief CCADISCRET: namespace of the ccarat discretization module
+\brief DRT: namespace of the ccarat discretization module
 
 */
-namespace CCADISCRETIZATION
+namespace DRT
 {
 
 // forward declarations
@@ -44,7 +44,7 @@ namespace CCADISCRETIZATION
 
 \author gee (gee@lnm.mw.tum.de)
 */
-class Container : public CCADISCRETIZATION::ParObject
+class Container : public DRT::ParObject
 {
 public:
 
@@ -63,7 +63,7 @@ public:
   Makes a deep copy of a Node
   
   */
-  Container(const CCADISCRETIZATION::Container& old);
+  Container(const DRT::Container& old);
 
   /*!
   \brief Destructor
@@ -256,11 +256,11 @@ protected:
   map<string,string>                        stringdata_;   // a map to store string data in
 
 }; // class Container
-} // namespace CCADISCRETIZATION
+} // namespace DRT
 
 
 // << operator
-ostream& operator << (ostream& os, const CCADISCRETIZATION::Container& node);
+ostream& operator << (ostream& os, const DRT::Container& node);
 
 
 #endif  // #ifndef CONTAINER_H

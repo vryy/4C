@@ -22,9 +22,8 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Exporter::Exporter(const Epetra_Map& frommap, 
-                                      const Epetra_Map& tomap, 
-                                      const Epetra_Comm& comm) :
+DRT::Exporter::Exporter(const Epetra_Map& frommap,const Epetra_Map& tomap, 
+                        const Epetra_Comm& comm) :
 frommap_(frommap),
 tomap_(tomap),
 comm_(comm),
@@ -145,7 +144,7 @@ numproc_(comm.NumProc())
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Exporter::Exporter(const CCADISCRETIZATION::Exporter& old) :
+DRT::Exporter::Exporter(const DRT::Exporter& old) :
 frommap_(old.frommap_),
 tomap_(old.tomap_),
 comm_(old.comm_),
@@ -160,7 +159,7 @@ recvplan_(old.recvplan_)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Exporter::~Exporter()
+DRT::Exporter::~Exporter()
 {
   return;
 }
@@ -170,12 +169,12 @@ CCADISCRETIZATION::Exporter::~Exporter()
 /*----------------------------------------------------------------------*
  |  do a send of data (public)                               mwgee 11/06|
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Exporter::ISend(const int frompid, 
-                                        const int topid, 
-                                        const char* data, 
-                                        const int dsize,
-                                        const int tag, 
-                                        MPI_Request& request)
+void DRT::Exporter::ISend(const int frompid, 
+                          const int topid, 
+                          const char* data, 
+                          const int dsize,
+                          const int tag, 
+                          MPI_Request& request)
 {
   if (MyPID()!=frompid) return;
   const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
@@ -189,9 +188,8 @@ void CCADISCRETIZATION::Exporter::ISend(const int frompid,
 /*----------------------------------------------------------------------*
  |  receive anything (public)                                mwgee 11/06|
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Exporter::ReceiveAny(int& source, int&tag, 
-                                             vector<char>& recvbuff,
-                                             int& length)
+void DRT::Exporter::ReceiveAny(int& source, int&tag, 
+                               vector<char>& recvbuff,int& length)
 {
   const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
   if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");

@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file designnode.H
 
-\class CCADISCRETIZATION::DesignNode
+\class DRT::DesignNode
 
 \brief A node that is part of a CAD design description
 
@@ -23,10 +23,10 @@ Maintainer: Michael Gee
 #include "node.H"
 
 /*!
-\brief CCADISCRET: namespace of the ccarat discretization module
+\brief DRT: namespace of the ccarat discretization module
 
 */
-namespace CCADISCRETIZATION
+namespace DRT
 {
 
 /*!
@@ -36,7 +36,7 @@ namespace CCADISCRETIZATION
 
 \author gee (gee@lnm.mw.tum.de)
 */
-class DesignNode : public CCADISCRETIZATION::Node
+class DesignNode : public DRT::Node
 {
 public:
 
@@ -56,13 +56,13 @@ public:
   Makes a deep copy of a Design_Node
   
   */
-  DesignNode(const CCADISCRETIZATION::DesignNode& old);
+  DesignNode(const DRT::DesignNode& old);
 
   /*!
   \brief Deep copy the derived class and return pointer to it
   
   */
-  virtual CCADISCRETIZATION::DesignNode* Clone() const;
+  virtual DRT::DesignNode* Clone() const;
 
   /*!
   \brief Destructor
@@ -106,7 +106,7 @@ protected:
 
 
 }; // class DesignNode
-} // namespace CCADISCRETIZATION
+} // namespace DRT
 
 
 

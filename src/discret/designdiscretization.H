@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file designdiscretization.H
 
-\class CCADISCRETIZATION::Design
+\class DRT::Design
 
 \brief A class to manage a CAD design description
 
@@ -22,10 +22,10 @@ Maintainer: Michael Gee
 #include "designelement.H"
 
 /*!
-\brief CCADISCRET: namespace of the ccarat discretization module
+\brief DRT: namespace of the ccarat discretization module
 
 */
-namespace CCADISCRETIZATION
+namespace DRT
 {
 
 /*!
@@ -37,7 +37,7 @@ design inherits from Discretization
 
 \author gee (gee@lnm.mw.tum.de)
 */
-class DesignDiscretization : public CCADISCRETIZATION::Discretization
+class DesignDiscretization : public DRT::Discretization
 {
 public:
 
@@ -85,15 +85,15 @@ public:
   \note NULL is a valid argument for upper and/or lower
 
   */
-  int FillComplete(CCADISCRETIZATION::DesignDiscretization* higher, 
-                   CCADISCRETIZATION::DesignDiscretization* lower);
+  int FillComplete(DRT::DesignDiscretization* higher, 
+                   DRT::DesignDiscretization* lower);
 
   //@}
 
 private:
 
   // don't want copy-ctor
-  DesignDiscretization(const CCADISCRETIZATION::DesignDiscretization& old);
+  DesignDiscretization(const DRT::DesignDiscretization& old);
 
 
 protected:
@@ -102,7 +102,7 @@ protected:
 
 
 }; // class DesignDiscretization
-} // namespace CCADISCRETIZATION
+} // namespace DRT
 
 
 

@@ -20,7 +20,7 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Design::Design(RefCountPtr<Epetra_Comm> comm) :
+DRT::Design::Design(RefCountPtr<Epetra_Comm> comm) :
 comm_(comm)
 {
   for (int i=0; i<3; ++i) entity_[i] = rcp(new DesignDiscretization(comm_));
@@ -30,7 +30,7 @@ comm_(comm)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Design::Design(const CCADISCRETIZATION::Design& old)
+DRT::Design::Design(const DRT::Design& old)
 {
   dserror("Do not have copy-ctor");
 }
@@ -38,7 +38,7 @@ CCADISCRETIZATION::Design::Design(const CCADISCRETIZATION::Design& old)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Design::~Design()
+DRT::Design::~Design()
 {
   return;
 }
@@ -46,7 +46,7 @@ CCADISCRETIZATION::Design::~Design()
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-RefCountPtr<CCADISCRETIZATION::DesignDiscretization> CCADISCRETIZATION::Design::operator [] (const int index) const
+RefCountPtr<DRT::DesignDiscretization> DRT::Design::operator [] (const int index) const
 { 
   if (index != 0 && index != 1 && index != 2)
     dserror("index out of range, has to be 0 for lines/nodes, 1 for surfaces, 2 for volumes"); 

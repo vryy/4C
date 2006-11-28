@@ -84,14 +84,14 @@ extern struct _DESIGN *design;
 
 
 // local methods
-static void input_designnode_dirich(RefCountPtr<CCADISCRETIZATION::DesignDiscretization> designdis);
-static void input_designline_dirich(RefCountPtr<CCADISCRETIZATION::DesignDiscretization> designdis);
-static void input_designsurf_dirich(RefCountPtr<CCADISCRETIZATION::DesignDiscretization> designdis);
-static void input_designvol_dirich(RefCountPtr<CCADISCRETIZATION::DesignDiscretization> designdis);
-static void input_designnode_neum(RefCountPtr<CCADISCRETIZATION::DesignDiscretization> designdis);
-static void input_designline_neum(RefCountPtr<CCADISCRETIZATION::DesignDiscretization> designdis);
-static void input_designsurf_neum(RefCountPtr<CCADISCRETIZATION::DesignDiscretization> designdis);
-static void input_designvol_neum(RefCountPtr<CCADISCRETIZATION::DesignDiscretization> designdis);
+static void input_designnode_dirich(RefCountPtr<DRT::DesignDiscretization> designdis);
+static void input_designline_dirich(RefCountPtr<DRT::DesignDiscretization> designdis);
+static void input_designsurf_dirich(RefCountPtr<DRT::DesignDiscretization> designdis);
+static void input_designvol_dirich(RefCountPtr<DRT::DesignDiscretization> designdis);
+static void input_designnode_neum(RefCountPtr<DRT::DesignDiscretization> designdis);
+static void input_designline_neum(RefCountPtr<DRT::DesignDiscretization> designdis);
+static void input_designsurf_neum(RefCountPtr<DRT::DesignDiscretization> designdis);
+static void input_designvol_neum(RefCountPtr<DRT::DesignDiscretization> designdis);
 
 /*----------------------------------------------------------------------*
  | input of conditions                                    m.gee 11/06   |
@@ -109,12 +109,11 @@ void input_conditions()
 
   if (design)
   {
-    RefCountPtr<CCADISCRETIZATION::Design>* tmp = 
-               (RefCountPtr<CCADISCRETIZATION::Design>*)design->ccadesign;
-    CCADISCRETIZATION::Design& ccadesign = **tmp;
-    RefCountPtr<CCADISCRETIZATION::DesignDiscretization> designlines = ccadesign[0];
-    RefCountPtr<CCADISCRETIZATION::DesignDiscretization> designsurfs = ccadesign[1];
-    RefCountPtr<CCADISCRETIZATION::DesignDiscretization> designvols  = ccadesign[2];
+    RefCountPtr<DRT::Design>* tmp = (RefCountPtr<DRT::Design>*)design->ccadesign;
+    DRT::Design& ccadesign = **tmp;
+    RefCountPtr<DRT::DesignDiscretization> designlines = ccadesign[0];
+    RefCountPtr<DRT::DesignDiscretization> designsurfs = ccadesign[1];
+    RefCountPtr<DRT::DesignDiscretization> designvols  = ccadesign[2];
   
     if (ccadesign.Comm().MyPID()==0)
     {
@@ -152,7 +151,7 @@ void input_conditions()
 /*----------------------------------------------------------------------*
  | input of design node dirichlet conditions              m.gee 11/06   |
  *----------------------------------------------------------------------*/
-void input_designnode_dirich(RefCountPtr<CCADISCRETIZATION::DesignDiscretization> designdis)
+void input_designnode_dirich(RefCountPtr<DRT::DesignDiscretization> designdis)
 {
   DSTraceHelper dst("input_designnode_dirich");
 
@@ -246,15 +245,15 @@ void input_designnode_dirich(RefCountPtr<CCADISCRETIZATION::DesignDiscretization
     }
     
     // create boundary condition
-    RefCountPtr<CCADISCRETIZATION::Condition> condition = 
-      rcp(new CCADISCRETIZATION::Condition(CCADISCRETIZATION::Condition::condition_Dirichlet));
+    RefCountPtr<DRT::Condition> condition = 
+                rcp(new DRT::Condition(DRT::Condition::condition_Dirichlet));
     condition->Add("onoff",dirich_onoff);
     condition->Add("val",dirich_val);
     condition->Add("curve",dirich_curve);
     condition->Add("funct",dirich_funct);
     
     //------------------------------- get the dnode from the discretization
-    CCADISCRETIZATION::Node* node = designdis->gNode(dnodeid);
+    DRT::Node* node = designdis->gNode(dnodeid);
     if (node==NULL) dserror("Cannot find design node");
 
     //-------------------------------------------- attach condition to node
@@ -270,7 +269,7 @@ void input_designnode_dirich(RefCountPtr<CCADISCRETIZATION::DesignDiscretization
 /*----------------------------------------------------------------------*
  | input of design line dirichlet conditions              m.gee 11/06   |
  *----------------------------------------------------------------------*/
-void input_designline_dirich(RefCountPtr<CCADISCRETIZATION::DesignDiscretization> designdis)
+void input_designline_dirich(RefCountPtr<DRT::DesignDiscretization> designdis)
 {
   DSTraceHelper dst("input_designline_dirich");
 
@@ -362,8 +361,8 @@ void input_designline_dirich(RefCountPtr<CCADISCRETIZATION::DesignDiscretization
         strtol(colptr,&colptr,10);
     
     // create boundary condition
-    RefCountPtr<CCADISCRETIZATION::Condition> condition = 
-      rcp(new CCADISCRETIZATION::Condition(CCADISCRETIZATION::Condition::condition_Dirichlet));
+    RefCountPtr<DRT::Condition> condition = 
+                rcp(new DRT::Condition(DRT::Condition::condition_Dirichlet));
     condition->Add("onoff",dirich_onoff);
     condition->Add("val",dirich_val);
     condition->Add("curve",dirich_curve);
@@ -371,7 +370,7 @@ void input_designline_dirich(RefCountPtr<CCADISCRETIZATION::DesignDiscretization
     
     //------------------------------- get the dline from the discretization
     
-    CCADISCRETIZATION::Element* line = designdis->gElement(dlineid);
+    DRT::Element* line = designdis->gElement(dlineid);
     if (line==NULL) dserror("Cannot find design line");
 
     //-------------------------------------------- attach condition to node
@@ -388,7 +387,7 @@ void input_designline_dirich(RefCountPtr<CCADISCRETIZATION::DesignDiscretization
 /*----------------------------------------------------------------------*
  | input of design surface dirichlet conditions           m.gee 11/06   |
  *----------------------------------------------------------------------*/
-void input_designsurf_dirich(RefCountPtr<CCADISCRETIZATION::DesignDiscretization> designdis)
+void input_designsurf_dirich(RefCountPtr<DRT::DesignDiscretization> designdis)
 {
   DSTraceHelper dst("input_designsurf_dirich");
 
@@ -480,8 +479,8 @@ void input_designsurf_dirich(RefCountPtr<CCADISCRETIZATION::DesignDiscretization
         strtol(colptr,&colptr,10);
     
     // create boundary condition
-    RefCountPtr<CCADISCRETIZATION::Condition> condition = 
-      rcp(new CCADISCRETIZATION::Condition(CCADISCRETIZATION::Condition::condition_Dirichlet));
+    RefCountPtr<DRT::Condition> condition = 
+                 rcp(new DRT::Condition(DRT::Condition::condition_Dirichlet));
     condition->Add("onoff",dirich_onoff);
     condition->Add("val",dirich_val);
     condition->Add("curve",dirich_curve);
@@ -489,7 +488,7 @@ void input_designsurf_dirich(RefCountPtr<CCADISCRETIZATION::DesignDiscretization
     
     //------------------------------- get the dsurf from the discretization
     
-    CCADISCRETIZATION::Element* surf = designdis->gElement(dsurfid);
+    DRT::Element* surf = designdis->gElement(dsurfid);
     if (surf==NULL) dserror("Cannot find design surface");
 
     //-------------------------------------------- attach condition to node
@@ -506,7 +505,7 @@ void input_designsurf_dirich(RefCountPtr<CCADISCRETIZATION::DesignDiscretization
 /*----------------------------------------------------------------------*
  | input of design volume dirichlet conditions            m.gee 11/06   |
  *----------------------------------------------------------------------*/
-void input_designvol_dirich(RefCountPtr<CCADISCRETIZATION::DesignDiscretization> designdis)
+void input_designvol_dirich(RefCountPtr<DRT::DesignDiscretization> designdis)
 {
   DSTraceHelper dst("input_designvol_dirich");
 
@@ -598,15 +597,15 @@ void input_designvol_dirich(RefCountPtr<CCADISCRETIZATION::DesignDiscretization>
         strtol(colptr,&colptr,10);
     
     // create boundary condition
-    RefCountPtr<CCADISCRETIZATION::Condition> condition = 
-      rcp(new CCADISCRETIZATION::Condition(CCADISCRETIZATION::Condition::condition_Dirichlet));
+    RefCountPtr<DRT::Condition> condition = 
+                rcp(new DRT::Condition(DRT::Condition::condition_Dirichlet));
     condition->Add("onoff",dirich_onoff);
     condition->Add("val",dirich_val);
     condition->Add("curve",dirich_curve);
     condition->Add("funct",dirich_funct);
     
     //------------------------------- get the dvol from the discretization
-    CCADISCRETIZATION::Element* vol = designdis->gElement(dvolid);
+    DRT::Element* vol = designdis->gElement(dvolid);
     if (vol==NULL) dserror("Cannot find design volume");
 
     //-------------------------------------------- attach condition to node
@@ -621,7 +620,7 @@ void input_designvol_dirich(RefCountPtr<CCADISCRETIZATION::DesignDiscretization>
 /*----------------------------------------------------------------------*
  | input of design node neumann conditions                m.gee 11/06   |
  *----------------------------------------------------------------------*/
-void input_designnode_neum(RefCountPtr<CCADISCRETIZATION::DesignDiscretization> designdis)
+void input_designnode_neum(RefCountPtr<DRT::DesignDiscretization> designdis)
 {
   DSTraceHelper dst("input_designnode_neum");
 
@@ -700,8 +699,8 @@ void input_designnode_neum(RefCountPtr<CCADISCRETIZATION::DesignDiscretization> 
         strtod(colptr,&colptr);
        
     // create boundary condition
-    RefCountPtr<CCADISCRETIZATION::Condition> condition = 
-      rcp(new CCADISCRETIZATION::Condition(CCADISCRETIZATION::Condition::condition_Neumann));
+    RefCountPtr<DRT::Condition> condition = 
+                    rcp(new DRT::Condition(DRT::Condition::condition_Neumann));
     
     // read whether load is on surface (shells)
     frchk("Mid",&ierr);
@@ -716,7 +715,7 @@ void input_designnode_neum(RefCountPtr<CCADISCRETIZATION::DesignDiscretization> 
     condition->Add("val",neum_val);
     condition->Add("curve",&curve,1);
     //------------------------------- get the dnode from the discretization
-    CCADISCRETIZATION::Node* node = designdis->gNode(dnodeid);
+    DRT::Node* node = designdis->gNode(dnodeid);
     if (node==NULL) dserror("Cannot find design node");
 
     //-------------------------------------------- attach condition to node
@@ -733,7 +732,7 @@ void input_designnode_neum(RefCountPtr<CCADISCRETIZATION::DesignDiscretization> 
 /*----------------------------------------------------------------------*
  | input of design line neumann conditions                m.gee 11/06   |
  *----------------------------------------------------------------------*/
-void input_designline_neum(RefCountPtr<CCADISCRETIZATION::DesignDiscretization> designdis)
+void input_designline_neum(RefCountPtr<DRT::DesignDiscretization> designdis)
 {
   DSTraceHelper dst("input_designline_neum");
 
@@ -812,8 +811,8 @@ void input_designline_neum(RefCountPtr<CCADISCRETIZATION::DesignDiscretization> 
         strtod(colptr,&colptr);
        
     // create boundary condition
-    RefCountPtr<CCADISCRETIZATION::Condition> condition = 
-      rcp(new CCADISCRETIZATION::Condition(CCADISCRETIZATION::Condition::condition_Neumann));
+    RefCountPtr<DRT::Condition> condition = 
+                  rcp(new DRT::Condition(DRT::Condition::condition_Neumann));
     
     // read whether load is on surface (shells)
     condition->Add("type","neum_live");
@@ -845,7 +844,7 @@ void input_designline_neum(RefCountPtr<CCADISCRETIZATION::DesignDiscretization> 
     condition->Add("curve",&curve,1);
 
     //------------------------------- get the dline from the discretization
-    CCADISCRETIZATION::Element* line = designdis->gElement(dlineid);
+    DRT::Element* line = designdis->gElement(dlineid);
     if (line==NULL) dserror("Cannot find design line");
 
     //-------------------------------------------- attach condition to node
@@ -863,7 +862,7 @@ void input_designline_neum(RefCountPtr<CCADISCRETIZATION::DesignDiscretization> 
 /*----------------------------------------------------------------------*
  | input of design surface neumann conditions             m.gee 11/06   |
  *----------------------------------------------------------------------*/
-void input_designsurf_neum(RefCountPtr<CCADISCRETIZATION::DesignDiscretization> designdis)
+void input_designsurf_neum(RefCountPtr<DRT::DesignDiscretization> designdis)
 {
   DSTraceHelper dst("input_designsurf_neum");
 
@@ -942,8 +941,8 @@ void input_designsurf_neum(RefCountPtr<CCADISCRETIZATION::DesignDiscretization> 
         strtod(colptr,&colptr);
        
     // create boundary condition
-    RefCountPtr<CCADISCRETIZATION::Condition> condition = 
-      rcp(new CCADISCRETIZATION::Condition(CCADISCRETIZATION::Condition::condition_Neumann));
+    RefCountPtr<DRT::Condition> condition = 
+                  rcp(new DRT::Condition(DRT::Condition::condition_Neumann));
     
     // read whether load is on surface (shells)
     condition->Add("type","neum_live");
@@ -975,7 +974,7 @@ void input_designsurf_neum(RefCountPtr<CCADISCRETIZATION::DesignDiscretization> 
     condition->Add("curve",&curve,1);
 
     //------------------------------- get the dsurf from the discretization
-    CCADISCRETIZATION::Element* surf = designdis->gElement(dsurfid);
+    DRT::Element* surf = designdis->gElement(dsurfid);
     if (surf==NULL) dserror("Cannot find design surface");
 
     //-------------------------------------------- attach condition to node
@@ -993,7 +992,7 @@ void input_designsurf_neum(RefCountPtr<CCADISCRETIZATION::DesignDiscretization> 
 /*----------------------------------------------------------------------*
  | input of design volume neumann conditions             m.gee 11/06   |
  *----------------------------------------------------------------------*/
-void input_designvol_neum(RefCountPtr<CCADISCRETIZATION::DesignDiscretization> designdis)
+void input_designvol_neum(RefCountPtr<DRT::DesignDiscretization> designdis)
 {
   DSTraceHelper dst("input_designvol_neum");
 
@@ -1072,8 +1071,8 @@ void input_designvol_neum(RefCountPtr<CCADISCRETIZATION::DesignDiscretization> d
         strtod(colptr,&colptr);
        
     // create boundary condition
-    RefCountPtr<CCADISCRETIZATION::Condition> condition = 
-      rcp(new CCADISCRETIZATION::Condition(CCADISCRETIZATION::Condition::condition_Neumann));
+    RefCountPtr<DRT::Condition> condition = 
+                  rcp(new DRT::Condition(DRT::Condition::condition_Neumann));
     
     // read whether load is on surface (shells)
     condition->Add("type","neum_dead");
@@ -1088,7 +1087,7 @@ void input_designvol_neum(RefCountPtr<CCADISCRETIZATION::DesignDiscretization> d
     condition->Add("curve",&curve,1);
 
     //------------------------------- get the dvol from the discretization
-    CCADISCRETIZATION::Element* vol = designdis->gElement(dvolid);
+    DRT::Element* vol = designdis->gElement(dvolid);
     if (vol==NULL) dserror("Cannot find design volume");
 
     //-------------------------------------------- attach condition to node

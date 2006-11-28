@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file utils.H
-\brief A collection of helper methods for namespace CCADISCRETIZATION
+\brief A collection of helper methods for namespace DRT
 
 <pre>
 Maintainer: Michael Gee
@@ -29,10 +29,10 @@ using namespace std;
 using namespace Teuchos;
 
 /*!
-\brief CCADISCRET: namespace of the ccarat discretization module
+\brief DRT: namespace of the ccarat discretization module
 
 */
-namespace CCADISCRETIZATION
+namespace DRT
 {
 namespace Utils
 {
@@ -71,7 +71,7 @@ namespace Utils
                                                    const Epetra_Vector& weights);
 
 } // namespace Utils
-} // namespace CCADISCRETIZATION
+} // namespace DRT
 
 
 #endif  // #ifndef UTILS_H

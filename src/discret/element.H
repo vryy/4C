@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file element.H
 
-\class CCADISCRETIZATION::Element
+\class DRT::Element
 
 \brief A pure virtual element class
 
@@ -27,10 +27,10 @@ using namespace Teuchos;
 
 
 /*!
-\brief CCADISCRET: namespace of the ccarat discretization module
+\brief DRT: namespace of the ccarat discretization module
 
 */
-namespace CCADISCRETIZATION
+namespace DRT
 {
 
 // forward declarations
@@ -40,11 +40,11 @@ class Node;
 /*!
 \class Element
 
-\brief A virtual class all elements that are used in CCADISCRETIZATION have to implement
+\brief A virtual class all elements that are used in DRT have to implement
 
 \author gee (gee@lnm.mw.tum.de)
 */
-class Element : public CCADISCRETIZATION::ParObject
+class Element : public DRT::ParObject
 {
 public:
 
@@ -84,13 +84,13 @@ public:
   Makes a deep copy of a Element
   
   */
-  Element(const CCADISCRETIZATION::Element& old);
+  Element(const DRT::Element& old);
 
   /*!
   \brief Deep copy the derived class and return pointer to it
   
   */
-  virtual CCADISCRETIZATION::Element* Clone() const = 0;
+  virtual DRT::Element* Clone() const = 0;
 
   /*!
   \brief Destructor
@@ -218,21 +218,21 @@ protected:
   \return Returns true on success and false if nodes from NodeIds() cannot be found
           in map
   */
-  bool BuildNodalPointers(map<int,RefCountPtr<CCADISCRETIZATION::Node> >& nodes);
+  bool BuildNodalPointers(map<int,RefCountPtr<DRT::Node> >& nodes);
 
   int                                 id_;        // a unique global element id
   int                                 owner_;     // owner of this element
   ElementType                         etype_;     // type of element
   vector<int>                         nodeid_;    // list of my nodal ids
-  vector<CCADISCRETIZATION::Node*>    node_;      // pointers to adjacent nodes
+  vector<DRT::Node*>                  node_;      // pointers to adjacent nodes
   map<string,RefCountPtr<Condition> > condition_; // some conditions e.g. BCs
 
 }; // class Element
-} // namespace CCADISCRETIZATION
+} // namespace DRT
 
 
 // << operator
-ostream& operator << (ostream& os, const CCADISCRETIZATION::Element& ele);
+ostream& operator << (ostream& os, const DRT::Element& ele);
 
 
 

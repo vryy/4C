@@ -23,7 +23,7 @@ Maintainer: Michael Gee
  |  ctor (public)                                            mwgee 11/06|
  |  comm             (in)  a communicator object                        |
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Discretization::Discretization(RefCountPtr<Epetra_Comm> comm) :
+DRT::Discretization::Discretization(RefCountPtr<Epetra_Comm> comm) :
 comm_(comm),
 filled_(false)
 {
@@ -32,7 +32,7 @@ filled_(false)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Discretization::Discretization(const CCADISCRETIZATION::Discretization& old)
+DRT::Discretization::Discretization(const DRT::Discretization& old)
 {
   dserror("Discretization does not have a copy constructor");
   return;
@@ -41,7 +41,7 @@ CCADISCRETIZATION::Discretization::Discretization(const CCADISCRETIZATION::Discr
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Discretization::~Discretization()
+DRT::Discretization::~Discretization()
 {
   return;
 }
@@ -49,7 +49,7 @@ CCADISCRETIZATION::Discretization::~Discretization()
 /*----------------------------------------------------------------------*
  |  Add an element (public)                                  mwgee 11/06|
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Discretization::AddElement(RefCountPtr<CCADISCRETIZATION::Element> ele)
+void DRT::Discretization::AddElement(RefCountPtr<DRT::Element> ele)
 {
   filled_ = false;
   element_[ele->Id()] = ele;
@@ -59,7 +59,7 @@ void CCADISCRETIZATION::Discretization::AddElement(RefCountPtr<CCADISCRETIZATION
 /*----------------------------------------------------------------------*
  |  Add a node (public)                                      mwgee 11/06|
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Discretization::AddNode(RefCountPtr<CCADISCRETIZATION::Node> node)
+void DRT::Discretization::AddNode(RefCountPtr<DRT::Node> node)
 {
   filled_ = false;
   node_[node->Id()] = node;
@@ -69,9 +69,9 @@ void CCADISCRETIZATION::Discretization::AddNode(RefCountPtr<CCADISCRETIZATION::N
 /*----------------------------------------------------------------------*
  |  get element with global id (public)                      mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Element* CCADISCRETIZATION::Discretization::gElement(int gid) const
+DRT::Element* DRT::Discretization::gElement(int gid) const
 {
-  map<int,RefCountPtr<CCADISCRETIZATION::Element> >:: const_iterator curr = 
+  map<int,RefCountPtr<DRT::Element> >:: const_iterator curr = 
     element_.find(gid);
   if (curr == element_.end()) dserror("Element with gobal id gid=%d not stored on this proc",gid);
   else                        return curr->second.get();
@@ -81,13 +81,13 @@ CCADISCRETIZATION::Element* CCADISCRETIZATION::Discretization::gElement(int gid)
 /*----------------------------------------------------------------------*
  |  get element with local id (public)                      mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Element* CCADISCRETIZATION::Discretization::lRowElement(int lid) const
+DRT::Element* DRT::Discretization::lRowElement(int lid) const
 {
   if (!Filled()) 
-    dserror("CCADISCRETIZATION::Discretization::lRowElement: Filled() != true");
+    dserror("DRT::Discretization::lRowElement: Filled() != true");
   int gid = ElementRowMap()->GID(lid);
   if (gid<0) dserror("Element with local row index lid=%d not on this proc",lid);
-  map<int,RefCountPtr<CCADISCRETIZATION::Element> >:: const_iterator curr = 
+  map<int,RefCountPtr<DRT::Element> >:: const_iterator curr = 
     element_.find(gid);
   if (curr == element_.end()) 
     dserror("Cannot find element with row index lid %d gid %d",lid,gid);
@@ -99,13 +99,13 @@ CCADISCRETIZATION::Element* CCADISCRETIZATION::Discretization::lRowElement(int l
 /*----------------------------------------------------------------------*
  |  get element with local id (public)                      mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Element* CCADISCRETIZATION::Discretization::lColElement(int lid) const
+DRT::Element* DRT::Discretization::lColElement(int lid) const
 {
   if (!Filled()) 
-    dserror("CCADISCRETIZATION::Discretization::lColElement: Filled() != true");
+    dserror("DRT::Discretization::lColElement: Filled() != true");
   int gid = ElementColMap()->GID(lid);
   if (gid<0) dserror("Element with local column index lid=%d not on this proc",lid);
-  map<int,RefCountPtr<CCADISCRETIZATION::Element> >:: const_iterator curr = 
+  map<int,RefCountPtr<DRT::Element> >:: const_iterator curr = 
     element_.find(gid);
   if (curr == element_.end()) 
     dserror("Cannot find element with column index lid %d gid %d",lid,gid);
@@ -117,9 +117,9 @@ CCADISCRETIZATION::Element* CCADISCRETIZATION::Discretization::lColElement(int l
 /*----------------------------------------------------------------------*
  |  get node with global id (public)                         mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Node* CCADISCRETIZATION::Discretization::gNode(int gid) const
+DRT::Node* DRT::Discretization::gNode(int gid) const
 {
-  map<int,RefCountPtr<CCADISCRETIZATION::Node> >:: const_iterator curr = 
+  map<int,RefCountPtr<DRT::Node> >:: const_iterator curr = 
     node_.find(gid);
   if (curr == node_.end()) dserror("Node with global id gid=%d not stored on this proc",gid);
   else                     return curr->second.get();
@@ -129,13 +129,13 @@ CCADISCRETIZATION::Node* CCADISCRETIZATION::Discretization::gNode(int gid) const
 /*----------------------------------------------------------------------*
  |  get node with local id (public)                         mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Node* CCADISCRETIZATION::Discretization::lRowNode(int lid) const
+DRT::Node* DRT::Discretization::lRowNode(int lid) const
 {
   if (!Filled()) 
-    dserror("CCADISCRETIZATION::Discretization::lRowNode: Filled() != true");
+    dserror("DRT::Discretization::lRowNode: Filled() != true");
   int gid = NodeRowMap()->GID(lid);
   if (gid<0) return NULL;
-  map<int,RefCountPtr<CCADISCRETIZATION::Node> >:: const_iterator curr = 
+  map<int,RefCountPtr<DRT::Node> >:: const_iterator curr = 
     node_.find(gid);
   if (curr == node_.end()) dserror("Cannot find node with lid=%d gid=%d",lid,gid);
   else                     return curr->second.get();
@@ -145,13 +145,13 @@ CCADISCRETIZATION::Node* CCADISCRETIZATION::Discretization::lRowNode(int lid) co
 /*----------------------------------------------------------------------*
  |  get node with local id (public)                         mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Node* CCADISCRETIZATION::Discretization::lColNode(int lid) const
+DRT::Node* DRT::Discretization::lColNode(int lid) const
 {
   if (!Filled()) 
-    dserror("CCADISCRETIZATION::Discretization::lColNode: Filled() != true");
+    dserror("DRT::Discretization::lColNode: Filled() != true");
   int gid = NodeColMap()->GID(lid);
-  if (gid<0) return NULL;
-  map<int,RefCountPtr<CCADISCRETIZATION::Node> >:: const_iterator curr = 
+  if (gid<0) dserror("local index lid=%d out of range",lid);
+  map<int,RefCountPtr<DRT::Node> >:: const_iterator curr = 
     node_.find(gid);
   if (curr == node_.end()) dserror("Cannot find node with lid=%d gid=%d",lid,gid);
   else                     return curr->second.get();
@@ -161,7 +161,7 @@ CCADISCRETIZATION::Node* CCADISCRETIZATION::Discretization::lColNode(int lid) co
 /*----------------------------------------------------------------------*
  |  << operator                                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const CCADISCRETIZATION::Discretization& dis)
+ostream& operator << (ostream& os, const DRT::Discretization& dis)
 {
   dis.Print(os); 
   return os;
@@ -170,7 +170,7 @@ ostream& operator << (ostream& os, const CCADISCRETIZATION::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  Print discretization (public)                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Discretization::Print(ostream& os) const
+void DRT::Discretization::Print(ostream& os) const
 {
   int numglobalelements = 0;
   int numglobalnodes    = 0;
@@ -182,12 +182,12 @@ void CCADISCRETIZATION::Discretization::Print(ostream& os) const
   else
   {
     int nummynodes = 0;
-    map<int,RefCountPtr<CCADISCRETIZATION::Node> >::const_iterator ncurr;
+    map<int,RefCountPtr<DRT::Node> >::const_iterator ncurr;
     for (ncurr=node_.begin(); ncurr != node_.end(); ++ncurr)
       if (ncurr->second->Owner() == Comm().MyPID()) nummynodes++;
     
     int nummyele   = 0;
-    map<int,RefCountPtr<CCADISCRETIZATION::Element> >::const_iterator ecurr;
+    map<int,RefCountPtr<DRT::Element> >::const_iterator ecurr;
     for (ecurr=element_.begin(); ecurr != element_.end(); ++ecurr)
       if (ecurr->second->Owner() == Comm().MyPID()) nummyele++;
     
@@ -214,7 +214,7 @@ void CCADISCRETIZATION::Discretization::Print(ostream& os) const
     {
       if ((int)element_.size())
         os << "-------------------------- Proc " << proc << " :\n";
-      map<int,RefCountPtr<CCADISCRETIZATION::Element> >:: const_iterator curr;
+      map<int,RefCountPtr<DRT::Element> >:: const_iterator curr;
       for (curr = element_.begin(); curr != element_.end(); ++curr)
         os << *(curr->second) << endl;
       os << endl;
@@ -228,7 +228,7 @@ void CCADISCRETIZATION::Discretization::Print(ostream& os) const
     {
       if ((int)node_.size())
         os << "-------------------------- Proc " << proc << " :\n";
-      map<int,RefCountPtr<CCADISCRETIZATION::Node> >:: const_iterator curr;
+      map<int,RefCountPtr<DRT::Node> >:: const_iterator curr;
       for (curr = node_.begin(); curr != node_.end(); ++curr)
         os << *(curr->second) << endl;
       os << endl;
@@ -242,9 +242,9 @@ void CCADISCRETIZATION::Discretization::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  node <-> design node topology (public)                   mwgee 11/06|
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Discretization::SetDesignEntityIds(Node::OnDesignEntity type, 
-                                                           const vector<int>& nfenode, 
-                                                           const vector<vector<int> >& fenode)
+void DRT::Discretization::SetDesignEntityIds(Node::OnDesignEntity type, 
+                                             const vector<int>& nfenode, 
+                                             const vector<vector<int> >& fenode)
 {
   const int ndentity = nfenode.size();
   for (int i=0; i<ndentity; ++i)

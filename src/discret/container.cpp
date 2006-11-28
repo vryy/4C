@@ -21,7 +21,7 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Container::Container() :
+DRT::Container::Container() :
 ParObject()
 {
   return;
@@ -30,7 +30,7 @@ ParObject()
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Container::Container(const CCADISCRETIZATION::Container& old) :
+DRT::Container::Container(const DRT::Container& old) :
 ParObject(old),
 intdata_(old.intdata_),
 doubledata_(old.doubledata_),
@@ -42,7 +42,7 @@ stringdata_(old.stringdata_)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Container::~Container()
+DRT::Container::~Container()
 {
   return;
 }
@@ -51,7 +51,7 @@ CCADISCRETIZATION::Container::~Container()
 /*----------------------------------------------------------------------*
  |  << operator                                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const CCADISCRETIZATION::Container& cont)
+ostream& operator << (ostream& os, const DRT::Container& cont)
 {
   cont.Print(os); 
   return os;
@@ -62,7 +62,7 @@ ostream& operator << (ostream& os, const CCADISCRETIZATION::Container& cont)
  |  Pack data from this element into vector of length size     (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-const char* CCADISCRETIZATION::Container::Pack(int& size) const
+const char* DRT::Container::Pack(int& size) const
 {
   const int sizeint    = sizeof(int);
 
@@ -145,7 +145,7 @@ const char* CCADISCRETIZATION::Container::Pack(int& size) const
  |  Unpack data into this element                              (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-bool CCADISCRETIZATION::Container::Unpack(const char* data)
+bool DRT::Container::Unpack(const char* data)
 {
   int position=0;
   
@@ -201,7 +201,7 @@ bool CCADISCRETIZATION::Container::Unpack(const char* data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Container::Print(ostream& os) const
+void DRT::Container::Print(ostream& os) const
 {
   map<string,RefCountPtr<vector<int> > >::const_iterator curr;
   for (curr = intdata_.begin(); curr != intdata_.end(); ++curr)
@@ -229,7 +229,7 @@ void CCADISCRETIZATION::Container::Print(ostream& os) const
  |  Add stuff to the container                                 (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Container::Add(const string& name, const int* data, const int num)
+void DRT::Container::Add(const string& name, const int* data, const int num)
 {
   // get data in a vector
   RefCountPtr<vector<int> > storage = rcp(new vector<int>(num));
@@ -245,7 +245,7 @@ void CCADISCRETIZATION::Container::Add(const string& name, const int* data, cons
  |  Add stuff to the container                                 (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Container::Add(const string& name, const double* data, const int num)
+void DRT::Container::Add(const string& name, const double* data, const int num)
 {
   // get data in a vector
   RefCountPtr<vector<double> > storage = rcp(new vector<double>(num));
@@ -261,7 +261,7 @@ void CCADISCRETIZATION::Container::Add(const string& name, const double* data, c
  |  Add stuff to the container                                 (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Container::Add(const string& name, const string& data)
+void DRT::Container::Add(const string& name, const string& data)
 {
   // store the data
   stringdata_[name] = data;
@@ -272,7 +272,7 @@ void CCADISCRETIZATION::Container::Add(const string& name, const string& data)
  |  Delete stuff from the container                            (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Container::Delete(const string& name)
+void DRT::Container::Delete(const string& name)
 {
   map<string,RefCountPtr<vector<int> > >::iterator icurr = intdata_.find(name);
   if (icurr != intdata_.end()) 
@@ -302,7 +302,7 @@ void CCADISCRETIZATION::Container::Delete(const string& name)
  |  Get a string                                               (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-const string* CCADISCRETIZATION::Container::GetString(const string& name) const
+const string* DRT::Container::GetString(const string& name) const
 {
   map<string,string>::const_iterator curr = stringdata_.find(name);
   if (curr != stringdata_.end())

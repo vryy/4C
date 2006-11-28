@@ -21,7 +21,7 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::DesignNode::DesignNode(int id, const double* coords, const int owner) :
+DRT::DesignNode::DesignNode(int id, const double* coords, const int owner) :
 Node(id,coords,owner)
 {
   return;
@@ -30,7 +30,7 @@ Node(id,coords,owner)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::DesignNode::DesignNode(const CCADISCRETIZATION::DesignNode& old) :
+DRT::DesignNode::DesignNode(const DRT::DesignNode& old) :
 Node(old)
 {
   return;
@@ -39,7 +39,7 @@ Node(old)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::DesignNode::~DesignNode()
+DRT::DesignNode::~DesignNode()
 {
   return;
 }
@@ -49,16 +49,16 @@ CCADISCRETIZATION::DesignNode::~DesignNode()
  |  Deep copy this instance of Node and return pointer to it (public)   |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::DesignNode* CCADISCRETIZATION::DesignNode::Clone() const
+DRT::DesignNode* DRT::DesignNode::Clone() const
 {
-  CCADISCRETIZATION::DesignNode* newnode = new CCADISCRETIZATION::DesignNode(*this);
+  DRT::DesignNode* newnode = new DRT::DesignNode(*this);
   return newnode;
 }
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::DesignNode::Print(ostream& os) const
+void DRT::DesignNode::Print(ostream& os) const
 {
   Node::Print(os);
   return;
@@ -68,7 +68,7 @@ void CCADISCRETIZATION::DesignNode::Print(ostream& os) const
  |  Pack data from this element into vector of length size     (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-const char* CCADISCRETIZATION::DesignNode::Pack(int& size) const
+const char* DRT::DesignNode::Pack(int& size) const
 {
   const int sizeint    = sizeof(int);
 
@@ -103,7 +103,7 @@ const char* CCADISCRETIZATION::DesignNode::Pack(int& size) const
  |  Unpack data into this element                              (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-bool CCADISCRETIZATION::DesignNode::Unpack(const char* data)
+bool DRT::DesignNode::Unpack(const char* data)
 {
   int position=0;
   

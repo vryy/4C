@@ -21,7 +21,7 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Node::Node(int id, const double* coords, const int owner) :
+DRT::Node::Node(int id, const double* coords, const int owner) :
 ParObject(),
 id_(id),
 owner_(owner),
@@ -36,7 +36,7 @@ dentityid_(-1)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Node::Node(const CCADISCRETIZATION::Node& old) :
+DRT::Node::Node(const DRT::Node& old) :
 ParObject(old),
 id_(old.id_),
 owner_(old.owner_),
@@ -52,7 +52,7 @@ condition_(old.condition_)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Node::~Node()
+DRT::Node::~Node()
 {
   return;
 }
@@ -62,16 +62,16 @@ CCADISCRETIZATION::Node::~Node()
  |  Deep copy this instance of Node and return pointer to it (public)   |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Node* CCADISCRETIZATION::Node::Clone() const
+DRT::Node* DRT::Node::Clone() const
 {
-  CCADISCRETIZATION::Node* newnode = new CCADISCRETIZATION::Node(*this);
+  DRT::Node* newnode = new DRT::Node(*this);
   return newnode;
 }
 
 /*----------------------------------------------------------------------*
  |  << operator                                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const CCADISCRETIZATION::Node& node)
+ostream& operator << (ostream& os, const DRT::Node& node)
 {
   node.Print(os); 
   return os;
@@ -81,7 +81,7 @@ ostream& operator << (ostream& os, const CCADISCRETIZATION::Node& node)
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Node::Print(ostream& os) const
+void DRT::Node::Print(ostream& os) const
 {
   // Print id and coordinates
   os << "Node " << Id()
@@ -115,7 +115,7 @@ void CCADISCRETIZATION::Node::Print(ostream& os) const
  |  Pack data from this element into vector of length size     (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-const char* CCADISCRETIZATION::Node::Pack(int& size) const
+const char* DRT::Node::Pack(int& size) const
 {
   const int sizeint    = sizeof(int);
   const int sizedouble = sizeof(double);
@@ -191,7 +191,7 @@ const char* CCADISCRETIZATION::Node::Pack(int& size) const
  |  Unpack data into this element                              (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-bool CCADISCRETIZATION::Node::Unpack(const char* data)
+bool DRT::Node::Unpack(const char* data)
 {
   //const int sizeint    = sizeof(int);
   const int sizedouble = sizeof(double);
@@ -240,7 +240,7 @@ bool CCADISCRETIZATION::Node::Unpack(const char* data)
  |  Get a condition of a certain name                          (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-const CCADISCRETIZATION::Condition* CCADISCRETIZATION::Node::GetCondition(const string& name) const
+const DRT::Condition* DRT::Node::GetCondition(const string& name) const
 {
   map<string,RefCountPtr<Condition> >::const_iterator curr = condition_.find(name);
   if (curr != condition_.end()) return curr->second.get();

@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file condition.H
 
-\class CCADISCRETIZATION::Condition
+\class DRT::Condition
 
 \brief A condition of any kind
 
@@ -28,10 +28,10 @@ using namespace Teuchos;
 #include "dserror.H"
 
 /*!
-\brief CCADISCRET: namespace of the ccarat discretization module
+\brief DRT: namespace of the ccarat discretization module
 
 */
-namespace CCADISCRETIZATION
+namespace DRT
 {
 
 // forward declarations
@@ -43,7 +43,7 @@ namespace CCADISCRETIZATION
 
 \author gee (gee@lnm.mw.tum.de)
 */
-class Condition : public CCADISCRETIZATION::Container
+class Condition : public DRT::Container
 {
 public:
 
@@ -80,7 +80,7 @@ public:
   Makes a deep copy of a Node
   
   */
-  Condition(const CCADISCRETIZATION::Condition& old);
+  Condition(const DRT::Condition& old);
 
   /*!
   \brief Destructor
@@ -136,11 +136,11 @@ protected:
   ConditionType type_;   // type of this condition
 
 }; // class Condition
-} // namespace CCADISCRETIZATION
+} // namespace DRT
 
 
 // << operator
-ostream& operator << (ostream& os, const CCADISCRETIZATION::Condition& node);
+ostream& operator << (ostream& os, const DRT::Condition& node);
 
 
 #endif  // #ifndef CONDITION_H

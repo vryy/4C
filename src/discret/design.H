@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file design.H
 
-\class CCADISCRETIZATION::Design
+\class DRT::Design
 
 \brief A class to manage a CAD design
 
@@ -22,10 +22,10 @@ Maintainer: Michael Gee
 #include "designelement.H"
 
 /*!
-\brief CCADISCRET: namespace of the ccarat discretization module
+\brief DRT: namespace of the ccarat discretization module
 
 */
-namespace CCADISCRETIZATION
+namespace DRT
 {
 
 /*!
@@ -52,7 +52,7 @@ public:
   \brief Copy Constructor
 
   */
-  Design(const CCADISCRETIZATION::Design& old);
+  Design(const DRT::Design& old);
 
   /*!
   \brief Destructor
@@ -106,7 +106,7 @@ protected:
   RefCountPtr<DesignDiscretization> entity_[3];  
 
 }; // class Design
-} // namespace CCADISCRETIZATION
+} // namespace DRT
 
 
 

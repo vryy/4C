@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file utils.cpp
-\brief A collection of helper methods for namespace CCADISCRETIZATION
+\brief A collection of helper methods for namespace DRT
 
 <pre>
 Maintainer: Michael Gee
@@ -39,7 +39,7 @@ extern "C"
 /*----------------------------------------------------------------------*
  |  create an instance of ParObject  (public)                mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::ParObject* CCADISCRETIZATION::Utils::Factory(const char* data)
+DRT::ParObject* DRT::Utils::Factory(const char* data)
 {
   // mv ptr behind the size record
   const int* ptr = (const int*)data;
@@ -52,15 +52,14 @@ CCADISCRETIZATION::ParObject* CCADISCRETIZATION::Utils::Factory(const char* data
   {
     case ParObject_Container:
     {
-      CCADISCRETIZATION::Container* object = new CCADISCRETIZATION::Container();
+      DRT::Container* object = new DRT::Container();
       object->Unpack(data);
       return object;
     }
     break;
     case ParObject_Condition:
     {
-      CCADISCRETIZATION::Condition* object = 
-        new CCADISCRETIZATION::Condition(CCADISCRETIZATION::Condition::condition_none);
+      DRT::Condition* object = new DRT::Condition(DRT::Condition::condition_none);
       object->Unpack(data);
       return object;
     }
@@ -68,7 +67,7 @@ CCADISCRETIZATION::ParObject* CCADISCRETIZATION::Utils::Factory(const char* data
     case ParObject_Node:
     {
       double dummycoord[3] = {999.,999.,999.};
-      CCADISCRETIZATION::Node* object = new CCADISCRETIZATION::Node(-1,dummycoord,-1);
+      DRT::Node* object = new DRT::Node(-1,dummycoord,-1);
       object->Unpack(data);
       return object;
     }
@@ -76,27 +75,26 @@ CCADISCRETIZATION::ParObject* CCADISCRETIZATION::Utils::Factory(const char* data
     case ParObject_DesignNode:
     {
       double dummycoord[3] = {999.,999.,999.};
-      CCADISCRETIZATION::DesignNode* object = new CCADISCRETIZATION::DesignNode(-1,dummycoord,-1);
+      DRT::DesignNode* object = new DRT::DesignNode(-1,dummycoord,-1);
       object->Unpack(data);
       return object;
     }
     break;
     case ParObject_Element:
     {
-      dserror("CCADISCRETIZATION::Element is pure virtual, cannot create instance");
+      dserror("DRT::Element is pure virtual, cannot create instance");
     }
     break;
     case ParObject_DesignElement:
     {
-      CCADISCRETIZATION::DesignElement* object = 
-        new CCADISCRETIZATION::DesignElement(-1,CCADISCRETIZATION::Element::element_none,-1);
+      DRT::DesignElement* object = new DRT::DesignElement(-1,DRT::Element::element_none,-1);
       object->Unpack(data);
       return object;
     }
     break;
     case ParObject_Shell8:
     {
-      CCADISCRETIZATION::Shell8* object = new CCADISCRETIZATION::Shell8(-1,-1);
+      DRT::Shell8* object = new DRT::Shell8(-1,-1);
       object->Unpack(data);
       return object;
     }
@@ -112,7 +110,7 @@ CCADISCRETIZATION::ParObject* CCADISCRETIZATION::Utils::Factory(const char* data
 /*----------------------------------------------------------------------*
  |  partition a graph using metis  (public)                  mwgee 11/06|
  *----------------------------------------------------------------------*/
-RefCountPtr<Epetra_CrsGraph> CCADISCRETIZATION::Utils::PartGraphUsingMetis(
+RefCountPtr<Epetra_CrsGraph> DRT::Utils::PartGraphUsingMetis(
                                              const Epetra_CrsGraph& graph,
                                              const Epetra_Vector& weights)
 {

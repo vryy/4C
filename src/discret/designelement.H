@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file designelement.H
 
-\class CCADISCRETIZATION::DesignElement
+\class DRT::DesignElement
 
 \brief An element used in CAD design description
 
@@ -25,10 +25,10 @@ using namespace Teuchos;
 
 
 /*!
-\brief CCADISCRETIZATION: namespace of the ccarat discretization module
+\brief DRT: namespace of the ccarat discretization module
 
 */
-namespace CCADISCRETIZATION
+namespace DRT
 {
 
 /*!
@@ -38,7 +38,7 @@ namespace CCADISCRETIZATION
 
 \author gee (gee@lnm.mw.tum.de)
 */
-class DesignElement : public CCADISCRETIZATION::Element
+class DesignElement : public DRT::Element
 {
 public:
 
@@ -62,7 +62,7 @@ public:
   Makes a deep copy of an Element
   
   */
-  DesignElement(const CCADISCRETIZATION::DesignElement& old);
+  DesignElement(const DRT::DesignElement& old);
 
   /*!
   \brief Deep copy this instance of DesignElement and return pointer to the copy
@@ -71,7 +71,7 @@ public:
   where the type of the derived class is unknown and a copy-ctor is needed
   
   */
-  CCADISCRETIZATION::DesignElement* Clone() const;
+  DRT::DesignElement* Clone() const;
 
   /*!
   \brief Pack this class so it can be communicated
@@ -188,7 +188,7 @@ private:
   vector<Element*> hentity_;      // ptrs to lower entities
 
 }; // class DesignElement
-} // namespace CCADISCRET
+} // namespace DRT
 
 
 

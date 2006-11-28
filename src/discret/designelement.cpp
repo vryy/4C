@@ -23,7 +23,7 @@ Maintainer: Michael Gee
  |  ctor (public)                                            mwgee 11/06|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::DesignElement::DesignElement(int id, enum ElementType type, int owner) :
+DRT::DesignElement::DesignElement(int id, enum ElementType type, int owner) :
 Element(id,type,owner)
 {
   return;
@@ -33,7 +33,7 @@ Element(id,type,owner)
  |  copy-ctor (public)                                       mwgee 11/06|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::DesignElement::DesignElement(const CCADISCRETIZATION::DesignElement& old) :
+DRT::DesignElement::DesignElement(const DRT::DesignElement& old) :
 Element(old),
 lentityid_(old.lentityid_),
 lorientation_(old.lorientation_),
@@ -49,9 +49,9 @@ hentity_(old.hentity_)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::DesignElement* CCADISCRETIZATION::DesignElement::Clone() const
+DRT::DesignElement* DRT::DesignElement::Clone() const
 {
-  CCADISCRETIZATION::DesignElement* newelement = new CCADISCRETIZATION::DesignElement(*this);
+  DRT::DesignElement* newelement = new DRT::DesignElement(*this);
   return newelement;
 }
 
@@ -59,7 +59,7 @@ CCADISCRETIZATION::DesignElement* CCADISCRETIZATION::DesignElement::Clone() cons
  |  Pack data from this element into vector of length size     (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-const char* CCADISCRETIZATION::DesignElement::Pack(int& size) const
+const char* DRT::DesignElement::Pack(int& size) const
 {
   const int sizeint    = sizeof(int);
   //const int sizedouble = sizeof(double);
@@ -113,7 +113,7 @@ const char* CCADISCRETIZATION::DesignElement::Pack(int& size) const
  |  Unpack data into this element                              (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-bool CCADISCRETIZATION::DesignElement::Unpack(const char* data)
+bool DRT::DesignElement::Unpack(const char* data)
 {
   //const int sizeint    = sizeof(int);
   //const int sizeforcetype = sizeof(enum ForceType);
@@ -157,7 +157,7 @@ bool CCADISCRETIZATION::DesignElement::Unpack(const char* data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::DesignElement::~DesignElement()
+DRT::DesignElement::~DesignElement()
 {
   return;
 }
@@ -166,7 +166,7 @@ CCADISCRETIZATION::DesignElement::~DesignElement()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::DesignElement::Print(ostream& os) const
+void DRT::DesignElement::Print(ostream& os) const
 {
   os << "DesignElement ";
   Element::Print(os);
@@ -189,7 +189,7 @@ void CCADISCRETIZATION::DesignElement::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  | set lower entity ids (public)                             mwgee 11/06|
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::DesignElement::SetLowerEntities(const int nele, const int* ids, const int* orientation)
+void DRT::DesignElement::SetLowerEntities(const int nele, const int* ids, const int* orientation)
 {
   lentityid_.resize(nele);
   lorientation_.resize(nele);
@@ -204,7 +204,7 @@ void CCADISCRETIZATION::DesignElement::SetLowerEntities(const int nele, const in
 /*----------------------------------------------------------------------*
  | set higher entity ids (public)                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::DesignElement::SetHigherEntities(const int nele, const int* ids, const int* orientation)
+void DRT::DesignElement::SetHigherEntities(const int nele, const int* ids, const int* orientation)
 {
   hentityid_.resize(nele);
   horientation_.resize(nele);
@@ -220,7 +220,7 @@ void CCADISCRETIZATION::DesignElement::SetHigherEntities(const int nele, const i
 /*----------------------------------------------------------------------*
  | get pointers to lower entities (public)                   mwgee 11/06|
  *----------------------------------------------------------------------*/
-bool CCADISCRETIZATION::DesignElement::BuildLowerElementPointers(const Discretization& lower)
+bool DRT::DesignElement::BuildLowerElementPointers(const Discretization& lower)
 {
   const int nlowerid = NumLowerEntityIds();
   if (!nlowerid) return true;

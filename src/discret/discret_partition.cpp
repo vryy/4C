@@ -20,11 +20,11 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  Export nodes owned by a proc (public)                    mwgee 11/06|
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Discretization::ExportNodes(const Epetra_Map& newmap)
+void DRT::Discretization::ExportRowNodes(const Epetra_Map& newmap)
 {
   // destroy all ghosted nodes
   const int myrank = Comm().MyPID();
-  map<int,RefCountPtr<CCADISCRETIZATION::Node> >::iterator curr;
+  map<int,RefCountPtr<DRT::Node> >::iterator curr;
   for (curr=node_.begin(); curr!=node_.end(); ++curr)
     if (curr->second->Owner() != myrank)
       node_.erase(curr->first);
@@ -34,16 +34,14 @@ void CCADISCRETIZATION::Discretization::ExportNodes(const Epetra_Map& newmap)
   const Epetra_Map& oldmap = *noderowmap_;
   
   // test whether newmap is non-overlapping
-  int oldmy = oldmap.NumMyElements();
-  int newmy = newmap.NumMyElements();
-  int oldglobal=0;
-  int newglobal=0;
-  Comm().SumAll(&oldmy,&oldglobal,1);
-  Comm().SumAll(&newmy,&newglobal,1);
-  if (oldglobal != newglobal) dserror("New map is likely not non-overlapping");
+  if (!newmap.UniqueGIDs()) dserror("new map not unique");
+
+  // test whether global number of nodes in maps are the same
+  if (newmap.NumGlobalElements() != oldmap.NumGlobalElements())
+    dserror("Global number of nodes in new and old map does not match");
 
   // create an exporter object that will figure out the communication pattern
-  CCADISCRETIZATION::Exporter exporter(oldmap,newmap,Comm());
+  DRT::Exporter exporter(oldmap,newmap,Comm());
   // Do the communication
   exporter.Export(node_);
   
@@ -61,11 +59,11 @@ void CCADISCRETIZATION::Discretization::ExportNodes(const Epetra_Map& newmap)
 /*----------------------------------------------------------------------*
  |  Export nodes owned by a proc (public)                    mwgee 11/06|
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Discretization::ExportGhostNodes(const Epetra_Map& newmap)
+void DRT::Discretization::ExportColumnNodes(const Epetra_Map& newmap)
 {
   // destroy all ghosted nodes
   const int myrank = Comm().MyPID();
-  map<int,RefCountPtr<CCADISCRETIZATION::Node> >::iterator curr;
+  map<int,RefCountPtr<DRT::Node> >::iterator curr;
   for (curr=node_.begin(); curr!=node_.end(); ++curr)
     if (curr->second->Owner() != myrank)
       node_.erase(curr->first);
@@ -83,7 +81,7 @@ void CCADISCRETIZATION::Discretization::ExportGhostNodes(const Epetra_Map& newma
   }
   
   // create an exporter object that will figure out the communication pattern
-  CCADISCRETIZATION::Exporter exporter(oldmap,newmap,Comm());
+  DRT::Exporter exporter(oldmap,newmap,Comm());
   // Do the communication
   exporter.Export(node_);
   
@@ -98,11 +96,11 @@ void CCADISCRETIZATION::Discretization::ExportGhostNodes(const Epetra_Map& newma
 /*----------------------------------------------------------------------*
  |  Export elements (public)                                 mwgee 11/06|
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Discretization::ExportElements(const Epetra_Map& newmap)
+void DRT::Discretization::ExportRowElements(const Epetra_Map& newmap)
 {
   // destroy all ghosted elements
   const int myrank = Comm().MyPID();
-  map<int,RefCountPtr<CCADISCRETIZATION::Element> >::iterator curr;
+  map<int,RefCountPtr<DRT::Element> >::iterator curr;
   for (curr=element_.begin(); curr!=element_.end(); ++curr)
     if (curr->second->Owner() != myrank)
       element_.erase(curr);
@@ -121,7 +119,7 @@ void CCADISCRETIZATION::Discretization::ExportElements(const Epetra_Map& newmap)
   if (oldglobal != newglobal) dserror("New map is likely not non-overlapping");
   
   // create an exporter object that will figure out the communication pattern
-  CCADISCRETIZATION::Exporter exporter(oldmap,newmap,Comm());
+  DRT::Exporter exporter(oldmap,newmap,Comm());
   exporter.Export(element_);
   
   // update ownerships and kick out everything that's not in newmap
@@ -139,11 +137,11 @@ void CCADISCRETIZATION::Discretization::ExportElements(const Epetra_Map& newmap)
 /*----------------------------------------------------------------------*
  |  Export elements (public)                                 mwgee 11/06|
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Discretization::ExportGhostElements(const Epetra_Map& newmap)
+void DRT::Discretization::ExportColumnElements(const Epetra_Map& newmap)
 {
   // destroy all ghosted elements
   const int myrank = Comm().MyPID();
-  map<int,RefCountPtr<CCADISCRETIZATION::Element> >::iterator curr;
+  map<int,RefCountPtr<DRT::Element> >::iterator curr;
   for (curr=element_.begin(); curr!=element_.end(); ++curr)
     if (curr->second->Owner() != myrank)
       element_.erase(curr->first);
@@ -161,7 +159,7 @@ void CCADISCRETIZATION::Discretization::ExportGhostElements(const Epetra_Map& ne
   }
   
   // create an exporter object that will figure out the communication pattern
-  CCADISCRETIZATION::Exporter exporter(oldmap,newmap,Comm());
+  DRT::Exporter exporter(oldmap,newmap,Comm());
   exporter.Export(element_);
   
   // maps and pointers are no longer correct and need rebuilding
@@ -174,7 +172,7 @@ void CCADISCRETIZATION::Discretization::ExportGhostElements(const Epetra_Map& ne
 /*----------------------------------------------------------------------*
  |  build nodal graph from discretization (public)           mwgee 11/06|
  *----------------------------------------------------------------------*/
-RefCountPtr<Epetra_CrsGraph> CCADISCRETIZATION::Discretization::BuildNodeGraph() const
+RefCountPtr<Epetra_CrsGraph> DRT::Discretization::BuildNodeGraph() const
 {
   if (!Filled()) dserror("FillComplete() was not called on this discretization");
 
@@ -190,7 +188,7 @@ RefCountPtr<Epetra_CrsGraph> CCADISCRETIZATION::Discretization::BuildNodeGraph()
   // if a proc stores the appropiate ghosted elements, the resulting
   // graph will be the correct and complete graph of the distributed
   // discretization even if nodes are not ghosted.
-  map<int,RefCountPtr<CCADISCRETIZATION::Element> >::const_iterator curr;
+  map<int,RefCountPtr<DRT::Element> >::const_iterator curr;
   for (curr=element_.begin(); curr!=element_.end(); ++curr)
   {
     const int  nnode   = curr->second->NumNode();
@@ -216,9 +214,9 @@ RefCountPtr<Epetra_CrsGraph> CCADISCRETIZATION::Discretization::BuildNodeGraph()
 
 
 /*----------------------------------------------------------------------*
- |  build element map from discretization (public)           mwgee 11/06|
+ |  build element map from discretization (private)          mwgee 11/06|
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Discretization::BuildElementGhosting(
+void DRT::Discretization::BuildElementRowColumn(
                                     const Epetra_Map& noderowmap,
                                     const Epetra_Map& nodecolmap,
                                     RefCountPtr<Epetra_Map>& elerowmap,
@@ -251,10 +249,10 @@ void CCADISCRETIZATION::Discretization::BuildElementGhosting(
   int stoposize = 2000;
   int count     = 0;
   vector<int> stopo(stoposize);
-  map<int,RefCountPtr<CCADISCRETIZATION::Element> >::const_iterator ecurr;
+  map<int,RefCountPtr<DRT::Element> >::const_iterator ecurr;
   for (ecurr=element_.begin(); ecurr!=element_.end(); ++ecurr)
   {
-    const CCADISCRETIZATION::Element& actele = *(ecurr->second);
+    const DRT::Element& actele = *(ecurr->second);
     int        gid     = actele.Id();
     int        nnode   = actele.NumNode();
     const int* nodeids = actele.NodeIds();
@@ -420,6 +418,34 @@ void CCADISCRETIZATION::Discretization::BuildElementGhosting(
   return;
 }
 
+
+
+
+/*----------------------------------------------------------------------*
+ |  redistribute discretization (public)                     mwgee 11/06|
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap,
+                                       const Epetra_Map& nodecolmap)
+{
+  if (!Filled()) dserror("FillComplete() was not called on this discretization");
+  
+  // build the overlapping and non-overlapping element maps
+  RefCountPtr<Epetra_Map> elerowmap;
+  RefCountPtr<Epetra_Map> elecolmap;
+  BuildElementRowColumn(noderowmap,nodecolmap,elerowmap,elecolmap);
+  
+  // export nodes and elements to the new maps
+  ExportRowNodes(noderowmap);
+  ExportColumnNodes(nodecolmap);
+  ExportRowElements(*elerowmap);
+  ExportColumnElements(*elecolmap);
+  
+  // these exports have set Filled()=false as all maps are invalid now
+  int err = FillComplete();
+  if (err) dserror("FillComplete() returned err=%d",err);
+
+  return;
+}
 
 
 #endif  // #ifdef TRILINOS_PACKAGE

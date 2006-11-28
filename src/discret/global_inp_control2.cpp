@@ -128,11 +128,11 @@ void ntainp_ccadiscret()
   if (design)
     for (int i=0; i<genprob.numfld; ++i)
     {
-      vector<RefCountPtr<CCADISCRETIZATION::Discretization> >* discretization =
-        (vector<RefCountPtr<CCADISCRETIZATION::Discretization> >*)field[i].ccadis;
+      vector<RefCountPtr<DRT::Discretization> >* discretization =
+                  (vector<RefCountPtr<DRT::Discretization> >*)field[i].ccadis;
       for (int j=0;j<field[i].ndis;j++)
       {
-        RefCountPtr<CCADISCRETIZATION::Discretization> actdis = (*discretization)[j];
+        RefCountPtr<DRT::Discretization> actdis = (*discretization)[j];
         input_design_topology_discretization(*actdis);
       }
     }
@@ -181,19 +181,18 @@ void ntainp_ccadiscret()
 
  */
 /*-----------------------------------------------------------------------*/
-void input_design_topology_discretization(CCADISCRETIZATION::Discretization& actdis)
+void input_design_topology_discretization(DRT::Discretization& actdis)
 {
   DSTraceHelper dst("input_design_topology_discretization");
   
   
   
   // get the design discretizations
-  RefCountPtr<CCADISCRETIZATION::Design>* tmp =
-    (RefCountPtr<CCADISCRETIZATION::Design>*)design->ccadesign;
-  CCADISCRETIZATION::Design& ccadesign = **tmp;   
-  RefCountPtr<CCADISCRETIZATION::DesignDiscretization> designlines = ccadesign[0];
-  RefCountPtr<CCADISCRETIZATION::DesignDiscretization> designsurfs = ccadesign[1];
-  RefCountPtr<CCADISCRETIZATION::DesignDiscretization> designvols  = ccadesign[2];
+  RefCountPtr<DRT::Design>* tmp = (RefCountPtr<DRT::Design>*)design->ccadesign;
+  DRT::Design& ccadesign = **tmp;   
+  RefCountPtr<DRT::DesignDiscretization> designlines = ccadesign[0];
+  RefCountPtr<DRT::DesignDiscretization> designsurfs = ccadesign[1];
+  RefCountPtr<DRT::DesignDiscretization> designvols  = ccadesign[2];
   
   // number of design points, lines, surfaces and volumes
   const int ndnode = designlines->NumGlobalNodes();
@@ -233,13 +232,13 @@ void input_design_topology_discretization(CCADISCRETIZATION::Discretization& act
     input_design_dvol_fenode_read(dvol_fenode,ndvol_fenode);
 
     // create topology node <-> designnode
-    CCADISCRETIZATION::Node::OnDesignEntity type = CCADISCRETIZATION::Node::on_dnode;
+    DRT::Node::OnDesignEntity type = DRT::Node::on_dnode;
     actdis.SetDesignEntityIds(type,ndnode_fenode,dnode_fenode);
-    type = CCADISCRETIZATION::Node::on_dline;
+    type = DRT::Node::on_dline;
     actdis.SetDesignEntityIds(type,ndline_fenode,dline_fenode);
-    type = CCADISCRETIZATION::Node::on_dsurface;
+    type = DRT::Node::on_dsurface;
     actdis.SetDesignEntityIds(type,ndsurf_fenode,dsurf_fenode);
-    type = CCADISCRETIZATION::Node::on_dvolume;
+    type = DRT::Node::on_dvolume;
     actdis.SetDesignEntityIds(type,ndvol_fenode,dvol_fenode);
   } // if (designvols->Comm().MyPID()==0)
   return;
@@ -277,14 +276,13 @@ void input_design()
 #endif
 
   // create the new style design structure and store in design
-  RefCountPtr<CCADISCRETIZATION::Design>* tmp = 
-                                  new RefCountPtr<CCADISCRETIZATION::Design>();
-  (*tmp) = rcp(new CCADISCRETIZATION::Design(comm));
+  RefCountPtr<DRT::Design>* tmp = new RefCountPtr<DRT::Design>();
+  (*tmp) = rcp(new DRT::Design(comm));
   design->ccadesign = (void*)tmp;
-  CCADISCRETIZATION::Design& ccadesign = **tmp;
-  RefCountPtr<CCADISCRETIZATION::DesignDiscretization> designlines = ccadesign[0];
-  RefCountPtr<CCADISCRETIZATION::DesignDiscretization> designsurfs = ccadesign[1];
-  RefCountPtr<CCADISCRETIZATION::DesignDiscretization> designvols  = ccadesign[2];
+  DRT::Design& ccadesign = **tmp;
+  RefCountPtr<DRT::DesignDiscretization> designlines = ccadesign[0];
+  RefCountPtr<DRT::DesignDiscretization> designsurfs = ccadesign[1];
+  RefCountPtr<DRT::DesignDiscretization> designvols  = ccadesign[2];
 
   int ierr=0;
   
@@ -352,8 +350,8 @@ void input_design()
       frread();
     
       // create the design node and store it in ccadesign
-      RefCountPtr<CCADISCRETIZATION::DesignNode> node = 
-                  rcp(new CCADISCRETIZATION::DesignNode(i,x,comm->MyPID()));
+      RefCountPtr<DRT::DesignNode> node = 
+                                 rcp(new DRT::DesignNode(i,x,comm->MyPID()));
       
       // we add the nodes to all of the design descriptions
       // this is not a problem as they are refcountpointed
@@ -392,8 +390,8 @@ void input_design()
       frread();
       
       // create the design line element and store it in ccadesign
-      RefCountPtr<CCADISCRETIZATION::DesignElement> line = 
-        rcp(new CCADISCRETIZATION::DesignElement(i,CCADISCRETIZATION::Element::element_designline,comm->MyPID())); 
+      RefCountPtr<DRT::DesignElement> line = 
+        rcp(new DRT::DesignElement(i,DRT::Element::element_designline,comm->MyPID())); 
       line->SetNodeIds(2,nodeids);     
       
       // Add the line to the lines description
@@ -446,8 +444,8 @@ void input_design()
       }
       
       // create the design surface
-      RefCountPtr<CCADISCRETIZATION::DesignElement> surf = 
-        rcp(new CCADISCRETIZATION::DesignElement(i,CCADISCRETIZATION::Element::element_designsurface,comm->MyPID()));
+      RefCountPtr<DRT::DesignElement> surf = 
+        rcp(new DRT::DesignElement(i,DRT::Element::element_designsurface,comm->MyPID()));
       surf->SetLowerEntities(numlines,&lineids[0],&orientation[0]);
       
       // Add the surface to the surfaces description
@@ -498,8 +496,8 @@ void input_design()
       frread();
       
       // create the design volume
-      RefCountPtr<CCADISCRETIZATION::DesignElement> vol = 
-        rcp(new CCADISCRETIZATION::DesignElement(i,CCADISCRETIZATION::Element::element_designsurface,comm->MyPID()));
+      RefCountPtr<DRT::DesignElement> vol = 
+        rcp(new DRT::DesignElement(i,DRT::Element::element_designsurface,comm->MyPID()));
       vol->SetLowerEntities(numsurfs,&surfids[0],&orientation[0]);
       
       // Add the volume to the volumes description
@@ -590,11 +588,11 @@ void inpfield_ccadiscret()
   int nnode_total = 0;
   for (int i=0; i<genprob.numfld; i++)
   {
-    vector<RefCountPtr<CCADISCRETIZATION::Discretization> >* discretization = 
-      (vector<RefCountPtr<CCADISCRETIZATION::Discretization> >*)field[i].ccadis;
+    vector<RefCountPtr<DRT::Discretization> >* discretization = 
+                 (vector<RefCountPtr<DRT::Discretization> >*)field[i].ccadis;
     for (int j=0;j<field[i].ndis;j++)
     {
-      RefCountPtr<CCADISCRETIZATION::Discretization> actdis = (*discretization)[j];
+      RefCountPtr<DRT::Discretization> actdis = (*discretization)[j];
       input_assign_nodes(*actdis,tmpnodes.get());
       int err = actdis->FillComplete();
       if (err)
@@ -619,7 +617,7 @@ void inpfield_ccadiscret()
 
  */
 /*-----------------------------------------------------------------------*/
-void input_assign_nodes(CCADISCRETIZATION::Discretization& actdis,Epetra_SerialDenseMatrix* tmpnodes)
+void input_assign_nodes(DRT::Discretization& actdis,Epetra_SerialDenseMatrix* tmpnodes)
 {
   DSTraceHelper dst("input_assign_nodes");
   
@@ -634,7 +632,7 @@ void input_assign_nodes(CCADISCRETIZATION::Discretization& actdis,Epetra_SerialD
     // set flag for each node in this discretization
     for (int i=0; i<actdis.NumMyColElements(); ++i)
     {
-      const CCADISCRETIZATION::Element* actele = actdis.gElement(i);
+      const DRT::Element* actele = actdis.gElement(i);
       const int  nnode = actele->NumNode();
       const int* nodes = actele->NodeIds();
       for (int j=0; j<nnode; ++j)
@@ -647,8 +645,8 @@ void input_assign_nodes(CCADISCRETIZATION::Discretization& actdis,Epetra_SerialD
       if (nodeflag[i]==-1) continue;
       double coords[3];
       for (int j=0; j<3; ++j) coords[j] = (*tmpnodes)(i,j);
-      RefCountPtr<CCADISCRETIZATION::Node> node = 
-        rcp(new CCADISCRETIZATION::Node(nodeflag[i],coords,actdis.Comm().MyPID()));
+      RefCountPtr<DRT::Node> node = 
+                 rcp(new DRT::Node(nodeflag[i],coords,actdis.Comm().MyPID()));
       actdis.AddNode(node);
     }
   } // if (actdis.Comm().MyPID()==0)
@@ -679,11 +677,11 @@ void input_structural_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm)
   structfield->dis = NULL; // not using this here!
 
   // allocate the discretizations
-  vector<RefCountPtr<CCADISCRETIZATION::Discretization> >* discretization = 
-    new vector<RefCountPtr<CCADISCRETIZATION::Discretization> >(structfield->ndis);
+  vector<RefCountPtr<DRT::Discretization> >* discretization = 
+            new vector<RefCountPtr<DRT::Discretization> >(structfield->ndis);
   structfield->ccadis = (void*)discretization;
   for (int i=0; i<structfield->ndis; ++i)
-    (*discretization)[i] = rcp(new CCADISCRETIZATION::Discretization(comm));
+    (*discretization)[i] = rcp(new DRT::Discretization(comm));
 
   // count number of elements
   int numele = 0;
@@ -702,7 +700,7 @@ void input_structural_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm)
   }
 
   // read elements (proc 0 only) 
-  RefCountPtr<CCADISCRETIZATION::Discretization> actdis = (*discretization)[0];
+  RefCountPtr<DRT::Discretization> actdis = (*discretization)[0];
   if (actdis->Comm().MyPID()==0)
   {
     if (frfind("--STRUCTURE ELEMENTS")==0) return;
@@ -720,8 +718,8 @@ void input_structural_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm)
 #ifndef D_SHELL8
         dserror("SHELL8 needed but not defined in Makefile");
 #else  
-        RefCountPtr<CCADISCRETIZATION::Shell8> ele = 
-                              rcp(new CCADISCRETIZATION::Shell8(elenumber,actdis->Comm().MyPID()));
+        RefCountPtr<DRT::Shell8> ele = 
+                         rcp(new DRT::Shell8(elenumber,actdis->Comm().MyPID()));
         
         // read input for this element
         ele->ReadElement();

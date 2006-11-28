@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file discret.cpp
+\file shell8_input.cpp
 \brief
 
 <pre>
@@ -40,7 +40,7 @@ extern struct _FILES  allfiles;
 /*----------------------------------------------------------------------*
  |  read element input (public)                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-bool CCADISCRETIZATION::Shell8::ReadElement()
+bool DRT::Shell8::ReadElement()
 {
   DSTraceHelper dst("Shell8::ReadElement");
   
@@ -202,7 +202,7 @@ bool CCADISCRETIZATION::Shell8::ReadElement()
   if (ierr!=1) dserror("Reading of shell8 sdc failed");
     
   return true;
-} // bool CCADISCRETIZATION::Shell8::ReadElement()
+} // bool DRT::Shell8::ReadElement()
 
 
 

@@ -20,7 +20,7 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Condition::Condition(ConditionType type) :
+DRT::Condition::Condition(ConditionType type) :
 Container(),
 type_(type)
 {
@@ -30,7 +30,7 @@ type_(type)
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Condition::Condition() :
+DRT::Condition::Condition() :
 Container(),
 type_(condition_none)
 {
@@ -40,7 +40,7 @@ type_(condition_none)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Condition::Condition(const CCADISCRETIZATION::Condition& old) :
+DRT::Condition::Condition(const DRT::Condition& old) :
 Container(old),
 type_(old.type_)
 {
@@ -50,7 +50,7 @@ type_(old.type_)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::Condition::~Condition()
+DRT::Condition::~Condition()
 {
   return;
 }
@@ -59,7 +59,7 @@ CCADISCRETIZATION::Condition::~Condition()
 /*----------------------------------------------------------------------*
  |  << operator                                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const CCADISCRETIZATION::Condition& cond)
+ostream& operator << (ostream& os, const DRT::Condition& cond)
 {
   cond.Print(os); 
   return os;
@@ -69,7 +69,7 @@ ostream& operator << (ostream& os, const CCADISCRETIZATION::Condition& cond)
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-void CCADISCRETIZATION::Condition::Print(ostream& os) const
+void DRT::Condition::Print(ostream& os) const
 {
   if (Type()==condition_Dirichlet)    os << "Dirichlet boundary condition:\n";
   else if (Type()==condition_Neumann) os << "Neumann boundary condition:\n";
@@ -81,7 +81,7 @@ void CCADISCRETIZATION::Condition::Print(ostream& os) const
  |  Pack data from this element into vector of length size     (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-const char* CCADISCRETIZATION::Condition::Pack(int& size) const
+const char* DRT::Condition::Pack(int& size) const
 {
   const int sizeint    = sizeof(int);
   const int sizetype   = sizeof(enum ConditionType);
@@ -123,7 +123,7 @@ const char* CCADISCRETIZATION::Condition::Pack(int& size) const
  |  Unpack data into this element                              (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-bool CCADISCRETIZATION::Condition::Unpack(const char* data)
+bool DRT::Condition::Unpack(const char* data)
 {
   int position=0;
   

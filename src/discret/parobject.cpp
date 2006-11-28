@@ -20,7 +20,7 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::ParObject::ParObject()
+DRT::ParObject::ParObject()
 {
   return;
 }
@@ -28,7 +28,7 @@ CCADISCRETIZATION::ParObject::ParObject()
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::ParObject::ParObject(const CCADISCRETIZATION::ParObject& old)
+DRT::ParObject::ParObject(const DRT::ParObject& old)
 {
   return;
 }
@@ -36,7 +36,7 @@ CCADISCRETIZATION::ParObject::ParObject(const CCADISCRETIZATION::ParObject& old)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-CCADISCRETIZATION::ParObject::~ParObject()
+DRT::ParObject::~ParObject()
 {
   return;
 }
