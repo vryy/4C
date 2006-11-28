@@ -214,9 +214,6 @@ void distribute_grids_and_design()
     } // for (int j=0;j<field[i].ndis;j++)
   } // for (int i=0; i<genprob.numfld; ++i)
 
-
-  cout << "Reach standard exit\n"; fflush(stdout);
-  exit(0);
   return;
 } // void distribute_grids_and_design
 

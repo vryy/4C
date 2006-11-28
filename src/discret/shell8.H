@@ -24,7 +24,7 @@ Maintainer: Michael Gee
 using namespace std;
 using namespace Teuchos;
 
-#include "element.H"
+#include "drt_element.H"
 
 
 /*!

@@ -15,7 +15,7 @@ Maintainer: Michael Gee
 #ifdef TRILINOS_PACKAGE
 
 #include "shell8.H"
-#include "dserror.H"
+#include "drt_dserror.H"
 
 
 

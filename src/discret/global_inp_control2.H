@@ -26,13 +26,13 @@ Maintainer: Michael Gee
 #endif
 #include "Teuchos_RefCountPtr.hpp"
 
-#include "discret.H"
-#include "condition.H"
-#include "designdiscretization.H"
-#include "designelement.H"
-#include "designnode.H"
-#include "design.H"
-#include "utils.H"
+#include "drt_discret.H"
+#include "drt_condition.H"
+#include "drt_designdiscretization.H"
+#include "drt_designelement.H"
+#include "drt_designnode.H"
+#include "drt_design.H"
+#include "drt_utils.H"
 #ifdef D_SHELL8
 #include "shell8.H"
 #endif
