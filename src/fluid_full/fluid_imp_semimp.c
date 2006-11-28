@@ -19,6 +19,12 @@ Maintainer: Steffen Genkinger
 #include "fluid_prototypes.h"
 #include "../fluid2/fluid2_prototypes.h"
 #include "../io/io.h"
+
+#ifdef D_FLUID2_TDS
+#include "../fluid2_TDS/fluid2_TDS_prototypes.h"
+#endif
+
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -805,6 +811,16 @@ if(fdyn->adaptive)
     fdyn->dt_prop = fdyn->dta;
   }
 }
+
+#ifdef D_FLUID2_TDS
+/*-------------------------------- update of time dependent subscales */
+f2_update_subscale_pres(
+    actpart,
+    actintra,
+    actfield,
+    ipos,
+    disnum_calc);
+#endif
 
 /*---------------------------------------------- update acceleration ---*/
 /*----- copy solution from sol_increment[5][j] to sol_increment[4][j] */

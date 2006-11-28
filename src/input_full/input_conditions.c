@@ -2700,6 +2700,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
   /*-------------------------------- read the type of stabilisation ---*/
   ierr=sscanf(colptr," %s ",buffer);
   dsassert(ierr==1,"Cannot read design surface stabilisation conditions");
+
   if (strncmp(buffer,"GLS",3)==0)
   {
     actdsurf->stab_type = stab_gls;
@@ -2719,11 +2720,21 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
   else if (strncmp(buffer,"USFEM",5)==0)
   {
     actdsurf->stab_type = stab_usfem;
-    /* move pointer after "PresPro" */
+    /* move pointer after "USFEM" */
     while (colptr[0] == ' ')
       colptr++;
     colptr += 5;
   }
+#ifdef D_FLUID2_TDS
+  else if (strncmp(buffer,"TDS",3)==0)
+  {
+    actdsurf->stab_type = stab_tds;
+    /* move pointer after "TDS" */
+    while (colptr[0] == ' ')
+      colptr++;
+    colptr += 3;
+  }
+#endif
   else dserror("Unknown stabilisation type!");
 
   /*---- All the following is done for eigther stabilisation type! ----*/
@@ -2991,6 +3002,10 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
   case stab_prespro:
     dserror("Pressure Projection type of stabilisation has not yet been implemented!");
   break;
+#ifdef D_FLUID2_TDS
+  case stab_tds:
+  break;
+#endif  
   case stab_usfem:
 /*    do nothing since there's so far no information to read here
 */
@@ -3108,6 +3123,16 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       colptr++;
     colptr += 5;
   }
+#ifdef D_FLUID3_TDS
+  else if (strncmp(buffer,"TDS",3)==0)
+  {
+    actdvol->stab_type = stab_tds;
+    /* move pointer after "TDS" */
+    while (colptr[0] == ' ')
+      colptr++;
+    colptr += 3;
+  }
+#endif
   else dserror("Unknown stabilisation type!");
 
   /*---- All the following is done for eigther stabilisation type! ----*/

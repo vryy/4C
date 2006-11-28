@@ -54,6 +54,17 @@ if grep '^[[:blank:]]*FLUID2_ML' "$definefile" 2>&1 > /dev/null ; then
     fi
 fi
 
+# FLUID2_TDS
+if grep '^[[:blank:]]*D_FLUID2_TDS' "$definefile" 2>&1 > /dev/null ; then
+    if [ "x$OBJ_FLUID" = "x0" ] ; then
+        OBJECTS="$OBJECTS  \$(OBJS_F2_TDS)"
+        DEFINES="$DEFINES -DD_FLUID"
+        OBJ_FLUID=1
+    else
+        OBJECTS="$OBJECTS \$(OBJS_F2_TDS)"
+    fi
+fi
+
 # FLUID3
 if grep '^[[:blank:]]*D_FLUID3' "$definefile" 2>&1 > /dev/null ; then
     if [ "x$OBJ_FLUID" = "x0" ] ; then

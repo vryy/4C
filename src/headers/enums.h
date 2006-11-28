@@ -634,6 +634,9 @@ typedef enum _STABILISATION_TYP
    stab_none,
    stab_gls,	/*! Galerkin least square stabilisation			*/
    stab_usfem,  /*! Unusual 'least square' stabilisation                */
+#ifdef D_FLUID2_TDS
+   stab_tds,    /*! Stabilisation using time dependent subscales        */
+#endif
    stab_prespro	/*! Stabilisation based on pressure projection		*/
 } STABILISATION_TYP;
 

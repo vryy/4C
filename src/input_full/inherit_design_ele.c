@@ -79,6 +79,10 @@ for (i=0; i<actdis->numele; i++)
           fluid2->stabi.gls = actdsurf->stabi.gls;
         break;
         case stab_usfem:
+#ifdef D_FLUID2_TDS
+	  case stab_tds:
+        break;
+#endif	    
         case stab_prespro:
          /* nothing needs to be done at the moment (no parameters!) */
         break;
@@ -117,6 +121,10 @@ for (i=0; i<actdis->numele; i++)
         case stab_usfem:
          /* nothing needs to be done at the moment (no parameters!) */
         break;
+#ifdef D_FLUID3_TDS
+	  case stab_tds:
+        break;
+#endif		
         default:
         dserror("Unknown stabilisation for fluid3!");
       }
@@ -142,6 +150,10 @@ for (i=0; i<actdis->numele; i++)
         case stab_usfem:
          /* nothing needs to be done at the moment (no parameters!) */
         break;
+#ifdef D_FLUID3_TDS
+	  case stab_tds:
+        break;
+#endif		
         default:
         dserror("Unknown stabilisation for fluid3f!");
       }
@@ -166,6 +178,10 @@ for (i=0; i<actdis->numele; i++)
       f2is->stabi.gls = actdsurf->stabi.gls;
       break;
     case stab_usfem:
+#ifdef D_FLUID2_TDS
+	  case stab_tds:
+        break;
+#endif		
     case stab_prespro:
       /* nothing needs to be done at the moment (no parameters!) */
       break;
@@ -194,6 +210,10 @@ for (i=0; i<actdis->numele; i++)
       f3is->stabi.gls = actdvol->stabi.gls;
       break;
     case stab_usfem:
+#ifdef D_FLUID3_TDS
+	  case stab_tds:
+        break;
+#endif		
     case stab_prespro:
       /* nothing needs to be done at the moment (no parameters!) */
       break;

@@ -539,7 +539,10 @@ void fluid_init(
   INT               l;
 #endif
 
-
+#ifdef D_FLUID2_TDS
+  INT               nis;
+#endif
+  
   /* variables for beltrami */
   DOUBLE    visc,a,x1,x2,x3;
 
@@ -638,6 +641,29 @@ void fluid_init(
         case el_fluid2:
           amdef("Stabpar",&(actele->e.f2->tau_old),3,1,"DV");
           amzero(&(actele->e.f2->tau_old));
+#ifdef D_FLUID2_TDS
+	  if(actele->distyp==tri3 || actele->distyp==tri6)
+	  {
+	      nis=1;
+	  }
+	  else
+	  {
+	      nis=actele->e.f2->nGP[1];
+	  }
+	  amdef("subscale_pressure",
+		&(actele->e.f2->sub_pres),
+		actele->e.f2->nGP[0]*nis,1,
+		"DV");
+	  amzero(&(actele->e.f2->sub_pres));
+	  am4def("subscale_velocities",
+		&(actele->e.f2->sub_vel),
+		actele->e.f2->nGP[0]*nis,
+		actele->e.f2->nGP[0]*nis,
+		actele->e.f2->nGP[0]*nis,
+		0,
+		"D3");
+	  am4zero(&(actele->e.f2->sub_vel));	  
+#endif
           break;
 #endif
 

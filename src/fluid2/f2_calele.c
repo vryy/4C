@@ -18,6 +18,9 @@ Maintainer: Steffen Genkinger
 #include "fluid2_prototypes.h"
 #include "fluid2.h"
 #include "../fluid_full/fluid_prototypes.h"
+#ifdef D_FLUID2_TDS
+#include "../fluid2_TDS/fluid2_TDS_prototypes.h"
+#endif
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
@@ -256,6 +259,21 @@ case 0:
                    evhist,NULL,epren,edeadng,
                    vderxy,vderxy2,visc,wa1,wa2,estress, is_relax);
    break;
+#ifdef D_FLUID2_TDS   
+   case stab_tds:
+      /*---------------------------------------------- get viscosity ---*/
+      visc = mat[ele->mat-1].m.fluid->viscosity;
+
+      /*--------------------------------------------- stab-parameter ---*/
+      f2_caltau(ele,xyze,funct,deriv,xjm,evelng,visc);
+
+      /*-------------------------------- perform element integration ---*/
+      f2_int_tds(ele,hasext,estif,eforce,xyze,
+                 funct,deriv,deriv2,xjm,derxy,derxy2,evelng,eveln,
+                 evhist,NULL,epren,edeadng,
+                 vderxy,vderxy2,visc,wa1,wa2,estress, is_relax);
+   break;
+#endif
    default: dserror("unknown stabilisation type");
    }
 break;
@@ -315,7 +333,11 @@ default:
    dserror("parameter is_ale not 0 or 1!\n");
 } /* end switch */
 
-if (ele->e.f2->stab_type != stab_usfem)
+if (ele->e.f2->stab_type != stab_usfem
+#ifdef D_FLUID2_TDS
+    && ele->e.f2->stab_type != stab_tds
+#endif
+    )
 {
 #ifdef PERF
   perf_begin(21);
@@ -1133,7 +1155,11 @@ for(i=0;i<ele->numnp;i++) /* loop nodes of element */
    evelng[1][i]=actnode->sol_increment.a.da[ipos->velnp][1];
 } /* end of loop over nodes of element */
 
-if (ele->e.f2->stab_type == stab_usfem)
+if (ele->e.f2->stab_type == stab_usfem
+/*#ifdef D_FLUID2_TDS 
+    || ele->e.f2->stab_type == stab_tds
+    #endif*/
+    )
 {
    /*-------------------------------- perform element integration ---*/
    f2_int_stress_project(ele,hasext,estif,eforce,xyze,funct,deriv,

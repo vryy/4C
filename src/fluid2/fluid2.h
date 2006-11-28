@@ -78,8 +78,15 @@ struct _ARRAY      stress_ND;    /*!< nodal stresses                         */
 struct _ARRAY      kappa_ND;
 
 #ifdef QUASI_NEWTON
-  struct _ARRAY  estif;
+  struct _ARRAY   estif;
 #endif
+
+#ifdef D_FLUID2_TDS
+  struct _ARRAY    sub_pres;
+  struct _ARRAY4D  sub_vel;
+#endif
+
+    
 } FLUID2;
 
 
