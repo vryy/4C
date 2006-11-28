@@ -247,6 +247,8 @@ MAP* symbol_map(SYMBOL* symbol);
 
 /* Write the map to file f in a readable way. */
 void map_print(FILE* f, MAP* map, INT indent);
+void map_node_print(FILE* f, MAP_NODE* node, INT indent);
+void symbol_print(FILE* f, CHAR* key, SYMBOL* symbol, INT indent);
 
 
 /* Read the control file given by name. Put its contents into the map. */

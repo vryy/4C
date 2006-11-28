@@ -1406,7 +1406,7 @@ MAP* symbol_map(SYMBOL* symbol)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-static void symbol_print(FILE* f, CHAR* key, SYMBOL* symbol, INT indent)
+void symbol_print(FILE* f, CHAR* key, SYMBOL* symbol, INT indent)
 {
 #ifdef DEBUG
   dstrc_enter("symbol_print");
@@ -1453,7 +1453,7 @@ static void symbol_print(FILE* f, CHAR* key, SYMBOL* symbol, INT indent)
   \date 08/04
 */
 /*----------------------------------------------------------------------*/
-static void map_node_print(FILE* f, MAP_NODE* node, INT indent)
+void map_node_print(FILE* f, MAP_NODE* node, INT indent)
 {
 #ifdef DEBUG
   dstrc_enter("map_node_print");
