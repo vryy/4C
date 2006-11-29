@@ -5,7 +5,7 @@ MPIRUNARGS=
 
 # for filters we need non-mip versions of these
 PLAIN_CC=cc
-PLAIN_CP=CC
+PLAIN_CP=c++
 PLAIN_F77=f77
 PLAIN_LD=f77
 

@@ -214,6 +214,9 @@ int main(int argc, char** argv)
           }
         }
 
+	fflush(cf);
+	fflush(vf[i]);
+
         if (resnum==0)
           printf("\t\t|L1|\t\t|L2|\t\t|Linf|\n");
         printf("%f:\n", time1);
