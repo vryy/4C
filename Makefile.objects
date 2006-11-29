@@ -714,9 +714,11 @@ OBJS_POST_GID_COMMON = src/post_gid/post_gid.o \
                 src/post_gid/post_brick1.o \
                 src/post_gid/post_fluid2.o \
                 src/post_gid/post_fluid2_pro.o \
+                src/post_gid/post_fluid2_is.o \
                 src/post_gid/post_fluid3.o \
                 src/post_gid/post_fluid3_fast.o \
                 src/post_gid/post_fluid3_pro.o \
+                src/post_gid/post_fluid3_is.o \
                 src/post_gid/post_interf.o \
                 src/post_gid/post_shell8.o \
                 src/post_gid/post_shell9.o \

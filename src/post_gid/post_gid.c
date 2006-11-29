@@ -40,9 +40,11 @@ possible). You might want to start reading the file from there.
 #include "post_brick1.h"
 #include "post_fluid2.h"
 #include "post_fluid2_pro.h"
+#include "post_fluid2_is.h"
 #include "post_fluid3.h"
 #include "post_fluid3_fast.h"
 #include "post_fluid3_pro.h"
+#include "post_fluid3_is.h"
 #include "post_interf.h"
 #include "post_shell8.h"
 #include "post_shell9.h"
@@ -659,6 +661,20 @@ static void setup_gid_flags(FIELD_DATA* field, GIDSET* gid)
       break;
     }
 #endif
+#ifdef D_FLUID2_IS
+    case el_fluid2_is:
+      if (numnp==4)
+      {
+        gid->is_fluid2_is_22    = 1;
+        gid->fluid2_is_22_name  = "fluid2_is_22";
+      }
+      if (numnp==8  || numnp==9)
+      {
+        gid->is_fluid2_is_33    = 1;
+        gid->fluid2_is_33_name  = "fluid2_is_33";
+      }
+      break;
+#endif
 #ifdef D_FLUID2TU
     case el_fluid2_tu:
     {
@@ -723,6 +739,20 @@ static void setup_gid_flags(FIELD_DATA* field, GIDSET* gid)
       }
       break;
     }
+#endif
+#ifdef D_FLUID3_IS
+    case el_fluid3_is:
+      if (numnp==8)
+      {
+        gid->is_fluid3_is_222   = 1;
+        gid->fluid3_is_222_name = "fluid3_is_222";
+      }
+      if (numnp==20 || numnp==27)
+      {
+        gid->is_fluid3_is_333   = 1;
+        gid->fluid3_is_333_name = "fluid3_is_333";
+      }
+      break;
 #endif
 #ifdef D_ALE
     case el_ale2:
@@ -956,6 +986,9 @@ static void write_mesh(FIELD_DATA* field, GIDSET* gid)
 #ifdef D_FLUID2_PRO
   fluid2_pro_write_gauss(gid);
 #endif
+#ifdef D_FLUID2_IS
+  fluid2_is_write_gauss(gid);
+#endif
 #ifdef D_FLUID3
   fluid3_write_gauss(gid);
 #endif
@@ -964,6 +997,9 @@ static void write_mesh(FIELD_DATA* field, GIDSET* gid)
 #endif
 #ifdef D_FLUID3_PRO
   fluid3_pro_write_gauss(gid);
+#endif
+#ifdef D_FLUID3_IS
+  fluid3_is_write_gauss(gid);
 #endif
 #ifdef D_ALE
   ale2_write_gauss(gid);
@@ -1008,6 +1044,9 @@ static void write_mesh(FIELD_DATA* field, GIDSET* gid)
 #ifdef D_FLUID2_PRO
   fluid2_pro_write_mesh(field, gid, &first_mesh);
 #endif
+#ifdef D_FLUID2_IS
+  fluid2_is_write_mesh(field, gid, &first_mesh);
+#endif
 #ifdef D_FLUID3
   fluid3_write_mesh(field, gid, &first_mesh);
 #endif
@@ -1016,6 +1055,9 @@ static void write_mesh(FIELD_DATA* field, GIDSET* gid)
 #endif
 #ifdef D_FLUID3_PRO
   fluid3_pro_write_mesh(field, gid, &first_mesh);
+#endif
+#ifdef D_FLUID3_IS
+  fluid3_is_write_mesh(field, gid, &first_mesh);
 #endif
 #ifdef D_ALE
   ale2_write_mesh(field, gid, &first_mesh);
