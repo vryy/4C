@@ -324,7 +324,10 @@ void find_data_limits(POST_DISCRETIZATION* discret,
           if (!find_result_file_min_max_values(discret[h].field,"pressure", FLIMS_tmp, 1))
           {
             if (!find_result_file_min_max_values(discret[h].field,"average_pressure", FLIMS_tmp, 1))
-              dserror("NO PRESSURE ENTRY IN RESULT FILE");
+            {
+              FLIMS_tmp[0][0] = FLIMS_tmp[0][1] = 0;
+              printf("NO PRESSURE ENTRY IN RESULT FILE\n");
+            }
           }
           printf("\r getting pressure max/min values from result file done:");
         }
