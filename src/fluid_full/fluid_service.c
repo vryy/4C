@@ -1784,6 +1784,8 @@ case fnst_L2: /* L_2 norm */
 	               -actnode->sol_increment.a.da[ipos->veln][j]);
           vnorm += DSQR(actnode->sol_increment.a.da[ipos->velnp][j]);
       } /* end of loop over vel-dofs */
+      if (actnode->numdf <= predof)
+        continue;
       actdof = actnode->dof[predof];
 #if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
       if (actnode->gnode->dirich!=NULL &&
