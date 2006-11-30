@@ -747,5 +747,8 @@ OBJS_POST_MONITOR = src/post_monitor/post_monitor.o \
 #               post_file_manager
 OBJS_POST_FILE_MANAGER = src/post_file_manager/post_file_manager.o
                 #src/post_visual/post_map_functions.o 
+#               ensight_file_converter
+OBJS_POST_ENSIGHT = src/post_ensight/post_ensight.o \
+                src/post_ensight/post_functions.o		              
 #               post_cmp
 OBJS_POST_CMP = src/post_cmp/post_cmp.o

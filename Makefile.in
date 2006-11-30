@@ -21,6 +21,9 @@ post_monitor: $(OBJS_POST_MONITOR) $(OBJS_POST_COMMON)
 post_file_manager: $(OBJS_POST_FILE_MANAGER) $(OBJS_POST_COMMON)
 	$(PLAIN_LD) $(LDFLAGS) $(OBJS_POST_FILE_MANAGER) $(OBJS_POST_COMMON) $(PLAIN_LIBS) -o post_file_manager
 
+post_ensight: $(OBJS_POST_ENSIGHT) $(OBJS_POST_COMMON)
+	$(PLAIN_LD) $(LDFLAGS) $(OBJS_POST_ENSIGHT) $(OBJS_POST_COMMON) $(PLAIN_LIBS) -o post_ensight
+
 post_cmp: $(OBJS_POST_CMP) $(OBJS_POST_COMMON)
 	$(PLAIN_LD) $(LDFLAGS) $(OBJS_POST_CMP) $(OBJS_POST_COMMON) $(PLAIN_LIBS) -o post_cmp
 
@@ -265,6 +268,11 @@ $(OBJS_POST_MONITOR):
 	@$(PLAIN_CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@ > /dev/stderr
 
 $(OBJS_POST_FILE_MANAGER):
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(PLAIN_CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@$(PLAIN_CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@ > /dev/stderr
+
+$(OBJS_POST_ENSIGHT):
 	@mkdir -p ${DEST}/${@D}
 	@echo "$(PLAIN_CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
 	@$(PLAIN_CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@ > /dev/stderr
