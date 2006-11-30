@@ -97,6 +97,30 @@ public:
   // @{ \name Acess methods
 
   /*!
+  \brief Get number of degrees of freedom of a certain node
+         (implements pure virtual DRT::Element)
+  
+  The element decides how many degrees of freedom its nodes must have.
+  As this may vary along a simulation, the element can redecide the
+  number of degrees of freedom per node along the way for each of it's nodes
+  separately.
+  */
+  virtual int NumDofPerNode(const DRT::Node& node) const {return 6;}
+
+  /*!
+  \brief Get number of degrees of freedom per element
+         (implements pure virtual DRT::Element)
+  
+  The element decides how many element degrees of freedom it has.
+  It can redecide along the way of a simulation.
+  
+  \note Element degrees of freedom mentioned here are dofs that are visible
+        at the level of the total system of equations. Purely internal
+        element dofs that are condensed internally should NOT be considered.
+  */
+  virtual int NumDofPerElement() const { return 0; }
+
+  /*!
   \brief Print this element
   */
   void Print(ostream& os) const;

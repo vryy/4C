@@ -32,8 +32,8 @@ ParObject()
  *----------------------------------------------------------------------*/
 DRT::Container::Container(const DRT::Container& old) :
 ParObject(old),
-intdata_(old.intdata_),
-doubledata_(old.doubledata_),
+intdata_(old.intdata_),        // scary: this is a map of RefcountPtr
+doubledata_(old.doubledata_),  // scary: this is a map of RefcountPtr
 stringdata_(old.stringdata_)
 {
   return;

@@ -24,7 +24,8 @@ DRT::Element::Element(int id, ElementType etype, int owner) :
 ParObject(),
 id_(id),
 owner_(owner),
-etype_(etype)
+etype_(etype),
+dofset_()
 {
   nodeid_.resize(0);
   node_.resize(0);
@@ -40,7 +41,9 @@ id_(old.id_),
 owner_(old.owner_),
 etype_(old.etype_),
 nodeid_(old.nodeid_),
-node_(old.node_)
+node_(old.node_),
+dofset_(old.dofset_),
+condition_(old.condition_) // scary: this is a map of RefCountPtr
 {
 
   return;
@@ -51,8 +54,6 @@ node_(old.node_)
  *----------------------------------------------------------------------*/
 DRT::Element::~Element()
 {
-  nodeid_.clear();
-  node_.clear();
   return;
 }
 
@@ -72,14 +73,18 @@ ostream& operator << (ostream& os, const DRT::Element& element)
  *----------------------------------------------------------------------*/
 void DRT::Element::Print(ostream& os) const
 {
-  os << Id() << " Owner " << Owner();
+  os << setw(12) << Id() << " Owner " << setw(5) << Owner();
   const int nnode = NumNode();
   const int* nodes = NodeIds();
   if (nnode)
   {
     os << " Nodes ";
-    for (int i=0; i<nnode; ++i) os << nodes[i] << " ";
+    for (int i=0; i<nnode; ++i) os << setw(10) << nodes[i] << " ";
   }
+  // Print dofs if there are any
+  if (Dof().NumDof())
+    cout << Dof();
+  
   // Print conditions if there are any
   int numcond = condition_.size();
   if (numcond)
@@ -132,6 +137,11 @@ const char* DRT::Element::Pack(int& size) const
   //const int sizedouble = sizeof(double);
   //const int sizechar   = sizeof(char);
 
+  // get data and size of dofset_
+  int dofsetsize=0;
+  const char* dofsetpack = dofset_.Pack(dofsetsize);
+  
+  
   // get the size of all conditions
   int condsize=0;
   map<string,RefCountPtr<Condition> >::const_iterator curr;
@@ -152,6 +162,7 @@ const char* DRT::Element::Pack(int& size) const
   sizeint                +   // holds Owner()
   sizetype               +   // holds type of element
   SizeVector(nodeid_)    +   // nodeid_
+  dofsetsize             +   // dofset_
   sizeint                +   // no. of objects in condition_
   condsize               +   // condition_
   0;                         // continue to add data here...
@@ -177,6 +188,9 @@ const char* DRT::Element::Pack(int& size) const
   AddtoPack(position,data,etype);
   // add vector nodeid_
   AddVectortoPack(position,data,nodeid_);
+  // dofset_
+  AddtoPack(position,data,dofsetpack,dofsetsize);
+  delete [] dofsetpack;
   // condition_
   int num = condition_.size(); // no. of objects
   AddtoPack(position,data,num);
@@ -219,6 +233,10 @@ bool DRT::Element::Unpack(const char* data)
   ExtractfromPack(position,data,etype_);
   // extract nodeid_
   ExtractVectorfromPack(position,data,nodeid_);
+  // dofset_
+  dofset_.Unpack(&data[position]);
+  int dofsetsize = dofset_.SizePack(&data[position]);
+  position += dofsetsize;
   // extract condition_
   int num=0;
   ExtractfromPack(position,data,num);

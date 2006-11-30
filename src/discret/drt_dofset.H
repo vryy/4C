@@ -1,9 +1,9 @@
 /*!----------------------------------------------------------------------
-\file drt_condition.H
+\file drt_dofset.H
 
-\class DRT::Condition
+\class DRT::DofSet
 
-\brief A condition of any kind
+\brief A set of degrees of freedom
 
 <pre>
 Maintainer: Michael Gee
@@ -15,16 +15,12 @@ Maintainer: Michael Gee
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
-#ifndef CONDITION_H
-#define CONDITION_H
+#ifndef DOFSET_H
+#define DOFSET_H
 
-
-#include "Teuchos_RefCountPtr.hpp"
 
 using namespace std;
-using namespace Teuchos;
-
-#include "drt_container.H"
+#include "drt_parobject.H"
 #include "drt_dserror.H"
 
 /*!
@@ -37,27 +33,15 @@ namespace DRT
 // forward declarations
 
 /*!
-\class Condition
+\class DofSet
 
-\brief A condition of any kind
+\brief A set of degrees of freedom
 
 \author gee (gee@lnm.mw.tum.de)
 */
-class Condition : public DRT::Container
+class DofSet : public DRT::ParObject
 {
 public:
-
-
-  /*!
-  \brief Type of condition
-         
-  */
-  enum ConditionType 
-  {
-    condition_none,
-    condition_Dirichlet,
-    condition_Neumann
-  };
 
 
   // @{ \name Constructors and destructors
@@ -66,13 +50,7 @@ public:
   \brief Standard Constructor
   
   */
-  Condition(ConditionType type);
-
-  /*!
-  \brief Constructor with type condition_none
-  
-  */
-  Condition();
+  DofSet();
 
   /*!
   \brief Copy Constructor
@@ -80,13 +58,13 @@ public:
   Makes a deep copy of a Node
   
   */
-  Condition(const DRT::Condition& old);
+  DofSet(const DRT::DofSet& old);
 
   /*!
   \brief Destructor
 
   */
-  virtual ~Condition();
+  virtual ~DofSet();
 
   /*!
   \brief Pack this class so it can be communicated
@@ -109,40 +87,61 @@ public:
   // @{ \name Acess methods
 
   /*!
-  \brief Print this element
+  \brief Print this class
   */
   virtual void Print(ostream& os) const ;
 
   /*!
-  \brief Print this element
+  \brief Return no. of degrees of freedom
   */
-  inline virtual ConditionType Type() const { return type_; }
+  virtual inline int NumDof() const { return (int)dofs_.size(); }
+
+  /*!
+  \brief Return degrees of freedom
+  */
+  virtual inline const int* Dofs() const 
+  { if (NumDof()) return &dofs_[0]; else return NULL;}
+
+  /*!
+  \brief Return a degree of freedom
+  */
+  virtual inline int operator [] (const int index) const 
+  { if (NumDof()>index) return dofs_[index]; else return -1;}
 
   //@}
 
   // @{ \name Construction
 
+  /*!
+  \brief change no. of degrees of freedom
+  */
+  virtual void SetNumDof(const int size); 
+
+  /*!
+  \brief Set degrees of freedom
+  */
+  virtual void SetDof(const int* dofs, const int size); 
 
   //@}
 
-protected:
+private:
 
   // don't want = operator
-  Condition operator = (const Condition& old);
+  DofSet operator = (const DofSet& old);
   
 
 protected:
 
-  ConditionType type_;   // type of this condition
+  vector<int>   dofs_;  // vector of degrees of freedom
 
-}; // class Condition
+}; // class DofSet
 } // namespace DRT
 
 
 // << operator
-ostream& operator << (ostream& os, const DRT::Condition& node);
+ostream& operator << (ostream& os, const DRT::DofSet& dofset);
 
 
-#endif  // #ifndef CONDITION_H
+#endif  // #ifndef DOFSET_H
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

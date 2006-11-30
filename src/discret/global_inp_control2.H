@@ -78,7 +78,7 @@ void input_design();
 void input_conditions();                                
 void inherit_conditions();
 void distribute_grids_and_design();
-
+void assign_degreesoffreedom(FIELD* actfield, const int ndis);
 
 #ifdef __cplusplus
 }

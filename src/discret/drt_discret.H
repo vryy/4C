@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file discret.H
+\file drt_discret.H
 
 \class DRT::Discretization
 
@@ -80,29 +80,10 @@ public:
   virtual inline bool Filled() const {return filled_;}
 
   /*!
-  \brief Get map associated with the distribution of the ownership of elements
-         (Filled()==true prerequisite)
+  \brief Get degree of freedom row map (Filled()==true prerequisite)
   
-  This map includes all elements stored on this proc and also owned by this proc.
-  This map is non-ambiguous, meaning that it is a non-overlapping map.
-  
-  \return NULL if Filled() is false. A call to FillComplete() is a prerequisite.
   */
-  virtual const Epetra_Map* ElementRowMap() const { if (Filled()) return elerowmap_.get();
-                                                    else dserror("FillComplete() must be called before call to ElementRowMap()"); 
-                                                    return NULL; }
-  /*!
-  \brief Get map associated with the distribution of elements including ghosted elements
-         (Filled()==true prerequisite)
-  
-  This map includes all elements stored on this proc including any ghosted elements
-  This map is ambiguous, meaning that it is an overlapping map
-  
-  \return NULL if Filled() is false. A call to FillComplete() is a prerequisite.
-  */
-  virtual const Epetra_Map* ElementColMap() const { if (Filled()) return elecolmap_.get();
-                                                    else dserror("FillComplete() must be called before call to ElementColMap()"); 
-                                                    return NULL; }
+  virtual const Epetra_Map* DofRowMap() const;
 
   /*!
   \brief Get map associated with the distribution of the ownership of nodes
@@ -113,9 +94,7 @@ public:
 
   \return NULL if Filled() is false. A call to FillComplete() is a prerequisite.
   */
-  virtual const Epetra_Map* NodeRowMap() const { if (Filled()) return noderowmap_.get();
-                                                 else dserror("FillComplete() must be called before call to NodeRowMap()"); 
-                                                 return NULL; }
+  virtual const Epetra_Map* NodeRowMap() const;
 
   /*!
   \brief Get map associated with the distribution of nodes including ghosted nodes
@@ -126,9 +105,27 @@ public:
 
   \return NULL if Filled() is false. A call to FillComplete() is a prerequisite.
   */
-  virtual const Epetra_Map* NodeColMap() const { if (Filled()) return nodecolmap_.get();
-                                                 else dserror("FillComplete() must be called before call to NodeRowMap()"); 
-                                                 return NULL; }
+  virtual const Epetra_Map* NodeColMap() const;
+  /*!
+  \brief Get map associated with the distribution of the ownership of elements
+         (Filled()==true prerequisite)
+  
+  This map includes all elements stored on this proc and also owned by this proc.
+  This map is non-ambiguous, meaning that it is a non-overlapping map.
+  
+  \return NULL if Filled() is false. A call to FillComplete() is a prerequisite.
+  */
+  virtual const Epetra_Map* ElementRowMap() const;
+  /*!
+  \brief Get map associated with the distribution of elements including ghosted elements
+         (Filled()==true prerequisite)
+  
+  This map includes all elements stored on this proc including any ghosted elements
+  This map is ambiguous, meaning that it is an overlapping map
+  
+  \return NULL if Filled() is false. A call to FillComplete() is a prerequisite.
+  */
+  virtual const Epetra_Map* ElementColMap() const;
 
   /*!
   \brief Get global number of elements (true number of total elements)
@@ -136,52 +133,37 @@ public:
   
   This is a collective call
   */
-  virtual int NumGlobalElements() const { if (Filled()) return ElementRowMap()->NumGlobalElements();
-                                          else dserror("FillComplete() must be called before call to NumGlobalElements()");
-                                          return -1; } 
+  virtual int NumGlobalElements() const; 
   
   /*!
   \brief Get processor local number of elements owned by this processor
          (Filled()==true prerequisite)
   */
-  virtual int NumMyRowElements() const { if (Filled()) return ElementRowMap()->NumMyElements();
-                                         else dserror("FillComplete() must be called before call to NumMyRowElements()"); 
-                                         return -1;}
+  virtual int NumMyRowElements() const;
 
   /*!
   \brief Get processor local number of elements including ghost elements
          (Filled()==true NOT prerequisite)
   */
-  virtual int NumMyColElements() const { if (Filled()) return ElementColMap()->NumMyElements();
-                                         else return (int)element_.size(); 
-                                         return -1;}
+  virtual int NumMyColElements() const;
   
   /*!
   \brief Get global number of nodes (true number of total nodes without ghosting)
          (Filled()==true prerequisite)
-  
-  This is a collective call
   */
-  virtual int NumGlobalNodes() const { if (Filled()) return NodeRowMap()->NumGlobalElements();
-                                       else dserror("FillComplete() must be called before call to NumGlobalNodes()");
-                                       return -1; }
+  virtual int NumGlobalNodes() const;
 
   /*!
   \brief Get processor local number of nodes owned by this processor
          (Filled()==true prerequisite)
   */
-  virtual int NumMyRowNodes() const { if (Filled()) return NodeRowMap()->NumMyElements();
-                                      else dserror("FillComplete() must be called before call to NumMyRowNodes()");
-                                      return -1; }
+  virtual int NumMyRowNodes() const;
   
   /*! 
   \brief Get processor local number of nodes including ghost nodes
          (Filled()==true NOT prerequisite)
   */
-  virtual int NumMyColNodes() const { if (Filled()) return NodeColMap()->NumMyElements();
-                                      else return (int)node_.size();
-                                      return -1; }
-  
+  virtual int NumMyColNodes() const;
   
   /*!
   \brief Get the element with global id gid (Filled()==true NOT prerequisite)
@@ -204,7 +186,13 @@ public:
   
   \return Adress of element if element is owned by calling proc
   */
-  virtual DRT::Element* lRowElement(int lid) const;
+  virtual inline DRT::Element* lRowElement(int lid) const
+  { 
+    #ifdef DEBUG
+    if (!Filled()) dserror("DRT::Discretization::lRowElement: Filled() != true");
+    #endif
+    return elerowptr_[lid];
+  }
 
   /*!
   \brief Get the element with local column id lid (Filled()==true prerequisite)
@@ -215,7 +203,13 @@ public:
   
   \return Adress of element if element is stored by calling proc
   */
-  virtual DRT::Element* lColElement(int lid) const;
+  virtual inline DRT::Element* lColElement(int lid) const
+  {
+  #ifdef DEBUG
+    if (!Filled()) dserror("DRT::Discretization::lColElement: Filled() != true");
+  #endif
+    return elecolptr_[lid];
+  }
 
   /*!
   \brief Get the node with global row id gid (Filled()==true NOT prerequisite)
@@ -237,7 +231,13 @@ public:
   
   \return Adress of node if node is owned and stored by calling proc
   */
-  virtual DRT::Node* lRowNode(int lid) const;
+  virtual inline DRT::Node* lRowNode(int lid) const
+  {
+  #ifdef DEBUG
+    if (!Filled()) dserror("DRT::Discretization::lRowNode: Filled() != true");
+  #endif
+    return noderowptr_[lid];
+  }
 
   /*!
   \brief Get the node with local column id lid (Filled()==true prerequisite)
@@ -248,7 +248,13 @@ public:
   
   \return Adress of node if node is stored by calling proc
   */
-  virtual DRT::Node* lColNode(int lid) const;
+  virtual inline DRT::Node* lColNode(int lid) const
+  {
+  #ifdef DEBUG
+    if (!Filled()) dserror("DRT::Discretization::lColNode: Filled() != true");
+  #endif
+    return nodecolptr_[lid];
+  }
 
   /*!
   \brief Print this discretization to stdout (Filled()==true NOT prerequisite)
@@ -448,6 +454,7 @@ public:
   */
   virtual void SetDesignEntityIds(Node::OnDesignEntity type, const vector<int>& nfenode, const vector<vector<int> >& fenode);
 
+
   //@}
 
 private:
@@ -455,6 +462,13 @@ private:
   // don't want = operator and copy constructor
   Discretization operator = (const Discretization& old);
   Discretization(const DRT::Discretization& old);
+
+  /*!
+  \brief Reset all maps and set Filled()=false (Filled()==true NOT prerequisite)
+  
+  \note This is a collective call
+  */
+  virtual void Reset();
 
   /*!
   \brief Build noderowmap_ (Filled()==true NOT prerequisite)
@@ -550,12 +564,19 @@ protected:
   RefCountPtr<Epetra_Comm>                          comm_;        // an Epetra_comm
   bool                                              filled_;      // flag indicating whether getOrganized has been called
 
+  RefCountPtr<Epetra_Map>                           dofrowmap_;   // unique row map of degrees of freedom (node and element dofs))
+  RefCountPtr<Epetra_Map>                           dofcolmap_;   // unique column map of degrees of freedom (node and element dofs))
+
   RefCountPtr<Epetra_Map>                           elerowmap_;   // unique distribution of element ownerships
   RefCountPtr<Epetra_Map>                           elecolmap_;   // distribution of elements including ghost elements
+  vector<DRT::Element*>                             elerowptr_;   // vector of pointers to row elements for faster access
+  vector<DRT::Element*>                             elecolptr_;   // vector of pointers to column elements for faster access
   map<int,RefCountPtr<DRT::Element> >               element_;     // map of elements
   
   RefCountPtr<Epetra_Map>                           noderowmap_;  // unique distribution of nodal ownerships
   RefCountPtr<Epetra_Map>                           nodecolmap_;  // distribution of nodes including ghost nodes
+  vector<DRT::Node*>                                noderowptr_;  // vector of pointers to row nodes for faster access
+  vector<DRT::Node*>                                nodecolptr_;  // vector of pointers to column nodes for faster access
   map<int,RefCountPtr<DRT::Node> >                  node_;        // map of nodes
 
 

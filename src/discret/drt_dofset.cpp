@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
-\file drt_condition.cpp
-\brief A condition of any kind
+\file drt_dofset.cpp
+\brief A set of degrees of freedom
 
 <pre>
 Maintainer: Michael Gee
@@ -13,36 +13,26 @@ Maintainer: Michael Gee
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
-#include "drt_condition.H"
-
+#include "drt_dofset.H"
+#include "iostream"
 
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-DRT::Condition::Condition(ConditionType type) :
-Container(),
-type_(type)
+DRT::DofSet::DofSet() :
+ParObject()
 {
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  ctor (public)                                            mwgee 11/06|
- *----------------------------------------------------------------------*/
-DRT::Condition::Condition() :
-Container(),
-type_(condition_none)
-{
-  return;
-}
 
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 11/06|
  *----------------------------------------------------------------------*/
-DRT::Condition::Condition(const DRT::Condition& old) :
-Container(old),
-type_(old.type_)
+DRT::DofSet::DofSet(const DRT::DofSet& old) :
+ParObject(old),
+dofs_(old.dofs_)
 {
   return;
 }
@@ -50,7 +40,7 @@ type_(old.type_)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-DRT::Condition::~Condition()
+DRT::DofSet::~DofSet()
 {
   return;
 }
@@ -59,21 +49,21 @@ DRT::Condition::~Condition()
 /*----------------------------------------------------------------------*
  |  << operator                                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const DRT::Condition& cond)
+ostream& operator << (ostream& os, const DRT::DofSet& dofset)
 {
-  cond.Print(os); 
+  dofset.Print(os); 
   return os;
 }
 
 
 /*----------------------------------------------------------------------*
- |  print this element (public)                              mwgee 11/06|
+ |  print this  (public)                                     mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Condition::Print(ostream& os) const
+void DRT::DofSet::Print(ostream& os) const
 {
-  if (Type()==condition_Dirichlet)    os << "Dirichlet boundary condition:\n";
-  else if (Type()==condition_Neumann) os << "Neumann boundary condition:\n";
-  Container::Print(os);
+  os << "NumDof " << NumDof() << " Dof(s) ";
+  for (int i=0; i<NumDof(); ++i)
+    os << Dofs()[i] << " ";
   return;
 }
 
@@ -81,21 +71,15 @@ void DRT::Condition::Print(ostream& os) const
  |  Pack data from this element into vector of length size     (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-const char* DRT::Condition::Pack(int& size) const
+const char* DRT::DofSet::Pack(int& size) const
 {
   const int sizeint    = sizeof(int);
-  const int sizetype   = sizeof(enum ConditionType);
 
-  // pack base class Container
-  int basesize=0;
-  const char* basedata = Container::Pack(basesize);
-  
   size = 
-  sizeint +      // size itself 
-  sizeint +      // type of this instance of ParObject, see top of ParObject.H
-  basesize +     // base class Container
-  sizetype +     // type_
-  0;             // continue to add data here...
+  sizeint +          // size itself 
+  sizeint +          // type of this instance of ParObject, see top of ParObject.H
+  SizeVector(dofs_)+ // no. of degrees of freedom and degrees of freedom
+  0;                 // continue to add data here...
   
   
   char* data = new char[size];
@@ -105,13 +89,10 @@ const char* DRT::Condition::Pack(int& size) const
   // size
   AddtoPack(position,data,size);
   // ParObject type
-  int type = ParObject_Condition;
+  int type = ParObject_DofSet;    // see top of ParObject.H
   AddtoPack(position,data,type);
-  // add base class
-  AddtoPack(position,data,basedata,basesize);
-  delete [] basedata;
-  // add type_
-  AddtoPack(position,data,type_);
+  // dofs_
+  AddVectortoPack(position,data,dofs_);
 
   if (position != size)
     dserror("Mismatch in size of data %d <-> %d",size,position);
@@ -123,7 +104,7 @@ const char* DRT::Condition::Pack(int& size) const
  |  Unpack data into this element                              (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-bool DRT::Condition::Unpack(const char* data)
+bool DRT::DofSet::Unpack(const char* data)
 {
   int position=0;
   
@@ -133,13 +114,9 @@ bool DRT::Condition::Unpack(const char* data)
   // ParObject instance type
   int type=0;
   ExtractfromPack(position,data,type);
-  if (type != ParObject_Condition) dserror("Wrong instance type in data");
-  // extract base class
-  int basesize = SizePack(&data[position]);
-  Container::Unpack(&data[position]);
-  position += basesize;
-  // extract type_
-  ExtractfromPack(position,data,type_);
+  if (type != ParObject_DofSet) dserror("Wrong instance type in data");
+  // dofs_
+  ExtractVectorfromPack(position,data,dofs_);
     
   if (position != size)
     dserror("Mismatch in size of data %d <-> %d",size,position);
@@ -147,7 +124,28 @@ bool DRT::Condition::Unpack(const char* data)
 }
 
 
+/*----------------------------------------------------------------------*
+ |  set no. of degrees of freedom                              (public) |
+ |                                                            gee 11/06 |
+ *----------------------------------------------------------------------*/
+void DRT::DofSet::SetNumDof(const int size)
+{
+  int oldsize = NumDof();
+  dofs_.resize(size);
+  for (int i=oldsize; i<size; ++i) dofs_[i] = -1;
+  return;
+}
 
+/*----------------------------------------------------------------------*
+ |  set no. of degrees of freedom                              (public) |
+ |                                                            gee 11/06 |
+ *----------------------------------------------------------------------*/
+void DRT::DofSet::SetDof(const int* dofs, const int size)
+{
+  dofs_.resize(size);
+  for (int i=0; i<size; ++i) dofs_[i] = dofs[i];
+  return;
+}
 
 
 

@@ -32,6 +32,7 @@ extern "C"
 #include "drt_node.H"
 #include "drt_designnode.H"
 #include "drt_designelement.H"
+#include "drt_dofset.H"
 #include "shell8.H"
 #include "drt_dserror.H"
 
@@ -95,6 +96,13 @@ DRT::ParObject* DRT::Utils::Factory(const char* data)
     case ParObject_Shell8:
     {
       DRT::Shell8* object = new DRT::Shell8(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_DofSet:
+    {
+      DRT::DofSet* object = new DRT::DofSet();
       object->Unpack(data);
       return object;
     }

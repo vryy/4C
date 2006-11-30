@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file discret.cpp
+\file drt_discret.cpp
 \brief
 
 <pre>
@@ -32,9 +32,22 @@ filled_(false)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 11/06|
  *----------------------------------------------------------------------*/
-DRT::Discretization::Discretization(const DRT::Discretization& old)
+DRT::Discretization::Discretization(const DRT::Discretization& old) :
+filled_(old.Filled())
 {
-  dserror("Discretization does not have a copy constructor");
+  comm_ = rcp(old.comm_->Clone());
+  Reset();
+  
+  map<int,RefCountPtr<DRT::Element> >::const_iterator ecurr;
+  for (ecurr=old.element_.begin(); ecurr!=old.element_.end(); ++ecurr)
+    element_[ecurr->first] = rcp(ecurr->second->Clone());
+    
+  map<int,RefCountPtr<DRT::Node> >::const_iterator ncurr;
+  for (ncurr=old.node_.begin(); ncurr!=old.node_.end(); ++ncurr)
+    node_[ncurr->first] = rcp(ncurr->second->Clone());
+
+  if (old.Filled()) FillComplete();
+  
   return;
 }
 
@@ -51,8 +64,8 @@ DRT::Discretization::~Discretization()
  *----------------------------------------------------------------------*/
 void DRT::Discretization::AddElement(RefCountPtr<DRT::Element> ele)
 {
-  filled_ = false;
   element_[ele->Id()] = ele;
+  Reset();
   return;
 }
 
@@ -61,9 +74,139 @@ void DRT::Discretization::AddElement(RefCountPtr<DRT::Element> ele)
  *----------------------------------------------------------------------*/
 void DRT::Discretization::AddNode(RefCountPtr<DRT::Node> node)
 {
-  filled_ = false;
   node_[node->Id()] = node;
+  Reset();
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  get nodal row map (public)                               mwgee 11/06|
+ *----------------------------------------------------------------------*/
+const Epetra_Map* DRT::Discretization::NodeRowMap() const 
+{ 
+#ifdef DEBUG
+  if (Filled()) return noderowmap_.get();
+  else dserror("FillComplete() must be called before call to NodeRowMap()"); 
+  return NULL; 
+#else
+  return noderowmap_.get();
+#endif
+}
+
+/*----------------------------------------------------------------------*
+ |  get nodal column map (public)                            mwgee 11/06|
+ *----------------------------------------------------------------------*/
+const Epetra_Map* DRT::Discretization::NodeColMap() const 
+{ 
+#ifdef DEBUG
+  if (Filled()) return nodecolmap_.get();
+  else dserror("FillComplete() must be called before call to NodeColMap()"); 
+  return NULL; 
+#else
+  return nodecolmap_.get();
+#endif
+}
+
+/*----------------------------------------------------------------------*
+ |  get element row map (public)                             mwgee 11/06|
+ *----------------------------------------------------------------------*/
+const Epetra_Map* DRT::Discretization::ElementRowMap() const 
+{ 
+#ifdef DEBUG
+  if (Filled()) return elerowmap_.get();
+  else dserror("FillComplete() must be called before call to ElementRowMap()"); 
+  return NULL; 
+#else
+  return elerowmap_.get();
+#endif
+}
+
+/*----------------------------------------------------------------------*
+ |  get element column map (public)                          mwgee 11/06|
+ *----------------------------------------------------------------------*/
+const Epetra_Map* DRT::Discretization::ElementColMap() const 
+{ 
+#ifdef DEBUG
+  if (Filled()) return elecolmap_.get();
+  else dserror("FillComplete() must be called before call to ElementColMap()"); 
+  return NULL; 
+#else
+  return elecolmap_.get();
+#endif
+}
+
+/*----------------------------------------------------------------------*
+ |  get global no of elements (public)                       mwgee 11/06|
+ *----------------------------------------------------------------------*/
+int DRT::Discretization::NumGlobalElements() const 
+{ 
+#ifdef DEBUG
+  if (Filled()) return ElementRowMap()->NumGlobalElements();
+  else dserror("FillComplete() must be called before call to NumGlobalElements()");
+  return -1; 
+#else
+  return ElementRowMap()->NumGlobalElements();
+#endif
+}
+
+/*----------------------------------------------------------------------*
+ |  get no of my row elements (public)                       mwgee 11/06|
+ *----------------------------------------------------------------------*/
+int DRT::Discretization::NumMyRowElements() const 
+{ 
+#ifdef DEBUG
+  if (Filled()) return ElementRowMap()->NumMyElements();
+  else dserror("FillComplete() must be called before call to NumMyRowElements()"); 
+  return -1;
+#else
+  return ElementRowMap()->NumMyElements();
+#endif
+}
+
+/*----------------------------------------------------------------------*
+ |  get no of my column elements (public)                    mwgee 11/06|
+ *----------------------------------------------------------------------*/
+int DRT::Discretization::NumMyColElements() const 
+{ 
+  if (Filled()) return ElementColMap()->NumMyElements();
+  else return (int)element_.size(); 
+}
+
+/*----------------------------------------------------------------------*
+ |  get global no of nodes (public)                          mwgee 11/06|
+ *----------------------------------------------------------------------*/
+int DRT::Discretization::NumGlobalNodes() const 
+{ 
+#ifdef DEBUG
+  if (Filled()) return NodeRowMap()->NumGlobalElements();
+  else dserror("FillComplete() must be called before call to NumGlobalNodes()");
+  return -1; 
+#else
+  return NodeRowMap()->NumGlobalElements();
+#endif
+}
+
+/*----------------------------------------------------------------------*
+ |  get no of my row nodes (public)                          mwgee 11/06|
+ *----------------------------------------------------------------------*/
+int DRT::Discretization::NumMyRowNodes() const 
+{ 
+#ifdef DEBUG
+  if (Filled()) return NodeRowMap()->NumMyElements();
+  else dserror("FillComplete() must be called before call to NumMyRowNodes()");
+  return -1; 
+#else
+  return NodeRowMap()->NumMyElements();
+#endif
+}
+
+/*----------------------------------------------------------------------*
+ |  get no of my column nodes (public)                       mwgee 11/06|
+ *----------------------------------------------------------------------*/
+int DRT::Discretization::NumMyColNodes() const 
+{ 
+  if (Filled()) return NodeColMap()->NumMyElements();
+  else return (int)node_.size();
 }
 
 /*----------------------------------------------------------------------*
@@ -71,47 +214,14 @@ void DRT::Discretization::AddNode(RefCountPtr<DRT::Node> node)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::Discretization::gElement(int gid) const
 {
-  map<int,RefCountPtr<DRT::Element> >:: const_iterator curr = 
-    element_.find(gid);
+#ifdef DEBUG
+  map<int,RefCountPtr<DRT::Element> >:: const_iterator curr = element_.find(gid);
   if (curr == element_.end()) dserror("Element with gobal id gid=%d not stored on this proc",gid);
-  else                        return curr->second.get();
+  else return curr->second.get();
   return NULL;
-}
-
-/*----------------------------------------------------------------------*
- |  get element with local id (public)                      mwgee 11/06|
- *----------------------------------------------------------------------*/
-DRT::Element* DRT::Discretization::lRowElement(int lid) const
-{
-  if (!Filled()) 
-    dserror("DRT::Discretization::lRowElement: Filled() != true");
-  int gid = ElementRowMap()->GID(lid);
-  if (gid<0) dserror("Element with local row index lid=%d not on this proc",lid);
-  map<int,RefCountPtr<DRT::Element> >:: const_iterator curr = 
-    element_.find(gid);
-  if (curr == element_.end()) 
-    dserror("Cannot find element with row index lid %d gid %d",lid,gid);
-  else                        
-    return curr->second.get();
-  return NULL;
-}
-
-/*----------------------------------------------------------------------*
- |  get element with local id (public)                      mwgee 11/06|
- *----------------------------------------------------------------------*/
-DRT::Element* DRT::Discretization::lColElement(int lid) const
-{
-  if (!Filled()) 
-    dserror("DRT::Discretization::lColElement: Filled() != true");
-  int gid = ElementColMap()->GID(lid);
-  if (gid<0) dserror("Element with local column index lid=%d not on this proc",lid);
-  map<int,RefCountPtr<DRT::Element> >:: const_iterator curr = 
-    element_.find(gid);
-  if (curr == element_.end()) 
-    dserror("Cannot find element with column index lid %d gid %d",lid,gid);
-  else                        
-    return curr->second.get();
-  return NULL;
+#else
+  return element_.find(gid)->second.get();
+#endif  
 }
 
 /*----------------------------------------------------------------------*
@@ -119,43 +229,15 @@ DRT::Element* DRT::Discretization::lColElement(int lid) const
  *----------------------------------------------------------------------*/
 DRT::Node* DRT::Discretization::gNode(int gid) const
 {
+#ifdef DEBUG
   map<int,RefCountPtr<DRT::Node> >:: const_iterator curr = 
     node_.find(gid);
   if (curr == node_.end()) dserror("Node with global id gid=%d not stored on this proc",gid);
   else                     return curr->second.get();
   return NULL;
-}
-
-/*----------------------------------------------------------------------*
- |  get node with local id (public)                         mwgee 11/06|
- *----------------------------------------------------------------------*/
-DRT::Node* DRT::Discretization::lRowNode(int lid) const
-{
-  if (!Filled()) 
-    dserror("DRT::Discretization::lRowNode: Filled() != true");
-  int gid = NodeRowMap()->GID(lid);
-  if (gid<0) return NULL;
-  map<int,RefCountPtr<DRT::Node> >:: const_iterator curr = 
-    node_.find(gid);
-  if (curr == node_.end()) dserror("Cannot find node with lid=%d gid=%d",lid,gid);
-  else                     return curr->second.get();
-  return NULL;
-}
-
-/*----------------------------------------------------------------------*
- |  get node with local id (public)                         mwgee 11/06|
- *----------------------------------------------------------------------*/
-DRT::Node* DRT::Discretization::lColNode(int lid) const
-{
-  if (!Filled()) 
-    dserror("DRT::Discretization::lColNode: Filled() != true");
-  int gid = NodeColMap()->GID(lid);
-  if (gid<0) dserror("local index lid=%d out of range",lid);
-  map<int,RefCountPtr<DRT::Node> >:: const_iterator curr = 
-    node_.find(gid);
-  if (curr == node_.end()) dserror("Cannot find node with lid=%d gid=%d",lid,gid);
-  else                     return curr->second.get();
-  return NULL;
+#else
+  return node_.find(gid)->second.get();
+#endif
 }
 
 /*----------------------------------------------------------------------*
@@ -258,12 +340,103 @@ void DRT::Discretization::SetDesignEntityIds(Node::OnDesignEntity type,
       node->SetDesignEntity(type,dentityid);
     }
   }
-
   return;
 }
 
 
 
+/*----------------------------------------------------------------------*
+ |  set degrees of freedom (public)                          mwgee 11/06|
+ *----------------------------------------------------------------------*/
+const Epetra_Map* DRT::Discretization::DofRowMap() const
+{
+  // do not reconstruct if it exists
+  // dofrowmap_ is destroyed in Reset() which is used in ALL
+  // discretization altering methods
+  if (dofrowmap_ != null) return dofrowmap_.get();
+  if (!Filled()) dserror("Filled()==false");
+  
+  const int myrank = Comm().MyPID();
+  const int numproc = Comm().NumProc();
+  
+  // loop all my nodes and set number of degrees of freedom to them
+  for (int i=0; i<NumMyColNodes(); ++i)
+  {
+    DRT::Node* actnode = lColNode(i);
+    const int numele = actnode->NumElement();
+    DRT::Element** myele = actnode->Elements();
+    int maxnum=0;
+    for (int j=0; j<numele; ++j)
+      maxnum = max(maxnum,myele[j]->NumDofPerNode(*actnode));
+    actnode->Dof().SetNumDof(maxnum);
+  }
+  
+  // loop all my elements and set number of degrees of freedom to them
+  for (int i=0; i<NumMyColElements(); ++i)
+  {
+    DRT::Element* actele = lColElement(i);
+    actele->Dof().SetNumDof(actele->NumDofPerElement());
+  }
+  
+  // count dofs in row nodes and elements
+  int nodedofcount=0;
+  for (int i=0; i<NumMyRowNodes(); ++i)
+    nodedofcount += lRowNode(i)->Dof().NumDof();
+  int eledofcount=0;
+  for (int i=0; i<NumMyRowElements(); ++i)
+    eledofcount += lRowElement(i)->Dof().NumDof();
+  
+  // communicate these sizes
+  vector<int> sendbuff(numproc*2);
+  vector<int> numdof(numproc*2);
+  for (int i=0; i<(int)sendbuff.size(); ++i) sendbuff[i] = 0;
+  sendbuff[myrank*2]   = nodedofcount;
+  sendbuff[myrank*2+1] = eledofcount;
+  Comm().SumAll(&sendbuff[0],&numdof[0],numproc*2);
+  
+  // find out where to start numbering dofs
+  int start=0;
+  for (int i=0; i<myrank*2; ++i)
+    start += numdof[i];
+  vector<int> myglobaldofs(numdof[myrank*2]+numdof[myrank*2+1]);
+  for (int i=0; i<(int)myglobaldofs.size(); ++i)
+    myglobaldofs[i] = start+i;
+    
+  // number my dofs
+  map<int,vector<int > > dofpernode;
+  map<int,vector<int > > dofperele;
+  int count=0;
+  for (int i=0; i<NumMyRowNodes(); ++i)
+  {
+    DRT::Node* actnode = lRowNode(i);
+    const int numdof = actnode->Dof().NumDof();
+    actnode->Dof().SetDof(&myglobaldofs[count],numdof);
+    dofpernode[actnode->Id()].resize(numdof);
+    for (int j=0; j<numdof; ++j) 
+      dofpernode[actnode->Id()][j] = myglobaldofs[count+j];
+    count += numdof;
+  }
+  if (count != numdof[myrank*2]) 
+    dserror("Mismatch in local no. of dofs: %d <-> %d",count,numdof[myrank*2]);
+  for (int i=0; i<NumMyRowElements(); ++i)
+  {
+    DRT::Element* actele = lRowElement(i);
+    const int numdof = actele->Dof().NumDof();
+    actele->Dof().SetDof(&myglobaldofs[count],numdof);
+    dofperele[actele->Id()].resize(numdof);
+    for (int j=0; j<numdof; ++j)
+      dofperele[actele->Id()][j] = myglobaldofs[count+j];
+    count += numdof;
+  }
+  if (count != numdof[myrank*2]+numdof[myrank*2+1]) 
+    dserror("Mismatch in local no. of dofs: %d <-> %d",count,numdof[myrank*2]+numdof[myrank*2+1]);
+
+  // communicate the nodal dofs
+  DRT::Exporter exporter(*NodeRowMap(),*NodeColMap(),Comm());
+  exporter.Export(dofpernode);
+
+  return NULL;
+}
 
 
 

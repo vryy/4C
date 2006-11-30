@@ -25,6 +25,7 @@ DRT::Node::Node(int id, const double* coords, const int owner) :
 ParObject(),
 id_(id),
 owner_(owner),
+dofset_(),
 dentitytype_(on_none),
 dentityid_(-1)
 {
@@ -40,10 +41,11 @@ DRT::Node::Node(const DRT::Node& old) :
 ParObject(old),
 id_(old.id_),
 owner_(old.owner_),
+dofset_(old.dofset_),
 element_(old.element_),
 dentitytype_(old.dentitytype_),
 dentityid_(old.dentityid_),
-condition_(old.condition_)
+condition_(old.condition_) // scary: this is a RefCountPtr !
 {
   for (int i=0; i<3; ++i) x_[i] = old.x_[i];
   return;
@@ -84,16 +86,25 @@ ostream& operator << (ostream& os, const DRT::Node& node)
 void DRT::Node::Print(ostream& os) const
 {
   // Print id and coordinates
-  os << "Node " << Id()
-     << " Owner " << Owner() 
-     << " Coords " << X()[0] << " " << X()[1] << " " << X()[2];
+  os << "Node " << setw(12) << Id()
+     << " Owner " << setw(4) << Owner()
+     << " Coords " 
+     << setw(12) << X()[0] << " " 
+     << setw(12) << X()[1] << " " 
+     << setw(12) << X()[2] << " ";
+  // print dofs if there are any
+  if (Dof().NumDof())
+  {
+    os << Dof();
+  }
+  
   // Print design entity if there is any
   if (dentitytype_ != on_none)
   {
-    if      (dentitytype_==on_dnode) os << " on DNODE " << dentityid_;
-    else if (dentitytype_==on_dline) os << " on DLINE " << dentityid_;
-    else if (dentitytype_==on_dsurface) os << " on DSURF " << dentityid_;
-    else if (on_dsurface==on_dvolume) os << " on DVOL " << dentityid_;
+    if      (dentitytype_==on_dnode) os << "on DNODE " << dentityid_ << " ";
+    else if (dentitytype_==on_dline) os << "on DLINE " << dentityid_ << " ";
+    else if (dentitytype_==on_dsurface) os << "on DSURF " << dentityid_ << " ";
+    else if (on_dsurface==on_dvolume) os << "on DVOL " << dentityid_ << " ";
     else dserror("Unknown type of design entity");
   }
   // Print conditions if there are any
@@ -121,6 +132,10 @@ const char* DRT::Node::Pack(int& size) const
   const int sizedouble = sizeof(double);
   //const int sizechar   = sizeof(char);
 
+  // get data and size of dofset_
+  int dofsetsize=0;
+  const char* dofsetpack = dofset_.Pack(dofsetsize);
+
   // get the size of all conditions
   int condsize=0;
   map<string,RefCountPtr<Condition> >::const_iterator curr;
@@ -139,6 +154,7 @@ const char* DRT::Node::Pack(int& size) const
   sizeint                +   // holds id
   sizeint                +   // owner_
   sizedouble*3           +   // holds x_
+  dofsetsize             +   // dofset_
   sizeof(OnDesignEntity) +   // dentitytype_
   sizeint                +   // dentityid_
   sizeint                +   // no. objects in condition_
@@ -163,6 +179,9 @@ const char* DRT::Node::Pack(int& size) const
   AddtoPack(position,data,owner);
   // add x_
   AddtoPack(position,data,x_,3*sizedouble);
+  // dofset_
+  AddtoPack(position,data,dofsetpack,dofsetsize);
+  delete [] dofsetpack;
   // dentitytype_
   AddtoPack(position,data,dentitytype_);
   // dentityid_
@@ -212,6 +231,10 @@ bool DRT::Node::Unpack(const char* data)
   ExtractfromPack(position,data,owner_);
   // extract x_
   ExtractfromPack(position,data,x_,3*sizedouble);  
+  // dofset_
+  dofset_.Unpack(&data[position]);
+  int dofsetsize = dofset_.SizePack(&data[position]);
+  position += dofsetsize;
   // dentitytype_
   ExtractfromPack(position,data,dentitytype_);
   // dentityid_
@@ -225,8 +248,8 @@ bool DRT::Node::Unpack(const char* data)
     ExtractStringfromPack(position,data,name);
     RefCountPtr<Condition> cond = rcp(new Condition());
     cond->Unpack(&data[position]);
-    int size = cond->SizePack(&data[position]);
-    position += size;
+    int condsize = cond->SizePack(&data[position]);
+    position += condsize;
     SetCondition(name,cond);
   }
 

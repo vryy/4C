@@ -24,6 +24,7 @@ using namespace std;
 using namespace Teuchos;
 #include "drt_parobject.H"
 #include "drt_condition.H"
+#include "drt_dofset.H"
 
 
 /*!
@@ -161,6 +162,38 @@ public:
   { if (node_.size()) return &node_[0]; else return NULL; }
 
   /*!
+  \brief Get number of degrees of freedom of a certain node
+  
+  The element decides how many degrees of freedom its nodes must have.
+  As this may vary along a simulation, the element can redecide the
+  number of degrees of freedom per node along the way for each of it's nodes
+  separately.
+  */
+  virtual int NumDofPerNode(const DRT::Node& node) const = 0;
+
+  /*!
+  \brief Get number of degrees of freedom per element
+  
+  The element decides how many element degrees of freedom it has.
+  It can redecide along the way of a simulation.
+  
+  \note Element degrees of freedom mentioned here are dofs that are visible
+        at the level of the total system of equations. Purely internal
+        element dofs that are condensed internally should NOT be considered.
+  */
+  virtual int NumDofPerElement() const = 0;
+
+  /*!
+  \brief Return reference to the set of degrees of freedom
+  */
+  virtual inline DRT::DofSet& Dof() { return dofset_; }
+
+  /*!
+  \brief Return reference to the set of degrees of freedom
+  */
+  virtual inline const DRT::DofSet& Dof() const { return dofset_; }
+
+  /*!
   \brief Print this element
   */
   virtual void Print(ostream& os) const;
@@ -225,6 +258,7 @@ protected:
   ElementType                         etype_;     // type of element
   vector<int>                         nodeid_;    // list of my nodal ids
   vector<DRT::Node*>                  node_;      // pointers to adjacent nodes
+  DRT::DofSet                         dofset_;    // a set of degrees of freedom
   map<string,RefCountPtr<Condition> > condition_; // some conditions e.g. BCs
 
 }; // class Element

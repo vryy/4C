@@ -25,6 +25,7 @@ using namespace std;
 using namespace Teuchos;
 
 #include "drt_parobject.H"
+#include "drt_dofset.H"
 #include "drt_condition.H"
 
 /*!
@@ -132,6 +133,27 @@ public:
   virtual inline const double* X() const { return x_; }
 
   /*!
+  \brief Return number of elements adjacent to this node
+  */
+  virtual inline int NumElement() const { return element_.size(); }
+
+  /*!
+  \brief Return ptr to vector of element ptrs
+  */
+  virtual DRT::Element** Elements() 
+  { if (NumElement()) return &element_[0]; else return NULL; }
+
+  /*!
+  \brief Return reference to the set of degrees of freedom
+  */
+  virtual inline DRT::DofSet& Dof() { return dofset_; }
+
+  /*!
+  \brief Return reference to the set of degrees of freedom
+  */
+  virtual inline const DRT::DofSet& Dof() const { return dofset_; }
+
+  /*!
   \brief Get a condition with a certain name
   
   \param name : Name of condition
@@ -185,9 +207,27 @@ public:
 
 protected:
 
+  /*!
+  \brief Clear vector of pointers to my elements
+  
+  */
+  virtual inline void ClearMyElementTopology() { element_.clear(); return;}
+
+  /*!
+  \brief Add an element to my vector of pointers to elements
+  
+  Resizes the element ptr vector and adds ptr at the end of vector
+  */
+  virtual void AddElementPtr(DRT::Element* eleptr) 
+  { const int size = element_.size(); element_.resize(size+1); 
+    element_[size] = eleptr; return;}
+
+protected:
+
   int                                 id_;          // a unique global id
   int                                 owner_;       // proc owning this node
   double                              x_[3];        // nodal coords
+  DRT::DofSet                         dofset_;      // a set of degrees of freedom
   vector<Element*>                    element_;     // pointers to adjacent elements
   OnDesignEntity                      dentitytype_; // type of design object I'm on
   int                                 dentityid_;   // global id of design object I'm on

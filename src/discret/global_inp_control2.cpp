@@ -595,8 +595,7 @@ void inpfield_ccadiscret()
       RefCountPtr<DRT::Discretization> actdis = (*discretization)[j];
       input_assign_nodes(*actdis,tmpnodes.get());
       int err = actdis->FillComplete();
-      if (err)
-        dserror("Fillcomplete() returned %d",err);
+      if (err) dserror("Fillcomplete() returned %d",err);
       nnode_total += actdis->NumGlobalNodes();
     }
   }
@@ -771,6 +770,37 @@ void inpnodes_ccadiscret(Epetra_SerialDenseMatrix& tmpnodes)
   return;
 } // void inpnodes_ccadiscret
 
+
+/*----------------------------------------------------------------------*
+  | assign degrees of freedom                              m.gee 10/06  |
+ *----------------------------------------------------------------------*/
+void assign_degreesoffreedom(FIELD* actfield, const int ndis)
+{
+  DSTraceHelper dst("assign_degreesoffreedom");
+
+  vector<RefCountPtr<DRT::Discretization> >* discretization =
+            (vector<RefCountPtr<DRT::Discretization> >*)actfield->ccadis;
+            
+  for (int i=0; i<ndis; ++i)
+  {
+    RefCountPtr<DRT::Discretization> actdis = (*discretization)[i];
+    if (!actdis->Filled())
+    {
+      int err = actdis->FillComplete();
+      if (err) dserror("FillComplete() returned err=%d",err);
+    }
+    actdis->DofRowMap();
+  } // for (int i=0; i<ndis; ++i)
+  
+
+
+
+
+
+
+
+  return;
+} // void assign_degreesoffreedom
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

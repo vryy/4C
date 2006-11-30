@@ -38,6 +38,7 @@ using namespace std;
 #define ParObject_Element         (int)5
 #define ParObject_DesignElement   (int)6
 #define ParObject_Shell8          (int)7
+#define ParObject_DofSet          (int)8
 
 
 /*!

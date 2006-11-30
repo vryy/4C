@@ -23,11 +23,32 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  Finalize construction (public)                           mwgee 11/06|
  *----------------------------------------------------------------------*/
+void DRT::Discretization::Reset()
+{
+  filled_ = false;
+  dofrowmap_ = null;
+  dofcolmap_ = null;
+  elerowmap_ = null;
+  elecolmap_ = null;
+  elerowptr_.clear();
+  elecolptr_.clear();
+  noderowmap_ = null;
+  nodecolmap_ = null;
+  noderowptr_.clear();
+  nodecolptr_.clear();
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Finalize construction (public)                           mwgee 11/06|
+ *----------------------------------------------------------------------*/
 int DRT::Discretization::FillComplete()
 {
-  filled_ = false;  
+  // set all maps to null
+  Reset();  
 
-  // (re)build map of nodes noderowmap_ and nodecolmap_
+  // (re)build map of nodes noderowmap_, nodecolmap_, noderowptr and nodecolptr
   BuildNodeRowMap();
   BuildNodeColMap();
   
@@ -58,12 +79,14 @@ void DRT::Discretization::BuildNodeRowMap()
     if (curr->second->Owner() == myrank)
       ++nummynodes;
   vector<int> nodeids(nummynodes);
+  noderowptr_.resize(nummynodes);
   
   int count=0;
   for (curr=node_.begin(); curr != node_.end(); ++curr)
     if (curr->second->Owner() == myrank)
     {
       nodeids[count] = curr->second->Id();
+      noderowptr_[count] = curr->second.get();
       ++count;
     }
   if (count != nummynodes) dserror("Mismatch in no. of nodes");
@@ -76,14 +99,16 @@ void DRT::Discretization::BuildNodeRowMap()
  *----------------------------------------------------------------------*/
 void DRT::Discretization::BuildNodeColMap()
 {
-  int nummynodes     = (int)node_.size();
+  int nummynodes = (int)node_.size();
   vector<int> nodeids(nummynodes);
+  nodecolptr_.resize(nummynodes);
   
   int count=0;
   map<int,RefCountPtr<DRT::Node> >::iterator curr;
   for (curr=node_.begin(); curr != node_.end(); ++curr)
   {
     nodeids[count] = curr->second->Id();
+    nodecolptr_[count] = curr->second.get();
     ++count;
   }
   if (count != nummynodes) dserror("Mismatch in no. of nodes");
@@ -104,11 +129,13 @@ void DRT::Discretization::BuildElementRowMap()
     if (curr->second->Owner()==myrank)
       nummyeles++;
   vector<int> eleids(nummyeles);
+  elerowptr_.resize(nummyeles);
   int count=0;
   for (curr=element_.begin(); curr != element_.end(); ++curr)
     if (curr->second->Owner()==myrank)
     {
       eleids[count] = curr->second->Id();
+      elerowptr_[count] = curr->second.get();
       ++count;
     }
   if (count != nummyeles) dserror("Mismatch in no. of elements");
@@ -121,13 +148,15 @@ void DRT::Discretization::BuildElementRowMap()
  *----------------------------------------------------------------------*/
 void DRT::Discretization::BuildElementColMap()
 {
-  int nummyeles     = (int)element_.size();
+  int nummyeles = (int)element_.size();
   vector<int> eleids(nummyeles);
+  elecolptr_.resize(nummyeles);
   map<int,RefCountPtr<DRT::Element> >::iterator curr;
   int count=0;
   for (curr=element_.begin(); curr != element_.end(); ++curr)
   {
     eleids[count] = curr->second->Id();
+    elecolptr_[count] = curr->second.get();
     ++count;
   }
   if (count != nummyeles) dserror("Mismatch in no. of elements");
@@ -157,7 +186,7 @@ void DRT::Discretization::BuildNodeToElementPointers()
 {
   map<int,RefCountPtr<DRT::Node> >::iterator nodecurr;
   for (nodecurr=node_.begin(); nodecurr != node_.end(); ++nodecurr)
-    nodecurr->second->element_.resize(0);
+    nodecurr->second->ClearMyElementTopology();
   
   map<int,RefCountPtr<DRT::Element> >::iterator elecurr;
   for (elecurr=element_.begin(); elecurr != element_.end(); ++elecurr)
@@ -168,12 +197,7 @@ void DRT::Discretization::BuildNodeToElementPointers()
     {
       DRT::Node* node = gNode(nodes[j]);
       if (!node) dserror("Node %d is not on this proc %d",j,Comm().MyPID());
-      else
-      {
-        int size = node->element_.size();
-        node->element_.resize(size+1);
-        node->element_[size] = elecurr->second.get();
-      }
+      else node->AddElementPtr(elecurr->second.get());
     }
   }
   return;

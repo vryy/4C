@@ -50,9 +50,8 @@ void DRT::Discretization::ExportRowNodes(const Epetra_Map& newmap)
     curr->second->SetOwner(myrank);
   
   // maps and pointers are no longer correct and need rebuilding
-  noderowmap_ = null;
-  nodecolmap_ = null;
-  filled_ = false;
+  Reset();
+
   return;
 }
 
@@ -86,9 +85,8 @@ void DRT::Discretization::ExportColumnNodes(const Epetra_Map& newmap)
   exporter.Export(node_);
   
   // maps and pointers are no longer correct and need rebuilding
-  noderowmap_ = null;
-  nodecolmap_ = null;
-  filled_ = false;  
+  Reset();
+
   return;
 }
 
@@ -127,9 +125,8 @@ void DRT::Discretization::ExportRowElements(const Epetra_Map& newmap)
     curr->second->SetOwner(myrank);
   
   // maps and pointers are no longer correct and need rebuilding
-  elerowmap_ = null; 
-  elecolmap_ = null; 
-  filled_ = false;  
+  Reset();
+
   return;
 }
 
@@ -163,9 +160,8 @@ void DRT::Discretization::ExportColumnElements(const Epetra_Map& newmap)
   exporter.Export(element_);
   
   // maps and pointers are no longer correct and need rebuilding
-  elerowmap_ = null; 
-  elecolmap_ = null; 
-  filled_ = false;  
+  Reset();
+
   return;
 }
 
