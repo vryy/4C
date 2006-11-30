@@ -589,7 +589,8 @@ void pe_update(float *TIME)
         }
         else
         {
-          dserror("No pressure entry found.");
+          /* no pressure information. leave. */
+          break;
         }
         dsassert(chunk.value_entry_length==1, "there must be just one pressure value");
 
