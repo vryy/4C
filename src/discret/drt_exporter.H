@@ -97,15 +97,34 @@ public:
   // @{ \name Communication methods
 
   /*!
-  \brief Communicate objects
+  \brief Communicate a map of objects that implement ParObject
   
-  this method takes a map of objects and redistributes them according to
-  the send and receive plans. It is implicitly assumed, that the map of nodes
-  pointwise matches SourceMap(). It is also assumed (and tested), that type T 
-  implements the ParObject class.
-  
+  This method takes a map of objects and redistributes them according to
+  the send and receive plans. It is implicitly assumed, that the key in 
+  the map of objects pointwise matches SourceMap(). It is also assumed
+  (and tested), that type T implements the ParObject class.
+
+  \param parobjects (in/out): A map of classes T that implement the
+                              class ParObject. On input, the map
+                              has a distribution matching SourceMap().
+                              On output, the map has a distribution of
+                              TargetMap().
   */
   template<typename T> void Export(map<int,RefCountPtr<T> >& parobjects);
+
+  /*!
+  \brief Communicate a map of vectors of some basic data type T
+  
+  This method takes a map of vectors and redistributes them according to
+  the send and receive plans. It is implicitly assumed, that the key in 
+  the map of vectors pointwise matches SourceMap().
+
+  \param data (in/out): A map of vectors<T>. On input, the map
+                        has a distribution matching SourceMap().
+                        On output, the map has a distribution of
+                        TargetMap().
+  */
+  template<typename T> void Export(map<int,vector<T> >& data);
 
   //@}
 
@@ -149,6 +168,23 @@ private:
   */
   void ISend(const int frompid, const int topid, const char* data, 
             const int dsize, const int tag, MPI_Request& request);
+
+  /*!
+  \brief Send data from one processor to another (nonblocking)
+
+  \note This is an individual call
+  */
+  void ISend(const int frompid, const int topid, const int* data, 
+            const int dsize, const int tag, MPI_Request& request);
+
+  /*!
+  \brief Send data from one processor to another (nonblocking)
+
+  \note This is an individual call
+  */
+  void ISend(const int frompid, const int topid, const double* data, 
+            const int dsize, const int tag, MPI_Request& request);
+
   /*!
   \brief Receive anything joker (blocking)
   
@@ -164,8 +200,42 @@ private:
   \param recvbuff (output): buffer containing received data
   \param length (output): length of message upon receive
   */
-  void ReceiveAny(int& source, int&tag, vector<char>& recvbuff, int& length);
+  void ReceiveAny(int& source, int& tag, vector<char>& recvbuff, int& length);
   
+  /*!
+  \brief Receive anything joker (blocking)
+  
+  This method receives an MPI_INT message from any source proc with
+  any message tag of any length. It simply takes the first message that's 
+  coming in. recvbuff is resized to fit received message.
+  the method is blocking for the calling proc.
+  It is used together with ISend and Wait to do nonblocking chaotic 
+  point to point communication.
+  
+  \param source (output): source the message came from
+  \param tag (output): message tag
+  \param recvbuff (output): buffer containing received data
+  \param length (output): length of message upon receive
+  */
+  void ReceiveAny(int& source, int& tag, vector<int>& recvbuff, int& length);
+
+  /*!
+  \brief Receive anything joker (blocking)
+  
+  This method receives an MPI_DOUBLE message from any source proc with
+  any message tag of any length. It simply takes the first message that's 
+  coming in. recvbuff is resized to fit received message.
+  the method is blocking for the calling proc.
+  It is used together with ISend and Wait to do nonblocking chaotic 
+  point to point communication.
+  
+  \param source (output): source the message came from
+  \param tag (output): message tag
+  \param recvbuff (output): buffer containing received data
+  \param length (output): length of message upon receive
+  */
+  void ReceiveAny(int& source, int& tag, vector<double>& recvbuff, int& length);
+
   /*!
   \brief wait for nonblocking send to finish
   */
@@ -308,14 +378,106 @@ template<typename T> void DRT::Exporter::Export(
       SendBuff()[i] = NULL;
       SendSize()[i] = 0;
     }
-    
-
-
 #endif  
   return;
 }
 
 
+/*----------------------------------------------------------------------*
+ |  communicate objects (public)                             mwgee 11/06|
+ *----------------------------------------------------------------------*/
+template<typename T> void DRT::Exporter::Export(map<int,vector<T> >& data)
+{
+#ifdef PARALLEL
+  // allocate requests for unknown number of sends
+  vector<MPI_Request> request(200);
+  int nsend=0;
+  
+  // allocate a sendbuffer
+  vector<T*> sendbuff(SourceMap().NumMyElements());
+  
+  //-------------------------------------------------------- do the sending
+  for (int i=0; i<SourceMap().NumMyElements(); ++i)
+  {
+    // get the global id
+    const int gid = SourceMap().MyGlobalElements()[i];
+    const int lid = i;
+    // check whether there will be any send to do at all 
+    bool issend = false;
+    for (int j=0; j<NumProc(); ++j)
+      if (MyPID() != j)
+        if (SendPlan()(lid,j)==1)
+        {
+          issend = true;
+          break;
+        }
+    if (!issend) continue;
+    
+    
+    // get the object to send
+    typename map<int,vector<T> >::iterator curr = data.find(gid);
+    if (curr==data.end()) dserror("Cannot find object with gid %d",gid);
+    vector<T>& actobject = curr->second;
+    // pack the stuff
+    sendbuff[lid]   = &actobject[0];
+    SendSize()[lid] = (int)actobject.size();
+    // do sending
+    for (int j=0; j<NumProc(); ++j)
+      if (j != MyPID() && SendPlan()(lid,j)==1)
+      {
+        if (nsend>=(int)request.size()) 
+          request.resize(request.size()+200);
+        ISend(MyPID(),j,sendbuff[lid],SendSize()[lid],gid,request[nsend]);
+        ++nsend;
+      }
+  }
+  
+  
+  //-------------------------------------------------------- do receiving
+  // count how many receives I want to do
+  int nrecv=0;
+  for (int i=0; i<RecvPlan().M(); ++i)
+    for (int j=0; j<RecvPlan().N(); ++j)
+      if (RecvPlan()(i,j)) ++nrecv;
+  vector<T> recvbuff;
+  while (nrecv)
+  {
+    int source = -1;
+    int gid = -1;
+    int length = 0;
+    ReceiveAny(source,gid,recvbuff,length);
+    --nrecv;
+    // check whether message was for me
+    if (!TargetMap().MyGID(gid))
+      dserror("Received object with gid that I did not want");
+    // check whether I already have this object
+    // This can happen if I've received it before from someone else
+    // In this case, do nothing (keep what I have)
+    typename map<int,vector<T> >::iterator curr = data.find(gid);
+    if (curr != data.end()) 
+      continue;
+    data[gid].resize(length);
+    for (int i=0; i<length; ++i) data[gid][i] = recvbuff[i];
+  }
+
+  //--------- loop map and kick out everything that's not in TargetMap()
+  // (this is done strangely here because of a mysterious bug when 
+  //  deleting from the parobjects map)
+  map<int,vector<T> > newmap;
+  typename map<int,vector<T> >::iterator fool;
+  for (fool=data.begin(); fool != data.end(); ++fool)
+    if (TargetMap().MyGID(fool->first))
+      newmap[fool->first] = fool->second;
+  data.clear();
+  for (fool=newmap.begin(); fool != newmap.end(); ++fool)
+    data[fool->first] = fool->second;
+
+  //---------------------------------------------------------- do waiting
+  for (int i=0; i<nsend; ++i) Wait(request[i]);
+
+#endif  
+  return;
+}
 
 
 

@@ -80,10 +80,18 @@ public:
   virtual inline bool Filled() const {return filled_;}
 
   /*!
+  \brief Get flag indicating whether degrees of freedom where assigned
+  
+  Degrees of freedom need to be assigned using AssignDegreesOfFreedom()
+  before any calculations using this discretization can be made
+  */
+  virtual inline bool HaveDofs() const {return havedof_;}
+
+  /*!
   \brief Get degree of freedom row map (Filled()==true prerequisite)
   
   */
-  virtual const Epetra_Map* DofRowMap() const;
+  virtual const Epetra_Map* DofRowMap() { return NULL; }
 
   /*!
   \brief Get map associated with the distribution of the ownership of nodes
@@ -454,6 +462,16 @@ public:
   */
   virtual void SetDesignEntityIds(Node::OnDesignEntity type, const vector<int>& nfenode, const vector<vector<int> >& fenode);
 
+  /*!
+  \brief Assign degrees of freedom to discretization (Filled()==true prerequisite)
+  
+  Assign nodes and elements their no. of degrees of freedom as aquired
+  by Element::NumDofPerNode and Element::NumDofPerElement.
+  Number degrees of freedom (dofs) ascending according to global node numbers
+  followed by global element numbers
+  
+  */
+  virtual void AssignDegreesOfFreedom();
 
   //@}
 
@@ -563,6 +581,7 @@ protected:
   // internal data
   RefCountPtr<Epetra_Comm>                          comm_;        // an Epetra_comm
   bool                                              filled_;      // flag indicating whether getOrganized has been called
+  bool                                              havedof_;     // flag indicating whether degrees of freedom where assigned
 
   RefCountPtr<Epetra_Map>                           dofrowmap_;   // unique row map of degrees of freedom (node and element dofs))
   RefCountPtr<Epetra_Map>                           dofcolmap_;   // unique column map of degrees of freedom (node and element dofs))

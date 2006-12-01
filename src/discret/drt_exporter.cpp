@@ -186,6 +186,44 @@ void DRT::Exporter::ISend(const int frompid,
 
 #ifdef PARALLEL
 /*----------------------------------------------------------------------*
+ |  do a send of data (public)                               mwgee 11/06|
+ *----------------------------------------------------------------------*/
+void DRT::Exporter::ISend(const int frompid, 
+                          const int topid, 
+                          const int* data, 
+                          const int dsize,
+                          const int tag, 
+                          MPI_Request& request)
+{
+  if (MyPID()!=frompid) return;
+  const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
+  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
+  MPI_Isend((void*)data,dsize,MPI_INT,topid,tag,comm->Comm(),&request);
+  return;
+}
+#endif  
+
+#ifdef PARALLEL
+/*----------------------------------------------------------------------*
+ |  do a send of data (public)                               mwgee 11/06|
+ *----------------------------------------------------------------------*/
+void DRT::Exporter::ISend(const int frompid, 
+                          const int topid, 
+                          const double* data, 
+                          const int dsize,
+                          const int tag, 
+                          MPI_Request& request)
+{
+  if (MyPID()!=frompid) return;
+  const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
+  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
+  MPI_Isend((void*)data,dsize,MPI_DOUBLE,topid,tag,comm->Comm(),&request);
+  return;
+}
+#endif  
+
+#ifdef PARALLEL
+/*----------------------------------------------------------------------*
  |  receive anything (public)                                mwgee 11/06|
  *----------------------------------------------------------------------*/
 void DRT::Exporter::ReceiveAny(int& source, int&tag, 
@@ -207,6 +245,51 @@ void DRT::Exporter::ReceiveAny(int& source, int&tag,
 }
 #endif  
 
+#ifdef PARALLEL
+/*----------------------------------------------------------------------*
+ |  receive anything (public)                                mwgee 11/06|
+ *----------------------------------------------------------------------*/
+void DRT::Exporter::ReceiveAny(int& source, int&tag, 
+                               vector<int>& recvbuff,int& length)
+{
+  const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
+  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
+  MPI_Status status;
+  // probe for any message to come
+  MPI_Probe(MPI_ANY_SOURCE,MPI_ANY_TAG,comm->Comm(),&status);
+  // get sender, tag and length
+  source = status.MPI_SOURCE;
+  tag    = status.MPI_TAG;
+  MPI_Get_count(&status,MPI_INT,&length);
+  if (length>(int)recvbuff.size()) recvbuff.resize(length);
+  // receive the message
+  MPI_Recv(&recvbuff[0],length,MPI_INT,source,tag,comm->Comm(),&status);
+  return;
+}
+#endif  
+
+#ifdef PARALLEL
+/*----------------------------------------------------------------------*
+ |  receive anything (public)                                mwgee 11/06|
+ *----------------------------------------------------------------------*/
+void DRT::Exporter::ReceiveAny(int& source, int&tag, 
+                               vector<double>& recvbuff,int& length)
+{
+  const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
+  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
+  MPI_Status status;
+  // probe for any message to come
+  MPI_Probe(MPI_ANY_SOURCE,MPI_ANY_TAG,comm->Comm(),&status);
+  // get sender, tag and length
+  source = status.MPI_SOURCE;
+  tag    = status.MPI_TAG;
+  MPI_Get_count(&status,MPI_DOUBLE,&length);
+  if (length>(int)recvbuff.size()) recvbuff.resize(length);
+  // receive the message
+  MPI_Recv(&recvbuff[0],length,MPI_DOUBLE,source,tag,comm->Comm(),&status);
+  return;
+}
+#endif  
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

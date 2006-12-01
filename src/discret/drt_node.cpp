@@ -30,7 +30,6 @@ dentitytype_(on_none),
 dentityid_(-1)
 {
   for (int i=0; i<3; ++i) x_[i] = coords[i];
-  element_.resize(0);
   return;
 }
 
@@ -44,10 +43,15 @@ owner_(old.owner_),
 dofset_(old.dofset_),
 element_(old.element_),
 dentitytype_(old.dentitytype_),
-dentityid_(old.dentityid_),
-condition_(old.condition_) // scary: this is a RefCountPtr !
+dentityid_(old.dentityid_)
 {
   for (int i=0; i<3; ++i) x_[i] = old.x_[i];
+  
+  // we want a true deep copy of the condition_
+  map<string,RefCountPtr<Condition> >::const_iterator fool;
+  for (fool=old.condition_.begin(); fool!=old.condition_.end(); ++fool)
+    condition_[fool->first] = rcp(new Condition(*(fool->second)));
+
   return;
 }
 

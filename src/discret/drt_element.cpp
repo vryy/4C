@@ -27,8 +27,6 @@ owner_(owner),
 etype_(etype),
 dofset_()
 {
-  nodeid_.resize(0);
-  node_.resize(0);
   return;
 }
 
@@ -42,9 +40,12 @@ owner_(old.owner_),
 etype_(old.etype_),
 nodeid_(old.nodeid_),
 node_(old.node_),
-dofset_(old.dofset_),
-condition_(old.condition_) // scary: this is a map of RefCountPtr
+dofset_(old.dofset_)
 {
+  // we want a true deep copy of the condition_
+  map<string,RefCountPtr<Condition> >::const_iterator fool;
+  for (fool=old.condition_.begin(); fool!=old.condition_.end(); ++fool)
+    condition_[fool->first] = rcp(new Condition(*(fool->second)));
 
   return;
 }

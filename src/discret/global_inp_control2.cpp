@@ -789,7 +789,7 @@ void assign_degreesoffreedom(FIELD* actfield, const int ndis)
       int err = actdis->FillComplete();
       if (err) dserror("FillComplete() returned err=%d",err);
     }
-    actdis->DofRowMap();
+    actdis->AssignDegreesOfFreedom();
   } // for (int i=0; i<ndis; ++i)
   
 

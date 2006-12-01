@@ -26,6 +26,7 @@ Maintainer: Michael Gee
 void DRT::Discretization::Reset()
 {
   filled_ = false;
+  havedof_=false;
   dofrowmap_ = null;
   dofcolmap_ = null;
   elerowmap_ = null;

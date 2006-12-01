@@ -32,10 +32,17 @@ ParObject()
  *----------------------------------------------------------------------*/
 DRT::Container::Container(const DRT::Container& old) :
 ParObject(old),
-intdata_(old.intdata_),        // scary: this is a map of RefcountPtr
-doubledata_(old.doubledata_),  // scary: this is a map of RefcountPtr
 stringdata_(old.stringdata_)
 {
+  // we want a true deep copy of the data, not a reference
+  map<string,RefCountPtr<vector<int> > >::const_iterator ifool;
+  for (ifool=old.intdata_.begin(); ifool!=old.intdata_.end(); ++ifool)
+    intdata_[ifool->first] = rcp(new vector<int>(*(ifool->second)));
+
+  map<string,RefCountPtr<vector<double> > >::const_iterator dfool;
+  for (dfool=old.doubledata_.begin(); dfool!=old.doubledata_.end(); ++dfool)
+    doubledata_[dfool->first] = rcp(new vector<double>(*(dfool->second)));
+
   return;
 }
 
