@@ -1,37 +1,25 @@
 # -*- shell-script -*-
-#
-# parallel on fedora core 6 using lam mpi.
-#
 
 PLATFORM=LINUX_MUENCH
 PARALLEL=yes
 
-PROGRAMNAME=cca_par_linux
+LINUX_DIST=fc5
+MPI_VERSION=lam
+
+PROGRAMNAME=cca_"$LINUX_DIST"_"$MPI_VERSION"
 F77="LAMMPIF77=g77 mpif77"
 CC=mpicc
 CP=mpic++
 LD="LAMMPIF77=g77 mpif77"
 
-PLAIN_CC=gcc
-PLAIN_CP=g++
-PLAIN_F77=g77
-PLAIN_LD=g77
+BASEDIR=/lnm/lib/$LINUX_DIST/$MPI_VERSION
 
-INCLUDEDIRS="-I$MPIDIR/include -I/usr/include/lam -I/local_lnm/include -I/lnm/include"
-LIBDIRS="-L/local_lnm/lib -L/lnm/lib -L/usr/lib/gcc/i386-redhat-linux/3.4.6"
-
-# Trilinos
-TRILINOS_HOME=/lnm/lib/Trilinos
-TRILINOS_ARCH=LINUX_LAMMPI_OPT
-TRILINOS_INCDIR=$TRILINOS_HOME/$TRILINOS_ARCH/include
-TRILINOS_LIBDIR=$TRILINOS_HOME/$TRILINOS_ARCH/lib
-TRILINOS_DEFINES="-DHAVE_CONFIG_H -DTRILINOS_HAVE_FORTRAN_UNDERSCORE"
-TRILINOS_LIB="-lmoertel -lml -lnoxepetra  -lnox  -lml -laztecoo -lifpack -lamesos -lteuchos -lepetraext -lepetra"
-SUPERLU_LIB="-L/lnm/lib/SuperLU_DIST_2.0 -lsuperlu_dist_2.0_f5_lam"
+INCLUDEDIRS="-I$BASEDIR/include -I/usr/include/lam"
+LIBDIRS="-L$BASEDIR/lib -L/usr/lib/gcc-lib/i386-redhat-linux/3.2.3"
 
 # aztec
 AZTEC_INC=""
-AZTEC_LIB="-laztec_gcc_par"
+AZTEC_LIB="-laztec_gcc"
 
 # spooles
 SPOOLES_INC=""
@@ -51,8 +39,7 @@ VISUAL2_LIB="-L/usr/X11R6/lib -lVisual2 -lX11"
 VISUAL3_INC=""
 VISUAL3_LIB="-L/usr/X11R6/lib -lVisual3 -lg2c -lGLU -lGL -lX11 -lXext -ldl -lpthread"
 
-#LIBS="-lc -lm -lg2c -llapack -lgoto_p4_512-r0.6 -lxerbla -lmetis -laztec -lspoolesMPI -lspooles"
-#LIBS="-lc -lm -lg2c -llapack -lblas -lmetis"
+#LIBS="-lc -lg2c -llapack -lgoto_p4_512-r0.6 -lxerbla -lmetis"
 LIBS="-llapack -lblas -lmetis"
 
 CFLAGS_OPT="-O2"
@@ -61,9 +48,12 @@ FFLAGS_OPT="-O2"
 LDFLAGS_OPT="-O2"
 
 #CFLAGS_OPT="-g"
+#CPPFLAGS_OPT="-g"
 #FFLAGS_OPT="-g"
 #LDFLAGS_OPT="-g"
 
+# Alle Bibliotheken neu uebersetzen?!
+# -malign-double
 CFLAGS="-Wall -march=pentium4 -msse2 -mfpmath=sse -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
 CPFLAGS="-Wall -march=pentium4 -msse2 -mfpmath=sse -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
 FFLAGS="-Wall -march=pentium4 -msse2 -mfpmath=sse -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"

@@ -1,0 +1,61 @@
+# -*- shell-script -*-
+
+PLATFORM=LINUX_MUENCH
+PARALLEL=yes
+MPIDIR=/usr/lib/mpich
+
+LINUX_DIST=debian
+MPI_VERSION=mpich
+
+PROGRAMNAME=cca_"$LINUX_DIST"_"$MPI_VERSION"
+F77=$MPIDIR/bin/mpif77
+CC=$MPIDIR/bin/mpicc
+CP=$MPIDIR/bin/mpicxx
+LD=$MPIDIR/bin/mpicxx
+
+BASEDIR=/lnm/lib/$LINUX_DIST/$MPI_VERSION
+
+INCLUDEDIRS="-I$BASEDIR/include -I$MPIDIR/include"
+LIBDIRS="-L$BASEDIR/lib"
+
+# aztec
+AZTEC_INC=""
+AZTEC_LIB="-laztec_gcc"
+
+# spooles
+SPOOLES_INC=""
+SPOOLES_LIB="-lspoolesMPI -lspooles"
+
+# umfpack
+UMFPACK_INC=
+UMFPACK_LIB="-lumfpack -lamd"
+
+# fast elements
+LOOPL="-DLOOPL=15"
+
+# visual2
+VISUAL2_INC=""
+VISUAL2_LIB="-L/usr/X11R6/lib -lVisual2 -lX11"
+
+VISUAL3_INC=""
+VISUAL3_LIB="-L/usr/X11R6/lib -lVisual3 -lg2c -lGLU -lGL -lX11 -lXext -ldl -lpthread"
+
+#LIBS="-lc -lg2c -llapack -lgoto_p4_512-r0.6 -lxerbla -lmetis"
+LIBS="-llapack -lblas -lmetis -lg2c"
+
+CFLAGS_OPT="-O2"
+CPFLAGS_OPT="-O2"
+FFLAGS_OPT="-O2"
+LDFLAGS_OPT="-O2"
+
+#CFLAGS_OPT="-g"
+#CPPFLAGS_OPT="-g"
+#FFLAGS_OPT="-g"
+#LDFLAGS_OPT="-g"
+
+# Alle Bibliotheken neu uebersetzen?!
+# -malign-double
+CFLAGS="-Wall -march=pentium4 -msse2 -mfpmath=sse -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+CPFLAGS="-Wall -march=pentium4 -msse2 -mfpmath=sse -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+FFLAGS="-Wall -march=pentium4 -msse2 -mfpmath=sse -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+LDFLAGS="-Xlinker -defsym -Xlinker MAIN__=main"
