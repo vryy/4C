@@ -88,7 +88,9 @@ for file in $liste; do
     # parallel run
     echo
     echo '  Running Input-file in parallel...'
+    $MPIBOOT
     $MPIRUN -np 2 $MPIRUNARGS ./$exe $inputfile test_out >test.tmp
+    $MPIHALT
     killall $exe >& /dev/null
   fi
 

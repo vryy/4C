@@ -12,6 +12,9 @@ CC=mpicc
 CP=mpic++
 LD="LAMMPIF77=g77 mpif77"
 
+MPIBOOT=lamboot
+MPIHALT=lamhalt
+
 BASEDIR=/lnm/lib/$LINUX_DIST/$MPI_VERSION
 
 INCLUDEDIRS="-I$BASEDIR/include -I/usr/include/lam"

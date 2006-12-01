@@ -1,5 +1,7 @@
 
 # default values
+MPIBOOT=
+MPIHALT=
 MPIRUN=mpirun
 MPIRUNARGS=
 
