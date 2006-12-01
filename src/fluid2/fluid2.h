@@ -83,7 +83,43 @@ struct _ARRAY      kappa_ND;
 
 #ifdef D_FLUID2_TDS
   struct _ARRAY    sub_pres;
+    /*
+     * USAGE:
+     *    
+     *            sub_pres.a.dv[number of gausspoint]
+     *
+     *            whereas
+     *
+     *                                 number of gausspoint in r-direction
+     *                                 |
+     *                                 |        number of gausspoint
+     *                                 |        in s-direction
+     *                                 |        |
+     *            number of gausspoint=lr*(nis)+ls
+     *                                      |
+     *                                     total number of gausspoint
+     *                                     in s-direction
+     * */
+    
   struct _ARRAY4D  sub_vel;
+    /*
+     * USAGE:
+     *    
+     *            sub_vel.a.d3[old/new][dim][number of gausspoint]
+     *
+     *            whereas
+     *                         old=0,  new=1
+     *
+     *                        xdim=0, ydim=1
+     *
+     *            and
+     *
+     *            
+     *            number of gausspoint=lr*(nis)+ls
+     *                                      |
+     *                                     total number of gausspoint
+     *                                     in s-direction
+     * */
 #endif
 
     

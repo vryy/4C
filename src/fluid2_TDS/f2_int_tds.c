@@ -49,29 +49,33 @@ Codina, Principe, Guasch, Badia:
  
 
 </pre>
-\param  *ele	   ELEMENT	   (i)    actual element
-\param  *hasext    INT             (i)    element flag
-\param **estif     DOUBLE	   (o)    element stiffness matrix
-\param  *eforce    DOUBLE	   (o)    element iter force vector
-\param **xyze      DOUBLE          (-)    nodal coordinates
-\param  *funct     DOUBLE	   (-)    natural shape functions
-\param **deriv     DOUBLE	   (-)	  deriv. of nat. shape funcs
-\param **deriv2    DOUBLE	   (-)    2nd deriv. of nat. shape f.
-\param **xjm	   DOUBLE	   (-)    jacobian matrix
-\param **derxy     DOUBLE	   (-)	  global derivatives
-\param **derxy2    DOUBLE	   (-)    2nd global derivatives
-\param **evelng    DOUBLE	   (i)    ele vel. at time n+g
-\param **evhist    DOUBLE	   (i)    lin. combination of recent vel and acc
-\param **egridv    DOUBLE	   (i)    grid velocity of element
-\param  *epren     DOUBLE	   (-)    ele pres. at time n
-\param  *edeadng   DOUBLE	   (-)    ele dead load (selfweight) at n+1
-\param  *velint    DOUBLE	   (-)    vel at integration point
-\param  *vel2int   DOUBLE	   (-)    vel at integration point
-\param  *covint    DOUBLE	   (-)    conv. vel. at integr. point
-\param **vderxy    DOUBLE	   (-)    global vel. derivatives
-\param **vderxy2   DOUBLE	   (-)    2nd global vel. deriv.
-\param **wa1	   DOUBLE	   (-)    working array
-\param **wa2	   DOUBLE	   (-)    working array
+\param  *ele	      ELEMENT	   (i)    actual element
+\param  *hasext       INT          (i)    element flag
+\param **estif        DOUBLE	   (o)    element stiffness matrix
+\param  *eforce       DOUBLE	   (o)    element iter force vector
+\param **xyze         DOUBLE       (-)    nodal coordinates
+\param  *funct        DOUBLE	   (-)    natural shape functions
+\param **deriv        DOUBLE	   (-)	  deriv. of nat. shape funcs
+\param **deriv2       DOUBLE	   (-)    2nd deriv. of nat. shape f.
+\param **xjm	      DOUBLE	   (-)    jacobian matrix
+\param **derxy        DOUBLE	   (-)	  global derivatives
+\param **derxy2       DOUBLE	   (-)    2nd global derivatives
+\param **evelng       DOUBLE	   (i)    ele vel. at time n+g
+\param **evhist       DOUBLE	   (i)    lin. combination of recent vel and acc
+\param **egridv       DOUBLE	   (i)    grid velocity of element
+\param  *epreng       DOUBLE	   (-)    ele pres. at time n+1
+\param  *epren        DOUBLE	   (-)    ele pres. at time n
+\param  *edeadng      DOUBLE	   (-)    ele dead load (selfweight) at n+1
+\param  *edeadn       DOUBLE	   (-)    ele dead load (selfweight) at n
+\param  *velint       DOUBLE	   (-)    vel at integration point
+\param  *vel2int      DOUBLE	   (-)    vel at integration point
+\param  *covint       DOUBLE	   (-)    conv. vel. at integr. point
+\param **vderxy       DOUBLE	   (-)    global vel. derivatives
+\param **vderxy2      DOUBLE	   (-)    2nd global vel. deriv.
+\param **vderxy_old   DOUBLE	   (-)    global vel. derivatives
+\param **vderxy2_old  DOUBLE	   (-)    2nd global vel. deriv.
+\param **wa1	      DOUBLE	   (-)    working array
+\param **wa2	      DOUBLE	   (-)    working array
 \return void
 
 ------------------------------------------------------------------------*/
@@ -91,18 +95,23 @@ void f2_int_tds(
 	              DOUBLE         **eveln,
 	              DOUBLE         **evhist,
 	              DOUBLE         **egridv,
+	              DOUBLE          *epreng,
 	              DOUBLE          *epren,
 	              DOUBLE          *edeadng,
+	              DOUBLE          *edeadn,
 	              DOUBLE         **vderxy,
                       DOUBLE         **vderxy2,
-                      DOUBLE           visc,
+	              DOUBLE         **vderxy_old,
+                      DOUBLE         **vderxy2_old,
+		      DOUBLE           visc,
 	              DOUBLE         **wa1,
 	              DOUBLE         **wa2,
                       DOUBLE           estress[3][MAXNOD_F2],
                       INT              is_relax
 	             )
 {
-INT       i;          /* a couter                                       */
+INT       i;          /* a counter                                       */
+INT       dim;        /* a counter                                       */
 INT       iel;        /* number of nodes                                */
 INT       intc=0;     /* "integration case" for tri for further infos
                           see f2_inpele.c and f2_intg.c                 */
@@ -112,16 +121,26 @@ INT       icode;      /* flag for eveluation of shape functions         */
 INT       lr, ls;     /* counter for integration                        */
 INT       is_ale;
 DOUBLE    fac;        /* total integration vactor                       */
-DOUBLE    facr, facs; /* integration weights                            */
+DOUBLE    facr=0;     /* integration weights                            */
+DOUBLE    facs=0;
 DOUBLE    det;        /* determinant of jacobian matrix at time (n+1)   */
 DOUBLE    e1,e2;      /* natural coordinates of integr. point           */
 DOUBLE    gradp[2];   /* pressure gradient at integration point         */
+DOUBLE    gradp_old[2];/* pressure gradient at integration point        */
+DOUBLE    hot_old[2];   /* old higher order terms at integration point  */
 DOUBLE    velint[2];  /* velocity vector at integration point           */
 DOUBLE    sub_pres;   /* subscale pressure at integration point         */
 DOUBLE    histvec[2]; /* history data at integration point              */
 DOUBLE    gridvelint[2]; /* grid velocity                               */
 DOUBLE    divuold;
 DOUBLE    press;
+
+INT       old=0;
+DOUBLE    velint_old[2];
+DOUBLE    sub_vel[2];
+
+DOUBLE    res_old[2];
+
 DIS_TYP   typ;	      /* element type                                   */
 
 FLUID_DYNAMIC   *fdyn;
@@ -197,8 +216,6 @@ for (lr=0;lr<nir;lr++)
          dserror("typ unknown!");
       } /* end switch(typ) */
 
-      
-      sub_pres=ele->e.f2->sub_pres.a.dv[lr*nir+ls];
       /*------------------------ compute Jacobian matrix at time n+1 ---*/
       f2_jaco(xyze,deriv,xjm,&det,iel,ele);
       fac = facr * facs * det;
@@ -209,6 +226,10 @@ for (lr=0;lr<nir;lr++)
       /*---------------- get velocities (n+1,i) at integration point ---*/
       f2_veci(velint,funct,evelng,iel);
 
+      /*---------------- get velocities (n) at integration point ---*/
+      f2_veci(velint_old,funct,eveln,iel);
+
+      
       /*---------------- get history data (n,i) at integration point ---*/
       f2_veci(histvec,funct,evhist,iel);
 
@@ -224,25 +245,32 @@ for (lr=0;lr<nir;lr++)
       }
 
       /*-------- get velocity (n,i) derivatives at integration point ---*/
-      f2_vder(vderxy,derxy,eveln,iel);
-      divuold = vderxy[0][0] + vderxy[1][1];
+      f2_vder(vderxy_old,derxy,eveln,iel);
 
-      /*------ get velocity (n+1,i) derivatives at integration point ---*/
+      divuold = vderxy_old[0][0] + vderxy_old[1][1];
+
+      /*- get velocity derivatives (n+1,i) and (n) at integration point */
       f2_vder(vderxy,derxy,evelng,iel);
 
       if (ihoel!=0)
       {
 	  f2_gder2(xyze,xjm,wa1,wa2,derxy,derxy2,deriv2,iel);
-	  f2_vder2(vderxy2,derxy2,evelng,iel);
+
+	  f2_vder2(vderxy2_old,derxy2,eveln ,iel);
+	  f2_vder2(vderxy2    ,derxy2,evelng,iel);
       }
 
       /*------------------------------------- get pressure gradients ---*/
-      gradp[0] = gradp[1] = 0.0;
+      gradp    [0] = gradp    [1] = 0.0;
+      gradp_old[0] = gradp_old[1] = 0.0;
 
       for (i=0; i<iel; i++)
       {
-         gradp[0] += derxy[0][i] * epren[i];
-         gradp[1] += derxy[1][i] * epren[i];
+         gradp    [0] += derxy[0][i] * epreng[i];
+         gradp    [1] += derxy[1][i] * epreng[i];
+
+         gradp_old[0] += derxy[0][i] * epren [i];
+         gradp_old[1] += derxy[1][i] * epren [i];
       }
 
       press = 0;
@@ -251,11 +279,49 @@ for (lr=0;lr<nir;lr++)
         press += funct[i]*epren[i];
       }
 
+            
+      sub_pres=ele->e.f2->sub_pres.a.dv[lr*nis+ls];
 
+      for(dim=0;dim<2;dim++)
+      {
+	  sub_vel[dim]=ele->e.f2->sub_vel.a.d3[old][dim][lr*nis+ls];
+      }
+	      
+      if(ihoel!=0)
+      {
+	  hot_old[0]=0.5 * (2.0*vderxy2_old[0][0]
+			    +
+			    (vderxy2_old[0][1] + vderxy2_old[1][2]));
+	  hot_old[1]=0.5 * (2.0*vderxy2_old[1][1]
+			    +
+			    (vderxy2_old[1][0] + vderxy2_old[0][2]));
+      }	
+      else
+      {
+	  hot_old[0]=0;
+	  hot_old[1]=0;
+      }
+	    
+      /* calculate old residual without time derivative       */
+      for(dim=0;dim<2;dim++)
+      {
+	  res_old[dim] =0;
+	  res_old[dim]+=(velint_old[0]*vderxy_old[dim][0]
+			 +
+			 velint_old[1]*vderxy_old[dim][1]);
+  
+	  res_old[dim]-=2*visc*hot_old[dim];
+	  
+	  res_old[dim]+=gradp_old[dim];
+	  
+	  res_old[dim]-=edeadn[dim];
+      }
+      
       /*-------------- perform integration for entire matrix and rhs ---*/
       f2_calmat_tds(estif,eforce,velint,histvec,gridvelint,press,vderxy,
 		    vderxy2,gradp,funct,derxy,derxy2,edeadng,fac,
-		    visc,iel,hasext,is_ale, is_relax, sub_pres, divuold);
+		    visc,iel,hasext,is_ale, is_relax, sub_pres, divuold,
+		    sub_vel,velint_old,res_old);
 
    } /* end of loop over integration points ls*/
 } /* end of loop over integration points lr */

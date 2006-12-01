@@ -657,8 +657,8 @@ void fluid_init(
 	  amzero(&(actele->e.f2->sub_pres));
 	  am4def("subscale_velocities",
 		&(actele->e.f2->sub_vel),
-		actele->e.f2->nGP[0]*nis,
-		actele->e.f2->nGP[0]*nis,
+		2,
+		actfield->dis[disnum_calc].numdf,
 		actele->e.f2->nGP[0]*nis,
 		0,
 		"D3");

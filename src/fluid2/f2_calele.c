@@ -70,6 +70,14 @@ static ARRAY     evnn_a;      /* element normal vector at n             */
 static DOUBLE  **evnn;
 static ARRAY     epren_a;  /* element pressures at (n)	                */
 static DOUBLE   *epren;
+#ifdef D_FLUID2_TDS
+static ARRAY     epreng_a;  /* element pressures at (n+1)               */
+static DOUBLE   *epreng;
+static ARRAY     vderxy_old_a; /* vel - derivatives                     */
+static DOUBLE  **vderxy_old;
+static ARRAY     vderxy2_old_a;/* vel - 2nd derivatives                 */
+static DOUBLE  **vderxy2_old;
+#endif
 static ARRAY     edeadn_a; /* element dead load (selfweight)            */
 static DOUBLE   *edeadng;
 static ARRAY     edeadng_a;/* element dead load (selfweight)            */
@@ -166,6 +174,7 @@ void f2_calele(
 	       )
 {
 INT		readfrom;	/* where to read dbc from 		*/
+INT             i;
 
 DOUBLE estress[3][MAXNOD_F2];   /* ele stresses reprojected for lin eles*/
 
@@ -184,6 +193,11 @@ if (init==1) /* allocate working arrays and set pointers */
    evnng     = amdef("evnng"    ,&evnng_a    ,NUM_F2_VELDOF,MAXNOD_F2,"DA");
    evnn      = amdef("evnn"     ,&evnn_a     ,NUM_F2_VELDOF,MAXNOD_F2,"DA");
    epren     = amdef("epren"    ,&epren_a    ,MAXNOD_F2,1,"DV");
+#ifdef D_FLUID2_TDS
+   epreng      = amdef("epreng"     ,&epreng_a     ,MAXNOD_F2,1,"DV");
+   vderxy_old  = amdef("vderxy_old" ,&vderxy_old_a ,2,2,"DA");
+   vderxy2_old = amdef("vderxy2_old",&vderxy2_old_a,2,3,"DA");
+#endif
    edeadn    = amdef("edeadn"   ,&edeadn_a   ,2,1,"DV");
    edeadng   = amdef("edeadng"  ,&edeadng_a  ,2,1,"DV");
    funct     = amdef("funct"    ,&funct_a    ,MAXNOD_F2,1,"DV");
@@ -232,6 +246,9 @@ switch(ele->e.f2->is_ale)
 {
 case 0:
 /*---------------------------------------------------- set element data */
+#ifdef D_FLUID2_TDS
+    if(ele->e.f2->stab_type!=stab_tds)
+#endif
    f2_calset(ele,xyze,eveln,evelng,evhist,epren,edeadn,edeadng,ipos,hasext);
 
    switch (ele->e.f2->stab_type)
@@ -261,6 +278,15 @@ case 0:
    break;
 #ifdef D_FLUID2_TDS   
    case stab_tds:
+
+      /*-------------------------------------- set default element data */
+      f2_calset(ele,xyze,eveln,evelng,evhist,epreng,edeadn,edeadng,ipos,hasext);
+      for(i=0;i<ele->numnp;i++) /* loop nodes of element */
+      {
+	  /*-------------------------------------- set pressures (n) ---*/
+	  epren[i] =ele->node[i]->sol_increment.a.da[ipos->veln][2];
+      }
+
       /*---------------------------------------------- get viscosity ---*/
       visc = mat[ele->mat-1].m.fluid->viscosity;
 
@@ -270,8 +296,9 @@ case 0:
       /*-------------------------------- perform element integration ---*/
       f2_int_tds(ele,hasext,estif,eforce,xyze,
                  funct,deriv,deriv2,xjm,derxy,derxy2,evelng,eveln,
-                 evhist,NULL,epren,edeadng,
-                 vderxy,vderxy2,visc,wa1,wa2,estress, is_relax);
+                 evhist,NULL,epreng,epren,edeadng,edeadn,
+                 vderxy,vderxy2,vderxy_old,vderxy2_old,
+		 visc,wa1,wa2,estress, is_relax);
    break;
 #endif
    default: dserror("unknown stabilisation type");

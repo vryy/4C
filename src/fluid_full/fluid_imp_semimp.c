@@ -820,6 +820,14 @@ f2_update_subscale_pres(
     actfield,
     ipos,
     disnum_calc);
+
+f2_update_subscale_vel(
+    actpart,
+    actintra,
+    actfield,
+    ipos,
+    disnum_calc);
+
 #endif
 
 /*---------------------------------------------- update acceleration ---*/
