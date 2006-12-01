@@ -4,7 +4,7 @@
 //             http://www.uni-stuttgart.de/ibs/members/genkinger/
 //             0711 - 685-6127
 //
-// necessary defines: D_FLUID D_FLUID2 D_FLUID2_IS AZTEC_PACKAGE UMFPACK RESULTTEST CHECK_MAX
+// necessary defines: D_FLUID D_FLUID2 D_FLUID2_IS AZTEC_PACKAGE UMFPACK BINIO RESULTTEST CHECK_MAX
 //
 //
 // #define MAXNOD           (9)
