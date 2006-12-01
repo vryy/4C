@@ -365,14 +365,7 @@ for (ri=0; ri<iel; ri++)      /* row index */
 
 /*=================== Stabilisation part of the matrix =================*/
 
-
-      /*--- CONVECTIVE stabilisation ---*/
-      /* a concentration of the following two terms: */
-      /* tau_M*timefac*(u, u_old * grad v) */
-      /* -tau_M*timefac*timefac*(u_old * grad u, u_old * grad v) */
-      aux = conv_c[ri] * (timetauM * funct[ci] + ttimetauM * conv_c[ci]);
-      estif[ri*3][ci*3]     += aux;
-      estif[ri*3+1][ci*3+1] += aux;
+#if 0
       /* ALE: -tau_M*timefac*timefac*(-u_G * grad u, u_old * grad v) */
       if(isale)
       {
@@ -380,21 +373,6 @@ for (ri=0; ri<iel; ri++)      /* row index */
          estif[ri*3][ci*3]     += aux;
          estif[ri*3+1][ci*3+1] += aux;
       }
-      /* a concentration of the following two terms: */
-      /* -tau_M*timefac*timefac*(u * grad u_old, u_old * grad v) */
-      /* tau_M*timefac*timefac*2*nu*(div epsilon(u), u_old * grad v) */
-      aux = timetauM * time2nue;
-      estif[ri*3][ci*3]     += conv_c[ri] * ( conv_r[0][2*ci]*ttimetauM
-                                             +viscs2[0][2*ci]*aux );
-      estif[ri*3][ci*3+1]   += conv_c[ri] * ( conv_r[0][2*ci+1]*ttimetauM
-                                             +viscs2[0][2*ci+1]*aux );
-      estif[ri*3+1][ci*3]   += conv_c[ri] * ( conv_r[1][2*ci]*ttimetauM
-                                             +viscs2[1][2*ci]*aux );
-      estif[ri*3+1][ci*3+1] += conv_c[ri] * ( conv_r[1][2*ci+1]*ttimetauM
-                                             +viscs2[1][2*ci+1]*aux );
-      /* -tau_M*timefac*timefac*(grad p, u_old * grad v) */
-      estif[ri*3][ci*3+2]   += conv_c[ri] * derxy[0][ci] * ttimetauM;
-      estif[ri*3+1][ci*3+2] += conv_c[ri] * derxy[1][ci] * ttimetauM;
 
       /*--- ALE only: CONVECTIVE GRID stabilisation ---*/
       if(isale)
@@ -424,15 +402,13 @@ for (ri=0; ri<iel; ri++)      /* row index */
          estif[ri*3+1][ci*3+2] += conv_g[ri] * derxy[1][ci] * ttimetauM;
       }
 
-      /*--- DIFFUSION part of stabilisation ---*/
-      /* a concentration of the following two terms: */
-      /* tau_M*timefac*2*nu*(u, div epsilon(v)) */
-      /* tau_M*timefac*timefac*2*nu*(u_old * grad u, div epsilon(v)) */
-      aux = time2nue * ( funct[ci]*tau_Mp + conv_c[ci] * timetauMp );
-      estif[ri*3][ci*3]     += viscs2[0][2*ri] * aux;
-      estif[ri*3][ci*3+1]   += viscs2[1][2*ri] * aux;
-      estif[ri*3+1][ci*3]   += viscs2[0][2*ri+1] * aux;
-      estif[ri*3+1][ci*3+1] += viscs2[1][2*ri+1] * aux;
+      /*ALE -tau_M*timefac*timefac*(-u_G * grad u, grad q) */
+      if(isale)
+      {
+	  estif[ri*3+2][ci*3]   += derxy[0][ri] * conv_g[ci] * ttimetauMp;
+         estif[ri*3+2][ci*3+1] += derxy[1][ri] * conv_g[ci] * ttimetauMp;
+      }
+
       /*ALE: tau_M*timefac*timefac*2*nu*(-u_G * grad u, div epsilon(v)) */
       if(isale)
       {
@@ -442,18 +418,28 @@ for (ri=0; ri<iel; ri++)      /* row index */
          estif[ri*3+1][ci*3]   += viscs2[0][2*ri+1] * aux;
          estif[ri*3+1][ci*3+1] += viscs2[1][2*ri+1] * aux;
       }
-      /* tau_M*timefac*timefac*2*nu*(u * grad u_old, div epsilon(v)) */
-      aux = timetauMp * time2nue;
-      estif[ri*3][ci*3]     += (viscs2[0][2*ri]   * conv_r[0][2*ci]
-                               +viscs2[1][2*ri]   * conv_r[1][2*ci]) * aux;
-      estif[ri*3+1][ci*3]   += (viscs2[0][2*ri+1] * conv_r[0][2*ci]
-                               +viscs2[1][2*ri+1] * conv_r[1][2*ci]) * aux;
-      estif[ri*3][ci*3+1]   += (viscs2[0][2*ri]   * conv_r[0][2*ci+1]
-                               +viscs2[1][2*ri]   * conv_r[1][2*ci+1]) * aux;
-      estif[ri*3+1][ci*3+1] += (viscs2[0][2*ri+1] * conv_r[0][2*ci+1]
-                               +viscs2[1][2*ri+1] * conv_r[1][2*ci+1]) * aux;
+
+#endif
+
+      /*--- DIFFUSION part of stabilisation ---*/
+
+      /* tau_M*timefac*timefac*2*nu*(grad p, div epsilon(v)) */
+      aux = facMtau * timefac * timefac * 2 * visc *fac;
+      estif[ri*3][ci*3+2]   += (viscs2[0][2*ri] * derxy[0][ci]
+                               +viscs2[1][2*ri] * derxy[1][ci]) * aux;
+      estif[ri*3+1][ci*3+2] += (viscs2[0][2*ri+1] * derxy[0][ci]
+                               +viscs2[1][2*ri+1] * derxy[1][ci]) * aux;
+
+      /* tau_M*timefac*2*nu*(u, div epsilon(v)) */
+      aux = funct[ci] * facMtau * timefac * 2 * visc *fac;
+      estif[ri*3][ci*3]     += viscs2[0][2*ri] * aux;
+      estif[ri*3][ci*3+1]   += viscs2[1][2*ri] * aux;
+      estif[ri*3+1][ci*3]   += viscs2[0][2*ri+1] * aux;
+      estif[ri*3+1][ci*3+1] += viscs2[1][2*ri+1] * aux;
+
+
       /* -tau_M*timefac*timefac*4*nu^2(div epsilon(u), div epsilon(v)) */
-      aux = time2nue * time2nue * tau_Mp;
+      aux = facMtau * timefac * timefac * 4 * visc * visc * fac;
       estif[ri*3][ci*3]     += (viscs2[0][2*ri]   * viscs2[0][2*ci]
                                +viscs2[1][2*ri]   * viscs2[1][2*ci]) * aux;
       estif[ri*3+1][ci*3]   += (viscs2[0][2*ri+1] * viscs2[0][2*ci]
@@ -462,23 +448,92 @@ for (ri=0; ri<iel; ri++)      /* row index */
                                +viscs2[1][2*ri]   * viscs2[1][2*ci+1]) * aux;
       estif[ri*3+1][ci*3+1] += (viscs2[0][2*ri+1] * viscs2[0][2*ci+1]
                                +viscs2[1][2*ri+1] * viscs2[1][2*ci+1]) * aux;
-      /* tau_M*timefac*timefac*2*nu*(grad p, div epsilon(v)) */
-      aux = time2nue * timetauMp;
-      estif[ri*3][ci*3+2]   += (viscs2[0][2*ri] * derxy[0][ci]
-                               +viscs2[1][2*ri] * derxy[1][ci]) * aux;
-      estif[ri*3+1][ci*3+2] += (viscs2[0][2*ri+1] * derxy[0][ci]
-                               +viscs2[1][2*ri+1] * derxy[1][ci]) * aux;
 
-#if 0
-      /*ALE -tau_M*timefac*timefac*(-u_G * grad u, grad q) */
-      if(isale)
-      {
-	  estif[ri*3+2][ci*3]   += derxy[0][ri] * conv_g[ci] * ttimetauMp;
-         estif[ri*3+2][ci*3+1] += derxy[1][ri] * conv_g[ci] * ttimetauMp;
-      }
-#endif
+
+      /* tau_M*timefac*timefac*2*nu*(u_old * grad u, div epsilon(v)) */
+      aux = conv_c[ci] * facMtau * timefac * timefac * 2 * visc * fac;
+      estif[ri*3][ci*3]     += viscs2[0][2*ri] * aux;
+      estif[ri*3][ci*3+1]   += viscs2[1][2*ri] * aux;
+      estif[ri*3+1][ci*3]   += viscs2[0][2*ri+1] * aux;
+      estif[ri*3+1][ci*3+1] += viscs2[1][2*ri+1] * aux;
       
+      /* tau_M*timefac*timefac*2*nu*(u * grad u_old, div epsilon(v)) */
+      aux = facMtau * timefac * timefac * 2 * visc * fac;
+      estif[ri*3][ci*3]     += (viscs2[0][2*ri]   * conv_r[0][2*ci]
+                               +viscs2[1][2*ri]   * conv_r[1][2*ci]) * aux;
+      estif[ri*3+1][ci*3]   += (viscs2[0][2*ri+1] * conv_r[0][2*ci]
+                               +viscs2[1][2*ri+1] * conv_r[1][2*ci]) * aux;
+      estif[ri*3][ci*3+1]   += (viscs2[0][2*ri]   * conv_r[0][2*ci+1]
+                               +viscs2[1][2*ri]   * conv_r[1][2*ci+1]) * aux;
+      estif[ri*3+1][ci*3+1] += (viscs2[0][2*ri+1] * conv_r[0][2*ci+1]
+                               +viscs2[1][2*ri+1] * conv_r[1][2*ci+1]) * aux;
 
+      /*------- AGLS part of stabilisation --- TIME DEPENDENT FORMULATION ---*/
+
+      /* -tau_M*timefac*timefac*(grad p, u_old * grad v) */
+      estif[ri*3][ci*3+2]   += conv_c[ri] * derxy[0][ci]
+	                       * facMtau * timefac * timefac * fac;
+      estif[ri*3+1][ci*3+2] += conv_c[ri] * derxy[1][ci]
+	                       * facMtau * timefac * timefac * fac;      
+      /*--- CONVECTIVE stabilisation ---*/
+      /* tau_M*timefac*(u, u_old * grad v) */
+      aux = conv_c[ri] * (funct[ci]) * facMtau * timefac * fac;
+      estif[ri*3][ci*3]     += aux;
+      estif[ri*3+1][ci*3+1] += aux;
+
+      /* -tau_M*timefac*timefac*(u_old * grad u, u_old * grad v) */
+      aux = conv_c[ri] * (conv_c[ci]) * facMtau * timefac * timefac * fac;
+      estif[ri*3][ci*3]     += aux;
+      estif[ri*3+1][ci*3+1] += aux;
+      
+      /* -tau_M*timefac*timefac*(u * grad u_old, u_old * grad v) */
+      estif[ri*3][ci*3]     += conv_c[ri] * ( conv_r[0][2*ci]  )* facMtau * timefac * timefac * fac;
+      estif[ri*3][ci*3+1]   += conv_c[ri] * ( conv_r[0][2*ci+1])* facMtau * timefac * timefac * fac;
+      estif[ri*3+1][ci*3]   += conv_c[ri] * ( conv_r[1][2*ci]  )* facMtau * timefac * timefac * fac;
+      estif[ri*3+1][ci*3+1] += conv_c[ri] * ( conv_r[1][2*ci+1])* facMtau * timefac * timefac * fac;
+
+      /* tau_M*timefac*timefac*2*nu*(div epsilon(u), u_old * grad v) */
+      aux = facMtau * timefac * timefac * 2.0 * visc * fac;
+      estif[ri*3][ci*3]     += conv_c[ri] * ( viscs2[0][2*ci]  *aux );
+      estif[ri*3][ci*3+1]   += conv_c[ri] * ( viscs2[0][2*ci+1]*aux );
+      estif[ri*3+1][ci*3]   += conv_c[ri] * ( viscs2[1][2*ci]  *aux );
+      estif[ri*3+1][ci*3+1] += conv_c[ri] * ( viscs2[1][2*ci+1]*aux );
+
+      
+      /*--- R(u_old) * L_conv STABILISATION ---*/
+
+      /* -tau_M*timefac*(u_old, u * grad v) */
+      estif[ri*3][ci*3]     += velint[0] * ugradv[ri][2*ci]  * facMtau * timefac * fac;
+      estif[ri*3][ci*3+1]   += velint[0] * ugradv[ri][2*ci+1]* facMtau * timefac * fac;
+      estif[ri*3+1][ci*3]   += velint[1] * ugradv[ri][2*ci]  * facMtau * timefac * fac;
+      estif[ri*3+1][ci*3+1] += velint[1] * ugradv[ri][2*ci+1]* facMtau * timefac * fac;
+
+      /* -tau_M*timefac*timefac*(u_old * grad u_old, u * grad v) */
+      estif[ri*3][ci*3]     += conv_old[0] * ugradv[ri][2*ci  ]* facMtau * timefac * timefac * fac;
+      estif[ri*3][ci*3+1]   += conv_old[0] * ugradv[ri][2*ci+1]* facMtau * timefac * timefac * fac;
+      estif[ri*3+1][ci*3]   += conv_old[1] * ugradv[ri][2*ci  ]* facMtau * timefac * timefac * fac;
+      estif[ri*3+1][ci*3+1] += conv_old[1] * ugradv[ri][2*ci+1]* facMtau * timefac * timefac * fac;
+
+      /* tau_M*timefac*timefac*2*nu*(div epsilon(u_old), u * grad v) */
+      aux = - facMtau * timefac * time2nue * fac;
+      estif[ri*3][ci*3]     += ( visc_old[0] * aux ) * ugradv[ri][2*ci  ];
+      estif[ri*3][ci*3+1]   += ( visc_old[0] * aux ) * ugradv[ri][2*ci+1];
+      estif[ri*3+1][ci*3]   += ( visc_old[1] * aux ) * ugradv[ri][2*ci  ];
+      estif[ri*3+1][ci*3+1] += ( visc_old[1] * aux ) * ugradv[ri][2*ci+1];
+
+      /* -tau_M*timefac*timefac*(grad p_old, u * grad v) */
+      estif[ri*3][ci*3]     += gradp[0] * ugradv[ri][2*ci  ] * facMtau * timefac * timefac * fac;
+      estif[ri*3][ci*3+1]   += gradp[0] * ugradv[ri][2*ci+1] * facMtau * timefac * timefac * fac;
+      estif[ri*3+1][ci*3]   += gradp[1] * ugradv[ri][2*ci  ] * facMtau * timefac * timefac * fac;
+      estif[ri*3+1][ci*3+1] += gradp[1] * ugradv[ri][2*ci+1] * facMtau * timefac * timefac * fac;
+
+      /* this one's new!!! */
+      estif[ri*3][ci*3]     -= (sub_vel[0]+old_vel[0]+timefac*edeadng[0]) * ugradv[ri][2*ci  ] * facMtau  * timefac * fac;
+      estif[ri*3][ci*3+1]   -= (sub_vel[0]+old_vel[0]+timefac*edeadng[0]) * ugradv[ri][2*ci+1] * facMtau  * timefac * fac;
+      estif[ri*3+1][ci*3]   -= (sub_vel[1]+old_vel[1]+timefac*edeadng[1]) * ugradv[ri][2*ci  ] * facMtau  * timefac * fac;
+      estif[ri*3+1][ci*3+1] -= (sub_vel[1]+old_vel[1]+timefac*edeadng[1]) * ugradv[ri][2*ci+1] * facMtau  * timefac * fac;
+
+      
       /*--- PRESSURE part of stabilisation --- TIME DEPENDENT FORMULATION ---*/
 
       /* 1/(1+dt/tau_M)*timefac*timefac*fac*(u_old * grad u, grad q) */
@@ -492,8 +547,6 @@ for (ri=0; ri<iel; ri++)      /* row index */
       estif[ri*3+2][ci*3+1] += (derxy[0][ri] * conv_r[0][2*ci+1]
                                +derxy[1][ri] * conv_r[1][2*ci+1])
 	                       * facMtau * timefac * timefac * fac;
-
-      
 
       /* -1/(1+theta*dt/tau_M)*timefac*timefac*fac*2*nu*(div epsilon(u), grad q) */
       /* viscs already contains - sign!!                                   */
@@ -514,29 +567,6 @@ for (ri=0; ri<iel; ri++)      /* row index */
 				+derxy[1][ri] * derxy[1][ci])
 	                       * timefac * timefac * facMtau * fac;
 
-      
-      /*--- R(u_old) * L_conv STABILISATION ---*/
-      /* a concentration of the following terms: */
-      /* -tau_M*timefac*(u_old, u * grad v) */
-      /* -tau_M*timefac*timefac*(u_old * grad u_old, u * grad v) */
-      /* tau_M*timefac*timefac*2*nu*(div epsilon(u_old), u * grad v) */
-      /* -tau_M*timefac*timefac*(grad p_old, u * grad v) */
-      /*--- linear part of RHS stabilisation (goes into matrix) ---*/
-      /* tau_M*timefac*(rhsint, u * grad v) */
-      aux = - timetauM * time2nue;
-      estif[ri*3][ci*3]     += ( (velint[0]-rhsint[0]) * timetauM
-                                +(conv_old[0] + gradp[0]) * ttimetauM
-                                + visc_old[0] * aux ) * ugradv[ri][2*ci];
-      estif[ri*3][ci*3+1]   += ( (velint[0]-rhsint[0]) * timetauM
-                                +(conv_old[0] + gradp[0]) * ttimetauM
-                                + visc_old[0] * aux ) * ugradv[ri][2*ci+1];
-      estif[ri*3+1][ci*3]   += ( (velint[1]-rhsint[1]) * timetauM
-                                +(conv_old[1] + gradp[1]) * ttimetauM
-                                + visc_old[1] * aux ) * ugradv[ri][2*ci];
-      estif[ri*3+1][ci*3+1] += ( (velint[1]-rhsint[1]) * timetauM
-                                +(conv_old[1] + gradp[1]) * ttimetauM
-                                + visc_old[1] * aux ) * ugradv[ri][2*ci+1];
-
       /* TIME DEPENDENT STABILISATION */
       /*--- CONTINUITY equation stabilisation ---*/
       /* facC*timefac*timefac*(div u, div v) */
@@ -548,17 +578,60 @@ for (ri=0; ri<iel; ri++)      /* row index */
       estif[ri*3  ][ci*3+1] += derxy[0][ri]*(derxy[1][ci])* aux;
       estif[ri*3+1][ci*3  ] += derxy[1][ri]*(derxy[0][ci])* aux;
       estif[ri*3+1][ci*3+1] += derxy[1][ri]*(derxy[1][ci])* aux;
-   
+
+      /* TIME DEPENDENT STABILISATION --- TIME DERIVATIVE */
+
+      /* -(u * grad u_old , v) * timefac * facMtau * fac */
+      aux = timefac * facMtau * fac ;
+      
+      estif[ri*3  ][ci*3  ] -=  funct[ri] * conv_r[0][2*ci  ] * aux;
+      estif[ri*3  ][ci*3+1] -=  funct[ri] * conv_r[0][2*ci+1] * aux;
+      estif[ri*3+1][ci*3  ] -=  funct[ri] * conv_r[1][2*ci  ] * aux;
+      estif[ri*3+1][ci*3+1] -=  funct[ri] * conv_r[1][2*ci+1] * aux;
+
+      /* -(u_old *grad u , v) * timefac * facMtau * fac */
+      estif[ri*3  ][ci*3  ] -=  funct[ri] * conv_c[ci] * aux;
+      estif[ri*3+1][ci*3+1] -=  funct[ri] * conv_c[ci] * aux;
+
+
+      /* -(grad p , v) * timefac * facMtau * fac */
+      estif[ri*3  ][ci*3+2] -=  funct[ri] * derxy[0][ci] * aux;
+      estif[ri*3+1][ci*3+2] -=  funct[ri] * derxy[1][ci] * aux;
+
+
+      /* -(u , v) * facMtau * fac */
+      estif[ri*3  ][ci*3  ] -=  funct[ri] * funct[ci] * facMtau * fac ;
+      estif[ri*3+1][ci*3+1] -=  funct[ri] * funct[ci] * facMtau * fac ;
+
+      /* (div epsilon(u), u_old * grad v) */
+      aux = facMtau * timefac * 2.0 * visc * fac ;
+      estif[ri*3  ][ci*3  ] -= funct[ri] * ( viscs2[0][2*ci  ]*aux );
+      estif[ri*3  ][ci*3+1] -= funct[ri] * ( viscs2[0][2*ci+1]*aux );
+      estif[ri*3+1][ci*3  ] -= funct[ri] * ( viscs2[1][2*ci  ]*aux );
+      estif[ri*3+1][ci*3+1] -= funct[ri] * ( viscs2[1][2*ci+1]*aux );
+      
    }  /* end column loop (ci) */
 
-   /**************** integrate element force vector *********************/
-   /*================== Galerkin part of the RHS =======================*/
-   /*--- 'Original' RHS, concentrated ---*/
-   /* (rhsint, v) */
-   /*--- from Nonlinearity of Galerkin stiffness ---*/
-   /* timefac*(u_old * grad u_old, v) */
-   eforce[ri*3]   += funct[ri] * ( rhsint[0]*fac + conv_old[0]*timefacfac);
-   eforce[ri*3+1] += funct[ri] * ( rhsint[1]*fac + conv_old[1]*timefacfac);
+#if 0
+      
+      /*--- R(u_old) * L_conv STABILISATION ---*/
+      /* a concentration of the following terms: */
+      /*--- linear part of RHS stabilisation (goes into matrix) ---*/
+      /* tau_M*timefac*(rhsint, u * grad v) */
+      aux = - timetauM * time2nue;
+      estif[ri*3][ci*3]     += ( (-rhsint[0]) * timetauM
+                                 ) * ugradv[ri][2*ci];
+      estif[ri*3][ci*3+1]   += ( (-rhsint[0]) * timetauM
+                                 ) * ugradv[ri][2*ci+1];
+      estif[ri*3+1][ci*3]   += ( (-rhsint[1]) * timetauM
+                                 ) * ugradv[ri][2*ci];
+      estif[ri*3+1][ci*3+1] += ( (-rhsint[1]) * timetauM
+                                 ) * ugradv[ri][2*ci+1];
+
+
+   }  /* end column loop (ci) */
+
+
 
    /*================ Stabilisation part of the RHS ====================*/
    /*--- 'Original' RHS ---*/
@@ -571,40 +644,38 @@ for (ri=0; ri<iel; ri++)      /* row index */
    /* -tau_M*timefac*(rhsint, grad q) */
    eforce[ri*3+2] += (rhsint[0] * derxy[0][ri]
                      +rhsint[1] * derxy[1][ri]) * timetauMp;
+#endif
+
+
+   /**************** integrate element force vector *********************/
+   /*================== Galerkin part of the RHS =======================*/
+   /*--- 'Original' RHS, concentrated ---*/
+   /* (rhsint, v) */
+   eforce[ri*3]   += funct[ri] * ( rhsint[0]*fac );
+   eforce[ri*3+1] += funct[ri] * ( rhsint[1]*fac );
+
+
+
+#if 0   
    /* -tau_M*timefac*(rhsint, -u_G * grad v) */
    if(isale)
    {
       eforce[ri*3]   += rhsint[0] * conv_g[ri] * timetauM;
       eforce[ri*3+1] += rhsint[1] * conv_g[ri] * timetauM;
    }
-   /*--- Terms resulting from stiffness linearisation ---*/
-   /* a concentration of the following: */
-   /* -tau_M*timefac*(u_old, u_old * grad v) */
-   /* tau_M*timefac*timefac*2*nu*(div epsilon(u_old), u_old * grad v) */
-   /* -tau_M*timefac*timefac*(grad p_old, u_old * grad v) */
-   aux = - timetauM * time2nue;
-   eforce[ri*3]   += conv_c[ri] * ( velint[0]*timetauM
-                                   +visc_old[0]*aux
-                                   +gradp[0]*ttimetauM );
-   eforce[ri*3+1] += conv_c[ri] * ( velint[1]*timetauM
-                                   +visc_old[1]*aux
-                                   +gradp[1]*ttimetauM );
-   /* -tau_M*2*timefac*timefac*(u_old * grad u_old, u_old * grad v) */
-   aux = ttimetauM * 2.0;
-   eforce[ri*3]   += conv_old[0] * conv_c[ri] * aux;
-   eforce[ri*3+1] += conv_old[1] * conv_c[ri] * aux;
    /* ALE: -tau_M*timefac*timefac*(u_old * grad u_old, u_old * grad v) */
    if(isale)
    {
       eforce[ri*3]   += conv_old[0] * conv_g[ri] * ttimetauM;
       eforce[ri*3+1] += conv_old[1] * conv_g[ri] * ttimetauM;
    }
-   /* tau_M*timefac*timefac*2*nu*(u_old * grad u_old, div epsilon(v)) */
-   aux = timetauMp * time2nue;
-   eforce[ri*3  ] += (conv_old[0] * viscs2[0][2*ri]
-                     +conv_old[1] * viscs2[1][2*ri]) * aux;
-   eforce[ri*3+1] += (conv_old[0] * viscs2[0][2*ri+1]
-                     +conv_old[1] * viscs2[1][2*ri+1]) * aux;
+#endif
+
+
+   /*--- from Nonlinearity of Galerkin stiffness ---*/
+   /* timefac*(u_old * grad u_old, v) */
+   eforce[ri*3]   += funct[ri] * ( conv_old[0]*timefacfac);
+   eforce[ri*3+1] += funct[ri] * ( conv_old[1]*timefacfac);
 
 /*----------------------------------------------------------------------*/
 /* ADDITIONAL TIME DEPENDENT PART */
@@ -643,6 +714,56 @@ for (ri=0; ri<iel; ri++)      /* row index */
 	  (1.-theta)*dt*(sub_vel[0]*derxy[0][ri]+sub_vel[1]*derxy[1][ri])
 	   )*facM * timefac * fac ;
 #endif   
+
+   /* -tau_M*2*timefac*timefac*(u_old * grad u_old, u_old * grad v) */
+   aux = 2.0 * facMtau * timefac * timefac * fac;
+   eforce[ri*3]   += conv_old[0] * conv_c[ri] * aux;
+   eforce[ri*3+1] += conv_old[1] * conv_c[ri] * aux;
+
+
+   /*--- Terms resulting from stiffness linearisation ---*/
+
+   /* -tau_M*timefac*(u_old, u_old * grad v) */
+   eforce[ri*3]   += conv_c[ri] * velint[0] * facMtau * timefac * fac;
+   eforce[ri*3+1] += conv_c[ri] * velint[1] * facMtau * timefac * fac;
+
+   /* tau_M*timefac*timefac*2*nu*(div epsilon(u_old), u_old * grad v) */
+   aux = - timefac * facMtau * fac * timefac * 2.0 * visc;
+   eforce[ri*3]   += conv_c[ri] * visc_old[0]*aux ;
+   eforce[ri*3+1] += conv_c[ri] * visc_old[1]*aux ;
+
+   /* -tau_M*timefac*timefac*(grad p_old, u_old * grad v) */
+   eforce[ri*3]   += conv_c[ri] * gradp[0] * facMtau * timefac * timefac * fac;
+   eforce[ri*3+1] += conv_c[ri] * gradp[1] * facMtau * timefac * timefac * fac;
+
+   /* tau_M*timefac*timefac*2*nu*(u_old * grad u_old, div epsilon(v)) */
+   aux = facMtau * timefac * timefac * 2 * visc * fac;
+   eforce[ri*3  ] += (conv_old[0] * viscs2[0][2*ri]
+                     +conv_old[1] * viscs2[1][2*ri]) * aux;
+   eforce[ri*3+1] += (conv_old[0] * viscs2[0][2*ri+1]
+                     +conv_old[1] * viscs2[1][2*ri+1]) * aux;
+
+   /* this one's new!!! */
+   aux = facMtau * timefac * 2 * visc * fac;
+   eforce[ri*3  ] += ((sub_vel[0]+old_vel[0]+timefac*edeadng[0]) * viscs2[0][2*ri]
+       	             +(sub_vel[1]+old_vel[1]+timefac*edeadng[1]) * viscs2[1][2*ri]) * aux;
+   eforce[ri*3+1] += ((sub_vel[0]+old_vel[0]+timefac*edeadng[0]) * viscs2[0][2*ri+1]
+		     +(sub_vel[1]+old_vel[1]+timefac*edeadng[1]) * viscs2[1][2*ri+1]) * aux;
+
+   /* TIME DEPENDENT STABILISATION --- TIME DERIVATIVE */
+
+   /* -timefac * facMtau * fac*(u_old * grad u_old,v)  --- from linearisation */
+   aux = timefac * facMtau * fac ;
+   eforce[ri*3]   -= conv_old[0] * funct[ri] * aux;
+   eforce[ri*3+1] -= conv_old[1] * funct[ri] * aux;
+
+   aux = facMtau * fac ;
+   eforce[ri*3]   -= (sub_vel[0]+old_vel[0]+timefac*edeadng[0]) * funct[ri] * aux;
+   eforce[ri*3+1] -= (sub_vel[1]+old_vel[1]+timefac*edeadng[1]) * funct[ri] * aux;
+
+   aux = fac;
+   eforce[ri*3]   += (sub_vel[0]) * funct[ri] * aux;
+   eforce[ri*3+1] += (sub_vel[1]) * funct[ri] * aux;
 
 }     /* end row loop (ri) */
 
