@@ -60,7 +60,11 @@ if (alldyn[0].sdyn->Typ == centr_diff) {
 }
 else if (alldyn[0].sdyn->Typ == gen_alfa) {
   /* generalized alfa time integration */
+#ifndef CCADISCRET
   dyn_nln_structural();
+#else
+  dyn_nlnstructural_drt();
+#endif
 }
 else if (alldyn[0].sdyn->Typ == Gen_EMM) {
 #ifdef GEMM

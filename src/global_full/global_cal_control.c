@@ -3,10 +3,10 @@
 \brief
 
 <pre>
-Maintainer: Malte Neumann
-            neumann@statik.uni-stuttgart.de
-            http://www.uni-stuttgart.de/ibs/members/neumann/
-            0711 - 685-6121
+Maintainer: Michael Gee
+            gee@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15239
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -66,6 +66,11 @@ extern struct _FIELD      *field;
 extern struct _FIELD      *sm_field;
 #endif /* D_MLSTRUCT */
 
+/* header for DRT style input */
+#ifdef CCADISCRET
+#include "../discret/global_inp_control2.H"
+#endif
+
 /*----------------------------------------------------------------------*
  |  routine to control execution phase                   m.gee 6/01     |
  *----------------------------------------------------------------------*/
@@ -85,36 +90,49 @@ dstrc_enter("ntacal");
 #ifdef PERF
   perf_begin(12);
 #endif
+
+#ifndef CCADISCRET /* the 'old' ccarat style discretization management */
   part_fields();
+#else              /* the 'new' DRT discretization management */
+  distribute_grids_and_design(); 
+#endif
 #ifdef PERF
   perf_end(12);
 #endif
 
 #ifdef D_FLUID
+#ifndef CCADISCRET
 /*---------------------------------- set dofs for implicit free surface */
 if (genprob.numff>=0) fluid_freesurf_setdofs();
 /*----------------------------- modify coordinates for special problems */
 if (genprob.numff>=0) fluid_modcoor();
 #endif
+#endif
 /*-------------------------------- set dofs for gradient enhanced model */
 #ifdef D_WALLGE
+#ifndef CCADISCRET
 if (genprob.graderw>0) wge_setdof();
+#endif
 #endif
 
 /*------------------------------------------------ assign dofs to nodes */
 #ifdef PERF
   perf_begin(13);
 #endif
+#ifndef CCADISCRET
   for(i=0; i<genprob.numfld; i++)
   {
     actfield = &(field[i]);
     if (actfield->ndis==1) assign_dof(actfield);
     if (actfield->ndis>1) assign_dof_ndis(actfield);
   }
+#endif  
 #ifdef PERF
   perf_end(13);
 #endif
+
 /*--------------------------------- assign dofs to nodes in the submesh */
+#ifndef CCADISCRET
 #ifdef D_MLSTRUCT
 if (genprob.multisc_struct == 1)
 {
@@ -124,7 +142,9 @@ if (genprob.multisc_struct == 1)
       dserror(">3000 submesh-DOF's->size of fields ele.e.w1.fint_mi,..for static cond.have to be enlarged\n");
 }
 #endif /* D_MLSTRUCT */
+#endif
 /*--------make the procs know their own nodes and elements a bit better */
+#ifndef CCADISCRET
 #ifdef PERF
   perf_begin(14);
 #endif
@@ -132,50 +152,61 @@ part_assignfield();
 #ifdef PERF
   perf_end(14);
 #endif
-
+#endif
 
   /* divide fast elements into vectors */
+#ifndef CCADISCRET
 #ifdef D_FLUID3_F
   divide_fast();
 #endif
-
+#endif
 
   /* check the values of the defines for MAXNODE etc. */
+#ifndef CCADISCRET
 #ifdef CHECK_MAX
   if (par.myrank==0)
     check_max_sizes();
 #endif
+#endif
 
 
 /*-------------------calculate system matrices parallel storage formats */
+#ifndef CCADISCRET
 #ifdef PERF
   perf_begin(15);
 #endif
-
   mask_global_matrices();
-
 #ifdef PERF
   perf_end(15);
 #endif
+#endif
+
+#ifndef CCADISCRET
 #ifdef D_MLSTRUCT
 if (genprob.multisc_struct == 1)
 {
   mask_submesh_matrices();
 }
 #endif /* D_MLSTRUCT */
+#endif
 
 /*------------------- inherit local co-ordinate systems to the elements */
+#ifndef CCADISCRET
 locsys_inherit_to_node();
+#endif
 
 /*------------------------------------------------ write general output */
 out_general();
 /*--------------------------------------------------- write mesh to gid */
+#ifndef CCADISCRET
 if (par.myrank==0 && ioflags.output_gid)
 {
   out_gid_sol_init();
   if (genprob.probtyp != prb_structure && genprob.probtyp != prb_fsi)
     out_gid_msh();
 }
+#else
+#endif
 /*------------------------ program to control execution of optimization */
 /*------------------ call control programs of static or dynamic control */
 
@@ -184,7 +215,11 @@ case prb_structure:
 
   switch (genprob.timetyp) {
   case time_static:
+#ifndef CCADISCRET
     calsta();
+#else
+    dserror("calsta with DRT not yet impl.");
+#endif
     break;
   case time_dynamic:
     caldyn();
@@ -198,13 +233,21 @@ case prb_structure:
 #ifdef D_FLUID
 case prb_fluid:
 case prb_fluid_pm:
+#ifndef CCADISCRET
   dyn_fluid();
+#else
+  dserror("dyn_fluid with DRT not yet impl.");
+#endif
   break;
 #endif
 
 #ifdef D_FSI
 case prb_fsi:
+#ifndef CCADISCRET
   dyn_fsi(0);
+#else
+  dserror("dyn_fsi(0) with DRT not yet impl.");
+#endif
   break;
 #endif
 
@@ -228,7 +271,11 @@ case prb_opt:
 
 #ifdef D_TSI
 case prb_tsi:
+#ifndef CCADISCRET
   tsi_dyn();
+#else
+  dserror("dyn_fsi(0) with DRT not yet impl.");
+#endif
   break;
 #endif
 
@@ -238,8 +285,10 @@ break;
 }
 
 /*------------------------------------------------------- check results */
+#ifndef CCADISCRET
 #ifdef RESULTTEST
 global_result_test();
+#endif
 #endif
 
 /*--------------------------------------------------- write warnings ---*/

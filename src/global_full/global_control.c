@@ -155,7 +155,11 @@ void ntam(
   perf_begin(1);
 #endif
 
+#ifndef CCADISCRET
   ntainp();
+#else
+  ntainp_ccadiscret();
+#endif  
 
 #ifdef PERF
   perf_end(1);

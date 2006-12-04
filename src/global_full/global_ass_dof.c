@@ -80,21 +80,23 @@ for (j=0; j<actfield->dis[0].numele; j++)
    actele = &(actfield->dis[0].element[j]);
    switch(actele->eltyp)
    {
+#ifdef D_SHELL8
    case el_shell8:
       for (k=0; k<actele->numnp; k++)
       {
          if (actele->node[k]->numdf < NUMDOF_SHELL8) actele->node[k]->numdf=NUMDOF_SHELL8;
       }
       break;
+#endif
+#ifdef D_SHELL9
    case el_shell9:
-      #ifdef D_SHELL9
       /* set number of dofs of actele  ==>   actele->e.s9->numdf */
       for (k=0; k<actele->numnp; k++)
       {
          actele->node[k]->numdf = actele->e.s9->numdf;
       }
-      #endif /*D_SHELL9*/
       break;
+#endif /*D_SHELL9*/
    case el_beam3:
       for (k=0; k<actele->numnp; k++)
       {
