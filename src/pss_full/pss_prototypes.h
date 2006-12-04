@@ -339,8 +339,27 @@ void dsassert_func(
     char                string[]
     );
 
+/* to make sure we do not have a redefinition here as its also defined in dserror.H */
+#ifndef DSERROR_H
+#define DSERROR_H
+
 #define dsassert(test, string) dsassert_func(__FILE__, __LINE__, test, string)
 
+/*!
+  \brief always call dslatest before dserror so that we have the right
+  position.
+
+  The point here is that the macro does not accept arguments. This way
+  the dserror name is replaced by a dslatest call and the arguments
+  the user supplied to dserror apply to the function dserror_func.
+  However, the two function calls are not separated by a semicolon (;)
+  but by a comma (,) and thus the whole line is still one
+  statement. In particular this dserror macro can be used in if
+  clauses without braces ({}).
+ */
+#define dserror dslatest(__FILE__, __LINE__), dserror_func
+
+#endif 
 
 /*----------------------------------------------------------------------*
  | report an error and stop program                       m.gee 8/00    |
@@ -356,21 +375,6 @@ void dserror_func(char *string, ...);
   dserror_func
  */
 void dslatest(char* file, INT line);
-
-
-/*!
-  \brief always call dslatest before dserror so that we have the right
-  position.
-
-  The point here is that the macro does not accept arguments. This way
-  the dserror name is replaced by a dslatest call and the arguments
-  the user supplied to dserror apply to the function dserror_func.
-  However, the two function calls are not separated by a semicolon (;)
-  but by a comma (,) and thus the whole line is still one
-  statement. In particular this dserror macro can be used in if
-  clauses without braces ({}).
- */
-#define dserror dslatest(__FILE__, __LINE__), dserror_func
 
 
 /*----------------------------------------------------------------------*
