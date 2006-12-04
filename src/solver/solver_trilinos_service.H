@@ -11,26 +11,12 @@ extern "C"
 #include "../solver/solver.h"
 
 
-#ifdef __cplusplus
 /*----------------------------------------------------------------------*/
 /*!
   \brief Simplify dstrc_enter and dstrc_exit calls in c++
  */
 /*----------------------------------------------------------------------*/
-class DSTraceHelper
-{
-public:
-#ifdef DEBUG
-  explicit DSTraceHelper(char* functname)
-    { dstrc_enter(functname); }
-  ~DSTraceHelper()
-    { dstrc_exit(); }
-#else
-  explicit DSTraceHelper(char* functname)
-    {}
-#endif
-};
-#endif
+#include "../discret/dstrc.H"
 
 
 void construct_trilinos_matrix(INTRA *actintra, TRILINOSMATRIX *trimatrix);
