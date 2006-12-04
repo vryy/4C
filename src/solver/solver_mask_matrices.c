@@ -192,7 +192,7 @@ void mask_global_matrices()
 #else
         dserror("TRILINOS_PACKAGE not defined");
 #endif
-      }  /* for (i=0; i<actfield->ndis; i++) */
+      }  /* for (i=0; i<actsolv->nsysarray; i++) */
       continue;
     }
 
