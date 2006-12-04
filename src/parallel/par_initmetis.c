@@ -1,21 +1,21 @@
-/*!---------------------------------------------------------------------
+/*!----------------------------------------------------------------------
 \file
 \brief domain decomposition and metis routines
 
 <pre>
-Maintainer: Malte Neumann
-            neumann@statik.uni-stuttgart.de
-            http://www.uni-stuttgart.de/ibs/members/neumann/
-            0711 - 685-6121
+Maintainer: Michael Gee
+            gee@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15239
 </pre>
 
----------------------------------------------------------------------*/
+*----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
-#include "../fluid3/fluid3.h"
+#include "../fluid3/fluid3.h"  /* what's this stuff to do here? mgee */
 
 #ifdef D_ALE
-#include "../ale3/ale3.h"
-#include "../ale2/ale2.h"
+#include "../ale3/ale3.h" /* what's this stuff to do here? mgee */
+#include "../ale2/ale2.h" /* what's this stuff to do here? mgee */
 #endif
 
 
@@ -49,7 +49,7 @@ Maintainer: Malte Neumann
 
 
 
-static INT MAXNODPERGLINE=3;
+static INT MAXNODPERGLINE=3; /* explain? mgee */
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -347,7 +347,7 @@ void part_fields()
         }  /* for (j=0; j<actdis->numnp; j++) */
 
 #if 0
-        printf("Check size of adjncy!! Current size: %d  --- Requiered size: %d\n",
+        printf("Check size of adjncy!! Current size: %d  --- Required size: %d\n",
             adjncy[i].fdim,adjcounter);
         fflush(stdout);
 #endif
