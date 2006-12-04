@@ -63,6 +63,7 @@
 # SUBDIV             # subdivide elements for calculation
 # FSI_NONMATCH       # nonmatching interface, simple interpolation.
 # FSI_NEWTONCOUPLING # fsi coupling with evaluation of tangent operator
+# CCADISCRET         # use new ccarat discretization subsystem DRT
 
 #   tools
 #  =======
