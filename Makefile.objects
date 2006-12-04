@@ -25,6 +25,7 @@ OBJS_GLOBAL   = src/global_full/global_control.o \
                 src/global_full/global_divide_fast.o \
                 src/global_full/global_subdivide.o \
                 src/global_full/global_subdivide_process.o
+OBJS_GLOBAL_CPP =
 #               structure
 OBJS_STRUCTURE= src/structure/stru_dyn_nln.o \
                 src/structure/stru_dyn_nln_expl.o \
@@ -87,6 +88,33 @@ OBJS_SOLVER_CPP = src/solver/solver_trilinos_service.o \
                   src/solver/solver_trilinos_control.o \
                   src/solver/solver_trilinos_ml.o \
                   src/solver/solver_trilinos_spooles.o
+#               discretization (c++)
+OBJS_DISCRET  = src/discret/drt_discret.o \
+                src/discret/drt_discret_fillcomplete.o \
+                src/discret/drt_discret_partition.o \
+                src/discret/drt_element.o \
+                src/discret/drt_node.o \
+                src/discret/drt_container.o \
+                src/discret/drt_condition.o \
+                src/discret/drt_dofset.o \
+                src/discret/drt_utils.o \
+                src/discret/drt_designnode.o \
+                src/discret/drt_designelement.o \
+                src/discret/drt_designdiscretization.o \
+                src/discret/drt_design.o \
+                src/discret/drt_parobject.o \
+                src/discret/drt_exporter.o \
+                src/discret/linalg_utils.o \
+                src/discret/shell8.o \
+                src/discret/shell8_input.o \
+                src/discret/drt_gid.o \
+                src/discret/drt_dserror.o \
+                src/discret/global_inp_control2.o \
+                src/discret/global_inp_control3.o \
+                src/discret/stru_dyn_nln_drt.o \
+                src/discret/distribute_grids.o \
+                src/discret/inherit_conditions.o \
+                src/discret/input_conditions.o
 #                pss_full
 OBJS_PSS      = src/pss_full/pss_am.o \
                 src/pss_full/pss_ds.o \
