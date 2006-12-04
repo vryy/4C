@@ -45,6 +45,10 @@ typedef struct _DESIGN
    INT **dvol_fenode;
    INT **dvol_fenode2;
 
+#ifdef CCADISCRET    /* new discretization management module */
+   void* ccadesign;  /* is of type RefCountPtr<DRT::Design>* */
+#endif
+
 } DESIGN;
 
 

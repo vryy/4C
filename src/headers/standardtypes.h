@@ -231,7 +231,10 @@ enum _FIELDTYP     fieldtyp;      /* typ of field */
 INT                ndis;          /* number of discretizations in this field */
 struct _DISCRET   *dis;           /* structure holding a number of discretisations */
 INT                subdivide;     /* subdivide the elements of this field */
-  struct _PARTITION *part;	/* the partition on this processor */
+struct _PARTITION *part;	  /* the partition on this processor */
+#ifdef CCADISCRET                 /* new discretization management module */
+void*              ccadis;        /* is of type vector<RefCountPtr<DRT::Discretization> >* */
+#endif
 } FIELD;
 /*----------------------------------------------------------------------*
  | this structure holds one discretization of a field     m.gee 2/02    |
