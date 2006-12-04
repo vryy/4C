@@ -245,6 +245,11 @@ void out_general()
           break;
       }
 
+#ifdef CCADISCRET
+      fflush(out);
+      continue;
+#endif
+
       fprintf(out,"   Number of Elements : %d\n",actfield->dis[0].numele);
       fprintf(out,"   Number of Nodes    : %d\n",actfield->dis[0].numnp);
       fprintf(out,"   Number of Dofs     : %d\n",actfield->dis[0].numdf);
