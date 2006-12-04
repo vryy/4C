@@ -43,7 +43,6 @@ void cpp_dslatest(char* file, int line)
   latest_line = line;
 }
 
-
 /*----------------------------------------------------------------------*
  | error function                                            mwgee 11/06|
  | used by macro dsassert in dserror.H                                  |
@@ -78,7 +77,7 @@ myrank=0;
 #ifdef PARALLEL
   MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
 #else
-  exit(EXIT_FAILURE);
+  exit(0);
 #endif
 
   return;

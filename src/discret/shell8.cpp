@@ -23,7 +23,7 @@ Maintainer: Michael Gee
  |  ctor (public)                                            mwgee 11/06|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Shell8::Shell8(int id, int owner) :
+DRT::Elements::Shell8::Shell8(int id, int owner) :
 DRT::Element(id,element_shell8,owner),
 forcetype_(s8_none),
 thickness_(0.0),
@@ -42,7 +42,7 @@ material_(0)
  |  copy-ctor (public)                                       mwgee 11/06|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Shell8::Shell8(const DRT::Shell8& old) :
+DRT::Elements::Shell8::Shell8(const DRT::Elements::Shell8& old) :
 DRT::Element(old),
 forcetype_(old.forcetype_),
 thickness_(old.thickness_),
@@ -61,9 +61,9 @@ material_(old.material_)
  |  Deep copy this instance of Shell8 and return pointer to it (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::Shell8::Clone() const
+DRT::Element* DRT::Elements::Shell8::Clone() const
 {
-  DRT::Shell8* newelement = new DRT::Shell8(*this);
+  DRT::Elements::Shell8* newelement = new DRT::Elements::Shell8(*this);
   return newelement;
 }
 
@@ -71,7 +71,7 @@ DRT::Element* DRT::Shell8::Clone() const
  |  Pack data from this element into vector of length size     (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-const char* DRT::Shell8::Pack(int& size) const
+const char* DRT::Elements::Shell8::Pack(int& size) const
 {
   const int sizeint    = sizeof(int);
   const int sizeforcetype = sizeof(enum ForceType);
@@ -141,7 +141,7 @@ const char* DRT::Shell8::Pack(int& size) const
  |  Unpack data into this element                              (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-bool DRT::Shell8::Unpack(const char* data)
+bool DRT::Elements::Shell8::Unpack(const char* data)
 {
   const int sizeint    = sizeof(int);
   //const int sizeforcetype = sizeof(enum ForceType);
@@ -193,7 +193,7 @@ bool DRT::Shell8::Unpack(const char* data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-DRT::Shell8::~Shell8()
+DRT::Elements::Shell8::~Shell8()
 {
   return;
 }
@@ -202,7 +202,7 @@ DRT::Shell8::~Shell8()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Shell8::Print(ostream& os) const
+void DRT::Elements::Shell8::Print(ostream& os) const
 {
   os << "Shell8 ";
   Element::Print(os);

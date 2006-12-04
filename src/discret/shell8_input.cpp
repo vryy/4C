@@ -40,7 +40,7 @@ extern struct _FILES  allfiles;
 /*----------------------------------------------------------------------*
  |  read element input (public)                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-bool DRT::Shell8::ReadElement()
+bool DRT::Elements::Shell8::ReadElement()
 {
   DSTraceHelper dst("Shell8::ReadElement");
   

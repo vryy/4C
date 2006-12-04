@@ -95,7 +95,7 @@ DRT::ParObject* DRT::Utils::Factory(const char* data)
     break;
     case ParObject_Shell8:
     {
-      DRT::Shell8* object = new DRT::Shell8(-1,-1);
+      DRT::Elements::Shell8* object = new DRT::Elements::Shell8(-1,-1);
       object->Unpack(data);
       return object;
     }

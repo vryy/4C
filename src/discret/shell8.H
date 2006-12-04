@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file shell8.H
 
-\class DRT::Shell8
+\class DRT::Elements::Shell8
 
 \brief A C++ wrapper for the shell8 element
 
@@ -33,6 +33,8 @@ using namespace Teuchos;
 */
 namespace DRT
 {
+namespace Elements
+{
 
 /*!
 \class Shell8
@@ -59,7 +61,7 @@ public:
   Makes a deep copy of a Element
   
   */
-  Shell8(const DRT::Shell8& old);
+  Shell8(const Shell8& old);
 
   /*!
   \brief Deep copy this instance of Shell8 and return pointer to the copy
@@ -162,7 +164,8 @@ private:
   int              material_;   // number of the material law
 
 }; // class Shell8
-} // namespace CCADISCRET
+} // namespace Elements
+} // namespace DRT
 
 
 

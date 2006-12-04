@@ -24,6 +24,7 @@ Maintainer: Michael Gee
 #else
 #include "Epetra_SerialComm.h"
 #endif
+#include "Epetra_SerialDenseMatrix.h"
 #include "Teuchos_RefCountPtr.hpp"
 
 #include "drt_discret.H"
@@ -78,7 +79,7 @@ void input_design();
 void input_conditions();                                
 void inherit_conditions();
 void distribute_grids_and_design();
-void assign_degreesoffreedom(FIELD* actfield, const int ndis);
+void dyn_nlnstructural_drt();
 
 #ifdef __cplusplus
 }

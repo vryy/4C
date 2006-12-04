@@ -19,6 +19,7 @@ Maintainer: Michael Gee
 
 #ifdef __cplusplus
 
+#include "cstdlib"
 #include "cstdio"
 #include "cstdarg"
 void cpp_dsassert_func(char* file, int line, int test, char string[]);

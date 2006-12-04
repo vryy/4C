@@ -680,7 +680,7 @@ void input_structural_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm)
             new vector<RefCountPtr<DRT::Discretization> >(structfield->ndis);
   structfield->ccadis = (void*)discretization;
   for (int i=0; i<structfield->ndis; ++i)
-    (*discretization)[i] = rcp(new DRT::Discretization(comm));
+    (*discretization)[i] = rcp(new DRT::Discretization("Structure",comm));
 
   // count number of elements
   int numele = 0;
@@ -717,8 +717,8 @@ void input_structural_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm)
 #ifndef D_SHELL8
         dserror("SHELL8 needed but not defined in Makefile");
 #else  
-        RefCountPtr<DRT::Shell8> ele = 
-                         rcp(new DRT::Shell8(elenumber,actdis->Comm().MyPID()));
+        RefCountPtr<DRT::Elements::Shell8> ele = 
+                         rcp(new DRT::Elements::Shell8(elenumber,actdis->Comm().MyPID()));
         
         // read input for this element
         ele->ReadElement();
@@ -771,36 +771,6 @@ void inpnodes_ccadiscret(Epetra_SerialDenseMatrix& tmpnodes)
 } // void inpnodes_ccadiscret
 
 
-/*----------------------------------------------------------------------*
-  | assign degrees of freedom                              m.gee 10/06  |
- *----------------------------------------------------------------------*/
-void assign_degreesoffreedom(FIELD* actfield, const int ndis)
-{
-  DSTraceHelper dst("assign_degreesoffreedom");
-
-  vector<RefCountPtr<DRT::Discretization> >* discretization =
-            (vector<RefCountPtr<DRT::Discretization> >*)actfield->ccadis;
-            
-  for (int i=0; i<ndis; ++i)
-  {
-    RefCountPtr<DRT::Discretization> actdis = (*discretization)[i];
-    if (!actdis->Filled())
-    {
-      int err = actdis->FillComplete();
-      if (err) dserror("FillComplete() returned err=%d",err);
-    }
-    actdis->AssignDegreesOfFreedom();
-  } // for (int i=0; i<ndis; ++i)
-  
-
-
-
-
-
-
-
-  return;
-} // void assign_degreesoffreedom
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

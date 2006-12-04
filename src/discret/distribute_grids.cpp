@@ -175,11 +175,11 @@ void distribute_grids_and_design()
     vector<RefCountPtr<DRT::Discretization> >* discretization =
       (vector<RefCountPtr<DRT::Discretization> >*)field[i].ccadis;
     
-    INTRA* actintra = &(par.intra[i]);
     for (int j=0;j<field[i].ndis;j++)
     {
       RefCountPtr<DRT::Discretization> actdis = (*discretization)[j];
 #ifdef PARALLEL
+      INTRA* actintra = &(par.intra[i]);
       RefCountPtr<Epetra_MpiComm> comm = 
                            rcp(new Epetra_MpiComm(actintra->MPI_INTRA_COMM));
       actdis->SetComm(comm); 

@@ -23,7 +23,8 @@ Maintainer: Michael Gee
  |  ctor (public)                                            mwgee 11/06|
  |  comm             (in)  a communicator object                        |
  *----------------------------------------------------------------------*/
-DRT::Discretization::Discretization(RefCountPtr<Epetra_Comm> comm) :
+DRT::Discretization::Discretization(const string name, RefCountPtr<Epetra_Comm> comm) :
+name_(name),
 comm_(comm),
 filled_(false),
 havedof_(false)
@@ -34,8 +35,7 @@ havedof_(false)
  |  copy-ctor (public)                                       mwgee 11/06|
  *----------------------------------------------------------------------*/
 DRT::Discretization::Discretization(const DRT::Discretization& old) :
-filled_(old.Filled()),
-havedof_(old.HaveDofs())
+name_(old.name_)
 {
   comm_ = rcp(old.comm_->Clone());
   Reset();
@@ -283,6 +283,7 @@ void DRT::Discretization::Print(ostream& os) const
   // print head
   if (Comm().MyPID()==0)
   {
+    os << "Discretization: " << Name() << endl;
     os << "--------------------------------------------------\n";
     os << numglobalelements << " Elements " << numglobalnodes << " Nodes (global)\n";
     os << "--------------------------------------------------\n";
@@ -527,6 +528,9 @@ void DRT::Discretization::AssignDegreesOfFreedom()
   // clear the element map
   coleledofs.clear();
   
+  // maps might be outdated now, delete
+  dofrowmap_ = null;
+  dofcolmap_ = null;
   // set flag indicating that dofs now are present
   havedof_ = true;
 
@@ -534,8 +538,99 @@ void DRT::Discretization::AssignDegreesOfFreedom()
 }
 
 
+/*----------------------------------------------------------------------*
+ |  get dof row map (public)                                 mwgee 12/06|
+ *----------------------------------------------------------------------*/
+const Epetra_Map* DRT::Discretization::DofRowMap()
+{
+  if (dofrowmap_ != null) return dofrowmap_.get();
+  if (!Filled()) dserror("FillComplete was not called on this discretization");
+  if (!HaveDofs()) dserror("AssignDegreesOfFreedom() not called on this discretization");
+
+  // loop my row nodes and count dofs
+  int numnodaldof = 0;
+  for (int i=0; i<NumMyRowNodes(); ++i)
+    numnodaldof += lRowNode(i)->Dof().NumDof();
+    
+  // loop my row elements and count dofs
+  int numeledof = 0;
+  for (int i=0; i<NumMyRowElements(); ++i)
+    numeledof += lRowElement(i)->Dof().NumDof();
+    
+  vector<int> mygid(numnodaldof+numeledof);
+
+  // loop my row nodes and record dofs
+  int count=0;
+  for (int i=0; i<NumMyRowNodes(); ++i)
+  {
+    DRT::Node* actnode = lRowNode(i);
+    for (int j=0; j<actnode->Dof().NumDof(); ++j)
+      mygid[count++] = actnode->Dof()[j];
+  }
+  
+  // loop elements and record dofs
+  for (int i=0; i<NumMyRowElements(); ++i)
+  {
+    DRT::Element* actele = lRowElement(i);
+    for (int j=0; j<actele->Dof().NumDof(); ++j)
+      mygid[count++] = actele->Dof()[j];
+  }
+  
+  if (count !=  numnodaldof+numeledof)
+    dserror("Mismatch in no. of dofs %d <-> %d",count,numnodaldof+numeledof);
+    
+  dofrowmap_ = rcp(new Epetra_Map(-1,numnodaldof+numeledof,&mygid[0],0,Comm()));
+  if (!dofrowmap_->UniqueGIDs()) dserror("Dof row map is not unique");
+  
+  return dofrowmap_.get();
+}
 
 
+/*----------------------------------------------------------------------*
+ |  get dof column map (public)                              mwgee 12/06|
+ *----------------------------------------------------------------------*/
+const Epetra_Map* DRT::Discretization::DofColMap()
+{
+  if (dofcolmap_ != null) return dofcolmap_.get();
+  if (!Filled()) dserror("FillComplete was not called on this discretization");
+  if (!HaveDofs()) dserror("AssignDegreesOfFreedom() not called on this discretization");
+
+  // loop my column nodes and count dofs
+  int numnodaldof = 0;
+  for (int i=0; i<NumMyColNodes(); ++i)
+    numnodaldof += lColNode(i)->Dof().NumDof();
+    
+  // loop my column elements and count dofs
+  int numeledof = 0;
+  for (int i=0; i<NumMyColElements(); ++i)
+    numeledof += lColElement(i)->Dof().NumDof();
+    
+  vector<int> mygid(numnodaldof+numeledof);
+
+  // loop my column nodes and record dofs
+  int count=0;
+  for (int i=0; i<NumMyColNodes(); ++i)
+  {
+    DRT::Node* actnode = lColNode(i);
+    for (int j=0; j<actnode->Dof().NumDof(); ++j)
+      mygid[count++] = actnode->Dof()[j];
+  }
+  
+  // loop elements and record dofs
+  for (int i=0; i<NumMyColElements(); ++i)
+  {
+    DRT::Element* actele = lColElement(i);
+    for (int j=0; j<actele->Dof().NumDof(); ++j)
+      mygid[count++] = actele->Dof()[j];
+  }
+  
+  if (count !=  numnodaldof+numeledof)
+    dserror("Mismatch in no. of dofs %d <-> %d",count,numnodaldof+numeledof);
+    
+  dofcolmap_ = rcp(new Epetra_Map(-1,numnodaldof+numeledof,&mygid[0],0,Comm()));
+  
+  return dofcolmap_.get();
+}
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

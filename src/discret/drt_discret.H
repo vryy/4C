@@ -56,7 +56,7 @@ public:
   
   \param comm : An epetra comm object associated with this discretization
   */
-  Discretization(RefCountPtr<Epetra_Comm> comm);
+  Discretization(const string name, RefCountPtr<Epetra_Comm> comm);
 
 
   /*!
@@ -80,6 +80,11 @@ public:
   virtual inline bool Filled() const {return filled_;}
 
   /*!
+  \brief Get name of this discretization
+  */
+  virtual inline const string& Name() const {return name_;}
+
+  /*!
   \brief Get flag indicating whether degrees of freedom where assigned
   
   Degrees of freedom need to be assigned using AssignDegreesOfFreedom()
@@ -90,8 +95,26 @@ public:
   /*!
   \brief Get degree of freedom row map (Filled()==true prerequisite)
   
+  Return ptr to degree of freedom row distribution map of this discretization.
+  If it does not exist yet, build it.
+  
+  \note - Filled()==true prerequisite
+        - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+  
   */
-  virtual const Epetra_Map* DofRowMap() { return NULL; }
+  virtual const Epetra_Map* DofRowMap();
+
+  /*!
+  \brief Get degree of freedom column map (Filled()==true prerequisite)
+  
+  Return ptr to degree of freedom column distribution map of this discretization.
+  If it does not exist yet, build it.
+  
+  \note - Filled()==true prerequisite
+        - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+  
+  */
+  virtual const Epetra_Map* DofColMap();
 
   /*!
   \brief Get map associated with the distribution of the ownership of nodes
@@ -579,6 +602,7 @@ private:
 protected:
 
   // internal data
+  string                                            name_;        // name of this discretization
   RefCountPtr<Epetra_Comm>                          comm_;        // an Epetra_comm
   bool                                              filled_;      // flag indicating whether getOrganized has been called
   bool                                              havedof_;     // flag indicating whether degrees of freedom where assigned

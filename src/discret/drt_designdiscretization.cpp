@@ -22,7 +22,7 @@ Maintainer: Michael Gee
  |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
 DRT::DesignDiscretization::DesignDiscretization(RefCountPtr<Epetra_Comm> comm) :
-Discretization(comm)
+Discretization("Design",comm)
 {
   return;
 }
@@ -31,7 +31,7 @@ Discretization(comm)
  |  copy-ctor (public)                                       mwgee 11/06|
  *----------------------------------------------------------------------*/
 DRT::DesignDiscretization::DesignDiscretization(const DRT::DesignDiscretization& old) :
-Discretization(old.comm_)
+Discretization("Design",old.comm_)
 {
   dserror("Do not have copy-ctor");
   return;
