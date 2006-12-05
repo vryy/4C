@@ -19,6 +19,8 @@ Maintainer: Christiane Foerster
 #include "fluid_prototypes.h"
 #include "../fluid2/fluid2.h"
 #include "../fluid2/fluid2_prototypes.h"
+#include "../fluid2_pro/fluid2pro.h"
+#include "../fluid2_pro/fluid2pro_prototypes.h"
 #include "../fluid3/fluid3.h"
 #ifdef D_ALE
 #include "../ale2/ale2.h"
@@ -92,7 +94,7 @@ INT i, j, k, l;
 INT line;
 INT ld_id;                            /* Id of the actual liftdrag line */
 INT numdf;
-INT foundsome, foundit;
+INT hasldline, foundit;
 INT hasdirich, hasext;
 INT force_on_node[MAXNOD];
 INT nfnode;  /* number of nodes of actele where forces are searched for */
@@ -135,23 +137,23 @@ if (init==0)
 #ifdef D_FLUID2
       for(i=0; i<actpdis->numele; i++)
       {
+        INT found_ld = -1;
          actele = actpdis->element[i];
          if (par.myrank!=actele->proc) continue; /* only my elments */
-         foundsome = 0;
+         hasldline = 0;
          for(j=0; j<actele->g.gsurf->ngline; j++)
          {
             actgline = actele->g.gsurf->gline[j];
             if (actgline->dline == NULL) continue; /* not on boundary line */
             actdline = actgline->dline;
             if (actdline->liftdrag == NULL) continue; /* not on l&d line   */
-            foundsome++; /* actele has lift&drag line */
-            if(actele->e.f2->force_on != 0 &&
-               actele->e.f2->force_on != actdline->liftdrag->liftdrag)
-               dswarning(1,13);
-            actele->e.f2->force_on = actdline->liftdrag->liftdrag;
+            hasldline++; /* actele has lift&drag line */
+            if(found_ld != 0 && found_ld != found_ld)
+              dswarning(1,13);
+            found_ld = actdline->liftdrag->liftdrag;
          }
          /*--- care for elements which have only nodes touching ld line ---*/
-         if(!foundsome)
+         if(!hasldline)
          {
             for(j=0; j<actele->numnp; j++)
             {
@@ -163,15 +165,37 @@ if (init==0)
                   if (actgline->dline == NULL) continue; /* not on boundary line */
                   actdline = actgline->dline;
                   if (actdline->liftdrag == NULL) continue; /* not on l&d line   */
-                  foundsome++;
-                  if(actele->e.f2->force_on != 0 &&
-                     actele->e.f2->force_on != actdline->liftdrag->liftdrag)
-                     dswarning(1,13);
-                  actele->e.f2->force_on = actdline->liftdrag->liftdrag;
+                  hasldline++;
+                  if(found_ld != 0 && found_ld != found_ld)
+                    dswarning(1,13);
+                  found_ld = actdline->liftdrag->liftdrag;
                }
             }
          }
-         if (foundsome) num_ldele++; /* count number of elements along ld-line */
+         if (hasldline)
+         {
+           num_ldele++;         /* count number of elements along ld-line */
+
+           switch (actele->eltyp)
+           {
+           case el_fluid2:
+             if(actele->e.f2->force_on != 0 &&
+                actele->e.f2->force_on != found_ld)
+               dswarning(1,13);
+             actele->e.f2->force_on = found_ld;
+             break;
+#ifdef D_FLUID2_PRO
+           case el_fluid2_pro:
+             if(actele->e.f2pro->force_on != 0 &&
+                actele->e.f2pro->force_on != found_ld)
+               dswarning(1,13);
+             actele->e.f2pro->force_on = found_ld;
+             break;
+#endif
+           default:
+             dserror("element type %d unknown", actele->eltyp);
+           }
+         }
       }
 #endif
    break;
@@ -197,22 +221,40 @@ case 2: /* problem is two-dimensional */
    numdf = 3;
    for(i=0; i<actpdis->numele; i++)
    {
-
       actele = actpdis->element[i];
 
      /*------------------------------------------------------------------*/
-      if (actele->e.f2->force_on==0) continue; /* element not of interest*/
+      switch (actele->eltyp)
+      {
+      case el_fluid2:
+        if (actele->e.f2->force_on==0)
+          continue; /* element not of interest*/
+        /*------------------------------ get liftdrag Id of element ---*/
+        ld_id = actele->e.f2->force_on;
+        break;
+#ifdef D_FLUID2_PRO
+      case el_fluid2_pro:
+        if (actele->e.f2pro->force_on==0)
+          continue; /* element not of interest*/
+        /*------------------------------ get liftdrag Id of element ---*/
+        ld_id = actele->e.f2pro->force_on;
+        break;
+#endif
+      default:
+        dserror("element type!");
+      }
+      
       nfnode = 0;
       for(j=0; j<MAXNOD; j++)
         force_on_node[j] = -1;
-      foundsome = 0;
+      hasldline = 0;
       for(j=0; j<actele->g.gsurf->ngline; j++)
       {
          actgline = actele->g.gsurf->gline[j];
          if (actgline->dline == NULL) continue; /* not on boundary line */
          actdline = actgline->dline;
          if (actdline->liftdrag == NULL) continue; /* not on l&d line   */
-         foundsome++; /* actele has lift&drag line */
+         hasldline++; /* actele has lift&drag line */
          /* get center of liftdrag momentum (only one per node!) */
          center[0] = actdline->liftdrag->ld_center[0];
          center[1] = actdline->liftdrag->ld_center[1];
@@ -222,23 +264,32 @@ case 2: /* problem is two-dimensional */
          {
             l=0;
             foundit=0;
+
+            /* what's that for? */
             if((actgline->gnode[k]->node->x[0] == 0.0 &&
                 actgline->gnode[k]->node->x[1] == 1.0) ||
                (actgline->gnode[k]->node->x[0] == 0.0 &&
                 actgline->gnode[k]->node->x[1] == 1.0)) continue;
-            while(force_on_node[l]!=-1 && l<MAXNOD)
+            
+            while (force_on_node[l]!=-1 && l<MAXNOD)
             {
-               if(force_on_node[l]==actgline->gnode[k]->node->Id)
-                  foundit++;
-               l++;
+              if (force_on_node[l]==actgline->gnode[k]->node->Id)
+              {
+                foundit++;
+                break;
+              }
+              l++;
             }
-            if(foundit) continue;
-            force_on_node[l] = actgline->gnode[k]->node->Id;
-            nfnode++;
+            if (!foundit)
+            {
+              dsassert(l<MAXNOD, "node overrun");
+              force_on_node[l] = actgline->gnode[k]->node->Id;
+              nfnode++;
+            }
          }
       }
       /*--- care for elements which have only nodes touching ld line ---*/
-      if(!foundsome)  /* one node per element only!!! */
+      if (!hasldline)           /* one node per element only!!! */
       {
          for(j=0; j<actele->numnp; j++)
          {
@@ -250,19 +301,17 @@ case 2: /* problem is two-dimensional */
                if (actgline->dline == NULL) continue; /* not on boundary line */
                actdline = actgline->dline;
                if (actdline->liftdrag == NULL) continue; /* not on l&d line   */
-               foundsome++;
+               hasldline++;
                force_on_node[0] = actnode->Id;
-               if(foundsome==1) nfnode++;
+               if(hasldline==1) nfnode++;
                /* center of liftdrag angular momentum (only one per node!) */
                center[0] = actdline->liftdrag->ld_center[0];
                center[1] = actdline->liftdrag->ld_center[1];
             }
          }
       }
-      if(foundsome)
+      if(hasldline)
       {
-         /*------------------------------ get liftdrag Id of element ---*/
-         ld_id = actele->e.f2->force_on;
          /*------------------ which nodes of actele are of interest? ---*/
          j=0;
          while(force_on_node[j]!=-1 && j<MAXNOD)
@@ -281,8 +330,22 @@ case 2: /* problem is two-dimensional */
             j++;
             dsassert(foundit,"something is wrong!");
          }
+         
          /*--- get force vector ---*/
-         f2_caleleres(actele,&eforce_global,ipos,&hasdirich,&hasext);
+         
+         switch (actele->eltyp)
+         {
+         case el_fluid2:
+           f2_caleleres(actele,&eforce_global,ipos,&hasdirich,&hasext);
+           break;
+#ifdef D_FLUID2_PRO
+         case el_fluid2_pro:
+           f2pro_caleleres(actele,&eforce_global,ipos,&hasdirich,&hasext);
+           break;
+#endif
+         default:
+           dserror("element type!");
+         }
 
          /*--------------------- perform matrix-vector multiplication...
            ------------------------------------ ...on selected lines ---*/

@@ -721,6 +721,15 @@ void fluid_pm_cont()
     /*------------------------------------ prepare time rhs in mass form ---*/
     fluid_prep_rhs(actfield, disnum_calc, ipos);
 
+/* #define PM_ITERATION */
+#ifdef PM_ITERATION
+    {
+      INT loop;
+    for (loop=0; loop<10; ++loop)
+    {
+#else
+#endif
+    
     /*------------------------------------- start time step on the screen---*/
     if (fdyn->itnorm!=fncc_no && par.myrank==0)
     {
@@ -913,11 +922,17 @@ void fluid_pm_cont()
       }
     }
 
+#ifdef PM_ITERATION
+    }}
+#else
+    
     /* update velocity */
     pm_vel_update(actfield, actpart, disnum_calc, actintra, ipos,
 		  &lmass, actsolv, actsysarray,
 		  frhs, fgradprhs);
 
+#endif
+    
 #if 0
     if (actintra->intra_rank==0)
     {

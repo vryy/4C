@@ -678,6 +678,15 @@ void fluid_pm_cont_laplace()
     /*------------------------------------ prepare time rhs in mass form ---*/
     fluid_prep_rhs(actfield, disnum_calc, ipos);
 
+/* #define PM_ITERATION */
+#ifdef PM_ITERATION
+    {
+      INT loop;
+    for (loop=0; loop<10; ++loop)
+    {
+#else
+#endif
+      
     /*------------------------------------- start time step on the screen---*/
     if (fdyn->itnorm!=fncc_no && par.myrank==0)
     {
@@ -924,6 +933,10 @@ void fluid_pm_cont_laplace()
     }
 #endif
 
+#ifdef PM_ITERATION
+    }}
+#else
+    
     /* update velocity */
 
     solserv_zero_vec(&actsolv->sol[0]);
@@ -974,6 +987,9 @@ void fluid_pm_cont_laplace()
 		    node_array_sol_increment,
 		    ipos->velnm,
 		    ipos->velnp,1);
+
+#endif
+    
 #if 0
     if (actintra->intra_rank==0)
     {

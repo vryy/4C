@@ -44,6 +44,52 @@ void f2pro_calint(
   INT              *dirich_onoff
   );
 
+void f2pro_int_res(
+  ELEMENT         *ele,
+  INT             *hasext,
+  DOUBLE          *force,
+  DOUBLE         **xyze,
+  DOUBLE          *funct,
+  DOUBLE         **deriv,
+  DOUBLE         **deriv2,
+  DOUBLE          *pfunct,
+  DOUBLE         **pderiv,
+  DOUBLE         **xjm,
+  DOUBLE         **derxy,
+  DOUBLE         **derxy2,
+  DOUBLE         **pderxy,
+  DOUBLE         **evelng,
+  DOUBLE         **evhist,
+  DOUBLE         **ealecovng,
+  DOUBLE          *epren,
+  DOUBLE          *edeadng,
+  DOUBLE         **vderxy,
+  DOUBLE         **vderxy2,
+  DOUBLE           visc,
+  DOUBLE         **wa1,
+  DOUBLE         **wa2,
+  DOUBLE           estress[3][MAXNOD_F2]
+  );
+
+void f2pro_calresvec(  DOUBLE  *eforce,
+                       DOUBLE  *velint,
+                       DOUBLE   histvec[2],
+                       DOUBLE **vderxy,
+                       DOUBLE **vderxy2,
+                       DOUBLE  *funct,
+                       DOUBLE **derxy,
+                       DOUBLE **derxy2,
+                       DOUBLE  *edeadng,
+                       DOUBLE   aleconv[2],
+                       DOUBLE  *press,
+                       DOUBLE   gradp[2],
+                       DOUBLE   fac,
+                       DOUBLE   visc,
+                       INT      iel,
+                       INT     *hasext,
+                       INT      is_ale
+  );
+
 /************************************************************************
  | f2pro_calele.c                                                       |
 ************************************************************************/
@@ -67,6 +113,14 @@ void f2pro_calele(
   ARRAY          *eforce_global,
   ARRAY          *edforce_global,
   ARRAY          *gforce_global,
+  ARRAY_POSITION *ipos,
+  INT            *hasdirich,
+  INT            *hasext
+  );
+
+void f2pro_caleleres(
+  ELEMENT        *ele,
+  ARRAY          *eforce_global,
   ARRAY_POSITION *ipos,
   INT            *hasdirich,
   INT            *hasext
