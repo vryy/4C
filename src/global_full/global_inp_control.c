@@ -161,7 +161,15 @@ void ntainp()
   perf_end(6);
 #endif
 
-
+#ifdef D_BRICK1
+#ifdef SURFACE_ENERGY
+  /*----------------------------- input of surface energetical properties */
+  if (frfind("--SURFACE CONDITIONS")==1)
+  {
+    input_surface_energy();
+  }
+#endif
+#endif
 
   /* input of meshes:
    * ----------------

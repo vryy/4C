@@ -712,6 +712,43 @@ void c1cptp(
             DOUBLE      fac
             );
 /*----------------------------------------------------------------------*
+ | surface energy contribution to stiffness matrix and f_int   lw 07/06 |
+ *----------------------------------------------------------------------*/
+void c1_surf(
+             INT surface_flag,
+             DOUBLE k1,
+             DOUBLE k2,
+             DOUBLE C,
+             DOUBLE m1,
+             DOUBLE m2,
+             DOUBLE gamma_0,
+             DOUBLE gamma_min,
+             DOUBLE gamma_min_eq,
+             DOUBLE const_gamma,
+             double  *xyz_curr,
+             double **K_surf,
+             double  *fie_surf,
+             int     *nodevec,
+             double   dt,
+             int      r,
+             int      step,
+             double  *A_old,
+             double  *con_quot,
+             DOUBLE  *d_con_quot
+            );
+/*----------------------------------------------------------------------*
+ | calculation of surface area, derivative of angles of normal lw 08/06 |
+ *----------------------------------------------------------------------*/
+void area_calc(
+               double  *A,
+               double  *Adiff,
+               double **Adiff2,
+               int     *nodevec,
+               double  *xyz_curr,
+               int      r
+               );
+
+/*----------------------------------------------------------------------*
  | prototypes for fortran routines                               al 9/01|
  *----------------------------------------------------------------------*/
 void fortranpow (DOUBLE *V,DOUBLE *R,DOUBLE *RE);

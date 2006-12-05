@@ -252,6 +252,21 @@ typedef struct _DSURF
    /*  struct _STAB_PRES_PRO *pp; */
    } stabi;
 #endif
+#ifdef SURFACE_ENERGY
+  INT     surface;          /* =1 if dsurf=surface */
+  INT     surface_flag;     /* =0 for surfactant,
+                             * =1 for const. surface tension */
+  DOUBLE  const_gamma;      /* for constant surface tension only */
+  DOUBLE  k1;               /* adsorption coefficient (surfactant) */
+  DOUBLE  k2;               /* desorption coefficient (surfactant) */
+  DOUBLE  C;                /* bulk concentration of surfactant */
+  DOUBLE  m1;               /* isotherm slope regime 1 (surfactant) */
+  DOUBLE  m2;               /* isotherm slope regime 2 (surfactant) */
+  DOUBLE  gamma_0;
+  DOUBLE  gamma_min;        /* minimal surface stress (surfactant) */
+  DOUBLE  gamma_min_eq ;    /* minimum equilibrium surface stress
+                             * (surfactant) */
+#endif
    INT                     locsysId;
 } DSURF;
 

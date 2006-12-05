@@ -324,6 +324,19 @@ typedef struct _GSURF
   INT                     node_ind[4];
 #endif
 
+#ifdef D_BRICK1
+#ifdef SURFACE_ENERGY
+  INT step;                /* time step */
+  DOUBLE A_old_temp;
+  DOUBLE A_old;               /* surface area of former step */
+  DOUBLE con_quot_temp;
+  DOUBLE con_quot;            /* non-dimensionalized surfactant
+                               * concentration */
+  DOUBLE d_con_quot_temp;
+  DOUBLE d_con_quot;
+#endif
+#endif
+
 
 } GSURF;
 /*----------------------------------------------------------------------*

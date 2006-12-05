@@ -136,6 +136,7 @@ OBJS_INPUT    = src/input_full/input_control_global.o \
                 src/input_full/input_topology.o \
                 src/input_full/input_curves.o \
                 src/input_full/input_material.o \
+                src/input_full/input_surface_energy.o \
                 src/input_full/input_monitor.o \
                 src/input_full/input_locsys.o \
                 src/input_full/inherit_insidedesign.o \
@@ -288,7 +289,8 @@ OBJS_BRICK1   = src/brick1/c1_out.o \
                 src/brick1/c1_eas_service.o \
                 src/brick1/c1_cstr.o \
                 src/brick1/c1_load.o \
-		src/brick1/c1_tsi.o
+                src/brick1/c1_tsi.o \
+                src/brick1/c1_surf.o
 #               math
 OBJS_MATH     = src/math/sort_find.o \
                 src/math/math1.o \

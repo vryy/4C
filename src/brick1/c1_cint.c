@@ -30,7 +30,9 @@ struct _GENPROB       genprob; defined in global_control.c
 \author bborn
 \date 10/06
 */
-extern GENPROB genprob;
+extern        GENPROB  genprob;
+extern union _ALLDYNA *alldyn;
+
 
 /*!----------------------------------------------------------------------
 \brief integration routine for BRICK1 element
@@ -564,6 +566,174 @@ for (lr=0; lr<nir; lr++)
       for (j=0; j<24; j++){ estif[i][j] = estiflo[i][j];}}
       if (force) for (i=0; i<24; i++) force[i] = fielo[i];
     }
+
+/*------------------------------------------------------------lw 11/06 */
+#ifdef SURFACE_ENERGY
+
+GVOL           *actgvol;
+GSURF          *actgsurf;
+INT             r, l, m, n;
+INT             nodevec[4];         /* local node numbers of interface */
+DOUBLE          xyz_curr[24];       /* current nodal coordinates */
+DOUBLE        **K_surf;             /* interface stiffness matrix */
+DOUBLE          fie_surf[12];       /* interface internal force vector */
+STRUCT_DYNAMIC *sdyn;
+DOUBLE          deltat;             /* time step size */
+INT             step;               /* current step */
+DOUBLE          A_old;              /* surface area of former step
+                                     * (surfactant) */
+DOUBLE          con_quot;           /* surfactant concentration of
+                                     * former step */
+DOUBLE          d_con_quot;         /* derivative of surfactant
+                                     * concentration with respect to
+                                     * interfacial area */
+INT             surface_flag;       /* surfactant or const. surface tension*/
+DOUBLE          k1;                 /* adsorption coefficient
+                                     * (surfactant) */
+DOUBLE          k2;                 /* desorption coefficient
+                                     * (surfactant) */
+DOUBLE          C;                  /* bulk surfactant concentration */
+DOUBLE          m1;                 /* first isotherm slope
+                                     * (surfactant) */
+DOUBLE          m2;                 /* second isotherm slope
+                                     * (surfactant) */
+DOUBLE          gamma_0;
+DOUBLE          gamma_min;          /* minimal surface stress
+                                     * (surfactant) */
+DOUBLE          gamma_min_eq;       /* minimal equilibrium surface stress
+                                     * (surfactant) */
+DOUBLE          const_gamma;        /* constant surface tension */
+
+/*----------------------------------- calculate contribution of surfactant
+ *------------------------to stiffness matrix and internal force vector */
+{
+actgvol=ele->g.gvol;
+sdyn= alldyn[0].sdyn;
+deltat=sdyn->dt;
+step=sdyn->step;
+
+for (r=0;r<actgvol->ngsurf;r++)
+{
+  actgsurf=actgvol->gsurf[r];
+
+  if (actgsurf->dsurf!=NULL)
+  {
+    if (actgsurf->dsurf->surface==1)  /* check if gsurf is an interface */
+    {
+      surface_flag=actgsurf->dsurf->surface_flag;
+
+      if (step==0)    /* initialising some parameters, for all
+                       * possible iterations in step 0 equal, but this
+                       * doesn't matter since surface energy is
+                       * applied gradually starting with 0 */
+      {
+        actgsurf->step=0;
+
+        if (surface_flag==0)
+        {
+          actgsurf->A_old=0.;
+          actgsurf->con_quot=0.;
+          actgsurf->d_con_quot=0.;
+        }
+      }
+
+      for (i=0;i<24;i++)         /* determine current nodal coordinates */
+      {
+        xyz_curr[i]=xyze[i]+edis[i];
+      }
+
+      K_surf=(double**)CCACALLOC(12, sizeof(double*));
+      for (i=0;i<12;i++)
+      {
+        K_surf[i]=(double*)CCACALLOC(12, sizeof(double));
+      }
+
+      if (actgsurf->step!=step)
+      {
+        actgsurf->step=step;
+
+        if (surface_flag==0)
+        {
+          actgsurf->A_old=actgsurf->A_old_temp;
+          actgsurf->con_quot=actgsurf->con_quot_temp;
+          actgsurf->d_con_quot=actgsurf->d_con_quot_temp;
+        }
+      }
+
+      if (surface_flag==0)
+      {
+        A_old=actgsurf->A_old;
+        con_quot=actgsurf->con_quot;
+        d_con_quot=actgsurf->d_con_quot;
+
+        k1=actgsurf->dsurf->k1;
+        k2=actgsurf->dsurf->k2;
+        C=actgsurf->dsurf->C;
+        m1=actgsurf->dsurf->m1;
+        m2=actgsurf->dsurf->m2;
+        gamma_0=actgsurf->dsurf->gamma_0;
+        gamma_min=actgsurf->dsurf->gamma_min;
+        gamma_min_eq=actgsurf->dsurf->gamma_min_eq;
+
+        c1_surf(surface_flag,k1,k2,C,m1,m2,gamma_0,gamma_min,gamma_min_eq,0,
+                xyz_curr,K_surf,fie_surf,nodevec,deltat,r,step,&A_old,&con_quot,
+                &d_con_quot);
+      }
+
+      else if (surface_flag==1)
+      {
+        const_gamma=actgsurf->dsurf->const_gamma;
+
+        c1_surf(surface_flag,0,0,0,0,0,0,0,0,const_gamma,
+                xyz_curr,K_surf,fie_surf,nodevec,deltat,r,step,NULL,NULL,
+                NULL);
+      }
+
+      for (k=0;k<4;k++)                       /* sort K_surf into estif */
+      {
+        for (l=0;l<4;l++)
+        {
+          for (i=0;i<3;i++)
+          {
+            for (j=0;j<3;j++)
+            {
+              m=nodevec[k];
+              n=nodevec[l];
+              estif[3*m+i][3*n+j]+=K_surf[3*k+i][3*l+j];
+            }
+          }
+        }
+      }
+
+      if (force)
+      {
+        for (i=0;i<4;i++)                  /*  sort fie_surf into force */
+        {
+          for (j=0;j<3;j++)
+          {
+            m=nodevec[i];
+            force[3*m+j]+=fie_surf[3*i+j];
+          }
+        }
+      }
+      /*------------------------------------------------------ update */
+      if (surface_flag==0)
+      {
+        actgsurf->A_old_temp=A_old;
+        actgsurf->con_quot_temp=con_quot;
+        actgsurf->d_con_quot_temp=d_con_quot;
+      }
+
+      for (i=0;i<12;i++)
+      {
+        CCAFREE(K_surf[i]);
+      }
+      CCAFREE(K_surf);
+    }
+  }
+}
+}
+#endif
 /*----------------------------------------------------- local co-system */
 dsassert(ele->locsys==locsys_no,"locsys not implemented for this element!\n");
 /*----------------------------------------------------------------------*/
