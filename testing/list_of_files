@@ -19,6 +19,7 @@ Input/c1_neum_geonln.dat                x        x        x        x        -   
 Input/c1_optfsd.dat                     x        x        x        x        -        -
 Input/c1_plast_mises.dat                x        x        x        x        -        -
 Input/c1_mat_hyperpolyconvex.dat        x        -        x        -        -        -
+Input/c1_surftension.dat		x	 x	  x	   x        -	     -
 Input/dyn_shell_dirich.dat              x        x        x        x        -        -
 Input/dyn_shell_neum.dat                x        x        x        x        -        -
 Input/f2_channel_neumann.dat            x        x        x        x        -        -
