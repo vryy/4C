@@ -1497,13 +1497,12 @@ long pe_binary_data(FILE* result_file,
 }
 
 long pe_binary_vector(FILE* result_file,
-                                  DOUBLE* results,
-                                  int result_offset,
-                                  int result_multiplicator,
-                                  int numnp,
-                                  int part
-                                  )
-
+                      DOUBLE* results,
+                      int result_offset,
+                      int result_multiplicator,
+                      int numnp,
+                      int part
+  )
 {
 #ifdef DEBUG
   dstrc_enter("pe_binary_vector");
@@ -1535,11 +1534,11 @@ long pe_binary_vector(FILE* result_file,
       bytes += 4*(fwrite(&temp_result, sizeof(float), 1, result_file));
     }
   }
-  return bytes;
-
+  
 #ifdef DEBUG
   dstrc_exit();
 #endif
+  return bytes;
 }
 
 int main(int argc, char** argv)
@@ -1581,14 +1580,7 @@ int main(int argc, char** argv)
     }
   }
 
-  if (!map_has_int(&(problem.control_table), "ndim", 2))
-  {
-    ACTDIM=3;
-  }
-  if (!map_has_int(&(problem.control_table), "ndim",3 ))
-  {
-    ACTDIM=2;
-  }
+  ACTDIM = map_read_int(&(problem.control_table), "ndim");
   num_discr=problem.num_discr;
 
   strcpy(basename, &problem.basename[strlen(problem.input_dir)]);
@@ -1640,7 +1632,6 @@ int main(int argc, char** argv)
     case prb_fluid_pm:
       if (problem.num_discr == 1)
       {
-
         if (problem.discr[0].type != fluid)
         {
           dserror("fluid discretization expected");
