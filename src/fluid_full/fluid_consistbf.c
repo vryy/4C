@@ -21,6 +21,7 @@ Maintainer: Christiane Foerster
 #include "../fluid2/fluid2_prototypes.h"
 #include "../fluid2_pro/fluid2pro.h"
 #include "../fluid2_pro/fluid2pro_prototypes.h"
+#include "../fluid2_is/fluid2_is.h"
 #include "../fluid3/fluid3.h"
 #ifdef D_ALE
 #include "../ale2/ale2.h"
@@ -192,6 +193,14 @@ if (init==0)
              actele->e.f2pro->force_on = found_ld;
              break;
 #endif
+#ifdef D_FLUID2_IS
+           case el_fluid2_is:
+             if(actele->e.f2is->force_on != 0 &&
+                actele->e.f2is->force_on != found_ld)
+               dswarning(1,13);
+             actele->e.f2is->force_on = found_ld;
+             break;
+#endif
            default:
              dserror("element type %d unknown", actele->eltyp);
            }
@@ -238,6 +247,14 @@ case 2: /* problem is two-dimensional */
           continue; /* element not of interest*/
         /*------------------------------ get liftdrag Id of element ---*/
         ld_id = actele->e.f2pro->force_on;
+        break;
+#endif
+#ifdef D_FLUID2_IS
+      case el_fluid2_is:
+        if (actele->e.f2is->force_on==0)
+          continue; /* element not of interest*/
+        /*------------------------------ get liftdrag Id of element ---*/
+        ld_id = actele->e.f2is->force_on;
         break;
 #endif
       default:
@@ -341,6 +358,11 @@ case 2: /* problem is two-dimensional */
 #ifdef D_FLUID2_PRO
          case el_fluid2_pro:
            f2pro_caleleres(actele,&eforce_global,ipos,&hasdirich,&hasext);
+           break;
+#endif
+#ifdef D_FLUID2_IS
+         case el_fluid2_is:
+           f2is_caleleres(actele,&eforce_global,ipos,&hasdirich,&hasext);
            break;
 #endif
          default:
