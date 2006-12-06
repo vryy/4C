@@ -91,14 +91,12 @@ void fluid_cbf(PARTDISCRET *actpdis,
 {
 
 #ifdef D_FLUID2
-INT i, j, k, l;
-INT line;
+INT i, j, k;
 INT ld_id;                            /* Id of the actual liftdrag line */
 INT numdf;
-INT hasldline, foundit;
+INT hasldline;
 INT hasdirich, hasext;
 INT force_on_node[MAXNOD];
-INT nfnode;  /* number of nodes of actele where forces are searched for */
 
 DOUBLE   rho;
 
@@ -261,7 +259,6 @@ case 2: /* problem is two-dimensional */
         dserror("element type!");
       }
       
-      nfnode = 0;
       for(j=0; j<MAXNOD; j++)
         force_on_node[j] = -1;
       hasldline = 0;
@@ -279,30 +276,13 @@ case 2: /* problem is two-dimensional */
          /*--------- get list of Ids of interesting nodes at element ---*/
          for(k=0; k<actgline->ngnode; k++)
          {
-            l=0;
-            foundit=0;
-
             /* what's that for? */
             if((actgline->gnode[k]->node->x[0] == 0.0 &&
                 actgline->gnode[k]->node->x[1] == 1.0) ||
                (actgline->gnode[k]->node->x[0] == 0.0 &&
                 actgline->gnode[k]->node->x[1] == 1.0)) continue;
             
-            while (force_on_node[l]!=-1 && l<MAXNOD)
-            {
-              if (force_on_node[l]==actgline->gnode[k]->node->Id)
-              {
-                foundit++;
-                break;
-              }
-              l++;
-            }
-            if (!foundit)
-            {
-              dsassert(l<MAXNOD, "node overrun");
-              force_on_node[l] = actgline->gnode[k]->node->Id;
-              nfnode++;
-            }
+            force_on_node[k] = actgline->gnode[k]->node->Id;
          }
       }
       /*--- care for elements which have only nodes touching ld line ---*/
@@ -319,35 +299,17 @@ case 2: /* problem is two-dimensional */
                actdline = actgline->dline;
                if (actdline->liftdrag == NULL) continue; /* not on l&d line   */
                hasldline++;
-               force_on_node[0] = actnode->Id;
-               if(hasldline==1) nfnode++;
+               force_on_node[j] = actnode->Id;
                /* center of liftdrag angular momentum (only one per node!) */
                center[0] = actdline->liftdrag->ld_center[0];
                center[1] = actdline->liftdrag->ld_center[1];
             }
          }
       }
-      if(hasldline)
+      if (hasldline)
       {
-         /*------------------ which nodes of actele are of interest? ---*/
-         j=0;
-         while(force_on_node[j]!=-1 && j<MAXNOD)
-         {
-            foundit=0;
-            l=0;
-            while(!foundit && l<actele->numnp)
-            {
-               if(force_on_node[j]==actele->node[l]->Id)
-               {
-                  force_on_node[j]=l;
-                  foundit++;
-               }
-               l++;
-            }
-            j++;
-            dsassert(foundit,"something is wrong!");
-         }
-         
+        INT dof;
+        
          /*--- get force vector ---*/
          
          switch (actele->eltyp)
@@ -371,22 +333,27 @@ case 2: /* problem is two-dimensional */
 
          /*--------------------- perform matrix-vector multiplication...
            ------------------------------------ ...on selected lines ---*/
-         for(j=0; j<nfnode; j++)
+         dof = 0;
+         for(j=0; j<actele->numnp; j++)
          {
-            actnode = actele->node[force_on_node[j]];
-            /*warning: this is not yet for the ale case!!! */
-            xy[0] = actnode->x[0] - center[0];
-            xy[1] = actnode->x[1] - center[1];
-            xforce = yforce = 0.0;
-            line = force_on_node[j] * 3;
+            actnode = actele->node[j];
 
-            xforce += eforce[line]*rho;
-            yforce += eforce[line+1]*rho;
+            if (force_on_node[j]!=-1)
+            {
+              /* warning: this is not yet for the ale case!!! */
+              xy[0] = actnode->x[0] - center[0];
+              xy[1] = actnode->x[1] - center[1];
+              xforce = yforce = 0.0;
 
-            /* write nodal result from this ele to total ld sum */
-            liftdrag[(ld_id-1)*6+0] += xforce;
-            liftdrag[(ld_id-1)*6+1] += yforce;
-            liftdrag[(ld_id-1)*6+5] += (xforce * xy[1] - yforce*xy[0]);
+              xforce += eforce[dof]*rho;
+              yforce += eforce[dof+1]*rho;
+
+              /* write nodal result from this ele to total ld sum */
+              liftdrag[(ld_id-1)*6+0] += xforce;
+              liftdrag[(ld_id-1)*6+1] += yforce;
+              liftdrag[(ld_id-1)*6+5] += (xforce * xy[1] - yforce*xy[0]);
+            }
+            dof += actnode->numdf;
          }
       }
    }
