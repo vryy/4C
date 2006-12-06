@@ -92,6 +92,7 @@ OBJS_SOLVER_CPP = src/solver/solver_trilinos_service.o \
 OBJS_DISCRET  = src/discret/drt_discret.o \
                 src/discret/drt_discret_fillcomplete.o \
                 src/discret/drt_discret_partition.o \
+                src/discret/drt_discret_evaluate.o \
                 src/discret/drt_element.o \
                 src/discret/drt_node.o \
                 src/discret/drt_container.o \
