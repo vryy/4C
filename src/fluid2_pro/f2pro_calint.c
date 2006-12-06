@@ -1110,6 +1110,13 @@ void f2pro_calresvec(  DOUBLE  *eforce,
 
 #include "f2pro_rhs_incr.c"
 
+for (vi=0; vi<iel; ++vi)
+{
+  /* Druckterm */
+  eforce_(vi*2)     += press*timefacfac*derxy_(0, vi) ;
+  eforce_(vi*2 + 1) += press*timefacfac*derxy_(1, vi) ;
+}
+
 #undef estif_
 #undef eforce_
 #undef funct_

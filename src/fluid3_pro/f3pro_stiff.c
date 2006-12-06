@@ -81,8 +81,6 @@ for (vi=0; vi<iel; ++vi)
 
     /* Stabilisierung der Viskosität (grad(p),-2*nu*div(epsilon((v)))) */
 
-    /* Druckterm */
-
     /* Kontinuitätsstabilisierung */
     estif_(vi*3, ui*3)         += (thsl*thsl)*tau_C*derxyz_(0, ui)*derxyz_(0, vi) ;
     estif_(vi*3, ui*3 + 1)     += (thsl*thsl)*tau_C*derxyz_(0, vi)*derxyz_(1, ui) ;

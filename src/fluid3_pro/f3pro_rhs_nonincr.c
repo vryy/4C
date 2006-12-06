@@ -31,11 +31,13 @@ for (vi=0; vi<iel; ++vi)
     eforce_(vi*3 + 1) += -2.0*visc_*ttimetauMp*(gradp_(0)*viscs2_(0, 1, vi) + gradp_(1)*viscs2_(1, 1, vi) + gradp_(2)*viscs2_(1, 2, vi)) ;
     eforce_(vi*3 + 2) += -2.0*visc_*ttimetauMp*(gradp_(0)*viscs2_(0, 2, vi) + gradp_(1)*viscs2_(1, 2, vi) + gradp_(2)*viscs2_(2, 2, vi)) ;
 
+#if 0
     /* Druckterm */
     eforce_(vi*3)     += press*timefacfac*derxyz_(0, vi) ;
     eforce_(vi*3 + 1) += press*timefacfac*derxyz_(1, vi) ;
     eforce_(vi*3 + 2) += press*timefacfac*derxyz_(2, vi) ;
-
+#endif
+    
     /* Kontinuitätsstabilisierung */
 
     /* Massenterm (u,v) */
