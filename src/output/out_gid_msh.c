@@ -750,6 +750,28 @@ end_shell8:;
       }
 
 
+      if (actgid->is_fluid2_6)
+      {
+        fprintf(out,"#-------------------------------------------------------------------------------\n");
+        fprintf(out,"# MESH %s FOR FIELD %s, DIS %1i: FLUID2 3 GP\n",
+            actgid->fluid2_6_name,actgid->fieldname,l);
+        fprintf(out,"#-------------------------------------------------------------------------------\n");
+        fprintf(out,"MESH %s_dis_%1i DIMENSION 2 ELEMTYPE Triangle NNODE 6\n",
+            actgid->fluid2_6_name,l);
+        /*------------------------------------------------ print elements */
+        fprintf(out,"ELEMENTS\n");
+        for (j=0; j<actfield->dis[l].numele; j++)
+        {
+          actele = &(actfield->dis[l].element[j]);
+          if (actele->eltyp != el_fluid2 || actele->numnp !=6) continue;
+          fprintf(out," %6d ",actele->Id+1);
+          for (k=0; k<actele->numnp; k++)
+            fprintf(out,"%6d ",actele->node[k]->Id+1);
+          fprintf(out,"\n");
+        }
+        fprintf(out,"END ELEMENTS\n");
+      }
+      
       if (actgid->is_fluid2_22)
       {
         fprintf(out,"#-------------------------------------------------------------------------------\n");
@@ -775,18 +797,29 @@ end_shell8:;
 
       if (actgid->is_fluid2_33)
       {
+
         fprintf(out,"#-------------------------------------------------------------------------------\n");
         fprintf(out,"# MESH %s FOR FIELD %s, DIS %1i: FLUID2 3x3 GP\n",
             actgid->fluid2_33_name,actgid->fieldname,l);
         fprintf(out,"#-------------------------------------------------------------------------------\n");
-        fprintf(out,"MESH %s_dis_%1i DIMENSION 2 ELEMTYPE Quadrilateral NNODE 9\n",
-            actgid->fluid2_33_name,l);
+	if(actfield->dis[l].element[0].distyp == quad8)
+	{
+	    fprintf(out,"MESH %s_dis_%1i DIMENSION 2 ELEMTYPE Quadrilateral NNODE 8\n",
+		    actgid->fluid2_33_name,l);
+    	}
+	else
+	{
+	    fprintf(out,"MESH %s_dis_%1i DIMENSION 2 ELEMTYPE Quadrilateral NNODE 9\n",
+		    actgid->fluid2_33_name,l);	    
+	}
+	  
+  
         /*------------------------------------------------ print elements */
         fprintf(out,"ELEMENTS\n");
         for (j=0; j<actfield->dis[l].numele; j++)
         {
           actele = &(actfield->dis[l].element[j]);
-          if (actele->eltyp != el_fluid2 || actele->numnp !=9) continue;
+          if (actele->eltyp != el_fluid2 || !(actele->numnp ==9 || actele->numnp ==8)) continue;
           fprintf(out," %6d ",actele->Id+1);
           for (k=0; k<actele->numnp; k++)
             fprintf(out,"%6d ",actele->node[k]->Id+1);

@@ -18,6 +18,11 @@ Maintainer: Steffen Genkinger
 #include "../solver/solver.h"
 #include "fluid_prototypes.h"
 #include "../fluid2/fluid2_prototypes.h"
+
+#ifdef D_FLUID2_TDS
+#include "../fluid2/fluid2.h"
+#endif
+
 #include "../io/io.h"
 
 #ifdef D_FLUID2_TDS
@@ -814,20 +819,22 @@ if(fdyn->adaptive)
 
 #ifdef D_FLUID2_TDS
 /*-------------------------------- update of time dependent subscales */
-f2_update_subscale_pres(
-    actpart,
-    actintra,
-    actfield,
-    ipos,
-    disnum_calc);
-
-f2_update_subscale_vel(
-    actpart,
-    actintra,
-    actfield,
-    ipos,
-    disnum_calc);
-
+if(actfield->dis[disnum_calc].element[0].e.f2->stab_type == stab_tds)
+{
+    f2_update_subscale_pres(
+	actpart,
+	actintra,
+	actfield,
+	ipos,
+	disnum_calc);
+    
+    f2_update_subscale_vel(
+	actpart,
+	actintra,
+	actfield,
+	ipos,
+	disnum_calc);
+}
 #endif
 
 /*---------------------------------------------- update acceleration ---*/

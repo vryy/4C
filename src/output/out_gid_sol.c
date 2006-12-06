@@ -315,7 +315,12 @@ for (i=0; i<genprob.numfld; i++)
             actgid->is_fluid2_tri3    = 1;
             actgid->fluid2_tri3_name  = "fluid2_tri3";
          }
-         if (actele->numnp==4)
+         if (actele->numnp==6)
+         {
+            actgid->is_fluid2_6    = 1;
+            actgid->fluid2_6_name  = "fluid2_tri6";
+         }
+	 if (actele->numnp==4)
          {
             actgid->is_fluid2_22    = 1;
             actgid->fluid2_22_name  = "fluid2_22";

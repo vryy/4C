@@ -902,6 +902,72 @@ case 1: /* Whiting tau */
    fdyn->tau[2] = 0.125 / (fdyn->tau[0] * (gij[0]+gij[1]));
 break;
 
+#ifdef D_FLUID2_TDS
+case 3: /* tau for time dependent subscales --- a combination
+	 * of Franca and Codina tau for time dependent subscales */
+        /* which_hk has no meaning here! */
+
+   /* be careful with this definition --- it's just a try......  */
+    
+   /*--- get proper constant mk ---*/
+   switch(typ)
+   {
+   case tri3:
+      mk = 0.333333333333333333333;
+   break;
+   case tri6:
+      mk = 0.083333333333333333333;
+   break;
+   case quad4:
+      mk = 0.333333333333333333333;
+   break;
+   case quad8:
+      mk = 0.083333333333333333333;
+   break;
+   case quad9:
+      mk = 0.083333333333333333333;
+   break;
+   default: dserror("element type not implemented!");
+   }
+   
+   /* square root of area for element length calculation */
+   /*--------------------- rewrite array of elemental coordinates ---*/
+   for(i=0; i<iel; i++)
+   {
+       xyz[0][i] = xyze[0][i];
+       xyz[1][i] = xyze[1][i];
+   }
+
+   /*-------------------------------- get area and element length ---*/
+   area = area_lin_2d(ele,xyz);
+
+   switch(typ)
+   {
+   case tri3:
+   case tri6:
+       hk = sqrt(area);
+       /* this is a rough estimate .... */
+   break;
+   case quad4:
+   case quad8:
+   case quad9:
+       hk = sqrt(area);
+   break;
+   default: dserror("element type not implemented!");
+   }
+   
+   /*---------------------------------------------------- get p-norm ---*/
+   norm_p = sqrt(DSQR(velint[0]) + DSQR(velint[1]));
+
+   re = mk * norm_p * hk / (2.0 * visc);  /* advective : viscous forces */
+
+   xi2 = DMAX(re,1.0);
+
+   fdyn->tau[0] = DSQR(hk) / (2 * visc/mk + (4.0 * visc/mk) * xi2);
+   fdyn->tau[2] = norm_p * hk * 0.5 * xi2;
+break;
+#endif
+
 default: dserror(" Way of tau calculation unknown!");
 } /* end switch (whichtau) */
 /*----------------------------------------------------------------------*/
@@ -947,7 +1013,7 @@ void f2_int_kim_moin_err(
     )
 
 {
-  INT       i;          /* a couter                                       */
+  INT       i;          /* a counter                                      */
   INT       iel;        /* number of nodes                                */
   INT       intc;       /* "integration case" for tri for further infos
                            see f2_inpele.c and f2_intg.c                 */
@@ -972,7 +1038,7 @@ void f2_int_kim_moin_err(
   FLUID_DYNAMIC   *fdyn;
   FLUID_DATA      *data;
   NODE     *actnode;
-
+  
 
 #ifdef DEBUG
   dstrc_enter("f2_int_kim_moin_err");

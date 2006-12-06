@@ -51,6 +51,7 @@ DOUBLE area_lin_2d(
   switch(ele->distyp)
   {
     case tri3:
+    case tri6:
       a = (xyz[0][0]-xyz[0][1])*(xyz[0][0]-xyz[0][1])
         +(xyz[1][0]-xyz[1][1])*(xyz[1][0]-xyz[1][1]); /* line 0-1 squared */
       b = (xyz[0][1]-xyz[0][2])*(xyz[0][1]-xyz[0][2])
@@ -61,6 +62,7 @@ DOUBLE area_lin_2d(
       break;
 
     case quad4:
+    case quad8:
     case quad9:
       a = (xyz[0][0]-xyz[0][1])*(xyz[0][0]-xyz[0][1])
         +(xyz[1][0]-xyz[1][1])*(xyz[1][0]-xyz[1][1]); /* line 0-1 squared */

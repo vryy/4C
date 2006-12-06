@@ -88,8 +88,17 @@ dstrc_enter("f2_caltau");
    the other possibilities will be kept for research purpose
    for detailed explainations of the different tau concepts see
    preamble to routine 'f2_get_tau'                                     */
-whichtau = 0; /* Franca  */
-/*whichtau = 1;*/ /* Whiting */
+#ifdef D_FLUID2_TDS
+if(ele->g.gsurf->dsurf->stab_type == stab_tds)
+{
+    whichtau = 3; /* dummy modification for time dependent subscales */
+}
+else
+#endif
+{
+    whichtau = 0;   /* Franca  */
+  /*whichtau = 1;*/ /* Whiting */
+}
 
 which_hk = 0; /* area square root */
 /*which_hk = 1;*/ /* length in flow direction (Wall) */

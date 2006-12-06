@@ -316,7 +316,7 @@ for (lr=0;lr<nir;lr++)
 	  
 	  res_old[dim]-=edeadn[dim];
       }
-      
+
       /*-------------- perform integration for entire matrix and rhs ---*/
       f2_calmat_tds(estif,eforce,velint,histvec,gridvelint,press,vderxy,
 		    vderxy2,gradp,funct,derxy,derxy2,edeadng,fac,
