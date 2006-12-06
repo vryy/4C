@@ -20,6 +20,8 @@ Maintainer: Michael Gee
 
 
 #include "Teuchos_RefCountPtr.hpp"
+#include "Epetra_SerialDenseMatrix.h"
+#include "Epetra_SerialDenseVector.h"
 using namespace std;
 using namespace Teuchos;
 #include "drt_parobject.H"
@@ -152,7 +154,7 @@ public:
   
   \return Returns NULL if condition with that name does not exist
   */
-  virtual const Condition* GetCondition(const string& name) const;
+  virtual Condition* GetCondition(const string& name);
 
   /*!
   \brief Get vector of ptrs to nodes
@@ -204,6 +206,9 @@ public:
 
   /*!
   \brief Read input for this element
+  
+  This class implements a dummy of this method that prints a warning and
+  returns false.
   */
   virtual bool ReadElement();
 
@@ -243,6 +248,73 @@ public:
 
   //@}
 
+  // @{ \name Evaluation
+  
+  /*!
+  \brief Return the location vector of this element
+  
+  The method computes degrees of freedom this element is using.
+  Numbering is as follows:<br>
+  First all degrees of freedom of nodes are numbered in nodal order,
+  then the element internal degrees of freedom are given if present.<br>
+  If your implementation of an Element has to use a different numbering scheme, 
+  you are welcome to overload this method.<br>
+  Length of the output vector must match number of degrees of freedom
+  exactly.<br>
+  
+  \note The degrees of freedom returned are not neccessarily only nodal dofs.
+        Depending on the element implementation, output also includes
+        element dofs.
+        
+  \param lm (out): vector of degrees of freedom adressed by this element
+  \param lmdirich (out): vector of zeros and ones indicating which
+                         dofs have dirichlet boundary conditions. Ordering
+                         matches dofs in lm.
+  \param lmowner (out) : vector of proc numbers indicating which dofs are owned
+                         by which procs in a dof row map. Ordering
+                         matches dofs in lm.
+  
+  */
+  virtual void LocationVector(vector<int>& lm, vector<int>& lmdirich, vector<int>& lmowner);
+  
+  /*!
+  \brief Evaluate an element
+  
+  This class implements a dummy of this method that prints a warning and
+  returns false.
+  
+  \param params (in/out): ParameterList for communication between control routine
+                          and elements
+  \param elemat1 (out)  : matrix to be filled by element. If NULL on input, 
+                          the controling method does not epxect the element to fill
+                          this matrix.
+  \param elemat2 (out)  : matrix to be filled by element. If NULL on input, 
+                          the controling method does not epxect the element to fill
+                          this matrix.
+  \param elevec1 (out)  : vector to be filled by element. If NULL on input, 
+                          the controlling method does not epxect the element
+                          to fill this vector 
+  \param elevec2 (out)  : vector to be filled by element. If NULL on input, 
+                          the controlling method does not epxect the element
+                          to fill this vector 
+  \param elevec3 (out)  : vector to be filled by element. If NULL on input, 
+                          the controlling method does not epxect the element
+                          to fill this vector 
+  \return 0 if successful, negative otherwise
+  */
+  virtual int Evaluate(ParameterList& params, 
+                       DRT::Discretization&      discretization,
+                       vector<int>&              lm,
+                       Epetra_SerialDenseMatrix& elemat1,
+                       Epetra_SerialDenseMatrix& elemat2,
+                       Epetra_SerialDenseVector& elevec1,
+                       Epetra_SerialDenseVector& elevec2,
+                       Epetra_SerialDenseVector& elevec3);
+  
+
+
+  //@}
+
 protected:
 
   /*!
@@ -253,12 +325,17 @@ protected:
   */
   bool BuildNodalPointers(map<int,RefCountPtr<DRT::Node> >& nodes);
 
+private:
+
   int                                 id_;        // a unique global element id
   int                                 owner_;     // owner of this element
   ElementType                         etype_;     // type of element
+
   vector<int>                         nodeid_;    // list of my nodal ids
   vector<DRT::Node*>                  node_;      // pointers to adjacent nodes
+
   DRT::DofSet                         dofset_;    // a set of degrees of freedom
+
   map<string,RefCountPtr<Condition> > condition_; // some conditions e.g. BCs
 
 }; // class Element

@@ -185,8 +185,6 @@ void input_design_topology_discretization(DRT::Discretization& actdis)
 {
   DSTraceHelper dst("input_design_topology_discretization");
   
-  
-  
   // get the design discretizations
   RefCountPtr<DRT::Design>* tmp = (RefCountPtr<DRT::Design>*)design->ccadesign;
   DRT::Design& ccadesign = **tmp;   
@@ -231,15 +229,21 @@ void input_design_topology_discretization(DRT::Discretization& actdis)
       ndvol_fenode[i] = 0;
     input_design_dvol_fenode_read(dvol_fenode,ndvol_fenode);
 
-    // create topology node <-> designnode
-    DRT::Node::OnDesignEntity type = DRT::Node::on_dnode;
-    actdis.SetDesignEntityIds(type,ndnode_fenode,dnode_fenode);
-    type = DRT::Node::on_dline;
-    actdis.SetDesignEntityIds(type,ndline_fenode,dline_fenode);
+    // note: The order in which these entities are set DOES matter!
+    
+    // create topology node <-> designvolume
+    DRT::Node::OnDesignEntity type = DRT::Node::on_dvolume;
+    actdis.SetDesignEntityIds(type,ndvol_fenode,dvol_fenode);
+    // create topology node <-> designsurface
     type = DRT::Node::on_dsurface;
     actdis.SetDesignEntityIds(type,ndsurf_fenode,dsurf_fenode);
-    type = DRT::Node::on_dvolume;
-    actdis.SetDesignEntityIds(type,ndvol_fenode,dvol_fenode);
+    // create topology node <-> designline
+    type = DRT::Node::on_dline;
+    actdis.SetDesignEntityIds(type,ndline_fenode,dline_fenode);
+    // create topology node <-> designnode
+    type = DRT::Node::on_dnode;
+    actdis.SetDesignEntityIds(type,ndnode_fenode,dnode_fenode);
+
   } // if (designvols->Comm().MyPID()==0)
   return;
 }

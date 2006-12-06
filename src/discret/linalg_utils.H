@@ -22,6 +22,7 @@ Maintainer: Michael Gee
 #include "Epetra_CrsMatrix.h"
 #include "Epetra_Vector.h"
 #include "Epetra_Export.h"
+#include "Epetra_Import.h"
 #include "Teuchos_RefCountPtr.hpp"
 
 using namespace std;
@@ -46,9 +47,24 @@ namespace LINALG
   \brief Create a new Epetra_Vector and return RefcountPtr to it
   
   \param rowmap (in): row map of vector
-  \param npr (in): initializa vector to zero upon construction
+  \param init (in): initializa vector to zero upon construction
   */
   RefCountPtr<Epetra_Vector> CreateVector(const Epetra_Map& rowmap, const bool init);
+
+  /*!
+  \brief Export a vector to a different map
+  
+  Values of source are copied to target where maps don't have to match.
+  Prerequisite: Either the map of source OR the map of target has to be unique
+                (will be tested)
+  \warning When source is overlapping (and therefore target is unique), values
+           in the overlapping region are inserted into the target on a first come 
+           first serve basis, meaning they should be equal in the source to 
+           be deterministic
+  \param source (in) : source vector values are taken from
+  \param target (out): target vector values will be inserted in
+  */
+  void Export(const Epetra_Vector& source, Epetra_Vector& target);
 
 } // namespace LINALG
 

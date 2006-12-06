@@ -160,7 +160,19 @@ public:
   
   \return Returns NULL if condition with that name does not exist
   */
-  virtual const Condition* GetCondition(const string& name) const;
+  virtual Condition* GetCondition(const string& name);
+
+  /*!
+  \brief Get the type of design entity this node is on
+
+  */
+  virtual inline DRT::Node::OnDesignEntity GetDesignEntityType() {return dentitytype_;}
+
+  /*!
+  \brief Get the id of design entity this node is on
+
+  */
+  virtual inline int GetDesignEntityId() {return dentityid_;}
 
   /*!
   \brief Print this node

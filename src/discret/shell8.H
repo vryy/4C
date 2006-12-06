@@ -21,6 +21,7 @@ Maintainer: Michael Gee
 
 
 #include "Teuchos_RefCountPtr.hpp"
+#include "Epetra_Vector.h"
 using namespace std;
 using namespace Teuchos;
 
@@ -136,6 +137,39 @@ public:
   */
   bool ReadElement();
 
+  /*!
+  \brief Evaluate an element
+  
+  Evaluate shell8 element stuffness, mass, internal forces etc
+  
+  \param params (in/out): ParameterList for communication between control routine
+                          and elements
+  \param elemat1 (out)  : matrix to be filled by element. If NULL on input, 
+                          the controling method does not epxect the element to fill
+                          this matrix.
+  \param elemat2 (out)  : matrix to be filled by element. If NULL on input, 
+                          the controling method does not epxect the element to fill
+                          this matrix.
+  \param elevec1 (out)  : vector to be filled by element. If NULL on input, 
+                          the controlling method does not epxect the element
+                          to fill this vector 
+  \param elevec2 (out)  : vector to be filled by element. If NULL on input, 
+                          the controlling method does not epxect the element
+                          to fill this vector 
+  \param elevec3 (out)  : vector to be filled by element. If NULL on input, 
+                          the controlling method does not epxect the element
+                          to fill this vector 
+  \return 0 if successful, negative otherwise
+  */
+  int Evaluate(ParameterList& params, 
+               DRT::Discretization&      discretization,
+               vector<int>&              lm,
+               Epetra_SerialDenseMatrix& elemat1,
+               Epetra_SerialDenseMatrix& elemat2,
+               Epetra_SerialDenseVector& elevec1,
+               Epetra_SerialDenseVector& elevec2,
+               Epetra_SerialDenseVector& elevec3);
+
   //@}
 
 
@@ -144,8 +178,20 @@ private:
   // don't want = operator
   Shell8 operator = (const Shell8& old);
 
+  enum ActionType
+  {
+    none,
+    calc_struct_linstiff,
+    calc_struct_nlnstiff,
+    calc_struct_internalforce,
+    calc_struct_linstiffmass,
+    calc_struct_nlnstiffmass,
+    calc_struct_stress,
+    calc_struct_eleload,
+    calc_struct_fsiload
+  };
+
   // element specific data
-  
   enum ForceType
   {
     s8_none,

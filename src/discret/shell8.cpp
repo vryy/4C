@@ -14,8 +14,22 @@ Maintainer: Michael Gee
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
+// This is just here to get the c++ mpi header, otherwise it would
+// use the c version included inside standardtypes.h
+#ifdef PARALLEL
+#include "mpi.h"
+#endif
 #include "shell8.H"
+#include "drt_discret.H"
+#include "drt_utils.H"
 #include "drt_dserror.H"
+extern "C" 
+{
+#include "../headers/standardtypes.h"
+#include "../shell8/shell8.h"
+}
+#include "dstrc.H"
+
 
 
 
@@ -33,6 +47,7 @@ ans_(0),
 sdc_(1.0),
 material_(0)
 {
+  DSTraceHelper dst("Shell8::Shell8");  
   ngp_[0] = ngp_[1] = ngp_[2] = 0;
   eas_[0] = eas_[1] = eas_[2] = eas_[3] = eas_[4] = 0;
   return;
@@ -52,6 +67,7 @@ ans_(old.ans_),
 sdc_(old.sdc_),
 material_(old.material_)
 {
+  DSTraceHelper dst("Shell8::Shell8");  
   for (int i=0; i<3; ++i) ngp_[i] = old.ngp_[i];
   for (int i=0; i<5; ++i) eas_[i] = old.eas_[i];
   return;
@@ -63,6 +79,7 @@ material_(old.material_)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::Elements::Shell8::Clone() const
 {
+  DSTraceHelper dst("Shell8::Clone");  
   DRT::Elements::Shell8* newelement = new DRT::Elements::Shell8(*this);
   return newelement;
 }
@@ -73,6 +90,7 @@ DRT::Element* DRT::Elements::Shell8::Clone() const
  *----------------------------------------------------------------------*/
 const char* DRT::Elements::Shell8::Pack(int& size) const
 {
+  DSTraceHelper dst("Shell8::Pack");  
   const int sizeint    = sizeof(int);
   const int sizeforcetype = sizeof(enum ForceType);
   const int sizedouble = sizeof(double);
@@ -143,6 +161,7 @@ const char* DRT::Elements::Shell8::Pack(int& size) const
  *----------------------------------------------------------------------*/
 bool DRT::Elements::Shell8::Unpack(const char* data)
 {
+  DSTraceHelper dst("Shell8::Unpack");  
   const int sizeint    = sizeof(int);
   //const int sizeforcetype = sizeof(enum ForceType);
   //const int sizedouble = sizeof(double);
@@ -195,6 +214,7 @@ bool DRT::Elements::Shell8::Unpack(const char* data)
  *----------------------------------------------------------------------*/
 DRT::Elements::Shell8::~Shell8()
 {
+  DSTraceHelper dst("Shell8::~Shell8");  
   return;
 }
 
@@ -204,12 +224,92 @@ DRT::Elements::Shell8::~Shell8()
  *----------------------------------------------------------------------*/
 void DRT::Elements::Shell8::Print(ostream& os) const
 {
+  DSTraceHelper dst("Shell8::Print");  
   os << "Shell8 ";
   Element::Print(os);
   return;
 }
 
-
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | vector of material laws                                              |
+ | defined in global_control.c
+ *----------------------------------------------------------------------*/
+extern struct _MATERIAL  *mat;
+/*----------------------------------------------------------------------*
+ |  evaluate the element (public)                            mwgee 11/06|
+ *----------------------------------------------------------------------*/
+int DRT::Elements::Shell8::Evaluate(ParameterList& params, 
+                                    DRT::Discretization&      discretization,
+                                    vector<int>&              lm,
+                                    Epetra_SerialDenseMatrix& elemat1,
+                                    Epetra_SerialDenseMatrix& elemat2,
+                                    Epetra_SerialDenseVector& elevec1,
+                                    Epetra_SerialDenseVector& elevec2,
+                                    Epetra_SerialDenseVector& elevec3)
+{
+  DSTraceHelper dst("Shell8::Evaluate");  
+  DRT::Elements::Shell8::ActionType act = Shell8::none;
+  
+  // get the action required
+  string action = params.get<string>("action","none");
+  if (action == "none") dserror("No action supplied");
+  else if (action=="calc_struct_linstiff")      act = Shell8::calc_struct_linstiff;
+  else if (action=="calc_struct_nlnstiff")      act = Shell8::calc_struct_nlnstiff;
+  else if (action=="calc_struct_internalforce") act = Shell8::calc_struct_internalforce;
+  else if (action=="calc_struct_linstiffmass")  act = Shell8::calc_struct_linstiffmass;
+  else if (action=="calc_struct_nlnstiffmass")  act = Shell8::calc_struct_nlnstiffmass;
+  else if (action=="calc_struct_stress")        act = Shell8::calc_struct_stress;
+  else if (action=="calc_struct_eleload")       act = Shell8::calc_struct_eleload;
+  else if (action=="calc_struct_fsiload")       act = Shell8::calc_struct_fsiload;
+  else dserror("Unknown type of action for Shell8");
+  
+  // get the material law
+  MATERIAL* actmat = &(mat[material_-1]);
+  
+  switch(act)
+  {
+    case calc_struct_linstiff:
+      dserror("Case not yet implemented");
+    break;
+    case calc_struct_nlnstiff:
+      dserror("Case not yet implemented");
+    break;
+    case calc_struct_internalforce:
+      dserror("Case not yet implemented");
+    break;
+    case calc_struct_linstiffmass:
+      dserror("Case not yet implemented");
+    break;
+    case calc_struct_nlnstiffmass: // do mass, stiffness and internal forces
+    {
+      // need current displacement and residual forces
+      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual");
+      if (disp==null || res==null) dserror("Cannot get state vectors");
+      vector<double> mydisp(lm.size());
+      DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
+      vector<double> myres(lm.size());
+      DRT::Utils::ExtractMyValues(*res,myres,lm);
+      
+    }
+    break;
+    case calc_struct_stress:
+      dserror("Case not yet implemented");
+    break;
+    case calc_struct_eleload:
+      dserror("Case not yet implemented");
+    break;
+    case calc_struct_fsiload:
+      dserror("Case not yet implemented");
+    break;
+    default:
+      dserror("Unknown type of action for Shell8");
+  }
+  
+  
+  return 0;
+}
 
 
 

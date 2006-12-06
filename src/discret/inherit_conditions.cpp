@@ -89,7 +89,9 @@ static void inherit_dirichlet_high_to_low_entity_elements(
                             RefCountPtr<DRT::DesignDiscretization> lowdis);
 static void inherit_dirichlet_element_to_node(
                             RefCountPtr<DRT::DesignDiscretization> dis);
-
+static void inherit_dirichlet_design_to_discretization(
+                                        DRT::DesignDiscretization& ddis,
+                                        DRT::Discretization&        dis);
 /*----------------------------------------------------------------------*
  | input of conditions                                    m.gee 11/06   |
  *----------------------------------------------------------------------*/
@@ -116,11 +118,91 @@ void inherit_conditions()
       inherit_dirichlet_high_to_low_entity_elements(designvols,designsurfs);
       inherit_dirichlet_high_to_low_entity_elements(designsurfs,designlines);
       inherit_dirichlet_element_to_node(designlines);
+  
+      // inherit all conditions from design to discretization
+      for (int i=0; i<genprob.numfld; ++i)
+      {
+        vector<RefCountPtr<DRT::Discretization> >* discretization =
+                      (vector<RefCountPtr<DRT::Discretization> >*)field[i].ccadis;
+        for (int j=0; j<field[i].ndis; ++j)
+        {
+          RefCountPtr<DRT::Discretization> actdis = (*discretization)[j];
+          inherit_dirichlet_design_to_discretization(*designlines,*actdis);
+          inherit_dirichlet_design_to_discretization(*designsurfs,*actdis);
+          inherit_dirichlet_design_to_discretization(*designvols,*actdis);
+        }
+      } // for (int i=0; i<genprob.numfld; ++i)
+  
     } // if (ccadesign.Comm().MyPID()==0)
-  }
+  
+  } // if (design)
 
   return;
 } /* end of inherit_conditions */
+
+/*----------------------------------------------------------------------*
+ | inherit Dirichlet conditions from eles to nodes          m.gee 11/06 |
+ *----------------------------------------------------------------------*/
+void inherit_dirichlet_design_to_discretization(
+                                        DRT::DesignDiscretization& ddis,
+                                        DRT::Discretization&        dis)
+{
+  DSTraceHelper dst("inherit_dirichlet_design_to_discretization");
+  
+  // it is implicitly assumed that all neccessary design objects are
+  // available on this processor.
+  // Normally, when this method is called, everything is still on proc 0
+  
+  if (!ddis.Filled()) dserror("FillComplete was not called on design discretization");
+  if (!dis.Filled()) dserror("FillComplete was not called on discretization");
+
+  // loop nodes in discretization 
+  for (int i=0; i<dis.NumMyColNodes(); ++i)
+  {
+    DRT::Node* actnode = dis.lColNode(i);
+    
+    // get design entity type and id this node is on
+    DRT::Node::OnDesignEntity type = actnode->GetDesignEntityType();
+    if (type==DRT::Node::on_none) continue;
+    int dgid = actnode->GetDesignEntityId();
+    
+    // get the design entity and inherit its dirichlet condition
+    if (type==DRT::Node::on_dnode)
+    {
+      if (!ddis.HaveGlobalNode(dgid)) continue;
+      DRT::Node* dnode = ddis.gNode(dgid);
+      DRT::Condition* dirich = dnode->GetCondition("Dirichlet");
+      if (!dirich) continue;
+      // deep copy and set in actnode
+      RefCountPtr<DRT::Condition> newdirich = rcp(new DRT::Condition(*dirich));
+      actnode->SetCondition("Dirichlet",newdirich);
+    }
+    else
+    {
+      if (!ddis.HaveGlobalElement(dgid)) continue;
+      DRT::Element* dele = ddis.gElement(dgid);
+      
+      // make sure its the correct type
+      DRT::Element::ElementType dtype = dele->Type();
+      if (type  == DRT::Node::on_dline && 
+          dtype != DRT::Element::element_designline) continue;
+      if (type  == DRT::Node::on_dsurface && 
+          dtype != DRT::Element::element_designsurface) continue;
+      if (type  == DRT::Node::on_dvolume && 
+          dtype != DRT::Element::element_designvolume) continue;
+      
+      DRT::Condition* dirich = dele->GetCondition("Dirichlet");
+      if (!dirich) continue;
+      // deep copy and set in actnode
+      RefCountPtr<DRT::Condition> newdirich = rcp(new DRT::Condition(*dirich));
+      actnode->SetCondition("Dirichlet",newdirich);
+    }
+  } // for (int i=0; i<dis.NumMyColNodes(); ++i)
+  
+  return;
+} // inherit_dirichlet_design_to_discretization
+
+
 
 /*----------------------------------------------------------------------*
  | inherit Dirichlet conditions from eles to nodes          m.gee 11/06 |

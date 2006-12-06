@@ -169,21 +169,21 @@ public:
   
   \return const ptr to vector if data with that name exists, NULL otherwise
   */
-  template<typename T> const vector<T>* Get(const string& name) const
+  template<typename T> vector<T>* Get(const string& name)
   {
     T tester;
     if (IsInt(tester))
     {
-      map<string,RefCountPtr<vector<int> > >::const_iterator icurr = intdata_.find(name);
+      map<string,RefCountPtr<vector<int> > >::iterator icurr = intdata_.find(name);
       if (icurr != intdata_.end())
-        return (const vector<T>*)icurr->second.get();
+        return (vector<T>*)icurr->second.get();
       else return NULL;
     }
     else if (IsDouble(tester))
     {
-      map<string,RefCountPtr<vector<double> > >::const_iterator dcurr = doubledata_.find(name);
+      map<string,RefCountPtr<vector<double> > >::iterator dcurr = doubledata_.find(name);
       if (dcurr != doubledata_.end())
-        return (const vector<T>*)dcurr->second.get();
+        return (vector<T>*)dcurr->second.get();
       else return NULL;
     }
     else dserror("This templated method returns <int> and <double> data only!");

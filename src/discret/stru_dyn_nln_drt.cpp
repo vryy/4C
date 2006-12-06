@@ -163,14 +163,22 @@ void dyn_nlnstructural_drt()
   // -------------------------------------------------------------------
   // call elements to calculate stiffness and mass
   // -------------------------------------------------------------------
-  ParameterList container;
-  container.set("stiffness matrix",true);
-  container.set("mass matrix",true);
-  container.set("total time",acttime);
-  container.set("delta time",sdyn->dt);
-  container.set<RefCountPtr<Epetra_Vector> >("current displacement",sol0);
-//  actdis->Evaluate(container,stiff_mat,mass_mat);
-
+  {
+    // create the parameters for the discretization
+    ParameterList params;
+    params.set("action","calc_struct_nlnstiffmass");
+    params.set("total time",acttime);
+    params.set("delta time",sdyn->dt);
+    // set values needed by elements (have to be column map!)
+    RefCountPtr<Epetra_Vector> cfie0 = LINALG::CreateVector(*dofcolmap,false);
+    LINALG::Export(*fie0,*cfie0);
+    RefCountPtr<Epetra_Vector> csol0 = LINALG::CreateVector(*dofcolmap,false);
+    LINALG::Export(*sol0,*csol0);
+    actdis->ClearState();
+    actdis->SetState("residual",cfie0);
+    actdis->SetState("displacement",csol0);
+    actdis->Evaluate(params,stiff_mat,mass_mat,null,null,null);
+  }
 
 
 

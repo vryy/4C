@@ -267,7 +267,7 @@ bool DRT::Node::Unpack(const char* data)
  |  Get a condition of a certain name                          (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-const DRT::Condition* DRT::Node::GetCondition(const string& name) const
+DRT::Condition* DRT::Node::GetCondition(const string& name)
 {
   map<string,RefCountPtr<Condition> >::const_iterator curr = condition_.find(name);
   if (curr != condition_.end()) return curr->second.get();

@@ -202,7 +202,7 @@ bool DRT::Elements::Shell8::ReadElement()
   if (ierr!=1) dserror("Reading of shell8 sdc failed");
     
   return true;
-} // bool DRT::Shell8::ReadElement()
+} // Shell8::ReadElement()
 
 
 

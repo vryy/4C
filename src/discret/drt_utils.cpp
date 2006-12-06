@@ -284,5 +284,26 @@ RefCountPtr<Epetra_CrsGraph> DRT::Utils::PartGraphUsingMetis(
 }
 
 
+
+/*----------------------------------------------------------------------*
+ |  locallly extract a subset of values  (public)            mwgee 12/06|
+ *----------------------------------------------------------------------*/
+void DRT::Utils::ExtractMyValues(const Epetra_Vector& global, 
+                                 vector<double>& local, 
+                                 const vector<int> lm)
+{
+  const int ldim = (int)lm.size();
+  local.resize(ldim);
+  for (int i=0; i<ldim; ++i)
+  {
+    const int lid = global.Map().LID(lm[i]);
+    if (lid<0) dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",global.Comm().MyPID(),lm[i]);
+    local[i] = global[lid];
+  }
+  return;
+}
+
+
+
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

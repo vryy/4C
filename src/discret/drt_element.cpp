@@ -14,6 +14,7 @@ Maintainer: Michael Gee
 #ifdef TRILINOS_PACKAGE
 
 #include "drt_element.H"
+#include "drt_node.H"
 #include "drt_dserror.H"
 
 
@@ -84,17 +85,16 @@ void DRT::Element::Print(ostream& os) const
   }
   // Print dofs if there are any
   if (Dof().NumDof())
-    cout << Dof();
+    cout << Dof() << " ";
   
   // Print conditions if there are any
   int numcond = condition_.size();
   if (numcond)
   {
-    os << endl; // end the previous line
     map<string,RefCountPtr<Condition> >::const_iterator curr;
     for (curr=condition_.begin(); curr != condition_.end(); ++curr)
     {
-      os << "Condition : " << curr->first << endl;
+      os << "Conditions : " << curr->first << " ";
       os << *(curr->second);
     }
   }
@@ -286,7 +286,7 @@ bool DRT::Element::BuildNodalPointers(map<int,RefCountPtr<DRT::Node> >& nodes)
  |  Get a condition of a certain name                          (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-const DRT::Condition* DRT::Element::GetCondition(const string& name) const
+DRT::Condition* DRT::Element::GetCondition(const string& name)
 {
   map<string,RefCountPtr<Condition> >::const_iterator curr = condition_.find(name);
   if (curr != condition_.end()) return curr->second.get();
@@ -294,7 +294,93 @@ const DRT::Condition* DRT::Element::GetCondition(const string& name) const
   return NULL;
 }
 
+/*----------------------------------------------------------------------*
+ |  Get degrees of freedom used by this element                (public) |
+ |                                                            gee 12/06 |
+ *----------------------------------------------------------------------*/
+void DRT::Element::LocationVector(vector<int>& lm, vector<int>& lmdirich, 
+                                  vector<int>& lmowner)
+{
 
+  // count how many degrees of freedom I have
+  int count=0;
+  // count nodal dofs
+  DRT::Node** nodes = Nodes();
+  if (nodes)
+    for (int i=0; i<NumNode(); ++i)
+      count += nodes[i]->Dof().NumDof();
+  // add element dofs
+  count += Dof().NumDof();
+
+  lm.resize(count);
+  lmdirich.resize(count);
+  lmowner.resize(count);
+  for (int i=0; i<count; ++i) lmdirich[i] = 0;
+  
+  // fill the vector with nodal dofs
+  int count2=0;
+  if (nodes)
+    for (int i=0; i<NumNode(); ++i)
+    {
+      DRT::Condition* dirich = nodes[i]->GetCondition("Dirichlet");
+      vector<int>* flag = NULL;
+      if (dirich)
+      {
+        dsassert(dirich->Type()==DRT::Condition::condition_Dirichlet,"condition with name Dirichlet is not of type condition_Dirichlet");
+        flag = dirich->Get<int>("onoff");
+      }
+      const int owner = nodes[i]->Owner();
+      for (int j=0; j<nodes[i]->Dof().NumDof(); ++j)
+      {
+        if (flag)
+          if ((*flag)[j]) 
+            lmdirich[count2] = 1;
+        lmowner[count2] = owner;
+        lm[count2++]    = nodes[i]->Dof()[j];
+      }
+    }
+
+  // fill the vector with element dofs
+  vector<int>* flag = NULL;
+  DRT::Condition* dirich = GetCondition("Dirichlet");
+  if (dirich)
+  {
+    dsassert(dirich->Type()==DRT::Condition::condition_Dirichlet,"condition with name Dirichlet is not of type condition_Dirichlet");
+    flag = dirich->Get<int>("onoff");
+  }
+  const int owner = Owner();
+  for (int j=0; j<Dof().NumDof(); ++j)
+  {
+    if (flag)
+      if ((*flag)[j]) 
+        lmdirich[count2] = 1;
+    lmowner[count2] = owner;
+    lm[count2++]    = Dof()[j];
+  }
+    
+  if (count2!=count) dserror("Mismatch in no. of dofs");
+  
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  evaluate element dummy (public)                          mwgee 12/06|
+ *----------------------------------------------------------------------*/
+int DRT::Element::Evaluate(ParameterList& params,
+                           DRT::Discretization&      discretization,
+                           vector<int>&              lm,
+                           Epetra_SerialDenseMatrix& elemat1,
+                           Epetra_SerialDenseMatrix& elemat2,
+                           Epetra_SerialDenseVector& elevec1,
+                           Epetra_SerialDenseVector& elevec2,
+                           Epetra_SerialDenseVector& elevec3)
+{
+  cout << "DRT::Element::Evaluate:\n"
+       << "Base class dummy routine DRT::Element::Evaluate(...) called\n"
+       << __FILE__ << ":" << __LINE__ << endl;
+  return -1;
+}
 
 
 

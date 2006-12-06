@@ -70,6 +70,11 @@ namespace Utils
   RefCountPtr<Epetra_CrsGraph> PartGraphUsingMetis(const Epetra_CrsGraph& graph,
                                                    const Epetra_Vector& weights);
 
+  /*!
+  \brief Locally extract a subset of values from ann Epetra_Vector
+  */
+  void ExtractMyValues(const Epetra_Vector& global, vector<double>& local, const vector<int> lm);
+
 } // namespace Utils
 } // namespace DRT
 

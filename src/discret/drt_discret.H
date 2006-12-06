@@ -197,6 +197,12 @@ public:
   virtual int NumMyColNodes() const;
   
   /*!
+  \brief Query whether an Element with global id gid is stored on this proc
+  
+  */
+  virtual bool HaveGlobalElement(int gid) const;
+
+  /*!
   \brief Get the element with global id gid (Filled()==true NOT prerequisite)
   
   Returns the element with global row id gid if element is on this proc.
@@ -241,6 +247,12 @@ public:
   #endif
     return elecolptr_[lid];
   }
+
+  /*!
+  \brief Query whether a Node with global id gid is stored on this proc
+  
+  */
+  virtual bool HaveGlobalNode(int gid) const;
 
   /*!
   \brief Get the node with global row id gid (Filled()==true NOT prerequisite)
@@ -498,6 +510,61 @@ public:
 
   //@}
 
+  // @{ \name Evaluate methods
+
+  /*!
+  \brief Set a reference to a data vector
+  
+  Using this method, a reference to a state vector can 
+  be supplied to the discretization. The elements can access
+  this vector by using the name of that vector.
+  
+  \param name (in): Name of solution state
+  \param state (in): vector of some data
+  
+  \note This class will not take ownership or in any way modify the solution vector.
+  */
+  virtual void SetState(const string& name,RefCountPtr<const Epetra_Vector> state)
+  { state_[name] = state; return; }
+
+  /*!
+  \brief Get a reference to a data vector
+  
+  Providing a name of a solution state, get a reference to the solution vector
+  
+  \param name (in): Name of solution state
+  
+  \return Reference to solution state or Teuchos::null if not found
+  */
+  virtual RefCountPtr<const Epetra_Vector> GetState(const string& name) const
+  {
+    map<string,RefCountPtr<const Epetra_Vector> >::const_iterator fool = state_.find(name);
+    if (fool==state_.end()) dserror("Cannot find state %s",&name[0]);
+    else return fool->second;
+    return null;
+  }
+
+  /*!
+  \brief Clear solution state references
+    
+  The method deletes all references to any solution data
+  */
+  virtual void ClearState()
+  { state_.clear(); return; }
+
+  /*!
+  \brief Call elements to evaluate
+    
+  */
+  virtual void Evaluate(ParameterList&                params, 
+                        RefCountPtr<Epetra_CrsMatrix> systemmatrix1,
+                        RefCountPtr<Epetra_CrsMatrix> systemmatrix2,
+                        RefCountPtr<Epetra_Vector>    systemvector1,
+                        RefCountPtr<Epetra_Vector>    systemvector2,
+                        RefCountPtr<Epetra_Vector>    systemvector3);
+
+  //@}
+
 private:
 
   // don't want = operator and copy constructor
@@ -622,6 +689,7 @@ protected:
   vector<DRT::Node*>                                nodecolptr_;  // vector of pointers to column nodes for faster access
   map<int,RefCountPtr<DRT::Node> >                  node_;        // map of nodes
 
+  map<string,RefCountPtr<const Epetra_Vector> >     state_;       // map of references to solution states
 
 }; // class Discretization
 } // namespace DRT

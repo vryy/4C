@@ -35,7 +35,8 @@ havedof_(false)
  |  copy-ctor (public)                                       mwgee 11/06|
  *----------------------------------------------------------------------*/
 DRT::Discretization::Discretization(const DRT::Discretization& old) :
-name_(old.name_)
+name_(old.name_),
+state_(old.state_)
 {
   comm_ = rcp(old.comm_->Clone());
   Reset();
@@ -213,6 +214,16 @@ int DRT::Discretization::NumMyColNodes() const
 }
 
 /*----------------------------------------------------------------------*
+ |  query existance of element (public)                      mwgee 12/06|
+ *----------------------------------------------------------------------*/
+bool DRT::Discretization::HaveGlobalElement(int gid) const
+{
+  map<int,RefCountPtr<DRT::Element> >:: const_iterator curr = element_.find(gid);
+  if (curr == element_.end()) return false; 
+  else                        return true;
+}
+
+/*----------------------------------------------------------------------*
  |  get element with global id (public)                      mwgee 11/06|
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::Discretization::gElement(int gid) const
@@ -228,13 +239,22 @@ DRT::Element* DRT::Discretization::gElement(int gid) const
 }
 
 /*----------------------------------------------------------------------*
+ |  query existance of node (public)                         mwgee 12/06|
+ *----------------------------------------------------------------------*/
+bool DRT::Discretization::HaveGlobalNode(int gid) const
+{
+  map<int,RefCountPtr<DRT::Node> >:: const_iterator curr = node_.find(gid);
+  if (curr == node_.end()) return false; 
+  else                     return true;
+}
+
+/*----------------------------------------------------------------------*
  |  get node with global id (public)                         mwgee 11/06|
  *----------------------------------------------------------------------*/
 DRT::Node* DRT::Discretization::gNode(int gid) const
 {
 #ifdef DEBUG
-  map<int,RefCountPtr<DRT::Node> >:: const_iterator curr = 
-    node_.find(gid);
+  map<int,RefCountPtr<DRT::Node> >:: const_iterator curr = node_.find(gid);
   if (curr == node_.end()) dserror("Node with global id gid=%d not stored on this proc",gid);
   else                     return curr->second.get();
   return NULL;
@@ -283,6 +303,7 @@ void DRT::Discretization::Print(ostream& os) const
   // print head
   if (Comm().MyPID()==0)
   {
+    os << "--------------------------------------------------\n";
     os << "Discretization: " << Name() << endl;
     os << "--------------------------------------------------\n";
     os << numglobalelements << " Elements " << numglobalnodes << " Nodes (global)\n";

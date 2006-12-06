@@ -71,8 +71,8 @@ ostream& operator << (ostream& os, const DRT::Condition& cond)
  *----------------------------------------------------------------------*/
 void DRT::Condition::Print(ostream& os) const
 {
-  if (Type()==condition_Dirichlet)    os << "Dirichlet boundary condition:\n";
-  else if (Type()==condition_Neumann) os << "Neumann boundary condition:\n";
+  if (Type()==condition_Dirichlet)    os << "Dirichlet boundary condition: ";
+  else if (Type()==condition_Neumann) os << "Neumann boundary condition: ";
   Container::Print(os);
   return;
 }

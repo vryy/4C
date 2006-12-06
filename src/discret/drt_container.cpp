@@ -216,7 +216,7 @@ void DRT::Container::Print(ostream& os) const
     vector<int>& data = *(curr->second);
     os << curr->first << " : ";
     for (int i=0; i<(int)data.size(); ++i) os << data[i] << " ";
-    os << endl;
+    //os << endl;
   }
   map<string,RefCountPtr<vector<double> > >::const_iterator dcurr;
   for (dcurr = doubledata_.begin(); dcurr != doubledata_.end(); ++dcurr)
@@ -224,11 +224,11 @@ void DRT::Container::Print(ostream& os) const
     vector<double>& data = *(dcurr->second);
     os << dcurr->first << " : ";
     for (int i=0; i<(int)data.size(); ++i) os << data[i] << " ";
-    os << endl;
+    //os << endl;
   }
   map<string,string>::const_iterator scurr;
   for (scurr = stringdata_.begin(); scurr != stringdata_.end(); ++scurr)
-    os << scurr->first << " : " << scurr->second << endl;
+    os << scurr->first << " : " << scurr->second << " ";
   return;
 }
 

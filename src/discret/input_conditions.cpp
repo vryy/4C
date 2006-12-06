@@ -104,8 +104,6 @@ void input_conditions()
   inp_cond_curve();
   /*---------------------------------------- input of spatial functions */
   inp_cond_funct();
-  /*-------------------------------- input of local co-ordinate systems */
-  // not yet implemented as these are stored inside design objects
 
   if (design)
   {
