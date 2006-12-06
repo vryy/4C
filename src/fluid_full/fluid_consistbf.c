@@ -276,13 +276,22 @@ case 2: /* problem is two-dimensional */
          /*--------- get list of Ids of interesting nodes at element ---*/
          for(k=0; k<actgline->ngnode; k++)
          {
+           INT l;
+           
             /* what's that for? */
             if((actgline->gnode[k]->node->x[0] == 0.0 &&
                 actgline->gnode[k]->node->x[1] == 1.0) ||
                (actgline->gnode[k]->node->x[0] == 0.0 &&
                 actgline->gnode[k]->node->x[1] == 1.0)) continue;
             
-            force_on_node[k] = actgline->gnode[k]->node->Id;
+            for (l=0; l<actele->numnp; l++)
+            {
+              if (actele->node[l]==actgline->gnode[k]->node)
+              {
+                force_on_node[l] = actgline->gnode[k]->node->Id;
+                break;
+              }
+            }
          }
       }
       /*--- care for elements which have only nodes touching ld line ---*/
