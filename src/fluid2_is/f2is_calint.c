@@ -478,6 +478,11 @@ void f2is_int_res(
     } /* end of loop over integration points ls*/
   } /* end of loop over integration points lr */
 
+  for (i=0; i<MAXNOD*MAXDOFPERNODE; ++i)
+  {
+    force[i] /= fdyn->thsl;
+  }
+  
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_exit();

@@ -864,11 +864,16 @@ void f2pro_int_res(
       
 
       /*-------------- perform integration for entire matrix and rhs ---*/
-      f2_calresvec(force,velint,histvec,vderxy,vderxy2,funct,derxy,derxy2,
-                   edeadng,aleconv,&presint,gradp,fac,visc,iel,hasext,
-                   is_ale);
+      f2pro_calresvec(force,velint,histvec,vderxy,vderxy2,funct,derxy,derxy2,
+                      edeadng,aleconv,&presint,gradp,fac,visc,iel,hasext,
+                      is_ale);
     } /* end of loop over integration points ls*/
   } /* end of loop over integration points lr */
+
+  for (i=0; i<MAXNOD*MAXDOFPERNODE; ++i)
+  {
+    force[i] /= fdyn->thsl;
+  }
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
