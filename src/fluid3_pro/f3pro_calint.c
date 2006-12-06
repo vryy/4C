@@ -277,17 +277,8 @@ void f3pro_int_usfem(
 	    gradp[2] += pderxy[2][i] * epren[i];
 	  }
 	}
-	/*-------------- perform integration for entire matrix and rhs ---*/
-	f3pro_calmat(estif,eforce,velint,histvec,gridvelint,vderxy,
-		     vderxy2,gradp,funct,derxy,derxy2,edeadng,fac,
-		     visc,iel,hasext);
 
-	/*
-	 * Now do the weak form of the pressure gradient. That is used
-	 * on the rhs, but with M*ML^-1 and therefore we cannot add it
-	 * to eforce here but have to handle it globally. */
-
-	press = 0;
+        press = 0;
 	if (numpdof==-1)
 	{
 	  for (i=0; i<iel; ++i)
@@ -303,6 +294,16 @@ void f3pro_int_usfem(
 	  for (i=0; i<numpdof; ++i)
 	    press += pfunct[i] * epren[i];
 	}
+
+	/*-------------- perform integration for entire matrix and rhs ---*/
+	f3pro_calmat(estif,eforce,velint,histvec,gridvelint,press,vderxy,
+		     vderxy2,gradp,funct,derxy,derxy2,edeadng,fac,
+		     visc,iel,hasext);
+
+	/*
+	 * Now do the weak form of the pressure gradient. That is used
+	 * on the rhs, but with M*ML^-1 and therefore we cannot add it
+	 * to eforce here but have to handle it globally. */
 
 	/* loop over nodes of element */
 	for (i=0; i<iel; i++)
@@ -432,6 +433,7 @@ void f3pro_calmat( DOUBLE **estif,
                    DOUBLE  *velint,
                    DOUBLE   histvec[3],
                    DOUBLE   gridvint[3],
+                   DOUBLE   press, 
                    DOUBLE **vderxy,
                    DOUBLE **vderxy2,
                    DOUBLE   gradp[3],

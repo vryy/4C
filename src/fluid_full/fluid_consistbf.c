@@ -277,21 +277,14 @@ case 2: /* problem is two-dimensional */
          for(k=0; k<actgline->ngnode; k++)
          {
            INT l;
-           
-            /* what's that for? */
-            if((actgline->gnode[k]->node->x[0] == 0.0 &&
-                actgline->gnode[k]->node->x[1] == 1.0) ||
-               (actgline->gnode[k]->node->x[0] == 0.0 &&
-                actgline->gnode[k]->node->x[1] == 1.0)) continue;
-            
-            for (l=0; l<actele->numnp; l++)
-            {
-              if (actele->node[l]==actgline->gnode[k]->node)
-              {
-                force_on_node[l] = actgline->gnode[k]->node->Id;
-                break;
-              }
-            }
+           for (l=0; l<actele->numnp; l++)
+           {
+             if (actele->node[l]==actgline->gnode[k]->node)
+             {
+               force_on_node[l] = actgline->gnode[k]->node->Id;
+               break;
+             }
+           }
          }
       }
       /*--- care for elements which have only nodes touching ld line ---*/
@@ -352,10 +345,9 @@ case 2: /* problem is two-dimensional */
               /* warning: this is not yet for the ale case!!! */
               xy[0] = actnode->x[0] - center[0];
               xy[1] = actnode->x[1] - center[1];
-              xforce = yforce = 0.0;
 
-              xforce += eforce[dof]*rho;
-              yforce += eforce[dof+1]*rho;
+              xforce = eforce[dof  ]*rho;
+              yforce = eforce[dof+1]*rho;
 
               /* write nodal result from this ele to total ld sum */
               liftdrag[(ld_id-1)*6+0] += xforce;
