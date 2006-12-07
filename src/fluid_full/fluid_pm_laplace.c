@@ -889,7 +889,7 @@ void fluid_pm_cont_laplace()
 	NODE* actnode;
 	actnode = &(actfield->dis[press_dis].node[i]);
 	actnode->sol_increment.a.da[0][0]  = frhs[actnode->dof[0]];
-	actnode->sol_increment.a.da[1][0] += fdyn->dta*frhs[actnode->dof[0]]/fdyn->thsl;
+	actnode->sol_increment.a.da[1][0] += frhs[actnode->dof[0]]/fdyn->thsl;
       }
     }
 
