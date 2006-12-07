@@ -185,6 +185,16 @@ bool DRT::Elements::Shell8::ReadElement()
   // count no. eas parameters
   nhyb_ = 0;
   for (int i=0; i<5; ++i) nhyb_ += eas_[i];                                                  
+  // resize eas arrays
+  alfa_.resize(nhyb_);
+  Rtild_.resize(nhyb_);
+  for (int i=0; i<nhyb_; ++i) 
+  {
+    alfa_[i] = 0.0;
+    Rtild_[i] = 0.0;
+  }
+  Dtildinv_.Shape(nhyb_,nhyb_);
+  Lt_.Shape(nhyb_,nnode*6);
     
   // read ANS
   ans_ = 0;

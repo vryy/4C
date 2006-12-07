@@ -63,7 +63,9 @@ int DRT::Discretization::FillComplete()
   // (re)construct node -> element pointers
   BuildNodeToElementPointers();
   
+  // set the flag indicating Filled()==true
   filled_ = true;  
+  
   return 0;
 }
 

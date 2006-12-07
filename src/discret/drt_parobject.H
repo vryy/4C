@@ -21,6 +21,7 @@ Maintainer: Michael Gee
 
 #include "vector"
 #include "string"
+#include "Epetra_SerialDenseMatrix.h"
 
 using namespace std;
 
@@ -136,12 +137,21 @@ protected:
   /*!
   \brief return packing size of a vector
   
-  Calculate the size it needs to pack a string
+  Calculate the size it needs to pack a vector<...>
   
   \note Only vectors of basic types allowed!
   */
   template<typename kind> int SizeVector(const vector<kind>& data) const 
   { return (sizeof(int)+data.size()*sizeof(kind));}
+
+  /*!
+  \brief return packing size of a Epetra_SerialDenseMatrix
+  
+  Calculate the size it needs to pack a Epetra_SerialDenseMatrix
+  
+  */
+  inline int SizeDenseMatrix(const Epetra_SerialDenseMatrix& data) const 
+  { return (2*sizeof(int)+data.M()*data.N()*sizeof(double));}
 
   /*!
   \brief Add stuff to a char vector data and increment position
@@ -189,6 +199,26 @@ protected:
     int numele = stuff.size();
     AddtoPack(position,data,numele);
     AddtoPack(position,data,&stuff[0],numele*sizeof(kind));
+    return;
+  }
+
+  /*!
+  \brief Add an Epetra_SerialDenseMatrix to data and increment position
+  
+  This method adds a Epetra_SerialDenseMatrix to data
+  \param position : place in data where to add stuff. Position will be incremented by this method.
+  \param data     : char string stuff shall be added to
+  \param stuff    : matrix to add
+  */
+  void AddMatrixtoPack(int& position, char* data, 
+                       const Epetra_SerialDenseMatrix& stuff) const
+  {
+    int m = stuff.M();
+    int n = stuff.N();
+    AddtoPack(position,data,m);
+    AddtoPack(position,data,n);
+    double* A = stuff.A();
+    AddtoPack(position,data,A,n*m*sizeof(double));
     return;
   }
 
@@ -247,7 +277,7 @@ protected:
   This method extracts an array from data
   \param position : place in data where to extract stuff. Position will be incremented by this method by stuffsize.
   \param data     : char string where stuff is extracted from
-  \param stuff    : array of total length stuffsize (in byte)
+  \param stuff    : array of total length stuff.size() (in byte)
   */
   template<typename kind> void ExtractVectorfromPack(int& position, const char* data, vector<kind>& stuff) const
   {
@@ -256,6 +286,26 @@ protected:
     stuff.resize(dim);
     int size = dim*sizeof(kind);
     ExtractfromPack(position,data,&stuff[0],size);
+    return;
+  }
+
+  /*!
+  \brief Extract a Epetra_SerialDenseMatrix from a char vector data and increment position
+  
+  \param position : place in data where to extract stuff. Position will be incremented by this method by stuffsize.
+  \param data     : char string where stuff is extracted from
+  \param stuff    : Epetra_SerialDenseMatrix to be extracted
+  */
+  void ExtractMatrixfromPack(int& position, const char* data, 
+                             Epetra_SerialDenseMatrix& stuff) const
+  {
+    int m = 0;
+    ExtractfromPack(position,data,m);
+    int n = 0;
+    ExtractfromPack(position,data,n);
+    stuff.Reshape(m,n);
+    double* A = stuff.A();
+    ExtractfromPack(position,data,A,n*m*sizeof(double));
     return;
   }
 

@@ -28,12 +28,19 @@ using namespace Teuchos;
 #include "drt_element.H"
 
 
+// forward declarations
+struct _MATERIAL;
+struct _S8_DATA;
+
 /*!
 \brief DRT: namespace of the ccarat discretization module
 
 */
 namespace DRT
 {
+// forward declarations
+class Discretization;
+
 namespace Elements
 {
 
@@ -99,6 +106,17 @@ public:
 
   // @{ \name Acess methods
 
+  
+  /*!
+  \brief Indiate whether element has been initialized
+  */
+  virtual inline bool Init() const { return init_; }
+  
+  /*!
+  \brief Set the initialization flag
+  */
+  virtual inline void SetInit(bool flag) { init_=flag; return;}
+  
   /*!
   \brief Get number of degrees of freedom of a certain node
          (implements pure virtual DRT::Element)
@@ -178,6 +196,23 @@ private:
   // don't want = operator
   Shell8 operator = (const Shell8& old);
 
+  void s8_nlnstiffmass(vector<int>&              lm, 
+                       vector<double>&           disp, 
+                       vector<double>&           residual,
+                       Epetra_SerialDenseMatrix* stiffmatrix,
+                       Epetra_SerialDenseMatrix* massmatrix,
+                       Epetra_SerialDenseVector* intforce,
+                       struct _MATERIAL*         material);
+
+  void s8_integration_points(struct _S8_DATA& data);
+  
+  void s8_initialize(DRT::Discretization& actdis);
+  
+  void s8_YpluseqAx(vector<double>& y, const Epetra_SerialDenseMatrix& A,
+                    const vector<double>& x, const double factor, 
+                    const bool init);
+  
+  // action parameters recognized by shell8
   enum ActionType
   {
     none,
@@ -199,15 +234,22 @@ private:
     s8_rst,
     s8_rst_ortho
   };
-  ForceType        forcetype_;  // type of force calculation
-  double           thickness_;  // shell thickness
-  int              ngp_[3];     // no. gaussian points in each spatial dimension
-  int              ngptri_;     // no. gaussian points for triangle elements
-  int              nhyb_;       // no. of internal dofs
-  int              eas_[5];     // eas parameters
-  int              ans_;        // type of ANS: 0=none 1=Q 2=T 3=QT  
-  double           sdc_;        // scaled director conditioning
-  int              material_;   // number of the material law
+  ForceType                forcetype_;     // type of force calculation
+  bool                     init_;          // flag indicating whether element was initialized
+  double                   thickness_;     // shell thickness
+  int                      ngp_[3];        // no. gaussian points in each spatial dimension
+  int                      ngptri_;        // no. gaussian points for triangle elements
+  int                      nhyb_;          // no. of internal dofs
+  int                      eas_[5];        // eas parameters
+  int                      ans_;           // type of ANS: 0=none 1=Q 2=T 3=QT  
+  double                   sdc_;           // scaled director conditioning
+  int                      material_;      // number of the material law
+
+  vector<double>           alfa_;          // eas parameters
+  Epetra_SerialDenseMatrix Dtildinv_;
+  Epetra_SerialDenseMatrix Lt_;
+  vector<double>           Rtild_;
+
 
 }; // class Shell8
 } // namespace Elements
