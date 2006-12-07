@@ -726,7 +726,8 @@ void f2pro_int_res(
   typ    = ele->distyp;
   fdyn   = alldyn[genprob.numff].fdyn;
   data   = fdyn->data;
-
+  dm     = ele->e.f2pro->dm;
+  
   /* is_ale = ele->e.f2->is_ale; */
 
   switch (ele->e.f2pro->dm)
