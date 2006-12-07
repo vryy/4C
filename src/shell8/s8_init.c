@@ -73,6 +73,7 @@ void s8init(
   /*--- loop elements in partition to allocate space for material history */
   for (i=0; i<actpart->pdis[disnum].numele; i++)
   {
+    if (actele->eltyp != el_shell8) continue;
     actele = actpart->pdis[disnum].element[i];
     actmat = &(mat[actele->mat-1]);
     if (actmat->mattyp==m_viscohyper)/* material is viscohyperelastic */
