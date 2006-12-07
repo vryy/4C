@@ -799,7 +799,7 @@ void fluid_pm_cont()
                    &(actsolv->sysarray[actsysarray]),
                    &(actsolv->rhs[0]),
                    fgradprhs,
-                   -fdyn->thsr
+                   -fdyn->thsl
         );
 
       matvec_trilinos(&(actsolv->rhs[1]),
@@ -877,6 +877,26 @@ void fluid_pm_cont()
      | -->  end of nonlinear iteration                                      |
      *----------------------------------------------------------------------*/
 
+#if 1
+    if (actintra->intra_rank==0)
+    {
+      fprintf(allfiles.gidres,"RESULT \"vel_star\" \"ccarat\" %d VECTOR ONNODES\n"
+              "RESULTRANGESTABLE \"standard_fluid    \"\n"
+              "COMPONENTNAMES \"e1\" \"e2\"\n"
+              "VALUES\n",fdyn->step);
+
+      for (i=0; i<actfield->dis[0].numnp; ++i)
+      {
+        NODE* n = &actfield->dis[0].node[i];
+        fprintf(allfiles.gidres,"%d %e %e\n",n->Id+1,
+                n->sol_increment.a.da[ipos->velnp][0],
+                n->sol_increment.a.da[ipos->velnp][1]);
+      }
+
+      fprintf(allfiles.gidres,"END VALUES\n");
+    }
+#endif
+    
     solserv_zero_vec(press_rhs);
     amzero(&frhs_a);
     amzero(&fgradprhs_a);
@@ -917,8 +937,9 @@ void fluid_pm_cont()
 	NODE* actnode;
 	actnode = &(actfield->dis[press_dis].node[i]);
 	actnode->sol_increment.a.da[0][0]  = frhs[actnode->dof[0]];
-	actnode->sol_increment.a.da[1][0] += 2./fdyn->dta*frhs[actnode->dof[0]];
+	/* actnode->sol_increment.a.da[1][0] += 2./fdyn->dta*frhs[actnode->dof[0]]; */
 	/*actnode->sol_increment.a.da[1][0] += frhs[actnode->dof[0]];*/
+        actnode->sol_increment.a.da[1][0] += frhs[actnode->dof[0]] / fdyn->thsl;
       }
     }
 
@@ -933,7 +954,7 @@ void fluid_pm_cont()
 
 #endif
     
-#if 0
+#if 1
     if (actintra->intra_rank==0)
     {
       fprintf(allfiles.gidres,"RESULT \"press_rhs\" \"ccarat\" %d SCALAR ONNODES\n"

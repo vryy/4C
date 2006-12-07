@@ -1738,7 +1738,7 @@ void pm_press_update(FIELD *actfield,
                      ARRAY_POSITION *ipos,
                      INT numpdof,
                      DIST_VECTOR* sol,
-                     DOUBLE dta)
+                     DOUBLE thsl)
 {
   INT i;
 
@@ -1860,7 +1860,7 @@ void pm_press_update(FIELD *actfield,
 #endif
 
         f2pro->phi[k] = p[f2pro->dof[k]];
-        f2pro->press[k] += 2/dta*f2pro->phi[k];
+        f2pro->press[k] += f2pro->phi[k]/thsl;
       }
       break;
     }
@@ -1890,7 +1890,7 @@ void pm_press_update(FIELD *actfield,
 #endif
 
         f3pro->phi[k] = p[f3pro->dof[k]];
-        f3pro->press[k] += 2/dta*f3pro->phi[k];
+        f3pro->press[k] += f3pro->phi[k]/thsl;
       }
       break;
     }

@@ -848,7 +848,7 @@ void fluid_pm()
                    &(actsolv->sysarray[actsysarray]),
                    &(actsolv->rhs[0]),
                    fgradprhs,
-                   -fdyn->thsr
+                   -fdyn->thsl
         );
 
       matvec_trilinos(&(actsolv->rhs[1]),
@@ -900,7 +900,7 @@ void fluid_pm()
                    &(actsolv->sysarray[actsysarray]),
                    &(actsolv->rhs[1]),
                    fgradprhs,
-                   -fdyn->thsr
+                   -fdyn->thsl
         );
 
 #endif /* PM_TRILINOS */
@@ -1016,7 +1016,7 @@ void fluid_pm()
                    0);
 
     /* update pressure */
-    pm_press_update(actfield, actpart, disnum_calc, actintra, ipos, numpdof, &(presolv.sol[0]), fdyn->dta);
+    pm_press_update(actfield, actpart, disnum_calc, actintra, ipos, numpdof, &(presolv.sol[0]), fdyn->thsl);
 
     /* update velocity */
 #ifdef PM_TRILINOS

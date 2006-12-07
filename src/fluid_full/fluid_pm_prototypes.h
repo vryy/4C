@@ -123,7 +123,7 @@ void pm_press_update(FIELD *actfield,
                      ARRAY_POSITION *ipos,
                      INT numpdof,
                      DIST_VECTOR* sol,
-                     DOUBLE dta);
+                     DOUBLE thsl);
 
 void pm_vel_update(FIELD *actfield,
                    PARTITION *actpart,
