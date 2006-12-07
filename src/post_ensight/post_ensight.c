@@ -1521,8 +1521,8 @@ long pe_binary_vector(FILE* result_file,
   {
     for (i=0;i<numnp;i++)
     {
-      temp_result = (float)results[result_multiplicator*i+result_offset];
-      bytes += 4*(fwrite(&temp_result, sizeof(float), 1, result_file));
+      temp_result = (float)results[result_multiplicator*i+result_offset+j];
+      bytes += sizeof(float)*(fwrite(&temp_result, sizeof(float), 1, result_file));
     }
   }
   /*for 2 dimensional arrays : append vz = 0*/
@@ -1531,7 +1531,7 @@ long pe_binary_vector(FILE* result_file,
     for (i=0;i<numnp;i++)
     {
       temp_result = 0;
-      bytes += 4*(fwrite(&temp_result, sizeof(float), 1, result_file));
+      bytes += sizeof(float)*(fwrite(&temp_result, sizeof(float), 1, result_file));
     }
   }
   
@@ -1551,15 +1551,6 @@ int main(int argc, char** argv)
   CHUNK_DATA chunk;
   INT numnp_temp;
   CHAR* dis_names[]=DISTYPENAMES;
-
-
-  /*The .Visual3.setup file has to be deleted, otherwise VISUAL wont
-   * calculate a new transformation matrix which is needed to start
-   * with the right distance to the object. */
-
-  FILE* setup=fopen(".Visual3.setup", "w");
-  fclose(setup);
-
   CHAR gimmick[]="|/-\\";
   INT gimmick_size=4;
 
