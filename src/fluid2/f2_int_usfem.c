@@ -963,6 +963,9 @@ case 3: /* tau for time dependent subscales --- a combination
 
    xi2 = DMAX(re,1.0);
 
+   fdyn->tau_old[0] = DSQR(hk) / (2 * visc/mk + (4.0 * visc/mk) * xi2);
+   fdyn->tau_old[2] = norm_p * hk * 0.5 * xi2;
+   
    fdyn->tau[0] = DSQR(hk) / (2 * visc/mk + (4.0 * visc/mk) * xi2);
    fdyn->tau[2] = norm_p * hk * 0.5 * xi2;
 break;

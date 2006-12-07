@@ -239,6 +239,9 @@ DOUBLE  coord_scale[2]; /*!< coordinates for scaling the turbulence variables */
 DOUBLE  washvel;        /*!< wall shear velocity */
 /*!< variables related to stabilisation                                 */
 DOUBLE tau[3];   /*!< array for stabilitity parameter */
+#ifdef D_FLUID2_TDS
+DOUBLE tau_old[3];   /*!< array for stabilitity parameter */
+#endif
 DOUBLE tau_tu;   /*!< array for stabilitity parameter for turbulence*/
 DOUBLE tau_tu_dc;/*!< array for DISCONTINUITY CAPTURING for turbulence*/
 /* variables related to potential subgrid viscosity term (only ml so far) */

@@ -103,6 +103,7 @@ void f2_int_tds(
                       DOUBLE         **vderxy2,
 	              DOUBLE         **vderxy_old,
                       DOUBLE         **vderxy2_old,
+	              DOUBLE         **eacc,
 		      DOUBLE           visc,
 	              DOUBLE         **wa1,
 	              DOUBLE         **wa2,
@@ -135,9 +136,9 @@ DOUBLE    gridvelint[2]; /* grid velocity                               */
 DOUBLE    divuold;
 DOUBLE    press;
 
-INT       old=0;
 DOUBLE    velint_old[2];
 DOUBLE    sub_vel[2];
+DOUBLE    acc_old[2];
 
 DOUBLE    res_old[2];
 
@@ -233,6 +234,10 @@ for (lr=0;lr<nir;lr++)
       /*---------------- get history data (n,i) at integration point ---*/
       f2_veci(histvec,funct,evhist,iel);
 
+      /*----------------- get accelerations (n) at integration point ---*/
+      f2_veci(acc_old,funct,eacc,iel);
+
+      
       /*--------------------- get grid velocity at integration point ---*/
       if (is_ale)
       {
@@ -284,7 +289,7 @@ for (lr=0;lr<nir;lr++)
 
       for(dim=0;dim<2;dim++)
       {
-	  sub_vel[dim]=ele->e.f2->sub_vel.a.d3[old][dim][lr*nis+ls];
+	  sub_vel    [dim]=ele->e.f2->sub_vel.a.da[dim][lr*nis+ls];
       }
 	      
       if(ihoel!=0)
@@ -321,7 +326,7 @@ for (lr=0;lr<nir;lr++)
       f2_calmat_tds(estif,eforce,velint,histvec,gridvelint,press,vderxy,
 		    vderxy2,gradp,funct,derxy,derxy2,edeadng,fac,
 		    visc,iel,hasext,is_ale, is_relax, sub_pres, divuold,
-		    sub_vel,velint_old,res_old);
+		    sub_vel,velint_old,acc_old,res_old);
 
    } /* end of loop over integration points ls*/
 } /* end of loop over integration points lr */

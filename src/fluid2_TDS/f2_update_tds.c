@@ -102,6 +102,7 @@ double   dt;
 
 /* constants containing dt and the stabilisation parameter */
 double   facC,facCtau;
+double   old_facC,old_facCtau;
 
 /* new and old residual of the coninuity equation */
 double   divu,divu_old;
@@ -205,10 +206,14 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
     visc = mat[ele->mat-1].m.fluid->viscosity;
     
     /*--------------------------------------------- stab-parameter ---*/
-    f2_caltau(ele,xyze,funct,deriv,xjm,evelng,visc);
+    f2_get_time_dependent_sub_tau(ele,xyze,funct,deriv,evelng,eveln,visc);
 
     facC   =1./(fdyn->tau[2]+theta*dt);
     facCtau=fdyn->tau[2]*facC;
+
+    old_facC   = 1./(fdyn->tau_old[2]+theta*dt);
+    old_facCtau= fdyn->tau_old[2]*facC;
+    
     
 /*----------------------------------------------------------------------*
  |               start loop over integration points                     |
@@ -236,10 +241,12 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 
 	    sp_old=ele->e.f2->sub_pres.a.dv[lr*nis+ls];
 	    
-	    CRHS=fdyn->tau[2]*sp_old-(1.-theta)*dt*(sp_old+fdyn->tau[2]*divu_old);
+	    CRHS=sp_old
+		-
+		(1.-theta)*dt*(sp_old/fdyn->tau_old[2]+divu_old);
 
 	    ele->e.f2->sub_pres.a.dv[lr*nis+ls]=
-		facC*(CRHS-fdyn->tau[2]*theta*dt*divu);
+		facCtau*(CRHS-theta*dt*divu);
 
 	} /* end of loop over integration points ls*/
     } /* end of loop over integration points lr */
@@ -331,6 +338,7 @@ double  dt;
 
 /* constants containing dt and the stabilisation parameter */
 double  facM,facMtau;
+double  old_facM,old_facMtau;
 
 /* vector of subscale velocities */
 double  sv_old[2];
@@ -343,9 +351,6 @@ double  time_der[2];
 
 /* factors from curves for timedependent deadload */
 double  acttimefacn,acttimefac;
-
-/* information on the use of ele->e.f2->sub_vel.a.d3                    */
-int     old=0,new=1;
 
 /* velocity vectors at integration point      */
 DOUBLE  velint[2],velint_old[2];
@@ -478,6 +483,7 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 	eveln [0][i]=actnode->sol_increment.a.da[ipos->veln ][0];
 	eveln [1][i]=actnode->sol_increment.a.da[ipos->veln ][1];
 	
+        /*--------------------------------------------- and pressures */
 	epreng   [i]=actnode->sol_increment.a.da[ipos->velnp][2];
 	epren    [i]=actnode->sol_increment.a.da[ipos->veln ][2];
     } /* end of loop over nodes of element */
@@ -529,11 +535,16 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
     visc = mat[ele->mat-1].m.fluid->viscosity;
     
     /*--------------------------------------------- stab-parameter ---*/
-    f2_caltau(ele,xyze,funct,deriv,xjm,evelng,visc);
+    f2_get_time_dependent_sub_tau(ele,xyze,funct,deriv,evelng,eveln,visc);
 
     facM   =         1.0/(fdyn->tau[0]+theta*dt);
     facMtau=fdyn->tau[0]/(fdyn->tau[0]+theta*dt);
 
+    
+    old_facM   = 1./(fdyn->tau_old[0]+theta*dt);
+    old_facMtau= fdyn->tau_old[0]*old_facM;
+
+    
 /*----------------------------------------------------------------------*
  |               start loop over integration points                     |
  *----------------------------------------------------------------------*/
@@ -644,8 +655,7 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 		/* the current subscales velocities become the most
 		 * recent subscale velocities for the next timestep    */
 		/* sv_old is just an abbreviation                      */
-		sv_old[dim]=ele->e.f2->sub_vel.a.d3[new][dim][lr*nis+ls];
-		ele->e.f2->sub_vel.a.d3[old][dim][lr*nis+ls]=sv_old[dim];
+		sv_old[dim]=ele->e.f2->sub_vel.a.da[dim][lr*nis+ls];
 
 		/* calculate new residual without time derivative       */
 
@@ -672,12 +682,13 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 
 
 		/* set new subscale velocities                          */
-		ele->e.f2->sub_vel.a.d3[new][dim][lr*nis+ls]=
+		ele->e.f2->sub_vel.a.da[dim][lr*nis+ls]=
 		     facMtau*                sv_old[dim]
 		    -facMtau*(               time_der[dim]
 			      +theta    *dt* res_new[dim]
 			      +(1-theta)*dt* res_old[dim])
-		    -facM   *  (1-theta)*dt* sv_old[dim];
+		    -facMtau/fdyn->tau_old[0] * (1-theta)*dt* sv_old[dim];
+
 	    }
 	} /* end of loop over integration points ls*/
     } /* end of loop over integration points lr */

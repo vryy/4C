@@ -478,6 +478,7 @@ if (restart != 0)
 
 
 fluid_init_pos_euler(ipos);
+
 fluid_init(actpart, actintra, actfield, disnum_calc, disnum_io,
     action, &container, 8,ipos,str);
 actpos=0;
@@ -520,6 +521,7 @@ alldyn[genprob.numff].fdyn->data = (FLUID_DATA*)CCACALLOC(1,sizeof(FLUID_DATA));
 
 /*------------------------------- init the element calculating routines */
 *action = calc_fluid_init;
+
 calinit(actfield,actpart,action,&container);
 
 #ifdef BINIO

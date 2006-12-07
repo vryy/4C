@@ -428,7 +428,8 @@ OBJS_FLUID2   = src/fluid2/f2_calcurvature.o \
 #               fluid2_TDS
 OBJS_F2_TDS   = src/fluid2_TDS/f2_int_tds.o \
 	        src/fluid2_TDS/f2_calmat_tds.o\
-		src/fluid2_TDS/f2_update_tds.o
+		src/fluid2_TDS/f2_update_tds.o\
+		src/fluid2_TDS/f2_caltau_tds.o
 #               fluid_full
 OBJS_FLUID    = src/fluid_full/fluid_adapt_service.o \
                 src/fluid_full/fluid_curvature.o \

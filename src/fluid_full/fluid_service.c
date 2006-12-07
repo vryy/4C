@@ -650,19 +650,22 @@ void fluid_init(
 	  {
 	      nis=actele->e.f2->nGP[1];
 	  }
+
+	  
 	  amdef("subscale_pressure",
 		&(actele->e.f2->sub_pres),
 		actele->e.f2->nGP[0]*nis,1,
 		"DV");
 	  amzero(&(actele->e.f2->sub_pres));
-	  am4def("subscale_velocities",
+
+
+	  amdef("subscale_velocities",
 		&(actele->e.f2->sub_vel),
-		2,
-		actfield->dis[disnum_calc].numdf,
+		3/*numdf (xyz)*/,
 		actele->e.f2->nGP[0]*nis,
-		0,
-		"D3");
-	  am4zero(&(actele->e.f2->sub_vel));	  
+		"DA");
+
+	  amzero(&(actele->e.f2->sub_vel));
 #endif
           break;
 #endif

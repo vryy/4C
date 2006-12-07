@@ -77,6 +77,8 @@ static ARRAY     vderxy_old_a; /* vel - derivatives                     */
 static DOUBLE  **vderxy_old;
 static ARRAY     vderxy2_old_a;/* vel - 2nd derivatives                 */
 static DOUBLE  **vderxy2_old;
+static ARRAY     eacc_a;  /* element accelerations at (n)               */
+static DOUBLE  **eacc;
 #endif
 static ARRAY     edeadn_a; /* element dead load (selfweight)            */
 static DOUBLE   *edeadng;
@@ -197,6 +199,7 @@ if (init==1) /* allocate working arrays and set pointers */
    epreng      = amdef("epreng"     ,&epreng_a     ,MAXNOD_F2,1,"DV");
    vderxy_old  = amdef("vderxy_old" ,&vderxy_old_a ,2,2,"DA");
    vderxy2_old = amdef("vderxy2_old",&vderxy2_old_a,2,3,"DA");
+   eacc        = amdef("eacc"   ,&eacc_a   ,NUM_F2_VELDOF,MAXNOD_F2,"DA");
 #endif
    edeadn    = amdef("edeadn"   ,&edeadn_a   ,2,1,"DV");
    edeadng   = amdef("edeadng"  ,&edeadng_a  ,2,1,"DV");
@@ -285,19 +288,22 @@ case 0:
       {
 	  /*-------------------------------------- set pressures (n) ---*/
 	  epren[i] =ele->node[i]->sol_increment.a.da[ipos->veln][2];
+
+	  eacc[0][i] = ele->node[i]->sol_increment.a.da[ipos->accn][0];
+	  eacc[1][i] = ele->node[i]->sol_increment.a.da[ipos->accn][1];
       }
 
       /*---------------------------------------------- get viscosity ---*/
       visc = mat[ele->mat-1].m.fluid->viscosity;
 
       /*--------------------------------------------- stab-parameter ---*/
-      f2_caltau(ele,xyze,funct,deriv,xjm,evelng,visc);
+      f2_get_time_dependent_sub_tau(ele,xyze,funct,deriv,evelng,eveln,visc);
 
       /*-------------------------------- perform element integration ---*/
       f2_int_tds(ele,hasext,estif,eforce,xyze,
                  funct,deriv,deriv2,xjm,derxy,derxy2,evelng,eveln,
                  evhist,NULL,epreng,epren,edeadng,edeadn,
-                 vderxy,vderxy2,vderxy_old,vderxy2_old,
+                 vderxy,vderxy2,vderxy_old,vderxy2_old,eacc,
 		 visc,wa1,wa2,estress, is_relax);
    break;
 #endif

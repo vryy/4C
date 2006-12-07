@@ -45,6 +45,7 @@ void f2_int_tds(
     DOUBLE         **vderxy2,
     DOUBLE         **vderxy_old,
     DOUBLE         **vderxy2_old,
+    DOUBLE         **eacc,
     DOUBLE           visc,
     DOUBLE         **wa1,
     DOUBLE         **wa2,
@@ -80,6 +81,7 @@ void f2_calmat_tds(
 		DOUBLE   divu_old,
 		DOUBLE   sub_vel[2],
 		DOUBLE   old_vel[2],
+		DOUBLE   old_acc[2],
 		DOUBLE   res_old[2]
               )
     ;
@@ -103,5 +105,17 @@ void f2_update_subscale_vel(
     INT             disnum_calc
     );
 
+
+/************************************************************************
+ | f2_caltau_tds.c                                                       |
+ ************************************************************************/
+void f2_get_time_dependent_sub_tau(ELEMENT *ele,
+				   DOUBLE  **xyze,
+				   DOUBLE   *funct,
+				   DOUBLE  **deriv,
+				   DOUBLE  **evelng,
+				   DOUBLE  **eveln,
+				   DOUBLE    visc
+    );
 
 /*! @} (documentation module close)*/

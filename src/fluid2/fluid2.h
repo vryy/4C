@@ -101,14 +101,13 @@ struct _ARRAY      kappa_ND;
      *                                     in s-direction
      * */
     
-  struct _ARRAY4D  sub_vel;
+  struct _ARRAY  sub_vel;
     /*
      * USAGE:
      *    
-     *            sub_vel.a.d3[old/new][dim][number of gausspoint]
+     *            sub_vel.a.da[dim][number of gausspoint]
      *
      *            whereas
-     *                         old=0,  new=1
      *
      *                        xdim=0, ydim=1
      *
@@ -120,6 +119,7 @@ struct _ARRAY      kappa_ND;
      *                                     total number of gausspoint
      *                                     in s-direction
      * */
+
 #endif
 
     
