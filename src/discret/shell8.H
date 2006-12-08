@@ -26,6 +26,7 @@ using namespace std;
 using namespace Teuchos;
 
 #include "drt_element.H"
+#include "drt_elementregister.H"
 
 
 // forward declarations
@@ -146,6 +147,15 @@ public:
   */
   void Print(ostream& os) const;
 
+  /*!
+  \brief Allocate and return a DesignElementRegister class
+  
+  Every implementation of DRT::Element must also implement
+  an DRT::ElementRegister. This method allocates and returns
+  an instance of a matching DRT::ElementRegister.
+  */
+  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const;
+
   //@}
 
   // @{ \name Other
@@ -252,6 +262,97 @@ private:
 
 
 }; // class Shell8
+
+
+//=======================================================================
+//=======================================================================
+//=======================================================================
+//=======================================================================
+
+
+/*!
+\class Shell8Register
+
+\brief A register for shell8 element
+
+\author gee (gee@lnm.mw.tum.de)
+*/
+class Shell8Register : public DRT::ElementRegister
+{
+public:
+
+  // @{ \name Constructors and destructors
+
+  /*!
+  \brief Standard Constructor
+  
+  */
+  Shell8Register(DRT::Element::ElementType etype);
+
+  /*!
+  \brief Copy Constructor
+
+  Makes a deep copy of an Element
+  
+  */
+  Shell8Register(const DRT::Elements::Shell8Register& old);
+
+  /*!
+  \brief Deep copy this instance of Shell8Register and return pointer to the copy
+  
+  The Clone() method is used from the virtual base class Element in cases
+  where the type of the derived class is unknown and a copy-ctor is needed
+  
+  */
+  DRT::Elements::Shell8Register* Clone() const;
+
+  /*!
+  \brief Pack this class so it can be communicated
+  
+  \ref Pack and \ref Unpack are used to communicate this element
+  
+  */
+  virtual const char* Pack(int& size) const;
+
+  /*!
+  \brief Unpack data from a char vector into this class
+  
+  \ref Pack and \ref Unpack are used to communicate this element
+
+  */
+  virtual bool Unpack(const char* data);
+
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~Shell8Register();
+
+  //@}
+
+  // @{ \name Acess methods
+
+  /*!
+  \brief Print this element
+  */
+  void Print(ostream& os) const;
+
+  //@}
+
+
+private:
+
+
+}; // class DesignElementRegister
+
+
+
+
+
+
+
+
+
 } // namespace Elements
 } // namespace DRT
 

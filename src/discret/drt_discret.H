@@ -27,6 +27,7 @@ using namespace std;
 using namespace Teuchos;
 
 #include "drt_element.H"
+#include "drt_elementregister.H"
 #include "drt_node.H"
 #include "drt_dserror.H"
 
@@ -640,6 +641,12 @@ private:
   virtual void BuildNodeToElementPointers();
 
   /*!
+  \brief (Re)create a map of ElementRegister objects
+  
+  */
+  virtual void BuildElementRegister();
+
+  /*!
   \brief Build element row and column map from nodal row and column maps
          (Filled()==true prerequisite)
   
@@ -669,28 +676,29 @@ private:
 protected:
 
   // internal data
-  string                                            name_;        // name of this discretization
-  RefCountPtr<Epetra_Comm>                          comm_;        // an Epetra_comm
-  bool                                              filled_;      // flag indicating whether getOrganized has been called
-  bool                                              havedof_;     // flag indicating whether degrees of freedom where assigned
+  string                                                   name_;            // name of this discretization
+  RefCountPtr<Epetra_Comm>                                 comm_;            // an Epetra_comm
+  bool                                                     filled_;          // flag indicating whether getOrganized has been called
+  bool                                                     havedof_;         // flag indicating whether degrees of freedom where assigned
 
-  RefCountPtr<Epetra_Map>                           dofrowmap_;   // unique row map of degrees of freedom (node and element dofs))
-  RefCountPtr<Epetra_Map>                           dofcolmap_;   // unique column map of degrees of freedom (node and element dofs))
+  RefCountPtr<Epetra_Map>                                  dofrowmap_;       // unique row map of degrees of freedom (node and element dofs))
+  RefCountPtr<Epetra_Map>                                  dofcolmap_;       // unique column map of degrees of freedom (node and element dofs))
 
-  RefCountPtr<Epetra_Map>                           elerowmap_;   // unique distribution of element ownerships
-  RefCountPtr<Epetra_Map>                           elecolmap_;   // distribution of elements including ghost elements
-  vector<DRT::Element*>                             elerowptr_;   // vector of pointers to row elements for faster access
-  vector<DRT::Element*>                             elecolptr_;   // vector of pointers to column elements for faster access
-  map<int,RefCountPtr<DRT::Element> >               element_;     // map of elements
+  RefCountPtr<Epetra_Map>                                  elerowmap_;       // unique distribution of element ownerships
+  RefCountPtr<Epetra_Map>                                  elecolmap_;       // distribution of elements including ghost elements
+  vector<DRT::Element*>                                    elerowptr_;       // vector of pointers to row elements for faster access
+  vector<DRT::Element*>                                    elecolptr_;       // vector of pointers to column elements for faster access
+  map<int,RefCountPtr<DRT::Element> >                      element_;         // map of elements
   
-  RefCountPtr<Epetra_Map>                           noderowmap_;  // unique distribution of nodal ownerships
-  RefCountPtr<Epetra_Map>                           nodecolmap_;  // distribution of nodes including ghost nodes
-  vector<DRT::Node*>                                noderowptr_;  // vector of pointers to row nodes for faster access
-  vector<DRT::Node*>                                nodecolptr_;  // vector of pointers to column nodes for faster access
-  map<int,RefCountPtr<DRT::Node> >                  node_;        // map of nodes
+  RefCountPtr<Epetra_Map>                                  noderowmap_;      // unique distribution of nodal ownerships
+  RefCountPtr<Epetra_Map>                                  nodecolmap_;      // distribution of nodes including ghost nodes
+  vector<DRT::Node*>                                       noderowptr_;      // vector of pointers to row nodes for faster access
+  vector<DRT::Node*>                                       nodecolptr_;      // vector of pointers to column nodes for faster access
+  map<int,RefCountPtr<DRT::Node> >                         node_;            // map of nodes
 
-  map<string,RefCountPtr<const Epetra_Vector> >     state_;       // map of references to solution states
+  map<string,RefCountPtr<const Epetra_Vector> >            state_;           // map of references to solution states
 
+  map<Element::ElementType,RefCountPtr<ElementRegister> >  elementregister_; // register for types of elements in this discretization
 }; // class Discretization
 } // namespace DRT
 

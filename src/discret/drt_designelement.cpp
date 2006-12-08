@@ -21,7 +21,6 @@ Maintainer: Michael Gee
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
- |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::DesignElement::DesignElement(int id, enum ElementType type, int owner) :
 Element(id,type,owner)
@@ -31,7 +30,6 @@ Element(id,type,owner)
 
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 11/06|
- |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::DesignElement::DesignElement(const DRT::DesignElement& old) :
 Element(old),
@@ -187,6 +185,15 @@ void DRT::DesignElement::Print(ostream& os) const
 
 
 /*----------------------------------------------------------------------*
+ |  allocate and return DesignElementRegister (public)       mwgee 12/06|
+ *----------------------------------------------------------------------*/
+RefCountPtr<DRT::ElementRegister> DRT::DesignElement::ElementRegister() const
+{
+  return rcp(new DRT::DesignElementRegister(Type()));
+}
+
+
+/*----------------------------------------------------------------------*
  | set lower entity ids (public)                             mwgee 11/06|
  *----------------------------------------------------------------------*/
 void DRT::DesignElement::SetLowerEntities(const int nele, const int* ids, const int* orientation)
@@ -236,14 +243,124 @@ bool DRT::DesignElement::BuildLowerElementPointers(const Discretization& lower)
 }
 
 
+//=======================================================================
+//=======================================================================
+//=======================================================================
+//=======================================================================
 
 
 
+/*----------------------------------------------------------------------*
+ |  ctor (public)                                            mwgee 12/06|
+ *----------------------------------------------------------------------*/
+DRT::DesignElementRegister::DesignElementRegister(DRT::Element::ElementType etype) :
+ElementRegister(etype)
+{
+  return;
+}
 
+/*----------------------------------------------------------------------*
+ |  copy-ctor (public)                                       mwgee 12/06|
+ *----------------------------------------------------------------------*/
+DRT::DesignElementRegister::DesignElementRegister(const DRT::DesignElementRegister& old) :
+ElementRegister(old)
+{
+  return;
+}
 
+/*----------------------------------------------------------------------*
+ |  Deep copy this instance return pointer to it               (public) |
+ |                                                            gee 12/06 |
+ *----------------------------------------------------------------------*/
+DRT::DesignElementRegister* DRT::DesignElementRegister::Clone() const
+{
+  DRT::DesignElementRegister* newelement = new DRT::DesignElementRegister(*this);
+  return newelement;
+}
 
+/*----------------------------------------------------------------------*
+ |  Pack data from this element into vector of length size     (public) |
+ |                                                            gee 12/06 |
+ *----------------------------------------------------------------------*/
+const char* DRT::DesignElementRegister::Pack(int& size) const
+{
+  const int sizeint    = sizeof(int);
 
+  // pack base class
+  int         basesize = 0;
+  const char* basedata = ElementRegister::Pack(basesize);
+   
+  // calculate size of vector data
+  size = 
+  sizeint +                     // size itself
+  sizeint +                     // type of this instance of ParObject, see top of ParObject.H
+  basesize +                    // base class data
+  0;                            // continue to add data here...
+  
+  char* data = new char[size];
+  
+  // pack stuff into vector
+  int position = 0;
+  
+  // add size
+  AddtoPack(position,data,size);
+  // ParObject type
+  int type = ParObject_DesignElementRegister;
+  AddtoPack(position,data,type);
+  // add base class
+  AddtoPack(position,data,basedata,basesize);
+  delete [] basedata;
+  // continue to add stuff here  
+    
+  if (position != size)
+    dserror("Mismatch in size of data %d <-> %d",size,position);
 
+  return data;
+}
+
+/*----------------------------------------------------------------------*
+ |  Unpack data                                                (public) |
+ |                                                            gee 12/06 |
+ *----------------------------------------------------------------------*/
+bool DRT::DesignElementRegister::Unpack(const char* data)
+{
+  int position = 0;
+  // extract size
+  int size = 0;
+  ExtractfromPack(position,data,size);
+  // ParObject instance type
+  int type=0;
+  ExtractfromPack(position,data,type);
+  if (type != ParObject_DesignElementRegister) dserror("Wrong instance type in data");
+  // extract base class
+  int basesize = SizePack(&data[position]);
+  ElementRegister::Unpack(&data[position]);
+  position += basesize;
+  // extract more stuff here
+
+  if (position != size)
+    dserror("Mismatch in size of data %d <-> %d",size,position);
+
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  dtor (public)                                            mwgee 12/06|
+ *----------------------------------------------------------------------*/
+DRT::DesignElementRegister::~DesignElementRegister()
+{
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  print (public)                                           mwgee 12/06|
+ *----------------------------------------------------------------------*/
+void DRT::DesignElementRegister::Print(ostream& os) const
+{
+  os << "DesignElementRegister ";
+  ElementRegister::Print(os);
+  return;
+}
 
 
 #endif  // #ifdef TRILINOS_PACKAGE

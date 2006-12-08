@@ -244,6 +244,131 @@ void DRT::Elements::Shell8::Print(ostream& os) const
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  allocate and return Shell8Register (public)              mwgee 12/06|
+ *----------------------------------------------------------------------*/
+RefCountPtr<DRT::ElementRegister> DRT::Elements::Shell8::ElementRegister() const
+{
+  return rcp(new DRT::Elements::Shell8Register(Type()));
+}
+
+
+//=======================================================================
+//=======================================================================
+//=======================================================================
+//=======================================================================
+
+/*----------------------------------------------------------------------*
+ |  ctor (public)                                            mwgee 12/06|
+ *----------------------------------------------------------------------*/
+DRT::Elements::Shell8Register::Shell8Register(DRT::Element::ElementType etype) :
+ElementRegister(etype)
+{
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  copy-ctor (public)                                       mwgee 12/06|
+ *----------------------------------------------------------------------*/
+DRT::Elements::Shell8Register::Shell8Register(
+                               const DRT::Elements::Shell8Register& old) :
+ElementRegister(old)
+{
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Deep copy this instance return pointer to it               (public) |
+ |                                                            gee 12/06 |
+ *----------------------------------------------------------------------*/
+DRT::Elements::Shell8Register* DRT::Elements::Shell8Register::Clone() const
+{
+  return new DRT::Elements::Shell8Register(*this);
+}
+
+/*----------------------------------------------------------------------*
+ |  Pack data from this element into vector of length size     (public) |
+ |                                                            gee 12/06 |
+ *----------------------------------------------------------------------*/
+const char* DRT::Elements::Shell8Register::Pack(int& size) const
+{
+  const int sizeint    = sizeof(int);
+
+  // pack base class
+  int         basesize = 0;
+  const char* basedata = ElementRegister::Pack(basesize);
+   
+  // calculate size of vector data
+  size = 
+  sizeint +                     // size itself
+  sizeint +                     // type of this instance of ParObject, see top of ParObject.H
+  basesize +                    // base class data
+  0;                            // continue to add data here...
+  
+  char* data = new char[size];
+  
+  // pack stuff into vector
+  int position = 0;
+  
+  // add size
+  AddtoPack(position,data,size);
+  // ParObject type
+  int type = ParObject_Shell8Register;
+  AddtoPack(position,data,type);
+  // add base class
+  AddtoPack(position,data,basedata,basesize);
+  delete [] basedata;
+  // continue to add stuff here  
+    
+  if (position != size)
+    dserror("Mismatch in size of data %d <-> %d",size,position);
+
+  return data;
+}
+
+/*----------------------------------------------------------------------*
+ |  Unpack data                                                (public) |
+ |                                                            gee 12/06 |
+ *----------------------------------------------------------------------*/
+bool DRT::Elements::Shell8Register::Unpack(const char* data)
+{
+  int position = 0;
+  // extract size
+  int size = 0;
+  ExtractfromPack(position,data,size);
+  // ParObject instance type
+  int type=0;
+  ExtractfromPack(position,data,type);
+  if (type != ParObject_Shell8Register) dserror("Wrong instance type in data");
+  // extract base class
+  int basesize = SizePack(&data[position]);
+  ElementRegister::Unpack(&data[position]);
+  position += basesize;
+  // extract more stuff here
+
+  if (position != size)
+    dserror("Mismatch in size of data %d <-> %d",size,position);
+
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  dtor (public)                                            mwgee 12/06|
+ *----------------------------------------------------------------------*/
+DRT::Elements::Shell8Register::~Shell8Register()
+{
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  print (public)                                           mwgee 12/06|
+ *----------------------------------------------------------------------*/
+void DRT::Elements::Shell8Register::Print(ostream& os) const
+{
+  os << "Shell8Register ";
+  ElementRegister::Print(os);
+  return;
+}
 
 
 

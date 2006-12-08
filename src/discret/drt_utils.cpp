@@ -107,6 +107,11 @@ DRT::ParObject* DRT::Utils::Factory(const char* data)
       return object;
     }
     break;
+    case ParObject_ElementRegister:
+    {
+      dserror("DRT::ElementRegister is pure virtual, cannot create instance");
+    }
+    break;
     default:
       dserror("Unknown type of ParObject instance: %d",type);
     break;

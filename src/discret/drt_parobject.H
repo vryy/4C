@@ -32,14 +32,17 @@ using namespace std;
 // so the receiving processor knows what type of class has been sent.
 // the method DRT::Factory(data) in utils.cpp can then be used to 
 // create an Unpack the correct instance of ParObject
-#define ParObject_Container       (int)1
-#define ParObject_Condition       (int)2
-#define ParObject_Node            (int)3
-#define ParObject_DesignNode      (int)4
-#define ParObject_Element         (int)5
-#define ParObject_DesignElement   (int)6
-#define ParObject_Shell8          (int)7
-#define ParObject_DofSet          (int)8
+#define ParObject_Container             (int)1
+#define ParObject_Condition             (int)2
+#define ParObject_Node                  (int)3
+#define ParObject_DesignNode            (int)4
+#define ParObject_Element               (int)5
+#define ParObject_DesignElement         (int)6
+#define ParObject_DesignElementRegister (int)7
+#define ParObject_Shell8                (int)8
+#define ParObject_Shell8Register        (int)9
+#define ParObject_DofSet                (int)10
+#define ParObject_ElementRegister       (int)11
 
 
 /*!

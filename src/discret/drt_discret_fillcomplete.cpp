@@ -63,6 +63,9 @@ int DRT::Discretization::FillComplete()
   // (re)construct node -> element pointers
   BuildNodeToElementPointers();
   
+  // build the register of elements
+  BuildElementRegister();
+  
   // set the flag indicating Filled()==true
   filled_ = true;  
   
@@ -71,7 +74,34 @@ int DRT::Discretization::FillComplete()
 
 
 /*----------------------------------------------------------------------*
- |  Build noderowmap_ (public)                               mwgee 11/06|
+ |  Build elementregister_ (private)                         mwgee 12/06|
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::BuildElementRegister()
+{
+  const int myrank = Comm().MyPID();
+  const int numproc = Comm().NumProc();
+
+  // clear any existing data in register 
+  elementregister_.clear();
+  
+  // loop my row elements and build local register
+  map<int,RefCountPtr<DRT::Element> >::iterator fool;
+  for (fool=element_.begin(); fool!=element_.end(); ++fool)
+  {
+    if (fool->second->Owner()!=myrank) continue;
+    DRT::Element* actele = fool->second.get();
+    map<Element::ElementType,RefCountPtr<ElementRegister> >::iterator rcurr;
+    rcurr = elementregister_.find(actele->Type());
+    if (rcurr != elementregister_.end()) continue;
+    elementregister_[actele->Type()] = actele->ElementRegister();
+  }
+
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Build noderowmap_ (private)                              mwgee 11/06|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::BuildNodeRowMap()
 {
@@ -98,7 +128,7 @@ void DRT::Discretization::BuildNodeRowMap()
 }
 
 /*----------------------------------------------------------------------*
- |  Build noderowmap_ (public)                               mwgee 11/06|
+ |  Build nodecolmap_ (private)                              mwgee 11/06|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::BuildNodeColMap()
 {
@@ -121,7 +151,7 @@ void DRT::Discretization::BuildNodeColMap()
 
 
 /*----------------------------------------------------------------------*
- |  Build elecolmap_ (public)                                mwgee 11/06|
+ |  Build elerowmap_ (private)                                mwgee 11/06|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::BuildElementRowMap()
 {
@@ -147,7 +177,7 @@ void DRT::Discretization::BuildElementRowMap()
 }
 
 /*----------------------------------------------------------------------*
- |  Build elecolmap_ (public)                                mwgee 11/06|
+ |  Build elecolmap_ (private)                                mwgee 11/06|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::BuildElementColMap()
 {
@@ -168,7 +198,7 @@ void DRT::Discretization::BuildElementColMap()
 }
 
 /*----------------------------------------------------------------------*
- |  Build ptrs element -> node (public)                      mwgee 11/06|
+ |  Build ptrs element -> node (private)                      mwgee 11/06|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::BuildElementToNodePointers()
 {
@@ -183,7 +213,7 @@ void DRT::Discretization::BuildElementToNodePointers()
 }
 
 /*----------------------------------------------------------------------*
- |  Build ptrs node -> element (public)                      mwgee 11/06|
+ |  Build ptrs node -> element (private)                      mwgee 11/06|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::BuildNodeToElementPointers()
 {

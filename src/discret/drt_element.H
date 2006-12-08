@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file element.H
+\file drt_element.H
 
 \class DRT::Element
 
@@ -39,6 +39,7 @@ namespace DRT
 // forward declarations
 class Discretization;
 class Node;
+class ElementRegister;
 
 /*!
 \class Element
@@ -135,6 +136,15 @@ public:
   \brief Get type of element
   */
   inline ElementType Type() const { return etype_; }
+
+  /*!
+  \brief Allocate and return an ElementRegister class
+  
+  Every implementation of DRT::Element must also implement
+  an DRT::ElementRegister. This method allocates and returns
+  an instance of a matching DRT::ElementRegister.
+  */
+  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const = 0;
 
   /*!
   \brief Return number of nodes of this element

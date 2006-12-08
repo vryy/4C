@@ -20,6 +20,7 @@ Maintainer: Michael Gee
 
 
 #include "drt_element.H"
+#include "drt_elementregister.H"
 using namespace std;
 using namespace Teuchos;
 
@@ -65,6 +66,12 @@ public:
   DesignElement(const DRT::DesignElement& old);
 
   /*!
+  \brief Destructor
+
+  */
+  virtual ~DesignElement();
+
+  /*!
   \brief Deep copy this instance of DesignElement and return pointer to the copy
   
   The Clone() method is used from the virtual base class Element in cases
@@ -89,12 +96,6 @@ public:
   */
   virtual bool Unpack(const char* data);
 
-  /*!
-  \brief Destructor
-
-  */
-  virtual ~DesignElement();
-
   //@}
 
   // @{ \name Acess methods
@@ -103,6 +104,15 @@ public:
   \brief Print this element
   */
   void Print(ostream& os) const;
+
+  /*!
+  \brief Allocate and return a DesignElementRegister class
+  
+  Every implementation of DRT::Element must also implement
+  an DRT::ElementRegister. This method allocates and returns
+  an instance of a matching DRT::ElementRegister.
+  */
+  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const;
 
   /*!
   \brief Get number of degrees of freedom of a certain node
@@ -212,6 +222,95 @@ private:
   vector<Element*> hentity_;      // ptrs to lower entities
 
 }; // class DesignElement
+
+
+
+//=======================================================================
+//=======================================================================
+//=======================================================================
+//=======================================================================
+
+
+
+
+/*!
+\class DesignElementRegister
+
+\brief An register for element used in CAD design description
+
+\author gee (gee@lnm.mw.tum.de)
+*/
+class DesignElementRegister : public DRT::ElementRegister
+{
+public:
+
+  // @{ \name Constructors and destructors
+
+  /*!
+  \brief Standard Constructor
+  
+  */
+  DesignElementRegister(DRT::Element::ElementType etype);
+
+  /*!
+  \brief Copy Constructor
+
+  Makes a deep copy of an Element
+  
+  */
+  DesignElementRegister(const DRT::DesignElementRegister& old);
+
+  /*!
+  \brief Deep copy this instance of DesignElementRegister and return pointer to the copy
+  
+  The Clone() method is used from the virtual base class Element in cases
+  where the type of the derived class is unknown and a copy-ctor is needed
+  
+  */
+  DRT::DesignElementRegister* Clone() const;
+
+  /*!
+  \brief Pack this class so it can be communicated
+  
+  \ref Pack and \ref Unpack are used to communicate this element
+  
+  */
+  virtual const char* Pack(int& size) const;
+
+  /*!
+  \brief Unpack data from a char vector into this class
+  
+  \ref Pack and \ref Unpack are used to communicate this element
+
+  */
+  virtual bool Unpack(const char* data);
+
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~DesignElementRegister();
+
+  //@}
+
+  // @{ \name Acess methods
+
+  /*!
+  \brief Print this element
+  */
+  void Print(ostream& os) const;
+
+  //@}
+
+
+private:
+
+
+}; // class DesignElementRegister
+
+
+
+
 } // namespace DRT
 
 
