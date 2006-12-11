@@ -25,7 +25,7 @@ Maintainer: Andreas Lipka
 /*!
 \brief General problem data
 
-struct _GENPROB       genprob; defined in global_control.c 
+struct _GENPROB       genprob; defined in global_control.c
 
 \author bborn
 \date 10/06
@@ -604,6 +604,7 @@ DOUBLE          gamma_min_eq;       /* minimal equilibrium surface stress
                                      * (surfactant) */
 DOUBLE          const_gamma;        /* constant surface tension */
 
+if (iel==8)
 /*----------------------------------- calculate contribution of surfactant
  *------------------------to stiffness matrix and internal force vector */
 {
@@ -733,6 +734,8 @@ for (r=0;r<actgvol->ngsurf;r++)
   }
 }
 }
+else
+  dserror("currently only implementation of surface energy for hex8");
 #endif
 /*----------------------------------------------------- local co-system */
 dsassert(ele->locsys==locsys_no,"locsys not implemented for this element!\n");
