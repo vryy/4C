@@ -16,7 +16,6 @@ Input/c1_elast.dat                      x        x        x        x        -   
 Input/c1_elast_geonln.dat               x        -        x        -        -        -
 Input/c1_elast_geonln_sd.dat            x        -        x        -        -        -
 Input/c1_neum_geonln.dat                x        x        x        x        -        -
-Input/c1_optfsd.dat                     x        x        x        x        -        -
 Input/c1_plast_mises.dat                x        x        x        x        -        -
 Input/c1_mat_hyperpolyconvex.dat        x        -        x        -        -        -
 Input/c1_surftension.dat		x	 x	  x	   x        -	     -
