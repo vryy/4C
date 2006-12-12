@@ -32,17 +32,17 @@ using namespace std;
 // so the receiving processor knows what type of class has been sent.
 // the method DRT::Factory(data) in utils.cpp can then be used to 
 // create an Unpack the correct instance of ParObject
-#define ParObject_Container             (int)1
-#define ParObject_Condition             (int)2
+#define ParObject_Container             (int)0
+#define ParObject_Condition             (int)1
+#define ParObject_DofSet                (int)2
 #define ParObject_Node                  (int)3
 #define ParObject_DesignNode            (int)4
 #define ParObject_Element               (int)5
-#define ParObject_DesignElement         (int)6
-#define ParObject_DesignElementRegister (int)7
-#define ParObject_Shell8                (int)8
-#define ParObject_Shell8Register        (int)9
-#define ParObject_DofSet                (int)10
-#define ParObject_ElementRegister       (int)11
+#define ParObject_ElementRegister       (int)6
+#define ParObject_DesignElement         (int)7
+#define ParObject_DesignElementRegister (int)8
+#define ParObject_Shell8                (int)9
+#define ParObject_Shell8Register        (int)10
 
 
 /*!
@@ -92,6 +92,14 @@ public:
   // @{ \name virtual Packing and Unpacking
 
   /*!
+  \brief Return unique ParObject id
+  
+  every class imploementing ParObject needs a unique id defined at the
+  top of this file.
+  */
+  virtual int UniqueParObjectId() const = 0;
+
+  /*!
   \brief Pack this class so it can be communicated
   
   Allocates a char array of size size and returns it as well as size.
@@ -122,6 +130,7 @@ public:
   */
   inline int SizePack(const char* data) const 
   { int s = ((int*)data)[0]; return s; }
+  
 
   //@}
 

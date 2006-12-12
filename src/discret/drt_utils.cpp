@@ -38,7 +38,7 @@ extern "C"
 
 
 /*----------------------------------------------------------------------*
- |  create an instance of ParObject  (public)                mwgee 11/06|
+ |  allocate an instance of a specific impl. of ParObject (public) mwgee 12/06|
  *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::Utils::Factory(const char* data)
 {
@@ -93,9 +93,25 @@ DRT::ParObject* DRT::Utils::Factory(const char* data)
       return object;
     }
     break;
+    case ParObject_DesignElementRegister:
+    {
+      DRT::DesignElementRegister* object = 
+          new DRT::DesignElementRegister(DRT::Element::element_none);
+      object->Unpack(data);
+      return object;
+    }
+    break;
     case ParObject_Shell8:
     {
       DRT::Elements::Shell8* object = new DRT::Elements::Shell8(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_Shell8Register:
+    {
+      DRT::Elements::Shell8Register* object = 
+                      new DRT::Elements::Shell8Register(DRT::Element::element_shell8);
       object->Unpack(data);
       return object;
     }
@@ -119,6 +135,7 @@ DRT::ParObject* DRT::Utils::Factory(const char* data)
   
   return NULL;
 }
+
 
 /*----------------------------------------------------------------------*
  |  partition a graph using metis  (public)                  mwgee 11/06|

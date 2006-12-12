@@ -84,18 +84,105 @@ void DRT::Discretization::BuildElementRegister()
   // clear any existing data in register 
   elementregister_.clear();
   
+  // create a temporary map for communication
+  // this maps Element::Type() to ElementRegister
+  map<int,RefCountPtr<DRT::ParObject> > tmpmap;
+  
   // loop my row elements and build local register
+  vector<int> mygid(500);
   map<int,RefCountPtr<DRT::Element> >::iterator fool;
+  map<int,RefCountPtr<DRT::ParObject> >::iterator rcurr;
+  int nummygid=0;
   for (fool=element_.begin(); fool!=element_.end(); ++fool)
   {
     if (fool->second->Owner()!=myrank) continue;
     DRT::Element* actele = fool->second.get();
-    map<Element::ElementType,RefCountPtr<ElementRegister> >::iterator rcurr;
-    rcurr = elementregister_.find(actele->Type());
-    if (rcurr != elementregister_.end()) continue;
-    elementregister_[actele->Type()] = actele->ElementRegister();
+    rcurr = tmpmap.find(actele->Type());
+    if (rcurr != tmpmap.end()) continue;
+    RefCountPtr<DRT::ElementRegister> tmp = actele->ElementRegister();
+    tmpmap[actele->Type()] = tmp;
+    if ((int)mygid.size()<=nummygid) mygid.resize(nummygid+100);
+    mygid[nummygid] = actele->Type();
+    ++nummygid;
+  }
+  
+  // build the source map
+  Epetra_Map sourcemap(-1,nummygid,&mygid[0],0,Comm());
+  
+  // build redundant target map
+  int numglobalgid = sourcemap.NumGlobalElements();
+  vector<int> redgid(numglobalgid);
+  for (int i=0; i<numglobalgid; ++i) redgid[i] = 0;
+  int position=0;
+  for (int proc=0; proc<numproc; ++proc)
+  {
+    if (proc==myrank)
+    {
+      for (int i=0; i<nummygid; ++i)
+        redgid[position+i] = mygid[i];
+      position += nummygid;
+    }
+    Comm().Broadcast(&position,1,proc);
+  }
+  vector<int> recvredgid(numglobalgid);
+  Comm().SumAll(&redgid[0],&recvredgid[0],numglobalgid);
+  Epetra_Map targetmap(-1,numglobalgid,&recvredgid[0],0,Comm());
+  
+  // create an exporter and export the tmpmap
+  DRT::Exporter exporter(sourcemap,targetmap,Comm());
+  exporter.Export(tmpmap);
+  
+  
+#if 0
+  for (int proc=0; proc<numproc; ++proc)
+  {
+    if (myrank==proc)
+    {
+      cout << "Proc " << myrank << endl;
+      cout << "tmpmap.size() " << tmpmap.size() << endl;
+      for (rcurr=tmpmap.begin(); rcurr!=tmpmap.end(); ++rcurr)
+        cout << "rcurr->first " << rcurr->first
+             << " rcurr->second->UniqueParObjectId() " << rcurr->second->UniqueParObjectId() << endl;
+    }
+    fflush(stdout);
+    Comm().Barrier();
+  }
+#endif  
+  
+  // go through the tmpmap and fill elementregister_
+  map<int,RefCountPtr<ElementRegister> >::iterator regcurr;
+  for (rcurr=tmpmap.begin(); rcurr!=tmpmap.end(); ++rcurr)
+  {
+    // cast the parobject to DRT::ElementRegister
+    DRT::ElementRegister* elereg = dynamic_cast<DRT::ElementRegister*>(rcurr->second.get());
+    if (!elereg) dserror("cast from ParObject to ElementRegister failed");
+    // check whether its already in elementregister_
+    regcurr = elementregister_.find(elereg->Type());
+    if (regcurr!=elementregister_.end()) continue;
+    // don't want tmpmap to destroy my ElementRegister class as we 
+    // will keep it in elementregister_
+    // so we release the tmpmap refcountptr and create a new one
+    // (this is actually to avoid type conversion)
+    rcurr->second.release();
+    elementregister_[elereg->Type()] = rcp(elereg);
   }
 
+
+#if 0
+  for (int proc=0; proc<numproc; ++proc)
+  {
+    if (myrank==proc)
+    {
+      cout << "Proc " << myrank << endl;
+      cout << "elementregister_.size() " << elementregister_.size() << endl;
+      for (regcurr=elementregister_.begin(); regcurr!=elementregister_.end(); ++regcurr)
+        cout << "regcurr->first " << regcurr->first
+             << " regcurr->second->UniqueParObjectId() " << regcurr->second->UniqueParObjectId() << endl;
+    }
+    fflush(stdout);
+    Comm().Barrier();
+  }
+#endif
 
   return;
 }

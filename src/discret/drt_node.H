@@ -98,6 +98,14 @@ public:
   virtual ~Node();
 
   /*!
+  \brief Return unique ParObject id
+  
+  every class imploementing ParObject needs a unique id defined at the
+  top of this file.
+  */
+  virtual int UniqueParObjectId() const { return ParObject_Node;}
+
+  /*!
   \brief Pack this class so it can be communicated
   
   \ref Pack and \ref Unpack are used to communicate this node

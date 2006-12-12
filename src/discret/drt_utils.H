@@ -36,6 +36,7 @@ namespace DRT
 {
 namespace Utils
 {
+  
   /*!
   \brief Create an instance of a ParObject depending on the type stored in data
   
@@ -52,8 +53,8 @@ namespace Utils
           already unpacked in the instance. The calling method is responsible for
           freeing this instance!
   */
-  ParObject* Factory(const char* data);
-  
+  DRT::ParObject* Factory(const char* data);
+
   /*!
   \brief Partition a graph with metis
   

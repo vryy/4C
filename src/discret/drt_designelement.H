@@ -81,6 +81,14 @@ public:
   DRT::DesignElement* Clone() const;
 
   /*!
+  \brief Return unique ParObject id
+  
+  every class imploementing ParObject needs a unique id defined at the
+  top of this file.
+  */
+  virtual int UniqueParObjectId() const { return ParObject_DesignElement;}
+
+  /*!
   \brief Pack this class so it can be communicated
   
   \ref Pack and \ref Unpack are used to communicate this element
@@ -268,6 +276,14 @@ public:
   
   */
   DRT::DesignElementRegister* Clone() const;
+
+  /*!
+  \brief Return unique ParObject id
+  
+  every class imploementing ParObject needs a unique id defined at the
+  top of this file.
+  */
+  virtual int UniqueParObjectId() const { return ParObject_ElementRegister;}
 
   /*!
   \brief Pack this class so it can be communicated
