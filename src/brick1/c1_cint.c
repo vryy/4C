@@ -569,7 +569,9 @@ for (lr=0; lr<nir; lr++)
 
 /*------------------------------------------------------------lw 11/06 */
 #ifdef SURFACE_ENERGY
-
+if (iel==8)                       /* current implementation only for
+                                   * hex8 */
+{
 GVOL           *actgvol;
 GSURF          *actgsurf;
 INT             r, l, m, n;
@@ -604,10 +606,9 @@ DOUBLE          gamma_min_eq;       /* minimal equilibrium surface stress
                                      * (surfactant) */
 DOUBLE          const_gamma;        /* constant surface tension */
 
-if (iel==8)
 /*----------------------------------- calculate contribution of surfactant
  *------------------------to stiffness matrix and internal force vector */
-{
+
 actgvol=ele->g.gvol;
 sdyn= alldyn[0].sdyn;
 deltat=sdyn->dt;
@@ -619,9 +620,12 @@ for (r=0;r<actgvol->ngsurf;r++)
 
   if (actgsurf->dsurf!=NULL)
   {
-    if (actgsurf->dsurf->surface==1)  /* check if gsurf is an interface */
+    if (actgsurf->dsurf->interface_flag==1)  /* check if gsurf is an interface */
     {
-      surface_flag=actgsurf->dsurf->surface_flag;
+      if (iel!=8)
+        dserror("Current implementation for hex 8 only");
+
+      surface_flag=actgsurf->dsurf->surface_energy_flag;
 
       if (step==0)    /* initialising some parameters, for all
                        * possible iterations in step 0 equal, but this
@@ -734,8 +738,6 @@ for (r=0;r<actgvol->ngsurf;r++)
   }
 }
 }
-else
-  dserror("currently only implementation of surface energy for hex8");
 #endif
 /*----------------------------------------------------- local co-system */
 dsassert(ele->locsys==locsys_no,"locsys not implemented for this element!\n");

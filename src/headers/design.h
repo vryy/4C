@@ -253,8 +253,8 @@ typedef struct _DSURF
    } stabi;
 #endif
 #ifdef SURFACE_ENERGY
-  INT     surface;          /* =1 if dsurf=surface */
-  INT     surface_flag;     /* =0 for surfactant,
+  INT     interface_flag;          /* =1 if dsurf=surface */
+  INT     surface_energy_flag;     /* =0 for surfactant,
                              * =1 for const. surface tension */
   DOUBLE  const_gamma;      /* for constant surface tension only */
   DOUBLE  k1;               /* adsorption coefficient (surfactant) */

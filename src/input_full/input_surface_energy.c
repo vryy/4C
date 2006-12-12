@@ -59,12 +59,12 @@ void input_surface_energy()
       }
     }
     dsassert(actdsurf!=NULL,"Cannot read design-surface energy conditions");
-    actdsurf->surface=1;
+    actdsurf->interface_flag=1;
 
     frchk("SURFACTANT", &ierr1);
     if (ierr1)
     {
-      actdsurf->surface_flag=0;
+      actdsurf->surface_energy_flag=0;
       frdouble("k1", &(actdsurf->k1), &ierr);
       dsassert(ierr==1, "Cannot read adsorption coefficient");
       frdouble("k2", &(actdsurf->k2), &ierr);
@@ -86,7 +86,7 @@ void input_surface_energy()
     frchk("SURFACE TENSION", &ierr2);
     if (ierr2)
     {
-      actdsurf->surface_flag=1;
+      actdsurf->surface_energy_flag=1;
       frdouble("gamma", &(actdsurf->const_gamma), &ierr);
       dsassert(ierr==1, "Cannot read gamma");
     }
