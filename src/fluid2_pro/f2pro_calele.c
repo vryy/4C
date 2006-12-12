@@ -48,6 +48,8 @@ static ARRAY     evelng_a;    /* element velocities at (n+gamma)           */
 static DOUBLE  **evelng;
 static ARRAY     evhist_a;    /* element velocities at (n+gamma)           */
 static DOUBLE  **evhist;
+static ARRAY     ealecovng_a; /* element ale-convective velocities      */
+static DOUBLE  **ealecovng;   /* at (n+gamma)                           */
 static ARRAY     egridv_a;    /* element grid velocity                  */
 static DOUBLE  **egridv;
 static ARRAY     evnng_a;     /* element normal vector at n+1           */
@@ -135,6 +137,7 @@ void f2pro_calinit(
   eveln     = amdef("eveln"    ,&eveln_a    ,NUM_F2_VELDOF,MAXNOD_F2,"DA");
   evelng    = amdef("evelng"   ,&evelng_a   ,NUM_F2_VELDOF,MAXNOD_F2,"DA");
   evhist    = amdef("evhist"   ,&evhist_a   ,NUM_F2_VELDOF,MAXNOD_F2,"DA");
+  ealecovng = amdef("ealecovng",&ealecovng_a,NUM_F2_VELDOF,MAXNOD_F2,"DA");
   egridv    = amdef("egridv"   ,&egridv_a   ,NUM_F2_VELDOF,MAXNOD_F2,"DA");
   evnng     = amdef("evnng"    ,&evnng_a    ,NUM_F2_VELDOF,MAXNOD_F2,"DA");
   evnn      = amdef("evnn"     ,&evnn_a     ,NUM_F2_VELDOF,MAXNOD_F2,"DA");
@@ -207,7 +210,8 @@ void f2pro_calele(
   ARRAY          *gforce_global,
   ARRAY_POSITION *ipos,
   INT            *hasdirich,
-  INT            *hasext
+  INT            *hasext, 
+  INT             is_relax
   )
 {
   DOUBLE visc;
@@ -229,25 +233,52 @@ void f2pro_calele(
   *hasdirich=0;
   *hasext=0;
 
-  /*---------------------------------------------------- set element data */
-  f2pro_calset(ele,xyze,eveln,evelng,evhist,epren,ipos);
+  switch(ele->e.f2pro->is_ale)
+  {
+  case 0:
+    /*---------------------------------------------------- set element data */
+    f2pro_calset(ele,xyze,eveln,evelng,evhist,epren,edeadng,ipos);
 
-  /* We follow the förster-element here. */
+    /* We follow the förster-element here. */
 
-  /*---------------------------------------------- get viscosity ---*/
-  visc = mat[ele->mat-1].m.fluid->viscosity;
+    /*---------------------------------------------- get viscosity ---*/
+    visc = mat[ele->mat-1].m.fluid->viscosity;
 
-  /*--------------------------------------------- stab-parameter ---*/
-  f2_caltau(ele,xyze,funct,deriv,xjm,evelng,visc);
+    /*--------------------------------------------- stab-parameter ---*/
+    f2_caltau(ele,xyze,funct,deriv,xjm,evelng,visc);
 
-  /*-------------------------------- perform element integration ---*/
-  f2pro_int_usfem(ele,hasext,estif,eforce,gforce,xyze,
-                  funct,deriv,deriv2,pfunct,pderiv,xjm,
-                  derxy,derxy2,pderxy,
-                  evelng,eveln,
-                  evhist,NULL,epren,edeadng,
-                  vderxy,vderxy2,visc,wa1,wa2);
+    /*-------------------------------- perform element integration ---*/
+    f2pro_int_usfem(ele,hasext,estif,eforce,gforce,xyze,
+                    funct,deriv,deriv2,pfunct,pderiv,xjm,
+                    derxy,derxy2,pderxy,
+                    evelng,eveln,
+                    evhist,NULL,epren,edeadng,
+                    vderxy,vderxy2,visc,wa1,wa2,is_relax);
+    break;
+  case 1:
+    /*---------------------------------------------------- set element data */
+    f2pro_calseta(ele,xyze,eveln,evelng,evhist,ealecovng,egridv,epren,edeadng,ipos,is_relax);
 
+    /* We follow the förster-element here. */
+
+    /*---------------------------------------------- get viscosity ---*/
+    visc = mat[ele->mat-1].m.fluid->viscosity;
+
+    /*--------------------------------------------- stab-parameter ---*/
+    f2_caltau(ele,xyze,funct,deriv,xjm,evelng,visc);
+
+    /*-------------------------------- perform element integration ---*/
+    f2pro_int_usfem(ele,hasext,estif,eforce,gforce,xyze,
+                    funct,deriv,deriv2,pfunct,pderiv,xjm,
+                    derxy,derxy2,pderxy,
+                    evelng,eveln,
+                    evhist,egridv,epren,edeadng,
+                    vderxy,vderxy2,visc,wa1,wa2,is_relax);
+    break;
+  default:
+    dserror("parameter is_ale not 0 or 1!\n");
+  }
+    
   /*------------------------------------------------ condensation of DBCs */
   /* estif is in xyz* so edforce is also in xyz* (but DBCs have to be
      tranformed before condensing the dofs                                */
@@ -307,7 +338,7 @@ void f2pro_caleleres(
   {
   case 0:
 /*---------------------------------------------------- set element data */
-    f2pro_calset(ele,xyze,eveln,evelng,evhist,epren,ipos);
+    f2pro_calset(ele,xyze,eveln,evelng,evhist,epren,edeadng,ipos);
 
     /*---------------------------------------------- get viscosity ---*/
     visc = mat[ele->mat-1].m.fluid->viscosity;
@@ -317,15 +348,12 @@ void f2pro_caleleres(
 
     /*-------------------------------- perform element integration ---*/
     f2pro_int_res(ele,hasext,eforce,xyze,funct,deriv,deriv2,pfunct,pderiv,xjm,derxy,
-                  derxy2,pderxy,evelng,evhist,NULL,epren,edeadng,vderxy,
+                  derxy2,pderxy,evelng,evhist,NULL,NULL,epren,edeadng,vderxy,
                   vderxy2,visc,wa1,wa2,estress);
     break;
-#if 0
   case 1:
     /*---------------------------------------------- set element data ---*/
-    f2pro_calseta(ele,xyze,eveln,evelng,evhist,ealecovn,
-                  ealecovng,egridv,epren,edeadn,edeadng,ekappan,ekappang,
-                  ephin,ephing,evnng,evnn,ipos,hasext,0);
+    f2pro_calseta(ele,xyze,eveln,evelng,evhist,ealecovng,egridv,epren,edeadng,ipos,0);
 
     /*------------------------------------------------- get viscosity ---*/
     visc = mat[ele->mat-1].m.fluid->viscosity;
@@ -335,10 +363,9 @@ void f2pro_caleleres(
 
     /*----------------------------------- perform element integration ---*/
     f2pro_int_res(ele,hasext,eforce,xyze,funct,deriv,deriv2,pfunct,pderiv,xjm,derxy,
-                  derxy2,evelng,evhist,ealecovng,epren,edeadng,
-                  vderxy,vderxy2,visc,wa1,wa2,estress);
+                  derxy2,pderxy,evelng,evhist,ealecovng,egridv,epren,edeadng,vderxy,
+                  vderxy2,visc,wa1,wa2,estress);
     break;
-#endif
   default:
     dserror("parameter is_ale not 0 or 1!\n");
   }

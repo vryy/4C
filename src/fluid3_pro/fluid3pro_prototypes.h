@@ -107,6 +107,18 @@ void f3pro_calset(
   DOUBLE         **evelng,
   DOUBLE         **evhist,
   DOUBLE          *epren,
+  DOUBLE          *edeadng, 
+  ARRAY_POSITION  *ipos
+  );
+void f3pro_calseta(
+  ELEMENT         *ele,
+  DOUBLE         **xyze,
+  DOUBLE         **eveln,
+  DOUBLE         **evelng,
+  DOUBLE         **evhist,
+  DOUBLE         **egridv,
+  DOUBLE          *epren,
+  DOUBLE          *edeadng, 
   ARRAY_POSITION  *ipos
   );
 
@@ -186,7 +198,8 @@ void f3pro_int_usfem(
   DOUBLE         **vderxy2,
   DOUBLE           visc,
   DOUBLE         **wa1,
-  DOUBLE         **wa2
+  DOUBLE         **wa2,
+  INT              is_relax
   );
 
 void f3pro_calmat( DOUBLE **estif,
@@ -205,7 +218,9 @@ void f3pro_calmat( DOUBLE **estif,
                    DOUBLE   fac,
                    DOUBLE   visc,
                    INT      iel,
-                   INT     *hasext
+                   INT     *hasext, 
+                   INT      isale,
+                   INT      is_relax
   );
 
 void f3pro_calgradp(

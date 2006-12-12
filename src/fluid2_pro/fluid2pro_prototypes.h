@@ -61,6 +61,7 @@ void f2pro_int_res(
   DOUBLE         **evelng,
   DOUBLE         **evhist,
   DOUBLE         **ealecovng,
+  DOUBLE         **egridv,
   DOUBLE          *epren,
   DOUBLE          *edeadng,
   DOUBLE         **vderxy,
@@ -74,6 +75,7 @@ void f2pro_int_res(
 void f2pro_calresvec(  DOUBLE  *eforce,
                        DOUBLE  *velint,
                        DOUBLE   histvec[2],
+                       DOUBLE   gridvint[2],
                        DOUBLE **vderxy,
                        DOUBLE **vderxy2,
                        DOUBLE  *funct,
@@ -115,7 +117,8 @@ void f2pro_calele(
   ARRAY          *gforce_global,
   ARRAY_POSITION *ipos,
   INT            *hasdirich,
-  INT            *hasext
+  INT            *hasext, 
+  INT             is_relax
   );
 
 void f2pro_caleleres(
@@ -161,7 +164,21 @@ void f2pro_calset(
   DOUBLE         **evelng,
   DOUBLE         **evhist,
   DOUBLE          *epren,
+  DOUBLE          *edeadng, 
   ARRAY_POSITION  *ipos
+  );
+void f2pro_calseta(
+  ELEMENT         *ele,
+  DOUBLE         **xyze,
+  DOUBLE         **eveln,
+  DOUBLE         **evelng,
+  DOUBLE         **evhist,
+  DOUBLE         **ealecovng, 
+  DOUBLE         **egridv,
+  DOUBLE          *epren,
+  DOUBLE          *edeadng, 
+  ARRAY_POSITION  *ipos,
+  INT              is_relax
   );
 
 /************************************************************************
@@ -239,7 +256,8 @@ void f2pro_int_usfem(
   DOUBLE         **vderxy2,
   DOUBLE           visc,
   DOUBLE         **wa1,
-  DOUBLE         **wa2
+  DOUBLE         **wa2,
+  INT              is_relax
   );
 
 void f2pro_calmat( DOUBLE **estif,
@@ -258,6 +276,8 @@ void f2pro_calmat( DOUBLE **estif,
                    DOUBLE   fac,
                    DOUBLE   visc,
                    INT      iel,
+                   INT      isale, 
+                   INT      is_relax, 
                    INT     *hasext
   );
 

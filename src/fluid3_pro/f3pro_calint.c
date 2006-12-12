@@ -96,13 +96,15 @@ void f3pro_int_usfem(
   DOUBLE         **vderxy2,
   DOUBLE           visc,
   DOUBLE         **wa1,
-  DOUBLE         **wa2
+  DOUBLE         **wa2,
+  INT              is_relax
   )
 {
   INT       i;			/* a couter                                       */
   INT       iel;		/* number of nodes                                */
   INT       intc;		/* "integration case" for tri for further infos
 				   see f3_inpele.c and f3_intg.c                  */
+  INT       is_ale;             /* ALE or Euler element flag                      */
   INT       nir,nis,nit;	/* number of integration nodesin r,s,t direction  */
   INT       ihoel=0;		/* flag for higher order elements                 */
   INT       icode=2;		/* flag for eveluation of shape functions         */
@@ -133,7 +135,9 @@ void f3pro_int_usfem(
   fdyn   = alldyn[genprob.numff].fdyn;
   data   = fdyn->data;
 
-  switch (ele->e.f3pro->dm)
+  is_ale = ele->e.f3pro->is_ale;
+  
+  switch (dm)
   {
   case dm_q2pm1:
     numpdof = 3;
@@ -240,6 +244,16 @@ void f3pro_int_usfem(
 	/*------ get velocity (n+1,i) derivatives at integration point ---*/
 	f3_vder(vderxy,derxy,evelng,iel);
 
+	/*--------------------- get grid velocity at integration point ---*/
+	if(is_ale)
+	  f3_veci(gridvelint,funct,egridv,iel);
+	else
+	{
+	  gridvelint[0] = 0;
+	  gridvelint[1] = 0;
+	  gridvelint[2] = 0;
+	}
+        
 	/*--------------------------- compute second global derivative ---*/
 	if (ihoel!=0)
 	{
@@ -298,7 +312,7 @@ void f3pro_int_usfem(
 	/*-------------- perform integration for entire matrix and rhs ---*/
 	f3pro_calmat(estif,eforce,velint,histvec,gridvelint,press,vderxy,
 		     vderxy2,gradp,funct,derxy,derxy2,edeadng,fac,
-		     visc,iel,hasext);
+		     visc,iel,hasext,is_ale,is_relax);
 
 	/*
 	 * Now do the weak form of the pressure gradient. That is used
@@ -444,7 +458,9 @@ void f3pro_calmat( DOUBLE **estif,
                    DOUBLE   fac,
                    DOUBLE   visc,
                    INT      iel,
-                   INT     *hasext
+                   INT     *hasext, 
+                   INT      isale,
+                   INT      is_relax
   )
 {
   INT     i, j, ri, ci;
@@ -458,6 +474,7 @@ void f3pro_calmat( DOUBLE **estif,
 #if 1
   DOUBLE  viscs2[3][3*MAXNOD_F3];   /* viscous term incluiding 2nd derivatives */
   DOUBLE  conv_c[MAXNOD_F3]; /* linearisation of convect, convective part */
+  DOUBLE  conv_g[MAXNOD_F3];       /* linearisation of convect, grid part */
   DOUBLE  conv_r[3][3*MAXNOD_F3];/* linearisation of convect, reactive part */
   DOUBLE  vconv_r[3][MAXNOD_F3];
   DOUBLE  div[3*MAXNOD_F3];          /* divergence of u or v              */
@@ -530,17 +547,26 @@ void f3pro_calmat( DOUBLE **estif,
 
 
 /*------------------------- evaluate rhs vector at integration point ---*/
-  if (*hasext)
+  if (!is_relax)
   {
-    rhsint[0] = timefac * edeadng[0] + histvec[0];
-    rhsint[1] = timefac * edeadng[1] + histvec[1];
-    rhsint[2] = timefac * edeadng[2] + histvec[2];
+    if (*hasext)
+    {
+      rhsint[0] = timefac * edeadng[0] + histvec[0];
+      rhsint[1] = timefac * edeadng[1] + histvec[1];
+      rhsint[2] = timefac * edeadng[2] + histvec[2];
+    }
+    else
+    {
+      rhsint[0] = histvec[0];
+      rhsint[1] = histvec[1];
+      rhsint[2] = histvec[2];
+    }
   }
   else
   {
-    rhsint[0] = histvec[0];
-    rhsint[1] = histvec[1];
-    rhsint[2] = histvec[2];
+    rhsint[0] = 0;
+    rhsint[1] = 0;
+    rhsint[2] = 0;
   }
 
 /*----------------- get numerical representation of single operators ---*/
@@ -571,6 +597,18 @@ void f3pro_calmat( DOUBLE **estif,
        with  N .. form function matrix                                   */
     conv_c[i] = derxy[0][i] * velint[0] + derxy[1][i] * velint[1]
       + derxy[2][i] * velint[2];
+
+    /*--- convective grid part u_G * grad (funct) -----------------------*/
+    /* u_old_x * N,x  +  u_old_y * N,y   with  N .. form function matrix */
+    if(isale)
+    {
+      conv_g[i] = - derxy[0][i] * gridvint[0] - derxy[1][i] * gridvint[1]
+	- derxy[2][i] * gridvint[2];
+    }
+    else
+    {
+      conv_g[i] = 0;
+    }
 
     /*--- reactive part funct * grad (u_old) ----------------------------*/
     /* /                                     \
@@ -670,28 +708,45 @@ void f3pro_calmat( DOUBLE **estif,
 
 #ifdef FLUID_INCREMENTAL
 
-#ifdef QUASI_NEWTON
-  if (!fdyn->qnewton || fdyn->itnum==1)
+  if (isale)
   {
+#include "f3pro_stiff_ale.c"
+#include "f3pro_rhs_incr_ale.c"
+  }
+  else
+  {
+
+#ifdef QUASI_NEWTON
+    if (!fdyn->qnewton || fdyn->itnum==1)
+    {
 #endif
 
 #include "f3pro_stiff.c"
 
 #ifdef QUASI_NEWTON
-  }
+    }
 #endif
 
 #include "f3pro_rhs_incr.c"
-
+  }
+  
 #else
 
 #ifdef QUASI_NEWTON
   dserror("no quasi newton with non-incremental fluid");
 #endif
 
+  if (isale)
+  {
+#include "f3pro_stiff_ale.c"
+#include "f3pro_rhs_nonincr_ale.c"
+  }
+  else
+  {
 #include "f3pro_stiff.c"
 #include "f3pro_rhs_nonincr.c"
-
+  }
+  
 #endif
 
 #undef estif_

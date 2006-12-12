@@ -231,25 +231,51 @@ void f3pro_calele(
   *hasdirich=0;
   *hasext=0;
 
-  /*---------------------------------------------------- set element data */
-  f3pro_calset(ele,xyze,eveln,evelng,evhist,epren,ipos);
+  switch(ele->e.f3pro->is_ale)
+  {
+  case 0:
+    /*---------------------------------------------------- set element data */
+    f3pro_calset(ele,xyze,eveln,evelng,evhist,epren,edeadng,ipos);
 
-  /* We follow the Förster-element here. */
+    /* We follow the Förster-element here. */
 
-  /*---------------------------------------------- get viscosity ---*/
-  visc = mat[ele->mat-1].m.fluid->viscosity;
+    /*---------------------------------------------- get viscosity ---*/
+    visc = mat[ele->mat-1].m.fluid->viscosity;
 
-  /*--------------------------------------------- stab-parameter ---*/
-  f3_caltau(ele,xyze,funct,deriv,derxy,xjm,evelng,wa1,visc);
+    /*--------------------------------------------- stab-parameter ---*/
+    f3_caltau(ele,xyze,funct,deriv,derxy,xjm,evelng,wa1,visc);
 
-  /*-------------------------------- perform element integration ---*/
-  f3pro_int_usfem(ele,hasext,estif,eforce,gforce,xyze,
-                  funct,deriv,deriv2,pfunct,pderiv,xjm,
-                  derxy,derxy2,pderxy,
-                  evelng,eveln,
-                  evhist,NULL,epren,edeadng,
-                  vderxy,vderxy2,visc,wa1,wa2);
+    /*-------------------------------- perform element integration ---*/
+    f3pro_int_usfem(ele,hasext,estif,eforce,gforce,xyze,
+                    funct,deriv,deriv2,pfunct,pderiv,xjm,
+                    derxy,derxy2,pderxy,
+                    evelng,eveln,
+                    evhist,NULL,epren,edeadng,
+                    vderxy,vderxy2,visc,wa1,wa2,0);
+    break;
+  case 1:
+    f3pro_calseta(ele,xyze,eveln,evelng,evhist,egridv,epren,edeadng,ipos);
 
+    /* We follow the Förster-element here. */
+
+    /*---------------------------------------------- get viscosity ---*/
+    visc = mat[ele->mat-1].m.fluid->viscosity;
+
+    /*--------------------------------------------- stab-parameter ---*/
+    f3_caltau(ele,xyze,funct,deriv,derxy,xjm,evelng,wa1,visc);
+
+    /*-------------------------------- perform element integration ---*/
+    f3pro_int_usfem(ele,hasext,estif,eforce,gforce,xyze,
+                    funct,deriv,deriv2,pfunct,pderiv,xjm,
+                    derxy,derxy2,pderxy,
+                    evelng,eveln,
+                    evhist,egridv,epren,edeadng,
+                    vderxy,vderxy2,visc,wa1,wa2,0);
+    break;
+  default:
+    dserror("parameter is_ale not 0 or 1!\n");
+  }
+    
 #ifdef QUASI_NEWTON
   if (fdyn->qnewton)
   {

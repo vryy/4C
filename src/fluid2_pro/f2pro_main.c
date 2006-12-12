@@ -102,7 +102,7 @@ void fluid2_pro(     PARTITION     *actpart,
   case calc_fluid:
     f2pro_calele(ele,estif_global,emass_global,
                  lmass_global,gradopr_global,eforce_global,
-                 edforce_global,gforce_global,ipos,hasdirich,hasext);
+                 edforce_global,gforce_global,ipos,hasdirich,hasext,0);
     break;
 
   case calc_fluid_error:

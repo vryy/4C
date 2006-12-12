@@ -15,6 +15,7 @@ Maintainer: Ulrich Kuettler
 *//*! @{ (documentation module open)*/
 #ifdef D_FLUID2_PRO
 #include "../headers/standardtypes.h"
+#include "../fluid2/fluid2_prototypes.h"
 #include "fluid2pro_prototypes.h"
 #include "fluid2pro.h"
 /*!---------------------------------------------------------------------
@@ -41,6 +42,7 @@ void f2pro_calset(
   DOUBLE         **evelng,
   DOUBLE         **evhist,
   DOUBLE          *epren,
+  DOUBLE          *edeadng, 
   ARRAY_POSITION  *ipos
   )
 {
@@ -128,6 +130,140 @@ void f2pro_calset(
       epren[i]   = ele->e.f2pro->press[i];
     }
   }
+
+  edeadng[0] = 0;
+  edeadng[1] = 0;
+  
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+} /* end of f2pro_calset */
+
+
+/*!---------------------------------------------------------------------
+\brief set all arrays for element calculation
+
+<pre>                                                         basol 11/02
+
+get the element velocities and the pressure at different times
+
+</pre>
+\param   *elevel      ELEMENT	   (i)    actual element for velocity
+\param   *elepre      ELEMENT	   (i)    actual element for pressure
+\param   **xyze       DOUBLE	   (o)    coordinates of the element
+\param   **eveln      DOUBLE	   (o)    ele velocities at time n
+\param   *epren       DOUBLE	   (o)    ele pressures at time n
+\param   *ipos                     (i)    node array positions
+\return void
+
+------------------------------------------------------------------------*/
+void f2pro_calseta(
+  ELEMENT         *ele,
+  DOUBLE         **xyze,
+  DOUBLE         **eveln,
+  DOUBLE         **evelng,
+  DOUBLE         **evhist,
+  DOUBLE         **ealecovng, 
+  DOUBLE         **egridv,
+  DOUBLE          *epren,
+  DOUBLE          *edeadng, 
+  ARRAY_POSITION  *ipos,
+  INT              is_relax
+  )
+{
+  INT i, veln, velnp, hist;
+  INT numpdof;
+  NODE *actnode;                /* actual node for element */
+
+#ifdef DEBUG
+  dstrc_enter("f2pro_calseta");
+#endif
+
+  veln  = ipos->veln;
+  velnp = ipos->velnp;
+  hist  = ipos->hist;
+
+/*-------------------------------------------- set element coordinates */
+  if (is_relax)
+    f2_alecoor_sd(ele,xyze);
+  else
+    f2_alecoor(ele,xyze);
+
+  /*---------------------------------------------------------------------*
+   | position of the different solutions:                                |
+   | node->sol_incement: solution history used for calculations          |
+   |       sol_increment[ipos][i]: solution at some time level           |
+   |       ipos->velnp .. solution at time n+1                           |
+   |       ipos->veln  .. solution at time n                             |
+   |       ipos->velnm .. solution at time n-1                           |
+   *---------------------------------------------------------------------*/
+
+  /* -> computation of time forces -------------------
+     -> velocities and pressure at (n) are needed ----*/
+
+  for(i=0;i<ele->numnp;i++)
+  {
+    actnode=ele->node[i];
+
+    /*------------------------------------- set element velocities at (n) */
+    eveln[0][i]=actnode->sol_increment.a.da[veln][0];
+    eveln[1][i]=actnode->sol_increment.a.da[veln][1];
+
+    /*----------------------------------- set element velocities (n+gamma) */
+    evelng[0][i]=actnode->sol_increment.a.da[velnp][0];
+    evelng[1][i]=actnode->sol_increment.a.da[velnp][1];
+
+    /*--------------------------------------- set vel. histories at (n) ---*/
+    evhist[0][i] = actnode->sol_increment.a.da[hist][0];
+    evhist[1][i] = actnode->sol_increment.a.da[hist][1];
+
+    ealecovng[0][i]=actnode->sol_increment.a.da[ipos->convnp][0];
+    ealecovng[1][i]=actnode->sol_increment.a.da[ipos->convnp][1];
+
+    egridv[0][i]   =actnode->sol_increment.a.da[ipos->gridv][0];
+    egridv[1][i]   =actnode->sol_increment.a.da[ipos->gridv][1];
+  }
+
+  switch (ele->e.f2pro->dm)
+  {
+  case dm_q2pm1:
+    numpdof = 3;
+    break;
+  case dm_q1p0:
+    numpdof = 1;
+    break;
+  case dm_q1q1:
+  case dm_q2q2:
+    numpdof = -1;
+    break;
+  case dm_q2q1:
+    numpdof = -2;
+    break;
+  default:
+    dserror("unsupported discretization mode %d", ele->e.f2pro->dm);
+  }
+
+  /*---------------------------------------------- set pressures (n+1) ---*/
+  if ((numpdof==-1) || (numpdof==-2))
+  {
+    ELEMENT* pele;
+    pele = ele->e.f2pro->other;
+    for (i=0; i<pele->numnp; ++i)
+    {
+      epren[i] = pele->node[i]->sol_increment.a.da[1][0];
+    }
+  }
+  else
+  {
+    for (i=0; i<numpdof; ++i)
+    {
+      epren[i]   = ele->e.f2pro->press[i];
+    }
+  }
+
+  edeadng[0] = 0;
+  edeadng[1] = 0;
 
 #ifdef DEBUG
   dstrc_exit();

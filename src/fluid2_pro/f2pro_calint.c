@@ -99,13 +99,15 @@ void f2pro_int_usfem(
   DOUBLE         **vderxy2,
   DOUBLE           visc,
   DOUBLE         **wa1,
-  DOUBLE         **wa2
+  DOUBLE         **wa2,
+  INT              is_relax
   )
 {
   INT       i;          /* a couter                                       */
   INT       iel;        /* number of nodes                                */
   INT       intc;       /* "integration case" for tri for further infos
                            see f2_inpele.c and f2_intg.c                 */
+  INT       is_ale;     /* ALE or Euler element flag                      */
   INT       nir,nis;    /* number of integration nodesin r,s direction    */
   INT       ihoel=0;    /* flag for higher order elements                 */
   INT       icode=2;    /* flag for eveluation of shape functions         */
@@ -137,7 +139,9 @@ void f2pro_int_usfem(
   fdyn   = alldyn[genprob.numff].fdyn;
   data   = fdyn->data;
 
-  switch (ele->e.f2pro->dm)
+  is_ale = ele->e.f2pro->is_ale;
+
+  switch (dm)
   {
   case dm_q2pm1:
     numpdof = 3;
@@ -233,6 +237,17 @@ void f2pro_int_usfem(
       /*---------------- get history data (n,i) at integration point ---*/
       f2_veci(histvec,funct,evhist,iel);
 
+      /*--------------------- get grid velocity at integration point ---*/
+      if (is_ale)
+      {
+	f2_veci(gridvelint,funct,egridv,iel);
+      }
+      else
+      {
+        gridvelint[0] = 0;
+        gridvelint[1] = 0;
+      }
+      
       /*-------- get velocity (n,i) derivatives at integration point ---*/
       f2_vder(vderxy,derxy,eveln,iel);
       divuold = vderxy[0][0] + vderxy[1][1];
@@ -295,7 +310,7 @@ void f2pro_int_usfem(
       /*-------------- perform integration for entire matrix and rhs ---*/
       f2pro_calmat(estif,eforce,velint,histvec,gridvelint,press,vderxy,
 		   vderxy2,gradp,funct,derxy,derxy2,edeadng,fac,
-		   visc,iel,hasext);
+		   visc,iel,is_ale,is_relax,hasext);
 
       /*
        * Now do the weak form of the pressure gradient. That is used
@@ -439,6 +454,8 @@ void f2pro_calmat( DOUBLE **estif,
                    DOUBLE   fac,
                    DOUBLE   visc,
                    INT      iel,
+                   INT      isale, 
+                   INT      is_relax, 
                    INT     *hasext
   )
 {
@@ -450,6 +467,7 @@ void f2pro_calmat( DOUBLE **estif,
   DOUBLE  tau_Mp;             /* stabilisation parameter            */
   DOUBLE  viscs2[2][2*MAXNOD]; /* viscous term incluiding 2nd derivatives */
   DOUBLE  conv_c[MAXNOD];    /* linearisation of convect, convective part */
+  DOUBLE  conv_g[MAXNOD];          /* linearisation of convect, grid part */
   DOUBLE  conv_r[2][2*MAXNOD]; /* linearisation of convect, reactive part */
   DOUBLE  vconv_r[2][MAXNOD];
   DOUBLE  div[2*MAXNOD];             /* divergence of u or v              */
@@ -486,17 +504,25 @@ void f2pro_calmat( DOUBLE **estif,
 
 
 /*------------------------- evaluate rhs vector at integration point ---*/
-  if (*hasext)
+  if (!is_relax)
   {
-    rhsint[0] = timefac * edeadng[0] + histvec[0];
-    rhsint[1] = timefac * edeadng[1] + histvec[1];
+    if (*hasext)
+    {
+      rhsint[0] = timefac * edeadng[0] + histvec[0];
+      rhsint[1] = timefac * edeadng[1] + histvec[1];
+    }
+    else
+    {
+      rhsint[0] = histvec[0];
+      rhsint[1] = histvec[1];
+    }
   }
   else
   {
-    rhsint[0] = histvec[0];
-    rhsint[1] = histvec[1];
+    rhsint[0] = 0;
+    rhsint[1] = 0;
   }
-
+  
 /*----------------- get numerical representation of single operators ---*/
 
 /* Convective term  u_old * grad u_old: */
@@ -517,6 +543,17 @@ void f2pro_calmat( DOUBLE **estif,
     /* u_old_x * N,x  +  u_old_y * N,y   with  N .. form function matrix */
     conv_c[i] = derxy[0][i] * velint[0] + derxy[1][i] * velint[1] ;
 
+    /*--- convective grid part u_G * grad (funct) -----------------------*/
+    /* u_old_x * N,x  +  u_old_y * N,y   with  N .. form function matrix */
+    if (isale)
+    {
+      conv_g[i] = - derxy[0][i] * gridvint[0] - derxy[1][i] * gridvint[1];
+    }
+    else
+    {
+      conv_g[i] = 0;
+    }
+    
     /*--- reactive part funct * grad (u_old) ----------------------------*/
     /* /                          \
        |  u_old_x,x   u_old_x,y   |
@@ -592,14 +629,30 @@ void f2pro_calmat( DOUBLE **estif,
 
 #ifdef FLUID_INCREMENTAL
 
+  if (isale)
+  {
+#include "f2pro_stiff_ale.c"
+#include "f2pro_rhs_incr_ale.c"
+  }
+  else
+  {
 #include "f2pro_stiff.c"
 #include "f2pro_rhs_incr.c"
-
+  }
+      
 #else
 
+  if (isale)
+  {
+#include "f2pro_stiff_ale.c"
+#include "f2pro_rhs_nonincr_ale.c"
+  }
+  else
+  {
 #include "f2pro_stiff.c"
 #include "f2pro_rhs_nonincr.c"
-
+  }
+  
 #endif
 
 #undef estif_
@@ -682,6 +735,7 @@ void f2pro_int_res(
   DOUBLE         **evelng,
   DOUBLE         **evhist,
   DOUBLE         **ealecovng,
+  DOUBLE         **egridv,
   DOUBLE          *epren,
   DOUBLE          *edeadng,
   DOUBLE         **vderxy,
@@ -708,6 +762,7 @@ void f2pro_int_res(
   DOUBLE    e1,e2;      /* natural coordinates of integr. point           */
   DOUBLE    velint[2];  /* velocity vector at integration point           */
   DOUBLE    histvec[2]; /* history data at integration point              */
+  DOUBLE    gridvelint[2]; /* grid velocity                               */
   DOUBLE    aleconv[2]; /* ALE convective velocity at Gauss point         */
   DIS_TYP   typ;	      /* element type                                   */
   DOUBLE    presint;    /* pressure at integration point                  */
@@ -825,6 +880,17 @@ void f2pro_int_res(
       /*----------- get ALE convective velocity at integration point ---*/
       if(is_ale) f2_veci(aleconv,funct,ealecovng,iel);
 
+      /*--------------------- get grid velocity at integration point ---*/
+      if (is_ale)
+      {
+	f2_veci(gridvelint,funct,egridv,iel);
+      }
+      else
+      {
+        gridvelint[0] = 0;
+        gridvelint[1] = 0;
+      }
+      
       /*-------------- get velocity derivatives at integration point ---*/
       f2_vder(vderxy,derxy,evelng,iel);
 
@@ -869,7 +935,7 @@ void f2pro_int_res(
       
 
       /*-------------- perform integration for entire matrix and rhs ---*/
-      f2pro_calresvec(force,velint,histvec,vderxy,vderxy2,funct,derxy,derxy2,
+      f2pro_calresvec(force,velint,histvec,gridvelint,vderxy,vderxy2,funct,derxy,derxy2,
                       edeadng,aleconv,presint,gradp,fac,visc,iel,hasext,
                       is_ale);
     } /* end of loop over integration points ls*/
@@ -945,6 +1011,7 @@ NOTE: this works perfectly only when the fluid is solved via usfem
 void f2pro_calresvec(  DOUBLE  *eforce,
                        DOUBLE  *velint,
                        DOUBLE   histvec[2],
+                       DOUBLE   gridvint[2],
                        DOUBLE **vderxy,
                        DOUBLE **vderxy2,
                        DOUBLE  *funct,
@@ -969,6 +1036,7 @@ void f2pro_calresvec(  DOUBLE  *eforce,
   DOUBLE  tau_Mp;             /* stabilisation parameter            */
   DOUBLE  viscs2[2][2*MAXNOD]; /* viscous term incluiding 2nd derivatives */
   DOUBLE  conv_c[MAXNOD];    /* linearisation of convect, convective part */
+  DOUBLE  conv_g[MAXNOD];          /* linearisation of convect, grid part */
   DOUBLE  conv_r[2][2*MAXNOD]; /* linearisation of convect, reactive part */
   DOUBLE  vconv_r[2][MAXNOD];
   DOUBLE  div[2*MAXNOD];             /* divergence of u or v              */
@@ -1036,6 +1104,17 @@ void f2pro_calresvec(  DOUBLE  *eforce,
     /* u_old_x * N,x  +  u_old_y * N,y   with  N .. form function matrix */
     conv_c[i] = derxy[0][i] * velint[0] + derxy[1][i] * velint[1] ;
 
+    /*--- convective grid part u_G * grad (funct) -----------------------*/
+    /* u_old_x * N,x  +  u_old_y * N,y   with  N .. form function matrix */
+    if (is_ale)
+    {
+      conv_g[i] = - derxy[0][i] * gridvint[0] - derxy[1][i] * gridvint[1];
+    }
+    else
+    {
+      conv_g[i] = 0;
+    }
+    
     /*--- reactive part funct * grad (u_old) ----------------------------*/
     /* /                          \
        |  u_old_x,x   u_old_x,y   |
@@ -1109,7 +1188,14 @@ void f2pro_calresvec(  DOUBLE  *eforce,
 #define visc_          visc
 #define thsl           timefac
 
+if (is_ale)
+{
+#include "f2pro_rhs_incr_ale.c"
+}
+else
+{
 #include "f2pro_rhs_incr.c"
+}
 
 for (vi=0; vi<iel; ++vi)
 {
