@@ -569,6 +569,8 @@ for (lr=0; lr<nir; lr++)
 
 /*------------------------------------------------------------lw 11/06 */
 #ifdef SURFACE_ENERGY
+if (genprob.timetyp==time_dynamic)
+{
 if (iel==8)                       /* current implementation only for
                                    * hex8 */
 {
@@ -606,13 +608,14 @@ DOUBLE          gamma_min_eq;       /* minimal equilibrium surface stress
                                      * (surfactant) */
 DOUBLE          const_gamma;        /* constant surface tension */
 
+sdyn= alldyn[0].sdyn;
+deltat=sdyn->dt;
+step=sdyn->step;
+
 /*----------------------------------- calculate contribution of surfactant
  *------------------------to stiffness matrix and internal force vector */
 
 actgvol=ele->g.gvol;
-sdyn= alldyn[0].sdyn;
-deltat=sdyn->dt;
-step=sdyn->step;
 
 for (r=0;r<actgvol->ngsurf;r++)
 {
@@ -690,7 +693,7 @@ for (r=0;r<actgvol->ngsurf;r++)
         const_gamma=actgsurf->dsurf->const_gamma;
 
         c1_surf(surface_flag,0,0,0,0,0,0,0,0,const_gamma,
-                xyz_curr,K_surf,fie_surf,nodevec,deltat,r,step,NULL,NULL,
+                xyz_curr,K_surf,fie_surf,nodevec,0,r,step,NULL,NULL,
                 NULL);
       }
 
@@ -736,6 +739,7 @@ for (r=0;r<actgvol->ngsurf;r++)
       CCAFREE(K_surf);
     }
   }
+}
 }
 }
 #endif
