@@ -26,6 +26,15 @@ typedef struct _FSI_FLUID_WORK
 
   ARRAY           totarea_a;
 
+#if defined(TRILINOS_PACKAGE) && defined(PM_TRILINOS)
+  ARRAY           fgradprhs_a;
+  TRILINOSMATRIX  grad;
+  TRILINOSMATRIX  lmass;
+
+  DIST_VECTOR   *press_rhs;
+  DIST_VECTOR   *press_sol;
+#endif
+  
 #ifdef BINIO
   BIN_OUT_FIELD out_context;
   BIN_OUT_FIELD restart_context;

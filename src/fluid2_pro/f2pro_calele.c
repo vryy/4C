@@ -423,12 +423,19 @@ void f2pro_calgradp(
   /*memset(eforce,0,(MAXNOD*MAXDOFPERNODE)*sizeof(DOUBLE));*/
 
   /* set element coordinates */
-  for(i=0;i<ele->numnp;i++)
+  if (ele->e.f2pro->is_ale)
   {
-    xyze[0][i]=ele->node[i]->x[0];
-    xyze[1][i]=ele->node[i]->x[1];
+    f2_alecoor(ele,xyze);
   }
-
+  else
+  {
+    for(i=0;i<ele->numnp;i++)
+    {
+      xyze[0][i]=ele->node[i]->x[0];
+      xyze[1][i]=ele->node[i]->x[1];
+    }
+  }
+  
   switch (ele->e.f2pro->dm)
   {
   case dm_q2pm1:
@@ -638,10 +645,17 @@ void f2pro_calprhs(
   memset(eforce,0,(MAXNOD*MAXDOFPERNODE)*sizeof(DOUBLE));
 
   /* set element coordinates */
-  for(i=0;i<ele->numnp;i++)
+  if (ele->e.f2pro->is_ale)
   {
-    xyze[0][i]=ele->node[i]->x[0];
-    xyze[1][i]=ele->node[i]->x[1];
+    f2_alecoor(ele,xyze);
+  }
+  else
+  {
+    for(i=0;i<ele->numnp;i++)
+    {
+      xyze[0][i]=ele->node[i]->x[0];
+      xyze[1][i]=ele->node[i]->x[1];
+    }
   }
 
   velnp = ipos->velnp;
@@ -828,10 +842,17 @@ void f2pro_calvrhs(ELEMENT* ele, ARRAY_POSITION *ipos)
   memset(eforce,0,(MAXNOD*MAXDOFPERNODE)*sizeof(DOUBLE));
 
   /* set element coordinates */
-  for(i=0;i<ele->numnp;i++)
+  if (ele->e.f2pro->is_ale)
   {
-    xyze[0][i]=ele->node[i]->x[0];
-    xyze[1][i]=ele->node[i]->x[1];
+    f2_alecoor(ele,xyze);
+  }
+  else
+  {
+    for(i=0;i<ele->numnp;i++)
+    {
+      xyze[0][i]=ele->node[i]->x[0];
+      xyze[1][i]=ele->node[i]->x[1];
+    }
   }
 
   velnp = ipos->velnp;
@@ -1054,10 +1075,17 @@ void f2pro_calvelupdate(
   memset(eforce,0,(MAXNOD*MAXDOFPERNODE)*sizeof(DOUBLE));
 
   /* set element coordinates */
-  for(i=0;i<ele->numnp;i++)
+  if (ele->e.f2pro->is_ale)
   {
-    xyze[0][i]=ele->node[i]->x[0];
-    xyze[1][i]=ele->node[i]->x[1];
+    f2_alecoor(ele,xyze);
+  }
+  else
+  {
+    for(i=0;i<ele->numnp;i++)
+    {
+      xyze[0][i]=ele->node[i]->x[0];
+      xyze[1][i]=ele->node[i]->x[1];
+    }
   }
 
   switch (ele->e.f2pro->dm)
@@ -1342,10 +1370,17 @@ void f2pro_calpress(ELEMENT* ele,
   amzero(emass_global);
 
   /* set element coordinates */
-  for(i=0;i<ele->numnp;i++)
+  if (ele->e.f2pro->is_ale)
   {
-    xyze[0][i]=ele->node[i]->x[0];
-    xyze[1][i]=ele->node[i]->x[1];
+    f2_alecoor(ele,xyze);
+  }
+  else
+  {
+    for(i=0;i<ele->numnp;i++)
+    {
+      xyze[0][i]=ele->node[i]->x[0];
+      xyze[1][i]=ele->node[i]->x[1];
+    }
   }
 
   switch (ele->e.f2pro->dm)
@@ -1491,10 +1526,17 @@ void f2pro_debugoutpressure(ELEMENT* ele, FILE* f)
     -1, -1
   };
 
-  for(i=0;i<ele->numnp;i++)
+  if (ele->e.f2pro->is_ale)
   {
-    xyze[0][i]=ele->node[i]->x[0];
-    xyze[1][i]=ele->node[i]->x[1];
+    f2_alecoor(ele,xyze);
+  }
+  else
+  {
+    for(i=0;i<ele->numnp;i++)
+    {
+      xyze[0][i]=ele->node[i]->x[0];
+      xyze[1][i]=ele->node[i]->x[1];
+    }
   }
 
   switch (ele->e.f2pro->dm)

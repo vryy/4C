@@ -24,8 +24,19 @@ Maintainer: Steffen Genkinger
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 #include "../fluid_full/fluid_prototypes.h"
+#include "../fluid_full/fluid_pm_prototypes.h"
 #include "fsi_prototypes.h"
 #include "../io/io.h"
+
+#ifdef D_FLUID2_PRO
+#include "../fluid2_pro/fluid2pro.h"
+#include "../fluid2_pro/fluid2pro_prototypes.h"
+#endif
+
+#ifdef D_FLUID3_PRO
+#include "../fluid3_pro/fluid3pro.h"
+#include "../fluid3_pro/fluid3pro_prototypes.h"
+#endif
 
 
 /*----------------------------------------------------------------------*
@@ -119,22 +130,26 @@ void fsi_fluid_pm_cont_setup(
   INT             disnum_io
   )
 {
-  INT             stresspro;          /* flag for stress projection       */
+#if defined(TRILINOS_PACKAGE) && defined(PM_TRILINOS)
   INT             numff;              /* actual number of fluid field     */
   INT             i;                  /* counters                         */
   INT             numeq;              /* number of equations on this proc */
   INT             numeq_total;        /* total number of equations        */
+  INT             pnumeq;
+  INT             pnumeq_total;
   INT             init;               /* flag for solver_control call     */
   INT             actsysarray=0;      /* number of actual sysarray        */
   INT             restart;
 
   DOUBLE          grat;               /* convergence ratios               */
   SOLVAR         *actsolv;            /* pointer to active sol. structure */
+  SOLVAR         *pressolv;
   PARTITION      *actpart;            /* pointer to active partition      */
   INTRA          *actintra;           /* pointer to active intra-communic.*/
   CALC_ACTION    *action;             /* pointer to the cal_action enum   */
 
   DOUBLE         *frhs;               /* iteration - RHS                  */
+  DOUBLE         *fgradprhs;
 
 #ifdef PARALLEL
   INT             numddof;            /* number of Dirichlet dofs         */
@@ -149,6 +164,9 @@ void fsi_fluid_pm_cont_setup(
   FSI_DYNAMIC    *fsidyn;             /* fsi dynamic variables     */
   ARRAY_POSITION *ipos;
 
+  INT stiff_array;              /* indice of the active system sparse matrix */
+  INT mass_array;               /* indice of the active system sparse matrix */
+  INT press_array;
 
   perf_begin(46);
 
@@ -164,22 +182,24 @@ void fsi_fluid_pm_cont_setup(
 
   /****************************************/
 
-  actsysarray   = disnum_calc;
-
   numff         = genprob.numff;
   fdyn          = alldyn[numff].fdyn;
   fsidyn        = alldyn[genprob.numaf+1].fsidyn;
+
+  actsysarray   = disnum_calc;
+  stiff_array = disnum_calc;
+  mass_array  = stiff_array+1;
+  press_array = numff+3;
 
   fdyn->dt      = fsidyn->dt;
   fdyn->maxtime = fsidyn->maxtime;
   fdyn->nstep   = fsidyn->nstep;
   grat          = ZERO;
 
-  stresspro     = fdyn->stresspro;
-
   /* set some pointers */
   /* -> only valid for single field problem !!!! */
   actsolv     = &(solv[numff]);
+  pressolv    = &(solv[numff+3]);
   actpart     = &(partition[numff]);
   action      = &(calc_action[numff]);
   restart     = genprob.restart;
@@ -210,6 +230,148 @@ void fsi_fluid_pm_cont_setup(
   if (actintra->intra_fieldtyp != fluid)
     dserror("only fluid allowed");
 
+  /* ------------------------------------------------ */
+  /* Allocate space for the additional mass matrix
+   * This follows the structure code. The same ugliness here. */
+
+  /* stiff_array already exists, so copy the mask of it to mass_array
+   * reallocate the vector of sparse matrices and the vector of there
+   * types formerly lenght 1, now lenght 2
+   * (Not quite right because of the subdiscretizations.) */
+  actsolv->nsysarray += 1;
+  actsolv->sysarray_typ = (SPARSE_TYP*)CCAREALLOC(actsolv->sysarray_typ,
+                                                  actsolv->nsysarray*sizeof(SPARSE_TYP));
+  actsolv->sysarray = (SPARSE_ARRAY*)CCAREALLOC(actsolv->sysarray,
+                                                actsolv->nsysarray*sizeof(SPARSE_ARRAY));
+
+  /* copy the matrices sparsity mask from stiff_array to mass_array */
+  solserv_alloc_cp_sparsemask(actintra,
+                              &(actsolv->sysarray_typ[stiff_array]),
+                              &(actsolv->sysarray[stiff_array]),
+                              &(actsolv->sysarray_typ[mass_array]),
+                              &(actsolv->sysarray[mass_array]));
+
+  /* change discretization type in main discretization */
+  for (i=0; i<actfield->dis[disnum_calc].numele; ++i)
+  {
+    ELEMENT* actele;
+    actele = &actfield->dis[disnum_calc].element[i];
+    switch (actele->eltyp)
+    {
+#ifdef D_FLUID2_PRO
+    case el_fluid2_pro:
+    {
+      FLUID2_PRO* f2pro;
+      f2pro = actele->e.f2pro;
+      switch (f2pro->dm)
+      {
+      case dm_q2pm1:
+	/* switch to taylor-hood */
+	f2pro->dm = dm_q2q1;
+	f2pro->other->e.f2pro->dm = dm_q2q1;
+	break;
+      case dm_q1p0:
+	f2pro->dm = dm_q1q1;
+	f2pro->other->e.f2pro->dm = dm_q1q1;
+	break;
+      default:
+        dserror("discretization mode %d currently unsupported", f2pro->dm);
+      }
+      break;
+    }
+#endif
+#ifdef D_FLUID3_PRO
+    case el_fluid3_pro:
+    {
+      FLUID3_PRO* f3pro;
+      f3pro = actele->e.f3pro;
+      switch (f3pro->dm)
+      {
+      case dm_q2pm1:
+	/* switch to "taylor-hood" */
+	f3pro->dm = dm_q2q1;
+	f3pro->other->e.f3pro->dm = dm_q2q1;
+	break;
+      case dm_q1p0:
+	f3pro->dm = dm_q1q1;
+	f3pro->other->e.f3pro->dm = dm_q1q1;
+	break;
+      default:
+        dserror("discretization mode %d currently unsupported", f3pro->dm);
+      }
+      break;
+    }
+#endif
+    default:
+      dserror("element type %d undefined",actele->eltyp);
+    }
+  }
+
+  /* ------------------------------------------------ */
+  /* The gradient matrix G */
+  /* This is a parallel matrix, each processor owns a separate slice. */
+
+  /* the continuous pressure version */
+
+  if (!genprob.usetrilinosalgebra)
+  {
+    dserror("trilinos algebra required");
+  }
+
+  {
+    TRILINOSMATRIX* global_stiff;
+    TRILINOSMATRIX* global_press;
+
+    /* we take the update map from our global solvers */
+    if (actsolv->sysarray_typ[stiff_array]!=trilinos)
+      dserror("fatal: trilinos solver expected");
+    if (actsolv->sysarray_typ[press_array]!=trilinos)
+      dserror("fatal: trilinos solver expected");
+
+    global_stiff = actsolv->sysarray[stiff_array].trilinos;
+    global_press = actsolv->sysarray[press_array].trilinos;
+
+    /* Let the distinguished pressure solver point to the pressure's
+     * matrix. This way we can use the pressure solver's flags for
+     * solving the pressure equation. Yeah! What a hack! */
+
+    pressolv->sysarray_typ = (SPARSE_TYP*)  CCACALLOC(1,sizeof(SPARSE_TYP));
+    pressolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(1,sizeof(SPARSE_ARRAY));
+    pressolv->sysarray_typ[0] = trilinos;
+    pressolv->sysarray[0].trilinos = global_press;
+
+    /* setup diagonal mass matrix */
+    memset(&work->lmass,0,sizeof(TRILINOSMATRIX));
+    work->lmass.numeq_total = global_stiff->numeq_total;
+    work->lmass.numeq       = global_stiff->numeq;
+
+    am_alloc_copy(&global_stiff->update,&work->lmass.update);
+    construct_trilinos_diagonal_matrix(actintra,&work->lmass);
+
+    /* setup rectangular gradient matrix (FillComplete with arguments
+     * needed.) */
+    memset(&work->grad,0,sizeof(TRILINOSMATRIX));
+    work->grad.numeq_total = global_press->numeq_total;
+    work->grad.numeq       = global_press->numeq;
+
+    am_alloc_copy(&global_press->update,&work->grad.update);
+    construct_trilinos_matrix(actintra,&work->grad);
+  }
+  
+  /*---------------------------- get global and local number of equations */
+  solserv_getmatdims(&(actsolv->sysarray[press_array]),
+                     actsolv->sysarray_typ[press_array],
+                     &pnumeq,
+                     &pnumeq_total);
+
+  /*---------------------------------------- allocate dist. vectors 'rhs' */
+  solserv_create_vec(&work->press_rhs,1,pnumeq_total,pnumeq,"DV");
+  solserv_zero_vec(work->press_rhs);
+
+  /*---------------------------------- allocate dist. solution vectors ---*/
+  solserv_create_vec(&work->press_sol,1,pnumeq_total,pnumeq,"DV");
+  solserv_zero_vec(work->press_sol);
+  
   /****************************************/
 
 
@@ -235,8 +397,7 @@ void fsi_fluid_pm_cont_setup(
 
 
   /* allocate dist. solution vectors */
-  if (stresspro) actsolv->nsol= 2;/* one more solvec needed for stresspro */
-  else actsolv->nsol= 1;
+  actsolv->nsol= 1;
 
   solserv_create_vec(&(actsolv->sol),actsolv->nsol,numeq_total,numeq,"DV");
   for (i=0; i<actsolv->nsol; i++)
@@ -246,6 +407,7 @@ void fsi_fluid_pm_cont_setup(
   /* allocate one redundant vector frhs of full lenght */
   /* -> this is used by the element routines to assemble the Iteration RHS*/
   frhs = amdef("frhs",&work->frhs_a,numeq_total,1,"DV");
+  fgradprhs = amdef("fgradprhs",&work->fgradprhs_a,numeq_total,1,"DV");
 
 
   /* allocate one vector for storing the area */
@@ -320,7 +482,6 @@ void fsi_fluid_pm_cont_setup(
 
   if(fdyn->iop == 4) ipos->numincr = 9;
   else               ipos->numincr = 7;
-  if(stresspro) ipos->numincr++; /* stress projection and ...*/
   if ((fsidyn->ifsi == fsi_iter_stagg_steep_desc) ||
       (fsidyn->ifsi == fsi_iter_stagg_steep_desc_force))
     /* ... steepest descent relaxation ... */
@@ -488,6 +649,9 @@ void fsi_fluid_pm_cont_setup(
   perf_end(46);
 #endif
 
+#else
+  dserror("TRILINOS_PACKAGE and PM_TRILINOS required");
+#endif
 }
 
 
@@ -533,8 +697,8 @@ void fsi_fluid_pm_cont_calc(
   INT             adisnum_calc
   )
 {
+#if defined(TRILINOS_PACKAGE) && defined(PM_TRILINOS)
   INT             itnum;              /* counter for NR-Iterations        */
-  INT             stresspro;          /* flag for stress projection       */
   INT             numff;              /* actual number of fluid field     */
   INT             numeq;              /* number of equations on this proc */
   INT             numeq_total;        /* total number of equations        */
@@ -549,11 +713,13 @@ void fsi_fluid_pm_cont_calc(
   DOUBLE          grat;               /* convergence ratios               */
   DOUBLE          t1,ts,te;
   SOLVAR         *actsolv;            /* pointer to active sol. structure */
+  SOLVAR         *pressolv;
   PARTITION      *actpart;            /* pointer to active partition      */
   INTRA          *actintra;           /* pointer to active intra-communic.*/
   CALC_ACTION    *action;             /* pointer to the cal_action enum   */
 
   DOUBLE         *frhs;               /* iteration - RHS                  */
+  DOUBLE         *fgradprhs;
 
 #ifdef PARALLEL
   INT             numddof;            /* number of Dirichlet dofs         */
@@ -568,6 +734,11 @@ void fsi_fluid_pm_cont_calc(
   FSI_DYNAMIC    *fsidyn;             /* fsi dynamic variables     */
   ARRAY_POSITION *ipos;
 
+  INT stiff_array;              /* indice of the active system sparse matrix */
+  INT mass_array;               /* indice of the active system sparse matrix */
+  INT press_array;
+  INT             press_dis;
+  
 #ifdef PERF
   perf_begin(47);
 #endif
@@ -575,7 +746,8 @@ void fsi_fluid_pm_cont_calc(
   /****************************************/
 
   frhs = work->frhs_a.a.dv;
-
+  fgradprhs = work->fgradprhs_a.a.dv;
+  
 #ifdef PARALLEL
   fcouple = work->fcouple_a.a.dv;
   recvfcouple = work->recvfcouple_a.a.dv;
@@ -583,11 +755,14 @@ void fsi_fluid_pm_cont_calc(
 
   totarea = work->totarea_a.a.dv;
 
-  actsysarray   = disnum_calc;
-
   numff         = genprob.numff;
   fdyn          = alldyn[numff].fdyn;
   fsidyn        = alldyn[genprob.numaf+1].fsidyn;
+
+  actsysarray   = disnum_calc;
+  stiff_array = disnum_calc;
+  mass_array  = stiff_array+1;
+  press_array = numff+3;
 
 
   fdyn->dt      = fsidyn->dt;
@@ -595,12 +770,12 @@ void fsi_fluid_pm_cont_calc(
   fdyn->nstep   = fsidyn->nstep;
   grat          = ZERO;
 
-
-  stresspro     = fdyn->stresspro;
+  press_dis = 1;
 
   /* set some pointers */
   /* -> only valid for single field problem !!!! */
   actsolv     = &(solv[numff]);
+  pressolv    = &(solv[numff+3]);
   actpart     = &(partition[numff]);
   action      = &(calc_action[numff]);
   restart     = genprob.restart;
@@ -626,6 +801,30 @@ void fsi_fluid_pm_cont_calc(
   if (actintra->intra_fieldtyp != fluid)
     dserror("only fluid allowed");
 
+  /* -------------------------------------------------------------------- */
+  /* Now setup is done and we actually calculate the values of G and
+   * M. */
+
+  /* ------------------------------------------------ */
+  /* Calculate gradient and mass matrices, including the inverted
+   * lumped mass matrix. Velocity dirichlet conditions are observed. */
+  solserv_zero_mat(actintra,&(actsolv->sysarray[mass_array]),
+                   &(actsolv->sysarray_typ[mass_array]));
+
+  pm_calelm_cont(actfield, actpart, disnum_calc, press_dis,
+		 actsolv, mass_array,
+		 actintra, ipos, &work->grad, &work->lmass);
+
+  {
+    TRILINOSMATRIX* global_press;
+
+    if (actsolv->sysarray_typ[press_array]!=trilinos)
+      dserror("fatal: trilinos solver expected");
+
+    global_press = actsolv->sysarray[press_array].trilinos;
+    mult_trilinos_mmm_cont(global_press,&work->grad,0,&work->lmass,0,&work->grad,1);
+  }
+  
   /****************************************/
 
   /* get global and local number of equations */
@@ -707,22 +906,18 @@ void fsi_fluid_pm_cont_calc(
 #endif
 
   /*======================================================================*
-    |               N O N L I N E A R   I T E R A T I O N                  |
-    *======================================================================*/
+   |               N O N L I N E A R   I T E R A T I O N                  |
+   *======================================================================*/
 nonlniter:
-
 
 #ifdef PERF
   perf_begin(48);
 #endif
 
-
   fdyn->itnum=itnum;
-
 
   /* calculate constants for nonlinear iteration */
   if(fdyn->freesurf) fluid_icons(itnum);
-
 
   /* ALE-PHASE II */
   if (fsidyn->iale == 1)
@@ -740,7 +935,8 @@ nonlniter:
     /* calculate ale-convective velocities at  time (n+1) */
     fsi_aleconv(actfield,disnum_calc,fdyn->numdf,ipos->convnp,ipos->velnp);
   }
-  else  dserror("ALE field by function not implemented yet!\n");
+  else
+    dserror("ALE field by function not implemented yet!\n");
 
 
   /* calculate curvature at free surface */
@@ -750,26 +946,24 @@ nonlniter:
     fluid_curvature(actfield,actpart,actintra,action);
   }
 
-
   /* intitialise global matrix and global rhs */
   solserv_zero_vec(&(actsolv->rhs[0]));
   solserv_zero_mat(actintra,&(actsolv->sysarray[actsysarray]),
 		   &(actsolv->sysarray_typ[actsysarray]));
 
-
   /* re-initialise neumann bcs */
   inherit_design_dis_neum(&(actfield->dis[disnum_calc]));
 
-
   /* initialise rhs */
   amzero(&work->frhs_a);
-
+  amzero(&work->fgradprhs_a);
 
   /* form incremental matrices, residual and element forces */
   *action = calc_fluid;
   t1=ds_cputime();
   container.dvec         = NULL;
   container.frhs         = frhs;
+  container.fgradprhs    = fgradprhs;
   container.global_numeq = numeq_total;
   container.nii          = fdyn->nii;
   container.kstep        = 0;
@@ -780,8 +974,35 @@ nonlniter:
   te=ds_cputime()-t1;
   work->tes+=te;
 
+  /* Add the pressure term M*ML^-1*G*p(n) to the rhs. The vector
+   * G*p(n) has already been calculated by the element call. */
+  /* (This term could be done just once for each nonlinear iteration,
+   * but maybe we'll do the convection explicit and circumvent the
+   * iteration altogether.) */
+  
+  assemble_vec(actintra,
+               &(actsolv->sysarray_typ[actsysarray]),
+               &(actsolv->sysarray[actsysarray]),
+               &(actsolv->rhs[0]),
+               fgradprhs,
+               -fdyn->thsl
+    );
 
-  /* add rhs: */
+  matvec_trilinos(&(actsolv->rhs[1]),
+                  &(actsolv->rhs[0]),
+                  &work->lmass);
+  
+  solserv_zero_vec(&(actsolv->rhs[0]));
+  
+  solserv_sparsematvec(actintra,
+                       &(actsolv->rhs[0]),
+                       &(actsolv->sysarray[mass_array]),
+                       &(actsolv->sysarray_typ[mass_array]),
+                       &(actsolv->rhs[1]));
+
+  /*--------------------------------------------------------- add rhs: ---*/
+  /* The pressure part is already there. Add the rhs terms from the
+   * element calls. */
   assemble_vec(actintra,
 	       &(actsolv->sysarray_typ[actsysarray]),
 	       &(actsolv->sysarray[actsysarray]),
@@ -817,88 +1038,18 @@ nonlniter:
   perf_end(49);
 #endif
 
-
   /* set flags for stability parameter evaluation and convergence check */
   fdyn->ishape=0;
-
 
 #ifdef PERF
   perf_begin(50);
 #endif
-
 
   /* return solution to the nodes and calculate the convergence ratios */
   fluid_result_incre(actfield, disnum_calc,actintra,&(actsolv->sol[0]),&(actsolv->rhs[0]),ipos->velnp,
 		     &(actsolv->sysarray[actsysarray]),
 		     &(actsolv->sysarray_typ[actsysarray]),
 		     &vrat,&prat,&grat);
-
-
-  /* do stress projection */
-  /* ==================== */
-  if (stresspro)
-  {
-    /* intitialise global matrix and global rhs */
-    solserv_zero_vec(&(actsolv->rhs[0]));
-    solserv_zero_mat(actintra,&(actsolv->sysarray[actsysarray]),
-		     &(actsolv->sysarray_typ[actsysarray]));
-
-    /* empty rhs */
-    amzero(&work->frhs_a);
-
-
-    /* form incremental matrices, residual and element forces */
-    *action = calc_fluid_stressprojection;
-    t1=ds_cputime();
-    container.dvec         = NULL;
-    container.frhs         = frhs;
-    container.global_numeq = numeq_total;
-    container.nii          = 0;
-    container.kstep        = 0;
-    container.fieldtyp     = actfield->fieldtyp;
-    container.is_relax     = 0;
-    calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,
-	   &container,action);
-    te=ds_cputime()-t1;
-    work->tes+=te;
-
-
-    /* add rhs: */
-    assemble_vec(actintra,
-		 &(actsolv->sysarray_typ[actsysarray]),
-		 &(actsolv->sysarray[actsysarray]),
-		 &(actsolv->rhs[0]),
-		 frhs,
-		 1.0
-      );
-
-
-    /* solve system */
-    init=0;
-    t1=ds_cputime();
-    solver_control(actfield,disnum_calc,actsolv, actintra,
-		   &(actsolv->sysarray_typ[actsysarray]),
-		   &(actsolv->sysarray[actsysarray]),
-		   &(actsolv->sol[1]),
-		   &(actsolv->rhs[0]),
-		   init);
-    ts=ds_cputime()-t1;
-    work->tss+=ts;
-
-
-    /* return solution to the nodes to increment vector */
-    solserv_result_incre(
-      actfield,
-      disnum_calc,
-      actintra,
-      &(actsolv->sol[1]),
-      ipos->stresspro,
-      &(actsolv->sysarray[actsysarray]),
-      &(actsolv->sysarray_typ[actsysarray]));
-
-  }  /* if (stresspro) */
-
-
 
   /* store total area */
   if (fdyn->checkarea > 0)
@@ -908,25 +1059,20 @@ nonlniter:
     totarea[itnum-1] = fdyn->totarea;
   }
 
-
   /* solve heightfunction seperately */
   if (fdyn->freesurf == 3)
     fluid_heightfunc(2,&grat,actfield,actpart,actintra,action,
 		     &container,ipos);
 
-
   /* update coordinates at free surface */
   if (fdyn->freesurf > 1)
     fluid_updfscoor(actfield, fdyn, fdyn->dta, ipos, 1);
 
-
   /* based on the new position calculate normal at free surface */
   if (itnum == 1) fluid_cal_normal(actfield,disnum_calc,0,action);
 
-
   /* iteration convergence check */
   converged = fluid_convcheck(vrat,prat,grat,itnum,te,ts);
-
 
 #ifdef PERF
   perf_end(50);
@@ -944,11 +1090,57 @@ nonlniter:
    *----------------------------------------------------------------------*/
 
 
+    solserv_zero_vec(work->press_rhs);
+    amzero(&work->frhs_a);
+    amzero(&work->fgradprhs_a);
+
+    /* build up the rhs */
+    pm_calprhs_cont(actfield, actpart, disnum_calc, actintra, ipos, work->press_rhs, fgradprhs, frhs);
+
+    assemble_vec(actintra,
+		 &(actsolv->sysarray_typ[press_array]),
+		 &(actsolv->sysarray[press_array]),
+		 work->press_rhs,
+		 frhs,
+		 1.0
+      );
+
+    /* solve for the pressure increment */
+    solver_control(actfield,press_dis,pressolv,actintra,
+                   &(actsolv->sysarray_typ[press_array]),
+                   &(actsolv->sysarray[press_array]),
+                   work->press_sol,
+                   work->press_rhs,
+                   0);
+
+    /* update pressure */
+    /* solserv_result_incre does not work due to misleading dirichlet
+       conditions. The conditions on the velocity interfere. */
+    {
+      INT i;
+      amzero(&work->frhs_a);
+      solserv_reddistvec(work->press_sol,
+			 &(actsolv->sysarray[press_array]),
+			 &(actsolv->sysarray_typ[press_array]),
+			 frhs,
+			 work->press_sol->numeq_total,
+			 actintra);
+      for (i=0; i<actfield->dis[press_dis].numnp; i++)
+      {
+	NODE* actnode;
+	actnode = &(actfield->dis[press_dis].node[i]);
+	actnode->sol_increment.a.da[0][0]  = frhs[actnode->dof[0]];
+        actnode->sol_increment.a.da[1][0] += frhs[actnode->dof[0]] / fdyn->thsl;
+      }
+    }
+
+    /* update velocity */
+    pm_vel_update(actfield, actpart, disnum_calc, actintra, ipos,
+		  &work->lmass, actsolv, actsysarray,
+		  frhs, fgradprhs);
 
   /* output of area to monitor file */
   if (fdyn->checkarea>0) out_area(work->totarea_a,fdyn->acttime,itnum,0);
-
-
 
 
 #ifdef PERF
@@ -1033,6 +1225,9 @@ nonlniter:
   }
 #endif
 
+#else
+  dserror("TRILINOS_PACKAGE and PM_TRILINOS required");
+#endif
 }
 
 
@@ -1048,7 +1243,7 @@ void fsi_fluid_pm_cont_final(
   INT             disnum_io
   )
 {
-  INT             stresspro;          /* flag for stress projection       */
+#if defined(TRILINOS_PACKAGE) && defined(PM_TRILINOS)
   INT             numff;              /* actual number of fluid field     */
   INT             actsysarray=0;      /* number of actual sysarray        */
   INT             restart;
@@ -1060,6 +1255,7 @@ void fsi_fluid_pm_cont_final(
   CALC_ACTION    *action;             /* pointer to the cal_action enum   */
 
   DOUBLE         *frhs;               /* iteration - RHS                  */
+  DOUBLE         *fgradprhs;
 
 #ifdef PARALLEL
   DOUBLE         *fcouple;            /* to store fsi coupling forces     */
@@ -1079,7 +1275,8 @@ void fsi_fluid_pm_cont_final(
   /****************************************/
 
   frhs = work->frhs_a.a.dv;
-
+  fgradprhs = work->fgradprhs_a.a.dv;
+  
 #ifdef PARALLEL
   fcouple = work->fcouple_a.a.dv;
   recvfcouple = work->recvfcouple_a.a.dv;
@@ -1097,8 +1294,6 @@ void fsi_fluid_pm_cont_final(
   fdyn->maxtime = fsidyn->maxtime;
   fdyn->nstep   = fsidyn->nstep;
   grat          = ZERO;
-
-  stresspro     = fdyn->stresspro;
 
   /* set some pointers */
   /* -> only valid for single field problem !!!! */
@@ -1287,6 +1482,9 @@ void fsi_fluid_pm_cont_final(
 #ifdef PERF
   perf_end(52);
 #endif
+#else
+  dserror("TRILINOS_PACKAGE and PM_TRILINOS required");
+#endif
 }
 
 
@@ -1326,7 +1524,7 @@ void fsi_fluid_pm_cont_sd(
   INT             disnum_io
   )
 {
-  INT             stresspro;          /* flag for stress projection       */
+#if defined(TRILINOS_PACKAGE) && defined(PM_TRILINOS)
   INT             numff;              /* actual number of fluid field     */
   INT             numeq;              /* number of equations on this proc */
   INT             numeq_total;        /* total number of equations        */
@@ -1342,6 +1540,7 @@ void fsi_fluid_pm_cont_sd(
   CALC_ACTION    *action;             /* pointer to the cal_action enum   */
 
   DOUBLE         *frhs;               /* iteration - RHS                  */
+  DOUBLE         *fgradprhs;
 
 #ifdef PARALLEL
   INT             numddof;            /* number of Dirichlet dofs         */
@@ -1359,7 +1558,8 @@ void fsi_fluid_pm_cont_sd(
   /****************************************/
 
   frhs = work->frhs_a.a.dv;
-
+  fgradprhs = work->fgradprhs_a.a.dv;
+  
   totarea = work->totarea_a.a.dv;
 
   actsysarray   = disnum_calc;
@@ -1372,8 +1572,6 @@ void fsi_fluid_pm_cont_sd(
   fdyn->maxtime = fsidyn->maxtime;
   fdyn->nstep   = fsidyn->nstep;
   grat          = ZERO;
-
-  stresspro     = fdyn->stresspro;
 
   /* set some pointers */
   /* -> only valid for single field problem !!!! */
@@ -1598,6 +1796,9 @@ void fsi_fluid_pm_cont_sd(
 		       ipos->velnp);
     }
   }
+#else
+  dserror("TRILINOS_PACKAGE and PM_TRILINOS required");
+#endif
 }
 
 
@@ -1613,6 +1814,7 @@ void fsi_fluid_pm_cont_output(
   INT             disnum_io
   )
 {
+#if defined(TRILINOS_PACKAGE) && defined(PM_TRILINOS)
 #ifdef BINIO
   if (ioflags.output_bin==1 && ioflags.fluid_sol==1)
   {
@@ -1625,6 +1827,9 @@ void fsi_fluid_pm_cont_output(
     out_results(&work->out_context, fdyn->acttime, fdyn->step, 0, OUTPUT_VELOCITY);
     out_results(&work->out_context, fdyn->acttime, fdyn->step, 0, OUTPUT_PRESSURE);
   }
+#endif
+#else
+  dserror("TRILINOS_PACKAGE and PM_TRILINOS required");
 #endif
 }
 
@@ -1641,6 +1846,7 @@ void fsi_fluid_pm_cont_cleanup(
   INT             disnum_io
   )
 {
+#if defined(TRILINOS_PACKAGE) && defined(PM_TRILINOS)
   INT             numff;              /* actual number of fluid field     */
   INT             i;                  /* counters                         */
   INT             actsysarray=0;      /* number of actual sysarray        */
@@ -1737,6 +1943,9 @@ void fsi_fluid_pm_cont_cleanup(
   destroy_bin_out_field(&work->out_context);
   if(disnum_io != disnum_calc)
     destroy_bin_out_field(&work->restart_context);
+#endif
+#else
+  dserror("TRILINOS_PACKAGE and PM_TRILINOS required");
 #endif
 }
 
