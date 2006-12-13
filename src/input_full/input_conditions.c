@@ -156,7 +156,7 @@ inpdesign_line_ssi();
 #endif
 /*------------------------------- input of line FSI coupling conditions */
 #ifdef D_FSI
-if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fsi)
+if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fsi || genprob.probtyp==prb_pfsi)
 {
 /*------------------------------ input of nodal FSI coupling conditions */
    inpdesign_nodal_fsicouple();
@@ -168,7 +168,7 @@ if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fsi)
 #endif
 
 #ifdef D_FLUID
-if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fluid_pm || genprob.probtyp==prb_fsi)
+if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fluid_pm || genprob.probtyp==prb_fsi || genprob.probtyp==prb_pfsi)
 {
 #ifdef D_FSI
 /*------------------------------ input of nodal free surface conditions */

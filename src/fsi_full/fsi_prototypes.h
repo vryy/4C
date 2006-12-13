@@ -511,6 +511,104 @@ void fsi_fluid_cleanup(
 
 
 /************************************************************************
+ | fsi_fluid_imp.c                                                      |
+ ************************************************************************/
+void fsi_fluid_imp_setup(
+  FSI_FLUID_WORK *work,
+  FIELD          *actfield,
+  INT             disnum_calc,
+  INT             disnum_io
+  );
+
+void fsi_fluid_imp_calc(
+  FSI_FLUID_WORK *work,
+  FIELD          *actfield,
+  INT             disnum_calc,
+  INT             disnum_io,
+  FIELD          *alefield,
+  INT             adisnum_calc
+  );
+
+void fsi_fluid_imp_final(
+  FSI_FLUID_WORK *work,
+  FIELD          *actfield,
+  INT             disnum_calc,
+  INT             disnum_io
+  );
+
+void fsi_fluid_imp_sd(
+  FSI_FLUID_WORK *work,
+  FIELD          *actfield,
+  INT             disnum_calc,
+  INT             disnum_io
+  );
+
+void fsi_fluid_imp_output(
+  FSI_FLUID_WORK *work,
+  FIELD          *actfield,
+  INT             disnum_calc,
+  INT             disnum_io
+  );
+
+void fsi_fluid_imp_cleanup(
+  FSI_FLUID_WORK *work,
+  FIELD          *actfield,
+  INT             disnum_calc,
+  INT             disnum_io
+  );
+
+
+
+/************************************************************************
+ | fsi_fluid_pm_cont.c                                                  |
+ ************************************************************************/
+void fsi_fluid_pm_cont_setup(
+  FSI_FLUID_WORK *work,
+  FIELD          *actfield,
+  INT             disnum_calc,
+  INT             disnum_io
+  );
+
+void fsi_fluid_pm_cont_calc(
+  FSI_FLUID_WORK *work,
+  FIELD          *actfield,
+  INT             disnum_calc,
+  INT             disnum_io,
+  FIELD          *alefield,
+  INT             adisnum_calc
+  );
+
+void fsi_fluid_pm_cont_final(
+  FSI_FLUID_WORK *work,
+  FIELD          *actfield,
+  INT             disnum_calc,
+  INT             disnum_io
+  );
+
+void fsi_fluid_pm_cont_sd(
+  FSI_FLUID_WORK *work,
+  FIELD          *actfield,
+  INT             disnum_calc,
+  INT             disnum_io
+  );
+
+void fsi_fluid_pm_cont_output(
+  FSI_FLUID_WORK *work,
+  FIELD          *actfield,
+  INT             disnum_calc,
+  INT             disnum_io
+  );
+
+void fsi_fluid_pm_cont_cleanup(
+  FSI_FLUID_WORK *work,
+  FIELD          *actfield,
+  INT             disnum_calc,
+  INT             disnum_io
+  );
+
+
+
+/************************************************************************
  | fsi_gradient.c                                                       |
  ************************************************************************/
 void fsi_gradient(

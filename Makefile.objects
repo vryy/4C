@@ -476,6 +476,8 @@ OBJS_FSI      = src/fsi_full/fsi_aitken.o \
                 src/fsi_full/fsi_dyn.o \
                 src/fsi_full/fsi_energy.o \
                 src/fsi_full/fsi_fluid.o \
+                src/fsi_full/fsi_fluid_imp.o \
+                src/fsi_full/fsi_fluid_pm_cont.o \
                 src/fsi_full/fsi_gradient.o \
                 src/fsi_full/fsi_relax_intdisp.o \
                 src/fsi_full/fsi_service.o \

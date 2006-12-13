@@ -24,6 +24,10 @@ Maintainer: Christiane Foerster
 #include "../fluid3_fast/f3f_prototypes.h"
 #include "../fluid2_is/fluid2_is.h"
 #include "../fluid3_is/fluid3_is.h"
+#include "../fluid2_pro/fluid2pro.h"
+#include "../fluid3_pro/fluid3pro.h"
+#include "../fluid2_pro/fluid2pro_prototypes.h"
+#include "../fluid3_pro/fluid3pro_prototypes.h"
 #include "../shell8/shell8.h"
 #ifdef D_ALE
 #include "../ale2/ale2.h"
@@ -255,6 +259,10 @@ void fsi_cbf(
 	else if (actele->eltyp==el_fluid2_is)
 	  f2is_caleleres(actele,&eforce_global,ipos,&hasdirich,&hasext);
 #endif
+#ifdef D_FLUID2_PRO
+	else if (actele->eltyp==el_fluid2_pro)
+	  f2pro_caleleres(actele,&eforce_global,ipos,&hasdirich,&hasext);
+#endif
 	else
 	  dserror("element type %d unsupported",actele->eltyp);
 
@@ -326,7 +334,10 @@ void fsi_cbf(
 
 
         /* get force vector */
-        f3_caleleres(actele,&eforce_global,&hasdirich,&hasext,ipos);
+	if (actele->eltyp==el_fluid3)
+          f3_caleleres(actele,&eforce_global,&hasdirich,&hasext,ipos);
+	else
+	  dserror("element type %d unsupported",actele->eltyp);
 
 
         for(j=0; j<nfnode; j++)

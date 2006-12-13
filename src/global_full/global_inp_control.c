@@ -74,10 +74,7 @@ void interpolate_axishell_conds(DISCRET  *actdis);
  *----------------------------------------------------------------------*/
 void ntainp()
 {
-
   INT i,j;
-  DOUBLE b_temp;
-
 
   /* the input of the tracing option has not been done yet, so
      we have to make the dstrc_enter 'by hand'
@@ -339,7 +336,8 @@ void ntainp()
     condition is transformed in a dirichlet condition for fluid- and
     ale-field and into a neumann condition for structure-field           */
 #ifdef D_FSI
-  if (genprob.probtyp==prb_fsi) fsi_createfsicoup();
+  if (genprob.probtyp==prb_fsi)  fsi_createfsicoup();
+  if (genprob.probtyp==prb_pfsi) fsi_createfsicoup();
 #endif
 #ifdef D_SSI
   if (genprob.probtyp==prb_ssi) ssi_createssicoup();
@@ -347,7 +345,7 @@ void ntainp()
 #ifdef D_FLUID
   /*----------------- inherit the freesurface condition inside the design
     condition is transformed into a dirichlet condition for ale fiedl    */
-  if ((genprob.probtyp==prb_fluid && genprob.numfld>=2) || genprob.probtyp==prb_fsi)
+  if ((genprob.probtyp==prb_fluid && genprob.numfld>=2) || genprob.probtyp==prb_fsi || genprob.probtyp==prb_pfsi)
     fluid_createfreesurf();
 
   if (genprob.probtyp==prb_fluid && genprob.numfld>=2)
@@ -387,7 +385,7 @@ void ntainp()
 
 #ifdef D_FSI
   /*---- set pointers in the discretisations to the design fsi conditions */
-  if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fsi)
+  if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fsi || genprob.probtyp==prb_pfsi)
   {
     for (i=0; i<genprob.numfld; i++)
       for (j=0; j<field[i].ndis; j++)
@@ -409,7 +407,7 @@ void ntainp()
 
 #ifdef D_FLUID
   /*------ set pointers in the discr. to the design freesurface condition */
-  if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fsi)
+  if (genprob.probtyp==prb_fluid || genprob.probtyp==prb_fsi || genprob.probtyp==prb_pfsi)
   {
     for (i=0; i<genprob.numfld; i++)
       for (j=0; j<field[i].ndis; j++)

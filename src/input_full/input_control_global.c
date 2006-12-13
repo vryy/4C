@@ -111,6 +111,30 @@ dstrc_enter("inpctr");
       inpctrsol(&(solv[genprob.numaf]));
       break;
    }
+   case prb_pfsi:
+   {
+      if (genprob.numfld!=3) dserror("numfld != 3 for FSI");
+
+      solv = (SOLVAR*)CCACALLOC(2*genprob.numfld,sizeof(SOLVAR));
+
+      solv[genprob.numsf].fieldtyp = structure;
+      inpctrsol(&(solv[genprob.numsf]));
+
+      solv[genprob.numff].fieldtyp = fluid;
+      inpctrsol(&(solv[genprob.numff]));
+
+      solv[genprob.numaf].fieldtyp = ale;
+      inpctrsol(&(solv[genprob.numaf]));
+
+      /* We need to read the variables of the pressure solver. The
+       * actual pressure matrix is contained in the first solver
+       * object because it belongs to a discretization of the first
+       * field. */
+      solv[genprob.numff+3].fieldtyp = pressure;
+      inpctrsol(&(solv[genprob.numff+3]));
+      
+      break;
+   }
    /* for SSI */
    case prb_ssi:
    {
@@ -303,6 +327,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
     else if (frwordcmp("Fluid"                      ,buffer)==0) genprob.probtyp = prb_fluid;
     else if (frwordcmp("Fluid_Projection"           ,buffer)==0) genprob.probtyp = prb_fluid_pm;
     else if (frwordcmp("Fluid_Structure_Interaction",buffer)==0) genprob.probtyp = prb_fsi;
+    else if (frwordcmp("Projection_Fluid_Structure_Interaction",buffer)==0) genprob.probtyp = prb_pfsi;
     else if (frwordcmp("Structure_Structure_Interaction",buffer)==0) genprob.probtyp = prb_ssi;
     else if (frwordcmp("Optimisation"               ,buffer)==0) genprob.probtyp = prb_opt;
     else if (frwordcmp("Ale"                        ,buffer)==0) genprob.probtyp = prb_ale;
@@ -356,6 +381,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 switch (genprob.probtyp)
 {
 case prb_fsi:
+case prb_pfsi:
 {
   genprob.numsf=0;
   genprob.numff=1;
@@ -798,7 +824,7 @@ FIELD *actfield;
 dstrc_enter("inpctrdyn");
 #endif
 /*----------------------------------------------------------------------*/
-if (genprob.probtyp==prb_fsi ||
+if (genprob.probtyp==prb_fsi || genprob.probtyp==prb_pfsi ||
    (genprob.probtyp==prb_fluid &&  genprob.numfld>1))
    alldyn = (ALLDYNA*)CCACALLOC((genprob.numfld+1),sizeof(ALLDYNA));
 else if (genprob.probtyp==prb_ssi)
@@ -851,7 +877,7 @@ for (i=0; i<genprob.numfld; i++)
    }
 }
 /*----------------------------------------------------------------------*/
- if (genprob.probtyp==prb_fsi ||
+ if (genprob.probtyp==prb_fsi || genprob.probtyp==prb_pfsi ||
      (genprob.probtyp==prb_fluid &&  genprob.numfld>1))
  {
 #ifdef D_FSI

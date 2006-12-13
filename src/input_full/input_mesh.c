@@ -138,7 +138,7 @@ void inpfield()
   /* FSI typ of problem:
    * -------------------
    */
-  if (genprob.probtyp == prb_fsi)
+  if (genprob.probtyp == prb_fsi || genprob.probtyp == prb_pfsi)
   {
     if (genprob.numfld!=3) dserror("numfld != 3 for FSI");
 
@@ -158,7 +158,6 @@ void inpfield()
       inpdis(&(field[genprob.numaf]));
       inp_ale_field  (&(field[genprob.numaf]));
     }
-
   }
 
 

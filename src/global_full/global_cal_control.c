@@ -202,7 +202,7 @@ out_general();
 if (par.myrank==0 && ioflags.output_gid)
 {
   out_gid_sol_init();
-  if (genprob.probtyp != prb_structure && genprob.probtyp != prb_fsi)
+  if (genprob.probtyp != prb_structure && genprob.probtyp != prb_fsi && genprob.probtyp != prb_pfsi)
     out_gid_msh();
 }
 #else
@@ -243,6 +243,7 @@ case prb_fluid_pm:
 
 #ifdef D_FSI
 case prb_fsi:
+case prb_pfsi:
 #ifndef CCADISCRET
   dyn_fsi(0);
 #else

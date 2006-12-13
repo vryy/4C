@@ -164,6 +164,9 @@ void out_general()
       case prb_fsi:
         fprintf(out,"Type of Problem           : Fluid-Structure-Interaction\n");
         break;
+      case prb_pfsi:
+        fprintf(out,"Type of Problem           : Fluid-Structure-Interaction with projection method\n");
+        break;
       case prb_ssi:
         fprintf(out,"Type of Problem           : Structure-Structure-Interaction\n");
         break;

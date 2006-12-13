@@ -29,6 +29,8 @@ Maintainer: Steffen Genkinger
 #include "../fluid3/fluid3.h"
 #include "../fluid2_is/fluid2_is.h"
 #include "../fluid3_is/fluid3_is.h"
+#include "../fluid2_pro/fluid2pro.h"
+#include "../fluid3_pro/fluid3pro.h"
 #include "fsi_prototypes.h"
 
 
@@ -769,6 +771,16 @@ perf_begin(54);
 #ifdef D_FLUID3_IS
         case el_fluid3_is:
           if (actele->e.f3is->is_ale>0) is_ale++;
+          break;
+#endif
+#ifdef D_FLUID2_PRO
+        case el_fluid2_pro:
+          if (actele->e.f2pro->is_ale>0) is_ale++;
+          break;
+#endif
+#ifdef D_FLUID3_PRO
+        case el_fluid3_pro:
+          if (actele->e.f3pro->is_ale>0) is_ale++;
           break;
 #endif
         default:
