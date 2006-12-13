@@ -29,13 +29,13 @@ Maintainer: Michael Gee
 DRT::Elements::Shell8::Shell8(int id, int owner) :
 DRT::Element(id,element_shell8,owner),
 forcetype_(s8_none),
-init_(false),
 thickness_(0.0),
 ngptri_(0),
 nhyb_(0),
 ans_(0),
 sdc_(1.0),
-material_(0)
+material_(0),
+data_()
 {
   ngp_[0] = ngp_[1] = ngp_[2] = 0;
   eas_[0] = eas_[1] = eas_[2] = eas_[3] = eas_[4] = 0;
@@ -49,17 +49,13 @@ material_(0)
 DRT::Elements::Shell8::Shell8(const DRT::Elements::Shell8& old) :
 DRT::Element(old),
 forcetype_(old.forcetype_),
-init_(old.init_),
 thickness_(old.thickness_),
 ngptri_(old.ngptri_),
 nhyb_(old.nhyb_),
 ans_(old.ans_),
 sdc_(old.sdc_),
 material_(old.material_),
-alfa_(old.alfa_),
-Dtildinv_(old.Dtildinv_),
-Lt_(old.Lt_),
-Rtild_(old.Rtild_)
+data_(old.data_)
 {
   for (int i=0; i<3; ++i) ngp_[i] = old.ngp_[i];
   for (int i=0; i<5; ++i) eas_[i] = old.eas_[i];
@@ -90,6 +86,10 @@ const char* DRT::Elements::Shell8::Pack(int& size) const
   // pack base class
   int         basesize = 0;
   const char* basedata = Element::Pack(basesize);
+  
+  // pack data_
+  int         consize = 0;
+  const char* condata = data_.Pack(consize);
    
   // calculate size of vector data
   size = 
@@ -97,7 +97,6 @@ const char* DRT::Elements::Shell8::Pack(int& size) const
   sizeint +                    // type of this instance of ParObject, see top of ParObject.H
   basesize +                   // base class data
   sizeforcetype +              // forcetype_
-  sizeof(bool) +               // init_
   sizedouble +                 // thickness_
   3*sizeint +                  // ngp_
   sizeint +                    // ngptri_  
@@ -106,10 +105,7 @@ const char* DRT::Elements::Shell8::Pack(int& size) const
   sizeint +                    // ans_
   sizedouble +                 // sdc_
   sizeint +                    // material_
-  SizeVector(alfa_) +          // alfa_
-  SizeDenseMatrix(Dtildinv_) + // Dtildinv_
-  SizeDenseMatrix(Lt_)       + // Lt_
-  SizeVector(Rtild_) +         // Rtild_
+  consize +                    // data_
   0;            // continue to add data here...
   
   char* data = new char[size];
@@ -127,8 +123,6 @@ const char* DRT::Elements::Shell8::Pack(int& size) const
   delete [] basedata;
   // forcetype_
   AddtoPack(position,data,&forcetype_,sizeof(enum ForceType));
-  // init_
-  AddtoPack(position,data,init_);
   // thickness_
   AddtoPack(position,data,thickness_);
   // ngp_
@@ -145,14 +139,9 @@ const char* DRT::Elements::Shell8::Pack(int& size) const
   AddtoPack(position,data,sdc_);
   // material_
   AddtoPack(position,data,material_);
-  // alfa_
-  AddVectortoPack(position,data,alfa_);
-  // Dtildinv_
-  AddMatrixtoPack(position,data,Dtildinv_);
-  // Lt_
-  AddMatrixtoPack(position,data,Lt_);
-  // Rtild_
-  AddVectortoPack(position,data,Rtild_);
+  // data_
+  AddtoPack(position,data,condata,consize);
+  delete [] condata;
   // continue to add stuff here  
     
   if (position != size)
@@ -181,16 +170,12 @@ bool DRT::Elements::Shell8::Unpack(const char* data)
   int type=0;
   ExtractfromPack(position,data,type);
   if (type != ParObject_Shell8) dserror("Wrong instance type in data");
-  
   // extract base class
   int basesize = SizePack(&data[position]);
   Element::Unpack(&data[position]);
   position += basesize;
-  
   // forcetype_
   ExtractfromPack(position,data,forcetype_);
-  // init_
-  ExtractfromPack(position,data,init_);
   // thickness_
   ExtractfromPack(position,data,thickness_);
   // ngp_
@@ -207,14 +192,10 @@ bool DRT::Elements::Shell8::Unpack(const char* data)
   ExtractfromPack(position,data,sdc_);
   // material_
   ExtractfromPack(position,data,material_);
-  // alfa_
-  ExtractVectorfromPack(position,data,alfa_);
-  // Dtildinv_
-  ExtractMatrixfromPack(position,data,Dtildinv_);
-  // Lt_
-  ExtractMatrixfromPack(position,data,Lt_);
-  // Rtild_
-  ExtractVectorfromPack(position,data,Rtild_);
+  // data_
+  int consize = SizePack(&data[position]);
+  data_.Unpack(&data[position]);
+  position += consize;
   
   // extract more stuff here
 

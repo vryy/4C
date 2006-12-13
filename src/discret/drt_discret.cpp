@@ -41,16 +41,18 @@ state_(old.state_)
   comm_ = rcp(old.comm_->Clone());
   Reset();
   
+  // deep copy elements
   map<int,RefCountPtr<DRT::Element> >::const_iterator ecurr;
   for (ecurr=old.element_.begin(); ecurr!=old.element_.end(); ++ecurr)
     element_[ecurr->first] = rcp(ecurr->second->Clone());
-    
+  
+  // deep copy nodes  
   map<int,RefCountPtr<DRT::Node> >::const_iterator ncurr;
   for (ncurr=old.node_.begin(); ncurr!=old.node_.end(); ++ncurr)
     node_[ncurr->first] = rcp(ncurr->second->Clone());
 
+  // do fillcomplete if old was fillcomplete
   if (old.Filled()) FillComplete();
-  if (old.HaveDofs()) AssignDegreesOfFreedom();
   
   return;
 }
@@ -370,193 +372,6 @@ void DRT::Discretization::SetDesignEntityIds(Node::OnDesignEntity type,
 
 
 
-/*----------------------------------------------------------------------*
- |  set degrees of freedom (public)                          mwgee 11/06|
- *----------------------------------------------------------------------*/
-void DRT::Discretization::AssignDegreesOfFreedom()
-{
-  if (!Filled()) dserror("Filled()==false");
-  if (!NodeRowMap()->UniqueGIDs()) dserror("Nodal row map is not unique");
-  if (!ElementRowMap()->UniqueGIDs()) dserror("Element row map is not unique");
-
-  havedof_ = false;
-  
-  // loop my row nodes and set number of degrees of freedom to them
-  for (int i=0; i<NumMyRowNodes(); ++i)
-  {
-    DRT::Node* actnode = lRowNode(i);
-    const int numele = actnode->NumElement();
-    DRT::Element** myele = actnode->Elements();
-    int maxnum=0;
-    for (int j=0; j<numele; ++j)
-      maxnum = max(maxnum,myele[j]->NumDofPerNode(*actnode));
-    actnode->Dof().SetNumDof(maxnum);
-  }
-  
-  // build a redundant map for nodes
-  vector<int> sredundantnodes(NumGlobalNodes());
-  for (int i=0; i<NumGlobalNodes(); ++i) sredundantnodes[i] = 0;
-  for (int i=0; i<NumMyRowNodes(); ++i)
-  {
-    const int gid = lRowNode(i)->Id();
-    sredundantnodes[gid] = gid;
-  }
-  vector<int> rredundantnodes(NumGlobalNodes());
-  Comm().SumAll(&sredundantnodes[0],&rredundantnodes[0],NumGlobalNodes());
-  RefCountPtr<Epetra_Map> rednodemap = 
-      rcp(new Epetra_Map(-1,NumGlobalNodes(),&rredundantnodes[0],0,Comm()));
-  sredundantnodes.clear();
-  rredundantnodes.clear();
-  
-  // build a map that holds all the node's numdof
-  map<int,vector<int> > redundantnodedof;
-  for (int i=0; i<NumMyRowNodes(); ++i)
-  {
-    const int gid = lRowNode(i)->Id();
-    const int numdof = lRowNode(i)->Dof().NumDof();
-    redundantnodedof[gid].resize(1);
-    redundantnodedof[gid][0] = numdof;
-  }
-  
-  // export this map to full overlap (I know this is painful, but how else to do it?))
-  {
-    DRT::Exporter exporter(*NodeRowMap(),*rednodemap,Comm());
-    exporter.Export(redundantnodedof);
-  }
-  
-  // go through the redundant map holding the sizes and assign dofs
-  // note that in stl map all gids are ordered ascending
-  // so we are numbering dofs in ascending order maintaining the bandwith
-  // minimizing property of the node numbering
-  int count=0;
-  map<int,vector<int> >::iterator fool;
-  for (fool=redundantnodedof.begin(); fool!=redundantnodedof.end(); ++fool)
-  {
-    const int numdof = fool->second[0];
-    fool->second.resize(numdof);
-    for (int i=0; i<numdof; ++i)
-    {
-      fool->second[i] = count;
-      ++count;
-    }
-  }
-  // element dof numbering starts from count
-  const int starteledof = count;
-  
-  // export the redundant map to column map
-  {
-    DRT::Exporter exporter(*rednodemap,*NodeColMap(),Comm());
-    exporter.Export(redundantnodedof);
-  }
-  
-  // we don't need the redundant map anymore, destroy
-  rednodemap = null;
-  
-  // redundantnodedof now is not redundant any more, better rename for clarity
-  map<int,vector<int> >& colnodedofs = redundantnodedof;
-  
-  // loop my col nodes and assign degrees of freedom
-  for (int i=0; i<NumMyColNodes(); ++i)
-  {
-    DRT::Node* actnode = lColNode(i);
-    fool = colnodedofs.find(actnode->Id());
-    if (fool == colnodedofs.end()) dserror("Cannot find node gid=%d in colnodedofs",actnode->Id());
-    int* dofs = &(fool->second[0]);
-    int numdof = (int)fool->second.size();
-    actnode->Dof().SetDof(dofs,numdof);
-  }
-  
-  // clear the nodal map
-  redundantnodedof.clear();
-  
-  // Now do all this fun again for the elements
-  // loop my row elements and set number of degrees of freedom
-  for (int i=0; i<NumMyRowElements(); ++i)
-  {
-    DRT::Element* actele = lRowElement(i);
-    actele->Dof().SetNumDof(actele->NumDofPerElement());
-  }
-  
-  // build a redundant map for elements
-  vector<int> sredundanteles(NumGlobalElements());
-  for (int i=0; i<NumGlobalElements(); ++i) sredundanteles[i] = 0;
-  for (int i=0; i<NumMyRowElements(); ++i)
-  {
-    const int gid = lRowElement(i)->Id();
-    sredundanteles[gid]=gid;
-  }
-  vector<int> rredundanteles(NumGlobalElements());
-  Comm().SumAll(&sredundanteles[0],&rredundanteles[0],NumGlobalElements());
-  RefCountPtr<Epetra_Map> redelemap = 
-    rcp(new Epetra_Map(-1,NumGlobalElements(),&rredundanteles[0],0,Comm()));
-  sredundanteles.clear();
-  rredundanteles.clear();
-  
-  // build a map that holds all the ele's numdof
-  map<int,vector<int> > redundanteledof;
-  for (int i=0; i<NumMyRowElements(); ++i)
-  {
-    DRT::Element* actele = lRowElement(i);
-    const int gid = actele->Id();
-    const int numdof = actele->Dof().NumDof();
-    redundanteledof[gid].resize(1);
-    redundanteledof[gid][0] = numdof;
-  }
-  
-  // export redundanteledof to full redundance ( I know..., you are welcome to rewrite this method without)
-  {
-    DRT::Exporter exporter(*ElementRowMap(),*redelemap,Comm());
-    exporter.Export(redundanteledof);
-  }
-  
-  // go through the redundant map and assign dofs to elements
-  // start with starteledof
-  count=starteledof;
-  for (fool=redundanteledof.begin(); fool!=redundanteledof.end(); ++fool)
-  {
-    const int numdof = fool->second[0];
-    fool->second.resize(numdof);
-    for (int i=0; i<numdof; ++i)
-    {
-      fool->second[i] = count;
-      ++count;
-    }
-  }
-  
-  // export the full redundant map to column element map
-  {
-    DRT::Exporter exporter(*redelemap,*ElementColMap(),Comm());
-    exporter.Export(redundanteledof);
-  }
-  
-  // don't need the big redundant map any more
-  redelemap = null;
-  
-  // rename element dof map into what it is now
-  map<int,vector<int> >& coleledofs = redundanteledof;
-  
-  // loop my column elements and set degrees of freedom
-  for (int i=0; i<NumMyColElements(); ++i)
-  {
-    DRT::Element* actele = lColElement(i);
-    fool = coleledofs.find(actele->Id());
-    if (fool==coleledofs.end()) dserror("Proc %d: Cannot find element gid=%d in coleledofs",Comm().MyPID(),actele->Id());
-    int* dofs = &(fool->second[0]);
-    int numdof = (int)fool->second.size();
-    actele->Dof().SetDof(dofs,numdof);
-  }
-  
-  // clear the element map
-  coleledofs.clear();
-  
-  // maps might be outdated now, delete
-  dofrowmap_ = null;
-  dofcolmap_ = null;
-  // set flag indicating that dofs now are present
-  havedof_ = true;
-
-  return;
-}
 
 
 /*----------------------------------------------------------------------*

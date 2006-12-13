@@ -327,7 +327,7 @@ void DRT::Element::LocationVector(vector<int>& lm, vector<int>& lmdirich,
       if (dirich)
       {
         dsassert(dirich->Type()==DRT::Condition::condition_Dirichlet,"condition with name Dirichlet is not of type condition_Dirichlet");
-        flag = dirich->Get<int>("onoff");
+        flag = dirich->GetVector<int>("onoff");
       }
       const int owner = nodes[i]->Owner();
       for (int j=0; j<nodes[i]->Dof().NumDof(); ++j)
@@ -346,7 +346,7 @@ void DRT::Element::LocationVector(vector<int>& lm, vector<int>& lmdirich,
   if (dirich)
   {
     dsassert(dirich->Type()==DRT::Condition::condition_Dirichlet,"condition with name Dirichlet is not of type condition_Dirichlet");
-    flag = dirich->Get<int>("onoff");
+    flag = dirich->GetVector<int>("onoff");
   }
   const int owner = Owner();
   for (int j=0; j<Dof().NumDof(); ++j)

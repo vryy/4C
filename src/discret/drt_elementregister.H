@@ -115,6 +115,12 @@ public:
 
   // @{ \name Construction
 
+  /*!
+  \brief Call Element init routines
+  
+  The method performs all steps needed to init the element routines
+  */
+  virtual int Initialize(DRT::Discretization& dis) = 0;
 
   //@}
 

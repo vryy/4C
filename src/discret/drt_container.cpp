@@ -43,6 +43,10 @@ stringdata_(old.stringdata_)
   for (dfool=old.doubledata_.begin(); dfool!=old.doubledata_.end(); ++dfool)
     doubledata_[dfool->first] = rcp(new vector<double>(*(dfool->second)));
 
+  map<string,RefCountPtr<Epetra_SerialDenseMatrix> >::const_iterator curr;
+  for (curr=old.matdata_.begin();curr!=old.matdata_.end(); ++curr)
+    matdata_[curr->first] = rcp(new Epetra_SerialDenseMatrix(*(curr->second)));
+
   return;
 }
 
@@ -79,6 +83,7 @@ const char* DRT::Container::Pack(int& size) const
   sizeint +      // number of entries in intdata_
   sizeint +      // number of entries in doubledata_
   sizeint +      // number of entries in stringdata_
+  sizeint +      // number of entries in matdata_
   0;             // continue to add data here...
   
   
@@ -101,7 +106,12 @@ const char* DRT::Container::Pack(int& size) const
     size += SizeString(scurr->first);      // size of the key
     size += SizeString(scurr->second);     // size of data
   }
-
+  map<string,RefCountPtr<Epetra_SerialDenseMatrix> >::const_iterator matcurr;
+  for (matcurr=matdata_.begin(); matcurr!=matdata_.end(); ++matcurr)
+  {
+    size += SizeString(matcurr->first);
+    size += SizeDenseMatrix(*(matcurr->second));
+  }
 
   char* data = new char[size];
   // pack stuff into vector
@@ -121,6 +131,9 @@ const char* DRT::Container::Pack(int& size) const
   // stringdata_.size()
   tmp = (int)stringdata_.size();
   AddtoPack(position,data,tmp);
+  // matdata_.size()
+  tmp = (int)matdata_.size();
+  AddtoPack(position,data,tmp);
   
   // continue to pack data here...
   
@@ -138,6 +151,11 @@ const char* DRT::Container::Pack(int& size) const
   {
     AddStringtoPack(position,data,scurr->first);
     AddStringtoPack(position,data,scurr->second);
+  }
+  for (matcurr=matdata_.begin(); matcurr!=matdata_.end(); ++matcurr)
+  {
+    AddStringtoPack(position,data,matcurr->first);
+    AddMatrixtoPack(position,data,*(matcurr->second));
   }
     
   
@@ -172,6 +190,9 @@ bool DRT::Container::Unpack(const char* data)
   // extract number of entries in stringdata_
   int numstringdata=0;
   ExtractfromPack(position,data,numstringdata);
+  // extract no. entries in matdata_;
+  int nummatdata=0;
+  ExtractfromPack(position,data,nummatdata);
   
   // iterate and extract
   for (int i=0; i<numintdata; ++i)
@@ -198,6 +219,14 @@ bool DRT::Container::Unpack(const char* data)
     string tmp2;
     ExtractStringfromPack(position,data,tmp2);
     Add(tmp,tmp2);
+  }
+  for (int i=0; i<nummatdata; ++i)
+  {
+    string tmp;
+    ExtractStringfromPack(position,data,tmp);
+    Epetra_SerialDenseMatrix tmpmat;
+    ExtractMatrixfromPack(position,data,tmpmat);
+    Add(tmp,tmpmat);
   }  
     
   if (position != size)
@@ -218,6 +247,7 @@ void DRT::Container::Print(ostream& os) const
     for (int i=0; i<(int)data.size(); ++i) os << data[i] << " ";
     //os << endl;
   }
+
   map<string,RefCountPtr<vector<double> > >::const_iterator dcurr;
   for (dcurr = doubledata_.begin(); dcurr != doubledata_.end(); ++dcurr)
   {
@@ -226,9 +256,15 @@ void DRT::Container::Print(ostream& os) const
     for (int i=0; i<(int)data.size(); ++i) os << data[i] << " ";
     //os << endl;
   }
+
   map<string,string>::const_iterator scurr;
   for (scurr = stringdata_.begin(); scurr != stringdata_.end(); ++scurr)
     os << scurr->first << " : " << scurr->second << " ";
+    
+  map<string,RefCountPtr<Epetra_SerialDenseMatrix> >::const_iterator matcurr;
+  for (matcurr=matdata_.begin(); matcurr!=matdata_.end(); ++matcurr)
+    os << endl << matcurr->first << " :\n" << *(matcurr->second);
+
   return;
 }
 
@@ -276,6 +312,16 @@ void DRT::Container::Add(const string& name, const string& data)
 }
 
 /*----------------------------------------------------------------------*
+ |  Add stuff to the container                                 (public) |
+ |                                                            gee 12/06 |
+ *----------------------------------------------------------------------*/
+void DRT::Container::Add(const string& name, const Epetra_SerialDenseMatrix& matrix)
+{
+  matdata_[name] = rcp(new Epetra_SerialDenseMatrix(matrix));
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Delete stuff from the container                            (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
@@ -301,6 +347,15 @@ void DRT::Container::Delete(const string& name)
     stringdata_.erase(name);
     return;
   }
+  
+  map<string,RefCountPtr<Epetra_SerialDenseMatrix> >::iterator matcurr = matdata_.find(name);
+  if (matcurr != matdata_.end()) 
+  {
+    matdata_.erase(name);
+    return;
+  }
+  
+  
   return;
 }
 
@@ -309,15 +364,28 @@ void DRT::Container::Delete(const string& name)
  |  Get a string                                               (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-const string* DRT::Container::GetString(const string& name) const
+string* DRT::Container::GetString(const string& name)
 {
-  map<string,string>::const_iterator curr = stringdata_.find(name);
+  map<string,string>::iterator curr = stringdata_.find(name);
   if (curr != stringdata_.end())
     return &(curr->second);
   else return NULL;
   return NULL;
 }
 
+/*----------------------------------------------------------------------*
+ |  Get a string                                               (public) |
+ |                                                            gee 11/06 |
+ *----------------------------------------------------------------------*/
+Epetra_SerialDenseMatrix* DRT::Container::GetMatrix(const string& name)
+{
+  map<string,RefCountPtr<Epetra_SerialDenseMatrix> >::iterator curr = 
+    matdata_.find(name);
+  if (curr != matdata_.end())
+    return curr->second.get();
+  else return NULL;
+  return NULL;
+}
 
 
 

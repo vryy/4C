@@ -498,16 +498,6 @@ public:
   */
   virtual void SetDesignEntityIds(Node::OnDesignEntity type, const vector<int>& nfenode, const vector<vector<int> >& fenode);
 
-  /*!
-  \brief Assign degrees of freedom to discretization (Filled()==true prerequisite)
-  
-  Assign nodes and elements their no. of degrees of freedom as aquired
-  by Element::NumDofPerNode and Element::NumDofPerElement.
-  Number degrees of freedom (dofs) ascending according to global node numbers
-  followed by global element numbers
-  
-  */
-  virtual void AssignDegreesOfFreedom();
 
   //@}
 
@@ -672,6 +662,29 @@ private:
                                      const Epetra_Map& nodecolmap,
                                      RefCountPtr<Epetra_Map>& elerowmap,
                                      RefCountPtr<Epetra_Map>& elecolmap) const;
+
+  /*!
+  \brief Assign degrees of freedom to discretization (Filled()==true prerequisite)
+  
+  Assign nodes and elements their no. of degrees of freedom as aquired
+  by Element::NumDofPerNode and Element::NumDofPerElement.
+  Number degrees of freedom (dofs) ascending according to global node numbers
+  followed by global element numbers
+  
+  */
+  virtual void AssignDegreesOfFreedom();
+
+  /*!
+  \brief Initialize element routines
+  
+  Loops through the ElementRegister map elementregister_ and call the
+  initialize method of each of the ElementRegister classes present.
+  
+  
+  \note InitializeElements might be called more then once!
+  
+  */
+  virtual void InitializeElements();
 
 protected:
 

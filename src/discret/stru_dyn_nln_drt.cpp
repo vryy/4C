@@ -81,7 +81,6 @@ void dyn_nlnstructural_drt()
   }
   // set degrees of freedom in the discretization
   if (!actdis->Filled()) actdis->FillComplete();
-  if (!actdis->HaveDofs()) actdis->AssignDegreesOfFreedom();
 
   // -------------------------------------------------------------------
   // get a communicator and myrank and numproc

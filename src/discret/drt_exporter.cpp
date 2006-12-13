@@ -30,6 +30,8 @@ comm_(comm),
 myrank_(comm.MyPID()),
 numproc_(comm.NumProc())
 {
+  if (SourceMap().PointSameAs(TargetMap())) return;
+
   // allocate a sendplan array and init to zero
   // SendPlan():
   // SendPlan()(lid,proc)    = 1 for data with local id lid needs sending to proc

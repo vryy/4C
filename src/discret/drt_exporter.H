@@ -271,6 +271,8 @@ private:
 template<typename T> void DRT::Exporter::Export(
                                      map<int,RefCountPtr<T> >& parobjects)
 {
+  if (SourceMap().PointSameAs(TargetMap())) return;
+
   // test whether type T implements ParObject
   {
     typename map<int,RefCountPtr<T> >::iterator curr = parobjects.begin();
@@ -282,6 +284,7 @@ template<typename T> void DRT::Exporter::Export(
     }
   }
   
+
 #ifdef PARALLEL
   // allocate requests for unknown number of sends
   vector<MPI_Request> request(200);
@@ -392,6 +395,8 @@ template<typename T> void DRT::Exporter::Export(map<int,vector<T> >& data)
   // allocate requests for unknown number of sends
   vector<MPI_Request> request(200);
   int nsend=0;
+  
+  if (SourceMap().PointSameAs(TargetMap())) return;
   
   // allocate a sendbuffer
   vector<T*> sendbuff(SourceMap().NumMyElements());

@@ -19,8 +19,10 @@ Maintainer: Michael Gee
 #define CONTAINER_H
 
 
+#include <string>
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
+#include "Epetra_SerialDenseMatrix.h"
 
 using namespace std;
 using namespace Teuchos;
@@ -162,6 +164,26 @@ public:
   */
   void Add(const string& name, const string& data);
 
+  /*!
+  \brief Add a string to the container
+  
+  \param name : Name of data to store data with
+  \param data : string to store
+
+  \note If record with name name already exists, it will be overwritten
+  */
+  void Add(const string& name, const char data[])
+  { Add(name,(string)data); return; }
+
+  /*!
+  \brief Add a Epetra_SerialDenseMatrix to the container
+  
+  \param name : Name of data to store data with
+  \param data : matrix to store
+
+  \note If record with name name already exists, it will be overwritten
+  */
+  void Add(const string& name, const Epetra_SerialDenseMatrix& matrix);
 
   /*!
   \brief Get vector of type int or double
@@ -177,7 +199,7 @@ public:
   
   \return const ptr to vector if data with that name exists, NULL otherwise
   */
-  template<typename T> vector<T>* Get(const string& name)
+  template<typename T> vector<T>* GetVector(const string& name)
   {
     T tester;
     if (IsInt(tester))
@@ -199,16 +221,28 @@ public:
   }
   
   /*!
-  \brief Get a string from the container of type int or double
+  \brief Get a string from the container
   
   \param name : Name of data to receive
 
   \note Usage is<br> 
-        const string* ifool = Container::GetString("ifool_name");
+        const string* fool = Container::GetString("ifool_name");
   
   \return const ptr to string if data with that name exists, NULL otherwise
   */
-  const string* GetString(const string& name) const;
+  string* GetString(const string& name);
+
+  /*!
+  \brief Get a matrix from the container
+  
+  \param name : Name of data to receive
+
+  \note Usage is<br> 
+        const Epetra_SerialDenseMatrix* fool = Container::GetMatrix("ifool_name");
+  
+  \return const ptr to matrix if data with that name exists, NULL otherwise
+  */
+  Epetra_SerialDenseMatrix* GetMatrix(const string& name);
 
   /*!
   \brief Delete a record from the container
@@ -221,7 +255,9 @@ public:
   /*!
   \brief Delete everything in this container
   */
-  void Clear() { intdata_.clear(); doubledata_.clear(); return;}
+  void Clear() 
+  { intdata_.clear(); doubledata_.clear(); stringdata_.clear(); matdata_.clear();
+    return;}
 
   //@}
 
@@ -249,19 +285,20 @@ protected:
   bool IsDouble(const double& data) const { return true; }
     
   /*!
-  \brief Detection of double type
+  \brief Detection of string type
   */
   template<typename T> bool IsString(const T& data) const { return false; }
   /*!
-  \brief Detection of double type
+  \brief Detection of string type
   */
   bool IsString(const string& data) const { return true; }
 
 protected:
 
-  map<string,RefCountPtr<vector<int> > >    intdata_;      // a map to store integer data in
-  map<string,RefCountPtr<vector<double> > > doubledata_;   // a map to store double data in
-  map<string,string>                        stringdata_;   // a map to store string data in
+  map<string,RefCountPtr<vector<int> > >             intdata_;      // a map to store integer data in
+  map<string,RefCountPtr<vector<double> > >          doubledata_;   // a map to store double data in
+  map<string,string>                                 stringdata_;   // a map to store string data in
+  map<string,RefCountPtr<Epetra_SerialDenseMatrix> > matdata_;      // a map to store arrays in
 
 }; // class Container
 } // namespace DRT
