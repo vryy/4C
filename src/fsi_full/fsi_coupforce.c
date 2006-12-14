@@ -173,7 +173,18 @@ void fsi_cbf(
             if (actgnode->mfcpnode[genprob.numsf]==NULL)
               continue;
 
-            actele->e.f2->force_on = 1;
+            if (actele->eltyp==el_fluid2)
+              actele->e.f2->force_on = 1;
+#ifdef D_FLUID2_IS
+            else if (actele->eltyp==el_fluid2_is)
+              actele->e.f2is->force_on = 1;
+#endif
+#ifdef D_FLUID2_PRO
+            else if (actele->eltyp==el_fluid2_pro)
+              actele->e.f2pro->force_on = 1;
+#endif
+            else
+              dserror("element type %d unsupported",actele->eltyp);
             break;
           }
         }
@@ -228,30 +239,44 @@ void fsi_cbf(
   /* evaluate fsi coupling forces depending on dimension */
   switch (genprob.ndim)
   {
-
     case 2: /* problem is two-dimensional */
 #ifdef D_FLUID2
       rho = mat[actpdis->element[0]->mat-1].m.fluid->density;
       numdf = 3;
       for(i=0; i<actpdis->numele; i++)
       {
+        INT dof;
         actele = actpdis->element[i];
 
-
-        if (actele->e.f2->force_on==0) continue; /* element not of interest*/
-        nfnode = 0;
-        for(j=0; j<MAXNOD_F2; j++)
-          force_on_node[j] = -1;
+        if (actele->eltyp==el_fluid2)
+        {
+          if (actele->e.f2->force_on==0) continue; /* element not of interest*/
+        }
+#ifdef D_FLUID2_IS
+        else if (actele->eltyp==el_fluid2_is)
+        {
+          if (actele->e.f2is->force_on==0) continue; /* element not of interest*/
+        }
+#endif
+#ifdef D_FLUID2_PRO
+        else if (actele->eltyp==el_fluid2_pro)
+        {
+          if (actele->e.f2pro->force_on==0) continue; /* element not of interest*/
+        }
+#endif
+        else
+          dserror("element type %d unsupported",actele->eltyp);
 
         for(j=0; j<actele->numnp; j++)
         {
           actgnode = actele->node[j]->gnode;
           /* check if there is a coupled struct node */
-          if (actgnode->mfcpnode[genprob.numsf]==NULL)
-            continue;
-          force_on_node[nfnode] = j;
-          nfnode++;
+          if (actgnode->mfcpnode[genprob.numsf]!=NULL)
+            force_on_node[j] = actele->node[j]->Id;
+          else
+            force_on_node[j] = -1;
         }
+        
         /*--- get force vector ---*/
 	if (actele->eltyp==el_fluid2)
 	  f2_caleleres(actele,&eforce_global,ipos,&hasdirich,&hasext);
@@ -266,29 +291,34 @@ void fsi_cbf(
 	else
 	  dserror("element type %d unsupported",actele->eltyp);
 
-        for(j=0; j<nfnode; j++)
+        dof = 0;
+        for(j=0; j<actele->numnp; j++)
         {
-          actnode = actele->node[force_on_node[j]];
-          line = force_on_node[j] * 3;
-#ifdef PARALLEL
-          dofx = actnode->dof[0];
-          dofy = actnode->dof[1];
-#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
-          fcouple[dofx] += eforce[line]*rho;
-          fcouple[dofy] += eforce[line+1]*rho;
-#else
-          if(dofx<numeq_total)
-            dserror("can not fsi couple free dof!\n");
-          if(dofy<numeq_total)
-            dserror("can not fsi couple free dof!\n");
+          actnode = actele->node[j];
 
-          fcouple[dofx-numeq_total] += eforce[line]*rho;
-          fcouple[dofy-numeq_total] += eforce[line+1]*rho;
+          if (force_on_node[j]!=-1)
+          {
+#ifdef PARALLEL
+            dofx = actnode->dof[0];
+            dofy = actnode->dof[1];
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
+            fcouple[dofx] += eforce[dof  ]*rho;
+            fcouple[dofy] += eforce[dof+1]*rho;
+#else
+            if(dofx<numeq_total)
+              dserror("can not fsi couple free dof!\n");
+            if(dofy<numeq_total)
+              dserror("can not fsi couple free dof!\n");
+
+            fcouple[dofx-numeq_total] += eforce[dof  ]*rho;
+            fcouple[dofy-numeq_total] += eforce[dof+1]*rho;
 #endif /* SOLVE_DIRICH */
 #else
-          actnode->sol_mf.a.da[ipos->mf_forcenp][0] += eforce[line]*rho;
-          actnode->sol_mf.a.da[ipos->mf_forcenp][1] += eforce[line+1]*rho;
+            actnode->sol_mf.a.da[ipos->mf_forcenp][0] += eforce[dof  ]*rho;
+            actnode->sol_mf.a.da[ipos->mf_forcenp][1] += eforce[dof+1]*rho;
 #endif  /* PARALLEL */
+          }
+          dof += actnode->numdf;
         }
       }
 #endif
@@ -817,10 +847,16 @@ void fsi_load(
     if (actsgnode->fsicouple) /* node is on FSI interface */
     {
       actfnode  = actsgnode->mfcpnode[genprob.numff];
-      for(j=0; j<actnode->numdf && j<actfnode->numdf-1; j++) /* loop nodal dofs */
+      /*for(j=0; j<actnode->numdf && j<actfnode->numdf-1; j++)*/ /* loop nodal dofs */
+      for(j=0; j<actnode->numdf; j++) /* loop nodal dofs */
       {
         dof = actnode->dof[j];
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
+        if (actnode->gnode->dirich && actnode->gnode->dirich->dirich_onoff.a.iv[j])
+          continue;
+#else
         if ( dof>= global_numeq) continue;
+#endif
         if (par.myrank == actnode->proc)
           fsiforce[dof] = actfnode->sol_mf.a.da[fluid_ipos->mf_forcenp][j];
       }

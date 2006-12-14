@@ -167,6 +167,7 @@ void fsi_fluid_pm_cont_setup(
   INT stiff_array;              /* indice of the active system sparse matrix */
   INT mass_array;               /* indice of the active system sparse matrix */
   INT press_array;
+  INT             press_dis;
 
   perf_begin(46);
 
@@ -182,14 +183,16 @@ void fsi_fluid_pm_cont_setup(
 
   /****************************************/
 
+  press_dis = 1;
+  
   numff         = genprob.numff;
   fdyn          = alldyn[numff].fdyn;
   fsidyn        = alldyn[genprob.numaf+1].fsidyn;
 
   actsysarray   = disnum_calc;
   stiff_array = disnum_calc;
-  mass_array  = stiff_array+1;
-  press_array = numff+3;
+  press_array = stiff_array+1;
+  mass_array  = press_array+1;
 
   fdyn->dt      = fsidyn->dt;
   fdyn->maxtime = fsidyn->maxtime;
@@ -391,13 +394,13 @@ void fsi_fluid_pm_cont_setup(
 
 
   /* allocate 1 dist. vector 'rhs' */
-  actsolv->nrhs = 1;
+  actsolv->nrhs = 2;
   solserv_create_vec(&(actsolv->rhs),actsolv->nrhs,numeq_total,numeq,"DV");
   solserv_zero_vec(&(actsolv->rhs[0]));
 
 
   /* allocate dist. solution vectors */
-  actsolv->nsol= 1;
+  actsolv->nsol = 1;
 
   solserv_create_vec(&(actsolv->sol),actsolv->nsol,numeq_total,numeq,"DV");
   for (i=0; i<actsolv->nsol; i++)
@@ -510,6 +513,14 @@ void fsi_fluid_pm_cont_setup(
   fluid_init(actpart,actintra,actfield,disnum_calc,disnum_io,action,
 	     &container,ipos->numincr,ipos,str);
 
+  /* we need two entries on the pressure discretization */
+  /*
+   * sol_increment[0]  ... phi
+   * sol_increment[1]  ... press
+   */
+  solserv_sol_zero(actfield,press_dis,node_array_sol_increment,1);
+
+  solserv_sol_zero(actfield,press_dis,node_array_sol,0);
 
   /* init the dirichlet-conditions */
   fluid_initdirich(actfield, disnum_calc, ipos);
@@ -534,6 +545,23 @@ void fsi_fluid_pm_cont_setup(
 		 &(actsolv->sol[0]),
 		 &(actsolv->rhs[0]),
 		 init);
+  /* initialize pressure matrix */
+  /* We initialize the matrix in actsolv using the parameters from
+   * pressolv. */
+  solver_control(actfield,disnum_calc,pressolv, actintra,
+                 &(actsolv->sysarray_typ[press_array]),
+                 &(actsolv->sysarray[press_array]),
+                 NULL,
+                 NULL,
+                 init);
+  /* initialize the mass matrix, too, so we can use the global
+   * matrix-vector product */
+  solver_control(actfield,disnum_calc,actsolv, actintra,
+                 &(actsolv->sysarray_typ[mass_array]),
+                 &(actsolv->sysarray[mass_array]),
+                 &(actsolv->sol[0]),
+                 &(actsolv->rhs[0]),
+                 init);
 
 
 
@@ -761,8 +789,8 @@ void fsi_fluid_pm_cont_calc(
 
   actsysarray   = disnum_calc;
   stiff_array = disnum_calc;
-  mass_array  = stiff_array+1;
-  press_array = numff+3;
+  press_array = stiff_array+1;
+  mass_array  = press_array+1;
 
 
   fdyn->dt      = fsidyn->dt;
@@ -811,6 +839,9 @@ void fsi_fluid_pm_cont_calc(
   solserv_zero_mat(actintra,&(actsolv->sysarray[mass_array]),
                    &(actsolv->sysarray_typ[mass_array]));
 
+  trilinos_zero_matrix(&work->grad);
+  trilinos_zero_matrix(&work->lmass);
+  
   pm_calelm_cont(actfield, actpart, disnum_calc, press_dis,
 		 actsolv, mass_array,
 		 actintra, ipos, &work->grad, &work->lmass);
