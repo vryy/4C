@@ -104,6 +104,8 @@ void construct_trilinos_matrix(
   trimatrix->rowmap = (void*)map;
 
   // Allocate the Epetra_CrsMatrix
+  trimatrix->NumEntriesPerRow = 81;
+  trimatrix->StaticProfile = false;
   Epetra_CrsMatrix* matrix = new Epetra_CrsMatrix(Copy,*map,81,false);
   trimatrix->matrix = (void*)matrix;
 
@@ -146,6 +148,8 @@ void construct_trilinos_diagonal_matrix(INTRA *actintra,
   trimatrix->rowmap = (void*)map;
 
   // Allocate the Epetra_CrsMatrix
+  trimatrix->NumEntriesPerRow = 1;
+  trimatrix->StaticProfile = true;
   Epetra_CrsMatrix* matrix = new Epetra_CrsMatrix(Copy,*map,1,true);
   trimatrix->matrix = (void*)matrix;
 
@@ -318,7 +322,9 @@ void trilinos_cp_matrixmask(TRILINOSMATRIX  *from, TRILINOSMATRIX* to)
   to->rowmap = (void*)rowmap;
 
   // Do Epetra_CrsMatrix
-  Epetra_CrsMatrix* matrix = new Epetra_CrsMatrix(Copy,*rowmap,81,false);
+  Epetra_CrsMatrix* matrix = new Epetra_CrsMatrix(Copy,*rowmap,
+                                                  from->NumEntriesPerRow,
+                                                  from->StaticProfile);
   to->matrix = (void*)matrix;
 
   // do dimensions and flags
@@ -351,7 +357,9 @@ void trilinos_zero_matrix(TRILINOSMATRIX *tri)
   Epetra_Map *rowmap = (Epetra_Map*)(tri->rowmap);
 
   // Do Epetra_CrsMatrix
-  Epetra_CrsMatrix* matrix = new Epetra_CrsMatrix(Copy,*rowmap,81,false);
+  Epetra_CrsMatrix* matrix = new Epetra_CrsMatrix(Copy,*rowmap,
+                                                  tri->NumEntriesPerRow,
+                                                  tri->StaticProfile);
   tri->matrix = (void*)matrix;
 
   // do flag
@@ -889,7 +897,9 @@ void add_trilinos_matrix(TRILINOSMATRIX* from, TRILINOSMATRIX* to, double factor
   {
     // target has been called FillComplete(), we can't add to it anymore
     // Create a new one and add both old ones
-    Epetra_CrsMatrix* newmatrix = new Epetra_CrsMatrix(Copy,mto->RowMap(),81,false);
+    Epetra_CrsMatrix* newmatrix = new Epetra_CrsMatrix(Copy,mto->RowMap(),
+                                                       to->NumEntriesPerRow,
+                                                       to->StaticProfile);
     MOERTEL::MatrixMatrixAdd(*mto,false,1.0,*newmatrix,0.0);
     MOERTEL::MatrixMatrixAdd(*mfrom,false,factor,*newmatrix,1.0);
     newmatrix->FillComplete(mto->OperatorDomainMap(),mto->OperatorRangeMap());

@@ -956,6 +956,9 @@ typedef struct _TRILINOSMATRIX
   void*                   rowmap;        /*!< rowmap of the matrix actually ptr to Epetra_Map */
   void*                   matrix;        /*!< Epetra_CrsMatrix */
 
+  INT                     NumEntriesPerRow; /*!< trilinos Graph build info */
+  INT                     StaticProfile; /*!< trilinos Graph build info */
+  
   void*                   linearproblem; /*!< ptr to the Epetra_LinearProblem */
   void*                   solver;        /*!< ptr to any Trilinos solver */
   void*                   params;        /*!< ptr to Teuchos parameter list */
