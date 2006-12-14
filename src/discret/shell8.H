@@ -208,6 +208,41 @@ public:
 
 private:
 
+  // action parameters recognized by shell8
+  enum ActionType
+  {
+    none,
+    calc_struct_linstiff,
+    calc_struct_nlnstiff,
+    calc_struct_internalforce,
+    calc_struct_linstiffmass,
+    calc_struct_nlnstiffmass,
+    calc_struct_stress,
+    calc_struct_eleload,
+    calc_struct_fsiload
+  };
+
+  // element specific data
+  enum ForceType
+  {
+    s8_none,
+    s8_xyz,
+    s8_rst,
+    s8_rst_ortho
+  };
+  ForceType                forcetype_;     // type of force calculation
+  double                   thickness_;     // shell thickness
+  int                      ngp_[3];        // no. gaussian points in each spatial dimension
+  int                      ngptri_;        // no. gaussian points for triangle elements
+  int                      nhyb_;          // no. of internal dofs
+  int                      eas_[5];        // eas parameters
+  int                      ans_;           // type of ANS: 0=none 1=Q 2=T 3=QT  
+  double                   sdc_;           // scaled director conditioning
+  int                      material_;      // number of the material law
+  DRT::Container           data_;          // container containing all kind of shell8 data
+  
+  // internal calculation methods
+
   // don't want = operator
   Shell8 operator = (const Shell8& old);
   
@@ -216,11 +251,36 @@ private:
                        vector<double>&           residual,
                        Epetra_SerialDenseMatrix* stiffmatrix,
                        Epetra_SerialDenseMatrix* massmatrix,
-                       Epetra_SerialDenseVector* intforce,
+                       Epetra_SerialDenseVector* force,
                        struct _MATERIAL*         material);
   
   void s8_integration_points(struct _S8_DATA& data);
   
+  void s8BtDB(Epetra_SerialDenseMatrix& estif, const Epetra_SerialDenseMatrix& bop,
+              const double D[][12], const int iel, const int numdf, const double weight);
+  
+  void s8tvkg(Epetra_SerialDenseMatrix& estif, double stress_r[], 
+              const vector<double>& funct, const Epetra_SerialDenseMatrix& deriv,
+              const int numdf, const int iel, const double weight,
+              const double e1, const double e2);
+  
+  void s8anstvkg(Epetra_SerialDenseMatrix& estif, double stress_r[], 
+                 const vector<double>& funct, const Epetra_SerialDenseMatrix& deriv,
+                 const int numdf, const int iel, const double weight,
+                 const double e1, const double e2,
+                 const double frq[], const double fsq[], 
+                 const vector<double> funct1q[], const vector<double> funct2q[],
+                 const Epetra_SerialDenseMatrix deriv1q[], const Epetra_SerialDenseMatrix deriv2q[],
+                 const int ansq, const int nsansq);
+
+  void s8intforce(Epetra_SerialDenseVector& intforce, const double stress_r[],
+                  const Epetra_SerialDenseMatrix& bop, const int iel, 
+                  const int numdf, const int nstress_r, const double weight);
+
+  void s8tmas(const vector<double>& funct, const vector<double>& thick,
+              Epetra_SerialDenseMatrix& emass, const int iel, const int numdf,
+              const double facv, const double facw, const double facvw);
+
   void s8tmat(struct _MATERIAL* material, 
               double stress[], double strain[], double** C,
               double gmkovc[][3], double gmkonc[][3], 
@@ -231,7 +291,13 @@ private:
               const double e3, const int option, 
               const int ngauss);
   
+  void s8tvma(double D[][12], double** C, double stress[], double stress_r[], 
+              const double e3, const double fact, const double condfac);
+  
   void s8_YpluseqAx(vector<double>& y, const Epetra_SerialDenseMatrix& A,
+                    const vector<double>& x, const double factor, 
+                    const bool init);
+  void s8_YpluseqAx(Epetra_SerialDenseVector& y, const Epetra_SerialDenseMatrix& A,
                     const vector<double>& x, const double factor, 
                     const bool init);
   
@@ -249,6 +315,29 @@ private:
                      const int nj,
                      const int init,
                      const double factor);
+  void s8matmatdense(Epetra_SerialDenseMatrix& R, 
+                     const double A[][12],
+                     const Epetra_SerialDenseMatrix& B,
+                     const int ni,
+                     const int nk,
+                     const int nj,
+                     const int init,
+                     const double factor);
+  void s8mattrnmatdense(Epetra_SerialDenseMatrix& R,
+                        const Epetra_SerialDenseMatrix& A,
+                        const Epetra_SerialDenseMatrix& B,
+                        const int ni,
+                        const int nk,
+                        const int nj,
+                        const int init,
+                        const double factor);
+  void s8mattrnvecdense(vector<double>& r,
+                        const Epetra_SerialDenseMatrix& A, 
+                        const double b[],
+                        const int ni,
+                        const int nk,
+                        const int init,
+                        const double factor);
   
   const double s8_localcoordsofnode(const int node, const int flag,
                                     const int numnode) const;
@@ -373,46 +462,6 @@ private:
 
   void s8vthv(double gmkovc[][3], double gmkonc[][3], const vector<double>& epsh,
               double* detc, const double e3, const double condfac);
-
-  // action parameters recognized by shell8
-  enum ActionType
-  {
-    none,
-    calc_struct_linstiff,
-    calc_struct_nlnstiff,
-    calc_struct_internalforce,
-    calc_struct_linstiffmass,
-    calc_struct_nlnstiffmass,
-    calc_struct_stress,
-    calc_struct_eleload,
-    calc_struct_fsiload
-  };
-
-  // element specific data
-  enum ForceType
-  {
-    s8_none,
-    s8_xyz,
-    s8_rst,
-    s8_rst_ortho
-  };
-  ForceType                forcetype_;     // type of force calculation
-  double                   thickness_;     // shell thickness
-  int                      ngp_[3];        // no. gaussian points in each spatial dimension
-  int                      ngptri_;        // no. gaussian points for triangle elements
-  int                      nhyb_;          // no. of internal dofs
-  int                      eas_[5];        // eas parameters
-  int                      ans_;           // type of ANS: 0=none 1=Q 2=T 3=QT  
-  double                   sdc_;           // scaled director conditioning
-  int                      material_;      // number of the material law
-
-  DRT::Container           data_;          // container containing all kind of shell8 data
-  
-  //vector<double>           alfa_;          // eas parameters
-  //Epetra_SerialDenseMatrix Dtildinv_;
-  //Epetra_SerialDenseMatrix Lt_;
-  //vector<double>           Rtild_;
-
 
 }; // class Shell8
 

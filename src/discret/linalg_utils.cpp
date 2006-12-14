@@ -81,6 +81,49 @@ void LINALG::Export(const Epetra_Vector& source, Epetra_Vector& target)
   return;
 }
 
+#ifdef LINUX_MUENCH
+#define CCA_APPEND_U (1)
+#endif
+#ifdef CCA_APPEND_U
+#define dsytrf dsytrf_
+#define dsytri dsytri_
+#endif
+extern "C"
+{
+  void dsytrf(char *uplo, int *n, double *a, int *lda, int *ipiv, double *work, int *lwork, int *info);
+  void dsytri(char *uplo, int *n, double *a, int *lda, int *ipiv, double *work, int *info);
+}
+
+/*----------------------------------------------------------------------*
+ |  invert a dense symmetric matrix  (public)                mwgee 12/06|
+ *----------------------------------------------------------------------*/
+void LINALG::SymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim)
+{
+  if (A.M() != A.N()) dserror("Matrix is not square");
+  if (A.M() != dim) dserror("Dimension supplied does not match matrix");
+
+  double* a = A.A();
+  char uplo[5]; strncpy(uplo,"L ",2);
+  vector<int> ipiv(dim);
+  int lwork = 10*dim;
+  vector<double> work(lwork);
+  int info=0;
+  int n = dim;
+  int m = dim;
+
+  dsytrf(uplo,&m,a,&n,&(ipiv[0]),&(work[0]),&lwork,&info);
+  if (info) dserror("dsytrf returned info=%d",info);
+  
+  dsytri(uplo,&m,a,&n,&(ipiv[0]),&(work[0]),&info);
+  if (info) dserror("dsytri returned info=%d",info);
+  
+  for (int i=0; i<dim; ++i)
+    for (int j=0; j<i; ++j)
+      A(j,i)=A(i,j);
+  
+  return;
+}
+
 
 
 #endif  // #ifdef TRILINOS_PACKAGE

@@ -23,6 +23,7 @@ Maintainer: Michael Gee
 #include "Epetra_Vector.h"
 #include "Epetra_Export.h"
 #include "Epetra_Import.h"
+#include "Epetra_SerialDenseMatrix.h"
 #include "Teuchos_RefCountPtr.hpp"
 
 using namespace std;
@@ -65,6 +66,14 @@ namespace LINALG
   \param target (out): target vector values will be inserted in
   */
   void Export(const Epetra_Vector& source, Epetra_Vector& target);
+
+  /*!
+  \brief Invert a symmetric dim*dim square matrix
+  
+  \param A (in/out): Matrix to be inverted
+  \param dim (in) :  Dimension of matrix
+  */
+  void SymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim);
 
 } // namespace LINALG
 

@@ -24,6 +24,8 @@ Maintainer: Michael Gee
 #include "drt_utils.H"
 #include "drt_exporter.H"
 #include "drt_dserror.H"
+#include "linalg_utils.H"
+
 extern "C" 
 {
 #include "../headers/standardtypes.h"
@@ -121,7 +123,7 @@ void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm,
                                             vector<double>&           residual,
                                             Epetra_SerialDenseMatrix* stiffmatrix,
                                             Epetra_SerialDenseMatrix* massmatrix,
-                                            Epetra_SerialDenseVector* intforce,
+                                            Epetra_SerialDenseVector* force,
                                             struct _MATERIAL*         material)
 {
   DSTraceHelper dst("Shell8::s8_nlnstiffmass");  
@@ -129,11 +131,13 @@ void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm,
   const int numnode = NumNode();
   const int numdf   = 6;
   int       ngauss  = 0;
+  const int nd      = numnode*numdf;
 
   // general arrays
   vector<double>           funct(numnode);
   Epetra_SerialDenseMatrix deriv(2,numnode);
-  Epetra_SerialDenseMatrix bop(12,numdf*numnode);
+  Epetra_SerialDenseMatrix bop(12,nd);
+  Epetra_SerialDenseVector intforce(nd);
   double D[12][12];    // mid surface material tensor
   double stress[6];
   double strain[6];
@@ -208,7 +212,7 @@ void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm,
   double a3kvpc2q[nsansmax][3][2];
   
   // for eas
-  Epetra_SerialDenseMatrix P;
+  Epetra_SerialDenseMatrix P;          
   Epetra_SerialDenseMatrix transP;
   Epetra_SerialDenseMatrix T;
   Epetra_SerialDenseMatrix Lt;
@@ -247,7 +251,7 @@ void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm,
     P.Shape(12,nhyb_);
     transP.Shape(12,nhyb_);
     T.Shape(12,12);
-    Lt.Shape(nhyb_,numnode*numdf);
+    Lt.Shape(nhyb_,nd);
     Dtild.Shape(nhyb_,nhyb_);
     Dtildinv.Shape(nhyb_,nhyb_);
     Rtild.resize(nhyb_); for (int i=0; i<nhyb_; ++i) Rtild[i] = 0.0;
@@ -281,7 +285,6 @@ void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm,
   const int nis = ngp_[1];
   const int nit = ngp_[2];
   const int iel = numnode;
-  const int nd  = numnode*numdf;
   const double condfac = sdc_;
   Epetra_SerialDenseMatrix* a3ref = data_.GetMatrix("a3ref");
   if (!a3ref) dserror("Cannot get data a3ref");
@@ -423,22 +426,479 @@ void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm,
          s8tmat(material,stress,strain,C,gmkovc,gmkonc,gmkovr,gmkonr,
                 gkovc,gkonc,gkovr,gkonr,detc,detr,e3,0,ngauss);
          /*---------------- do thickness integration of material tensor */
-         
-         
-         
+         s8tvma(D,C,stress,stress_r,e3,fact,condfac);
+         /*-------------------------- mass matrix thickness integration */
+         if (imass)
+         {
+           facv  += s8data.wgtt[lt] * detr;
+           facw  += s8data.wgtt[lt] * detr * e3 * e3;
+           facvw += s8data.wgtt[lt] * detr * e3;
+         }
+         /*-------------------------------------------------------------*/
        } // for (int lt=0; lt<nit; ++lt)
+       /*------------ product of all weights and jacobian of mid surface */
+       double weight = facr*facs*da;
+       /*----------------------------------- elastic stiffness matrix ke */
+       s8BtDB(*stiffmatrix,bop,D,iel,numdf,weight);
+       /*--------------------------------- geometric stiffness matrix kg */
+       if (!ansq) s8tvkg(*stiffmatrix,stress_r,funct,deriv,numdf,iel,weight,e1,e2); 
+       else       s8anstvkg(*stiffmatrix,stress_r,funct,deriv,numdf,iel,weight,e1,e2,
+                            frq,fsq,funct1q,funct2q,deriv1q,deriv2q,ansq,nsansq);
+       /*-------------------------------- calculation of internal forces */
+       if (force) s8intforce(intforce,stress_r,bop,iel,numdf,12,weight);
+       /*------------- mass matrix : gaussian point on shell mid surface */
+       if (imass)
+       {
+         double fac = facr * facs * density;
+         facv  *= fac;
+         facw  *= fac;
+         facvw *= fac;
+         s8tmas(funct,*thick,*massmatrix,iel,numdf,facv,facw,facvw);
+       }
+       /*----------------------------------- integration of eas matrices */
+       if (nhyb_)
+       {
+         /*==========================================================*/
+         /*  Ltrans(nhyb,nd) = Mtrans(nhyb,12) * D(12,12) * B(12,nd) */
+         /*==========================================================*/
+         /*-------------------------------------------------- DB=D*B */
+         Epetra_SerialDenseMatrix workeas(12,nd); // bug in old version (nhyb,nd)
+         s8matmatdense(workeas,D,bop,12,12,nd,0,0.0);
+         /*----------------------------------- Ltransposed = Mt * DB */
+         s8mattrnmatdense(Lt,transP,workeas,nhyb_,12,nd,1,weight);
+         /*==========================================================*/
+         /*  Dtilde(nhyb,nhyb) = Mtrans(nhyb,12) * D(12,12) * M(12,nhyb) */
+         /*==========================================================*/
+         /*-------------------------------------------------DM = D*M */
+         workeas.Shape(12,nhyb_);
+         s8matmatdense(workeas,D,transP,12,12,nhyb_,0,0.0);
+         /*------------------------------------------ Dtilde = Mt*DM */
+         s8mattrnmatdense(Dtild,transP,workeas,nhyb_,12,nhyb_,1,weight);
+         /*==========================================================*/
+         /*  Rtilde(nhyb) = Mtrans(nhyb,12) * Forces(12)             */
+         /*==========================================================*/
+         /*---------------------- eas part of internal forces Rtilde */
+         s8mattrnvecdense(Rtild,transP,stress_r,nhyb_,12,1,weight);
+       }
+       ngauss++;
     } // for (int ls=0; ls<nis; ++ls)
   } // for (int lr=0; lr<nir; ++lr)
-
-
-
-
-
-
-
+  /*----------------- make modifications to stiffness matrices due to eas */
+  if (nhyb_)
+  {
+    /*------------------------------------ make inverse of matrix Dtilde */
+    Epetra_SerialDenseMatrix Dtildinv(Dtild);
+    LINALG::SymmetricInverse(Dtildinv,nhyb_);
+    /*===================================================================*/
+    /* estif(nd,nd) = estif(nd,nd) - Ltrans(nhyb,nd) * Dtilde^-1(nhyb,nhyb) * L(nd,nhyb) */
+    /*===================================================================*/
+    Epetra_SerialDenseMatrix workeas(nd,nhyb_);
+    /*------------------------------------------- make Ltrans * Dtildinv */
+    s8mattrnmatdense(workeas,Lt,Dtildinv,nd,nhyb_,nhyb_,0,0.0);
+    /*---------------------------------- make estif -= Lt * Dtildinv * L */
+    s8matmatdense(*stiffmatrix,workeas,Lt,nd,nhyb_,nd,1,-1.0);
+    /*===================================================================*/
+    /* R(nd) = R(nd) - Ltrans(nhyb,nd) * Dtilde^-1(nhyb,nhyb) * Rtilde(nhyb) */
+    /*===================================================================*/
+    /*--------------------------- make intforce -= Lt * Dtildinv * Rtild */
+    s8_YpluseqAx(intforce,workeas,Rtild,-1.0,false);
+    /*------------------------------------------ put Dtildinv to storage */
+    /*------------------------------------------------ put Lt to storage */
+    /*-------------------------------------------- put Rtilde to storage */
+    for (int i=0; i<nhyb_; ++i)
+    {
+      for (int j=0; j<nhyb_; ++j) (*oldDtildinv)(i,j) = Dtildinv(i,j);
+      for (int j=0; j<nd; ++j)    (*oldLt)(i,j)       = Lt(i,j);
+                                  (*oldRtild)[i]      = Rtild[i];
+    }
+  } // if (nhyb_)
+  /*- add internal forces to global vector, if a global vector was passed */
+  /*                                                      to this routine */
+  if (force)
+    for (int i=0; i<nd; ++i) (*force)[i] += intforce[i];
+  //------------------------------------------------ delete the only ARRAY
   amdel(&C_a);
+  /*------------------------------------- make estif absolute symmetric */
+  for (int i=0; i<nd; ++i)
+    for (int j=i+1; j<nd; ++j)
+    {
+      const double average = 0.5*( (*stiffmatrix)(i,j) + (*stiffmatrix)(j,i) );
+      (*stiffmatrix)(i,j) = average;
+      (*stiffmatrix)(j,i) = average;
+    }
+  
+#if 0  
+printf("Element id %d\n",Id());
+for (int i=0; i<nd; ++i)
+{
+  for (int j=0; j<nd; ++j)
+    printf("  %15.10e  ",(*stiffmatrix)(i,j));
+  printf("\n");
+}
+printf("internal forces\n");
+for (int i=0; i<nd; ++i) 
+  printf("%15.10e\n",(*force)[i]);
+fflush(stdout);
+exit(0);
+#endif  
+  
   return;
 } // DRT::Elements::Shell8::s8_nlnstiffmass
+
+
+/*----------------------------------------------------------------------*
+ | calculation of gaussian points mass with update of displacements     |
+ |                                                 (private) 12/06 mgee |
+ *----------------------------------------------------------------------*/
+void DRT::Elements::Shell8::s8tmas(
+              const vector<double>& funct, const vector<double>& thick,
+              Epetra_SerialDenseMatrix& emass, const int iel, const int numdf,
+              const double facv, const double facw, const double facvw)
+{
+  DSTraceHelper dst("Shell8::s8tmas");
+/*----------------------------------------------------------------------*/
+/*---------------------------- half element thickness at gaussian point */
+  double he=0.0;
+  for (int i=0; i<iel; ++i) he+= thick[i]*funct[i];
+  he /=2.0;
+  const double hehe=he*he;
+/*---------------------------------------------------- make mass matrix */
+  for (int i=0; i<iel; ++i)
+    for (int j=0; j<iel; ++j)
+    {
+      const double helpf = funct[i] * funct[j];
+      double       help  = facv * helpf;
+      for (int k=0; k<3; ++k)
+        emass(j*numdf+k,i*numdf+k) += help;
+      
+      help = facw * helpf * hehe;
+      for (int k=3; k<6; ++k)
+        emass(j*numdf+k,i*numdf+k) += help;
+        
+      if (abs(facvw)>1.0e-14)
+      {
+        help = facvw * helpf * he;
+        emass(j*numdf+3,i*numdf+0) += help;
+        emass(j*numdf+4,i*numdf+1) += help;
+        emass(j*numdf+5,i*numdf+2) += help;
+        emass(j*numdf+0,i*numdf+3) += help;
+        emass(j*numdf+1,i*numdf+4) += help;
+        emass(j*numdf+2,i*numdf+5) += help;
+      }
+    }
+/*----------------------------------------------------------------------*/
+  return;
+}
+
+
+
+
+/*----------------------------------------------------------------------*
+ | make internal forces                                                 |
+ |                                                 (private) 12/06 mgee |
+ *----------------------------------------------------------------------*/
+void DRT::Elements::Shell8::s8intforce(Epetra_SerialDenseVector& intforce, const double stress_r[],
+                  const Epetra_SerialDenseMatrix& bop, const int iel, 
+                  const int numdf, const int nstress_r, const double weight)
+{
+  DSTraceHelper dst("Shell8::s8intforce");
+/*----------------------------------------------------------------------*/
+  const int nd = iel*numdf;
+  /*
+  make intforce[nd] = transposed(bop[nstress_r][nd]) * stress_r[nstress_r]
+  */
+  for (int i=0; i<nd; ++i)
+  {
+    double sum=0.0;
+    for (int k=0; k<nstress_r; ++k) sum += bop(k,i)*stress_r[k];
+    intforce[i] += sum*weight;
+  }
+/*----------------------------------------------------------------------*/
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | geometric stiffness matrix kg  with ans                              |
+ |                                                 (private) 12/06 mgee |
+ *----------------------------------------------------------------------*/
+void DRT::Elements::Shell8::s8anstvkg(
+                 Epetra_SerialDenseMatrix& estif, double stress_r[], 
+                 const vector<double>& funct, const Epetra_SerialDenseMatrix& deriv,
+                 const int numdf, const int iel, const double weight,
+                 const double e1, const double e2,
+                 const double frq[], const double fsq[], 
+                 const vector<double> funct1q[], const vector<double> funct2q[],
+                 const Epetra_SerialDenseMatrix deriv1q[], const Epetra_SerialDenseMatrix deriv2q[],
+                 const int ansq, const int nsansq)
+{
+  DSTraceHelper dst("Shell8::s8anstvkg");
+/*----------------------------------------------------------------------*/
+  const double sn11 = stress_r[0];
+  const double sn21 = stress_r[1];
+  const double sn31 = stress_r[2];
+  const double sn22 = stress_r[3];
+  const double sn32 = stress_r[4];
+  const double sn33 = stress_r[5];
+  const double sm11 = stress_r[6];
+  const double sm21 = stress_r[7];
+  const double sm31 = stress_r[8];
+  const double sm22 = stress_r[9];
+  const double sm32 = stress_r[10];
+/*----------------------------------------------------------------------*/
+  for (int inode=0; inode<iel; ++inode)
+  {
+    for (int jnode=0; jnode<=inode; ++jnode)
+    {
+      const double pi = funct[inode];
+      const double pj = funct[jnode];
+      
+      const double d11 = deriv(0,inode) * deriv(0,jnode);
+      const double d12 = deriv(0,inode) * deriv(1,jnode);
+      const double d21 = deriv(1,inode) * deriv(0,jnode);
+      const double d22 = deriv(1,inode) * deriv(1,jnode);
+      
+      const double xn = (sn11*d11 + sn21*(d12+d21) + sn22*d22) * weight;
+      const double xm = (sm11*d11 + sm21*(d12+d21) + sm22*d22) * weight;
+
+      double pd1ij,pd1ji,pd2ij,pd2ji,yu,yo;
+      /*----------------------------------------- no ans for querschub */
+      if (!ansq)
+      {
+        pd1ij = deriv(0,inode) * pj;
+        pd1ji = deriv(0,jnode) * pi;
+        pd2ij = deriv(1,inode) * pj;
+        pd2ji = deriv(1,jnode) * pi;
+        yu = (sn31*pd1ji + sn32*pd2ji) * weight;
+        yo = (sn31*pd1ij + sn32*pd2ij) * weight;
+      }
+      /*----------------------------------------- ans for querschub */
+      else
+      {
+        yu=0.0;
+        yo=0.0;
+        for (int i=0; i<nsansq; ++i)
+        {
+          pd1ij = deriv1q[i](0,inode) * funct1q[i][jnode] * frq[i];
+          pd1ji = deriv1q[i](0,jnode) * funct1q[i][inode] * frq[i];
+          pd2ij = deriv2q[i](1,inode) * funct2q[i][jnode] * fsq[i];
+          pd2ji = deriv2q[i](1,jnode) * funct2q[i][inode] * fsq[i];
+          yu += (sn31*pd1ji + sn32*pd2ji) * weight;
+          yo += (sn31*pd1ij + sn32*pd2ij) * weight;
+        } 
+      }
+      /*---------------- linear part of querschub is always unmodified */
+      pd1ij = deriv(0,inode) * pj;
+      pd1ji = deriv(0,jnode) * pi;
+      pd2ij = deriv(1,inode) * pj;
+      pd2ji = deriv(1,jnode) * pi;
+      const double yy = (sm31*(pd1ij+pd1ji) + sm32*(pd2ij+pd2ji)) * weight;
+      const double z  = pi*pj*sn33*weight;
+      
+      estif(inode*numdf+0,jnode*numdf+0) += xn;
+      estif(inode*numdf+1,jnode*numdf+1) += xn;
+      estif(inode*numdf+2,jnode*numdf+2) += xn;
+      
+      estif(inode*numdf+3,jnode*numdf+0) += (xm+yu);
+      estif(inode*numdf+4,jnode*numdf+1) += (xm+yu);
+      estif(inode*numdf+5,jnode*numdf+2) += (xm+yu);
+      
+      estif(inode*numdf+0,jnode*numdf+3) += (xm+yo);
+      estif(inode*numdf+1,jnode*numdf+4) += (xm+yo);
+      estif(inode*numdf+2,jnode*numdf+5) += (xm+yo);
+      
+      estif(inode*numdf+3,jnode*numdf+3) += (yy+z);
+      estif(inode*numdf+4,jnode*numdf+4) += (yy+z);
+      estif(inode*numdf+5,jnode*numdf+5) += (yy+z);
+      
+      if (inode!=jnode)
+      {
+         estif(jnode*numdf+0,inode*numdf+0) += xn;
+         estif(jnode*numdf+1,inode*numdf+1) += xn;
+         estif(jnode*numdf+2,inode*numdf+2) += xn;
+      
+         estif(jnode*numdf+0,inode*numdf+3) += (xm+yu);
+         estif(jnode*numdf+1,inode*numdf+4) += (xm+yu);
+         estif(jnode*numdf+2,inode*numdf+5) += (xm+yu);
+      
+         estif(jnode*numdf+3,inode*numdf+0) += (xm+yo);
+         estif(jnode*numdf+4,inode*numdf+1) += (xm+yo);
+         estif(jnode*numdf+5,inode*numdf+2) += (xm+yo);
+      
+         estif(jnode*numdf+3,inode*numdf+3) += (yy+z);
+         estif(jnode*numdf+4,inode*numdf+4) += (yy+z);
+         estif(jnode*numdf+5,inode*numdf+5) += (yy+z);
+      }
+    } // for (int jnode=0; jnode<=inode; ++jnode)
+  } // for (int inode=0; inode<iel; ++inode)
+
+
+
+/*----------------------------------------------------------------------*/
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | geometric stiffness matrix kg                                        |
+ |                                                 (private) 12/06 mgee |
+ *----------------------------------------------------------------------*/
+void DRT::Elements::Shell8::s8tvkg(
+              Epetra_SerialDenseMatrix& estif, double stress_r[], 
+              const vector<double>& funct, const Epetra_SerialDenseMatrix& deriv,
+              const int numdf, const int iel, const double weight,
+              const double e1, const double e2)
+{
+  DSTraceHelper dst("Shell8::s8tvkg");
+/*----------------------------------------------------------------------*/
+  const double sn11 = stress_r[0];
+  const double sn21 = stress_r[1];
+  const double sn31 = stress_r[2];
+  const double sn22 = stress_r[3];
+  const double sn32 = stress_r[4];
+  const double sn33 = stress_r[5];
+  const double sm11 = stress_r[6];
+  const double sm21 = stress_r[7];
+  const double sm31 = stress_r[8];
+  const double sm22 = stress_r[9];
+  const double sm32 = stress_r[10];
+  for (int inode=0; inode<iel; ++inode)
+  {
+    for (int jnode=0; jnode<=inode; ++jnode)
+    {
+      const double pi = funct[inode];
+      const double pj = funct[jnode];
+      
+      const double d11 = deriv(0,inode) * deriv(0,jnode);
+      const double d12 = deriv(0,inode) * deriv(1,jnode);
+      const double d21 = deriv(1,inode) * deriv(0,jnode);
+      const double d22 = deriv(1,inode) * deriv(1,jnode);
+      
+      const double pd1ij = deriv(0,inode) * pj;
+      const double pd1ji = deriv(0,jnode) * pi;
+      const double pd2ij = deriv(1,inode) * pj;
+      const double pd2ji = deriv(1,jnode) * pi;
+
+      const double xn = (sn11*d11 + sn21*(d12+d21) + sn22*d22) * weight;
+      const double xm = (sm11*d11 + sm21*(d12+d21) + sm22*d22) * weight;
+      const double yu = (sn31*pd1ji + sn32*pd2ji) * weight;
+      const double yo = (sn31*pd1ij + sn32*pd2ij) * weight;
+      const double yy = (sm31*(pd1ij+pd1ji) + sm32*(pd2ij+pd2ji)) * weight;
+      const double z  = pi*pj*sn33*weight;
+      
+      estif(inode*numdf+0,jnode*numdf+0) += xn;
+      estif(inode*numdf+1,jnode*numdf+1) += xn;
+      estif(inode*numdf+2,jnode*numdf+2) += xn;
+      
+      estif(inode*numdf+3,jnode*numdf+0) += (xm+yu);
+      estif(inode*numdf+4,jnode*numdf+1) += (xm+yu);
+      estif(inode*numdf+5,jnode*numdf+2) += (xm+yu);
+      
+      estif(inode*numdf+0,jnode*numdf+3) += (xm+yo);
+      estif(inode*numdf+1,jnode*numdf+4) += (xm+yo);
+      estif(inode*numdf+2,jnode*numdf+5) += (xm+yo);
+      
+      estif(inode*numdf+3,jnode*numdf+3) += (yy+z);
+      estif(inode*numdf+4,jnode*numdf+4) += (yy+z);
+      estif(inode*numdf+5,jnode*numdf+5) += (yy+z);
+      
+      if (inode!=jnode)
+      {
+         estif(jnode*numdf+0,inode*numdf+0) += xn;
+         estif(jnode*numdf+1,inode*numdf+1) += xn;
+         estif(jnode*numdf+2,inode*numdf+2) += xn;
+      
+         estif(jnode*numdf+0,inode*numdf+3) += (xm+yu);
+         estif(jnode*numdf+1,inode*numdf+4) += (xm+yu);
+         estif(jnode*numdf+2,inode*numdf+5) += (xm+yu);
+      
+         estif(jnode*numdf+3,inode*numdf+0) += (xm+yo);
+         estif(jnode*numdf+4,inode*numdf+1) += (xm+yo);
+         estif(jnode*numdf+5,inode*numdf+2) += (xm+yo);
+      
+         estif(jnode*numdf+3,inode*numdf+3) += (yy+z);
+         estif(jnode*numdf+4,inode*numdf+4) += (yy+z);
+         estif(jnode*numdf+5,inode*numdf+5) += (yy+z);
+      }
+    } // for (int jnode=0; jnode<=inode; ++jnode)
+  } // for (int inode=0; inode<iel; ++inode)
+/*----------------------------------------------------------------------*/
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | integrate material law and stresses in thickness direction of shell  |
+ |                                                 (private) 12/06 mgee |
+ *----------------------------------------------------------------------*/
+void DRT::Elements::Shell8::s8tvma(
+              double D[][12], double** C, double stress[], double stress_r[], 
+              const double e3, const double fact, const double condfac)
+{
+  DSTraceHelper dst("Shell8::s8tvma");
+/*----------------------------------------------------------------------*/
+  const double zeta = e3/condfac;
+  for (int i=0; i<6; ++i)
+  {
+    const int i6 = i+6;
+    const double stress_fact = stress[i]*fact;
+    stress_r[i]  += stress_fact;
+    stress_r[i6] += stress_fact * zeta;
+    for (int j=0; j<6; ++j)
+    {
+      const int j6 = j+6;
+      const double C_fact = C[i][j]*fact;
+      D[i][j]   += C_fact;
+      D[i6][j]  += C_fact*zeta;
+      D[i6][j6] += C_fact*zeta*zeta;
+    }
+  }
+/*-------------------------------------------------------- symmetrize D */
+for (int i=0; i<12; i++)
+{
+   for (int j=i+1; j<12; j++)
+   {
+      D[i][j]=D[j][i];
+   }
+}
+/*----------------------------------------------------------------------*/
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | calculate Ke += Bt * D * B                                           |
+ |                                                 (private) 12/06 mgee |
+ *----------------------------------------------------------------------*/
+void DRT::Elements::Shell8::s8BtDB(Epetra_SerialDenseMatrix& estif, 
+                                   const Epetra_SerialDenseMatrix& bop,
+                                   const double D[][12], 
+                                   const int iel, 
+                                   const int numdf, 
+                                   const double weight)
+{
+  DSTraceHelper dst("Shell8::s8BtDB");
+/*----------------------------------------------------------------------*/
+  const int dim = iel*numdf;
+/*------------------------------------ make multiplication work = D * B */
+  double work[12][dim];
+  for (int i=0; i<12; ++i)
+    for (int j=0; j<dim; ++j)
+    {
+      double sum = 0.0;
+      for (int k=0; k<12; ++k) sum += D[i][k]*bop(k,j);
+      work[i][j] = sum;
+    }
+/*--------------------------- make multiplication estif += bop^t * work */    
+  for (int i=0; i<dim; ++i)
+    for (int j=0; j<dim; ++j)
+    {
+      double sum = 0.0;
+      for (int k=0; k<12; ++k) sum += bop(k,i) * work[k][j];
+      estif(i,j) += sum*weight;
+    }
+/*----------------------------------------------------------------------*/
+  return;
+}
 
 
 /*----------------------------------------------------------------------*
@@ -504,7 +964,7 @@ void DRT::Elements::Shell8::s8tmat(
       for (int i=0; i<3; ++i)
       for (int j=0; j<3; ++j) 
       {
-        gkonrtmp[i][j] = gmkonr[i][j];
+        gkonrtmp[i][j] = gkonr[i][j];
         gmkovctmp[i][j] = gmkovc[i][j];
       }
       /*----------------------------- call compressible ogden material law */
@@ -536,7 +996,6 @@ void DRT::Elements::Shell8::s8tmat(
 /*----------------------------------------------------------------------*/
   return;
 }
-
 
 
 /*----------------------------------------------------------------------*
@@ -1888,7 +2347,145 @@ void DRT::Elements::Shell8::s8matmatdense(Epetra_SerialDenseMatrix& R,
         R(i,j) += sum*factor;
       }
   }
-    
+  return;
+}                    
+/*----------------------------------------------------------------------*
+ |  R[i][j] = A[i][k]*B[k][j] -----  R=A*B                   m.gee12/01 |
+ | if init==0 result is inited to 0.0                                   |
+ |        !=0 result is added  to R multiplied by factor                |
+ |  R[i][j] += A[i][k]*B[k][j]*factor                                   |
+ |                                                                      |
+ | important: this routine works only with arrays that are dynamically  |
+ |            allocated the way the AM routines do it                   |
+ |            (you can use BLAS as well for this, but you have to care  |
+               for the fact, that rows and columns are changed by BLAS )|
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+void DRT::Elements::Shell8::s8matmatdense(Epetra_SerialDenseMatrix& R, 
+                                          const double A[][12],
+                                          const Epetra_SerialDenseMatrix& B,
+                                          const int ni,
+                                          const int nk,
+                                          const int nj,
+                                          const int init,
+                                          const double factor)
+{
+  if (!init)
+  {
+    for (int i=0; i<ni; ++i)
+      for (int j=0; j<nj; ++j)
+      {
+        double sum=0.0;
+        for (int k=0; k<nk; ++k) sum += A[i][k]*B(k,j);
+        R(i,j) = sum;
+      }
+  }
+  else
+  {
+    for (int i=0; i<ni; ++i)
+      for (int j=0; j<nj; ++j)
+      {
+        double sum=0.0;
+        for (int k=0; k<nk; ++k) sum += A[i][k]*B(k,j);
+        R(i,j) += sum*factor;
+      }
+  }
+  return;
+}                    
+/*----------------------------------------------------------------------*
+ |  R[i][j] = A[k][i]*B[k][j] -----  R=A^t * B               m.gee 7/01 |
+ | if init==0 result is inited to 0.0                                   |
+ |        !=0 result is added  to R multiplied by factor                |
+ |  R[i][j] += A[k][i]*B[k][j]*factor                                   |
+ |                                                                      |
+ | important: this routine works only with arrays that are dynamically  |
+ |            allocated the way the AM routines do it                   |
+ |            (you can use BLAS as well for this, but you have to care  |
+               for the fact, that rows and columns are changed by BLAS )|
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+void DRT::Elements::Shell8::s8mattrnmatdense(Epetra_SerialDenseMatrix& R,
+                                             const Epetra_SerialDenseMatrix& A,
+                                             const Epetra_SerialDenseMatrix& B,
+                                             const int ni,
+                                             const int nk,
+                                             const int nj,
+                                             const int init,
+                                             const double factor)
+{
+  if (!init)
+  {
+    for (int i=0; i<ni; ++i)
+      for (int j=0; j<nj; ++j)
+      {
+        double sum=0.0;
+        for (int k=0; k<nk; ++k) sum += A(k,i)*B(k,j);
+        R(i,j) = sum;
+      }
+  }
+  else
+  {
+    for (int i=0; i<ni; ++i)
+      for (int j=0; j<nj; ++j)
+      {
+        double sum=0.0;
+        for (int k=0; k<nk; ++k) sum += A(k,i)*B(k,j);
+        R(i,j) += sum*factor;
+      }
+  }
+  return;
+}                    
+
+/*----------------------------------------------------------------------*
+ |  r(I) = A(K,I)*b(K) -----  r = A*b                        m.gee 6/01 |
+ |  or                                                                  |
+ |  r(I) += A(K,I)*b(K)*factor                                          |
+ *----------------------------------------------------------------------*/
+void DRT::Elements::Shell8::s8mattrnvecdense(
+                        vector<double>& r,
+                        const Epetra_SerialDenseMatrix& A, 
+                        const double b[],
+                        const int ni,
+                        const int nk,
+                        const int init,
+                        const double factor)
+{
+  if (!init)
+    for (int i=0; i<ni; ++i) r[i] = 0.0;
+  for (int i=0; i<ni; ++i)
+  {
+    double sum=0.0;
+    for (int k=0; k<nk; ++k) sum += A(k,i)*b[k];
+    r[i] += sum*factor;
+  }
+  return;
+}                    
+
+
+/*----------------------------------------------------------------------*
+ |  y(I) = A(I,K)*x(K)*factor -----  y = A*x*factor         m.gee 12/06 |
+ |  or                                                                  |
+ |  y(I) += A(I,K)*x(K)*factor                                          |
+ | (private)                                                            |
+ *----------------------------------------------------------------------*/
+void DRT::Elements::Shell8::s8_YpluseqAx(Epetra_SerialDenseVector& y,
+                                         const Epetra_SerialDenseMatrix& A,
+                                         const vector<double>& x, 
+                                         const double factor, 
+                                         const bool init)
+{
+  const int rdim = (int)y.Length();
+  const int ddim = (int)x.size();
+  if (A.M()<rdim || A.N()<ddim) dserror("Mismatch in dimensions");
+  
+  if (init)
+    for (int i=0; i<rdim; ++i) y[i] = 0.0;
+  for (int i=0; i<rdim; ++i)
+  {
+    double sum = 0.0;
+    for (int k=0; k<ddim; ++k) sum += A(i,k)*x[k];
+    y[i] += sum*factor;
+  }
   return;
 }                    
 
@@ -1918,6 +2515,7 @@ void DRT::Elements::Shell8::s8_YpluseqAx(vector<double>& y,
   }
   return;
 }                    
+
 
 /*----------------------------------------------------------------------*
  |  calcs the inverse of an unsym 3x3 matrix and determinant m.gee12/06 |
@@ -2365,7 +2963,7 @@ int DRT::Elements::Shell8Register::Initialize(DRT::Discretization& dis)
     for (int i=0; i<numnode; ++i)
     {
       double r = actele->s8_localcoordsofnode(i,0,numnode);
-      double s = actele->s8_localcoordsofnode(i,0,numnode);
+      double s = actele->s8_localcoordsofnode(i,1,numnode);
       actele->s8_shapefunctions(funct,deriv,r,s,numnode,1);
       double gkov[3][3];
       /*-------------------------------------------------------------- a1, a2 */
