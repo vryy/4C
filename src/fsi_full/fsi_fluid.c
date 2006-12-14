@@ -57,6 +57,7 @@ void fsi_fluid_setup(
   
   switch (genprob.probtyp)
   {
+  case prb_fluid:
   case prb_fsi:
     fsi_fluid_imp_setup(work,actfield,disnum_calc,disnum_io);
     break;
@@ -106,6 +107,7 @@ void fsi_fluid_calc(
   
   switch (genprob.probtyp)
   {
+  case prb_fluid:
   case prb_fsi:
     fsi_fluid_imp_calc(work,actfield,disnum_calc,disnum_io,alefield,adisnum_calc);
     break;
@@ -153,6 +155,7 @@ void fsi_fluid_final(
   
   switch (genprob.probtyp)
   {
+  case prb_fluid:
   case prb_fsi:
     fsi_fluid_imp_final(work,actfield,disnum_calc,disnum_io);
     break;
@@ -200,6 +203,7 @@ void fsi_fluid_sd(
   
   switch (genprob.probtyp)
   {
+  case prb_fluid:
   case prb_fsi:
     fsi_fluid_imp_sd(work,actfield,disnum_calc,disnum_io);
     break;
@@ -247,6 +251,7 @@ void fsi_fluid_output(
   
   switch (genprob.probtyp)
   {
+  case prb_fluid:
   case prb_fsi:
     fsi_fluid_imp_output(work,actfield,disnum_calc,disnum_io);
     break;
@@ -294,6 +299,7 @@ void fsi_fluid_cleanup(
   
   switch (genprob.probtyp)
   {
+  case prb_fluid:
   case prb_fsi:
     fsi_fluid_imp_cleanup(work,actfield,disnum_calc,disnum_io);
     break;
