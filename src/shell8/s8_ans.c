@@ -93,7 +93,7 @@ if (ans==1)
       xqr2[0] = -1.0;     xqs2[0] =  0.0; /* point (-1.0/ 0.0) */
       xqr2[1] =  1.0;     xqs2[1] =  0.0; /* point ( 1.0/ 0.0) */
    }
-   if (iel==9)/* 9-noded element */
+   else if (iel==9)/* 9-noded element */
    {
       rthreei = 1.0 / (sqrt(3.0));
       xqr1[0] = -rthreei; xqs1[0] = -1.0;
@@ -309,7 +309,7 @@ return;
 
 /*----------------------------------------------------------------------*
  |                                                        m.gee 2/02    |
- | modifications to metrics of shell ody due to ans for querschub       |
+ | modifications to metrics of shell body due to ans for querschub      |
  *----------------------------------------------------------------------*/
 void s8_ans_tvhe_q(DOUBLE **gmkovr,DOUBLE **gmkovc,DOUBLE **gmkonr,DOUBLE **gmkonc,
                   DOUBLE **gkovr,DOUBLE **gkovc,DOUBLE **amkovc,DOUBLE **amkovr,

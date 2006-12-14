@@ -657,6 +657,7 @@ for (lr=0; lr<nir; lr++)
          /*  Ltrans(nhyb,nd) = Mtrans(nhyb,12) * D(12,12) * B(12,nd) */
          /*=============================================================*/
          /*----------------------------------------------------- DB=D*B */
+         /* note that dimensions of workeas are wrong! mgee 12/06 */
          math_matmatdense(workeas,D,bop,12,12,nd,0,0.0);
          /*----------------------------------- Ltransposed = Mt * D * B */
          math_mattrnmatdense(Lt,transP,workeas,nhyb,12,nd,1,weight);
@@ -734,6 +735,22 @@ for (j=i+1; j<nd; j++)
    estif[i][j] = diff;
    estif[j][i] = diff;
 }
+
+#if 0
+printf("Element id %d\n",ele->Id);
+for (i=0; i<nd; ++i)
+{
+  for (j=0; j<nd; ++j)
+    printf("  %15.10e  ",estif[i][j]);
+  printf("\n");
+}
+printf("internal forces\n");
+for (i=0; i<nd; ++i) 
+  printf("%15.10e\n",force[i]);
+fflush(stdout);
+exit(0);
+#endif
+
 /*----------------------------------------------------------------- end */
 /*----------------------------------------------------------------------*/
 end:
