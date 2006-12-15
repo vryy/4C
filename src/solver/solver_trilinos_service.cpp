@@ -160,6 +160,49 @@ void construct_trilinos_diagonal_matrix(INTRA *actintra,
 }
 
 
+/*----------------------------------------------------------------------*/
+/*!
+  \brief deconstruct an Epetra_CrsMatrix
+
+  \param trimatrix    (i/o)  the matrix object to set up
+
+  \author kuettler
+  \date 12/06
+ */
+/*----------------------------------------------------------------------*/
+void deconstruct_trilinos_matrix(
+                            TRILINOSMATRIX  *trimatrix
+                         )
+{
+  DSTraceHelper dst("deconstruct_trilinos_matrix");
+
+  Epetra_CrsMatrix* matrix = (Epetra_CrsMatrix*)trimatrix->matrix;
+  delete matrix;
+  trimatrix->matrix = NULL;
+
+  Epetra_Map* map = (Epetra_Map*)trimatrix->rowmap;
+  delete map;
+  trimatrix->rowmap = NULL;
+
+  // destroy the epetra comm
+#ifdef PARALLEL
+  Epetra_MpiComm*    comm = (Epetra_MpiComm*)trimatrix->epetracomm;
+#else
+  Epetra_SerialComm* comm = (Epetra_SerialComm*)trimatrix->epetracomm;
+#endif
+  delete comm;
+  trimatrix->epetracomm = NULL;
+
+  trimatrix->NumEntriesPerRow = -1;
+  trimatrix->StaticProfile = false;
+
+  // set flags indicating status of matrix
+  trimatrix->is_init=1;
+
+  return;
+}
+
+
 /*----------------------------------------------------------------------*
   |  calculate the map of an Epetra_CrsMatrix from a discretization     |
   |                                                        m.gee 9/06   |

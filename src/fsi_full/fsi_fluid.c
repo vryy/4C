@@ -69,6 +69,8 @@ void fsi_fluid_setup(
       fsi_fluid_pm_cont_setup(work,actfield,disnum_calc,disnum_io);
       break;
     case dyntyp_pm_discont:
+      fsi_fluid_pm_discont_setup(work,actfield,disnum_calc,disnum_io);
+      break;
     case dyntyp_pm_cont_laplace:
       fsi_fluid_pm_laplace_setup(work,actfield,disnum_calc,disnum_io);
       break;
@@ -121,6 +123,8 @@ void fsi_fluid_calc(
       fsi_fluid_pm_cont_calc(work,actfield,disnum_calc,disnum_io,alefield,adisnum_calc);
       break;
     case dyntyp_pm_discont:
+      fsi_fluid_pm_discont_calc(work,actfield,disnum_calc,disnum_io,alefield,adisnum_calc);
+      break;
     case dyntyp_pm_cont_laplace:
       fsi_fluid_pm_laplace_calc(work,actfield,disnum_calc,disnum_io,alefield,adisnum_calc);
       break;
@@ -171,6 +175,8 @@ void fsi_fluid_final(
       fsi_fluid_pm_cont_final(work,actfield,disnum_calc,disnum_io);
       break;
     case dyntyp_pm_discont:
+      fsi_fluid_pm_discont_final(work,actfield,disnum_calc,disnum_io);
+      break;
     case dyntyp_pm_cont_laplace:
       fsi_fluid_pm_laplace_final(work,actfield,disnum_calc,disnum_io);
       break;
@@ -221,6 +227,8 @@ void fsi_fluid_sd(
       fsi_fluid_pm_cont_sd(work,actfield,disnum_calc,disnum_io);
       break;
     case dyntyp_pm_discont:
+      fsi_fluid_pm_discont_sd(work,actfield,disnum_calc,disnum_io);
+      break;
     case dyntyp_pm_cont_laplace:
       fsi_fluid_pm_laplace_sd(work,actfield,disnum_calc,disnum_io);
       break;
@@ -271,6 +279,8 @@ void fsi_fluid_output(
       fsi_fluid_pm_cont_output(work,actfield,disnum_calc,disnum_io);
       break;
     case dyntyp_pm_discont:
+      fsi_fluid_pm_discont_output(work,actfield,disnum_calc,disnum_io);
+      break;
     case dyntyp_pm_cont_laplace:
       fsi_fluid_pm_laplace_output(work,actfield,disnum_calc,disnum_io);
       break;
@@ -321,6 +331,8 @@ void fsi_fluid_cleanup(
       fsi_fluid_pm_cont_cleanup(work,actfield,disnum_calc,disnum_io);
       break;
     case dyntyp_pm_discont:
+      fsi_fluid_pm_discont_cleanup(work,actfield,disnum_calc,disnum_io);
+      break;
     case dyntyp_pm_cont_laplace:
       fsi_fluid_pm_laplace_cleanup(work,actfield,disnum_calc,disnum_io);
       break;

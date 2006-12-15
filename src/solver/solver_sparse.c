@@ -1134,8 +1134,6 @@ void parallel_sparse_pm_matmat(PARALLEL_SPARSE* pmat, PARALLEL_SPARSE* grad,
 /*!
   \brief create a ccarat solver wrapper for the trilinos matrix object
 
-  \warning right now aztec with hardcoded default values is used
-
   \author u.kue
   \date 10/06
  */

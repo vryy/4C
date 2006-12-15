@@ -33,6 +33,8 @@ typedef struct _FSI_FLUID_WORK
 
   DIST_VECTOR   *press_rhs;
   DIST_VECTOR   *press_sol;
+
+  INT numpdof;
 #endif
   
 #ifdef BINIO

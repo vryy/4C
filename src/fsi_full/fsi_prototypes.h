@@ -609,6 +609,55 @@ void fsi_fluid_pm_cont_cleanup(
 
 
 /************************************************************************
+ | fsi_fluid_pm_discont.c                                                  |
+ ************************************************************************/
+void fsi_fluid_pm_discont_setup(
+  FSI_FLUID_WORK *work,
+  FIELD          *actfield,
+  INT             disnum_calc,
+  INT             disnum_io
+  );
+
+void fsi_fluid_pm_discont_calc(
+  FSI_FLUID_WORK *work,
+  FIELD          *actfield,
+  INT             disnum_calc,
+  INT             disnum_io,
+  FIELD          *alefield,
+  INT             adisnum_calc
+  );
+
+void fsi_fluid_pm_discont_final(
+  FSI_FLUID_WORK *work,
+  FIELD          *actfield,
+  INT             disnum_calc,
+  INT             disnum_io
+  );
+
+void fsi_fluid_pm_discont_sd(
+  FSI_FLUID_WORK *work,
+  FIELD          *actfield,
+  INT             disnum_calc,
+  INT             disnum_io
+  );
+
+void fsi_fluid_pm_discont_output(
+  FSI_FLUID_WORK *work,
+  FIELD          *actfield,
+  INT             disnum_calc,
+  INT             disnum_io
+  );
+
+void fsi_fluid_pm_discont_cleanup(
+  FSI_FLUID_WORK *work,
+  FIELD          *actfield,
+  INT             disnum_calc,
+  INT             disnum_io
+  );
+
+
+
+/************************************************************************
  | fsi_fluid_pm_laplace.c                                               |
  ************************************************************************/
 void fsi_fluid_pm_laplace_setup(

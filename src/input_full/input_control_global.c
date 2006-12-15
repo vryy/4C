@@ -126,10 +126,6 @@ dstrc_enter("inpctr");
       solv[genprob.numaf].fieldtyp = ale;
       inpctrsol(&(solv[genprob.numaf]));
 
-      /* We need to read the variables of the pressure solver. The
-       * actual pressure matrix is contained in the first solver
-       * object because it belongs to a discretization of the first
-       * field. */
       solv[genprob.numff+3].fieldtyp = pressure;
       inpctrsol(&(solv[genprob.numff+3]));
       

@@ -5271,7 +5271,7 @@ if (strncmp(string,"average_pressure",stringlenght)==0)
   for (i=0; i<actfield->dis[disnum].numnp; i++)
   {
     actnode = &(actfield->dis[disnum].node[i]);
-    fprintf(out," %6d %22.9E \n", actnode->Id+1, pressure[actnode->Id]);
+    fprintf(out," %6d %22.9E \n", actnode->Id+1, pressure[actnode->Id_loc]);
   }
   fprintf(out,"END VALUES\n");
   CCAFREE(pressure);

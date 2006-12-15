@@ -22,6 +22,7 @@ extern "C"
 void construct_trilinos_matrix(INTRA *actintra, TRILINOSMATRIX *trimatrix);
 void construct_trilinos_diagonal_matrix(INTRA *actintra,
                                         TRILINOSMATRIX *trimatrix);
+void deconstruct_trilinos_matrix(TRILINOSMATRIX  *trimatrix);
 void init_trilinos_matrix(FIELD *actfield,PARTITION *actpart,SOLVAR *actsolv,
                           INTRA *actintra,TRILINOSMATRIX *trimatrix,int disnum);
 
