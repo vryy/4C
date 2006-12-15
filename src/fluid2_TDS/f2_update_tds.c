@@ -346,7 +346,7 @@ double  sv_old[2];
 double  res_old[2];
 double  res_new[2];
 
-/* */
+/* time increment of velocities */
 double  time_der[2];
 
 /* factors from curves for timedependent deadload */

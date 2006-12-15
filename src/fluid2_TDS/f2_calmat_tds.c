@@ -96,6 +96,10 @@ for further comments see comment lines within code.
 \param	 sub_pres   DOUBLE        (i)   old subscale pressure at GP
 \param	 divu_old   DOUBLE        (i)   old divergence at GP
 \param	 sub_vel[2] DOUBLE        (i)   old subscale velocities at GP
+\param   sub_vel_trial_wo_facMtau[2]
+                    DOUBLE        (i)   estimdated subscale velocities at GP
+                                        (still have to be multiplied by
+                                         facMtau)
 \param	 old_vel[2] DOUBLE        (i)   old velocities at GP
 \param	 res_old[2] DOUBLE        (i)   part of old residual without time
                                         derivative
@@ -127,6 +131,7 @@ void f2_calmat_tds(
 		DOUBLE   sub_pres,
 		DOUBLE   divu_old,
 		DOUBLE   sub_vel[2],
+		DOUBLE   sub_vel_trial_wo_facMtau[2],
 		DOUBLE   old_vel[2],
 		DOUBLE   old_acc[2],
 		DOUBLE   res_old[2]
@@ -157,7 +162,8 @@ DOUBLE  rhsint[2];   /* total right hand side terms at int.-point       */
 DOUBLE  time2nue, timetauM, timetauMp, ttimetauM, ttimetauMp, timefacfac;
 DOUBLE  theta;
 
-INT     cross_stress=1;
+INT     cross_stress   =1;
+INT     reynolds_stress=1;
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -886,6 +892,30 @@ for (ri=0; ri<iel; ri++)      /* row index */
    eforce[ri*3+1] -= conv_old[1] * funct[ri] * aux;
 
 
+   /* TIME DEPENDENT STABILISATION --- LINEARISATION OF AGLS PART */
+
+   /* facMtau*timefac*(u_old, u_old * grad v) */
+   eforce[ri*3]   += conv_c[ri] * velint[0] * facMtau * timefac * fac;
+   eforce[ri*3+1] += conv_c[ri] * velint[1] * facMtau * timefac * fac;
+
+   
+   /* facMtau*2*timefac*timefac*(u_old * grad u_old, u_old * grad v) */
+   aux = 2.0 * facMtau * timefac * timefac * fac;
+   eforce[ri*3]   += conv_old[0] * conv_c[ri] * aux;
+   eforce[ri*3+1] += conv_old[1] * conv_c[ri] * aux;
+
+   
+   /* -facMtau*timefac*timefac*2*nu*(div epsilon(u_old), u_old * grad v) */
+   aux = timefac * facMtau * fac * timefac * 2.0 * visc;
+   eforce[ri*3]   -= conv_c[ri] * visc_old[0]*aux ;
+   eforce[ri*3+1] -= conv_c[ri] * visc_old[1]*aux ;
+
+   
+   /* facMtau*timefac*timefac*(grad p_old, u_old * grad v) */
+   aux = facMtau * timefac * timefac * fac;
+   
+   eforce[ri*3]   += conv_c[ri] * gradp[0] * aux;
+   eforce[ri*3+1] += conv_c[ri] * gradp[1] * aux;
    
    /* TIME DEPENDENT FORMULATION ---                               */
    /*      --- linearisation of CROSS STRESS part of stabilisation */
@@ -915,32 +945,23 @@ for (ri=0; ri<iel; ri++)      /* row index */
        eforce[ri*3+1]   -= velint[1] * (visc_old[0] * derxy[0][ri] + visc_old[1] * derxy[1][ri]) * aux;
        
    }
-       
-   /* TIME DEPENDENT STABILISATION --- LINEARISATION OF AGLS PART */
 
-   /* facMtau*timefac*(u_old, u_old * grad v) */
-   eforce[ri*3]   += conv_c[ri] * velint[0] * facMtau * timefac * fac;
-   eforce[ri*3+1] += conv_c[ri] * velint[1] * facMtau * timefac * fac;
-
-   
-   /* facMtau*2*timefac*timefac*(u_old * grad u_old, u_old * grad v) */
-   aux = 2.0 * facMtau * timefac * timefac * fac;
-   eforce[ri*3]   += conv_old[0] * conv_c[ri] * aux;
-   eforce[ri*3+1] += conv_old[1] * conv_c[ri] * aux;
-
-   
-   /* -facMtau*timefac*timefac*2*nu*(div epsilon(u_old), u_old * grad v) */
-   aux = timefac * facMtau * fac * timefac * 2.0 * visc;
-   eforce[ri*3]   -= conv_c[ri] * visc_old[0]*aux ;
-   eforce[ri*3+1] -= conv_c[ri] * visc_old[1]*aux ;
-
-   
-   /* facMtau*timefac*timefac*(grad p_old, u_old * grad v) */
-   aux = facMtau * timefac * timefac * fac;
-   
-   eforce[ri*3]   += conv_c[ri] * gradp[0] * aux;
-   eforce[ri*3+1] += conv_c[ri] * gradp[1] * aux;
-
+   /* TIME DEPENDENT STABILISATION --- REYNOLDS STRESS PART */
+   if(reynolds_stress==1)
+   {
+       /* facMtau*facMtau*timefac*(sub_vel_trial , (sub_vel_trial * grad )v) */
+       aux = facMtau * facMtau * timefac * fac;
+       eforce[ri*3  ]   += funct[ri] * sub_vel_trial_wo_facMtau[0] *
+	                   (sub_vel_trial_wo_facMtau[0] * derxy[0][ri]
+			    +
+			    sub_vel_trial_wo_facMtau[0] *  derxy[1][ri]
+			   ) * aux;
+       eforce[ri*3+1]   += funct[ri] * sub_vel_trial_wo_facMtau[1] *
+	                   (sub_vel_trial_wo_facMtau[0] * derxy[0][ri]
+			    +
+			    sub_vel_trial_wo_facMtau[0] *  derxy[1][ri]
+			   ) * aux;
+   }
 }     /* end row loop (ri) */
 
 /*----------------------------------------------------------------------*/

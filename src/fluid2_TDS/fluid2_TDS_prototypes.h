@@ -80,6 +80,7 @@ void f2_calmat_tds(
 		DOUBLE   sub_pres,
 		DOUBLE   divu_old,
 		DOUBLE   sub_vel[2],
+		DOUBLE   sub_vel_trial_wo_facMtau[2],
 		DOUBLE   old_vel[2],
 		DOUBLE   old_acc[2],
 		DOUBLE   res_old[2]

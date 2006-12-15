@@ -128,6 +128,7 @@ DOUBLE    det;        /* determinant of jacobian matrix at time (n+1)   */
 DOUBLE    e1,e2;      /* natural coordinates of integr. point           */
 DOUBLE    gradp[2];   /* pressure gradient at integration point         */
 DOUBLE    gradp_old[2];/* pressure gradient at integration point        */
+DOUBLE    hot    [2];   /* old higher order terms at integration point  */
 DOUBLE    hot_old[2];   /* old higher order terms at integration point  */
 DOUBLE    velint[2];  /* velocity vector at integration point           */
 DOUBLE    sub_pres;   /* subscale pressure at integration point         */
@@ -138,14 +139,28 @@ DOUBLE    press;
 
 DOUBLE    velint_old[2];
 DOUBLE    sub_vel[2];
+
+
+/* time increment of velocities */
+double  time_der[2];
+
+/* trial value for subscale velocity without factor tau/(tau+theta*dt)*/
+DOUBLE    sub_vel_trial_wo_facMtau[2];
+
 DOUBLE    acc_old[2];
 
+DOUBLE    res    [2];
 DOUBLE    res_old[2];
 
 DIS_TYP   typ;	      /* element type                                   */
 
 FLUID_DYNAMIC   *fdyn;
 FLUID_DATA      *data;
+
+
+/* time algorithm */
+double   theta;
+double   dt;
 
 #ifdef DEBUG
     dstrc_enter("f2_int_tds");
@@ -157,6 +172,10 @@ typ    = ele->distyp;
 fdyn   = alldyn[genprob.numff].fdyn;
 data   = fdyn->data;
 is_ale = ele->e.f2->is_ale;
+
+dt     =fdyn->dt;
+theta  =fdyn->theta;
+
 
 /*------- get integraton data and check if elements are "higher order" */
 switch (typ)
@@ -229,7 +248,12 @@ for (lr=0;lr<nir;lr++)
 
       /*---------------- get velocities (n) at integration point ---*/
       f2_veci(velint_old,funct,eveln,iel);
-
+      
+      /*--------------------------- calculate the velocity increment ---*/
+      for(dim=0;dim<2;dim++)
+      {
+	  time_der[dim]=velint[dim]-velint_old[dim];
+      }
       
       /*---------------- get history data (n,i) at integration point ---*/
       f2_veci(histvec,funct,evhist,iel);
@@ -252,6 +276,7 @@ for (lr=0;lr<nir;lr++)
       /*-------- get velocity (n,i) derivatives at integration point ---*/
       f2_vder(vderxy_old,derxy,eveln,iel);
 
+      /*---------- set old divergence */
       divuold = vderxy_old[0][0] + vderxy_old[1][1];
 
       /*- get velocity derivatives (n+1,i) and (n) at integration point */
@@ -261,7 +286,9 @@ for (lr=0;lr<nir;lr++)
       {
 	  f2_gder2(xyze,xjm,wa1,wa2,derxy,derxy2,deriv2,iel);
 
+	  /*- get second velocity derivatives (n) at integration point */
 	  f2_vder2(vderxy2_old,derxy2,eveln ,iel);
+	  /*- get second velocity derivatives (n+1,i) at integration point */
 	  f2_vder2(vderxy2    ,derxy2,evelng,iel);
       }
 
@@ -284,9 +311,11 @@ for (lr=0;lr<nir;lr++)
         press += funct[i]*epren[i];
       }
 
-            
+      /*---------- set subscale pressure */
       sub_pres=ele->e.f2->sub_pres.a.dv[lr*nis+ls];
 
+
+      /*---------- set old subscale velocity */
       for(dim=0;dim<2;dim++)
       {
 	  sub_vel    [dim]=ele->e.f2->sub_vel.a.da[dim][lr*nis+ls];
@@ -300,14 +329,25 @@ for (lr=0;lr<nir;lr++)
 	  hot_old[1]=0.5 * (2.0*vderxy2_old[1][1]
 			    +
 			    (vderxy2_old[1][0] + vderxy2_old[0][2]));
+
+	  hot[0]=0.5 * (2.0*vderxy2[0][0]
+			    +
+			    (vderxy2[0][1] + vderxy2[1][2]));
+	  hot[1]=0.5 * (2.0*vderxy2[1][1]
+			    +
+			    (vderxy2[1][0] + vderxy2[0][2]));
+	  
       }	
       else
       {
 	  hot_old[0]=0;
 	  hot_old[1]=0;
+
+	  hot    [0]=0;
+	  hot    [1]=0;
       }
 	    
-      /* calculate old residual without time derivative       */
+      /* calculate old and new residual without time derivative       */
       for(dim=0;dim<2;dim++)
       {
 	  res_old[dim] =0;
@@ -319,14 +359,36 @@ for (lr=0;lr<nir;lr++)
 	  
 	  res_old[dim]+=gradp_old[dim];
 	  
-	  res_old[dim]-=edeadn[dim];
+	  res_old[dim]-=edeadn [dim];
+
+	  res    [dim] =0;
+	  res    [dim]+=(velint[0]*vderxy[dim][0]
+			 +
+			 velint[1]*vderxy[dim][1]);
+  
+	  res    [dim]-=2*visc*hot[dim];
+	  
+	  res    [dim]+=gradp    [dim];
+	  
+	  res    [dim]-=edeadng[dim];
+ 
       }
 
+      /*---------------------- get new estimate for subscale velocities */
+      for(dim=0;dim<2;dim++)
+      {
+	  sub_vel_trial_wo_facMtau[dim]=
+	      sub_vel[dim]
+	      -time_der[dim]
+	      +theta    *dt* res    [dim]
+	      +(1-theta)*dt* res_old[dim]
+	      -1./fdyn->tau_old[0] * (1-theta)*dt* sub_vel[dim];
+      }
       /*-------------- perform integration for entire matrix and rhs ---*/
       f2_calmat_tds(estif,eforce,velint,histvec,gridvelint,press,vderxy,
 		    vderxy2,gradp,funct,derxy,derxy2,edeadng,fac,
 		    visc,iel,hasext,is_ale, is_relax, sub_pres, divuold,
-		    sub_vel,velint_old,acc_old,res_old);
+		    sub_vel,sub_vel_trial_wo_facMtau,velint_old,acc_old,res_old);
 
    } /* end of loop over integration points ls*/
 } /* end of loop over integration points lr */

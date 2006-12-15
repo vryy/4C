@@ -602,8 +602,9 @@ for (i=0; i<actpart->pdis[disnum].numnp; i++)
   actgnode = actnode->gnode;
   for (j=0;j<numveldof;j++) /* loop all velocity dofs */
   {
-    if (actgnode->dirich->dirich_onoff.a.iv[j]!=0)
-      continue; /* do nothing for dbc dofs*/
+    if (actgnode->dirich!=NULL)
+	if (actgnode->dirich->dirich_onoff.a.iv[j]!=0)
+	    continue; /* do nothing for dbc dofs*/
     sum += DSQR( actnode->sol_increment.a.da[terr][j]
          / ( FABS(actnode->sol_increment.a.da[velnp][j]) + vel0[j] ) );
     nvel++;
