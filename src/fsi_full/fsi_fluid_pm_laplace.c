@@ -123,7 +123,7 @@ extern enum _CALC_ACTION calc_action[MAXFIELD];
   \brief setup fsi fluid algorithm
  */
 /*----------------------------------------------------------------------*/
-void fsi_fluid_pm_cont_setup(
+void fsi_fluid_pm_laplace_setup(
   FSI_FLUID_WORK *work,
   FIELD          *actfield,
   INT             disnum_calc,
@@ -342,23 +342,6 @@ void fsi_fluid_pm_cont_setup(
     pressolv->sysarray     = (SPARSE_ARRAY*)CCACALLOC(1,sizeof(SPARSE_ARRAY));
     pressolv->sysarray_typ[0] = trilinos;
     pressolv->sysarray[0].trilinos = global_press;
-
-    /* setup diagonal mass matrix */
-    memset(&work->lmass,0,sizeof(TRILINOSMATRIX));
-    work->lmass.numeq_total = global_stiff->numeq_total;
-    work->lmass.numeq       = global_stiff->numeq;
-
-    am_alloc_copy(&global_stiff->update,&work->lmass.update);
-    construct_trilinos_diagonal_matrix(actintra,&work->lmass);
-
-    /* setup rectangular gradient matrix (FillComplete with arguments
-     * needed.) */
-    memset(&work->grad,0,sizeof(TRILINOSMATRIX));
-    work->grad.numeq_total = global_press->numeq_total;
-    work->grad.numeq       = global_press->numeq;
-
-    am_alloc_copy(&global_press->update,&work->grad.update);
-    construct_trilinos_matrix(actintra,&work->grad);
   }
   
   /*---------------------------- get global and local number of equations */
@@ -513,6 +496,15 @@ void fsi_fluid_pm_cont_setup(
   fluid_init(actpart,actintra,actfield,disnum_calc,disnum_io,action,
 	     &container,ipos->numincr,ipos,str);
 
+  /* we need two entries on the pressure discretization */
+  /*
+   * sol_increment[0]  ... phi
+   * sol_increment[1]  ... press
+   */
+  solserv_sol_zero(actfield,press_dis,node_array_sol_increment,1);
+
+  solserv_sol_zero(actfield,press_dis,node_array_sol,0);
+  
   /* we need two entries on the pressure discretization */
   /*
    * sol_increment[0]  ... phi
@@ -716,7 +708,7 @@ void fsi_fluid_pm_cont_setup(
 
  */
 /*----------------------------------------------------------------------*/
-void fsi_fluid_pm_cont_calc(
+void fsi_fluid_pm_laplace_calc(
   FSI_FLUID_WORK *work,
   FIELD          *actfield,
   INT             disnum_calc,
@@ -830,31 +822,14 @@ void fsi_fluid_pm_cont_calc(
     dserror("only fluid allowed");
 
   /* -------------------------------------------------------------------- */
-  /* Now setup is done and we actually calculate the values of G and
-   * M. */
+  /* Create the pressure Laplace matrix. */
 
-  /* ------------------------------------------------ */
-  /* Calculate gradient and mass matrices, including the inverted
-   * lumped mass matrix. Velocity dirichlet conditions are observed. */
-  solserv_zero_mat(actintra,&(actsolv->sysarray[mass_array]),
-                   &(actsolv->sysarray_typ[mass_array]));
-
-  trilinos_zero_matrix(&work->grad);
-  trilinos_zero_matrix(&work->lmass);
+  trilinos_zero_matrix(actsolv->sysarray[mass_array].trilinos);
+  trilinos_zero_matrix(actsolv->sysarray[press_array].trilinos);
   
-  pm_calelm_cont(actfield, actpart, disnum_calc, press_dis,
-		 actsolv, mass_array,
-		 actintra, ipos, &work->grad, &work->lmass);
-
-  {
-    TRILINOSMATRIX* global_press;
-
-    if (actsolv->sysarray_typ[press_array]!=trilinos)
-      dserror("fatal: trilinos solver expected");
-
-    global_press = actsolv->sysarray[press_array].trilinos;
-    mult_trilinos_mmm_cont(global_press,&work->grad,0,&work->lmass,0,&work->grad,1);
-  }
+  pm_calelm_laplace(actfield,actpart,disnum_calc,press_dis,
+		    actsolv,press_array,mass_array,
+		    actintra,ipos);
   
   /****************************************/
 
@@ -994,7 +969,6 @@ nonlniter:
   t1=ds_cputime();
   container.dvec         = NULL;
   container.frhs         = frhs;
-  container.fgradprhs    = fgradprhs;
   container.global_numeq = numeq_total;
   container.nii          = fdyn->nii;
   container.kstep        = 0;
@@ -1015,21 +989,9 @@ nonlniter:
                &(actsolv->sysarray_typ[actsysarray]),
                &(actsolv->sysarray[actsysarray]),
                &(actsolv->rhs[0]),
-               fgradprhs,
+               frhs,
                -fdyn->thsl
     );
-
-  matvec_trilinos(&(actsolv->rhs[1]),
-                  &(actsolv->rhs[0]),
-                  &work->lmass);
-  
-  solserv_zero_vec(&(actsolv->rhs[0]));
-  
-  solserv_sparsematvec(actintra,
-                       &(actsolv->rhs[0]),
-                       &(actsolv->sysarray[mass_array]),
-                       &(actsolv->sysarray_typ[mass_array]),
-                       &(actsolv->rhs[1]));
 
   /*--------------------------------------------------------- add rhs: ---*/
   /* The pressure part is already there. Add the rhs terms from the
@@ -1136,6 +1098,29 @@ nonlniter:
 		 1.0
       );
 
+#if 0
+    if (actintra->intra_rank==0)
+    {
+      fprintf(allfiles.gidres,"RESULT \"press_rhs\" \"ccarat\" %d SCALAR ONNODES\n"
+              "RESULTRANGESTABLE \"standard_fluid    \"\n"
+              "COMPONENTNAMES \"pressure\"\n"
+              "VALUES\n",fdyn->step);
+
+      for (i=0; i<actfield->dis[press_dis].numnp; ++i)
+      {
+        NODE* n = &actfield->dis[press_dis].node[i];
+        fprintf(allfiles.gidres,"%d %f\n",
+                n->Id+1-genprob.nodeshift,
+		frhs[n->dof[0]]);
+      }
+
+      fprintf(allfiles.gidres,"END VALUES\n");
+    }
+#endif
+
+#ifdef PERF
+    perf_begin(80);
+#endif
     /* solve for the pressure increment */
     solver_control(actfield,press_dis,pressolv,actintra,
                    &(actsolv->sysarray_typ[press_array]),
@@ -1143,6 +1128,9 @@ nonlniter:
                    work->press_sol,
                    work->press_rhs,
                    0);
+#ifdef PERF
+    perf_end(80);
+#endif
 
     /* update pressure */
     /* solserv_result_incre does not work due to misleading dirichlet
@@ -1161,14 +1149,101 @@ nonlniter:
 	NODE* actnode;
 	actnode = &(actfield->dis[press_dis].node[i]);
 	actnode->sol_increment.a.da[0][0]  = frhs[actnode->dof[0]];
-        actnode->sol_increment.a.da[1][0] += frhs[actnode->dof[0]] / fdyn->thsl;
+	actnode->sol_increment.a.da[1][0] += frhs[actnode->dof[0]]/fdyn->thsl;
       }
     }
 
+#if 0
+    if (actintra->intra_rank==0)
+    {
+      fprintf(allfiles.gidres,"RESULT \"press_sol\" \"ccarat\" %d SCALAR ONNODES\n"
+              "RESULTRANGESTABLE \"standard_fluid    \"\n"
+              "COMPONENTNAMES \"pressure\"\n"
+              "VALUES\n",fdyn->step);
+
+      for (i=0; i<actfield->dis[press_dis].numnp; ++i)
+      {
+        NODE* n = &actfield->dis[press_dis].node[i];
+        fprintf(allfiles.gidres,"%d %f\n",
+                n->Id+1-genprob.nodeshift,
+		frhs[n->dof[0]]);
+      }
+
+      fprintf(allfiles.gidres,"END VALUES\n");
+    }
+#endif
+
+#if 0
+    if (actintra->intra_rank==0)
+    {
+      fprintf(allfiles.gidres,"RESULT \"vel_star\" \"ccarat\" %d VECTOR ONNODES\n"
+              "RESULTRANGESTABLE \"standard_fluid    \"\n"
+              "COMPONENTNAMES \"e1\" \"e2\"\n"
+              "VALUES\n",fdyn->step);
+
+      for (i=0; i<actfield->dis[0].numnp; ++i)
+      {
+        NODE* n = &actfield->dis[0].node[i];
+        fprintf(allfiles.gidres,"%d %e %e\n",n->Id+1,
+                n->sol_increment.a.da[ipos->velnp][0],
+                n->sol_increment.a.da[ipos->velnp][1]);
+      }
+
+      fprintf(allfiles.gidres,"END VALUES\n");
+    }
+#endif
+
     /* update velocity */
-    pm_vel_update(actfield, actpart, disnum_calc, actintra, ipos,
-		  &work->lmass, actsolv, actsysarray,
-		  frhs, fgradprhs);
+
+    solserv_zero_vec(&actsolv->sol[0]);
+    solserv_zero_vec(&actsolv->rhs[0]);
+    amzero(&work->frhs_a);
+
+    /* build up rhs off velocity corretion */
+    pm_calvrhs(actfield, actpart, disnum_calc, actintra, ipos, &actsolv->rhs[0], frhs);
+
+    assemble_vec(actintra,
+		 &(actsolv->sysarray_typ[mass_array]),
+		 &(actsolv->sysarray[mass_array]),
+		 &actsolv->rhs[0],
+		 frhs,
+		 1
+      );
+
+    /*-------------------------------------------------------- solve system */
+#ifdef PERF
+    perf_begin(80);
+#endif
+
+    init=0;
+    t1=ds_cputime();
+    solver_control(actfield,disnum_calc,actsolv, actintra,
+		   &(actsolv->sysarray_typ[mass_array]),
+		   &(actsolv->sysarray[mass_array]),
+		   &(actsolv->sol[0]),
+		   &(actsolv->rhs[0]),
+                     init);
+    ts=ds_cputime()-t1;
+    work->tss+=ts;
+
+#ifdef PERF
+    perf_end(80);
+#endif
+
+    solserv_sol_zero(actfield,disnum_calc,node_array_sol_increment,ipos->velnm);
+
+    fluid_result_incre(actfield,disnum_calc,actintra,&(actsolv->sol[0]),&(actsolv->rhs[0]),
+		       ipos->velnm,
+		       &(actsolv->sysarray[actsysarray]),
+		       &(actsolv->sysarray_typ[actsysarray]),
+		       &vrat,NULL,NULL);
+
+    solserv_sol_add(actfield,disnum_calc,
+		    node_array_sol_increment,
+		    node_array_sol_increment,
+		    ipos->velnm,
+		    ipos->velnp,1);
+
 
   /* output of area to monitor file */
   if (fdyn->checkarea>0) out_area(work->totarea_a,fdyn->acttime,itnum,0);
@@ -1267,7 +1342,7 @@ nonlniter:
   \brief fsi fluid finalize time step.
  */
 /*----------------------------------------------------------------------*/
-void fsi_fluid_pm_cont_final(
+void fsi_fluid_pm_laplace_final(
   FSI_FLUID_WORK *work,
   FIELD          *actfield,
   INT             disnum_calc,
@@ -1557,7 +1632,7 @@ void fsi_fluid_pm_cont_final(
   Do the required fluid sensitivity calculation.
  */
 /*----------------------------------------------------------------------*/
-void fsi_fluid_pm_cont_sd(
+void fsi_fluid_pm_laplace_sd(
   FSI_FLUID_WORK *work,
   FIELD          *actfield,
   INT             disnum_calc,
@@ -1847,7 +1922,7 @@ void fsi_fluid_pm_cont_sd(
   \brief setup fsi fluid binary output
  */
 /*----------------------------------------------------------------------*/
-void fsi_fluid_pm_cont_output(
+void fsi_fluid_pm_laplace_output(
   FSI_FLUID_WORK *work,
   FIELD          *actfield,
   INT             disnum_calc,
@@ -1879,7 +1954,7 @@ void fsi_fluid_pm_cont_output(
   \brief cleanup fsi fluid algorithm
  */
 /*----------------------------------------------------------------------*/
-void fsi_fluid_pm_cont_cleanup(
+void fsi_fluid_pm_laplace_cleanup(
   FSI_FLUID_WORK *work,
   FIELD          *actfield,
   INT             disnum_calc,

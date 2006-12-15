@@ -70,6 +70,8 @@ void fsi_fluid_setup(
       break;
     case dyntyp_pm_discont:
     case dyntyp_pm_cont_laplace:
+      fsi_fluid_pm_laplace_setup(work,actfield,disnum_calc,disnum_io);
+      break;
     default:
       dserror("unsupported dynamic type %d for fluid projection", fdyn->dyntyp);
     }
@@ -120,6 +122,8 @@ void fsi_fluid_calc(
       break;
     case dyntyp_pm_discont:
     case dyntyp_pm_cont_laplace:
+      fsi_fluid_pm_laplace_calc(work,actfield,disnum_calc,disnum_io,alefield,adisnum_calc);
+      break;
     default:
       dserror("unsupported dynamic type %d for fluid projection", fdyn->dyntyp);
     }
@@ -168,6 +172,8 @@ void fsi_fluid_final(
       break;
     case dyntyp_pm_discont:
     case dyntyp_pm_cont_laplace:
+      fsi_fluid_pm_laplace_final(work,actfield,disnum_calc,disnum_io);
+      break;
     default:
       dserror("unsupported dynamic type %d for fluid projection", fdyn->dyntyp);
     }
@@ -216,6 +222,8 @@ void fsi_fluid_sd(
       break;
     case dyntyp_pm_discont:
     case dyntyp_pm_cont_laplace:
+      fsi_fluid_pm_laplace_sd(work,actfield,disnum_calc,disnum_io);
+      break;
     default:
       dserror("unsupported dynamic type %d for fluid projection", fdyn->dyntyp);
     }
@@ -264,6 +272,8 @@ void fsi_fluid_output(
       break;
     case dyntyp_pm_discont:
     case dyntyp_pm_cont_laplace:
+      fsi_fluid_pm_laplace_output(work,actfield,disnum_calc,disnum_io);
+      break;
     default:
       dserror("unsupported dynamic type %d for fluid projection", fdyn->dyntyp);
     }
@@ -312,6 +322,8 @@ void fsi_fluid_cleanup(
       break;
     case dyntyp_pm_discont:
     case dyntyp_pm_cont_laplace:
+      fsi_fluid_pm_laplace_cleanup(work,actfield,disnum_calc,disnum_io);
+      break;
     default:
       dserror("unsupported dynamic type %d for fluid projection", fdyn->dyntyp);
     }

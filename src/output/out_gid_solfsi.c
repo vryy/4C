@@ -538,7 +538,28 @@ void out_gid_sol_fsi(
   if (ioflags.fluid_sol==1)
   {
     out_gid_sol("velocity",fluidfield,disnumf,actintraf,fsidyn->step,fsidyn->actpos,fsidyn->time);
-    out_gid_sol("pressure",fluidfield,disnumf,actintraf,fsidyn->step,fsidyn->actpos,fsidyn->time);
+    switch (genprob.probtyp)
+    {
+    case prb_fluid:
+    case prb_fsi:
+      out_gid_sol("pressure",fluidfield,disnumf,actintraf,fsidyn->step,fsidyn->actpos,fsidyn->time);
+      break;
+#ifdef D_FLUID_PM
+    case prb_pfsi:
+      switch (fdyn->dyntyp)
+      {
+      case dyntyp_pm_cont:
+      case dyntyp_pm_cont_laplace:
+        out_gid_sol("projected_pressure",fluidfield,disnumf+1,actintraf,fsidyn->step,fsidyn->actpos,fsidyn->time);
+        break;
+      default:
+        dserror("unsupported dynamic type %d for fluid projection", fdyn->dyntyp);
+      }
+      break;
+#endif
+    default:
+      dserror("unsupported problem type %d for fluid in fsi", genprob.probtyp);
+    }
   }
 
 

@@ -37,6 +37,9 @@ SPOOLES_LIB="-lspoolesMPI -lspooles"
 UMFPACK_INC=
 UMFPACK_LIB="-lumfpack -lamd"
 
+# super_lu
+SUPERLU_LIB="-lsuperlu_dist"
+
 # fast elements
 LOOPL="-DLOOPL=15"
 
