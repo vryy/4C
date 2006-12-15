@@ -10,12 +10,19 @@ PROGRAMNAME=cca_"$LINUX_DIST"_"$MPI_VERSION"
 F77=g77
 CC=gcc
 CP=g++
-LD=g77
+LD=g++
 
 BASEDIR=/lnm/lib/$LINUX_DIST/$MPI_VERSION
 
 INCLUDEDIRS="-I$BASEDIR/include"
 LIBDIRS="-L$BASEDIR/lib -L/usr/lib/gcc-lib/i386-redhat-linux/3.2.3"
+
+# Trilinos
+TRILINOS_HOME=/lnm/lib/$LINUX_DIST/$MPI_VERSION/trilinos
+TRILINOS_INCDIR=$TRILINOS_HOME/include
+TRILINOS_LIBDIR=$TRILINOS_HOME/lib
+TRILINOS_DEFINES="-DHAVE_CONFIG_H -DTRILINOS_HAVE_FORTRAN_UNDERSCORE"
+TRILINOS_LIB="-lmoertel -lml -lnoxepetra  -lnox  -lml -laztecoo -lifpack -lamesos -lteuchos -lepetraext -lepetra"
 
 # aztec
 AZTEC_INC=""
@@ -40,7 +47,7 @@ VISUAL3_INC=""
 VISUAL3_LIB="-L/usr/X11R6/lib -lVisual3 -lg2c -lGLU -lGL -lX11 -lXext -ldl -lpthread"
 
 #LIBS="-lc -lg2c -llapack -lgoto_p4_512-r0.6 -lxerbla -lmetis"
-LIBS="-llapack -lblas -lmetis"
+LIBS="-lc -lg2c -lmetis -llapack -lblas"
 
 CFLAGS_OPT="-O2"
 CPFLAGS_OPT="-O2"
