@@ -553,7 +553,7 @@ void out_gid_sol_fsi(
         out_gid_sol("projected_pressure",fluidfield,disnumf+1,actintraf,fsidyn->step,fsidyn->actpos,fsidyn->time);
         break;
       case dyntyp_pm_discont:
-        /* out_gid_sol("average_pressure",fluidfield,disnumf,actintraf,fsidyn->step,fsidyn->actpos,fsidyn->time); */
+	out_gid_sol("average_pressure",fluidfield,disnumf,actintraf,fsidyn->step,fsidyn->actpos,fsidyn->time);
         break;
       default:
         dserror("unsupported dynamic type %d for fluid projection", fdyn->dyntyp);

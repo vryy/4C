@@ -77,6 +77,18 @@ extern struct _IO_FLAGS     ioflags;
 
 
 /*!----------------------------------------------------------------------
+\brief file pointers
+
+<pre>                                                         m.gee 8/00
+This structure struct _FILES allfiles is defined in input_control_global.c
+and the type is in standardtypes.h
+It holds all file pointers and some variables needed for the FRSYSTEM
+</pre>
+*----------------------------------------------------------------------*/
+extern struct _FILES  allfiles;
+
+
+/*!----------------------------------------------------------------------
 \brief ranks and communicators
 
 <pre>                                                         m.gee 8/00
@@ -184,7 +196,7 @@ void fsi_fluid_pm_cont_setup(
   /****************************************/
 
   press_dis = 1;
-  
+
   numff         = genprob.numff;
   fdyn          = alldyn[numff].fdyn;
   fsidyn        = alldyn[genprob.numaf+1].fsidyn;
@@ -360,7 +372,7 @@ void fsi_fluid_pm_cont_setup(
     am_alloc_copy(&global_press->update,&work->grad.update);
     construct_trilinos_matrix(actintra,&work->grad);
   }
-  
+
   /*---------------------------- get global and local number of equations */
   solserv_getmatdims(&(actsolv->sysarray[press_array]),
                      actsolv->sysarray_typ[press_array],
@@ -374,7 +386,7 @@ void fsi_fluid_pm_cont_setup(
   /*---------------------------------- allocate dist. solution vectors ---*/
   solserv_create_vec(&work->press_sol,1,pnumeq_total,pnumeq,"DV");
   solserv_zero_vec(work->press_sol);
-  
+
   /****************************************/
 
 
@@ -517,8 +529,9 @@ void fsi_fluid_pm_cont_setup(
   /*
    * sol_increment[0]  ... phi
    * sol_increment[1]  ... press
+   * sol_increment[2]  ... press (save)
    */
-  solserv_sol_zero(actfield,press_dis,node_array_sol_increment,1);
+  solserv_sol_zero(actfield,press_dis,node_array_sol_increment,2);
 
   solserv_sol_zero(actfield,press_dis,node_array_sol,0);
 
@@ -766,7 +779,7 @@ void fsi_fluid_pm_cont_calc(
   INT mass_array;               /* indice of the active system sparse matrix */
   INT press_array;
   INT             press_dis;
-  
+
 #ifdef PERF
   perf_begin(47);
 #endif
@@ -775,7 +788,7 @@ void fsi_fluid_pm_cont_calc(
 
   frhs = work->frhs_a.a.dv;
   fgradprhs = work->fgradprhs_a.a.dv;
-  
+
 #ifdef PARALLEL
   fcouple = work->fcouple_a.a.dv;
   recvfcouple = work->recvfcouple_a.a.dv;
@@ -833,6 +846,13 @@ void fsi_fluid_pm_cont_calc(
   /* Now setup is done and we actually calculate the values of G and
    * M. */
 
+  /* restore backup pressure */
+  solserv_sol_copy(actfield,press_dis,
+                   node_array_sol_increment,
+                   node_array_sol_increment,
+                   2,
+                   1);
+
   /* ------------------------------------------------ */
   /* Calculate gradient and mass matrices, including the inverted
    * lumped mass matrix. Velocity dirichlet conditions are observed. */
@@ -841,7 +861,7 @@ void fsi_fluid_pm_cont_calc(
 
   trilinos_zero_matrix(&work->grad);
   trilinos_zero_matrix(&work->lmass);
-  
+
   pm_calelm_cont(actfield, actpart, disnum_calc, press_dis,
 		 actsolv, mass_array,
 		 actintra, ipos, &work->grad, &work->lmass);
@@ -855,7 +875,7 @@ void fsi_fluid_pm_cont_calc(
     global_press = actsolv->sysarray[press_array].trilinos;
     mult_trilinos_mmm_cont(global_press,&work->grad,0,&work->lmass,0,&work->grad,1);
   }
-  
+
   /****************************************/
 
   /* get global and local number of equations */
@@ -1010,7 +1030,7 @@ nonlniter:
   /* (This term could be done just once for each nonlinear iteration,
    * but maybe we'll do the convection explicit and circumvent the
    * iteration altogether.) */
-  
+
   assemble_vec(actintra,
                &(actsolv->sysarray_typ[actsysarray]),
                &(actsolv->sysarray[actsysarray]),
@@ -1022,9 +1042,9 @@ nonlniter:
   matvec_trilinos(&(actsolv->rhs[1]),
                   &(actsolv->rhs[0]),
                   &work->lmass);
-  
+
   solserv_zero_vec(&(actsolv->rhs[0]));
-  
+
   solserv_sparsematvec(actintra,
                        &(actsolv->rhs[0]),
                        &(actsolv->sysarray[mass_array]),
@@ -1136,6 +1156,29 @@ nonlniter:
 		 1.0
       );
 
+#if 0
+    if (actintra->intra_rank==0)
+    {
+      static INT count = 0;
+      INT i;
+      count++;
+      fprintf(allfiles.gidres,"RESULT \"press_rhs_%d\" \"ccarat\" %d SCALAR ONNODES\n"
+              "RESULTRANGESTABLE \"standard_fluid    \"\n"
+              "COMPONENTNAMES \"pressure\"\n"
+              "VALUES\n",count,fdyn->step);
+
+      for (i=0; i<actfield->dis[press_dis].numnp; ++i)
+      {
+        NODE* n = &actfield->dis[press_dis].node[i];
+        fprintf(allfiles.gidres,"%d %f\n",
+                n->Id+1-genprob.nodeshift,
+		frhs[n->dof[0]]);
+      }
+
+      fprintf(allfiles.gidres,"END VALUES\n");
+    }
+#endif
+
     /* solve for the pressure increment */
     solver_control(actfield,press_dis,pressolv,actintra,
                    &(actsolv->sysarray_typ[press_array]),
@@ -1164,6 +1207,29 @@ nonlniter:
         actnode->sol_increment.a.da[1][0] += frhs[actnode->dof[0]] / fdyn->thsl;
       }
     }
+
+#if 0
+    if (actintra->intra_rank==0)
+    {
+      static INT count = 0;
+      INT i;
+      count++;
+      fprintf(allfiles.gidres,"RESULT \"press_sol_%d\" \"ccarat\" %d SCALAR ONNODES\n"
+              "RESULTRANGESTABLE \"standard_fluid    \"\n"
+              "COMPONENTNAMES \"pressure\"\n"
+              "VALUES\n",count,fdyn->step);
+
+      for (i=0; i<actfield->dis[press_dis].numnp; ++i)
+      {
+        NODE* n = &actfield->dis[press_dis].node[i];
+        fprintf(allfiles.gidres,"%d %f\n",
+                n->Id+1-genprob.nodeshift,
+		frhs[n->dof[0]]);
+      }
+
+      fprintf(allfiles.gidres,"END VALUES\n");
+    }
+#endif
 
     /* update velocity */
     pm_vel_update(actfield, actpart, disnum_calc, actintra, ipos,
@@ -1308,9 +1374,9 @@ void fsi_fluid_pm_cont_final(
 
   frhs = work->frhs_a.a.dv;
   fgradprhs = work->fgradprhs_a.a.dv;
-  
+
   press_dis = 1;
-  
+
 #ifdef PARALLEL
   fcouple = work->fcouple_a.a.dv;
   recvfcouple = work->recvfcouple_a.a.dv;
@@ -1443,7 +1509,14 @@ void fsi_fluid_pm_cont_final(
                    node_array_sol,
                    1,
                    0);
-  
+
+  /* backup pressure */
+  solserv_sol_copy(actfield,press_dis,
+                   node_array_sol_increment,
+                   node_array_sol_increment,
+                   1,
+                   2);
+
   /* alternative to the above copys which does not work with restart: */
   /*-------------------------- shift position of old velocity solution ---*/
   /* leftspace = ipos->velnm;
@@ -1599,7 +1672,7 @@ void fsi_fluid_pm_cont_sd(
 
   frhs = work->frhs_a.a.dv;
   fgradprhs = work->fgradprhs_a.a.dv;
-  
+
   totarea = work->totarea_a.a.dv;
 
   actsysarray   = disnum_calc;

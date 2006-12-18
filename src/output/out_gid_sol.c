@@ -5263,7 +5263,7 @@ if (strncmp(string,"average_pressure",stringlenght)==0)
         dserror("Unsupported element type %d for averaged pressure", actele->eltyp);
       }
 
-      pressure[node->Id] += el_press;
+      pressure[node->Id_loc] += el_press;
     }
   }
 

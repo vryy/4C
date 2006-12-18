@@ -184,7 +184,7 @@ void fsi_fluid_pm_discont_setup(
   /****************************************/
 
   press_dis = 1;
-  
+
   numff         = genprob.numff;
   fdyn          = alldyn[numff].fdyn;
   fsidyn        = alldyn[genprob.numaf+1].fsidyn;
@@ -237,7 +237,7 @@ void fsi_fluid_pm_discont_setup(
   /* Enumerate discontinous pressure dofs */
 
   work->numpdof = pm_assign_press_dof(actfield, actpart, disnum_calc, actintra);
-  
+
   /* ------------------------------------------------ */
   /* Allocate space for the additional mass matrix
    * This follows the structure code. The same ugliness here. */
@@ -312,7 +312,7 @@ void fsi_fluid_pm_discont_setup(
                             work->grad.update.fdim, work->grad.update.a.iv);
 
     construct_trilinos_matrix(actintra,&work->grad);
-  
+
     /* No need to construct a trilinos object for the pressure
      * matrix. It comes with the multiplication. But the ccarat
      * surroundings are needed. */
@@ -325,7 +325,7 @@ void fsi_fluid_pm_discont_setup(
     amdel(&global_press->update);
     am_alloc_copy(&work->grad.update,&global_press->update);
   }
-  
+
   /*---------------------------- get global and local number of equations */
   solserv_getmatdims(&(actsolv->sysarray[press_array]),
                      actsolv->sysarray_typ[press_array],
@@ -339,7 +339,7 @@ void fsi_fluid_pm_discont_setup(
   /*---------------------------------- allocate dist. solution vectors ---*/
   solserv_create_vec(&work->press_sol,1,pnumeq_total,pnumeq,"DV");
   solserv_zero_vec(work->press_sol);
-  
+
   /****************************************/
 
 
@@ -482,8 +482,9 @@ void fsi_fluid_pm_discont_setup(
   /*
    * sol_increment[0]  ... phi
    * sol_increment[1]  ... press
+   * sol_increment[2]  ... press (save)
    */
-  solserv_sol_zero(actfield,press_dis,node_array_sol_increment,1);
+  solserv_sol_zero(actfield,press_dis,node_array_sol_increment,2);
 
   solserv_sol_zero(actfield,press_dis,node_array_sol,0);
 
@@ -731,7 +732,7 @@ void fsi_fluid_pm_discont_calc(
   INT mass_array;               /* indice of the active system sparse matrix */
   INT press_array;
   INT             press_dis;
-  
+
 #ifdef PERF
   perf_begin(47);
 #endif
@@ -740,7 +741,7 @@ void fsi_fluid_pm_discont_calc(
 
   frhs = work->frhs_a.a.dv;
   fgradprhs = work->fgradprhs_a.a.dv;
-  
+
 #ifdef PARALLEL
   fcouple = work->fcouple_a.a.dv;
   recvfcouple = work->recvfcouple_a.a.dv;
@@ -798,6 +799,13 @@ void fsi_fluid_pm_discont_calc(
   /* Now setup is done and we actually calculate the values of G and
    * M. */
 
+  /* restore backup pressure */
+  solserv_sol_copy(actfield,press_dis,
+                   node_array_sol_increment,
+                   node_array_sol_increment,
+                   2,
+                   1);
+
   /* ------------------------------------------------ */
   /* Calculate gradient and mass matrices, including the inverted
    * lumped mass matrix. Velocity dirichlet conditions are observed. */
@@ -806,7 +814,7 @@ void fsi_fluid_pm_discont_calc(
 
   trilinos_zero_matrix(&work->grad);
   trilinos_zero_matrix(&work->lmass);
-  
+
   pm_calelm(actfield, actpart, disnum_calc,
             actsolv, mass_array,
             actintra, ipos, work->numpdof, &work->grad, &work->lmass);
@@ -826,7 +834,7 @@ void fsi_fluid_pm_discont_calc(
     else
       mult_trilinos_mmm_cont(global_press,&work->grad,0,&work->lmass,0,&work->grad,1);
   }
-  
+
   /****************************************/
 
   /* get global and local number of equations */
@@ -981,7 +989,7 @@ nonlniter:
   /* (This term could be done just once for each nonlinear iteration,
    * but maybe we'll do the convection explicit and circumvent the
    * iteration altogether.) */
-  
+
   assemble_vec(actintra,
                &(actsolv->sysarray_typ[actsysarray]),
                &(actsolv->sysarray[actsysarray]),
@@ -993,9 +1001,9 @@ nonlniter:
   matvec_trilinos(&(actsolv->rhs[1]),
                   &(actsolv->rhs[0]),
                   &work->lmass);
-  
+
   solserv_zero_vec(&(actsolv->rhs[0]));
-  
+
   solserv_sparsematvec(actintra,
                        &(actsolv->rhs[0]),
                        &(actsolv->sysarray[mass_array]),
@@ -1093,7 +1101,7 @@ nonlniter:
 
 
     solserv_zero_vec(work->press_rhs);
-    
+
     /* build up the rhs */
     pm_calprhs(actfield, actpart, disnum_calc, actintra, ipos, work->numpdof, work->press_rhs);
 
@@ -1112,7 +1120,7 @@ nonlniter:
     pm_vel_update(actfield, actpart, disnum_calc, actintra, ipos,
 		  &work->lmass, actsolv, actsysarray,
 		  frhs, fgradprhs);
-    
+
   /* output of area to monitor file */
   if (fdyn->checkarea>0) out_area(work->totarea_a,fdyn->acttime,itnum,0);
 
@@ -1251,9 +1259,9 @@ void fsi_fluid_pm_discont_final(
 
   frhs = work->frhs_a.a.dv;
   fgradprhs = work->fgradprhs_a.a.dv;
-  
+
   press_dis = 1;
-  
+
 #ifdef PARALLEL
   fcouple = work->fcouple_a.a.dv;
   recvfcouple = work->recvfcouple_a.a.dv;
@@ -1386,7 +1394,14 @@ void fsi_fluid_pm_discont_final(
                    node_array_sol,
                    1,
                    0);
-  
+
+  /* backup pressure */
+  solserv_sol_copy(actfield,press_dis,
+                   node_array_sol_increment,
+                   node_array_sol_increment,
+                   1,
+                   2);
+
   /* alternative to the above copys which does not work with restart: */
   /*-------------------------- shift position of old velocity solution ---*/
   /* leftspace = ipos->velnm;
@@ -1542,7 +1557,7 @@ void fsi_fluid_pm_discont_sd(
 
   frhs = work->frhs_a.a.dv;
   fgradprhs = work->fgradprhs_a.a.dv;
-  
+
   totarea = work->totarea_a.a.dv;
 
   actsysarray   = disnum_calc;
