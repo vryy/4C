@@ -136,6 +136,10 @@ void inherit_conditions()
     } // if (ccadesign.Comm().MyPID()==0)
   
   } // if (design)
+  else
+  {
+    dserror("Design free boundary conditions not yet impl.");
+  }
 
   return;
 } /* end of inherit_conditions */
@@ -201,7 +205,6 @@ void inherit_dirichlet_design_to_discretization(
   
   return;
 } // inherit_dirichlet_design_to_discretization
-
 
 
 /*----------------------------------------------------------------------*
