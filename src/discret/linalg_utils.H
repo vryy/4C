@@ -24,6 +24,7 @@ Maintainer: Michael Gee
 #include "Epetra_Export.h"
 #include "Epetra_Import.h"
 #include "Epetra_SerialDenseMatrix.h"
+#include "Epetra_SerialDenseVector.h"
 #include "Teuchos_RefCountPtr.hpp"
 
 using namespace std;
@@ -74,6 +75,58 @@ namespace LINALG
   \param dim (in) :  Dimension of matrix
   */
   void SymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim);
+
+  /*!
+  \brief Assemble a Epetra_SerialDenseMatrix into a Epetra_CrsMatrix
+  
+  This is an individual call. Matrix A is not completed upon return.
+  Will only assemble locally and will never do any commmunication.
+  All values that can not be assembled locally will be ignored.
+  Will use the communicator from matrix A to determine ownerships.
+  Local matrix Aele has to be square.
+  
+  \param A (out)   : Sparse matrix to be assembled on
+  \param Aele (in) : dense matrix to be assembled
+  \param lm (in) : vector with gids
+  \param lmowner (in) : vector with owners of gids
+  */
+  void Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix& Aele, 
+                const vector<int>& lm, const vector<int>& lmowner);
+
+  /*!
+  \brief Assemble a Epetra_SerialDenseVector into a Epetra_Vector
+  
+  This is an individual call.
+  Will only assemble locally and will never do any commmunication.
+  All values that can not be assembled locally will be ignored.
+  Will use the communicator from vector V to determine ownerships.
+  
+  \param V (out)   : Sparse matrix to be assembled on
+  \param Vele (in) : dense matrix to be assembled
+  \param lm (in) : vector with gids
+  \param lmowner (in) : vector with owners of gids
+  */
+  void Assemble(Epetra_Vector& V, const Epetra_SerialDenseVector& Vele, 
+                const vector<int>& lm, const vector<int>& lmowner);
+
+
+  /*!
+  \brief Call FillComplete on a Epetra_CrsMatrix
+  */
+  void Complete(Epetra_CrsMatrix& A);
+
+  /*!
+  \brief Add a (transposed) Epetra_CrsMatrix to another: B = B*bfactor + A(^T)*afactor
+  
+  
+  \param V (out)   : Sparse matrix to be assembled on
+  \param Vele (in) : dense matrix to be assembled
+  \param lm (in) : vector with gids
+  \param lmowner (in) : vector with owners of gids
+  */
+  void Add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
+           Epetra_CrsMatrix& B, const double scalarB);
+
 
 } // namespace LINALG
 
