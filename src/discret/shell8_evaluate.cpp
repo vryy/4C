@@ -89,7 +89,7 @@ int DRT::Elements::Shell8::Evaluate(ParameterList& params,
     {
       // need current displacement and residual forces
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual");
+      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors displacement and/or residual");
       vector<double> mydisp(lm.size());
       DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
