@@ -340,10 +340,8 @@ private:
   int                                 id_;        // a unique global element id
   int                                 owner_;     // owner of this element
   ElementType                         etype_;     // type of element
-
   vector<int>                         nodeid_;    // list of my nodal ids
   vector<DRT::Node*>                  node_;      // pointers to adjacent nodes
-
   DRT::DofSet                         dofset_;    // a set of degrees of freedom
 
   map<string,RefCountPtr<Condition> > condition_; // some conditions e.g. BCs
