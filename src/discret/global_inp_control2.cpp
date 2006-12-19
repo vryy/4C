@@ -229,8 +229,9 @@ void input_design_topology_discretization(DRT::Discretization& actdis)
       ndvol_fenode[i] = 0;
     input_design_dvol_fenode_read(dvol_fenode,ndvol_fenode);
 
+    //-------------------------------------------------------------
     // note: The order in which these entities are set DOES matter!
-    
+    //-------------------------------------------------------------
     // create topology node <-> designvolume
     DRT::Node::OnDesignEntity type = DRT::Node::on_dvolume;
     actdis.SetDesignEntityIds(type,ndvol_fenode,dvol_fenode);
