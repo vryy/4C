@@ -509,14 +509,17 @@ public:
   Using this method, a reference to a state vector can 
   be supplied to the discretization. The elements can access
   this vector by using the name of that vector.
+  If the vector is supplied in DofColMap() a reference to it will be stored.
+  If the vector is NOT supplied in DofColMap() a vector with column map
+  is allocated and the supplied vector is exported to it.
+  Everything is stored/referenced using RefCountPtr.
   
   \param name (in): Name of solution state
   \param state (in): vector of some data
   
   \note This class will not take ownership or in any way modify the solution vector.
   */
-  virtual void SetState(const string& name,RefCountPtr<const Epetra_Vector> state)
-  { state_[name] = state; return; }
+  virtual void SetState(const string& name,RefCountPtr<const Epetra_Vector> state);
 
   /*!
   \brief Get a reference to a data vector
