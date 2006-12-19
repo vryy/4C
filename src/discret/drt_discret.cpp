@@ -16,6 +16,7 @@ Maintainer: Michael Gee
 #include "drt_discret.H"
 #include "drt_exporter.H"
 #include "drt_dserror.H"
+#include "linalg_utils.H"
 
 
 
@@ -466,6 +467,29 @@ const Epetra_Map* DRT::Discretization::DofColMap()
   dofcolmap_ = rcp(new Epetra_Map(-1,numnodaldof+numeledof,&mygid[0],0,Comm()));
   
   return dofcolmap_.get();
+}
+
+
+/*----------------------------------------------------------------------*
+ |  set a reference to a data vector (public)                mwgee 12/06|
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::SetState(const string& name,RefCountPtr<const Epetra_Vector> state)
+{
+  if (!Filled()) dserror("FillComplete() was not called");
+  const Epetra_Map* colmap = DofColMap();
+  const Epetra_BlockMap& vecmap = state->Map();
+  
+  // if it's already in column map just set a reference
+  if (vecmap.PointSameAs(*colmap))
+    state_[name] = state;
+  // if it's not in column map export and allocate
+  else
+  {
+    RefCountPtr<Epetra_Vector> tmp = LINALG::CreateVector(*colmap,false);
+    LINALG::Export(*state,*tmp);
+    state_[name] = tmp;
+  }
+  return;
 }
 
 #endif  // #ifdef TRILINOS_PACKAGE
