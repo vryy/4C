@@ -1088,7 +1088,7 @@ void input_designvol_neum(RefCountPtr<DRT::DesignDiscretization> designdis)
     DRT::Element* vol = designdis->gElement(dvolid);
     if (vol==NULL) dserror("Cannot find design volume");
 
-    //-------------------------------------------- attach condition to node
+    //-------------------------------------------- attach condition to element
     vol->SetCondition("Neumann",condition);
 
     //-------------------------------------------------- read the next line
