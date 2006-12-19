@@ -133,8 +133,8 @@ void DRT::Element::SetNodeIds(const int nnode, const int* nodes)
  *----------------------------------------------------------------------*/
 const char* DRT::Element::Pack(int& size) const
 {
-  const int sizeint    = sizeof(int);
-  const int sizetype   = sizeof(enum ElementType);
+  const int sizeint            = sizeof(int);
+  const int sizetype           = sizeof(enum ElementType);
   //const int sizedouble = sizeof(double);
   //const int sizechar   = sizeof(char);
 
@@ -301,13 +301,13 @@ DRT::Condition* DRT::Element::GetCondition(const string& name)
 void DRT::Element::LocationVector(vector<int>& lm, vector<int>& lmdirich, 
                                   vector<int>& lmowner)
 {
-
+  const int numnode = NumNode();
   // count how many degrees of freedom I have
   int count=0;
   // count nodal dofs
   DRT::Node** nodes = Nodes();
   if (nodes)
-    for (int i=0; i<NumNode(); ++i)
+    for (int i=0; i<numnode; ++i)
       count += nodes[i]->Dof().NumDof();
   // add element dofs
   count += Dof().NumDof();
@@ -320,7 +320,7 @@ void DRT::Element::LocationVector(vector<int>& lm, vector<int>& lmdirich,
   // fill the vector with nodal dofs
   int count2=0;
   if (nodes)
-    for (int i=0; i<NumNode(); ++i)
+    for (int i=0; i<numnode; ++i)
     {
       DRT::Condition* dirich = nodes[i]->GetCondition("Dirichlet");
       vector<int>* flag = NULL;
