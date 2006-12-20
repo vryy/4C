@@ -238,12 +238,21 @@ dsassert(ele->e.f2->turbu==0,"Turbulence needed but not compiled in!\n");
 
 
   /* read type of ale elements, created or read */
-  frint("CA",&(create_ale),&ierr);
-
-  /*if (ierr!=1) dserror("Reading of FLUID3 element failed: flag CA not available\n");*/
-  if (ierr!=1)
-    create_ale = 0;
-
+  frchar("CA",buffer,&ierr);
+  
+  if (ierr==1)
+       if (strncmp(buffer,"YES",3)==0 ||
+           strncmp(buffer,"Yes",3)==0 ||
+           strncmp(buffer,"yes",3)==0 ||
+           strncmp(buffer,"1",3)==0)
+           create_ale = 1;
+       else
+           create_ale = 0;
+  else
+      /* dserror("Reading of FLUID3 element failed: flag CA not available\n");*/
+      /* should we dserror here? probably not, since most test don't have this flag */
+      create_ale = 0;
+    
   if (create_ale == 1 && ele->e.f2->is_ale == 1)
   {
     genprob.create_ale    = 1;
