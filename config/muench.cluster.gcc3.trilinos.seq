@@ -49,7 +49,7 @@ LIBS="-L/cluster/acml-3.0.0/gnu64/lib -lacml -lmetis-gcc-3.3 -lc -lg2c"
 
 CFLAGS_OPT="-pipe -O3 -ffast-math -funroll-all-loops -fpeel-loops -ftracer -funswitch-loops -funit-at-a-time"
 CPFLAGS_OPT="-pipe -O3 -ffast-math -funroll-all-loops -fpeel-loops -ftracer -funswitch-loops -funit-at-a-time"
-FFLAGS_OPT="-pipe -O3 -ffast-math -funroll-all-loops -fpeel-loops -ftracer -funswitch-loops -funit-at-a-time"
+FFLAGS_OPT="-pipe -O5 -ffast-math -funroll-all-loops -fpeel-loops -ftracer -funswitch-loops -funit-at-a-time"
 LDFLAGS_OPT="-O2"
 
 #CFLAGS_OPT="-g"
