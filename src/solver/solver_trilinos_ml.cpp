@@ -89,11 +89,8 @@ void create_ml_parameterlist(struct _SOLVAR         *actsolv,
     break;
     case azprec_MLfluid2: // full Pretrov-Galerkin unsymmetric smoothed
       mllist.set("energy minimization: enable",true);
-      mllist.set("energy minimization: type",2); // 1,2,3 cheap -> expensive
-      if (matrix.Comm().NumProc()==1)
-        mllist.set("aggregation: block scaling",true); // crashes in parallel
-      else
-        mllist.set("aggregation: block scaling",false); // crashes in parallel
+      mllist.set("energy minimization: type",3); // 1,2,3 cheap -> expensive
+      mllist.set("aggregation: block scaling",false); // crashes in parallel
     break;
     default: dserror("Unknown type of preconditioner");
   }
