@@ -55,9 +55,9 @@ VISUAL3_LIB="-L/usr/X11R6/lib -lVisual3 -lg2c -lGLU -lGL -lX11 -lXext -ldl -lpth
 #LIBS="-lc -lg2c -llapack -lgoto_p4_512-r0.6 -lxerbla -lmetis"
 LIBS="-lc -lg2c -lmetis -llapack -lblas"
 
-CFLAGS_OPT="-O2"
-CPFLAGS_OPT="-O2"
-FFLAGS_OPT="-O2"
+CFLAGS_OPT="-O3"
+CPFLAGS_OPT="-O3"
+FFLAGS_OPT="-O5 -funroll-all-loops -malign-double"
 LDFLAGS_OPT="-O2"
 
 #CFLAGS_OPT="-g"
