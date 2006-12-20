@@ -117,6 +117,8 @@ if (par.myrank==0)
    printf("*   Technische Universitaet Muenchen   *\n");
    printf("*                                      *\n");
    printf("*    (c) 2005 All Rights Reserved.     *\n");
+   printf("*    (c) 2006 All Rights Reserved.     *\n");
+   printf("*    (c) 2007 All Rights Reserved.     *\n");
    printf("*                                      *\n");
    printf("****************************************\n\n");
 #ifdef PARALLEL
