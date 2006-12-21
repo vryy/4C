@@ -500,17 +500,9 @@ void fsi_fluid_pm_laplace_setup(
   /*
    * sol_increment[0]  ... phi
    * sol_increment[1]  ... press
+   * sol_increment[2]  ... press (save)
    */
-  solserv_sol_zero(actfield,press_dis,node_array_sol_increment,1);
-
-  solserv_sol_zero(actfield,press_dis,node_array_sol,0);
-  
-  /* we need two entries on the pressure discretization */
-  /*
-   * sol_increment[0]  ... phi
-   * sol_increment[1]  ... press
-   */
-  solserv_sol_zero(actfield,press_dis,node_array_sol_increment,1);
+  solserv_sol_zero(actfield,press_dis,node_array_sol_increment,2);
 
   solserv_sol_zero(actfield,press_dis,node_array_sol,0);
 
@@ -821,6 +813,13 @@ void fsi_fluid_pm_laplace_calc(
   if (actintra->intra_fieldtyp != fluid)
     dserror("only fluid allowed");
 
+  /* restore backup pressure */
+  solserv_sol_copy(actfield,press_dis,
+                   node_array_sol_increment,
+                   node_array_sol_increment,
+                   2,
+                   1);
+  
   /* -------------------------------------------------------------------- */
   /* Create the pressure Laplace matrix. */
 
@@ -1518,6 +1517,13 @@ void fsi_fluid_pm_laplace_final(
                    node_array_sol,
                    1,
                    0);
+  
+  /* backup pressure */
+  solserv_sol_copy(actfield,press_dis,
+                   node_array_sol_increment,
+                   node_array_sol_increment,
+                   1,
+                   2);
   
   /* alternative to the above copys which does not work with restart: */
   /*-------------------------- shift position of old velocity solution ---*/

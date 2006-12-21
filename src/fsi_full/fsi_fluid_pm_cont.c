@@ -873,6 +873,7 @@ void fsi_fluid_pm_cont_calc(
       dserror("fatal: trilinos solver expected");
 
     global_press = actsolv->sysarray[press_array].trilinos;
+    trilinos_zero_matrix(global_press);
     mult_trilinos_mmm_cont(global_press,&work->grad,0,&work->lmass,0,&work->grad,1);
   }
 

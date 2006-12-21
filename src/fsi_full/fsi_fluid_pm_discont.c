@@ -832,7 +832,10 @@ void fsi_fluid_pm_discont_calc(
     if (!global_press->matrix)
       mult_trilinos_mmm(global_press,&work->grad,0,&work->lmass,0,&work->grad,1);
     else
+    {
+      trilinos_zero_matrix(global_press);
       mult_trilinos_mmm_cont(global_press,&work->grad,0,&work->lmass,0,&work->grad,1);
+    }
   }
 
   /****************************************/
