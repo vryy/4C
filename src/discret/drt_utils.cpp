@@ -60,7 +60,7 @@ DRT::ParObject* DRT::Utils::Factory(const char* data)
     break;
     case ParObject_Condition:
     {
-      DRT::Condition* object = new DRT::Condition(DRT::Condition::condition_none);
+      DRT::Condition* object = new DRT::Condition(-1,DRT::Condition::none);
       object->Unpack(data);
       return object;
     }
