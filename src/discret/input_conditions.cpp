@@ -244,7 +244,7 @@ void input_designnode_dirich(RefCountPtr<DRT::DesignDiscretization> designdis)
     
     // create boundary condition
     RefCountPtr<DRT::Condition> condition = 
-                rcp(new DRT::Condition(DRT::Condition::condition_Dirichlet));
+                rcp(new DRT::Condition(dnodeid,DRT::Condition::Dirichlet));
     condition->Add("onoff",dirich_onoff);
     condition->Add("val",dirich_val);
     condition->Add("curve",dirich_curve);
@@ -360,7 +360,7 @@ void input_designline_dirich(RefCountPtr<DRT::DesignDiscretization> designdis)
     
     // create boundary condition
     RefCountPtr<DRT::Condition> condition = 
-                rcp(new DRT::Condition(DRT::Condition::condition_Dirichlet));
+                rcp(new DRT::Condition(dlineid,DRT::Condition::Dirichlet));
     condition->Add("onoff",dirich_onoff);
     condition->Add("val",dirich_val);
     condition->Add("curve",dirich_curve);
@@ -478,7 +478,7 @@ void input_designsurf_dirich(RefCountPtr<DRT::DesignDiscretization> designdis)
     
     // create boundary condition
     RefCountPtr<DRT::Condition> condition = 
-                 rcp(new DRT::Condition(DRT::Condition::condition_Dirichlet));
+                 rcp(new DRT::Condition(dsurfid,DRT::Condition::Dirichlet));
     condition->Add("onoff",dirich_onoff);
     condition->Add("val",dirich_val);
     condition->Add("curve",dirich_curve);
@@ -596,7 +596,7 @@ void input_designvol_dirich(RefCountPtr<DRT::DesignDiscretization> designdis)
     
     // create boundary condition
     RefCountPtr<DRT::Condition> condition = 
-                rcp(new DRT::Condition(DRT::Condition::condition_Dirichlet));
+                rcp(new DRT::Condition(dvolid,DRT::Condition::Dirichlet));
     condition->Add("onoff",dirich_onoff);
     condition->Add("val",dirich_val);
     condition->Add("curve",dirich_curve);
@@ -698,7 +698,7 @@ void input_designnode_neum(RefCountPtr<DRT::DesignDiscretization> designdis)
        
     // create boundary condition
     RefCountPtr<DRT::Condition> condition = 
-                    rcp(new DRT::Condition(DRT::Condition::condition_Neumann));
+                    rcp(new DRT::Condition(dnodeid,DRT::Condition::PointNeumann));
     
     // read whether load is on surface (shells)
     frchk("Mid",&ierr);
@@ -717,7 +717,7 @@ void input_designnode_neum(RefCountPtr<DRT::DesignDiscretization> designdis)
     if (node==NULL) dserror("Cannot find design node");
 
     //-------------------------------------------- attach condition to node
-    node->SetCondition("Neumann",condition);
+    node->SetCondition("PointNeumann",condition);
 
     //-------------------------------------------------- read the next line
     frread();
@@ -810,7 +810,7 @@ void input_designline_neum(RefCountPtr<DRT::DesignDiscretization> designdis)
        
     // create boundary condition
     RefCountPtr<DRT::Condition> condition = 
-                  rcp(new DRT::Condition(DRT::Condition::condition_Neumann));
+                  rcp(new DRT::Condition(dlineid,DRT::Condition::LineNeumann));
     
     // read whether load is on surface (shells)
     condition->Add("type","neum_live");
@@ -846,7 +846,7 @@ void input_designline_neum(RefCountPtr<DRT::DesignDiscretization> designdis)
     if (line==NULL) dserror("Cannot find design line");
 
     //-------------------------------------------- attach condition to node
-    line->SetCondition("Neumann",condition);
+    line->SetCondition("LineNeumann",condition);
 
     //-------------------------------------------------- read the next line
     frread();
@@ -940,7 +940,7 @@ void input_designsurf_neum(RefCountPtr<DRT::DesignDiscretization> designdis)
        
     // create boundary condition
     RefCountPtr<DRT::Condition> condition = 
-                  rcp(new DRT::Condition(DRT::Condition::condition_Neumann));
+                  rcp(new DRT::Condition(dsurfid,DRT::Condition::SurfaceNeumann));
     
     // read whether load is on surface (shells)
     condition->Add("type","neum_live");
@@ -976,7 +976,7 @@ void input_designsurf_neum(RefCountPtr<DRT::DesignDiscretization> designdis)
     if (surf==NULL) dserror("Cannot find design surface");
 
     //-------------------------------------------- attach condition to node
-    surf->SetCondition("Neumann",condition);
+    surf->SetCondition("SurfaceNeumann",condition);
 
     //-------------------------------------------------- read the next line
     frread();
@@ -1070,7 +1070,7 @@ void input_designvol_neum(RefCountPtr<DRT::DesignDiscretization> designdis)
        
     // create boundary condition
     RefCountPtr<DRT::Condition> condition = 
-                  rcp(new DRT::Condition(DRT::Condition::condition_Neumann));
+                  rcp(new DRT::Condition(dvolid,DRT::Condition::VolumeNeumann));
     
     // read whether load is on surface (shells)
     condition->Add("type","neum_dead");
@@ -1089,7 +1089,7 @@ void input_designvol_neum(RefCountPtr<DRT::DesignDiscretization> designdis)
     if (vol==NULL) dserror("Cannot find design volume");
 
     //-------------------------------------------- attach condition to element
-    vol->SetCondition("Neumann",condition);
+    vol->SetCondition("VolumeNeumann",condition);
 
     //-------------------------------------------------- read the next line
     frread();
