@@ -158,15 +158,6 @@ public:
                                       else                return NULL;     }
 
   /*!
-  \brief Get a condition with a certain name
-  
-  \param name : Name of condition
-  
-  \return Returns NULL if condition with that name does not exist
-  */
-  virtual Condition* GetCondition(const string& name);
-
-  /*!
   \brief Get vector of ptrs to nodes
   
   */
@@ -244,17 +235,49 @@ public:
   /*!
   \brief Set a condition with a certain name
   
+  Store a condition with a certain name in the element. The name need not
+  be unique, meaning multiple conditions with the same name can be stored.
+  Conditions can then be accessed with the GetCondition methods.
+  
   \param name : Name of condition
   \param cond : The Condition class
   
   \note this takes ownership of cond
   
   \warning If a condition with the exact same name already exists, it will be
-           overwritten
+           NOT be overwritten but stored twice in the element
   
   */
   virtual void SetCondition(const string& name,RefCountPtr<Condition> cond)
-  { condition_[name] = cond; return; }
+  { condition_.insert(pair<string,RefCountPtr<Condition> >(name,cond)); return; }
+
+  /*!
+  \brief Get all conditions with a certain name
+  
+  Get all conditions with a certain name. A vector of ptrs to all conditions
+  with name name is returned in out. The number of conditions found with name
+  name is out.size(). out.size() is 0 if no condition with that name is found.
+  
+  \param name (in): Name of condition
+  \param out  (out): vector of pointers to all conditions with that name
+  
+  \return Returns NULL if condition with that name does not exist
+  */
+  virtual void GetCondition(const string& name, vector<DRT::Condition*>& out);
+
+  /*!
+  \brief Get a condition with a certain name
+  
+  Returns the first condition with name name found in the multimap. 
+  If multiple conditions with the same name exist, the first condition is
+  returned and behaviour is therefore non-deterministic. this method should
+  therefore only be used in cases where the user is sure that name is unique.
+  
+  \param name (in): Name of condition
+  
+  \return Returns NULL if condition with that name does not exist
+  */
+  virtual DRT::Condition* GetCondition(const string& name);
 
   //@}
 
@@ -337,14 +360,14 @@ protected:
 
 private:
 
-  int                                 id_;        // a unique global element id
-  int                                 owner_;     // owner of this element
-  ElementType                         etype_;     // type of element
-  vector<int>                         nodeid_;    // list of my nodal ids
-  vector<DRT::Node*>                  node_;      // pointers to adjacent nodes
-  DRT::DofSet                         dofset_;    // a set of degrees of freedom
+  int                                      id_;        // a unique global element id
+  int                                      owner_;     // owner of this element
+  ElementType                              etype_;     // type of element
+  vector<int>                              nodeid_;    // list of my nodal ids
+  vector<DRT::Node*>                       node_;      // pointers to adjacent nodes
+  DRT::DofSet                              dofset_;    // a set of degrees of freedom
 
-  map<string,RefCountPtr<Condition> > condition_; // some conditions e.g. BCs
+  multimap<string,RefCountPtr<Condition> > condition_; // some conditions e.g. BCs
 
 }; // class Element
 } // namespace DRT

@@ -50,7 +50,7 @@ dentityid_(old.dentityid_)
   // we want a true deep copy of the condition_
   map<string,RefCountPtr<Condition> >::const_iterator fool;
   for (fool=old.condition_.begin(); fool!=old.condition_.end(); ++fool)
-    condition_[fool->first] = rcp(new Condition(*(fool->second)));
+    SetCondition(fool->first,rcp(new DRT::Condition(*(fool->second))));
 
   return;
 }
@@ -115,12 +115,12 @@ void DRT::Node::Print(ostream& os) const
   int numcond = condition_.size();
   if (numcond)
   {
-    os << endl; // end the previous line
+    os << endl << numcond << " Conditions:\n";
     map<string,RefCountPtr<Condition> >::const_iterator curr;
     for (curr=condition_.begin(); curr != condition_.end(); ++curr)
     {
-      os << "Condition : " << curr->first << endl;
-      os << *(curr->second);
+      os << curr->first << " ";
+      os << *(curr->second) << endl;
     }
   }
   return;
@@ -265,14 +265,35 @@ bool DRT::Node::Unpack(const char* data)
 
 /*----------------------------------------------------------------------*
  |  Get a condition of a certain name                          (public) |
- |                                                            gee 11/06 |
+ |                                                            gee 12/06 |
+ *----------------------------------------------------------------------*/
+void DRT::Node::GetCondition(const string& name,vector<DRT::Condition*>& out)
+{
+  const int num = condition_.count(name);
+  out.resize(num);
+  multimap<string,RefCountPtr<Condition> >::iterator startit = 
+                                         condition_.lower_bound(name);
+  multimap<string,RefCountPtr<Condition> >::iterator endit = 
+                                         condition_.upper_bound(name);
+  int count=0;
+  multimap<string,RefCountPtr<Condition> >::iterator curr;
+  for (curr=startit; curr!=endit; ++curr)
+    out[count++] = curr->second.get();
+  if (count != num) dserror("Mismatch in number of conditions found");
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Get a condition of a certain name                          (public) |
+ |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
 DRT::Condition* DRT::Node::GetCondition(const string& name)
 {
-  map<string,RefCountPtr<Condition> >::const_iterator curr = condition_.find(name);
-  if (curr != condition_.end()) return curr->second.get();
-  else                          return NULL;
-  return NULL;
+  multimap<string,RefCountPtr<Condition> >::iterator curr = 
+                                         condition_.find(name);
+  if (curr==condition_.end()) return NULL;
+  curr = condition_.lower_bound(name);
+  return curr->second.get();
 }
 
 
