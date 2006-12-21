@@ -92,6 +92,21 @@ static void inherit_dirichlet_element_to_node(
 static void inherit_dirichlet_design_to_discretization(
                                         DRT::DesignDiscretization& ddis,
                                         DRT::Discretization&        dis);
+
+static void inherit_neumann_designelements_to_discretization(
+                                      DRT::DesignDiscretization& ddis,
+                                      DRT::Discretization&        dis,
+                                      const int ndele,
+                                      const vector<int>& ndele_fenode,
+                                      const vector<vector<int> >& dele_fenode);
+
+static void inherit_neumann_designnodes_to_discretization(
+                                      DRT::DesignDiscretization& ddis,
+                                      DRT::Discretization&        dis,
+                                      const int ndnode,
+                                      const vector<int>& ndnode_fenode,
+                                      const vector<vector<int> >& dnode_fenode);
+
 /*----------------------------------------------------------------------*
  | input of conditions                                    m.gee 11/06   |
  *----------------------------------------------------------------------*/
@@ -107,18 +122,50 @@ void inherit_conditions()
     RefCountPtr<DRT::DesignDiscretization> designsurfs = ccadesign[1];
     RefCountPtr<DRT::DesignDiscretization> designvols  = ccadesign[2];
   
+    // number of design points, lines, surfaces and volumes
+    const int ndnode = designlines->NumGlobalNodes();
+    const int ndline = designlines->NumGlobalElements();
+    const int ndsurf = designsurfs->NumGlobalElements();
+    const int ndvol  = designvols->NumGlobalElements();
+
     if (ccadesign.Comm().MyPID()==0)
     {
-      /*
-      dirichlet conditions are inherited as follows:
-      DVOL inherits to its DSURFS if the DSURF does not have its own
-      DSURF inherits to its DLINEs if the DLINE does not have its own
-      DLINE inherits to its DNODEs if the DNODE does not have its own
-      */
+      // dirichlet conditions are inherited as follows:
+      // DVOL inherits to its DSURFS if the DSURF does not have its own
+      // DSURF inherits to its DLINEs if the DLINE does not have its own
+      // DLINE inherits to its DNODEs if the DNODE does not have its own
       inherit_dirichlet_high_to_low_entity_elements(designvols,designsurfs);
       inherit_dirichlet_high_to_low_entity_elements(designsurfs,designlines);
       inherit_dirichlet_element_to_node(designlines);
+      
+      // read design nodes <-> nodes
+      vector<int> ndnode_fenode(ndnode);
+      vector<vector<int> > dnode_fenode(ndnode);
+      for (int i=0; i<ndnode; ++i) 
+        ndnode_fenode[i] = 0; 
+      input_design_dpoint_fenode_read(dnode_fenode,ndnode_fenode);
+    
+      // read design lines <-> nodes
+      vector<int> ndline_fenode(ndline);
+      vector<vector<int> > dline_fenode(ndline);
+      for (int i=0; i<ndline; ++i) 
+        ndline_fenode[i] = 0;
+      input_design_dline_fenode_read(dline_fenode,ndline_fenode); 
   
+      // read design surfaces <-> nodes
+      vector<int> ndsurf_fenode(ndsurf);
+      vector<vector<int> > dsurf_fenode(ndsurf);
+      for (int i=0; i<ndsurf; ++i) 
+        ndsurf_fenode[i] = 0;
+      input_design_dsurf_fenode_read(dsurf_fenode,ndsurf_fenode);
+
+      // read design volumes <-> nodes
+      vector<int> ndvol_fenode(ndvol);
+      vector<vector<int> > dvol_fenode(ndvol);
+      for (int i=0; i<ndvol; ++i) 
+        ndvol_fenode[i] = 0;
+      input_design_dvol_fenode_read(dvol_fenode,ndvol_fenode);
+
       // inherit all conditions from design to discretization
       for (int i=0; i<genprob.numfld; ++i)
       {
@@ -126,15 +173,29 @@ void inherit_conditions()
                       (vector<RefCountPtr<DRT::Discretization> >*)field[i].ccadis;
         for (int j=0; j<field[i].ndis; ++j)
         {
+          // inherit the dirichlet boundary conditions from design
+          // to the discretization
           RefCountPtr<DRT::Discretization> actdis = (*discretization)[j];
           inherit_dirichlet_design_to_discretization(*designlines,*actdis);
           inherit_dirichlet_design_to_discretization(*designsurfs,*actdis);
           inherit_dirichlet_design_to_discretization(*designvols,*actdis);
+          // inherit neumann conditions from design to discretization 
+          // based on the sets read above
+          inherit_neumann_designelements_to_discretization(
+                                             *designvols,*actdis,
+                                             ndvol,ndvol_fenode,dvol_fenode);
+          inherit_neumann_designelements_to_discretization(
+                                             *designsurfs,*actdis,
+                                             ndsurf,ndsurf_fenode,dsurf_fenode);
+          inherit_neumann_designelements_to_discretization(
+                                             *designlines,*actdis,
+                                             ndline,ndline_fenode,dline_fenode);
+          inherit_neumann_designnodes_to_discretization(
+                                             *designlines,*actdis,
+                                             ndnode,ndnode_fenode,dnode_fenode);
         }
       } // for (int i=0; i<genprob.numfld; ++i)
-  
     } // if (ccadesign.Comm().MyPID()==0)
-  
   } // if (design)
   else
   {
@@ -143,6 +204,94 @@ void inherit_conditions()
 
   return;
 } /* end of inherit_conditions */
+
+
+/*----------------------------------------------------------------------*
+ | inherit Neumann conditions from design set to nodes      m.gee 12/06 |
+ *----------------------------------------------------------------------*/
+void inherit_neumann_designnodes_to_discretization(
+                                      DRT::DesignDiscretization& ddis,
+                                      DRT::Discretization&        dis,
+                                      const int ndnode,
+                                      const vector<int>& ndnode_fenode,
+                                      const vector<vector<int> >& dnode_fenode)
+{
+  DSTraceHelper dst("inherit_neumann_designnodes_to_discretization");
+  if (!dis.Filled()) dserror("FillComplete() must have been called before");
+  if (!ddis.Filled()) dserror("FillComplete() must have been called before");
+  
+  for (int i=0; i<ddis.NumMyColNodes(); ++i)
+  {
+    DRT::Node* dnode = ddis.lColNode(i);
+    if (!dnode) dserror("Cannot get lColNode");
+    const int dnodeid = dnode->Id();
+    
+    // check design node for PointNeumann condition
+    DRT::Condition* neumpoint  = dnode->GetCondition("PointNeumann");
+    if (!neumpoint) continue;
+    
+    const int nfenode = ndnode_fenode[dnodeid];
+    for (int j=0; j<nfenode; ++j)
+    {
+      const int gid = dnode_fenode[dnodeid][j];
+      DRT::Node* node = dis.gNode(gid);
+      if (!node) dserror("Cannot find fe node");
+      node->SetCondition("PointNeumann",rcp(new DRT::Condition(*neumpoint)));
+    }
+  }
+  
+  return;
+}                                      
+
+
+
+/*----------------------------------------------------------------------*
+ | inherit Neumann conditions from design set to nodes      m.gee 12/06 |
+ *----------------------------------------------------------------------*/
+void inherit_neumann_designelements_to_discretization(
+                                      DRT::DesignDiscretization& ddis,
+                                      DRT::Discretization&        dis,
+                                      const int ndele,
+                                      const vector<int>& ndele_fenode,
+                                      const vector<vector<int> >& dele_fenode)
+{
+  DSTraceHelper dst("inherit_neumann_designelements_to_discretization");
+  if (!dis.Filled()) dserror("FillComplete() must have been called before");
+  if (!ddis.Filled()) dserror("FillComplete() must have been called before");
+  
+  for (int i=0; i<ddis.NumMyColElements(); ++i)
+  {
+    DRT::Element* ele = ddis.lColElement(i);
+    if (!ele) dserror("Cannot get lColElement");
+    const int eleid = ele->Id();
+    
+    // check design Element for VolumeNeumann, SurfaceNeumann,
+    //                          LineNeumann condition
+    DRT::Condition* neumvol  = ele->GetCondition("VolumeNeumann");
+    DRT::Condition* neumsurf = ele->GetCondition("SurfaceNeumann");
+    DRT::Condition* neumline = ele->GetCondition("LineNeumann");
+    
+    const int nfenode = ndele_fenode[eleid];
+    
+    for (int j=0; j<nfenode; ++j)
+    {
+      const int gid = dele_fenode[eleid][j];
+      DRT::Node* node = dis.gNode(gid);
+      if (!node) dserror("Cannot find fe node");
+      
+      if (neumvol)
+        node->SetCondition("VolumeNeumann",rcp(new DRT::Condition(*neumvol)));
+      if (neumsurf)
+        node->SetCondition("SurfaceNeumann",rcp(new DRT::Condition(*neumsurf)));
+      if (neumline)
+        node->SetCondition("LineNeumann",rcp(new DRT::Condition(*neumline)));
+    }
+  }
+  
+  return;
+}                                      
+
+
 
 /*----------------------------------------------------------------------*
  | inherit Dirichlet conditions from eles to nodes          m.gee 11/06 |
