@@ -20,8 +20,9 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-DRT::Condition::Condition(ConditionType type) :
+DRT::Condition::Condition(const int id, const ConditionType type) :
 Container(),
+id_(id),
 type_(type)
 {
   return;
@@ -32,7 +33,8 @@ type_(type)
  *----------------------------------------------------------------------*/
 DRT::Condition::Condition() :
 Container(),
-type_(condition_none)
+id_(-1),
+type_(none)
 {
   return;
 }
@@ -42,6 +44,7 @@ type_(condition_none)
  *----------------------------------------------------------------------*/
 DRT::Condition::Condition(const DRT::Condition& old) :
 Container(old),
+id_(old.id_),
 type_(old.type_)
 {
   return;
@@ -71,8 +74,12 @@ ostream& operator << (ostream& os, const DRT::Condition& cond)
  *----------------------------------------------------------------------*/
 void DRT::Condition::Print(ostream& os) const
 {
-  if (Type()==condition_Dirichlet)           os << "Dirichlet boundary condition: ";
-  else if (Type()==condition_Neumann) os << "Neumann boundary condition: ";
+  os << "Condition " << Id() << " ";
+  if (Type()==Dirichlet)  os << "Dirichlet boundary condition: ";
+  else if (Type()==PointNeumann) os << "Point Neumann boundary condition: ";
+  else if (Type()==LineNeumann) os << "Line Neumann boundary condition: ";
+  else if (Type()==SurfaceNeumann) os << "Surface Neumann boundary condition: ";
+  else if (Type()==VolumeNeumann) os << "Volume Neumann boundary condition: ";
   Container::Print(os);
   return;
 }
@@ -94,6 +101,7 @@ const char* DRT::Condition::Pack(int& size) const
   sizeint +      // size itself 
   sizeint +      // type of this instance of ParObject, see top of ParObject.H
   basesize +     // base class Container
+  sizeint  +     // id_
   sizetype +     // type_
   0;             // continue to add data here...
   
@@ -110,6 +118,8 @@ const char* DRT::Condition::Pack(int& size) const
   // add base class
   AddtoPack(position,data,basedata,basesize);
   delete [] basedata;
+  // id_
+  AddtoPack(position,data,id_);
   // add type_
   AddtoPack(position,data,type_);
 
@@ -138,6 +148,8 @@ bool DRT::Condition::Unpack(const char* data)
   int basesize = SizePack(&data[position]);
   Container::Unpack(&data[position]);
   position += basesize;
+  // id_
+  ExtractfromPack(position,data,id_);
   // extract type_
   ExtractfromPack(position,data,type_);
     

@@ -54,9 +54,12 @@ public:
   */
   enum ConditionType 
   {
-    condition_none,
-    condition_Dirichlet,
-    condition_Neumann
+    none,
+    Dirichlet,
+    PointNeumann,
+    LineNeumann,
+    SurfaceNeumann,
+    VolumeNeumann
   };
 
 
@@ -66,7 +69,7 @@ public:
   \brief Standard Constructor
   
   */
-  Condition(ConditionType type);
+  Condition(const int id, const ConditionType type);
 
   /*!
   \brief Constructor with type condition_none
@@ -111,10 +114,15 @@ public:
   /*!
   \brief Print this element
   */
-  virtual void Print(ostream& os) const ;
+  inline virtual int Id() const { return id_; }
 
   /*!
   \brief Print this element
+  */
+  virtual void Print(ostream& os) const ;
+
+  /*!
+  \brief Return type of condition
   */
   inline virtual ConditionType Type() const { return type_; }
 
@@ -133,6 +141,7 @@ protected:
 
 protected:
 
+  int           id_;     // unique id of this condition, no second condition of the same type with same id may exist
   ConditionType type_;   // type of this condition
 
 }; // class Condition
