@@ -557,6 +557,13 @@ public:
                         RefCountPtr<Epetra_Vector>    systemvector2,
                         RefCountPtr<Epetra_Vector>    systemvector3);
 
+
+  /*!
+  \brief Evaluate Neumann boundary conditions
+    
+  */
+  virtual void EvaluateNeumann(ParameterList& params, Epetra_Vector& systemvector);
+
   //@}
 
 private:

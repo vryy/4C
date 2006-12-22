@@ -102,16 +102,87 @@ void DRT::Discretization::Evaluate(
 
     
   } // for (int i=0; i<numcolele; ++i)
-  
-  
-  
-  
-  
-  
   return;
 }
 
+extern "C"
+{
+  void dyn_facfromcurve(int actcurve,double T,double *fac);  
+}
+/*----------------------------------------------------------------------*
+ |  evaluate Neumann conditions (public)                     mwgee 12/06|
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::EvaluateNeumann(ParameterList& params, Epetra_Vector& systemvector)
+{
+  if (!Filled()) dserror("FillComplete() was not called");
+  if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+  systemvector.PutScalar(0.0);
+  
+  // loop through column nodes and set flags indicating whether Neumann
+  // condition was already evaluated to false
+  for (int i=0; i<NumMyColNodes(); ++i)
+  {
+    DRT::Node* actnode = lColNode(i);
+    // get the Neumann conditions and set evaluated flag to false
+    const int zero = 0;
+    vector<DRT::Condition*> conds;
+    actnode->GetCondition("PointNeumann",conds);
+    for (int j=0; j<(int)conds.size(); ++j)
+      conds[j]->Add("isevaluated",&zero,1);
+    actnode->GetCondition("LineNeumann",conds);
+    for (int j=0; j<(int)conds.size(); ++j)
+      conds[j]->Add("isevaluated",&zero,1);
+    actnode->GetCondition("SurfaceNeumann",conds);
+    for (int j=0; j<(int)conds.size(); ++j)
+      conds[j]->Add("isevaluated",&zero,1);
+    actnode->GetCondition("VolumeNeumann",conds);
+    for (int j=0; j<(int)conds.size(); ++j)
+      conds[j]->Add("isevaluated",&zero,1);
+  } // for (int i=0; i<NumMyColNodes(); ++i)
 
+  // get the current time
+  const double time = params.get("total time",-1.0);
+  if (time<0.0) dserror("current time is negative or unset");
+
+  // loop through Point Neumann conditions and evaluate them
+  for (int i=0; i<NumMyRowNodes(); ++i)
+  {
+    DRT::Node* actnode = lRowNode(i);
+    vector<DRT::Condition*> conds;
+    actnode->GetCondition("PointNeumann",conds);
+    const int numcond = (int)conds.size();
+    if (!numcond) continue;
+    const int numdf = actnode->Dof().NumDof();
+    const int* dofs = actnode->Dof().Dofs();
+    for (int j=0; j<numcond; ++j)
+    {
+      cout << *conds[j];
+      vector<int>*    curve = conds[j]->GetVector<int>("curve");
+      vector<int>*    onoff = conds[j]->GetVector<int>("onoff");
+      vector<double>* val   = conds[j]->GetVector<double>("val");
+      for (int k=0; k<numdf; ++k)
+      {
+        if ((*onoff)[k]==0) continue;
+        const int gid   = dofs[k];
+        double    value = (*val)[k];
+        if ((*curve)[0])
+        {
+          const int curvenum = (*curve)[0]; // PointNeumann for some reason only has one curve
+          // brauchen hier eine c-style numerierung der kurven
+          // kucken wie die Kurven im alten Stil in der randbedingungen gelesen werden
+        }
+      }
+    }
+    
+    
+  } // for (int i=0; i<NumMyRowNodes(); ++i)   
+
+
+
+
+
+  return;
+}
 
 
 #endif  // #ifdef TRILINOS_PACKAGE
