@@ -35,7 +35,6 @@ struct _GENPROB       genprob; defined in global_control.c
 \author mf
 \date 10/06
 */
-/*----------------------------------------------------------------------*/
 /* extern struct _GENPROB genprob; */
 
 
@@ -48,7 +47,6 @@ defined in global_control.c
 \author mf
 \date 10/06
 */
-/*----------------------------------------------------------------------*/
 extern struct _MATERIAL *mat;
 
 
@@ -56,16 +54,29 @@ extern struct _MATERIAL *mat;
 /*!
 \brief global variable so3_data
 
-Contains Gauss point coordinates and weights
+Contains constant Gauss point coordinates and weights
 
 \author mf
 \date 10/06
 */
-/*----------------------------------------------------------------------*/
-static SOLID3_DATA so3_data;
+static SO3_DATA so3_data;
 
 
 /*----------------------------------------------------------------------*/
+/*!
+\brief All Gauss point coordinates and weights, shape functions and their 
+       parametric derivates readily evaluated at Gauss point.
+       
+These data will only change if a different discretisation/Gauss point
+combination occurs of the element.
+
+\author bborn
+\date 12/06
+*/
+static SO3_GPSHAPEDERIV so3_gpshade;
+
+
+/*======================================================================*/
 /*!
 \brief Main SOLID3 routine
 
@@ -76,7 +87,6 @@ The ACTION keywords are defined in headers/enum.h.
 \author mf
 \date 10/06
 */
-/*----------------------------------------------------------------------*/
 void solid3(PARTITION *actpart,
 	    INTRA *actintra,
 	    ELEMENT *ele,
@@ -113,6 +123,7 @@ void solid3(PARTITION *actpart,
       /* these are only called once! */
       so3_intg_init(&(so3_data));
       so3_cfg_init(&(so3_data));
+      so3_shape_gpshade_init(&(so3_gpshade));
 /*       th2_lin_init(); */
 /*       th2_load_init(); */
 /*       th2_hflux_init(actpart); */
@@ -132,7 +143,9 @@ void solid3(PARTITION *actpart,
 /* nonlinear stiffness and mass matrix ----------------------------------*/
     case calc_struct_nlnstiffmass:
       actmat = &(mat[ele->mat-1]);
-/*       so3_stiff(ele, &(so3_data), actmat, estif_global, NULL, NULL); */
+      so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
+      so3_int_fintstiffmass(ele, &(so3_gpshade), actmat, 
+                            estif_global, NULL, NULL);
       break;
 /* load vector of element loads -----------------------------------------*/
     case calc_struct_eleload:

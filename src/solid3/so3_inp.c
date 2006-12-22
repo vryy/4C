@@ -199,6 +199,10 @@ void so3_inp(ELEMENT *ele)
   frchar("STRESS", buffer, &ierr);
   if (ierr == 1)
   {
+    if (strncmp(buffer,"None",4) == 0)
+    {
+      ele->e.so3->stresstype = so3_stress_none;
+    }
     if (strncmp(buffer,"Gpxyz",5) == 0)
     {
       ele->e.so3->stresstype = so3_stress_gpxyz;

@@ -44,10 +44,11 @@ Maintainer: Moritz Frenzel
 \author mf
 \date 10/06
 */
-void so3_metr_jaco(const ELEMENT *ele,
-                   const INT      enod,
-                   const DOUBLE **deriv,
-                   const INT      flag,
+void so3_metr_jaco(ELEMENT *ele,
+                   INT      enod,
+                   DOUBLE   ex[MAXNOD_SOLID3][NDIM_SOLID3],
+                   DOUBLE **deriv,
+                   INT      flag,
                    DOUBLE **xjm,
                    DOUBLE  *det,
                    DOUBLE **xji)
@@ -94,20 +95,21 @@ void so3_metr_jaco(const ELEMENT *ele,
   {
     for (i=0; i<NDIM_SOLID3; i++)
     {
-      nodxyz = ele->node[k]->x[i];
       for (j=0; j<NDIM_SOLID3; j++)
       {
-         xjm[j][i] += deriv[k][j] * nodxyz;
+         xjm[j][i] += deriv[k][j] * ex[k][j];
       }
     }
   }
 
   /*--------------------------------------------------------------------*/
   /* determinat */
-  *det = xjm[0][0] * xjm[1][1] * xjm[2][2]  /* Sarrus' rule */
-       + xjm[0][1] * xjm[1][2] * xjm[2][0]  /* [Bronstein, */
-       + xjm[0][2] * xjm[1][0] * xjm[2][1]  /*  Taschenbuch der */
-       - xjm[0][2] * xjm[1][1] * xjm[2][0]  /*  der Mathematik] */
+  /* determinat is calculated by Sarrus' rule 
+   * [Bronstein, Taschenbuch der Mathematik */
+  *det = xjm[0][0] * xjm[1][1] * xjm[2][2]
+       + xjm[0][1] * xjm[1][2] * xjm[2][0]
+       + xjm[0][2] * xjm[1][0] * xjm[2][1]
+       - xjm[0][2] * xjm[1][1] * xjm[2][0]
        - xjm[0][0] * xjm[1][2] * xjm[2][1]
        - xjm[0][1] * xjm[1][0] * xjm[2][2];
   /* check if negative Jacobian */
@@ -134,9 +136,9 @@ void so3_metr_jaco(const ELEMENT *ele,
       for (j=0; j<NDIM_SOLID3; j++)
       {
         xji[i][j] = xji[i][j] / (*det);
-      }  /* end of for */
-    }  /* end of for */
-  }  /* end of if */
+      }
+    }
+  }
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG

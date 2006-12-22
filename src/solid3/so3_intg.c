@@ -397,6 +397,59 @@ void so3_intg_init(SO3_DATA *data)
     data->gtdct[2][4] = 1.0/4.0;
     data->gtdw[2][4] = -2.0/15.0;
   }
+  /* 10 Gauss points (>=2nd order ?) */
+  if ( (GTINTC_SOLID3 >= 4) && (GTMAXP_SOLID3 >= 10) )
+  {
+    DOUBLE a = 0.10810301;
+    DOUBLE b = 0.44594849;
+    DOUBLE c = 0.81684757;
+    DOUBLE wo = 0.01035436807669;  /* next to origin */
+    DOUBLE wc = 0.00614714378407;  /* next to vertices */
+    DOUBLE wma = 0.03480868143412;  /* next to mid-nodes on axes */
+    DOUBLE wmd = 0.01114827431181;  /* next to mis-nodes on diagonals */
+    DOUBLE wcs = 0.01114827431181;  /* next to centre of inclined face */
+    
+    data->gtdcr[3][0] = a;
+    data->gtdcs[3][0] = a;
+    data->gtdct[3][0] = a;
+    data->gtdw[3][0] = wo;
+    data->gtdcr[3][1] = c;
+    data->gtdcs[3][1] = a;
+    data->gtdct[3][1] = a;
+    data->gtdw[3][1] = wc;
+    data->gtdcr[3][2] = a;
+    data->gtdcs[3][2] = c;
+    data->gtdct[3][2] = a;
+    data->gtdw[3][2] = wc;
+    data->gtdcr[3][3] = a;
+    data->gtdcs[3][3] = a;
+    data->gtdct[3][3] = c;
+    data->gtdw[3][3] = wc;
+    data->gtdcr[3][4] = b;
+    data->gtdcs[3][4] = a;
+    data->gtdct[3][4] = a;
+    data->gtdw[3][4] = wma;
+    data->gtdcr[3][5] = b;
+    data->gtdcs[3][5] = b;
+    data->gtdct[3][5] = a;
+    data->gtdw[3][5] = wmd;
+    data->gtdcr[3][6] = a;
+    data->gtdcs[3][6] = b;
+    data->gtdct[3][6] = a;
+    data->gtdw[3][6] = wma;
+    data->gtdcr[3][7] = a;
+    data->gtdcs[3][7] = a;
+    data->gtdct[3][7] = b;
+    data->gtdw[3][7] = wma;
+    data->gtdcr[3][8] = b;
+    data->gtdcs[3][8] = a;
+    data->gtdct[3][8] = b;
+    data->gtdw[3][8] = wmd;
+    data->gtdcr[3][9] = a;
+    data->gtdcs[3][9] = b;
+    data->gtdct[3][9] = b;
+    data->gtdw[3][9] = wcs;
+  }
   /*--------------------------------------------------------------------*/
   /* tetrahedron sides */
   /* 1 Gauss point (1st order) */

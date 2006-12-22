@@ -50,7 +50,7 @@ void so3_mat_sel(ELEMENT *ele,
 {
   INT imat,jmat,istrn,istss,inode;  /* counters */
   DOUBLE E,nu,mfac,strainsum,stresssum;
-  DOUBLE strain[NUMSTRN_SOLID3];  /* strain vector */
+  DOUBLE strain[NUMSTR_SOLID3];  /* strain vector */
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_enter("so3_mat_sel");
@@ -62,33 +62,38 @@ void so3_mat_sel(ELEMENT *ele,
   switch (mat->mattyp)
   {
     case struct_stvenant:
+      /* isotropic elasticity tensor C in matrix notion */
+      /*                       [ 1-nu     nu     nu |          0    0    0 ]
+       *                       [        1-nu     nu |          0    0    0 ]
+       *           E           [               1-nu |          0    0    0 ]
+       *   C = --------------- [ ~~~~   ~~~~   ~~~~   ~~~~~~~~~~  ~~~  ~~~ ]
+       *       (1+nu)*(1-2*nu) [                    | (1-2*nu)/2    0    0 ]
+       *                       [                    |      (1-2*nu)/2    0 ]
+       *                       [ symmetric          |           (1-2*nu)/2 ]
+       */
          /* !!! here we work hardwired for testing !!!*/
-	 E   = mat->youngs;
-	 nu  = mat->possionratio;
-	 mfac=E/(1+nu)/(1-2*nu);
-         /* constitutive matrix */
+      E = mat->youngs;  /* Young's modulus (modulus of elasticity */
+      nu = mat->possionratio;  /* Poisson's ratio */
+      mfac = E/((1.0+nu)*(1.0-2.0*nu));  /* factor */
+      /* constitutive matrix */
          /* set the whole thing to zero */
-         for (imat=0; imat<6; imat++)
-         { 
-    	   for (jmat=0; jmat<6; jmat++)
-	   {
-	     cmat[imat][jmat] = 0.0;
-	   }
-         }
-	 cmat[0][0] = mfac*(1-nu);
+         memset(cmat, 0, sizeof(cmat));
+         /* write non-zero components */
+	 cmat[0][0] = mfac*(1.0-nu);
 	 cmat[0][1] = mfac*nu;
 	 cmat[0][2] = mfac*nu;
 	 cmat[1][0] = mfac*nu;
-	 cmat[1][1] = mfac*(1-nu);
+	 cmat[1][1] = mfac*(1.0-nu);
 	 cmat[1][2] = mfac*nu;
 	 cmat[2][0] = mfac*nu;
 	 cmat[2][1] = mfac*nu;
-	 cmat[2][2] = mfac*(1-nu);
-	 cmat[3][3] = mfac*0.5*(1-2*nu);
-	 cmat[4][4] = mfac*0.5*(1-2*nu);
-	 cmat[5][5] = mfac*0.5*(1-2*nu);
+	 cmat[2][2] = mfac*(1.0-nu);
+         /* ~~~ */
+	 cmat[3][3] = mfac*0.5*(1.0-2.0*nu);
+	 cmat[4][4] = mfac*0.5*(1.0-2.0*nu);
+	 cmat[5][5] = mfac*0.5*(1.0-2.0*nu);
 	 /* compute strains and stresses */
-	 for (istrn=0; istrn<NUMSTRN_SOLID3; istrn++)
+	 for (istrn=0; istrn<NUMSTR_SOLID3; istrn++)
 	 {
 	   strainsum = 0.0;
 	   for (inode=0; inode<ele->numnp; inode++)
@@ -97,10 +102,10 @@ void so3_mat_sel(ELEMENT *ele,
 	   }
 	   strain[istrn] = strainsum;
 	 }
-	 for (istss=0; istss<NUMSTSS_SOLID3; istss++)
+	 for (istss=0; istss<NUMSTR_SOLID3; istss++)
 	 {
 	   stresssum = 0.0;
-	   for (istrn=0; istrn<NUMSTRN_SOLID3; istrn++)
+	   for (istrn=0; istrn<NUMSTR_SOLID3; istrn++)
 	   {
 	     stresssum += cmat[istss][istrn] * strain[istrn];
 	   }

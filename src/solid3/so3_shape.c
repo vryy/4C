@@ -44,11 +44,11 @@ Maintainer: Moritz Frenzel
 \author mf
 \date 10/06
 */
-void so3_shape_deriv(const DIS_TYP     typ,
-                     const DOUBLE      r,
-                     const DOUBLE      s,
-                     const DOUBLE      t,
-                     const INT         option,
+void so3_shape_deriv(DIS_TYP     typ,
+                     DOUBLE      r,
+                     DOUBLE      s,
+                     DOUBLE      t,
+                     INT         option,
                      DOUBLE     *shape,
                      DOUBLE    **deriv)
 {
@@ -57,8 +57,7 @@ void so3_shape_deriv(const DIS_TYP     typ,
   const DOUBLE rp=1.0+r, sp=1.0+s, tp=1.0+t;
   const DOUBLE rm=1.0-r, sm=1.0-s, tm=1.0-t;
   const DOUBLE rrm=1.0-r*r, ssm=1.0-s*s, ttm=1.0-t*t;
-  DOUBLE u, r4, s4, t4, u4;  /* auxiliary variables 3 */
-
+  const DOUBLE u=1.0-r-s-t, r4=4.0*r, s4=4.0*s, t4=4.0*t, u4=4.0*u;
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -238,7 +237,7 @@ void so3_shape_deriv(const DIS_TYP     typ,
       shape[0] = r;
       shape[1] = s;
       shape[2] = t;
-      shape[3] = 1.0 - r - s - t;
+      shape[3] = u;
       /* optionally include derivatives */
       if (option == 1)
       {
@@ -258,12 +257,6 @@ void so3_shape_deriv(const DIS_TYP     typ,
       break;
     /* Quadratic interpolation */
     case tet10:
-      /* auxiliary variables */
-      u = 1.0 - r - s - t;
-      r4 = 4.0*r;
-      s4 = 4.0*s;
-      t4 = 4.0*t;
-      u4 = 4.0*u;
       /* shape functions at (r,s,t)
        * [T.J.R. Hughes, The finite element method, Dover, 2000] */
       /* corner nodes */
@@ -335,6 +328,214 @@ void so3_shape_deriv(const DIS_TYP     typ,
 #endif
   return;
 } /* end of so3_shape_deriv */
+
+
+/*======================================================================*/
+/*!
+\brief Initialise arrays for Gauss point coordinate, weights, shape
+       functions + their derivatives
+
+\param so3_gpshade SO3_GPSHAPEDERIV* (o)    coord & weights
+                                            & shape functions
+                                            & derivatives
+
+\return void
+
+\author bborn
+\date 12/06
+*/
+void  so3_shape_gpshade_init(SO3_GPSHAPEDERIV* so3_gpshade)
+{
+  INT idim;
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_enter("so3_shape_gpshade_init");
+#endif
+
+  so3_gpshade->distyp = dis_none;
+  for (idim=0; idim<NDIM_SOLID3; idim++)
+  {
+    so3_gpshade->gpintc[idim] = 0;
+  }
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+
+
+/*======================================================================*/
+/*!
+\brief Shape functions and their natural derivatives at point (r,s,t)
+
+\param  ele         ELEMENT*          (i)    pointer to current element
+\param  data        SO3_DATA*         (i)    constant Gauss point data
+\param  so3_gpshade SO3_GPSHAPEDERIV* (o)    coord & weights
+                                             & shape functions
+                                             & derivatives
+
+\return void
+
+\author bborn
+\date 12/06
+*/
+void so3_shape_gpshade(ELEMENT *ele,
+                       SO3_DATA *data,
+                       SO3_GPSHAPEDERIV *so3_gpshade)
+{
+  INT calc_gpshade;  /* operation flag */
+  INT gpnumr, gpnums, gpnumt;  /* auxiliar number of Gauss points */
+  INT gpintcr, gpintcs, gpintct;  /* auxiliar integration case */
+  INT igpr, igps,igpt;  /* directional Gauss point index */
+  INT igp;  /* total Gauss point index (in domain) */
+  DOUBLE gpcr, gpcs, gpct;  /* Gauss point coordinate */
+  DOUBLE fac;  /* Gauss weight */
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_enter("so3_shape_gpshade");
+#endif
+
+  /*--------------------------------------------------------------------*/
+  /* check if current element discretisation + Gauss integration case
+   * is identical to stored combination */
+  calc_gpshade = 0;
+  switch (ele->distyp)
+  {
+    /* hexahedron elements */
+    case hex8: case hex20: case hex27:
+      if (ele->distyp != so3_gpshade->distyp)
+      {
+        calc_gpshade = 1;
+      }
+      else
+      {
+        for (idim=0; idim<NDIM_SOLID3; idim++)
+        {
+          if (ele->e.so3->gpintc[idim] != so3_gpshade->gpintc[idim])
+          {
+            calc_gpshade = 1;
+            break;
+          }
+        }
+      }      
+      break;
+    /* tetrahedron elements */
+    case tet4: case tet10:
+      if (ele->distyp != so3_gpshade->distyp)
+      {
+        calc_gpshade = 1;
+      }
+      else
+      {
+        if (ele->e.so3->gpintc[0] != so3_gpshade->gpintc[0])
+        {
+          calc_gpshade = 1;
+        }
+      }
+      break;
+    default:
+      dserror("Discretisation type is not available\n");
+      break;
+  }
+
+  /*--------------------------------------------------------------------*/
+  /* determine shape functions at Gauss points */
+  if (calc_gpshade)
+  {
+    /* set discretisation type of stored data */
+    so3_gpshade->distyp = ele->distyp;
+    /* select new Gauss point set */
+    switch (ele->distyp)
+    {
+      /* hexahedra elements */
+      case hex8: case hex20: case hex27:
+        gpnumr = ele->e.so3->gpnum[0];
+        gpintcr = ele->e.so3->gpintc[0];
+        gpnums = ele->e.so3->gpnum[1];
+        gpintcs = ele->e.so3->gpintc[1];
+        gpnumt = ele->e.so3->gpnum[2];
+        gpintct = ele->e.so3->gpintc[2];
+        so3_gpshade->gpintc[0] = gpintcr;
+        so3_gpshade->gpintc[1] = gpintcs;
+        so3_gpshade->gpintc[2] = gpintct;
+        so3_gpshape->gptot = gpnumr*gpnums*gpnumt;
+        break;
+      /* tetrahedra elements */
+      /* tets are not simply rst-oriented and have just one GP-set nr */
+      case tet4: case tet10:
+        gpnumr = 1;
+        gpnums = 1;
+        gpnumt = ele->e.so3->gpnum[0];
+        gpintcr = 1;
+        gpintcs = 1;
+        gpintct = ele->e.so3->gpintc[0];
+        so3_gpshade->gpintc[0] = gpintct;
+        so3_gpshape->gptot = gpnumt;
+        break;
+      default:
+        dserror("ele->distyp unknown!");
+    }
+    /* initialise total domain GP index */
+    igp = 0;
+    /* walk along every Gauss point */
+    for (igpr=0; igpr<gpnumr; igpr++)
+    {
+      for (igps=0; igps<gpnums; igps++)
+      {
+        for (igpt=0; igpt<gpnumt; igpt++)
+        {
+          /* retrieve Gauss point coordinate and weight */
+          switch (ele->distyp)
+          {
+            /* hexahedra */
+            case hex10: case hex20: case hex27:
+              gpcr = data->ghlc[gpintcr][igpr];  /* r-coordinate */
+              gpcs = data->ghlc[gpintcs][igps];  /* s-coordinate */
+              gpct = data->ghlc[gpintct][igpt];  /* t-coordinate */
+              fac = data->ghlw[gpintcr][igpr]  /* weight */
+                  * data->ghlw[gpintcs][igps]
+                  * data->ghlw[gpintct][igpt];
+              break;
+            /* tetrahedra */
+            case tet4: case tet10:
+              gpcr = data->gtdc[gpintct][igpt][0];  /* r-coordinate */
+              gpcs = data->gtdc[gpintct][igpt][1];  /* s-coordinate */
+              gpct = data->gtdc[gpintct][igpt][2];  /* t-coordinate */
+              fac = data->gtdw[gpintct][igpt];  /* weight */
+              break;
+            default:
+              dserror("ele->distyp unknown!");
+              break;
+          }
+          /* set coordinate and weight in total array */
+          so3_gpshade->gpco[igp][0] = gpcr;
+          so3_gpshade->gpco[igp][1] = gpcs;
+          so3_gpshade->gpco[igp][2] = gpct;
+          so3_gpshade->gpwg[igp] = fac;
+          /* shape functions and their derivatives at igp */
+          so3_shape_deriv(ele->distyp, gpcr, gpcs, gpct, 1, 
+                          so3_gpshade->gpshape[igp], 
+                          so3_gpshade->gpderiv[igp]);
+          /* increment absolute Gauss point index */
+          igp++;
+        }
+      }
+    }
+    /* verify total number of Gauss points */
+    dsassert(so3_gpshape->gptot == igp, 
+             "Broken total Gauss point number\n");
+  }
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
 
 
 /*======================================================================*/
