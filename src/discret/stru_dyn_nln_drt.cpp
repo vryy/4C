@@ -218,22 +218,42 @@ void dyn_nlnstructural_drt()
   sdyn->time += sdyn->dt;
   acttime = sdyn->time;
   /*-------------------------------------------------- set some constants */
-  dyn_setconstants(&dynvar,sdyn,sdyn->dt);
+  double constants[16];
+  {
+    const double beta   = sdyn->beta;
+    const double gamma  = sdyn->gamma;
+    const double alpham = sdyn->alpha_m;
+    const double alphaf = sdyn->alpha_f;
+    const double dt     = sdyn->dt;
+    constants[6]  = 1.0-alphaf;
+    constants[7]  = 1.0-alpham;
+    constants[8]  = (1.0/beta)/(DSQR(dt));
+    constants[9]  = -constants[8] * dt;
+    constants[10] = 1.0 - 0.5/beta;
+    constants[11] = (gamma/beta)/dt;
+    constants[12] = 1.0 - gamma/beta;
+    constants[13] = (1.0-(gamma/beta)/2.0)*dt;
+    constants[0]  = constants[7]*constants[8];
+    constants[1]  = constants[0]*dt;
+    constants[2]  = (constants[7]/2.0)/beta - 1.0;
+    constants[3]  = constants[6]*constants[11];
+    constants[4]  = constants[3]*dt - 1.0;
+    constants[5]  = ((gamma/beta)/2.0 - 1.0)*dt*constants[6];
+    constants[14] = dt;
+    constants[15] = beta;
+    constants[16] = gamma;
+  }
   
-  /*---------------------- set incremental displacements dispi[0] to zero */
+  
+  /*------------------------- set incremental displacements dispi to zero */
   dispi->PutScalar(0.0);
   
   /*----------------------------------------------------------------------*/
   /*                     PREDICTOR                                        */
   /*----------------------------------------------------------------------*/
   
-  /*---------------------- this vector holds loads due to external forces */
-  rhs1->PutScalar(0.0);
-  
-  //---------------------------------------------- evaluate external forces
-#if 0
+  //-------------------------------------------------- evaluate Neumann BCs
   {
-    // create the parameters for the discretization
     ParameterList params;
     // action for elements
     params.set("action","calc_struct_eleload");
@@ -243,17 +263,15 @@ void dyn_nlnstructural_drt()
     params.set("assemble vector 1",true);
     params.set("assemble vector 2",false);
     params.set("assemble vector 3",false);
-    // other parameters that might be needed by the elements
+    // other parameters needed by the elements
     params.set("total time",acttime);
     params.set("delta time",sdyn->dt);
     // set vector values needed by elements
     actdis->ClearState();
     actdis->SetState("displacement",sol0);
-    actdis->Evaluate(params,null,null,rhs1,null,null);
+    actdis->EvaluateNeumann(params,*rhs1);
     actdis->ClearState();
   }
-#endif
-
 
 
 
