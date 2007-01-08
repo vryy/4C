@@ -45,6 +45,7 @@ iop=2: Semi-Implicit-One-Step Method
 iop=3: Semi-Implicit-Two-Step Method
 iop=4: One-Step-Theta Scheme
 iop=5: Fractional-Step-Theta Scheme
+iop=8: incremental acceleration gen-alpha scheme (one step scheme!)
 
 see dissertation of W.A. WALL, chapter 4.2 'Zeitdiskretisierung'
 </pre>
@@ -91,7 +92,6 @@ case dyntyp_nln_time_int:
    case 1:		/* Generalised alpha time integration		*/
       fluid_isi();
    break;
-
    case 4:		/* One step Theta 				*/
       if(genprob.numfld > 1) fluid_mf(0);
       else
@@ -125,6 +125,14 @@ case dyntyp_nln_time_int:
       else fluid_mf(0);
    break;
 
+#ifdef D_FLUID2_TDS
+   case 8:		/* incremental accelerations Generalised alpha
+			                               time integration */
+      fluid_incr_acc_gen_alpha();
+   break;
+#endif /* D_FLUID2_TDS */   
+
+   
    default:
       dserror("Unknown time integration scheme");
    }		/* end switch						*/

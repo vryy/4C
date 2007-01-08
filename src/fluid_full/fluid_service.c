@@ -263,7 +263,19 @@ case 7:		/* 2nd order backward differencing BDF2 */
    if (genprob.restart == 0) /* restart using the pss-file */
      fdyn->nums += fdyn->step;
 
+case 8:		/* incremental accelerations gen alpha implementation */
+    
+  if (fabs((1./2.+fdyn->alpha_m-fdyn->alpha_f) - fdyn->theta)> EPS10)
+  {
+      printf("\nWarning: Theta, Alpha_m and Alpha_f do not satisfy 2nd order condition.\n");
+  }
 
+  if(fdyn->alpha_m<fdyn->alpha_f || 0.5 > fdyn->alpha_m)
+  {
+      dserror("\n Unstable choice of Alpha_m and Alpha_f!");
+  }  
+   fdyn->dta = 0.0;
+break;
 break;
 
 
@@ -358,6 +370,17 @@ case 7:		/* 2nd order backward differencing BDF2 */
       fdyn->thpr = fdyn->thsr;
    }
 break;
+#ifdef D_FLUID2_TDS
+case 8:	  /* incremental acceleration generalised alpha */
+   /* constant time step size !!!*/
+   fdyn->dta  = fdyn->dt;
+    
+   fdyn->thsl = fdyn->dta * fdyn->theta * fdyn->alpha_f;
+   fdyn->thpl = fdyn->thsl;
+   fdyn->thsr = ZERO;
+   fdyn->thpr = fdyn->thsr;
+break;
+#endif
 default:
    dserror("constants for time algorithm not implemented yet!\n");
 }
@@ -666,6 +689,26 @@ void fluid_init(
 		"DA");
 
 	  amzero(&(actele->e.f2->sub_vel));
+
+	  if(fdyn->iop == 8)
+	  {
+	      amdef("subscale_pressure_acceleration",
+		    &(actele->e.f2->sub_pres_acc),
+		    actele->e.f2->nGP[0]*nis,1,
+		    "DV");
+	      amzero(&(actele->e.f2->sub_pres));
+	      
+	      
+	      amdef("subscale_velocity_accelerations",
+		    &(actele->e.f2->sub_vel_acc),
+		    3/*numdf (xyz)*/,
+		    actele->e.f2->nGP[0]*nis,
+		    "DA");
+	      
+	      amzero(&(actele->e.f2->sub_vel));
+	  }
+
+	  
 #endif
           break;
 #endif
@@ -2314,6 +2357,12 @@ case 7:
    printf("TIME: %11.4E/%11.4E  DT = %11.4E     BDF2         STEP = %4d/%4d \n",
           fdyn->acttime,fdyn->maxtime,fdyn->dta,fdyn->step,fdyn->nstep);
 break;
+#ifdef D_FLUID2_TDS
+case 8:
+   printf("TIME: %11.4E/%11.4E  DT = %11.4E incr. Gen-Alpha  STEP = %4d/%4d \n",
+          fdyn->acttime,fdyn->maxtime,fdyn->dta,fdyn->step,fdyn->nstep);
+break;
+#endif /* D_FLUID2_TDS */
 default:
    dserror("parameter out of range: IOP\n");
 } /* end of swtich(fdyn->iop) */

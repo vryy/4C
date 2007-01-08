@@ -77,8 +77,10 @@ static ARRAY     vderxy_old_a; /* vel - derivatives                     */
 static DOUBLE  **vderxy_old;
 static ARRAY     vderxy2_old_a;/* vel - 2nd derivatives                 */
 static DOUBLE  **vderxy2_old;
-static ARRAY     eacc_a;  /* element accelerations at (n)               */
-static DOUBLE  **eacc;
+static ARRAY     eaccn_a;  /* element accelerations at (n)               */
+static DOUBLE  **eaccn;
+static ARRAY     eaccng_a;  /* element accelerations at (n+alpha_M)     */
+static DOUBLE  **eaccng;
 #endif
 static ARRAY     edeadn_a; /* element dead load (selfweight)            */
 static DOUBLE   *edeadng;
@@ -199,7 +201,8 @@ if (init==1) /* allocate working arrays and set pointers */
    epreng      = amdef("epreng"     ,&epreng_a     ,MAXNOD_F2,1,"DV");
    vderxy_old  = amdef("vderxy_old" ,&vderxy_old_a ,2,2,"DA");
    vderxy2_old = amdef("vderxy2_old",&vderxy2_old_a,2,3,"DA");
-   eacc        = amdef("eacc"   ,&eacc_a   ,NUM_F2_VELDOF,MAXNOD_F2,"DA");
+   eaccn       = amdef("eaccn"  ,&eaccn_a  ,NUM_F2_VELDOF,MAXNOD_F2,"DA");
+   eaccng      = amdef("eaccng" ,&eaccng_a ,NUM_F2_VELDOF,MAXNOD_F2,"DA");
 #endif
    edeadn    = amdef("edeadn"   ,&edeadn_a   ,2,1,"DV");
    edeadng   = amdef("edeadng"  ,&edeadng_a  ,2,1,"DV");
@@ -282,30 +285,78 @@ case 0:
 #ifdef D_FLUID2_TDS   
    case stab_tds:
 
-      /*-------------------------------------- set default element data */
-      f2_calset(ele,xyze,eveln,evelng,evhist,epreng,edeadn,edeadng,ipos,hasext);
-      for(i=0;i<ele->numnp;i++) /* loop nodes of element */
+      if(fdyn->iop==4) /*------------------- the one step theta version */
       {
-	  /*-------------------------------------- set pressures (n) ---*/
-	  epren[i] =ele->node[i]->sol_increment.a.da[ipos->veln][2];
-
-	  eacc[0][i] = ele->node[i]->sol_increment.a.da[ipos->accn][0];
-	  eacc[1][i] = ele->node[i]->sol_increment.a.da[ipos->accn][1];
+	  /*---------------------------------- set default element data */
+	  f2_calset(ele,xyze,eveln,evelng,evhist,
+		    epreng,edeadn,edeadng,ipos,hasext);
+	  for(i=0;i<ele->numnp;i++) /* loop nodes of element */
+	  {
+	      /*---------------------------------- set pressures (n) ---*/
+	      epren[i] =ele->node[i]->sol_increment.a.da[ipos->veln][2];
+	      
+	      eaccn[0][i] = ele->node[i]->sol_increment.a.da[ipos->accn][0];
+	      eaccn[1][i] = ele->node[i]->sol_increment.a.da[ipos->accn][1];
+	  }
+	  
+	  /*------------------------------------------ get viscosity ---*/
+	  visc = mat[ele->mat-1].m.fluid->viscosity;
+	  
+	  /*----------------------------------------- stab-parameter ---*/
+	  f2_get_time_dependent_sub_tau(ele,xyze,funct,deriv,evelng,eveln,visc);
+	  
+	  /*--------------------------- perform element integration ---*/
+	  f2_int_tds(ele,hasext,estif,eforce,xyze,
+		     funct,deriv,deriv2,xjm,derxy,derxy2,evelng,eveln,
+		     evhist,NULL,epreng,epren,edeadng,edeadn,
+		     vderxy,vderxy2,vderxy_old,vderxy2_old,eaccn,
+		     visc,wa1,wa2,estress, is_relax);
       }
+      else if (fdyn->iop==8) /*------- the (Whiting) gen-alpha version */
+      {
+	  /*---------------------------------- set default element data */
+	  f2_inc_gen_alpha_calset(
+	      ele,xyze,
+	      eaccng,
+	      evelng,
+	      epreng,
+	      edeadng,
+	      ipos,
+	      &visc
+	      );
 
-      /*---------------------------------------------- get viscosity ---*/
-      visc = mat[ele->mat-1].m.fluid->viscosity;
+	  
+	  /*----------------------------------------- stab-parameter ---*/
+	  f2_get_time_dependent_sub_tau(ele,xyze,funct,deriv,
+					evelng,NULL,visc);
 
-      /*--------------------------------------------- stab-parameter ---*/
-      f2_get_time_dependent_sub_tau(ele,xyze,funct,deriv,evelng,eveln,visc);
-
-      /*-------------------------------- perform element integration ---*/
-      f2_int_tds(ele,hasext,estif,eforce,xyze,
-                 funct,deriv,deriv2,xjm,derxy,derxy2,evelng,eveln,
-                 evhist,NULL,epreng,epren,edeadng,edeadn,
-                 vderxy,vderxy2,vderxy_old,vderxy2_old,eacc,
-		 visc,wa1,wa2,estress, is_relax);
-   break;
+	  /*---------------------------- start loop over gausspoints ---*/
+	  f2_int_gen_alpha_tds(ele,
+			       hasext,
+			       estif,
+			       eforce,
+			       xyze,
+			       funct,
+			       deriv,
+			       deriv2,
+			       xjm,
+			       derxy,
+			       derxy2,
+			       eaccng,
+			       evelng,
+			       epreng,
+			       edeadng,
+			       vderxy,
+			       vderxy2,
+			       visc,
+			       wa1,
+			       wa2);
+      }
+      else 
+      {
+	  dserror("Unknown time integration for time dependent subscales.");
+      }
+      break;
 #endif
    default: dserror("unknown stabilisation type");
    }

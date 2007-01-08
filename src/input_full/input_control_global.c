@@ -1143,6 +1143,10 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          fdyn->iop=4;
       else if (frwordcmp(buffer,"BDF2")==0)
          fdyn->iop=7;
+#ifdef D_FLUID2_TDS
+      else if (frwordcmp(buffer,"Inc_Acc_Gen_Alpha")==0)
+         fdyn->iop=8;
+#endif /* D_FLUID2_TDS */      
       else
          dserror("TIMEINTEGR-Type unknown");
    }

@@ -127,11 +127,6 @@ switch (ele->distyp)
 } /* end switch(typ) */
 
 
-/*--------------------------------- get velocities at element center ---*/
-f2_veci(velint    ,funct,evelng,iel);
-f2_veci(velint_old,funct,eveln ,iel);
-
-
 /* tau for time dependent subscales --- a combination
  * of Franca and Codina tau for time dependent subscales */
 
@@ -184,27 +179,63 @@ switch(typ)
     default: dserror("element type not implemented!");
 }
 
-/*---------------------------------------------------- get p-norm ---*/
-norm_p = sqrt(DSQR(velint[0]) + DSQR(velint[1]));
 
-re = mk * norm_p * hk / (2.0 * visc);  /* advective : viscous forces */
+if (fdyn->iop==4)                 /* old and new tau for one step theta */
+{
+    /*----------------------------- get velocities at element center ---*/
 
-xi2 = DMAX(re,1.0);
+    f2_veci(velint    ,funct,evelng,iel);
+    f2_veci(velint_old,funct,eveln ,iel);
 
-fdyn->tau[0] = DSQR(hk) / (2 * visc/mk + (4.0 * visc/mk) * xi2);
+    /*-------------------- calculate the new tau -----------------------*/
+    
+    /*--------------------------------------------------- get p-norm ---*/
+    norm_p = sqrt(DSQR(velint[0]) + DSQR(velint[1]));
+    
+    re = mk * norm_p * hk / (2.0 * visc); /* advective : viscous forces */
+    
+    xi2 = DMAX(re,1.0);
+    
+    fdyn->tau[0] = DSQR(hk) / (2 * visc/mk + (4.0 * visc/mk) * xi2);
+    
+    fdyn->tau[2]=  DSQR(hk) /(fdyn->tau[0]*2./mk);
 
-fdyn->tau[2]=  DSQR(hk) /(fdyn->tau[0]*2./mk);
+    /*-------------------- calculate the old tau -----------------------*/
+    
+    /*--------------------------------------------------- get p-norm ---*/
+    norm_p = sqrt(DSQR(velint_old[0]) + DSQR(velint_old[1]));
+    
+    re = mk * norm_p * hk / (2.0 * visc); /* advective : viscous forces */
+    
+    xi2 = DMAX(re,1.0);
+    
+    fdyn->tau_old[0] = DSQR(hk) / (2 * visc/mk + (4.0 * visc/mk) * xi2);
+    
+    fdyn->tau_old[2]=  DSQR(hk) /(fdyn->tau_old[0]*2./mk);
+    
+}
+else if (fdyn->iop==8)               /* intermediate tau for gena alpha */
+{
+    /*----------- get velocity (at time n+alpha_F) at element center ---*/
+    f2_veci(velint,funct,evelng,iel);
 
-/*---------------------------------------------------- get p-norm ---*/
-norm_p = sqrt(DSQR(velint_old[0]) + DSQR(velint_old[1]));
+    /*--------------------------------------------------- get p-norm ---*/
+    norm_p = sqrt(DSQR(velint[0]) + DSQR(velint[1]));
+    
+    re = mk * norm_p * hk / (2.0 * visc); /* advective : viscous forces */
+    
+    xi2 = DMAX(re,1.0);
+    
+    fdyn->tau[0] = DSQR(hk) / (2 * visc/mk + (4.0 * visc/mk) * xi2);
+    
+    fdyn->tau[2]=  DSQR(hk) /(fdyn->tau[0]*2./mk);
+}
+else
+{
+    dserror("This time integration isn't available for tds");
+}
+    
 
-re = mk * norm_p * hk / (2.0 * visc);  /* advective : viscous forces */
-
-xi2 = DMAX(re,1.0);
-
-fdyn->tau_old[0] = DSQR(hk) / (2 * visc/mk + (4.0 * visc/mk) * xi2);
-
-fdyn->tau_old[2]=  DSQR(hk) /(fdyn->tau_old[0]*2./mk);
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
 dstrc_exit();

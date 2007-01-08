@@ -54,6 +54,30 @@ void f2_int_tds(
     )
     ;
 
+void f2_int_gen_alpha_tds(
+                      ELEMENT         *ele,
+                      INT             *hasext,
+                      DOUBLE         **estif,
+	              DOUBLE          *eforce,
+	              DOUBLE         **xyze,
+	              DOUBLE          *funct,
+	              DOUBLE         **deriv,
+	              DOUBLE         **deriv2,
+	              DOUBLE         **xjm,
+	              DOUBLE         **derxy,
+	              DOUBLE         **derxy2,
+		      DOUBLE	     **eaccng,
+	              DOUBLE         **evelng,
+		      DOUBLE          *epreng, 
+	              DOUBLE          *edeadng,
+		      DOUBLE         **vderxy,
+                      DOUBLE         **vderxy2,
+		      DOUBLE           visc,
+	              DOUBLE         **wa1,
+	              DOUBLE         **wa2
+	             )
+    ;
+
 /************************************************************************
  | f2_calmat_tds.c                                                       |
  ************************************************************************/
@@ -88,6 +112,34 @@ void f2_calmat_tds(
     ;
 
 /************************************************************************
+ | f2_calmat_incr_acc_gen_alpha_tds.c                                   |
+ ************************************************************************/
+
+void f2_calgalmat_gen_alpha_tds(
+                DOUBLE **estif,
+		DOUBLE  *velint,
+		DOUBLE  *funct,
+		DOUBLE **derxy,
+		DOUBLE **derxy2,
+		DOUBLE   fac,
+		DOUBLE   visc,
+		int      iel
+              )
+    ;
+
+void f2_calstabmat_gen_alpha_tds(
+                DOUBLE **estif,
+		DOUBLE  *velint,
+		DOUBLE  *funct,
+		DOUBLE **derxy,
+		DOUBLE **derxy2,
+		DOUBLE   fac,
+		DOUBLE   visc,
+		int      iel
+              )
+    ;
+
+/************************************************************************
  | f2_update_tds.c                                                       |
  ************************************************************************/
 void f2_update_subscale_pres(
@@ -106,6 +158,13 @@ void f2_update_subscale_vel(
     INT             disnum_calc
     );
 
+void f2_update_subscale_pres_for_inc_gen_alpha(
+    PARTITION      *actpart,
+    INTRA          *actintra,
+    FIELD          *actfield,
+    ARRAY_POSITION *ipos,
+    INT             disnum_calc
+    );
 
 /************************************************************************
  | f2_caltau_tds.c                                                       |
@@ -118,5 +177,76 @@ void f2_get_time_dependent_sub_tau(ELEMENT *ele,
 				   DOUBLE  **eveln,
 				   DOUBLE    visc
     );
+
+
+/************************************************************************
+ | f2_calservice_for_TDS.c                                              |
+ ************************************************************************/
+
+void f2_inc_gen_alpha_calset(
+	        ELEMENT         *ele,
+                DOUBLE         **xyze,
+                DOUBLE         **eaccng,
+	        DOUBLE         **evelng,
+		DOUBLE          *epreng,
+		DOUBLE          *edeadng,
+                ARRAY_POSITION *ipos,
+		double         *visc
+	      )
+    ;
+
+void fluid_result_incre_for_genalpha(
+                          FIELD             *actfield,
+                          INT                disnum,
+                          INTRA             *actintra,
+			  DIST_VECTOR       *sol,
+			  DIST_VECTOR       *rhs,
+                          ARRAY_POSITION    *ipos,
+			  SPARSE_ARRAY      *sysarray,
+			  SPARSE_TYP        *sysarray_typ,
+			  DOUBLE            *vrat,
+			  DOUBLE            *prat,
+                          DOUBLE            *grat
+		       )
+    ;
+
+/************************************************************************
+ | f2_calrhs_incr_acc_gen_alpha_tds.c                                   |
+ ************************************************************************/
+void f2_calgalrhs_gen_alpha_tds(
+                DOUBLE  *eforce,
+		DOUBLE  *velint,
+		DOUBLE  *accint,
+		DOUBLE   presint,
+		DOUBLE  *edeadng,
+		DOUBLE  *funct,
+		DOUBLE **derxy,
+		DOUBLE **derxy2,
+		DOUBLE **vderxy,
+                DOUBLE **vderxy2,
+		DOUBLE   fac,
+		DOUBLE   visc,
+		int      iel     
+              )
+    ;
+
+
+void f2_calstabrhs_gen_alpha_tds(
+                DOUBLE  *eforce,
+		DOUBLE  *velint,
+		DOUBLE  *accint,
+		DOUBLE   presint,
+		DOUBLE  *gradpint,
+		DOUBLE  *edeadng,
+		DOUBLE  *funct,
+		DOUBLE **derxy,
+		DOUBLE **derxy2,
+		DOUBLE **vderxy,
+                DOUBLE **vderxy2,
+		DOUBLE   fac,
+		DOUBLE   visc,
+		int      iel     
+              )
+    ;
 
 /*! @} (documentation module close)*/

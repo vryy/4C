@@ -90,6 +90,12 @@ void f2_calstresspro(ELEMENT   *ele,
                      ARRAY_POSITION *ipos
   );
 
+void f2_calerr(
+    ELEMENT          *ele,
+    CONTAINER        *container,
+    ARRAY_POSITION   *ipos
+    );
+
 /************************************************************************
  | f2_calele_tu.c                                                       |
  ************************************************************************/
@@ -1723,6 +1729,18 @@ void f2_get_tau(ELEMENT  *ele,
                 DOUBLE    visc,
                 INT       whichtau,
                 INT       which_hk);
+
+void f2_int_kim_moin_err(
+    ELEMENT         *ele,
+    DOUBLE         **xyze,
+    DOUBLE          *funct,
+    DOUBLE         **deriv,
+    DOUBLE         **xjm,
+    DOUBLE         **evelng,
+    DOUBLE           visc,
+    DOUBLE          *epren,
+    CONTAINER       *container
+    );
 
 /************************************************************************
  | f2_main.c                                                            |

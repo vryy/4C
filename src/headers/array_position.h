@@ -91,6 +91,10 @@ typedef struct _ARRAY_POSITION_SOLRES
 This structure contains the positions of the various fluid solutions
 within the nodal array of sol_increment.a.da[pos][dim].
 
+For the incremental acceleration gen-alpha scheme, the meaning of the
+variables change. The new meaning is explained in the comments to
+fluid_incr_acc_gen_alpha.                                    (gammi)
+
 \author chfoe
 \date 11/04
 */
@@ -100,7 +104,9 @@ typedef struct _ARRAY_POSITION
   INT numincr; /*!< number of solution fields within sol_increment (fluid)*/
   INT nummf;
   INT numres;  /*! < 1st dimension of solution field sol_residual */
-
+#ifdef D_FLUID2_TDS
+  INT accnp; /*!< most recent iteration value of new accel. at time n+1  */
+#endif /* D_FLUID2_TDS */    
   INT accn;  /*!< position of sol_increment occupied by accel. at time n */
   INT accnm; /*!< position of sol_increment occup. by accel. at time n-1 */
   INT convn; /*!< position of convective velocity at n in sol vectors    */

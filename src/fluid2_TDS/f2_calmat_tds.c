@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief evaluate 2D fluid coefficient matrix
+\brief evaluate 2D fluid coefficient matrix for one step theta
 
 <pre>
 Maintainer: Peter Gamnitzer
@@ -422,7 +422,7 @@ for (ri=0; ri<iel; ri++)      /* row index */
       if(isale)
       {
 	  estif[ri*3+2][ci*3]   += derxy[0][ri] * conv_g[ci] * ttimetauMp;
-         estif[ri*3+2][ci*3+1] += derxy[1][ri] * conv_g[ci] * ttimetauMp;
+	  estif[ri*3+2][ci*3+1] += derxy[1][ri] * conv_g[ci] * ttimetauMp;
       }
 
       /*ALE: tau_M*timefac*timefac*2*nu*(-u_G * grad u, div epsilon(v)) */
