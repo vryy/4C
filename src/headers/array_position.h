@@ -104,9 +104,9 @@ typedef struct _ARRAY_POSITION
   INT numincr; /*!< number of solution fields within sol_increment (fluid)*/
   INT nummf;
   INT numres;  /*! < 1st dimension of solution field sol_residual */
-/*#ifdef D_FLUID2_TDS*/
+#ifdef D_FLUID2_TDS
   INT accnp; /*!< most recent iteration value of new accel. at time n+1  */
-/*#endif  D_FLUID2_TDS */    
+#endif  /* D_FLUID2_TDS */    
   INT accn;  /*!< position of sol_increment occupied by accel. at time n */
   INT accnm; /*!< position of sol_increment occup. by accel. at time n-1 */
   INT convn; /*!< position of convective velocity at n in sol vectors    */

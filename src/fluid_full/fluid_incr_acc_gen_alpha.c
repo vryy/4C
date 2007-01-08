@@ -28,7 +28,6 @@ Maintainer: Peter Gamnitzer
 #ifdef D_FLUID2_TDS
 #include "../fluid2/fluid2.h"
 #include "../fluid2_TDS/fluid2_TDS_prototypes.h"
-#endif
 
 
 /*----------------------------------------------------------------------*
@@ -732,7 +731,6 @@ while (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime && steady==0)
  *----------------------------------------------------------------------*/
 
 
-#ifdef D_FLUID2_TDS
 /*-------------------------------- update of time dependent subscales */
  if(actfield->dis[disnum_calc].element[0].e.f2->stab_type == stab_tds)
  {
@@ -750,7 +748,6 @@ while (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime && steady==0)
 	 ipos,
 	 disnum_calc);
  }
-#endif
 
 /*-------------------------------------------------- steady state check */
  if (fdyn->stchk==iststep)
@@ -907,6 +904,9 @@ dstrc_exit();
 #endif
 return;
 } /* end of fluid_incr_acc_gen_alpha */
+
+#endif /*D_FLUID2_TDS*/
+
 
 #endif /*D_FLUID*/
 /*! @} (documentation module close)*/
