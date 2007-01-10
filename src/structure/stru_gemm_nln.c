@@ -1077,6 +1077,8 @@ total_energy(actpart,actintra,&dynvar);
 if (print_gemm_file_new_style == 1)
 {
    /* (bborn) local_ or total_? see total_energy() serving WALL1 */
+   /* it appears more sensible to plot the local_* quantities
+    * but it could be a misinterpretation. */
    fprintf(allfiles.out_gemm,"%5d %16.9f %16.9f %16.9f %16.9f %16.9f %16.9f\n", ttt,
            dynvar.local_strain_energy+dynvar.local_kinetic_energy,
            dynvar.local_strain_energy, dynvar.local_kinetic_energy,

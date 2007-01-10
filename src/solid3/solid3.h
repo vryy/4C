@@ -204,14 +204,35 @@ typedef struct _SO3_GEODEFSTR
   /* (FE-) Jacobi matrix J (isoparametric)
    *         [ J_11  J_12  J_13 ]   [ X_{,r}  Y_{,r}  Z_{,r} ]
    *     J = [ J_21  J_22  J_23 ] = [ X_{,s}  Y_{,s}  Z_{,s} ]
-   *         [ J_31  J_32  J_33 ]   [ X_{,t}  Y_{,t}  Z_{,t} ] */
+   *         [ J_31  J_32  J_33 ]   [ X_{,t}  Y_{,t}  Z_{,t} ]
+   * HINT: This is the classical ordering found in FE text books.
+   *       This ordering transposes the ordering fashion
+   *       of J viewed as the `parametric deformation gradient'
+   *       (being responsible for the `deformation' of paramter
+   *       space to material space) */
   DOUBLE xjm[NDIM_SOLID3][NDIM_SOLID3];
   /* Jacobi determinant det(J) */
   DOUBLE xjdet;
   /* inverted Jacobi matrix J^{-1}*/
   DOUBLE xji[NDIM_SOLID3][NDIM_SOLID3];
-  /* rotational component of  J = R . U  ie  R = J . U^{-1} */
+  /* rotational component of  J = R . U   ie  R = J . U^{-1}  */
+  /* HINT: This matrix adheres to the ordering of xjm */
   DOUBLE xrm[NDIM_SOLID3][NDIM_SOLID3];
+  /* rotational component of J prepared such that a symmetric 2-tensor
+   * A living in (rst) denoted vectorially Av can be computed 
+   * by matrix-vector product
+   *     (A)_{XYZ} = (xrm) . (A)_{rst} . (xrm^T)
+   * becomes
+   *     (Av)_{XYZ} = xrvm . (Av)_{rst} */
+  DOUBLE xrvm[NUMSTR_SOLID3][NUMSTR_SOLID3];
+  /* rotational component of J^{-1} prepared such that a symmetric 2-tensor
+   * A living in (XYZ) denoted vectorially Av can be computed 
+   * by matrix-vector product 
+   *     (A)_{rst} = (xrm^T) . (A)_{XYZ} . (xrm)
+   * becomes
+   *     (Av)_{rst} = xrvi . (Av)_{XYZ} */
+  DOUBLE xrvi[NUMSTR_SOLID3][NUMSTR_SOLID3];
+  /* 
   /*--------------------------------------------------------------------*/
   /* deformation: 
    *     These variables refer to the transformation between
@@ -225,55 +246,29 @@ typedef struct _SO3_GEODEFSTR
   DOUBLE defgrd[NDIM_SOLID3][NDIM_SOLID3];
   /* material deformation gradient in vectorial notion Fv
    *     Fv^T = [ F_11  F_22  F_33  F_12  F_21  F_23  F_32  F_31  F_13 ] */
+  /*  DOUBLE defgrdv[NUMDFGR_SOLID3]; */
+  /* material displacement gradient in vectorial notion Hv
+   *     Hv^T = [ u_,X  v_,Y  w_,Z  u_,Y  v_,X  v_,Z  w_,Y  w_,X  u_,Z ] */
   DOUBLE disgrdv[NUMDFGR_SOLID3];
   /*--------------------------------------------------------------------*/
   /* strain:
    *     Strains referred to different frames */
   /* Green-Lagrange strain tensor in vector notion Ev
    *     Ev^T = [ E_11  E_22  E_33  E_12  E_23  E_31 ] */
-  DOUBLE stsglv[NUMSTR_SOLID3];
+  DOUBLE stnglv[NUMSTR_SOLID3];
+  /* Linear (engineering strain) in vector notion epsv
+   *     epsv^T = [ eps_11  eps_22  eps_33  eps_12  eps_23  eps_31 ] */
+  DOUBLE stnengv[NUMSTR_SOLID3];
   /*--------------------------------------------------------------------*/
   /* stress:
    *     Stresses referred to different frames */
   /* 2nd Piola-Kirchhoff stress vector Sv
    *     Sv^T = [ S_11  S_22  S_33  S_12  S_23  S_31 ] */
-  DOUBLE str2pkv[NUMSTR_SOLID3];
+  /* DOUBLE sts2pkv[NUMSTR_SOLID3]; */
   /* 1st Piola-Kirchhoff stress vector Pv
    *     Pv^T = [ P_11  P_22  P_33  P_12  P_21  P_23  P_32  P_31  P_13 ] */
-  DOUBLE str1pkv[NUMDFGR_SOLID3];
+  /* DOUBLE sts1pkv[NUMDFGR_SOLID3]; */
 } SO3_GEODEFSTR;
-
-
-/* /\*----------------------------------------------------------------------*\/ */
-/* /\*! */
-/* \brief Stress type */
-
-/* \author bborn */
-/* \date 12/06 */
-/* *\/ */
-/* typedef enum _SO3_STRESSTYPE */
-/* { */
-/*   so3_stress_none,  /\* none *\/ */
-/*   so3_stress_lin,  /\* linear stress *\/ */
-/*   so3_stress_pk2,  /\* 2nd Piola--Kirchhoff stress *\/ */
-/*   so3_stress_pk1,  /\* 1st Piola--Kirchhoff stress *\/ */
-/*   so3_stress_ct  /\* Cauchy (true) stress *\/ */
-/* } SO3_STRESSTYPE; */
-
-
-/* /\*----------------------------------------------------------------------*\/ */
-/* /\*! */
-/* \brief Strain measure */
-/* \author bborn */
-/* \date 12/06 */
-/* *\/ */
-/* typedef enum _SO3_STRNMEAS */
-/* { */
-/*   so3_strnmeas_none,  /\* none *\/ */
-/*   so3_strnmeas_lin,  /\* linear strain *\/ */
-/*   so3_strnmeas_gl,  /\* Green-Lagrange strain *\/ */
-/*   so3_strnmeas_ea  /\* Euler-Almansi strain *\/ */
-/* } SO3_STRNMEAS; */
 
 
 /*----------------------------------------------------------------------*/
@@ -351,7 +346,7 @@ typedef struct _SOLID3
   /* thermo-structure-interaction */
 #ifdef D_TSI
   TSI_COUPTYP tsi_couptyp;  /* TSI coupling type */
-  ELEMENT *therm_ele;      /* pointer to conforming thermal2 element */
+  ELEMENT *therm_ele;  /* pointer to conforming THERM3 element */
 #endif
 
 } SOLID3;
@@ -362,17 +357,24 @@ typedef struct _SOLID3
 
 
 /*======================================================================*/
-/* Declarations of functions in solid3 directory
+/* Declarations of functions in SOLID3 directory
  * Order: Firstly, alphabetically list file names, secondly, list
  *        functions in file according to appearance */
 
 
 /*----------------------------------------------------------------------*/
 /* file so3_bop.c */
-void so3_bop(INT        enod,
-             DOUBLE     deriv[MAXNOD_SOLID3][NDIM_SOLID3],
-             DOUBLE     xji[NDIM_SOLID3][NDIM_SOLID3],
-             DOUBLE     bop[NDIM_SOLID3][NUMDOF_SOLID3*MAXNOD_SOLID3]);
+void so3_bop_lin(INT enod,
+                 DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3],
+                 DOUBLE xji[NUMDOF_SOLID3][NUMDOF_SOLID3],
+                 DOUBLE boplin[NUMSTR_SOLID3][MAXDOF_SOLID3]);
+void so3_bop(ELEMENT *ele,
+             INT enod,
+             DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3],
+             DOUBLE xji[NUMDOF_SOLID3][NUMDOF_SOLID3],
+             DOUBLE defgrd[NUMDOF_SOLID3][NUMDOF_SOLID3],
+             DOUBLE bopn[MAXDOF_SOLID3][NUMDOF_SOLID3],
+             DOUBLE bop[NUMSTR_SOLID3][MAXDOF_SOLID3]);
 
 /*---------------------------------------------------------------------*/
 /* file so3_cfg.c */
@@ -381,7 +383,19 @@ void so3_cfg_init(SO3_DATA *data);
 void so3_cfg_noderst(ELEMENT *ele,
                      SO3_DATA *data,
                      INT inode,
-                     DOUBLE *rst)
+                     DOUBLE *rst);
+#ifdef TEST_SOLID3
+void so3_cfg_test(SO3_DATA *data);
+#endif
+
+/*----------------------------------------------------------------------*/
+/* file so3_def.c */
+void so3_def_grad(INT enod,
+                  DOUBLE edis[MAXNOD_SOLID3][NDIM_SOLID3],
+                  DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3],
+                  DOUBLE xji[NDIM_SOLID3][NDIM_SOLID3],
+                  DOUBLE disgrdv[NUMDFGR_SOLID3],
+                  DOUBLE defgrd[NDIM_SOLID3][NDIM_SOLID3]);
 
 /*----------------------------------------------------------------------*/
 /* file so3_inp.c */
@@ -395,50 +409,11 @@ void so3_intg_eleinp(ELEMENT *actele,
 void so3_intg_init(SO3_DATA *data);
 
 /*----------------------------------------------------------------------*/
-/* file so3_metr.c */
-void so3_metr_jaco(ELEMENT *ele,
-                   INT      enod,
-                   DOUBLE   deriv[MAXNOD_SOLID3][NDIM_SOLID3],
-                   INT      flag,
-                   DOUBLE   xjm[NDIM_SOLID3][NDIM_SOLID3],
-                   DOUBLE  *det,
-                   DOUBLE   xji[NDIM_SOLID3][NDIM_SOLID3]);
-void so3_metr_surf(ELEMENT *ele, 
-                   INT      nelenod, 
-                   DOUBLE   deriv[MAXNOD_SOLID3][NDIM_SOLID3], 
-                   DOUBLE   sidredm[DIMSID_SOLID3][NDIM_SOLID3],
-                   DOUBLE  *metr);
-void so3_metr_line(ELEMENT *ele, 
-                   INT      nelenod, 
-                   DOUBLE   deriv[MAXNOD_SOLID3][NDIM_SOLID3], 
-                   DOUBLE   linredv[NDIM_SOLID3],
-                   DOUBLE  *metr);
-
-/*----------------------------------------------------------------------*/
-/* file so2_stiff.c */
-void so3_stiff(ELEMENT *ele,
-                   SO3_DATA *data,
-                   MATERIAL *mat,
-                   ARRAY *estif_global,
-                   ARRAY *emass_global,
-                   DOUBLE *force);
-void so3_stiff_bcb(INT neledof,
-                   DOUBLE bop[NUMSTRN_SOLID3][NUMDOF_SOLID3*MAXNOD_SOLID3],
-                   DOUBLE cmat[NUMSTSS_SOLID3][NUMSTRN_SOLID3],
-                   DOUBLE fac,
-                   DOUBLE **tmat);
-void so3_stiff_fint(INT neledof,
-                    DOUBLE bop[NUMSTRN_SOLID3][NUMDOF_SOLID3*MAXNOD_SOLID3],
-                    DOUBLE stress[NUMSTSS_SOLID3],
-                    DOUBLE fac,
-                    DOUBLE *intfor);
-
-/*----------------------------------------------------------------------*/
-/* file th3_load.c */
-void so3_eleload(ELEMENT *ele,  /* actual element */
-                   TH3_DATA *data,
-                   INT imyrank,
-                   DOUBLE *loadvec); /* global element load vector fext */
+/* file so3_load.c */
+void so3_load(ELEMENT *ele,  /* actual element */
+              SO3_DATA *data,
+              INT imyrank,
+              DOUBLE *loadvec); /* global element load vector fext */
 void so3_load_vol(ELEMENT *ele,
                   INT nelenod,
                   DOUBLE shape[MAXNOD_SOLID3],
@@ -466,27 +441,120 @@ void solid3(PARTITION *actpart,
 	    ARRAY *emass_global,
 	    ARRAY *intforce_global,
 	    CALC_ACTION *action,
-	    CONTAINER *container);   /* contains variables defined 
-				      * in container.h */
+	    CONTAINER *container);
 
 /*----------------------------------------------------------------------*/
 /* file so3_mat.c */
 void so3_mat_sel(ELEMENT *ele,
                  MATERIAL *mat,
-                 DOUBLE bop[NUMSTRN_SOLID3][NUMDOF_SOLID3*MAXNOD_SOLID3],
                  INT ip,
-                 DOUBLE stress[NUMSTSS_SOLID3],
-                 DOUBLE cmat[NUMSTSS_SOLID3][NUMSTRN_SOLID3]);
+                 SO3_GEODEFSTR *gds,
+                 DOUBLE stress[NUMSTR_SOLID3],
+                 DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3]);
+
+
+/*----------------------------------------------------------------------*/
+/* file so3_metr.c */
+void so3_metr_jaco(ELEMENT *ele,
+                   INT      enod,
+                   DOUBLE   ex[MAXNOD_SOLID3][NDIM_SOLID3],
+                   DOUBLE   deriv[MAXNOD_SOLID3][NDIM_SOLID3],
+                   INT      flag,
+                   DOUBLE   xjm[NDIM_SOLID3][NDIM_SOLID3],
+                   DOUBLE  *det,
+                   DOUBLE   xji[NDIM_SOLID3][NDIM_SOLID3]);
+void so3_metr_surf(ELEMENT *ele, 
+                   INT nelenod, 
+                   DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3],
+                   DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3],
+                   DOUBLE sidredm[DIMSID_SOLID3][NDIM_SOLID3],
+                   DOUBLE *metr);
+void so3_metr_line(ELEMENT *ele, 
+                   INT nelenod, 
+                   DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3],
+                   DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3], 
+                   DOUBLE linredv[NDIM_SOLID3],
+                   DOUBLE *metr);
+void so3_metr_rot(DOUBLE xjm[NDIM_SOLID3][NDIM_SOLID3],
+                  DOUBLE xrm[NDIM_SOLID3][NDIM_SOLID3],
+                  DOUBLE xrvm[NUMSTR_SOLID3][NUMSTR_SOLID3],
+                  DOUBLE xrvi[NUMSTR_SOLID3][NUMSTR_SOLID3]);
 
 /*----------------------------------------------------------------------*/
 /* file so3_shape.c */
-void so3_shape_deriv(DIS_TYP     typ,
-                     DOUBLE      r,
-                     DOUBLE      s,
-                     DOUBLE      t,
-                     INT         option,
-                     DOUBLE      shape[MAXNOD_SOLID3],
-                     DOUBLE      deriv[MAXNOD_SOLID3][NDIM_SOLID3]);
+void so3_shape_deriv(DIS_TYP typ,
+                     DOUBLE r,
+                     DOUBLE s,
+                     DOUBLE t,
+                     INT option,
+                     DOUBLE shape[MAXNOD_SOLID3],
+                     DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3])
+void so3_shape_gpshade_init(SO3_GPSHAPEDERIV* so3_gpshade);
+void so3_shape_gpshade(ELEMENT *ele,
+                       SO3_DATA *data,
+                       SO3_GPSHAPEDERIV *so3_gpshade);
+
+/*----------------------------------------------------------------------*/
+/* file so3_strain.c */
+void so3_strain_lin(ELEMENT *ele,
+                    DOUBLE disgrdv[NUMDFGR_SOLID3],
+                    DOUBLE strain[NUMSTR_SOLID3]);
+void so3_strain_gl(ELEMENT *ele,
+                   DOUBLE disgrdv[NUMDFGR_SOLID3],
+                   DOUBLE strain[NUMSTR_SOLID3]);
+
+/*----------------------------------------------------------------------*/
+/* file so3_stress.c */
+void so3_stress_init(PARTITION *actpart);
+void so3_stress_final(PARTITION *actpart);
+void so3_stress(CONTAINER *cont,
+                ELEMENT *ele,
+                SO3_DATA *data,
+                SO3_GPSHAPEDERIV *gpshade,
+                MATERIAL *mat);
+void so3_stress_rst(DOUBLE xrvi[NUMSTR_SOLID3][NUMSTR_SOLID3],
+                    DOUBLE stress[NUMSTR_SOLID3],
+                    DOUBLE *stressrst);
+void so3_stress_123(DOUBLE stress[NUMSTR_SOLID3],
+                    DOUBLE *stress123);
+void so3_stress_extrpol(ELEMENT *ele,
+                        SO3_DATA *data,
+                        INT ngauss,
+                        DOUBLE **stressgp,
+                        DOUBLE rst[NDIM_SOLID3],
+                        DOUBLE stressnd[NUMSTR_SOLID3]);
+
+/*----------------------------------------------------------------------*/
+/* file so3_tns3.c */
+void so3_tns3_id(DOUBLE it[3][3]);
+void so3_tns3_tr(DOUBLE at[3][3],
+                 DOUBLE *tr);
+void so3_tns3_det(DOUBLE at[3][3],
+                  DOUBLE *det);
+void so3_tns3_inva(DOUBLE at[3][3],
+                   DOUBLE *ai,
+                   DOUBLE *aii,
+                   DOUBLE *aiii);
+void so3_tns3_dotprod(DOUBLE at[3][3],
+                      DOUBLE bt[3][3],
+                      DOUBLE ct[3][3]);
+void so3_tns3_dotprod_tl(DOUBLE at[3][3],
+                         DOUBLE bt[3][3],
+                         DOUBLE ct[3][3]);
+void so3_tns3_dotprod_tr(DOUBLE at[3][3],
+                         DOUBLE bt[3][3],
+                         DOUBLE ct[3][3]);
+void so3_tns3_plrdcmp(DOUBLE ft[3][3],  /* input tensor */
+                      DOUBLE rt[3][3],  /* rotation matrix */
+                      DOUBLE ut[3][3],  /* right stretch tensor */
+                      DOUBLE vt[3][3]);  /* left stretch tensor */
+void so3_tns3_tsym2v(DOUBLE at[3][3],
+                     DOUBLE av[6]);
+void so3_tns3_v2tsym(DOUBLE av[6],
+                     DOUBLE at[3][3]);
+void so3_tns3_spcdcmp(DOUBLE at[3][3],  /* input tensor */
+                      INT *err,
+                      DOUBLE ew[3]);
 
 /*----------------------------------------------------------------------*/
 #endif /*end of #ifdef D_SOLID3 */

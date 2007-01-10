@@ -122,7 +122,7 @@ void therm3(PARTITION *actpart,
     case calc_therm_heatload:
       imyrank = actintra->intra_rank;
       actmat = &(mat[ele->mat-1]);
-       th3_load_heat(ele, &(th3_data), imyrank, intforce);
+      th3_load_heat(ele, &(th3_data), imyrank, intforce);
       break;
     case calc_therm_heatflux:
       imyrank = actintra->intra_rank;

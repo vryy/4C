@@ -28,6 +28,7 @@
 # D_MLSTRUCT         # 2D element for structural analysis with multiscale
 # D_THERM2           # planar thermal elment
 # D_THERM3           # spatial thermal element
+# D_SOLID3           # spatial solid element
 
 
 #   problem types

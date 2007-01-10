@@ -288,17 +288,6 @@ for (i=0; i<genprob.numfld; i++)
          c1_out_gid_sol_str(NULL, actfield, j, 0, 1);
          /* set used gid set */
          c1_gid_init(actele, actgid);
-
-/*          if (actele->numnp==8) */
-/*          { */
-/*             actgid->is_brick1_222   = 1; */
-/*             actgid->brick1_222_name = "brick1_222"; */
-/*          } */
-/*          if (actele->numnp==20 || actele->numnp==27) */
-/*          { */
-/*             actgid->is_brick1_333   = 1; */
-/*             actgid->brick1_333_name = "brick1_333"; */
-/*          } */
       break;
 #endif /*D_BRICK1*/
 
@@ -1035,31 +1024,6 @@ end_s8_init:;
    {
      c1_gid_gpset(j, actgid, out);
    }
-
-/*    if (actgid->is_brick1_222) */
-/*    { */
-/*    fprintf(out,"#-------------------------------------------------------------------------------\n"); */
-/*    fprintf(out,"# GAUSSPOINTSET FOR FIELD %s DIS %1i BRICK1 2x2x2 GP\n",actgid->fieldname,j); */
-/*    fprintf(out,"#-------------------------------------------------------------------------------\n"); */
-/*    fprintf(out,"GAUSSPOINTS %c%s_dis_%1i%c ELEMTYPE Hexahedra %c%s_dis_%1i%c\n", */
-/*        sign,actgid->brick1_222_name,j,sign, */
-/*        sign,actgid->brick1_222_name,j,sign); */
-/*    fprintf(out,"NUMBER OF GAUSS POINTS: 8\n"); */
-/*    fprintf(out,"NATURAL COORDINATES: Internal\n"); */
-/*    fprintf(out,"END GAUSSPOINTS\n"); */
-/*    } */
-/*    if (actgid->is_brick1_333) */
-/*    { */
-/*    fprintf(out,"#-------------------------------------------------------------------------------\n"); */
-/*    fprintf(out,"# GAUSSPOINTSET FOR FIELD %s DIS %1i BRICK1 3x3x3 GP\n",actgid->fieldname,j); */
-/*    fprintf(out,"#-------------------------------------------------------------------------------\n"); */
-/*    fprintf(out,"GAUSSPOINTS %c%s_dis_%1i%c ELEMTYPE Hexahedra %c%s_dis_%1i%c\n", */
-/*        sign,actgid->brick1_333_name,j,sign, */
-/*        sign,actgid->brick1_333_name,j,sign); */
-/*    fprintf(out,"NUMBER OF GAUSS POINTS: 27\n"); */
-/*    fprintf(out,"NATURAL COORDINATES: Internal\n"); */
-/*    fprintf(out,"END GAUSSPOINTS\n"); */
-/*    } */
 #endif
 
 
@@ -2057,45 +2021,6 @@ if ( (actgid->is_brick1_222)
 {
   c1_gid_dom(actfield, disnum, actgid, out);
 }
-
-/* if (actgid->is_brick1_222) */
-/* { */
-/*    fprintf(out,"#-------------------------------------------------------------------------------\n"); */
-/*    fprintf(out,"# RESULT Domains on DIS %1i, MESH %s\n",disnum,actgid->brick1_222_name); */
-/*    fprintf(out,"#-------------------------------------------------------------------------------\n"); */
-/*    fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s_dis_%1i%c\n", */
-/*        sign,sign,sign,sign,sign,actgid->brick1_222_name,disnum,sign); */
-/*    fprintf(out,"VALUES\n"); */
-/*    for (i=0; i<actfield->dis[disnum].numele; i++) */
-/*    { */
-/*       actele = &(actfield->dis[disnum].element[i]); */
-/*       if (actele->eltyp != el_brick1 || actele->numnp != 8) continue; */
-/*       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc); */
-/*       for (j=1; j<8; j++) */
-/*       fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); */
-/*    } */
-/*    fprintf(out,"END VALUES\n"); */
-/* } */
-
-
-/* if (actgid->is_brick1_333) */
-/* { */
-/*    fprintf(out,"#-------------------------------------------------------------------------------\n"); */
-/*    fprintf(out,"# RESULT Domains on DIS %1i, MESH %s\n",disnum,actgid->brick1_333_name); */
-/*    fprintf(out,"#-------------------------------------------------------------------------------\n"); */
-/*    fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s_dis_%1i%c\n", */
-/*        sign,sign,sign,sign,sign,actgid->brick1_333_name,disnum,sign); */
-/*    fprintf(out,"VALUES\n"); */
-/*    for (i=0; i<actfield->dis[disnum].numele; i++) */
-/*    { */
-/*       actele = &(actfield->dis[disnum].element[i]); */
-/*       if (actele->eltyp != el_brick1 || (actele->numnp != 20 || actele->numnp != 27)) continue; */
-/*       fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc); */
-/*       for (j=1; j<27; j++) */
-/*       fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc); */
-/*    } */
-/*    fprintf(out,"END VALUES\n"); */
-/* } */
 #endif
 
 
@@ -3950,125 +3875,6 @@ if (strncmp(string,"stress",stringlenght)==0)
    {
      c1_gid_stress(string, actfield, disnum, step, actgid, out);
    }
-/*    /\* bricks have 6 stress - use 3D matrix *\/ */
-/*    if (actgid->is_brick1_222) */
-/*    { */
-/*       /\*check only first element and assume, that the others are the same*\/ */
-/*      actele = &(actfield->dis[disnum].element[0]); */
-/*      switch(actele->e.c1->stresstyp) */
-/*      { */
-/*      case c1_npeqs: */
-/*       resulttype                             = "SCALAR"; */
-/*       resultplace                            = "ONNODES";                 /\*extrapolated to nodal points!*\/ */
-/*       gpset             = actgid->brick1_222_name; */
-/*       rangetable        = actgid->standardrangetable; */
-/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
-/*       fprintf(out,"# RESULT Brick1_forces on FIELD %s, DIS %1i\n",actgid->fieldname,disnum); */
-/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
-/*       fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n", */
-/*                    sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,disnum,sign ); */
-/*         fprintf(out,"COMPONENTNAMES %cequivStress%c\n", sign,sign); */
-/*         fprintf(out,"VALUES\n"); */
-/*         c1_out_gid_sol_str(out,actfield,disnum,place,0); /\*extrapolated to nodal points!*\/ */
-/*         fprintf(out,"END VALUES\n"); */
-/*      break; */
-/*      case c1_npxyz: */
-/*       resulttype                             = "MATRIX"; */
-/*       resultplace                            = "ONNODES";                 /\*extrapolated to nodal points!*\/ */
-/*       gpset             = actgid->brick1_222_name; */
-/*       rangetable        = actgid->standardrangetable; */
-/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
-/*       fprintf(out,"# RESULT Brick1_forces on FIELD %s, DIS %1i\n",actgid->fieldname,disnum); */
-/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
-/*       fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n", */
-/*                    sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,disnum,sign ); */
-/*         fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-zz%c,%cStress-xy%c,%cStress-xz%c,%cStress-yz%c\n", */
-/*                sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign); */
-/*         fprintf(out,"VALUES\n"); */
-/*         c1_out_gid_sol_str(out,actfield,disnum,place,0); /\*extrapolated to nodal points!*\/ */
-/*         fprintf(out,"END VALUES\n"); */
-/*      break; */
-/*      case c1_nprst: */
-/*       resulttype                             = "MATRIX"; */
-/*       resultplace                            = "ONNODES";                 /\*extrapolated to nodal points!*\/ */
-/*       gpset             = actgid->brick1_222_name; */
-/*       rangetable        = actgid->standardrangetable; */
-/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
-/*       fprintf(out,"# RESULT Brick1_forces on FIELD %s, DIS %1i\n",actgid->fieldname,disnum); */
-/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
-/*       fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n", */
-/*                    sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,disnum,sign ); */
-/*         fprintf(out,"COMPONENTNAMES %cStress-rr%c,%cStress-ss%c,%cStress-tt%c,%cStress-rs%c,%cStress-st%c,%cStress-tr%c\n", */
-/*                sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign); */
-/*         fprintf(out,"VALUES\n"); */
-/*         c1_out_gid_sol_str(out,actfield,disnum,place,0); /\*extrapolated to nodal points!*\/ */
-/*         fprintf(out,"END VALUES\n"); */
-/*      break; */
-/*      /\*-----------------------------------*\/ */
-/*      default: */
-/*        fprintf(out,"no stresses available\n"); */
-/*      break; */
-/*      } */
-/*    } */
-/*    if (actgid->is_brick1_333) */
-/*    { */
-/*       /\*check only first element and assume, that the others are the same*\/ */
-/*      actele = &(actfield->dis[disnum].element[0]); */
-/*      switch(actele->e.c1->stresstyp) */
-/*      { */
-/*      case c1_npeqs: */
-/*       resulttype                             = "SCALAR"; */
-/*       resultplace                            = "ONNODES";                 /\*extrapolated to nodal points!*\/ */
-/*       gpset             = actgid->brick1_333_name; */
-/*       rangetable        = actgid->standardrangetable; */
-/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
-/*       fprintf(out,"# RESULT Brick1_forces on FIELD %s, DIS %1i\n",actgid->fieldname,disnum); */
-/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
-/*       fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n", */
-/*                    sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,disnum,sign ); */
-/*         fprintf(out,"COMPONENTNAMES %cequivStress%c\n", sign,sign); */
-/*         fprintf(out,"VALUES\n"); */
-/*         c1_out_gid_sol_str(out,actfield,disnum,place,0); /\*extrapolated to nodal points!*\/ */
-/*         fprintf(out,"END VALUES\n"); */
-/*      break; */
-/*      case c1_npxyz: */
-/*       resulttype                             = "MATRIX"; */
-/*       resultplace                            = "ONNODES";                 /\*extrapolated to nodal points!*\/ */
-/*       gpset             = actgid->brick1_333_name; */
-/*       rangetable        = actgid->standardrangetable; */
-/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
-/*       fprintf(out,"# RESULT Brick1_forces on FIELD %s, DIS %1i\n",actgid->fieldname,disnum); */
-/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
-/*       fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n", */
-/*                    sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,disnum,sign ); */
-/*         fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-zz%c,%cStress-xy%c,%cStress-xz%c,%cStress-yz%c\n", */
-/*                sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign); */
-/*         fprintf(out,"VALUES\n"); */
-/*         c1_out_gid_sol_str(out,actfield,disnum,place,0); /\*extrapolated to nodal points!*\/ */
-/*         fprintf(out,"END VALUES\n"); */
-/*      break; */
-/*      case c1_nprst: */
-/*       resulttype                             = "MATRIX"; */
-/*       resultplace                            = "ONNODES";                 /\*extrapolated to nodal points!*\/ */
-/*       gpset             = actgid->brick1_333_name; */
-/*       rangetable        = actgid->standardrangetable; */
-/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
-/*       fprintf(out,"# RESULT Brick1_forces on FIELD %s, DIS %1i\n",actgid->fieldname,disnum); */
-/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
-/*       fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n", */
-/*                    sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,disnum,sign ); */
-/*         fprintf(out,"COMPONENTNAMES %cStress-rr%c,%cStress-ss%c,%cStress-tt%c,%cStress-rs%c,%cStress-st%c,%cStress-tr%c\n", */
-/*                sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign); */
-/*         fprintf(out,"VALUES\n"); */
-/*         c1_out_gid_sol_str(out,actfield,disnum,place,0); /\*extrapolated to nodal points!*\/ */
-/*         fprintf(out,"END VALUES\n"); */
-/*      break; */
-/*      /\*-----------------------------------*\/ */
-/*      default: */
-/*        fprintf(out,"no stresses available\n"); */
-/*      break; */
-/*      } */
-/*    } */
 #endif
 
 #ifdef D_FLUID3

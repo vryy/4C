@@ -113,54 +113,90 @@ void solid3(PARTITION *actpart,
   {
     intforce = intforce_global->a.dv;
   }
+  else
+  {
+    intforce = NULL;
+  }
 
   /*--------------------------------------------------------------------*/
   /* switch according to ACTION */
   switch (*action)
   {
-/* initialize   --------------------------------------------------------*/
+    /*------------------------------------------------------------------*/
+    /* initialize --- these are only called once! */
     case calc_struct_init:
-      /* these are only called once! */
       so3_intg_init(&(so3_data));
       so3_cfg_init(&(so3_data));
       so3_shape_gpshade_init(&(so3_gpshade));
-/*       th2_lin_init(); */
-/*       th2_load_init(); */
-/*       th2_hflux_init(actpart); */
+      so3_stress_init(actpart);
 /*      th2_write_restart(NULL, NULL, 0, NULL, 1); */
 /*      th2_read_restart(NULL, NULL, NULL, 1); */
       break;
-/* linear stiffness matrix ----------------------------------------------*/
+    /*------------------------------------------------------------------*/
+    /* linear stiffness matrix */
     case calc_struct_linstiff:
       actmat = &(mat[ele->mat-1]);
-      so3_stiff(ele, &(so3_data), actmat, estif_global, NULL, NULL);
+      so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
+      so3_int_fintstiffmass(container, ele, &(so3_gpshade), actmat, 
+                            NULL, estif_global, NULL);
       break;
-/* nonlinear stiffness matrix -------------------------------------------*/
+    /*------------------------------------------------------------------*/
+    /* nonlinear stiffness matrix */
     case calc_struct_nlnstiff:
       actmat = &(mat[ele->mat-1]);
-/*       so3_stiff(ele, &(so3_data), actmat, estif_global, NULL, NULL); */
+      so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
+      so3_int_fintstiffmass(container, ele, &(so3_gpshade), actmat, 
+                            NULL, estif_global, NULL);
       break;
-/* nonlinear stiffness and mass matrix ----------------------------------*/
+    /*------------------------------------------------------------------*/
+    /* linear stiffness and consistent mass matrix */
+    case calc_struct_linstiffmass:
+      actmat = &(mat[ele->mat-1]);
+      so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
+      so3_int_fintstiffmass(container, ele, &(so3_gpshade), actmat, 
+                            intforce, estif_global, emass_global);
+      break;
+    /*------------------------------------------------------------------*/
+    /* calculate linear stiffness and lumped mass matrix */
+    case calc_struct_linstifflmass:
+      dserror("Lumped mass matrix is not implemented");
+      actmat = &(mat[ele->mat-1]);
+      so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
+      so3_int_fintstiffmass(container, ele, &(so3_gpshade), actmat, 
+                            intforce, estif_global, emass_global);
+      break;
+    /*------------------------------------------------------------------*/
+    /* internal forces, nonlinear stiffness and mass matrix */
     case calc_struct_nlnstiffmass:
       actmat = &(mat[ele->mat-1]);
       so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
-      so3_int_fintstiffmass(ele, &(so3_gpshade), actmat, 
-                            estif_global, NULL, NULL);
+      so3_int_fintstiffmass(container, ele, &(so3_gpshade), actmat, 
+                            intforce, estif_global, emass_global);
       break;
-/* load vector of element loads -----------------------------------------*/
+    /*------------------------------------------------------------------*/
+    /* load vector of element loads */
     case calc_struct_eleload:
       imyrank = actintra->intra_rank;
       actmat = &(mat[ele->mat-1]);
-/*       so3_load(ele, &(so3_data), intforce, imyrank); */
+      so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
+      so3_load(ele, &(so3_data), &(so3_gpshade), imyrank, intforce);
       break;
-/* calculate stresses --------------------------------------------------*/
+    /*------------------------------------------------------------------*/
+    /* calculate stresses */
     case calc_struct_stress:
       imyrank = actintra->intra_rank;
       actmat = &(mat[ele->mat-1]);
-/*       so3_stress(ele, &(so3_data), actmat, 0); */
+      so3_stress(ele, &(so3_data), &(so3_gpshade), imyrank, actmat);
       break;
+    /*------------------------------------------------------------------*/
+    /* finalise */
+/*     case calc_struct_final: */
+/*       so3_stress_final(actpart); */
+/*       break; */
+    /*------------------------------------------------------------------*/
+    /* catch errors */
     default:
-      dserror("action unknown");
+      dserror("SOLID3: action unknown");
       break;
   }  /* end of switch (*action) */
 

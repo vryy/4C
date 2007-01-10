@@ -215,6 +215,11 @@ if grep '^[[:blank:]]*D_THERM3' "$definefile" 2>&1 > /dev/null ; then
     OBJECTS="$OBJECTS \$(OBJS_THERM3)"
 fi
 
+# SOLID3
+if grep '^[[:blank:]]*D_SOLID3' "$definefile" 2>&1 > /dev/null ; then
+    OBJECTS="$OBJECTS \$(OBJS_SOLID3)"
+fi
+
 # FSI
 if grep '^[[:blank:]]*D_FSI' "$definefile" 2>&1 > /dev/null ; then
     OBJECTS="$OBJECTS \$(OBJS_FSI)"

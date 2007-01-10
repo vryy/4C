@@ -30,12 +30,12 @@ Maintainer: Moritz Frenzel
 /*!
 \brief Select proper material law
 
-\param *ele       ELEMENT   (i)   pointer to current element
-\param *mat       MATERIAL  (i)   pointer to current material
-\param **bop      DOUBLE    (i)   B-operator
-\param ip         INT       (i)   current Gauss point index
-\param *stress    DOUBLE    (o)   stress
-\param **cmat     DOUBLE    (o)   constitutive matrix
+\param *ele       ELEMENT        (i)   pointer to current element
+\param *mat       MATERIAL       (i)   pointer to current material
+\param ip         INT            (i)   current Gauss point index
+\param *gds       SO3_GEODEFSTR  (i)   geom. & def. data at Gauss point
+\param stress[]   DOUBLE         (o)   linear(Biot)/2.Piola-Kirchhoff stress
+\param cmat[][]   DOUBLE         (o)   constitutive matrix
 \return void
 
 \author mf
@@ -43,25 +43,37 @@ Maintainer: Moritz Frenzel
 */
 void so3_mat_sel(ELEMENT *ele,
                  MATERIAL *mat,
-                 DOUBLE **bop,
                  INT ip,
-                 DOUBLE *stress,
-                 DOUBLE **cmat)
+                 SO3_GEODEFSTR *gds,
+                 DOUBLE stress[NUMSTR_SOLID3],
+                 DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3])
 {
-  INT imat,jmat,istrn,istss,inode;  /* counters */
-  DOUBLE E,nu,mfac,strainsum,stresssum;
+  INT imat, jmat, istrn, istss, inode;  /* counters */
+  DOUBLE Emod, nu, mfac, strainsum, stresssum;
   DOUBLE strain[NUMSTR_SOLID3];  /* strain vector */
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_enter("so3_mat_sel");
 #endif
 
-  /*--------------------------------------------------------------------*/
+  /*====================================================================*/
+  /* ===> central material routines
+   *
+   *      These materials are supposed to be connected to the 
+   *      existant (or new?) central material routines.
+   *      Right now, only the simple St.Venant-Kirchhoff material
+   *      is included to test the element.
+   *
+   * ===> central material routines
+   */
+
+  /*====================================================================*/
   /* the material law (it's a material world!) */
-  /* soon here we want to connect to global material library */
   switch (mat->mattyp)
   {
+    /*------------------------------------------------------------------*/
     case struct_stvenant:
+      /*----------------------------------------------------------------*/
       /* isotropic elasticity tensor C in matrix notion */
       /*                       [ 1-nu     nu     nu |          0    0    0 ]
        *                       [        1-nu     nu |          0    0    0 ]
@@ -71,46 +83,59 @@ void so3_mat_sel(ELEMENT *ele,
        *                       [                    |      (1-2*nu)/2    0 ]
        *                       [ symmetric          |           (1-2*nu)/2 ]
        */
-         /* !!! here we work hardwired for testing !!!*/
-      E = mat->youngs;  /* Young's modulus (modulus of elasticity */
+      Emod = mat->youngs;  /* Young's modulus (modulus of elasticity */
       nu = mat->possionratio;  /* Poisson's ratio */
-      mfac = E/((1.0+nu)*(1.0-2.0*nu));  /* factor */
+      mfac = Emod/((1.0+nu)*(1.0-2.0*nu));  /* factor */
       /* constitutive matrix */
-         /* set the whole thing to zero */
-         memset(cmat, 0, sizeof(cmat));
-         /* write non-zero components */
-	 cmat[0][0] = mfac*(1.0-nu);
-	 cmat[0][1] = mfac*nu;
-	 cmat[0][2] = mfac*nu;
-	 cmat[1][0] = mfac*nu;
-	 cmat[1][1] = mfac*(1.0-nu);
-	 cmat[1][2] = mfac*nu;
-	 cmat[2][0] = mfac*nu;
-	 cmat[2][1] = mfac*nu;
-	 cmat[2][2] = mfac*(1.0-nu);
-         /* ~~~ */
-	 cmat[3][3] = mfac*0.5*(1.0-2.0*nu);
-	 cmat[4][4] = mfac*0.5*(1.0-2.0*nu);
-	 cmat[5][5] = mfac*0.5*(1.0-2.0*nu);
-	 /* compute strains and stresses */
-	 for (istrn=0; istrn<NUMSTR_SOLID3; istrn++)
-	 {
-	   strainsum = 0.0;
-	   for (inode=0; inode<ele->numnp; inode++)
-	   {
-	     strainsum += bop[istrn][inode] * ele->node[inode]->sol.a.da[0][0];
-	   }
-	   strain[istrn] = strainsum;
-	 }
-	 for (istss=0; istss<NUMSTR_SOLID3; istss++)
-	 {
-	   stresssum = 0.0;
-	   for (istrn=0; istrn<NUMSTR_SOLID3; istrn++)
-	   {
-	     stresssum += cmat[istss][istrn] * strain[istrn];
-	   }
-	   stress[istress] = stresssum;
-	 }
+      /* set the whole thing to zero */
+      memset(cmat, 0, sizeof(cmat));
+      /* write non-zero components */
+      cmat[0][0] = mfac*(1.0-nu);
+      cmat[0][1] = mfac*nu;
+      cmat[0][2] = mfac*nu;
+      cmat[1][0] = mfac*nu;
+      cmat[1][1] = mfac*(1.0-nu);
+      cmat[1][2] = mfac*nu;
+      cmat[2][0] = mfac*nu;
+      cmat[2][1] = mfac*nu;
+      cmat[2][2] = mfac*(1.0-nu);
+      /* ~~~ */
+      cmat[3][3] = mfac*0.5*(1.0-2.0*nu);
+      cmat[4][4] = mfac*0.5*(1.0-2.0*nu);
+      cmat[5][5] = mfac*0.5*(1.0-2.0*nu);
+      /*----------------------------------------------------------------*/
+      /* set local strain vector */
+      if (ele->e.so3->kintype == so3_geo_lin)
+      {
+        /* linear (engineering) strain vector */
+        for (istrn=0; istrn<NUMSTR_SOLID3; istrn++)
+        {
+          strain[istrn] = gds->stnengv[istrn];
+        }
+      } 
+      else if (ele->e.so3->kintype == so3_total_lagr)
+      {
+        /* Green-Lagrange strain vector */
+        for (istrn=0; istrn<NUMSTR_SOLID3; istrn++)
+        {
+          strain[istrn] = gds->stnglv[istrn];
+        }
+      }
+      else
+      {
+        dserror("Cannot digest chosen type of spatial kinematic\n");
+      }
+      /*----------------------------------------------------------------*/
+      /* compute stress vector */
+      for (istss=0; istss<NUMSTR_SOLID3; istss++)
+      {
+        stresssum = 0.0;
+        for (istrn=0; istrn<NUMSTR_SOLID3; istrn++)
+        {
+          stresssum += cmat[istss][istrn] * strain[istrn];
+        }
+        stress[istress] = stresssum;
+      }
       break;
     default:
       dserror("Type of material law is not applicable");

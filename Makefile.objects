@@ -677,11 +677,11 @@ OBJS_TSI      = src/tsi_full/tsi_coupling.o \
 #               planar thermal
 OBJS_THERM2   = src/therm2/th2_bop.o \
                 src/therm2/th2_cfg.o \
-		src/therm2/th2_gid.o \
+                src/therm2/th2_gid.o \
                 src/therm2/th2_hflux.o \
                 src/therm2/th2_inp.o \
-		src/therm2/th2_intg.o \
-		src/therm2/th2_jaco.o \
+                src/therm2/th2_intg.o \
+                src/therm2/th2_jaco.o \
                 src/therm2/th2_lin.o \
                 src/therm2/th2_load.o \
                 src/therm2/th2_main.o \
@@ -689,7 +689,7 @@ OBJS_THERM2   = src/therm2/th2_bop.o \
                 src/therm2/th2_matlin.o \
                 src/therm2/th2_shape.o \
                 src/therm2/th2_temper.o  \
-		src/therm2/th2_out.o
+      	        src/therm2/th2_out.o
 #               spatial thermal
 OBJS_THERM3   = src/therm3/th3_bop.o \
                 src/therm3/th3_cfg.o \
@@ -706,6 +706,21 @@ OBJS_THERM3   = src/therm3/th3_bop.o \
                 src/therm3/th3_out.o \
                 src/therm3/th3_shape.o \
 		src/therm3/th3_temper.o
+#               spatial structural
+OBJS_SOLID3   = src/solid3/so3_bop.c \
+                src/solid3/so3_cfg.c \
+                src/solid3/so3_def.c \
+                src/solid3/so3_inp.c \
+                src/solid3/so3_int.c \
+                src/solid3/so3_intg.c \
+                src/solid3/so3_load.c \
+                src/solid3/so3_main.c \
+                src/solid3/so3_mat.c \
+                src/solid3/so3_metr.c \
+                src/solid3/so3_shape.c \
+                src/solid3/so3_strain.c \
+                src/solid3/so3_stress.c \
+                src/solid3/so3_tns3.c
 #               visual
 OBJS_VISUAL   = src/visual/visual_global.o \
                 src/visual/visual_readflaviares.o \

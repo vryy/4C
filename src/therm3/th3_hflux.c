@@ -160,8 +160,8 @@ void th3_hflux_final(PARTITION *actpart)
     {
       /* set current element */
       actele = tpart->pdis[j].element[i];
-      /* check wether THERM2 element */
-      if (actele->eltyp == el_therm2)
+      /* check wether THERM3 element */
+      if (actele->eltyp == el_therm3)
       {
         /* deallocate heat flux arrays at element */
         am4del(&(actele->e.th3->hflux_gp_xyz));
@@ -360,7 +360,7 @@ void th3_hflux_cal(CONTAINER *cont,
                       hflux);
     for (ihflx=0; ihflx<NUMHFLX_THERM3; ihflx++)
     {
-      ele->e.th3->hflux_nd_xyz.a.d3[place][ihflx][inode] = hflux[ihflx];
+      ele->e.th3->hflux_nd_xyz.a.d3[place][inode][ihflx] = hflux[ihflx];
     }
     /* absolute heat flux and its direction at element nodes */
     th3_hflux_modang(hflux, inode, ele->e.th3->hflux_nd_123.a.d3[place]);
@@ -496,7 +496,7 @@ These procedure does not provide more accurate heat fluxes as the direct
 computation, but maybe saves a bit of computing time.
 
 \param  *ele      ELEMENT     (i)   pointer to active element
-\param  *data     TH3_DATA    (i)   pointer to THERM2 data (GPs coords etc)
+\param  *data     TH3_DATA    (i)   pointer to THERM3 data (GPs coords etc)
 \param  ngauss    INT         (i)   total number of Gauss points
 \param  **hfluxgp DOUBLE      (i)   heat flux at Gauss points
 \param  *rst      DOUBLE      (i)   element node natural coordinates
@@ -610,7 +610,7 @@ void th3_hflux_extrpol(ELEMENT *ele,
              */
             for (ihflx=0; ihflx<NUMHFLX_THERM3; ihflx++)
             {
-              funinc[ihflx] = hfluxgp[ihflx][igauss];
+              funinc[ihflx] = hfluxgp[igauss][ihflx];
             }
             /* build tri-directional Lagrange polynomials at Gauss points */
             /* l_{igpr,igps,igpt}(r,s,t) = hflux_{igpr,igps,igpt}

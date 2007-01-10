@@ -29,10 +29,11 @@ Maintainer: Moritz Frenzel
 \brief Calculate material deformation gradient and displacement gradient
        at Gauss point
 
-\param   enod       INT     (i)  number of element nodes
-\param   **deriv    DOUBLE  (i)  natural derivatives of shape functions
-\param   **xji      DOUBLE  (i)  Inverse Jacobi matrix at (r,s,t)
-\param   *grdisv    DOUBLE  (o)  displacement gradient at (r,s,t)
+\param   enod         INT     (i)  number of element nodes
+\param   deriv[][]    DOUBLE  (i)  natural derivatives of shape functions
+\param   xji[][]      DOUBLE  (i)  Inverse Jacobi matrix at (r,s,t)
+\param   disgrdv[]    DOUBLE  (o)  displacement gradient at (r,s,t)
+\param   defgrd[][]   DOUBLE  (o)  deformation gradient tensor at (r,s,t)
 
 \return void
 
@@ -44,7 +45,7 @@ void so3_def_grad(INT enod,
                   DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3],
                   DOUBLE xji[NDIM_SOLID3][NDIM_SOLID3],
                   DOUBLE disgrdv[NUMDFGR_SOLID3],
-                  DOUBLE defgrd[NDIM_SOLID3][NDIM_SOLID3]
+                  DOUBLE defgrd[NDIM_SOLID3][NDIM_SOLID3])
 {
   /*--------------------------------------------------------------------*/
   INT inod;  /* current node */

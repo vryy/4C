@@ -1,14 +1,14 @@
 /*======================================================================*/
 /*!
 \file
-\brief Spatial integration of loads applied
-       to element domain (volume), sides and edges
+\brief Spatial integration of loads (ie body forces/traction) applied
+       to element domain (volume), sides (faces) and edges (lines)
 
 <pre>
-Maintainer: Moritz Frenzel
-            frenzel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/frenzel
-            089-289-15240
+Maintainer: Burkhard Bornemann
+            bornemann@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/bornemann
+            089-289-15237
 </pre>
 */
 #ifdef D_SOLID3
@@ -29,8 +29,8 @@ Maintainer: Moritz Frenzel
 
 global variable GENPROB genprob is defined in global_control.c
 
-\author mf
-\date 03/06
+\author bborn
+\date 01/07
 */
 extern GENPROB genprob;
 
@@ -38,30 +38,32 @@ extern GENPROB genprob;
 /*======================================================================*/
 /*!
 \brief Spatial integration of 
-       (i)    body load in element domain (volume)
-       (ii)   surface load (pressure) on element sides
-       (iii)  line load on element edges
+       (i)    body force in element domain (volume) [force/volume]
+       (ii)   traction on element sides (faces) [force/area]
+       (iii)  traction on element edges (lines) [force/length]
 
-All loads are integrated along their corresponding domain and fill
-the element load vector.
+The traction is integrated over the element domain (surface).
+The traction is integrated along the elements boundaries (edges/lines).
+The integration results in the external element load vector.
 
 The parameter space is defined by the triple (r,s,t)
-Hexahedra biunit cube  { (r,s,t) | -1<=r<=1, -1<=s<=1, -1<=t<=1 }
+Hexahedra triunit cube  { (r,s,t) | -1<=r<=1, -1<=s<=1, -1<=t<=1 }
 Tetrahedra  { (r,s,t) | -1<=r<=1, -1<=s<=1-r, -1<=t<=1-r-s }
 
 \param   *ele           ELEMENT     (i)  pointer to current element
 \param   *data          SO3_DATA    (i)  common element data
-\param    imyrank       INT         (i)  ???????
+\param 
+\param    imyrank       INT         (i)  ??????? parallel stuff
 \param   *loadvec       DOUBLE      (o)  global element load vector fext
 \return void
 
-\author mf
-\date 10/06
+\author bborn
+\date 09/06
 */
-void so3_eleload(const ELEMENT *ele,  /* actual element */
-                 const SO3_DATA *data,
-                 const INT imyrank,
-                 DOUBLE *loadvec) /* global element load vector fext */
+void so3_load(ELEMENT *ele,  /* actual element */
+              SO3_DATA *data,
+              INT imyrank,
+              DOUBLE *loadvec) /* global element load vector fext */
 {
 
   /* general variables */
@@ -69,6 +71,7 @@ void so3_eleload(const ELEMENT *ele,  /* actual element */
   INT nelenod;  /* number of element nodes */
   INT neledof;  /* element DOF */
   DIS_TYP distyp;  /* local copy of discretisation type */
+  DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3];  /* material coord. of element */
 
   /* volume load */
   GVOL *gvol;  /* local pointer to geometry volume of element */
@@ -87,6 +90,7 @@ void so3_eleload(const ELEMENT *ele,  /* actual element */
   GSURF *gsurf[MAXSID_SOLID3];
   DOUBLE sidredm[DIMSID_SOLID3][NDIM_SOLID3];  /* dimens. reduct. matrix */
   DOUBLE metr;
+  DOUBLE gpcidim;  /* dummy Gauss point coordinate */
 
   /* line load */
   INT foundglineneum;  /* flag for identifying loaded line */
@@ -96,13 +100,11 @@ void so3_eleload(const ELEMENT *ele,  /* actual element */
   DOUBLE linredv[NDIM_SOLID3];  /* dimension reduction vector */
 
   /* integration */
-  INT igp[NDIM_SOLID3];  /* Gauss point indices */
-  INT gpnum[NDIM_SOLID3];  /* Gauss point numbers */
+  INT jgp, igp[NDIM_SOLID3];  /* Gauss point indices */
+  INT ngp, gpnum[NDIM_SOLID3];  /* Gauss point numbers */
   INT gpintc[NDIM_SOLID3];  /* Gauss point integration cases */
   DOUBLE fac;  /* integration factors */
   DOUBLE gpc[NDIM_SOLID3];  /* r,s,t-coord current GP */
-  INT gpsubnum[NDIM_SOLID3];
-  INT gpsubintc[NDIM_SOLID3];
 
   /* result */
   DOUBLE eload[NUMDOF_SOLID3][MAXNOD_SOLID3];  /* element load */
@@ -110,7 +112,7 @@ void so3_eleload(const ELEMENT *ele,  /* actual element */
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
-  dstrc_enter("so3_eleload");
+  dstrc_enter("so3_load");
 #endif
 
   /*--------------------------------------------------------------------*/
@@ -122,19 +124,12 @@ void so3_eleload(const ELEMENT *ele,  /* actual element */
 
   /*--------------------------------------------------------------------*/
   /* initialize vectors */
-  memset(eload, 0, sizeof(eload));
-/*   for (idim=0; idim<NUMDOF_SOLID3; idim++)  /\* element load *\/ */
-/*   { */
-/*     for (inode=0; inode<nelenod; inode++) */
-/*     { */
-/*       eload[idim][inode] = 0.0; */
-/*     } */
-/*   } */
+  memset(eload, 0, sizeof(eload));  /* set eload to zero */
 
   /*====================================================================*/
   /* check if external load is applied */
   /*--------------------------------------------------------------------*/
-  /* check for presence of body loads in domain (volume) */
+  /* check for presence of heat sources in domain (volume) */
   if (gvol->neum == NULL)
   {
     foundgvolneum = 0;
@@ -143,11 +138,11 @@ void so3_eleload(const ELEMENT *ele,  /* actual element */
   {
     switch (ele->g.gvol->neum->neum_type)
     {
-      case pres_domain_load:
+      case neum_dead:
         foundgvolneum = 1;
         break;
       default:
-        dserror("load case not implemented");
+        dserror("load type not implemented");
         foundgvolneum = 0;
         break;
     }
@@ -155,9 +150,9 @@ void so3_eleload(const ELEMENT *ele,  /* actual element */
   /*--------------------------------------------------------------------*/
   /* number of geom. surfaces */
   ngsurf = gvol->ngsurf;
-  /* initialise flag for applied surface loads */
+  /* initialise flag for applied heat fluxes */
   foundgsurfneum = 0;
-  /* check if surface loads are applied */
+  /* check if heat fluxes are applied */
   for (igsurf=0; igsurf<ngsurf; igsurf++)
   {
     gsurf[igsurf] = gvol->gsurf[igsurf];
@@ -165,11 +160,11 @@ void so3_eleload(const ELEMENT *ele,  /* actual element */
     {
       switch (gsurf[igsurf]->neum->neum_type)
       {
-        case pres_domain_load:
+        case neum_dead:
           foundgsurfneum = 1;
           break;
         default:
-          dserror("Neumann BC type is not available!");
+          dserror("Neumann BC type is not available on side!");
           break;
       }
     }
@@ -177,9 +172,9 @@ void so3_eleload(const ELEMENT *ele,  /* actual element */
   /*--------------------------------------------------------------------*/
   /* number of geom. lines */
   ngline = gvol->ngline;
-  /* initialise flag for applied line loads */
+  /* initialise flag for applied heat fluxes */
   foundglineneum = 0;
-  /* check if line loads are applied */
+  /* check if heat fluxes are applied */
   for (igline=0; igline<ngline; igline++)
   {
     gline[igline] = gvol->gline[igline];
@@ -187,368 +182,399 @@ void so3_eleload(const ELEMENT *ele,  /* actual element */
     {
       switch (gline[igline]->neum->neum_type)
       {
-        case pres_domain_load:
+        case neum_dead:
           foundglineneum = 1;
           break;
         default:
-          dserror("Neumann BC type is not available!");
+          dserror("Neumann BC type is not available on edge!");
           break;
       }
     }
   }
+
+  
   /*--------------------------------------------------------------------*/
-  /* Gauss integraton data */
+  /* material coordinates of element nodes */
   if ( (foundgvolneum > 0) 
        || (foundgsurfneum > 0) 
        || (foundglineneum > 0) )
   {
-    switch (distyp)
+    for (inod=0; inod<nelenod; inod++)
     {
-      /* hexahedra elements */
-      case hex8: case hex20: case hex27:
-        for (idim=0; idim<NDIM_SOLID3; idim++)
-        {
-          gpnum[idim] = ele->e.so3->gpnum[idim];
-          gpintc[idim] = ele->e.so3->gpintc[idim];
-        }
-        break;
-      /* tetrahedra elements */
-      case tet4: case tet10:
-        gpnum[0] = 1;
-        gpnum[1] = 1;
-        /* gpnum[2] has to be set according to domain/side/edge */
-        gpintc[0] = 1;
-        gpintc[1] = 1;
-        /* gpintc[2] has to be set according to domain/side/edge */
-        break;
-      default:
-        dserror("ele->distyp unknown!");
-        break;
-    }  /* end of switch */
-  }  /* end of if */
+      actnode = ele->node[inod];
+      for (jdim=0; jdim<NDIM_SOLID3; jdim++)
+      {
+        ex[inod][jdim] = actnode->x[jdim];
+      }
+    }
+  }
+
 
   /*====================================================================*/
-  /* domain load ==> volume body load */
+  /* domain load ==> volume heat load, heat source */
   /*------------------------------------------------------------------- */
   /* integrate volume load */
   if ( (foundgvolneum > 0) && (imyrank == ele->proc) )
   {
     /*------------------------------------------------------------------*/
-    /* Gauss integraton data for tetrahedron domain */
-    if ( (distyp == tet4) || (distyp == tet10) )
-    {
-        gpnum[2] = ele->e.so3->gpnum[0];
-        gpintc[2] = ele->e.so3->gpintc[0];
-    }  /* end of if */
+    /* total number of Gauss points */
+    ngp = gpshade->gptot;
     /*------------------------------------------------------------------*/
-    /* integration loops */
-    for (igp[0]=0; igp[0]<gpnum[0]; igp[0]++)
+    /* integration loop */
+    for (jgp=0; jgp<ngp; jgp++)
     {
-      for (igp[1]=0; igp[1]<gpnum[1]; igp[1]++)
-      {
-        for (igp[2]=0; igp[2]<gpnum[2]; igp[2]++)
-        {
-          /*------------------------------------------------------------*/
-          /* initialise integration factor */
-          fac = 1.0;
-          /*------------------------------------------------------------*/
-          /* obtain current Gauss coordinates and weights */
-          switch (distyp)
-          {
-            /* hexahedra */
-            case hex8: case hex20: case hex27:
-              for (idim=0; idim<NDIM_SOLID3; idim++)
-              {
-                /* r,s,t-coordinate */
-                gpc[idim] = data->ghlc[gpintc[idim]][igp[idim]];
-                /* weight */
-                fac = fac * data->ghlw[gpintc[idim]][igp[idim]];
-              }
-              break;
-            /* tetrahedra */
-            case tet4: case tet10:
-              gpc[0] = data->gtdcr[gpintc[2]][igp[2]];  /* r-coordinate */
-              gpc[1] = data->gtdcs[gpintc[2]][igp[2]];  /* s-coordinate */
-              gpc[2] = data->gtdct[gpintc[2]][igp[2]];  /* t-coordinate */
-              fac = data->gtdw[gpintc[2]][igp[2]];  /* weight */
-              break;
-            default:
-              dserror("ele->distyp unknown!");
-          }  /* end of switch */
-          /*------------------------------------------------------------*/
-          /* shape functions */
-          so3_shape_deriv(ele->distyp, gpc[0], gpc[1], gpc[2], 0, 
-                          shape, deriv);
-          /*------------------------------------------------------------*/
-          /* compute Jacobian matrix, its determinant
-           * inverse Jacobian is not calculated */
-          so3_metr_jaco(ele, nelenod, deriv, 0, xjm, &det, xji);
-          /*------------------------------------------------------------*/
-          /* integration (quadrature) factor */
-          fac = fac * det;
-          /*------------------------------------------------------------*/
-          /* volume-load  ==> eload modified */
-          so3_load_vol(ele, nelenod, shape, fac, eload);
-        }  /* end of for */
-      }  /* end of for */
+      /* initialise intgration factor */
+      fac = gpshade->gpwg[jgp];  /* Gauss weight */
+      /* compute Jacobian matrix, its determinant
+       * inverse Jacobian is not calculated */
+      so3_metr_jaco(ele, nelenod, ex, gpshade->gpderiv[igp], 1, 
+                    xjm, &det, xji);
+      /* integration (quadrature) factor */
+      fac = fac * det;
+      /* volume-load  ==> eload modified */
+      so3_load_vol(ele, nelenod, shape, fac, eload);
     }  /* end of for */
     /*------------------------------------------------------------------*/
-    /* WHY, WHY, WHY ??????????????? */
     /* the volume load of this element has been done,
-     * -> switch off the volume load condition */
+     * -> switch off the volume load condition
+     * will be switched on again at beginning of next time step */
     gvol->neum = NULL;
-  } /* end of if ((foundsurface > 0) && (imyrank==ele->proc)) */
+  }
 
 
   /*====================================================================*/
-  /* side loads ==> surface loads */
+  /* side loads ==> surface heat load, heat fluxes */
   /*--------------------------------------------------------------------*/
   /* loop all element sides (surfaces) */
   if (foundgsurfneum > 0)
   {
     /*------------------------------------------------------------------*/
-    /* Gauss integraton data for tetrahedron sides */
-    if ( (distyp == tet4) || (distyp == tet10) )
+    /* distinguish hex and tet */
+    switch (distyp)
     {
-        gpnum[2] = ele->e.th3->gpnum[1];
-        gpintc[2] = ele->e.th3->gpintc[1];
-    }  /* end of if */
-    /*------------------------------------------------------------------*/
-    /* loop all element surfaces */
-    for (igsurf=0; igsurf<ngsurf; igsurf++)
-    {
-      /*----------------------------------------------------------------*/
-      /* get number of Gauss points for current surface
-       * these could change depending on the set Gauss point numbers
-       * in r-, s- and t-direction */
-      switch (distyp)
-      {
-        /* hexahedron elements */
-        case hex8: case hex20: case hex27:
-          for (idim=0; idim<NDIM_SOLID3; idim++)
-          {
-            /* set number of Gauss points for side integration */
-            if (data->dirsidh[igsurf][idim] == 1)
-            {
-              gpsubnum[idim] = gpnum[idim];
-              gpsubintc[idim] = gpintc[idim];
-            }
-            else
-            {
-              gpsubnum[idim] = 1;
-              gpsubintc[idim] = 1;
-            }
-          }
-          break;
-        /* tetrahedron elements */
-        case tet4: case tet10:
-          dserror("surface loads for tet.s are not available");
-          break;
-        /* catch dubious discretisation types */
-        default:
-          break;
-      }
-      /*----------------------------------------------------------------*/
-      /* integration loops 
-       * For each side one of the following loops is not repeated,
-       * but as all sides are generally integrated here. */
-      for (igp[0]=0; igp[0]<gpsubnum[0]; igp[0]++)
-      {
-        for (igp[1]=0; igp[1]<gpsubnum[1]; igp[1]++)
+      /*================================================================*/
+      /* hexahedron elements */
+      case hex8: case hex20: case hex27:
+        /*--------------------------------------------------------------*/
+        /* loop all element surfaces */
+        for (igsurf=0; igsurf<ngsurf; igsurf++)
         {
-          for (igp[2]=0; igp[2]<gpsubnum[2]; igp[2]++)
+          /*------------------------------------------------------------*/
+          /* check if current side is subjected to a load */
+          if (gsurf[igsurf]->neum != NULL)
           {
             /*----------------------------------------------------------*/
-            /* set anchor point in current side
-             * This is the intersection of side plane with its normal 
-             * parameter coordinate axis */
+            /* get dimension reduction matrix */
+            /* sidredm = &&(data->redsidh[igsurf][0][0]); */
+            for (idimsid=0; idimsid<DIMSID_SOLID3; idimsid++)
+            {
+              for (idim=0; idim<NDIM_SOLID3; idim++)
+              {
+                sidredm[idimsid][idim] 
+                  = data->redsidh[igsurf][idimsid][idim];
+              }
+            }
+            /*----------------------------------------------------------*/
+            /* get number of Gauss points in each direction */
+            idimsid = 0;  /* initialise dimension index */
             for (idim=0; idim<NDIM_SOLID3; idim++)
             {
-              gpc[idim] = data->ancsidh[igsurf][idim];
-            }
-            /* initialise integration factor */
-            fac = 1.0;
-            /* initialise dimension reduction matrix to zero */
-            memset(sidredm, 0, sizeof(sidredm));
-            /* obtain current Gauss coordinates and weights 
-             * and dimension reduction matrix */
-            switch (ele->distyp)
+              /* set number of Gauss points for side integration */
+              if ((INT) data->ancsidh[igsurf][idim] == 0)
+              {
+                gpnum[idimsid] = ele->e.so3->gpnum[idim];
+                gpintc[idimsid] = ele->e.so3->gpintc[idim];
+                idimsid++;
+              }
+            }  /* end for */
+            /*----------------------------------------------------------*/
+            /* integration loops */
+            for (igp[0]=0; igp[0]<gpnum[0]; igp[0]++)
             {
-              /* hexahedra */
-              case hex8: case hex20: case hex27:
-                /* initialise dimension reduction counter */
-                idimsid = 0;
-                /* loop potential basis vector directions */
+              for (igp[1]=0; igp[1]<gpnum[1]; igp[1]++)
+              {
+                /*------------------------------------------------------*/
+                /* obtain current Gauss coordinates */
                 for (idim=0; idim<NDIM_SOLID3; idim++)
                 {
-                  if (data->dirsidh[igsurf][idim] == 1)
+                  /* set anchor point in current side
+                   * This is the intersection of side plane with its
+                   * normal parameter coordinate axis */
+                  gpcidim = data->ancsidh[igsurf][idim];
+                  for (idimsid=0; idimsid<DIMSID_SOLID3; idimsid++)
                   {
                     /* add coordinate components */
-                    gpc[idim] = gpc[idim] 
-                              + data->ghlc[gpsubintc[idim]][igp[idim]];
-                    /* add weight */
-                    fac = fac * data->ghlw[gpsubintc[idim]][igp[idim]];
-                    /* dimension reduction matrix */
-                    sidredm[idimsid][idim] = 1.0;
-                    idimsid = idimsid + 1;
-                  }
+                    gpcidim = gpcidim 
+                      + sidredm[idimsid][idim] 
+                        * data->ghlc[gpintc[idimsid]][igp[idimsid]];
+                  }  /* end for */
+                  /* final set of idim-component */
+                  gpc[idim] = gpcidim;
+                }  /* end for */
+                /*------------------------------------------------------*/
+                /* Gauss weight */
+                fac = 1.0;  /* initialise integration factor */
+                for (idimsid=0; idimsid<DIMSID_SOLID3; idimsid++)
+                {
+                  /* multiply weight */
+                  fac = fac * data->ghlw[gpintc[idimsid]][igp[idimsid]];
                 }
-                break;
-              /* tetrahedra */
-              case tet4: case tet10:
-                dserror("tets are not available");
-                break;
-              default:
-                dserror("ele->distyp unknown!");
-            }  /* end of switch (ele->distyp) */
+                /*------------------------------------------------------*/
+                /* Shape functions at Gauss point */
+                so3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1, 
+                                shape, deriv);
+                /*------------------------------------------------------*/
+                /* Jacobi matrix and determinant */
+                so3_metr_surf(ele, nelenod, ex, deriv, sidredm, &metr);
+                /*------------------------------------------------------*/
+                /* integration factor */
+                fac = fac * metr;
+                /*------------------------------------------------------*/
+                /* add surface load contribution ==> eload modified */
+                so3_load_surf(ele, nelenod, gsurf[igsurf], shape, fac, 
+                              eload);
+              }  /* end for */
+            }  /* end for */
             /*----------------------------------------------------------*/
-            /* Shape functions at Gauss point */
-            so3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1, 
-                            shape, deriv);
+            /* the surface load of this element has been done,
+             * -> switch off the surface load condition */
+            gsurf[igsurf]->neum = NULL;
+          }  /* end if */
+        } /* end for */
+        break;  /* end cases */
+      /*================================================================*/
+      /* tetrahedron elements */
+      case tet4: case tet10:
+        /*--------------------------------------------------------------*/
+        /* get number of Gauss points for all sides */
+        gpnum[0] = ele->e.so3->gpnum[1];
+        gpintc[0] = ele->e.so3->gpintc[1];
+        /*--------------------------------------------------------------*/
+        /* loop all element surfaces */
+        for (igsurf=0; igsurf<ngsurf; igsurf++)
+        {
+          /*------------------------------------------------------------*/
+          /* check if current side is subjected to a load */
+          if (gsurf[igsurf]->neum != NULL)
+          {
             /*----------------------------------------------------------*/
-            /* Jacobi matrix and determinant */
-            so3_metr_surf(ele, nelenod, deriv, sidredm, &metr);
+            /* set dimension reduction matrix */
+            for (idimsid=0; idimsid<DIMSID_SOLID3; idimsid++)
+            {
+              for (idim=0; idim<NDIM_SOLID3; idim++)
+              {
+                sidredm[idimsid][idim] 
+                  = data->redsidt[igsurf][idimsid][idim];
+              }
+            }
             /*----------------------------------------------------------*/
-            /* integration factor */
-            fac = fac * metr;
-            /*----------------------------------------------------------*/
-            /* add surface load contribution ==> eload modified */
-            so3_load_surf(ele, nelenod, gsurf[igsurf], shape, fac, 
-                          eload);
-          }  /* end of for */
-        }  /* end of for */
-      }  /* end of for */
+            /* integration loop */
+            for (igp[0]=0; igp[0]<gpnum[0]; igp[0]++)
+            {
+              /*--------------------------------------------------------*/
+              /* create Gauss point (r,s,t) coordinate in side */
+              for (idim=0; idim<NDIM_SOLID3; idim++)
+              {
+                /* set anchor point in current side */
+                gpcidim = data->ancsidt[igsurf][idim];
+                /* add position sideways */
+                for (idimsid=0; idimsid<DIMSID_SOLID3; idimsid++)
+                {
+                  gpcidim = gpcidim
+                    + sidredm[idim][idimsid]
+                      * data->gtsc[gpintc[0]][igp[0]][idimsid];
+                }  /* end for */
+                /* final set of idim-component */
+                gpc[idim] = gpcidim;
+              }  /* end for */
+              /*--------------------------------------------------------*/
+              /* multiply weight */
+              fac = data->ghlw[gpintc[0]][igp[0]];
+              /*--------------------------------------------------------*/
+              /* Shape functions at Gauss point */
+              so3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1, 
+                              shape, deriv);
+              /*--------------------------------------------------------*/
+              /* Jacobi matrix and determinant */
+              so3_metr_surf(ele, nelenod, ex, deriv, sidredm, &metr);
+              /*--------------------------------------------------------*/
+              /* integration factor */
+              fac = fac * metr;
+              /*--------------------------------------------------------*/
+              /* add surface load contribution ==> eload modified */
+              so3_load_surf(ele, nelenod, gsurf[igsurf], shape, fac, 
+                            eload);
+            }  /* end for */
+          }  /* end for */
+          /*------------------------------------------------------------*/
+          /* the surface load of this element has been done,
+           * -> switch off the surface load condition */
+          gsurf[igsurf]->neum = NULL;
+        }  /* end if */
+        break;  /* end cases */
       /*----------------------------------------------------------------*/
-      /* WHY, WHY AND WHY ??? */
-      /* the surface load of this element has been done,
-       * -> switch off the surface load condition */
-      gsurf[igsurf]->neum = NULL;
-    }
-  }
-  
+      default:
+        dserror("ele->distyp unknown!");
+    }  /* end switch */
+  }  /* end if */
+
+
   /*====================================================================*/
-  /* edge loads ==> edge line load */
-  
+  /* edge loads ==> edge heat load, heat fluxes */
   /*--------------------------------------------------------------------*/
   /* loop all element sides (surfaces) */
   if (foundglineneum > 0)
   {
     /*------------------------------------------------------------------*/
-    /* Gauss integraton data for tetrahedron edges */
-    if ( (distyp == tet4) || (distyp == tet10) )
+    /* distinguish hex and tet */
+    switch (distyp)
     {
-        gpnum[2] = ele->e.so3->gpnum[2];
-        gpintc[2] = ele->e.so3->gpintc[2];
-    }  /* end of if */
-    /*------------------------------------------------------------------*/
-    /* loop all element lines */
-    for (igline=0; igline<ngline; igline++)
-    {
-      /*----------------------------------------------------------------*/
-      /* get number of Gauss points for current line
-       * these could change depending on the set Gauss point numbers
-       * in r-, s- and t-direction */
-      switch (distyp)
-      {
-        /* hexahedron elements */
-        case hex8: case hex20: case hex27:
-          for (idim=0; idim<NDIM_SOLID3; idim++)
-          {
-            /* set number of Gauss points for side integration */
-            if (data->dirsidh[igsurf][idim] == 1)
-            {
-              gpsubnum[idim] = gpnum[idim];
-              gpsubintc[idim] = gpintc[idim];
-            }
-            else
-            {
-              gpsubnum[idim] = 1;
-              gpsubintc[idim] = 1;
-            }
-          }
-          break;
-        /* tetrahedron elements */
-        case tet4: case tet10:
-          dserror("tets are not available");
-          break;
-        /* catch dubious discretisation types */
-        default:
-          break;
-      }
-      /*----------------------------------------------------------------*/
-      /* integration loops 
-       * For each side one of the following loops is not repeated,
-       * but as all sides are generally integrated here. */
-      for (igp[0]=0; igp[0]<gpsubnum[0]; igp[0]++)
-      {
-        for (igp[1]=0; igp[1]<gpsubnum[1]; igp[1]++)
+      /*================================================================*/
+      /* hexahedron elements */
+      case hex8: case hex20: case hex27:
+        /*--------------------------------------------------------------*/
+        /* loop all element lines */
+        for (igline=0; igline<ngline; igline++)
         {
-          for (igp[2]=0; igp[2]<gpsubnum[2]; igp[2]++)
+          /*------------------------------------------------------------*/
+          /* check if current line is subjected to a load */
+          if (gline[igline]->neum != NULL)
           {
             /*----------------------------------------------------------*/
-            /* set anchor point in current side
-             * This is the intersection of side plane with its normal 
-             * parameter coordinate axis */
+            /* get dimension reduction matrix */
             for (idim=0; idim<NDIM_SOLID3; idim++)
             {
-              gpc[idim] = data->ancedgh[igline][idim];
+              linredv[idim] = data->rededgh[igline][idim];
             }
-            /* initialise integration factor */
-            fac = 1.0;
-            /* initialise dimension reduction vector to zero */
-            memset(linredv, 0, sizeof(linredv));
-            /* obtain current Gauss coordinates and weights 
-             * and dimension reduction matrix */
-            switch (distyp)
+            /*----------------------------------------------------------*/
+            /* get number of Gauss points for current line
+             * these could change depending on the set Gauss point numbers
+             * in r-, s- and t-direction */
+            for (idim=0; idim<NDIM_SOLID3; idim++)
             {
-              /* hexahedra */
-              case hex8: case hex20: case hex27:
-                /* loop potential basis vector directions */
-                for (idim=0; idim<NDIM_SOLID3; idim++)
-                {
-                  if ( (data->dirsidh[igline][idim] == 1)
-                       || (data->dirsidh[igline][idim] == -1) )
-                  {
-                    /* add coordinate components */
-                    gpc[idim] = gpc[idim] 
-                              + data->ghlc[gpsubintc[idim]][igp[idim]];
-                    /* add weight */
-                    fac = fac * data->ghlw[gpsubintc[idim]][igp[idim]];
-                    /* dimension reduction vector */
-                    linredv[idim] = 1.0;
-                  }
-                }
-                break;
-              /* tetrahedra */
-              case tet4: case tet10:
-                dserror("tets are not available");
-                break;
-              default:
-                dserror("ele->distyp unknown!");
-            }  /* end of switch (ele->distyp) */
+              /* set number of Gauss points for side integration
+               * the anchor ancsidh is normal on the edge direction */
+              if ((INT) data->ancedgh[igline][idim] == 0)
+              {
+                gpnum[0] = ele->e.so3->gpnum[idim];
+                gpintc[0] = ele->e.so3->gpintc[idim];
+              }
+            }  /* end for */
             /*----------------------------------------------------------*/
-            /* Shape functions at Gauss point */
-            so3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1, 
-                            shape, deriv);
+            /* integration loops 
+             * For each side one of the following loops is not repeated,
+             * but as all sides are generally integrated here. */
+            for (igp[0]=0; igp[0]<gpnum[0]; igp[0]++)
+            {
+              /*--------------------------------------------------------*/
+              /* obtain current Gauss coordinates and weights */
+              for (idim=0; idim<NDIM_SOLID3; idim++)
+              {
+                /* set anchor point in current side
+                 * This is the intersection of edge with its normal 
+                 * parameter coordinate plane */
+                gpcidim = data->ancedgh[igline][idim];
+                /* add coordinate components */
+                gpcidim = gpcidim
+                  + linredv[idim] * data->ghlc[gpintc[0]][igp[0]];
+                /* final set of idim-component */
+                gpc[idim] = gpcidim;
+              }  /* end for */
+              /*--------------------------------------------------------*/
+              /* set weight */
+              fac = data->ghlw[gpintc[0]][igp[0]];
+              /*--------------------------------------------------------*/
+              /* Shape functions at Gauss point */
+              so3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1, 
+                              shape, deriv);
+              /*--------------------------------------------------------*/
+              /* Jacobi matrix and determinant */
+              so3_metr_line(ele, nelenod, ex, deriv, linredv, &metr);
+              /*--------------------------------------------------------*/
+              /* integration factor */
+              fac = fac * metr;
+              /*--------------------------------------------------------*/
+              /* add surface load contribution ==> eload modified */
+              so3_load_line(ele, nelenod, gline[igline], shape, fac, 
+                            eload);
+            }  /* end for */
             /*----------------------------------------------------------*/
-            /* Jacobi matrix and determinant */
-            so3_metr_line(ele, nelenod, deriv, linredv, &metr);
+            /* the line load of this element has been done,
+             * -> switch off the line load condition */
+            gline[igline]->neum = NULL;
+          }  /* end if */
+        }  /* end for */
+        break;  /* end of cases */
+      /*================================================================*/
+      /* tetrahedron elements */
+      case tet4: case tet10:
+        /*--------------------------------------------------------------*/
+        /* get number of Gauss points for all sides */
+        gpnum[0] = ele->e.so3->gpnum[2];
+        gpintc[0] = ele->e.so3->gpintc[2];
+        /*--------------------------------------------------------------*/
+        /* loop all element lines */
+        for (igline=0; igline<ngline; igline++)
+        {
+          /*------------------------------------------------------------*/
+          /* check if current line is subjected to a load */
+          if (gline[igline]->neum != NULL)
+          {
             /*----------------------------------------------------------*/
-            /* integration factor */
-            fac = fac * metr;
+            /* get dimension reduction matrix */
+            for (idim=0; idim<NDIM_SOLID3; idim++)
+            {
+              linredv[idim] = data->rededgt[igline][idim];
+            }
             /*----------------------------------------------------------*/
-            /* add surface load contribution ==> eload modified */
-            so3_load_line(ele, nelenod, gline[igline], shape, fac, eload);
-          }  /* end of for */
-        }  /* end of for */
-      }  /* end of for */
-      /*----------------------------------------------------------------*/
-      /* WHY, WHY AND WHY ??? */
-      /* the line load of this element has been done,
-       * -> switch off the line load condition */
-      gline[igline]->neum = NULL;
-    }
-  }
+            /* integration loops 
+             * For each side one of the following loops is not repeated,
+             * but as all sides are generally integrated here. */
+            for (igp[0]=0; igp[0]<gpnum[0]; igp[0]++)
+            {
+              /*--------------------------------------------------------*/
+              /* obtain current Gauss coordinates and weights */
+              for (idim=0; idim<NDIM_SOLID3; idim++)
+              {
+                /* set anchor point in current side
+                 * This is the intersection of edge with its normal 
+                 * parameter coordinate plane */
+                gpcidim = data->ancedgt[igline][idim];
+                /* add coordinate components */
+                gpcidim = gpcidim
+                  + linredv[idim] * data->gtlc[gpintc[0]][igp[0]];
+                /* final set of idim-component */
+                gpc[idim] = gpcidim;
+              }  /* end for */
+              /*--------------------------------------------------------*/
+              /* set weight */
+              fac = data->gtlw[gpintc[0]][igp[0]];
+              /*--------------------------------------------------------*/
+              /* shape functions at Gauss point */
+              so3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1, 
+                              shape, deriv);
+              /*--------------------------------------------------------*/
+              /* Jacobi matrix and determinant */
+              so3_metr_line(ele, nelenod, ex, deriv, linredv, &metr);
+              /*--------------------------------------------------------*/
+              /* integration factor */
+              fac = fac * metr;
+              /*--------------------------------------------------------*/
+              /* add surface load contribution ==> eload modified */
+              so3_load_line(ele, nelenod, gline[igline], shape, fac, 
+                            eload);
+            }  /* end for */
+            /*----------------------------------------------------------*/
+            /* the line load of this element has been done,
+             * -> switch off the line load condition */
+            gline[igline]->neum = NULL;
+          }  /* end if */
+        }  /* end for */
+        break;  /* end of cases */
+      default:
+        dserror("ele->distyp unknown!");
+    }  /* end switch */
+  }  /* end if */
 
   /*====================================================================*/
   /* add eload to global load vector */
@@ -560,7 +586,7 @@ void so3_eleload(const ELEMENT *ele,  /* actual element */
     {
       for (idof=0; idof<NUMDOF_SOLID3; idof++)
       {
-        loadvec[inode*NUMDOF_SOLID3+idof] += eload[idof][inode];
+        loadvec[inode*NUMDOF_SOLID3+idof] = eload[idof][inode];
       }
     }
   }
@@ -577,25 +603,25 @@ void so3_eleload(const ELEMENT *ele,  /* actual element */
 
 /*======================================================================*/
 /*!
-\brief Determine load due to body load on element domain (volume)
+\brief Determine load due to body force on element domain (volume)
 
-\param	 *ele      ELEMENT      (i)    actual element
+\param    ele      ELEMENT*     (i)    actual element
 \param    nelenod  INT          (i)    number of element nodes
-\param   *shape    DOUBLE       (i)    shape function at Gauss point
+\param    shape    DOUBLE[]     (i)    shape function at Gauss point
 \param    fac      DOUBLE       (i)    integration factor
-\param  **eload    DOUBLE       (io)   element load vector contribution
+\param    eload    DOUBLE[][]   (io)   element load vector contribution
 \return void
 
-\author mf
-\date 10/06
+\author bborn
+\date 01/07
 */
-void so3_load_vol(const ELEMENT *ele,
-                  const INT nelenod,
-                  const DOUBLE shape[MAXNOD_SOLID3],
-                  const DOUBLE fac,
+void so3_load_vol(ELEMENT *ele,
+                  INT nelenod,
+                  DOUBLE shape[MAXNOD_SOLID3],
+                  DOUBLE fac,
                   DOUBLE eload[NUMDOF_SOLID3][MAXNOD_SOLID3])
 {
-  DOUBLE bodyload[NUMDOF_SOLID3];
+  DOUBLE source[NUMDOF_SOLID3];  /* body force [force/vol] */
   INT idof, inode;  /* loopers (i = loaddirection x or y)(j=node) */
 
   /*--------------------------------------------------------------------*/
@@ -607,38 +633,26 @@ void so3_load_vol(const ELEMENT *ele,
   switch(ele->g.gvol->neum->neum_type)
   {
     /*------------------------------------------------------------------*/
-    /* uniform prescribed body load */
-    case pres_domain_load:
+    /* uniform (density-proportional) dead load */
+    case neum_dead:
       for (idof=0; idof<NUMDOF_SOLID3; idof++)
       {
-        bodyload[idof] = ele->g.gvol->neum->neum_val.a.dv[idof];
+        source[idof] = ele->g.gvol->neum->neum_val.a.dv[idof];
       }
       /* add load vector component to element load vector */
       for (inode=0; inode<nelenod; inode++)
       {
         for (idof=0; idof<NUMDOF_SOLID3; idof++)
         {
-          eload[idof][inode] += shape[inode] * bodyload[idof] * fac;
+          eload[idof][inode] += shape[inode] * source[idof] * fac;
         }
       }
-      break;
-    /*------------------------------------------------------------------*/
-    case neum_live:
-      dserror("load case unknown");
-      break;
-    /*------------------------------------------------------------------*/
-    case neum_consthydro_z:
-      dserror("load case unknown");
-      break;
-    /*------------------------------------------------------------------*/
-    case neum_increhydro_z:
-      dserror("load case unknown");
       break;
     /*------------------------------------------------------------------*/
     default:
       dserror("load case unknown");
       break;
-  }  /* end of switch(ele->g.gsurf->neum->neum_type) */
+  }
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -650,45 +664,46 @@ void so3_load_vol(const ELEMENT *ele,
 
 /*======================================================================*/
 /*!
-\brief Determine load due to surface loads on element sides
+\brief Determine load due to heat fluxes on element sides (surfaces)
 
-\param	 *ele      ELEMENT      (i)    actual element
+\param   *ele      ELEMENT      (i)    actual element
 \param    nelenod  INT          (i)    number of element nodes
 \param   *gsurf    GSURF        (i)    current geometry surface
-\param   *shape    DOUBLE       (i)    shape function at Gauss point
+\param    shape[]  DOUBLE       (i)    shape function at Gauss point
 \param    fac      DOUBLE       (i)    integration factor at Gauss point
-\param  **eload    DOUBLE       (io)   element load vector contribution
+\param    eload[][]DOUBLE       (io)   element load vector contribution
 \return void
 
-\author mf
-\date 10/06
+\author bborn
+\date 01/07
 */
-void so3_load_surf(const ELEMENT *ele,
-                   const INT nelenod,
-                   const GSURF *gsurf,
-                   const DOUBLE shape[MAXNOD_SOLID3],
-                   const DOUBLE fac,
+void so3_load_surf(ELEMENT *ele,
+                   INT nelenod,
+                   GSURF *gsurf,
+                   DOUBLE shape[MAXNOD_SOLID3],
+                   DOUBLE fac,
                    DOUBLE eload[NUMDOF_SOLID3][MAXNOD_SOLID3])
 {
   INT onoff[NUMDOF_SOLID3];
-  DOUBLE surfaceload[NUMDOF_SOLID3];
+  DOUBLE traction[NUMDOF_SOLID3];  /* elem. bound. traction [force/area] */
   INT idof, inode;  /* loopers */
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_enter("so3_load_surf");
 #endif
+
   /*--------------------------------------------------------------------*/
   /* distinguish load type */
   switch(gsurf->neum->neum_type)
   {
     /*------------------------------------------------------------------*/
-    /* uniform prescribed surface load */
-    case pres_domain_load:
+    /* uniform traction applied in undeformed configuration */
+    case neum_dead:
       for (idof=0; idof<NUMDOF_SOLID3; idof++)
       {
         onoff[idof] = gsurf->neum->neum_onoff.a.iv[idof];
-        surfaceload[idof] = gsurf->neum->neum_val.a.dv[idof];
+        traction[idof] = gsurf->neum->neum_val.a.dv[idof];
       }
       /* add load vector component to element load vector */
       for (inode=0; inode<nelenod; inode++)
@@ -698,78 +713,67 @@ void so3_load_surf(const ELEMENT *ele,
           /* if load is switched on : apply */
           if (onoff[idof] == 1)
           {
-            eload[idof][inode] += shape[inode] * surfaceload[idof] * fac;
+            eload[idof][inode] += shape[inode] * traction[idof] * fac;
           }
         }
       }
       break;
     /*------------------------------------------------------------------*/
-    case neum_live:
-      dserror("load case unknown");
-      break;
-    /*------------------------------------------------------------------*/
-    case neum_consthydro_z:
-      dserror("load case unknown");
-      break;
-    /*------------------------------------------------------------------*/
-    case neum_increhydro_z:
-      dserror("load case unknown");
-      break;
-    /*------------------------------------------------------------------*/
     default:
       dserror("load case unknown");
       break;
-  }  /* end of switch(ele->g.gsurf->neum->neum_type) */
+  }
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_exit();
 #endif
   return;
-} /* end of so3_load_surf(...) */
+} /* end of so3_load_vol(...) */
 
 
 /*======================================================================*/
 /*!
-\brief Determine load due to line loads on element edges
+\brief Determine load due to heat fluxes on element edges (lines)
 
-\param	 *ele      ELEMENT      (i)    actual element
+\param   *ele      ELEMENT      (i)    actual element
 \param    nelenod  INT          (i)    number of element nodes
 \param   *igline   GLINE        (i)    current geometry line
-\param   *shape    DOUBLE       (i)    shape function at Gauss point
+\param    shape[]  DOUBLE       (i)    shape function at Gauss point
 \param    fac      DOUBLE       (i)    integration factor
-\param  **eload    DOUBLE       (io)   element load vector contribution
+\param    eload[][]DOUBLE       (io)   element load vector contribution
 \return void
 
-\author mf
-\date 10/06
+\author bborn
+\date 01/07
 */
-void so3_load_line(const ELEMENT *ele,
-                   const INT nelenod,
-                   const GLINE *gline,
-                   const DOUBLE shape[MAXNOD_SOLID3],
-                   const DOUBLE fac,
+void so3_load_line(ELEMENT *ele,
+                   INT nelenod,
+                   GLINE *gline,
+                   DOUBLE shape[MAXNOD_SOLID3],
+                   DOUBLE fac,
                    DOUBLE eload[NUMDOF_SOLID3][MAXNOD_SOLID3])
 {
   INT onoff[NUMDOF_SOLID3];
-  DOUBLE lineload[NUMDOF_SOLID3];
+  DOUBLE traction[NUMDOF_SOLID3];  /* traction on edge [force/length] */
   INT idof, inode;  /* loopers */
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_enter("so3_load_line");
 #endif
+
   /*--------------------------------------------------------------------*/
   /* distinguish load type */
   switch(gline->neum->neum_type)
   {
     /*------------------------------------------------------------------*/
     /* uniform prescribed surface load */
-    case pres_domain_load:
+    case neum_dead:
       for (idof=0; idof<NUMDOF_SOLID3; idof++)
       {
         onoff[idof] = gline->neum->neum_onoff.a.iv[idof];
-        lineload[idof] = gline->neum->neum_val.a.dv[idof];
+        traction[idof] = gline->neum->neum_val.a.dv[idof];
       }
       /* add load vector component to element load vector */
       for (inode=0; inode<nelenod; inode++)
@@ -779,28 +783,16 @@ void so3_load_line(const ELEMENT *ele,
           /* if load is switched on : apply */
           if (onoff[idof] == 1)
           {
-            eload[idof][inode] += shape[inode] * lineload[idof] * fac;
+            eload[idof][inode] += shape[inode] * traction[idof] * fac;
           }
         }
       }
       break;
     /*------------------------------------------------------------------*/
-    case neum_live:
-      dserror("load case unknown");
-      break;
-    /*------------------------------------------------------------------*/
-    case neum_consthydro_z:
-      dserror("load case unknown");
-      break;
-    /*------------------------------------------------------------------*/
-    case neum_increhydro_z:
-      dserror("load case unknown");
-      break;
-    /*------------------------------------------------------------------*/
     default:
       dserror("load case unknown");
       break;
-  }  /* end of switch(ele->g.gsurf->neum->neum_type) */
+  }
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG

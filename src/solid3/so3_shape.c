@@ -36,21 +36,21 @@ Maintainer: Moritz Frenzel
 \param  option     INT       (i)    option
                                     ==0 : only shape functions
                                     ==1 : shape functions and derivatives
-\param  *shape     DOUBLE    (o)    shape function value at (r,s)
-\param  **deriv    DOUBLE    (o)    shape function derivative at (r,s)
+\param  shape[]    DOUBLE    (o)    shape function value at (r,s)
+\param  deriv[][]  DOUBLE    (o)    shape function derivative at (r,s)
 
 \return void
 
 \author mf
 \date 10/06
 */
-void so3_shape_deriv(DIS_TYP     typ,
-                     DOUBLE      r,
-                     DOUBLE      s,
-                     DOUBLE      t,
-                     INT         option,
-                     DOUBLE     *shape,
-                     DOUBLE    **deriv)
+void so3_shape_deriv(DIS_TYP typ,
+                     DOUBLE r,
+                     DOUBLE s,
+                     DOUBLE t,
+                     INT option,
+                     DOUBLE shape[MAXNOD_SOLID3],
+                     DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3])
 {
 /*----------------------------------------------------------------------*/
 /* a few parameters depending on coord of current point (r,s) */
@@ -344,7 +344,7 @@ void so3_shape_deriv(DIS_TYP     typ,
 \author bborn
 \date 12/06
 */
-void  so3_shape_gpshade_init(SO3_GPSHAPEDERIV* so3_gpshade)
+void so3_shape_gpshade_init(SO3_GPSHAPEDERIV* so3_gpshade)
 {
   INT idim;
 
@@ -482,6 +482,8 @@ void so3_shape_gpshade(ELEMENT *ele,
     /* initialise total domain GP index */
     igp = 0;
     /* walk along every Gauss point */
+    /* WARNING: Do not change this ordering unless you change it
+     *          also in so3_stress_extrpol() */
     for (igpr=0; igpr<gpnumr; igpr++)
     {
       for (igps=0; igps<gpnums; igps++)

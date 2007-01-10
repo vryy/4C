@@ -40,9 +40,9 @@ Maintainer: Moritz Frenzel
 \date 10/06
 */
 void so3_bop_lin(INT enod,
-                 DOUBLE **deriv,
+                 DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3],
                  DOUBLE xji[NUMDOF_SOLID3][NUMDOF_SOLID3],
-                 DOUBLE boplin[NUMSTR_SOLID3][MAXNOD_SOLID3*NUMDOF_SOLID3])
+                 DOUBLE boplin[NUMSTR_SOLID3][MAXDOF_SOLID3])
 {
   /*--------------------------------------------------------------------*/
   INT inod;  /* current node */
@@ -125,7 +125,7 @@ void so3_bop_lin(INT enod,
 */
 void so3_bop(ELEMENT *ele,
              INT enod,
-             DOUBLE **deriv,
+             DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3],
              DOUBLE xji[NUMDOF_SOLID3][NUMDOF_SOLID3],
              DOUBLE defgrd[NUMDOF_SOLID3][NUMDOF_SOLID3],
              DOUBLE bopn[MAXDOF_SOLID3][NUMDOF_SOLID3],

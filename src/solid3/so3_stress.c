@@ -197,13 +197,22 @@ void so3_stress_final(PARTITION *actpart)
 /*!
 \brief Evaluate element stresses 
 
+\param  cont      CONTAINER*         (i)    see container.h
+\param  ele       ELE*               (io)   current element
+\param  data      SO3_DATA*          (i)    common SOLID3 data
+\param  gpshade   SO3_GPSHAPEDERIV*  (i)    Gauss point coords
+                                            and shape functions
+\param  mat       MATERIAL*          (i)    
+\return void
+
 \author bborn
-\date 10/06
+\date 01/07
 */
-void so3_stress_cal(CONTAINER *cont,
-                    ELEMENT *ele,
-                    SO3_DATA *data,
-                    MATERIAL *mat)
+void so3_stress(CONTAINER *cont,
+                ELEMENT *ele,
+                SO3_DATA *data,
+                SO3_GPSHAPEDERIV *gpshade,
+                MATERIAL *mat)
 {
   const INT place = 0;
   INT nelenod;  /* number of element nodes */
@@ -226,147 +235,124 @@ void so3_stress_cal(CONTAINER *cont,
 
   DOUBLE det;  /* Jacobi determinants */
   DOUBLE rst[NDIM_SOLID3];  /* natural coordinate a point */
-  DOUBLE shape[MAXNOD_SOLID3];
-  DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3];
-  DOUBLE xjm[NDIM_SOLID3][NDIM_SOLID3];
-  DOUBLE xji[NDIM_SOLID3][NDIM_SOLID3];
-  DOUBLE bop[NUMTMGR_SOLID3][NUMDOF_SOLID3*MAXNOD_SOLID3];
-  DOUBLE cmat[NUMHFLX_SOLID3][NUMTMGR_SOLID3];
+  DOUBLE bop[NUMSTR_SOLID3][MAXDOF_SOLID3];
+  DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3];
+  DOUBLE stress[NUMSTR_SOLID3];
 
-  INT ihflx;  /* heat flux index */
   INT inode;  /* element nodal index */
 
   /*--------------------------------------------------------------------*/
   /* start */
   /* Working arrays (locally globals) MUST be initialised! */ 
 #ifdef DEBUG
-  dstrc_enter("so3_stress_cal");
+  dstrc_enter("so3_stress");
 #endif
 
   /*--------------------------------------------------------------------*/
   /* element properties */
+  distyp = ele->distyp;
   nelenod = ele->numnp;
   neledof = NUMDOF_SOLID3 * nelenod;
-  distyp = ele->distyp;
-
-  /*--------------------------------------------------------------------*/
-  /* number of Gauss points */
-  switch (distyp)
+  for (inod=0; inod<nelenod; inod++)
   {
-    /* hexahedra elements */
-    case hex8: case hex20: case hex27:
-      gpnumr = ele->e.so3->gpnum[0];
-      gpintcr = ele->e.so3->gpintc[0];
-      gpnums = ele->e.so3->gpnum[1];
-      gpintcs = ele->e.so3->gpintc[1];
-      gpnumt = ele->e.so3->gpnum[2];
-      gpintct = ele->e.so3->gpintc[2];
-      /* total number of Gauss points */
-      gpnum = gpnumr * gpnums * gpnumt;
-      break;
-    /* tetrahedra elements */
-    case tet4: case tet10:
-      gpnumr = 1;
-      gpnums = 1;
-      gpnumt = ele->e.so3->gpnum[0];
-      gpintcr = 1;
-      gpintcs = 1;
-      gpintct = ele->e.so3->gpintc[0];
-      /* total number of Gauss points */
-      gpnum = gpnumt;
-      break;
-    default:
-      dserror("distyp unknown!");
-  }  /* end switch */
+    actnode = ele->node[inod];
+    for (jdim=0; jdim<NDIM_SOLID3; jdim++)
+    {
+      ex[inod][jdim] = actnode->x[jdim];
+      /* THE FOLLOWING HARD-CODED `0' IS SHARED AMONG ALL STRUCTURE ELEMENTS
+       * AND SOLUTION TECHNIQUES (BOTH STATICS, DYNAMICS AND FSI).
+       * IT ACCESSES THE CURRENT NODAL DISPLACEMENTS STORED IN sol ARRAY.
+       * THIS HARD-CODED `0' SHOULD BE REPLACED BY A SOFT-CODED VERSION.
+       * NEW SOFT-CODED INDEX FOR OLD DISCRETISATION ==> array_position.h
+       * NEW SOFT-CODED INDEX FOR NEW DISCRETISATION ==> TO BE ANNOUNCED
+       * ==> IN FEM WE TRUST. */
+      edis[inod][jdim] = actnode->sol[0][jdim];
+    }
+  }
+  ngp = gpshade->gptot;  /* total number of Gauss points in domain */
+
 
   /*--------------------------------------------------------------------*/
   /* stress at every Gauss point */
-  /* init total Gauss point counter */
-  igp = 0;
   /* parse all Gauss points and evaluate stress */
-  for (igpr=0; igpr<gpnumr; igpr++)
+  for (igp=0; igp<ngp; igp++)
   {
-    for (igps=0; igps<gpnums; igps++)
+    /*------------------------------------------------------------------*/
+    /* Gauss point */
+    gpcr = gpshade->gpco[igp][0];  /* r-coordinate */
+    gpcs = gpshade->gpco[igp][1];  /* s-coordinate */
+    gpct = gpshade->gpco[igp][2];  /* t-coordinate */
+    fac = gpshade->gpwg[igp];  /* weight */
+    /*------------------------------------------------------------------*/
+    /* compute Jacobian matrix, its determinant and inverse */
+    so3_metr_jaco(ele, nelenod, ex, gpshade->gpderiv[igp], 1, 
+                  gds.xjm, &(gds.xjdet), gds.xji);
+    /*------------------------------------------------------------------*/
+    /* integration (quadrature) factor */
+    fac = fac * gds.det;
+    /*------------------------------------------------------------------*/
+    /* deformation tensor and displacement gradient */
+    so3_def_grad(enod, edis, gpshade->gpderiv[igp], gds.xji, 
+                 gds.disgrdv, gds.defgrd);
+    /*------------------------------------------------------------------*/
+    /* Linear/Green-Lagrange strain vector */
+    if (ele->e.so3->kintype == so3_geo_lin)
     {
-      for (igpt=0; igpt<gpnumt; igpt++)
-      {
-        /*--------------------------------------------------------------*/
-        /* obtain current Gauss coordinates and weights */
-        switch (distyp)
-        {
-          /* hexahedra */
-          case hex8: case hex20: case hex27:
-            gpcr = data->ghlc[gpintcr][igpr];  /* r-coordinate */
-            gpcs = data->ghlc[gpintcs][igps];  /* s-coordinate */
-            gpct = data->ghlc[gpintct][igpt];  /* t-coordinate */
-            fac = data->ghlw[gpintcr][igpr]  /* weight */
-                * data->ghlw[gpintcs][igps]
-                * data->ghlw[gpintct][igpt];
-            break;
-          /* tetrahedra */
-          case tet4: case tet10:
-            gpcr = data->gtdc[gpintct][igpt][0];  /* r-coordinate */
-            gpcs = data->gtdc[gpintct][igpt][1];  /* s-coordinate */
-            gpct = data->gtdc[gpintct][igpt][2];  /* t-coordinate */
-            fac = data->gtdw[gpintct][igpt];  /* weight */
-            break;
-          default:
-            dserror("distyp unknown!");
-        }  /* end of switch (distyp) */
-        /*--------------------------------------------------------------*/
-        /* shape functions and their derivatives */
-        so3_shape_deriv(distyp, gpcr, gpcs, gpct, 1, shape, deriv);
-        /*--------------------------------------------------------------*/
-        /* compute Jacobian matrix, its determinant and inverse */
-        so3_metr_jaco(ele, nelenod, deriv, 1, xjm, &det, xji);
-        /*--------------------------------------------------------------*/
-        /* factor */
-        fac = det;
-        /*--------------------------------------------------------------*/
-        /* calculate B-operator */
-        so3_bop(nelenod, deriv, xji, bop);
-        /*--------------------------------------------------------------*/
-        /* call material law */
-        so3_mat_sel(cont, ele, mat, bop, igp, stress, cmat);
-        /*--------------------------------------------------------------*/
-        /* store heat flux of current Gauss point */
-        for (ihflx=0; ihflx<NUMHFLX_SOLID3; ihflx++)
-        {
-          ele->e.so3->stress_gp_xyz.a.d3[place][igp][ihflx] = stress[ihflx];
-        }
-        /*--------------------------------------------------------------*/
-        /* store heat flux in parameter space co-ordinates (r,s,t) */
-        so3_stress_rst(xjm, stress, igp, ele->e.so3->stress_gp_rst.a.d3[place]);
-        /*--------------------------------------------------------------*/
-        /* store modulus and angles at current Gauss point */
-        so3_stress_modang(stress, igp, ele->e.so3->stress_gp_123.a.d3[place]);
-        /*--------------------------------------------------------------*/
-        /* increment total Gauss point counter */
-        igp++;
-      }  /* end of for */
-    }  /* end of for */
-  }  /* end of for */
+      so3_strain_lin(ele, gds.disgrdv, gds.stnengv);
+    }
+    else if (ele->e.so3->kintype == so3_total_lagr)
+    {
+      so3_strain_gl(ele, gds.disgrdv, gds.stnglv);
+    }
+    else
+    {
+      dserror("Cannot digest chosen type of spatial kinematic\n");
+    }
+    /*------------------------------------------------------------------*/
+    /* calculate B-operator */
+    so3_bop(nelenod, gpshade->gpderiv[igp], gds.xji, bopl, bop);
+    /*------------------------------------------------------------------*/
+    /* call material law ==> 2nd PK-stresses and constitutive matrix */
+    so3_mat_sel(ele, mat, igp, &gds, stress, cmat);
+    /*------------------------------------------------------------------*/
+    /* store stress of current Gauss point */
+    for (istr=0; istr<NUMSTR_SOLID3; istr++)
+    {
+      ele->e.so3->stress_gpxyz.a.d3[place][igp][istr] = stress[istr];
+    }
+    /*------------------------------------------------------------------*/
+    /* construct rotational component of inverse FE-Jacobian */
+    so3_metr_rot(gds.xjm, gds.xrm, gds.xrvm, gds.xrvi);
+    /*------------------------------------------------------------------*/
+    /* store heat flux in parameter space co-ordinates (r,s,t) */
+    so3_stress_rst(gds.xrvi, stress, 
+                   ele->e.so3->stress_gprst.a.d3[place][igp]);
+    /*------------------------------------------------------------------*/
+    /* store principle and direction angles at current Gauss point */
+    so3_stress_123(stress, ele->e.so3->stress_gp123.a.d3[place][igp]);
+    /*------------------------------------------------------------------*/
+    /* increment total Gauss point counter */
+  }  /* end for */
 
   /*--------------------------------------------------------------------*/
-  /* Heat fluxes at Gauss points are extrapolated to element nodes. */
+  /* Stresses at Gauss points are extrapolated to element nodes. */
   /* loop all element nodes */
   for (inode=0; inode<nelenod; inode++)
   {
     /*------------------------------------------------------------------*/
-    /* get local coordinates of node ==> rs */
+    /* get local coordinates of node ==> rst */
     so3_cfg_noderst(ele, data, inode, rst);
     /*------------------------------------------------------------------*/
     /* extrapolate values now */
-    /* heat flux in x-direction : q_1 */
     so3_stress_extrpol(ele, data, gpnum, 
-                      ele->e.so3->stress_gp_xyz.a.d3[place], rst,
-                      stress);
-    for (ihflx=0; ihflx<NUMHFLX_SOLID3; ihflx++)
+                       ele->e.so3->stress_gpxyz.a.d3[place], rst,
+                       stress);
+    for (istr=0; istr<NUMSTR_SOLID3; istr++)
     {
-      ele->e.so3->stress_nd_xyz.a.d3[place][ihflx][inode] = stress[ihflx];
+      ele->e.so3->stress_ndxyz.a.d3[place][inode][istr] = stress[istr];
     }
-    /* absolute heat flux and its direction at element nodes */
-    so3_stress_modang(stress, inode, ele->e.so3->stress_nd_123.a.d3[place]);
+    /* store principle and direction angles at current Gauss point */
+    so3_stress_123(stress, ele->e.so3->stress_nd123.a.d3[place][inode]);
   }  /* end for */
 
   /*--------------------------------------------------------------------*/
@@ -379,24 +365,24 @@ void so3_stress_cal(CONTAINER *cont,
 
 /*======================================================================*/
 /*!
-\brief Convert heat flux with respect to (X,Y,Z) to (r,s,t)
+\brief Redirect stress vector with respect to (X,Y,Z) to (r,s,t)
 
-\param **xjm         DOUBLE   (i)   Jacobi matrix at GP
-\param  *stress       DOUBLE   (i)   heat flux (at GP)
-\param   igp         INT      (i)   index of current Gauss point
-\param **stress123    DOUBLE   (o)   modulus and angles at GP
+\param   xrvi        DOUBLE[][]  (i)   spec. rotation matrix (rst)->(XYZ)
+                                       for symmtric 2-tensors stored
+                                       vectorially
+\param   stress      DOUBLE[]    (i)   stress (at GP)
+\param   stressrst   DOUBLE**    (o)   modulus and angles at GP
 \return void
 
 \author bborn
-\date 10/06
+\date 01/07
 */
-void so3_stress_rst(DOUBLE xjm[NDIM_SOLID3][NDIM_SOLID3],
-                   DOUBLE *stress,
-                   INT igp,
-                   DOUBLE **stressrst)
+void so3_stress_rst(DOUBLE xrvi[NUMSTR_SOLID3][NUMSTR_SOLID3],
+                    DOUBLE stress[NUMSTR_SOLID3],
+                    DOUBLE *stressrst)
 {
-  INT idim, jdim;
-  DOUBLE hfluc;
+  INT istr, jstr;  /* indices */
+  DOUBLE sc;  /* intermediate stress component */
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -404,23 +390,15 @@ void so3_stress_rst(DOUBLE xjm[NDIM_SOLID3][NDIM_SOLID3],
 #endif
 
   /*--------------------------------------------------------------------*/
-  dsassert(NDIM_SOLID3 == NUMSTR_SOLID3,
-           "Warning dimension of heat flux vector differs to problem "
-           "dimension\n");
-
-  /*--------------------------------------------------------------------*/
-  /* get locally defined heat flux */
-  for (idim=0; idim<NDIM_SOLID3; idim++)
+  /* get locally oriented stress vector */
+  for (jstr=0; jstr<NUMSTR_SOLID3; jstr++)
   {
-    hfluc = 0.0;
-    for (jdim=0; jdim<NDIM_SOLID3; jdim++)
+    sc = 0.0;
+    for (istr=0; istr<NUMSTR_SOLID3; istr++)
     {
-      /* we have to use the 'transposed Jacobian' here,
-       * referred to the isoparametric Jacobian notation
-       * commonly used, cf. so3_metr.c */
-      hfluc = hfluc + xjm[jdim][idim] * stress[jdim];
+      sc += xrvi[jstr][istr] * stress[istr];
     }
-    stressrst[igp][idim] = hfluc;
+    stressrst[jstr] = sc;
   }
 
   /*--------------------------------------------------------------------*/
@@ -432,58 +410,44 @@ void so3_stress_rst(DOUBLE xjm[NDIM_SOLID3][NDIM_SOLID3],
 
 /*======================================================================*/
 /*!
-\brief Modulus of heat flux and its direction measured in angles with
-       respect to the global X,Y,Z-axes
+\brief Principial stresses and principial directions at current
+       Gauss point
 
-\param  *stress       DOUBLE   (i)   heat flux (at GP)
-\param   igp         INT      (i)   index of current Gauss point
-\param **stress123    DOUBLE   (o)   modulus and angles at GP
+\param  *stress       DOUBLE   (i)   stress vector
+\param  *stress123    DOUBLE   (o)   principial stresses
 \return void
 
 \author bborn
-\date 10/06
+\date 01/07
 */
-void so3_stress_modang(DOUBLE *stress,
-                      INT igp,
-                      DOUBLE **stress123)
+void so3_stress_123(DOUBLE stress[NUMSTR_SOLID3],
+                    DOUBLE *stress123)
 
 {
-  INT ihf;  /* count heat flux components */
-  DOUBLE stressmod;  /* heat flux modulus */
+  DOUBLE stresst[NDIM_SOLID3][NDIM_SOLID3];  /* stress tensor */
+  DOUBLE ew[NDIM_SOLID3];  /* principial stresses */
 
-  /*--------------------------------------------------------------------*/
 #ifdef DEBUG
-  dstrc_enter("so3_stress_modang");
+  dstrc_enter("so3_stress_123");
 #endif
 
-  /*--------------------------------------------------------------------*/
-  /* absolute value of heat flux (modulus) */
-  stressmod = 0.0;
-  for (ihf=0; ihf<NUMHFLX_SOLID3; ihf++)
-  {
-    stressmod += stress[ihf]*stress[ihf];
-  }
-  stressmod = sqrt(stressmod);
-  stress123[igp][NUMHFLX_SOLID3] = stressmod;  /* store in ELEMENT array */
+  /* stress tensor */
+  so3_tns3_v2tsym(stress, stresst);
 
-  /*--------------------------------------------------------------------*/
-  /* direction of heat flux with respect to X,Y,Z-axes */
-  if (stressmod != 0.0)
+  /* principial stresses */
+  so3_tns3_spcdcmp(stresst, &err, ew);
+
+  /* write principial stresses -- if found */
+  if (err == 0)
   {
-    for (ihf=0; ihf<NUMHFLX_SOLID3; ihf++)
-    {
-      stress123[igp][ihf] = acos(stress[ihf]/stressmod);
-    }
-  }
-  else
-  {
-    for (ihf=0; ihf<NUMHFLX_SOLID3; ihf++)
-    {
-      stress123[igp][ihf] = 0.0;
-    }
+    stress123[0] = ew[0];
+    stress123[1] = ew[0];
+    stress123[2] = ew[0];
+    stress123[3] = 0.0;
+    stress123[4] = 0.0;
+    stress123[5] = 0.0;
   }
 
-  /*--------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_exit();
 #endif
@@ -498,23 +462,23 @@ void so3_stress_modang(DOUBLE *stress,
 These procedure does not provide more accurate heat fluxes as the direct
 computation, but maybe saves a bit of computing time.
 
-\param  *ele      ELEMENT     (i)   pointer to active element
-\param  *data     SO3_DATA    (i)   pointer to THERM2 data (GPs coords etc)
-\param  ngauss    INT         (i)   total number of Gauss points
+\param  *ele       ELEMENT     (i)   pointer to active element
+\param  *data      SO3_DATA    (i)   pointer to THERM2 data (GPs coords etc)
+\param  ngauss     INT         (i)   total number of Gauss points
 \param  **stressgp DOUBLE      (i)   heat flux at Gauss points
-\param  *rst      DOUBLE      (i)   element node natural coordinates
-\param  *stressnd  DOUBLE      (o)   extrapolated heat flux at node
+\param  rst[]      DOUBLE      (i)   element node natural coordinates
+\param  stressnd[] DOUBLE      (o)   extrapolated heat flux at node
 \return void
 
 \author bborn
 \date 03/06
 */
 void so3_stress_extrpol(ELEMENT *ele,
-                       SO3_DATA *data,
-                       INT ngauss,
-                       DOUBLE **stressgp,
-                       DOUBLE *rst,
-                       DOUBLE *stressnd)
+                        SO3_DATA *data,
+                        INT ngauss,
+                        DOUBLE **stressgp,
+                        DOUBLE rst[NDIM_SOLID3],
+                        DOUBLE stressnd[NUMSTR_SOLID3])
 {
   INT gpnumr = 0;  /* Gauss points in r-direction */
   INT gpnums = 0;  /* Gauss points in s-direction */
@@ -527,11 +491,11 @@ void so3_stress_extrpol(ELEMENT *ele,
   INT igauss;  /* total Gauss point counter */
   DOUBLE gpcr, gpcs, gpct;  /* GP (r,s,t) co-ordinate */
 
-  INT ihflx;  /* heat flux index */
+  INT istr;  /* stress index */
 
   INT i, j, k;  /* loop counter */
   DOUBLE gri, gsj, gtk;  /* Lagrange stages */
-  DOUBLE funinc[NUMHFLX_SOLID3];  /* increment due to contribution of cur. GP */
+  DOUBLE funinc[NUMSTR_SOLID3];  /* increment due to contribution of cur. GP */
 
   /*--------------------------------------------------------------------*/
   /* start up */
@@ -574,9 +538,9 @@ void so3_stress_extrpol(ELEMENT *ele,
 
   /*--------------------------------------------------------------------*/
   /* initialise nodal heat flux vector */
-  for (ihflx=0; ihflx<NUMHFLX_SOLID3; ihflx++)
+  for (istr=0; istr<NUMSTR_SOLID3; istr++)
   {
-    stressnd[ihflx] = 0.0;
+    stressnd[istr] = 0.0;
   }
 
   /*--------------------------------------------------------------------*/
@@ -611,9 +575,9 @@ void so3_stress_extrpol(ELEMENT *ele,
              *            th2_stress_cal, as the heat fluxes are stored
              *            in a vector
              */
-            for (ihflx=0; ihflx<NUMHFLX_SOLID3; ihflx++)
+            for (istr=0; istr<NUMSTR_SOLID3; istr++)
             {
-              funinc[ihflx] = stressgp[ihflx][igauss];
+              funinc[istr] = stressgp[igauss][istr];
             }
             /* build tri-directional Lagrange polynomials at Gauss points */
             /* l_{igpr,igps,igpt}(r,s,t) = stress_{igpr,igps,igpt}
@@ -634,10 +598,9 @@ void so3_stress_extrpol(ELEMENT *ele,
               if (i != igpr)
               {
                 gri = data->ghlc[gpintcr][i];
-                for (ihflx=0; ihflx<NUMHFLX_SOLID3; ihflx++)
+                for (istr=0; istr<NUMSTR_SOLID3; istr++)
                 {
-                  funinc[ihflx] = funinc[ihflx] 
-                    * (rst[0] - gri)/(gpcr - gri);
+                  funinc[istr] *= (rst[0] - gri)/(gpcr - gri);
                 }  /* end for */
               }  /* end if */
             }  /* end for */
@@ -647,10 +610,9 @@ void so3_stress_extrpol(ELEMENT *ele,
               if (j != igps)
               {
                 gsj = data->ghlc[gpintcs][j];
-                for (ihflx=0; ihflx<NUMHFLX_SOLID3; ihflx++)
+                for (istr=0; istr<NUMSTR_SOLID3; istr++)
                 {
-                  funinc[ihflx] = funinc[ihflx] 
-                    * (rst[1] - gsj)/(gpcs - gsj);
+                  funinc[istr] *= (rst[1] - gsj)/(gpcs - gsj);
                 }  /* end for */
               }  /* end if */
             }  /* end for */
@@ -660,17 +622,16 @@ void so3_stress_extrpol(ELEMENT *ele,
               if (k != igpt)
               {
                 gtk = data->ghlc[gpintct][k];
-                for (ihflx=0; ihflx<NUMHFLX_SOLID3; ihflx++)
+                for (istr=0; istr<NUMSTR_SOLID3; istr++)
                 {
-                  funinc[ihflx] = funinc[ihflx] 
-                    * (rst[2] - gtk)/(gpct - gtk);
+                  funinc[istr] *= (rst[2] - gtk)/(gpct - gtk);
                 }  /* end for */
               }  /* end if */
             }  /* end for */
             /* add increment of current Gauss point */
-            for (ihflx=0; ihflx<NUMHFLX_SOLID3; ihflx++)
+            for (istr=0; istr<NUMSTR_SOLID3; istr++)
             {
-              stressnd[ihflx] = stressnd[ihflx] + funinc[ihflx];
+              stressnd[istr] += funinc[istr];
             }
             /* increment total Gauss point counter */
             igauss++;
