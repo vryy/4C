@@ -44,6 +44,51 @@ void f3pro_calint(
   INT              *dirich_onoff
   );
 
+void f3pro_int_res(
+  ELEMENT         *ele,
+  INT             *hasext,
+  DOUBLE          *force,
+  DOUBLE         **xyze,
+  DOUBLE          *funct,
+  DOUBLE         **deriv,
+  DOUBLE         **deriv2,
+  DOUBLE          *pfunct,
+  DOUBLE         **pderiv,
+  DOUBLE         **xjm,
+  DOUBLE         **derxy,
+  DOUBLE         **derxy2,
+  DOUBLE         **pderxy,
+  DOUBLE         **evelng,
+  DOUBLE         **evhist,
+  DOUBLE         **egridv,
+  DOUBLE          *epren,
+  DOUBLE          *edeadng,
+  DOUBLE         **vderxy,
+  DOUBLE         **vderxy2,
+  DOUBLE           visc,
+  DOUBLE         **wa1,
+  DOUBLE         **wa2
+  );
+
+void f3pro_calresvec(  DOUBLE  *eforce,
+                       DOUBLE  *velint,
+                       DOUBLE   histvec[3],
+                       DOUBLE   gridvint[3],
+                       DOUBLE **vderxy,
+                       DOUBLE **vderxy2,
+                       DOUBLE  *funct,
+                       DOUBLE **derxy,
+                       DOUBLE **derxy2,
+                       DOUBLE  *edeadng,
+                       DOUBLE   press,
+                       DOUBLE   gradp[3],
+                       DOUBLE   fac,
+                       DOUBLE   visc,
+                       INT      iel,
+                       INT     *hasext,
+                       INT      is_ale
+  );
+
 /************************************************************************
  | f3pro_calele.c                                                       |
 ************************************************************************/
@@ -67,6 +112,14 @@ void f3pro_calele(
   ARRAY          *eforce_global,
   ARRAY          *edforce_global,
   ARRAY          *gforce_global,
+  ARRAY_POSITION *ipos,
+  INT            *hasdirich,
+  INT            *hasext
+  );
+
+void f3pro_caleleres(
+  ELEMENT        *ele,
+  ARRAY          *eforce_global,
   ARRAY_POSITION *ipos,
   INT            *hasdirich,
   INT            *hasext

@@ -11,6 +11,7 @@ Maintainer: Ulrich Küttler
 
 ------------------------------------------------------------------------*/
 #include "fluid3_is.h"
+#include "../fluid3/fluid3_prototypes.h"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -76,12 +77,6 @@ void fluid3_is(PARTITION   *actpart,
   static INT              viscstr;
   static FLUID_DYNAMIC   *fdyn;
   ARRAY_POSITION* ipos;
-
-  INT       i;        /* simply a counter */
-  INT       ldflag;
-  GVOL     *actgvol;
-  GSURF    *actgsurf;
-  DSURF    *actdsurf;
 
 #ifdef DEBUG
   dstrc_enter("fluid3is");

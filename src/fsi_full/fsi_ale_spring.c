@@ -320,9 +320,11 @@ void fsi_ale_spring_setup(
   }
 
 /*------------------------------------------- print out results to .out */
+#if 0
 #ifdef PARALLEL
   if (ioflags.ale_disp==1 && par.myrank==0)
     out_gid_domains(actfield,disnum_io);
+#endif
 #endif
 
   if (fsidyn->ifsi == fsi_iter_stagg_steep_desc) /* if we do steepest descent method! */

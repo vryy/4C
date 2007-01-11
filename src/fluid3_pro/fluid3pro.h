@@ -41,6 +41,9 @@ typedef struct _FLUID3_PRO
   INT*    dof;                  /* global dof numbers */
   INT*    ldof;                 /* processor local dof numbers */
 
+  /*----- flag, if there is a lif&drag or fsi coupling line to this element */
+  INT                force_on;
+  
   ELEMENT* other;
 #ifdef QUASI_NEWTON
   struct _ARRAY  estif;

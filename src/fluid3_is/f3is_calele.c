@@ -356,4 +356,90 @@ end:
   return;
 }
 
+
+/*!---------------------------------------------------------------------
+\brief control routine for integration of element residual
+
+<pre>                                                        chfoe 11/04
+
+This routine controls the integration of the elemental residual which is
+required to compute consistent nodal forces. These are also used to be
+FSI coupling forces
+
+</pre>
+
+\param  *ele	         ELEMENT	(i)   actual element
+\param  *eforce_global   ARRAY	        (o)   ele iteration force
+\param  *ipos                           (i)   node array positions
+\param  *hasdirich       INT	        (o)   element flag
+\param  *hasext          INT	        (o)   element flag
+\return void
+
+------------------------------------------------------------------------*/
+void f3is_caleleres(
+  ELEMENT        *ele,
+  ARRAY          *eforce_global,
+  ARRAY_POSITION *ipos,
+  INT            *hasdirich,
+  INT            *hasext
+  )
+{
+#ifdef DEBUG
+  dstrc_enter("f3is_caleleres");
+#endif
+
+/*--------------------------------------------- initialise with ZERO ---*/
+  amzero(eforce_global);
+  *hasdirich=0;
+  *hasext=0;
+
+  switch(ele->e.f3->is_ale)
+  {
+  case 0:
+/*---------------------------------------------------- set element data */
+    f3is_calset(ele,xyze,ehist,evelng,epren,edeadng,ipos,hasext);
+
+    /*---------------------------------------------- get viscosity ---*/
+    visc = mat[ele->mat-1].m.fluid->viscosity;
+
+    /*--------------------------------------------- stab-parameter ---*/
+    f3_caltau(ele,xyze,funct,deriv,derxy,xjm,evelng,wa1,visc);
+
+    /*-------------------------------- perform element integration ---*/
+    f3is_int_res(ele,hasext,eforce,xyze,
+		 funct,deriv,deriv2,pfunct,pderiv,pderiv2,
+		 xjm,derxy,
+		 derxy2,pderxy,evelng,ehist,NULL,epren,edeadng,vderxy,
+		 vderxy2,visc,wa1,wa2);
+    break;
+  case 1:
+    /* set element data */
+    f3is_calseta(ele,xyze,ehist,evelng,
+		 ealecovng,egridv,epren,edeadng,ipos,hasext);
+
+    /*---------------------------------------------- get viscosity ---*/
+    visc = mat[ele->mat-1].m.fluid->viscosity;
+
+    /*--------------------------------------------- stab-parameter ---*/
+    f3_caltau(ele,xyze,funct,deriv,derxy,xjm,ealecovng,wa1,visc);
+
+    /*----------------------------------- perform element integration ---*/
+    f3is_int_res(ele,hasext,eforce,xyze,
+		 funct,deriv,deriv2,pfunct,pderiv,pderiv2,
+		 xjm,derxy,
+		 derxy2,pderxy,evelng,ehist,egridv,epren,edeadng,
+		 vderxy,vderxy2,visc,wa1,wa2);
+    break;
+  default:
+    dserror("parameter is_ale not 0 or 1!\n");
+  }
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+
+  return;
+}
+
 #endif

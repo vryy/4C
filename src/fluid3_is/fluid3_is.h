@@ -53,6 +53,14 @@ void f3is_calele(
   INT             init
   );
 
+void f3is_caleleres(
+  ELEMENT        *ele,
+  ARRAY          *eforce_global,
+  ARRAY_POSITION *ipos,
+  INT            *hasdirich,
+  INT            *hasext
+  );
+
 void f3is_calset(
   ELEMENT         *ele,
   DOUBLE         **xyze,
@@ -127,6 +135,54 @@ void f3is_calmat( DOUBLE **estif,
 		  INT     *hasext,
 		  INT      isale,
 		  INT      is_relax
+  );
+
+void f3is_int_res(
+  ELEMENT         *ele,
+  INT             *hasext,
+  DOUBLE          *force,
+  DOUBLE         **xyze,
+  DOUBLE          *funct,
+  DOUBLE         **deriv,
+  DOUBLE         **deriv2,
+  DOUBLE          *pfunct,
+  DOUBLE         **pderiv,
+  DOUBLE         **pderiv2,
+  DOUBLE         **xjm,
+  DOUBLE         **derxy,
+  DOUBLE         **derxy2,
+  DOUBLE         **pderxy,
+  DOUBLE         **evelng,
+  DOUBLE         **evhist,
+  DOUBLE         **egridv,
+  DOUBLE          *epren,
+  DOUBLE          *edeadng,
+  DOUBLE         **vderxy,
+  DOUBLE         **vderxy2,
+  DOUBLE           visc,
+  DOUBLE         **wa1,
+  DOUBLE         **wa2
+  );
+
+void f3is_calresvec(
+  DOUBLE  *eforce,
+  DOUBLE  *velint,
+  DOUBLE   histvec[3],
+  DOUBLE **vderxy,
+  DOUBLE **vderxy2,
+  DOUBLE  *funct,
+  DOUBLE  *pfunct,
+  DOUBLE **derxy,
+  DOUBLE **derxy2,
+  DOUBLE  *edeadng,
+  DOUBLE   gridvint[3],
+  DOUBLE   press,
+  DOUBLE   gradp[3],
+  DOUBLE   fac,
+  DOUBLE   visc,
+  INT      iel,
+  INT     *hasext,
+  INT      is_ale
   );
 
 #endif

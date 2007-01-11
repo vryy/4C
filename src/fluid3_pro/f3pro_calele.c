@@ -308,6 +308,93 @@ void f3pro_calele(
 } /* end of f3pro_calele */
 
 
+/*!---------------------------------------------------------------------
+\brief control routine for integration of element residual
+
+<pre>                                                        chfoe 11/04
+
+This routine controls the integration of the elemental residual which is
+required to compute consistent nodal forces. These are also used to be
+FSI coupling forces
+
+</pre>
+
+\param  *ele	         ELEMENT	(i)   actual element
+\param  *eforce_global   ARRAY	        (o)   ele iteration force
+\param  *ipos                           (i)   node array positions
+\param  *hasdirich       INT	        (o)   element flag
+\param  *hasext          INT	        (o)   element flag
+\return void
+
+------------------------------------------------------------------------*/
+void f3pro_caleleres(
+  ELEMENT        *ele,
+  ARRAY          *eforce_global,
+  ARRAY_POSITION *ipos,
+  INT            *hasdirich,
+  INT            *hasext
+  )
+{
+  DOUBLE visc;
+
+#ifdef DEBUG
+  dstrc_enter("f2pro_caleleres");
+#endif
+
+#ifdef QUASI_NEWTON
+  dserror("QUASI_NEWTON hack not supported!");
+#endif
+  
+/*--------------------------------------------- initialise with ZERO ---*/
+  amzero(eforce_global);
+  *hasdirich=0;
+  *hasext=0;
+
+  switch (ele->e.f3pro->is_ale)
+  {
+  case 0:
+    /*---------------------------------------------------- set element data */
+    f3pro_calset(ele,xyze,eveln,evelng,evhist,epren,edeadng,ipos);
+
+    /* We follow the Förster-element here. */
+
+    /*---------------------------------------------- get viscosity ---*/
+    visc = mat[ele->mat-1].m.fluid->viscosity;
+
+    /*--------------------------------------------- stab-parameter ---*/
+    f3_caltau(ele,xyze,funct,deriv,derxy,xjm,evelng,wa1,visc);
+
+    /*-------------------------------- perform element integration ---*/
+    f3pro_int_res(ele,hasext,eforce,xyze,funct,deriv,deriv2,pfunct,pderiv,xjm,derxy,
+                  derxy2,pderxy,evelng,evhist,NULL,epren,edeadng,vderxy,
+                  vderxy2,visc,wa1,wa2);
+    break;
+  case 1:
+    f3pro_calseta(ele,xyze,eveln,evelng,evhist,egridv,epren,edeadng,ipos);
+
+    /* We follow the Förster-element here. */
+
+    /*---------------------------------------------- get viscosity ---*/
+    visc = mat[ele->mat-1].m.fluid->viscosity;
+
+    /*--------------------------------------------- stab-parameter ---*/
+    f3_caltau(ele,xyze,funct,deriv,derxy,xjm,evelng,wa1,visc);
+
+    /*----------------------------------- perform element integration ---*/
+    f3pro_int_res(ele,hasext,eforce,xyze,funct,deriv,deriv2,pfunct,pderiv,xjm,derxy,
+                  derxy2,pderxy,evelng,evhist,egridv,epren,edeadng,vderxy,
+                  vderxy2,visc,wa1,wa2);
+    break;
+  default:
+    dserror("parameter is_ale not 0 or 1!\n");
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+
 
 /*----------------------------------------------------------------------*/
 /*!
