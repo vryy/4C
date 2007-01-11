@@ -141,7 +141,7 @@ struct stat folder_check;
 
 
 static DOUBLE *velocity;
-static DOUBLE *pressure;
+static DOUBLE *press;
 static DOUBLE *displacement;
 static DOUBLE *ale_displacement;
 
@@ -405,7 +405,7 @@ void vis3caf(INT numff, INT numaf, INT numsf)
       if (numff!=-1)
       {
         velocity=(DOUBLE*)CCACALLOC(2*numnp_fluid, sizeof(DOUBLE));
-        pressure=(DOUBLE*)CCACALLOC(numnp_fluid, sizeof(DOUBLE));
+        press=(DOUBLE*)CCACALLOC(numnp_fluid, sizeof(DOUBLE));
       }
 
       if (numsf!=-1)
@@ -507,7 +507,7 @@ void vis3caf(INT numff, INT numaf, INT numsf)
       if (numff!=-1)
       {
         velocity=(DOUBLE*)CCACALLOC(3*numnp_fluid, sizeof(DOUBLE));
-        pressure=(DOUBLE*)CCACALLOC(numnp_fluid, sizeof(DOUBLE));
+        press=(DOUBLE*)CCACALLOC(numnp_fluid, sizeof(DOUBLE));
       }
       if (numsf!=-1)
       {
@@ -1304,8 +1304,8 @@ void v3scal(INT *JKEY, float *S)
               {
                 for (i=0;i<numnp_fluid;i++)
                 {
-                  S[i]=pressure[i];
-                  S[i+numnp_fluid]=pressure[i];
+                  S[i]=press[i];
+                  S[i+numnp_fluid]=press[i];
                 }
               }
               if (actfieldtyp==structure)
@@ -1520,7 +1520,7 @@ void v3scal(INT *JKEY, float *S)
               {
                 for (i=0;i<numnp_fluid;i++)
                 {
-                  S[i]=pressure[i];
+                  S[i]=press[i];
                 }
               }
               if (actfieldtyp==structure)
@@ -1893,11 +1893,11 @@ void v3update(float *TIME)
         for (i=0; i<discret[h].field->numnp; ++i)
         {
           chunk_read_value_entry(&chunk, i);
-          pressure[i] = chunk.value_buf[0];
+          press[i] = chunk.value_buf[0];
         }
         destroy_chunk_data(&chunk);
         if (discret[h].element[0].distyp==hex20)
-          lin_interpol(&discret[h], numnp_tot[h], velocity, pressure,  INPT);
+          lin_interpol(&discret[h], numnp_tot[h], velocity, press,  INPT);
 #if 0
         if (discret[h].element[0].distyp==h_hex20)
           hier_elements(&discret[h], numnp_tot[h], velocity, pressure);
