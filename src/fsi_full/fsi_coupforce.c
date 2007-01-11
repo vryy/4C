@@ -114,14 +114,18 @@ void fsi_cbf(
     INT             init)
 {
 
-  INT i, j;
+  INT i, j, l;
+  INT line;
   INT numdf;
   INT hasdirich, hasext;
   INT force_on_node[MAXNOD];
+  INT nfnode;  /* number of nodes of actele where forces are searched for */
+
 
 #ifdef PARALLEL
   INT dofx, dofy, dofz;
 #endif
+
 
   DOUBLE    rho;
 
