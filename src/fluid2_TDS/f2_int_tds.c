@@ -506,7 +506,13 @@ DOUBLE    velint[2];  /* velocity vector at integration point
 DOUBLE    accint[2];  /* acceleration vector at integration point
 		                                            (n+alpha_M) */
 
+DOUBLE    svel_trial[2];/* trial subscale velocity at integration point */
+DOUBLE    sacc_trial[2];/* trial subscale acceleration at integration point */
+
+DOUBLE    spres_trial;  /* trial subscale pressure at integration point */
 DIS_TYP   typ;	      /* element type                                   */
+
+DOUBLE    alpha_M,alpha_F;
 
 FLUID_DYNAMIC   *fdyn;
 FLUID_DATA      *data; 
@@ -522,6 +528,8 @@ fdyn   = alldyn[genprob.numff].fdyn;
 data   = fdyn->data;
 is_ale = ele->e.f2->is_ale;
 
+alpha_F=fdyn->alpha_f;
+alpha_M=fdyn->alpha_m;
 
 /*------- get integraton data and check if elements are "higher order" */
 switch (typ)
@@ -557,7 +565,7 @@ default:
 /*----------------------------------------------------------------------*
  |               start loop over integration points                     |
  *----------------------------------------------------------------------*/
-for (lr=0;lr<nir;lr++)
+for (lr=0;lr<nir;lr++) 
 {
    for (ls=0;ls<nis;ls++)
    {
@@ -582,6 +590,22 @@ for (lr=0;lr<nir;lr++)
          dserror("typ unknown!");
       } /* end switch(typ) */
 
+      /* subscale velocity and acceleration */
+      for(i=0;i<2;i++)
+      {
+	  svel_trial[i]=
+	      (alpha_F  )*ele->e.f2->sub_vel_trial.a.da[i][lr*nis+ls]
+	      +
+	      (1-alpha_F)*ele->e.f2->sub_vel.a.da[i][lr*nis+ls];
+	  sacc_trial[i]=
+	      (alpha_M  )*ele->e.f2->sub_vel_acc_trial.a.da[i][lr*nis+ls]
+	      +		  
+	      (1-alpha_M)*ele->e.f2->sub_vel_acc_trial.a.da[i][lr*nis+ls];
+      }
+
+      /* subscale pressure */
+      spres_trial=ele->e.f2->sub_pres_trial.a.dv[lr*nis+ls];
+      
       /*------------------------ compute Jacobian matrix at time n+1 ---*/
       f2_jaco(xyze,deriv,xjm,&det,iel,ele);
       fac = facr * facs * det;
@@ -634,6 +658,7 @@ for (lr=0;lr<nir;lr++)
 				  fac,
 				  visc,
 				  iel);
+
       /*------------------ perform integration for galerkin rhs part ---*/
       f2_calgalrhs_gen_alpha_tds(eforce,
 				 velint,
@@ -661,6 +686,9 @@ for (lr=0;lr<nir;lr++)
 				  derxy2,
 				  vderxy,
 				  vderxy2,
+				  svel_trial,
+				  sacc_trial,
+				  spres_trial,
 				  fac,
 				  visc,
 				  iel);

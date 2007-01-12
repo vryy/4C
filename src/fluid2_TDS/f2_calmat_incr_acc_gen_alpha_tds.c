@@ -200,8 +200,10 @@ void f2_calgalmat_gen_alpha_tds(
    /*-------------------------------------------------------------------*/ 
 
    /* - ( Dp , div v ) */
-   estif[ri*3][ci*3+2]   -= derxy[0][ri] * funct[ci];
-   estif[ri*3+1][ci*3+2] -= derxy[1][ri] * funct[ci];
+   aux = fac;
+   
+   estif[ri*3][ci*3+2]   -= derxy[0][ri] * funct[ci] * aux;
+   estif[ri*3+1][ci*3+2] -= derxy[1][ri] * funct[ci] * aux;
  
   } /* end loop over column index ci */
  } /* end loop over row index ri */
@@ -340,8 +342,7 @@ void f2_calstabmat_gen_alpha_tds(
        *          * alpha_M                                         */
       /* term  : (Dacc, grad q)                                     */
       
-      aux = tau_M/(alpha_M * tau_M + dt * alpha_F * theta)
-	    *alpha_M * fac;
+      aux = tau_M/(alpha_M * tau_M + aftdt) *alpha_M * aftdt * fac;
 
       estif[ri*3+2][ci*3]   += derxy[0][ri] * funct[ci] * aux;
       estif[ri*3+2][ci*3+1] += derxy[1][ri] * funct[ci] * aux;
@@ -350,8 +351,7 @@ void f2_calstabmat_gen_alpha_tds(
       /* (div epsilon(Dacc), grad q) */
       /* viscs already contains - sign!!                                   */
 
-      aux = 2 * visc * tau_M/(alpha_M * tau_M + dt * alpha_F * theta)
-	    * aftdt * fac;
+      aux = 2 * visc * tau_M/(alpha_M * tau_M + aftdt) * aftdt * aftdt *fac;
       
       estif[ri*3+2][ci*3]   += (derxy[0][ri] * viscs2[0][2*ci]
                                +derxy[1][ri] * viscs2[1][2*ci]) * aux;
@@ -361,10 +361,62 @@ void f2_calstabmat_gen_alpha_tds(
       
       /* factor: tau_M /(alpha_M * tau_M + dt * alpha_F * theta)
          term  : (grad Dp, grad q)                                   */
-      aux = tau_M/(alpha_M * tau_M + dt * alpha_F * theta) * fac;
+      aux = tau_M/(alpha_M * tau_M + aftdt) * aftdt * fac;
 
       estif[ri*3+2][ci*3+2] += (derxy[0][ri] * derxy[0][ci]
 			       +derxy[1][ri] * derxy[1][ci]) * aux;
+
+
+      /* factor:                                                    */
+      /* term  : (div Dacc, div v)                                  */
+
+      aux = theta*dt*(tau_C/(alpha_M*tau_C+aftdt))*aftdt*fac;
+      
+      estif[ri*3  ][ci*3  ] += derxy[0][ri]*derxy[0][ci]*aux;
+      estif[ri*3  ][ci*3+1] += derxy[0][ri]*derxy[1][ci]*aux;
+      estif[ri*3+1][ci*3  ] += derxy[1][ri]*derxy[0][ci]*aux;
+      estif[ri*3+1][ci*3+1] += derxy[1][ri]*derxy[1][ci]*aux;
+
+
+      /* factor:                                                    */
+      /* term  : (grad Dp, div eps(v))                                  */
+      /* viscs already contains - sign!!                                   */
+
+      aux = tau_M/(alpha_M * tau_M + aftdt) * 2 * visc *fac * aftdt;
+      
+      estif[ri*3][ci*3+2]   -= (viscs2[0][2*ri] * derxy[0][ci]
+                               +viscs2[1][2*ri] * derxy[1][ci]) * aux;
+      estif[ri*3+1][ci*3+2] -= (viscs2[0][2*ri+1] * derxy[0][ci]
+                               +viscs2[1][2*ri+1] * derxy[1][ci]) * aux;
+
+
+
+      /* factor:                                                    */
+      /* term  : (Dacc, div eps(v))                                  */
+      /* viscs already contains - sign!!                                   */
+
+      aux = funct[ci] * alpha_M * 2 * visc * tau_M/(alpha_M * tau_M + aftdt) * aftdt * fac;
+      estif[ri*3][ci*3]     -= viscs2[0][2*ri] * aux;
+      estif[ri*3][ci*3+1]   -= viscs2[1][2*ri] * aux;
+      estif[ri*3+1][ci*3]   -= viscs2[0][2*ri+1] * aux;
+      estif[ri*3+1][ci*3+1] -= viscs2[1][2*ri+1] * aux;
+
+
+      /* factor:                                                    */
+      /* term  : (div epsilon(Dacc), div epsilon(v))                                  */
+      /* viscs already contains - sign!!                                   */
+
+      aux = tau_M/(alpha_M * tau_M + aftdt) * 4 * visc * visc * aftdt * aftdt * fac;
+      
+      estif[ri*3][ci*3]     -= (viscs2[0][2*ri]   * viscs2[0][2*ci]
+                               +viscs2[1][2*ri]   * viscs2[1][2*ci]) * aux;
+      estif[ri*3+1][ci*3]   -= (viscs2[0][2*ri+1] * viscs2[0][2*ci]
+                               +viscs2[1][2*ri+1] * viscs2[1][2*ci]) * aux;
+      estif[ri*3][ci*3+1]   -= (viscs2[0][2*ri]   * viscs2[0][2*ci+1]
+                               +viscs2[1][2*ri]   * viscs2[1][2*ci+1]) * aux;
+      estif[ri*3+1][ci*3+1] -= (viscs2[0][2*ri+1] * viscs2[0][2*ci+1]
+                               +viscs2[1][2*ri+1] * viscs2[1][2*ci+1]) * aux;
+
       
   } /* end loop over column index ci */
  } /* end loop over row index ri */

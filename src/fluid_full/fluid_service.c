@@ -696,7 +696,7 @@ void fluid_init(
 		    &(actele->e.f2->sub_pres_acc),
 		    actele->e.f2->nGP[0]*nis,1,
 		    "DV");
-	      amzero(&(actele->e.f2->sub_pres));
+	      amzero(&(actele->e.f2->sub_pres_acc));
 	      
 	      
 	      amdef("subscale_velocity_accelerations",
@@ -705,7 +705,38 @@ void fluid_init(
 		    actele->e.f2->nGP[0]*nis,
 		    "DA");
 	      
-	      amzero(&(actele->e.f2->sub_vel));
+	      amzero(&(actele->e.f2->sub_vel_acc));
+
+
+	      amdef("subscale_pressure_acceleration-trial_value",
+		    &(actele->e.f2->sub_pres_trial),
+		    actele->e.f2->nGP[0]*nis,1,
+		    "DV");
+	      amzero(&(actele->e.f2->sub_pres_trial));
+	      
+	      
+	      amdef("subscale_velocity_accelerations-trial_value",
+		    &(actele->e.f2->sub_vel_trial),
+		    3/*numdf (xyz)*/,
+		    actele->e.f2->nGP[0]*nis,
+		    "DA");
+	      	      
+	      amzero(&(actele->e.f2->sub_vel_trial));
+
+	      amdef("subscale_pressure_acceleration-trial_value",
+		    &(actele->e.f2->sub_pres_acc_trial),
+		    actele->e.f2->nGP[0]*nis,1,
+		    "DV");
+	      amzero(&(actele->e.f2->sub_pres_acc_trial));
+	      
+	      
+	      amdef("subscale_velocity_accelerations-trial_value",
+		    &(actele->e.f2->sub_vel_acc_trial),
+		    3/*numdf (xyz)*/,
+		    actele->e.f2->nGP[0]*nis,
+		    "DA");
+	      
+	      amzero(&(actele->e.f2->sub_vel_acc_trial));
 	  }
 
 	  

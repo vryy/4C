@@ -600,8 +600,10 @@ while (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime && steady==0)
 /*------------------------------------------------ output to the screen */
  if (par.myrank==0) fluid_algoout();
  
+
 /*-------- set dirichlet boundary conditions to sol_increment[velnp] ---*/
  fluid_setdirich(actfield, disnum_calc, ipos,ipos->velnp);
+
  
 /*------------------------------------- start time step on the screen---*/
  if (fdyn->itnorm!=fncc_no && par.myrank==0)
@@ -617,19 +619,41 @@ while (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime && steady==0)
  /*-------------------------- estimate new acceleration (and pressure)
                              --- I assume constant velo's and pressure */
 
-
  solserv_sol_zero(actfield,disnum_calc,node_array_sol_increment,ipos->accnp);
- fact = (1.0 - fdyn->theta)/(fdyn->theta);
+ fact = (fdyn->theta - 1.0)/(fdyn->theta);
  solserv_sol_add(actfield,disnum_calc,node_array_sol_increment,
 		 node_array_sol_increment,
 		 ipos->accn,ipos->accnp, fact);
 
-
+ /*
  solserv_sol_copy(actfield,disnum_calc,node_array_sol_increment,
-		  node_array_sol_increment,ipos->veln,ipos->velnm);
+		  node_array_sol_increment,ipos->velnp,ipos->velnm);
+*/
+ 
+ solserv_sol_zero(actfield,disnum_calc,node_array_sol_increment,ipos->velnm);
 
+
+
+ solserv_sol_add(actfield,disnum_calc,node_array_sol_increment,
+		 node_array_sol_increment,
+		 ipos->veln ,ipos->velnm,1-fdyn->alpha_f);
  
+ solserv_sol_add(actfield,disnum_calc,node_array_sol_increment,
+		 node_array_sol_increment,
+		 ipos->velnp,ipos->velnm,fdyn->alpha_f);
  
+
+/*-- transfer dirichlet boundary conditions to the accelerations */
+
+ solserv_sol_zero(actfield,disnum_calc,node_array_sol_increment,ipos->accnm);
+ solserv_sol_add(actfield,disnum_calc,node_array_sol_increment,
+		 node_array_sol_increment,
+		 ipos->accn ,ipos->accnm,1-fdyn->alpha_m);
+ solserv_sol_add(actfield,disnum_calc,node_array_sol_increment,
+		 node_array_sol_increment,
+		 ipos->accnp,ipos->accnm,fdyn->alpha_m);
+
+
 /*======================================================================*
  |           N O N L I N E A R   I T E R A T I O N                      |
  *======================================================================*/
@@ -720,34 +744,42 @@ while (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime && steady==0)
 			&(actsolv->sysarray_typ[actsysarray]),
 			&vrat,&prat,NULL);
                         
+
+     /*---------------- update of estimate for time dependent subscales */
+     if(actfield->dis[disnum_calc].element[0].e.f2->stab_type == stab_tds)
+     {
+	 f2_update_subscale_pres_for_inc_gen_alpha(
+	     actpart,
+	     actintra,
+	     actfield,
+	     ipos,
+	     disnum_calc);
+	 
+	 f2_update_subscale_vel_for_inc_gen_alpha(
+	     actpart,
+	     actintra,
+	     actfield,
+	     ipos,
+	     disnum_calc);
+     }
+
      
      /*----------------------------------- iteration convergence check */
      converged = fluid_convcheck(vrat,prat,ZERO,itnum,te,ts);
 
      itnum++;
+
  }
  /*----------------------------------------------------------------------*
  | -->  end of nonlinear iteration                                      |
  *----------------------------------------------------------------------*/
 
-
-/*-------------------------------- update of time dependent subscales */
- if(actfield->dis[disnum_calc].element[0].e.f2->stab_type == stab_tds)
- {
-     f2_update_subscale_pres_for_inc_gen_alpha(
-	 actpart,
-	 actintra,
-	 actfield,
-	 ipos,
-	 disnum_calc);
-     
-     f2_update_subscale_vel(
-	 actpart,
-	 actintra,
-	 actfield,
-	 ipos,
-	 disnum_calc);
- }
+ f2_time_update_subscales_for_incr_gen_alpha (
+     actpart,
+     actintra,
+     actfield,
+     ipos,
+     disnum_calc);
 
 /*-------------------------------------------------- steady state check */
  if (fdyn->stchk==iststep)

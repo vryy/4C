@@ -225,10 +225,14 @@ else if (fdyn->iop==8)               /* intermediate tau for gena alpha */
     re = mk * norm_p * hk / (2.0 * visc); /* advective : viscous forces */
     
     xi2 = DMAX(re,1.0);
+
     
     fdyn->tau[0] = DSQR(hk) / (2 * visc/mk + (4.0 * visc/mk) * xi2);
+
+    fdyn->tau[0] = (1.)/(/*1./fdyn->dt+*/12*visc/(hk*hk));
     
     fdyn->tau[2]=  DSQR(hk) /(fdyn->tau[0]*2./mk);
+
 }
 else
 {

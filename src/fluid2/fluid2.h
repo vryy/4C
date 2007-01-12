@@ -120,6 +120,46 @@ struct _ARRAY      kappa_ND;
      *                                     total number of gausspoint
      *                                     in s-direction
      * */
+
+  struct _ARRAY    sub_pres_trial;
+    /*
+     * USAGE:
+     *    
+     *            sub_pres.a.dv[number of gausspoint]
+     *
+     *            whereas
+     *
+     *                                 number of gausspoint in r-direction
+     *                                 |
+     *                                 |        number of gausspoint
+     *                                 |        in s-direction
+     *                                 |        |
+     *            number of gausspoint=lr*(nis)+ls
+     *                                      |
+     *                                     total number of gausspoint
+     *                                     in s-direction
+     * */
+    
+  struct _ARRAY    sub_pres_acc_trial;
+    /* only required for incremental acceleration genalpha
+     * 
+     * USAGE:
+     *    
+     *            sub_pres.a.dv[number of gausspoint]
+     *
+     *            whereas
+     *
+     *                                 number of gausspoint in r-direction
+     *                                 |
+     *                                 |        number of gausspoint
+     *                                 |        in s-direction
+     *                                 |        |
+     *            number of gausspoint=lr*(nis)+ls
+     *                                      |
+     *                                     total number of gausspoint
+     *                                     in s-direction
+     * */
+
     
   struct _ARRAY  sub_vel;
     /*
@@ -160,7 +200,44 @@ struct _ARRAY      kappa_ND;
      *                                     in s-direction
      * */
   
-    
+     struct _ARRAY  sub_vel_trial;
+    /*
+     * USAGE:
+     *    
+     *            sub_vel.a.da[dim][number of gausspoint]
+     *
+     *            whereas
+     *
+     *                        xdim=0, ydim=1
+     *
+     *            and
+     *
+     *            
+     *            number of gausspoint=lr*(nis)+ls
+     *                                      |
+     *                                     total number of gausspoint
+     *                                     in s-direction
+     * */
+
+  struct _ARRAY  sub_vel_acc_trial;
+    /* only required for incremental acceleration genalpha
+     * 
+     * USAGE:
+     *    
+     *            sub_vel.a.da[dim][number of gausspoint]
+     *
+     *            whereas
+     *
+     *                        xdim=0, ydim=1
+     *
+     *            and
+     *
+     *            
+     *            number of gausspoint=lr*(nis)+ls
+     *                                      |
+     *                                     total number of gausspoint
+     *                                     in s-direction
+     * */ 
 #endif
 
     

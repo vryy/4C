@@ -166,6 +166,23 @@ void f2_update_subscale_pres_for_inc_gen_alpha(
     INT             disnum_calc
     );
 
+void f2_update_subscale_vel_for_inc_gen_alpha(
+    PARTITION      *actpart,
+    INTRA          *actintra,
+    FIELD          *actfield,
+    ARRAY_POSITION *ipos,
+    INT             disnum_calc
+    );
+
+void f2_time_update_subscales_for_incr_gen_alpha (
+    PARTITION      *actpart,
+    INTRA          *actintra,
+    FIELD          *actfield,
+    ARRAY_POSITION *ipos,
+    INT             disnum_calc
+    );
+
+
 /************************************************************************
  | f2_caltau_tds.c                                                       |
  ************************************************************************/
@@ -243,6 +260,9 @@ void f2_calstabrhs_gen_alpha_tds(
 		DOUBLE **derxy2,
 		DOUBLE **vderxy,
                 DOUBLE **vderxy2,
+		DOUBLE   svel[2],
+		DOUBLE   sacc[2],
+		DOUBLE   spres,
 		DOUBLE   fac,
 		DOUBLE   visc,
 		int      iel     

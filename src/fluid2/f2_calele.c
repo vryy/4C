@@ -484,10 +484,14 @@ if (fdyn->qnewton)
 }
 #endif
 
+
 #ifndef FLUID_INCREMENTAL
 /*------------------------------------------------ condensation of DBCs */
 /* estif is in xyz* so edforce is also in xyz* (but DBCs have to be
    tranformed before condensing the dofs                                */
+#ifdef D_FLUID2_TDS
+if(fdyn->iop!=8)
+#endif
 fluid_caldirich(ele,edforce,estif,hasdirich,readfrom);
 #endif
 
