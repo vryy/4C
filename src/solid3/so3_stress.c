@@ -202,6 +202,7 @@ void so3_stress_final(PARTITION *actpart)
 \param  data      SO3_DATA*          (i)    common SOLID3 data
 \param  gpshade   SO3_GPSHAPEDERIV*  (i)    Gauss point coords
                                             and shape functions
+
 \param  mat       MATERIAL*          (i)    
 \return void
 
@@ -212,34 +213,36 @@ void so3_stress(CONTAINER *cont,
                 ELEMENT *ele,
                 SO3_DATA *data,
                 SO3_GPSHAPEDERIV *gpshade,
+                INT imyrank,
                 MATERIAL *mat)
 {
   const INT place = 0;
   INT nelenod;  /* number of element nodes */
   INT neledof;  /* total number of element DOFs */
   DIS_TYP distyp;  /* type of discretisation */
-  
-  INT gpnumr = 0;  /* Gauss points in r-direction */
-  INT gpnums = 0;  /* Gauss points in s-direction */
-  INT gpnumt = 0;  /* Gauss points in t-direction */
-  INT gpintcr = 0;  /* GP integration case in r-direction */
-  INT gpintcs = 0;  /* GP integration case in s-direction */
-  INT gpintct = 0;  /* GP integration case in t-direction */
+  DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3];
+  DOUBLE edis[MAXNOD_SOLID3][NDIM_SOLID3];
   INT gpnum = 0;  /* total number of Gauss points in element domain */
-  INT igpr, igps, igpt;  /* Gauss point index in r-, s- and t-direction */
+
   INT igp;  /* total index Gauss point */
+  INT inod;  /* element nodal index */
+  INT jdim;  /* dimension index */
+  INT istr;  /* stress/strain index */
+  NODE *actnode;  /* current node */
+
   DOUBLE fac;  /* a factor */
   DOUBLE gpcr = 0.0;  /* GP r-coord */
   DOUBLE gpcs = 0.0;  /* GP s-coord */
   DOUBLE gpct = 0.0;  /* GP t-coord */
-
-  DOUBLE det;  /* Jacobi determinants */
   DOUBLE rst[NDIM_SOLID3];  /* natural coordinate a point */
-  DOUBLE bop[NUMSTR_SOLID3][MAXDOF_SOLID3];
+  SO3_GEODEFSTR gds;  /* isoparametric Jacobian, deformation grad, etc at
+                       * Gauss point */
   DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3];
   DOUBLE stress[NUMSTR_SOLID3];
+  DOUBLE bopn[MAXDOF_SOLID3][NUMDOF_SOLID3];
+  DOUBLE bop[NUMSTR_SOLID3][MAXDOF_SOLID3];
 
-  INT inode;  /* element nodal index */
+
 
   /*--------------------------------------------------------------------*/
   /* start */
@@ -266,16 +269,16 @@ void so3_stress(CONTAINER *cont,
        * NEW SOFT-CODED INDEX FOR OLD DISCRETISATION ==> array_position.h
        * NEW SOFT-CODED INDEX FOR NEW DISCRETISATION ==> TO BE ANNOUNCED
        * ==> IN FEM WE TRUST. */
-      edis[inod][jdim] = actnode->sol[0][jdim];
+      /* edis[inod][jdim] = actnode->sol[0][jdim]; */
     }
   }
-  ngp = gpshade->gptot;  /* total number of Gauss points in domain */
+  gpnum = gpshade->gptot;  /* total number of Gauss points in domain */
 
 
   /*--------------------------------------------------------------------*/
   /* stress at every Gauss point */
   /* parse all Gauss points and evaluate stress */
-  for (igp=0; igp<ngp; igp++)
+  for (igp=0; igp<gpnum; igp++)
   {
     /*------------------------------------------------------------------*/
     /* Gauss point */
@@ -289,10 +292,10 @@ void so3_stress(CONTAINER *cont,
                   gds.xjm, &(gds.xjdet), gds.xji);
     /*------------------------------------------------------------------*/
     /* integration (quadrature) factor */
-    fac = fac * gds.det;
+    fac = fac * gds.xjdet;
     /*------------------------------------------------------------------*/
     /* deformation tensor and displacement gradient */
-    so3_def_grad(enod, edis, gpshade->gpderiv[igp], gds.xji, 
+    so3_def_grad(nelenod, edis, gpshade->gpderiv[igp], gds.xji, 
                  gds.disgrdv, gds.defgrd);
     /*------------------------------------------------------------------*/
     /* Linear/Green-Lagrange strain vector */
@@ -310,7 +313,8 @@ void so3_stress(CONTAINER *cont,
     }
     /*------------------------------------------------------------------*/
     /* calculate B-operator */
-    so3_bop(nelenod, gpshade->gpderiv[igp], gds.xji, bopl, bop);
+    so3_bop(ele, nelenod, gpshade->gpderiv[igp], gds.xji, gds.defgrd,
+            bopn, bop);
     /*------------------------------------------------------------------*/
     /* call material law ==> 2nd PK-stresses and constitutive matrix */
     so3_mat_sel(ele, mat, igp, &gds, stress, cmat);
@@ -337,11 +341,11 @@ void so3_stress(CONTAINER *cont,
   /*--------------------------------------------------------------------*/
   /* Stresses at Gauss points are extrapolated to element nodes. */
   /* loop all element nodes */
-  for (inode=0; inode<nelenod; inode++)
+  for (inod=0; inod<nelenod; inod++)
   {
     /*------------------------------------------------------------------*/
     /* get local coordinates of node ==> rst */
-    so3_cfg_noderst(ele, data, inode, rst);
+    so3_cfg_noderst(ele, data, inod, rst);
     /*------------------------------------------------------------------*/
     /* extrapolate values now */
     so3_stress_extrpol(ele, data, gpnum, 
@@ -349,10 +353,10 @@ void so3_stress(CONTAINER *cont,
                        stress);
     for (istr=0; istr<NUMSTR_SOLID3; istr++)
     {
-      ele->e.so3->stress_ndxyz.a.d3[place][inode][istr] = stress[istr];
+      ele->e.so3->stress_ndxyz.a.d3[place][inod][istr] = stress[istr];
     }
     /* store principle and direction angles at current Gauss point */
-    so3_stress_123(stress, ele->e.so3->stress_nd123.a.d3[place][inode]);
+    so3_stress_123(stress, ele->e.so3->stress_nd123.a.d3[place][inod]);
   }  /* end for */
 
   /*--------------------------------------------------------------------*/
@@ -426,6 +430,7 @@ void so3_stress_123(DOUBLE stress[NUMSTR_SOLID3],
 {
   DOUBLE stresst[NDIM_SOLID3][NDIM_SOLID3];  /* stress tensor */
   DOUBLE ew[NDIM_SOLID3];  /* principial stresses */
+  INT err;  /* error 0=PASSED, 1=ERROR */
 
 #ifdef DEBUG
   dstrc_enter("so3_stress_123");

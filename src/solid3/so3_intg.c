@@ -71,7 +71,7 @@ void so3_intg_eleinp(ELEMENT *actele,
                      INT *ierr)
 {
 
-  INT i, j;
+  INT i;
   INT *actGP;
   INT *intc;
   SOLID3 *actso3;
@@ -115,6 +115,8 @@ void so3_intg_eleinp(ELEMENT *actele,
       {
         intc[i] = actGP[i] - 1;
       }
+      /* set total number of GP in domain */
+      actso3->gptot = actGP[0] * actGP[1] * actGP[2];
       break;
     /*------------------------------------------------------------------*/
     /* tetrahedra */
@@ -126,6 +128,8 @@ void so3_intg_eleinp(ELEMENT *actele,
       {
         dserror("First GP must be 1, 4, or 5 (total GP of tetrahedra domain)"); 
       }
+      /* set total number of GP in domain */
+      actso3->gptot = actGP[0];
       /* set 2nd Gauss point number (for sides) */
       if ( !( (actGP[1] == 1) || (actGP[1] == 3) 
               || (actGP[1] == 4) ||  (actGP[1] == 6) ) )
@@ -165,7 +169,7 @@ void so3_intg_eleinp(ELEMENT *actele,
       switch (actGP[0])
       {
           case 1: 
-            gintc[0] = 0;
+            intc[0] = 0;
             break;
           case 4:
             intc[0] = 1;
@@ -258,9 +262,9 @@ void so3_intg_init(SO3_DATA *data)
   {
     for (i=0; i<GTMAXP_SOLID3; i++)
     {
-      data->gtdcr[k][i] = 0.0;
-      data->gtdcs[k][i] = 0.0;
-      data->gtdcr[k][i] = 0.0;
+      data->gtdc[k][i][0] = 0.0;
+      data->gtdc[k][i][1] = 0.0;
+      data->gtdc[k][i][2] = 0.0;
       data->gtdw[k][i] = 0.0;
     }
   }
@@ -269,9 +273,9 @@ void so3_intg_init(SO3_DATA *data)
   {
     for (i=0; i<GSMAXP_SOLID3; i++)
     {
-      data->gsdcr[k][i] = 0.0;
-      gdata->sdcs[k][i] = 0.0;
-      data->gsdw[k][i] = 0.0;
+      data->gtsc[k][i][0] = 0.0;
+      data->gtsc[k][i][1] = 0.0;
+      data->gtsw[k][i] = 0.0;
     }
   }
 
@@ -348,53 +352,53 @@ void so3_intg_init(SO3_DATA *data)
   /* 1 Gauss point (1st order) */
   if ( (GTINTC_SOLID3 >= 1) && (GTMAXP_SOLID3 >= 1) )
   {
-    data->gtdcr[0][0] = 0.25;  /* r-coordinate */
-    data->gtdcs[0][0] = 0.25;  /* s-coordinate */
-    data->gtdct[0][0] = 0.25;  /* t-coordinate */
+    data->gtdc[0][0][0] = 0.25;  /* r-coordinate */
+    data->gtdc[0][0][1] = 0.25;  /* s-coordinate */
+    data->gtdc[0][0][2] = 0.25;  /* t-coordinate */
     data->gtdw[0][0]  = 1.0/6.0;  /* weight */
   }
   /* 4 Gauss points (2nd order) */
   if ( (GTINTC_SOLID3 >= 2) && (GTMAXP_SOLID3 >= 4) )
   {
-    data->gtdcr[1][0] = 0.13819660;
-    data->gtdcs[1][0] = 0.13819660;
-    data->gtdct[1][0] = 0.13819660;
+    data->gtdc[1][0][0] = 0.13819660;
+    data->gtdc[1][0][1] = 0.13819660;
+    data->gtdc[1][0][2] = 0.13819660;
     data->gtdw[1][0] = 1.0/24.0;
-    data->gtdcr[1][1] = 0.58541020;
-    data->gtdcs[1][1] = 0.13819660;
-    data->gtdct[1][1] = 0.13819660;
+    data->gtdc[1][1][0] = 0.58541020;
+    data->gtdc[1][1][1] = 0.13819660;
+    data->gtdc[1][1][2] = 0.13819660;
     data->gtdw[1][1] = 1.0/24.0;
-    data->gtdcr[1][2] = 0.13819660;
-    data->gtdcs[1][2] = 0.58541020;
-    data->gtdct[1][2] = 0.13819660;
+    data->gtdc[1][2][0] = 0.13819660;
+    data->gtdc[1][2][1] = 0.58541020;
+    data->gtdc[1][2][2] = 0.13819660;
     data->gtdw[1][2] = 1.0/24.0;
-    data->gtdcr[1][3] = 0.13819660;
-    data->gtdcs[1][3] = 0.13819660;
-    data->gtdct[1][3] = 0.58541020;
+    data->gtdc[1][3][0] = 0.13819660;
+    data->gtdc[1][3][1] = 0.13819660;
+    data->gtdc[1][3][2] = 0.58541020;
     data->gtdw[1][3] = 1.0/24.0;
   }
   /* 5 Gauss points (3rd order) */
   if ( (GTINTC_SOLID3 >= 3) && (GTMAXP_SOLID3 >= 5) )
   {
-    data->gtdcr[2][0] = 1.0/6.0;
-    data->gtdcs[2][0] = 1.0/6.0;
-    data->gtdct[2][0] = 1.0/6.0;
+    data->gtdc[2][0][0] = 1.0/6.0;
+    data->gtdc[2][0][1] = 1.0/6.0;
+    data->gtdc[2][0][2] = 1.0/6.0;
     data->gtdw[2][0] = 1.0/36.0;
-    data->gtdcr[2][1] = 1.0/2.0;
-    data->gtdcs[2][1] = 1.0/6.0;
-    data->gtdct[2][1] = 1.0/6.0;
+    data->gtdc[2][1][0] = 1.0/2.0;
+    data->gtdc[2][1][1] = 1.0/6.0;
+    data->gtdc[2][1][2] = 1.0/6.0;
     data->gtdw[2][1] = 1.0/36.0;
-    data->gtdcr[2][2] = 1.0/6.0;
-    data->gtdcs[2][2] = 1.0/2.0;
-    data->gtdct[2][2] = 1.0/6.0;
+    data->gtdc[2][2][0] = 1.0/6.0;
+    data->gtdc[2][2][1] = 1.0/2.0;
+    data->gtdc[2][2][2] = 1.0/6.0;
     data->gtdw[2][2] = 1.0/36.0;
-    data->gtdcr[2][3] = 1.0/6.0;
-    data->gtdcs[2][3] = 1.0/6.0;
-    data->gtdct[2][3] = 1.0/2.0;
+    data->gtdc[2][3][0] = 1.0/6.0;
+    data->gtdc[2][3][1] = 1.0/6.0;
+    data->gtdc[2][3][2] = 1.0/2.0;
     data->gtdw[2][3] = 1.0/36.0;
-    data->gtdcr[2][4] = 1.0/4.0;
-    data->gtdcs[2][4] = 1.0/4.0;
-    data->gtdct[2][4] = 1.0/4.0;
+    data->gtdc[2][4][0] = 1.0/4.0;
+    data->gtdc[2][4][1] = 1.0/4.0;
+    data->gtdc[2][4][2] = 1.0/4.0;
     data->gtdw[2][4] = -2.0/15.0;
   }
   /* 10 Gauss points (>=2nd order ?) */
@@ -409,45 +413,45 @@ void so3_intg_init(SO3_DATA *data)
     DOUBLE wmd = 0.01114827431181;  /* next to mis-nodes on diagonals */
     DOUBLE wcs = 0.01114827431181;  /* next to centre of inclined face */
     
-    data->gtdcr[3][0] = a;
-    data->gtdcs[3][0] = a;
-    data->gtdct[3][0] = a;
+    data->gtdc[3][0][0] = a;
+    data->gtdc[3][0][1] = a;
+    data->gtdc[3][0][2] = a;
     data->gtdw[3][0] = wo;
-    data->gtdcr[3][1] = c;
-    data->gtdcs[3][1] = a;
-    data->gtdct[3][1] = a;
+    data->gtdc[3][1][0] = c;
+    data->gtdc[3][1][1] = a;
+    data->gtdc[3][1][2] = a;
     data->gtdw[3][1] = wc;
-    data->gtdcr[3][2] = a;
-    data->gtdcs[3][2] = c;
-    data->gtdct[3][2] = a;
+    data->gtdc[3][2][0] = a;
+    data->gtdc[3][2][1] = c;
+    data->gtdc[3][2][2] = a;
     data->gtdw[3][2] = wc;
-    data->gtdcr[3][3] = a;
-    data->gtdcs[3][3] = a;
-    data->gtdct[3][3] = c;
+    data->gtdc[3][3][0] = a;
+    data->gtdc[3][3][1] = a;
+    data->gtdc[3][3][2] = c;
     data->gtdw[3][3] = wc;
-    data->gtdcr[3][4] = b;
-    data->gtdcs[3][4] = a;
-    data->gtdct[3][4] = a;
+    data->gtdc[3][4][0] = b;
+    data->gtdc[3][4][1] = a;
+    data->gtdc[3][4][2] = a;
     data->gtdw[3][4] = wma;
-    data->gtdcr[3][5] = b;
-    data->gtdcs[3][5] = b;
-    data->gtdct[3][5] = a;
+    data->gtdc[3][5][0] = b;
+    data->gtdc[3][5][1] = b;
+    data->gtdc[3][5][2] = a;
     data->gtdw[3][5] = wmd;
-    data->gtdcr[3][6] = a;
-    data->gtdcs[3][6] = b;
-    data->gtdct[3][6] = a;
+    data->gtdc[3][6][0] = a;
+    data->gtdc[3][6][1] = b;
+    data->gtdc[3][6][2] = a;
     data->gtdw[3][6] = wma;
-    data->gtdcr[3][7] = a;
-    data->gtdcs[3][7] = a;
-    data->gtdct[3][7] = b;
+    data->gtdc[3][7][0] = a;
+    data->gtdc[3][7][1] = a;
+    data->gtdc[3][7][2] = b;
     data->gtdw[3][7] = wma;
-    data->gtdcr[3][8] = b;
-    data->gtdcs[3][8] = a;
-    data->gtdct[3][8] = b;
+    data->gtdc[3][8][0] = b;
+    data->gtdc[3][8][1] = a;
+    data->gtdc[3][8][2] = b;
     data->gtdw[3][8] = wmd;
-    data->gtdcr[3][9] = a;
-    data->gtdcs[3][9] = b;
-    data->gtdct[3][9] = b;
+    data->gtdc[3][9][0] = a;
+    data->gtdc[3][9][1] = b;
+    data->gtdc[3][9][2] = b;
     data->gtdw[3][9] = wcs;
   }
   /*--------------------------------------------------------------------*/
@@ -455,72 +459,72 @@ void so3_intg_init(SO3_DATA *data)
   /* 1 Gauss point (1st order) */
   if ( (GSINTC_SOLID3 >= 1) && (GSMAXP_SOLID3 >= 1) )
   {
-    data->gtscr[0][0] = 1.0/3.0;  /* r-coordinate (or other) */
-    data->gtscs[0][0] = 1.0/3.0;  /* s-coordinate (or other) */
+    data->gtsc[0][0][0] = 1.0/3.0;  /* r-coordinate (or other) */
+    data->gtsc[0][0][1] = 1.0/3.0;  /* s-coordinate (or other) */
     data->gtsw[0][0] = 1.0/2.0;  /* weight */
   }
   /* 3 Gauss points (2nd order) -- kind 1 */
   if ( (GTINTC_SOLID3 >= 2) && (GTMAXP_SOLID3 >= 3) )
   {
-    data->gtscr[1][0] = 1.0/6.0;
-    data->gtscs[1][0] = 1.0/6.0;
+    data->gtsc[1][0][0] = 1.0/6.0;
+    data->gtsc[1][0][1] = 1.0/6.0;
     data->gtsw[1][0] = 1.0/6.0;
-    data->gtscr[1][1] = 2.0/3.0;
-    data->gtscs[1][1] = 1.0/6.0; 
+    data->gtsc[1][1][0] = 2.0/3.0;
+    data->gtsc[1][1][1] = 1.0/6.0; 
     data->gtsw[1][1] = 1.0/6.0;
-    data->gtscr[1][2] = 1.0/6.0;
-    data->gtscs[1][2] = 2.0/3.0;
+    data->gtsc[1][2][0] = 1.0/6.0;
+    data->gtsc[1][2][1] = 2.0/3.0;
     data->gtsw[1][2] = 1.0/6.0;
   }
   /* 3 Gauss points (2nd order) -- kind 2 -- unused */
   if ( (GTINTC_SOLID3 >= 3) && (GTMAXP_SOLID3 >= 3) )
   {
-    data->gtscr[2][0] = 0.5;
-    data->gtscs[2][0] = 0.0;
+    data->gtsc[2][0][0] = 0.5;
+    data->gtsc[2][0][1] = 0.0;
     data->gtsw[2][0] = 1.0/6.0;
-    data->gtscr[2][1] = 0.5;
-    data->gtscs[2][1] = 0.5;
+    data->gtsc[2][1][0] = 0.5;
+    data->gtsc[2][1][1] = 0.5;
     data->gtsw[2][1] = 1.0/6.0;
-    data->gtscr[2][2] = 0.0;
-    data->gtscs[2][2] = 0.5;
+    data->gtsc[2][2][0] = 0.0;
+    data->gtsc[2][2][1] = 0.5;
     data->gtsw[2][2] = 1.0/6.0;
   }
   /* 4 Gauss points (3rd order) */
   if ( (GTINTC_SOLID3 >= 4) && (GTMAXP_SOLID3 >= 4) )
   {
-    data->gtscr[3][0] = 0.2;
-    data->gtscs[3][0] = 0.2;
+    data->gtsc[3][0][0] = 0.2;
+    data->gtsc[3][0][1] = 0.2;
     data->gtsw[3][0] = 25.0/96.0;
-    data->gtscr[3][1] = 0.6;
-    data->gtscs[3][1] = 0.2;
+    data->gtsc[3][1][0] = 0.6;
+    data->gtsc[3][1][1] = 0.2;
     data->gtsw[3][1] = 25.0/96.0;
-    data->gtscr[3][2] = 0.2;
-    data->gtscs[3][2] = 0.6;
+    data->gtsc[3][2][0] = 0.2;
+    data->gtsc[3][2][1] = 0.6;
     data->gtsw[3][2] = 25.0/96.0;
-    data->gtscr[3][3] = 1.0/3.0;
-    data->gtscs[3][3] = 1.0/3.0;
+    data->gtsc[3][3][0] = 1.0/3.0;
+    data->gtsc[3][3][1] = 1.0/3.0;
     data->gtsw[3][3] = 9.0/32.0;
   }
   /* 6 Gauss points (4th order) */
   if ( (GTINTC_SOLID3 >= 5) && (GTMAXP_SOLID3 >= 6) )
   {
-    data->gtscr[4][0] = 0.091576213509771;
-    data->gtscs[4][0] = 0.091576213509771;
+    data->gtsc[4][0][0] = 0.091576213509771;
+    data->gtsc[4][0][1] = 0.091576213509771;
     data->gtsw[4][0] = 0.05497587182766;
-    data->gtscr[4][1] = 0.81684757298045;
-    data->gtscs[4][1] = 0.091576213509771;
+    data->gtsc[4][1][0] = 0.81684757298045;
+    data->gtsc[4][1][1] = 0.091576213509771;
     data->gtsw[4][1] = 0.054975871827661;
-    data->gtscr[4][2] = 0.09157621350977;
-    data->gtscs[4][2] = 0.816847572980459;
+    data->gtsc[4][2][0] = 0.09157621350977;
+    data->gtsc[4][2][1] = 0.816847572980459;
     data->gtsw[4][2] = 0.054975871827661;
-    data->gtscr[4][3] = 0.445948490915965;
-    data->gtscs[4][3] = 0.108103018168070;
+    data->gtsc[4][3][0] = 0.445948490915965;
+    data->gtsc[4][3][1] = 0.108103018168070;
     data->gtsw[4][3] = 0.111690794839006;
-    data->gtscr[4][4] = 0.445948490915965;
-    data->gtscs[4][4] = 0.445948490915965;
+    data->gtsc[4][4][0] = 0.445948490915965;
+    data->gtsc[4][4][1] = 0.445948490915965;
     data->gtsw[4][4] = 0.111690794839006;
-    data->gtscr[4][5] = 0.108103018168070;
-    data->gtscs[4][5] = 0.445948490915965;
+    data->gtsc[4][5][0] = 0.108103018168070;
+    data->gtsc[4][5][1] = 0.445948490915965;
     data->gtsw[4][5] = 0.111690794839006;
   }
   /*--------------------------------------------------------------------*/

@@ -34,6 +34,9 @@ Maintainer: Burkhard Bornemann
 #ifdef D_BRICK1
 #include "../brick1/brick1.h"
 #endif
+#ifdef D_SOLID3
+#include "../solid3/solid3.h"
+#endif
 #ifdef D_THERM2
 #include "../therm2/therm2.h"
 #endif
@@ -101,9 +104,9 @@ nodes of the other fields
 */
 /*-----------------------------------------------------------------------*/
 void tsi_coupling(FIELD *structfield,
-		    INT disnum_s,
-		    FIELD *thermfield,
-		    INT disnum_t)
+                  INT disnum_s,
+                  FIELD *thermfield,
+                  INT disnum_t)
 
 {
 
@@ -316,6 +319,14 @@ void tsi_coupling(FIELD *structfield,
 #ifdef D_BRICK1
         case el_brick1:
           if (actele->e.c1->tsi_couptyp == tsi_coup_thermconf)
+          {
+            partner++;
+          }
+          break;
+#endif
+#ifdef D_SOLID3
+        case el_solid3:
+          if (actele->e.so3->tsi_couptyp == tsi_coup_thermconf)
           {
             partner++;
           }
@@ -559,6 +570,11 @@ void tsi_coupling(FIELD *structfield,
 #ifdef D_BRICK1
         case el_brick1:
           actsele->e.c1->therm_ele = acttele;
+          break;
+#endif
+#ifdef D_SOLID3
+        case el_solid3:
+          actsele->e.so3->therm_ele = acttele;
           break;
 #endif
         default:

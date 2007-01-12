@@ -707,20 +707,20 @@ OBJS_THERM3   = src/therm3/th3_bop.o \
                 src/therm3/th3_shape.o \
 		src/therm3/th3_temper.o
 #               spatial structural
-OBJS_SOLID3   = src/solid3/so3_bop.c \
-                src/solid3/so3_cfg.c \
-                src/solid3/so3_def.c \
-                src/solid3/so3_inp.c \
-                src/solid3/so3_int.c \
-                src/solid3/so3_intg.c \
-                src/solid3/so3_load.c \
-                src/solid3/so3_main.c \
-                src/solid3/so3_mat.c \
-                src/solid3/so3_metr.c \
-                src/solid3/so3_shape.c \
-                src/solid3/so3_strain.c \
-                src/solid3/so3_stress.c \
-                src/solid3/so3_tns3.c
+OBJS_SOLID3   = src/solid3/so3_bop.o \
+                src/solid3/so3_cfg.o \
+                src/solid3/so3_def.o \
+                src/solid3/so3_inp.o \
+                src/solid3/so3_int.o \
+                src/solid3/so3_intg.o \
+                src/solid3/so3_load.o \
+                src/solid3/so3_main.o \
+                src/solid3/so3_mat.o \
+                src/solid3/so3_metr.o \
+                src/solid3/so3_shape.o \
+                src/solid3/so3_strain.o \
+                src/solid3/so3_stress.o \
+                src/solid3/so3_tns3.o
 #               visual
 OBJS_VISUAL   = src/visual/visual_global.o \
                 src/visual/visual_readflaviares.o \

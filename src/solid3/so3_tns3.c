@@ -152,7 +152,7 @@ void so3_tns3_inva(DOUBLE at[3][3],
                    DOUBLE *aii,
                    DOUBLE *aiii)
 {
-  INT i;  /* index */
+  INT i, j;  /* index */
   DOUBLE aix, aiix;  /* auxiliar inva. */
 
 #ifdef DEBUG
@@ -391,8 +391,7 @@ void so3_tns3_plrdcmp(DOUBLE ft[3][3],  /* input tensor */
   DOUBLE c2i;  /* invariants of C^2 */
   DOUBLE ui, uii, uiii;  /* invariants of U */
   DOUBLE invut[3][3];  /* inverted material stretch tensor */
-  INT i, j, k;  /* indices */
-  DOUBLE xi, eta, zeta;
+  INT i, j;  /* indices */
   DOUBLE denom, pc2, pc, pi;  /* coefficients */
   DOUBLE p, q, r;  /* coefficients in quartic polynomial of tr(U) */
   DOUBLE pp, qq;
@@ -804,7 +803,7 @@ void so3_tns3_spcdcmp(DOUBLE at[3][3],  /* input tensor */
 #endif
 
   /* initialise error  status */
-  *int = 0;
+  *err = 0;
 
   /* invariants of A */
   so3_tns3_inva(at, &ai, &aii, &aiii);
@@ -877,9 +876,9 @@ void so3_tns3_spcdcmp(DOUBLE at[3][3],  /* input tensor */
 
   if (*err == 0)
   {
-    ev[0] = lam1;
-    ev[1] = lam2;
-    ev[2] = lam3;
+    ew[0] = lam1;
+    ew[1] = lam2;
+    ew[2] = lam3;
   }
 
   /*--------------------------------------------------------------------*/

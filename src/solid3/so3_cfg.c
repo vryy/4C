@@ -18,7 +18,7 @@ Maintainer: Moritz Frenzel
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "../headers/standardtypes.h"
-#include "therm3.h"
+#include "solid3.h"
 
 
 /*======================================================================*/

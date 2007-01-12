@@ -79,24 +79,24 @@ void so3_bop_lin(INT enod,
      * [ N1,Y N1,X 0 | N2,Y N2,X 0 | ... | Ni,Y Ni,X 0 ]
      * [ 0 N1,Z N1,Y | 0 N2,Z N2,Y | ... | 0 Ni,Z Ni,Y ]
      * [ N1,Z 0 N1,X | N2,Z 0 N2,X | ... | Ni,Z 0 Ni,X ] */
-    bop[0][nodeindex+0] = N_X;
-    bop[0][nodeindex+1] = 0.0;
-    bop[0][nodeindex+2] = 0.0;
-    bop[1][nodeindex+0] = 0.0;
-    bop[1][nodeindex+1] = N_Y;
-    bop[1][nodeindex+2] = 0.0;
-    bop[2][nodeindex+0] = 0.0;
-    bop[2][nodeindex+1] = 0.0;
-    bop[2][nodeindex+2] = N_Z;
-    bop[3][nodeindex+0] = N_Y;
-    bop[3][nodeindex+1] = N_X;
-    bop[3][nodeindex+2] = 0.0;
-    bop[4][nodeindex+0] = 0.0;
-    bop[4][nodeindex+1] = N_Z;
-    bop[4][nodeindex+2] = N_Y;
-    bop[5][nodeindex+0] = N_Z;
-    bop[5][nodeindex+1] = 0.0;
-    bop[5][nodeindex+2] = N_X;
+    boplin[0][nodeindex+0] = N_X;
+    boplin[0][nodeindex+1] = 0.0;
+    boplin[0][nodeindex+2] = 0.0;
+    boplin[1][nodeindex+0] = 0.0;
+    boplin[1][nodeindex+1] = N_Y;
+    boplin[1][nodeindex+2] = 0.0;
+    boplin[2][nodeindex+0] = 0.0;
+    boplin[2][nodeindex+1] = 0.0;
+    boplin[2][nodeindex+2] = N_Z;
+    boplin[3][nodeindex+0] = N_Y;
+    boplin[3][nodeindex+1] = N_X;
+    boplin[3][nodeindex+2] = 0.0;
+    boplin[4][nodeindex+0] = 0.0;
+    boplin[4][nodeindex+1] = N_Z;
+    boplin[4][nodeindex+2] = N_Y;
+    boplin[5][nodeindex+0] = N_Z;
+    boplin[5][nodeindex+1] = 0.0;
+    boplin[5][nodeindex+2] = N_X;
   }
 
   /*--------------------------------------------------------------------*/
@@ -112,30 +112,31 @@ void so3_bop_lin(INT enod,
 \brief Calculate non-linear B-operator matrix at point (r,s,t) 
        (e.g. Gauss point)
 
-\param   enod       INT     (i)  number of element nodes
-\param   **deriv    DOUBLE  (i)  natural derivatives of shape functions
-\param   **xji      DOUBLE  (i)  Inverse Jacobi matrix at (r,s,t)
-\param   *egrdis    DOUBLE  (i)  
-\param   **bopnl    DOUBLE  (o)  B-operator contribution at (r,s,t)
-
+\param   ele        ELEMENT*   (i)  current element
+\param   enod       INT        (i)  number of element nodes
+\param   deriv      DOUBLE[][] (i)  shape function derivatives at (r,s,t)
+\param   xji        DOUBLE[][] (i)  inverse isopara-Jacobian
+\param   defgrd     DOUBLE[][] (i)  deformation gradient
+\param   bopn       DOUBLE[][] (o)  nodally stored B-operator
+\param   bopl       DOUBLE[][] (o)  material gradient of shape function
 \return void
 
-\author mf
-\date 10/06
+\author bborn
+\date 01/07
 */
 void so3_bop(ELEMENT *ele,
              INT enod,
              DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3],
              DOUBLE xji[NUMDOF_SOLID3][NUMDOF_SOLID3],
              DOUBLE defgrd[NUMDOF_SOLID3][NUMDOF_SOLID3],
-             DOUBLE bopn[MAXDOF_SOLID3][NUMDOF_SOLID3],
+             DOUBLE bopn[MAXNOD_SOLID3][NUMDOF_SOLID3],
              DOUBLE bop[NUMSTR_SOLID3][MAXDOF_SOLID3])
 {
   /*--------------------------------------------------------------------*/
   INT inod;  /* current node */
-  INT idof;  /* element DOF index */
+  INT idof_X, idof_Y, idof_Z;  /* element DOF index */
   DOUBLE N_X, N_Y, N_Z;  /* derivative w.r. to global coords */
-  DOUBLE grdshp[NUMDFGR_SOLID3][MAXDOF_SOLID3];
+  /* DOUBLE bopl[NUMSTR_SOLID3][MAXDOF_SOLID3]; */
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -189,41 +190,41 @@ void so3_bop(ELEMENT *ele,
      *  Bl   =         L         .                   N
      *    
      */
-    bopl[0][idof_X] = N_X;
-    bopl[0][idof_Y] = 0.0;
-    bopl[0][idof_Z] = 0.0;
-    bopl[1][idof_X] = 0.0;
-    bopl[1][idof_Y] = N_Y;
-    bopl[1][idof_Z] = 0.0;
-    bopl[2][idof_X] = 0.0;
-    bopl[2][idof_Y] = 0.0;
-    bopl[2][idof_Z] = N_Z;
-    /* ~~~ */
-    bopl[3][idof_X] = N_Y;
-    bopl[3][idof_Y] = 0.0;
-    bopl[3][idof_Z] = 0.0;
-    bopl[4][idof_X] = 0.0;
-    bopl[4][idof_Y] = N_X;
-    bopl[4][idof_Z] = 0.0;
-    /* ~~~ */
-    bopl[5][idof_X] = 0.0;
-    bopl[5][idof_Y] = N_Z;
-    bopl[5][idof_Z] = 0.0;
-    bopl[6][idof_X] = 0.0;
-    bopl[6][idof_Y] = 0.0;
-    bopl[6][idof_Z] = N_Y;
-    /* ~~~ */
-    bopl[7][idof_X] = N_Z;
-    bopl[7][idof_Y] = 0.0;
-    bopl[7][idof_Z] = 0.0;
-    bopl[8][idof_X] = 0.0;
-    bopl[8][idof_Y] = 0.0;
-    bopl[8][idof_Z] = N_X;
+/*     bopl[0][idof_X] = N_X; */
+/*     bopl[0][idof_Y] = 0.0; */
+/*     bopl[0][idof_Z] = 0.0; */
+/*     bopl[1][idof_X] = 0.0; */
+/*     bopl[1][idof_Y] = N_Y; */
+/*     bopl[1][idof_Z] = 0.0; */
+/*     bopl[2][idof_X] = 0.0; */
+/*     bopl[2][idof_Y] = 0.0; */
+/*     bopl[2][idof_Z] = N_Z; */
+/*     /\* ~~~ *\/ */
+/*     bopl[3][idof_X] = N_Y; */
+/*     bopl[3][idof_Y] = 0.0; */
+/*     bopl[3][idof_Z] = 0.0; */
+/*     bopl[4][idof_X] = 0.0; */
+/*     bopl[4][idof_Y] = N_X; */
+/*     bopl[4][idof_Z] = 0.0; */
+/*     /\* ~~~ *\/ */
+/*     bopl[5][idof_X] = 0.0; */
+/*     bopl[5][idof_Y] = N_Z; */
+/*     bopl[5][idof_Z] = 0.0; */
+/*     bopl[6][idof_X] = 0.0; */
+/*     bopl[6][idof_Y] = 0.0; */
+/*     bopl[6][idof_Z] = N_Y; */
+/*     /\* ~~~ *\/ */
+/*     bopl[7][idof_X] = N_Z; */
+/*     bopl[7][idof_Y] = 0.0; */
+/*     bopl[7][idof_Z] = 0.0; */
+/*     bopl[8][idof_X] = 0.0; */
+/*     bopl[8][idof_Y] = 0.0; */
+/*     bopl[8][idof_Z] = N_X; */
     /*------------------------------------------------------------------*/
     /* B-operator */
     /*------------------------------------------------------------------*/
     /* linear B-operator */
-    if (ele->kintype == so3_geo_lin)
+    if (ele->e.so3->kintype == so3_geo_lin)
     {
       /*----------------------------------------------------------------*/
       /* linear B-operator */
@@ -256,7 +257,7 @@ void so3_bop(ELEMENT *ele,
       bop[5][idof_Y] = 0.0;
       bop[5][idof_Z] = N_X;   
     }
-    else if (ele->kintype == so3_total_lagr)
+    else if (ele->e.so3->kintype == so3_total_lagr)
     {
       /*----------------------------------------------------------------*/
       /* non-linear B-operator (maybe so-called, meaning

@@ -45,6 +45,10 @@
 #include "../therm3/therm3.h"
 #endif
 
+#ifdef D_SOLID3
+#include "../solid3/solid3.h"
+#endif
+
 /*----------------------------------------------------------------------*
   |                                                       m.gee 06/01  |
   | general problem data                                               |
@@ -483,6 +487,16 @@ void calelm(FIELD        *actfield,     /* active field */
         break;
 #endif
 
+#ifdef D_SOLID3
+      case el_solid3:
+        container->handsize = 0;
+        container->handles  = NULL;
+        solid3(actpart,actintra,actele,
+	       &estif_global,&emass_global,&intforce_global,
+	       action,container);
+        break;
+#endif
+
 
    case el_none:
       dserror("Typ of element unknown");
@@ -896,6 +910,8 @@ INT is_wallge=0;
 INT is_therm2=0;
 INT is_therm3=0;
 #endif
+INT is_solid3=0;
+
   ELEMENT *actele;              /* active element */
   /*----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -990,6 +1006,11 @@ for (i=0; i<actfield->dis[disnum].numele; i++)
 #ifdef D_THERM3
    case el_therm3:
       is_therm3=1;
+   break;
+#endif
+#ifdef D_SOLID3
+   case el_solid3:
+      is_solid3=1;
    break;
 #endif
    default:
@@ -1195,13 +1216,23 @@ container->kstep = 0;
         action,container);
   }
 #endif
-  /*------------------------------ init all kind of routines for therm2 */
+  /*------------------------------ init all kind of routines for therm3 */
 #ifdef D_THERM3
   if (is_therm3==1)
   {
     container->handsize = 0;
     container->handles  = NULL;
     therm3(actpart,NULL,NULL,&estif_global,&emass_global,&intforce_global,
+	   action,container);
+  }
+#endif
+  /*------------------------------ init all kind of routines for solid3 */
+#ifdef D_SOLID3
+  if (is_solid3==1)
+  {
+    container->handsize = 0;
+    container->handles  = NULL;
+    solid3(actpart,NULL,NULL,&estif_global,&emass_global,&intforce_global,
 	   action,container);
   }
 #endif
@@ -1248,6 +1279,8 @@ void calreduce(
   INT is_therm2=0;
   INT is_therm3=0;
 #endif
+  INT is_solid3=0;
+  
   ELEMENT *actele;
 
 
@@ -1303,6 +1336,11 @@ void calreduce(
 #ifdef D_THERM3
       case el_therm3:
         is_therm3=1;
+        break;
+#endif
+#ifdef D_SOLID3
+      case el_solid3:
+        is_solid3=1;
         break;
 #endif
       default:
@@ -1378,6 +1416,12 @@ void calreduce(
   /*------------------------------------------- reduce results for therm3 */
 #ifdef D_THERM3
   if (is_therm3==1)
+  {
+  }
+#endif
+  /*------------------------------------------- reduce results for solid3 */
+#ifdef D_SOLID3
+  if (is_solid3==1)
   {
   }
 #endif

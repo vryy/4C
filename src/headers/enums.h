@@ -150,6 +150,7 @@ typedef enum _ELEMENT_TYP
                                         * (planar heat conduction) */
                        el_therm3,      /* 3D thermal element
                                         * (spatial heat conduction) */
+                       el_solid3,      /* 3D structurak element */
                        el_count        /* The number of known
                                         * elements. This must be the
                                         * last entry! */
@@ -179,6 +180,7 @@ typedef enum _ELEMENT_TYP
       "wallge",                                                         \
       "therm2",                                                         \
       "therm3",                                                         \
+      "solid3",                                                         \
       NULL  }
 
 

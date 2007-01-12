@@ -52,7 +52,7 @@ Tetrahedra  { (r,s,t) | -1<=r<=1, -1<=s<=1-r, -1<=t<=1-r-s }
 
 \param   *ele           ELEMENT     (i)  pointer to current element
 \param   *data          SO3_DATA    (i)  common element data
-\param 
+\param   *gpshade       SO3_GPSHAPEDERIV  (i)  Gauss point coords
 \param    imyrank       INT         (i)  ??????? parallel stuff
 \param   *loadvec       DOUBLE      (o)  global element load vector fext
 \return void
@@ -62,12 +62,14 @@ Tetrahedra  { (r,s,t) | -1<=r<=1, -1<=s<=1-r, -1<=t<=1-r-s }
 */
 void so3_load(ELEMENT *ele,  /* actual element */
               SO3_DATA *data,
+              SO3_GPSHAPEDERIV *gpshade,
               INT imyrank,
               DOUBLE *loadvec) /* global element load vector fext */
 {
 
   /* general variables */
-  INT idim, inode, idof;  /* some counters */
+  INT idim, jdim, inod, idof;  /* some counters */
+  NODE *actnode;
   INT nelenod;  /* number of element nodes */
   INT neledof;  /* element DOF */
   DIS_TYP distyp;  /* local copy of discretisation type */
@@ -227,7 +229,7 @@ void so3_load(ELEMENT *ele,  /* actual element */
       fac = gpshade->gpwg[jgp];  /* Gauss weight */
       /* compute Jacobian matrix, its determinant
        * inverse Jacobian is not calculated */
-      so3_metr_jaco(ele, nelenod, ex, gpshade->gpderiv[igp], 1, 
+      so3_metr_jaco(ele, nelenod, ex, gpshade->gpderiv[jgp], 1, 
                     xjm, &det, xji);
       /* integration (quadrature) factor */
       fac = fac * det;
@@ -582,11 +584,11 @@ void so3_load(ELEMENT *ele,  /* actual element */
        || (foundgsurfneum > 0) 
        || (foundglineneum > 0) )
   {
-    for (inode=0; inode<nelenod; inode++)
+    for (inod=0; inod<nelenod; inod++)
     {
       for (idof=0; idof<NUMDOF_SOLID3; idof++)
       {
-        loadvec[inode*NUMDOF_SOLID3+idof] = eload[idof][inode];
+        loadvec[inod*NUMDOF_SOLID3+idof] = eload[idof][inod];
       }
     }
   }

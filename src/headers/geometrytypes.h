@@ -114,6 +114,7 @@ typedef struct _ELEMENT
      struct _WALLGE     *wallge;                /* gradient enhance wall element */
      struct _THERM2     *th2;                   /* 2D thermal element */
      struct _THERM3     *th3;                   /* 3D thermal element */
+     struct _SOLID3     *so3;                   /* 3D structural element */
      }                          e;              /* name of union */
 
      union

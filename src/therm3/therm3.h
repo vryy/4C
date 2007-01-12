@@ -221,6 +221,8 @@ typedef struct _THERM3
    * tetrahedra:
    *    ... */
   INT gpintc[NDIM_THERM3];
+  /* total number of GPs in domain */
+  INT gptot;
 
   /* heat flux vector at Gauss points or nodes
    *    hflux_gp_xyz : at Gauss points in global XYZ-components

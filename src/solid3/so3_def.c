@@ -32,7 +32,7 @@ Maintainer: Moritz Frenzel
 \param   enod         INT     (i)  number of element nodes
 \param   deriv[][]    DOUBLE  (i)  natural derivatives of shape functions
 \param   xji[][]      DOUBLE  (i)  Inverse Jacobi matrix at (r,s,t)
-\param   disgrdv[]    DOUBLE  (o)  displacement gradient at (r,s,t)
+\param   disgrdv[]    DOUBLE  (o)  displacement gradient vect at (r,s,t)
 \param   defgrd[][]   DOUBLE  (o)  deformation gradient tensor at (r,s,t)
 
 \return void
@@ -50,7 +50,7 @@ void so3_def_grad(INT enod,
   /*--------------------------------------------------------------------*/
   INT inod;  /* current node */
   DOUBLE N_X, N_Y, N_Z;  /* derivative w.r. to reference coords */
-  DOUBLE grddis[NUMDFGR_SOLID3];  /* displacment gradient vector */
+/*   DOUBLE defgrdm[NUMDFGR_SOLID3][NUMSTR_SOLID3];  def. grad. matrix */
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -104,33 +104,33 @@ void so3_def_grad(INT enod,
    * [   u_{3,1}                       |   u_{3,2}             1+u_{3,3} ]
    * [                         u_{1,3} |              u_{1,2}  1+u_{1,1} ]
    */
-  defgrdm[0][0] = 1.0 + disgrd[0];
-  defgrdm[0][3] =       disgrd[3];
-  defgrdm[0][5] =       disgrd[8];
-  defgrdm[1][1] = 1.0 + disgrd[1];
-  defgrdm[1][3] =       disgrd[4];
-  defgrdm[1][4] =       disgrd[5];
-  defgrdm[2][2] = 1.0 + disgrd[2];
-  defgrdm[2][4] =       disgrd[6];
-  defgrdm[2][5] =       disgrd[7];
-  defgrdm[3][1] =       disgrd[3];
-  defgrdm[3][3] = 1.0 + disgrd[0];
-  defgrdm[3][4] =       disgrd[8];
-  defgrdm[4][0] =       disgrd[4];
-  defgrdm[4][3] = 1.0 + disgrd[1];
-  defgrdm[4][5] =       disgrd[5];
-  defgrdm[5][2] =       disgrd[5];
-  defgrdm[5][4] = 1.0 + disgrd[1];
-  defgrdm[5][5] =       disgrd[4];
-  defgrdm[6][1] =       disgrd[6];
-  defgrdm[6][3] =       disgrd[7];
-  defgrdm[6][4] = 1.0 + disgrd[2];
-  defgrdm[7][0] =       disgrd[7];
-  defgrdm[7][3] =       disgrd[6];
-  defgrdm[7][5] = 1.0 + disgrd[2];
-  defgrdm[8][2] =       disgrd[8];
-  defgrdm[8][4] =       disgrd[3];
-  defgrdm[8][5] = 1.0 + disgrd[0];
+/*   defgrdm[0][0] = 1.0 + disgrd[0]; */
+/*   defgrdm[0][3] =       disgrd[3]; */
+/*   defgrdm[0][5] =       disgrd[8]; */
+/*   defgrdm[1][1] = 1.0 + disgrd[1]; */
+/*   defgrdm[1][3] =       disgrd[4]; */
+/*   defgrdm[1][4] =       disgrd[5]; */
+/*   defgrdm[2][2] = 1.0 + disgrd[2]; */
+/*   defgrdm[2][4] =       disgrd[6]; */
+/*   defgrdm[2][5] =       disgrd[7]; */
+/*   defgrdm[3][1] =       disgrd[3]; */
+/*   defgrdm[3][3] = 1.0 + disgrd[0]; */
+/*   defgrdm[3][4] =       disgrd[8]; */
+/*   defgrdm[4][0] =       disgrd[4]; */
+/*   defgrdm[4][3] = 1.0 + disgrd[1]; */
+/*   defgrdm[4][5] =       disgrd[5]; */
+/*   defgrdm[5][2] =       disgrd[5]; */
+/*   defgrdm[5][4] = 1.0 + disgrd[1]; */
+/*   defgrdm[5][5] =       disgrd[4]; */
+/*   defgrdm[6][1] =       disgrd[6]; */
+/*   defgrdm[6][3] =       disgrd[7]; */
+/*   defgrdm[6][4] = 1.0 + disgrd[2]; */
+/*   defgrdm[7][0] =       disgrd[7]; */
+/*   defgrdm[7][3] =       disgrd[6]; */
+/*   defgrdm[7][5] = 1.0 + disgrd[2]; */
+/*   defgrdm[8][2] =       disgrd[8]; */
+/*   defgrdm[8][4] =       disgrd[3]; */
+/*   defgrdm[8][5] = 1.0 + disgrd[0]; */
 
   /*--------------------------------------------------------------------*/
   /* (material) deformation gradient tensor */
@@ -138,15 +138,15 @@ void so3_def_grad(INT enod,
    *    F = --- = ------- = [   u_{2,1}   1+u_{2,2}     u_{2,3} ]
    *        d X     d X     [   u_{3,1}     u_{3,2}   1+u_{3,3} ]
    */
-  defgrd[0][0] = 1.0 + disgrd[0];
-  defgrd[0][1] =       disgrd[3];
-  defgrd[0][2] =       disgrd[8];
-  defgrd[1][0] =       disgrd[4];
-  defgrd[1][1] = 1.0 + disgrd[1];
-  defgrd[1][2] =       disgrd[5];
-  defgrd[2][0] =       disgrd[7];
-  defgrd[2][1] =       disgrd[6];
-  defgrd[2][2] = 1.0 + disgrd[2];
+  defgrd[0][0] = 1.0 + disgrdv[0];
+  defgrd[0][1] =       disgrdv[3];
+  defgrd[0][2] =       disgrdv[8];
+  defgrd[1][0] =       disgrdv[4];
+  defgrd[1][1] = 1.0 + disgrdv[1];
+  defgrd[1][2] =       disgrdv[5];
+  defgrd[2][0] =       disgrdv[7];
+  defgrd[2][1] =       disgrdv[6];
+  defgrd[2][2] = 1.0 + disgrdv[2];
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG

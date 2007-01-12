@@ -186,7 +186,8 @@ void solid3(PARTITION *actpart,
     case calc_struct_stress:
       imyrank = actintra->intra_rank;
       actmat = &(mat[ele->mat-1]);
-      so3_stress(ele, &(so3_data), &(so3_gpshade), imyrank, actmat);
+      so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
+      so3_stress(container, ele, &(so3_data), &(so3_gpshade), imyrank, actmat);
       break;
     /*------------------------------------------------------------------*/
     /* finalise */

@@ -217,15 +217,15 @@ void so3_inp(ELEMENT *ele)
     }
     if (strncmp(buffer,"Ndxyz",5) == 0)
     {
-      ele->e.so3->stresstype = so3_stress_npxyz;
+      ele->e.so3->stresstype = so3_stress_ndxyz;
     }
     if (strncmp(buffer,"Ndrst",5) == 0)
     {
-      ele->e.so3->stresstype = so3_stress_nprst;
+      ele->e.so3->stresstype = so3_stress_ndrst;
     }
     if (strncmp(buffer,"Nd123",5) == 0)
     {
-      ele->e.so3->stresstype = so3_stress_np123;
+      ele->e.so3->stresstype = so3_stress_nd123;
     }
   }
 

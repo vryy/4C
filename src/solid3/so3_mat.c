@@ -48,8 +48,8 @@ void so3_mat_sel(ELEMENT *ele,
                  DOUBLE stress[NUMSTR_SOLID3],
                  DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3])
 {
-  INT imat, jmat, istrn, istss, inode;  /* counters */
-  DOUBLE Emod, nu, mfac, strainsum, stresssum;
+  INT istrn, istss;  /* counters */
+  DOUBLE Emod, nu, mfac, stresssum;
   DOUBLE strain[NUMSTR_SOLID3];  /* strain vector */
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -72,7 +72,7 @@ void so3_mat_sel(ELEMENT *ele,
   switch (mat->mattyp)
   {
     /*------------------------------------------------------------------*/
-    case struct_stvenant:
+    case m_stvenant:
       /*----------------------------------------------------------------*/
       /* isotropic elasticity tensor C in matrix notion */
       /*                       [ 1-nu     nu     nu |          0    0    0 ]
@@ -83,8 +83,9 @@ void so3_mat_sel(ELEMENT *ele,
        *                       [                    |      (1-2*nu)/2    0 ]
        *                       [ symmetric          |           (1-2*nu)/2 ]
        */
-      Emod = mat->youngs;  /* Young's modulus (modulus of elasticity */
-      nu = mat->possionratio;  /* Poisson's ratio */
+      Emod = mat->m.stvenant->youngs;  /* Young's modulus 
+                                        * (modulus of elasticity */
+      nu = mat->m.stvenant->possionratio;  /* Poisson's ratio */
       mfac = Emod/((1.0+nu)*(1.0-2.0*nu));  /* factor */
       /* constitutive matrix */
       /* set the whole thing to zero */
@@ -134,7 +135,7 @@ void so3_mat_sel(ELEMENT *ele,
         {
           stresssum += cmat[istss][istrn] * strain[istrn];
         }
-        stress[istress] = stresssum;
+        stress[istss] = stresssum;
       }
       break;
     default:
@@ -149,6 +150,55 @@ void so3_mat_sel(ELEMENT *ele,
   return;
 }  /* end of so3_mat_sel */
 
+/*======================================================================*/
+/*!
+\brief get density out of material law
+
+\param  mat       MATERIAL*   (i)   material data
+\param  density   DOUBLE*     (o)   density value
+\return void
+
+\author bborn
+\date 01/07
+*/
+void so3_mat_density(MATERIAL *mat, 
+                     DOUBLE *density)
+{
+
+#ifdef DEBUG
+  dstrc_enter("so3_mat_density");
+#endif
+
+  /* switch material type */
+  switch(mat->mattyp)
+  {
+    /* ST.VENANT-KIRCHHOFF-MATERIAL */
+    case m_stvenant:
+      *density = mat->m.stvenant->density;
+      break;
+    /* kompressible neo-hooke */
+    case m_neohooke:
+      *density = mat->m.neohooke->density;
+      break;
+    /* porous linear elastic */
+    case m_stvenpor:
+      *density = mat->m.stvenpor->density;
+      break;
+    /* hyperelastic polyconvex material */
+    case m_hyper_polyconvex:
+      *density = mat ->m.hyper_polyconvex->density;
+      break;
+    /* */
+    default:
+      dserror("Density of chosen material is not defined!");
+      break;
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
 
 /*======================================================================*/
 #endif  /* end of #ifdef D_SOLID3 */

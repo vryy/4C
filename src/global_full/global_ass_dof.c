@@ -29,6 +29,11 @@ Maintainer: Michael Gee
 #include "../therm3/therm3.h"
 #endif
 
+#ifdef D_SOLID3
+#include "../solid3/solid3.h"
+#endif
+
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -278,6 +283,16 @@ for (j=0; j<actfield->dis[0].numele; j++)
 	* "../headers/standardtypes.h" ==> "defines.h" ==> "define_sizes.h"
 	*/
          if (actele->node[k]->numdf < NUMDOF_THERM3) actele->node[k]->numdf=NUMDOF_THERM3;
+     }
+     break;
+#endif
+
+#ifdef D_SOLID3
+   case el_solid3:
+     for (k=0; k<actele->numnp; k++)
+     {
+       /* The constant NUMDOF_THERM3 is defined in solid3.h */
+         if (actele->node[k]->numdf < NUMDOF_SOLID3) actele->node[k]->numdf=NUMDOF_SOLID3;
      }
      break;
 #endif

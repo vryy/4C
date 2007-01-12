@@ -43,6 +43,9 @@ Maintainer: Michael Gee
 #include "../therm3/therm3.h"
 #endif
 
+#ifdef D_SOLID3
+#include "../solid3/solid3.h"
+#endif
 
 
 /*----------------------------------------------------------------------*
@@ -923,6 +926,23 @@ void inp_struct_field(
       wge_inp(&(structfield->dis[0].element[counter]));
     }
 #endif
+
+
+
+    /*   elementtyp is SOLID3:
+     *   ---------------------
+     */
+    frchk("SOLID3", &ierr);
+    if (ierr == 1)
+    {
+#ifndef D_SOLID3
+      dserror("SOLID3 needed but not defined in Makefile");
+#else
+      structfield->dis[0].element[counter].eltyp = el_solid3;
+      so3_inp(&(structfield->dis[0].element[counter]));
+#endif
+    }
+
 
 
     counter++;
@@ -1869,7 +1889,6 @@ void inp_therm_field(
       th3_inp(&(thermfield->dis[idis].element[elecounter]));
 #endif
     }
-
 
     elecounter++;  /* increment element counter */
     frread();

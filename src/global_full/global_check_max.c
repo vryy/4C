@@ -82,6 +82,10 @@ Maintainer: Malte Neumann
 #include "../therm3/therm3.h"
 #endif
 
+#ifdef D_SOLID3
+#include "../solid3/solid3.h"
+#endif
+
 
 
 
@@ -301,14 +305,18 @@ for(i=0; i<genprob.numfld; i++)  /* loop all fields */
 
 #ifdef D_THERM3
         case el_therm3:
-          gauss = actele->e.th3->gpnum[0]
-	        * actele->e.th3->gpnum[1]
-	        * actele->e.th3->gpnum[2];
+          gauss = actele->e.th3->gptot;
+          break;
+#endif
+
+#ifdef D_SOLID3
+        case el_solid3:
+          gauss = actele->e.so3->gptot;
           break;
 #endif
 
         case el_none:
-          dserror("No element typ given");
+          dserror("No element type given");
           break;
 
         default:

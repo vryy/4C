@@ -232,7 +232,6 @@ typedef struct _SO3_GEODEFSTR
    * becomes
    *     (Av)_{rst} = xrvi . (Av)_{XYZ} */
   DOUBLE xrvi[NUMSTR_SOLID3][NUMSTR_SOLID3];
-  /* 
   /*--------------------------------------------------------------------*/
   /* deformation: 
    *     These variables refer to the transformation between
@@ -322,15 +321,17 @@ typedef struct _SOLID3
 
   /* number of Gauss points as obtained at read-in
    * hexahedra:
-   *       nGP[0] : in r-direction : 1,2,3,4,5,6 : read-in
-   *       nGP[1] : in s-direction : 1,2,3,4,5,6 : read-in/set
-   *       nGP[2] : in t-direction : 1,2,3,4,5,6 : read-in/set
+   *    gpnum[0] : in r-direction : 1,2,3,4,5,6 : read-in
+   *    gpnum[1] : in s-direction : 1,2,3,4,5,6 : read-in/set
+   *    gpnum[2] : in t-direction : 1,2,3,4,5,6 : read-in/set
    * tetrahedra:
-   *       nGP[0] : total number of GPs in domain: 1,4,5 : read-in
-   *       nGP[1] : total number of GPs on sides: 1,3,4,6 : read-in/set
-   *       nGP[2] : total number of GPs on edges: 1,2,3,4,5,6 : read-in/set */
+   *    gpnum[0] : total number of GPs in domain: 1,4,5 : read-in
+   *    gpnum[1] : total number of GPs on sides: 1,3,4,6 : read-in/set
+   *    gpnum[2] : total number of GPs on edges: 1,2,3,4,5,6 : read-in/set */
   INT gpnum[NDIM_SOLID3];
   INT gpintc[NDIM_SOLID3];
+  /* total number of GPs in domain */
+  INT gptot;
 
   /* stress vector at Gauss points or nodes
    *    stress_gpxyz : at Gauss points in global XYZ-components
@@ -401,6 +402,35 @@ void so3_def_grad(INT enod,
 /* file so3_inp.c */
 void so3_inp(ELEMENT *ele);
 
+/*----------------------------------------------------------------------*/
+/* file so3_int.c */
+void so3_int_fintstiffmass(CONTAINER *container,
+                           ELEMENT *ele,
+                           SO3_GPSHAPEDERIV *gpshade,
+                           MATERIAL *mat,
+                           DOUBLE *eforce_global,
+                           ARRAY *estif_global,
+                           ARRAY *emass_global);
+void so3_int_fintcont(INT neledof,
+                      DOUBLE bop[NUMSTR_SOLID3][MAXDOF_SOLID3],
+                      DOUBLE stress[NUMSTR_SOLID3],
+                      DOUBLE fac,
+                      DOUBLE intfor[MAXDOF_SOLID3]);
+void so3_int_stiffeu(INT neledof,
+                     DOUBLE bop[NUMSTR_SOLID3][MAXDOF_SOLID3],
+                     DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3],
+                     DOUBLE fac,
+                     DOUBLE **estif);
+void so3_int_stiffgeo(INT enod,
+                      DOUBLE bopn[MAXDOF_SOLID3][NUMDOF_SOLID3],
+                      DOUBLE stress[NUMSTR_SOLID3],
+                      DOUBLE fac,
+                      DOUBLE **estif);
+void so3_int_mass(MATERIAL *mat,
+                  INT nnod,
+                  DOUBLE shape[MAXNOD_SOLID3],
+                  DOUBLE fac,
+                  DOUBLE **emass);
 
 /*----------------------------------------------------------------------*/
 /* file so3_intg.c */
@@ -412,6 +442,7 @@ void so3_intg_init(SO3_DATA *data);
 /* file so3_load.c */
 void so3_load(ELEMENT *ele,  /* actual element */
               SO3_DATA *data,
+              SO3_GPSHAPEDERIV *gpshade,
               INT imyrank,
               DOUBLE *loadvec); /* global element load vector fext */
 void so3_load_vol(ELEMENT *ele,
@@ -451,6 +482,8 @@ void so3_mat_sel(ELEMENT *ele,
                  SO3_GEODEFSTR *gds,
                  DOUBLE stress[NUMSTR_SOLID3],
                  DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3]);
+void so3_mat_density(MATERIAL *mat, 
+                     DOUBLE *density);
 
 
 /*----------------------------------------------------------------------*/
@@ -488,7 +521,7 @@ void so3_shape_deriv(DIS_TYP typ,
                      DOUBLE t,
                      INT option,
                      DOUBLE shape[MAXNOD_SOLID3],
-                     DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3])
+                     DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3]);
 void so3_shape_gpshade_init(SO3_GPSHAPEDERIV* so3_gpshade);
 void so3_shape_gpshade(ELEMENT *ele,
                        SO3_DATA *data,
@@ -511,6 +544,7 @@ void so3_stress(CONTAINER *cont,
                 ELEMENT *ele,
                 SO3_DATA *data,
                 SO3_GPSHAPEDERIV *gpshade,
+                INT imyrank,
                 MATERIAL *mat);
 void so3_stress_rst(DOUBLE xrvi[NUMSTR_SOLID3][NUMSTR_SOLID3],
                     DOUBLE stress[NUMSTR_SOLID3],

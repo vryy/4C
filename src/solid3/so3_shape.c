@@ -389,8 +389,9 @@ void so3_shape_gpshade(ELEMENT *ele,
   INT calc_gpshade;  /* operation flag */
   INT gpnumr, gpnums, gpnumt;  /* auxiliar number of Gauss points */
   INT gpintcr, gpintcs, gpintct;  /* auxiliar integration case */
-  INT igpr, igps,igpt;  /* directional Gauss point index */
+  INT igpr, igps, igpt;  /* directional Gauss point index */
   INT igp;  /* total Gauss point index (in domain) */
+  INT idim;  /* dimension index */
   DOUBLE gpcr, gpcs, gpct;  /* Gauss point coordinate */
   DOUBLE fac;  /* Gauss weight */
 
@@ -462,7 +463,7 @@ void so3_shape_gpshade(ELEMENT *ele,
         so3_gpshade->gpintc[0] = gpintcr;
         so3_gpshade->gpintc[1] = gpintcs;
         so3_gpshade->gpintc[2] = gpintct;
-        so3_gpshape->gptot = gpnumr*gpnums*gpnumt;
+        so3_gpshade->gptot = gpnumr*gpnums*gpnumt;
         break;
       /* tetrahedra elements */
       /* tets are not simply rst-oriented and have just one GP-set nr */
@@ -474,7 +475,7 @@ void so3_shape_gpshade(ELEMENT *ele,
         gpintcs = 1;
         gpintct = ele->e.so3->gpintc[0];
         so3_gpshade->gpintc[0] = gpintct;
-        so3_gpshape->gptot = gpnumt;
+        so3_gpshade->gptot = gpnumt;
         break;
       default:
         dserror("ele->distyp unknown!");
@@ -494,7 +495,7 @@ void so3_shape_gpshade(ELEMENT *ele,
           switch (ele->distyp)
           {
             /* hexahedra */
-            case hex10: case hex20: case hex27:
+            case hex8: case hex20: case hex27:
               gpcr = data->ghlc[gpintcr][igpr];  /* r-coordinate */
               gpcs = data->ghlc[gpintcs][igps];  /* s-coordinate */
               gpct = data->ghlc[gpintct][igpt];  /* t-coordinate */
@@ -528,7 +529,7 @@ void so3_shape_gpshade(ELEMENT *ele,
       }
     }
     /* verify total number of Gauss points */
-    dsassert(so3_gpshape->gptot == igp, 
+    dsassert(so3_gpshade->gptot == igp, 
              "Broken total Gauss point number\n");
   }
 

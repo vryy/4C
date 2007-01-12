@@ -115,6 +115,8 @@ void th3_intg_eleinp(ELEMENT *actele,
       {
         gintc[i] = actGP[i] - 1;
       }
+      /* set total number of GP in domain */
+      actth3->gptot = actGP[0] * actGP[1] * actGP[2];
       break;
     /*------------------------------------------------------------------*/
     /* tetrahedra */
@@ -126,6 +128,8 @@ void th3_intg_eleinp(ELEMENT *actele,
       {
         dserror("First GP must be 1, 4, or 5 (total GP of tetrahedra domain)"); 
       }
+      /* set total number of GP in domain */
+      actth3->gptot = actGP[0];
       /* set 2nd Gauss point number (for sides) */
       if ( !( (actGP[1] == 1) || (actGP[1] == 3) 
               || (actGP[1] == 4) ||  (actGP[1] == 6) ) )

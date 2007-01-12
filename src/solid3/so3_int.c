@@ -64,7 +64,7 @@ void so3_int_fintstiffmass(CONTAINER *container,
                            MATERIAL *mat,
                            DOUBLE *eforce_global,
                            ARRAY *estif_global,
-                           ARRAY *emass_global);
+                           ARRAY *emass_global)
 {
   /* general variables/constants */
   INT nelenod;  /* numnp of this element */
@@ -79,22 +79,26 @@ void so3_int_fintstiffmass(CONTAINER *container,
   DOUBLE gpcs;  /* s-coord current GP */
   DOUBLE gpct;  /* t-coord current GP */
   DOUBLE fac;  /* integration factors */
+  INT inod;  /* node index */
+  NODE *actnode;  /* pointer to current node */
+  INT jdim; /* dimension index */
 
   /* quantities at Gauss point */
-  DOUBLE shape[MAXNOD_SOLID3];  /* shape functions */
-  DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3];   /* shape fct. derivatives */
+/*   DOUBLE shape[MAXNOD_SOLID3];  /\* shape functions *\/ */
+/*   DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3];   /\* shape fct. derivatives *\/ */
   SO3_GEODEFSTR gds;  /* isoparametric Jacobian, deformation grad, etc at
                        * Gauss point */
 /*   DOUBLE xjm[NDIM_SOLID3][NDIM_SOLID3];  /\* Jacobian matrix *\/ */
 /*   DOUBLE det;  /\* Jacobi determinant *\/ */
 /*   DOUBLE xji[NDIM_SOLID3][NDIM_SOLID3];  /\* inverse Jacobian matrix *\/ */
-  DOUBLE bop[NDIM_SOLID3][MAXDOF_SOLID3]; /* B-operator */
+  DOUBLE bopn[MAXNOD_SOLID3][NDIM_SOLID3];  /* nodal B-operator */
+  DOUBLE bop[NUMSTR_SOLID3][MAXDOF_SOLID3];  /* B-operator */
   DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3];  /* constitutive matrix */
   DOUBLE stress[NUMSTR_SOLID3];  /* stress vector */
 
   /* convenience */
-  DOUBLE estif[MAXDOF_SOLID3][MAXDOF_SOLID3];  /* element stiffness matrix */
-  DOUBLE emass[MAXDOF_SOLID3][MAXDOF_SOLID3];  /* element stiffness matrix */
+  DOUBLE **estif;  /* element stiffness matrix */
+  DOUBLE **emass;  /* element stiffness matrix */
   DOUBLE eforce[MAXDOF_SOLID3];  /* element internal force vector */
 
   /*--------------------------------------------------------------------*/
@@ -128,7 +132,7 @@ void so3_int_fintstiffmass(CONTAINER *container,
        * NEW SOFT-CODED INDEX FOR OLD DISCRETISATION ==> array_position.h
        * NEW SOFT-CODED INDEX FOR NEW DISCRETISATION ==> TO BE ANNOUNCED
        * ==> IN FEM WE TRUST. */
-      edis[inod][jdim] = actnode->sol[0][jdim];
+      /*edis[inod][jdim] = actnode->sol[0][jdim];*/
     }
   }
   ngp = gpshade->gptot;  /* total number of Gauss points in domain */
@@ -149,10 +153,10 @@ void so3_int_fintstiffmass(CONTAINER *container,
                   gds.xjm, &(gds.xjdet), gds.xji);
     /*------------------------------------------------------------------*/
     /* integration (quadrature) factor */
-    fac = fac * det;
+    fac = fac * gds.xjdet;
     /*------------------------------------------------------------------*/
     /* deformation tensor and displacement gradient */
-    so3_def_grad(enod, edis, gpshade->gpderiv[igp], gds.xji, 
+    so3_def_grad(nelenod, edis, gpshade->gpderiv[igp], gds.xji, 
                  gds.disgrdv, gds.defgrd);
     /*------------------------------------------------------------------*/
     /* Linear/Green-Lagrange strain vector */
@@ -170,7 +174,8 @@ void so3_int_fintstiffmass(CONTAINER *container,
     }
     /*------------------------------------------------------------------*/
     /* calculate B-operator */
-    so3_bop(nelenod, gpshade->gpderiv[igp], gds.xji, bopl, bop);
+    so3_bop(ele, nelenod, gpshade->gpderiv[igp], gds.xji, 
+            gds.defgrd, bopn, bop);
     /*------------------------------------------------------------------*/
     /* call material law */
     so3_mat_sel(ele, mat, igp, &gds, stress, cmat);
@@ -196,7 +201,7 @@ void so3_int_fintstiffmass(CONTAINER *container,
         /* `elastic' and `initial-displacement' stiffness */
         so3_int_stiffeu(neledof, bop, cmat, fac, estif);
         /* `geometric' stiffness */
-        so3_int_stiffgeo(enod, bopn, stress, fac, estif);
+        so3_int_stiffgeo(nelenod, bopn, stress, fac, estif);
       }
       /* catch unknown spatial kinematics */
       else
@@ -208,7 +213,7 @@ void so3_int_fintstiffmass(CONTAINER *container,
     /* element mass matrix */
     if (emass_global)
     {
-      so3_int_mass(enod, dens, gpshade->gpshape[igp], emass);
+      so3_int_mass(mat, nelenod, gpshade->gpshape[igp], fac, emass);
     }
   }
 
@@ -261,9 +266,9 @@ void so3_int_fintcont(INT neledof,
   for (idof=0; idof<neledof; idof++)
   {
     intforidof = 0.0;
-    for (istr=0, istr<NUMSTR_SOLID3; istr++)
+    for (istr=0; istr<NUMSTR_SOLID3; istr++)
     {
-      intforidof += bop[istr][idof]*stress[istr]*fac;
+      intforidof += bop[istr][idof] * stress[istr] * fac;
     }
     intfor[idof] += intforidof;
   }
@@ -289,7 +294,7 @@ void so3_int_fintcont(INT neledof,
 \param   bop[][]    DOUBLE  (i)    B-operator
 \param   cmat[][]   DOUBLE  (i)    constitutive matrix
 \param   fac        DOUBLE  (i)    integration factor of current GP
-\param   stif[][]   DOUBLE  (io)   element stiffness matrix increment of
+\param   **estif    DOUBLE  (io)   element stiffness matrix increment of
                                      current Gauss point
 \return  void
 
@@ -300,10 +305,10 @@ void so3_int_stiffeu(INT neledof,
                      DOUBLE bop[NUMSTR_SOLID3][MAXDOF_SOLID3],
                      DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3],
                      DOUBLE fac,
-                     DOUBLE stif[MAXDOF_SOLID3][MAXDOF_SOLID3])
+                     DOUBLE **estif)
 {
   INT istr, jstr, idof, jdof;  /* counters */
-  DOUBLE bopcmatistr, tidofjdof;  /* intermediate sums */
+  DOUBLE bopcmatistr, stidofjdof;  /* intermediate sums */
   DOUBLE bopcmat[NUMSTR_SOLID3];  /* bopcmat_ki = bop_kj * cmat_ji */
 
   /*--------------------------------------------------------------------*/
@@ -332,7 +337,7 @@ void so3_int_stiffeu(INT neledof,
       {
         stidofjdof += bopcmat[istr]*bop[istr][jdof];
       }
-      stif[idof][jdof] += stidofjdof;
+      estif[idof][jdof] += stidofjdof;
     }
   }
 
@@ -354,7 +359,7 @@ void so3_int_stiffeu(INT neledof,
 \param   bopn[][]   DOUBLE      (i)   B-operator
 \param   stress[]   DOUBLE      (i)   stress vector
 \param   fac        DOUBLE      (i)   Gaussian integration factor
-\param   estif[][]  DOUBLE      (io)  element stiffness matrix
+\param   **estif    DOUBLE      (io)  element stiffness matrix
 \return  void
 
 \author bborn
@@ -364,9 +369,15 @@ void so3_int_stiffgeo(INT enod,
                       DOUBLE bopn[MAXDOF_SOLID3][NUMDOF_SOLID3],
                       DOUBLE stress[NUMSTR_SOLID3],
                       DOUBLE fac,
-                      DOUBLE estif[MAXDOF_SOLID3][MAXDOF_SOLID3])
+                      DOUBLE **estif)
 {
   DOUBLE S11, S12, S13, S21, S22, S23, S31, S32, S33;  /* stress compo. */
+  INT inod, jnod;  /* node indices */
+  INT idof, jdof;  /* DOF indices */
+  INT idim;  /* dimension indices */
+  DOUBLE bopinod[NDIM_SOLID3];  /* intermediate Bn-matrix */
+  DOUBLE strbopinod[NDIM_SOLID3];  /* intermediate Sm . Blin */
+  DOUBLE bopstrbop;
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -401,7 +412,7 @@ void so3_int_stiffgeo(INT enod,
       bopstrbop = 0.0;
       for (idim=0; idim<NDIM_SOLID3; idim++)
       {
-        bopstrbop += bopn[jnod][idim]*strbopinod[idim];
+        bopstrbop += bopn[jnod][idim] * strbopinod[idim];
       }
       /* add contribution to element stiffness matrix */
       for (idof=inod*NDIM_SOLID3; idof<(inod+1)*NDIM_SOLID3; idof++)
@@ -444,34 +455,40 @@ WHAT ABOUT _CONSISTENT_ AND _LUMPED_ MASS MATRICES?
 \author bborn
 \date 12/06
 */
-void so3_int_mass(INT nnod,
-                  DOUBLE density,
+void so3_int_mass(MATERIAL *mat,
+                  INT nnod,
                   DOUBLE shape[MAXNOD_SOLID3],
                   DOUBLE fac,
-                  DOUBLE emass[MAXDOF_SOLID3][MAXDOF_SOLID3])
+                  DOUBLE **emass)
 {
-  INT inod, jnod;  /* loop indices */
+  DOUBLE dens;  /* density */
+  INT idof, jdof;  /* loop indices for DOFs */
+  INT inod, jnod;  /* node indices */
+  INT idim;  /* dimension indices */
   DOUBLE shapeinod;  /* temporary (inod)th shape function */
   DOUBLE mascom[MAXNOD_SOLID3][MAXNOD_SOLID3];  /* compact mass matrix 
                                                  * containing only 
                                                  * discretised mass
                                                  * in one direction */
-  INT idof, jdof;  /* loop indices for DOFs */
-  
+
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_enter("so3_int_mass");
 #endif
 
   /*--------------------------------------------------------------------*/
+  /* retrieve density */
+  so3_mat_density(mat, &dens);
+
+  /*--------------------------------------------------------------------*/
   /* compact mass matrix contribution at current Gauss point */
   /* m = N^T . rho * N */
   for (inod=0; inod<nnod; inod++)
   {
-    shapeinod = fac * density * shape[inod];
+    shapeinod = fac * dens * shape[inod];
     for (jnod=0; jnod<nnod; jnod++)
     {
-      mascom[inod][jnod] = shapeinod * shape[jnod] 
+      mascom[inod][jnod] = shapeinod * shape[jnod];
     }
   }
 
