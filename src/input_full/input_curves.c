@@ -197,6 +197,8 @@ for (i=0; i<counter; i++)
          actcurve->numex=-8;
       else if (strncmp(buffer,"f(t)=t:2-C1:(2PI)*cos(PI*t:C1-PI:2)",35)==0)
          actcurve->numex=-9; /* time integral of numex -5 */
+      else if (strncmp(buffer,"f(t)=-0.5*cos(PI*(T-C1)/C2)+0.5",31)==0)
+         actcurve->numex=-11; /* ramp function with horizontal slopes */
       else
          dserror("cannot read function of CURVE\n");
       if (ierr!=1) dserror("cannot read CURVE");

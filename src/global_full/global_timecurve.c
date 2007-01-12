@@ -306,6 +306,14 @@ case -10:
 	 fac = 0.5*(1-c2)*(1 - cos(2*PI*c1*(T - c3))) + c2;
    } 
 break;
+case -11: /* f(t)=-0.5*cos(PI*(T-c1)/c2)+0.5 */
+   	if (T<c1)
+    	fac = 0.0;
+    else if ((c1 <= T) && (T <= (c1 + c2)))
+        fac = -0.5 * cos(PI * ( T - c1 ) / c2) + 0.5;
+    else
+        fac = 1.0;
+break;
 default:
    dserror("Number of explicit timecurve (NUMEX) unknown\n");
 } /* end switch(numex) */
