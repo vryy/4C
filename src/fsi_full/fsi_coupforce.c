@@ -114,13 +114,15 @@ void fsi_cbf(
     INT             init)
 {
 
-  INT i, j, l;
-  INT line;
+  INT i, j;
   INT numdf;
   INT hasdirich, hasext;
   INT force_on_node[MAXNOD];
+#ifdef D_FLUID3_F
   INT nfnode;  /* number of nodes of actele where forces are searched for */
-
+  INT line;
+  INT l;
+#endif
 
 #ifdef PARALLEL
   INT dofx, dofy, dofz;
@@ -208,7 +210,7 @@ void fsi_cbf(
             if (actgnode->fsicouple==NULL) continue;
 #endif
 
-            if (actele->eltyp==el_fluid3)
+            if (actele->eltyp==el_fluid3 || actele->eltyp==el_fluid3_fast)
               actele->e.f3->force_on = 1;
 #ifdef D_FLUID3_IS
             else if (actele->eltyp==el_fluid3_is)
