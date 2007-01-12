@@ -297,6 +297,149 @@ void ale3_funct_deriv(
       deriv[2][19] =  Q14*sm*sp*rm;
       break;
 
+  case hex27: /* QUADRATIC shape functions and their natural derivatives
+                 with central nodes                         ----*/
+  {
+    /* form basic values */
+    DOUBLE drm1,dr00,drp1,dsm1,ds00,dsp1,dtm1,dt00,dtp1;
+    DOUBLE rm1,r00,rp1,sm1,s00,sp1,tm1,t00,tp1;
+
+    rm1=Q12*r*(r - ONE);
+    r00=(ONE - r*r);
+    rp1=Q12*r*(r + ONE);
+    sm1=Q12*s*(s - ONE);
+    s00=(ONE - s*s);
+    sp1=Q12*s*(s + ONE);
+    tm1=Q12*t*(t - ONE);
+    t00=(ONE - t*t);
+    tp1=Q12*t*(t + ONE);
+
+    drm1 = r - Q12;
+    dr00 = -TWO * r;
+    drp1 = r + Q12;
+    dsm1 = s - Q12;
+    ds00 = -TWO * s;
+    dsp1 = s + Q12;
+    dtm1 = t - Q12;
+    dt00 = -TWO * t;
+    dtp1 = t + Q12;
+
+    funct[0] = rp1*sp1*tp1;
+    funct[1] = sm1*rp1*tp1;
+    funct[2] = rm1*sm1*tp1;
+    funct[3] = rm1*sp1*tp1;
+    funct[4] = tm1*rp1*sp1;
+    funct[5] = sm1*tm1*rp1;
+    funct[6] = rm1*sm1*tm1;
+    funct[7] = rm1*tm1*sp1;
+    funct[8] = s00*rp1*tp1;
+    funct[9] = r00*sm1*tp1;
+    funct[10] = s00*rm1*tp1;
+    funct[11] = r00*sp1*tp1;
+    funct[12] = t00*rp1*sp1;
+    funct[13] = t00*sm1*rp1;
+    funct[14] = t00*rm1*sm1;
+    funct[15] = t00*rm1*sp1;
+    funct[16] = s00*tm1*rp1;
+    funct[17] = r00*sm1*tm1;
+    funct[18] = s00*rm1*tm1;
+    funct[19] = r00*tm1*sp1;
+    funct[20] = r00*s00*tp1;
+    funct[21] = s00*t00*rp1;
+    funct[22] = r00*t00*sm1;
+    funct[23] = s00*t00*rm1;
+    funct[24] = r00*t00*sp1;
+    funct[25] = r00*s00*tm1;
+    funct[26] = r00*s00*t00;
+
+    if (option==1) /* --> first derivative evaluation */
+    {
+      deriv[0][0] = sp1*tp1*drp1;
+      deriv[0][1] = sm1*tp1*drp1;
+      deriv[0][2] = sm1*tp1*drm1;
+      deriv[0][3] = sp1*tp1*drm1;
+      deriv[0][4] = tm1*sp1*drp1;
+      deriv[0][5] = sm1*tm1*drp1;
+      deriv[0][6] = sm1*tm1*drm1;
+      deriv[0][7] = tm1*sp1*drm1;
+      deriv[0][8] = s00*tp1*drp1;
+      deriv[0][9] = sm1*tp1*dr00;
+      deriv[0][10] = s00*tp1*drm1;
+      deriv[0][11] = sp1*tp1*dr00;
+      deriv[0][12] = t00*sp1*drp1;
+      deriv[0][13] = t00*sm1*drp1;
+      deriv[0][14] = t00*sm1*drm1;
+      deriv[0][15] = t00*sp1*drm1;
+      deriv[0][16] = s00*tm1*drp1;
+      deriv[0][17] = sm1*tm1*dr00;
+      deriv[0][18] = s00*tm1*drm1;
+      deriv[0][19] = tm1*sp1*dr00;
+      deriv[0][20] = s00*tp1*dr00;
+      deriv[0][21] = s00*t00*drp1;
+      deriv[0][22] = t00*sm1*dr00;
+      deriv[0][23] = s00*t00*drm1;
+      deriv[0][24] = t00*sp1*dr00;
+      deriv[0][25] = s00*tm1*dr00;
+      deriv[0][26] = s00*t00*dr00;
+
+      deriv[1][0] = rp1*tp1*dsp1;
+      deriv[1][1] = rp1*tp1*dsm1;
+      deriv[1][2] = rm1*tp1*dsm1;
+      deriv[1][3] = rm1*tp1*dsp1;
+      deriv[1][4] = tm1*rp1*dsp1;
+      deriv[1][5] = tm1*rp1*dsm1;
+      deriv[1][6] = rm1*tm1*dsm1;
+      deriv[1][7] = rm1*tm1*dsp1;
+      deriv[1][8] = rp1*tp1*ds00;
+      deriv[1][9] = r00*tp1*dsm1;
+      deriv[1][10] = rm1*tp1*ds00;
+      deriv[1][11] = r00*tp1*dsp1;
+      deriv[1][12] = t00*rp1*dsp1;
+      deriv[1][13] = t00*rp1*dsm1;
+      deriv[1][14] = t00*rm1*dsm1;
+      deriv[1][15] = t00*rm1*dsp1;
+      deriv[1][16] = tm1*rp1*ds00;
+      deriv[1][17] = r00*tm1*dsm1;
+      deriv[1][18] = rm1*tm1*ds00;
+      deriv[1][19] = r00*tm1*dsp1;
+      deriv[1][20] = r00*tp1*ds00;
+      deriv[1][21] = t00*rp1*ds00;
+      deriv[1][22] = r00*t00*dsm1;
+      deriv[1][23] = t00*rm1*ds00;
+      deriv[1][24] = r00*t00*dsp1;
+      deriv[1][25] = r00*tm1*ds00;
+      deriv[1][26] = r00*t00*ds00;
+
+      deriv[2][0] = rp1*sp1*dtp1;
+      deriv[2][1] = sm1*rp1*dtp1;
+      deriv[2][2] = rm1*sm1*dtp1;
+      deriv[2][3] = rm1*sp1*dtp1;
+      deriv[2][4] = rp1*sp1*dtm1;
+      deriv[2][5] = sm1*rp1*dtm1;
+      deriv[2][6] = rm1*sm1*dtm1;
+      deriv[2][7] = rm1*sp1*dtm1;
+      deriv[2][8] = s00*rp1*dtp1;
+      deriv[2][9] = r00*sm1*dtp1;
+      deriv[2][10] = s00*rm1*dtp1;
+      deriv[2][11] = r00*sp1*dtp1;
+      deriv[2][12] = rp1*sp1*dt00;
+      deriv[2][13] = sm1*rp1*dt00;
+      deriv[2][14] = rm1*sm1*dt00;
+      deriv[2][15] = rm1*sp1*dt00;
+      deriv[2][16] = s00*rp1*dtm1;
+      deriv[2][17] = r00*sm1*dtm1;
+      deriv[2][18] = s00*rm1*dtm1;
+      deriv[2][19] = r00*sp1*dtm1;
+      deriv[2][20] = r00*s00*dtp1;
+      deriv[2][21] = s00*rp1*dt00;
+      deriv[2][22] = r00*sm1*dt00;
+      deriv[2][23] = s00*rm1*dt00;
+      deriv[2][24] = r00*sp1*dt00;
+      deriv[2][25] = r00*s00*dtm1;
+      deriv[2][26] = r00*s00*dt00;
+    }
+    break;
+  }
 
     case tet4: /* LINEAR SHAPE FUNCTIONS */
 /*
@@ -647,6 +790,7 @@ void ale3_intg(
   {
     case hex8:
     case hex20:
+    case hex27:
       /*----------------------------------------------------------------------*
         |     INTEGRATION PARAMETERS FOR    H E X A H E D R A L     ELEMENTS   |
         |     GAUSS SAMPLING POINTS  AT     R/S/T-COORDINATES   RESPECTIVELY   |

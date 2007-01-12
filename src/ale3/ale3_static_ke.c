@@ -90,6 +90,7 @@ void ale3_static_ke(
   {
     case hex8:
     case hex20:
+    case hex27:
       nir     = ele->e.ale3->nGP[0];
       nis     = ele->e.ale3->nGP[1];
       nit     = ele->e.ale3->nGP[2];
@@ -125,6 +126,7 @@ void ale3_static_ke(
         {
           case hex8:
           case hex20:
+          case hex27:
             e2   = data->xgps[ls];
             facs = data->wgts[ls];
             e3   = data->xgpt[lt];
@@ -267,6 +269,7 @@ void ale3_static_ke_red(
   {
     case hex8:
     case hex20:
+    case hex27:
       nir     = ele->e.ale3->nGP[0];
       nis     = ele->e.ale3->nGP[1];
       nit     = ele->e.ale3->nGP[2];
@@ -308,6 +311,7 @@ void ale3_static_ke_red(
         {
           case hex8:
           case hex20:
+          case hex27:
             e2   = data->xgps[ls];
             facs = data->wgts[ls];
             e3   = data->xgpt[lt];
