@@ -163,7 +163,11 @@ case 1:
       msr_array->options[AZ_graph_fill]      = azvar->azgfill;
    break;
    default:
-      dserror("No correct preconditioner for Aztec");
+     if ((azvar->azprectyp==azprec_ML) ||
+         (azvar->azprectyp==azprec_MLfluid) ||
+         (azvar->azprectyp==azprec_MLfluid2))
+       dserror("ML preconditioner only with Trilinos algebra");
+      dserror("No correct preconditioner for Aztec: %d", azvar->azprectyp);
    }
    /*---------------------------------------------- set rest of options */
    msr_array->options[AZ_max_iter] = azvar->aziter;
