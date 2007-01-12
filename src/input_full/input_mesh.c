@@ -1171,9 +1171,9 @@ void inp_fluid_field(
 {
 
   INT        ierr;
-  INT        counter = 0;
-  INT        ale_counter;
-  INT        ale_element;
+  INT        fluid_counter = 0;       /* number of fluid elements */
+  INT        ale_counter = 0;         /* number of fluid elements that need a new ALE element */
+  INT        created_ale_counter = 0; /* count ALE elemntes actually created */
   INT        elenumber;
   char      *colpointer;
   FIELD     *alefield;
@@ -1230,11 +1230,11 @@ void inp_fluid_field(
       if (create_ale != 0)
         ale_counter++;
 
-      counter++;
+      fluid_counter++;
       frread();
     }
   }
-  fluidfield->dis[0].numele = counter;
+  fluidfield->dis[0].numele = fluid_counter;
 
 
   /* allocate elements */
@@ -1245,13 +1245,13 @@ void inp_fluid_field(
   /* read elements */
   if (frfind("--FLUID ELEMENTS")==0) goto end;
   frread();
-  counter=0;
-  ale_element=0;
+  fluid_counter=0;
+  created_ale_counter=0;
   while(strncmp(allfiles.actplace,"------",6)!=0)
   {
     colpointer = allfiles.actplace;
     elenumber  = strtol(colpointer,&colpointer,10);
-    fluidfield->dis[0].element[counter].Id = --elenumber;
+    fluidfield->dis[0].element[fluid_counter].Id = --elenumber;
 
 
     /* read the typ of element and call element readning function */
@@ -1266,8 +1266,8 @@ void inp_fluid_field(
 #ifndef D_FLUID2_PRO
       dserror("FLUID2_PRO needed but not defined in Makefile");
 #else
-      fluidfield->dis[0].element[counter].eltyp = el_fluid2_pro;
-      f2pro_inp(&(fluidfield->dis[0].element[counter]));
+      fluidfield->dis[0].element[fluid_counter].eltyp = el_fluid2_pro;
+      f2pro_inp(&(fluidfield->dis[0].element[fluid_counter]));
 
       /*
        * We always create a second discretization, even if we do not
@@ -1286,9 +1286,9 @@ void inp_fluid_field(
 	genprob.create_dis = 1;
 	fluidfield->dis[1].disclass = dc_created_tu;
       }
-      fluidfield->dis[1].element[counter].eltyp=el_fluid2_pro;
-      f2pro_dis(&(fluidfield->dis[0].element[counter]),
-		&(fluidfield->dis[1].element[counter]),
+      fluidfield->dis[1].element[fluid_counter].eltyp=el_fluid2_pro;
+      f2pro_dis(&(fluidfield->dis[0].element[fluid_counter]),
+		&(fluidfield->dis[1].element[fluid_counter]),
 		genprob.nele,genprob.nodeshift);
 #endif
     }
@@ -1303,8 +1303,8 @@ void inp_fluid_field(
 #ifndef D_FLUID3_PRO
       dserror("FLUID3_PRO needed but not defined in Makefile");
 #else
-      fluidfield->dis[0].element[counter].eltyp = el_fluid3_pro;
-      f3pro_inp(&(fluidfield->dis[0].element[counter]));
+      fluidfield->dis[0].element[fluid_counter].eltyp = el_fluid3_pro;
+      f3pro_inp(&(fluidfield->dis[0].element[fluid_counter]));
 
       /*
        * We always create a second discretization, even if we do not
@@ -1323,9 +1323,9 @@ void inp_fluid_field(
 	genprob.create_dis = 1;
 	fluidfield->dis[1].disclass = dc_created_tu;
       }
-      fluidfield->dis[1].element[counter].eltyp=el_fluid3_pro;
-      f3pro_dis(&(fluidfield->dis[0].element[counter]),
-		&(fluidfield->dis[1].element[counter]),
+      fluidfield->dis[1].element[fluid_counter].eltyp=el_fluid3_pro;
+      f3pro_dis(&(fluidfield->dis[0].element[fluid_counter]),
+		&(fluidfield->dis[1].element[fluid_counter]),
 		genprob.nele,genprob.nodeshift);
 #endif
     }
@@ -1340,8 +1340,8 @@ void inp_fluid_field(
 #ifndef D_FLUID2_IS
       dserror("FLUID2_IS needed but not defined in Makefile");
 #else
-      fluidfield->dis[0].element[counter].eltyp = el_fluid2_is;
-      f2is_inp(&(fluidfield->dis[0].element[counter]));
+      fluidfield->dis[0].element[fluid_counter].eltyp = el_fluid2_is;
+      f2is_inp(&(fluidfield->dis[0].element[fluid_counter]));
 #endif
     }
 
@@ -1355,8 +1355,8 @@ void inp_fluid_field(
 #ifndef D_FLUID3_IS
       dserror("FLUID3_IS needed but not defined in Makefile");
 #else
-      fluidfield->dis[0].element[counter].eltyp = el_fluid3_is;
-      f3is_inp(&(fluidfield->dis[0].element[counter]));
+      fluidfield->dis[0].element[fluid_counter].eltyp = el_fluid3_is;
+      f3is_inp(&(fluidfield->dis[0].element[fluid_counter]));
 #endif
     }
 
@@ -1374,10 +1374,10 @@ void inp_fluid_field(
 #ifdef D_FLUID3
     if (ierr==1)
     {
-      fluidfield->dis[0].element[counter].eltyp=el_fluid3;
-      f3inp(&(fluidfield->dis[0].element[counter]),counter);
+      fluidfield->dis[0].element[fluid_counter].eltyp=el_fluid3;
+      f3inp(&(fluidfield->dis[0].element[fluid_counter]),fluid_counter);
 
-      if (fluidfield->dis[0].element[counter].e.f3->create_ale > 0)
+      if (fluidfield->dis[0].element[fluid_counter].e.f3->create_ale > 0)
       {
         /* allocate discretization, if necessary */
         if( alefield->dis == NULL)
@@ -1421,9 +1421,9 @@ void inp_fluid_field(
 
 
         /* create the corresponding ale element */
-        f3_createale(&(fluidfield->dis[0].element[counter]),
-            &(alefield->dis[0].element[ale_element]),genprob.nele,genprob.nodeshift);
-        ale_element++;
+        f3_createale(&(fluidfield->dis[0].element[fluid_counter]),
+            &(alefield->dis[0].element[created_ale_counter]),genprob.nele,genprob.nodeshift);
+        created_ale_counter++;
       }  /* if (genprob.create_ale == 1) */
     }
 #endif
@@ -1439,8 +1439,8 @@ void inp_fluid_field(
 #ifndef D_FLUID3_F
       dserror("FLUID3_F needed but not defined in Makefile");
 #else
-      fluidfield->dis[0].element[counter].eltyp=el_fluid3_fast;
-      f3inp(&(fluidfield->dis[0].element[counter]),counter);
+      fluidfield->dis[0].element[fluid_counter].eltyp=el_fluid3_fast;
+      f3inp(&(fluidfield->dis[0].element[fluid_counter]),fluid_counter);
 
       if (genprob.create_ale == 1)
       {
@@ -1485,9 +1485,9 @@ void inp_fluid_field(
 
 
         /* create the corresponding ale element */
-        f3_createale(&(fluidfield->dis[0].element[counter]),
-            &(alefield->dis[0].element[ale_element]),genprob.nele,genprob.nodeshift);
-        ale_element++;
+        f3_createale(&(fluidfield->dis[0].element[fluid_counter]),
+            &(alefield->dis[0].element[created_ale_counter]),genprob.nele,genprob.nodeshift);
+        created_ale_counter++;
       }  /* if (genprob.create_ale == 1) */
 
 #endif
@@ -1508,8 +1508,8 @@ void inp_fluid_field(
 #ifdef D_FLUID2
     if (ierr==1)
     {
-      fluidfield->dis[0].element[counter].eltyp=el_fluid2;
-      f2_inp(&(fluidfield->dis[0].element[counter]),counter);
+      fluidfield->dis[0].element[fluid_counter].eltyp=el_fluid2;
+      f2_inp(&(fluidfield->dis[0].element[fluid_counter]),fluid_counter);
 
 
       if (genprob.create_ale == 1)
@@ -1544,15 +1544,16 @@ void inp_fluid_field(
 
 
         /* create the corresponding ale element */
-        f2_createale(&(fluidfield->dis[0].element[counter]),
-            &(alefield->dis[0].element[counter]),genprob.nele,genprob.nodeshift);
+        f2_createale(&(fluidfield->dis[0].element[fluid_counter]),
+            &(alefield->dis[0].element[created_ale_counter]),genprob.nele,genprob.nodeshift);
+        created_ale_counter++;
       }  /* if (genprob.create_ale == 1) */
 
 
 
 #ifdef D_FLUID2TU
-      if (fluidfield->dis[0].element[counter].e.f2->turbu == 2 ||
-          fluidfield->dis[0].element[counter].e.f2->turbu == 3 )
+      if (fluidfield->dis[0].element[fluid_counter].e.f2->turbu == 2 ||
+          fluidfield->dis[0].element[fluid_counter].e.f2->turbu == 3 )
       {
         if(cpro==0)
         {
@@ -1564,9 +1565,9 @@ void inp_fluid_field(
           fluidfield->dis[1].disclass = dc_created_tu;
         } /* endif (cpro==0) */
 
-        fluidfield->dis[1].element[counter].eltyp=el_fluid2_tu;
-        f2tu_dis(&(fluidfield->dis[0].element[counter]),
-            &(fluidfield->dis[1].element[counter]),genprob.nele,genprob.nodeshift);
+        fluidfield->dis[1].element[fluid_counter].eltyp=el_fluid2_tu;
+        f2tu_dis(&(fluidfield->dis[0].element[fluid_counter]),
+            &(fluidfield->dis[1].element[fluid_counter]),genprob.nele,genprob.nodeshift);
       } /* endif (e.f2->turbu == 2 || 3) */
 #endif
 
@@ -1574,11 +1575,11 @@ void inp_fluid_field(
 #endif
 
 
-    counter++;
+    fluid_counter++;
     frread();
 
   }  /* while(strncmp(allfiles.actplace,"------",6)!=0) */
-  dsassert(ale_counter==ale_element, "ale element count mismatch");
+  dsassert(ale_counter == created_ale_counter, "ale element count mismatch");
 
   frrewind();
 
