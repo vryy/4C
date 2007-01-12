@@ -348,8 +348,8 @@ void f2_createale(
       }
 
       ele1->mat            = 1;
-      ele1->e.ale2->nGP[0] = 2;
-      ele1->e.ale2->nGP[1] = 2;
+      ele1->e.ale2->nGP[0] = 3;
+      ele1->e.ale2->nGP[1] = 3;
       ele1->e.ale2->jacobi = 0;
       break;
 
@@ -365,8 +365,8 @@ void f2_createale(
       }
 
       ele1->mat            = 1;
-      ele1->e.ale2->nGP[0] = 2;
-      ele1->e.ale2->nGP[1] = 2;
+      ele1->e.ale2->nGP[0] = 3;
+      ele1->e.ale2->nGP[1] = 3;
       ele1->e.ale2->jacobi = 0;
       break;
 
