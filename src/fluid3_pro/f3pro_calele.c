@@ -441,11 +441,18 @@ void f3pro_calgradp(
   /*memset(eforce,0,(MAXNOD*MAXDOFPERNODE)*sizeof(DOUBLE));*/
 
   /* set element coordinates */
-  for(i=0;i<ele->numnp;i++)
+  if (ele->e.f3pro->is_ale)
   {
-    xyze[0][i]=ele->node[i]->x[0];
-    xyze[1][i]=ele->node[i]->x[1];
-    xyze[2][i]=ele->node[i]->x[2];
+    f3_alecoor(ele,xyze);
+  }
+  else
+  {
+    for(i=0;i<ele->numnp;i++)
+    {
+      xyze[0][i]=ele->node[i]->x[0];
+      xyze[1][i]=ele->node[i]->x[1];
+      xyze[2][i]=ele->node[i]->x[2];
+    }
   }
 
   switch (ele->e.f3pro->dm)
@@ -685,11 +692,18 @@ void f3pro_calprhs(
   memset(eforce,0,(MAXNOD*MAXDOFPERNODE)*sizeof(DOUBLE));
 
   /* set element coordinates */
-  for(i=0;i<ele->numnp;i++)
+  if (ele->e.f3pro->is_ale)
   {
-    xyze[0][i]=ele->node[i]->x[0];
-    xyze[1][i]=ele->node[i]->x[1];
-    xyze[2][i]=ele->node[i]->x[2];
+    f3_alecoor(ele,xyze);
+  }
+  else
+  {
+    for(i=0;i<ele->numnp;i++)
+    {
+      xyze[0][i]=ele->node[i]->x[0];
+      xyze[1][i]=ele->node[i]->x[1];
+      xyze[2][i]=ele->node[i]->x[2];
+    }
   }
 
   velnp = ipos->velnp;
@@ -886,11 +900,18 @@ void f3pro_calvrhs(ELEMENT* ele, ARRAY_POSITION *ipos)
   memset(eforce,0,(MAXNOD*MAXDOFPERNODE)*sizeof(DOUBLE));
 
   /* set element coordinates */
-  for(i=0;i<ele->numnp;i++)
+  if (ele->e.f3pro->is_ale)
   {
-    xyze[0][i]=ele->node[i]->x[0];
-    xyze[1][i]=ele->node[i]->x[1];
-    xyze[2][i]=ele->node[i]->x[2];
+    f3_alecoor(ele,xyze);
+  }
+  else
+  {
+    for(i=0;i<ele->numnp;i++)
+    {
+      xyze[0][i]=ele->node[i]->x[0];
+      xyze[1][i]=ele->node[i]->x[1];
+      xyze[2][i]=ele->node[i]->x[2];
+    }
   }
 
   velnp = ipos->velnp;
@@ -1128,11 +1149,18 @@ void f3pro_calvelupdate(
   memset(eforce,0,(MAXNOD*MAXDOFPERNODE)*sizeof(DOUBLE));
 
   /* set element coordinates */
-  for(i=0;i<ele->numnp;i++)
+  if (ele->e.f3pro->is_ale)
   {
-    xyze[0][i]=ele->node[i]->x[0];
-    xyze[1][i]=ele->node[i]->x[1];
-    xyze[2][i]=ele->node[i]->x[2];
+    f3_alecoor(ele,xyze);
+  }
+  else
+  {
+    for(i=0;i<ele->numnp;i++)
+    {
+      xyze[0][i]=ele->node[i]->x[0];
+      xyze[1][i]=ele->node[i]->x[1];
+      xyze[2][i]=ele->node[i]->x[2];
+    }
   }
 
   switch (ele->e.f3pro->dm)
@@ -1455,11 +1483,18 @@ void f3pro_calpress(ELEMENT* ele,
   amzero(emass_global);
 
   /* set element coordinates */
-  for(i=0;i<ele->numnp;i++)
+  if (ele->e.f3pro->is_ale)
   {
-    xyze[0][i]=ele->node[i]->x[0];
-    xyze[1][i]=ele->node[i]->x[1];
-    xyze[2][i]=ele->node[i]->x[2];
+    f3_alecoor(ele,xyze);
+  }
+  else
+  {
+    for(i=0;i<ele->numnp;i++)
+    {
+      xyze[0][i]=ele->node[i]->x[0];
+      xyze[1][i]=ele->node[i]->x[1];
+      xyze[2][i]=ele->node[i]->x[2];
+    }
   }
 
   switch (ele->e.f3pro->dm)
