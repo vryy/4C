@@ -222,7 +222,7 @@ fi
 
 # FSI
 if grep '^[[:blank:]]*D_FSI' "$definefile" 2>&1 > /dev/null ; then
-    OBJECTS="$OBJECTS \$(OBJS_FSI)"
+    OBJECTS="$OBJECTS \$(OBJS_FSI) \$(OBJS_FSI_CPP)"
 fi
 
 # SSI

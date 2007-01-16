@@ -46,6 +46,8 @@ void fsi_ale_setup(
   dstrc_enter("fsi_ale_setup");
 #endif
 
+  work->ale_field = actfield;
+
   switch (adyn->typ)
   {
 /*---------------------------------------- purely linear calculation ---*/

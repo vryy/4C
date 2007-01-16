@@ -180,7 +180,6 @@ void dyn_fsi(
 
   if (mctrl==99) goto cleaningup;
 
-
   /* check input -------------------------------------------------------- *
    * convention used at the moment:                                       *
    *   FIELD 0: structure                                                 *
@@ -323,8 +322,6 @@ void dyn_fsi(
   fsi_struct_setup(&struct_work,structfield,s_disnum_calc,s_disnum_io,itnum);
 
 
-
-
   if (genprob.restart!=0)
   {
 
@@ -344,6 +341,17 @@ void dyn_fsi(
         fsidyn->step != adyn->step ||
         fsidyn->step != sdyn->step   )
       dserror("Restart problem: Step not identical in fields!\n");
+  }
+
+
+  if (fsidyn->ifsi==fsi_iter_nox)
+  {
+#ifdef TRILINOS_PACKAGE
+    dyn_fsi_nox(&struct_work,&fluid_work,&ale_work);
+    goto cleaningup;
+#else
+    dserror("trilinos with nox support required");
+#endif
   }
 
 
@@ -392,7 +400,7 @@ if (alefield->subdivide > 0)
     mctrl = 98;
     fsi_ale_output(&ale_work,alefield,a_disnum_calc,a_disnum_io);
     fsi_fluid_output(&fluid_work,fluidfield,f_disnum_calc,f_disnum_io);
-    fsi_struct_output(&struct_work,structfield,s_disnum_calc,s_disnum_io,itnum);
+    fsi_struct_output(&struct_work,structfield,s_disnum_calc,s_disnum_io);
   }
 
 
@@ -581,7 +589,7 @@ fielditer:
     /*------------------------------- CSD -------------------------------*/
     perf_begin(43);
     fsi_struct_calc(&struct_work,structfield,s_disnum_calc,s_disnum_io,itnum,fluidfield,f_disnum_calc);
-    fsi_struct_final(&struct_work,structfield,s_disnum_calc,s_disnum_io,itnum);
+    fsi_struct_final(&struct_work,structfield,s_disnum_calc,s_disnum_io);
     perf_end(43);
 
     /*------------------------------- CMD -------------------------------*/
@@ -824,7 +832,7 @@ fielditer:
 
       /*------------------ update STRUCTURE data -----------------------*/
       perf_begin(43);
-      fsi_struct_final(&struct_work,structfield,s_disnum_calc,s_disnum_io,itnum);
+      fsi_struct_final(&struct_work,structfield,s_disnum_calc,s_disnum_io);
       perf_end(43);
 
 
@@ -895,7 +903,7 @@ fielditer:
 
       /*------------------ update STRUCTURE data -----------------------*/
       perf_begin(43);
-      fsi_struct_final(&struct_work,structfield,s_disnum_calc,s_disnum_io,itnum);
+      fsi_struct_final(&struct_work,structfield,s_disnum_calc,s_disnum_io);
       perf_end(43);
 
       if (fsidyn->ifsi==fsi_iter_stagg_AITKEN_rel_force)
@@ -948,7 +956,7 @@ fielditer:
       mctrl = 98;
       fsi_ale_output(&ale_work,alefield,a_disnum_calc,a_disnum_io);
       fsi_fluid_output(&fluid_work,fluidfield,f_disnum_calc,f_disnum_io);
-      fsi_struct_output(&struct_work,structfield,s_disnum_calc,s_disnum_io,itnum);
+      fsi_struct_output(&struct_work,structfield,s_disnum_calc,s_disnum_io);
     }
 #endif
 

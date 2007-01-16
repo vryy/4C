@@ -26,6 +26,8 @@ typedef struct _FSI_FLUID_WORK
 
   ARRAY           totarea_a;
 
+  FIELD* fluid_field;
+
 #if defined(TRILINOS_PACKAGE) && defined(PM_TRILINOS)
   ARRAY           fgradprhs_a;
   TRILINOSMATRIX  grad;
@@ -36,7 +38,7 @@ typedef struct _FSI_FLUID_WORK
 
   INT numpdof;
 #endif
-  
+
 #ifdef BINIO
   BIN_OUT_FIELD out_context;
   BIN_OUT_FIELD restart_context;
@@ -67,6 +69,8 @@ typedef struct _FSI_STRUCT_WORK
   ARRAY         dirich_a;       /* red. vector of full length for dirich rhs  */
   STRUCT_DYN_CALC dynvar;       /* variables to perform dynamic struct sim    */
 
+  FIELD* struct_field;
+
 #ifndef PARALLEL
   INTRA           dummy_intra;
 #endif
@@ -96,6 +100,8 @@ typedef struct _FSI_ALE_WORK
 
   /* LAS */
   ARRAY     index_a;
+
+  FIELD* ale_field;
 
 #ifdef BINIO
   BIN_OUT_FIELD out_context;

@@ -48,13 +48,14 @@ void fsi_fluid_setup(
   )
 {
   FLUID_DYNAMIC  *fdyn;               /* fluid dynamic variables   */
-  
+
 #ifdef DEBUG
   dstrc_enter("fsi_fluid_setup");
 #endif
 
   fdyn          = alldyn[genprob.numff].fdyn;
-  
+  work->fluid_field = actfield;
+
   switch (genprob.probtyp)
   {
   case prb_fluid:
@@ -102,13 +103,13 @@ void fsi_fluid_calc(
   )
 {
   FLUID_DYNAMIC  *fdyn;               /* fluid dynamic variables   */
-  
+
 #ifdef DEBUG
   dstrc_enter("fsi_fluid_calc");
 #endif
 
   fdyn          = alldyn[genprob.numff].fdyn;
-  
+
   switch (genprob.probtyp)
   {
   case prb_fluid:
@@ -154,13 +155,13 @@ void fsi_fluid_final(
   )
 {
   FLUID_DYNAMIC  *fdyn;               /* fluid dynamic variables   */
-  
+
 #ifdef DEBUG
   dstrc_enter("fsi_fluid_final");
 #endif
 
   fdyn          = alldyn[genprob.numff].fdyn;
-  
+
   switch (genprob.probtyp)
   {
   case prb_fluid:
@@ -206,13 +207,13 @@ void fsi_fluid_sd(
   )
 {
   FLUID_DYNAMIC  *fdyn;               /* fluid dynamic variables   */
-  
+
 #ifdef DEBUG
   dstrc_enter("fsi_fluid_sd");
 #endif
 
   fdyn          = alldyn[genprob.numff].fdyn;
-  
+
   switch (genprob.probtyp)
   {
   case prb_fluid:
@@ -258,13 +259,13 @@ void fsi_fluid_output(
   )
 {
   FLUID_DYNAMIC  *fdyn;               /* fluid dynamic variables   */
-  
+
 #ifdef DEBUG
   dstrc_enter("fsi_fluid_output");
 #endif
 
   fdyn          = alldyn[genprob.numff].fdyn;
-  
+
   switch (genprob.probtyp)
   {
   case prb_fluid:
@@ -310,13 +311,13 @@ void fsi_fluid_cleanup(
   )
 {
   FLUID_DYNAMIC  *fdyn;               /* fluid dynamic variables   */
-  
+
 #ifdef DEBUG
   dstrc_enter("fsi_fluid_cleanup");
 #endif
 
   fdyn          = alldyn[genprob.numff].fdyn;
-  
+
   switch (genprob.probtyp)
   {
   case prb_fluid:

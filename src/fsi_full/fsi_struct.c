@@ -172,6 +172,8 @@ void fsi_struct_setup(
   work->dummy_intra.intra_nprocs   = 1;
 #endif
 
+  work->struct_field = actfield;
+
   numsf             = genprob.numsf;
   fsidyn            = alldyn[genprob.numaf+1].fsidyn;
   sdyn              = alldyn[numsf].sdyn;
@@ -527,7 +529,8 @@ void fsi_struct_setup(
       fsidyn->ifsi==fsi_iter_stagg_AITKEN_rel_force ||
       fsidyn->ifsi==fsi_iter_stagg_Newton_FD ||
       fsidyn->ifsi==fsi_iter_stagg_Newton_I ||
-      fsidyn->ifsi==fsi_iter_stagg_steep_desc_force)
+      fsidyn->ifsi==fsi_iter_stagg_steep_desc_force ||
+      fsidyn->ifsi==fsi_iter_nox)
     fsi_structpredictor(actfield,disnum_calc,1);
 
 
@@ -543,7 +546,8 @@ void fsi_struct_setup(
       fsidyn->ifsi==fsi_iter_stagg_AITKEN_rel_force ||
       fsidyn->ifsi==fsi_iter_stagg_steep_desc_force ||
       fsidyn->ifsi==fsi_iter_stagg_Newton_FD ||
-      fsidyn->ifsi==fsi_iter_stagg_Newton_I )
+      fsidyn->ifsi==fsi_iter_stagg_Newton_I ||
+      fsidyn->ifsi==fsi_iter_nox)
   {
     /* entry 10 is used below. So make sure it exists now. */
     solserv_sol_zero(actfield, disnum_calc, node_array_sol, 10);
@@ -659,7 +663,8 @@ void fsi_struct_setup(
         fsidyn->ifsi==fsi_iter_stagg_Newton_FD ||
         fsidyn->ifsi==fsi_iter_stagg_Newton_I ||
 	fsidyn->ifsi==fsi_iter_stagg_AITKEN_rel_force ||
-	fsidyn->ifsi==fsi_iter_stagg_steep_desc_force)
+	fsidyn->ifsi==fsi_iter_stagg_steep_desc_force ||
+	fsidyn->ifsi==fsi_iter_nox)
       fsi_structpredictor(actfield,disnum_calc,2);
 
   }  /* if (restart) */
@@ -762,12 +767,10 @@ void fsi_struct_calc(
   /* write memory report */
   if (par.myrank == 0) dsmemreport();
 
-
   /* there are only procs allowed in here, that belong to the structural */
   /* intracommunicator (in case of nonlinear struct. dyn., this should be all) */
   if (actintra->intra_fieldtyp != structure)
     dserror("only structure allowed");
-
 
   /* output to the screen */
   if (par.myrank==0)
@@ -784,7 +787,8 @@ void fsi_struct_calc(
       fsidyn->ifsi==fsi_iter_stagg_Newton_FD ||
       fsidyn->ifsi==fsi_iter_stagg_Newton_I ||
       fsidyn->ifsi==fsi_iter_stagg_AITKEN_rel_force ||
-      fsidyn->ifsi==fsi_iter_stagg_steep_desc_force)
+      fsidyn->ifsi==fsi_iter_stagg_steep_desc_force ||
+      fsidyn->ifsi==fsi_iter_nox)
   {
     /* copy solution from sol[9][j] to sol[0][j] */
     if (fsiitnum > 0)
@@ -798,32 +802,23 @@ void fsi_struct_calc(
   /* increment step and time */
   /*sdyn->step++;*/
 
-
   /* modifications to time steps size can be done here */
   /* set new absolue time */
   /*sdyn->time += sdyn->dt;*/
 
-
   /* put time to global variable for time-dependent load distributions */
   acttime = sdyn->time;
-
 
   /* set some constants */
   dyn_setconstants(dynvar,sdyn,sdyn->dt);
 
-
   /* set incremental displacements dispi[0] to zero */
   solserv_zero_vec(&work->dispi[0]);
-
 
   /* set residual displacements in nodes to zero */
   solserv_result_resid(actfield,disnum_calc,actintra,&work->dispi[0],0,
                        &(actsolv->sysarray[stiff_array]),
                        &(actsolv->sysarray_typ[stiff_array]));
-
-
-
-
 
   /*----------------------------------------------------------------------*/
   /*                     PREDICTOR                                        */
@@ -838,14 +833,11 @@ void fsi_struct_calc(
   calrhs(actfield,actsolv,actpart,actintra,stiff_array,
          &(actsolv->rhs[1]),action,&container);
 
-
   /* get factor at time t */
   dyn_facfromcurve(actcurve,sdyn->time,&(dynvar->rldfac));
 
-
   /* multiply rhs[1] by actual load factor rldfac */
   solserv_scalarprod_vec(&(actsolv->rhs[1]),dynvar->rldfac);
-
 
   /* calculate external forces due to fsi coupling */
   /* -> conforming discretization, take values from coincident nodes */
@@ -867,9 +859,7 @@ void fsi_struct_calc(
       /* assemble the forces into the rhs[4] */
       assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),
                    &(actsolv->sysarray[stiff_array]),&(actsolv->rhs[4]),fsiforce,1.0);
-
       break;
-
 
     case cf_stress:
       /* determine coupling forces from stresses */
@@ -880,15 +870,12 @@ void fsi_struct_calc(
       *action = calc_struct_fsiload;
       calrhs(actfield,actsolv,actpart,actintra,stiff_array,
              &(actsolv->rhs[4]),action,&container);
-
       break;
 
-
-    default: dserror("FSI coupling force type unknown");
+    default:
+      dserror("FSI coupling force type unknown");
     }
-
   }  /* if (fsidyn->coupmethod == 1) */
-
 
   /* mortar method (mtr) */
   else if(fsidyn->coupmethod == 0)
@@ -901,12 +888,9 @@ void fsi_struct_calc(
     *action = calc_struct_fsiload_mtr;
     calrhs(actfield,actsolv,actpart,actintra,stiff_array,
            &(actsolv->rhs[4]),action,&container);
-
   }
   else
     dserror("fsidyn->coupmethod unknown in fsi_struct! ");
-
-
 
   /* add up the two parts of the external forces
    * and store them in rhs[1]                     */
@@ -947,17 +931,13 @@ void fsi_struct_calc(
     dirichfacs[8] =  0.0;
   }
 
-
-
   /* put the prescribed scaled displacements to the nodes in field sol at
    * place 4 separate from the free dofs
    * these are used to calculate the rhs due to dirichlet conditions */
   solserv_putdirich_to_dof(actfield,disnum_calc,0,4,sdyn->time);
 
-
   /* put presdisplacements(t) - presdisplacements(t-dt) in place 5 */
   solserv_adddirich(actfield,disnum_calc,0,3,4,5,-1.0,1.0);
-
 
   /* calculate tangential stiffness/mass and internal forces at time t-dt */
   solserv_zero_mat(actintra,&(actsolv->sysarray[stiff_array]),
@@ -976,27 +956,22 @@ void fsi_struct_calc(
   calelm(actfield, actsolv, actpart, actintra, stiff_array, mass_array,
          &container, action);
 
-
   /* store positive internal forces on fie[1] */
   solserv_zero_vec(&work->fie[1]);
   assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),
                &(actsolv->sysarray[stiff_array]),&(work->fie[1]),intforce,1.0);
-
 
   /* interpolate external forces rhs[0] = (1-alphaf)rhs[1] + alphaf*rhs[2] */
   solserv_copy_vec(&(actsolv->rhs[2]),&(actsolv->rhs[0]));
   solserv_scalarprod_vec(&(actsolv->rhs[0]),sdyn->alpha_f);
   solserv_add_vec(&(actsolv->rhs[1]),&(actsolv->rhs[0]),(1.0-sdyn->alpha_f));
 
-
   /* subtract internal forces from interpolated external forces */
   solserv_add_vec(&(work->fie[1]),&(actsolv->rhs[0]),-1.0);
-
 
   /* add rhs from prescribed displacements to rhs */
   assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),
                &(actsolv->sysarray[stiff_array]),&(actsolv->rhs[0]),dirich,1.0);
-
 
   /* create effective load vector (rhs[0]-fie[2])eff */
   /*
@@ -1014,8 +989,6 @@ void fsi_struct_calc(
   pefnln_struct(dynvar,sdyn,actfield,actsolv,actintra,work->dispi,work->vel,work->acc,work->work,
                 mass_array,damp_array);
 
-
-
   /* create effective stiffness matrix */
   /*
     keff = constants[6] * K + constants[0] * M + constants[3] * D
@@ -1026,8 +999,6 @@ void fsi_struct_calc(
   kefnln_struct(dynvar,sdyn,actfield,actsolv,actintra,work->work,stiff_array,mass_array,
                 damp_array);
 
-
-
   /* call for solution of system dispi[0] = Keff^-1 * rhs[0] */
   init=0;
   solver_control(actfield,disnum_calc,actsolv, actintra,
@@ -1037,25 +1008,20 @@ void fsi_struct_calc(
                  &(actsolv->rhs[0]),
                  init);
 
-
-
   /* update displacements
    *   sol[1] = sol[0] + dispi[0] */
   solserv_copy_vec(&(actsolv->sol[0]),&(actsolv->sol[1]));
   solserv_add_vec(&work->dispi[0],&(actsolv->sol[1]),1.0);
-
 
   /* put the scaled prescribed displacements to the nodes
    * in field sol at place 0 together with free displacements
    * these are used to calculate the stiffness matrix */
   solserv_putdirich_to_dof(actfield,disnum_calc,0,0,sdyn->time);
 
-
   /* return total displacements to the nodes */
   solserv_result_total(actfield,disnum_calc,actintra, &(actsolv->sol[1]),0,
                        &(actsolv->sysarray[stiff_array]),
                        &(actsolv->sysarray_typ[stiff_array]));
-
 
   /* return incremental displacements to the nodes */
   solserv_result_incre(actfield,
@@ -1063,19 +1029,14 @@ void fsi_struct_calc(
                        &(actsolv->sysarray[stiff_array]),
                        &(actsolv->sysarray_typ[stiff_array]));
 
-
-
   /* TODO: */
   /* here put incremental prescribed displacements from sol[5] to sol_increment[0] ? */
-
-
 
   /*----------------------------------------------------------------------*/
   /*                     PERFORM EQUILLIBRIUM ITERATION                   */
   /*----------------------------------------------------------------------*/
 
   itnum=0;
-
 
 iterloop:
 
@@ -1235,7 +1196,8 @@ iterloop:
       fsidyn->ifsi==fsi_iter_stagg_AITKEN_rel_force ||
       fsidyn->ifsi==fsi_iter_stagg_steep_desc_force ||
       fsidyn->ifsi==fsi_iter_stagg_Newton_FD ||
-      fsidyn->ifsi==fsi_iter_stagg_Newton_I)
+      fsidyn->ifsi==fsi_iter_stagg_Newton_I ||
+      fsidyn->ifsi==fsi_iter_nox)
     solserv_sol_copy(actfield,disnum_calc,
 		     node_array_sol_mf,
 		     node_array_sol_mf,
@@ -1296,8 +1258,7 @@ void fsi_struct_final(
   FSI_STRUCT_WORK    *work,
   FIELD              *actfield,
   INT                 disnum_calc,
-  INT                 disnum_io,
-  INT                 fsiitnum
+  INT                 disnum_io
   )
 {
   INT           numsf;          /* actual number of struct field     */
@@ -1661,8 +1622,7 @@ void fsi_struct_output(
   FSI_STRUCT_WORK    *work,
   FIELD              *actfield,
   INT                 disnum_calc,
-  INT                 disnum_io,
-  INT                 fsiitnum
+  INT                 disnum_io
   )
 {
 #ifdef BINIO

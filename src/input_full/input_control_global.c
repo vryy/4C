@@ -128,7 +128,7 @@ dstrc_enter("inpctr");
 
       solv[genprob.numff+3].fieldtyp = pressure;
       inpctrsol(&(solv[genprob.numff+3]));
-      
+
       break;
    }
    /* for SSI */
@@ -1635,6 +1635,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
         fsidyn->ifsi=fsi_iter_stagg_Newton_FD;
       else if (frwordcmp(buffer,"iter_stagg_Newton_I")==0)
         fsidyn->ifsi=fsi_iter_stagg_Newton_I;
+      else if (frwordcmp(buffer,"iter_nox")==0)
+        fsidyn->ifsi=fsi_iter_nox;
       else
          dserror("Coupling Algorithm COUPALGO unknown");
    }

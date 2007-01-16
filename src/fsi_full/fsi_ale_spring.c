@@ -569,7 +569,8 @@ void fsi_ale_spring_final(
       fsidyn->ifsi==fsi_iter_stagg_steep_desc_force ||
       fsidyn->ifsi==fsi_iter_stagg_Newton_FD ||
       fsidyn->ifsi==fsi_iter_stagg_Newton_I ||
-      fsidyn->ifsi==fsi_coupling_freesurface)
+      fsidyn->ifsi==fsi_coupling_freesurface ||
+      fsidyn->ifsi==fsi_iter_nox)
   {
     solserv_sol_copy(actfield,disnum_calc,
 		     node_array_sol_mf,

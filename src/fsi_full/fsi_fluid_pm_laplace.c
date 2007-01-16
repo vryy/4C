@@ -184,7 +184,7 @@ void fsi_fluid_pm_laplace_setup(
   /****************************************/
 
   press_dis = 1;
-  
+
   numff         = genprob.numff;
   fdyn          = alldyn[numff].fdyn;
   fsidyn        = alldyn[genprob.numaf+1].fsidyn;
@@ -343,7 +343,7 @@ void fsi_fluid_pm_laplace_setup(
     pressolv->sysarray_typ[0] = trilinos;
     pressolv->sysarray[0].trilinos = global_press;
   }
-  
+
   /*---------------------------- get global and local number of equations */
   solserv_getmatdims(&(actsolv->sysarray[press_array]),
                      actsolv->sysarray_typ[press_array],
@@ -357,7 +357,7 @@ void fsi_fluid_pm_laplace_setup(
   /*---------------------------------- allocate dist. solution vectors ---*/
   solserv_create_vec(&work->press_sol,1,pnumeq_total,pnumeq,"DV");
   solserv_zero_vec(work->press_sol);
-  
+
   /****************************************/
 
 
@@ -750,7 +750,7 @@ void fsi_fluid_pm_laplace_calc(
   INT mass_array;               /* indice of the active system sparse matrix */
   INT press_array;
   INT             press_dis;
-  
+
 #ifdef PERF
   perf_begin(47);
 #endif
@@ -759,7 +759,7 @@ void fsi_fluid_pm_laplace_calc(
 
   frhs = work->frhs_a.a.dv;
   fgradprhs = work->fgradprhs_a.a.dv;
-  
+
 #ifdef PARALLEL
   fcouple = work->fcouple_a.a.dv;
   recvfcouple = work->recvfcouple_a.a.dv;
@@ -819,17 +819,17 @@ void fsi_fluid_pm_laplace_calc(
                    node_array_sol_increment,
                    2,
                    1);
-  
+
   /* -------------------------------------------------------------------- */
   /* Create the pressure Laplace matrix. */
 
   trilinos_zero_matrix(actsolv->sysarray[mass_array].trilinos);
   trilinos_zero_matrix(actsolv->sysarray[press_array].trilinos);
-  
+
   pm_calelm_laplace(actfield,actpart,disnum_calc,press_dis,
 		    actsolv,press_array,mass_array,
 		    actintra,ipos);
-  
+
   /****************************************/
 
   /* get global and local number of equations */
@@ -983,7 +983,7 @@ nonlniter:
   /* (This term could be done just once for each nonlinear iteration,
    * but maybe we'll do the convection explicit and circumvent the
    * iteration altogether.) */
-  
+
   assemble_vec(actintra,
                &(actsolv->sysarray_typ[actsysarray]),
                &(actsolv->sysarray[actsysarray]),
@@ -1263,7 +1263,8 @@ nonlniter:
       fsidyn->ifsi==fsi_iter_stagg_Newton_FD ||
       fsidyn->ifsi==fsi_iter_stagg_Newton_I ||
       fsidyn->ifsi==fsi_iter_stagg_AITKEN_rel_force ||
-      fsidyn->ifsi==fsi_iter_stagg_steep_desc_force)
+      fsidyn->ifsi==fsi_iter_stagg_steep_desc_force ||
+      fsidyn->ifsi==fsi_iter_nox)
   {
     if (fsidyn->ifsi==fsi_iter_stagg_AITKEN_rel_force ||
 	fsidyn->ifsi==fsi_iter_stagg_steep_desc_force)
@@ -1382,9 +1383,9 @@ void fsi_fluid_pm_laplace_final(
 
   frhs = work->frhs_a.a.dv;
   fgradprhs = work->fgradprhs_a.a.dv;
-  
+
   press_dis = 1;
-  
+
 #ifdef PARALLEL
   fcouple = work->fcouple_a.a.dv;
   recvfcouple = work->recvfcouple_a.a.dv;
@@ -1517,14 +1518,14 @@ void fsi_fluid_pm_laplace_final(
                    node_array_sol,
                    1,
                    0);
-  
+
   /* backup pressure */
   solserv_sol_copy(actfield,press_dis,
                    node_array_sol_increment,
                    node_array_sol_increment,
                    1,
                    2);
-  
+
   /* alternative to the above copys which does not work with restart: */
   /*-------------------------- shift position of old velocity solution ---*/
   /* leftspace = ipos->velnm;
@@ -1680,7 +1681,7 @@ void fsi_fluid_pm_laplace_sd(
 
   frhs = work->frhs_a.a.dv;
   fgradprhs = work->fgradprhs_a.a.dv;
-  
+
   totarea = work->totarea_a.a.dv;
 
   actsysarray   = disnum_calc;
@@ -1849,7 +1850,8 @@ void fsi_fluid_pm_laplace_sd(
       fsidyn->ifsi==fsi_iter_stagg_AITKEN_rel_force ||
       fsidyn->ifsi==fsi_iter_stagg_Newton_FD ||
       fsidyn->ifsi==fsi_iter_stagg_Newton_I ||
-      fsidyn->ifsi==fsi_iter_stagg_steep_desc_force)
+      fsidyn->ifsi==fsi_iter_stagg_steep_desc_force ||
+      fsidyn->ifsi==fsi_iter_nox)
   {
     if (fsidyn->ifsi==fsi_iter_stagg_steep_desc_force)
     {

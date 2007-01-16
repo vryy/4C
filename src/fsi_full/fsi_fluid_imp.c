@@ -965,7 +965,8 @@ nonlniter:
       fsidyn->ifsi==fsi_iter_stagg_Newton_FD ||
       fsidyn->ifsi==fsi_iter_stagg_Newton_I ||
       fsidyn->ifsi==fsi_iter_stagg_AITKEN_rel_force ||
-      fsidyn->ifsi==fsi_iter_stagg_steep_desc_force)
+      fsidyn->ifsi==fsi_iter_stagg_steep_desc_force ||
+      fsidyn->ifsi==fsi_iter_nox)
   {
     if (fsidyn->ifsi==fsi_iter_stagg_AITKEN_rel_force ||
 	fsidyn->ifsi==fsi_iter_stagg_steep_desc_force)
@@ -1529,7 +1530,8 @@ void fsi_fluid_imp_sd(
       fsidyn->ifsi==fsi_iter_stagg_AITKEN_rel_force ||
       fsidyn->ifsi==fsi_iter_stagg_Newton_FD ||
       fsidyn->ifsi==fsi_iter_stagg_Newton_I ||
-      fsidyn->ifsi==fsi_iter_stagg_steep_desc_force)
+      fsidyn->ifsi==fsi_iter_stagg_steep_desc_force ||
+      fsidyn->ifsi==fsi_iter_nox)
   {
     if (fsidyn->ifsi==fsi_iter_stagg_steep_desc_force)
     {

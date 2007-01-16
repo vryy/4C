@@ -551,6 +551,14 @@ void fsi_algoout(
       printf("\n");
       break;
 
+    case fsi_iter_nox:
+      printf("ITERATIVE STAGGERED SCHEME USING NOX\n");
+      printf("TIME: %10.3E/%10.3E   DT=%10.3E   STEP=" YELLOW_LIGHT "%4d" END_COLOR "/%4d   ITNUM=" YELLOW_LIGHT "%4d" END_COLOR "/%4d\n",
+          fsidyn->time,fsidyn->maxtime,fsidyn->dt,fsidyn->step,fsidyn->nstep,
+          itnum,fsidyn->itemax);
+      printf("\n");
+      break;
+
 
     default:
       dserror("algoout not implemented yet\n");

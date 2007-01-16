@@ -447,6 +447,12 @@ void dyn_fsi(
     INT                 mctrl
     );
 
+/************************************************************************
+ | fsi_dyn_nox.c                                                        |
+ ************************************************************************/
+void dyn_fsi_nox(FSI_STRUCT_WORK* struct_work,
+                 FSI_FLUID_WORK* fluid_work,
+                 FSI_ALE_WORK* ale_work);
 
 /************************************************************************
  | fsi_energy.c                                                          |
@@ -967,8 +973,7 @@ void fsi_struct_final(
   FSI_STRUCT_WORK    *work,
   FIELD              *actfield,
   INT                 disnum_calc,
-  INT                 disnum_io,
-  INT                 fsiitnum
+  INT                 disnum_io
   );
 
 void fsi_struct_sd(
@@ -983,8 +988,7 @@ void fsi_struct_output(
   FSI_STRUCT_WORK    *work,
   FIELD              *actfield,
   INT                 disnum_calc,
-  INT                 disnum_io,
-  INT                 fsiitnum
+  INT                 disnum_io
   );
 
 void fsi_struct_cleanup(
