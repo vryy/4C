@@ -40,6 +40,9 @@ Maintainer: Malte Neumann
 #ifdef D_THERM3
   #include "../therm3/therm3.h"
 #endif
+#ifdef D_SOLID3
+  #include "../solid3/solid3.h"
+#endif
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | structure of flags to control output                                 |
@@ -924,6 +927,12 @@ for (j=0; j<actfield->dis[disnum].numele; j++)
 #endif /*D_WALLGE*/
    break;
 
+   case el_solid3:
+#ifdef D_SOLID3
+       so3_out_stress(actele, place, out);
+#endif /*D_SOLID3*/
+   break;
+
    default:
       dserror("unknown type of element");
    break;
@@ -1398,6 +1407,11 @@ void out_tsi(FIELD *structfield)
 #ifdef D_BRICK1
           case el_brick1:
             acttele = actsele->e.c1->therm_ele;
+            break;
+#endif
+#ifdef D_SOLID3
+          case el_solid3:
+            acttele = actsele->e.so3->therm_ele;
             break;
 #endif
           default:

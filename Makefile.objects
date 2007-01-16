@@ -713,6 +713,7 @@ OBJS_THERM3   = src/therm3/th3_bop.o \
 OBJS_SOLID3   = src/solid3/so3_bop.o \
                 src/solid3/so3_cfg.o \
                 src/solid3/so3_def.o \
+                src/solid3/so3_gid.o \
                 src/solid3/so3_inp.o \
                 src/solid3/so3_int.o \
                 src/solid3/so3_intg.o \
@@ -720,6 +721,7 @@ OBJS_SOLID3   = src/solid3/so3_bop.o \
                 src/solid3/so3_main.o \
                 src/solid3/so3_mat.o \
                 src/solid3/so3_metr.o \
+                src/solid3/so3_out.o \
                 src/solid3/so3_shape.o \
                 src/solid3/so3_strain.o \
                 src/solid3/so3_stress.o \

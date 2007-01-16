@@ -702,127 +702,17 @@ if (strncmp(string,"stress",stringlenght)==0)
    {
      c1_gid_stress(string, actfield, disnum, step, actgid, out);
    }
+#endif
 
-/*    /\* STRESS output for Gid for BRICK1 elements *\/ */
-/*    /\* bricks have 6 stress - use 3D matrix *\/ */
-/*    if (actgid->is_brick1_222) */
-/*    { */
-/*       /\*check only first element and assume, that the others are the same*\/ */
-/*      actele = &(actfield->dis[disnum].element[0]); */
-/*      switch(actele->e.c1->stresstyp) */
-/*      { */
-/*      case c1_npeqs: */
-/*       resulttype                             = "SCALAR"; */
-/*       resultplace                            = "ONNODES";                 /\*extrapolated to nodal points!*\/ */
-/*       gpset             = actgid->brick1_222_name; */
-/*       rangetable        = actgid->standardrangetable; */
-/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
-/*       fprintf(out,"# RESULT Brick1_forces on FIELD %s\n",actgid->fieldname); */
-/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
-/*       fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n", */
-/*                    sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,disnum,sign ); */
-/*         fprintf(out,"COMPONENTNAMES %cequivStress%c\n", sign,sign); */
-/*         fprintf(out,"VALUES\n"); */
-/*         c1_out_gid_sol_str(out,actfield,disnum,place,0); /\*extrapolated to nodal points!*\/ */
-/*         fprintf(out,"END VALUES\n"); */
-/*      break; */
-/*      case c1_npxyz: */
-/*       resulttype                             = "MATRIX"; */
-/*       resultplace                            = "ONNODES";                 /\*extrapolated to nodal points!*\/ */
-/*       gpset             = actgid->brick1_222_name; */
-/*       rangetable        = actgid->standardrangetable; */
-/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
-/*       fprintf(out,"# RESULT Brick1_forces on FIELD %s\n",actgid->fieldname); */
-/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
-/*       fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n", */
-/*                    sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,disnum,sign ); */
-/*         fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-zz%c,%cStress-xy%c,%cStress-xz%c,%cStress-yz%c\n", */
-/*                sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign); */
-/*         fprintf(out,"VALUES\n"); */
-/*         c1_out_gid_sol_str(out,actfield,disnum,place,0); /\*extrapolated to nodal points!*\/ */
-/*         fprintf(out,"END VALUES\n"); */
-/*      break; */
-/*      case c1_nprst: */
-/*       resulttype                             = "MATRIX"; */
-/*       resultplace                            = "ONNODES";                 /\*extrapolated to nodal points!*\/ */
-/*       gpset             = actgid->brick1_222_name; */
-/*       rangetable        = actgid->standardrangetable; */
-/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
-/*       fprintf(out,"# RESULT Brick1_forces on FIELD %s\n",actgid->fieldname); */
-/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
-/*       fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n", */
-/*                    sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,disnum,sign ); */
-/*         fprintf(out,"COMPONENTNAMES %cStress-rr%c,%cStress-ss%c,%cStress-tt%c,%cStress-rs%c,%cStress-st%c,%cStress-tr%c\n", */
-/*                sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign); */
-/*         fprintf(out,"VALUES\n"); */
-/*         c1_out_gid_sol_str(out,actfield,disnum,place,0); /\*extrapolated to nodal points!*\/ */
-/*         fprintf(out,"END VALUES\n"); */
-/*      break; */
-/*      /\*-----------------------------------*\/ */
-/*      default: */
-/*        fprintf(out,"no stresses available\n"); */
-/*      break; */
-/*      } */
-/*    } */
-/*    if (actgid->is_brick1_333) */
-/*    { */
-/*       /\*check only first element and assume, that the others are the same*\/ */
-/*      actele = &(actfield->dis[disnum].element[0]); */
-/*      switch(actele->e.c1->stresstyp) */
-/*      { */
-/*      case c1_npeqs: */
-/*       resulttype                             = "SCALAR"; */
-/*       resultplace                            = "ONNODES";                 /\*extrapolated to nodal points!*\/ */
-/*       gpset             = actgid->brick1_333_name; */
-/*       rangetable        = actgid->standardrangetable; */
-/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
-/*       fprintf(out,"# RESULT Brick1_forces on FIELD %s\n",actgid->fieldname); */
-/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
-/*       fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n", */
-/*                    sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,disnum,sign ); */
-/*         fprintf(out,"COMPONENTNAMES %cequivStress%c\n", sign,sign); */
-/*         fprintf(out,"VALUES\n"); */
-/*         c1_out_gid_sol_str(out,actfield,disnum,place,0); /\*extrapolated to nodal points!*\/ */
-/*         fprintf(out,"END VALUES\n"); */
-/*      break; */
-/*      case c1_npxyz: */
-/*       resulttype                             = "MATRIX"; */
-/*       resultplace                            = "ONNODES";                 /\*extrapolated to nodal points!*\/ */
-/*       gpset             = actgid->brick1_333_name; */
-/*       rangetable        = actgid->standardrangetable; */
-/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
-/*       fprintf(out,"# RESULT Brick1_forces on FIELD %s\n",actgid->fieldname); */
-/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
-/*       fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n", */
-/*                    sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,disnum,sign ); */
-/*         fprintf(out,"COMPONENTNAMES %cStress-xx%c,%cStress-yy%c,%cStress-zz%c,%cStress-xy%c,%cStress-xz%c,%cStress-yz%c\n", */
-/*                sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign); */
-/*         fprintf(out,"VALUES\n"); */
-/*         c1_out_gid_sol_str(out,actfield,disnum,place,0); /\*extrapolated to nodal points!*\/ */
-/*         fprintf(out,"END VALUES\n"); */
-/*      break; */
-/*      case c1_nprst: */
-/*       resulttype                             = "MATRIX"; */
-/*       resultplace                            = "ONNODES";                 /\*extrapolated to nodal points!*\/ */
-/*       gpset             = actgid->brick1_333_name; */
-/*       rangetable        = actgid->standardrangetable; */
-/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
-/*       fprintf(out,"# RESULT Brick1_forces on FIELD %s\n",actgid->fieldname); */
-/*       fprintf(out,"#-------------------------------------------------------------------------------\n"); */
-/*       fprintf(out,"RESULT %cbrick1_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n", */
-/*                    sign,sign, sign,sign, step, resulttype, resultplace, sign,gpset,disnum,sign ); */
-/*         fprintf(out,"COMPONENTNAMES %cStress-rr%c,%cStress-ss%c,%cStress-tt%c,%cStress-rs%c,%cStress-st%c,%cStress-tr%c\n", */
-/*                sign,sign, sign,sign, sign,sign, sign,sign, sign,sign, sign,sign); */
-/*         fprintf(out,"VALUES\n"); */
-/*         c1_out_gid_sol_str(out,actfield,disnum,place,0); /\*extrapolated to nodal points!*\/ */
-/*         fprintf(out,"END VALUES\n"); */
-/*      break; */
-/*      /\*-----------------------------------*\/ */
-/*      default: */
-/*        fprintf(out,"no stresses available\n"); */
-/*      break; */
-/*      } */
-/*    } */
+#ifdef D_SOLID3
+   if ( (actgid->is_solid3_h8_222)
+        || (actgid->is_solid3_h20_333)
+        || (actgid->is_solid3_h27_333)
+        || (actgid->is_solid3_t4_1)
+        || (actgid->is_solid3_t10_4) )
+   {
+     so3_gid_stress(string, actfield, disnum, step, actgid, out);
+   }
 #endif
 
 } /* end of (strncmp(string,"stress",stringlenght)==0) */

@@ -84,13 +84,8 @@ void so3_int_fintstiffmass(CONTAINER *container,
   INT jdim; /* dimension index */
 
   /* quantities at Gauss point */
-/*   DOUBLE shape[MAXNOD_SOLID3];  /\* shape functions *\/ */
-/*   DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3];   /\* shape fct. derivatives *\/ */
   SO3_GEODEFSTR gds;  /* isoparametric Jacobian, deformation grad, etc at
                        * Gauss point */
-/*   DOUBLE xjm[NDIM_SOLID3][NDIM_SOLID3];  /\* Jacobian matrix *\/ */
-/*   DOUBLE det;  /\* Jacobi determinant *\/ */
-/*   DOUBLE xji[NDIM_SOLID3][NDIM_SOLID3];  /\* inverse Jacobian matrix *\/ */
   DOUBLE bopn[MAXNOD_SOLID3][NDIM_SOLID3];  /* nodal B-operator */
   DOUBLE bop[NUMSTR_SOLID3][MAXDOF_SOLID3];  /* B-operator */
   DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3];  /* constitutive matrix */
@@ -99,7 +94,7 @@ void so3_int_fintstiffmass(CONTAINER *container,
   /* convenience */
   DOUBLE **estif;  /* element stiffness matrix */
   DOUBLE **emass;  /* element stiffness matrix */
-  DOUBLE eforce[MAXDOF_SOLID3];  /* element internal force vector */
+  DOUBLE *eforce;  /* element internal force vector */
 
   /*--------------------------------------------------------------------*/
   /* start */
@@ -109,11 +104,21 @@ void so3_int_fintstiffmass(CONTAINER *container,
 
   /*--------------------------------------------------------------------*/
   /* element matrix fields are reused for every element, thus
-  /* have to be reinitialized to zero */
-  amzero(estif_global);  /* element tangent matrix */
-  estif = estif_global->a.da;
-  amzero(emass_global); /* element mass matrix */
-  emass = emass_global->a.da;
+   * have to be reinitialized to zero */
+  if (estif_global != NULL)
+  {
+    amzero(estif_global);  /* element tangent matrix */
+    estif = estif_global->a.da;
+  }
+  if (emass_global != NULL)
+  {
+    amzero(emass_global); /* element mass matrix */
+    emass = emass_global->a.da;
+  }
+  if (eforce_global != NULL)
+  {
+    eforce = eforce_global;
+  }
 
   /*--------------------------------------------------------------------*/
   /* element properties */
@@ -132,7 +137,7 @@ void so3_int_fintstiffmass(CONTAINER *container,
        * NEW SOFT-CODED INDEX FOR OLD DISCRETISATION ==> array_position.h
        * NEW SOFT-CODED INDEX FOR NEW DISCRETISATION ==> TO BE ANNOUNCED
        * ==> IN FEM WE TRUST. */
-      /*edis[inod][jdim] = actnode->sol[0][jdim];*/
+      edis[inod][jdim] = actnode->sol.a.da[0][jdim];
     }
   }
   ngp = gpshade->gptot;  /* total number of Gauss points in domain */
@@ -181,13 +186,13 @@ void so3_int_fintstiffmass(CONTAINER *container,
     so3_mat_sel(ele, mat, igp, &gds, stress, cmat);
     /*------------------------------------------------------------------*/
     /* element internal force from integration of stresses */
-    if (eforce_global)
+    if (eforce_global != NULL)
     {
       so3_int_fintcont(neledof, bop, stress, fac, eforce);
     }
     /*------------------------------------------------------------------*/
     /* element stiffness matrix */
-    if (estif_global)
+    if (estif_global != NULL)
     {
       /* geometrically linear kinematics (in space) */
       if (ele->e.so3->kintype == so3_geo_lin)
@@ -211,8 +216,9 @@ void so3_int_fintstiffmass(CONTAINER *container,
     }
     /*------------------------------------------------------------------*/
     /* element mass matrix */
-    if (emass_global)
+    if (emass_global != NULL)
     {
+      
       so3_int_mass(mat, nelenod, gpshade->gpshape[igp], fac, emass);
     }
   }
@@ -251,7 +257,7 @@ void so3_int_fintcont(INT neledof,
                       DOUBLE bop[NUMSTR_SOLID3][MAXDOF_SOLID3],
                       DOUBLE stress[NUMSTR_SOLID3],
                       DOUBLE fac,
-                      DOUBLE intfor[MAXDOF_SOLID3])
+                      DOUBLE *intfor)
 {
   INT istr, idof;  /* counters */
   DOUBLE intforidof;  /* stress multiplied by 'fac' */

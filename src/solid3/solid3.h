@@ -22,6 +22,7 @@ Maintainer: Moritz Frenzel
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "../headers/standardtypes.h"
+#include "../output/gid.h"
 
 /*======================================================================*/
 /* defines constants of SOLID3 */
@@ -302,7 +303,8 @@ typedef enum _SO3_STRESSOUT
   so3_stress_ndxyz,     /* the same for nodes*/
   so3_stress_nd123,
   so3_stress_ndrst,
-  so3_stress_ndxyz123
+  so3_stress_ndxyz123,
+  so3_stress_ndeqv
 } SO3_STRESSOUT;
 
 
@@ -343,6 +345,7 @@ typedef struct _SOLID3
   ARRAY4D stress_ndxyz;
   ARRAY4D stress_ndrst;
   ARRAY4D stress_nd123;
+  /* ARRAY4D stress_ndeqv; */
 
   /* thermo-structure-interaction */
 #ifdef D_TSI
@@ -399,6 +402,45 @@ void so3_def_grad(INT enod,
                   DOUBLE defgrd[NDIM_SOLID3][NDIM_SOLID3]);
 
 /*----------------------------------------------------------------------*/
+/* file so3_gid.c */
+void so3_gid_init(ELEMENT *actele,
+                  GIDSET *actgid);
+void so3_gid_msh(FIELD *actfield,
+                 INT ldis,
+                 GIDSET *actgid,
+                 FILE *out);
+void so3_gid_gpset(INT jdis,
+                   GIDSET *actgid,
+                   FILE *out);
+void so3_gid_dom(FIELD *actfield,
+                 INT disnum,
+                 GIDSET *actgid,
+                 FILE *out);
+void so3_gid_stress(CHAR resstring[],
+                    FIELD *actfield,
+                    INT disnum,
+                    INT step,
+                    GIDSET *actgid,
+                    FILE *out);
+void so3_gid_stress_gp(FIELD *actfield,
+                       INT disnum,
+                       ELEMENT *actele,
+                       GIDSET *actgid,
+                       SO3_STRESSOUT stresstype,
+                       CHAR *resultname,
+                       INT step,
+                       CHAR *resulttype,
+                       CHAR *resultplace,
+                       CHAR *gpset,
+                       INT ncomp,
+                       CHAR *componentnames[],
+                       INT nelenod,
+                       INT *gperm,
+                       INT ngauss,
+                       INT place,
+                       FILE *out);
+
+/*----------------------------------------------------------------------*/
 /* file so3_inp.c */
 void so3_inp(ELEMENT *ele);
 
@@ -415,7 +457,7 @@ void so3_int_fintcont(INT neledof,
                       DOUBLE bop[NUMSTR_SOLID3][MAXDOF_SOLID3],
                       DOUBLE stress[NUMSTR_SOLID3],
                       DOUBLE fac,
-                      DOUBLE intfor[MAXDOF_SOLID3]);
+                      DOUBLE *intfor);
 void so3_int_stiffeu(INT neledof,
                      DOUBLE bop[NUMSTR_SOLID3][MAXDOF_SOLID3],
                      DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3],
@@ -512,6 +554,12 @@ void so3_metr_rot(DOUBLE xjm[NDIM_SOLID3][NDIM_SOLID3],
                   DOUBLE xrm[NDIM_SOLID3][NDIM_SOLID3],
                   DOUBLE xrvm[NUMSTR_SOLID3][NUMSTR_SOLID3],
                   DOUBLE xrvi[NUMSTR_SOLID3][NUMSTR_SOLID3]);
+
+/*----------------------------------------------------------------------*/
+/* file so3_out.c */
+void so3_out_stress(ELEMENT *actele,
+                    INT place,
+                    FILE *out);
 
 /*----------------------------------------------------------------------*/
 /* file so3_shape.c */

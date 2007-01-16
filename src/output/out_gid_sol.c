@@ -36,6 +36,9 @@ Maintainer: Malte Neumann
 #ifdef D_THERM3
 #include "../therm3/therm3.h"
 #endif
+#ifdef D_SOLID3
+#include "../solid3/solid3.h"
+#endif
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | structure of flags to control output                                 |
@@ -768,6 +771,16 @@ for (i=0; i<genprob.numfld; i++)
 #ifdef D_THERM3
      case el_therm3:
        th3_gid_init(actele, actgid);
+     break;
+#endif
+
+
+
+   /* SOLID3 */
+   /* ====== */
+#ifdef D_SOLID3
+     case el_solid3:
+       so3_gid_init(actele, actgid);
      break;
 #endif
 
@@ -1625,6 +1638,15 @@ end_s8_init:;
    /* bborn 11/06 */
 #ifdef D_THERM3
    th3_gid_gpset(j, actgid, out);
+#endif
+
+
+
+   /* SOLID3 */
+   /*========*/
+   /* bborn 01/07 */
+#ifdef D_SOLID3
+   so3_gid_gpset(j, actgid, out);
 #endif
 
 
@@ -2646,6 +2668,23 @@ if ( (actgid->is_therm3_h8_222)
      || (actgid->is_therm3_t10_4) )
 {
   th3_gid_dom(actfield, disnum, actgid, out);
+}
+#endif
+
+
+
+   /* SOLID3 */
+   /*========*/
+   /* bborn 01/07 */
+
+#ifdef D_SOLID3
+if ( (actgid->is_solid3_h8_222)
+     || (actgid->is_solid3_h20_333)
+     || (actgid->is_solid3_h27_333)
+     || (actgid->is_solid3_t4_1)
+     || (actgid->is_solid3_t10_4) )
+{
+  so3_gid_dom(actfield, disnum, actgid, out);
 }
 #endif
 
@@ -4685,6 +4724,19 @@ if (strncmp(string,"stress",stringlenght)==0)
       fprintf(out,"END VALUES\n");
    }
 #endif
+
+  /*--------------------------------------------------------------------*/
+  /* stress output of element SOLID3 */
+#ifdef D_SOLID3
+  if ( (actgid->is_solid3_h8_222)
+       || (actgid->is_solid3_h20_333)
+       || (actgid->is_solid3_h27_333)
+       || (actgid->is_solid3_t4_1)
+       || (actgid->is_solid3_t10_4) )
+  {
+    so3_gid_stress(string, actfield, disnum, step, actgid, out);
+  }
+#endif  /* end #ifdef D_SOLID3 */
 
 } /* end of (strncmp(string,"stress",stringlenght)==0) */
 

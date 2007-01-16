@@ -28,6 +28,9 @@ Maintainer: Malte Neumann
 #ifdef D_THERM3
   #include "../therm3/therm3.h"
 #endif
+#ifdef D_SOLID3
+  #include "../solid3/solid3.h"
+#endif
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | structure of flags to control output                                 |
@@ -2110,6 +2113,23 @@ end_shell8:;
            || (actgid->is_therm3_t10_4) )
       {
         th3_gid_msh(actfield, l, actgid, out);
+      }
+#endif
+
+
+
+      /* SOLID3 */
+      /*========*/
+      /* bborn 01/07 */
+
+#ifdef D_SOLID3
+      if ( (actgid->is_solid3_h8_222)
+           || (actgid->is_solid3_h20_333)
+           || (actgid->is_solid3_h27_333)
+           || (actgid->is_solid3_t4_1)
+           || (actgid->is_solid3_t10_4) )
+      {
+        so3_gid_msh(actfield, l, actgid, out);
       }
 #endif
 

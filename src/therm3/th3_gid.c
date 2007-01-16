@@ -622,7 +622,7 @@ void th3_gid_hflux(char resstring[],
                          9,21,15,3,1,19,25,7,11,23,17,5,
                          12,10,22,16,4,14,13};
   INT gperm_t_4[4] = {0,1,2,3};
-  /* INT gperm_t_10[10] = {0,1,2,3,4,5,6,7,8,9}; */
+  /* INT gperm_t_10[10] = {0,1,2,3,4,5,6,7,8,9}; */  /* check this */
 
   DOUBLE **heatflux;
 

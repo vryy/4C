@@ -259,5 +259,5 @@ void th3_out_hflux(ELEMENT *actele,
   return;
 }  /* end of th3_out_hflux */
 
-#endif /* end of #ifdef D_THERM2 */
+#endif /* end of #ifdef D_THERM3 */
 /*! @} (documentation module close)*/

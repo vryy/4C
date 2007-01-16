@@ -21,6 +21,7 @@ Maintainer: Burkhard Bornemann
 #include "../headers/standardtypes.h"
 #include "solid3.h"
 
+
 /*!
 \addtogroup SOLID3
 *//*! @{ (documentation module open)*/
@@ -790,7 +791,7 @@ The tensor
 void so3_tns3_spcdcmp(DOUBLE at[3][3],  /* input tensor */
                       INT *err,
                       DOUBLE ew[3])     /* eigen values */
-/*                      DOUBLE ev[3][3])  \/* eigen vectors *\/ */
+/*                      DOUBLE ev[3][3])  /\* eigen vectors *\/ */
 {
   DOUBLE ai, aii, aiii;  /* invariants of A */
   DOUBLE p, q, disc, rho, phi, rhort;
@@ -808,6 +809,7 @@ void so3_tns3_spcdcmp(DOUBLE at[3][3],  /* input tensor */
   /* invariants of A */
   so3_tns3_inva(at, &ai, &aii, &aiii);
 
+  /* ==> Cardan's formulae */
   /* characteristic polynomial (already in normal form)
    *    lam^3 - I_A*lam^2 + II_A*lam - III_A = 0
    * with reduced equation y=lam-II_A/3 (or lam=y+II_A/3)

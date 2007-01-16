@@ -54,7 +54,6 @@ void so3_metr_jaco(ELEMENT *ele,
                    DOUBLE   xji[NDIM_SOLID3][NDIM_SOLID3])
 {
   INT i, j, k;
-  DOUBLE nodxyz;
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG

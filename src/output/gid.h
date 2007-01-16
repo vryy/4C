@@ -193,6 +193,17 @@ typedef struct _GIDSET
      INT                        is_therm3_t10_4;          /* 10-noded therm3 4 GP */
      char                      *therm3_t10_4_name;
 
+     INT                        is_solid3_h8_222;          /* 8-noded solid3 2x2x2 GP */
+     char                      *solid3_h8_222_name;
+     INT                        is_solid3_h20_333;          /* 20-noded solid3 3x3x3 GP */
+     char                      *solid3_h20_333_name;
+     INT                        is_solid3_h27_333;          /* 27-noded solid3 3x3x3 GP */
+     char                      *solid3_h27_333_name;
+     INT                        is_solid3_t4_1;          /* 4-noded solid3 1 GP */
+     char                      *solid3_t4_1_name;
+     INT                        is_solid3_t10_4;          /* 10-noded solid3 4 GP */
+     char                      *solid3_t10_4_name;
+
 } GIDSET;
 
 

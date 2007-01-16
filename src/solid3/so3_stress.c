@@ -103,13 +103,13 @@ void so3_stress_init(PARTITION *actpart)
         am4def("stress_gprst", &(actso3->stress_gprst), 
                1, MAXGAUSS_SOLID3, NUMSTR_SOLID3, 0, "D3");
         am4def("stress_gp123", &(actso3->stress_gp123), 
-               1, MAXGAUSS_SOLID3, NUMSTR_SOLID3, 0, "D3");
+               1, MAXGAUSS_SOLID3, 4*NDIM_SOLID3, 0, "D3");
         am4def("stress_ndxyz", &(actso3->stress_ndxyz), 
                1, MAXNOD_SOLID3, NUMSTR_SOLID3, 0, "D3");
         am4def("stress_ndrst", &(actso3->stress_ndrst), 
                1, MAXNOD_SOLID3, NUMSTR_SOLID3, 0, "D3");
         am4def("stress_nd123", &(actso3->stress_nd123), 
-               1, MAXNOD_SOLID3, NUMSTR_SOLID3, 0, "D3");
+               1, MAXNOD_SOLID3, 4*NDIM_SOLID3, 0, "D3");
       }  /* end if */
     }  /* end for */
   }  /* end for */
@@ -269,7 +269,7 @@ void so3_stress(CONTAINER *cont,
        * NEW SOFT-CODED INDEX FOR OLD DISCRETISATION ==> array_position.h
        * NEW SOFT-CODED INDEX FOR NEW DISCRETISATION ==> TO BE ANNOUNCED
        * ==> IN FEM WE TRUST. */
-      /* edis[inod][jdim] = actnode->sol[0][jdim]; */
+      edis[inod][jdim] = actnode->sol.a.da[0][jdim];
     }
   }
   gpnum = gpshade->gptot;  /* total number of Gauss points in domain */
@@ -334,9 +334,7 @@ void so3_stress(CONTAINER *cont,
     /*------------------------------------------------------------------*/
     /* store principle and direction angles at current Gauss point */
     so3_stress_123(stress, ele->e.so3->stress_gp123.a.d3[place][igp]);
-    /*------------------------------------------------------------------*/
-    /* increment total Gauss point counter */
-  }  /* end for */
+  }
 
   /*--------------------------------------------------------------------*/
   /* Stresses at Gauss points are extrapolated to element nodes. */
@@ -357,7 +355,7 @@ void so3_stress(CONTAINER *cont,
     }
     /* store principle and direction angles at current Gauss point */
     so3_stress_123(stress, ele->e.so3->stress_nd123.a.d3[place][inod]);
-  }  /* end for */
+  }
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -445,12 +443,33 @@ void so3_stress_123(DOUBLE stress[NUMSTR_SOLID3],
   /* write principial stresses -- if found */
   if (err == 0)
   {
-    stress123[0] = ew[0];
-    stress123[1] = ew[0];
-    stress123[2] = ew[0];
-    stress123[3] = 0.0;
-    stress123[4] = 0.0;
-    stress123[5] = 0.0;
+    stress123[0] = ew[0];  /* 1st principal stress */
+    stress123[1] = ew[1];  /* 2nd principal stress */
+    stress123[2] = ew[2];  /* 3rd principal stress */
+    stress123[3] = -1.0;  /* 1st stress 1st direction */
+    stress123[4] = -1.0;  /* 1st stress 2nd direction */
+    stress123[5] = -1.0;  /* 1st stress 3rd direction */
+    stress123[6] = -1.0;  /* 2st stress 1st direction */
+    stress123[7] = -1.0;  /* 2st stress 2nd direction */
+    stress123[8] = -1.0;  /* 2st stress 3rd direction */
+    stress123[9] = -1.0;  /* 3rd stress 1st direction */
+    stress123[10] = -1.0;  /* 3rd stress 2nd direction */
+    stress123[11] = -1.0;  /* 3rd stress 3rd direction */
+  }
+  else
+  {
+    stress123[0] = -1.0;  /* 1st principal stress */
+    stress123[1] = -1.0;  /* 2nd principal stress */
+    stress123[2] = -1.0;  /* 3rd principal stress */
+    stress123[3] = -1.0;  /* 1st stress 1st direction */
+    stress123[4] = -1.0;  /* 1st stress 2nd direction */
+    stress123[5] = -1.0;  /* 1st stress 3rd direction */
+    stress123[6] = -1.0;  /* 2st stress 1st direction */
+    stress123[7] = -1.0;  /* 2st stress 2nd direction */
+    stress123[8] = -1.0;  /* 2st stress 3rd direction */
+    stress123[9] = -1.0;  /* 3rd stress 1st direction */
+    stress123[10] = -1.0;  /* 3rd stress 2nd direction */
+    stress123[11] = -1.0;  /* 3rd stress 3rd direction */
   }
 
 #ifdef DEBUG
