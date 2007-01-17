@@ -567,6 +567,8 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     sdyn->time = fsidyn->time;
     adyn->time = fsidyn->time;
 
+    fsi_algoout(0);
+
     // backup current structural values
     solserv_sol_copy(structfield,s_disnum_calc,node_array_sol,node_array_sol,0,9);
     solserv_sol_copy(structfield,s_disnum_calc,node_array_sol,node_array_sol,1,10);
