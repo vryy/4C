@@ -1,5 +1,6 @@
 #include "post_ensight.h"
 
+
 static POST_DISCRETIZATION* discret;
 static FIELD_DATA* struct_field = NULL;
 static FIELD_DATA* fluid_field = NULL;
@@ -8,27 +9,40 @@ static INT struct_idx=-1;
 static INT fluid_idx=-1;
 static INT ale_idx=-1;
 
+static DOUBLE *node_director = NULL;
+
 #ifdef D_FSI
 static INT* fluid_ale_connect;
-static DOUBLE *node_director = NULL;
 #endif
 
-static ARRAY  time_a ;         /* time array				*/
-static ARRAY  step_a ;         /* time array
-                                        * */
+static ARRAY  time_a ;         /* time array*/
+static ARRAY  step_a ;         /* step array*/
 
 static int ACTDIM;
 
-static long actbytes;;
+static long actbytes;   /*keeps the bytesize of the file we write at the moment*/
 
-static char basename[80];
+static char basename[80]; /*basename of our problem*/
 
-static INT nsteps; /*total number of steps*/
-static INT wsteps; /*number of written steps*/
-static INT SHELL;
+static INT nsteps;     /*total number of steps*/
+static INT wsteps;     /*number of written steps (e.g. slices) */
+static INT SHELL;      /*flag for shell problem*/
 
 
-
+/*------------------------------------------------------------*/
+/* procedure :
+ *
+ * if fluid_field exists :
+ *
+ *       - write the basename_fluid.geo file using
+ *         pe_write_fluid_geo_file()
+ *       - write the basename_fluid.case file using
+ *         pe_write_fluid_case_file(). This function also writes all
+ *         the result files, so if you want to add data, which has to
+ *         be written, enlist it there!
+ *
+ * same procedure afterwards for struct_field
+ * */
 void pe_write_data()
 {
   RESULT_DATA result;
@@ -43,7 +57,6 @@ void pe_write_data()
   long* file_index;
 
   INT actstep = 0;
-  INT i;
 
 #ifdef DEBUG
   dstrc_enter("pe_write_data");
@@ -51,31 +64,31 @@ void pe_write_data()
 
   file_index = (long*)CCACALLOC(wsteps, sizeof(long));
 
-  if (fluid_idx!=-1) /*-------------------------write the *fluid.geo file*/
+  if (fluid_idx!=-1)
   {
+    /*-------------------------write the *fluid.geo file*/
     numele_fluid = discret[fluid_idx].field->numele;
     numnp_fluid =  discret[fluid_idx].field->numnp;
 
     if (ale_idx!=-1)
     {
       init_result_data(ale_field, &result);
-      if (next_result(&result))
-        init_chunk_data(&result, &chunk, "displacement");
-      else
-        dserror("COULD NOT USE NEXT_RESULT ON FLUID_RESULT\n ");
+
+      if (!next_result(&result))
+        dserror("could not read ale result\n ");
     }
     else
     {
       init_result_data(fluid_field, &result);
       if (!next_result(&result))
-        dserror("COULD NOT USE NEXT_RESULT ON FLUID_RESULT\n");
+        dserror("could not read fluid result\n");
     }
 
     /*open the .geo file*/
     sprintf(filename, "%s_fluid.geo",basename);
     outfile = fopen(filename,"w");
 
-    actstep = 0;
+    actstep = 0; /*used for writing the file_index*/
     actbytes = 0;
 
     do
@@ -85,35 +98,36 @@ void pe_write_data()
 
       if (ale_idx!=-1)
       {
-        pe_write_fluid_grid(outfile, numnp_fluid, &chunk, file_index, actstep);
+        init_chunk_data(&result, &chunk, "displacement");
+        pe_write_fluid_geo_file(outfile, numnp_fluid, &chunk, file_index, actstep);
+        destroy_chunk_data(&chunk);
       }
       else
-        pe_write_fluid_grid(outfile, numnp_fluid, NULL, file_index, actstep);
+        pe_write_fluid_geo_file(outfile, numnp_fluid, NULL, file_index, actstep);
 
       actstep++;
     }while (next_result(&result));
 
-    /*append the file table*/
-    fwrite(&wsteps, sizeof(int), 1, outfile);
-    for (i=0;i<wsteps;i++)
-    {
-      fwrite(&file_index[i], sizeof(long), 1, outfile);
-    }
-    i=0;
-    fwrite(&i, sizeof(int), 1, outfile);
-    fwrite(&actbytes, sizeof(long), 1, outfile);
-    pe_write_string(outfile, "FILE_INDEX");
+    /*append the file index*/
+    pe_append_file_index(outfile, file_index, &actbytes);
 
      destroy_result_data(&result);
 
-     if (ale_idx!=-1)
-       destroy_chunk_data(&chunk);
+    fclose(outfile); /*finished writing .geo file*/
+    printf("  geometry data written to file %s_fluid.geo\n", basename);
+
+    /*-------------------------write the *fluid.case file*/
+    sprintf(filename, "%s_fluid.case",basename);
+    outfile = fopen(filename,"w");
+
+    pe_write_fluid_case_file(outfile);
 
     fclose(outfile);
   }
 
-  if (struct_idx!=-1)/*-------------------------write the *struct.geo file*/
+  if (struct_idx!=-1)
   {
+    /*-------------------------write the *struct.geo file*/
     numele_struct = discret[struct_idx].field->numele;
     numnp_struct = discret[struct_idx].field->numnp;
 
@@ -135,74 +149,51 @@ void pe_write_data()
 
     init_result_data(struct_field, &result);
     if (!next_result(&result))
-      dserror("COULD NOT USE NEXT_RESULT ON STRUCTURE_RESULT\n");
-    init_chunk_data(&result, &chunk, "displacement");
+      dserror("could not read struct result\n");
+
 
     actstep = 0;
     actbytes = 0;
 
     do
     {
+      init_chunk_data(&result, &chunk, "displacement");
       fflush(stdout);
       printf("  Writing struct .geo file step : %lf \r", map_read_real(result.group, "time"));
 
       if (SHELL==1)
-        pe_write_struct_grid(outfile,2*numnp_struct,&chunk, file_index, actstep);
+        pe_write_struct_geo_file(outfile,2*numnp_struct,&chunk, file_index, actstep);
 
       else
-        pe_write_struct_grid(outfile,numnp_struct,&chunk, file_index, actstep);
+        pe_write_struct_geo_file(outfile,numnp_struct,&chunk, file_index, actstep);
 
       actstep++;
+      destroy_chunk_data(&chunk);
+
     }while (next_result(&result));
 
-    /*append the file table*/
-    fwrite(&wsteps, sizeof(int), 1, outfile);
-    for (i=0;i<wsteps;i++)
-    {
-      fwrite(&file_index[i], sizeof(long), 1, outfile);
-    }
-    i=0;
-    fwrite(&i, sizeof(int), 1, outfile);
-    fwrite(&actbytes, sizeof(long), 1, outfile);
-    pe_write_string(outfile, "FILE_INDEX");
-
-/*     destroy_chunk_data(&chunk);
-     destroy_result_data(&result);*/
+    /*append the file index*/
+    pe_append_file_index(outfile, file_index, &actbytes);
 
     if (SHELL==1)
       CCAFREE(node_director);
 
     destroy_result_data(&result);
-    destroy_chunk_data(&chunk);
 
-    fclose(outfile);
-  }/*if(struct_idx!=-1)*/
+    fclose(outfile);/*finished writing .geo file*/
+    printf("  geometry data written to file %s_struct.geo\n", basename);
 
-  CCAFREE(file_index);
-
-
-  printf("\r  .geo file(s) succesfully created                       \n");   /*.geo files written*/
-
-  if (fluid_idx!=-1)
-  {
-    sprintf(filename, "%s_fluid.case",basename);
-    outfile = fopen(filename,"w");
-
-    pe_write_fluid_case_file(outfile);
-
-    fclose(outfile);
-  }
-
-  if (struct_idx!=-1)
-  {
-
+    /*-------------------------write the *struct.case file*/
     sprintf(filename, "%s_struct.case",basename);
     outfile = fopen(filename,"w");
 
     pe_write_struct_case_file(outfile);
 
     fclose(outfile);
-  }
+
+  }/*if(struct_idx!=-1)*/
+
+  CCAFREE(file_index);
 
 #ifdef DEBUG
   dstrc_exit();
@@ -211,6 +202,10 @@ void pe_write_data()
 
 void pe_write_field_result(int field_id, char* name, FILE* case_file,int dim)
 {
+#ifdef DEBUG
+  dstrc_enter("pe_write_field_result");
+#endif
+
   RESULT_DATA result;
   CHUNK_DATA chunk;
 
@@ -223,15 +218,18 @@ void pe_write_field_result(int field_id, char* name, FILE* case_file,int dim)
   float result_value;
 
   numnp = discret[field_id].field->numnp;
-  part = field_id+1;
+  part = field_id+1; /*+1 because ensight part indices start at 1*/
 
   init_result_data(discret[field_id].field, &result);
-  next_result(&result);
+
+  if (!next_result(&result))
+    dserror("Error while trying to open result_data %s\n", name);
 
   if (map_has_map(result.group, name))
   {
     file_index = (long*)CCACALLOC(wsteps, sizeof(long));
     strcpy(filename, basename);
+
     if (field_id == fluid_idx)
       strcat(filename, "_fluid.");
     if (field_id == struct_idx)
@@ -324,15 +322,7 @@ void pe_write_field_result(int field_id, char* name, FILE* case_file,int dim)
     }while (next_result(&result)); /*next time step*/
 
     /*append the file table*/
-    fwrite(&wsteps, sizeof(int), 1, outfile);
-    for (i=0;i<wsteps;i++)
-    {
-      fwrite(&file_index[i], sizeof(long), 1, outfile);
-    }
-    result_value=0;
-    fwrite(&result_value, sizeof(int), 1, outfile);
-    fwrite(&bytes, sizeof(long), 1, outfile);
-    pe_write_string(outfile, "FILE_INDEX");
+    pe_append_file_index(outfile, file_index, &bytes);
 
     if (dim == 3)
     {
@@ -354,6 +344,10 @@ void pe_write_field_result(int field_id, char* name, FILE* case_file,int dim)
     printf("  %s not found\n", name);
   }
 
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+
 }
 
 void pe_write_fluid_case_file(FILE* case_file)
@@ -370,6 +364,9 @@ void pe_write_fluid_case_file(FILE* case_file)
   fprintf(case_file, "model:\t1\t1\t%s_fluid.geo\n\n", basename);
   fprintf(case_file, "VARIABLE\n\n");
 
+  /*add your optional data here! */
+  /*pe_write_field_result(field, name of result, case_file, dimension
+   * of result*/
   pe_write_field_result(fluid_idx, "velocity", case_file, 3);
   pe_write_field_result(fluid_idx, "pressure", case_file, 1);
   pe_write_field_result(fluid_idx, "average_pressure", case_file, 1);
@@ -408,6 +405,9 @@ void pe_write_struct_case_file(FILE* case_file)
   fprintf(case_file, "model:\t1\t1\t%s_struct.geo\n\n", basename);
   fprintf(case_file, "VARIABLE\n\n");
 
+  /*add your optional data here! */
+  /*pe_write_field_result(field, name of result, case_file, dimension
+   * of result*/
   pe_write_field_result(struct_idx, "displacement", case_file, 3);
 
   fprintf(case_file, "\nTIME\n");
@@ -430,8 +430,11 @@ void pe_write_struct_case_file(FILE* case_file)
 #endif
 }
 
-void pe_write_fluid_grid(FILE* outfile, INT numnp_fluid, CHUNK_DATA* chunk, long* file_index, INT actstep)
+void pe_write_fluid_geo_file(FILE* outfile, INT numnp_fluid, CHUNK_DATA* chunk, long* file_index, INT actstep)
 {
+#ifdef DEBUG
+  dstrc_enter("pe_write_fluid_geo_file");
+#endif
 
   if (actstep == 0)
     actbytes += pe_write_string(outfile, "C Binary");
@@ -448,12 +451,16 @@ void pe_write_fluid_grid(FILE* outfile, INT numnp_fluid, CHUNK_DATA* chunk, long
   actbytes += pe_write_fluid_coordinates(outfile, chunk); /*write the grid information*/
   actbytes += pe_write_cells(outfile, fluid_idx);
   actbytes += pe_write_string(outfile, "END TIME STEP");
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
 }
 
-void pe_write_struct_grid(FILE* outfile, INT numnp_struct, CHUNK_DATA* chunk,long* file_index, INT actstep )
+void pe_write_struct_geo_file(FILE* outfile, INT numnp_struct, CHUNK_DATA* chunk,long* file_index, INT actstep )
 {
 #ifdef DEBUG
-  dstrc_enter("pe_write_struct_grid");
+  dstrc_enter("pe_write_struct_geo_file");
 #endif
 
   if (actstep == 0)
@@ -477,6 +484,21 @@ void pe_write_struct_grid(FILE* outfile, INT numnp_struct, CHUNK_DATA* chunk,lon
 #endif
 }
 
+void pe_append_file_index(FILE* outfile, long* file_index, long* actbytes)
+{
+  int i;
+  /*append the file table*/
+    fwrite(&wsteps, sizeof(int), 1, outfile);
+    for (i=0;i<wsteps;i++)
+    {
+      fwrite(&file_index[i], sizeof(long), 1, outfile);
+    }
+    i=0;
+    fwrite(&i, sizeof(int), 1, outfile);
+    fwrite(actbytes, sizeof(long), 1, outfile);
+    pe_write_string(outfile, "FILE_INDEX");
+}
+
 long pe_write_fluid_coordinates(FILE* outfile, CHUNK_DATA* chunk)
 {
   INT i, j;
@@ -488,7 +510,7 @@ long pe_write_fluid_coordinates(FILE* outfile, CHUNK_DATA* chunk)
 
 
 #ifdef DEBUG
-  dstrc_enter("pe_fluid_grid");
+  dstrc_enter("pe_write_fluid_coordinates");
 #endif
 
   numnp = discret[fluid_idx].field->numnp;
@@ -515,7 +537,6 @@ long pe_write_fluid_coordinates(FILE* outfile, CHUNK_DATA* chunk)
 
           if (ACTDIM==2 && j==2)
             XYZ_temp = 0;
-
           else
             XYZ_temp =(float)(actanode->x[j] + chunk->value_buf[j]);
         }
@@ -557,7 +578,7 @@ long pe_write_struct_coordinates(FILE* outfile, CHUNK_DATA* chunk, DOUBLE* direc
   long bytes = 0;
 
 #ifdef DEBUG
-  dstrc_enter("pe_struct_grid");
+  dstrc_enter("pe_write_struct_coordinates");
 #endif
 
   numnp = discret[struct_idx].field->numnp;
@@ -1191,7 +1212,7 @@ int main(int argc, char** argv)
       }
       else if (problem.num_discr == 2)
       {
-        if ((fluid_field == NULL) || (ale_field == NULL) || (struct_field != NULL))
+        if ((fluid_field == NULL) || (ale_field == NULL))
         {
           dserror("fluid and ale field expected");
         }
@@ -1209,8 +1230,13 @@ int main(int argc, char** argv)
         {
           dserror("structure discretization expected");
         }
+        else
+        {
+          dserror("invalid number of discretizations for struct problem (%d)", problem.num_discr);
+        }
       }
       break;
+
     default:
       dserror("problem type %d not supported", problem.type);
   }
@@ -1257,13 +1283,15 @@ int main(int argc, char** argv)
   /* Iterate all results. */
   if (fluid_field!=NULL)
     init_result_data(fluid_field, &result);
-  else
+  else if (struct_field != NULL)
     init_result_data(struct_field, &result);
+  else
+    dserror("No fluid field and no struct field\n");
 
   for (wsteps = 0; next_result(&result); wsteps++)
   {
     if (wsteps>=nsteps)
-      dserror("too many fluid result steps");
+      dserror("too many result steps");
     printf("Find number of results: \r");
     time_a.a.dv[wsteps] = map_read_real(result.group, "time");
     step_a.a.iv[wsteps] = map_read_int(result.group, "step");
