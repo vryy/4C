@@ -15,7 +15,7 @@ LD=g++
 BASEDIR=/lnm/lib/$LINUX_DIST/$MPI_VERSION
 
 INCLUDEDIRS="-I$BASEDIR/include"
-LIBDIRS="-L$BASEDIR/lib -L/usr/lib/gcc-lib/i386-redhat-linux/3.2.3"
+LIBDIRS="-L$BASEDIR/lib -L/usr/lib/gcc/i386-redhat-linux/4.1.1 -L/usr/lib/gcc-lib/i386-redhat-linux/3.2.3"
 
 # Trilinos
 TRILINOS_HOME=/lnm/lib/$LINUX_DIST/$MPI_VERSION/trilinos
