@@ -1,25 +1,5 @@
-/* We split our information into a .geo file (which contains the
- * grid) and some result files (no predetermined file ending). Further
- * more there is a ASCII 'index' file (.case) similar to the .control
- * file.
- *
- * Here we use the single file format, which means there is one file
- * for all the time steps of the grid, and one for all the time steps
- * of every result type (velx, pressure..). The time steps inside each
- * file are wrapped by "BEGIN TIME STEP" and "END TIME STEP" wrappers.
- *
- * At the moment we write the grid for every time step.
- *
-
-*/
-
 #include "post_ensight.h"
 
-#define INCRE 1                      /*for V3UPDATE : number of steps
-                                      * forward */
-/*----------------------------------------------------------------------*/
-/* the result values */
-/*----------------------------------------------------------------------*/
 static POST_DISCRETIZATION* discret;
 static FIELD_DATA* struct_field = NULL;
 static FIELD_DATA* fluid_field = NULL;
@@ -28,1173 +8,355 @@ static INT struct_idx=-1;
 static INT fluid_idx=-1;
 static INT ale_idx=-1;
 
+#ifdef D_FSI
 static INT* fluid_ale_connect;
-static DOUBLE *node_director;
+static DOUBLE *node_director = NULL;
+#endif
 
-/*----------------------------------------------------------------------*
- |                                                        genk 07/02    |
- | all variables needed by VISUAL2 are defined extern                   |
- *----------------------------------------------------------------------*/
-
-
-static INT      IOPT=0;                 /* program mode                   */
-static INT      ACTDIM;
-static INT      NKEYS=12;
-static float    FLIMS[12][2];          /* data limits                    */
-static DOUBLE  minpre;   /*					*/
-static DOUBLE  minvx;     /*					*/
-static DOUBLE  minvy;     /*					*/
-static DOUBLE  minvz;     /*					*/
-static DOUBLE  minabsv; /*					*/
-static DOUBLE  mindx;    /*                                      */
-static DOUBLE  mindy;    /*                                      */
-static DOUBLE  mindz;    /*                                      */
-static DOUBLE  minabsd;
-static INT     LASTSTEP;
-static INT     ACTSTEP;
-static INT     nsteps;
-static INT     SHELL = 0; /*shell problem*/
-static INT     numnp=0;          /* number of nodes of actual field*/
-static INT     numnp_fluid=0;
-static INT     numnp_struct=0;
-static INT     numele=0;	        /* number of elements of actual field*/
-static INT     numele_fluid=0;
-static INT     numele_struct=0;
-static INT     num_discr;
-static INT     ncols=1;         /* number of sol steps stored in sol	*/
-static INT     icol=-1;         /* act. num. of sol step to be visual.  */
-static INT     ACTSTEP;
-
-static ELEMENT       *actele;
-static FIELDTYP       actfieldtyp;
-static ARRAY          time_a ;         /* time array				*/
-static ARRAY          step_a ;         /* time array
+static ARRAY  time_a ;         /* time array				*/
+static ARRAY  step_a ;         /* time array
                                         * */
-/*global scalar result arrays*/
-DOUBLE *velocity;
-DOUBLE *press;
-DOUBLE *displacement;
-DOUBLE *ale_displacement;
 
-/*global results*/
-static RESULT_DATA global_fluid_result;
-static RESULT_DATA global_ale_result;
-static RESULT_DATA global_struct_result;
-static RESULT_DATA fluid_data;
+static int ACTDIM;
 
-static INT dis_dim;
-static INT* numnp_tot;
+static long actbytes;;
 
-/*our file pointers*/
-FILE* case_file;
-FILE* fluid_geo_file;
-FILE* struct_geo_file;
+static char basename[80];
 
-float** XYZ_fluid; /*float point coordinates*/
-float** XYZ_struct; /*float point coordinates*/
+static INT nsteps; /*total number of steps*/
+static INT wsteps; /*number of written steps*/
+static INT SHELL;
 
-double* timesteps; /*the actual time value of every step*/
-char basename[100]; /*the name of our control file*/
-char filename[100];
-int actstep=0;
-
-/*some information about the data sets we want to write*/
-/*if you change something here you need to change :
- * - third dimension values = 0 for ACTDIM ==2
- * - pe_write_result
- * - pe_write_fluid_case_file
- * - pe_write_struct_case_file*/
-static int scalar_array[9] = {1, 1, 1, 1, 1, 1, 1 , 1, 0}; /*'1' in scalar array signals that this scalar data should be written*/
-static long counter[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0}; /*counter for the file size*/
-static char file_ending[9][15] = {".vx", ".vy", ".vz",".pres",".vel", ".dx",".dy",".dz",".empty" };
-static char scalar_description[9][20] = {"VelX", "VelY", "VelZ", "Pressure", "VectorVelocity", "DisX", "DisY", "DisZ", "empty"};
-static int numsd = 9;           /*number of possible scalar data*/
-static int numsd_struct = 5;    /*index of first struct data*/
-static long* file_table[9];     /*the first byte of every step*/
-static FILE* result_file[9];    /*the files we write our data into*/
 
 
 void pe_write_data()
 {
+  RESULT_DATA result;
+  CHUNK_DATA chunk;
+
+  INT numnp_fluid, numele_fluid;
+  INT numnp_struct, numele_struct;
+
+  char filename[80];
+  FILE* outfile;
+
+  long* file_index;
+
+  INT actstep = 0;
   INT i;
-  float time;
 
 #ifdef DEBUG
-  dstrc_enter("pcf_write_data");
+  dstrc_enter("pe_write_data");
 #endif
 
-  /*turn of third dimension values for ACTDIM == 2*/
-  if (ACTDIM==2)
-  {
-    scalar_array[2] = 0;
-    scalar_array[7] = 0;
-  }
+  file_index = (long*)CCACALLOC(wsteps, sizeof(long));
 
-  if (ale_idx!=-1)
-  {
-    if (IOPT==0)
-    {
-      IOPT=2;
-      printf("\n  %dD problem: steady data structure, unsteady grid and variables\n\n",ACTDIM );
-    }
-    if (IOPT==1) printf("\n  %dD problem : steady data structure, STEADY grid and variables\n\n",ACTDIM );
-  }
-  else
-  {
-    IOPT=1;
-    printf("\n  %dD problem: steady data structure and grid, unsteady variables\n\n", ACTDIM);
-  }
-
-  if (fluid_idx!=-1) /*-------------------------------init the fluid variables*/
+  if (fluid_idx!=-1) /*-------------------------write the *fluid.geo file*/
   {
     numele_fluid = discret[fluid_idx].field->numele;
     numnp_fluid =  discret[fluid_idx].field->numnp;
-    numnp+=numnp_fluid;
-    numele+=numele_fluid;
 
-    XYZ_fluid = (float**)CCACALLOC(numnp_fluid,sizeof(float*));
-    for (i=0;i<numnp_fluid;i++)
+    if (ale_idx!=-1)
     {
-      XYZ_fluid[i] = (float*)CCACALLOC(3, sizeof(float));
+      init_result_data(ale_field, &result);
+      if (next_result(&result))
+        init_chunk_data(&result, &chunk, "displacement");
+      else
+        dserror("COULD NOT USE NEXT_RESULT ON FLUID_RESULT\n ");
     }
+    else
+    {
+      init_result_data(fluid_field, &result);
+      if (!next_result(&result))
+        dserror("COULD NOT USE NEXT_RESULT ON FLUID_RESULT\n");
+    }
+
+    /*open the .geo file*/
+    sprintf(filename, "%s_fluid.geo",basename);
+    outfile = fopen(filename,"w");
+
+    actstep = 0;
+    actbytes = 0;
+
+    do
+    {
+      fflush(stdout);
+      printf("  Writing fluid .geo file step : %lf \r", map_read_real(result.group, "time"));
+
+      if (ale_idx!=-1)
+      {
+        pe_write_fluid_grid(outfile, numnp_fluid, &chunk, file_index, actstep);
+      }
+      else
+        pe_write_fluid_grid(outfile, numnp_fluid, NULL, file_index, actstep);
+
+      actstep++;
+    }while (next_result(&result));
+
+    /*append the file table*/
+    fwrite(&wsteps, sizeof(int), 1, outfile);
+    for (i=0;i<wsteps;i++)
+    {
+      fwrite(&file_index[i], sizeof(long), 1, outfile);
+    }
+    i=0;
+    fwrite(&i, sizeof(int), 1, outfile);
+    fwrite(&actbytes, sizeof(long), 1, outfile);
+    pe_write_string(outfile, "FILE_INDEX");
+
+     destroy_result_data(&result);
+
+     if (ale_idx!=-1)
+       destroy_chunk_data(&chunk);
+
+    fclose(outfile);
   }
 
-  if (struct_idx!=-1)/*-------------------------------init the structure variables*/
+  if (struct_idx!=-1)/*-------------------------write the *struct.geo file*/
   {
     numele_struct = discret[struct_idx].field->numele;
     numnp_struct = discret[struct_idx].field->numnp;
-    numnp+=numnp_struct;
-    numele+=numele_struct;
 
-    /*If we got a 3D FSI problem we assume there are shell
-     * information, other cases not implemented.     *
+    /*If we got a 3D FSI problem we assume that there are shell
+     * information, other cases are not implemented.     *
      * For a shell problem we got to double the number of struct nodes
      * to create 3D bodies from the 2D shell*/
     if (map_has_string(struct_field->group,"shell8_problem","yes" ))
     {
-      numnp_struct *= 2;
-      SHELL = 1;
-      XYZ_struct = (float**)CCACALLOC(numnp_struct,sizeof(float*));
-      for (i=0;i<numnp_struct;i++)
-      {
-        XYZ_struct[i] = (float*)CCACALLOC(3, sizeof(float));
-      }
+      /*read the node_director information*/
+      node_director=(DOUBLE*)CCACALLOC(3*(numnp_struct),sizeof(DOUBLE));
+      post_read_shell8_info(discret, node_director, struct_idx);
+      SHELL=1;
     }
-    else
-    {
-      XYZ_struct = (float**)CCACALLOC(numnp_struct,sizeof(float*));
-      for (i=0;i<numnp_struct;i++)
-      {
-        XYZ_struct[i] = (float*)CCACALLOC(3, sizeof(float));
-      }
-    }
-  }
 
-  /*--------------------------------------- get the data limits */
-  find_data_limits(discret, num_discr,FLIMS, ACTDIM);
-
-  /*-------------------------------------- maybe needed sometimes*/
-  minvx=FLIMS[0][0];
-  minvy=FLIMS[1][0];
-  minvz=FLIMS[2][0];
-  minpre=FLIMS[3][0];
-  minabsv=FLIMS[5][0];
-  mindx=FLIMS[7][0];
-  mindy=FLIMS[8][0];
-  mindz=FLIMS[9][0];
-  minabsd=FLIMS[10][0];
-
-  /*--------------------------------------- check limits*/
-  for (i=0;i<NKEYS;i++)
-  {
-    if (FLIMS[i][0]==FLIMS[i][1])
-      FLIMS[i][1] += ONE;
-  }
-
-  /*-------------------------------------- set real number of last step */
-  LASTSTEP=step_a.a.iv[ncols-1];
-
-  /*-------------------------------------- initalize the scalar data arrays*/
-  if (fluid_idx!=-1)
-  {
-    velocity=(DOUBLE*)CCACALLOC(ACTDIM*numnp_fluid, sizeof(DOUBLE));
-    press=(DOUBLE*)CCACALLOC(numnp_fluid, sizeof(DOUBLE));
-  }
-  if (struct_idx!=-1)
-  {
-    displacement=(DOUBLE*)CCACALLOC(dis_dim*numnp_struct, sizeof(DOUBLE));
-  }
-  if (ale_idx!=-1)
-  {
-    ale_displacement=(DOUBLE*)CCACALLOC(ACTDIM*numnp_fluid, sizeof(DOUBLE));
-  }
-
-  if (SHELL==1)
-  {
-#ifdef D_FSI
-    /*if we got a shell problem we need the node director information*/
-    printf("Creating shell information for %d nodes\n", numnp_struct/2);
-    actele=&discret[struct_idx].element[0];
-    switch(actele->eltyp)
-    {
-      case el_shell8:
-	if (struct_idx==-1) dserror("Structure field needed");
-
-	node_director=(DOUBLE*)CCACALLOC(3*(numnp_struct/2),sizeof(DOUBLE));
-	for (i=0;i<3*(numnp_struct/2);i++)
-	{
-	  node_director[i]=0;
-	}
-	post_read_shell8_info(discret, node_director, struct_idx);
-	break;
-
-
-      default:
-	/*dserror("eltyp in vis3caf no supported yet");*/
-	break;
-    }
-#else
-    dserror("D_FSI not compiled in!!!");
-#endif
-  }
-
-  /*open the .geo files, those will contain the grid information*/
-  if (fluid_idx!=-1)
-  {
-    sprintf(filename, "%s_fluid.geo",basename);
-    fluid_geo_file = fopen(filename,"w");
-    pe_write_string(fluid_geo_file, "C Binary");
-  }
-
-  if (struct_idx!=-1)
-  {
+    /*open the .geo file*/
     sprintf(filename, "%s_struct.geo",basename);
-    struct_geo_file = fopen(filename,"w");
-    pe_write_string(struct_geo_file, "C Binary");
-  }
+    outfile = fopen(filename,"w");
 
-  /*open all the result files we need*/
-  for (i=0;i<numsd;i++)
-  {
-    if (scalar_array[i] == 1)
+    init_result_data(struct_field, &result);
+    if (!next_result(&result))
+      dserror("COULD NOT USE NEXT_RESULT ON STRUCTURE_RESULT\n");
+    init_chunk_data(&result, &chunk, "displacement");
+
+    actstep = 0;
+    actbytes = 0;
+
+    do
     {
-      sprintf(filename, "%s%s",basename, file_ending[i]);
-      result_file[i] = fopen(filename, "w");
-    }
-  }
+      fflush(stdout);
+      printf("  Writing struct .geo file step : %lf \r", map_read_real(result.group, "time"));
 
-  printf("\n");
-
-  /*this one is needed for stepping through all results. We assume
-   * there are as many struct results as fluid results*/
-  init_result_data(fluid_field, &fluid_data);
-
-
-  while (next_result(&fluid_data))
-  {
-    time = (float)map_read_real(fluid_data.group, "time");
-
-    timesteps[actstep] = time;
-
-    /*update velocity,pressure and discretization arrays*/
-    pe_update(&time);
-
-    fflush(stdout);
-    printf("\rtimestep : %f", time);
-
-    /* general geo_file structure, for further information see Ensight
-     * UserManual, Chapter 11.1 :
-     *
-     * BEGIN TIME STEP
-     * Commentline1
-     * Commentline2
-     * node id <off/given/assign/ignore>
-     * element id <off/given/assign/ignore>
-     * part
-     * #
-     * comment
-     * coordinates
-     * number of nodes
-     * x_n1 x_n2 .... x_nn
-     * y_n1 y_n2 .... y_nn
-     * z_n1 z_n2 .... z_nn
-     * element type
-     * number of elements
-     * n1_e1 n2_e1 .... np_e1
-     * .
-     * .     *
-     * END TIME STEP*/
-
-    if (fluid_idx!=-1)
-    {
-      pe_write_string(fluid_geo_file, "BEGIN TIME STEP");
-      pe_write_string(fluid_geo_file, "Fluid geometry");
-      pe_write_string(fluid_geo_file, "Comment");
-      pe_write_string(fluid_geo_file, "node id assign");
-      pe_write_string(fluid_geo_file, "element id assign");
-      pe_write_part_header(fluid_geo_file, fluid_idx+1, "fluid field"); /*part + partnumber + comment*/
-      pe_grid(XYZ_fluid, fluid_idx);                                    /*update the grid information*/
-      pe_write_coordinates(fluid_geo_file, XYZ_fluid, numnp_fluid); /*write the grid information*/
-      pe_write_cells(fluid_geo_file, fluid_idx);                        /*write the connectivity*/
-      pe_write_string(fluid_geo_file, "END TIME STEP");
-    }
-
-    if (struct_idx!=-1)
-    {
-      pe_write_string(struct_geo_file, "BEGIN TIME STEP");
-      pe_write_string(struct_geo_file, "Struct geometry");
-      pe_write_string(struct_geo_file, "Comment");
-      pe_write_string(struct_geo_file, "node id assign");
-      pe_write_string(struct_geo_file, "element id assign");
-      pe_write_part_header(struct_geo_file, struct_idx+1, "struct field");
-      pe_grid(XYZ_struct, struct_idx);
-      pe_write_coordinates(struct_geo_file, XYZ_struct, numnp_struct);
-      pe_write_cells(struct_geo_file, struct_idx);
-      pe_write_string(struct_geo_file, "END TIME STEP");
-    }
-
-    pe_write_results(scalar_array);
-
-    actstep++;
-  }
-
-  if (fluid_idx!=-1)
-    fclose(fluid_geo_file);
-  if (struct_idx!=-1)
-    fclose(struct_geo_file);
-
-  pe_append_file_index();
-
-  destroy_result_data(&fluid_data);
-
-  /*Write the case files, these files are ALWAYS ASCII*/
-  if (fluid_idx!=-1)
-  {
-    sprintf(filename, "%s_fluid.case", basename);
-    case_file = fopen(filename, "w");
-    pe_write_fluid_case_file(case_file, scalar_array);
-    fclose(case_file);
-  }
-
-  if (struct_idx!=-1)
-  {
-    sprintf(filename, "%s_struct.case", basename);
-    case_file = fopen(filename, "w");
-    pe_write_struct_case_file(case_file, scalar_array);
-    fclose(case_file);
-  }
-
-
-}/*end of pcf_write_data */
-
-
-/*get the grid of 'part' and write it into XYZ[][]*/
-void pe_grid(float** XYZ,  int part)
-{
-  INT i;
-  INT numnp;
-  NODE* actnode;
-  NODE* actanode;
-
-  DOUBLE dx, dy, dz;
-  DOUBLE dvx, dvy, dvz;
-  DOUBLE ddvx, ddvy, ddvz;
-
-#ifdef DEBUG
-  dstrc_enter("pe_grid");
-#endif
-
-  numnp = discret[part].field->numnp;
-
-  for (i=0;i<numnp;i++)
-  {
-    actnode = &discret[part].node[i];
-
-    if (part == fluid_idx)
-    {
-      if (ale_field!=NULL && fluid_ale_connect[i] != -1)
-      {
-
-        actanode = &(discret[ale_idx].node[fluid_ale_connect[i]]);
-
-        XYZ[i][0] = actanode->x[0] + ale_displacement[ACTDIM*actanode->Id_loc + 0];
-        XYZ[i][1] = actanode->x[1] + ale_displacement[ACTDIM*actanode->Id_loc + 1];
-        XYZ[i][2] = actanode->x[2] + ale_displacement[ACTDIM*actanode->Id_loc + 2];
-
-        if (ACTDIM==2)
-          XYZ[i][2]=0;
-      }
-
-      else
-      {
-        XYZ[i][0] = actnode->x[0];
-        XYZ[i][1] = actnode->x[1];
-        XYZ[i][2] = actnode->x[2];
-      }
-    }
-
-    if (part == struct_idx)
-    {
       if (SHELL==1)
-      {
-        dx=displacement[dis_dim*i+0];
-        dy=displacement[dis_dim*i+1];
-        dz=displacement[dis_dim*i+2];
+        pe_write_struct_grid(outfile,2*numnp_struct,&chunk, file_index, actstep);
 
-        ddvx=displacement[dis_dim*i+3];
-        ddvy=displacement[dis_dim*i+4];
-        ddvz=displacement[dis_dim*i+5];
-
-
-        dvx=node_director[3*actnode->Id_loc];
-        dvy=node_director[3*actnode->Id_loc+1];
-        dvz=node_director[3*actnode->Id_loc+2];
-
-        XYZ[i][0] = actnode->x[0]+dx+dvx+ddvx;
-        XYZ[i][1] = actnode->x[1]+dy+dvy+ddvy;
-        XYZ[i][2] = actnode->x[2]+dz+dvz+ddvz;
-
-        XYZ[i+numnp][0] = actnode->x[0]+dx-dvx-ddvx;
-        XYZ[i+numnp][1] = actnode->x[1]+dy-dvy-ddvy;
-        XYZ[i+numnp][2] = actnode->x[2]+dz-dvz-ddvz;
-      }
       else
-      {
-        dx=displacement[ACTDIM*i+0];
-        dy=displacement[ACTDIM*i+1];
+        pe_write_struct_grid(outfile,numnp_struct,&chunk, file_index, actstep);
 
-        if (ACTDIM == 3)
-          dz=displacement[ACTDIM*i+2];
-        else
-          dz = 0;
+      actstep++;
+    }while (next_result(&result));
 
-        XYZ[i][0] = actnode->x[0]+dx;
-        XYZ[i][1] = actnode->x[1]+dy;
-        XYZ[i][2] = actnode->x[2]+dz;
-      }
+    /*append the file table*/
+    fwrite(&wsteps, sizeof(int), 1, outfile);
+    for (i=0;i<wsteps;i++)
+    {
+      fwrite(&file_index[i], sizeof(long), 1, outfile);
     }
+    i=0;
+    fwrite(&i, sizeof(int), 1, outfile);
+    fwrite(&actbytes, sizeof(long), 1, outfile);
+    pe_write_string(outfile, "FILE_INDEX");
 
+/*     destroy_chunk_data(&chunk);
+     destroy_result_data(&result);*/
+
+    if (SHELL==1)
+      CCAFREE(node_director);
+
+    destroy_result_data(&result);
+    destroy_chunk_data(&chunk);
+
+    fclose(outfile);
+  }/*if(struct_idx!=-1)*/
+
+  CCAFREE(file_index);
+
+
+  printf("\r  .geo file(s) succesfully created                       \n");   /*.geo files written*/
+
+  if (fluid_idx!=-1)
+  {
+    sprintf(filename, "%s_fluid.case",basename);
+    outfile = fopen(filename,"w");
+
+    pe_write_fluid_case_file(outfile);
+
+    fclose(outfile);
+  }
+
+  if (struct_idx!=-1)
+  {
+
+    sprintf(filename, "%s_struct.case",basename);
+    outfile = fopen(filename,"w");
+
+    pe_write_struct_case_file(outfile);
+
+    fclose(outfile);
   }
 
 #ifdef DEBUG
   dstrc_exit();
 #endif
-  return;
-
 }
 
-
-/* here we update all the scalar arrays like velocity for the current
- * time step*/
-void pe_update(float *TIME)
+void pe_write_field_result(int field_id, char* name, FILE* case_file,int dim)
 {
-  INT i;
-#ifdef DEBUG
-  dstrc_enter("pe_update");
-#endif
-
-/*------------------------------------------ go to the next step*/
-  if (icol==-1 || icol+INCRE > nsteps-1)
-  {
-    icol=0;
-    ACTSTEP=step_a.a.iv[icol];
-  }
-  else
-  {
-    icol+=INCRE;
-    ACTSTEP=step_a.a.iv[icol];
-  }
-  *TIME = time_a.a.dv[icol];
-
+  RESULT_DATA result;
   CHUNK_DATA chunk;
-  INT j, h;
 
-  if (fluid_field!=NULL)
+  FILE* outfile;
+  char filename[80] = "";
+  long bytes = 0;
+  long* file_index;
+  int numnp, i,j, part;
+  int actstep = 0;
+  float result_value;
+
+  numnp = discret[field_id].field->numnp;
+  part = field_id+1;
+
+  init_result_data(discret[field_id].field, &result);
+  next_result(&result);
+
+  if (map_has_map(result.group, name))
   {
-    if (!next_result(&global_fluid_result))
+    file_index = (long*)CCACALLOC(wsteps, sizeof(long));
+    strcpy(filename, basename);
+    if (field_id == fluid_idx)
+      strcat(filename, "_fluid.");
+    if (field_id == struct_idx)
+      strcat(filename, "_struct.");
+
+    strncat(filename, name, 3);
+    outfile = fopen(filename, "w");
+
+    do
     {
-      destroy_result_data(&global_fluid_result);
-      init_result_data(fluid_field, &global_fluid_result);
-      if (!next_result(&global_fluid_result))
+      fflush(stdout);
+      printf("  writing %s step %lf \r",name, map_read_real(result.group, "time"));
+      bytes += pe_write_string(outfile, "BEGIN TIME STEP");
+      file_index[actstep] = bytes;
+      bytes += pe_write_string(outfile, "description");
+      bytes += pe_write_string(outfile, "part");
+      bytes += 4*fwrite(&part, sizeof(int), 1, outfile);
+      bytes += pe_write_string(outfile, "coordinates");
+
+      init_chunk_data(&result, &chunk, name);
+
+      if (ACTDIM == 3 && dim == 3)/*--------------------------- 3 dimensional vector in 3D data*/
       {
-        dserror("failed to reinitialize fluid");
-      }
-    }
-  }
-  if (ale_field!=NULL)
-  {
-    if (!next_result(&global_ale_result))
-    {
-      destroy_result_data(&global_ale_result);
-      init_result_data(ale_field, &global_ale_result);
-      if (!next_result(&global_ale_result))
-      {
-        dserror("failed to reinitialize ale");
-      }
-    }
-  }
-  if (struct_field!=NULL)
-  {
-    if (!next_result(&global_struct_result))
-    {
-      destroy_result_data(&global_struct_result);
-      init_result_data(struct_field, &global_struct_result);
-      if (!next_result(&global_struct_result))
-      {
-        dserror("failed to reinitialize struct");
-      }
-    }
-  }
-
-
-  /*-----------------------------------------------------*/
-  for (h=0;h<num_discr;h++)
-  {
-    actfieldtyp=discret[h].field->type;
-    switch(actfieldtyp)
-    {
-      case fluid:
-        /*read the velocity*/
-        init_chunk_data(&global_fluid_result, &chunk, "velocity");
-        if (ACTDIM==2)
-          dsassert(chunk.value_entry_length==2, "2d problem expected");
-        if (ACTDIM==3)
-          dsassert(chunk.value_entry_length==3, "3d problem expected");
-
-        for (i=0; i<discret[h].field->numnp; ++i)
+        if (SHELL == 1 && field_id == struct_idx)/*-------- shell problem*/
         {
-          chunk_read_value_entry(&chunk, i);
-          if (ACTDIM==2)
+          for (j=0;j<3;j++)
           {
-            velocity[2*i+0] = chunk.value_buf[0];
-            velocity[2*i+1] = chunk.value_buf[1];
-          }
-          if (ACTDIM==3)
-          {
-            velocity[3*i+0] = chunk.value_buf[0];
-            velocity[3*i+1] = chunk.value_buf[1];
-            velocity[3*i+2] = chunk.value_buf[2];
-          }
-        }
-        destroy_chunk_data(&chunk);
-
-        /*read the pressure*/
-        if (map_has_map(global_fluid_result.group, "pressure"))
-        {
-          init_chunk_data(&global_fluid_result, &chunk, "pressure");
-        }
-        else if (map_has_map(global_fluid_result.group, "average_pressure"))
-        {
-          init_chunk_data(&global_fluid_result, &chunk, "average_pressure");
-        }
-        else
-        {
-          /* no pressure information. leave. */
-          break;
-        }
-        dsassert(chunk.value_entry_length==1, "there must be just one pressure value");
-
-        for (i=0; i<discret[h].field->numnp; ++i)
-        {
-          chunk_read_value_entry(&chunk, i);
-          press[i] = chunk.value_buf[0];
-        }
-        destroy_chunk_data(&chunk);
-
-        /*NO HEX20*/
-        /* if (discret[h].element[0].distyp==hex20) */
-/*           lin_interpol(&discret[h], numnp_tot[h], velocity, pressure,  INPT); */
-        break;
-
-      case structure:
-        init_chunk_data(&global_struct_result, &chunk, "displacement");
-
-        for (i=0; i<discret[h].field->numnp; ++i)
-        {
-          chunk_read_value_entry(&chunk, i);
-          if (ACTDIM==2)
-          {
-            displacement[2*i+0] = chunk.value_buf[0];
-            displacement[2*i+1] = chunk.value_buf[1];
-          }
-          if (ACTDIM==3)
-          {
-            for (j=0;j<dis_dim;j++)
+            for (i=0;i<numnp;i++)
             {
-              displacement[dis_dim*i+j] = chunk.value_buf[j];
+              chunk_read_value_entry(&chunk, i);
+              result_value = (float)chunk.value_buf[j];
+              bytes += 4*(fwrite(&result_value, sizeof(float), 1, outfile));
+            }
+            for (i=0;i<numnp;i++)
+            {
+              chunk_read_value_entry(&chunk, i);
+              result_value = (float)chunk.value_buf[j];
+              bytes += 4*(fwrite(&result_value, sizeof(float), 1, outfile));
             }
           }
         }
-        destroy_chunk_data(&chunk);
-        break;
 
-      case ale:
-        init_chunk_data(&global_ale_result, &chunk, "displacement");
-        if (ACTDIM==2)
-          dsassert(chunk.value_entry_length==2, "2d problem expected");
-        if (ACTDIM==3)
-          dsassert(chunk.value_entry_length==3, "3d problem expected");
-
-        for (i=0; i<discret[h].field->numnp; ++i)
+        else /*-------------------------------------------- normal case*/
         {
-          chunk_read_value_entry(&chunk, i);
-          if (ACTDIM==2)
+          for (j=0;j<3;j++)
           {
-            ale_displacement[2*i+0] = chunk.value_buf[0];
-            ale_displacement[2*i+1] = chunk.value_buf[1];
-          }
-          if (ACTDIM==3)
-          {
-            ale_displacement[3*i+0] = chunk.value_buf[0];
-            ale_displacement[3*i+1] = chunk.value_buf[1];
-            ale_displacement[3*i+2] = chunk.value_buf[2];
+            for (i=0;i<numnp;i++)
+            {
+              chunk_read_value_entry(&chunk, i);
+              result_value = (float)chunk.value_buf[j];
+              bytes += 4*(fwrite(&result_value, sizeof(float), 1, outfile));
+            }
           }
         }
-        /*NO HEX20*/
-        /* if (discret[h].element[0].distyp==hex20) */
-/*         { */
-/*           lin_interpol(&discret[h], numnp_tot[h], ale_displacement, NULL,  INPT); */
-/*         } */
-
-      default:
-        break;
-    }/*end of switch(actfieldtyp)*/
-  }/*end of loop over discretizations*/
-
-/*----------------------------------------------------------------------*/
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
-  return;
-}
-
-
-int pe_write_part_header(FILE* outfile, int part, char* comment)
-{
-#ifdef DEBUG
-  dstrc_enter("pe_write_part_header");
-#endif
-
-  int counter = 0;
-
-  counter += pe_write_string(outfile, "part");
-  counter += 4*fwrite(&part, sizeof(int), 1, outfile);
-  counter += pe_write_string(outfile, comment);
-
-  return counter;
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
-}
-
-int pe_write_coordinates(FILE* outfile, float** XYZ, int numnp)
-{
-#ifdef DEBUG
-  dstrc_enter("pe_write_coordinates");
-#endif
-
-  int i;
-  int counter = 0;
-
-  counter += pe_write_string(outfile, "coordinates");
-  counter += 4*fwrite(&numnp, sizeof(int), 1, outfile);
-
-  for (i=0;i<numnp;i++)
-  {
-    counter += 4*(fwrite(&XYZ[i][0], sizeof(float), 1, outfile));
-  }
-  for (i=0;i<numnp;i++)
-  {
-    counter += 4*(fwrite(&XYZ[i][1], sizeof(float), 1, outfile));
-  }
-  for (i=0;i<numnp;i++)
-  {
-    counter += 4*(fwrite(&XYZ[i][2], sizeof(float), 1, outfile));
-  }
-
-  return counter;
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
-}
-
-
-int pe_write_cells(FILE* outfile, int part)
-{
-#ifdef DEBUG
-  dstrc_enter("pe_write_cells");
-#endif
-
-  int i, j;
-  int numele;
-  ELEMENT* actele;
-
-  numele = discret[part].field->numele;
-  actele = &discret[part].element[0];
-
-  int counter=0;
-  int temp;
-
-  switch(actele->distyp)
-  {
-    case hex8:
-      counter += pe_write_string(outfile, "hexa8");
-      counter += 4*fwrite(&numele, sizeof(int), 1, outfile);
-      break;
-
-    case hex27:
-      counter += pe_write_string(outfile, "hexa8");
-      temp=8*numele;
-      counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-      break;
-
-    case tet4:
-      counter += pe_write_string(outfile, "tetra4");
-      counter += 4*fwrite(&numele, sizeof(int), 1, outfile);
-      break;
-
-    case quad4:
-      if (SHELL==0)
-      {
-        counter += pe_write_string(outfile, "quad4");
       }
 
-      if (SHELL==1)
+      else if (ACTDIM == 2 && dim == 3) /*--------------------------- 3 dimensional vector in 2D data*/
       {
-        counter += pe_write_string(outfile, "hexa8");
+        for (j=0;j<2;j++)
+        {
+          for (i=0;i<numnp;i++)
+          {
+            chunk_read_value_entry(&chunk, i);
+            result_value = (float)chunk.value_buf[j];
+            bytes += 4*(fwrite(&result_value, sizeof(float), 1, outfile));
+          }
+        }
+        for (i=0;i<numnp;i++)
+        {
+          result_value = 0;
+          bytes += 4*(fwrite(&result_value, sizeof(float), 1, outfile));
+        }
       }
 
-      counter += 4*fwrite(&numele, sizeof(int), 1, outfile);
-      break;
-
-    case quad9:
-      if (SHELL==0)
+      else if (dim == 1)/*------------------------------------------- scalar value*/
       {
-        counter += pe_write_string(outfile, "quad4");
-        temp = 4*numele;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        for (i=0;i<numnp;i++)
+          {
+            chunk_read_value_entry(&chunk, i);
+            result_value = (float)chunk.value_buf[0];
+            bytes += 4*(fwrite(&result_value, sizeof(float), 1, outfile));
+          }
       }
 
-      if (SHELL==1)
-      {
-        counter += pe_write_string(outfile, "hexa8");
-        temp = 4*numele;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-      }
-      break;
+      bytes += pe_write_string(outfile, "END TIME STEP");
+      destroy_chunk_data(&chunk);
 
-    case tri3:
-      if (SHELL==0)
-      {
-        counter += pe_write_string(outfile, "tria3");
-      }
+      actstep++;
 
-      if (SHELL==1)
-      {
-        counter += pe_write_string(outfile, "penta6");
-      }
+    }while (next_result(&result)); /*next time step*/
 
-      counter += 4*fwrite(&numele, sizeof(int), 1, outfile);
-      break;
-
-    default:
-      dserror("element type : %d", actele->distyp);
-      break;
-  }
-
-  for (i=0;i<numele;i++)
-  {
-    actele = &discret[part].element[i];
-    switch(actele->distyp)
+    /*append the file table*/
+    fwrite(&wsteps, sizeof(int), 1, outfile);
+    for (i=0;i<wsteps;i++)
     {
-      case hex8:
-        for (j=0;j<8;j++)
-        {
-          temp = actele->node[j]->Id_loc+1;
-          counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        }
-      break;
-
-      case hex27:
-        /*------------sub element 1*/
-        temp = actele->node[0]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[8]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[20]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[11]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[12]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[21]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[26]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[24]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-
-        /*------------sub element 2*/
-        temp = actele->node[8]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[1]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[9]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[20]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[21]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[13]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[22]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[26]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-
-        /*------------sub element 3*/
-        temp = actele->node[20]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[9]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[2]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[10]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[26]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[22]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[14]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[23]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-
-        /*------------sub element 4*/
-        temp = actele->node[11]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[20]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[10]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[3]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[24]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[26]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[23]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[15]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        /*------------sub element 5*/
-        temp = actele->node[12]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[21]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[26]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[24]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[4]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[16]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[25]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[19]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-
-        /*------------sub element 6*/
-        temp = actele->node[21]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[13]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[22]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[26]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[16]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[5]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[17]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[25]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-
-        /*------------sub element 7*/
-        temp = actele->node[26]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[22]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[14]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[23]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[25]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[17]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[6]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[18]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-
-        /*------------sub element 8*/
-        temp = actele->node[24]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[26]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[23]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[15]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[19]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[25]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[18]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        temp = actele->node[7]->Id_loc+1;
-        counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        break;
-
-      case tet4:
-        for (j=0;j<4;j++)
-        {
-          temp = actele->node[j]->Id_loc+1;
-          counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        }
-        break;
-
-      case quad4:
-        if (SHELL==0)
-        {
-          for (j=0;j<4;j++)
-          {
-            temp = actele->node[j]->Id_loc+1;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-          }
-        }
-        if (SHELL==1)
-        {
-          for (j=0;j<4;j++)
-          {
-            temp = actele->node[j]->Id_loc+1;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-          }
-          for (j=0;j<4;j++)
-          {
-            temp = actele->node[j]->Id_loc+1+discret[part].field->numnp;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-          }
-        }
-        break;
-
-      case quad9:
-        if (SHELL==0)
-        {
-          /*------------sub element 1*/
-          temp = actele->node[0]->Id_loc+1;
-          counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-          temp = actele->node[4]->Id_loc+1;
-          counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-          temp = actele->node[8]->Id_loc+1;
-          counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-          temp = actele->node[7]->Id_loc+1;
-          counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-
-          /*------------sub element 2*/
-          temp = actele->node[4]->Id_loc+1;
-          counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-          temp = actele->node[1]->Id_loc+1;
-          counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-          temp = actele->node[5]->Id_loc+1;
-          counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-          temp = actele->node[8]->Id_loc+1;
-          counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-
-          /*------------sub element 3*/
-          temp = actele->node[8]->Id_loc+1;
-          counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-          temp = actele->node[5]->Id_loc+1;
-          counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-          temp = actele->node[2]->Id_loc+1;
-          counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-          temp = actele->node[6]->Id_loc+1;
-          counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-
-          /*------------sub element 4*/
-          temp = actele->node[7]->Id_loc+1;
-          counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-          temp = actele->node[8]->Id_loc+1;
-          counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-          temp = actele->node[6]->Id_loc+1;
-          counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-          temp = actele->node[3]->Id_loc+1;
-          counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-        }
-
-        if (SHELL==1)
-        {
-          for (j=0;j<4;j++)
-          {
-            /*------------sub element 1*/
-            temp = actele->node[0]->Id_loc+1;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[4]->Id_loc+1;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[8]->Id_loc+1;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[7]->Id_loc+1;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[0]->Id_loc+1+discret[part].field->numnp;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[4]->Id_loc+1+discret[part].field->numnp;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[8]->Id_loc+1+discret[part].field->numnp;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[7]->Id_loc+1+discret[part].field->numnp;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-
-
-            /*------------sub element 2*/
-            temp = actele->node[4]->Id_loc+1;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[1]->Id_loc+1;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[5]->Id_loc+1;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[8]->Id_loc+1;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[4]->Id_loc+1+discret[part].field->numnp;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[1]->Id_loc+1+discret[part].field->numnp;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[5]->Id_loc+1+discret[part].field->numnp;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[8]->Id_loc+1+discret[part].field->numnp;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-
-            /*------------sub element 3*/
-            temp = actele->node[8]->Id_loc+1;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[5]->Id_loc+1;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[2]->Id_loc+1;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[6]->Id_loc+1;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[8]->Id_loc+1+discret[part].field->numnp;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[5]->Id_loc+1+discret[part].field->numnp;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[2]->Id_loc+1+discret[part].field->numnp;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[6]->Id_loc+1+discret[part].field->numnp;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-
-            /*------------sub element 4*/
-            temp = actele->node[7]->Id_loc+1;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[8]->Id_loc+1;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[6]->Id_loc+1;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[3]->Id_loc+1;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[7]->Id_loc+1+discret[part].field->numnp;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[8]->Id_loc+1+discret[part].field->numnp;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[6]->Id_loc+1+discret[part].field->numnp;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[3]->Id_loc+1+discret[part].field->numnp;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-          }
-        }
-        break;
-
-      case tri3:
-        if (SHELL==0)
-        {
-          for (j=0;j<3;j++)
-          {
-            temp = actele->node[j]->Id_loc+1;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-          }
-        }
-        if (SHELL==1)
-        {
-          for (j=0;j<3;j++)
-          {
-            temp = actele->node[j]->Id_loc+1;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-          }
-          for (j=0;j<3;j++)
-          {
-            temp = actele->node[j]->Id_loc+1+discret[part].field->numnp;
-            counter += 4*fwrite(&temp, sizeof(int), 1, outfile);
-          }
-        }
-        break;
-
-
-      default:
-        break;
+      fwrite(&file_index[i], sizeof(long), 1, outfile);
     }
-  }
-  return counter;
-}
+    result_value=0;
+    fwrite(&result_value, sizeof(int), 1, outfile);
+    fwrite(&bytes, sizeof(long), 1, outfile);
+    pe_write_string(outfile, "FILE_INDEX");
 
-
-/*general file index structure :
- *
- * number of steps
- * File byte loc for 1st step
- * File byte loc for 2nd step
- * ....
- * File byte loc for contents of nth step
- * flag
- * File byte loc for 'number of steps' entry above
- * FILE_INDEX*/
-void pe_append_file_index()
-{
-  int i, j, temp, bytes ;
-  /*append the file table*/
-  for (i=0;i<numsd;i++)
-  {
-    bytes = 0;
-    if (scalar_array[i] == 1)
+    if (dim == 3)
     {
-      bytes += 4*fwrite(&nsteps, sizeof(int), 1, result_file[i]);
-      for (j=0;j<nsteps;j++)
-      {
-        bytes += 4*fwrite(&file_table[i][j], sizeof(long), 1, result_file[i]);
-      }
-      temp=0;
-      bytes += 4*fwrite(&temp, sizeof(int), 1, result_file[i]);
-      bytes += 4*fwrite(&counter[i], sizeof(long), 1, result_file[i]);
-      bytes += pe_write_string(result_file[i], "FILE_INDEX");
-
-      fclose(result_file[i]);
-
-      printf("\nsize %s file : %ld ",file_ending[i], counter[i]+bytes);
+      fprintf(case_file, "vector per node:\t1\t1\t%s\t%s\n",name, filename);
+      printf("\r  vector data %s written to file %s\n", name, filename);
     }
-  }
-  printf("\n\n -----------Conversion done----------\n\n");
+    if (dim == 1)
+    {
+      fprintf(case_file, "scalar per node:\t1\t1\t%s\t%s\n",name, filename);
+      printf("\r  scalar data %s written to file %s\n", name, filename);
+    }
 
-#ifdef DEBUG
-  dstrc_exit();
-#endif
+    CCAFREE(file_index);
+    destroy_result_data(&result);
+    fclose(outfile);
+  }
+  else
+  {
+    printf("  %s not found\n", name);
+  }
+
 }
 
-
-void pe_write_fluid_case_file(FILE* case_file, int* scalar_array)
+void pe_write_fluid_case_file(FILE* case_file)
 {
 #ifdef DEBUG
   dstrc_enter("pe_write_fluid_case_file");
@@ -1208,45 +370,31 @@ void pe_write_fluid_case_file(FILE* case_file, int* scalar_array)
   fprintf(case_file, "model:\t1\t1\t%s_fluid.geo\n\n", basename);
   fprintf(case_file, "VARIABLE\n\n");
 
-  for (i=0;i<numsd_struct;i++)
-  {
-    if (scalar_array[i] == 1)
-    {
-      switch(i)
-      {
-        /*vector data*/
-        case 4:
-          fprintf(case_file, "vector per node:\t1\t1\t%s\t%s%s\n", scalar_description[i],basename, file_ending[i]);
-          break;
-        /*default: scalar data*/
-        default:
-          fprintf(case_file, "scalar per node:\t1\t1\t%s\t%s%s\n", scalar_description[i],basename, file_ending[i]);
-          break;
-      }
-    }
-  }
+  pe_write_field_result(fluid_idx, "velocity", case_file, 3);
+  pe_write_field_result(fluid_idx, "pressure", case_file, 1);
+  pe_write_field_result(fluid_idx, "average_pressure", case_file, 1);
 
   fprintf(case_file, "\nTIME\n");
   fprintf(case_file, "time set:\t\t1\n");
-  fprintf(case_file, "number of steps:\t%d\n", nsteps);
+  fprintf(case_file, "number of steps:\t%d\n", wsteps);
   fprintf(case_file, "time values: ");
-  for (i=0;i<nsteps;i++)
+  for (i=0;i<wsteps;i++)
   {
-    fprintf(case_file,"%f ",timesteps[i] );
+    fprintf(case_file,"%f ",time_a.a.dv[i]);
     if (i%8==0 && i!=0)
       fprintf(case_file, "\n");
   }
   fprintf(case_file, "\n\n");
   fprintf(case_file, "FILE\n");
   fprintf(case_file, "file set:\t\t1\n");
-  fprintf(case_file, "number of steps:\t%d", nsteps);
+  fprintf(case_file, "number of steps:\t%d", wsteps);
 
 #ifdef DEBUG
   dstrc_exit();
 #endif
 }
 
-void pe_write_struct_case_file(FILE* case_file, int* scalar_array)
+void pe_write_struct_case_file(FILE* case_file)
 {
 #ifdef DEBUG
   dstrc_enter("pe_write_struct_case_file");
@@ -1260,299 +408,719 @@ void pe_write_struct_case_file(FILE* case_file, int* scalar_array)
   fprintf(case_file, "model:\t1\t1\t%s_struct.geo\n\n", basename);
   fprintf(case_file, "VARIABLE\n\n");
 
-  /*step from the first to the last struct data set*/
-  for (i=numsd_struct;i<numsd;i++)
-  {
-    if (scalar_array[i] == 1)
-        fprintf(case_file, "scalar per node:\t1\t1\t%s\t%s%s\n", scalar_description[i],basename, file_ending[i]);
-  }
+  pe_write_field_result(struct_idx, "displacement", case_file, 3);
 
   fprintf(case_file, "\nTIME\n");
   fprintf(case_file, "time set:\t\t1\n");
-  fprintf(case_file, "number of steps:\t%d\n", nsteps);
+  fprintf(case_file, "number of steps:\t%d\n", wsteps);
   fprintf(case_file, "time values: ");
-  for (i=0;i<nsteps;i++)
+  for (i=0;i<wsteps;i++)
   {
-    fprintf(case_file,"%f ",timesteps[i] );
+    fprintf(case_file,"%f ",time_a.a.dv[i]);
     if (i%8==0 && i!=0)
       fprintf(case_file, "\n");
   }
   fprintf(case_file, "\n\n");
   fprintf(case_file, "FILE\n");
   fprintf(case_file, "file set:\t\t1\n");
-  fprintf(case_file, "number of steps:\t%d", nsteps);
+  fprintf(case_file, "number of steps:\t%d", wsteps);
 
 #ifdef DEBUG
   dstrc_exit();
 #endif
 }
 
+void pe_write_fluid_grid(FILE* outfile, INT numnp_fluid, CHUNK_DATA* chunk, long* file_index, INT actstep)
+{
 
-/*pcf_write_results :
- *
- * Results have to be wrapped in BEGIN TIME STEP - END TIME
- * STEP. Every node needs a value!
- *
- * - counter[i] is the actual size of file i *
- * - file_table[i][ACTSTEP] contains the first byte of step ACTSTEP in
- *   file i (The first byte after the "BEGIN TIME STEP" flag)
- *
- * pe_binary_data writes the data like velocity into result_file[i],
- * the mulitplicator and offset values are needed for our
- * memory saving data arrays *
- *
- * general result file structure:
- *
- * BEGIN TIME STEP
- * desciption line 1
- * part
- * #
- * coordinates
- * result_n1 result_n2 ..... result_nn
- * END TIME STEP*/
-void pe_write_results(int* scalar_array)
+  if (actstep == 0)
+    actbytes += pe_write_string(outfile, "C Binary");
+
+  actbytes += pe_write_string(outfile, "BEGIN TIME STEP");
+  file_index[actstep] = actbytes;
+  actbytes += pe_write_string(outfile, "Fluid geometry");
+  actbytes += pe_write_string(outfile, "Comment");
+  actbytes += pe_write_string(outfile, "node id given");
+  actbytes += pe_write_string(outfile, "element id given");
+  actbytes += pe_write_part_header(outfile, fluid_idx+1, "fluid field"); /*part +partnumber + comment*/
+  actbytes += pe_write_string(outfile, "coordinates");
+  actbytes += 4*fwrite(&numnp_fluid, sizeof(int), 1, outfile);
+  actbytes += pe_write_fluid_coordinates(outfile, chunk); /*write the grid information*/
+  actbytes += pe_write_cells(outfile, fluid_idx);
+  actbytes += pe_write_string(outfile, "END TIME STEP");
+}
+
+void pe_write_struct_grid(FILE* outfile, INT numnp_struct, CHUNK_DATA* chunk,long* file_index, INT actstep )
 {
 #ifdef DEBUG
-  dstrc_enter("pe_write_results");
+  dstrc_enter("pe_write_struct_grid");
 #endif
 
-  int i;
+  if (actstep == 0)
+    actbytes += pe_write_string(outfile, "C Binary");
 
-  /*write the results*/
-  for (i=0;i<numsd;i++)
-  {
-    if (scalar_array[i] == 1)
-    {
-      switch(i)
-      {
-        /*velx*/
-        case 0:
-          counter[i] += pe_write_string(result_file[i], "BEGIN TIME STEP");
-
-          file_table[i][actstep] = counter[i];
-
-          counter[i] += pe_write_string(result_file[i], "description");
-
-          counter[i] += pe_binary_data(result_file[i], velocity,0, ACTDIM,numnp_fluid,fluid_idx+1);
-
-          counter[i] += pe_write_string(result_file[i], "END TIME STEP");
-          break;
-
-          /*vely*/
-        case 1:
-          counter[i] += pe_write_string(result_file[i], "BEGIN TIME STEP");
-
-          file_table[i][actstep] = counter[i];
-
-          counter[i] += pe_write_string(result_file[i], "description");
-
-          counter[i] += pe_binary_data(result_file[i], velocity,1, ACTDIM,numnp_fluid,fluid_idx+1);
-
-          counter[i] += pe_write_string(result_file[i], "END TIME STEP");
-          break;
-
-          /*velz*/
-        case 2:
-          counter[i] += pe_write_string(result_file[i], "BEGIN TIME STEP");
-
-          file_table[i][actstep] = counter[i];
-
-          counter[i] += pe_write_string(result_file[i], "description");
-
-          counter[i] += pe_binary_data(result_file[i], velocity,2, ACTDIM,numnp_fluid,fluid_idx+1);
-
-          counter[i] += pe_write_string(result_file[i], "END TIME STEP");
-          break;
-
-          /*pressure*/
-        case 3:
-          counter[i] += pe_write_string(result_file[i], "BEGIN TIME STEP");
-
-          file_table[i][actstep] = counter[i];
-
-          counter[i] += pe_write_string(result_file[i], "description");
-
-          counter[i] += pe_binary_data(result_file[i], press,0, 1,numnp_fluid,fluid_idx+1);
-
-          counter[i] += pe_write_string(result_file[i], "END TIME STEP");
-          break;
-
-          /*velocity vector*/
-        case 4:
-          counter[i] += pe_write_string(result_file[i], "BEGIN TIME STEP");
-
-          file_table[i][actstep] = counter[i];
-
-          counter[i] += pe_write_string(result_file[i], "description");
-
-          counter[i] += pe_binary_vector(result_file[i], velocity,0, ACTDIM, numnp_fluid,fluid_idx+1);
-
-          counter[i] += pe_write_string(result_file[i], "END TIME STEP");
-          break;
-
-          /*disx*/
-        case 5:
-          counter[i] += pe_write_string(result_file[i], "BEGIN TIME STEP");
-
-          file_table[i][actstep] = counter[i];
-
-          counter[i] += pe_write_string(result_file[i], "description");
-
-          counter[i] += pe_binary_data(result_file[i], displacement,0, dis_dim,numnp_struct,struct_idx+1);
-
-          counter[i] += pe_write_string(result_file[i], "END TIME STEP");
-          break;
-
-          /*disy*/
-        case 6:
-          counter[i] += pe_write_string(result_file[i], "BEGIN TIME STEP");
-
-          file_table[i][actstep] = counter[i];
-
-          counter[i] += pe_write_string(result_file[i], "description");
-
-          counter[i] += pe_binary_data(result_file[i], displacement,1, dis_dim,numnp_struct,struct_idx+1);
-
-          counter[i] += pe_write_string(result_file[i], "END TIME STEP");
-          break;
-
-          /*disz*/
-        case 7:
-          counter[i] += pe_write_string(result_file[i], "BEGIN TIME STEP");
-
-          file_table[i][actstep] = counter[i];
-
-          counter[i] += pe_write_string(result_file[i], "description");
-
-          counter[i] += pe_binary_data(result_file[i], displacement,2, dis_dim,numnp_struct,struct_idx+1);
-
-          counter[i] += pe_write_string(result_file[i], "END TIME STEP");
-         break;
-        default:
-          break;
-      }
-    }
-  }
+  actbytes += pe_write_string(outfile, "BEGIN TIME STEP");
+  file_index[actstep] = actbytes;
+  actbytes += pe_write_string(outfile, "Struct geometry");
+  actbytes += pe_write_string(outfile, "Comment");
+  actbytes += pe_write_string(outfile, "node id given");
+  actbytes += pe_write_string(outfile, "element id given");
+  actbytes += pe_write_part_header(outfile, struct_idx+1, "struct field"); /*part +partnumber + comment*/
+  actbytes += pe_write_string(outfile, "coordinates");
+  actbytes += 4*fwrite(&numnp_struct, sizeof(int), 1, outfile);
+  actbytes += pe_write_struct_coordinates(outfile, chunk, node_director); /*write the grid information*/
+  actbytes += pe_write_cells(outfile, struct_idx);
+  actbytes += pe_write_string(outfile, "END TIME STEP");
 
 #ifdef DEBUG
   dstrc_exit();
 #endif
 }
 
-
-/*our result arrays are one dimensional arrays
- *
- * -result_multiplicator : number of result types in this array per node
- * -result offset : result type number of the result we want to write
- *                  (e.g. velx = 0, vely = 1, velz = 2)
- * */
-long pe_binary_data(FILE* result_file,
-                                  DOUBLE* results,
-                                  int result_offset,
-                                  int result_multiplicator,
-                                  int numnp,
-                                  int part
-                                  )
-
+long pe_write_fluid_coordinates(FILE* outfile, CHUNK_DATA* chunk)
 {
-#ifdef DEBUG
-  dstrc_enter("pe_binary_data");
-#endif
-
-  int i=0;
+  INT i, j;
+  INT numnp;
+  NODE* actnode;
+  NODE* actanode;
+  float XYZ_temp = 0;
   long bytes = 0;
-  float temp_result;
 
 
-  bytes += pe_write_string(result_file, "part");
-  bytes += 4*fwrite(&part, sizeof(int), 1, result_file);
-  bytes += pe_write_string(result_file, "coordinates");
+#ifdef DEBUG
+  dstrc_enter("pe_fluid_grid");
+#endif
 
-  if (SHELL == 1 && part == struct_idx+1)
-  {
-    for (i=0;i<numnp/2;i++)
-    {
-      temp_result = (float)results[result_multiplicator*i+result_offset];
-      bytes += 4*(fwrite(&temp_result, sizeof(float), 1, result_file));
-    }
-    for (i=0;i<numnp/2;i++)
-    {
-      temp_result = (float)results[result_multiplicator*i+result_offset];
-      bytes += 4*(fwrite(&temp_result, sizeof(float), 1, result_file));
-    }
-    return bytes;
-  }
+  numnp = discret[fluid_idx].field->numnp;
 
   for (i=0;i<numnp;i++)
   {
-    temp_result = (float)results[result_multiplicator*i+result_offset];
-    bytes += 4*(fwrite(&temp_result, sizeof(float), 1, result_file));
+    bytes+=4*fwrite(&i, sizeof(int), 1, outfile);
   }
+  /*ensight format requires x_1 .. x_n, y_1 .. y_n, z_1 ... z_n */
+  for (j=0;j<3;j++)
+  {
+    for (i=0;i<numnp;i++)
+    {
+      actnode = &discret[fluid_idx].node[i];
 
-  return bytes;
+      /*FSI-CASE*/
+      if (ale_idx != -1)
+      {
+        if(chunk!=NULL && fluid_ale_connect[i] != -1)
+        {
+          actanode = &(discret[ale_idx].node[fluid_ale_connect[i]]);
+
+          chunk_read_value_entry(chunk, fluid_ale_connect[i]);
+
+          if (ACTDIM==2 && j==2)
+            XYZ_temp = 0;
+
+          else
+            XYZ_temp =(float)(actanode->x[j] + chunk->value_buf[j]);
+        }
+        else
+        {
+          XYZ_temp = (float)actnode->x[j];
+        }
+      }
+      /*STANDARD-CASE*/
+      else
+      {
+        XYZ_temp = (float)actnode->x[j];
+      }
+
+      bytes+=4*fwrite(&XYZ_temp, sizeof(float), 1, outfile);
+
+    } /*numnp*/
+  }/*dimension*/
 
 #ifdef DEBUG
   dstrc_exit();
 #endif
+
+  return bytes;
 }
 
-long pe_binary_vector(FILE* result_file,
-                      DOUBLE* results,
-                      int result_offset,
-                      int result_multiplicator,
-                      int numnp,
-                      int part
-  )
+long pe_write_struct_coordinates(FILE* outfile, CHUNK_DATA* chunk, DOUBLE* director_vector)
+{
+  INT i, j;
+  INT numnp;
+  NODE* actnode;
+
+  DOUBLE d;
+  DOUBLE dv;
+  DOUBLE ddv;
+
+  float XYZ_temp;
+
+  long bytes = 0;
+
+#ifdef DEBUG
+  dstrc_enter("pe_struct_grid");
+#endif
+
+  numnp = discret[struct_idx].field->numnp;
+
+  /*writing the node id's*/
+  for (i=0;i<numnp;i++)
+  {
+    bytes += 4*fwrite(&i, sizeof(int), 1, outfile);
+  }
+  /*appending node id's if its a shell problem*/
+  if (SHELL==1)
+  {
+    for (i=0;i<numnp;i++)
+    {
+      j=i+numnp;
+      bytes += 4*fwrite(&j, sizeof(int), 1, outfile);
+    }
+  }
+
+  /*ensight format requires x_1 .. x_n, y_1 .. y_n, z_1 ... z_n */
+  for (j=0;j<3;j++)
+  {
+    /*3D FSI-CASE*/
+      if (SHELL==1)
+      {
+        for (i=0;i<numnp;i++)
+        {
+          actnode = &discret[struct_idx].node[i];
+          chunk_read_value_entry(chunk, i);
+
+          d=chunk->value_buf[j];
+
+          dv=node_director[3*actnode->Id_loc+j];
+
+          ddv=chunk->value_buf[j+3];
+
+          XYZ_temp =(float)(actnode->x[j]+d+dv+ddv);
+
+          bytes += 4*fwrite(&XYZ_temp, sizeof(float), 1, outfile);
+        }
+        for (i=0;i<numnp;i++)
+        {
+          actnode = &discret[struct_idx].node[i];
+          chunk_read_value_entry(chunk, i);
+
+          d=chunk->value_buf[j];
+
+          dv=node_director[3*actnode->Id_loc+j];
+
+          ddv=chunk->value_buf[j+3];
+
+          XYZ_temp =(float)(actnode->x[j]+d-dv-ddv);
+
+          bytes += 4*fwrite(&XYZ_temp, sizeof(float), 1, outfile);
+        }
+      }/*END 3D FSI-CASE*/
+
+      /*2D FSI-CASE*/
+      else
+      {
+
+        for (i=0;i<numnp;i++)
+        {
+          actnode = &discret[struct_idx].node[i];
+          chunk_read_value_entry(chunk, i);
+
+          if (ACTDIM == 2 && j == 2)
+          {
+            XYZ_temp = (float)0;
+          }
+
+          else
+          {
+            d=chunk->value_buf[j];
+            XYZ_temp = (float)(actnode->x[j]+d);
+          }
+          bytes += 4*fwrite(&XYZ_temp, sizeof(float), 1, outfile);
+        }
+      }
+
+    }/*dimension*/
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+
+  return bytes;
+}
+
+
+long pe_write_part_header(FILE* outfile, int part, char* comment)
 {
 #ifdef DEBUG
-  dstrc_enter("pe_binary_vector");
+  dstrc_enter("pe_write_part_header");
 #endif
 
-  int i=0, j;
   long bytes = 0;
-  float temp_result;
 
+  bytes += pe_write_string(outfile, "part");
+  bytes += 4*fwrite(&part, sizeof(int), 1, outfile);
+  bytes += pe_write_string(outfile, comment);
 
-  bytes += pe_write_string(result_file, "part");
-  bytes += 4*fwrite(&part, sizeof(int), 1, result_file);
-  bytes += pe_write_string(result_file, "coordinates");
-
-  for (j=0;j<ACTDIM;j++)
-  {
-    for (i=0;i<numnp;i++)
-    {
-      temp_result = (float)results[result_multiplicator*i+result_offset+j];
-      bytes += sizeof(float)*(fwrite(&temp_result, sizeof(float), 1, result_file));
-    }
-  }
-  /*for 2 dimensional arrays : append vz = 0*/
-  if (ACTDIM == 2)
-  {
-    for (i=0;i<numnp;i++)
-    {
-      temp_result = 0;
-      bytes += sizeof(float)*(fwrite(&temp_result, sizeof(float), 1, result_file));
-    }
-  }
-  
 #ifdef DEBUG
   dstrc_exit();
 #endif
+
   return bytes;
 }
+
+
+long pe_write_cells(FILE* outfile, int part)
+{
+#ifdef DEBUG
+  dstrc_enter("pe_write_cells");
+#endif
+
+  int i, j;
+  ELEMENT* actele;
+  int numele;
+  int numele_temp;
+
+  numele = discret[part].field->numele;
+  actele = &discret[part].element[0];
+
+  long bytes=0;
+  int temp;
+
+  switch(actele->distyp)
+  {
+    case hex8:
+      numele_temp = numele;
+      bytes += pe_write_string(outfile, "hexa8");
+      bytes += 4*fwrite(&numele_temp, sizeof(int), 1, outfile);
+      break;
+
+    case hex27:
+      numele_temp = 8*numele;
+      bytes += pe_write_string(outfile, "hexa8");
+      bytes += 4*fwrite(&numele_temp, sizeof(int), 1, outfile);
+      break;
+
+    case tet4:
+      numele_temp = numele;
+      bytes += pe_write_string(outfile, "tetra4");
+      bytes += 4*fwrite(&numele_temp, sizeof(int), 1, outfile);
+      break;
+
+    case quad4:
+      numele_temp = numele;
+      if (SHELL==0)
+      {
+        bytes += pe_write_string(outfile, "quad4");
+      }
+
+      if (SHELL==1)
+      {
+        bytes += pe_write_string(outfile, "hexa8");
+      }
+
+      bytes += 4*fwrite(&numele_temp, sizeof(int), 1, outfile);
+      break;
+
+    case quad9:
+      numele_temp = 4*numele;
+      if (SHELL==0)
+      {
+        bytes += pe_write_string(outfile, "quad4");
+        bytes += 4*fwrite(&numele_temp, sizeof(int), 1, outfile);
+      }
+
+      if (SHELL==1)
+      {
+        bytes += pe_write_string(outfile, "hexa8");
+        bytes += 4*fwrite(&numele_temp, sizeof(int), 1, outfile);
+      }
+      break;
+
+    case tri3:
+      numele_temp = numele;
+      if (SHELL==0)
+      {
+        bytes += pe_write_string(outfile, "tria3");
+      }
+
+      if (SHELL==1)
+      {
+        bytes += pe_write_string(outfile, "penta6");
+      }
+
+      bytes += 4*fwrite(&numele_temp, sizeof(int), 1, outfile);
+      break;
+
+    default:
+      dserror("element type : %d", actele->distyp);
+      break;
+  }
+  for (i=0;i<numele_temp;i++)
+  {
+    bytes += 4*fwrite(&i, sizeof(int), 1, outfile);
+  }
+
+  for (i=0;i<numele;i++)
+  {
+    actele = &discret[part].element[i];
+    switch(actele->distyp)
+    {
+      case hex8:
+        for (j=0;j<8;j++)
+        {
+          temp = actele->node[j]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        }
+      break;
+
+      case hex27:
+        /*------------sub element 1*/
+        temp = actele->node[0]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[8]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[20]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[11]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[12]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[21]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[26]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[24]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+
+        /*------------sub element 2*/
+        temp = actele->node[8]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[1]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[9]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[20]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[21]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[13]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[22]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[26]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+
+        /*------------sub element 3*/
+        temp = actele->node[20]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[9]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[2]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[10]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[26]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[22]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[14]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[23]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+
+        /*------------sub element 4*/
+        temp = actele->node[11]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[20]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[10]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[3]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[24]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[26]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[23]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[15]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        /*------------sub element 5*/
+        temp = actele->node[12]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[21]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[26]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[24]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[4]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[16]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[25]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[19]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+
+        /*------------sub element 6*/
+        temp = actele->node[21]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[13]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[22]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[26]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[16]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[5]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[17]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[25]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+
+        /*------------sub element 7*/
+        temp = actele->node[26]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[22]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[14]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[23]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[25]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[17]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[6]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[18]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+
+        /*------------sub element 8*/
+        temp = actele->node[24]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[26]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[23]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[15]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[19]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[25]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[18]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        temp = actele->node[7]->Id_loc+1;
+        bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        break;
+
+      case tet4:
+        for (j=0;j<4;j++)
+        {
+          temp = actele->node[j]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        }
+        break;
+
+      case quad4:
+        if (SHELL==0)
+        {
+          for (j=0;j<4;j++)
+          {
+            temp = actele->node[j]->Id_loc+1;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          }
+        }
+        if (SHELL==1)
+        {
+          for (j=0;j<4;j++)
+          {
+            temp = actele->node[j]->Id_loc+1;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          }
+          for (j=0;j<4;j++)
+          {
+            temp = actele->node[j]->Id_loc+1+discret[part].field->numnp;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          }
+        }
+        break;
+
+      case quad9:
+        if (SHELL==0)
+        {
+          /*------------sub element 1*/
+          temp = actele->node[0]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[4]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[8]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[7]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+
+          /*------------sub element 2*/
+          temp = actele->node[4]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[1]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[5]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[8]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+
+          /*------------sub element 3*/
+          temp = actele->node[8]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[5]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[2]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[6]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+
+          /*------------sub element 4*/
+          temp = actele->node[7]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[8]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[6]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[3]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        }
+
+        if (SHELL==1)
+        {
+          for (j=0;j<4;j++)
+          {
+            /*------------sub element 1*/
+            temp = actele->node[0]->Id_loc+1;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+            temp = actele->node[4]->Id_loc+1;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+            temp = actele->node[8]->Id_loc+1;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+            temp = actele->node[7]->Id_loc+1;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+            temp = actele->node[0]->Id_loc+1+discret[part].field->numnp;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+            temp = actele->node[4]->Id_loc+1+discret[part].field->numnp;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+            temp = actele->node[8]->Id_loc+1+discret[part].field->numnp;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+            temp = actele->node[7]->Id_loc+1+discret[part].field->numnp;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+
+
+            /*------------sub element 2*/
+            temp = actele->node[4]->Id_loc+1;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+            temp = actele->node[1]->Id_loc+1;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+            temp = actele->node[5]->Id_loc+1;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+            temp = actele->node[8]->Id_loc+1;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+            temp = actele->node[4]->Id_loc+1+discret[part].field->numnp;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+            temp = actele->node[1]->Id_loc+1+discret[part].field->numnp;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+            temp = actele->node[5]->Id_loc+1+discret[part].field->numnp;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+            temp = actele->node[8]->Id_loc+1+discret[part].field->numnp;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+
+            /*------------sub element 3*/
+            temp = actele->node[8]->Id_loc+1;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+            temp = actele->node[5]->Id_loc+1;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+            temp = actele->node[2]->Id_loc+1;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+            temp = actele->node[6]->Id_loc+1;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+            temp = actele->node[8]->Id_loc+1+discret[part].field->numnp;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+            temp = actele->node[5]->Id_loc+1+discret[part].field->numnp;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+            temp = actele->node[2]->Id_loc+1+discret[part].field->numnp;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+            temp = actele->node[6]->Id_loc+1+discret[part].field->numnp;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+
+            /*------------sub element 4*/
+            temp = actele->node[7]->Id_loc+1;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+            temp = actele->node[8]->Id_loc+1;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+            temp = actele->node[6]->Id_loc+1;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+            temp = actele->node[3]->Id_loc+1;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+            temp = actele->node[7]->Id_loc+1+discret[part].field->numnp;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+            temp = actele->node[8]->Id_loc+1+discret[part].field->numnp;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+            temp = actele->node[6]->Id_loc+1+discret[part].field->numnp;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+            temp = actele->node[3]->Id_loc+1+discret[part].field->numnp;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          }
+        }
+        break;
+
+      case tri3:
+        if (SHELL==0)
+        {
+          for (j=0;j<3;j++)
+          {
+            temp = actele->node[j]->Id_loc+1;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          }
+        }
+        if (SHELL==1)
+        {
+          for (j=0;j<3;j++)
+          {
+            temp = actele->node[j]->Id_loc+1;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          }
+          for (j=0;j<3;j++)
+          {
+            temp = actele->node[j]->Id_loc+1+discret[part].field->numnp;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          }
+        }
+        break;
+
+
+      default:
+        break;
+    }
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+
+  return bytes;
+}
+
+
 
 int main(int argc, char** argv)
 {
   PROBLEM_DATA problem;
   INT i;
   INT res_count;
-  INT counter1;
+  INT num_discr;
   RESULT_DATA result;
-  CHUNK_DATA chunk;
-  INT numnp_temp;
+
   CHAR* dis_names[]=DISTYPENAMES;
-  CHAR gimmick[]="|/-\\";
-  INT gimmick_size=4;
 
   printf("\n  Reading the mesh files... ");
 
@@ -1560,25 +1128,21 @@ int main(int argc, char** argv)
 
   printf("done.\n");
 
-  /*check process command line arguments*/
-  for (i=1; i<argc-1; ++i)
+  if (!map_has_int(&(problem.control_table), "ndim", 2))
   {
-    CHAR* arg;
-    arg = argv[i];
-    if (arg[0]== '-')
-    {
-      if (arg[1]=='u') IOPT=1;
-    }
+    ACTDIM=3;
+  }
+  if (!map_has_int(&(problem.control_table), "ndim",3 ))
+  {
+    ACTDIM=2;
   }
 
-  ACTDIM = map_read_int(&(problem.control_table), "ndim");
   num_discr=problem.num_discr;
 
   strcpy(basename, &problem.basename[strlen(problem.input_dir)]);
 
   /*--------------------------------------------------------------------*/
   /* Find the corresponding discretizations. We don't rely on any order. */
-
   for (i=0; i<problem.num_discr; ++i)
   {
     if (problem.discr[i].type == structure)
@@ -1591,13 +1155,11 @@ int main(int argc, char** argv)
       fluid_field = &(problem.discr[i]);
       fluid_idx = i;
     }
-    /*we dont need the number of ale elements and nodes*/
     else if (problem.discr[i].type == ale)
     {
       ale_field = &(problem.discr[i]);
       ale_idx = i;
     }
-
     else
     {
       dserror("Unknown fieldtyp");
@@ -1620,7 +1182,6 @@ int main(int argc, char** argv)
       break;
 
     case prb_fluid:
-    case prb_fluid_pm:
       if (problem.num_discr == 1)
       {
         if (problem.discr[0].type != fluid)
@@ -1640,6 +1201,16 @@ int main(int argc, char** argv)
         dserror("invalid number of discretizations for fluid problem (%d)", problem.num_discr);
       }
       break;
+
+    case prb_structure:
+      if (problem.num_discr == 1)
+      {
+        if (problem.discr[0].type != structure)
+        {
+          dserror("structure discretization expected");
+        }
+      }
+      break;
     default:
       dserror("problem type %d not supported", problem.type);
   }
@@ -1650,20 +1221,10 @@ int main(int argc, char** argv)
                                             sizeof(POST_DISCRETIZATION));
 
 
-  numnp_tot = (INT*)CCACALLOC(problem.num_discr, sizeof(INT));
-
-
   /* Iterate all discretizations. */
   for (i=0; i<problem.num_discr; ++i)
   {
-    /* if we got hex20 we have to create new nodes and  the field's
-     * numnp is changed.we have to change it back to the original
-     * amount so we can use chunk_read functions. The numnp_tot array
-     * contains the number of nodes including the new created ones */
-    numnp_temp = problem.discr[i].numnp;
     init_post_discretization(&(discret[i]), &problem, &(problem.discr[i]), 0);
-    numnp_tot[i] = problem.discr[i].numnp;
-    problem.discr[i].numnp = numnp_temp;
     printf("  distyp : %s\n",dis_names[discret[i].element[0].distyp]) ;
   }
 
@@ -1682,14 +1243,6 @@ int main(int argc, char** argv)
 
   printf("  There are %d sets of results.\n", nsteps);
 
-  timesteps = (double*)CCACALLOC(nsteps, sizeof(double));
-
-  for (i=0;i<numsd;i++)
-  {
-    file_table[i] = (long*)CCACALLOC(nsteps, sizeof(long));
-  }
-
-
   /* create time array */
   amdef("time",&time_a,nsteps,1,"DV");
 
@@ -1702,64 +1255,46 @@ int main(int argc, char** argv)
    * field per step*/
 
   /* Iterate all results. */
-  init_result_data(fluid_field, &result);
-  for (counter1 = 0; next_result(&result); counter1++)
-  {
-    if (counter1>=nsteps)
-      dserror("too many fluid result steps");
-    printf("Find number of results: %c\r", gimmick[counter1 % gimmick_size]);
-    time_a.a.dv[counter1] = map_read_real(result.group, "time");
-    step_a.a.iv[counter1] = map_read_int(result.group, "step");
+  if (fluid_field!=NULL)
+    init_result_data(fluid_field, &result);
+  else
+    init_result_data(struct_field, &result);
 
+  for (wsteps = 0; next_result(&result); wsteps++)
+  {
+    if (wsteps>=nsteps)
+      dserror("too many fluid result steps");
+    printf("Find number of results: \r");
+    time_a.a.dv[wsteps] = map_read_real(result.group, "time");
+    step_a.a.iv[wsteps] = map_read_int(result.group, "step");
   }
+
   destroy_result_data(&result);
-  nsteps = counter1;
+
   printf("  Find number of results: done.\n");
 
-  init_result_data(fluid_field, &global_fluid_result);
-  if (ale_field!= NULL)
-    init_result_data(ale_field, &global_ale_result);
-  if (struct_field!=NULL)
-  {
-    init_result_data(struct_field, &global_struct_result);
-
-    init_result_data(struct_field, &result);
-    next_result(&result);
-    init_chunk_data(&result,&chunk,"displacement");
-    dis_dim=chunk.value_entry_length;
-    destroy_chunk_data(&chunk);
-    destroy_result_data(&result);
-  }
 
 #ifdef D_FSI
   /* Find coupled nodes. If there's at least an ale field. */
   if (ale_field != NULL)
   {
-    /*NO HEX20*/
-    /* if (discret[fluid_idx].element[0].distyp == hex20) */
-/*     { */
-/*       numnp_temp=discret[fluid_idx].field->numnp; */
-/*       discret[fluid_idx].field->numnp=numnp_tot[fluid_idx]; */
-/*       discret[ale_idx].field->numnp=numnp_tot[fluid_idx]; */
-/*     } */
-
-    fluid_ale_connect=(INT*)CCACALLOC(numnp_tot[fluid_idx], sizeof(INT));
+    fluid_ale_connect=(INT*)CCACALLOC(discret[fluid_idx].field->numnp, sizeof(INT));
     printf("  Find FSI coupling : ");
-
     post_fsi_initcoupling(&discret[struct_idx], &discret[fluid_idx], &discret[ale_idx], fluid_ale_connect);
-
-    /*no hex20 at the moment*/
-/*     if (discret[fluid_idx].element[0].distyp == hex20) */
-/*     { */
-/*       discret[fluid_idx].field->numnp=numnp_temp; */
-/*       discret[ale_idx].field->numnp=numnp_temp; */
-/*     } */
-
     printf(" done.\n");
   }
 #endif
 
+  /*write the data*/
   pe_write_data();
+
+
+  CCAFREE(discret);
+
+#ifdef D_FSI
+  if (ale_field!=NULL)
+    CCAFREE(fluid_ale_connect);
+#endif
 
   return 1;
 }

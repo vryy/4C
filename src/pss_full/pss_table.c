@@ -632,7 +632,7 @@ INT map_has_map(MAP* map, CHAR* key)
   INT ret;
 
 #ifdef DEBUG
-  dstrc_enter("map_has_real");
+  dstrc_enter("map_has_map");
 #endif
 
   symbol = map_find_symbol(map, key);
