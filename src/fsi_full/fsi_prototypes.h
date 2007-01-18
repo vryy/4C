@@ -391,6 +391,7 @@ void fsi_cbf(
     DOUBLE             *fcouple,
     ARRAY_POSITION     *ipos,
     INT                 numeq_total,
+    INT                 is_relax,
     INT                 init
     );
 

@@ -282,7 +282,7 @@ case 0:
                    evhist,NULL,epren,edeadng,
                    vderxy,vderxy2,visc,wa1,wa2,estress, is_relax);
    break;
-#ifdef D_FLUID2_TDS   
+#ifdef D_FLUID2_TDS
    case stab_tds:
 
       if(fdyn->iop==4) /*------------------- the one step theta version */
@@ -294,17 +294,17 @@ case 0:
 	  {
 	      /*---------------------------------- set pressures (n) ---*/
 	      epren[i] =ele->node[i]->sol_increment.a.da[ipos->veln][2];
-	      
+
 	      eaccn[0][i] = ele->node[i]->sol_increment.a.da[ipos->accn][0];
 	      eaccn[1][i] = ele->node[i]->sol_increment.a.da[ipos->accn][1];
 	  }
-	  
+
 	  /*------------------------------------------ get viscosity ---*/
 	  visc = mat[ele->mat-1].m.fluid->viscosity;
-	  
+
 	  /*----------------------------------------- stab-parameter ---*/
 	  f2_get_time_dependent_sub_tau(ele,xyze,funct,deriv,evelng,eveln,visc);
-	  
+
 	  /*--------------------------- perform element integration ---*/
 	  f2_int_tds(ele,hasext,estif,eforce,xyze,
 		     funct,deriv,deriv2,xjm,derxy,derxy2,evelng,eveln,
@@ -325,7 +325,7 @@ case 0:
 	      &visc
 	      );
 
-	  
+
 	  /*----------------------------------------- stab-parameter ---*/
 	  f2_get_time_dependent_sub_tau(ele,xyze,funct,deriv,
 					evelng,NULL,visc);
@@ -352,7 +352,7 @@ case 0:
 			       wa1,
 			       wa2);
       }
-      else 
+      else
       {
 	  dserror("Unknown time integration for time dependent subscales.");
       }
@@ -374,7 +374,7 @@ case 1:
                     vderxy,ealecovng,ephin,ephing,eddy,&visc,ipos,0);
       /*-------------------------- calculate element stiffness matrices */
       /*                                         and element force vectors */
-      f2_calinta(ele,imyrank,
+      f2_calinta(ele,
                  estif,emass,eforce,
 	         xyze,funct,deriv,deriv2,xjm,derxy,derxy2,
 	         eveln,evelng,ealecovng,egridv,vderxy,
@@ -1177,6 +1177,190 @@ dstrc_exit();
 return;
 } /* end of f2_caleleres */
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void f2_caleleres_relax(ELEMENT        *ele,
+			ARRAY          *estif_global,
+			ARRAY          *eforce_global,
+			ARRAY_POSITION *ipos,
+			INT            *hasdirich,
+			INT            *hasext)
+{
+  INT is_relax = 1;
+#ifdef DEBUG
+  dstrc_enter("f2_caleleres_relax");
+#endif
+
+#ifdef QUASI_NEWTON
+  dserror("quasi newton hack not supported with SD");
+#endif
+#ifdef D_FLUID2_TDS
+  if (ele->e.f2->stab_type == stab_tds)
+    dserror("tds fluid does not support SD");
+#endif
+
+  /*------------------------------------------------ initialise with ZERO */
+  amzero(estif_global);
+  amzero(eforce_global);
+  *hasdirich=0;
+  *hasext=0;
+
+  /* The point here is to calculate the element matrix and to apply
+   * the (independent) solution afterwards. */
+
+  switch(ele->e.f2->is_ale)
+  {
+  case 0:
+    /*---------------------------------------------------- set element data */
+    f2_calset(ele,xyze,eveln,evelng,evhist,epren,edeadn,edeadng,ipos,hasext);
+
+    switch (ele->e.f2->stab_type)
+    {
+    case stab_gls:
+      /*-------------------------- calculate element size and stab-parameter: */
+      f2_calelesize(ele,NULL,xyze,funct,deriv,deriv2,xjm,derxy,
+                    vderxy,evelng,ephin,ephing,eddy,&visc,ipos,0);
+/*-------------------------------- calculate element stiffness matrices */
+/*                                            and element force vectors */
+      f2_calint(ele,estif,emass,eforce,
+                xyze,funct,deriv,deriv2,xjm,derxy,derxy2,
+                evelng,vderxy,wa1,wa2,visc);
+      break;
+    case stab_usfem:
+      /*---------------------------------------------- get viscosity ---*/
+      visc = mat[ele->mat-1].m.fluid->viscosity;
+
+      /*--------------------------------------------- stab-parameter ---*/
+      f2_caltau(ele,xyze,funct,deriv,xjm,evelng,visc);
+
+      /*-------------------------------- perform element integration ---*/
+      f2_int_usfem(ele,hasext,estif,eforce,xyze,
+		   funct,deriv,deriv2,xjm,derxy,derxy2,evelng,eveln,
+		   evhist,NULL,epren,edeadng,
+		   vderxy,vderxy2,visc,wa1,wa2,NULL,is_relax);
+      break;
+    default:
+      dserror("unknown stabilisation type");
+    }
+    break;
+  case 1:
+    /*---------------------------------------------- set element data ---*/
+    f2_calseta(ele,xyze,eveln,evelng,evhist,ealecovn,
+	       ealecovng,egridv,epren,edeadn,edeadng,ekappan,ekappang,
+	       ephin,ephing,evnng,evnn,ipos,hasext,is_relax);
+
+    switch (ele->e.f2->stab_type)
+    {
+    case stab_gls:
+      /*-------------------- calculate element size and stab-parameter: */
+      f2_calelesize(ele,NULL,xyze,funct,deriv,deriv2,xjm,derxy,
+                    vderxy,ealecovng,ephin,ephing,eddy,&visc,ipos,0);
+      /*-------------------------- calculate element stiffness matrices */
+      /*                                         and element force vectors */
+      f2_calinta(ele,
+                 estif,emass,eforce,
+	         xyze,funct,deriv,deriv2,xjm,derxy,derxy2,
+	         eveln,evelng,ealecovng,egridv,vderxy,
+	         ekappan,ekappang,ephin,ephing,evnng,wa1,wa2);
+      break;
+    case stab_usfem:
+      /*---------------------------------------------- get viscosity ---*/
+      visc = mat[ele->mat-1].m.fluid->viscosity;
+
+      /*--------------------------------------------- stab-parameter ---*/
+      f2_caltau(ele,xyze,funct,deriv,xjm,ealecovng,visc);
+
+      /*-------------------------------- perform element integration ---*/
+      f2_int_usfem(ele,hasext,estif,eforce,xyze,
+		   funct,deriv,deriv2,xjm,derxy,derxy2,evelng,eveln,
+		   evhist,egridv,epren,edeadng,
+		   vderxy,vderxy2,visc,wa1,wa2,NULL,is_relax);
+      break;
+    default:
+      dserror("unknown stabilisation type");
+    }
+    break;
+  default:
+    dserror("parameter is_ale not 0 or 1!\n");
+  }
+
+  if (ele->e.f2->stab_type != stab_usfem)
+  {
+    switch(ele->e.f2->fs_on)
+    {
+    case 0: case 1: case 3: /* no or explict free surface */
+      /*---------------------- add up emassto estif and permute the matrix */
+      f2_permestif(estif,emass,wa1,ele);
+      /*------------------------------ permute element load vector eforce */
+      if (fdyn->nii+(*hasext)!=0)
+	f2_permeforce(eforce,wa1,ele->numnp);
+      break;
+    case 2: case 5: case 6:/* partitioned implict free surface */
+      dsassert(ele->e.f2->is_ale!=0,"element at free surface has to be ALE!\n");
+      /*--------------------- add up emass to estif and permute the matrix */
+      f2_permestif_ifs(estif,emass,wa1,ele);
+      /*------------------------------ permute element load vector eforce */
+      if (fdyn->nii+(*hasext)!=0)
+	f2_permeforce_ifs(eforce,wa1,ele);
+      break;
+    default:
+      dserror("parameter fs_on out of range!\n");
+    }
+  }
+
+  /* Use stiffness matrix to calculate reaction forces. */
+
+  amzero(eforce_global);
+
+  {
+    INT ri;
+    INT i;
+
+    ri = 0;
+    for (i=0; i<ele->numnp; i++)
+    {
+      INT id;
+      NODE* inode;
+      GNODE* ignode;
+      inode  = ele->node[i];
+      ignode = inode->gnode;
+      if (ignode->dirich!=NULL)
+      {
+	for (id=0; id<inode->numdf; ++id)
+	{
+	  if (ignode->dirich->dirich_onoff.a.iv[id])
+	  {
+	    INT rj;
+	    INT j;
+	    rj = 0;
+	    for (j=0; j<ele->numnp; j++)
+	    {
+	      INT jd;
+	      NODE* jnode;
+	      jnode  = ele->node[j];
+	      for (jd=0; jd<jnode->numdf; ++jd)
+	      {
+		DOUBLE disp;
+		DOUBLE stiff;
+		disp  = jnode->sol_increment.a.da[ipos->relax][jd];
+		stiff = estif_global->a.da[ri+id][rj+jd]/fdyn->dta;
+		eforce_global->a.dv[ri+id] -= stiff*disp;
+	      }
+	      rj += jnode->numdf;
+	    }
+	  }
+	}
+      }
+      ri += inode->numdf;
+    }
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
 /*!---------------------------------------------------------------------
 \brief control routine for integration of stress projection matrix and rhs
 
@@ -1244,7 +1428,7 @@ for(i=0;i<ele->numnp;i++) /* loop nodes of element */
 } /* end of loop over nodes of element */
 
 if (ele->e.f2->stab_type == stab_usfem
-/*#ifdef D_FLUID2_TDS 
+/*#ifdef D_FLUID2_TDS
     || ele->e.f2->stab_type == stab_tds
     #endif*/
     )

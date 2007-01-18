@@ -83,6 +83,12 @@ void f2_caleleres(
                    INT            *hasdirich,
                    INT            *hasext
 	       );
+void f2_caleleres_relax(ELEMENT        *ele,
+			ARRAY          *estif_global,
+			ARRAY          *eforce_global,
+			ARRAY_POSITION *ipos,
+			INT            *hasdirich,
+			INT            *hasext);
 void f2_calstresspro(ELEMENT   *ele,
                      INT       *hasext,
                      ARRAY     *estif_global,
@@ -642,7 +648,6 @@ void f2_calint(
 	      );
 void f2_calinta(
                   ELEMENT         *ele,
-                  INT              imyrank,
                   DOUBLE         **estif,
                   DOUBLE         **emass,
                   DOUBLE          *eforce,

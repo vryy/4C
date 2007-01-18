@@ -425,9 +425,9 @@ void fsi_fluid_pm_discont_setup(
     recvfcouple = amdef("recvfcouple",&work->recvfcouple_a,numddof,1,"DV");
 #endif /* SOLVE_DIRICH */
 
-    fsi_cbf(&(actpart->pdis[disnum_calc]),fcouple,ipos,numeq_total,1);
+    fsi_cbf(&(actpart->pdis[disnum_calc]),fcouple,ipos,numeq_total,0,1);
 #else
-    fsi_cbf(&(actpart->pdis[disnum_calc]),NULL,ipos,0,1);
+    fsi_cbf(&(actpart->pdis[disnum_calc]),NULL,ipos,0,0,1);
     solserv_sol_zero(actfield,disnum_calc,node_array_sol_mf,1);
 #endif /* PARALLEL */
   }
@@ -1163,14 +1163,14 @@ nonlniter:
 #ifdef PARALLEL
 
       amzero(&work->fcouple_a);
-      fsi_cbf(&(actpart->pdis[disnum_calc]),fcouple,ipos,numeq_total,0);
+      fsi_cbf(&(actpart->pdis[disnum_calc]),fcouple,ipos,numeq_total,0,0);
 
       fsi_allreduce_coupforce(fcouple,recvfcouple,numeq_total,numddof,
 			      actintra,actfield,disnum_calc);
 
 #else
 
-      fsi_cbf(&(actpart->pdis[disnum_calc]),NULL,ipos,0,0);
+      fsi_cbf(&(actpart->pdis[disnum_calc]),NULL,ipos,0,0,0);
 
 #endif  /* PARALLEL */
     }
@@ -1758,14 +1758,14 @@ void fsi_fluid_pm_discont_sd(
 #ifdef PARALLEL
 
       amzero(&work->fcouple_a);
-      fsi_cbf(&(actpart->pdis[disnum_calc]),fcouple,ipos,numeq_total,0);
+      fsi_cbf(&(actpart->pdis[disnum_calc]),fcouple,ipos,numeq_total,1,0);
 
       fsi_allreduce_coupforce(fcouple,recvfcouple,numeq_total,numddof,
 			      actintra,actfield,disnum_calc);
 
 #else
 
-      fsi_cbf(&(actpart->pdis[disnum_calc]),NULL,ipos,0,0);
+      fsi_cbf(&(actpart->pdis[disnum_calc]),NULL,ipos,0,1,0);
 
 #endif  /* PARALLEL */
     }

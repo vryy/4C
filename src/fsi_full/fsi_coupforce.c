@@ -62,6 +62,7 @@ extern struct _MATERIAL  *mat;
 /*----------------------------------------------------------------------*
  | global dense matrices for element routines             m.gee 7/01    |
  *----------------------------------------------------------------------*/
+extern struct _ARRAY estif_global;
 extern struct _ARRAY eforce_global;   /* element RHS                    */
 extern struct _ARRAY eforce_fast;     /* element RHS(fortran)           */
 
@@ -111,6 +112,7 @@ void fsi_cbf(
     DOUBLE         *fcouple,
     ARRAY_POSITION *ipos,
     INT             numeq_total,
+    INT             is_relax,
     INT             init)
 {
 
@@ -190,7 +192,7 @@ void fsi_cbf(
         }
 #endif
         break;
-        
+
       case 3:
 #ifdef D_FLUID3
         for(i=0; i<actpdis->numele; i++)
@@ -227,11 +229,11 @@ void fsi_cbf(
         }
 #endif
         break;
-        
+
       default:
         dserror("genprob.ndim != 2 or 3!!");
     }
-    
+
     goto end;
   }
 
@@ -278,20 +280,38 @@ void fsi_cbf(
           else
             force_on_node[j] = -1;
         }
-        
+
         /*--- get force vector ---*/
-	if (actele->eltyp==el_fluid2)
-	  f2_caleleres(actele,&eforce_global,ipos,&hasdirich,&hasext);
+	if (!is_relax)
+	{
+	  if (actele->eltyp==el_fluid2)
+	    f2_caleleres(actele,&eforce_global,ipos,&hasdirich,&hasext);
 #ifdef D_FLUID2_IS
-	else if (actele->eltyp==el_fluid2_is)
-	  f2is_caleleres(actele,&eforce_global,ipos,&hasdirich,&hasext);
+	  else if (actele->eltyp==el_fluid2_is)
+	    f2is_caleleres(actele,&eforce_global,ipos,&hasdirich,&hasext);
 #endif
 #ifdef D_FLUID2_PRO
-	else if (actele->eltyp==el_fluid2_pro)
-	  f2pro_caleleres(actele,&eforce_global,ipos,&hasdirich,&hasext);
+	  else if (actele->eltyp==el_fluid2_pro)
+	    f2pro_caleleres(actele,&eforce_global,ipos,&hasdirich,&hasext);
 #endif
+	  else
+	    dserror("element type %d unsupported",actele->eltyp);
+	}
 	else
-	  dserror("element type %d unsupported",actele->eltyp);
+	{
+	  if (actele->eltyp==el_fluid2)
+	    f2_caleleres_relax(actele,&estif_global,&eforce_global,ipos,&hasdirich,&hasext);
+#ifdef D_FLUID2_IS
+	  else if (actele->eltyp==el_fluid2_is)
+	    dserror("not yet");
+#endif
+#ifdef D_FLUID2_PRO
+	  else if (actele->eltyp==el_fluid2_pro)
+	    dserror("not yet");
+#endif
+	  else
+	    dserror("element type %d unsupported",actele->eltyp);
+	}
 
         dof = 0;
         for(j=0; j<actele->numnp; j++)
@@ -360,7 +380,7 @@ void fsi_cbf(
 #endif
         else
           dserror("element type %d unsupported",actele->eltyp);
-        
+
         for (j=0; j<actele->numnp; j++)
         {
           actgnode = actele->node[j]->gnode;
@@ -370,21 +390,38 @@ void fsi_cbf(
           else
             force_on_node[j] = -1;
         }
-        
+
         /* get force vector */
-	if (actele->eltyp==el_fluid3)
-          f3_caleleres(actele,&eforce_global,&hasdirich,&hasext,ipos);
+	if (!is_relax)
+	{
+	  if (actele->eltyp==el_fluid3)
+	    f3_caleleres(actele,&eforce_global,&hasdirich,&hasext,ipos);
 #ifdef D_FLUID3_IS
-	else if (actele->eltyp==el_fluid3_is)
-	  f3is_caleleres(actele,&eforce_global,ipos,&hasdirich,&hasext);
+	  else if (actele->eltyp==el_fluid3_is)
+	    f3is_caleleres(actele,&eforce_global,ipos,&hasdirich,&hasext);
 #endif
 #ifdef D_FLUID3_PRO
-	else if (actele->eltyp==el_fluid3_pro)
-	  f3pro_caleleres(actele,&eforce_global,ipos,&hasdirich,&hasext);
+	  else if (actele->eltyp==el_fluid3_pro)
+	    f3pro_caleleres(actele,&eforce_global,ipos,&hasdirich,&hasext);
 #endif
+	  else
+	    dserror("element type %d unsupported",actele->eltyp);
+	}
 	else
-	  dserror("element type %d unsupported",actele->eltyp);
-
+	{
+	  if (actele->eltyp==el_fluid3)
+	    dserror("not yet");
+#ifdef D_FLUID3_IS
+	  else if (actele->eltyp==el_fluid3_is)
+	    dserror("not yet");
+#endif
+#ifdef D_FLUID3_PRO
+	  else if (actele->eltyp==el_fluid3_pro)
+	    dserror("not yet");
+#endif
+	  else
+	    dserror("element type %d unsupported",actele->eltyp);
+	}
 
         dof = 0;
         for(j=0; j<actele->numnp; j++)

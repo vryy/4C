@@ -299,7 +299,6 @@ time-RHS for one fluid2 element is calculated
 ------------------------------------------------------------------------*/
 void f2_calinta(
                   ELEMENT         *ele,
-                  INT              imyrank,
                   DOUBLE         **estif,
                   DOUBLE         **emass,
                   DOUBLE          *eforce,
@@ -592,7 +591,7 @@ if (ele->e.f2->fs_on==2)  /* element at free surface (local lagrange)   */
             dserror("Surface tension rhs has to be checked by S. Genkinger");
             /* Im Rahmen der Umstellung auf die Verwendung der Massen-
                RHS wird etforce abgeschafft. Die korrekte Integration der
-               Oberflaechenspannungseinfluesse muss ueberprueft werden! 
+               Oberflaechenspannungseinfluesse muss ueberprueft werden!
                chfoe 02/05 */
 	       /*------ calculate surface tension at gauss point at (n) */
                sigmaint = gamma*f2_edgescali(funct,ekappan,iedgnod,ngnode);
@@ -608,7 +607,7 @@ if (ele->e.f2->fs_on==2)  /* element at free surface (local lagrange)   */
             dserror("Surface tension rhs has to be checked by S. Genkinger");
             /* Im Rahmen der Umstellung auf die Verwendung der Massen-
                RHS wird etforce abgeschafft. Die korrekte Integration der
-               Oberflaechenspannungseinfluesse muss ueberprueft werden! 
+               Oberflaechenspannungseinfluesse muss ueberprueft werden!
                chfoe 02/05 */
                /*---- calculate surface tension at gauss point at (n+1) */
                sigmaint = gamma*f2_edgescali(funct,ekappang,iedgnod,ngnode);
@@ -743,7 +742,7 @@ else if (ele->e.f2->fs_on==1 && fdyn->surftens>0)
          dserror("Surface tension rhs has to be checked by S. Genkinger");
          /* Im Rahmen der Umstellung auf die Verwendung der Massen-
             RHS wird etforce abgeschafft. Die korrekte Integration der
-            Oberflaechenspannungseinfluesse muss ueberprueft werden! 
+            Oberflaechenspannungseinfluesse muss ueberprueft werden!
             chfoe 02/05 */
          f2_calsurftenfv(eforce,funct,vn,sigmaint,
                         fdyn->thsl,facr,ngnode,iedgnod);
@@ -756,7 +755,7 @@ else if (ele->e.f2->fs_on==1 && fdyn->surftens>0)
          dserror("Surface tension rhs has to be checked by S. Genkinger");
          /* Im Rahmen der Umstellung auf die Verwendung der Massen-
             RHS wird etforce abgeschafft. Die korrekte Integration der
-            Oberflaechenspannungseinfluesse muss ueberprueft werden! 
+            Oberflaechenspannungseinfluesse muss ueberprueft werden!
             chfoe 02/05 */
          f2_calsurftenfv(eforce,funct,vn,sigmaint,
                          fdyn->thsr,facr,ngnode,iedgnod);
