@@ -1191,7 +1191,18 @@ void tsi_st_genalp(INT disnum_s,
 
     /*------------------------------------------------------------------*/
     /* check whether to write restart or not */
-    mod_res_write = actdyn->step % actdyn->res_write_evry;
+    if (actdyn->res_write_evry > 0)
+    {
+      /* if mod_res_write becomes 0, i.e. current time step sdyn->step
+       * is a integer multiple of sdyn->res_write_evry, the restart
+       * will be written */
+      mod_res_write = actdyn->step % actdyn->res_write_evry;
+    }
+    else
+    {
+      /* prevent the attempt to write a restart file */
+      mod_res_write = -1;
+    }
 
     /*------------------------------------------------------------------*/
     /* perform stress calculation */

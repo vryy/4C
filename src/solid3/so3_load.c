@@ -54,7 +54,7 @@ Tetrahedra  { (r,s,t) | -1<=r<=1, -1<=s<=1-r, -1<=t<=1-r-s }
 \param   *data          SO3_DATA    (i)  common element data
 \param   *gpshade       SO3_GPSHAPEDERIV  (i)  Gauss point coords
 \param    imyrank       INT         (i)  ??????? parallel stuff
-\param   *loadvec       DOUBLE      (o)  global element load vector fext
+\param   *loadvec       ARRAY       (o)  global element load vector fext
 \return void
 
 \author bborn
@@ -64,7 +64,7 @@ void so3_load(ELEMENT *ele,  /* actual element */
               SO3_DATA *data,
               SO3_GPSHAPEDERIV *gpshade,
               INT imyrank,
-              DOUBLE *loadvec) /* global element load vector fext */
+              ARRAY *eforc_global) /* global element load vector */
 {
 
   /* general variables */
@@ -109,13 +109,25 @@ void so3_load(ELEMENT *ele,  /* actual element */
   DOUBLE gpc[NDIM_SOLID3];  /* r,s,t-coord current GP */
 
   /* result */
-  DOUBLE eload[NUMDOF_SOLID3][MAXNOD_SOLID3];  /* element load */
+  DOUBLE *loadvec;  /* external force vector */
+  DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3];  /* element load */
   
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_enter("so3_load");
 #endif
+
+  /*--------------------------------------------------------------------*/
+  /* pointer to vector data of external force vector */
+  if (eforc_global != NULL)
+  {
+    loadvec = eforc_global->a.dv;
+  }
+  else
+  {
+    dserror("Global element load vector has nil pointer!\n");
+  }
 
   /*--------------------------------------------------------------------*/
   /* element properties */
@@ -126,7 +138,13 @@ void so3_load(ELEMENT *ele,  /* actual element */
 
   /*--------------------------------------------------------------------*/
   /* initialize vectors */
-  memset(eload, 0, sizeof(eload));  /* set eload to zero */
+  for (inod=0; inod<nelenod; inod++)
+  {
+    for (idof=0; idof<NUMDOF_SOLID3; idof++)
+    {
+      eload[inod][idof] = 0.0;
+    }
+  }
 
   /*====================================================================*/
   /* check if external load is applied */
@@ -234,7 +252,7 @@ void so3_load(ELEMENT *ele,  /* actual element */
       /* integration (quadrature) factor */
       fac = fac * det;
       /* volume-load  ==> eload modified */
-      so3_load_vol(ele, nelenod, shape, fac, eload);
+      so3_load_vol(ele, nelenod, gpshade->gpshape[jgp], fac, eload);
     }  /* end of for */
     /*------------------------------------------------------------------*/
     /* the volume load of this element has been done,
@@ -588,7 +606,7 @@ void so3_load(ELEMENT *ele,  /* actual element */
     {
       for (idof=0; idof<NUMDOF_SOLID3; idof++)
       {
-        loadvec[inod*NUMDOF_SOLID3+idof] = eload[idof][inod];
+        loadvec[inod*NUMDOF_SOLID3+idof] += eload[inod][idof];
       }
     }
   }
@@ -621,7 +639,7 @@ void so3_load_vol(ELEMENT *ele,
                   INT nelenod,
                   DOUBLE shape[MAXNOD_SOLID3],
                   DOUBLE fac,
-                  DOUBLE eload[NUMDOF_SOLID3][MAXNOD_SOLID3])
+                  DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3])
 {
   DOUBLE source[NUMDOF_SOLID3];  /* body force [force/vol] */
   INT idof, inode;  /* loopers (i = loaddirection x or y)(j=node) */
@@ -646,7 +664,7 @@ void so3_load_vol(ELEMENT *ele,
       {
         for (idof=0; idof<NUMDOF_SOLID3; idof++)
         {
-          eload[idof][inode] += shape[inode] * source[idof] * fac;
+          eload[inode][idof] += shape[inode] * source[idof] * fac;
         }
       }
       break;
@@ -684,7 +702,7 @@ void so3_load_surf(ELEMENT *ele,
                    GSURF *gsurf,
                    DOUBLE shape[MAXNOD_SOLID3],
                    DOUBLE fac,
-                   DOUBLE eload[NUMDOF_SOLID3][MAXNOD_SOLID3])
+                   DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3])
 {
   INT onoff[NUMDOF_SOLID3];
   DOUBLE traction[NUMDOF_SOLID3];  /* elem. bound. traction [force/area] */
@@ -715,7 +733,7 @@ void so3_load_surf(ELEMENT *ele,
           /* if load is switched on : apply */
           if (onoff[idof] == 1)
           {
-            eload[idof][inode] += shape[inode] * traction[idof] * fac;
+            eload[inode][idof] += shape[inode] * traction[idof] * fac;
           }
         }
       }
@@ -754,7 +772,7 @@ void so3_load_line(ELEMENT *ele,
                    GLINE *gline,
                    DOUBLE shape[MAXNOD_SOLID3],
                    DOUBLE fac,
-                   DOUBLE eload[NUMDOF_SOLID3][MAXNOD_SOLID3])
+                   DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3])
 {
   INT onoff[NUMDOF_SOLID3];
   DOUBLE traction[NUMDOF_SOLID3];  /* traction on edge [force/length] */
@@ -785,7 +803,7 @@ void so3_load_line(ELEMENT *ele,
           /* if load is switched on : apply */
           if (onoff[idof] == 1)
           {
-            eload[idof][inode] += shape[inode] * traction[idof] * fac;
+            eload[inode][idof] += shape[inode] * traction[idof] * fac;
           }
         }
       }

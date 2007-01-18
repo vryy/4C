@@ -171,7 +171,7 @@ void th3_shape_deriv(DIS_TYP     typ,
       if (option == 1)
       {
         /* corners */
-        deriv[0][0] = -0.125*sm*rm*(2.0*rm+sm+tm-5.0); 
+        deriv[0][0] = -0.125*sm*tm*(2.0*rm+sm+tm-5.0); 
         deriv[0][1] = -0.125*rm*tm*(rm+2.0*sm+tm-5.0); 
         deriv[0][2] = -0.125*rm*sm*(rm+sm+2.0*tm-5.0);
         deriv[1][0] = 0.125*sm*tm*(2.0*rp+sm+tm-5.0);
@@ -265,10 +265,10 @@ void th3_shape_deriv(DIS_TYP     typ,
       shape[9] = -0.25 * r*rp * sm*sp * t*tm;
       shape[10] = -0.25 * rm*rp * s*sp * t*tm;
       shape[11] = 0.25 * r*rm * sm*sp * t*tm;
-      shape[12] = -0.5 * rm*rp * s*sm * tm*tp;
-      shape[13] = 0.5 * r*rp * sm*sp * tm*tp;
-      shape[14] = 0.5 * rm*rp * s*sp * tm*tp;
-      shape[15] = -0.5 * r*rm * sm*sp * tm*tp;
+      shape[12] = 0.25 * r*rm * s*sm * tm*tp;
+      shape[13] = -0.25 * r*rp * s*sm * tm*tp;
+      shape[14] = 0.25 * r*rp * s*sp * tm*tp;
+      shape[15] = -0.25 * r*rm * s*sp * tm*tp;
       shape[16] = -0.25 * rm*rp * s*sm * t*tp;
       shape[17] = 0.25 * r*rp * sm*sp * t*tp;
       shape[18] = 0.25 * rm*rp * s*sp * t*tp;
@@ -334,21 +334,21 @@ void th3_shape_deriv(DIS_TYP     typ,
         deriv[11][1] = -0.5 * r*rm * s * t*tm;
         deriv[11][2] = 0.25 * r*rm * sm*sp * ttm;
         /* shape fct. assoc. to node 12 */
-        deriv[12][0] = r * s*sm * tm*tp;
-        deriv[12][1] = -0.5 * rm*rp * ssm * tm*tp;
-        deriv[12][2] = rm*rp * s*sm * t;
+        deriv[12][0] = 0.25 * rrm * s*sm * tm*tp;
+        deriv[12][1] = 0.25 * r*rm * ssm * tm*tp;
+        deriv[12][2] = -0.5 * r*rm * s*sm * t;
         /* shape fct. assoc. to node 13 */
-        deriv[13][0] = 0.5 * rrp * sm*sp * tm*tp;
-        deriv[13][1] = -r*rp * s * tm*tp;
-        deriv[13][2] = -r*rp * sm*sp * t;
+        deriv[13][0] = -0.25 * rrp * s*sm * tm*tp;
+        deriv[13][1] = -0.25 * r*rp * ssm * tm*tp;
+        deriv[13][2] = 0.5 * r*rp * s*sm * t;
         /* shape fct. assoc. to node 14 */
-        deriv[14][0] = -r * s*sp * tm*tp;
-        deriv[14][1] = 0.5 * rm*rp * ssp * tm*tp;
-        deriv[14][2] = -rm*rp * s*sp * t;
+        deriv[14][0] = 0.25 * rrp * s*sp * tm*tp;
+        deriv[14][1] = 0.25 * r*rp * ssp * tm*tp;
+        deriv[14][2] = -0.5 * r*rp * s*sp * t;
         /* shape fct. assoc. to node 15 */
-        deriv[15][0] = -0.5 * rrm * sm*sp * tm*tp;
-        deriv[15][1] = r*rm * s * tm*tp;
-        deriv[15][2] = r*rm * sm*sp * t;
+        deriv[15][0] = -0.25 * rrm * s*sp * tm*tp;
+        deriv[15][1] = -0.25 * r*rm * ssp * tm*tp;
+        deriv[15][2] = 0.5 * r*rm * s*sp * t;
         /* shape fct. assoc. to node 16 */
         deriv[16][0] = 0.5 * r * s*sm * t*tp;
         deriv[16][1] = -0.25 * rm*rp * ssm * t*tp;

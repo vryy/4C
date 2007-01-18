@@ -96,7 +96,7 @@ void so3_metr_jaco(ELEMENT *ele,
     {
       for (j=0; j<NDIM_SOLID3; j++)
       {
-         xjm[j][i] += deriv[k][j] * ex[k][j];
+         xjm[j][i] += deriv[k][j] * ex[k][i];
       }
     }
   }
@@ -112,9 +112,13 @@ void so3_metr_jaco(ELEMENT *ele,
        - xjm[0][0] * xjm[1][2] * xjm[2][1]
        - xjm[0][1] * xjm[1][0] * xjm[2][2];
   /* check if negative Jacobian */
-  if (*det < 0.0)
+  if (*det == 0.0)
   {
-     dserror("NEGATIVE JACOBIAN DETERMINANT");
+    dserror("ZERO JACOBIAN DETERMINANT");
+  }
+  else if (*det < 0.0)
+  {
+    dserror("NEGATIVE JACOBIAN DETERMINANT");
   }
 
   /*--------------------------------------------------------------------*/
@@ -346,15 +350,18 @@ void so3_metr_line(ELEMENT *ele,
 
 /*======================================================================*/
 /*!
-\brief Determine metric at Gauss point by reducing the Jacobian
-       matrix for element edge
+\brief Determine rotational content in Jacobian matrix
 
-\param ele     ELEMENT*     (i)  pointer to current element
-\param nelelod INT          (i)  number of element nodes
-\param ex      DOUBLE[][]   (i)  element node coordinates
-\param deriv   DOUBLE[][]   (i)  derivatives of shape fct at Gauss point
-\param sired   DOUBLE[][]   (i)  matrix for dimension reduction
-\param metr    DOUBLE*      (o)  metric
+\param xjm     DOUBLE[][]   (i)  Jacobian matrix J
+\param xrm     DOUBLE[][]   (o)  rotational content in J
+\param xrvm    DOUBLE[][]   (o)  rotational content in J prepared
+                                 such that symmetric tensors
+                                 stored vectorially can be
+                                 rotated
+\param         DOUBLE[][]   (o)  inverse rotational content in J
+                                 prepared such that symmetric tensors
+                                 stored vectorially can be
+                                 rotated
 \return void
 
 \author bborn

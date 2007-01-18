@@ -84,6 +84,18 @@ This routine addresses a manifold of SOLID3 routines/functions. These
 functions are primarily accessed by the appropriate ACTION keyword.
 The ACTION keywords are defined in headers/enum.h.
 
+\param actpart         PARTITION*   (i)   my partition
+\param actintra        INTRA*       (i)   my intra-communicator
+\param ele             ELEMENT*     (i)   my element
+\param estif_global    ARRAY*       (i)   global stiffness matrix
+\param emass_global    ARRAY*       (i)   global mass matrix
+\param eforc_global    ARRAY*       (i)   global force vector
+                                          (internal/external)
+\param action          CALC_ACTION* (i)   option passed to element
+\param container       CONTAINER*   (i)   contains variables defined 
+                                          in container.h
+\return void
+
 \author mf
 \date 10/06
 */
@@ -92,31 +104,18 @@ void solid3(PARTITION *actpart,
 	    ELEMENT *ele,
 	    ARRAY *estif_global,
 	    ARRAY *emass_global,
-	    ARRAY *intforce_global,
+	    ARRAY *eforc_global,
 	    CALC_ACTION *action,
-	    CONTAINER *container)   /* contains variables defined 
-				     * in container.h */
+	    CONTAINER *container)
 {
 
   MATERIAL *actmat;
-
   INT imyrank;
-  DOUBLE *intforce;
-
 
   /*====================================================================*/
 #ifdef DEBUG
   dstrc_enter("solid3");
 #endif
-
-  if (intforce_global)
-  {
-    intforce = intforce_global->a.dv;
-  }
-  else
-  {
-    intforce = NULL;
-  }
 
   /*--------------------------------------------------------------------*/
   /* switch according to ACTION */
@@ -127,6 +126,10 @@ void solid3(PARTITION *actpart,
     case calc_struct_init:
       so3_intg_init(&(so3_data));
       so3_cfg_init(&(so3_data));
+#ifdef TEST_SOLID3
+      so3_cfg_test(&(so3_data));
+      so3_shape_test(&(so3_data));
+#endif
       so3_shape_gpshade_init(&(so3_gpshade));
       so3_stress_init(actpart);
 /*      th2_write_restart(NULL, NULL, 0, NULL, 1); */
@@ -154,7 +157,7 @@ void solid3(PARTITION *actpart,
       actmat = &(mat[ele->mat-1]);
       so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
       so3_int_fintstiffmass(container, ele, &(so3_gpshade), actmat, 
-                            intforce, estif_global, emass_global);
+                            eforc_global, estif_global, emass_global);
       break;
     /*------------------------------------------------------------------*/
     /* calculate linear stiffness and lumped mass matrix */
@@ -163,7 +166,7 @@ void solid3(PARTITION *actpart,
       actmat = &(mat[ele->mat-1]);
       so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
       so3_int_fintstiffmass(container, ele, &(so3_gpshade), actmat, 
-                            intforce, estif_global, emass_global);
+                            eforc_global, estif_global, emass_global);
       break;
     /*------------------------------------------------------------------*/
     /* internal forces, nonlinear stiffness and mass matrix */
@@ -171,7 +174,7 @@ void solid3(PARTITION *actpart,
       actmat = &(mat[ele->mat-1]);
       so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
       so3_int_fintstiffmass(container, ele, &(so3_gpshade), actmat, 
-                            intforce, estif_global, emass_global);
+                            eforc_global, estif_global, emass_global);
       break;
     /*------------------------------------------------------------------*/
     /* load vector of element loads */
@@ -179,7 +182,16 @@ void solid3(PARTITION *actpart,
       imyrank = actintra->intra_rank;
       actmat = &(mat[ele->mat-1]);
       so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
-      so3_load(ele, &(so3_data), &(so3_gpshade), imyrank, intforce);
+      so3_load(ele, &(so3_data), &(so3_gpshade), imyrank, eforc_global);
+      break;
+    /*------------------------------------------------------------------*/
+    /* update internal variables */
+    case calc_struct_update_istep:
+      /* The update of internal variables is necessary for
+       * advanced material laws, e.g. plastic, visco-elastic or
+       * visco-plastic materials.
+       * Currently, SOLID3 can only do Hooke/St. Venant-Kirchhoff 
+       * material */
       break;
     /*------------------------------------------------------------------*/
     /* calculate stresses */

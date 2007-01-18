@@ -49,17 +49,21 @@ void so3_def_grad(INT enod,
 {
   /*--------------------------------------------------------------------*/
   INT inod;  /* current node */
+  INT idfg;
   DOUBLE N_X, N_Y, N_Z;  /* derivative w.r. to reference coords */
 /*   DOUBLE defgrdm[NUMDFGR_SOLID3][NUMSTR_SOLID3];  def. grad. matrix */
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
-  dstrc_enter("so3_grad");
+  dstrc_enter("so3_def_grad");
 #endif
 
   /*--------------------------------------------------------------------*/
   /* initialise vector to zero */
-  memset(disgrdv, 0, sizeof(disgrdv));
+  for (idfg=0; idfg<NUMDFGR_SOLID3; idfg++)
+  {
+    disgrdv[idfg] = 0.0;
+  }
 
   /*--------------------------------------------------------------------*/
   /* construct displacement gradient in vector */

@@ -171,7 +171,6 @@ void so3_inp(ELEMENT *ele)
 
   /*--------------------------------------------------------------------*/
   /* read kinematic type */
-  ele->e.so3->kintype = so3_geo_lin;   /* default */
   frchar("KINEM", buffer, &ierr);
   if (ierr == 1)
   {
@@ -192,10 +191,14 @@ void so3_inp(ELEMENT *ele)
       dserror("Updated Lagrange for SOLID3 is not implemented!");
     }
   }
+  else
+  {
+    /* default */
+    ele->e.so3->kintype = so3_total_lagr; 
+  }
 
   /*--------------------------------------------------------------------*/
   /* read local or global stresses */
-  ele->e.so3->stresstype = so3_stress_none; /* set default */
   frchar("STRESS", buffer, &ierr);
   if (ierr == 1)
   {
@@ -227,6 +230,11 @@ void so3_inp(ELEMENT *ele)
     {
       ele->e.so3->stresstype = so3_stress_nd123;
     }
+  }
+  else
+  {
+    /* set default */
+    ele->e.so3->stresstype = so3_stress_none;
   }
 
 

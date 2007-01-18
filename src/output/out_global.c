@@ -357,6 +357,11 @@ void out_general()
             fprintf(out,"ELE glob_Id %6d loc_Id %6d THERM3\n",actele->Id,actele->Id_loc);
             break;
 #endif
+#ifdef D_SOLID3
+          case el_solid3:
+            fprintf(out,"ELE glob_Id %6d loc_Id %6d SOLID3\n",actele->Id,actele->Id_loc);
+            break;
+#endif
           default:
             dserror("Cannot print elementtype");
             break;

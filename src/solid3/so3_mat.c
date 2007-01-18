@@ -48,7 +48,7 @@ void so3_mat_sel(ELEMENT *ele,
                  DOUBLE stress[NUMSTR_SOLID3],
                  DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3])
 {
-  INT istrn, istss;  /* counters */
+  INT istrn, istss, istr, jstr;  /* counters */
   DOUBLE Emod, nu, mfac, stresssum;
   DOUBLE strain[NUMSTR_SOLID3];  /* strain vector */
   /*--------------------------------------------------------------------*/
@@ -89,7 +89,13 @@ void so3_mat_sel(ELEMENT *ele,
       mfac = Emod/((1.0+nu)*(1.0-2.0*nu));  /* factor */
       /* constitutive matrix */
       /* set the whole thing to zero */
-      memset(cmat, 0, sizeof(cmat));
+      for (istr=0; istr<NUMSTR_SOLID3; istr++)
+      {
+        for (jstr=0; jstr<NUMSTR_SOLID3; jstr++)
+        {
+          cmat[istr][jstr] = 0.0;
+        }
+      }
       /* write non-zero components */
       cmat[0][0] = mfac*(1.0-nu);
       cmat[0][1] = mfac*nu;

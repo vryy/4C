@@ -289,6 +289,11 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    break;
    case el_wallge:
    break;
+#ifdef D_SOLID3
+   case el_solid3:
+      dserror("Restart for SOLID3 has not yet been implemented.");
+   break;
+#endif
    case el_none:
       dserror("Typ of element unknown");
    break;

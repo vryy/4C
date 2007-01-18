@@ -97,7 +97,7 @@ void so3_stress_init(PARTITION *actpart)
       {
         /* set pointer to SOLID3 */
         actso3 = actele->e.so3;
-        /* allocate heat flux arrays per element */
+        /* allocate heat stress arrays per element */
         am4def("stress_gpxyz", &(actso3->stress_gpxyz), 
                1, MAXGAUSS_SOLID3, NUMSTR_SOLID3, 0, "D3");
         am4def("stress_gprst", &(actso3->stress_gprst), 
@@ -110,6 +110,9 @@ void so3_stress_init(PARTITION *actpart)
                1, MAXNOD_SOLID3, NUMSTR_SOLID3, 0, "D3");
         am4def("stress_nd123", &(actso3->stress_nd123), 
                1, MAXNOD_SOLID3, 4*NDIM_SOLID3, 0, "D3");
+        /* allocate Gauss point coordinates */
+        amdef("gpco_xyz", &(actso3->gpco_xyz), 
+              MAXGAUSS_SOLID3, NDIM_SOLID3, "DA");
       }  /* end if */
     }  /* end for */
   }  /* end for */
@@ -162,18 +165,20 @@ void so3_stress_final(PARTITION *actpart)
     {
       /* set current element */
       actele = tpart->pdis[jdis].element[iele];
-      /* check wether THERM2 element */
+      /* check wether SOLID3 element */
       if (actele->eltyp == el_solid3)
       {
         /* set current SOLID3 element */
         actso3 = actele->e.so3;
-        /* deallocate heat flux arrays at element */
+        /* deallocate heat stress arrays at element */
         am4del(&(actso3->stress_gpxyz));
         am4del(&(actso3->stress_gprst));
         am4del(&(actso3->stress_gp123));
         am4del(&(actso3->stress_ndxyz));
         am4del(&(actso3->stress_ndrst));
         am4del(&(actso3->stress_nd123));
+        /* deallocate Gauss point coordinates */
+        amdel(&(actso3->gpco_xyz));
       }  /* end if */
     }  /* end for */
   }  /* end for */
@@ -223,17 +228,16 @@ void so3_stress(CONTAINER *cont,
   DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3];
   DOUBLE edis[MAXNOD_SOLID3][NDIM_SOLID3];
   INT gpnum = 0;  /* total number of Gauss points in element domain */
+  DOUBLE gpcxyz;  /* intermediate sum */
 
   INT igp;  /* total index Gauss point */
   INT inod;  /* element nodal index */
-  INT jdim;  /* dimension index */
+  INT idim, jdim;  /* dimension index */
   INT istr;  /* stress/strain index */
   NODE *actnode;  /* current node */
 
   DOUBLE fac;  /* a factor */
-  DOUBLE gpcr = 0.0;  /* GP r-coord */
-  DOUBLE gpcs = 0.0;  /* GP s-coord */
-  DOUBLE gpct = 0.0;  /* GP t-coord */
+  DOUBLE gpc[NDIM_SOLID3] = {0.0, 0.0, 0.0};  /* GP rst-coord */
   DOUBLE rst[NDIM_SOLID3];  /* natural coordinate a point */
   SO3_GEODEFSTR gds;  /* isoparametric Jacobian, deformation grad, etc at
                        * Gauss point */
@@ -282,10 +286,32 @@ void so3_stress(CONTAINER *cont,
   {
     /*------------------------------------------------------------------*/
     /* Gauss point */
-    gpcr = gpshade->gpco[igp][0];  /* r-coordinate */
-    gpcs = gpshade->gpco[igp][1];  /* s-coordinate */
-    gpct = gpshade->gpco[igp][2];  /* t-coordinate */
+    gpc[0] = gpshade->gpco[igp][0];  /* r-coordinate */
+    gpc[1] = gpshade->gpco[igp][1];  /* s-coordinate */
+    gpc[2] = gpshade->gpco[igp][2];  /* t-coordinate */
     fac = gpshade->gpwg[igp];  /* weight */
+    /*------------------------------------------------------------------*/
+    /* Gauss point coordinate in material XYZ-frame */
+    /* These coordinates (X,Y,Z) of a Gauss point (r,s,t) 
+     * are calculated with the isoparametric concept.
+     *                                                         [  :  ]
+     *                                                         [ X^k ]
+     *    [ X ]|           [ ... N^k            ... ]|         [ Y^k ]
+     *    [ Y ]|         = [ ...      N^k       ... ]|         [ Z^k ]
+     *    [ Z ]|(r,s,t)    [ ...           N^k  ... ]|(r,s,t)  [  :  ]
+     *
+     * The shape funtions N^k evaluated at Gauss point (r,s,t) multiplied
+     * by the coordinates (X^k,Y^k,Z^k) of the k nodes.
+     * Here the shape function matrix N is stored redundance-free */
+    for (idim=0; idim<NDIM_SOLID3; idim++)
+    {
+      gpcxyz = 0.0;  
+      for (inod=0; inod<nelenod; inod++)
+      {
+        gpcxyz += gpshade->gpshape[igp][inod] * ex[inod][idim];
+      }
+      ele->e.so3->gpco_xyz.a.da[igp][idim] = gpcxyz;
+    }
     /*------------------------------------------------------------------*/
     /* compute Jacobian matrix, its determinant and inverse */
     so3_metr_jaco(ele, nelenod, ex, gpshade->gpderiv[igp], 1, 
@@ -309,7 +335,7 @@ void so3_stress(CONTAINER *cont,
     }
     else
     {
-      dserror("Cannot digest chosen type of spatial kinematic\n");
+      dserror("Cannot digest chosen type of spatial kinematic.");
     }
     /*------------------------------------------------------------------*/
     /* calculate B-operator */
@@ -333,7 +359,9 @@ void so3_stress(CONTAINER *cont,
                    ele->e.so3->stress_gprst.a.d3[place][igp]);
     /*------------------------------------------------------------------*/
     /* store principle and direction angles at current Gauss point */
+#if 0
     so3_stress_123(stress, ele->e.so3->stress_gp123.a.d3[place][igp]);
+#endif
   }
 
   /*--------------------------------------------------------------------*/
@@ -354,7 +382,9 @@ void so3_stress(CONTAINER *cont,
       ele->e.so3->stress_ndxyz.a.d3[place][inod][istr] = stress[istr];
     }
     /* store principle and direction angles at current Gauss point */
+#if 0
     so3_stress_123(stress, ele->e.so3->stress_nd123.a.d3[place][inod]);
+#endif
   }
 
   /*--------------------------------------------------------------------*/

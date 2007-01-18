@@ -29,6 +29,39 @@ Maintainer: Burkhard Bornemann
 
 /*======================================================================*/
 /*!
+\brief Zero 2-tensor in 3 dimensions.
+
+\param  at     DOUBLE[][]    (i)  input tensor
+\return void
+
+\author bborn
+\date 01/07
+*/
+void so3_tns3_zero(DOUBLE it[3][3])
+{
+  INT i, j;  /* indices */
+
+#ifdef DEBUG
+  dstrc_enter("so3_tns3_zero");
+#endif
+
+  for (i=0; i<3; i++)
+  {
+    for (j=0; j<3; j++)
+    {
+      it[i][j] = 0.0;
+    }
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+
+
+/*======================================================================*/
+/*!
 \brief Identity 2-tensor in 3 dimensions.
 
 \param  at     DOUBLE[][]    (i)  input tensor
@@ -45,7 +78,7 @@ void so3_tns3_id(DOUBLE it[3][3])
   dstrc_enter("so3_tns3_it");
 #endif
 
-  memset(it, 0, sizeof(it));
+  so3_tns3_zero(it);
   for (i=0; i<3; i++)
   {
     it[i][i] = 1.0;

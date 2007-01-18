@@ -49,7 +49,7 @@ for the linear, 3dim elasticity
 \param   *ele           ELEMENT          (i)  pointer to current element
 \param   *gpshade       SO3_GPSHAPEDERIV (i)  Gauss point coords 
 \param   *mat           MATERIAL         (i)
-\param   *force         DOUBLE           (o)  global vector for internal 
+\param   *eforc_global  ARRAY            (o)  global vector for internal 
                                               forces (initialized!)
 \param   *estif_global  ARRAY            (o)  element stiffness matrix
 \param   *emass_global  ARRAY            (o)  element mass matrix
@@ -62,7 +62,7 @@ void so3_int_fintstiffmass(CONTAINER *container,
                            ELEMENT *ele,
                            SO3_GPSHAPEDERIV *gpshade,
                            MATERIAL *mat,
-                           DOUBLE *eforce_global,
+                           ARRAY *eforc_global,
                            ARRAY *estif_global,
                            ARRAY *emass_global)
 {
@@ -115,9 +115,9 @@ void so3_int_fintstiffmass(CONTAINER *container,
     amzero(emass_global); /* element mass matrix */
     emass = emass_global->a.da;
   }
-  if (eforce_global != NULL)
+  if (eforc_global != NULL)
   {
-    eforce = eforce_global;
+    eforce = eforc_global->a.dv;
   }
 
   /*--------------------------------------------------------------------*/
@@ -186,7 +186,7 @@ void so3_int_fintstiffmass(CONTAINER *container,
     so3_mat_sel(ele, mat, igp, &gds, stress, cmat);
     /*------------------------------------------------------------------*/
     /* element internal force from integration of stresses */
-    if (eforce_global != NULL)
+    if (eforc_global != NULL)
     {
       so3_int_fintcont(neledof, bop, stress, fac, eforce);
     }

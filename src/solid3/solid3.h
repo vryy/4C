@@ -96,6 +96,12 @@ Maintainer: Moritz Frenzel
 #define GSMAXP_SOLID3    (6)    /* triangle max. number of Gauss points */
 #endif
 
+#ifdef DEBUG
+#define TEST_SOLID3             /* compile test routines if ... */
+/*#undef TEST_SOLID3*/              /* ... not undefined */
+#else
+#endif
+
 /*======================================================================*/
 /* global declarations, variables etc */
 
@@ -335,6 +341,9 @@ typedef struct _SOLID3
   /* total number of GPs in domain */
   INT gptot;
 
+  /* coordinates of Gauss points in material frame */
+  ARRAY gpco_xyz;
+
   /* stress vector at Gauss points or nodes
    *    stress_gpxyz : at Gauss points in global XYZ-components
    *    stress_gprst : at Gauss points in parameter rst-compoonents
@@ -450,7 +459,7 @@ void so3_int_fintstiffmass(CONTAINER *container,
                            ELEMENT *ele,
                            SO3_GPSHAPEDERIV *gpshade,
                            MATERIAL *mat,
-                           DOUBLE *eforce_global,
+                           ARRAY *eforc_global,
                            ARRAY *estif_global,
                            ARRAY *emass_global);
 void so3_int_fintcont(INT neledof,
@@ -486,24 +495,24 @@ void so3_load(ELEMENT *ele,  /* actual element */
               SO3_DATA *data,
               SO3_GPSHAPEDERIV *gpshade,
               INT imyrank,
-              DOUBLE *loadvec); /* global element load vector fext */
+              ARRAY *eforc_global); /* global element load vector fext */
 void so3_load_vol(ELEMENT *ele,
                   INT nelenod,
                   DOUBLE shape[MAXNOD_SOLID3],
                   DOUBLE fac,
-                  DOUBLE eload[NUMDOF_SOLID3][MAXNOD_SOLID3]);
+                  DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3]);
 void so3_load_surf(ELEMENT *ele,
                    INT nelenod,
                    GSURF *gsurf,
                    DOUBLE shape[MAXNOD_SOLID3],
                    DOUBLE fac,
-                   DOUBLE eload[NUMDOF_SOLID3][MAXNOD_SOLID3]);
+                   DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3]);
 void so3_load_line(ELEMENT *ele,
                    INT nelenod,
                    GLINE *gline,
                    DOUBLE shape[MAXNOD_SOLID3],
                    DOUBLE fac,
-                   DOUBLE eload[NUMDOF_SOLID3][MAXNOD_SOLID3]);
+                   DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3]);
 
 /*----------------------------------------------------------------------*/
 /* file so3_main.c */
@@ -574,6 +583,23 @@ void so3_shape_gpshade_init(SO3_GPSHAPEDERIV* so3_gpshade);
 void so3_shape_gpshade(ELEMENT *ele,
                        SO3_DATA *data,
                        SO3_GPSHAPEDERIV *so3_gpshade);
+#ifdef TEST_SOLID3
+void so3_shape_test(SO3_DATA *data);
+#endif
+#ifdef TEST_SOLID3
+void so3_shape_test_shp(SO3_DATA *data,
+                        DIS_TYP dis,
+                        CHAR *text, 
+                        INT nelenod,
+                        FILE *filetest);
+#endif
+#ifdef TEST_SOLID3
+void so3_shape_test_drv(SO3_DATA *data,
+                        DIS_TYP dis,
+                        CHAR *text, 
+                        INT nelenod,
+                        FILE *filetest);
+#endif
 
 /*----------------------------------------------------------------------*/
 /* file so3_strain.c */
@@ -608,6 +634,7 @@ void so3_stress_extrpol(ELEMENT *ele,
 
 /*----------------------------------------------------------------------*/
 /* file so3_tns3.c */
+void so3_tns3_zero(DOUBLE it[3][3]);
 void so3_tns3_id(DOUBLE it[3][3]);
 void so3_tns3_tr(DOUBLE at[3][3],
                  DOUBLE *tr);

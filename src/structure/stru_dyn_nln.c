@@ -1092,7 +1092,18 @@ solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol_increment,2,
 mod_disp      = sdyn->step % sdyn->updevry_disp;
 mod_stress    = sdyn->step % sdyn->updevry_stress;
 /*------------------------------- check whether to write restart or not */
-mod_res_write = sdyn->step % sdyn->res_write_evry;
+if (sdyn->res_write_evry > 0)
+{
+   /* if mod_res_write becomes 0, i.e. current time step sdyn->step
+    * is a integer multiple of sdyn->res_write_evry, the restart
+    * will be written */
+   mod_res_write = sdyn->step % sdyn->res_write_evry;
+}
+else
+{
+   /* prevent the attempt to write a restart file */
+   mod_res_write = -1;
+}
 /*------------------------------------------ perform stress calculation */
 if (mod_stress==0 || mod_disp==0)
 if (ioflags.struct_stress==1)

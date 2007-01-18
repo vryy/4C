@@ -182,13 +182,40 @@ void so3_gid_msh(FIELD *actfield,
             actgid->solid3_h20_333_name, actgid->fieldname, ldis);
     fprintf(out, "#-------------------------------------------------------------------------------\n");
     fprintf(out, "MESH %s_dis_%1i DIMENSION 3 ELEMTYPE Hexahedra NNODE %d\n",
-            actgid->solid3_h20_333_name, ldis, actele->numnp);
+            actgid->solid3_h20_333_name, ldis, 20);
     /* print elements */
     fprintf(out, "ELEMENTS\n");
     for (j=0; j<actfield->dis[ldis].numele; j++)
     {
       actele = &(actfield->dis[ldis].element[j]);
       if ( (actele->eltyp == el_solid3) && (actele->numnp == 20) )
+      {
+        fprintf(out, " %6d ", actele->Id+1);
+        for (k=0; k<actele->numnp; k++)
+        {
+          fprintf(out, "%6d ", actele->node[k]->Id+1);
+        }
+        fprintf(out, "\n");
+      }
+    }
+    fprintf(out, "END ELEMENTS\n");
+  }
+  /*--------------------------------------------------------------------*/
+  /* hexahedron element with 27 nodes and 3x3x3 Gauss points */
+  if (actgid->is_solid3_h27_333)
+  {
+    fprintf(out, "#-------------------------------------------------------------------------------\n");
+    fprintf(out, "# MESH %s FOR FIELD %s, DIS %1i: SOLID3 HEX27 3x3x3 GP\n",
+            actgid->solid3_h27_333_name, actgid->fieldname, ldis);
+    fprintf(out, "#-------------------------------------------------------------------------------\n");
+    fprintf(out, "MESH %s_dis_%1i DIMENSION 3 ELEMTYPE Hexahedra NNODE %d\n",
+            actgid->solid3_h27_333_name, ldis, 27);
+    /* print elements */
+    fprintf(out, "ELEMENTS\n");
+    for (j=0; j<actfield->dis[ldis].numele; j++)
+    {
+      actele = &(actfield->dis[ldis].element[j]);
+      if ( (actele->eltyp == el_solid3) && (actele->numnp == 27) )
       {
         fprintf(out, " %6d ", actele->Id+1);
         for (k=0; k<actele->numnp; k++)
@@ -408,8 +435,8 @@ void so3_gid_stress(CHAR resstring[],
   INT gperm_h_333[27] = {0,10,24,6,2,20,26,8,
                          9,21,15,3,1,19,25,7,11,23,17,5,
                          12,10,22,16,4,14,13};
-  INT gperm_t_4[4] = {0,1,2,3};
-  INT gperm_t_10[10] = {0,1,2,3,4,5,6,7,8,9};  /* check this */
+  /* INT gperm_t_4[4] = {0,1,2,3}; */
+  /* INT gperm_t_10[10] = {0,1,2,3,4,5,6,7,8,9}; */ /* check this */
   INT *gperm;  /* pointer to current permutation */
 
   /*--------------------------------------------------------------------*/
@@ -469,12 +496,12 @@ void so3_gid_stress(CHAR resstring[],
         gpset             = actgid->solid3_h8_222_name;
         rangetable        = actgid->standardrangetable;
         ncomponent        = 6;
-        componentnames[0] = "Stress-XX";
-        componentnames[1] = "Stress-YY";
-        componentnames[2] = "Stress-ZZ";
-        componentnames[3] = "Stress-XY";
-        componentnames[4] = "Stress-YZ";
-        componentnames[5] = "Stress-ZX";
+        componentnames[0] = "Stress-xx";
+        componentnames[1] = "Stress-yy";
+        componentnames[2] = "Stress-zz";
+        componentnames[3] = "Stress-xy";
+        componentnames[4] = "Stress-yz";
+        componentnames[5] = "Stress-zx";
         fprintf(out, "#-------------------------------------------------------------------------------\n");
         fprintf(out, "# RESULT %s on FIELD %s, DIS %1i\n",
                 resultname, actgid->fieldname, disnum);
@@ -528,12 +555,12 @@ void so3_gid_stress(CHAR resstring[],
         gpset             = actgid->solid3_h8_222_name;
         rangetable        = actgid->standardrangetable;
         ncomponent        = 6;
-        componentnames[0] = "Stress-XX";
-        componentnames[1] = "Stress-YY";
-        componentnames[2] = "Stress-ZZ";
-        componentnames[3] = "Stress-XY";
-        componentnames[4] = "Stress-YZ";
-        componentnames[5] = "Stress-ZX";
+        componentnames[0] = "Stress-xx";
+        componentnames[1] = "Stress-yy";
+        componentnames[2] = "Stress-zz";
+        componentnames[3] = "Stress-xy";
+        componentnames[4] = "Stress-yz";
+        componentnames[5] = "Stress-zx";
         nelenod           = 8;
         gperm             = &(gperm_h_222[0]);
         ngauss            = 8;
@@ -545,7 +572,7 @@ void so3_gid_stress(CHAR resstring[],
         break;
       /* catch the remaining stress types */
       default:
-        fprintf(out,"no stresses available\n");
+        fprintf(out,"# no stresses available\n");
         break;
     }  /* end switch */
   }  /* end if */
@@ -657,12 +684,12 @@ void so3_gid_stress(CHAR resstring[],
         gpset             = actgid->solid3_h20_333_name;
         rangetable        = actgid->standardrangetable;
         ncomponent        = 6;
-        componentnames[0] = "Stress-XX";
-        componentnames[1] = "Stress-YY";
-        componentnames[2] = "Stress-ZZ";
-        componentnames[3] = "Stress-XY";
-        componentnames[4] = "Stress-YZ";
-        componentnames[5] = "Stress-ZX";
+        componentnames[0] = "Stress-xx";
+        componentnames[1] = "Stress-yy";
+        componentnames[2] = "Stress-zz";
+        componentnames[3] = "Stress-xy";
+        componentnames[4] = "Stress-yz";
+        componentnames[5] = "Stress-zx";
         nelenod           = 20;
         gperm             = &(gperm_h_333[0]);
         ngauss            = 27;
@@ -675,7 +702,7 @@ void so3_gid_stress(CHAR resstring[],
         break;
       /* catch the remains */
       default:
-        fprintf(out,"no stresses available\n");
+        fprintf(out,"# no stresses available\n");
         break;
     }  /* end switch */
   }  /* end if */
@@ -742,7 +769,7 @@ void so3_gid_stress_gp(FIELD *actfield,
   fprintf(out, "RESULT \"%s\" \"ccarat\" %d %s %s \"%s_dis_%1i\"\n",
           resultname, step, resulttype, resultplace, gpset,disnum);
   fprintf(out, "COMPONENTNAMES ");
-  for (icomp=0; icomp<ncomp; ncomp++)
+  for (icomp=0; icomp<ncomp; icomp++)
   {
     if (icomp == ncomp-1)
     {

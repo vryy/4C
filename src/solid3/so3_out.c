@@ -72,16 +72,16 @@ void so3_out_stress(ELEMENT *actele,
       break;
     /* output stress XYZ-oriented at Gauss points */
     case so3_stress_gpxyz:
-      fprintf(out, "INT.point   x-coord.     y-coord.     z-coord."
-                   "     stress-xx    stress-yy    stress-zz"
-                   "stress-xy    stress-yz    stress-zx\n");
+      fprintf(out, "INT.point   x-coord.     y-coord.     z-coord. "
+                   "    stress-xx    stress-yy    stress-zz"
+                   "    stress-xy    stress-yz    stress-zx\n");
       for (igp=0; igp<ngauss; igp++)
       {
         fprintf(out,"  %-6d %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E \n",
                 igp,
-                0.0,  /* x-coord */
-                0.0,  /* y-coord */
-                0.0,  /* z-ccord */
+                actso3->gpco_xyz.a.da[igp][0],  /* x-coord */
+                actso3->gpco_xyz.a.da[igp][1],  /* y-coord */
+                actso3->gpco_xyz.a.da[igp][2],  /* z-ccord */
                 actso3->stress_gpxyz.a.d3[place][igp][0],  /* stress-xx */
                 actso3->stress_gpxyz.a.d3[place][igp][1],  /* stress-yy */
                 actso3->stress_gpxyz.a.d3[place][igp][2],  /* stress-zz */
@@ -95,16 +95,16 @@ void so3_out_stress(ELEMENT *actele,
       fprintf(out, "r,s,t    ---> local system on element level \n");
       fprintf(out, "rr,ss,tt ---> normal-stresses               \n");
       fprintf(out, "rs,st,tr ---> shear -stresses               \n\n");
-      fprintf(out, "INT.point   x-coord.     y-coord.     z-coord."
-                   "     stress-rr    stress-ss    stress-tt"
+      fprintf(out, "INT.point   x-coord.     y-coord.     z-coord. "
+                   "    stress-rr    stress-ss    stress-tt"
                    "    stress-rs    stress-st    stress-tr\n");
       for (igp=0; igp<ngauss; igp++)
       {
         fprintf(out,"  %-6d %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E \n",
                 igp,
-                0.0,  /* x-coord */
-                0.0,  /* y-coord */
-                0.0,  /* z-coord */
+                actso3->gpco_xyz.a.da[igp][0],  /* x-coord */
+                actso3->gpco_xyz.a.da[igp][1],  /* y-coord */
+                actso3->gpco_xyz.a.da[igp][2],  /* z-ccord */
                 actso3->stress_gprst.a.d3[place][igp][0],  /* stress-rr */
                 actso3->stress_gprst.a.d3[place][igp][1],  /* stress-ss */
                 actso3->stress_gprst.a.d3[place][igp][2],  /* stress-tt */
