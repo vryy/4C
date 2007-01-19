@@ -484,16 +484,18 @@ if (fdyn->qnewton)
 }
 #endif
 
-
-#ifndef FLUID_INCREMENTAL
 /*------------------------------------------------ condensation of DBCs */
 /* estif is in xyz* so edforce is also in xyz* (but DBCs have to be
    tranformed before condensing the dofs                                */
+#ifdef FLUID_INCREMENTAL
+  /* with incremental fluid we want dirichlet forces only during
+   * steepest descent relaxation factor calculation */
+  if (is_relax)
+#endif
 #ifdef D_FLUID2_TDS
-if(fdyn->iop!=8)
+  if (fdyn->iop!=8)
 #endif
-fluid_caldirich(ele,edforce,estif,hasdirich,readfrom);
-#endif
+  fluid_caldirich(ele,edforce,estif,hasdirich,readfrom);
 
 end:
 /*----------------------------------------------------------------------*/
@@ -1179,6 +1181,27 @@ return;
 
 
 /*----------------------------------------------------------------------*/
+/*!
+  \brief calculate reaction forces for SD relaxation
+
+  We just calculated a linear fluid solution at the current state
+  without any rhs and with the residuum prescribes at the fsi
+  interface. Now we need to know the fluid reaction forces. We simply
+  recalculate the element matrices at the interface and multiply with
+  the known solution. This way we get consistent nodal forces.
+
+  Note: Only the dofs belonging to the interface are calculated.
+
+  \param ele           (i) the element
+  \param estif_global  (-) global stiffness matrix
+  \param eforce_global (o) consistent nodal forces at the interface
+  \param ipos          (i) fluid field array positions
+  \param hasdirich     (-) dirichlet flag
+  \param hasext        (-) ext flag
+
+  \author u.kue
+  \date 01/07
+ */
 /*----------------------------------------------------------------------*/
 void f2_caleleres_relax(ELEMENT        *ele,
 			ARRAY          *estif_global,
@@ -1205,6 +1228,8 @@ void f2_caleleres_relax(ELEMENT        *ele,
   amzero(eforce_global);
   *hasdirich=0;
   *hasext=0;
+
+  memset(emass[0],0,estif_global->fdim*estif_global->sdim*sizeof(DOUBLE));
 
   /* The point here is to calculate the element matrix and to apply
    * the (independent) solution afterwards. */
@@ -1310,51 +1335,10 @@ void f2_caleleres_relax(ELEMENT        *ele,
   }
 
   /* Use stiffness matrix to calculate reaction forces. */
-
-  amzero(eforce_global);
-
-  {
-    INT ri;
-    INT i;
-
-    ri = 0;
-    for (i=0; i<ele->numnp; i++)
-    {
-      INT id;
-      NODE* inode;
-      GNODE* ignode;
-      inode  = ele->node[i];
-      ignode = inode->gnode;
-      if (ignode->dirich!=NULL)
-      {
-	for (id=0; id<inode->numdf; ++id)
-	{
-	  if (ignode->dirich->dirich_onoff.a.iv[id])
-	  {
-	    INT rj;
-	    INT j;
-	    rj = 0;
-	    for (j=0; j<ele->numnp; j++)
-	    {
-	      INT jd;
-	      NODE* jnode;
-	      jnode  = ele->node[j];
-	      for (jd=0; jd<jnode->numdf; ++jd)
-	      {
-		DOUBLE disp;
-		DOUBLE stiff;
-		disp  = jnode->sol_increment.a.da[ipos->relax][jd];
-		stiff = estif_global->a.da[ri+id][rj+jd]/fdyn->dta;
-		eforce_global->a.dv[ri+id] -= stiff*disp;
-	      }
-	      rj += jnode->numdf;
-	    }
-	  }
-	}
-      }
-      ri += inode->numdf;
-    }
-  }
+  fluid_reaction_forces(ele, fdyn,
+			estif_global->a.da,
+			eforce_global->a.dv,
+			ipos->relax);
 
 #ifdef DEBUG
   dstrc_exit();

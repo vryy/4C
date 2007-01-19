@@ -256,7 +256,8 @@ for (lt=0;lt<nit;lt++)
 } /* end of loop over integration points lr */
 
 /*----------------------------------------------- to ensure assembly ---*/
-*hasext = 1;
+if (!is_relax)
+  *hasext = 1;
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG

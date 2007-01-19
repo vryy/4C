@@ -1552,7 +1552,7 @@ void fsi_fluid_imp_sd(
 
     if (fsidyn->coupforce == cf_nodeforce)
     {
-      solserv_sol_zero(actfield,disnum_calc,node_array_sol_mf,1);
+      solserv_sol_zero(actfield,disnum_calc,node_array_sol_mf,ipos->mf_forcenp);
 
 #ifdef PARALLEL
 

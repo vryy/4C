@@ -94,7 +94,7 @@ dstrc_enter("ntacal");
 #ifndef CCADISCRET /* the 'old' ccarat style discretization management */
   part_fields();
 #else              /* the 'new' DRT discretization management */
-  distribute_grids_and_design(); 
+  distribute_grids_and_design();
 #endif
 #ifdef PERF
   perf_end(12);
@@ -126,7 +126,7 @@ if (genprob.graderw>0) wge_setdof();
     if (actfield->ndis==1) assign_dof(actfield);
     if (actfield->ndis>1) assign_dof_ndis(actfield);
   }
-#endif  
+#endif
 #ifdef PERF
   perf_end(13);
 #endif
@@ -163,10 +163,8 @@ part_assignfield();
 
   /* check the values of the defines for MAXNODE etc. */
 #ifndef CCADISCRET
-#ifdef CHECK_MAX
   if (par.myrank==0)
     check_max_sizes();
-#endif
 #endif
 
 

@@ -1501,7 +1501,9 @@ void fsi_struct_sd(
   FIELD              *actfield,
   INT                 disnum_calc,
   INT                 disnum_io,
-  INT                 fsiitnum
+  INT                 fsiitnum,
+  FIELD              *fluidfield,
+  INT                 fdisnum_calc
   )
 {
   INT           numsf;          /* actual number of struct field     */
@@ -1518,7 +1520,11 @@ void fsi_struct_sd(
 
   FSI_DYNAMIC       *fsidyn;
   STRUCT_DYNAMIC    *sdyn;
-  ARRAY_POSITION *ipos;
+  ARRAY_POSITION    *ipos;
+  DOUBLE            *fsiforce;
+
+  INT           numeq;          /* number of equations on this proc  */
+  INT           numeq_total;    /* total number of equations         */
 
   numsf             = genprob.numsf;
   fsidyn            = alldyn[genprob.numaf+1].fsidyn;
@@ -1541,6 +1547,7 @@ void fsi_struct_sd(
 #endif
 
   stiff_array = work->stiff_array;
+  fsiforce = work->fsiforce_a.a.dv;
 
   /****************************************/
 
@@ -1548,6 +1555,11 @@ void fsi_struct_sd(
       (fsidyn->ifsi != fsi_iter_stagg_steep_desc_force))
     dserror("No auxiliary structure solution within this coupling scheme");
 
+  /* get global and local number of equations */
+  solserv_getmatdims(&(actsolv->sysarray[stiff_array]),
+                     actsolv->sysarray_typ[stiff_array],
+                     &numeq,
+                     &numeq_total);
 
   /* there are only procs allowed in here, that belong to the structural */
   /* intracommunicator (in case of nonlinear struct. dyn., this should be all) */
@@ -1569,13 +1581,35 @@ void fsi_struct_sd(
   /* calculate rhs from external forces due to fsi coupling */
   solserv_zero_vec(&(actsolv->rhs[0]));
 
-  container.inherit = 1;
-  container.point_neum = 1;
+  switch (fsidyn->coupforce)
+  {
+  case cf_nodeforce:
+    /* determine coupling forces from consistent nodal fluid forces */
 
-  *action = calc_struct_fsiload;
-  calrhs(actfield,actsolv,actpart,actintra,stiff_array,
-         &(actsolv->rhs[0]),action,&container);
+    /* initialise full vector to store consistent nodal fluid forces */
+    amzero(&work->fsiforce_a);
 
+    /* get consistent nodal forces from respective fluid node */
+    fsi_load(actpart,disnum_calc,fluidfield,fdisnum_calc,fsiforce,numeq_total);
+
+    /* assemble the forces into the rhs[0] */
+    assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),
+		 &(actsolv->sysarray[stiff_array]),&(actsolv->rhs[0]),fsiforce,1.0);
+    break;
+
+  case cf_stress:
+    /* determine coupling forces from stresses */
+    container.inherit = 1;
+    container.point_neum = 1;
+
+    *action = calc_struct_fsiload;
+    calrhs(actfield,actsolv,actpart,actintra,stiff_array,
+	   &(actsolv->rhs[0]),action,&container);
+    break;
+
+  default:
+    dserror("FSI coupling force type unknown");
+  }
 
   /* note: this calculation is performed on the initial configuration
      changed by the increment step vector g_i only. There are no

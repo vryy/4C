@@ -310,12 +310,15 @@ void f2is_calele(
   }
 #endif
 
-#ifndef FLUID_INCREMENTAL
 /*------------------------------------------------ condensation of DBCs */
 /* estif is in xyz* so edforce is also in xyz* (but DBCs have to be
    tranformed before condensing the dofs                                */
-  fluid_caldirich(ele,edforce,estif,hasdirich,readfrom);
+#ifdef FLUID_INCREMENTAL
+  /* with incremental fluid we want dirichlet forces only during
+   * steepest descent relaxation factor calculation */
+  if (is_relax)
 #endif
+  fluid_caldirich(ele,edforce,estif,hasdirich,readfrom);
 
 end:
 /*----------------------------------------------------------------------*/
@@ -354,9 +357,6 @@ void f2is_caleleres(
   INT            *hasext
   )
 {
-  INT             i;
-  NODE           *actnode;
-
 #ifdef DEBUG
   dstrc_enter("f2is_caleleres");
 #endif
@@ -412,9 +412,111 @@ void f2is_caleleres(
 #ifdef DEBUG
   dstrc_exit();
 #endif
-
-  return;
 }
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief calculate reaction forces for SD relaxation
+
+  We just calculated a linear fluid solution at the current state
+  without any rhs and with the residuum prescribes at the fsi
+  interface. Now we need to know the fluid reaction forces. We simply
+  recalculate the element matrices at the interface and multiply with
+  the known solution. This way we get consistent nodal forces.
+
+  Note: Only the dofs belonging to the interface are calculated.
+
+  \param ele           (i) the element
+  \param estif_global  (-) global stiffness matrix
+  \param eforce_global (o) consistent nodal forces at the interface
+  \param ipos          (i) fluid field array positions
+  \param hasdirich     (-) dirichlet flag
+  \param hasext        (-) ext flag
+
+  \author u.kue
+  \date 01/07
+ */
+/*----------------------------------------------------------------------*/
+void f2is_caleleres_relax(ELEMENT        *ele,
+			  ARRAY          *estif_global,
+			  ARRAY          *eforce_global,
+			  ARRAY_POSITION *ipos,
+			  INT            *hasdirich,
+			  INT            *hasext)
+{
+  INT is_relax = 1;
+#ifdef DEBUG
+  dstrc_enter("f2is_caleleres_relax");
+#endif
+
+#ifdef QUASI_NEWTON
+  dserror("quasi newton hack not supported with SD");
+#endif
+
+  /*------------------------------------------------ initialise with ZERO */
+  amzero(estif_global);
+  amzero(eforce_global);
+  *hasdirich=0;
+  *hasext=0;
+
+  memset(emass[0],0,estif_global->fdim*estif_global->sdim*sizeof(DOUBLE));
+
+  /* The point here is to calculate the element matrix and to apply
+   * the (independent) solution afterwards. */
+
+  switch(ele->e.f2is->is_ale)
+  {
+  case 0:
+    /* set element data */
+    f2is_calset(ele,xyze,eveln,evelng,evhist,epren,edeadn,edeadng,ipos,hasext);
+
+    /*---------------------------------------------- get viscosity ---*/
+    visc = mat[ele->mat-1].m.fluid->viscosity;
+
+    /*--------------------------------------------- stab-parameter ---*/
+    f2_caltau(ele,xyze,funct,deriv,xjm,evelng,visc);
+
+    /*-------------------------------- perform element integration ---*/
+    f2is_int_usfem(ele,hasext,estif,eforce,xyze,
+		   funct,deriv,deriv2,pfunct,pderiv,pderiv2,
+		   xjm,derxy,derxy2,pderxy,evelng,eveln,
+		   evhist,NULL,epren,edeadng,
+		   vderxy,vderxy2,visc,wa1,wa2,NULL,is_relax);
+    break;
+  case 1:
+    /*---------------------------------------------- set element data ---*/
+    f2is_calseta(ele,xyze,eveln,evelng,evhist,ealecovn,
+	       ealecovng,egridv,epren,edeadn,edeadng,ekappan,ekappang,
+	       ephin,ephing,evnng,evnn,ipos,hasext,is_relax);
+    /*---------------------------------------------- get viscosity ---*/
+    visc = mat[ele->mat-1].m.fluid->viscosity;
+
+    /*--------------------------------------------- stab-parameter ---*/
+    f2_caltau(ele,xyze,funct,deriv,xjm,ealecovng,visc);
+
+    /*-------------------------------- perform element integration ---*/
+    f2is_int_usfem(ele,hasext,estif,eforce,xyze,
+		   funct,deriv,deriv2,pfunct,pderiv,pderiv2,
+		   xjm,derxy,derxy2,pderxy,evelng,eveln,
+		   evhist,egridv,epren,edeadng,
+		   vderxy,vderxy2,visc,wa1,wa2,NULL,is_relax);
+    break;
+  default:
+    dserror("parameter is_ale not 0 or 1!\n");
+  }
+
+  /* Use stiffness matrix to calculate reaction forces. */
+  fluid_reaction_forces(ele, fdyn,
+			estif_global->a.da,
+			eforce_global->a.dv,
+			ipos->relax);
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
 
 #endif
 /*! @} (documentation module close)*/

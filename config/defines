@@ -70,7 +70,6 @@
 #  =======
 # RESULTTEST         # result testing
 # PERF               # routines for exact time measurements  (overhead!!)
-# CHECK_MAX          # check the values of MAXNOD etc. (overhead!!)
 
 
 #   fancy stuff

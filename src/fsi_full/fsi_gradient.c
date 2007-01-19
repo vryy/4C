@@ -174,7 +174,7 @@ fsi_fluid_sd(fluid_work,fluidfield,disnumf_calc,disnumf_io);
 
 /*=== 5.h ===*/
 /*-------------------------------------------------- solve structure ---*/
-fsi_struct_sd(struct_work,structfield,disnums_calc,disnums_io,0);
+fsi_struct_sd(struct_work,structfield,disnums_calc,disnums_io,0,fluidfield,disnumf_calc);
 
 /*=== 5.i ===*/
 /*----------------------------------- determine relaxation parameter ---*/
@@ -367,7 +367,7 @@ void fsi_gradient_force(
 		   fluid_ipos->mf_sd_g);
 
   /*-------------------------------------------------- solve structure ---*/
-  fsi_struct_sd(struct_work,structfield,disnums_calc,disnums_io,0);
+  fsi_struct_sd(struct_work,structfield,disnums_calc,disnums_io,0,fluidfield,disnumf_calc);
 
   /*--------------------- solve Ale mesh with sol_mf[6][i] used as DBC ---*/
   fsi_ale_sd(ale_work, alefield, disnuma_calc, disnuma_io, structfield, disnums_calc);

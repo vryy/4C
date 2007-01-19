@@ -303,11 +303,11 @@ void fsi_cbf(
 	    f2_caleleres_relax(actele,&estif_global,&eforce_global,ipos,&hasdirich,&hasext);
 #ifdef D_FLUID2_IS
 	  else if (actele->eltyp==el_fluid2_is)
-	    dserror("not yet");
+	    f2is_caleleres_relax(actele,&estif_global,&eforce_global,ipos,&hasdirich,&hasext);
 #endif
 #ifdef D_FLUID2_PRO
 	  else if (actele->eltyp==el_fluid2_pro)
-	    dserror("not yet");
+	    dserror("no steepest decent with projection fsi right now");
 #endif
 	  else
 	    dserror("element type %d unsupported",actele->eltyp);
@@ -410,14 +410,14 @@ void fsi_cbf(
 	else
 	{
 	  if (actele->eltyp==el_fluid3)
-	    dserror("not yet");
+	    f3_caleleres_relax(actele,&estif_global,&eforce_global,ipos,&hasdirich,&hasext);
 #ifdef D_FLUID3_IS
 	  else if (actele->eltyp==el_fluid3_is)
-	    dserror("not yet");
+	    f3is_caleleres_relax(actele,&estif_global,&eforce_global,ipos,&hasdirich,&hasext);
 #endif
 #ifdef D_FLUID3_PRO
 	  else if (actele->eltyp==el_fluid3_pro)
-	    dserror("not yet");
+	    dserror("no steepest decent with projection fsi right now");
 #endif
 	  else
 	    dserror("element type %d unsupported",actele->eltyp);

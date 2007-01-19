@@ -133,6 +133,9 @@ void fluid_caldirich(
     );
 
 
+void fluid_reaction_forces(ELEMENT* ele, FLUID_DYNAMIC* fdyn, DOUBLE** estif, DOUBLE* eforce, INT pos);
+
+
 void fluid_pm_caldirich(
     ELEMENT            *actele,
     DOUBLE             *dforces,

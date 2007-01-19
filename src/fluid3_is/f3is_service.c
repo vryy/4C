@@ -201,7 +201,8 @@ void f3is_calseta(
   DOUBLE          *epren,
   DOUBLE          *edeadng,
   ARRAY_POSITION  *ipos,
-  INT             *hasext
+  INT             *hasext,
+  INT              is_relax
   )
 {
   INT    i;
@@ -219,7 +220,10 @@ void f3is_calseta(
   fdyn    = alldyn[genprob.numff].fdyn;
 
 /*-------------------------------------------- set element coordinates */
-  f3_alecoor(ele,xyze);
+  if (is_relax)
+    f3_alecoor_sd(ele,xyze);
+  else
+    f3_alecoor(ele,xyze);
 
 
  /*---------------------------------------------------------------------*

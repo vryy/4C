@@ -136,6 +136,7 @@ void f3_calele(
 		INT             init
 	       )
 {
+  INT		readfrom;	/* where to read dbc from 		*/
 
 #ifdef DEBUG
 dstrc_enter("f3_calele");
@@ -226,7 +227,7 @@ break;
 case 1:
 /*---------------------------------------------------- set element data */
    f3_calseta(ele,xyze,ehist,evelng,
-              ealecovng,egridv,epren,edeadng,ipos,hasext);
+              ealecovng,egridv,epren,edeadng,ipos,hasext,is_relax);
 
    switch (ele->e.f3->stab_type)
    {
@@ -292,13 +293,19 @@ default:
 #endif
 
 /*------------------------------------------ calculate emass * ehist ---*/
-/*if (!is_relax)*/			/* calculation for relaxation parameter	*/
-f3_massrhs(ele,emass,ehist,edeadng,eforce,hasext);
+if (!is_relax)			/* calculation for relaxation parameter	*/
+  f3_massrhs(ele,emass,ehist,edeadng,eforce,hasext);
 }
 
 /*-------------------------------------------- local co-ordinate system */
 if(ele->locsys==locsys_yes)
    locsys_trans(ele,estif,NULL,NULL,eforce);
+
+/*------------------------------- calculate element load vector edforce */
+if (is_relax)			/* calculation for relaxation parameter	*/
+   readfrom = ipos->relax;
+else				/* standard case			*/
+   readfrom = ipos->velnp;
 
 #ifdef QUASI_NEWTON
 if (fdyn->qnewton)
@@ -314,12 +321,15 @@ if (fdyn->qnewton)
 }
 #endif
 
-#ifndef FLUID_INCREMENTAL
 /*------------------------------------------------ condensation of DBCs */
 /* estif is in xyz* so edforce is also in xyz* (but DBCs have to be
    tranformed before condensing the dofs                                */
-fluid_caldirich(ele,edforce,estif,hasdirich,ipos->velnp);
+#ifdef FLUID_INCREMENTAL
+  /* with incremental fluid we want dirichlet forces only during
+   * steepest descent relaxation factor calculation */
+  if (is_relax)
 #endif
+  fluid_caldirich(ele,edforce,estif,hasdirich,readfrom);
 
 end:
 
@@ -635,7 +645,7 @@ break;
 case 1:
    /*---------------------------------------------- set element data ---*/
    f3_calseta(ele,xyze,ehist,evelng,ealecovng,egridv,
-              epren,edeadng,ipos,hasext);
+              epren,edeadng,ipos,hasext,0);
 
    /*------------------------------------------------- get viscosity ---*/
    visc = mat[ele->mat-1].m.fluid->viscosity;
@@ -660,6 +670,163 @@ dstrc_exit();
 return;
 } /* end of f3_caleleres */
 
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief calculate reaction forces for SD relaxation
+
+  We just calculated a linear fluid solution at the current state
+  without any rhs and with the residuum prescribes at the fsi
+  interface. Now we need to know the fluid reaction forces. We simply
+  recalculate the element matrices at the interface and multiply with
+  the known solution. This way we get consistent nodal forces.
+
+  Note: Only the dofs belonging to the interface are calculated.
+
+  \param ele           (i) the element
+  \param estif_global  (-) global stiffness matrix
+  \param eforce_global (o) consistent nodal forces at the interface
+  \param ipos          (i) fluid field array positions
+  \param hasdirich     (-) dirichlet flag
+  \param hasext        (-) ext flag
+
+  \author u.kue
+  \date 01/07
+ */
+/*----------------------------------------------------------------------*/
+void f3_caleleres_relax(ELEMENT        *ele,
+			ARRAY          *estif_global,
+			ARRAY          *eforce_global,
+			ARRAY_POSITION *ipos,
+			INT            *hasdirich,
+			INT            *hasext)
+{
+  INT is_relax = 1;
+#ifdef DEBUG
+  dstrc_enter("f3_caleleres_relax");
+#endif
+
+#ifdef QUASI_NEWTON
+  dserror("quasi newton hack not supported with SD");
+#endif
+
+  /*------------------------------------------------ initialise with ZERO */
+  amzero(estif_global);
+  amzero(eforce_global);
+  *hasdirich=0;
+  *hasext=0;
+
+  memset(emass[0],0,estif_global->fdim*estif_global->sdim*sizeof(DOUBLE));
+
+  /* The point here is to calculate the element matrix and to apply
+   * the (independent) solution afterwards. */
+
+  switch(ele->e.f3->is_ale)
+  {
+  case 0:
+/*---------------------------------------------------- set element data */
+    f3_calset(ele,xyze,ehist,evelng,epren,edeadng,ipos,hasext);
+
+    switch (ele->e.f3->stab_type)
+    {
+    case stab_gls:
+/*------------------------- calculate element size and stab-parameter: */
+      f3_calelesize(ele,xyze,funct,deriv,deriv2,derxy,xjm,evelng,wa1,0);
+
+/*------------------------------- calculate element stiffness matrices */
+/*                                           and element force vectors */
+      f3_calint(ele,estif,emass,eforce,xyze,funct,deriv,deriv2,xjm,
+                derxy,derxy2,evelng,vderxy,wa1,wa2);
+      break;
+    case stab_usfem:
+      /*---------------------------------------------- get viscosity ---*/
+      visc = mat[ele->mat-1].m.fluid->viscosity;
+
+      /*--------------------------------------------- stab-parameter ---*/
+      f3_caltau(ele,xyze,funct,deriv,derxy,xjm,evelng,wa1,visc);
+
+      /*-------------------------------- perform element integration ---*/
+      f3_int_usfem(ele,hasext,estif,eforce,xyze,
+                   funct,deriv,deriv2,xjm,derxy,derxy2,evelng,
+                   ehist,NULL,epren,edeadng,
+                   vderxy,vderxy2,visc,wa1,wa2,is_relax);
+      break;
+    default:
+      dserror("unknown stabilisation type");
+    }
+    break;
+  case 1:
+/*---------------------------------------------------- set element data */
+    f3_calseta(ele,xyze,ehist,evelng,
+	       ealecovng,egridv,epren,edeadng,ipos,hasext,is_relax);
+
+    switch (ele->e.f3->stab_type)
+    {
+    case stab_gls:
+      /*------------------- calculate element size and stab-parameter: */
+      f3_calelesize(ele,xyze,funct,deriv,deriv2,derxy,xjm,evelng,wa1,0);
+      /*------------------------- calculate element stiffness matrices */
+      /*                                     and element force vectors */
+      f3_calinta(ele,estif,emass,eforce,xyze,funct,deriv,deriv2,xjm,
+                 derxy,derxy2,evelng,ealecovng,egridv,vderxy,wa1,wa2);
+      break;
+    case stab_usfem:
+    {
+      /*---------------------------------------------- get viscosity ---*/
+      visc = mat[ele->mat-1].m.fluid->viscosity;
+
+      /*--------------------------------------------- stab-parameter ---*/
+      f3_caltau(ele,xyze,funct,deriv,derxy,xjm,ealecovng,wa1,visc);
+
+      /*-------------------------------- perform element integration ---*/
+      f3_int_usfem(ele,hasext,estif,eforce,xyze,
+                   funct,deriv,deriv2,xjm,derxy,derxy2,evelng,
+                   ehist,egridv,epren,edeadng,
+                   vderxy,vderxy2,visc,wa1,wa2,is_relax);
+      break;
+    }
+    default:
+      dserror("unknown stabilisation type");
+    }
+    break;
+  default:
+    dserror("parameter is_ale not 0 or 1!\n");
+  }
+
+  if (ele->e.f3->stab_type != stab_usfem)
+  {
+    switch(ele->e.f3->fs_on)
+    {
+    case 0: case 1: case 3: /* no or explict free surface */
+      /*-------------- add emass and estif to estif and permute the matrix */
+      f3_permestif(estif,emass,wa1,ele->numnp);
+      /*------------------------------- permute element load vector eforce */
+      if (fdyn->nii+(*hasext)!=0)
+	f3_permeforce(eforce,wa1,ele->numnp);
+      break;
+    case 2: case 5: /* partitioned implict free surface */
+      dsassert(ele->e.f3->is_ale!=0,"element at free surface has to be ALE!\n");
+      /*-------------- add emass and estif to estif and permute the matrix */
+      f3_permestif_ifs(estif,emass,wa1,ele);
+      /*------------------------------- permute element load vector eforce */
+      if (fdyn->nii+(*hasext)!=0)
+	f3_permeforce_ifs(eforce,wa1,ele);
+      break;
+    default:
+      dserror("parameter fs_on out of range!\n");
+    }
+  }
+
+  /* Use stiffness matrix to calculate reaction forces. */
+  fluid_reaction_forces(ele, fdyn,
+			estif_global->a.da,
+			eforce_global->a.dv,
+			ipos->relax);
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
 
 
 

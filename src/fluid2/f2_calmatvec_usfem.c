@@ -606,7 +606,7 @@ for (ri=0; ri<iel; ri++)      /* row index */
 
       /*--- CONTINUITY equation stabilisation ---*/
       /* tau_C*timefac*timefac*(div u, div v) */
-      
+
       aux = timefac * timefac * tau_C;
       estif[ri*3][ci*3]     += div[ri*2] * div[ci*2] * aux;
       estif[ri*3][ci*3+1]   += div[ri*2] * div[ci*2+1] * aux;

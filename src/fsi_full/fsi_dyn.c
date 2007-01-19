@@ -810,6 +810,7 @@ fielditer:
         fprintf(out,"            |\n");
       fflush(out);
 
+
       goto fielditer;
     }
     else /* convergence */

@@ -1056,6 +1056,82 @@ dstrc_exit();
 return;
 } /* end of fluid_caldirich*/
 
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief calculate element reaction forces
+
+  Calculate the reaction forces at dirichlet constraint dofs. This
+  assumes the solution is already known and available via
+  sol_increment. Only the entries of eforce that correspond to a
+  constraint dof will be set.
+
+  \param ele      (i) the element
+  \param fdyn     (i) fluid dynamic settings
+  \param estif    (i) current element stiffness matrix
+  \param eforce   (o) reaction force output vector
+  \param pos      (i) node array position of solution
+
+  \author u.kue
+  \data 01/07
+ */
+/*----------------------------------------------------------------------*/
+void fluid_reaction_forces(ELEMENT* ele, FLUID_DYNAMIC* fdyn, DOUBLE** estif, DOUBLE* eforce, INT pos)
+{
+  INT ri;
+  INT i;
+
+#ifdef DEBUG
+  dstrc_enter("fluid_reaction_forces");
+#endif
+
+  ri = 0;
+  for (i=0; i<ele->numnp; i++)
+  {
+    INT id;
+    NODE* inode;
+    GNODE* ignode;
+    inode = ele->node[i];
+    ignode = inode->gnode;
+    if (ignode->dirich!=NULL)
+    {
+      for (id=0; id<inode->numdf; ++id)
+      {
+	if (ignode->dirich->dirich_onoff.a.iv[id])
+	{
+	  INT rj;
+	  INT j;
+
+	  eforce[ri+id] = 0;
+
+	  rj = 0;
+	  for (j=0; j<ele->numnp; j++)
+	  {
+	    INT jd;
+	    NODE* jnode;
+	    jnode = ele->node[j];
+	    for (jd=0; jd<jnode->numdf; ++jd)
+	    {
+	      DOUBLE disp;
+	      DOUBLE stiff;
+	      disp  = jnode->sol_increment.a.da[pos][jd];
+	      stiff = estif[ri+id][rj+jd]/fdyn->dta;
+	      eforce[ri+id] -= stiff*disp;
+	    }
+	    rj += jnode->numdf;
+	  }
+	}
+      }
+    }
+    ri += inode->numdf;
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+
 /*!---------------------------------------------------------------------
 \brief routine to calculate the element dirichlet load vector for the
 projection method (constant velocity profile)

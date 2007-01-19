@@ -982,7 +982,9 @@ void fsi_struct_sd(
   FIELD              *actfield,
   INT                 disnum_calc,
   INT                 disnum_io,
-  INT                 fsiitnum
+  INT                 fsiitnum,
+  FIELD              *fluidfield,
+  INT                 fdisnum_calc
   );
 
 void fsi_struct_output(

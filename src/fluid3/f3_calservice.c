@@ -193,7 +193,8 @@ void f3_calseta(
                   DOUBLE          *epren,
                   DOUBLE          *edeadng,
                   ARRAY_POSITION  *ipos,
-                  INT             *hasext
+                  INT             *hasext,
+                  INT              is_relax
                )
 {
 INT    i;
@@ -211,7 +212,10 @@ dstrc_enter("f3_calseta");
 fdyn    = alldyn[genprob.numff].fdyn;
 
 /*-------------------------------------------- set element coordinates */
-f3_alecoor(ele,xyze);
+if (is_relax)
+  f3_alecoor_sd(ele,xyze);
+else
+  f3_alecoor(ele,xyze);
 
 
 /*---------------------------------------------------------------------*
@@ -366,6 +370,60 @@ dstrc_exit();
 
 return;
 } /* end of f3_alecoor */
+
+/*!---------------------------------------------------------------------
+\brief set element coordinates during ALE calculations for relaxation
+parameter of steepest descent method
+
+<pre>                                                         chfoe 08/03
+
+
+</pre>
+
+\param   *ele       ELEMENT         (i)    actual element
+\param  **xyze      DOUBLE          (o)    nodal coordinates at time n+theta
+\return void
+
+------------------------------------------------------------------------*/
+void f3_alecoor_sd(ELEMENT *ele, DOUBLE **xyze)
+{
+#ifdef D_FSI
+  INT i,j;
+  DOUBLE theta;
+  NODE  *actfnode;    /* actual fluid node                                */
+  NODE  *actanode;    /* actual ale node                                  */
+  GNODE *actfgnode;   /* actual fluid gnode                               */
+
+#ifdef DEBUG
+  dstrc_enter("f3_alecoor_sd");
+#endif
+
+  fdyn  = alldyn[genprob.numff].fdyn;
+
+/*-------------------------------------------- set element coordinates */
+
+/* computation of relaxation parameter always goes from configuration 0
+   to the one indicated by the actual incremental residuum vector g_i.
+   See diss. Mok for details p. 119 ff */
+
+  for(i=0;i<ele->numnp;i++)
+  {
+    actfnode = ele->node[i];
+    actfgnode = actfnode->gnode;
+    actanode = actfgnode->mfcpnode[genprob.numaf];
+    for (j=0;j<3;j++)
+    {
+      xyze[j][i] = ( actanode->sol_mf.a.da[2][j] );
+    }
+  }
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+#else
+  dserror("FSI-functions not compiled in!\n");
+#endif
+}
+
 
 /*!---------------------------------------------------------------------
 \brief routine to calculate velocities at integration point

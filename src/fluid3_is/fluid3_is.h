@@ -61,6 +61,13 @@ void f3is_caleleres(
   INT            *hasext
   );
 
+void f3is_caleleres_relax(ELEMENT        *ele,
+			  ARRAY          *estif_global,
+			  ARRAY          *eforce_global,
+			  ARRAY_POSITION *ipos,
+			  INT            *hasdirich,
+			  INT            *hasext);
+
 void f3is_calset(
   ELEMENT         *ele,
   DOUBLE         **xyze,
@@ -82,7 +89,8 @@ void f3is_calseta(
   DOUBLE          *epren,
   DOUBLE          *edeadng,
   ARRAY_POSITION  *ipos,
-  INT             *hasext
+  INT             *hasext,
+  INT              is_relax
   );
 
 void f3is_int_usfem(

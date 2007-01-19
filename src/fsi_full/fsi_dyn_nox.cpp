@@ -61,7 +61,7 @@ and the type is in partition.h
 extern struct _PAR   par;
 
 
-void debug_out_data(FIELD *actfield, CHAR* n, NODE_ARRAY array, INT pos)
+extern "C" void debug_out_data(FIELD *actfield, CHAR* n, NODE_ARRAY array, INT pos)
 {
   static INT call = 0;
   INT i;

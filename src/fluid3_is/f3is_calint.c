@@ -270,7 +270,8 @@ void f3is_int_usfem(
   } /* end of loop over integration points lr */
 
 /*----------------------------------------------- to ensure assembly ---*/
-  *hasext = 1;
+  if (!is_relax)
+    *hasext = 1;
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -979,7 +980,7 @@ void f3is_int_res(
 	  gridvelint[1] = 0;
 	  gridvelint[2] = 0;
 	}
-        
+
 	/*------------------------------------- get pressure gradients ---*/
 	gradp[0] = gradp[1] = gradp[2] = 0.0;
 
@@ -1005,7 +1006,7 @@ void f3is_int_res(
   {
     force[i] /= fdyn->thsl;
   }
-  
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_exit();

@@ -51,6 +51,12 @@ void f3_caleleres(
                    INT              *hasext,
                    ARRAY_POSITION   *ipos
 	       );
+void f3_caleleres_relax(ELEMENT        *ele,
+			ARRAY          *estif_global,
+			ARRAY          *eforce_global,
+			ARRAY_POSITION *ipos,
+			INT            *hasdirich,
+			INT            *hasext);
 
 /************************************************************************
  | f3_calelesize.c                                                      |
@@ -411,12 +417,14 @@ void f3_calseta(
                   DOUBLE          *epren,
                   DOUBLE          *edeadng,
                   ARRAY_POSITION  *ipos,
-                  INT             *hasext
+                  INT             *hasext,
+                  INT              is_relax
                );
 void f3_alecoor(
                   ELEMENT         *ele,
                   DOUBLE         **xyze
 	       );
+void f3_alecoor_sd(ELEMENT *ele, DOUBLE **xyze);
 void f3_veci(
              DOUBLE  *vecint,
              DOUBLE  *funct,

@@ -539,17 +539,20 @@ for(i=0;i<ele->numnp;i++)
    actfnode = ele->node[i];
    actfgnode = actfnode->gnode;
    actanode = actfgnode->mfcpnode[genprob.numaf];
-   if(actfnode->numdf==NUMDF)
+   /* if(actfnode->numdf==NUMDF) */
    {
       for (j=0;j<2;j++)
       {
-         xyze[j][i] =  theta * ( actanode->sol_mf.a.da[2][j] );
+         /* xyze[j][i] =  theta * ( actanode->sol_mf.a.da[2][j] ); */
+         xyze[j][i] = ( actanode->sol_mf.a.da[2][j] );
       }
    }
+#if 0
    else /* node on implicit free surface */
    {
    dserror("implicit free surface with steepest descent method not yet implementd");
    }
+#endif
 }
 
 /*---------------------------------------------------------------------*/

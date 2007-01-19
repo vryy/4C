@@ -126,30 +126,39 @@ void f2is_int_usfem(
 
 
 void f2is_calmat( DOUBLE **estif,
-		DOUBLE  *eforce,
-		DOUBLE  *velint,
-		DOUBLE   histvec[2],
-		DOUBLE   gridvint[2],
-		DOUBLE   press,
-		DOUBLE **vderxy,
-                DOUBLE **vderxy2,
-                DOUBLE   gradp[2],
-		DOUBLE  *funct,
-		DOUBLE **derxy,
-		DOUBLE **derxy2,
-		  DOUBLE          *pfunct,
-		  DOUBLE         **pderxy,
-                DOUBLE  *edeadng,
-		DOUBLE   fac,
-		DOUBLE   visc,
-		INT      iel,
-                INT     *hasext,
-                INT      isale,
-                INT      is_relax
+		  DOUBLE  *eforce,
+		  DOUBLE  *velint,
+		  DOUBLE   histvec[2],
+		  DOUBLE   gridvint[2],
+		  DOUBLE   press,
+		  DOUBLE **vderxy,
+		  DOUBLE **vderxy2,
+		  DOUBLE   gradp[2],
+		  DOUBLE  *funct,
+		  DOUBLE **derxy,
+		  DOUBLE **derxy2,
+		  DOUBLE  *pfunct,
+		  DOUBLE **pderxy,
+		  DOUBLE  *edeadng,
+		  DOUBLE   fac,
+		  DOUBLE   visc,
+		  INT      iel,
+		  INT     *hasext,
+		  INT      isale,
+		  INT      is_relax
   );
 
 void f2is_caleleres(
   ELEMENT        *ele,
+  ARRAY          *eforce_global,
+  ARRAY_POSITION *ipos,
+  INT            *hasdirich,
+  INT            *hasext
+  );
+
+void f2is_caleleres_relax(
+  ELEMENT        *ele,
+  ARRAY          *estif_global,
   ARRAY          *eforce_global,
   ARRAY_POSITION *ipos,
   INT            *hasdirich,
