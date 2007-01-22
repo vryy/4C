@@ -83,11 +83,9 @@ void so3_strain_lin(ELEMENT *ele,
 /*!
 \brief Calculate Green-Lagrange strains at Gauss point
 
-\param   enod       INT     (i)  number of element nodes
-\param   **deriv    DOUBLE  (i)  natural derivatives of shape functions
-\param   **xji      DOUBLE  (i)  Inverse Jacobi matrix at (r,s,t)
-\param   *grdisv    DOUBLE  (o)  displacement gradient at (r,s,t)
-
+\param   ele        ELEMENT* (i)  current element
+\param   disgrdv    DOUBLE[] (i)  displacement gradient vector
+\param   strain     DOUBLE[] (o)  Green-Lagrange strain vector
 \return void
 
 \author bborn

@@ -60,6 +60,7 @@ function calls.
 #include "../axishell/axishell.h"
 #include "../interf/interf.h"
 #include "../wallge/wallge.h"
+#include "../solid3/solid3.h"
 
 
 /*----------------------------------------------------------------------*
@@ -359,6 +360,22 @@ void out_element_control(struct _BIN_OUT_FIELD *context,
         for (j=0; wallge_stresstype[j] != NULL; ++j)
         {
           fprintf(file, "        %s = %d\n", wallge_stresstype[j], j);
+        }
+        fprintf(file, "\n");
+
+        break;
+      }
+#endif
+#ifdef D_SOLID3
+      case el_solid3:
+      {
+        INT j;
+        CHAR* so3_stresstype[] = SOLID3_STRESSTYPE;
+
+        fprintf(file, "    so3_stresstypes:\n");
+        for (j=0; so3_stresstype[j] != NULL; ++j)
+        {
+          fprintf(file, "        %s = %d\n", so3_stresstype[j], j);
         }
         fprintf(file, "\n");
 
@@ -1123,6 +1140,21 @@ static void out_pack_ele_params(BIN_OUT_CHUNK *chunk,
         size_ptr[vars->ep_size_stresstyp] = wallge->stresstyp;
 
         ptr[vars->ep_value_thick] = wallge->thick;
+
+        break;
+      }
+#endif
+#ifdef D_SOLID3
+      case el_solid3:
+      {
+        SOLID3* so3 = actele->e.so3;
+        SOLID3_VARIABLES* vars = &solid3_variables;
+
+        size_ptr[vars->ep_size_gpnum0] = so3->gpnum[0];
+        size_ptr[vars->ep_size_gpnum1] = so3->gpnum[1];
+        size_ptr[vars->ep_size_gpnum2] = so3->gpnum[2];
+        size_ptr[vars->ep_size_gptot] = so3->gptot;
+        size_ptr[vars->ep_size_stresstype] = so3->stresstype;
 
         break;
       }
@@ -2486,6 +2518,46 @@ static void out_pack_stress(BIN_OUT_CHUNK *chunk,
       case el_fluid2_tu:        /* 2D fluid element for turbulence */
       case el_ale2:             /* 2D pseudo structural ale element */
       case el_ale3:             /* 3D pseudo structural ale element */
+#ifdef D_SOLID3
+      case el_solid3:
+      {         /* structural solid3 element */
+        SOLID3* so3 = actele->e.so3;
+
+        /* stress array
+         * 1st index : Gauss point
+         * 2nd index : stress (symmetric, (materially) xyz-oriented) */
+        stress = so3->stress_gpxyz.a.da;
+
+        /* The first dimension gives the number of rows.
+         * This is the  number of Gauss points, these might
+         * differ to the actual row-dimension of rows = so3->gptot.
+         * The variable gptot accounts for the total number of
+         * Gauss points in element domain. This is independent of
+         * hexahedron or tetrahedron elements. */
+        rows = so3->gptot;
+
+        /* number of (linear/2nd Piola-Kirchhoff) stresses
+         * These are symmetric tensors, therefore only 6 relevant components
+         * are stored vectorially in 2nd dim of stress_gpxyz. */
+        cols = so3->stress_gpxyz.sdim;
+
+        dsassert(cols == 6, "solid3 changed but binary output not updated");
+        dsassert(rows*cols <= send_count, "solid3 entry too small");
+
+        /* copy the values */
+        /*
+         * The inner loop must loop the cols in order to keep the
+         * values at one gauss point together. */
+        for (j=0; j<rows; j++)
+        {
+          for (k=0; k<cols; k++)
+          {
+            *dst_ptr++ = stress[j][k];
+          }
+        }
+        break;
+      }
+#endif
       default:
         dserror("element based stress output not supported for element type %d", actele->eltyp);
       }
@@ -3142,6 +3214,7 @@ static void out_pack_restart_element(BIN_OUT_CHUNK *chunk,
         break;
 #endif
 
+
 #ifdef D_FLUID2
       case el_fluid2:
       {
@@ -3307,6 +3380,11 @@ static void out_pack_restart_element(BIN_OUT_CHUNK *chunk,
         break;
 #endif
 
+#ifdef D_SOLID3
+      case el_solid3:
+        /* Nothing to do?! */
+        break;
+#endif
       default:
       {
         static CHAR warning[el_count];
@@ -4735,6 +4813,12 @@ static void in_unpack_restart_element(BIN_IN_FIELD *context,
       break;
 #endif
 
+#ifdef D_SOLID3
+    case el_solid3:
+      /* Nothing to do?! */
+      break;
+#endif
+
     default:
       dserror("element type %d unsupported", actele->eltyp);
     }
@@ -5128,6 +5212,12 @@ void find_ele_param_item_length(struct _BIN_OUT_FIELD* context,
       vlen = MAX(vlen, wallge_variables.ep_value_length);
       break;
 #endif
+#ifdef D_SOLID3
+    case el_solid3:
+      slen = MAX(slen, solid3_variables.ep_size_length);
+      vlen = MAX(vlen, solid3_variables.ep_value_length);
+      break;
+#endif
     default:
     {
       char* en[] = ELEMENTNAMES;
@@ -5425,6 +5515,19 @@ void find_stress_item_length(struct _BIN_OUT_FIELD* context,
       {
         dserror("distyp %d unsupported", actele->distyp);
       }
+      break;
+    }
+#endif
+#ifdef D_SOLID3
+    case el_solid3:
+    {
+      INT rows;
+      INT cols;
+      SOLID3* so3 = actele->e.so3;
+
+      rows = so3->gptot;
+      cols = so3->stress_gpxyz.sdim;
+      length = MAX(length, rows*cols);
       break;
     }
 #endif
@@ -5794,6 +5897,14 @@ void find_restart_item_length(struct _BIN_OUT_FIELD* context,
     {
       /*WALLGE* wallge = actele->e.wallge;*/
       /* There's nothing to be saved for wallge elements, right? */
+      break;
+    }
+#endif
+
+#ifdef D_SOLID3
+    case el_solid3:
+    {
+      /* nothing? */
       break;
     }
 #endif

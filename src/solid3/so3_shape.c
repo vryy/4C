@@ -718,9 +718,7 @@ void so3_shape_gpshade(ELEMENT *ele,
 
 /*======================================================================*/
 /*!
-\brief Evaluate every shape function at every node
-       We expect to get 1 if shape function corresponds
-       to node otheriwse we should get 0
+\brief Test shape functions and their derivatives at element nodes
 
 \param  data        SO3_DATA*         (i)    constant Gauss point data
 \return void
@@ -740,13 +738,16 @@ void so3_shape_test(SO3_DATA *data)
 
   /*--------------------------------------------------------------------*/
   /* open test file */
-  filetest = fopen("so3_shape_test.out", "w");
+  filetest = fopen("so3_shape_test.testout", "w");
 
   /*--------------------------------------------------------------------*/
   /* hex8 */
   if (MAXNOD_SOLID3 >= 8)
   {
+    /* test every shape function node by node */
     so3_shape_test_shp(data, hex8, "HEX8", 8, filetest);
+    /* test every shape-function derivatives
+     * by summing over nodes */
     so3_shape_test_drv(data, hex8, "HEX8", 8, filetest);
   }
   /* hex20 */
@@ -822,6 +823,7 @@ void so3_shape_test_shp(SO3_DATA *data,
   fprintf(filetest, "%s\n", text);
   for (inod=0; inod<nelenod; inod++)
   {
+    /* get rst-coordinate of node */
     if ( (dis == hex8) || (dis == hex20) || (dis == hex27) )
     {
       for (idim=0; idim<NDIM_SOLID3; idim++)
@@ -836,8 +838,12 @@ void so3_shape_test_shp(SO3_DATA *data,
         rst[idim] = data->nodtrst[inod][idim];
       }
     }
+    /* print node index plus its rst-coord */
     fprintf(filetest, "%d:(%.1f,%.1f,%.1f):  ", 
             inod, rst[0], rst[1], rst[2]);
+    /* get shape functions at current rst-triple
+     * should return shape[inod] = 1
+     * and           shape[jnod] = 0 for every jnod != inod */
     so3_shape_deriv(dis, rst[0], rst[1], rst[2], 0, shape, NULL);
     for (jnod=0; jnod<nelenod; jnod++)
     {

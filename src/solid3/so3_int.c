@@ -58,13 +58,13 @@ for the linear, 3dim elasticity
 \author mf
 \date 10/06
 */
-void so3_int_fintstiffmass(CONTAINER *container,
-                           ELEMENT *ele,
-                           SO3_GPSHAPEDERIV *gpshade,
-                           MATERIAL *mat,
-                           ARRAY *eforc_global,
-                           ARRAY *estif_global,
-                           ARRAY *emass_global)
+void so3_int_fintstifmass(CONTAINER *container,
+                          ELEMENT *ele,
+                          SO3_GPSHAPEDERIV *gpshade,
+                          MATERIAL *mat,
+                          ARRAY *eforc_global,
+                          ARRAY *estif_global,
+                          ARRAY *emass_global)
 {
   /* general variables/constants */
   INT nelenod;  /* numnp of this element */
@@ -99,7 +99,7 @@ void so3_int_fintstiffmass(CONTAINER *container,
   /*--------------------------------------------------------------------*/
   /* start */
 #ifdef DEBUG
-  dstrc_enter("so3_int_fintstiffmass");
+  dstrc_enter("so3_int_fintstifmass");
 #endif
 
   /*--------------------------------------------------------------------*/
@@ -117,6 +117,7 @@ void so3_int_fintstiffmass(CONTAINER *container,
   }
   if (eforc_global != NULL)
   {
+    amzero(eforc_global);
     eforce = eforc_global->a.dv;
   }
 
@@ -177,8 +178,19 @@ void so3_int_fintstiffmass(CONTAINER *container,
     {
       dserror("Cannot digest chosen type of spatial kinematic\n");
     }
+#if 0
+    /* dedug pruposes */
+      INT xxx;
+      printf("Element %d, GP %d \n", ele->Id, igp);
+      for (xxx=0; xxx<6; xxx++)
+      {
+        printf("Strain %d : (% 5.2f,% 5.2f,% 5.2f) : %f\n", 
+               xxx, gpcr, gpcs, gpct, gds.stnglv[xxx]);
+      }
+#endif
     /*------------------------------------------------------------------*/
-    /* calculate B-operator */
+    /* calculate B-operator
+     * bop differs depending on geometrically linearity/non-linearity */
     so3_bop(ele, nelenod, gpshade->gpderiv[igp], gds.xji, 
             gds.defgrd, bopn, bop);
     /*------------------------------------------------------------------*/
@@ -421,13 +433,18 @@ void so3_int_stiffgeo(INT enod,
         bopstrbop += bopn[jnod][idim] * strbopinod[idim];
       }
       /* add contribution to element stiffness matrix */
-      for (idof=inod*NDIM_SOLID3; idof<(inod+1)*NDIM_SOLID3; idof++)
-      {
-        for (jdof=jnod*NDIM_SOLID3; jdof<(jnod+1)*NDIM_SOLID3; jdof++)
-        {
-          estif[idof][jdof] += bopstrbop;
-        }
-      }
+      idof = inod*NDIM_SOLID3;
+      jdof = jnod*NDIM_SOLID3;
+      estif[idof][jdof] += bopstrbop;
+      estif[idof+1][jdof+1] += bopstrbop;
+      estif[idof+2][jdof+2] += bopstrbop;
+/*       for (idof=inod*NDIM_SOLID3; idof<(inod+1)*NDIM_SOLID3; idof++) */
+/*       { */
+/*         for (jdof=jnod*NDIM_SOLID3; jdof<(jnod+1)*NDIM_SOLID3; jdof++) */
+/*         { */
+/*           estif[idof][jdof] += bopstrbop; */
+/*         } */
+/*       } */
     }
   }
 

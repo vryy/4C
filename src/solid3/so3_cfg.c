@@ -1177,7 +1177,7 @@ void so3_cfg_test(SO3_DATA *data)
 
   /*--------------------------------------------------------------------*/
   /* open test file */
-  filetest = fopen("so3_cfg_test.out", "w");
+  filetest = fopen("so3_cfg_test.testout", "w");
 
   /*====================================================================*/
   /* hexahedra geometry and topology */

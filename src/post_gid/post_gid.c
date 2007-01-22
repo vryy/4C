@@ -50,6 +50,7 @@ possible). You might want to start reading the file from there.
 #include "post_shell9.h"
 #include "post_wall1.h"
 #include "post_wallge.h"
+#include "post_solid3.h"
 
 #include "../output/gid.h"
 #include "../post_common/post_octtree.h"
@@ -219,6 +220,12 @@ static void write_domain(FIELD_DATA *field, GIDSET* gid)
 
 #ifdef D_BEAM3
   beam3_write_domain(field, gid, &chunk);
+#endif
+
+  /*--------------------------------------------------------------------*/
+
+#ifdef D_SOLID3
+  solid3_write_domain(field, gid, &chunk);
 #endif
 
   destroy_chunk_data(&chunk);
@@ -475,6 +482,9 @@ static void write_stress(FIELD_DATA *field, GIDSET* gid, RESULT_DATA* result)
 #endif
 #ifdef D_WALLGE
   wallge_write_stress(field, gid, &chunk, time, step);
+#endif
+#ifdef D_SOLID3
+  solid3_write_stress(field, gid, &chunk, time, step);
 #endif
 
   destroy_chunk_data(&chunk);
@@ -940,6 +950,22 @@ static void setup_gid_flags(FIELD_DATA* field, GIDSET* gid)
       break;
     }
 #endif
+#ifdef D_SOLID3
+    case el_solid3:
+    {
+      if (numnp==8)
+      {
+        gid->is_solid3_h8_222   = 1;
+        gid->solid3_h8_222_name = "solid3_h8_222";
+      }
+      if (numnp==20)
+      {
+        gid->is_solid3_h20_333   = 1;
+        gid->solid3_h20_333_name = "solid3_h20_333";
+      }
+      break;
+    }
+#endif
     default:
       dserror("element type %d unknown", el_type);
     }
@@ -1020,6 +1046,9 @@ static void write_mesh(FIELD_DATA* field, GIDSET* gid)
 #ifdef D_WALLGE
   wallge_write_gauss(gid);
 #endif
+#ifdef D_SOLID3
+  solid3_write_gauss(gid);
+#endif
 
   /*--------------------------------------------------------------------*/
   /* Write a mesh for each element variant */
@@ -1077,6 +1106,9 @@ static void write_mesh(FIELD_DATA* field, GIDSET* gid)
 #endif
 #ifdef D_WALLGE
   wallge_write_mesh(field, gid, &first_mesh);
+#endif
+#ifdef D_SOLID3
+  solid3_write_mesh(field, gid, &first_mesh);
 #endif
 
 #ifdef DEBUG

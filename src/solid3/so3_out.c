@@ -32,7 +32,6 @@ Maintainer: Burkhard Bornemann
 \brief Write the stress in element to Ccarat output file
 
 \param   *actele        ELEMENT     (i)   pointer to current element
-\param    place         INT         (i)   first index in ARRAY4D stress 
 \param   *out           FILE        (i/o) pointer to output file
 
 \return void
@@ -41,7 +40,6 @@ Maintainer: Burkhard Bornemann
 \date 01/07
 */
 void so3_out_stress(ELEMENT *actele,
-                    INT place,
                     FILE *out)
 {
   SOLID3 *actso3 = actele->e.so3;  /* pointer to SOLID3 element contents */
@@ -82,12 +80,12 @@ void so3_out_stress(ELEMENT *actele,
                 actso3->gpco_xyz.a.da[igp][0],  /* x-coord */
                 actso3->gpco_xyz.a.da[igp][1],  /* y-coord */
                 actso3->gpco_xyz.a.da[igp][2],  /* z-ccord */
-                actso3->stress_gpxyz.a.d3[place][igp][0],  /* stress-xx */
-                actso3->stress_gpxyz.a.d3[place][igp][1],  /* stress-yy */
-                actso3->stress_gpxyz.a.d3[place][igp][2],  /* stress-zz */
-                actso3->stress_gpxyz.a.d3[place][igp][3],  /* stress-xy */
-                actso3->stress_gpxyz.a.d3[place][igp][4],  /* stress-yz */
-                actso3->stress_gpxyz.a.d3[place][igp][5]);  /* stress-zx */
+                actso3->stress_gpxyz.a.da[igp][0],  /* stress-xx */
+                actso3->stress_gpxyz.a.da[igp][1],  /* stress-yy */
+                actso3->stress_gpxyz.a.da[igp][2],  /* stress-zz */
+                actso3->stress_gpxyz.a.da[igp][3],  /* stress-xy */
+                actso3->stress_gpxyz.a.da[igp][4],  /* stress-yz */
+                actso3->stress_gpxyz.a.da[igp][5]);  /* stress-zx */
       }
       break;
     /* output stress rst-oriented at Gauss point */
@@ -105,12 +103,12 @@ void so3_out_stress(ELEMENT *actele,
                 actso3->gpco_xyz.a.da[igp][0],  /* x-coord */
                 actso3->gpco_xyz.a.da[igp][1],  /* y-coord */
                 actso3->gpco_xyz.a.da[igp][2],  /* z-ccord */
-                actso3->stress_gprst.a.d3[place][igp][0],  /* stress-rr */
-                actso3->stress_gprst.a.d3[place][igp][1],  /* stress-ss */
-                actso3->stress_gprst.a.d3[place][igp][2],  /* stress-tt */
-                actso3->stress_gprst.a.d3[place][igp][3],  /* stress-rs */
-                actso3->stress_gprst.a.d3[place][igp][4],  /* stress-st */
-                actso3->stress_gprst.a.d3[place][igp][5]); /* stress-tr */
+                actso3->stress_gprst.a.da[igp][0],  /* stress-rr */
+                actso3->stress_gprst.a.da[igp][1],  /* stress-ss */
+                actso3->stress_gprst.a.da[igp][2],  /* stress-tt */
+                actso3->stress_gprst.a.da[igp][3],  /* stress-rs */
+                actso3->stress_gprst.a.da[igp][4],  /* stress-st */
+                actso3->stress_gprst.a.da[igp][5]); /* stress-tr */
       }
       break;
     /* output stress principals at Gauss point */
@@ -127,18 +125,18 @@ void so3_out_stress(ELEMENT *actele,
       {
         fprintf(out,"  %-6d %12.3E %12.3E %12.3E %5.2f    %5.2f    %5.2f    %5.2f    %5.2f    %5.2f    %5.2f    %5.2f    %5.2f \n",
                 igp,
-                actso3->stress_gp123.a.d3[place][igp][0],  /* stress-11 */
-                actso3->stress_gp123.a.d3[place][igp][1],  /* stress-22 */
-                actso3->stress_gp123.a.d3[place][igp][2],  /* stress-33 */
-                actso3->stress_gp123.a.d3[place][igp][3],  /* ang-r1 */
-                actso3->stress_gp123.a.d3[place][igp][4],  /* ang-s1 */
-                actso3->stress_gp123.a.d3[place][igp][5],  /* ang-t1 */
-                actso3->stress_gp123.a.d3[place][igp][6],  /* ang-r2 */
-                actso3->stress_gp123.a.d3[place][igp][7],  /* ang-s2 */
-                actso3->stress_gp123.a.d3[place][igp][8],  /* ang-t2 */
-                actso3->stress_gp123.a.d3[place][igp][9],  /* ang-r3 */
-                actso3->stress_gp123.a.d3[place][igp][10], /* ang-s3 */
-                actso3->stress_gp123.a.d3[place][igp][11]);/* ang-t3 */
+                actso3->stress_gp123.a.da[igp][0],  /* stress-11 */
+                actso3->stress_gp123.a.da[igp][1],  /* stress-22 */
+                actso3->stress_gp123.a.da[igp][2],  /* stress-33 */
+                actso3->stress_gp123.a.da[igp][3],  /* ang-r1 */
+                actso3->stress_gp123.a.da[igp][4],  /* ang-s1 */
+                actso3->stress_gp123.a.da[igp][5],  /* ang-t1 */
+                actso3->stress_gp123.a.da[igp][6],  /* ang-r2 */
+                actso3->stress_gp123.a.da[igp][7],  /* ang-s2 */
+                actso3->stress_gp123.a.da[igp][8],  /* ang-t2 */
+                actso3->stress_gp123.a.da[igp][9],  /* ang-r3 */
+                actso3->stress_gp123.a.da[igp][10], /* ang-s3 */
+                actso3->stress_gp123.a.da[igp][11]);/* ang-t3 */
       }
       break;
     /* output stress XYZ-oriented at element nodes */
@@ -150,12 +148,12 @@ void so3_out_stress(ELEMENT *actele,
       {
         fprintf(out, "  %-6d %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E \n",
                 inod,
-                actso3->stress_ndxyz.a.d3[place][inod][0],  /* stress-XX */
-                actso3->stress_ndxyz.a.d3[place][inod][1],  /* stress-YY */
-                actso3->stress_ndxyz.a.d3[place][inod][2],  /* stress-ZZ */
-                actso3->stress_ndxyz.a.d3[place][inod][3],  /* stress-XY */
-                actso3->stress_ndxyz.a.d3[place][inod][4],  /* stress-YZ */
-                actso3->stress_ndxyz.a.d3[place][inod][5]); /* stress-ZX */
+                actso3->stress_ndxyz.a.da[inod][0],  /* stress-XX */
+                actso3->stress_ndxyz.a.da[inod][1],  /* stress-YY */
+                actso3->stress_ndxyz.a.da[inod][2],  /* stress-ZZ */
+                actso3->stress_ndxyz.a.da[inod][3],  /* stress-XY */
+                actso3->stress_ndxyz.a.da[inod][4],  /* stress-YZ */
+                actso3->stress_ndxyz.a.da[inod][5]); /* stress-ZX */
       }
       break;
     /* output stress rst-oriented at element nodes */
@@ -167,12 +165,12 @@ void so3_out_stress(ELEMENT *actele,
       {
         fprintf(out, "  %-6d %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E \n",
                 inod,
-                actso3->stress_ndrst.a.d3[place][inod][0],  /* stress-rr */
-                actso3->stress_ndrst.a.d3[place][inod][1],  /* stress-ss */
-                actso3->stress_ndrst.a.d3[place][inod][2],  /* stress-tt */
-                actso3->stress_ndrst.a.d3[place][inod][3],  /* stress-rs */
-                actso3->stress_ndrst.a.d3[place][inod][4],  /* stress-st */
-                actso3->stress_ndrst.a.d3[place][inod][5]); /* stress-tr */
+                actso3->stress_ndrst.a.da[inod][0],  /* stress-rr */
+                actso3->stress_ndrst.a.da[inod][1],  /* stress-ss */
+                actso3->stress_ndrst.a.da[inod][2],  /* stress-tt */
+                actso3->stress_ndrst.a.da[inod][3],  /* stress-rs */
+                actso3->stress_ndrst.a.da[inod][4],  /* stress-st */
+                actso3->stress_ndrst.a.da[inod][5]); /* stress-tr */
       }
       break;
     /* output stress principals at element nodes */
@@ -186,18 +184,18 @@ void so3_out_stress(ELEMENT *actele,
       {
         fprintf(out, "  %-6d %12.3E %12.3E %12.3E %5.2f    %5.2f    %5.2f    %5.2f    %5.2f    %5.2f    %5.2f    %5.2f    %5.2f \n",
                 inod,
-                actso3->stress_nd123.a.d3[place][inod][0],  /* stress-11 */
-                actso3->stress_nd123.a.d3[place][inod][1],  /* stress-22 */
-                actso3->stress_nd123.a.d3[place][inod][2],  /* stress-33 */
-                actso3->stress_nd123.a.d3[place][inod][3],  /* ang-r1 */
-                actso3->stress_nd123.a.d3[place][inod][4],  /* ang-s1 */
-                actso3->stress_nd123.a.d3[place][inod][5],  /* ang-t1 */
-                actso3->stress_nd123.a.d3[place][inod][6],  /* ang-r2 */
-                actso3->stress_nd123.a.d3[place][inod][7],  /* ang-s2 */
-                actso3->stress_nd123.a.d3[place][inod][8],  /* ang-t2 */
-                actso3->stress_nd123.a.d3[place][inod][9],  /* ang-r3 */
-                actso3->stress_nd123.a.d3[place][inod][10],  /* ang-s3 */
-                actso3->stress_nd123.a.d3[place][inod][11]);  /* ang-t3 */
+                actso3->stress_nd123.a.da[inod][0],  /* stress-11 */
+                actso3->stress_nd123.a.da[inod][1],  /* stress-22 */
+                actso3->stress_nd123.a.da[inod][2],  /* stress-33 */
+                actso3->stress_nd123.a.da[inod][3],  /* ang-r1 */
+                actso3->stress_nd123.a.da[inod][4],  /* ang-s1 */
+                actso3->stress_nd123.a.da[inod][5],  /* ang-t1 */
+                actso3->stress_nd123.a.da[inod][6],  /* ang-r2 */
+                actso3->stress_nd123.a.da[inod][7],  /* ang-s2 */
+                actso3->stress_nd123.a.da[inod][8],  /* ang-t2 */
+                actso3->stress_nd123.a.da[inod][9],  /* ang-r3 */
+                actso3->stress_nd123.a.da[inod][10],  /* ang-s3 */
+                actso3->stress_nd123.a.da[inod][11]);  /* ang-t3 */
       }
       break;
     /* catch it if you must */

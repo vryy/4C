@@ -643,6 +643,12 @@ solserv_del_vec(&(actsolv->sol),actsolv->nsol);
 solserv_del_vec(&(re),1);
 solserv_del_vec(&(rsd),3);
 solserv_del_vec(&(dispi),2);
+
+/*----------------------------------------------------------------------*/
+#ifdef BINIO
+destroy_bin_out_field(&out_context);
+#endif
+
 /*----------------------------------------------------------------------*/
 end:
 #ifndef PARALLEL

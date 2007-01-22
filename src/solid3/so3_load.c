@@ -149,7 +149,7 @@ void so3_load(ELEMENT *ele,  /* actual element */
   /*====================================================================*/
   /* check if external load is applied */
   /*--------------------------------------------------------------------*/
-  /* check for presence of heat sources in domain (volume) */
+  /* check for presence of body forces in domain (volume) */
   if (gvol->neum == NULL)
   {
     foundgvolneum = 0;
@@ -170,9 +170,9 @@ void so3_load(ELEMENT *ele,  /* actual element */
   /*--------------------------------------------------------------------*/
   /* number of geom. surfaces */
   ngsurf = gvol->ngsurf;
-  /* initialise flag for applied heat fluxes */
+  /* initialise flag for applied tractions */
   foundgsurfneum = 0;
-  /* check if heat fluxes are applied */
+  /* check if tractions are applied */
   for (igsurf=0; igsurf<ngsurf; igsurf++)
   {
     gsurf[igsurf] = gvol->gsurf[igsurf];
@@ -192,9 +192,9 @@ void so3_load(ELEMENT *ele,  /* actual element */
   /*--------------------------------------------------------------------*/
   /* number of geom. lines */
   ngline = gvol->ngline;
-  /* initialise flag for applied heat fluxes */
+  /* initialise flag for applied tractions */
   foundglineneum = 0;
-  /* check if heat fluxes are applied */
+  /* check if tractions are applied */
   for (igline=0; igline<ngline; igline++)
   {
     gline[igline] = gvol->gline[igline];
@@ -231,7 +231,7 @@ void so3_load(ELEMENT *ele,  /* actual element */
 
 
   /*====================================================================*/
-  /* domain load ==> volume heat load, heat source */
+  /* domain load ==> volume load, body load, source term */
   /*------------------------------------------------------------------- */
   /* integrate volume load */
   if ( (foundgvolneum > 0) && (imyrank == ele->proc) )
@@ -263,7 +263,7 @@ void so3_load(ELEMENT *ele,  /* actual element */
 
 
   /*====================================================================*/
-  /* side loads ==> surface heat load, heat fluxes */
+  /* side loads ==> surface stress, tractions, fluxes */
   /*--------------------------------------------------------------------*/
   /* loop all element sides (surfaces) */
   if (foundgsurfneum > 0)
@@ -440,7 +440,7 @@ void so3_load(ELEMENT *ele,  /* actual element */
 
 
   /*====================================================================*/
-  /* edge loads ==> edge heat load, heat fluxes */
+  /* edge loads ==> edge tractions */
   /*--------------------------------------------------------------------*/
   /* loop all element sides (surfaces) */
   if (foundglineneum > 0)
@@ -617,7 +617,7 @@ void so3_load(ELEMENT *ele,  /* actual element */
   dstrc_exit();
 #endif
   return;
-} /* end of so3_load_heat */
+} /* end of so3_load */
 
 
 
@@ -684,7 +684,7 @@ void so3_load_vol(ELEMENT *ele,
 
 /*======================================================================*/
 /*!
-\brief Determine load due to heat fluxes on element sides (surfaces)
+\brief Determine load due to tractions on element faces (surfaces)
 
 \param   *ele      ELEMENT      (i)    actual element
 \param    nelenod  INT          (i)    number of element nodes
@@ -754,7 +754,7 @@ void so3_load_surf(ELEMENT *ele,
 
 /*======================================================================*/
 /*!
-\brief Determine load due to heat fluxes on element edges (lines)
+\brief Determine load due to tractions on element edges (lines)
 
 \param   *ele      ELEMENT      (i)    actual element
 \param    nelenod  INT          (i)    number of element nodes

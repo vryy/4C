@@ -438,7 +438,7 @@ void so3_tns3_plrdcmp(DOUBLE ft[3][3],  /* input tensor */
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
-  dstrc_enter("so3_tns_plrdcmp");
+  dstrc_enter("so3_tns3_plrdcmp");
 #endif
 
   /* set identity tensor */

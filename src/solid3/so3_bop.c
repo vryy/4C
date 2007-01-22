@@ -260,7 +260,7 @@ void so3_bop(ELEMENT *ele,
     else if (ele->e.so3->kintype == so3_total_lagr)
     {
       /*----------------------------------------------------------------*/
-      /* non-linear B-operator (maybe so-called, meaning
+      /* non-linear B-operator (may so be called, meaning
        * of B-operator is not so sharp in the non-linear realm) */
       /*
        * B = F . Bl
@@ -303,7 +303,7 @@ void so3_bop(ELEMENT *ele,
     }
     else
     {
-      dserror("Cannot compute B-operator for chosen kinematics.\n");
+      dserror("Cannot compute B-operator for chosen kinematics.");
     }
   }
 

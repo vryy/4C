@@ -1131,6 +1131,64 @@ extern WALLGE_VARIABLES wallge_variables;
 /*======================================================================*/
 /*======================================================================*/
 
+#ifdef D_SOLID3
+
+/* output version of solid3 element */
+#define SOLID3_IO_VERSION 1
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Variables that describe the structure of the solid3 output.
+
+  These variables depend on the output version of the element. There
+  is a function that sets there variables depending of the version
+  number. The idea is to allow element evolution and still be able to
+  read old output.
+
+  \author u.kue
+  \date 11/04
+  \sa setup_solid3_variables
+ */
+/*----------------------------------------------------------------------*/
+typedef struct _SOLID3_VARIABLES
+{
+  /* If there is no element version in the control file we cannot
+   * initialize this structure. It's illegal to use it then. */
+  INT init;
+
+  /* version for which the parameters are initialized */
+  INT version;
+
+  /* the length of the integer and the double entry */
+  INT ep_size_length;
+  INT ep_value_length;
+
+  INT ep_size_gpnum0;
+  INT ep_size_gpnum1;
+  INT ep_size_gpnum2;
+  INT ep_size_gptot;
+  INT ep_size_stresstype;
+
+} SOLID3_VARIABLES;
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Variables that describe the structure of the solid3 output.
+
+  The only instance of this structure.
+
+  \author u.kue
+  \date 11/04
+  \sa setup_solid3_variables
+ */
+/*----------------------------------------------------------------------*/
+extern SOLID3_VARIABLES solid3_variables;
+
+#endif
+
+/*======================================================================*/
+/*======================================================================*/
+
 
 /* Now here we have the same thing for nodes. But there is only one
  * type of nodes, so things are much easier here. */

@@ -4,14 +4,14 @@
 //             http://www.lnm.mw.tum.de/Members/kuettler
 //             089 - 289-15238
 // 
-// necessary defines: D_FLUID D_FLUID2 D_FLUID2_IS AZTEC_PACKAGE RESULTTEST D_FSI D_ALE D_WALL1 CHECK_MAX SOLVE_DIRICH2
+// necessary defines: D_FLUID D_FLUID2 D_FLUID2_IS UMFPACK AZTEC_PACKAGE RESULTTEST D_FSI D_ALE D_WALL1 CHECK_MAX SOLVE_DIRICH2 BINIO
 //
-// #define MAXNOD           (4)
+// #define MAXNOD           (9)
 // #define MAXELE           (4)
 // #define MAXDOFPERNODE    (3)
-// #define MAXGAUSS         (4)
-// #define MAXNOD_F2        (4)
-// #define MAXNOD_ALE3      (4)
+// #define MAXGAUSS         (9)
+// #define MAXNOD_F2        (9)
+// #define MAXNOD_ALE3      (9)
 // #define MAXNOD_WALL1     (4)
 //
 ==================================================================

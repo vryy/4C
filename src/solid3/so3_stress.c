@@ -60,7 +60,7 @@ static DOUBLE *stress;
 
 /*======================================================================*/
 /*!
-\brief Allocate element heat fluxes and  working arrays
+\brief Allocate element stresses and  working arrays
 
 \param  *actpart  PARTITION   (i)   pointer to current partition
 \return void
@@ -82,7 +82,7 @@ void so3_stress_init(PARTITION *actpart)
 #endif
   
   /*--------------------------------------------------------------------*/
-  /* allocate heat flux arrays stored at each element */
+  /* allocate stress arrays stored at each element */
   tpart = actpart;  /*&(actpart[genprob.numtf]);*/
   /* loop over all discretisations of partition thermal field */
   for (jdis=0; jdis<tpart->ndis; jdis++)
@@ -97,19 +97,19 @@ void so3_stress_init(PARTITION *actpart)
       {
         /* set pointer to SOLID3 */
         actso3 = actele->e.so3;
-        /* allocate heat stress arrays per element */
-        am4def("stress_gpxyz", &(actso3->stress_gpxyz), 
-               1, MAXGAUSS_SOLID3, NUMSTR_SOLID3, 0, "D3");
-        am4def("stress_gprst", &(actso3->stress_gprst), 
-               1, MAXGAUSS_SOLID3, NUMSTR_SOLID3, 0, "D3");
-        am4def("stress_gp123", &(actso3->stress_gp123), 
-               1, MAXGAUSS_SOLID3, 4*NDIM_SOLID3, 0, "D3");
-        am4def("stress_ndxyz", &(actso3->stress_ndxyz), 
-               1, MAXNOD_SOLID3, NUMSTR_SOLID3, 0, "D3");
-        am4def("stress_ndrst", &(actso3->stress_ndrst), 
-               1, MAXNOD_SOLID3, NUMSTR_SOLID3, 0, "D3");
-        am4def("stress_nd123", &(actso3->stress_nd123), 
-               1, MAXNOD_SOLID3, 4*NDIM_SOLID3, 0, "D3");
+        /* allocate stress arrays per element */
+        amdef("stress_gpxyz", &(actso3->stress_gpxyz), 
+              MAXGAUSS_SOLID3, NUMSTR_SOLID3, "DA");
+        amdef("stress_gprst", &(actso3->stress_gprst), 
+              MAXGAUSS_SOLID3, NUMSTR_SOLID3, "DA");
+        amdef("stress_gp123", &(actso3->stress_gp123), 
+              MAXGAUSS_SOLID3, 4*NDIM_SOLID3, "DA");
+        amdef("stress_ndxyz", &(actso3->stress_ndxyz), 
+              MAXNOD_SOLID3, NUMSTR_SOLID3, "DA");
+        amdef("stress_ndrst", &(actso3->stress_ndrst), 
+              MAXNOD_SOLID3, NUMSTR_SOLID3, "DA");
+        amdef("stress_nd123", &(actso3->stress_nd123), 
+              MAXNOD_SOLID3, 4*NDIM_SOLID3, "DA");
         /* allocate Gauss point coordinates */
         amdef("gpco_xyz", &(actso3->gpco_xyz), 
               MAXGAUSS_SOLID3, NDIM_SOLID3, "DA");
@@ -155,7 +155,7 @@ void so3_stress_final(PARTITION *actpart)
 #endif
 
   /*--------------------------------------------------------------------*/
-  /* deallocate heat flux arrays */
+  /* deallocate stress arrays */
   tpart = actpart; /*&(actpart[genprob.numtf]); */
   /* loop over all discretisations of partition */
   for (jdis=0; jdis<tpart->ndis; jdis++)
@@ -170,13 +170,13 @@ void so3_stress_final(PARTITION *actpart)
       {
         /* set current SOLID3 element */
         actso3 = actele->e.so3;
-        /* deallocate heat stress arrays at element */
-        am4del(&(actso3->stress_gpxyz));
-        am4del(&(actso3->stress_gprst));
-        am4del(&(actso3->stress_gp123));
-        am4del(&(actso3->stress_ndxyz));
-        am4del(&(actso3->stress_ndrst));
-        am4del(&(actso3->stress_nd123));
+        /* deallocate stress arrays at element */
+        amdel(&(actso3->stress_gpxyz));
+        amdel(&(actso3->stress_gprst));
+        amdel(&(actso3->stress_gp123));
+        amdel(&(actso3->stress_ndxyz));
+        amdel(&(actso3->stress_ndrst));
+        amdel(&(actso3->stress_nd123));
         /* deallocate Gauss point coordinates */
         amdel(&(actso3->gpco_xyz));
       }  /* end if */
@@ -348,19 +348,21 @@ void so3_stress(CONTAINER *cont,
     /* store stress of current Gauss point */
     for (istr=0; istr<NUMSTR_SOLID3; istr++)
     {
-      ele->e.so3->stress_gpxyz.a.d3[place][igp][istr] = stress[istr];
+      ele->e.so3->stress_gpxyz.a.da[igp][istr] = stress[istr];
     }
     /*------------------------------------------------------------------*/
     /* construct rotational component of inverse FE-Jacobian */
     so3_metr_rot(gds.xjm, gds.xrm, gds.xrvm, gds.xrvi);
     /*------------------------------------------------------------------*/
-    /* store heat flux in parameter space co-ordinates (r,s,t) */
+    /* store stress in parameter space co-ordinates (r,s,t) */
+#if 1
     so3_stress_rst(gds.xrvi, stress, 
-                   ele->e.so3->stress_gprst.a.d3[place][igp]);
+                   ele->e.so3->stress_gprst.a.da[igp]);
+#endif
     /*------------------------------------------------------------------*/
     /* store principle and direction angles at current Gauss point */
-#if 0
-    so3_stress_123(stress, ele->e.so3->stress_gp123.a.d3[place][igp]);
+#if 1
+    so3_stress_123(stress, ele->e.so3->stress_gp123.a.da[igp]);
 #endif
   }
 
@@ -375,15 +377,15 @@ void so3_stress(CONTAINER *cont,
     /*------------------------------------------------------------------*/
     /* extrapolate values now */
     so3_stress_extrpol(ele, data, gpnum, 
-                       ele->e.so3->stress_gpxyz.a.d3[place], rst,
+                       ele->e.so3->stress_gpxyz.a.da, rst,
                        stress);
     for (istr=0; istr<NUMSTR_SOLID3; istr++)
     {
-      ele->e.so3->stress_ndxyz.a.d3[place][inod][istr] = stress[istr];
+      ele->e.so3->stress_ndxyz.a.da[inod][istr] = stress[istr];
     }
     /* store principle and direction angles at current Gauss point */
-#if 0
-    so3_stress_123(stress, ele->e.so3->stress_nd123.a.d3[place][inod]);
+#if 1
+    so3_stress_123(stress, ele->e.so3->stress_nd123.a.da[inod]);
 #endif
   }
 
@@ -511,17 +513,17 @@ void so3_stress_123(DOUBLE stress[NUMSTR_SOLID3],
 
 /*======================================================================*/
 /*!
-\brief Extrapolate heat fluxes at Gauss points to element nodes
+\brief Extrapolate stresses at Gauss points to element nodes
 
-These procedure does not provide more accurate heat fluxes as the direct
+These procedure does not provide more accurate stresses as the direct
 computation, but maybe saves a bit of computing time.
 
 \param  *ele       ELEMENT     (i)   pointer to active element
 \param  *data      SO3_DATA    (i)   pointer to THERM2 data (GPs coords etc)
 \param  ngauss     INT         (i)   total number of Gauss points
-\param  **stressgp DOUBLE      (i)   heat flux at Gauss points
+\param  **stressgp DOUBLE      (i)   stress at Gauss points
 \param  rst[]      DOUBLE      (i)   element node natural coordinates
-\param  stressnd[] DOUBLE      (o)   extrapolated heat flux at node
+\param  stressnd[] DOUBLE      (o)   extrapolated stresses at node
 \return void
 
 \author bborn
@@ -591,7 +593,7 @@ void so3_stress_extrpol(ELEMENT *ele,
   dsassert(gpnum==ngauss, "Total number of Gauss points do not match!");
 
   /*--------------------------------------------------------------------*/
-  /* initialise nodal heat flux vector */
+  /* initialise nodal stress vector */
   for (istr=0; istr<NUMSTR_SOLID3; istr++)
   {
     stressnd[istr] = 0.0;
@@ -624,9 +626,11 @@ void so3_stress_extrpol(ELEMENT *ele,
             /* determine func increment due to extrapolation function
              * at Gauss point */
             /* initialise increment/contribution of current Gauss point */
-            /* IMPORTANT: The calling sequence of the nir*nis Gauss points
+            /* IMPORTANT: The calling sequence of the gpnumr*gpnums*gpnumt 
+             *            Gauss points
              *            must be indentically as in the superroutine
-             *            th2_stress_cal, as the heat fluxes are stored
+             *            so3_stress & so3_shape_gpshade, 
+             *            as the stresses are stored
              *            in a vector
              */
             for (istr=0; istr<NUMSTR_SOLID3; istr++)

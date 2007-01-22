@@ -50,7 +50,9 @@ possible). You might want to start reading the file from there.
 #ifdef D_WALLGE
 #include "../wallge/wallge.h"
 #endif /*D_WALLGE*/
-
+#ifdef D_SOLID3
+#include "../solid3/solid3.h"
+#endif /*D_SOLID3*/
 
 static CHAR* UNDERLINE = "________________________________________________________________________________\n\n";
 static CHAR* DBLLINE   = "================================================================================\n";
@@ -255,6 +257,9 @@ static void post_out_general(FILE* out, PROBLEM_DATA* problem)
         break;
       case el_wallge:
         fprintf(out,"ELE glob_Id %6d loc_Id %6d WALLGE\n",Id,j);
+        break;
+      case el_solid3:
+        fprintf(out,"ELE glob_Id %6d loc_Id %6d SOLID3\n",Id,j);
         break;
       default:
         dserror("Cannot print elementtype");
@@ -641,27 +646,50 @@ static void post_out_sol(FILE* out, RESULT_DATA* result)
       CHAR* wallge_stresstypenames[] = WALLGE_STRESSTYPE;
       TRANSLATION_TABLE wallge_stresstype;
 #endif
-
+#ifdef D_SOLID3
+      CHAR* so3_stresstypenames[] = SOLID3_STRESSTYPE;
+      TRANSLATION_TABLE so3_stresstype;
+#endif
 
 #ifdef D_WALL1
-      init_translation_table(&w1_stresstype,
-                             map_read_map(field->group, "w1_stresstypes"),
-                             w1_stresstypenames);
+      if (map_has_string(field->group, "w1_stresstypes", "yes"))
+      {
+        init_translation_table(&w1_stresstype,
+                               map_read_map(field->group, "w1_stresstypes"),
+                               w1_stresstypenames);
+      }
 #endif
 #ifdef D_BRICK1
-      init_translation_table(&c1_stresstype,
-                             map_read_map(field->group, "c1_stresstypes"),
-                             c1_stresstypenames);
+      if (map_has_string(field->group, "c1_stresstypes", "yes"))
+      {
+        init_translation_table(&c1_stresstype,
+                               map_read_map(field->group, "c1_stresstypes"),
+                               c1_stresstypenames);
+      }
 #endif
 #ifdef D_INTERF
-      init_translation_table(&interf_stresstype,
-                             map_read_map(field->group, "interf_stresstypes"),
-                             interf_stresstypenames);
+      if (map_has_string(field->group, "interf_stresstypes", "yes"))
+      {
+        init_translation_table(&interf_stresstype,
+                               map_read_map(field->group, "interf_stresstypes"),
+                               interf_stresstypenames);
+      }
 #endif
 #ifdef D_WALLGE
-      init_translation_table(&wallge_stresstype,
-                             map_read_map(field->group, "wallge_stresstypes"),
-                             wallge_stresstypenames);
+      if (map_has_string(field->group, "wallge_stresstypes", "yes"))
+      {
+        init_translation_table(&wallge_stresstype,
+                               map_read_map(field->group, "wallge_stresstypes"),
+                               wallge_stresstypenames);
+      }
+#endif
+#ifdef D_SOLID3
+      if (map_has_string(field->group, "so3_stresstypes", "yes"))
+      {
+        init_translation_table(&so3_stresstype,
+                               map_read_map(field->group, "so3_stresstypes"),
+                               so3_stresstypenames);
+      }
 #endif
 
 
@@ -749,8 +777,15 @@ static void post_out_sol(FILE* out, RESULT_DATA* result)
         {
           INT i;
 
+          INT nGP[3];
           INT stresstype;
           INT ngauss;
+
+          /* number of Gauss points */
+          nGP[0] = field->ele_param.size_buf[brick1_variables.ep_size_nGP0];
+          nGP[1] = field->ele_param.size_buf[brick1_variables.ep_size_nGP1];
+          nGP[2] = field->ele_param.size_buf[brick1_variables.ep_size_nGP2];
+          ngauss = nGP[0] * nGP[1] * nGP[2];
 
           /*
            * get the element's stress type and translate in to
@@ -1014,6 +1049,72 @@ static void post_out_sol(FILE* out, RESULT_DATA* result)
         }
 #endif /*D_WALLGE*/
 
+#ifdef D_SOLID3
+        case el_solid3:
+        {
+          INT i;
+          INT stresstype;
+          INT ngauss;
+
+          /* get total number of Gauss points of element */
+          /* This is independent of hex and tet elements. */
+          ngauss = field->ele_param.size_buf[solid3_variables.ep_size_gptot];
+
+          /*
+           * get the element stress type and translate to
+           * internal */
+          stresstype = field->ele_param.size_buf[solid3_variables.ep_size_stresstype];
+          stresstype = so3_stresstype.table[stresstype];
+
+          fprintf(out,UNDERLINE);
+          fprintf(out,"Element glob_Id %d loc_Id %d                SOLID3\n", Id, j);
+          fprintf(out,"\n");
+
+          switch (stresstype)
+          {
+          case so3_stress_none:
+            break;
+          case so3_stress_gpxyz:
+            /* Gauss points coordinates cannot be printed, because
+             * their data are not stored, cf. io_packing.c etc.
+             * We'll print 0.0 instead. */
+            fprintf(out, "INT.point   x-coord.     y-coord.     z-coord. "
+                         "    stress-xx    stress-yy    stress-zz"
+                         "    stress-xy    stress-yz    stress-zx\n");
+            for (i=0; i<ngauss; i++)
+            {
+              fprintf(out,"  %-6d %12.3E %12.3E %12.3E "
+                      "%12.3E %12.3E %12.3E "
+                      "%12.3E %12.3E %12.3E \n",
+                      i,  /* Gauss point 1-based index */
+                      0.0,  /* x-coord */
+                      0.0,  /* y-coord */
+                      0.0,  /* z-ccord */
+                      chunk.value_buf[i+0],  /* stress-xx */
+                      chunk.value_buf[i+1],  /* stress-yy */
+                      chunk.value_buf[i+2],  /* stress-zz */
+                      chunk.value_buf[i+3],  /* stress-xy */
+                      chunk.value_buf[i+4],  /* stress-yz */
+                      chunk.value_buf[i+5]);  /* stress-zx */
+            }
+            break;
+          case so3_stress_gprst:
+          case so3_stress_gp123:
+          case so3_stress_ndrst:
+          case so3_stress_nd123:
+          case so3_stress_ndxyz:
+            dserror("The stress type '%s' is not available", 
+                    so3_stresstypenames[stresstype]);
+            /* This stress cannot be printed as the data are not stored.
+             * Look at so3_out_stress(...) if this will ever be required */    
+            break;
+          default:
+            fprintf(out,"no stresses available\n");
+          }
+          break;
+        }
+#endif /*D_SOLID3*/
+
         default:
           dserror("unknown type of element");
           break;
@@ -1022,17 +1123,35 @@ static void post_out_sol(FILE* out, RESULT_DATA* result)
 
       destroy_chunk_data(&chunk);
 
+#ifdef D_SOLID3
+      if (map_has_string(field->group, "so3_stresstypes", "yes"))
+      {
+        destroy_translation_table(&so3_stresstype);
+      }
+#endif
 #ifdef D_WALLGE
-      destroy_translation_table(&wallge_stresstype);
+      if (map_has_string(field->group, "wallge_stresstypes", "yes"))
+      {
+        destroy_translation_table(&wallge_stresstype);
+      }
 #endif
 #ifdef D_INTERF
-      destroy_translation_table(&interf_stresstype);
+      if (map_has_string(field->group, "interf_stresstypes", "yes"))
+      {
+        destroy_translation_table(&interf_stresstype);
+      }
 #endif
 #ifdef D_BRICK1
-      destroy_translation_table(&c1_stresstype);
+      if (map_has_string(field->group, "c1_stresstypes", "yes"))
+      {
+        destroy_translation_table(&c1_stresstype);
+      }
 #endif
 #ifdef D_WALL1
-      destroy_translation_table(&w1_stresstype);
+      if (map_has_string(field->group, "w1_stresstypes", "yes"))
+      {
+        destroy_translation_table(&w1_stresstype);
+      }
 #endif
     }
   }

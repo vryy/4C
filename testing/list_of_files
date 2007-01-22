@@ -85,6 +85,10 @@ Input/shell9_el_lay_eans.dat            x        x        x        x        -   
 Input/shell9_epc.dat                    x        x        x        x        -        -
 Input/shell9_kreuz_easnl.dat            x        x        x        x        -        -
 Input/shell9_matnl.dat                  x        x        x        x        -        -
+Input/so3_elast.dat                     x        -        x        -        -        -
+Input/so3_elast_geonln.dat              x        -        x        -        -        -
+Input/so3_elast_geonln_sd.dat           x        -        x        -        -        -
+Input/so3_neum_geonln.dat               x        -        x        -        -        -
 Input/ssi_mortar_canti.dat              x        -        x        -        -        -
 Input/struct2ml_ifvers.dat              x        -        x        -        -        -
 Input/tsi_th2sta_w1dyn_3ele.dat         x        -        x        -        -        -

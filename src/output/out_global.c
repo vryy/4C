@@ -934,7 +934,7 @@ for (j=0; j<actfield->dis[disnum].numele; j++)
 
    case el_solid3:
 #ifdef D_SOLID3
-       so3_out_stress(actele, place, out);
+       so3_out_stress(actele, out);
 #endif /*D_SOLID3*/
    break;
 

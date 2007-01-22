@@ -295,10 +295,10 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    break;
 #endif
    case el_none:
-      dserror("Typ of element unknown");
+      dserror("Type of element is 'el_none'");
    break;
    default:
-      dserror("Typ of element unknown");
+      dserror("Type of element %d unknown", actele->eltyp);
    }/* end of calling elements */
 }
 /*----------------------------------------------------------------------*/
@@ -1409,11 +1409,11 @@ for (i=0; i<actpart->pdis[0].numele; i++)
    break;
 #endif
    case el_none:
-      dserror("Typ of element unknown");
+      dserror("Typ of element is 'el_none'");
    break;
 
    default:
-      dserror("Typ of element unknown");
+      dserror("Typ of element %d unknown", actele->eltyp);
    }/* end of calling elements */
 }
 /*----------------------------------------------------------------------*/

@@ -785,7 +785,8 @@ OBJS_POST_GID_COMMON = src/post_gid/post_gid.o \
                 src/post_gid/post_shell8.o \
                 src/post_gid/post_shell9.o \
                 src/post_gid/post_wall1.o \
-                src/post_gid/post_wallge.o
+                src/post_gid/post_wallge.o \
+                src/post_gid/post_solid3.o
 
 OBJS_POST_GID_BIN = src/post_gid/gid_out.o \
                 src/post_gid/zlibint1.o \

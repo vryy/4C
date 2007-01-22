@@ -140,24 +140,24 @@ void solid3(PARTITION *actpart,
     case calc_struct_linstiff:
       actmat = &(mat[ele->mat-1]);
       so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
-      so3_int_fintstiffmass(container, ele, &(so3_gpshade), actmat, 
-                            NULL, estif_global, NULL);
+      so3_int_fintstifmass(container, ele, &(so3_gpshade), actmat, 
+                           NULL, estif_global, NULL);
       break;
     /*------------------------------------------------------------------*/
     /* nonlinear stiffness matrix */
     case calc_struct_nlnstiff:
       actmat = &(mat[ele->mat-1]);
       so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
-      so3_int_fintstiffmass(container, ele, &(so3_gpshade), actmat, 
-                            NULL, estif_global, NULL);
+      so3_int_fintstifmass(container, ele, &(so3_gpshade), actmat, 
+                           eforc_global, estif_global, NULL);
       break;
     /*------------------------------------------------------------------*/
     /* linear stiffness and consistent mass matrix */
     case calc_struct_linstiffmass:
       actmat = &(mat[ele->mat-1]);
       so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
-      so3_int_fintstiffmass(container, ele, &(so3_gpshade), actmat, 
-                            eforc_global, estif_global, emass_global);
+      so3_int_fintstifmass(container, ele, &(so3_gpshade), actmat, 
+                           eforc_global, estif_global, emass_global);
       break;
     /*------------------------------------------------------------------*/
     /* calculate linear stiffness and lumped mass matrix */
@@ -165,16 +165,16 @@ void solid3(PARTITION *actpart,
       dserror("Lumped mass matrix is not implemented");
       actmat = &(mat[ele->mat-1]);
       so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
-      so3_int_fintstiffmass(container, ele, &(so3_gpshade), actmat, 
-                            eforc_global, estif_global, emass_global);
+      so3_int_fintstifmass(container, ele, &(so3_gpshade), actmat, 
+                           eforc_global, estif_global, emass_global);
       break;
     /*------------------------------------------------------------------*/
     /* internal forces, nonlinear stiffness and mass matrix */
     case calc_struct_nlnstiffmass:
       actmat = &(mat[ele->mat-1]);
       so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
-      so3_int_fintstiffmass(container, ele, &(so3_gpshade), actmat, 
-                            eforc_global, estif_global, emass_global);
+      so3_int_fintstifmass(container, ele, &(so3_gpshade), actmat, 
+                           eforc_global, estif_global, emass_global);
       break;
     /*------------------------------------------------------------------*/
     /* load vector of element loads */

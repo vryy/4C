@@ -389,7 +389,9 @@ void so3_metr_rot(DOUBLE xjm[NDIM_SOLID3][NDIM_SOLID3],
    *          frame.
    *          Thus rotation matrix is transposed
    *          (and left and right stretch are switched) */
+#if 0
   so3_tns3_plrdcmp(xjm, xrm, NULL, NULL);
+#endif
 
   /*--------------------------------------------------------------------*/
   /* rotation matrix R in components (accounting for transposedness) */

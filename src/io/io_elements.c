@@ -1153,6 +1153,66 @@ static void setup_wallge_variables(INT version, WALLGE_VARIABLES* vars)
 /*======================================================================*/
 /*======================================================================*/
 
+#ifdef D_SOLID3
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Variables that describe the structure of the solid3 output.
+
+  The only instance of this structure.
+
+  \author u.kue
+  \date 01/07
+  \sa setup_solid3_variables
+ */
+/*----------------------------------------------------------------------*/
+SOLID3_VARIABLES solid3_variables;
+
+
+static void setup_solid3_variables(INT version, SOLID3_VARIABLES* vars)
+{
+#ifdef DEBUG
+  dstrc_enter("setup_solid3_variables");
+#endif
+
+  vars->init = 1;
+  vars->version = version;
+
+  switch (version)
+  {
+  case 1:
+    vars->ep_size_gpnum0 = 4;
+    vars->ep_size_gpnum1 = 5;
+    vars->ep_size_gpnum2 = 6;
+    vars->ep_size_gptot = 7;
+    vars->ep_size_stresstype = 8;
+
+    /* the length of the integer and the double entry */
+    vars->ep_size_length = 9;
+    vars->ep_value_length = 0;
+    break;
+
+  case 0:
+
+    /* Oh, no version. We are not initialized. */
+    vars->init = 0;
+    break;
+
+  default:
+    dserror("solid3 output version %d unknown", version);
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+#endif
+
+/*======================================================================*/
+/*======================================================================*/
+
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -1272,7 +1332,9 @@ void setup_element_variables_current()
 #ifdef D_WALLGE
   setup_wallge_variables(WALLGE_IO_VERSION, &wallge_variables);
 #endif
-
+#ifdef D_SOLID3
+  setup_solid3_variables(SOLID3_IO_VERSION, &solid3_variables);
+#endif
 
 #ifdef DEBUG
   dstrc_exit();
@@ -1536,6 +1598,19 @@ void setup_element_variables_map(MAP* group)
     setup_wallge_variables(0, &wallge_variables);
   }
 #endif
+#ifdef D_SOLID3
+  if (map_symbol_count(group, "solid3_version") > 0)
+  {
+    setup_solid3_variables(map_read_int(group, "solid3_version"),
+                           &solid3_variables);
+  }
+  else
+  {
+    /* maybe the reader known more elements than ccarat when it wrote
+     * the files */
+    setup_solid3_variables(0, &solid3_variables);
+  }
+#endif
 
 
 #ifdef DEBUG
@@ -1614,6 +1689,9 @@ void out_print_element_versions(FILE* file)
 #endif
 #ifdef D_WALLGE
   fprintf(file, "wallge_version = %d\n", WALLGE_IO_VERSION);
+#endif
+#ifdef D_SOLID3
+  fprintf(file, "solid3_version = %d\n", SOLID3_IO_VERSION);
 #endif
   fprintf(file, "\n");
 

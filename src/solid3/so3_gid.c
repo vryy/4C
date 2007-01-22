@@ -140,9 +140,6 @@ void so3_gid_msh(FIELD *actfield,
                  GIDSET *actgid,
                  FILE *out)
 {
-  ELEMENT *actele;
-  INT j, k;  /* loop index */
-
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_enter("so3_gid_msh");
@@ -152,80 +149,22 @@ void so3_gid_msh(FIELD *actfield,
   /* hexahedron element with 8 nodes and 2x2x2 Gauss points */
   if (actgid->is_solid3_h8_222)
   {
-    fprintf(out, "#-------------------------------------------------------------------------------\n");
-    fprintf(out, "# MESH %s FOR FIELD %s, DIS %1i: SOLID3 HEX8 2x2x2 GP\n",
-            actgid->solid3_h8_222_name, actgid->fieldname, ldis);
-    fprintf(out, "#-------------------------------------------------------------------------------\n");
-    fprintf(out, "MESH %s_dis_%1i DIMENSION 3 ELEMTYPE Hexahedra NNODE 8\n",
-            actgid->solid3_h8_222_name, ldis);
-    /* print elements */
-    fprintf(out, "ELEMENTS\n");
-    for (j=0; j<actfield->dis[ldis].numele; j++)
-    {
-      actele = &(actfield->dis[ldis].element[j]);
-      if ( (actele->eltyp == el_solid3) && (actele->numnp == 8) )
-      {
-        fprintf(out, " %6d ", actele->Id+1);
-        for (k=0; k<actele->numnp; k++)
-          fprintf(out, "%6d ", actele->node[k]->Id+1);
-        fprintf(out, "\n");
-      }
-    }
-    fprintf(out,"END ELEMENTS\n");
+    so3_gid_msh_val(actfield, actgid->solid3_h8_222_name, ldis,
+                    actgid, "HEX8 2x2x2", "Hexahedra", 8, out);
   }
   /*--------------------------------------------------------------------*/
   /* hexahedron element with 20 nodes and 3x3x3 Gauss points */
   if (actgid->is_solid3_h20_333)
   {
-    fprintf(out, "#-------------------------------------------------------------------------------\n");
-    fprintf(out, "# MESH %s FOR FIELD %s, DIS %1i: SOLID3 HEX20 3x3x3 GP\n",
-            actgid->solid3_h20_333_name, actgid->fieldname, ldis);
-    fprintf(out, "#-------------------------------------------------------------------------------\n");
-    fprintf(out, "MESH %s_dis_%1i DIMENSION 3 ELEMTYPE Hexahedra NNODE %d\n",
-            actgid->solid3_h20_333_name, ldis, 20);
-    /* print elements */
-    fprintf(out, "ELEMENTS\n");
-    for (j=0; j<actfield->dis[ldis].numele; j++)
-    {
-      actele = &(actfield->dis[ldis].element[j]);
-      if ( (actele->eltyp == el_solid3) && (actele->numnp == 20) )
-      {
-        fprintf(out, " %6d ", actele->Id+1);
-        for (k=0; k<actele->numnp; k++)
-        {
-          fprintf(out, "%6d ", actele->node[k]->Id+1);
-        }
-        fprintf(out, "\n");
-      }
-    }
-    fprintf(out, "END ELEMENTS\n");
+    so3_gid_msh_val(actfield, actgid->solid3_h20_333_name, ldis,
+                    actgid, "HEX20 3x3x3", "Hexahedra", 20, out);
   }
   /*--------------------------------------------------------------------*/
   /* hexahedron element with 27 nodes and 3x3x3 Gauss points */
   if (actgid->is_solid3_h27_333)
   {
-    fprintf(out, "#-------------------------------------------------------------------------------\n");
-    fprintf(out, "# MESH %s FOR FIELD %s, DIS %1i: SOLID3 HEX27 3x3x3 GP\n",
-            actgid->solid3_h27_333_name, actgid->fieldname, ldis);
-    fprintf(out, "#-------------------------------------------------------------------------------\n");
-    fprintf(out, "MESH %s_dis_%1i DIMENSION 3 ELEMTYPE Hexahedra NNODE %d\n",
-            actgid->solid3_h27_333_name, ldis, 27);
-    /* print elements */
-    fprintf(out, "ELEMENTS\n");
-    for (j=0; j<actfield->dis[ldis].numele; j++)
-    {
-      actele = &(actfield->dis[ldis].element[j]);
-      if ( (actele->eltyp == el_solid3) && (actele->numnp == 27) )
-      {
-        fprintf(out, " %6d ", actele->Id+1);
-        for (k=0; k<actele->numnp; k++)
-        {
-          fprintf(out, "%6d ", actele->node[k]->Id+1);
-        }
-        fprintf(out, "\n");
-      }
-    }
-    fprintf(out, "END ELEMENTS\n");
+    so3_gid_msh_val(actfield, actgid->solid3_h27_333_name, ldis,
+                    actgid, "HEX27 3x3x3", "Hexahedra", 27, out);
   }
 
   /*--------------------------------------------------------------------*/
@@ -234,6 +173,73 @@ void so3_gid_msh(FIELD *actfield,
 #endif
   return;
 }  /* end of so3_gid_msh */
+
+
+/*======================================================================*/
+/*!
+\brief Print header of Gauss point set to Gid output file
+
+\param   *actfield      FIELD       (i)   current field
+\param   *gidname       CHAR        (i)   Gid result identifier
+\param    ldis          INT         (i)   discretisation index
+\param   *actgid        GIDSET      (i)   Gid data
+\param   *disname       CHAR        (i)   string of kind "HEX8 2x2x2"
+\param   *volname       CHAR        (i)   "Hexahedra"/"Tetrahedra"
+\param    nelenod       INT         (i)   number of element nodes
+\param   *out           FILE        (o)   Gid output file
+
+\return void
+
+\author bborn
+\date 10/06
+*/
+void so3_gid_msh_val(FIELD *actfield,
+                     CHAR *gidname,
+                     INT ldis,
+                     GIDSET *actgid,
+                     CHAR *disname,
+                     CHAR *volname,
+                     INT nelenod,
+                     FILE *out)
+{
+  ELEMENT *actele;
+  INT j, k;  /* loop index */
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_enter("so3_gid_msh_val");
+#endif
+
+  /*--------------------------------------------------------------------*/
+  fprintf(out, "#-------------------------------------------------------------------------------\n");
+  fprintf(out, "# MESH %s FOR FIELD %s, DIS %1i: SOLID3 %s\n",
+          gidname, actgid->fieldname, ldis, disname);
+  fprintf(out, "#-------------------------------------------------------------------------------\n");
+  fprintf(out, "MESH %s_dis_%1i DIMENSION 3 ELEMTYPE %s NNODE %d\n",
+          gidname, ldis, volname, nelenod);
+  /* print elements */
+  fprintf(out, "ELEMENTS\n");
+  for (j=0; j<actfield->dis[ldis].numele; j++)
+  {
+    actele = &(actfield->dis[ldis].element[j]);
+    if ( (actele->eltyp == el_solid3) && (actele->numnp == nelenod) )
+    {
+      fprintf(out, " %6d ", actele->Id+1);
+      for (k=0; k<actele->numnp; k++)
+      {
+        fprintf(out, "%6d ", actele->node[k]->Id+1);
+      }
+      fprintf(out, "\n");
+    }
+  }
+  fprintf(out,"END ELEMENTS\n");
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}  /* end of so3_gid_msh_p */
 
 
 /*======================================================================*/
@@ -264,31 +270,25 @@ void so3_gid_gpset(INT jdis,
   /* hexahedron element with 8 nodes and 2x2x2 Gauss points */
   if (actgid->is_solid3_h8_222)
   {
-    fprintf(out, "#-------------------------------------------------------------------------------\n");
-    fprintf(out, "# GAUSSPOINTSET FOR FIELD %s DIS %1i SOLID3 2x2x2 GP\n",
-            actgid->fieldname, jdis);
-    fprintf(out, "#-------------------------------------------------------------------------------\n");
-    fprintf(out, "GAUSSPOINTS \"%s_dis_%1i\" ELEMTYPE Hexahedra \"%s_dis_%1i\"\n",
-            actgid->solid3_h8_222_name, jdis, 
-            actgid->solid3_h8_222_name, jdis);
-    fprintf(out, "NUMBER OF GAUSS POINTS: 8\n");
-    fprintf(out, "NATURAL COORDINATES: Internal\n");
-    fprintf(out, "END GAUSSPOINTS\n");
+    so3_gid_gpset_int(actgid, jdis, "2x2x2", 
+                      actgid->solid3_h8_222_name,
+                      "Hexahedra", 8, out);
   }
   /*--------------------------------------------------------------------*/
   /* hexahedron element with 20 nodes and 3x3x3 Gauss points */
   if (actgid->is_solid3_h20_333)
   {
-    fprintf(out,"#-------------------------------------------------------------------------------\n");
-    fprintf(out,"# GAUSSPOINTSET FOR FIELD %s DIS %1i SOLID3 3x3x3 GP\n",
-            actgid->fieldname, jdis);
-    fprintf(out,"#-------------------------------------------------------------------------------\n");
-    fprintf(out,"GAUSSPOINTS \"%s_dis_%1i\" ELEMTYPE Hexahedra \"%s_dis_%1i\"\n",
-            actgid->solid3_h20_333_name, jdis,
-            actgid->solid3_h20_333_name, jdis);
-    fprintf(out, "NUMBER OF GAUSS POINTS: 27\n");
-    fprintf(out, "NATURAL COORDINATES: Internal\n");
-    fprintf(out, "END GAUSSPOINTS\n");
+    so3_gid_gpset_int(actgid, jdis, "3x3x3", 
+                      actgid->solid3_h20_333_name,
+                      "Hexahedra", 27, out);
+  }
+  /*--------------------------------------------------------------------*/
+  /* hexahedron element with 27 nodes and 3x3x3 Gauss points */
+  if (actgid->is_solid3_h27_333)
+  {
+    so3_gid_gpset_int(actgid, jdis, "3x3x3", 
+                      actgid->solid3_h27_333_name,
+                      "Hexahedra", 27, out);
   }
 
   /*--------------------------------------------------------------------*/
@@ -297,6 +297,55 @@ void so3_gid_gpset(INT jdis,
 #endif
   return;
 }  /* end void so3_gid_gpset */
+
+
+/*======================================================================*/
+/*!
+\brief Print header of Gauss point set to Gid output file
+
+\param   *actgid        GIDSET      (i)   Gid data (incl. GP sets)
+\param    jdis          INT         (i)   discretisation index
+\param   *gpname        CHAR        (i)   string like "2x2x2" for GP
+\param   *gidname       CHAR        (i)   
+\param   *volname       CHAR        (i)   "Hexahedra"/"Tetrahedra"
+\param    ngauss        INT         (i)   number of Gauss points in domain
+\param   *out           FILE        (o)   Gid output file
+
+\return void
+
+\author bborn
+\date 01/07
+*/
+void so3_gid_gpset_int(GIDSET *actgid,
+                       INT jdis,
+                       CHAR *gpname,
+                       CHAR *gidname,
+                       CHAR *volname,
+                       INT ngauss,
+                       FILE *out)
+{
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_enter("so3_gid_gpset_p");
+#endif
+
+  fprintf(out, "#-------------------------------------------------------------------------------\n");
+  fprintf(out, "# GAUSSPOINTSET FOR FIELD %s DIS %1i SOLID3 %s GP\n",
+          actgid->fieldname, jdis, gpname);
+  fprintf(out, "#-------------------------------------------------------------------------------\n");
+  fprintf(out, "GAUSSPOINTS \"%s_dis_%1i\" ELEMTYPE %s \"%s_dis_%1i\"\n",
+          gidname, jdis, volname, gidname, jdis);
+  fprintf(out, "NUMBER OF GAUSS POINTS: %d\n", ngauss);
+  fprintf(out, "NATURAL COORDINATES: Internal\n");
+  fprintf(out, "END GAUSSPOINTS\n");
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}  /* end void so3_gid_gpset_int */
 
 
 
@@ -318,9 +367,8 @@ void so3_gid_dom(FIELD *actfield,
                  GIDSET *actgid,
                  FILE *out)
 {
-  INT ngauss;
-  INT i, j;  /* loop index */
-  ELEMENT *actele;  /* current element */
+  INT nnode;  /* number of element nodes */
+  INT ngauss;  /* number of Gauss points in its domain */
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -331,57 +379,28 @@ void so3_gid_dom(FIELD *actfield,
   /* hexahedron element with 8 nodes and 2x2x2 Gauss points */
   if (actgid->is_solid3_h8_222)
   {
+    nnode = 8;
     ngauss = 8;
-    /* print header */
-    fprintf(out, "#-------------------------------------------------------------------------------\n");
-    fprintf(out, "# RESULT Domains on DIS %1i, MESH %s\n",
-            disnum, actgid->solid3_h8_222_name);
-    fprintf(out, "#-------------------------------------------------------------------------------\n");
-    fprintf(out, "RESULT \"Domains\" \"ccarat\" 0 SCALAR ONGAUSSPOINTS \"%s_dis_%1i\"\n",
-            actgid->solid3_h8_222_name, disnum);
-    /* print values */
-    fprintf(out, "VALUES\n");
-    for (i=0; i<actfield->dis[disnum].numele; i++)
-    {
-      actele = &(actfield->dis[disnum].element[i]);
-      if ( (actele->eltyp == el_solid3) && (actele->numnp == 8) )
-      {
-        fprintf(out, "    %6d  %18.5E\n", actele->Id+1, (DOUBLE)actele->proc);
-        for (j=1; j<ngauss; j++)
-        {
-          fprintf(out, "            %18.5E\n", (DOUBLE)actele->proc);
-        }
-      }
-    }
-    fprintf(out, "END VALUES\n");
+    so3_gid_dom_val(actfield, disnum, actgid->solid3_h8_222_name,
+                    actgid, nnode, ngauss, out);
   }
   /*--------------------------------------------------------------------*/
   /* hexahedron element with 20 nodes and 3x3x3 Gauss points */
   if (actgid->is_solid3_h20_333)
   {
+    nnode = 20;
     ngauss = 27;
-    /* print header */
-    fprintf(out, "#-------------------------------------------------------------------------------\n");
-    fprintf(out, "# RESULT Domains on DIS %1i, MESH %s\n",
-            disnum, actgid->solid3_h20_333_name);
-    fprintf(out, "#-------------------------------------------------------------------------------\n");
-    fprintf(out, "RESULT \"Domains\" \"ccarat\" 0 SCALAR ONGAUSSPOINTS \"%s_dis_%1i\"\n",
-            actgid->solid3_h20_333_name, disnum);
-    /* print values */
-    fprintf(out, "VALUES\n");
-    for (i=0; i<actfield->dis[disnum].numele; i++)
-    {
-      actele = &(actfield->dis[disnum].element[i]);
-      if ( (actele->eltyp == el_solid3) && (actele->numnp == 20) )
-      {
-        fprintf(out, "    %6d  %18.5E\n", actele->Id+1, (DOUBLE)actele->proc);
-        for (j=1; j<ngauss; j++)
-        {
-          fprintf(out, "            %18.5E\n", (DOUBLE)actele->proc);
-        }
-      }
-    }
-    fprintf(out,"END VALUES\n");
+    so3_gid_dom_val(actfield, disnum, actgid->solid3_h20_333_name,
+                    actgid, nnode, ngauss, out);
+  }
+  /*--------------------------------------------------------------------*/
+  /* hexahedron element with 27 nodes and 3x3x3 Gauss points */
+  if (actgid->is_solid3_h27_333)
+  {
+    nnode = 27;
+    ngauss = 27;
+    so3_gid_dom_val(actfield, disnum, actgid->solid3_h27_333_name,
+                    actgid, nnode, ngauss, out);
   }
 
   /*--------------------------------------------------------------------*/
@@ -391,6 +410,70 @@ void so3_gid_dom(FIELD *actfield,
   return;
 }  /* end void so3_gid_dom */
 
+
+/*======================================================================*/
+/*!
+\brief Print header for domain section
+
+\param   *actfield      FIELD       (i)   current field
+\param    disnum        INT         (i)   discretisation index
+\param   *gidname       CHAR        (i)   Gid result identifier
+\param   *actgid        GIDSET      (i)   Gid data
+\param    nelenod       INT         (i)   element nodes
+\param    ngauss        INT         (i)   number of Gauss points
+\param   *out           FILE        (o)   Gid output file
+
+\return void
+
+\author bborn
+\date 01/07
+*/
+void so3_gid_dom_val(FIELD *actfield,
+                     INT disnum,
+                     CHAR *gidname,
+                     GIDSET *actgid,
+                     INT nelenod,
+                     INT ngauss,
+                     FILE *out)
+{
+  INT i, j;  /* loop index */
+  ELEMENT *actele;  /* current element */
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_enter("so3_gid_dom_val");
+#endif
+
+  /*--------------------------------------------------------------------*/
+  /* print header */
+  fprintf(out, "#-------------------------------------------------------------------------------\n");
+  fprintf(out, "# RESULT Domains on DIS %1i, MESH %s\n",
+          disnum, gidname);
+  fprintf(out, "#-------------------------------------------------------------------------------\n");
+  fprintf(out, "RESULT \"Domains\" \"ccarat\" 0 SCALAR ONGAUSSPOINTS \"%s_dis_%1i\"\n",
+          gidname, disnum);
+  /* print values */
+  fprintf(out, "VALUES\n");
+  for (i=0; i<actfield->dis[disnum].numele; i++)
+  {
+    actele = &(actfield->dis[disnum].element[i]);
+    if ( (actele->eltyp == el_solid3) && (actele->numnp == nelenod) )
+    {
+      fprintf(out, "    %6d  %18.5E\n", actele->Id+1, (DOUBLE)actele->proc);
+      for (j=1; j<ngauss; j++)
+      {
+        fprintf(out, "            %18.5E\n", (DOUBLE)actele->proc);
+      }
+    }
+  }
+  fprintf(out, "END VALUES\n");
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}  /* end void so3_gid_dom_val */
 
 
 
@@ -417,8 +500,6 @@ void so3_gid_stress(CHAR resstring[],
                     GIDSET *actgid,
                     FILE *out)
 {
-  const INT place = 0;
-
   INT ngauss;  /* number of Gauss points in element domain */
   INT nelenod;  /* number of element nodes */
   CHAR *resultname;
@@ -568,7 +649,7 @@ void so3_gid_stress(CHAR resstring[],
                           so3_stress_gpxyz, resultname, step,
                           resulttype, resultplace, gpset,
                           ncomponent, componentnames,
-                          nelenod, gperm, ngauss, place, out);
+                          nelenod, gperm, ngauss, out);
         break;
       /* catch the remaining stress types */
       default:
@@ -698,7 +779,57 @@ void so3_gid_stress(CHAR resstring[],
                           so3_stress_gpxyz, resultname, step,
                           resulttype, resultplace, gpset,
                           ncomponent, componentnames,
-                          nelenod, gperm, ngauss, place, out);
+                          nelenod, gperm, ngauss, out);
+        break;
+      /* catch the remains */
+      default:
+        fprintf(out,"# no stresses available\n");
+        break;
+    }  /* end switch */
+  }  /* end if */
+  /*--------------------------------------------------------------------*/
+  /* hexahderon element with 27 nodes and 3x3x3 Gauss points */
+  if (actgid->is_solid3_h27_333)
+  {
+    /*check only first element and assume, that the others are the same*/
+    actele = &(actfield->dis[disnum].element[0]);
+    switch(actele->e.so3->stresstype)
+    {
+      /* equivalent stress */
+      case so3_stress_ndeqv:
+        dserror("Equivalent stresses at element nodes are not available!");
+        break;
+      /* xyz-oriented stresses at nodes */
+      case so3_stress_ndxyz:
+        dserror("xyz-oriented stresses at global nodes are not available!");
+        break;
+      /* parameter-space rst-oriented stresses at nodes */
+      case so3_stress_ndrst:
+        dserror("rst-oriented stresses at global nodes are not available!");
+        break;
+      /* xyz-oriented stresses at Gauss points */
+      case so3_stress_gpxyz:
+        resultname        = "solid3_stress";
+        resulttype        = "MATRIX";
+        resultplace       = "ONGAUSSPOINTS";
+        gpset             = actgid->solid3_h27_333_name;
+        rangetable        = actgid->standardrangetable;
+        ncomponent        = 6;
+        componentnames[0] = "Stress-xx";
+        componentnames[1] = "Stress-yy";
+        componentnames[2] = "Stress-zz";
+        componentnames[3] = "Stress-xy";
+        componentnames[4] = "Stress-yz";
+        componentnames[5] = "Stress-zx";
+        nelenod           = 27;
+        gperm             = &(gperm_h_333[0]);
+        ngauss            = 27;
+        /* print */
+        so3_gid_stress_gp(actfield, disnum, actele, actgid, 
+                          so3_stress_gpxyz, resultname, step,
+                          resulttype, resultplace, gpset,
+                          ncomponent, componentnames,
+                          nelenod, gperm, ngauss, out);
         break;
       /* catch the remains */
       default:
@@ -746,7 +877,6 @@ void so3_gid_stress_gp(FIELD *actfield,
                        INT nelenod,
                        INT *gperm,
                        INT ngauss,
-                       INT place,
                        FILE *out)
 {
   INT icomp;
@@ -786,16 +916,16 @@ void so3_gid_stress_gp(FIELD *actfield,
   {
     /* pointer to current element */
     actele = &(actfield->dis[disnum].element[iele]);
-    /* print heat fluxes */
+    /* print stresses */
     if ( (actele->eltyp == el_solid3) && (actele->numnp == nelenod) )
     {
       if (stresstype == so3_stress_gpxyz)
       {
-        stress = actele->e.so3->stress_gpxyz.a.d3[place];
+        stress = actele->e.so3->stress_gpxyz.a.da;
       }
       else if (stresstype == so3_stress_gprst)
       {
-        stress = actele->e.so3->stress_gprst.a.d3[place];
+        stress = actele->e.so3->stress_gprst.a.da;
       }
       else
       {
