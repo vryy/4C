@@ -164,6 +164,58 @@ case 1: /* calculation */
 
 break;
 
+case 2:
+/* experimental post-processing due to
+ * M. Krizek, L. Liu, P. Neittaanmäki: "Post-processing of Gauss-Seidel iterations",
+ * Numer. Linear Algebra Appl., 6, 147-156 (1999)
+ * */
+{
+  DOUBLE q = 0.;
+  INT counter = 0;
+
+  if (itnum==0)
+    aminit(&del_a,&done);
+
+  ipos = &(structfield->dis[disnum].ipos);
+
+  /* the solution history sol_mf of the structfield:
+     - sol_mf[0][j] holds the latest struct-displacements
+     - sol_mf[1][j] holds the (relaxed) displacements of the last iteration step
+   */
+
+  /* loop structure nodes */
+  for (i=0;i<numnp_total;i++)
+  {
+    actsnode  = &(structfield->dis[disnum].node[i]);
+    numdf = actsnode->numdf;
+    sol_mf = actsnode->sol_mf.a.da;
+
+    /* loop dofs and check for coupling */
+    for (j=0;j<numdf;j++)
+    {
+      dof = actsnode->dof[j];
+      dsassert(dof<numdf_total,"dofnumber not valid!\n");
+      if (sid[dof]==0) continue;
+      del2     = del[dof];
+      del[dof] = sol_mf[ipos->mf_reldisp][j] - sol_mf[ipos->mf_dispnp][j];
+
+      q += del[dof] / del2;
+      counter += 1;
+    }
+  }
+
+  q /= counter;
+  fsidyn->relax = 1. / (1 - q);
+
+  /* output to the screen */
+  if (par.myrank==0)
+    printf("\nRELAX = %.5lf\n\n",fsidyn->relax);
+
+  break;
+}
+
+default:
+  dserror("parameter %d not supported",init);
 }  /* switch (init) */
 
 
