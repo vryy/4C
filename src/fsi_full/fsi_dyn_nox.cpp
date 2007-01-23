@@ -798,11 +798,16 @@ void dyn_fsi_nox(FSI_STRUCT_WORK* struct_work,
 {
   DSTraceHelper("dyn_fsi_nox");
   // Create a communicator for Epetra objects
+#if 0
 #ifdef PARALLEL
   Epetra_MpiComm Comm(mpicomm);
 #else
   Epetra_SerialComm Comm;
 #endif
+#endif
+
+  // right now the interface is redundant anyway
+  Epetra_SerialComm Comm;
 
   // Create the interface between the test problem and the nonlinear solver
   Teuchos::RefCountPtr<FSI_InterfaceProblem> interface = Teuchos::rcp(new FSI_InterfaceProblem(Comm,struct_work,fluid_work,ale_work));
