@@ -177,6 +177,14 @@ void solid3(PARTITION *actpart,
                            eforc_global, estif_global, emass_global);
       break;
     /*------------------------------------------------------------------*/
+    /* internal forces */
+    case calc_struct_internalforce:
+      actmat = &(mat[ele->mat-1]);
+      so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
+      so3_int_fintstifmass(container, ele, &(so3_gpshade), actmat, 
+                           eforc_global, NULL, NULL);
+      break;
+    /*------------------------------------------------------------------*/
     /* load vector of element loads */
     case calc_struct_eleload:
       imyrank = actintra->intra_rank;

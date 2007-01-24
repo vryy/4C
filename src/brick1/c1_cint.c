@@ -195,10 +195,12 @@ else if(init==0)
 /*------------------------------------------- integration parameters ---*/
 c1intg(ele,data);
 /*-------------- some of the fields have to be reinitialized to zero ---*/
+if (init != 6)
+{
 amzero(estif_global);
 estif     = estif_global->a.da;
 amzero(&estiflo_a);
-
+}
 
 for (i=0; i<81; i++) fielo[i] = 0.0;
 /*------------------------------------ check calculation of mass matrix */
@@ -483,13 +485,16 @@ for (lr=0; lr<nir; lr++)
           nd1 = 3*iel + l1;
           c1_keku(estif9,bop,D,fac,nd1,numeps);
         }
-        else
+        else if (init != 6)
         {
           c1_keku(estiflo,bop,D,fac,nd,numeps);
         }
       /*------------------------------ geometric stiffness-matrix kg ---*/
         /* besser eigener kenner fuer geom. n.l.! hier T.L.Abfrage!*/
-        if(iform==2 && mat->mattyp!=m_pl_mises_ls) c1vkg (estiflo,bn,F,fac,iel);
+        if (init != 6)
+        {
+       	 if(iform==2 && mat->mattyp!=m_pl_mises_ls) c1vkg (estiflo,bn,F,fac,iel);
+        }
       /*--------------- nodal forces fi from integration of stresses ---*/
         if (force)
         {
@@ -557,12 +562,12 @@ for (lr=0; lr<nir; lr++)
 /* reorder stiffness and element forces for 'gid' element-node topo...  */
     if(iel==20)
     {
-      c1kgid(estiflo, estif);
+      if (init != 6) c1kgid(estiflo, estif);
       if (force) c1fgid(fielo,force);
     }
     else
     {
-      for (i=0; i<24; i++){
+      if (init != 6) for (i=0; i<24; i++){
       for (j=0; j<24; j++){ estif[i][j] = estiflo[i][j];}}
       if (force) for (i=0; i<24; i++) force[i] = fielo[i];
     }

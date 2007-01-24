@@ -555,6 +555,9 @@ solserv_add_vec(&(acc[0]),&(actsolv->sol[1]),dynvar.constants[2]);
 solserv_result_total(actfield,disnum,actintra, &(actsolv->sol[1]),0,
                      &(actsolv->sysarray[stiff_array]),
                      &(actsolv->sysarray_typ[stiff_array]));
+/*---------------- put the prescribed scaled displacements to the nodes */
+/*                                                    in field sol at 0 */
+solserv_putdirich_to_dof(actfield,disnum,0,0,sdyn->time);
 /*----------------- copy rhs in rhs[1] at time t to rhs[2] at time t-dt */
 solserv_copy_vec(&(actsolv->rhs[1]),&(actsolv->rhs[2]));
 /*--------------------------------------- make load at time t in rhs[1] */

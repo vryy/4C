@@ -112,6 +112,11 @@ case calc_struct_nlnstiffmass:
    c1_cint(ele,&actdata,actmat,estif_global,emass_global,intforce,5,
            container);
 break;/*----------------------------------------------------------------*/
+case calc_struct_internalforce:
+   actmat = &(mat[ele->mat-1]);
+   c1_cint(ele,&actdata,actmat,NULL,NULL,intforce,6,
+           container);
+break;/*----------------------------------------------------------------*/
 /*-------------------------------- calculate stresses in a certain step */
 case calc_struct_stress:
    actmat = &(mat[ele->mat-1]);
