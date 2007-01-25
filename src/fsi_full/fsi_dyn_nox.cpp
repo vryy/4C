@@ -15,6 +15,7 @@
 #include <NOX_Epetra_Vector.H>
 
 #include <Teuchos_XMLParameterListHelpers.hpp>
+#include <Epetra_SerialComm.h>
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -717,8 +718,8 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     //DistributeSolution dd(finalSolution,finalF,ipos->mf_dispnp);
     loop_interface(structfield,dd,finalSolution);
 
-    // Wenn der letzte Löseraufruf nicht mit der gefundenen Lösung
-    // erfolgte, müssen die Felder erst einmal neu gelöst werden.
+    // Wenn der letzte Lï¿½eraufruf nicht mit der gefundenen Lï¿½ung
+    // erfolgte, mssen die Felder erst einmal neu gelï¿½t werden.
 
     /*--------------------- update MESH data -------------------------*/
     perf_begin(44);

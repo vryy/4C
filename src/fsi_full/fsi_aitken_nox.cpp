@@ -5,6 +5,10 @@
 #include "fsi_aitken_nox.H"
 #include <NOX.H>
 
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
+
 extern "C"
 {
 #include "../headers/standardtypes.h"
