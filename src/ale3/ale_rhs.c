@@ -85,6 +85,12 @@ if (sysarray1 != -1)
 {
    switch(actsolv->sysarray_typ[sysarray1])
    {
+   case trilinos:
+      if (actsolv->sysarray[sysarray1].trilinos->couple_d_send)
+         amzero(actsolv->sysarray[sysarray1].trilinos->couple_d_send);
+      if (actsolv->sysarray[sysarray1].trilinos->couple_d_recv)
+         amzero(actsolv->sysarray[sysarray1].trilinos->couple_d_recv);
+   break;
    case msr:
       if (actsolv->sysarray[sysarray1].msr->couple_d_send)
          amzero(actsolv->sysarray[sysarray1].msr->couple_d_send);
@@ -149,6 +155,12 @@ if (sysarray2 != -1)
 {
    switch(actsolv->sysarray_typ[sysarray2])
    {
+   case trilinos:
+      if (actsolv->sysarray[sysarray2].trilinos->couple_d_send)
+         amzero(actsolv->sysarray[sysarray2].trilinos->couple_d_send);
+      if (actsolv->sysarray[sysarray2].trilinos->couple_d_recv)
+         amzero(actsolv->sysarray[sysarray2].trilinos->couple_d_recv);
+   break;
    case msr:
       if (actsolv->sysarray[sysarray2].msr->couple_d_send)
          amzero(actsolv->sysarray[sysarray2].msr->couple_d_send);
