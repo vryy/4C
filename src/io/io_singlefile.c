@@ -2875,6 +2875,16 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
   switch (*sysarray_typ)
   {
 
+#ifdef TRILINOS_PACKAGE
+  case trilinos:
+    for (i=0; i<sysarray->trilinos->numeq; ++i)
+    {
+      INT dof = sysarray->trilinos->update.a.iv[i];
+      boilerplate_code(dof);
+    }
+    break;
+#endif
+
 #ifdef AZTEC_PACKAGE
   case msr:
     for (i=0; i<sysarray->msr->numeq; ++i)
