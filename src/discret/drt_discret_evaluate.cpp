@@ -141,10 +141,13 @@ void DRT::Discretization::EvaluateNeumann(ParameterList& params, Epetra_Vector& 
   } // for (int i=0; i<NumMyColNodes(); ++i)
 
   // get the current time
+  bool usetime = true;
   const double time = params.get("total time",-1.0);
-  if (time<0.0) dserror("current time is negative or unset");
+  if (time<0.0) usetime = false;
 
+  //--------------------------------------------------------
   // loop through Point Neumann conditions and evaluate them
+  //--------------------------------------------------------
   for (int i=0; i<NumMyRowNodes(); ++i)
   {
     DRT::Node* actnode = lRowNode(i);
@@ -156,29 +159,40 @@ void DRT::Discretization::EvaluateNeumann(ParameterList& params, Epetra_Vector& 
     const int* dofs = actnode->Dof().Dofs();
     for (int j=0; j<numcond; ++j)
     {
-      cout << *conds[j];
-      vector<int>*    curve = conds[j]->GetVector<int>("curve");
-      vector<int>*    onoff = conds[j]->GetVector<int>("onoff");
-      vector<double>* val   = conds[j]->GetVector<double>("val");
+      vector<int>*    iseval = conds[j]->GetVector<int>("isevaluated");
+      if ((*iseval)[0]) continue;
+      vector<int>*    curve  = conds[j]->GetVector<int>("curve");
+      vector<int>*    onoff  = conds[j]->GetVector<int>("onoff");
+      vector<double>* val    = conds[j]->GetVector<double>("val");
+      // Neumann BCs for some historic reason only have one curve
+      int curvenum = -1;
+      if (curve) curvenum = (*curve)[0]; 
+      double curvefac = 1.0;
+      if (curvenum>=0 && usetime)
+        dyn_facfromcurve(curvenum,time,&curvefac); 
       for (int k=0; k<numdf; ++k)
       {
         if ((*onoff)[k]==0) continue;
         const int gid   = dofs[k];
         double    value = (*val)[k];
-        if ((*curve)[0])
-        {
-          const int curvenum = (*curve)[0]; // PointNeumann for some reason only has one curve
-          // brauchen hier eine c-style numerierung der kurven
-          // kucken wie die Kurven im alten Stil in der randbedingungen gelesen werden
-        }
+        value *= curvefac;
+        int lid = systemvector.Map().LID(gid);
+        systemvector[lid] += value;
       }
+      // set flag indicating that this Point Neumann condition has been evaluated
+      (*iseval)[0] = 1;
     }
-    
-    
   } // for (int i=0; i<NumMyRowNodes(); ++i)   
 
+  //--------------------------------------------------------
+  // evaluate line/surface/volume/Neumann conditions
+  //--------------------------------------------------------
+  RefCountPtr<Epetra_Vector> sysvec = rcp(&systemvector);
+  sysvec.release();
+  Evaluate(params,null,null,sysvec,null,null);
 
-
+  cout << systemvector;
+  exit(0);
 
 
   return;

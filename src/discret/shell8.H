@@ -254,6 +254,9 @@ private:
                        Epetra_SerialDenseVector* force,
                        struct _MATERIAL*         material);
   
+void s8_surfaceload(ParameterList& params,Epetra_SerialDenseVector& elevec1,
+                    const vector<double>& disp);
+
   void s8_integration_points(struct _S8_DATA& data);
   
   void s8BtDB(Epetra_SerialDenseMatrix& estif, const Epetra_SerialDenseMatrix& bop,
@@ -391,6 +394,17 @@ private:
               double akovc[][3], double akovr[][3],
               double a3kvpc[][2], double a3kvpr[][2],
               const double e3, const double condfac);
+
+  void s8_jaco(const vector<double>& funct,
+               const Epetra_SerialDenseMatrix& deriv,
+               const double x[][MAXNOD_SHELL8],
+               double xjm[][3],
+               const vector<double>& hte,
+               const double a3ref[][MAXNOD_SHELL8],
+               const double e3,
+               const int iel,
+               double* det,
+               double* deta);
 
   void s8_ans_colloquationpoints(const int nsansq, const int iel, const int ans,
                                  double xr1[], double xs1[], double xr2[], double xs2[],

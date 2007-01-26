@@ -190,7 +190,7 @@ void input_designnode_dirich(RefCountPtr<DRT::DesignDiscretization> designdis)
     {
       dirich_onoff[i] = 0;
       dirich_val[i]   = 0.0;
-      dirich_curve[i] = 0;
+      dirich_curve[i] = -1;
       dirich_funct[i] = 0;
     }
     
@@ -226,7 +226,10 @@ void input_designnode_dirich(RefCountPtr<DRT::DesignDiscretization> designdis)
       {
         ierr=1;
         if (i < MAXDOFPERNODE)
+        {
           ierr=sscanf(colptr," %d ",&dirich_curve[i]);
+          dirich_curve[i]--;
+        }
         dsassert(ierr==1,"Cannot read design-nodal dirichlet conditions");
         colptr = strpbrk(colptr,"1234567890");
         colptr++;
@@ -308,7 +311,7 @@ void input_designline_dirich(RefCountPtr<DRT::DesignDiscretization> designdis)
     {
       dirich_onoff[i] = 0;
       dirich_val[i]   = 0.0;
-      dirich_curve[i] = 0;
+      dirich_curve[i] = -1;
       dirich_funct[i] = 0;
     }
     
@@ -344,7 +347,10 @@ void input_designline_dirich(RefCountPtr<DRT::DesignDiscretization> designdis)
       {
         ierr=1;
         if (i < MAXDOFPERNODE)
+        {
           ierr=sscanf(colptr," %d ",&dirich_curve[i]);
+          dirich_curve[i]--;
+        }
         dsassert(ierr==1,"Cannot read design-line dirichlet conditions");
         colptr = strpbrk(colptr,"1234567890");
         colptr++;
@@ -426,7 +432,7 @@ void input_designsurf_dirich(RefCountPtr<DRT::DesignDiscretization> designdis)
     {
       dirich_onoff[i] = 0;
       dirich_val[i]   = 0.0;
-      dirich_curve[i] = 0;
+      dirich_curve[i] = -1;
       dirich_funct[i] = 0;
     }
     
@@ -462,7 +468,10 @@ void input_designsurf_dirich(RefCountPtr<DRT::DesignDiscretization> designdis)
       {
         ierr=1;
         if (i < MAXDOFPERNODE)
+        {
           ierr=sscanf(colptr," %d ",&dirich_curve[i]);
+          dirich_curve[i]--;
+        }
         dsassert(ierr==1,"Cannot read design-line surface conditions");
         colptr = strpbrk(colptr,"1234567890");
         colptr++;
@@ -544,7 +553,7 @@ void input_designvol_dirich(RefCountPtr<DRT::DesignDiscretization> designdis)
     {
       dirich_onoff[i] = 0;
       dirich_val[i]   = 0.0;
-      dirich_curve[i] = 0;
+      dirich_curve[i] = -1;
       dirich_funct[i] = 0;
     }
     
@@ -580,7 +589,10 @@ void input_designvol_dirich(RefCountPtr<DRT::DesignDiscretization> designdis)
       {
         ierr=1;
         if (i < MAXDOFPERNODE)
+        {
           ierr=sscanf(colptr," %d ",&dirich_curve[i]);
+          dirich_curve[i]--;
+        }
         dsassert(ierr==1,"Cannot read design-line volume conditions");
         colptr = strpbrk(colptr,"1234567890");
         colptr++;
@@ -666,7 +678,7 @@ void input_designnode_neum(RefCountPtr<DRT::DesignDiscretization> designdis)
     dsassert(ierr==1,"Cannot read design-nodal neumann conditions");
     if (strncmp(buffer,"none",4)==0)
     {
-       curve = 0;
+       curve = -1;
        colptr = strstr(allfiles.actplace,"none");
        dsassert(colptr!=NULL,"Cannot read design-nodal neumann conditions");
        colptr += 4;
@@ -674,6 +686,7 @@ void input_designnode_neum(RefCountPtr<DRT::DesignDiscretization> designdis)
     else
     {
        ierr=sscanf(colptr," %d ",&curve);
+       curve--;
        dsassert(ierr==1,"Cannot read design-nodal neumann conditions");
        colptr = strpbrk(colptr,"1234567890");
        colptr++;
@@ -778,7 +791,7 @@ void input_designline_neum(RefCountPtr<DRT::DesignDiscretization> designdis)
     dsassert(ierr==1,"Cannot read design-line neumann conditions");
     if (strncmp(buffer,"none",4)==0)
     {
-       curve = 0;
+       curve = -1;
        colptr = strstr(allfiles.actplace,"none");
        dsassert(colptr!=NULL,"Cannot read design-line neumann conditions");
        colptr += 4;
@@ -786,6 +799,7 @@ void input_designline_neum(RefCountPtr<DRT::DesignDiscretization> designdis)
     else
     {
        ierr=sscanf(colptr," %d ",&curve);
+       curve--;
        dsassert(ierr==1,"Cannot read design-line neumann conditions");
        colptr = strpbrk(colptr,"1234567890");
        colptr++;
@@ -908,7 +922,7 @@ void input_designsurf_neum(RefCountPtr<DRT::DesignDiscretization> designdis)
     dsassert(ierr==1,"Cannot read design-surface neumann conditions");
     if (strncmp(buffer,"none",4)==0)
     {
-       curve = 0;
+       curve = -1;
        colptr = strstr(allfiles.actplace,"none");
        dsassert(colptr!=NULL,"Cannot read design-surface neumann conditions");
        colptr += 4;
@@ -916,6 +930,7 @@ void input_designsurf_neum(RefCountPtr<DRT::DesignDiscretization> designdis)
     else
     {
        ierr=sscanf(colptr," %d ",&curve);
+       curve--;
        dsassert(ierr==1,"Cannot read design-surface neumann conditions");
        colptr = strpbrk(colptr,"1234567890");
        colptr++;
@@ -1038,7 +1053,7 @@ void input_designvol_neum(RefCountPtr<DRT::DesignDiscretization> designdis)
     dsassert(ierr==1,"Cannot read design-volume neumann conditions");
     if (strncmp(buffer,"none",4)==0)
     {
-       curve = 0;
+       curve = -1;
        colptr = strstr(allfiles.actplace,"none");
        dsassert(colptr!=NULL,"Cannot read design-volume neumann conditions");
        colptr += 4;
@@ -1046,6 +1061,7 @@ void input_designvol_neum(RefCountPtr<DRT::DesignDiscretization> designdis)
     else
     {
        ierr=sscanf(colptr," %d ",&curve);
+       curve--;
        dsassert(ierr==1,"Cannot read design-volume neumann conditions");
        colptr = strpbrk(colptr,"1234567890");
        colptr++;

@@ -90,7 +90,7 @@ int DRT::Elements::Shell8::Evaluate(ParameterList& params,
       // need current displacement and residual forces
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==null || res==null) dserror("Cannot get state vectors displacement and/or residual");
+      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
       DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
@@ -102,7 +102,14 @@ int DRT::Elements::Shell8::Evaluate(ParameterList& params,
       dserror("Case not yet implemented");
     break;
     case calc_struct_eleload:
-      dserror("Case not yet implemented");
+    {
+      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==null) dserror("Cannot get state vector 'displacement'");
+      vector<double> mydisp(lm.size());
+      DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
+      s8_surfaceload(params,elevec1,mydisp);
+      //s8_lineload(params,elevec1,mydisp);
+    }
     break;
     case calc_struct_fsiload:
       dserror("Case not yet implemented");
@@ -2194,6 +2201,50 @@ void DRT::Elements::Shell8::s8tmtr(const double x[][MAXNOD_SHELL8],
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ |  do Jacobian (private)                                    mwgee 12/06|
+ *----------------------------------------------------------------------*/
+void DRT::Elements::Shell8::s8_jaco(const vector<double>& funct,
+                                    const Epetra_SerialDenseMatrix& deriv,
+                                    const double x[][MAXNOD_SHELL8],
+                                    double xjm[][3],
+                                    const vector<double>& hte,
+                                    const double a3ref[][MAXNOD_SHELL8],
+                                    const double e3,
+                                    const int iel,
+                                    double* det,
+                                    double* deta)
+{
+  DSTraceHelper dst("Shell8::s8_jaco");  
+  double gkov[3][3];
+  double gkon[3][3];
+  double gmkov[3][3];
+  double gmkon[3][3];
+  s8tmtr(x,a3ref,e3,gkov,gkon,gmkov,gmkon,det,funct,deriv,iel,1.0,0);
+  xjm[0][0]=gkov[0][0];
+  xjm[0][1]=gkov[1][0];
+  xjm[0][2]=gkov[2][0];
+  xjm[1][0]=gkov[0][1];
+  xjm[1][1]=gkov[1][1];
+  xjm[1][2]=gkov[2][1];
+  xjm[2][0]=gkov[0][2];
+  xjm[2][1]=gkov[1][2];
+  xjm[2][2]=gkov[2][2];
+  const double x1r=xjm[0][0];
+  const double x2r=xjm[0][1];
+  const double x3r=xjm[0][2];
+  const double x1s=xjm[1][0];
+  const double x2s=xjm[1][1];
+  const double x3s=xjm[1][2];
+
+  *deta = DSQR(x1r*x2s - x2r*x1s) + DSQR(x3r*x1s - x3s*x1r) + DSQR(x2r*x3s - x3r*x2s);
+  *deta = sqrt(*deta);
+  if (*deta <= 1.0e-14) dserror("Element Area equal 0.0 or negativ detected");
+  
+  return;
+}
+
   
 /*----------------------------------------------------------------------*
  |  do metric (private)                                      mwgee 12/06|
@@ -2918,6 +2969,329 @@ void DRT::Elements::Shell8::s8_shapefunctions(
   
   
   
+  return;
+}
+
+
+extern "C"
+{
+  void dyn_facfromcurve(int actcurve,double T,double *fac);  
+}
+
+enum LoadType
+{
+  neum_none,
+  neum_live,
+  neum_orthopressure,
+  neum_consthydro_z,
+  neum_increhydro_z,
+  neum_live_FSI,
+  neum_opres_FSI
+};
+static void s8loadgaussianpoint(double eload[][MAXNOD_SHELL8], const double hhi,
+                         double wgt, const double xjm[][3], 
+                         const vector<double>& funct,
+                         const Epetra_SerialDenseMatrix& deriv,
+                         const int iel, 
+                         const double xi,
+                         const double yi,
+                         const double zi,
+                         const enum LoadType ltype,
+                         const vector<int>& onoff,
+                         const vector<double>& val,
+                         const double curvefac,
+                         const double time);
+/*----------------------------------------------------------------------*
+ |  calculate shell surface loads (private)                  mwgee 01/07|
+ *----------------------------------------------------------------------*/
+void DRT::Elements::Shell8::s8_surfaceload(ParameterList& params,
+                                           Epetra_SerialDenseVector& elevec1,
+                                           const vector<double>& disp)
+{
+  DSTraceHelper dst("Shell8::s8_surfaceload");
+  
+  // no. of nodes to this surface
+  const int iel = NumNode();
+  
+  // check whether ALL nodes of this element have a SurfaceNeumann condition
+  // and create ptrs to all SurfaceNeumann conditions
+  bool havesurface = true;
+  vector<vector<DRT::Condition*> > conds(iel);
+  for (int i=0; i<iel; ++i)
+  {
+    Nodes()[i]->GetCondition("SurfaceNeumann",conds[i]);
+    if (!(int)conds[i].size())
+    {
+      havesurface = false;
+      break;
+    }
+  }
+  if (!havesurface) return;
+
+  // take first node and see whether all other nodes have these conditions as well
+  int numcond=0;
+  vector<int> condids(400);
+  for (int k=0; k<(int)conds[0].size(); ++k)
+  {
+    int id = conds[0][k]->Id();
+    bool haveit = false;
+    for (int i=1; i<iel; ++i)
+    {
+      for (int j=0; j<(int)conds[i].size(); ++j)
+        if (conds[i][j]->Id() == id)
+        {
+          haveit = true;
+          break;
+        }
+        else haveit = false;
+      if (!haveit)
+        break;
+    }
+    if (!haveit) continue;
+    else
+    {
+      condids[numcond] = id;
+      ++numcond;
+    }
+  }
+  if (!numcond) return;
+  
+  // we have to deal with numcond SurfaceNeumann conditions, 
+  // their ids are in condids
+
+
+  // find out whether we will use time curves
+  bool usetime = true;
+  const double time = params.get("total time",-1.0);
+  if (time<0.0) usetime = false;
+  
+  // start integrating this surface loads
+  S8_DATA s8data;
+  s8_integration_points(s8data);
+  const int nir = ngp_[0]; 
+  const int nis = ngp_[1]; 
+  const int numdf = 6;
+  vector<double>* thick = data_.GetVector<double>("thick");
+  if (!thick) dserror("Cannot find vector of nodal thicknesses");
+  Epetra_SerialDenseMatrix* a3ref = data_.GetMatrix("a3ref");
+  if (!a3ref) dserror("Cannot find array of directors");
+  double a3ref2[3][MAXNOD_SHELL8];
+  for (int i=0; i<3; ++i)
+    for (int j=0; j<iel; ++j)
+      a3ref2[i][j] = (*a3ref)(i,j);
+      
+  vector<double> funct(iel);
+  Epetra_SerialDenseMatrix deriv(2,iel);
+  
+  double a3r[3][MAXNOD_SHELL8];
+  double a3c[3][MAXNOD_SHELL8];
+  double a3cur[3][MAXNOD_SHELL8];
+  double xrefe[3][MAXNOD_SHELL8];
+  double xcure[3][MAXNOD_SHELL8];
+  double xjm[3][3];
+  double eload[6][MAXNOD_SHELL8];
+  for (int i=0; i<numdf; ++i)
+    for (int j=0; j<iel; ++j)
+      eload[i][j] = 0.0;
+      
+  // update geometry
+  for (int k=0; k<iel; ++k)
+  {
+    const double h2 = (*thick)[k];
+    
+    a3r[0][k] = (*a3ref)(0,k)*h2;
+    a3r[1][k] = (*a3ref)(1,k)*h2;
+    a3r[2][k] = (*a3ref)(2,k)*h2;
+    
+    xrefe[0][k] = Nodes()[k]->X()[0];
+    xrefe[1][k] = Nodes()[k]->X()[1];
+    xrefe[2][k] = Nodes()[k]->X()[2];
+    
+    xcure[0][k] = xrefe[0][k] + disp[k*numdf+0];
+    xcure[1][k] = xrefe[1][k] + disp[k*numdf+1];
+    xcure[2][k] = xrefe[2][k] + disp[k*numdf+2];
+    
+    a3c[0][k] = a3r[0][k] + disp[k*numdf+3];
+    a3c[1][k] = a3r[1][k] + disp[k*numdf+4];
+    a3c[2][k] = a3r[2][k] + disp[k*numdf+5];
+
+    a3cur[0][k] = a3c[0][k] / h2;
+    a3cur[1][k] = a3c[1][k] / h2;
+    a3cur[2][k] = a3c[2][k] / h2;
+  }
+  
+  
+  for (int icond=0; icond<numcond; ++icond)
+  {
+    // get current condition
+    int condid = condids[icond];
+    DRT::Condition* actcond = NULL;
+    for (int i=0; i<(int)conds[0].size(); ++i)
+      if (condid == conds[0][i]->Id())
+      {
+        actcond = conds[0][i];
+        break;
+      }
+    if (!actcond) dserror("Cannot find matching Condition");
+    cout << *actcond << endl;
+    // find out whether we will use a time curve and get the factor
+    vector<int>* curve  = actcond->GetVector<int>("curve");
+    int curvenum = -1;
+    if (curve) curvenum = (*curve)[0]; 
+    double curvefac = 1.0;
+    if (curvenum>=0 && usetime)
+      dyn_facfromcurve(curvenum,time,&curvefac); 
+    
+    // get type of condition
+    LoadType ltype;
+    string* type = actcond->GetString("type");
+    if      (*type == "neum_live")          ltype = neum_live;
+    else if (*type == "neum_live_FSI")      ltype = neum_live_FSI;
+    else if (*type == "neum_orthopressure") ltype = neum_orthopressure;
+    else if (*type == "neum_consthydro_z")  ltype = neum_consthydro_z;
+    else if (*type == "neum_increhydro_z")  ltype = neum_increhydro_z;
+    else dserror("Unknown type of SurfaceNeumann condition");
+      
+    // start integration
+    double e3=0.0;
+    for (int lr=0; lr<nir; ++lr) // loop r direction
+    {
+      // gaussian points and weights
+      double e1   = s8data.xgpr[lr];
+      double facr = s8data.wgtr[lr];
+      for (int ls=0; ls<nis; ++ls) // loop s direction
+      {
+        double e2   = s8data.xgps[ls];
+        double facs = s8data.wgts[ls];
+        // shape functiosn and derivatives at gaussian point
+        s8_shapefunctions(funct,deriv,e1,e2,iel,1);
+        // element thickness at gaussian point
+        double hhi = 0.0;
+        for (int i=0; i<iel; ++i) hhi += funct[i] * (*thick)[i];
+        // Jacobian matrix
+        // in reference configuration
+        double det,deta;
+        if (ltype == neum_live)
+          s8_jaco(funct,deriv,xrefe,xjm,*thick,a3ref2,e3,iel,&det,&deta);
+        else
+          s8_jaco(funct,deriv,xcure,xjm,*thick,a3cur,e3,iel,&det,&deta);
+        // total weight at gaussian point
+        double wgt = facr*facs;
+        // coordinates of gaussian point (needed in some types)
+        double xi,yi,zi;
+        xi=yi=zi=0.0;
+        if (ltype != neum_live)
+          for (int i=0; i<iel; ++i)
+          {
+            xi += xcure[0][i]*funct[i];
+            yi += xcure[1][i]*funct[i];
+            zi += xcure[2][i]*funct[i];
+          }
+        // do load calculation at gaussian point
+        vector<int>*    onoff = actcond->GetVector<int>("onoff");
+        vector<double>* val   = actcond->GetVector<double>("val");
+        s8loadgaussianpoint(eload,hhi,wgt,xjm,funct,deriv,iel,xi,yi,zi,ltype,
+                            *onoff,*val,curvefac,time);
+      } // for (int ls=0; ls<nis; ++ls)
+    } // for (int lr=0; lr<nir; ++lr)
+   } //  for (int icond=0; icond<numcond; ++icond)
+  
+  // add eload to element vector
+  for (int inode=0; inode<iel; ++inode)
+    for (int dof=0; dof<6; ++dof)
+      elevec1[inode*iel+dof] += eload[dof][inode];
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  calculate shell surface loads at gaussian point (private)mwgee 01/07|
+ *----------------------------------------------------------------------*/
+void s8loadgaussianpoint(double eload[][MAXNOD_SHELL8], const double hhi,
+                         double wgt, const double xjm[][3], 
+                         const vector<double>& funct,
+                         const Epetra_SerialDenseMatrix& deriv,
+                         const int iel, 
+                         const double xi,
+                         const double yi,
+                         const double zi,
+                         const enum LoadType ltype,
+                         const vector<int>& onoff,
+                         const vector<double>& val,
+                         const double curvefac,
+                         const double time)
+{
+  DSTraceHelper dst("s8loadgaussianpoint");
+
+/*----------------------------------------------------------------------*/
+/*------------------------------ evaluate components of angle of normal */
+/*        xjm = J = (g1 g2 g3) siehe Dissertation Braun Kap. Grundlagen */
+/*--------- the lenght of the vector ap (which is g3) is det(J) is |g3| */
+  double ap[3];
+  ap[0] = xjm[0][1]*xjm[1][2] - xjm[1][1]*xjm[0][2];
+  ap[1] = xjm[0][2]*xjm[1][0] - xjm[1][2]*xjm[0][0];
+  ap[2] = xjm[0][0]*xjm[1][1] - xjm[1][0]*xjm[0][1];
+  double ar[3];
+  switch(ltype)
+  {
+    case neum_live: // uniform load on reference configuration
+    case neum_live_FSI:
+    {
+      double ar[3];
+      ar[0]=ar[1]=ar[2]= sqrt( ap[0]*ap[0] + ap[1]*ap[1] + ap[2]*ap[2] );
+      for (int i=0; i<3; ++i)
+        ar[i] = ar[i] * wgt * onoff[i] * val[i] * curvefac;
+      for (int i=0; i<iel; ++i)
+        for (int j=0; j<3; ++j)
+          eload[j][i] += funct[i]*ar[j];
+    }
+    break;
+    // hydrostatic pressure dependent on z-coordinate of gaussian point
+    case neum_consthydro_z: 
+    {
+      if (onoff[2] != 1) dserror("hydropressure must be on third dof");
+      ar[0] = ap[0] * val[2] * wgt * curvefac;
+      ar[1] = ap[1] * val[2] * wgt * curvefac;
+      ar[2] = ap[2] * val[2] * wgt * curvefac;
+      for (int i=0; i<iel; ++i)
+        for (int j=0; j<3; ++j)
+          eload[j][i] += funct[i]*ar[j];
+    }
+    break;
+    // hydrostat pressure dep. on z-coord of gp increasing with time in height
+    case neum_increhydro_z:
+    {
+      if (onoff[2] != 1) dserror("hydropressure must be on third dof");
+      double height = time * 10.0;
+      double pressure = 0.0;
+      if (zi<=height)
+        pressure = -val[2]*(height-zi);
+      ar[0] = ap[0] * pressure * wgt;
+      ar[1] = ap[1] * pressure * wgt;
+      ar[2] = ap[2] * pressure * wgt;
+      for (int i=0; i<iel; ++i)
+        for (int j=0; j<3; ++j)
+          eload[j][i] += funct[i]*ar[j];
+    }
+    break;
+    // orthogonal pressure dep. on load curve only  
+    case neum_orthopressure:
+    case neum_opres_FSI:
+    {
+      if (onoff[2] != 1) dserror("orthopressure must be on third dof");
+      double pressure = -val[2]*curvefac;
+      ar[0] = ap[0] * pressure * wgt;
+      ar[1] = ap[1] * pressure * wgt;
+      ar[2] = ap[2] * pressure * wgt;
+      for (int i=0; i<iel; ++i)
+        for (int j=0; j<3; ++j)
+          eload[j][i] += funct[i]*ar[j];
+    }
+    break;
+    default:
+      dserror("Unknown type of SurfaceNeumann load");
+    break;
+  }
   return;
 }
 
