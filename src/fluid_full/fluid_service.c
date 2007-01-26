@@ -262,9 +262,10 @@ case 7:		/* 2nd order backward differencing BDF2 */
    /* set number of starting steps for restarts */
    if (genprob.restart == 0) /* restart using the pss-file */
      fdyn->nums += fdyn->step;
+   break;
 
 case 8:		/* incremental accelerations gen alpha implementation */
-    
+
   if (fabs((1./2.+fdyn->alpha_m-fdyn->alpha_f) - fdyn->theta)> EPS10)
   {
       printf("\nWarning: Theta, Alpha_m and Alpha_f do not satisfy 2nd order condition.\n");
@@ -273,10 +274,9 @@ case 8:		/* incremental accelerations gen alpha implementation */
   if(fdyn->alpha_m<fdyn->alpha_f || 0.5 > fdyn->alpha_m)
   {
       dserror("\n Unstable choice of Alpha_m and Alpha_f!");
-  }  
-   fdyn->dta = 0.0;
-break;
-break;
+  }
+  fdyn->dta = 0.0;
+  break;
 
 
 default:
@@ -374,7 +374,7 @@ break;
 case 8:	  /* incremental acceleration generalised alpha */
    /* constant time step size !!!*/
    fdyn->dta  = fdyn->dt;
-    
+
    fdyn->thsl = fdyn->dta * fdyn->theta * fdyn->alpha_f;
    fdyn->thpl = fdyn->thsl;
    fdyn->thsr = ZERO;
@@ -565,7 +565,7 @@ void fluid_init(
 #ifdef D_FLUID2_TDS
   INT               nis;
 #endif
-  
+
   /* variables for beltrami */
   DOUBLE    visc,a,x1,x2,x3;
 
@@ -674,7 +674,7 @@ void fluid_init(
 	      nis=actele->e.f2->nGP[1];
 	  }
 
-	  
+
 	  amdef("subscale_pressure",
 		&(actele->e.f2->sub_pres),
 		actele->e.f2->nGP[0]*nis,1,
@@ -697,14 +697,14 @@ void fluid_init(
 		    actele->e.f2->nGP[0]*nis,1,
 		    "DV");
 	      amzero(&(actele->e.f2->sub_pres_acc));
-	      
-	      
+
+
 	      amdef("subscale_velocity_accelerations",
 		    &(actele->e.f2->sub_vel_acc),
 		    3/*numdf (xyz)*/,
 		    actele->e.f2->nGP[0]*nis,
 		    "DA");
-	      
+
 	      amzero(&(actele->e.f2->sub_vel_acc));
 
 
@@ -713,14 +713,14 @@ void fluid_init(
 		    actele->e.f2->nGP[0]*nis,1,
 		    "DV");
 	      amzero(&(actele->e.f2->sub_pres_trial));
-	      
-	      
+
+
 	      amdef("subscale_velocity_accelerations-trial_value",
 		    &(actele->e.f2->sub_vel_trial),
 		    3/*numdf (xyz)*/,
 		    actele->e.f2->nGP[0]*nis,
 		    "DA");
-	      	      
+
 	      amzero(&(actele->e.f2->sub_vel_trial));
 
 	      amdef("subscale_pressure_acceleration-trial_value",
@@ -728,18 +728,18 @@ void fluid_init(
 		    actele->e.f2->nGP[0]*nis,1,
 		    "DV");
 	      amzero(&(actele->e.f2->sub_pres_acc_trial));
-	      
-	      
+
+
 	      amdef("subscale_velocity_accelerations-trial_value",
 		    &(actele->e.f2->sub_vel_acc_trial),
 		    3/*numdf (xyz)*/,
 		    actele->e.f2->nGP[0]*nis,
 		    "DA");
-	      
+
 	      amzero(&(actele->e.f2->sub_vel_acc_trial));
 	  }
 
-	  
+
 #endif
           break;
 #endif
