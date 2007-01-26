@@ -2155,7 +2155,7 @@ void out_write_chunk(BIN_OUT_FIELD *context,
                       MPI_SEEK_SET);
   if (err != 0)
   {
-    dserror("MPI_File_seek(%d,%d) failed: %d", 
+    dserror("MPI_File_seek(%d,%d) failed: %d",
 	    context->out->value_file,
 	    context->out->value_file_offset +
 	    chunk->first_id*chunk->value_entry_length*sizeof(DOUBLE),
@@ -2704,6 +2704,17 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
   /* Find out how many dofs we have to send to which processor. */
   switch (*sysarray_typ)
   {
+
+#ifdef TRILINOS_PACKAGE
+  case trilinos:
+    calc_max_number(sysarray->trilinos->numeq_total);
+    for (i=0; i<sysarray->trilinos->numeq; ++i)
+    {
+      INT dof = sysarray->trilinos->update.a.iv[i];
+      boilerplate_code(dof);
+    }
+    break;
+#endif
 
 #ifdef AZTEC_PACKAGE
   case msr:
