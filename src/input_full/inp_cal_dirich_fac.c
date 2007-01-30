@@ -87,6 +87,8 @@ void cal_dirich_fac(
 
     case funct_line_lin:  /* linear function */
       f_line_lin = funct[funct_num].typ.funct_line_lin;
+      if (f_line_lin==NULL)
+	dserror("failed to read function %d",index);
 
       length = f_line_lin->length;
 
@@ -288,7 +290,7 @@ void cal_dirich_fac(
     break;
   }
 
-  
+
     default:  /* default: no function */
       fac = 1.0;
       break;
