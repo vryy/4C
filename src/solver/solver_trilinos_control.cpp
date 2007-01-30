@@ -617,6 +617,7 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
       if (resolve)
       {
 #ifdef PARALLEL
+        if (matrix->Comm().MyPID()==0) cout << "Falling back to SuperLU\n";
         Amesos_Superludist superlusolver(*lp);
         int err = superlusolver.SymbolicFactorization();
         if (err) dserror("SuperLU.SymbolicFactorization() returned %d",err);
@@ -625,7 +626,14 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
         err     = superlusolver.Solve();
         if (err) dserror("SuperLU.Solve() returned %d",err);
 #else
-        dserror("Superludist not available");
+        cout << "Falling back to Amesos_KLU\n";
+        Amesos_Klu klusolver(*lp);
+        int err = klusolver.SymbolicFactorization();
+        if (err) dserror("Amesos_Klu.SymbolicFactorization() returned %d",err);
+        err     = klusolver.NumericFactorization();
+        if (err) dserror("Amesos_Klu.NumericFactorization() returned %d",err);
+        err     = klusolver.Solve();
+        if (err) dserror("Amesos_Klu.Solve() returned %d",err);        
 #endif
       }
     }
