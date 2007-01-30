@@ -19,115 +19,10 @@ Maintainer: Malte Neumann
  | includes for solver package AZTEC 2.1                 m.gee 10/01    |
  *----------------------------------------------------------------------*/
 #ifdef AZTEC_PACKAGE
-#ifdef PARALLEL
-/*-------------------------------- with mpi parallel version of aztec2.1*/
-
-#ifdef HPUX10
-#include <aztec21/az_aztec.h>
-#endif
-
-#ifdef HPUX11
-#include <aztec21/az_aztec.h>
-#endif
-
-#ifdef HPUXITA
-#include <aztec21/az_aztec.h>
-#endif
-
-#if defined(LINUX) || defined(LINUX64)
-#include <aztec21/az_aztec.h>
-#endif
-
-#ifdef BULL
-#include <aztec21/az_aztec.h>
-#endif
-
-#ifdef SX6
-#include <aztec21/az_aztec.h>
-#endif
-
-#ifdef SX8
-#include <aztec21/az_aztec.h>
-#endif
-
-#ifdef TX7
-#include <aztec21/az_aztec.h>
-#endif
-
-#ifdef AZUSA
-#include "../../../../lib_ita1/aztec21/lib/az_aztec.h"
-#endif
-
-#ifdef SUN
-#include "../../../lib_sun/aztec21/lib/az_aztec.h"
-#endif
-
-#ifdef LINUX_MUENCH
 #ifdef TRILINOS_PACKAGE
 #include <az_aztec.h>
 #else
 #include <aztec21/lib/az_aztec.h>
-#endif
-#endif
-
-#ifdef HPUX_MUENCH
-#include <aztec21/lib/az_aztec.h>
-#endif
-
-#else
-/*------------------------ without mpi , sequentiel version of aztec2.1 */
-#ifdef HPUX10
-#include <aztec21/az_aztec.h>
-#endif
-
-#ifdef HPUX11
-#include <aztec21/az_aztec.h>
-#endif
-
-#ifdef HPUXITA
-#include <aztec21/az_aztec.h>
-#endif
-
-#if defined(LINUX) || defined(LINUX64)
-#include <aztec21/az_aztec.h>
-#endif
-
-#ifdef WIN
-#include <aztec21/az_aztec.h>
-#endif
-
-#ifdef BULL
-#include <aztec21/az_aztec.h>
-#endif
-
-#ifdef SX6
-#include <aztec21/az_aztec.h>
-#endif
-
-#ifdef SX8
-#include <aztec21/az_aztec.h>
-#endif
-
-#ifdef TX7
-#include <aztec21/az_aztec.h>
-#endif
-
-#ifdef LINUX_MUENCH
-#ifdef TRILINOS_PACKAGE
-#include <az_aztec.h>
-#else
-#include <aztec21/lib/az_aztec.h>
-#endif
-#endif
-
-#ifdef HPUX_MUENCH
-#include <aztec21/lib/az_aztec.h>
-#endif
-
-#ifdef WIN_MUENCH
-#include <aztec21/lib/az_aztec.h>
-#endif
-
 #endif
 #endif /* end of ifdef AZTEC_PACKAGE */
 
@@ -368,7 +263,7 @@ typedef struct _AZVAR
 
 #ifdef TRILINOS_PACKAGE
   INT                     azscal;             /* 0 = none, 1 = sym, 2 = infnorm */
-  
+
   int                     mlprint;            /* ml print level 0 - 10 */
   int                     mlcsize;            /* size where to stop coarsening */
   int                     mlmaxlevel;         /* max no. of grids */
@@ -382,7 +277,7 @@ typedef struct _AZVAR
   double                  mldamp_med;         /* damping factor fine grid */
   double                  mldamp_coarse;      /* damping factor fine grid */
   double                  mldamp_prolong;     /* damping factor for prolongator smoother */
-  double                  ml_threshold;       /* threshold for aggregation/prolongator smoother */  
+  double                  ml_threshold;       /* threshold for aggregation/prolongator smoother */
 #endif
 } AZVAR;
 
@@ -958,7 +853,7 @@ typedef struct _TRILINOSMATRIX
 
   INT                     NumEntriesPerRow; /*!< trilinos Graph build info */
   INT                     StaticProfile; /*!< trilinos Graph build info */
-  
+
   void*                   linearproblem; /*!< ptr to the Epetra_LinearProblem */
   void*                   solver;        /*!< ptr to any Trilinos solver */
   void*                   params;        /*!< ptr to Teuchos parameter list */
