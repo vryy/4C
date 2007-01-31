@@ -397,7 +397,7 @@ ccarat{}
  a bunch of files in return.
  To build and run it you will need a basic understanding of Linux and the
  Linux shell.
- You will also want to choose you favorite text editor.
+ You will also want to choose your favorite text editor.
  (See section\InsetSpace ~
 
 \begin_inset LatexCommand \ref{sec:Text-editors}
@@ -412,7 +412,11 @@ Configure
 \end_layout
 
 \begin_layout Standard
-Before compiling a Makefile needs to be generated.
+Before compiling a 
+\family typewriter
+Makefile
+\family default
+ needs to be generated.
  There is a configuration script to do this.
  It needs two arguments: a platform specification and a parameter list.
  Both are available as files in the 
@@ -982,32 +986,158 @@ Testing
 \end_layout
 
 \begin_layout Standard
-There exist two executables, which run all examples of 
-\family typewriter
-Input
-\family default
--directory; 
-\family typewriter
-test_release
-\family default
- generates one "big" executable file which can run all examples, 
+There is the script 
 \family typewriter
 test_script
 \family default
- recompiles the sources for each example with the necessary parameters (e.g.
- 
+ that runs all the examples file from the 
 \family typewriter
-MAXNOD
+Input
 \family default
-, ...).
- e.g.
- 
+-directory that are marked for testing.
+ It knows four modes depending on the command line parameters:
+\end_layout
+
+\begin_layout List
+\labelwidthstring 00.00.0000
+
+\family typewriter
+single\InsetSpace ~
+test
+\family default
+ compile 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ to fit one input file exactly and run it
+\end_layout
+
+\begin_layout List
+\labelwidthstring 00.00.0000
+
+\family typewriter
+test\InsetSpace ~
+all
+\family default
+ compile 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ for all input files and run them one after the other
+\end_layout
+
+\begin_layout List
+\labelwidthstring 00.00.0000
+
+\family typewriter
+restart\InsetSpace ~
+test
+\family default
+ compile 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ for all input files, run them and restart them from a certain step
+\end_layout
+
+\begin_layout List
+\labelwidthstring 00.00.0000
+
+\family typewriter
+release\InsetSpace ~
+test
+\family default
+ compile 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ so this it is able to run any (or neary any) input file and run them all
+ using this version
+\end_layout
+
+\begin_layout Standard
+After each run some result values are compared to expected values.
+ Only if these values match the test was successful.
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+test_release
+\family default
+ script can be used to abbreviate all this.
+ It runs 
+\family typewriter
+test all
+\family default
+, 
+\family typewriter
+restart test
+\family default
+ and 
+\family typewriter
+release test
+\family default
+ in a row:
 \end_layout
 
 \begin_layout LyX-Code
 
 \family typewriter
 ./test_release config/muench.fc6.ser
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ needs to survive these tests on any supported platform at any time.
+ This is enforced by nightly tests.
 \end_layout
 
 \begin_layout Standard
