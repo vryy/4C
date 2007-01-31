@@ -1,0 +1,3138 @@
+#LyX 1.4.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 245
+\begin_document
+\begin_header
+\textclass article
+\language english
+\inputencoding auto
+\fontscheme default
+\graphics default
+\paperfontsize default
+\spacing single
+\papersize default
+\use_geometry false
+\use_amsmath 1
+\cite_engine basic
+\use_bibtopic false
+\paperorientation portrait
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\end_header
+
+\begin_body
+
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+newcommand{
+\backslash
+ccarat}{{
+\backslash
+tt ccarat}}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+newcommand{
+\backslash
+gauss}{{
+\backslash
+tt gauss}}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Title
+Getting Started: Setup Guide to 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Author
+Ulrich Küttler
+\end_layout
+
+\begin_layout Abstract
+Notes on setting up and running 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+, the Finite-Element code at the Chair of Computational Mechanics.
+\end_layout
+
+\begin_layout Standard
+For information about solving specific types of problems using 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ see the problem introduction guides.
+ For information about the inner workings of the code and recommendations
+ for developers see the developing guide.
+\end_layout
+
+\begin_layout Section
+Getting the code
+\end_layout
+
+\begin_layout Standard
+The 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ code lives in an subversion repository on 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+gauss{}
+\end_layout
+
+\end_inset
+
+, the central LNM file server.
+ There are two ways to get the code.
+\end_layout
+
+\begin_layout Itemize
+Students ask their custodian :) for a copy.
+ Before that can happen the non-disclosure form needs to be filled.
+\end_layout
+
+\begin_layout Itemize
+Coworkers get it via subversion: 
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+svn checkout svn://gauss/trunk/ccarat 
+\end_layout
+
+\begin_layout Standard
+Ask your friendly LNM administrator for a subversion account.
+\end_layout
+
+\begin_layout Standard
+It is a very good idea to get to know subversion before you do this.
+ There is the book 
+\begin_inset Quotes eld
+\end_inset
+
+
+\begin_inset LatexCommand \htmlurl[Version Control with Subversion]{http://svnbook.red-bean.com}
+
+\end_inset
+
+
+\begin_inset Quotes erd
+\end_inset
+
+ online.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Subsection
+Directory structure
+\end_layout
+
+\begin_layout Standard
+The 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ code comes with documentation, example input files and support scripts.
+ The important subdirectories are the following:
+\end_layout
+
+\begin_layout List
+\labelwidthstring 00.00.0000
+
+\family typewriter
+src
+\family default
+ contains the real 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ code in several subdirectories 
+\end_layout
+
+\begin_layout List
+\labelwidthstring 00.00.0000
+
+\family typewriter
+Input
+\family default
+ contains various valid and running 
+\family typewriter
+*.dat
+\family default
+ files, 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ input files that are used for (automatic) testing.
+\end_layout
+
+\begin_layout List
+\labelwidthstring 00.00.0000
+
+\family typewriter
+config
+\family default
+ contains configuration files (platform specifications) needed to setup
+ a 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ Makefile
+\end_layout
+
+\begin_layout List
+\labelwidthstring 00.00.0000
+
+\family typewriter
+scripts
+\family default
+ contains configuration scripts needed to setup a 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ Makefile
+\end_layout
+
+\begin_layout List
+\labelwidthstring 00.00.0000
+
+\family typewriter
+testing
+\family default
+ contains scripts used for automatic testing and the list of files that
+ are to be run during tests
+\end_layout
+
+\begin_layout List
+\labelwidthstring 00.00.0000
+
+\family typewriter
+doc
+\family default
+ contains all the documentation
+\end_layout
+
+\begin_layout List
+\labelwidthstring 00.00.0000
+
+\family typewriter
+.
+
+\family default
+ there are only a few scripts and two Makefile fragments in the main directory
+ of 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Section
+Setup and Run
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ is developed and used on Linux.
+ Other Unixes work as well.
+ Windows versions might be created using cygwin or mingw, but this will
+ require some small modifications and is not covered here.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ is a non-interactive shell application that reads an input file and creates
+ a bunch of files in return.
+ To build and run it you will need a basic understanding of Linux and the
+ Linux shell.
+ You will also want to choose you favorite text editor.
+ (See section\InsetSpace ~
+
+\begin_inset LatexCommand \ref{sec:Text-editors}
+
+\end_inset
+
+.)
+\end_layout
+
+\begin_layout Subsection
+Configure
+\end_layout
+
+\begin_layout Standard
+Before compiling a Makefile needs to be generated.
+ There is a configuration script to do this.
+ It needs two arguments: a platform specification and a parameter list.
+ Both are available as files in the 
+\family typewriter
+config
+\family default
+ subdirectory.
+ 
+\end_layout
+
+\begin_layout Itemize
+There is a platform specification file for each supported platform.
+ This includes different versions of Linux on desktop computers and the
+ cluster configuration.
+ On all platforms both serial and parallel versions are supported.
+\end_layout
+
+\begin_layout Itemize
+in 
+\family typewriter
+config/defines
+\family default
+ there is a list of all available parameters; uncomment those which are
+ needed; mandatory/recommended are: 
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+select the elements and algorithmic flags you need
+\end_layout
+
+\begin_layout Itemize
+set appropriate sizes for 
+\family typewriter
+MAXNOD
+\family default
+, 
+\family typewriter
+MAXELE
+\family default
+, 
+\family typewriter
+MAXGAUSS
+\family default
+, 
+\family typewriter
+MAXDOFPERNODE
+\family default
+.
+ There are also special versions of 
+\family typewriter
+MAXNOD
+\family default
+ for each element, in case a particular element needs LESS nodes than needed
+ in general.
+\end_layout
+
+\begin_layout Itemize
+tools: uncomment 
+\family typewriter
+PERF
+\family default
+ to get better time measurements.
+\end_layout
+
+\begin_layout Itemize
+possible solver packages: include 
+\family typewriter
+TRILINOS_PACKAGE
+\family default
+ (the great huge libraries) and make sure to also include 
+\family typewriter
+AZTEC_PACKAGE
+\family default
+ (iterative solver) and both 
+\family typewriter
+SOLVE_DIRICH
+\family default
+ and 
+\family typewriter
+SOLVE_DIRICH2
+\family default
+.
+ For smaller problems (serial) you might want to have 
+\family typewriter
+UMFPACK
+\family default
+ (direct solver for single CPU) as well.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+save defines in a separate file, e.g.
+ 
+\family typewriter
+config/defines.my
+\family default
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+For example inside the 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ directory the call
+\end_layout
+
+\begin_layout LyX-Code
+./configure config/muench.fc6.ser config/defines.my 
+\end_layout
+
+\begin_layout Standard
+creates a 
+\family typewriter
+Makefile
+\family default
+ by aid of 
+\family typewriter
+Makefile.in
+\family default
+ for a serial executable; 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+after reconfiguring use 
+\family typewriter
+make clean
+\family default
+ before recompiling
+\end_layout
+
+\begin_layout Subsection
+Compile
+\end_layout
+
+\begin_layout Standard
+After the 
+\family typewriter
+Makefile
+\family default
+ is there simply run 
+\family typewriter
+make
+\family default
+.
+ You might want to run 
+\family typewriter
+make all
+\family default
+ to create the binary output filters, too.
+ See below.
+\end_layout
+
+\begin_layout Standard
+The required libraries and include files are found in 
+\family typewriter
+/lnm/lib/$PLATFORM/$VERSION
+\family default
+.
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ depends on the Trilinos libraries, a few external solver libraries and
+ metis.
+ Additional the boost libraries will be used in the future.
+ You should not need to worry about these libraries as long as to stick
+ to the provided configurations.
+\end_layout
+
+\begin_layout Standard
+Please note that these are static libraries.
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ does not need these libraries to run.
+ The libraries are needed to compile the source only.
+\end_layout
+
+\begin_layout Subsubsection
+Details on library setup
+\end_layout
+
+\begin_layout Standard
+You might want to skip this section.
+\end_layout
+
+\begin_layout Standard
+All libraries needed to compile 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ on a specific platform (apart from the system provided ones) are to be
+ in the directory 
+\family typewriter
+/lnm/lib/$PLATFORM/$VERSION
+\family default
+, where 
+\family typewriter
+$PLATFORM
+\family default
+ referes to the Linux version used and 
+\family typewriter
+$VERSION
+\family default
+ referes to the serial or MPI version supported on this Linux.
+\end_layout
+
+\begin_layout Standard
+The currently supported platforms are 
+\family typewriter
+fc5
+\family default
+, 
+\family typewriter
+fc6
+\family default
+, 
+\family typewriter
+debian
+\family default
+ (sarge), 
+\family typewriter
+cluster
+\family default
+.
+ The debian version will be discontinued once all debian workstations are
+ gone.
+ Each platform supports a serial and one parallel version.
+\end_layout
+
+\begin_layout Standard
+Inside 
+\family typewriter
+/lnm/lib/$PLATFORM/$VERSION
+\family default
+ there are the directories 
+\family typewriter
+include
+\family default
+, 
+\family typewriter
+lib
+\family default
+, 
+\family typewriter
+trilinos
+\family default
+ and optionally 
+\family typewriter
+trilinos_dbg
+\family default
+.
+ There directories contain:
+\end_layout
+
+\begin_layout List
+\labelwidthstring 00.00.0000
+
+\family typewriter
+include
+\family default
+ include files of the libraries or, if modifications have been made or the
+ include files are not easy to extract, the whole source packages
+\end_layout
+
+\begin_layout List
+\labelwidthstring 00.00.0000
+
+\family typewriter
+lib
+\family default
+ compiled libraries.
+ These are aztec 2.1, spooles 2.2, umfpack 4.1, metis 4.0, superlu 2.0, visual2,
+ visual3, lapack, blas.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Both visual2 and visual3 are optional and are only supported on 32bit Linux
+ with g77.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout List
+\labelwidthstring 00.00.0000
+
+\family typewriter
+trilinos
+\family default
+ a installed version of the trilinos libraries, that is the directories
+ 
+\family typewriter
+/lnm/lib/$PLATFORM/$VERSION/trilinos/include
+\family default
+ and 
+\family typewriter
+/lnm/lib/$PLATFORM/$VERSION/trilinos/lib
+\family default
+ with appropiate content are required.
+ The packages from trilinos that are needed include 
+\family typewriter
+amesos
+\family default
+, 
+\family typewriter
+aztecoo
+\family default
+, 
+\family typewriter
+epetra
+\family default
+, 
+\family typewriter
+epetraext
+\family default
+, 
+\family typewriter
+ifpack
+\family default
+, 
+\family typewriter
+loca
+\family default
+, 
+\family typewriter
+ml
+\family default
+, 
+\family typewriter
+moertel
+\family default
+, 
+\family typewriter
+nox
+\family default
+, 
+\family typewriter
+teuchos
+\family default
+.
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+The trilinos sources reside in 
+\family typewriter
+/lnm/lib/Trilinos
+\family default
+.
+ It is currently a developer version close to release 7.
+\end_layout
+
+\end_deeper
+\begin_layout List
+\labelwidthstring 00.00.0000
+
+\family typewriter
+trilinos_dbg
+\family default
+ a version of the trilinos libraries with debug symbols enabled.
+\end_layout
+
+\begin_layout Subsubsection
+Have a local copy of the 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ libraries
+\end_layout
+
+\begin_layout Standard
+Caution: This a advanced stuff.
+ You can savely skip it.
+\end_layout
+
+\begin_layout Standard
+The 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ library organization is meant to allow you to compile 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ on your local machine without access to the network directory 
+\family typewriter
+/lnm
+\family default
+.
+ All you have to do is
+\end_layout
+
+\begin_layout Enumerate
+copy the appropiate 
+\family typewriter
+/lnm/lib/$PLATFORM/$VERSION
+\family default
+ directory to your home directory somewhere and
+\end_layout
+
+\begin_layout Enumerate
+copy and modify the corresponding platform specification file (
+\family typewriter
+config/$PLATFORM_FILE
+\family default
+).
+\end_layout
+
+\begin_layout Standard
+Note: You are urged to make a copy and leave the original platform specification
+ file as it is.
+ You are not allowed to submit changes to the platform specification file
+ without consulting the 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ maintainer first.
+\end_layout
+
+\begin_layout Subsection
+Running examples
+\end_layout
+
+\begin_layout Standard
+In 
+\family typewriter
+Input
+\family default
+ there are test examples; all necessary "packages" must have been activated
+ in the defines-file that was used to configure the 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ at hand.
+ For example, 
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+./cca_fc6_ser.fast Input/f2_drivencavity20x20.dat xxx 
+\end_layout
+
+\begin_layout Standard
+runs the 2d fluid driven cavity example and writes the output to files beginning
+ with 
+\family typewriter
+xxx
+\family default
+.
+ If the run is interrupted with an error '
+\family typewriter
+MAXNOD
+\family default
+ is too small' then the values given in a table above this error message
+ have to be inserted in '
+\family typewriter
+config/defines.my
+\family default
+'; e.g.
+ 
+\family typewriter
+MAXNOD=20
+\family default
+ in second line, 
+\family typewriter
+MAXELE=4
+\family default
+ in third line, ...; then recompile and rerun to run a parallel version you
+ need to use the mpirun command like this: 
+\end_layout
+
+\begin_layout LyX-Code
+mpirun -np 1 ./cca_fc6_par.fast Input/f2_drivencavity20x20.dat xxx
+\end_layout
+
+\begin_layout Section
+Testing
+\end_layout
+
+\begin_layout Standard
+There exist two executables, which run all examples of 
+\family typewriter
+Input
+\family default
+-directory; 
+\family typewriter
+test_release
+\family default
+ generates one "big" executable file which can run all examples, 
+\family typewriter
+test_script
+\family default
+ recompiles the sources for each example with the necessary parameters (e.g.
+ 
+\family typewriter
+MAXNOD
+\family default
+, ...).
+ e.g.
+ 
+\end_layout
+
+\begin_layout LyX-Code
+
+\family typewriter
+./test_release config/muench.fc6.ser
+\end_layout
+
+\begin_layout Standard
+A nightly test builds and runs all configured example files.
+ The BuildBot server runs on 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+gauss{}
+\end_layout
+
+\end_inset
+
+, the clients that do the actual testing are distributed among the desktop
+ machines.
+\end_layout
+
+\begin_layout Standard
+To add your own input file to the nightly tests edit 
+\family typewriter
+testing/list_of_files
+\family default
+.
+\end_layout
+
+\begin_layout Section
+Cluster
+\end_layout
+
+\begin_layout Standard
+We own a cluster system for massive parallel processing.
+ The cluster consists of 54 nodes (two processors each), a frontend and
+ a file server.
+ For obvious reasons the frontend is called 
+\family typewriter
+hop
+\family default
+, the file server is called 
+\family typewriter
+malt
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+Your home directory is accessible on all nodes and both server machines.
+ Additionally there is scratch space in the 
+\family typewriter
+/scratch
+\family default
+ directory on all nodes.
+\end_layout
+
+\begin_layout Standard
+You will normally want to login to the frontend, however if you have to
+ transfer huge files you are better off accessing the file server directly.
+\end_layout
+
+\begin_layout Subsection
+First Time Setup 
+\end_layout
+
+\begin_layout Standard
+Before the cluster can be used for parallel calculations, a few setup steps
+ have to be performed 
+\end_layout
+
+\begin_layout Subsubsection
+Get an account
+\end_layout
+
+\begin_layout Standard
+Ask your friendly LNM administrator.
+ Ask politely.
+\end_layout
+
+\begin_layout Subsubsection
+generate ssh keys for password-less access to all nodes
+\end_layout
+
+\begin_layout Itemize
+Login to the cluster with 
+\family typewriter
+ssh username@hop.lnm.mw.tum.de
+\family default
+ 
+\end_layout
+
+\begin_layout Itemize
+If you have not done it before, change the default password set by the Administr
+ator with 
+\family typewriter
+passwd 
+\end_layout
+
+\begin_layout Itemize
+Create new SSH key with 
+\family typewriter
+ssh-keygen -t rsa
+\family default
+ and press enter without entering a password
+\end_layout
+
+\begin_layout Itemize
+in the folder 
+\family typewriter
+~/.ssh
+\family default
+ copy the generated key into the authorized key file with 
+\family typewriter
+cp id_rsa.pub authorized_keys
+\family default
+.
+ This allows to connect to all nodes on the cluster and is essential for
+ running any kind of job 
+\end_layout
+
+\begin_layout Subsubsection
+optinally generate ssh keys for password-less access to the frontend 
+\end_layout
+
+\begin_layout Standard
+To make life pleasant, add the public key also to your 
+\family typewriter
+authorized_keys
+\family default
+ file on your desktop machine.
+ This way you can login to the cluster from your account without a password.
+\end_layout
+
+\begin_layout Subsection
+Getting the code on the cluster
+\end_layout
+
+\begin_layout Standard
+Use subversion as described above our copy with 
+\family typewriter
+scp
+\family default
+, whatever you like best.
+\end_layout
+
+\begin_layout Subsection
+Running a parallel job
+\end_layout
+
+\begin_layout Standard
+There is a queue where you submit your job, that is the executable and its
+ input file.
+ To do this you will have to write a short job file that tells the queue
+ where to find and how to run your code.
+\end_layout
+
+\begin_layout Standard
+The following file prototype serves as the execution script for the cluster.
+ Copy and modify it to your needs.
+ 
+\end_layout
+
+\begin_layout LyX-Code
+#!/bin/sh
+\end_layout
+
+\begin_layout LyX-Code
+# Here are some comments the PBS system will search for.
+\end_layout
+
+\begin_layout LyX-Code
+#...job name 
+\end_layout
+
+\begin_layout LyX-Code
+#PBS -N jobname 
+\end_layout
+
+\begin_layout LyX-Code
+#...nodes = number of nodes, ppn = processors per node (always 2)
+\end_layout
+
+\begin_layout LyX-Code
+#PBS -l nodes=4:ppn=2
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+# we start our job from inside the source
+\end_layout
+
+\begin_layout LyX-Code
+# directory and we also want the results there.
+\end_layout
+
+\begin_layout LyX-Code
+srcdir=$PBS_O_WORKDIR 
+\end_layout
+
+\begin_layout LyX-Code
+cd $srcdir
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+# number of processors
+\end_layout
+
+\begin_layout LyX-Code
+PROCS=`wc -l < $PBS_NODEFILE` 
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+# parameters, to be changed!
+\end_layout
+
+\begin_layout LyX-Code
+PREFIX=xxx 
+\end_layout
+
+\begin_layout LyX-Code
+EXE=cca_par_ompi_cluster.fast
+\end_layout
+
+\begin_layout LyX-Code
+INPUT=inputfile.dat
+\end_layout
+
+\begin_layout LyX-Code
+RESTART=
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+# add the InfiniBand library to the search path
+\end_layout
+
+\begin_layout LyX-Code
+VAPILIB=/usr/local/ibgd/driver/infinihost/lib64 
+\end_layout
+
+\begin_layout LyX-Code
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$VAPILIB
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+MPIDIR=/cluster/openmpi-1.1.1
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+$MPIDIR/bin/mpirun -np $PROCS -hostfile $PBS_NODEFILE $EXE $INPUT $PREFIX
+ $RESTART | tee $srcdir/$PREFIX.log 
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout Standard
+This job file makes several assumptions:
+\end_layout
+
+\begin_layout Itemize
+You want to run a parallel job compiled using OpenMPI (the supported MPI
+ version on the cluster.)
+\end_layout
+
+\begin_layout Itemize
+You are going to use 4 nodes with 2 processors each.
+ If that is not what you want change the line
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+#PBS -l nodes=4:ppn=2
+\end_layout
+
+\begin_layout Standard
+Note: You will always end up with two processes on each node unless you
+ provide your own nodefile.
+ Most of the time two processes per node are exactly what you want.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+You want the output files to go to the same directory where your 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ executable resides.
+ If you build 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ with the 
+\family typewriter
+BINIO
+\family default
+ flag set and switched binary output on in your input file, this directory
+ must be accessible from all nodes.
+ Most probably you will want to start the job from somewhere inside your
+ home directory.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Note that you can use the scratch space for output.
+ This requires a slight change in the job file above.
+ Additionally the binary output does not yet support writing processor local
+ files.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+The 
+\family typewriter
+PREFIX
+\family default
+ and 
+\family typewriter
+INPUT
+\family default
+ variables are most likely to need a change.
+\end_layout
+
+\begin_layout Itemize
+If you want to restart a calculation you have to set the 
+\family typewriter
+PREFIX
+\family default
+ variable accordingly and specify 
+\family typewriter
+RESTART=restart
+\family default
+.
+ Additionally the restart step must be set inside the input file.
+\end_layout
+
+\begin_layout Standard
+To submit the job use 
+\family typewriter
+qsub job.sh
+\family default
+, with the above file saved as 
+\family typewriter
+job.sh
+\family default
+.
+ Each job in the queue gets an unique number.
+\end_layout
+
+\begin_layout Subsubsection
+Useful queue commands
+\end_layout
+
+\begin_layout List
+\labelwidthstring 00.00.0000
+
+\family typewriter
+qsub\InsetSpace ~
+job.sh
+\family default
+ submit a job
+\end_layout
+
+\begin_layout List
+\labelwidthstring 00.00.0000
+
+\family typewriter
+qsub\InsetSpace ~
+-I
+\family default
+ start an interactive session on a node
+\end_layout
+
+\begin_layout List
+\labelwidthstring 00.00.0000
+
+\family typewriter
+qstat
+\family default
+ show currently running (and waiting) jobs
+\end_layout
+
+\begin_layout List
+\labelwidthstring 00.00.0000
+
+\family typewriter
+qstat\InsetSpace ~
+-f\InsetSpace ~
+[number]
+\family default
+ show details to all (or one) job
+\end_layout
+
+\begin_layout List
+\labelwidthstring 00.00.0000
+
+\family typewriter
+showq
+\family default
+ another way to view the queue
+\end_layout
+
+\begin_layout List
+\labelwidthstring 00.00.0000
+
+\family typewriter
+qdel\InsetSpace ~
+number
+\family default
+ remove a currently running job
+\end_layout
+
+\begin_layout Subsubsection
+Hints
+\end_layout
+
+\begin_layout Itemize
+You are allowed to login to any node that is used by your job via 
+\family typewriter
+ssh
+\family default
+.
+\end_layout
+
+\begin_layout Itemize
+You can get a nice view on the current cluster performance by browsing to
+ 
+\begin_inset LatexCommand \url[ganglia]{http://hop.lnm.mw.tum.de/ganglia/}
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Itemize
+The 
+\family typewriter
+#PBS
+\family default
+ comments in the job file can be given as command line arguments to 
+\family typewriter
+qsub
+\family default
+ as well.
+ Without the 
+\family typewriter
+#PBS
+\family default
+ string.
+\end_layout
+
+\begin_layout Section
+Preprocessing
+\end_layout
+
+\begin_layout Standard
+There are not so many means to create a valid input file.
+\end_layout
+
+\begin_layout Subsection
+GiD
+\end_layout
+
+\begin_layout Standard
+GiD is a pre- and postprocessing tool.
+ We have the specialized problem type 
+\family typewriter
+lnm_general
+\family default
+ available, that contains the necessary definitions to create a 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ input file.
+ 
+\end_layout
+
+\begin_layout Standard
+GiD is installed at 
+\family typewriter
+/lnm/gid
+\family default
+.
+ Standard users have a rather limited academic version available.
+ We own a single computer license that runs without limitations on 
+\family typewriter
+galileo
+\family default
+.
+ You can simply login via 
+\family typewriter
+ssh
+\family default
+:
+\end_layout
+
+\begin_layout LyX-Code
+ssh -X username@galileo.lnm.mw.tum.de
+\end_layout
+
+\begin_layout Standard
+and run GiD there.
+ Students will have to ask the friendly LNM administrator to be allowed
+ to login to 
+\family typewriter
+galileo
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+lnm_general
+\family default
+ problem type consists of a bunch of text files and can be found in the
+ subversion repository as well.
+ You can get it with
+\end_layout
+
+\begin_layout LyX-Code
+svn co svn://gauss/trunk/lnm_general
+\end_layout
+
+\begin_layout Standard
+However, you do not need to bother unless we want to modify it.
+\end_layout
+
+\begin_layout Subsection
+Modify 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ input files
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ input files are text files so you can modify them using your favorite text
+ editor.
+ However, sometimes you might want some more modifications (e.g.
+ moving many nodes coordinates) that might be better done by a script.
+ And indeed there is a python script that can help you edit input files.
+ (ToDo: There is no central place yet.)
+\end_layout
+
+\begin_layout Subsection
+viewer
+\end_layout
+
+\begin_layout Standard
+There is a small but useful 
+\family typewriter
+python
+\family default
+ script that allows to visualize 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ input files (meshes and conditions).
+ It is in the 
+\family typewriter
+viewer
+\family default
+ directory inside the repository.
+ To run it you will need to have 
+\family typewriter
+PyQt
+\family default
+ and 
+\family typewriter
+PyOpenGl
+\family default
+ installed.
+ You can get it with
+\end_layout
+
+\begin_layout LyX-Code
+svn co svn://gauss/trunk/viewer
+\end_layout
+
+\begin_layout Section
+Postprocessing
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ supports traditional text file output and more recent binary output.
+ The later needs to be postprocessed by some filter before it can be viewed.
+\end_layout
+
+\begin_layout Subsection
+GiD
+\end_layout
+
+\begin_layout Standard
+Reads 
+\family typewriter
+*.flavia.res
+\family default
+ files in postprocessing mode.
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ writes these files immediately (provided 
+\family typewriter
+OUTPUT_GID
+\family default
+ is set to 
+\family typewriter
+yes
+\family default
+ in the input file).
+ Additionally these files can be generated from the binary files using the
+ 
+\family typewriter
+post_gid_txt
+\family default
+ filter.
+\end_layout
+
+\begin_layout Subsection
+Filters
+\end_layout
+
+\begin_layout Standard
+All filters read the control files 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ creates.
+ Common filter options are:
+\end_layout
+
+\begin_layout LyX-Code
+./post_filter [-s start:end[:step]] control-file
+\end_layout
+
+\begin_layout Standard
+Process output steps from 
+\family typewriter
+start
+\family default
+ to 
+\family typewriter
+end
+\family default
+ every 
+\family typewriter
+step
+\family default
+.
+ Works on real time steps, steps not written by ccarat are counted, too.
+ Both 
+\family typewriter
+start
+\family default
+ and 
+\family typewriter
+end
+\family default
+ can be empty, in which case the filter will process from the first and
+ to the last step, respectively.
+\end_layout
+
+\begin_layout Standard
+Common code for output filters is in 
+\family typewriter
+src/post_common
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+Note: filters are largely independent of ccarat and can be enhanced on demand.
+\end_layout
+
+\begin_layout Subsubsection
+post_gid_txt
+\end_layout
+
+\begin_layout Standard
+Generate GiD 
+\family typewriter
+*.flavia.*
+\family default
+ files:
+\end_layout
+
+\begin_layout LyX-Code
+./post_gid_txt control-file
+\end_layout
+
+\begin_layout Itemize
+supported problem types: all simple ones (one field, one discretization),
+ fsi
+\end_layout
+
+\begin_layout Itemize
+supported result types: displacement, velocity, pressure, average_pressure
+\end_layout
+
+\begin_layout Itemize
+supported elements: shell8 shell9 brick1 fluid2 fluid2_pro fluid2_is fluid3
+ fluid3_fast fluid3_pro fluid3_is ale2 ale3 wall1 beam3 axishell interf
+ wallge.
+\end_layout
+
+\begin_layout Standard
+Bugs: not working with subdivition, quadratic element support needs enhancement,
+ obscure elements untested
+\end_layout
+
+\begin_layout Subsubsection
+post_out
+\end_layout
+
+\begin_layout Standard
+Generate readable output.
+ Unprocecced numbers.
+ No known issues.
+\end_layout
+
+\begin_layout Subsubsection
+post_visual2
+\end_layout
+
+\begin_layout Standard
+interactive visual2 viewer.
+ 32bit g77 linux only.
+ 2d only.
+ Fluid and FSI supported.
+\end_layout
+
+\begin_layout Standard
+Issues: Library buggy and unsupported, console input not working.
+\end_layout
+
+\begin_layout Subsubsection
+post_visual3
+\end_layout
+
+\begin_layout Standard
+interactive visual3 viewer.
+ 32bit g77 linux only.
+ 2d and 3d.
+ Fluid and FSI supported.
+\end_layout
+
+\begin_layout Subsubsection
+post_monitor
+\end_layout
+
+\begin_layout Standard
+generate gnuplot files for values at selected dofs:
+\end_layout
+
+\begin_layout LyX-Code
+./post_monitor [options] control-file monitor-file
+\end_layout
+
+\begin_layout Standard
+with a monitor-file in control-file format consisting of at least one block:
+\end_layout
+
+\begin_layout LyX-Code
+monitor:
+\end_layout
+
+\begin_layout LyX-Code
+   field = "fluid"
+\end_layout
+
+\begin_layout LyX-Code
+   field_pos = 0
+\end_layout
+
+\begin_layout LyX-Code
+   discretization = 0
+\end_layout
+
+\begin_layout LyX-Code
+   node = 440
+\end_layout
+
+\begin_layout LyX-Code
+   group = "velocity"
+\end_layout
+
+\begin_layout LyX-Code
+   dof = 0
+\end_layout
+
+\begin_layout LyX-Code
+   dof = 1
+\end_layout
+
+\begin_layout Standard
+Here the three variables 
+\family typewriter
+field
+\family default
+, 
+\family typewriter
+field_pos
+\family default
+ and 
+\family typewriter
+discretization
+\family default
+ specify the discretization that is to be used.
+ 
+\family typewriter
+node
+\family default
+ gives the global node id.
+ 
+\family typewriter
+group
+\family default
+ gives the result name that should be monitored.
+ And any number of 
+\family typewriter
+dof
+\family default
+ variables (in the example two dofs are set, no mistake!) gives the dofs
+ at the node those values are to be plotted.
+\end_layout
+
+\begin_layout Subsubsection
+post_file_manager
+\end_layout
+
+\begin_layout Standard
+copy, merge and slice binary output files:
+\end_layout
+
+\begin_layout LyX-Code
+./post_file_manager control-file new-control-file
+\end_layout
+
+\begin_layout Standard
+Utility filter by Michael Geppert.
+\end_layout
+
+\begin_layout Subsubsection
+post_ensight
+\end_layout
+
+\begin_layout Standard
+generate ensight (paraview) input files:
+\end_layout
+
+\begin_layout LyX-Code
+./post_ensight control-file
+\end_layout
+
+\begin_layout Standard
+supported problem types: 2d and 3d fluid and fsi another Michael Geppert
+ filter.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+post_cmp
+\end_layout
+
+\begin_layout Standard
+compare two binary fluid results, assuming the same mesh was used.
+ Create difference of velocity:
+\end_layout
+
+\begin_layout LyX-Code
+./post_cmp control-file1 control-file2
+\end_layout
+
+\begin_layout Standard
+Issues: very simple tool.
+ Just for velocity of fluid problems.
+ Enhancements are possible.
+\end_layout
+
+\begin_layout Section
+Developement environment
+\end_layout
+
+\begin_layout Standard
+The main developement tools for 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ are 
+\family typewriter
+gcc
+\family default
+, 
+\family typewriter
+g77
+\family default
+, 
+\family typewriter
+gdb
+\family default
+, 
+\family typewriter
+bash
+\family default
+ and the related tools.
+ Most people, however, prefere some kind of environment that plugs these
+ tools together.
+\end_layout
+
+\begin_layout Standard
+This section does only provide some hints what is there.
+ These tools are not necessarilly installed on your machine.
+ But they can be using 
+\family typewriter
+yum
+\family default
+ or 
+\family typewriter
+apt-get
+\family default
+.
+\end_layout
+
+\begin_layout Subsection
+Text editors 
+\begin_inset LatexCommand \label{sec:Text-editors}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+That is a matter of taste, really.
+ Only those with taste choose the right one: 
+\family typewriter
+xemacs
+\family default
+.
+\end_layout
+
+\begin_layout Subsubsection
+xemacs
+\end_layout
+
+\begin_layout Standard
+The right one.
+ 
+\end_layout
+
+\begin_layout Standard
+A text editor that has shortcuts for everything ever imagined.
+ Very huge.
+ Comes with extensive documentation.
+ Contains the elisp programming language for customization and extention.
+ Has been around for ages.
+ Is a standard on its own.
+ It does not stick to any standard you are likely to know.
+ Love it or hate it.
+\end_layout
+
+\begin_layout Standard
+It takes some effort to become fluent with xemacs.
+ You have to remember some seemingly random keyboard shortcuts.
+ The benefits are unimagined text editing power.
+ Some clever customizations are available that make editing with xemacs
+ even more fun.
+ (Derived from the xemacs customizations used by the KDE people.)
+\end_layout
+
+\begin_layout Standard
+A very good reason why you should give xemacs a closer look is the 
+\family typewriter
+xref
+\family default
+ utility.
+\end_layout
+
+\begin_layout Paragraph
+xref
+\end_layout
+
+\begin_layout Standard
+is a cross referencing and refactoring tool to be used in connection with
+ (x)emacs.
+ With this tool you can jump to the definition of any symbol in your code.
+ It is amazing...
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+xref
+\family default
+ is located in 
+\family typewriter
+/lnm/programs/xref
+\family default
+.
+ It needs to be installed before it can be used.
+ To do so call the 
+\family typewriter
+xrefsetup
+\family default
+ script.
+ It will modify your xemacs configuration file 
+\family typewriter
+~/.xemacs/init.el
+\family default
+ and offer a simple tutorial.
+ Do it.
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+xref
+\family default
+ configuration lives in the 
+\family typewriter
+~/.xrefrc
+\family default
+ file.
+ For all projects you want to work on (e.g.
+ all copies of 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ you happen to keep) you will need a section in that file.
+ A 
+\family typewriter
+~/.xrefrc
+\family default
+ file with just one section that covers the 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ copy located in 
+\family typewriter
+~/ccarat
+\family default
+ looks like this:
+\end_layout
+
+\begin_layout LyX-Code
+-license=0/0/0/5:Lehrstuhl-für-Numerische-Mechanik:b8f7c7b28aaf7b11
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+[/home/username/ccarat]
+\end_layout
+
+\begin_layout LyX-Code
+  //  input files and directories (processed recursively)
+\end_layout
+
+\begin_layout LyX-Code
+  /home/username/ccarat/src/
+\end_layout
+
+\begin_layout LyX-Code
+  //  directory where tag files are stored
+\end_layout
+
+\begin_layout LyX-Code
+  -refs /home/username/Xrefs/ccarat
+\end_layout
+
+\begin_layout LyX-Code
+  //  split tag files using first letter
+\end_layout
+
+\begin_layout LyX-Code
+  -refalphahash
+\end_layout
+
+\begin_layout LyX-Code
+  //  include directories
+\end_layout
+
+\begin_layout LyX-Code
+  -I /lnm/lib/fc6/ser/include
+\end_layout
+
+\begin_layout LyX-Code
+  // resolve symbols using definition place
+\end_layout
+
+\begin_layout LyX-Code
+  -exactpositionresolve
+\end_layout
+
+\begin_layout LyX-Code
+  //  setting for Emacs compile and run
+\end_layout
+
+\begin_layout LyX-Code
+  -set compilefile "mpicc -g -ansi -Wall %s"
+\end_layout
+
+\begin_layout LyX-Code
+  -set compiledir "mpicc -g -ansi -Wall *.c"
+\end_layout
+
+\begin_layout LyX-Code
+  -set compileproject "
+\end_layout
+
+\begin_layout LyX-Code
+       cd /home/kuettler/fem/ccarat
+\end_layout
+
+\begin_layout LyX-Code
+       make
+\end_layout
+
+\begin_layout LyX-Code
+       "
+\end_layout
+
+\begin_layout LyX-Code
+  -set run1 "cca_par_linux.debg"
+\end_layout
+
+\begin_layout LyX-Code
+  -set run2 "cca_seq_linux.debg"
+\end_layout
+
+\begin_layout LyX-Code
+  -set run5 "" // an empty run; C-F8 will only compile
+\end_layout
+
+\begin_layout LyX-Code
+  //  set default to run1   -set run ${run1}
+\end_layout
+
+\begin_layout LyX-Code
+  //  HTML configuration
+\end_layout
+
+\begin_layout LyX-Code
+  -htmlroot=/home/kuettler/HTML
+\end_layout
+
+\begin_layout LyX-Code
+  -htmlgxlist -htmllxlist -htmldirectx -htmllinenums
+\end_layout
+
+\begin_layout LyX-Code
+  -htmltab=8 -htmllinenumcolor=000000
+\end_layout
+
+\begin_layout LyX-Code
+  //  pre-processor macros and passes specification
+\end_layout
+
+\begin_layout LyX-Code
+  -DAZTEC_PACKAGE
+\end_layout
+
+\begin_layout LyX-Code
+  -DD_MLSTRUCT
+\end_layout
+
+\begin_layout LyX-Code
+  -DBINIO
+\end_layout
+
+\begin_layout LyX-Code
+  -DDEBUG
+\end_layout
+
+\begin_layout LyX-Code
+  -DD_ALE
+\end_layout
+
+\begin_layout LyX-Code
+  -DD_AXISHELL
+\end_layout
+
+\begin_layout LyX-Code
+  -DD_BEAM3
+\end_layout
+
+\begin_layout LyX-Code
+  -DD_BRICK1
+\end_layout
+
+\begin_layout LyX-Code
+  -DD_CONTACT
+\end_layout
+
+\begin_layout LyX-Code
+  -DD_FLUID
+\end_layout
+
+\begin_layout LyX-Code
+  -DD_FLUID_PM
+\end_layout
+
+\begin_layout LyX-Code
+  -DD_FLUID2
+\end_layout
+
+\begin_layout LyX-Code
+  -DFLUID2_ML
+\end_layout
+
+\begin_layout LyX-Code
+  -DD_FLUID2TU
+\end_layout
+
+\begin_layout LyX-Code
+  -DFLUID3_ML
+\end_layout
+
+\begin_layout LyX-Code
+  -DD_FLUID2_PRO
+\end_layout
+
+\begin_layout LyX-Code
+  -DD_FLUID3
+\end_layout
+
+\begin_layout LyX-Code
+  -DD_FLUID3_F
+\end_layout
+
+\begin_layout LyX-Code
+  -DD_FSI
+\end_layout
+
+\begin_layout LyX-Code
+  -DD_INTERF
+\end_layout
+
+\begin_layout LyX-Code
+  -DD_MAT
+\end_layout
+
+\begin_layout LyX-Code
+  -DD_OPTIM
+\end_layout
+
+\begin_layout LyX-Code
+  -DD_SHELL8
+\end_layout
+
+\begin_layout LyX-Code
+  -DD_SHELL9
+\end_layout
+
+\begin_layout LyX-Code
+  -DD_WALL1
+\end_layout
+
+\begin_layout LyX-Code
+  -DD_WALLGE
+\end_layout
+
+\begin_layout LyX-Code
+  -DLINUX_MUENCH
+\end_layout
+
+\begin_layout LyX-Code
+  -DPERF
+\end_layout
+
+\begin_layout LyX-Code
+  -DRESULTTEST
+\end_layout
+
+\begin_layout LyX-Code
+  -DS8CONTACT
+\end_layout
+
+\begin_layout LyX-Code
+  -DUMFPACK
+\end_layout
+
+\begin_layout LyX-Code
+  -DSOLVE_DIRICH
+\end_layout
+
+\begin_layout LyX-Code
+  -DSOLVE_DIRICH2
+\end_layout
+
+\begin_layout LyX-Code
+  -pass1
+\end_layout
+
+\begin_layout LyX-Code
+    -DPARALLEL
+\end_layout
+
+\begin_layout LyX-Code
+    -DSPOOLES_PACKAGE
+\end_layout
+
+\begin_layout LyX-Code
+  -pass2
+\end_layout
+
+\begin_layout LyX-Code
+    -DNOTPARALLEL 
+\end_layout
+
+\begin_layout Standard
+Not all of that is important.
+ In particular all the settings related to compile, run and html are of
+ no importance here.
+ You might try to find an use for that if you like.
+ Three parts, however, are highly relevant:
+\end_layout
+
+\begin_layout Itemize
+the license string in the first line of the file
+\end_layout
+
+\begin_layout Itemize
+the directories that state where your project lives, where the project sources
+ are, where to put the internal database and where to find additional include
+ files
+\end_layout
+
+\begin_layout Itemize
+the list of preprocessor macros that are defined 
+\begin_inset Quotes eld
+\end_inset
+
+on the command line.
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+After you setup a project like shown above start your xemacs and choose
+ 
+\begin_inset Quotes eld
+\end_inset
+
+Create Xref Tags
+\begin_inset Quotes erd
+\end_inset
+
+ from the 
+\begin_inset Quotes eld
+\end_inset
+
+Xrefactory
+\begin_inset Quotes erd
+\end_inset
+
+ menu.
+ This is going to take a while.
+ After that you can jump around in 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ just like you did in the small 
+\family typewriter
+xref
+\family default
+ tutorial.
+ Cool! And it helps a lot!
+\end_layout
+
+\begin_layout Subsubsection
+emacs
+\end_layout
+
+\begin_layout Standard
+A close miss.
+ Everything said in faviour of xemacs applies here as well, except ...
+ it misses an 
+\family typewriter
+x
+\family default
+.
+\end_layout
+
+\begin_layout Subsubsection
+eclipse
+\end_layout
+
+\begin_layout Standard
+A developement environment originally meant to replace xemacs.
+ Comes with a more convinient user interface for most new users.
+ Hundreds of plugins available.
+ Does provide its own cross referencing support.
+ Is based on java.
+ Is both slow and memory consuming beyond measure.
+ You have been warned.
+\end_layout
+
+\begin_layout Subsubsection
+kdevelop
+\end_layout
+
+\begin_layout Standard
+The developement environment made by the KDE people.
+ Is meant to be a modern IDE.
+ There are still problems with the way we use define flags in 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+.
+ The buildin parser fails to see many files, so function based navigation
+ is rather limited.
+\end_layout
+
+\begin_layout Subsubsection
+nedit, kwrite, kate
+\end_layout
+
+\begin_layout Standard
+Plain editors.
+ Most often syntax highlighting is supported, so at least you get colour.
+ All the developement has to be done using the Linux shell.
+\end_layout
+
+\begin_layout Subsection
+Debugging frontends
+\end_layout
+
+\begin_layout Standard
+There is only one degugger: 
+\family typewriter
+gdb
+\family default
+.
+ But it has a very plain user interface.
+ Most people use a frontend application that internally talks to 
+\family typewriter
+gdb
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+Development environments that are more that text editors (xemacs, eclipse,
+ kdevelop) contain a debugging ability.
+ There are, however, standalone debugging tools.
+ The point of these frontends is to show the code along with the current
+ position, the contents of variables and so on.
+\end_layout
+
+\begin_layout Subsubsection
+ddd
+\end_layout
+
+\begin_layout Standard
+Debugger frontend with some graphical ability.
+ Based on motiv, therefore it is sometimes cumbersome to use.
+\end_layout
+
+\begin_layout Subsubsection
+kdbg
+\end_layout
+
+\begin_layout Standard
+A KDE frontend to gdb.
+ Lacks the ability to input commands at the 
+\family typewriter
+gdb
+\family default
+ command line.
+ Suitable for simple debugging jobs.
+\end_layout
+
+\begin_layout Subsubsection
+gdbtui
+\end_layout
+
+\begin_layout Standard
+Simple 
+\family typewriter
+gdb
+\family default
+ enhancement.
+ Text based.
+ Nothing more that 
+\family typewriter
+gdb
+\family default
+ with a source code view.
+\end_layout
+
+\begin_layout Subsubsection
+ddt
+\end_layout
+
+\begin_layout Standard
+To debug in parallel on the cluster use 
+\family typewriter
+ddt
+\family default
+.
+ It is installed in 
+\family typewriter
+/cluster/allinea/ddt
+\family default
+ and supports up to 8 processes.
+ There is one debugging session allowed at a time.
+\end_layout
+
+\begin_layout Subsection
+Debugging hints
+\end_layout
+
+\begin_layout Standard
+What to do when 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ fails.
+\end_layout
+
+\begin_layout Subsubsection
+debug version of 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+To be able to debug 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ you have to build it in debug mode.
+ To do this you have to uncomment the 
+\family typewriter
+DEBUG
+\family default
+ flag in your 
+\family typewriter
+config/defines.my
+\family default
+ file and call 
+\family typewriter
+configure
+\family default
+ again.
+ Do not forget to 
+\family typewriter
+make clean
+\family default
+ before you compile again!
+\end_layout
+
+\begin_layout Standard
+Note: The 
+\family typewriter
+DEBUG
+\family default
+ flag slows things down.
+ You are not supposed to run long jobs with the debug version of 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Note: If all you want is add the 
+\family typewriter
+DEBUG
+\family default
+ flag to your configuration, there is no need to actually edit your 
+\family typewriter
+config/defines.my
+\family default
+ file.
+ Instead you can set the environment variable 
+\family typewriter
+DEBUG
+\family default
+ to 
+\family typewriter
+yes
+\family default
+ and reconfigure:
+\end_layout
+
+\begin_layout LyX-Code
+DEBUG=yes make reconfig && make clean && make
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+make reconfig
+\family default
+ is an abbreviation for the 
+\family typewriter
+configure
+\family default
+ call you used to configure in the first place.
+ In particular both configuration files will be read again, so if these
+ files have changed it will do something different.
+\end_layout
+
+\begin_layout Subsubsection
+build in a different directory
+\end_layout
+
+\begin_layout Standard
+A 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ reconfigure overwrites the 
+\family typewriter
+Makefile
+\family default
+.
+ This might not be what you want.
+ Instead you might run 
+\family typewriter
+configure
+\family default
+ from a directory different from the 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ source directory.
+ This way you will get a Makefile in the directory you run configure from.
+ For example, starting from the 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ source directory you might:
+\end_layout
+
+\begin_layout LyX-Code
+mkdir quicktest
+\end_layout
+
+\begin_layout LyX-Code
+cd quicktest
+\end_layout
+
+\begin_layout LyX-Code
+../configure ../config/muench.fc6.ser ../config/defines.my
+\end_layout
+
+\begin_layout LyX-Code
+make
+\end_layout
+
+\begin_layout Standard
+This will create a 
+\family typewriter
+Makefile
+\family default
+ and from that a whole new 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ inside the 
+\family typewriter
+quicktest
+\family default
+ directory.
+ The 
+\family typewriter
+Makefile
+\family default
+ in the source directory as well all the object files from your original
+ build will remain untouched.
+ All new files will be inside the 
+\family typewriter
+quicktest
+\family default
+ directory.
+ So you can remove the whole thing by
+\end_layout
+
+\begin_layout LyX-Code
+cd ..
+\end_layout
+
+\begin_layout LyX-Code
+rm -r quicktest
+\end_layout
+
+\begin_layout Subsubsection
+core files
+\end_layout
+
+\begin_layout Standard
+To get information out of crashing 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ processes you want to switch on 
+\family typewriter
+core
+\family default
+ files.
+ To do this add the line
+\end_layout
+
+\begin_layout LyX-Code
+ulimit -c unlimited
+\end_layout
+
+\begin_layout Standard
+to your 
+\family typewriter
+~/.bashrc
+\family default
+ and start a new shell.
+ This will create a file 
+\family typewriter
+core
+\family default
+ or 
+\family typewriter
+core.$$
+\family default
+ in the current directory each time 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ crashes, where 
+\family typewriter
+$$
+\family default
+ stands for the process id.
+ Afterwards you can have a look into 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ at just the moment the program failed:
+\end_layout
+
+\begin_layout LyX-Code
+gdb cca_fc6_ser.debg core
+\end_layout
+
+\begin_layout Standard
+Debugger frontends can be used as well.
+\end_layout
+
+\begin_layout Standard
+You might also want to include the 
+\family typewriter
+DSERROR_DUMP
+\family default
+ flag in your 
+\family typewriter
+config/defines.my
+\family default
+ file to have 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ crash each time a runtime error occurs (and 
+\family typewriter
+dserror
+\family default
+ gets called.)
+\end_layout
+
+\begin_layout Standard
+Note: Writing a 
+\family typewriter
+core
+\family default
+ file in Linux is pretty fast.
+ However, if your process took a large amount of memory and you run it on
+ a nfs mounted directory, it might take a few seconds to dump the 
+\family typewriter
+core
+\family default
+ file.
+\end_layout
+
+\begin_layout Subsubsection
+valgrind
+\end_layout
+
+\begin_layout Standard
+If it gets all confused and you have lost track of your pointers it might
+ be time to reach for something strong.
+ Enter 
+\family typewriter
+valgrind
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+valgrind
+\family default
+ is a memory checker (and more!) It simulates your code, keeps track of
+ the memory usage and reports anything strange like using unallocated memory,
+ uninitialized variables, freeing the same pointer twice or leaking memory.
+ 
+\family typewriter
+valgrind
+\family default
+ can save lifes!
+\end_layout
+
+\begin_layout Standard
+To use it simple write valgrind before the 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+ccarat{}
+\end_layout
+
+\end_inset
+
+ executable:
+\end_layout
+
+\begin_layout LyX-Code
+valgrind 
+\family typewriter
+./cca_fc6_ser.debg Input/f2_drivencavity20x20.dat xxx
+\end_layout
+
+\begin_layout Standard
+The messages from 
+\family typewriter
+valgrind
+\family default
+ might seem cryptic.
+ But do not ignore them.
+ Decipher!
+\end_layout
+
+\begin_layout Standard
+There are two issues with 
+\family typewriter
+valgrind
+\family default
+: It is slow.
+ And memory demanding.
+ So you will want to use it on small examples.
+\end_layout
+
+\end_body
+\end_document
