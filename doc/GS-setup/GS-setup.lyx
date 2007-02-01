@@ -1402,7 +1402,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$VAPILIB
 \end_layout
 
 \begin_layout LyX-Code
-MPIDIR=/cluster/openmpi-1.1.1
+MPIDIR=/cluster/openmpi-1.1.4
 \end_layout
 
 \begin_layout LyX-Code
@@ -2825,7 +2825,7 @@ add the line
 
 \begin_deeper
 \begin_layout LyX-Code
-export DDTMPIRUN=/cluster/openmpi-1.1.1/bin/mpirun
+export DDTMPIRUN=/cluster/openmpi-1.1.4/bin/mpirun
 \end_layout
 
 \begin_layout Standard
@@ -3118,7 +3118,7 @@ RY_PATH:$VAPILIB
 \end_layout
 
 \begin_layout LyX-Code
-MPIDIR=/cluster/openmpi-1.1.1
+MPIDIR=/cluster/openmpi-1.1.4
 \end_layout
 
 \begin_layout LyX-Code
@@ -3401,6 +3401,25 @@ cd ..
 
 \begin_layout LyX-Code
 rm -r quicktest
+\end_layout
+
+\begin_layout Standard
+Note: Sometimes you want to create an executable fast for just one run,
+ without worring about source dependencies.
+ So you can skip the dependency generation by setting the environment variable
+ 
+\family typewriter
+NODEPS
+\family default
+ to 
+\family typewriter
+yes
+\family default
+ like this:
+\end_layout
+
+\begin_layout LyX-Code
+NODEPS=yes ../configure ../config/muench.fc6.ser ../config/defines.my
 \end_layout
 
 \begin_layout Subsubsection

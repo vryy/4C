@@ -4,7 +4,7 @@ PLATFORM=LINUX_MUENCH
 PARALLEL=yes
 
 # just for convenience
-MPIDIR=/cluster/openmpi-1.1.1
+MPIDIR=/cluster/openmpi-1.1.4
 
 # these are needed for the test runs
 # we expect two test processes at most
