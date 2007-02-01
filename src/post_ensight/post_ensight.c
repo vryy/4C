@@ -114,7 +114,7 @@ void pe_write_data()
      destroy_result_data(&result);
 
     fclose(outfile); /*finished writing .geo file*/
-    printf("  geometry data written to file %s_fluid.geo\n", basename);
+    printf("  fluid geometry data written to file %s_fluid.geo\n", basename);
 
     /*-------------------------write the *fluid.case file*/
     sprintf(filename, "%s_fluid.case",basename);
@@ -123,6 +123,7 @@ void pe_write_data()
     pe_write_fluid_case_file(outfile);
 
     fclose(outfile);
+    printf("  finished writing fluid data, %s_fluid.case file created\n\n", basename);
   }
 
   if (struct_idx!=-1)
@@ -181,7 +182,7 @@ void pe_write_data()
     destroy_result_data(&result);
 
     fclose(outfile);/*finished writing .geo file*/
-    printf("  geometry data written to file %s_struct.geo\n", basename);
+    printf("  structure geometry data written to file %s_struct.geo\n", basename);
 
     /*-------------------------write the *struct.case file*/
     sprintf(filename, "%s_struct.case",basename);
@@ -190,6 +191,7 @@ void pe_write_data()
     pe_write_struct_case_file(outfile);
 
     fclose(outfile);
+    printf("  finished writing structure data, %s_struct.case file created\n\n", basename);
 
   }/*if(struct_idx!=-1)*/
 
@@ -444,7 +446,7 @@ void pe_write_fluid_geo_file(FILE* outfile, INT numnp_fluid, CHUNK_DATA* chunk, 
   actbytes += pe_write_string(outfile, "Fluid geometry");
   actbytes += pe_write_string(outfile, "Comment");
   actbytes += pe_write_string(outfile, "node id given");
-  actbytes += pe_write_string(outfile, "element id given");
+  actbytes += pe_write_string(outfile, "element id off");
   actbytes += pe_write_part_header(outfile, fluid_idx+1, "fluid field"); /*part +partnumber + comment*/
   actbytes += pe_write_string(outfile, "coordinates");
   actbytes += 4*fwrite(&numnp_fluid, sizeof(int), 1, outfile);
@@ -471,7 +473,7 @@ void pe_write_struct_geo_file(FILE* outfile, INT numnp_struct, CHUNK_DATA* chunk
   actbytes += pe_write_string(outfile, "Struct geometry");
   actbytes += pe_write_string(outfile, "Comment");
   actbytes += pe_write_string(outfile, "node id given");
-  actbytes += pe_write_string(outfile, "element id given");
+  actbytes += pe_write_string(outfile, "element id off");
   actbytes += pe_write_part_header(outfile, struct_idx+1, "struct field"); /*part +partnumber + comment*/
   actbytes += pe_write_string(outfile, "coordinates");
   actbytes += 4*fwrite(&numnp_struct, sizeof(int), 1, outfile);
@@ -515,10 +517,12 @@ long pe_write_fluid_coordinates(FILE* outfile, CHUNK_DATA* chunk)
 
   numnp = discret[fluid_idx].field->numnp;
 
+  /*writing the node id's*/
   for (i=0;i<numnp;i++)
   {
-    bytes+=4*fwrite(&i, sizeof(int), 1, outfile);
+    bytes += 4*fwrite(&i, sizeof(int), 1, outfile);
   }
+
   /*ensight format requires x_1 .. x_n, y_1 .. y_n, z_1 ... z_n */
   for (j=0;j<3;j++)
   {
@@ -714,6 +718,12 @@ long pe_write_cells(FILE* outfile, int part)
       bytes += 4*fwrite(&numele_temp, sizeof(int), 1, outfile);
       break;
 
+    case hex20:
+      numele_temp = numele;
+      bytes += pe_write_string(outfile, "hexa20");
+      bytes += 4*fwrite(&numele_temp, sizeof(int), 1, outfile);
+      break;
+
     case hex27:
       numele_temp = 8*numele;
       bytes += pe_write_string(outfile, "hexa8");
@@ -731,6 +741,21 @@ long pe_write_cells(FILE* outfile, int part)
       if (SHELL==0)
       {
         bytes += pe_write_string(outfile, "quad4");
+      }
+
+      if (SHELL==1)
+      {
+        bytes += pe_write_string(outfile, "hexa8");
+      }
+
+      bytes += 4*fwrite(&numele_temp, sizeof(int), 1, outfile);
+      break;
+
+    case quad8:
+      numele_temp = numele;
+      if (SHELL==0)
+      {
+        bytes += pe_write_string(outfile, "quad8");
       }
 
       if (SHELL==1)
@@ -774,15 +799,12 @@ long pe_write_cells(FILE* outfile, int part)
     default:
       dserror("element type : %d", actele->distyp);
       break;
-  }
-  for (i=0;i<numele_temp;i++)
-  {
-    bytes += 4*fwrite(&i, sizeof(int), 1, outfile);
-  }
+  }/*end of header switch*/
 
   for (i=0;i<numele;i++)
   {
     actele = &discret[part].element[i];
+
     switch(actele->distyp)
     {
       case hex8:
@@ -791,7 +813,15 @@ long pe_write_cells(FILE* outfile, int part)
           temp = actele->node[j]->Id_loc+1;
           bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
         }
-      break;
+        break;
+
+      case hex20:
+        for (j=0;j<20;j++)
+        {
+          temp = actele->node[j]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        }
+        break;
 
       case hex27:
         /*------------sub element 1*/
@@ -970,6 +1000,36 @@ long pe_write_cells(FILE* outfile, int part)
         }
         break;
 
+      case quad8:
+        if (SHELL==0)
+        {
+          for (j=0;j<8;j++)
+          {
+            temp = actele->node[j]->Id_loc+1;
+            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          }
+        }
+        if (SHELL==1)
+        {
+          temp = actele->node[4]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[5]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[6]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[7]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[4]->Id_loc+1+discret[part].field->numnp;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[5]->Id_loc+1+discret[part].field->numnp;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[6]->Id_loc+1+discret[part].field->numnp;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[7]->Id_loc+1+discret[part].field->numnp;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+        }
+        break;
+
       case quad9:
         if (SHELL==0)
         {
@@ -1016,81 +1076,78 @@ long pe_write_cells(FILE* outfile, int part)
 
         if (SHELL==1)
         {
-          for (j=0;j<4;j++)
-          {
-            /*------------sub element 1*/
-            temp = actele->node[0]->Id_loc+1;
-            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[4]->Id_loc+1;
-            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[8]->Id_loc+1;
-            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[7]->Id_loc+1;
-            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[0]->Id_loc+1+discret[part].field->numnp;
-            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[4]->Id_loc+1+discret[part].field->numnp;
-            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[8]->Id_loc+1+discret[part].field->numnp;
-            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[7]->Id_loc+1+discret[part].field->numnp;
-            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          /*------------sub element 1*/
+          temp = actele->node[0]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[4]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[8]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[7]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[0]->Id_loc+1+discret[part].field->numnp;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[4]->Id_loc+1+discret[part].field->numnp;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[8]->Id_loc+1+discret[part].field->numnp;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[7]->Id_loc+1+discret[part].field->numnp;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
 
 
-            /*------------sub element 2*/
-            temp = actele->node[4]->Id_loc+1;
-            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[1]->Id_loc+1;
-            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[5]->Id_loc+1;
-            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[8]->Id_loc+1;
-            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[4]->Id_loc+1+discret[part].field->numnp;
-            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[1]->Id_loc+1+discret[part].field->numnp;
-            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[5]->Id_loc+1+discret[part].field->numnp;
-            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[8]->Id_loc+1+discret[part].field->numnp;
-            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          /*------------sub element 2*/
+          temp = actele->node[4]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[1]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[5]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[8]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[4]->Id_loc+1+discret[part].field->numnp;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[1]->Id_loc+1+discret[part].field->numnp;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[5]->Id_loc+1+discret[part].field->numnp;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+printf("  finished writing fluid data, %s.case file created\n");          temp = actele->node[8]->Id_loc+1+discret[part].field->numnp;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
 
-            /*------------sub element 3*/
-            temp = actele->node[8]->Id_loc+1;
-            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[5]->Id_loc+1;
-            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[2]->Id_loc+1;
-            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[6]->Id_loc+1;
-            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[8]->Id_loc+1+discret[part].field->numnp;
-            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[5]->Id_loc+1+discret[part].field->numnp;
-            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[2]->Id_loc+1+discret[part].field->numnp;
-            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[6]->Id_loc+1+discret[part].field->numnp;
-            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          /*------------sub element 3*/
+          temp = actele->node[8]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[5]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[2]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[6]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[8]->Id_loc+1+discret[part].field->numnp;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[5]->Id_loc+1+discret[part].field->numnp;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[2]->Id_loc+1+discret[part].field->numnp;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[6]->Id_loc+1+discret[part].field->numnp;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
 
-            /*------------sub element 4*/
-            temp = actele->node[7]->Id_loc+1;
-            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[8]->Id_loc+1;
-            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[6]->Id_loc+1;
-            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[3]->Id_loc+1;
-            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[7]->Id_loc+1+discret[part].field->numnp;
-            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[8]->Id_loc+1+discret[part].field->numnp;
-            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[6]->Id_loc+1+discret[part].field->numnp;
-            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
-            temp = actele->node[3]->Id_loc+1+discret[part].field->numnp;
-            bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
-          }
+          /*------------sub element 4*/
+          temp = actele->node[7]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[8]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[6]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[3]->Id_loc+1;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[7]->Id_loc+1+discret[part].field->numnp;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[8]->Id_loc+1+discret[part].field->numnp;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[6]->Id_loc+1+discret[part].field->numnp;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+          temp = actele->node[3]->Id_loc+1+discret[part].field->numnp;
+          bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
         }
         break;
 
@@ -1118,9 +1175,75 @@ long pe_write_cells(FILE* outfile, int part)
         }
         break;
 
-
-      default:
+      default :
         break;
+    }/*end of switch*/
+  }/*end of for(numele)*/
+
+  /*if quad 8 SHELL problem append the penta6 subelements*/
+  if (discret[part].element[0].distyp == quad8 && SHELL == 1)
+  {
+    numele_temp = 4*numele;
+
+    bytes += pe_write_string(outfile, "penta6");
+
+    bytes += 4*fwrite(&numele_temp, sizeof(int), 1, outfile);
+
+    for (i=0;i<numele;i++)
+    {
+      actele = &discret[part].element[i];
+      /*----------------------------------subelement 1*/
+      temp = actele->node[4]->Id_loc+1;
+      bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+      temp = actele->node[0]->Id_loc+1;
+      bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+      temp = actele->node[7]->Id_loc+1;
+      bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+      temp = actele->node[4]->Id_loc+1+discret[part].field->numnp;
+      bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+      temp = actele->node[0]->Id_loc+1+discret[part].field->numnp;
+      bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+      temp = actele->node[7]->Id_loc+1+discret[part].field->numnp;
+      bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+      /*----------------------------------subelement 2*/
+      temp = actele->node[5]->Id_loc+1;
+      bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+      temp = actele->node[1]->Id_loc+1;
+      bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+      temp = actele->node[4]->Id_loc+1;
+      bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+      temp = actele->node[5]->Id_loc+1+discret[part].field->numnp;
+      bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+      temp = actele->node[1]->Id_loc+1+discret[part].field->numnp;
+      bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+      temp = actele->node[4]->Id_loc+1+discret[part].field->numnp;
+      bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+      /*----------------------------------subelement 3*/
+      temp = actele->node[6]->Id_loc+1;
+      bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+      temp = actele->node[2]->Id_loc+1;
+      bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+      temp = actele->node[5]->Id_loc+1;
+      bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+      temp = actele->node[6]->Id_loc+1+discret[part].field->numnp;
+      bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+      temp = actele->node[2]->Id_loc+1+discret[part].field->numnp;
+      bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+      temp = actele->node[5]->Id_loc+1+discret[part].field->numnp;
+      bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+      /*----------------------------------subelement 4*/
+      temp = actele->node[7]->Id_loc+1;
+      bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+      temp = actele->node[3]->Id_loc+1;
+      bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+      temp = actele->node[6]->Id_loc+1;
+      bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+      temp = actele->node[7]->Id_loc+1+discret[part].field->numnp;
+      bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+      temp = actele->node[3]->Id_loc+1+discret[part].field->numnp;
+      bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
+      temp = actele->node[6]->Id_loc+1+discret[part].field->numnp;
+      bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
     }
   }
 
@@ -1130,7 +1253,6 @@ long pe_write_cells(FILE* outfile, int part)
 
   return bytes;
 }
-
 
 
 int main(int argc, char** argv)
@@ -1299,7 +1421,7 @@ int main(int argc, char** argv)
 
   destroy_result_data(&result);
 
-  printf("  Find number of results: done.\n");
+  printf("  Find number of results: done.\n\n");
 
 
 #ifdef D_FSI
@@ -1309,7 +1431,7 @@ int main(int argc, char** argv)
     fluid_ale_connect=(INT*)CCACALLOC(discret[fluid_idx].field->numnp, sizeof(INT));
     printf("  Find FSI coupling : ");
     post_fsi_initcoupling(&discret[struct_idx], &discret[fluid_idx], &discret[ale_idx], fluid_ale_connect);
-    printf(" done.\n");
+    printf(" done.\n\n");
   }
 #endif
 
