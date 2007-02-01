@@ -89,6 +89,29 @@ public:
   DRT::Element* Clone() const;
 
   /*!
+  \brief Return number of lines of this element
+  */
+  virtual int NumLine() const 
+  {if (NumNode()==4 || NumNode()==9) return 4; else return 3;}
+
+  /*!
+  \brief Return number of surfaces of this element
+  */
+  virtual int NumSurface() const {return 1;}
+
+  /*!
+  \brief Get vector of ptrs to the lines of this element
+  
+  */
+  virtual DRT::ElementLine** Lines();
+
+  /*!
+  \brief Get vector of ptrs to the surfaces of this element
+  
+  */
+  virtual DRT::ElementSurface** Surfaces();
+
+  /*!
   \brief Return unique ParObject id
   
   every class imploementing ParObject needs a unique id defined at the
@@ -230,16 +253,20 @@ private:
     s8_rst,
     s8_rst_ortho
   };
-  ForceType                forcetype_;     // type of force calculation
-  double                   thickness_;     // shell thickness
-  int                      ngp_[3];        // no. gaussian points in each spatial dimension
-  int                      ngptri_;        // no. gaussian points for triangle elements
-  int                      nhyb_;          // no. of internal dofs
-  int                      eas_[5];        // eas parameters
-  int                      ans_;           // type of ANS: 0=none 1=Q 2=T 3=QT  
-  double                   sdc_;           // scaled director conditioning
-  int                      material_;      // number of the material law
-  DRT::Container           data_;          // container containing all kind of shell8 data
+  ForceType                                 forcetype_; // type of force calculation
+  double                                    thickness_; // shell thickness
+  int                                       ngp_[3];    // no. gaussian points in each spatial dimension
+  int                                       ngptri_;    // no. gaussian points for triangle elements
+  int                                       nhyb_;      // no. of internal dofs
+  int                                       eas_[5];    // eas parameters
+  int                                       ans_;       // type of ANS: 0=none 1=Q 2=T 3=QT  
+  double                                    sdc_;       // scaled director conditioning
+  int                                       material_;  // number of the material law
+  DRT::Container                            data_;      // container containing all kind of shell8 data
+  vector<RefCountPtr<DRT::ElementSurface> > surfs_;     // vector of surfaces adjacent to this element (shell8: 1 surface)
+  vector<DRT::ElementSurface*>              surfptrs_;
+  vector<RefCountPtr<DRT::ElementLine> >    lines_;     // vector of lines adjacent to this element (shell8: 3 or 4 lines)
+  vector<DRT::ElementLine*>                 lineptrs_;
   
   // internal calculation methods
 
@@ -580,7 +607,7 @@ private:
 
 
 
-}; // class DesignElementRegister
+}; // class Shell8Register
 
 
 

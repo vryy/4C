@@ -16,6 +16,8 @@ Maintainer: Michael Gee
 
 #include "shell8.H"
 #include "drt_discret.H"
+#include "drt_elementsurface.H"
+#include "drt_elementline.H"
 #include "drt_utils.H"
 #include "drt_dserror.H"
 
@@ -231,6 +233,168 @@ void DRT::Elements::Shell8::Print(ostream& os) const
 RefCountPtr<DRT::ElementRegister> DRT::Elements::Shell8::ElementRegister() const
 {
   return rcp(new DRT::Elements::Shell8Register(Type()));
+}
+
+/*----------------------------------------------------------------------*
+ |  get vector of lines (public)                             mwgee 01/07|
+ *----------------------------------------------------------------------*/
+DRT::ElementLine** DRT::Elements::Shell8::Lines()
+{
+  if (0==(int)lines_.size())
+  {
+    const int nline = NumLine();
+    const int numnode = NumNode();
+    lines_.resize(nline);
+    lineptrs_.resize(nline);
+    int nodeids[100];
+    DRT::Node* nodes[100];
+    if (nline==4)
+    {
+      if (numnode==4)
+      {
+        nodeids[0] = NodeIds()[0];
+        nodeids[1] = NodeIds()[1];
+        nodes[0] = Nodes()[0];
+        nodes[1] = Nodes()[1];
+        lines_[0] = rcp(new DRT::ElementLine(0,Owner(),2,nodeids,nodes));
+        lineptrs_[0] = lines_[0].get();
+
+        nodeids[0] = NodeIds()[1];
+        nodeids[1] = NodeIds()[2];
+        nodes[0] = Nodes()[1];
+        nodes[1] = Nodes()[2];
+        lines_[1] = rcp(new DRT::ElementLine(1,Owner(),2,nodeids,nodes));
+        lineptrs_[1] = lines_[1].get();
+
+        nodeids[0] = NodeIds()[2];
+        nodeids[1] = NodeIds()[3];
+        nodes[0] = Nodes()[2];
+        nodes[1] = Nodes()[3];
+        lines_[2] = rcp(new DRT::ElementLine(2,Owner(),2,nodeids,nodes));
+        lineptrs_[2] = lines_[2].get();
+
+        nodeids[0] = NodeIds()[3];
+        nodeids[1] = NodeIds()[0];
+        nodes[0] = Nodes()[3];
+        nodes[1] = Nodes()[0];
+        lines_[3] = rcp(new DRT::ElementLine(3,Owner(),2,nodeids,nodes));
+        lineptrs_[3] = lines_[3].get();
+      }
+      else if (numnode==9)
+      {
+        nodeids[0] = NodeIds()[0];
+        nodeids[1] = NodeIds()[1];
+        nodeids[2] = NodeIds()[4];
+        nodes[0] = Nodes()[0];
+        nodes[1] = Nodes()[1];
+        nodes[2] = Nodes()[4];
+        lines_[0] = rcp(new DRT::ElementLine(0,Owner(),3,nodeids,nodes));
+        lineptrs_[0] = lines_[0].get();
+
+        nodeids[0] = NodeIds()[1];
+        nodeids[1] = NodeIds()[2];
+        nodeids[2] = NodeIds()[5];
+        nodes[0] = Nodes()[1];
+        nodes[1] = Nodes()[2];
+        nodes[2] = Nodes()[5];
+        lines_[1] = rcp(new DRT::ElementLine(1,Owner(),3,nodeids,nodes));
+        lineptrs_[1] = lines_[1].get();
+
+        nodeids[0] = NodeIds()[2];
+        nodeids[1] = NodeIds()[3];
+        nodeids[2] = NodeIds()[6];
+        nodes[0] = Nodes()[2];
+        nodes[1] = Nodes()[3];
+        nodes[2] = Nodes()[6];
+        lines_[2] = rcp(new DRT::ElementLine(2,Owner(),3,nodeids,nodes));
+        lineptrs_[2] = lines_[2].get();
+
+        nodeids[0] = NodeIds()[3];
+        nodeids[1] = NodeIds()[0];
+        nodeids[2] = NodeIds()[7];
+        nodes[0] = Nodes()[3];
+        nodes[1] = Nodes()[0];
+        nodes[2] = Nodes()[7];
+        lines_[3] = rcp(new DRT::ElementLine(3,Owner(),3,nodeids,nodes));
+        lineptrs_[3] = lines_[3].get();
+      }
+      else dserror("Number of nodes not supported");
+    }
+    else if (nline==3)
+    {
+      if (numnode==3)
+      {
+        nodeids[0] = NodeIds()[0];
+        nodeids[1] = NodeIds()[1];
+        nodes[0] = Nodes()[0];
+        nodes[1] = Nodes()[1];
+        lines_[0] = rcp(new DRT::ElementLine(0,Owner(),2,nodeids,nodes));
+        lineptrs_[0] = lines_[0].get();
+
+        nodeids[0] = NodeIds()[1];
+        nodeids[1] = NodeIds()[2];
+        nodes[0] = Nodes()[1];
+        nodes[1] = Nodes()[2];
+        lines_[1] = rcp(new DRT::ElementLine(1,Owner(),2,nodeids,nodes));
+        lineptrs_[1] = lines_[1].get();
+
+        nodeids[0] = NodeIds()[2];
+        nodeids[1] = NodeIds()[0];
+        nodes[0] = Nodes()[1];
+        nodes[1] = Nodes()[2];
+        lines_[2] = rcp(new DRT::ElementLine(2,Owner(),2,nodeids,nodes));
+        lineptrs_[2] = lines_[2].get();
+      }
+      else if (numnode==6)
+      {
+        nodeids[0] = NodeIds()[0];
+        nodeids[1] = NodeIds()[1];
+        nodeids[2] = NodeIds()[3];
+        nodes[0] = Nodes()[0];
+        nodes[1] = Nodes()[1];
+        nodes[2] = Nodes()[3];
+        lines_[0] = rcp(new DRT::ElementLine(0,Owner(),3,nodeids,nodes));
+        lineptrs_[0] = lines_[0].get();
+
+        nodeids[0] = NodeIds()[1];
+        nodeids[1] = NodeIds()[2];
+        nodeids[2] = NodeIds()[4];
+        nodes[0] = Nodes()[1];
+        nodes[1] = Nodes()[2];
+        nodes[2] = Nodes()[4];
+        lines_[1] = rcp(new DRT::ElementLine(1,Owner(),3,nodeids,nodes));
+        lineptrs_[1] = lines_[1].get();
+
+        nodeids[0] = NodeIds()[2];
+        nodeids[1] = NodeIds()[0];
+        nodeids[2] = NodeIds()[5];
+        nodes[0] = Nodes()[2];
+        nodes[1] = Nodes()[0];
+        nodes[2] = Nodes()[5];
+        lines_[2] = rcp(new DRT::ElementLine(2,Owner(),3,nodeids,nodes));
+        lineptrs_[2] = lines_[2].get();
+      }
+      else dserror("Number of nodes not supported");
+    }
+    else dserror("Number of lines not supported");
+  }
+  return &(lineptrs_[0]);
+}
+
+/*----------------------------------------------------------------------*
+ |  get vector of surfaces (public)                          mwgee 01/07|
+ *----------------------------------------------------------------------*/
+DRT::ElementSurface** DRT::Elements::Shell8::Surfaces()
+{
+  if (0==(int)surfs_.size())
+  {
+    surfs_.resize(1);
+    surfptrs_.resize(1);
+    surfs_[0] = rcp(new DRT::ElementSurface(0,Owner(),NumNode(),
+                                            NodeIds(),Nodes()));
+    surfptrs_[0] = surfs_[0].get();
+  }
+  return &(surfptrs_[0]);
 }
 
 

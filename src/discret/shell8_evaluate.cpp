@@ -21,6 +21,8 @@ Maintainer: Michael Gee
 #endif
 #include "shell8.H"
 #include "drt_discret.H"
+#include "drt_elementsurface.H"
+#include "drt_elementline.H"
 #include "drt_utils.H"
 #include "drt_exporter.H"
 #include "drt_dserror.H"
@@ -107,8 +109,13 @@ int DRT::Elements::Shell8::Evaluate(ParameterList& params,
       if (disp==null) dserror("Cannot get state vector 'displacement'");
       vector<double> mydisp(lm.size());
       DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
+      const int             numsurf = NumSurface();
+      DRT::ElementSurface** surfs   = Surfaces();
+      for (int i=0; i<numsurf; ++i)
+        surfs[i]->SurfaceLoad(params,elevec1,mydisp,lm);
+      exit(0);
+      
       s8_surfaceload(params,elevec1,mydisp);
-      //s8_lineload(params,elevec1,mydisp);
     }
     break;
     case calc_struct_fsiload:
@@ -3133,7 +3140,6 @@ void DRT::Elements::Shell8::s8_surfaceload(ParameterList& params,
         break;
       }
     if (!actcond) dserror("Cannot find matching Condition");
-    cout << *actcond << endl;
     // find out whether we will use a time curve and get the factor
     vector<int>* curve  = actcond->GetVector<int>("curve");
     int curvenum = -1;
@@ -3194,6 +3200,8 @@ void DRT::Elements::Shell8::s8_surfaceload(ParameterList& params,
                             *onoff,*val,curvefac,time);
       } // for (int ls=0; ls<nis; ++ls)
     } // for (int lr=0; lr<nir; ++lr)
+    
+    //cout << *actcond << endl;
    } //  for (int icond=0; icond<numcond; ++icond)
   
   // add eload to element vector

@@ -40,6 +40,8 @@ namespace DRT
 class Discretization;
 class Node;
 class ElementRegister;
+class ElementSurface;
+class ElementLine;
 
 /*!
 \class Element
@@ -68,7 +70,9 @@ public:
     element_designline,
     element_designsurface,
     element_designvolume,
-    element_shell8
+    element_shell8,
+    element_elementsurface,
+    element_elementline
   };
 
 
@@ -152,6 +156,16 @@ public:
   inline int NumNode() const { return nodeid_.size(); }
 
   /*!
+  \brief Return number of lines of this element
+  */
+  virtual int NumLines() const {return 0;}
+
+  /*!
+  \brief Return number of surfaces of this element
+  */
+  virtual int NumSurface() const {return 0;}
+
+  /*!
   \brief Return id's of nodes adjacent to this element
   */
   inline const int* NodeIds() const { if (nodeid_.size()) return &nodeid_[0]; 
@@ -163,6 +177,18 @@ public:
   */
   virtual Node** Nodes()
   { if (node_.size()) return &node_[0]; else return NULL; }
+
+  /*!
+  \brief Get vector of ptrs to the lines of this element
+  
+  */
+  virtual ElementLine** Lines() { return NULL; }
+
+  /*!
+  \brief Get vector of ptrs to the surfaces of this element
+  
+  */
+  virtual ElementSurface** Surfaces() { return NULL; }
 
   /*!
   \brief Get number of degrees of freedom of a certain node
@@ -244,7 +270,7 @@ public:
   
   \note this takes ownership of cond
   
-  \warning If a condition with the exact same name already exists, it will be
+  \warning If a condition with the exact same name already exists, it will
            NOT be overwritten but stored twice in the element
   
   */
@@ -358,13 +384,14 @@ protected:
   */
   bool BuildNodalPointers(map<int,RefCountPtr<DRT::Node> >& nodes);
 
+protected:
+  vector<DRT::Node*>                       node_;      // pointers to adjacent nodes
 private:
 
   int                                      id_;        // a unique global element id
   int                                      owner_;     // owner of this element
   ElementType                              etype_;     // type of element
   vector<int>                              nodeid_;    // list of my nodal ids
-  vector<DRT::Node*>                       node_;      // pointers to adjacent nodes
   DRT::DofSet                              dofset_;    // a set of degrees of freedom
 
   multimap<string,RefCountPtr<Condition> > condition_; // some conditions e.g. BCs

@@ -150,9 +150,12 @@ void ntainp_ccadiscret()
   // Also read time and space functions and local coord systems
   input_conditions();
   
-  // inherit conditions inside design
-  // Dirichlet conditions are inherited (vol->surf->line->node)
-  // Neumann conditions are additive and are therefore not inherited for now
+  // inherit Dirichlet conditions inside design
+  // inherit dirichlet conditions from design to discretization
+  // Neumann conditions are additive and are therefore not inherited
+  // inside design
+  // Neumann conditions are inherited from design to discretization
+  // All this takes place if there IS a design
   inherit_conditions();
   
   /*-------------------------------------------- input of monitoring data */
