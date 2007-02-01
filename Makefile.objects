@@ -95,6 +95,8 @@ OBJS_DISCRET  = src/discret/drt_discret.o \
                 src/discret/drt_discret_evaluate.o \
                 src/discret/drt_element.o \
                 src/discret/drt_elementregister.o \
+                src/discret/drt_elementsurface.o \
+                src/discret/drt_elementline.o \
                 src/discret/drt_node.o \
                 src/discret/drt_container.o \
                 src/discret/drt_condition.o \
