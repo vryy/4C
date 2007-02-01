@@ -717,11 +717,11 @@ void destroy_bin_in_field(BIN_IN_FIELD* context)
 #ifdef PARALLEL
   for (i=0; i<nproc; ++i)
   {
-    CCAFREE(context->send_node_ids[i]);
-    CCAFREE(context->recv_node_ids[i]);
+    if (context->send_node_ids[i]!=NULL) CCAFREE(context->send_node_ids[i]);
+    if (context->recv_node_ids[i]!=NULL) CCAFREE(context->recv_node_ids[i]);
 
-    CCAFREE(context->send_element_ids[i]);
-    CCAFREE(context->recv_element_ids[i]);
+    if (context->send_element_ids[i]!=NULL) CCAFREE(context->send_element_ids[i]);
+    if (context->recv_element_ids[i]!=NULL) CCAFREE(context->recv_element_ids[i]);
   }
 
   CCAFREE(context->send_node_ids);
@@ -738,6 +738,12 @@ void destroy_bin_in_field(BIN_IN_FIELD* context)
 
   if (context->sysarray_typ != NULL)
   {
+    for (i=0; i<nproc; ++i)
+    {
+      if (context->send_dof_ids[i]!=NULL) CCAFREE(context->send_dof_ids[i]);
+      if (context->recv_dof_ids[i]!=NULL) CCAFREE(context->recv_dof_ids[i]);
+    }
+
     CCAFREE(context->send_dof_ids);
     CCAFREE(context->recv_dof_ids);
 
@@ -1843,6 +1849,8 @@ void out_gather_values(BIN_OUT_FIELD* context,
       recv_num = context->recv_numdof[src];
       break;
     default:
+      send_num = 0;
+      recv_num = 0;
       dserror("unknown chunk type %d", type);
     }
 
@@ -1851,8 +1859,13 @@ void out_gather_values(BIN_OUT_FIELD* context,
       send_count = send_num*chunk->value_entry_length;
       recv_count = recv_num*chunk->value_entry_length;
 
-      send_buf = (DOUBLE*)CCACALLOC(send_count, sizeof(DOUBLE));
-      recv_buf = (DOUBLE*)CCACALLOC(recv_count, sizeof(DOUBLE));
+      send_buf = (send_count>0) ? (DOUBLE*)CCACALLOC(send_count, sizeof(DOUBLE)) : NULL;
+      recv_buf = (recv_count>0) ? (DOUBLE*)CCACALLOC(recv_count, sizeof(DOUBLE)) : NULL;
+    }
+    else
+    {
+      send_buf = NULL;
+      recv_buf = NULL;
     }
 
     /*
@@ -1861,8 +1874,8 @@ void out_gather_values(BIN_OUT_FIELD* context,
     send_size_count = (chunk->size_entry_length+1)*send_num;
     recv_size_count = (chunk->size_entry_length+1)*recv_num;
 
-    send_size_buf = (INT*)CCACALLOC(send_size_count, sizeof(INT));
-    recv_size_buf = (INT*)CCACALLOC(recv_size_count, sizeof(INT));
+    send_size_buf = (send_size_count>0) ? (INT*)CCACALLOC(send_size_count, sizeof(INT)) : NULL;
+    recv_size_buf = (recv_size_count>0) ? (INT*)CCACALLOC(recv_size_count, sizeof(INT)) : NULL;
 #else
     /* In the sequential version we take a shortcut. Here we gather
      * values into the array that's used for writing. Thus no
@@ -1936,13 +1949,13 @@ void out_gather_values(BIN_OUT_FIELD* context,
     }
 
 
-    CCAFREE(recv_size_buf);
-    CCAFREE(send_size_buf);
+    if (recv_size_count>0) CCAFREE(recv_size_buf);
+    if (send_size_count>0) CCAFREE(send_size_buf);
 
     if (chunk->value_entry_length > 0)
     {
-      CCAFREE(recv_buf);
-      CCAFREE(send_buf);
+      if (recv_count>0) CCAFREE(recv_buf);
+      if (send_count>0) CCAFREE(send_buf);
     }
 #endif
   }
@@ -2456,7 +2469,7 @@ static void in_setup_node_transfer(BIN_IN_FIELD *context,
 
   for (i=0; i<nprocs; ++i)
   {
-    context->recv_node_ids[i] = (INT*)CCACALLOC(2*context->recv_numnp[i], sizeof(INT));
+    context->recv_node_ids[i] = (context->recv_numnp[i]>0) ? (INT*)CCACALLOC(2*context->recv_numnp[i], sizeof(INT)) : NULL;
   }
 
   /*
@@ -2513,7 +2526,7 @@ static void in_setup_node_transfer(BIN_IN_FIELD *context,
       dserror("mpi sendrecv error %d", err);
     }
 
-    context->send_node_ids[dst] = (INT*)CCACALLOC(2*context->send_numnp[dst], sizeof(INT));
+    context->send_node_ids[dst] = (context->send_numnp[dst]>0) ? (INT*)CCACALLOC(2*context->send_numnp[dst], sizeof(INT)) : NULL;
 
     /* Tell the source which items we expect. */
     err = MPI_Sendrecv(context->recv_node_ids[src], 2*context->recv_numnp[src], MPI_INT, src, tag_base+i,
@@ -2580,7 +2593,7 @@ static void in_setup_element_transfer(BIN_IN_FIELD *context,
 
   for (i=0; i<nprocs; ++i)
   {
-    context->recv_element_ids[i] = (INT*)CCACALLOC(2*context->recv_numele[i], sizeof(INT));
+    context->recv_element_ids[i] = (context->recv_numele[i]>0) ? (INT*)CCACALLOC(2*context->recv_numele[i], sizeof(INT)) : NULL;
   }
 
   /* collect the elements */
@@ -2631,7 +2644,7 @@ static void in_setup_element_transfer(BIN_IN_FIELD *context,
       dserror("mpi sendrecv error %d", err);
     }
 
-    context->send_element_ids[dst] = (INT*)CCACALLOC(2*context->send_numele[dst], sizeof(INT));
+    context->send_element_ids[dst] = (context->send_numele[dst]>0) ? (INT*)CCACALLOC(2*context->send_numele[dst], sizeof(INT)) : NULL;
 
     /* Tell the source which items we expect. */
     err = MPI_Sendrecv(context->recv_element_ids[src], 2*context->recv_numele[src], MPI_INT, src, tag_base+i,
@@ -2666,7 +2679,7 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
                                   PARTDISCRET *actpdis,
                                   DISCRET *actdis)
 {
-  INT i, j, max_num, fullarrays;
+  INT i, j, max_num=0, fullarrays=0;
   INT tag_base = 0xCDEF;
   SPARSE_TYP *sysarray_typ;
   SPARSE_ARRAY *sysarray;
@@ -2846,7 +2859,7 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
 
   for (i=0; i<nprocs; ++i)
   {
-    context->recv_dof_ids[i] = (INT*)CCACALLOC(2*context->recv_numdof[i], sizeof(INT));
+    context->recv_dof_ids[i] = (context->recv_numdof[i]>0) ? (INT*)CCACALLOC(2*context->recv_numdof[i], sizeof(INT)) : NULL;
   }
 
 /* collect the dofs */
@@ -3025,7 +3038,7 @@ static void in_setup_dof_transfer(BIN_IN_FIELD *context,
       dserror("mpi sendrecv error %d", err);
     }
 
-    context->send_dof_ids[dst] = (INT*)CCACALLOC(2*context->send_numdof[dst], sizeof(INT));
+    context->send_dof_ids[dst] = (context->send_numdof[dst]) ? (INT*)CCACALLOC(2*context->send_numdof[dst], sizeof(INT)) : NULL;
 
     /* Tell the source which items we expect. */
     err = MPI_Sendrecv(context->recv_dof_ids[src], 2*context->recv_numdof[src], MPI_INT, src, tag_base+i,
@@ -3495,6 +3508,9 @@ void in_scatter_chunk(BIN_IN_FIELD* context,
       send_ids = context->send_dof_ids[dst];
       break;
     default:
+      send_num = 0;
+      recv_num = 0;
+      send_ids = NULL;
       dserror("unknown chunk type %d", chunk->type);
     }
 
@@ -3503,15 +3519,20 @@ void in_scatter_chunk(BIN_IN_FIELD* context,
       send_count = send_num*chunk->value_entry_length;
       recv_count = recv_num*chunk->value_entry_length;
 
-      send_buf = (DOUBLE*)CCACALLOC(send_count, sizeof(DOUBLE));
-      recv_buf = (DOUBLE*)CCACALLOC(recv_count, sizeof(DOUBLE));
+      send_buf = (send_count>0) ? (DOUBLE*)CCACALLOC(send_count, sizeof(DOUBLE)) : NULL;
+      recv_buf = (recv_count>0) ? (DOUBLE*)CCACALLOC(recv_count, sizeof(DOUBLE)) : NULL;
+    }
+    else
+    {
+      send_buf = NULL;
+      recv_buf = NULL;
     }
 
     send_size_count = send_num*(chunk->size_entry_length+1);
     recv_size_count = recv_num*(chunk->size_entry_length+1);
 
-    send_size_buf = (INT*)CCACALLOC(send_size_count, sizeof(INT));
-    recv_size_buf = (INT*)CCACALLOC(recv_size_count, sizeof(INT));
+    send_size_buf = (send_size_count>0) ? (INT*)CCACALLOC(send_size_count, sizeof(INT)) : NULL;
+    recv_size_buf = (recv_size_count>0) ? (INT*)CCACALLOC(recv_size_count, sizeof(INT)) : NULL;
 
     /* abbreviations */
     size_len = chunk->size_entry_length;
@@ -3587,12 +3608,12 @@ void in_scatter_chunk(BIN_IN_FIELD* context,
 
     if (chunk->value_entry_length > 0)
     {
-      CCAFREE(recv_buf);
-      CCAFREE(send_buf);
+      if (recv_count>0) CCAFREE(recv_buf);
+      if (send_count>0) CCAFREE(send_buf);
     }
 
-    CCAFREE(recv_size_buf);
-    CCAFREE(send_size_buf);
+    if (recv_size_count>0) CCAFREE(recv_size_buf);
+    if (send_size_count>0) CCAFREE(send_size_buf);
 
 #endif
 
