@@ -2809,6 +2809,346 @@ ddt
  There is one debugging session allowed at a time.
 \end_layout
 
+\begin_layout Standard
+Before you can use 
+\family typewriter
+ddt
+\family default
+ you have to set it up so that it knows you are running your job via OpenMPI
+ and a PBS queue.
+ Several steps are required:
+\end_layout
+
+\begin_layout Itemize
+add the line
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+export DDTMPIRUN=/cluster/openmpi-1.1.1/bin/mpirun
+\end_layout
+
+\begin_layout Standard
+to your 
+\family typewriter
+~/.bashrc
+\family default
+.
+ This allows ddt to run proccesses in parallel on the frontend.
+ (You are not supposed to do that regularly.)
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+create a file 
+\family typewriter
+~/.ddt/config.ddt
+\family default
+ with the following content
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+DDT Config File
+\end_layout
+
+\begin_layout LyX-Code
+[editor] 
+\end_layout
+
+\begin_layout LyX-Code
+tab size = 4
+\end_layout
+
+\begin_layout LyX-Code
+[fonts] 
+\end_layout
+
+\begin_layout LyX-Code
+family = fixed 
+\end_layout
+
+\begin_layout LyX-Code
+size = 14
+\end_layout
+
+\begin_layout LyX-Code
+[groups] 
+\end_layout
+
+\begin_layout LyX-Code
+filename =
+\end_layout
+
+\begin_layout LyX-Code
+[startup] 
+\end_layout
+
+\begin_layout LyX-Code
+default number of processes = 2 
+\end_layout
+
+\begin_layout LyX-Code
+default debugger = gdb 
+\end_layout
+
+\begin_layout LyX-Code
+stop at exit = no 
+\end_layout
+
+\begin_layout LyX-Code
+stop at abort = yes
+\end_layout
+
+\begin_layout LyX-Code
+[mpi] 
+\end_layout
+
+\begin_layout LyX-Code
+type = OpenMPI
+\end_layout
+
+\begin_layout LyX-Code
+[queue] 
+\end_layout
+
+\begin_layout LyX-Code
+use queue = yes 
+\end_layout
+
+\begin_layout LyX-Code
+template file = /home/username/pbs.qtf 
+\end_layout
+
+\begin_layout LyX-Code
+submit = /cluster/torque/bin/qsub 
+\end_layout
+
+\begin_layout LyX-Code
+cancel = /cluster/torque/bin/qdel JOB_ID_TAG 
+\end_layout
+
+\begin_layout LyX-Code
+job regexp = [0-9]+ 
+\end_layout
+
+\begin_layout LyX-Code
+display = /cluster/torque/bin/qstat 
+\end_layout
+
+\begin_layout LyX-Code
+use num_nodes = yes 
+\end_layout
+
+\begin_layout LyX-Code
+procs_per_node = 2
+\end_layout
+
+\begin_layout LyX-Code
+[arguments] 
+\end_layout
+
+\begin_layout LyX-Code
+mpi0 =
+\end_layout
+
+\begin_layout LyX-Code
+[attach] 
+\end_layout
+
+\begin_layout LyX-Code
+node list file = 
+\end_layout
+
+\begin_layout LyX-Code
+hide forked children = yes
+\end_layout
+
+\begin_layout LyX-Code
+[attach list]
+\end_layout
+
+\begin_layout LyX-Code
+[memory debugging] 
+\end_layout
+
+\begin_layout LyX-Code
+enabled = yes 
+\end_layout
+
+\begin_layout LyX-Code
+setting = none 
+\end_layout
+
+\begin_layout LyX-Code
+interval = -1 
+\end_layout
+
+\begin_layout LyX-Code
+preload = dmalloc 
+\end_layout
+
+\begin_layout Standard
+This file can be generated using the 
+\family typewriter
+ddt
+\family default
+ gui as well, however it is far more convenient to create beforehand.
+ This configuration file tells 
+\family typewriter
+ddt
+\family default
+ how to use the queue.
+ The only line you have to change in the above file is the one defining
+ the 
+\family typewriter
+template file
+\family default
+.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+The 
+\family typewriter
+template file
+\family default
+ is used to create a PBS job file.
+ There are some tags that 
+\family typewriter
+ddt
+\family default
+ replaces with its values before it submits the file into the queue.
+ A valid template file looks like this:
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+#!/bin/bash
+\end_layout
+
+\begin_layout LyX-Code
+# DDT will generate a submission script from this by replacing these tags:
+ 
+\end_layout
+
+\begin_layout LyX-Code
+#        TAG NAME       |      DESCRIPTION              |      EXAMPLE 
+\end_layout
+
+\begin_layout LyX-Code
+# ---------------------------------------------------------------------------
+ 
+\end_layout
+
+\begin_layout LyX-Code
+# PROGRAM_TAG           | target path and filename      | /users/ned/a.out
+ 
+\end_layout
+
+\begin_layout LyX-Code
+# PROGRAM_ARGUMENTS_TAG | arguments to target program   | -myarg myval 
+\end_layout
+
+\begin_layout LyX-Code
+# NUM_PROCS_TAG         | total number of processes     | 16 
+\end_layout
+
+\begin_layout LyX-Code
+# NUM_NODES_TAG         | number of compute nodes       | 8 
+\end_layout
+
+\begin_layout LyX-Code
+# PROCS_PER_NODE_TAG    | processes per node            | 2 
+\end_layout
+
+\begin_layout LyX-Code
+# 
+\end_layout
+
+\begin_layout LyX-Code
+# Note that NUM_NODES_TAG and PROCS_PER_NODE_TAG are only valid if DDT is
+ 
+\end_layout
+
+\begin_layout LyX-Code
+# set to 'use NUM_NODES' in the queue options.
+ If not, they will be replaced 
+\end_layout
+
+\begin_layout LyX-Code
+# with the number of processes and 1 respectively.
+\end_layout
+
+\begin_layout LyX-Code
+#P BS -l walltime=00:30:00,nodes=NUM_NODES_TAG:ppn=PROCS_PER_NODE_TAG 
+\end_layout
+
+\begin_layout LyX-Code
+#PBS -l nodes=NUM_NODES_TAG 
+\end_layout
+
+\begin_layout LyX-Code
+#PBS -q debug 
+\end_layout
+
+\begin_layout LyX-Code
+#PBS -V 
+\end_layout
+
+\begin_layout LyX-Code
+#PBS -o PROGRAM_TAG-ddt.output 
+\end_layout
+
+\begin_layout LyX-Code
+#PBS -e PROGRAM_TAG-ddt.error
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+srcdir=$PBS_O_WORKDIR cd $srcdir
+\end_layout
+
+\begin_layout LyX-Code
+VAPILIB=/usr/local/ibgd/driver/infinihost/lib64 export LD_LIBRARY_PATH=$LD_LIBRA
+RY_PATH:$VAPILIB
+\end_layout
+
+\begin_layout LyX-Code
+MPIDIR=/cluster/openmpi-1.1.1
+\end_layout
+
+\begin_layout LyX-Code
+$MPIDIR/bin/mpirun -hostfile $PBS_NODEFILE -np NUM_PROCS_TAG /cluster/allinea/dd
+t/bin/ddt-debugger PROGRAM_ARGUMENTS_TAG | tee debug_output
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+Once you have the configuration in place you can call 
+\family typewriter
+ddt
+\family default
+ via
+\end_layout
+
+\begin_layout LyX-Code
+/cluster/allinea/ddt/bin/ddt cca_par_ompi_cluster.debg inputfile.dat xxx
+\end_layout
+
+\begin_layout Standard
+Note: 
+\family typewriter
+ddt
+\family default
+ has a memory debugging ability that consumes a large amount of memory.
+ If you want to debug large examples you will have to turn memory debugging
+ off.
+\end_layout
+
 \begin_layout Subsection
 Debugging hints
 \end_layout
