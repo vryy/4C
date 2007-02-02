@@ -1,0 +1,35 @@
+1) How to generate a tech report
+
+-> Use ./configure to generate Makefile and master tex 
+   documents in tex_aux_log_etc
+
+-> Use make to generate reports in subdirectory reports
+   
+   make          :   global & single reports
+   make global   :   create only one master document
+   make single   :   create one pdf for each chapter
+   make clean    :   remove all generated documents
+
+2) How to add a tech report
+
+-> add a new subdirectory to src/
+   it must be named like
+
+               src_doohickey
+
+-> create file named 
+
+               src_doohickey.tex
+
+   in this new directory. This file is your main document.
+   You are allowed to include files and pictures ---
+   use unique names for labels (like fsi:couple, fsi:basic_equation, ...)
+   to avoid name clashes in master document!
+
+   If you are using subdirectories, the path should be 
+   specified relative to the src_doohickey directory
+   e.g. \includegraphics{figures/baum} to include baum.eps
+   Do NOT use the \graphicspath command!
+   It is already used by the configure script.
+
+-> run ./configure and make
