@@ -213,6 +213,7 @@ INT               output_dis;         /* output discretization */
 INT               monitor;
 INT               relative_displ;         /* write relative displacements to .err */
 INT               steps_per_file;         /* number of result steps per binary file */
+INT               processor_local;        /* write binary processor local */
 } IO_FLAGS;
 
 
@@ -313,8 +314,8 @@ typedef struct _GENPROB
                                     * be compared to the calculated ones. */
 #endif
 
-  INT               usetrilinosalgebra; /* use trilinos for vectors/matrices or 
-                                         * ccarat internal (solver dependent) 
+  INT               usetrilinosalgebra; /* use trilinos for vectors/matrices or
+                                         * ccarat internal (solver dependent)
                                          * vectors/marices */
 
 

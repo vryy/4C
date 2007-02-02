@@ -92,8 +92,11 @@ extern CHAR* fieldnames[];
 */
 /*----------------------------------------------------------------------*/
 typedef struct _RESULT_DATA {
-  FILE* value_file;
-  FILE* size_file;
+  FILE** value_file;
+  FILE** size_file;
+
+  /* Number of files. This is !=1 for processor local output in parallel. */
+  INT num_files;
 
   /* position of this result in the global result array */
   INT pos;

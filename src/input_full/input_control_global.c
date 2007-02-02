@@ -426,6 +426,7 @@ if (frfind("---IO")==1)
 {
   frread();
   ioflags.steps_per_file = 1000;
+  ioflags.processor_local = 0;
   while(strncmp(allfiles.actplace,"------",6)!=0)
   {
     frreadyes("OUTPUT_OUT",&ioflags.output_out);
@@ -537,6 +538,7 @@ if (frfind("---IO")==1)
 
     frint("RELATIVE_DISP_NUM",&(ioflags.relative_displ),&ierr);
     frint("FILESTEPS",&(ioflags.steps_per_file),&ierr);
+    frreadyes("PROCESSOR_LOCAL",&ioflags.processor_local);
     frread();
   }
 }
@@ -1146,7 +1148,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #ifdef D_FLUID2_TDS
       else if (frwordcmp(buffer,"Inc_Acc_Gen_Alpha")==0)
          fdyn->iop=8;
-#endif /* D_FLUID2_TDS */      
+#endif /* D_FLUID2_TDS */
       else
          dserror("TIMEINTEGR-Type unknown");
    }

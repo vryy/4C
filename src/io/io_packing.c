@@ -5741,7 +5741,7 @@ void find_restart_item_length(struct _BIN_OUT_FIELD* context,
 #ifdef D_FLUID2_PRO
     case el_fluid2_pro:
     {
-      INT numpdof;
+      INT numpdof=0;
       switch (actele->e.f2pro->dm)
       {
       case dm_q2pm1:
@@ -5769,7 +5769,7 @@ void find_restart_item_length(struct _BIN_OUT_FIELD* context,
 #ifdef D_FLUID3_PRO
     case el_fluid3_pro:
     {
-      INT numpdof;
+      INT numpdof=0;
       switch (actele->e.f3pro->dm)
       {
       case dm_q2pm1:

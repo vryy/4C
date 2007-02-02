@@ -543,9 +543,11 @@ void destroy_translation_table(TRANSLATION_TABLE* table)
 /*----------------------------------------------------------------------*/
 static void open_data_files(RESULT_DATA* result, MAP* field_info, CHAR* prefix)
 {
+  INT i;
   CHAR* filename;
   CHAR var_name[100];
   PROBLEM_DATA* problem;
+  INT num_output_proc;
 
 #ifdef DEBUG
   dstrc_enter("open_data_files");
@@ -553,21 +555,36 @@ static void open_data_files(RESULT_DATA* result, MAP* field_info, CHAR* prefix)
 
   problem = result->field->problem;
 
+  if (!map_find_int(field_info,"num_output_proc",&num_output_proc))
+  {
+    num_output_proc = 1;
+  }
+
+  result->num_files  = num_output_proc;
+  result->value_file = (FILE**)CCACALLOC(num_output_proc,sizeof(FILE*));
+  result->size_file  = (FILE**)CCACALLOC(num_output_proc,sizeof(FILE*));
+
   sprintf(var_name, "%s_value_file", prefix);
   filename = map_read_string(field_info, var_name);
 
   /* It's misleading to look in the current directory by default. */
 
-  /*result->value_file = fopen(filename, "rb");
-    if (result->value_file == NULL)*/
+  for (i=0; i<num_output_proc; ++i)
   {
-    CHAR buf[100];
-    strcpy(buf, problem->input_dir);
-    strcat(buf, filename);
+    CHAR buf[256];
+    if (num_output_proc>1)
+    {
+      sprintf(buf,"%s%s.p%d",problem->input_dir,filename,i);
+    }
+    else
+    {
+      strcpy(buf, problem->input_dir);
+      strcat(buf, filename);
+    }
 
     /* windows asks for a binary flag here... */
-    result->value_file = fopen(buf, "rb");
-    if (result->value_file == NULL)
+    result->value_file[i] = fopen(buf, "rb");
+    if (result->value_file[i] == NULL)
     {
       dserror("failed to open file '%s'", filename);
     }
@@ -578,16 +595,23 @@ static void open_data_files(RESULT_DATA* result, MAP* field_info, CHAR* prefix)
   sprintf(var_name, "%s_size_file", prefix);
 
   filename = map_read_string(field_info, var_name);
-  /*result->size_file = fopen(filename, "rb");
-    if (result->size_file == NULL)*/
+
+  for (i=0; i<num_output_proc; ++i)
   {
-    CHAR buf[100];
-    strcpy(buf, problem->input_dir);
-    strcat(buf, filename);
+    CHAR buf[256];
+    if (num_output_proc>1)
+    {
+      sprintf(buf,"%s%s.p%d",problem->input_dir,filename,i);
+    }
+    else
+    {
+      strcpy(buf, problem->input_dir);
+      strcat(buf, filename);
+    }
 
     /* windows asks for a binary flag here... */
-    result->size_file = fopen(buf, "rb");
-    if (result->size_file == NULL)
+    result->size_file[i] = fopen(buf, "rb");
+    if (result->size_file[i] == NULL)
     {
       dserror("failed to open file '%s'", filename);
     }
@@ -1104,8 +1128,14 @@ void destroy_result_data(RESULT_DATA* result)
 
   if (result->value_file != NULL)
   {
-    fclose(result->value_file);
-    fclose(result->size_file);
+    INT i;
+    for (i=0; i<result->num_files; ++i)
+    {
+      fclose(result->value_file[i]);
+      fclose(result->size_file[i]);
+    }
+    CCAFREE(result->value_file);
+    CCAFREE(result->size_file);
   }
 
 #ifdef DEBUG
@@ -1155,11 +1185,7 @@ INT next_result(RESULT_DATA* result)
       if ((map_symbol_count(map, "result_value_file") > 0) ||
           (map_symbol_count(map, "result_size_file") > 0))
       {
-        if (result->value_file != NULL)
-        {
-          fclose(result->value_file);
-          fclose(result->size_file);
-        }
+	destroy_result_data(result);
         open_data_files(result, map, "result");
       }
 
@@ -1263,6 +1289,133 @@ static void byteswap_ints(INT* data, INT length)
 
 /*----------------------------------------------------------------------*/
 /*!
+  \brief Read the value entries of one chunk
+
+  One chunk is just a bunch of continuous data in a file. Only when
+  processor local output was used this become more complicated because
+  each chunk will be scattered to many files. We read on after the
+  other.
+
+  \param chunk    (o) the chunk to be read
+  \param result   (i) on input the current result data
+  \param numentry (i) the number of entries in this chunk
+
+  \author u.kue
+  \date 02/07
+*/
+/*----------------------------------------------------------------------*/
+static void read_value_chunk(CHUNK_DATA* chunk, RESULT_DATA* result, INT numentry)
+{
+  INT length = chunk->value_entry_length*numentry;
+
+  if (length > 0)
+  {
+    INT i, max_num, fullarrays;
+    DOUBLE* data;
+
+    /* We read (possibly) from many processor local files. */
+
+    max_num = (numentry + result->num_files - 1) / result->num_files;
+    fullarrays = result->num_files - (result->num_files*max_num - numentry);
+
+    chunk->value_data = (DOUBLE*)CCACALLOC(length, sizeof(DOUBLE));
+    data = chunk->value_data;
+
+    for (i=0; i<result->num_files; ++i)
+    {
+      INT local_length;
+      if (i<fullarrays)
+      {
+	local_length = chunk->value_entry_length*max_num;
+      }
+      else
+      {
+	local_length = chunk->value_entry_length*(max_num - 1);
+      }
+
+      fseek(chunk->result->value_file[i], chunk->value_offset, SEEK_SET);
+      if (fread(data, sizeof(DOUBLE),
+		local_length,
+		chunk->result->value_file[i]) != local_length)
+      {
+	dserror("failed to read value file of field '%s'", result->field->name);
+      }
+      data += local_length;
+    }
+    byteswap_doubles(chunk->value_data, length);
+  }
+  else
+  {
+    chunk->value_data = NULL;
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Read the size entries of one chunk
+
+  One chunk is just a bunch of continuous data in a file. Only when
+  processor local output was used this become more complicated because
+  each chunk will be scattered to many files. We read on after the
+  other.
+
+  \param chunk    (o) the chunk to be read
+  \param result   (i) on input the current result data
+  \param numentry (i) the number of entries in this chunk
+
+  \author u.kue
+  \date 02/07
+*/
+/*----------------------------------------------------------------------*/
+static void read_size_chunk(CHUNK_DATA* chunk, RESULT_DATA* result, INT numentry)
+{
+  INT length;
+  length = chunk->size_entry_length*numentry;
+
+  if (length > 0)
+  {
+    INT i, max_num, fullarrays;
+    INT* data;
+
+    max_num = (numentry + result->num_files - 1) / result->num_files;
+    fullarrays = result->num_files - (result->num_files*max_num - numentry);
+
+    chunk->size_data = (INT*)CCACALLOC(length, sizeof(INT));
+    data = chunk->size_data;
+
+    for (i=0; i<result->num_files; ++i)
+    {
+      INT local_length;
+      if (i<fullarrays)
+      {
+	local_length = chunk->size_entry_length*max_num;
+      }
+      else
+      {
+	local_length = chunk->size_entry_length*(max_num - 1);
+      }
+
+      fseek(chunk->result->size_file[i], chunk->size_offset, SEEK_SET);
+      if (fread(data, sizeof(INT),
+		local_length,
+		chunk->result->size_file[i]) != local_length)
+      {
+	dserror("failed to read size file of field '%s'", result->field->name);
+      }
+      data += local_length;
+    }
+    byteswap_ints(chunk->size_data, length);
+  }
+  else
+  {
+    chunk->size_data = NULL;
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
   \brief Set up the chunk structure to iterate the chunk's entries.
 
   \param result (i) on input the current result data
@@ -1297,6 +1450,9 @@ void init_chunk_data(RESULT_DATA* result, CHUNK_DATA* chunk, CHAR* name)
   /* Low memory! We read one entry only. This way we have to reread
    * some entries many times. */
 
+  if (result->num_files > 1)
+    dserror("No! Reading processor local files with low memory is not supported!");
+
   if (chunk->value_entry_length > 0)
   {
     chunk->value_buf = (DOUBLE*)CCACALLOC(chunk->value_entry_length, sizeof(DOUBLE));
@@ -1324,87 +1480,13 @@ void init_chunk_data(RESULT_DATA* result, CHUNK_DATA* chunk, CHAR* name)
 
   if (strcmp(type, "element") == 0)
   {
-    INT length = chunk->value_entry_length*result->field->numele;
-
-    if (length > 0)
-    {
-      chunk->value_data = (DOUBLE*)CCACALLOC(length, sizeof(DOUBLE));
-      fseek(chunk->result->value_file, chunk->value_offset, SEEK_SET);
-      if (fread(chunk->value_data, sizeof(DOUBLE),
-                length,
-                chunk->result->value_file) != length)
-      {
-        dserror("failed to read value file of field '%s'", result->field->name);
-      }
-      byteswap_doubles(chunk->value_data, length);
-    }
-    else
-    {
-      chunk->value_data = NULL;
-    }
-
-    length = chunk->size_entry_length*result->field->numele;
-
-    if (length > 0)
-    {
-      chunk->size_data = (INT*)CCACALLOC(length, sizeof(INT));
-      fseek(chunk->result->size_file, chunk->size_offset, SEEK_SET);
-      if (fread(chunk->size_data, sizeof(INT),
-                length,
-                chunk->result->size_file) != length)
-      {
-        dserror("failed to read size file of field '%s'", result->field->name);
-      }
-      byteswap_ints(chunk->size_data, length);
-    }
-    else
-    {
-      chunk->size_data = NULL;
-    }
+    read_value_chunk(chunk, result, result->field->numele);
+    read_size_chunk(chunk, result, result->field->numele);
   }
   else if (strcmp(type, "node") == 0)
   {
-    INT length = chunk->value_entry_length*result->field->numnp;
-
-    if (length > 0)
-    {
-      INT length_read;
-      chunk->value_data = (DOUBLE*)CCACALLOC(length, sizeof(DOUBLE));
-      fseek(chunk->result->value_file, chunk->value_offset, SEEK_SET);
-      length_read = fread(chunk->value_data, sizeof(DOUBLE),
-                          length,
-                          chunk->result->value_file);
-      if (length_read != length)
-      {
-        dserror("failed to read value file of field '%s'", result->field->name);
-      }
-      byteswap_doubles(chunk->value_data, length);
-    }
-    else
-    {
-      chunk->value_data = NULL;
-    }
-
-    length = chunk->size_entry_length*result->field->numnp;
-
-    if (length > 0)
-    {
-      INT length_read;
-      chunk->size_data = (INT*)CCACALLOC(length, sizeof(INT));
-      fseek(chunk->result->size_file, chunk->size_offset, SEEK_SET);
-      length_read = fread(chunk->size_data, sizeof(INT),
-                          length,
-                          chunk->result->size_file);
-      if (length_read != length)
-      {
-        dserror("failed to read size file of field '%s'", result->field->name);
-      }
-      byteswap_ints(chunk->size_data, length);
-    }
-    else
-    {
-      chunk->size_data = NULL;
-    }
+    read_value_chunk(chunk, result, result->field->numnp);
+    read_size_chunk(chunk, result, result->field->numnp);
   }
   else
   {
@@ -1476,12 +1558,12 @@ void chunk_read_size_entry(CHUNK_DATA* chunk, INT id)
 
 #ifdef LOWMEM
 
-  fseek(chunk->result->size_file,
+  fseek(chunk->result->size_file[0],
         chunk->size_offset + chunk->size_entry_length*id*sizeof(INT),
         SEEK_SET);
   if (fread(chunk->size_buf, sizeof(INT),
             chunk->size_entry_length,
-            chunk->result->size_file) != chunk->size_entry_length)
+            chunk->result->size_file[0]) != chunk->size_entry_length)
   {
     dserror("failed to read size file of field '%s'", chunk->result->field->name);
   }
@@ -1518,12 +1600,12 @@ void chunk_read_value_entry(CHUNK_DATA* chunk, INT id)
 
 #ifdef LOWMEM
 
-  fseek(chunk->result->value_file,
+  fseek(chunk->result->value_file[0],
         chunk->value_offset + chunk->value_entry_length*id*sizeof(DOUBLE),
         SEEK_SET);
   if (fread(chunk->value_buf, sizeof(DOUBLE),
             chunk->value_entry_length,
-            chunk->result->value_file) != chunk->value_entry_length)
+            chunk->result->value_file[0]) != chunk->value_entry_length)
   {
     dserror("failed to read value file of field '%s'", chunk->result->field->name);
   }

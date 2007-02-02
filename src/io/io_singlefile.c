@@ -111,6 +111,11 @@ All io is done using chunks.
   - Element variants removed
   - Element parameter chunk introduced
 
+  Version 0.3
+  ===========
+
+  - introduction of processor local output
+
   </pre>
 
   \author u.kue
@@ -470,6 +475,8 @@ static void close_data_files(BIN_DATA_FILES* files)
 #endif
 
 #ifdef PARALLEL
+
+  /* close the shared files */
   if (files->value_file != MPI_FILE_NULL)
   {
     err = MPI_File_close(&(files->value_file));
@@ -487,6 +494,12 @@ static void close_data_files(BIN_DATA_FILES* files)
       dserror("MPI_File_close failed: %d", err);
     }
   }
+
+  /* close the processor local file (if opened) */
+  if (files->local_value_file != NULL)
+    fclose(files->local_value_file);
+  if (files->local_size_file != NULL)
+    fclose(files->local_size_file);
 #else
   if (files->value_file != NULL)
     fclose(files->value_file);
@@ -751,17 +764,33 @@ void destroy_bin_in_field(BIN_IN_FIELD* context)
     CCAFREE(context->recv_numdof);
   }
 
-  err = MPI_File_close(&(context->value_file));
-  if (err != 0)
+  /* Now we have two different modes. Only one set of files is allowed
+   * to be open. */
+  if (ioflags.processor_local==0)
   {
-    dserror("MPI_File_close failed: %d", err);
+    err = MPI_File_close(&(context->value_file));
+    if (err != 0)
+    {
+      dserror("MPI_File_close failed: %d", err);
+    }
+    context->value_file = MPI_FILE_NULL;
+
+    err = MPI_File_close(&(context->size_file));
+    if (err != 0)
+    {
+      dserror("MPI_File_close failed: %d", err);
+    }
+    context->size_file = MPI_FILE_NULL;
+  }
+  else
+  {
+    fclose(context->local_value_file);
+    fclose(context->local_size_file);
+
+    context->local_value_file = NULL;
+    context->local_size_file = NULL;
   }
 
-  err = MPI_File_close(&(context->size_file));
-  if (err != 0)
-  {
-    dserror("MPI_File_close failed: %d", err);
-  }
 #else
   fclose(context->value_file);
   fclose(context->size_file);
@@ -1238,6 +1267,11 @@ static void out_setup_node_transfer(BIN_OUT_FIELD *context)
 /*!
   \brief Open the data files for output.
 
+  Depending on the mode (serial/parallel, single file/multi file) the
+  files we have to open are different. Additionally we need to store
+  the actual file name in the control file, so we can find the files
+  again.
+
   \param context      (i) pointer to a context variable during setup.
   \param files        (o) the pair of files to be opened.
   \param variant      (i) tag to distinguish different pairs. Might be
@@ -1277,6 +1311,18 @@ void out_open_data_files(BIN_OUT_FIELD *context,
 
   close_data_files(files);
 
+#ifdef PARALLEL
+  if (ioflags.processor_local!=0)
+  {
+    if (rank==0)
+    {
+      fprintf(bin_out_main.control_file,
+	      "    # This is a processor local output\n"
+	      "    num_output_proc = %d\n", actintra->intra_nprocs);
+    }
+  }
+#endif
+
   /*
    * The file names must be unique even in (future) problems with
    * different field of the same type and many discretizations. Thus
@@ -1287,12 +1333,30 @@ void out_open_data_files(BIN_OUT_FIELD *context,
   sprintf(filename, "%s.%s.%s.f%d.d%d.s%d.values", bin_out_main.name, variant,
           fieldnames[actfield->fieldtyp], field_pos, disnum, step);
 #ifdef PARALLEL
-  err = MPI_File_open(actintra->MPI_INTRA_COMM, filename,
-                      MPI_MODE_WRONLY | MPI_MODE_CREATE, MPI_INFO_NULL,
-                      &(files->value_file));
-  if (err != 0)
+  if (ioflags.processor_local==0)
   {
-    dserror("MPI_File_open failed for file '%s': %d", filename, err);
+    files->local_value_file = NULL;
+    err = MPI_File_open(actintra->MPI_INTRA_COMM, filename,
+			MPI_MODE_WRONLY | MPI_MODE_CREATE, MPI_INFO_NULL,
+			&(files->value_file));
+    if (err != 0)
+    {
+      dserror("MPI_File_open failed for file '%s': %d", filename, err);
+    }
+  }
+  else
+  {
+    if (actintra->intra_nprocs>1)
+    {
+      CHAR local_filename[256];
+      sprintf(local_filename,"%s.p%d",filename,rank);
+      files->local_value_file = fopen(local_filename, "wb");
+    }
+    else
+    {
+      files->local_value_file = fopen(filename, "wb");
+    }
+    files->value_file = MPI_FILE_NULL;
   }
 #else
   files->value_file = fopen(filename, "wb");
@@ -1318,12 +1382,30 @@ void out_open_data_files(BIN_OUT_FIELD *context,
   sprintf(filename, "%s.%s.%s.f%d.d%d.s%d.sizes", bin_out_main.name, variant,
           fieldnames[actfield->fieldtyp], field_pos, disnum, step);
 #ifdef PARALLEL
-  err = MPI_File_open(actintra->MPI_INTRA_COMM, filename,
-                      MPI_MODE_WRONLY | MPI_MODE_CREATE, MPI_INFO_NULL,
-                      &(files->size_file));
-  if (err != 0)
+  if (ioflags.processor_local==0)
   {
-    dserror("MPI_File_open failed for file '%s': %d", filename, err);
+    files->local_size_file = NULL;
+    err = MPI_File_open(actintra->MPI_INTRA_COMM, filename,
+			MPI_MODE_WRONLY | MPI_MODE_CREATE, MPI_INFO_NULL,
+			&(files->size_file));
+    if (err != 0)
+    {
+      dserror("MPI_File_open failed for file '%s': %d", filename, err);
+    }
+  }
+  else
+  {
+    if (actintra->intra_nprocs>1)
+    {
+      CHAR local_filename[256];
+      sprintf(local_filename,"%s.p%d",filename,rank);
+      files->local_size_file = fopen(local_filename, "wb");
+    }
+    else
+    {
+      files->local_size_file = fopen(filename, "wb");
+    }
+    files->size_file = MPI_FILE_NULL;
   }
 #else
   files->size_file = fopen(filename, "wb");
@@ -2004,6 +2086,10 @@ void out_activate_restart(BIN_OUT_FIELD *context)
 /*!
   \brief Write the gathered data.
 
+  Write the data and increase the offset counter. Depending on the
+  output mode the offset counts the data of all processors or just the
+  data of the local one.
+
   \author u.kue
   \date 08/04
 */
@@ -2048,13 +2134,13 @@ void out_write_chunk(BIN_OUT_FIELD *context,
     /*
      * There is the odd test Input/w1dyn.dat with just one element. This
      * means no element at all for the second processor in a parallel
-     * test. We cannot handle that! That's ill posed. */
+     * test. We cannot handle that! That is ill posed. */
     dsassert(chunk->num > 0, "empty partitions not supported");
 
     /* find min/max values */
     /* We do a reverse loop here because the symbols have to be
      * ordered in the control file and map_insert_real_cpy adds its
-     * symbol to the front of the list. */
+     * symbol to the front of the list. At least they used to have. */
     for (i=chunk->value_entry_length-1; i>=0; --i)
     {
       INT j;
@@ -2162,43 +2248,68 @@ void out_write_chunk(BIN_OUT_FIELD *context,
   /*MPI_File_get_position(fh, &my_current_offset);*/
 
 #ifdef PARALLEL
-  err = MPI_File_seek(context->out->value_file,
-                      context->out->value_file_offset +
-                      chunk->first_id*chunk->value_entry_length*sizeof(DOUBLE),
-                      MPI_SEEK_SET);
-  if (err != 0)
+  if (ioflags.processor_local==0)
   {
-    dserror("MPI_File_seek(%d,%d) failed: %d",
-	    context->out->value_file,
-	    context->out->value_file_offset +
-	    chunk->first_id*chunk->value_entry_length*sizeof(DOUBLE),
-	    err);
-  }
-  err = MPI_File_write(context->out->value_file, chunk->out_values,
-                       chunk->value_count, MPI_DOUBLE, &status);
-  if (err != 0)
-  {
-    dserror("MPI_File_write failed: %d", err);
-  }
-
-  if (chunk->size_entry_length > 0)
-  {
-    err = MPI_File_seek(context->out->size_file,
-                        context->out->size_file_offset +
-                        chunk->first_id*chunk->size_entry_length*sizeof(INT),
-                        MPI_SEEK_SET);
+    err = MPI_File_seek(context->out->value_file,
+			context->out->value_file_offset +
+			chunk->first_id*chunk->value_entry_length*sizeof(DOUBLE),
+			MPI_SEEK_SET);
     if (err != 0)
     {
-      dserror("MPI_File_seek failed: %d", err);
+      dserror("MPI_File_seek(%d,%d) failed: %d",
+	      context->out->value_file,
+	      context->out->value_file_offset +
+	      chunk->first_id*chunk->value_entry_length*sizeof(DOUBLE),
+	      err);
     }
-    err = MPI_File_write(context->out->size_file, chunk->out_sizes,
-                         chunk->size_count, MPI_INT, &status);
+    err = MPI_File_write(context->out->value_file, chunk->out_values,
+			 chunk->value_count, MPI_DOUBLE, &status);
     if (err != 0)
     {
       dserror("MPI_File_write failed: %d", err);
     }
+
+    if (chunk->size_entry_length > 0)
+    {
+      err = MPI_File_seek(context->out->size_file,
+			  context->out->size_file_offset +
+			  chunk->first_id*chunk->size_entry_length*sizeof(INT),
+			  MPI_SEEK_SET);
+      if (err != 0)
+      {
+	dserror("MPI_File_seek failed: %d", err);
+      }
+      err = MPI_File_write(context->out->size_file, chunk->out_sizes,
+			   chunk->size_count, MPI_INT, &status);
+      if (err != 0)
+      {
+	dserror("MPI_File_write failed: %d", err);
+      }
+    }
+  }
+  else
+  {
+    fseek(context->out->local_value_file, context->out->value_file_offset, SEEK_SET);
+    if (fwrite(chunk->out_values,
+	       sizeof(DOUBLE),
+	       chunk->value_count,
+	       context->out->local_value_file) != chunk->value_count)
+    {
+      dserror("failed to write value file");
+    }
+    fseek(context->out->local_size_file, context->out->size_file_offset, SEEK_SET);
+    if (fwrite(chunk->out_sizes,
+	       sizeof(INT),
+	       chunk->size_count,
+	       context->out->local_size_file) != chunk->size_count)
+    {
+      dserror("failed to write size file");
+    }
   }
 #else
+
+  /* This will be a seek behind the end of the file on some
+   * procesors. That should be ok with unix. */
   fseek(context->out->value_file, context->out->value_file_offset, SEEK_SET);
   if (fwrite(chunk->out_values,
              sizeof(DOUBLE),
@@ -2228,7 +2339,16 @@ void out_write_chunk(BIN_OUT_FIELD *context,
   local_sizes[0] = chunk->value_count*sizeof(DOUBLE);
   local_sizes[1] = chunk->size_count*sizeof(INT);
 #ifdef PARALLEL
-  MPI_Allreduce(local_sizes, global_sizes, 2, MPI_INT, MPI_SUM, context->actintra->MPI_INTRA_COMM);
+  if (ioflags.processor_local==0)
+  {
+    MPI_Allreduce(local_sizes, global_sizes, 2, MPI_INT, MPI_SUM, context->actintra->MPI_INTRA_COMM);
+  }
+  else
+  {
+    /* It might be stupid to communicate here. But it is easy to
+     * do. Improve if it is too slow. */
+    MPI_Allreduce(local_sizes, global_sizes, 2, MPI_INT, MPI_MAX, context->actintra->MPI_INTRA_COMM);
+  }
 #endif
   context->out->value_file_offset += global_sizes[0];
   context->out->size_file_offset += global_sizes[1];

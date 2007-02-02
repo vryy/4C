@@ -104,6 +104,8 @@ typedef struct _BIN_DATA_FILES {
 #ifdef PARALLEL
   MPI_File value_file;
   MPI_File size_file;
+  FILE* local_value_file;
+  FILE* local_size_file;
 #else
   FILE* value_file;
   FILE* size_file;
@@ -251,6 +253,8 @@ typedef struct _BIN_IN_FIELD {
 #ifdef PARALLEL
   MPI_File value_file;
   MPI_File size_file;
+  FILE* local_value_file;
+  FILE* local_size_file;
 #else
   FILE* value_file;
   FILE* size_file;
