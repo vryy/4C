@@ -1,0 +1,1196 @@
+
+\makeatletter
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Textclass specific LaTeX commands.
+\newenvironment{lyxcode}
+{\begin{list}{}{
+\setlength{\rightmargin}{\leftmargin}
+\setlength{\listparindent}{0pt}% needed for AMS classes
+\raggedright
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\normalfont\ttfamily}%
+ \item[]}
+{\end{list}}
+\newenvironment{lyxlist}[1]
+{\begin{list}{}
+{\settowidth{\labelwidth}{#1}
+ \setlength{\leftmargin}{\labelwidth}
+ \addtolength{\leftmargin}{\labelsep}
+ \renewcommand{\makelabel}[1]{##1\hfil}}}
+{\end{list}}
+
+\makeatother
+
+\newcommand{\gauss}{{\tt gauss}}
+
+
+\chapter{Getting Started: Setup Guide to \ccarat{}}
+
+
+Notes on setting up and running \ccarat{}, the Finite-Element code
+at the Chair of Computational Mechanics.
+For information about solving specific types of problems using \ccarat{}
+see the problem introduction guides. For information about the inner
+workings of the code and recommendations for developers see the developing
+guide.
+
+
+\section{Getting the code}
+
+The \ccarat{} code lives in an subversion repository on \gauss{},
+the central LNM file server. There are two ways to get the code.
+
+\begin{itemize}
+\item Students ask their custodian :) for a copy. Before that can happen
+the non-disclosure form needs to be filled.
+\item Coworkers get it via subversion: 
+
+\begin{lyxcode}
+svn~checkout~svn://gauss/trunk/ccarat
+\end{lyxcode}
+Ask your friendly LNM administrator for a subversion account.
+
+It is a very good idea to get to know subversion before you do this.
+There is the book {}``Version Control with Subversion \url{http://svnbook.red-bean.com}''
+online. 
+
+\end{itemize}
+
+\subsection{Directory structure}
+
+The \ccarat{} code comes with documentation, example input files
+and support scripts. The important subdirectories are the following:
+
+\begin{lyxlist}{00.00.0000}
+\item [{\texttt{src}}] contains the real \ccarat{} code in several subdirectories 
+\item [{\texttt{Input}}] contains various valid and running \texttt{{*}.dat}
+files, \ccarat{} input files that are used for (automatic) testing.
+\item [{\texttt{config}}] contains configuration files (platform specifications)
+needed to setup a \ccarat{} Makefile
+\item [{\texttt{scripts}}] contains configuration scripts needed to setup
+a \ccarat{} Makefile
+\item [{\texttt{testing}}] contains scripts used for automatic testing
+and the list of files that are to be run during tests
+\item [{\texttt{doc}}] contains all the documentation
+\item [{\texttt{.}}] there are only a few scripts and two Makefile fragments
+in the main directory of \ccarat{} 
+\end{lyxlist}
+
+\section{Setup and Run}
+
+\ccarat{} is developed and used on Linux. Other Unixes work as well.
+Windows versions might be created using cygwin or mingw, but this
+will require some small modifications and is not covered here.
+
+\ccarat{} is a non-interactive shell application that reads an input
+file and creates a bunch of files in return. To build and run it you
+will need a basic understanding of Linux and the Linux shell. You
+will also want to choose your favorite text editor. (See section~\ref{sec:Text-editors}.)
+
+
+\subsection{Configure}
+
+Before compiling a \texttt{Makefile} needs to be generated. There
+is a configuration script to do this. It needs two arguments: a platform
+specification and a parameter list. Both are available as files in
+the \texttt{config} subdirectory. 
+
+\begin{itemize}
+\item There is a platform specification file for each supported platform.
+This includes different versions of Linux on desktop computers and
+the cluster configuration. On all platforms both serial and parallel
+versions are supported.
+\item in \texttt{config/defines} there is a list of all available parameters;
+uncomment those which are needed; mandatory/recommended are: 
+
+\begin{itemize}
+\item select the elements and algorithmic flags you need
+\item set appropriate sizes for \texttt{MAXNOD}, \texttt{MAXELE}, \texttt{MAXGAUSS},
+\texttt{MAXDOFPERNODE}. There are also special versions of \texttt{MAXNOD}
+for each element, in case a particular element needs LESS nodes than
+needed in general.
+\item tools: uncomment \texttt{PERF} to get better time measurements.
+\item possible solver packages: include \texttt{TRILINOS\_PACKAGE} (the
+great huge libraries) and make sure to also include \texttt{AZTEC\_PACKAGE}
+(iterative solver) and both \texttt{SOLVE\_DIRICH} and \texttt{SOLVE\_DIRICH2}.
+For smaller problems (serial) you might want to have \texttt{UMFPACK}
+(direct solver for single CPU) as well.
+\end{itemize}
+\item save defines in a separate file, e.g. \texttt{config/defines.my} 
+
+
+For example inside the \ccarat{} directory the call
+
+\begin{lyxcode}
+./configure~config/muench.fc6.ser~config/defines.my~
+\end{lyxcode}
+creates a \texttt{Makefile} by aid of \texttt{Makefile.in} for a serial
+executable; 
+
+\item after reconfiguring use \texttt{make clean} before recompiling
+\end{itemize}
+
+\subsection{Compile}
+
+After the \texttt{Makefile} is there simply run \texttt{make}. You
+might want to run \texttt{make all} to create the binary output filters,
+too. See below.
+
+The required libraries and include files are found in \texttt{/lnm/lib/\$PLATFORM/\$VERSION}.
+\ccarat{} depends on the Trilinos libraries, a few external solver
+libraries and metis. Additional the boost libraries will be used in
+the future. You should not need to worry about these libraries as
+long as to stick to the provided configurations.
+
+Please note that these are static libraries. \ccarat{} does not need
+these libraries to run. The libraries are needed to compile the source
+only.
+
+
+\subsubsection{Details on library setup}
+
+You might want to skip this section.
+
+All libraries needed to compile \ccarat{} on a specific platform
+(apart from the system provided ones) are to be in the directory \texttt{/lnm/lib/\$PLATFORM/\$VERSION},
+where \texttt{\$PLATFORM} referes to the Linux version used and \texttt{\$VERSION}
+referes to the serial or MPI version supported on this Linux.
+
+The currently supported platforms are \texttt{fc5}, \texttt{fc6},
+\texttt{debian} (sarge), \texttt{cluster}. The debian version will
+be discontinued once all debian workstations are gone. Each platform
+supports a serial and one parallel version.
+
+Inside \texttt{/lnm/lib/\$PLATFORM/\$VERSION} there are the directories
+\texttt{include}, \texttt{lib}, \texttt{trilinos} and optionally \texttt{trilinos\_dbg}.
+There directories contain:
+
+\begin{lyxlist}{00.00.0000}
+\item [{\texttt{include}}] include files of the libraries or, if modifications
+have been made or the include files are not easy to extract, the whole
+source packages
+\item [{\texttt{lib}}] compiled libraries. These are aztec 2.1, spooles
+2.2, umfpack 4.1, metis 4.0, superlu 2.0, visual2, visual3, lapack,
+blas.
+
+
+Both visual2 and visual3 are optional and are only supported on 32bit
+Linux with g77. 
+
+\item [{\texttt{trilinos}}] a installed version of the trilinos libraries,
+that is the directories \texttt{/lnm/lib/\$PLATFORM/\$VERSION/trilinos/include}
+and \texttt{/lnm/lib/\$PLATFORM/\$VERSION/trilinos/lib} with appropiate
+content are required. The packages from trilinos that are needed include
+\texttt{amesos}, \texttt{aztecoo}, \texttt{epetra}, \texttt{epetraext},
+\texttt{ifpack}, \texttt{loca}, \texttt{ml}, \texttt{moertel}, \texttt{nox},
+\texttt{teuchos}. 
+
+
+The trilinos sources reside in \texttt{/lnm/lib/Trilinos}. It is currently
+a developer version close to release 7.
+
+\item [{\texttt{trilinos\_dbg}}] a version of the trilinos libraries with
+debug symbols enabled.
+\end{lyxlist}
+
+\subsubsection{Have a local copy of the \ccarat{} libraries}
+
+Caution: This a advanced stuff. You can savely skip it.
+
+The \ccarat{} library organization is meant to allow you to compile
+\ccarat{} on your local machine without access to the network directory
+\texttt{/lnm}. All you have to do is
+
+\begin{enumerate}
+\item copy the appropiate \texttt{/lnm/lib/\$PLATFORM/\$VERSION} directory
+to your home directory somewhere and
+\item copy and modify the corresponding platform specification file (\texttt{config/\$PLATFORM\_FILE}).
+\end{enumerate}
+Note: You are urged to make a copy and leave the original platform
+specification file as it is. You are not allowed to submit changes
+to the platform specification file without consulting the \ccarat{}
+maintainer first.
+
+
+\subsection{Running examples}
+
+In \texttt{Input} there are test examples; all necessary \char`\"{}packages\char`\"{}
+must have been activated in the defines-file that was used to configure
+the \ccarat{} at hand. For example, 
+
+\texttt{./cca\_fc6\_ser.fast Input/f2\_drivencavity20x20.dat xxx }
+
+runs the 2d fluid driven cavity example and writes the output to files
+beginning with \texttt{xxx}. If the run is interrupted with an error
+'\texttt{MAXNOD} is too small' then the values given in a table above
+this error message have to be inserted in '\texttt{config/defines.my}';
+e.g. \texttt{MAXNOD=20} in second line, \texttt{MAXELE=4} in third
+line, ...; then recompile and rerun to run a parallel version you
+need to use the mpirun command like this: 
+
+\begin{lyxcode}
+mpirun~-np~1~./cca\_fc6\_par.fast~Input/f2\_drivencavity20x20.dat~xxx
+\end{lyxcode}
+
+\section{Testing}
+
+There is the script \texttt{test\_script} that runs all the examples
+file from the \texttt{Input}-directory that are marked for testing.
+It knows four modes depending on the command line parameters:
+
+\begin{lyxlist}{00.00.0000}
+\item [{\texttt{single~test}}] compile \ccarat{} to fit one input file
+exactly and run it
+\item [{\texttt{test~all}}] compile \ccarat{} for all input files and
+run them one after the other
+\item [{\texttt{restart~test}}] compile \ccarat{} for all input files,
+run them and restart them from a certain step
+\item [{\texttt{release~test}}] compile \ccarat{} so this it is able
+to run any (or neary any) input file and run them all using this version
+\end{lyxlist}
+After each run some result values are compared to expected values.
+Only if these values match the test was successful.
+
+The \texttt{test\_release} script can be used to abbreviate all this.
+It runs \texttt{test all}, \texttt{restart test} and \texttt{release
+test} in a row:
+
+\begin{lyxcode}
+./test\_release~config/muench.fc6.ser
+\end{lyxcode}
+\ccarat{} needs to survive these tests on any supported platform
+at any time. This is enforced by nightly tests.
+
+A nightly test builds and runs all configured example files. The BuildBot
+server runs on \gauss{}, the clients that do the actual testing are
+distributed among the desktop machines.
+
+To add your own input file to the nightly tests edit \texttt{testing/list\_of\_files}.
+
+
+\section{Cluster}
+
+We own a cluster system for massive parallel processing. The cluster
+consists of 54 nodes (two processors each), a frontend and a file
+server. For obvious reasons the frontend is called \texttt{hop}, the
+file server is called \texttt{malt}.
+
+Your home directory is accessible on all nodes and both server machines.
+Additionally there is scratch space in the \texttt{/scratch} directory
+on all nodes.
+
+You will normally want to login to the frontend, however if you have
+to transfer huge files you are better off accessing the file server
+directly.
+
+
+\subsection{First Time Setup }
+
+Before the cluster can be used for parallel calculations, a few setup
+steps have to be performed 
+
+
+\subsubsection{Get an account}
+
+Ask your friendly LNM administrator. Ask politely.
+
+
+\subsubsection{generate ssh keys for password-less access to all nodes}
+
+\begin{itemize}
+\item Login to the cluster with \texttt{ssh username@hop.lnm.mw.tum.de} 
+\item If you have not done it before, change the default password set by
+the Administrator with \texttt{passwd }
+\item Create new SSH key with \texttt{ssh-keygen -t rsa} and press enter
+without entering a password
+\item in the folder \texttt{\textasciitilde{}/.ssh} copy the generated key
+into the authorized key file with \texttt{cp id\_rsa.pub authorized\_keys}.
+This allows to connect to all nodes on the cluster and is essential
+for running any kind of job 
+\end{itemize}
+
+\subsubsection{optinally generate ssh keys for password-less access to the frontend }
+
+To make life pleasant, add the public key also to your \texttt{authorized\_keys}
+file on your desktop machine. This way you can login to the cluster
+from your account without a password.
+
+
+\subsection{Getting the code on the cluster}
+
+Use subversion as described above our copy with \texttt{scp}, whatever
+you like best.
+
+
+\subsection{Running a parallel job}
+
+There is a queue where you submit your job, that is the executable
+and its input file. To do this you will have to write a short job
+file that tells the queue where to find and how to run your code.
+
+The following file prototype serves as the execution script for the
+cluster. Copy and modify it to your needs. 
+
+\begin{lyxcode}
+\#!/bin/sh
+
+\#~Here~are~some~comments~the~PBS~system~will~search~for.
+
+\#...job~name~
+
+\#PBS~-N~jobname~
+
+\#...nodes~=~number~of~nodes,~ppn~=~processors~per~node~(always~2)
+
+\#PBS~-l~nodes=4:ppn=2
+
+
+
+\#~we~start~our~job~from~inside~the~source
+
+\#~directory~and~we~also~want~the~results~there.
+
+srcdir=\$PBS\_O\_WORKDIR~
+
+cd~\$srcdir
+
+
+
+\#~number~of~processors
+
+PROCS=`wc~-l~<~\$PBS\_NODEFILE`~
+
+
+
+\#~parameters,~to~be~changed!
+
+PREFIX=xxx~
+
+EXE=cca\_par\_ompi\_cluster.fast
+
+INPUT=inputfile.dat
+
+RESTART=
+
+
+
+\#~add~the~InfiniBand~library~to~the~search~path
+
+VAPILIB=/usr/local/ibgd/driver/infinihost/lib64~
+
+export~LD\_LIBRARY\_PATH=\$LD\_LIBRARY\_PATH:\$VAPILIB
+
+
+
+MPIDIR=/cluster/openmpi-1.1.4
+
+
+
+\$MPIDIR/bin/mpirun~-np~\$PROCS~-hostfile~\$PBS\_NODEFILE~\$EXE~\$INPUT~\$PREFIX~\$RESTART~|~tee~\$srcdir/\$PREFIX.log~
+
+
+\end{lyxcode}
+This job file makes several assumptions:
+
+\begin{itemize}
+\item You want to run a parallel job compiled using OpenMPI (the supported
+MPI version on the cluster.)
+\item You are going to use 4 nodes with 2 processors each. If that is not
+what you want change the line
+
+\begin{lyxcode}
+\#PBS~-l~nodes=4:ppn=2
+\end{lyxcode}
+Note: You will always end up with two processes on each node unless
+you provide your own nodefile. Most of the time two processes per
+node are exactly what you want.
+
+\item You want the output files to go to the same directory where your \ccarat{}
+executable resides. If you build \ccarat{} with the \texttt{BINIO}
+flag set and switched binary output on in your input file, this directory
+must be accessible from all nodes. Most probably you will want to
+start the job from somewhere inside your home directory.
+
+
+Note that you can use the scratch space for output. This requires
+a slight change in the job file above. Additionally the binary output
+does not yet support writing processor local files.
+
+\item The \texttt{PREFIX} and \texttt{INPUT} variables are most likely to
+need a change.
+\item If you want to restart a calculation you have to set the \texttt{PREFIX}
+variable accordingly and specify \texttt{RESTART=restart}. Additionally
+the restart step must be set inside the input file.
+\end{itemize}
+To submit the job use \texttt{qsub job.sh}, with the above file saved
+as \texttt{job.sh}. Each job in the queue gets an unique number.
+
+
+\subsubsection{Useful queue commands}
+
+\begin{lyxlist}{00.00.0000}
+\item [{\texttt{qsub~job.sh}}] submit a job
+\item [{\texttt{qsub~-I}}] start an interactive session on a node
+\item [{\texttt{qstat}}] show currently running (and waiting) jobs
+\item [{\texttt{qstat~-f~{[}number]}}] show details to all (or one) job
+\item [{\texttt{showq}}] another way to view the queue
+\item [{\texttt{qdel~number}}] remove a currently running job
+\end{lyxlist}
+
+\subsubsection{Hints}
+
+\begin{itemize}
+\item You are allowed to login to any node that is used by your job via
+\texttt{ssh}.
+\item You can get a nice view on the current cluster performance by browsing
+to ganglia \url{http://hop.lnm.mw.tum.de/ganglia/}.
+\item The \texttt{\#PBS} comments in the job file can be given as command
+line arguments to \texttt{qsub} as well. Without the \texttt{\#PBS}
+string.
+\end{itemize}
+
+\section{Preprocessing}
+
+There are not so many means to create a valid input file.
+
+
+\subsection{GiD}
+
+GiD is a pre- and postprocessing tool. We have the specialized problem
+type \texttt{lnm\_general} available, that contains the necessary
+definitions to create a \ccarat{} input file. 
+
+GiD is installed at \texttt{/lnm/gid}. Standard users have a rather
+limited academic version available. We own a single computer license
+that runs without limitations on \texttt{galileo}. You can simply
+login via \texttt{ssh}:
+
+\begin{lyxcode}
+ssh~-X~username@galileo.lnm.mw.tum.de
+\end{lyxcode}
+and run GiD there. Students will have to ask the friendly LNM administrator
+to be allowed to login to \texttt{galileo}.
+
+The \texttt{lnm\_general} problem type consists of a bunch of text
+files and can be found in the subversion repository as well. You can
+get it with
+
+\begin{lyxcode}
+svn~co~svn://gauss/trunk/lnm\_general
+\end{lyxcode}
+However, you do not need to bother unless we want to modify it.
+
+
+\subsection{Modify \ccarat{} input files}
+
+\ccarat{} input files are text files so you can modify them using
+your favorite text editor. However, sometimes you might want some
+more modifications (e.g. moving many nodes coordinates) that might
+be better done by a script. And indeed there is a python script that
+can help you edit input files. (ToDo: There is no central place yet.)
+
+
+\subsection{viewer}
+
+There is a small but useful \texttt{python} script that allows to
+visualize \ccarat{} input files (meshes and conditions). It is in
+the \texttt{viewer} directory inside the repository. To run it you
+will need to have \texttt{PyQt} and \texttt{PyOpenGl} installed. You
+can get it with
+
+\begin{lyxcode}
+svn~co~svn://gauss/trunk/viewer
+\end{lyxcode}
+
+\section{Postprocessing}
+
+\ccarat{} supports traditional text file output and more recent binary
+output. The later needs to be postprocessed by some filter before
+it can be viewed.
+
+
+\subsection{GiD}
+
+Reads \texttt{{*}.flavia.res} files in postprocessing mode. \ccarat{}
+writes these files immediately (provided \texttt{OUTPUT\_GID} is set
+to \texttt{yes} in the input file). Additionally these files can be
+generated from the binary files using the \texttt{post\_gid\_txt}
+filter.
+
+
+\subsection{Filters}
+
+All filters read the control files \ccarat{} creates. Common filter
+options are:
+
+\begin{lyxcode}
+./post\_filter~{[}-s~start:end{[}:step]]~control-file
+\end{lyxcode}
+Process output steps from \texttt{start} to \texttt{end} every \texttt{step}.
+Works on real time steps, steps not written by ccarat are counted,
+too. Both \texttt{start} and \texttt{end} can be empty, in which case
+the filter will process from the first and to the last step, respectively.
+
+Common code for output filters is in \texttt{src/post\_common}.
+
+Note: filters are largely independent of ccarat and can be enhanced
+on demand.
+
+
+\subsubsection{post\_gid\_txt}
+
+Generate GiD \texttt{{*}.flavia.{*}} files:
+
+\begin{lyxcode}
+./post\_gid\_txt~control-file
+\end{lyxcode}
+\begin{itemize}
+\item supported problem types: all simple ones (one field, one discretization),
+fsi
+\item supported result types: displacement, velocity, pressure, average\_pressure
+\item supported elements: shell8 shell9 brick1 fluid2 fluid2\_pro fluid2\_is
+fluid3 fluid3\_fast fluid3\_pro fluid3\_is ale2 ale3 wall1 beam3 axishell
+interf wallge.
+\end{itemize}
+Bugs: not working with subdivition, quadratic element support needs
+enhancement, obscure elements untested
+
+
+\subsubsection{post\_out}
+
+Generate readable output. Unprocecced numbers. No known issues.
+
+
+\subsubsection{post\_visual2}
+
+interactive visual2 viewer. 32bit g77 linux only. 2d only. Fluid and
+FSI supported.
+
+Issues: Library buggy and unsupported, console input not working.
+
+
+\subsubsection{post\_visual3}
+
+interactive visual3 viewer. 32bit g77 linux only. 2d and 3d. Fluid
+and FSI supported.
+
+
+\subsubsection{post\_monitor}
+
+generate gnuplot files for values at selected dofs:
+
+\begin{lyxcode}
+./post\_monitor~{[}options]~control-file~monitor-file
+\end{lyxcode}
+with a monitor-file in control-file format consisting of at least
+one block:
+
+\begin{lyxcode}
+monitor:
+
+~~~field~=~\char`\"{}fluid\char`\"{}
+
+~~~field\_pos~=~0
+
+~~~discretization~=~0
+
+~~~node~=~440
+
+~~~group~=~\char`\"{}velocity\char`\"{}
+
+~~~dof~=~0
+
+~~~dof~=~1
+\end{lyxcode}
+Here the three variables \texttt{field}, \texttt{field\_pos} and \texttt{discretization}
+specify the discretization that is to be used. \texttt{node} gives
+the global node id. \texttt{group} gives the result name that should
+be monitored. And any number of \texttt{dof} variables (in the example
+two dofs are set, no mistake!) gives the dofs at the node those values
+are to be plotted.
+
+
+\subsubsection{post\_file\_manager}
+
+copy, merge and slice binary output files:
+
+\begin{lyxcode}
+./post\_file\_manager~control-file~new-control-file
+\end{lyxcode}
+Utility filter by Michael Geppert.
+
+
+\subsubsection{post\_ensight}
+
+generate ensight (paraview) input files:
+
+\begin{lyxcode}
+./post\_ensight~control-file
+\end{lyxcode}
+supported problem types: 2d and 3d fluid and fsi another Michael Geppert
+filter. 
+
+
+\subsubsection{post\_cmp}
+
+compare two binary fluid results, assuming the same mesh was used.
+Create difference of velocity:
+
+\begin{lyxcode}
+./post\_cmp~control-file1~control-file2
+\end{lyxcode}
+Issues: very simple tool. Just for velocity of fluid problems. Enhancements
+are possible.
+
+
+\section{Developement environment}
+
+The main developement tools for \ccarat{} are \texttt{gcc}, \texttt{g77},
+\texttt{gdb}, \texttt{bash} and the related tools. Most people, however,
+prefere some kind of environment that plugs these tools together.
+
+This section does only provide some hints what is there. These tools
+are not necessarilly installed on your machine. But they can be using
+\texttt{yum} or \texttt{apt-get}.
+
+
+\subsection{Text editors \label{sec:Text-editors}}
+
+That is a matter of taste, really. Only those with taste choose the
+right one: \texttt{xemacs}.
+
+
+\subsubsection{xemacs}
+
+The right one. 
+
+A text editor that has shortcuts for everything ever imagined. Very
+huge. Comes with extensive documentation. Contains the elisp programming
+language for customization and extention. Has been around for ages.
+Is a standard on its own. It does not stick to any standard you are
+likely to know. Love it or hate it.
+
+It takes some effort to become fluent with xemacs. You have to remember
+some seemingly random keyboard shortcuts. The benefits are unimagined
+text editing power. Some clever customizations are available that
+make editing with xemacs even more fun. (Derived from the xemacs customizations
+used by the KDE people.)
+
+A very good reason why you should give xemacs a closer look is the
+\texttt{xref} utility.
+
+
+\paragraph{xref}
+
+is a cross referencing and refactoring tool to be used in connection
+with (x)emacs. With this tool you can jump to the definition of any
+symbol in your code. It is amazing...
+
+\texttt{xref} is located in \texttt{/lnm/programs/xref}. It needs
+to be installed before it can be used. To do so call the \texttt{xrefsetup}
+script. It will modify your xemacs configuration file \texttt{\textasciitilde{}/.xemacs/init.el}
+and offer a simple tutorial. Do it.
+
+The \texttt{xref} configuration lives in the \texttt{\textasciitilde{}/.xrefrc}
+file. For all projects you want to work on (e.g. all copies of \ccarat{}
+you happen to keep) you will need a section in that file. A \texttt{\textasciitilde{}/.xrefrc}
+file with just one section that covers the \ccarat{} copy located
+in \texttt{\textasciitilde{}/ccarat} looks like this:
+
+\begin{lyxcode}
+-license=0/0/0/5:Lehrstuhl-f\"ur-Numerische-Mechanik:b8f7c7b28aaf7b11
+
+
+
+{[}/home/username/ccarat]
+
+~~//~~input~files~and~directories~(processed~recursively)
+
+~~/home/username/ccarat/src/
+
+~~//~~directory~where~tag~files~are~stored
+
+~~-refs~/home/username/Xrefs/ccarat
+
+~~//~~split~tag~files~using~first~letter
+
+~~-refalphahash
+
+~~//~~include~directories
+
+~~-I~/lnm/lib/fc6/ser/include
+
+~~//~resolve~symbols~using~definition~place
+
+~~-exactpositionresolve
+
+~~//~~setting~for~Emacs~compile~and~run
+
+~~-set~compilefile~\char`\"{}mpicc~-g~-ansi~-Wall~\%s\char`\"{}
+
+~~-set~compiledir~\char`\"{}mpicc~-g~-ansi~-Wall~{*}.c\char`\"{}
+
+~~-set~compileproject~\char`\"{}
+
+~~~~~~~cd~/home/kuettler/fem/ccarat
+
+~~~~~~~make
+
+~~~~~~~\char`\"{}
+
+~~-set~run1~\char`\"{}cca\_par\_linux.debg\char`\"{}
+
+~~-set~run2~\char`\"{}cca\_seq\_linux.debg\char`\"{}
+
+~~-set~run5~\char`\"{}\char`\"{}~//~an~empty~run;~C-F8~will~only~compile
+
+~~//~~set~default~to~run1~~~-set~run~\$\{run1\}
+
+~~//~~HTML~configuration
+
+~~-htmlroot=/home/kuettler/HTML
+
+~~-htmlgxlist~-htmllxlist~-htmldirectx~-htmllinenums
+
+~~-htmltab=8~-htmllinenumcolor=000000
+
+~~//~~pre-processor~macros~and~passes~specification
+
+~~-DAZTEC\_PACKAGE
+
+~~-DD\_MLSTRUCT
+
+~~-DBINIO
+
+~~-DDEBUG
+
+~~-DD\_ALE
+
+~~-DD\_AXISHELL
+
+~~-DD\_BEAM3
+
+~~-DD\_BRICK1
+
+~~-DD\_CONTACT
+
+~~-DD\_FLUID
+
+~~-DD\_FLUID\_PM
+
+~~-DD\_FLUID2
+
+~~-DFLUID2\_ML
+
+~~-DD\_FLUID2TU
+
+~~-DFLUID3\_ML
+
+~~-DD\_FLUID2\_PRO
+
+~~-DD\_FLUID3
+
+~~-DD\_FLUID3\_F
+
+~~-DD\_FSI
+
+~~-DD\_INTERF
+
+~~-DD\_MAT
+
+~~-DD\_OPTIM
+
+~~-DD\_SHELL8
+
+~~-DD\_SHELL9
+
+~~-DD\_WALL1
+
+~~-DD\_WALLGE
+
+~~-DLINUX\_MUENCH
+
+~~-DPERF
+
+~~-DRESULTTEST
+
+~~-DS8CONTACT
+
+~~-DUMFPACK
+
+~~-DSOLVE\_DIRICH
+
+~~-DSOLVE\_DIRICH2
+
+~~-pass1
+
+~~~~-DPARALLEL
+
+~~~~-DSPOOLES\_PACKAGE
+
+~~-pass2
+
+~~~~-DNOTPARALLEL~
+\end{lyxcode}
+Not all of that is important. In particular all the settings related
+to compile, run and html are of no importance here. You might try
+to find an use for that if you like. Three parts, however, are highly
+relevant:
+
+\begin{itemize}
+\item the license string in the first line of the file
+\item the directories that state where your project lives, where the project
+sources are, where to put the internal database and where to find
+additional include files
+\item the list of preprocessor macros that are defined {}``on the command
+line.''
+\end{itemize}
+After you setup a project like shown above start your xemacs and choose
+{}``Create Xref Tags'' from the {}``Xrefactory'' menu. This is
+going to take a while. After that you can jump around in \ccarat{}
+just like you did in the small \texttt{xref} tutorial. Cool! And it
+helps a lot!
+
+
+\subsubsection{emacs}
+
+A close miss. Everything said in faviour of xemacs applies here as
+well, except ... it misses an \texttt{x}.
+
+
+\subsubsection{eclipse}
+
+A developement environment originally meant to replace xemacs. Comes
+with a more convinient user interface for most new users. Hundreds
+of plugins available. Does provide its own cross referencing support.
+Is based on java. Is both slow and memory consuming beyond measure.
+You have been warned.
+
+
+\subsubsection{kdevelop}
+
+The developement environment made by the KDE people. Is meant to be
+a modern IDE. There are still problems with the way we use define
+flags in \ccarat{}. The buildin parser fails to see many files, so
+function based navigation is rather limited.
+
+
+\subsubsection{nedit, kwrite, kate}
+
+Plain editors. Most often syntax highlighting is supported, so at
+least you get colour. All the developement has to be done using the
+Linux shell.
+
+
+\subsection{Debugging frontends}
+
+There is only one degugger: \texttt{gdb}. But it has a very plain
+user interface. Most people use a frontend application that internally
+talks to \texttt{gdb}.
+
+Development environments that are more that text editors (xemacs,
+eclipse, kdevelop) contain a debugging ability. There are, however,
+standalone debugging tools. The point of these frontends is to show
+the code along with the current position, the contents of variables
+and so on.
+
+
+\subsubsection{ddd}
+
+Debugger frontend with some graphical ability. Based on motiv, therefore
+it is sometimes cumbersome to use.
+
+
+\subsubsection{kdbg}
+
+A KDE frontend to gdb. Lacks the ability to input commands at the
+\texttt{gdb} command line. Suitable for simple debugging jobs.
+
+
+\subsubsection{gdbtui}
+
+Simple \texttt{gdb} enhancement. Text based. Nothing more that \texttt{gdb}
+with a source code view.
+
+
+\subsubsection{ddt}
+
+To debug in parallel on the cluster use \texttt{ddt}. It is installed
+in \texttt{/cluster/allinea/ddt} and supports up to 8 processes. There
+is one debugging session allowed at a time.
+
+Before you can use \texttt{ddt} you have to set it up so that it knows
+you are running your job via OpenMPI and a PBS queue. Several steps
+are required:
+
+\begin{itemize}
+\item add the line
+
+\begin{lyxcode}
+export~DDTMPIRUN=/cluster/openmpi-1.1.4/bin/mpirun
+\end{lyxcode}
+to your \texttt{\textasciitilde{}/.bashrc}. This allows ddt to run
+proccesses in parallel on the frontend. (You are not supposed to do
+that regularly.)
+
+\item create a file \texttt{\textasciitilde{}/.ddt/config.ddt} with the
+following content
+
+\begin{lyxcode}
+DDT~Config~File
+
+{[}editor]~
+
+tab~size~=~4
+
+{[}fonts]~
+
+family~=~fixed~
+
+size~=~14
+
+{[}groups]~
+
+filename~=
+
+{[}startup]~
+
+default~number~of~processes~=~2~
+
+default~debugger~=~gdb~
+
+stop~at~exit~=~no~
+
+stop~at~abort~=~yes
+
+{[}mpi]~
+
+type~=~OpenMPI
+
+{[}queue]~
+
+use~queue~=~yes~
+
+template~file~=~/home/username/pbs.qtf~
+
+submit~=~/cluster/torque/bin/qsub~
+
+cancel~=~/cluster/torque/bin/qdel~JOB\_ID\_TAG~
+
+job~regexp~=~{[}0-9]+~
+
+display~=~/cluster/torque/bin/qstat~
+
+use~num\_nodes~=~yes~
+
+procs\_per\_node~=~2
+
+{[}arguments]~
+
+mpi0~=
+
+{[}attach]~
+
+node~list~file~=~
+
+hide~forked~children~=~yes
+
+{[}attach~list]
+
+{[}memory~debugging]~
+
+enabled~=~yes~
+
+setting~=~none~
+
+interval~=~-1~
+
+preload~=~dmalloc~
+\end{lyxcode}
+This file can be generated using the \texttt{ddt} gui as well, however
+it is far more convenient to create beforehand. This configuration
+file tells \texttt{ddt} how to use the queue. The only line you have
+to change in the above file is the one defining the \texttt{template
+file}.
+
+\item The \texttt{template file} is used to create a PBS job file. There
+are some tags that \texttt{ddt} replaces with its values before it
+submits the file into the queue. A valid template file looks like
+this:
+
+\begin{lyxcode}
+\#!/bin/bash
+
+\#~DDT~will~generate~a~submission~script~from~this~by~replacing~these~tags:~
+
+\#~~~~~~~~TAG~NAME~~~~~~~|~~~~~~DESCRIPTION~~~~~~~~~~~~~~|~~~~~~EXAMPLE~
+
+\#~-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-~
+
+\#~PROGRAM\_TAG~~~~~~~~~~~|~target~path~and~filename~~~~~~|~/users/ned/a.out~
+
+\#~PROGRAM\_ARGUMENTS\_TAG~|~arguments~to~target~program~~~|~-myarg~myval~
+
+\#~NUM\_PROCS\_TAG~~~~~~~~~|~total~number~of~processes~~~~~|~16~
+
+\#~NUM\_NODES\_TAG~~~~~~~~~|~number~of~compute~nodes~~~~~~~|~8~
+
+\#~PROCS\_PER\_NODE\_TAG~~~~|~processes~per~node~~~~~~~~~~~~|~2~
+
+\#~
+
+\#~Note~that~NUM\_NODES\_TAG~and~PROCS\_PER\_NODE\_TAG~are~only~valid~if~DDT~is~
+
+\#~set~to~'use~NUM\_NODES'~in~the~queue~options.~If~not,~they~will~be~replaced~
+
+\#~with~the~number~of~processes~and~1~respectively.
+
+\#P~BS~-l~walltime=00:30:00,nodes=NUM\_NODES\_TAG:ppn=PROCS\_PER\_NODE\_TAG~
+
+\#PBS~-l~nodes=NUM\_NODES\_TAG~
+
+\#PBS~-q~debug~
+
+\#PBS~-V~
+
+\#PBS~-o~PROGRAM\_TAG-ddt.output~
+
+\#PBS~-e~PROGRAM\_TAG-ddt.error
+
+
+
+srcdir=\$PBS\_O\_WORKDIR~cd~\$srcdir
+
+VAPILIB=/usr/local/ibgd/driver/infinihost/lib64~export~LD\_LIBRARY\_PATH=\$LD\_LIBRARY\_PATH:\$VAPILIB
+
+MPIDIR=/cluster/openmpi-1.1.4
+
+\$MPIDIR/bin/mpirun~-hostfile~\$PBS\_NODEFILE~-np~NUM\_PROCS\_TAG~/cluster/allinea/ddt/bin/ddt-debugger~PROGRAM\_ARGUMENTS\_TAG~|~tee~debug\_output
+\end{lyxcode}
+\end{itemize}
+Once you have the configuration in place you can call \texttt{ddt}
+via
+
+\begin{lyxcode}
+/cluster/allinea/ddt/bin/ddt~cca\_par\_ompi\_cluster.debg~inputfile.dat~xxx
+\end{lyxcode}
+Note: \texttt{ddt} has a memory debugging ability that consumes a
+large amount of memory. If you want to debug large examples you will
+have to turn memory debugging off.
+
+
+\subsection{Debugging hints}
+
+What to do when \ccarat{} fails.
+
+
+\subsubsection{debug version of \ccarat{}}
+
+To be able to debug \ccarat{} you have to build it in debug mode.
+To do this you have to uncomment the \texttt{DEBUG} flag in your \texttt{config/defines.my}
+file and call \texttt{configure} again. Do not forget to \texttt{make
+clean} before you compile again!
+
+Note: The \texttt{DEBUG} flag slows things down. You are not supposed
+to run long jobs with the debug version of \ccarat{}.
+
+Note: If all you want is add the \texttt{DEBUG} flag to your configuration,
+there is no need to actually edit your \texttt{config/defines.my}
+file. Instead you can set the environment variable \texttt{DEBUG}
+to \texttt{yes} and reconfigure:
+
+\begin{lyxcode}
+DEBUG=yes~make~reconfig~\&\&~make~clean~\&\&~make
+\end{lyxcode}
+\texttt{make reconfig} is an abbreviation for the \texttt{configure}
+call you used to configure in the first place. In particular both
+configuration files will be read again, so if these files have changed
+it will do something different.
+
+
+\subsubsection{build in a different directory}
+
+A \ccarat{} reconfigure overwrites the \texttt{Makefile}. This might
+not be what you want. Instead you might run \texttt{configure} from
+a directory different from the \ccarat{} source directory. This way
+you will get a Makefile in the directory you run configure from. For
+example, starting from the \ccarat{} source directory you might:
+
+\begin{lyxcode}
+mkdir~quicktest
+
+cd~quicktest
+
+../configure~../config/muench.fc6.ser~../config/defines.my
+
+make
+\end{lyxcode}
+This will create a \texttt{Makefile} and from that a whole new \ccarat{}
+inside the \texttt{quicktest} directory. The \texttt{Makefile} in
+the source directory as well all the object files from your original
+build will remain untouched. All new files will be inside the \texttt{quicktest}
+directory. So you can remove the whole thing by
+
+\begin{lyxcode}
+cd~..
+
+rm~-r~quicktest
+\end{lyxcode}
+Note: Sometimes you want to create an executable fast for just one
+run, without worring about source dependencies. So you can skip the
+dependency generation by setting the environment variable \texttt{NODEPS}
+to \texttt{yes} like this:
+
+\begin{lyxcode}
+NODEPS=yes~../configure~../config/muench.fc6.ser~../config/defines.my
+\end{lyxcode}
+
+\subsubsection{core files}
+
+To get information out of crashing \ccarat{} processes you want to
+switch on \texttt{core} files. To do this add the line
+
+\begin{lyxcode}
+ulimit~-c~unlimited
+\end{lyxcode}
+to your \texttt{\textasciitilde{}/.bashrc} and start a new shell.
+This will create a file \texttt{core} or \texttt{core.\$\$} in the
+current directory each time \ccarat{} crashes, where \texttt{\$\$}
+stands for the process id. Afterwards you can have a look into \ccarat{}
+at just the moment the program failed:
+
+\begin{lyxcode}
+gdb~cca\_fc6\_ser.debg~core
+\end{lyxcode}
+Debugger frontends can be used as well.
+
+You might also want to include the \texttt{DSERROR\_DUMP} flag in
+your \texttt{config/defines.my} file to have \ccarat{} crash each
+time a runtime error occurs (and \texttt{dserror} gets called.)
+
+Note: Writing a \texttt{core} file in Linux is pretty fast. However,
+if your process took a large amount of memory and you run it on a
+nfs mounted directory, it might take a few seconds to dump the \texttt{core}
+file.
+
+
+\subsubsection{valgrind}
+
+If it gets all confused and you have lost track of your pointers it
+might be time to reach for something strong. Enter \texttt{valgrind}.
+
+\texttt{valgrind} is a memory checker (and more!) It simulates your
+code, keeps track of the memory usage and reports anything strange
+like using unallocated memory, uninitialized variables, freeing the
+same pointer twice or leaking memory. \texttt{valgrind} can save lifes!
+
+To use it simple write valgrind before the \ccarat{} executable:
+
+\begin{lyxcode}
+valgrind~./cca\_fc6\_ser.debg~Input/f2\_drivencavity20x20.dat~xxx
+\end{lyxcode}
+The messages from \texttt{valgrind} might seem cryptic. But do not
+ignore them. Decipher!
+
+There are two issues with \texttt{valgrind}: It is slow. And memory
+demanding. So you will want to use it on small examples.
