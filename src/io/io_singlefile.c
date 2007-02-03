@@ -1535,6 +1535,12 @@ void init_bin_out_field(BIN_OUT_FIELD* context,
 
   context->out_restart.value_file = MPI_FILE_NULL;
   context->out_restart.size_file = MPI_FILE_NULL;
+
+  context->out_result.local_value_file = NULL;
+  context->out_result.local_size_file = NULL;
+
+  context->out_restart.local_value_file = NULL;
+  context->out_restart.local_size_file = NULL;
 #else
   context->out_result.value_file = NULL;
   context->out_result.size_file = NULL;
