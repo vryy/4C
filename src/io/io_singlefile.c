@@ -766,7 +766,7 @@ void destroy_bin_in_field(BIN_IN_FIELD* context)
 
   /* Now we have two different modes. Only one set of files is allowed
    * to be open. */
-  if (ioflags.processor_local==0)
+  if (context->value_file!=MPI_FILE_NULL)
   {
     err = MPI_File_close(&(context->value_file));
     if (err != 0)
@@ -3198,12 +3198,19 @@ static void in_open_data_files(BIN_IN_FIELD *context,
   INT err;
 #endif
   CHAR *filename;
-  CHAR buf[100];
+  CHAR buf[256];
   CHAR input_dir[100];
   CHAR* separator;
 
 #ifdef DEBUG
   dstrc_enter("in_open_data_files");
+#endif
+
+#ifdef PARALLEL
+  if (!map_find_int(field_info,"num_output_proc",&context->num_output_proc))
+  {
+    context->num_output_proc = 1;
+  }
 #endif
 
   separator = rindex(bin_out_main.name, '/');
@@ -3227,13 +3234,27 @@ static void in_open_data_files(BIN_IN_FIELD *context,
   strcpy(buf, input_dir);
   strcat(buf, filename);
 #ifdef PARALLEL
-  err = MPI_File_open(actintra->MPI_INTRA_COMM, buf,
-                      MPI_MODE_RDONLY, MPI_INFO_NULL,
-                      &(context->value_file));
-  if (err != 0)
+  if (context->num_output_proc==1)
   {
-    dserror("MPI_File_open failed for file '%s': %d", buf, err);
+    err = MPI_File_open(actintra->MPI_INTRA_COMM, buf,
+			MPI_MODE_RDONLY, MPI_INFO_NULL,
+			&(context->value_file));
+    if (err != 0)
+    {
+      dserror("MPI_File_open failed for file '%s': %d", buf, err);
+    }
+    context->local_value_file = NULL;
   }
+  else if (context->num_output_proc==actintra->intra_nprocs)
+  {
+    CHAR local_filename[256];
+    sprintf(local_filename,"%s.p%d",buf,actintra->intra_rank);
+    context->local_value_file = fopen(local_filename,"rb");
+    context->value_file = MPI_FILE_NULL;
+  }
+  else
+    dserror("cannot restart with %d restart files on %d processors",
+	    context->num_output_proc,actintra->intra_nprocs);
 #else
   context->value_file = fopen(buf, "rb");
   if (context->value_file == NULL)
@@ -3246,13 +3267,27 @@ static void in_open_data_files(BIN_IN_FIELD *context,
   strcpy(buf, input_dir);
   strcat(buf, filename);
 #ifdef PARALLEL
-  err = MPI_File_open(actintra->MPI_INTRA_COMM, buf,
-                      MPI_MODE_RDONLY, MPI_INFO_NULL,
-                      &(context->size_file));
-  if (err != 0)
+  if (context->num_output_proc==1)
   {
-    dserror("MPI_File_open failed for file '%s': %d", buf, err);
+    err = MPI_File_open(actintra->MPI_INTRA_COMM, buf,
+			MPI_MODE_RDONLY, MPI_INFO_NULL,
+			&(context->size_file));
+    if (err != 0)
+    {
+      dserror("MPI_File_open failed for file '%s': %d", buf, err);
+    }
+    context->local_size_file = NULL;
   }
+  else if (context->num_output_proc==actintra->intra_nprocs)
+  {
+    CHAR local_filename[256];
+    sprintf(local_filename,"%s.p%d",buf,actintra->intra_rank);
+    context->local_size_file = fopen(local_filename,"rb");
+    context->size_file = MPI_FILE_NULL;
+  }
+  else
+    dserror("cannot restart with %d restart files on %d processors",
+	    context->num_output_proc,actintra->intra_nprocs);
 #else
   context->size_file = fopen(buf, "rb");
   if (context->size_file == NULL)
@@ -3839,18 +3874,32 @@ void in_read_chunk(BIN_IN_FIELD *context,
   /* read the values */
   offset = map_read_int(chunk->group_info, "value_offset");
 #ifdef PARALLEL
-  err = MPI_File_seek(context->value_file,
-                      offset+chunk->first_id*sizeof(DOUBLE)*chunk->value_entry_length,
-                      MPI_SEEK_SET);
-  if (err != 0)
+  if (context->num_output_proc==1)
   {
-    dserror("MPI_File_seek failed: %d", err);
+    err = MPI_File_seek(context->value_file,
+			offset+chunk->first_id*sizeof(DOUBLE)*chunk->value_entry_length,
+			MPI_SEEK_SET);
+    if (err != 0)
+    {
+      dserror("MPI_File_seek failed: %d", err);
+    }
+    err = MPI_File_read(context->value_file, chunk->in_values,
+			chunk->value_count, MPI_DOUBLE, &status);
+    if (err != 0)
+    {
+      dserror("MPI_File_read failed: %d", err);
+    }
   }
-  err = MPI_File_read(context->value_file, chunk->in_values,
-                      chunk->value_count, MPI_DOUBLE, &status);
-  if (err != 0)
+  else
   {
-    dserror("MPI_File_read failed: %d", err);
+    fseek(context->local_value_file, offset, SEEK_SET);
+    if (fread(chunk->in_values,
+	      sizeof(DOUBLE),
+	      chunk->value_count,
+	      context->local_value_file) != chunk->value_count)
+    {
+      dserror("failed to read value file");
+    }
   }
 #else
   fseek(context->value_file, offset, SEEK_SET);
@@ -3866,18 +3915,32 @@ void in_read_chunk(BIN_IN_FIELD *context,
   /* read the array dimensions */
   offset = map_read_int(chunk->group_info, "size_offset");
 #ifdef PARALLEL
-  err = MPI_File_seek(context->size_file,
-                      offset+chunk->first_id*sizeof(INT)*chunk->size_entry_length,
-                      MPI_SEEK_SET);
-  if (err != 0)
+  if (context->num_output_proc==1)
   {
-    dserror("MPI_File_seek failed: %d", err);
+    err = MPI_File_seek(context->size_file,
+			offset+chunk->first_id*sizeof(INT)*chunk->size_entry_length,
+			MPI_SEEK_SET);
+    if (err != 0)
+    {
+      dserror("MPI_File_seek failed: %d", err);
+    }
+    err = MPI_File_read(context->size_file, chunk->in_sizes,
+			chunk->size_count, MPI_INT, &status);
+    if (err != 0)
+    {
+      dserror("MPI_File_read failed: %d", err);
+    }
   }
-  err = MPI_File_read(context->size_file, chunk->in_sizes,
-                      chunk->size_count, MPI_INT, &status);
-  if (err != 0)
+  else
   {
-    dserror("MPI_File_read failed: %d", err);
+    fseek(context->local_size_file, offset, SEEK_SET);
+    if (fread(chunk->in_sizes,
+	      sizeof(INT),
+	      chunk->size_count,
+	      context->local_size_file) != chunk->size_count)
+    {
+      dserror("failed to read size file");
+    }
   }
 #else
   fseek(context->size_file, offset, SEEK_SET);

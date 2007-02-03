@@ -255,6 +255,8 @@ typedef struct _BIN_IN_FIELD {
   MPI_File size_file;
   FILE* local_value_file;
   FILE* local_size_file;
+
+  INT num_output_proc;
 #else
   FILE* value_file;
   FILE* size_file;
