@@ -94,7 +94,7 @@ dstrc_enter("ntacal");
 #ifndef CCADISCRET /* the 'old' ccarat style discretization management */
   part_fields();
 #else              /* the 'new' DRT discretization management */
-  distribute_grids_and_design();
+  distribute_drt_grids();
 #endif
 #ifdef PERF
   perf_end(12);
