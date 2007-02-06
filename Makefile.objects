@@ -91,10 +91,12 @@ OBJS_SOLVER_CPP = src/solver/solver_trilinos_service.o \
 #               discretization (c++)
 OBJS_DISCRET  = src/discret/drt_discret.o \
                 src/discret/drt_discret_fillcomplete.o \
+                src/discret/drt_discret_conditions.o \
                 src/discret/drt_discret_partition.o \
                 src/discret/drt_discret_evaluate.o \
                 src/discret/drt_element.o \
                 src/discret/drt_elementregister.o \
+                src/discret/drt_elementvolume.o \
                 src/discret/drt_elementsurface.o \
                 src/discret/drt_elementline.o \
                 src/discret/drt_node.o \
