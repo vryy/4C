@@ -45,6 +45,7 @@ using namespace std;
 #define ParObject_Shell8Register        (int)10
 #define ParObject_ElementSurface        (int)11
 #define ParObject_ElementLine           (int)12
+#define ParObject_ElementVolume         (int)13
 
 
 /*!

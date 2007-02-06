@@ -118,6 +118,7 @@ void DRT::Discretization::EvaluateNeumann(ParameterList& params, Epetra_Vector& 
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
   systemvector.PutScalar(0.0);
   
+#if 0 // not sure whether we will need this
   // loop through column nodes and set flags indicating whether Neumann
   // condition was already evaluated to false
   for (int i=0; i<NumMyColNodes(); ++i)
@@ -139,6 +140,7 @@ void DRT::Discretization::EvaluateNeumann(ParameterList& params, Epetra_Vector& 
     for (int j=0; j<(int)conds.size(); ++j)
       conds[j]->Add("isevaluated",&zero,1);
   } // for (int i=0; i<NumMyColNodes(); ++i)
+#endif
 
   // get the current time
   bool usetime = true;
@@ -159,8 +161,6 @@ void DRT::Discretization::EvaluateNeumann(ParameterList& params, Epetra_Vector& 
     const int* dofs = actnode->Dof().Dofs();
     for (int j=0; j<numcond; ++j)
     {
-      vector<int>*    iseval = conds[j]->GetVector<int>("isevaluated");
-      if ((*iseval)[0]) continue;
       vector<int>*    curve  = conds[j]->GetVector<int>("curve");
       vector<int>*    onoff  = conds[j]->GetVector<int>("onoff");
       vector<double>* val    = conds[j]->GetVector<double>("val");
@@ -179,8 +179,6 @@ void DRT::Discretization::EvaluateNeumann(ParameterList& params, Epetra_Vector& 
         int lid = systemvector.Map().LID(gid);
         systemvector[lid] += value;
       }
-      // set flag indicating that this Point Neumann condition has been evaluated
-      (*iseval)[0] = 1;
     }
   } // for (int i=0; i<NumMyRowNodes(); ++i)   
 

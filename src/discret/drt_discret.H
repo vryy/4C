@@ -353,6 +353,71 @@ public:
   virtual int FillComplete();
 
   /*!
+  \brief Set a condition with a certain name (Filled()==false on exit)
+  
+  Store a condition with a certain name in the discretization. The name need not
+  be unique, meaning multiple conditions with the same name can be stored.
+  Conditions can then be accessed with the GetCondition methods.
+  
+  \note Conditions attached to the discretization have to be 
+        completely redundant meaning that nodal cloud in the
+        condition is the same on each processor and spans all
+        nodes that hold this condition.<br>
+        Also, setting a condition to the discretization set the Filled() flag
+        to false.
+        
+  \note
+  
+  \param name : Name of condition
+  \param cond : The Condition class
+  
+  \note this takes ownership of cond
+  
+  \warning If a condition with the exact same name already exists, it will
+           NOT be overwritten but stored twice in the element
+  
+  */
+  virtual void SetCondition(const string& name,RefCountPtr<Condition> cond);
+
+  /*!
+  \brief Get all conditions with a certain name
+  
+  Get all conditions with a certain name. A vector of ptrs to all conditions
+  with name name is returned in out. The number of conditions found with name
+  name is out.size(). out.size() is 0 if no condition with that name is found.
+  
+  \note Conditions attached to the discretization have to be 
+        completely redundant meaning that nodal cloud in the
+        condition is the same on each processor and spans all
+        nodes that hold this condition
+
+  \param name (in): Name of condition
+  \param out  (out): vector of pointers to all conditions with that name
+  
+  \return Returns NULL if condition with that name does not exist
+  */
+  virtual void GetCondition(const string& name, vector<DRT::Condition*>& out);
+
+  /*!
+  \brief Get a condition with a certain name
+  
+  Returns the first condition with name name found in the multimap. 
+  If multiple conditions with the same name exist, the first condition is
+  returned and behaviour is therefore non-deterministic. This method should
+  therefore only be used in cases where the user is sure that name is unique.
+  
+  \note Conditions attached to the discretization have to be 
+        completely redundant meaning that nodal cloud in the
+        condition is the same on each processor and spans all
+        nodes that hold this condition
+
+  \param name (in): Name of condition
+  
+  \return Returns NULL if condition with that name does not exist
+  */
+  virtual DRT::Condition* GetCondition(const string& name);
+
+  /*!
   \brief Redistribute the discretization according to provided maps
          (Filled()==true prerequisite)
   
@@ -681,8 +746,14 @@ private:
   Number degrees of freedom (dofs) ascending according to global node numbers
   followed by global element numbers
   
+  \note This should become public to allow users to assign there own dofs
+        in a more-than-one-discretization case
+  
+  \param start (int): first dof number to assign
+  
+  \return last dof assigned + 1
   */
-  virtual void AssignDegreesOfFreedom();
+  virtual int AssignDegreesOfFreedom(const int start);
 
   /*!
   \brief Initialize element routines
@@ -695,6 +766,30 @@ private:
   
   */
   virtual void InitializeElements();
+
+  /*!
+  \brief Build the geometry for boundary conditions
+  
+  */
+  virtual void BoundaryConditionsGeometry();
+
+  /*!
+  \brief Build the geometry of lines for a certain line condition
+  
+  */
+  virtual void BuildLinesinCondition(const string name,RefCountPtr<DRT::Condition> cond);
+
+  /*!
+  \brief Build the geometry of surfaces for a certain surface condition
+  
+  */
+  virtual void BuildSurfacesinCondition(const string name,RefCountPtr<DRT::Condition> cond);
+
+  /*!
+  \brief Build the geometry of volumes for a certain volume condition
+  
+  */
+  virtual void BuildVolumesinCondition(const string name,RefCountPtr<DRT::Condition> cond);
 
 protected:
 
@@ -720,8 +815,10 @@ protected:
   map<int,RefCountPtr<DRT::Node> >              node_;            // map of nodes
 
   map<string,RefCountPtr<const Epetra_Vector> > state_;           // map of references to solution states
-
   map<int,RefCountPtr<ElementRegister> >        elementregister_; // register for types of elements in this discretization
+
+  multimap<string,RefCountPtr<Condition> >      condition_;       // some conditions e.g. BCs
+
 }; // class Discretization
 } // namespace DRT
 

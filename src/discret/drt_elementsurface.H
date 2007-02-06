@@ -25,7 +25,7 @@ using namespace std;
 using namespace Teuchos;
 
 #include "drt_element.H"
-#include "drt_elementregister.H"
+#include "drt_node.H"
 
 
 /*!
@@ -36,7 +36,6 @@ namespace DRT
 {
 // forward declarations
 class Discretization;
-class Shell8Register;
 
 /*!
 \class ElementSurface
@@ -123,7 +122,8 @@ public:
   number of degrees of freedom per node along the way for each of it's nodes
   separately.
   */
-  virtual int NumDofPerNode(const DRT::Node& node) const {return 0;}
+  virtual int NumDofPerNode(const DRT::Node& node) const 
+  {return node.Dof().NumDof();}
 
   /*!
   \brief Get number of degrees of freedom per element

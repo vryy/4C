@@ -69,13 +69,16 @@ int DRT::Discretization::FillComplete()
   filled_ = true;
 
   // Assign degrees of freedom to elements and nodes
-  AssignDegreesOfFreedom();
+  AssignDegreesOfFreedom(0);
   
   // build the register of elements
   BuildElementRegister();
   
   // call element routines to initialize
-  InitializeElements();  
+  InitializeElements();
+  
+  // (Re)build the geometry of the boundary conditions
+  BoundaryConditionsGeometry();
   
   return 0;
 }
@@ -353,7 +356,7 @@ void DRT::Discretization::BuildNodeToElementPointers()
 /*----------------------------------------------------------------------*
  |  set degrees of freedom (public)                          mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::AssignDegreesOfFreedom()
+int DRT::Discretization::AssignDegreesOfFreedom(const int start)
 {
   if (!Filled()) dserror("Filled()==false");
   if (!NodeRowMap()->UniqueGIDs()) dserror("Nodal row map is not unique");
@@ -416,12 +419,12 @@ void DRT::Discretization::AssignDegreesOfFreedom()
     fool->second.resize(numdof);
     for (int i=0; i<numdof; ++i)
     {
-      fool->second[i] = count;
+      fool->second[i] = count+start;
       ++count;
     }
   }
   // element dof numbering starts from count
-  const int starteledof = count;
+  const int starteledof = count+start;
   
   // export the redundant map to column map
   {
@@ -535,7 +538,7 @@ void DRT::Discretization::AssignDegreesOfFreedom()
   // set flag indicating that dofs now are present
   havedof_ = true;
 
-  return;
+  return count;
 }
 
 

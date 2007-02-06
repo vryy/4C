@@ -1,9 +1,9 @@
 /*!----------------------------------------------------------------------
-\file drt_elementline.H
+\file drt_elementvolume.H
 
-\class DRT::ElementLine
+\class DRT::ElementVolume
 
-\brief An element representing a line of a finite element
+\brief An element representing a volume of a finite element
 
 <pre>
 Maintainer: Michael Gee
@@ -15,8 +15,8 @@ Maintainer: Michael Gee
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
-#ifndef ELEMENTLINE_H
-#define ELEMENTLINE_H
+#ifndef ELEMENTVOLUME_H
+#define ELEMENTVOLUME_H
 
 
 #include "Teuchos_RefCountPtr.hpp"
@@ -38,13 +38,13 @@ namespace DRT
 class Discretization;
 
 /*!
-\class ElementLine
+\class ElementVolume
 
-\brief An element representing a line of a finite element
+\brief An element representing a volume of a finite element
 
 \author gee (gee@lnm.mw.tum.de)
 */
-class ElementLine : public DRT::Element
+class ElementVolume : public DRT::Element
 {
 public:
 
@@ -59,8 +59,7 @@ public:
   \param nodeids: global ids of nodes attached to this element
   \param nodes: the discretizations map of nodes to build ptrs to nodes from
   */
-  ElementLine(int id, int owner, int nnode, const int* nodeids,
-              DRT::Node** nodes);
+  ElementVolume(int id, int owner, int nnode, const int* nodeids, DRT::Node** nodes);
 
   /*!
   \brief Copy Constructor
@@ -68,7 +67,7 @@ public:
   Makes a deep copy of a Element
   
   */
-  ElementLine(const ElementLine& old);
+  ElementVolume(const ElementVolume& old);
 
   /*!
   \brief Deep copy this instance of an element and return pointer to the copy
@@ -82,10 +81,10 @@ public:
   /*!
   \brief Return unique ParObject id
   
-  every class implementing ParObject needs a unique id defined at the
-  top of the drt_parobject.H file.
+  every class imploementing ParObject needs a unique id defined at the
+  top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_ElementLine;}
+  virtual int UniqueParObjectId() const { return ParObject_ElementVolume;}
 
   /*!
   \brief Pack this class so it can be communicated
@@ -107,7 +106,7 @@ public:
   \brief Destructor
 
   */
-  virtual ~ElementLine();
+  virtual ~ElementVolume();
 
   //@}
 
@@ -153,16 +152,24 @@ public:
   */
   virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const;
 
+  /*!
+  \brief Integrate a Volume Neumann boundary condition
+  
+  */
+  void VolumeLoad(ParameterList& params,
+                   Epetra_SerialDenseVector& elevec1,
+                   const vector<double>& disp,
+                   const vector<int>& lm);
   //@}
 
 
 private:
 
   // don't want = operator
-  ElementLine operator = (const ElementLine& old);
+  ElementVolume operator = (const ElementVolume& old);
   
 
-}; // class ElementLine
+}; // class ElementSurface
 } // namespace DRT
 
 
@@ -175,6 +182,6 @@ private:
 
 
 
-#endif  // #ifndef ELEMENTLINE_H
+#endif  // #ifndef ELEMENTVOLUME_H
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

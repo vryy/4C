@@ -29,8 +29,7 @@ DRT::ElementLine::ElementLine(int id, int owner,
 DRT::Element(id,element_elementline,owner)
 {
   SetNodeIds(nnode,nodeids);
-  node_.resize(nnode);
-  for (int i=0; i<nnode; ++i) node_[i] = nodes[i];
+  BuildNodalPointers(nodes);
   return;
 }
 

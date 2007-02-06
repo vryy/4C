@@ -492,5 +492,51 @@ void DRT::Discretization::SetState(const string& name,RefCountPtr<const Epetra_V
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  Set a condition of a certain name                          (public) |
+ |                                                            gee 01/07 |
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::SetCondition(const string& name,RefCountPtr<Condition> cond)
+{
+  condition_.insert(pair<string,RefCountPtr<Condition> >(name,cond));
+  filled_ = false;
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Get a condition of a certain name                          (public) |
+ |                                                            gee 01/07 |
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::GetCondition(const string& name,vector<DRT::Condition*>& out)
+{
+  const int num = condition_.count(name);
+  out.resize(num);
+  multimap<string,RefCountPtr<Condition> >::iterator startit = 
+                                         condition_.lower_bound(name);
+  multimap<string,RefCountPtr<Condition> >::iterator endit = 
+                                         condition_.upper_bound(name);
+  int count=0;
+  multimap<string,RefCountPtr<Condition> >::iterator curr;
+  for (curr=startit; curr!=endit; ++curr)
+    out[count++] = curr->second.get();
+  if (count != num) dserror("Mismatch in number of conditions found");
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Get a condition of a certain name                          (public) |
+ |                                                            gee 01/07 |
+ *----------------------------------------------------------------------*/
+DRT::Condition* DRT::Discretization::GetCondition(const string& name)
+{
+  multimap<string,RefCountPtr<Condition> >::iterator curr = 
+                                         condition_.find(name);
+  if (curr==condition_.end()) return NULL;
+  curr = condition_.lower_bound(name);
+  return curr->second.get();
+}
+
+
+
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

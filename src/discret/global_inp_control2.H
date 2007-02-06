@@ -78,7 +78,7 @@ void inpfield_ccadiscret();
 void input_design();
 void input_conditions();                                
 void inherit_conditions();
-void distribute_grids_and_design();
+void distribute_drt_grids();
 void dyn_nlnstructural_drt();
 
 #ifdef __cplusplus

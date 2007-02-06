@@ -42,6 +42,7 @@ class Node;
 class ElementRegister;
 class ElementSurface;
 class ElementLine;
+class ElementVolume;
 
 /*!
 \class Element
@@ -71,6 +72,7 @@ public:
     element_designsurface,
     element_designvolume,
     element_shell8,
+    element_elementvolume,
     element_elementsurface,
     element_elementline
   };
@@ -158,12 +160,17 @@ public:
   /*!
   \brief Return number of lines of this element
   */
-  virtual int NumLines() const {return 0;}
+  virtual int NumLine() const {return 0;}
 
   /*!
   \brief Return number of surfaces of this element
   */
   virtual int NumSurface() const {return 0;}
+
+  /*!
+  \brief Return number of volumes of this element
+  */
+  virtual int NumVolume() const {return 0;}
 
   /*!
   \brief Return id's of nodes adjacent to this element
@@ -189,6 +196,12 @@ public:
   
   */
   virtual ElementSurface** Surfaces() { return NULL; }
+
+  /*!
+  \brief Get vector of ptrs to the volumes of this element
+  
+  */
+  virtual ElementVolume** Volumes() { return NULL; }
 
   /*!
   \brief Get number of degrees of freedom of a certain node
@@ -305,6 +318,11 @@ public:
   */
   virtual DRT::Condition* GetCondition(const string& name);
 
+  /*!
+  \brief Delete all conditions set to this element
+  */
+  virtual void ClearConditions() { condition_.clear(); return; }
+
   //@}
 
   // @{ \name Evaluation
@@ -379,19 +397,22 @@ protected:
   /*!
   \brief Build pointer vector from map of nodes
   
-  \return Returns true on success and false if nodes from NodeIds() cannot be found
-          in map
   */
-  bool BuildNodalPointers(map<int,RefCountPtr<DRT::Node> >& nodes);
+  virtual bool BuildNodalPointers(map<int,RefCountPtr<DRT::Node> >& nodes);
 
-protected:
-  vector<DRT::Node*>                       node_;      // pointers to adjacent nodes
+  /*!
+  \brief Build pointer vector from vector of nodal pointers
+  
+  */
+  virtual bool BuildNodalPointers(DRT::Node** nodes); 
+
 private:
 
   int                                      id_;        // a unique global element id
   int                                      owner_;     // owner of this element
   ElementType                              etype_;     // type of element
   vector<int>                              nodeid_;    // list of my nodal ids
+  vector<DRT::Node*>                       node_;      // pointers to adjacent nodes
   DRT::DofSet                              dofset_;    // a set of degrees of freedom
 
   multimap<string,RefCountPtr<Condition> > condition_; // some conditions e.g. BCs

@@ -19,6 +19,7 @@ Maintainer: Michael Gee
 #define CONDITION_H
 
 
+#include "Epetra_Comm.h"
 #include "Teuchos_RefCountPtr.hpp"
 
 using namespace std;
@@ -35,6 +36,7 @@ namespace DRT
 {
 
 // forward declarations
+class Element;
 
 /*!
 \class Condition
@@ -126,10 +128,45 @@ public:
   */
   inline virtual ConditionType Type() const { return type_; }
 
+  /*!
+  \brief Return communicator
+  */
+  inline const RefCountPtr<Epetra_Comm> Comm() const { return comm_; }
+
   //@}
 
   // @{ \name Construction
 
+  /*!
+  \brief Set a communicator
+  */
+  inline void SetComm(RefCountPtr<Epetra_Comm> comm) 
+  { comm_ = comm; return; }
+
+  /*!
+  \brief Add a geometry description to the condition
+  
+  A geometry condition can be added to the condition.
+  In case the condition refers to lines, surfaces or volumes, a
+  geometry description is needed to properly evaluate this condition.
+  Such a geometry description is build in \ref DRT::Discretization::BoundaryConditionsGeometry
+  and then added to this Condition.
+  
+  \param geom (in): Map of elements describing the geometry.
+                    A deep copy of the map is made and stored.
+                    Normally though, these elements are a line, surface or
+                    volume description produced and shared with the discretization.
+                    Do not mess with the RefCountPtr!
+  
+  */
+  virtual void AddGeometry(map<int,RefCountPtr<DRT::Element> >& geom) 
+  { geometry_ = geom; return; }
+
+  /*!
+  \brief Delete a geometry description of the condition
+  
+  */
+  virtual void ClearGeometry() { geometry_.clear(); return; }
 
   //@}
 
@@ -141,9 +178,10 @@ protected:
 
 protected:
 
-  int           id_;     // unique id of this condition, no second condition of the same type with same id may exist
-  ConditionType type_;   // type of this condition
-
+  int                                 id_;       // unique id of this condition, no second condition of the same type with same id may exist
+  ConditionType                       type_;     // type of this condition
+  map<int,RefCountPtr<DRT::Element> > geometry_; // geometry description of this condition
+  RefCountPtr<Epetra_Comm>            comm_;     // a communicator 
 }; // class Condition
 } // namespace DRT
 

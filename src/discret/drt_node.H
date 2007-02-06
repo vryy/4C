@@ -246,6 +246,11 @@ public:
   */
   virtual DRT::Condition* GetCondition(const string& name);
 
+  /*!
+  \brief Delete all conditions set to this node
+  */
+  virtual void ClearConditions() { condition_.clear(); return; }
+
   //@}
 
 protected:

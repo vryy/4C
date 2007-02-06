@@ -114,7 +114,8 @@ void ntainp_ccadiscret()
   inpctr();
   
   // input of design if desired
-  input_design();
+  design = NULL;
+  //input_design();
 
   /* input of materials */
   inp_material();
@@ -125,6 +126,7 @@ void ntainp_ccadiscret()
   inpfield_ccadiscret();
 
   // read the design topology and make discretizations familiar with design
+/*
   if (design)
     for (int i=0; i<genprob.numfld; ++i)
     {
@@ -136,6 +138,7 @@ void ntainp_ccadiscret()
         input_design_topology_discretization(*actdis);
       }
     }
+*/
   
   // read dynamic control data
   if (genprob.timetyp==time_dynamic) inpctrdyn();
@@ -149,14 +152,14 @@ void ntainp_ccadiscret()
   // read all types of geometry related conditions (e.g. boundary conditions)
   // Also read time and space functions and local coord systems
   input_conditions();
-  
+
   // inherit Dirichlet conditions inside design
   // inherit dirichlet conditions from design to discretization
   // Neumann conditions are additive and are therefore not inherited
   // inside design
   // Neumann conditions are inherited from design to discretization
   // All this takes place if there IS a design
-  inherit_conditions();
+  //inherit_conditions();
   
   /*-------------------------------------------- input of monitoring data */
   inp_monitor();

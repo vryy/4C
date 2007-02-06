@@ -99,10 +99,11 @@ and the type is in partition.h
   | make design redundant                                               |
   | distribute grids                                                    |
  *----------------------------------------------------------------------*/
-void distribute_grids_and_design()
+void distribute_drt_grids()
 {
-  DSTraceHelper dst("distribute_grids_and_design");
+  DSTraceHelper dst("distribute_drt_grids");
 
+#if 0 // design does no longer exist
   //-------------------------------------- get the design if it exists
   if (design)
   {
@@ -167,6 +168,7 @@ void distribute_grids_and_design()
     ierr += ccadesign[0]->FillComplete(ccadesign[1].get(),NULL);
     if (ierr) dserror("FillComplete of Design returned %d",ierr);
   } // if (design)
+#endif
   
   //the comm in the design can stay MPI_COMM_WORLD
   // get discretizations and replace their comm
@@ -186,7 +188,9 @@ void distribute_grids_and_design()
       int ierr = actdis->FillComplete();
       if (ierr) dserror("FillComplete returned %d",ierr);
 #endif
-      if (!actdis->Filled()) dserror("FillComplete() was not called on discretization");
+      if (!actdis->Filled())
+        ierr = actdis->FillComplete();
+      if (ierr) dserror("FillComplete returned %d",ierr);
       
       // partition the discretization using metis
       // create nodal graph of problem
@@ -215,7 +219,7 @@ void distribute_grids_and_design()
   } // for (int i=0; i<genprob.numfld; ++i)
 
   return;
-} // void distribute_grids_and_design
+} // void distribute_drt_grids
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

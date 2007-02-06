@@ -14,6 +14,7 @@ Maintainer: Michael Gee
 #ifdef TRILINOS_PACKAGE
 
 #include "drt_condition.H"
+#include "drt_element.H"
 
 
 
@@ -23,8 +24,9 @@ Maintainer: Michael Gee
 DRT::Condition::Condition(const int id, const ConditionType type) :
 Container(),
 id_(id),
-type_(type)
-{
+type_(type),
+comm_(null)
+{ 
   return;
 }
 
@@ -34,7 +36,8 @@ type_(type)
 DRT::Condition::Condition() :
 Container(),
 id_(-1),
-type_(none)
+type_(none),
+comm_(null)
 {
   return;
 }
@@ -45,7 +48,8 @@ type_(none)
 DRT::Condition::Condition(const DRT::Condition& old) :
 Container(old),
 id_(old.id_),
-type_(old.type_)
+type_(old.type_),
+comm_(old.comm_)
 {
   return;
 }
@@ -81,6 +85,14 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==SurfaceNeumann) os << "Surface Neumann boundary condition: ";
   else if (Type()==VolumeNeumann) os << "Volume Neumann boundary condition: ";
   Container::Print(os);
+  if ((int)geometry_.size())
+  {
+    cout << endl;
+    cout << "Elements of this condition:\n";
+    map<int,RefCountPtr<DRT::Element> >::const_iterator curr;
+    for (curr=geometry_.begin(); curr!=geometry_.end(); ++curr)
+      cout << "      " << *(curr->second) << endl;
+  }
   return;
 }
 

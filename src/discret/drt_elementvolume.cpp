@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file drt_elementsurface.cpp
+\file drt_elementvolume.cpp
 \brief
 
 <pre>
@@ -13,7 +13,7 @@ Maintainer: Michael Gee
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
-#include "drt_elementsurface.H"
+#include "drt_elementvolume.H"
 #include "drt_dserror.H"
 
 
@@ -23,10 +23,10 @@ Maintainer: Michael Gee
  |  ctor (public)                                            mwgee 01/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ElementSurface::ElementSurface(int id, int owner,
+DRT::ElementVolume::ElementVolume(int id, int owner,
                                     int nnode, const int* nodeids,
                                     DRT::Node** nodes) :
-DRT::Element(id,element_elementsurface,owner)
+DRT::Element(id,element_elementvolume,owner)
 {
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
@@ -37,7 +37,7 @@ DRT::Element(id,element_elementsurface,owner)
  |  copy-ctor (public)                                       mwgee 01/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ElementSurface::ElementSurface(const DRT::ElementSurface& old) :
+DRT::ElementVolume::ElementVolume(const DRT::ElementVolume& old) :
 DRT::Element(old)
 {
   return;
@@ -47,9 +47,9 @@ DRT::Element(old)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ElementSurface::Clone() const
+DRT::Element* DRT::ElementVolume::Clone() const
 {
-  DRT::ElementSurface* newelement = new DRT::ElementSurface(*this);
+  DRT::ElementVolume* newelement = new DRT::ElementVolume(*this);
   return newelement;
 }
 
@@ -57,7 +57,7 @@ DRT::Element* DRT::ElementSurface::Clone() const
  |  Pack data from this element into vector of length size     (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-const char* DRT::ElementSurface::Pack(int& size) const
+const char* DRT::ElementVolume::Pack(int& size) const
 {
   const int sizeint    = sizeof(int);
   //const int sizedouble = sizeof(double);
@@ -99,7 +99,7 @@ const char* DRT::ElementSurface::Pack(int& size) const
  |  Unpack data into this element                              (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-bool DRT::ElementSurface::Unpack(const char* data)
+bool DRT::ElementVolume::Unpack(const char* data)
 {
   //const int sizeint    = sizeof(int);
   //const int sizeforcetype = sizeof(enum ForceType);
@@ -131,7 +131,7 @@ bool DRT::ElementSurface::Unpack(const char* data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 01/07|
  *----------------------------------------------------------------------*/
-DRT::ElementSurface::~ElementSurface()
+DRT::ElementVolume::~ElementVolume()
 {
   return;
 }
@@ -140,9 +140,9 @@ DRT::ElementSurface::~ElementSurface()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 01/07|
  *----------------------------------------------------------------------*/
-void DRT::ElementSurface::Print(ostream& os) const
+void DRT::ElementVolume::Print(ostream& os) const
 {
-  os << "ElementSurface ";
+  os << "ElementVolume ";
   Element::Print(os);
   return;
 }
@@ -150,7 +150,7 @@ void DRT::ElementSurface::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  allocate and return ElementSurfaceRegister (public)      mwgee 01/07|
  *----------------------------------------------------------------------*/
-RefCountPtr<DRT::ElementRegister> DRT::ElementSurface::ElementRegister() const
+RefCountPtr<DRT::ElementRegister> DRT::ElementVolume::ElementRegister() const
 {
   return null;
 }
@@ -159,7 +159,7 @@ RefCountPtr<DRT::ElementRegister> DRT::ElementSurface::ElementRegister() const
 /*----------------------------------------------------------------------*
  |  Integrate a Surface Neumann boundary condition (public)  mwgee 01/07|
  *----------------------------------------------------------------------*/
-void DRT::ElementSurface::SurfaceLoad(ParameterList& params,
+void DRT::ElementVolume::VolumeLoad(ParameterList& params,
                                       Epetra_SerialDenseVector& elevec1,
                                       const vector<double>& disp,
                                       const vector<int>& lm)

@@ -282,6 +282,17 @@ bool DRT::Element::BuildNodalPointers(map<int,RefCountPtr<DRT::Node> >& nodes)
   return true;
 }
 
+/*----------------------------------------------------------------------*
+ |  Build nodal pointers                                    (protected) |
+ |                                                            gee 01/07 |
+ *----------------------------------------------------------------------*/
+bool DRT::Element::BuildNodalPointers(DRT::Node** nodes)
+{
+  node_.resize(NumNode()); 
+  for (int i=0; i<NumNode(); ++i) node_[i] = nodes[i];
+  return true;
+}
+
 
 /*----------------------------------------------------------------------*
  |  Get a condition of a certain name                          (public) |
