@@ -44,7 +44,6 @@ void DRT::Discretization::BoundaryConditionsGeometry()
     fool->second->SetComm(comm_);
   }
 
-  
   // for dirichlet boundary conditions, we do not do anything special, 
   // we just set a ptr in the nodes to the condition
   for (fool=condition_.begin(); fool != condition_.end(); ++fool)
@@ -61,7 +60,8 @@ void DRT::Discretization::BoundaryConditionsGeometry()
     }
   }
 
-  // For point neumann conditions, we do not do anything special,
+  // For point neumann conditions, we do nothing
+#if 0  
   // we just set a ptr in the nodes of the condition
   for (fool=condition_.begin(); fool != condition_.end(); ++fool)
   {
@@ -76,6 +76,7 @@ void DRT::Discretization::BoundaryConditionsGeometry()
       actnode->SetCondition(fool->first,fool->second);
     }
   }
+#endif  
 
   // For line neumann conditions, we take the nodal cloud
   // and build all lines connecting the nodal cloud using
@@ -123,22 +124,34 @@ void DRT::Discretization::BuildLinesinCondition(
   // number of global nodes in this cloud
   const int ngnode = nodeids->size();
 
-  // ptrs to my column nodes of those
-  map<int,DRT::Node*> nodes;
+  // ptrs to my row/column nodes of those
+  map<int,DRT::Node*> rownodes;
+  map<int,DRT::Node*> colnodes;
+
   for (int i=0; i<ngnode; ++i)
   {
-    if (!NodeColMap()->MyGID((*nodeids)[i])) continue;
-    DRT::Node* actnode = gNode((*nodeids)[i]);
-    if (!actnode) dserror("Cannot find global node");
-    nodes[actnode->Id()] = actnode;
+    if (NodeColMap()->MyGID((*nodeids)[i]))
+    {
+      DRT::Node* actnode = gNode((*nodeids)[i]);
+      if (!actnode) dserror("Cannot find global node");
+      colnodes[actnode->Id()] = actnode;
+    }
+  }
+  for (int i=0; i<ngnode; ++i)
+  {
+    if (NodeRowMap()->MyGID((*nodeids)[i]))
+    {
+      DRT::Node* actnode = gNode((*nodeids)[i]);
+      if (!actnode) dserror("Cannot find global node");
+      rownodes[actnode->Id()] = actnode;
+    }
   }
 
   // multimap of lines in our cloud
   multimap<int,RefCountPtr<DRT::Element> > linemap;
-  
   // loop these nodes and build all lines attached to them
   map<int,DRT::Node*>::iterator fool;
-  for (fool=nodes.begin(); fool != nodes.end(); ++fool)
+  for (fool=rownodes.begin(); fool != rownodes.end(); ++fool)
   {
     // currently looking at actnode
     DRT::Node*     actnode  = fool->second;
@@ -166,8 +179,8 @@ void DRT::Discretization::BuildLinesinCondition(
             bool allin = true;
             for (int l=0; l<nnodeperline; ++l)
             {
-              map<int,DRT::Node*>::iterator test = nodes.find(nodesperline[l]->Id());
-              if (test==nodes.end())
+              map<int,DRT::Node*>::iterator test = colnodes.find(nodesperline[l]->Id());
+              if (test==colnodes.end())
               {
                 allin = false;
                 break;
@@ -273,22 +286,31 @@ void DRT::Discretization::BuildSurfacesinCondition(
   // number of global nodes in this cloud
   const int ngnode = nodeids->size();
 
-  // ptrs to my column nodes of those
-  map<int,DRT::Node*> nodes;
+  // ptrs to my row/column nodes of those
+  map<int,DRT::Node*> rownodes;
+  map<int,DRT::Node*> colnodes;
   for (int i=0; i<ngnode; ++i)
   {
-    if (!NodeColMap()->MyGID((*nodeids)[i])) continue;
-    DRT::Node* actnode = gNode((*nodeids)[i]);
-    if (!actnode) dserror("Cannot find global node");
-    nodes[actnode->Id()] = actnode;
+    if (NodeColMap()->MyGID((*nodeids)[i]))
+    {
+      DRT::Node* actnode = gNode((*nodeids)[i]);
+      if (!actnode) dserror("Cannot find global node");
+      colnodes[actnode->Id()] = actnode;
+    }
+    if (NodeRowMap()->MyGID((*nodeids)[i]))
+    {
+      DRT::Node* actnode = gNode((*nodeids)[i]);
+      if (!actnode) dserror("Cannot find global node");
+      rownodes[actnode->Id()] = actnode;
+    }
   }
 
   // multimap of surfaces in this cloud
   multimap<int,RefCountPtr<DRT::Element> > surfmap;
   
-  // loop these nodes and build all surfs attached to them
+  // loop these row nodes and build all surfs attached to them
   map<int,DRT::Node*>::iterator fool;
-  for (fool=nodes.begin(); fool != nodes.end(); ++fool)
+  for (fool=rownodes.begin(); fool != rownodes.end(); ++fool)
   {
     // currently looking at actnode
     DRT::Node*     actnode  = fool->second;
@@ -316,8 +338,8 @@ void DRT::Discretization::BuildSurfacesinCondition(
             bool allin = true;
             for (int l=0; l<nnodepersurf; ++l)
             {
-              map<int,DRT::Node*>::iterator test = nodes.find(nodespersurf[l]->Id());
-              if (test==nodes.end())
+              map<int,DRT::Node*>::iterator test = colnodes.find(nodespersurf[l]->Id());
+              if (test==colnodes.end())
               {
                 allin = false;
                 break;
@@ -424,14 +446,23 @@ void DRT::Discretization::BuildVolumesinCondition(
   // number of global nodes in this cloud
   const int ngnode = nodeids->size();
 
-  // ptrs to my column nodes of those
-  map<int,DRT::Node*> nodes;
+  // ptrs to my row/column nodes of those
+  map<int,DRT::Node*> rownodes;
+  map<int,DRT::Node*> colnodes;
   for (int i=0; i<ngnode; ++i)
   {
-    if (!NodeColMap()->MyGID((*nodeids)[i])) continue;
-    DRT::Node* actnode = gNode((*nodeids)[i]);
-    if (!actnode) dserror("Cannot find global node");
-    nodes[actnode->Id()] = actnode;
+    if (NodeColMap()->MyGID((*nodeids)[i]))
+    {
+      DRT::Node* actnode = gNode((*nodeids)[i]);
+      if (!actnode) dserror("Cannot find global node");
+      colnodes[actnode->Id()] = actnode;
+    }
+    if (NodeRowMap()->MyGID((*nodeids)[i]))
+    {
+      DRT::Node* actnode = gNode((*nodeids)[i]);
+      if (!actnode) dserror("Cannot find global node");
+      rownodes[actnode->Id()] = actnode;
+    }
   }
 
   // multimap of volumes in our cloud
@@ -439,7 +470,7 @@ void DRT::Discretization::BuildVolumesinCondition(
   
   // loop these nodes and build all lines attached to them
   map<int,DRT::Node*>::iterator fool;
-  for (fool=nodes.begin(); fool != nodes.end(); ++fool)
+  for (fool=rownodes.begin(); fool != rownodes.end(); ++fool)
   {
     // currently looking at actnode
     DRT::Node*     actnode  = fool->second;
@@ -467,8 +498,8 @@ void DRT::Discretization::BuildVolumesinCondition(
             bool allin = true;
             for (int l=0; l<nnodepervol; ++l)
             {
-              map<int,DRT::Node*>::iterator test = nodes.find(nodespervol[l]->Id());
-              if (test==nodes.end())
+              map<int,DRT::Node*>::iterator test = colnodes.find(nodespervol[l]->Id());
+              if (test==colnodes.end())
               {
                 allin = false;
                 break;

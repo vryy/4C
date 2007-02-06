@@ -150,6 +150,14 @@ void DRT::Discretization::EvaluateNeumann(ParameterList& params, Epetra_Vector& 
   //--------------------------------------------------------
   // loop through Point Neumann conditions and evaluate them
   //--------------------------------------------------------
+  multimap<string,RefCountPtr<Condition> >::iterator fool;
+  for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
+  {
+    if (fool->first != (string)"PointNeumann") continue;
+    cout << *(fool->second);
+  }
+
+#if 0
   for (int i=0; i<NumMyRowNodes(); ++i)
   {
     DRT::Node* actnode = lRowNode(i);
@@ -181,13 +189,12 @@ void DRT::Discretization::EvaluateNeumann(ParameterList& params, Epetra_Vector& 
       }
     }
   } // for (int i=0; i<NumMyRowNodes(); ++i)   
+#endif
 
   //--------------------------------------------------------
-  // evaluate line/surface/volume/Neumann conditions
+  // evaluate line/surface/volume-Neumann conditions
   //--------------------------------------------------------
-  RefCountPtr<Epetra_Vector> sysvec = rcp(&systemvector);
-  sysvec.release();
-  Evaluate(params,null,null,sysvec,null,null);
+  
 
   cout << systemvector;
   exit(0);

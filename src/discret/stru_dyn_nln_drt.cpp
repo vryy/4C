@@ -86,7 +86,7 @@ void dyn_nlnstructural_drt()
   // get a communicator and myrank and numproc
   // -------------------------------------------------------------------
   const Epetra_Comm& Comm = actdis->Comm();
-  const int myrank = Comm.MyPID();
+  const int myrank  = Comm.MyPID();
   const int numproc = Comm.NumProc();
   
   // -------------------------------------------------------------------
