@@ -280,7 +280,7 @@ void init_bin_out_main(CHAR* outputname)
   {
     if (par.myrank == 0)
     {
-      CHAR tmpbuf[256];
+      CHAR tmpbuf[1024];
       INT len;
       INT number = 0;
       strcpy(tmpbuf, outputname);
@@ -329,7 +329,7 @@ void init_bin_out_main(CHAR* outputname)
   if (par.myrank == 0)
   {
     static CHAR* problem_names[] = PROBLEMNAMES;
-    CHAR name[256];
+    CHAR name[1024];
     time_t time_value;
     CHAR hostname[31];
     struct passwd *user_entry;
@@ -432,7 +432,7 @@ void init_bin_out_main(CHAR* outputname)
 /*----------------------------------------------------------------------*/
 void init_bin_in_main(CHAR* inputname)
 {
-  CHAR name[256];
+  CHAR name[1024];
 
 #ifdef DEBUG
   dstrc_enter("init_bin_in_main");
@@ -1295,7 +1295,7 @@ void out_open_data_files(BIN_OUT_FIELD *context,
   INTRA *actintra;
   INT disnum;
   INT rank;
-  CHAR filename[256];
+  CHAR filename[1024];
 
 #ifdef DEBUG
   dstrc_enter("out_open_data_files");
@@ -1348,7 +1348,7 @@ void out_open_data_files(BIN_OUT_FIELD *context,
   {
     if (actintra->intra_nprocs>1)
     {
-      CHAR local_filename[256];
+      CHAR local_filename[1024];
       sprintf(local_filename,"%s.p%d",filename,rank);
       files->local_value_file = fopen(local_filename, "wb");
     }
@@ -1397,7 +1397,7 @@ void out_open_data_files(BIN_OUT_FIELD *context,
   {
     if (actintra->intra_nprocs>1)
     {
-      CHAR local_filename[256];
+      CHAR local_filename[1024];
       sprintf(local_filename,"%s.p%d",filename,rank);
       files->local_size_file = fopen(local_filename, "wb");
     }
@@ -2303,6 +2303,7 @@ void out_write_chunk(BIN_OUT_FIELD *context,
     {
       dserror("failed to write value file");
     }
+    fflush(context->out->local_value_file);
     fseek(context->out->local_size_file, context->out->size_file_offset, SEEK_SET);
     if (fwrite(chunk->out_sizes,
 	       sizeof(INT),
@@ -2311,6 +2312,7 @@ void out_write_chunk(BIN_OUT_FIELD *context,
     {
       dserror("failed to write size file");
     }
+    fflush(context->out->local_size_file);
   }
 #else
 
@@ -3204,8 +3206,8 @@ static void in_open_data_files(BIN_IN_FIELD *context,
   INT err;
 #endif
   CHAR *filename;
-  CHAR buf[256];
-  CHAR input_dir[100];
+  CHAR buf[1024];
+  CHAR input_dir[1024];
   CHAR* separator;
 
 #ifdef DEBUG
@@ -3253,7 +3255,7 @@ static void in_open_data_files(BIN_IN_FIELD *context,
   }
   else if (context->num_output_proc==actintra->intra_nprocs)
   {
-    CHAR local_filename[256];
+    CHAR local_filename[1024];
     sprintf(local_filename,"%s.p%d",buf,actintra->intra_rank);
     context->local_value_file = fopen(local_filename,"rb");
     context->value_file = MPI_FILE_NULL;
@@ -3286,7 +3288,7 @@ static void in_open_data_files(BIN_IN_FIELD *context,
   }
   else if (context->num_output_proc==actintra->intra_nprocs)
   {
-    CHAR local_filename[256];
+    CHAR local_filename[1024];
     sprintf(local_filename,"%s.p%d",buf,actintra->intra_rank);
     context->local_size_file = fopen(local_filename,"rb");
     context->size_file = MPI_FILE_NULL;

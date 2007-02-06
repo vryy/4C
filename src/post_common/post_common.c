@@ -119,7 +119,7 @@ DOUBLE cmp_double(const void *a, const void *b )
 void setup_filter(CHAR* output_name, MAP* control_table, CHAR* basename)
 {
   INT length;
-  CHAR control_file_name[100];
+  CHAR control_file_name[1024];
   MAP* table;
   MAP temp_table;
 
@@ -138,7 +138,7 @@ void setup_filter(CHAR* output_name, MAP* control_table, CHAR* basename)
   length = strlen(output_name);
   if ((length > 8) && (strcmp(output_name+length-8, ".control")==0)) {
     /* dsassert isn't working yet. */
-    assert(length-8+13 < 100);
+    assert(length-8+13 < 1024);
     strcpy(allfiles.outputfile_name, output_name);
     strcpy(allfiles.outputfile_name+length-8, ".post.log");
     strcpy(control_file_name, output_name);
@@ -147,7 +147,7 @@ void setup_filter(CHAR* output_name, MAP* control_table, CHAR* basename)
   }
   else {
     /* dsassert isn't working yet. */
-    assert(length+13 < 100);
+    assert(length+13 < 1024);
     strcpy(allfiles.outputfile_name, output_name);
     strcpy(allfiles.outputfile_name+length, ".post.log");
     strcpy(control_file_name, output_name);
@@ -545,7 +545,7 @@ static void open_data_files(RESULT_DATA* result, MAP* field_info, CHAR* prefix)
 {
   INT i;
   CHAR* filename;
-  CHAR var_name[100];
+  CHAR var_name[1024];
   PROBLEM_DATA* problem;
   INT num_output_proc;
 
@@ -571,7 +571,7 @@ static void open_data_files(RESULT_DATA* result, MAP* field_info, CHAR* prefix)
 
   for (i=0; i<num_output_proc; ++i)
   {
-    CHAR buf[256];
+    CHAR buf[1024];
     if (num_output_proc>1)
     {
       sprintf(buf,"%s%s.p%d",problem->input_dir,filename,i);
@@ -598,7 +598,7 @@ static void open_data_files(RESULT_DATA* result, MAP* field_info, CHAR* prefix)
 
   for (i=0; i<num_output_proc; ++i)
   {
-    CHAR buf[256];
+    CHAR buf[1024];
     if (num_output_proc>1)
     {
       sprintf(buf,"%s%s.p%d",problem->input_dir,filename,i);
@@ -977,7 +977,7 @@ void init_problem_data(PROBLEM_DATA* problem, INT argc, CHAR** argv)
     /* 'separator-filename' gives the number of chars before the
      * separator. But we want to copy the separator as well. */
     n = separator-filename+1;
-    dsassert(n < 100, "file name overflow");
+    dsassert(n < 1024, "file name overflow");
     strncpy(problem->input_dir, filename, n);
     problem->input_dir[n] = '\0';
   }
@@ -1324,6 +1324,7 @@ static void read_value_chunk(CHUNK_DATA* chunk, RESULT_DATA* result, INT numentr
     for (i=0; i<result->num_files; ++i)
     {
       INT local_length;
+      INT read_length;
       if (i<fullarrays)
       {
 	local_length = chunk->value_entry_length*max_num;
@@ -1334,9 +1335,10 @@ static void read_value_chunk(CHUNK_DATA* chunk, RESULT_DATA* result, INT numentr
       }
 
       fseek(chunk->result->value_file[i], chunk->value_offset, SEEK_SET);
-      if (fread(data, sizeof(DOUBLE),
-		local_length,
-		chunk->result->value_file[i]) != local_length)
+      read_length = fread(data, sizeof(DOUBLE),
+			  local_length,
+			  chunk->result->value_file[i]);
+      if (read_length != local_length)
       {
 	dserror("failed to read value file of field '%s'", result->field->name);
       }
@@ -1387,6 +1389,8 @@ static void read_size_chunk(CHUNK_DATA* chunk, RESULT_DATA* result, INT numentry
     for (i=0; i<result->num_files; ++i)
     {
       INT local_length;
+      INT read_length;
+
       if (i<fullarrays)
       {
 	local_length = chunk->size_entry_length*max_num;
@@ -1397,9 +1401,10 @@ static void read_size_chunk(CHUNK_DATA* chunk, RESULT_DATA* result, INT numentry
       }
 
       fseek(chunk->result->size_file[i], chunk->size_offset, SEEK_SET);
-      if (fread(data, sizeof(INT),
-		local_length,
-		chunk->result->size_file[i]) != local_length)
+      read_length = fread(data, sizeof(INT),
+			  local_length,
+			  chunk->result->size_file[i]);
+      if (read_length != local_length)
       {
 	dserror("failed to read size file of field '%s'", result->field->name);
       }
