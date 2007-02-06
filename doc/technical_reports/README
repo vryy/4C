@@ -8,18 +8,18 @@
    make          :   global & single reports
    make global   :   create only one master document
    make single   :   create one pdf for each chapter
-   make clean    :   remove all generated documents
+   make clean    :   remove all generated documents and re-./configure
 
 2) How to add a tech report
 
 -> add a new subdirectory to src/
    it must be named like
 
-               src_doohickey
+               src_example
 
 -> create file named 
 
-               src_doohickey.tex
+               src_example.tex
 
    in this new directory. This file is your main document.
    You are allowed to include files and pictures ---
@@ -28,7 +28,7 @@
 
    If you are using subdirectories, the path should be 
    specified relative to the src_doohickey directory
-   e.g. \includegraphics{figures/baum} to include baum.eps
+   e.g. \includegraphics{figures/convergence_diagram} to include baum.eps
    Do NOT use the \graphicspath command!
    It is already used by the configure script.
 

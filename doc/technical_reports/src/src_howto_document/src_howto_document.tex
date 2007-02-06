@@ -10,49 +10,53 @@ In the \verb|/doc/technical_reports| folder, type
 \item \verb|make|
 \end{itemize}
 
-\section{Technics}
-
-In the whole process, PDF\LaTeX ist used. That allows to use eps (via transformation to little pdfs), and any binary image formats such as JPEG or PNG that the PDF standard allows
 
 \section{HowTo create a new report}
 
 \begin{enumerate}
-  \item create a new folder \verb|src_project}|
-  \item create a new file \verb|src_project.tex}|
-  \item start the file with \verb|\chapter{Project Title X}|
+  \item create a new folder \verb|src_project|
+  \item create a new file \verb|src_project.tex|
+  \item start the file with \verb|\chapter{Project Title X|
   \item run \verb|./configure| --> your new folder should be mentioned on the screen and should appear on the screen and in the Makefile. Also, all your eps files should be mentioned in the begining of the Makefile.
 \end{enumerate}
 
 
 \section{Working with all the gimmiks using latex}
-If you want to work without all the make magic using your editor of choice, do the following.
+If you want to work without all the make magic using your editor of choice, do the following:
 After creating your folder and main file and running configure, do
 \begin{enumerate}
  \item copy the file \verb|temp/single_report_project.tex| to your \verb|src/src_project| folder
  \item delete \verb|inputpath| and \verb|figurepath| stuff from this file
  \item use \verb|latex single_report_project| as usual
 \end{enumerate}
+This ensures that you have all the packages and conform to the standard of the configure script and, therefore, the general CCARAT (oops, he said it again...) documentation.
 
-This ensures that you have all the packages and conform to some standard from the configure script.
 
+\section{Technic}
+
+The reports are produced with PDF\LaTeX.
 
 \subsection{Basics}
 
-you can include files as
+You can include files as
 \begin{verbatim}
 \include{blub_additional_file}
 \end{verbatim}
 
-you can define your own commands, which won't be visible outside of your chapter
+You can define your own commands, which won't be visible outside of your chapter
 \newcommand{\testbastel}[1]{\vec{#1}}
 \begin{verbatim}
 \newcommand{\testbastel}[1]{\vec{#1}}
 \end{verbatim}
+Keep all your newcommands inside your own files to avoid cluttering of the templates. The templates are only allowed to be changed to add packages via \verb|\usepackage{}|.
+
+% Use \verb|\input| instead of \verb|\include|. The additional \verb|.aux| file confuses \LaTeX and always requires additional recompiling, whether crossreferences are correct or not.
 
 \subsection{Figures}
 
-Do not use endings in you including statement
+All figures have to be provided in EPS format. This allows usage of latex and pdflatex. All paths to pictures have to be in relative paths with respect to the \verb|src_example.tex| file.
 
+Do not use endings in you including statement.
 \subsubsection{Binary Images}
 \begin{verbatim}
 \begin{figure}
@@ -62,8 +66,6 @@ Do not use endings in you including statement
 \end{center}
 \end{figure}
 \end{verbatim}
-
-
 
 \subsubsection{EPS Images}
 \begin{verbatim}
@@ -75,7 +77,4 @@ Do not use endings in you including statement
 \end{figure}
 \end{verbatim}
 
-eps images will be translated via \verb|epstopdf| to a little pdf file of the same size (bounding box) and is always uptodate with the basic eps file.
-
-If no endings are used, the \TeX file can be translated with \LaTeX AND PDF\LaTeX, if one wants to.
-
+eps images will be translated automatically via \verb|epstopdf| to a little pdf file of the same size (bounding box) and is always uptodate with the eps file during compilation of the documents.

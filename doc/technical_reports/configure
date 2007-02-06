@@ -9,7 +9,7 @@ latex_wd=build
 execute_command="pdflatex -output-directory="$latex_wd" "$latex_wd"/"
 
 echo "--------------------------------------------------"
-echo latex working directory set to $latex_wd
+echo latex working directory set to $latex_wd/
 echo "All toc, aux and log files will be written there"
 echo "Also, temporary report tex files are in there"
 echo "--------------------------------------------------"
@@ -38,18 +38,11 @@ fi
 ###################################################
 ###################################################
 
-
 #  TeX_files contains all tex-files in src which start with src_
 TeX_files=`find src -name src_*.tex`
 
-###################################################
-#
-#          INIT GLOBAL MASTER DOCUMENT
-#
-###################################################
-
+# INIT GLOBAL MASTER DOCUMENT
 cat templates/global_report.tex > $global_report_file
-
 
 
 ###################################################
@@ -68,7 +61,7 @@ do
 
     ###################################################
     #
-    # CONTRIBUTION TO THE SINGLE REPORTS
+    #  THE SINGLE REPORTS
     #
     ###################################################
 
@@ -94,7 +87,7 @@ do
 
     ###################################################
     #
-    # CONTRIBUTION OF THE SRCS TO MASTER DOCUMENT
+    #  MASTER DOCUMENT
     #
     ###################################################
 
@@ -119,15 +112,16 @@ do
 
 done
 
-###################################################
-#
-#          CLOSE GLOBAL MASTER DOCUMENT
-#
-###################################################
-
+# CLOSE GLOBAL MASTER DOCUMENT
 echo "\end{document}" >> $global_report_file
 
-
+###################################################
+###################################################
+#
+#        End Part 1
+#
+###################################################
+###################################################
 
 
 ###################################################
@@ -141,10 +135,11 @@ echo "\end{document}" >> $global_report_file
 echo -e "\\n"Generating Makefile
 echo -e "" > Makefile
 
+# check for eps files that have to be translated to pdf
 EPS_files=`find src -name *.eps`
 
 echo -e "EPS_FILES= \\" >> Makefile
-for full_name in `echo $EPS_files` 
+for full_name in `echo $EPS_files`
 do
     echo -e "    "$full_name"\\" >> Makefile
 done
@@ -153,46 +148,30 @@ echo -e "" >> Makefile
 echo -e "PDF_FILES := \$(EPS_FILES:.eps=.pdf)" >> Makefile
 echo -e "" >> Makefile
 
-# make target all
 
-echo -e "all: Makefile single global\\n\\n" >> Makefile
+# make target all
+echo -e "all: single global\\n\\n" >> Makefile
+
 
 # make target for global report
-
 echo -e "global: templates/global_report.tex "reports/$global_report.pdf"\\n\\n" >> Makefile
 
 
-###################################################
-#
-#           LOOP ALL TEX(TECH)-REPORTS
-#
-###################################################
-
-
 # make targets for single reports
-
-first=0
-
-for full_name in `echo $TeX_files` 
+single_reports_pdfs="single: "'$(PDF_FILES)'
+for full_name in `echo $TeX_files`
 do
     src_name=${full_name##*/}
     file_name=${src_name#*_}
     inputname=${file_name%.*}
 
-    if [ $first = 0 ]
-      then
-        single_reports_pdfs="single: "'$(PDF_FILES)'" templates/single_report.tex "reports/$single_report_base$inputname".pdf"
-    else
-        single_reports_pdfs=$single_reports_pdfs'\\'"\\n\\t"reports/$single_report_base$inputname".pdf"
-    fi
-    first=1
+    single_reports_pdfs=$single_reports_pdfs'\\'"\\n\\t"reports/$single_report_base$inputname".pdf"
 done
 
 echo -e $single_reports_pdfs"\\n" >> Makefile
 
 
 # make dependencies for single reports
-
 for full_name in `echo $TeX_files`
 do
     src_name=${full_name##*/}
@@ -202,13 +181,12 @@ do
     single_report_dependency=reports/$single_report_base$inputname".pdf"
 
     echo -e "" >> Makefile
-    echo -e "" >> Makefile
 
-    echo -e $single_report_dependency: Makefile $directory"/*.tex" >> Makefile
+    echo -e $single_report_dependency: Makefile $directory"/*.tex templates/global_report.tex" >> Makefile
 
-    echo -e "\\t "$execute_command$single_report_base$inputname >> Makefile
-    echo -e "\\t "$execute_command$single_report_base$inputname >> Makefile
-    echo -e "\\t ""mv $latex_wd/$single_report_base$inputname".pdf" reports" >> Makefile
+    echo -e "\\t"$execute_command$single_report_base$inputname >> Makefile
+    echo -e "\\t"$execute_command$single_report_base$inputname >> Makefile
+    echo -e "\\t""mv $latex_wd/$single_report_base$inputname".pdf" reports" >> Makefile
 done
 
 
@@ -217,22 +195,11 @@ done
 echo -e "" >> Makefile
 echo -e "" >> Makefile
 
-first=0
-
+global_report_dependency="reports/"$global_report.pdf": "'$(PDF_FILES)'" Makefile templates/single_report.tex "
 for full_name in `echo $TeX_files` 
 do
     directory=${full_name%/*}
-
-    global_report_dependency=$global_report_dependency
-
-    if [ $first = 0 ]
-    then
-        global_report_dependency="reports/"$global_report.pdf": "'$(PDF_FILES)'" Makefile "
-        global_report_dependency=$global_report_dependency$directory"/*.tex"
-    else
-        global_report_dependency=$global_report_dependency'\\'"\\n\\t"$directory"/*.tex"
-    fi
-    first=1
+    global_report_dependency=$global_report_dependency'\\'"\\n\\t"$directory"/*.tex"
 done
 
 echo -e $global_report_dependency >> Makefile
@@ -246,8 +213,16 @@ echo -e "\\tmv "$latex_wd/$global_report".pdf reports" >> Makefile
 echo -e "\\n" >> Makefile
 
 echo clean: >> Makefile
-echo -e "\\tif [ -e ${working_directory}/reports ] ; then rm -r reports; fi" >> Makefile
-echo -e "\\tif [ -e ${working_directory}/"$latex_wd" ] ; then rm -r "$latex_wd"; fi" >> Makefile
+echo -e "\\tif [ -e reports ] ; then rm -r reports; fi" >> Makefile
+echo -e "\\tif [ -e "$latex_wd" ] ; then rm -r "$latex_wd"; fi" >> Makefile
+#echo -e "\\tif [ -e Makefile ] ; then rm Makefile; fi" >> Makefile
+echo -e "\\t@echo reconfiguring..." >> Makefile
+echo -e "\\t./configure" >> Makefile
+
+echo clean_svn: >> Makefile
+echo -e "\\tif [ -e reports ] ; then rm -r reports; fi" >> Makefile
+echo -e "\\tif [ -e "$latex_wd" ] ; then rm -r "$latex_wd"; fi" >> Makefile
+echo -e "\\tif [ -e Makefile ] ; then rm Makefile; fi" >> Makefile
 
 
 # Make target for all the missing figure.pdf files
@@ -255,7 +230,7 @@ echo -e "\\tif [ -e ${working_directory}/"$latex_wd" ] ; then rm -r "$latex_wd";
 
 echo -e "\\n" >> Makefile
 
-echo -e "src/src_%.pdf: src/src_%.eps Makefile" >> Makefile
+echo -e "src/src_%.pdf: src/src_%.eps" >> Makefile
 echo -e "\\t@echo 'Compiling :  ' $< ' to ' \$@" >> Makefile
 echo -e "\\t@epstopdf $<" >> Makefile
 echo -e "" >> Makefile
