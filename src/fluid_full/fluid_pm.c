@@ -1148,17 +1148,26 @@ void fluid_pm()
 
     /*------- copy solution from sol_increment[1][j] to sol_increment[0][j] */
     /*------- -> prev. solution becomes (n-1)-solution of next time step ---*/
-    solserv_sol_copy(actfield,0,node_array_sol_increment,
-                     node_array_sol_increment,ipos->veln,ipos->velnm);
+    solserv_sol_copy(actfield,0,
+                     node_array_sol_increment,
+                     node_array_sol_increment,
+                     ipos->veln,
+                     ipos->velnm);
 
     /* copy solution from sol_increment[velnp][j] to sol_increment[veln][j] */
     /*--- -> actual solution becomes previous solution of next time step ---*/
-    solserv_sol_copy(actfield,0,node_array_sol_increment,
-                     node_array_sol_increment,ipos->velnp,ipos->veln);
+    solserv_sol_copy(actfield,0,
+                     node_array_sol_increment,
+                     node_array_sol_increment,
+                     ipos->velnp,
+                     ipos->veln);
 
     /*-------- copy solution from sol_increment[ipos->velnp][j] to sol_[actpos][j] */
-    solserv_sol_copy(actfield,0,node_array_sol_increment,
-                     node_array_sol,ipos->veln,actpos);
+    solserv_sol_copy(actfield,0,
+                     node_array_sol_increment,
+                     node_array_sol,
+                     ipos->veln,
+                     actpos);
 
     /*---------------------------------------------- finalise this timestep */
     outstep++;

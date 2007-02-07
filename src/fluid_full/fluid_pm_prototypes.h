@@ -125,6 +125,10 @@ void pm_press_update(FIELD *actfield,
                      DIST_VECTOR* sol,
                      DOUBLE thsl);
 
+void pm_press_restore(FIELD *actfield,
+                      INT disnum,
+                      INT numpdof);
+
 void pm_vel_update(FIELD *actfield,
                    PARTITION *actpart,
                    INT disnum,

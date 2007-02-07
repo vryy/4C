@@ -1860,6 +1860,7 @@ void pm_press_update(FIELD *actfield,
 #endif
 
         f2pro->phi[k] = p[f2pro->dof[k]];
+        f2pro->pressm[k] = f2pro->press[k];
         f2pro->press[k] += f2pro->phi[k]/thsl;
       }
       break;
@@ -1890,6 +1891,7 @@ void pm_press_update(FIELD *actfield,
 #endif
 
         f3pro->phi[k] = p[f3pro->dof[k]];
+        f3pro->pressm[k] = f3pro->press[k];
         f3pro->press[k] += f3pro->phi[k]/thsl;
       }
       break;
@@ -1904,6 +1906,95 @@ void pm_press_update(FIELD *actfield,
 #ifdef PARALLEL
   CCAFREE(press2);
 #endif
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief restore the pressure values to the ones from the previous
+         time step
+
+  For projection FSI we need to (or might want to) start the field
+  iteration from the pressure previous time step.
+
+  Actually we might choose not to restore the pressure. But the option
+  is needed.
+
+  \param actfield           (i) actual field
+  \param disnum             (i) number of discretization
+  \param numpdof            (i) number of pressure dofs
+
+  \author u.kue
+  \date 02/07
+ */
+/*----------------------------------------------------------------------*/
+void pm_press_restore(FIELD *actfield,
+                      INT disnum,
+                      INT numpdof)
+{
+  INT i;
+
+#ifdef DEBUG
+  dstrc_enter("pm_press_restore");
+#endif
+
+  for (i=0; i<actfield->dis[disnum].numele; ++i)
+  {
+    INT k;
+    ELEMENT* actele = &(actfield->dis[disnum].element[i]);
+
+    switch (actele->eltyp)
+    {
+#ifdef D_FLUID2_PRO
+    case el_fluid2_pro:
+    {
+      FLUID2_PRO* f2pro;
+      f2pro = actele->e.f2pro;
+      for (k=0; k<numpdof; ++k)
+      {
+        /* there are no dirichlet conditions on the pressure dofs
+         * allowed... currently. */
+
+        /* Remember the pressure increment, we need it to update the
+         * velocity, too. */
+        dsassert((f2pro->dof[k] >= 0) &&
+                 (f2pro->dof[k] < numpdof*actfield->dis[disnum].numele),
+                 "global dof number out of range");
+
+        f2pro->press[k] = f2pro->pressm[k];
+      }
+      break;
+    }
+#endif
+#ifdef D_FLUID3_PRO
+    case el_fluid3_pro:
+    {
+      FLUID3_PRO* f3pro;
+      f3pro = actele->e.f3pro;
+      for (k=0; k<numpdof; ++k)
+      {
+        /* there are no dirichlet conditions on the pressure dofs
+         * allowed... currently. */
+
+        /* Remember the pressure increment, we need it to update the
+         * velocity, too. */
+        dsassert((f3pro->dof[k] >= 0) &&
+                 (f3pro->dof[k] < numpdof*actfield->dis[disnum].numele),
+                 "global dof number out of range");
+
+        f3pro->press[k] = f3pro->pressm[k];
+      }
+      break;
+    }
+#endif
+    default:
+      dserror("element type %d unsupported", actele->eltyp);
+    }
+  }
 
 #ifdef DEBUG
   dstrc_exit();

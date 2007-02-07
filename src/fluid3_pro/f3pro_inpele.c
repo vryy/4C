@@ -55,8 +55,9 @@ void f3pro_inp(ELEMENT *ele)
     /*
      * Lets not allocate too small pieces of memory. Two pointers
      * share one array peacefully. :) */
-    ele->e.f3pro->press = (DOUBLE*)CCACALLOC(2, sizeof(DOUBLE));
-    ele->e.f3pro->phi   = &(ele->e.f3pro->press[1]);
+    ele->e.f3pro->press = (DOUBLE*)CCACALLOC(3, sizeof(DOUBLE));
+    ele->e.f3pro->pressm= &(ele->e.f3pro->press[1]);
+    ele->e.f3pro->phi   = &(ele->e.f3pro->press[2]);
     ele->e.f3pro->dof   = (INT*)   CCACALLOC(2, sizeof(INT));
     ele->e.f3pro->ldof  = &(ele->e.f3pro->dof[1]);
   }
@@ -89,8 +90,9 @@ void f3pro_inp(ELEMENT *ele)
     /*
      * Lets not allocate too small pieces of memory. Two pointers
      * share one array peacefully. :) */
-    ele->e.f3pro->press = (DOUBLE*)CCACALLOC(8, sizeof(DOUBLE));
-    ele->e.f3pro->phi   = &(ele->e.f3pro->press[4]);
+    ele->e.f3pro->press = (DOUBLE*)CCACALLOC(12, sizeof(DOUBLE));
+    ele->e.f3pro->pressm= &(ele->e.f3pro->press[4]);
+    ele->e.f3pro->phi   = &(ele->e.f3pro->press[8]);
     ele->e.f3pro->dof   = (INT*)   CCACALLOC(8, sizeof(INT));
     ele->e.f3pro->ldof  = &(ele->e.f3pro->dof[4]);
   }

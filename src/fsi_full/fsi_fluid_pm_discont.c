@@ -801,6 +801,9 @@ void fsi_fluid_pm_discont_calc(
   /* Now setup is done and we actually calculate the values of G and
    * M. */
 
+  /* restore pressure */
+  pm_press_restore(actfield, disnum_calc, work->numpdof);
+
 #if 0
   /* restore backup pressure */
   solserv_sol_copy(actfield,press_dis,
