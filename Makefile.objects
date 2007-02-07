@@ -114,6 +114,7 @@ OBJS_DISCRET  = src/discret/drt_discret.o \
                 src/discret/shell8.o \
                 src/discret/shell8_input.o \
                 src/discret/shell8_evaluate.o \
+                src/discret/shell8_line.o \
                 src/discret/drt_gid.o \
                 src/discret/drt_dserror.o \
                 src/discret/global_inp_control2.o \
