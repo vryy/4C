@@ -884,7 +884,7 @@ Linux shell.
 
 \subsection{Debugging frontends}
 
-There is only one degugger: \texttt{gdb}. But it has a very plain
+There is only one debugger: \texttt{gdb}. But it has a very plain
 user interface. Most people use a frontend application that internally
 talks to \texttt{gdb}.
 
@@ -1045,11 +1045,9 @@ this:
 
 \#~with~the~number~of~processes~and~1~respectively.
 
-\#P~BS~-l~walltime=00:30:00,nodes=NUM\_NODES\_TAG:ppn=PROCS\_PER\_NODE\_TAG~
+\#PBS~-l~walltime=24:00:00,nodes=NUM\_NODES\_TAG:ppn=PROCS\_PER\_NODE\_TAG~
 
-\#PBS~-l~nodes=NUM\_NODES\_TAG~
-
-\#PBS~-q~debug~
+\#P~BS~-q~debug~
 
 \#PBS~-V~
 
