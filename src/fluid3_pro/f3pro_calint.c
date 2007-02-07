@@ -88,12 +88,16 @@ void f3pro_int_usfem(
   DOUBLE         **pderxy,
   DOUBLE         **evelng,
   DOUBLE         **eveln,
+  DOUBLE         **evelnm,
   DOUBLE         **evhist,
   DOUBLE         **egridv,
   DOUBLE          *epren,
+  DOUBLE          *eprenm,
   DOUBLE          *edeadng,
   DOUBLE         **vderxy,
   DOUBLE         **vderxy2,
+  DOUBLE         **vderxy_n,
+  DOUBLE         **vderxy_nm,
   DOUBLE           visc,
   DOUBLE         **wa1,
   DOUBLE         **wa2,
@@ -117,6 +121,8 @@ void f3pro_int_usfem(
   DOUBLE    velint[3];		/* velocity vector at integration point           */
   DOUBLE    histvec[3];		/* history data at integration point              */
   DOUBLE    gridvelint[3];	/* grid velocity                                  */
+  DOUBLE    velint_n[3];
+  DOUBLE    velint_nm[3];
   DIS_TYP   typ;		/* element type                                   */
   DISMODE   dm;
   INT       numpdof=0;
@@ -193,6 +199,7 @@ void f3pro_int_usfem(
       for (lt=0;lt<nit;lt++)
       {
 	DOUBLE press;
+	DOUBLE press_n;
 
 	/*------------- get values of  shape functions and their derivatives ---*/
 	switch(typ)
@@ -238,21 +245,28 @@ void f3pro_int_usfem(
 	/*---------------- get velocities (n+1,i) at integration point ---*/
 	f3_veci(velint,funct,evelng,iel);
 
+	f3_veci(velint_n,funct,eveln,iel);
+	f3_veci(velint_nm,funct,evelnm,iel);
+
 	/*---------------- get history data (n,i) at integration point ---*/
-	f3_veci(histvec,funct,evhist,iel);
+        if (fdyn->iop!=timeint_theta_adamsbashforth)
+        {
+          f3_veci(histvec,funct,evhist,iel);
+        }
+        else
+          histvec[0] = histvec[1] = histvec[2] = 0.;
 
 	/*------ get velocity (n+1,i) derivatives at integration point ---*/
 	f3_vder(vderxy,derxy,evelng,iel);
 
+	f3_vder(vderxy_n,derxy,eveln,iel);
+	f3_vder(vderxy_nm,derxy,evelnm,iel);
+
 	/*--------------------- get grid velocity at integration point ---*/
-	if(is_ale)
+	if (is_ale)
 	  f3_veci(gridvelint,funct,egridv,iel);
 	else
-	{
-	  gridvelint[0] = 0;
-	  gridvelint[1] = 0;
-	  gridvelint[2] = 0;
-	}
+	  gridvelint[0] = gridvelint[1] = gridvelint[2] = 0;
 
 	/*--------------------------- compute second global derivative ---*/
 	if (ihoel!=0)
@@ -293,24 +307,35 @@ void f3pro_int_usfem(
 	}
 
         press = 0;
+        press_n = 0;
 	if (numpdof==-1)
 	{
 	  for (i=0; i<iel; ++i)
-	    press += funct[i] * epren[i];
+          {
+	    press   += funct[i] * epren[i];
+	    press_n += funct[i] * eprenm[i];
+          }
 	}
 	else if (numpdof==-2)
 	{
 	  for (i=0; i<ele->e.f3pro->other->numnp; ++i)
-	    press += pfunct[i] * epren[i];
+          {
+	    press   += pfunct[i] * epren[i];
+	    press_n += pfunct[i] * eprenm[i];
+          }
 	}
 	else
 	{
 	  for (i=0; i<numpdof; ++i)
-	    press += pfunct[i] * epren[i];
+          {
+	    press   += pfunct[i] * epren[i];
+	    press_n += pfunct[i] * eprenm[i];
+          }
 	}
 
 	/*-------------- perform integration for entire matrix and rhs ---*/
-	f3pro_calmat(estif,eforce,velint,histvec,gridvelint,press,vderxy,
+	f3pro_calmat(estif,eforce,velint_n,vderxy_n,velint_nm,vderxy_nm,
+                     velint,histvec,gridvelint,press_n,press,vderxy,
 		     vderxy2,gradp,funct,derxy,derxy2,edeadng,fac,
 		     visc,iel,hasext,is_ale,is_relax);
 
@@ -444,9 +469,14 @@ for further comments see comment lines within code.
 ------------------------------------------------------------------------*/
 void f3pro_calmat( DOUBLE **estif,
                    DOUBLE  *eforce,
+		   DOUBLE  *velint_n,
+		   DOUBLE **vderxy_n,
+		   DOUBLE  *velint_nm,
+		   DOUBLE **vderxy_nm,
                    DOUBLE  *velint,
                    DOUBLE   histvec[3],
                    DOUBLE   gridvint[3],
+                   DOUBLE   press_n,
                    DOUBLE   press,
                    DOUBLE **vderxy,
                    DOUBLE **vderxy2,
@@ -480,6 +510,8 @@ void f3pro_calmat( DOUBLE **estif,
   DOUBLE  div[3*MAXNOD_F3];          /* divergence of u or v              */
   DOUBLE  ugradv[MAXNOD_F3][3*MAXNOD_F3];/* linearisation of u * grad v   */
   DOUBLE  conv_old[3]; /* convective term evalaluated with old velocities */
+  DOUBLE  conv_old_n[3];
+  DOUBLE  conv_old_nm[3];
   DOUBLE  visc_old[3]; /* viscous term evaluated with old velocities      */
   DOUBLE  rhsint[3];   /* total right hand side terms at int.-point       */
 #else
@@ -572,12 +604,17 @@ void f3pro_calmat( DOUBLE **estif,
 /*----------------- get numerical representation of single operators ---*/
 
   /* Convective term  u_old * grad u_old: */
-  conv_old[0] = vderxy[0][0] * velint[0] + vderxy[0][1] * velint[1]
-    + vderxy[0][2] * velint[2];
-  conv_old[1] = vderxy[1][0] * velint[0] + vderxy[1][1] * velint[1]
-    + vderxy[1][2] * velint[2];
-  conv_old[2] = vderxy[2][0] * velint[0] + vderxy[2][1] * velint[1]
-    + vderxy[2][2] * velint[2];
+  conv_old[0] = vderxy[0][0]*velint[0] + vderxy[0][1]*velint[1] + vderxy[0][2]*velint[2];
+  conv_old[1] = vderxy[1][0]*velint[0] + vderxy[1][1]*velint[1] + vderxy[1][2]*velint[2];
+  conv_old[2] = vderxy[2][0]*velint[0] + vderxy[2][1]*velint[1] + vderxy[2][2]*velint[2];
+
+  conv_old_n[0] = vderxy_n[0][0]*velint_n[0] + vderxy_n[0][1]*velint_n[1] + vderxy_n[0][2]*velint_n[2];
+  conv_old_n[1] = vderxy_n[1][0]*velint_n[0] + vderxy_n[1][1]*velint_n[1] + vderxy_n[1][2]*velint_n[2];
+  conv_old_n[2] = vderxy_n[2][0]*velint_n[0] + vderxy_n[2][1]*velint_n[1] + vderxy_n[2][2]*velint_n[2];
+
+  conv_old_nm[0] = vderxy_nm[0][0]*velint_nm[0] + vderxy_nm[0][1]*velint_nm[1] + vderxy_nm[0][2]*velint_nm[2];
+  conv_old_nm[1] = vderxy_nm[1][0]*velint_nm[0] + vderxy_nm[1][1]*velint_nm[1] + vderxy_nm[1][2]*velint_nm[2];
+  conv_old_nm[2] = vderxy_nm[2][0]*velint_nm[0] + vderxy_nm[2][1]*velint_nm[1] + vderxy_nm[2][2]*velint_nm[2];
 
   /* Viscous term  div epsilon(u_old) */
   visc_old[0] = vderxy2[0][0] + 0.5 * ( vderxy2[0][1] + vderxy2[1][3]
@@ -689,14 +726,18 @@ void f3pro_calmat( DOUBLE **estif,
 #define eforce_(i)     eforce[i]
 #define funct_(i)      funct[i]
 #define vderxyz_(i,j)  vderxy[i][j]
+#define vderxyz_n_(i,j) vderxy_n[i][j]
 #define conv_c_(j)     conv_c[j]
 #define conv_g_(j)     conv_g[j]
 #define conv_r_(i,j,k) conv_r[i][3*(k)+j]
 #define vconv_r_(i,j)  vconv_r[i][j]
 #define conv_old_(j)   conv_old[j]
+#define conv_old_n_(j) conv_old_n[j]
+#define conv_old_nm_(j) conv_old_nm[j]
 #define derxyz_(i,j)   derxy[i][j]
 #define gridvint_(j)   gridvint[j]
 #define velint_(j)     velint[j]
+#define velint_n_(j)   velint_n[j]
 #define viscs2_(i,j,k) viscs2[i][3*(k)+j]
 #define visc_old_(i)   visc_old[i]
 #define rhsint_(i)     rhsint[i]
@@ -706,48 +747,80 @@ void f3pro_calmat( DOUBLE **estif,
 #define visc_          visc
 #define thsl           timefac
 
-#ifdef FLUID_INCREMENTAL
 
-  if (isale)
+  /* One step theta / Adams-Bashforth */
+  /* Use explicit Adams-Bashforth time integration for convection
+   * term as shown in
+   *
+   *  Alfio Quarteroni, Fausto Saleri, and Alessandro
+   *  Veneziani. Factorization methods for the numerical approximation
+   *  of navier-stokes equations. Comp. Meth. in Appl. Mech. and
+   *  Engng., 188:505-526, 2000.
+   *
+   * all other terms are treated with normal one-step-theta. No
+   * stabilization yet.
+   */
+  if (fdyn->iop==timeint_theta_adamsbashforth)
   {
-#include "f3pro_stiff_ale.c"
-#include "f3pro_rhs_incr_ale.c"
+#ifdef FLUID_INCREMENTAL
+    dserror("no incremental formulation");
+#else
+    if (isale)
+    {
+      dserror("no ale yet");
+    }
+    else
+    {
+#include "f3pro_ab_stiff.c"
+#include "f3pro_ab_rhs_nonincr.c"
+    }
+#endif
   }
   else
   {
+#ifdef FLUID_INCREMENTAL
+
+    if (isale)
+    {
+#include "f3pro_stiff_ale.c"
+#include "f3pro_rhs_incr_ale.c"
+    }
+    else
+    {
 
 #ifdef QUASI_NEWTON
-    if (!fdyn->qnewton || fdyn->itnum==1)
-    {
+      if (!fdyn->qnewton || fdyn->itnum==1)
+      {
 #endif
 
 #include "f3pro_stiff.c"
 
 #ifdef QUASI_NEWTON
-    }
+      }
 #endif
 
 #include "f3pro_rhs_incr.c"
-  }
+    }
 
 #else
 
 #ifdef QUASI_NEWTON
-  dserror("no quasi newton with non-incremental fluid");
+    dserror("no quasi newton with non-incremental fluid");
 #endif
 
-  if (isale)
-  {
+    if (isale)
+    {
 #include "f3pro_stiff_ale.c"
 #include "f3pro_rhs_nonincr_ale.c"
-  }
-  else
-  {
+    }
+    else
+    {
 #include "f3pro_stiff.c"
 #include "f3pro_rhs_nonincr.c"
-  }
+    }
 
 #endif
+  }
 
 #undef estif_
 #undef eforce_
@@ -756,15 +829,19 @@ void f3pro_calmat( DOUBLE **estif,
 #undef conv_r_
 #undef vconv_r_
 #undef conv_old_
+#undef conv_old_n_
+#undef conv_old_nm_
 #undef derxyz_
 #undef gridvint_
 #undef velint_
+#undef velint_n_
 #undef viscs2_
 #undef gradp_
 #undef ui
 #undef vi
 #undef funct_
 #undef vderxyz_
+#undef vderxyz_n_
 #undef visc_old_
 #undef rhsint_
 #undef visc_

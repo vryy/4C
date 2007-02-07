@@ -251,9 +251,7 @@ void f2pro_int_usfem(
 	f2_veci(histvec,funct,evhist,iel);
       }
       else
-      {
 	histvec[0] = histvec[1] = 0.;
-      }
 
       /*--------------------- get grid velocity at integration point ---*/
       if (is_ale)
@@ -261,10 +259,7 @@ void f2pro_int_usfem(
 	f2_veci(gridvelint,funct,egridv,iel);
       }
       else
-      {
-        gridvelint[0] = 0;
-        gridvelint[1] = 0;
-      }
+        gridvelint[0] = gridvelint[1] = 0;
 
       /*-------- get velocity (n,i) derivatives at integration point ---*/
       f2_vder(vderxy_n,derxy,eveln,iel);

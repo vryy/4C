@@ -38,15 +38,17 @@ get the element velocities and the pressure at different times
 void f3pro_calset(
   ELEMENT         *ele,
   DOUBLE         **xyze,
+  DOUBLE         **evelnm,
   DOUBLE         **eveln,
   DOUBLE         **evelng,
   DOUBLE         **evhist,
+  DOUBLE          *eprenm,
   DOUBLE          *epren,
   DOUBLE          *edeadng,
   ARRAY_POSITION  *ipos
   )
 {
-  INT i, veln, velnp, hist;
+  INT i, velnm, veln, velnp, hist;
   INT numpdof=0;
   NODE *actnode;                /* actual node for element */
 
@@ -54,6 +56,7 @@ void f3pro_calset(
   dstrc_enter("f3pro_calset");
 #endif
 
+  velnm = ipos->velnm;
   veln  = ipos->veln;
   velnp = ipos->velnp;
   hist  = ipos->hist;
@@ -81,6 +84,11 @@ void f3pro_calset(
   for(i=0;i<ele->numnp;i++)
   {
     actnode=ele->node[i];
+
+    /*----------------------------------- set element velocities at (n-1) */
+    eveln[0][i]=actnode->sol_increment.a.da[velnm][0];
+    eveln[1][i]=actnode->sol_increment.a.da[velnm][1];
+    eveln[2][i]=actnode->sol_increment.a.da[velnm][2];
 
     /*------------------------------------- set element velocities at (n) */
     eveln[0][i]=actnode->sol_increment.a.da[veln][0];
@@ -166,16 +174,18 @@ get the element velocities and the pressure at different times
 void f3pro_calseta(
   ELEMENT         *ele,
   DOUBLE         **xyze,
+  DOUBLE         **evelnm,
   DOUBLE         **eveln,
   DOUBLE         **evelng,
   DOUBLE         **evhist,
   DOUBLE         **egridv,
+  DOUBLE          *eprenm,
   DOUBLE          *epren,
   DOUBLE          *edeadng,
   ARRAY_POSITION  *ipos
   )
 {
-  INT i, veln, velnp, hist;
+  INT i, velnm, veln, velnp, hist;
   INT numpdof=0;
   NODE *actnode;                /* actual node for element */
 
@@ -183,6 +193,7 @@ void f3pro_calseta(
   dstrc_enter("f3pro_calseta");
 #endif
 
+  velnm = ipos->velnm;
   veln  = ipos->veln;
   velnp = ipos->velnp;
   hist  = ipos->hist;
@@ -206,6 +217,11 @@ void f3pro_calseta(
   for(i=0;i<ele->numnp;i++)
   {
     actnode=ele->node[i];
+
+    /*----------------------------------- set element velocities at (n-1) */
+    eveln[0][i]=actnode->sol_increment.a.da[velnm][0];
+    eveln[1][i]=actnode->sol_increment.a.da[velnm][1];
+    eveln[2][i]=actnode->sol_increment.a.da[velnm][2];
 
     /*------------------------------------- set element velocities at (n) */
     eveln[0][i]=actnode->sol_increment.a.da[veln][0];

@@ -42,6 +42,8 @@ extern struct _MATERIAL  *mat;
 
 /* Variables used by all element integration functions */
 
+static ARRAY     evelnm_a;    /* element velocities at (n-1)               */
+static DOUBLE  **evelnm;
 static ARRAY     eveln_a;     /* element velocities at (n)                 */
 static DOUBLE  **eveln;
 static ARRAY     evelng_a;    /* element velocities at (n+gamma)           */
@@ -54,8 +56,10 @@ static ARRAY     evnng_a;     /* element normal vector at n+1           */
 static DOUBLE  **evnng;
 static ARRAY     evnn_a;      /* element normal vector at n             */
 static DOUBLE  **evnn;
-static ARRAY     epren_a;     /* element pressures at (n)               */
+static ARRAY     epren_a;     /* element pressures at (n+1)             */
 static DOUBLE   *epren;
+static ARRAY     eprenm_a;    /* element pressures at (n)               */
+static DOUBLE   *eprenm;
 static ARRAY     edeadn_a;    /* element dead load (selfweight)            */
 static DOUBLE   *edeadng;
 static ARRAY     edeadng_a;   /* element dead load (selfweight)            */
@@ -80,6 +84,10 @@ static ARRAY     pderxy_a;    /* pre -derivatives                          */
 static DOUBLE  **pderxy;
 static ARRAY     vderxy2_a;   /* vel - 2nd derivatives                     */
 static DOUBLE  **vderxy2;
+static ARRAY     vderxy_n_a;  /* vel - derivatives                         */
+static DOUBLE  **vderxy_n;
+static ARRAY     vderxy_nm_a; /* vel - derivatives                         */
+static DOUBLE  **vderxy_nm;
 static ARRAY     derxy_a;     /* coordinate - derivatives                  */
 static DOUBLE  **derxy;
 static ARRAY     derxy2_a;    /* 2nd coordinate - derivatives              */
@@ -130,6 +138,7 @@ void f3pro_calinit(
 
   /* allocate working arrays and set pointers */
 
+  evelnm    = amdef("evelnm"   ,&evelnm_a   ,NUM_F3_VELDOF,MAXNOD_F3,"DA");
   eveln     = amdef("eveln"    ,&eveln_a    ,NUM_F3_VELDOF,MAXNOD_F3,"DA");
   evelng    = amdef("evelng"   ,&evelng_a   ,NUM_F3_VELDOF,MAXNOD_F3,"DA");
   evhist    = amdef("evhist"   ,&evhist_a   ,NUM_F3_VELDOF,MAXNOD_F3,"DA");
@@ -137,6 +146,7 @@ void f3pro_calinit(
   evnng     = amdef("evnng"    ,&evnng_a    ,NUM_F3_VELDOF,MAXNOD_F3,"DA");
   evnn      = amdef("evnn"     ,&evnn_a     ,NUM_F3_VELDOF,MAXNOD_F3,"DA");
   epren     = amdef("epren"    ,&epren_a    ,MAXNOD_F3,1,"DV");
+  eprenm    = amdef("eprenm"   ,&eprenm_a   ,MAXNOD_F3,1,"DV");
   edeadn    = amdef("edeadn"   ,&edeadn_a   ,3,1,"DV");
   edeadng   = amdef("edeadng"  ,&edeadng_a  ,3,1,"DV");
   funct     = amdef("funct"    ,&funct_a    ,MAXNOD_F3,1,"DV");
@@ -148,6 +158,8 @@ void f3pro_calinit(
   xyze      = amdef("xyze"     ,&xyze_a     ,3,MAXNOD_F3,"DA");
   vderxy    = amdef("vderxy"   ,&vderxy_a   ,3,3,"DA");
   vderxy2   = amdef("vderxy2"  ,&vderxy2_a  ,3,6,"DA");
+  vderxy_n  = amdef("vderxy_n" ,&vderxy_n_a ,3,3,"DA");
+  vderxy_nm = amdef("vderxy_nm",&vderxy_nm_a,3,3,"DA");
   derxy     = amdef("derxy"    ,&derxy_a    ,3,MAXNOD_F3,"DA");
   derxy2    = amdef("derxy2"   ,&derxy2_a   ,6,MAXNOD_F3,"DA");
   pderxy    = amdef("pderxy"   ,&pderxy_a   ,3,MAXNOD_F3,"DA");
@@ -235,7 +247,7 @@ void f3pro_calele(
   {
   case 0:
     /*---------------------------------------------------- set element data */
-    f3pro_calset(ele,xyze,eveln,evelng,evhist,epren,edeadng,ipos);
+    f3pro_calset(ele,xyze,evelnm,eveln,evelng,evhist,eprenm,epren,edeadng,ipos);
 
     /* We follow the Förster-element here. */
 
@@ -249,12 +261,12 @@ void f3pro_calele(
     f3pro_int_usfem(ele,hasext,estif,eforce,gforce,xyze,
                     funct,deriv,deriv2,pfunct,pderiv,xjm,
                     derxy,derxy2,pderxy,
-                    evelng,eveln,
-                    evhist,NULL,epren,edeadng,
-                    vderxy,vderxy2,visc,wa1,wa2,0);
+                    evelng,eveln,evelnm,
+                    evhist,NULL,eprenm,epren,edeadng,
+                    vderxy,vderxy2,vderxy_n,vderxy_nm,visc,wa1,wa2,0);
     break;
   case 1:
-    f3pro_calseta(ele,xyze,eveln,evelng,evhist,egridv,epren,edeadng,ipos);
+    f3pro_calseta(ele,xyze,evelnm,eveln,evelng,evhist,egridv,eprenm,epren,edeadng,ipos);
 
     /* We follow the Förster-element here. */
 
@@ -268,9 +280,9 @@ void f3pro_calele(
     f3pro_int_usfem(ele,hasext,estif,eforce,gforce,xyze,
                     funct,deriv,deriv2,pfunct,pderiv,xjm,
                     derxy,derxy2,pderxy,
-                    evelng,eveln,
-                    evhist,egridv,epren,edeadng,
-                    vderxy,vderxy2,visc,wa1,wa2,0);
+                    evelng,eveln,evelnm,
+                    evhist,egridv,eprenm,epren,edeadng,
+                    vderxy,vderxy2,vderxy_n,vderxy_nm,visc,wa1,wa2,0);
     break;
   default:
     dserror("parameter is_ale not 0 or 1!\n");
@@ -354,7 +366,7 @@ void f3pro_caleleres(
   {
   case 0:
     /*---------------------------------------------------- set element data */
-    f3pro_calset(ele,xyze,eveln,evelng,evhist,epren,edeadng,ipos);
+    f3pro_calset(ele,xyze,evelnm,eveln,evelng,evhist,eprenm,epren,edeadng,ipos);
 
     /* We follow the Förster-element here. */
 
@@ -370,7 +382,7 @@ void f3pro_caleleres(
                   vderxy2,visc,wa1,wa2);
     break;
   case 1:
-    f3pro_calseta(ele,xyze,eveln,evelng,evhist,egridv,epren,edeadng,ipos);
+    f3pro_calseta(ele,xyze,evelnm,eveln,evelng,evhist,egridv,eprenm,epren,edeadng,ipos);
 
     /* We follow the Förster-element here. */
 
