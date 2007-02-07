@@ -91,12 +91,16 @@ void f2pro_int_usfem(
   DOUBLE         **pderxy,
   DOUBLE         **evelng,
   DOUBLE         **eveln,
+  DOUBLE         **evelnm,
   DOUBLE         **evhist,
   DOUBLE         **egridv,
+  DOUBLE          *eprenm,
   DOUBLE          *epren,
   DOUBLE          *edeadng,
   DOUBLE         **vderxy,
   DOUBLE         **vderxy2,
+  DOUBLE         **vderxy_n,
+  DOUBLE         **vderxy_nm,
   DOUBLE           visc,
   DOUBLE         **wa1,
   DOUBLE         **wa2,
@@ -105,7 +109,7 @@ void f2pro_int_usfem(
 {
   INT       i;          /* a couter                                       */
   INT       iel;        /* number of nodes                                */
-  INT       intc;       /* "integration case" for tri for further infos
+  INT       intc=0;     /* "integration case" for tri for further infos
                            see f2_inpele.c and f2_intg.c                 */
   INT       is_ale;     /* ALE or Euler element flag                      */
   INT       nir,nis;    /* number of integration nodesin r,s direction    */
@@ -120,7 +124,8 @@ void f2pro_int_usfem(
   DOUBLE    velint[2];  /* velocity vector at integration point           */
   DOUBLE    histvec[2]; /* history data at integration point              */
   DOUBLE    gridvelint[2]; /* grid velocity                               */
-  DOUBLE    divuold;
+  DOUBLE    velint_n[2];
+  DOUBLE    velint_nm[2];
   DIS_TYP   typ;	      /* element type                                   */
   DISMODE   dm;
   INT       numpdof=0;
@@ -181,6 +186,7 @@ void f2pro_int_usfem(
     intc = ele->e.f2pro->nGP[1];
     break;
   default:
+    nir = nis = 0;
     dserror("typ unknown!");
   } /* end switch(typ) */
 
@@ -193,6 +199,7 @@ void f2pro_int_usfem(
     for (ls=0;ls<nis;ls++)
     {
       DOUBLE press;
+      DOUBLE press_n;
 
       /*------------- get values of  shape functions and their derivatives ---*/
       switch(typ)
@@ -217,6 +224,7 @@ void f2pro_int_usfem(
         dserror("illegal discretisation mode %d", dm);
         break;
       default:
+	facr = facs = 0.;
         dserror("typ unknown!");
       } /* end switch(typ) */
 
@@ -234,8 +242,18 @@ void f2pro_int_usfem(
       /*---------------- get velocities (n+1,i) at integration point ---*/
       f2_veci(velint,funct,evelng,iel);
 
+      f2_veci(velint_n,funct,eveln,iel);
+      f2_veci(velint_nm,funct,evelnm,iel);
+
       /*---------------- get history data (n,i) at integration point ---*/
-      f2_veci(histvec,funct,evhist,iel);
+      if (fdyn->iop!=timeint_theta_adamsbashforth)
+      {
+	f2_veci(histvec,funct,evhist,iel);
+      }
+      else
+      {
+	histvec[0] = histvec[1] = 0.;
+      }
 
       /*--------------------- get grid velocity at integration point ---*/
       if (is_ale)
@@ -247,10 +265,11 @@ void f2pro_int_usfem(
         gridvelint[0] = 0;
         gridvelint[1] = 0;
       }
-      
+
       /*-------- get velocity (n,i) derivatives at integration point ---*/
-      f2_vder(vderxy,derxy,eveln,iel);
-      divuold = vderxy[0][0] + vderxy[1][1];
+      f2_vder(vderxy_n,derxy,eveln,iel);
+      f2_vder(vderxy_nm,derxy,evelnm,iel);
+      /* divuold = vderxy[0][0] + vderxy[1][1]; */
 
       /*------ get velocity (n+1,i) derivatives at integration point ---*/
       f2_vder(vderxy,derxy,evelng,iel);
@@ -291,24 +310,35 @@ void f2pro_int_usfem(
       }
 
       press = 0;
+      press_n = 0;
       if (numpdof==-1)
       {
 	for (i=0; i<iel; ++i)
-	  press += funct[i] * epren[i];
+	{
+	  press   += funct[i] * epren[i];
+	  press_n += funct[i] * eprenm[i];
+	}
       }
       else if (numpdof==-2)
       {
 	for (i=0; i<ele->e.f2pro->other->numnp; ++i)
-	  press += pfunct[i] * epren[i];
+	{
+	  press   += pfunct[i] * epren[i];
+	  press_n += pfunct[i] * eprenm[i];
+	}
       }
       else
       {
 	for (i=0; i<numpdof; ++i)
-	  press += pfunct[i] * epren[i];
+	{
+	  press   += pfunct[i] * epren[i];
+	  press_n += pfunct[i] * eprenm[i];
+	}
       }
 
       /*-------------- perform integration for entire matrix and rhs ---*/
-      f2pro_calmat(estif,eforce,velint,histvec,gridvelint,press,vderxy,
+      f2pro_calmat(estif,eforce,velint_n,vderxy_n,velint_nm,vderxy_nm,
+		   velint,histvec,gridvelint,press_n,press,vderxy,
 		   vderxy2,gradp,funct,derxy,derxy2,edeadng,fac,
 		   visc,iel,is_ale,is_relax,hasext);
 
@@ -440,9 +470,14 @@ for further comments see comment lines within code.
 ------------------------------------------------------------------------*/
 void f2pro_calmat( DOUBLE **estif,
                    DOUBLE  *eforce,
+		   DOUBLE  *velint_n,
+		   DOUBLE **vderxy_n,
+		   DOUBLE  *velint_nm,
+		   DOUBLE **vderxy_nm,
                    DOUBLE  *velint,
                    DOUBLE   histvec[2],
                    DOUBLE   gridvint[2],
+                   DOUBLE   press_n,
                    DOUBLE   press,
                    DOUBLE **vderxy,
                    DOUBLE **vderxy2,
@@ -454,8 +489,8 @@ void f2pro_calmat( DOUBLE **estif,
                    DOUBLE   fac,
                    DOUBLE   visc,
                    INT      iel,
-                   INT      isale, 
-                   INT      is_relax, 
+                   INT      isale,
+                   INT      is_relax,
                    INT     *hasext
   )
 {
@@ -473,6 +508,8 @@ void f2pro_calmat( DOUBLE **estif,
   DOUBLE  div[2*MAXNOD];             /* divergence of u or v              */
   DOUBLE  ugradv[MAXNOD][2*MAXNOD];  /* linearisation of u * grad v       */
   DOUBLE  conv_old[2]; /* convective term evalaluated with old velocities */
+  DOUBLE  conv_old_n[2];
+  DOUBLE  conv_old_nm[2];
   DOUBLE  visc_old[2]; /* viscous term evaluated with old velocities      */
   DOUBLE  rhsint[2];   /* total right hand side terms at int.-point       */
 
@@ -522,12 +559,18 @@ void f2pro_calmat( DOUBLE **estif,
     rhsint[0] = 0;
     rhsint[1] = 0;
   }
-  
+
 /*----------------- get numerical representation of single operators ---*/
 
 /* Convective term  u_old * grad u_old: */
   conv_old[0] = vderxy[0][0] * velint[0] + vderxy[0][1] * velint[1];
   conv_old[1] = vderxy[1][0] * velint[0] + vderxy[1][1] * velint[1];
+
+  conv_old_n[0] = vderxy_n[0][0] * velint_n[0] + vderxy_n[0][1] * velint_n[1];
+  conv_old_n[1] = vderxy_n[1][0] * velint_n[0] + vderxy_n[1][1] * velint_n[1];
+
+  conv_old_nm[0] = vderxy_nm[0][0] * velint_nm[0] + vderxy_nm[0][1] * velint_nm[1];
+  conv_old_nm[1] = vderxy_nm[1][0] * velint_nm[0] + vderxy_nm[1][1] * velint_nm[1];
 
 /* Viscous term  div epsilon(u_old) */
   visc_old[0] = 0.5 * (2.0*vderxy2[0][0] + vderxy2[0][1] + vderxy2[1][2]);
@@ -553,7 +596,7 @@ void f2pro_calmat( DOUBLE **estif,
     {
       conv_g[i] = 0;
     }
-    
+
     /*--- reactive part funct * grad (u_old) ----------------------------*/
     /* /                          \
        |  u_old_x,x   u_old_x,y   |
@@ -610,14 +653,18 @@ void f2pro_calmat( DOUBLE **estif,
 #define eforce_(i)     eforce[i]
 #define funct_(i)      funct[i]
 #define vderxy_(i,j)   vderxy[i][j]
+#define vderxy_n_(i,j) vderxy_n[i][j]
 #define conv_c_(j)     conv_c[j]
 #define conv_g_(j)     conv_g[j]
 #define conv_r_(i,j,k) conv_r[i][2*(k)+j]
 #define vconv_r_(i,j)  vconv_r[i][j]
 #define conv_old_(j)   conv_old[j]
+#define conv_old_n_(j) conv_old_n[j]
+#define conv_old_nm_(j) conv_old_nm[j]
 #define derxy_(i,j)    derxy[i][j]
 #define gridvint_(j)   gridvint[j]
 #define velint_(j)     velint[j]
+#define velint_n_(j)   velint_n[j]
 #define viscs2_(i,j,k) viscs2[i][2*(k)+j]
 #define visc_old_(i)   visc_old[i]
 #define rhsint_(i)     rhsint[i]
@@ -627,54 +674,89 @@ void f2pro_calmat( DOUBLE **estif,
 #define visc_          visc
 #define thsl           timefac
 
+  /* One step theta / Adams-Bashforth */
+  /* Use explicit Adams-Bashforth time integration for convection
+   * term as shown in
+   *
+   *  Alfio Quarteroni, Fausto Saleri, and Alessandro
+   *  Veneziani. Factorization methods for the numerical approximation
+   *  of navier-stokes equations. Comp. Meth. in Appl. Mech. and
+   *  Engng., 188:505-526, 2000.
+   *
+   * all other terms are treated with normal one-step-theta. No
+   * stabilization yet.
+   */
+  if (fdyn->iop==timeint_theta_adamsbashforth)
+  {
+#ifdef FLUID_INCREMENTAL
+    dserror("no incremental formulation");
+#else
+    if (isale)
+    {
+      dserror("no ale yet");
+    }
+    else
+    {
+#include "f2pro_ab_stiff.c"
+#include "f2pro_ab_rhs_nonincr.c"
+    }
+#endif
+  }
+  else
+  {
 #ifdef FLUID_INCREMENTAL
 
-  if (isale)
-  {
+    if (isale)
+    {
 #include "f2pro_stiff_ale.c"
 #include "f2pro_rhs_incr_ale.c"
-  }
-  else
-  {
+    }
+    else
+    {
 #include "f2pro_stiff.c"
 #include "f2pro_rhs_incr.c"
-  }
-      
+    }
+
 #else
 
-  if (isale)
-  {
+    if (isale)
+    {
 #include "f2pro_stiff_ale.c"
 #include "f2pro_rhs_nonincr_ale.c"
-  }
-  else
-  {
+    }
+    else
+    {
 #include "f2pro_stiff.c"
 #include "f2pro_rhs_nonincr.c"
-  }
-  
+    }
+
 #endif
+  }
 
 #undef estif_
 #undef eforce_
 #undef funct_
 #undef vderxy_
+#undef vderxy_n_
 #undef conv_c_
 #undef conv_g_
 #undef conv_r_
 #undef vconv_r_
 #undef conv_old_
+#undef conv_old_n_
+#undef conv_old_nm_
 #undef derxy_
 #undef gridvint_
 #undef velint_
+#undef velint_n_
 #undef viscs2_
 #undef visc_old_
 #undef rhsint_
 #undef gradp_
-#undef ui             
-#undef vi             
-#undef visc_          
-#undef thsl           
+#undef ui
+#undef vi
+#undef visc_
+#undef thsl
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -748,7 +830,7 @@ void f2pro_int_res(
 {
   INT       i;          /* a couter                                       */
   INT       iel;        /* number of nodes                                */
-  INT       intc;       /* "integration case" for tri for further infos
+  INT       intc=0;     /* "integration case" for tri for further infos
                            see f2_inpele.c and f2_intg.c                 */
   INT       is_ale=0;   /* ALE or Euler element flag                      */
   INT       nir,nis;    /* number of integration nodesin r,s direction    */
@@ -782,7 +864,7 @@ void f2pro_int_res(
   fdyn   = alldyn[genprob.numff].fdyn;
   data   = fdyn->data;
   dm     = ele->e.f2pro->dm;
-  
+
   /* is_ale = ele->e.f2->is_ale; */
 
   switch (ele->e.f2pro->dm)
@@ -803,7 +885,7 @@ void f2pro_int_res(
   default:
     dserror("unsupported discretization mode %d", ele->e.f2pro->dm);
   }
-  
+
 /*------- get integraton data and check if elements are "higher order" */
   switch (typ)
   {
@@ -825,6 +907,7 @@ void f2pro_int_res(
     intc = ele->e.f2pro->nGP[1];
     break;
   default:
+    nir = nis = 0;
     dserror("typ unknown!");
   } /* end switch(typ) */
 
@@ -857,6 +940,7 @@ void f2pro_int_res(
         f2_tri(funct,deriv,deriv2,e1,e2,typ,icode);
         break;
       default:
+	facr = facs = 0.;
         dserror("typ unknown!");
       } /* end switch(typ) */
 
@@ -890,7 +974,7 @@ void f2pro_int_res(
         gridvelint[0] = 0;
         gridvelint[1] = 0;
       }
-      
+
       /*-------------- get velocity derivatives at integration point ---*/
       f2_vder(vderxy,derxy,evelng,iel);
 
@@ -932,7 +1016,7 @@ void f2pro_int_res(
 	}
         presint = f2_scali(pfunct,epren,numpdof);
       }
-      
+
 
       /*-------------- perform integration for entire matrix and rhs ---*/
       f2pro_calresvec(force,velint,histvec,gridvelint,vderxy,vderxy2,funct,derxy,derxy2,
@@ -1051,7 +1135,7 @@ void f2pro_calresvec(  DOUBLE  *eforce,
 #ifdef DEBUG
   dstrc_enter("f2pro_calresvec");
 #endif
-  
+
 /*========================== initialisation ============================*/
   fdyn = alldyn[genprob.numff].fdyn;
 
@@ -1114,7 +1198,7 @@ void f2pro_calresvec(  DOUBLE  *eforce,
     {
       conv_g[i] = 0;
     }
-    
+
     /*--- reactive part funct * grad (u_old) ----------------------------*/
     /* /                          \
        |  u_old_x,x   u_old_x,y   |
@@ -1220,10 +1304,10 @@ for (vi=0; vi<iel; ++vi)
 #undef visc_old_
 #undef rhsint_
 #undef gradp_
-#undef ui             
-#undef vi             
-#undef visc_          
-#undef thsl           
+#undef ui
+#undef vi
+#undef visc_
+#undef thsl
 
 #ifdef DEBUG
   dstrc_exit();

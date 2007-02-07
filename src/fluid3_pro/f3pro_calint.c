@@ -102,15 +102,15 @@ void f3pro_int_usfem(
 {
   INT       i;			/* a couter                                       */
   INT       iel;		/* number of nodes                                */
-  INT       intc;		/* "integration case" for tri for further infos
+  INT       intc=0;		/* "integration case" for tri for further infos
 				   see f3_inpele.c and f3_intg.c                  */
   INT       is_ale;             /* ALE or Euler element flag                      */
-  INT       nir,nis,nit;	/* number of integration nodesin r,s,t direction  */
+  INT       nir=0,nis=0,nit=0;	/* number of integration nodesin r,s,t direction  */
   INT       ihoel=0;		/* flag for higher order elements                 */
   INT       icode=2;		/* flag for eveluation of shape functions         */
   INT       lr, ls, lt;		/* counter for integration                        */
   DOUBLE    fac;		/* total integration vactor                       */
-  DOUBLE    facr, facs, fact;	/* integration weights                            */
+  DOUBLE    facr=0, facs=0, fact=0;	/* integration weights                            */
   DOUBLE    det;		/* determinant of jacobian matrix at time (n+1)   */
   DOUBLE    e1,e2,e3;		/* natural coordinates of integr. point           */
   DOUBLE    gradp[3];		/* pressure gradient at integration point         */
@@ -136,7 +136,7 @@ void f3pro_int_usfem(
   data   = fdyn->data;
 
   is_ale = ele->e.f3pro->is_ale;
-  
+
   switch (dm)
   {
   case dm_q2pm1:
@@ -253,7 +253,7 @@ void f3pro_int_usfem(
 	  gridvelint[1] = 0;
 	  gridvelint[2] = 0;
 	}
-        
+
 	/*--------------------------- compute second global derivative ---*/
 	if (ihoel!=0)
 	{
@@ -447,7 +447,7 @@ void f3pro_calmat( DOUBLE **estif,
                    DOUBLE  *velint,
                    DOUBLE   histvec[3],
                    DOUBLE   gridvint[3],
-                   DOUBLE   press, 
+                   DOUBLE   press,
                    DOUBLE **vderxy,
                    DOUBLE **vderxy2,
                    DOUBLE   gradp[3],
@@ -458,7 +458,7 @@ void f3pro_calmat( DOUBLE **estif,
                    DOUBLE   fac,
                    DOUBLE   visc,
                    INT      iel,
-                   INT     *hasext, 
+                   INT     *hasext,
                    INT      isale,
                    INT      is_relax
   )
@@ -729,7 +729,7 @@ void f3pro_calmat( DOUBLE **estif,
 
 #include "f3pro_rhs_incr.c"
   }
-  
+
 #else
 
 #ifdef QUASI_NEWTON
@@ -746,7 +746,7 @@ void f3pro_calmat( DOUBLE **estif,
 #include "f3pro_stiff.c"
 #include "f3pro_rhs_nonincr.c"
   }
-  
+
 #endif
 
 #undef estif_
@@ -840,15 +840,15 @@ void f3pro_int_res(
 {
   INT       i;			/* a couter                                       */
   INT       iel;		/* number of nodes                                */
-  INT       intc;		/* "integration case" for tri for further infos
+  INT       intc=0;		/* "integration case" for tri for further infos
 				   see f3_inpele.c and f3_intg.c                  */
   INT       is_ale;             /* ALE or Euler element flag                      */
-  INT       nir,nis,nit;	/* number of integration nodesin r,s,t direction  */
+  INT       nir=0,nis=0,nit=0;	/* number of integration nodesin r,s,t direction  */
   INT       ihoel=0;		/* flag for higher order elements                 */
   INT       icode=2;		/* flag for eveluation of shape functions         */
   INT       lr, ls, lt;		/* counter for integration                        */
   DOUBLE    fac;		/* total integration vactor                       */
-  DOUBLE    facr, facs, fact;	/* integration weights                            */
+  DOUBLE    facr=0, facs=0, fact=0;	/* integration weights                            */
   DOUBLE    det;		/* determinant of jacobian matrix at time (n+1)   */
   DOUBLE    e1,e2,e3;		/* natural coordinates of integr. point           */
   DOUBLE    gradp[3];		/* pressure gradient at integration point         */
@@ -873,7 +873,7 @@ void f3pro_int_res(
   fdyn   = alldyn[genprob.numff].fdyn;
   data   = fdyn->data;
   dm     = ele->e.f3pro->dm;
-  
+
   is_ale = ele->e.f3pro->is_ale;
 
   switch (dm)
@@ -894,7 +894,7 @@ void f3pro_int_res(
   default:
     dserror("unsupported discretization mode %d", dm);
   }
-  
+
 /*------- get integraton data and check if elements are "higher order" */
   switch (typ)
   {
@@ -979,7 +979,7 @@ void f3pro_int_res(
 
 	/*------ get velocity (n+1,i) derivatives at integration point ---*/
 	f3_vder(vderxy,derxy,evelng,iel);
-        
+
 	/*--------------------- get grid velocity at integration point ---*/
 	if(is_ale)
 	  f3_veci(gridvelint,funct,egridv,iel);
@@ -989,7 +989,7 @@ void f3pro_int_res(
 	  gridvelint[1] = 0;
 	  gridvelint[2] = 0;
 	}
-      
+
 	/*--------------------------- compute second global derivative ---*/
 	if (ihoel!=0)
 	{
@@ -1149,7 +1149,7 @@ void f3pro_calresvec(  DOUBLE  *eforce,
 #ifdef DEBUG
   dstrc_enter("f3pro_calresvec");
 #endif
-  
+
 /*========================== initialisation ============================*/
   fdyn = alldyn[genprob.numff].fdyn;
 
@@ -1354,10 +1354,10 @@ for (vi=0; vi<iel; ++vi)
 #undef visc_old_
 #undef rhsint_
 #undef gradp_
-#undef ui             
-#undef vi             
-#undef visc_          
-#undef thsl           
+#undef ui
+#undef vi
+#undef visc_
+#undef thsl
 
 #ifdef DEBUG
   dstrc_exit();

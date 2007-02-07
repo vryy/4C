@@ -33,7 +33,8 @@ typedef struct _FLUID2_PRO
   enum   _DISMODE    dm;
 
   /* discontinuous pressure values stored at the element */
-  DOUBLE* press;                /* pressure values */
+  DOUBLE* press;                /* pressure values at (n+1) */
+  DOUBLE* pressm;               /* pressure values at (n) */
   DOUBLE* phi;                  /* pressure increments */
   INT*    dof;                  /* global dof numbers */
   INT*    ldof;                 /* processor local dof numbers */

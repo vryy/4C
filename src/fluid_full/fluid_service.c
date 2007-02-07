@@ -242,7 +242,7 @@ default:
 switch(fdyn->iop)
 {
 
-case 1:		/* gen alpha implementation */
+case timeint_gen_alpha:		/* gen alpha implementation */
    if (fabs(fdyn->theta*TWO*fdyn->alpha_f/fdyn->alpha_m - ONE) > EPS10)
    {
        fdyn->theta = fdyn->alpha_m / fdyn->alpha_f * 0.5;
@@ -253,18 +253,19 @@ case 1:		/* gen alpha implementation */
    fdyn->dta = 0.0;
 break;
 
-case 4:		/* one step theta */
-   fdyn->dta = 0.0;
+case timeint_one_step_theta:		/* one step theta */
+case timeint_theta_adamsbashforth:
+  fdyn->dta = 0.0;
 break;
 
-case 7:		/* 2nd order backward differencing BDF2 */
+case timeint_bdf2:		/* 2nd order backward differencing BDF2 */
    fdyn->dta = 0.0;
    /* set number of starting steps for restarts */
    if (genprob.restart == 0) /* restart using the pss-file */
      fdyn->nums += fdyn->step;
    break;
 
-case 8:		/* incremental accelerations gen alpha implementation */
+case timeint_inc_acc_gen_alpha:		/* incremental accelerations gen alpha implementation */
 
   if (fabs((1./2.+fdyn->alpha_m-fdyn->alpha_f) - fdyn->theta)> EPS10)
   {
@@ -322,7 +323,7 @@ fdyn = alldyn[genprob.numff].fdyn;
 /*----------------------------------------------------- check algorithm */
 switch (fdyn->iop)
 {
-case 1:		/* generalised alpha */
+case timeint_gen_alpha:		/* generalised alpha */
    if (fdyn->adaptive)
    {
       if(fdyn->dta == 0.0) fdyn->dta = fdyn->dt;
@@ -336,8 +337,9 @@ case 1:		/* generalised alpha */
    fdyn->thsr = ZERO;
    fdyn->thpr = fdyn->thsr;
 break;
-case 4:		/* one step theta */
-   if (fdyn->adaptive)
+case timeint_one_step_theta:		/* one step theta */
+case timeint_theta_adamsbashforth:
+  if (fdyn->adaptive)
    {
       if(fdyn->dta == 0.0) fdyn->dta = fdyn->dt;
    }
@@ -350,7 +352,7 @@ case 4:		/* one step theta */
    fdyn->thsr = (ONE - fdyn->theta)*fdyn->dta;
    fdyn->thpr = fdyn->thsr;
 break;
-case 7:		/* 2nd order backward differencing BDF2 */
+case timeint_bdf2:		/* 2nd order backward differencing BDF2 */
    if (fdyn->adaptive)
    {
       if(fdyn->dta == 0.0) fdyn->dta = fdyn->dt;
@@ -371,7 +373,7 @@ case 7:		/* 2nd order backward differencing BDF2 */
    }
 break;
 #ifdef D_FLUID2_TDS
-case 8:	  /* incremental acceleration generalised alpha */
+case timeint_inc_acc_gen_alpha:	  /* incremental acceleration generalised alpha */
    /* constant time step size !!!*/
    fdyn->dta  = fdyn->dt;
 
@@ -2376,24 +2378,28 @@ printf("\n");
 
 switch(fdyn->iop)
 {
-case 1:
+case timeint_gen_alpha:
    printf("TIME: %11.4E/%11.4E  DT = %11.4E  Generalised Alpha  STEP = %4d/%4d \n",
           fdyn->acttime,fdyn->maxtime,fdyn->dta,fdyn->step,fdyn->nstep);
 break;
-case 4:
+case timeint_one_step_theta:
    printf("TIME: %11.4E/%11.4E  DT = %11.4E  One-Step-Theta  STEP = %4d/%4d \n",
           fdyn->acttime,fdyn->maxtime,fdyn->dta,fdyn->step,fdyn->nstep);
 break;
-case 7:
+case timeint_bdf2:
    printf("TIME: %11.4E/%11.4E  DT = %11.4E     BDF2         STEP = %4d/%4d \n",
           fdyn->acttime,fdyn->maxtime,fdyn->dta,fdyn->step,fdyn->nstep);
 break;
 #ifdef D_FLUID2_TDS
-case 8:
+case timeint_inc_acc_gen_alpha:
    printf("TIME: %11.4E/%11.4E  DT = %11.4E incr. Gen-Alpha  STEP = %4d/%4d \n",
           fdyn->acttime,fdyn->maxtime,fdyn->dta,fdyn->step,fdyn->nstep);
 break;
 #endif /* D_FLUID2_TDS */
+case timeint_theta_adamsbashforth:
+  printf("TIME: %11.4E/%11.4E  DT = %11.4E  One-Step-Theta / Adams-Bashforth  STEP = %4d/%4d \n",
+	 fdyn->acttime,fdyn->maxtime,fdyn->dta,fdyn->step,fdyn->nstep);
+  break;
 default:
    dserror("parameter out of range: IOP\n");
 } /* end of swtich(fdyn->iop) */

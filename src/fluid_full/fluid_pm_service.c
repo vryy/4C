@@ -961,7 +961,7 @@ void pm_calelm_cont(FIELD *actfield,
   {
     INT j;
     ELEMENT* vele;
-    ELEMENT* pele;
+    ELEMENT* pele=NULL;
     vele = actpart->pdis[vel_dis].element[i];
     /* this does not work... */
     /*pele = actpart->pdis[press_dis].element[i];*/
@@ -1155,7 +1155,7 @@ void pm_calelm_laplace(FIELD *actfield,
   )
 {
   INT i;
-  TRILINOSMATRIX *press_mat;
+  TRILINOSMATRIX *press_mat=NULL;
 
   /* Variables from global_calelm. These are filled by the element
    * routines. */
@@ -2174,14 +2174,17 @@ void pm_out_screen_header(INT numeq,
 
     switch(fdyn->iop)
     {
-    case 1:
+    case timeint_gen_alpha:
       fprintf(out,"Generalised Alpha\n");
       break;
-    case 4:
+    case timeint_one_step_theta:
       fprintf(out,"One-Step-Theta\n");
       break;
-    case 7:
+    case timeint_bdf2:
       fprintf(out,"BDF2\n");
+      break;
+    case timeint_theta_adamsbashforth:
+      fprintf(out,"One-Step-Theta with Adams-Bashforth\n");
       break;
     default:
       dserror("parameter out of range: IOP\n");

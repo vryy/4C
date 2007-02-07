@@ -525,11 +525,11 @@ void fsi_fluid_pm_cont_setup(
   fluid_init(actpart,actintra,actfield,disnum_calc,disnum_io,action,
 	     &container,ipos->numincr,ipos,str);
 
-  /* we need two entries on the pressure discretization */
+  /* we need three entries on the pressure discretization */
   /*
    * sol_increment[0]  ... phi
-   * sol_increment[1]  ... press
-   * sol_increment[2]  ... press (save)
+   * sol_increment[1]  ... press at (n+1)
+   * sol_increment[2]  ... press at (n)
    */
   solserv_sol_zero(actfield,press_dis,node_array_sol_increment,2);
 
@@ -1512,7 +1512,7 @@ void fsi_fluid_pm_cont_final(
                    1,
                    0);
 
-  /* backup pressure */
+  /* save pressure at timestep beginning */
   solserv_sol_copy(actfield,press_dis,
                    node_array_sol_increment,
                    node_array_sol_increment,

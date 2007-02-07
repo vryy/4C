@@ -478,6 +478,7 @@ void fsi_fluid_pm_discont_setup(
   fluid_init(actpart,actintra,actfield,disnum_calc,disnum_io,action,
 	     &container,ipos->numincr,ipos,str);
 
+#if 0
   /* we need two entries on the pressure discretization */
   /*
    * sol_increment[0]  ... phi
@@ -485,6 +486,7 @@ void fsi_fluid_pm_discont_setup(
    * sol_increment[2]  ... press (save)
    */
   solserv_sol_zero(actfield,press_dis,node_array_sol_increment,2);
+#endif
 
   solserv_sol_zero(actfield,press_dis,node_array_sol,0);
 
@@ -799,12 +801,14 @@ void fsi_fluid_pm_discont_calc(
   /* Now setup is done and we actually calculate the values of G and
    * M. */
 
+#if 0
   /* restore backup pressure */
   solserv_sol_copy(actfield,press_dis,
                    node_array_sol_increment,
                    node_array_sol_increment,
                    2,
                    1);
+#endif
 
   /* ------------------------------------------------ */
   /* Calculate gradient and mass matrices, including the inverted
@@ -1393,6 +1397,7 @@ void fsi_fluid_pm_discont_final(
 		   ipos->velnp,
 		   ipos->veln);
 
+#if 0
   solserv_sol_copy(actfield,press_dis,
                    node_array_sol_increment,
                    node_array_sol,
@@ -1405,6 +1410,7 @@ void fsi_fluid_pm_discont_final(
                    node_array_sol_increment,
                    1,
                    2);
+#endif
 
   /* alternative to the above copys which does not work with restart: */
   /*-------------------------- shift position of old velocity solution ---*/

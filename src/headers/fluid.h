@@ -122,7 +122,7 @@ typedef struct _FLUID_DYNAMIC
 {
 /* general control variables of fluid dynamics */
 FLUID_DYNTYPE dyntyp; /*!< dynamictype                                   */
-INT    iop;          /*!< time integration method                       */
+FLUID_TIMEINTTYPE iop;/*!< time integration method                       */
 INT    iops;         /*!< starting algorithm                            */
 INT    init;         /*!< initialisation of starting field              */
 INT    mlfem;        /*!< multilevel algorithm?                         */

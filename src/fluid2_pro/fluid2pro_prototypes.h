@@ -117,7 +117,7 @@ void f2pro_calele(
   ARRAY          *gforce_global,
   ARRAY_POSITION *ipos,
   INT            *hasdirich,
-  INT            *hasext, 
+  INT            *hasext,
   INT             is_relax
   );
 
@@ -160,23 +160,26 @@ void f2pro_gradopr(
 void f2pro_calset(
   ELEMENT         *ele,
   DOUBLE         **xyze,
+  DOUBLE         **evelnm,
   DOUBLE         **eveln,
   DOUBLE         **evelng,
   DOUBLE         **evhist,
+  DOUBLE          *eprenm,
   DOUBLE          *epren,
-  DOUBLE          *edeadng, 
+  DOUBLE          *edeadng,
   ARRAY_POSITION  *ipos
   );
 void f2pro_calseta(
   ELEMENT         *ele,
   DOUBLE         **xyze,
+  DOUBLE         **evelnm,
   DOUBLE         **eveln,
   DOUBLE         **evelng,
   DOUBLE         **evhist,
-  DOUBLE         **ealecovng, 
+  DOUBLE         **ealecovng,
   DOUBLE         **egridv,
   DOUBLE          *epren,
-  DOUBLE          *edeadng, 
+  DOUBLE          *edeadng,
   ARRAY_POSITION  *ipos,
   INT              is_relax
   );
@@ -248,12 +251,16 @@ void f2pro_int_usfem(
   DOUBLE         **pderxy,
   DOUBLE         **evelng,
   DOUBLE         **eveln,
+  DOUBLE         **evelnm,
   DOUBLE         **evhist,
   DOUBLE         **egridv,
+  DOUBLE          *eprenm,
   DOUBLE          *epren,
   DOUBLE          *edeadng,
   DOUBLE         **vderxy,
   DOUBLE         **vderxy2,
+  DOUBLE         **vderxy_n,
+  DOUBLE         **vderxy_nm,
   DOUBLE           visc,
   DOUBLE         **wa1,
   DOUBLE         **wa2,
@@ -262,9 +269,14 @@ void f2pro_int_usfem(
 
 void f2pro_calmat( DOUBLE **estif,
                    DOUBLE  *eforce,
+		   DOUBLE  *velint_n,
+		   DOUBLE **vderxy_n,
+		   DOUBLE  *velint_nm,
+		   DOUBLE **vderxy_nm,
                    DOUBLE  *velint,
                    DOUBLE   histvec[2],
                    DOUBLE   gridvint[2],
+                   DOUBLE   press_n,
                    DOUBLE   press,
                    DOUBLE **vderxy,
                    DOUBLE **vderxy2,
@@ -276,8 +288,8 @@ void f2pro_calmat( DOUBLE **estif,
                    DOUBLE   fac,
                    DOUBLE   visc,
                    INT      iel,
-                   INT      isale, 
-                   INT      is_relax, 
+                   INT      isale,
+                   INT      is_relax,
                    INT     *hasext
   );
 

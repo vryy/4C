@@ -52,10 +52,11 @@ void f2pro_inp(ELEMENT *ele)
     if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
 
     /*
-     * Lets not allocate too small pieces of memory. Two pointers
+     * Lets not allocate too small pieces of memory. Three pointers
      * share one array peacefully. :) */
-    ele->e.f2pro->press = (DOUBLE*)CCACALLOC(2, sizeof(DOUBLE));
-    ele->e.f2pro->phi   = &(ele->e.f2pro->press[1]);
+    ele->e.f2pro->press  = (DOUBLE*)CCACALLOC(3, sizeof(DOUBLE));
+    ele->e.f2pro->pressm = &(ele->e.f2pro->press[1]);
+    ele->e.f2pro->phi    = &(ele->e.f2pro->press[2]);
     ele->e.f2pro->dof   = (INT*)   CCACALLOC(2, sizeof(INT));
     ele->e.f2pro->ldof  = &(ele->e.f2pro->dof[1]);
   }
@@ -72,12 +73,13 @@ void f2pro_inp(ELEMENT *ele)
     if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
 
     /*
-     * Lets not allocate too small pieces of memory. Two pointers
+     * Lets not allocate too small pieces of memory. Three pointers
      * share one array peacefully. :) */
-    ele->e.f2pro->press = (DOUBLE*)CCACALLOC(6, sizeof(DOUBLE));
-    ele->e.f2pro->phi   = &(ele->e.f2pro->press[3]);
-    ele->e.f2pro->dof   = (INT*)   CCACALLOC(6, sizeof(INT));
-    ele->e.f2pro->ldof  = &(ele->e.f2pro->dof[3]);
+    ele->e.f2pro->press  = (DOUBLE*)CCACALLOC(9, sizeof(DOUBLE));
+    ele->e.f2pro->pressm = &(ele->e.f2pro->press[3]);
+    ele->e.f2pro->phi    = &(ele->e.f2pro->press[6]);
+    ele->e.f2pro->dof    = (INT*)   CCACALLOC(6, sizeof(INT));
+    ele->e.f2pro->ldof   = &(ele->e.f2pro->dof[3]);
   }
   frchk("QUAD8",&ierr);
   if (ierr==1)

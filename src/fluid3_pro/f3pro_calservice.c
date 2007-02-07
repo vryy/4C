@@ -42,12 +42,12 @@ void f3pro_calset(
   DOUBLE         **evelng,
   DOUBLE         **evhist,
   DOUBLE          *epren,
-  DOUBLE          *edeadng, 
+  DOUBLE          *edeadng,
   ARRAY_POSITION  *ipos
   )
 {
   INT i, veln, velnp, hist;
-  INT numpdof;
+  INT numpdof=0;
   NODE *actnode;                /* actual node for element */
 
 #ifdef DEBUG
@@ -138,7 +138,7 @@ void f3pro_calset(
   edeadng[0] = 0;
   edeadng[1] = 0;
   edeadng[2] = 0;
-  
+
 #ifdef DEBUG
   dstrc_exit();
 #endif
@@ -171,12 +171,12 @@ void f3pro_calseta(
   DOUBLE         **evhist,
   DOUBLE         **egridv,
   DOUBLE          *epren,
-  DOUBLE          *edeadng, 
+  DOUBLE          *edeadng,
   ARRAY_POSITION  *ipos
   )
 {
   INT i, veln, velnp, hist;
-  INT numpdof;
+  INT numpdof=0;
   NODE *actnode;                /* actual node for element */
 
 #ifdef DEBUG
@@ -190,7 +190,7 @@ void f3pro_calseta(
   /*--------------------------------------------- set element coordinates */
   f3_alecoor(ele,xyze);
 
-  
+
   /*---------------------------------------------------------------------*
    | position of the different solutions:                                |
    | node->sol_incement: solution history used for calculations          |

@@ -466,12 +466,13 @@ void fluid_pm_cont_laplace()
   /*-------------------------------------- init the dirichlet-conditions -*/
   fluid_initdirich(actfield, disnum_calc, ipos);
 
-  /* we need two entries on the pressure discretization */
+  /* we need three entries on the pressure discretization */
   /*
    * sol_increment[0]  ... phi
-   * sol_increment[1]  ... press
+   * sol_increment[1]  ... press at (n+1)
+   * sol_increment[2]  ... press at (n)
    */
-  solserv_sol_zero(actfield,press_dis,node_array_sol_increment,1);
+  solserv_sol_zero(actfield,press_dis,node_array_sol_increment,2);
 
   solserv_sol_zero(actfield,press_dis,node_array_sol,0);
 
@@ -686,7 +687,7 @@ void fluid_pm_cont_laplace()
     {
 #else
 #endif
-      
+
     /*------------------------------------- start time step on the screen---*/
     if (fdyn->itnorm!=fncc_no && par.myrank==0)
     {
@@ -936,7 +937,7 @@ void fluid_pm_cont_laplace()
 #ifdef PM_ITERATION
     }}
 #else
-    
+
     /* update velocity */
 
     solserv_zero_vec(&actsolv->sol[0]);
@@ -989,7 +990,7 @@ void fluid_pm_cont_laplace()
 		    ipos->velnp,1);
 
 #endif
-    
+
 #if 0
     if (actintra->intra_rank==0)
     {
@@ -1144,6 +1145,13 @@ void fluid_pm_cont_laplace()
                      node_array_sol,
 		     1,
 		     actpos);
+
+    /* save pressure at timestep beginning */
+    solserv_sol_copy(actfield,press_dis,
+		     node_array_sol_increment,
+                     node_array_sol_increment,
+		     1,
+		     2);
 
     /*---------------------------------------------- finalise this timestep */
     outstep++;

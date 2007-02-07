@@ -843,9 +843,9 @@ void f3is_int_res(
 {
   INT       i;          /* a couter                                       */
   INT       iel;        /* number of nodes                                */
-  INT       intc;       /* "integration case" for tri for further infos
+  INT       intc=0;       /* "integration case" for tri for further infos
 			   see f2_inpele.c and f2_intg.c                 */
-  INT       nir,nis,nit;/* number of integration nodesin r,s,t direction  */
+  INT       nir=0,nis=0,nit=0;/* number of integration nodesin r,s,t direction  */
   INT       ihoel=0;    /* flag for higher order elements                 */
   INT       icode=2;    /* flag for eveluation of shape functions         */
   INT       lr, ls, lt; /* counter for integration                        */

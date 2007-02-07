@@ -1136,19 +1136,21 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    if (ierr==1)
    {
       if (frwordcmp(buffer,"Stationary")==0)
-         fdyn->iop=0;
+         fdyn->iop=timeint_stationary;
       else if (frwordcmp(buffer,"Gen_Alfa")==0)
-         fdyn->iop=1;
+         fdyn->iop=timeint_gen_alpha;
       else if (frwordcmp(buffer,"Gen_Alpha")==0)
-         fdyn->iop=1;
+         fdyn->iop=timeint_gen_alpha;
       else if (frwordcmp(buffer,"One_Step_Theta")==0)
-         fdyn->iop=4;
+         fdyn->iop=timeint_one_step_theta;
       else if (frwordcmp(buffer,"BDF2")==0)
-         fdyn->iop=7;
+         fdyn->iop=timeint_bdf2;
 #ifdef D_FLUID2_TDS
       else if (frwordcmp(buffer,"Inc_Acc_Gen_Alpha")==0)
-         fdyn->iop=8;
+         fdyn->iop=timeint_inc_acc_gen_alpha;
 #endif /* D_FLUID2_TDS */
+      else if (frwordcmp(buffer,"Theta_Adamsbashforth")==0)
+	 fdyn->iop=timeint_theta_adamsbashforth;
       else
          dserror("TIMEINTEGR-Type unknown");
    }

@@ -106,8 +106,8 @@ fdyn = alldyn[genprob.numff].fdyn;
 /*----------------------------------------------------------------------*/
 switch (iop)
 {
-case 1:	/* Generalised Alpha time integration 				*/
-case 4:	/* One step Theta time integration 				*/
+case timeint_gen_alpha:	/* Generalised Alpha time integration 				*/
+case timeint_one_step_theta:	/* One step Theta time integration 				*/
    fact1 = 1.0 / (fdyn->theta*fdyn->dta);
    fact2 =-1.0 / fdyn->theta + 1.0;	/* = -1/Theta + 1		*/
    solserv_sol_zero(actfield,disnum,node_array_sol_increment,accn);
@@ -121,7 +121,7 @@ case 4:	/* One step Theta time integration 				*/
                               node_array_sol_increment,
                               accnm,accn, fact2);
 break;
-case 7:	/* 2nd order backward differencing BDF2				*/
+case timeint_bdf2:	/* 2nd order backward differencing BDF2				*/
    dta = fdyn->dta;
    dtp = fdyn->dtp;
    if (dta*dtp < EPS15)
@@ -141,6 +141,10 @@ case 7:	/* 2nd order backward differencing BDF2				*/
                               node_array_sol_increment,
                               velnm,accn,fact3);
 break;
+case timeint_theta_adamsbashforth:
+  /* no acceleration with mixed schemes */
+  solserv_sol_zero(actfield,disnum,node_array_sol_increment,accn);
+  break;
 default:
    dserror("Time integration scheme unknown for calculation of acceleration!");
 }
@@ -223,7 +227,7 @@ fdyn = alldyn[genprob.numff].fdyn;
 /*----------------------------------------------------------------------*/
 switch (fdyn->iop)
 {
-case 1:	/* Generalised Alpha time integration 				*/
+case timeint_gen_alpha:	/* Generalised Alpha time integration 				*/
    fact = -fdyn->dta * fdyn->alpha_f *
           (fdyn->theta - fdyn->alpha_m) / fdyn->alpha_m;
    solserv_sol_copy(actfield,disnum,node_array_sol_increment,
@@ -233,14 +237,14 @@ case 1:	/* Generalised Alpha time integration 				*/
                               node_array_sol_increment,
                               accn,hist,fact);
 break;
-case 4:	/* One step Theta time integration 				*/
+case timeint_one_step_theta:	/* One step Theta time integration 				*/
    fact = fdyn->dta * (1.0 -fdyn->theta);     /* = dt*(1-Theta)         */
    solserv_sol_copy(actfield,disnum,node_array_sol_increment,
                                node_array_sol_increment,veln,hist);
    solserv_sol_add(actfield,disnum,node_array_sol_increment,
                               node_array_sol_increment,accn,hist,fact);
 break;
-case 7:	/* 2nd order backward differencing BDF2				*/
+case timeint_bdf2:	/* 2nd order backward differencing BDF2				*/
    fact = DSQR(fdyn->dta)/(fdyn->dtp*(2.0*fdyn->dta+fdyn->dtp));
    solserv_sol_zero(actfield,disnum,node_array_sol_increment,hist);
    solserv_sol_add(actfield,disnum,node_array_sol_increment,
@@ -248,6 +252,10 @@ case 7:	/* 2nd order backward differencing BDF2				*/
    solserv_sol_add(actfield,disnum,node_array_sol_increment,
                               node_array_sol_increment,velnm,hist,-fact);
 break;
+case timeint_theta_adamsbashforth:
+  /* No mass rhs with this scheme. We do the history terms explicitly. */
+  solserv_sol_zero(actfield,disnum,node_array_sol_increment,hist);
+  break;
 default:
    dserror("Time integration scheme unknown for mass rhs!");
 }
@@ -643,6 +651,8 @@ if (par.myrank == 0)
     case 7:	/* BDF2							*/
       ratio = pow((fdyn->lte/d_norm),0.33333333333333333333333);
     break;
+    default:
+      dserror("ups!");
     }	/* end switch (fdyn->iop) */
   }
 }	/* end of par.myrank == 0 */

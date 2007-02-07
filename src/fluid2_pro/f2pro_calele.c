@@ -42,6 +42,8 @@ extern struct _MATERIAL  *mat;
 
 /* Variables used by all element integration functions */
 
+static ARRAY     evelnm_a;    /* element velocities at (n-1)               */
+static DOUBLE  **evelnm;
 static ARRAY     eveln_a;     /* element velocities at (n)                 */
 static DOUBLE  **eveln;
 static ARRAY     evelng_a;    /* element velocities at (n+gamma)           */
@@ -56,8 +58,10 @@ static ARRAY     evnng_a;     /* element normal vector at n+1           */
 static DOUBLE  **evnng;
 static ARRAY     evnn_a;      /* element normal vector at n             */
 static DOUBLE  **evnn;
-static ARRAY     epren_a;     /* element pressures at (n)               */
+static ARRAY     epren_a;     /* element pressures at (n+1)               */
 static DOUBLE   *epren;
+static ARRAY     eprenm_a;    /* element pressures at (n)               */
+static DOUBLE   *eprenm;
 static ARRAY     edeadn_a;    /* element dead load (selfweight)            */
 static DOUBLE   *edeadng;
 static ARRAY     edeadng_a;   /* element dead load (selfweight)            */
@@ -82,6 +86,10 @@ static ARRAY     pderxy_a;    /* pre -derivatives                          */
 static DOUBLE  **pderxy;
 static ARRAY     vderxy2_a;   /* vel - 2nd derivatives                     */
 static DOUBLE  **vderxy2;
+static ARRAY     vderxy_n_a;  /* vel - derivatives                         */
+static DOUBLE  **vderxy_n;
+static ARRAY     vderxy_nm_a; /* vel - derivatives                         */
+static DOUBLE  **vderxy_nm;
 static ARRAY     derxy_a;     /* coordinate - derivatives                  */
 static DOUBLE  **derxy;
 static ARRAY     derxy2_a;    /* 2nd coordinate - derivatives              */
@@ -134,6 +142,7 @@ void f2pro_calinit(
 
   /* allocate working arrays and set pointers */
 
+  evelnm    = amdef("evelnm"   ,&evelnm_a   ,NUM_F2_VELDOF,MAXNOD_F2,"DA");
   eveln     = amdef("eveln"    ,&eveln_a    ,NUM_F2_VELDOF,MAXNOD_F2,"DA");
   evelng    = amdef("evelng"   ,&evelng_a   ,NUM_F2_VELDOF,MAXNOD_F2,"DA");
   evhist    = amdef("evhist"   ,&evhist_a   ,NUM_F2_VELDOF,MAXNOD_F2,"DA");
@@ -142,6 +151,7 @@ void f2pro_calinit(
   evnng     = amdef("evnng"    ,&evnng_a    ,NUM_F2_VELDOF,MAXNOD_F2,"DA");
   evnn      = amdef("evnn"     ,&evnn_a     ,NUM_F2_VELDOF,MAXNOD_F2,"DA");
   epren     = amdef("epren"    ,&epren_a    ,MAXNOD_F2,1,"DV");
+  eprenm    = amdef("eprenm"   ,&eprenm_a   ,MAXNOD_F2,1,"DV");
   edeadn    = amdef("edeadn"   ,&edeadn_a   ,2,1,"DV");
   edeadng   = amdef("edeadng"  ,&edeadng_a  ,2,1,"DV");
   funct     = amdef("funct"    ,&funct_a    ,MAXNOD_F2,1,"DV");
@@ -153,6 +163,8 @@ void f2pro_calinit(
   xyze      = amdef("xyze"     ,&xyze_a     ,2,MAXNOD_F2,"DA");
   vderxy    = amdef("vderxy"   ,&vderxy_a   ,2,2,"DA");
   vderxy2   = amdef("vderxy2"  ,&vderxy2_a  ,2,3,"DA");
+  vderxy_n  = amdef("vderxy_n" ,&vderxy_n_a ,2,2,"DA");
+  vderxy_nm = amdef("vderxy_nm",&vderxy_nm_a,2,2,"DA");
   derxy     = amdef("derxy"    ,&derxy_a    ,2,MAXNOD_F2,"DA");
   derxy2    = amdef("derxy2"   ,&derxy2_a   ,3,MAXNOD_F2,"DA");
   pderxy    = amdef("pderxy"   ,&pderxy_a   ,2,MAXNOD_F2,"DA");
@@ -210,7 +222,7 @@ void f2pro_calele(
   ARRAY          *gforce_global,
   ARRAY_POSITION *ipos,
   INT            *hasdirich,
-  INT            *hasext, 
+  INT            *hasext,
   INT             is_relax
   )
 {
@@ -237,7 +249,7 @@ void f2pro_calele(
   {
   case 0:
     /*---------------------------------------------------- set element data */
-    f2pro_calset(ele,xyze,eveln,evelng,evhist,epren,edeadng,ipos);
+    f2pro_calset(ele,xyze,evelnm,eveln,evelng,evhist,eprenm,epren,edeadng,ipos);
 
     /* We follow the förster-element here. */
 
@@ -251,13 +263,14 @@ void f2pro_calele(
     f2pro_int_usfem(ele,hasext,estif,eforce,gforce,xyze,
                     funct,deriv,deriv2,pfunct,pderiv,xjm,
                     derxy,derxy2,pderxy,
-                    evelng,eveln,
-                    evhist,NULL,epren,edeadng,
-                    vderxy,vderxy2,visc,wa1,wa2,is_relax);
+                    evelng,eveln,evelnm,
+                    evhist,NULL,eprenm,epren,edeadng,
+                    vderxy,vderxy2,vderxy_n,vderxy_nm,
+		    visc,wa1,wa2,is_relax);
     break;
   case 1:
     /*---------------------------------------------------- set element data */
-    f2pro_calseta(ele,xyze,eveln,evelng,evhist,ealecovng,egridv,epren,edeadng,ipos,is_relax);
+    f2pro_calseta(ele,xyze,evelnm,eveln,evelng,evhist,ealecovng,egridv,epren,edeadng,ipos,is_relax);
 
     /* We follow the förster-element here. */
 
@@ -271,14 +284,15 @@ void f2pro_calele(
     f2pro_int_usfem(ele,hasext,estif,eforce,gforce,xyze,
                     funct,deriv,deriv2,pfunct,pderiv,xjm,
                     derxy,derxy2,pderxy,
-                    evelng,eveln,
-                    evhist,egridv,epren,edeadng,
-                    vderxy,vderxy2,visc,wa1,wa2,is_relax);
+                    evelng,eveln,evelnm,
+                    evhist,egridv,eprenm,epren,edeadng,
+                    vderxy,vderxy2,vderxy_n,vderxy_nm,
+		    visc,wa1,wa2,is_relax);
     break;
   default:
     dserror("parameter is_ale not 0 or 1!\n");
   }
-    
+
   /*------------------------------------------------ condensation of DBCs */
   /* estif is in xyz* so edforce is also in xyz* (but DBCs have to be
      tranformed before condensing the dofs                                */
@@ -338,7 +352,7 @@ void f2pro_caleleres(
   {
   case 0:
 /*---------------------------------------------------- set element data */
-    f2pro_calset(ele,xyze,eveln,evelng,evhist,epren,edeadng,ipos);
+    f2pro_calset(ele,xyze,evelnm,eveln,evelng,evhist,eprenm,epren,edeadng,ipos);
 
     /*---------------------------------------------- get viscosity ---*/
     visc = mat[ele->mat-1].m.fluid->viscosity;
@@ -353,7 +367,7 @@ void f2pro_caleleres(
     break;
   case 1:
     /*---------------------------------------------- set element data ---*/
-    f2pro_calseta(ele,xyze,eveln,evelng,evhist,ealecovng,egridv,epren,edeadng,ipos,0);
+    f2pro_calseta(ele,xyze,evelnm,eveln,evelng,evhist,ealecovng,egridv,epren,edeadng,ipos,0);
 
     /*------------------------------------------------- get viscosity ---*/
     visc = mat[ele->mat-1].m.fluid->viscosity;
@@ -393,14 +407,14 @@ void f2pro_calgradp(
   INT i;
   INT numpdof;
   INT       iel;        /* number of nodes                                */
-  INT       intc;       /* "integration case" for tri for further infos
+  INT       intc=0;       /* "integration case" for tri for further infos
                            see f2_inpele.c and f2_intg.c                 */
-  INT       nir,nis;    /* number of integration nodesin r,s direction    */
+  INT       nir=0,nis=0;    /* number of integration nodesin r,s direction    */
   INT       ihoel=0;    /* flag for higher order elements                 */
   INT       icode=2;    /* flag for eveluation of shape functions         */
   INT       lr, ls;     /* counter for integration                        */
   DOUBLE    fac;        /* total integration vactor                       */
-  DOUBLE    facr, facs; /* integration weights                            */
+  DOUBLE    facr=0, facs=0; /* integration weights                            */
   DOUBLE    det;        /* determinant of jacobian matrix at time (n+1)   */
   DOUBLE    e1,e2;      /* natural coordinates of integr. point           */
   DIS_TYP   typ;	      /* element type                                   */
@@ -435,7 +449,7 @@ void f2pro_calgradp(
       xyze[1][i]=ele->node[i]->x[1];
     }
   }
-  
+
   switch (ele->e.f2pro->dm)
   {
   case dm_q2pm1:
@@ -617,14 +631,14 @@ void f2pro_calprhs(
   INT numpdof;
   INT velnp;
   INT       iel;        /* number of nodes                                */
-  INT       intc;       /* "integration case" for tri for further infos
+  INT       intc=0;       /* "integration case" for tri for further infos
                            see f2_inpele.c and f2_intg.c                 */
-  INT       nir,nis;    /* number of integration nodesin r,s direction    */
+  INT       nir=0,nis=0;    /* number of integration nodesin r,s direction    */
   INT       ihoel=0;    /* flag for higher order elements                 */
   INT       icode=2;    /* flag for eveluation of shape functions         */
   INT       lr, ls;     /* counter for integration                        */
   DOUBLE    fac;        /* total integration vactor                       */
-  DOUBLE    facr, facs; /* integration weights                            */
+  DOUBLE    facr=0, facs=0; /* integration weights                            */
   DOUBLE    det;        /* determinant of jacobian matrix at time (n+1)   */
   DOUBLE    e1,e2;      /* natural coordinates of integr. point           */
   DIS_TYP   typ;        /* element type                                   */
@@ -812,14 +826,14 @@ void f2pro_calvrhs(ELEMENT* ele, ARRAY_POSITION *ipos)
   INT numpdof;
   INT velnp;
   INT       iel;        /* number of nodes                                */
-  INT       intc;       /* "integration case" for tri for further infos
+  INT       intc=0;       /* "integration case" for tri for further infos
                            see f2_inpele.c and f2_intg.c                 */
-  INT       nir,nis;    /* number of integration nodesin r,s direction    */
+  INT       nir=0,nis=0;    /* number of integration nodesin r,s direction    */
   INT       ihoel=0;    /* flag for higher order elements                 */
   INT       icode=2;    /* flag for eveluation of shape functions         */
   INT       lr, ls;     /* counter for integration                        */
   DOUBLE    fac;        /* total integration vactor                       */
-  DOUBLE    facr, facs; /* integration weights                            */
+  DOUBLE    facr=0, facs=0; /* integration weights                            */
   DOUBLE    det;        /* determinant of jacobian matrix at time (n+1)   */
   DOUBLE    e1,e2;      /* natural coordinates of integr. point           */
   DIS_TYP   typ;        /* element type                                   */
@@ -985,7 +999,7 @@ void f2pro_calvrhs(ELEMENT* ele, ARRAY_POSITION *ipos)
 
       /*------------------------------------- get pressure gradients ---*/
       gradp[0] = gradp[1] = 0.0;
-      
+
       if (numpdof==-1)
       {
 	for (i=0; i<iel; i++)
@@ -1047,14 +1061,14 @@ void f2pro_calvelupdate(
   INT i;
   INT numpdof;
   INT       iel;        /* number of nodes                                */
-  INT       intc;       /* "integration case" for tri for further infos
+  INT       intc=0;       /* "integration case" for tri for further infos
                            see f2_inpele.c and f2_intg.c                 */
-  INT       nir,nis;    /* number of integration nodesin r,s direction    */
+  INT       nir=0,nis=0;    /* number of integration nodesin r,s direction    */
   INT       ihoel=0;    /* flag for higher order elements                 */
   INT       icode=2;    /* flag for eveluation of shape functions         */
   INT       lr, ls;     /* counter for integration                        */
   DOUBLE    fac;        /* total integration vactor                       */
-  DOUBLE    facr, facs; /* integration weights                            */
+  DOUBLE    facr=0, facs=0; /* integration weights                            */
   DOUBLE    det;        /* determinant of jacobian matrix at time (n+1)   */
   DOUBLE    e1,e2;      /* natural coordinates of integr. point           */
   DIS_TYP   typ;        /* element type                                   */
@@ -1347,14 +1361,14 @@ void f2pro_calpress(ELEMENT* ele,
   INT i;
   INT numpdof;
   INT       iel;        /* number of nodes                                */
-  INT       intc;       /* "integration case" for tri for further infos
+  INT       intc=0;       /* "integration case" for tri for further infos
                            see f2_inpele.c and f2_intg.c                 */
-  INT       nir,nis;    /* number of integration nodesin r,s direction    */
+  INT       nir=0,nis=0;    /* number of integration nodesin r,s direction    */
   INT       ihoel=0;    /* flag for higher order elements                 */
   INT       icode=2;    /* flag for eveluation of shape functions         */
   INT       lr, ls;     /* counter for integration                        */
   DOUBLE    fac;        /* total integration vactor                       */
-  DOUBLE    facr, facs; /* integration weights                            */
+  DOUBLE    facr=0, facs=0; /* integration weights                            */
   DOUBLE    det;        /* determinant of jacobian matrix at time (n+1)   */
   DOUBLE    e1,e2;      /* natural coordinates of integr. point           */
   DIS_TYP   typ;        /* element type                                   */

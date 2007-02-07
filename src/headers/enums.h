@@ -512,7 +512,7 @@ typedef enum _SSI_MESH
 
 
 /*----------------------------------------------------------------------*/
-/* The known time integration methods for fluids. */
+/* The known time marching schemes for fluids. */
 /*----------------------------------------------------------------------*/
 typedef enum _FLUID_DYNTYPE
 {
@@ -521,6 +521,23 @@ typedef enum _FLUID_DYNTYPE
   dyntyp_pm_cont=2,
   dyntyp_pm_cont_laplace=3,
 } FLUID_DYNTYPE;
+
+
+/*----------------------------------------------------------------------*/
+/* The known time integration methods for fluids. */
+/*----------------------------------------------------------------------*/
+typedef enum _FLUID_TIMEINTTYPE
+{
+  timeint_stationary=0,
+  timeint_gen_alpha=1,
+  timeint_one_step_theta=4,
+  timeint_bdf2=7,
+  timeint_inc_acc_gen_alpha=8,
+
+  /* One step theta / Adams-Bashforth */
+  /**/
+  timeint_theta_adamsbashforth,
+} FLUID_TIMEINTTYPE;
 
 
 /*----------------------------------------------------------------------*/

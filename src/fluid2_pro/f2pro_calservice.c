@@ -38,22 +38,25 @@ get the element velocities and the pressure at different times
 void f2pro_calset(
   ELEMENT         *ele,
   DOUBLE         **xyze,
+  DOUBLE         **evelnm,
   DOUBLE         **eveln,
   DOUBLE         **evelng,
   DOUBLE         **evhist,
+  DOUBLE          *eprenm,
   DOUBLE          *epren,
-  DOUBLE          *edeadng, 
+  DOUBLE          *edeadng,
   ARRAY_POSITION  *ipos
   )
 {
-  INT i, veln, velnp, hist;
-  INT numpdof;
+  INT i, velnm, veln, velnp, hist;
+  INT numpdof=0;
   NODE *actnode;                /* actual node for element */
 
 #ifdef DEBUG
   dstrc_enter("f2pro_calset");
 #endif
 
+  velnm = ipos->velnm;
   veln  = ipos->veln;
   velnp = ipos->velnp;
   hist  = ipos->hist;
@@ -80,6 +83,10 @@ void f2pro_calset(
   for(i=0;i<ele->numnp;i++)
   {
     actnode=ele->node[i];
+
+    /*----------------------------------- set element velocities at (n-1) */
+    evelnm[0][i]=actnode->sol_increment.a.da[velnm][0];
+    evelnm[1][i]=actnode->sol_increment.a.da[velnm][1];
 
     /*------------------------------------- set element velocities at (n) */
     eveln[0][i]=actnode->sol_increment.a.da[veln][0];
@@ -120,7 +127,8 @@ void f2pro_calset(
     pele = ele->e.f2pro->other;
     for (i=0; i<pele->numnp; ++i)
     {
-      epren[i] = pele->node[i]->sol_increment.a.da[1][0];
+      epren[i]  = pele->node[i]->sol_increment.a.da[1][0];
+      eprenm[i] = pele->node[i]->sol_increment.a.da[2][0];
     }
   }
   else
@@ -128,12 +136,13 @@ void f2pro_calset(
     for (i=0; i<numpdof; ++i)
     {
       epren[i]   = ele->e.f2pro->press[i];
+      eprenm[i]  = ele->e.f2pro->pressm[i];
     }
   }
 
   edeadng[0] = 0;
   edeadng[1] = 0;
-  
+
 #ifdef DEBUG
   dstrc_exit();
 #endif
@@ -161,25 +170,27 @@ get the element velocities and the pressure at different times
 void f2pro_calseta(
   ELEMENT         *ele,
   DOUBLE         **xyze,
+  DOUBLE         **evelnm,
   DOUBLE         **eveln,
   DOUBLE         **evelng,
   DOUBLE         **evhist,
-  DOUBLE         **ealecovng, 
+  DOUBLE         **ealecovng,
   DOUBLE         **egridv,
   DOUBLE          *epren,
-  DOUBLE          *edeadng, 
+  DOUBLE          *edeadng,
   ARRAY_POSITION  *ipos,
   INT              is_relax
   )
 {
-  INT i, veln, velnp, hist;
-  INT numpdof;
+  INT i, velnm, veln, velnp, hist;
+  INT numpdof=0;
   NODE *actnode;                /* actual node for element */
 
 #ifdef DEBUG
   dstrc_enter("f2pro_calseta");
 #endif
 
+  velnm = ipos->velnm;
   veln  = ipos->veln;
   velnp = ipos->velnp;
   hist  = ipos->hist;
@@ -205,6 +216,10 @@ void f2pro_calseta(
   for(i=0;i<ele->numnp;i++)
   {
     actnode=ele->node[i];
+
+    /*----------------------------------- set element velocities at (n-1) */
+    evelnm[0][i]=actnode->sol_increment.a.da[velnm][0];
+    evelnm[1][i]=actnode->sol_increment.a.da[velnm][1];
 
     /*------------------------------------- set element velocities at (n) */
     eveln[0][i]=actnode->sol_increment.a.da[veln][0];

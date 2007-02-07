@@ -496,12 +496,13 @@ void fluid_pm_cont()
   /*-------------------------------------- init the dirichlet-conditions -*/
   fluid_initdirich(actfield, disnum_calc, ipos);
 
-  /* we need two entries on the pressure discretization */
+  /* we need three entries on the pressure discretization */
   /*
    * sol_increment[0]  ... phi
-   * sol_increment[1]  ... press
+   * sol_increment[1]  ... press at (n+1)
+   * sol_increment[2]  ... press at (n)
    */
-  solserv_sol_zero(actfield,press_dis,node_array_sol_increment,1);
+  solserv_sol_zero(actfield,press_dis,node_array_sol_increment,2);
 
   solserv_sol_zero(actfield,press_dis,node_array_sol,0);
 
@@ -729,7 +730,7 @@ void fluid_pm_cont()
     {
 #else
 #endif
-    
+
     /*------------------------------------- start time step on the screen---*/
     if (fdyn->itnorm!=fncc_no && par.myrank==0)
     {
@@ -863,6 +864,7 @@ void fluid_pm_cont()
       converged = fluid_convcheck(vrat,0.,0.,itnum,te,ts);
 
       /*--------------------- check if nonlinear iteration has to be finished */
+      /* if (converged==0 && fdyn->iop!=timeint_theta_adamsbashforth) */
       if (converged==0)
       {
         itnum++;
@@ -896,7 +898,7 @@ void fluid_pm_cont()
       fprintf(allfiles.gidres,"END VALUES\n");
     }
 #endif
-    
+
     solserv_zero_vec(press_rhs);
     amzero(&frhs_a);
     amzero(&fgradprhs_a);
@@ -946,14 +948,14 @@ void fluid_pm_cont()
 #ifdef PM_ITERATION
     }}
 #else
-    
+
     /* update velocity */
     pm_vel_update(actfield, actpart, disnum_calc, actintra, ipos,
 		  &lmass, actsolv, actsysarray,
 		  frhs, fgradprhs);
 
 #endif
-    
+
 #if 1
     if (actintra->intra_rank==0)
     {
@@ -1160,23 +1162,39 @@ void fluid_pm_cont()
 
     /*------- copy solution from sol_increment[1][j] to sol_increment[0][j] */
     /*------- -> prev. solution becomes (n-1)-solution of next time step ---*/
-    solserv_sol_copy(actfield,0,node_array_sol_increment,
-                     node_array_sol_increment,ipos->veln,ipos->velnm);
+    solserv_sol_copy(actfield,0,
+		     node_array_sol_increment,
+                     node_array_sol_increment,
+		     ipos->veln,
+		     ipos->velnm);
 
     /* copy solution from sol_increment[velnp][j] to sol_increment[veln][j] */
     /*--- -> actual solution becomes previous solution of next time step ---*/
-    solserv_sol_copy(actfield,0,node_array_sol_increment,
-                     node_array_sol_increment,ipos->velnp,ipos->veln);
+    solserv_sol_copy(actfield,0,
+		     node_array_sol_increment,
+                     node_array_sol_increment,
+		     ipos->velnp,
+		     ipos->veln);
 
     /*-------- copy solution from sol_increment[ipos->velnp][j] to sol_[actpos][j] */
-    solserv_sol_copy(actfield,0,node_array_sol_increment,
-                     node_array_sol,ipos->veln,actpos);
+    solserv_sol_copy(actfield,0,
+		     node_array_sol_increment,
+                     node_array_sol,
+		     ipos->veln,
+		     actpos);
 
     solserv_sol_copy(actfield,press_dis,
 		     node_array_sol_increment,
                      node_array_sol,
 		     1,
 		     actpos);
+
+    /* save pressure at timestep beginning */
+    solserv_sol_copy(actfield,press_dis,
+		     node_array_sol_increment,
+                     node_array_sol_increment,
+		     1,
+		     2);
 
     /*---------------------------------------------- finalise this timestep */
     outstep++;

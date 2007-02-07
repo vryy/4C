@@ -275,7 +275,7 @@ void f3pro_calele(
   default:
     dserror("parameter is_ale not 0 or 1!\n");
   }
-    
+
 #ifdef QUASI_NEWTON
   if (fdyn->qnewton)
   {
@@ -344,7 +344,7 @@ void f3pro_caleleres(
 #ifdef QUASI_NEWTON
   dserror("QUASI_NEWTON hack not supported!");
 #endif
-  
+
 /*--------------------------------------------- initialise with ZERO ---*/
   amzero(eforce_global);
   *hasdirich=0;
@@ -411,14 +411,14 @@ void f3pro_calgradp(
   INT i;
   INT numpdof;
   INT       iel;		/* number of nodes                                */
-  INT       intc;		/* "integration case" for tri for further infos
+  INT       intc=0;		/* "integration case" for tri for further infos
 				   see f3_inpele.c and f3_intg.c                 */
-  INT       nir,nis,nit;	/* number of integration nodesin r,s,t direction  */
+  INT       nir=0,nis=0,nit=0;	/* number of integration nodesin r,s,t direction  */
   INT       ihoel=0;		/* flag for higher order elements                 */
   INT       icode=2;		/* flag for eveluation of shape functions         */
   INT       lr, ls, lt;		/* counter for integration                        */
   DOUBLE    fac;		/* total integration vactor                       */
-  DOUBLE    facr, facs, fact;	/* integration weights                            */
+  DOUBLE    facr=0, facs=0, fact=0;	/* integration weights                            */
   DOUBLE    det;		/* determinant of jacobian matrix at time (n+1)   */
   DOUBLE    e1,e2,e3;		/* natural coordinates of integr. point           */
   DIS_TYP   typ;		/* element type                                   */
@@ -664,14 +664,14 @@ void f3pro_calprhs(
   INT numpdof;
   INT velnp;
   INT       iel;		/* number of nodes                                */
-  INT       intc;		/* "integration case" for tri for further infos
+  INT       intc=0;		/* "integration case" for tri for further infos
 				   see f3_inpele.c and f3_intg.c                 */
-  INT       nir,nis,nit;	/* number of integration nodesin r,s,t direction  */
+  INT       nir=0,nis=0,nit=0;	/* number of integration nodesin r,s,t direction  */
   INT       ihoel=0;		/* flag for higher order elements                 */
   INT       icode=2;		/* flag for eveluation of shape functions         */
   INT       lr, ls, lt;		/* counter for integration                        */
   DOUBLE    fac;		/* total integration vactor                       */
-  DOUBLE    facr, facs, fact;	/* integration weights                            */
+  DOUBLE    facr=0, facs=0, fact=0;	/* integration weights                            */
   DOUBLE    det;		/* determinant of jacobian matrix at time (n+1)   */
   DOUBLE    e1,e2,e3;		/* natural coordinates of integr. point           */
   DIS_TYP   typ;		/* element type                                   */
@@ -870,14 +870,14 @@ void f3pro_calvrhs(ELEMENT* ele, ARRAY_POSITION *ipos)
   INT numpdof;
   INT velnp;
   INT       iel;        /* number of nodes                                */
-  INT       intc;       /* "integration case" for tri for further infos
+  INT       intc=0;       /* "integration case" for tri for further infos
                            see f2_inpele.c and f2_intg.c                 */
-  INT       nir,nis,nit;/* number of integration nodesin r,s direction    */
+  INT       nir=0,nis=0,nit=0;/* number of integration nodesin r,s direction    */
   INT       ihoel=0;    /* flag for higher order elements                 */
   INT       icode=2;    /* flag for eveluation of shape functions         */
   INT       lr, ls, lt; /* counter for integration                        */
   DOUBLE    fac;        /* total integration vactor                       */
-  DOUBLE    facr, facs, fact; /* integration weights                            */
+  DOUBLE    facr=0, facs=0, fact=0; /* integration weights                            */
   DOUBLE    det;        /* determinant of jacobian matrix at time (n+1)   */
   DOUBLE    e1,e2,e3;   /* natural coordinates of integr. point           */
   DIS_TYP   typ;        /* element type                                   */
@@ -1121,14 +1121,14 @@ void f3pro_calvelupdate(
   INT i;
   INT numpdof;
   INT       iel;		/* number of nodes                                */
-  INT       intc;		/* "integration case" for tri for further infos
+  INT       intc=0;		/* "integration case" for tri for further infos
 				   see f3_inpele.c and f3_intg.c                 */
-  INT       nir,nis,nit;	/* number of integration nodesin r,s,t direction  */
+  INT       nir=0,nis=0,nit=0;	/* number of integration nodesin r,s,t direction  */
   INT       ihoel=0;		/* flag for higher order elements                 */
   INT       icode=2;		/* flag for eveluation of shape functions         */
   INT       lr, ls, lt;		/* counter for integration                        */
   DOUBLE    fac;		/* total integration vactor                       */
-  DOUBLE    facr, facs, fact;	/* integration weights                            */
+  DOUBLE    facr=0, facs=0, fact=0;	/* integration weights                            */
   DOUBLE    det;		/* determinant of jacobian matrix at time (n+1)   */
   DOUBLE    e1,e2,e3;		/* natural coordinates of integr. point           */
   DIS_TYP   typ;		/* element type                                   */
@@ -1460,14 +1460,14 @@ void f3pro_calpress(ELEMENT* ele,
   INT i;
   INT numpdof;
   INT       iel;        /* number of nodes                                */
-  INT       intc;       /* "integration case" for tri for further infos
+  INT       intc=0;       /* "integration case" for tri for further infos
                            see f2_inpele.c and f2_intg.c                 */
-  INT       nir,nis,nit;/* number of integration nodesin r,s direction    */
+  INT       nir=0,nis=0,nit=0;/* number of integration nodesin r,s direction    */
   INT       ihoel=0;    /* flag for higher order elements                 */
   INT       icode=2;    /* flag for eveluation of shape functions         */
   INT       lr,ls,lt;   /* counter for integration                        */
   DOUBLE    fac;        /* total integration vactor                       */
-  DOUBLE    facr, facs, fact; /* integration weights                            */
+  DOUBLE    facr=0, facs=0, fact=0; /* integration weights                            */
   DOUBLE    det;        /* determinant of jacobian matrix at time (n+1)   */
   DOUBLE    e1,e2,e3;   /* natural coordinates of integr. point           */
   DIS_TYP   typ;        /* element type                                   */

@@ -101,15 +101,15 @@ void f2is_int_usfem(
 {
   INT       i;          /* a couter                                       */
   INT       iel;        /* number of nodes                                */
-  INT       intc;       /* "integration case" for tri for further infos
+  INT       intc=0;       /* "integration case" for tri for further infos
 			   see f2_inpele.c and f2_intg.c                 */
-  INT       nir,nis;    /* number of integration nodesin r,s direction    */
+  INT       nir=0,nis=0;    /* number of integration nodesin r,s direction    */
   INT       ihoel=0;    /* flag for higher order elements                 */
   INT       icode=2;    /* flag for eveluation of shape functions         */
   INT       lr, ls;     /* counter for integration                        */
   INT       is_ale;
   DOUBLE    fac;        /* total integration vactor                       */
-  DOUBLE    facr, facs; /* integration weights                            */
+  DOUBLE    facr=0, facs=0; /* integration weights                            */
   DOUBLE    det;        /* determinant of jacobian matrix at time (n+1)   */
   DOUBLE    e1,e2;      /* natural coordinates of integr. point           */
   DOUBLE    gradp[2];   /* pressure gradient at integration point         */
@@ -331,16 +331,16 @@ void f2is_int_res(
 {
   INT       i;          /* a couter                                       */
   INT       iel;        /* number of nodes                                */
-  INT       intc;       /* "integration case" for tri for further infos
+  INT       intc=0;       /* "integration case" for tri for further infos
 			   see f2_inpele.c and f2_intg.c                 */
   INT       is_ale;     /* ALE or Euler element flag                      */
-  INT       nir,nis;    /* number of integration nodesin r,s direction    */
+  INT       nir=0,nis=0;    /* number of integration nodesin r,s direction    */
   INT       ihoel=0;    /* flag for higher order elements                 */
   INT       icode=2;    /* flag for eveluation of shape functions         */
   INT       lr, ls;     /* counter for integration                        */
 
   DOUBLE    fac;        /* total integration vactor                       */
-  DOUBLE    facr, facs; /* integration weights                            */
+  DOUBLE    facr=0, facs=0; /* integration weights                            */
   DOUBLE    det;        /* determinant of jacobian matrix                 */
   DOUBLE    e1,e2;      /* natural coordinates of integr. point           */
   DOUBLE    velint[2];  /* velocity vector at integration point           */
@@ -482,7 +482,7 @@ void f2is_int_res(
   {
     force[i] /= fdyn->thsl;
   }
-  
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_exit();
