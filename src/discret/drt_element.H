@@ -74,7 +74,8 @@ public:
     element_shell8,
     element_elementvolume,
     element_elementsurface,
-    element_elementline
+    element_elementline,
+    element_shell8line
   };
 
 
@@ -189,19 +190,19 @@ public:
   \brief Get vector of ptrs to the lines of this element
   
   */
-  virtual ElementLine** Lines() { return NULL; }
+  virtual Element** Lines() { return NULL; }
 
   /*!
   \brief Get vector of ptrs to the surfaces of this element
   
   */
-  virtual ElementSurface** Surfaces() { return NULL; }
+  virtual Element** Surfaces() { return NULL; }
 
   /*!
   \brief Get vector of ptrs to the volumes of this element
   
   */
-  virtual ElementVolume** Volumes() { return NULL; }
+  virtual Element** Volumes() { return NULL; }
 
   /*!
   \brief Get number of degrees of freedom of a certain node
@@ -357,26 +358,28 @@ public:
   /*!
   \brief Evaluate an element
   
-  This class implements a dummy of this method that prints a warning and
-  returns false.
+  \note This class implements a dummy of this method that prints a warning and
+        returns false.
   
-  \param params (in/out): ParameterList for communication between control routine
-                          and elements
-  \param elemat1 (out)  : matrix to be filled by element. If NULL on input, 
-                          the controling method does not epxect the element to fill
-                          this matrix.
-  \param elemat2 (out)  : matrix to be filled by element. If NULL on input, 
-                          the controling method does not epxect the element to fill
-                          this matrix.
-  \param elevec1 (out)  : vector to be filled by element. If NULL on input, 
-                          the controlling method does not epxect the element
-                          to fill this vector 
-  \param elevec2 (out)  : vector to be filled by element. If NULL on input, 
-                          the controlling method does not epxect the element
-                          to fill this vector 
-  \param elevec3 (out)  : vector to be filled by element. If NULL on input, 
-                          the controlling method does not epxect the element
-                          to fill this vector 
+  \param params (in/out)    : ParameterList for communication between control routine
+                              and elements
+  \param discretization (in): A reference to the undelrying discretization
+  \param lm (in)            : location vector of this element
+  \param elemat1 (out)      : matrix to be filled by element. If NULL on input, 
+                              the controling method does not epxect the element to fill
+                              this matrix.
+  \param elemat2 (out)      : matrix to be filled by element. If NULL on input, 
+                              the controling method does not epxect the element to fill
+                              this matrix.
+  \param elevec1 (out)      : vector to be filled by element. If NULL on input, 
+                              the controlling method does not epxect the element
+                              to fill this vector 
+  \param elevec2 (out)      : vector to be filled by element. If NULL on input, 
+                              the controlling method does not epxect the element
+                              to fill this vector 
+  \param elevec3 (out)      : vector to be filled by element. If NULL on input, 
+                              the controlling method does not epxect the element
+                              to fill this vector 
   \return 0 if successful, negative otherwise
   */
   virtual int Evaluate(ParameterList& params, 
@@ -388,6 +391,26 @@ public:
                        Epetra_SerialDenseVector& elevec2,
                        Epetra_SerialDenseVector& elevec3);
   
+  /*!
+  \brief Evaluate a Neumann boundary condition
+  
+  \note This class implements a dummy of this method that prints a warning and
+        returns false.
+  
+  \param params (in/out)    : ParameterList for communication between control routine
+                              and elements
+  \param discretization (in): A reference to the underlying discretization
+  \param condition (in)     : The condition to be evaluated
+  \param lm (in)            : location vector of this element
+  \param elevec1 (out)      : vector to be filled by element. If NULL on input, 
+
+  \return 0 if successful, negative otherwise
+  */
+  virtual int EvaluateNeumann(ParameterList& params, 
+                              DRT::Discretization&      discretization,
+                              DRT::Condition&           condition,
+                              vector<int>&              lm,
+                              Epetra_SerialDenseVector& elevec1);
 
 
   //@}

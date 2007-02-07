@@ -27,6 +27,7 @@ using namespace Teuchos;
 
 #include "drt_element.H"
 #include "drt_elementregister.H"
+#include "drt_node.H"
 
 
 // forward declarations
@@ -45,6 +46,8 @@ class Shell8Register;
 
 namespace Elements
 {
+// forward declarations
+class Shell8Line;
 
 /*!
 \class Shell8
@@ -61,6 +64,10 @@ public:
   \brief Shell8Register is a friend of Shell8
   */
   friend class Shell8Register;
+  /*!
+  \brief Shell8Line is a friend of Shell8
+  */
+  friend class Shell8Line;
 
   // @{ \name Constructors and destructors
 
@@ -103,13 +110,13 @@ public:
   \brief Get vector of ptrs to the lines of this element
   
   */
-  virtual DRT::ElementLine** Lines();
+  virtual DRT::Element** Lines();
 
   /*!
   \brief Get vector of ptrs to the surfaces of this element
   
   */
-  virtual DRT::ElementSurface** Surfaces();
+  virtual DRT::Element** Surfaces();
 
   /*!
   \brief Return unique ParObject id
@@ -196,7 +203,7 @@ public:
   /*!
   \brief Evaluate an element
   
-  Evaluate shell8 element stuffness, mass, internal forces etc
+  Evaluate shell8 element stiffness, mass, internal forces etc
   
   \param params (in/out): ParameterList for communication between control routine
                           and elements
@@ -226,6 +233,26 @@ public:
                Epetra_SerialDenseVector& elevec2,
                Epetra_SerialDenseVector& elevec3);
 
+
+  /*!
+  \brief Evaluate a Neumann boundary condition
+  
+  this method evaluates a surfaces Neumann condition on the shell element
+  
+  \param params (in/out)    : ParameterList for communication between control routine
+                              and elements
+  \param discretization (in): A reference to the underlying discretization
+  \param condition (in)     : The condition to be evaluated
+  \param lm (in)            : location vector of this element
+  \param elevec1 (out)      : vector to be filled by element. If NULL on input, 
+
+  \return 0 if successful, negative otherwise
+  */
+  virtual int EvaluateNeumann(ParameterList& params, 
+                              DRT::Discretization&      discretization,
+                              DRT::Condition&           condition,
+                              vector<int>&              lm,
+                              Epetra_SerialDenseVector& elevec1);
   //@}
 
 
@@ -253,20 +280,19 @@ private:
     s8_rst,
     s8_rst_ortho
   };
-  ForceType                                 forcetype_; // type of force calculation
-  double                                    thickness_; // shell thickness
-  int                                       ngp_[3];    // no. gaussian points in each spatial dimension
-  int                                       ngptri_;    // no. gaussian points for triangle elements
-  int                                       nhyb_;      // no. of internal dofs
-  int                                       eas_[5];    // eas parameters
-  int                                       ans_;       // type of ANS: 0=none 1=Q 2=T 3=QT  
-  double                                    sdc_;       // scaled director conditioning
-  int                                       material_;  // number of the material law
-  DRT::Container                            data_;      // container containing all kind of shell8 data
-  vector<RefCountPtr<DRT::ElementSurface> > surfs_;     // vector of surfaces adjacent to this element (shell8: 1 surface)
-  vector<DRT::ElementSurface*>              surfptrs_;
-  vector<RefCountPtr<DRT::ElementLine> >    lines_;     // vector of lines adjacent to this element (shell8: 3 or 4 lines)
-  vector<DRT::ElementLine*>                 lineptrs_;
+  ForceType                                       forcetype_; // type of force calculation
+  double                                          thickness_; // shell thickness
+  int                                             ngp_[3];    // no. gaussian points in each spatial dimension
+  int                                             ngptri_;    // no. gaussian points for triangle elements
+  int                                             nhyb_;      // no. of internal dofs
+  int                                             eas_[5];    // eas parameters
+  int                                             ans_;       // type of ANS: 0=none 1=Q 2=T 3=QT  
+  double                                          sdc_;       // scaled director conditioning
+  int                                             material_;  // number of the material law
+  DRT::Container                                  data_;      // container containing all kind of shell8 data
+  vector<DRT::Element*>                           surfaces_;  // vector of surfaces of this element (length 1)
+  vector<RefCountPtr<DRT::Elements::Shell8Line> > lines_;     // vector of lines adjacent to this element (shell8: 3 or 4 lines)
+  vector<DRT::Elements::Shell8Line*>              lineptrs_;
   
   // internal calculation methods
 
@@ -604,14 +630,168 @@ public:
 private:
 
 
-
-
-
 }; // class Shell8Register
 
 
+//=======================================================================
+//=======================================================================
+//=======================================================================
+//=======================================================================
 
 
+/*!
+\class Shell8Line
+
+\brief An element representing a line edge of a shell8 element
+
+\author gee (gee@lnm.mw.tum.de)
+*/
+class Shell8Line : public DRT::Element
+{
+public:
+
+  // @{ \name Constructors and destructors
+
+  /*!
+  \brief Standard Constructor
+  
+  \param id : A unique global id
+  \param owner: Processor owning this line
+  \param nnode: Number of nodes attached to this element
+  \param nodeids: global ids of nodes attached to this element
+  \param nodes: the discretizations map of nodes to build ptrs to nodes from
+  \param parent: The parent shell element of this line
+  \param lline: the local line number of this line w.r.t. the parent element
+  */
+  Shell8Line(int id, int owner, int nnode, const int* nodeids,
+             DRT::Node** nodes, DRT::Elements::Shell8* parent, const int lline);
+
+  /*!
+  \brief Copy Constructor
+
+  Makes a deep copy of a Element
+  
+  */
+  Shell8Line(const Shell8Line& old);
+
+  /*!
+  \brief Deep copy this instance of an element and return pointer to the copy
+  
+  The Clone() method is used from the virtual base class Element in cases
+  where the type of the derived class is unknown and a copy-ctor is needed
+  
+  */
+  DRT::Element* Clone() const;
+
+  /*!
+  \brief Return unique ParObject id
+  
+  every class implementing ParObject needs a unique id defined at the
+  top of the drt_parobject.H file.
+  */
+  virtual int UniqueParObjectId() const { return ParObject_Shell8Line;}
+
+  /*!
+  \brief Pack this class so it can be communicated
+  
+  \ref Pack and \ref Unpack are used to communicate this element
+  
+  */
+  virtual const char* Pack(int& size) const;
+
+  /*!
+  \brief Unpack data from a char vector into this class
+  
+  \ref Pack and \ref Unpack are used to communicate this element
+
+  */
+  virtual bool Unpack(const char* data);
+
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~Shell8Line();
+
+  //@}
+
+  // @{ \name Acess methods
+
+  
+  /*!
+  \brief Get number of degrees of freedom of a certain node
+         (implements pure virtual DRT::Element)
+  
+  The element decides how many degrees of freedom its nodes must have.
+  As this may vary along a simulation, the element can redecide the
+  number of degrees of freedom per node along the way for each of it's nodes
+  separately.
+  */
+  virtual int NumDofPerNode(const DRT::Node& node) const 
+  {return node.Dof().NumDof();}
+
+  /*!
+  \brief Get number of degrees of freedom per element
+         (implements pure virtual DRT::Element)
+  
+  The element decides how many element degrees of freedom it has.
+  It can redecide along the way of a simulation.
+  
+  \note Element degrees of freedom mentioned here are dofs that are visible
+        at the level of the total system of equations. Purely internal
+        element dofs that are condensed internally should NOT be considered.
+  */
+  virtual int NumDofPerElement() const { return 0; }
+
+  /*!
+  \brief Print this element
+  */
+  void Print(ostream& os) const;
+
+  /*!
+  \brief Allocate and return a ElementRegister class
+  
+  Every implementation of DRT::Element must also implement
+  an DRT::ElementRegister. This method allocates and returns
+  an instance of a matching DRT::ElementRegister.
+  */
+  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const { return null; }
+
+  //@}
+
+  // @{ \name Evaluate methods
+
+  /*!
+  \brief Evaluate a Neumann boundary condition
+  
+  this method evaluates a line Neumann condition on the shell element
+  
+  \param params (in/out)    : ParameterList for communication between control routine
+                              and elements
+  \param discretization (in): A reference to the underlying discretization
+  \param condition (in)     : The condition to be evaluated
+  \param lm (in)            : location vector of this element
+  \param elevec1 (out)      : vector to be filled by element. If NULL on input, 
+
+  \return 0 if successful, negative otherwise
+  */
+  virtual int EvaluateNeumann(ParameterList& params, 
+                              DRT::Discretization&      discretization,
+                              DRT::Condition&           condition,
+                              vector<int>&              lm,
+                              Epetra_SerialDenseVector& elevec1);
+
+  //@}
+
+private:
+
+  // don't want = operator
+  Shell8Line operator = (const Shell8Line& old);
+  
+  DRT::Elements::Shell8* parent_;  // The parent element of this line
+  int                    lline_;   // The local line number of this line w.r.t to the parent_ element
+
+}; // class Shell8Line
 
 
 

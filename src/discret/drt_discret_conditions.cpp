@@ -16,9 +16,6 @@ Maintainer: Michael Gee
 #include "drt_discret.H"
 #include "drt_exporter.H"
 #include "drt_dserror.H"
-#include "drt_elementline.H"
-#include "drt_elementsurface.H"
-#include "drt_elementvolume.H"
 
 
 
@@ -60,50 +57,28 @@ void DRT::Discretization::BoundaryConditionsGeometry()
     }
   }
 
-  // For point neumann conditions, we do nothing
-#if 0  
-  // we just set a ptr in the nodes of the condition
-  for (fool=condition_.begin(); fool != condition_.end(); ++fool)
-  {
-    if (fool->first != (string)"PointNeumann") continue;
-    const vector<int>* nodes = fool->second->GetVector<int>("Node Ids");
-    int nnode = nodes->size();
-    for (int i=0; i<nnode; ++i)
-    {
-      if (!NodeColMap()->MyGID((*nodes)[i])) continue;
-      DRT::Node* actnode = gNode((*nodes)[i]);
-      if (!actnode) dserror("Cannot find global node");
-      actnode->SetCondition(fool->first,fool->second);
-    }
-  }
-#endif  
+  // Note that we intentionally do nothing at all for point Neumann BCs here
 
   // For line neumann conditions, we take the nodal cloud
   // and build all lines connecting the nodal cloud using
   // the elements attached to these lines
   for (fool=condition_.begin(); fool != condition_.end(); ++fool)
-  {
-    if (fool->first != (string)"LineNeumann") continue;
-    BuildLinesinCondition(fool->first,fool->second);
-  }
+    if (fool->first == (string)"LineNeumann")
+      BuildLinesinCondition(fool->first,fool->second);
   
   // for surface neumann conditions, we take the nodal cloud
   // and build all surfaces connecting the nodal cloud using
   // the elements attached to these surfaces
   for (fool=condition_.begin(); fool != condition_.end(); ++fool)
-  {
-    if (fool->first != (string)"SurfaceNeumann") continue;
-    BuildSurfacesinCondition(fool->first,fool->second);
-  }
+    if (fool->first == (string)"SurfaceNeumann")
+      BuildSurfacesinCondition(fool->first,fool->second);
   
   // for volume neumann conditions, we take the nodal cloud
   // and build all volumes connecting the nodal cloud using
   // the elements attached to these volumes
   for (fool=condition_.begin(); fool != condition_.end(); ++fool)
-  {
-    if (fool->first != (string)"VolumeNeumann") continue;
-    BuildVolumesinCondition(fool->first,fool->second);
-  }
+    if (fool->first == (string)"VolumeNeumann")
+      BuildVolumesinCondition(fool->first,fool->second);
 
   return;
 }
@@ -162,11 +137,11 @@ void DRT::Discretization::BuildLinesinCondition(
       // loop all lines of all elements attached to actnode
       const int numlines = elements[i]->NumLine();
       if (!numlines) continue;
-      DRT::ElementLine** lines = elements[i]->Lines();
+      DRT::Element** lines = elements[i]->Lines();
       if (!lines) dserror("Element returned no lines");
       for (int j=0; j<numlines; ++j)
       {
-        DRT::ElementLine* actline = lines[j];
+        DRT::Element* actline = lines[j];
         // find lines that are attached to actnode
         const int nnodeperline   = actline->NumNode();
         DRT::Node** nodesperline = actline->Nodes();
@@ -321,11 +296,11 @@ void DRT::Discretization::BuildSurfacesinCondition(
       // loop all surfaces of all elements attached to actnode
       const int numsurfs = elements[i]->NumSurface();
       if (!numsurfs) continue;
-      DRT::ElementSurface** surfs = elements[i]->Surfaces();
+      DRT::Element** surfs = elements[i]->Surfaces();
       if (!surfs) dserror("Element does not return any surfaces");
       for (int j=0; j<numsurfs; ++j)
       {
-        DRT::ElementSurface* actsurf = surfs[j];
+        DRT::Element* actsurf = surfs[j];
         // find surfs attached to actnode
         const int nnodepersurf = actsurf->NumNode();
         DRT::Node** nodespersurf = actsurf->Nodes();
@@ -481,11 +456,11 @@ void DRT::Discretization::BuildVolumesinCondition(
       // loop all volumes of all elements attached to actnode
       const int numvols = elements[i]->NumVolume();
       if (!numvols) continue;
-      DRT::ElementVolume** volumes = elements[i]->Volumes();
+      DRT::Element** volumes = elements[i]->Volumes();
       if (!volumes) dserror("Element returned no volumes");
       for (int j=0; j<numvols; ++j)
       {
-        DRT::ElementVolume* actvol = volumes[j];
+        DRT::Element* actvol = volumes[j];
         // find volumes that are attached to actnode
         const int nnodepervol   = actvol->NumNode();
         DRT::Node** nodespervol = actvol->Nodes();

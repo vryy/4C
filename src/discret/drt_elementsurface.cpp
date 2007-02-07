@@ -14,6 +14,9 @@ Maintainer: Michael Gee
 #ifdef TRILINOS_PACKAGE
 
 #include "drt_elementsurface.H"
+#include "drt_discret.H"
+#include "drt_utils.H"
+#include "linalg_utils.H"
 #include "drt_dserror.H"
 
 
@@ -159,15 +162,140 @@ RefCountPtr<DRT::ElementRegister> DRT::ElementSurface::ElementRegister() const
 /*----------------------------------------------------------------------*
  |  Integrate a Surface Neumann boundary condition (public)  mwgee 01/07|
  *----------------------------------------------------------------------*/
-void DRT::ElementSurface::SurfaceLoad(ParameterList& params,
-                                      Epetra_SerialDenseVector& elevec1,
-                                      const vector<double>& disp,
-                                      const vector<int>& lm)
+int DRT::ElementSurface::EvaluateNeumann(ParameterList& params, 
+                                         DRT::Discretization&      discretization,
+                                         DRT::Condition&           condition,
+                                         vector<int>&              lm,
+                                         Epetra_SerialDenseVector& elevec1)
 {
+  RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+  if (disp==null) dserror("Cannot get state vector 'displacement'");
+  vector<double> mydisp(lm.size());
+  DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
   
-  return;
+  // find out whether we will use a time curve
+  bool usetime = true;
+  const double time = params.get("total time",-1.0);
+  if (time<0.0) usetime = false;
+
+  // no. of nodes on this surface
+  const int nnode = NumNode();
+  if (nnode==3 || nnode==6) dserror("triangles not yet impl.");
+
+  // decide how many gaussian points to use
+  // here, 8 or 9 noded surface uses 3x3 integration
+  // 4 noded surface uses 2x2 integration
+  // 3 or 6 noded surface uses 1 or 3 gaussian points
+  double xgpr[3];
+  double wgtr[3];
+  double xgps[3];
+  double wgts[3];
+  int    ngp;
+  GaussianPoints(nnode,ngp,xgpr,wgtr,xgps,wgts);
+  
+  // find out how many degrees of freedom we have per node
+  int numdf = 1000;
+  for (int i=0; i<NumNode(); ++i)
+    numdf = min(numdf,Nodes()[i]->Dof().NumDof());
+  
+    
+  
+  
+  return 0;
 }
 
+/*----------------------------------------------------------------------*
+ |  Integrate a Surface Neumann boundary condition (public)  mwgee 01/07|
+ *----------------------------------------------------------------------*/
+void DRT::ElementSurface::GaussianPoints(const int nnode,
+                                         int&   ngp,
+                                         double xgpr[],
+                                         double wgtr[],
+                                         double xgps[],
+                                         double wgts[])
+{
+  const double invsqrtthree = 1./sqrt(3.);
+  const double sqrtthreeinvfive = sqrt(3./5.);
+  const double wgt  = 5.0/9.0;
+  const double wgt0 = 8.0/9.0;
+  
+  switch (nnode)
+  {
+  case 4:
+    ngp = 2;
+    xgpr[0] = -invsqrtthree;
+    xgpr[1] =  invsqrtthree;
+    xgpr[2] =  0.0;
+    wgtr[0] =  1.0;
+    wgtr[1] =  1.0;
+    wgtr[2] =  0.0;
+    xgps[0] = -invsqrtthree;
+    xgps[1] =  invsqrtthree;
+    xgps[2] =  0.0;
+    wgts[0] =  1.0;
+    wgts[1] =  1.0;
+    wgts[2] =  0.0;
+  break;
+  case 8:
+  case 9:
+    ngp = 3;
+    xgpr[0] = -sqrtthreeinvfive;
+    xgpr[1] =  0.0;
+    xgpr[2] =  sqrtthreeinvfive;
+    wgtr[0] =  wgt;
+    wgtr[1] =  wgt0;
+    wgtr[2] =  wgt;
+    xgps[0] = -sqrtthreeinvfive;
+    xgps[1] =  0.0;
+    xgps[2] =  sqrtthreeinvfive;
+    wgts[0] =  wgt;
+    wgts[1] =  wgt0;
+    wgts[2] =  wgt;
+  break;
+  case 3:
+  {
+    ngp = 1;
+    const double third = 1.0/3.0;
+    xgpr[0] =  third;
+    xgpr[1] =  0.0;
+    xgpr[2] =  0.0;
+    xgps[0] =  third;
+    xgps[1] =  0.0;
+    xgps[2] =  0.0;
+    wgtr[0] =  0.5;
+    wgtr[1] =  0.0;
+    wgtr[2] =  0.0;
+    wgts[0] =  0.5;
+    wgts[1] =  0.0;
+    wgts[2] =  0.0;
+  }
+  break;
+  case 6:
+  {
+    ngp = 3;
+    const double wgt = 1.0/6.0;
+    xgpr[0] =  0.5;
+    xgpr[1] =  0.5;
+    xgpr[2] =  0.0;
+    xgps[0] =  0.0;
+    xgps[1] =  0.5;
+    xgps[2] =  0.5;
+    wgtr[0] =  wgt;
+    wgtr[1] =  wgt;
+    wgtr[2] =  wgt;
+    wgts[0] =  wgt;
+    wgts[1] =  wgt;
+    wgts[2] =  wgt;
+  }
+  break;
+  default:
+    dserror("Unknown number of nodes");
+  break;
+  }
+  
+    
+  return;
+}
 
 
 #endif  // #ifdef TRILINOS_PACKAGE

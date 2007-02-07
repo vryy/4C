@@ -118,88 +118,76 @@ void DRT::Discretization::EvaluateNeumann(ParameterList& params, Epetra_Vector& 
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
   systemvector.PutScalar(0.0);
   
-#if 0 // not sure whether we will need this
-  // loop through column nodes and set flags indicating whether Neumann
-  // condition was already evaluated to false
-  for (int i=0; i<NumMyColNodes(); ++i)
-  {
-    DRT::Node* actnode = lColNode(i);
-    // get the Neumann conditions and set evaluated flag to false
-    const int zero = 0;
-    vector<DRT::Condition*> conds;
-    actnode->GetCondition("PointNeumann",conds);
-    for (int j=0; j<(int)conds.size(); ++j)
-      conds[j]->Add("isevaluated",&zero,1);
-    actnode->GetCondition("LineNeumann",conds);
-    for (int j=0; j<(int)conds.size(); ++j)
-      conds[j]->Add("isevaluated",&zero,1);
-    actnode->GetCondition("SurfaceNeumann",conds);
-    for (int j=0; j<(int)conds.size(); ++j)
-      conds[j]->Add("isevaluated",&zero,1);
-    actnode->GetCondition("VolumeNeumann",conds);
-    for (int j=0; j<(int)conds.size(); ++j)
-      conds[j]->Add("isevaluated",&zero,1);
-  } // for (int i=0; i<NumMyColNodes(); ++i)
-#endif
-
   // get the current time
   bool usetime = true;
   const double time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
 
+  multimap<string,RefCountPtr<Condition> >::iterator fool;
   //--------------------------------------------------------
   // loop through Point Neumann conditions and evaluate them
   //--------------------------------------------------------
-  multimap<string,RefCountPtr<Condition> >::iterator fool;
   for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
   {
     if (fool->first != (string)"PointNeumann") continue;
-    cout << *(fool->second);
-  }
-
-#if 0
-  for (int i=0; i<NumMyRowNodes(); ++i)
-  {
-    DRT::Node* actnode = lRowNode(i);
-    vector<DRT::Condition*> conds;
-    actnode->GetCondition("PointNeumann",conds);
-    const int numcond = (int)conds.size();
-    if (!numcond) continue;
-    const int numdf = actnode->Dof().NumDof();
-    const int* dofs = actnode->Dof().Dofs();
-    for (int j=0; j<numcond; ++j)
-    {
-      vector<int>*    curve  = conds[j]->GetVector<int>("curve");
-      vector<int>*    onoff  = conds[j]->GetVector<int>("onoff");
-      vector<double>* val    = conds[j]->GetVector<double>("val");
-      // Neumann BCs for some historic reason only have one curve
-      int curvenum = -1;
-      if (curve) curvenum = (*curve)[0]; 
-      double curvefac = 1.0;
+    DRT::Condition& cond = *(fool->second);
+    const vector<int>* nodeids = cond.GetVector<int>("Node Ids");
+    if (!nodeids) dserror("PointNeumann condition does not have nodal cloud");
+    const int nnode = (*nodeids).size();
+    vector<int>*    curve  = cond.GetVector<int>("curve");
+    vector<int>*    onoff  = cond.GetVector<int>("onoff");
+    vector<double>* val    = cond.GetVector<double>("val");
+    // Neumann BCs for some historic reason only have one curve
+    int curvenum = -1;
+    if (curve) curvenum = (*curve)[0]; 
+    double curvefac = 1.0;
       if (curvenum>=0 && usetime)
         dyn_facfromcurve(curvenum,time,&curvefac); 
-      for (int k=0; k<numdf; ++k)
+    for (int i=0; i<nnode; ++i)
+    {
+      // do only nodes in my row map
+      if (!NodeRowMap()->MyGID((*nodeids)[i])) continue;
+      DRT::Node* actnode = gNode((*nodeids)[i]);
+      if (!actnode) dserror("Cannot find global node %d",(*nodeids)[i]);
+      const int  numdf = actnode->Dof().NumDof();
+      const int* dofs  = actnode->Dof().Dofs();
+      for (int j=0; j<numdf; ++j)
       {
-        if ((*onoff)[k]==0) continue;
-        const int gid   = dofs[k];
-        double    value = (*val)[k];
+        if ((*onoff)[j]==0) continue;
+        const int gid = dofs[j];
+        double value  = (*val)[j];
         value *= curvefac;
-        int lid = systemvector.Map().LID(gid);
+        const int lid = systemvector.Map().LID(gid);
+        if (lid<0) dserror("Global id %d not on this proc in system vector",gid);
         systemvector[lid] += value;
       }
     }
-  } // for (int i=0; i<NumMyRowNodes(); ++i)   
-#endif
-
+  }
   //--------------------------------------------------------
-  // evaluate line/surface/volume-Neumann conditions
+  // loop through line/surface/volume Neumann BCs and evaluate them
   //--------------------------------------------------------
-  
-
-  cout << systemvector;
-  exit(0);
-
-
+  for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
+    if (fool->first == (string)"LineNeumann" ||
+        fool->first == (string)"SurfaceNeumann" ||
+        fool->first == (string)"VolumeNeumann"
+       )
+    {
+    DRT::Condition& cond = *(fool->second);
+    map<int,RefCountPtr<DRT::Element> >& geom = cond.Geometry();
+    map<int,RefCountPtr<DRT::Element> >::iterator curr;
+    Epetra_SerialDenseVector elevector;
+    for (curr=geom.begin(); curr!=geom.end(); ++curr)
+    {
+      // get element location vector, dirichlet flags and ownerships
+      vector<int> lm;
+      vector<int> lmdirich;
+      vector<int> lmowner;
+      curr->second->LocationVector(lm,lmdirich,lmowner);
+      elevector.Size((int)lm.size());
+      curr->second->EvaluateNeumann(params,*this,cond,lm,elevector);
+      LINALG::Assemble(systemvector,elevector,lm,lmowner);
+    }
+    }
   return;
 }
 

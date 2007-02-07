@@ -168,6 +168,12 @@ public:
   */
   virtual void ClearGeometry() { geometry_.clear(); return; }
 
+  /*!
+  \brief Get a reference to the geometry description of the condition
+  
+  */
+  virtual map<int,RefCountPtr<DRT::Element> >& Geometry() { return geometry_; }
+
   //@}
 
 protected:

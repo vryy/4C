@@ -415,6 +415,20 @@ int DRT::Element::Evaluate(ParameterList& params,
   return -1;
 }
 
+/*----------------------------------------------------------------------*
+ |  evaluate Neumann BC dummy (public)                       mwgee 01/07|
+ *----------------------------------------------------------------------*/
+int DRT::Element::EvaluateNeumann(ParameterList& params, 
+                                  DRT::Discretization&      discretization,
+                                  DRT::Condition&           condition,
+                                  vector<int>&              lm,
+                                  Epetra_SerialDenseVector& elevec1)
+{
+  cout << "DRT::Element::EvaluateNeumann:\n"
+       << "Base class dummy routine DRT::Element::EvaluateNeumann(...) called\n"
+       << __FILE__ << ":" << __LINE__ << endl;
+  return -1;
+}
 
 
 

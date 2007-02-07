@@ -153,13 +153,24 @@ public:
   virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const;
 
   /*!
-  \brief Integrate a Surface Neumann boundary condition
+  \brief Evaluate a Neumann boundary condition
   
+  \note This class implements a general evaluation of a Neumann BC
+  
+  \param params (in/out)    : ParameterList for communication between control routine
+                              and elements
+  \param discretization (in): A reference to the underlying discretization
+  \param condition (in)     : The condition to be evaluated
+  \param lm (in)            : location vector of this element
+  \param elevec1 (out)      : vector to be filled by element. If NULL on input, 
+
+  \return 0 if successful, negative otherwise
   */
-  void SurfaceLoad(ParameterList& params,
-                   Epetra_SerialDenseVector& elevec1,
-                   const vector<double>& disp,
-                   const vector<int>& lm);
+  virtual int EvaluateNeumann(ParameterList& params, 
+                              DRT::Discretization&      discretization,
+                              DRT::Condition&           condition,
+                              vector<int>&              lm,
+                              Epetra_SerialDenseVector& elevec1);
   //@}
 
 
@@ -168,6 +179,16 @@ private:
   // don't want = operator
   ElementSurface operator = (const ElementSurface& old);
   
+  /*!
+  \brief Compute coords and weights of gaussian points
+  
+  */
+  virtual void GaussianPoints(const int nnode,
+                              int&   ngp,
+                              double xgpr[],
+                              double wgtr[],
+                              double xgps[],
+                              double wgts[]);
 
 }; // class ElementSurface
 } // namespace DRT

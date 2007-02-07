@@ -141,8 +141,6 @@ void input_conditions()
   vector<RefCountPtr<DRT::Discretization> >* discretization = 
     (vector<RefCountPtr<DRT::Discretization> >*)field[0].ccadis;
   RefCountPtr<DRT::Discretization> actdis = (*discretization)[0];
-  const int myrank  = actdis->Comm().MyPID();
-  const int numproc = actdis->Comm().NumProc(); 
   //--------------------------------------------- read generic node sets
   // read design nodes <-> nodes
   vector<int> ndnode_fenode(ndnode);
@@ -368,8 +366,6 @@ void add_nodeids_to_condition(const int id, RefCountPtr<DRT::Condition> cond,
 {
   DSTraceHelper dst("add_nodeids_to_condition");
   
-  // number of finite element nodes in this node set
-  const int nnode = nd_fenode[id];
   // vector of finite element node ids in this node set
   const vector<int>& nodes = d_fenode[id];
   
