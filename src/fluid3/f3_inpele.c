@@ -354,9 +354,9 @@ void f3_createale(
       }
 
       ele1->mat            = 1;
-      ele1->e.ale3->nGP[0] = 2;
-      ele1->e.ale3->nGP[1] = 2;
-      ele1->e.ale3->nGP[2] = 2;
+      ele1->e.ale3->nGP[0] = 3;
+      ele1->e.ale3->nGP[1] = 3;
+      ele1->e.ale3->nGP[2] = 3;
       ele1->e.ale3->jacobi = 0;
       ele1->e.ale3->hex20_red = 1;
       break;
