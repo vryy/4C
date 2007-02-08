@@ -27,6 +27,7 @@ Maintainer: Michael Gee
 #include "Teuchos_RefCountPtr.hpp"
 #include "drt_discret.H"
 #include "linalg_utils.H"
+#include "linalg_solver.H"
 
 extern "C" /* stuff which is c and is accessed from c++ */
 {

@@ -79,11 +79,14 @@ ostream& operator << (ostream& os, const DRT::Condition& cond)
 void DRT::Condition::Print(ostream& os) const
 {
   os << "Condition " << Id() << " ";
-  if (Type()==Dirichlet)  os << "Dirichlet boundary condition: ";
-  else if (Type()==PointNeumann) os << "Point Neumann boundary condition: ";
-  else if (Type()==LineNeumann) os << "Line Neumann boundary condition: ";
-  else if (Type()==SurfaceNeumann) os << "Surface Neumann boundary condition: ";
-  else if (Type()==VolumeNeumann) os << "Volume Neumann boundary condition: ";
+  if      (Type()==PointDirichlet)   os << "Point Dirichlet boundary condition: ";
+  else if (Type()==LineDirichlet)    os << "Line Dirichlet boundary condition: ";
+  else if (Type()==SurfaceDirichlet) os << "Surface Dirichlet boundary condition: ";
+  else if (Type()==VolumeDirichlet)  os << "Volume Dirichlet boundary condition: ";
+  else if (Type()==PointNeumann)     os << "Point Neumann boundary condition: ";
+  else if (Type()==LineNeumann)      os << "Line Neumann boundary condition: ";
+  else if (Type()==SurfaceNeumann)   os << "Surface Neumann boundary condition: ";
+  else if (Type()==VolumeNeumann)    os << "Volume Neumann boundary condition: ";
   Container::Print(os);
   if ((int)geometry_.size())
   {

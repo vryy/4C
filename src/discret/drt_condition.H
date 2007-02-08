@@ -57,7 +57,10 @@ public:
   enum ConditionType 
   {
     none,
-    Dirichlet,
+    PointDirichlet,
+    LineDirichlet,
+    SurfaceDirichlet,
+    VolumeDirichlet,
     PointNeumann,
     LineNeumann,
     SurfaceNeumann,

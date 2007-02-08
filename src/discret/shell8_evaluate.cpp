@@ -79,7 +79,17 @@ int DRT::Elements::Shell8::Evaluate(ParameterList& params,
       dserror("Case not yet implemented");
     break;
     case calc_struct_nlnstiff:
-      dserror("Case not yet implemented");
+    {
+      // need current displacement and residual forces
+      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      vector<double> mydisp(lm.size());
+      DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
+      vector<double> myres(lm.size());
+      DRT::Utils::ExtractMyValues(*res,myres,lm);
+      s8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,actmat);
+    }
     break;
     case calc_struct_internalforce:
       dserror("Case not yet implemented");

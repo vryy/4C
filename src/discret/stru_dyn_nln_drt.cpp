@@ -121,43 +121,36 @@ void dyn_nlnstructural_drt()
   // -------------------------------------------------------------------
   // create empty vectors
   // -------------------------------------------------------------------
-  // original load vector without curve
-  //RefCountPtr<Epetra_Vector> rhs0 = LINALG::CreateVector(*dofrowmap,true);
 
-  // load vectors at time t and t-dt
+  // load vectors at time t-dt and t
+  RefCountPtr<Epetra_Vector> rhs0 = LINALG::CreateVector(*dofrowmap,true);
   RefCountPtr<Epetra_Vector> rhs1 = LINALG::CreateVector(*dofrowmap,true);
-  //RefCountPtr<Epetra_Vector> rhs2 = LINALG::CreateVector(*dofrowmap,true);
-
   // interpolated load vector
-  //RefCountPtr<Epetra_Vector> rhs3 = LINALG::CreateVector(*dofrowmap,true);
+  RefCountPtr<Epetra_Vector> rhs  = LINALG::CreateVector(*dofrowmap,true);
 
-  // forces from dirichlet conditions
-  //RefCountPtr<Epetra_Vector> dirich = LINALG::CreateVector(*dofrowmap,true);
-
-  // solution at time t and t-dt
+  // solution at time t-dt and t
   RefCountPtr<Epetra_Vector> sol0 = LINALG::CreateVector(*dofrowmap,true);
-  //RefCountPtr<Epetra_Vector> sol1 = LINALG::CreateVector(*dofrowmap,true);
+  RefCountPtr<Epetra_Vector> sol1 = LINALG::CreateVector(*dofrowmap,true);
   
   // incremental displacements
-  RefCountPtr<Epetra_Vector> dispi = LINALG::CreateVector(*dofrowmap,true);
+  RefCountPtr<Epetra_Vector> dx = LINALG::CreateVector(*dofrowmap,true);
+  
+  // residual incremental displacements
+  RefCountPtr<Epetra_Vector> rdx = LINALG::CreateVector(*dofrowmap,true);
+  
+  // toggle vector indicating which dofs have Dirichlet BCs
+  RefCountPtr<Epetra_Vector> dirichtoggle = LINALG::CreateVector(*dofrowmap,true);
   
   // velocities
-  //RefCountPtr<Epetra_Vector> vel = LINALG::CreateVector(*dofrowmap,true);
+  RefCountPtr<Epetra_Vector> vel = LINALG::CreateVector(*dofrowmap,true);
   
   // accelerations
-  //RefCountPtr<Epetra_Vector> acc = LINALG::CreateVector(*dofrowmap,true);
+  RefCountPtr<Epetra_Vector> acc = LINALG::CreateVector(*dofrowmap,true);
   
-  // internal forces
-  //RefCountPtr<Epetra_Vector> intforce = LINALG::CreateVector(*dofrowmap,true);
+  // internal forces at t-dt, t and interpolated  
+  RefCountPtr<Epetra_Vector> fie0 = LINALG::CreateVector(*dofrowmap,true);
+  RefCountPtr<Epetra_Vector> fie1 = LINALG::CreateVector(*dofrowmap,true);
   
-  // internal forces at t, t-dt and interpolated  
-  //RefCountPtr<Epetra_Vector> fie0 = LINALG::CreateVector(*dofrowmap,true);
-  //RefCountPtr<Epetra_Vector> fie1 = LINALG::CreateVector(*dofrowmap,true);
-  //RefCountPtr<Epetra_Vector> fie2 = LINALG::CreateVector(*dofrowmap,true);
-  
-  // working vectors
-  //RefCountPtr<Epetra_Vector> work0 = LINALG::CreateVector(*dofrowmap,true);
-
   // -------------------------------------------------------------------
   // call elements to calculate stiffness and mass
   // -------------------------------------------------------------------
@@ -177,13 +170,11 @@ void dyn_nlnstructural_drt()
     params.set("delta time",sdyn->dt);
     // set vector values needed by elements
     actdis->ClearState();
-    actdis->SetState("residual displacement",dispi);
+    actdis->SetState("residual displacement",rdx);
     actdis->SetState("displacement",sol0);
     actdis->Evaluate(params,stiff_mat,mass_mat,null,null,null);
     actdis->ClearState();
   }
-
-  // get dirichlet conditions from discretization and apply them to system of equations
 
   // complete stiffness and mass matrix
   LINALG::Complete(*stiff_mat);
@@ -218,13 +209,14 @@ void dyn_nlnstructural_drt()
   sdyn->time += sdyn->dt;
   acttime = sdyn->time;
   /*-------------------------------------------------- set some constants */
+  const double beta   = sdyn->beta;
+  const double gamma  = sdyn->gamma;
+  const double alpham = sdyn->alpha_m;
+  const double alphaf = sdyn->alpha_f;
+  const double dt     = sdyn->dt;
+#if 0 // probably not use these
   double constants[16];
   {
-    const double beta   = sdyn->beta;
-    const double gamma  = sdyn->gamma;
-    const double alpham = sdyn->alpha_m;
-    const double alphaf = sdyn->alpha_f;
-    const double dt     = sdyn->dt;
     constants[6]  = 1.0-alphaf;
     constants[7]  = 1.0-alpham;
     constants[8]  = (1.0/beta)/(DSQR(dt));
@@ -243,16 +235,18 @@ void dyn_nlnstructural_drt()
     constants[15] = beta;
     constants[16] = gamma;
   }
-  
+#endif  
   
   /*------------------------- set incremental displacements dispi to zero */
-  dispi->PutScalar(0.0);
+  dx->PutScalar(0.0);
+  //------------------------------------- set residual displacements to zero
+  rdx->PutScalar(0.0);
   
   /*----------------------------------------------------------------------*/
   /*                     PREDICTOR                                        */
   /*----------------------------------------------------------------------*/
   
-  //-------------------------------------------------- evaluate Neumann BCs
+  //------------------------------------- evaluate Neumann and Dirichlet BCs
   {
     ParameterList params;
     // action for elements
@@ -269,22 +263,111 @@ void dyn_nlnstructural_drt()
     // set vector values needed by elements
     actdis->ClearState();
     actdis->SetState("displacement",sol0);
+    rhs1->PutScalar(0.0);
+    // predicted rhs
     actdis->EvaluateNeumann(params,*rhs1);
+    // predicted dirichlet values
+    actdis->EvaluateDirichlet(params,*sol1,*dirichtoggle); 
     actdis->ClearState();
   }
 
+  //------------------------------------ evaluate stiffness and internal forces
+  {
+    // zero out the stiffness matrix
+    stiff_mat = LINALG::CreateMatrix(*dofrowmap,81);
+    // zero out internal forces
+    fie1->PutScalar(0.0);
+    // create the parameters for the discretization
+    ParameterList params;
+    // action for elements
+    params.set("action","calc_struct_nlnstiff");
+    // choose what to assemble
+    params.set("assemble matrix 1",true);
+    params.set("assemble matrix 2",false);
+    params.set("assemble vector 1",true);
+    params.set("assemble vector 2",false);
+    params.set("assemble vector 3",false);
+    // other parameters that might be needed by the elements
+    params.set("total time",acttime);
+    params.set("delta time",sdyn->dt);
+    // set vector values needed by elements
+    actdis->ClearState();
+    actdis->SetState("residual displacement",rdx);
+    actdis->SetState("displacement",sol0);
+    fie1->PutScalar(0.0);
+    actdis->Evaluate(params,stiff_mat,null,fie1,null,null);
+    actdis->ClearState();
+    // finalize the stiffness matrix
+    LINALG::Complete(*stiff_mat);
+  }
 
+  //----------------------------------------------- interpolate external forces
+  // rhs = (1-alphaf)*rhs1 + alphaf*rhs0
+  rhs->Update((1.-alphaf),*rhs1,alphaf,*rhs0,0.0);
 
+  //---------------- subtract internal forces from interpolated external forces
+  // rhs = rhs - fie1;
+  rhs->Update(-1.0,*fie1,1.0);
+  
+  //========================================================build effective RHS
+  // rhs = alphaf*rhs1 + (1-alphaf)*rhs0 - fie1 (already done above)
+  //       + M*(-a1*dx + a2*vel + a3*acc)
+  //       + D*(-a4*dx + a5*vel + a6*acc)       (if present)
+  //
+  {
+    const double a1 = (1.0-alpham) * (1./beta)/(dt*dt);
+    const double a2 = ((1.0-alpham) * (1./beta)/(dt*dt))*dt;
+    const double a3 = (1.0-alpham) / (2. * beta) - 1.0;
+    const double a4 = (1.0-alphaf) * (gamma/(beta*dt));
+    const double a5 = ((1.0-alphaf) * (gamma/(beta*dt)))*dt - 1.0;
+    const double a6 = ((gamma/beta)/2.0 - 1.0)*dt*(1.0-alphaf);
 
+    // build work1 = -a1*dx + a2*vel + a3*acc
+    RefCountPtr<Epetra_Vector> work1 = LINALG::CreateVector(*dofrowmap,false);
+    work1->Update(-a1,*dx,a2,*vel,0.0);
+    work1->Update(a3,*acc,1.0);
+    // rhs = rhs + mass_mat*work1
+    RefCountPtr<Epetra_Vector> tmp = LINALG::CreateVector(*dofrowmap,false);
+    mass_mat->Multiply(false,*work1,*tmp);
+    rhs->Update(1.0,*tmp,1.0);
 
+    if (damping)
+    {
+      // build work2 = -a4*dx + a5*vel + a6*acc (if present)
+      RefCountPtr<Epetra_Vector> work2 = LINALG::CreateVector(*dofrowmap,false);
+      work2->Update(-a4,*dx,a5,*vel,0.0);
+      work2->Update(a6,*acc,1.0);
+      // rhs = rhs + damp_mat*work2
+      damp_mat->Multiply(false,*work2,*tmp);
+      rhs->Update(1.0,*tmp,1.0);
+    }
+  }
 
+  //======================================================= build effective LHS
+  // keff =   (1.0-alphaf)*K 
+  //        + (1.0-alpham)*(1.0/(beta*dt*dt))*M
+  //        + (1.0-alphaf)*(gamma/(beta*dt))*D (if present)
+  RefCountPtr<Epetra_CrsMatrix> eff_mat = LINALG::CreateMatrix(*dofrowmap,81);
+  {
+    const double a1 = (1.0-alphaf);
+    const double a2 = (1.0-alpham)*(1.0/(beta*dt*dt));
+    const double a3 = (1.0-alphaf)*(gamma/(beta*dt));
+    
+    stiff_mat->Scale(a1);
+    LINALG::Add(*stiff_mat,false,a1,*eff_mat,0.0);
+    LINALG::Add(*mass_mat ,false,a2,*eff_mat,1.0);
+    if (damping) LINALG::Add(*damp_mat ,false,a3,*eff_mat,1.0);
+  }
+  LINALG::Complete(*eff_mat);
 
+  //============================================================create a solver
+  LINALG::Solver solver;
+  ParameterList  solveparams;
+  solver.TranslateSolverParameters(solveparams,actsolv);
+  actdis->ComputeNullSpaceIfNecessary(solveparams);
 
-
-
-
-
-
+  //============================================== solve for dx = Keff^-1 * rhs
+  //solver.Solve(solveparams,eff_mat,dx,rhs);
 
 
 

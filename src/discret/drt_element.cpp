@@ -359,7 +359,11 @@ void DRT::Element::LocationVector(vector<int>& lm, vector<int>& lmdirich,
       vector<int>* flag = NULL;
       if (dirich)
       {
-        dsassert(dirich->Type()==DRT::Condition::Dirichlet,"condition with name Dirichlet is not of type Dirichlet");
+        if (dirich->Type()!=DRT::Condition::PointDirichlet &&
+            dirich->Type()!=DRT::Condition::LineDirichlet &&
+            dirich->Type()!=DRT::Condition::SurfaceDirichlet &&
+            dirich->Type()!=DRT::Condition::VolumeDirichlet)
+          dserror("condition with name dirichlet is not of type Dirichlet");
         flag = dirich->GetVector<int>("onoff");
       }
       const int owner = nodes[i]->Owner();
@@ -378,7 +382,11 @@ void DRT::Element::LocationVector(vector<int>& lm, vector<int>& lmdirich,
   DRT::Condition* dirich = GetCondition("Dirichlet");
   if (dirich)
   {
-    dsassert(dirich->Type()==DRT::Condition::Dirichlet,"condition with name Dirichlet is not of type condition_Dirichlet");
+    if (dirich->Type()!=DRT::Condition::PointDirichlet &&
+        dirich->Type()!=DRT::Condition::LineDirichlet &&
+        dirich->Type()!=DRT::Condition::SurfaceDirichlet &&
+        dirich->Type()!=DRT::Condition::VolumeDirichlet)
+      dserror("condition with name dirichlet is not of type Dirichlet");
     flag = dirich->GetVector<int>("onoff");
   }
   const int owner = Owner();

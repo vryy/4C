@@ -116,13 +116,20 @@ namespace LINALG
   void Complete(Epetra_CrsMatrix& A);
 
   /*!
-  \brief Add a (transposed) Epetra_CrsMatrix to another: B = B*bfactor + A(^T)*afactor
+  \brief Add a (transposed) Epetra_CrsMatrix to another: B = B*scalarB + A(^T)*scalarA
   
+  Add one matrix to another. the matrix B to be added to must not be
+  completed. Sparsity patterns of A and B need not match and A and B can be
+  nonsymmetric in value and pattern.
+  Range, Row and Domain maps of A(^T) and B have to match.
   
-  \param V (out)   : Sparse matrix to be assembled on
-  \param Vele (in) : dense matrix to be assembled
-  \param lm (in) : vector with gids
-  \param lmowner (in) : vector with owners of gids
+  Note that this is a true parallel add, even in the transposed case!
+  
+  \param A          (in)     : Matrix to add to B (must have Filled()==true)
+  \param transposeA (in)     : flag indicating whether transposed of A should be used
+  \param scalarA    (in)     : scaling factor for A
+  \param B          (in/out) : Matrix to be added to (must have Filled()==false)
+  \param scalarB    (in)     : scaling factor for B
   */
   void Add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
            Epetra_CrsMatrix& B, const double scalarB);

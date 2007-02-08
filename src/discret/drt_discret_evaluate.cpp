@@ -116,7 +116,6 @@ void DRT::Discretization::EvaluateNeumann(ParameterList& params, Epetra_Vector& 
 {
   if (!Filled()) dserror("FillComplete() was not called");
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
-  systemvector.PutScalar(0.0);
   
   // get the current time
   bool usetime = true;
@@ -172,25 +171,137 @@ void DRT::Discretization::EvaluateNeumann(ParameterList& params, Epetra_Vector& 
         fool->first == (string)"VolumeNeumann"
        )
     {
-    DRT::Condition& cond = *(fool->second);
-    map<int,RefCountPtr<DRT::Element> >& geom = cond.Geometry();
-    map<int,RefCountPtr<DRT::Element> >::iterator curr;
-    Epetra_SerialDenseVector elevector;
-    for (curr=geom.begin(); curr!=geom.end(); ++curr)
-    {
-      // get element location vector, dirichlet flags and ownerships
-      vector<int> lm;
-      vector<int> lmdirich;
-      vector<int> lmowner;
-      curr->second->LocationVector(lm,lmdirich,lmowner);
-      elevector.Size((int)lm.size());
-      curr->second->EvaluateNeumann(params,*this,cond,lm,elevector);
-      LINALG::Assemble(systemvector,elevector,lm,lmowner);
-    }
+      DRT::Condition& cond = *(fool->second);
+      map<int,RefCountPtr<DRT::Element> >& geom = cond.Geometry();
+      map<int,RefCountPtr<DRT::Element> >::iterator curr;
+      Epetra_SerialDenseVector elevector;
+      for (curr=geom.begin(); curr!=geom.end(); ++curr)
+      {
+        // get element location vector, dirichlet flags and ownerships
+        vector<int> lm;
+        vector<int> lmdirich;
+        vector<int> lmowner;
+        curr->second->LocationVector(lm,lmdirich,lmowner);
+        elevector.Size((int)lm.size());
+        curr->second->EvaluateNeumann(params,*this,cond,lm,elevector);
+        LINALG::Assemble(systemvector,elevector,lm,lmowner);
+      }
     }
   return;
 }
 
+static void DoDirichletCondition(DRT::Condition&      cond,
+                                 DRT::Discretization& dis,
+                                 const bool           usetime,
+                                 const double         time,
+                                 Epetra_Vector&       systemvector,
+                                 Epetra_Vector&       toggle);
+/*----------------------------------------------------------------------*
+ |  evaluate Dirichlet conditions (public)                   mwgee 01/07|
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::EvaluateDirichlet(ParameterList& params, 
+                                            Epetra_Vector& systemvector,
+                                            Epetra_Vector& toggle)
+{
+  if (!Filled()) dserror("FillComplete() was not called");
+  if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+  
+  // get the current time
+  bool usetime = true;
+  const double time = params.get("total time",-1.0);
+  if (time<0.0) usetime = false;
+
+  multimap<string,RefCountPtr<Condition> >::iterator fool;
+  //--------------------------------------------------------
+  // loop through Dirichlet conditions and evaluate them
+  //--------------------------------------------------------
+  // Note that this method does not sum up but 'sets' values in systemvector.
+  // For this reason, Dirichlet BCs are evaluated hierarchical meaning
+  // in this order:
+  //                VolumeDirichlet
+  //                SurfaceDirichlet
+  //                LineDirichlet
+  //                PointDirichlet
+  // This way, lower entities override higher ones which is
+  // equivalent to inheritance of dirichlet BCs as done in the old
+  // ccarat discretization with design          (mgee 1/07)
+  
+  // Do VolumeDirichlet first
+  for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
+  {
+    if (fool->first != (string)"Dirichlet") continue;
+    if (fool->second->Type() != DRT::Condition::VolumeDirichlet) continue;
+    DoDirichletCondition(*(fool->second),*this,usetime,time,systemvector,toggle);
+  }
+  // Do SurfaceDirichlet
+  for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
+  {
+    if (fool->first != (string)"Dirichlet") continue;
+    if (fool->second->Type() != DRT::Condition::SurfaceDirichlet) continue;
+    DoDirichletCondition(*(fool->second),*this,usetime,time,systemvector,toggle);
+  }
+  // Do LineDirichlet
+  for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
+  {
+    if (fool->first != (string)"Dirichlet") continue;
+    if (fool->second->Type() != DRT::Condition::LineDirichlet) continue;
+    DoDirichletCondition(*(fool->second),*this,usetime,time,systemvector,toggle);
+  }
+  // Do LineDirichlet
+  for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
+  {
+    if (fool->first != (string)"Dirichlet") continue;
+    if (fool->second->Type() != DRT::Condition::PointDirichlet) continue;
+    DoDirichletCondition(*(fool->second),*this,usetime,time,systemvector,toggle);
+  }
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  evaluate Dirichlet conditions (public)                   mwgee 01/07|
+ *----------------------------------------------------------------------*/
+void DoDirichletCondition(DRT::Condition&      cond,
+                          DRT::Discretization& dis,
+                          const bool           usetime,
+                          const double         time,
+                          Epetra_Vector&       systemvector,
+                          Epetra_Vector&       toggle)
+{
+  const vector<int>* nodeids = cond.GetVector<int>("Node Ids");
+  if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
+  const int nnode = (*nodeids).size();
+  vector<int>*    curve  = cond.GetVector<int>("curve");
+  vector<int>*    onoff  = cond.GetVector<int>("onoff");
+  vector<double>* val    = cond.GetVector<double>("val");
+  for (int i=0; i<nnode; ++i)
+  {
+    // do only nodes in my row map
+    if (!dis.NodeRowMap()->MyGID((*nodeids)[i])) continue;
+    DRT::Node* actnode = dis.gNode((*nodeids)[i]);
+    if (!actnode) dserror("Cannot find global node %d",(*nodeids)[i]);
+    const int  numdf = actnode->Dof().NumDof();
+    const int* dofs  = actnode->Dof().Dofs();
+    for (int j=0; j<numdf; ++j)
+    {
+      if ((*onoff)[j]==0) continue;
+      const int gid = dofs[j];
+      double value  = (*val)[j];
+      double curvefac = 1.0;
+      int    curvenum = -1;
+      if (curve) curvenum = (*curve)[j];
+      if (curvenum>=0 && usetime)
+        dyn_facfromcurve(curvenum,time,&curvefac);
+      //cout << "Dirichlet value " << value << " curvefac " <<  curvefac << endl;
+      value *= curvefac;
+      const int lid = systemvector.Map().LID(gid);
+      if (lid<0) dserror("Global id %d not on this proc in system vector",gid);
+      systemvector[lid] = value;
+      toggle[lid] = 1.0;
+    }
+  }
+  return;
+}
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

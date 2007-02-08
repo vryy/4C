@@ -626,8 +626,45 @@ public:
   /*!
   \brief Evaluate Neumann boundary conditions
     
+  Loop all Neumann conditions attached to the discretization and evaluate them.
+  This method considers all conditions in condition_ with the names
+  "PointNeumann", LineNeumann", "SurfaceNeumann" and "VolumeNeumann".
+  It takes a current time from the parameter list params named "total time"
+  and evaluates the appropiate time curves at that time for each 
+  Neumann condition separately. If "total time" is not included
+  in the parameters, no time curves are used.
+  
+  \param params (in): List of parameters
+  \param systemvector (out): Vector to assemble Neumann BCs to.
+                             The vector is NOT initialized to zero by this method.
   */
-  virtual void EvaluateNeumann(ParameterList& params, Epetra_Vector& systemvector);
+  virtual void EvaluateNeumann(ParameterList& params, 
+                               Epetra_Vector& systemvector);
+
+  /*!
+  \brief Evaluate Dirichlet boundary conditions
+  
+  \param params (in): List of parameters
+  \param systemvector (out): Vector holding prescribed dirichlet values
+  \param toggle (out): Vector containing 1.0 for each dirichlet dof and 0 for everything else
+  */
+  virtual void EvaluateDirichlet(ParameterList& params, 
+                                 Epetra_Vector& systemvector, 
+                                 Epetra_Vector& toggle);
+
+  /*!
+  \brief Compute the nullspace of the discretization
+  
+  This method looks in the solver parameters whether algebraic multigrid (AMG)
+  is used as preconditioner. AMG desires the nullspace of the 
+  system of equations which is then computed here if it does not already exist
+  in the parameter list.
+  
+  \param solveparams (in): List of parameters
+  \param recompute (in)  : force method to recompute the nullspace
+  */
+  virtual void ComputeNullSpaceIfNecessary(ParameterList& solveparams,
+                                           bool recompute = false);
 
   //@}
 

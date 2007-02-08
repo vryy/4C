@@ -163,6 +163,7 @@ void LINALG::Complete(Epetra_CrsMatrix& A)
 
 /*----------------------------------------------------------------------*
  |  Add a sparse matrix to another  (public)                 mwgee 12/06|
+ |  B = B*scalarB + A(transposed)*scalarA                               |
  *----------------------------------------------------------------------*/
 void LINALG::Add(const Epetra_CrsMatrix& A, 
                  const bool transposeA, 

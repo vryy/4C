@@ -253,6 +253,18 @@ public:
                               DRT::Condition&           condition,
                               vector<int>&              lm,
                               Epetra_SerialDenseVector& elevec1);
+  
+  
+  /*!
+  \brief Get ptr to nodal thicknesses
+  */
+  vector<double>* GetThickness() { return data_.GetVector<double>("thick");}
+  
+  /*!
+  \brief Get reference to directors
+  */
+  Epetra_SerialDenseMatrix* GetDirectors() { return data_.GetMatrix("a3ref"); }
+
   //@}
 
 
