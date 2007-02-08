@@ -4707,7 +4707,7 @@ static void in_unpack_restart_element(BIN_IN_FIELD *context,
       INT k;
 
       dsassert(len >= 3, "value item too small");
-      dsassert(actele->e.f3->tau_old.Typ == cca_DV &&
+      dsassert(actele->e.f3->tau_old.Typ == ARRAY::cca_DV &&
                actele->e.f3->tau_old.fdim == 3, "uninitialized array");
       dst_ptr = &(actele->e.f3->tau_old.a.dv[0]);
       for (k=0; k<3; ++k)

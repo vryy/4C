@@ -933,7 +933,7 @@ typedef struct _DBCSR
                                            sparse column format */
 #ifdef MLPCG
   struct _DBCSR          *ilu;           /*!< the ilu-decomposed asm - matrix */
-  struct _DBCSR          *asm;           /*!< the asm splitted matrix */
+  struct _DBCSR          *stupid_asm;           /*!< the asm splitted matrix */
 #endif
   ARRAY                  *dense;         /*!< for dense solve on coarsest grid */
   ARRAY                  *ipiv;          /*!< for dense solve on coarsest grid */

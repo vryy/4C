@@ -130,8 +130,8 @@ nproc  = actintra->intra_nprocs;
 if (csr->ilu==NULL)
 {
    csr->ilu = (DBCSR*)CCACALLOC(1,sizeof(DBCSR));
-   csr->asm = (DBCSR*)CCACALLOC(1,sizeof(DBCSR));
-   asm        = csr->asm;
+   csr->stupid_asm = (DBCSR*)CCACALLOC(1,sizeof(DBCSR));
+   asm        = csr->stupid_asm;
    asm->numeq = csr->numeq;
    ilu        = csr->ilu;
    ilu->numeq = csr->numeq;
@@ -227,13 +227,13 @@ c           ierr  = -5   --> zero row encountered in A or U.
    amdel(&w);
    amdel(&jw);
    mlpcg_csr_destroy(asm);
-   csr->asm   = CCAFREE(asm);
+   csr->stupid_asm   = CCAFREE(asm);
 }
 else if (csr->ilu->is_factored != mlprecond.ncall && mlprecond.mod==0)
 {
    ilu        = csr->ilu;
-   csr->asm   = (DBCSR*)CCACALLOC(1,sizeof(DBCSR));
-   asm        = csr->asm;
+   csr->stupid_asm   = (DBCSR*)CCACALLOC(1,sizeof(DBCSR));
+   asm        = csr->stupid_asm;
    mlpcg_csr_open(asm,
                   csr->owner[myrank][0],
                   csr->owner[myrank][1],
@@ -324,7 +324,7 @@ c           ierr  = -5   --> zero row encountered in A or U.
    amdel(&w);
    amdel(&jw);
    mlpcg_csr_destroy(asm);
-   csr->asm   = CCAFREE(asm);
+   csr->stupid_asm   = CCAFREE(asm);
 }
 /*-------------------------------------- make solve with the ilu matrix */
 ilu = csr->ilu;
