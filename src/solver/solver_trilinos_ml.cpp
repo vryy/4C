@@ -90,7 +90,7 @@ void create_ml_parameterlist(struct _SOLVAR         *actsolv,
     case azprec_MLfluid2: // full Pretrov-Galerkin unsymmetric smoothed
       mllist.set("energy minimization: enable",true);
       mllist.set("energy minimization: type",3); // 1,2,3 cheap -> expensive
-      mllist.set("aggregation: block scaling",false); // crashes in parallel
+      mllist.set("aggregation: block scaling",false); 
     break;
     default: dserror("Unknown type of preconditioner");
   }
