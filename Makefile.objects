@@ -94,6 +94,7 @@ OBJS_DISCRET  = src/discret/drt_discret.o \
                 src/discret/drt_discret_conditions.o \
                 src/discret/drt_discret_partition.o \
                 src/discret/drt_discret_evaluate.o \
+                src/discret/drt_discret_utils.o \
                 src/discret/drt_element.o \
                 src/discret/drt_elementregister.o \
                 src/discret/drt_elementvolume.o \
@@ -110,6 +111,7 @@ OBJS_DISCRET  = src/discret/drt_discret.o \
                 src/discret/drt_design.o \
                 src/discret/drt_parobject.o \
                 src/discret/drt_exporter.o \
+                src/discret/linalg_solver.o \
                 src/discret/linalg_utils.o \
                 src/discret/shell8.o \
                 src/discret/shell8_input.o \
