@@ -270,7 +270,7 @@ void f2pro_calele(
     break;
   case 1:
     /*---------------------------------------------------- set element data */
-    f2pro_calseta(ele,xyze,evelnm,eveln,evelng,evhist,ealecovng,egridv,epren,edeadng,ipos,is_relax);
+    f2pro_calseta(ele,xyze,evelnm,eveln,evelng,evhist,ealecovng,egridv,eprenm,epren,edeadng,ipos,is_relax);
 
     /* We follow the förster-element here. */
 
@@ -367,7 +367,7 @@ void f2pro_caleleres(
     break;
   case 1:
     /*---------------------------------------------- set element data ---*/
-    f2pro_calseta(ele,xyze,evelnm,eveln,evelng,evhist,ealecovng,egridv,epren,edeadng,ipos,0);
+    f2pro_calseta(ele,xyze,evelnm,eveln,evelng,evhist,ealecovng,egridv,eprenm,epren,edeadng,ipos,0);
 
     /*------------------------------------------------- get viscosity ---*/
     visc = mat[ele->mat-1].m.fluid->viscosity;

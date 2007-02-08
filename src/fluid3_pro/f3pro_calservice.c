@@ -86,9 +86,9 @@ void f3pro_calset(
     actnode=ele->node[i];
 
     /*----------------------------------- set element velocities at (n-1) */
-    eveln[0][i]=actnode->sol_increment.a.da[velnm][0];
-    eveln[1][i]=actnode->sol_increment.a.da[velnm][1];
-    eveln[2][i]=actnode->sol_increment.a.da[velnm][2];
+    evelnm[0][i]=actnode->sol_increment.a.da[velnm][0];
+    evelnm[1][i]=actnode->sol_increment.a.da[velnm][1];
+    evelnm[2][i]=actnode->sol_increment.a.da[velnm][2];
 
     /*------------------------------------- set element velocities at (n) */
     eveln[0][i]=actnode->sol_increment.a.da[veln][0];
@@ -132,7 +132,8 @@ void f3pro_calset(
     pele = ele->e.f3pro->other;
     for (i=0; i<pele->numnp; ++i)
     {
-      epren[i] = pele->node[i]->sol_increment.a.da[1][0];
+      epren[i]  = pele->node[i]->sol_increment.a.da[1][0];
+      eprenm[i] = pele->node[i]->sol_increment.a.da[2][0];
     }
   }
   else
@@ -140,6 +141,7 @@ void f3pro_calset(
     for (i=0; i<numpdof; ++i)
     {
       epren[i]   = ele->e.f3pro->press[i];
+      eprenm[i]  = ele->e.f3pro->pressm[i];
     }
   }
 
@@ -219,9 +221,9 @@ void f3pro_calseta(
     actnode=ele->node[i];
 
     /*----------------------------------- set element velocities at (n-1) */
-    eveln[0][i]=actnode->sol_increment.a.da[velnm][0];
-    eveln[1][i]=actnode->sol_increment.a.da[velnm][1];
-    eveln[2][i]=actnode->sol_increment.a.da[velnm][2];
+    evelnm[0][i]=actnode->sol_increment.a.da[velnm][0];
+    evelnm[1][i]=actnode->sol_increment.a.da[velnm][1];
+    evelnm[2][i]=actnode->sol_increment.a.da[velnm][2];
 
     /*------------------------------------- set element velocities at (n) */
     eveln[0][i]=actnode->sol_increment.a.da[veln][0];
@@ -273,7 +275,8 @@ void f3pro_calseta(
     pele = ele->e.f3pro->other;
     for (i=0; i<pele->numnp; ++i)
     {
-      epren[i] = pele->node[i]->sol_increment.a.da[1][0];
+      epren[i]  = pele->node[i]->sol_increment.a.da[1][0];
+      eprenm[i] = pele->node[i]->sol_increment.a.da[2][0];
     }
   }
   else
@@ -281,6 +284,7 @@ void f3pro_calseta(
     for (i=0; i<numpdof; ++i)
     {
       epren[i]   = ele->e.f3pro->press[i];
+      eprenm[i]  = ele->e.f3pro->pressm[i];
     }
   }
 

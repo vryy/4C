@@ -178,6 +178,7 @@ void f2pro_calseta(
   DOUBLE         **evhist,
   DOUBLE         **ealecovng,
   DOUBLE         **egridv,
+  DOUBLE          *eprenm,
   DOUBLE          *epren,
   DOUBLE          *edeadng,
   ARRAY_POSITION  *ipos,

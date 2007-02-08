@@ -176,6 +176,7 @@ void f2pro_calseta(
   DOUBLE         **evhist,
   DOUBLE         **ealecovng,
   DOUBLE         **egridv,
+  DOUBLE          *eprenm,
   DOUBLE          *epren,
   DOUBLE          *edeadng,
   ARRAY_POSITION  *ipos,
@@ -266,7 +267,8 @@ void f2pro_calseta(
     pele = ele->e.f2pro->other;
     for (i=0; i<pele->numnp; ++i)
     {
-      epren[i] = pele->node[i]->sol_increment.a.da[1][0];
+      epren[i]  = pele->node[i]->sol_increment.a.da[1][0];
+      eprenm[i] = pele->node[i]->sol_increment.a.da[2][0];
     }
   }
   else
@@ -274,6 +276,7 @@ void f2pro_calseta(
     for (i=0; i<numpdof; ++i)
     {
       epren[i]   = ele->e.f2pro->press[i];
+      eprenm[i]  = ele->e.f2pro->pressm[i];
     }
   }
 
