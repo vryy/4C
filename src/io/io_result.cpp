@@ -22,7 +22,12 @@ Everybody who wants to output results calls the function defined here.
   \addtogroup IO
 *//*! @{ (documentation module open)*/
 
+extern "C" {
+
 #include "../headers/standardtypes.h"
+
+}
+
 #include "io.h"
 #include "io_packing.h"
 #include "io_singlefile.h"

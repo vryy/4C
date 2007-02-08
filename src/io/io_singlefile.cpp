@@ -65,11 +65,9 @@ All io is done using chunks.
 #include <pwd.h>
 #endif
 
-#include "../headers/standardtypes.h"
+extern "C" {
 
-#include "io_singlefile.h"
-#include "io_packing.h"
-#include "io_elements.h"
+#include "../headers/standardtypes.h"
 
 #include "../shell8/shell8.h"
 #include "../shell9/shell9.h"
@@ -85,6 +83,11 @@ All io is done using chunks.
 #include "../interf/interf.h"
 #include "../wallge/wallge.h"
 
+}
+
+#include "io_singlefile.h"
+#include "io_packing.h"
+#include "io_elements.h"
 
 
 /*----------------------------------------------------------------------*/
@@ -281,7 +284,7 @@ void init_bin_out_main(CHAR* outputname)
     if (par.myrank == 0)
     {
       CHAR tmpbuf[1024];
-      INT len;
+      unsigned len;
       INT number = 0;
       strcpy(tmpbuf, outputname);
 
@@ -2105,7 +2108,7 @@ void out_write_chunk(BIN_OUT_FIELD *context,
                      CHAR* entry_name,
                      INT restart)
 {
-  INT i;
+  unsigned i;
 
 #ifdef PARALLEL
   MPI_Status status;
@@ -2147,19 +2150,19 @@ void out_write_chunk(BIN_OUT_FIELD *context,
     /* We do a reverse loop here because the symbols have to be
      * ordered in the control file and map_insert_real_cpy adds its
      * symbol to the front of the list. At least they used to have. */
-    for (i=chunk->value_entry_length-1; i>=0; --i)
+    for (int k=chunk->value_entry_length-1; k>=0; --k)
     {
-      INT j;
+      unsigned j;
       DOUBLE minvalue;
       DOUBLE maxvalue;
 
-      minvalue = chunk->out_values[i];
-      maxvalue = chunk->out_values[i];
+      minvalue = chunk->out_values[k];
+      maxvalue = chunk->out_values[k];
 
       for (j=1; j<chunk->num; ++j)
       {
-        minvalue = MIN(minvalue, chunk->out_values[j*chunk->value_entry_length+i]);
-        maxvalue = MAX(maxvalue, chunk->out_values[j*chunk->value_entry_length+i]);
+        minvalue = MIN(minvalue, chunk->out_values[j*chunk->value_entry_length+k]);
+        maxvalue = MAX(maxvalue, chunk->out_values[j*chunk->value_entry_length+k]);
       }
 
 #ifdef PARALLEL
@@ -2174,9 +2177,9 @@ void out_write_chunk(BIN_OUT_FIELD *context,
       if (rank == 0)
       {
         char buf[10];
-        sprintf(buf, "min%d", i);
+        sprintf(buf, "min%d", k);
         map_insert_real_cpy(&chunk->group, minvalue, buf);
-        sprintf(buf, "max%d", i);
+        sprintf(buf, "max%d", k);
         map_insert_real_cpy(&chunk->group, maxvalue, buf);
       }
     }
@@ -3868,7 +3871,7 @@ void in_scatter_chunk(BIN_IN_FIELD* context,
 void in_read_chunk(BIN_IN_FIELD *context,
                    BIN_IN_CHUNK *chunk)
 {
-  INT i;
+  unsigned i;
   INT offset;
 #ifdef PARALLEL
   INT err;
@@ -4080,9 +4083,9 @@ void in_element_chunk(BIN_IN_FIELD* context,
   dstrc_enter("in_element_chunk");
 #endif
 
-  init_bin_in_chunk(context, &chunk, result_info, group_name, chunk_element, 0);
+  init_bin_in_chunk(context, &chunk, result_info, group_name, chunk_element, node_array_sol);
   in_read_chunk(context, &chunk);
-  in_scatter_chunk(context, &chunk, type, 0);
+  in_scatter_chunk(context, &chunk, type, node_array_sol);
 
   destroy_bin_in_chunk(&chunk);
 
@@ -4119,9 +4122,9 @@ void in_distvec_chunk(BIN_IN_FIELD* context,
 
   chunk.vectors = vectors;
 
-  init_bin_in_chunk(context, &chunk, result_info, group_name, chunk_dist_vec, 0);
+  init_bin_in_chunk(context, &chunk, result_info, group_name, chunk_dist_vec, node_array_sol);
   in_read_chunk(context, &chunk);
-  in_scatter_chunk(context, &chunk, cc_dist_vector, 0);
+  in_scatter_chunk(context, &chunk, cc_dist_vector, node_array_sol);
 
   destroy_bin_in_chunk(&chunk);
 

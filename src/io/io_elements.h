@@ -56,9 +56,16 @@ Mistakes to avoid:
 #ifndef IO_ELEMENTS_H
 #define IO_ELEMENTS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "../headers/standardtypes.h"
 #include "../pss_full/pss_table.h"
 
+#ifdef __cplusplus
+}
+#endif
 
 /* output version of the part common to all elements */
 #define ELEMENT_IO_VERSION 1

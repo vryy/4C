@@ -38,6 +38,8 @@ function calls.
 #include "io_singlefile.h"
 #include "io_elements.h"
 
+extern "C" {
+
 #include "../pss_full/pss_table.h"
 #include "../pss_full/pss_set.h"
 
@@ -62,6 +64,7 @@ function calls.
 #include "../wallge/wallge.h"
 #include "../solid3/solid3.h"
 
+}
 
 /*----------------------------------------------------------------------*
   |                                                       m.gee 06/01    |
@@ -3471,13 +3474,13 @@ static void out_pack_dnode(BIN_OUT_CHUNK *chunk,
 
       switch (actnode->gnode->ondesigntyp)
       {
-      case ondnode:
+      case GNODE::ondnode:
         dnode = actnode->gnode->d.dnode;
         *size_ptr++ = dnode->Id;
         break;
-      case ondline:
-      case ondsurf:
-      case ondvol:
+      case GNODE::ondline:
+      case GNODE::ondsurf:
+      case GNODE::ondvol:
         /* no dnode on this node */
         break;
       default:
@@ -3564,18 +3567,18 @@ static void out_pack_dline(BIN_OUT_CHUNK *chunk,
       /* determine starting point */
       switch (actnode->gnode->ondesigntyp)
       {
-      case ondnode:
+      case GNODE::ondnode:
         dnode = actnode->gnode->d.dnode;
         ndnode = 1;
         break;
-      case ondline:
+      case GNODE::ondline:
         pdline = &(actnode->gnode->d.dline);
         ndline = 1;
         break;
-      case ondsurf:
+      case GNODE::ondsurf:
         /* Nothing to do :) */
         break;
-      case ondvol:
+      case GNODE::ondvol:
         /* Nothing to do :) */
         break;
       default:
@@ -3585,10 +3588,10 @@ static void out_pack_dline(BIN_OUT_CHUNK *chunk,
       /* count dnode, dline, dsurf, dvol to one gnode */
       switch (actnode->gnode->ondesigntyp)
       {
-      case ondnode:
+      case GNODE::ondnode:
         ndline = dnode->ndline;
         pdline = dnode->dline;
-      case ondline:
+      case GNODE::ondline:
         for (j=0; j<ndline; ++j)
         {
           dline = pdline[j];
@@ -3598,10 +3601,10 @@ static void out_pack_dline(BIN_OUT_CHUNK *chunk,
 	  }
         }
         break;
-      case ondsurf:
+      case GNODE::ondsurf:
         /* Nothing to do :) */
         break;
-      case ondvol:
+      case GNODE::ondvol:
         /* Nothing to do :) */
         break;
       default:
@@ -3700,19 +3703,19 @@ static void out_pack_dsurf(BIN_OUT_CHUNK *chunk,
       /* determine starting point */
       switch (actnode->gnode->ondesigntyp)
       {
-      case ondnode:
+      case GNODE::ondnode:
         dnode = actnode->gnode->d.dnode;
         ndnode = 1;
         break;
-      case ondline:
+      case GNODE::ondline:
         pdline = &(actnode->gnode->d.dline);
         ndline = 1;
         break;
-      case ondsurf:
+      case GNODE::ondsurf:
         pdsurf = &(actnode->gnode->d.dsurf);
         ndsurf = 1;
         break;
-      case ondvol:
+      case GNODE::ondvol:
         /* Nothing to do :) */
         break;
       default:
@@ -3722,16 +3725,16 @@ static void out_pack_dsurf(BIN_OUT_CHUNK *chunk,
       /* count dnode, dline, dsurf, dvol to one gnode */
       switch (actnode->gnode->ondesigntyp)
       {
-      case ondnode:
+      case GNODE::ondnode:
         ndline = dnode->ndline;
         pdline = dnode->dline;
-      case ondline:
+      case GNODE::ondline:
         for (j=0; j<ndline; ++j)
         {
           dline = pdline[j];
           ndsurf = dline->ndsurf;
           pdsurf = dline->dsurf;
-        case ondsurf:
+        case GNODE::ondsurf:
           for (k=0; k<ndsurf; ++k)
           {
             dsurf = pdsurf[k];
@@ -3742,7 +3745,7 @@ static void out_pack_dsurf(BIN_OUT_CHUNK *chunk,
           }
         }
         break;
-      case ondvol:
+      case GNODE::ondvol:
         /* Nothing to do :) */
         break;
       default:
@@ -3845,19 +3848,19 @@ static void out_pack_dvol(BIN_OUT_CHUNK *chunk,
       /* determine starting point */
       switch (actnode->gnode->ondesigntyp)
       {
-      case ondnode:
+      case GNODE::ondnode:
         dnode = actnode->gnode->d.dnode;
         ndnode = 1;
         break;
-      case ondline:
+      case GNODE::ondline:
         pdline = &(actnode->gnode->d.dline);
         ndline = 1;
         break;
-      case ondsurf:
+      case GNODE::ondsurf:
         pdsurf = &(actnode->gnode->d.dsurf);
         ndsurf = 1;
         break;
-      case ondvol:
+      case GNODE::ondvol:
         pdvol = &(actnode->gnode->d.dvol);
         ndvol = 1;
         break;
@@ -3868,22 +3871,22 @@ static void out_pack_dvol(BIN_OUT_CHUNK *chunk,
       /* count dnode, dline, dsurf, dvol to one gnode */
       switch (actnode->gnode->ondesigntyp)
       {
-      case ondnode:
+      case GNODE::ondnode:
         ndline = dnode->ndline;
         pdline = dnode->dline;
-      case ondline:
+      case GNODE::ondline:
         for (j=0; j<ndline; ++j)
         {
           dline = pdline[j];
           ndsurf = dline->ndsurf;
           pdsurf = dline->dsurf;
-        case ondsurf:
+        case GNODE::ondsurf:
           for (k=0; k<ndsurf; ++k)
           {
             dsurf = pdsurf[k];
             ndvol = dsurf->ndvol;
             pdvol = dsurf->dvol;
-          case ondvol:
+          case GNODE::ondvol:
             for (l=0; l<ndvol; ++l)
             {
               dvol = pdvol[l];
@@ -3967,7 +3970,7 @@ void out_pack_items(struct _BIN_OUT_CHUNK *chunk,
   switch (type)
   {
   case cc_node_array:
-    out_pack_node_arrays(chunk, array, actpdis, send_buf, send_count, send_size_buf, dst_first_id, dst_num);
+    out_pack_node_arrays(chunk, static_cast<NODE_ARRAY>(array), actpdis, send_buf, send_count, send_size_buf, dst_first_id, dst_num);
     break;
   case cc_mesh:
     /* array flag unused here */
@@ -4655,7 +4658,7 @@ static void in_unpack_restart_element(BIN_IN_FIELD *context,
       fdyn = alldyn[genprob.numff].fdyn;
 
       dsassert(len >= 3, "value item too small");
-      dsassert(actele->e.f2->tau_old.Typ == cca_DV &&
+      dsassert(actele->e.f2->tau_old.Typ == ARRAY::cca_DV &&
                actele->e.f2->tau_old.fdim == 3, "uninitialized array");
       dst_ptr = &(actele->e.f2->tau_old.a.dv[0]);
       for (k=0; k<3; ++k)
@@ -4665,7 +4668,7 @@ static void in_unpack_restart_element(BIN_IN_FIELD *context,
       if (fdyn->surftens > 0)
       {
         dsassert(len >= 3+2*actele->numnp, "value item too small");
-        dsassert(actele->e.f2->kappa_ND.Typ == cca_DA, "uninitialized array");
+        dsassert(actele->e.f2->kappa_ND.Typ == ARRAY::cca_DA, "uninitialized array");
         dst_ptr = &(actele->e.f2->kappa_ND.a.dv[0]);
         if (actele->e.f2->fs_on>0)
         {
@@ -4686,7 +4689,7 @@ static void in_unpack_restart_element(BIN_IN_FIELD *context,
       INT k;
 
       dsassert(len >= 3, "value item too small");
-      dsassert(actele->e.f3->tau_old.Typ == cca_DV &&
+      dsassert(actele->e.f3->tau_old.Typ == ARRAY::cca_DV &&
                actele->e.f3->tau_old.fdim == 3, "uninitialized array");
       dst_ptr = &(actele->e.f3->tau_old.a.dv[0]);
       for (k=0; k<3; ++k)
@@ -4979,19 +4982,19 @@ void find_design_item_length(struct _BIN_OUT_FIELD* context,
     /* determine starting point */
     switch (actnode->gnode->ondesigntyp)
     {
-    case ondnode:
+    case GNODE::ondnode:
       dnode = actnode->gnode->d.dnode;
       ndnode = 1;
       break;
-    case ondline:
+    case GNODE::ondline:
       pdline = &(actnode->gnode->d.dline);
       ndline = 1;
       break;
-    case ondsurf:
+    case GNODE::ondsurf:
       pdsurf = &(actnode->gnode->d.dsurf);
       ndsurf = 1;
       break;
-    case ondvol:
+    case GNODE::ondvol:
       pdvol = &(actnode->gnode->d.dvol);
       ndvol = 1;
       break;
@@ -5004,11 +5007,11 @@ void find_design_item_length(struct _BIN_OUT_FIELD* context,
      * structured goto construct. */
     switch (actnode->gnode->ondesigntyp)
     {
-    case ondnode:
+    case GNODE::ondnode:
       dnodecount += ndnode;
       ndline = dnode->ndline;
       pdline = dnode->dline;
-    case ondline:
+    case GNODE::ondline:
       for (j=0; j<ndline; ++j)
       {
         dline = pdline[j];
@@ -5018,7 +5021,7 @@ void find_design_item_length(struct _BIN_OUT_FIELD* context,
 	{
 	  intset_add(&dline_set, dline->Id);
 	}
-      case ondsurf:
+      case GNODE::ondsurf:
         for (k=0; k<ndsurf; ++k)
         {
           dsurf = pdsurf[k];
@@ -5028,7 +5031,7 @@ void find_design_item_length(struct _BIN_OUT_FIELD* context,
 	  {
 	    intset_add(&dsurf_set, dsurf->Id);
 	  }
-        case ondvol:
+        case GNODE::ondvol:
 	  for (l=0; l<ndvol; ++l)
 	  {
 	    dvol = pdvol[l];

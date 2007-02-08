@@ -23,6 +23,10 @@ functions that must be called from elsewhere.
 #ifndef IO_H
 #define IO_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "../pss_full/pss_table.h"
 
 
@@ -595,6 +599,9 @@ void restart_read_bin_fsidyn(FSI_DYNAMIC *fsidyn, INT step);
 /*----------------------------------------------------------------------*/
 void io_emergency_close_files();
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 #endif

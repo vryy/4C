@@ -83,7 +83,7 @@ typedef struct _BIN_OUT_CHUNK {
 
   CHUNK_TYPE type;              /* the kind of entities we store */
 
-  INT num;                      /* number of nodes or elements */
+  unsigned num;                      /* number of nodes or elements */
   INT fullarrays;               /* Number of processors that have the
                                  * maximal number of items. All others
                                  * have one less. */
@@ -96,9 +96,9 @@ typedef struct _BIN_OUT_CHUNK {
   INT value_entry_length;       /* number of doubles per item */
   INT size_entry_length;        /* number of ints per item */
 #endif
-  
-  INT value_count;              /* total number of doubles on this proc */
-  INT size_count;               /* total number of ints on this proc */
+
+  unsigned value_count;              /* total number of doubles on this proc */
+  unsigned size_count;               /* total number of ints on this proc */
 
   DOUBLE* out_values;           /* all double values we write */
   INT* out_sizes;               /* all int values we write */
@@ -136,8 +136,8 @@ typedef struct _BIN_IN_CHUNK {
   INT size_entry_length;        /* number of ints per item */
 #endif
 
-  INT value_count;              /* total number of doubles */
-  INT size_count;               /* total number of ints */
+  unsigned value_count;              /* total number of doubles */
+  unsigned size_count;               /* total number of ints */
 
   DOUBLE* in_values;
   INT* in_sizes;

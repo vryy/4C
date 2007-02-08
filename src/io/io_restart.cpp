@@ -24,10 +24,9 @@ understand. Feel free to add your own.
 \addtogroup IO
 *//*! @{ (documentation module open)*/
 
-#include "../headers/standardtypes.h"
+extern "C" {
 
-#include "io_packing.h"
-#include "io_singlefile.h"
+#include "../headers/standardtypes.h"
 
 #include "../shell8/shell8.h"
 #include "../shell9/shell9.h"
@@ -42,6 +41,11 @@ understand. Feel free to add your own.
 #include "../axishell/axishell.h"
 #include "../interf/interf.h"
 #include "../wallge/wallge.h"
+
+}
+
+#include "io_packing.h"
+#include "io_singlefile.h"
 
 
 /*!----------------------------------------------------------------------
@@ -352,7 +356,9 @@ void restart_read_bin_nlnstructdyn(STRUCT_DYNAMIC  *sdyn,
    * group. Therefore we can savely forget the pointer afterwards. */
   map = map_read_map(result_info, "sdyn");
 
-  sdyn->Typ = map_read_int(map, "type");
+  // no means to cast to an anonymous enum. Lets rely on the normal
+  // input to set the right type.
+  //sdyn->Typ = map_read_int(map, "type");
   sdyn->updevry_disp = map_read_int(map, "updevry_disp");
   sdyn->updevry_stress = map_read_int(map, "updevry_stress");
   sdyn->res_write_evry = map_read_int(map, "res_write_evry");
@@ -698,8 +704,8 @@ void restart_read_bin_nlnstructstat(STATIC_VAR      *statvar,
 
   statvar->linear = map_read_int(map, "linear");
   statvar->nonlinear = map_read_int(map, "nonlinear");
-  statvar->kintyp = map_read_int(map, "kintyp");
-  statvar->nr_controltyp = map_read_int(map, "nr_controltyp");
+  statvar->kintyp = static_cast<KINTYP>(map_read_int(map, "kintyp"));
+  statvar->nr_controltyp = static_cast<NR_CONTROLTYP>(map_read_int(map, "nr_controltyp"));
   statvar->nstep = map_read_int(map, "nstep");
   statvar->maxiter = map_read_int(map, "maxiter");
   statvar->tolresid = map_read_real(map, "tolresid");

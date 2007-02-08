@@ -47,7 +47,16 @@ out), how the values are collected and how they are put pack.
 #ifndef BIN_PACKING_H
 #define BIN_PACKING_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "../headers/standardtypes.h"
+
+#ifdef __cplusplus
+}
+#endif
+
 #include "io.h"
 
 
