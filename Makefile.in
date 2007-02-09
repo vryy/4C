@@ -244,7 +244,7 @@ $(OBJS_VISUAL):
 
 $(OBJS_IO):
 	@mkdir -p ${DEST}/${@D}
-	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
+	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
 	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
 
 $(OBJS_POST_GID_BIN):

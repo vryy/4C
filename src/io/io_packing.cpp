@@ -34,6 +34,10 @@ function calls.
   \addtogroup IO
 *//*! @{ (documentation module open)*/
 
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
+
 #include "io_packing.h"
 #include "io_singlefile.h"
 #include "io_elements.h"

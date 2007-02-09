@@ -22,6 +22,10 @@ Everybody who wants to output results calls the function defined here.
   \addtogroup IO
 *//*! @{ (documentation module open)*/
 
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
+
 extern "C" {
 
 #include "../headers/standardtypes.h"

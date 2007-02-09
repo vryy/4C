@@ -53,6 +53,10 @@ Mistakes to avoid:
 
 #ifdef BINIO
 
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
+
 #include "io_elements.h"
 
 

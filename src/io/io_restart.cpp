@@ -24,6 +24,10 @@ understand. Feel free to add your own.
 \addtogroup IO
 *//*! @{ (documentation module open)*/
 
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
+
 extern "C" {
 
 #include "../headers/standardtypes.h"

@@ -65,6 +65,10 @@ All io is done using chunks.
 #include <pwd.h>
 #endif
 
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
+
 extern "C" {
 
 #include "../headers/standardtypes.h"
