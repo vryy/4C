@@ -920,6 +920,7 @@ static void out_setup_dof_transfer(BIN_OUT_FIELD *context)
 
 #ifdef TRILINOS_PACKAGE
   case trilinos:
+  {
     calc_max_number(sysarray->trilinos->numeq_total);
     const int numeq = sysarray->trilinos->numeq;
     int* update = sysarray->trilinos->update.a.iv;
@@ -929,6 +930,7 @@ static void out_setup_dof_transfer(BIN_OUT_FIELD *context)
       boilerplate_code;
     }
     break;
+  }
 #endif
 
 #ifdef AZTEC_PACKAGE
