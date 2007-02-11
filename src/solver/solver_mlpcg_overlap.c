@@ -77,9 +77,9 @@ nproc  = actintra->intra_nprocs;
 if (csr->ilu==NULL)
 {
    csr->ilu = (DBCSR*)CCACALLOC(1,sizeof(DBCSR));
-   csr->asm = (DBCSR*)CCACALLOC(1,sizeof(DBCSR));
+   csr->stupid_asm = (DBCSR*)CCACALLOC(1,sizeof(DBCSR));
    ilu      = csr->ilu;
-   asm      = csr->asm;
+   asm      = csr->stupid_asm;
    /*------------------------- find the ghost rows due to overlap of ilu */
    mlpcg_csr_overlap(csr,asm,ilu,mlprecond.overlap,actintra);
    /*---------------- change the enumeration to local and fortran style */
@@ -159,10 +159,10 @@ c           ierr  = -5   --> zero row encountered in A or U.
 else if (csr->ilu->is_factored != mlprecond.ncall && mlprecond.mod==0)
 {
    mlpcg_csr_destroy(asm);
-   csr->asm = CCAFREE(asm);
-   csr->asm = (DBCSR*)CCACALLOC(1,sizeof(DBCSR));
+   csr->stupid_asm = CCAFREE(asm);
+   csr->stupid_asm = (DBCSR*)CCACALLOC(1,sizeof(DBCSR));
    ilu      = csr->ilu;
-   asm      = csr->asm;
+   asm      = csr->stupid_asm;
    /*------------------------- find the ghost rows due to overlap of ilu */
    mlpcg_csr_overlap(csr,asm,ilu,mlprecond.overlap,actintra);
    /*---------------- change the enumeration to local and fortran style */
@@ -910,7 +910,7 @@ dstrc_enter("mlpcg_matvec_asm_overlap");
 myrank = actintra->intra_rank;
 nproc  = actintra->intra_nprocs;
 /*----------------------------------------------------------------------*/
-asm    = A->asm;
+asm    = A->stupid_asm;
 ilu    = A->ilu;
 numeq  = ilu->numeq;
 update = asm->update.a.iv;
