@@ -29,10 +29,14 @@ Maintainer: Michael Gee
 #include "linalg_utils.H"
 #include "linalg_solver.H"
 
+
+
+
 extern "C" /* stuff which is c and is accessed from c++ */
 {
 #include "../headers/standardtypes.h"
 }
+
 #include "dstrc.H" /* needs standardtypes.h */
 
 using namespace std;

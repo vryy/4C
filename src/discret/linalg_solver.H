@@ -32,12 +32,39 @@ Maintainer: Michael Gee
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
 
+#include "ml_common.h"
+#include "ml_include.h"
+#include "ml_epetra_utils.h"
+#include "ml_epetra.h"
+#include "ml_epetra_operator.h"
+#include "ml_MultiLevelPreconditioner.h"
+
+#include "drt_dserror.H"
+
 using namespace std;
 using namespace Teuchos;
 
 
 // forward declarations
 struct _SOLVAR;
+// spooles stuff
+#ifdef PARALLEL
+#ifdef SPOOLES_PACKAGE
+struct _FrontMtx;
+struct _InpMtx;                     
+struct _DenseMtx;               
+struct _Graph;                  
+struct _IVL;                    
+struct _ETree;                  
+struct _SubMtxManager;          
+struct _ChvManager;             
+struct _Chv;                    
+struct _IV;                     
+struct _DV;                     
+struct _DenseMtx;               
+struct _SolveMap;               
+#endif
+#endif
 
 
 /*!
@@ -62,20 +89,31 @@ public:
   /*!
   \brief Standard Constructor
   
+  \params params (in) : parameter list holding solver configuration
+  \params comm (in)   : a reference to a epetra communicator object
   */
-  Solver();
+  Solver(RefCountPtr<ParameterList> params, const Epetra_Comm& comm);
 
-  /*!
-  \brief Copy Constructor
-
-  */
-  Solver(const LINALG::Solver& old);
 
   /*!
   \brief Destructor
 
   */
   virtual ~Solver();
+
+  /*!
+  \brief Solve system of equations
+
+  \params matrix (in/out): system of equations
+  \params x      (in/out): initial guess on input, solution on output
+  \params b      (in)    : right hand side vector
+  \params reset  (in)    : flag indicating whether all data from previous solves should
+                           be recalculated
+  */
+  void Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
+             RefCountPtr<Epetra_Vector>    x,
+             RefCountPtr<Epetra_Vector>    b,
+             bool reset = true);
 
   /*!
   \brief Translate solver input parameters from old ccarat style to
@@ -86,20 +124,123 @@ public:
   \params actsolv (in): ccarat style struct holding solver parameters
 
   */
-  void TranslateSolverParameters(ParameterList& params, struct _SOLVAR* actsolv);
+  void TranslateSolverParameters(ParameterList& params, struct _SOLVAR* actsolv) const;
+
+  /*!
+  \brief Print solver configuration
+
+  */
+  virtual void Print(ostream& os) const;
+
+  /*!
+  \brief Get communicator
+
+  */
+  inline const Epetra_Comm& Comm() const { return comm_; }
+
+  /*!
+  \brief Get Parameters
+
+  */
+  inline ParameterList& Params() const { return *params_; }
+
+  /*!
+  \brief Get number of calls done on this matrix
+
+  */
+  inline const int Ncall() const { return ncall_; }
+
+  /*!
+  \brief Get the factored_ flag
+
+  */
+  inline const bool IsFactored() const { return factored_; }
 
 protected:
+
+  /*!
+  \brief Solve using spooles
+
+  */
+  virtual void Solve_spooles(const bool reset);
+
+  /*!
+  \brief Solve using superlu
+
+  */
+  virtual void Solve_superlu(const bool reset);
+
+  /*!
+  \brief Solve using klu
+
+  */
+  virtual void Solve_klu(const bool reset);
+
+  /*!
+  \brief Solve using umfpack
+
+  */
+  virtual void Solve_umfpack(const bool reset);
+
+  /*!
+  \brief Solve using lapack
+
+  */
+  virtual void Solve_lapack(const bool reset);
+
+  /*!
+  \brief Solve using aztec
+
+  */
+  virtual void Solve_aztec(const bool reset);
+
+  const Epetra_Comm&                comm_;    // a communicator;
+  RefCountPtr<ParameterList>        params_;  // parameter list
+  RefCountPtr<Epetra_CrsMatrix>     A_;       // system of equations
+  RefCountPtr<Epetra_Operator>      P_;       // Preconditioner
+  RefCountPtr<Epetra_Vector>        x_;       // initial guess and solution
+  RefCountPtr<Epetra_Vector>        b_;       // right hand side vector
+  RefCountPtr<Epetra_LinearProblem> lp_;      // a linear problem
+  bool                              factored_;// flag indicating whether matrix was factored before
+  bool                              ncall_;   // counting how many times matrix was solved between resets
+
+#ifdef PARALLEL
+#ifdef SPOOLES_PACKAGE
+  _FrontMtx               *frontmtx_;
+  _InpMtx                 *newA_;
+  _DenseMtx               *newY_;
+  _ETree                  *frontETree_;
+  _SubMtxManager          *mtxmanager_;
+  _IV                     *newToOldIV_;
+  _IV                     *oldToNewIV_;
+  _IV                     *ownersIV_;
+  _IV                     *vtxmapIV_;
+  _IV                     *ownedColumnsIV_;
+  _SolveMap               *solvemap_;
+  _IVL                    *symbfacIVL_;
+  _Graph                  *graph_;
+  _DV                     *cumopsDV_;
+  _DenseMtx               *mtxY_;
+  _ChvManager             *chvmanager_;
+  _DenseMtx               *mtxX_;
+  _InpMtx                 *mtxA_;
+#endif
+#endif
+
 
 private:
 
   // don't want = operator
   Solver operator = (const Solver& old);
-
-
+  // don't want cctor
+  Solver(const LINALG::Solver& old);
+ 
 }; // class Solver
 } // namespace LINALG
 
 
+// << operator
+ostream& operator << (ostream& os, const LINALG::Solver& solver);
 
 
 

@@ -99,6 +99,13 @@ void dyn_nlnstructural_drt()
   memset(&dynvar, 0, sizeof(STRUCT_DYN_CALC));
   double          acttime = 0.0;
   
+  //-----------------------------------------------------create a solver
+  RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
+  LINALG::Solver solver(solveparams,actdis->Comm());
+  solver.TranslateSolverParameters(*solveparams,actsolv);
+  actdis->ComputeNullSpaceIfNecessary(*solveparams);
+  cout << solver;
+
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
@@ -360,14 +367,10 @@ void dyn_nlnstructural_drt()
   }
   LINALG::Complete(*eff_mat);
 
-  //============================================================create a solver
-  LINALG::Solver solver;
-  ParameterList  solveparams;
-  solver.TranslateSolverParameters(solveparams,actsolv);
-  actdis->ComputeNullSpaceIfNecessary(solveparams);
 
   //============================================== solve for dx = Keff^-1 * rhs
-  //solver.Solve(solveparams,eff_mat,dx,rhs);
+  solver.Solve(eff_mat,dx,rhs,true);
+  solver.Solve(eff_mat,dx,rhs,false);
 
 
 

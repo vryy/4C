@@ -18,37 +18,49 @@ Maintainer: Michael Gee
 #else
 #include "Epetra_SerialComm.h"
 #endif
+
 #include "linalg_solver.H"
 
 extern "C" 
 {
-
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 }
-#include "dstrc.H"
-
-#include "ml_common.h"
-#include "ml_include.h"
-#include "ml_epetra_utils.h"
-#include "ml_epetra.h"
-#include "ml_epetra_operator.h"
-#include "ml_MultiLevelPreconditioner.h"
-
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 02/07|
  *----------------------------------------------------------------------*/
-LINALG::Solver::Solver()
+LINALG::Solver::Solver(RefCountPtr<ParameterList> params, 
+                       const Epetra_Comm& comm) :
+comm_(comm),
+params_(params),
+factored_(false),
+ncall_(0)
 {
-  return;
-}
+  // create an empty linear problem
+  lp_ = rcp(new Epetra_LinearProblem());
 
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       mwgee 02/07|
- *----------------------------------------------------------------------*/
-LINALG::Solver::Solver(const LINALG::Solver& old)
-{
+#ifdef PARALLEL
+#ifdef SPOOLES_PACKAGE
+  frontmtx_      =NULL;
+  newA_          =NULL;
+  newY_          =NULL;
+  frontETree_    =NULL;
+  mtxmanager_    =NULL;
+  newToOldIV_    =NULL;
+  oldToNewIV_    =NULL;
+  ownersIV_      =NULL;
+  vtxmapIV_      =NULL;
+  ownedColumnsIV_=NULL;
+  solvemap_      =NULL;
+  symbfacIVL_    =NULL;  
+  graph_         =NULL;
+  mtxY_          =NULL;
+  mtxX_          =NULL;
+  mtxA_          =NULL;
+#endif
+#endif
+
   return;
 }
 
@@ -57,6 +69,140 @@ LINALG::Solver::Solver(const LINALG::Solver& old)
  *----------------------------------------------------------------------*/
 LINALG::Solver::~Solver()
 {
+#ifdef PARALLEL
+#ifdef SPOOLES_PACKAGE
+    if (frontmtx_)       FrontMtx_free(frontmtx_);        frontmtx_      =NULL;
+    if (newA_)           InpMtx_free(newA_);              newA_          =NULL;
+    if (newY_)           DenseMtx_free(newY_);            newY_          =NULL;
+    if (frontETree_)     ETree_free(frontETree_);         frontETree_    =NULL;
+    if (mtxmanager_)     SubMtxManager_free(mtxmanager_); mtxmanager_    =NULL;
+    if (newToOldIV_)     IV_free(newToOldIV_);            newToOldIV_    =NULL;
+    if (oldToNewIV_)     IV_free(oldToNewIV_);            oldToNewIV_    =NULL;
+    if (ownersIV_)       IV_free(ownersIV_);              ownersIV_      =NULL;
+    if (vtxmapIV_)       IV_free(vtxmapIV_);              vtxmapIV_      =NULL;
+    if (ownedColumnsIV_) IV_free(ownedColumnsIV_);        ownedColumnsIV_=NULL;
+    if (solvemap_)       SolveMap_free(solvemap_);        solvemap_      =NULL;
+    if (graph_)          Graph_free(graph_);              graph_         =NULL;
+    if (mtxY_)           DenseMtx_free(mtxY_);            mtxY_          =NULL;
+    if (mtxX_)           DenseMtx_free(mtxX_);            mtxX_          =NULL;
+    if (mtxA_)           InpMtx_free(mtxA_);              mtxA_          =NULL;
+    if (symbfacIVL_)     IVL_free(symbfacIVL_);           symbfacIVL_    =NULL;
+#endif
+#endif
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  << operator                                              mwgee 02/07|
+ *----------------------------------------------------------------------*/
+ostream& operator << (ostream& os, const LINALG::Solver& solver)
+{
+  solver.Print(os); 
+  return os;
+}
+
+/*----------------------------------------------------------------------*
+ |  print solver (public)                                    mwgee 02/07|
+ *----------------------------------------------------------------------*/
+void LINALG::Solver::Print(ostream& os) const
+{
+  if (Comm().MyPID()==0) 
+  {
+    os << "============================LINALG::Solver Parameter List\n";
+    os << *params_;
+    os << "========================end LINALG::Solver Parameter List\n";
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  solve (public)                                           mwgee 02/07|
+ *----------------------------------------------------------------------*/
+void LINALG::Solver::Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
+                           RefCountPtr<Epetra_Vector>    x,
+                           RefCountPtr<Epetra_Vector>    b,
+                           bool reset)
+{
+  // set the data passed to the method
+  A_ = matrix;
+  x_ = x;
+  b_ = b;
+  
+  // fill the linear problem
+  lp_->SetRHS(b_.get());
+  lp_->SetLHS(x_.get());
+  lp_->SetOperator(A_.get());
+  
+  // reset data flags
+  if (reset)
+  {
+    ncall_ = 0;
+    factored_ = false;
+  }
+  
+  // get symmetry info
+  //bool symmetric = Params().get("symmetric",false);
+
+  // decide what solver to use
+  string solvertype = Params().get("solver","none");
+  if      ("lapack" ==solvertype) Solve_lapack(reset);
+  else if ("klu"    ==solvertype) Solve_klu(reset);
+  else if ("umfpack"==solvertype) Solve_umfpack(reset);
+  else if ("aztec"  ==solvertype) Solve_aztec(reset);
+#ifdef PARALLEL
+  else if ("superlu"==solvertype) Solve_superlu(reset);
+#endif
+#ifdef PARALLEL
+#ifdef SPOOLES_PACKAGE
+  else if ("spooles"==solvertype) Solve_spooles(reset);
+#endif
+#endif
+  else if ("none"   ==solvertype) dserror("Unknown type of solver");
+  
+  factored_ = true;
+  ncall_++;
+  
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  solve (protected)                                        mwgee 02/07|
+ *----------------------------------------------------------------------*/
+void LINALG::Solver::Solve_superlu(const bool reset)
+{
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  solve (protected)                                        mwgee 02/07|
+ *----------------------------------------------------------------------*/
+void LINALG::Solver::Solve_klu(const bool reset)
+{
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  solve (protected)                                        mwgee 02/07|
+ *----------------------------------------------------------------------*/
+void LINALG::Solver::Solve_umfpack(const bool reset)
+{
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  solve (protected)                                        mwgee 02/07|
+ *----------------------------------------------------------------------*/
+void LINALG::Solver::Solve_lapack(const bool reset)
+{
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  solve (protected)                                        mwgee 02/07|
+ *----------------------------------------------------------------------*/
+void LINALG::Solver::Solve_aztec(const bool reset)
+{
   return;
 }
 
@@ -64,7 +210,7 @@ LINALG::Solver::~Solver()
  |  translate solver parameters (public)                     mwgee 02/07|
  *----------------------------------------------------------------------*/
 void LINALG::Solver::TranslateSolverParameters(ParameterList& params, 
-                                          struct _SOLVAR* actsolv)
+                                          struct _SOLVAR* actsolv) const
 {
   // switch type of solver
   switch (actsolv->solvertyp)
