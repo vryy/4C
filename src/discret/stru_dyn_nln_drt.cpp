@@ -36,6 +36,17 @@ extern struct _FIELD      *field;
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 
+/*!----------------------------------------------------------------------
+\brief file pointers
+
+<pre>                                                         m.gee 8/00
+This structure struct _FILES allfiles is defined in input_control_global.c
+and the type is in standardtypes.h
+It holds all file pointers and some variables needed for the FRSYSTEM
+</pre>
+*----------------------------------------------------------------------*/
+extern struct _FILES  allfiles;
+
 /*----------------------------------------------------------------------*
  | global variable *solv, vector of lenght numfld of structures SOLVAR  |
  | defined in solver_control.c                                          |
@@ -101,10 +112,9 @@ void dyn_nlnstructural_drt()
   
   //-----------------------------------------------------create a solver
   RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
-  LINALG::Solver solver(solveparams,actdis->Comm());
+  LINALG::Solver solver(solveparams,actdis->Comm(),allfiles.out_err);
   solver.TranslateSolverParameters(*solveparams,actsolv);
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
-  cout << solver;
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -370,8 +380,6 @@ void dyn_nlnstructural_drt()
 
   //============================================== solve for dx = Keff^-1 * rhs
   solver.Solve(eff_mat,dx,rhs,true);
-  solver.Solve(eff_mat,dx,rhs,false);
-
 
 
 

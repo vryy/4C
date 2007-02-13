@@ -39,6 +39,19 @@ Maintainer: Michael Gee
 #include "ml_epetra_operator.h"
 #include "ml_MultiLevelPreconditioner.h"
 
+#include "AztecOO.h"
+
+#include "Ifpack.h"
+#include "Ifpack_AdditiveSchwarz.h"
+
+#include "Amesos_Klu.h"
+#include "Amesos_Umfpack.h"
+#include "Amesos_Lapack.h"
+// Trilinos is configured SuperLUDIST only in the parallel version
+#ifdef PARALLEL
+#include "Amesos_Superludist.h"
+#endif
+
 #include "drt_dserror.H"
 
 using namespace std;
@@ -89,10 +102,10 @@ public:
   /*!
   \brief Standard Constructor
   
-  \params params (in) : parameter list holding solver configuration
-  \params comm (in)   : a reference to a epetra communicator object
+  \param params (in) : parameter list holding solver configuration
+  \param comm (in)   : a reference to a epetra communicator object
   */
-  Solver(RefCountPtr<ParameterList> params, const Epetra_Comm& comm);
+  Solver(RefCountPtr<ParameterList> params, const Epetra_Comm& comm, FILE* outfile);
 
 
   /*!
@@ -104,10 +117,10 @@ public:
   /*!
   \brief Solve system of equations
 
-  \params matrix (in/out): system of equations
-  \params x      (in/out): initial guess on input, solution on output
-  \params b      (in)    : right hand side vector
-  \params reset  (in)    : flag indicating whether all data from previous solves should
+  \param matrix (in/out): system of equations
+  \param x      (in/out): initial guess on input, solution on output
+  \param b      (in)    : right hand side vector
+  \param reset  (in)    : flag indicating whether all data from previous solves should
                            be recalculated
   */
   void Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
@@ -116,12 +129,19 @@ public:
              bool reset = true);
 
   /*!
+  \brief Reset the solver and clear data
+
+  All data is destroyed except the parameter list
+  */
+  void Reset();
+
+  /*!
   \brief Translate solver input parameters from old ccarat style to
          new solver parameters list style
          
-  \params params (out): parameter list holding new style solver parameters
-                        on output
-  \params actsolv (in): ccarat style struct holding solver parameters
+  \param params (out): parameter list holding new style solver parameters
+                       on output
+  \param actsolv (in): ccarat style struct holding solver parameters
 
   */
   void TranslateSolverParameters(ParameterList& params, struct _SOLVAR* actsolv) const;
@@ -196,13 +216,18 @@ protected:
 
   const Epetra_Comm&                comm_;    // a communicator;
   RefCountPtr<ParameterList>        params_;  // parameter list
+  FILE*                             outfile_; // file to write output to
   RefCountPtr<Epetra_CrsMatrix>     A_;       // system of equations
   RefCountPtr<Epetra_Operator>      P_;       // Preconditioner
+  RefCountPtr<Epetra_CrsMatrix>     Pmatrix_; // system of equations used for preconditioning
   RefCountPtr<Epetra_Vector>        x_;       // initial guess and solution
   RefCountPtr<Epetra_Vector>        b_;       // right hand side vector
   RefCountPtr<Epetra_LinearProblem> lp_;      // a linear problem
   bool                              factored_;// flag indicating whether matrix was factored before
-  bool                              ncall_;   // counting how many times matrix was solved between resets
+  int                               ncall_;   // counting how many times matrix was solved between resets
+
+  RefCountPtr<Amesos_BaseSolver>    amesos_;  // an abstract amesos solver
+  RefCountPtr<AztecOO>              aztec_;   // an aztec solver
 
 #ifdef PARALLEL
 #ifdef SPOOLES_PACKAGE

@@ -31,9 +31,10 @@ extern "C"
  |  ctor (public)                                            mwgee 02/07|
  *----------------------------------------------------------------------*/
 LINALG::Solver::Solver(RefCountPtr<ParameterList> params, 
-                       const Epetra_Comm& comm) :
+                       const Epetra_Comm& comm, FILE* outfile) :
 comm_(comm),
 params_(params),
+outfile_(outfile),
 factored_(false),
 ncall_(0)
 {
@@ -71,25 +72,59 @@ LINALG::Solver::~Solver()
 {
 #ifdef PARALLEL
 #ifdef SPOOLES_PACKAGE
-    if (frontmtx_)       FrontMtx_free(frontmtx_);        frontmtx_      =NULL;
-    if (newA_)           InpMtx_free(newA_);              newA_          =NULL;
-    if (newY_)           DenseMtx_free(newY_);            newY_          =NULL;
-    if (frontETree_)     ETree_free(frontETree_);         frontETree_    =NULL;
-    if (mtxmanager_)     SubMtxManager_free(mtxmanager_); mtxmanager_    =NULL;
-    if (newToOldIV_)     IV_free(newToOldIV_);            newToOldIV_    =NULL;
-    if (oldToNewIV_)     IV_free(oldToNewIV_);            oldToNewIV_    =NULL;
-    if (ownersIV_)       IV_free(ownersIV_);              ownersIV_      =NULL;
-    if (vtxmapIV_)       IV_free(vtxmapIV_);              vtxmapIV_      =NULL;
-    if (ownedColumnsIV_) IV_free(ownedColumnsIV_);        ownedColumnsIV_=NULL;
-    if (solvemap_)       SolveMap_free(solvemap_);        solvemap_      =NULL;
-    if (graph_)          Graph_free(graph_);              graph_         =NULL;
-    if (mtxY_)           DenseMtx_free(mtxY_);            mtxY_          =NULL;
-    if (mtxX_)           DenseMtx_free(mtxX_);            mtxX_          =NULL;
-    if (mtxA_)           InpMtx_free(mtxA_);              mtxA_          =NULL;
-    if (symbfacIVL_)     IVL_free(symbfacIVL_);           symbfacIVL_    =NULL;
+  if (frontmtx_)       FrontMtx_free(frontmtx_);        frontmtx_      =NULL;
+  if (newA_)           InpMtx_free(newA_);              newA_          =NULL;
+  if (newY_)           DenseMtx_free(newY_);            newY_          =NULL;
+  if (frontETree_)     ETree_free(frontETree_);         frontETree_    =NULL;
+  if (mtxmanager_)     SubMtxManager_free(mtxmanager_); mtxmanager_    =NULL;
+  if (newToOldIV_)     IV_free(newToOldIV_);            newToOldIV_    =NULL;
+  if (oldToNewIV_)     IV_free(oldToNewIV_);            oldToNewIV_    =NULL;
+  if (ownersIV_)       IV_free(ownersIV_);              ownersIV_      =NULL;
+  if (vtxmapIV_)       IV_free(vtxmapIV_);              vtxmapIV_      =NULL;
+  if (ownedColumnsIV_) IV_free(ownedColumnsIV_);        ownedColumnsIV_=NULL;
+  if (solvemap_)       SolveMap_free(solvemap_);        solvemap_      =NULL;
+  if (graph_)          Graph_free(graph_);              graph_         =NULL;
+  if (mtxY_)           DenseMtx_free(mtxY_);            mtxY_          =NULL;
+  if (mtxX_)           DenseMtx_free(mtxX_);            mtxX_          =NULL;
+  if (mtxA_)           InpMtx_free(mtxA_);              mtxA_          =NULL;
+  if (symbfacIVL_)     IVL_free(symbfacIVL_);           symbfacIVL_    =NULL;
 #endif
 #endif
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  reset solver (public)                                    mwgee 02/07|
+ *----------------------------------------------------------------------*/
+void LINALG::Solver::Reset()
+{
+  A_        = null;
+  P_        = null;
+  x_        = null;
+  b_        = null;
+  lp_       = rcp(new Epetra_LinearProblem());
+  factored_ = false;
+  ncall_    = 0;
+#ifdef PARALLEL
+#ifdef SPOOLES_PACKAGE
+  if (frontmtx_)       FrontMtx_free(frontmtx_);        frontmtx_      =NULL;
+  if (newA_)           InpMtx_free(newA_);              newA_          =NULL;
+  if (newY_)           DenseMtx_free(newY_);            newY_          =NULL;
+  if (frontETree_)     ETree_free(frontETree_);         frontETree_    =NULL;
+  if (mtxmanager_)     SubMtxManager_free(mtxmanager_); mtxmanager_    =NULL;
+  if (newToOldIV_)     IV_free(newToOldIV_);            newToOldIV_    =NULL;
+  if (oldToNewIV_)     IV_free(oldToNewIV_);            oldToNewIV_    =NULL;
+  if (ownersIV_)       IV_free(ownersIV_);              ownersIV_      =NULL;
+  if (vtxmapIV_)       IV_free(vtxmapIV_);              vtxmapIV_      =NULL;
+  if (ownedColumnsIV_) IV_free(ownedColumnsIV_);        ownedColumnsIV_=NULL;
+  if (solvemap_)       SolveMap_free(solvemap_);        solvemap_      =NULL;
+  if (graph_)          Graph_free(graph_);              graph_         =NULL;
+  if (mtxY_)           DenseMtx_free(mtxY_);            mtxY_          =NULL;
+  if (mtxX_)           DenseMtx_free(mtxX_);            mtxX_          =NULL;
+  if (mtxA_)           InpMtx_free(mtxA_);              mtxA_          =NULL;
+  if (symbfacIVL_)     IVL_free(symbfacIVL_);           symbfacIVL_    =NULL;
+#endif
+#endif
 }
 
 /*----------------------------------------------------------------------*
@@ -140,24 +175,28 @@ void LINALG::Solver::Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
     factored_ = false;
   }
   
-  // get symmetry info
-  //bool symmetric = Params().get("symmetric",false);
-
   // decide what solver to use
   string solvertype = Params().get("solver","none");
-  if      ("lapack" ==solvertype) Solve_lapack(reset);
-  else if ("klu"    ==solvertype) Solve_klu(reset);
-  else if ("umfpack"==solvertype) Solve_umfpack(reset);
-  else if ("aztec"  ==solvertype) Solve_aztec(reset);
+  if      ("lapack" ==solvertype) 
+    Solve_lapack(reset);
+  else if ("klu"    ==solvertype) 
+    Solve_klu(reset);
+  else if ("umfpack"==solvertype) 
+    Solve_umfpack(reset);
 #ifdef PARALLEL
-  else if ("superlu"==solvertype) Solve_superlu(reset);
+  else if ("superlu"==solvertype) 
+    Solve_superlu(reset);
 #endif
 #ifdef PARALLEL
 #ifdef SPOOLES_PACKAGE
-  else if ("spooles"==solvertype) Solve_spooles(reset);
+  else if ("spooles"==solvertype) 
+    Solve_spooles(reset);
 #endif
 #endif
-  else if ("none"   ==solvertype) dserror("Unknown type of solver");
+  else if ("aztec"  ==solvertype) 
+    Solve_aztec(reset);
+  else if ("none"   ==solvertype) 
+    dserror("Unknown type of solver");
   
   factored_ = true;
   ncall_++;
@@ -169,16 +208,222 @@ void LINALG::Solver::Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
 /*----------------------------------------------------------------------*
  |  solve (protected)                                        mwgee 02/07|
  *----------------------------------------------------------------------*/
-void LINALG::Solver::Solve_superlu(const bool reset)
+void LINALG::Solver::Solve_aztec(const bool reset)
 {
+  if (!Params().isSublist("Aztec Parameters")) 
+    dserror("Do not have aztec parameter list");
+  ParameterList& azlist = Params().sublist("Aztec Parameters");
+
+  // decide whether we recreate preconditioners
+  bool create = false;
+  int  reuse  = azlist.get("reuse",0);
+  if      (reset)            create = true;
+  else if (!IsFactored())    create = true;
+  else if (!Ncall())         create = true;
+  else if (!reuse)           create = true;
+  else if (Ncall()%reuse==0) create = true;
+
+  // Allocate an aztec solver
+  if (create)
+  {
+    // create an aztec solver
+    aztec_ = rcp(new AztecOO());
+    aztec_->SetAztecDefaults();
+    aztec_->SetParameters(azlist,false);
+  }
+
+  // decide whether we do what kind of scaling
+  bool scaling_infnorm = false;
+  bool scaling_symdiag = false;
+  string scaling = azlist.get("scaling","none");
+  if (scaling=="none");
+  else if (scaling=="infnorm")
+  {
+    scaling_infnorm = true;
+    scaling_symdiag = false;
+  }
+  else if (scaling=="symmetric")
+  {
+    scaling_infnorm = false;
+    scaling_symdiag = true;
+  }
+  else dserror("Unknown type of scaling found in parameter list");	
+
+  // do infnorm scaling
+  RefCountPtr<Epetra_Vector> rowsum;
+  RefCountPtr<Epetra_Vector> colsum;
+  if (scaling_infnorm)
+  {
+    rowsum = rcp(new Epetra_Vector(A_->RowMap(),false));
+    colsum = rcp(new Epetra_Vector(A_->RowMap(),false));
+    A_->InvRowSums(*rowsum);
+    A_->InvColSums(*colsum);
+    lp_->LeftScale(*rowsum);
+    lp_->RightScale(*colsum);
+  }
+  
+  // do symmetric diagonal scaling
+  RefCountPtr<Epetra_Vector> diag;
+  if (scaling_symdiag)
+  {
+    Epetra_Vector invdiag(A_->RowMap(),false);
+    diag = rcp(new Epetra_Vector(A_->RowMap(),false));
+    A_->ExtractDiagonalCopy(*diag);
+    invdiag.Reciprocal(*diag);
+    lp_->LeftScale(invdiag);
+    lp_->RightScale(invdiag);
+  }
+  
+  aztec_->SetProblem(*lp_);
+
+  // get type of preconditioner and build either Ifpack or ML
+  // if we have an ifpack parameter list, we do ifpack
+  // if we have an ml parameter list we do ml
+  bool doifpack = Params().isSublist("IFPACK Parameters");
+  bool doml     = Params().isSublist("ML Parameters");
+
+  // do ifpack if desired
+  if (create && doifpack)
+  {
+    ParameterList&  ifpacklist = Params().sublist("IFPACK Parameters");
+    // create a copy of the scaled matrix
+    // so we can reuse the precondition
+    Pmatrix_ = rcp(new Epetra_CrsMatrix(*A_));
+    // get the type of ifpack preconditioner from aztec
+    string prectype = azlist.get("preconditioner","ILU");
+    int    overlap  = azlist.get("AZ_overlap",0);
+    Ifpack Factory;
+    Ifpack_Preconditioner* prec = Factory.Create(prectype,Pmatrix_.get(),overlap);
+    prec->SetParameters(ifpacklist);
+    prec->Initialize();
+    prec->Compute();
+    P_ = rcp(prec);
+  }
+  
+  // do ml if desired
+  if (create && doml)
+  {
+    ParameterList&  mllist = Params().sublist("ML Parameters");
+    // create a copy of the scaled matrix
+    // so we can reuse the precondition
+    Pmatrix_ = rcp(new Epetra_CrsMatrix(*A_));
+    P_ = rcp(new ML_Epetra::MultiLevelPreconditioner(*Pmatrix_,mllist,true));
+  }
+  
+  if (doifpack || doml)
+    aztec_->SetPrecOperator(P_.get());
+
+  // iterate on the solution
+  int iter = azlist.get("AZ_max_iter",500);
+  double tol = azlist.get("AZ_tol",1.0e-6);
+  aztec_->Iterate(iter,tol);
+  
+  // check status of solution process
+  const double* status = aztec_->GetAztecStatus();
+  if (status[AZ_why] != AZ_normal)
+  {
+    bool resolve = false;
+    if (status[AZ_why] == AZ_breakdown)
+    {
+      if (Comm().MyPID()==0)
+        printf("Numerical breakdown in AztecOO, try again with KLU/SuperLU\n");
+      resolve = true;
+    }
+    else if (status[AZ_why] == AZ_ill_cond)
+    {
+      if (Comm().MyPID()==0)
+        printf("Problem is near singular in AztecOO, try again with KLU/SuperLU\n");
+      resolve = true;
+    }
+    else if (status[AZ_why] == AZ_maxits)
+    {
+      if (Comm().MyPID()==0)
+        printf("Max iterations reached in AztecOO, try again with KLU/SuperLU\n");
+      resolve = true;
+    }
+    if (resolve)
+    {
+#ifdef PARALLEL
+      if (Comm().MyPID()==0) cout << "Retrying using SuperLU\n"; fflush(stdout);
+      Amesos_Superludist superlusolver(*lp_);
+      int err = superlusolver.SymbolicFactorization();
+      if (err) dserror("SuperLU.SymbolicFactorization() returned %d",err);
+      err     = superlusolver.NumericFactorization();
+      if (err) dserror("SuperLU.NumericFactorization() returned %d",err);
+      err     = superlusolver.Solve();
+      if (err) dserror("SuperLU.Solve() returned %d",err);
+#else
+      if (Comm().MyPID()==0) cout << "Retrying using KLU\n"; fflush(stdout);
+      Amesos_Klu klusolver(*lp_);
+      int err = klusolver.SymbolicFactorization();
+      if (err) dserror("Amesos_Klu.SymbolicFactorization() returned %d",err);
+      err     = klusolver.NumericFactorization();
+      if (err) dserror("Amesos_Klu.NumericFactorization() returned %d",err);
+      err     = klusolver.Solve();
+      if (err) dserror("Amesos_Klu.Solve() returned %d",err);        
+#endif      
+    }
+  } // if (status[AZ_why] != AZ_normal)
+
+  // undo scaling
+  if (scaling_infnorm)
+  {
+    Epetra_Vector invrowsum(A_->RowMap(),false);
+    invrowsum.Reciprocal(*rowsum);
+    rowsum = null;
+    Epetra_Vector invcolsum(A_->RowMap(),false);
+    invcolsum.Reciprocal(*colsum);
+    colsum = null;
+    lp_->LeftScale(invrowsum);
+    lp_->RightScale(invcolsum);
+  }
+  if (scaling_symdiag)
+  {
+    lp_->LeftScale(*diag);
+    lp_->RightScale(*diag);
+    diag = null;
+  }
+  
+
+
+  // print some output if desired
+  if (Comm().MyPID()==0 && azlist.get("AZ_output",0) && outfile_)
+  {
+    fprintf(outfile_,"AztecOO: unknowns/iterations/time %d  %d  %f\n",
+            A_->NumGlobalRows(),(int)status[AZ_its],status[AZ_solve_time]);
+    fflush(outfile_);
+  }
+
   return;
 }
+
+
 
 /*----------------------------------------------------------------------*
  |  solve (protected)                                        mwgee 02/07|
  *----------------------------------------------------------------------*/
-void LINALG::Solver::Solve_klu(const bool reset)
+void LINALG::Solver::Solve_superlu(const bool reset)
 {
+#ifdef PARALLEL
+  if (reset || !IsFactored())
+    amesos_ = rcp(new Amesos_Superludist(*lp_));
+
+  if (amesos_==null) dserror("No solver allocated");
+
+  // Problem has not been factorized before
+  if (!IsFactored())
+  {
+    int err = amesos_->SymbolicFactorization();
+    if (err) dserror("Amesos::SymbolicFactorization returned an err");
+    err = amesos_->NumericFactorization();
+    if (err) dserror("Amesos::NumericFactorization returned an err");
+  }
+  
+  int err = amesos_->Solve();
+  if (err) dserror("Amesos::Solve returned an err");
+#else
+  dserror("Distributed SuperLU only in parallel");
+#endif  
   return;
 }
 
@@ -187,6 +432,52 @@ void LINALG::Solver::Solve_klu(const bool reset)
  *----------------------------------------------------------------------*/
 void LINALG::Solver::Solve_umfpack(const bool reset)
 {
+  if (reset || !IsFactored())
+    amesos_ = rcp(new Amesos_Umfpack(*lp_));
+
+  if (amesos_==null) dserror("No solver allocated");
+
+  // Problem has not been factorized before
+  if (!IsFactored())
+  {
+    bool symmetric = Params().get("symmetric",false);
+    amesos_->SetUseTranspose(symmetric);
+    int err = amesos_->SymbolicFactorization();
+    if (err) dserror("Amesos::SymbolicFactorization returned an err");
+    err = amesos_->NumericFactorization();
+    if (err) dserror("Amesos::NumericFactorization returned an err");
+  }
+  
+  int err = amesos_->Solve();
+  if (err) dserror("Amesos::Solve returned an err");
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  solve (protected)                                        mwgee 02/07|
+ *----------------------------------------------------------------------*/
+void LINALG::Solver::Solve_klu(const bool reset)
+{
+  if (reset || !IsFactored())
+    amesos_ = rcp(new Amesos_Klu(*lp_));
+
+  if (amesos_==null) dserror("No solver allocated");
+
+  // Problem has not been factorized before
+  if (!IsFactored())
+  {
+    bool symmetric = Params().get("symmetric",false);
+    amesos_->SetUseTranspose(symmetric);
+    int err = amesos_->SymbolicFactorization();
+    if (err) dserror("Amesos::SymbolicFactorization returned an err");
+    err = amesos_->NumericFactorization();
+    if (err) dserror("Amesos::NumericFactorization returned an err");
+  }
+  
+  int err = amesos_->Solve();
+  if (err) dserror("Amesos::Solve returned an err");
+  
   return;
 }
 
@@ -195,14 +486,23 @@ void LINALG::Solver::Solve_umfpack(const bool reset)
  *----------------------------------------------------------------------*/
 void LINALG::Solver::Solve_lapack(const bool reset)
 {
-  return;
-}
+  if (reset || !IsFactored())
+    amesos_ = rcp(new Amesos_Lapack(*lp_));
 
-/*----------------------------------------------------------------------*
- |  solve (protected)                                        mwgee 02/07|
- *----------------------------------------------------------------------*/
-void LINALG::Solver::Solve_aztec(const bool reset)
-{
+  if (amesos_==null) dserror("No solver allocated");
+
+  // Problem has not been factorized before
+  if (!IsFactored())
+  {
+    int err = amesos_->SymbolicFactorization();
+    if (err) dserror("Amesos::SymbolicFactorization returned an err");
+    err = amesos_->NumericFactorization();
+    if (err) dserror("Amesos::NumericFactorization returned an err");
+  }
+  
+  int err = amesos_->Solve();
+  if (err) dserror("Amesos::Solve returned an err");
+  
   return;
 }
 
@@ -252,6 +552,8 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
       azlist.set("scaling","symmetric");
     else if (azvar->azscal==2)
       azlist.set("scaling","infnorm");
+    else
+      azlist.set("scaling","none");
     //--------------------------------------------- set type of solver
     switch (azvar->azsolvertyp)
     {
@@ -272,10 +574,12 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
     case azprec_ILUT:
       // using ifpack
       azlist.set("AZ_precond",AZ_user_precond);
+      azlist.set("preconditioner","ILUT");
     break;
     case azprec_ILU:
       // using ifpack
       azlist.set("AZ_precond",AZ_user_precond);
+      azlist.set("preconditioner","ILU");
     break;
     case azprec_Jacobi:
       azlist.set("AZ_precond",AZ_Jacobi);
@@ -292,6 +596,7 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
     case azprec_LU:
       // using ifpack
       azlist.set("AZ_precond",AZ_user_precond);
+      azlist.set("preconditioner","Amesos");
     break;
     case azprec_RILU:
       azlist.set("AZ_precond",AZ_dom_decomp);
@@ -301,6 +606,7 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
     case azprec_ICC:
       // using ifpack
       azlist.set("AZ_precond",AZ_user_precond);
+      azlist.set("preconditioner","IC");
     break;
     case azprec_ML:
     case azprec_MLfluid:
