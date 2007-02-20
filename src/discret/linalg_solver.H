@@ -120,13 +120,15 @@ public:
   \param matrix (in/out): system of equations
   \param x      (in/out): initial guess on input, solution on output
   \param b      (in)    : right hand side vector
+  \param refactor (in)  : flag indicating whether system should be refactorized
   \param reset  (in)    : flag indicating whether all data from previous solves should
                            be recalculated
   */
   void Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
              RefCountPtr<Epetra_Vector>    x,
              RefCountPtr<Epetra_Vector>    b,
-             bool reset = true);
+             bool refactor,
+             bool reset = false);
 
   /*!
   \brief Reset the solver and clear data

@@ -100,11 +100,14 @@ void LINALG::Solver::Reset()
 {
   A_        = null;
   P_        = null;
+  Pmatrix_  = null;
   x_        = null;
   b_        = null;
   lp_       = rcp(new Epetra_LinearProblem());
   factored_ = false;
   ncall_    = 0;
+  amesos_   = null;
+  aztec_    = null;
 #ifdef PARALLEL
 #ifdef SPOOLES_PACKAGE
   if (frontmtx_)       FrontMtx_free(frontmtx_);        frontmtx_      =NULL;
@@ -156,24 +159,28 @@ void LINALG::Solver::Print(ostream& os) const
 void LINALG::Solver::Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
                            RefCountPtr<Epetra_Vector>    x,
                            RefCountPtr<Epetra_Vector>    b,
+                           bool refactor,
                            bool reset)
 {
+  // reset data flags
+  if (reset) 
+  {
+    Reset();
+    refactor = true;
+  }
+  
   // set the data passed to the method
-  A_ = matrix;
+  if (refactor) A_ = matrix;
   x_ = x;
   b_ = b;
+  
+  // set flag indicating that problem should be refactorized
+  if (refactor) factored_ = false;
   
   // fill the linear problem
   lp_->SetRHS(b_.get());
   lp_->SetLHS(x_.get());
   lp_->SetOperator(A_.get());
-  
-  // reset data flags
-  if (reset)
-  {
-    ncall_ = 0;
-    factored_ = false;
-  }
   
   // decide what solver to use
   string solvertype = Params().get("solver","none");
@@ -218,7 +225,6 @@ void LINALG::Solver::Solve_aztec(const bool reset)
   bool create = false;
   int  reuse  = azlist.get("reuse",0);
   if      (reset)            create = true;
-  else if (!IsFactored())    create = true;
   else if (!Ncall())         create = true;
   else if (!reuse)           create = true;
   else if (Ncall()%reuse==0) create = true;
@@ -229,7 +235,7 @@ void LINALG::Solver::Solve_aztec(const bool reset)
     // create an aztec solver
     aztec_ = rcp(new AztecOO());
     aztec_->SetAztecDefaults();
-    aztec_->SetParameters(azlist,false);
+    aztec_->SetParameters(azlist,false); 
   }
 
   // decide whether we do what kind of scaling
@@ -387,7 +393,7 @@ void LINALG::Solver::Solve_aztec(const bool reset)
 
 
   // print some output if desired
-  if (Comm().MyPID()==0 && azlist.get("AZ_output",0) && outfile_)
+  if (Comm().MyPID()==0 && outfile_)
   {
     fprintf(outfile_,"AztecOO: unknowns/iterations/time %d  %d  %f\n",
             A_->NumGlobalRows(),(int)status[AZ_its],status[AZ_solve_time]);
