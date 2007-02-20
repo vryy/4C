@@ -134,6 +134,33 @@ namespace LINALG
   void Add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
            Epetra_CrsMatrix& B, const double scalarB);
 
+  /*!
+  \brief Apply dirichlet boundary condition to a linear system of equations
+    
+  
+  \param A         (in/out) : Matrix to of Ax=b
+  \param x         (in/out) : initial guess vector of Ax=b
+  \param b         (in/out) : rhs vector of Ax=b
+  \param dbcval    (in)     : vector holding prescribed dirichlet values
+  \param dbctoggle (in)     : vector holding 1.0 where dirichlet should be applied
+                              and 0.0 everywhere else
+  */
+  void ApplyDirichlettoSystem(RefCountPtr<Epetra_CrsMatrix>&   A,
+                              RefCountPtr<Epetra_Vector>&      x,
+                              RefCountPtr<Epetra_Vector>&      b,
+                              const RefCountPtr<Epetra_Vector> dbcval,
+                              const RefCountPtr<Epetra_Vector> dbctoggle);
+
+  /*!
+  \brief Apply dirichlet boundary condition to a linear system of equations
+    
+  
+  \param A         (in/out) : Matrix to of Ax=b
+  \param dbctoggle (in)     : vector holding 1.0 where dirichlet should be applied
+                              and 0.0 everywhere else
+  */
+  void ApplyDirichlettoSystem(RefCountPtr<Epetra_CrsMatrix>&   A,
+                              const RefCountPtr<Epetra_Vector> dbctoggle);
 
 } // namespace LINALG
 

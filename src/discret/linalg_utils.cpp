@@ -109,6 +109,7 @@ void LINALG::Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix& Aele,
     for (int lcol=0; lcol<ldim; ++lcol)
     {
       double val = Aele(lrow,lcol);
+      if (abs(val)<1.0e-10) continue; // do not assemble zeros
       int    cgid = lm[lcol];
       int errone = A.SumIntoGlobalValues(rgid,1,&val,&cgid);
       if (errone>0)
@@ -262,6 +263,89 @@ void LINALG::SymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim)
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  Apply dirichlet conditions  (public)                     mwgee 02/07|
+ *----------------------------------------------------------------------*/
+void LINALG::ApplyDirichlettoSystem(RefCountPtr<Epetra_CrsMatrix>&   A,
+                                    const RefCountPtr<Epetra_Vector> dbctoggle)
+{
+  RefCountPtr<Epetra_Vector> dummy = null;
+  ApplyDirichlettoSystem(A,dummy,dummy,dummy,dbctoggle);
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Apply dirichlet conditions  (public)                     mwgee 02/07|
+ *----------------------------------------------------------------------*/
+void LINALG::ApplyDirichlettoSystem(RefCountPtr<Epetra_CrsMatrix>&   A,
+                                    RefCountPtr<Epetra_Vector>&      x,
+                                    RefCountPtr<Epetra_Vector>&      b,
+                                    const RefCountPtr<Epetra_Vector> dbcval,
+                                    const RefCountPtr<Epetra_Vector> dbctoggle)
+{
+  const Epetra_Map& rowmap = A->RowMap();
+#ifdef DEBUG
+  if (x != null)
+    if (!rowmap.PointSameAs(x->Map())) dserror("x does not match A");
+  if (b != null)
+    if (!rowmap.PointSameAs(b->Map())) dserror("b does not match A");
+  if (dbcval != null)
+    if (!rowmap.PointSameAs(dbcval->Map())) dserror("dbcval does not match A");
+  if (!rowmap.PointSameAs(dbctoggle->Map())) dserror("dbctoggle does not match A");
+  if (A->Filled()!=true) dserror("FillComplete was not called on A");
+#endif  
+  
+  const Epetra_Vector& dbct = *dbctoggle;
+  if (x != null && b != null)
+  {
+    Epetra_Vector&       X    = *x;
+    Epetra_Vector&       B    = *b;
+    const Epetra_Vector& dbcv = *dbcval;
+    // set the prescribed value in x and b
+    const int mylength = dbcv.MyLength();
+    for (int i=0; i<mylength; ++i)
+      if (dbct[i]==1.0)
+      {
+        X[i] = dbcv[i];
+        B[i] = dbcv[i];
+      }
+  }
+    
+  // allocate a new matrix and copy all rows that are not dirichlet
+  const int nummyrows     = A->NumMyRows();
+  const int maxnumentries = A->MaxNumEntries();
+  RefCountPtr<Epetra_CrsMatrix> Anew = LINALG::CreateMatrix(rowmap,maxnumentries);
+  vector<int> indices(maxnumentries);
+  vector<double> values(maxnumentries);
+  for (int i=0; i<nummyrows; ++i)
+  {
+    int row = A->GRID(i);
+    if (dbct[i]!=1.0)
+    {
+      int numentries;
+      int err = A->ExtractGlobalRowCopy(row,maxnumentries,numentries,&values[0],&indices[0]);
+#ifdef DEBUG
+      if (err) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d",err);
+#endif
+      err = Anew->InsertGlobalValues(row,numentries,&values[0],&indices[0]);
+#ifdef DEBUG
+      if (err<0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d",err);
+#endif
+    }
+    else
+    {
+      double one = 1.0;
+      int err = Anew->InsertGlobalValues(row,1,&one,&row);
+#ifdef DEBUG
+      if (err<0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d",err);
+#endif
+    }
+  }
+  LINALG::Complete(*Anew);
+  A = Anew;
+  
+  return;
+}
 
 
 #endif  // #ifdef TRILINOS_PACKAGE
