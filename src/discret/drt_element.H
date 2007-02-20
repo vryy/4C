@@ -40,9 +40,6 @@ namespace DRT
 class Discretization;
 class Node;
 class ElementRegister;
-class ElementSurface;
-class ElementLine;
-class ElementVolume;
 
 /*!
 \class Element
@@ -72,9 +69,6 @@ public:
     element_designsurface,
     element_designvolume,
     element_shell8,
-    element_elementvolume,
-    element_elementsurface,
-    element_elementline,
     element_shell8line
   };
 

@@ -27,13 +27,6 @@ Maintainer: Michael Gee
 
 
 /*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | pointer to allocate design if needed                                 |
- | defined in global_control.c                                          |
- *----------------------------------------------------------------------*/
-extern struct _DESIGN *design;
-
-/*----------------------------------------------------------------------*
   |                                                       m.gee 06/01    |
   | vector of numfld FIELDs, defined in global_control.c                 |
  *----------------------------------------------------------------------*/
@@ -75,12 +68,6 @@ extern struct _IO_FLAGS     ioflags;
  *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | pointer to allocate design if needed                                 |
- | defined in global_control.c                                          |
- *----------------------------------------------------------------------*/
-extern struct _DESIGN *design;
 
 
 static void input_point_dirich(multimap<int,RefCountPtr<DRT::Condition> >& pdmap);

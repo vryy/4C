@@ -30,8 +30,6 @@ extern "C"
 
 #include "drt_utils.H"
 #include "drt_node.H"
-#include "drt_designnode.H"
-#include "drt_designelement.H"
 #include "drt_dofset.H"
 #include "shell8.H"
 #include "drt_dserror.H"
@@ -73,32 +71,9 @@ DRT::ParObject* DRT::Utils::Factory(const char* data)
       return object;
     }
     break;
-    case ParObject_DesignNode:
-    {
-      double dummycoord[3] = {999.,999.,999.};
-      DRT::DesignNode* object = new DRT::DesignNode(-1,dummycoord,-1);
-      object->Unpack(data);
-      return object;
-    }
-    break;
     case ParObject_Element:
     {
       dserror("DRT::Element is pure virtual, cannot create instance");
-    }
-    break;
-    case ParObject_DesignElement:
-    {
-      DRT::DesignElement* object = new DRT::DesignElement(-1,DRT::Element::element_none,-1);
-      object->Unpack(data);
-      return object;
-    }
-    break;
-    case ParObject_DesignElementRegister:
-    {
-      DRT::DesignElementRegister* object = 
-          new DRT::DesignElementRegister(DRT::Element::element_none);
-      object->Unpack(data);
-      return object;
     }
     break;
     case ParObject_Shell8:

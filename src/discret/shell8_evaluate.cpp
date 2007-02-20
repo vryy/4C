@@ -21,8 +21,6 @@ Maintainer: Michael Gee
 #endif
 #include "shell8.H"
 #include "drt_discret.H"
-#include "drt_elementsurface.H"
-#include "drt_elementline.H"
 #include "drt_utils.H"
 #include "drt_exporter.H"
 #include "drt_dserror.H"
@@ -173,7 +171,6 @@ void DRT::Elements::Shell8::s8stress(struct _MATERIAL* material,
   double a3c[3][MAXNOD_SHELL8];
   double xrefe[3][MAXNOD_SHELL8];
   double xcure[3][MAXNOD_SHELL8];
-  double xjm[3][3];
   double hte[MAXNOD_SHELL8];
 
   // update geometry
@@ -208,11 +205,9 @@ void DRT::Elements::Shell8::s8stress(struct _MATERIAL* material,
   for (int lr=0; lr<nir; ++lr)
   {
     const double e1   = s8data.xgpr[lr];
-    const double facr = s8data.wgtr[lr];
     for (int ls=0; ls<nis; ++ls)
     {
       const double e2   = s8data.xgps[ls];
-      const double facs = s8data.wgts[ls];
       //------------------------------------- shape functions and derivatives
       s8_shapefunctions(funct,deriv,e1,e2,iel,1);
       //----------------------------------------- thickness at gaussian point
@@ -281,7 +276,6 @@ void DRT::Elements::Shell8::s8stress(struct _MATERIAL* material,
           const double s23 = stress[4];
           const double s32 = s23;
           const double s33 = stress[5];
-          const double xu = detsrr/detsmr;
           const double hh = sqrt(amkovr[2][2]);
           const double wgt    = fact*e3*hh;
           const double wgthe3 = wgt*e3*hh;
@@ -737,7 +731,6 @@ void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm,
   // for ans
   int ansq=0;
   int nsansq=0;
-  const int nsansmax = 6;
   double xr1[6];
   double xs1[6];
   double xr2[6];

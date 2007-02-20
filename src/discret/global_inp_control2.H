@@ -29,10 +29,6 @@ Maintainer: Michael Gee
 
 #include "drt_discret.H"
 #include "drt_condition.H"
-#include "drt_designdiscretization.H"
-#include "drt_designelement.H"
-#include "drt_designnode.H"
-#include "drt_design.H"
 #include "drt_utils.H"
 #ifdef D_SHELL8
 #include "shell8.H"
@@ -51,7 +47,6 @@ using namespace Teuchos;
 void inpnodes_ccadiscret(Epetra_SerialDenseMatrix& tmpnodes);
 void input_structural_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm);
 void input_assign_nodes(DRT::Discretization& actdis,Epetra_SerialDenseMatrix* tmpnodes);
-void input_design_topology_discretization(DRT::Discretization& actdis);
 void input_design_dpoint_fenode_read(vector<vector<int> >& dnode_fenode,
                                      vector<int>& ndnode_fenode);
 void input_design_dline_fenode_read(vector<vector<int> >& dline_fenode,
@@ -75,9 +70,7 @@ extern "C"
 
 void ntainp_ccadiscret();
 void inpfield_ccadiscret();
-void input_design();
 void input_conditions();                                
-void inherit_conditions();
 void distribute_drt_grids();
 void dyn_nlnstructural_drt();
 

@@ -39,14 +39,9 @@ using namespace std;
 #define ParObject_DesignNode            (int)4
 #define ParObject_Element               (int)5
 #define ParObject_ElementRegister       (int)6
-#define ParObject_DesignElement         (int)7
-#define ParObject_DesignElementRegister (int)8
-#define ParObject_Shell8                (int)9
-#define ParObject_Shell8Register        (int)10
-#define ParObject_ElementSurface        (int)11
-#define ParObject_ElementLine           (int)12
-#define ParObject_ElementVolume         (int)13
-#define ParObject_Shell8Line            (int)14
+#define ParObject_Shell8                (int)7
+#define ParObject_Shell8Register        (int)8
+#define ParObject_Shell8Line            (int)9
 
 
 /*!

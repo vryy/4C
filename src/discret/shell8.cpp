@@ -16,8 +16,6 @@ Maintainer: Michael Gee
 
 #include "shell8.H"
 #include "drt_discret.H"
-#include "drt_elementsurface.H"
-#include "drt_elementline.H"
 #include "drt_utils.H"
 #include "drt_dserror.H"
 
