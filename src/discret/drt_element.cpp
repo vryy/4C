@@ -143,7 +143,8 @@ const char* DRT::Element::Pack(int& size) const
   int dofsetsize=0;
   const char* dofsetpack = dofset_.Pack(dofsetsize);
   
-  
+  // no need to pack conditions
+#if 0  
   // get the size of all conditions
   int condsize=0;
   map<string,RefCountPtr<Condition> >::const_iterator curr;
@@ -155,6 +156,7 @@ const char* DRT::Element::Pack(int& size) const
     condsize += tmp;
     delete [] condpack;
   }
+#endif
 
   // calculate size of vector
   size = 
@@ -165,8 +167,10 @@ const char* DRT::Element::Pack(int& size) const
   sizetype               +   // holds type of element
   SizeVector(nodeid_)    +   // nodeid_
   dofsetsize             +   // dofset_
+#if 0
   sizeint                +   // no. of objects in condition_
   condsize               +   // condition_
+#endif
   0;                         // continue to add data here...
 
   char* data = new char[size];
@@ -193,6 +197,7 @@ const char* DRT::Element::Pack(int& size) const
   // dofset_
   AddtoPack(position,data,dofsetpack,dofsetsize);
   delete [] dofsetpack;
+#if 0
   // condition_
   int num = condition_.size(); // no. of objects
   AddtoPack(position,data,num);
@@ -204,6 +209,7 @@ const char* DRT::Element::Pack(int& size) const
     AddtoPack(position,data,condpack,tmp);
     delete [] condpack;
   }
+#endif
   // continue to add stuff here
 
   if (position != size)
@@ -239,6 +245,7 @@ bool DRT::Element::Unpack(const char* data)
   dofset_.Unpack(&data[position]);
   int dofsetsize = dofset_.SizePack(&data[position]);
   position += dofsetsize;
+#if 0
   // extract condition_
   int num=0;
   ExtractfromPack(position,data,num);
@@ -252,6 +259,8 @@ bool DRT::Element::Unpack(const char* data)
     position += size;
     SetCondition(name,cond);
   }
+#endif
+  
   // node_ is NOT communicated
   node_.resize(0);
 

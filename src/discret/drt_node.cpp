@@ -140,6 +140,7 @@ const char* DRT::Node::Pack(int& size) const
   int dofsetsize=0;
   const char* dofsetpack = dofset_.Pack(dofsetsize);
 
+#if 0 // conditions are no longer communicated
   // get the size of all conditions
   int condsize=0;
   map<string,RefCountPtr<Condition> >::const_iterator curr;
@@ -151,6 +152,7 @@ const char* DRT::Node::Pack(int& size) const
     condsize += tmp;
     delete [] condpack;
   }
+#endif
 
   size = 
   sizeint                +   // holds size itself
@@ -161,8 +163,10 @@ const char* DRT::Node::Pack(int& size) const
   dofsetsize             +   // dofset_
   sizeof(OnDesignEntity) +   // dentitytype_
   sizeint                +   // dentityid_
+#if 0
   sizeint                +   // no. objects in condition_
   condsize               +   // condition_
+#endif
   0;                         // continue to add data here...
 
   char* data = new char[size];
@@ -190,6 +194,7 @@ const char* DRT::Node::Pack(int& size) const
   AddtoPack(position,data,dentitytype_);
   // dentityid_
   AddtoPack(position,data,dentityid_);
+#if 0
   // condition_
   int num = condition_.size(); // no. of objects
   AddtoPack(position,data,num);
@@ -201,6 +206,7 @@ const char* DRT::Node::Pack(int& size) const
     AddtoPack(position,data,condpack,tmp);
     delete [] condpack;
   }
+#endif  
   // continue to add stuff here
   
   if (position != size)
@@ -243,6 +249,7 @@ bool DRT::Node::Unpack(const char* data)
   ExtractfromPack(position,data,dentitytype_);
   // dentityid_
   ExtractfromPack(position,data,dentityid_);
+#if 0
   // condition_
   int num=0;
   ExtractfromPack(position,data,num);
@@ -256,6 +263,7 @@ bool DRT::Node::Unpack(const char* data)
     position += condsize;
     SetCondition(name,cond);
   }
+#endif
 
   if (position != size)
     dserror("Mismatch in size of data %d <-> %d",size,position);

@@ -83,8 +83,8 @@ void DRT::Discretization::Evaluate(
     // get dimension of element matrices and vectors
     // Reshape element matrices and vectors and init to zero
     const int eledim = (int)lm.size();
-    elematrix1.Shape(eledim,eledim);
-    elematrix2.Shape(eledim,eledim);
+    elematrix1.Shape(eledim,eledim); 
+    elematrix2.Shape(eledim,eledim); 
     elevector1.Size(eledim);
     elevector2.Size(eledim);
     elevector3.Size(eledim);
