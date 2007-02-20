@@ -24,6 +24,7 @@ Maintainer: Michael Gee
 #else
 #include "Epetra_SerialComm.h"
 #endif
+#include "Epetra_Time.h"
 #include "Teuchos_RefCountPtr.hpp"
 #include "drt_discret.H"
 #include "linalg_utils.H"

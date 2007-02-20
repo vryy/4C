@@ -48,6 +48,13 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 extern struct _FILES  allfiles;
 
 /*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | structure of flags to control output                                 |
+ | defined in out_global.c                                              |
+ *----------------------------------------------------------------------*/
+extern struct _IO_FLAGS     ioflags;
+
+/*----------------------------------------------------------------------*
  | global variable *solv, vector of lenght numfld of structures SOLVAR  |
  | defined in solver_control.c                                          |
  |                                                                      |
@@ -98,12 +105,10 @@ void dyn_nlnstructural_drt()
   // -------------------------------------------------------------------
   const Epetra_Comm& Comm = actdis->Comm();
   const int myrank  = Comm.MyPID();
-  const int numproc = Comm.NumProc();
   
   // -------------------------------------------------------------------
   // set some pointers and variables
   // -------------------------------------------------------------------
-  FIELD*          actfield = &field[0];
   SOLVAR*         actsolv  = &solv[0];
   STRUCT_DYNAMIC* sdyn     = alldyn[0].sdyn;
   STRUCT_DYN_CALC dynvar;
@@ -140,8 +145,8 @@ void dyn_nlnstructural_drt()
   // -------------------------------------------------------------------
 
   // load vectors at time t-dt and t
-  RefCountPtr<Epetra_Vector> rhs0 = LINALG::CreateVector(*dofrowmap,true);
   RefCountPtr<Epetra_Vector> rhs1 = LINALG::CreateVector(*dofrowmap,true);
+  RefCountPtr<Epetra_Vector> rhs2 = LINALG::CreateVector(*dofrowmap,true);
   // interpolated load vector
   RefCountPtr<Epetra_Vector> rhs  = LINALG::CreateVector(*dofrowmap,true);
 
@@ -164,9 +169,14 @@ void dyn_nlnstructural_drt()
   // accelerations
   RefCountPtr<Epetra_Vector> acc = LINALG::CreateVector(*dofrowmap,true);
   
-  // internal forces at t-dt, t and interpolated  
-  RefCountPtr<Epetra_Vector> fie0 = LINALG::CreateVector(*dofrowmap,true);
+  // internal forces at t-dt, t   
   RefCountPtr<Epetra_Vector> fie1 = LINALG::CreateVector(*dofrowmap,true);
+  RefCountPtr<Epetra_Vector> fie2 = LINALG::CreateVector(*dofrowmap,true);
+  // interpolated internal forces
+  RefCountPtr<Epetra_Vector> fie  = LINALG::CreateVector(*dofrowmap,true);
+  
+  // a vector of zeros to be used to enforce zero dirichlet boundary conditions
+  RefCountPtr<Epetra_Vector> zeros = LINALG::CreateVector(*dofrowmap,true);
   
   // -------------------------------------------------------------------
   // call elements to calculate stiffness and mass
@@ -196,7 +206,8 @@ void dyn_nlnstructural_drt()
   // complete stiffness and mass matrix
   LINALG::Complete(*stiff_mat);
   LINALG::Complete(*mass_mat);
-  
+  const int maxentriesperrow = stiff_mat->MaxNumEntries();
+
   // build damping matrix if neccessary
   if (damping)
   {
@@ -220,7 +231,8 @@ void dyn_nlnstructural_drt()
   /*                     START LOOP OVER ALL STEPS                        */
   /*----------------------------------------------------------------------*/
   timeloop:
-  double t0 = ds_cputime();
+  Epetra_Time timelooptime(Comm);
+  const double t0 = timelooptime.WallTime();
   /*--------------------------------------------- increment step and time */
   sdyn->step++;
   sdyn->time += sdyn->dt;
@@ -231,28 +243,6 @@ void dyn_nlnstructural_drt()
   const double alpham = sdyn->alpha_m;
   const double alphaf = sdyn->alpha_f;
   const double dt     = sdyn->dt;
-#if 0 // probably not use these
-  double constants[16];
-  {
-    constants[6]  = 1.0-alphaf;
-    constants[7]  = 1.0-alpham;
-    constants[8]  = (1.0/beta)/(DSQR(dt));
-    constants[9]  = -constants[8] * dt;
-    constants[10] = 1.0 - 0.5/beta;
-    constants[11] = (gamma/beta)/dt;
-    constants[12] = 1.0 - gamma/beta;
-    constants[13] = (1.0-(gamma/beta)/2.0)*dt;
-    constants[0]  = constants[7]*constants[8];
-    constants[1]  = constants[0]*dt;
-    constants[2]  = (constants[7]/2.0)/beta - 1.0;
-    constants[3]  = constants[6]*constants[11];
-    constants[4]  = constants[3]*dt - 1.0;
-    constants[5]  = ((gamma/beta)/2.0 - 1.0)*dt*constants[6];
-    constants[14] = dt;
-    constants[15] = beta;
-    constants[16] = gamma;
-  }
-#endif  
   
   /*------------------------- set incremental displacements dispi to zero */
   dx->PutScalar(0.0);
@@ -280,11 +270,14 @@ void dyn_nlnstructural_drt()
     // set vector values needed by elements
     actdis->ClearState();
     actdis->SetState("displacement",sol0);
-    rhs1->PutScalar(0.0);
-    // predicted rhs
-    actdis->EvaluateNeumann(params,*rhs1);
     // predicted dirichlet values
-    actdis->EvaluateDirichlet(params,*sol1,*dirichtoggle); 
+    // sol0 then also holds prescribed new dirichlet displacements
+    actdis->EvaluateDirichlet(params,*sol1,*dirichtoggle);
+    actdis->ClearState();
+    actdis->SetState("displacement",sol0);
+    // predicted rhs
+    rhs2->PutScalar(0.0);
+    actdis->EvaluateNeumann(params,*rhs2);
     actdis->ClearState();
   }
 
@@ -319,15 +312,15 @@ void dyn_nlnstructural_drt()
   }
 
   //----------------------------------------------- interpolate external forces
-  // rhs = (1-alphaf)*rhs1 + alphaf*rhs0
-  rhs->Update((1.-alphaf),*rhs1,alphaf,*rhs0,0.0);
+  // rhs = (1-alphaf)*rhs2 + alphaf*rhs1
+  rhs->Update((1.-alphaf),*rhs2,alphaf,*rhs1,0.0);
 
   //---------------- subtract internal forces from interpolated external forces
   // rhs = rhs - fie1;
   rhs->Update(-1.0,*fie1,1.0);
   
   //========================================================build effective RHS
-  // rhs = alphaf*rhs1 + (1-alphaf)*rhs0 - fie1 (already done above)
+  // rhs = (1-alphaf)*rhs1 + alphaf*rhs0 - fie1 (already done above)
   //       + M*(-a1*dx + a2*vel + a3*acc)
   //       + D*(-a4*dx + a5*vel + a6*acc)       (if present)
   //
@@ -339,23 +332,21 @@ void dyn_nlnstructural_drt()
     const double a5 = ((1.0-alphaf) * (gamma/(beta*dt)))*dt - 1.0;
     const double a6 = ((gamma/beta)/2.0 - 1.0)*dt*(1.0-alphaf);
 
-    // build work1 = -a1*dx + a2*vel + a3*acc
-    RefCountPtr<Epetra_Vector> work1 = LINALG::CreateVector(*dofrowmap,false);
-    work1->Update(-a1,*dx,a2,*vel,0.0);
-    work1->Update(a3,*acc,1.0);
-    // rhs = rhs + mass_mat*work1
+    // build work = -a1*dx + a2*vel + a3*acc
+    RefCountPtr<Epetra_Vector> work = LINALG::CreateVector(*dofrowmap,false);
+    work->Update(-a1,*dx,a2,*vel,0.0);
+    work->Update(a3,*acc,1.0);
+    // rhs = rhs + mass_mat*work
     RefCountPtr<Epetra_Vector> tmp = LINALG::CreateVector(*dofrowmap,false);
-    mass_mat->Multiply(false,*work1,*tmp);
+    mass_mat->Multiply(false,*work,*tmp);
     rhs->Update(1.0,*tmp,1.0);
-
     if (damping)
     {
-      // build work2 = -a4*dx + a5*vel + a6*acc (if present)
-      RefCountPtr<Epetra_Vector> work2 = LINALG::CreateVector(*dofrowmap,false);
-      work2->Update(-a4,*dx,a5,*vel,0.0);
-      work2->Update(a6,*acc,1.0);
+      // build work = -a4*dx + a5*vel + a6*acc (if present)
+      work->Update(-a4,*dx,a5,*vel,0.0);
+      work->Update(a6,*acc,1.0);
       // rhs = rhs + damp_mat*work2
-      damp_mat->Multiply(false,*work2,*tmp);
+      damp_mat->Multiply(false,*work,*tmp);
       rhs->Update(1.0,*tmp,1.0);
     }
   }
@@ -364,28 +355,290 @@ void dyn_nlnstructural_drt()
   // keff =   (1.0-alphaf)*K 
   //        + (1.0-alpham)*(1.0/(beta*dt*dt))*M
   //        + (1.0-alphaf)*(gamma/(beta*dt))*D (if present)
-  RefCountPtr<Epetra_CrsMatrix> eff_mat = LINALG::CreateMatrix(*dofrowmap,81);
+  RefCountPtr<Epetra_CrsMatrix> eff_mat = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow);
   {
     const double a1 = (1.0-alphaf);
     const double a2 = (1.0-alpham)*(1.0/(beta*dt*dt));
     const double a3 = (1.0-alphaf)*(gamma/(beta*dt));
     
-    stiff_mat->Scale(a1);
     LINALG::Add(*stiff_mat,false,a1,*eff_mat,0.0);
     LINALG::Add(*mass_mat ,false,a2,*eff_mat,1.0);
     if (damping) LINALG::Add(*damp_mat ,false,a3,*eff_mat,1.0);
   }
   LINALG::Complete(*eff_mat);
 
+  //================ Apply dirichlet boundary conditions to system of equations
+  // increment dx at Dirichlet BCs should be zero as we already have proper
+  // dirichlet values in sol1
+  // we use the vector dx to set zeros to dx and rhs respectively
+  LINALG::ApplyDirichlettoSystem(eff_mat,dx,rhs,zeros,dirichtoggle);
 
   //============================================== solve for dx = Keff^-1 * rhs
-  solver.Solve(eff_mat,dx,rhs,true);
+  solver.Solve(eff_mat,dx,rhs,true,true);
 
+  //====================================================== update displacements
+  // new dirichlet values present on sol1
+  sol1->Update(1.0,*dx,1.0);
+  // make dx contain increment of dirichlet BCs
+  dx->Update(1.0,*sol1,-1.0,*sol0,0.0);
+  
+  //------------------ start with residual discplacements zero as initial guess
+  rdx->PutScalar(0.0);
+  
+  /*----------------------------------------------------------------------*/
+  /*                     PERFORM EQUILLIBRIUM ITERATION                   */
+  /*----------------------------------------------------------------------*/
+  int itnum = 0;
+  iterloop:
+  
+  //--------------- call elements to calculate stiffness and internal forces
+  {
+    // zero out the stiffness matrix
+    stiff_mat = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow);
+    // zero out internal forces
+    fie2->PutScalar(0.0);
+    // create the parameters for the discretization
+    ParameterList params;
+    // action for elements
+    params.set("action","calc_struct_nlnstiff");
+    // choose what to assemble
+    params.set("assemble matrix 1",true);
+    params.set("assemble matrix 2",false);
+    params.set("assemble vector 1",true);
+    params.set("assemble vector 2",false);
+    params.set("assemble vector 3",false);
+    // other parameters that might be needed by the elements
+    params.set("total time",acttime);
+    params.set("delta time",sdyn->dt);
+    // set vector values needed by elements
+    actdis->ClearState();
+    actdis->SetState("residual displacement",rdx);
+    actdis->SetState("displacement",sol1);
+    fie2->PutScalar(0.0);
+    actdis->Evaluate(params,stiff_mat,null,fie2,null,null);
+    actdis->ClearState();
+    // finalize the stiffness matrix
+    LINALG::Complete(*stiff_mat);
+  }
 
+  //----------------------------------------------- interpolate external forces
+  // rhs = (1-alphaf)*rhs2 + alphaf*rhs1
+  rhs->Update((1.-alphaf),*rhs2,alphaf,*rhs1,0.0);
 
+  //----------------------------------------------- interpolate internal forces
+  fie->Update((1.-alphaf),*fie2,alphaf,*fie1,0.0);
+  
+  //------------------------------ subtract internal forces from external force
+  rhs->Update(-1.0,*fie,1.0);
 
+  //---------------------------------------------- create effective load vector
+  // rhs = (1-alphaf)*rhs1 + alphaf*rhs0 - {(1-alphaf)*fie2 + alphaf*fie1} (already done above)
+  //       + M*(-a1*dx + a2*vel + a3*acc)
+  //       + D*(-a4*dx + a5*vel + a6*acc)       (if present)
+  //
+  {
+    const double a1 = (1.0-alpham) * (1./beta)/(dt*dt);
+    const double a2 = ((1.0-alpham) * (1./beta)/(dt*dt))*dt;
+    const double a3 = (1.0-alpham) / (2. * beta) - 1.0;
+    const double a4 = (1.0-alphaf) * (gamma/(beta*dt));
+    const double a5 = ((1.0-alphaf) * (gamma/(beta*dt)))*dt - 1.0;
+    const double a6 = ((gamma/beta)/2.0 - 1.0)*dt*(1.0-alphaf);
 
+    // build work = -a1*dx + a2*vel + a3*acc
+    RefCountPtr<Epetra_Vector> work = LINALG::CreateVector(*dofrowmap,false);
+    work->Update(-a1,*dx,a2,*vel,0.0);
+    work->Update(a3,*acc,1.0);
+    // rhs = rhs + mass_mat*work
+    RefCountPtr<Epetra_Vector> tmp = LINALG::CreateVector(*dofrowmap,false);
+    mass_mat->Multiply(false,*work,*tmp);
+    rhs->Update(1.0,*tmp,1.0);
+    if (damping)
+    {
+      // build work = -a4*dx + a5*vel + a6*acc (if present)
+      work->Update(-a4,*dx,a5,*vel,0.0);
+      work->Update(a6,*acc,1.0);
+      // rhs = rhs + damp_mat*work
+      damp_mat->Multiply(false,*work,*tmp);
+      rhs->Update(1.0,*tmp,1.0);
+    }
+  }
 
+  //------------------------------------------------------ create effective LHS
+  // keff =   (1.0-alphaf)*K 
+  //        + (1.0-alpham)*(1.0/(beta*dt*dt))*M
+  //        + (1.0-alphaf)*(gamma/(beta*dt))*D (if present)
+  eff_mat = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow);
+  {
+    const double a1 = (1.0-alphaf);
+    const double a2 = (1.0-alpham)*(1.0/(beta*dt*dt));
+    const double a3 = (1.0-alphaf)*(gamma/(beta*dt));
+    
+    LINALG::Add(*stiff_mat,false,a1,*eff_mat,0.0);
+    LINALG::Add(*mass_mat ,false,a2,*eff_mat,1.0);
+    if (damping) LINALG::Add(*damp_mat ,false,a3,*eff_mat,1.0);
+  }
+  LINALG::Complete(*eff_mat);
+
+  //---------------- Apply dirichlet boundary conditions to system of equations
+  // residual discplacements are supposed to be zero at boundary conditions
+  LINALG::ApplyDirichlettoSystem(eff_mat,rdx,rhs,zeros,dirichtoggle);
+  
+  //-------solve for residual displacements to correct incremental displacements
+  rdx->PutScalar(0.0);
+  solver.Solve(eff_mat,rdx,rhs,true,false);
+
+  //--------------- update incremental displacements by residual displacements  
+  dx->Update(1.0,*rdx,1.0);
+
+  //------------------------------------------------ update total displacements
+  sol1->Update(1.0,*rdx,1.0);
+
+  //----------------------------------------------------- check for convergence
+  {
+    bool conv = false;
+    double rdxnorm2;
+    double dxnorm2;
+    double rdxnorminf;
+    rdx->Norm2(&rdxnorm2);
+    rdx->NormInf(&rdxnorminf);
+    dx->Norm2(&dxnorm2);
+    if (myrank==0)
+    {
+      printf("  rdx %15.10E\n",rdxnorm2);
+      fflush(stdout);
+    }
+    if (rdxnorm2 < sdyn->toldisp ||
+        (rdxnorm2 < 1.0e-14 && rdxnorminf < 1.0e-12) ||
+        dxnorm2 < 1.0e-14)
+    {
+      itnum++;
+      conv = true;
+    }
+    else
+    {
+      itnum++;
+      if (itnum==sdyn->maxiter) dserror("No convergence in Newton in max iterations steps");
+      goto iterloop;
+    }
+  }
+  /*----------------------------------------------------------------------*/
+  /*                      END OF EQUILLIBRIUM ITERATION                   */
+  /*----------------------------------------------------------------------*/
+  //--------------------------------------------- do update for next time step
+  {
+    const double a1 = (1.0/beta)/(dt*dt);
+    const double a2 = -(1.0/beta)/(dt);
+    const double a3 = 1.0 - 0.5/beta;
+    const double a4 = (gamma/beta)/dt;
+    const double a5 = 1.0 - gamma/beta;
+    const double a6 = (1.0-(gamma/beta)/2.0)*dt;
+    
+    // displacement increment is dx (already calculated in Newton iteration)
+    // dx contains correct dirichlet BCs increment
+
+    // copy load vector from rhs2 to rhs1
+    rhs1->Update(1.0,*rhs2,0.0);
+    
+    // copy internal forces from fie2 to fie1
+    fie1->Update(1.0,*fie2,0.0);
+    
+    // copy displacements from sol1 to sol0
+    sol0->Update(1.0,*sol1,0.0);
+    
+    // temporary copy of acc
+    RefCountPtr<Epetra_Vector> acc_old = LINALG::CreateVector(*dofrowmap,false);
+    acc_old->Update(1.0,*acc,0.0);
+    
+    // new accelerations acc = a1*dx + a2*vel + a3*acc_old
+    acc->Update(a1,*dx,a2,*vel,a3);
+
+    // new velocities vel = a4*dx + a5*vel_old + a6*acc_old
+    vel->Update(a4,*dx,a6,*acc_old,a5);
+
+/*
+    printf("displacements\n");
+    for (int i=0; i<sol1->MyLength(); ++i)
+      printf("%d     %20.15e\n",i,(*sol1)[i]);
+    fflush(stdout);
+    printf("velocities\n");
+    for (int i=0; i<vel->MyLength(); ++i)
+      printf("%d     %20.15e\n",i,(*vel)[i]);
+    fflush(stdout);
+    printf("accelerations\n");
+    for (int i=0; i<acc->MyLength(); ++i)
+      printf("%d     %20.15e\n",i,(*acc)[i]);
+    fflush(stdout);
+*/
+  }
+
+  //---------------------------------------check whether to write output or not
+  int mod_disp   = sdyn->step % sdyn->updevry_disp;
+  int mod_stress = sdyn->step % sdyn->updevry_stress;
+  
+  //----------------------------------------------------- do stress calculation
+  if (mod_stress==0 && ioflags.struct_stress==1)
+  {
+    // create the parameters for the discretization
+    ParameterList params;
+    // action for elements
+    params.set("action","calc_struct_stress");
+    // choose what to assemble
+    params.set("assemble matrix 1",false);
+    params.set("assemble matrix 2",false);
+    params.set("assemble vector 1",false);
+    params.set("assemble vector 2",false);
+    params.set("assemble vector 3",false);
+    // other parameters that might be needed by the elements
+    params.set("total time",acttime);
+    params.set("delta time",sdyn->dt);
+    // set vector values needed by elements
+    actdis->ClearState();
+    rdx->PutScalar(0.0);
+    actdis->SetState("residual displacement",rdx);
+    actdis->SetState("displacement",sol1);
+    actdis->Evaluate(params,null,null,null,null,null);
+    actdis->ClearState();
+  }
+  
+  //---------------- update any material history parameters or something else...
+  {
+    // create the parameters for the discretization
+    ParameterList params;
+    // action for elements
+    params.set("action","calc_struct_update_istep");
+    // choose what to assemble
+    params.set("assemble matrix 1",false);
+    params.set("assemble matrix 2",false);
+    params.set("assemble vector 1",false);
+    params.set("assemble vector 2",false);
+    params.set("assemble vector 3",false);
+    // other parameters that might be needed by the elements
+    params.set("total time",acttime);
+    params.set("delta time",sdyn->dt);
+    actdis->Evaluate(params,null,null,null,null,null);
+  }
+  
+  //--------------------------------------------------print output of time step
+  if (Comm.MyPID()==myrank)
+  {
+    printf("STEP=%6d | NSTEP=%6d | TIME=%-14.8E | DT=%-14.8E | NUMITER=%3d\n",
+           sdyn->step,sdyn->nstep,sdyn->time,dt,itnum);
+    fprintf(allfiles.out_err,"STEP=%6d | NSTEP=%6d | TIME=%-14.8E | DT=%-14.8E | NUMITER=%3d\n",
+            sdyn->step,sdyn->nstep,sdyn->time,dt,itnum);
+    fflush(stdout);
+    fflush(allfiles.out_err);
+    
+  }
+  //--------------------------------------------- print timing to error file
+  Comm.Barrier();
+  const double t1 = timelooptime.WallTime();
+  fprintf(allfiles.out_err,"TIME for step %d : %15.10e sec\n",sdyn->step,t1-t0);
+
+  //========================================== check time and number of steps
+  if (sdyn->step < sdyn->nstep-1 && sdyn->time <= sdyn->maxtime)
+    goto timeloop;
+
+  //------------- this is the end, no clean up needed thanxs to RefCountPtrs!
   return;
 } // end of dyn_nlnstructural_drt()
 
