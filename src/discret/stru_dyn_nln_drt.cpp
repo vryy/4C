@@ -619,7 +619,7 @@ void dyn_nlnstructural_drt()
   }
   
   //--------------------------------------------------print output of time step
-  if (Comm.MyPID()==myrank)
+  if (Comm.MyPID()==0)
   {
     printf("STEP=%6d | NSTEP=%6d | TIME=%-14.8E | DT=%-14.8E | NUMITER=%3d\n",
            sdyn->step,sdyn->nstep,sdyn->time,dt,itnum);
