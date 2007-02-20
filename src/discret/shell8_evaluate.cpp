@@ -68,11 +68,11 @@ int DRT::Elements::Shell8::Evaluate(ParameterList& params,
   else if (action=="calc_struct_stress")        act = Shell8::calc_struct_stress;
   else if (action=="calc_struct_eleload")       act = Shell8::calc_struct_eleload;
   else if (action=="calc_struct_fsiload")       act = Shell8::calc_struct_fsiload;
+  else if (action=="calc_struct_update_istep")  act = Shell8::calc_struct_update_istep;
   else dserror("Unknown type of action for Shell8");
   
   // get the material law
   MATERIAL* actmat = &(mat[material_-1]);
-  
   switch(act)
   {
     case calc_struct_linstiff:
@@ -111,7 +111,13 @@ int DRT::Elements::Shell8::Evaluate(ParameterList& params,
     }
     break;
     case calc_struct_stress:
-      dserror("Case not yet implemented");
+    {
+      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==null) dserror("Cannot get state vectors 'displacement'");
+      vector<double> mydisp(lm.size());
+      DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
+      s8stress(actmat,mydisp);
+    }
     break;
     case calc_struct_eleload:
       dserror("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
@@ -119,13 +125,379 @@ int DRT::Elements::Shell8::Evaluate(ParameterList& params,
     case calc_struct_fsiload:
       dserror("Case not yet implemented");
     break;
+    case calc_struct_update_istep:
+    {
+      ;// there is nothing to do here at the moment
+    }
+    break;
     default:
       dserror("Unknown type of action for Shell8");
   }
-  
-  
   return 0;
 }
+
+
+// tesnor transformtation routine, used on in s8stress
+static void s8tettr(double x[][3], double a[][3], double b[][3]);
+/*----------------------------------------------------------------------*
+ |  Do stress calculation (private)                          mwgee 02/07|
+ *----------------------------------------------------------------------*/
+void DRT::Elements::Shell8::s8stress(struct _MATERIAL* material, 
+                                    vector<double>& mydisp)
+{
+  // no. of nodes on this surface
+  const int iel = NumNode();
+
+  // init gaussian points
+  S8_DATA s8data;
+  s8_integration_points(s8data);
+  
+  const int nir = ngp_[0]; 
+  const int nis = ngp_[1]; 
+  const int nit = 2;
+  const int numdf = 6;
+  const double condfac = sdc_;
+  vector<double>* thick = data_.GetVector<double>("thick");
+  if (!thick) dserror("Cannot find vector of nodal thicknesses");
+  Epetra_SerialDenseMatrix* a3ref = data_.GetMatrix("a3ref");
+  if (!a3ref) dserror("Cannot find array of directors");
+  double a3ref2[3][MAXNOD_SHELL8];
+  for (int i=0; i<3; ++i)
+    for (int j=0; j<iel; ++j)
+      a3ref2[i][j] = (*a3ref)(i,j);
+      
+  vector<double> funct(iel);
+  Epetra_SerialDenseMatrix deriv(2,iel);
+  
+  double a3r[3][MAXNOD_SHELL8];
+  double a3c[3][MAXNOD_SHELL8];
+  double xrefe[3][MAXNOD_SHELL8];
+  double xcure[3][MAXNOD_SHELL8];
+  double xjm[3][3];
+  double hte[MAXNOD_SHELL8];
+
+  // update geometry
+  for (int k=0; k<iel; ++k)
+  {
+    double h2 = (*thick)[k];
+    hte[k] = h2;
+    h2/=2.0;
+    
+    a3r[0][k] = (*a3ref)(0,k)*h2;
+    a3r[1][k] = (*a3ref)(1,k)*h2;
+    a3r[2][k] = (*a3ref)(2,k)*h2;
+    
+    xrefe[0][k] = Nodes()[k]->X()[0];
+    xrefe[1][k] = Nodes()[k]->X()[1];
+    xrefe[2][k] = Nodes()[k]->X()[2];
+    
+    xcure[0][k] = xrefe[0][k] + mydisp[k*numdf+0];
+    xcure[1][k] = xrefe[1][k] + mydisp[k*numdf+1];
+    xcure[2][k] = xrefe[2][k] + mydisp[k*numdf+2];
+    
+    a3c[0][k] = a3r[0][k] + mydisp[k*numdf+3];
+    a3c[1][k] = a3r[1][k] + mydisp[k*numdf+4];
+    a3c[2][k] = a3r[2][k] + mydisp[k*numdf+5];
+  }
+  //--------------------------------------------------------------- integrate
+  int ngauss=0;
+  Epetra_SerialDenseMatrix gp_stress;
+  gp_stress.Shape(18,nir*nis);
+  ARRAY C_a;
+  double** C = (double**)amdef("C",&C_a,6 ,6,"DA");
+  for (int lr=0; lr<nir; ++lr)
+  {
+    const double e1   = s8data.xgpr[lr];
+    const double facr = s8data.wgtr[lr];
+    for (int ls=0; ls<nis; ++ls)
+    {
+      const double e2   = s8data.xgps[ls];
+      const double facs = s8data.wgts[ls];
+      //------------------------------------- shape functions and derivatives
+      s8_shapefunctions(funct,deriv,e1,e2,iel,1);
+      //----------------------------------------- thickness at gaussian point
+      double hhi = 0.0;
+      for (int i=0; i<iel; ++i) hhi += funct[i]*hte[i];
+      //---------------- build metric for current and reference configuration
+      double akovr[3][3];
+      double akonr[3][3];
+      double amkovr[3][3];
+      double amkonr[3][3];
+      double detsmr;
+      double a3kvpr[3][2];
+      double akovc[3][3];
+      double akonc[3][3];
+      double amkovc[3][3];
+      double amkonc[3][3];
+      double detsmc;
+      double a3kvpc[3][2];
+      s8tvmr(xrefe,a3r,akovr,akonr,amkovr,amkonr,&detsmr,funct,deriv,iel,a3kvpr,0);
+      s8tvmr(xcure,a3c,akovc,akonc,amkovc,amkonc,&detsmc,funct,deriv,iel,a3kvpc,0);
+      //-------------------- make h as cross product in reference configuration
+      //                     to get area da on shell mid surface
+      double h[3];
+      h[0] = akovr[1][0]*akovr[2][1] - akovr[2][0]*akovr[1][1];
+      h[1] = akovr[2][0]*akovr[0][1] - akovr[0][0]*akovr[2][1];
+      h[2] = akovr[0][0]*akovr[1][1] - akovr[1][0]*akovr[0][1];
+      //------------- make director unit length and get midsurf area da from it      
+      double da;
+      s8unvc(&da,h,3);
+      //-------------------------------------------------------- clear stresses
+      double stress[6];
+      for (int i=0; i<6; ++i) stress[i] = 0.0;
+      //------------------------------ loop gauss points in thickness direction
+      for (int lt=0; lt<nit; ++lt)
+      {
+        const double e3   = s8data.xgpt[lt];
+        const double fact = s8data.wgtt[lt];
+        //----------------------------- basis vectors and metrics of shell body
+        double gkovr[3][3];
+        double gkonr[3][3];
+        double gmkovr[3][3];
+        double gmkonr[3][3];
+        double detsrr;
+        double gkovc[3][3];
+        double gkonc[3][3];
+        double gmkovc[3][3];
+        double gmkonc[3][3];
+        double detsrc;
+        s8tmtr(xrefe,a3r,e3,gkovr,gkonr,gmkovr,gmkonr,&detsrr,funct,deriv,iel,condfac,0);
+        s8tmtr(xcure,a3c,e3,gkovc,gkonc,gmkovc,gmkonc,&detsrc,funct,deriv,iel,condfac,0);
+        //------------------- modification of metrics due to qudratic terms in e3
+        s8tvhe(gmkovr,gmkovc,gmkonr,gmkonc,gkovr,gkovc,&detsrr,&detsrc,
+               amkovc,amkovr,akovc,akovr,a3kvpc,a3kvpr,e3,condfac);
+        //--------------------- ------------------------------ call material law
+        double strain[6];
+        s8tmat(material,stress,strain,C,gmkovc,gmkonc,gmkovr,gmkonr,
+               gkovc,gkonc,gkovr,gkonr,detsrc,detsrr,e3,0,ngauss);
+        //---------------------- calculate forces from stress at gaussian points
+        {
+          const double s11 = stress[0];
+          const double s12 = stress[1];
+          const double s21 = s12;
+          const double s13 = stress[2];
+          const double s31 = s13;
+          const double s22 = stress[3];
+          const double s23 = stress[4];
+          const double s32 = s23;
+          const double s33 = stress[5];
+          const double xu = detsrr/detsmr;
+          const double hh = sqrt(amkovr[2][2]);
+          const double wgt    = fact*e3*hh;
+          const double wgthe3 = wgt*e3*hh;
+          double xu11=0.0;
+          double xu21=0.0;
+          double xu31=0.0;
+          double xu12=0.0;
+          double xu22=0.0;
+          double xu32=0.0;
+          double xu13=0.0;
+          double xu23=0.0;
+          double xu33=0.0;
+          for (int i=0; i<3; i++)
+          {
+            xu11 += gkovr[i][0]*akonr[i][0];
+            xu21 += gkovr[i][0]*akonr[i][1];
+            xu31 += gkovr[i][0]*akonr[i][2];
+            xu12 += gkovr[i][1]*akonr[i][0];
+            xu22 += gkovr[i][1]*akonr[i][1];
+            xu32 += gkovr[i][1]*akonr[i][2];
+            xu13 += gkovr[i][2]*akonr[i][0];
+            xu23 += gkovr[i][2]*akonr[i][1];
+            xu33 += gkovr[i][2]*akonr[i][2];
+          }
+          gp_stress(0,ngauss)  += (s11*xu11+s12*xu21+s13*xu31) * wgt;    // N11
+          gp_stress(2,ngauss)  += (s11*xu12+s12*xu22+s13*xu32) * wgt;    // N12
+          gp_stress(8,ngauss)  += (s21*xu11+s22*xu21+s23*xu31) * wgt;    // N21
+          gp_stress(1,ngauss)  += (s21*xu12+s22*xu22+s23*xu32) * wgt;    // N22
+          gp_stress(3,ngauss)  += (s11*xu13+s12*xu23+s13*xu33) * wgt;    // Q1
+          gp_stress(4,ngauss)  += (s21*xu13+s22*xu23+s23*xu33) * wgt;    // Q2
+          gp_stress(16,ngauss) += (s31*xu11+s32*xu21+s33*xu31) * wgt;    // N31
+          gp_stress(17,ngauss) += (s31*xu12+s32*xu22+s33*xu32) * wgt;    // N32
+          gp_stress(9,ngauss)  += (s31*xu13+s32*xu23+s33*xu33) * wgt;    // N33
+          gp_stress(5,ngauss)  += (s11*xu11+s12*xu21+s13*xu31) * wgthe3; // M11
+          gp_stress(7,ngauss)  += (s11*xu12+s12*xu22+s13*xu32) * wgthe3; // M12
+          gp_stress(6,ngauss)  += (s21*xu12+s22*xu22+s23*xu32) * wgthe3; // M22
+          gp_stress(10,ngauss) += (s11*xu13+s12*xu23+s13*xu33) * wgthe3; // M13
+          gp_stress(11,ngauss) += (s21*xu13+s22*xu23+s23*xu33) * wgthe3; // M23
+          gp_stress(12,ngauss) += (s31*xu11+s32*xu21+s33*xu31) * wgthe3; // M31
+          gp_stress(13,ngauss) += (s31*xu12+s32*xu22+s33*xu32) * wgthe3; // M32
+          gp_stress(14,ngauss) += (s21*xu11+s22*xu21+s23*xu31) * wgthe3; // M21
+          gp_stress(15,ngauss) += (s31*xu13+s32*xu23+s33*xu33) * wgthe3; // M33
+        }
+      } // for (int lt=0; lt<nit; ++lt)
+      //------------------------ calculate forces wrt local/global coordsystems
+      // akovr, akonr
+      {
+        double sn[3][3],sm[3][3];
+        sn[0][0] = gp_stress(0,ngauss);
+        sn[0][1] = gp_stress(2,ngauss);
+        sn[0][2] = gp_stress(3,ngauss);
+        sn[1][0] = gp_stress(8,ngauss);
+        sn[1][1] = gp_stress(1,ngauss);
+        sn[1][2] = gp_stress(4,ngauss);
+        sn[2][0] = gp_stress(16,ngauss);
+        sn[2][1] = gp_stress(17,ngauss);
+        sn[2][2] = gp_stress(9,ngauss);
+        sm[0][0] = gp_stress(5,ngauss);
+        sm[0][1] = gp_stress(7,ngauss);
+        sm[0][2] = gp_stress(10,ngauss);
+        sm[1][0] = gp_stress(14,ngauss);
+        sm[1][1] = gp_stress(6,ngauss);
+        sm[1][2] = gp_stress(11,ngauss);
+        sm[2][0] = gp_stress(12,ngauss);
+        sm[2][1] = gp_stress(13,ngauss);
+        sm[2][2] = gp_stress(15,ngauss);
+        switch(forcetype_)
+        {
+        case s8_xyz:
+        {
+          double b[3][3];
+          for (int i=0; i<3; ++i)
+            for (int j=0; j<2; ++j) b[i][j] = 0.0;
+          b[0][2] = akovr[1][0]*akovr[2][1] - akovr[2][0]*akovr[1][1];
+          b[1][2] = akovr[2][0]*akovr[0][1] - akovr[0][0]*akovr[2][1];
+          b[2][2] = akovr[0][0]*akovr[1][1] - akovr[1][0]*akovr[0][1];
+          const double cnorm = sqrt(b[0][2]*b[0][2] + b[1][2]*b[1][2] + b[2][2]*b[2][2]);
+          b[0][2] /= cnorm;
+          b[1][2] /= cnorm;
+          b[2][2] /= cnorm;
+          const double caeins = 0.99999999999;
+          if (abs(b[1][2])<caeins)
+          {
+            b[0][0] = b[2][2];
+            b[1][0] = 0.0;
+            b[2][0] = -b[0][2];
+            const double anorm = sqrt(b[0][0]*b[0][0] + b[2][0]*b[2][0]);
+            b[0][0] /= anorm;
+            b[2][0] /= anorm;
+            b[0][1] =  b[1][2]*b[2][0];
+            b[1][1] =  b[2][2]*b[0][0] - b[0][2]*b[2][0];
+            b[2][1] = -b[1][2]*b[0][0];
+          }
+          else
+          {
+            b[0][0] = 1.0;
+            b[1][0] = 0.0;
+            b[2][0] = 0.0;
+            b[0][1] = 0.0;
+            b[1][1] = 0.0;
+            if (b[1][2] > 0.0) b[2][1] = -1.0;
+            else                b[2][1] =  1.0;
+          }
+          s8tettr(sn,akovr,b);
+          s8tettr(sm,akovr,b);
+        }
+        break;
+        case s8_rst:
+        {
+          double b[3][3];
+          for (int i=0; i<3; ++i)
+            for (int j=0; j<3; ++j)
+              b[i][j] = akovr[i][j];
+          for (int j=0; j<3; ++j)
+          {
+            double sum = 0.0;
+            for (int i=0; i<3; ++i) sum += b[i][j]*b[i][j];
+            sum = 1.0/(sqrt(sum));
+            for (int i=0; i<3; ++i) b[i][j] *= sum;
+          }
+          s8tettr(sn,akovr,b);
+          s8tettr(sm,akovr,b);
+        }
+        break;
+        case s8_rst_ortho:
+        {
+          double b[3][3];
+          b[0][2] = akovr[1][0]*akovr[2][1] - akovr[2][0]*akovr[1][1];
+          b[1][2] = akovr[2][0]*akovr[0][1] - akovr[0][0]*akovr[2][1];
+          b[2][2] = akovr[0][0]*akovr[1][1] - akovr[1][0]*akovr[0][1];
+          const double cnorm = sqrt(b[0][2]*b[0][2] + b[1][2]*b[1][2] + b[2][2]*b[2][2]);
+          b[0][2] /= cnorm;
+          b[1][2] /= cnorm;
+          b[2][2] /= cnorm;
+          const double anorm = sqrt(akovr[0][0]*akovr[0][0]+akovr[1][0]*akovr[1][0]+akovr[2][0]*akovr[2][0]);
+          b[0][0] = akovr[0][0]/anorm;
+          b[1][0] = akovr[1][0]/anorm;
+          b[2][0] = akovr[2][0]/anorm;
+          b[0][1] = akovr[1][2]*akovr[2][0] - akovr[2][2]*akovr[1][0];
+          b[1][1] = akovr[2][2]*akovr[0][0] - akovr[0][2]*akovr[2][0];
+          b[2][1] = akovr[0][2]*akovr[1][0] - akovr[1][2]*akovr[0][0];
+          s8tettr(sn,akovr,b);
+          s8tettr(sm,akovr,b);
+        }
+        break;
+        case s8_none:
+        default:
+          dserror("Unknown type of force");
+        break;
+        } // switch(forcetype_)
+        gp_stress(0,ngauss)  = sn[0][0];
+        gp_stress(2,ngauss)  = sn[0][1];
+        gp_stress(3,ngauss)  = sn[0][2];
+        gp_stress(8,ngauss)  = sn[1][0];
+        gp_stress(1,ngauss)  = sn[1][1];
+        gp_stress(4,ngauss)  = sn[1][2];
+        gp_stress(16,ngauss) = sn[2][0];
+        gp_stress(17,ngauss) = sn[2][1];
+        gp_stress(9,ngauss)  = sn[2][2];
+        gp_stress(5,ngauss)  = sm[0][0];
+        gp_stress(7,ngauss)  = sm[0][1];
+        gp_stress(10,ngauss) = sm[0][2];
+        gp_stress(14,ngauss) = sm[1][0];
+        gp_stress(6,ngauss)  = sm[1][1];
+        gp_stress(11,ngauss) = sm[1][2];
+        gp_stress(12,ngauss) = sm[2][0];
+        gp_stress(13,ngauss) = sm[2][1];
+        gp_stress(15,ngauss) = sm[2][2];
+      }
+      ++ngauss;
+    } // for (int ls=0; ls<nis; ++ls)
+  } // for (int lr=0; lr<nir; ++lr)
+  amdel(&C_a);
+  //------------------------------------- store forces inside the element
+  data_.Add("Forces",gp_stress);
+  return;
+} // DRT::Elements::Shell8::s8stress
+
+/*----------------------------------------------------------------------*
+ |  transform forces to local/global coordinates (static)    mwgee 02/07|
+ *----------------------------------------------------------------------*/
+/*
+C.......................................................................
+C!    TENSORTRANSFORMATION                                             .
+C!    XX(K,L)=T(I,K)*X(I,J)*T(J,L)                                     .
+C!    T(I,J)=A(I)*B(J)                                                 .
+C!    X(I,J)     - TENSOR 2.TER STUFE                                  .
+C!    A UND B    - BASISVEKTOREN   A ALTE SYS./ B NEUE SYS.            .
+C!    T          - TRANSFORMATIONSMATRIX                               .
+C.......................................................................
+*/
+void s8tettr(double x[][3], double a[][3], double b[][3])
+{
+  double t[3][3];
+  for (int i=0; i<3; ++i)
+    for (int j=0; j<3; ++j)
+    {
+      t[i][j] = 0.0;
+      for (int k=0; k<3; ++k) t[i][j] += a[k][i]*b[k][j];
+    }
+  double h[3][3];
+  for (int i=0; i<3; ++i)
+    for (int j=0; j<3; ++j)
+    {
+      h[i][j] = 0.0;
+      for (int k=0; k<3; ++k) h[i][j] += x[i][k]*t[k][j];
+    }
+  for (int i=0; i<3; ++i)
+    for (int j=0; j<3; ++j)
+    {
+      x[i][j] = 0.0;
+      for (int k=0; k<3; ++k) x[i][j] += t[k][i]*h[k][j];
+    }
+  return;
+}
+
 
 extern "C"
 {
@@ -316,7 +688,6 @@ void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm,
                                             struct _MATERIAL*         material)
 {
   DSTraceHelper dst("Shell8::s8_nlnstiffmass");  
-
   const int numnode = NumNode();
   const int numdf   = 6;
   int       ngauss  = 0;
@@ -324,9 +695,12 @@ void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm,
 
   // general arrays
   vector<double>           funct(numnode);
-  Epetra_SerialDenseMatrix deriv(2,numnode);
-  Epetra_SerialDenseMatrix bop(12,nd);
-  Epetra_SerialDenseVector intforce(nd);
+  Epetra_SerialDenseMatrix deriv;
+  deriv.Shape(2,numnode);
+  Epetra_SerialDenseMatrix bop;
+  bop.Shape(12,nd);
+  Epetra_SerialDenseVector intforce;
+  intforce.Size(nd);
   double D[12][12];    // mid surface material tensor
   double stress[6];
   double strain[6];
@@ -364,41 +738,41 @@ void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm,
   int ansq=0;
   int nsansq=0;
   const int nsansmax = 6;
-  double xr1[nsansmax];
-  double xs1[nsansmax];
-  double xr2[nsansmax];
-  double xs2[nsansmax];
-  double frq[nsansmax];
-  double fsq[nsansmax];
+  double xr1[6];
+  double xs1[6];
+  double xr2[6];
+  double xs2[6];
+  double frq[6];
+  double fsq[6];
   
-  vector<double> funct1q[nsansmax];
-  vector<double> funct2q[nsansmax];
-  Epetra_SerialDenseMatrix deriv1q[nsansmax];
-  Epetra_SerialDenseMatrix deriv2q[nsansmax];
+  vector<double> funct1q[6];
+  vector<double> funct2q[6];
+  Epetra_SerialDenseMatrix deriv1q[6];
+  Epetra_SerialDenseMatrix deriv2q[6];
   
-  double akovr1q[nsansmax][3][3];
-  double akonr1q[nsansmax][3][3];
-  double amkovr1q[nsansmax][3][3];
-  double amkonr1q[nsansmax][3][3];
-  double a3kvpr1q[nsansmax][3][2];
+  double akovr1q[6][3][3];
+  double akonr1q[6][3][3];
+  double amkovr1q[6][3][3];
+  double amkonr1q[6][3][3];
+  double a3kvpr1q[6][3][2];
 
-  double akovc1q[nsansmax][3][3];
-  double akonc1q[nsansmax][3][3];
-  double amkovc1q[nsansmax][3][3];
-  double amkonc1q[nsansmax][3][3];
-  double a3kvpc1q[nsansmax][3][2];
+  double akovc1q[6][3][3];
+  double akonc1q[6][3][3];
+  double amkovc1q[6][3][3];
+  double amkonc1q[6][3][3];
+  double a3kvpc1q[6][3][2];
 
-  double akovr2q[nsansmax][3][3];
-  double akonr2q[nsansmax][3][3];
-  double amkovr2q[nsansmax][3][3];
-  double amkonr2q[nsansmax][3][3];
-  double a3kvpr2q[nsansmax][3][2];
+  double akovr2q[6][3][3];
+  double akonr2q[6][3][3];
+  double amkovr2q[6][3][3];
+  double amkonr2q[6][3][3];
+  double a3kvpr2q[6][3][2];
 
-  double akovc2q[nsansmax][3][3];
-  double akonc2q[nsansmax][3][3];
-  double amkovc2q[nsansmax][3][3];
-  double amkonc2q[nsansmax][3][3];
-  double a3kvpc2q[nsansmax][3][2];
+  double akovc2q[6][3][3];
+  double akonc2q[6][3][3];
+  double amkovc2q[6][3][3];
+  double amkonc2q[6][3][3];
+  double a3kvpc2q[6][3][2];
   
   // for eas
   Epetra_SerialDenseMatrix P;          
@@ -443,8 +817,9 @@ void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm,
     Lt.Shape(nhyb_,nd);
     Dtild.Shape(nhyb_,nhyb_);
     Dtildinv.Shape(nhyb_,nhyb_);
-    Rtild.resize(nhyb_); for (int i=0; i<nhyb_; ++i) Rtild[i] = 0.0;
-    
+    Rtild.resize(nhyb_); 
+    for (int i=0; i<nhyb_; ++i) Rtild[i] = 0.0;
+
     // access history stuff stored in element
     alfa        = data_.GetVector<double>("alfa");
     oldDtildinv = data_.GetMatrix("Dtildinv");
@@ -453,7 +828,7 @@ void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm,
     if (!alfa || !oldDtildinv || !oldLt || !oldRtild) dserror("Missing data");
     /*---------------- make multiplication eashelp = oldLt * disp[kstep] */
     vector<double> eashelp(nhyb_);
-    s8_YpluseqAx(eashelp,*oldLt,disp,1.0,true);
+    s8_YpluseqAx(eashelp,*oldLt,residual,1.0,true);
     /*---------------------------------------- add old Rtilde to eashelp */
     for (int i=0; i<nhyb_; ++i) eashelp[i] += (*oldRtild)[i];
     /*----------------- make multiplication alfa -= olDtildinv * eashelp */
@@ -477,7 +852,6 @@ void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm,
   const double condfac = sdc_;
   Epetra_SerialDenseMatrix* a3ref = data_.GetMatrix("a3ref");
   if (!a3ref) dserror("Cannot get data a3ref");
-  
   /*----------------------------------------------------- geometry update */
   for (int k=0; k<iel; ++k)
   {
@@ -600,7 +974,7 @@ void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm,
            s8tvhe(gmkovr,gmkovc,gmkonr,gmkonc,gkovr,gkovc,&detr,&detc,
                   amkovc,amkovr,akovc,akovr,a3kvpc,a3kvpr,e3,condfac);
          /*- modifications to metric of shell body due to querschub-ans */
-         else;
+         else
            s8anstvheq(gmkovr,gmkovc,gmkonr,gmkonc,gkovr,gkovc,amkovc,amkovr,
                       akovc,akovr,a3kvpc,a3kvpr,&detr,&detc,
                       amkovr1q,amkovc1q,akovr1q,akovc1q,a3kvpr1q,a3kvpc1q,
@@ -716,8 +1090,11 @@ void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm,
       (*stiffmatrix)(j,i) = average;
     }
   
+
 #if 0  
 printf("Element id %d\n",Id());
+
+printf("stiffness\n");
 for (int i=0; i<nd; ++i)
 {
   for (int j=0; j<nd; ++j)
@@ -728,7 +1105,7 @@ printf("internal forces\n");
 for (int i=0; i<nd; ++i) 
   printf("%15.10e\n",(*force)[i]);
 fflush(stdout);
-exit(0);
+
 #endif  
   
   return;
@@ -3258,7 +3635,6 @@ static void s8_averagedirector(Epetra_SerialDenseMatrix& dir_list,
 int DRT::Elements::Shell8Register::Initialize(DRT::Discretization& dis)
 {
   DSTraceHelper dst("Shell8Register::Initialize");
-
   //-------------------- loop all my column elements and init directors at nodes
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
@@ -3281,7 +3657,8 @@ int DRT::Elements::Shell8Register::Initialize(DRT::Discretization& dis)
     
     
     vector<double> funct(numnode);
-    Epetra_SerialDenseMatrix deriv(2,numnode);
+    Epetra_SerialDenseMatrix deriv;
+    deriv.Shape(2,numnode);
     
     for (int i=0; i<numnode; ++i)
     {
@@ -3312,12 +3689,12 @@ int DRT::Elements::Shell8Register::Initialize(DRT::Discretization& dis)
       a3[2] *= a3norm;
       for (int j=0; j<3; j++) (*a3ref)(j,i) = a3[j];
     } // for (int i=0; i<numnode; ++i)
-    
+
     //------------------------------------------ allocate an array for forces
     {
-    Epetra_SerialDenseMatrix forces;
-    forces.Shape(18,actele->ngp_[0]*actele->ngp_[1]); // 18 forces on upto 9 gaussian points
-    actele->data_.Add("forces",forces);
+      Epetra_SerialDenseMatrix forces;
+      forces.Shape(18,actele->ngp_[0]*actele->ngp_[1]); // 18 forces on upto 9 gaussian points
+      actele->data_.Add("forces",forces);
     }
     
     //--------------------------------------allocate space for material history
@@ -3373,7 +3750,7 @@ int DRT::Elements::Shell8Register::Initialize(DRT::Discretization& dis)
     {
       a3map[actnode->Id()].resize(3);
       for (int k=0; k<3; ++k) 
-        a3map[actnode->Id()][k] = collaverdir(k,1);
+        a3map[actnode->Id()][k] = collaverdir(k,0);
     }
     else
     {
@@ -3420,7 +3797,6 @@ int DRT::Elements::Shell8Register::Initialize(DRT::Discretization& dis)
       } // for (int k=0; k<actele->NumNode(); ++k)
     } // for (int j=0; j<numele; ++j)
   } // for (int i=0; i<dis.NumMyColNodes(); ++i)
-
   return 0;
 }
 

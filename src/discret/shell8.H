@@ -281,7 +281,8 @@ private:
     calc_struct_nlnstiffmass,
     calc_struct_stress,
     calc_struct_eleload,
-    calc_struct_fsiload
+    calc_struct_fsiload,
+    calc_struct_update_istep
   };
 
   // element specific data
@@ -319,7 +320,9 @@ private:
                        Epetra_SerialDenseVector* force,
                        struct _MATERIAL*         material);
   
-void s8_surfaceload(ParameterList& params,Epetra_SerialDenseVector& elevec1,
+  void s8stress(struct _MATERIAL* material, vector<double>& mydisp);
+  
+  void s8_surfaceload(ParameterList& params,Epetra_SerialDenseVector& elevec1,
                     const vector<double>& disp);
 
   void s8_integration_points(struct _S8_DATA& data);

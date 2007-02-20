@@ -228,6 +228,8 @@ void DRT::Elements::Shell8::Print(ostream& os) const
 {
   os << "Shell8 ";
   Element::Print(os);
+  cout << endl;
+  cout << data_;
   return;
 }
 
