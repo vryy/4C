@@ -101,7 +101,7 @@ void dyn_nlnstructural_drt()
   if (!actdis->Filled()) actdis->FillComplete();
 
   // -------------------------------------------------------------------
-  // get a communicator and myrank and numproc
+  // get a communicator and myrank
   // -------------------------------------------------------------------
   const Epetra_Comm& Comm = actdis->Comm();
   const int myrank  = Comm.MyPID();
