@@ -115,6 +115,7 @@ OBJS_DISCRET  = src/discret/drt_discret.o \
                 src/discret/global_inp_control2.o \
                 src/discret/global_inp_control3.o \
                 src/discret/stru_dyn_nln_drt.o \
+                src/discret/stru_genalpha_drt.o \
                 src/discret/distribute_grids.o \
                 src/discret/input_conditions.o
 #                pss_full
