@@ -65,6 +65,24 @@ void DRT::ElementRegister::Print(ostream& os) const
 }
 
 /*----------------------------------------------------------------------*
+ |  Pack data                                                  (public) |
+ |                                                            gee 02/07 |
+ *----------------------------------------------------------------------*/
+void DRT::ElementRegister::Pack(vector<char>& data) const
+{
+  data.resize(0);
+  
+  // pack type of this instance of ParObject
+  int type = UniqueParObjectId();
+  AddtoPack(data,type);
+  // add type of element
+  AddtoPack(data,etype_);
+  
+  return;
+}
+
+#if 0
+/*----------------------------------------------------------------------*
  |  Pack data from this element into vector of length size     (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
@@ -91,12 +109,29 @@ const char* DRT::ElementRegister::Pack(int& size) const
   // add type of element
   AddtoPack(position,data,etype_);
 
-
-
   return data;
 }
+#endif
 
+/*----------------------------------------------------------------------*
+ |  Unpack data                                                (public) |
+ |                                                            gee 02/07 |
+ *----------------------------------------------------------------------*/
+void DRT::ElementRegister::Unpack(const vector<char>& data)
+{
+  int position = 0;
+  // extract type
+  int type = 0;
+  ExtractfromPack(position,data,type);
+  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  ExtractfromPack(position,data,etype_);
+  
+  if (position != (int)data.size())
+    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+  return;
+} 
 
+#if 0
 /*----------------------------------------------------------------------*
  |  Unpack data into this element                              (public) |
  |                                                            gee 11/06 |
@@ -115,11 +150,9 @@ bool DRT::ElementRegister::Unpack(const char* data)
   // extract type
   ExtractfromPack(position,data,etype_);
 
-
-
   return true;
 }
-
+#endif
 
 
 

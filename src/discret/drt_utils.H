@@ -53,7 +53,7 @@ namespace Utils
           already unpacked in the instance. The calling method is responsible for
           freeing this instance!
   */
-  DRT::ParObject* Factory(const char* data);
+  DRT::ParObject* Factory(const vector<char>& data);
 
   /*!
   \brief Partition a graph with metis

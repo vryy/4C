@@ -30,6 +30,7 @@ Maintainer: Michael Gee
 
 #include "drt_node.H"
 #include "drt_utils.H"
+#include "drt_parobject.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -153,7 +154,7 @@ private:
   /*!
   \brief Get sendbuff_
   */
-  inline vector<const char*>& SendBuff() { return sendbuff_; }
+  inline vector<vector<char> >& SendBuff() { return sendbuff_; }
 
   /*!
   \brief Get sendsize_
@@ -255,8 +256,8 @@ private:
   Epetra_SerialDenseMatrix sendplan_;  // sending information
   Epetra_SerialDenseMatrix recvplan_;  // receiving information
 
-  vector<const char*>      sendbuff_;  // a sendbuffer
-  vector<int>              sendsize_;  // sendsize_[i] is length of sendbuff_[i]
+  vector<vector<char> >    sendbuff_;  // a sendbuffer
+  vector<int>              sendsize_;  // sendsize_[i] is length of vector in sendbuff_[i]
   
   
 }; // class Exporter
@@ -313,14 +314,15 @@ template<typename T> void DRT::Exporter::Export(
     if (curr==parobjects.end()) dserror("Cannot find object with gid %d",gid);
     RefCountPtr<T> actobject = curr->second;
     // pack the stuff
-    SendBuff()[lid] = actobject->Pack(SendSize()[lid]);
+    actobject->Pack(SendBuff()[lid]);
+    SendSize()[lid] = SendBuff()[lid].size();
     // do sending
     for (int j=0; j<NumProc(); ++j)
       if (j != MyPID() && SendPlan()(lid,j)==1)
       {
         if (nsend>=(int)request.size()) 
           request.resize(request.size()+200);
-        ISend(MyPID(),j,SendBuff()[lid],SendSize()[lid],gid,request[nsend]);
+        ISend(MyPID(),j,&SendBuff()[lid][0],SendSize()[lid],gid,request[nsend]);
         ++nsend;
       }
   }
@@ -339,6 +341,7 @@ template<typename T> void DRT::Exporter::Export(
     int gid = -1;
     int length = 0;
     ReceiveAny(source,gid,recvbuff,length);
+    recvbuff.resize(length);
     --nrecv;
     // check whether message was for me
     if (!TargetMap().MyGID(gid))
@@ -350,7 +353,7 @@ template<typename T> void DRT::Exporter::Export(
     if (curr != parobjects.end()) 
       continue;
     // Create an empty object and unpack
-    DRT::ParObject* object = DRT::Utils::Factory(&(recvbuff[0]));
+    DRT::ParObject* object = DRT::Utils::Factory(recvbuff);
     T* ptr = dynamic_cast<T*>(object);
     if (!ptr) dserror("typename T in template does not implement ParObject (dynamic_cast failed)");
     RefCountPtr<T> refptr = rcp(ptr);
@@ -375,12 +378,10 @@ template<typename T> void DRT::Exporter::Export(
 
   //------------------------------------------------------ free sendbuffer
   for (int i=0; i<(int)SendBuff().size(); ++i)
-    if (SendBuff()[i]) 
-    {
-      delete [] SendBuff()[i];
-      SendBuff()[i] = NULL;
-      SendSize()[i] = 0;
-    }
+  {
+    SendBuff()[i].clear();
+    SendSize()[i] = 0;
+  }
 #endif  
   return;
 }

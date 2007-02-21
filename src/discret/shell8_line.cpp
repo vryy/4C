@@ -72,6 +72,21 @@ DRT::Element* DRT::Elements::Shell8Line::Clone() const
 }
 
 /*----------------------------------------------------------------------*
+ |  Pack data                                                  (public) |
+ |                                                            gee 02/07 |
+ *----------------------------------------------------------------------*/
+void DRT::Elements::Shell8Line::Pack(vector<char>& data) const
+{
+  DSTraceHelper dst("Shell8Line::Pack");  
+  data.resize(0);
+  
+  dserror("this Shell8Line element does not support communication");
+
+  return;
+}
+
+#if 0
+/*----------------------------------------------------------------------*
  |  Pack data from this element into vector of length size     (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
@@ -81,7 +96,20 @@ const char* DRT::Elements::Shell8Line::Pack(int& size) const
   dserror("this line element does not support communication");
   return NULL;
 }
+#endif
 
+/*----------------------------------------------------------------------*
+ |  Unpack data                                                (public) |
+ |                                                            gee 02/07 |
+ *----------------------------------------------------------------------*/
+void DRT::Elements::Shell8Line::Unpack(const vector<char>& data)
+{
+  DSTraceHelper dst("Shell8Line::Unpack");  
+  dserror("this line element does not support communication");
+  return;
+} 
+
+#if 0
 /*----------------------------------------------------------------------*
  |  Unpack data into this element                              (public) |
  |                                                            gee 01/07 |
@@ -92,7 +120,7 @@ bool DRT::Elements::Shell8Line::Unpack(const char* data)
   dserror("this line element does not support communication");
   return false;
 }
-
+#endif
 
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 01/07|

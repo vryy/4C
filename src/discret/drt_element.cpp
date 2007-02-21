@@ -129,6 +129,37 @@ void DRT::Element::SetNodeIds(const int nnode, const int* nodes)
 }
 
 /*----------------------------------------------------------------------*
+ |  Pack data                                                  (public) |
+ |                                                            gee 02/07 |
+ *----------------------------------------------------------------------*/
+void DRT::Element::Pack(vector<char>& data) const
+{
+  data.resize(0);
+  
+  // pack type of this instance of ParObject
+  int type = UniqueParObjectId();
+  AddtoPack(data,type);
+  // add id
+  int id = Id();
+  AddtoPack(data,id);
+  // add owner
+  int owner = Owner();
+  AddtoPack(data,owner);
+  // add type of element
+  ElementType etype = Type();
+  AddtoPack(data,etype);
+  // add vector nodeid_
+  AddVectortoPack(data,nodeid_);
+  // dofset
+  vector<char> dofsetpack(0);
+  dofset_.Pack(dofsetpack);
+  AddVectortoPack(data,dofsetpack);
+  
+  return;
+}
+
+#if 0
+/*----------------------------------------------------------------------*
  |  Pack data from this element into vector of length size     (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
@@ -186,7 +217,7 @@ const char* DRT::Element::Pack(int& size) const
   // add Id()
   int id = Id();
   AddtoPack(position,data,id);
-  // add Id()
+  // add owner
   int owner = Owner();
   AddtoPack(position,data,owner);
   // add type of element
@@ -216,8 +247,41 @@ const char* DRT::Element::Pack(int& size) const
     dserror("Mismatch in size of data %d <-> %d",size,position);
   return data;
 }
+#endif
 
-
+/*----------------------------------------------------------------------*
+ |  Unpack data                                                (public) |
+ |                                                            gee 02/07 |
+ *----------------------------------------------------------------------*/
+void DRT::Element::Unpack(const vector<char>& data)
+{
+  int position = 0;
+  // extract type
+  int type = 0;
+  ExtractfromPack(position,data,type);
+  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  // id_
+  ExtractfromPack(position,data,id_);
+  // owner_
+  ExtractfromPack(position,data,owner_);
+  // etype_
+  ExtractfromPack(position,data,etype_);
+  // nodeid_
+  ExtractVectorfromPack(position,data,nodeid_);
+  // dofset_
+  vector<char> dofpack(0);
+  ExtractVectorfromPack(position,data,dofpack);
+  dofset_.Unpack(dofpack);
+  
+  // node_ is NOT communicated
+  node_.resize(0);
+  
+  if (position != (int)data.size())
+    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+  return;
+} 
+ 
+#if 0
 /*----------------------------------------------------------------------*
  |  Unpack data into this element                              (public) |
  |                                                            gee 11/06 |
@@ -269,7 +333,7 @@ bool DRT::Element::Unpack(const char* data)
 
   return true;
 }
-
+#endif
 
 /*----------------------------------------------------------------------*
  |  Build nodal pointers                                    (protected) |

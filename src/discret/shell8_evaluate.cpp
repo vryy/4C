@@ -74,7 +74,14 @@ int DRT::Elements::Shell8::Evaluate(ParameterList& params,
   switch(act)
   {
     case calc_struct_linstiff:
-      dserror("Case not yet implemented");
+    {
+      // need current displacement and residual forces
+      vector<double> mydisp(lm.size());
+      for (int i=0; i<(int)mydisp.size(); ++i) mydisp[i] = 0.0;
+      vector<double> myres(lm.size());
+      for (int i=0; i<(int)myres.size(); ++i) myres[i] = 0.0;
+      s8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,actmat);
+    }
     break;
     case calc_struct_nlnstiff:
     {

@@ -38,12 +38,10 @@ extern "C"
 /*----------------------------------------------------------------------*
  |  allocate an instance of a specific impl. of ParObject (public) mwgee 12/06|
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::Utils::Factory(const char* data)
+DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
 {
   // mv ptr behind the size record
-  const int* ptr = (const int*)data;
-  ptr++;
-  
+  const int* ptr = (const int*)(&data[0]);
   // get the type
   const int type = *ptr;
   

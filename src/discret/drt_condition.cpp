@@ -100,6 +100,30 @@ void DRT::Condition::Print(ostream& os) const
 }
 
 /*----------------------------------------------------------------------*
+ |  Pack data                                                  (public) |
+ |                                                            gee 02/07 |
+ *----------------------------------------------------------------------*/
+void DRT::Condition::Pack(vector<char>& data) const
+{
+  data.resize(0);
+  
+  // pack type of this instance of ParObject
+  int type = UniqueParObjectId();
+  AddtoPack(data,type);
+  // add base class container
+  vector<char> basedata;
+  Container::Pack(basedata);
+  AddVectortoPack(data,basedata);
+  // id_
+  AddtoPack(data,id_);
+  // type_
+  AddtoPack(data,type_);
+  
+  return;
+}
+
+#if 0
+/*----------------------------------------------------------------------*
  |  Pack data from this element into vector of length size     (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
@@ -142,8 +166,34 @@ const char* DRT::Condition::Pack(int& size) const
     dserror("Mismatch in size of data %d <-> %d",size,position);
   return data;
 }
+#endif
 
+/*----------------------------------------------------------------------*
+ |  Unpack data                                                (public) |
+ |                                                            gee 02/07 |
+ *----------------------------------------------------------------------*/
+void DRT::Condition::Unpack(const vector<char>& data)
+{
+  int position = 0;
+  // extract type
+  int type = 0;
+  ExtractfromPack(position,data,type);
+  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  // extract base class Container
+  vector<char> basedata(0);
+  ExtractVectorfromPack(position,data,basedata);
+  Container::Unpack(basedata);
+  // id_
+  ExtractfromPack(position,data,id_);
+  // type_
+  ExtractfromPack(position,data,type_);
+  
+  if (position != (int)data.size())
+    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+  return;
+} 
 
+#if 0
 /*----------------------------------------------------------------------*
  |  Unpack data into this element                              (public) |
  |                                                            gee 11/06 |
@@ -172,7 +222,7 @@ bool DRT::Condition::Unpack(const char* data)
     dserror("Mismatch in size of data %d <-> %d",size,position);
   return true;
 }
-
+#endif
 
 
 

@@ -5,6 +5,9 @@
 
 \brief A set of degrees of freedom
 
+A set of degrees of freedom to be used in a node or an element or so.
+This is a VERY simple class...
+
 <pre>
 Maintainer: Michael Gee
             gee@lnm.mw.tum.de
@@ -30,8 +33,6 @@ using namespace std;
 namespace DRT
 {
 
-// forward declarations
-
 /*!
 \class DofSet
 
@@ -55,7 +56,7 @@ public:
   /*!
   \brief Copy Constructor
 
-  Makes a deep copy of a Node
+  Makes a deep copy
   
   */
   DofSet(const DRT::DofSet& old);
@@ -69,8 +70,7 @@ public:
   /*!
   \brief Return unique ParObject id
   
-  every class imploementing ParObject needs a unique id defined at the
-  top of this file.
+  see DRT::ParObject
   */
   virtual int UniqueParObjectId() const { return ParObject_DofSet;}
 
@@ -80,7 +80,7 @@ public:
   \ref Pack and \ref Unpack are used to communicate this class
   
   */
-  virtual const char* Pack(int& size) const;
+  virtual void Pack(vector<char>& data) const;
 
   /*!
   \brief Unpack data from a char vector into this class
@@ -88,7 +88,7 @@ public:
   \ref Pack and \ref Unpack are used to communicate this class
 
   */
-  virtual bool Unpack(const char* data);
+  virtual void Unpack(const vector<char>& data);
 
   //@}
 
@@ -111,10 +111,18 @@ public:
   { if (NumDof()) return &dofs_[0]; else return NULL;}
 
   /*!
-  \brief Return a degree of freedom
+  \brief Return one local degree of freedom
+  
+  \param index (in): local index of the degree of freedom to be accessed
   */
   virtual inline int operator [] (const int index) const 
-  { if (NumDof()>index) return dofs_[index]; else return -1;}
+  { 
+#ifdef DEBUG
+    if (NumDof()>index) return dofs_[index]; else return -1;
+#else
+    return dofs_[index];
+#endif
+  }
 
   //@}
 
@@ -122,11 +130,16 @@ public:
 
   /*!
   \brief change no. of degrees of freedom
+  
+  \param size (in) : new number of degrees of freedom in this set
   */
   virtual void SetNumDof(const int size); 
 
   /*!
   \brief Set degrees of freedom
+  
+  \param dofs (in): degrees of freedom to be stored in this class
+  \param size (in): number of degrees of freedom in dofs
   */
   virtual void SetDof(const int* dofs, const int size); 
 

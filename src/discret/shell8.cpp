@@ -77,6 +77,48 @@ DRT::Element* DRT::Elements::Shell8::Clone() const
 }
 
 /*----------------------------------------------------------------------*
+ |  Pack data                                                  (public) |
+ |                                                            gee 02/07 |
+ *----------------------------------------------------------------------*/
+void DRT::Elements::Shell8::Pack(vector<char>& data) const
+{
+  data.resize(0);
+  
+  // pack type of this instance of ParObject
+  int type = UniqueParObjectId();
+  AddtoPack(data,type);
+  // add base class Element
+  vector<char> basedata(0);
+  Element::Pack(basedata);
+  AddVectortoPack(data,basedata);
+  // forcetype_
+  AddtoPack(data,forcetype_);
+  // thickness_
+  AddtoPack(data,thickness_);
+  // ngp_
+  AddtoPack(data,ngp_,3*sizeof(int));
+  // ngptri_
+  AddtoPack(data,ngptri_);
+  // nhyb_
+  AddtoPack(data,nhyb_);
+  // eas_
+  AddtoPack(data,eas_,5*sizeof(int));
+  // ans_
+  AddtoPack(data,ans_);
+  // sdc_
+  AddtoPack(data,sdc_);
+  // material_
+  AddtoPack(data,material_);
+  // data_
+  vector<char> tmp(0);
+  data_.Pack(tmp);
+  AddVectortoPack(data,tmp);
+
+  return;
+}
+
+#if 0
+/*----------------------------------------------------------------------*
  |  Pack data from this element into vector of length size     (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
@@ -120,7 +162,7 @@ const char* DRT::Elements::Shell8::Pack(int& size) const
   // add size
   AddtoPack(position,data,size);
   // ParObject type
-  int type = ParObject_Shell8;
+  int type = UniqueParObjectId();;
   AddtoPack(position,data,type);
   // add base class
   AddtoPack(position,data,basedata,basesize);
@@ -153,7 +195,52 @@ const char* DRT::Elements::Shell8::Pack(int& size) const
 
   return data;
 }
+#endif
 
+/*----------------------------------------------------------------------*
+ |  Unpack data                                                (public) |
+ |                                                            gee 02/07 |
+ *----------------------------------------------------------------------*/
+void DRT::Elements::Shell8::Unpack(const vector<char>& data)
+{
+  int position = 0;
+  // extract type
+  int type = 0;
+  ExtractfromPack(position,data,type);
+  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  // extract base class Element
+  vector<char> basedata(0);
+  ExtractVectorfromPack(position,data,basedata);
+  Element::Unpack(basedata);
+  // forcetype_
+  ExtractfromPack(position,data,forcetype_);
+  // thickness_
+  ExtractfromPack(position,data,thickness_);
+  // ngp_
+  ExtractfromPack(position,data,ngp_,3*sizeof(int));
+  // ngptri_
+  ExtractfromPack(position,data,ngptri_);
+  // nhyb_
+  ExtractfromPack(position,data,nhyb_);
+  // eas_
+  ExtractfromPack(position,data,eas_,5*sizeof(int));
+  // ans_
+  ExtractfromPack(position,data,ans_);
+  // sdc_
+  ExtractfromPack(position,data,sdc_);
+  // material_
+  ExtractfromPack(position,data,material_);
+  // data_
+  vector<char> tmp(0);
+  ExtractVectorfromPack(position,data,tmp);
+  data_.Unpack(tmp);
+  
+  if (position != (int)data.size())
+    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+  return;
+} 
+
+#if 0
 /*----------------------------------------------------------------------*
  |  Unpack data into this element                              (public) |
  |                                                            gee 11/06 |
@@ -208,7 +295,7 @@ bool DRT::Elements::Shell8::Unpack(const char* data)
 
   return true;
 }
-
+#endif
 
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 11/06|
@@ -441,6 +528,26 @@ DRT::Elements::Shell8Register* DRT::Elements::Shell8Register::Clone() const
 }
 
 /*----------------------------------------------------------------------*
+ |  Pack data                                                  (public) |
+ |                                                            gee 02/07 |
+ *----------------------------------------------------------------------*/
+void DRT::Elements::Shell8Register::Pack(vector<char>& data) const
+{
+  data.resize(0);
+  
+  // pack type of this instance of ParObject
+  int type = UniqueParObjectId();
+  AddtoPack(data,type);
+  // add base class ElementRegister
+  vector<char> basedata(0);
+  ElementRegister::Pack(basedata);
+  AddVectortoPack(data,basedata);
+  
+  return;
+}
+
+#if 0
+/*----------------------------------------------------------------------*
  |  Pack data from this element into vector of length size     (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
@@ -467,7 +574,7 @@ const char* DRT::Elements::Shell8Register::Pack(int& size) const
   // add size
   AddtoPack(position,data,size);
   // ParObject type
-  int type = ParObject_Shell8Register;
+  int type = UniqueParObjectId();
   AddtoPack(position,data,type);
   // add base class
   AddtoPack(position,data,basedata,basesize);
@@ -479,7 +586,30 @@ const char* DRT::Elements::Shell8Register::Pack(int& size) const
 
   return data;
 }
+#endif
 
+/*----------------------------------------------------------------------*
+ |  Unpack data                                                (public) |
+ |                                                            gee 02/07 |
+ *----------------------------------------------------------------------*/
+void DRT::Elements::Shell8Register::Unpack(const vector<char>& data)
+{
+  int position = 0;
+  // extract type
+  int type = 0;
+  ExtractfromPack(position,data,type);
+  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  // base class ElementRegister
+  vector<char> basedata(0);
+  ExtractVectorfromPack(position,data,basedata);
+  ElementRegister::Unpack(basedata);
+  
+  if (position != (int)data.size())
+    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+  return;
+} 
+
+#if 0
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
  |                                                            gee 12/06 |
@@ -505,6 +635,7 @@ bool DRT::Elements::Shell8Register::Unpack(const char* data)
 
   return true;
 }
+#endif
 
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 12/06|

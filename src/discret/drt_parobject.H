@@ -75,7 +75,7 @@ public:
   /*!
   \brief Copy Constructor
 
-  Makes a deep copy of a Element
+  Makes a deep copy of a ParObject
   
   */
   ParObject(const DRT::ParObject& old);
@@ -93,7 +93,7 @@ public:
   /*!
   \brief Return unique ParObject id
   
-  every class imploementing ParObject needs a unique id defined at the
+  every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
   virtual int UniqueParObjectId() const = 0;
@@ -101,35 +101,30 @@ public:
   /*!
   \brief Pack this class so it can be communicated
   
-  Allocates a char array of size size and returns it as well as size.
-  Note that the first entry in the char array has to be the size itself.
-  Note that the second entry in the char array has to be the type of
-  instance of ParObject, also see top of this file.
+  Resizes the vector data and stores all information of a class in it.
+  The first information to be stored in data has to be the
+  unique parobject delivered by UniqueParObjectId() which will then
+  identify the exact class on the receiving processor.
   
-  Pack and Unpack are used to communicate this element
-  
+  \param data (in/out): char vector to store class information
+    
   */
-  virtual const char* Pack(int& size) const = 0;
+  virtual void Pack(vector<char>& data) const = 0;
 
   /*!
   \brief Unpack data from a char vector into this class
   
-  \ref Pack and \ref Unpack are used to communicate this element
+  The vector data contains all information to rebuild the
+  exact copy of an instance of a class on a different processor.
+  The first entry in data has to be an integer which is the unique
+  parobject id defined at the top of this file and delivered by 
+  UniqueParObjectId().
 
+  \param data (in) : vector storing all data to be unpacked into this 
+                     instance.
   */
-  virtual bool Unpack(const char* data) = 0;
+  virtual void Unpack(const vector<char>& data) = 0;
 
-
-  /*!
-  \brief return size of a char vector used for communication
-  
-  The size of a char vector used for communication should ALWAYS be stored
-  at the beginning of the vector
-
-  */
-  inline int SizePack(const char* data) const 
-  { int s = ((int*)data)[0]; return s; }
-  
 
   //@}
 
@@ -138,114 +133,88 @@ protected:
   // @{ \name Routines to help pack stuff into a char string
 
   /*!
-  \brief return packing size of a string
+  \brief Add stuff to the end of a char vector data
   
-  Calculate the size it needs to pack a string
-  */
-  inline int SizeString(const string& data) const 
-  { return (sizeof(int)+data.size()*sizeof(char));}
-
-  /*!
-  \brief return packing size of a vector
+  This method is templated for all basic types int char double enum bool etc.
+  \param data (in/out) : char string stuff shall be added to
+  \param stuff (in)    : basic data type (float int double char etc) that get's added to stuff
   
-  Calculate the size it needs to pack a vector<...>
-  
-  \note Only vectors of basic types allowed!
-  */
-  template<typename kind> int SizeVector(const vector<kind>& data) const 
-  { return (sizeof(int)+data.size()*sizeof(kind));}
-
-  /*!
-  \brief return packing size of a Epetra_SerialDenseMatrix
-  
-  Calculate the size it needs to pack a Epetra_SerialDenseMatrix
+  \note To be more precise, you can use this template for types of data that sizeof(kind)
+        works for. Do not use for classes or structs or stl containers!
   
   */
-  inline int SizeDenseMatrix(const Epetra_SerialDenseMatrix& data) const 
-  { return (2*sizeof(int)+data.M()*data.N()*sizeof(double));}
-
-  /*!
-  \brief Add stuff to a char vector data and increment position
-  
-  This method is templated for all basic type int char double enum.
-  \param position : place in data where to add stuff. Position will be incremented by this method.
-  \param data     : char string stuff shall be added to
-  \param stuff    : basic data type (float int double char) that get's added to stuff
-  
-  */
-  template<typename kind> void AddtoPack(int& position, char* data, kind& stuff) const
+  template<typename kind> void AddtoPack(vector<char>& data, const kind& stuff) const
   {
     int size = sizeof(kind);
-    memcpy(&data[position],&stuff,size);
-    position += size;
+    int oldsize = data.size();
+    data.resize(oldsize+size);
+    memcpy(&data[oldsize],&stuff,size);
     return;
   }
   
   /*!
-  \brief Add stuff to a char vector data and increment position
+  \brief Add stuff to a char vector data
   
   This method adds an array to data
-  \param position : place in data where to add stuff. Position will be incremented by this method.
-  \param data     : char string stuff shall be added to
-  \param stuff    : array of total length stuffsize (in byte)
-  \param stuffsize: length of stuff in byte
+  \param data (in/out)  : char vector stuff shall be added to
+  \param stuff (in)     : ptr to stuff that has length stuffsize (in byte)
+  \param stuffsize (in) : length of stuff in byte
   */
-  template<typename kind> void AddtoPack(int& position, char* data, kind* stuff, int stuffsize) const
+  template<typename kind> void AddtoPack(vector<char>& data, const kind* stuff, const int stuffsize) const
   {
-    memcpy(&data[position],stuff,stuffsize);
-    position += stuffsize;
+    int oldsize = data.size();
+    data.resize(oldsize+stuffsize);
+    memcpy(&data[oldsize],stuff,stuffsize);
     return;
   }
 
   /*!
-  \brief Add a vector of a basic type to a char vector data and increment position
+  \brief Add a vector of a basic type to a char vector data
   
   This method adds a vector to data
-  \param position : place in data where to add stuff. Position will be incremented by this method.
-  \param data     : char string stuff shall be added to
-  \param stuff    : vector of things of total length stuffsize
+  \param data (in/out) : char vector stuff shall be added to
+  \param stuff (in)    : vector of kind
   */
-  template<typename kind> void AddVectortoPack(int& position, char* data, const vector<kind>& stuff) const
+  template<typename kind> void AddVectortoPack(vector<char>& data, const vector<kind>& stuff) const
   {
     int numele = stuff.size();
-    AddtoPack(position,data,numele);
-    AddtoPack(position,data,&stuff[0],numele*sizeof(kind));
+    AddtoPack(data,numele);
+    AddtoPack(data,&stuff[0],numele*sizeof(kind));
     return;
   }
 
   /*!
-  \brief Add an Epetra_SerialDenseMatrix to data and increment position
+  \brief Add an Epetra_SerialDenseMatrix to data
   
   This method adds a Epetra_SerialDenseMatrix to data
-  \param position : place in data where to add stuff. Position will be incremented by this method.
-  \param data     : char string stuff shall be added to
-  \param stuff    : matrix to add
+  
+  \param data (in/out) : char vector stuff shall be added to
+  \param stuff (in)    : matrix to add
   */
-  void AddMatrixtoPack(int& position, char* data, 
+  void AddMatrixtoPack(vector<char>& data, 
                        const Epetra_SerialDenseMatrix& stuff) const
   {
     int m = stuff.M();
     int n = stuff.N();
-    AddtoPack(position,data,m);
-    AddtoPack(position,data,n);
+    AddtoPack(data,m);
+    AddtoPack(data,n);
     double* A = stuff.A();
-    AddtoPack(position,data,A,n*m*sizeof(double));
+    AddtoPack(data,A,n*m*sizeof(double));
     return;
   }
 
   /*!
-  \brief Add a string to a char vector data and increment position
+  \brief Add a string to a char vector data
   
   This method adds a string to data
-  \param position : place in data where to add stuff. Position will be incremented by this method.
-  \param data     : char string stuff shall be added to
-  \param stuff    : string to add
+  \param data (in/out) : char string stuff shall be added to
+  \param stuff (in)    : string to add
   */
-  void AddStringtoPack(int& position, char* data, const string& stuff) const
+  void AddStringtoPack(vector<char>& data, const string& stuff) const
   {
     int numele = stuff.size();
-    AddtoPack(position,data,numele);
-    AddtoPack(position,data,&stuff[0],numele*sizeof(char));
+    AddtoPack(data,numele);
+    AddtoPack(data,&stuff[0],numele*sizeof(char));
     return;
   }
 
@@ -253,12 +222,14 @@ protected:
   \brief Extract stuff from a char vector data and increment position
   
   This method is templated for all basic type like int char double enum.
-  \param position : place in data where to extract stuff. Position will be incremented by this method by sizeof(kind).
-  \param data     : char string where stuff is extracted from
-  \param stuff    : basic data type (float int double char ...) to extract from data
+  To be precise, it will work for all objects where sizeof(kind) is well defined.
+  
+  \param position (in/out) : place in data where to extract stuff. Position will be incremented by sizeof(kind)
+  \param data (in)         : char vector where stuff is extracted from
+  \param stuff (out)       : basic data type (float int double char ...) to extract from data
   
   */
-  template<typename kind> void ExtractfromPack(int& position, const char* data, kind& stuff) const
+  template<typename kind> void ExtractfromPack(int& position, const vector<char>& data, kind& stuff) const
   {
     int size = sizeof(kind);
     memcpy(&stuff,&data[position],size);
@@ -270,12 +241,12 @@ protected:
   \brief Extract stuff from a char vector data and increment position
   
   This method extracts an array from data
-  \param position : place in data where to extract stuff. Position will be incremented by this method by stuffsize.
-  \param data     : char string where stuff is extracted from
-  \param stuff    : array of total length stuffsize (in byte)
-  \param stuffsize: length of stuff in byte
+  \param position (in/out) : place in data where to extract stuff. Position will be incremented by stuffsize
+  \param data (in)         : char string where stuff is extracted from
+  \param stuff (out)       : array of total length stuffsize (in byte)
+  \param stuffsize (in)    : length of stuff in byte
   */
-  template<typename kind> void ExtractfromPack(int& position, const char* data, kind* stuff, int stuffsize) const
+  template<typename kind> void ExtractfromPack(int& position, const vector<char>& data, kind* stuff, const int stuffsize) const
   {
     memcpy(stuff,&data[position],stuffsize);
     position += stuffsize;
@@ -285,12 +256,13 @@ protected:
   /*!
   \brief Extract a vector of a basic type from a char vector data and increment position
   
-  This method extracts an array from data
-  \param position : place in data where to extract stuff. Position will be incremented by this method by stuffsize.
-  \param data     : char string where stuff is extracted from
-  \param stuff    : array of total length stuff.size() (in byte)
+  This method extracts a vector<kind> from data
+  \param position (in/out): place in data where to extract stuff. Position will be incremented 
+                            by sizeof(int)+stuff.size()*sizeof(kind)
+  \param data (in)        : char string where stuff is extracted from
+  \param stuff (out)      : vector of total length stuff.size()
   */
-  template<typename kind> void ExtractVectorfromPack(int& position, const char* data, vector<kind>& stuff) const
+  template<typename kind> void ExtractVectorfromPack(int& position, const vector<char>& data, vector<kind>& stuff) const
   {
     int dim = 0;
     ExtractfromPack(position,data,dim);
@@ -303,11 +275,12 @@ protected:
   /*!
   \brief Extract a Epetra_SerialDenseMatrix from a char vector data and increment position
   
-  \param position : place in data where to extract stuff. Position will be incremented by this method by stuffsize.
-  \param data     : char string where stuff is extracted from
-  \param stuff    : Epetra_SerialDenseMatrix to be extracted
+  \param position (in/out) : place in data where to extract stuff. Position will be incremented by this method by
+                             the size of the matrix
+  \param data (in)         : char vector where stuff is extracted from
+  \param stuff (out)       : Epetra_SerialDenseMatrix to be extracted
   */
-  void ExtractMatrixfromPack(int& position, const char* data, 
+  void ExtractMatrixfromPack(int& position, const vector<char>& data, 
                              Epetra_SerialDenseMatrix& stuff) const
   {
     int m = 0;
@@ -321,14 +294,15 @@ protected:
   }
 
   /*!
-  \brief Extract a vector of a basic type from a char vector data and increment position
+  \brief Extract a string from a char vector data and increment position
   
-  This method extracts an array from data
-  \param position : place in data where to extract stuff. Position will be incremented by this method by stuffsize.
-  \param data     : char string where stuff is extracted from
-  \param stuff    : array of total length stuffsize (in byte)
+  This method extracts a string
+  \param position (in/out) : place in data where to extract stuff. Position will be incremented by
+                             the sizeof the string in byte + sizeof(int)
+  \param data (in)         : char vector where stuff is extracted from
+  \param stuff (out)       : string to be extracted to
   */
-  void ExtractStringfromPack(int& position, const char* data, string& stuff) const
+  void ExtractStringfromPack(int& position, const vector<char>& data, string& stuff) const
   {
     int dim = 0;
     ExtractfromPack(position,data,dim);

@@ -5,6 +5,10 @@
 
 \brief A data storage container
 
+You can store arrays of integer, double, and strings in this container
+and access the data by keys. As the Container implements ParObject
+everything stored in here can easily be communicated using the DRT::Exporter.
+
 <pre>
 Maintainer: Michael Gee
             gee@lnm.mw.tum.de
@@ -43,6 +47,10 @@ namespace DRT
 \class Container
 
 \brief A data storage container
+
+You can store arrays of integer, double, and strings in this container
+and access the data by keys. As the Container implements ParObject
+everything stored in here can easily be communicated using the DRT::Exporter.
 
 \author gee (gee@lnm.mw.tum.de)
 */
@@ -87,16 +95,18 @@ public:
   \ref Pack and \ref Unpack are used to communicate this class
   
   */
-  virtual const char* Pack(int& size) const;
-
+  //virtual const char* Pack(int& size) const;
+  virtual void Pack(vector<char>& data) const;
+  
   /*!
   \brief Unpack data from a char vector into this class
   
   \ref Pack and \ref Unpack are used to communicate this class
 
   */
-  virtual bool Unpack(const char* data);
-
+  //virtual bool Unpack(const char* data);
+  virtual void Unpack(const vector<char>& data);
+  
   //@}
 
   // @{ \name Acess methods
@@ -261,7 +271,7 @@ public:
 
   //@}
 
-protected:
+private:  // these methods are for PURE internal use
 
   // don't want = operator
   Container operator = (const Container& old);

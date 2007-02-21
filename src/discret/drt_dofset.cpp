@@ -68,6 +68,23 @@ void DRT::DofSet::Print(ostream& os) const
 }
 
 /*----------------------------------------------------------------------*
+ |  Pack data                                                  (public) |
+ |                                                            gee 02/07 |
+ *----------------------------------------------------------------------*/
+void DRT::DofSet::Pack(vector<char>& data) const
+{
+  data.resize(0);
+  // type of parobject
+  int type = UniqueParObjectId();
+  AddtoPack(data,type);
+  // dofs_
+  AddVectortoPack(data,dofs_);
+  
+  return;
+}
+
+#if 0
+/*----------------------------------------------------------------------*
  |  Pack data from this element into vector of length size     (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
@@ -89,7 +106,7 @@ const char* DRT::DofSet::Pack(int& size) const
   // size
   AddtoPack(position,data,size);
   // ParObject type
-  int type = ParObject_DofSet;    // see top of ParObject.H
+  int type = UniqueParObjectId();    // see top of ParObject.H
   AddtoPack(position,data,type);
   // dofs_
   AddVectortoPack(position,data,dofs_);
@@ -98,8 +115,28 @@ const char* DRT::DofSet::Pack(int& size) const
     dserror("Mismatch in size of data %d <-> %d",size,position);
   return data;
 }
+#endif
 
+/*----------------------------------------------------------------------*
+ |  Unpack data                                                (public) |
+ |                                                            gee 02/07 |
+ *----------------------------------------------------------------------*/
+void DRT::DofSet::Unpack(const vector<char>& data)
+{
+  int position = 0;
+  // extract type
+  int type = 0;
+  ExtractfromPack(position,data,type);
+  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  // dofs_
+  ExtractVectorfromPack(position,data,dofs_);
+  
+  if (position != (int)data.size())
+    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+  return;
+} 
 
+#if 0
 /*----------------------------------------------------------------------*
  |  Unpack data into this element                              (public) |
  |                                                            gee 11/06 |
@@ -122,7 +159,7 @@ bool DRT::DofSet::Unpack(const char* data)
     dserror("Mismatch in size of data %d <-> %d",size,position);
   return true;
 }
-
+#endif
 
 /*----------------------------------------------------------------------*
  |  set no. of degrees of freedom                              (public) |

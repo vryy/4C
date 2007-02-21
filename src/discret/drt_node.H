@@ -111,7 +111,8 @@ public:
   \ref Pack and \ref Unpack are used to communicate this node
   
   */
-  virtual const char* Pack(int& size) const;
+  //virtual const char* Pack(int& size) const;
+  virtual void Pack(vector<char>& data) const;
 
   /*!
   \brief Unpack data from a char vector into this class
@@ -119,7 +120,8 @@ public:
   \ref Pack and \ref Unpack are used to communicate this node
 
   */
-  virtual bool Unpack(const char* data);
+  //virtual bool Unpack(const char* data);
+  virtual void Unpack(const vector<char>& data);
 
   //@}
 

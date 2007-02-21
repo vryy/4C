@@ -104,12 +104,21 @@ public:
   virtual ~Element();
 
   /*!
+  \brief Return unique ParObject id
+  
+  every class implementing ParObject needs a unique id defined at the
+  top of this file.
+  */
+  virtual int UniqueParObjectId() const { return ParObject_Element; }
+
+  /*!
   \brief Pack this class so it can be communicated
   
   \ref Pack and \ref Unpack are used to communicate this element
   
   */
-  virtual const char* Pack(int& size) const;
+  //virtual const char* Pack(int& size) const;
+  virtual void Pack(vector<char>& data) const;
 
   /*!
   \brief Unpack data from a char vector into this class
@@ -117,7 +126,8 @@ public:
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
-  virtual bool Unpack(const char* data);
+  //virtual bool Unpack(const char* data);
+  virtual void Unpack(const vector<char>& data);
 
   //@}
 

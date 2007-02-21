@@ -5,6 +5,16 @@
 
 \brief A condition of any kind
 
+A condition is mainly used to realize boundary conditions. As the Condition
+class implements DRT::Container it is capable of storing almost any data
+and can be communicated in parallel as it also implements ParObject.
+the container base class of the Condition holds all specific condition data.
+The condition can additionally store a discretization of the condition which is
+driven by the Discretization class that is evaluating this condition.
+The Discretization class is therefore a friend of the Condition and has access to
+the protected methods dealing with the discretization of this condition.
+(I guess this whole comment is not very helpful)
+
 <pre>
 Maintainer: Michael Gee
             gee@lnm.mw.tum.de
@@ -37,11 +47,22 @@ namespace DRT
 
 // forward declarations
 class Element;
+class Discretization;
 
 /*!
 \class Condition
 
 \brief A condition of any kind
+
+A condition is mainly used to realize boundary conditions. As the Condition
+class implements DRT::Container it is capable of storing almost any data
+and can be communicated in parallel as it also implements ParObject.
+the container base class of the Condition holds all specific condition data.
+The condition can additionally store a discretization of the condition which is
+driven by the Discretization class that is evaluating this condition.
+The Discretization class is therefore a friend of the Condition and has access to
+the protected methods dealing with the discretization of this condition.
+(I guess this whole comment is not very helpful)
 
 \author gee (gee@lnm.mw.tum.de)
 */
@@ -49,6 +70,13 @@ class Condition : public DRT::Container
 {
 public:
 
+
+  /*!
+  \brief Discretization is a friend of the condition to have access
+         to the protected methods that would otherwise have to be public.
+         
+  */
+  friend class DRT::Discretization;
 
   /*!
   \brief Type of condition
@@ -73,11 +101,22 @@ public:
   /*!
   \brief Standard Constructor
   
+  The way a condition is treated later on depends on the type of the
+  condition. E.g. Dirichlet conditions are treated differently from
+  Neumann conditions. How they are treated is not described here but in 
+  DRT::Discretization.
+  
+  \note In case you might wonder where this condition class actually stores
+        data necessary for the condition: This class implements DRT::Container.
+  
+  \param id (in): a unique id for this condition
+  \param type (in): type of the condition
+  
   */
   Condition(const int id, const ConditionType type);
 
   /*!
-  \brief Constructor with type condition_none
+  \brief Empty Constructor with type condition_none
   
   */
   Condition();
@@ -85,7 +124,7 @@ public:
   /*!
   \brief Copy Constructor
 
-  Makes a deep copy of a Node
+  Makes a deep copy of a condition
   
   */
   Condition(const DRT::Condition& old);
@@ -102,7 +141,7 @@ public:
   \ref Pack and \ref Unpack are used to communicate this class
   
   */
-  virtual const char* Pack(int& size) const;
+  virtual void Pack(vector<char>& data) const;
 
   /*!
   \brief Unpack data from a char vector into this class
@@ -110,19 +149,19 @@ public:
   \ref Pack and \ref Unpack are used to communicate this class
 
   */
-  virtual bool Unpack(const char* data);
+  virtual void Unpack(const vector<char>& data);
 
   //@}
 
   // @{ \name Acess methods
 
   /*!
-  \brief Print this element
+  \brief Return condition id
   */
   inline virtual int Id() const { return id_; }
 
   /*!
-  \brief Print this element
+  \brief Print this Condition (ostream << is also implemented for DRT::Condition)
   */
   virtual void Print(ostream& os) const ;
 
@@ -140,6 +179,8 @@ public:
 
   // @{ \name Construction
 
+protected:
+
   /*!
   \brief Set a communicator
   */
@@ -149,17 +190,24 @@ public:
   /*!
   \brief Add a geometry description to the condition
   
-  A geometry condition can be added to the condition.
+  A geometry description can be added to the condition.
   In case the condition refers to lines, surfaces or volumes, a
-  geometry description is needed to properly evaluate this condition.
+  geometry description might be needed to properly evaluate the condition
+  (e.g. in the case of Neumann conditions).
   Such a geometry description is build in \ref DRT::Discretization::BoundaryConditionsGeometry
   and then added to this Condition.
+  The geometry description consists of elements that are capable to 
+  perform the necessary operations on the condition (e.g. integrate a Neumann BC
+  along a line). The matching nodes are taken from the
+  undelrying discretization itself. Also, it is actually the Discretization class
+  that drives this process, so do not add elements yourself to the condition, let
+  the Discretization do it for you.
   
   \param geom (in): Map of elements describing the geometry.
                     A deep copy of the map is made and stored.
                     Normally though, these elements are a line, surface or
-                    volume description produced and shared with the discretization.
-                    Do not mess with the RefCountPtr!
+                    volume elements produced by and shared with the discretization.
+                    Do not mess with their RefCountPtr!
   
   */
   virtual void AddGeometry(map<int,RefCountPtr<DRT::Element> >& geom) 
@@ -168,6 +216,7 @@ public:
   /*!
   \brief Delete a geometry description of the condition
   
+  This method is used by the Discretization only
   */
   virtual void ClearGeometry() { geometry_.clear(); return; }
 
@@ -184,8 +233,6 @@ protected:
   // don't want = operator
   Condition operator = (const Condition& old);
   
-
-protected:
 
   int                                 id_;       // unique id of this condition, no second condition of the same type with same id may exist
   ConditionType                       type_;     // type of this condition
