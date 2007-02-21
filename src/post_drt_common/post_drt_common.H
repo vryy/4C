@@ -26,6 +26,9 @@ The new filters can be used in parallel.
 #ifndef POST_DRT_COMMON_H
 #define POST_DRT_COMMON_H
 
+#ifdef CCADISCRET
+#ifdef TRILINOS_PACKAGE
+
 #include <vector>
 #include <string>
 
@@ -323,4 +326,6 @@ private:
 };
 
 
+#endif
+#endif
 #endif

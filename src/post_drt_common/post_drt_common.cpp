@@ -14,6 +14,9 @@ Maintainer: Ulrich Kuettler
 */
 /*----------------------------------------------------------------------*/
 
+#ifdef CCADISCRET
+#ifdef TRILINOS_PACKAGE
+
 #include <algorithm>
 #include "post_drt_common.H"
 
@@ -609,3 +612,6 @@ RefCountPtr<Epetra_Vector> PostResult::read_result(string name)
   return file_.read_result_data(id_path.c_str(), value_path.c_str(), comm->NumProc(),
                                 comm->MyPID(), comm, gId_num);
 }
+
+#endif
+#endif

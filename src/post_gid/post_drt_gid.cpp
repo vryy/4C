@@ -14,6 +14,9 @@ Maintainer: Ulrich Kuettler
 */
 /*----------------------------------------------------------------------*/
 
+#ifdef CCADISCRET
+#ifdef TRILINOS_PACKAGE
+
 #include "post_drt_gid.H"
 
 extern "C" {
@@ -122,3 +125,6 @@ int main(int argc, char** argv)
   GiD_ClosePostResultFile();
   return 0;
 }
+
+#endif
+#endif
