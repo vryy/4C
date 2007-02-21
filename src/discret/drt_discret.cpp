@@ -13,6 +13,8 @@ Maintainer: Michael Gee
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
+#include <algorithm>
+
 #include "drt_discret.H"
 #include "drt_exporter.H"
 #include "drt_dserror.H"
@@ -41,20 +43,20 @@ state_(old.state_)
 {
   comm_ = rcp(old.comm_->Clone());
   Reset();
-  
+
   // deep copy elements
   map<int,RefCountPtr<DRT::Element> >::const_iterator ecurr;
   for (ecurr=old.element_.begin(); ecurr!=old.element_.end(); ++ecurr)
     element_[ecurr->first] = rcp(ecurr->second->Clone());
-  
-  // deep copy nodes  
+
+  // deep copy nodes
   map<int,RefCountPtr<DRT::Node> >::const_iterator ncurr;
   for (ncurr=old.node_.begin(); ncurr!=old.node_.end(); ++ncurr)
     node_[ncurr->first] = rcp(ncurr->second->Clone());
 
   // do fillcomplete if old was fillcomplete
   if (old.Filled()) FillComplete();
-  
+
   return;
 }
 
@@ -89,12 +91,12 @@ void DRT::Discretization::AddNode(RefCountPtr<DRT::Node> node)
 /*----------------------------------------------------------------------*
  |  get nodal row map (public)                               mwgee 11/06|
  *----------------------------------------------------------------------*/
-const Epetra_Map* DRT::Discretization::NodeRowMap() const 
-{ 
+const Epetra_Map* DRT::Discretization::NodeRowMap() const
+{
 #ifdef DEBUG
   if (Filled()) return noderowmap_.get();
-  else dserror("FillComplete() must be called before call to NodeRowMap()"); 
-  return NULL; 
+  else dserror("FillComplete() must be called before call to NodeRowMap()");
+  return NULL;
 #else
   return noderowmap_.get();
 #endif
@@ -103,12 +105,12 @@ const Epetra_Map* DRT::Discretization::NodeRowMap() const
 /*----------------------------------------------------------------------*
  |  get nodal column map (public)                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-const Epetra_Map* DRT::Discretization::NodeColMap() const 
-{ 
+const Epetra_Map* DRT::Discretization::NodeColMap() const
+{
 #ifdef DEBUG
   if (Filled()) return nodecolmap_.get();
-  else dserror("FillComplete() must be called before call to NodeColMap()"); 
-  return NULL; 
+  else dserror("FillComplete() must be called before call to NodeColMap()");
+  return NULL;
 #else
   return nodecolmap_.get();
 #endif
@@ -117,12 +119,12 @@ const Epetra_Map* DRT::Discretization::NodeColMap() const
 /*----------------------------------------------------------------------*
  |  get element row map (public)                             mwgee 11/06|
  *----------------------------------------------------------------------*/
-const Epetra_Map* DRT::Discretization::ElementRowMap() const 
-{ 
+const Epetra_Map* DRT::Discretization::ElementRowMap() const
+{
 #ifdef DEBUG
   if (Filled()) return elerowmap_.get();
-  else dserror("FillComplete() must be called before call to ElementRowMap()"); 
-  return NULL; 
+  else dserror("FillComplete() must be called before call to ElementRowMap()");
+  return NULL;
 #else
   return elerowmap_.get();
 #endif
@@ -131,12 +133,12 @@ const Epetra_Map* DRT::Discretization::ElementRowMap() const
 /*----------------------------------------------------------------------*
  |  get element column map (public)                          mwgee 11/06|
  *----------------------------------------------------------------------*/
-const Epetra_Map* DRT::Discretization::ElementColMap() const 
-{ 
+const Epetra_Map* DRT::Discretization::ElementColMap() const
+{
 #ifdef DEBUG
   if (Filled()) return elecolmap_.get();
-  else dserror("FillComplete() must be called before call to ElementColMap()"); 
-  return NULL; 
+  else dserror("FillComplete() must be called before call to ElementColMap()");
+  return NULL;
 #else
   return elecolmap_.get();
 #endif
@@ -145,12 +147,12 @@ const Epetra_Map* DRT::Discretization::ElementColMap() const
 /*----------------------------------------------------------------------*
  |  get global no of elements (public)                       mwgee 11/06|
  *----------------------------------------------------------------------*/
-int DRT::Discretization::NumGlobalElements() const 
-{ 
+int DRT::Discretization::NumGlobalElements() const
+{
 #ifdef DEBUG
   if (Filled()) return ElementRowMap()->NumGlobalElements();
   else dserror("FillComplete() must be called before call to NumGlobalElements()");
-  return -1; 
+  return -1;
 #else
   return ElementRowMap()->NumGlobalElements();
 #endif
@@ -159,11 +161,11 @@ int DRT::Discretization::NumGlobalElements() const
 /*----------------------------------------------------------------------*
  |  get no of my row elements (public)                       mwgee 11/06|
  *----------------------------------------------------------------------*/
-int DRT::Discretization::NumMyRowElements() const 
-{ 
+int DRT::Discretization::NumMyRowElements() const
+{
 #ifdef DEBUG
   if (Filled()) return ElementRowMap()->NumMyElements();
-  else dserror("FillComplete() must be called before call to NumMyRowElements()"); 
+  else dserror("FillComplete() must be called before call to NumMyRowElements()");
   return -1;
 #else
   return ElementRowMap()->NumMyElements();
@@ -173,21 +175,21 @@ int DRT::Discretization::NumMyRowElements() const
 /*----------------------------------------------------------------------*
  |  get no of my column elements (public)                    mwgee 11/06|
  *----------------------------------------------------------------------*/
-int DRT::Discretization::NumMyColElements() const 
-{ 
+int DRT::Discretization::NumMyColElements() const
+{
   if (Filled()) return ElementColMap()->NumMyElements();
-  else return (int)element_.size(); 
+  else return (int)element_.size();
 }
 
 /*----------------------------------------------------------------------*
  |  get global no of nodes (public)                          mwgee 11/06|
  *----------------------------------------------------------------------*/
-int DRT::Discretization::NumGlobalNodes() const 
-{ 
+int DRT::Discretization::NumGlobalNodes() const
+{
 #ifdef DEBUG
   if (Filled()) return NodeRowMap()->NumGlobalElements();
   else dserror("FillComplete() must be called before call to NumGlobalNodes()");
-  return -1; 
+  return -1;
 #else
   return NodeRowMap()->NumGlobalElements();
 #endif
@@ -196,12 +198,12 @@ int DRT::Discretization::NumGlobalNodes() const
 /*----------------------------------------------------------------------*
  |  get no of my row nodes (public)                          mwgee 11/06|
  *----------------------------------------------------------------------*/
-int DRT::Discretization::NumMyRowNodes() const 
-{ 
+int DRT::Discretization::NumMyRowNodes() const
+{
 #ifdef DEBUG
   if (Filled()) return NodeRowMap()->NumMyElements();
   else dserror("FillComplete() must be called before call to NumMyRowNodes()");
-  return -1; 
+  return -1;
 #else
   return NodeRowMap()->NumMyElements();
 #endif
@@ -210,8 +212,8 @@ int DRT::Discretization::NumMyRowNodes() const
 /*----------------------------------------------------------------------*
  |  get no of my column nodes (public)                       mwgee 11/06|
  *----------------------------------------------------------------------*/
-int DRT::Discretization::NumMyColNodes() const 
-{ 
+int DRT::Discretization::NumMyColNodes() const
+{
   if (Filled()) return NodeColMap()->NumMyElements();
   else return (int)node_.size();
 }
@@ -222,7 +224,7 @@ int DRT::Discretization::NumMyColNodes() const
 bool DRT::Discretization::HaveGlobalElement(int gid) const
 {
   map<int,RefCountPtr<DRT::Element> >:: const_iterator curr = element_.find(gid);
-  if (curr == element_.end()) return false; 
+  if (curr == element_.end()) return false;
   else                        return true;
 }
 
@@ -238,7 +240,7 @@ DRT::Element* DRT::Discretization::gElement(int gid) const
   return NULL;
 #else
   return element_.find(gid)->second.get();
-#endif  
+#endif
 }
 
 /*----------------------------------------------------------------------*
@@ -247,7 +249,7 @@ DRT::Element* DRT::Discretization::gElement(int gid) const
 bool DRT::Discretization::HaveGlobalNode(int gid) const
 {
   map<int,RefCountPtr<DRT::Node> >:: const_iterator curr = node_.find(gid);
-  if (curr == node_.end()) return false; 
+  if (curr == node_.end()) return false;
   else                     return true;
 }
 
@@ -271,7 +273,7 @@ DRT::Node* DRT::Discretization::gNode(int gid) const
  *----------------------------------------------------------------------*/
 ostream& operator << (ostream& os, const DRT::Discretization& dis)
 {
-  dis.Print(os); 
+  dis.Print(os);
   return os;
 }
 
@@ -293,12 +295,12 @@ void DRT::Discretization::Print(ostream& os) const
     map<int,RefCountPtr<DRT::Node> >::const_iterator ncurr;
     for (ncurr=node_.begin(); ncurr != node_.end(); ++ncurr)
       if (ncurr->second->Owner() == Comm().MyPID()) nummynodes++;
-    
+
     int nummyele   = 0;
     map<int,RefCountPtr<DRT::Element> >::const_iterator ecurr;
     for (ecurr=element_.begin(); ecurr != element_.end(); ++ecurr)
       if (ecurr->second->Owner() == Comm().MyPID()) nummyele++;
-    
+
     Comm().SumAll(&nummynodes,&numglobalnodes,1);
     Comm().SumAll(&nummyele,&numglobalelements,1);
   }
@@ -352,8 +354,8 @@ void DRT::Discretization::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  node <-> design node topology (public)                   mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::SetDesignEntityIds(Node::OnDesignEntity type, 
-                                             const vector<int>& nfenode, 
+void DRT::Discretization::SetDesignEntityIds(Node::OnDesignEntity type,
+                                             const vector<int>& nfenode,
                                              const vector<vector<int> >& fenode)
 {
   const int ndentity = nfenode.size();
@@ -388,12 +390,12 @@ const Epetra_Map* DRT::Discretization::DofRowMap()
   int numnodaldof = 0;
   for (int i=0; i<NumMyRowNodes(); ++i)
     numnodaldof += lRowNode(i)->Dof().NumDof();
-    
+
   // loop my row elements and count dofs
   int numeledof = 0;
   for (int i=0; i<NumMyRowElements(); ++i)
     numeledof += lRowElement(i)->Dof().NumDof();
-    
+
   vector<int> mygid(numnodaldof+numeledof);
 
   // loop my row nodes and record dofs
@@ -404,7 +406,7 @@ const Epetra_Map* DRT::Discretization::DofRowMap()
     for (int j=0; j<actnode->Dof().NumDof(); ++j)
       mygid[count++] = actnode->Dof()[j];
   }
-  
+
   // loop elements and record dofs
   for (int i=0; i<NumMyRowElements(); ++i)
   {
@@ -412,13 +414,13 @@ const Epetra_Map* DRT::Discretization::DofRowMap()
     for (int j=0; j<actele->Dof().NumDof(); ++j)
       mygid[count++] = actele->Dof()[j];
   }
-  
+
   if (count !=  numnodaldof+numeledof)
     dserror("Mismatch in no. of dofs %d <-> %d",count,numnodaldof+numeledof);
-    
+
   dofrowmap_ = rcp(new Epetra_Map(-1,numnodaldof+numeledof,&mygid[0],0,Comm()));
   if (!dofrowmap_->UniqueGIDs()) dserror("Dof row map is not unique");
-  
+
   return dofrowmap_.get();
 }
 
@@ -436,12 +438,12 @@ const Epetra_Map* DRT::Discretization::DofColMap()
   int numnodaldof = 0;
   for (int i=0; i<NumMyColNodes(); ++i)
     numnodaldof += lColNode(i)->Dof().NumDof();
-    
+
   // loop my column elements and count dofs
   int numeledof = 0;
   for (int i=0; i<NumMyColElements(); ++i)
     numeledof += lColElement(i)->Dof().NumDof();
-    
+
   vector<int> mygid(numnodaldof+numeledof);
 
   // loop my column nodes and record dofs
@@ -452,7 +454,7 @@ const Epetra_Map* DRT::Discretization::DofColMap()
     for (int j=0; j<actnode->Dof().NumDof(); ++j)
       mygid[count++] = actnode->Dof()[j];
   }
-  
+
   // loop elements and record dofs
   for (int i=0; i<NumMyColElements(); ++i)
   {
@@ -460,12 +462,12 @@ const Epetra_Map* DRT::Discretization::DofColMap()
     for (int j=0; j<actele->Dof().NumDof(); ++j)
       mygid[count++] = actele->Dof()[j];
   }
-  
+
   if (count !=  numnodaldof+numeledof)
     dserror("Mismatch in no. of dofs %d <-> %d",count,numnodaldof+numeledof);
-    
+
   dofcolmap_ = rcp(new Epetra_Map(-1,numnodaldof+numeledof,&mygid[0],0,Comm()));
-  
+
   return dofcolmap_.get();
 }
 
@@ -478,7 +480,7 @@ void DRT::Discretization::SetState(const string& name,RefCountPtr<const Epetra_V
   if (!Filled()) dserror("FillComplete() was not called");
   const Epetra_Map* colmap = DofColMap();
   const Epetra_BlockMap& vecmap = state->Map();
-  
+
   // if it's already in column map just set a reference
   if (vecmap.PointSameAs(*colmap))
     state_[name] = state;
@@ -511,9 +513,9 @@ void DRT::Discretization::GetCondition(const string& name,vector<DRT::Condition*
 {
   const int num = condition_.count(name);
   out.resize(num);
-  multimap<string,RefCountPtr<Condition> >::iterator startit = 
+  multimap<string,RefCountPtr<Condition> >::iterator startit =
                                          condition_.lower_bound(name);
-  multimap<string,RefCountPtr<Condition> >::iterator endit = 
+  multimap<string,RefCountPtr<Condition> >::iterator endit =
                                          condition_.upper_bound(name);
   int count=0;
   multimap<string,RefCountPtr<Condition> >::iterator curr;
@@ -529,7 +531,7 @@ void DRT::Discretization::GetCondition(const string& name,vector<DRT::Condition*
  *----------------------------------------------------------------------*/
 DRT::Condition* DRT::Discretization::GetCondition(const string& name)
 {
-  multimap<string,RefCountPtr<Condition> >::iterator curr = 
+  multimap<string,RefCountPtr<Condition> >::iterator curr =
                                          condition_.find(name);
   if (curr==condition_.end()) return NULL;
   curr = condition_.lower_bound(name);
@@ -537,6 +539,90 @@ DRT::Condition* DRT::Discretization::GetCondition(const string& name)
 }
 
 
+/*----------------------------------------------------------------------*
+ |  Pack local elements (row map) into buffer                  (public) |
+ |                                                          m.kue 02/07 |
+ *----------------------------------------------------------------------*/
+RefCountPtr<vector<char> > DRT::Discretization::PackMyElements()
+{
+  RefCountPtr<vector<char> > block = rcp(new vector<char>);
+  for (vector<DRT::Element*>::iterator i=elerowptr_.begin();
+       i!=elerowptr_.end();
+       ++i)
+  {
+    vector<char> data;
+    (*i)->Pack(data);
+    ParObject::AddVectortoPack(*block,data);
+  }
+  return block;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Pack local nodes (row map) into buffer                     (public) |
+ |                                                          m.kue 02/07 |
+ *----------------------------------------------------------------------*/
+RefCountPtr<vector<char> > DRT::Discretization::PackMyNodes()
+{
+  RefCountPtr<vector<char> > block = rcp(new vector<char>);
+  for (vector<DRT::Node*>::iterator i=noderowptr_.begin();
+       i!=noderowptr_.end();
+       ++i)
+  {
+    vector<char> data;
+    (*i)->Pack(data);
+    ParObject::AddVectortoPack(*block,data);
+  }
+  return block;
+}
+
+/*----------------------------------------------------------------------*
+ |  Unpack element buffer and create local elements            (public) |
+ |                                                          m.kue 02/07 |
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::UnPackMyElements(RefCountPtr<vector<char> > e)
+{
+  int index = 0;
+  while (index < static_cast<int>(e->size()))
+  {
+    vector<char> data;
+    ParObject::ExtractVectorfromPack(index,*e,data);
+    DRT::ParObject* o = DRT::Utils::Factory(data);
+    DRT::Element* ele = dynamic_cast<Element*>(o);
+    if (ele == NULL)
+    {
+      dserror("Failed to build an element from the element data");
+    }
+    ele->SetOwner(comm_->MyPID());
+    AddElement(rcp(ele));
+  }
+  // in case AddElement forgets...
+  Reset();
+}
+
+/*----------------------------------------------------------------------*
+ |  Unpack nodal buffer and create local nodes                 (public) |
+ |                                                          m.kue 02/07 |
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::UnPackMyNodes(RefCountPtr<vector<char> > e)
+{
+  int index = 0;
+  while (index < static_cast<int>(e->size()))
+  {
+    vector<char> data;
+    ParObject::ExtractVectorfromPack(index,*e,data);
+    DRT::ParObject* o = DRT::Utils::Factory(data);
+    DRT::Node* n = dynamic_cast<Node*>(o);
+    if (n == NULL)
+    {
+      dserror("Failed to build a node from the node data");
+    }
+    n->SetOwner(comm_->MyPID());
+    AddNode(rcp(n));
+  }
+  // in case AddNode forgets...
+  Reset();
+}
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

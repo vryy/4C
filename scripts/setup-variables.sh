@@ -14,6 +14,9 @@ PLAIN_LD=f77
 # for the filters we do NOT need the solver libs
 PLAIN_LIBS=$LIBS
 
+# filters based on drt will need trilinos and metis as well.
+FILTER_LIBS=$LIBS
+
 # most of the time these have to begin changed
 CC=cc
 CP=CC

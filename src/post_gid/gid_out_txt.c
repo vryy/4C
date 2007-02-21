@@ -650,7 +650,7 @@ int GiD_OpenPostResultFile( char * FileName )
   /* It's needed to have one interface (set of functions) for both
    * text and binary files. */
   {
-    INT i;
+    int i;
     i = strlen(FileName);
     assert(i>4);
     assert(FileName[i-4] == '.');

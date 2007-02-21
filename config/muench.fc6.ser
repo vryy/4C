@@ -23,6 +23,7 @@ TRILINOS_INCDIR=$TRILINOS_HOME/include
 TRILINOS_LIBDIR=$TRILINOS_HOME/lib
 TRILINOS_DEFINES="-DHAVE_CONFIG_H -DTRILINOS_HAVE_FORTRAN_UNDERSCORE"
 TRILINOS_LIB="-lmoertel -lml -lnoxepetra  -lnox  -lml -laztecoo -lifpack -lamesos -lteuchos -lepetraext -lepetra"
+TRILINOS_FILTER_LIB="-laztecoo -lteuchos -lepetraext -lepetra"
 
 # aztec
 AZTEC_INC=""
@@ -45,6 +46,9 @@ VISUAL2_LIB="-L/usr/X11R6/lib -lVisual2 -lX11"
 
 VISUAL3_INC=""
 VISUAL3_LIB="-L/usr/X11R6/lib -lVisual3 -lg2c -lGLU -lGL -lX11 -lXext -ldl -lpthread"
+
+# hdf5
+HDF5_LIB="-lhdf5_hl -lhdf5 -lpthread -lz"
 
 #LIBS="-lc -lg2c -llapack -lgoto_p4_512-r0.6 -lxerbla -lmetis"
 LIBS="-lc -lg2c -lmetis -llapack -lblas"

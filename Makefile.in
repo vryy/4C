@@ -5,6 +5,9 @@ post_gid: $(OBJS_POST_GID_BIN) $(OBJS_POST_GID_COMMON) $(OBJS_POST_COMMON)
 post_gid_txt: $(OBJS_POST_GID_TXT) $(OBJS_POST_GID_COMMON) $(OBJS_POST_COMMON)
 	$(PLAIN_LD) $(LDFLAGS) $(PLAIN_LIBS) $(OBJS_POST_GID_TXT) $(OBJS_POST_GID_COMMON) $(OBJS_POST_COMMON) -o post_gid_txt
 
+post_drt_gid: $(OBJS_POST_DRT_GID) $(OBJS_POST_GID_TXT) $(OBJS_POST_DRT_COMMON) $(OBJS_DISCRET_LIB) $(OBJS_PSS) $(OBJS_PAR)
+	$(LD) $(LDFLAGS) $(OBJS_POST_DRT_GID) $(OBJS_POST_GID_TXT) $(OBJS_POST_DRT_COMMON) $(OBJS_DISCRET_LIB) $(OBJS_PSS) $(OBJS_PAR) $(FILTER_LIBS) -o post_drt_gid
+
 post_out: $(OBJS_POST_OUT) $(OBJS_POST_COMMON)
 	$(PLAIN_LD) $(LDFLAGS) $(PLAIN_LIBS) $(OBJS_POST_OUT) $(OBJS_POST_COMMON) -o post_out
 
@@ -55,12 +58,17 @@ $(OBJS_SOLVER):
 $(OBJS_SOLVER_CPP):
 	@mkdir -p ${DEST}/${@D}
 	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
-	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@
+	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
+
+$(OBJS_DISCRET_LIB):
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
+	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
 
 $(OBJS_DISCRET):
 	@mkdir -p ${DEST}/${@D}
 	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
-	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@
+	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
 
 $(OBJS_PSS):
 	@mkdir -p ${DEST}/${@D}
@@ -262,10 +270,20 @@ $(OBJS_POST_GID_COMMON):
 	@echo "$(PLAIN_CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
 	@$(PLAIN_CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@ > /dev/stderr
 
+$(OBJS_POST_DRT_GID):
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
+	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
+
 $(OBJS_POST_COMMON):
 	@mkdir -p ${DEST}/${@D}
 	@echo "$(PLAIN_CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
 	@$(PLAIN_CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@ > /dev/stderr
+
+$(OBJS_POST_DRT_COMMON):
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
+	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
 
 $(OBJS_POST_OUT):
 	@mkdir -p ${DEST}/${@D}

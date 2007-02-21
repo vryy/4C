@@ -113,7 +113,7 @@ void distribute_drt_grids()
     // ------------------------------------------------------------------
     // At this point, everything should be on proc 0
     // We want the design to be redundant, so we create completely reundant maps
-    // and distribute the design discretizations according to it 
+    // and distribute the design discretizations according to it
     // loop over dlines, dsurfaces, dvolumes (lines contain nodes, the others don't)
     for (int i=0; i<3; ++i)
     {
@@ -122,7 +122,7 @@ void distribute_drt_grids()
       const Epetra_Map*  nmap = ddis->NodeColMap();
       const Epetra_Map*  emap = ddis->ElementColMap();
       const Epetra_Comm& comm = ddis->Comm();
-      
+
       //--------------------------------------- make redundant map of nodes
       const int ngnodes = nmap->NumGlobalElements();
       vector<int> nodes(ngnodes);
@@ -130,13 +130,13 @@ void distribute_drt_grids()
       for (int proc=0; proc<comm.NumProc(); ++proc)
       {
         int nele = nmap->NumMyElements();
-        if (proc==comm.MyPID()) 
+        if (proc==comm.MyPID())
           nmap->MyGlobalElements(&nodes[start]);
         comm.Broadcast(&nele,1,proc);
         comm.Broadcast(&nodes[start],nele,proc);
         start += nele;
       }
-      RefCountPtr<Epetra_Map> rnmap = 
+      RefCountPtr<Epetra_Map> rnmap =
                         rcp(new Epetra_Map(-1,ngnodes,&nodes[0],0,comm));
 
       //------------------------------------ make redundant map of elements
@@ -146,21 +146,21 @@ void distribute_drt_grids()
       for (int proc=0; proc<comm.NumProc(); ++proc)
       {
         int nele = emap->NumMyElements();
-        if (proc==comm.MyPID()) 
+        if (proc==comm.MyPID())
           emap->MyGlobalElements(&ele[start]);
         comm.Broadcast(&nele,1,proc);
         comm.Broadcast(&ele[start],nele,proc);
         start += nele;
       }
-      RefCountPtr<Epetra_Map> remap = 
+      RefCountPtr<Epetra_Map> remap =
                              rcp(new Epetra_Map(-1,ngele,&ele[0],0,comm));
-      
+
       // Export nodes to overlapping storage
       ddis->ExportColumnNodes(*rnmap);
       // Export elements to overlapping storage
       ddis->ExportColumnElements(*remap);
     } // for (int i=0; i<3; ++i)
-    
+
     // call FillComplete on all three discretizations again
     int ierr=0;
     ierr += ccadesign[2]->FillComplete(NULL,ccadesign[1].get());
@@ -169,40 +169,41 @@ void distribute_drt_grids()
     if (ierr) dserror("FillComplete of Design returned %d",ierr);
   } // if (design)
 #endif
-  
+
   //the comm in the design can stay MPI_COMM_WORLD
   // get discretizations and replace their comm
   for (int i=0; i<genprob.numfld; ++i)
   {
     vector<RefCountPtr<DRT::Discretization> >* discretization =
       (vector<RefCountPtr<DRT::Discretization> >*)field[i].ccadis;
-    
+
     for (int j=0;j<field[i].ndis;j++)
     {
       RefCountPtr<DRT::Discretization> actdis = (*discretization)[j];
+      int ierr;
 #ifdef PARALLEL
       INTRA* actintra = &(par.intra[i]);
-      RefCountPtr<Epetra_MpiComm> comm = 
+      RefCountPtr<Epetra_MpiComm> comm =
                            rcp(new Epetra_MpiComm(actintra->MPI_INTRA_COMM));
-      actdis->SetComm(comm); 
-      int ierr = actdis->FillComplete();
+      actdis->SetComm(comm);
+      ierr = actdis->FillComplete();
       if (ierr) dserror("FillComplete returned %d",ierr);
 #endif
       if (!actdis->Filled())
         ierr = actdis->FillComplete();
       if (ierr) dserror("FillComplete returned %d",ierr);
-      
+
       // partition the discretization using metis
       // create nodal graph of problem
-      RefCountPtr<Epetra_CrsGraph> nodegraph = actdis->BuildNodeGraph(); 
-      
+      RefCountPtr<Epetra_CrsGraph> nodegraph = actdis->BuildNodeGraph();
+
       // repartition the nodal graph using metis
       Epetra_Vector weights(nodegraph->RowMap(),false);
       weights.PutScalar(1.0);
-      RefCountPtr<Epetra_CrsGraph> newnodegraph = 
+      RefCountPtr<Epetra_CrsGraph> newnodegraph =
                           DRT::Utils::PartGraphUsingMetis(*nodegraph,weights);
       nodegraph = null;
-      
+
       // the rowmap will become the new distribution of nodes
       const Epetra_BlockMap rntmp = newnodegraph->RowMap();
       Epetra_Map newnoderowmap(-1,rntmp.NumMyElements(),rntmp.MyGlobalElements(),0,actdis->Comm());
@@ -211,10 +212,10 @@ void distribute_drt_grids()
       const Epetra_BlockMap cntmp = newnodegraph->ColMap();
       Epetra_Map newnodecolmap(-1,cntmp.NumMyElements(),cntmp.MyGlobalElements(),0,actdis->Comm());
       newnodegraph = null;
-      
+
       // do the redistribution
       actdis->Redistribute(newnoderowmap,newnodecolmap);
-      
+
     } // for (int j=0;j<field[i].ndis;j++)
   } // for (int i=0; i<genprob.numfld; ++i)
 
