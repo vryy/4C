@@ -58,6 +58,7 @@ extern "C"
 #endif
 
 void dyn_nlnstructural_drt();
+void stru_genalpha_drt();
 
 #ifdef __cplusplus
 }
