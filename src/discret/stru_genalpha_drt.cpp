@@ -129,11 +129,13 @@ void stru_genalpha_drt()
   // -------------------------------------------------------------------
   // create empty matrices
   // -------------------------------------------------------------------
+  // `81' is an initial guess for the bandwidth of the matrices
+  // The correct value will be determined later.
   RefCountPtr<Epetra_CrsMatrix> stiff_mat = LINALG::CreateMatrix(*dofrowmap,81);
   RefCountPtr<Epetra_CrsMatrix> mass_mat  = LINALG::CreateMatrix(*dofrowmap,81);
   RefCountPtr<Epetra_CrsMatrix> damp_mat  = null;
   bool damping = false;
-  if (sdyn->damp==1) 
+  if (sdyn->damp==1)
   {
     damping = true;
     damp_mat = LINALG::CreateMatrix(*dofrowmap,81);
@@ -166,18 +168,18 @@ void stru_genalpha_drt()
   RefCountPtr<Epetra_Vector> acc = LINALG::CreateVector(*dofrowmap,true);
   
   // displacements D_{n+1} at new time
-  RefCountPtr<Epetra_Vector> disn = LINALG::CreateVector(*dofrowmap,false);
+  RefCountPtr<Epetra_Vector> disn = LINALG::CreateVector(*dofrowmap,true);
   // velocities V_{n+1} at new time 
-  RefCountPtr<Epetra_Vector> veln = LINALG::CreateVector(*dofrowmap,false);
+  RefCountPtr<Epetra_Vector> veln = LINALG::CreateVector(*dofrowmap,true);
   // accelerations A_{n+1} at new time
-  RefCountPtr<Epetra_Vector> accn = LINALG::CreateVector(*dofrowmap,false);
+  RefCountPtr<Epetra_Vector> accn = LINALG::CreateVector(*dofrowmap,true);
 
   // mid-displacements D_{n+1-alpha_f}
-  RefCountPtr<Epetra_Vector> dism = LINALG::CreateVector(*dofrowmap,false);
+  RefCountPtr<Epetra_Vector> dism = LINALG::CreateVector(*dofrowmap,true);
   // mid-velocities V_{n+1-alpha_f}
-  RefCountPtr<Epetra_Vector> velm = LINALG::CreateVector(*dofrowmap,false);
+  RefCountPtr<Epetra_Vector> velm = LINALG::CreateVector(*dofrowmap,true);
   // mid-accelerations A_{n+1-alpha_m}
-  RefCountPtr<Epetra_Vector> accm = LINALG::CreateVector(*dofrowmap,false);
+  RefCountPtr<Epetra_Vector> accm = LINALG::CreateVector(*dofrowmap,true);
 
   // iterative displacement increments IncD_{n+1}
   // also known as residual displacements
@@ -188,7 +190,7 @@ void stru_genalpha_drt()
   // external force vector F_ext at last times
   RefCountPtr<Epetra_Vector> fext = LINALG::CreateVector(*dofrowmap,true);
   // external mid-force vector F_{ext;n+1-alpha_f}
-  RefCountPtr<Epetra_Vector> fextm = LINALG::CreateVector(*dofrowmap,false);
+  RefCountPtr<Epetra_Vector> fextm = LINALG::CreateVector(*dofrowmap,true);
   // external force vector F_{n+1} at new time
   RefCountPtr<Epetra_Vector> fextn = LINALG::CreateVector(*dofrowmap,true);
 
@@ -291,7 +293,7 @@ void stru_genalpha_drt()
     acttime += dt;
     //--------------------------------------------------- predicting state
     // constant predictor displacement in domain
-    disn->Update(1.0,*dis,0.0);      
+    disn->Update(1.0, *dis, 0.0);      
     // apply new displacements at DBCs 
     // and get new external force vector
     {
@@ -315,6 +317,7 @@ void stru_genalpha_drt()
       actdis->EvaluateDirichlet(params,*disn,*dirichtoggle);
       actdis->ClearState();
       actdis->SetState("displacement",disn);
+      fextn->PutScalar(0.0);  // initialse external force vector (load vect)
       actdis->EvaluateNeumann(params,*fextn);
       actdis->ClearState();
     }
@@ -406,7 +409,8 @@ void stru_genalpha_drt()
     //------------------------------------------------ build residual norm
     double norm;
     fresm->Norm2(&norm);
-    cout << "Norm bevor Newton " << norm << endl;
+//    cout << "--------------------------------------------" << endl;
+//    cout << "Norm bevor Newton " << norm << endl;
   
     //=================================================== equilibrium loop
     int numiter=0;
@@ -441,13 +445,13 @@ void stru_genalpha_drt()
 
       //---------------------------------- update mid configuration values
       // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
-      dism->Update(1.-alphaf,*disi,1.0);
+      dism->Update(1.-alphaf, *disi, 1.0);
       // V_{n+1-alpha_f} := V_{n+1-alpha_f} 
       //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
-      velm->Update((1.-alphaf)*gamma/(beta*dt),*disi,1.0);
+      velm->Update((1.-alphaf)*gamma/(beta*dt), *disi, 1.0);
       // A_{n+1-alpha_m} := A_{n+1-alpha_m} 
       //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
-      accm->Update((1.-alpham)/(beta*dt*dt),*disi,1.0);
+      accm->Update((1.-alpham)/(beta*dt*dt), *disi, 1.0);
     
       //---------------------------- compute internal forces and stiffness
       {
@@ -505,10 +509,14 @@ void stru_genalpha_drt()
       disi->Norm2(&disinorm);
     
       fresm->Norm2(&norm);
-      cout << "numiter " << numiter 
-           << " norm " << norm
-           << " disinorm " << disinorm << endl;;
-    
+      // a short message
+      printf("numiter %d res-norm %e dis-norm %e\n", 
+	     numiter, norm, disinorm);
+      // cout << "numiter " << numiter 
+      //            << " norm " << norm
+      //            << " disinorm " << disinorm << endl;;
+      // debug:
+      norm = disinorm;
     
       //--------------------------------- increment equilibrium loop index
       ++numiter;
@@ -518,19 +526,30 @@ void stru_genalpha_drt()
     // new displacements at t_{n+1} -> t_n
     //    D_{n} := D_{n+1} = 1./(1.-alphaf) * D_{n+1-alpha_f} 
     //                     - alphaf/(1.-alphaf) * D_n
-    dis->Update(1./(1.-alphaf),*dism,-alphaf/(1.-alphaf));
+    dis->Update(1./(1.-alphaf), *dism, -alphaf/(1.-alphaf));
     // new velocities at t_{n+1} -> t_n
     //    V_{n} := V_{n+1} = 1./(1.-alphaf) * V_{n+1-alpha_f} 
     //                     - alphaf/(1.-alphaf) * V_n
-    vel->Update(1./(1.-alphaf),*velm,-alphaf/(1.-alphaf));
+    vel->Update(1./(1.-alphaf), *velm, -alphaf/(1.-alphaf));
     // new accelerations at t_{n+1} -> t_n
     //    A_{n} := A_{n+1} = 1./(1.-alpham) * A_{n+1-alpha_m} 
     //                     - alpham/(1.-alpham) * A_n
-    acc->Update(1./(1.-alpham),*accm,-alpham/(1.-alpham));
+    acc->Update(1./(1.-alpham), *accm, -alpham/(1.-alpham));
     // update new external force
     //    F_{ext;n} := F_{ext;n+1}
-    fext->Update(1.0,*fextn,0.0);
+    fext->Update(1.0, *fextn, 0.0);
 
+    //---------------------------------------------------------- print out
+    //cout << *dis << endl;
+    // debug print out to compare with classic discret. gen-alpha
+    // {
+    //   Epetra_Vector disn(*dis);
+    //   for (int ii=0; ii<disn.MyLength(); ii++)
+    //   {
+    //      printf(" %3d  % 16.10e \n", ii, disn[ii]);
+    //   }
+    //   printf("\n");
+    // }
     //------------------------------------------------ increment time step
     ++istep;
   }  // end time loop

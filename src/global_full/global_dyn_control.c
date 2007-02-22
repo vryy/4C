@@ -36,43 +36,34 @@ void caldyn()
 dstrc_enter("caldyn");
 #endif
 /*------------------------------ switch into different time integrators */
-/*   switch (alldyn[0].sdyn->Typ) */
-/*   { */
-/*     /\* central differences time integration *\/ */
-/*     case centr_diff: */
-/*       dyn_nln_stru_expl(); */
-/*     /\* generalized alfa time integration *\/ */
-/*     case gen_alfa: */
-/*       dyn_nln_structural(); */
-/*     /\* Generalized Energy-Momentum time integration *\/ */
-/*     case Gen_EMM: */
-/* #ifdef GEMM */
-/*       dyn_nln_gemm(); */
-/* #else */
-/*       dserror("GEMM not supported"); */
-/* #endif */
-/*   } */
-
-
-if (alldyn[0].sdyn->Typ == centr_diff) {
-  /* central difference time integration */
-  dyn_nln_stru_expl();
-}
-else if (alldyn[0].sdyn->Typ == gen_alfa) {
-  /* generalized alfa time integration */
+  switch (alldyn[0].sdyn->Typ)
+  {
+    /* central differences time integration */
+    case centr_diff:
+      dyn_nln_stru_expl();
+      break;
+    /* generalized alfa time integration */
+    case gen_alfa:
 #ifndef CCADISCRET
-  dyn_nln_structural();
+      dyn_nln_structural();
 #else
-  dyn_nlnstructural_drt();
+      stru_genalpha_drt();
+      /* dyn_nlnstructural_drt(); */
 #endif
-}
-else if (alldyn[0].sdyn->Typ == Gen_EMM) {
+      break;
+    /* Generalized Energy-Momentum time integration */
+    case Gen_EMM:
 #ifdef GEMM
-  dyn_nln_gemm(); /* Generalized Energy-Momentum time integration */
+      dyn_nln_gemm();
 #else
-  dserror("GEMM not supported");
+      dserror("GEMM not supported");
 #endif
-}
+      break;
+    default:
+      dserror("Untimely unknown time integration scheme");
+      break;
+  }
+
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG

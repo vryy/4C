@@ -1091,6 +1091,16 @@ solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol_increment,2,
 /*------------------------------- check whether to write results or not */
 mod_disp      = sdyn->step % sdyn->updevry_disp;
 mod_stress    = sdyn->step % sdyn->updevry_stress;
+/*-------------------------------- debug: print current displ to STDOUT */
+/* used to diff to new discretisation */
+/* #ifdef DEBUG */
+/* int ii; */
+/* for (ii=0; ii<actsolv->sol[0].numeq; ii++) */
+/* { */
+/*   printf(" %3d  % 16.10e \n", ii, actsolv->sol[1].vec.a.dv[ii]); */
+/* } */
+/* printf("\n"); */
+/* #endif */
 /*------------------------------- check whether to write restart or not */
 if (sdyn->res_write_evry > 0)
 {
