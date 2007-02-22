@@ -300,8 +300,8 @@ void fsi_ale_spring_setup(
   {
 #if defined(BINIO)
     restart_read_bin_aledyn(adyn,
-			    &(actsolv->sysarray_typ[i]),
-			    &(actsolv->sysarray[i]),
+			    &(actsolv->sysarray_typ[actsysarray]),
+			    &(actsolv->sysarray[actsysarray]),
 			    actfield,
 			    actpart,
 			    disnum_io,
