@@ -103,7 +103,7 @@ void Discretization::EvaluateDirichlet(ParameterList& params,
 
 int Elements::Shell8Register::Initialize(Discretization&)
 {
-  dserror("Elements::Shell8Register::Initialize undefined");
+  // dserror("Elements::Shell8Register::Initialize undefined");
   return 0;
 }
 

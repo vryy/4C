@@ -57,7 +57,8 @@ char* fieldnames[] = FIELDNAMES;
 /*----------------------------------------------------------------------*
  * the Constructor of PostProblem
  *----------------------------------------------------------------------*/
-PostProblem::PostProblem(int argc, char** argv)
+PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
+                         int argc, char** argv)
   : start_(0),end_(-1),step_(1)
 {
 #ifdef PARALLEL
@@ -74,8 +75,34 @@ PostProblem::PostProblem(int argc, char** argv)
   DSTraceHelper dst("PostProblem::PostProblem");
 #endif
 
+  string file;
+
+  CLP.throwExceptions(false);
+  CLP.setOption("start",&start_,"first time step to read");
+  CLP.setOption("end",&end_,"last time step to read");
+  CLP.setOption("step",&step_,"number of time steps to jump");
+  CLP.setOption("file",&file,"control file to open");
+
+  CommandLineProcessor::EParseCommandLineReturn
+    parseReturn = CLP.parse(argc,argv);
+
+  if (parseReturn == CommandLineProcessor::PARSE_HELP_PRINTED)
+  {
+    exit(0);
+  }
+  if (parseReturn != CommandLineProcessor::PARSE_SUCCESSFUL)
+  {
+    exit(1);
+  }
+
+  if (file=="")
+  {
+    CLP.printHelpMessage(argv[0],cout);
+    exit(1);
+  }
+
   result_group_ = vector<MAP*>();
-  setup_filter(argv[argc-1]);
+  setup_filter(file.c_str());
 
   ndim_ = map_read_int(&control_table_, "ndim");
   dsassert((ndim_ == 2) || (ndim_ == 3), "illegal dimension");
@@ -140,7 +167,7 @@ RefCountPtr<Epetra_Comm> PostProblem::comm()
  * initializes all the data a filter needs. This function is called by
  * the Constructor.  (private)
  *----------------------------------------------------------------------*/
-void PostProblem::setup_filter(char* output_name)
+void PostProblem::setup_filter(const char* output_name)
 {
   DSTraceHelper dst("PostProblem::setup_filter");
   int length;
@@ -393,7 +420,8 @@ PostField PostProblem::getfield(MAP* field_info)
   }
   if (fieldnames[i]==NULL)
   {
-    dserror("unknown field type '%s'", type);
+    type = i;
+    dserror("unknown field type '%d'", i);
   }
 
   if (field_pos >= genprob.numfld)

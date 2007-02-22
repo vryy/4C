@@ -39,7 +39,8 @@ The new filters can be used in parallel.
 #endif
 
 #include "../discret/drt_discret.H"
-#include "Teuchos_RefCountPtr.hpp"
+#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_CommandLineProcessor.hpp>
 
 extern "C" {
 #include "../headers/standardtypes.h"
@@ -55,9 +56,9 @@ extern "C" {
 #include <Epetra_SerialComm.h>
 
 
-#include "Epetra_Comm.h"
-#include "Epetra_Map.h"
-#include "Epetra_Vector.h"
+#include <Epetra_Comm.h>
+#include <Epetra_Map.h>
+#include <Epetra_Vector.h>
 
 class PostProblem;
 class PostField;
@@ -91,7 +92,12 @@ class PostProblem
 public:
   // @{ \name Constructors and destructors
 
-  PostProblem(int argc, char** argv);
+  //! setup filter and read command line
+  //
+  // \param CLP (in)  : preconfigured command line processor
+  // \param argc (in) : number of command line arguments
+  // \param argv (in) : command line arguments
+  PostProblem(Teuchos::CommandLineProcessor& CLP, int argc, char** argv);
   ~PostProblem();
 
   //@}
@@ -142,7 +148,7 @@ private:
   //! initializes all the data a filter needs.
   //
   // This function is called by the Constructor.
-  void setup_filter(char* output_name);
+  void setup_filter(const char* output_name);
 
   //! reads the mesh files
   //

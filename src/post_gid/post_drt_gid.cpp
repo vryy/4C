@@ -17,6 +17,9 @@ Maintainer: Ulrich Kuettler
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
+#include <string>
+#include <Teuchos_CommandLineProcessor.hpp>
+
 #include "post_drt_gid.H"
 
 extern "C" {
@@ -25,32 +28,36 @@ extern "C" {
 
 extern char* fieldnames[];
 
+using namespace std;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void write_velocity(PostField* field, PostResult* result)
+void write_vector_result(string result_name, PostField* field, PostResult* result)
 {
-  CHAR* componentnames[] = { "x-vel", "y-vel", "z-vel" };
+  CHAR* componentnames[] = { "x", "y", "z" };
+
   //double time = map_read_real(result->group(), "time");
   int step = map_read_int(result->group(), "step");
 
   ostringstream buf;
-  buf << fieldnames[field->type()] << "_velocity";
-  RefCountPtr<Epetra_Vector> data = result->read_result("velocity");
+  buf << fieldnames[field->type()] << "_" << result_name;
+
+  RefCountPtr<Epetra_Vector> data = result->read_result(result_name);
   GiD_BeginResult(const_cast<char*>(buf.str().c_str()), "ccarat", step, GiD_Vector,
                   GiD_OnNodes, NULL, NULL, field->problem()->num_dim(),
                   componentnames);
-  double vel[3];
-  vel[2] = 0;
+
+  double v[3];
+  v[2] = 0;
   for (int k = 0; k < field->num_nodes(); ++k)
   {
     DRT::Node* n = field->discretization()->lRowNode(k);
     DRT::DofSet s = n->Dof();
     for (int i = 0; i < field->problem()->num_dim(); ++i)
     {
-      vel[i] = (*data)[s[i]];
+      v[i] = (*data)[s[i]];
     }
-    GiD_WriteVector(n->Id()+1,vel[0],vel[1],vel[2]);
+    GiD_WriteVector(n->Id()+1,v[0],v[1],v[2]);
   }
   GiD_EndResult();
 }
@@ -94,17 +101,6 @@ void write_mesh(PostProblem* problem, int disnum)
   }
   GiD_EndElements();
   GiD_EndMesh();
-
-  // write the results. This code is only thought to work for the
-  // shell8 example. (And it will not work for anzthing else)
-  PostResult result = PostResult(field);
-  while (result.next_result())
-  {
-    if (map_has_map(result.group(), "velocity"))
-    {
-      write_velocity(field, &result);
-    }
-  }
 }
 
 
@@ -112,7 +108,12 @@ void write_mesh(PostProblem* problem, int disnum)
 /*----------------------------------------------------------------------*/
 int main(int argc, char** argv)
 {
-  PostProblem problem = PostProblem(argc,argv);
+  Teuchos::CommandLineProcessor My_CLP;
+  My_CLP.setDocString(
+    "Post DRT GiD Filter\n"
+    );
+
+  PostProblem problem = PostProblem(My_CLP,argc,argv);
 
   string filename = problem.basename() + ".flavia.res";
   if (GiD_OpenPostResultFile(const_cast<char*>(filename.c_str()))!=0)
@@ -121,6 +122,27 @@ int main(int argc, char** argv)
   // just write the mesh
   for (int i = 0; i<problem.num_discr(); ++i)
     write_mesh(&problem,i);
+
+  for (int i = 0; i<problem.num_discr(); ++i)
+  {
+    PostField* field = problem.get_discretization(i);
+    PostResult result = PostResult(field);
+    while (result.next_result())
+    {
+      if (map_has_map(result.group(), "displacement"))
+      {
+        write_vector_result("displacement", field, &result);
+      }
+      if (map_has_map(result.group(), "velocity"))
+      {
+        write_vector_result("velocity", field, &result);
+      }
+      if (map_has_map(result.group(), "acceleration"))
+      {
+        write_vector_result("acceleration", field, &result);
+      }
+    }
+  }
 
   GiD_ClosePostResultFile();
   return 0;
