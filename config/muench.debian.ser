@@ -48,7 +48,7 @@ VISUAL3_INC=""
 VISUAL3_LIB="-L/usr/X11R6/lib -lVisual3 -lg2c -lGLU -lGL -lX11 -lXext -ldl -lpthread"
 
 # hdf5
-HDF5_LIB="-lhdf5_hl -lhdf5 -lpthread -lz"
+HDF5_LIB="-lhdf5 -lpthread -lz"
 
 #LIBS="-lc -lg2c -llapack -lgoto_p4_512-r0.6 -lxerbla -lmetis"
 LIBS="-lc -lg2c -lmetis -llapack -lblas"
