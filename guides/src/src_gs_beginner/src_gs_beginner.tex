@@ -56,6 +56,34 @@ online.
 
 \end{itemize}
 
+\subsection{svn hints}
+
+Once you have a copy of \ccarat{} in your home directory and you start
+working on it you will need only a small set of subversion commands:
+
+Check the current state of your copy (compared to the version
+\ccarat{} you fetched from the repository) with \texttt{svn~status}, get
+new versions with \texttt{svn~update}, mark files and directories to
+be added or removed with \texttt{svn~add} and \texttt{svn~remove}
+and commit your changes with \texttt{svn~commit}.
+
+Sometimes, however, you need to edit a file that is owned by somebody
+else. Somebody you want to was about your changes before you commit
+them. To do this you can easily save your changes in a separate file:
+\begin{lyxcode}
+svn~diff~>~patchfile
+\end{lyxcode}
+These patches can be applied to a clean version of \ccarat{} using
+\begin{lyxcode}
+patch~-p0~<~patchfile
+\end{lyxcode}
+but can also be viewed conveniently and applied selectively using the
+graphical interface \texttt{kompare} from the \texttt{kdesdk} package
+\begin{lyxcode}
+kompare~patchfile
+\end{lyxcode}
+All these commands have to be entered in the \ccarat{} directory.
+
 \subsection{Directory structure}
 
 The \ccarat{} code comes with documentation, example input files
@@ -138,9 +166,9 @@ too. See below.
 
 The required libraries and include files are found in \texttt{/lnm/lib/\$PLATFORM/\$VERSION}.
 \ccarat{} depends on the Trilinos libraries, a few external solver
-libraries and metis. Additional the boost libraries will be used in
-the future. You should not need to worry about these libraries as
-long as to stick to the provided configurations.
+libraries and metis and hdf5. Additional the boost libraries will be
+used in the future. You should not need to worry about these libraries
+as long as to stick to the provided configurations.
 
 Please note that these are static libraries. \ccarat{} does not need
 these libraries to run. The libraries are needed to compile the source
