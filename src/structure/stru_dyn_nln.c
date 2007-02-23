@@ -1094,12 +1094,19 @@ mod_stress    = sdyn->step % sdyn->updevry_stress;
 /*-------------------------------- debug: print current displ to STDOUT */
 /* used to diff to new discretisation */
 /* #ifdef DEBUG */
+/* if (sdyn->step % 1 == 0) */
+/* { */
 /* int ii; */
 /* for (ii=0; ii<actsolv->sol[0].numeq; ii++) */
 /* { */
-/*   printf(" %3d  % 16.10e \n", ii, actsolv->sol[1].vec.a.dv[ii]); */
+/*   printf(" %3d  % 16.10e   % 16.10e   % 16.10e\n",  */
+/*          ii,  */
+/*          actsolv->sol[1].vec.a.dv[ii], */
+/*          vel->vec.a.dv[ii], */
+/*          acc->vec.a.dv[ii]); */
 /* } */
 /* printf("\n"); */
+/* } */
 /* #endif */
 /*------------------------------- check whether to write restart or not */
 if (sdyn->res_write_evry > 0)
