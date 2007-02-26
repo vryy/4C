@@ -16,12 +16,15 @@ Maintainer: Ulrich Kuettler
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
+#include <iostream>
 #include <sstream>
 #include <string>
 
 #include "io_drt.H"
 
 using namespace std;
+
+#ifdef BINIO
 
 /*----------------------------------------------------------------------*
   |                                                       m.gee 06/01    |
@@ -59,7 +62,7 @@ extern BIN_OUT_MAIN bin_out_main;
 /*----------------------------------------------------------------------*/
 extern CHAR* fieldnames[];
 
-
+#endif
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -69,18 +72,21 @@ OUT_DRT::OUT_DRT(RefCountPtr<DRT::Discretization> dis):
   field_pos_(0),
   step_(0),
   time_(0),
+#ifdef BINIO
   meshfile_(-1),
   resultfile_(-1),
   meshfilename_(),
   resultfilename_(),
   meshgroup_(-1),
   resultgroup_(-1),
+#endif
   resultfile_changed_(-1),
   meshfile_changed_(-1)
 {
-  DSTraceHelper dst("OUT_DRT::OUT_DRT");
-
   findposition(field_pos_,disnum_);
+#ifndef BINIO
+  cerr << "compiled without BINIO: no output will be written\n";
+#endif
 }
 
 
@@ -88,6 +94,7 @@ OUT_DRT::OUT_DRT(RefCountPtr<DRT::Discretization> dis):
 /*----------------------------------------------------------------------*/
 OUT_DRT::~OUT_DRT()
 {
+#ifdef BINIO
   herr_t status;
   if (meshfile_ != -1)
   {
@@ -105,6 +112,7 @@ OUT_DRT::~OUT_DRT()
       dserror("Failed to close HDF file %s", resultfilename_.c_str());
     }
   }
+#endif
 }
 
 
@@ -112,7 +120,7 @@ OUT_DRT::~OUT_DRT()
 /*----------------------------------------------------------------------*/
 void OUT_DRT::create_mesh_file(int step)
 {
-  DSTraceHelper dst("OUT_DRT::create_mesh_file");
+#ifdef BINIO
 
   ostringstream meshname;
 
@@ -143,6 +151,7 @@ void OUT_DRT::create_mesh_file(int step)
   if (meshfile_ < 0)
     dserror("Failed to open file %s", meshname.str().c_str());
   meshfile_changed_ = step;
+#endif
 }
 
 
@@ -150,7 +159,7 @@ void OUT_DRT::create_mesh_file(int step)
 /*----------------------------------------------------------------------*/
 void OUT_DRT::create_result_file(int step)
 {
-  DSTraceHelper dst("OUT_DRT::create_result_file");
+#ifdef BINIO
 
   ostringstream resultname;
   resultname << bin_out_main.name
@@ -179,6 +188,7 @@ void OUT_DRT::create_result_file(int step)
   if (resultfile_ < 0)
     dserror("Failed to open file %s", resultname.str().c_str());
   resultfile_changed_ = step;
+#endif
 }
 
 
@@ -186,7 +196,7 @@ void OUT_DRT::create_result_file(int step)
 /*----------------------------------------------------------------------*/
 void OUT_DRT::findposition(int& field_pos, unsigned int& disnum)
 {
-  DSTraceHelper dst("OUT_DRT::findposition");
+#ifdef BINIO
 
   for (field_pos=0;field_pos<genprob.numfld; ++field_pos)
   {
@@ -202,6 +212,7 @@ void OUT_DRT::findposition(int& field_pos, unsigned int& disnum)
   }
   // no field found
   dserror("unregistered field object");
+#endif
 }
 
 
@@ -209,7 +220,7 @@ void OUT_DRT::findposition(int& field_pos, unsigned int& disnum)
 /*----------------------------------------------------------------------*/
 void OUT_DRT::new_step(int step, double time)
 {
-  DSTraceHelper dst("OUT_DRT::new_step");
+#ifdef BINIO
 
   herr_t status;
   bool write_file = false;
@@ -271,6 +282,7 @@ void OUT_DRT::new_step(int step, double time)
   {
     dserror("Failed to flush HDF file %s", resultfilename_.c_str());
   }
+#endif
 }
 
 
@@ -278,7 +290,7 @@ void OUT_DRT::new_step(int step, double time)
 /*----------------------------------------------------------------------*/
 void OUT_DRT::write_vector(string name, RefCountPtr<Epetra_Vector> vec)
 {
-  DSTraceHelper dst("OUT_DRT::write_vector");
+#ifdef BINIO
 
   herr_t status;
   string valuename = name;
@@ -320,6 +332,7 @@ void OUT_DRT::write_vector(string name, RefCountPtr<Epetra_Vector> vec)
   {
     dserror("Failed to flush HDF file %s", resultfilename_.c_str());
   }
+#endif
 }
 
 
@@ -327,7 +340,7 @@ void OUT_DRT::write_vector(string name, RefCountPtr<Epetra_Vector> vec)
 /*----------------------------------------------------------------------*/
 void OUT_DRT::write_mesh(int step, double time)
 {
-  DSTraceHelper dst("OUT_DRT::write_mesh");
+#ifdef BINIO
 
   herr_t status;
   bool write_file = false;
@@ -406,6 +419,7 @@ void OUT_DRT::write_mesh(int step, double time)
   {
     dserror("Failed to close HDF group in file %s", meshfilename_.c_str());
   }
+#endif
 }
 
 #endif

@@ -25,7 +25,9 @@ Maintainer: Ulrich Kuettler
 #include "Teuchos_RefCountPtr.hpp"
 #include "io.h"
 
+#ifdef BINIO
 #include <H5LT.h>
+#endif
 
 extern "C" {
 #include "../headers/standardtypes.h"
@@ -101,12 +103,14 @@ private:
   int step_;
   double time_;
 
+#ifdef BINIO
   hid_t meshfile_;
   hid_t resultfile_;
   string meshfilename_;
   string resultfilename_;
   hid_t meshgroup_;
   hid_t resultgroup_;
+#endif
 
   int resultfile_changed_;
   int meshfile_changed_;
