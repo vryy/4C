@@ -155,6 +155,9 @@ void fsi_ale_lin_setup(
   ipos->dispnp = 0;
   ipos->dispn = 1;
 
+  solserv_sol_zero(actfield, disnum_calc, node_array_sol_increment, ipos->numincr);
+  solserv_sol_zero(actfield, disnum_calc, node_array_sol_mf, ipos->nummf);
+
   adyn->dt=fsidyn->dt;
   adyn->maxtime=fsidyn->maxtime;
   adyn->nstep=fsidyn->nstep;

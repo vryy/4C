@@ -10,12 +10,21 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <vector>
 
 #include <NOX_Solver_Manager.H>
 #include <NOX_Epetra_Vector.H>
+#include <NOX_Epetra_FiniteDifferenceColoring.H>
 
 #include <Teuchos_XMLParameterListHelpers.hpp>
 #include <Epetra_SerialComm.h>
+#include <EpetraExt_MapColoring.h>
+#include <EpetraExt_MapColoringIndex.h>
+#include <Epetra_CrsGraph.h>
+#include <Epetra_MapColoring.h>
+#include <Epetra_IntVector.h>
+
+#include "fsi_nox_interface_helper.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -23,13 +32,6 @@
  | defined in out_global.c                                              |
  *----------------------------------------------------------------------*/
 extern struct _IO_FLAGS     ioflags;
-
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | struct _GENPROB       genprob; defined in global_control.c           |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -62,6 +64,8 @@ and the type is in partition.h
 extern struct _PAR   par;
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 extern "C" void debug_out_data(FIELD *actfield, CHAR* n, NODE_ARRAY array, INT pos)
 {
   static INT call = 0;
@@ -114,188 +118,8 @@ extern "C" void debug_out_data(FIELD *actfield, CHAR* n, NODE_ARRAY array, INT p
   }
 
   fclose(f);
-
-#if 0
-  /* dann noch schnell die python Variante */
-  sprintf(name, "plot/%s%d.py", n, call);
-  f = fopen(name, "w");
-  fprintf(f, "#from Matrix import Matrix\n");
-  fprintf(f, "array = [\n");
-  for (i=0; i<actfield->dis[0].numnp; ++i)
-  {
-    INT k;
-    NODE* actnode = &(actfield->dis[0].node[i]);
-
-    fprintf(f, "[");
-
-    for (k=0; k<actnode->numdf; ++k)
-    {
-      switch (array)
-      {
-      case node_array_sol:
-        fprintf(f, "%20.20e, ",
-                actnode->sol.a.da[pos][k]);
-        break;
-      case node_array_sol_increment:
-        fprintf(f, "%20.20e, ",
-                actnode->sol_increment.a.da[pos][k]);
-        break;
-      case node_array_sol_mf:
-        fprintf(f, "%20.20e, ",
-                actnode->sol_mf.a.da[pos][k]);
-        break;
-      default:
-        dserror("node array %d unsupported", array);
-      }
-    }
-
-    fprintf(f, "],\n");
-  }
-  fprintf(f, "]\n\n");
-  fclose(f);
-#endif
   call++;
 }
-
-
-/*----------------------------------------------------------------------*/
-//! \brief loop the interface and call the operator for all dofs of
-//         this processor.
-/*----------------------------------------------------------------------*/
-template <class Op>
-void loop_interface(FIELD* structfield, Op& op, const Epetra_Vector& x)
-{
-  DSTraceHelper("loop_interface");
-
-  int disnum = 0;
-  int numnp_total = structfield->dis[disnum].numnp;
-  int numaf       = genprob.numaf;
-
-  // We don't have a direct mapping, so loop all structural nodes and
-  // select the dofs that belong to the local part of the interface.
-
-  int count = 0;
-  for (int i=0;i<numnp_total;i++)
-  {
-    NODE* actsnode  = &(structfield->dis[disnum].node[i]);
-    GNODE* actsgnode = actsnode->gnode;
-
-    NODE* actanode  = actsgnode->mfcpnode[numaf];
-    if (actanode == NULL) continue;
-    GNODE* actagnode = actanode->gnode;
-
-    /* check for coupling nodes */
-    if (actagnode->dirich == NULL)
-      dserror("no dirich condition for coupled ALE node #%d",actanode->Id);
-
-    if (actagnode->dirich->dirich_type != DIRICH_CONDITION::dirich_FSI) continue;
-
-    for (int j=0;j<actanode->numdf;j++)
-    {
-      if (x.Map().MyGID(count))
-      {
-        op(actsnode,j,x.Map().LID(count));
-      }
-      count += 1;
-    }
-  }
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-class DistributeDisplacements
-{
-  const Epetra_Vector& x_;
-  int pos_;
-
-public:
-  DistributeDisplacements(const Epetra_Vector& x,int pos)
-    : x_(x), pos_(pos) {}
-
-  void operator()(NODE* actsnode, int dof, int LID)
-    { actsnode->sol_mf.a.da[pos_][dof] = x_[LID]; }
-};
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-class DistributeSolution
-{
-  const Epetra_Vector& x_;
-  const Epetra_Vector& F_;
-  int pos_;
-
-public:
-  DistributeSolution(const Epetra_Vector& x,const Epetra_Vector& F,int pos)
-    : x_(x), F_(F), pos_(pos) {}
-
-  void operator()(NODE* actsnode, int dof, int LID)
-    { actsnode->sol_mf.a.da[pos_][dof] = F_[LID]+x_[LID]; }
-};
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-class GatherResiduum
-{
-  Epetra_Vector& F_;
-  int dispnp_;
-  int dispn_;
-
-public:
-  GatherResiduum(Epetra_Vector& F,int dispnp,int dispn)
-    : F_(F), dispnp_(dispnp), dispn_(dispn) {}
-
-  void operator()(NODE* actsnode, int dof, int LID)
-    {
-      F_[LID] = actsnode->sol_mf.a.da[dispnp_][dof] -
-                actsnode->sol_mf.a.da[dispn_ ][dof];
-    }
-};
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-class GatherDisplacements
-{
-  Epetra_Vector& soln_;
-  int pos_;
-
-public:
-  GatherDisplacements(Epetra_Vector& soln,int pos)
-    : soln_(soln), pos_(pos) {}
-
-  void operator()(NODE* actsnode, int dof, int LID)
-    { soln_[LID] = actsnode->sol_mf.a.da[pos_][dof]; }
-};
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-class OutputDisplacements
-{
-  std::ostream& out_;
-  int dispnp_;
-  int dispn_;
-
-public:
-  OutputDisplacements(std::ostream& out,int dispnp,int dispn)
-    : out_(out), dispnp_(dispnp), dispn_(dispn) {}
-
-  // a hack
-  void operator()(NODE* actsnode, int dof, int LID)
-    { if (dof==0)
-        out_ << LID << " "
-             << actsnode->sol_mf.a.da[dispnp_][0] << " "
-             << actsnode->sol_mf.a.da[dispnp_][1] << " "
-             << actsnode->sol_mf.a.da[dispn_][0] << " "
-             << actsnode->sol_mf.a.da[dispn_][1] << " "
-             << actsnode->sol_mf.a.da[dispnp_][0]-actsnode->sol_mf.a.da[dispn_][0] << " "
-             << actsnode->sol_mf.a.da[dispnp_][1]-actsnode->sol_mf.a.da[dispn_][1] << "\n"; }
-};
-
-
 
 
 
@@ -309,11 +133,98 @@ FSI_InterfaceProblem::FSI_InterfaceProblem(Epetra_Comm& Comm,
     fluid_work_(fluid_work),
     ale_work_(ale_work)
 {
-  DSTraceHelper("FSI_InterfaceProblem::FSI_InterfaceProblem");
   fsidyn_ = alldyn[3].fsidyn;
 
-  StandardMap_ = Teuchos::rcp(new Epetra_Map(fsidyn_->numsid, 0, Comm));
+  // We need to use the normal structural dof numbers for the global
+  // ids of the interface vector. That's ok, trilinos lets us use any
+  // set of distinct values for global ids.
+
+  FIELD* structfield = struct_work->struct_field;
+  int disnum = 0;
+  int numnp_total = structfield->dis[disnum].numnp;
+  int numaf       = genprob.numaf;
+
+  std::vector<int> gid;
+
+  // Find all interface dofs.
+
+  for (int i=0;i<numnp_total;i++)
+  {
+    NODE* actsnode  = &(structfield->dis[disnum].node[i]);
+    GNODE* actsgnode = actsnode->gnode;
+
+    NODE* actanode  = actsgnode->mfcpnode[numaf];
+    if (actanode == NULL) continue;
+    GNODE* actagnode = actanode->gnode;
+
+#ifdef PARALLEL
+    dserror("test ownership!");
+#endif
+
+    /* check for coupling nodes */
+    if (actagnode->dirich == NULL)
+      dserror("no dirich condition for coupled ALE node #%d",actanode->Id);
+
+    if (actagnode->dirich->dirich_type != DIRICH_CONDITION::dirich_FSI) continue;
+
+    for (int j=0;j<actanode->numdf;j++)
+    {
+      gid.push_back(actsnode->dof[j]);
+    }
+  }
+
+  StandardMap_ = Teuchos::rcp(new Epetra_Map(fsidyn_->numsid,
+                                             gid.size(), &gid[0],
+                                             0, Comm));
   soln_ = Teuchos::rcp(new Epetra_Vector(*StandardMap_));
+
+  // create connection graph of interface elements
+  rawGraph_ = Teuchos::rcp(new Epetra_CrsGraph(Copy,*StandardMap_,12));
+
+  int numele_total = structfield->dis[disnum].numele;
+  for (int i=0; i<numele_total; ++i)
+  {
+    ELEMENT* actele = &(structfield->dis[disnum].element[i]);
+    for (int j=0; j<actele->numnp; ++j)
+    {
+      NODE* actsnode = actele->node[j];
+      GNODE* actsgnode = actsnode->gnode;
+
+      NODE* actanode  = actsgnode->mfcpnode[numaf];
+      if (actanode != NULL)
+      {
+        GNODE* actagnode = actanode->gnode;
+        if ((actagnode->dirich != NULL) &&
+            (actagnode->dirich->dirich_type == DIRICH_CONDITION::dirich_FSI))
+        {
+          // So this is a node at the FSI interface. Couple it with
+          // all the nodes of this element that are at the interface
+          // as well.
+
+          for (int l=0; l<actele->numnp; ++l)
+          {
+            NODE* snode = actele->node[l];
+            NODE* anode = snode->gnode->mfcpnode[numaf];
+            if ((anode != NULL) &&
+                (anode->gnode->dirich != NULL) &&
+                (anode->gnode->dirich->dirich_type == DIRICH_CONDITION::dirich_FSI))
+            {
+              for (int dof1=0; dof1<actanode->numdf; ++dof1)
+              {
+                // The ale node known the number of dofs to be
+                // coupled, but the dofs of the structural node are
+                // actually used.
+                int err = rawGraph_->InsertGlobalIndices(actsnode->dof[dof1],anode->numdf,snode->dof);
+                if (err != 0)
+                  dserror("Epetra_CrsGraph::InsertGlobalIndices returned %d", err);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  rawGraph_->FillComplete();
 }
 
 
@@ -323,15 +234,39 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
                                     Epetra_Vector& F,
                                     const FillType fillFlag)
 {
-  DSTraceHelper("FSI_InterfaceProblem::computeF");
+  char* flags[] = { "Residual", "Jac", "Prec", "FD_Res", "MF_Res", "MF_Jac", "User", NULL };
+
+  cout << "\n==================================================================================================\n"
+       << "FSI_InterfaceProblem::computeF: fillFlag = " RED << flags[fillFlag] << END_COLOR "\n\n";
+
   FIELD* structfield = struct_work_->struct_field;
   FIELD* fluidfield  = fluid_work_ ->fluid_field;
   FIELD* alefield    = ale_work_   ->ale_field;
 
   int disnum = 0;
 
+  // subdivision is not supported.
+  INT a_disnum_calc = 0;
+  INT a_disnum_io   = 0;
+  INT f_disnum_calc = 0;
+  INT f_disnum_io   = 0;
+  INT s_disnum_calc = 0;
+  INT s_disnum_io   = 0;
+
   // set new interface displacement x
   ARRAY_POSITION *ipos = &(structfield->dis[disnum].ipos);
+
+  // no consecutive iterations here. We have to care about the fields
+  // backup from the outside.
+  INT itnum = 1;
+
+  // restore structfield state
+  solserv_sol_copy(structfield, s_disnum_calc, node_array_sol_mf, node_array_sol_mf, 8,ipos->mf_dispnp);
+  solserv_sol_copy(structfield, s_disnum_calc, node_array_sol_mf, node_array_sol_mf, 9,ipos->mf_reldisp);
+  if (itnum > 0)
+    solserv_sol_copy(structfield,s_disnum_calc,node_array_sol,node_array_sol,11, 9);
+  if (itnum == 0)
+    solserv_sol_copy(structfield,s_disnum_calc,node_array_sol,node_array_sol,12, 1);
 
 #ifdef DEBUG
   if (getenv("DEBUG")!=NULL)
@@ -355,38 +290,37 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
   // Calculate new interface displacements starting from the given
   // ones.
 
-  // subdivision is not supported.
-  INT a_disnum_calc = 0;
-  INT a_disnum_io   = 0;
-  INT f_disnum_calc = 0;
-  INT f_disnum_io   = 0;
-  INT s_disnum_calc = 0;
-  INT s_disnum_io   = 0;
+  // reset ale field
+  // sollte nicht nötig sein...
+//   solserv_sol_copy(alefield,a_disnum_calc,
+//                    node_array_sol_increment,
+//                    node_array_sol_increment,
+//                    alefield->dis[a_disnum_calc].ipos.dispn,
+//                    alefield->dis[a_disnum_calc].ipos.dispnp);
 
-  // no consecutive iterations here. We have to care about the fields
-  // backup from the outside.
-  INT itnum = 1;
+//   debug_out_data(alefield, "ale_disp_incr", node_array_sol_increment, alefield->dis[a_disnum_calc].ipos.dispnp);
 
   /*------------------------------- CMD -------------------------------*/
   perf_begin(44);
   fsi_ale_calc(ale_work_,alefield,a_disnum_calc,a_disnum_io,structfield,s_disnum_calc);
   perf_begin(44);
 
-  //debug_out_data(alefield, "ale_disp", node_array_sol_mf, alefield->dis[0].ipos.mf_dispnp);
+//   debug_out_data(alefield, "ale_disp_incr", node_array_sol_increment, alefield->dis[a_disnum_calc].ipos.dispnp);
+  debug_out_data(alefield, "ale_disp", node_array_sol_mf, alefield->dis[a_disnum_calc].ipos.mf_dispnp);
 
   /*------------------------------- CFD -------------------------------*/
   perf_begin(42);
   fsi_fluid_calc(fluid_work_,fluidfield,f_disnum_calc,f_disnum_io,alefield,a_disnum_calc);
   perf_end(42);
 
-  //debug_out_data(fluidfield, "fluid_vel", node_array_sol_increment, fluidfield->dis[0].ipos.velnp);
+  debug_out_data(fluidfield, "fluid_vel", node_array_sol_increment, fluidfield->dis[0].ipos.velnp);
 
   /*------------------------------- CSD -------------------------------*/
   perf_begin(43);
   fsi_struct_calc(struct_work_,structfield,s_disnum_calc,s_disnum_io,itnum,fluidfield,f_disnum_calc);
   perf_end(43);
 
-  //debug_out_data(structfield, "struct_disp", node_array_sol, 0);
+  debug_out_data(structfield, "struct_disp", node_array_sol, 0);
 
   // Fill the distributed interface displacement vector F. We
   // don't have a direct mapping, so loop all structural nodes and
@@ -553,6 +487,18 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
 
   fflush(out);
 
+  // Create the Epetra_RowMatrix using Finite Difference with Coloring
+  // Here we take the graph of the dof connections at the FSI
+  // interface and create a coloring with the EpetraExt helpers. This
+  // is needed to setup the Finite Difference with Coloring class
+  // later on.
+
+  EpetraExt::CrsGraph_MapColoring::ColoringAlgorithm algType = EpetraExt::CrsGraph_MapColoring::GREEDY;
+  EpetraExt::CrsGraph_MapColoring tmpMapColoring(algType);
+  Teuchos::RefCountPtr<Epetra_MapColoring> colorMap = Teuchos::rcp(&tmpMapColoring(*rawGraph_));
+  EpetraExt::CrsGraph_MapColoringIndex colorMapIndex(*colorMap);
+  Teuchos::RefCountPtr< vector<Epetra_IntVector> > columns = Teuchos::rcp(&colorMapIndex(*rawGraph_));
+
   while (fsidyn->step < fsidyn->nstep && fsidyn->time <= fsidyn->maxtime)
   {
     double t2=ds_cputime();
@@ -570,9 +516,50 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
 
     fsi_algoout(0);
 
+    // aus dem Strukturlöser:
+
+      /*======================================================================*
+       *                      S O L U T I O N    P H A S E                    *
+       *======================================================================*
+       * nodal solution history structural field:                             *
+       * sol[0][j]           ... total displacements at time (t)              *
+       * sol[1][j]           ... velocities at time (t)                       *
+       * sol[2][j]           ... accels at time (t)                           *
+       * sol[3][j]           ... prescribed displacements at time (t-dt)      *
+       * sol[4][j]           ... prescribed displacements at time (t)         *
+       * sol[5][j]           ... place 4 - place 3                            *
+       * sol[6][j]           ... the  velocities of prescribed dofs           *
+       * sol[7][j]           ... the  accels of prescribed dofs               *
+       * sol[8][j]           ... working space                                *
+       * sol[9][j]           ... total displacements at time (t-dt)           *
+       * sol[10][j]          ... velocities at time (t-dt)                    *
+       * sol_mf[0][j]        ... latest struct-displacements                  *
+       * sol_mf[1][j]        ... (relaxed) displ. of the last iteration step  *
+       * sol_mf[2][j]        ... converged relaxed displ. at time (t-dt)      *
+       * sol_mf[3][j]        ... actual dispi                                 *
+       * sol_mf[4][j]        ... FSI coupl.-forces at the end of the timestep *
+       * sol_mf[5][j]        ... FSI coupl.-forces at beginning of the timest.*
+       * sol_mf[6][j]        ... used in fsi_gradient.c                       *
+       *======================================================================*/
+
+    // no consecutive iterations here. We have to care about the fields
+    // backup from the outside.
+    INT itnum = 1;
+
     // backup current structural values
-    solserv_sol_copy(structfield,s_disnum_calc,node_array_sol,node_array_sol,0,9);
-    solserv_sol_copy(structfield,s_disnum_calc,node_array_sol,node_array_sol,1,10);
+    //solserv_sol_copy(structfield,s_disnum_calc,node_array_sol,node_array_sol,0,9);
+    //solserv_sol_copy(structfield,s_disnum_calc,node_array_sol,node_array_sol,1,10);
+    /* backup for Newton via finite differences */
+    {
+      ARRAY_POSITION *ipos;
+      ipos = &(structfield->dis[s_disnum_calc].ipos);
+      solserv_sol_copy(structfield, s_disnum_calc, node_array_sol_mf, node_array_sol_mf, ipos->mf_dispnp, 8);
+      solserv_sol_copy(structfield, s_disnum_calc, node_array_sol_mf, node_array_sol_mf, ipos->mf_reldisp, 9);
+      if (itnum > 0)
+        solserv_sol_copy(structfield,s_disnum_calc,node_array_sol,node_array_sol,9,11);
+      if (itnum == 0)
+        solserv_sol_copy(structfield,s_disnum_calc,node_array_sol,node_array_sol,1,12);
+    }
 
     // Begin Nonlinear Solver ************************************
 
@@ -621,6 +608,8 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
     Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
 
+    //cout << lsParams;
+
     // Create printing utilities
     NOX::Utils utils(printParams);
 
@@ -631,29 +620,41 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     dirParams.set("User Defined Direction", aitken);
 #endif
 
-
     // Create the Epetra_RowMatrix.  Uncomment one or more of the following:
     // 1. User supplied (Epetra_RowMatrix)
     //Teuchos::RefCountPtr<Epetra_RowMatrix> Analytic = Problem.getJacobian();
     // 2. Matrix-Free (Epetra_Operator)
-    Teuchos::RefCountPtr<NOX::Epetra::MatrixFree> MF = Teuchos::rcp(new NOX::Epetra::MatrixFree(printParams, interface, noxSoln));
+    //Teuchos::RefCountPtr<NOX::Epetra::MatrixFree> MF = Teuchos::rcp(new NOX::Epetra::MatrixFree(printParams, interface, noxSoln));
     // 3. Finite Difference (Epetra_RowMatrix)
     //Teuchos::RefCountPtr<NOX::Epetra::FiniteDifference> FD = Teuchos::rcp(new NOX::Epetra::FiniteDifference(printParams, interface, noxSoln));
 
+    Teuchos::RefCountPtr<NOX::Epetra::FiniteDifferenceColoring> FDC =
+      Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, colorMap, columns));
+    Teuchos::RefCountPtr<NOX::Epetra::Interface::Jacobian> iJac_FDC = FDC;
+
     // Create the linear system
     Teuchos::RefCountPtr<NOX::Epetra::Interface::Required> iReq = interface;
-    Teuchos::RefCountPtr<NOX::Epetra::Interface::Jacobian> iJac = MF;
+    //Teuchos::RefCountPtr<NOX::Epetra::Interface::Jacobian> iJac = MF;
     //Teuchos::RefCountPtr<NOX::Epetra::Interface::Preconditioner> iPrec = interface;
+
+#if 0
     Teuchos::RefCountPtr<NOX::Epetra::LinearSystemAztecOO> linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams,
                                                                                                                       iReq, iJac, MF,
                                                                                                                       noxSoln));
+#endif
+#if 0
+    Teuchos::RefCountPtr<NOX::Epetra::LinearSystemAztecOO> linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams,
+                                                                                                                      iReq, noxSoln));
+#endif
+    Teuchos::RefCountPtr<NOX::Epetra::LinearSystemAztecOO> linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams,
+                                                                                                                      iReq, iJac_FDC, FDC, noxSoln));
 
     // Create the Group
     Teuchos::RefCountPtr<NOX::Epetra::Group> grp = Teuchos::rcp(new NOX::Epetra::Group(printParams, iReq, noxSoln,
                                                                                        linSys));
 
     // Create the convergence tests
-    Teuchos::RefCountPtr<NOX::StatusTest::NormF> absresid    = Teuchos::rcp(new NOX::StatusTest::NormF(1.0e-8));
+    Teuchos::RefCountPtr<NOX::StatusTest::NormF> absresid    = Teuchos::rcp(new NOX::StatusTest::NormF(1.0e-6));
     //Teuchos::RefCountPtr<NOX::StatusTest::NormF> relresid    = Teuchos::rcp(new NOX::StatusTest::NormF(*grp.get(), 1.0e-2));
     Teuchos::RefCountPtr<NOX::StatusTest::NormUpdate> update = Teuchos::rcp(new NOX::StatusTest::NormUpdate(1.0e-5));
     Teuchos::RefCountPtr<NOX::StatusTest::NormWRMS> wrms     = Teuchos::rcp(new NOX::StatusTest::NormWRMS(1.0e-2, 1.0e-8));
@@ -661,7 +662,7 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     converged->addStatusTest(absresid);
     //converged->addStatusTest(relresid);
     //converged->addStatusTest(wrms);
-    converged->addStatusTest(update);
+    //converged->addStatusTest(update);
     Teuchos::RefCountPtr<NOX::StatusTest::MaxIters> maxiters = Teuchos::rcp(new NOX::StatusTest::MaxIters(20));
     Teuchos::RefCountPtr<NOX::StatusTest::FiniteValue> fv    = Teuchos::rcp(new NOX::StatusTest::FiniteValue);
     Teuchos::RefCountPtr<NOX::StatusTest::Combo> combo       = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));

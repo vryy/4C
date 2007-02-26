@@ -18,6 +18,7 @@
 #include <Epetra_Vector.h>
 #include <Epetra_RowMatrix.h>
 #include <Epetra_CrsMatrix.h>
+#include <Epetra_CrsGraph.h>
 #include <Epetra_Map.h>
 #include <Epetra_LinearProblem.h>
 #include <AztecOO.h>
@@ -57,6 +58,7 @@ private:
 
   Teuchos::RefCountPtr<Epetra_Map> StandardMap_;
   Teuchos::RefCountPtr<Epetra_Vector> soln_;
+  Teuchos::RefCountPtr<Epetra_CrsGraph> rawGraph_;
 
   FSI_STRUCT_WORK* struct_work_;
   FSI_FLUID_WORK* fluid_work_;
