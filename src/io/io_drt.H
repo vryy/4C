@@ -2,8 +2,6 @@
 /*!
 \file io_drt.H
 
-\class OUT_DRT
-
 \brief output context of one discretization
 
 <pre>
@@ -37,7 +35,7 @@ extern "C" {
 
 
 /*!
-  \class OUT_DRT
+  \class DiscretizationWriter
 
   \brief The output context of a discretization
 
@@ -49,51 +47,56 @@ extern "C" {
   \author m.kue
   \date 02/07
 */
-class OUT_DRT
+class DiscretizationWriter
 {
 public:
 
-  // @{ \name Constructors and destructors
+  //!@name Constructors and destructors
+  //@{
 
-  OUT_DRT(RefCountPtr<DRT::Discretization> dis);
-  ~OUT_DRT();
+  //! Writer constructor always needs a discretization
+  explicit DiscretizationWriter(RefCountPtr<DRT::Discretization> dis);
+  ~DiscretizationWriter();
 
   //@}
 
-  // @{ \name Output methods
+  //!@name Output methods
+  //@{
 
   //! write result header to control file
-  // You will want to call this once each time step _before_ the
-  // result data is written.
-  // \param step : current time step
-  // \param time : current absolute time
-  void new_step(int step, double time);
+  /*!
+    You will want to call this once each time step _before_ the
+    result data is written.
+    \param step : current time step
+    \param time : current absolute time
+  */
+  void NewStep(int step, double time);
 
   //! write a result vector
-  //
-  // There will be an entry in the current result step in the control
-  // file that points to this vector
-  //
-  // \param name : control file entry name
-  // \param vec  : the result data vector
-  void write_vector(string name, RefCountPtr<Epetra_Vector> vec);
+  /*!
+    There will be an entry in the current result step in the control
+    file that points to this vector
 
-  //! write new "field" group to control file including node and
-  // element chunks
-  void write_mesh(int step, double time);
+    \param name : control file entry name
+    \param vec  : the result data vector
+  */
+  void WriteVector(string name, RefCountPtr<Epetra_Vector> vec);
+
+  //! write new "field" group to control file including node and element chunks
+  void WriteMesh(int step, double time);
 
   //@}
 
 private:
 
   //! open new mesh file
-  void create_mesh_file(int step);
+  void CreateMeshFile(int step);
 
   //! open new result file
-  void create_result_file(int step);
+  void CreateResultFile(int step);
 
   //! find position of my discretization in (old) ccarat arrays
-  void findposition(int& field_pos, unsigned int& dis);
+  void FindPosition(int& field_pos, unsigned int& dis);
 
   //! my discretization
   RefCountPtr<DRT::Discretization> dis_;

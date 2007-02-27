@@ -371,15 +371,15 @@ void PostProblem::read_meshes()
       if (!map_find_string(symbol_map(mesh),"mesh_file",&fn))
         dserror("No meshfile name for discretization %s.", currfield.discretization()->Name().c_str());
       string filename = fn;
-      HDFReader reader = HDFReader(input_dir_,num_output_procs);
-      reader.open(filename);
+      HDFReader reader = HDFReader(input_dir_);
+      reader.Open(filename,num_output_procs);
 
       RefCountPtr<vector<char> > node_data =
-        reader.read_node_data(step, comm_->NumProc(), comm_->MyPID());
+        reader.ReadNodeData(step, comm_->NumProc(), comm_->MyPID());
       currfield.discretization()->UnPackMyNodes(node_data);
 
       RefCountPtr<vector<char> > element_data =
-        reader.read_element_data(step, comm_->NumProc(), comm_->MyPID());
+        reader.ReadElementData(step, comm_->NumProc(), comm_->MyPID());
       currfield.discretization()->UnPackMyElements(element_data);
 
       // before we can call discretization functions (in parallel) we
@@ -517,11 +517,8 @@ PostResult::PostResult(PostField* field):
   field_(field),
   pos_(-1),
   group_(NULL),
-  file_((field->problem()->input_dir()),field->num_output_procs())
+  file_((field->problem()->input_dir()))
 {
-  DSTraceHelper("PostResult::PostResult");
-  int num_output_proc = field_->num_output_procs();
-  file_ = HDFReader((field_->problem()->input_dir()), num_output_proc);
 }
 
 
@@ -611,7 +608,7 @@ int PostResult::match_field_result(MAP* result_group)
 void PostResult::close_result_files()
 {
   DSTraceHelper("PostResult::close_result_files");
-  file_.close();
+  file_.Close();
 }
 
 /*----------------------------------------------------------------------*
@@ -621,9 +618,14 @@ void PostResult::close_result_files()
 void PostResult::open_result_files(MAP* field_info)
 {
   DSTraceHelper("PostResult::open_result_files");
+  int num_output_procs;
+  if (!map_find_int(field_info,"num_output_proc",&num_output_procs))
+  {
+    num_output_procs = 1;
+  }
   string basename = map_read_string(field_info,"result_file");
   field_->problem()->set_basename(basename);
-  file_.open(basename);
+  file_.Open(basename,num_output_procs);
 }
 
 /*----------------------------------------------------------------------*
@@ -637,7 +639,7 @@ RefCountPtr<Epetra_Vector> PostResult::read_result(string name)
   MAP* result = map_read_map(group_, const_cast<char*>(name.c_str()));
   string id_path = map_read_string(result, "ids");
   string value_path = map_read_string(result, "values");
-  return file_.read_result_data(id_path.c_str(), value_path.c_str(), comm->NumProc(),
+  return file_.ReadResultData(id_path.c_str(), value_path.c_str(), comm->NumProc(),
                                 comm->MyPID(), comm, gId_num);
 }
 

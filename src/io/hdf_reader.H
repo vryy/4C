@@ -1,4 +1,18 @@
-// -*- C++ -*-
+/*----------------------------------------------------------------------*/
+/*!
+\file hdf_reader.H
+
+\brief Helpers to read HDF5 based output.
+
+<pre>
+Maintainer: Ulrich Kuettler
+            kuettler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/kuettler
+            089 - 289-15238
+</pre>
+*/
+/*----------------------------------------------------------------------*/
+
 #ifndef HDF_READER_H
 #define HDF_READER_H
 
@@ -33,33 +47,123 @@ extern "C" {
 #include "Epetra_Map.h"
 #include "Epetra_Vector.h"
 
+/*!
+  \class HDFReader
+  \brief Helper class that handles the HDF5 files while reading.
+
+  After parallel output we need parallel input. Each processor writes
+  its own file. On input therefore each processor needs to read some
+  files (zero to many, depending on the number of processors that
+  wrote and read.) Additionally each processor might use several files
+  (for several time steps, as it happens with restart.) This class
+  handles the basic HDF5 file access.
+
+  \author m.kue
+  \date 02/07
+*/
 class HDFReader
 {
 public:
-  HDFReader(string dir, int num_proc=1);
-  HDFReader();
+
+  //! Construct with the directory where the files can be found.
+  explicit HDFReader(string dir);
   ~HDFReader();
-  void open(string basename);
-  RefCountPtr<std::vector<char> > read_element_data(int step, int new_proc_num=0,
-                                                    int my_id=0);
-  RefCountPtr<std::vector<char> > read_node_data(int step, int new_proc_num=0,
-                                                 int my_id=0);
+
+  //! Open a new set of input files.
+  /*!
+    With num_output_procs==1 this function opens the result data
+    file with name basename. If num_output_procs>1 it opens the result
+    files of all processors, by appending .p<proc_num> to the
+    basename.
+  */
+  void Open(string basename,int num_output_procs);
+  //!
+  void Close();
+
+  //! read the packed element data from the mesh files
+  /*!
+    Note: this function should only be called while the HDFReader reads
+    mesh files
+  */
+  RefCountPtr<std::vector<char> > ReadElementData(int step, int new_proc_num=0, int my_id=0);
+
+  //! read the packed nodal data from the mesh files
+  /*!
+    Note: this function should only be called while the HDFReader reads
+    mesh files
+  */
+  RefCountPtr<std::vector<char> > ReadNodeData(int step, int new_proc_num=0, int my_id=0);
+
+  //! read an Epetra_Vector from the result files
+  /*!
+    Right now an Epetra_Vector has to be read along with its map. Thus
+    we read an integer and a double array here.
+
+    \param id_path      (in): hdf5 path to map array (from control file)
+    \param value_path   (in): hdf5 path to value array (from control file)
+    \param new_proc_num (in): number of processors reading
+    \param my_id        (in): my rank
+    \param Comm         (in): the communicator itself
+    \param gId_num      (in): number of entries in the vector (from control file)
+   */
   RefCountPtr<Epetra_Vector>
-  read_result_data(string id_path, string value_path, int new_proc_num, int my_id,
-                   RefCountPtr<Epetra_Comm> Comm, int gId_num);
-  void close();
-  void set_num_output_procs(int num);
+  ReadResultData(string id_path, string value_path, int new_proc_num, int my_id,
+                 RefCountPtr<Epetra_Comm> Comm, int gId_num);
+
 private:
-  RefCountPtr<std::vector<char> > read_char_data(std::string path,
-                                                 int start=0, int end=-1);
-  RefCountPtr<std::vector<int> > read_int_data(std::string path,
+
+  //! reads the dataset 'path' in all the files in the range [start,end)
+  /*!
+    Here we finally loop all the files the local processor has to read.
+    returns all the data in one vector. The data is assumed to by of type char.
+   */
+  RefCountPtr<std::vector<char> > ReadCharData(std::string path,
                                                int start=0, int end=-1);
-  RefCountPtr<std::vector<double> > read_double_data(std::string path,
-                                                     int start=0, int end=-1);
-  void calculate_range(int new_proc_num, int my_id, int& start, int& end);
+
+  //! reads the dataset 'path' in all the files in the range [start,end)
+  /*!
+    Here we finally loop all the files the local processor has to read.
+    returns all the data in one vector<int>
+  */
+  RefCountPtr<std::vector<int> > ReadIntData(std::string path,
+                                             int start=0, int end=-1);
+
+  //! reads the dataset 'path' in all the files in the range [start,end)
+  /*!
+    Here we finally loop all the files the local processor has to
+    read.
+  */
+  RefCountPtr<std::vector<double> > ReadDoubleData(std::string path,
+                                                   int start=0, int end=-1);
+
+  //! Figure out which subset of files this process needs to read
+  /*!
+    In a parallel run each processor writes one file. If we are to
+    read this set of files on with a different number of processors,
+    we need to know how many files each one has to read. One file will
+    always be read by one processor. The reader already knows how many
+    files there are (how many processors wrote this set.)
+
+    We assign a consecutive range of files to each processor. Linearly
+    distributed. After the read we can redistribute. :)
+
+    \param new_proc_num (in): numbers of processors that read
+    \param my_id        (in): my rank. id. processor number.
+    \param start       (out): first file I have to read
+    \param end         (out): first file I do not read
+   */
+  void CalculateRange(int new_proc_num, int my_id, int& start, int& end);
+
+  //! the names of the files opened here
   std::vector<std::string> filenames_;
+
+  //! HDF5 ids of the open files
   std::vector<hid_t> files_;
+
+  //! directory where to find the files
   string input_dir_;
+
+  //! number of processors that wrote this set of files
   int num_output_proc_;
 };
 

@@ -66,7 +66,7 @@ extern CHAR* fieldnames[];
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-OUT_DRT::OUT_DRT(RefCountPtr<DRT::Discretization> dis):
+DiscretizationWriter::DiscretizationWriter(RefCountPtr<DRT::Discretization> dis):
   dis_(dis),
   disnum_(0),
   field_pos_(0),
@@ -83,7 +83,7 @@ OUT_DRT::OUT_DRT(RefCountPtr<DRT::Discretization> dis):
   resultfile_changed_(-1),
   meshfile_changed_(-1)
 {
-  findposition(field_pos_,disnum_);
+  FindPosition(field_pos_,disnum_);
 #ifndef BINIO
   cerr << "compiled without BINIO: no output will be written\n";
 #endif
@@ -92,7 +92,7 @@ OUT_DRT::OUT_DRT(RefCountPtr<DRT::Discretization> dis):
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-OUT_DRT::~OUT_DRT()
+DiscretizationWriter::~DiscretizationWriter()
 {
 #ifdef BINIO
   herr_t status;
@@ -118,7 +118,7 @@ OUT_DRT::~OUT_DRT()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void OUT_DRT::create_mesh_file(int step)
+void DiscretizationWriter::CreateMeshFile(int step)
 {
 #ifdef BINIO
 
@@ -157,7 +157,7 @@ void OUT_DRT::create_mesh_file(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void OUT_DRT::create_result_file(int step)
+void DiscretizationWriter::CreateResultFile(int step)
 {
 #ifdef BINIO
 
@@ -194,7 +194,7 @@ void OUT_DRT::create_result_file(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void OUT_DRT::findposition(int& field_pos, unsigned int& disnum)
+void DiscretizationWriter::FindPosition(int& field_pos, unsigned int& disnum)
 {
 #ifdef BINIO
 
@@ -218,7 +218,7 @@ void OUT_DRT::findposition(int& field_pos, unsigned int& disnum)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void OUT_DRT::new_step(int step, double time)
+void DiscretizationWriter::NewStep(int step, double time)
 {
 #ifdef BINIO
 
@@ -241,7 +241,7 @@ void OUT_DRT::new_step(int step, double time)
   if (step_ - resultfile_changed_ >= bin_out_main.steps_per_file
       || resultfile_changed_ == -1)
   {
-    create_result_file(step_);
+    CreateResultFile(step_);
     write_file = true;
   }
 
@@ -288,7 +288,7 @@ void OUT_DRT::new_step(int step, double time)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void OUT_DRT::write_vector(string name, RefCountPtr<Epetra_Vector> vec)
+void DiscretizationWriter::WriteVector(string name, RefCountPtr<Epetra_Vector> vec)
 {
 #ifdef BINIO
 
@@ -338,7 +338,7 @@ void OUT_DRT::write_vector(string name, RefCountPtr<Epetra_Vector> vec)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void OUT_DRT::write_mesh(int step, double time)
+void DiscretizationWriter::WriteMesh(int step, double time)
 {
 #ifdef BINIO
 
@@ -348,7 +348,7 @@ void OUT_DRT::write_mesh(int step, double time)
   if (step - meshfile_changed_ >= bin_out_main.steps_per_file
     || meshfile_changed_ == -1)
   {
-    create_mesh_file(step);
+    CreateMeshFile(step);
     write_file = true;
   }
   ostringstream name;

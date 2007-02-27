@@ -104,8 +104,8 @@ void stru_genalpha_drt()
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  OUT_DRT output(actdis);
-  output.write_mesh(0,0.0);
+  DiscretizationWriter output(actdis);
+  output.WriteMesh(0,0.0);
 
   // -------------------------------------------------------------------
   // get a communicator and myrank
@@ -291,13 +291,13 @@ void stru_genalpha_drt()
   const double alpham = sdyn->alpha_m;
   const double alphaf = sdyn->alpha_f;
   const double dt     = sdyn->dt;
-  int istep = 0;  // time step index 
+  int istep = 0;  // time step index
 
   //------------------------------------------------- output initial state
-  output.new_step(istep, time);
-  output.write_vector("displacement", dis);
-  output.write_vector("velocity", vel);
-  output.write_vector("acceleration", acc);
+  output.NewStep(istep, time);
+  output.WriteVector("displacement", dis);
+  output.WriteVector("velocity", vel);
+  output.WriteVector("acceleration", acc);
 
   //==================================================== start of timeloop
   while (time<=sdyn->maxtime && istep<=sdyn->nstep)
@@ -558,10 +558,10 @@ void stru_genalpha_drt()
     time += dt;  // time t_n := t_{n+1} = t_n + Delta t
 
     //----------------------------------------------------- output results
-    output.new_step(istep, time);
-    output.write_vector("displacement", dis);
-    output.write_vector("velocity", vel);
-    output.write_vector("acceleration", acc);
+    output.NewStep(istep, time);
+    output.WriteVector("displacement", dis);
+    output.WriteVector("velocity", vel);
+    output.WriteVector("acceleration", acc);
 
     //---------------------------------------------------------- print out
     //cout << *dis << endl;
@@ -571,7 +571,7 @@ void stru_genalpha_drt()
 //       Epetra_Vector disn(*dis), veln(*vel), accn(*acc);
 //       for (int ii=0; ii<disn.MyLength(); ii++)
 //       {
-//          printf(" %3d  % 16.10e   % 16.10e   % 16.10e\n", 
+//          printf(" %3d  % 16.10e   % 16.10e   % 16.10e\n",
 //                 ii, disn[ii], veln[ii], accn[ii]);
 //       }
 //       printf("\n");
