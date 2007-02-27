@@ -93,7 +93,7 @@ switch (*action)
 /*-init the element routines(geolin and geononlin,no matter if I need both)*/
 case calc_struct_init:
 #ifdef D_MLSTRUCT
-   if (genprob.multisc_struct == 1)
+   if (genprob.multisc_struct == 1) /* gitterle spielt */
    {
      printf("structural Multiscale only for BILINEAR, RECTENGULAR Makroelements and submesh-left-down-corner-node must have coordinates 0.0/0.0\n");
      printf("For more than 3000 submesh-DOF's the size of the fields ele.e.w1.fint_mi,..for rueckrechnung in static condensation has to be enlarged\n");
