@@ -5,6 +5,9 @@
 
 \brief A virtual class for a node
 
+This class represents a finite element node. though it is virtual and one can overload any of its
+methods, the normal case would be to use this base class for all nodes.
+
 <pre>
 Maintainer: Michael Gee
             gee@lnm.mw.tum.de
@@ -49,31 +52,24 @@ class Node : public DRT::ParObject
 {
 public:
 
+  //! @name Enums and Friends
+
   /*!
   \brief The Discretization is a friend of Node
   */
   friend class Discretization;
 
-  // @{ \name Constructors and destructors
 
-  /*!
-  \brief Type of design entity this node is on
-         
-  */
-  enum OnDesignEntity 
-  {
-    on_none,
-    on_dnode,
-    on_dline,
-    on_dsurface,
-    on_dvolume,
-  };
+  //@}
+  
+  //! @name Constructors and destructors and related methods
 
   /*!
   \brief Standard Constructor
   
-  \param id    : A globally unique node id
-  \param coords: vector of nodal coordinates, length 3
+  \param id     (in): A globally unique node id
+  \param coords (in): vector of nodal coordinates, length 3
+  \param owner  (in): Owner of this node.
   */
   Node(int id, const double* coords, const int owner);
 
@@ -111,7 +107,6 @@ public:
   \ref Pack and \ref Unpack are used to communicate this node
   
   */
-  //virtual const char* Pack(int& size) const;
   virtual void Pack(vector<char>& data) const;
 
   /*!
@@ -120,12 +115,11 @@ public:
   \ref Pack and \ref Unpack are used to communicate this node
 
   */
-  //virtual bool Unpack(const char* data);
   virtual void Unpack(const vector<char>& data);
 
   //@}
 
-  // @{ \name Acess methods
+  //! @name Acess methods
 
   /*!
   \brief Return global id
@@ -164,25 +158,13 @@ public:
   virtual inline const DRT::DofSet& Dof() const { return dofset_; }
 
   /*!
-  \brief Get the type of design entity this node is on
-
-  */
-  virtual inline DRT::Node::OnDesignEntity GetDesignEntityType() {return dentitytype_;}
-
-  /*!
-  \brief Get the id of design entity this node is on
-
-  */
-  virtual inline int GetDesignEntityId() {return dentityid_;}
-
-  /*!
   \brief Print this node
   */
   virtual void Print(ostream& os) const ;
 
   //@}
 
-  // @{ \name Construction
+  //! @name Construction
 
 
   /*!
@@ -191,15 +173,6 @@ public:
   \param owner: Proc owning this node
   */
   virtual inline void SetOwner(const int owner) { owner_ = owner; return; }
-
-  /*!
-  \brief Set a design relationship
-  
-  \param type: Type of design element this node is located on
-  \param gid: Global id of the design object this node is located on
-  */
-  virtual void SetDesignEntity(const OnDesignEntity type, const int gid)
-  { dentitytype_ = type; dentityid_ = gid; return; }
 
   /*!
   \brief Set a condition with a certain name
@@ -211,9 +184,14 @@ public:
   \param name : Name of condition
   \param cond : The Condition class
   
-  \note this takes ownership of cond
+  \note Normally, This method would be called by the Discretization to
+        set references to a Condition in the nodes. As the Condition is
+        RefCountPtr, one can not say who actually owns the underlying object.
+        The node does not communicate any conditions through Pack/Unpack, 
+        Conditions are therefore more of a reference here that will be
+        recreated after communications of nodes have been done.
   
-  \warning If a condition with the exact same name already exists, it will be
+  \warning If a condition with the exact same name already exists, it will
            NOT be overwritten but stored twice in the element
   
   */
@@ -230,7 +208,6 @@ public:
   \param name (in): Name of condition
   \param out  (out): vector of pointers to all conditions with that name
   
-  \return Returns NULL if condition with that name does not exist
   */
   virtual void GetCondition(const string& name, vector<DRT::Condition*>& out);
 
@@ -239,7 +216,7 @@ public:
   
   Returns the first condition with name name found in the multimap. 
   If multiple conditions with the same name exist, the first condition is
-  returned and behaviour is therefore non-deterministic. this method should
+  returned and behaviour is therefore non-deterministic. This method should
   therefore only be used in cases where the user is sure that name is unique.
   
   \param name (in): Name of condition
@@ -273,15 +250,19 @@ protected:
     element_[size] = eleptr; return;}
 
 protected:
-
-  int                                      id_;          // a unique global id
-  int                                      owner_;       // proc owning this node
-  double                                   x_[3];        // nodal coords
-  DRT::DofSet                              dofset_;      // a set of degrees of freedom
-  vector<Element*>                         element_;     // pointers to adjacent elements
-  OnDesignEntity                           dentitytype_; // type of design object I'm on
-  int                                      dentityid_;   // global id of design object I'm on
-  multimap<string,RefCountPtr<Condition> > condition_;   // some conditions e.g. BCs
+  
+  //! a unique global id
+  int                                      id_;          
+  //! proc owning this node
+  int                                      owner_;       
+  //! nodal coords
+  double                                   x_[3];        
+  //! a set of degrees of freedom
+  DRT::DofSet                              dofset_;      
+  //! pointers to adjacent elements
+  vector<Element*>                         element_;     
+  //! some conditions e.g. BCs
+  multimap<string,RefCountPtr<Condition> > condition_;   
 
 }; // class Node
 } // namespace DRT

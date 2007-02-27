@@ -350,7 +350,7 @@ void DRT::Discretization::Print(ostream& os) const
   return;
 }
 
-
+#if 0
 /*----------------------------------------------------------------------*
  |  node <-> design node topology (public)                   mwgee 11/06|
  *----------------------------------------------------------------------*/
@@ -372,7 +372,7 @@ void DRT::Discretization::SetDesignEntityIds(Node::OnDesignEntity type,
   }
   return;
 }
-
+#endif
 
 
 
@@ -552,7 +552,7 @@ RefCountPtr<vector<char> > DRT::Discretization::PackMyElements()
   {
     vector<char> data;
     (*i)->Pack(data);
-    ParObject::AddVectortoPack(*block,data);
+    ParObject::AddtoPack(*block,data);
   }
   return block;
 }
@@ -571,7 +571,7 @@ RefCountPtr<vector<char> > DRT::Discretization::PackMyNodes()
   {
     vector<char> data;
     (*i)->Pack(data);
-    ParObject::AddVectortoPack(*block,data);
+    ParObject::AddtoPack(*block,data);
   }
   return block;
 }
@@ -586,7 +586,7 @@ void DRT::Discretization::UnPackMyElements(RefCountPtr<vector<char> > e)
   while (index < static_cast<int>(e->size()))
   {
     vector<char> data;
-    ParObject::ExtractVectorfromPack(index,*e,data);
+    ParObject::ExtractfromPack(index,*e,data);
     DRT::ParObject* o = DRT::Utils::Factory(data);
     DRT::Element* ele = dynamic_cast<Element*>(o);
     if (ele == NULL)
@@ -610,7 +610,7 @@ void DRT::Discretization::UnPackMyNodes(RefCountPtr<vector<char> > e)
   while (index < static_cast<int>(e->size()))
   {
     vector<char> data;
-    ParObject::ExtractVectorfromPack(index,*e,data);
+    ParObject::ExtractfromPack(index,*e,data);
     DRT::ParObject* o = DRT::Utils::Factory(data);
     DRT::Node* n = dynamic_cast<Node*>(o);
     if (n == NULL)

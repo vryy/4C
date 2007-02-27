@@ -46,7 +46,7 @@ void DRT::Discretization::BoundaryConditionsGeometry()
   for (fool=condition_.begin(); fool != condition_.end(); ++fool)
   {
     if (fool->first != (string)"Dirichlet") continue;
-    const vector<int>* nodes = fool->second->GetVector<int>("Node Ids");
+    const vector<int>* nodes = fool->second->Get<vector<int> >("Node Ids");
     int nnode = nodes->size();
     for (int i=0; i<nnode; ++i)
     {
@@ -93,7 +93,7 @@ void DRT::Discretization::BuildLinesinCondition(
 {
 
   // get ptrs to all node ids that have this condition
-  const vector<int>* nodeids = cond->GetVector<int>("Node Ids");
+  const vector<int>* nodeids = cond->Get<vector<int> >("Node Ids");
   if (!nodeids) dserror("Cannot find array 'Node Ids' in condition");
 
   // number of global nodes in this cloud
@@ -255,7 +255,7 @@ void DRT::Discretization::BuildSurfacesinCondition(
 {
 
   // get ptrs to all node ids that have this condition
-  const vector<int>* nodeids = cond->GetVector<int>("Node Ids");
+  const vector<int>* nodeids = cond->Get<vector<int> >("Node Ids");
   if (!nodeids) dserror("Cannot find array 'Node Ids' in condition");
 
   // number of global nodes in this cloud
@@ -415,7 +415,7 @@ void DRT::Discretization::BuildVolumesinCondition(
 {
 
   // get ptrs to all node ids that have this condition
-  const vector<int>* nodeids = cond->GetVector<int>("Node Ids");
+  const vector<int>* nodeids = cond->Get<vector<int> >("Node Ids");
   if (!nodeids) dserror("Cannot find array 'Node Ids' in condition");
 
   // number of global nodes in this cloud

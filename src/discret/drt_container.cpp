@@ -97,130 +97,33 @@ void DRT::Container::Pack(vector<char>& data) const
   map<string,RefCountPtr<vector<int> > >::const_iterator icurr;
   for (icurr = intdata_.begin(); icurr != intdata_.end(); ++icurr)
   {
-    AddStringtoPack(data,icurr->first);
-    AddVectortoPack(data,*(icurr->second));
+    AddtoPack(data,icurr->first);
+    AddtoPack(data,*(icurr->second));
   }
   // iterate though doubledata_ and add to pack
   map<string,RefCountPtr<vector<double> > >::const_iterator dcurr;
   for (dcurr = doubledata_.begin(); dcurr != doubledata_.end(); ++dcurr)
   {
-    AddStringtoPack(data,dcurr->first);
-    AddVectortoPack(data,*(dcurr->second));
+    AddtoPack(data,dcurr->first);
+    AddtoPack(data,*(dcurr->second));
   }
   // iterate through stringdata_ and add to pack
   map<string,string>::const_iterator scurr;
   for (scurr = stringdata_.begin(); scurr != stringdata_.end(); ++scurr)
   {
-    AddStringtoPack(data,scurr->first);
-    AddStringtoPack(data,scurr->second);
+    AddtoPack(data,scurr->first);
+    AddtoPack(data,scurr->second);
   }
   // iterate though matdata_ and add to pack
   map<string,RefCountPtr<Epetra_SerialDenseMatrix> >::const_iterator mcurr;
   for (mcurr=matdata_.begin(); mcurr!=matdata_.end(); ++mcurr)
   {
-    AddStringtoPack(data,mcurr->first);
-    AddMatrixtoPack(data,*(mcurr->second));
+    AddtoPack(data,mcurr->first);
+    AddtoPack(data,*(mcurr->second));
   }
 
   return;
 }
-#if 0
-/*----------------------------------------------------------------------*
- |  Pack data from this element into vector of length size     (public) |
- |                                                            gee 11/06 |
- *----------------------------------------------------------------------*/
-const char* DRT::Container::Pack(int& size) const
-{
-  const int sizeint    = sizeof(int);
-
-  size = 
-  sizeint +      // size itself 
-  sizeint +      // type of this instance of ParObject, see top of ParObject.H
-  sizeint +      // number of entries in intdata_
-  sizeint +      // number of entries in doubledata_
-  sizeint +      // number of entries in stringdata_
-  sizeint +      // number of entries in matdata_
-  0;             // continue to add data here...
-  
-  
-  // iterate through data and record sizes
-  map<string,RefCountPtr<vector<int> > >::const_iterator curr;
-  for (curr = intdata_.begin(); curr != intdata_.end(); ++curr)
-  {
-    size += SizeString(curr->first);     // size of the key
-    size += SizeVector(*(curr->second)); // size of data
-  }
-  map<string,RefCountPtr<vector<double> > >::const_iterator dcurr;
-  for (dcurr = doubledata_.begin(); dcurr != doubledata_.end(); ++dcurr)
-  {
-    size += SizeString(dcurr->first);      // size of the key
-    size += SizeVector(*(dcurr->second));  // size of data
-  }
-  map<string,string>::const_iterator scurr;
-  for (scurr = stringdata_.begin(); scurr != stringdata_.end(); ++scurr)
-  {
-    size += SizeString(scurr->first);      // size of the key
-    size += SizeString(scurr->second);     // size of data
-  }
-  map<string,RefCountPtr<Epetra_SerialDenseMatrix> >::const_iterator matcurr;
-  for (matcurr=matdata_.begin(); matcurr!=matdata_.end(); ++matcurr)
-  {
-    size += SizeString(matcurr->first);
-    size += SizeDenseMatrix(*(matcurr->second));
-  }
-
-  char* data = new char[size];
-  // pack stuff into vector
-  int position = 0;
-
-  // size
-  AddtoPack(position,data,size);
-  // ParObject type
-  int type = UniqueParObjectId();
-  AddtoPack(position,data,type);
-  // intdata_.size()
-  int tmp = (int)intdata_.size();
-  AddtoPack(position,data,tmp);
-  // doubledata_.size()
-  tmp = (int)doubledata_.size();
-  AddtoPack(position,data,tmp);
-  // stringdata_.size()
-  tmp = (int)stringdata_.size();
-  AddtoPack(position,data,tmp);
-  // matdata_.size()
-  tmp = (int)matdata_.size();
-  AddtoPack(position,data,tmp);
-  
-  // continue to pack data here...
-  
-  for (curr = intdata_.begin(); curr != intdata_.end(); ++curr)
-  {
-    AddStringtoPack(position,data,curr->first);
-    AddVectortoPack(position,data,*(curr->second));
-  }
-  for (dcurr = doubledata_.begin(); dcurr != doubledata_.end(); ++dcurr)
-  {
-    AddStringtoPack(position,data,dcurr->first);
-    AddVectortoPack(position,data,*(dcurr->second));
-  }
-  for (scurr = stringdata_.begin(); scurr != stringdata_.end(); ++scurr)
-  {
-    AddStringtoPack(position,data,scurr->first);
-    AddStringtoPack(position,data,scurr->second);
-  }
-  for (matcurr=matdata_.begin(); matcurr!=matdata_.end(); ++matcurr)
-  {
-    AddStringtoPack(position,data,matcurr->first);
-    AddMatrixtoPack(position,data,*(matcurr->second));
-  }
-    
-  
-  if (position != size)
-    dserror("Mismatch in size of data %d <-> %d",size,position);
-
-  return data;
-}
-#endif
 
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
@@ -250,9 +153,9 @@ void DRT::Container::Unpack(const vector<char>& data)
   for (int i=0; i<intdatasize; ++i)
   {
     string key;
-    ExtractStringfromPack(position,data,key);
+    ExtractfromPack(position,data,key);
     vector<int> value(0);
-    ExtractVectorfromPack(position,data,value);
+    ExtractfromPack(position,data,value);
     Add(key,value);
   }
   
@@ -260,9 +163,9 @@ void DRT::Container::Unpack(const vector<char>& data)
   for (int i=0; i<doubledatasize; ++i)
   {
     string key;
-    ExtractStringfromPack(position,data,key);
+    ExtractfromPack(position,data,key);
     vector<double> value(0);
-    ExtractVectorfromPack(position,data,value);
+    ExtractfromPack(position,data,value);
     Add(key,value);
   }
   
@@ -270,9 +173,9 @@ void DRT::Container::Unpack(const vector<char>& data)
   for (int i=0; i<stringdatasize; ++i)
   {
     string key;
-    ExtractStringfromPack(position,data,key);
+    ExtractfromPack(position,data,key);
     string value;
-    ExtractStringfromPack(position,data,value);
+    ExtractfromPack(position,data,value);
     Add(key,value);
   }
 
@@ -280,9 +183,9 @@ void DRT::Container::Unpack(const vector<char>& data)
   for (int i=0; i<matdatasize; ++i)
   {
     string key;
-    ExtractStringfromPack(position,data,key);
+    ExtractfromPack(position,data,key);
     Epetra_SerialDenseMatrix value(0,0);
-    ExtractMatrixfromPack(position,data,value);
+    ExtractfromPack(position,data,value);
     Add(key,value);
   }
   
@@ -291,75 +194,6 @@ void DRT::Container::Unpack(const vector<char>& data)
   return;
 } 
 
-#if 0
-/*----------------------------------------------------------------------*
- |  Unpack data into this element                              (public) |
- |                                                            gee 11/06 |
- *----------------------------------------------------------------------*/
-bool DRT::Container::Unpack(const char* data)
-{
-  int position=0;
-  
-  // extract size
-  int size = 0;
-  ExtractfromPack(position,data,size);
-  // ParObject instance type
-  int type=0;
-  ExtractfromPack(position,data,type);
-  if (type != ParObject_Container) dserror("Wrong instance type in data");
-  // extract number of entries in intdata_
-  int numintdata=0;
-  ExtractfromPack(position,data,numintdata);
-  // extract number of entries in doubledata_
-  int numdoubledata=0;
-  ExtractfromPack(position,data,numdoubledata);
-  // extract number of entries in stringdata_
-  int numstringdata=0;
-  ExtractfromPack(position,data,numstringdata);
-  // extract no. entries in matdata_;
-  int nummatdata=0;
-  ExtractfromPack(position,data,nummatdata);
-  
-  // iterate and extract
-  for (int i=0; i<numintdata; ++i)
-  {
-    string tmp;
-    ExtractStringfromPack(position,data,tmp);
-    vector<int> tmpvector;
-    ExtractVectorfromPack(position,data,tmpvector);
-    // add to the hits container
-    Add(tmp,tmpvector);
-  }  
-  for (int i=0; i<numdoubledata; ++i)
-  {
-    string tmp;
-    ExtractStringfromPack(position,data,tmp);
-    vector<double> tmpvector;
-    ExtractVectorfromPack(position,data,tmpvector);
-    Add(tmp,tmpvector);
-  }  
-  for (int i=0; i<numstringdata; ++i)
-  {
-    string tmp;
-    ExtractStringfromPack(position,data,tmp);
-    string tmp2;
-    ExtractStringfromPack(position,data,tmp2);
-    Add(tmp,tmp2);
-  }
-  for (int i=0; i<nummatdata; ++i)
-  {
-    string tmp;
-    ExtractStringfromPack(position,data,tmp);
-    Epetra_SerialDenseMatrix tmpmat;
-    ExtractMatrixfromPack(position,data,tmpmat);
-    Add(tmp,tmpmat);
-  }  
-    
-  if (position != size)
-    dserror("Mismatch in size of data %d <-> %d",size,position);
-  return true;
-}
-#endif
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 11/06|
@@ -487,35 +321,55 @@ void DRT::Container::Delete(const string& name)
 }
 
 
-/*----------------------------------------------------------------------*
- |  Get a string                                               (public) |
- |                                                            gee 11/06 |
- *----------------------------------------------------------------------*/
-string* DRT::Container::GetString(const string& name)
+// specializations have to be in the same namespace as the template
+// compilers can be pedantic!
+namespace DRT
 {
-  map<string,string>::iterator curr = stringdata_.find(name);
-  if (curr != stringdata_.end())
-    return &(curr->second);
-  else return NULL;
-  return NULL;
-}
-
 /*----------------------------------------------------------------------*
- |  Get a string                                               (public) |
- |                                                            gee 11/06 |
+ |  Get a vector<int> specialization                           (public) |
+ |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-Epetra_SerialDenseMatrix* DRT::Container::GetMatrix(const string& name)
-{
-  map<string,RefCountPtr<Epetra_SerialDenseMatrix> >::iterator curr = 
-    matdata_.find(name);
-  if (curr != matdata_.end())
-    return curr->second.get();
-  else return NULL;
-  return NULL;
-}
-
-
-
+  template<> vector<int>* Container::Get(const string& name)
+  {
+    map<string,RefCountPtr<vector<int> > >::iterator icurr = intdata_.find(name);
+    if (icurr != intdata_.end())
+      return icurr->second.get();
+    else return NULL;
+  }
+/*----------------------------------------------------------------------*
+ |  Get a vector<double> specialization                        (public) |
+ |                                                            gee 02/07 |
+ *----------------------------------------------------------------------*/
+  template<> vector<double>* Container::Get(const string& name)
+  {
+    map<string,RefCountPtr<vector<double> > >::iterator dcurr = doubledata_.find(name);
+    if (dcurr != doubledata_.end())
+      return dcurr->second.get();
+    else return NULL;
+  }
+/*----------------------------------------------------------------------*
+ |  Get a string specialization                                (public) |
+ |                                                            gee 02/07 |
+ *----------------------------------------------------------------------*/
+  template<> string* Container::Get(const string& name)
+  {
+    map<string,string>::iterator scurr = stringdata_.find(name);
+    if (scurr != stringdata_.end())
+      return &(scurr->second);
+    else return NULL;
+  }
+/*----------------------------------------------------------------------*
+ |  Get a Epetra_SerialDensMatrix specialization               (public) |
+ |                                                            gee 02/07 |
+ *----------------------------------------------------------------------*/
+  template<> Epetra_SerialDenseMatrix* Container::Get(const string& name)
+  {
+    map<string,RefCountPtr<Epetra_SerialDenseMatrix> >::iterator mcurr = matdata_.find(name);
+    if (mcurr != matdata_.end())
+      return mcurr->second.get();
+    else return NULL;
+  }
+} // end of namespace DRT
 
 
 

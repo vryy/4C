@@ -1,6 +1,9 @@
 /*!----------------------------------------------------------------------
-\file exporter.cpp
-\brief
+\file drt_exporter.cpp
+
+\class DRT::Exporter
+
+\brief A class to manage communcation patterns
 
 <pre>
 Maintainer: Michael Gee

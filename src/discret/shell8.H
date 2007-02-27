@@ -60,16 +60,12 @@ class Shell8 : public DRT::Element
 {
 public:
 
-  /*!
-  \brief Shell8Register is a friend of Shell8
-  */
+  //! @name Friends
   friend class Shell8Register;
-  /*!
-  \brief Shell8Line is a friend of Shell8
-  */
   friend class Shell8Line;
 
-  // @{ \name Constructors and destructors
+  //@}
+  //! @name Constructors and destructors and related methods
 
   /*!
   \brief Standard Constructor
@@ -121,7 +117,7 @@ public:
   /*!
   \brief Return unique ParObject id
   
-  every class imploementing ParObject needs a unique id defined at the
+  every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
   virtual int UniqueParObjectId() const { return ParObject_Shell8;}
@@ -132,7 +128,6 @@ public:
   \ref Pack and \ref Unpack are used to communicate this element
   
   */
-  //virtual const char* Pack(int& size) const;
   virtual void Pack(vector<char>& data) const;
 
   /*!
@@ -141,7 +136,6 @@ public:
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
-  //virtual bool Unpack(const char* data);
   virtual void Unpack(const vector<char>& data);
 
   /*!
@@ -152,7 +146,7 @@ public:
 
   //@}
 
-  // @{ \name Acess methods
+  //! @name Acess methods
 
   
   /*!
@@ -195,12 +189,16 @@ public:
 
   //@}
 
-  // @{ \name Other
+  //! @name Input and Creation
 
   /*!
   \brief Read input for this element
   */
   bool ReadElement();
+
+  //@}
+
+  //! @name Evaluation
 
   /*!
   \brief Evaluate an element
@@ -257,22 +255,26 @@ public:
                               Epetra_SerialDenseVector& elevec1);
   
   
+  //@}
+
+  //! @name Other
+
   /*!
   \brief Get ptr to nodal thicknesses
   */
-  vector<double>* GetThickness() { return data_.GetVector<double>("thick");}
+  vector<double>* GetThickness() { return data_.Get<vector<double> >("thick");}
   
   /*!
   \brief Get reference to directors
   */
-  Epetra_SerialDenseMatrix* GetDirectors() { return data_.GetMatrix("a3ref"); }
+  Epetra_SerialDenseMatrix* GetDirectors() { return data_.Get<Epetra_SerialDenseMatrix>("a3ref"); }
 
   //@}
 
 
 private:
 
-  // action parameters recognized by shell8
+  //! action parameters recognized by shell8
   enum ActionType
   {
     none,
@@ -287,7 +289,7 @@ private:
     calc_struct_update_istep
   };
 
-  // element specific data
+  //! type of forces to be calculated in postprocessing
   enum ForceType
   {
     s8_none,
@@ -295,18 +297,31 @@ private:
     s8_rst,
     s8_rst_ortho
   };
-  ForceType                                       forcetype_; // type of force calculation
-  double                                          thickness_; // shell thickness
-  int                                             ngp_[3];    // no. gaussian points in each spatial dimension
-  int                                             ngptri_;    // no. gaussian points for triangle elements
-  int                                             nhyb_;      // no. of internal dofs
-  int                                             eas_[5];    // eas parameters
-  int                                             ans_;       // type of ANS: 0=none 1=Q 2=T 3=QT  
-  double                                          sdc_;       // scaled director conditioning
-  int                                             material_;  // number of the material law
-  DRT::Container                                  data_;      // container containing all kind of shell8 data
-  vector<DRT::Element*>                           surfaces_;  // vector of surfaces of this element (length 1)
-  vector<RefCountPtr<DRT::Elements::Shell8Line> > lines_;     // vector of lines adjacent to this element (shell8: 3 or 4 lines)
+  //! type of force calculation
+  ForceType                                       forcetype_; 
+  //! shell thickness
+  double                                          thickness_; 
+  //! no. gaussian points in each spatial dimension
+  int                                             ngp_[3];    
+  //! no. gaussian points for triangle elements
+  int                                             ngptri_;    
+  //! no. of internal eas dofs
+  int                                             nhyb_;      
+  //! eas parameters
+  int                                             eas_[5];    
+  //! type of ANS: 0=none 1=Q 2=T 3=QT  
+  int                                             ans_;       
+  //! scaled director conditioning
+  double                                          sdc_;       
+  //! number of the material law
+  int                                             material_;  
+  //! container containing all kind of shell8 thisandthat
+  DRT::Container                                  data_;      
+  //! vector of surfaces of this element (length 1)
+  vector<DRT::Element*>                           surfaces_;  
+  //! vector of lines adjacent to this element (shell8: 3 or 4 lines)
+  vector<RefCountPtr<DRT::Elements::Shell8Line> > lines_;     
+  //! vector of lines adjacent to this element (shell8: 3 or 4 lines)
   vector<DRT::Elements::Shell8Line*>              lineptrs_;
   
   // internal calculation methods
@@ -567,7 +582,7 @@ class Shell8Register : public DRT::ElementRegister
 {
 public:
 
-  // @{ \name Constructors and destructors
+  //! @name Constructors and destructors and related methods
 
   /*!
   \brief Standard Constructor
@@ -578,7 +593,7 @@ public:
   /*!
   \brief Copy Constructor
 
-  Makes a deep copy of an Element
+  Makes a deep copy of an Shell8Register
   
   */
   Shell8Register(const DRT::Elements::Shell8Register& old);
@@ -606,7 +621,6 @@ public:
   \ref Pack and \ref Unpack are used to communicate this element
   
   */
-  //virtual const char* Pack(int& size) const;
   virtual void Pack(vector<char>& data) const;
 
   /*!
@@ -615,7 +629,6 @@ public:
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
-  //virtual bool Unpack(const char* data);
   virtual void Unpack(const vector<char>& data);
 
   /*!
@@ -626,7 +639,7 @@ public:
 
   //@}
 
-  // @{ \name Acess methods
+  //! @name Acess methods
 
   /*!
   \brief Print this element
@@ -635,12 +648,13 @@ public:
 
   //@}
 
-  // @{ \name Construction
+  //! @name Construction
 
   /*!
   \brief Call Element init routines
   
-  The method performs all steps needed to init the element routines
+  The method performs all steps needed to init the shell8 elements. it e.g. calculates the
+  field of averaged directors at nodes.
   */
   int Initialize(DRT::Discretization& dis);
 
@@ -663,13 +677,18 @@ private:
 
 \brief An element representing a line edge of a shell8 element
 
+\note This is a pure Neumann boundary condition element. It's only 
+      purpose is to evaluate line Neumann boundary conditions that might be
+      adjacent to a parent shell8 element. It therefore does not implement
+      the DRT::Element::Evaluate method and does not have its own ElementRegister class.
+
 \author gee (gee@lnm.mw.tum.de)
 */
 class Shell8Line : public DRT::Element
 {
 public:
 
-  // @{ \name Constructors and destructors
+  //! @name Constructors and destructors and related methods
 
   /*!
   \brief Standard Constructor
@@ -716,7 +735,6 @@ public:
   \ref Pack and \ref Unpack are used to communicate this element
   
   */
-  //virtual const char* Pack(int& size) const;
   virtual void Pack(vector<char>& data) const;
 
   /*!
@@ -725,7 +743,6 @@ public:
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
-  //virtual bool Unpack(const char* data);
   virtual void Unpack(const vector<char>& data);
 
   /*!
@@ -736,7 +753,7 @@ public:
 
   //@}
 
-  // @{ \name Acess methods
+  //! @name Acess methods
 
   
   /*!
@@ -780,7 +797,7 @@ public:
 
   //@}
 
-  // @{ \name Evaluate methods
+  //! @name Evaluate methods
 
   /*!
   \brief Evaluate a Neumann boundary condition
@@ -809,8 +826,10 @@ private:
   // don't want = operator
   Shell8Line operator = (const Shell8Line& old);
   
-  DRT::Elements::Shell8* parent_;  // The parent element of this line
-  int                    lline_;   // The local line number of this line w.r.t to the parent_ element
+  //! The parent element of this line
+  DRT::Elements::Shell8* parent_;  
+  //! The local line number of this line w.r.t to the parent_ element
+  int                    lline_;   
 
 }; // class Shell8Line
 

@@ -1,9 +1,17 @@
 /*!----------------------------------------------------------------------
-\file exporter.H
+\file drt_exporter.H
 
 \class DRT::Exporter
 
-\brief A class to manage communcation patterns
+\brief A class to manage explicit mpi communications
+
+The discretization management module uses this class to do most of its
+communication. It is used to redistribute grids and to do point-to-point
+communications. It is therefore the only place on DRT where explicit calls to MPI
+methods are done.<br>
+It has strong capabilities in gathering and scattering information in a collective AND
+an individual way. Whenever you need explicit communication, check this class first before
+implementing your own mpi stuff.
 
 <pre>
 Maintainer: Michael Gee
@@ -45,7 +53,15 @@ namespace DRT
 /*!
 \class Exporter
 
-\brief A class to manage communcation patterns
+\brief A class to manage explicit mpi communications
+
+The discretization management module uses this class to do most of its
+communication. It is used to redistribute grids and to do point-to-point
+communications. It is therefore the only place on DRT where explicit calls to MPI
+methods are done.<br>
+It has strong capabilities in gathering and scattering information in a collective AND
+an individual way. Whenever you need explicit communication, check this class first before
+implementing your own mpi stuff.
 
 \author gee (gee@lnm.mw.tum.de)
 */
@@ -54,11 +70,14 @@ class Exporter
 public:
 
 
-  // @{ \name Constructors and destructors
+  //! @name Constructors and destructors
 
   /*!
   \brief Standard Constructor
   
+  \param frommap (in): The source map data shall be exported from
+  \param tomap   (in): The target map data shall be exported to
+  \param comm    (in): Communicator that shall be used in exports
   */
   Exporter(const Epetra_Map& frommap, const Epetra_Map& tomap, const Epetra_Comm& comm);
 
@@ -76,7 +95,7 @@ public:
 
   //@}
 
-  // @{ \name Acess methods
+  //! @name Acess methods
 
   /*!
   \brief Get communicator
@@ -95,7 +114,7 @@ public:
 
   //@}
 
-  // @{ \name Communication methods
+  //! @name Communication methods
 
   /*!
   \brief Communicate a map of objects that implement ParObject
@@ -119,6 +138,9 @@ public:
   This method takes a map of vectors and redistributes them according to
   the send and receive plans. It is implicitly assumed, that the key in 
   the map of vectors pointwise matches SourceMap().
+  
+  \note T can be int, double or char. The method will not compile will other
+        then these basic data types (and will give a rater kryptic error message)           
 
   \param data (in/out): A map of vectors<T>. On input, the map
                         has a distribution matching SourceMap().
@@ -127,8 +149,189 @@ public:
   */
   template<typename T> void Export(map<int,vector<T> >& data);
 
-  //@}
 
+
+#ifdef PARALLEL
+  /*!
+  \brief Send data from one processor to another (nonblocking)
+  
+  The method will send an array of chars in a nonblocking way meaning that this method
+  will return immediately on the calling processor - even if communcation has not
+  finished yet. The char array must not be altered or destroyed as long as the
+  communication might still be in progress. This can be tested for using DRT::Exporter::Wait
+  and the request handle returned.
+  The receiving processor should call DRT::Exporter::ReceiveAny to receive the message.
+  Note that messages from one explicit proc to another explicit proc are non-overtaking meaning
+  they will arrive in the order they have been sent.
+  
+  \note This is an individual call.
+
+  \param frompid (in)  : sending processors' pid
+  \param topid (in)    : target processors' pid
+  \param data (in)     : ptr to data to be send
+  \param dsize (in)    : size of data (no. of chars)
+  \param tag (in)      : tag to be used with message
+  \param request (out) : mpi request handle to be used for testing completion of the
+                         communication. data may not be altered or destroyed before
+                         communcation finalized! One can use DRT::Exporter::Wait for this.
+
+  \note This is an individual call
+  */
+  void ISend(const int frompid, const int topid, const char* data, 
+            const int dsize, const int tag, MPI_Request& request);
+
+  /*!
+  \brief Send data from one processor to another (nonblocking)
+  
+  The method will send an array of ints in a nonblocking way meaning that this method
+  will return immediately on the calling processor - even if communcation has not
+  finished yet. The int array must not be altered or destroyed as long as the
+  communication might still be in progress. This can be tested for using DRT::Exporter::Wait
+  and the request handle returned.
+  The receiving processor should call DRT::Exporter::ReceiveAny to receive the message.
+  Note that messages from one explicit proc to another explicit proc are non-overtaking meaning
+  they will arrive in the order they have been sent.
+  
+  \note This is an individual call.
+
+  \param frompid (in)  : sending processors' pid
+  \param topid (in)    : target processors' pid
+  \param data (in)     : ptr to data to be send
+  \param dsize (in)    : size of data (no. of integers)
+  \param tag (in)      : tag to be used with message
+  \param request (out) : mpi request handle to be used for testing completion of the
+                         communication. data may not be altered or destroyed before
+                         communcation finalized! One can use DRT::Exporter::Wait for this.
+
+  \note This is an individual call
+  */
+  void ISend(const int frompid, const int topid, const int* data, 
+            const int dsize, const int tag, MPI_Request& request);
+
+  /*!
+  \brief Send data from one processor to another (nonblocking)
+  
+  The method will send an array of doubles in a nonblocking way meaning that this method
+  will return immediately on the calling processor - even if communcation has not
+  finished yet. The double array must not be altered or destroyed as long as the
+  communication might still be in progress. This can be tested for using DRT::Exporter::Wait
+  and the request handle returned.
+  The receiving processor should call DRT::Exporter::ReceiveAny to receive the message.
+  Note that messages from one explicit proc to another explicit proc are non-overtaking meaning
+  they will arrive in the order they have been sent.
+  
+  \note This is an individual call.
+
+  \param frompid (in)  : sending processors' pid
+  \param topid (in)    : target processors' pid
+  \param data (in)     : ptr to data to be send
+  \param dsize (in)    : size of data (no. of doubles)
+  \param tag (in)      : tag to be used with message
+  \param request (out) : mpi request handle to be used for testing completion of the
+                         communication. data may not be altered or destroyed before
+                         communcation finalized! One can use DRT::Exporter::Wait for this.
+
+  \note This is an individual call
+  */
+  void ISend(const int frompid, const int topid, const double* data, 
+            const int dsize, const int tag, MPI_Request& request);
+
+  /*!
+  \brief Receive anything joker (blocking)
+  
+  This method receives an MPI_CHAR string message from any source proc with
+  any message tag of any length. It simply takes the first message that's 
+  coming in no matter from which sender of with which tag. 
+  recvbuff is resized to fit received message.
+  the method is blocking for the calling (receiving) proc but for none of the
+  other processors.
+  It is used together with ISend and Wait to do nonblocking chaotic 
+  point to point communication.
+  
+  \note This is an individual call.
+  
+  \warning There is absolutely no guarantee about the order messages are
+           received with this method except for one: Messages from the SAME sender
+           to the SAME receiver will not overtake each other (which is not a really strong
+           statement).
+  
+  \param source (output): source the message came from
+  \param tag (output): message tag of message received
+  \param recvbuff (output): buffer containing received data
+  \param length (output): length of message upon receive
+  */
+  void ReceiveAny(int& source, int& tag, vector<char>& recvbuff, int& length);
+  
+  /*!
+  \brief Receive anything joker (blocking)
+  
+  This method receives an MPI_INT message from any source proc with
+  any message tag of any length. It simply takes the first message that's 
+  coming in no matter from which sender of with which tag. 
+  recvbuff is resized to fit received message.
+  the method is blocking for the calling (receiving) proc but for none of the
+  other processors.
+  It is used together with ISend and Wait to do nonblocking chaotic 
+  point to point communication.
+  
+  \note This is an individual call.
+  
+  \warning There is absolutely no guarantee about the order messages are
+           received with this method except for one: Messages from the SAME sender
+           to the SAME receiver will not overtake each other (which is not a really strong
+           statement).
+  
+  \param source (output): source the message came from
+  \param tag (output): message tag of message received
+  \param recvbuff (output): buffer containing received data
+  \param length (output): length of message upon receive
+  */
+  void ReceiveAny(int& source, int& tag, vector<int>& recvbuff, int& length);
+
+  /*!
+  \brief Receive anything joker (blocking)
+  
+  This method receives an MPI_DOUBLE message from any source proc with
+  any message tag of any length. It simply takes the first message that's 
+  coming in no matter from which sender of with which tag. 
+  recvbuff is resized to fit received message.
+  the method is blocking for the calling (receiving) proc but for none of the
+  other processors.
+  It is used together with ISend and Wait to do nonblocking chaotic 
+  point to point communication.
+  
+  \note This is an individual call.
+  
+  \warning There is absolutely no guarantee about the order messages are
+           received with this method except for one: Messages from the SAME sender
+           to the SAME receiver will not overtake each other (which is not a really strong
+           statement).
+  
+  \param source (output): source the message came from
+  \param tag (output): message tag of message received
+  \param recvbuff (output): buffer containing received data
+  \param length (output): length of message upon receive
+  */
+  void ReceiveAny(int& source, int& tag, vector<double>& recvbuff, int& length);
+
+  /*!
+  \brief wait for nonblocking send to finish
+  
+  The method is used together with Isend and ReceiveAny to guarantee finalization
+  of a communication. It is an individual call done by the sending processor to guarantee
+  that message was taken from the sendbuffer before destroying the sendbuffer.
+  This method is blocking and will return one communication associated with request has
+  left the sender.
+  
+  \param request (in): mpi request handle
+  
+  */
+  void Wait(MPI_Request& request) { MPI_Status status; MPI_Wait(&request,&status); return;}
+
+            
+#endif
+
+  //@}
 
 private:
 
@@ -161,103 +364,27 @@ private:
   */
   inline vector<int>& SendSize() { return sendsize_; }
 
-#ifdef PARALLEL
-  /*!
-  \brief Send data from one processor to another (nonblocking)
-
-  \note This is an individual call
-  */
-  void ISend(const int frompid, const int topid, const char* data, 
-            const int dsize, const int tag, MPI_Request& request);
-
-  /*!
-  \brief Send data from one processor to another (nonblocking)
-
-  \note This is an individual call
-  */
-  void ISend(const int frompid, const int topid, const int* data, 
-            const int dsize, const int tag, MPI_Request& request);
-
-  /*!
-  \brief Send data from one processor to another (nonblocking)
-
-  \note This is an individual call
-  */
-  void ISend(const int frompid, const int topid, const double* data, 
-            const int dsize, const int tag, MPI_Request& request);
-
-  /*!
-  \brief Receive anything joker (blocking)
-  
-  This method receives an MPI char string message from any source proc with
-  any message tag of any length. It simply takes the first message that's 
-  coming in. recvbuff is resized to fit received message.
-  the method is blocking for the calling proc.
-  It is used together with ISend and Wait to do nonblocking chaotic 
-  point to point communication.
-  
-  \param source (output): source the message came from
-  \param tag (output): message tag
-  \param recvbuff (output): buffer containing received data
-  \param length (output): length of message upon receive
-  */
-  void ReceiveAny(int& source, int& tag, vector<char>& recvbuff, int& length);
-  
-  /*!
-  \brief Receive anything joker (blocking)
-  
-  This method receives an MPI_INT message from any source proc with
-  any message tag of any length. It simply takes the first message that's 
-  coming in. recvbuff is resized to fit received message.
-  the method is blocking for the calling proc.
-  It is used together with ISend and Wait to do nonblocking chaotic 
-  point to point communication.
-  
-  \param source (output): source the message came from
-  \param tag (output): message tag
-  \param recvbuff (output): buffer containing received data
-  \param length (output): length of message upon receive
-  */
-  void ReceiveAny(int& source, int& tag, vector<int>& recvbuff, int& length);
-
-  /*!
-  \brief Receive anything joker (blocking)
-  
-  This method receives an MPI_DOUBLE message from any source proc with
-  any message tag of any length. It simply takes the first message that's 
-  coming in. recvbuff is resized to fit received message.
-  the method is blocking for the calling proc.
-  It is used together with ISend and Wait to do nonblocking chaotic 
-  point to point communication.
-  
-  \param source (output): source the message came from
-  \param tag (output): message tag
-  \param recvbuff (output): buffer containing received data
-  \param length (output): length of message upon receive
-  */
-  void ReceiveAny(int& source, int& tag, vector<double>& recvbuff, int& length);
-
-  /*!
-  \brief wait for nonblocking send to finish
-  */
-  void Wait(MPI_Request& request) { MPI_Status status; MPI_Wait(&request,&status); return;}
-
-            
-#endif
 
 private:
-
-  const Epetra_Map&        frommap_;   // source layout
-  const Epetra_Map&        tomap_;     // target map 
-  const Epetra_Comm&       comm_;      // communicator
-  int                      myrank_;    // PID
-  int                      numproc_;   // no. of processors
   
-  Epetra_SerialDenseMatrix sendplan_;  // sending information
-  Epetra_SerialDenseMatrix recvplan_;  // receiving information
-
-  vector<vector<char> >    sendbuff_;  // a sendbuffer
-  vector<int>              sendsize_;  // sendsize_[i] is length of vector in sendbuff_[i]
+  //! source layout
+  const Epetra_Map&        frommap_;   
+  //! target map 
+  const Epetra_Map&        tomap_;     
+  //! communicator
+  const Epetra_Comm&       comm_;      
+  //! PID
+  int                      myrank_;    
+  //! no. of processors
+  int                      numproc_;   
+  //! sending information
+  Epetra_SerialDenseMatrix sendplan_;  
+  //! receiving information
+  Epetra_SerialDenseMatrix recvplan_;  
+  //! a sendbuffer
+  vector<vector<char> >    sendbuff_;  
+  //! sendsize_[i] is length of vector sendbuff_[i]
+  vector<int>              sendsize_;  
   
   
 }; // class Exporter

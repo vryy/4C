@@ -71,6 +71,8 @@ class Condition : public DRT::Container
 public:
 
 
+  //! @name Enums and Friends
+
   /*!
   \brief Discretization is a friend of the condition to have access
          to the protected methods that would otherwise have to be public.
@@ -95,8 +97,9 @@ public:
     VolumeNeumann
   };
 
+  //@}
 
-  // @{ \name Constructors and destructors
+  //! @name Constructors and destructors and related methods
 
   /*!
   \brief Standard Constructor
@@ -153,7 +156,7 @@ public:
 
   //@}
 
-  // @{ \name Acess methods
+  //! @name Query methods
 
   /*!
   \brief Return condition id
@@ -180,6 +183,8 @@ public:
   // @{ \name Construction
 
 protected:
+
+  //! @name Construction methods
 
   /*!
   \brief Set a communicator
@@ -233,16 +238,22 @@ protected:
   // don't want = operator
   Condition operator = (const Condition& old);
   
+  //! Unique id of this condition, no second condition of the same type with same id may exist
+  int                                 id_;       
 
-  int                                 id_;       // unique id of this condition, no second condition of the same type with same id may exist
-  ConditionType                       type_;     // type of this condition
-  map<int,RefCountPtr<DRT::Element> > geometry_; // geometry description of this condition
+  //! Type of this condition
+  ConditionType                       type_;     
+  
+  //! Geometry description of this condition
+  map<int,RefCountPtr<DRT::Element> > geometry_; 
+  
+  //! A communicator 
   RefCountPtr<Epetra_Comm>            comm_;     // a communicator 
 }; // class Condition
 } // namespace DRT
 
 
-// << operator
+//! << operator
 ostream& operator << (ostream& os, const DRT::Condition& node);
 
 

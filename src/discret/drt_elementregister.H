@@ -3,7 +3,19 @@
 
 \class DRT::ElementRegister
 
-\brief A pure virtual element register class
+\brief A virtual element register class
+
+This class is used to initialize the finite elements of a specific type
+in a discretization. Usage is as follows:<br>
+Every concrete implementation should also have a concrete implementation
+of the ElementRegister class, if it needs to have an initialization process
+done before calculations on the elements can be performed. The method
+DRT::ElementRegister::Initialize performs this initialization and is
+called from DRT::Discretization::FillComplete ONCE for every type of
+finite element included in a discretization.<br>
+If a finite element does NOT need an initialization process, it may use
+this base class as its ElementRegister as this base class implements a
+dummy Initialize method.
 
 <pre>
 Maintainer: Michael Gee
@@ -38,7 +50,19 @@ namespace DRT
 /*!
 \class ElementRegister
 
-\brief A pure virtual element type class
+\brief A virtual element register class
+
+This class is used to initialize the finite elements of a specific type
+in a discretization. Usage is as follows:<br>
+Every concrete implementation should also have a concrete implementation
+of the ElementRegister class, if it needs to have an initialization process
+done before calculations on the elements can be performed. The method
+DRT::ElementRegister::Initialize performs this initialization and is
+called from DRT::Discretization::FillComplete ONCE for every type of
+finite element included in a discretization.<br>
+If a finite element does NOT need an initialization process, it may use
+this base class as its ElementRegister as this base class implements a
+dummy Initialize method.
 
 \author gee (gee@lnm.mw.tum.de)
 */
@@ -47,13 +71,9 @@ class ElementRegister : public DRT::ParObject
 public:
 
   
-  /*!
-  \brief The Discretization is a friend of Element
-  */
-//  friend class Discretization;
   
 
-  // @{ \name Constructors and destructors
+  //! @name Constructors and destructors and related methods
 
   /*!
   \brief Standard Constructor
@@ -73,7 +93,7 @@ public:
   \brief Deep copy the derived class and return pointer to it
   
   */
-  virtual DRT::ElementRegister* Clone() const = 0;
+  virtual DRT::ElementRegister* Clone() const;
 
   /*!
   \brief Destructor
@@ -82,12 +102,19 @@ public:
   virtual ~ElementRegister();
 
   /*!
+  \brief Return unique ParObject id
+  
+  Every class implementing ParObject needs a unique id defined at the
+  top of drt_parobject.H
+  */
+  virtual int UniqueParObjectId() const { return ParObject_ElementRegister; }
+
+  /*!
   \brief Pack this class so it can be communicated
   
   \ref Pack and \ref Unpack are used to communicate this element
   
   */
-  //virtual const char* Pack(int& size) const;
   virtual void Pack(vector<char>& data) const;
 
   /*!
@@ -96,12 +123,11 @@ public:
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
-  //virtual bool Unpack(const char* data);
   virtual void Unpack(const vector<char>& data);
 
   //@}
 
-  // @{ \name Acess methods
+  //! @name Acess methods
 
   /*!
   \brief Get type of element
@@ -110,27 +136,51 @@ public:
 
   /*!
   \brief Print this element
+  
+  This class also implements the ostream << operator.
   */
   virtual void Print(ostream& os) const;
 
   //@}
 
-  // @{ \name Construction
+  //! @name Construction
 
   /*!
   \brief Call Element init routines
   
-  The method performs all steps needed to init the element routines
+  This method performs all steps needed to initialize the 
+  finite elements in the discretization dis when reimplemented
+  by a derived element register class.<br>
+  It is called once by DRT::Discretization::FillComplete for every 
+  type of finite element contained in dis.
+  All necessary steps to init the finite elements of a certain type
+   should be performed by the reimplementation of this method.
+
+  \note The Discretization dis may contain a mixture of various types of
+        elements, so care of this should be taken when reimplementing this
+        method. The reimplementation should only
+         initialize the ONE type of finite element it was written for, 
+         as other elements will have their own call to their distinct Initialize.
+    
+  \param dis (in/out): Discretization with finite elements that have to 
+                       be initialized.
+
+  \note This class implements a dummy version of this method so finite 
+  elements that do not need an initialization can use this base class
+  as their register class.  
+  
+  
   */
-  virtual int Initialize(DRT::Discretization& dis) = 0;
+  virtual int Initialize(DRT::Discretization& dis);
 
   //@}
 
 
 
 private:
-
-  DRT::Element::ElementType           etype_;     // type of element
+  
+  //! type of element this register class refers to
+  DRT::Element::ElementType           etype_;     
 
 }; // class ElementRegister
 } // namespace DRT

@@ -215,7 +215,7 @@ void input_conditions()
       // point dirichlet
       for (curr=pointdirich.begin(); curr!=pointdirich.end(); ++curr)
       {
-        const vector<int>* nodes = curr->second->GetVector<int>("Node Ids");
+        const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
         if (!(int)nodes->size()) dserror("Condition has no nodal cloud");
         const int firstnode = (*nodes)[0];
         int foundit = 0;
@@ -228,7 +228,7 @@ void input_conditions()
       // line dirichlet
       for (curr=linedirich.begin(); curr!=linedirich.end(); ++curr)
       {
-        const vector<int>* nodes = curr->second->GetVector<int>("Node Ids");
+        const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
         if (!(int)nodes->size()) dserror("Condition has no nodal cloud");
         const int firstnode = (*nodes)[0];
         int foundit = 0;
@@ -241,7 +241,7 @@ void input_conditions()
       // surface dirichlet
       for (curr=surfdirich.begin(); curr!=surfdirich.end(); ++curr)
       {
-        const vector<int>* nodes = curr->second->GetVector<int>("Node Ids");
+        const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
         if (!(int)nodes->size()) dserror("Condition has no nodal cloud");
         const int firstnode = (*nodes)[0];
         int foundit = 0;
@@ -254,7 +254,7 @@ void input_conditions()
       // volume dirichlet
       for (curr=voldirich.begin(); curr!=voldirich.end(); ++curr)
       {
-        const vector<int>* nodes = curr->second->GetVector<int>("Node Ids");
+        const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
         if (!(int)nodes->size()) dserror("Condition has no nodal cloud");
         const int firstnode = (*nodes)[0];
         int foundit = 0;
@@ -268,7 +268,7 @@ void input_conditions()
       // point neumann
       for (curr=pointneum.begin(); curr!=pointneum.end(); ++curr)
       {
-        const vector<int>* nodes = curr->second->GetVector<int>("Node Ids");
+        const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
         if (!(int)nodes->size()) dserror("Condition has no nodal cloud");
         const int firstnode = (*nodes)[0];
         int foundit = 0;
@@ -281,7 +281,7 @@ void input_conditions()
       // line neumann
       for (curr=lineneum.begin(); curr!=lineneum.end(); ++curr)
       {
-        const vector<int>* nodes = curr->second->GetVector<int>("Node Ids");
+        const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
         if (!(int)nodes->size()) dserror("Condition has no nodal cloud");
         const int firstnode = (*nodes)[0];
         int foundit = 0;
@@ -294,7 +294,7 @@ void input_conditions()
       // surface neumann
       for (curr=surfneum.begin(); curr!=surfneum.end(); ++curr)
       {
-        const vector<int>* nodes = curr->second->GetVector<int>("Node Ids");
+        const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
         if (!(int)nodes->size()) dserror("Condition has no nodal cloud");
         const int firstnode = (*nodes)[0];
         int foundit = 0;
@@ -307,7 +307,7 @@ void input_conditions()
       // volume neumann
       for (curr=volneum.begin(); curr!=volneum.end(); ++curr)
       {
-        const vector<int>* nodes = curr->second->GetVector<int>("Node Ids");
+        const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
         if (!(int)nodes->size()) dserror("Condition has no nodal cloud");
         const int firstnode = (*nodes)[0];
         int foundit = 0;

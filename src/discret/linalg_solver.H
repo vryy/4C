@@ -5,6 +5,10 @@
 
 \brief A general solver interface to Trilinos solvers and spooles
 
+- The input of parameters needs to be completely reworked (hiwi job)
+
+- This class should implement Epetra_Operator in the future
+
 <pre>
 Maintainer: Michael Gee
             gee@lnm.mw.tum.de
@@ -47,7 +51,8 @@ Maintainer: Michael Gee
 #include "Amesos_Klu.h"
 #include "Amesos_Umfpack.h"
 #include "Amesos_Lapack.h"
-// Trilinos is configured SuperLUDIST only in the parallel version
+
+// Trilinos is configured with SuperLUDIST only in the parallel version
 #ifdef PARALLEL
 #include "Amesos_Superludist.h"
 #endif
@@ -98,12 +103,15 @@ class Solver
 {
 public:
 
-
+  //! @name Constructors and destructors and related methods
+  
   /*!
   \brief Standard Constructor
   
   \param params (in) : parameter list holding solver configuration
   \param comm (in)   : a reference to a epetra communicator object
+  \param outfile (in): ptr to an error file on proc 0 only. If NULL on input, 
+                       no output will be generated.
   */
   Solver(RefCountPtr<ParameterList> params, const Epetra_Comm& comm, FILE* outfile);
 
@@ -114,6 +122,10 @@ public:
   */
   virtual ~Solver();
 
+  //@}
+  
+  //! @name Solve and ApplyInverse methods
+
   /*!
   \brief Solve system of equations
 
@@ -122,7 +134,7 @@ public:
   \param b      (in)    : right hand side vector
   \param refactor (in)  : flag indicating whether system should be refactorized
   \param reset  (in)    : flag indicating whether all data from previous solves should
-                           be recalculated
+                           be recalculated including preconditioners
   */
   void Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
              RefCountPtr<Epetra_Vector>    x,
@@ -137,9 +149,14 @@ public:
   */
   void Reset();
 
+  //@}
+  //! @name Input of parameters
+
   /*!
   \brief Translate solver input parameters from old ccarat style to
          new solver parameters list style
+  
+  This method should go away once the input of all solver parameters is reworked
          
   \param params (out): parameter list holding new style solver parameters
                        on output
@@ -148,8 +165,12 @@ public:
   */
   void TranslateSolverParameters(ParameterList& params, struct _SOLVAR* actsolv) const;
 
+  //@}
+
+  //! @name Query methods
+
   /*!
-  \brief Print solver configuration
+  \brief Print solver configuration (ostream << also supported)
 
   */
   virtual void Print(ostream& os) const;
@@ -161,24 +182,26 @@ public:
   inline const Epetra_Comm& Comm() const { return comm_; }
 
   /*!
-  \brief Get Parameters
+  \brief Get solver parameters
 
   */
   inline ParameterList& Params() const { return *params_; }
 
   /*!
-  \brief Get number of calls done on this matrix
+  \brief Get number of solver calls done on this solver
 
   */
   inline const int Ncall() const { return ncall_; }
 
   /*!
-  \brief Get the factored_ flag
+  \brief Get the factored_ flag indicating whether system has been factorized before
 
   */
   inline const bool IsFactored() const { return factored_; }
 
-protected:
+  //@}
+
+private:
 
   /*!
   \brief Solve using spooles
@@ -215,24 +238,37 @@ protected:
 
   */
   virtual void Solve_aztec(const bool reset);
-
-  const Epetra_Comm&                comm_;    // a communicator;
-  RefCountPtr<ParameterList>        params_;  // parameter list
-  FILE*                             outfile_; // file to write output to
-  RefCountPtr<Epetra_CrsMatrix>     A_;       // system of equations
-  RefCountPtr<Epetra_Operator>      P_;       // Preconditioner
-  RefCountPtr<Epetra_CrsMatrix>     Pmatrix_; // system of equations used for preconditioning
-  RefCountPtr<Epetra_Vector>        x_;       // initial guess and solution
-  RefCountPtr<Epetra_Vector>        b_;       // right hand side vector
-  RefCountPtr<Epetra_LinearProblem> lp_;      // a linear problem
-  bool                              factored_;// flag indicating whether matrix was factored before
-  int                               ncall_;   // counting how many times matrix was solved between resets
-
-  RefCountPtr<Amesos_BaseSolver>    amesos_;  // an abstract amesos solver
-  RefCountPtr<AztecOO>              aztec_;   // an aztec solver
+  
+  //! a communicator
+  const Epetra_Comm&                comm_;    
+  //! parameter list
+  RefCountPtr<ParameterList>        params_;  
+  //! file to write output to (proc 0 only, can be NULL on input)
+  FILE*                             outfile_; 
+  //! system of equations
+  RefCountPtr<Epetra_CrsMatrix>     A_;       
+  //! Preconditioner (currently an ML or Ifpack operator)
+  RefCountPtr<Epetra_Operator>      P_;       
+  //! system of equations used for preconditioning used by P_ only
+  RefCountPtr<Epetra_CrsMatrix>     Pmatrix_; 
+  //! initial guess and solution
+  RefCountPtr<Epetra_Vector>        x_;       
+  //! right hand side vector
+  RefCountPtr<Epetra_Vector>        b_;       
+  //! a linear problem wrapper class used by Trilinos and for scaling of the system
+  RefCountPtr<Epetra_LinearProblem> lp_;      
+  //! flag indicating whether matrix was factored before
+  bool                              factored_;
+  //! counting how many times matrix was solved between resets
+  int                               ncall_;   
+  //! an abstract amesos solver that can be any of the amesos concrete immplementations
+  RefCountPtr<Amesos_BaseSolver>    amesos_;  
+  //! an aztec solver
+  RefCountPtr<AztecOO>              aztec_;   
 
 #ifdef PARALLEL
 #ifdef SPOOLES_PACKAGE
+  //! lots of stuff needed by spooles
   _FrontMtx               *frontmtx_;
   _InpMtx                 *newA_;
   _DenseMtx               *newY_;

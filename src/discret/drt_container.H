@@ -52,6 +52,11 @@ You can store arrays of integer, double, and strings in this container
 and access the data by keys. As the Container implements ParObject
 everything stored in here can easily be communicated using the DRT::Exporter.
 
+The intention of this class is to store rather 'small' units of data. Though possible, 
+it is not meant to be used at the system level to store huge data sets such as sparse matrices or
+vectors of system length. It does therefore not support any Epetra_Vector
+or Epetra_CrsMatrix objects and is not supposed to in the future either. 
+
 \author gee (gee@lnm.mw.tum.de)
 */
 class Container : public DRT::ParObject
@@ -59,7 +64,7 @@ class Container : public DRT::ParObject
 public:
 
 
-  // @{ \name Constructors and destructors
+  //! @name Constructors and destructors and related methods
 
   /*!
   \brief Standard Constructor
@@ -95,7 +100,6 @@ public:
   \ref Pack and \ref Unpack are used to communicate this class
   
   */
-  //virtual const char* Pack(int& size) const;
   virtual void Pack(vector<char>& data) const;
   
   /*!
@@ -104,12 +108,11 @@ public:
   \ref Pack and \ref Unpack are used to communicate this class
 
   */
-  //virtual bool Unpack(const char* data);
   virtual void Unpack(const vector<char>& data);
   
   //@}
 
-  // @{ \name Acess methods
+  //! @name Query methods
 
   /*!
   \brief Print this element
@@ -118,7 +121,7 @@ public:
 
   //@}
 
-  // @{ \name Construction
+  //! @name Construction methods
 
   /*!
   \brief Add vector of int to the container
@@ -195,69 +198,56 @@ public:
   */
   void Add(const string& name, const Epetra_SerialDenseMatrix& matrix);
 
-  /*!
-  \brief Get vector of type int or double
-  
-  Receive <int> or <double> data of a given name.
-  
-  \param name : Name of data to receive
+  //@}
 
-  \note Usage is<br> 
-        const vector<int>* ifool = Container::Get<int>("ifool_name");<br>
-        or <br> 
-        const vector<double>* dfool = Container::Get<double>("dfool_name");
-  
-  \return const ptr to vector if data with that name exists, NULL otherwise
-  */
-  template<typename T> vector<T>* GetVector(const string& name)
-  {
-    T tester;
-    if (IsInt(tester))
-    {
-      map<string,RefCountPtr<vector<int> > >::iterator icurr = intdata_.find(name);
-      if (icurr != intdata_.end())
-        return (vector<T>*)icurr->second.get();
-      else return NULL;
-    }
-    else if (IsDouble(tester))
-    {
-      map<string,RefCountPtr<vector<double> > >::iterator dcurr = doubledata_.find(name);
-      if (dcurr != doubledata_.end())
-        return (vector<T>*)dcurr->second.get();
-      else return NULL;
-    }
-    else dserror("This templated method returns <int> and <double> data only!");
-    return NULL;
-  }
-  
-  /*!
-  \brief Get a string from the container
-  
-  \param name : Name of data to receive
-
-  \note Usage is<br> 
-        const string* fool = Container::GetString("ifool_name");
-  
-  \return const ptr to string if data with that name exists, NULL otherwise
-  */
-  string* GetString(const string& name);
+  //! @name Access methods
 
   /*!
-  \brief Get a matrix from the container
+  \brief Get data of type int, double, string or Epetra_SerialDenseMatrix
   
-  \param name : Name of data to receive
+  Receive <int>, <double>, <string>, <Epetra_SerialDenseMatrix> data of a given name.
+  
+  \param name (in): Name of data to receive
 
-  \note Usage is<br> 
-        const Epetra_SerialDenseMatrix* fool = Container::GetMatrix("ifool_name");
+  Usage is<br> 
+    \code
+    vector<int>* ifool = Container::Get<vector<int> >("ifool_name");
+    \endcode
+    or <br> 
+    \code
+    vector<double>* dfool = Container::Get<vector<double> >("dfool_name");
+    \endcode
+    or <br> 
+    \code
+    string* sfool = Container::Get<string>("sfool_name");
+    \endcode
+    or <br> 
+    \code
+    Epetra_SerialDenseMatrix* mfool = Container::Get<Epetra_SerialDenseMatrix>("mfool_name");
+    \endcode
+
+  \note This template will let you experience one of the most kryptic error messages
+        (at link time) you have ever seen if you try to use it with other data types then
+        mentioned above. The same holds for the case where you did not get the
+        syntax absolutely correct.
   
-  \return const ptr to matrix if data with that name exists, NULL otherwise
+  \note (Advanced users:) This is a template with no general definition but with four
+                          specializations only. It will compile for any data type
+                          but will discover at link time that it is unable to generate
+                          a definition other than one of the four specializations.
+  
+  \return Ptr to data if data with that name if it exists, NULL otherwise
   */
-  Epetra_SerialDenseMatrix* GetMatrix(const string& name);
+  template<typename T> T* Get(const string& name);
+
+  //@}
+
+  //! @name Erase methods
 
   /*!
   \brief Delete a record from the container
   
-  \param name : Name of data
+  \param name : Name of data to be deleted from container
 
   */
   void Delete(const string& name);
@@ -276,46 +266,26 @@ private:  // these methods are for PURE internal use
   // don't want = operator
   Container operator = (const Container& old);
   
-  /*!
-  \brief Detection of integer type
-  */
-  template<typename T> bool IsInt(const T& data) const { return false; }
-  /*!
-  \brief Detection of integer type
-  */
-  bool IsInt(const int& data) const { return true; }
-  
-  /*!
-  \brief Detection of double type
-  */
-  template<typename T> bool IsDouble(const T& data) const { return false; }
-  /*!
-  \brief Detection of double type
-  */
-  bool IsDouble(const double& data) const { return true; }
-    
-  /*!
-  \brief Detection of string type
-  */
-  template<typename T> bool IsString(const T& data) const { return false; }
-  /*!
-  \brief Detection of string type
-  */
-  bool IsString(const string& data) const { return true; }
-
 protected:
-
-  map<string,RefCountPtr<vector<int> > >             intdata_;      // a map to store integer data in
-  map<string,RefCountPtr<vector<double> > >          doubledata_;   // a map to store double data in
-  map<string,string>                                 stringdata_;   // a map to store string data in
-  map<string,RefCountPtr<Epetra_SerialDenseMatrix> > matdata_;      // a map to store arrays in
+  
+  //! a map to store integer data in
+  map<string,RefCountPtr<vector<int> > >             intdata_;      
+  
+  //! a map to store double data in
+  map<string,RefCountPtr<vector<double> > >          doubledata_;   
+  
+  //! a map to store string data in
+  map<string,string>                                 stringdata_;   
+  
+  //! a map to store matrices in
+  map<string,RefCountPtr<Epetra_SerialDenseMatrix> > matdata_;      
 
 }; // class Container
 } // namespace DRT
 
-
 // << operator
 ostream& operator << (ostream& os, const DRT::Container& node);
+
 
 
 #endif  // #ifndef CONTAINER_H

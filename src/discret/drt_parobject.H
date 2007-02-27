@@ -3,8 +3,99 @@
 
 \class DRT::ParObject
 
-\brief A virtual class with functionality to pack, unpack and communicate
-       classes in parallel
+\brief A pure virtual class with functionality to pack, unpack and communicate
+       classes in parallel.
+       
+This class is used to pack information usually stored in a class in a vector<char>.
+This vector<char> can then be used to communicate the contents of a class and to 
+read/write binary io. Every class derived from ParObject must basically implement
+the Pack and the Unpack method. There are several methods (mpst of them template specializations)
+to ease the work of packing/unpacking<br><br> 
+Here is an example:
+\code
+// stuff in a class 'Fool' that needs to be packed
+int                      i;
+double                   b;
+double*                  vec = new double[50];
+vector<char>             bla;
+Epetra_SerialDenseMatrix matrix;
+\endcode
+This is how it is packed into a vector<char>& data:<br>
+\code
+Fool::Pack (vector< char > &data) const
+{
+  data.resize(0);                       // resize data to zero
+  int tmp = UniqueParObjectId()         // get the unique parobject id
+  AddtoPack(data,tmp);                  // pack this id
+  AddtoPack(data,i);                    // pack i
+  AddtoPack(data,b);                    // pack b
+  AddtoPack(data,vec,50*sizeof(double); // pack vec
+  AddtoPack(data,bla);                  // pack bla
+  AddtoPack(data,matrix);               // pack matrix
+  return;
+}
+\endcode
+Here is how this data can be unpacked again:<br>
+\code
+Fool::Unpack(const vector< char > &data)
+{
+  int position = 0;                      // used to mark current reading position in data
+  int tmp;
+  ExtractfromPack(position,data,tmp);    // unpack the unique id
+  if (tmp != UniqueParObjectId()) dserror("data does not belong to this class");
+  ExtractfromPack(position,data,i);      // extract i
+  ExtractfromPack(position,data,b);      // extract b
+  ExtractfromPack(position,data,bla);    // extract bla
+  ExtractfromPack(position,data,matrix); // extract matrix
+  if (position != (int)data.size()) dserror("Mismatch in size of data");
+  return;
+}
+\endcode
+<br>
+Some remarks:
+
+- Data has to be unpacked the order it was packed
+
+- The first object in every packed data set has to be the unique parobject id, see head of file drt_parobject.H
+
+- The size of data ( data.size() ) must 'fit' exactly
+
+- A class should pack everything it needs to be exatcly recreated on a different processor.
+  this specifically holds for classes used in a Discretization where data might be shifted around processors.
+
+- Every object that carefully implements ParObject can very easily be communicated using the Exporter.
+
+- Every class that carefully implements ParObject can pretty easily be written/read to/from binary io
+
+- A class derived from or more base classes is responsible to also pack and unpack the base classes' data
+  by calling the base class' implementation of Pack/Unpack
+
+- The intention of this class is to pack and communicate rather 'small' units of data. Though possible, 
+  it is not meant to be used at the system level to communicate huge data sets such as sparse matrices or
+  vectors of system length. It does therefore not support any Epetra_Vector
+  or Epetra_CrsMatrix objects and is not supposed to in the future either.
+
+<br>
+Here is a list of data types that are currently supported by the existing AddtoPack and ExtractfromPack methods:
+\code
+bool, bool*
+char, char*
+enum, enum*
+int, int*
+double, double*
+float, float*
+string
+vector<char>  // especially useful to pack other packs into a pack, e.g. a class packing its own base class
+vector<int>
+vector<double>
+Epetra_SerialDenseMatrix
+\endcode
+
+Note that trying to pack an unsupported type of data (such as e.g. map<key,T> ) might compile and link but will
+result in the most (or least) funny behavior. Also, this type of bug might be extremely hard to find....
+<br><br>
+Of course, you are welcome to add more specializations to the existing AddtoPack and ExtractfromPack templates.
+If you do so, please update this documentation.
 
 <pre>
 Maintainer: Michael Gee
@@ -64,7 +155,7 @@ class ParObject
 public:
 
 
-  // @{ \name Constructors and destructors
+  //! @name Constructors and destructors
 
   /*!
   \brief Standard Constructor
@@ -88,13 +179,13 @@ public:
 
   //@}
 
-  // @{ \name virtual Packing and Unpacking
+  //! @name pure virtual Packing and Unpacking
 
   /*!
   \brief Return unique ParObject id
 
   every class implementing ParObject needs a unique id defined at the
-  top of this file.
+  top of drt_parobject.H (this file) and should return it in this method.
   */
   virtual int UniqueParObjectId() const = 0;
 
@@ -103,7 +194,7 @@ public:
 
   Resizes the vector data and stores all information of a class in it.
   The first information to be stored in data has to be the
-  unique parobject delivered by UniqueParObjectId() which will then
+  unique parobject id delivered by UniqueParObjectId() which will then
   identify the exact class on the receiving processor.
 
   \param data (in/out): char vector to store class information
@@ -130,7 +221,7 @@ public:
 
 public:
 
-  // @{ \name Routines to help pack stuff into a char string
+  //! @name Routines to help pack stuff into a char vector
 
   /*!
   \brief Add stuff to the end of a char vector data
@@ -169,56 +260,6 @@ public:
   }
 
   /*!
-  \brief Add a vector of a basic type to a char vector data
-
-  This method adds a vector to data
-  \param data (in/out) : char vector stuff shall be added to
-  \param stuff (in)    : vector of kind
-  */
-  template<typename kind> static void AddVectortoPack(vector<char>& data, const vector<kind>& stuff)
-  {
-    int numele = stuff.size();
-    AddtoPack(data,numele);
-    AddtoPack(data,&stuff[0],numele*sizeof(kind));
-    return;
-  }
-
-  /*!
-  \brief Add an Epetra_SerialDenseMatrix to data
-
-  This method adds a Epetra_SerialDenseMatrix to data
-
-  \param data (in/out) : char vector stuff shall be added to
-  \param stuff (in)    : matrix to add
-  */
-  static void AddMatrixtoPack(vector<char>& data,
-                              const Epetra_SerialDenseMatrix& stuff)
-  {
-    int m = stuff.M();
-    int n = stuff.N();
-    AddtoPack(data,m);
-    AddtoPack(data,n);
-    double* A = stuff.A();
-    AddtoPack(data,A,n*m*sizeof(double));
-    return;
-  }
-
-  /*!
-  \brief Add a string to a char vector data
-
-  This method adds a string to data
-  \param data (in/out) : char string stuff shall be added to
-  \param stuff (in)    : string to add
-  */
-  static void AddStringtoPack(vector<char>& data, const string& stuff)
-  {
-    int numele = stuff.size();
-    AddtoPack(data,numele);
-    AddtoPack(data,&stuff[0],numele*sizeof(char));
-    return;
-  }
-
-  /*!
   \brief Extract stuff from a char vector data and increment position
 
   This method is templated for all basic type like int char double enum.
@@ -253,64 +294,6 @@ public:
     return;
   }
 
-  /*!
-  \brief Extract a vector of a basic type from a char vector data and increment position
-
-  This method extracts a vector<kind> from data
-  \param position (in/out): place in data where to extract stuff. Position will be incremented
-                            by sizeof(int)+stuff.size()*sizeof(kind)
-  \param data (in)        : char string where stuff is extracted from
-  \param stuff (out)      : vector of total length stuff.size()
-  */
-  template<typename kind> static void ExtractVectorfromPack(int& position, const vector<char>& data, vector<kind>& stuff)
-  {
-    int dim = 0;
-    ExtractfromPack(position,data,dim);
-    stuff.resize(dim);
-    int size = dim*sizeof(kind);
-    ExtractfromPack(position,data,&stuff[0],size);
-    return;
-  }
-
-  /*!
-  \brief Extract a Epetra_SerialDenseMatrix from a char vector data and increment position
-
-  \param position (in/out) : place in data where to extract stuff. Position will be incremented by this method by
-                             the size of the matrix
-  \param data (in)         : char vector where stuff is extracted from
-  \param stuff (out)       : Epetra_SerialDenseMatrix to be extracted
-  */
-  static void ExtractMatrixfromPack(int& position, const vector<char>& data,
-                             Epetra_SerialDenseMatrix& stuff)
-  {
-    int m = 0;
-    ExtractfromPack(position,data,m);
-    int n = 0;
-    ExtractfromPack(position,data,n);
-    stuff.Reshape(m,n);
-    double* A = stuff.A();
-    ExtractfromPack(position,data,A,n*m*sizeof(double));
-    return;
-  }
-
-  /*!
-  \brief Extract a string from a char vector data and increment position
-
-  This method extracts a string
-  \param position (in/out) : place in data where to extract stuff. Position will be incremented by
-                             the sizeof the string in byte + sizeof(int)
-  \param data (in)         : char vector where stuff is extracted from
-  \param stuff (out)       : string to be extracted to
-  */
-  static void ExtractStringfromPack(int& position, const vector<char>& data, string& stuff)
-  {
-    int dim = 0;
-    ExtractfromPack(position,data,dim);
-    stuff.resize(dim);
-    int size = dim*sizeof(char);
-    ExtractfromPack(position,data,&stuff[0],size);
-    return;
-  }
   //@}
 
 

@@ -43,10 +43,11 @@ nodeid_(old.nodeid_),
 node_(old.node_),
 dofset_(old.dofset_)
 {
-  // we want a true deep copy of the condition_
+  // we do NOT want a deep copy of the condition_ as the condition
+  // is only a reference in the elements anyway
   map<string,RefCountPtr<Condition> >::const_iterator fool;
   for (fool=old.condition_.begin(); fool!=old.condition_.end(); ++fool)
-    SetCondition(fool->first,rcp(new DRT::Condition(*(fool->second))));
+    SetCondition(fool->first,fool->second);
 
   return;
 }
@@ -149,105 +150,15 @@ void DRT::Element::Pack(vector<char>& data) const
   ElementType etype = Type();
   AddtoPack(data,etype);
   // add vector nodeid_
-  AddVectortoPack(data,nodeid_);
+  AddtoPack(data,nodeid_);
   // dofset
   vector<char> dofsetpack(0);
   dofset_.Pack(dofsetpack);
-  AddVectortoPack(data,dofsetpack);
+  AddtoPack(data,dofsetpack);
   
   return;
 }
 
-#if 0
-/*----------------------------------------------------------------------*
- |  Pack data from this element into vector of length size     (public) |
- |                                                            gee 11/06 |
- *----------------------------------------------------------------------*/
-const char* DRT::Element::Pack(int& size) const
-{
-  const int sizeint            = sizeof(int);
-  const int sizetype           = sizeof(enum ElementType);
-  //const int sizedouble = sizeof(double);
-  //const int sizechar   = sizeof(char);
-
-  // get data and size of dofset_
-  int dofsetsize=0;
-  const char* dofsetpack = dofset_.Pack(dofsetsize);
-  
-  // no need to pack conditions
-#if 0  
-  // get the size of all conditions
-  int condsize=0;
-  map<string,RefCountPtr<Condition> >::const_iterator curr;
-  for (curr=condition_.begin(); curr != condition_.end(); ++curr)
-  {
-    condsize += SizeString(curr->first);
-    int tmp=0;
-    const char* condpack = curr->second->Pack(tmp);
-    condsize += tmp;
-    delete [] condpack;
-  }
-#endif
-
-  // calculate size of vector
-  size = 
-  sizeint                +   // holds size itself
-  sizeint                +   // type of this instance of ParObject, see top of ParObject.H
-  sizeint                +   // holds Id()
-  sizeint                +   // holds Owner()
-  sizetype               +   // holds type of element
-  SizeVector(nodeid_)    +   // nodeid_
-  dofsetsize             +   // dofset_
-#if 0
-  sizeint                +   // no. of objects in condition_
-  condsize               +   // condition_
-#endif
-  0;                         // continue to add data here...
-
-  char* data = new char[size];
-  
-  // pack stuff into vector
-  int position = 0;
-
-  // add size
-  AddtoPack(position,data,size);
-  // ParObject type
-  int type = ParObject_Element;
-  AddtoPack(position,data,type);
-  // add Id()
-  int id = Id();
-  AddtoPack(position,data,id);
-  // add owner
-  int owner = Owner();
-  AddtoPack(position,data,owner);
-  // add type of element
-  ElementType etype = Type();
-  AddtoPack(position,data,etype);
-  // add vector nodeid_
-  AddVectortoPack(position,data,nodeid_);
-  // dofset_
-  AddtoPack(position,data,dofsetpack,dofsetsize);
-  delete [] dofsetpack;
-#if 0
-  // condition_
-  int num = condition_.size(); // no. of objects
-  AddtoPack(position,data,num);
-  for (curr=condition_.begin(); curr != condition_.end(); ++curr)
-  {
-    AddStringtoPack(position,data,curr->first);
-    int tmp=0;
-    const char* condpack = curr->second->Pack(tmp);
-    AddtoPack(position,data,condpack,tmp);
-    delete [] condpack;
-  }
-#endif
-  // continue to add stuff here
-
-  if (position != size)
-    dserror("Mismatch in size of data %d <-> %d",size,position);
-  return data;
-}
-#endif
 
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
@@ -267,10 +178,10 @@ void DRT::Element::Unpack(const vector<char>& data)
   // etype_
   ExtractfromPack(position,data,etype_);
   // nodeid_
-  ExtractVectorfromPack(position,data,nodeid_);
+  ExtractfromPack(position,data,nodeid_);
   // dofset_
   vector<char> dofpack(0);
-  ExtractVectorfromPack(position,data,dofpack);
+  ExtractfromPack(position,data,dofpack);
   dofset_.Unpack(dofpack);
   
   // node_ is NOT communicated
@@ -281,59 +192,6 @@ void DRT::Element::Unpack(const vector<char>& data)
   return;
 } 
  
-#if 0
-/*----------------------------------------------------------------------*
- |  Unpack data into this element                              (public) |
- |                                                            gee 11/06 |
- *----------------------------------------------------------------------*/
-bool DRT::Element::Unpack(const char* data)
-{
-  int position = 0;
-  
-  // extract size
-  int size = 0;
-  ExtractfromPack(position,data,size);
-  // ParObject instance type
-  int type=0;
-  ExtractfromPack(position,data,type);
-  if (type != ParObject_Element) dserror("Wrong instance type in data");
-  // extract id
-  ExtractfromPack(position,data,id_);
-  // extract owner_
-  ExtractfromPack(position,data,owner_);
-  // extract type
-  ExtractfromPack(position,data,etype_);
-  // extract nodeid_
-  ExtractVectorfromPack(position,data,nodeid_);
-  // dofset_
-  dofset_.Unpack(&data[position]);
-  int dofsetsize = dofset_.SizePack(&data[position]);
-  position += dofsetsize;
-#if 0
-  // extract condition_
-  int num=0;
-  ExtractfromPack(position,data,num);
-  for (int i=0; i<num; ++i)
-  {
-    string name;
-    ExtractStringfromPack(position,data,name);
-    RefCountPtr<Condition> cond = rcp(new Condition());
-    cond->Unpack(&data[position]);
-    int size = cond->SizePack(&data[position]);
-    position += size;
-    SetCondition(name,cond);
-  }
-#endif
-  
-  // node_ is NOT communicated
-  node_.resize(0);
-
-  if (position != size)
-    dserror("Mismatch in size of data %d <-> %d",size,position);
-
-  return true;
-}
-#endif
 
 /*----------------------------------------------------------------------*
  |  Build nodal pointers                                    (protected) |
@@ -437,7 +295,7 @@ void DRT::Element::LocationVector(vector<int>& lm, vector<int>& lmdirich,
             dirich->Type()!=DRT::Condition::SurfaceDirichlet &&
             dirich->Type()!=DRT::Condition::VolumeDirichlet)
           dserror("condition with name dirichlet is not of type Dirichlet");
-        flag = dirich->GetVector<int>("onoff");
+        flag = dirich->Get<vector<int> >("onoff");
       }
       const int owner = nodes[i]->Owner();
       for (int j=0; j<nodes[i]->Dof().NumDof(); ++j)
@@ -460,7 +318,7 @@ void DRT::Element::LocationVector(vector<int>& lm, vector<int>& lmdirich,
         dirich->Type()!=DRT::Condition::SurfaceDirichlet &&
         dirich->Type()!=DRT::Condition::VolumeDirichlet)
       dserror("condition with name dirichlet is not of type Dirichlet");
-    flag = dirich->GetVector<int>("onoff");
+    flag = dirich->Get<vector<int> >("onoff");
   }
   const int owner = Owner();
   for (int j=0; j<Dof().NumDof(); ++j)
@@ -477,6 +335,52 @@ void DRT::Element::LocationVector(vector<int>& lm, vector<int>& lmdirich,
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ |  Get degrees of freedom used by this element                (public) |
+ |                                                            gee 02/07 |
+ *----------------------------------------------------------------------*/
+void DRT::Element::LocationVector(vector<int>& lm, vector<int>& lmowner)
+{
+  const int numnode = NumNode();
+  // count how many degrees of freedom I have
+  int count=0;
+  // count nodal dofs
+  DRT::Node** nodes = Nodes();
+  if (nodes)
+    for (int i=0; i<numnode; ++i)
+      count += nodes[i]->Dof().NumDof();
+  // add element dofs
+  count += Dof().NumDof();
+
+  lm.resize(count);
+  lmowner.resize(count);
+  
+  // fill the vector with nodal dofs
+  int count2=0;
+  if (nodes)
+    for (int i=0; i<numnode; ++i)
+    {
+      const int owner = nodes[i]->Owner();
+      for (int j=0; j<nodes[i]->Dof().NumDof(); ++j)
+      {
+        lmowner[count2] = owner;
+        lm[count2++]    = nodes[i]->Dof()[j];
+      }
+    }
+
+  // fill the vector with element dofs
+  const int owner = Owner();
+  for (int j=0; j<Dof().NumDof(); ++j)
+  {
+    lmowner[count2] = owner;
+    lm[count2++]    = Dof()[j];
+  }
+    
+  if (count2!=count) dserror("Mismatch in no. of dofs");
+  
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |  evaluate element dummy (public)                          mwgee 12/06|

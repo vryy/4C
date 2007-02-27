@@ -113,7 +113,7 @@ void DRT::Condition::Pack(vector<char>& data) const
   // add base class container
   vector<char> basedata;
   Container::Pack(basedata);
-  AddVectortoPack(data,basedata);
+  AddtoPack(data,basedata);
   // id_
   AddtoPack(data,id_);
   // type_
@@ -122,51 +122,6 @@ void DRT::Condition::Pack(vector<char>& data) const
   return;
 }
 
-#if 0
-/*----------------------------------------------------------------------*
- |  Pack data from this element into vector of length size     (public) |
- |                                                            gee 11/06 |
- *----------------------------------------------------------------------*/
-const char* DRT::Condition::Pack(int& size) const
-{
-  const int sizeint    = sizeof(int);
-  const int sizetype   = sizeof(enum ConditionType);
-
-  // pack base class Container
-  int basesize=0;
-  const char* basedata = Container::Pack(basesize);
-  
-  size = 
-  sizeint +      // size itself 
-  sizeint +      // type of this instance of ParObject, see top of ParObject.H
-  basesize +     // base class Container
-  sizeint  +     // id_
-  sizetype +     // type_
-  0;             // continue to add data here...
-  
-  
-  char* data = new char[size];
-  // pack stuff into vector
-  int position = 0;
-
-  // size
-  AddtoPack(position,data,size);
-  // ParObject type
-  int type = ParObject_Condition;
-  AddtoPack(position,data,type);
-  // add base class
-  AddtoPack(position,data,basedata,basesize);
-  delete [] basedata;
-  // id_
-  AddtoPack(position,data,id_);
-  // add type_
-  AddtoPack(position,data,type_);
-
-  if (position != size)
-    dserror("Mismatch in size of data %d <-> %d",size,position);
-  return data;
-}
-#endif
 
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
@@ -181,7 +136,7 @@ void DRT::Condition::Unpack(const vector<char>& data)
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
   // extract base class Container
   vector<char> basedata(0);
-  ExtractVectorfromPack(position,data,basedata);
+  ExtractfromPack(position,data,basedata);
   Container::Unpack(basedata);
   // id_
   ExtractfromPack(position,data,id_);
@@ -192,41 +147,6 @@ void DRT::Condition::Unpack(const vector<char>& data)
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
 } 
-
-#if 0
-/*----------------------------------------------------------------------*
- |  Unpack data into this element                              (public) |
- |                                                            gee 11/06 |
- *----------------------------------------------------------------------*/
-bool DRT::Condition::Unpack(const char* data)
-{
-  int position=0;
-  
-  // extract size
-  int size = 0;
-  ExtractfromPack(position,data,size);
-  // ParObject instance type
-  int type=0;
-  ExtractfromPack(position,data,type);
-  if (type != ParObject_Condition) dserror("Wrong instance type in data");
-  // extract base class
-  int basesize = SizePack(&data[position]);
-  Container::Unpack(&data[position]);
-  position += basesize;
-  // id_
-  ExtractfromPack(position,data,id_);
-  // extract type_
-  ExtractfromPack(position,data,type_);
-    
-  if (position != size)
-    dserror("Mismatch in size of data %d <-> %d",size,position);
-  return true;
-}
-#endif
-
-
-
-
 
 
 

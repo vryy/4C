@@ -162,9 +162,9 @@ void DRT::Elements::Shell8::s8stress(struct _MATERIAL* material,
   const int nit = 2;
   const int numdf = 6;
   const double condfac = sdc_;
-  vector<double>* thick = data_.GetVector<double>("thick");
+  vector<double>* thick = data_.Get<vector<double> >("thick");
   if (!thick) dserror("Cannot find vector of nodal thicknesses");
-  Epetra_SerialDenseMatrix* a3ref = data_.GetMatrix("a3ref");
+  Epetra_SerialDenseMatrix* a3ref = data_.Get<Epetra_SerialDenseMatrix>("a3ref");
   if (!a3ref) dserror("Cannot find array of directors");
   double a3ref2[3][MAXNOD_SHELL8];
   for (int i=0; i<3; ++i)
@@ -557,9 +557,9 @@ int DRT::Elements::Shell8::EvaluateNeumann(ParameterList& params,
   const int nir = ngp_[0]; 
   const int nis = ngp_[1]; 
   const int numdf = 6;
-  vector<double>* thick = data_.GetVector<double>("thick");
+  vector<double>* thick = data_.Get<vector<double> >("thick");
   if (!thick) dserror("Cannot find vector of nodal thicknesses");
-  Epetra_SerialDenseMatrix* a3ref = data_.GetMatrix("a3ref");
+  Epetra_SerialDenseMatrix* a3ref = data_.Get<Epetra_SerialDenseMatrix>("a3ref");
   if (!a3ref) dserror("Cannot find array of directors");
   double a3ref2[3][MAXNOD_SHELL8];
   for (int i=0; i<3; ++i)
@@ -607,7 +607,7 @@ int DRT::Elements::Shell8::EvaluateNeumann(ParameterList& params,
   }
 
   // find out whether we will use a time curve and get the factor
-  vector<int>* curve  = condition.GetVector<int>("curve");
+  vector<int>* curve  = condition.Get<vector<int> >("curve");
   int curvenum = -1;
   if (curve) curvenum = (*curve)[0]; 
   double curvefac = 1.0;
@@ -616,7 +616,7 @@ int DRT::Elements::Shell8::EvaluateNeumann(ParameterList& params,
   
   // get type of condition
   LoadType ltype;
-  string* type = condition.GetString("type");
+  string* type = condition.Get<string>("type");
   if      (*type == "neum_live")          ltype = neum_live;
   else if (*type == "neum_live_FSI")      ltype = neum_live_FSI;
   else if (*type == "neum_orthopressure") ltype = neum_orthopressure;
@@ -625,8 +625,8 @@ int DRT::Elements::Shell8::EvaluateNeumann(ParameterList& params,
   else dserror("Unknown type of SurfaceNeumann condition");
   
   // get values and switches from the condition
-  vector<int>*    onoff = condition.GetVector<int>("onoff");
-  vector<double>* val   = condition.GetVector<double>("val");
+  vector<int>*    onoff = condition.Get<vector<int> >("onoff");
+  vector<double>* val   = condition.Get<vector<double> >("val");
   
   // start integration
   double e3=0.0;
@@ -804,7 +804,7 @@ void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm,
   s8_integration_points(s8data);
   
   vector<double>* thick = NULL;
-  thick = data_.GetVector<double>("thick");
+  thick = data_.Get<vector<double> >("thick");
   if (!thick) dserror("Cannot find nodal thicknesses");
   
   // eas
@@ -821,10 +821,10 @@ void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm,
     for (int i=0; i<nhyb_; ++i) Rtild[i] = 0.0;
 
     // access history stuff stored in element
-    alfa        = data_.GetVector<double>("alfa");
-    oldDtildinv = data_.GetMatrix("Dtildinv");
-    oldLt       = data_.GetMatrix("Lt");
-    oldRtild    = data_.GetVector<double>("Rtild");
+    alfa        = data_.Get<vector<double> >("alfa");
+    oldDtildinv = data_.Get<Epetra_SerialDenseMatrix>("Dtildinv");
+    oldLt       = data_.Get<Epetra_SerialDenseMatrix>("Lt");
+    oldRtild    = data_.Get<vector<double> >("Rtild");
     if (!alfa || !oldDtildinv || !oldLt || !oldRtild) dserror("Missing data");
     /*---------------- make multiplication eashelp = oldLt * disp[kstep] */
     vector<double> eashelp(nhyb_);
@@ -850,7 +850,7 @@ void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm,
   const int nit = ngp_[2];
   const int iel = numnode;
   const double condfac = sdc_;
-  Epetra_SerialDenseMatrix* a3ref = data_.GetMatrix("a3ref");
+  Epetra_SerialDenseMatrix* a3ref = data_.Get<Epetra_SerialDenseMatrix>("a3ref");
   if (!a3ref) dserror("Cannot get data a3ref");
   /*----------------------------------------------------- geometry update */
   for (int k=0; k<iel; ++k)
@@ -3647,12 +3647,12 @@ int DRT::Elements::Shell8Register::Initialize(DRT::Discretization& dis)
     // create matrix a3ref
     Epetra_SerialDenseMatrix tmpmatrix(3,numnode);
     actele->data_.Add("a3ref",tmpmatrix);
-    Epetra_SerialDenseMatrix* a3ref = actele->data_.GetMatrix("a3ref");
+    Epetra_SerialDenseMatrix* a3ref = actele->data_.Get<Epetra_SerialDenseMatrix>("a3ref");
     
     // create vector thick
     vector<double> tmpvector(numnode);
     actele->data_.Add("thick",tmpvector);
-    vector<double>* thick = actele->data_.GetVector<double>("thick");
+    vector<double>* thick = actele->data_.Get<vector<double> >("thick");
     for (int i=0; i<numnode; ++i) (*thick)[i] = actele->thickness_;
     
     
@@ -3733,7 +3733,7 @@ int DRT::Elements::Shell8Register::Initialize(DRT::Discretization& dis)
       {
         if (actele->Nodes()[k]==actnode)
         {
-          Epetra_SerialDenseMatrix* a3ref = actele->data_.GetMatrix("a3ref");
+          Epetra_SerialDenseMatrix* a3ref = actele->data_.Get<Epetra_SerialDenseMatrix>("a3ref");
           if (!a3ref) dserror("Cannot find a3ref");
           collaverdir(0,numa3) = (*a3ref)(0,k);
           collaverdir(1,numa3) = (*a3ref)(1,k);
@@ -3787,7 +3787,7 @@ int DRT::Elements::Shell8Register::Initialize(DRT::Discretization& dis)
       {
         if (actele->Nodes()[k]==actnode)
         {
-          Epetra_SerialDenseMatrix* a3ref = actele->data_.GetMatrix("a3ref");
+          Epetra_SerialDenseMatrix* a3ref = actele->data_.Get<Epetra_SerialDenseMatrix>("a3ref");
           if (!a3ref) dserror("Cannot find a3ref");
           (*a3ref)(0,k) = curr->second[0];
           (*a3ref)(1,k) = curr->second[1];

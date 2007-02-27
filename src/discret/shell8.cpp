@@ -90,7 +90,7 @@ void DRT::Elements::Shell8::Pack(vector<char>& data) const
   // add base class Element
   vector<char> basedata(0);
   Element::Pack(basedata);
-  AddVectortoPack(data,basedata);
+  AddtoPack(data,basedata);
   // forcetype_
   AddtoPack(data,forcetype_);
   // thickness_
@@ -112,90 +112,11 @@ void DRT::Elements::Shell8::Pack(vector<char>& data) const
   // data_
   vector<char> tmp(0);
   data_.Pack(tmp);
-  AddVectortoPack(data,tmp);
+  AddtoPack(data,tmp);
 
   return;
 }
 
-#if 0
-/*----------------------------------------------------------------------*
- |  Pack data from this element into vector of length size     (public) |
- |                                                            gee 11/06 |
- *----------------------------------------------------------------------*/
-const char* DRT::Elements::Shell8::Pack(int& size) const
-{
-  const int sizeint    = sizeof(int);
-  const int sizeforcetype = sizeof(enum ForceType);
-  const int sizedouble = sizeof(double);
-  //const int sizechar   = sizeof(char);
-
-  // pack base class
-  int         basesize = 0;
-  const char* basedata = Element::Pack(basesize);
-  
-  // pack data_
-  int         consize = 0;
-  const char* condata = data_.Pack(consize);
-   
-  // calculate size of vector data
-  size = 
-  sizeint +                    // size itself
-  sizeint +                    // type of this instance of ParObject, see top of ParObject.H
-  basesize +                   // base class data
-  sizeforcetype +              // forcetype_
-  sizedouble +                 // thickness_
-  3*sizeint +                  // ngp_
-  sizeint +                    // ngptri_  
-  sizeint +                    // nhyb_
-  5*sizeint +                  // eas_
-  sizeint +                    // ans_
-  sizedouble +                 // sdc_
-  sizeint +                    // material_
-  consize +                    // data_
-  0;            // continue to add data here...
-  
-  char* data = new char[size];
-  
-  // pack stuff into vector
-  int position = 0;
-  
-  // add size
-  AddtoPack(position,data,size);
-  // ParObject type
-  int type = UniqueParObjectId();;
-  AddtoPack(position,data,type);
-  // add base class
-  AddtoPack(position,data,basedata,basesize);
-  delete [] basedata;
-  // forcetype_
-  AddtoPack(position,data,&forcetype_,sizeof(enum ForceType));
-  // thickness_
-  AddtoPack(position,data,thickness_);
-  // ngp_
-  AddtoPack(position,data,ngp_,3*sizeint);
-  // ngptri_
-  AddtoPack(position,data,ngptri_);
-  // nhyb_
-  AddtoPack(position,data,nhyb_);
-  // eas_
-  AddtoPack(position,data,eas_,5*sizeint);
-  // ans_
-  AddtoPack(position,data,ans_);
-  // sdc_
-  AddtoPack(position,data,sdc_);
-  // material_
-  AddtoPack(position,data,material_);
-  // data_
-  AddtoPack(position,data,condata,consize);
-  delete [] condata;
-  // continue to add stuff here  
-    
-  if (position != size)
-    dserror("Mismatch in size of data %d <-> %d",size,position);
-
-  return data;
-}
-#endif
 
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
@@ -210,7 +131,7 @@ void DRT::Elements::Shell8::Unpack(const vector<char>& data)
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
   // extract base class Element
   vector<char> basedata(0);
-  ExtractVectorfromPack(position,data,basedata);
+  ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
   // forcetype_
   ExtractfromPack(position,data,forcetype_);
@@ -232,7 +153,7 @@ void DRT::Elements::Shell8::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,material_);
   // data_
   vector<char> tmp(0);
-  ExtractVectorfromPack(position,data,tmp);
+  ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
   
   if (position != (int)data.size())
@@ -240,62 +161,6 @@ void DRT::Elements::Shell8::Unpack(const vector<char>& data)
   return;
 } 
 
-#if 0
-/*----------------------------------------------------------------------*
- |  Unpack data into this element                              (public) |
- |                                                            gee 11/06 |
- *----------------------------------------------------------------------*/
-bool DRT::Elements::Shell8::Unpack(const char* data)
-{
-  const int sizeint    = sizeof(int);
-  //const int sizeforcetype = sizeof(enum ForceType);
-  //const int sizedouble = sizeof(double);
-  //const int sizechar   = sizeof(char);
-
-  int position = 0;
-
-  // extract size
-  int size = 0;
-  ExtractfromPack(position,data,size);
-  // ParObject instance type
-  int type=0;
-  ExtractfromPack(position,data,type);
-  if (type != ParObject_Shell8) dserror("Wrong instance type in data");
-  // extract base class
-  int basesize = SizePack(&data[position]);
-  Element::Unpack(&data[position]);
-  position += basesize;
-  // forcetype_
-  ExtractfromPack(position,data,forcetype_);
-  // thickness_
-  ExtractfromPack(position,data,thickness_);
-  // ngp_
-  ExtractfromPack(position,data,ngp_,3*sizeint);
-  // ngptri_
-  ExtractfromPack(position,data,ngptri_);
-  // nhyb_
-  ExtractfromPack(position,data,nhyb_);
-  // eas_
-  ExtractfromPack(position,data,eas_,5*sizeint);
-  // ans_
-  ExtractfromPack(position,data,ans_);
-  // sdc_
-  ExtractfromPack(position,data,sdc_);
-  // material_
-  ExtractfromPack(position,data,material_);
-  // data_
-  int consize = SizePack(&data[position]);
-  data_.Unpack(&data[position]);
-  position += consize;
-  
-  // extract more stuff here
-
-  if (position != size)
-    dserror("Mismatch in size of data %d <-> %d",size,position);
-
-  return true;
-}
-#endif
 
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 11/06|
@@ -541,52 +406,11 @@ void DRT::Elements::Shell8Register::Pack(vector<char>& data) const
   // add base class ElementRegister
   vector<char> basedata(0);
   ElementRegister::Pack(basedata);
-  AddVectortoPack(data,basedata);
+  AddtoPack(data,basedata);
   
   return;
 }
 
-#if 0
-/*----------------------------------------------------------------------*
- |  Pack data from this element into vector of length size     (public) |
- |                                                            gee 12/06 |
- *----------------------------------------------------------------------*/
-const char* DRT::Elements::Shell8Register::Pack(int& size) const
-{
-  const int sizeint    = sizeof(int);
-
-  // pack base class
-  int         basesize = 0;
-  const char* basedata = ElementRegister::Pack(basesize);
-   
-  // calculate size of vector data
-  size = 
-  sizeint +                     // size itself
-  sizeint +                     // type of this instance of ParObject, see top of ParObject.H
-  basesize +                    // base class data
-  0;                            // continue to add data here...
-  
-  char* data = new char[size];
-  
-  // pack stuff into vector
-  int position = 0;
-  
-  // add size
-  AddtoPack(position,data,size);
-  // ParObject type
-  int type = UniqueParObjectId();
-  AddtoPack(position,data,type);
-  // add base class
-  AddtoPack(position,data,basedata,basesize);
-  delete [] basedata;
-  // continue to add stuff here  
-    
-  if (position != size)
-    dserror("Mismatch in size of data %d <-> %d",size,position);
-
-  return data;
-}
-#endif
 
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
@@ -601,7 +425,7 @@ void DRT::Elements::Shell8Register::Unpack(const vector<char>& data)
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
   // base class ElementRegister
   vector<char> basedata(0);
-  ExtractVectorfromPack(position,data,basedata);
+  ExtractfromPack(position,data,basedata);
   ElementRegister::Unpack(basedata);
   
   if (position != (int)data.size())
@@ -609,33 +433,6 @@ void DRT::Elements::Shell8Register::Unpack(const vector<char>& data)
   return;
 } 
 
-#if 0
-/*----------------------------------------------------------------------*
- |  Unpack data                                                (public) |
- |                                                            gee 12/06 |
- *----------------------------------------------------------------------*/
-bool DRT::Elements::Shell8Register::Unpack(const char* data)
-{
-  int position = 0;
-  // extract size
-  int size = 0;
-  ExtractfromPack(position,data,size);
-  // ParObject instance type
-  int type=0;
-  ExtractfromPack(position,data,type);
-  if (type != ParObject_Shell8Register) dserror("Wrong instance type in data");
-  // extract base class
-  int basesize = SizePack(&data[position]);
-  ElementRegister::Unpack(&data[position]);
-  position += basesize;
-  // extract more stuff here
-
-  if (position != size)
-    dserror("Mismatch in size of data %d <-> %d",size,position);
-
-  return true;
-}
-#endif
 
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 12/06|

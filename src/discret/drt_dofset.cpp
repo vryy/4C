@@ -78,44 +78,11 @@ void DRT::DofSet::Pack(vector<char>& data) const
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // dofs_
-  AddVectortoPack(data,dofs_);
+  AddtoPack(data,dofs_);
   
   return;
 }
 
-#if 0
-/*----------------------------------------------------------------------*
- |  Pack data from this element into vector of length size     (public) |
- |                                                            gee 11/06 |
- *----------------------------------------------------------------------*/
-const char* DRT::DofSet::Pack(int& size) const
-{
-  const int sizeint    = sizeof(int);
-
-  size = 
-  sizeint +          // size itself 
-  sizeint +          // type of this instance of ParObject, see top of ParObject.H
-  SizeVector(dofs_)+ // no. of degrees of freedom and degrees of freedom
-  0;                 // continue to add data here...
-  
-  
-  char* data = new char[size];
-  // pack stuff into vector
-  int position = 0;
-
-  // size
-  AddtoPack(position,data,size);
-  // ParObject type
-  int type = UniqueParObjectId();    // see top of ParObject.H
-  AddtoPack(position,data,type);
-  // dofs_
-  AddVectortoPack(position,data,dofs_);
-
-  if (position != size)
-    dserror("Mismatch in size of data %d <-> %d",size,position);
-  return data;
-}
-#endif
 
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
@@ -129,37 +96,12 @@ void DRT::DofSet::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
   // dofs_
-  ExtractVectorfromPack(position,data,dofs_);
+  ExtractfromPack(position,data,dofs_);
   
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
 } 
-
-#if 0
-/*----------------------------------------------------------------------*
- |  Unpack data into this element                              (public) |
- |                                                            gee 11/06 |
- *----------------------------------------------------------------------*/
-bool DRT::DofSet::Unpack(const char* data)
-{
-  int position=0;
-  
-  // extract size
-  int size = 0;
-  ExtractfromPack(position,data,size);
-  // ParObject instance type
-  int type=0;
-  ExtractfromPack(position,data,type);
-  if (type != ParObject_DofSet) dserror("Wrong instance type in data");
-  // dofs_
-  ExtractVectorfromPack(position,data,dofs_);
-    
-  if (position != size)
-    dserror("Mismatch in size of data %d <-> %d",size,position);
-  return true;
-}
-#endif
 
 /*----------------------------------------------------------------------*
  |  set no. of degrees of freedom                              (public) |

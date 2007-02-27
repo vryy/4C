@@ -47,6 +47,15 @@ DRT::ElementRegister::~ElementRegister()
 
 
 /*----------------------------------------------------------------------*
+ |  clone (public)                                           mwgee 02/07|
+ *----------------------------------------------------------------------*/
+DRT::ElementRegister* DRT::ElementRegister::Clone() const
+{
+  DRT::ElementRegister* tmp = new DRT::ElementRegister(*this);
+  return tmp;
+}
+
+/*----------------------------------------------------------------------*
  |  << operator                                              mwgee 11/06|
  *----------------------------------------------------------------------*/
 ostream& operator << (ostream& os, const DRT::ElementRegister& eler)
@@ -61,6 +70,20 @@ ostream& operator << (ostream& os, const DRT::ElementRegister& eler)
  *----------------------------------------------------------------------*/
 void DRT::ElementRegister::Print(ostream& os) const
 {
+  os << "ElementRegister to element with type ";
+  switch(Type())
+  {
+    case DRT::Element::element_shell8line:
+      os << "Shell8Line ";
+    break;
+    case DRT::Element::element_shell8:
+      os << "Shell8 ";
+    break;
+    case DRT::Element::element_none:
+    default:
+      dserror("Unknown type of element");
+    break;
+  }
   return;
 }
 
@@ -81,37 +104,6 @@ void DRT::ElementRegister::Pack(vector<char>& data) const
   return;
 }
 
-#if 0
-/*----------------------------------------------------------------------*
- |  Pack data from this element into vector of length size     (public) |
- |                                                            gee 11/06 |
- *----------------------------------------------------------------------*/
-const char* DRT::ElementRegister::Pack(int& size) const
-{
-  const int sizeint    = sizeof(int);
-  const int sizetype   = sizeof(enum DRT::Element::ElementType);
-
-  // calculate size of vector
-  size = 
-  sizeint                +   // holds size itself
-  sizeint                +   // type of this instance of ParObject, see top of ParObject.H
-  sizetype               +   // holds type of element
-  0;                         // continue to add data here...
-  
-  char* data = new char[size];
-  int position = 0;
-
-  // add size
-  AddtoPack(position,data,size);
-  // ParObject type
-  int type = ParObject_ElementRegister;
-  AddtoPack(position,data,type);
-  // add type of element
-  AddtoPack(position,data,etype_);
-
-  return data;
-}
-#endif
 
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
@@ -131,36 +123,17 @@ void DRT::ElementRegister::Unpack(const vector<char>& data)
   return;
 } 
 
-#if 0
 /*----------------------------------------------------------------------*
- |  Unpack data into this element                              (public) |
- |                                                            gee 11/06 |
+ |  Init the elements of a discretization                      (public) |
+ |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-bool DRT::ElementRegister::Unpack(const char* data)
+int DRT::ElementRegister::Initialize(DRT::Discretization& dis)
 {
-  int position = 0;
-  
-  // extract size
-  int size = 0;
-  ExtractfromPack(position,data,size);
-  // ParObject instance type
-  int type=0;
-  ExtractfromPack(position,data,type);
-  if (type != ParObject_ElementRegister) dserror("Wrong instance type in data");
-  // extract type
-  ExtractfromPack(position,data,etype_);
-
-  return true;
-}
-#endif
-
-
-
-
-
-
-
-
+  // This is a base class dummy that does nothing.
+  // It does not even print a message because it might become
+  // heavily used by elements that do not need an initialize call
+  return 0;
+} 
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

@@ -547,23 +547,6 @@ public:
   */
   virtual RefCountPtr<Epetra_CrsGraph> BuildNodeGraph() const;
 
-
-  /*!
-  \brief Set Ids of design nodes in nodes (Filled()==true NOT prerequisite)
-
-  On exit, each node in this that is positioned on a design entity
-  will store the global design node number that it concides to.
-  It will also store a flag indicating on what type of design entitty its on.
-
-  \param type   : type of design entity (on_none, on_dnode, on_dline, on_dsurface, on_dvolume) that is set
-  \param nfenode: vector of length ndnode, nfenode[i] is number of fe nodes on design entity i
-  \param fenode: vector of length ndnode, fenode[i] is vector of global fe node ids that are on design entity i
-
-  \note this is an individual call
-  */
-  virtual void SetDesignEntityIds(Node::OnDesignEntity type, const vector<int>& nfenode, const vector<vector<int> >& fenode);
-
-
   //@}
 
   // @{ \name Evaluate methods

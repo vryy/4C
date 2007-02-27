@@ -76,9 +76,8 @@ void DRT::Discretization::Evaluate(
     
     // get element location vector, dirichlet flags and ownerships
     vector<int> lm;
-    vector<int> lmdirich;
     vector<int> lmowner;
-    actele->LocationVector(lm,lmdirich,lmowner);
+    actele->LocationVector(lm,lmowner);
     
     // get dimension of element matrices and vectors
     // Reshape element matrices and vectors and init to zero
@@ -130,12 +129,12 @@ void DRT::Discretization::EvaluateNeumann(ParameterList& params, Epetra_Vector& 
   {
     if (fool->first != (string)"PointNeumann") continue;
     DRT::Condition& cond = *(fool->second);
-    const vector<int>* nodeids = cond.GetVector<int>("Node Ids");
+    const vector<int>* nodeids = cond.Get<vector<int> >("Node Ids");
     if (!nodeids) dserror("PointNeumann condition does not have nodal cloud");
     const int nnode = (*nodeids).size();
-    vector<int>*    curve  = cond.GetVector<int>("curve");
-    vector<int>*    onoff  = cond.GetVector<int>("onoff");
-    vector<double>* val    = cond.GetVector<double>("val");
+    vector<int>*    curve  = cond.Get<vector<int> >("curve");
+    vector<int>*    onoff  = cond.Get<vector<int> >("onoff");
+    vector<double>* val    = cond.Get<vector<double> >("val");
     // Neumann BCs for some historic reason only have one curve
     int curvenum = -1;
     if (curve) curvenum = (*curve)[0]; 
@@ -179,9 +178,8 @@ void DRT::Discretization::EvaluateNeumann(ParameterList& params, Epetra_Vector& 
       {
         // get element location vector, dirichlet flags and ownerships
         vector<int> lm;
-        vector<int> lmdirich;
         vector<int> lmowner;
-        curr->second->LocationVector(lm,lmdirich,lmowner);
+        curr->second->LocationVector(lm,lmowner);
         elevector.Size((int)lm.size());
         curr->second->EvaluateNeumann(params,*this,cond,lm,elevector);
         LINALG::Assemble(systemvector,elevector,lm,lmowner);
@@ -268,12 +266,12 @@ void DoDirichletCondition(DRT::Condition&      cond,
                           Epetra_Vector&       systemvector,
                           Epetra_Vector&       toggle)
 {
-  const vector<int>* nodeids = cond.GetVector<int>("Node Ids");
+  const vector<int>* nodeids = cond.Get<vector<int> >("Node Ids");
   if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
   const int nnode = (*nodeids).size();
-  vector<int>*    curve  = cond.GetVector<int>("curve");
-  vector<int>*    onoff  = cond.GetVector<int>("onoff");
-  vector<double>* val    = cond.GetVector<double>("val");
+  vector<int>*    curve  = cond.Get<vector<int> >("curve");
+  vector<int>*    onoff  = cond.Get<vector<int> >("onoff");
+  vector<double>* val    = cond.Get<vector<double> >("val");
   for (int i=0; i<nnode; ++i)
   {
     // do only nodes in my row map
