@@ -679,6 +679,8 @@ OBJS_WALLGE   = src/wallge/wge_setdof.o \
 OBJS_TSI      = src/tsi_full/tsi_coupling.o \
                 src/tsi_full/tsi_dyn.o \
 		src/tsi_full/tsi_init.o \
+                src/tsi_full/tsi_st_cendif.o \
+                src/tsi_full/tsi_st_fehlbg.o \
                 src/tsi_full/tsi_st_genalp.o \
                 src/tsi_full/tsi_th_stat.o
 #               planar thermal

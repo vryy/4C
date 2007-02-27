@@ -176,6 +176,19 @@ void tsi_dyn()
       tsi_th_stat(disnum_s, disnum_t);
       tsi_st_genalp(disnum_s, disnum_t);
       break;
+    /* semi TSI : static thermal and dynamic structure field */
+    case tsi_therm_stat_struct_cendif: 
+      tsi_th_stat(disnum_s, disnum_t);
+      tsi_st_cendif(disnum_s, disnum_t);
+      break;
+    /* semi TSI : static thermal and dynamic structure field */
+    case tsi_therm_stat_struct_fehlbg: 
+      tsi_th_stat(disnum_s, disnum_t);
+      tsi_st_fehlbg(disnum_s, disnum_t);
+      break;
+    /* semi TSI : prescribed thermal and dynamic structure field */
+    case tsi_therm_presc_struct_genalp:
+      break;
     /* full TSI */
     case tsi_full:
       dserror("Full thermal-structure-interation is not implemented!\n");

@@ -201,6 +201,12 @@ for (k=0; k<iel; k++)
  xrefe[1][k]= ele->node[k]->x[1];                         /* y-direction */
  xcure[0][k]= xrefe[0][k] + ele->node[k]->sol.a.da[0][0]; /* x-direction */
  xcure[1][k]= xrefe[1][k] + ele->node[k]->sol.a.da[0][1]; /* y-direction */
+#if 0
+ /* debug: */
+ printf("Ele %d, node %d, xdis %f, ydis %f\n", 
+        ele->Id, k, 
+        ele->node[k]->sol.a.da[0][0], ele->node[k]->sol.a.da[0][1]); 
+#endif
 }
 if(ele->e.w1->kintype==updated_lagr)
 {

@@ -54,12 +54,20 @@ void tsi_init_nodsol(FIELD *structfield,
                      INT disnum_t);
 void tsi_init_curve();
 
+/*----------------------------------------------------------------------*/
+/* file tsi_st_cendif.c */
+void tsi_st_cendif(INT disnum_s,
+                   INT disnum_t);
+
+/*----------------------------------------------------------------------*/
+/* file tsi_st_fehlbg.c */
+void tsi_st_fehlbg(INT disnum_s,
+                   INT disnum_t);
 
 /*----------------------------------------------------------------------*/
 /* file tsi_st_genalp.c */
 void tsi_st_genalp(INT disnum_s,
                    INT disnum_t);
-
 
 /*----------------------------------------------------------------------*/
 /* file tsi_th_stat.c */

@@ -86,6 +86,9 @@ void inpctr_dyn_fluid(
 void inpctr_dyn_fsi(
     FSI_DYNAMIC    *fsidyn);
 
+void inpctr_dyn_tsi(
+    TSI_DYNAMIC    *tsidyn);
+
 
 /*----------------------------------------------------------------------*
   |  input_ctr_head.c                                  m.gee 11/01       |

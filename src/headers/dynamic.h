@@ -233,10 +233,24 @@ typedef struct _TSI_DYNAMIC
   {
     tsi_full,                       /* fully coupled analysis,
                                      * both fields vary in time */
+    tsi_therm_presc_struct_genalp,  /* A steady thermal field is solved
+                                     * at each time step by prescribed
+                                     * heat load. Subsequently, the
+                                     * structural dyamics is solved by
+                                     * generalised-alpha introducing
+                                     * the current temperature. */
     tsi_therm_stat_struct_genalp,   /* thermal field is initially
                                      * solved, then only the structure
-                                     * is integrated in time with
+                                     * is time-integrated with
                                      * generalised-alpha scheme */
+    tsi_therm_stat_struct_cendif,   /* thermal field is initially
+                                     * solved, then only the structure
+                                     * is time-integrated with
+                                     * central-differences scheme */
+    tsi_therm_stat_struct_fehlbg,   /* thermal field is initially
+                                     * solved, then only the structure
+                                     * is time-integrated with
+                                     * Fehlberg4 scheme */
     tsi_therm_pred_struct_dyn       /* thermal field is predefined 
                                      * initially, ie it is not solved,
                                      * later on only the structural field

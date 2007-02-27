@@ -25,15 +25,15 @@ Maintainer: Michael Gee
 #include "../io/io_drt.H"
 
 /*----------------------------------------------------------------------*
-  |                                                       m.gee 06/01    |
-  | vector of numfld FIELDs, defined in global_control.c                 |
+ |                                                       m.gee 06/01    |
+ | vector of numfld FIELDs, defined in global_control.c                 |
  *----------------------------------------------------------------------*/
 extern struct _FIELD      *field;
 
 /*----------------------------------------------------------------------*
-  |                                                       m.gee 06/01    |
-  | general problem data                                                 |
-  | global variable GENPROB genprob is defined in global_control.c       |
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 
@@ -120,13 +120,14 @@ void stru_genalpha_drt()
   STRUCT_DYN_CALC dynvar;
   memset(&dynvar, 0, sizeof(STRUCT_DYN_CALC));
   double          time = 0.0;  // we should add an input parameter
+  double          timen;  // new time t_{n+1}
 
   //-----------------------------------------------------create a solver
   RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
   LINALG::Solver solver(solveparams,actdis->Comm(),allfiles.out_err);
   solver.TranslateSolverParameters(*solveparams,actsolv);
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
-
+  
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
@@ -304,9 +305,10 @@ void stru_genalpha_drt()
   {
     //------------------------------------------------------- current time
     // we are at t_{n} == time; the new time is t_{n+1} == time+dt
+    timen = time + dt;
 
     //--------------------------------------------------- predicting state
-    // constant predictor displacement in domain
+    // constant predictor : displacement in domain
     disn->Update(1.0, *dis, 0.0);
     // apply new displacements at DBCs
     // and get new external force vector
@@ -321,8 +323,8 @@ void stru_genalpha_drt()
       params.set("assemble vector 2",false);
       params.set("assemble vector 3",false);
       // other parameters needed by the elements
-      params.set("total time",time+dt);
-      params.set("delta time",sdyn->dt);
+      params.set("total time",ntime);
+      params.set("delta time",dt);
       // set vector values needed by elements
       actdis->ClearState();
       actdis->SetState("displacement",disn);
@@ -364,9 +366,10 @@ void stru_genalpha_drt()
     //    A_{n+1-alpha_m} := (1.-alpha_m) * A_{n+1} + alpha_m * A_{n}
     accm->Update(1.-alpham,*accn,alpham,*acc,0.0);
 
-    //------------------------- ----- compute interpolated external forces
+    //------------------------------- compute interpolated external forces
     // external mid-forces F_{ext;n+1-alpha_f} (fextm)
-    //    F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1} + alpha_f * F_{ext;n}
+    //    F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1} 
+    //                         + alpha_f * F_{ext;n}
     fextm->Update(1.-alphaf,*fextn,alphaf,*fext,0.0);
 
     //------------- eval fint at interpolated state, eval stiffness matrix
@@ -384,8 +387,8 @@ void stru_genalpha_drt()
       params.set("assemble vector 2",false);
       params.set("assemble vector 3",false);
       // other parameters that might be needed by the elements
-      params.set("total time",time+dt);
-      params.set("delta time",sdyn->dt);
+      params.set("total time",timen);
+      params.set("delta time",dt);
       // set vector values needed by elements
       actdis->ClearState();
       actdis->SetState("residual displacement",disi);
@@ -482,8 +485,8 @@ void stru_genalpha_drt()
         params.set("assemble vector 2",false);
         params.set("assemble vector 3",false);
         // other parameters that might be needed by the elements
-        params.set("total time",time+dt);
-        params.set("delta time",sdyn->dt);
+        params.set("total time",timen);
+        params.set("delta time",dt);
         // set vector values needed by elements
         actdis->ClearState();
         actdis->SetState("residual displacement",disi);
@@ -501,7 +504,7 @@ void stru_genalpha_drt()
       //     + C . V_{n+1-alpha_f}
       //     + F_int(D_{n+1-alpha_f})
       //     - F_{ext;n+1-alpha_f}
-      // add interia mid-forces
+      // add inertia mid-forces
       mass_mat->Multiply(false,*accm,*fresm);
       // add viscous mid-forces
       if (damping)

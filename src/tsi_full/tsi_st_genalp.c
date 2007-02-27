@@ -172,7 +172,7 @@ DOUBLE deltat;
 
 /*======================================================================*/
 /*!
-\brief 
+\brief Generalised-alpha time integration of structural field
 
 \author bborn
 \date 03/06
@@ -303,7 +303,7 @@ void tsi_st_genalp(INT disnum_s,
   actintra->intra_rank = 0;
   actintra->intra_nprocs = 1;
 #endif
-  /* there are only procs allowed in here, that belong to the thermal
+  /* there are only procs allowed in here, that belong to the structural
    * intracommunicator (in case of linear statics, this should be all) */
   if (actintra->intra_fieldtyp != structure)
   {
@@ -539,7 +539,8 @@ void tsi_st_genalp(INT disnum_s,
   actdyn->time = 0.0;
 
   /*--------------------------------------------------------------------*/
-  /* init all applied time curves -*/
+  /* init all applied time curves */
+  /* This was already done */
   for (actcurve=0; actcurve<numcurve; actcurve++)
   {
     /* dyn_init_curve(actcurve, actdyn->nstep, actdyn->dt, actdyn->maxtime); */
@@ -585,7 +586,7 @@ void tsi_st_genalp(INT disnum_s,
   init_bin_out_field(&out_context,
                      &(actsolv->sysarray_typ[stiff_array]), 
                      &(actsolv->sysarray[stiff_array]),
-                     actfield, actpart, actintra, 0);
+                     actfield, actpart, actintra, disnum);
 #endif
 
   /*--------------------------------------------------------------------*/

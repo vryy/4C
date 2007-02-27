@@ -2037,6 +2037,18 @@ void inpctr_dyn_tsi(TSI_DYNAMIC *tsidyn)
       {
 	 tsidyn->kind = tsi_therm_stat_struct_genalp;
       }
+      else if (frwordcmp(buffer, "thermal_static_structure_centraldiff") == 0)
+      {
+	 tsidyn->kind = tsi_therm_stat_struct_cendif;
+      }
+      else if (frwordcmp(buffer, "thermal_static_structure_fehlberg") == 0)
+      {
+	 tsidyn->kind = tsi_therm_stat_struct_fehlbg;
+      }
+      else if (frwordcmp(buffer, "thermal_prescribed_structure_genalpha") == 0)
+      {
+         tsidyn->kind = tsi_therm_presc_struct_genalp;
+      }
       else if (frwordcmp(buffer, "thermal_predefined_structure_dynamic") == 0)
       {
          tsidyn->kind = tsi_therm_pred_struct_dyn;
@@ -2048,7 +2060,7 @@ void inpctr_dyn_tsi(TSI_DYNAMIC *tsidyn)
     }
 
     frint("NUMSTEP", &(tsidyn->nstep), &ierr);
-    frint("TIMESTEP", &(tsidyn->dt), &ierr);
+    frdouble("TIMESTEP", &(tsidyn->dt), &ierr);
     frdouble("MAXTIME", &(tsidyn->maxtime), &ierr);
 
     frint("ITEMAX", &(tsidyn->maxiter), &ierr);

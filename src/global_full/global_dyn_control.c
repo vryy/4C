@@ -36,7 +36,7 @@ extern ALLDYNA      *alldyn;
 void caldyn()
 {
 #ifdef DEBUG
-dstrc_enter("caldyn");
+  dstrc_enter("caldyn");
 #endif
 /*------------------------------ switch into different time integrators */
   switch (alldyn[0].sdyn->Typ)
@@ -70,7 +70,7 @@ dstrc_enter("caldyn");
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
-dstrc_exit();
+  dstrc_exit();
 #endif
 return;
 } /* end of caldyn */
