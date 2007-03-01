@@ -21,6 +21,7 @@
 #include <Epetra_CrsGraph.h>
 #include <Epetra_Map.h>
 #include <Epetra_LinearProblem.h>
+#include <Epetra_Export.h>
 #include <AztecOO.h>
 #include "Teuchos_ParameterList.hpp"
 
@@ -57,12 +58,18 @@ private:
   FSI_DYNAMIC *fsidyn_;
 
   Teuchos::RefCountPtr<Epetra_Map> StandardMap_;
+  Teuchos::RefCountPtr<Epetra_Map> redundantmap_;
   Teuchos::RefCountPtr<Epetra_Vector> soln_;
+  Teuchos::RefCountPtr<Epetra_Vector> redundantsol_;
   Teuchos::RefCountPtr<Epetra_CrsGraph> rawGraph_;
+
+  Teuchos::RefCountPtr<Epetra_Export> exportredundant_;
 
   FSI_STRUCT_WORK* struct_work_;
   FSI_FLUID_WORK* fluid_work_;
   FSI_ALE_WORK* ale_work_;
+
+  Epetra_Comm& Comm_;
 };
 
 

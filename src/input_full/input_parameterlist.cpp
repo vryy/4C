@@ -28,6 +28,10 @@ Maintainer: Ulrich Kuettler
 
 #include <Teuchos_ParameterList.hpp>
 
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
+
 // include all C stuff from ccarat
 extern "C" {
 
