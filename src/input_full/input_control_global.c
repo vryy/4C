@@ -91,6 +91,10 @@ dstrc_enter("inpctr");
    inpctrhed();
 /*--------------------------------------- input of general problem data */
    inpctrprob();
+#ifdef TRILINOS_PACKAGE
+/*------------------------------------ input of trilinos parameter list */
+   input_ReadGlobalParameterList();
+#endif
 /*---------------------------------------- input of general solver data */
    /* for FSI */
    switch (genprob.probtyp)

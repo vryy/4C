@@ -153,6 +153,8 @@ OBJS_INPUT    = src/input_full/input_control_global.o \
                 src/input_full/input_funct.o \
                 src/input_full/input_resultdescr.o \
                 src/input_full/input_submesh.o
+# c++ part of input
+OBJS_INPUT_CPP= src/input_full/input_parameterlist.o
 #                fluid3
 OBJS_FLUID3   = src/fluid3/f3_calele.o \
                 src/fluid3/f3_calelesize.o \

@@ -12,19 +12,25 @@
 #include <sstream>
 #include <vector>
 
-#include <NOX_Solver_Manager.H>
-#include <NOX_Epetra_Vector.H>
-#include <NOX_Epetra_FiniteDifferenceColoring.H>
-
-#include <Teuchos_XMLParameterListHelpers.hpp>
-#include <Epetra_SerialComm.h>
 #include <EpetraExt_MapColoring.h>
 #include <EpetraExt_MapColoringIndex.h>
 #include <Epetra_CrsGraph.h>
-#include <Epetra_MapColoring.h>
 #include <Epetra_IntVector.h>
+#include <Epetra_MapColoring.h>
+#include <Epetra_SerialComm.h>
+#include <NOX_Abstract_Group.H>
+#include <NOX_Epetra_BroydenOperator.H>
+#include <NOX_Epetra_FiniteDifferenceColoring.H>
+#include <NOX_Epetra_Vector.H>
+#include <NOX_Solver_Manager.H>
 
 #include "fsi_nox_interface_helper.H"
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+extern Teuchos::RefCountPtr<Teuchos::ParameterList> globalparameterlist;
+
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -120,7 +126,6 @@ extern "C" void debug_out_data(FIELD *actfield, CHAR* n, NODE_ARRAY array, INT p
   fclose(f);
   call++;
 }
-
 
 
 /*----------------------------------------------------------------------*/
@@ -326,8 +331,20 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
   // don't have a direct mapping, so loop all structural nodes and
   // select the dofs that belong to the local part of the interface.
 
-  GatherResiduum gr(F,ipos->mf_dispnp,ipos->mf_reldisp);
-  loop_interface(structfield,gr,F);
+#if 0
+  if ((fillFlag==MF_Jac) || (fillFlag==MF_Res))
+  {
+    // in the special case of MF avoid the old solution part. This is
+    // supposed to prevent roundoff issues.
+    GatherDisplacements gd(F,ipos->mf_dispnp);
+    loop_interface(structfield,gd,F);
+  }
+  else
+#endif
+  {
+    GatherResiduum gr(F,ipos->mf_dispnp,ipos->mf_reldisp);
+    loop_interface(structfield,gr,F);
+  }
 
 #ifdef DEBUG
   if (getenv("DEBUG")!=NULL)
@@ -591,13 +608,8 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     }
 #endif
 
-    // Create the top level parameter list
-    Teuchos::RefCountPtr<Teuchos::ParameterList> nlParamsPtr = Teuchos::rcp(new Teuchos::ParameterList);
-
-    // Read parameters. Hack. This must be merged with our input file.
-    Teuchos::updateParametersFromXmlFile("input.xml", nlParamsPtr.get());
-
-    Teuchos::ParameterList& nlParams = *nlParamsPtr.get();
+    // Get the top level parameter list
+    Teuchos::ParameterList& nlParams = *globalparameterlist;
 
     // sublists
 
@@ -608,10 +620,8 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
     Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
 
-    //cout << lsParams;
-
     // Create printing utilities
-    NOX::Utils utils(printParams);
+    Teuchos::RefCountPtr<NOX::Utils> utils = Teuchos::rcp(new NOX::Utils(printParams));
 
 #if 0
     // use user defined aitken relaxation
@@ -628,30 +638,71 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     // 3. Finite Difference (Epetra_RowMatrix)
     //Teuchos::RefCountPtr<NOX::Epetra::FiniteDifference> FD = Teuchos::rcp(new NOX::Epetra::FiniteDifference(printParams, interface, noxSoln));
 
+    // Create the linear system
+    Teuchos::RefCountPtr<NOX::Epetra::Interface::Required> iReq = interface;
+#if 0
+    // Die Variante mit dem schönen Coloring. Das funktioniert ganz
+    // prächtig, allerdings braucht er eben recht lang um den Jacobian
+    // aufzustellen. Das scheint am besten mit modified Newton zu laufen.
     Teuchos::RefCountPtr<NOX::Epetra::FiniteDifferenceColoring> FDC =
       Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, colorMap, columns));
     Teuchos::RefCountPtr<NOX::Epetra::Interface::Jacobian> iJac_FDC = FDC;
 
-    // Create the linear system
-    Teuchos::RefCountPtr<NOX::Epetra::Interface::Required> iReq = interface;
-    //Teuchos::RefCountPtr<NOX::Epetra::Interface::Jacobian> iJac = MF;
     //Teuchos::RefCountPtr<NOX::Epetra::Interface::Preconditioner> iPrec = interface;
 
-#if 0
-    Teuchos::RefCountPtr<NOX::Epetra::LinearSystemAztecOO> linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams,
-                                                                                                                      iReq, iJac, MF,
-                                                                                                                      noxSoln));
-#endif
-#if 0
-    Teuchos::RefCountPtr<NOX::Epetra::LinearSystemAztecOO> linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams,
-                                                                                                                      iReq, noxSoln));
-#endif
+//     Teuchos::RefCountPtr<NOX::Epetra::LinearSystemAztecOO> linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams,
+//                                                                                                                       iReq, noxSoln));
     Teuchos::RefCountPtr<NOX::Epetra::LinearSystemAztecOO> linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams,
                                                                                                                       iReq, iJac_FDC, FDC, noxSoln));
+#else
+    // Matrix-Free.
+    // This is an operator only. Not that good at preconditioning
+    Teuchos::RefCountPtr<NOX::Epetra::MatrixFree> MF = Teuchos::rcp(new NOX::Epetra::MatrixFree(printParams, interface, noxSoln));
+    //MF->setLambda(1e-2);
+    //MF->setLambda(1);
+
+    // A real (approximated) matrix for preconditioning
+    Teuchos::RefCountPtr<NOX::Epetra::FiniteDifferenceColoring> FDC =
+      Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, colorMap, columns));
+
+    Teuchos::RefCountPtr<NOX::Epetra::Interface::Jacobian> iJac = MF;
+    Teuchos::RefCountPtr<NOX::Epetra::Interface::Preconditioner> iPrec = FDC;
+
+#if 1
+    // Die matrizenfreie Version läuft, solange man sich mit
+    // fehlgeschlagenen Newton-Schritten zufrieden gibt. Das
+    // funktioniert mit und ohne Preconditioner. Aber das gefällt mir
+    // nicht!
+    Teuchos::RefCountPtr<NOX::Epetra::LinearSystemAztecOO> linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams,
+                                                                                                                      iReq,
+                                                                                                                      iJac, MF,
+                                                                                                                      //iPrec, FDC,
+                                                                                                                      noxSoln));
+#else
+    // an alternative approach for the Jacobian
+
+    // we need a Jacobian to start with.
+    FDC->computeJacobian(*soln());
+
+    Teuchos::RefCountPtr<Epetra_CrsMatrix> mat = Teuchos::rcp(new Epetra_CrsMatrix(FDC->getUnderlyingMatrix()));
+    Teuchos::RefCountPtr<NOX::Epetra::BroydenOperator> B =
+      //Teuchos::rcp(new NOX::Epetra::BroydenOperator(nlParams, utils,
+      //*soln(), mat));
+    Teuchos::rcp(new NOX::Epetra::BroydenOperator(nlParams, *soln(), mat));
+
+    iJac = B;
+    Teuchos::RefCountPtr<NOX::Epetra::LinearSystemAztecOO> linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams,
+                                                                                                                      iReq,
+                                                                                                                      //iJac, B,
+                                                                                                                      iJac, FDC,
+                                                                                                                      //iPrec, FDC,
+                                                                                                                      noxSoln));
+#endif
+
+#endif
 
     // Create the Group
-    Teuchos::RefCountPtr<NOX::Epetra::Group> grp = Teuchos::rcp(new NOX::Epetra::Group(printParams, iReq, noxSoln,
-                                                                                       linSys));
+    Teuchos::RefCountPtr<NOX::Epetra::Group> grp = Teuchos::rcp(new NOX::Epetra::Group(printParams, iReq, noxSoln, linSys));
 
     // Create the convergence tests
     Teuchos::RefCountPtr<NOX::StatusTest::NormF> absresid    = Teuchos::rcp(new NOX::StatusTest::NormF(1.0e-6));
@@ -671,12 +722,12 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     combo->addStatusTest(maxiters);
 
     // Create the method
-    NOX::Solver::Manager solver(grp, combo, nlParamsPtr);
+    NOX::Solver::Manager solver(grp, combo, globalparameterlist);
     NOX::StatusTest::StatusType status = solver.solve();
 
     if (status != NOX::StatusTest::Converged)
       if (par.myrank==0)
-        utils.out() << "Nonlinear solver failed to converge!" << endl;
+        utils->out() << "Nonlinear solver failed to converge!" << endl;
 
     // Get the Epetra_Vector with the final solution from the solver
     const NOX::Epetra::Group& finalGroup = dynamic_cast<const NOX::Epetra::Group&>(solver.getSolutionGroup());
@@ -686,13 +737,13 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     // End Nonlinear Solver **************************************
 
     // Output the parameter list
-    if (utils.isPrintType(NOX::Utils::Parameters))
+    if (utils->isPrintType(NOX::Utils::Parameters))
     {
-      utils.out() << endl
-                  << "Final Parameters" << endl
-                  << "****************" << endl;
-      solver.getList().print(utils.out());
-      utils.out() << endl;
+      utils->out() << endl
+                   << "Final Parameters" << endl
+                   << "****************" << endl;
+      solver.getList().print(utils->out());
+      utils->out() << endl;
     }
 
 #ifdef DEBUG
