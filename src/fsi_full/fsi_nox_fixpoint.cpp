@@ -1,0 +1,63 @@
+
+#ifdef TRILINOS_PACKAGE
+
+#include "fsi_nox_fixpoint.H"
+#include <NOX_GlobalData.H>
+#include <NOX_Abstract_Group.H>
+
+FixPoint::FixPoint(const Teuchos::RefCountPtr<NOX::Utils>& utils,
+                   Teuchos::ParameterList& params)
+  : utils_(utils)
+{
+}
+
+
+FixPoint::~FixPoint()
+{
+}
+
+
+bool FixPoint::reset(const Teuchos::RefCountPtr<NOX::GlobalData>& gd,
+                     Teuchos::ParameterList& params)
+{
+  utils_ = gd->getUtils();
+  return true;
+}
+
+
+bool FixPoint::compute(NOX::Abstract::Vector& dir,
+                       NOX::Abstract::Group& soln,
+                       const NOX::Solver::Generic& solver)
+{
+  NOX::Abstract::Group::ReturnType status;
+
+  // Compute F at current solution
+  status = soln.computeF();
+  if (status != NOX::Abstract::Group::Ok)
+    throwError("compute", "Unable to compute F");
+
+  // The residual is the direction.
+  dir.update(1.0, soln.getF());
+
+  return true;
+}
+
+
+bool FixPoint::compute(NOX::Abstract::Vector& dir,
+                       NOX::Abstract::Group& soln,
+                       const NOX::Solver::LineSearchBased& solver)
+{
+  return NOX::Direction::Generic::compute( dir, soln, solver );
+}
+
+
+void FixPoint::throwError(const string& functionName,
+                          const string& errorMsg)
+{
+    if (utils_->isPrintType(NOX::Utils::Error))
+      utils_->err() << "FixPoint::" << functionName
+                    << " - " << errorMsg << endl;
+    throw "NOX Error";
+}
+
+#endif

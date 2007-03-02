@@ -7,7 +7,8 @@
 #endif
 
 #include "fsi_dyn_nox.H"
-#include "fsi_aitken_nox.H"
+#include "fsi_nox_aitken.H"
+#include "fsi_nox_fixpoint.H"
 #include "../discret/dstrc.H"
 
 #include <fstream>
@@ -15,6 +16,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <algorithm>
 
 #include <EpetraExt_MapColoring.h>
 #include <EpetraExt_MapColoringIndex.h>
@@ -27,6 +29,9 @@
 #include <NOX_Epetra_FiniteDifferenceColoring.H>
 #include <NOX_Epetra_Vector.H>
 #include <NOX_Solver_Manager.H>
+
+#include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_Time.hpp>
 
 #include "fsi_nox_interface_helper.H"
 
@@ -141,7 +146,8 @@ FSI_InterfaceProblem::FSI_InterfaceProblem(Epetra_Comm& Comm,
   : struct_work_(struct_work),
     fluid_work_(fluid_work),
     ale_work_(ale_work),
-    Comm_(Comm)
+    Comm_(Comm),
+    counter_(7)
 {
   fsidyn_ = alldyn[3].fsidyn;
 
@@ -263,6 +269,9 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
   if (Comm_.MyPID()==0)
     cout << "\n==================================================================================================\n"
          << "FSI_InterfaceProblem::computeF: fillFlag = " RED << flags[fillFlag] << END_COLOR "\n\n";
+
+  // we count the number of times the residuum is build
+  counter_[fillFlag] += 1;
 
   FIELD* structfield = struct_work_->struct_field;
   FIELD* fluidfield  = fluid_work_ ->fluid_field;
@@ -506,6 +515,41 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
 
   fflush(out);
 
+  // Get the top level parameter list
+  Teuchos::ParameterList& nlParams = *globalparameterlist;
+
+  // sublists
+
+  //Teuchos::ParameterList& searchParams = nlParams.sublist("Line Search");
+  Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
+
+  Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
+  Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Newton"));
+  Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
+
+  // Create printing utilities
+  Teuchos::RefCountPtr<NOX::Utils> utils = Teuchos::rcp(new NOX::Utils(printParams));
+
+  // log solver iterations
+
+  Teuchos::RefCountPtr<std::ofstream> log;
+  if (par.myrank==0)
+  {
+    std::string s = allfiles.outputfile_kenner;
+    s.append(".iteration");
+    log = Teuchos::rcp(new std::ofstream(s.c_str()));
+    (*log) << "# num procs      = " << par.nprocs << "\n"
+           << "# Method         = " << dirParams.get("Method","Newton") << "\n"
+           << "# Jacobian       = " << nlParams.get("Jacobian", "Matrix Free") << "\n"
+           << "# Preconditioner = " << nlParams.get("Preconditioner","None") << "\n"
+           << "# Line Search    = " << nlParams.sublist("Line Search").get("Method","Full Step") << "\n"
+           << "#\n"
+           << "# step  time/step  #nliter  #liter  Residual  Jac  Prec  FD_Res  MF_Res  MF_Jac  User\n"
+      ;
+  }
+
+  Teuchos::Time timer("time step timer");
+
   // Create the Epetra_RowMatrix using Finite Difference with Coloring
   // Here we take the graph of the dof connections at the FSI
   // interface and create a coloring with the EpetraExt helpers. This
@@ -517,6 +561,15 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
   Teuchos::RefCountPtr<Epetra_MapColoring> colorMap = Teuchos::rcp(&tmpMapColoring(*rawGraph_));
   EpetraExt::CrsGraph_MapColoringIndex colorMapIndex(*colorMap);
   Teuchos::RefCountPtr< vector<Epetra_IntVector> > columns = Teuchos::rcp(&colorMapIndex(*rawGraph_));
+
+  // A distance 1 coloring can be used to build just the diagonal of
+  // the Jacobian. This is much faster and might be a suitable
+  // preconditioner.
+
+  EpetraExt::CrsGraph_MapColoring distance1MapColoring(algType,0,true);
+  Teuchos::RefCountPtr<Epetra_MapColoring> distance1ColorMap = Teuchos::rcp(&distance1MapColoring(*rawGraph_));
+  EpetraExt::CrsGraph_MapColoringIndex distance1ColorMapIndex(*distance1ColorMap);
+  Teuchos::RefCountPtr< vector<Epetra_IntVector> > distance1Columns = Teuchos::rcp(&distance1ColorMapIndex(*rawGraph_));
 
   while (fsidyn->step < fsidyn->nstep && fsidyn->time <= fsidyn->maxtime)
   {
@@ -534,6 +587,13 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     adyn->time = fsidyn->time;
 
     fsi_algoout(0);
+
+    // reset all counters
+    std::fill(counter_.begin(),counter_.end(),0);
+    lsParams.sublist("Output").set("Total Number of Linear Iterations",0);
+
+    // start time measurement
+    Teuchos::RefCountPtr<Teuchos::TimeMonitor> timemonitor = rcp(new Teuchos::TimeMonitor(timer,true));
 
     // aus dem Strukturlöser:
 
@@ -602,20 +662,6 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     }
 #endif
 
-    // Get the top level parameter list
-    Teuchos::ParameterList& nlParams = *globalparameterlist;
-
-    // sublists
-
-    //Teuchos::ParameterList& searchParams = nlParams.sublist("Line Search");
-    Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
-
-    Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
-    Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Newton"));
-    Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
-
-    // Create printing utilities
-    Teuchos::RefCountPtr<NOX::Utils> utils = Teuchos::rcp(new NOX::Utils(printParams));
 
 #if 0
     // use user defined aitken relaxation
@@ -639,6 +685,8 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
 
     Teuchos::RefCountPtr<NOX::Epetra::MatrixFree> MF;
     Teuchos::RefCountPtr<NOX::Epetra::FiniteDifferenceColoring> FDC;
+    Teuchos::RefCountPtr<NOX::Epetra::FiniteDifferenceColoring> FDC1;
+    Teuchos::RefCountPtr<NOX::Epetra::BroydenOperator> B;
 
     Teuchos::RefCountPtr<NOX::Epetra::Interface::Jacobian> iJac;
     Teuchos::RefCountPtr<NOX::Epetra::Interface::Preconditioner> iPrec;
@@ -648,7 +696,7 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
 
     Teuchos::RefCountPtr<NOX::Epetra::LinearSystemAztecOO> linSys;
 
-    //////////////////////////////////////////////////////////////////
+    // ==================================================================
     // decide on Jacobian and preconditioner
     // We migh want to use no preconditioner at all. Some kind of
     // Jacobian has to be provided, otherwise the linear system uses
@@ -657,6 +705,8 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     std::string jacobian = nlParams.get("Jacobian", "MatrixFree");
     std::string preconditioner = nlParams.get("Preconditioner", "None");
 
+    // Matrix Free Newton Krylov. This is supposed to be the most
+    // appropiate choice.
     if (jacobian=="Matrix Free")
     {
       // MatrixFree seems to be the most interessting choice. But you
@@ -667,31 +717,114 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
       iJac = MF;
       J = MF;
     }
+
+    // No Jacobian at all. Do a fix point iteration. This is a user
+    // extension, so we have to modify the parameter list here.
+    else if (jacobian=="None")
+    {
+      Teuchos::RefCountPtr<NOX::Direction::Generic> fixpoint = Teuchos::rcp(new FixPoint(utils,nlParams));
+      dirParams.set("Method","User Defined");
+      dirParams.set("User Defined Direction",fixpoint);
+      lsParams.set("Preconditioner","None");
+      preconditioner="None";
+    }
+
+    // Finite Difference with coloring. Build a Jacobian as good as it
+    // gets. This is the closest we get to the true Jacobian.
     else if (jacobian=="Finite Difference")
     {
-      // A real (approximated) matrix for preconditioning
       FDC = Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, colorMap, columns));
 
       iJac = FDC;
       J = FDC;
+    }
+
+    // Finite Difference with distance 1 coloring. Build just a
+    // diagonal Jacobian.
+    else if (jacobian=="Finite Difference 1")
+    {
+      FDC1 = Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, colorMap, columns, false, true));
+
+      iJac = FDC1;
+      J = FDC1;
+    }
+
+    // Broyden. A strange idea that starts with a real Jacobian and
+    // does modify it along the steps of the nonlinear solve.
+    else if (jacobian=="Broyden")
+    {
+#if 0
+      // we need a Jacobian to start with.
+      if (is_null(FDC))
+      {
+        FDC = Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, colorMap, columns));
+      }
+      FDC->computeJacobian(*soln());
+
+      Teuchos::RefCountPtr<Epetra_CrsMatrix> mat = Teuchos::rcp(new Epetra_CrsMatrix(FDC->getUnderlyingMatrix()));
+      //B = Teuchos::rcp(new NOX::Epetra::BroydenOperator(nlParams, *soln(), mat));
+      B = Teuchos::rcp(new NOX::Epetra::BroydenOperator(nlParams, utils, *soln(), mat));
+
+      iJac = B;
+      J = B;
+#else
+      dserror("Broyden Operator still unfinished");
+#endif
     }
     else
     {
       dserror("unsupported Jacobian '%s'",jacobian.c_str());
     }
 
-    //////////////////////////////////////////////////////////////////
+    // ==================================================================
 
+    if (nlParams.sublist("Line Search").get("Method","Full Step")=="Aitken")
+    {
+      // insert user defined aitken relaxation
+      Teuchos::RefCountPtr<NOX::LineSearch::Generic> aitken = Teuchos::rcp(new AitkenRelaxation(utils,nlParams));
+      Teuchos::ParameterList& linesearch = nlParams.sublist("Line Search");
+      linesearch.set("Method","User Defined");
+      linesearch.set("User Defined Line Search",aitken);
+    }
+
+    // ==================================================================
+
+    // No preconditioning at all. This might work. But on large
+    // systems it probably won't.
     if (preconditioner=="None")
     {
-      linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams, iReq, iJac, J, noxSoln));
+      if (lsParams.get("Preconditioner", "None")!="None")
+      {
+        if (par.myrank==0)
+          utils->out() << RED "Warning: Preconditioner turned on in linear solver settings.\n"
+                       << "Jacobian operator will be used for preconditioning as well." END_COLOR "\n";
+      }
+
+      if (Teuchos::is_null(iJac))
+      {
+        // if no Jacobian has been set this better be the fix point
+        // method.
+        if (dirParams.get("Method","Newton")!="User Defined")
+        {
+          if (par.myrank==0)
+            utils->out() << RED "Warning: No Jacobian for solver " << dirParams.get("Method","Newton") << END_COLOR "\n";
+        }
+        linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams, iReq, noxSoln));
+      }
+      else
+      {
+        linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams, iReq, iJac, J, noxSoln));
+      }
     }
+
+    // Finite Difference with coloring. The best (and most expensive)
+    // Jacobian we can get. It might do good on really hard problems.
     else if (preconditioner=="Finite Difference")
     {
       if (lsParams.get("Preconditioner", "None")=="None")
       {
         if (par.myrank==0)
-          utils->out() << "Warning: Preconditioner truned off in linear solver settings.\n";
+          utils->out() << RED "Warning: Preconditioner turned off in linear solver settings." END_COLOR "\n";
       }
 
       // A real (approximated) matrix for preconditioning
@@ -707,33 +840,31 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
 
       linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams, iJac, J, iPrec, M, noxSoln));
     }
+
+    // Finite Difference with distance 1 coloring. Supposed to be a
+    // suitable (and cheap) preconditioner
+    else if (preconditioner=="Finite Difference 1")
+    {
+      if (lsParams.get("Preconditioner", "None")=="None")
+      {
+        if (par.myrank==0)
+          utils->out() << RED "Warning: Preconditioner truned off in linear solver settings." END_COLOR "\n";
+      }
+      if (is_null(FDC1))
+      {
+        FDC1 = Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, colorMap, columns, false, true));
+      }
+      iPrec = FDC1;
+      M = FDC1;
+
+      linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams, iJac, J, iPrec, M, noxSoln));
+    }
     else
     {
       dserror("unsupported preconditioner '%s'",preconditioner.c_str());
     }
 
-#if 0
-    // an alternative approach for the Jacobian
-
-    // we need a Jacobian to start with.
-    FDC->computeJacobian(*soln());
-
-    Teuchos::RefCountPtr<Epetra_CrsMatrix> mat = Teuchos::rcp(new Epetra_CrsMatrix(FDC->getUnderlyingMatrix()));
-    Teuchos::RefCountPtr<NOX::Epetra::BroydenOperator> B =
-      //Teuchos::rcp(new NOX::Epetra::BroydenOperator(nlParams, utils,
-      //*soln(), mat));
-    Teuchos::rcp(new NOX::Epetra::BroydenOperator(nlParams, *soln(), mat));
-
-    iJac = B;
-    Teuchos::RefCountPtr<NOX::Epetra::LinearSystemAztecOO> linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams,
-                                                                                                                      iReq,
-                                                                                                                      //iJac, B,
-                                                                                                                      iJac, FDC,
-                                                                                                                      //iPrec, FDC,
-                                                                                                                      noxSoln));
-#endif
-
-    //////////////////////////////////////////////////////////////////
+    // ==================================================================
     // Convergence Tests
 
     // Create the Group
@@ -787,13 +918,14 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
 
     // Output the parameter list
     if (utils->isPrintType(NOX::Utils::Parameters))
-    {
-      utils->out() << endl
-                   << "Final Parameters" << endl
-                   << "****************" << endl;
-      solver.getList().print(utils->out());
-      utils->out() << endl;
-    }
+      if (par.myrank==0)
+      {
+        utils->out() << endl
+                     << "Final Parameters" << endl
+                     << "****************" << endl;
+        solver.getList().print(utils->out());
+        utils->out() << endl;
+      }
 
 #ifdef DEBUG
     if (getenv("DEBUG")!=NULL && Comm_.NumProc()==1)
@@ -812,15 +944,39 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     }
 #endif
 
-    DistributeDisplacements dd(finalSolution,ipos->mf_dispnp);
-    // Use the last step we calculated.
-    // No need to do this. The last but one solution is (by
-    // definition) the same as the last one.
-    //DistributeSolution dd(finalSolution,finalF,ipos->mf_dispnp);
-    loop_interface(structfield,dd,finalSolution);
+    // ==================================================================
+    // return results
 
-    // Wenn der letzte Lï¿½eraufruf nicht mit der gefundenen Lï¿½ung
-    // erfolgte, mssen die Felder erst einmal neu gelï¿½t werden.
+    redundantsol_->PutScalar(0);
+
+    int err = redundantsol_->Export(finalSolution,*exportredundant_,Insert);
+    if (err!=0)
+      dserror("Export failed with err=%d",err);
+
+    DistributeDisplacements dd(*redundantsol_,ipos->mf_dispnp);
+    loop_interface(structfield,dd,*redundantsol_);
+
+    // ==================================================================
+
+    // stop time measurement
+    timemonitor = Teuchos::null;
+
+    if (par.myrank==0)
+    {
+      (*log) << fsidyn->step
+             << " " << timer.totalElapsedTime()
+             << " " << nlParams.sublist("Output").get("Nonlinear Iterations",0)
+             << " " << lsParams.sublist("Output").get("Total Number of Linear Iterations",0)
+        ;
+      for (std::vector<int>::size_type i=0; i<counter_.size(); ++i)
+      {
+        (*log) << " " << counter_[i];
+      }
+      (*log) << std::endl;
+      log->flush();
+    }
+
+    // ==================================================================
 
     /*--------------------- update MESH data -------------------------*/
     perf_begin(44);

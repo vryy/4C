@@ -74,7 +74,8 @@ static std::string trim(const std::string& line)
     newline.append(s);
     newline.append(" ");
   }
-  newline.resize(newline.size()-1);
+  if (newline.size()>0)
+    newline.resize(newline.size()-1);
   return newline;
 }
 

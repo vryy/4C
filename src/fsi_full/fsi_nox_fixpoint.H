@@ -1,0 +1,67 @@
+#ifndef FSI_NOX_FIXPOINT_H
+#define FSI_NOX_FIXPOINT_H
+
+#ifdef TRILINOS_PACKAGE
+
+#include <NOX_Direction_Generic.H> // base class
+#include <NOX_Utils.H>
+
+//! %Calculates the fix point direction.
+/*!
+
+  Calculates the direction
+  \f[
+  d = f(x)
+  \f]
+
+  This is the old (established, trusted, whatever you want) way to
+  solve the nonlinear FSI interface equations. The residuum \f$ f(x)
+  \f$ is
+  \f[
+  f(x) = g = d_{\Gamma,i+1} - d_{\Gamma,i}
+  \f]
+  in the FSI context.
+
+  To be used with relaxation (line search).
+
+<B>Parameters</B>
+
+None.
+
+*/
+class FixPoint : public NOX::Direction::Generic
+{
+public:
+
+  //! Constructor
+  FixPoint(const Teuchos::RefCountPtr<NOX::Utils>& utils,
+           Teuchos::ParameterList& params);
+
+  //! Destructor
+  ~FixPoint();
+
+  // derived
+  bool reset(const Teuchos::RefCountPtr<NOX::GlobalData>& gd,
+	     Teuchos::ParameterList& params);
+
+  // derived
+  bool compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp,
+	       const NOX::Solver::Generic& solver);
+
+  // derived
+  virtual bool compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp,
+		       const NOX::Solver::LineSearchBased& solver);
+
+private:
+
+  //! Print error message and throw error
+  void throwError(const string& functionName, const string& errorMsg);
+
+private:
+
+  //! Printing Utils
+  Teuchos::RefCountPtr<NOX::Utils> utils_;
+};
+
+#endif
+#endif
