@@ -663,13 +663,6 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
 #endif
 
 
-#if 0
-    // use user defined aitken relaxation
-    Teuchos::RefCountPtr<NOX::Direction::Generic> aitken = Teuchos::rcp(new Aitken());
-    dirParams.set("Method", "User Defined");
-    dirParams.set("User Defined Direction", aitken);
-#endif
-
     // Create the Epetra_RowMatrix.
     // 1. User supplied (Epetra_RowMatrix)
     //Teuchos::RefCountPtr<Epetra_RowMatrix> Analytic = Problem.getJacobian();
@@ -743,7 +736,7 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     // diagonal Jacobian.
     else if (jacobian=="Finite Difference 1")
     {
-      FDC1 = Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, colorMap, columns, false, true));
+      FDC1 = Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, distance1ColorMap, distance1Columns, false, true));
 
       iJac = FDC1;
       J = FDC1;
@@ -852,7 +845,7 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
       }
       if (is_null(FDC1))
       {
-        FDC1 = Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, colorMap, columns, false, true));
+        FDC1 = Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, distance1ColorMap, distance1Columns, false, true));
       }
       iPrec = FDC1;
       M = FDC1;
