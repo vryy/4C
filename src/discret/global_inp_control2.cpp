@@ -13,9 +13,12 @@ Maintainer: Michael Gee
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
-#include <ctime>
 #include <cstdlib>
+#include <ctime>
+#include <fstream>
 #include <iostream>
+#include <map>
+#include <string>
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -93,6 +96,19 @@ and the type is in partition.h
 *----------------------------------------------------------------------*/
  extern struct _PAR   par;
 
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Section start positions of excluded section in input file
+
+  Another global variable!
+
+  \author u.kue
+  \date 03/07
+ */
+/*----------------------------------------------------------------------*/
+extern map<string,ifstream::pos_type> ExcludedSectionPositions;
+
+
 /*----------------------------------------------------------------------*
   | input of control, element and load information         m.gee 10/06  |
   | This version of the routine uses the new discretization subsystem   |
@@ -112,7 +128,7 @@ void ntainp_ccadiscret()
 
   /* input of not mesh or time based problem data  */
   inpctr();
-  
+
   // input of design if desired
   design = NULL;
   //input_design();
@@ -127,13 +143,13 @@ void ntainp_ccadiscret()
 
   // read dynamic control data
   if (genprob.timetyp==time_dynamic) inpctrdyn();
-  
+
   // read static control data
   else inpctrstat();
-  
+
   // read input of eigensolution control data
   inpctreig();
-  
+
   // read all types of geometry related conditions (e.g. boundary conditions)
   // Also read time and space functions and local coord systems
   input_conditions();
@@ -165,7 +181,7 @@ void ntainp_ccadiscret()
 void inpfield_ccadiscret()
 {
   DSTraceHelper dst("inpfield_ccadiscret");
-  
+
   int myrank = 0;
   int nproc  = 1;
 
@@ -177,7 +193,7 @@ void inpfield_ccadiscret()
 #else
   Epetra_SerialComm* com = new Epetra_SerialComm();
   RefCountPtr<Epetra_Comm> comm = rcp(com);
-#endif  
+#endif
 
   genprob.create_dis = 0;
   genprob.create_ale = 0;
@@ -196,20 +212,20 @@ void inpfield_ccadiscret()
     // read nodal coords
     inpnodes_ccadiscret(*tmpnodes);
   }
-  
+
   // read elements
   if (genprob.probtyp == prb_fsi)
     dserror("prb_fsi not yet impl.");
-    
+
   if (genprob.probtyp==prb_fluid)
     dserror("prb_fluid not yet impl.");
 
   if (genprob.probtyp==prb_fluid_pm)
     dserror("prb_fluid_pm not yet impl.");
-    
+
   if (genprob.probtyp == prb_tsi)
     dserror("prb_tsi not yet impl.");
-    
+
   if (genprob.probtyp==prb_structure)
   {
     if (genprob.numfld!=1) dserror("numfld != 1 for structural problem");
@@ -218,12 +234,12 @@ void inpfield_ccadiscret()
     inpdis(&(field[genprob.numsf]));
     input_structural_field(&(field[genprob.numsf]),comm);
   }
-  
+
   // assign nodes to the fields
   int nnode_total = 0;
   for (int i=0; i<genprob.numfld; i++)
   {
-    vector<RefCountPtr<DRT::Discretization> >* discretization = 
+    vector<RefCountPtr<DRT::Discretization> >* discretization =
                  (vector<RefCountPtr<DRT::Discretization> >*)field[i].ccadis;
     for (int j=0;j<field[i].ndis;j++)
     {
@@ -254,15 +270,15 @@ void inpfield_ccadiscret()
 void input_assign_nodes(DRT::Discretization& actdis,Epetra_SerialDenseMatrix* tmpnodes)
 {
   DSTraceHelper dst("input_assign_nodes");
-  
+
   // assign nodes on proc 0 only
   if (actdis.Comm().MyPID()==0)
   {
-  
+
     // allocate a temporary flag array
     vector<int> nodeflag(genprob.nnode);
     for (int i=0; i< genprob.nnode; ++i) nodeflag[i] = -1;
-    
+
     // set flag for each node in this discretization
     for (int i=0; i<actdis.NumMyColElements(); ++i)
     {
@@ -272,14 +288,14 @@ void input_assign_nodes(DRT::Discretization& actdis,Epetra_SerialDenseMatrix* tm
       for (int j=0; j<nnode; ++j)
         nodeflag[nodes[j]] = nodes[j];
     }
-    
+
     // create the nodes and add them to actdis
     for (int i=0; i<genprob.nnode; ++i)
     {
       if (nodeflag[i]==-1) continue;
       double coords[3];
       for (int j=0; j<3; ++j) coords[j] = (*tmpnodes)(i,j);
-      RefCountPtr<DRT::Node> node = 
+      RefCountPtr<DRT::Node> node =
                  rcp(new DRT::Node(nodeflag[i],coords,actdis.Comm().MyPID()));
       actdis.AddNode(node);
     }
@@ -307,69 +323,73 @@ void input_assign_nodes(DRT::Discretization& actdis,Epetra_SerialDenseMatrix* tm
 void input_structural_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm)
 {
   DSTraceHelper dst("input_structural_field");
-  
+
   structfield->dis = NULL; // not using this here!
 
   // allocate the discretizations
-  vector<RefCountPtr<DRT::Discretization> >* discretization = 
+  vector<RefCountPtr<DRT::Discretization> >* discretization =
             new vector<RefCountPtr<DRT::Discretization> >(structfield->ndis);
   structfield->ccadis = (void*)discretization;
   for (int i=0; i<structfield->ndis; ++i)
     (*discretization)[i] = rcp(new DRT::Discretization("Structure",comm));
 
-  // count number of elements
-  int numele = 0;
-  {
-    int counter=0;
-    if (frfind("--STRUCTURE ELEMENTS")==1)
-    {
-      frread();
-      while(strncmp(allfiles.actplace,"------",6)!=0)
-      {
-        counter++;
-        frread();
-      }
-    }
-    numele = counter;
-  }
-
-  // read elements (proc 0 only) 
+  // read elements (proc 0 only)
   RefCountPtr<DRT::Discretization> actdis = (*discretization)[0];
   if (actdis->Comm().MyPID()==0)
   {
-    if (frfind("--STRUCTURE ELEMENTS")==0) return;
-    frread();
-    while(strncmp(allfiles.actplace,"------",6)!=0)
+    // open input file at the right position
+    ifstream file(allfiles.inputfile_name);
+    file.seekg(ExcludedSectionPositions["--STRUCTURE ELEMENTS"]);
+
+    // loop all element lines
+    // Comments in the node section are not supported!
+    string line;
+    for (int i=0; getline(file, line); ++i)
     {
-      char *colpointer = allfiles.actplace;
-      int elenumber    = strtol(colpointer,&colpointer,10);
-      --elenumber;
-      int ierr=0;
-      // elementtyp shell8
-      frchk("SHELL8",&ierr);
-      if (ierr==1)
+      if (line.find("--")==0)
       {
-#ifndef D_SHELL8
-        dserror("SHELL8 needed but not defined in Makefile");
-#else  
-        RefCountPtr<DRT::Elements::Shell8> ele = 
-                         rcp(new DRT::Elements::Shell8(elenumber,actdis->Comm().MyPID()));
-        
-        // read input for this element
-        ele->ReadElement();
-        
-        // add element to discretization (discretization takes ownership)
-        actdis->AddElement(ele);
-#endif        
+        break;
       }
+      else
+      {
+        istringstream t;
+        t.str(line);
+        int elenumber;
+        string eletype;
+        t >> elenumber >> eletype;
+        elenumber -= 1;
 
-      // elementtyp brick1
-      // not yet impl...
+        // Set the current row to the empty slot after the file rows
+        // and store the current line. This way the elements can use
+        // the normal fr* functions to read the line.
+        // Of course this is a hack.
+        allfiles.actrow = allfiles.numrows;
+        allfiles.actplace = allfiles.input_file[allfiles.actrow] = const_cast<char*>(line.c_str());
 
-      frread();
-    } // while(strncmp(allfiles.actplace,"------",6)!=0)  
+        if (eletype=="SHELL8")
+        {
+#ifndef D_SHELL8
+          dserror("SHELL8 needed but not defined in Makefile");
+#else
+          RefCountPtr<DRT::Elements::Shell8> ele =
+            rcp(new DRT::Elements::Shell8(elenumber,actdis->Comm().MyPID()));
+
+          // read input for this element
+          ele->ReadElement();
+
+          // add element to discretization (discretization takes ownership)
+          actdis->AddElement(ele);
+#endif
+        }
+        else
+        {
+          dserror("element type '%s' unsupported",eletype.c_str());
+        }
+      }
+    }
   } // if (actdis->Comm().MyPID()==0)
 
+  // Reset fr* functions. Still required.
   frrewind();
   return;
 } // void input_structural_field
@@ -382,27 +402,34 @@ void input_structural_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm)
  *----------------------------------------------------------------------*/
 void inpnodes_ccadiscret(Epetra_SerialDenseMatrix& tmpnodes)
 {
-  DSTraceHelper dst("inpnodes_ccadiscret");
+  // open input file at the right position
+  ifstream file(allfiles.inputfile_name);
+  file.seekg(ExcludedSectionPositions["--NODE COORDS"]);
 
-  if (frfind("--NODE COORDS")==0) dserror("frfind: NODE COORDS is not in input file");
-  frread();
-  int counter=0;
-  int nodeid=0;
-  while(strncmp(allfiles.actplace,"------",6)!=0)
+  // loop all node lines
+  // Comments in the node section are not supported!
+  string tmp;
+  for (int i=0; file; ++i)
   {
-    int ierr;
-    frint("NODE",&(nodeid),&ierr);
-    if (ierr!=1) dserror("reading of nodes failed");
-    if (nodeid-1 != counter) dserror("Reading of nodes failed: Nodes must be numbered consecutive!!");
-    double nodes[3];
-    frdouble_n("COORD",nodes,3,&ierr);
-    if (ierr!=1) dserror("reading of nodes failed");
-    for (int i=0; i<3; ++i) tmpnodes(counter,i) = nodes[i];
-    counter++;
-    frread();
+    file >> tmp;
+    if (tmp=="NODE")
+    {
+      int nodeid;
+      file >> nodeid >> tmp >> tmpnodes(i,0) >> tmpnodes(i,1) >> tmpnodes(i,2);
+      if (nodeid-1 != i)
+        dserror("Reading of nodes failed: Nodes must be numbered consecutive!!");
+      if (tmp!="COORD")
+        dserror("failed to read node %d",nodeid);
+    }
+    else if (tmp.find("--")==0)
+    {
+      break;
+    }
+    else
+    {
+      dserror("unexpected word '%s'",tmp.c_str());
+    }
   }
-  frrewind();
-  return;
 } // void inpnodes_ccadiscret
 
 

@@ -132,6 +132,7 @@ OBJS_PSS      = src/pss_full/pss_am.o \
                 src/pss_full/pss_table_iter.o \
                 src/pss_full/pss_set.o \
 		src/pss_full/pss_parser.o
+OBJS_PSS_CPP  = src/pss_full/pss_readdat.o
 #                input_full
 OBJS_INPUT    = src/input_full/input_control_global.o \
                 src/input_full/input_ctr_head.o \
