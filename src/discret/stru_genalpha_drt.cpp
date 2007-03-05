@@ -127,7 +127,7 @@ void stru_genalpha_drt()
   LINALG::Solver solver(solveparams,actdis->Comm(),allfiles.out_err);
   solver.TranslateSolverParameters(*solveparams,actsolv);
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
-  
+
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
@@ -323,7 +323,7 @@ void stru_genalpha_drt()
       params.set("assemble vector 2",false);
       params.set("assemble vector 3",false);
       // other parameters needed by the elements
-      params.set("total time",ntime);
+      params.set("total time",timen);
       params.set("delta time",dt);
       // set vector values needed by elements
       actdis->ClearState();
@@ -368,7 +368,7 @@ void stru_genalpha_drt()
 
     //------------------------------- compute interpolated external forces
     // external mid-forces F_{ext;n+1-alpha_f} (fextm)
-    //    F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1} 
+    //    F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1}
     //                         + alpha_f * F_{ext;n}
     fextm->Update(1.-alphaf,*fextn,alphaf,*fext,0.0);
 
