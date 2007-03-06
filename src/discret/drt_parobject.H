@@ -5,12 +5,12 @@
 
 \brief A pure virtual class with functionality to pack, unpack and communicate
        classes in parallel.
-       
+
 This class is used to pack information usually stored in a class in a vector<char>.
-This vector<char> can then be used to communicate the contents of a class and to 
+This vector<char> can then be used to communicate the contents of a class and to
 read/write binary io. Every class derived from ParObject must basically implement
 the Pack and the Unpack method. There are several methods (mpst of them template specializations)
-to ease the work of packing/unpacking<br><br> 
+to ease the work of packing/unpacking<br><br>
 Here is an example:
 \code
 // stuff in a class 'Fool' that needs to be packed
@@ -70,7 +70,7 @@ Some remarks:
 - A class derived from or more base classes is responsible to also pack and unpack the base classes' data
   by calling the base class' implementation of Pack/Unpack
 
-- The intention of this class is to pack and communicate rather 'small' units of data. Though possible, 
+- The intention of this class is to pack and communicate rather 'small' units of data. Though possible,
   it is not meant to be used at the system level to communicate huge data sets such as sparse matrices or
   vectors of system length. It does therefore not support any Epetra_Vector
   or Epetra_CrsMatrix objects and is not supposed to in the future either.
@@ -133,6 +133,9 @@ using namespace std;
 #define ParObject_Shell8                (int)7
 #define ParObject_Shell8Register        (int)8
 #define ParObject_Shell8Line            (int)9
+#define ParObject_Fluid3                (int)10
+#define ParObject_Fluid3Register        (int)11
+#define ParObject_Fluid3Surface         (int)12
 
 
 /*!

@@ -18,10 +18,10 @@ Maintainer: Michael Gee
 typedef int idxtype;
 extern "C"
 {
-  void METIS_PartGraphRecursive(int *, idxtype *, idxtype *, 
-				idxtype *, idxtype *, int *, int *, int *, 
+  void METIS_PartGraphRecursive(int *, idxtype *, idxtype *,
+				idxtype *, idxtype *, int *, int *, int *,
 				int *, int *, idxtype *);
-  void METIS_PartGraphKway(int *, idxtype *, idxtype *, idxtype *, 
+  void METIS_PartGraphKway(int *, idxtype *, idxtype *, idxtype *,
 			   idxtype *, int *, int *, int *, int *, int *,
 			   idxtype *);
 }
@@ -32,6 +32,7 @@ extern "C"
 #include "drt_node.H"
 #include "drt_dofset.H"
 #include "shell8.H"
+#include "fluid3.H"
 #include "drt_dserror.H"
 
 
@@ -44,7 +45,7 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
   const int* ptr = (const int*)(&data[0]);
   // get the type
   const int type = *ptr;
-  
+
   switch(type)
   {
     case ParObject_Container:
@@ -83,8 +84,23 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
     break;
     case ParObject_Shell8Register:
     {
-      DRT::Elements::Shell8Register* object = 
+      DRT::Elements::Shell8Register* object =
                       new DRT::Elements::Shell8Register(DRT::Element::element_shell8);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_Fluid3:
+    {
+      DRT::Elements::Fluid3* object = new DRT::Elements::Fluid3(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_Fluid3Register:
+    {
+      DRT::Elements::Fluid3Register* object =
+                      new DRT::Elements::Fluid3Register(DRT::Element::element_fluid3);
       object->Unpack(data);
       return object;
     }
@@ -105,7 +121,7 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
       dserror("Unknown type of ParObject instance: %d",type);
     break;
   }
-  
+
   return NULL;
 }
 
@@ -119,7 +135,7 @@ RefCountPtr<Epetra_CrsGraph> DRT::Utils::PartGraphUsingMetis(
 {
   const int myrank   = graph.Comm().MyPID();
   const int numproc  = graph.Comm().NumProc();
-  
+
   if (numproc==1)
   {
     RefCountPtr<Epetra_CrsGraph> outgraph = rcp(new Epetra_CrsGraph(graph));
@@ -131,17 +147,17 @@ RefCountPtr<Epetra_CrsGraph> DRT::Utils::PartGraphUsingMetis(
   // Normally this would be proc 0 but 0 always has so much to do.... ;-)
   int workrank = 0;
   if (graph.Comm().NumProc()>1) workrank=1;
-  
+
   // get rowmap of the graph
   const Epetra_BlockMap& tmp = graph.RowMap();
   Epetra_Map rowmap(tmp.NumGlobalElements(),tmp.NumMyElements(),
                     tmp.MyGlobalElements(),0,graph.Comm());
-  
+
   // build a target map that stores everything on proc workrank
   vector<int> rowsend(rowmap.NumGlobalElements());
   vector<int> rowrecv(rowmap.NumGlobalElements());
-  for (int i=0; i<(int)rowsend.size(); ++i) rowsend[i] = 0;  
-  for (int i=0; i<rowmap.NumMyElements(); ++i) 
+  for (int i=0; i<(int)rowsend.size(); ++i) rowsend[i] = 0;
+  for (int i=0; i<rowmap.NumMyElements(); ++i)
   {
     const int gid = rowmap.GID(i);
     rowsend[gid] = gid;
@@ -151,7 +167,7 @@ RefCountPtr<Epetra_CrsGraph> DRT::Utils::PartGraphUsingMetis(
   if (myrank != workrank) rowrecv.clear();
   Epetra_Map tmap(rowmap.NumGlobalElements(),(int)rowrecv.size(),&rowrecv[0],0,rowmap.Comm());
   rowrecv.clear();
-  
+
   // export the graph to tmap
   Epetra_CrsGraph tgraph(Copy,tmap,108,false);
   Epetra_Export exporter(rowmap,tmap);
@@ -173,7 +189,7 @@ RefCountPtr<Epetra_CrsGraph> DRT::Utils::PartGraphUsingMetis(
     vector<int> adjncy(tgraph.NumGlobalNonzeros()); // the size is an upper bound
     vector<int> vwgt(tweights.MyLength());
     for (int i=0; i<tweights.MyLength(); ++i) vwgt[i] = (int)tweights[i];
-    
+
     int count=0;
     xadj[0] = 0;
     for (int row=0; row<tgraph.NumMyRows(); ++row)
@@ -196,11 +212,11 @@ RefCountPtr<Epetra_CrsGraph> DRT::Utils::PartGraphUsingMetis(
       //cout << endl;
       xadj[row+1] = count;
     }
-    //cout << "xadj[" << xadj.size()-1 << "] = " << xadj[xadj.size()-1] << endl;  
+    //cout << "xadj[" << xadj.size()-1 << "] = " << xadj[xadj.size()-1] << endl;
     //cout << "tgraph.NumGlobalNonzeros() " << tgraph.NumGlobalNonzeros() << endl
     //     << "tmap.NumMyElements()       " << tmap.NumMyElements() << endl
     //     << "count                      " << count << endl;
-  
+
     if (numproc<8) // better for smaller no. of partitions
     {
 #ifdef PARALLEL
@@ -246,13 +262,13 @@ RefCountPtr<Epetra_CrsGraph> DRT::Utils::PartGraphUsingMetis(
 #endif
     }
   } // if (myrank==workrank)
-  
+
   // broadcast partitioning result
   int size = tmap.NumMyElements();
   tmap.Comm().Broadcast(&size,1,workrank);
   part.resize(size);
   tmap.Comm().Broadcast(&part[0],size,workrank);
-  
+
   // loop part and count no. of nodes belonging to me
   // (we reuse part to save on memory)
   int count=0;
@@ -262,19 +278,19 @@ RefCountPtr<Epetra_CrsGraph> DRT::Utils::PartGraphUsingMetis(
       part[count] = i;
       ++count;
     }
-    
+
   // create map with new layout
   Epetra_Map newmap(size,count,&part[0],0,graph.Comm());
 
   // create the output graph and export to it
-  RefCountPtr<Epetra_CrsGraph> outgraph = 
+  RefCountPtr<Epetra_CrsGraph> outgraph =
                            rcp(new Epetra_CrsGraph(Copy,newmap,108,false));
   Epetra_Export exporter2(graph.RowMap(),newmap);
   err = outgraph->Export(graph,exporter2,Add);
   if (err<0) dserror("Graph export returned err=%d",err);
   outgraph->FillComplete();
   outgraph->OptimizeStorage();
-  
+
   return outgraph;
 }
 
@@ -283,8 +299,8 @@ RefCountPtr<Epetra_CrsGraph> DRT::Utils::PartGraphUsingMetis(
 /*----------------------------------------------------------------------*
  |  locallly extract a subset of values  (public)            mwgee 12/06|
  *----------------------------------------------------------------------*/
-void DRT::Utils::ExtractMyValues(const Epetra_Vector& global, 
-                                 vector<double>& local, 
+void DRT::Utils::ExtractMyValues(const Epetra_Vector& global,
+                                 vector<double>& local,
                                  const vector<int> lm)
 {
   const int ldim = (int)lm.size();

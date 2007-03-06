@@ -65,30 +65,32 @@ class Element : public DRT::ParObject
 public:
 
   //! @name Enums and Friends
-  
+
   /*!
   \brief The Discretization is a friend of Element
   */
   friend class Discretization;
-  
+
   /*!
   \brief Type of element
-         
+
   */
-  enum ElementType 
+  enum ElementType
   {
     element_none,
     element_shell8,
-    element_shell8line
+    element_shell8line,
+    element_fluid3,
+    element_fluid3surface
   };
 
   //@}
-  
+
   //! @name Constructors and destructors and related methods
 
   /*!
   \brief Standard Constructor
-  
+
   \param id    (in): A globally unique element id
   \param etype (in): Type of element
   \param owner (in): owner processor of the element
@@ -99,7 +101,7 @@ public:
   \brief Copy Constructor
 
   Makes a deep copy of a Element
-  
+
   */
   Element(const DRT::Element& old);
 
@@ -111,18 +113,18 @@ public:
 
   /*!
   \brief Deep copy the derived class and return pointer to it
-  
+
   This method is sort of a copy constructor for a class derived from Element.
   It allows to copy construct the derived class without knowing what it
   actually is using the base class Element.
-  
+
   */
   virtual DRT::Element* Clone() const = 0;
 
 
   /*!
   \brief Return unique ParObject id
-  
+
   Every class implementing ParObject needs a unique id defined at the
   top of drt_parobject.H
   */
@@ -130,15 +132,15 @@ public:
 
   /*!
   \brief Pack this class so it can be communicated
-  
+
   \ref Pack and \ref Unpack are used to communicate this element
-  
+
   */
   virtual void Pack(vector<char>& data) const;
 
   /*!
   \brief Unpack data from a char vector into this class
-  
+
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
@@ -146,7 +148,7 @@ public:
 
   /*!
   \brief Allocate and return an ElementRegister class
-  
+
   Every implementation of DRT::Element must also implement
   an DRT::ElementRegister. This method allocates and returns
   an instance of a matching DRT::ElementRegister.
@@ -197,13 +199,13 @@ public:
   /*!
   \brief Return id's of nodes adjacent to this element
   */
-  inline const int* NodeIds() const { if (nodeid_.size()) return &nodeid_[0]; 
+  inline const int* NodeIds() const { if (nodeid_.size()) return &nodeid_[0];
                                       else                return NULL;     }
 
   /*!
   \brief Get vector of ptrs to nodes
-  
-  \warning The pointers to the nodes are build in 
+
+  \warning The pointers to the nodes are build in
            DRT::Discretization::FillComplete. A standalone
            element that has not been added to a discretization
            (or the discretization has not been called FillComplete)
@@ -217,12 +219,12 @@ public:
 
   /*!
   \brief Get vector of ptrs to the lines of this element
-  
+
   This is a base class dummy routine that always returns NULL.
   The derived element class is expected to allocate and store
   a vector of elements that represent the edges of this element.
   These edges are then used to create and evaluate boundary conditions.
-  
+
   \note A 1D type of element (e.g. a beam) may return
        a vector of length one pointing to itself. It then does not need
        to be able to spin of an explicit separate line element.
@@ -234,12 +236,12 @@ public:
 
   /*!
   \brief Get vector of ptrs to the surfaces of this element
-  
+
   This is a base class dummy routine that always returns NULL.
   The derived element class is expected to allocate and store
   a vector of elements that represent the surfaces of this element.
   These surfaces are then used to create and evaluate boundary conditions.
-  
+
   \note A 2D type of element (e.g. a shell, wall, fluid2 etc) may return
        a vector of length one pointing to itself. It then does not need
        to be able to spin of an explicit separate surface element.
@@ -251,7 +253,7 @@ public:
 
   /*!
   \brief Get vector of ptrs to the volumes of this element
-  
+
   This is a base class dummy routine that always returns NULL.
   The derived element class is expected to allocate and store
   a vector of elements that represent the volume of this element.
@@ -268,7 +270,7 @@ public:
 
   /*!
   \brief Get number of degrees of freedom of a certain node
-  
+
   The element decides how many degrees of freedom its nodes must have.
   As this may vary along a simulation, the element can redecide the
   number of degrees of freedom per node along the way for each of it's nodes
@@ -277,18 +279,18 @@ public:
   degrees of freedom should be assigned to each node. The discretization will
   assign a node the max number of dofs the adjacent elements demand by this
   method.
-  
+
   */
   virtual int NumDofPerNode(const DRT::Node& node) const = 0;
 
   /*!
   \brief Get number of degrees of freedom per element
-  
+
   The element decides how many element degrees of freedom it has.
   It can redecide along the way of a simulation.<br>
   Usually, a standard finite element would not have element degrees of
   freedom and would therefore return zero here.
-  
+
   \note Element degrees of freedom mentioned here are dofs that are supposed
         to be visible at the global system level. Purely internal
         element dofs that are condensed internally should NOT be considered.
@@ -300,8 +302,8 @@ public:
 
   /*!
   \brief Return reference to the set of degrees of freedom
-  
-  In case the derived element does not have element degrees of freedom, 
+
+  In case the derived element does not have element degrees of freedom,
   the dofset is of size zero.
   */
   virtual inline DRT::DofSet& Dof() { return dofset_; }
@@ -309,7 +311,7 @@ public:
   /*!
   \brief Return reference to the set of degrees of freedom
 
-  In case the derived element does not have element degrees of freedom, 
+  In case the derived element does not have element degrees of freedom,
   the dofset is of size zero.
   */
   virtual inline const DRT::DofSet& Dof() const { return dofset_; }
@@ -328,84 +330,84 @@ public:
 
   /*!
   \brief Read input for this element
-  
+
   This class implements a dummy of this method that prints a warning and
   returns false. A derived class would read one line from the input file and
   store all necessary information.
-  
+
   */
   virtual bool ReadElement();
 
   /*!
   \brief Set ownership
-  
+
   This method is used by the DRT::Discretiztion to change the ownership of
   an element that got communicated from one processor to another.
-  
+
   \param owner: Proc owning this node
 
-  \warning You should be very careful with changing the ownership 
+  \warning You should be very careful with changing the ownership
            of an element by hand as this might significantly confuse
            the DRT::Discretization the element is stored in.
-  
+
   */
   virtual inline void SetOwner(const int owner) { owner_ = owner; return; }
 
   /*!
   \brief Set a list of node ids this element is connected to
-  
+
   Sets the nodal ids of the nodes adjacent to this element and the number
   of nodes. This method is used in the construction phase of a discretization.
   It allows, that elements and nodes are created separately and be combined later
   on the way.
-  
+
   \param nnode : number of nodes
   \param nodes : list of unique global nodal ids
-  
+
   */
   void SetNodeIds(const int nnode, const int* nodes);
 
   /*!
   \brief Set a condition with a certain name
-  
+
   Store a condition with a certain name in the element. The name need not
   be unique, meaning multiple conditions with the same name can be stored.
   Conditions can then be accessed with the GetCondition methods.
-  
+
   \param name : Name of condition
   \param cond : The Condition class
-  
+
   \warning If a condition with the exact same name already exists, it will
            NOT be overwritten but stored twice in the element
-  
+
   */
   virtual void SetCondition(const string& name,RefCountPtr<Condition> cond)
   { condition_.insert(pair<string,RefCountPtr<Condition> >(name,cond)); return; }
 
   /*!
   \brief Get all conditions with a certain name
-  
+
   Get all conditions with a certain name. A vector of ptrs to all conditions
   with name name is returned in out. The number of conditions found with name
   name is out.size(). out.size() is 0 if no condition with that name is found.
-  
+
   \param name (in): Name of condition
   \param out  (out): vector of pointers to all conditions with that name
-  
+
   */
   virtual void GetCondition(const string& name, vector<DRT::Condition*>& out);
 
   /*!
   \brief Get a condition with a certain name
-  
-  Returns the first condition with name name found in the multimap. 
+
+  Returns the first condition with name name found in the multimap.
   If multiple conditions with the same name exist, the first condition with
-  that name is returned and behaviour is therefore non-deterministic. 
-  This method should therefore only be used in cases where the user is 
+  that name is returned and behaviour is therefore non-deterministic.
+  This method should therefore only be used in cases where the user is
   positive that name is unique.
-  
+
   \param name (in): Name of condition
-  
+
   \return Returns NULL if condition with that name does not exist
   */
   virtual DRT::Condition* GetCondition(const string& name);
@@ -418,26 +420,26 @@ public:
   //@}
 
   //! @name Evaluation methods
-  
+
   /*!
   \brief Return the location vector of this element
-  
+
   The method computes degrees of freedom this element adresses.
   Degree of freedom ordering is as follows:<br>
-  First all degrees of freedom of adjacent nodes are numbered in 
+  First all degrees of freedom of adjacent nodes are numbered in
   local nodal order, then the element internal degrees of freedom are
   given if present.<br>
-  If a derived element has to use a different ordering scheme, 
+  If a derived element has to use a different ordering scheme,
   it is welcome to overload this method as the assembly routines actually
   don't care as long as matrices and vectors evaluated by the element
   match the ordering, which is implicitly assumed.<br>
   Length of the output vector matches number of degrees of freedom
   exactly.<br>
-  
+
   \note The degrees of freedom returned are not neccessarily only nodal dofs.
         Depending on the element implementation, output might also include
         element dofs.
-        
+
   \param lm (out)      : vector of degrees of freedom adressed by this element
   \param lmdirich (out): vector of zeros and ones indicating which
                          dofs have dirichlet boundary conditions. Ordering
@@ -445,47 +447,47 @@ public:
   \param lmowner (out) : vector of proc numbers indicating which dofs are owned
                          by which procs in a dof row map. Ordering
                          matches dofs in lm.
-  
+
   */
   virtual void LocationVector(vector<int>& lm, vector<int>& lmdirich, vector<int>& lmowner);
-  
+
   /*!
   \brief Return the location vector of this element
-  
+
   The method computes degrees of freedom this element adresses.
   Degree of freedom ordering is as follows:<br>
-  First all degrees of freedom of adjacent nodes are numbered in 
+  First all degrees of freedom of adjacent nodes are numbered in
   local nodal order, then the element internal degrees of freedom are
   given if present.<br>
-  If a derived element has to use a different ordering scheme, 
+  If a derived element has to use a different ordering scheme,
   it is welcome to overload this method as the assembly routines actually
   don't care as long as matrices and vectors evaluated by the element
   match the ordering, which is implicitly assumed.<br>
   Length of the output vector matches number of degrees of freedom
   exactly.<br>
-  
+
   \note The degrees of freedom returned are not neccessarily only nodal dofs.
         Depending on the element implementation, output might also include
         element dofs.
-        
+
   \param lm (out)      : vector of degrees of freedom adressed by this element
   \param lmowner (out) : vector of proc numbers indicating which dofs are owned
                          by which procs in a dof row map. Ordering
                          matches dofs in lm.
-  
+
   */
   virtual void LocationVector(vector<int>& lm, vector<int>& lmowner);
 
   /*!
   \brief Evaluate an element
-  
+
   An element derived from this class uses the Evaluate method to receive commands
   and parameters from some control routine in params and evaluates element matrices and
   vectors accoring to the command in params.
-  
+
   \note This class implements a dummy of this method that prints a warning and
         returns false.
-  
+
   \param params (in/out)    : ParameterList for communication between control routine
                               and elements
   \param discretization (in): A reference to the underlying discretization
@@ -502,7 +504,7 @@ public:
                               given in params
   \return 0 if successful, negative otherwise
   */
-  virtual int Evaluate(ParameterList& params, 
+  virtual int Evaluate(ParameterList& params,
                        DRT::Discretization&      discretization,
                        vector<int>&              lm,
                        Epetra_SerialDenseMatrix& elemat1,
@@ -510,27 +512,27 @@ public:
                        Epetra_SerialDenseVector& elevec1,
                        Epetra_SerialDenseVector& elevec2,
                        Epetra_SerialDenseVector& elevec3);
-  
+
   /*!
   \brief Evaluate a Neumann boundary condition
-  
+
   An element derived from this class uses the EvaluateNeumann method to receive commands
   and parameters from some control routine in params and evaluates a Neumann boundary condition
   given in condition
 
   \note This class implements a dummy of this method that prints a warning and
         returns false.
-  
+
   \param params (in/out)    : ParameterList for communication between control routine
                               and elements
   \param discretization (in): A reference to the underlying discretization
   \param condition (in)     : The condition to be evaluated
   \param lm (in)            : location vector of this element
-  \param elevec1 (out)      : Force vector to be filled by element 
+  \param elevec1 (out)      : Force vector to be filled by element
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateNeumann(ParameterList& params, 
+  virtual int EvaluateNeumann(ParameterList& params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
                               vector<int>&              lm,
@@ -543,50 +545,50 @@ protected:
 
   /*!
   \brief Build pointer vector from map of nodes
-  
+
   The method is used to build the variable node_ in this element. It is called from
   DRT::Discretization in DRT::Discretization::FillComplete() to create the
   pointers from elements to nodes (and nodes to elements)
-  
+
   \param nodes (in): A map of all nodes of a discretization
   */
   virtual bool BuildNodalPointers(map<int,RefCountPtr<DRT::Node> >& nodes);
 
   /*!
   \brief Build pointer vector from vector of nodal pointers
-  
+
   The method is used to build the variable node_ in this element. It can be used
   to explicitly pass the nodal pointers to the element.
-  
+
   \param nodes (in): Pointer to array of pointers to nodes. The array of pointers
                      is implicitly expected to be of length NumNode() and contain pointers
                      to nodes in the correct element local ordering scheme.
   */
-  virtual bool BuildNodalPointers(DRT::Node** nodes); 
+  virtual bool BuildNodalPointers(DRT::Node** nodes);
 
 
 private:
 
   //! \brief A unique global element id
   int id_;
-  
+
   //! \brief owner processor of this element
-  int owner_;     
-  
+  int owner_;
+
   //! \brief Type of element
-  ElementType etype_;     
-  
+  ElementType etype_;
+
   //! \brief List of my nodal ids, length NumNode()
-  vector<int> nodeid_;    
-  
+  vector<int> nodeid_;
+
   //! \brief Pointers to adjacent nodes in element local ordering
-  vector<DRT::Node*> node_;      
-  
+  vector<DRT::Node*> node_;
+
   //! \brief A set of degrees of freedom
-  DRT::DofSet dofset_;    
-  
+  DRT::DofSet dofset_;
+
   //! \brief Some conditions e.g. BCs
-  multimap<string,RefCountPtr<Condition> > condition_; 
+  multimap<string,RefCountPtr<Condition> > condition_;
 
 }; // class Element
 } // namespace DRT
