@@ -82,24 +82,21 @@ complexity.
 void frinit()
 {
 INT     i=0;
-INT     linecount=0;
-unsigned arraysize;
 
-#ifndef CCADISCRET
+#ifdef CCADISCRET
+  /* Use the new reading facility for new discretization. */
+  ReadDat(allfiles.inputfile_name);
+#else
+
+INT     linecount=0;
 char   *remarkpointer;
 static include_stack_entry include_stack[INCLUDE_STACK_DEPTH];
 static INT include_stack_head = 0;
 FILE* f;
-#endif
 
 allfiles.numcol=MAXNUMCOL;
 if (par.myrank==0)
 {
-#ifdef CCADISCRET
-  arraysize = ReadDat(allfiles.inputfile_name);
-  linecount = allfiles.numrows;
-#else
-
   /*-------------------- make a copy of the input file without comments */
 
   include_stack[0].file = allfiles.in_input;
@@ -205,7 +202,6 @@ if (par.myrank==0)
     if (feof(f) == 0)
       linecount++;
   }
-#endif
 }
 /*--------------------------------------------broadcast number of lines */
 #ifdef PARALLEL
@@ -215,24 +211,6 @@ if (par.nprocs>1)
 }
 #endif
 
-#ifdef CCADISCRET
-#ifdef PARALLEL
-if (par.nprocs>1)
-{
-  /* Now that we use a variable number of bytes per line we have to
-   * communicate the buffer size as well. */
-   MPI_Bcast(&arraysize,1,MPI_INT,0,MPI_COMM_WORLD);
-}
-#endif
-
-if (par.myrank>0)
-{
-  allfiles.numrows=linecount;
-  /*--------------------------------------allocate space for copy of file */
-  allfiles.input_file_hook=(char*)CCACALLOC(arraysize,sizeof(char));
-  allfiles.input_file=(char**)CCACALLOC(linecount,sizeof(char*));
-}
-#else
 allfiles.numrows=linecount;
 /*--------------------------------------allocate space for copy of file */
 allfiles.input_file_hook=(char*)CCACALLOC(linecount*(allfiles.numcol),sizeof(char));
@@ -357,40 +335,18 @@ if (par.myrank==0)
     }
   }
 }
-#endif
 /*--------------------------------broadcast the copy of the input file */
 #ifdef PARALLEL
 if (par.nprocs>1)
 {
       MPI_Bcast(allfiles.input_file_hook,
-#ifdef CCADISCRET
-		arraysize,
-#else
                 allfiles.numrows*allfiles.numcol,
-#endif
                 MPI_CHAR,
                 0,
                 MPI_COMM_WORLD);
 }
 #endif
-
-#ifdef CCADISCRET
-/* We have not yet set the row pointers on procs > 0. So do it now. */
-if (par.myrank>0)
-{
-  INT row = 0;
-  allfiles.input_file[row] = allfiles.input_file_hook;
-  row += 1;
-  for (i=0; i<arraysize && row<linecount; ++i)
-  {
-    if (allfiles.input_file_hook[i]=='\0')
-    {
-      allfiles.input_file[row] = &allfiles.input_file_hook[i+1];
-      row += 1;
-    }
-  }
-}
-#endif
+#endif /* CCADISCRET */
 
 /*---------------------give a copy of the "cleaned" input file on .err */
 #if defined(DEBUG) || defined(OUTPUT_INPUT)
@@ -403,7 +359,7 @@ if (par.myrank==0)
   fprintf(allfiles.out_err,"===========================================\n");
   fprintf(allfiles.out_err,"broadcasted copy of input file:            \n");
   fprintf(allfiles.out_err,"===========================================\n");
-  for (i=0; i<linecount; i++)
+  for (i=0; i<allfiles.numrows; i++)
   {
     fprintf(allfiles.out_err,"%s",allfiles.input_file[i]);
   }
