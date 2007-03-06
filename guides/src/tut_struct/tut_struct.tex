@@ -1,0 +1,218 @@
+%%
+%%############################
+\chapter{Tutorial --- A plate is modelled with Gid and solved by
+  \ccarat{}}
+\label{tut_struct:chap}
+
+%%
+%%============================
+\section{Overview --- Simulation cycle with Gid and \ccarat{}}
+
+Gid (\texttt{http://gid.cimne.upc.es/}) is the graphical pre- and
+post-processor for Ccarat\@. If you want to solve a fresh problem
+the general scheme is 
+
+\begin{itemize}
+\item creating the geometry in Gid, 
+\item attributing it with material, boundary conditions, elements, etc., 
+\item generating the mesh, 
+\item extracting the \ccarat{} input file, 
+\item processing the input file through \ccarat{}, 
+\item admiring the results with Gid again. 
+\end{itemize}
+
+
+%%
+%%============================
+\section{Preprocessing}\label{tut_struct:sec:preprocessing}
+
+
+\subsection{How to start Gid}
+
+Check the Beginner's Guide at Section~\ref{beginner:sec:gid}.
+
+
+\subsection{Generating geometry (plate example)}
+
+The Gid help provides a decent tutorial on how to generate a geometry.
+You can access it via \emph{help $\rightarrow$ tutorials}.
+
+Here, a simple example is considered in which a plate is generated.
+The listed method is not most quickest. The listed menu chaines can
+often be cut shortly by using icons of keyboard short-cuts. 
+
+\begin{enumerate}
+\item \emph{Files $\rightarrow$ Save as $\rightarrow$} \texttt{\emph{plate.gid}}
+\item Draw a rectangle \emph{Geometry $\rightarrow$ Create $\rightarrow$
+Line}; \emph{Command} line: \texttt{10,-10}; \emph{Command} \texttt{10,10};
+\emph{Command} \texttt{-10,10}; \emph{Command} \texttt{-10,-10}; \emph{View
+$\rightarrow$ Zoom $\rightarrow$ Frame} shows area of interest;
+move $+$ pointer to first point and click; choose \emph{join}; hit
+\texttt{ESC}
+\item Make a surface based on these lines: \emph{Geometry $\rightarrow$
+Create $\rightarrow$ NURBS surface $\rightarrow$ By contour}; select
+the four lines; hit \texttt{ESC}; a magenta quadrilateral appears
+indicating the surface 
+\item Extrude the surface: \emph{Utilities $\rightarrow$ Copy...}; \emph{Entities
+type:} \texttt{\emph{Surfaces}}; \emph{Translation:} \texttt{\emph{Translation}};
+\emph{First point z:} \texttt{0.0}; \emph{Second point z:} \texttt{1.0};
+\emph{Do extrude:} \texttt{\emph{Surfaces}}; \emph{Select} and select
+previously created surface; \emph{Finish} or \texttt{ESC}; Five new
+surfaces were added. 
+\item Establish the hexahedron volume: \emph{Geometry $\rightarrow$ Create
+$\rightarrow$ Volume $\rightarrow$ By contour}; select the six area
+surfaces; hit \texttt{ESC} twice; a blue volume is indicated 
+\end{enumerate}
+
+
+\subsection{Show geometry labels (node-number, line-number, etc.)}
+\label{tut_struct:sec:show-geo-label}
+
+\begin{itemize}
+\item \emph{View $\rightarrow$ Label $\rightarrow$ All} shows all geometry
+labels/numbers 
+\item \emph{View $\rightarrow$ Label $\rightarrow$ All in $\rightarrow$
+node,line,...} shows selected geometry label 
+\end{itemize}
+
+\subsection{Using \emph{lnm\_general} (static structure example)}
+
+\begin{enumerate}
+\item Choose \emph{Date $\rightarrow$ Problemtypes $\rightarrow$ lnm\_general};
+give \texttt{OK}
+\item Apply boundary conditions (BCs): \emph{Data $\rightarrow$ Conditions
+$\rightarrow$ SingleLayer}
+\item Simple support along lower edges along $x$-direction: In \emph{SingleLayer}
+switch to \emph{line} (icon) and \texttt{\emph{L Dirich}}; tick \emph{1
+on/off}, \emph{2 on/off} and \emph{3 on/off} to fixate deformation
+to zero in $x$-, $y$- and $z$-direction; \emph{Assign}; Select
+on of the lower edges in $x$-direction; Untick \emph{2} and \emph{3};
+and \emph{Assign}; by selection the other lower edge in $x$-direction. 
+\item Highlight the supported edges: \emph{Draw $\rightarrow$ colors};
+\emph{Finish}
+\item Apply load: In \emph{SingleLayer} switch to \emph{surface} (icon)
+and \texttt{S Neum}; tick \emph{3 on/off} to have a load in $z$-direction;
+set \emph{value3:} to \texttt{-25.0}; \emph{Assign} the surface on
+which the load acts; Select top plane; \emph{Finish} or \texttt{ESC}. 
+\item Highlight the load surface: \emph{Draw $\rightarrow$ colors}; \emph{Finish}
+\item Setup material: \emph{Data $\rightarrow$ materials}; Select \texttt{\emph{MAT
+Struct StVenantKirchhoff}}; insert for \emph{Youngs modulus} \texttt{10000};
+and for \emph{Poisson ratio} \texttt{0.3}; \emph{Assign $\rightarrow$
+Volume}; Select the hexahedral volume; \emph{Finish} or \texttt{ESC}. 
+\item General problem data: \emph{Data $\rightarrow$ Problem Data $\rightarrow$
+General Problem Data}; select tab \emph{General}; type in a \emph{Problem
+title} \texttt{Plate}; \emph{Problem Type} \texttt{\emph{Structure}};
+Optimize maximal number of DOFs \emph{Max NumDOF} to \texttt{3}; \emph{Static/Dynamic}
+to \texttt{\emph{Static}}. 
+\item Include output: In \emph{General problem data} select tab \emph{Structural
+IO}; tick \emph{Struct Displ to File}; etc. 
+\item More settings for static case in \emph{Data $\rightarrow$ Problem
+Data $\rightarrow$ Static}. 
+\item Make Geometric elements also Design elements: \emph{Data $\rightarrow$
+Conditions $\rightarrow$ SingleLayer}; tick \emph{points} (icon);
+select \texttt{\emph{Design Node Number}}; \emph{Assign} to all geometric
+lines; \texttt{ESC}; tick \emph{lines} (icon); select \texttt{\emph{Design
+Line Number}}; \emph{Assign} to all geometric lines; \texttt{ESC};
+tick \emph{surfaces} (icon); select \texttt{\emph{Design Surface Number}};
+\emph{Assign} to all 6 geometric surface ; \texttt{ESC}; tick \emph{volumes}
+(icon); select \texttt{\emph{Design Volume Number}}; \emph{Assign}
+to all 1 geometric volume; \texttt{ESC}; \emph{Close}. 
+\item Assign finite element: \emph{Data $\rightarrow$ Conditions $\rightarrow$
+SingleLayer}; Tick \emph{Volumes} (icon); Select \texttt{\emph{Brick}};
+Keep Gauss-Points; change \emph{BrickStressIO} to \texttt{\emph{NDXYZ}},
+which means the stress is noted at the geometric nodes, so Gid can
+post-process the stresses. 
+\item Prepare a structured mesh: \emph{Meshing $\rightarrow$ Structured
+$\rightarrow$ Volumes}; Select blue plate volume; \texttt{ESC}; dialogue
+\emph{Enter number of cells to assign to lines} enter \texttt{20}
+along the long edges; give \emph{OK}; select the long edges (opposite
+lines get selected automatically); \texttt{ESC}; dialogue Take \texttt{20}
+elements along the long edges; Select them; \emph{Enter number of
+cells to assign to lines} enter \texttt{5} along the short edge (thickness
+direction); \emph{OK}; select one of the lines (remaing 3 get automatically
+selected); \texttt{ESC}; \emph{Cancel}. 
+\item Generate the mesh: \emph{Meshing $\rightarrow$ Generate mesh...};
+Ignore proposed element size and give \emph{OK}; see generated mesh;
+you can toggle between mesh and geometry by going to \emph{Meshing
+$\rightarrow$ Mesh view}. 
+\item Finally create Ccarat input file: \emph{Calculate $\rightarrow$ calculate};
+this should produce \texttt{\emph{plate.dat}}. 
+\end{enumerate}
+
+\subsection{Show boundary conditions}\label{tut_struct:sec:show-bound-cond}
+
+\begin{itemize}
+\item \emph{Data $\rightarrow$ Conditions $\rightarrow$ Single Layer $\rightarrow$
+Draw $\rightarrow$ Colors} shows active BCs; change between nodal,
+line, facial BCs with buttons in first line of \emph{Single layer}
+\end{itemize}
+
+\subsection{Deviation of \emph{curves} from \emph{functions}}
+
+There is a difference between the Ccarat input terms \emph{functions}
+and \emph{curves}.
+
+The latter are used as load curves, which are possibly dependent on
+time. These can be assigned to the von Neumann BCs in \emph{Gid :
+Data $\rightarrow$ Conditions $\rightarrow$ SingleLayer}; select
+\emph{P Neum}, \emph{L Nuem}, \ldots{}as appropriate; choose number
+from \emph{Load Curve} pop-down menu. The load curve is defined by
+clicking on the {}``Notepad'' icon on top right corner of the \emph{SingleLayer}
+window; there go to \emph{Interval Data}; define desired load curve.
+
+The \emph{functions} are defined (for instance) in \emph{Data $\rightarrow$
+Problem Data $\rightarrow$ Functions}.
+
+
+%%
+%%============================
+\section{Processing}
+
+More on executing the input file \texttt{\emph{plate.dat}} look at
+Sec~\ref{beginner:sec:running-examples}. 
+
+
+%%
+%%============================
+\section{Postprocessing}\label{tut_struct:sec:postprocessing}
+
+
+\subsection{Show mesh}
+
+\label{sec:show-grid}
+
+\begin{itemize}
+\item \emph{Files $\rightarrow$ Postprocess}
+\item \emph{Files $\rightarrow$ open $\rightarrow$ file.flavia.res}
+\item \emph{Windows $\rightarrow$ Deform mesh} or \emph{Ctrl-d}
+\item select arbitrary time step 
+\item \emph{Windows $\rightarrow$ View Style $\rightarrow$ Style $\rightarrow$
+Body lines}
+\end{itemize}
+
+\subsection{Show results of primary unknowns}\label{tut_struct:sec:show-results}
+
+\begin{itemize}
+\item \emph{Files $\rightarrow$ Postprocess}
+\item \emph{Files $\rightarrow$ open $\rightarrow$ file.flavia.res}
+\item \emph{View Results $\rightarrow$ ...}
+\end{itemize}
+
+\subsection{Show stresses}\label{tut_struct:sec:show-stresses}
+
+This feature is not implemented for all elements. Whether it is implemented
+or not can be seen e.g. in the file src/\emph{element}/{*}\_inp\_ele.
+There STRESS must be read in. For brick elements: 
+
+\begin{itemize}
+\item in the input file in the section STRUCTURE ELEMENTS at the end of
+each element the key words STRESSES NDXYZ must be present; meaning:
+stresses in the nodal points are displayed; additionally, the section
+IO must be adjusted 
+\item in gid the results are read in as usual (cf. \ref{tut_struct:sec:show-results}) 
+\item \emph{View Results $\rightarrow$ pcarat}
+\item view the stresses e.g. \emph{View Results $\rightarrow$ Contour Fill
+$\rightarrow$ ...}
+\end{itemize}
+
+

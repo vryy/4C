@@ -115,7 +115,6 @@ extern PAR par;
 
 pointer to allocate dynamic variables if needed
 dedfined in global_control.c
-ALLDYNA               *alldyn;
 
 \author bborn
 \date 03/06
@@ -129,8 +128,6 @@ extern ALLDYNA *alldyn;
 number of load curves numcurve
 vector of structures of curves
 defined in input_curves.c
-INT                   numcurve;
-struct _CURVE        *curve;
 
 \author bborn
 \date 03/06
@@ -142,7 +139,6 @@ extern CURVE *curve;
 /*!
 \brief CALC_ACTIONs
 
-enum _CALC_ACTION
 command passed from control routine to the element level
 to tell element routines what to do
 defined globally in global_calelm.c
@@ -848,22 +844,27 @@ void tsi_st_fehlbg(INT disnum_s,
     for (istg=0; istg<nstg; istg++)
     {
       /*----------------------------------------------------------------*/
-      /* time stage t_{n+1} = t_n + dt*c_i */
+      /* time stage 
+       *    t_{n+1} = t_n + dt*c_i */
       tim[istg] = acttime + dt*fb4c[istg];
       /*----------------------------------------------------------------*/
-      /* velocity at stage */
+      /* velocity at stage
+       *    V_{n+c_i} += dt_n * \sum{j=1}{s} ( a_{ij} * k_j ) */
       solserv_copy_vec(&(vel[0]), &(veln[istg]));
       for (jstg=0; jstg<istg; jstg++)
       {
         solserv_add_vec(&(accn[jstg]), &(veln[istg]), dt*fb4a[istg][jstg]);
       }
       /*----------------------------------------------------------------*/
-      /* displacement at stage */
+      /* displacement at stage
+       *    D_{n+c_i} += c_i * dt * V_n 
+       *               + dt_n^2 * \sum{j=1}{s} ( aa_{ij} * k_j )*/
       solserv_copy_vec(&(actsolv->sol[0]), &(disn[istg]));
       solserv_add_vec(&(vel[0]), &(disn[istg]), dt*fb4c[istg]);
       for (jstg=0; jstg<istg-1; jstg++)
       {
-        solserv_add_vec(&(accn[jstg]), &(disn[istg]), dt*dt*fb4aa[istg][jstg]);
+        solserv_add_vec(&(accn[jstg]), &(disn[istg]), 
+                        dt*dt*fb4aa[istg][jstg]);
       }
       /* put the displacements to the nodes */
       solserv_result_total(actfield, disnum, actintra, &(disn[istg]), 
@@ -950,7 +951,7 @@ void tsi_st_fehlbg(INT disnum_s,
     }  /* end of for */
 
     /*------------------------------------------------------------------*/
-    /* set new external force, last stage load is c_nstg=1 */
+    /* set new external force, last stage load is c_nstg==1 */
     solserv_copy_vec(&(fext[0]), &(fext[2]));
 
     /*------------------------------------------------------------------*/

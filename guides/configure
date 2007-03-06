@@ -14,10 +14,11 @@ echo "All toc, aux and log files will be written there"
 echo "Also, temporary report tex files are in there"
 echo "--------------------------------------------------"
 
-working_directory=`pwd`
+working_directory=$PWD
 global_report=global_report
 global_report_file=$latex_wd/$global_report.tex
 single_report_base="single_report_"
+single_report_template="templates/single_report.tex"
 
 if [ ! -e ${working_directory}/reports ]
 then
@@ -39,7 +40,12 @@ fi
 ###################################################
 
 #  TeX_files contains all tex-files in src which start with src_
-TeX_files=`find src -name src_*.tex`
+#TeX_files=`find src -name src_*.tex`
+#  Input file contains list of TEX files of the chapters and
+#  \part{This a part} commands. The part command separate the
+#  long chapter list in, well, parts.
+#  The flag -E places $ sign at every end 
+TeX_files=`cat Makefile.in`
 
 # INIT GLOBAL MASTER DOCUMENT
 cat templates/global_report.tex > $global_report_file
@@ -51,66 +57,76 @@ cat templates/global_report.tex > $global_report_file
 #
 ###################################################
 
-for full_name in `echo $TeX_files` 
+IFS_ORIG=$IFS
+IFS=$'\x0A'  # line break is the only white space character to parse
+for full_name in $TeX_files
 do
 
-    src_name=${full_name##*/}
-    file_name=${src_name#*_}
-    directory=${full_name%/*}
-    inputname=${src_name%.*}
+    if [ "${full_name:0:5}" == "\part" ]
+    then
+        part_title=$full_name
+        echo "$part_title" >> $global_report_file
+    else
+        src_name=${full_name##*/}
+        file_name=${src_name#src_} #${src_name#*_}
+        directory=${full_name%/*}
+        inputname=${src_name%.*}
 
-    ###################################################
-    #
-    #  THE SINGLE REPORTS
-    #
-    ###################################################
+        ###################################################
+        #
+        #  THE SINGLE REPORTS
+        #
+        ###################################################
 
-    cat templates/single_report.tex > $latex_wd/$single_report_base$file_name
+        #  create single report TEX file based on template
+        cat $single_report_template > $latex_wd/$single_report_base$file_name
 
-    # set input paths
-    echo "\makeatletter">> $latex_wd/$single_report_base$file_name
-    echo "\def\input@path{%">> $latex_wd/$single_report_base$file_name
-    echo "{"${directory}"/}%">> $latex_wd/$single_report_base$file_name
-    echo "}">> $latex_wd/$single_report_base$file_name
-    echo "\makeatother">> $latex_wd/$single_report_base$file_name
+        # set input paths
+        echo "\makeatletter">> $latex_wd/$single_report_base$file_name
+        echo "\def\input@path{%">> $latex_wd/$single_report_base$file_name
+        echo "{"${directory}"/}%">> $latex_wd/$single_report_base$file_name
+        echo "}">> $latex_wd/$single_report_base$file_name
+        echo "\makeatother">> $latex_wd/$single_report_base$file_name
 
-    # set graphic paths in single reports
-    echo "\graphicspath{%">> $latex_wd/$single_report_base$file_name
-    echo "{"${directory}"/}%">> $latex_wd/$single_report_base$file_name
-    echo "}">> $latex_wd/$single_report_base$file_name
+        # set graphic paths in single reports
+        echo "\graphicspath{%">> $latex_wd/$single_report_base$file_name
+        echo "{"${directory}"/}%">> $latex_wd/$single_report_base$file_name
+        echo "}">> $latex_wd/$single_report_base$file_name
 
-    # input document
-    #echo "\begin{document}" >> $latex_wd/$single_report_base$file_name
-    echo "\input{"${inputname}"}" >> $latex_wd/$single_report_base$file_name
-    echo "\end{document}" >> $latex_wd/$single_report_base$file_name
+        # input document
+        #echo "\begin{document}" >> $latex_wd/$single_report_base$file_name
+        echo "\input{"${inputname}"}" >> $latex_wd/$single_report_base$file_name
+        echo "\end{document}" >> $latex_wd/$single_report_base$file_name
 
+        ###################################################
+        #
+        #  CONTRIBUTE TO MASTER DOCUMENT
+        #
+        ###################################################
 
-    ###################################################
-    #
-    #  MASTER DOCUMENT
-    #
-    ###################################################
+        echo "\makeatletter">> $global_report_file
+        echo "\def\input@path{%">> $global_report_file
 
-    echo "\makeatletter">> $global_report_file
-    echo "\def\input@path{%">> $global_report_file
+        directory=${full_name%/*}
+        echo "   "${directory}
 
-    directory=${full_name%/*}
-    echo "   "${directory}
+        echo "{"${directory}"/}%">> $global_report_file
 
-    echo "{"${directory}"/}%">> $global_report_file
+        echo "}">> $global_report_file
+        echo "\makeatother">> $global_report_file
 
-    echo "}">> $global_report_file
-    echo "\makeatother">> $global_report_file
+        # set graphic paths in global report
+        echo "\graphicspath{%">> $global_report_file
+        directory=${full_name%/*}
+        echo "{"${directory}"/}%">> $global_report_file
+        echo "}">> $global_report_file
 
-    # set graphic paths in global report
-    echo "\graphicspath{%">> $global_report_file
-    directory=${full_name%/*}
-    echo "{"${directory}"/}%">> $global_report_file
-    echo "}">> $global_report_file
+        echo "{\input{"${inputname}"}}" >> $global_report_file
 
-    echo "{\input{"${inputname}"}}" >> $global_report_file
+    fi 
 
 done
+IFS=$IFS_ORIG
 
 # CLOSE GLOBAL MASTER DOCUMENT
 echo "\end{document}" >> $global_report_file
@@ -139,7 +155,7 @@ echo -e "" > Makefile
 EPS_files=`find src -name *.eps`
 
 echo -e "EPS_FILES= \\" >> Makefile
-for full_name in `echo $EPS_files`
+for full_name in $EPS_files
 do
     echo -e "    "$full_name"\\" >> Makefile
 done
@@ -159,35 +175,45 @@ echo -e "global: templates/global_report.tex "reports/$global_report.pdf"\\n\\n"
 
 # make targets for single reports
 single_reports_pdfs="single: "'$(PDF_FILES)'
-for full_name in `echo $TeX_files`
+IFS=$'\x0A'  # line break is the only white space character to parse
+for full_name in $TeX_files
 do
-    src_name=${full_name##*/}
-    file_name=${src_name#*_}
-    inputname=${file_name%.*}
+    if [ ! "${full_name:0:1}" == "\\" ]
+    then
+        src_name=${full_name##*/}
+        file_name=${src_name#src_} #${src_name#*_}
+        inputname=${file_name%.*}
 
-    single_reports_pdfs=$single_reports_pdfs'\\'"\\n\\t"reports/$single_report_base$inputname".pdf"
+        single_reports_pdfs=$single_reports_pdfs'\\'"\\n\\t"reports/$single_report_base$inputname".pdf"
+    fi
 done
+IFS=$IFS_ORIG
 
 echo -e $single_reports_pdfs"\\n" >> Makefile
 
 
 # make dependencies for single reports
-for full_name in `echo $TeX_files`
+IFS=$'\x0A'  # line break is the only white space character to parse
+for full_name in $TeX_files
 do
-    src_name=${full_name##*/}
-    file_name=${src_name#*_}
-    directory=${full_name%/*}
-    inputname=${file_name%.*}
-    single_report_dependency=reports/$single_report_base$inputname".pdf"
+    if [ ! "${full_name:0:1}" == "\\" ]
+    then
+        src_name=${full_name##*/}
+        file_name=${src_name#src_} #${src_name#*_}
+        directory=${full_name%/*}
+        inputname=${file_name%.*}
+        single_report_dependency=reports/$single_report_base$inputname".pdf"
 
-    echo -e "" >> Makefile
+        echo -e "" >> Makefile
 
-    echo -e $single_report_dependency: Makefile $directory"/*.tex templates/global_report.tex" >> Makefile
+        echo -e $single_report_dependency: Makefile $directory"/*.tex" $single_report_template >> Makefile
 
-    echo -e "\\t"$execute_command$single_report_base$inputname >> Makefile
-    echo -e "\\t"$execute_command$single_report_base$inputname >> Makefile
-    echo -e "\\t""mv $latex_wd/$single_report_base$inputname".pdf" reports" >> Makefile
+        echo -e "\\t"$execute_command$single_report_base$inputname >> Makefile
+        echo -e "\\t"$execute_command$single_report_base$inputname >> Makefile
+        echo -e "\\t""mv $latex_wd/$single_report_base$inputname".pdf" reports" >> Makefile
+    fi
 done
+IFS=$IFS_ORIG
 
 
 # make dependencies for global report
@@ -195,12 +221,17 @@ done
 echo -e "" >> Makefile
 echo -e "" >> Makefile
 
-global_report_dependency="reports/"$global_report.pdf": "'$(PDF_FILES)'" Makefile templates/single_report.tex "
-for full_name in `echo $TeX_files` 
+global_report_dependency="reports/"$global_report.pdf": "'$(PDF_FILES)'" Makefile templates/global_report.tex "
+IFS=$'\x0A'  # line break is the only white space character to parse
+for full_name in $TeX_files
 do
-    directory=${full_name%/*}
-    global_report_dependency=$global_report_dependency'\\'"\\n\\t"$directory"/*.tex"
+    if [ ! "${full_name:0:1}" == "\\" ]
+    then
+        directory=${full_name%/*}
+        global_report_dependency=$global_report_dependency'\\'"\\n\\t"$directory"/*.tex"
+    fi
 done
+IFS=$IFS_ORIG
 
 echo -e $global_report_dependency >> Makefile
 
@@ -214,15 +245,15 @@ echo -e "\\n" >> Makefile
 
 echo clean: >> Makefile
 echo -e "\\tif [ -e reports ] ; then rm -r reports; fi" >> Makefile
-echo -e "\\tif [ -e "$latex_wd" ] ; then rm -r "$latex_wd"; fi" >> Makefile
+echo -e "\\tif [ -e "$latex_wd" ] ; then rm -r "$latex_wd" ; fi" >> Makefile
 #echo -e "\\tif [ -e Makefile ] ; then rm Makefile; fi" >> Makefile
 echo -e "\\t@echo reconfiguring..." >> Makefile
 echo -e "\\t./configure" >> Makefile
 
 echo clean_svn: >> Makefile
 echo -e "\\tif [ -e reports ] ; then rm -r reports; fi" >> Makefile
-echo -e "\\tif [ -e "$latex_wd" ] ; then rm -r "$latex_wd"; fi" >> Makefile
-echo -e "\\tif [ -e Makefile ] ; then rm Makefile; fi" >> Makefile
+echo -e "\\tif [ -e "$latex_wd" ] ; then rm -r "$latex_wd" ; fi" >> Makefile
+echo -e "\\tif [ -e Makefile ] ; then rm Makefile ; fi" >> Makefile
 
 
 # Make target for all the missing figure.pdf files

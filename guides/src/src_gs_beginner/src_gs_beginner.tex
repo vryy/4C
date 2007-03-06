@@ -240,7 +240,7 @@ to the platform specification file without consulting the \ccarat{}
 maintainer first.
 
 
-\subsection{Running examples}
+\subsection{Running examples}\label{beginner:sec:running-examples}
 
 In \texttt{Input} there are test examples; all necessary \char`\"{}packages\char`\"{}
 must have been activated in the defines-file that was used to configure
@@ -482,12 +482,25 @@ string.
 There are not so many means to create a valid input file.
 
 
-\subsection{GiD}
+\subsection{GiD}\label{beginner:sec:gid}
 
-GiD is a pre- and postprocessing tool. We have the specialized problem
+GiD (http://gid.cimne.upc.es/) is a pre- and postprocessing tool. We have the specialized problem
 type \texttt{lnm\_general} available, that contains the necessary
 definitions to create a \ccarat{} input file. 
 
+\subsubsection{How to start Gid --- academic version}
+
+Gid is installed on Galileo. Its folder is \texttt{galileo:/lnm/gid}.
+You can run Gid by typing \texttt{/lnm/gid/gid} on any LNM machine.
+(It may be convenient to place a link to this executable in your \texttt{\~{/}bin}
+directory by doing \texttt{ln -s /lnm/gid/gid \~{/}bin/gid}, then
+typing \texttt{gid} will do the same.) Gid starts up in evaluation
+mode, if you are not logged on Galileo. In evaluation mode the number
+of DOFs is restricted to 4000 or so. So, to run the real deal one-million-degree-of-freedom
+problem you must firstly login on Galileo, which is best achieved
+with \texttt{ssh -X} \texttt{\emph{username}}\texttt{@galileo}.
+
+\subsubsection{How to start Gid --- full version}
 GiD is installed at \texttt{/lnm/gid}. Standard users have a rather
 limited academic version available. We own a single computer license
 that runs without limitations on \texttt{galileo}. You can simply
@@ -508,6 +521,20 @@ svn~co~svn://gauss/trunk/lnm\_general
 \end{lyxcode}
 However, you do not need to bother unless we want to modify it.
 
+
+
+
+\subsubsection{Parametrized modelling by using batch-files}
+
+If you build a model where you might want to change some values later
+on, for example a certain geometry parameter like thickness, the batch
+option in gid is usefull. You have to switch it on in \emph{Utilities$\rightarrow$Preferences}
+and give a path to the batch file. There, every command you execute
+in gid is stored. Therefore you will also find confusing mouse operations.
+But it is possible to extract the important commands and maybe save
+them to another file. This input file can be read by \emph{Files$\rightarrow$import$\rightarrow$batch}
+file. It works also with the annoying assignment of design nodes,
+etc. for ccarat, described below.
 
 \subsection{Modify \ccarat{} input files}
 
@@ -671,9 +698,9 @@ Issues: very simple tool. Just for velocity of fluid problems. Enhancements
 are possible.
 
 
-\section{Developement environment}
+\section{Development environment}
 
-The main developement tools for \ccarat{} are \texttt{gcc}, \texttt{g77},
+The main development tools for \ccarat{} are \texttt{gcc}, \texttt{g77},
 \texttt{gdb}, \texttt{bash} and the related tools. Most people, however,
 prefere some kind of environment that plugs these tools together.
 
@@ -685,7 +712,8 @@ are not necessarilly installed on your machine. But they can be using
 \subsection{Text editors \label{sec:Text-editors}}
 
 That is a matter of taste, really. Only those with taste choose the
-right one: \texttt{xemacs}.
+right one: \texttt{xemacs}. However, those of us with taste and style
+choose \texttt{emacs}. 
 
 
 \subsubsection{xemacs}
@@ -908,6 +936,39 @@ function based navigation is rather limited.
 Plain editors. Most often syntax highlighting is supported, so at
 least you get colour. All the developement has to be done using the
 Linux shell.
+
+
+\subsection{File comparators}
+
+A file comparator allows to show neatly the differences of two files. These
+are handy to compare two (or more) text files such as input files, output
+files or source code. 
+
+\subsubsection{Eclipse}
+
+built in
+
+\subsubsection{Smartsvn}
+
+Smartsvn (\texttt{smartsvn}) contains a file comparator against personal
+modified and committed versions. Ans more...
+
+\subsubsection{Kdiff3}
+
+kdiff3 -- compares two or three input files or directories
+
+\subsubsection{Xxdiff}
+
+Sometimes it is helpful --indeed very helpful-- to compare two text
+files and see their differences. One way to get these differences
+displayed conveniently is Xxdiff (\texttt{xxdiff} on the command line).
+
+Xxdiff is a free clone of the Unix freeware Xdiff (http://reality.sgiweb.org/rudy/xdiff/);
+due to its heritage it looks a bit siliconish.
+
+
+
+
 
 
 \subsection{Debugging frontends}

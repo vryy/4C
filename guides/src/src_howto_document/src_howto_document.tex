@@ -1,10 +1,10 @@
-\chapter{HowTo Document CCarat} 
+\chapter{HowTo Document \ccarat{}} 
 
 \newcommand{\test}[1]{\vec{#1}}
 
 \section{Usage}
 
-In the \verb|/doc/technical_reports| folder, type
+In the \verb|guide| folder, type
 \begin{itemize}
 \item \verb|./configure|
 \item \verb|make|
@@ -16,8 +16,11 @@ In the \verb|/doc/technical_reports| folder, type
 \begin{enumerate}
   \item create a new folder \verb|src_project|
   \item create a new file \verb|src_project.tex|
-  \item start the file with \verb|\chapter{Project Title X|
-  \item run \verb|./configure| --> your new folder should be mentioned on the screen and should appear on the screen and in the Makefile. Also, all your eps files should be mentioned in the begining of the Makefile.
+  \item start the file with \verb|\chapter{Project Title X}|
+  \item add the file to \texttt{Makefile.in} (at an appropriate position; the
+  files are compiled consecutively), e.g.\\
+  \verb|src/src_project/src_project.tex|
+  \item run \verb|./configure| $\to$ your new folder should be mentioned on the screen and should appear on the screen and in the Makefile. Also, all your eps files should be mentioned in the begining of the Makefile.
 \end{enumerate}
 
 
@@ -29,7 +32,7 @@ After creating your folder and main file and running configure, do
  \item delete \verb|inputpath| and \verb|figurepath| stuff from this file
  \item use \verb|latex single_report_project| as usual
 \end{enumerate}
-This ensures that you have all the packages and conform to the standard of the configure script and, therefore, the general CCARAT (oops, he said it again...) documentation.
+This ensures that you have all the packages and conform to the standard of the configure script and, therefore, the general \ccarat{} (oops, he said it again...) documentation.
 
 
 \section{Technic}

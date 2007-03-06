@@ -1,0 +1,40 @@
+%%
+%%############################
+\chapter{Welcome to \ccarat{}}
+
+%%
+%%============================
+\section{History}
+
+\ccarat{} is a research code. It was started by Michael Gee in 2000
+and has since grown in several directions. The original aim was to
+provide a framework for parallel multifield finite element simulations.
+That is the fortran code that was used back then was both serial and
+a pain to extend. However, the aim was moderate parallelization, not
+massive parallel execution with hundreds of processes. That is why
+there is a strong emphasis on data structures in \ccarat{} but still
+a lot of data redundancies. The original \ccarat{} is a large C project
+that uses external linear solver packages (both parallel and seriel.)
+
+In 2006 it was felt that \ccarat{} needs a major face lift. And again
+it is due to Michael Gee to introduce the trilinos libraries into
+\ccarat{} and redesign the whole package on top of that.
+
+The original code, however, is still in use and supported. So there
+are now two major parts to \ccarat{} that have many ideas in common,
+but are based on independent designs. 
+
+%%
+%%============================
+\section{Overview}
+
+The following Guide to \ccarat{} deals with
+
+\begin{description}
+\item[Part I --- Getting started] First steps towards compiling \ccarat{}; \textsc{Hop
+  \& Malt} cluster; Tutorials;
+  Development tools 
+\item[Part II --- Reference guide] Input parameter with short description
+\item[Part III --- Development guide] Theoretical background and detailed
+  description   on elements, data types, ...
+\end{description}

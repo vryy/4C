@@ -262,7 +262,8 @@ typedef enum _MATERIAL_TYP
                        m_damage_ge,     /* isotropic gradient enhanced damage model */
 		       m_hyper_polyconvex, /* hyperelastic polyconvex energy strain function */
                        m_th_fourier_iso,  /* isotropic (linear) Fourier's law of heat conduction */
-                       m_th_fourier_gen  /* general (linear) Fourier's law of heat conduction */
+                       m_th_fourier_gen,  /* general (linear) Fourier's law of heat conduction */
+                       m_vp_robinson  /* Robinson's visco-plastic material */
 } MATERIAL_TYP;
 /*----------------------------------------------------------------------*
  | enum PART_TYP                                          m.gee 7/01    |
@@ -296,6 +297,7 @@ typedef enum _CALC_ACTION
 {
                        calc_struct_none,
                        calc_struct_init,
+                       calc_struct_final,
                        calc_struct_linstiff,
                        calc_struct_linstiffmass,
                        calc_struct_linstifflmass,

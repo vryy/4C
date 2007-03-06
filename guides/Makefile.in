@@ -1,0 +1,12 @@
+src/welcome/welcome.tex
+\part{Getting started}
+src/src_gs_beginner/src_gs_beginner.tex
+src/tut_struct/tut_struct.tex
+\part{Reference guide}
+src/inparams/inparams.tex
+\part{Development guide}
+src/src_howto_document/src_howto_document.tex
+src/code_commentation/code_commentation.tex
+src/binary_io/binary_io.tex
+src/src_fsi/src_fsi.tex
+src/src_free_surface_flow/src_free_surface_flow.tex
