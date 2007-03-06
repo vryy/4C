@@ -1,0 +1,84 @@
+%%
+%%::::::::::::::::::::::::::::commands
+\input{cmd-text}
+\input{cmd-math}
+
+
+%%
+%%----------------------------materials
+\chapter{Materials}
+
+
+\section{Status}
+$\to$ Lena Wiechert and Robert `photoshop god' Metzke
+
+\section{Suggestions}
+\begin{enumerate}
+\item Problem with commented input file, comments break CCarat input ---
+  fixed.
+\item Expand unified material description to all elements, see e-mail
+  underneath 
+\end{enumerate}
+
+\section{Unified material definitions}
+
+Some old email
+\begin{verbatim}
+-------- Original Message --------
+Subject: Re: ccarat materials
+Date: Tue, 07 Mar 2006 12:42:01 +0100
+From: Stefan Hartmann <hartmann@statik.uni-stuttgart.de>
+To: Burkhard Bornemann <bornemann@lnm.mw.tum.de>
+
+Hallo Brukhard,
+gschichtlich ist es so, dass jedes Element seine eigenen 
+Materialroutinen hat. Als ich hier angefangen habe, hat es aber so ein 
+bisschen geheissen, dass es evtl. ganz schoen weare, wenn die 
+Materialgeschichten vom Element entkoppelt sind. Daraufhin habe ich 
+diejenigen Sachen, die ich neu programmiert habe so geschrieben, dass 
+sie allgemein 3D-Formuliert sind. D.h. diese Routinen sind dann mit ein 
+paar entsprechenden Koordinatentransformationen fuer das Shell8/9 und 
+Brick1 verwendbar. Fuer das Wall habe ich entsprechende Huellroutinen 
+geschrieben, die die plane-strain/stress Geschichte in den Griff bekommt 
+und die notwendige Kondensation der Werkstoffmatrix durchfuehrt.
+[...]
+Gruss,
+Stefan
+
+Burkhard Bornemann wrote:
+
+> Hallo Stefan,
+>
+> ich versuche gerade einen Ueberblick ueber die Stellen in Ccarat zu 
+> bekommen, an denen die Materialien fuer die Strukturen definiert 
+> werden. Mir ist aufgefallen, dass der Ordner src/materials nur (?) von 
+> Wall1 und Shell9 verwendet wird. Die anderen Strukturelemente haben 
+> separate Materialdefs (oder?).
+>
+> Ist es geplant alle Materialen ueber src/materials gemeinsam zu 
+> definieren, oder gar das Gegenteil? Ueber einen kleinen Tipp, waere 
+> ich echt froh.
+>
+> wall1 & shell9 ==> Definitionen im materials/* Ordner
+> brick1 ==> eigene Materialdefinitionen
+> shell8 ==> eigene Materialdefinitionen
+> beam3 ==> eigene Materialdefinitionen
+>
+>
+> Beste Gruesse
+> Burkhard
+>
+\end{verbatim}
+
+%%
+%%::::::::::::::::::::::::::::St.Venant-Kirchhoff
+\section{St.~Venant--Kirchhoff material}
+\subitempart{Text input}  `\cnl' is for line continuation
+\begin{quote}
+\cod{MAT} $int$ \cnl\\
+\cod{MAT\_Struct\_StVenantKirchhoff} \cnl\\
+\cod{YOUNG} $real$ \cnl \chs  Young's modulus\\
+\cod{NUE} $real$ \cnl \chs  Poisson's ratio $\nu\in[0,0.5)$\\
+\cod{DENS} $real$ \cnl \chs Density $>0$\\
+\cod{THEXPANS} $real$ \chs Coefficient of thermal expansion
+\end{quote}

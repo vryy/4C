@@ -10,3 +10,9 @@ src/code_commentation/code_commentation.tex
 src/binary_io/binary_io.tex
 src/src_fsi/src_fsi.tex
 src/src_free_surface_flow/src_free_surface_flow.tex
+src/shell8/shell8.tex
+src/shell9/shell9.tex
+src/axishell/axishell.tex
+src/wallge/wallge.tex
+src/beam3/beam3.tex
+src/struct_mat/struct_mat.tex

@@ -17,12 +17,11 @@ all data to define a problem. The file is divided in single blocks
 by horizontal lines which end with a key word specifying the following
 content. There must not be spaces in front of a keyword. An example
 is the \kw{PROBLEM TYP} introductory line 
-
-% \begin{lyxcode}
-% -{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-{}-PROBLEM~TYP~
-% \end{lyxcode}
+\begin{verbatim}
+-------------------------------------------------------PROBLEM TYP
+\end{verbatim}
 Plenty of keyword lines and blocks refere to special applications
-of the program (such as OPTIMIZATION, ALE DYNAMIC etc.). These often
+of the program (such as \kw{OPTIMIZATION}, \kw{ALE DYNAMIC} etc.). These often
 can be omitted when not required, which shortens the file and eases
 its use. Other blocks however are of general character and must not
 be left out in order to obtain a valid input file.
@@ -31,29 +30,50 @@ The order of the blocks can be chosen arbitrary while a convention
 certainly increases comfort. The single blocks are explained in more
 detail subsequently. Emphasis is here put on those blocks which are
 of general meaning and are used within all kinds of different problem
-types. Specific problem dependent blocks such as ALE SOLVER, FLUID
-DYNAMIC or OPTIMISATION can be added to this manually as required. 
+types. Specific problem dependent blocks such as \kw{ALE SOLVER}, \kw{FLUID
+DYNAMIC} or \kw{OPTIMISATION} can be added to this manually as required. 
 
+%%
+%%============================
+\section{Comments}
+Comments start with $\backslash\backslash$. These can appear in the first
+rows or somewhere else. Everything on their right side is a comment and
+neglected. 
 
-% ---TITLE 
+%%
+%%============================
+\section{List of input parameters}
 
-% This block contains the expressive and individual title of your input
-% problem. 
+%%
+%%----------------------------
+\subsection{Title}
+\begin{verbatim}
+-------------------------------------------------------------TITLE
+\end{verbatim}
 
-% read in: inpctrhead() in input\_full/input\_ctr\_head.c 
+---TITLE 
 
-% used for: writing it to output file 
+This block contains the expressive and individual title of your input
+problem. 
 
-% written by: hand 
+read in: inpctrhead() in input\_full/input\_ctr\_head.c 
 
-% remarks: 
+used for: writing it to output file 
 
-% \begin{itemize}
-% \item The title can be used to set special treatments for selected examples
-% (which may be advisable for testing only). 
-% \item The title may be empty or contain up to five lines. 
-% \item The TITLE head line must not be omitted.
-% \end{itemize}
+written by: hand 
+
+remarks: 
+
+\begin{itemize}
+\item The title can be used to set special treatments for selected examples
+(which may be advisable for testing only). 
+\item The title may be empty or contain up to five lines. 
+\item The TITLE head line must not be omitted.
+\end{itemize}
+
+%%
+%%----------------------------
+
 % ---PROBLEM SIZE
 
 % This block contains the overal size of your input problem. The elements,
