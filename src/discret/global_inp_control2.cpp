@@ -214,7 +214,13 @@ void inpfield_ccadiscret()
     dserror("prb_fsi not yet impl.");
 
   if (genprob.probtyp==prb_fluid)
-    dserror("prb_fluid not yet impl.");
+  {
+    if (genprob.numfld!=1) dserror("numfld != 1 for fluid problem");
+    field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
+    field[genprob.numff].fieldtyp = fluid;
+    inpdis(&(field[genprob.numff]));
+    input_fluid_field(&(field[genprob.numff]),comm);
+  }
 
   if (genprob.probtyp==prb_fluid_pm)
     dserror("prb_fluid_pm not yet impl.");
@@ -389,6 +395,97 @@ void input_structural_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm)
   frrewind();
   return;
 } // void input_structural_field
+
+
+/*-----------------------------------------------------------------------*/
+/*!
+  \brief input of fluid field
+
+  Create the fluid field: allocate the discretizations, the required
+  number of elements and then read and create the elements
+
+  \param fluidfield    FIELD  (i) pointer to the fluid field
+
+  \return void
+
+  \author g.bau
+  \date   03/07
+
+ */
+/*-----------------------------------------------------------------------*/
+void input_fluid_field(FIELD *fluidfield, RefCountPtr<Epetra_Comm> comm)
+{
+  DSTraceHelper dst("input_fluid_field");
+
+  fluidfield->dis = NULL; // not using this here!
+
+  // allocate the discretizations
+  vector<RefCountPtr<DRT::Discretization> >* discretization =
+            new vector<RefCountPtr<DRT::Discretization> >(fluidfield->ndis);
+  fluidfield->ccadis = (void*)discretization;
+  for (int i=0; i<fluidfield->ndis; ++i)
+    (*discretization)[i] = rcp(new DRT::Discretization("Fluid",comm));
+
+  // read elements (proc 0 only)
+  RefCountPtr<DRT::Discretization> actdis = (*discretization)[0];
+  if (actdis->Comm().MyPID()==0)
+  {
+    // open input file at the right position
+    ifstream file(allfiles.inputfile_name);
+    file.seekg(ExcludedSectionPositions["--FLUID ELEMENTS"]);
+
+    // loop all element lines
+    // Comments in the element section are not supported!
+    string line;
+    for (int i=0; getline(file, line); ++i)
+    {
+      if (line.find("--")==0)
+      {
+        break;
+      }
+      else
+      {
+        istringstream t;
+        t.str(line);
+        int elenumber;
+        string eletype;
+        t >> elenumber >> eletype;
+        elenumber -= 1;
+
+        // Set the current row to the empty slot after the file rows
+        // and store the current line. This way the elements can use
+        // the normal fr* functions to read the line.
+        // Of course this is a hack.
+        allfiles.actrow = allfiles.numrows;
+        allfiles.actplace = allfiles.input_file[allfiles.actrow] = const_cast<char*>(line.c_str());
+
+        if (eletype=="FLUID3")
+        {
+#ifndef D_FLUID3
+          dserror("FLUID3 needed but not defined in Makefile");
+#else
+          RefCountPtr<DRT::Elements::Fluid3> ele =
+            rcp(new DRT::Elements::Fluid3(elenumber,actdis->Comm().MyPID()));
+
+          // read input for this element
+          ele->ReadElement();
+
+          // add element to discretization (discretization takes ownership)
+          actdis->AddElement(ele);
+#endif
+        }
+        else
+        {
+          dserror("element type '%s' unsupported",eletype.c_str());
+        }
+      }
+    }
+  } // if (actdis->Comm().MyPID()==0)
+
+  // Reset fr* functions. Still required.
+  frrewind();
+  return;
+} // void input_fluid_field
 
 
 /*----------------------------------------------------------------------*

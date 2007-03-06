@@ -33,6 +33,9 @@ Maintainer: Michael Gee
 #ifdef D_SHELL8
 #include "shell8.H"
 #endif
+#ifdef D_FLUID3
+#include "fluid3.H"
+#endif
 
 extern "C" /* stuff which is c and is accessed from c++ */
 {
@@ -46,6 +49,7 @@ using namespace Teuchos;
 // headers and prototypes of functions acessible from c++
 void inpnodes_ccadiscret(Epetra_SerialDenseMatrix& tmpnodes);
 void input_structural_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm);
+void input_fluid_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm);
 void input_assign_nodes(DRT::Discretization& actdis,Epetra_SerialDenseMatrix* tmpnodes);
 void input_design_dpoint_fenode_read(vector<vector<int> >& dnode_fenode,
                                      vector<int>& ndnode_fenode);
@@ -63,14 +67,14 @@ void input_design_dvol_fenode_read(vector<vector<int> >& dvol_fenode,
 
 /* headers and prototypes of functions also acessible from c */
 #ifdef __cplusplus
-extern "C" 
+extern "C"
 {
 #endif
 
 
 void ntainp_ccadiscret();
 void inpfield_ccadiscret();
-void input_conditions();                                
+void input_conditions();
 void distribute_drt_grids();
 void dyn_nlnstructural_drt();
 
