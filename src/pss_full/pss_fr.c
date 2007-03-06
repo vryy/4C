@@ -216,12 +216,14 @@ if (par.nprocs>1)
 #endif
 
 #ifdef CCADISCRET
+#ifdef PARALLEL
 if (par.nprocs>1)
 {
   /* Now that we use a variable number of bytes per line we have to
    * communicate the buffer size as well. */
    MPI_Bcast(&arraysize,1,MPI_INT,0,MPI_COMM_WORLD);
 }
+#endif
 
 if (par.myrank>0)
 {
