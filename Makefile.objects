@@ -120,7 +120,6 @@ OBJS_DISCRET  = \
                 src/discret/linalg_solver.o \
                 src/discret/linalg_solver_spooles.o \
                 src/discret/stru_genalpha_drt.o
-
 #                pss_full
 OBJS_PSS      = src/pss_full/pss_am.o \
                 src/pss_full/pss_ds.o \
