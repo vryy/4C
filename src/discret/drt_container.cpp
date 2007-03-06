@@ -1,5 +1,6 @@
 /*!----------------------------------------------------------------------
-\file container.cpp
+\file drt_container.cpp
+
 \brief A data storage container
 
 <pre>

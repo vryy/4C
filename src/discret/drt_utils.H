@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file utils.H
+\file drt_utils.H
 \brief A collection of helper methods for namespace DRT
 
 <pre>
@@ -41,13 +41,13 @@ namespace Utils
   \brief Create an instance of a ParObject depending on the type stored in data
   
   An instance of ParObject is allocated and returned. The type of instance
-  depends on the second entry in data and is an int (defined at the top of
+  depends on the first entry in data and is an int (defined at the top of
   ParObject.H)
   
-  \param data: A char string used for communication
+  \param data (in): A char vector used for communication or io
   
-  \warning All instances of ParObject have to store the size of data in position 0
-           and the type in position 1
+  \warning All instances of ParObject have to store the parobject id 
+           at the vey beginning of the char vector
            
   \return Allocates and returns the correct instance of ParObject where data is
           already unpacked in the instance. The calling method is responsible for
@@ -59,7 +59,7 @@ namespace Utils
   \brief Partition a graph with metis
   
   Take an input graph with any row map and a vector of point weights with the same row
-  map and redistribute the graph using the partioning library metis.
+  map and redistribute the graph using the partitioning library metis.
   The output graph has a row map according to the new distribution.
   
   \param graph : (in) any graph
@@ -72,7 +72,17 @@ namespace Utils
                                                    const Epetra_Vector& weights);
 
   /*!
-  \brief Locally extract a subset of values from ann Epetra_Vector
+  \brief Locally extract a subset of values from an Epetra_Vector
+  
+  Extracts lm.size() values from a distributed epetra vector and stores them into local.
+  this is NOT a parallel method, meaning that all values to be extracted on a processor
+  must be present in global on that specific processor. This usually means that global
+  has to be in column map style.
+  
+  \param global (in): global distributed vector with values to be extracted
+  \param local (out): vector holding values etxracted from global
+  \param lm     (in): vector containing global ids to be extracted. Size of lm
+                      determines number of values to be extracted.
   */
   void ExtractMyValues(const Epetra_Vector& global, vector<double>& local, const vector<int> lm);
 

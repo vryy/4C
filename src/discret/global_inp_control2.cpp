@@ -129,10 +129,6 @@ void ntainp_ccadiscret()
   /* input of not mesh or time based problem data  */
   inpctr();
 
-  // input of design if desired
-  design = NULL;
-  //input_design();
-
   /* input of materials */
   inp_material();
   /* input of multilayer materials -> shell9  (sh 10/02) */
@@ -342,7 +338,7 @@ void input_structural_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm)
     file.seekg(ExcludedSectionPositions["--STRUCTURE ELEMENTS"]);
 
     // loop all element lines
-    // Comments in the node section are not supported!
+    // Comments in the element section are not supported!
     string line;
     for (int i=0; getline(file, line); ++i)
     {

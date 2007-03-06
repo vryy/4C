@@ -103,73 +103,6 @@ void distribute_drt_grids()
 {
   DSTraceHelper dst("distribute_drt_grids");
 
-#if 0 // design does no longer exist
-  //-------------------------------------- get the design if it exists
-  if (design)
-  {
-    RefCountPtr<DRT::Design>* tmp = (RefCountPtr<DRT::Design>*)design->ccadesign;
-    DRT::Design& ccadesign = *((*tmp).get());
-    if (!ccadesign.Filled()) dserror("design was not filled");
-    // ------------------------------------------------------------------
-    // At this point, everything should be on proc 0
-    // We want the design to be redundant, so we create completely reundant maps
-    // and distribute the design discretizations according to it
-    // loop over dlines, dsurfaces, dvolumes (lines contain nodes, the others don't)
-    for (int i=0; i<3; ++i)
-    {
-      RefCountPtr<DRT::DesignDiscretization> ddis = ccadesign[i];
-      if (!ddis->Filled()) dserror("FillComplete() was not called on design discretization");
-      const Epetra_Map*  nmap = ddis->NodeColMap();
-      const Epetra_Map*  emap = ddis->ElementColMap();
-      const Epetra_Comm& comm = ddis->Comm();
-
-      //--------------------------------------- make redundant map of nodes
-      const int ngnodes = nmap->NumGlobalElements();
-      vector<int> nodes(ngnodes);
-      int start=0;
-      for (int proc=0; proc<comm.NumProc(); ++proc)
-      {
-        int nele = nmap->NumMyElements();
-        if (proc==comm.MyPID())
-          nmap->MyGlobalElements(&nodes[start]);
-        comm.Broadcast(&nele,1,proc);
-        comm.Broadcast(&nodes[start],nele,proc);
-        start += nele;
-      }
-      RefCountPtr<Epetra_Map> rnmap =
-                        rcp(new Epetra_Map(-1,ngnodes,&nodes[0],0,comm));
-
-      //------------------------------------ make redundant map of elements
-      const int ngele = emap->NumGlobalElements();
-      vector<int> ele(ngele);
-      start=0;
-      for (int proc=0; proc<comm.NumProc(); ++proc)
-      {
-        int nele = emap->NumMyElements();
-        if (proc==comm.MyPID())
-          emap->MyGlobalElements(&ele[start]);
-        comm.Broadcast(&nele,1,proc);
-        comm.Broadcast(&ele[start],nele,proc);
-        start += nele;
-      }
-      RefCountPtr<Epetra_Map> remap =
-                             rcp(new Epetra_Map(-1,ngele,&ele[0],0,comm));
-
-      // Export nodes to overlapping storage
-      ddis->ExportColumnNodes(*rnmap);
-      // Export elements to overlapping storage
-      ddis->ExportColumnElements(*remap);
-    } // for (int i=0; i<3; ++i)
-
-    // call FillComplete on all three discretizations again
-    int ierr=0;
-    ierr += ccadesign[2]->FillComplete(NULL,ccadesign[1].get());
-    ierr += ccadesign[1]->FillComplete(ccadesign[2].get(),ccadesign[0].get());
-    ierr += ccadesign[0]->FillComplete(ccadesign[1].get(),NULL);
-    if (ierr) dserror("FillComplete of Design returned %d",ierr);
-  } // if (design)
-#endif
-
   //the comm in the design can stay MPI_COMM_WORLD
   // get discretizations and replace their comm
   for (int i=0; i<genprob.numfld; ++i)
@@ -189,8 +122,7 @@ void distribute_drt_grids()
       ierr = actdis->FillComplete();
       if (ierr) dserror("FillComplete returned %d",ierr);
 #endif
-      if (!actdis->Filled())
-        ierr = actdis->FillComplete();
+      if (!actdis->Filled()) ierr = actdis->FillComplete();
       if (ierr) dserror("FillComplete returned %d",ierr);
 
       // partition the discretization using metis

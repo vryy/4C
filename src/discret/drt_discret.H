@@ -50,15 +50,14 @@ The \ref DRT::Discretization class supports the ostream& operator <<
 class Discretization
 {
 public:
-  // @{ \name Constructors and destructors
 
   /*!
   \brief Standard Constructor
 
-  \param comm : An epetra comm object associated with this discretization
+  \param name (in): name of this discretization
+  \param comm (in): An epetra comm object associated with this discretization
   */
   Discretization(const string name, RefCountPtr<Epetra_Comm> comm);
-
 
   /*!
   \brief Destructor
@@ -66,9 +65,7 @@ public:
   */
   virtual ~Discretization();
 
-  //@}
-
-  // @{ \name Access methods
+  //! @name Query methods
 
   /*!
   \brief Get communicator associated with this class
@@ -94,13 +91,21 @@ public:
   virtual inline bool HaveDofs() const {return havedof_;}
 
   /*!
+  \brief Print this discretization to stdout (Filled()==true NOT prerequisite)
+         (ostream << also supported)
+
+  \note This is a collective call
+  */
+  virtual void Print(ostream& os) const;
+
+  /*!
   \brief Get degree of freedom row map (Filled()==true prerequisite)
 
   Return ptr to degree of freedom row distribution map of this discretization.
   If it does not exist yet, build it.
 
-  \note - Filled()==true prerequisite
-        - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+  - Filled()==true prerequisite
+  - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
 
   */
   virtual const Epetra_Map* DofRowMap();
@@ -111,8 +116,8 @@ public:
   Return ptr to degree of freedom column distribution map of this discretization.
   If it does not exist yet, build it.
 
-  \note - Filled()==true prerequisite
-        - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+  - Filled()==true prerequisite
+  - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
 
   */
   virtual const Epetra_Map* DofColMap();
@@ -208,7 +213,9 @@ public:
 
   Returns the element with global row id gid if element is on this proc.
   Will return row or column element, ghosted or not.
-  This is an individual call
+  This is an individual call. Will test on existance of element in 
+  DEBUG version and thorw error message of not. Will crash in non-DEBUG
+  version if element does not exist on calling processor.
 
   \return Adress of element if element is owned by calling proc, returns NULL
           otherwise
@@ -251,6 +258,7 @@ public:
 
   /*!
   \brief Query whether a Node with global id gid is stored on this proc
+         (Filled()==true NOT prerequisite)
 
   */
   virtual bool HaveGlobalNode(int gid) const;
@@ -300,16 +308,9 @@ public:
     return nodecolptr_[lid];
   }
 
-  /*!
-  \brief Print this discretization to stdout (Filled()==true NOT prerequisite)
-
-  \note This is a collective call
-  */
-  virtual void Print(ostream& os) const;
-
   //@}
 
-  // @{ \name Construction methods
+  //! @name Construction methods
 
   /*!
   \brief Set an Epetra_Comm object which can be either
@@ -343,14 +344,30 @@ public:
   virtual void AddNode(RefCountPtr<DRT::Node> node);
 
   /*!
-  \brief Complete construction of this discretization  (Filled()==true NOT prerequisite)
+  \brief Complete construction of a discretization  (Filled()==true NOT prerequisite)
 
-  after adding or deleting nodes or elements or redistributing them in parallel,
-  this method has to be called to (re)construct pointer topologies
+  After adding or deleting nodes or elements or redistributing them in parallel,
+  or adding/deleting boundary conditions, this method has to be called to (re)construct 
+  pointer topologies.<br>
+  It builds in this order:<br>
+  - row map of nodes
+  - column map of nodes
+  - row map of elements
+  - column map of elements
+  - pointers from elements to nodes
+  - pointers from nodes to elements
+  - assigns degrees of freedoms
+  - map of element register classes
+  - calls all element register initialize methods
+  - build geometries of all Dirichlet and Neumann boundary conditions
 
   \note Sets Filled()=true
   */
   virtual int FillComplete();
+
+  //@}
+
+  //! @name Boundary condition construction methods
 
   /*!
   \brief Set a condition with a certain name (Filled()==false on exit)
@@ -363,7 +380,7 @@ public:
         completely redundant meaning that nodal cloud in the
         condition is the same on each processor and spans all
         nodes that hold this condition.<br>
-        Also, setting a condition to the discretization set the Filled() flag
+        Also, setting a condition to the discretization sets the Filled() flag
         to false.
 
   \note
@@ -371,10 +388,8 @@ public:
   \param name : Name of condition
   \param cond : The Condition class
 
-  \note this takes ownership of cond
-
   \warning If a condition with the exact same name already exists, it will
-           NOT be overwritten but stored twice in the element
+           NOT be overwritten but stored twice in the discretization
 
   */
   virtual void SetCondition(const string& name,RefCountPtr<Condition> cond);
@@ -394,7 +409,7 @@ public:
   \param name (in): Name of condition
   \param out  (out): vector of pointers to all conditions with that name
 
-  \return Returns NULL if condition with that name does not exist
+  \return Returns out.size()=0 if condition with that name does not exist
   */
   virtual void GetCondition(const string& name, vector<DRT::Condition*>& out);
 
@@ -417,6 +432,10 @@ public:
   */
   virtual DRT::Condition* GetCondition(const string& name);
 
+  //@}
+
+  //! @name Parallel (re)distribution
+
   /*!
   \brief Redistribute the discretization according to provided maps
          (Filled()==true prerequisite)
@@ -425,6 +444,9 @@ public:
   - build element maps (row and column)
   - do export of row/col nodes and row/col elements
   - call Fillcomplete()
+  
+  \param noderowmap (in): new node map the discretization shall have on exit
+  \param nodecolmap (in): new column map the discretization shall have on exit
 
   \note Filled()==true is a prerequisite, Filled()==true on exit
   */
@@ -448,6 +470,8 @@ public:
   - All ghosted nodes on all processors will be destroyed.
     Ghosting has to be recreated afterwards<br>
 
+  \param newmap (in): new nodal row map the discretization should use
+
   \note Sets Filled()=false and deletes noderowmap_ and nodecolmap_
   */
   virtual void ExportRowNodes(const Epetra_Map& newmap);
@@ -465,7 +489,8 @@ public:
     before the communication.<br>
   - newmap must contain all nodes of noderowmap_ (will be tested) because
     otherwise a node is shipped to a different proc and deleted from the
-    originating proc. It then merely exists as a ghost node on the receiving proc.<br>
+    originating proc. It then merely exists as a ghost node on the receiving proc.
+    (which is a state not tolerated)<br>
   - Filled()=false on exit. This means FillComplete() needs to be called again.<br>
   - This is a dull export meaning that there is no notion of whether the
     exported node distribution still matches the element distribution. A call
@@ -473,7 +498,7 @@ public:
     distributed accordingly.<br>
   - newmap should be an overlapping map.<br>
   - The ownership of an exported node does not change on the receiving proc.<br>
-    The received node becomes a ghost node.
+    The received node becomes a ghost node on the receiving proc.
 
   \note Sets Filled()=false and deletes noderowmap_ and nodecolmap_
   */
@@ -521,7 +546,7 @@ public:
     distributed accordingly.<br>
   - newmap should be an overlapping map<br>
   - The ownership of an exported element does not change on the receiving proc.<br>
-    The received element becomes a ghost element.
+    The received element becomes a ghost element on the receiving processor.
 
   \note Sets Filled()=false and deletes elerowmap_ and elecolmap_
   */
@@ -549,20 +574,22 @@ public:
 
   //@}
 
-  // @{ \name Evaluate methods
+  //! @name Evaluate methods
 
   /*!
   \brief Set a reference to a data vector
 
-  Using this method, a reference to a state vector can
+  Using this method, a reference to a vector can
   be supplied to the discretization. The elements can access
   this vector by using the name of that vector.
+  The method expects state to be either of dof row map or of
+  dof column map.
   If the vector is supplied in DofColMap() a reference to it will be stored.
-  If the vector is NOT supplied in DofColMap() a vector with column map
-  is allocated and the supplied vector is exported to it.
+  If the vector is NOT supplied in DofColMap(), but in DofRowMap(),
+   a vector with column map is allocated and the supplied vector is exported to it.
   Everything is stored/referenced using RefCountPtr.
 
-  \param name (in): Name of solution state
+  \param name (in): Name of data
   \param state (in): vector of some data
 
   \note This class will not take ownership or in any way modify the solution vector.
@@ -572,11 +599,13 @@ public:
   /*!
   \brief Get a reference to a data vector
 
-  Providing a name of a solution state, get a reference to the solution vector
+  Providing a name of a solution state, get a reference to the solution vector.
+  If a vector under the provided name does not exist, the method will throw 
+  a lethal error message.
 
   \param name (in): Name of solution state
 
-  \return Reference to solution state or Teuchos::null if not found
+  \return Reference to solution state
   */
   virtual RefCountPtr<const Epetra_Vector> GetState(const string& name) const
   {
@@ -597,6 +626,59 @@ public:
   /*!
   \brief Call elements to evaluate
 
+  Call element routines to perform integration and return element contributions to
+  system vectors and matrices. Type of action taken by the elements and type of 
+  assembly is controlled by the params parameter.<br>
+  Parameters that control assembly are:<br>
+  \code
+  params.set("assemble matrix 1",true); // values true or false
+  params.set("assemble matrix 2",true); // values true or false
+  params.set("assemble vector 1",true); // values true or false
+  params.set("assemble vector 2",true); // values true or false
+  params.set("assemble vector 3",true); // values true or false
+  \endcode
+  Parameters that control element behavior are:<br>
+  \code
+  params.set("action","<element_action>"); // <element_action> somthing that elements understand
+  \endcode
+  Other parameters eventually recognized by the elements:<br>
+  \code
+  params.set("total time",1.23);     // current total time of simulation
+  params.set("delta time",0.01);     // time increment
+  \endcode
+  
+ 
+  \param params (in): Parameter list past to the elements containing
+                      commands and parameters for the elements and
+                      containing assembly intructions
+  \param systemmatrix1 (out)   : Sparse matrix that may be filled by
+                                 assembly of element contributions.
+                                 May be Teuchos::null on entry.
+                                 Matrix must be systemmatrix1->Filled()==false on input.
+  \param systemmatrix2 (out):    Sparse matrix that may be filled by
+                                 assembly of element contributions.
+                                 May be Teuchos::null on entry.
+                                 Matrix must be systemmatrix2->Filled()==false on input.
+  \param systemvector1 (out):    Distributed vector that may be filled by
+                                 aasembly of element contributions.
+                                 May be Teuchos::null on entry.
+                                 Vector will NOT be initialized to zero by 
+                                 the underlying assembly methods that add element
+                                 contributions.
+  \param systemvector2 (out):    Distributed vector that may be filled by
+                                 aasembly of element contributions.
+                                 May be Teuchos::null on entry.
+                                 Vector will NOT be initialized to zero by 
+                                 the underlying assembly methods that add element
+                                 contributions.
+  \param systemvector3 (out):    Distributed vector that may be filled by
+                                 aasembly of element contributions.
+                                 May be Teuchos::null on entry.
+                                 Vector will NOT be initialized to zero by 
+                                 the underlying assembly methods that add element
+                                 contributions.
+                                 
+
   */
   virtual void Evaluate(ParameterList&                params,
                         RefCountPtr<Epetra_CrsMatrix> systemmatrix1,
@@ -616,6 +698,11 @@ public:
   and evaluates the appropiate time curves at that time for each
   Neumann condition separately. If "total time" is not included
   in the parameters, no time curves are used.
+  Parameters recognized by this method:
+  \code
+  params.set("total time",acttime); // current total time
+  \endcode
+
 
   \param params (in): List of parameters
   \param systemvector (out): Vector to assemble Neumann BCs to.
@@ -626,6 +713,27 @@ public:
 
   /*!
   \brief Evaluate Dirichlet boundary conditions
+
+  Loop all Dirichlet conditions attached to the discretization and evaluate them.
+  This method considers all conditions in condition_ with the names
+  "PointDirichlet", "LineDirichlet", "SurfaceDirichlet" and "VolumeDirichlet".
+  It takes a current time from the parameter list params named "total time"
+  and evaluates the appropiate time curves at that time for each
+  Dirichlet condition separately. If "total time" is not included
+  in the parameters, no time curves are used.
+  
+  \note Opposed to the other 'Evaluate' method does this one NOT assembly but
+        OVERWRITE values in the output vector systemvector. For this reason, 
+        dirichlet boundary conditions are evaluated in the following order:
+        First "VolumeDirichlet", then "SurfaceDirichlet", then "LineDirichlet"
+        and finally "PointDirichlet". This way, the lower entity dirichlet BCs override
+        the higher ones and a point Dirichlet BCs has priority over other dirichlet
+        BCs in the input file.
+  
+  Parameters recognized by this method:
+  \code
+  params.set("total time",acttime); // current total time
+  \endcode
 
   \param params (in): List of parameters
   \param systemvector (out): Vector holding prescribed dirichlet values
@@ -642,6 +750,8 @@ public:
   is used as preconditioner. AMG desires the nullspace of the
   system of equations which is then computed here if it does not already exist
   in the parameter list.
+  
+  \note This method is supposed to go away and live somewhere else soon....
 
   \param solveparams (in): List of parameters
   \param recompute (in)  : force method to recompute the nullspace
@@ -651,13 +761,20 @@ public:
 
   //@}
 
+  //! @name IO methods
+  
   /*!
     \brief Pack local elements (row map) into buffer.
+    
+    Ulrich is missing his documentation....
+    
    */
   RefCountPtr<vector<char> > PackMyElements();
 
   /*!
     \brief Pack local nodes (row map) into buffer.
+
+    Ulrich is missing his documentation....
    */
   RefCountPtr<vector<char> > PackMyNodes();
 
@@ -665,6 +782,7 @@ public:
     \brief Unpack element buffer and create local elements.
 
     Takes the ownership of the unpacked elements.
+    Ulrich: a little bit more details?
 
     \param e (in): buffer of packed elements
    */
@@ -674,10 +792,13 @@ public:
     \brief Unpack nodal buffer and create local nodes.
 
     Takes the ownership of the unpacked nodes.
+    Ulrich: a little bit more details?
 
     \param e (in): buffer of packed nodes
    */
   void UnPackMyNodes(RefCountPtr<vector<char> > e);
+
+  //@}
 
 private:
 
@@ -687,6 +808,8 @@ private:
 
   /*!
   \brief Reset all maps and set Filled()=false (Filled()==true NOT prerequisite)
+  
+  Resets all maps and sets flags filled_ and havedof_ to false.
 
   \note This is a collective call
   */
@@ -697,8 +820,8 @@ private:
 
   Build the parallel layout of nodes in this
   discretization and store it as an Epetra_Map in noderowmap_
-  noderowmap_ is non-ambigous / non-overlapping.
-  It considers nodes owned by a proc only
+  noderowmap_ is unique.
+  It considers nodes owned by a proc only.
 
   \note This is a collective call
   */
@@ -709,7 +832,7 @@ private:
 
   Build the parallel layout of nodes in this
   discretization and store it as an Epetra_Map in nodecolmap_
-  nodecolmap_ is ambigous / potentially overlapping.
+  nodecolmap_ is potentially but not necessarily overlapping.
   It considers nodes owned by a proc and its ghosted nodes
 
   \note This is a collective call
@@ -721,7 +844,7 @@ private:
 
   Build the parallel layout of elements in this
   discretization and store it as an Epetra_Map in elerowmap_
-  elerowmap_ is non-ambigous / non-overlapping.
+  elerowmap_ is unique.
   It considers elements owned by a proc only
 
   \note This is a collective call
@@ -734,7 +857,7 @@ private:
 
   Build the potentially overlapping parallel layout of elements in this
   discretization and store it as an Epetra_Map in elecolmap_
-  elecolmap_ includes ghosted elements
+  elecolmap_ includes ghosted elements and is potentially overlapping.
 
   \note This is a collective call
 
@@ -755,6 +878,11 @@ private:
 
   /*!
   \brief (Re)create a map of ElementRegister objects
+  
+  (Re)creates the map elementregister_ containing ONE register class
+  for each type of element present in this discretization.
+  The register class will be called from FillComplete() to initialize 
+  the finite elements of a certain type.
 
   */
   virtual void BuildElementRegister();

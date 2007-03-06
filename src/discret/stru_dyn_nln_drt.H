@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file global_inp_control2.H
+\file stru_dyn_nln_drt.H
 \brief
 
 <pre>

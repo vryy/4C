@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file container.H
+\file drt_container.H
 
 \class DRT::Container
 

@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file node.cpp
+\file drt_node.cpp
 \brief A virtual class for a node
 
 <pre>

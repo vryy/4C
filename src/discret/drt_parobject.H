@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file parobject.H
+\file drt_parobject.H
 
 \class DRT::ParObject
 

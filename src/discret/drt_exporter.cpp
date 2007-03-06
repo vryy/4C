@@ -1,17 +1,5 @@
 /*!----------------------------------------------------------------------
 \file drt_exporter.cpp
-
-\class DRT::Exporter
-
-\brief A class to manage communcation patterns
-
-<pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15239
-</pre>
-
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE

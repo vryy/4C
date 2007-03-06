@@ -67,10 +67,10 @@ implementing your own mpi stuff.
 */
 class Exporter
 {
+
 public:
 
 
-  //! @name Constructors and destructors
 
   /*!
   \brief Standard Constructor
@@ -93,7 +93,6 @@ public:
   */
   virtual ~Exporter();
 
-  //@}
 
   //! @name Acess methods
 

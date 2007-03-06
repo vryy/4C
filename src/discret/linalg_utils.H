@@ -41,7 +41,7 @@ namespace LINALG
   
   \param rowmap (in): row map of matrix
   \param npr (in): estimated number of entries per row.
-                   (need not be exact better should be too big rather then too small)
+                   (need not be exact, better should be too big rather then too small)
   */
   RefCountPtr<Epetra_CrsMatrix> CreateMatrix(const Epetra_Map& rowmap, const int npr);
   
@@ -51,7 +51,7 @@ namespace LINALG
   \param rowmap (in): row map of vector
   \param init (in): initializa vector to zero upon construction
   */
-  RefCountPtr<Epetra_Vector> CreateVector(const Epetra_Map& rowmap, const bool init);
+  RefCountPtr<Epetra_Vector> CreateVector(const Epetra_Map& rowmap, const bool init = true);
 
   /*!
   \brief Export a vector to a different map
@@ -82,13 +82,13 @@ namespace LINALG
   This is an individual call. Matrix A is not completed upon return.
   Will only assemble locally and will never do any commmunication.
   All values that can not be assembled locally will be ignored.
-  Will use the communicator from matrix A to determine ownerships.
+  Will use the communicator and rowmap from matrix A to determine ownerships.
   Local matrix Aele has to be square.
   
   \param A (out)   : Sparse matrix to be assembled on
   \param Aele (in) : dense matrix to be assembled
   \param lm (in) : vector with gids
-  \param lmowner (in) : vector with owners of gids
+  \param lmowner (in) : vector with owner procs of gids
   */
   void Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix& Aele, 
                 const vector<int>& lm, const vector<int>& lmowner);
@@ -104,7 +104,7 @@ namespace LINALG
   \param V (out)   : Sparse matrix to be assembled on
   \param Vele (in) : dense matrix to be assembled
   \param lm (in) : vector with gids
-  \param lmowner (in) : vector with owners of gids
+  \param lmowner (in) : vector with owner procs of gids
   */
   void Assemble(Epetra_Vector& V, const Epetra_SerialDenseVector& Vele, 
                 const vector<int>& lm, const vector<int>& lmowner);
@@ -136,11 +136,36 @@ namespace LINALG
 
   /*!
   \brief Apply dirichlet boundary condition to a linear system of equations
-    
   
-  \param A         (in/out) : Matrix to of Ax=b
-  \param x         (in/out) : initial guess vector of Ax=b
-  \param b         (in/out) : rhs vector of Ax=b
+  Modifies a system of equations such that dirichlet boundary conditions are enforced.
+  Prescribed dirichlet BC values are supplied in dbcval and dbctoggle, where
+  a prescribed value is dbcval[i] and dbctoggle[i] = 1.0. No BC is enforced in
+  all places where dbctoggle[i] != 1.0.<br>
+  Let us denote the \f$ A_{2 \times 2} \f$ blocks of \f$A\f$ by 
+  \f$A_{ff}, A_{fD}, A_{Df}, A_{DD}\f$, where \f$f\f$ stands for 'free' and 
+  \f$D\f$ stands for 'Dirichlet BC'. Then, after a call to this method<br>
+  
+  \f$ A_{ff} = A_{ff}, \f$<br>
+  \f$ A_{fD} = A_{fD}, \f$<br>
+  \f$ A_{Df} = 0_{Df}, \f$<br>
+  \f$ A_{DD} = I_{DD}, \f$<br>
+  \f$ x_{D} = dbcval_{D}, \f$<br>
+  \f$ b_{D} = dbcval_{D} \f$<br>
+  
+  and
+  
+  \f$ A_{ff} x_f + A_{fD} x_D = b_f \f$<br>
+  \f$ 0 x_f + I_{DD} x_D = x_D \f$.<br>
+  
+  \note The matrix is then nonsymmetric. When using iterative methods on this
+        linear system of equations that depend on the symmetry of the matrix (such as e.g. CG), 
+        the initial guess supplied to the solver has to be exact at the
+        Dirichlet BCs. This should be easy, as the values at the Dirichlet BCs
+        are known.
+  
+  \param A         (in/out) : Matrix of Ax=b
+  \param x         (in/out) : initial guess vector x of Ax=b
+  \param b         (in/out) : rhs vector b of Ax=b
   \param dbcval    (in)     : vector holding prescribed dirichlet values
   \param dbctoggle (in)     : vector holding 1.0 where dirichlet should be applied
                               and 0.0 everywhere else

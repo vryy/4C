@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file discret_partition.cpp
+\file drt_discret_partition.cpp
 \brief
 
 <pre>

@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file drt_discret.cpp
+\file drt_discret_utils.cpp
 \brief
 
 <pre>

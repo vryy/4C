@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file linalg_solver.cpp
+\file linalg_solver_spooles.cpp
 \brief
 
 <pre>
