@@ -1,6 +1,6 @@
 src/welcome/welcome.tex
 \part{Getting started}
-src/beginner/src_gs_beginner.tex
+src/beginner/beginner.tex
 src/tut_struct/tut_struct.tex
 \part{Reference guide}
 src/inparams/inparams.tex
