@@ -265,7 +265,12 @@ private:
   {
     none,
   };
-
+  
+  //! no. gaussian points in each spatial dimension
+  int                                             ngp_[3];    
+  //! number of the material law
+  int                                             material_;  
+  
   //! container containing all kind of fluid3 thisandthat
   DRT::Container                                  data_;
   //! vector of surfaces of this element (length 1)

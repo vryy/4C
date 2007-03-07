@@ -27,8 +27,11 @@ Maintainer: Michael Gee
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::Elements::Fluid3::Fluid3(int id, int owner) :
-DRT::Element(id,element_fluid3,owner)
+DRT::Element(id,element_fluid3,owner),
+material_(0),
+data_()
 {
+  ngp_[0] = ngp_[1] = ngp_[2] = 0;
   return;
 }
 
@@ -37,8 +40,11 @@ DRT::Element(id,element_fluid3,owner)
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::Elements::Fluid3::Fluid3(const DRT::Elements::Fluid3& old) :
-DRT::Element(old)
+DRT::Element(old),
+material_(old.material_),
+data_(old.data_)
 {
+  for (int i=0; i<3; ++i) ngp_[i] = old.ngp_[i];
   return;
 }
 
@@ -67,7 +73,15 @@ void DRT::Elements::Fluid3::Pack(vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
-
+  // ngp_
+  AddtoPack(data,ngp_,3*sizeof(int));
+  // material_
+  AddtoPack(data,material_);
+  // data_
+  vector<char> tmp(0);
+  data_.Pack(tmp);
+  AddtoPack(data,tmp);
+  
   return;
 }
 
@@ -87,7 +101,15 @@ void DRT::Elements::Fluid3::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-
+  // ngp_
+  ExtractfromPack(position,data,ngp_,3*sizeof(int));
+  // material_
+  ExtractfromPack(position,data,material_);
+  // data_
+  vector<char> tmp(0);
+  ExtractfromPack(position,data,tmp);
+  data_.Unpack(tmp);
+  
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
@@ -128,6 +150,7 @@ RefCountPtr<DRT::ElementRegister> DRT::Elements::Fluid3::ElementRegister() const
  *----------------------------------------------------------------------*/
 DRT::Element** DRT::Elements::Fluid3::Surfaces()
 {
+  dserror("Method Fluid3.Surfaces() not yet implemented.");
   // TODO!
   surfaces_.resize(1);
   surfaces_[0] = this;
