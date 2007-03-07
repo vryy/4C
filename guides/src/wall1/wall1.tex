@@ -1,0 +1,339 @@
+%%
+%%::::::::::::::::::::::::::::commands
+\input{cmd-text}
+\input{cmd-math}
+
+%%
+%%::::::::::::::::::::::::::::WALL1
+\chapter{WALL1}
+
+\subitempart{About}\\
+The WALL1 element is an element for linear and non-linear structural analysis
+of planar structures. 
+
+The here used EBNF is explained in Sec~\ref{wall1:sec:ebnf}.
+
+\subitempart{Text input}  `\cnl' is for line continuation
+\begin{quote}
+\cod{WALL1} \cnl\\
+( \cod{QUAD4} \cor \cod{QUAD8} \cor \cod{QUAD9} \cor \cod{TRI3} \cor
+\cod{TRI6} ) $int_1$ $int_2$ $\ldots$ $int_\enod$ \cnl\\
+\cod{MAT} $int_1$ \cnl\\
+\cod{THICK} $real_1$ \cnl\\
+\cod{GP} $int_1$ $int_2$ \cnl\\
+\cgb \cod{PLANE\_STRESS} \cor \cod{PLANE\_STRAIN} \cor
+\cod{ROTATIONAL\_SYMMETRY} \cge \cnl \\
+( \cod{W\_GeoLin} \cor \cod{W\_TotalLagr} \cor \cod{W\_UpdatedLagr} ) \cnl\\
+\ccb\ ( \cod{Displ\_Model} \cor \cod{Incomp\_Mode} ) \cce \cnl\\
+\ccb\ \cod{STRESSES} ( \cod{XY} \cor \cod{RS} ) \cce \cnl\\
+\ccb\ \cod{SSI\_COUPTYP} ( \cod{Master} \cor \cod{Slave} ) \cce \cnl\\
+\ccb\ \cod{TSI\_COUPTYP} ( \cod{None} \cor \cod{Thermconf} \cor
+\cod{Thermcreate} ) \cce
+\end{quote}
+
+\subitempart{Discretisation types}
+Available are : quad4, quad8, quad9, tri3, tri6
+
+\subitempart{Materials}
+The material index can be referred to the following types
+\begin{description}
+\item[\cod{MAT\_Struct\_StVenantKirchhoff}] Works.
+\item[\cod{MAT\_Struct\_STVENPOR}]
+\item[\cod{MAT\_MisesPlastic}]
+\item[\cod{MAT\_3DMisesPlastic}]
+\item[\cod{MAT\_DP\_Plastic}]
+\item[\cod{MAT\_ConcretePlastic}]
+\item[\cod{MAT\_3DConcretePlastic}] \fail{Input in \cod{input\_material.c}
+    appears unclean, however, consistently dirtily used in
+    \cod{w1\_call\_mat.c}. Probably, material  does not work simulateneously
+    with \cod{MAT\_ConcretePlastic}. }
+\item[\cod{MAT\_DAM\_MP}]
+\item[\cod{MAT\_Damage}]
+\end{description}
+
+\subitempart{Gauss points}\\
+Quadrilaterals:\\
+1st \cod{GP}: number of GPs in $r$-direction\\
+2nd \cod{GP}: number of GPs in $s$-direction
+
+Triangles:\\
+1st \cod{GP}: total number of GPs on element domain\\
+2nd \cod{GP}: type/GP set (there different sets e.g.\@ for $3$ GPs)
+
+
+\subitempart{Dimension reduction type}\\
+Explanation: `+' works, `-' does not work, `0' is undetermined\\
+\begin{tabular}{c|ccc}
+  material & plane stress & plane strain & rot. sym.
+\\ \hline
+  \cod{MAT\_Struct\_STVENPOR} & + & + & -
+\\
+  \cod{MAT\_Struct\_StVenantKirchhoff} & + & + & +
+\\
+  \cod{MAT\_MisesPlastic} & + & + & -
+\\
+  \cod{MAT\_3DMisesPlastic} & + & + & -
+\\
+  \cod{MAT\_DP\_Plastic} & 0 & 0 & 0
+\\
+  \cod{MAT\_ConcretePlastic} & + & + & -
+\\
+  \cod{MAT\_3DConcretePlastic} & + & + & -
+\\
+  \cod{MAT\_DAM\_MP} & + & - & -
+\\
+  \cod{MAT\_Damage} & + & + & -
+\end{tabular}
+
+\subitempart{Spatial kinematic}
+\begin{description}
+\item[\cod{W\_GeoLin}] Geometrically linear : works
+\item[\cod{W\_TotalLagr}] Geometrically non-linear in total Lagrangean
+  description : works
+\item[\cod{W\_UpdatedLagr}] Geometrically non-linear in updated Lagrangean
+  description : \fail{not implemented}
+\end{description}
+
+\subitempart{Functional type --- Single field or mixed}
+\begin{description}
+\item[\cod{Displ\_Model}] Pure displacment-based (single field, default)
+\item[\cod{Incomp\_Mode}] Classical incompatible mode approach, can be
+  proven to be equivalent to EAS and Pian-Sumihara. Works for
+  \fail{linear Quad4 without stress output only}
+\end{description}
+
+\subitempart{Stresses}\\
+stresses are printed at Gauss points \emph{and} nodes (extrapolated) to
+\cod{xxx.out} output file.
+\begin{description}
+\item[\cod{STRESSES XY}] Stresses with respect to material $XY$-frame (default)
+\item[\cod{STRESSES RS}] Stresses with respect to parameter $rs$-frame
+\end{description}
+Maximum \& minimal principal stress and its angle are always printed.
+
+\subitempart{Structure-structure-interaction (SSI)}\\
+$\Longrightarrow$ ?
+
+\subitempart{Contact}\\
+Coded by Izzet \"Ozdemir (Masterthesis, Stuttgart), supports 2 body large deformation
+transient contact. Potentially contacting surfaces have to be defined using GID.
+Needs CONTACT flags in defines file.
+
+
+\subitempart{Thermo-structure-interaction (TSI)}
+Indicates the WALL1 element has a partner element in the thermo field. 
+\begin{description}
+\item[\cod{TSI\_COUPTYP None}] No TSI coupling (default)
+\item[\cod{TSI\_COUPTYP Thermconf}] There exists an conforming THERM2 element
+  (exactly same shape and location in $XYZ$-frame).
+\item[\cod{TSI\_COUPTYP Thermcreate}] \emph{Not implemented!} Create a conforming THERM2 element
+\end{description}
+
+\subitempart{Neumann BC}\\
+On nodes
+\begin{quote}
+%%\cod{-----------------------------------DESIGN POINT NEUMANN CONDITIONS}\\
+\cod{E} $int$ \cnl \chs Index of design entity\\
+\cod{-} \cnl\\
+\cgb \cod{none} \cor $int$ \cge \chs Curve index\\
+\cgb \cod{0} \cor \cod{1} \cge \cgb \cod{0} \cor \cod{1} \cge\ \cod{0 0 0
+  0} \cnl \chs Flag on/off condition \\
+$real_1$ $real_2$ \cod{0.0 0.0 0.0 0.0} \cnl \chs Value\\
+\cod{Mid} \chs Reference surface
+\end{quote}
+\begin{enumerate}
+\item Load vectors work.
+\item Individual load curves are ignored : do not work.
+\end{enumerate}
+
+On lines (edges)
+\begin{quote}
+%%\cod{------------------------------------DESIGN LINE NEUMANN CONDITIONS}\\
+\cod{E} $int$ \cnl \chs Index of design entity\\
+\cod{-} \cnl\\
+\cgb \cod{none} \cor $int$ \cge \cnl \chs Curve index\\
+\cgb\ \cod{0} \cor\ \cod{1} \cge\ \cgb\ \cod{0} \cor\ \cod{1} \cge\ \cod{0 0 0
+  0} \cnl \chs Flag on/off condition \\
+$real_1$ $real_2$ \cod{0.0 0.0 0.0 0.0} \cnl \chs Value\\
+\cgb \cod{Live} \cor \cod{Dead} \cor \cod{orthopressure} \cge \cnl \chs Load type\\
+\cod{Mid} \chs Reference surface
+\end{quote}
+\begin{enumerate}
+\item Constant material loads work.
+\item There is no difference between \cod{Live} and \cod{Dead}. Both load types
+refer to the undeformed/material frame.
+\item
+Load type \cod{orthopressure} is always orthogonal on the last converged
+deformation; works consistently only for \cod{QUAD4}; pressure is read-in on
+first value position $real_1$.
+\item Load curve is not applied.
+\end{enumerate}
+
+
+
+
+On surface (domain)
+\begin{quote}
+%%\cod{------------------------------------DESIGN SURF NEUMANN CONDITIONS}\\
+\cod{E} $int$ \cnl \chs Index of design entity\\
+\cod{-} \cnl\\
+\cgb \cod{none} \cor $int$ \cge \chs Curve\\
+\cgb\ \cod{0} \cor\ \cod{1} \cge\ \cgb\ \cod{0} \cor\ \cod{1} \cge\ \cod{0 0 0
+  0} \cnl \chs Flag on/off condition \\
+$real_1$ $real_2$ \cod{0.0 0.0 0.0 0.0} \cnl \chs Value (without curve?)\\
+\cod{PrescribedDomainLoad} \cnl \chs Load type\\
+\cod{Mid} \chs Reference surface
+\end{quote}
+\begin{enumerate}
+\item Constant domain load referred to material frame works.
+\item Individual load curve is ignored : does not work.
+\end{enumerate}
+
+
+\subitempart{Dirichlet BC}\\
+On nodes
+\begin{quote}
+%%\cod{------------------------------------DESIGN POINT DIRICH CONDITIONS}
+\cod{E} $int$ \cnl \chs Index of design entity\\
+\cod{-} \cnl \\
+\cgb \cod{0} \cor \cod{1} \cge \cgb \cod{0} \cor \cod{1} \cge \cod{0 0 0
+  0} \cnl \chs Flag on/off condition \\
+$real_1$ $real_2$ \cod{0.0 0.0 0.0 0.0} \cnl \chs Value\\
+\cgb \cod{none} \cor $int_1$ \cge
+\cgb \cod{none} \cor $int_2$ \cge
+\cod{none none none none} \cnl
+\chs Prescr. displ. by `Load curve' index\\
+$int_1$ $int_2$ \cod{0 0 0 0} \chs Spatial distribution `Function'
+\end{quote}
+\begin{enumerate}
+\item Constant prescribed displacements work.
+\item Load-Curve-prescribed displacements work.
+\item Spatial `Function'-distribution???
+\end{enumerate}
+
+On lines
+\begin{quote}
+%%\cod{-------------------------------------DESIGN LINE DIRICH CONDITIONS}\\
+\cod{E} $int$ \cnl \chs Index of design entity\\
+\cod{-} \cnl \\
+\cgb\ \cod{0} \cor\ \cod{1} \cge\ \cgb\ \cod{0} \cor\ \cod{1} \cge\ \cod{0 0 0
+  0} \cnl \chs Flag on/off condition \\
+$real_1$ $real_2$ \cod{0.0 0.0 0.0 0.0} \cnl \chs Value\\
+\cgb \cod{none} \cor $int_1$\cge\ 
+\cgb \cod{none} \cor $int_2$ \cge\
+\cod{none none none none} \cnl
+\chs prescribed displacement `Load curve'\\
+$int_1$ $int_2$ \cod{0 0 0 0} \chs Spatial distribution `Function'
+\end{quote}
+\begin{enumerate}
+\item Constant prescribed displacements work.
+\item Load-Curve-prescribed displacements work.
+\item Spatial `Function'-scaling does not work (could be added in
+  \cod{solver\_servic3.c} : \cod{solserv\_putdirich\_to\_dof(...)} and
+  similarly)
+\end{enumerate}
+
+On surface
+\begin{quote}
+%%\cod{-------------------------------------DESIGN SURF DIRICH CONDITIONS}\\
+\cod{E} $int$ \cnl \chs Index of design entity\\
+\cod{-} \cnl \\
+\cgb \cod{0} \cor \cod{1} \cge \cgb \cod{0} \cor \cod{1} \cge \cod{0 0 0
+  0} \cnl \chs Flag on/off condition \\
+$real_1$ $real_2$ \cod{0.0 0.0 0.0 0.0} \cnl \chs Value\\
+\cgb \cod{none} \cor $int_1$\cge\ 
+\cgb \cod{none} \cor $int_2$ \cge\
+\cod{none none none none} \cnl
+\chs prescribed displacement `Load curve'\\
+$int_1$ $int_2$ \cod{0 0 0 0} \chs Spatial distribution `Function'
+\end{quote}
+\begin{enumerate}
+\item Constant prescribed displacements work.
+\item Load-Curve-prescribed displacements work.
+\item Spatial `Function'-distribution???
+\end{enumerate}
+
+\subitempart{Dirichlet and Neumann BC --- status summary}\\
+Explanation: `+' means working, `-' is for \fail{not
+  implemented}, `0' is undetermined, ` ' does not apply
+\begin{center}
+\begin{tabular}{c|ccc|ccc|c}
+  & \multicolumn{3}{c|}{Dirichlet BC} & \multicolumn{3}{c|}{Neumann BC}
+  & Solution
+\\
+  & nodes & lines & surfaces & nodes & lines & surfaces & tested with
+\\ \hline
+  Curves & + & + & + & - & - & - & Dyn. gen.-$\alpha$
+\\
+  Functions & 0 & - & 0 &  &  & & Dyn. gen.-$\alpha$
+\end{tabular}
+\end{center}
+
+
+\subitempart{Gid input} Data : Conditions : Single Layer : Surfaces : Wall
+
+\subitempart{Gid output}\\
+Displacements can be shown for every discretisation and quadrature type.
+
+Stresses can only be printed for these combinations and only in serial:
+\begin{enumerate}
+\item quad4 \& $2\times2$ Gauss points
+\item quad8/9 \& $3\times3$ Gauss points
+\item tri3 \& $1$ Gauss point
+\item tri6 \& $3$ Gauss points in GP case $1$
+\end{enumerate}
+
+\subitempart{Suggestions}
+\begin{enumerate}
+\item Individual load curves for loads.
+\item Consistent naming scheme for all material loads: \cod{Dead} (because they
+  are proportional to the material mass, i.e.\@ the so-called dead load)
+\item Application of velocity BCs
+\end{enumerate}
+
+\subitempart{src/Input files}
+\cod{fsi\_mtr\_dc4x4.dat}
+\cod{fsi\_ow32x32.dat}
+\cod{fsi\_ow32x32\_force.dat}
+\cod{fsi\_ow32x32\_sd.dat}
+\cod{fsi\_ow32x32\_usfem.dat}
+\cod{fsi\_ow32x32\_usfem\_2xaztec.dat}
+\cod{fsi\_tank20x10.dat}
+\cod{ssi\_mortar\_canti.dat}
+\cod{struct2ml\_ifvers.dat}
+\cod{tsi\_th2sta\_w1dyn\_3ele.dat}
+\cod{tsi\_th2sta\_w1dyn\_3ele.dat~}
+\cod{w1\_3DmisGF.dat}
+\cod{w1\_Eulerstab.dat}
+\cod{w1\_Eulerstab\_sd.dat}
+\cod{w1\_dyn\_dirich.dat}
+\cod{w1\_epc3D.dat}
+\cod{w1\_gemm\_contact\_emconserv.dat}
+\cod{w1\_incompmode.dat}
+\cod{w1\_mises.dat}
+\cod{w1\_neumann\_ortho.dat}
+\cod{w1\_stalin\_dirich.dat}
+\cod{w1dyn.dat}
+
+%%
+%%::::::::::::::::::::::::::::EBNF
+\section{Extended Backus--Naur formalism}\label{wall1:sec:ebnf}.
+An extended Backus--Naur Formalism (EBNF), Reiser and Wirth
+%%\cite{reiser94}
+, is used to describe the input lines.
+
+\begin{itemize}
+\item Several listed construct are regarded as concatenated:\\
+  \cod{C $=$ A B} means \cod{C} consists of \cod{A} followed by \cod{B}.
+\item Alternatives are separated by $|$:\\
+  \cod{C $=$ A $|$ B} means \cod{C $=$ A} or \cod{C $=$ B}, but not 
+  \cod{C $=$ A B} or \cod{C $=$ $\emptyset$}\@. 
+\item Brackets $[$ and $]$ denote optionality of the enclosed 
+  construct:\\
+  \cod{B $=$ $[$A$]$} results in \cod{B $=$ A} or \cod{B $=$ $\emptyset$}\@.
+\item Braces $\{$ and $\}$ denote a repetition of a construct, 
+  which includes zero repetitions:\\
+  \cod{B $=$ $\{$A$\}$} is equivalent to $\cod{B} = \emptyset, \cod{A}, \cod{AA}, \cod{AAA}, \ldots$
+\item Parentheses $($ and $)$ group expressions.
+\item An ellipsis $\ldots$ represents reasonable continuation.
+\end{itemize}

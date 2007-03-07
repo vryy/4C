@@ -1,6 +1,6 @@
 src/welcome/welcome.tex
 \part{Getting started}
-src/src_gs_beginner/src_gs_beginner.tex
+src/beginner/src_gs_beginner.tex
 src/tut_struct/tut_struct.tex
 \part{Reference guide}
 src/inparams/inparams.tex
@@ -10,9 +10,13 @@ src/code_commentation/code_commentation.tex
 src/binary_io/binary_io.tex
 src/src_fsi/src_fsi.tex
 src/src_free_surface_flow/src_free_surface_flow.tex
+src/struct_dynamics/struct_dynamics.tex
+src/struct_statics/struct_statics.tex
+src/brick1/brick1.tex
+src/wall1/wall1.tex
+src/wallge/wallge.tex
 src/shell8/shell8.tex
 src/shell9/shell9.tex
 src/axishell/axishell.tex
-src/wallge/wallge.tex
 src/beam3/beam3.tex
 src/struct_mat/struct_mat.tex

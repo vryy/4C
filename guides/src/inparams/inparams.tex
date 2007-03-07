@@ -1,7 +1,6 @@
 %%
 %%############################
-\input{cmd-text}
-%\input{underscore}
+\input{def}
 
 
 %%
@@ -36,22 +35,53 @@ DYNAMIC} or \kw{OPTIMISATION} can be added to this manually as required.
 %%
 %%============================
 \section{Comments}
-Comments start with $\backslash\backslash$. These can appear in the first
+Comments start with \kw{//}. These can appear in the first
 rows or somewhere else. Everything on their right side is a comment and
 neglected. 
 
 %%
-%%============================
-\section{List of input parameters}
+%%::::::::::::::::::::::::::::EBNF
+\section[EBNF]{Extended Backus--Naur formalism}\label{brick1:sec:ebnf}
+An extended Backus--Naur Formalism (EBNF), Reiser and Wirth
+%%\cite{reiser94}
+, is used to describe the input lines.
+
+\begin{itemize}
+\item Several listed construct are regarded as concatenated:\\
+  \kw{C} $=$ \kw{A B} means \kw{C} consists of \kw{A} followed by \kw{B}.
+\item Alternatives are separated by \kor{}:\\
+  \kw{C} $=$ \kw{A} \kor \kw{B} means \kw{C} $=$ \kw{A} or \kw{C} $=$ \kw{B},
+  but not  
+  \kw{C} $=$ \kw{A B} or \kw{C} $=$ $\emptyset$\@. 
+\item Brackets $[$ and $]$ denote optionality of the enclosed 
+  construct:\\
+  \kw{B} $=$ $[$\kw{A}$]$ results in \kw{B} $=$ \kw{A} or \kw{B} $=$
+  $\emptyset$\@. 
+\item Braces $\{$ and $\}$ denote a repetition of a construct, 
+  which includes zero repetitions:\\
+  \kw{B} $=$ $\{$\kw{A}$\}$ is equivalent to \kw{B} $=
+  \emptyset,$\kw{A}$,$\kw{AA}$,$\kw{AAA}$,\ldots$
+\item Parentheses $($ and $)$ group expressions.
+\item An ellipsis $\ldots$ represents reasonable continuation.
+\end{itemize}
 
 %%
-%%----------------------------
+%%============================
+\section[Input parameters]{List of input parameters}
+
+\subsection{Header}
+\begin{verbatim}
+==================================================================
+                        General Data File CCARAT
+==================================================================
+\end{verbatim}
+
 \subsection{Title}
 \begin{verbatim}
 -------------------------------------------------------------TITLE
 \end{verbatim}
 
----TITLE 
+
 
 This block contains the expressive and individual title of your input
 problem. 
@@ -62,6 +92,7 @@ used for: writing it to output file
 
 written by: hand 
 
+
 remarks: 
 
 \begin{itemize}
@@ -70,6 +101,3529 @@ remarks:
 \item The title may be empty or contain up to five lines. 
 \item The TITLE head line must not be omitted.
 \end{itemize}
+
+\subsection{PROBLEM SIZE}
+\begin{verbatim}
+------------------------------------------------------PROBLEM SIZE
+\end{verbatim}
+
+\kw{ELEMENTS} $int$\\
+total number of elements
+
+\kw{NODES} $int$\\
+total number of nodes
+
+\kw{DIM} ($2$\kor$3$)\\
+DIM number of dimensions (2,3) chosen by gid
+
+\kw{MATERIALS} $int$\\
+number of materials assigned
+
+\kw{NUMDF} $int$\\
+global estimate of number of DOFs per node
+
+\subsection{PROBLEM TYP}
+\begin{verbatim}
+-------------------------------------------------------PROBLEM TYP
+\end{verbatim}
+
+\kw{PROBLEMTYP} (\kw{Structure}\kor\kw{Fluid_Structure_Interaction}\kor\kw{Fluid}\kor\kw{Optimisation}\kor\kw{Ale})\\
+PROBLEMTYP type of calculation
+
+\kw{NUMFIELD} ($1$\kor$2$\kor$3$)\\
+NUMFIELD number of fields
+
+\kw{TIMETYP} (\kw{Static}\kor\kw{Dynamic})\\
+TIMETYP either dynamic or static calc
+
+\kw{TRACE} (\kw{secure}\kor\kw{fast})\\
+TRACE bugtracing support on/off
+
+\kw{ALGEBRA} (\kw{ccarat}\kor\kw{Trilinos})\\
+ALGEBRA use ccarat or Trilinos for vectors/matrices etc: (ccarat,Trilinos)
+
+\kw{RESTART} $int$\\
+RESTART restart in step number $int$ (0 for initial calculation)
+
+\subsection{DISCRETISATION}
+\begin{verbatim}
+----------------------------------------------------DISCRETISATION
+\end{verbatim}
+
+\kw{NUMFLUIDDIS} $int$\\
+Number of fluid discretisations
+
+\kw{NUMSTRUCDIS} $int$\\
+Number of structure discretisations
+
+\kw{NUMALEDIS} $int$\\    
+Number of ALE discretisations
+
+\kw{NUMTHERMDIS} $int$\\
+Number of thermal discretisations
+
+\subsection{IO}
+\begin{verbatim}
+----------------------------------------------------------------IO
+\end{verbatim}
+
+\kw{OUTPUT_OUT} (\kw{Yes}\kor\kw{No})\\
+write output in various formats
+
+\kw{OUTPUT_GID} (\kw{Yes}\kor\kw{No})\\
+write Gid output data
+
+\kw{OUTPUT_BIN} (\kw{Yes}\kor\kw{No})\\
+write BinaryIO output data
+
+\kw{STRUCT_DISP} (\kw{Yes}\kor\kw{No})\\
+write displacements
+
+\kw{STRUCT_STRESS} (\kw{Yes}\kor\kw{No})\\
+write stresses in structure domain
+
+\kw{STRUCT_STRESS_SMO} (\kw{Yes}\kor\kw{No})\\
+write smoothed stresses in structure domain (working/obsolete?)
+
+\kw{STRUCT_SM_DISP} (\kw{Yes}\kor\kw{No})\\
+write smoothed displacements in structure domain (working/obsolete?)
+
+\kw{STRUCT_SM_STRESS} (\kw{Yes}\kor\kw{No})\\
+write smoothed stresses (?) in structure domain (working/obsolete?)
+
+\kw{FLUID_SOL} (\kw{Yes}\kor\kw{No})\\
+write solution in fluid domain: velocities
+
+\kw{FLUID_STRESS} (\kw{Yes}\kor\kw{No})\\
+write stresses in fluid domain
+
+\kw{FLUID_VIS} (\kw{Yes}\kor\kw{No})\\
+???
+
+\kw{ALE_DISP} (\kw{Yes}\kor\kw{No})\\
+write ALE displacements
+
+\kw{THERM_TEMPERATURE} (\kw{Yes}\kor\kw{No})\\
+write temperature in thermal domain
+
+\kw{THERM_HEATFLUX} (\kw{Yes}\kor\kw{No})\\
+write heat fluxes in thermal domain
+
+\kw{RELATIVE_DISP_NUM}\\
+???
+
+\kw{FILESTEPS}\\
+???
+
+\kw{PROCESSOR_LOCAL}\\
+???
+
+\subsection{STATIC}
+\begin{verbatim}
+------------------------------------------------------------STATIC
+\end{verbatim}
+More information in Chapter~\ref{struct_statics:chap}
+
+( \kw{LINEAR} \kor \kw{NONLINEAR} )\\
+switch linear or non-linear analysis
+
+The following options apply only in non-linear analysis
+
+\kw{KINTYP XXXXXXXXXXXX}\\
+???
+
+\kw{NEWTONRAPHSO} (\kw{Load_Control}\kor\kw{Displacement_Control}\kor\kw{Arc_Control})\\
+Control type: load, displacement or arc-length control
+
+\kw{NUMSTEP} $int$\\
+number of load steps (pseudo time steps)
+
+\kw{MAXITER} $int$\\
+numer of equlibrium iterations
+
+\kw{TOLRESID} $real$\\
+iteration tolerance for residuum
+
+\kw{TOLDISP} $real$\\
+iteration tolerance forincremental displacements 
+
+\kw{STEPSIZE} $real$\\
+???
+
+\kw{IARC} (\kw{Yes}\kor\kw{no})\\
+1st type of arc-length method
+
+\kw{ARCSCL} (\kw{0}\kor\kw{1})\\
+2nd type of arc-length method
+
+\kw{SIGNCHCSP} (\kw{Yes}\kor\kw{no})\\
+current stiffness detection
+
+\kw{RESEVRYDISP} $int$\\
+Write displacements every $int$ step 
+
+\kw{RESEVRYSTRS} $int$\\
+Write stress every $int$ step
+
+\kw{RESTARTEVRY} $int$\\
+Write restart every $int$ step
+
+
+\subsection{EIGENVALUE ANALYSIS}
+\begin{verbatim}
+-----------------------------------------------EIGENVALUE ANALYSIS
+\end{verbatim}
+
+WARNING: The eigenvalue analysis does not work well. Development will either
+be stopped or need tremendous repair works.
+
+\kw{SOLTYP} (\kw{SUBSPACE}\kor\kw{Eignone})\\
+Switch Eigenvalue Analysis on/off
+
+\kw{STURM} (\kw{Yes}\kor\kw{No})\\
+perform sturm sequence check
+
+\kw{SUBTYP} (\kw{JACOBI}\kor\kw{QZALGO})\\
+subspace: Jacobi rotation,  QZ-algorithm
+
+\kw{IFSH} ($0$\kor$1$)\\
+flag for shift
+
+\kw{ILMP} (\kw{Yes}\kor\kw{No})\\
+lumped mass matrix,  or consistent
+
+\kw{RANGE} (\kw{Yes}\kor\kw{No})\\     
+search in a range, or not
+
+\kw{NUMVEC} $int$\\
+$int$ number of iteration vectors
+
+\kw{NROOT} $int$\\
+number of requested eigenvalues to be converged
+
+\kw{ITEMAX} $int$\\
+maximum number of iterations
+
+\kw{IFCTR} (\kw{No}\kor\kw{Screen}\kor\kw{File})\\
+output to console/in file
+
+\kw{TOLEIG} $real$\\
+tolerance to be used in convergence check
+
+\kw{SHIFT} $real$\\
+relative shift (removed after iteration)
+
+\kw{BOULO} $real$\\
+lower boundary 
+
+\kw{BOUUP} $real$\\
+upper boundary  
+
+
+\subsection{STRUCTURAL DYNAMIC}
+\begin{verbatim}
+------------------------------------------------STRUCTURAL DYNAMIC
+\end{verbatim}
+
+
+\kw{DYNAMICTYP} (\kw{Gen_Alfa}\kor\kw{Centr_Diff}\kor\kw{Gen_EMM})\\
+type of time integration control
+
+\kw{EIGEN} (\kw{1}\kor\kw{0})\\
+EIGEN make eigenanalysis of the initial dynamic system (not with every solver): (0,1)
+
+\kw{RESEVRYDISP} $int$\\
+save displacements and contact forces every $int$ steps
+
+\kw{RESEVRYSTRS} $int$\\
+save stresses every $int$ steps
+
+\kw{RESTARTEVRY} $int$\\
+write restart possibility to .pss every $int$ steps
+
+\kw{TIMESTEP} $real$\\
+time step size
+
+\kw{NUMSTEP} $int$\\
+maximum number of steps
+
+\kw{MAXTIME} $real$\\
+maximum time
+
+\kw{BETA} $real$\\
+\kw{GAMMA} $real$\\
+\kw{ALPHA_M} $real$\\
+\kw{ALPHA_F} $real$\\
+\kw{BETA}, \kw{GAMMA}, \kw{ALPHA_M} and \kw{ALPHA_F} generalized-$\alpha$
+factors, BETA and GAMMA also 
+used by explicit time integration
+
+
+
+\kw{XSI} $real$\\
+disspipation parameter for GEMM time integration
+
+\kw{DAMPING} (\kw{Yes}\kor\kw{No})\\
+\kw{M_DAMP} $real$\\
+\kw{K_DAMP} $real$\\
+DAMPING build Raleigh damping matrix and use it from $\text{M\_DAMP}
+\times M + \text{K\_DAMP} \times K$
+
+\kw{ITERATION} (\kw{mod}\kor\kw{full}\kor\kw{none})\\
+make Newton Iteration (only full implemented, ignored by explicit
+time int.)
+
+\kw{TOLDISP} $real$\\
+tolerance in the displacement norm for the newton iteration
+
+\kw{MAXITER} $int$\\
+maximum number of iterations allowed for newton iteration before failure
+
+\kw{CONTACT} (\kw{Yes}\kor\kw{No})\\
+switch contact algorithms for shell8 and wall1 on/off;
+Have to use \kw{SPOOLES_nonsym} in parallel as solver for contact problems
+
+\kw{CET_flag} (\kw{Yes}\kor\kw{No})\\
+switch enforcment for contact lagr. multipliers on/off;
+\kw{Yes} $\to$ penalty method, \kw{No} $\to$ augmented Lagrangean
+
+\kw{FR_flag} (\kw{Yes}\kor\kw{No})\\
+switch friction in contact on/off: (0,1)
+
+\kw{NPP} $real$\\
+penaly parameter for normal contact
+
+\kw{TPP} $real$\\
+penaly parameter for tangential (frictional) contact
+
+\kw{FR_COEF} $real$\\
+frictional coefficient
+
+\kw{TIMEADAPT} (\kw{Yes}\kor\kw{No})\\
+switch time adaptivity dependend on number of newton iterations on/off (only shell8)
+
+\kw{ITWANT} $int$\\
+number of newton iterations wanted (adaptivity)
+
+\kw{MAXDT} $real$\\
+maximum time step size allowed to the time adaptivity
+
+\kw{RESULTDT} $real$\\
+offset when results shall be written to .flavia.res when time adaptivity is on
+
+\subsection{FLUID DYNAMIC}
+\begin{verbatim}
+-----------------------------------------------------FLUID DYNAMIC
+\end{verbatim}
+
+
+% \kw{DYNAMICTYP *GenData(Fluid_Dynamictype)}\\
+% Nonlinear Time Integraton Scheme or Projection Method
+% There are the following time integration schemes implemented:
+% - One step Theta
+% - Generalised Alpha
+% - Second order backward differencing (BDF2)
+
+
+% \kw{INITIALFIELD *GenData(Initial_Starting_Field)}\\
+% Initial Starting Field
+
+% \kw{RESSTEP *GenData(Restartstep)}\\
+% Restart Step from fluid_start.data if INITIALFIELD=\kw{field_from_file}
+
+% \kw{STARTFUNCNO *GenData(Function_Number)}\\
+% Function for Initial Starting Field
+
+% \kw{TIMEINTEGR *GenData(Fluid_Time_Int_Scheme)}\\
+% explicit number directly written in the code
+
+% \kw{STARTINGALGO *GenData(Starting_Algo)}\\
+% Time Integration Scheme
+
+% \kw{NONLINITER *GenData(Nlin_Iteration)}\\
+% Nonlinear iteration scheme
+
+% \kw{ITEMAX *GenData(Max_Nonln_Iterations)}\\
+% max. number of nonlin. iterations
+
+% \kw{CONVCHECK *GenData(Convergence_Check)}\\
+% norm for convergence check
+
+% \kw{CONVTOL *GenData(Tolerance_Conv_Check)}\\
+% Tolerance for convergence check
+
+% \kw{STEADYCHECK *GenData(Steady_State_Check)}\\
+% Norm of steady state check
+
+% \kw{STEADYSTEP *GenData(Steady_State_Check_every_Steps)}\\
+% steady state check every step
+
+% \kw{STEADYTOL *GenData(Tolerance_Steady_State_Check)}\\
+% Tolerance for steady state check
+
+% \kw{UPOUT *GenData(Fluid_Dyn_Sol_to_out_every)}\\
+% Increment for writing solution to output file
+
+% \kw{UPPSS *GenData(Fluid_Dyn_Sol_to_pss_every)}\\
+% Increment for visualisation via pss-file and VISUAL2
+
+% \kw{UPRES *GenData(Fluid_Dyn_Sol_to_gid_every)}\\
+% Increment for writing solution to .flavia.res
+
+% \kw{RESTARTEVRY *GenData(Fluid_Dyn_Restartevry)}\\
+% Increment for writing restart to pss file
+
+% \kw{NUMSTEP *GenData(Fluid_Dyn_Num_Steps)  }\\
+% Total number of Timesteps
+
+% \kw{NUMSTASTEPS *GenData(Number_of_Starting_Algo_Steps)}\\
+% Number of Steps for Starting Scheme
+
+% \kw{MAXTIME *GenData(Fluid_Dyn_Total_Time)}\\
+% Total simulation time
+
+% \kw{TIMESTEP *GenData(Fluid_Dyn_Time_Step)  }\\
+% Time increment dt
+
+% \kw{MAX_DT *GenData(Fluid_Dyn_Max_Dt)   }\\
+% Maximal Time increment dt_max in adaptive case
+
+% \kw{MIN_DT *GenData(Fluid_Dyn_Min_Dt)  }\\
+% Minimal Time increment dt_min in adaptive case
+
+% \kw{THETA *GenData(Fluid_Dyn_Theta)}\\
+% Time integration factor
+
+% \kw{START_THETA *GenData(Theta_for_Starting_Algo)}\\
+% Time integraton factor for starting scheme
+
+% \kw{ALPHA_F *GenData(Fluid_Dyn_Alpha_f)}\\
+% Time integration factor
+
+% \kw{ALPHA_M *GenData(Fluid_Dyn_Alpha_m)}\\
+% Time integration factor
+
+% \kw{LOC_TRUN_ERR *GenData(Fluid_Dyn_Loc_Trun_Err)}\\
+% Local Truncation Error to rule adaptive time stepping
+
+% \kw{VISCSTRESS *GenData(Calculate_visc_stresses)}\\
+% when calculating fluid stresses include viscose part
+
+% \kw{FREESURFACE *GenData(Freesurface)}\\
+% Treatment of free surface
+
+% \kw{SURFTENSION *GenData(Include_Surfacetension)}\\
+% Include surfadce tension effects
+
+% \kw{CHECKAREA *GenData(Fluid_Check_Area)}\\
+% Calculate lift and drag forces along specified lines
+
+% \kw{LIFTDRAG *GenData(Fluid_Dyn_Lift_Drag)}\\
+% Monitor the size of the fluid domain
+
+% \kw{ADAPT_TIME *GenData(Fluid_Dyn_Adapt_Time)}\\
+% Flag, if time stepping is adaptive
+% *if(GenData(Commented_Inputfile,int)==1)
+% // How to build timerhs?        classic => as described in diss. Wall
+% //                              mass    => by means of mass matrix
+% *endif
+% TIME_RHS     *GenData(Fluid_Dyn_TimeRhs)
+% *if(GenData(Commented_Inputfile,int)==1)
+% *endif
+% TURBULENCE   *GenData(Turbulence_Model)
+% *if(GenData(Commented_Inputfile,int)==1)
+% *endif
+% INT_LENGHT   *GenData(Internal_Lenght)
+% *if(GenData(Commented_Inputfile,int)==1)
+% *endif
+% ROUGHTNESS   *GenData(Roughtness)
+% *if(GenData(Commented_Inputfile,int)==1)
+% *endif
+% SC_COORD_X   *GenData(Scaling_Coord_x)
+% *if(GenData(Commented_Inputfile,int)==1)
+% *endif
+% SC_COORD_Y   *GenData(Scaling_Coord_y)
+% *if(GenData(Commented_Inputfile,int)==1)
+% *endif
+% DISC_CAPT    *GenData(Discontinuity_Capturing_for_Turbulence)
+% *if(GenData(Commented_Inputfile,int)==1)
+% *endif
+
+\subsection{FSI DYNAMIC}
+\begin{verbatim}
+-------------------------------------------------------FSI DYNAMIC
+\end{verbatim}
+
+
+% \kw{MAXTIME *GenData(FSI_Total_Time)}\\
+% Total simulation time
+
+% \kw{TIMESTEP *GenData(FSI_Time_Step)}\\
+% Time increment dt
+
+% \kw{NUMSTEP *GenData(FSI_Num_Steps)}\\
+% Total number of Timesteps
+
+% \kw{UPPSS *GenData(FSI_Dyn_Sol_to_pss_every)}\\
+% Increment for visualisation via pss-file and VISUAL2
+
+% \kw{UPRES *GenData(FSI_Dyn_Sol_to_gid_every)}\\
+% Increment for writing solution to .flavia.res
+
+% \kw{RESTARTEVRY *GenData(FSI_Dyn_Restartevry)}\\
+% Increment for writing restart to pss file
+
+% \kw{IALE *GenData(FSI_Ale_Field)}\\
+% Treatment of ALE-field
+
+% \kw{COUPALGO *GenData(FSI_Coupling_Algorithm)}\\
+% Iteration Scheme over the fields
+
+% \kw{PREDICTOR *GenData(FSI_Predictor)}\\
+% Predictor for structure field
+
+% \kw{CONVCRIT *GenData(FSI_Conv_Crit)}\\
+% Convergence criterium for iteration over fields
+
+% \kw{ENERGYCHECK *GenData(FSI_Energy_Check)}\\
+% Energy check for iteration over fields
+
+% \kw{TOLENCHECK *GenData(FSI_Tolerance_Energ_Check)}\\
+% Tolerance for energy check
+
+% \kw{RELAX *GenData(FSI_Relax_Param)}\\
+% fixed relaxation parameter
+
+% \kw{ITEMAX *GenData(FSI_max_Iter_over_field)}\\
+% Maximum number of iterations over fields
+
+% \kw{CONVTOL *GenData(FSI_Tol_Iter_over_field)}\\
+% Tolerance for iteration over fields
+
+% \kw{ISDMAX *GenData(FSI_Max_Iter_Steep_Desc)}\\
+% not used up to now
+
+% \kw{COUPMETHOD *GenData(FSI_Coup_Method)}\\
+% Coupling Method Mortar (mtr) or conforming nodes at interface
+% COUPFORCE    *GenData(FSI_Coup_Force)
+
+% \kw{BC_FLUID *GenData(FSI_XFEM_BC_Fluid)}\\
+% How to apply Dirichlet BC on discontinuity in fluid elements
+
+\subsection{SSI DYNAMIC}
+\begin{verbatim}
+-------------------------------------------------------SSI DYNAMIC
+\end{verbatim}
+
+
+% \kw{MAXTIME *GenData(SSI_Total_Time)}\\
+% Structure-Structure Interaction Problem maximal simulation time
+
+% \kw{TIMESTEP *GenData(SSI_Time_Step)}\\
+% time step size
+
+% \kw{NUMSTEP *GenData(SSI_Num_Steps)}\\
+% number of time steps
+
+% \kw{UPPSS *GenData(SSI_Dyn_Sol_to_pss_every)}\\
+% Increment for visualisation via pss-file and VISUAL2
+
+% \kw{IALE *GenData(SSI_Ale_Field)}\\
+% ALE algorithm
+
+% \kw{COUPALGO *GenData(SSI_Coupling_Algorithm)}\\
+% Iteration Scheme over the fields
+
+% \kw{CONVCRIT *GenData(SSI_Conv_Crit)}\\
+% Convergence criterium for iteration over fields
+
+% \kw{ENERGYCHECK *GenData(SSI_Energy_Check)}\\
+% Energy check for iteration over fields
+
+% \kw{TOLENCHECK *GenData(SSI_Tolerance_Energ_Check)}\\
+% Tolerance for energy check
+
+% \kw{RELAX *GenData(SSI_Relax_Param)}\\
+% fixed relaxation parameter
+
+% \kw{ITEMAX *GenData(SSI_max_Iter_over_field)}\\
+% Maximum number of iterations over fields
+
+% \kw{CONVTOL *GenData(SSI_Tol_Iter_over_field)}\\
+% Tolerance for iteration over fields
+
+% \kw{ISDMAX *GenData(SSI_Max_Iter_Steep_Desc)}\\
+% not used up to now
+
+% \kw{COUPMETHOD *GenData(SSI_Coup_Method)}\\
+% Coupling Method Mortar (mtr) or conforming nodes at interface
+
+\subsection{ALE DYNAMIC}
+\begin{verbatim}
+-------------------------------------------------------ALE DYNAMIC
+\end{verbatim}
+
+% TIMESTEP     *GenData(ALE_Time_Step)
+% NUMSTEP      *GenData(ALE_Num_Step)
+% MAXTIME      *GenData(ALE_Total_Time)
+% NUM_INITSTEP *GenData(ALE_Num_Initstep)
+% ALE_TYPE     *GenData(ALE_Typ)
+% RESEVRYDISP  *GenData(Write_ale_disp_evry)
+% QUALITY      *GenData(ALE_Quality)
+
+\subsection{TSI DYNAMIC}
+\begin{verbatim}
+-------------------------------------------------------TSI DYNAMIC
+\end{verbatim}
+
+\kw{KIND} (\kw{thermal_static_structure_genalpha}\kor\kw{thermal_predefined_structure_dynamic}\kor\kw{thermal_dynamic_structure_dynamic})
+type of thermo-structure interaction
+
+\kw{TIMESTEP} $real$\\
+time step size
+
+\kw{NUMSTEP} $int$\\
+number of time steps
+
+\kw{MAXTIME} $real$\\
+final simulation time
+
+\subsection{OPTIMIZATION}
+\begin{verbatim}
+------------------------------------------------------OPTIMIZATION
+\end{verbatim}
+
+WARNING: The eigenvalue analysis does not work well. Development will either
+be stopped or ...
+
+\kw{OPT_NUMITER} $int$\\
+total number of iteration steps
+
+\kw{OPT_TYPE} (\kw{Topo}\kor\kw{Shape})\\
+type of optimization
+
+\kw{OPT_STRATEGY} (\kw{FSD}\kor\kw{NLP})\\
+type of optimization strategy
+
+The following sub-options apply only if \kw{OPT_STRATEGY FSD}
+
+\kw{FSD_GRAD} (\kw{Explicit}\kor\kw{Implicit})\\
+gradientenbestimmung
+
+\kw{FSD_NUMITER} $int$\\
+number of iteration steps with fsd
+
+\kw{FSD_ACC} $real$\\
+erforderliche genauigkeit                  
+
+\kw{FSD_ALPHA} $real$\\
+genauigkeit fuer die gleichheitsrestriktion
+
+\kw{FSD_BETA} $real$\\
+schreitweitenfaktor                        
+
+\kw{FSD_DELTA} $real$\\
+schrittweitenbegrenzung                    
+
+\kw{FSD_GAMMA}\\
+gleichheitsrestriktionswert                
+
+\kw{OPT_SMO}  (\kw{ON}\kor\kw{OFF})\\
+smooth gradients or other values
+
+\kw{SMO_TYPE} (\kw{gradient}\kor\kw{density})\\
+???
+
+\kw{SMO_ERAD} $real$\\
+radius
+
+\kw{SMO_EXPO} $real$\\
+exponent
+
+\kw{OPT_OBJ} (\kw{Stiffness}\kor\kw{Mass})\\
+objective
+
+% OV_VAR 1 global opt. variables
+%   ELEofMAT 1 TYPE DENS  DL 1.0E-4  DU 1.0E0 SCL 1.
+% OV_END
+% //
+% OC_ICO 0 global inequality constraints
+% //
+% OC_ECO 1 global   equality constraints
+%       DVOLU 1 TYP WEIGHT  SCL 1. 
+
+\subsection{FLUID SOLVER}
+\begin{verbatim}
+------------------------------------------------------FLUID SOLVER
+\end{verbatim}
+
+% *if(strcmp(GenData(Flu_Solver),"Aztec_MSR")==0)
+% SOLVER         Aztec_MSR          // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+% AZOUTPUT       0                  // output every so often, 0 no output
+% AZSOLVE        BiCGSTAB           // CG GMRES CGS BiCGSTAB LU TFQMR
+% AZPREC         ILU                // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann
+% AZREUSE        0                  // how often to recompute some preconditioners
+% AZDROP         0.0                // drop tolerance for ILUT
+% AZFILL         1.0                // fill-in for ILUT
+% AZGFILL        0                  // graph fill for ILU
+% AZTOL          1.0E-8             // tolerance in unscaled residual
+% AZITER         1000               // max iterations
+% AZSUB          50                 // size of krylov space for gmres
+% AZOMEGA        1.0                // unused
+% AZGRAPH        1                  // unused
+% AZPOLY         5                  // polynomial order for Neumann
+% AZOVERLAP      0                  // amount of ASM overlap for ILU, ILU, ICC, LU
+% AZSCAL         none               // none sym infnorm scaling of the system
+% ML_PRINT          0               // ML print-out level (0-10)
+% ML_MAXCOARSESIZE  1               // ML stop coarsening when coarse ndof smaller then this
+% ML_MAXLEVEL       3               // ML max number of levels
+% ML_COARSEN        UC              // UC MIS METIS VBMETIS
+% ML_AGG_SIZE       27              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+% ML_PROLONG_SMO    1.33            // damping factor for prolongator smoother (usually 1.33 or 0.0)
+% ML_PROLONG_THRES  0.0             // threshold for prolongator smoother/aggregation
+% ML_SMOOTHERFINE   SGS             // SGS Jacobi Chebychev MLS ILU KLU
+% ML_SMOOTHERMED    ILU             // SGS Jacobi Chebychev MLS ILU KLU 
+% ML_SMOOTHERCOARSE KLU             // SGS Jacobi Chebychev MLS KLU Superlu
+% ML_SMOTIMES       1 0 1           // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+% ML_DAMPFINE       1.0             // damping fine grid
+% ML_DAMPMED        1.0             // damping med grids
+% ML_DAMPCOARSE     1.0             // damping coarse grid
+% *endif
+% *if(strcmp(GenData(Flu_Solver),"Aztec_VBR")==0)
+% AZSOLVE        *GenData(Flu_Aztec_Azsol)
+% AZPREC         *GenData(Flu_Aztec_AzPrec)
+% AZREUSE        *GenData(Flu_REUSE)  
+% AZDROP         *GenData(Flu_AZDROP)  
+% AZFILL         *GenData(Flu_DFILL)  
+% AZGFILL        *GenData(Flu_IFILL)  
+% AZTOL          *GenData(Flu_TOL)  
+% AZITER         *GenData(Flu_MAXITER)  
+% AZSUB          *GenData(Flu_AZSUB)  
+% AZOMEGA        *GenData(Flu_AZOMEGA)  
+% AZGRAPH        *GenData(Flu_AZGRAPH)  
+% AZPOLY         *GenData(Flu_AZPOLY)  
+% *endif
+% *if(strcmp(GenData(Flu_Solver),"HYPRE_BoomerAMG")==0)
+% HYPRE_PREC     *GenData(Flu_HYPRE_Prec)
+% HYPRE_IO       *GenData(Flu_HYPRE_IO)
+% HYPRE_ITER     *GenData(Flu_MAXITER)
+% HYPRE_TOL      *GenData(Flu_TOL)
+% HYPRE_THREAS   *GenData(Flu_AMGThresh)
+% HYPRE_SFINE    *GenData(Flu_AMGnsweepFine)
+% HYPRE_SDOWN    *GenData(Flu_AMGnsweepDown)
+% HYPRE_SUP      *GenData(Flu_AMGnsweepUp)
+% HYPRE_SCOARS   *GenData(Flu_AMGnsweepCoarse)
+% *endif
+% *if(strcmp(GenData(Flu_Solver),"HYPRE_PCG")==0)
+% HYPRE_PREC     *GenData(Flu_HYPRE_Prec)
+% HYPRE_IO       *GenData(Flu_HYPRE_IO)
+% HYPRE_ITER     *GenData(Flu_MAXITER)
+% HYPRE_TOL      *GenData(Flu_TOL)
+% HYPRE_DFILL    *GenData(Flu_DFILL) 
+% HYPRE_IFILL    *GenData(Flu_IFILL)  
+% HYPRE_PARASY   *GenData(Flu_Parasymm)
+% HYPRE_PARALEV  *GenData(Flu_Paranlevel)
+% HYPRE_PARATHR  *GenData(Flu_Parathresh)
+% HYPRE_PARAFILT *GenData(Flu_Parafilter)
+% HYPRE_THREAS   *GenData(Flu_AMGThresh)
+% HYPRE_SFINE    *GenData(Flu_AMGnsweepFine)
+% HYPRE_SDOWN    *GenData(Flu_AMGnsweepDown)
+% HYPRE_SUP      *GenData(Flu_AMGnsweepUp)
+% HYPRE_SCOARS   *GenData(Flu_AMGnsweepCoarse)
+% *endif
+% *if(strcmp(GenData(Flu_Solver),"HYPRE_GMRES")==0)
+% HYPRE_PREC     *GenData(Flu_HYPRE_Prec)
+% HYPRE_IO       *GenData(Flu_HYPRE_IO)
+% HYPRE_ITER     *GenData(Flu_MAXITER)
+% HYPRE_TOL      *GenData(Flu_TOL)
+% HYPRE_KRYDIM   *GenData(Flu_GMRESKrylovdim)
+% HYPRE_DFILL    *GenData(Flu_DFILL) 
+% HYPRE_IFILL    *GenData(Flu_IFILL)  
+% HYPRE_SYMM     *GenData(Flu_Parasymm)
+% HYPRE_PARALEV  *GenData(Flu_Paranlevel)
+% HYPRE_PARATHR  *GenData(Flu_Parathresh)
+% HYPRE_PARAFILT *GenData(Flu_Parafilter)
+% HYPRE_THREAS   *GenData(Flu_AMGThresh)
+% HYPRE_SFINE    *GenData(Flu_AMGnsweepFine)
+% HYPRE_SDOWN    *GenData(Flu_AMGnsweepDown)
+% HYPRE_SUP      *GenData(Flu_AMGnsweepUp)
+% HYPRE_SCOARS   *GenData(Flu_AMGnsweepCoarse)
+% *endif
+% *if(strcmp(GenData(Flu_Solver),"HYPRE_BiCGStab")==0)
+% HYPRE_PREC     *GenData(Flu_HYPRE_Prec)
+% HYPRE_IO       *GenData(Flu_HYPRE_IO)
+% HYPRE_ITER     *GenData(Flu_MAXITER)
+% HYPRE_TOL      *GenData(Flu_TOL)
+% HYPRE_DFILL    *GenData(Flu_DFILL) 
+% HYPRE_IFILL    *GenData(Flu_IFILL)  
+% HYPRE_SYMM     *GenData(Flu_Parasymm)
+% HYPRE_PARALEV  *GenData(Flu_Paranlevel)
+% HYPRE_PARATHR  *GenData(Flu_Parathresh)
+% HYPRE_PARAFILT *GenData(Flu_Parafilter)
+% HYPRE_THREAS   *GenData(Flu_AMGThresh)
+% HYPRE_SFINE    *GenData(Flu_AMGnsweepFine)
+% HYPRE_SDOWN    *GenData(Flu_AMGnsweepDown)
+% HYPRE_SUP      *GenData(Flu_AMGnsweepUp)
+% HYPRE_SCOARS   *GenData(Flu_AMGnsweepCoarse)
+% *endif
+% *if(strcmp(GenData(Flu_Solver),"ParSuperLU")==0)
+% *endif
+% *if(strcmp(GenData(Flu_Solver),"LAPACK_sym")==0)
+% *endif
+% *if(strcmp(GenData(Flu_Solver),"LAPACK_nonsym")==0)
+% *endif
+% *if(strcmp(GenData(Flu_Solver),"MUMPS_sym")==0)
+% *endif
+% *if(strcmp(GenData(Flu_Solver),"MUMPS_nonsym")==0)
+% *endif
+% *if(strcmp(GenData(Flu_Matrix_Format),"OLL")==0)
+% MATRIXTYP      *GenData(Flu_Matrix_Format)
+% *endif
+% PARTITION      *GenData(Fluid_Typ_of_Partitioning)
+
+\subsection{STRUCT SOLVER}
+\begin{verbatim}
+-----------------------------------------------------STRUCT SOLVER
+\end{verbatim}
+
+% SOLVER         *GenData(Str_Solver)
+% *if(strcmp(GenData(Str_Solver),"Aztec_MSR")==0)
+% SOLVER         Aztec_MSR    // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+% AZOUTPUT       0            // output every so often, 0 no output
+% AZSOLVE        CG           // CG GMRES CGS BiCGSTAB LU TFQMR
+% AZPREC         ILU          // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
+% AZREUSE        0            // how often to recompute some preconditioners
+% AZDROP         0.0          // drop tolerance for ILUT
+% AZFILL         1.0          // fill-in for ILUT
+% AZGFILL        0            // graph fill for ILU
+% AZTOL          1.0E-8       // tolerance in unscaled residual
+% AZITER         1000         // max iterations
+% AZSUB          40           // size of krylov space for gmres
+% AZOMEGA        1.0          // unused
+% AZGRAPH        1            // unused
+% AZPOLY         5            // polynomial order for Neumann
+% AZOVERLAP      0            // amount of ASM overlap for ILU, ILU, ICC, LU
+% AZSCAL         infnorm      // none sym infnorm scaling of the system
+% ML_PRINT          0         // ML print-out level (0-10)
+% ML_MAXCOARSESIZE  1000      // ML stop coarsening when coarse ndof smaller then this
+% ML_MAXLEVEL       3         // ML max number of levels
+% ML_COARSEN        UC        // UC MIS METIS VBMETIS
+% ML_AGG_SIZE       27              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+% ML_PROLONG_SMO    1.33      // damping factor for prolongator smoother (usually 0.0 or 1.33)
+% ML_PROLONG_THRES  0.0       // threshold for prolongator smoother/aggregation
+% ML_SMOOTHERFINE   Chebychev // SGS Jacobi Chebychev MLS ILU KLU
+% ML_SMOOTHERMED    Chebychev // SGS Jacobi Chebychev MLS ILU KLU 
+% ML_SMOOTHERCOARSE KLU       // SGS Jacobi Chebychev MLS KLU Superlu
+% ML_SMOTIMES       3 3 1     // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+% ML_DAMPFINE       1.0       // damping fine grid
+% ML_DAMPMED        1.0       // damping med grids
+% ML_DAMPCOARSE     1.0       // damping coarse grid
+% *endif
+% *if(strcmp(GenData(Str_Solver),"HYPRE_BoomerAMG")==0)
+% HYPRE_PREC     *GenData(Str_HYPRE_Prec)
+% HYPRE_IO       *GenData(Str_HYPRE_IO)
+% HYPRE_ITER     *GenData(Str_MAXITER)
+% HYPRE_TOL      *GenData(Str_TOL)
+% HYPRE_THREAS   *GenData(Str_AMGThresh)
+% HYPRE_SFINE    *GenData(Str_AMGnsweepFine)
+% HYPRE_SDOWN    *GenData(Str_AMGnsweepDown)
+% HYPRE_SUP      *GenData(Str_AMGnsweepUp)
+% HYPRE_SCOARS   *GenData(Str_AMGnsweepCoarse)
+% *endif
+% *if(strcmp(GenData(Str_Solver),"HYPRE_PCG")==0)
+% HYPRE_PREC     *GenData(Str_HYPRE_Prec)
+% HYPRE_IO       *GenData(Str_HYPRE_IO)
+% HYPRE_ITER     *GenData(Str_MAXITER)
+% HYPRE_TOL      *GenData(Str_TOL)
+% HYPRE_DFILL    *GenData(Str_DFILL) 
+% HYPRE_IFILL    *GenData(Str_IFILL)  
+% HYPRE_PARASY   *GenData(Str_Parasymm)
+% HYPRE_PARALEV  *GenData(Str_Paranlevel)
+% HYPRE_PARATHR  *GenData(Str_Parathresh)
+% HYPRE_PARAFILT *GenData(Str_Parafilter)
+% HYPRE_THREAS   *GenData(Str_AMGThresh)
+% HYPRE_SFINE    *GenData(Str_AMGnsweepFine)
+% HYPRE_SDOWN    *GenData(Str_AMGnsweepDown)
+% HYPRE_SUP      *GenData(Str_AMGnsweepUp)
+% HYPRE_SCOARS   *GenData(Str_AMGnsweepCoarse)
+% *endif
+% *if(strcmp(GenData(Str_Solver),"HYPRE_GMRES")==0)
+% HYPRE_PREC     *GenData(Str_HYPRE_Prec)
+% HYPRE_IO       *GenData(Str_HYPRE_IO)
+% HYPRE_ITER     *GenData(Str_MAXITER)
+% HYPRE_TOL      *GenData(Str_TOL)
+% HYPRE_KRYDIM   *GenData(Str_GMRESKrylovdim)
+% HYPRE_DFILL    *GenData(Str_DFILL) 
+% HYPRE_IFILL    *GenData(Str_IFILL)  
+% HYPRE_SYMM     *GenData(Str_Parasymm)
+% HYPRE_PARALEV  *GenData(Str_Paranlevel)
+% HYPRE_PARATHR  *GenData(Str_Parathresh)
+% HYPRE_PARAFILT *GenData(Str_Parafilter)
+% HYPRE_THREAS   *GenData(Str_AMGThresh)
+% HYPRE_SFINE    *GenData(Str_AMGnsweepFine)
+% HYPRE_SDOWN    *GenData(Str_AMGnsweepDown)
+% HYPRE_SUP      *GenData(Str_AMGnsweepUp)
+% HYPRE_SCOARS   *GenData(Str_AMGnsweepCoarse)
+% *endif
+% *if(strcmp(GenData(Str_Solver),"HYPRE_BiCGStab")==0)
+% HYPRE_PREC     *GenData(Str_HYPRE_Prec)
+% HYPRE_IO       *GenData(Str_HYPRE_IO)
+% HYPRE_ITER     *GenData(Str_MAXITER)
+% HYPRE_TOL      *GenData(Str_TOL)
+% HYPRE_DFILL    *GenData(Str_DFILL) 
+% HYPRE_IFILL    *GenData(Str_IFILL)  
+% HYPRE_SYMM     *GenData(Str_Parasymm)
+% HYPRE_PARALEV  *GenData(Str_Paranlevel)
+% HYPRE_PARATHR  *GenData(Str_Parathresh)
+% HYPRE_PARAFILT *GenData(Str_Parafilter)
+% HYPRE_THREAS   *GenData(Str_AMGThresh)
+% HYPRE_SFINE    *GenData(Str_AMGnsweepFine)
+% HYPRE_SDOWN    *GenData(Str_AMGnsweepDown)
+% HYPRE_SUP      *GenData(Str_AMGnsweepUp)
+% HYPRE_SCOARS   *GenData(Str_AMGnsweepCoarse)
+% *endif
+% *if(strcmp(GenData(Str_Solver),"ParSuperLU")==0)
+% *endif
+% *if(strcmp(GenData(Str_Solver),"LAPACK_sym")==0)
+
+% \kw{*endif
+% *if(strcmp(GenData(Str_Solver),"LAPACK_nonsym")==0)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // unsymmetric dense matrix direct (factorization based) solver for small problems)}\\
+% symmetric dense matrix direct (factorization based) solver for small problems)
+% *endif
+% *endif
+% *if(strcmp(GenData(Str_Solver),"MUMPS_sym")==0)
+% *endif
+% *if(strcmp(GenData(Str_Solver),"MUMPS_nonsym")==0)
+% *endif
+% *if(strcmp(GenData(Str_Solver),"SPOOLES_nonsym")==0)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // Parallel direct solver for unsymmetric systems (reliable and fast)
+% // necessary for contact problems
+% *endif
+% *endif
+% *if(strcmp(GenData(Str_Solver),"MLPCG")==0)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // Multigrid preconditioned CG iterative solver for structural problems
+% // REUSE offset how many solver calls the coarse grid preconditioners shall be reused: (<int>)
+% // NUMLEV number of levels (at least 2): (<int>)
+% // PROLONGSMODAMP relaxation parameter for damped jacobi smoothing of the intergrid transfer operators: (<real>)
+% // COARSENUMDF degrees of freedom per supernode on coarse grid, with 'Vanek' has to be 6, with 'Fish' >= 6: (<int>)
+% // TYPE type of coarse grid approach Vanek rigid body modes (only shell8) or Fish eigenmodes: (Vanek,Fish)
+% // MAXITER max number of iterations of iterative solver: (<int>)
+% // TOLERANCE accuracy in absolute l2-norm of solution: (<real>)
+% // COARSESOLV solver on coarsest grid: (LAPACK,SPOOLES,ILU)
+% // COARSEILULEV level of ilu(k) on coarsest grid in case of COARSESOLV = ILU: (<int>)
+% // PRESMO type of presmoother: (ILU,Jacobi)
+% // POSTSMO type of postsmoother: (ILU,Jacobi)
+% // PRESWEEP level for ilu(k) of or iterations for Jacobi as presmoother: (<int>)
+% // POSTSWEEP level for ilu(k) of or iterations for Jacobi as postsmoother: (<int>)
+% // OVERLAP number of rows of elements for overlapping schwartz method on finest grid (does not work properly): (<int>)
+% *endif
+% REUSE          *GenData(Str_REUSE)                 
+% NUMLEV         *GenData(Str_MLPCG_numlev)          
+% PROLONGSMODAMP *GenData(Str_MLPCG_prolong_omega)   
+% COARSENUMDF    *GenData(Str_MLPCG_coarsenumdf)     
+% TYPE           *GenData(Str_MLPCG_Type)            // Vanek Fish
+% MAXITER        *GenData(Str_MAXITER)  
+% TOLERANCE      *GenData(Str_TOL)
+% COARSESOLV     *GenData(Str_MLPCG_coarsest)        // LAPACK SPOOLES ILU
+% COARSEILULEV   *GenData(Str_MLPCG_coarseilulev)
+% PRESMO         *GenData(Str_MLPCG_presmo)          // ILU Jacobi
+% POSTSMO        *GenData(Str_MLPCG_postsmo)         // ILU Jacobi
+% PRESWEEP       *GenData(Str_MLPCG_presmo_sweep)
+% POSTSWEEP      *GenData(Str_MLPCG_postsmo_sweep)
+% OVERLAP        *GenData(Str_MLPCG_overlap)         
+% *endif
+% *if(strcmp(GenData(Str_Matrix_Format),"OLL")==0)
+% MATRIXTYP      *GenData(Str_Matrix_Format)
+% *endif
+% PARTITION      *GenData(Struct_Typ_of_Partitioning)
+
+\subsection{ALE SOLVER}
+\begin{verbatim}
+--------------------------------------------------------ALE SOLVER
+\end{verbatim}
+
+% SOLVER         *GenData(ALE_Solver)
+% *if(strcmp(GenData(ALE_Solver),"Aztec_MSR")==0)
+% SOLVER         Aztec_MSR    // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+% AZOUTPUT       0            // output every so often, 0 no output
+% AZSOLVE        CG           // CG GMRES CGS BiCGSTAB LU TFQMR
+% AZPREC         ILU          // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
+% AZREUSE        0            // how often to recompute some preconditioners
+% AZDROP         0.0          // drop tolerance for ILUT
+% AZFILL         1.0          // fill-in for ILUT
+% AZGFILL        0            // graph fill for ILU
+% AZTOL          1.0E-8       // tolerance in unscaled residual
+% AZITER         1000         // max iterations
+% AZSUB          40           // size of krylov space for gmres
+% AZOMEGA        1.0          // unused
+% AZGRAPH        1            // unused
+% AZPOLY         5            // polynomial order for Neumann
+% AZOVERLAP      0            // amount of ASM overlap for ILU, ILU, ICC, LU
+% AZSCAL         infnorm      // none sym infnorm scaling of the system
+% ML_PRINT          0         // ML print-out level (0-10)
+% ML_MAXCOARSESIZE  1000      // ML stop coarsening when coarse ndof smaller then this
+% ML_MAXLEVEL       3         // ML max number of levels
+% ML_COARSEN        UC        // UC MIS METIS VBMETIS
+% ML_AGG_SIZE       27              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+% ML_PROLONG_SMO    1.33      // damping factor for prolongator smoother (usually 0.0 or 1.33)
+% ML_PROLONG_THRES  0.0       // threshold for prolongator smoother/aggregation
+% ML_SMOOTHERFINE   Chebychev // SGS Jacobi Chebychev MLS ILU KLU
+% ML_SMOOTHERMED    Chebychev // SGS Jacobi Chebychev MLS ILU KLU 
+% ML_SMOOTHERCOARSE KLU       // SGS Jacobi Chebychev MLS KLU Superlu
+% ML_SMOTIMES       3 3 1     // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+% ML_DAMPFINE       1.0       // damping fine grid
+% ML_DAMPMED        1.0       // damping med grids
+% ML_DAMPCOARSE     1.0       // damping coarse grid
+% *endif
+% *if(strcmp(GenData(Flu_Solver),"Aztec_VBR")==0)
+% AZSOLVE        *GenData(Flu_Aztec_Azsol)
+% AZPREC         *GenData(Flu_Aztec_AzPrec)
+% AZREUSE        *GenData(Flu_REUSE)  
+% AZDROP         *GenData(Flu_AZDROP)  
+% AZFILL         *GenData(Flu_DFILL)  
+% AZGFILL        *GenData(Flu_IFILL)  
+% AZTOL          *GenData(Flu_TOL)  
+% AZITER         *GenData(Flu_MAXITER)  
+% AZSUB          *GenData(Flu_AZSUB)  
+% AZOMEGA        *GenData(Flu_AZOMEGA)  
+% AZGRAPH        *GenData(Flu_AZGRAPH)  
+% AZPOLY         *GenData(Flu_AZPOLY)  
+% *endif
+% *if(strcmp(GenData(ALE_Solver),"HYPRE_BoomerAMG")==0)
+% HYPRE_PREC     *GenData(ALE_HYPRE_Prec)
+% HYPRE_IO       *GenData(ALE_HYPRE_IO)
+% HYPRE_ITER     *GenData(ALE_MAXITER)
+% HYPRE_TOL      *GenData(ALE_TOL)
+% HYPRE_THREAS   *GenData(ALE_AMGThresh)
+% HYPRE_SFINE    *GenData(ALE_AMGnsweepFine)
+% HYPRE_SDOWN    *GenData(ALE_AMGnsweepDown)
+% HYPRE_SUP      *GenData(ALE_AMGnsweepUp)
+% HYPRE_SCOARS   *GenData(ALE_AMGnsweepCoarse)
+% *endif
+% *if(strcmp(GenData(ALE_Solver),"HYPRE_PCG")==0)
+% HYPRE_PREC     *GenData(ALE_HYPRE_Prec)
+% HYPRE_IO       *GenData(ALE_HYPRE_IO)
+% HYPRE_ITER     *GenData(ALE_MAXITER)
+% HYPRE_TOL      *GenData(ALE_TOL)
+% HYPRE_DFILL    *GenData(ALE_DFILL) 
+% HYPRE_IFILL    *GenData(ALE_IFILL)  
+% HYPRE_PARASY   *GenData(ALE_Parasymm)
+% HYPRE_PARALEV  *GenData(ALE_Paranlevel)
+% HYPRE_PARATHR  *GenData(ALE_Parathresh)
+% HYPRE_PARAFILT *GenData(ALE_Parafilter)
+% HYPRE_THREAS   *GenData(ALE_AMGThresh)
+% HYPRE_SFINE    *GenData(ALE_AMGnsweepFine)
+% HYPRE_SDOWN    *GenData(ALE_AMGnsweepDown)
+% HYPRE_SUP      *GenData(ALE_AMGnsweepUp)
+% HYPRE_SCOARS   *GenData(ALE_AMGnsweepCoarse)
+% *endif
+% *if(strcmp(GenData(ALE_Solver),"HYPRE_GMRES")==0)
+% HYPRE_PREC     *GenData(ALE_HYPRE_Prec)
+% HYPRE_IO       *GenData(ALE_HYPRE_IO)
+% HYPRE_ITER     *GenData(ALE_MAXITER)
+% HYPRE_TOL      *GenData(ALE_TOL)
+% HYPRE_KRYDIM   *GenData(ALE_GMRESKrylovdim)
+% HYPRE_DFILL    *GenData(ALE_DFILL) 
+% HYPRE_IFILL    *GenData(ALE_IFILL)  
+% HYPRE_SYMM     *GenData(ALE_Parasymm)
+% HYPRE_PARALEV  *GenData(ALE_Paranlevel)
+% HYPRE_PARATHR  *GenData(ALE_Parathresh)
+% HYPRE_PARAFILT *GenData(ALE_Parafilter)
+% HYPRE_THREAS   *GenData(ALE_AMGThresh)
+% HYPRE_SFINE    *GenData(ALE_AMGnsweepFine)
+% HYPRE_SDOWN    *GenData(ALE_AMGnsweepDown)
+% HYPRE_SUP      *GenData(ALE_AMGnsweepUp)
+% HYPRE_SCOARS   *GenData(ALE_AMGnsweepCoarse)
+% *endif
+% *if(strcmp(GenData(ALE_Solver),"HYPRE_BiCGStab")==0)
+% HYPRE_PREC     *GenData(ALE_HYPRE_Prec)
+% HYPRE_IO       *GenData(ALE_HYPRE_IO)
+% HYPRE_ITER     *GenData(ALE_MAXITER)
+% HYPRE_TOL      *GenData(ALE_TOL)
+% HYPRE_DFILL    *GenData(ALE_DFILL) 
+% HYPRE_IFILL    *GenData(ALE_IFILL)  
+% HYPRE_SYMM     *GenData(ALE_Parasymm)
+% HYPRE_PARALEV  *GenData(ALE_Paranlevel)
+% HYPRE_PARATHR  *GenData(ALE_Parathresh)
+% HYPRE_PARAFILT *GenData(ALE_Parafilter)
+% HYPRE_THREAS   *GenData(ALE_AMGThresh)
+% HYPRE_SFINE    *GenData(ALE_AMGnsweepFine)
+% HYPRE_SDOWN    *GenData(ALE_AMGnsweepDown)
+% HYPRE_SUP      *GenData(ALE_AMGnsweepUp)
+% HYPRE_SCOARS   *GenData(ALE_AMGnsweepCoarse)
+% *endif
+% *if(strcmp(GenData(ALE_Solver),"ParSuperLU")==0)
+% *endif
+% *if(strcmp(GenData(ALE_Solver),"LAPACK_sym")==0)
+% *endif
+% *if(strcmp(GenData(ALE_Solver),"LAPACK_nonsym")==0)
+% *endif
+% *if(strcmp(GenData(ALE_Solver),"MUMPS_sym")==0)
+% *endif
+% *if(strcmp(GenData(ALE_Solver),"MUMPS_nonsym")==0)
+% *endif
+% *if(strcmp(GenData(ALE_Matrix_Format),"OLL")==0)
+% MATRIXTYP      *GenData(ALE_Matrix_Format)
+% *endif
+% PARTITION      *GenData(Ale_Typ_of_Partitioning)
+
+\subsection{THERMAL SOLVER}
+\begin{verbatim}
+----------------------------------------------------THERMAL SOLVER
+\end{verbatim}
+
+% SOLVER         *GenData(The_Solver)
+% *if(strcmp(GenData(The_Solver),"Aztec_MSR")==0)
+% AZSOLVE        *GenData(The_Aztec_Azsol)
+% AZPREC         *GenData(The_Aztec_AzPrec)
+% AZREUSE        *GenData(The_REUSE)  
+% AZDROP         *GenData(The_AZDROP)  
+% AZFILL         *GenData(The_DFILL)  
+% AZGFILL        *GenData(The_IFILL)  
+% AZTOL          *GenData(The_TOL)  
+% AZITER         *GenData(The_MAXITER)  
+% AZSUB          *GenData(The_AZSUB)  
+% AZOMEGA        *GenData(The_AZOMEGA)  
+% AZGRAPH        *GenData(The_AZGRAPH)  
+% AZPOLY         *GenData(The_AZPOLY)  
+% *endif
+% *if(strcmp(GenData(The_Solver),"Aztec_VBR")==0)
+% AZSOLVE        *GenData(The_Aztec_Azsol)
+% AZPREC         *GenData(The_Aztec_AzPrec)
+% AZREUSE        *GenData(The_REUSE)  
+% AZDROP         *GenData(The_AZDROP)  
+% AZFILL         *GenData(The_DFILL)  
+% AZGFILL        *GenData(The_IFILL)  
+% AZTOL          *GenData(The_TOL)  
+% AZITER         *GenData(The_MAXITER)  
+% AZSUB          *GenData(The_AZSUB)  
+% AZOMEGA        *GenData(The_AZOMEGA)  
+% AZGRAPH        *GenData(The_AZGRAPH)  
+% AZPOLY         *GenData(The_AZPOLY)  
+% *endif
+% *if(strcmp(GenData(The_Solver),"HYPRE_BoomerAMG")==0)
+% HYPRE_PREC     *GenData(The_HYPRE_Prec)
+% HYPRE_IO       *GenData(The_HYPRE_IO)
+% HYPRE_ITER     *GenData(The_MAXITER)
+% HYPRE_TOL      *GenData(The_TOL)
+% HYPRE_THREAS   *GenData(The_AMGThresh)
+% HYPRE_SFINE    *GenData(The_AMGnsweepFine)
+% HYPRE_SDOWN    *GenData(The_AMGnsweepDown)
+% HYPRE_SUP      *GenData(The_AMGnsweepUp)
+% HYPRE_SCOARS   *GenData(The_AMGnsweepCoarse)
+% *endif
+% *if(strcmp(GenData(The_Solver),"HYPRE_PCG")==0)
+% HYPRE_PREC     *GenData(The_HYPRE_Prec)
+% HYPRE_IO       *GenData(The_HYPRE_IO)
+% HYPRE_ITER     *GenData(The_MAXITER)
+% HYPRE_TOL      *GenData(The_TOL)
+% HYPRE_DFILL    *GenData(The_DFILL) 
+% HYPRE_IFILL    *GenData(The_IFILL)  
+% HYPRE_PARASY   *GenData(The_Parasymm)
+% HYPRE_PARALEV  *GenData(The_Paranlevel)
+% HYPRE_PARATHR  *GenData(The_Parathresh)
+% HYPRE_PARAFILT *GenData(The_Parafilter)
+% HYPRE_THREAS   *GenData(The_AMGThresh)
+% HYPRE_SFINE    *GenData(The_AMGnsweepFine)
+% HYPRE_SDOWN    *GenData(The_AMGnsweepDown)
+% HYPRE_SUP      *GenData(The_AMGnsweepUp)
+% HYPRE_SCOARS   *GenData(The_AMGnsweepCoarse)
+% *endif
+% *if(strcmp(GenData(The_Solver),"HYPRE_GMRES")==0)
+% HYPRE_PREC     *GenData(The_HYPRE_Prec)
+% HYPRE_IO       *GenData(The_HYPRE_IO)
+% HYPRE_ITER     *GenData(The_MAXITER)
+% HYPRE_TOL      *GenData(The_TOL)
+% HYPRE_KRYDIM   *GenData(The_GMRESKrylovdim)
+% HYPRE_DFILL    *GenData(The_DFILL) 
+% HYPRE_IFILL    *GenData(The_IFILL)  
+% HYPRE_SYMM     *GenData(The_Parasymm)
+% HYPRE_PARALEV  *GenData(The_Paranlevel)
+% HYPRE_PARATHR  *GenData(The_Parathresh)
+% HYPRE_PARAFILT *GenData(The_Parafilter)
+% HYPRE_THREAS   *GenData(The_AMGThresh)
+% HYPRE_SFINE    *GenData(The_AMGnsweepFine)
+% HYPRE_SDOWN    *GenData(The_AMGnsweepDown)
+% HYPRE_SUP      *GenData(The_AMGnsweepUp)
+% HYPRE_SCOARS   *GenData(The_AMGnsweepCoarse)
+% *endif
+% *if(strcmp(GenData(The_Solver),"HYPRE_BiCGStab")==0)
+% HYPRE_PREC     *GenData(The_HYPRE_Prec)
+% HYPRE_IO       *GenData(The_HYPRE_IO)
+% HYPRE_ITER     *GenData(The_MAXITER)
+% HYPRE_TOL      *GenData(The_TOL)
+% HYPRE_DFILL    *GenData(The_DFILL) 
+% HYPRE_IFILL    *GenData(The_IFILL)  
+% HYPRE_SYMM     *GenData(The_Parasymm)
+% HYPRE_PARALEV  *GenData(The_Paranlevel)
+% HYPRE_PARATHR  *GenData(The_Parathresh)
+% HYPRE_PARAFILT *GenData(The_Parafilter)
+% HYPRE_THREAS   *GenData(The_AMGThresh)
+% HYPRE_SFINE    *GenData(The_AMGnsweepFine)
+% HYPRE_SDOWN    *GenData(The_AMGnsweepDown)
+% HYPRE_SUP      *GenData(The_AMGnsweepUp)
+% HYPRE_SCOARS   *GenData(The_AMGnsweepCoarse)
+% *endif
+% *if(strcmp(GenData(The_Solver),"ParSuperLU")==0)
+% *endif
+% *if(strcmp(GenData(The_Solver),"LAPACK_sym")==0)
+% *endif
+% *if(strcmp(GenData(The_Solver),"LAPACK_nonsym")==0)
+% *endif
+% *if(strcmp(GenData(The_Solver),"MUMPS_sym")==0)
+% *endif
+% *if(strcmp(GenData(The_Solver),"MUMPS_nonsym")==0)
+% *endif
+% *if(strcmp(GenData(The_Matrix_Format),"OLL")==0)
+% MATRIXTYP      *GenData(The_Matrix_Format)
+% *endif
+% PARTITION      *GenData(Therm_Typ_of_Partitioning)
+
+\subsection{DESIGN DESCRIPTION}
+\begin{verbatim}
+------------------------------------------------DESIGN DESCRIPTION
+\end{verbatim}
+
+% \kw{NDPOINT *tcl(NumDesignPoints)}\\
+% NDPOINT number of design nodes in gid geometry description, written by tcl script
+
+% \kw{NDLINE *tcl(NumDesignLines)}\\
+% NDLINE number of design lines in gid geometry description, written by tcl script
+
+% \kw{NDSURF *tcl(NumDesignSurfs)}\\
+% NDSURF number of design surfaces in gid geometry description, written by tcl script
+
+% \kw{NDVOL *tcl(NumDesignVols)}\\
+% NDVOL number of design volumes in gid geometry description, written by tcl script
+
+\subsection{DESIGN POINTS}
+\begin{verbatim}
+-----------------------------------------------------DESIGN POINTS
+\end{verbatim}
+
+
+% \kw{*tcl(PrintDesignPoints)*\
+
+\subsection{DESIGN LINES}
+gid design points written by tcl script
+\begin{verbatim}
+------------------------------------------------------DESIGN LINES
+\end{verbatim}
+
+
+% \kw{*tcl(PrintDesignLines)*\
+
+\subsection{DESIGN SURFACES}
+gid design lines written by tcl script
+\begin{verbatim}
+---------------------------------------------------DESIGN SURFACES
+\end{verbatim}
+
+
+% \kw{*tcl(PrintDesignSurfs)*\
+
+\subsection{DESIGN VOLUMES}
+gid design surfaces written by tcl script
+\begin{verbatim}
+----------------------------------------------------DESIGN VOLUMES
+\end{verbatim}
+
+
+% \kw{*tcl(PrintDesignVols)*\
+
+\subsection{DESIGN POINT DIRICH CONDITIONS}
+gid design volumes written by tcl script
+\begin{verbatim}
+------------------------------------DESIGN POINT DIRICH CONDITIONS 
+\end{verbatim}
+
+
+% \kw{// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE}\\
+% point dirich conditions written by tcl script
+% *tcl(Dpointdirich)*\
+
+\subsection{DESIGN LINE DIRICH CONDITIONS}
+\begin{verbatim}
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
+\end{verbatim}
+
+
+% \kw{// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE}\\
+% line dirich conditions written by tcl script
+% *tcl(Dlinedirich)*\
+
+\subsection{DESIGN SURF DIRICH CONDITIONS}
+\begin{verbatim}
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
+\end{verbatim}
+
+
+% \kw{// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE}\\
+% surface dirich conditions written by tcl script
+% *tcl(Dsurfdirich)*\
+
+\subsection{DESIGN VOL DIRICH CONDITIONS}
+\begin{verbatim}
+--------------------------------------DESIGN VOL DIRICH CONDITIONS
+\end{verbatim}
+
+
+% \kw{// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE}\\
+% volume dirich conditions written by tcl script
+% *tcl(Dvoldirich)*\
+
+\subsection{DESIGN POINT NEUMANN CONDITIONS}
+\begin{verbatim}
+-----------------------------------DESIGN POINT NEUMANN CONDITIONS
+\end{verbatim}
+
+
+% \kw{// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  NSURF}\\
+% point neumann conditions written by tcl script
+% *tcl(Dpointneum)*\
+
+\subsection{DESIGN LINE NEUMANN CONDITIONS}
+\begin{verbatim}
+------------------------------------DESIGN LINE NEUMANN CONDITIONS
+\end{verbatim}
+
+
+% \kw{// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  TYPE  NSURF}\\
+% line neumann conditions written by tcl script
+% *tcl(Dlineneum)*\
+
+\subsection{DESIGN SURF NEUMANN CONDITIONS}
+\begin{verbatim}
+------------------------------------DESIGN SURF NEUMANN CONDITIONS
+\end{verbatim}
+
+
+% \kw{// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  TYPE  NSURF}\\
+% surface neumann conditions written by tcl script
+% *tcl(Dsurfneum)*\
+
+\subsection{DESIGN VOL NEUMANN CONDITIONS}
+\begin{verbatim}
+-------------------------------------DESIGN VOL NEUMANN CONDITIONS
+\end{verbatim}
+
+
+% \kw{// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL}\\
+% volume neumann conditions written by tcl script
+% *tcl(Dvolneum)*\
+
+\subsection{DESIGN COUPLING POINT CONDITIONS}
+\begin{verbatim}
+----------------------------------DESIGN COUPLING POINT CONDITIONS
+\end{verbatim}
+
+
+% \kw{// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE}\\
+% coupling point conditions written by tcl script
+% *tcl(Dcouplepoint)*\
+
+\subsection{DESIGN COUPLING LINE CONDITIONS}
+\begin{verbatim}
+-----------------------------------DESIGN COUPLING LINE CONDITIONS
+\end{verbatim}
+
+
+% \kw{// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE}\\
+% coupling line conditions written by tcl script
+% *tcl(Dcoupleline)*\
+
+\subsection{DESIGN COUPLING SURF CONDITIONS}
+\begin{verbatim}
+-----------------------------------DESIGN COUPLING SURF CONDITIONS
+\end{verbatim}
+
+
+% \kw{// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE}\\
+% coupling surface conditions written by tcl script
+% *tcl(Dcouplesurf)*\
+
+\subsection{DESIGN COUPLING VOL CONDITIONS}
+\begin{verbatim}
+------------------------------------DESIGN COUPLING VOL CONDITIONS
+\end{verbatim}
+
+
+% \kw{// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE}\\
+% coupling volume conditions written by tcl script
+% *tcl(Dcouplevol)*\
+
+\subsection{DESIGN FSI COUPLING LINE CONDITIONS}
+\begin{verbatim}
+-------------------------------DESIGN FSI COUPLING LINE CONDITIONS
+\end{verbatim}
+
+% // DOBJECT FSI_ID FIELD MESH FLAG
+% *tcl(DFSIline)*\
+
+\subsection{DESIGN FSI COUPLING SURF CONDITIONS}
+\begin{verbatim}
+-------------------------------DESIGN FSI COUPLING SURF CONDITIONS
+\end{verbatim}
+
+% // DOBJECT FSI_ID FIELD MESH
+% *tcl(DFSIsurf)*\
+
+\subsection{DESIGN FSI XFEM COUPLING LINE CONDITIONS}
+\begin{verbatim}
+--------------------------DESIGN FSI XFEM COUPLING LINE CONDITIONS
+\end{verbatim}
+
+% // DOBJECT COUPLING BCFLUID
+% *tcl(DFSIXFEMline)*\
+
+\subsection{DESIGN FLUID FREE SURFACE POINT CONDITIONS}
+\begin{verbatim}
+------------------------DESIGN FLUID FREE SURFACE POINT CONDITIONS
+\end{verbatim}
+
+% // DOBJECT
+% *tcl(DFreesurfpoint)*\
+
+\subsection{DESIGN FLUID FREE SURFACE LINE CONDITIONS}
+\begin{verbatim}
+-------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
+\end{verbatim}
+
+% // DOBJECT
+% *tcl(DFreesurfline)*\
+
+\subsection{DESIGN FLUID FREE SURFACE SURF CONDITIONS}
+\begin{verbatim}
+-------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
+\end{verbatim}
+
+% // DOBJECT
+% *tcl(DFreesurfsurf)*\
+
+\subsection{CONTACT CONDITIONS}
+\begin{verbatim}
+------------------------------------------------CONTACT CONDITIONS
+\end{verbatim}
+
+
+% \kw{*tcl(Dcontact2D)*\
+
+\subsection{DESIGN AXISHELL THICKNESS LINE CONDITIONS}
+contact conditions needed for the wall1  master slave contact (selfcontact not impl.) written by tcl-script
+\begin{verbatim}
+-------------------------DESIGN AXISHELL THICKNESS LINE CONDITIONS
+\end{verbatim}
+
+% *tcl(Dthicknessline)*\
+
+\subsection{DESIGN AXISHELL LOAD LINE CONDITIONS}
+\begin{verbatim}
+------------------------------DESIGN AXISHELL LOAD LINE CONDITIONS
+\end{verbatim}
+
+% *tcl(Daxishellloadline)*\
+
+\subsection{DESIGN AXISHELL COS POINT CONDITIONS}
+\begin{verbatim}
+------------------------------DESIGN AXISHELL COS POINT CONDITIONS
+\end{verbatim}
+
+% *tcl(Daxishellcospoint)*\
+
+\subsection{DESIGN FLUID LINE LIFT}
+\begin{verbatim}
+---------------------------------------DESIGN FLUID LINE LIFT
+\end{verbatim}
+% &DRAG
+% // DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER
+% *tcl(Dliftdragline)*\
+
+\subsection{DESIGN FLUID SURF LIFT}
+\begin{verbatim}
+---------------------------------------DESIGN FLUID SURF LIFT
+\end{verbatim}
+% &DRAG
+% // DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER Z_CENTER ALE_LINE
+% *tcl(Dliftdragsurf)*\
+
+\subsection{DESIGN FLUID SURFACE STABILISING CONDITIONS}
+\begin{verbatim}
+-----------------------DESIGN FLUID SURFACE STABILISING CONDITIONS
+\end{verbatim}
+
+% // DOBJECT STABTYPE IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
+% *tcl(Dsurfstab)*\
+
+\subsection{DESIGN FLUID VOLUME STABILISING CONDITIONS}
+\begin{verbatim}
+------------------------DESIGN FLUID VOLUME STABILISING CONDITIONS
+\end{verbatim}
+
+% // DOBJECT STABTYPE IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
+% *tcl(Dvolstab)*\
+
+\subsection{DESIGN POINT LOCSYS CONDITIONS}
+\begin{verbatim}
+------------------------------------DESIGN POINT LOCSYS CONDITIONS
+\end{verbatim}
+
+% // DOBJECT Id
+% *tcl(DLocsyspoint)*\
+
+\subsection{DESIGN LINE LOCSYS CONDITIONS}
+\begin{verbatim}
+-------------------------------------DESIGN LINE LOCSYS CONDITIONS
+\end{verbatim}
+
+% // DOBJECT Id
+% *tcl(DLocsysline)*\
+
+\subsection{DESIGN SURF LOCSYS CONDITIONS}
+\begin{verbatim}
+-------------------------------------DESIGN SURF LOCSYS CONDITIONS
+\end{verbatim}
+
+% // DOBJECT Id
+% *tcl(DLocsyssurf)*\
+
+\subsection{DESIGN VOL LOCSYS CONDITIONS}
+\begin{verbatim}
+--------------------------------------DESIGN VOL LOCSYS CONDITIONS
+\end{verbatim}
+
+% // DOBJECT Id
+% *tcl(DLocsysvol)*\
+
+\subsection{DNODE}
+\begin{verbatim}
+-----------------------------------------------DNODE-NODE TOPOLOGY
+\end{verbatim}
+
+
+% \kw{*Set Cond Design_Node_Number *nodes *CanRepeat}\\
+% topology between design nodes and fe-nodes
+% *loop nodes *OnlyInCond
+% NODE *NodesNum DNODE *cond(Design_Node_Number)
+% *end
+
+\subsection{DLINE-NODE TOPOLOGY}
+\begin{verbatim}
+-----------------------------------------------DLINE-NODE TOPOLOGY
+\end{verbatim}
+
+
+% \kw{*Set Cond Design_Line_Number *nodes *CanRepeat}\\
+% topology between design lines and fe-nodes
+% *loop nodes *OnlyInCond
+% NODE *NodesNum DLINE *cond(Design_Line_Number)
+% *end
+
+\subsection{DSURF-NODE TOPOLOGY}
+\begin{verbatim}
+-----------------------------------------------DSURF-NODE TOPOLOGY
+\end{verbatim}
+
+
+% \kw{*Set Cond Design_Surface_Number *nodes *CanRepeat}\\
+% topology between design surfaces and fe-nodes
+% *loop nodes *OnlyInCond
+% NODE *NodesNum DSURFACE *cond(Design_Surface_Number)
+% *end
+
+\subsection{DVOL-NODE TOPOLOGY}
+\begin{verbatim}
+------------------------------------------------DVOL-NODE TOPOLOGY
+\end{verbatim}
+
+% *if(GenData(Commented_Inputfile,int)==1)
+% // topology between design volumes and fe-nodes
+% *endif
+% *Set Cond Design_Volume_Number *nodes *CanRepeat
+% *loop nodes *OnlyInCond
+% NODE *NodesNum DVOLUME *cond(Design_Volume_Number)
+% *end
+
+\subsection{NODE COORDS}
+\begin{verbatim}
+-------------------------------------------------------NODE COORDS
+\end{verbatim}
+
+% *if(GenData(Commented_Inputfile,int)==1)
+% // nodal coordinates of the gid-generated mesh
+% *endif
+% *set elems(all)
+% *loop nodes
+% *format "  %10i    %20.15e    %20.15e    %20.15e   "
+% NODE *NodesNum COORD *NodesCoord(1,real) *NodesCoord(2,real) *NodesCoord(3,real)
+% *end nodes
+
+\subsection{ELEMENTS}
+\begin{verbatim}
+----------------------------------------------------------ELEMENTS
+\end{verbatim}
+
+
+\subsection{STRUCTURE ELEMENTS}
+\begin{verbatim}
+------------------------------------------------STRUCTURE ELEMENTS
+\end{verbatim}
+
+% *Set elems(All)
+% *Set elems(Quadrilateral)
+% *Set Cond Shell8 *elems *CanRepeat
+% *if(GenData(Commented_Inputfile,int)==1)
+% //
+% // SHELL8 
+% //
+% // QUAD4 and QUAD9 implemented
+% // MAT number of materia law (see materials section of this file)
+% // THICK thickness of the shell elements
+% // GP number of Gaussian points, integration should be 2x2x2 for QUAD4 and 3x3x2 for QUAD9
+% // GP_TRI number of Gaussian points for triangle shell elements (not yet impl.)
+% // FORCES coordinate system , the forces will be put out: (XYZ,RST,RST_ortho)
+% // EAS parameters for membran,bending,thicknesschange,constantshear,linearsheal
+% // ANS (none,Q,T,QT) Q for transvers shear locking, T for curvature thickness locking for quad4 elements (T not yet impl.)
+% // recommendation for choice of hybrid parameters for QUAD4 elements:
+% // EAS  N4_4 N4_4 N_4 none none ANS  Q
+% // SDC scaled director conditioning scaling factor, should be chosen such, that sdc times thickness is equal to average element edge length: (<real>)
+% *endif
+% *loop elems *OnlyInCond
+% *ElemsNum SHELL8 *\
+% *if(IsQuadratic ==2) 
+% QUAD9 *ElemsConec *\ 
+% *endif
+% *if(IsQuadratic==1)
+% QUAD8 *ElemsConec *\ 
+% *endif
+% *if(IsQuadratic==0)
+% QUAD4 *ElemsConec *\ 
+% *endif
+% MAT *ElemsMat *\
+% THICK *cond(Thickness) *\
+% GP *cond(nGP_Quad_R) *cond(nGP_Quad_S) *cond(nGP_Quad_T) *\
+% GP_TRI *cond(nGP_Tri_R) *\
+% FORCES *cond(S8Forces) *\
+% EAS  *cond(EAS_E11/E22/E12_const.) *\
+% *cond(EAS_E11/E22/E12_lin.) *\
+% *cond(EAS_E33_lin) *\
+% *cond(EAS_E13/E23_const.) *\
+% *cond(EAS_E13/E23_lin.) *\
+% ANS  *cond(ANS) *\
+% SDC  *cond(SDC) *\
+
+% *end
+% *Set elems(All)
+% *Set elems(Triangle)
+% *Set Cond Shell8 *elems 
+% *if(GenData(Commented_Inputfile,int)==1)
+% //
+% // SHELL8 
+% //
+% // TRI3 and TRI6 not yet implemented in ccarat
+% *endif
+% *loop elems *OnlyInCond
+% *ElemsNum SHELL8 *\
+% *if(*IsQuadratic==1) 
+% TRI6 *ElemsConec *\ 
+% *else
+% TRI3 *ElemsConec *\ 
+% *endif
+% MAT *ElemsMat *\
+% THICK *cond(Thickness) *\
+% GP *cond(nGP_Quad_R) *cond(nGP_Quad_S) *cond(nGP_Quad_T) *\
+% GP_TRI *cond(nGP_Tri_R) *\
+% SYSNORMAL *cond(Sys_normal) *\
+% EAS  *cond(EAS_E11/E22/E12_const.) *\
+% *cond(EAS_E11/E22/E12_lin.) *\
+% *cond(EAS_E33_lin) *\
+% *cond(EAS_E13/E23_const.) *\
+% *cond(EAS_E13/E23_lin.) *\
+% ANS  *cond(ANS) *\
+% SDC  *cond(SDC) *\
+
+% //
+% // WALL1
+% //
+% *end
+% *Set elems(All)
+% *Set elems(Quadrilateral)
+% *Set Cond Wall *elems *CanRepeat
+% *loop elems *OnlyInCond
+% *ElemsNum WALL *\
+% *if(IsQuadratic ==2) 
+% QUAD9 *ElemsConec *\ 
+% *endif
+% *if(IsQuadratic==1)
+% QUAD8 *ElemsConec *\ 
+% *endif
+% *if(IsQuadratic==0)
+% QUAD4 *ElemsConec *\ 
+% *endif
+% MAT *ElemsMat *\
+% THICK *cond(W_Thickness) *\
+% GP *cond(nGP_Wall_R) *cond(nGP_Wall_S) *\
+% *cond(WallType) *\
+% *cond(WallKin) *\
+% *cond(WallQ1Model) *\
+% STRESSES *cond(Wall_Stresses) *\
+% SSI_COUPTYP *cond(Wall_SSI_Coupling_Type) *\
+% TSI_COUPTYP *cond(Wall_TSI_Coupling_Type) *\
+
+% *end
+% *Set elems(All)
+% *Set elems(Triangle)
+% *Set Cond Wall *elems *CanRepeat
+% *loop elems *OnlyInCond
+% *ElemsNum WALL *\
+% *if(IsQuadratic ==2) 
+% TRI6 *ElemsConec *\ 
+% *endif
+% *if(IsQuadratic==1)
+% TRI6 *ElemsConec *\ 
+% *endif
+% *if(IsQuadratic==0)
+% TRI3 *ElemsConec *\ 
+% *endif
+% MAT *ElemsMat *\
+% THICK *cond(W_Thickness) *\
+% GP *cond(nGP_Wall_R) *cond(nGP_Wall_S) *\
+% *cond(WallType) *\
+% *cond(WallKin) *\
+% *cond(WallQ1Model) *\
+% STRESSES *cond(Wall_Stresses) *\
+% SSI_COUPTYP *cond(Wall_SSI_Coupling_Type) *\
+% TSI_COUPTYP *cond(Wall_TSI_Coupling_Type) *\
+
+% *end
+% *if(GenData(Commented_Inputfile,int)==1)
+% //
+% // SHELL9  (multilayer shell element)
+% //
+% // QUAD4, QUAD8 and QUAD9 implemented
+% // MAT number of material law (has to be of type MAT_Multilayer)
+% //     within MAT_Multilayer, the design of the crossection is defined
+% //     -> number of kinematic layers and their heights in percent or total thickness of shell
+% //     -> number of material layers, their heights in percent of thickness of adjacent kinematic layer
+% //                                   MAT_Id for each layer, rotation angle of Material (if anisotropic)
+% //                                   rotation axis 
+% // THICK total thickness of the shell elements
+% // GP number of Gaussian points, integration should be 2x2x2 for QUAD4 and 3x3x2 for QUAD8/9
+% // GP_TRI number of Gaussian points for triangle shell elements (not yet impl.)
+% // FORCES coordinate system , the forces will be put out: (XYZ,RST,RST_ortho)
+% // EAS parameters for membran,bending,thicknesschange,constantshear,linearshear 
+% // ANS (none,Q,T,QT) Q for transvers shear locking (T, QT not yet impl.)
+% // SDC scaled director conditioning scaling factor, should be chosen such, that sdc times thickness is equal to average element edge length: (<real>)
+% //
+% *endif
+% *Set elems(All)
+% *Set elems(Quadrilateral)
+% *Set Cond Shell9 *elems *CanRepeat
+% *loop elems *OnlyInCond
+% *ElemsNum SHELL9 *\
+% *if(IsQuadratic ==2) 
+% QUAD9 *ElemsConec *\ 
+% *endif
+% *if(IsQuadratic==1)
+% QUAD8 *ElemsConec *\ 
+% *endif
+% *if(IsQuadratic==0)
+% QUAD4 *ElemsConec *\ 
+% *endif
+% MAT *ElemsMat *\
+% THICK *cond(Thickness) *\
+% GP *cond(nGP_Quad_R) *cond(nGP_Quad_S) *cond(nGP_Quad_T) *\
+% GP_TRI *cond(nGP_Tri_R) *\
+% FORCES *cond(S9Forces) *\
+% EAS  *cond(EAS_E11/E22/E12_const.) *\
+% *cond(EAS_E11/E22/E12_lin.) *\
+% *cond(EAS_E33_lin) *\
+% *cond(EAS_E13/E23_const.) *\
+% *cond(EAS_E13/E23_lin.) *\
+% ANS  *cond(ANS) *\
+% SDC  *cond(SDC) *\
+
+% *end
+% *Set elems(All)
+% *Set elems(Triangle)
+% *Set Cond Shell9 *elems 
+% *if(GenData(Commented_Inputfile,int)==1)
+% //
+% // SHELL9 
+% //
+% // TRI3 and TRI6 not yet implemented in ccarat
+% //
+% *endif
+% *loop elems *OnlyInCond
+% *ElemsNum SHELL9 *\
+% *if(*IsQuadratic==1) 
+% TRI6 *ElemsConec *\ 
+% *else
+% TRI3 *ElemsConec *\ 
+% *endif
+% MAT *ElemsMat *\
+% THICK *cond(Thickness) *\
+% GP *cond(nGP_Quad_R) *cond(nGP_Quad_S) *cond(nGP_Quad_T) *\
+% GP_TRI *cond(nGP_Tri_R) *\
+% FORCES *cond(S9Forces) *\
+% EAS  *cond(EAS_E11/E22/E12_const.) *\
+% *cond(EAS_E11/E22/E12_lin.) *\
+% *cond(EAS_E33_lin) *\
+% *cond(EAS_E13/E23_const.) *\
+% *cond(EAS_E13/E23_lin.) *\
+% ANS  *cond(ANS) *\
+% SDC  *cond(SDC) *\
+
+
+% *end
+% *Set elems(All)
+% *Set elems(Hexahedra)
+% *Set Cond Brick *elems *CanRepeat
+% *if(GenData(Commented_Inputfile,int)==1)
+% //
+% // BRICK1
+% //
+% *endif
+% *loop elems *OnlyInCond
+% *ElemsNum BRICK1 *\
+% *if(IsQuadratic==2) 
+% HEX27 *ElemsConec *\ 
+% *endif
+% *if(IsQuadratic==1)
+% HEX20 *ElemsConec *\ 
+% *endif
+% *if(IsQuadratic==0)
+% HEX8 *ElemsConec *\ 
+% *endif
+% MAT *ElemsMat *\
+% GP *\
+% *cond(nGP_Hex_R) *\
+% *cond(nGP_Hex_S) *\
+% *cond(nGP_Hex_T) *\
+% GP_TET *\
+% *cond(nGP_Tetra_R) *\
+% HYB *\
+% *cond(BrickHybri) *\
+% FORM *\
+% *cond(BrickKinem) *\
+% STRESSES *\
+% *cond(BrickStrIO) *\
+% TSI_COUPTYP *\
+% *cond(BrickTsiCouptyp) *\
+
+% *end
+% *if(GenData(Commented_Inputfile,int)==1)
+% // LIN2 (2-noded beam element), LIN3 (3-noded beam element) implemented
+% // REF Coordinates of reference node to determine local z-axis
+% // MAT Material number of actual beam element
+% // AREA area of beam cross section if IKE=1,2 width of beam cross section if IKE=3
+% // GS shear correction factor for Timoshenko beam element
+% // HEIGHT Height of beam cross section (only used if IKE=3)
+% // IYY Moment of Inertia of local y-axis of cross section (only used if IKE=1,2)
+% // IZZ Moment of Inertia of local z-axis of cross section (only used if IKE=1,2)
+% // IYZ Deviatoric Moment of cross section (only used if IKE=1,2)
+% // IT Torsional Moment of Inertia of cross section (only used if IKE=1,2)
+% // flag for local element coordinate system
+% // LCS = 1 -> local element coordinate system
+% // LCS = 0 -> global element coordinate system
+% // flag for beam type:
+% // IKE = 1 -> Euler Bernoulli beam element
+% // IKE = 2 -> Timoshenko beam element with linear kinematic
+% // IKE = 3 -> Spatial beam element according to Diss. Weimar
+% // GP Number of Gauss Points of actual beam element (only used if IKE=2,3)
+% // HC Hinge code for  l o c a l  dofs of actual beam element
+% // 0 = fixed
+% // 1 = released
+% // only valid for beam end nodes
+% // node i: ux,uy,uz,phix,phiy,phiz
+% // node k: ux,uy,uz,phix,phiy,phiz
+% *endif
+% *Set elems(All)
+% *Set elems(Linear)
+% *Set Cond Beam3 *elems *CanRepeat
+% *loop elems *OnlyInCond
+% *ElemsNum BEAM3 *\
+% *if(IsQuadratic==1)
+% LIN3 *ElemsConec *\ 
+% *endif
+% *if(IsQuadratic==0)
+% LIN2 *ElemsConec *\ 
+% *endif
+% REF *cond(x_REF) *\
+% *cond(y_REF) *\
+% *cond(z_REF) *\
+% MAT *ElemsMat *\
+% AREA *cond(B_A) *\
+% GS *cond(B_gs) *\
+% HEIGHT *cond(B_h) *\
+% IYY *cond(B_Iyy) *\
+% IZZ *cond(B_Izz) *\
+% IYZ *cond(B_Iyz) *\
+% IT *cond(B_IT) *\
+% IKE *cond(IKE) *\
+% GP *cond(nGP_Beam3) *\
+% CODE *cond(ux_i) *\
+% *cond(uy_i) *\
+% *cond(uz_i) *\
+% *cond(phix_i) *\
+% *cond(phiy_i) *\
+% *cond(phiz_i) *\
+% *cond(ux_k) *\
+% *cond(uy_k) *\
+% *cond(uz_k) *\
+% *cond(phix_k) *\
+% *cond(phiy_k) *\
+% *cond(phiz_k) *\
+
+% *end
+% *Set elems(All)
+% *Set elems(Tetrahedra)
+% *Set Cond Tetrahedra *elems *CanRepeat
+% *loop elems *OnlyInCond
+% *ElemsNum TETRA1 *\
+% *if(*IsQuadratic==1) 
+% TET10 *ElemsConec *\ 
+% *else
+% TET4 *ElemsConec *\ 
+% *endif
+% MAT *ElemsMat *\
+% GP_TET *\
+% *cond(nGP_Tet) *\
+
+% *end
+% *Set elems(All)
+% *Set elems(Linear)
+% *Set Cond AxiShell *elems *CanRepeat
+% *loop elems *OnlyInCond
+% *ElemsNum SAXI *\
+% *if(*IsQuadratic==1) 
+% LINE3 *ElemsConec *\ 
+% *else
+% LINE2 *ElemsConec *\ 
+% *endif
+% MAT *ElemsMat *\
+
+% *end
+% *Set elems(All)
+% *Set elems(Hexahedra)
+% *Set Cond Solid3 *elems *CanRepeat
+% *if(GenData(Commented_Inputfile,int)==1)
+% //
+% // SOLID3 hexahedra
+% //
+% // About:
+% //        structural 3dimensional element
+% //        classic isoparametric concept
+% //        parameter element space has coordinates r,s,t
+% //
+% // Input parameter:
+% // order of shape functions for displacements and geometry
+% //        HEX8   tri-linear Lagrangean
+% //        HEX20  quadratic serendipity 
+% //        HEX27  tri-quadratic Lagrangean
+% // Gauss-Legendre integration points 
+% //        GP a b c    with
+% //           a=1...4  number of Gauss points in r-direction
+% //           b=0...4  number of Gauss points in s-direction
+% //                    0 is for automatic, i.e. identical to r-direction
+% //           c=0...4  number of Gauss points in t-direction
+% //                    0 is for automatic, i.e. identical to r-direction
+% // spatial kinematics
+% //        KINEM Geolin  geometrically linear
+% //        KINEM Totlag  geometrically non-linear based on Total
+% //                      Lagrangean approach
+% // stress output
+% //        STRESS None   no stress output (default)
+% //        STRESS Gpxyz  materially XYZ-oriented at Gauss points
+% //        STRESS Gprst  parametrically rst-oriented at Gauss points
+% //                      only rotated! magnitude refers to XYZ-frame
+% //        STRESS Gp123  principal stresses and directions at Gauss points
+% //        STRESS Ndxyz  materially XYZ-oriented at element nodes
+% //        STRESS Ndrst  parametrically rst-oriented at element nodes
+% //                      only rotated! magnitude refers to XYZ-frame
+% //        STRESS Nd123  principal stresses and directions at element nodes
+% *endif
+% *loop elems *OnlyInCond
+% *ElemsNum SOLID3 *\
+% *if(IsQuadratic==2) 
+% HEX27 *ElemsConec *\ 
+% *endif
+% *if(IsQuadratic==1)
+% HEX20 *ElemsConec *\ 
+% *endif
+% *if(IsQuadratic==0)
+% HEX8 *ElemsConec *\ 
+% *endif
+% MAT *ElemsMat *\
+% GP *\
+% *cond(So3_Hex_nGP_R) *\
+% *if(strcmp(cond(So3_Hex_nGP_S),"auto")==0)
+% 0 *\
+% *else
+% *cond(So3_Hex_nGP_S) *\
+% *endif
+% *if(strcmp(cond(So3_Hex_nGP_T),"auto")==0)
+% 0 *\
+% *else
+% *cond(So3_Hex_nGP_T) *\
+% *endif
+% KINEM *cond(So3_Kinem) *\
+% STRESS *cond(So3_StressOut) *\
+% TSI_COUPTYP *\
+% *cond(So3_TsiCouptyp) *\
+
+% *end
+% *Set elems(All)
+% *Set elems(Tetrahedra)
+% *Set Cond Solid3 *elems *CanRepeat
+% *if(GenData(Commented_Inputfile,int)==1)
+% //
+% // SOLID3 tetrahedra
+% //
+% // About:
+% //        structural 3dimensional element
+% //        classic isoparametric concept
+% //        parameter element space has coordinates r,s,t
+% //
+% // Input parameter:
+% // order of shape functions for displacements and geometry
+% //        HEX8   tri-linear Lagrangean
+% //        HEX20  quadratic serendipity 
+% //        HEX27  tri-quadratic Lagrangean
+% // Gauss-Legendre integration points 
+% //        GP a b c        with
+% //           a=1,4,5      total number of Gauss points in domain
+% //           b=0,1,3,4,6  number of Gauss points on an element face
+% //                        0 is for automatic, i.e. fits a
+% //           c=0,1,2,3,4  number of Gauss points on an element edge
+% //                        0 is for automatic, i.e. fits a
+% // spatial kinematics
+% //        KINEM Geolin  geometrically linear
+% //        KINEM Totlag  geometrically non-linear based on Total
+% //                      Lagrangean approach
+% // stress output
+% //        STRESS None   no stress output (default)
+% //        STRESS Gpxyz  materially XYZ-oriented at Gauss points
+% //        STRESS Gprst  parametrically rst-oriented at Gauss points
+% //                      only rotated! magnitude refers to XYZ-frame
+% //        STRESS Gp123  principal stresses and directions at Gauss points
+% //        STRESS Ndxyz  materially XYZ-oriented at element nodes
+% //        STRESS Ndrst  parametrically rst-oriented at element nodes
+% //                      only rotated! magnitude refers to XYZ-frame
+% //        STRESS Nd123  principal stresses and directions at element nodes
+% *endif
+% *loop elems *OnlyInCond
+% *ElemsNum SOLID3 *\
+% *if(IsQuadratic==1)
+% TET10 *ElemsConec *\ 
+% *endif
+% *if(IsQuadratic==0)
+% TET4 *ElemsConec *\ 
+% *endif
+% MAT *ElemsMat *\
+% GP *\
+% *cond(So3_Tet_nGP_Domain) *\
+% *if(strcmp(cond(So3_Tet_nGP_Sides),"auto")==0)
+% 0 *\
+% *else
+% *cond(So3_Tet_nGP_Sides) *\
+% *endif
+% *if(strcmp(cond(So3_Tet_nGP_Edges),"auto")==0)
+% 0 *\
+% *else
+% *cond(So3_Tet_nGP_Edges) *\
+% *endif
+% KINEM *cond(So3_Kinem) *\
+% STRESS *cond(So3_StressOut) *\
+% TSI_COUPTYP *\
+% *cond(So3_TsiCouptyp) *\
+
+% *end
+% *Set elems(All)
+
+\subsection{FLUID ELEMENTS}
+\begin{verbatim}
+----------------------------------------------------FLUID ELEMENTS
+\end{verbatim}
+
+% *Set elems(All)
+% *Set elems(Quadrilateral)
+% *Set Cond Fluid2 *elems *CanRepeat
+% *loop elems *OnlyInCond
+% *if(strcmp(cond(inf-sup_stable),"No")==0) 
+% *ElemsNum FLUID2 *\
+% *else
+% *ElemsNum FLUID2_IS *\
+% *endif
+% *if(IsQuadratic ==2) 
+% QUAD9 *ElemsConec *\ 
+% *endif
+% *if(IsQuadratic==1)
+% QUAD8 *ElemsConec *\ 
+% *endif
+% *if(IsQuadratic==0)
+% QUAD4 *ElemsConec *\ 
+% *endif
+% MAT *ElemsMat *\
+% NA *cond(Net_Algo) *\
+% GP *cond(nGP_Quad_R) *cond(nGP_Quad_S) *\
+% TURBULENCE *cond(Turbulence_Model) *\
+% CA *cond(Create_Ale) *\
+
+% *end
+% *Set elems(All)
+% *Set elems(Triangle)
+% *Set Cond Fluid2 *elems *CanRepeat
+% *loop elems *OnlyInCond
+% *if(strcmp(cond(inf-sup_stable),"No")==0) 
+% *ElemsNum FLUID2 *\
+% *else
+% *ElemsNum FLUID2_IS *\
+% *endif
+% *if(*IsQuadratic==1) 
+% TRI6 *ElemsConec *\ 
+% *else
+% TRI3 *ElemsConec *\ 
+% *endif
+% MAT *ElemsMat *\
+% NA *cond(Net_Algo) *\
+% GP_TRI *cond(nGP_TRI_R) *\
+% GP_ALT *cond(TRI_int) *\
+% TURBULENCE *cond(Turbulence_Model) *\
+% CA *cond(Create_Ale) *\
+
+% *end
+% *Set elems(All)
+% *Set elems(Hexahedra)
+% *Set Cond Fluid3 *elems *CanRepeat
+% *loop elems *OnlyInCond
+% *if(strcmp(cond(inf-sup_stable),"No")==0) 
+% *ElemsNum FLUID3 *\
+% *else
+% *ElemsNum FLUID3_IS *\
+% *endif
+% *if(IsQuadratic==2) 
+% *format " %5i %5i %5i %5i %5i %5i %5i %5i %5i %5i %5i %5i %5i %5i %5i %5i %5i %5i %5i %5i %5i %5i %5i %5i %5i %5i %5i "
+% HEX27 *ElemsConec *\ 
+% *endif
+% *if(IsQuadratic==1) 
+% *format " %5i %5i %5i %5i %5i %5i %5i %5i %5i %5i %5i %5i %5i %5i %5i %5i %5i %5i %5i %5i "
+% HEX20 *ElemsConec *\ 
+% *endif
+% *if(IsQuadratic==0) 
+% HEX8 *ElemsConec *\ 
+% *endif
+% MAT *ElemsMat *\
+% NA *cond(Net_Algo) *\
+% GP *cond(nGP_Hex_R) *cond(nGP_Hex_S) *cond(nGP_Hex_T) *\
+% CA *cond(Create_Ale) *\
+
+% *end
+% *Set elems(All)
+% *Set elems(Tetrahedra)
+% *Set Cond Fluid3 *elems *CanRepeat
+% *loop elems *OnlyInCond
+% *if(strcmp(cond(inf-sup_stable),"No")==0) 
+% *ElemsNum FLUID3 *\
+% *else
+% *ElemsNum FLUID3_IS *\
+% *endif
+% *if(*IsQuadratic==1) 
+% TET10 *ElemsConec *\ 
+% *else
+% TET4 *ElemsConec *\ 
+% *endif
+% MAT *ElemsMat *\
+% NA *cond(Net_Algo) *\
+% GP_TET *\
+% *cond(nGP_Tet) *\
+% GP_ALT *\
+% *cond(TET_int) *\
+% CA *cond(Create_Ale) *\
+
+% *end
+% *Set elems(All)
+% *Set elems(Quadrilateral)
+% *Set Cond Fluid2_pro *elems *CanRepeat
+% *loop elems *OnlyInCond
+% *ElemsNum FLUID2_PRO *\
+% *if(*IsQuadratic==1) 
+% QUAD9 *ElemsConec *\ 
+% *else
+% QUAD4 *ElemsConec *\ 
+% *endif
+% MAT *ElemsMat *\
+% NA *cond(Net_Algo) *\
+% GP *cond(nGP_Quad_R) *cond(nGP_Quad_S) *\
+% DISMODE *cond(Dismode) *\
+
+% *end
+% *Set elems(All)
+
+\subsection{ALE ELEMENTS}
+\begin{verbatim}
+------------------------------------------------------ALE ELEMENTS
+\end{verbatim}
+
+% *Set elems(All)
+% *Set elems(Hexahedra)
+% *Set Cond Ale3 *elems *CanRepeat
+% *loop elems *OnlyInCond
+% *ElemsNum ALE3 *\
+% *if(*IsQuadratic==1) 
+% HEX27 *ElemsConec *\ 
+% *else
+% HEX8 *ElemsConec *\ 
+% *endif
+% MAT *ElemsMat *\
+% GP *\
+% *cond(nGP_Hex_R) *\
+% *cond(nGP_Hex_S) *\
+% *cond(nGP_Hex_T) *\
+% JAC *\
+% *cond(Jacobi_on/off) *\
+
+% *end
+% *Set elems(All)
+% *Set elems(Quadrilateral)
+% *Set Cond Ale2 *elems *CanRepeat
+% *loop elems *OnlyInCond
+% *ElemsNum ALE2 *\
+% *if(IsQuadratic==2) 
+% QUAD9 *ElemsConec *\ 
+% *endif
+% *if(IsQuadratic==1)
+% QUAD8 *ElemsConec *\ 
+% *endif
+% *if(IsQuadratic==0)
+% QUAD4 *ElemsConec *\ 
+% *endif
+% MAT *ElemsMat *\
+% GP *\
+% *cond(nGP_Hex_R) *\
+% *cond(nGP_Hex_S) *\
+% JAC *\
+% *cond(Jacobi_on/off) *\
+
+% *end
+% *Set elems(All)
+% *Set elems(Triangle)
+% *Set Cond Ale2 *elems *CanRepeat
+% *loop elems *OnlyInCond
+% *ElemsNum ALE2 *\
+% *if(*IsQuadratic==1) 
+% TRI6 *ElemsConec *\ 
+% *else
+% TRI3 *ElemsConec *\ 
+% *endif
+% MAT *ElemsMat *\
+% GP_TRI  *\
+% JAC *\
+% *cond(Jacobi_on/off) *\
+
+% *end
+% *Set elems(All)
+% *Set elems(Tetrahedra)
+% *Set Cond Ale3 *elems *CanRepeat
+% *loop elems *OnlyInCond
+% *ElemsNum ALE3 *\
+% *if(*IsQuadratic==1) 
+% TET10 *ElemsConec *\ 
+% *else
+% TET4 *ElemsConec *\ 
+% *endif
+% MAT *ElemsMat *\
+% GP_TET *\
+% *cond(nGP_Tet) *\
+% JAC *\
+% *cond(Jacobi_on/off) *\
+
+% *end
+% *Set elems(All)
+
+\subsection{THERMAL ELEMENTS}
+\begin{verbatim}
+--------------------------------------------------THERMAL ELEMENTS
+\end{verbatim}
+
+% *Set elems(Quadrilateral)
+% *Set Cond Therm2 *elems *CanRepeat
+% *if(GenData(Commented_Inputfile,int)==1)
+% //
+% // THERM2 quadrilaterals
+% //
+% *endif
+% *loop elems *OnlyInCond
+% *ElemsNum THERM2 *\
+% *if(IsQuadratic==2) 
+% QUAD9 *ElemsConec *\ 
+% *endif
+% *if(IsQuadratic==1)
+% QUAD8 *ElemsConec *\ 
+% *endif
+% *if(IsQuadratic==0)
+% QUAD4 *ElemsConec *\ 
+% *endif
+% MAT *ElemsMat *\
+% THICK *cond(Th2_Thickness) *\
+% GP *cond(nGP_Th2_R) *cond(nGP_Th2_S) *\
+% *cond(Th2_Plane_State) *\
+% *cond(Th2_Kin) *\
+% HFLUX *cond(Th2_Heatflux) *\
+
+% *end
+% *Set elems(All)
+% *Set elems(Triangle)
+% *Set Cond Therm2 *elems *CanRepeat
+% *if(GenData(Commented_Inputfile,int)==1)
+% //
+% // THERM2 triangles
+% //
+% *endif
+% *loop elems *OnlyInCond
+% *ElemsNum THERM2 *\
+% *if(IsQuadratic==2) 
+% TRI6 *ElemsConec *\ 
+% *endif
+% *if(IsQuadratic==1)
+% TRI6 *ElemsConec *\ 
+% *endif
+% *if(IsQuadratic==0)
+% TRI3 *ElemsConec *\ 
+% *endif
+% MAT *ElemsMat *\
+% THICK *cond(Th2_Thickness) *\
+% GP *cond(nGP_Th2_R) *cond(nGP_Th2_S) *\
+% *cond(Th2_Plane_State) *\
+% *cond(Th2_Kin) *\
+% HFLUX *cond(Th2_Heatflux) *\
+
+% *end
+% *Set elems(All)
+% *Set elems(Hexahedra)
+% *Set Cond Therm3 *elems *CanRepeat
+% *if(GenData(Commented_Inputfile,int)==1)
+% //
+% // THERM3 hexahedra
+% //
+% *endif
+% *loop elems *OnlyInCond
+% *ElemsNum THERM3 *\
+% *if(IsQuadratic==2) 
+% HEX27 *ElemsConec *\ 
+% *endif
+% *if(IsQuadratic==1)
+% HEX20 *ElemsConec *\ 
+% *endif
+% *if(IsQuadratic==0)
+% HEX8 *ElemsConec *\ 
+% *endif
+% MAT *ElemsMat *\
+% GP *\
+% *cond(Th3_Hex_nGP_R) *\
+% *if(strcmp(cond(Th3_Hex_nGP_S),"auto")==0)
+% 0 *\
+% *else
+% *cond(Th3_Hex_nGP_S) *\
+% *endif
+% *if(strcmp(cond(Th3_Hex_nGP_T),"auto")==0)
+% 0 *\
+% *else
+% *cond(Th3_Hex_nGP_T) *\
+% *endif
+% KINEM *cond(Th3_Kinem) *\
+% HFLUX *cond(Th3_Heatflux) *\
+
+% *end
+% *Set elems(All)
+% *Set elems(Tetrahedra)
+% *if(GenData(Commented_Inputfile,int)==1)
+% //
+% // THERM3 tetrahedra
+% //
+% *endif
+% *Set Cond Therm3 *elems *CanRepeat
+% *loop elems *OnlyInCond
+% *ElemsNum THERM3 *\
+% *if(IsQuadratic==1)
+% TET10 *ElemsConec *\ 
+% *endif
+% *if(IsQuadratic==0)
+% TET4 *ElemsConec *\ 
+% *endif
+% MAT *ElemsMat *\
+% GP *\
+% *cond(Th3_Tet_nGP_Domain) *\
+% *if(strcmp(cond(Th3_Tet_nGP_Sides),"auto")==0)
+% 0 *\
+% *else
+% *cond(Th3_Tet_nGP_Sides) *\
+% *endif
+% *if(strcmp(cond(Th3_Tet_nGP_Edges),"auto")==0)
+% 0 *\
+% *else
+% *cond(Th3_Tet_nGP_Edges) *\
+% *endif
+% KINEM *cond(Th3_Kinem) *\
+% HFLUX *cond(Th3_Heatflux) *\
+
+% *end
+% *Set elems(All)
+
+\subsection{MATERIALS}
+\begin{verbatim}
+---------------------------------------------------------MATERIALS
+\end{verbatim}
+
+These materials apply only in non-multilayer environments, see below.
+Thus we have \kw{MAT_Multilayer}$==0$
+
+More details in Chapter~\ref{struct_mat:chap}.
+
+% *if(strcmp(MatProp(1),"MAT_Struct_StVenantKirchhoff")==0)
+% MAT *MatNum *MatProp(1) *\
+%  YOUNG *MatProp(Youngs_Modulus) NUE *MatProp(Poisson_Ratio) DENS *MatProp(Density) THEXPANS *MatProp(Thermal_Expansion_Coeff)
+% *endif
+% linear-elastic st.venant kirchhoff material
+
+% *if(strcmp(MatProp(1),"MAT_Struct_Orthotropic")==0)
+% MAT *MatNum *MatProp(1) *\
+%  EMOD1 *MatProp(Emod1) EMOD2 *MatProp(Emod2) EMOD3 *MatProp(Emod3) *\
+%  GMOD12 *MatProp(Gmod12) GMOD13 *MatProp(Gmod13) GMOD23 *MatProp(Gmod23) *\
+%  XNUE12 *MatProp(xnue12) XNUE13 *MatProp(xnue13) XNUE23 *MatProp(xnue23) *\
+%  DENS *MatProp(Density)
+% *endif
+% linear-elastic orthotropic material
+
+% *if(strcmp(MatProp(1),"MAT_fluid")==0)
+% MAT *MatNum *MatProp(1) *\
+%  VISCOSITY *MatProp(Viscosity) DENSITY *MatProp(Density) GAMMA *MatProp(Gamma)
+% *endif
+
+% *if(strcmp(MatProp(1),"MAT_Struct_Ogden")==0)
+% MAT *MatNum *MatProp(1) *\
+%  NUE *MatProp(NUE) BETA *MatProp(BETA) ALFA1 *MatProp(ALFA1) ALFA2 *MatProp(ALFA2) ALFA3 *MatProp(ALFA3) *\
+%  NU1 *MatProp(NU1) NU2 *MatProp(NU2) NU3 *MatProp(NU3) DENS *MatProp(Density)
+% *endif
+% nonlinear-elastic compressible ogden hyperelastic material (shell8 only);
+% see theory (Ogdens Book) to check the parameters, they are simple and clear thenin the shell8 there exist 2 versions of this material, a volumetric-deviatoric coupled and decoupled one
+
+% *if(strcmp(MatProp(1),"MAT_Struct_Viscohyper")==0)
+% MAT *MatNum *MatProp(1) *\
+%  NUE *MatProp(NUE) BETA *MatProp(BETA) ALFA1 *MatProp(ALFA1) ALFA2 *MatProp(ALFA2) ALFA3 *MatProp(ALFA3) *\
+%  NU1 *MatProp(NU1) NU2 *MatProp(NU2) NU3 *MatProp(NU3) DENS *MatProp(Density) *\
+%  NMAXW *MatProp(nMaxwells) TAU1 *MatProp(tau1) BETA1 *MatProp(beta1) TAU2 *MatProp(tau2) BETA2 *MatProp(beta2) *\
+%  TAU3 *MatProp(tau3) BETA3 *MatProp(beta3) TAU4 *MatProp(tau4) BETA4 *MatProp(beta4)
+% *endif
+% compressible ogden hyperelastic material (shell8 only);
+% see theory (Ogdens Book) to check the parameters, they are simple and clear then;
+% inside a generalized maxwell model with upto 4 maxwellelements;
+% this is finite LINEAR viscoelasticity following holzapfels book
+
+% *if(strcmp(MatProp(1),"MAT_Struct_NeoHooke")==0)
+% MAT *MatNum *MatProp(1) *\
+%  YOUNG *MatProp(Youngs_Modulus) NUE *MatProp(Poisson_Ratio) DENS *MatProp(Density)
+% *endif
+% nonlinear-elastic compressible neo-hooke material (Wriggers' habil)
+
+% *if(strcmp(MatProp(1),"MAT_MisesPlastic")==0)
+% MAT *MatNum *MatProp(1) *\
+%  YOUNG *MatProp(Youngs_Modulus) NUE *MatProp(Poisson_Ratio) Sigy *MatProp(Yield_Stress) *\
+%  BETAH *MatProp(BetaH_kin_iso) DENS *MatProp(Density) *\
+% *if(strcmp(MatProp(HardSoft),"Hardening")==0)
+%    Hard *MatProp((Hardening)Hard)
+% *endif
+% *if(strcmp(MatProp(HardSoft),"Softening")==0)
+%    GF   *MatProp((Softening)GF)
+% *endif
+% *endif
+% von Mises Plasticity with linear hardening/softening (2D-formulated)
+
+% *if(strcmp(MatProp(1),"MAT_3DMisesPlastic")==0)
+% MAT *MatNum *MatProp(1) *\
+%  YOUNG *MatProp(Youngs_Modulus) NUE *MatProp(Poisson_Ratio) Sigy *MatProp(Yield_Stress) *\
+%  BETAH *MatProp(BetaH_kin_iso) DENS *MatProp(Density) *\
+% *if(strcmp(MatProp(HardSoft),"Hardening")==0)
+%    Hard *MatProp((Hardening)Hard)
+% *endif
+% *if(strcmp(MatProp(HardSoft),"Softening")==0)
+%    GF   *MatProp((Softening)GF)
+% *endif
+% *endif
+% von Mises Plasticity with linear hardening/softening (3D-formulated)
+
+% *if(strcmp(MatProp(1),"MAT_3DConcretePlastic")==0)
+% MAT *MatNum *MatProp(1) *\
+%  YOUNG *MatProp(YOUNG) NUE  *MatProp(NUE)  FTM *MatProp(FTM)  FCM *MatProp(FCM) *\
+%  GT *MatProp(GT) GC *MatProp(GC)  GAMMA1 *MatProp(GAMMA1)  GAMMA2 *MatProp(GAMMA2) *\
+%  GAMMA3 *MatProp(GAMMA3)  GAMMA4 *MatProp(GAMMA4)  DENS *MatProp(Density)
+% *endif
+% Elasto-Plastic material Modell (Menrath) (3D-formulated)
+
+% *if(strcmp(MatProp(1),"MAT_Therm_Fourier_iso")==0)
+% MAT *MatNum *MatProp(1) *\
+%  CONDUCT *MatProp(Conduct)
+% *endif
+% isotropic Fourier law
+
+% *if(strcmp(MatProp(1),"MAT_Therm_Fourier_gen")==0)
+% MAT *MatNum *MatProp(1) *\
+%  CONDUCT *MatProp(Conduct_11) *MatProp(Conduct_12) *MatProp(Conduct_13) *\
+%  *MatProp(Conduct_21) *MatProp(Conduct_22) *MatProp(Conduct_23) *\
+%  *MatProp(Conduct_31) *MatProp(Conduct_32) *MatProp(Conduct_33)
+% *endif
+% general Fourier law
+
+% *if(strcmp(MatProp(1),"MAT_Multilayer")==0)
+% MAT *MatNum *MatProp(1) *\
+%  NUM_KLAY *MatProp(Num_KLay,int) SEC_KLAY *MatProp(SEC_Klay)
+% *if(MatProp(Num_KLay,int)>0)
+%      KINLAY 1 NUM_MLAY *MatProp(Num_MLay1) *\
+%  SEC_MLAY  *MatProp(SEC_MLay1)  SEC_MAT  *MatProp(SEC_Mat1) *\
+%  SEC_PHI  *MatProp(SEC_Phi1)  SEC_ROT  *MatProp(SEC_Rot1)
+% *endif
+
+% *if(MatProp(Num_KLay,int)>1)
+%      KINLAY 2 NUM_MLAY *MatProp(Num_MLay2) *\
+%  SEC_MLAY  *MatProp(SEC_MLay2)  SEC_MAT  *MatProp(SEC_Mat2) *\
+%  SEC_PHI  *MatProp(SEC_Phi2)  SEC_ROT  *MatProp(SEC_Rot2)
+% *endif
+% *endif
+% *end
+% ???
+
+\subsection{MULTILAYER MATERIALS}
+\begin{verbatim}
+----------------------------------------------MULTILAYER MATERIALS
+\end{verbatim}
+
+MULTILAYER MATERIALS, only used for shell9 elements, in order to define
+different materials for one element (design surface),
+conditions that are similar to the materials used for single layer elements
+
+% *endif
+% *Set elems(All)
+% *Set Cond MultiMat1 *elems *CanRepeat
+% *loop elems *OnlyInCond
+% *if(LoopVar==1)
+% MULTIMAT 1  *cond(MatType1) *\
+% *if(strcmp(cond(MatType1),"MAT_Struct_StVenantKirchhoff")==0)
+%  YOUNG *cond(Youngs_Modulus_1) NUE *cond(Poisson_Ratio_1) DENS *cond(Density_stv1)
+% *endif
+% *if(strcmp(cond(MatType1),"MAT_Struct_Orthotropic")==0)
+%  EMOD1 *cond(Emod1_1) EMOD2 *cond(Emod2_1) EMOD3 *cond(Emod3_1)*\
+%  GMOD12 *cond(Gmod12_1) GMOD13 *cond(Gmod13_1) GMOD23 *cond(Gmod23_1)*\
+%  XNUE12 *cond(Xnue12_1) XNUE13 *cond(Xnue13_1) XNUE23 *cond(Xnue23_1) DENS *cond(Density_orth1)
+% *endif
+% *if(strcmp(cond(MatType1),"MAT_MisesPlastic")==0)
+%  YOUNG *cond(YOUNG_mis1)  NUE  *cond(NUE_mis1)  Sigy *cond(Sigy_mis1)*\
+%  BETAH *cond(betah_mis1)  DENS *cond(Density_mis1) *\
+% *if(strcmp(cond(HardSoftMis1),"Hardening")==0)
+%    Hard *cond((Hardening)Hard_mis1)
+% *endif
+% *if(strcmp(cond(HardSoftMis1),"Softening")==0)
+%    GF   *cond((Softening)GF_mis1)
+% *endif
+% *endif
+% *if(strcmp(cond(MatType1),"MAT_DP_Plastic")==0)
+%  YOUNG *cond(YOUNG_dp1) NUE  *cond(NUE_dp1)  Sigy *cond(Sigy_dp1)*\
+%  BETAH *cond(betah_dp1) PHI *cond(PHI_dp1)  DENS *cond(Density_dp1) *\
+% *if(strcmp(cond(HardSoftDP1),"Hardening")==0)
+%    Hard *cond((Hardening)Hard_dp1)
+% *endif
+% *if(strcmp(cond(HardSoftDP1),"Softening")==0)
+%    GF   *cond((Softening)GF_dp1)
+% *endif
+% *endif
+% *if(strcmp(cond(MatType1),"MAT_HoffPlastic")==0)
+%  EMOD1  *cond(E1_1) EMOD2  *cond(E2_1) EMOD3  *cond(E3_1) *\
+%  GMOD12 *cond(GM12_1) GMOD23 *cond(GM23_1) GMOD13 *cond(GM13_1) *\
+%  XNUE12 *cond(NU12_1) XNUE23 *cond(NU23_1) XNUE13 *cond(NU13_1) UNIAX *cond(UNIAX_1) DENS *cond(Density_hoff1)
+%  S11T  *cond(S11T_1) S11C  *cond(S11C_1) S22T  *cond(S22T_1) S22C  *cond(S22C_1)*\
+%  S33T  *cond(S33T_1) S33C  *cond(S33C_1) S12  *cond(S12_1) S23  *cond(S23_1) S13  *cond(S13_1)
+%  SH11T *cond(SH11T_1) SH11C *cond(SH11C_1) SH22T *cond(SH22T_1) SH22C *cond(SH22C_1)*\
+%  SH33T *cond(SH33T_1) SH33C *cond(SH33C_1) SH12 *cond(SH12_1) SH23 *cond(SH23_1) SH13 *cond(SH13_1)
+%  HA11T *cond(HA11T_1) HA11C *cond(HA11C_1) HA22T *cond(HA22T_1) HA22C *cond(HA22C_1)*\
+%  HA33T *cond(HA33T_1) HA33C *cond(HA33C_1) HA12 *cond(HA12_1) HA23 *cond(HA23_1) HA13 *cond(HA13_1)
+% *endif
+% *if(strcmp(cond(MatType1),"MAT_ConcretePlastic")==0)
+%  YOUNG *cond(YOUNG_epc1) NUE  *cond(NUE_epc1)  FTM *cond(FTM_epc1)  FCM *cond(FCM_epc1) *\
+%  GT *cond(GT_epc1) GC *cond(GC_epc1)  GAMMA1 *cond(GAMMA1_epc1)  GAMMA2 *cond(GAMMA2_epc1) *\
+%  GAMMA3 *cond(GAMMA3_epc1)  GAMMA4 *cond(GAMMA4_epc1)  DENS *cond(Density_epc1)
+% *endif
+% *endif
+% *end
+% *Set Cond MultiMat2 *elems *CanRepeat
+% *loop elems *OnlyInCond
+% *if(LoopVar==1)
+% MULTIMAT 2  *cond(MatType2) *\
+% *if(strcmp(cond(MatType2),"MAT_Struct_StVenantKirchhoff")==0)
+%  YOUNG *cond(Youngs_Modulus_2) NUE *cond(Poisson_Ratio_2) DENS *cond(Density_stv2)
+% *endif
+% *if(strcmp(cond(MatType2),"MAT_Struct_Orthotropic")==0)
+%  EMOD1 *cond(Emod1_2) EMOD2 *cond(Emod2_2) EMOD3 *cond(Emod3_2)*\
+%  GMOD12 *cond(Gmod12_2) GMOD13 *cond(Gmod13_2) GMOD23 *cond(Gmod23_2)*\
+%  XNUE12 *cond(Xnue12_2) XNUE13 *cond(Xnue13_2) XNUE23 *cond(Xnue23_2) DENS *cond(Density_orth2)
+% *endif
+% *if(strcmp(cond(MatType2),"MAT_MisesPlastic")==0)
+%  YOUNG *cond(YOUNG_mis2) NUE  *cond(NUE_mis2)  Sigy *cond(Sigy_mis2)*\
+%  BETAH *cond(betah_mis2)  DENS *cond(Density_mis2) *\
+% *if(strcmp(cond(HardSoftMis2),"Hardening")==0)
+%    Hard *cond((Hardening)Hard_mis2)
+% *endif
+% *if(strcmp(cond(HardSoftMis2),"Softening")==0)
+%    GF   *cond((Softening)GF_mis2)
+% *endif
+% *endif
+% *if(strcmp(cond(MatType2),"MAT_DP_Plastic")==0)
+%  YOUNG *cond(YOUNG_dp2) NUE  *cond(NUE_dp2)  Sigy *cond(Sigy_dp2)*\
+%  BETAH *cond(betah_dp2) PHI *cond(PHI_dp2)  DENS *cond(Density_dp2) *\
+% *if(strcmp(cond(HardSoftDP2),"Hardening")==0)
+%    Hard *cond((Hardening)Hard_dp2)
+% *endif
+% *if(strcmp(cond(HardSoftDP2),"Softening")==0)
+%    GF   *cond((Softening)GF_dp2)
+% *endif
+% *endif
+% *if(strcmp(cond(MatType2),"MAT_HoffPlastic")==0)
+%  EMOD1  *cond(E1_2) EMOD2  *cond(E2_2) EMOD3  *cond(E3_2) *\
+%  GMOD12 *cond(GM12_2) GMOD23 *cond(GM23_2) GMOD13 *cond(GM13_2) *\
+%  XNUE12 *cond(NU12_2) XNUE23 *cond(NU23_2) XNUE13 *cond(NU13_2) UNIAX *cond(UNIAX_2) DENS *cond(Density_hoff2)
+%  S11T  *cond(S11T_2) S11C  *cond(S11C_2) S22T  *cond(S22T_2) S22C  *cond(S22C_2)*\
+%  S33T  *cond(S33T_2) S33C  *cond(S33C_2) S12  *cond(S12_2) S23  *cond(S23_2) S13  *cond(S13_2)
+%  SH11T *cond(SH11T_2) SH11C *cond(SH11C_2) SH22T *cond(SH22T_2) SH22C *cond(SH22C_2)*\
+%  SH33T *cond(SH33T_2) SH33C *cond(SH33C_2) SH12 *cond(SH12_2) SH23 *cond(SH23_2) SH13 *cond(SH13_2)
+%  HA11T *cond(HA11T_2) HA11C *cond(HA11C_2) HA22T *cond(HA22T_2) HA22C *cond(HA22C_2)*\
+%  HA33T *cond(HA33T_2) HA33C *cond(HA33C_2) HA12 *cond(HA12_2) HA23 *cond(HA23_2) HA13 *cond(HA13_2)
+% *endif
+% *if(strcmp(cond(MatType2),"MAT_ConcretePlastic")==0)
+%  YOUNG *cond(YOUNG_epc2) NUE  *cond(NUE_epc2)  FTM *cond(FTM_epc2)  FCM *cond(FCM_epc2) *\
+%  GT *cond(GT_epc2) GC *cond(GC_epc2)  GAMMA1 *cond(GAMMA1_epc2)  GAMMA2 *cond(GAMMA2_epc2) *\
+%  GAMMA3 *cond(GAMMA3_epc2)  GAMMA4 *cond(GAMMA4_epc2)  DENS *cond(Density_epc2)
+% *endif
+% *endif
+% *end
+
+\subsection{CONTROL NODE}
+\begin{verbatim}
+------------------------------------------------------CONTROL NODE
+\end{verbatim}
+
+\kw{NODE} $int_1$ \kw{DOF} $int_2$\\
+controlled NODE $int_1$ with $int_2$ the DOF to control
+
+\subsection{LOAD CURVES}
+\begin{verbatim}
+-------------------------------------------------------LOAD CURVES
+\end{verbatim}
+
+
+\subsection{CURVE1}
+\begin{verbatim}
+------------------------------------------------------------CURVE1
+\end{verbatim}
+
+% *loop intervals
+% *if(strcmp(IntvData(Load_Curve_1),"on")==0)
+% CURVE1 *IntvData(Load_Curve_1) *\
+% *if(strcmp(IntvData(Typ_Curve_1),"Polygonal")==0)
+% *IntvData(Typ_Curve_1) *\
+% T *IntvData(Cu1_Streamtime) *\
+% BYABSTIME *IntvData(Cu1_By_Absolut_Time) *\
+% *IntvData(Cu1_Time_Start) *\
+% *IntvData(Cu1_Time_End) *\
+% FACTOR *IntvData(Cu1_Factor_Start) *\
+% *IntvData(Cu1_Factor_End)
+% *endif
+% *if(strcmp(IntvData(Typ_Curve_1),"Explicit")==0)
+% *IntvData(Typ_Curve_1) *\
+% FUNC *IntvData(Cu1_Function) *\
+% c1 *IntvData(Cu1_C1) *\
+% c2 *IntvData(Cu1_C2)
+% *endif
+% *if(strcmp(IntvData(Typ_Curve_1),"EXPR")==0)
+% EXPR FUNC *IntvData(Cu1_expression) *\
+% t1 *IntvData(Cu1_Time_Start) *\
+% t2 *IntvData(Cu1_Time_End)
+% *endif
+% *endif
+% *end
+
+\subsection{CURVE2}
+\begin{verbatim}
+------------------------------------------------------------CURVE2
+\end{verbatim}
+
+% *loop intervals
+% *if(strcmp(IntvData(Load_Curve_2),"on")==0)
+% CURVE2 *IntvData(Load_Curve_2) *\
+% *if(strcmp(IntvData(Typ_Curve_2),"Polygonal")==0)
+% *IntvData(Typ_Curve_2) *\
+% T *IntvData(Cu2_Streamtime) *\
+% BYABSTIME *IntvData(Cu2_By_Absolut_Time) *\
+% *IntvData(Cu2_Time_Start) *\
+% *IntvData(Cu2_Time_End) *\
+% FACTOR *IntvData(Cu2_Factor_Start) *\
+% *IntvData(Cu2_Factor_End)
+% *endif
+% *if(strcmp(IntvData(Typ_Curve_2),"Explicit")==0)
+% *IntvData(Typ_Curve_2) *\
+% FUNC *IntvData(Cu2_Function) *\
+% c1 *IntvData(Cu2_C1) *\
+% c2 *IntvData(Cu2_C2)
+% *endif
+% *if(strcmp(IntvData(Typ_Curve_2),"EXPR")==0)
+% EXPR FUNC *IntvData(Cu2_expression) *\
+% t1 *IntvData(Cu2_Time_Start) *\
+% t2 *IntvData(Cu2_Time_End)
+% *endif
+% *endif
+% *end
+
+\subsection{CURVE3}
+\begin{verbatim}
+------------------------------------------------------------CURVE3
+\end{verbatim}
+
+% *loop intervals
+% *if(strcmp(IntvData(Load_Curve_3),"on")==0)
+% CURVE3 *IntvData(Load_Curve_3) *\
+% *if(strcmp(IntvData(Typ_Curve_3),"Polygonal")==0)
+% *IntvData(Typ_Curve_3) *\
+% T *IntvData(Cu3_Streamtime) *\
+% BYABSTIME *IntvData(Cu3_By_Absolut_Time) *\
+% *IntvData(Cu3_Time_Start) *\
+% *IntvData(Cu3_Time_End) *\
+% FACTOR *IntvData(Cu3_Factor_Start) *\
+% *IntvData(Cu3_Factor_End)
+% *endif
+% *if(strcmp(IntvData(Typ_Curve_3),"Explicit")==0)
+% *IntvData(Typ_Curve_3) *\
+% FUNC *IntvData(Cu3_Function) *\
+% c1 *IntvData(Cu3_C1) *\
+% c2 *IntvData(Cu3_C2)
+% *endif
+% *if(strcmp(IntvData(Typ_Curve_3),"EXPR")==0)
+% EXPR FUNC *IntvData(Cu3_expression) *\
+% t1 *IntvData(Cu3_Time_Start) *\
+% t2 *IntvData(Cu3_Time_End)
+% *endif
+% *endif
+% *end
+
+\subsection{CURVE4}
+\begin{verbatim}
+------------------------------------------------------------CURVE4
+\end{verbatim}
+
+% *loop intervals
+% *if(strcmp(IntvData(Load_Curve_4),"on")==0)
+% CURVE4 *IntvData(Load_Curve_4) *\
+% *if(strcmp(IntvData(Typ_Curve_4),"Polygonal")==0)
+% *IntvData(Typ_Curve_4) *\
+% T *IntvData(Cu4_Streamtime) *\
+% BYABSTIME *IntvData(Cu4_By_Absolut_Time) *\
+% *IntvData(Cu4_Time_Start) *\
+% *IntvData(Cu4_Time_End) *\
+% FACTOR *IntvData(Cu4_Factor_Start) *\
+% *IntvData(Cu4_Factor_End)
+% *endif
+% *if(strcmp(IntvData(Typ_Curve_4),"Explicit")==0)
+% *IntvData(Typ_Curve_4) *\
+% FUNC *IntvData(Cu4_Function) *\
+% c1 *IntvData(Cu4_C1) *\
+% c2 *IntvData(Cu4_C2)
+% *endif
+% *if(strcmp(IntvData(Typ_Curve_4),"EXPR")==0)
+% EXPR FUNC *IntvData(Cu4_expression) *\
+% t1 *IntvData(Cu4_Time_Start) *\
+% t2 *IntvData(Cu4_Time_End)
+% *endif
+% *endif
+% *end
+
+\subsection{CURVE5}
+\begin{verbatim}
+------------------------------------------------------------CURVE5
+\end{verbatim}
+
+% *loop intervals
+% *if(strcmp(IntvData(Load_Curve_5),"on")==0)
+% CURVE5 *IntvData(Load_Curve_5) *\
+% *if(strcmp(IntvData(Typ_Curve_5),"Polygonal")==0)
+% *IntvData(Typ_Curve_5) *\
+% T *IntvData(Cu5_Streamtime) *\
+% BYABSTIME *IntvData(Cu5_By_Absolut_Time) *\
+% *IntvData(Cu5_Time_Start) *\
+% *IntvData(Cu5_Time_End) *\
+% FACTOR *IntvData(Cu5_Factor_Start) *\
+% *IntvData(Cu5_Factor_End)
+% *endif
+% *if(strcmp(IntvData(Typ_Curve_5),"Explicit")==0)
+% *IntvData(Typ_Curve_5) *\
+% FUNC *IntvData(Cu5_Function) *\
+% c1 *IntvData(Cu5_C1) *\
+% c2 *IntvData(Cu5_C2)
+% *endif
+% *if(strcmp(IntvData(Typ_Curve_5),"EXPR")==0)
+% EXPR FUNC *IntvData(Cu5_expression) *\
+% t1 *IntvData(Cu5_Time_Start) *\
+% t2 *IntvData(Cu5_Time_End)
+% *endif
+% *endif
+% *end
+
+\subsection{FUNCT1}
+\begin{verbatim}
+------------------------------------------------------------FUNCT1
+\end{verbatim}
+
+% *if(strcmp(GenData(F1_onoff),"on")==0)
+% FUNCT1 *GenData(F1_typ) *\
+% *if(strcmp(GenData(F1_typ),"LINE_LIN")==0)
+% *GenData(F1_linelin_x1) *\
+% *GenData(F1_linelin_y1) *\
+% *GenData(F1_linelin_z1) *\
+% *GenData(F1_linelin_v1) *\
+% *GenData(F1_linelin_x2) *\
+% *GenData(F1_linelin_y2) *\
+% *GenData(F1_linelin_z2) *\
+% *GenData(F1_linelin_v2) *\
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT1 LINE_LIN x1 y1 z1 val1 x2 y2 z2 val2
+% *endif
+% *endif
+% *if(strcmp(GenData(F1_typ),"LINE_QUAD")==0)
+% *GenData(F1_linequad_x1) *\
+% *GenData(F1_linequad_y1) *\
+% *GenData(F1_linequad_z1) *\
+% *GenData(F1_linequad_x2) *\
+% *GenData(F1_linequad_y2) *\
+% *GenData(F1_linequad_z2) *\
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT1 LINE_QUAD x1 y1 z1 x2 y2 z2
+% *endif
+% *endif
+% *if(strcmp(GenData(F1_typ),"RADIUS_LIN")==0)
+% *GenData(F1_radlin_x1) *\
+% *GenData(F1_radlin_y1) *\
+% *GenData(F1_radlin_z1) *\
+% *GenData(F1_radlin_v1) *\
+% *GenData(F1_radlin_x2) *\
+% *GenData(F1_radlin_y2) *\
+% *GenData(F1_radlin_z2) *\
+% *GenData(F1_radlin_v2) *\
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT1 LINE_LIN x1 y1 z1 val1 x2 y2 z2 val2
+% *endif
+% *endif
+% *if(strcmp(GenData(F1_typ),"RADIUS_QUAD")==0)
+% *GenData(F1_radquad_x1) *\
+% *GenData(F1_radquad_y1) *\
+% *GenData(F1_radquad_z1) *\
+% *GenData(F1_radquad_x2) *\
+% *GenData(F1_radquad_y2) *\
+% *GenData(F1_radquad_z2) *\
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT1 LINE_QUAD x1 y1 z1 x2 y2 z2
+% *endif
+% *endif
+% *if(strcmp(GenData(F1_typ),"BELTRAMI")==0)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT1 BELTRAMI
+% *endif
+% *endif
+% *if(strcmp(GenData(F1_typ),"KIM-MOIN")==0)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT1 KIM-MOIN
+% *endif
+% *endif
+% *if(strcmp(GenData(F1_typ),"NONE")==0)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT1 NONE
+% *endif
+% *endif
+% *if(strcmp(GenData(F1_typ),"EXPR")==0)
+% *GenData(F1_x) *\
+% *GenData(F1_y) *\
+% *GenData(F1_z) *\
+% FUNCTION *GenData(F1_expression) *\
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT1 EXPR x y z FUNCTION expression
+% *endif
+% *endif
+
+% *endif
+
+\subsection{FUNCT2}
+\begin{verbatim}
+------------------------------------------------------------FUNCT2
+\end{verbatim}
+
+% *if(strcmp(GenData(F2_onoff),"on")==0)
+% FUNCT2 *GenData(F2_typ) *\
+% *if(strcmp(GenData(F2_typ),"LINE_LIN")==0)
+% *GenData(F2_linelin_x1) *\
+% *GenData(F2_linelin_y1) *\
+% *GenData(F2_linelin_z1) *\
+% *GenData(F2_linelin_v1) *\
+% *GenData(F2_linelin_x2) *\
+% *GenData(F2_linelin_y2) *\
+% *GenData(F2_linelin_z2) *\
+% *GenData(F2_linelin_v2) *\
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT2 LINE_LIN x1 y1 z1 val1 x2 y2 z2 val2
+% *endif
+% *endif
+% *if(strcmp(GenData(F2_typ),"LINE_QUAD")==0)
+% *GenData(F2_linequad_x1) *\
+% *GenData(F2_linequad_y1) *\
+% *GenData(F2_linequad_z1) *\
+% *GenData(F2_linequad_x2) *\
+% *GenData(F2_linequad_y2) *\
+% *GenData(F2_linequad_z2) *\
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT2 LINE_QUAD x1 y1 z1 x2 y2 z2
+% *endif
+% *endif
+% *if(strcmp(GenData(F2_typ),"RADIUS_LIN")==0)
+% *GenData(F2_radlin_x1) *\
+% *GenData(F2_radlin_y1) *\
+% *GenData(F2_radlin_z1) *\
+% *GenData(F2_radlin_v1) *\
+% *GenData(F2_radlin_x2) *\
+% *GenData(F2_radlin_y2) *\
+% *GenData(F2_radlin_z2) *\
+% *GenData(F2_radlin_v2) *\
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT2 LINE_LIN x1 y1 z1 val1 x2 y2 z2 val2
+% *endif
+% *endif
+% *if(strcmp(GenData(F2_typ),"RADIUS_QUAD")==0)
+% *GenData(F2_radquad_x1) *\
+% *GenData(F2_radquad_y1) *\
+% *GenData(F2_radquad_z1) *\
+% *GenData(F2_radquad_x2) *\
+% *GenData(F2_radquad_y2) *\
+% *GenData(F2_radquad_z2) *\
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT2 LINE_QUAD x1 y1 z1 x2 y2 z2
+% *endif
+% *endif
+% *if(strcmp(GenData(F2_typ),"BELTRAMI")==0)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT2 BELTRAMI
+% *endif
+% *endif
+% *if(strcmp(GenData(F2_typ),"KIM-MOIN")==0)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT2 KIM-MOIN
+% *endif
+% *endif
+% *if(strcmp(GenData(F2_typ),"NONE")==0)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT2 NONE
+% *endif
+% *endif
+% *if(strcmp(GenData(F2_typ),"EXPR")==0)
+% *GenData(F2_x) *\
+% *GenData(F2_y) *\
+% *GenData(F2_z) *\
+% FUNCTION *GenData(F2_expression) *\
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT2 EXPR x y z FUNCTION expression
+% *endif
+% *endif
+
+% *endif
+
+\subsection{FUNCT3}
+\begin{verbatim}
+------------------------------------------------------------FUNCT3
+\end{verbatim}
+
+% *if(strcmp(GenData(F3_onoff),"on")==0)
+% FUNCT3 *GenData(F3_typ) *\
+% *if(strcmp(GenData(F3_typ),"LINE_LIN")==0)
+% *GenData(F3_linelin_x1) *\
+% *GenData(F3_linelin_y1) *\
+% *GenData(F3_linelin_z1) *\
+% *GenData(F3_linelin_v1) *\
+% *GenData(F3_linelin_x2) *\
+% *GenData(F3_linelin_y2) *\
+% *GenData(F3_linelin_z2) *\
+% *GenData(F3_linelin_v2) *\
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT3 LINE_LIN x1 y1 z1 val1 x2 y2 z2 val2
+% *endif
+% *endif
+% *if(strcmp(GenData(F3_typ),"LINE_QUAD")==0)
+% *GenData(F3_linequad_x1) *\
+% *GenData(F3_linequad_y1) *\
+% *GenData(F3_linequad_z1) *\
+% *GenData(F3_linequad_x2) *\
+% *GenData(F3_linequad_y2) *\
+% *GenData(F3_linequad_z2) *\
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT3 LINE_QUAD x1 y1 z1 x2 y2 z2
+% *endif
+% *endif
+% *if(strcmp(GenData(F3_typ),"RADIUS_LIN")==0)
+% *GenData(F3_radlin_x1) *\
+% *GenData(F3_radlin_y1) *\
+% *GenData(F3_radlin_z1) *\
+% *GenData(F3_radlin_v1) *\
+% *GenData(F3_radlin_x2) *\
+% *GenData(F3_radlin_y2) *\
+% *GenData(F3_radlin_z2) *\
+% *GenData(F3_radlin_v2) *\
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT3 LINE_LIN x1 y1 z1 val1 x2 y2 z2 val2
+% *endif
+% *endif
+% *if(strcmp(GenData(F3_typ),"RADIUS_QUAD")==0)
+% *GenData(F3_radquad_x1) *\
+% *GenData(F3_radquad_y1) *\
+% *GenData(F3_radquad_z1) *\
+% *GenData(F3_radquad_x2) *\
+% *GenData(F3_radquad_y2) *\
+% *GenData(F3_radquad_z2) *\
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT3 LINE_QUAD x1 y1 z1 x2 y2 z2
+% *endif
+% *endif
+% *if(strcmp(GenData(F3_typ),"BELTRAMI")==0)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT3 BELTRAMI
+% *endif
+% *endif
+% *if(strcmp(GenData(F3_typ),"KIM-MOIN")==0)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT3 KIM-MOIN
+% *endif
+% *endif
+% *if(strcmp(GenData(F3_typ),"NONE")==0)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT3 NONE
+% *endif
+% *endif
+% *if(strcmp(GenData(F3_typ),"EXPR")==0)
+% *GenData(F3_x) *\
+% *GenData(F3_y) *\
+% *GenData(F3_z) *\
+% FUNCTION *GenData(F3_expression) *\
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT3 EXPR x y z FUNCTION expression
+% *endif
+% *endif
+
+% *endif
+
+\subsection{FUNCT4}
+\begin{verbatim}
+------------------------------------------------------------FUNCT4
+\end{verbatim}
+
+% *if(strcmp(GenData(F4_onoff),"on")==0)
+% FUNCT4 *GenData(F4_typ) *\
+% *if(strcmp(GenData(F4_typ),"LINE_LIN")==0)
+% *GenData(F4_linelin_x1) *\
+% *GenData(F4_linelin_y1) *\
+% *GenData(F4_linelin_z1) *\
+% *GenData(F4_linelin_v1) *\
+% *GenData(F4_linelin_x2) *\
+% *GenData(F4_linelin_y2) *\
+% *GenData(F4_linelin_z2) *\
+% *GenData(F4_linelin_v2) *\
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT4 LINE_LIN x1 y1 z1 val1 x2 y2 z2 val2
+% *endif
+% *endif
+% *if(strcmp(GenData(F4_typ),"LINE_QUAD")==0)
+% *GenData(F4_linequad_x1) *\
+% *GenData(F4_linequad_y1) *\
+% *GenData(F4_linequad_z1) *\
+% *GenData(F4_linequad_x2) *\
+% *GenData(F4_linequad_y2) *\
+% *GenData(F4_linequad_z2) *\
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT4 LINE_QUAD x1 y1 z1 x2 y2 z2
+% *endif
+% *endif
+% *if(strcmp(GenData(F4_typ),"RADIUS_LIN")==0)
+% *GenData(F4_radlin_x1) *\
+% *GenData(F4_radlin_y1) *\
+% *GenData(F4_radlin_z1) *\
+% *GenData(F4_radlin_v1) *\
+% *GenData(F4_radlin_x2) *\
+% *GenData(F4_radlin_y2) *\
+% *GenData(F4_radlin_z2) *\
+% *GenData(F4_radlin_v2) *\
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT4 LINE_LIN x1 y1 z1 val1 x2 y2 z2 val2
+% *endif
+% *endif
+% *if(strcmp(GenData(F4_typ),"RADIUS_QUAD")==0)
+% *GenData(F4_radquad_x1) *\
+% *GenData(F4_radquad_y1) *\
+% *GenData(F4_radquad_z1) *\
+% *GenData(F4_radquad_x2) *\
+% *GenData(F4_radquad_y2) *\
+% *GenData(F4_radquad_z2) *\
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT4 LINE_QUAD x1 y1 z1 x2 y2 z2
+% *endif
+% *endif
+% *if(strcmp(GenData(F4_typ),"BELTRAMI")==0)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT4 BELTRAMI
+% *endif
+% *endif
+% *if(strcmp(GenData(F4_typ),"KIM-MOIN")==0)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT4 KIM-MOIN
+% *endif
+% *endif
+% *if(strcmp(GenData(F4_typ),"NONE")==0)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT4 NONE
+% *endif
+% *endif
+% *if(strcmp(GenData(F4_typ),"EXPR")==0)
+% *GenData(F4_x) *\
+% *GenData(F4_y) *\
+% *GenData(F4_z) *\
+% FUNCTION *GenData(F4_expression) *\
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT4 EXPR x y z FUNCTION expression
+% *endif
+% *endif
+
+% *endif
+
+\subsection{FUNCT5}
+\begin{verbatim}
+------------------------------------------------------------FUNCT5
+\end{verbatim}
+
+% *if(strcmp(GenData(F5_onoff),"on")==0)
+% FUNCT5 *GenData(F5_typ) *\
+% *if(strcmp(GenData(F5_typ),"LINE_LIN")==0)
+% *GenData(F5_linelin_x1) *\
+% *GenData(F5_linelin_y1) *\
+% *GenData(F5_linelin_z1) *\
+% *GenData(F5_linelin_v1) *\
+% *GenData(F5_linelin_x2) *\
+% *GenData(F5_linelin_y2) *\
+% *GenData(F5_linelin_z2) *\
+% *GenData(F5_linelin_v2) *\
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT5 LINE_LIN x1 y1 z1 val1 x2 y2 z2 val2
+% *endif
+% *endif
+% *if(strcmp(GenData(F5_typ),"LINE_QUAD")==0)
+% *GenData(F5_linequad_x1) *\
+% *GenData(F5_linequad_y1) *\
+% *GenData(F5_linequad_z1) *\
+% *GenData(F5_linequad_x2) *\
+% *GenData(F5_linequad_y2) *\
+% *GenData(F5_linequad_z2) *\
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT5 LINE_QUAD x1 y1 z1 x2 y2 z2
+% *endif
+% *endif
+% *if(strcmp(GenData(F5_typ),"RADIUS_LIN")==0)
+% *GenData(F5_radlin_x1) *\
+% *GenData(F5_radlin_y1) *\
+% *GenData(F5_radlin_z1) *\
+% *GenData(F5_radlin_v1) *\
+% *GenData(F5_radlin_x2) *\
+% *GenData(F5_radlin_y2) *\
+% *GenData(F5_radlin_z2) *\
+% *GenData(F5_radlin_v2) *\
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT5 LINE_LIN x1 y1 z1 val1 x2 y2 z2 val2
+% *endif
+% *endif
+% *if(strcmp(GenData(F5_typ),"RADIUS_QUAD")==0)
+% *GenData(F5_radquad_x1) *\
+% *GenData(F5_radquad_y1) *\
+% *GenData(F5_radquad_z1) *\
+% *GenData(F5_radquad_x2) *\
+% *GenData(F5_radquad_y2) *\
+% *GenData(F5_radquad_z2) *\
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT5 LINE_QUAD x1 y1 z1 x2 y2 z2
+% *endif
+% *endif
+% *if(strcmp(GenData(F5_typ),"BELTRAMI")==0)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT5 BELTRAMI
+% *endif
+% *endif
+% *if(strcmp(GenData(F5_typ),"KIM-MOIN")==0)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT5 KIM-MOIN
+% *endif
+% *endif
+% *if(strcmp(GenData(F5_typ),"NONE")==0)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT5 NONE
+% *endif
+% *endif
+% *if(strcmp(GenData(F5_typ),"EXPR")==0)
+% *GenData(F5_x) *\
+% *GenData(F5_y) *\
+% *GenData(F5_z) *\
+% FUNCTION *GenData(F5_expression) *\
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT5 EXPR x y z FUNCTION expression
+% *endif
+% *endif
+
+% *endif
+
+\subsection{FUNCT6}
+\begin{verbatim}
+------------------------------------------------------------FUNCT6
+\end{verbatim}
+
+% *if(strcmp(GenData(F6_onoff),"on")==0)
+% FUNCT6 *GenData(F6_typ) *\
+% *if(strcmp(GenData(F6_typ),"LINE_LIN")==0)
+% *GenData(F6_linelin_x1) *\
+% *GenData(F6_linelin_y1) *\
+% *GenData(F6_linelin_z1) *\
+% *GenData(F6_linelin_v1) *\
+% *GenData(F6_linelin_x2) *\
+% *GenData(F6_linelin_y2) *\
+% *GenData(F6_linelin_z2) *\
+% *GenData(F6_linelin_v2) *\
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT6 LINE_LIN x1 y1 z1 val1 x2 y2 z2 val2
+% *endif
+% *endif
+% *if(strcmp(GenData(F6_typ),"LINE_QUAD")==0)
+% *GenData(F6_linequad_x1) *\
+% *GenData(F6_linequad_y1) *\
+% *GenData(F6_linequad_z1) *\
+% *GenData(F6_linequad_x2) *\
+% *GenData(F6_linequad_y2) *\
+% *GenData(F6_linequad_z2) *\
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT6 LINE_QUAD x1 y1 z1 x2 y2 z2
+% *endif
+% *endif
+% *if(strcmp(GenData(F6_typ),"RADIUS_LIN")==0)
+% *GenData(F6_radlin_x1) *\
+% *GenData(F6_radlin_y1) *\
+% *GenData(F6_radlin_z1) *\
+% *GenData(F6_radlin_v1) *\
+% *GenData(F6_radlin_x2) *\
+% *GenData(F6_radlin_y2) *\
+% *GenData(F6_radlin_z2) *\
+% *GenData(F6_radlin_v2) *\
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT6 LINE_LIN x1 y1 z1 val1 x2 y2 z2 val2
+% *endif
+% *endif
+% *if(strcmp(GenData(F6_typ),"RADIUS_QUAD")==0)
+% *GenData(F6_radquad_x1) *\
+% *GenData(F6_radquad_y1) *\
+% *GenData(F6_radquad_z1) *\
+% *GenData(F6_radquad_x2) *\
+% *GenData(F6_radquad_y2) *\
+% *GenData(F6_radquad_z2) *\
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT6 LINE_QUAD x1 y1 z1 x2 y2 z2
+% *endif
+% *endif
+% *if(strcmp(GenData(F6_typ),"BELTRAMI")==0)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT6 BELTRAMI
+% *endif
+% *endif
+% *if(strcmp(GenData(F6_typ),"KIM-MOIN")==0)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT6 KIM-MOIN
+% *endif
+% *endif
+% *if(strcmp(GenData(F6_typ),"NONE")==0)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT6 NONE
+% *endif
+% *endif
+% *if(strcmp(GenData(F6_typ),"EXPR")==0)
+% *GenData(F6_x) *\
+% *GenData(F6_y) *\
+% *GenData(F6_z) *\
+% FUNCTION *GenData(F6_expression) *\
+% *if(GenData(Commented_Inputfile,int)==1)
+% // FUNCT6 EXPR x y z FUNCTION expression
+% *endif
+% *endif
+
+% *endif
+
+\subsection{LOCSYS1}
+\begin{verbatim}
+-----------------------------------------------------------LOCSYS1
+\end{verbatim}
+
+% *if(strcmp(GenData(Locsys_1),"on")==0)
+% LOCSYS1 *GenData(Locsys_typ_1) *\
+% *if(strcmp(GenData(Locsys_typ_1),"BASEVEC")==0)
+% XLOC *\
+% *GenData(Ls1_xloc1) *\
+% *GenData(Ls1_xloc2) *\
+% *GenData(Ls1_xloc3) *\
+% YLOC *\
+% *GenData(Ls1_yloc1) *\
+% *GenData(Ls1_yloc2) *\
+% *GenData(Ls1_yloc3) *\
+% ZLOC *\
+% *GenData(Ls1_zloc1) *\
+% *GenData(Ls1_zloc2) *\
+% *GenData(Ls1_zloc3)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // LOCSYS via three basevectors
+% *endif
+% *endif
+% *if(strcmp(GenData(Locsys_typ_1),"LINEPLANE")==0)
+% LINEID *\
+% *GenData(Ls1_lineId) *\
+% *GenData(Ls1_plane)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // LOCSYS via a line (xdir) and a plane
+% *endif
+% *endif
+% *if(strcmp(GenData(Locsys_typ_1),"LINELINE")==0)
+% LINEIDX *GenData(Ls1_lineIdX) *\
+% LINEIDY *GenData(Ls1_lineIdY) *\
+% LINEIDZ *GenData(Ls1_lineIdZ)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // LOCSYS via two lines (one has to be -1)
+% *endif
+% *endif
+% *if(strcmp(GenData(Locsys_typ_1),"FLUIDMASSCONS")==0)
+
+% *endif
+% *if(strcmp(GenData(Locsys_typ_1),"None")==0)
+
+% *endif
+% *endif
+
+\subsection{LOCSYS1}
+\begin{verbatim}
+-----------------------------------------------------------LOCSYS2
+\end{verbatim}
+
+% *if(strcmp(GenData(Locsys_2),"on")==0)
+% LOCSYS2 *GenData(Locsys_typ_2) *\
+% *if(strcmp(GenData(Locsys_typ_2),"BASEVEC")==0)
+% XLOC *\
+% *GenData(Ls2_xloc1) *\
+% *GenData(Ls2_xloc2) *\
+% *GenData(Ls2_xloc3) *\
+% YLOC *\
+% *GenData(Ls2_yloc1) *\
+% *GenData(Ls2_yloc2) *\
+% *GenData(Ls2_yloc3) *\
+% ZLOC *\
+% *GenData(Ls2_zloc1) *\
+% *GenData(Ls2_zloc2) *\
+% *GenData(Ls2_zloc3)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // LOCSYS via three basevectors
+% *endif
+% *endif
+% *if(strcmp(GenData(Locsys_typ_2),"LINEPLANE")==0)
+% LINEID *\
+% *GenData(Ls2_lineId) *\
+% *GenData(Ls2_plane)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // LOCSYS via a line (xdir) and a plane
+% *endif
+% *endif
+% *if(strcmp(GenData(Locsys_typ_2),"LINELINE")==0)
+% LINEIDX *GenData(Ls2_lineIdX) *\
+% LINEIDY *GenData(Ls2_lineIdY) *\
+% LINEIDZ *GenData(Ls2_lineIdZ)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // LOCSYS via two lines (one has to be -1)
+% *endif
+% *endif
+% *if(strcmp(GenData(Locsys_typ_2),"FLUIDMASSCONS")==0)
+
+% *endif
+% *if(strcmp(GenData(Locsys_typ_2),"None")==0)
+
+% *endif
+% *endif
+
+\subsection{LOCSYS3}
+\begin{verbatim}
+-----------------------------------------------------------LOCSYS3
+\end{verbatim}
+
+% *if(strcmp(GenData(Locsys_3),"on")==0)
+% LOCSYS3 *GenData(Locsys_typ_3) *\
+% *if(strcmp(GenData(Locsys_typ_3),"BASEVEC")==0)
+% XLOC *\
+% *GenData(Ls3_xloc1) *\
+% *GenData(Ls3_xloc2) *\
+% *GenData(Ls3_xloc3) *\
+% YLOC *\
+% *GenData(Ls3_yloc1) *\
+% *GenData(Ls3_yloc2) *\
+% *GenData(Ls3_yloc3) *\
+% ZLOC *\
+% *GenData(Ls3_zloc1) *\
+% *GenData(Ls3_zloc2) *\
+% *GenData(Ls3_zloc3)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // LOCSYS via three basevectors
+% *endif
+% *endif
+% *if(strcmp(GenData(Locsys_typ_3),"LINEPLANE")==0)
+% LINEID *\
+% *GenData(Ls3_lineId) *\
+% *GenData(Ls3_plane)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // LOCSYS via a line (xdir) and a plane
+% *endif
+% *endif
+% *if(strcmp(GenData(Locsys_typ_3),"LINELINE")==0)
+% LINEIDX *GenData(Ls3_lineIdX) *\
+% LINEIDY *GenData(Ls3_lineIdY) *\
+% LINEIDZ *GenData(Ls3_lineIdZ)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // LOCSYS via two lines (one has to be -1)
+% *endif
+% *endif
+% *if(strcmp(GenData(Locsys_typ_3),"FLUIDMASSCONS")==0)
+
+% *endif
+% *if(strcmp(GenData(Locsys_typ_3),"None")==0)
+
+% *endif
+% *endif
+
+\subsection{LOCSYS4}
+\begin{verbatim}
+-----------------------------------------------------------LOCSYS4
+\end{verbatim}
+
+% *if(strcmp(GenData(Locsys_4),"on")==0)
+% LOCSYS4 *GenData(Locsys_typ_4) *\
+% *if(strcmp(GenData(Locsys_typ_4),"BASEVEC")==0)
+% XLOC *\
+% *GenData(Ls4_xloc1) *\
+% *GenData(Ls4_xloc2) *\
+% *GenData(Ls4_xloc3) *\
+% YLOC *\
+% *GenData(Ls4_yloc1) *\
+% *GenData(Ls4_yloc2) *\
+% *GenData(Ls4_yloc3) *\
+% ZLOC *\
+% *GenData(Ls4_zloc1) *\
+% *GenData(Ls4_zloc2) *\
+% *GenData(Ls4_zloc3)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // LOCSYS via three basevectors
+% *endif
+% *endif
+% *if(strcmp(GenData(Locsys_typ_4),"LINEPLANE")==0)
+% LINEID *\
+% *GenData(Ls4_lineId) *\
+% *GenData(Ls4_plane)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // LOCSYS via a line (xdir) and a plane
+% *endif
+% *endif
+% *if(strcmp(GenData(Locsys_typ_4),"LINELINE")==0)
+% LINEIDX *GenData(Ls4_lineIdX) *\
+% LINEIDY *GenData(Ls4_lineIdY) *\
+% LINEIDZ *GenData(Ls4_lineIdZ)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // LOCSYS via two lines (one has to be -1)
+% *endif
+% *endif
+% *if(strcmp(GenData(Locsys_typ_4),"FLUIDMASSCONS")==0)
+
+% *endif
+% *if(strcmp(GenData(Locsys_typ_4),"None")==0)
+
+% *endif
+% *endif
+
+\subsection{LOCSYS5}
+\begin{verbatim}
+-----------------------------------------------------------LOCSYS5
+\end{verbatim}
+
+% *if(strcmp(GenData(Locsys_5),"on")==0)
+% LOCSYS5 *GenData(Locsys_typ_5) *\
+% *if(strcmp(GenData(Locsys_typ_5),"BASEVEC")==0)
+% XLOC *\
+% *GenData(Ls5_xloc1) *\
+% *GenData(Ls5_xloc2) *\
+% *GenData(Ls5_xloc3) *\
+% YLOC *\
+% *GenData(Ls5_yloc1) *\
+% *GenData(Ls5_yloc2) *\
+% *GenData(Ls5_yloc3) *\
+% ZLOC *\
+% *GenData(Ls5_zloc1) *\
+% *GenData(Ls5_zloc2) *\
+% *GenData(Ls5_zloc3)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // LOCSYS via three basevectors
+% *endif
+% *endif
+% *if(strcmp(GenData(Locsys_typ_5),"LINEPLANE")==0)
+% LINEID *\
+% *GenData(Ls5_lineId) *\
+% *GenData(Ls5_plane)
+% *if(GenData(Commented_Inputfile,int)==1)
+% // LOCSYS via a line (xdir) and a plane
+% *endif
+% *endif
+% *if(strcmp(GenData(Locsys_typ_5),"LINELINE")==0)
+% LINEIDX *GenData(Ls5_lineIdX) *\
+% LINEIDY *GenData(Ls5_lineIdY) *\
+% LINEIDZ *GenData(Ls5_lineIdZ) *\
+% *if(GenData(Commented_Inputfile,int)==1)
+% // LOCSYS via two lines (one has to be -1)
+% *endif
+% *endif
+% *if(strcmp(GenData(Locsys_typ_5),"FLUIDMASSCONS")==0)
+
+% *endif
+% *if(strcmp(GenData(Locsys_typ_5),"None")==0)
+
+% *endif
+% *endif
+
+\subsection{MONITORING}
+\begin{verbatim}
+--------------------------------------------------------MONITORING
+\end{verbatim}
+
+// FIELD globalId FLAG FLAG FLAG FLAG FLAG FLAG
+// FLUID 1 - 0 0 0 0 0 0 
+// STRUCTURE 2 - 0 0 0 0 0 0 
+// ALE 3 - 0 0 0 0 0 0 
+
+\subsection{END}
+\begin{verbatim}
+---------------------------------------------------------------END
+\end{verbatim}
+the end, my friend
+
 
 %%
 %%----------------------------

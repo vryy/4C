@@ -1,0 +1,150 @@
+
+%%
+%%::::::::::::::::::::::::::::commands
+\input{cmd-text}
+\input{cmd-math}
+
+%%
+%%::::::::::::::::::::::::::::dynamics
+\chapter{Structural dynamics}\label{struct_dynamics:chap}
+
+%% This documents should be split to several files which describe the
+%% individual time integration schemes. Right now, we do not have readily
+%% available theoretical background information.
+
+\section{Input parameters}
+\subitempart{Text input --- thanks to commented input file}
+\begin{quote}
+\cod{DYNAMICTYP \cgb Gen\_Alfa \cor Centr\_Diff \cor Gen\_EMM \cge} \chs type
+of time integration scheme (TIS) \\
+\cod{EIGEN \cgb 0 \cor 1 \cge} \chs make eigenanalysis of the initial dynamic
+system (not with every solver) \\
+\cod{RESEVRYDISP $int$} \chs print displacements and contact forces every $int$
+steps \\
+\cod{RESEVRYSTRS $int$} \chs print stresses every $int$ time steps \\
+\cod{RESTARTEVRY $int$} \chs print restart information every $int$ time steps
+\\
+\cod{TIMESTEP $real$} \chs time step size $\Delta t$ \\
+\cod{NUMSTEP $int$} \chs maximal number of time steps, $int>0$ \\
+\cod{MAXTIME $real$} \chs final time \\
+\cod{BETA $real$} \chs $\beta$ of Newmark's TIS,
+$real\in[0,0.5]$ \\
+\cod{GAMMA $real$} \chs $\gamma$ of Newmark's TIS,
+$real\in(0,1]$ \\
+\cod{ALPHA\_M $real$} \chs $\alpha_\text{M}$ of Generalised-$\alpha$ time
+integration schem, $real\in[0,1)$ \\
+\cod{ALPHA\_F $real$} \chs $\alpha_\text{F}$ of Generalised-$\alpha$ time
+integration schem, $real\in[0,1)$ \\
+\cod{XSI $real$} \chs disspipation parameter for GEMM time integration \\
+\cod{DAMPING \cgb No \cor Yes \cge}  Rayleigh damping matrix switch \\
+\cod{M\_DAMP $real$} \chs mass matrix coefficient \\
+\cod{K\_DAMP $real$} \chs stiffness matrix coefficient ($\mat{K}(\vct{D}_0)$
+???)\\
+\cod{ITERATION \cgb none \cor mod \cor full \cge} \chs Newton Iteration, only
+\cod{full} works for implicit TISs \\
+\cod{TOLDISP $real$} \chs Convergence tolerance of Newton iteration \\
+\cod{MAXITER $int$} \chs Maximally permitted Newton iterations \\
+\cod{CONTACT \cgb 0 \cor 1 \cge} \chs switch contact algorithms for
+shell8 and wall1 on/off: (0,1). Have to use SPOOLES\_nonsym in parallel as
+solver for contact problems \\
+\cod{CET\_flag \cgb 0 \cor 1 \cge} \chs switch enforcement for contact
+lagr. multipliers on/off: (0,1); 0 $\to$ penalty method, 1$\to$ augm
+lagrangean \\
+\cod{FR\_flag $real$} \chs switch friction in contact on/off: (0,1) \\
+\cod{NPP $real$} \chs penalty parameter for normal contact \\
+\cod{TPP $real$} \chs penalty parameter for tangential (frictional) contact \\
+\cod{FR\_COEF $real$} \chs frictional coefficient \\
+\cod{TIMEADAPT \cgb 0 \cor 1 \cge} \chs switch time adaptivity dependend on
+number of newton iterations on/off (only SHELL8) \\
+\cod{ITWANT $int$} \chs number of newton iterations wanted \\
+\cod{MAXDT $real$} \chs maximum time step size allowed to the time adaptivity
+\\
+\cod{RESULTDT $real$} \chs offset when results shall be written to .flavia.res when time adaptivity is on
+\end{quote}
+
+Observations
+\begin{enumerate}
+\item Eigensolution does not work
+\end{enumerate}
+%%
+%%............................generalised-alpha
+\section{Generalised-$\alpha$}
+
+Works generally.
+
+\subitempart{Suggestions}
+\begin{enumerate}
+\item Improve convergence check: Residual-based, relative and absolute kind
+\item Individual/No load curves. Currently, all external loads are scaled with
+  the load curve \cod{CURVE1}, which \emph{must} be applied
+\item time-step size adaptivity?
+\end{enumerate}
+
+%%
+%%............................generalised energy-momentum-conserving
+\section{GEMM}
+Coded by Izzet \"{O}zdemir (Master thesis ``An approach to contact in
+computational structural dynamics'', 2003)
+
+The routine
+\begin{enumerate}
+\item is supposed for
+  \begin{itemize}
+  \item WALL1
+  \item SHELL8 is malware $\to$ remove
+  \end{itemize}
+\item is based on Simo \& Tarnow's energy-momemtum conserving scheme, giving
+  an asymmetric stiffness matrix 
+\item conserves total energy (yessssssssssssssssssssssssss) Tested with
+  prescribed boundary displacement, loads were not applied.
+\item conserves total energy, linear and angular momemtum. Tested with
+  unsupported body, loads are switched off with 1st Load Curve after a while. 
+\item does not extract external (potential) loads, bad to test for
+  conservative loading 
+\item Contact was not tested (node-to-segment)
+\item possesses adaptive time-step fragments
+\item src/Input \cod{w1\_gemm\_contact\_emconserv.dat}
+\end{enumerate}
+
+\subitempart{Suggestions}
+\begin{enumerate}
+\item Check thoroughly
+\item Improve on WALL1 calculation; right now activation is controlled by
+  pre-proccessor flag such that either generalised-$alpha$ or GEMM is
+  available; maybe new ACTION, or flag in wall1(...)
+\item Add SOLID3
+\end{enumerate}
+
+%%
+%%............................central differences
+\section{Central differences}
+Algorithm:
+\begin{gather*}
+  \left\{\begin{array}{l}
+     \vct{D}_{n+1} = \vct{D}_n + \Dt \vct{V}_n + \frac{\Dt^2}{2} \vct{A}_n
+  \\
+     \vct{A}_{n+1} = \mat{M}^{-1} \big( 
+                     \vct{F}_\Int(\vct{D}_{n+1}) 
+                     - \vct{F}_\Ext(t_{n+1})
+                     \big)
+  \\
+     \vct{V}_{n+1} 
+               = \vct{V}_n + \frac{\Dt}{2} \big( 
+               \vct{A}_n + \vct{A}_{n+1} \big)
+  \end{array}\right.
+\end{gather*}
+\begin{enumerate}
+\item Method works explicitly for a few elements. Un-/Supported elements
+  \begin{itemize}
+  \item[$+$] WALL1, SHELL8, SHELL9
+  \item[$-$] BRICK1, BEAM3, WALLGE
+  \end{itemize}
+\item src/Input \cod{krag\_2ele\_expl.dat}
+\end{enumerate}
+
+\subitempart{Suggestions}
+\begin{enumerate}
+\item Add time step-size adapitvity
+\item Store inverted mass matrix once and for all; or even dummy solver for
+  lumped mass matrix
+\end{enumerate}
