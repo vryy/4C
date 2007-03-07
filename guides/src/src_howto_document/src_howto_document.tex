@@ -12,15 +12,14 @@ In the \verb|guide| folder, type
 
 
 \section{HowTo create a new report}
-
+In the following, we assume you work within the guide subfolder
 \begin{enumerate}
-  \item create a new folder \verb|src_project|
-  \item create a new file \verb|src_project.tex|
+  \item create a new folder \verb|src_project| in subfolder \verb|src/|
+  \item create a new file \verb|src_project.tex| within \verb|src_project|
   \item start the file with \verb|\chapter{Project Title X}|
-  \item add the file to \texttt{Makefile.in} (at an appropriate position; the
-  files are compiled consecutively), e.g.\\
+  \item add the file to \texttt{Makefile.in} (at an appropriate position; the files are compiled consecutively), e.g.\\
   \verb|src/src_project/src_project.tex|
-  \item run \verb|./configure| $\to$ your new folder should be mentioned on the screen and should appear on the screen and in the Makefile. Also, all your eps files should be mentioned in the begining of the Makefile.
+  \item run \verb|./configure| $\to$ your new folder should be mentioned on the screen and should appear on the screen and in the Makefile. Also, all your eps files should be mentioned in the beginning of the Makefile.
 \end{enumerate}
 
 
@@ -32,7 +31,7 @@ After creating your folder and main file and running configure, do
  \item delete \verb|inputpath| and \verb|figurepath| stuff from this file
  \item use \verb|latex single_report_project| as usual
 \end{enumerate}
-This ensures that you have all the packages and conform to the standard of the configure script and, therefore, the general \ccarat{} (oops, he said it again...) documentation.
+This ensures that you have all the packages and conform to the standard of the configure script and, therefore, the general \ccarat{} documentation.
 
 
 \section{Technic}
@@ -59,17 +58,16 @@ Keep all your newcommands inside your own files to avoid cluttering of the templ
 
 All figures have to be provided in EPS format. This allows usage of latex and pdflatex. All paths to pictures have to be in relative paths with respect to the \verb|src_example.tex| file.
 
-Do not use endings in you including statement.
-\subsubsection{Binary Images}
-\begin{verbatim}
-\begin{figure}
-\begin{center}
-  \includegraphics[width=0.5\textwidth]{figures/new_interface_mesh_show_all_meshes}
-  \caption{Included PNG file}
-\end{center}
-\end{figure}
-\end{verbatim}
 
+% \subsubsection{Binary Images}
+% \begin{verbatim}
+% \begin{figure}
+% \begin{center}
+%   \includegraphics[width=0.5\textwidth]{figures/new_interface_mesh_show_all_meshes}
+%   \caption{Included PNG file}
+% \end{center}
+% \end{figure}
+% \end{verbatim}
 \subsubsection{EPS Images}
 \begin{verbatim}
 \begin{figure}
@@ -79,5 +77,6 @@ Do not use endings in you including statement.
 \end{center}
 \end{figure}
 \end{verbatim}
+Do not use endings in your including statement.
 
-eps images will be translated automatically via \verb|epstopdf| to a little pdf file of the same size (bounding box) and is always uptodate with the eps file during compilation of the documents.
+eps images will be translated automatically via \verb|epstopdf| to a pdf file of the same size (and same bounding box) and is always uptodate with the eps file during compilation of the documents.
