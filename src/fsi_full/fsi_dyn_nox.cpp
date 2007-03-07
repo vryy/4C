@@ -202,8 +202,11 @@ FSI_InterfaceProblem::FSI_InterfaceProblem(Epetra_Comm& Comm,
   soln_ = Teuchos::rcp(new Epetra_Vector(*StandardMap_));
 
   // We need to make the solution vector redundant before we can put
-  // the results to the nodes.
-  exportredundant_ = Teuchos::rcp(new Epetra_Export(*StandardMap_,*redundantmap_));
+  // the results to the nodes. We have an unique source map, so use
+  // the importer here.
+  if (!StandardMap_->UniqueGIDs())
+    dserror("source map not unique");
+  importredundant_ = Teuchos::rcp(new Epetra_Import(*redundantmap_,*StandardMap_));
 
   // create connection graph of interface elements
   rawGraph_ = Teuchos::rcp(new Epetra_CrsGraph(Copy,*StandardMap_,12));
@@ -320,9 +323,9 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
 
   redundantsol_->PutScalar(0);
 
-  int err = redundantsol_->Export(x,*exportredundant_,Insert);
+  int err = redundantsol_->Import(x,*importredundant_,Insert);
   if (err!=0)
-    dserror("Export failed with err=%d",err);
+    dserror("Import failed with err=%d",err);
 
   DistributeDisplacements dd(*redundantsol_,ipos->mf_dispnp);
   loop_interface(structfield,dd,*redundantsol_);
@@ -586,7 +589,8 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     sdyn->time = fsidyn->time;
     adyn->time = fsidyn->time;
 
-    fsi_algoout(0);
+    if (par.myrank==0)
+      fsi_algoout(0);
 
     // reset all counters
     std::fill(counter_.begin(),counter_.end(),0);
@@ -942,9 +946,9 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
 
     redundantsol_->PutScalar(0);
 
-    int err = redundantsol_->Export(finalSolution,*exportredundant_,Insert);
+    int err = redundantsol_->Import(finalSolution,*importredundant_,Insert);
     if (err!=0)
-      dserror("Export failed with err=%d",err);
+      dserror("Import failed with err=%d",err);
 
     DistributeDisplacements dd(*redundantsol_,ipos->mf_dispnp);
     loop_interface(structfield,dd,*redundantsol_);

@@ -21,7 +21,7 @@
 #include <Epetra_CrsGraph.h>
 #include <Epetra_Map.h>
 #include <Epetra_LinearProblem.h>
-#include <Epetra_Export.h>
+#include <Epetra_Import.h>
 #include <AztecOO.h>
 #include <Teuchos_ParameterList.hpp>
 
@@ -158,8 +158,8 @@ private:
   //! connection of interface dofs for colored finite differences
   Teuchos::RefCountPtr<Epetra_CrsGraph> rawGraph_;
 
-  //! exporter to make interface displacements redundant
-  Teuchos::RefCountPtr<Epetra_Export> exportredundant_;
+  //! importer to make interface displacements redundant
+  Teuchos::RefCountPtr<Epetra_Import> importredundant_;
 
   //! traditional structure variables
   FSI_STRUCT_WORK* struct_work_;
