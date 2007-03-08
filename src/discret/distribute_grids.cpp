@@ -113,7 +113,7 @@ void distribute_drt_grids()
     for (int j=0;j<field[i].ndis;j++)
     {
       RefCountPtr<DRT::Discretization> actdis = (*discretization)[j];
-      int ierr;
+      int ierr=0;
 #ifdef PARALLEL
       INTRA* actintra = &(par.intra[i]);
       RefCountPtr<Epetra_MpiComm> comm =

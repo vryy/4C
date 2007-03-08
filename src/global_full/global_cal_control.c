@@ -69,6 +69,7 @@ extern struct _FIELD      *sm_field;
 /* header for DRT style input */
 #ifdef CCADISCRET
 #include "../discret/global_inp_control2.H"
+#include "../discret/fluid_dyn_nln_drt.H"
 #endif
 
 /*----------------------------------------------------------------------*
@@ -235,7 +236,8 @@ case prb_fluid_pm:
 #ifndef CCADISCRET
   dyn_fluid();
 #else
-  dserror("dyn_fluid with DRT not yet impl.");
+  dyn_fluid_drt();
+/*  dserror("dyn_fluid with DRT not yet impl.");*/
 #endif
   break;
 #endif

@@ -120,6 +120,7 @@ void DRT::Discretization::ExportRowElements(const Epetra_Map& newmap)
   int newglobal=0;
   Comm().SumAll(&oldmy,&oldglobal,1);
   Comm().SumAll(&newmy,&newglobal,1);
+
   if (oldglobal != newglobal) dserror("New map is likely not non-overlapping");
 #endif  
   

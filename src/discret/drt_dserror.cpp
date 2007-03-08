@@ -74,6 +74,10 @@ myrank=0;
 
   fflush(stdout);
 
+#ifdef DSERROR_DUMP
+  *((int*)0x0)=0;
+#endif
+  
 #ifdef PARALLEL
   MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
 #else
