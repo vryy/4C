@@ -90,7 +90,6 @@ static void add_nodeids_to_condition(const int id, RefCountPtr<DRT::Condition> c
 void input_conditions()
 {
   DSTraceHelper dst("input_conditions");
-
   /*---------------------------------------------- input of time curves */
   inp_cond_curve();
   /*---------------------------------------- input of spatial functions */
