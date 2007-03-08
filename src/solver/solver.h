@@ -962,5 +962,5 @@ typedef struct _DBCSR
 
 
 
-#endif
+#endif /* #ifndef SOLVER_H */
 

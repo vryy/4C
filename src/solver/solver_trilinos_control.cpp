@@ -420,7 +420,7 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
     lp->SetLHS(&x);
     lp->SetRHS(&b);
     lp->SetOperator(matrix);
-    // do symmetric infnorm scaling (note that ML hates this!)
+    // do symmetric infnorm scaling (note that ML might hate this!)
     // most matrices experience slightly better performance with this
     // than with symm. diagonal scaling (ML hates that as well).
     // Of course, the 2 scalings could be introduced as options....
