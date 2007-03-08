@@ -22,6 +22,9 @@ Maintainer: Michael Gee
  *----------------------------------------------------------------------*/
 void DRT::Discretization::ExportRowNodes(const Epetra_Map& newmap)
 {
+  // test whether newmap is non-overlapping
+  if (!newmap.UniqueGIDs()) dserror("new map not unique");
+
   // destroy all ghosted nodes
   const int myrank = Comm().MyPID();
   map<int,RefCountPtr<DRT::Node> >::iterator curr;
@@ -33,12 +36,9 @@ void DRT::Discretization::ExportRowNodes(const Epetra_Map& newmap)
   if (noderowmap_==null) BuildNodeRowMap();
   const Epetra_Map& oldmap = *noderowmap_;
   
-  // test whether newmap is non-overlapping
-  if (!newmap.UniqueGIDs()) dserror("new map not unique");
-
-  // test whether global number of nodes in maps are the same
-  if (newmap.NumGlobalElements() != oldmap.NumGlobalElements())
-    dserror("Global number of nodes in new and old map does not match");
+  // not testing this anymore to allow piecewise exports in jumbo mode input
+  //if (newmap.NumGlobalElements() != oldmap.NumGlobalElements())
+  //  dserror("Global number of nodes in new and old map does not match");
 
   // create an exporter object that will figure out the communication pattern
   DRT::Exporter exporter(oldmap,newmap,Comm());
@@ -107,6 +107,12 @@ void DRT::Discretization::ExportRowElements(const Epetra_Map& newmap)
   if (elerowmap_==null) BuildElementRowMap();
   const Epetra_Map& oldmap = *elerowmap_;
 
+
+  // don't do this test anymore to allow to use this function while
+  // the map of elements is still incomplete in the construction phase of
+  // the discretization. This is used when creating the discretization in
+  // jumbo mode
+#if 0
   // test whether newmap is non-overlapping
   int oldmy = oldmap.NumMyElements();
   int newmy = newmap.NumMyElements();
@@ -115,6 +121,7 @@ void DRT::Discretization::ExportRowElements(const Epetra_Map& newmap)
   Comm().SumAll(&oldmy,&oldglobal,1);
   Comm().SumAll(&newmy,&newglobal,1);
   if (oldglobal != newglobal) dserror("New map is likely not non-overlapping");
+#endif  
   
   // create an exporter object that will figure out the communication pattern
   DRT::Exporter exporter(oldmap,newmap,Comm());
@@ -210,7 +217,7 @@ RefCountPtr<Epetra_CrsGraph> DRT::Discretization::BuildNodeGraph() const
 
 
 /*----------------------------------------------------------------------*
- |  build element map from discretization (private)          mwgee 11/06|
+ |  build element map from discretization (public)           mwgee 11/06|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::BuildElementRowColumn(
                                     const Epetra_Map& noderowmap,
@@ -218,8 +225,6 @@ void DRT::Discretization::BuildElementRowColumn(
                                     RefCountPtr<Epetra_Map>& elerowmap,
                                     RefCountPtr<Epetra_Map>& elecolmap) const
 {
-  if (!Filled()) dserror("FillComplete() was not called on this discretization");
-
   const int myrank = Comm().MyPID();
   const int numproc = Comm().NumProc();
 
@@ -330,7 +335,7 @@ void DRT::Discretization::BuildElementRowColumn(
       
       // at this point I should definitely own exactly half of the nodes
       if (nummine != numnotmine)
-        dserror("Error in logic of this method");
+        dserror("Severe error in logic of this method, this will be painful to fix...");
       
       
       // find owners of these nodes
