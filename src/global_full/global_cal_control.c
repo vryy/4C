@@ -95,7 +95,7 @@ dstrc_enter("ntacal");
   part_fields();
 #else              /* the 'new' DRT discretization management */
   /* in jumbo mode input we don't need this anymore...*/
-  if (genprob.nnode<=1) distribute_drt_grids();
+  if (genprob.nnode<=150) distribute_drt_grids();
 #endif
 #ifdef PERF
   perf_end(12);
