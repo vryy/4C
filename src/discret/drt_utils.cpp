@@ -75,6 +75,7 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
       dserror("DRT::Element is pure virtual, cannot create instance");
     }
     break;
+#ifdef D_SHELL8    
     case ParObject_Shell8:
     {
       DRT::Elements::Shell8* object = new DRT::Elements::Shell8(-1,-1);
@@ -90,6 +91,8 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
       return object;
     }
     break;
+#endif    
+#ifdef D_FLUID3
     case ParObject_Fluid3:
     {
       DRT::Elements::Fluid3* object = new DRT::Elements::Fluid3(-1,-1);
@@ -105,6 +108,7 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
       return object;
     }
     break;
+#endif
     case ParObject_DofSet:
     {
       DRT::DofSet* object = new DRT::DofSet();
