@@ -453,6 +453,34 @@ public:
   virtual void Redistribute(const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap);
 
   /*!
+  \brief Build element row and column map from nodal row and column maps
+         (Filled()==true NOT prerequisite)
+
+  Create a unique element map elerowmap assigning each element an owner.
+  Create an overlapping element map elecolmap representing a one layer
+  overlap of element.
+  Maps are created such that they match the nodal row and column maps provided.
+
+  \param noderowmap (in): unique nodal row map of some distribution
+  \param nodecolmap (in): overlapping nodal column map
+  \param elerowmap (out): unique element row map
+  \param elecolmap (out): overlapping element column map
+
+  \note The provided noderowmap and nodecolmap do not need to match the
+  distribution of nodes in this discretization class. Also, the output
+  element maps do not match the distribution of elements in this class.
+  Total numbers of nodes and elements have to match nodes and elements in
+  this class. The status of this->Filled() is not changed by this method.
+  Neither nodes nor elements are actually redistributed here, this method
+  only builds maps!
+
+  */
+  virtual void BuildElementRowColumn(const Epetra_Map& noderowmap,
+                                     const Epetra_Map& nodecolmap,
+                                     RefCountPtr<Epetra_Map>& elerowmap,
+                                     RefCountPtr<Epetra_Map>& elecolmap) const;
+
+  /*!
   \brief Export the nodes to a different parallel layout
          (Filled()==true NOT prerequisite)
 
@@ -887,32 +915,6 @@ private:
   */
   virtual void BuildElementRegister();
 
-  /*!
-  \brief Build element row and column map from nodal row and column maps
-         (Filled()==true prerequisite)
-
-  Create a unique element map elerowmap assigning each element an owner.
-  Create an overlapping element map elecolmap representing a one layer
-  overlap of element.
-  Maps are created such that they match the nodal row and column maps provided.
-
-  \param noderowmap (in): unique nodal row map of some distribution
-  \param nodecolmap (in): overlapping nodal column map
-  \param elerowmap (out): unique element row map
-  \param elecolmap (out): overlapping element column map
-
-  \note The provided noderowmap and nodecolmap do not need to match the
-  distribution of nodes in this discretization class. Also, the output
-  element maps do not match the distribution of elements in this class.
-  Total numbers of nodes and elements have to match nodes and elements in
-  this class.
-
-  \return Filled()==true on exit
-  */
-  virtual void BuildElementRowColumn(const Epetra_Map& noderowmap,
-                                     const Epetra_Map& nodecolmap,
-                                     RefCountPtr<Epetra_Map>& elerowmap,
-                                     RefCountPtr<Epetra_Map>& elecolmap) const;
 
   /*!
   \brief Assign degrees of freedom to discretization (Filled()==true prerequisite)
