@@ -195,6 +195,7 @@ FSI_InterfaceProblem::FSI_InterfaceProblem(Epetra_Comm& Comm,
                                               redundant_gid.size(), &redundant_gid[0],
                                               0, Comm));
   redundantsol_ = Teuchos::rcp(new Epetra_Vector(*redundantmap_));
+  redundantf_   = Teuchos::rcp(new Epetra_Vector(*redundantmap_));
 
   StandardMap_ = Teuchos::rcp(new Epetra_Map(fsidyn_->numsid,
                                              gid.size(), &gid[0],
@@ -530,8 +531,24 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
   Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Newton"));
   Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
 
+  printParams.set("MyPID", par.myrank);
+
   // Create printing utilities
   Teuchos::RefCountPtr<NOX::Utils> utils = Teuchos::rcp(new NOX::Utils(printParams));
+
+  // Set user defined aitken line search object.
+  if (nlParams.sublist("Line Search").get("Method","Full Step")=="Aitken")
+  {
+    // insert user defined aitken relaxation
+    Teuchos::ParameterList& linesearch = nlParams.sublist("Line Search");
+    Teuchos::RefCountPtr<NOX::LineSearch::Generic> aitken = Teuchos::rcp(new AitkenRelaxation(utils,linesearch));
+
+    // We change the method here.
+    linesearch.set("Method","User Defined");
+    linesearch.set("User Defined Line Search",aitken);
+  }
+
+  // ==================================================================
 
   // log solver iterations
 
@@ -775,17 +792,6 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
 
     // ==================================================================
 
-    if (nlParams.sublist("Line Search").get("Method","Full Step")=="Aitken")
-    {
-      // insert user defined aitken relaxation
-      Teuchos::RefCountPtr<NOX::LineSearch::Generic> aitken = Teuchos::rcp(new AitkenRelaxation(utils,nlParams));
-      Teuchos::ParameterList& linesearch = nlParams.sublist("Line Search");
-      linesearch.set("Method","User Defined");
-      linesearch.set("User Defined Line Search",aitken);
-    }
-
-    // ==================================================================
-
     // No preconditioning at all. This might work. But on large
     // systems it probably won't.
     if (preconditioner=="None")
@@ -945,12 +951,25 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     // return results
 
     redundantsol_->PutScalar(0);
-
     int err = redundantsol_->Import(finalSolution,*importredundant_,Insert);
     if (err!=0)
       dserror("Import failed with err=%d",err);
 
-    DistributeDisplacements dd(*redundantsol_,ipos->mf_dispnp);
+    // The last F has not yet been added to the solution. This F has
+    // satisfied the norms, so it is very small. But never the less...
+#if 0
+    // We can add it here because the source is known to be unique.
+    err = redundantsol_->Import(finalF,*importredundant_,Add);
+    if (err!=0)
+      dserror("Import failed with err=%d",err);
+#endif
+    redundantf_->PutScalar(0);
+    err = redundantf_->Import(finalF,*importredundant_,Insert);
+    if (err!=0)
+      dserror("Import failed with err=%d",err);
+
+    //DistributeDisplacements dd(*redundantsol_,ipos->mf_dispnp);
+    DistributeSolution dd(*redundantsol_,*redundantf_,ipos->mf_dispnp);
     loop_interface(structfield,dd,*redundantsol_);
 
     // ==================================================================
@@ -963,6 +982,7 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
       (*log) << fsidyn->step
              << " " << timer.totalElapsedTime()
              << " " << nlParams.sublist("Output").get("Nonlinear Iterations",0)
+             << " " << nlParams.sublist("Output").get("2-Norm of Residual", 0.)
              << " " << lsParams.sublist("Output").get("Total Number of Linear Iterations",0)
         ;
       for (std::vector<int>::size_type i=0; i<counter_.size(); ++i)

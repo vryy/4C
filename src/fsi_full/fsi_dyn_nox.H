@@ -155,6 +155,9 @@ private:
   //! redundant version of interface displacements
   Teuchos::RefCountPtr<Epetra_Vector> redundantsol_;
 
+  //! redundant version of interface residuum
+  Teuchos::RefCountPtr<Epetra_Vector> redundantf_;
+
   //! connection of interface dofs for colored finite differences
   Teuchos::RefCountPtr<Epetra_CrsGraph> rawGraph_;
 

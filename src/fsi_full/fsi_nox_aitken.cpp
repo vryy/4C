@@ -29,7 +29,10 @@ bool AitkenRelaxation::reset(const Teuchos::RefCountPtr<NOX::GlobalData>& gd,
                              Teuchos::ParameterList& params)
 {
   Teuchos::ParameterList& p = params.sublist("Aitken");
-  nu_ = p.get("Start nu", 0.0);
+
+  // do not reset the aitken factor
+  //nu_ = p.get("Start nu", 0.0);
+
   if (!is_null(del_))
   {
     del_->init(1e20);
@@ -69,9 +72,11 @@ bool AitkenRelaxation::compute(Abstract::Group& grp, double& step,
 
   grp.computeX(oldGrp, dir, step);
 
-#if 0
+#if 1
   // Why calculate F anew here? This is the second time in this
   // loop.
+  // Do we need this in order to have an unrelaxed solution at the
+  // time step end?
   grp.computeF();
 
   // is this reasonable at this point?

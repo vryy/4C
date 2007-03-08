@@ -158,7 +158,7 @@ void dyn_fsi(
   INT                    a_disnum_calc = 0;
   INT                    a_disnum_io   = 0;
 
-
+  FILE                  *log;
 
 #ifdef D_MORTAR
   INTERFACES            *int_faces; /* interface information for mortar   */
@@ -354,7 +354,12 @@ void dyn_fsi(
 #endif
   }
 
-
+  if (par.myrank==0)
+  {
+    char buf[1024];
+    sprintf(buf,"%s%s", allfiles.outputfile_kenner, ".iteration");
+    log = fopen(buf,"w");
+  }
 
   /* initialise AITKEN iteration */
   if (fsidyn->ifsi==fsi_iter_stagg_AITKEN_rel_param)
@@ -845,6 +850,12 @@ fielditer:
     }
     else /* convergence */
     {
+
+      if (par.myrank==0)
+      {
+	fprintf(log,"%d %f %d %e\n",fsidyn->step,ds_cputime()-t2,itnum,resnorm);
+	fflush(log);
+      }
 
       if (par.myrank==0)
         fprintf(out,"            |");
