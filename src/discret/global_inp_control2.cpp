@@ -219,7 +219,13 @@ void inpfield_ccadiscret_jumbo()
     dserror("prb_fsi not yet impl.");
 
   else if (genprob.probtyp==prb_fluid)
+  {
+    if (genprob.numfld!=1) dserror("numfld != 1 for fluid problem");
+    field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
+    field[genprob.numff].fieldtyp = fluid;
+    inpdis(&(field[genprob.numff]));
     dserror("prb_fluid not yet impl.");
+  }
 
   else if (genprob.probtyp==prb_fluid_pm)
     dserror("prb_fluid_pm not yet impl.");
@@ -241,7 +247,8 @@ void inpfield_ccadiscret_jumbo()
     if (!myrank) cout << "Read, create and partition problem graph in...."; fflush(stdout);
     // rownodes, colnodes and graph reflect final parallel layout
     int gnele = 0; // global number of elements is detected here as well
-    input_structural_field_graph(gnele,comm,rownodes,colnodes,graph);
+    input_structural_field_graph(gnele,comm,rownodes,colnodes,graph,
+                                 (string)"--STRUCTURE ELEMENTS");
     if (!myrank) cout << time.ElapsedTime() << " secs\n"; fflush(stdout);
     time.ResetStartTime(); 
     
@@ -285,7 +292,8 @@ void inpfield_ccadiscret_jumbo()
     // actual distribution of objects and
     // the actual distribution of objects matches each other (nodes<->elements)
     roweles = rcp(new Epetra_Map(gnele,0,*comm));
-    input_structural_field_jumbo(structdis,rownodes,colnodes,roweles,coleles);
+    input_structural_field_jumbo(structdis,rownodes,colnodes,roweles,coleles,
+                                 (string)"--STRUCTURE ELEMENTS");
     if (!myrank) cout << time.ElapsedTime() << " secs\n"; fflush(stdout);
     time.ResetStartTime(); 
     
@@ -477,7 +485,8 @@ void input_structural_field_jumbo(RefCountPtr<DRT::Discretization>& dis,
                                   RefCountPtr<Epetra_Map>& rownodes,
                                   RefCountPtr<Epetra_Map>& colnodes,
                                   RefCountPtr<Epetra_Map>& roweles,
-                                  RefCountPtr<Epetra_Map>& coleles)
+                                  RefCountPtr<Epetra_Map>& coleles,
+                                  const string& searchword)
 {
   DSTraceHelper dst("input_structural_field_jumbo");
 
@@ -492,7 +501,7 @@ void input_structural_field_jumbo(RefCountPtr<DRT::Discretization>& dis,
   // open input file at correct position, 
   // valid on proc 0 only!
   ifstream file(allfiles.inputfile_name);
-  file.seekg(ExcludedSectionPositions["--STRUCTURE ELEMENTS"]);
+  file.seekg(ExcludedSectionPositions[searchword]);
   string line;  
   int filecount=0;
   // note that the last block is special....
@@ -684,7 +693,8 @@ void input_structural_field_graph(int& nele,
                                   RefCountPtr<Epetra_Comm> comm,
                                   RefCountPtr<Epetra_Map>& rownodes,
                                   RefCountPtr<Epetra_Map>& colnodes,
-                                  RefCountPtr<Epetra_CrsGraph>& graph)
+                                  RefCountPtr<Epetra_CrsGraph>& graph,
+                                  const string& searchword)
 {
   DSTraceHelper dst("input_structural_field_graph");
 
@@ -703,7 +713,7 @@ void input_structural_field_graph(int& nele,
   {
     // open input file at the right position
     ifstream file(allfiles.inputfile_name);
-    file.seekg(ExcludedSectionPositions["--STRUCTURE ELEMENTS"]);
+    file.seekg(ExcludedSectionPositions[searchword]);
 
     // create a dummy element
     RefCountPtr<DRT::Element> ele = null;
@@ -733,20 +743,9 @@ void input_structural_field_graph(int& nele,
         allfiles.actrow = allfiles.numrows;
         allfiles.actplace = allfiles.input_file[allfiles.actrow] = const_cast<char*>(line.c_str());
 
-        if (eletype=="SHELL8")
-        {
-#ifndef D_SHELL8
-          dserror("SHELL8 needed but not defined in Makefile");
-#else
-          ele = rcp(new DRT::Elements::Shell8(elenumber,comm->MyPID()));
-          // read input for this element
-          ele->ReadElement();
-#endif
-        }
-        else
-        {
-          dserror("element type '%s' unsupported",eletype.c_str());
-        }
+        ele = DRT::Utils::Factory(eletype,elenumber,0);
+        // read input for this element
+        ele->ReadElement();
         
         // get the node ids of this element
         const int  numnode = ele->NumNode();

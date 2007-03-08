@@ -58,12 +58,14 @@ void input_structural_field_jumbo(RefCountPtr<DRT::Discretization>& dis,
                                   RefCountPtr<Epetra_Map>& rownodes,
                                   RefCountPtr<Epetra_Map>& colnodes,
                                   RefCountPtr<Epetra_Map>& roweles,
-                                  RefCountPtr<Epetra_Map>& coleles);
+                                  RefCountPtr<Epetra_Map>& coleles,
+                                  const string& searchword);
 void input_structural_field_graph(int& nele,
                                   RefCountPtr<Epetra_Comm> comm,
                                   RefCountPtr<Epetra_Map>& rownodes,
                                   RefCountPtr<Epetra_Map>& colnodes,
-                                  RefCountPtr<Epetra_CrsGraph>& graph);
+                                  RefCountPtr<Epetra_CrsGraph>& graph,
+                                  const string& searchword);
 void input_assign_nodes(DRT::Discretization& actdis,Epetra_SerialDenseMatrix* tmpnodes);
 void input_design_dpoint_fenode_read(vector<vector<int> >& dnode_fenode,
                                      vector<int>& ndnode_fenode);
