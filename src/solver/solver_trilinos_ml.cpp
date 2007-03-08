@@ -85,7 +85,7 @@ void create_ml_parameterlist(struct _SOLVAR         *actsolv,
     case azprec_ML: // do nothing, this is standard
     break;
     case azprec_MLfluid: // unsymmetric, unsmoothed restruction
-      mllist.set("aggregation: use tentative restruction",true);
+      mllist.set("aggregation: use tentative restriction",true);
     break;
     case azprec_MLfluid2: // full Pretrov-Galerkin unsymmetric smoothed
       mllist.set("energy minimization: enable",true);
