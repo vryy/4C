@@ -32,7 +32,6 @@ using namespace Teuchos;
 
 // forward declarations
 struct _MATERIAL;
-struct _S8_DATA;
 
 /*!
 \brief DRT: namespace of the ccarat discretization module
@@ -273,8 +272,15 @@ private:
   
   //! container containing all kind of fluid3 thisandthat
   DRT::Container                                  data_;
-  //! vector of surfaces of this element (length 1)
-  vector<DRT::Element*>                           surfaces_;
+  
+  //! vector of volumes of this element (length 1)
+  //vector<DRT::Element*>                           volume_;
+  
+  //! vector of surfaces adjacent to this element (fluid3: 4 or 6 surfaces)
+  vector<RefCountPtr<DRT::Elements::Fluid3Surface> > surfaces_;     
+  //! vector of surfaces adjacent to this element (fluid3: 4 or 6 surfaces)
+  
+  vector<DRT::Elements::Fluid3Surface*>              surfaceptrs_;
 
   // internal calculation methods
 
@@ -393,7 +399,7 @@ private:
 /*!
 \class Fluid3Surface
 
-\brief An element representing a surface edge of a fluid3 element
+\brief An element representing a surface of a fluid3 element
 
 \note This is a pure Neumann boundary condition element. It's only
       purpose is to evaluate surface Neumann boundary conditions that might be
@@ -416,7 +422,7 @@ public:
   \param nnode: Number of nodes attached to this element
   \param nodeids: global ids of nodes attached to this element
   \param nodes: the discretizations map of nodes to build ptrs to nodes from
-  \param parent: The parent shell element of this surface
+  \param parent: The parent fluid element of this surface
   \param lsurface: the local surface number of this surface w.r.t. the parent element
   */
   Fluid3Surface(int id, int owner, int nnode, const int* nodeids,

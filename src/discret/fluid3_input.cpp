@@ -173,7 +173,7 @@ bool DRT::Elements::Fluid3::ReadElement()
     else
       dserror("Reading of FLUID3 element failed: Euler/Ale\n");
   }
-  else
+   else
     dserror("Reading of FLUID3 element net algorithm failed: NA\n");
 
 

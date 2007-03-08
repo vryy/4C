@@ -32,6 +32,8 @@ material_(0),
 data_()
 {
   ngp_[0] = ngp_[1] = ngp_[2] = 0;
+  surfaces_.resize(0);
+  surfaceptrs_.resize(0);
   return;
 }
 
@@ -45,6 +47,8 @@ material_(old.material_),
 data_(old.data_)
 {
   for (int i=0; i<3; ++i) ngp_[i] = old.ngp_[i];
+  surfaces_=old.surfaces_;
+  surfaceptrs_=old.surfaceptrs_;
   return;
 }
 
@@ -81,7 +85,7 @@ void DRT::Elements::Fluid3::Pack(vector<char>& data) const
   vector<char> tmp(0);
   data_.Pack(tmp);
   AddtoPack(data,tmp);
-  
+
   return;
 }
 
@@ -109,7 +113,7 @@ void DRT::Elements::Fluid3::Unpack(const vector<char>& data)
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
-  
+
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
@@ -146,15 +150,158 @@ RefCountPtr<DRT::ElementRegister> DRT::Elements::Fluid3::ElementRegister() const
 }
 
 /*----------------------------------------------------------------------*
- |  get vector of surfaces (public)                          mwgee 01/07|
+ |  get vector of surfaces (public)                          g.bau 03/07|
  *----------------------------------------------------------------------*/
 DRT::Element** DRT::Elements::Fluid3::Surfaces()
 {
-  dserror("Method Fluid3.Surfaces() not yet implemented.");
-  // TODO!
-  surfaces_.resize(1);
-  surfaces_[0] = this;
-  return &surfaces_[0];
+
+  const int nsurf = NumSurface();
+  const int numnode = NumNode();
+  surfaces_.resize(nsurf);
+  surfaceptrs_.resize(nsurf);
+  int nodeids[100];
+  DRT::Node* nodes[100];
+  if (nsurf==4)
+ {
+    if (numnode==4)
+    {
+      nodeids[0] = NodeIds()[0];
+      nodeids[1] = NodeIds()[1];
+      nodeids[2] = NodeIds()[2];
+      nodes[0] = Nodes()[0];
+      nodes[1] = Nodes()[1];
+      nodes[2] = Nodes()[2];
+      surfaces_[0] =
+        rcp(new DRT::Elements::Fluid3Surface(0,Owner(),3,nodeids,nodes,this,0));
+      surfaceptrs_[0] = surfaces_[0].get();
+
+      nodeids[0] = NodeIds()[0];
+      nodeids[1] = NodeIds()[1];
+      nodeids[2] = NodeIds()[3];
+      nodes[0] = Nodes()[0];
+      nodes[1] = Nodes()[1];
+      nodes[2] = Nodes()[3];
+      surfaces_[1] =
+        rcp(new DRT::Elements::Fluid3Surface(1,Owner(),3,nodeids,nodes,this,1));
+      surfaceptrs_[1] = surfaces_[1].get();
+
+      nodeids[0] = NodeIds()[2];
+      nodeids[1] = NodeIds()[0];
+      nodeids[2] = NodeIds()[3];
+      nodes[0] = Nodes()[2];
+      nodes[1] = Nodes()[0];
+      nodes[2] = Nodes()[3];
+      surfaces_[2] =
+        rcp(new DRT::Elements::Fluid3Surface(2,Owner(),3,nodeids,nodes,this,2));
+      surfaceptrs_[2] = surfaces_[2].get();
+
+      nodeids[0] = NodeIds()[1];
+      nodeids[1] = NodeIds()[2];
+      nodeids[2] = NodeIds()[3];
+      nodes[0] = Nodes()[1];
+      nodes[1] = Nodes()[2];
+      nodes[2] = Nodes()[3];
+      surfaces_[3] =
+        rcp(new DRT::Elements::Fluid3Surface(3,Owner(),3,nodeids,nodes,this,3));
+      surfaceptrs_[3] = surfaces_[3].get();
+    }
+    else if (numnode==10)
+    {
+      dserror("TET10 surfaces not implemented.");
+    }
+    else dserror("Number of nodes not supported");
+  }
+else if (nsurf==6)
+  {
+    if (numnode==8)
+    {
+      nodeids[0] = NodeIds()[0];
+      nodeids[1] = NodeIds()[3];
+      nodeids[2] = NodeIds()[2];
+      nodeids[3] = NodeIds()[1];
+      nodes[0] = Nodes()[0];
+      nodes[1] = Nodes()[3];
+      nodes[2] = Nodes()[2];
+      nodes[3] = Nodes()[1];      
+      surfaces_[0] =
+        rcp(new DRT::Elements::Fluid3Surface(0,Owner(),4,nodeids,nodes,this,0));
+      surfaceptrs_[0] = surfaces_[0].get();
+
+      nodeids[0] = NodeIds()[0];
+      nodeids[1] = NodeIds()[1];
+      nodeids[2] = NodeIds()[5];
+      nodeids[3] = NodeIds()[4];
+      nodes[0] = Nodes()[0];
+      nodes[1] = Nodes()[1];
+      nodes[2] = Nodes()[5];
+      nodes[3] = Nodes()[4];
+      surfaces_[1] =
+        rcp(new DRT::Elements::Fluid3Surface(1,Owner(),4,nodeids,nodes,this,1));
+      surfaceptrs_[1] = surfaces_[1].get();
+
+      nodeids[0] = NodeIds()[0];
+      nodeids[1] = NodeIds()[4];
+      nodeids[2] = NodeIds()[7];
+      nodeids[3] = NodeIds()[3];
+      nodes[0] = Nodes()[0];
+      nodes[1] = Nodes()[4];
+      nodes[2] = Nodes()[7];
+      nodes[3] = Nodes()[3];
+      surfaces_[2] =
+        rcp(new DRT::Elements::Fluid3Surface(2,Owner(),4,nodeids,nodes,this,2));
+      surfaceptrs_[2] = surfaces_[2].get();
+
+      nodeids[0] = NodeIds()[2];
+      nodeids[1] = NodeIds()[3];
+      nodeids[2] = NodeIds()[7];
+      nodeids[3] = NodeIds()[6];
+      nodes[0] = Nodes()[2];
+      nodes[1] = Nodes()[3];
+      nodes[2] = Nodes()[7];
+      nodes[3] = Nodes()[6];
+      surfaces_[3] =
+        rcp(new DRT::Elements::Fluid3Surface(3,Owner(),4,nodeids,nodes,this,3));
+      surfaceptrs_[3] = surfaces_[3].get();
+      
+      nodeids[0] = NodeIds()[1];
+      nodeids[1] = NodeIds()[2];
+      nodeids[2] = NodeIds()[6];
+      nodeids[3] = NodeIds()[5];
+      nodes[0] = Nodes()[1];
+      nodes[1] = Nodes()[2];
+      nodes[2] = Nodes()[6];
+      nodes[3] = Nodes()[5];
+      surfaces_[4] =
+        rcp(new DRT::Elements::Fluid3Surface(4,Owner(),4,nodeids,nodes,this,4));
+      surfaceptrs_[4] = surfaces_[4].get();
+
+      nodeids[0] = NodeIds()[4];
+      nodeids[1] = NodeIds()[5];
+      nodeids[2] = NodeIds()[6];
+      nodeids[3] = NodeIds()[7];
+      nodes[0] = Nodes()[4];
+      nodes[1] = Nodes()[5];
+      nodes[2] = Nodes()[6];
+      nodes[3] = Nodes()[7];
+      surfaces_[5] =
+        rcp(new DRT::Elements::Fluid3Surface(5,Owner(),4,nodeids,nodes,this,5));
+      surfaceptrs_[5] = surfaces_[5].get();
+      
+    }
+    else if (numnode==20)
+    {
+      dserror("hex20 surfaces not implemented.");
+    }
+    else if (numnode==27)
+    {
+      dserror("hex27 surfaces not implemented.");
+    }
+    else dserror("Number of nodes not supported");
+  }
+  else dserror("Number of lines not supported");
+  
+
+  return (DRT::Element**)(&(surfaceptrs_[0]));
 }
 
 
