@@ -26,7 +26,7 @@ struct _FIELD         *field;
 
 #ifdef D_MLSTRUCT
 /*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
+ |                                                                      |
  | vector of numfld submesh-FIELDs, defined in global_control.c         |
  *----------------------------------------------------------------------*/
 struct _FIELD         *sm_field;
