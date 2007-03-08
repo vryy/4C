@@ -168,6 +168,9 @@ void dyn_fluid_drt()
   // create empty vectors 
   // -------------------------------------------------------------------
 
+  // Vectors passed to the element
+  // -----------------------------
+  
   // accelerations at time n and n-1
   RefCountPtr<Epetra_Vector> accn  = LINALG::CreateVector(*dofrowmap,true);
   RefCountPtr<Epetra_Vector> accnm = LINALG::CreateVector(*dofrowmap,true);
@@ -176,13 +179,29 @@ void dyn_fluid_drt()
   RefCountPtr<Epetra_Vector> velnp = LINALG::CreateVector(*dofrowmap,true);
   RefCountPtr<Epetra_Vector> veln  = LINALG::CreateVector(*dofrowmap,true);
   RefCountPtr<Epetra_Vector> velnm = LINALG::CreateVector(*dofrowmap,true);
+
+  // histvector --- a linear combination of velnm, veln (BDF)
+  //                or veln, accn (One-Step-Theta)             
+  RefCountPtr<Epetra_Vector> hist  = LINALG::CreateVector(*dofrowmap,true);
+  
+  // Vectors associated to boundary conditions
+  // -----------------------------------------
   
   // toggle vector indicating which dofs have Dirichlet BCs
   RefCountPtr<Epetra_Vector> dirichtoggle = LINALG::CreateVector(*dofrowmap,true);
 
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
-  RefCountPtr<Epetra_Vector> zeros = LINALG::CreateVector(*dofrowmap,true);
+  // RefCountPtr<Epetra_Vector> zeros = LINALG::CreateVector(*dofrowmap,true);
 
+  // Vectors used for solution process 
+  // ---------------------------------
+
+  // The residual vector --- more or less the rhs for the incremental
+  // formulation!!!
+  RefCountPtr<Epetra_Vector> residual = LINALG::CreateVector(*dofrowmap,true);
+
+  // Nonlinear iteration increment vector
+  RefCountPtr<Epetra_Vector> incvel = LINALG::CreateVector(*dofrowmap,true);
 
   /*------------------------------------------- set initial step and time */
   fdyn->step    =   0;
@@ -222,10 +241,35 @@ void dyn_fluid_drt()
     bool stop_nonliniter=false;
     while (stop_nonliniter==false)
     {
+     // -------------------------------------------------------------------
+     // call elements to calculate system matrix
+     // -------------------------------------------------------------------
+     {
+      // create the parameters for the discretization
+      ParameterList params;
+      // action for elements
+      params.set("action","calc_fluid_systemmat");
+      // choose what to assemble
+      params.set("assemble matrix 1",true);
+      params.set("assemble matrix 2",false);
+      params.set("assemble vector 1",false);
+      params.set("assemble vector 2",false);
+      params.set("assemble vector 3",false);
+      // other parameters that might be needed by the elements
+      params.set("total time",fdyn->acttime);
+      params.set("delta time",fdyn->dt);
+      // set vector values needed by elements
+      actdis->ClearState();
+      actdis->SetState("trial velocities and pressure",velnp);
+      actdis->SetState("old velocities and pressure"  ,veln );
+      actdis->SetState("u and p n=n-1",velnm );
+      actdis->Evaluate(params,sys_mat,null,null,null,null);
+      actdis->ClearState();
+     }
+	
 
-
-	// check steady state, maxiter and maxtime
-	stop_nonliniter=true;
+     // check steady state, maxiter and maxtime
+     stop_nonliniter=true;
     }
     /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
     /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
@@ -234,7 +278,7 @@ void dyn_fluid_drt()
     /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
     /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
     /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
-
+    printf("nonlinear iteration\n");
     // check steady state, maxiter and maxtime
     stop_timeloop=true;
    }

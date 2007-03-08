@@ -221,8 +221,11 @@ void dyn_nlnstructural_drt()
   sdyn->time = 0.0;
   
   /*--------------------------------------- init all applied time curves -*/
+  
   for (int actcurve=0; actcurve<numcurve; actcurve++)
     dyn_init_curve(actcurve,sdyn->nstep,sdyn->dt,sdyn->maxtime);
+  
+
   
   /*------------------------------------------------------- printout head */
   if (myrank==0) dyn_nlnstruct_outhead(&dynvar,sdyn);
