@@ -277,6 +277,9 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
   // we count the number of times the residuum is build
   counter_[fillFlag] += 1;
 
+  if (!x.Map().UniqueGIDs())
+    dserror("source map not unique");
+
   FIELD* structfield = struct_work_->struct_field;
   FIELD* fluidfield  = fluid_work_ ->fluid_field;
   FIELD* alefield    = ale_work_   ->ale_field;
@@ -616,7 +619,7 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     // start time measurement
     Teuchos::RefCountPtr<Teuchos::TimeMonitor> timemonitor = rcp(new Teuchos::TimeMonitor(timer,true));
 
-    // aus dem Strukturlöser:
+    // aus dem Strukturlï¿½er:
 
       /*======================================================================*
        *                      S O L U T I O N    P H A S E                    *
@@ -747,7 +750,7 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     // gets. This is the closest we get to the true Jacobian.
     else if (jacobian=="Finite Difference")
     {
-      FDC = Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, colorMap, columns));
+      FDC = Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, colorMap, columns, true));
 
       iJac = FDC;
       J = FDC;
@@ -757,7 +760,7 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     // diagonal Jacobian.
     else if (jacobian=="Finite Difference 1")
     {
-      FDC1 = Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, distance1ColorMap, distance1Columns, false, true));
+      FDC1 = Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, distance1ColorMap, distance1Columns, true, true));
 
       iJac = FDC1;
       J = FDC1;
@@ -771,7 +774,7 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
       // we need a Jacobian to start with.
       if (is_null(FDC))
       {
-        FDC = Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, colorMap, columns));
+        FDC = Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, colorMap, columns, true));
       }
       FDC->computeJacobian(*soln());
 
@@ -836,7 +839,7 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
         // FiniteDifferenceColoring might be a good preconditioner for
         // really hard problems. But you should construct it only once
         // a time step. Probably.
-        FDC = Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, colorMap, columns));
+        FDC = Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, colorMap, columns, true));
       }
       iPrec = FDC;
       M = FDC;
@@ -855,7 +858,7 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
       }
       if (is_null(FDC1))
       {
-        FDC1 = Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, distance1ColorMap, distance1Columns, false, true));
+        FDC1 = Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, distance1ColorMap, distance1Columns, true, true));
       }
       iPrec = FDC1;
       M = FDC1;
