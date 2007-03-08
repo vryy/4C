@@ -707,6 +707,8 @@ fielditer:
     dserror("coupling method %d not supported", fsidyn->ifsi);
   }
 
+  /*------------------------------------------------------------------*/
+
 #ifdef FSI_NEWTONCOUPLING
 
   switch (fsidyn->ifsi)
@@ -744,8 +746,36 @@ fielditer:
 
 #endif
 
+  /*------------------------------------------------------------------*/
+
   switch (fsidyn->ifsi)
   {
+  case fsi_sequ_stagg_pred:
+    {
+
+      if (par.myrank==0)
+        fprintf(out,"            |");
+
+      mctrl=3;
+
+      /*--------------------- update MESH data -------------------------*/
+      perf_begin(44);
+      fsi_ale_final(&ale_work,alefield,a_disnum_calc,a_disnum_io);
+      perf_end(44);
+
+      /*-------------------- update FLUID data -------------------------*/
+      perf_begin(42);
+      fsi_fluid_final(&fluid_work,fluidfield,f_disnum_calc,f_disnum_io);
+      perf_end(42);
+
+      /*------------------ update STRUCTURE data -----------------------*/
+      perf_begin(43);
+      fsi_struct_final(&struct_work,structfield,s_disnum_calc,s_disnum_io);
+      perf_end(43);
+
+
+    }
+    break;
 
     /* strong coupling schemes */
     /*=========================*/
