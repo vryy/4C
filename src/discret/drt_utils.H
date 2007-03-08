@@ -24,6 +24,7 @@ Maintainer: Michael Gee
 #include "Teuchos_RefCountPtr.hpp"
 
 #include "drt_parobject.H"
+#include "drt_element.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -54,6 +55,19 @@ namespace Utils
           freeing this instance!
   */
   DRT::ParObject* Factory(const vector<char>& data);
+
+  /*!
+  \brief Create an instance of a finie element depending on the type of element
+  
+  A DRT::Element derived class is allocated and returned. The type of element
+  allocated depends on the input parameter eletype.
+  
+  \param eletype (in): A string containing the type of element
+  \param id (in)     : id of the new element to be created
+  \param owner (in)  : owner of the new element
+  
+  */
+  RefCountPtr<DRT::Element> Factory(const string eletype, const int id, const int owner);
 
   /*!
   \brief Partition a graph with metis

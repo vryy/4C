@@ -125,6 +125,48 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
   return NULL;
 }
 
+/*----------------------------------------------------------------------*
+ |  allocate an element of a specific type (public)          mwgee 03|07|
+ *----------------------------------------------------------------------*/
+RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype, 
+                                              const int id, 
+                                              const int owner)
+{
+  enum TypeofElement
+  {
+    none,
+    shell8,
+    wall1,
+    fluid3
+  };
+  
+  TypeofElement type = none;
+  if (eletype=="none"); // dummy
+  else if (eletype=="SHELL8") type = shell8;
+  else if (eletype=="WALL1")  type = wall1;
+  else if (eletype=="FLUID3") type = fluid3;
+  // continue to add elements here....
+  else dserror("Unknown type of finite element");
+  
+  
+  switch (type)
+  {
+#ifdef D_SHELL8
+    case shell8:
+    {
+      RefCountPtr<DRT::Element> ele = rcp(new DRT::Elements::Shell8(id,owner));
+      return ele;
+    }
+    break;
+#endif
+    // continue to add types of elements here....
+    default:
+      dserror("Unknown type of finite element");
+    break;
+  }
+  
+  return null;
+}
 
 /*----------------------------------------------------------------------*
  |  partition a graph using metis  (public)                  mwgee 11/06|
