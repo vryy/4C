@@ -25,6 +25,7 @@ Maintainer: Michael Gee
 #include "Epetra_SerialComm.h"
 #endif
 #include "Epetra_SerialDenseMatrix.h"
+#include "Epetra_Time.h"
 #include "Teuchos_RefCountPtr.hpp"
 
 #include "drt_discret.H"
@@ -48,8 +49,21 @@ using namespace Teuchos;
 
 // headers and prototypes of functions acessible from c++
 void inpnodes_ccadiscret(Epetra_SerialDenseMatrix& tmpnodes);
+void inpnodes_ccadiscret_jumbo(RefCountPtr<DRT::Discretization>& dis,
+                               RefCountPtr<Epetra_Map>& rownodes,
+                               RefCountPtr<Epetra_Map>& colnodes);
 void input_structural_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm);
 void input_fluid_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm);
+void input_structural_field_jumbo(RefCountPtr<DRT::Discretization>& dis,
+                                  RefCountPtr<Epetra_Map>& rownodes,
+                                  RefCountPtr<Epetra_Map>& colnodes,
+                                  RefCountPtr<Epetra_Map>& roweles,
+                                  RefCountPtr<Epetra_Map>& coleles);
+void input_structural_field_graph(int& nele,
+                                  RefCountPtr<Epetra_Comm> comm,
+                                  RefCountPtr<Epetra_Map>& rownodes,
+                                  RefCountPtr<Epetra_Map>& colnodes,
+                                  RefCountPtr<Epetra_CrsGraph>& graph);
 void input_assign_nodes(DRT::Discretization& actdis,Epetra_SerialDenseMatrix* tmpnodes);
 void input_design_dpoint_fenode_read(vector<vector<int> >& dnode_fenode,
                                      vector<int>& ndnode_fenode);
@@ -74,7 +88,8 @@ extern "C"
 
 void ntainp_ccadiscret();
 void inpfield_ccadiscret();
-void input_conditions();
+void inpfield_ccadiscret_jumbo();
+void input_conditions();                                
 void distribute_drt_grids();
 void dyn_nlnstructural_drt();
 
