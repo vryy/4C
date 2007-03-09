@@ -750,7 +750,22 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     // gets. This is the closest we get to the true Jacobian.
     else if (jacobian=="Finite Difference")
     {
-      FDC = Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, colorMap, columns, true));
+      Teuchos::ParameterList& fdParams = nlParams.sublist("Finite Difference");
+      double alpha = fdParams.get("alpha", 1.0e-4);
+      double beta  = fdParams.get("beta",  1.0e-6);
+      std::string dt = fdParams.get("Difference Type","Forward");
+      NOX::Epetra::FiniteDifferenceColoring::DifferenceType dtype = NOX::Epetra::FiniteDifferenceColoring::Forward;
+      if (dt=="Forward")
+        dtype = NOX::Epetra::FiniteDifferenceColoring::Forward;
+      else if (dt=="Backward")
+        dtype = NOX::Epetra::FiniteDifferenceColoring::Backward;
+      else if (dt=="Centered")
+        dtype = NOX::Epetra::FiniteDifferenceColoring::Centered;
+      else
+        dserror("unsupported difference type '%s'",dt.c_str());
+
+      FDC = Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, colorMap, columns, true, false, beta, alpha));
+      FDC->setDifferenceMethod(dtype);
 
       iJac = FDC;
       J = FDC;
@@ -760,7 +775,22 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     // diagonal Jacobian.
     else if (jacobian=="Finite Difference 1")
     {
-      FDC1 = Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, distance1ColorMap, distance1Columns, true, true));
+      Teuchos::ParameterList& fdParams = nlParams.sublist("Finite Difference");
+      double alpha = fdParams.get("alpha", 1.0e-4);
+      double beta  = fdParams.get("beta",  1.0e-6);
+      std::string dt = fdParams.get("Difference Type","Forward");
+      NOX::Epetra::FiniteDifferenceColoring::DifferenceType dtype = NOX::Epetra::FiniteDifferenceColoring::Forward;
+      if (dt=="Forward")
+        dtype = NOX::Epetra::FiniteDifferenceColoring::Forward;
+      else if (dt=="Backward")
+        dtype = NOX::Epetra::FiniteDifferenceColoring::Backward;
+      else if (dt=="Centered")
+        dtype = NOX::Epetra::FiniteDifferenceColoring::Centered;
+      else
+        dserror("unsupported difference type '%s'",dt.c_str());
+
+      FDC1 = Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, distance1ColorMap, distance1Columns, true, true, beta, alpha));
+      FDC1->setDifferenceMethod(dtype);
 
       iJac = FDC1;
       J = FDC1;
@@ -834,6 +864,7 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
       }
 
       // A real (approximated) matrix for preconditioning
+#if 0
       if (is_null(FDC))
       {
         // FiniteDifferenceColoring might be a good preconditioner for
@@ -843,6 +874,12 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
       }
       iPrec = FDC;
       M = FDC;
+#else
+      Teuchos::RefCountPtr<NOX::Epetra::FiniteDifferenceColoring> precFDC =
+        Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, colorMap, columns, true));
+      iPrec = precFDC;
+      M = precFDC;
+#endif
 
       linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams, iJac, J, iPrec, M, noxSoln));
     }
@@ -856,12 +893,19 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
         if (par.myrank==0)
           utils->out() << RED "Warning: Preconditioner truned off in linear solver settings." END_COLOR "\n";
       }
+#if 0
       if (is_null(FDC1))
       {
         FDC1 = Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, distance1ColorMap, distance1Columns, true, true));
       }
       iPrec = FDC1;
       M = FDC1;
+#else
+      Teuchos::RefCountPtr<NOX::Epetra::FiniteDifferenceColoring> precFDC =
+        Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, distance1ColorMap, distance1Columns, true, true));
+      iPrec = precFDC;
+      M = precFDC;
+#endif
 
       linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams, iJac, J, iPrec, M, noxSoln));
     }
