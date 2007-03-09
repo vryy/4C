@@ -248,11 +248,11 @@ void dyn_fluid_drt()
       // create the parameters for the discretization
       ParameterList params;
       // action for elements
-      params.set("action","calc_fluid_systemmat");
+      params.set("action","calc_fluid_systemmat_and_residual");
       // choose what to assemble
       params.set("assemble matrix 1",true);
       params.set("assemble matrix 2",false);
-      params.set("assemble vector 1",false);
+      params.set("assemble vector 1",true);
       params.set("assemble vector 2",false);
       params.set("assemble vector 3",false);
       // other parameters that might be needed by the elements
@@ -261,9 +261,8 @@ void dyn_fluid_drt()
       // set vector values needed by elements
       actdis->ClearState();
       actdis->SetState("u and p at time n+1 (trial)",velnp);
-      actdis->SetState("u and p at time n"          ,veln );
-      actdis->SetState("old solution data"          ,hist );
-      actdis->Evaluate(params,sys_mat,null,null,null,null);
+      actdis->SetState("old solution data for rhs"  ,hist );
+      actdis->Evaluate(params,sys_mat,null,residual,null,null);
       actdis->ClearState();
      }
 	
