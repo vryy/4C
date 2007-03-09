@@ -309,7 +309,8 @@ void DRT::Discretization::BuildElementRowColumn(
       
       // if I do not own any of the nodes, it is definitely not my element
       // and I do not ghost it
-      if (!nummine) continue;
+      if (!nummine) 
+        continue;
       
       // check whether I ghost all nodes of this element
       // this is neccessary to be able to own or ghost the element
@@ -317,30 +318,7 @@ void DRT::Discretization::BuildElementRowColumn(
         if (!nodecolmap.MyGID(nodeids[j]))
           dserror("I do not have own/ghosted node gid=%d",nodeids[j]);
       
-      
-      // I own the majority of the nodes and therefore the element is mine
-      const int numnotmine = numnode-nummine;
-      if (nummine>numnotmine)
-      {
-        myele[nummyele++] = elegid;
-        continue;
-      }
-      
-      // I own a minority of nodes of the element and therefore ghost it
-      // but do not own it
-      if (nummine<numnotmine)
-      {
-        myghostele[nummyghostele++] = elegid;
-        continue;
-      }
-      
-      // at this point I should definitely own exactly half of the nodes
-      if (nummine != numnotmine)
-        dserror("Severe error in logic of this method, this will be painful to fix...");
-      
-      
-      // find owners of these nodes
-      // and how many each of them owns
+      // find out who owns how many of the nodes
       vector<int> nodeowner(numnode);
       vector<int> numperproc(numproc);
       for (int j=0; j<numproc; ++j) numperproc[j] = 0;
@@ -352,48 +330,34 @@ void DRT::Discretization::BuildElementRowColumn(
         numperproc[owner]++;
       }
       
-      // see whether all other owners own less than me
-      // see who owns the same no. of nodes as me
-      bool ownless = true;
-      int  procwhoownssame=-1;
-      for (int j=0; j<numproc; ++j)
-        if (numperproc[j]<nummine || j==myrank)
-          continue;
-        else
+      // the proc with the largest number of nodes owns the element, 
+      // all others ghost it
+      // if no. of nodes is equal among some procs, 
+      // the higher rank owns the element
+      int owner   = -1;
+      int maxnode = 0;
+      for (int j=0; j<numnode; ++j)
+      {
+        int currentproc = nodeowner[j];
+        int ownhowmany  = numperproc[currentproc];
+        if (ownhowmany>=maxnode)
         {
-          ownless = false;
-          procwhoownssame = j;
-          break;
+          owner   = currentproc;
+          maxnode = ownhowmany;
         }
-        
-      // if all others own less, then its my element
-      if (ownless)
+      }
+      if (myrank==owner)
       {
         myele[nummyele++] = elegid;
         continue;
       }
-      // there is a proc procwhoownssame with the same no. of nodes
-      // Now, the element is mine if I am the lower rank, 
-      // else I just ghost it
       else
       {
-        if (myrank<procwhoownssame)
-        {
-          myele[nummyele++] = elegid;
-          continue;
-        }
-        else
-        {
-          myghostele[nummyghostele++] = elegid;
-          continue;
-        }
+        myghostele[nummyghostele++] = elegid;
+        continue;
       }
+      dserror("Error in logic of element ownerships");
       
-      cout << "Proc " << myrank << " numnode " << numnode << " Owners ";
-      for (int j=0; j<numnode; ++j) cout << nodeowner[j] << " ";
-      cout << endl;
-      fflush(stdout);
-      dserror("Do not know what to do with this element gid=%d",elegid);
     } // for (int i=0; i<size;)
   } // for (int proc=0; proc<numproc; ++proc)
 
