@@ -260,9 +260,9 @@ void dyn_fluid_drt()
       params.set("delta time",fdyn->dt);
       // set vector values needed by elements
       actdis->ClearState();
-      actdis->SetState("trial velocities and pressure",velnp);
-      actdis->SetState("old velocities and pressure"  ,veln );
-      actdis->SetState("u and p n=n-1",velnm );
+      actdis->SetState("u and p at time n+1 (trial)",velnp);
+      actdis->SetState("u and p at time n"          ,veln );
+      actdis->SetState("old solution data"          ,hist );
       actdis->Evaluate(params,sys_mat,null,null,null,null);
       actdis->ClearState();
      }
