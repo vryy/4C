@@ -193,6 +193,11 @@ void dyn_fluid_drt()
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
   RefCountPtr<Epetra_Vector> zeros = LINALG::CreateVector(*dofrowmap,true);
 
+
+  // the vector containing body and surface forces
+  RefCountPtr<Epetra_Vector> neumann_loads = LINALG::CreateVector(*dofrowmap,true);
+
+  
   // Vectors used for solution process 
   // ---------------------------------
 
@@ -220,15 +225,27 @@ void dyn_fluid_drt()
 
   } /* end if (myrank==0) */
   
-  /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
-  /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
-  /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
-  /*                               TIMELOOP                             */
-  /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
-  /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
-  /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
   {
+   // save all fluid-dynamic info which will be overwritten by startingalgo
+   FLUID_TIMEINTTYPE iop_s    = fdyn->iop;
+   double theta_s  = fdyn->theta;
+   if (theta_s < EPS5)
+   {
+     theta_s = 1.0;
+   }
+   if (iop_s == timeint_bdf2) /* BDF2 */
+   {
+     theta_s = 1.0;
+   }
+      
    bool stop_timeloop=false;
+   /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
+   /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
+   /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
+   /*                               TIMELOOP                             */
+   /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
+   /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
+   /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
    while (stop_timeloop==false)
    {
     // increase counters and time
@@ -236,7 +253,18 @@ void dyn_fluid_drt()
     fdyn->dta  = fdyn->dt;                   /* constant time step size */
     fdyn->acttime +=fdyn->dta;
 
-
+    // check (starting) algorithm 
+    if (fdyn->step<=fdyn->nums) /* set parameter for starting phase */
+    {
+     fdyn->iop    = timeint_one_step_theta;
+     fdyn->theta  = fdyn->thetas;
+    }
+    else if (fdyn->step==(fdyn->nums+1)) /* set original parameter */
+    {
+     fdyn->iop    = iop_s;
+     fdyn->theta  = theta_s;
+    }
+    
     // out to screen
     if (myrank==0)
     {
@@ -278,11 +306,6 @@ void dyn_fluid_drt()
                   
     */
 
-
-    /*------------------------------------------ check (starting) algorithm */
-    //                                @=
-
-
     
     switch (fdyn->iop)
     {
@@ -297,15 +320,20 @@ void dyn_fluid_drt()
     }
 
     /* do explicit predictor step to start iteration from better value */
-    //                               @=
-    
+    /*           velnp is still containing veln, the first trial value */
+    if(fdyn->step>1)
+    {
+	velnp->Update(fdyn->dta*(1.0+fdyn->dta/fdyn->dtp),*accn,
+		      DSQR(fdyn->dta/fdyn->dtp),*velnm,
+		      -DSQR(fdyn->dta/fdyn->dtp));
+    }
     
     //-------- set dirichlet boundary conditions 
     //------------------------------------- evaluate Neumann and Dirichlet BCs
     {
      ParameterList params;
      // action for elements
-     params.set("action","calc_struct_eleload");
+     params.set("action","calc_fluid_eleload");
      // choose what to assemble
      params.set("assemble matrix 1",false);
      params.set("assemble matrix 2",false);
@@ -324,7 +352,9 @@ void dyn_fluid_drt()
      actdis->ClearState();
 
      // evaluate Neumann conditions
-     //                            @=
+     neumann_loads->PutScalar(0.0);
+     actdis->EvaluateNeumann(params,*neumann_loads);
+     actdis->ClearState();
     }
     
     {
@@ -505,6 +535,9 @@ void dyn_fluid_drt()
     velnm->Update(1.0,*veln ,0.0);
     veln ->Update(1.0,*velnp,0.0);
 
+    // update time step sizes
+    fdyn->dtp = fdyn->dta;
+    
     
     // check steady state, maxiter and maxtime
     if(fdyn->step==fdyn->nstep||fdyn->acttime>=fdyn->maxtime)
