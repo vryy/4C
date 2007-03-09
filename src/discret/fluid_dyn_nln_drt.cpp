@@ -222,8 +222,20 @@ void dyn_fluid_drt()
   /*------------------------------------------------------- printout head */
   if (myrank==0)
   {
-
+      
   } /* end if (myrank==0) */
+
+
+  // -------------------------------------------------------------------
+  // context for output and restart
+  // -------------------------------------------------------------------
+  DiscretizationWriter output(actdis);
+  output.WriteMesh(0,0.0);
+
+  //------------------------------------------------- output initial state
+  output.NewStep(fdyn->step, fdyn->acttime);
+  output.WriteVector("vel_and_pres", velnp);
+
   
   {
    // save all fluid-dynamic info which will be overwritten by startingalgo
@@ -468,8 +480,12 @@ void dyn_fluid_drt()
     /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
     }
 
-    // update acceleration
 
+    //-------------------------------------------- output of solution
+    output.NewStep(fdyn->step, fdyn->acttime);
+    output.WriteVector("vel_and_pres", velnp);
+    
+    // update acceleration
 
     if (fdyn->step == 1)
     {
