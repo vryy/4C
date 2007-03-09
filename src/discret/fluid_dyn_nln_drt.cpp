@@ -90,7 +90,7 @@ extern struct _CURVE *curve;
 
 
 
-#include "fluid_dyn_nln_drt.H"
+//#include "fluid_dyn_nln_drt.H"
 
 
 /*----------------------------------------------------------------------*
@@ -191,7 +191,7 @@ void dyn_fluid_drt()
   RefCountPtr<Epetra_Vector> dirichtoggle = LINALG::CreateVector(*dofrowmap,true);
 
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
-  // RefCountPtr<Epetra_Vector> zeros = LINALG::CreateVector(*dofrowmap,true);
+  RefCountPtr<Epetra_Vector> zeros = LINALG::CreateVector(*dofrowmap,true);
 
   // Vectors used for solution process 
   // ---------------------------------
@@ -231,6 +231,103 @@ void dyn_fluid_drt()
    bool stop_timeloop=false;
    while (stop_timeloop==false)
    {
+    // increase counters and time
+    fdyn->step++;
+    fdyn->dta  = fdyn->dt;                   /* constant time step size */
+    fdyn->acttime +=fdyn->dta;
+
+
+    // out to screen
+    if (myrank==0)
+    {
+	fluid_algoout();
+    }
+    
+    // set time specific parameters
+    switch (fdyn->iop)
+    {
+	case timeint_one_step_theta: /* One step Theta time integration */
+	    fdyn->thsl = fdyn->dta*fdyn->theta;
+	    fdyn->thpl = fdyn->thsl;
+	    fdyn->thsr = (1.0 - fdyn->theta)*fdyn->dta;
+	    fdyn->thpr = fdyn->thsr;
+	    break;
+	case timeint_bdf2:	/* 2nd order backward differencing BDF2	*/
+	    fdyn->thsl = fdyn->dta*2.0/3.0;
+	    fdyn->thpl = fdyn->thsl;
+	    fdyn->thsr = 0.0;
+	    fdyn->thpr = fdyn->thsr;
+	    break;
+	default:
+	    dserror("Time integration scheme unknown for mass rhs!");	    
+    }
+
+    
+    // part of the residual vector belonging to the old timestep
+
+    /*
+
+         One-step-Theta:
+
+                  vel(n) + dt*(1-Theta)*acc(n)
+
+
+         BDF2: for constant time step:
+
+                  4/3 vel(n) - 1/3 vel(n-1)
+                  
+    */
+
+
+    /*------------------------------------------ check (starting) algorithm */
+    //                                @=
+
+
+    
+    switch (fdyn->iop)
+    {
+	case timeint_one_step_theta: /* One step Theta time integration */
+	    hist->Update(1.0,*veln,fdyn->dta*(1.0-fdyn->theta),*accn,0.0);
+	    break;
+	case timeint_bdf2:	/* 2nd order backward differencing BDF2	*/
+	    hist->Update(4./3.,*veln,-1./3.,*velnm,0.0);
+	    break;
+	default:
+	    dserror("Time integration scheme unknown for mass rhs!");	    
+    }
+
+    /* do explicit predictor step to start iteration from better value */
+    //                               @=
+    
+    
+    //-------- set dirichlet boundary conditions 
+    //------------------------------------- evaluate Neumann and Dirichlet BCs
+    {
+     ParameterList params;
+     // action for elements
+     params.set("action","calc_struct_eleload");
+     // choose what to assemble
+     params.set("assemble matrix 1",false);
+     params.set("assemble matrix 2",false);
+     params.set("assemble vector 1",true);
+     params.set("assemble vector 2",false);
+     params.set("assemble vector 3",false);
+     // other parameters needed by the elements
+     params.set("total time",fdyn->acttime);
+     params.set("delta time",fdyn->dt);
+     // set vector values needed by elements
+     actdis->ClearState();
+     actdis->SetState("u and p at time n+1 (trial)",velnp);
+     // predicted dirichlet values
+     // velnp then also holds prescribed new dirichlet values
+     actdis->EvaluateDirichlet(params,*velnp,*dirichtoggle);
+     actdis->ClearState();
+
+     // evaluate Neumann conditions
+     //                            @=
+    }
+    
+    {
     /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
     /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
     /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
@@ -238,38 +335,100 @@ void dyn_fluid_drt()
     /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
     /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
     /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
-    bool stop_nonliniter=false;
-    while (stop_nonliniter==false)
-    {
-     // -------------------------------------------------------------------
-     // call elements to calculate system matrix
-     // -------------------------------------------------------------------
+     int  n_itnum=0;
+     bool stop_nonliniter=false;
+     if(myrank == 0)
      {
-      // create the parameters for the discretization
-      ParameterList params;
-      // action for elements
-      params.set("action","calc_fluid_systemmat_and_residual");
-      // choose what to assemble
-      params.set("assemble matrix 1",true);
-      params.set("assemble matrix 2",false);
-      params.set("assemble vector 1",true);
-      params.set("assemble vector 2",false);
-      params.set("assemble vector 3",false);
-      // other parameters that might be needed by the elements
-      params.set("total time",fdyn->acttime);
-      params.set("delta time",fdyn->dt);
-      // set vector values needed by elements
-      actdis->ClearState();
-      actdis->SetState("u and p at time n+1 (trial)",velnp);
-      actdis->SetState("old solution data for rhs"  ,hist );
-      actdis->Evaluate(params,sys_mat,null,residual,null,null);
-      actdis->ClearState();
+      printf("-------------------------------------------------\n");
      }
-	
+     while (stop_nonliniter==false)
+     {
+      n_itnum++;
+      // -------------------------------------------------------------------
+      // call elements to calculate system matrix
+      // -------------------------------------------------------------------
+      {
+       // zero out the stiffness matrix
+       sys_mat = LINALG::CreateMatrix(*dofrowmap,81);
+       // zero out residual
+       residual->PutScalar(0.0);
+	  
+       // create the parameters for the discretization
+       ParameterList params;
 
-     // check steady state, maxiter and maxtime
-     stop_nonliniter=true;
-    }
+       // action for elements
+       params.set("action","calc_fluid_systemmat_and_residual");
+       // choose what to assemble
+       params.set("assemble matrix 1",true);
+       params.set("assemble matrix 2",false);
+       params.set("assemble vector 1",true);
+       params.set("assemble vector 2",false);
+       params.set("assemble vector 3",false);
+       // other parameters that might be needed by the elements
+       params.set("total time",fdyn->acttime);
+       params.set("delta time",fdyn->dt);
+       // set vector values needed by elements
+       actdis->ClearState();
+       actdis->SetState("u and p at time n+1 (trial)",velnp);
+       actdis->SetState("old solution data for rhs"  ,hist );
+
+       // call loop over elements
+       actdis->Evaluate(params,sys_mat,null,residual,null,null);
+       actdis->ClearState();
+
+       // finalize the system matrix
+       LINALG::Complete(*sys_mat);
+      }
+
+      //--------- Apply dirichlet boundary conditions to system of equations
+      //          residual discplacements are supposed to be zero at
+      //          boundary conditions
+      LINALG::ApplyDirichlettoSystem(sys_mat,incvel,residual,
+				     zeros,dirichtoggle);
+      
+      
+      
+      //-------solve for residual displacements to correct incremental displacements
+      incvel->PutScalar(0.0);
+      //solver.Solve(sys_mat,incvel,residual,true,false);
+
+      //------------------------------------------------ update (u,p) trial
+      velnp->Update(1.0,*incvel,1.0);
+      
+      // check convergence
+      {
+       double incvelnorm_L2;
+       incvel->Norm2(&incvelnorm_L2);
+       
+       double velnorm_L2;
+       velnp->Norm2(&velnorm_L2);
+       
+       
+       if (velnorm_L2<EPS5)
+       {
+	velnorm_L2 = 1.0;
+       }
+       
+       if(myrank == 0)
+       {
+	printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   |\n",
+	       n_itnum,fdyn->itemax,fdyn->ittol,incvelnorm_L2/velnorm_L2);
+       }
+       
+       if(incvelnorm_L2/velnorm_L2<fdyn->ittol
+	  ||
+	  n_itnum == fdyn->itemax)
+       {
+	stop_nonliniter=true;
+	if(myrank == 0)
+	{
+	 printf("-------------------------------------------------\n");
+	}
+       }
+      }
+     }
+
+     
     /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
     /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
     /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
@@ -277,9 +436,81 @@ void dyn_fluid_drt()
     /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
     /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
     /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
-    printf("nonlinear iteration\n");
+    }
+
+    // update acceleration
+
+
+    if (fdyn->step == 1)
+    {
+	// do just a linear interpolation within the first timestep
+	accn->Update(1.0/fdyn->dta,*velnp,
+		     1.0/fdyn->dta,*veln ,
+		     0.0);
+	
+	// ???
+	accnm->Update(1.0,*accn,0.0);
+		
+    }
+    else
+    { 
+	// prev. acceleration becomes (n-1)-accel. of next time step
+	accnm->Update(1.0,*accn,0.0);
+
+	/*
+
+        One-step-Theta:
+
+        acc(n+1) = (vel(n+1)-vel(n)) / (Theta * dt(n)) - (1/Theta -1) * acc(n)
+
+
+        BDF2:
+
+   	              2*dt(n)+dt(n-1)		     dt(n)+dt(n-1)
+        acc(n+1) = --------------------- vel(n+1) - --------------- vel(n)
+	           dt(n)*[dt(n)+dt(n-1)]	     dt(n)*dt(n-1)
+
+          		    dt(n)
+	         + ----------------------- vel(n+1)
+ 	           dt(n-1)*[dt(n)+dt(n-1)]
+
+        */
+
+	switch (fdyn->iop)
+	{
+	    case timeint_one_step_theta: /* One step Theta time integration */
+		accn->Update(1.0/(fdyn->theta*fdyn->dta),*velnp,
+			     1.0/(fdyn->theta*fdyn->dta),*veln ,
+			     (-1.0/fdyn->theta-1));
+		break;
+	    case timeint_bdf2:	/* 2nd order backward differencing BDF2	*/
+	        {
+		 double dta = fdyn->dta;
+		 double dtp = fdyn->dtp;
+		 if (dta*dtp < EPS15)
+		     dserror("Zero time step size!!!!!");
+		 double sum = dta + dtp;
+		 
+		 accn->Update((2.0*dta+dtp)/(dta*sum) + dta/(dtp*sum),*velnp,
+			      -sum / (dta*dtp),*veln ,
+			      0.0);
+		}
+		break;
+	    default:
+		dserror("Time integration scheme unknown for mass rhs!");	    
+	}
+    }
+
+    // solution of this step becomes most recent solution of the last step
+    velnm->Update(1.0,*veln ,0.0);
+    veln ->Update(1.0,*velnp,0.0);
+
+    
     // check steady state, maxiter and maxtime
-    stop_timeloop=true;
+    if(fdyn->step==fdyn->nstep||fdyn->acttime>=fdyn->maxtime)
+    {
+	stop_timeloop=true;
+    }
    }
   
   }

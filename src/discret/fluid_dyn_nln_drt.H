@@ -38,6 +38,7 @@ Maintainer: Peter Gamnitzer
 extern "C" /* stuff which is c and is accessed from c++ */
 {
 #include "../headers/standardtypes.h"
+#include "../fluid_full/fluid_prototypes.h"
 }
 
 #include "dstrc.H" /* needs standardtypes.h */
