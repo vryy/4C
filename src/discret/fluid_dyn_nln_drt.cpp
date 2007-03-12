@@ -355,7 +355,7 @@ void dyn_fluid_drt()
      params.set("assemble vector 3",false);
      // other parameters needed by the elements
      params.set("total time",fdyn->acttime);
-     params.set("delta time",fdyn->dt);
+     params.set("delta time",fdyn->dta);
      // set vector values needed by elements
      actdis->ClearState();
      actdis->SetState("u and p at time n+1 (trial)",velnp);
@@ -409,7 +409,8 @@ void dyn_fluid_drt()
        params.set("assemble vector 3",false);
        // other parameters that might be needed by the elements
        params.set("total time",fdyn->acttime);
-       params.set("delta time",fdyn->dt);
+       params.set("delta time",fdyn->dta);
+       params.set("time constant for integration",fdyn->thsl);
        // set vector values needed by elements
        actdis->ClearState();
        actdis->SetState("u and p at time n+1 (trial)",velnp);
