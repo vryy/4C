@@ -23,7 +23,14 @@ filter. But to link the filter stubs of these functions are needed.
 
 #include "post_drt_common.H"
 #include "../discret/shell8.H"
+#include "../discret/fluid3.H"
 
+
+extern "C" void ReadDat()
+{
+    dserror("This is not supposed to happen");
+    return;
+}
 
 /*----------------------------------------------------------------------*
  |  compare the integers - qsort routine                  a.lipka 5/01  |
@@ -139,6 +146,47 @@ int Elements::Shell8Line::EvaluateNeumann(ParameterList& params,
                                           Epetra_SerialDenseVector& elevec1)
 {
   dserror("Elements::Shell8Line::EvaluateNeumann undefined");
+  return 0;
+}
+
+int Elements::Fluid3Register::Initialize(Discretization&)
+{
+  // dserror("Elements::Fluid3Register::Initialize undefined");
+  return 0;
+}
+
+bool Elements::Fluid3::ReadElement()
+{
+  dserror("Elements::Fluid3::ReadElement undefined");
+  return false;
+}
+
+int Elements::Fluid3::Evaluate(ParameterList&,
+                               Discretization&,
+                               vector<int>&,
+                               Epetra_SerialDenseMatrix&,
+                               Epetra_SerialDenseMatrix&,
+                               Epetra_SerialDenseVector&,
+                               Epetra_SerialDenseVector&,
+                               Epetra_SerialDenseVector&)
+{
+  dserror("Elements::Fluid3::Evaluate undefined");
+  return 0;
+}
+
+int Elements::Fluid3::EvaluateNeumann(ParameterList&, Discretization&, Condition&, vector<int>&, Epetra_SerialDenseVector&)
+{
+  dserror("Elements::Fluid3::EvaluateNeumann undefined");
+  return 0;
+}
+
+int Elements::Fluid3Surface::EvaluateNeumann(ParameterList& params,
+                                          Discretization&      discretization,
+                                          Condition&           condition,
+                                          vector<int>&              lm,
+                                          Epetra_SerialDenseVector& elevec1)
+{
+  dserror("Elements::Fluid3Surface::EvaluateNeumann undefined");
   return 0;
 }
 
