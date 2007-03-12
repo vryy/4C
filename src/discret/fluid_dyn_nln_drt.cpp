@@ -155,8 +155,8 @@ void dyn_fluid_drt()
   // create empty system matrix --- stiffness and mass are assembled in
   // one system matrix!
   // -------------------------------------------------------------------
-  RefCountPtr<Epetra_CrsMatrix> sys_mat
-      = LINALG::CreateMatrix(*dofrowmap,81);
+  int maxentriesperrow = 81;
+  RefCountPtr<Epetra_CrsMatrix> sys_mat = null;
 
 
   // -------------------------------------------------------------------
@@ -392,7 +392,7 @@ void dyn_fluid_drt()
       // -------------------------------------------------------------------
       {
        // zero out the stiffness matrix
-       sys_mat = LINALG::CreateMatrix(*dofrowmap,81);
+       sys_mat = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow);
        // zero out residual
        residual->PutScalar(0.0);
 	  
@@ -421,6 +421,7 @@ void dyn_fluid_drt()
 
        // finalize the system matrix
        LINALG::Complete(*sys_mat);
+       maxentriesperrow = sys_mat->MaxNumEntries();
       }
 
       //--------- Apply dirichlet boundary conditions to system of equations
@@ -433,7 +434,9 @@ void dyn_fluid_drt()
       
       //-------solve for residual displacements to correct incremental displacements
       incvel->PutScalar(0.0);
-      //solver.Solve(sys_mat,incvel,residual,true,false);
+      bool initsolver = false; // init in first iteration only
+      if (!n_itnum) initsolver = true;
+      //solver.Solve(sys_mat,incvel,residual,true,initsolver);
 
       //------------------------------------------------ update (u,p) trial
       velnp->Update(1.0,*incvel,1.0);
