@@ -137,7 +137,7 @@ void ntainp_ccadiscret()
   /* input of fields */
   // depending on the size of the problem we enter 2 different input routines
   // here
-  if (genprob.nnode>150) // look in file global_cal_control.c:97 as well!
+  if (genprob.nnode>1) // look in file global_cal_control.c:97 as well!
     inpfield_ccadiscret_jumbo(); // jumbo mode input for large problems
   else
     inpfield_ccadiscret();       // standard input for small to medium problems
@@ -220,11 +220,69 @@ void inpfield_ccadiscret_jumbo()
 
   else if (genprob.probtyp==prb_fluid)
   {
+    // allocate and input general old stuff....
     if (genprob.numfld!=1) dserror("numfld != 1 for fluid problem");
     field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
     field[genprob.numff].fieldtyp = fluid;
     inpdis(&(field[genprob.numff]));
-    dserror("prb_fluid not yet impl.");
+    
+    Epetra_Time time(*comm);
+    if (!myrank) cout << "Entering jumbo reading mode...\n"; fflush(stdout);
+
+    if (!myrank) cout << "Read, create and partition problem graph in...."; fflush(stdout);
+    // rownodes, colnodes and graph reflect final parallel layout
+    int gnele = 0; // global number of elements is detected here as well
+    input_field_graph(gnele,comm,rownodes,colnodes,graph,"--FLUID ELEMENTS");
+    if (!myrank) cout << time.ElapsedTime() << " secs\n"; fflush(stdout);
+    time.ResetStartTime(); 
+    // this guy is VERY big and we don't need him anymore now
+    graph = null;
+    
+    // allocate empty discretization
+    fluiddis = rcp(new DRT::Discretization("Fluid",comm));
+    
+    if (!myrank) cout << "Read, create and partition nodes         in...."; fflush(stdout);
+    // all processors enter the input of the nodes
+    inpnodes_ccadiscret_jumbo(fluiddis,rownodes,colnodes);
+    if (!myrank) cout << time.ElapsedTime() << " secs\n"; fflush(stdout);
+    time.ResetStartTime(); 
+
+    // at this point, we have all nodes in structdis and they already
+    // have the final distribution!
+    
+    // allocate vector of discretizations
+    vector<RefCountPtr<DRT::Discretization> >* discretization =
+      new vector<RefCountPtr<DRT::Discretization> >(1);
+    field[0].ccadis = (void*)discretization;
+    // put our discretization in there
+    (*discretization)[0] = fluiddis;
+    
+    if (!myrank) cout << "Read, create and partition elements      in...."; fflush(stdout);
+    // read fluid elements from file (in jumbo mode)
+    // we assume some stupid linear distribution of elements here because
+    // we don't know any better (yet).
+    // This linear distribution is used while reading the elements to avoid
+    // proc 0 storing all elements at the same time.
+    // Proc 0 will read and immediately distribute junks of elements to other
+    // processors.
+    // roweles is going to be replaced inside input_field_jumbo
+    // by something very resonable matching the distribution of nodes
+    // in rownodes and colnodes once reading is done.
+    // coleles will be created as well
+    // elements on output have proper distribution and ghosting, such that
+    // all maps rownodes, colnodes, roweles, coleles match the
+    // actual distribution of objects and
+    // the actual distribution of objects matches each other (nodes<->elements)
+    roweles = rcp(new Epetra_Map(gnele,0,*comm));
+    input_field_jumbo(fluiddis,rownodes,colnodes,roweles,coleles,"--FLUID ELEMENTS");
+    if (!myrank) cout << time.ElapsedTime() << " secs\n"; fflush(stdout);
+    time.ResetStartTime(); 
+
+    if (!myrank) cout << "Complete discretization                  in...."; fflush(stdout);
+    // Now we will find out whether fluiddis can fly....
+    int err = fluiddis->FillComplete();
+    if (err) dserror("fluiddis->FillComplete() returned %d",err);
+    if (!myrank) cout << time.ElapsedTime() << " secs\n"; fflush(stdout);
   }
 
   else if (genprob.probtyp==prb_fluid_pm)
@@ -247,8 +305,7 @@ void inpfield_ccadiscret_jumbo()
     if (!myrank) cout << "Read, create and partition problem graph in...."; fflush(stdout);
     // rownodes, colnodes and graph reflect final parallel layout
     int gnele = 0; // global number of elements is detected here as well
-    input_structural_field_graph(gnele,comm,rownodes,colnodes,graph,
-                                 (string)"--STRUCTURE ELEMENTS");
+    input_field_graph(gnele,comm,rownodes,colnodes,graph,"--STRUCTURE ELEMENTS");
     if (!myrank) cout << time.ElapsedTime() << " secs\n"; fflush(stdout);
     time.ResetStartTime(); 
     
@@ -283,7 +340,7 @@ void inpfield_ccadiscret_jumbo()
     // proc 0 storing all elements at the same time.
     // Proc 0 will read and immediately distribute junks of elements to other
     // processors.
-    // roweles is going to be replaced inside input_structural_field_jumbo
+    // roweles is going to be replaced inside input_field_jumbo
     // by something very resonable matching the distribution of nodes
     // in rownodes and colnodes once reading is done.
     // coleles will be created as well
@@ -292,8 +349,7 @@ void inpfield_ccadiscret_jumbo()
     // actual distribution of objects and
     // the actual distribution of objects matches each other (nodes<->elements)
     roweles = rcp(new Epetra_Map(gnele,0,*comm));
-    input_structural_field_jumbo(structdis,rownodes,colnodes,roweles,coleles,
-                                 (string)"--STRUCTURE ELEMENTS");
+    input_field_jumbo(structdis,rownodes,colnodes,roweles,coleles,"--STRUCTURE ELEMENTS");
     if (!myrank) cout << time.ElapsedTime() << " secs\n"; fflush(stdout);
     time.ResetStartTime(); 
     
@@ -481,14 +537,14 @@ void input_assign_nodes(DRT::Discretization& actdis,Epetra_SerialDenseMatrix* tm
 
  */
 /*-----------------------------------------------------------------------*/
-void input_structural_field_jumbo(RefCountPtr<DRT::Discretization>& dis,
-                                  RefCountPtr<Epetra_Map>& rownodes,
-                                  RefCountPtr<Epetra_Map>& colnodes,
-                                  RefCountPtr<Epetra_Map>& roweles,
-                                  RefCountPtr<Epetra_Map>& coleles,
-                                  const string& searchword)
+void input_field_jumbo(RefCountPtr<DRT::Discretization>& dis,
+                       RefCountPtr<Epetra_Map>& rownodes,
+                       RefCountPtr<Epetra_Map>& colnodes,
+                       RefCountPtr<Epetra_Map>& roweles,
+                       RefCountPtr<Epetra_Map>& coleles,
+                       const string& searchword)
 {
-  DSTraceHelper dst("input_structural_field_jumbo");
+  DSTraceHelper dst("input_field_jumbo");
 
   const int myrank  = dis->Comm().MyPID();
   const int numproc = dis->Comm().NumProc();
@@ -496,7 +552,8 @@ void input_structural_field_jumbo(RefCountPtr<DRT::Discretization>& dis,
   // number of element junks to split the reading process in
   // approximate block size (just a guess!)
   const int nblock = numproc;
-  const int bsize = roweles->NumGlobalElements()/nblock;
+  int bsize = roweles->NumGlobalElements()/nblock;
+  if (bsize<1) bsize = 1;
 
   // open input file at correct position, 
   // valid on proc 0 only!
@@ -580,7 +637,7 @@ void input_structural_field_jumbo(RefCountPtr<DRT::Discretization>& dis,
   // Reset fr* functions. Still required.
   frrewind();
   return;
-} // void input_structural_field_jumbo
+} // void input_field_jumbo
 
 
 /*-----------------------------------------------------------------------*/
@@ -689,14 +746,14 @@ void input_structural_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm)
 
  */
 /*-----------------------------------------------------------------------*/
-void input_structural_field_graph(int& nele,
-                                  RefCountPtr<Epetra_Comm> comm,
-                                  RefCountPtr<Epetra_Map>& rownodes,
-                                  RefCountPtr<Epetra_Map>& colnodes,
-                                  RefCountPtr<Epetra_CrsGraph>& graph,
-                                  const string& searchword)
+void input_field_graph(int& nele,
+                       RefCountPtr<Epetra_Comm> comm,
+                       RefCountPtr<Epetra_Map>& rownodes,
+                       RefCountPtr<Epetra_Map>& colnodes,
+                       RefCountPtr<Epetra_CrsGraph>& graph,
+                       const string& searchword)
 {
-  DSTraceHelper dst("input_structural_field_graph");
+  DSTraceHelper dst("input_field_graph");
 
   // init number of elements 
   nele = 0;
@@ -795,7 +852,7 @@ void input_structural_field_graph(int& nele,
   comm->Broadcast(&nele,1,0);
   
   return;
-} // void input_structural_field_graph
+} // void input_field_graph
 
 
 /*-----------------------------------------------------------------------*/

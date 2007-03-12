@@ -163,6 +163,14 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
     }
     break;
 #endif
+#ifdef D_FLUID3
+    case fluid3:
+    {
+      RefCountPtr<DRT::Element> ele = rcp(new DRT::Elements::Fluid3(id,owner));
+      return ele;
+    }
+    break;
+#endif
     // continue to add types of elements here....
     default:
       dserror("Unknown type of finite element");

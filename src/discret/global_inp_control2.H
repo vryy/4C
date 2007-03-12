@@ -54,13 +54,13 @@ void inpnodes_ccadiscret_jumbo(RefCountPtr<DRT::Discretization>& dis,
                                RefCountPtr<Epetra_Map>& colnodes);
 void input_structural_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm);
 void input_fluid_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm);
-void input_structural_field_jumbo(RefCountPtr<DRT::Discretization>& dis,
+void input_field_jumbo(RefCountPtr<DRT::Discretization>& dis,
                                   RefCountPtr<Epetra_Map>& rownodes,
                                   RefCountPtr<Epetra_Map>& colnodes,
                                   RefCountPtr<Epetra_Map>& roweles,
                                   RefCountPtr<Epetra_Map>& coleles,
                                   const string& searchword);
-void input_structural_field_graph(int& nele,
+void input_field_graph(int& nele,
                                   RefCountPtr<Epetra_Comm> comm,
                                   RefCountPtr<Epetra_Map>& rownodes,
                                   RefCountPtr<Epetra_Map>& colnodes,
