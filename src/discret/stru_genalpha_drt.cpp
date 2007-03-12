@@ -104,13 +104,14 @@ void stru_genalpha_drt()
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  DiscretizationWriter output(actdis);
-  output.WriteMesh(0,0.0);
+  //DiscretizationWriter output(actdis);
+  //output.WriteMesh(0,0.0);
 
   // -------------------------------------------------------------------
   // get a communicator and myrank
   // -------------------------------------------------------------------
   const Epetra_Comm& Comm = actdis->Comm();
+  const int myrank = Comm.MyPID();
 
   // -------------------------------------------------------------------
   // set some pointers and variables
@@ -138,7 +139,7 @@ void stru_genalpha_drt()
   // create empty matrices
   // -------------------------------------------------------------------
   // `81' is an initial guess for the bandwidth of the matrices
-  // The correct value will be determined later.
+  // A better guess will be determined later.
   RefCountPtr<Epetra_CrsMatrix> stiff_mat = LINALG::CreateMatrix(*dofrowmap,81);
   RefCountPtr<Epetra_CrsMatrix> mass_mat  = LINALG::CreateMatrix(*dofrowmap,81);
   RefCountPtr<Epetra_CrsMatrix> damp_mat  = null;
@@ -295,10 +296,10 @@ void stru_genalpha_drt()
   int istep = 0;  // time step index
 
   //------------------------------------------------- output initial state
-  output.NewStep(istep, time);
-  output.WriteVector("displacement", dis);
-  output.WriteVector("velocity", vel);
-  output.WriteVector("acceleration", acc);
+  //output.NewStep(istep, time);
+  //output.WriteVector("displacement", dis);
+  //output.WriteVector("velocity", vel);
+  //output.WriteVector("acceleration", acc);
 
   //==================================================== start of timeloop
   while (time<=sdyn->maxtime && istep<=sdyn->nstep)
@@ -310,6 +311,7 @@ void stru_genalpha_drt()
     //--------------------------------------------------- predicting state
     // constant predictor : displacement in domain
     disn->Update(1.0, *dis, 0.0);
+    
     // apply new displacements at DBCs
     // and get new external force vector
     {
@@ -333,7 +335,7 @@ void stru_genalpha_drt()
       actdis->EvaluateDirichlet(params,*disn,*dirichtoggle);
       actdis->ClearState();
       actdis->SetState("displacement",disn);
-      fextn->PutScalar(0.0);  // initialse external force vector (load vect)
+      fextn->PutScalar(0.0);  // initialize external force vector (load vect)
       actdis->EvaluateNeumann(params,*fextn);
       actdis->ClearState();
     }
@@ -397,8 +399,7 @@ void stru_genalpha_drt()
       fint->PutScalar(0.0);  // initialise internal force vector
       actdis->Evaluate(params,stiff_mat,null,fint,null,null);
       actdis->ClearState();
-      // finalize the stiffness matrix
-      LINALG::Complete(*stiff_mat);
+      // do NOT finalize the stiffness matrix to mass and damping to it later
     }
 
     //-------------------------------------------- compute residual forces
@@ -426,8 +427,7 @@ void stru_genalpha_drt()
     //------------------------------------------------ build residual norm
     double norm;
     fresm->Norm2(&norm);
-//    cout << "--------------------------------------------" << endl;
-//    cout << "Norm bevor Newton " << norm << endl;
+    if (!myrank) cout << "Norm bevor Newton " << norm << endl; fflush(stdout);
 
     //=================================================== equilibrium loop
     int numiter=0;
@@ -435,29 +435,26 @@ void stru_genalpha_drt()
     {
       //------------------------------------------- effective rhs is fresm
       //---------------------------------------------- build effective lhs
-      RefCountPtr<Epetra_CrsMatrix> eff_mat = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow);
-      LINALG::Add(*stiff_mat,false,1.-alphaf,*eff_mat,0.0);
-      if (damping)
-      {
-        LINALG::Add(*damp_mat,false,(1.-alphaf)*gamma/(beta*dt),*eff_mat,1.0);
-      }
-      LINALG::Add(*mass_mat,false,(1.-alpham)/(beta*dt*dt),*eff_mat,1.0);
-      LINALG::Complete(*eff_mat);
+      // (using matrix stiff_mat as effective matrix)
+      LINALG::Add(*mass_mat,false,(1.-alpham)/(beta*dt*dt),*stiff_mat,1.-alphaf);
+      if (damping) 
+        LINALG::Add(*damp_mat,false,(1.-alphaf)*gamma/(beta*dt),*stiff_mat,1.0);
+      LINALG::Complete(*stiff_mat);
 
       //----------------------- apply dirichlet BCs to system of equations
       fresm->Scale(-1.0);  // delete this by building fresm with other sign
       disi->PutScalar(0.0);  // Useful? depends on solver and more
-      LINALG::ApplyDirichlettoSystem(eff_mat,disi,fresm,zeros,dirichtoggle);
+      LINALG::ApplyDirichlettoSystem(stiff_mat,disi,fresm,zeros,dirichtoggle);
 
       //--------------------------------------------------- solve for disi
       // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
       if (numiter==0)
       {
-        solver.Solve(eff_mat,disi,fresm,true,true);
+        solver.Solve(stiff_mat,disi,fresm,true,true);
       }
       else
       {
-        solver.Solve(eff_mat,disi,fresm,true,false);
+        solver.Solve(stiff_mat,disi,fresm,true,false);
       }
 
       //---------------------------------- update mid configuration values
@@ -495,8 +492,7 @@ void stru_genalpha_drt()
         fint->PutScalar(0.0);  // initialise internal force vector
         actdis->Evaluate(params,stiff_mat,null,fint,null,null);
         actdis->ClearState();
-        // finalize the stiffness matrix
-        LINALG::Complete(*stiff_mat);
+        // do NOT finalize the stiffness matrix to add masses to it later
       }
 
       //------------------------------------------ compute residual forces
@@ -527,17 +523,18 @@ void stru_genalpha_drt()
 
       fresm->Norm2(&norm);
       // a short message
-      printf("numiter %d res-norm %e dis-norm %e\n",
-	     numiter, norm, disinorm);
-      // cout << "numiter " << numiter
-      //            << " norm " << norm
-      //            << " disinorm " << disinorm << endl;;
-      // debug:
+      if (!myrank) 
+      {
+        printf("numiter %d res-norm %e dis-norm %e\n",numiter, norm, disinorm);
+        fflush(stdout);
+      }
+      // criteria to stop Newton iteration
       norm = disinorm;
 
       //--------------------------------- increment equilibrium loop index
       ++numiter;
-    } // end equilibrium loop
+    } //============================================= end equilibrium loop
+
 
     //---------------------------- determine new end-quantities and update
     // new displacements at t_{n+1} -> t_n
@@ -561,26 +558,67 @@ void stru_genalpha_drt()
     time += dt;  // time t_n := t_{n+1} = t_n + Delta t
 
     //----------------------------------------------------- output results
-    output.NewStep(istep, time);
-    output.WriteVector("displacement", dis);
-    output.WriteVector("velocity", vel);
-    output.WriteVector("acceleration", acc);
+    //output.NewStep(istep, time);
+    //output.WriteVector("displacement", dis);
+    //output.WriteVector("velocity", vel);
+    //output.WriteVector("acceleration", acc);
+
+    //---------------------------------------------- do stress calculation
+    int mod_stress = sdyn->step % sdyn->updevry_stress;
+    if (!mod_stress && ioflags.struct_stress==1)
+    {
+      // create the parameters for the discretization
+      ParameterList params;
+      // action for elements
+      params.set("action","calc_struct_stress");
+      // choose what to assemble
+      params.set("assemble matrix 1",false);
+      params.set("assemble matrix 2",false);
+      params.set("assemble vector 1",false);
+      params.set("assemble vector 2",false);
+      params.set("assemble vector 3",false);
+      // other parameters that might be needed by the elements
+      params.set("total time",timen);
+      params.set("delta time",dt);
+      // set vector values needed by elements
+      actdis->ClearState();
+      actdis->SetState("residual displacement",zeros);
+      actdis->SetState("displacement",dis);
+      actdis->Evaluate(params,null,null,null,null,null);
+      actdis->ClearState();
+    }
+    
+    //----- update anything that needs to be updated at the element level
+    {
+      // create the parameters for the discretization
+      ParameterList params;
+      // action for elements
+      params.set("action","calc_struct_update_istep");
+      // choose what to assemble
+      params.set("assemble matrix 1",false);
+      params.set("assemble matrix 2",false);
+      params.set("assemble vector 1",false);
+      params.set("assemble vector 2",false);
+      params.set("assemble vector 3",false);
+      // other parameters that might be needed by the elements
+      params.set("total time",timen);
+      params.set("delta time",dt);
+      actdis->Evaluate(params,null,null,null,null,null);
+    }
+    
 
     //---------------------------------------------------------- print out
-    //cout << *dis << endl;
-    // debug print out to compare with classic discret. gen-alpha
-    // if (istep % 1 == 0)
-//     {
-//       Epetra_Vector disn(*dis), veln(*vel), accn(*acc);
-//       for (int ii=0; ii<disn.MyLength(); ii++)
-//       {
-//          printf(" %3d  % 16.10e   % 16.10e   % 16.10e\n",
-//                 ii, disn[ii], veln[ii], accn[ii]);
-//       }
-//       printf("\n");
-//     }
+    if (!myrank)
+    {
+      printf("step %6d | nstep %6d | time %-14.8E | dt %-14.8E | numiter %3d\n",
+             istep,sdyn->nstep,timen,dt,numiter);
+      printf("----------------------------------------------------------------------------------\n");
+      fflush(stdout);
+    }
 
-  }  // end time loop
+  }  //===================================================== end time loop
+  
+  
 
   //----------------------------- this is the end my lonely friend the end
   return;
