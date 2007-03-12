@@ -104,14 +104,17 @@ void stru_genalpha_drt()
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  //DiscretizationWriter output(actdis);
-  //output.WriteMesh(0,0.0);
+  DiscretizationWriter output(actdis);
+  output.WriteMesh(0,0.0);
 
   // -------------------------------------------------------------------
   // get a communicator and myrank
   // -------------------------------------------------------------------
   const Epetra_Comm& Comm = actdis->Comm();
   const int myrank = Comm.MyPID();
+
+  //----------------------------------------------------- get error file
+  FILE* errfile = allfiles.out_err;
 
   // -------------------------------------------------------------------
   // set some pointers and variables
@@ -275,6 +278,7 @@ void stru_genalpha_drt()
     LINALG::Add(*stiff_mat,false,sdyn->k_damp,*damp_mat,0.0);
     LINALG::Add(*mass_mat ,false,sdyn->m_damp,*damp_mat,1.0);
     LINALG::Complete(*damp_mat);
+    stiff_mat = null;
   }
 
   //--------------------------- calculate consistent initial accelerations
@@ -296,10 +300,10 @@ void stru_genalpha_drt()
   int istep = 0;  // time step index
 
   //------------------------------------------------- output initial state
-  //output.NewStep(istep, time);
-  //output.WriteVector("displacement", dis);
-  //output.WriteVector("velocity", vel);
-  //output.WriteVector("acceleration", acc);
+  output.NewStep(istep, time);
+  output.WriteVector("displacement", dis);
+  output.WriteVector("velocity", vel);
+  output.WriteVector("acceleration", acc);
 
   //==================================================== start of timeloop
   while (time<=sdyn->maxtime && istep<=sdyn->nstep)
@@ -340,33 +344,44 @@ void stru_genalpha_drt()
       actdis->ClearState();
     }
 
+    // consistent predictor
     // predicting velocity V_{n+1} (veln)
     // V_{n+1} := gamma/(beta*dt) * (D_{n+1} - D_n)
     //          + (beta-gamma)/beta * V_n
     //          + (2.*beta-gamma)/(2.*beta) * A_n
-    veln->Update(1.0,*disn,-1.0,*dis,0.0);
-    veln->Update((beta-gamma)/beta,*vel,
-                (2.*beta-gamma)/(2.*beta),*acc,
-                 gamma/(beta*dt));
+    //veln->Update(1.0,*disn,-1.0,*dis,0.0);
+    //veln->Update((beta-gamma)/beta,*vel,
+    //            (2.*beta-gamma)/(2.*beta),*acc,
+    //             gamma/(beta*dt));
     // predicting accelerations A_{n+1} (accn)
     // A_{n+1} := 1./(beta*dt*dt) * (D_{n+1} - D_n)
     //          - 1./(beta*dt) * V_n
     //          + (2.*beta-1.)/(2.*beta) * A_n
-    accn->Update(1.0,*disn,-1.0,*dis,0.0);
-    accn->Update(-1./(beta*dt),*vel,
-                (2.*beta-1.)/(2.*beta),*acc,
-                1./(beta*dt*dt));
+    //accn->Update(1.0,*disn,-1.0,*dis,0.0);
+    //accn->Update(-1./(beta*dt),*vel,
+    //            (2.*beta-1.)/(2.*beta),*acc,
+    //            1./(beta*dt*dt));
+
+    // constant predictor
+    veln->Update(1.0,*vel,0.0);
+    accn->Update(1.0,*acc,0.0);
 
     //------------------------------ compute interpolated dis, vel and acc
+    // consistent predictor
     // mid-displacements D_{n+1-alpha_f} (dism)
     //    D_{n+1-alpha_f} := (1.-alphaf) * D_{n+1} + alpha_f * D_{n}
-    dism->Update(1.-alphaf,*disn,alphaf,*dis,0.0);
+    //dism->Update(1.-alphaf,*disn,alphaf,*dis,0.0);
     // mid-velocities V_{n+1-alpha_f} (velm)
     //    V_{n+1-alpha_f} := (1.-alphaf) * V_{n+1} + alpha_f * V_{n}
-    velm->Update(1.-alphaf,*veln,alphaf,*vel,0.0);
+    //velm->Update(1.-alphaf,*veln,alphaf,*vel,0.0);
     // mid-accelerations A_{n+1-alpha_m} (accm)
     //    A_{n+1-alpha_m} := (1.-alpha_m) * A_{n+1} + alpha_m * A_{n}
-    accm->Update(1.-alpham,*accn,alpham,*acc,0.0);
+    //accm->Update(1.-alpham,*accn,alpham,*acc,0.0);
+
+    // constant predictor
+    dism->Update(1.0,*dis,0.0);
+    velm->Update(1.0,*vel,0.0);
+    accm->Update(1.0,*accm,0.0);
 
     //------------------------------- compute interpolated external forces
     // external mid-forces F_{ext;n+1-alpha_f} (fextm)
@@ -412,12 +427,14 @@ void stru_genalpha_drt()
     // add mid-viscous damping force
     if (damping)
     {
-    	RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
+    	RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
     	damp_mat->Multiply(false,*velm,*fviscm);
     	fresm->Update(1.0,*fviscm,1.0);
     }
+
     // add static mid-balance
     fresm->Update(1.0,*fint,-1.0,*fextm,1.0);
+
     // blank residual at DOFs on Dirichlet BC
     {
       Epetra_Vector fresmcopy(*fresm);
@@ -427,7 +444,7 @@ void stru_genalpha_drt()
     //------------------------------------------------ build residual norm
     double norm;
     fresm->Norm2(&norm);
-    if (!myrank) cout << "Norm bevor Newton " << norm << endl; fflush(stdout);
+    if (!myrank) cout << "Residual before Newton " << norm << endl; fflush(stdout);
 
     //=================================================== equilibrium loop
     int numiter=0;
@@ -525,8 +542,10 @@ void stru_genalpha_drt()
       // a short message
       if (!myrank) 
       {
-        printf("numiter %d res-norm %e dis-norm %e\n",numiter, norm, disinorm);
+        printf("numiter %d res-norm %e dis-norm %e\n",numiter+1, norm, disinorm);
+        fprintf(errfile,"numiter %d res-norm %e dis-norm %e\n",numiter+1, norm, disinorm);
         fflush(stdout);
+        fflush(errfile);
       }
       // criteria to stop Newton iteration
       norm = disinorm;
@@ -535,6 +554,8 @@ void stru_genalpha_drt()
       ++numiter;
     } //============================================= end equilibrium loop
 
+    //-------------------------------- test whether max iterations was hit
+    if (numiter==sdyn->maxiter) dserror("Newton unconverged in %d iterations",numiter);
 
     //---------------------------- determine new end-quantities and update
     // new displacements at t_{n+1} -> t_n
@@ -558,10 +579,10 @@ void stru_genalpha_drt()
     time += dt;  // time t_n := t_{n+1} = t_n + Delta t
 
     //----------------------------------------------------- output results
-    //output.NewStep(istep, time);
-    //output.WriteVector("displacement", dis);
-    //output.WriteVector("velocity", vel);
-    //output.WriteVector("acceleration", acc);
+    output.NewStep(istep, time);
+    output.WriteVector("displacement", dis);
+    output.WriteVector("velocity", vel);
+    output.WriteVector("acceleration", acc);
 
     //---------------------------------------------- do stress calculation
     int mod_stress = sdyn->step % sdyn->updevry_stress;
@@ -612,8 +633,12 @@ void stru_genalpha_drt()
     {
       printf("step %6d | nstep %6d | time %-14.8E | dt %-14.8E | numiter %3d\n",
              istep,sdyn->nstep,timen,dt,numiter);
+      fprintf(errfile,"step %6d | nstep %6d | time %-14.8E | dt %-14.8E | numiter %3d\n",
+              istep,sdyn->nstep,timen,dt,numiter);
       printf("----------------------------------------------------------------------------------\n");
+      fprintf(errfile,"----------------------------------------------------------------------------------\n");
       fflush(stdout);
+      fflush(errfile);
     }
 
   }  //===================================================== end time loop
