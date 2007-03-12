@@ -140,6 +140,15 @@ public:
 
 private:
 
+  //! current time step
+  int Timestep() const;
+
+  //! nonlinear iteration counter
+  int NlIterCount() const;
+
+  //! linear iteration counter
+  int LinCount() const;
+
   //! FSI control variables
   FSI_DYNAMIC *fsidyn_;
 
@@ -170,6 +179,9 @@ private:
   //! importer to make interface displacements redundant
   Teuchos::RefCountPtr<Epetra_Import> importredundant_;
 
+  //! main nonlinear solver object that contains everything else
+  Teuchos::RefCountPtr<NOX::Solver::Manager> solver_;
+
   //! traditional structure variables
   FSI_STRUCT_WORK* struct_work_;
 
@@ -190,6 +202,9 @@ private:
     type.
    */
   std::vector<int> counter_;
+
+  //! number of residuum calculations per nonlinear solve in one time step
+  std::vector<int> linsolvcount_;
 };
 
 

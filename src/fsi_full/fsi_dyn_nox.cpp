@@ -271,6 +271,32 @@ FSI_InterfaceProblem::FSI_InterfaceProblem(Epetra_Comm& Comm,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+int FSI_InterfaceProblem::LinCount() const
+{
+  if (NlIterCount() < static_cast<int>(linsolvcount_.size()))
+    return linsolvcount_[NlIterCount()];
+  return 0;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+int FSI_InterfaceProblem::NlIterCount() const
+{
+  if (solver_ != Teuchos::null)
+    return solver_->getNumIterations();
+  return 0;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+int FSI_InterfaceProblem::Timestep() const
+{
+  return fsidyn_->step;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
                                     Epetra_Vector& F,
                                     const FillType fillFlag)
@@ -291,8 +317,6 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
   FIELD* fluidfield  = fluid_work_ ->fluid_field;
   FIELD* alefield    = ale_work_   ->ale_field;
 
-  int disnum = 0;
-
   // subdivision is not supported.
   INT a_disnum_calc = 0;
   INT a_disnum_io   = 0;
@@ -303,8 +327,17 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
 
   // set new interface displacement x
   ARRAY_POSITION *ipos = &(structfield->dis[s_disnum_calc].ipos);
+#if 0
   ARRAY_POSITION *fluid_ipos = &(fluidfield->dis[f_disnum_calc].ipos);
   ARRAY_POSITION *ale_ipos = &(alefield->dis[a_disnum_calc].ipos);
+#endif
+
+  // enforce linear residuum call counter array size
+  while (NlIterCount() >= static_cast<int>(linsolvcount_.size()))
+    linsolvcount_.push_back(0);
+
+  // count this call
+  linsolvcount_[NlIterCount()] += 1;
 
   // no consecutive iterations here. We have to care about the fields
   // backup from the outside.
@@ -432,8 +465,17 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
   /*------------------------------- CFD -------------------------------*/
   FLUID_DYNAMIC* fdyn = alldyn[genprob.numff].fdyn;
   int itemax = fdyn->itemax;
+
+  // We might want to do just one linear fluid solution in matrix free
+  // or finite difference settings.
+
   if (fillFlag==FD_Res)
     fdyn->itemax = 1;
+
+#if 0
+  if (fillFlag==MF_Res)
+    fdyn->itemax = 1;
+#endif
 
   perf_begin(42);
   fsi_fluid_calc(fluid_work_,fluidfield,f_disnum_calc,f_disnum_io,alefield,a_disnum_calc);
@@ -471,6 +513,67 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
     OutputDisplacements od(out,ipos->mf_dispnp,ipos->mf_reldisp);
     loop_interface(structfield,od,F);
     out_counter += 1;
+  }
+#endif
+
+#if 0
+
+  // debug output of solution
+  if (par.myrank==0)
+  {
+    std::ostringstream filename;
+    filename << allfiles.outputfile_kenner
+             << ".struct"
+             << "." << Timestep()
+             << "." << NlIterCount()
+             << "." << LinCount()
+             << ".plot";
+    std::cout << "output: " YELLOW_LIGHT << filename.str() << END_COLOR "\n";
+    std::ofstream sout(filename.str().c_str());
+
+    for (int i=0; i<structfield->dis[0].numele; ++i)
+    {
+      ELEMENT* actele = &(structfield->dis[0].element[i]);
+      sout << "# element " << actele->Id << "\n";
+      for (int j=0; j<=actele->numnp; ++j)
+      {
+        NODE* actnode = actele->node[j%actele->numnp];
+        sout << actnode->x[0] << " " << actnode->x[1] << " ";
+        for (int k=0; k<actnode->numdf; ++k)
+        {
+          sout << actnode->sol.a.da[0][k] << " ";
+        }
+        sout << "\t\t# node " << actnode->Id << "\n";
+      }
+      sout << "\n\n";
+    }
+
+    filename.str("");
+    filename << allfiles.outputfile_kenner
+             << ".fluid"
+             << "." << Timestep()
+             << "." << NlIterCount()
+             << "." << LinCount()
+             << ".plot";
+    std::cout << "output: " YELLOW_LIGHT << filename.str() << END_COLOR "\n";
+    std::ofstream fout(filename.str().c_str());
+
+    for (int i=0; i<fluidfield->dis[0].numele; ++i)
+    {
+      ELEMENT* actele = &(fluidfield->dis[0].element[i]);
+      fout << "# element " << actele->Id << "\n";
+      for (int j=0; j<=actele->numnp; ++j)
+      {
+        NODE* actnode = actele->node[j%actele->numnp];
+        fout << actnode->x[0] << " " << actnode->x[1] << " ";
+        for (int k=0; k<actnode->numdf; ++k)
+        {
+          fout << actnode->sol_increment.a.da[fluidfield->dis[0].ipos.velnp][k] << " ";
+        }
+        fout << "\t\t# node " << actnode->Id << "\n";
+      }
+      fout << "\n\n";
+    }
   }
 #endif
 
@@ -709,11 +812,17 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     // reset all counters
     std::fill(counter_.begin(),counter_.end(),0);
     lsParams.sublist("Output").set("Total Number of Linear Iterations",0);
+    linsolvcount_.resize(0);
 
     // start time measurement
     Teuchos::RefCountPtr<Teuchos::TimeMonitor> timemonitor = rcp(new Teuchos::TimeMonitor(timer,true));
 
-    // aus dem Strukturlï¿½er:
+    /*----------------- CSD - predictor for itnum==0 --------------------*/
+    perf_begin(43);
+    fsi_structpredictor(structfield,s_disnum_calc,0);
+    perf_end(43);
+
+    // aus dem Strukturlöser:
 
       /*======================================================================*
        *                      S O L U T I O N    P H A S E                    *
@@ -813,18 +922,21 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     // Jacobian has to be provided, otherwise the linear system uses
     // plain finite differences.
 
-    std::string jacobian = nlParams.get("Jacobian", "MatrixFree");
+    std::string jacobian = nlParams.get("Jacobian", "Matrix Free");
     std::string preconditioner = nlParams.get("Preconditioner", "None");
 
     // Matrix Free Newton Krylov. This is supposed to be the most
     // appropiate choice.
     if (jacobian=="Matrix Free")
     {
+      Teuchos::ParameterList& mfParams = nlParams.sublist("Matrix Free");
+      double lambda = mfParams.get("lambda", 1.0e-6);
+
       // MatrixFree seems to be the most interessting choice. But you
       // must set a rather low tolerance for the linear solver.
 
       MF = Teuchos::rcp(new NOX::Epetra::MatrixFree(printParams, interface, noxSoln));
-      //MF->setLambda(1e-2);
+      MF->setLambda(lambda);
       iJac = MF;
       J = MF;
     }
@@ -1046,15 +1158,15 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     //////////////////////////////////////////////////////////////////
 
     // Create the method
-    NOX::Solver::Manager solver(grp, combo, globalparameterlist);
-    NOX::StatusTest::StatusType status = solver.solve();
+    solver_ = Teuchos::rcp(new NOX::Solver::Manager(grp, combo, globalparameterlist));
+    NOX::StatusTest::StatusType status = solver_->solve();
 
     if (status != NOX::StatusTest::Converged)
       if (par.myrank==0)
         utils->out() << "Nonlinear solver failed to converge!" << endl;
 
     // Get the Epetra_Vector with the final solution from the solver
-    const NOX::Epetra::Group& finalGroup = dynamic_cast<const NOX::Epetra::Group&>(solver.getSolutionGroup());
+    const NOX::Epetra::Group& finalGroup = dynamic_cast<const NOX::Epetra::Group&>(solver_->getSolutionGroup());
     const Epetra_Vector& finalSolution = (dynamic_cast<const NOX::Epetra::Vector&>(finalGroup.getX())).getEpetraVector();
     const Epetra_Vector& finalF        = (dynamic_cast<const NOX::Epetra::Vector&>(finalGroup.getF())).getEpetraVector();
 
@@ -1067,7 +1179,7 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
         utils->out() << endl
                      << "Final Parameters" << endl
                      << "****************" << endl;
-        solver.getList().print(utils->out());
+        solver_->getList().print(utils->out());
         utils->out() << endl;
       }
 
@@ -1098,12 +1210,6 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
 
     // The last F has not yet been added to the solution. This F has
     // satisfied the norms, so it is very small. But never the less...
-#if 0
-    // We can add it here because the source is known to be unique.
-    err = redundantsol_->Import(finalF,*importredundant_,Add);
-    if (err!=0)
-      dserror("Import failed with err=%d",err);
-#endif
     redundantf_->PutScalar(0);
     err = redundantf_->Import(finalF,*importredundant_,Insert);
     if (err!=0)
