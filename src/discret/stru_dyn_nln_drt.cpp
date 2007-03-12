@@ -215,7 +215,8 @@ void dyn_nlnstructural_drt()
     LINALG::Add(*mass_mat ,false,sdyn->m_damp,*damp_mat,1.0);
     LINALG::Complete(*damp_mat);
   }
-
+  stiff_mat = null;
+  
   /*------------------------------------------- set initial step and time */
   sdyn->step = -1;
   sdyn->time = 0.0;
@@ -310,8 +311,6 @@ void dyn_nlnstructural_drt()
     fie1->PutScalar(0.0);
     actdis->Evaluate(params,stiff_mat,null,fie1,null,null);
     actdis->ClearState();
-    // finalize the stiffness matrix
-    LINALG::Complete(*stiff_mat);
   }
 
   //----------------------------------------------- interpolate external forces
@@ -358,26 +357,23 @@ void dyn_nlnstructural_drt()
   // keff =   (1.0-alphaf)*K 
   //        + (1.0-alpham)*(1.0/(beta*dt*dt))*M
   //        + (1.0-alphaf)*(gamma/(beta*dt))*D (if present)
-  RefCountPtr<Epetra_CrsMatrix> eff_mat = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow);
   {
     const double a1 = (1.0-alphaf);
     const double a2 = (1.0-alpham)*(1.0/(beta*dt*dt));
     const double a3 = (1.0-alphaf)*(gamma/(beta*dt));
-    
-    LINALG::Add(*stiff_mat,false,a1,*eff_mat,0.0);
-    LINALG::Add(*mass_mat ,false,a2,*eff_mat,1.0);
-    if (damping) LINALG::Add(*damp_mat ,false,a3,*eff_mat,1.0);
+    LINALG::Add(*mass_mat,false,a2,*stiff_mat,a1);
+    if (damping) LINALG::Add(*damp_mat,false,a3,*stiff_mat,1.0);
+    LINALG::Complete(*stiff_mat);
   }
-  LINALG::Complete(*eff_mat);
 
   //================ Apply dirichlet boundary conditions to system of equations
   // increment dx at Dirichlet BCs should be zero as we already have proper
   // dirichlet values in sol1
   // we use the vector dx to set zeros to dx and rhs respectively
-  LINALG::ApplyDirichlettoSystem(eff_mat,dx,rhs,zeros,dirichtoggle);
+  LINALG::ApplyDirichlettoSystem(stiff_mat,dx,rhs,zeros,dirichtoggle);
 
   //============================================== solve for dx = Keff^-1 * rhs
-  solver.Solve(eff_mat,dx,rhs,true,true);
+  solver.Solve(stiff_mat,dx,rhs,true,true);
 
   //====================================================== update displacements
   // new dirichlet values present on sol1
@@ -420,8 +416,6 @@ void dyn_nlnstructural_drt()
     fie2->PutScalar(0.0);
     actdis->Evaluate(params,stiff_mat,null,fie2,null,null);
     actdis->ClearState();
-    // finalize the stiffness matrix
-    LINALG::Complete(*stiff_mat);
   }
 
   //----------------------------------------------- interpolate external forces
@@ -470,25 +464,22 @@ void dyn_nlnstructural_drt()
   // keff =   (1.0-alphaf)*K 
   //        + (1.0-alpham)*(1.0/(beta*dt*dt))*M
   //        + (1.0-alphaf)*(gamma/(beta*dt))*D (if present)
-  eff_mat = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow);
   {
     const double a1 = (1.0-alphaf);
     const double a2 = (1.0-alpham)*(1.0/(beta*dt*dt));
     const double a3 = (1.0-alphaf)*(gamma/(beta*dt));
-    
-    LINALG::Add(*stiff_mat,false,a1,*eff_mat,0.0);
-    LINALG::Add(*mass_mat ,false,a2,*eff_mat,1.0);
-    if (damping) LINALG::Add(*damp_mat ,false,a3,*eff_mat,1.0);
+    LINALG::Add(*mass_mat ,false,a2,*stiff_mat,a1);
+    if (damping) LINALG::Add(*damp_mat ,false,a3,*stiff_mat,1.0);
+    LINALG::Complete(*stiff_mat);
   }
-  LINALG::Complete(*eff_mat);
 
   //---------------- Apply dirichlet boundary conditions to system of equations
   // residual discplacements are supposed to be zero at boundary conditions
-  LINALG::ApplyDirichlettoSystem(eff_mat,rdx,rhs,zeros,dirichtoggle);
+  LINALG::ApplyDirichlettoSystem(stiff_mat,rdx,rhs,zeros,dirichtoggle);
   
   //-------solve for residual displacements to correct incremental displacements
   rdx->PutScalar(0.0);
-  solver.Solve(eff_mat,rdx,rhs,true,false);
+  solver.Solve(stiff_mat,rdx,rhs,true,false);
 
   //--------------- update incremental displacements by residual displacements  
   dx->Update(1.0,*rdx,1.0);
