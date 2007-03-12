@@ -392,7 +392,7 @@ void DiscretizationWriter::WriteMesh(int step, double time)
             time,
             dis_->NumGlobalNodes(),
             dis_->NumGlobalElements(),
-            dis_->DofColMap()->NumGlobalElements()  // is that right ???
+            dis_->DofRowMap()->NumGlobalElements()  // is that right ???
 
       );
     if (write_file)
