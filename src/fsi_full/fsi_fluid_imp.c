@@ -321,7 +321,8 @@ void fsi_fluid_imp_setup(
   else               ipos->numincr = 7;
   if(stresspro) ipos->numincr++; /* stress projection and ...*/
   if ((fsidyn->ifsi == fsi_iter_stagg_steep_desc) ||
-      (fsidyn->ifsi == fsi_iter_stagg_steep_desc_force))
+      (fsidyn->ifsi == fsi_iter_stagg_steep_desc_force) ||
+      (fsidyn->ifsi == fsi_iter_nox))
     /* ... steepest descent relaxation ... */
     ipos->numincr++;            /* ... each need one more solution field. */
 
@@ -1421,7 +1422,8 @@ void fsi_fluid_imp_sd(
 #endif
 
   dsassert(fsidyn->ifsi == fsi_iter_stagg_steep_desc ||
-           fsidyn->ifsi == fsi_iter_stagg_steep_desc_force,
+           fsidyn->ifsi == fsi_iter_stagg_steep_desc_force ||
+           fsidyn->ifsi == fsi_iter_nox,
 	   "No auxiliary fluid solution within this coupling scheme");
 
   /* calculate constants for time algorithm */

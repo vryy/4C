@@ -68,6 +68,23 @@ public:
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+class DistributeDelta
+{
+  const Epetra_Vector& x_;
+  const Epetra_Vector& oldx_;
+  int pos_;
+
+public:
+  DistributeDelta(const Epetra_Vector& x,const Epetra_Vector& oldx,int pos)
+    : x_(x), oldx_(oldx), pos_(pos) {}
+
+  void operator()(NODE* actsnode, int dof, int LID)
+    { actsnode->sol_mf.a.da[pos_][dof] = x_[LID]-oldx_[LID]; }
+};
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 class DistributeSolution
 {
   const Epetra_Vector& x_;
@@ -99,6 +116,24 @@ public:
     {
       F_[LID] = actsnode->sol_mf.a.da[dispnp_][dof] -
                 actsnode->sol_mf.a.da[dispn_ ][dof];
+    }
+};
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+class GatherRelaxation
+{
+  Epetra_Vector& F_;
+  int pos_;
+
+public:
+  GatherRelaxation(Epetra_Vector& F,int pos)
+    : F_(F), pos_(pos) {}
+
+  void operator()(NODE* actsnode, int dof, int LID)
+    {
+      F_[LID] = actsnode->sol.a.da[pos_][dof];
     }
 };
 

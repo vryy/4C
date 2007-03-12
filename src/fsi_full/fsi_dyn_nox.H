@@ -158,6 +158,12 @@ private:
   //! redundant version of interface residuum
   Teuchos::RefCountPtr<Epetra_Vector> redundantf_;
 
+  //! the last x we got in computeF
+  Teuchos::RefCountPtr<Epetra_Vector> oldx_;
+
+  //! the last x we calculated in computeF
+  Teuchos::RefCountPtr<Epetra_Vector> oldf_;
+
   //! connection of interface dofs for colored finite differences
   Teuchos::RefCountPtr<Epetra_CrsGraph> rawGraph_;
 

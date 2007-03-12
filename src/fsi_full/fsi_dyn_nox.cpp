@@ -56,6 +56,13 @@ extern struct _IO_FLAGS     ioflags;
  *----------------------------------------------------------------------*/
 extern ALLDYNA      *alldyn;
 
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
 /*!----------------------------------------------------------------------
 \brief file pointers
 
@@ -295,11 +302,85 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
   INT s_disnum_io   = 0;
 
   // set new interface displacement x
-  ARRAY_POSITION *ipos = &(structfield->dis[disnum].ipos);
+  ARRAY_POSITION *ipos = &(structfield->dis[s_disnum_calc].ipos);
+  ARRAY_POSITION *fluid_ipos = &(fluidfield->dis[f_disnum_calc].ipos);
+  ARRAY_POSITION *ale_ipos = &(alefield->dis[a_disnum_calc].ipos);
 
   // no consecutive iterations here. We have to care about the fields
   // backup from the outside.
   INT itnum = 1;
+
+  // Use the special SD implementation for finite differences. This is
+  // a test only. I do not think this is the way to go in general.
+#if 0
+  if (fillFlag==FD_Res)
+  {
+    // use the explicit tangent calculation we own
+
+    FLUID_DYNAMIC* fdyn = alldyn[genprob.numff].fdyn;
+
+    // we get x+delta v and all we need is delta v. Thus we have to
+    // substract the x. Fortunatelly it is known.
+
+    redundantsol_->PutScalar(0);
+    int err = redundantsol_->Import(x,*importredundant_,Insert);
+    if (err!=0)
+      dserror("Import failed with err=%d",err);
+    redundantf_->PutScalar(0);
+    err = redundantf_->Import(*oldx_,*importredundant_,Insert);
+    if (err!=0)
+      dserror("Import failed with err=%d",err);
+
+    DistributeDelta dd(*redundantsol_,*redundantf_,ipos->mf_sd_g);
+    loop_interface(structfield,dd,*redundantsol_);
+
+    /*--------------------- solve Ale mesh with sol_mf[6][i] used as DBC ---*/
+    fsi_ale_sd(ale_work_,alefield, a_disnum_calc, a_disnum_io,structfield,s_disnum_calc);
+
+    /*------------------------------------- create some additional space ---*/
+    solserv_sol_zero(alefield,a_disnum_calc,
+                     node_array_sol_mf,
+                     ale_ipos->mf_posnp);
+
+    /*------------------------------------- mesh velocity to fluid field ---*/
+    for (int i=0;i<fluidfield->dis[f_disnum_calc].numnp;i++)
+    {
+      NODE* actfnode  = &(fluidfield->dis[f_disnum_calc].node[i]);
+      GNODE* actfgnode = actfnode->gnode;
+      NODE* actanode  = actfgnode->mfcpnode[genprob.numaf];
+
+      if (actanode==NULL)
+        continue;
+
+      for (int j=0;j<actanode->numdf;j++)
+      {
+        double actr   = actanode->sol_increment.a.da[ale_ipos->dispnp][j];
+        double initr  = actanode->x[j];
+        /* grid velocity */
+        actfnode->sol_increment.a.da[fluid_ipos->gridv][j] = actr/fdyn->dta;
+        /* grid position */
+        actanode->sol_mf.a.da[ale_ipos->mf_posnp][j] = actr + initr;
+      }
+    }
+
+    /*------------------------------------------------------ solve fluid ---*/
+    fsi_fluid_sd(fluid_work_,fluidfield,f_disnum_calc,f_disnum_io);
+
+    /*-------------------------------------------------- solve structure ---*/
+    fsi_struct_sd(struct_work_,structfield,s_disnum_calc,s_disnum_io,0,fluidfield,f_disnum_calc);
+
+    // We get here F(delta v). But nox wants to substract F(x), so it
+    // expects F(x + delta v). We know the old (last) F(x) and add it
+    // here.
+
+    GatherRelaxation gr(F,8);
+    loop_interface(structfield,gr,F);
+
+    F.Update(1,*oldf_,1);
+
+    return true;
+  }
+#endif
 
   // restore structfield state
   solserv_sol_copy(structfield, s_disnum_calc, node_array_sol_mf, node_array_sol_mf, 8,ipos->mf_dispnp);
@@ -325,8 +406,11 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
   }
 #endif
 
-  redundantsol_->PutScalar(0);
+  // keep a copy
+  oldx_ = Teuchos::rcp(new Epetra_Vector(x));
 
+  // make x redundan
+  redundantsol_->PutScalar(0);
   int err = redundantsol_->Import(x,*importredundant_,Insert);
   if (err!=0)
     dserror("Import failed with err=%d",err);
@@ -346,9 +430,16 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
   debug_out_data(alefield, "ale_disp", node_array_sol_mf, alefield->dis[a_disnum_calc].ipos.mf_dispnp);
 
   /*------------------------------- CFD -------------------------------*/
+  FLUID_DYNAMIC* fdyn = alldyn[genprob.numff].fdyn;
+  int itemax = fdyn->itemax;
+  if (fillFlag==FD_Res)
+    fdyn->itemax = 1;
+
   perf_begin(42);
   fsi_fluid_calc(fluid_work_,fluidfield,f_disnum_calc,f_disnum_io,alefield,a_disnum_calc);
   perf_end(42);
+
+  fdyn->itemax = itemax;
 
   debug_out_data(fluidfield, "fluid_vel", node_array_sol_increment, fluidfield->dis[0].ipos.velnp);
 
@@ -365,6 +456,9 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
 
   GatherResiduum gr(F,ipos->mf_dispnp,ipos->mf_reldisp);
   loop_interface(structfield,gr,F);
+
+  // keep a copy
+  oldf_ = Teuchos::rcp(new Epetra_Vector(F));
 
 #ifdef DEBUG
   if (getenv("DEBUG")!=NULL && Comm_.NumProc()==1)

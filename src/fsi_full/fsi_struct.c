@@ -561,7 +561,8 @@ void fsi_struct_setup(
   }
 
   if ((fsidyn->ifsi==fsi_iter_stagg_steep_desc) ||
-      (fsidyn->ifsi==fsi_iter_stagg_steep_desc_force))
+      (fsidyn->ifsi==fsi_iter_stagg_steep_desc_force) ||
+      (fsidyn->ifsi==fsi_iter_nox))
   {
     solserv_sol_zero(actfield, disnum_calc, node_array_sol_mf, ipos->mf_sd_g);
   }
@@ -1552,7 +1553,8 @@ void fsi_struct_sd(
   /****************************************/
 
   if ((fsidyn->ifsi != fsi_iter_stagg_steep_desc) &&
-      (fsidyn->ifsi != fsi_iter_stagg_steep_desc_force))
+      (fsidyn->ifsi != fsi_iter_stagg_steep_desc_force) &&
+      (fsidyn->ifsi != fsi_iter_nox))
     dserror("No auxiliary structure solution within this coupling scheme");
 
   /* get global and local number of equations */

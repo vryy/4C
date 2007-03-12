@@ -1306,7 +1306,8 @@ void fluid_init_pos_ale(
       ipos->accn   = 7;
       ipos->accnm  = 8;
       if ((fsidyn->ifsi == fsi_iter_stagg_steep_desc) ||
-          (fsidyn->ifsi == fsi_iter_stagg_steep_desc_force))
+          (fsidyn->ifsi == fsi_iter_stagg_steep_desc_force) ||
+          (fsidyn->ifsi == fsi_iter_nox))
         ipos->relax = 9;
       ipos->stresspro = 9;
       ipos->pred   =-1;
@@ -1323,7 +1324,8 @@ void fluid_init_pos_ale(
       ipos->convn  = 5;
       ipos->convnp = 6;
       if ((fsidyn->ifsi == fsi_iter_stagg_steep_desc) ||
-          (fsidyn->ifsi == fsi_iter_stagg_steep_desc_force))
+          (fsidyn->ifsi == fsi_iter_stagg_steep_desc_force) ||
+          (fsidyn->ifsi == fsi_iter_nox))
         ipos->relax = 7;
       ipos->stresspro = 7;
       ipos->accn   =-1;
