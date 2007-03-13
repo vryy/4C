@@ -559,12 +559,6 @@ int DRT::Elements::Shell8::EvaluateNeumann(ParameterList& params,
   const int numdf = 6;
   vector<double>* thick = data_.Get<vector<double> >("thick");
   if (!thick) dserror("Cannot find vector of nodal thicknesses");
-  Epetra_SerialDenseMatrix* a3ref = data_.Get<Epetra_SerialDenseMatrix>("a3ref");
-  if (!a3ref) dserror("Cannot find array of directors");
-  double a3ref2[3][MAXNOD_SHELL8];
-  for (int i=0; i<3; ++i)
-    for (int j=0; j<iel; ++j)
-      a3ref2[i][j] = (*a3ref)(i,j);
       
   vector<double> funct(iel);
   Epetra_SerialDenseMatrix deriv(2,iel);
@@ -580,14 +574,44 @@ int DRT::Elements::Shell8::EvaluateNeumann(ParameterList& params,
     for (int j=0; j<iel; ++j)
       eload[i][j] = 0.0;
 
+  double a3ref[3][MAXNOD_SHELL8];
+  // build a3 at nodal points
+  for (int i=0; i<NumNode(); ++i)
+  {
+    double r = s8_localcoordsofnode(i,0,iel);
+    double s = s8_localcoordsofnode(i,1,iel);
+    s8_shapefunctions(funct,deriv,r,s,iel,1);
+    double gkov[3][3];
+    for (int ialpha=0; ialpha<2; ialpha++)
+    {
+      for (int idim=0; idim<3; idim++)
+      {
+        gkov[idim][ialpha]=0.0;
+        for (int inode=0; inode<iel; inode++)
+          gkov[idim][ialpha] += deriv(ialpha,inode)* Nodes()[inode]->X()[idim];
+      }
+    }
+    double a3[3];
+    a3[0] = gkov[1][0]*gkov[2][1] - gkov[2][0]*gkov[1][1];
+    a3[1] = gkov[2][0]*gkov[0][1] - gkov[0][0]*gkov[2][1];
+    a3[2] = gkov[0][0]*gkov[1][1] - gkov[1][0]*gkov[0][1];
+    double a3norm = a3[0]*a3[0] + a3[1]*a3[1] + a3[2]*a3[2];
+    a3norm = sqrt(a3norm);
+    a3norm = 1.0/a3norm;
+    a3[0] *= a3norm;
+    a3[1] *= a3norm;
+    a3[2] *= a3norm;
+    for (int j=0; j<3; j++) a3ref[j][i] = a3[j];
+  }
+  
   // update geometry
   for (int k=0; k<iel; ++k)
   {
     const double h2 = (*thick)[k];
     
-    a3r[0][k] = (*a3ref)(0,k)*h2;
-    a3r[1][k] = (*a3ref)(1,k)*h2;
-    a3r[2][k] = (*a3ref)(2,k)*h2;
+    a3r[0][k] = a3ref[0][k]*h2;
+    a3r[1][k] = a3ref[1][k]*h2;
+    a3r[2][k] = a3ref[2][k]*h2;
     
     xrefe[0][k] = Nodes()[k]->X()[0];
     xrefe[1][k] = Nodes()[k]->X()[1];
@@ -648,7 +672,7 @@ int DRT::Elements::Shell8::EvaluateNeumann(ParameterList& params,
       // in reference configuration
       double det,deta;
       if (ltype == neum_live)
-        s8_jaco(funct,deriv,xrefe,xjm,*thick,a3ref2,e3,iel,&det,&deta);
+        s8_jaco(funct,deriv,xrefe,xjm,*thick,a3ref,e3,iel,&det,&deta);
       else
         s8_jaco(funct,deriv,xcure,xjm,*thick,a3cur,e3,iel,&det,&deta);
       // total weight at gaussian point
@@ -672,8 +696,8 @@ int DRT::Elements::Shell8::EvaluateNeumann(ParameterList& params,
   // add eload to element vector
   for (int inode=0; inode<iel; ++inode)
     for (int dof=0; dof<6; ++dof)
-      elevec1[inode*iel+dof] += eload[dof][inode];
-  
+      elevec1[inode*6+dof] += eload[dof][inode];
+      
   return 0;
 }
 
