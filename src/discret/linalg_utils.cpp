@@ -227,11 +227,15 @@ void LINALG::Add(const Epetra_CrsMatrix& A,
 #ifdef CCA_APPEND_U
 #define dsytrf dsytrf_
 #define dsytri dsytri_
+#define dgetrf dgetrf_
+#define dgetri dgetri_
 #endif
 extern "C"
 {
   void dsytrf(char *uplo, int *n, double *a, int *lda, int *ipiv, double *work, int *lwork, int *info);
   void dsytri(char *uplo, int *n, double *a, int *lda, int *ipiv, double *work, int *info);
+  void dgetrf(int *m,int *n, double *a, int *lda, int *ipiv, int* info);  
+  void dgetri(int *n, double *a, int *lda, int *ipiv, double *work, int *lwork, int *info);                         
 }
 
 /*----------------------------------------------------------------------*
@@ -256,6 +260,35 @@ void LINALG::SymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim)
   
   dsytri(uplo,&m,a,&n,&(ipiv[0]),&(work[0]),&info);
   if (info) dserror("dsytri returned info=%d",info);
+  
+  for (int i=0; i<dim; ++i)
+    for (int j=0; j<i; ++j)
+      A(j,i)=A(i,j);
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  invert a dense nonsymmetric matrix  (public)             g.bau 03/07|
+ *----------------------------------------------------------------------*/
+void LINALG::NonSymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim)
+{
+  if (A.M() != A.N()) dserror("Matrix is not square");
+  if (A.M() != dim) dserror("Dimension supplied does not match matrix");
+
+  double* a = A.A();
+  char uplo[5]; strncpy(uplo,"L ",2);
+  vector<int> ipiv(dim);
+  int lwork = 10*dim;
+  vector<double> work(lwork);
+  int info=0;
+  int n = dim;
+  int m = dim;
+  
+  dgetrf(&m,&n,a,&m,&(ipiv[0]),&info);
+  if (info) dserror("dgetrf returned info=%d",info);
+  
+  dgetri(&m,a,&n,&(ipiv[0]),&(work[0]),&lwork,&info);
+  if (info) dserror("dgetri returned info=%d",info);
   
   for (int i=0; i<dim; ++i)
     for (int j=0; j<i; ++j)

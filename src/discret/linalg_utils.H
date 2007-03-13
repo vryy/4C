@@ -75,6 +75,14 @@ namespace LINALG
   \param dim (in) :  Dimension of matrix
   */
   void SymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim);
+  
+  /*!
+  \brief Invert a nonsymmetric dim*dim square matrix
+  
+  \param A (in/out): Matrix to be inverted
+  \param dim (in) :  Dimension of matrix
+  */
+  void NonSymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim);
 
   /*!
   \brief Assemble a Epetra_SerialDenseMatrix into a Epetra_CrsMatrix

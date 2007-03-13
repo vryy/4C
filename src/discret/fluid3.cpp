@@ -3,10 +3,10 @@
 \brief
 
 <pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
+Maintainer: Georg Bauer
+            bauer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15252
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -29,6 +29,7 @@ Maintainer: Michael Gee
 DRT::Elements::Fluid3::Fluid3(int id, int owner) :
 DRT::Element(id,element_fluid3,owner),
 material_(0),
+is_ale_(false),
 data_()
 {
   ngp_[0] = ngp_[1] = ngp_[2] = 0;
@@ -44,11 +45,13 @@ data_()
 DRT::Elements::Fluid3::Fluid3(const DRT::Elements::Fluid3& old) :
 DRT::Element(old),
 material_(old.material_),
-data_(old.data_)
+is_ale_(old.is_ale_),
+data_(old.data_),
+surfaces_(old.surfaces_),
+surfaceptrs_(old.surfaceptrs_)
 {
   for (int i=0; i<3; ++i) ngp_[i] = old.ngp_[i];
-  surfaces_=old.surfaces_;
-  surfaceptrs_=old.surfaceptrs_;
+
   return;
 }
 
@@ -81,6 +84,8 @@ void DRT::Elements::Fluid3::Pack(vector<char>& data) const
   AddtoPack(data,ngp_,3*sizeof(int));
   // material_
   AddtoPack(data,material_);
+  // is_ale_
+  AddtoPack(data,is_ale_);  
   // data_
   vector<char> tmp(0);
   data_.Pack(tmp);
@@ -109,6 +114,8 @@ void DRT::Elements::Fluid3::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,ngp_,3*sizeof(int));
   // material_
   ExtractfromPack(position,data,material_);
+  // is_ale_
+  ExtractfromPack(position,data,is_ale_);
   // data_
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
@@ -161,6 +168,7 @@ DRT::Element** DRT::Elements::Fluid3::Surfaces()
   surfaceptrs_.resize(nsurf);
   int nodeids[100];
   DRT::Node* nodes[100];
+    
   if (nsurf==4)
  {
     if (numnode==4)
@@ -204,6 +212,7 @@ DRT::Element** DRT::Elements::Fluid3::Surfaces()
       surfaces_[3] =
         rcp(new DRT::Elements::Fluid3Surface(3,Owner(),3,nodeids,nodes,this,3));
       surfaceptrs_[3] = surfaces_[3].get();
+      
     }
     else if (numnode==10)
     {
@@ -286,7 +295,6 @@ else if (nsurf==6)
       surfaces_[5] =
         rcp(new DRT::Elements::Fluid3Surface(5,Owner(),4,nodeids,nodes,this,5));
       surfaceptrs_[5] = surfaces_[5].get();
-      
     }
     else if (numnode==20)
     {
@@ -300,7 +308,6 @@ else if (nsurf==6)
   }
   else dserror("Number of lines not supported");
   
-
   return (DRT::Element**)(&(surfaceptrs_[0]));
 }
 

@@ -79,7 +79,6 @@ void DRT::Elements::Fluid3Surface::Pack(vector<char>& data) const
 {
   DSTraceHelper dst("Fluid3Surface::Pack");
   data.resize(0);
-
   dserror("this Fluid3Surface element does not support communication");
 
   return;
@@ -92,7 +91,7 @@ void DRT::Elements::Fluid3Surface::Pack(vector<char>& data) const
 void DRT::Elements::Fluid3Surface::Unpack(const vector<char>& data)
 {
   DSTraceHelper dst("Fluid3Surface::Unpack");
-  dserror("this surface element does not support communication");
+  dserror("this Fluid3Surface element does not support communication");
   return;
 }
 

@@ -58,7 +58,6 @@ bool DRT::Elements::Fluid3::ReadElement()
     if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
   }
 
-
   frchk("HEX20",&ierr);
   if (ierr==1)
   {
@@ -162,14 +161,15 @@ bool DRT::Elements::Fluid3::ReadElement()
     if (strncmp(buffer,"ale",3)==0 ||
         strncmp(buffer,"ALE",3)==0 ||
         strncmp(buffer,"Ale",3)==0 )
-      dserror("ALE net algorithm for FLUID3 element is not supported\n");
-      //ele->e.f3->is_ale=1;
+        {
+	is_ale_=true;
+	dserror("ALE net algorithm for FLUID3 element is not supported\n");
+	}
+	
     else if (strncmp(buffer,"euler",5)==0 ||
         strncmp(buffer,"EULER",5)==0 ||
         strncmp(buffer,"Euler",5)==0 )
-      ;
-      // ele->e.f3->is_ale=0;
-      // do nothing. Eulerian mesh is default up to now!
+        is_ale_=false;
     else
       dserror("Reading of FLUID3 element failed: Euler/Ale\n");
   }

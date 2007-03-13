@@ -6,10 +6,10 @@
 \brief A C++ wrapper for the fluid3 element
 
 <pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
+Maintainer: Georg Bauer
+            bauer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15252
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -32,7 +32,7 @@ using namespace Teuchos;
 
 // forward declarations
 struct _MATERIAL;
-
+struct _FLUID_DATA;
 /*!
 \brief DRT: namespace of the ccarat discretization module
 
@@ -263,29 +263,84 @@ private:
   enum ActionType
   {
     none,
+    calc_fluid_systemmat_and_residual
   };
-  
+
   //! no. gaussian points in each spatial dimension
-  int                                             ngp_[3];    
+  int                                             ngp_[3];
   //! number of the material law
-  int                                             material_;  
-  
+  int                                             material_;
+  //! flag for euler/ale net algorithm
+  bool                                            is_ale_;
+
   //! container containing all kind of fluid3 thisandthat
   DRT::Container                                  data_;
-  
+
   //! vector of volumes of this element (length 1)
   //vector<DRT::Element*>                           volume_;
-  
+
   //! vector of surfaces adjacent to this element (fluid3: 4 or 6 surfaces)
-  vector<RefCountPtr<DRT::Elements::Fluid3Surface> > surfaces_;     
+  vector<RefCountPtr<DRT::Elements::Fluid3Surface> > surfaces_;
   //! vector of surfaces adjacent to this element (fluid3: 4 or 6 surfaces)
-  
+
   vector<DRT::Elements::Fluid3Surface*>              surfaceptrs_;
 
   // internal calculation methods
 
   // don't want = operator
   Fluid3 operator = (const Fluid3& old);
+
+  // calculating system matrix
+  void f3_sys_mat(vector<int>&              lm,
+                       vector<double>&           evelnp,
+		       vector<double>&           eprenp,
+                       vector<double>&           ehist,
+                       Epetra_SerialDenseMatrix* sys_mat,
+                       Epetra_SerialDenseVector* residual,
+                       struct _MATERIAL*         material,
+		       ParameterList&            params
+		       );
+
+  // evaluate element integration points
+  void f3_integration_points(struct _FLUID_DATA& data);
+
+  // calculate Jacobian matrix and it's determinant
+  void f3_jaco(const Epetra_SerialDenseMatrix& xyze,
+				    const Epetra_SerialDenseMatrix& deriv,
+                                    Epetra_SerialDenseMatrix& xjm,
+				    double* det,
+                                    const int iel
+				    );
+
+  // shape functions and natural derivatives for hexaeder
+	void f3_shape_function(
+               vector<double>& funct,
+               Epetra_SerialDenseMatrix& deriv,
+               Epetra_SerialDenseMatrix& deriv2,
+               const double&      r,
+               const double&      s,
+               const double&      t,
+               const int&         iel,
+               const int          icode
+          );
+
+  // calculate global derivatives w.r.t. x,y,z at point r,s,t are
+    void f3_gder(Epetra_SerialDenseMatrix& derxy,
+				    const Epetra_SerialDenseMatrix& deriv,
+                                    Epetra_SerialDenseMatrix& xjm,
+				    double& det,
+                                    const int iel
+				    );
+		
+  // calculate second global derivatives w.r.t x/y/z at point r,s,t			
+    void f3_gder2(const Epetra_SerialDenseMatrix& xyze,
+				    const Epetra_SerialDenseMatrix& xjm,
+                                    const Epetra_SerialDenseMatrix& derxy,
+				    Epetra_SerialDenseMatrix& derxy2,
+				    const Epetra_SerialDenseMatrix& deriv2,
+                                    const int iel
+				    );
+
 }; // class Fluid3
 
 
@@ -554,6 +609,16 @@ private:
   DRT::Elements::Fluid3* parent_;
   //! The local surface number of this surface w.r.t to the parent_ element
   int                    lsurface_;
+
+  void f3_nlnstiffmass(vector<int>&              lm,
+                       vector<double>&           velnp,
+                       vector<double>&           hist,
+                       Epetra_SerialDenseMatrix* stiffmatrix,
+                       Epetra_SerialDenseMatrix* massmatrix,
+                       Epetra_SerialDenseVector* force,
+                       struct _MATERIAL*         material);
+
+
 
 }; // class Fluid3Surface
 
