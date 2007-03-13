@@ -1023,6 +1023,7 @@ void inpnodes_ccadiscret_jumbo(RefCountPtr<DRT::Discretization>& dis,
     const int gid = rownodes->GID(i);
     send[gid] = gid;
   }
+
   rownodes->Comm().SumAll(&send[0],&recv[0],rownodes->NumGlobalElements());
   send.clear();
   if (myrank != 0) recv.clear();
@@ -1034,7 +1035,8 @@ void inpnodes_ccadiscret_jumbo(RefCountPtr<DRT::Discretization>& dis,
   // so the number of blocks is numproc
   // determine a rough blocksize
   const int nblock = numproc;
-  const int bsize  = (int)(rownodes->NumGlobalElements()/nblock);
+  int bsize  = (int)(rownodes->NumGlobalElements()/nblock);
+  if (bsize<1) bsize = 1;
 
   // open input file at the right position
   // note that stream is valid on proc 0 only!
@@ -1081,6 +1083,7 @@ void inpnodes_ccadiscret_jumbo(RefCountPtr<DRT::Discretization>& dis,
     // export block of nodes to other processors as reflected in rownodes,
     // changes ownership of nodes
     dis->ExportRowNodes(*rownodes); 
+
   } // for (int block=0; block<nblock; ++block)
 
   // last thing to do here is to produce nodal ghosting/overlap

@@ -45,7 +45,6 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
   const int* ptr = (const int*)(&data[0]);
   // get the type
   const int type = *ptr;
-
   switch(type)
   {
     case ParObject_Container:

@@ -36,12 +36,9 @@ void DRT::Discretization::ExportRowNodes(const Epetra_Map& newmap)
   if (noderowmap_==null) BuildNodeRowMap();
   const Epetra_Map& oldmap = *noderowmap_;
   
-  // not testing this anymore to allow piecewise exports in jumbo mode input
-  //if (newmap.NumGlobalElements() != oldmap.NumGlobalElements())
-  //  dserror("Global number of nodes in new and old map does not match");
-
   // create an exporter object that will figure out the communication pattern
   DRT::Exporter exporter(oldmap,newmap,Comm());
+
   // Do the communication
   exporter.Export(node_);
   

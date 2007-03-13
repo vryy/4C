@@ -41,144 +41,133 @@ DRT::ParObject::~ParObject()
   return;
 }
 
-// specializations have to be in the same namespace as the template.
-// compilers can be pedantic!
-namespace DRT
-{
-  //! @name Routines to help pack stuff into a char vector
-
 /*----------------------------------------------------------------------*
  |      a vector<int> specialization                           (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-  template<> void ParObject::AddtoPack(vector<char>& data, const vector<int>& stuff)
-  {
-    int numele = stuff.size();
-    AddtoPack(data,numele);
-    AddtoPack(data,&stuff[0],numele*sizeof(int));
-    return;
-  }
+void DRT::ParObject::AddtoPack(vector<char>& data, const vector<int>& stuff)
+{
+  int numele = stuff.size();
+  AddtoPack(data,numele);
+  AddtoPack(data,&stuff[0],numele*sizeof(int));
+  return;
+}
 /*----------------------------------------------------------------------*
  |      a vector<double> specialization                        (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-  template<> void ParObject::AddtoPack(vector<char>& data, const vector<double>& stuff)
-  {
-    int numele = stuff.size();
-    AddtoPack(data,numele);
-    AddtoPack(data,&stuff[0],numele*sizeof(double));
-    return;
-  }
+void DRT::ParObject::AddtoPack(vector<char>& data, const vector<double>& stuff)
+{
+  int numele = stuff.size();
+  AddtoPack(data,numele);
+  AddtoPack(data,&stuff[0],numele*sizeof(double));
+  return;
+}
 /*----------------------------------------------------------------------*
  |        a vector<char> specialization                        (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-  template<> void ParObject::AddtoPack(vector<char>& data, const vector<char>& stuff)
-  {
-    int numele = stuff.size();
-    AddtoPack(data,numele);
-    AddtoPack(data,&stuff[0],numele*sizeof(char));
-    return;
-  }
+void DRT::ParObject::AddtoPack(vector<char>& data, const vector<char>& stuff)
+{
+  int numele = stuff.size();
+  AddtoPack(data,numele);
+  AddtoPack(data,&stuff[0],numele*sizeof(char));
+  return;
+}
 /*----------------------------------------------------------------------*
  | a Epetra_SerialDenseMatrix specialization                   (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-  template<> void ParObject::AddtoPack(vector<char>& data, const Epetra_SerialDenseMatrix& stuff)
-  {
-    int m = stuff.M();
-    int n = stuff.N();
-    AddtoPack(data,m);
-    AddtoPack(data,n);
-    double* A = stuff.A();
-    AddtoPack(data,A,n*m*sizeof(double));
-    return;
-  }
+void DRT::ParObject::AddtoPack(vector<char>& data, const Epetra_SerialDenseMatrix& stuff)
+{
+  int m = stuff.M();
+  int n = stuff.N();
+  AddtoPack(data,m);
+  AddtoPack(data,n);
+  double* A = stuff.A();
+  AddtoPack(data,A,n*m*sizeof(double));
+  return;
+}
 /*----------------------------------------------------------------------*
  | a string specialization                                     (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-  template<> void ParObject::AddtoPack(vector<char>& data, const string& stuff)
-  {
-    int numele = stuff.size();
-    AddtoPack(data,numele);
-    AddtoPack(data,&stuff[0],numele*sizeof(char));
-    return;
-  }
+void DRT::ParObject::AddtoPack(vector<char>& data, const string& stuff)
+{
+  int numele = stuff.size();
+  AddtoPack(data,numele);
+  AddtoPack(data,&stuff[0],numele*sizeof(char));
+  return;
+}
 /*----------------------------------------------------------------------*
  | a int vector specialization                                 (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-  template<> void ParObject::ExtractfromPack(int& position, const vector<char>& data, vector<int>& stuff)
-  {
-    int dim = 0;
-    ExtractfromPack(position,data,dim);
-    stuff.resize(dim);
-    int size = dim*sizeof(int);
-    ExtractfromPack(position,data,&stuff[0],size);
-    return;
-  }
+void DRT::ParObject::ExtractfromPack(int& position, const vector<char>& data, vector<int>& stuff)
+{
+  int dim = 0;
+  ExtractfromPack(position,data,dim);
+  stuff.resize(dim);
+  int size = dim*sizeof(int);
+  ExtractfromPack(position,data,&stuff[0],size);
+  return;
+}
 /*----------------------------------------------------------------------*
  | a double vector specialization                                 (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-  template<> void ParObject::ExtractfromPack(int& position, const vector<char>& data, vector<double>& stuff)
-  {
-    int dim = 0;
-    ExtractfromPack(position,data,dim);
-    stuff.resize(dim);
-    int size = dim*sizeof(double);
-    ExtractfromPack(position,data,&stuff[0],size);
-    return;
-  }
+void DRT::ParObject::ExtractfromPack(int& position, const vector<char>& data, vector<double>& stuff)
+{
+  int dim = 0;
+  ExtractfromPack(position,data,dim);
+  stuff.resize(dim);
+  int size = dim*sizeof(double);
+  ExtractfromPack(position,data,&stuff[0],size);
+  return;
+}
 /*----------------------------------------------------------------------*
  | a char vector specialization                                 (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-  template<> void ParObject::ExtractfromPack(int& position, const vector<char>& data, vector<char>& stuff)
-  {
-    int dim = 0;
-    ExtractfromPack(position,data,dim);
-    stuff.resize(dim);
-    int size = dim*sizeof(char);
-    ExtractfromPack(position,data,&stuff[0],size);
-    return;
-  }
+void DRT::ParObject::ExtractfromPack(int& position, const vector<char>& data, vector<char>& stuff)
+{
+  int dim = 0;
+  ExtractfromPack(position,data,dim);
+  stuff.resize(dim);
+  int size = dim*sizeof(char);
+  ExtractfromPack(position,data,&stuff[0],size);
+  return;
+}
 /*----------------------------------------------------------------------*
  | a Epetra_SerialDenseMatrix specialization                   (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-  template<> void ParObject::ExtractfromPack(int& position, const vector<char>& data,
-                                             Epetra_SerialDenseMatrix& stuff)
-  {
-    int m = 0;
-    ExtractfromPack(position,data,m);
-    int n = 0;
-    ExtractfromPack(position,data,n);
-    stuff.Reshape(m,n);
-    double* A = stuff.A();
-    ExtractfromPack(position,data,A,n*m*sizeof(double));
-    return;
-  }
+void DRT::ParObject::ExtractfromPack(int& position, const vector<char>& data,
+                                Epetra_SerialDenseMatrix& stuff)
+{
+  int m = 0;
+  ExtractfromPack(position,data,m);
+  int n = 0;
+  ExtractfromPack(position,data,n);
+  stuff.Reshape(m,n);
+  double* A = stuff.A();
+  ExtractfromPack(position,data,A,n*m*sizeof(double));
+  return;
+}
 /*----------------------------------------------------------------------*
  | a string specialization                                     (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-  template<> void ParObject::ExtractfromPack(int& position, const vector<char>& data, string& stuff)
-  {
-    int dim = 0;
-    ExtractfromPack(position,data,dim);
-    stuff.resize(dim);
-    int size = dim*sizeof(char);
-    ExtractfromPack(position,data,&stuff[0],size);
-    return;
-   }
+void DRT::ParObject::ExtractfromPack(int& position, const vector<char>& data, string& stuff)
+{
+  int dim = 0;
+  ExtractfromPack(position,data,dim);
+  stuff.resize(dim);
+  int size = dim*sizeof(char);
+  ExtractfromPack(position,data,&stuff[0],size);
+  return;
+}
 
-
-
-  //@}
-
-} // end of namespace DRT
 
 
 #endif  // #ifdef TRILINOS_PACKAGE

@@ -453,7 +453,6 @@ template<typename T> void DRT::Exporter::Export(
       }
   }
   
-  
   //-------------------------------------------------------- do receiving
   // count how many receives I want to do
   int nrecv=0;

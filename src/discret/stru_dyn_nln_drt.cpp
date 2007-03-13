@@ -22,6 +22,7 @@ Maintainer: Michael Gee
 #endif
 
 #include "stru_dyn_nln_drt.H"
+#include "../io/io_drt.H"
 
 /*----------------------------------------------------------------------*
   |                                                       m.gee 06/01    |
@@ -99,6 +100,12 @@ void dyn_nlnstructural_drt()
   }
   // set degrees of freedom in the discretization
   if (!actdis->Filled()) actdis->FillComplete();
+
+  // -------------------------------------------------------------------
+  // context for output and restart
+  // -------------------------------------------------------------------
+  DiscretizationWriter output(actdis);
+  output.WriteMesh(0,0.0);
 
   // -------------------------------------------------------------------
   // get a communicator and myrank
@@ -231,6 +238,12 @@ void dyn_nlnstructural_drt()
   /*------------------------------------------------------- printout head */
   if (myrank==0) dyn_nlnstruct_outhead(&dynvar,sdyn);
   
+  //------------------------------------------------- output initial state
+  output.NewStep(0,0.0);
+  output.WriteVector("displacement", sol0);
+  output.WriteVector("velocity", vel);
+  output.WriteVector("acceleration", acc);
+
   /*----------------------------------------------------------------------*/
   /*                     START LOOP OVER ALL STEPS                        */
   /*----------------------------------------------------------------------*/
@@ -568,6 +581,15 @@ void dyn_nlnstructural_drt()
   //---------------------------------------check whether to write output or not
   int mod_disp   = sdyn->step % sdyn->updevry_disp;
   int mod_stress = sdyn->step % sdyn->updevry_stress;
+  
+  //--------------------------write displacements, velocities and accelerations
+  if (!mod_disp && ioflags.struct_disp==1)
+  {
+    output.NewStep(sdyn->step+1, sdyn->time);
+    output.WriteVector("displacement", sol0);
+    output.WriteVector("velocity", vel);
+    output.WriteVector("acceleration", acc);
+  }
   
   //----------------------------------------------------- do stress calculation
   if (mod_stress==0 && ioflags.struct_stress==1)
