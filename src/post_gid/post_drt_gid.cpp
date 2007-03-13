@@ -43,6 +43,7 @@ void write_vector_result(string result_name, PostField* field, PostResult* resul
   buf << fieldnames[field->type()] << "_" << result_name;
 
   RefCountPtr<Epetra_Vector> data = result->read_result(result_name);
+  const Epetra_BlockMap& datamap = data->Map();
   GiD_BeginResult(const_cast<char*>(buf.str().c_str()), "ccarat", step, GiD_Vector,
                   GiD_OnNodes, NULL, NULL, field->problem()->num_dim(),
                   componentnames);
@@ -55,7 +56,10 @@ void write_vector_result(string result_name, PostField* field, PostResult* resul
     DRT::DofSet s = n->Dof();
     for (int i = 0; i < field->problem()->num_dim(); ++i)
     {
-      v[i] = (*data)[s[i]];
+      // The order of the result vector is defined by the map. It is
+      // NOT ordered by global dof numbers.
+      // If this turns out to be too slow, we have to change it.
+      v[i] = (*data)[datamap.LID(s[i])];
     }
     GiD_WriteVector(n->Id()+1,v[0],v[1],v[2]);
   }

@@ -1,6 +1,7 @@
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
+#include <iostream>
 #include "hdf_reader.H"
 
 using namespace std;
@@ -235,7 +236,7 @@ HDFReader::ReadDoubleData(string path, int start, int end)
 /*----------------------------------------------------------------------*/
 RefCountPtr<Epetra_Vector>
 HDFReader::ReadResultData(string id_path, string value_path, int new_proc_num,
-                          int my_id, RefCountPtr<Epetra_Comm> Comm, int gId_num)
+                          int my_id, RefCountPtr<Epetra_Comm> Comm)
 {
   if (files_.size()==0 || files_[0] == -1)
     dserror("Tried to read data without opening any file");
@@ -243,7 +244,7 @@ HDFReader::ReadResultData(string id_path, string value_path, int new_proc_num,
   CalculateRange(new_proc_num,my_id,start,end);
 
   RefCountPtr<vector<int> > ids = ReadIntData(id_path,start,end);
-  Epetra_Map map(gId_num,static_cast<int>(ids->size()), &((*ids)[0]),0,*Comm);
+  Epetra_Map map(-1,static_cast<int>(ids->size()), &((*ids)[0]),0,*Comm);
 
   RefCountPtr<Epetra_Vector> res = rcp(new Epetra_Vector(map,false));
   RefCountPtr<vector<double> > values = ReadDoubleData(value_path,start,end);

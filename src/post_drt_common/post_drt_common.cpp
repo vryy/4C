@@ -635,12 +635,11 @@ void PostResult::open_result_files(MAP* field_info)
 RefCountPtr<Epetra_Vector> PostResult::read_result(string name)
 {
   RefCountPtr<Epetra_Comm> comm = field_->problem()->comm();
-  int gId_num = field_->global_id_num();
   MAP* result = map_read_map(group_, const_cast<char*>(name.c_str()));
   string id_path = map_read_string(result, "ids");
   string value_path = map_read_string(result, "values");
   return file_.ReadResultData(id_path.c_str(), value_path.c_str(), comm->NumProc(),
-                                comm->MyPID(), comm, gId_num);
+                                comm->MyPID(), comm);
 }
 
 #endif

@@ -104,11 +104,10 @@ public:
     \param new_proc_num (in): number of processors reading
     \param my_id        (in): my rank
     \param Comm         (in): the communicator itself
-    \param gId_num      (in): number of entries in the vector (from control file)
    */
   RefCountPtr<Epetra_Vector>
   ReadResultData(string id_path, string value_path, int new_proc_num, int my_id,
-                 RefCountPtr<Epetra_Comm> Comm, int gId_num);
+                 RefCountPtr<Epetra_Comm> Comm);
 
 private:
 
