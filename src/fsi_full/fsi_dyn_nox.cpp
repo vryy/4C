@@ -154,7 +154,9 @@ FSI_InterfaceProblem::FSI_InterfaceProblem(Epetra_Comm& Comm,
     fluid_work_(fluid_work),
     ale_work_(ale_work),
     Comm_(Comm),
-    counter_(7)
+    counter_(7),
+    mfresitemax_(-1),
+    fdresitemax_(-1)
 {
   fsidyn_ = alldyn[3].fsidyn;
 
@@ -469,13 +471,15 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
   // We might want to do just one linear fluid solution in matrix free
   // or finite difference settings.
 
-  if (fillFlag==FD_Res)
-    fdyn->itemax = 1;
+  if (fillFlag==FD_Res && fdresitemax_ > 0)
+    fdyn->itemax = fdresitemax_;
 
-#if 0
-  if (fillFlag==MF_Res)
-    fdyn->itemax = 1;
-#endif
+  if (fillFlag==MF_Res && mfresitemax_ > 0)
+    fdyn->itemax = mfresitemax_;
+
+  // not sure about that
+  if (fillFlag==MF_Jac && mfresitemax_ > 0)
+    fdyn->itemax = mfresitemax_;
 
   perf_begin(42);
   fsi_fluid_calc(fluid_work_,fluidfield,f_disnum_calc,f_disnum_io,alefield,a_disnum_calc);
@@ -889,15 +893,6 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     }
 #endif
 
-
-    // Create the Epetra_RowMatrix.
-    // 1. User supplied (Epetra_RowMatrix)
-    //Teuchos::RefCountPtr<Epetra_RowMatrix> Analytic = Problem.getJacobian();
-    // 2. Matrix-Free (Epetra_Operator)
-    //Teuchos::RefCountPtr<NOX::Epetra::MatrixFree> MF = Teuchos::rcp(new NOX::Epetra::MatrixFree(printParams, interface, noxSoln));
-    // 3. Finite Difference (Epetra_RowMatrix)
-    //Teuchos::RefCountPtr<NOX::Epetra::FiniteDifference> FD = Teuchos::rcp(new NOX::Epetra::FiniteDifference(printParams, interface, noxSoln));
-
     // Create the linear system
     Teuchos::RefCountPtr<NOX::Epetra::Interface::Required> iReq = interface;
 
@@ -931,6 +926,7 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     {
       Teuchos::ParameterList& mfParams = nlParams.sublist("Matrix Free");
       double lambda = mfParams.get("lambda", 1.0e-6);
+      mfresitemax_ = mfParams.get("itemax", -1);
 
       // MatrixFree seems to be the most interessting choice. But you
       // must set a rather low tolerance for the linear solver.
@@ -957,6 +953,7 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     else if (jacobian=="Finite Difference")
     {
       Teuchos::ParameterList& fdParams = nlParams.sublist("Finite Difference");
+      fdresitemax_ = fdParams.get("itemax", -1);
       double alpha = fdParams.get("alpha", 1.0e-4);
       double beta  = fdParams.get("beta",  1.0e-6);
       std::string dt = fdParams.get("Difference Type","Forward");

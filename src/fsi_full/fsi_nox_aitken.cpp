@@ -33,6 +33,12 @@ bool AitkenRelaxation::reset(const Teuchos::RefCountPtr<NOX::GlobalData>& gd,
   // do not reset the aitken factor
   //nu_ = p.get("Start nu", 0.0);
 
+  // We might want to constrain the step size of the first relaxation
+  // in a new time step.
+  double maxstep = p.get("max step size", 0.0);
+  if (maxstep > 0 && maxstep < 1-nu_)
+    nu_ = 1-maxstep;
+
   if (!is_null(del_))
   {
     del_->init(1e20);

@@ -205,6 +205,28 @@ private:
 
   //! number of residuum calculations per nonlinear solve in one time step
   std::vector<int> linsolvcount_;
+
+  //! number of fluid iterations to do during matrix free newton krylov solves
+  /*!
+    In matrix free newton krylov the Jacobian applied to a vector
+    is approximated by a finite difference. We might not have to solve
+    the fluid field fully when this difference is calculated. The
+    direction we get is probably well enough with just a raw fluid
+    solution. The rhs of course remains the same and we go to the same
+    solution.
+
+    Defaults to -1 and thus no constraint.
+   */
+  int mfresitemax_;
+
+  //! number of fluid iterations to do during finite difference solves
+  /*!
+    If we approximate the Jacobian by a (colored) finite difference we
+    might want to do just a few fluid solves.
+
+    Defaults to -1 and thus no constraint.
+   */
+  int fdresitemax_;
 };
 
 
