@@ -444,7 +444,7 @@ void stru_genalpha_drt()
     //------------------------------------------------ build residual norm
     double norm;
     fresm->Norm2(&norm);
-    if (!myrank) cout << "Residual before Newton " << norm << endl; fflush(stdout);
+    if (!myrank) cout << "Predictor residual forces " << norm << endl; fflush(stdout);
 
     //=================================================== equilibrium loop
     int numiter=0;
@@ -579,10 +579,14 @@ void stru_genalpha_drt()
     time += dt;  // time t_n := t_{n+1} = t_n + Delta t
 
     //----------------------------------------------------- output results
-    output.NewStep(istep, time);
-    output.WriteVector("displacement", dis);
-    output.WriteVector("velocity", vel);
-    output.WriteVector("acceleration", acc);
+    int mod_disp   = sdyn->step % sdyn->updevry_disp;
+    if (!mod_disp && ioflags.struct_disp==1)
+    {
+      output.NewStep(istep, time);
+      output.WriteVector("displacement", dis);
+      output.WriteVector("velocity", vel);
+      output.WriteVector("acceleration", acc);
+    }
 
     //---------------------------------------------- do stress calculation
     int mod_stress = sdyn->step % sdyn->updevry_stress;
