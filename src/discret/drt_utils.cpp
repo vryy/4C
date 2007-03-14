@@ -56,7 +56,7 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
     break;
     case ParObject_Condition:
     {
-      DRT::Condition* object = new DRT::Condition(-1,DRT::Condition::none);
+      DRT::Condition* object = new DRT::Condition();
       object->Unpack(data);
       return object;
     }

@@ -22,10 +22,13 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-DRT::Condition::Condition(const int id, const ConditionType type) :
+DRT::Condition::Condition(const int id, const ConditionType type,
+                          const bool buildgeometry, const GeometryType gtype) :
 Container(),
 id_(id),
+buildgeometry_(buildgeometry),
 type_(type),
+gtype_(gtype),
 comm_(null)
 { 
   return;
@@ -37,7 +40,9 @@ comm_(null)
 DRT::Condition::Condition() :
 Container(),
 id_(-1),
+buildgeometry_(false),
 type_(none),
+gtype_(NoGeom),
 comm_(null)
 {
   return;
@@ -49,7 +54,9 @@ comm_(null)
 DRT::Condition::Condition(const DRT::Condition& old) :
 Container(old),
 id_(old.id_),
+buildgeometry_(old.buildgeometry_),
 type_(old.type_),
+gtype_(old.gtype_),
 comm_(old.comm_)
 {
   return;
@@ -117,8 +124,12 @@ void DRT::Condition::Pack(vector<char>& data) const
   AddtoPack(data,basedata);
   // id_
   AddtoPack(data,id_);
+  // buildgeometry_
+  AddtoPack(data,buildgeometry_);
   // type_
   AddtoPack(data,type_);
+  // gtype_
+  AddtoPack(data,gtype_);
   
   return;
 }
@@ -141,8 +152,12 @@ void DRT::Condition::Unpack(const vector<char>& data)
   Container::Unpack(basedata);
   // id_
   ExtractfromPack(position,data,id_);
+  // buildgeometry_
+  ExtractfromPack(position,data,buildgeometry_);
   // type_
   ExtractfromPack(position,data,type_);
+  // gtype_
+  ExtractfromPack(position,data,gtype_);
   
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

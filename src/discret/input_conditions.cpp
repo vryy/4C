@@ -424,7 +424,8 @@ void input_point_neum(multimap<int,RefCountPtr<DRT::Condition> >& pnmap)
        
     // create boundary condition
     RefCountPtr<DRT::Condition> condition = 
-                    rcp(new DRT::Condition(dnodeid,DRT::Condition::PointNeumann));
+             rcp(new DRT::Condition(dnodeid,DRT::Condition::PointNeumann,false,
+                                    DRT::Condition::Point));
     
     // read whether load is on surface (shells)
     frchk("Mid",&ierr);
@@ -531,7 +532,8 @@ void input_line_neum(multimap<int,RefCountPtr<DRT::Condition> >& lnmap)
        
     // create boundary condition
     RefCountPtr<DRT::Condition> condition = 
-                  rcp(new DRT::Condition(dlineid,DRT::Condition::LineNeumann));
+              rcp(new DRT::Condition(dlineid,DRT::Condition::LineNeumann,true,
+                                     DRT::Condition::Line));
     
     // read whether load is on surface (shells)
     condition->Add("type","neum_live");
@@ -658,7 +660,8 @@ void input_surf_neum(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
        
     // create boundary condition
     RefCountPtr<DRT::Condition> condition = 
-                  rcp(new DRT::Condition(dsurfid,DRT::Condition::SurfaceNeumann));
+           rcp(new DRT::Condition(dsurfid,DRT::Condition::SurfaceNeumann,true,
+                                  DRT::Condition::Surface));
     
     // read whether load is on surface (shells)
     condition->Add("type","neum_live");
@@ -785,7 +788,8 @@ void input_vol_neum(multimap<int,RefCountPtr<DRT::Condition> >& vnmap)
        
     // create boundary condition
     RefCountPtr<DRT::Condition> condition = 
-                  rcp(new DRT::Condition(dvolid,DRT::Condition::VolumeNeumann));
+            rcp(new DRT::Condition(dvolid,DRT::Condition::VolumeNeumann,true,
+                                   DRT::Condition::Volume));
     
     // read whether load is on surface (shells)
     condition->Add("type","neum_dead");
@@ -910,7 +914,8 @@ void input_point_dirich(multimap<int,RefCountPtr<DRT::Condition> >& pdmap)
     
     // create boundary condition
     RefCountPtr<DRT::Condition> condition = 
-                rcp(new DRT::Condition(dnodeid,DRT::Condition::PointDirichlet));
+          rcp(new DRT::Condition(dnodeid,DRT::Condition::PointDirichlet,false,
+                                 DRT::Condition::Point));
     condition->Add("onoff",dirich_onoff);
     condition->Add("val",dirich_val);
     condition->Add("curve",dirich_curve);
@@ -1024,7 +1029,8 @@ void input_line_dirich(multimap<int,RefCountPtr<DRT::Condition> >& ldmap)
     
     // create boundary condition
     RefCountPtr<DRT::Condition> condition = 
-                rcp(new DRT::Condition(dlineid,DRT::Condition::LineDirichlet));
+           rcp(new DRT::Condition(dlineid,DRT::Condition::LineDirichlet,false,
+                                  DRT::Condition::Line));
     condition->Add("onoff",dirich_onoff);
     condition->Add("val",dirich_val);
     condition->Add("curve",dirich_curve);
@@ -1137,7 +1143,8 @@ void input_surf_dirich(multimap<int,RefCountPtr<DRT::Condition> >& sdmap)
     
     // create boundary condition
     RefCountPtr<DRT::Condition> condition = 
-                 rcp(new DRT::Condition(dsurfid,DRT::Condition::SurfaceDirichlet));
+        rcp(new DRT::Condition(dsurfid,DRT::Condition::SurfaceDirichlet,false,
+                               DRT::Condition::Surface));
     condition->Add("onoff",dirich_onoff);
     condition->Add("val",dirich_val);
     condition->Add("curve",dirich_curve);
@@ -1250,7 +1257,8 @@ void input_vol_dirich(multimap<int,RefCountPtr<DRT::Condition> >& vdmap)
     
     // create boundary condition
     RefCountPtr<DRT::Condition> condition = 
-                rcp(new DRT::Condition(dvolid,DRT::Condition::VolumeDirichlet));
+          rcp(new DRT::Condition(dvolid,DRT::Condition::VolumeDirichlet,false,
+                                 DRT::Condition::Volume));
     condition->Add("onoff",dirich_onoff);
     condition->Add("val",dirich_val);
     condition->Add("curve",dirich_curve);

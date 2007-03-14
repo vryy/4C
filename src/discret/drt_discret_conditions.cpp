@@ -19,7 +19,6 @@ Maintainer: Michael Gee
 
 
 
-
 /*----------------------------------------------------------------------*
  |  Build boundary condition geometries (public)             mwgee 01/07|
  *----------------------------------------------------------------------*/
@@ -32,7 +31,7 @@ void DRT::Discretization::BoundaryConditionsGeometry()
   for (int i=0; i<NumMyColElements(); ++i)
     lColElement(i)->ClearConditions();
   
-  // now we delete all geometries that are attached to any conditions
+  // now we delete all old geometries that are attached to any conditions
   // and set a communicator to the condition
   multimap<string,RefCountPtr<DRT::Condition> >::iterator fool;
   for (fool=condition_.begin(); fool != condition_.end(); ++fool)
@@ -41,12 +40,12 @@ void DRT::Discretization::BoundaryConditionsGeometry()
     fool->second->SetComm(comm_);
   }
 
-  // for dirichlet boundary conditions, we do not do anything special, 
-  // we just set a ptr in the nodes to the condition
+  // for all conditions, we set a ptr in the nodes to the condition
   for (fool=condition_.begin(); fool != condition_.end(); ++fool)
   {
-    if (fool->first != (string)"Dirichlet") continue;
     const vector<int>* nodes = fool->second->Get<vector<int> >("Node Ids");
+    // There might be conditions that do not have a nodal cloud
+    if (!nodes) continue;
     int nnode = nodes->size();
     for (int i=0; i<nnode; ++i)
     {
@@ -57,29 +56,26 @@ void DRT::Discretization::BoundaryConditionsGeometry()
     }
   }
 
-  // Note that we intentionally do nothing at all for point Neumann BCs here
-
-  // For line neumann conditions, we take the nodal cloud
-  // and build all lines connecting the nodal cloud using
-  // the elements attached to these lines
+  // Loop all conditions and build geometry description if desired
   for (fool=condition_.begin(); fool != condition_.end(); ++fool)
-    if (fool->first == (string)"LineNeumann")
+  {
+    // do not build geometry description for this condition
+    if (fool->second->GeometryDescription()==false)         continue;
+    // do not build geometry description for this condition
+    else if (fool->second->GType()==DRT::Condition::NoGeom) continue;
+    // do not build anything for point wise conditions
+    else if (fool->second->GType()==DRT::Condition::Point)  continue;
+    // build a line element geometry description
+    else if (fool->second->GType()==DRT::Condition::Line)
       BuildLinesinCondition(fool->first,fool->second);
-  
-  // for surface neumann conditions, we take the nodal cloud
-  // and build all surfaces connecting the nodal cloud using
-  // the elements attached to these surfaces
-  for (fool=condition_.begin(); fool != condition_.end(); ++fool)
-    if (fool->first == (string)"SurfaceNeumann")
+    // build a surface element geometry description
+    else if (fool->second->GType()==DRT::Condition::Surface)
       BuildSurfacesinCondition(fool->first,fool->second);
-  
-  // for volume neumann conditions, we take the nodal cloud
-  // and build all volumes connecting the nodal cloud using
-  // the elements attached to these volumes
-  for (fool=condition_.begin(); fool != condition_.end(); ++fool)
-    if (fool->first == (string)"VolumeNeumann")
+    // build a volume element geometry description
+    else if (fool->second->GType()==DRT::Condition::Volume)
       BuildVolumesinCondition(fool->first,fool->second);
-
+  }
+  
   return;
 }
 

@@ -97,6 +97,19 @@ public:
     VolumeNeumann
   };
 
+  /*!
+  \brief Type of geometry this conditions lives on
+         
+  */
+  enum GeometryType
+  {
+    NoGeom,
+    Point,
+    Line,
+    Surface,
+    Volume
+  };
+
   //@}
 
   //! @name Constructors and destructors and related methods
@@ -116,7 +129,8 @@ public:
   \param type (in): type of the condition
   
   */
-  Condition(const int id, const ConditionType type);
+  Condition(const int id, const ConditionType type, const bool buildgeometry,
+            const GeometryType gtype);
 
   /*!
   \brief Empty Constructor with type condition_none
@@ -162,6 +176,29 @@ public:
   \brief Return condition id
   */
   inline virtual int Id() const { return id_; }
+
+  /*!
+  \brief Return flag indicating whether this condition needs to build a geometry
+         description
+  
+  Some boundary conditions such as e.g. Neumann BCs need a geometry description
+  to perform an integration on the boundary. Some BCs such as Dirichlet BCs
+  don't need such a geometry description as it is sufficient to have access to
+  the nodes only.<br>
+  In case the condition needs to build elements describing the geometry of the
+  condition the returned flag is true, otherwise its false;
+         
+  */
+  inline virtual bool GeometryDescription() const { return buildgeometry_; }
+
+  /*!
+  \brief Return type of geometry this condition lives on
+  
+  The type of geometry this condition lives on determines what type of
+  geometry description is build for this ocndition iff GeometryDescription()==true
+  
+  */
+  inline virtual DRT::Condition::GeometryType GType() const { return gtype_; }
 
   /*!
   \brief Print this Condition (ostream << is also implemented for DRT::Condition)
@@ -241,8 +278,14 @@ protected:
   //! Unique id of this condition, no second condition of the same type with same id may exist
   int                                 id_;       
 
+  //! flag indicating whether this condition builds a geometry description or not
+  bool                                buildgeometry_;
+
   //! Type of this condition
   ConditionType                       type_;     
+  
+  //! Type of geometry the condition lives on
+  GeometryType                        gtype_;
   
   //! Geometry description of this condition
   map<int,RefCountPtr<DRT::Element> > geometry_; 
