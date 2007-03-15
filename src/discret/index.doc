@@ -1,7 +1,77 @@
-/*! \mainpage DRT: The ccarat discretization handling module
+/*! \mainpage DRT/LINALG: The baci discretization handling module and linear algebra subsystem
 \htmlonly
 \endhtmlonly
 
+\section drt_intro Introduction
+
+DRT provides fundamental services to construct and manage 2D/3D discretizations 
+in parallel and serial. LINALG provides parallel sparse and dense matrix/vector operations.
+
+\section Overviewdrt Overview of DRT
+
+DRT is a collection of c++ classes that facilitate the creation and administration of discretizations
+on a parallel machine. It does NOT actually implement any specific types of finite elements such as
+fluid or structural finite element formulations NOR does it implement any algorithms such as 
+time integration or other FE solution methods. It is capable of storing and organizing elements, nodes and
+boundary conditions in a parallel manner following domain decomposition principles, where a 
+discretization of a domain is split into subdomains which are stored on individual processors.
+DRT supports arbitrary types of domain decomposition and supports almost arbitrary distributions across
+processors. DRT is based on MPI and therefore works on distributed and shared memory architectures.<br>
+DRT makes use of Sandia National Laboratories software package 'Trilinos' 
+( http://software.sandia.gov/trilinos) and can not be compiled without.
+
+\section Overviewlinalg Overview of LINALG
+
+LINALG is a collection of methods and classes that facilitate parallel sparse matrix vector operations
+such as matrix-vector products, solution of linear systems and the like. It makes heavy use of
+Sandia National Laboratories software package 'Trilinos' ( http://software.sandia.gov/trilinos ).
+LINALG is actually only little more then a wrapper for Trilinos methods and classes. It simply
+supplies a generalized interface to Trilinos subpackages and methods and hides some of the details
+from the user. Additionally, LINALG supplies algebra services such as e.g. assembly of dense matrices/vectors
+into sparse distributed matrices/vectors to DRT. LINALG can not be compiled or used without Trilinos
+
+\section caps_drt Capabilities of DRT
+
+What DRT can do:
+<ul>
+<li> Support creation of a discretization in the DRT::Discretization class by allowing independent
+     input of nodes (DRT::Node) and elements (DRT::Element). Construction can be done on any processor
+     and incomplete parts of a discretization can be distributed to other processors during input.
+     The parallel distribution ('map') of nodes and elements does not need to match the final desired 
+     distribution ('map').
+
+<li> Input of arbitrary boundary conditions in terms of nodes only. An arbitrary condition (DRT::Condition)
+     can be associated with a block of nodes. If the boundary condition desires an explicit discrete
+     representation of the boundary (such as a Neumann BC would), this BC discretization is build
+     internally.
+
+<li> Support multiple discretizations by using several instances of the DRT::Discretization class.
+     Discretizations are completely independent from each other.
+     
+<li> Distribute a discretization across a distributed memory machine using MPI. Each discretization can
+     be associated with its own mpi communicator. DRT uses the partitioning package Metis to propose
+     a good partitioning of a discretization.
+     
+<li> Redistribute a discretization during simulation if desired. Also cooperate with LINALG by returning
+     the new parallel maps of matrices and vectors matching the new distribution and supporting
+     LINALG exports and imports of distributed vectors.
+    
+<li> Support adaptivity by allowing insertation and deletion of nodes/elements at any moment.
+</ul>
+
+What DRT can't do (not yet):
+<ul>
+<li> Finite element simulations on its own.
+
+<li> load balancing on its own
+
+<li> mesh inprinting, contact detection, nonconforming mesh tying
+
+<li> ...?
+</ul>
+
+
+<!--
 \section Moertel_intro Introduction
 Moertel provides fundamental construction
 routines and services that are required for serial and
@@ -194,3 +264,4 @@ Pavel Bochev for discussions and support in creating this work.
 <br>
 <br>
 */
+-->
