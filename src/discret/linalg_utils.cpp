@@ -290,9 +290,6 @@ void LINALG::NonSymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim)
   dgetri(&m,a,&n,&(ipiv[0]),&(work[0]),&lwork,&info);
   if (info) dserror("dgetri returned info=%d",info);
   
-  for (int i=0; i<dim; ++i)
-    for (int j=0; j<i; ++j)
-      A(j,i)=A(i,j);
   return;
 }
 
