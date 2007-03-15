@@ -437,7 +437,7 @@ void dyn_fluid_drt()
       incvel->PutScalar(0.0);
       bool initsolver = false; // init in first iteration only
       if (!n_itnum) initsolver = true;
-      //solver.Solve(sys_mat,incvel,residual,true,initsolver);
+      solver.Solve(sys_mat,incvel,residual,true,initsolver);
 
       //------------------------------------------------ update (u,p) trial
       velnp->Update(1.0,*incvel,1.0);
@@ -530,9 +530,9 @@ void dyn_fluid_drt()
 	switch (fdyn->iop)
 	{
 	    case timeint_one_step_theta: /* One step Theta time integration */
-		accn->Update(1.0/(fdyn->theta*fdyn->dta),*velnp,
-			     1.0/(fdyn->theta*fdyn->dta),*veln ,
-			     (-1.0/fdyn->theta-1));
+		accn->Update( 1.0/(fdyn->theta*fdyn->dta),*velnp,
+			     -1.0/(fdyn->theta*fdyn->dta),*veln ,
+			     (fdyn->theta-1)/fdyn->theta);
 		break;
 	    case timeint_bdf2:	/* 2nd order backward differencing BDF2	*/
 	        {
