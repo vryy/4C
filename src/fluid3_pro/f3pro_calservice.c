@@ -18,6 +18,21 @@ Maintainer: Ulrich Kuettler
 #include "fluid3pro_prototypes.h"
 #include "fluid3pro.h"
 #include "../fluid3/fluid3_prototypes.h"
+
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | dedfined in global_control.c                                         |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA      *alldyn;
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
 /*!---------------------------------------------------------------------
 \brief set all arrays for element calculation
 
@@ -51,6 +66,7 @@ void f3pro_calset(
   INT i, velnm, veln, velnp, hist;
   INT numpdof=0;
   NODE *actnode;                /* actual node for element */
+  GVOL *actgvol;
 
 #ifdef DEBUG
   dstrc_enter("f3pro_calset");
@@ -149,6 +165,45 @@ void f3pro_calset(
   edeadng[1] = 0;
   edeadng[2] = 0;
 
+  /*------------------------------------------------ check for dead load */
+  actgvol = ele->g.gvol;
+  if (actgvol->neum!=NULL)
+  {
+    INT    actcurve;    /* actual time curve                                */
+    DOUBLE acttime;
+    DOUBLE acttimefac;  /* time factor from actual curve                    */
+    DOUBLE acttimefacn; /* time factor at time (n)                          */
+
+    actcurve = actgvol->neum->curve-1;
+    if (actcurve<0)
+    {
+      acttimefac  = 1.;
+      acttimefacn = 1.;
+    }
+    else
+    {
+      FLUID_DYNAMIC *fdyn;
+      fdyn = alldyn[genprob.numff].fdyn;
+      acttime = fdyn->acttime;
+      dyn_facfromcurve(actcurve,acttime,&acttimefac) ;
+      acttime = fdyn->acttime-fdyn->dta;
+      dyn_facfromcurve(actcurve,acttime,&acttimefacn) ;
+    }
+    for (i=0;i<3;i++)
+    {
+      if (actgvol->neum->neum_onoff.a.iv[i]==0)
+      {
+	edeadng[i] = ZERO;
+      }
+      if (actgvol->neum->neum_onoff.a.iv[i]!=0)
+      {
+	if (actgvol->neum->neum_type!=neum_dead)
+	  dserror("unsupported neumann type %d",actgvol->neum->neum_type);
+	edeadng[i] = actgvol->neum->neum_val.a.dv[i]*acttimefac;
+      }
+    }
+  }
+
 #ifdef DEBUG
   dstrc_exit();
 #endif
@@ -190,6 +245,7 @@ void f3pro_calseta(
   INT i, velnm, veln, velnp, hist;
   INT numpdof=0;
   NODE *actnode;                /* actual node for element */
+  GVOL *actgvol;
 
 #ifdef DEBUG
   dstrc_enter("f3pro_calseta");
@@ -291,6 +347,45 @@ void f3pro_calseta(
   edeadng[0] = 0;
   edeadng[1] = 0;
   edeadng[2] = 0;
+
+  /*------------------------------------------------ check for dead load */
+  actgvol = ele->g.gvol;
+  if (actgvol->neum!=NULL)
+  {
+    INT    actcurve;    /* actual time curve                                */
+    DOUBLE acttime;
+    DOUBLE acttimefac;  /* time factor from actual curve                    */
+    DOUBLE acttimefacn; /* time factor at time (n)                          */
+
+    actcurve = actgvol->neum->curve-1;
+    if (actcurve<0)
+    {
+      acttimefac  = 1.;
+      acttimefacn = 1.;
+    }
+    else
+    {
+      FLUID_DYNAMIC *fdyn;
+      fdyn = alldyn[genprob.numff].fdyn;
+      acttime = fdyn->acttime;
+      dyn_facfromcurve(actcurve,acttime,&acttimefac) ;
+      acttime = fdyn->acttime-fdyn->dta;
+      dyn_facfromcurve(actcurve,acttime,&acttimefacn) ;
+    }
+    for (i=0;i<3;i++)
+    {
+      if (actgvol->neum->neum_onoff.a.iv[i]==0)
+      {
+	edeadng[i] = ZERO;
+      }
+      if (actgvol->neum->neum_onoff.a.iv[i]!=0)
+      {
+	if (actgvol->neum->neum_type!=neum_dead)
+	  dserror("unsupported neumann type %d",actgvol->neum->neum_type);
+	edeadng[i] = actgvol->neum->neum_val.a.dv[i]*acttimefac;
+      }
+    }
+  }
 
 #ifdef DEBUG
   dstrc_exit();

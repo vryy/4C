@@ -241,7 +241,9 @@ void f3pro_calele(
   amzero(edforce_global);
   amzero(gforce_global);
   *hasdirich=0;
-  *hasext=0;
+  *hasext=1;			/* This is an useless
+				 * optimization. But beware of the
+				 * relaxation case! */
 
   switch(ele->e.f3pro->is_ale)
   {
