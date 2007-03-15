@@ -331,8 +331,8 @@ private:
 				    double& det,
                                     const int iel
 				    );
-		
-  // calculate second global derivatives w.r.t x/y/z at point r,s,t			
+
+  // calculate second global derivatives w.r.t x/y/z at point r,s,t
     void f3_gder2(const Epetra_SerialDenseMatrix& xyze,
 				    const Epetra_SerialDenseMatrix& xjm,
                                     const Epetra_SerialDenseMatrix& derxy,
@@ -340,6 +340,26 @@ private:
 				    const Epetra_SerialDenseMatrix& deriv2,
                                     const int iel
 				    );
+
+  // evaluate fluid coefficient matrix
+    void f3_calmat( Epetra_SerialDenseMatrix& estif,
+                Epetra_SerialDenseVector&  	eforce,
+                vector<double>&  	velint,
+                vector<double>&   	histvec,
+                vector<double>&   	gridvint,
+                double&   		press,
+                Epetra_SerialDenseMatrix& vderxy,
+                Epetra_SerialDenseMatrix& vderxy2,
+                vector<double>&   	gradp,
+                vector<double>&   	funct,
+		vector<double>&   	tau,
+                Epetra_SerialDenseMatrix& derxy,
+                Epetra_SerialDenseMatrix& derxy2,
+                double&   	fac,
+                double&   	visc,
+                int&      	iel,
+		ParameterList& 		 params
+      );
 
 }; // class Fluid3
 
@@ -609,16 +629,6 @@ private:
   DRT::Elements::Fluid3* parent_;
   //! The local surface number of this surface w.r.t to the parent_ element
   int                    lsurface_;
-
-  void f3_nlnstiffmass(vector<int>&              lm,
-                       vector<double>&           velnp,
-                       vector<double>&           hist,
-                       Epetra_SerialDenseMatrix* stiffmatrix,
-                       Epetra_SerialDenseMatrix* massmatrix,
-                       Epetra_SerialDenseVector* force,
-                       struct _MATERIAL*         material);
-
-
 
 }; // class Fluid3Surface
 
