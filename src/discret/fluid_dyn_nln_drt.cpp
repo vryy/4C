@@ -338,7 +338,7 @@ void dyn_fluid_drt()
     {
 	velnp->Update(fdyn->dta*(1.0+fdyn->dta/fdyn->dtp),*accn,
 		      DSQR(fdyn->dta/fdyn->dtp),*velnm,
-		      -DSQR(fdyn->dta/fdyn->dtp));
+		      1-DSQR(fdyn->dta/fdyn->dtp));
     }
     
     //-------- set dirichlet boundary conditions 
