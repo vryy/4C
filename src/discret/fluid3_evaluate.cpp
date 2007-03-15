@@ -59,10 +59,11 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
   // get the action required
   string action = params.get<string>("action","none");
   if (action == "none") dserror("No action supplied");
-  else if (action == "calc_fluid_systemmat_and_residual")      act = Fluid3::calc_fluid_systemmat_and_residual;
+  else if (action == "calc_fluid_systemmat_and_residual")      
+  	act = Fluid3::calc_fluid_systemmat_and_residual;
   else dserror("Unknown type of action for Fluid3");
 
-  // get the material law
+  // get the material 
   MATERIAL* actmat = &(mat[material_-1]);
 
   switch(act)
@@ -73,45 +74,48 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
       RefCountPtr<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (trial)");
       RefCountPtr<const Epetra_Vector> hist  = discretization.GetState("old solution data for rhs");
       if (vel_pre_np==null || hist==null) dserror("Cannot get state vectors 'velnp' and/or 'hist'");
-
+      
+      // extract local values from the global vectors
       vector<double> my_vel_pre_np(lm.size());
       DRT::Utils::ExtractMyValues(*vel_pre_np,my_vel_pre_np,lm);
       vector<double> myhist(lm.size());
       DRT::Utils::ExtractMyValues(*hist,myhist,lm);
 
       // split "my_vel_pre_np" into velocity part "myvelnp" and pressure part "myprenp"
-      // only the velocity components of myhist are important!!
+      // Additionally only the velocity components of myhist are important!
       int numnode = NumNode();
       vector<double> myprenp(numnode);
       vector<double> myvelnp(3*numnode);
       vector<double> myvhist(3*numnode);
       for (int i=0;i<numnode;++i)
        {
-       myvelnp[0+i*3]=my_vel_pre_np[0+i*4];
+       myvelnp[0+(i*3)]=my_vel_pre_np[0+(i*4)];
        myvelnp[1+(i*3)]=my_vel_pre_np[1+(i*4)];
        myvelnp[2+(i*3)]=my_vel_pre_np[2+(i*4)];
 
        myprenp[i]=my_vel_pre_np[3+(i*4)];
 
-       myvhist[0+i*3]=myhist[0+i*4];
+       myvhist[0+(i*3)]=myhist[0+(i*4)];
        myvhist[1+(i*3)]=myhist[1+(i*4)];
        myvhist[2+(i*3)]=myhist[2+(i*4)];
        }
 
-
+      // calculate element coefficient matrix and rhs
       f3_sys_mat(lm,myvelnp,myprenp,myvhist,&elemat1,&elevec1,actmat,params);
     
-// outputs for debugging
-#if 0
+      // outputs for debugging
+if (Id()<=10)
+{
+#if 1
 	printf("Element %5d\n",Id());
 	for (int i=0;i<32;++i)
 	    {
-	    //printf("eforce[%d]: %15.12e\n",i,elevec1[i]);
+	    printf("eforce[%d]: %15.12e\n",i,elevec1[i]);
 	    ;
 	    }
 	    printf("\n");
-	
-	
+#endif
+#if 0
 	int iel = NumNode();
         for (int i=0;i<elemat1.ColDim();++i){
 	for (int j=0;j<elemat1.RowDim();++j)
@@ -122,14 +126,26 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
 	    }
 	    printf("\n");   
 #endif
+
+#if 1
+	int iel = NumNode();
+        for (unsigned int i=0;i<myvelnp.size();++i){
+	    printf("%17.12e ",myvelnp[i]);
+	    printf("\n");   
+	    }
+#endif
+
+}
+
+
     }
     break;
     default:
       dserror("Unknown type of action for Fluid3");
-  }
+  } // end of switch(act)
 
   return 0;
-}
+} // end of DRT::Elements::Fluid3::Evaluate
 
 
 extern "C"
@@ -139,7 +155,7 @@ extern "C"
 
 
 /*----------------------------------------------------------------------*
- |  Integrate a Surface Neumann boundary condition (public)  g.bau 03/07|
+ |  Integrate a Volume Neumann boundary condition (public)   g.bau 03/07|
  *----------------------------------------------------------------------*/
 int DRT::Elements::Fluid3::EvaluateNeumann(ParameterList& params,
                                            DRT::Discretization&      discretization,
@@ -147,12 +163,13 @@ int DRT::Elements::Fluid3::EvaluateNeumann(ParameterList& params,
                                            vector<int>&              lm,
                                            Epetra_SerialDenseVector& elevec1)
 {
+  dserror("Volume Neumann conditions not yet implemented for Fluid3");
   return 0;
 }
 
 
 /*----------------------------------------------------------------------*
- |  calculate system matrix (private)                        g.bau 03/07|
+ |  calculate system matrix and rhs (private)                g.bau 03/07|
  *----------------------------------------------------------------------*/
 void DRT::Elements::Fluid3::f3_sys_mat(vector<int>&              lm,
                                        vector<double>&           evelnp,
@@ -168,8 +185,7 @@ void DRT::Elements::Fluid3::f3_sys_mat(vector<int>&              lm,
 if(!is_ale_)
  {
    /*---------------------------------------------------- set element data */
-   int iel = NumNode();
-
+   const int iel = NumNode();
    Epetra_SerialDenseMatrix xyze(3,iel);
 
    // get node coordinates
@@ -181,14 +197,14 @@ if(!is_ale_)
    }
 
    /*---------------------------------------------- get viscosity ---*/
-      static double  visc = material->m.fluid->viscosity;
+   const double  visc = material->m.fluid->viscosity;
 
    /*--------------------------------------------- stab-parameter ---*/
    // USFEM stabilization is default. No switch here at the moment.
 
   /*----------------------------------------- declaration of variables ---*/
-   vector<double> 		eveln(iel);
-   vector<double> 		epren(iel);
+   //vector<double> 		eveln(iel);
+   //vector<double> 		epren(iel);
    vector<double> 		funct(iel);
    Epetra_SerialDenseMatrix 	deriv(3,iel);
    Epetra_SerialDenseMatrix 	deriv2(6,iel);
@@ -487,9 +503,9 @@ for (int lt=0;lt<nit;lt++)
      dserror("No ALE algorithms supported by Fluid3 element up to now.");
    else
    {
-     gridvelint[0] = 0;
-     gridvelint[1] = 0;
-     gridvelint[2] = 0;
+     gridvelint[0] = 0.0;
+     gridvelint[1] = 0.0;
+     gridvelint[2] = 0.0;
    }
 
    /*------------------------------------- get pressure gradients ---*/
@@ -497,15 +513,15 @@ for (int lt=0;lt<nit;lt++)
 
    for (int i=0; i<iel; i++)
    {
-      gradp[0] += derxy(0,i) * epren[i];
-      gradp[1] += derxy(1,i) * epren[i];
-      gradp[2] += derxy(2,i) * epren[i];
+      gradp[0] += derxy(0,i) * eprenp[i];
+      gradp[1] += derxy(1,i) * eprenp[i];
+      gradp[2] += derxy(2,i) * eprenp[i];            
    }
 
    press = 0;
    for (int i=0;i<iel;i++)
    {
-     press += funct[i]*epren[i];
+     press += funct[i]*eprenp[i];
    }
 
    /*-------------- perform integration for entire matrix and rhs ---*/
@@ -531,7 +547,6 @@ return;
 
 
 
-
 /*----------------------------------------------------------------------*
  |  evaluate the element integration points (private)        g.bau 03/07|
  *----------------------------------------------------------------------*/
@@ -539,12 +554,12 @@ void DRT::Elements::Fluid3::f3_integration_points(struct _FLUID_DATA& data)
 {
   DSTraceHelper dst("Fluid3::f3_integration_points");
 
-static DOUBLE Q12  = ONE/TWO;
-static DOUBLE Q14  = ONE/FOUR;
-static DOUBLE Q16  = ONE/SIX;
-static DOUBLE Q124 = ONE/SIX/FOUR;
-static DOUBLE Q430 = FOUR/FIVE/SIX;
-static DOUBLE Q9120= NINE/FOUR/FIVE/SIX;
+const double Q12  = ONE/TWO;
+const double Q14  = ONE/FOUR;
+const double Q16  = ONE/SIX;
+const double Q124 = ONE/SIX/FOUR;
+const double Q430 = FOUR/FIVE/SIX;
+const double Q9120= NINE/FOUR/FIVE/SIX;
 
 double  palpha;
 double  pbeta;
@@ -721,7 +736,6 @@ double  pbeta;
 
 
 
-
 /*----------------------------------------------------------------------*
  |  calculate Jacobian matrix and it's determinant (private) g.bau 03/07|
  *----------------------------------------------------------------------*/
@@ -883,9 +897,9 @@ derivatives with respect to r/s/t are evaluated for
 
 ------------------------------------------------------------------------*/
 // variables for use in hex elements
-static DOUBLE Q12 = ONE/TWO;
-static DOUBLE Q14 = ONE/FOUR;
-static DOUBLE Q18 = ONE/EIGHT;
+const DOUBLE Q12 = ONE/TWO;
+const DOUBLE Q14 = ONE/FOUR;
+const DOUBLE Q18 = ONE/EIGHT;
 DOUBLE rp,rm,sp,sm,tp,tm;
 DOUBLE rrm,ssm,ttm;
 // variables for use in tet elements
@@ -1807,6 +1821,7 @@ return;
 } // end of DRT:Elements:Fluid3:f3_shape_function
 
 
+
 /*----------------------------------------------------------------------*
  |  calculate global derivatives w.r.t. x,y,z at point r,s,t (private)genk05/02
  *----------------------------------------------------------------------*/
@@ -1861,6 +1876,7 @@ for (int k=0;k<iel;k++)
 
 return;
 } // end of DRT:Elements:Fluid3:f3_gder
+
 
 void DRT::Elements::Fluid3::f3_gder2(const Epetra_SerialDenseMatrix& xyze,
 				    const Epetra_SerialDenseMatrix& xjm,
@@ -2095,10 +2111,10 @@ for further comments see comment lines within code.
 
 void DRT::Elements::Fluid3::f3_calmat( Epetra_SerialDenseMatrix& estif,
                 Epetra_SerialDenseVector&  eforce,
-                vector<double>&  velint,
+                vector<double>&   velint,
                 vector<double>&   histvec,
                 vector<double>&   gridvint,
-		double&   press,
+		double&   	  press,
                 Epetra_SerialDenseMatrix& vderxy,
                 Epetra_SerialDenseMatrix& vderxy2,
                 vector<double>&   gradp,
@@ -2106,15 +2122,17 @@ void DRT::Elements::Fluid3::f3_calmat( Epetra_SerialDenseMatrix& estif,
                 vector<double>&   tau,
                 Epetra_SerialDenseMatrix& derxy,
                 Epetra_SerialDenseMatrix& derxy2,
-                double&   fac,
-                double&   visc,
-                int&      iel,
+                double&           fac,
+                const double&     visc,
+                const int&        iel,
 		ParameterList& 	  params
                 )
 {
-DOUBLE  aux;
-DOUBLE  auxmat[3][3];
-DOUBLE  viscous[3][3][3*iel];	/* viscous term partially integrated */
+//DOUBLE  aux;
+//DOUBLE  auxmat[3][3];
+//DOUBLE  viscous[3][3][3*iel];	/* viscous term partially integrated */
+
+/*========================= further variables =========================*/
 
 Epetra_SerialDenseMatrix  viscs2(3,3*iel);   	/* viscous term incluiding 2nd derivatives */
 vector<double>  conv_c(iel); 	/* linearisation of convect, convective part */
@@ -2133,7 +2151,7 @@ Epetra_SerialDenseMatrix  vconv_r(3,iel);
                        BDF2:           timefac = 2/3 * dt               */
 double timefac = params.get<double>("time constant for integration",0.0);
 /* time step size*/
-double dt = params.get<double>("delta time",0.0);
+double dt = params.get<double>("delta time",-1.0);
 /* stabilisation parameter            */
 double tau_M  = tau[0]*fac;
 double tau_Mp = tau[1]*fac;
@@ -2152,7 +2170,6 @@ double timefacfac = timefac * fac;
     rhsint[0] = histvec[0];
     rhsint[1] = histvec[1];
     rhsint[2] = histvec[2];
-
 /*----------------- get numerical representation of single operators ---*/
 
 /* Convective term  u_old * grad u_old: */
@@ -2199,13 +2216,12 @@ for (int i=0; i<iel; i++) /* loop over nodes of element */
    if(is_ale_)
    {
      dserror("No ALE supported by Fluid3 at the moment.");
- /*    conv_g[i] = - derxy(0,i) * gridvint[0] - derxy(1,i) * gridvint[1]
-                 - derxy(2,i) * gridvint[2];
-		 */
+      //    conv_g[i] = - derxy(0,i) * gridvint[0] - derxy(1,i) * gridvint[1]
+                 - derxy(2,i) * gridvint[2];		
    }
    else
    {
-     conv_g[i] = 0;
+     conv_g[i] = 0.0;
    }
 
    /*--- reactive part funct * grad (u_old) ----------------------------*/
@@ -2266,14 +2282,16 @@ for (int i=0; i<iel; i++) /* loop over nodes of element */
         N_y .. y-line of N
         N_z .. z-line of N                                              */
 
+
+/* not needed for incremental solver routine     g.bau 03/07
    viscous[0][0][3*i]   = derxy(0,i);
    viscous[0][0][3*i+1] = 0.0;
-   viscous[0][0][3*i+2] = 0.0;                /* 1st index:             */
-   viscous[0][1][3*i]   = 0.5 * derxy(1,i);  /*   line of epsilon      */
-   viscous[0][1][3*i+1] = 0.5 * derxy(0,i);  /* 2nd index:             */
-   viscous[0][1][3*i+2] = 0.0;                /*   column of epsilon    */
-   viscous[0][2][3*i]   = 0.5 * derxy(2,i);  /* 3rd index:             */
-   viscous[0][2][3*i+1] = 0.0;                /*   elemental vel dof    */
+   viscous[0][0][3*i+2] = 0.0;                // 1st index:             
+   viscous[0][1][3*i]   = 0.5 * derxy(1,i);  //   line of epsilon      
+   viscous[0][1][3*i+1] = 0.5 * derxy(0,i);  // 2nd index:             
+   viscous[0][1][3*i+2] = 0.0;                //   column of epsilon    
+   viscous[0][2][3*i]   = 0.5 * derxy(2,i);  // 3rd index:             
+   viscous[0][2][3*i+1] = 0.0;                //   elemental vel dof    
    viscous[0][2][3*i+2] = 0.5 * derxy(0,i);
    viscous[1][0][3*i]   = 0.5 * derxy(1,i);
    viscous[1][0][3*i+1] = 0.5 * derxy(0,i);
@@ -2293,6 +2311,7 @@ for (int i=0; i<iel; i++) /* loop over nodes of element */
    viscous[2][2][3*i]   = 0.0;
    viscous[2][2][3*i+1] = 0.0;
    viscous[2][2][3*i+2] = derxy(2,i);
+*/ 
 
    /* pressure gradient term derxy, funct without or with integration   *
     * by parts, respectively                                            */

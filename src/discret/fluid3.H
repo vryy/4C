@@ -356,8 +356,8 @@ private:
                 Epetra_SerialDenseMatrix& derxy,
                 Epetra_SerialDenseMatrix& derxy2,
                 double&   	fac,
-                double&   	visc,
-                int&      	iel,
+                const double&   	visc,
+                const int&      	iel,
 		ParameterList& 		 params
       );
 
@@ -601,7 +601,7 @@ public:
   /*!
   \brief Evaluate a Neumann boundary condition
 
-  this method evaluates a surface Neumann condition on the shell element
+  this method evaluates a surface Neumann condition on the fluid3 element
 
   \param params (in/out)    : ParameterList for communication between control routine
                               and elements
@@ -635,16 +635,8 @@ private:
 
 
 
-
 } // namespace Elements
 } // namespace DRT
-
-
-
-
-
-
-
 
 
 

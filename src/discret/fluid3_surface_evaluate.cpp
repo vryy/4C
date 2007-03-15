@@ -39,9 +39,9 @@ int DRT::Elements::Fluid3Surface::EvaluateNeumann(
                                            Epetra_SerialDenseVector& elevec1)
 {  
   DSTraceHelper dst("Fluid3Surface::EvaluateNeumann");
-
+  dserror("Surface Neumann condition not yet implemented for Fluid3");
   // find out whether we will use a time curve
-
+  
 
   // find out whether we will use a time curve and get the factor
 
