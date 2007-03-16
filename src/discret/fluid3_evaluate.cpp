@@ -104,10 +104,10 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
       f3_sys_mat(lm,myvelnp,myprenp,myvhist,&elemat1,&elevec1,actmat,params);
   
       // outputs for debugging
-	if (Id() ==10 || Id() == 15)
-{
-	printf("Element %5d\n",Id());
+//if (Id()<=10)
 
+{
+	
 #if 0
 
 	for (int i=0;i<32;++i)
@@ -119,17 +119,19 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
 #endif
 #if 0
 	int iel = NumNode();
-        for (int i=0;i<elemat1.ColDim();++i){
-	for (int j=0;j<elemat1.RowDim();++j)
+        if (Id()==0)
+	    for (int i=0;i<elemat1.ColDim();++i)
+	{
+//	    for (int j=0;j<elemat1.RowDim();++j)
 	    {
-	    printf("%22.16e ",elemat1(i,j));
+//		printf("%26.19e\n",elemat1(i,j));
+		printf("%3d res %26.19e\n",Id(),elevec1[i]);
+
 	    }
-	    printf("\n");
-	    }
-	    printf("\n");   
+	}
 #endif
 
-#if 1
+#if 0
 	int iel = NumNode();
         for (unsigned int i=0;i<myvelnp.size();++i){
 	    printf("vel %22.16e ",myvelnp[i]);
@@ -232,6 +234,7 @@ vector<double>    		histvec(3); /* history data at integration point            
   vector<double>     		velint(3);
   double 			timefac;
   timefac=params.get<double>("time constant for integration",0.0);
+
   /*------------------------------------------------------- initialise ---*/
 
   // gaussian points
@@ -533,7 +536,6 @@ f3_calmat(*sys_mat,*residual,velint,histvec,gridvelint,press,vderxy,vderxy2,grad
 } /* end of loop over integration points lt*/
 } /* end of loop over integration points ls */
 } /* end of loop over integration points lr */
-
 
 } // end of case !is_ale = true
 else
@@ -2143,15 +2145,15 @@ Epetra_SerialDenseMatrix  vconv_r(3,iel);
 double timefac = params.get<double>("time constant for integration",-1.0);
   if (timefac == -1.0) dserror("No time constant for integration supplied");
 /* time step size*/
-double dt = params.get<double>("delta time",-1.0);
-  if (dt == -1.0) dserror("No dta supplied");
+//double dt = params.get<double>("delta time",-1.0);
+//  if (dt == -1.0) dserror("No dta supplied");
 /* stabilisation parameter            */
 double tau_M  = tau[0]*fac;
 double tau_Mp = tau[1]*fac;
 double tau_C  = tau[2]*fac;
 
 /* integration factors and coefficients of single terms */
-double time2nue   = timefac * 2.0 * visc;
+//double time2nue   = timefac * 2.0 * visc;
 double timetauM   = timefac * tau_M;
 double timetauMp  = timefac * tau_Mp;
 
@@ -2211,7 +2213,7 @@ for (int i=0; i<iel; i++) /* loop over nodes of element */
    {
      dserror("No ALE supported by Fluid3 at the moment.");
       //    conv_g[i] = - derxy(0,i) * gridvint[0] - derxy(1,i) * gridvint[1]
-                 - derxy(2,i) * gridvint[2];		
+      //           - derxy(2,i) * gridvint[2];		
    }
    else
    {
