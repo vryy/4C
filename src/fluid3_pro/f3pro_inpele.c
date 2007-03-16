@@ -201,8 +201,7 @@ void f3pro_inp(ELEMENT *ele)
     if (strncmp(buffer,"ale",3)==0 ||
         strncmp(buffer,"ALE",3)==0 ||
         strncmp(buffer,"Ale",3)==0 )
-      dserror("ALE not possible for FLUID3_PRO!");
-    /*ele->e.f3->is_ale=1;*/
+      ele->e.f3pro->is_ale=1;
     else if (strncmp(buffer,"euler",5)==0 ||
         strncmp(buffer,"EULER",5)==0 ||
         strncmp(buffer,"Euler",5)==0 )
