@@ -109,7 +109,8 @@ void LINALG::Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix& Aele,
     for (int lcol=0; lcol<ldim; ++lcol)
     {
       double val = Aele(lrow,lcol);
-      if (abs(val)<1.0e-10) continue; // do not assemble zeros
+      //if (abs(val)<1.0e-10) continue; // do not assemble zeros
+      if (abs(val)==0) continue; // do not assemble zeros
       int    cgid = lm[lcol];
       int errone = A.SumIntoGlobalValues(rgid,1,&val,&cgid);
       if (errone>0)
