@@ -53,7 +53,7 @@ class Fluid3Surface;
 
 \brief A C++ wrapper for the fluid3 element
 
-\author gee (gee@lnm.mw.tum.de)
+\author g.bau (bauer@lnm.mw.tum.de)
 */
 class Fluid3 : public DRT::Element
 {
@@ -91,22 +91,38 @@ public:
   DRT::Element* Clone() const;
 
   /*!
-  \brief Return number of lines of this element
+  \brief Return number of lines of this element 
   */
-  virtual int NumLine() const
-  {return 0;}
+  virtual int NumLine() const {return 0;}
 
   /*!
   \brief Return number of surfaces of this element
   */
   virtual int NumSurface() const
-  {if (NumNode()==8 || NumNode()==20 || NumNode()==27) return 6; else return 4;}
+  {if (NumNode()==8 || NumNode()==20 || NumNode()==27) return 6; 
+   else if (NumNode()==4 || NumNode()==10) return 4;
+   else {
+   	dserror("Could not determine number of surfaces"); 
+   	return -1;
+	}
+  }
+  
+  /*!
+  \brief Return number of volumes of this element (always 1)
+  */
+  virtual int NumVolume() const {return 1;}
 
   /*!
   \brief Get vector of ptrs to the surfaces of this element
 
   */
   virtual DRT::Element** Surfaces();
+  
+  /*!
+  \brief Get vector of ptrs to the volume of this element
+
+  */
+  virtual DRT::Element** Volumes();
 
   /*!
   \brief Return unique ParObject id
@@ -275,15 +291,17 @@ private:
 
   //! container containing all kind of fluid3 thisandthat
   DRT::Container                                  data_;
-
+ 
   //! vector of volumes of this element (length 1)
-  //vector<DRT::Element*>                           volume_;
+  vector<DRT::Element*>                   volume_;
 
   //! vector of surfaces adjacent to this element (fluid3: 4 or 6 surfaces)
   vector<RefCountPtr<DRT::Elements::Fluid3Surface> > surfaces_;
   //! vector of surfaces adjacent to this element (fluid3: 4 or 6 surfaces)
-
   vector<DRT::Elements::Fluid3Surface*>              surfaceptrs_;
+  
+  
+  
 
   // internal calculation methods
 
@@ -292,45 +310,44 @@ private:
 
   // calculating system matrix
   void f3_sys_mat(vector<int>&              lm,
-                       vector<double>&           evelnp,
-		       vector<double>&           eprenp,
-                       vector<double>&           ehist,
-                       Epetra_SerialDenseMatrix* sys_mat,
-                       Epetra_SerialDenseVector* residual,
-                       struct _MATERIAL*         material,
-		       ParameterList&            params
-		       );
+                  vector<double>&           evelnp,
+		  vector<double>&           eprenp,
+                  vector<double>&           ehist,
+                  Epetra_SerialDenseMatrix* sys_mat,
+                  Epetra_SerialDenseVector* residual,
+                  struct _MATERIAL*         material,
+		  ParameterList&            params
+		  );
 
-  // evaluate element integration points
+  // evaluate element integration points (and storing them in data)
   void f3_integration_points(struct _FLUID_DATA& data);
 
   // calculate Jacobian matrix and it's determinant
   void f3_jaco(const Epetra_SerialDenseMatrix& xyze,
-				    const Epetra_SerialDenseMatrix& deriv,
-                                    Epetra_SerialDenseMatrix& xjm,
-				    double* det,
-                                    const int iel
-				    );
+	       const Epetra_SerialDenseMatrix& deriv,
+               Epetra_SerialDenseMatrix& xjm,
+	       double* 		det,
+               const int 	iel
+	       );
 
   // shape functions and natural derivatives for hexaeder
-	void f3_shape_function(
-               vector<double>& funct,
-               Epetra_SerialDenseMatrix& deriv,
-               Epetra_SerialDenseMatrix& deriv2,
-               const double&      r,
-               const double&      s,
-               const double&      t,
-               const int&         iel,
-               const int          icode
-          );
+  void f3_shape_function(vector<double>& funct,
+               		Epetra_SerialDenseMatrix& deriv,
+               		Epetra_SerialDenseMatrix& deriv2,
+               		const double&      r,
+               		const double&      s,
+               		const double&      t,
+               		const int&         iel,
+               		const int          icode
+          		);
 
   // calculate global derivatives w.r.t. x,y,z at point r,s,t are
     void f3_gder(Epetra_SerialDenseMatrix& derxy,
-				    const Epetra_SerialDenseMatrix& deriv,
-                                    Epetra_SerialDenseMatrix& xjm,
-				    double& det,
-                                    const int iel
-				    );
+		 const Epetra_SerialDenseMatrix& deriv,
+                 Epetra_SerialDenseMatrix& xjm,
+		 double& det,
+                 const int iel
+		 );
 
   // calculate second global derivatives w.r.t x/y/z at point r,s,t
     void f3_gder2(const Epetra_SerialDenseMatrix& xyze,
@@ -359,7 +376,7 @@ private:
                 const double&   	visc,
                 const int&      	iel,
 		ParameterList& 		 params
-      );
+      		);
 
 }; // class Fluid3
 

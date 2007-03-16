@@ -102,15 +102,17 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
 
       // calculate element coefficient matrix and rhs
       f3_sys_mat(lm,myvelnp,myprenp,myvhist,&elemat1,&elevec1,actmat,params);
-    
+  
       // outputs for debugging
-if (Id()<=10)
+	if (Id() ==10 || Id() == 15)
 {
-#if 1
 	printf("Element %5d\n",Id());
+
+#if 0
+
 	for (int i=0;i<32;++i)
 	    {
-	    printf("eforce[%d]: %15.12e\n",i,elevec1[i]);
+	    printf("eforce[%d]: %22.16e\n",i,elevec1[i]);
 	    ;
 	    }
 	    printf("\n");
@@ -120,7 +122,7 @@ if (Id()<=10)
         for (int i=0;i<elemat1.ColDim();++i){
 	for (int j=0;j<elemat1.RowDim();++j)
 	    {
-	    printf("%17.12e ",elemat1(i,j));
+	    printf("%22.16e ",elemat1(i,j));
 	    }
 	    printf("\n");
 	    }
@@ -130,13 +132,12 @@ if (Id()<=10)
 #if 1
 	int iel = NumNode();
         for (unsigned int i=0;i<myvelnp.size();++i){
-	    printf("%17.12e ",myvelnp[i]);
+	    printf("vel %22.16e ",myvelnp[i]);
 	    printf("\n");   
 	    }
 #endif
 
 }
-
 
     }
     break;
@@ -203,8 +204,6 @@ if(!is_ale_)
    // USFEM stabilization is default. No switch here at the moment.
 
   /*----------------------------------------- declaration of variables ---*/
-   //vector<double> 		eveln(iel);
-   //vector<double> 		epren(iel);
    vector<double> 		funct(iel);
    Epetra_SerialDenseMatrix 	deriv(3,iel);
    Epetra_SerialDenseMatrix 	deriv2(6,iel);
@@ -218,9 +217,8 @@ if(!is_ale_)
    vector<double> 		ephin(iel);
    vector<double> 		ephing(iel);
    vector<double> 		iedgnod(iel);
-   Epetra_SerialDenseMatrix 	wa1(300,300);
-   Epetra_SerialDenseMatrix 	wa2(300,300);
-	/*                                        \- size is chosen arbitrarily! */
+   Epetra_SerialDenseMatrix 	wa1(100,100);  // working matrix used as dummy
+
 vector<double>    		histvec(3); /* history data at integration point              */
   double         		hk;
   double         		norm_p, pe, re, xi1, xi2;
@@ -251,7 +249,7 @@ case 8: case 20: case 27:   /* --> hex - element */
    e3   = data.qxg[0][0];
    fact = data.qwgt[0][0];
 
-   f3_shape_function(funct,deriv,wa1,e1,e2,e3,iel,2);   // function call with wa1 dummy instead of NULL
+   f3_shape_function(funct,deriv,wa1,e1,e2,e3,iel,2); //wa1 as dummy for not wanted second derivatives  
 break;
 case 4: case 10:   /* --> tet - element */
    e1   = data.txgr[0][0];
@@ -260,7 +258,7 @@ case 4: case 10:   /* --> tet - element */
    facs = ONE;
    e3   = data.txgs[0][0];
    fact = ONE;
-   f3_shape_function(funct,deriv,wa1,e1,e2,e3,iel,2); // function call with wa1 dummy instead of NULL
+   f3_shape_function(funct,deriv,wa1,e1,e2,e3,iel,2); //wa1 as dummy for not wanted second derivatives
 break;
 default:
    dserror("type unknown!\n");
@@ -358,12 +356,12 @@ tau[2] = norm_p * hk * 0.5 * xi2;
 // integration loop for one Fluid3 element using USFEM
 
 
-INT       intc;       /* "integration case" for tri for further infos
+int       intc;       /* "integration case" for tri for further infos
                           see f2_inpele.c and f2_intg.c                 */
-INT       nir,nis,nit;/* number of integration nodesin r,s,t direction  */
-INT       ihoel=0;    /* flag for higher order elements                 */
-INT       icode=2;    /* flag for eveluation of shape functions         */
-DOUBLE    fac;        /* total integration vactor */
+int       nir,nis,nit;/* number of integration nodesin r,s,t direction  */
+int       ihoel=0;    /* flag for higher order elements                 */
+int       icode=2;    /* flag for eveluation of shape functions         */
+double    fac;        /* total integration factor */
 vector<double>    gridvelint(3); /* grid velocity                       */
 vector<double>    gradp(3);   /* pressure gradient at integration point         */
 double    press;
@@ -461,9 +459,9 @@ for (int lt=0;lt<nit;lt++)
 	} /* end of loop over i */
    }
 
-   /*---------------------- get velocities (n+g,i) at integration point */
+    /*---------------------- get velocities (n+g,i) at integration point */
    // expression for f3_veci(velint,funct,evelnp,iel);
-   for (int i=0;i<3;i++)
+    for (int i=0;i<3;i++)
 {
    velint[i]=ZERO;
    for (int j=0;j<iel;j++)
@@ -573,7 +571,7 @@ double  pbeta;
        data.txgr[i][k] = ZERO;
        data.txgs[i][k] = ZERO;
        data.txgt[i][k] = ZERO;
-      data.twgt[i][k] = ZERO;
+       data.twgt[i][k] = ZERO;
     }
   }
   for (int i=0; i<MAXQINTP; i++)
@@ -883,27 +881,22 @@ derivatives with respect to r/s/t are evaluated for
    There are no HEX27 Elements in brick1 so we just go ahead here and
    use the GiD numbering for HEX27.
 
-</pre>
 \param  *funct    DOUBLE   (o)    shape functions
 \param **deriv    DOUBLE   (o)    1st natural deriv. of shape funct.
 \param **deriv2   DOUBLE   (o)    2nd natural deriv. of shape funct.
 \param   r        DOUBLE   (i)    coordinate
 \param   s        DOUBLE   (i)    coordinate
 \param   t        DOUBLE   (i)    coordinate
-\param   typ      DIS_TYP  (i)    element type
-\param   icode    INT      (i)    evaluation flag
-\return void
-\warning shape functions for hex20/hex27/tet10 not implemented yet!!!
 
 ------------------------------------------------------------------------*/
 // variables for use in hex elements
-const DOUBLE Q12 = ONE/TWO;
-const DOUBLE Q14 = ONE/FOUR;
-const DOUBLE Q18 = ONE/EIGHT;
-DOUBLE rp,rm,sp,sm,tp,tm;
-DOUBLE rrm,ssm,ttm;
+const double Q12 = ONE/TWO;
+const double Q14 = ONE/FOUR;
+const double Q18 = ONE/EIGHT;
+double rp,rm,sp,sm,tp,tm;
+double rrm,ssm,ttm;
 // variables for use in tet elements
-DOUBLE t1,t2,t3,t4;
+double t1,t2,t3,t4;
 
 /*------------------------------- selection of polynomial interpolation */
 switch (iel)
@@ -1283,8 +1276,8 @@ case 27: /* QUADRATIC shape functions and their natural derivatives
                with central nodes                         ----*/
 /*--------------------------------------------------- form basic values */
 {
-  DOUBLE drm1,dr00,drp1,dsm1,ds00,dsp1,dtm1,dt00,dtp1;
-  DOUBLE rm1,r00,rp1,sm1,s00,sp1,tm1,t00,tp1;
+  double drm1,dr00,drp1,dsm1,ds00,dsp1,dtm1,dt00,dtp1;
+  double rm1,r00,rp1,sm1,s00,sp1,tm1,t00,tp1;
 
   rm1=Q12*r*(r - ONE);
   r00=(ONE - r*r);
@@ -1611,8 +1604,6 @@ T E T R A E D E R
 \param   r        DOUBLE   (i)    coordinate
 \param   s        DOUBLE   (i)    coordinate
 \param   t        DOUBLE   (i)    coordinate
-\param   typ      DIS_TYP  (i)    element type
-\param   icode    INT      (i)    evaluation flag
 \return void
 \warning shape functions for TET10 not implemented yet!!!
 */
@@ -2148,10 +2139,12 @@ Epetra_SerialDenseMatrix  vconv_r(3,iel);
 
 /*========================== initialisation ============================*/
 /* One-step-Theta: timefac = theta*dt
-                       BDF2:           timefac = 2/3 * dt               */
-double timefac = params.get<double>("time constant for integration",0.0);
+   BDF2:           timefac = 2/3 * dt               */
+double timefac = params.get<double>("time constant for integration",-1.0);
+  if (timefac == -1.0) dserror("No time constant for integration supplied");
 /* time step size*/
 double dt = params.get<double>("delta time",-1.0);
+  if (dt == -1.0) dserror("No dta supplied");
 /* stabilisation parameter            */
 double tau_M  = tau[0]*fac;
 double tau_Mp = tau[1]*fac;
@@ -2170,6 +2163,7 @@ double timefacfac = timefac * fac;
     rhsint[0] = histvec[0];
     rhsint[1] = histvec[1];
     rhsint[2] = histvec[2];
+// no switch here at the moment
 /*----------------- get numerical representation of single operators ---*/
 
 /* Convective term  u_old * grad u_old: */
