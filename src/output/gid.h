@@ -140,6 +140,12 @@ typedef struct _GIDSET
      char                      *ale_20_222_name;
      INT                        is_ale_20_333;             /* 20-noded ale 3x3x3 GP */
      char                      *ale_20_333_name;
+     INT                        is_ale_27_111;             /* 27-noded ale 1x1x1 GP */
+     char                      *ale_27_111_name;
+     INT                        is_ale_27_222;             /* 27-noded ale 2x2x2 GP */
+     char                      *ale_27_222_name;
+     INT                        is_ale_27_333;             /* 27-noded ale 3x3x3 GP */
+     char                      *ale_27_333_name;
 
      INT			is_beam3_21;		/* 2-noded beam3 1 GP */
      char		       *beam3_21_name;

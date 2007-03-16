@@ -774,7 +774,7 @@ end_shell8:;
         }
         fprintf(out,"END ELEMENTS\n");
       }
-      
+
       if (actgid->is_fluid2_22)
       {
         fprintf(out,"#-------------------------------------------------------------------------------\n");
@@ -813,10 +813,10 @@ end_shell8:;
 	else
 	{
 	    fprintf(out,"MESH %s_dis_%1i DIMENSION 2 ELEMTYPE Quadrilateral NNODE 9\n",
-		    actgid->fluid2_33_name,l);	    
+		    actgid->fluid2_33_name,l);
 	}
-	  
-  
+
+
         /*------------------------------------------------ print elements */
         fprintf(out,"ELEMENTS\n");
         for (j=0; j<actfield->dis[l].numele; j++)
@@ -1685,6 +1685,54 @@ end_shell8:;
 
           fprintf(out,"END ELEMENTS\n");
 
+        }
+
+
+        if (actgid->is_ale_27_111 ||
+            actgid->is_ale_27_222 ||
+            actgid->is_ale_27_333)
+        {
+          fprintf(out,"#-------------------------------------------------------------------------------\n");
+
+          if (actgid->is_ale_27_111)
+          {
+            fprintf(out,"# MESH %s FOR FIELD %s, DIS %1i: ALE 1x1x1 GP\n",
+                actgid->ale_27_111_name,actgid->fieldname,l);
+            fprintf(out,"#-------------------------------------------------------------------------------\n");
+            fprintf(out,"MESH %s_dis_%1i DIMENSION 3 ELEMTYPE Hexahedra NNODE 27\n",
+                actgid->ale_27_111_name,l);
+          }
+          if (actgid->is_ale_27_222)
+          {
+            fprintf(out,"# MESH %s FOR FIELD %s, DIS %1i: ALE 2x2x2 GP\n",
+                actgid->ale_27_222_name,actgid->fieldname,l);
+            fprintf(out,"#-------------------------------------------------------------------------------\n");
+            fprintf(out,"MESH %s_dis_%1i DIMENSION 3 ELEMTYPE Hexahedra NNODE 27\n",
+                actgid->ale_27_222_name,l);
+          }
+          if (actgid->is_ale_27_333)
+          {
+            fprintf(out,"# MESH %s FOR FIELD %s, DIS %1i: ALE 3x3x3 GP\n",
+                actgid->ale_27_333_name,actgid->fieldname,l);
+            fprintf(out,"#-------------------------------------------------------------------------------\n");
+            fprintf(out,"MESH %s_dis_%1i DIMENSION 3 ELEMTYPE Hexahedra NNODE 27\n",
+                actgid->ale_27_333_name,l);
+          }
+
+          /* print elements */
+          fprintf(out,"ELEMENTS\n");
+
+          /* write hex27 als hex27 elements */
+          for (j=0; j<actfield->dis[l].numele; j++)
+          {
+            actele = &(actfield->dis[l].element[j]);
+            if (actele->eltyp != el_ale3 || actele->numnp !=27) continue;
+            fprintf(out," %6d ",actele->Id+1);
+            for (k=0; k<actele->numnp; k++)
+              fprintf(out,"%6d ",actele->node[k]->Id+1);
+            fprintf(out,"\n");
+          }
+          fprintf(out,"END ELEMENTS\n");
         }
 
 

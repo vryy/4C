@@ -595,8 +595,29 @@ for (i=0; i<genprob.numfld; i++)
 
 
       if (actele->numnp==27)
-        dserror("Ale3 elements with 27 nodes not possible with GiD output");
-
+      {
+        if (actele->e.ale3->nGP[0]==1 &&
+            actele->e.ale3->nGP[1]==1 &&
+            actele->e.ale3->nGP[2]==1 )
+        {
+          actgid->is_ale_27_111   = 1;
+          actgid->ale_27_111_name = "ale_27_111";
+        }
+        if (actele->e.ale3->nGP[0]==2 &&
+            actele->e.ale3->nGP[1]==2 &&
+            actele->e.ale3->nGP[2]==2 )
+        {
+          actgid->is_ale_27_222   = 1;
+          actgid->ale_27_222_name = "ale_27_222";
+        }
+        if (actele->e.ale3->nGP[0]==3 &&
+            actele->e.ale3->nGP[1]==3 &&
+            actele->e.ale3->nGP[2]==3 )
+        {
+          actgid->is_ale_27_333   = 1;
+          actgid->ale_27_333_name = "ale_27_333";
+        }
+      }
 
 
       if (actele->numnp==4)
@@ -1381,6 +1402,45 @@ end_s8_init:;
      fprintf(out,"GAUSSPOINTS %c%s_dis_%1i%c ELEMTYPE Hexahedra %c%s_dis_%1i%c\n",
          sign,actgid->ale_20_333_name,j,sign,
          sign,actgid->ale_20_333_name,j,sign);
+     fprintf(out,"NUMBER OF GAUSS POINTS: 27\n");
+     fprintf(out,"NATURAL COORDINATES: Internal\n");
+     fprintf(out,"END GAUSSPOINTS\n");
+   }
+
+   if (actgid->is_ale_27_111)
+   {
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"# GAUSSPOINTSET FOR FIELD %s DIS %1i ALE 1x1x1 GP\n",actgid->fieldname,j);
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"GAUSSPOINTS %c%s_dis_%1i%c ELEMTYPE Hexahedra %c%s_dis_%1i%c\n",
+         sign,actgid->ale_27_111_name,j,sign,
+         sign,actgid->ale_27_111_name,j,sign);
+     fprintf(out,"NUMBER OF GAUSS POINTS: 1\n");
+     fprintf(out,"NATURAL COORDINATES: Internal\n");
+     fprintf(out,"END GAUSSPOINTS\n");
+   }
+
+   if (actgid->is_ale_27_222)
+   {
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"# GAUSSPOINTSET FOR FIELD %s DIS %1i ALE 2x2x2 GP\n",actgid->fieldname,j);
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"GAUSSPOINTS %c%s_dis_%1i%c ELEMTYPE Hexahedra %c%s_dis_%1i%c\n",
+         sign,actgid->ale_27_222_name,j,sign,
+         sign,actgid->ale_27_222_name,j,sign);
+     fprintf(out,"NUMBER OF GAUSS POINTS: 8\n");
+     fprintf(out,"NATURAL COORDINATES: Internal\n");
+     fprintf(out,"END GAUSSPOINTS\n");
+   }
+
+   if (actgid->is_ale_27_333)
+   {
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"# GAUSSPOINTSET FOR FIELD %s DIS %1i ALE 3x3x3 GP\n",actgid->fieldname,j);
+     fprintf(out,"#-------------------------------------------------------------------------------\n");
+     fprintf(out,"GAUSSPOINTS %c%s_dis_%1i%c ELEMTYPE Hexahedra %c%s_dis_%1i%c\n",
+         sign,actgid->ale_27_333_name,j,sign,
+         sign,actgid->ale_27_333_name,j,sign);
      fprintf(out,"NUMBER OF GAUSS POINTS: 27\n");
      fprintf(out,"NATURAL COORDINATES: Internal\n");
      fprintf(out,"END GAUSSPOINTS\n");
@@ -2398,6 +2458,61 @@ if (actgid->is_ale_20_333)
   {
     actele = &(actfield->dis[disnum].element[i]);
     if (actele->eltyp != el_ale3 || actele->numnp != 20) continue;
+    fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
+    for (j=1; j<27; j++)
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
+  }
+  fprintf(out,"END VALUES\n");
+}
+
+if (actgid->is_ale_27_111)
+{
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"# RESULT Domains on DIS %1i, MESH %s\n",disnum,actgid->ale_27_111_name);
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s_dis_%1i%c\n",
+      sign,sign,sign,sign,sign,actgid->ale_27_111_name,disnum,sign);
+  fprintf(out,"VALUES\n");
+  for (i=0; i<actfield->dis[disnum].numele; i++)
+  {
+    actele = &(actfield->dis[disnum].element[i]);
+    if (actele->eltyp != el_ale3 || actele->numnp != 27) continue;
+    fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
+  }
+  fprintf(out,"END VALUES\n");
+}
+
+if (actgid->is_ale_27_222)
+{
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"# RESULT Domains on DIS %1i, MESH %s\n",disnum,actgid->ale_27_222_name);
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s_dis_%1i%c\n",
+      sign,sign,sign,sign,sign,actgid->ale_27_222_name,disnum,sign);
+  fprintf(out,"VALUES\n");
+  for (i=0; i<actfield->dis[disnum].numele; i++)
+  {
+    actele = &(actfield->dis[disnum].element[i]);
+    if (actele->eltyp != el_ale3 || actele->numnp != 27) continue;
+    fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
+    for (j=1; j<8; j++)
+      fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
+  }
+  fprintf(out,"END VALUES\n");
+}
+
+if (actgid->is_ale_27_333)
+{
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"# RESULT Domains on DIS %1i, MESH %s\n",disnum,actgid->ale_27_333_name);
+  fprintf(out,"#-------------------------------------------------------------------------------\n");
+  fprintf(out,"RESULT %cDomains%c %cccarat%c 0 SCALAR ONGAUSSPOINTS %c%s_dis_%1i%c\n",
+      sign,sign,sign,sign,sign,actgid->ale_27_333_name,disnum,sign);
+  fprintf(out,"VALUES\n");
+  for (i=0; i<actfield->dis[disnum].numele; i++)
+  {
+    actele = &(actfield->dis[disnum].element[i]);
+    if (actele->eltyp != el_ale3 || actele->numnp != 27) continue;
     fprintf(out,"    %6d  %18.5E\n",actele->Id+1,(DOUBLE)actele->proc);
     for (j=1; j<27; j++)
       fprintf(out,"            %18.5E\n",(DOUBLE)actele->proc);
@@ -5476,6 +5591,9 @@ actsmgid->is_ale_8_333   = 0;
 actsmgid->is_ale_20_111  = 0;
 actsmgid->is_ale_20_222  = 0;
 actsmgid->is_ale_20_333  = 0;
+actsmgid->is_ale_27_111  = 0;
+actsmgid->is_ale_27_222  = 0;
+actsmgid->is_ale_27_333  = 0;
 
 actsmgid->is_wall1_22  = 0;
 actsmgid->is_wall1_33  = 0;
