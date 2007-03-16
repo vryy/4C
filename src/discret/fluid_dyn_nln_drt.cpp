@@ -323,8 +323,15 @@ void dyn_fluid_drt()
     switch (fdyn->iop)
     {
 	case timeint_one_step_theta: /* One step Theta time integration */
-	    hist->Update(1.0,*veln,fdyn->dta*(1.0-fdyn->theta),*accn,0.0);
-	    break;
+	    {
+		double fact = fdyn->dta * (1.0 -fdyn->theta);     /* = dt*(1-Theta)         */
+
+		hist->PutScalar(0.0);
+		    
+		hist->Update( 1.0,*veln,1.0);
+		hist->Update(fact,*accn,1.0);
+		break;
+	    }
 	case timeint_bdf2:	/* 2nd order backward differencing BDF2	*/
 	    hist->Update(4./3.,*veln,-1./3.,*velnm,0.0);
 	    break;
@@ -336,9 +343,15 @@ void dyn_fluid_drt()
     /*           velnp is still containing veln, the first trial value */
     if(fdyn->step>1)
     {
-	velnp->Update(fdyn->dta*(1.0+fdyn->dta/fdyn->dtp),*accn,
-		      DSQR(fdyn->dta/fdyn->dtp),*velnm,
-		      1-DSQR(fdyn->dta/fdyn->dtp));
+	double fact1 = fdyn->dta*(1.0+fdyn->dta/fdyn->dtp);
+	double fact2 = DSQR(fdyn->dta/fdyn->dtp);
+
+	velnp->Update( fact1,*accn ,1.0);
+
+	velnp->Update(-fact2,*veln ,1.0);
+
+	velnp->Update( fact2,*velnm,1.0);
+	
     }
     
     //-------- set dirichlet boundary conditions 
@@ -356,11 +369,13 @@ void dyn_fluid_drt()
      // other parameters needed by the elements
      params.set("total time",fdyn->acttime);
      params.set("delta time",fdyn->dta);
+
      // set vector values needed by elements
      actdis->ClearState();
      actdis->SetState("u and p at time n+1 (trial)",velnp);
      // predicted dirichlet values
      // velnp then also holds prescribed new dirichlet values
+     // dirichtoggle is 1 for dirichlet dofs, 0 elsewhere
      actdis->EvaluateDirichlet(params,*velnp,*dirichtoggle);
      actdis->ClearState();
 
@@ -369,7 +384,7 @@ void dyn_fluid_drt()
      actdis->EvaluateNeumann(params,*neumann_loads);
      actdis->ClearState();
     }
-    
+
     {
     /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
     /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
@@ -408,8 +423,6 @@ void dyn_fluid_drt()
        params.set("assemble vector 2",false);
        params.set("assemble vector 3",false);
        // other parameters that might be needed by the elements
-       params.set("total time",fdyn->acttime);
-       params.set("delta time",fdyn->dta);
        params.set("time constant for integration",fdyn->thsl);
        // set vector values needed by elements
        actdis->ClearState();
@@ -425,23 +438,80 @@ void dyn_fluid_drt()
        maxentriesperrow = sys_mat->MaxNumEntries();
       }
 
+
       //--------- Apply dirichlet boundary conditions to system of equations
       //          residual discplacements are supposed to be zero at
       //          boundary conditions
+      incvel->PutScalar(0.0);
+      zeros->PutScalar(0.0);
       LINALG::ApplyDirichlettoSystem(sys_mat,incvel,residual,
 				     zeros,dirichtoggle);
       
       
       
       //-------solve for residual displacements to correct incremental displacements
-      incvel->PutScalar(0.0);
-      bool initsolver = false; // init in first iteration only
-      if (!n_itnum) initsolver = true;
+      bool initsolver = false;
+      if (n_itnum==1) // init solver in first iteration only
+      {
+	   initsolver = true; 
+      }
       solver.Solve(sys_mat,incvel,residual,true,initsolver);
 
+      
+#if 0  // DEBUG IO --- the whole systemmatrix
+      {
+	  int rr;
+	  int mm;
+	  for(rr=0;rr<residual->MyLength();rr++)
+	  {
+	      int NumEntries;
+	      
+	      vector<double> Values(maxentriesperrow);
+	      vector<int> Indices(maxentriesperrow);
+
+	      sys_mat->ExtractGlobalRowCopy(rr,
+					    maxentriesperrow,
+					    NumEntries,
+					    &Values[0],&Indices[0]);
+	      printf("Row %4d\n",rr);
+
+	      for(mm=0;mm<NumEntries;mm++)
+	      {
+		  printf("mat [%4d] [%4d] %26.19e\n",rr,Indices[mm],Values[mm]);
+	      }
+	  }
+      }
+#endif            
+
+
+#if 0  // DEBUG IO  --- rhs of linear system
+      {
+	  int rr;
+	  double* data = residual->Values();
+	  for(rr=0;rr<residual->MyLength();rr++)
+	  {
+	      printf("global %26.19e\n",data[rr]);
+	  }    
+      }
+
+#endif            
+
+
+#if 0  // DEBUG IO --- incremental solution
+      {
+	  int rr;
+	  double* data = incvel->Values();
+	  for(rr=0;rr<incvel->MyLength();rr++)
+	  {
+	      printf("sol %26.19e\n",data[rr]);
+	  }    
+      }
+
+#endif      
+  
       //------------------------------------------------ update (u,p) trial
       velnp->Update(1.0,*incvel,1.0);
-      
+
       // check convergence
       {
        double incvelnorm_L2;
@@ -485,6 +555,16 @@ void dyn_fluid_drt()
     /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
     }
 
+#if 0  // DEBUG IO --- the solution vector after convergence
+      {
+	  int rr;
+	  double* data = velnp->Values();
+	  for(rr=0;rr<velnp->MyLength();rr++)
+	  {
+	      printf("velnp %26.19e\n",data[rr]);
+	  }    
+      }
+#endif    
 
     //-------------------------------------------- output of solution
     output.NewStep(fdyn->step, fdyn->acttime);
@@ -494,11 +574,14 @@ void dyn_fluid_drt()
 
     if (fdyn->step == 1)
     {
-	// do just a linear interpolation within the first timestep
-	accn->Update(1.0/fdyn->dta,*velnp,
-		     1.0/fdyn->dta,*veln ,
-		     0.0);
+	accnm->PutScalar(0.0);
+
 	
+	// do just a linear interpolation within the first timestep
+	accn->Update( 1.0/fdyn->dta,*velnp,1.0);
+	
+	accn->Update(-1.0/fdyn->dta,*veln ,1.0);
+
 	// ???
 	accnm->Update(1.0,*accn,0.0);
 		
@@ -530,10 +613,18 @@ void dyn_fluid_drt()
 	switch (fdyn->iop)
 	{
 	    case timeint_one_step_theta: /* One step Theta time integration */
-		accn->Update( 1.0/(fdyn->theta*fdyn->dta),*velnp,
-			     -1.0/(fdyn->theta*fdyn->dta),*veln ,
-			     (fdyn->theta-1)/fdyn->theta);
-		break;
+	        {
+		    double fact1 = 1.0 / (fdyn->theta*fdyn->dta);
+		    double fact2 =-1.0 / fdyn->theta + 1.0;	/* = -1/Theta + 1		*/
+		    
+		    accn->PutScalar(0.0);
+		    
+		    accn->Update( fact1,*velnp,1.0);
+		    accn->Update(-fact1,*veln ,1.0);
+		    accn->Update( fact2,*accnm ,1.0);
+		    
+		    break;
+		}
 	    case timeint_bdf2:	/* 2nd order backward differencing BDF2	*/
 	        {
 		 double dta = fdyn->dta;
@@ -553,8 +644,12 @@ void dyn_fluid_drt()
     }
 
     // solution of this step becomes most recent solution of the last step
-    velnm->Update(1.0,*veln ,0.0);
-    veln ->Update(1.0,*velnp,0.0);
+
+
+    velnm->PutScalar(0.0);
+    velnm->Update(1.0,*veln ,1.0);
+    veln ->PutScalar(0.0);
+    veln ->Update(1.0,*velnp,1.0);
 
     // update time step sizes
     fdyn->dtp = fdyn->dta;
