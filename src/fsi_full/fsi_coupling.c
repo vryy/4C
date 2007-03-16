@@ -963,16 +963,14 @@ perf_begin(55);
 
     actsnode = actfgnode->mfcpnode[numsf];
     actanode = actfgnode->mfcpnode[numaf];
+
+    if (actsnode == NULL)
+      dserror("No structure node for fluid node: #%d", actfnode->Id);
+    if (actanode == NULL)
+      dserror("No ale node for fluid node: #%d", actfnode->Id);
+
     actsgnode = actsnode->gnode;
     actagnode = actanode->gnode;
-
-
-    if (actsgnode == NULL)
-      dserror("No structure node for fluid node: #%d", actfnode->Id);
-
-
-    if (actagnode == NULL)
-      dserror("No ale node for fluid node: #%d", actfnode->Id);
 
 
     /* check locsys */
