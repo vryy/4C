@@ -1271,7 +1271,8 @@ void fluid_pm_cont()
 
     tt=ds_cputime()-t2;
     tts+=tt;
-    printf("PROC  %3d | total time for this time step: %10.3e \n",par.myrank,tt);
+    if (par.myrank==0)
+      printf("          | total time for this time step: %10.3e \n",tt);
 
 
     if (par.myrank==0)
