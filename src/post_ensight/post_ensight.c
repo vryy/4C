@@ -1110,7 +1110,7 @@ long pe_write_cells(FILE* outfile, int part)
           bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
           temp = actele->node[5]->Id_loc+1+discret[part].field->numnp;
           bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
-printf("  finished writing fluid data, %s.case file created\n");          temp = actele->node[8]->Id_loc+1+discret[part].field->numnp;
+	  temp = actele->node[8]->Id_loc+1+discret[part].field->numnp;
           bytes += 4*fwrite(&temp, sizeof(int), 1, outfile);
 
           /*------------sub element 3*/
@@ -1314,6 +1314,7 @@ int main(int argc, char** argv)
   switch (problem.type)
   {
     case prb_fsi:
+    case prb_pfsi:
       if (problem.num_discr != 3)
       {
         dserror("expect 3 discretizations for fsi not %d", problem.num_discr);
