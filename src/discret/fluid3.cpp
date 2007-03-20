@@ -66,6 +66,25 @@ DRT::Element* DRT::Elements::Fluid3::Clone() const
 }
 
 /*----------------------------------------------------------------------*
+ |                                                             (public) |
+ |                                                          u.kue 03/07 |
+ *----------------------------------------------------------------------*/
+DRT::Element::DiscretizationType DRT::Elements::Fluid3::Shape() const
+{
+  switch (NumNode())
+  {
+  case  4: return tet4;
+  case  8: return hex8;
+  case 10: return tet10;
+  case 20: return hex20;
+  case 27: return hex27;
+  default:
+    dserror("unexpected number of nodes %d", NumNode());
+  }
+  return dis_none;
+}
+
+/*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
@@ -85,7 +104,7 @@ void DRT::Elements::Fluid3::Pack(vector<char>& data) const
   // material_
   AddtoPack(data,material_);
   // is_ale_
-  AddtoPack(data,is_ale_);  
+  AddtoPack(data,is_ale_);
   // data_
   vector<char> tmp(0);
   data_.Pack(tmp);
@@ -168,7 +187,7 @@ DRT::Element** DRT::Elements::Fluid3::Surfaces()
   surfaceptrs_.resize(nsurf);
   int nodeids[100];
   DRT::Node* nodes[100];
-    
+
   if (nsurf==4)
  {
     if (numnode==4)
@@ -212,7 +231,7 @@ DRT::Element** DRT::Elements::Fluid3::Surfaces()
       surfaces_[3] =
         rcp(new DRT::Elements::Fluid3Surface(3,Owner(),3,nodeids,nodes,this,3));
       surfaceptrs_[3] = surfaces_[3].get();
-      
+
     }
     else if (numnode==10)
     {
@@ -231,7 +250,7 @@ else if (nsurf==6)
       nodes[0] = Nodes()[0];
       nodes[1] = Nodes()[3];
       nodes[2] = Nodes()[2];
-      nodes[3] = Nodes()[1];      
+      nodes[3] = Nodes()[1];
       surfaces_[0] =
         rcp(new DRT::Elements::Fluid3Surface(0,Owner(),4,nodeids,nodes,this,0));
       surfaceptrs_[0] = surfaces_[0].get();
@@ -271,7 +290,7 @@ else if (nsurf==6)
       surfaces_[3] =
         rcp(new DRT::Elements::Fluid3Surface(3,Owner(),4,nodeids,nodes,this,3));
       surfaceptrs_[3] = surfaces_[3].get();
-      
+
       nodeids[0] = NodeIds()[1];
       nodeids[1] = NodeIds()[2];
       nodeids[2] = NodeIds()[6];
@@ -307,7 +326,7 @@ else if (nsurf==6)
     else dserror("Number of nodes not supported");
   }
   else dserror("Number of lines not supported");
-  
+
   return (DRT::Element**)(&(surfaceptrs_[0]));
 }
 

@@ -72,14 +72,30 @@ DRT::Element* DRT::Elements::Shell8Line::Clone() const
 }
 
 /*----------------------------------------------------------------------*
+ |                                                             (public) |
+ |                                                          u.kue 03/07 |
+ *----------------------------------------------------------------------*/
+DRT::Element::DiscretizationType DRT::Elements::Shell8Line::Shape() const
+{
+  switch (NumNode())
+  {
+  case 2: return line2;
+  case 3: return line3;
+  default:
+    dserror("unexpected number of nodes %d", NumNode());
+  }
+  return dis_none;
+}
+
+/*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
 void DRT::Elements::Shell8Line::Pack(vector<char>& data) const
 {
-  DSTraceHelper dst("Shell8Line::Pack");  
+  DSTraceHelper dst("Shell8Line::Pack");
   data.resize(0);
-  
+
   dserror("this Shell8Line element does not support communication");
 
   return;
@@ -91,10 +107,10 @@ void DRT::Elements::Shell8Line::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void DRT::Elements::Shell8Line::Unpack(const vector<char>& data)
 {
-  DSTraceHelper dst("Shell8Line::Unpack");  
+  DSTraceHelper dst("Shell8Line::Unpack");
   dserror("this line element does not support communication");
   return;
-} 
+}
 
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 01/07|

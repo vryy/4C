@@ -91,7 +91,12 @@ public:
   DRT::Element* Clone() const;
 
   /*!
-  \brief Return number of lines of this element 
+  \brief Get shape type of element
+  */
+  virtual DiscretizationType Shape() const;
+
+  /*!
+  \brief Return number of lines of this element
   */
   virtual int NumLine() const {return 0;}
 
@@ -99,14 +104,14 @@ public:
   \brief Return number of surfaces of this element
   */
   virtual int NumSurface() const
-  {if (NumNode()==8 || NumNode()==20 || NumNode()==27) return 6; 
+  {if (NumNode()==8 || NumNode()==20 || NumNode()==27) return 6;
    else if (NumNode()==4 || NumNode()==10) return 4;
    else {
-   	dserror("Could not determine number of surfaces"); 
+   	dserror("Could not determine number of surfaces");
    	return -1;
 	}
   }
-  
+
   /*!
   \brief Return number of volumes of this element (always 1)
   */
@@ -117,7 +122,7 @@ public:
 
   */
   virtual DRT::Element** Surfaces();
-  
+
   /*!
   \brief Get vector of ptrs to the volume of this element
 
@@ -291,7 +296,7 @@ private:
 
   //! container containing all kind of fluid3 thisandthat
   DRT::Container                                  data_;
- 
+
   //! vector of volumes of this element (length 1)
   vector<DRT::Element*>                   volume_;
 
@@ -299,14 +304,14 @@ private:
   vector<RefCountPtr<DRT::Elements::Fluid3Surface> > surfaces_;
   //! vector of surfaces adjacent to this element (fluid3: 4 or 6 surfaces)
   vector<DRT::Elements::Fluid3Surface*>              surfaceptrs_;
-  
-  
-  
+
+
+
 
   // internal calculation methods
 
   // don't want = operator
-  Fluid3 operator = (const Fluid3& old);
+  Fluid3& operator = (const Fluid3& old);
 
   // calculating system matrix
   void f3_sys_mat(vector<int>&              lm,
@@ -538,6 +543,11 @@ public:
   DRT::Element* Clone() const;
 
   /*!
+  \brief Get shape type of element
+  */
+  virtual DiscretizationType Shape() const;
+
+  /*!
   \brief Return unique ParObject id
 
   every class implementing ParObject needs a unique id defined at the
@@ -640,7 +650,7 @@ public:
 private:
 
   // don't want = operator
-  Fluid3Surface operator = (const Fluid3Surface& old);
+  Fluid3Surface& operator = (const Fluid3Surface& old);
 
   //! The parent element of this surface
   DRT::Elements::Fluid3* parent_;

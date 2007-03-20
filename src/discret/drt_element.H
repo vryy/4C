@@ -84,6 +84,27 @@ public:
     element_fluid3surface
   };
 
+  /*!
+   \brief Element shape type
+  */
+  enum DiscretizationType
+  {
+    dis_none,                   // unknown dis type
+    quad4,                      // 4 noded quadrilateral
+    quad8,                      // 8 noded quadrilateral
+    quad9,                      // 9 noded quadrilateral
+    tri3,                       // 3 noded triangle
+    tri6,                       // 6 noded triangle
+    hex8,                       // 8 noded hexahedra
+    hex20,                      // 20 noded hexahedra
+    hex27,                      // 27 noded hexahedra
+    tet4,                       // 4 noded tetrahedra
+    tet10,                      // 4 noded tetrahedra
+    line2,                      // 2 noded line
+    line3,                      // 3 noded line
+    max_distype                 //  end marker. must be the last entry
+  };
+
   //@}
 
   //! @name Constructors and destructors and related methods
@@ -175,6 +196,11 @@ public:
   \brief Get type of element
   */
   inline ElementType Type() const { return etype_; }
+
+  /*!
+  \brief Get shape type of element
+  */
+  virtual DiscretizationType Shape() const = 0;
 
   /*!
   \brief Return number of nodes to this element
