@@ -1524,6 +1524,7 @@ int main(int argc, char** argv)
   {
 #ifdef D_FSI
   case prb_fsi:
+  case prb_pfsi:
     /*
      * We know there is an ale, a fluid and a structure field. We need
      * to find the fluid nodes that match the ale nodes to be able to

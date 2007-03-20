@@ -42,11 +42,12 @@ void shell8_write_domain(FIELD_DATA *field, GIDSET* gid, CHUNK_DATA* chunk)
 
       chunk_read_size_entry(chunk, i);
 
-#if 0
-      for (j=0; j<4; j++)/* quadrilateral version */
+#if defined(S8_HEX8)
+      for (j=0; j<8; j++)	/* hexahedra version */
+#else
+      for (j=0; j<4; j++)	/* quadrilateral version */
 #endif
-        for (j=0; j<8; j++)/* hexahedra version */
-          GiD_WriteScalar(Id+1, chunk->size_buf[0]);
+	GiD_WriteScalar(Id+1, chunk->size_buf[0]);
     }
     GiD_EndResult();
   }
@@ -413,7 +414,7 @@ void shell8_write_mesh(FIELD_DATA *field, GIDSET* gid, INT* first_mesh)
   {
     INT i;
 
-    GiD_BeginMesh(gid->shell8_8_33_name, 3, GiD_Quadrilateral, 8);
+    GiD_BeginMesh(gid->shell8_8_33_name, 3, GiD_Quadrilateral, 9);
     if (first_mesh)
     {
       first_mesh = 0;
@@ -433,7 +434,7 @@ void shell8_write_mesh(FIELD_DATA *field, GIDSET* gid, INT* first_mesh)
       /* read the element's data */
       get_element_params(field, i, &Id, &el_type, &dis, &numnp);
 
-      if (el_type != el_shell8 || numnp !=8) continue;
+      if (el_type != el_shell8 || numnp !=9) continue;
 
       chunk_read_size_entry(&(field->mesh), i);
       get_gid_node_ids(field, field->mesh.size_buf, mesh_entry, numnp);
