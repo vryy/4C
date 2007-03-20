@@ -141,6 +141,9 @@ public:
   //! returns the directory name in which the control files and data files are
   string input_dir() { return input_dir_; }
 
+  //! returns type of the simulation
+  PROBLEM_TYP Problemtype() { return problemtype_; }
+
   //@}
 
 private:
@@ -162,9 +165,21 @@ private:
   // Keeps track of global field variable
   PostField getfield(MAP* field_info);
 
+  //! type of the problem we post process
+  PROBLEM_TYP problemtype_;
+
+  //! number of dimensions
   int ndim_;
+
+  //! output file base name (possibly including directory)
   string basename_;
+
+  //! memory version of control file
+  /*! If a restarted run is post processed this is a merged control
+    file constructed from all control files available. */
   MAP control_table_;
+
+  //! the meshes of our problem (fields are discretizations here!)
   vector<PostField> fields_;
 
   /* start, stop and step numbers. a python like slice. */
@@ -307,6 +322,12 @@ public:
 
   //! returns the MAP all the result groups are read from
   MAP* group() { return group_; }
+
+  //! returns time of this result
+  double time() { return map_read_real(group_, "time"); }
+
+  //! returns step number of this result
+  int step() { return map_read_int(group_, "step"); }
 
   //@}
 private:

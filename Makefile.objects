@@ -815,6 +815,8 @@ OBJS_POST_GID_TXT = src/post_gid/gid_out_txt.o
 
 OBJS_POST_DRT_GID = src/post_gid/post_drt_gid.o
 
+OBJS_POST_DRT_ENSIGHT = src/post_ensight/post_drt_ensight.o
+
 #                 post_out
 OBJS_POST_OUT = src/post_out/post_out.o
 

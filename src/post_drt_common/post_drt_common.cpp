@@ -47,8 +47,6 @@ char* fieldnames[] = FIELDNAMES;
 
 
 
-
-
 /*----------------------------------------------------------------------*
  * The main part of this file. All the functions of the three classes
  * PostProbem, PostField and PostResult are defined here.
@@ -67,12 +65,6 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
 
 #ifdef DEBUG
   dsinit();
-
-  /* We need to take two steps back. dsinit is too close to ccarat. */
-  dstrc_exit();
-  dstrc_exit();
-
-  DSTraceHelper dst("PostProblem::PostProblem");
 #endif
 
   string file;
@@ -107,7 +99,21 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
   ndim_ = map_read_int(&control_table_, "ndim");
   dsassert((ndim_ == 2) || (ndim_ == 3), "illegal dimension");
 
-  // in the old version the problem type was checked here.
+  char* problem_names[] = PROBLEMNAMES;
+  char* type = map_read_string(&control_table_, "problem_type");
+  int i;
+  for (i=0; problem_names[i] != NULL; ++i)
+  {
+    if (strcmp(type, problem_names[i])==0)
+    {
+      problemtype_ = static_cast<PROBLEM_TYP>(i);
+      break;
+    }
+  }
+  if (problem_names[i] == NULL)
+  {
+    dserror("unknown problem type '%s'", type);
+  }
 
 
   /*--------------------------------------------------------------------*/
@@ -132,7 +138,6 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
  *----------------------------------------------------------------------*/
 PostProblem::~PostProblem()
 {
-  DSTraceHelper dst("PostProblem::~PostProblem");
   destroy_map(&control_table_);
 #ifdef PARALLEL
   MPI_Finalize();
@@ -145,7 +150,6 @@ PostProblem::~PostProblem()
  *----------------------------------------------------------------------*/
 PostField* PostProblem::get_discretization(int num)
 {
-  DSTraceHelper dst("PostProblem::get_discretization");
   if (num >= static_cast<int>(fields_.size()))
     dserror("index for field vector out of range.(index=%i,vector_size=%i)",
             num,fields_.size());
@@ -169,7 +173,6 @@ RefCountPtr<Epetra_Comm> PostProblem::comm()
  *----------------------------------------------------------------------*/
 void PostProblem::setup_filter(const char* output_name)
 {
-  DSTraceHelper dst("PostProblem::setup_filter");
   int length;
   string control_file_name;
   MAP* table;
