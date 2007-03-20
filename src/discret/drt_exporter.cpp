@@ -242,7 +242,7 @@ void DRT::Exporter::ReceiveAny(int& source, int&tag,
 /*----------------------------------------------------------------------*
  |  receive anything (public)                                mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Exporter::ReceiveAny(int& source, int&tag, 
+void DRT::Exporter::ReceiveAny(int& source, int& tag, 
                                vector<int>& recvbuff,int& length)
 {
   const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
@@ -253,6 +253,26 @@ void DRT::Exporter::ReceiveAny(int& source, int&tag,
   // get sender, tag and length
   source = status.MPI_SOURCE;
   tag    = status.MPI_TAG;
+  MPI_Get_count(&status,MPI_INT,&length);
+  if (length>(int)recvbuff.size()) recvbuff.resize(length);
+  // receive the message
+  MPI_Recv(&recvbuff[0],length,MPI_INT,source,tag,comm->Comm(),&status);
+  return;
+}
+#endif  
+
+#ifdef PARALLEL
+/*----------------------------------------------------------------------*
+ |  receive specific (public)                                mwgee 03/07|
+ *----------------------------------------------------------------------*/
+void DRT::Exporter::Receive(const int source,const int tag, 
+                            vector<int>& recvbuff,int& length)
+{
+  const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
+  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
+  MPI_Status status;
+  // probe for any message to come
+  MPI_Probe(source,tag,comm->Comm(),&status);
   MPI_Get_count(&status,MPI_INT,&length);
   if (length>(int)recvbuff.size()) recvbuff.resize(length);
   // receive the message
