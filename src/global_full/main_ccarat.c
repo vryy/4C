@@ -99,7 +99,7 @@ if (par.myrank==0)
    printf("\n");
    printf("****************************************\n");
    printf("*                                      *\n");
-   printf("*             C C A R A T              *\n");
+   printf("*               B A C I                *\n");
    printf("*                                      *\n");
    printf("*                                      *\n");
 #ifdef PARALLEL
@@ -110,14 +110,10 @@ if (par.myrank==0)
    printf("*                                      *\n");
    printf("*         Release: %s        *\n",release);
    printf("*                                      *\n");
-   printf("*       Institut fuer Baustatik        *\n");
-   printf("*        Universitaet Stuttgart        *\n");
-   printf("*                                      *\n");
    printf("*  Lehrstuhl fuer Numerische Mechanik  *\n");
+   printf("*                 LNM                  *\n");
    printf("*   Technische Universitaet Muenchen   *\n");
    printf("*                                      *\n");
-   printf("*    (c) 2005 All Rights Reserved.     *\n");
-   printf("*    (c) 2006 All Rights Reserved.     *\n");
    printf("*    (c) 2007 All Rights Reserved.     *\n");
    printf("*                                      *\n");
    printf("****************************************\n\n");
