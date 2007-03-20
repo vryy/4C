@@ -439,7 +439,7 @@ void DRT::Discretization::BuildVolumesinCondition(
   // multimap of volumes in our cloud
   multimap<int,RefCountPtr<DRT::Element> > volmap;
   
-  // loop these nodes and build all lines attached to them
+  // loop these nodes and build all volumes attached to them
   map<int,DRT::Node*>::iterator fool;
   for (fool=rownodes.begin(); fool != rownodes.end(); ++fool)
   {
