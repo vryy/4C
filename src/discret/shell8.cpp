@@ -77,13 +77,30 @@ DRT::Element* DRT::Elements::Shell8::Clone() const
 }
 
 /*----------------------------------------------------------------------*
+ |                                                             (public) |
+ |                                                          u.kue 03/07 |
+ *----------------------------------------------------------------------*/
+DRT::Element::DiscretizationType DRT::Elements::Shell8::Shape() const
+{
+  switch (NumNode())
+  {
+  case 4: return quad4;
+  case 8: return quad8;
+  case 9: return quad9;
+  default:
+    dserror("unexpected number of nodes %d", NumNode());
+  }
+  return dis_none;
+}
+
+/*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
 void DRT::Elements::Shell8::Pack(vector<char>& data) const
 {
   data.resize(0);
-  
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -155,11 +172,11 @@ void DRT::Elements::Shell8::Unpack(const vector<char>& data)
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
-  
+
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
-} 
+}
 
 
 /*----------------------------------------------------------------------*
@@ -210,7 +227,7 @@ DRT::Element** DRT::Elements::Shell8::Lines()
       nodeids[1] = NodeIds()[1];
       nodes[0] = Nodes()[0];
       nodes[1] = Nodes()[1];
-      lines_[0] = 
+      lines_[0] =
         rcp(new DRT::Elements::Shell8Line(0,Owner(),2,nodeids,nodes,this,0));
       lineptrs_[0] = lines_[0].get();
 
@@ -218,7 +235,7 @@ DRT::Element** DRT::Elements::Shell8::Lines()
       nodeids[1] = NodeIds()[2];
       nodes[0] = Nodes()[1];
       nodes[1] = Nodes()[2];
-      lines_[1] = 
+      lines_[1] =
         rcp(new DRT::Elements::Shell8Line(1,Owner(),2,nodeids,nodes,this,1));
       lineptrs_[1] = lines_[1].get();
 
@@ -226,7 +243,7 @@ DRT::Element** DRT::Elements::Shell8::Lines()
       nodeids[1] = NodeIds()[3];
       nodes[0] = Nodes()[2];
       nodes[1] = Nodes()[3];
-      lines_[2] = 
+      lines_[2] =
         rcp(new DRT::Elements::Shell8Line(2,Owner(),2,nodeids,nodes,this,2));
       lineptrs_[2] = lines_[2].get();
 
@@ -234,7 +251,7 @@ DRT::Element** DRT::Elements::Shell8::Lines()
       nodeids[1] = NodeIds()[0];
       nodes[0] = Nodes()[3];
       nodes[1] = Nodes()[0];
-      lines_[3] = 
+      lines_[3] =
         rcp(new DRT::Elements::Shell8Line(3,Owner(),2,nodeids,nodes,this,3));
       lineptrs_[3] = lines_[3].get();
     }
@@ -246,7 +263,7 @@ DRT::Element** DRT::Elements::Shell8::Lines()
       nodes[0] = Nodes()[0];
       nodes[1] = Nodes()[1];
       nodes[2] = Nodes()[4];
-      lines_[0] = 
+      lines_[0] =
         rcp(new DRT::Elements::Shell8Line(0,Owner(),3,nodeids,nodes,this,0));
       lineptrs_[0] = lines_[0].get();
 
@@ -256,7 +273,7 @@ DRT::Element** DRT::Elements::Shell8::Lines()
       nodes[0] = Nodes()[1];
       nodes[1] = Nodes()[2];
       nodes[2] = Nodes()[5];
-      lines_[1] = 
+      lines_[1] =
         rcp(new DRT::Elements::Shell8Line(1,Owner(),3,nodeids,nodes,this,1));
       lineptrs_[1] = lines_[1].get();
 
@@ -266,7 +283,7 @@ DRT::Element** DRT::Elements::Shell8::Lines()
       nodes[0] = Nodes()[2];
       nodes[1] = Nodes()[3];
       nodes[2] = Nodes()[6];
-      lines_[2] = 
+      lines_[2] =
         rcp(new DRT::Elements::Shell8Line(2,Owner(),3,nodeids,nodes,this,2));
       lineptrs_[2] = lines_[2].get();
 
@@ -276,7 +293,7 @@ DRT::Element** DRT::Elements::Shell8::Lines()
       nodes[0] = Nodes()[3];
       nodes[1] = Nodes()[0];
       nodes[2] = Nodes()[7];
-      lines_[3] = 
+      lines_[3] =
         rcp(new DRT::Elements::Shell8Line(3,Owner(),3,nodeids,nodes,this,3));
       lineptrs_[3] = lines_[3].get();
     }
@@ -290,7 +307,7 @@ DRT::Element** DRT::Elements::Shell8::Lines()
       nodeids[1] = NodeIds()[1];
       nodes[0] = Nodes()[0];
       nodes[1] = Nodes()[1];
-      lines_[0] = 
+      lines_[0] =
         rcp(new DRT::Elements::Shell8Line(0,Owner(),2,nodeids,nodes,this,0));
       lineptrs_[0] = lines_[0].get();
 
@@ -298,7 +315,7 @@ DRT::Element** DRT::Elements::Shell8::Lines()
       nodeids[1] = NodeIds()[2];
       nodes[0] = Nodes()[1];
       nodes[1] = Nodes()[2];
-      lines_[1] = 
+      lines_[1] =
         rcp(new DRT::Elements::Shell8Line(1,Owner(),2,nodeids,nodes,this,1));
       lineptrs_[1] = lines_[1].get();
 
@@ -306,7 +323,7 @@ DRT::Element** DRT::Elements::Shell8::Lines()
       nodeids[1] = NodeIds()[0];
       nodes[0] = Nodes()[1];
       nodes[1] = Nodes()[2];
-      lines_[2] = 
+      lines_[2] =
         rcp(new DRT::Elements::Shell8Line(2,Owner(),2,nodeids,nodes,this,2));
       lineptrs_[2] = lines_[2].get();
     }
@@ -318,7 +335,7 @@ DRT::Element** DRT::Elements::Shell8::Lines()
       nodes[0] = Nodes()[0];
       nodes[1] = Nodes()[1];
       nodes[2] = Nodes()[3];
-      lines_[0] = 
+      lines_[0] =
         rcp(new DRT::Elements::Shell8Line(0,Owner(),3,nodeids,nodes,this,0));
       lineptrs_[0] = lines_[0].get();
 
@@ -328,7 +345,7 @@ DRT::Element** DRT::Elements::Shell8::Lines()
       nodes[0] = Nodes()[1];
       nodes[1] = Nodes()[2];
       nodes[2] = Nodes()[4];
-      lines_[1] = 
+      lines_[1] =
         rcp(new DRT::Elements::Shell8Line(1,Owner(),3,nodeids,nodes,this,1));
       lineptrs_[1] = lines_[1].get();
 
@@ -338,7 +355,7 @@ DRT::Element** DRT::Elements::Shell8::Lines()
       nodes[0] = Nodes()[2];
       nodes[1] = Nodes()[0];
       nodes[2] = Nodes()[5];
-      lines_[2] = 
+      lines_[2] =
         rcp(new DRT::Elements::Shell8Line(2,Owner(),3,nodeids,nodes,this,2));
       lineptrs_[2] = lines_[2].get();
     }
@@ -399,7 +416,7 @@ DRT::Elements::Shell8Register* DRT::Elements::Shell8Register::Clone() const
 void DRT::Elements::Shell8Register::Pack(vector<char>& data) const
 {
   data.resize(0);
-  
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -407,7 +424,7 @@ void DRT::Elements::Shell8Register::Pack(vector<char>& data) const
   vector<char> basedata(0);
   ElementRegister::Pack(basedata);
   AddtoPack(data,basedata);
-  
+
   return;
 }
 
@@ -427,11 +444,11 @@ void DRT::Elements::Shell8Register::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   ElementRegister::Unpack(basedata);
-  
+
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
-} 
+}
 
 
 /*----------------------------------------------------------------------*

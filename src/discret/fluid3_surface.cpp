@@ -72,6 +72,23 @@ DRT::Element* DRT::Elements::Fluid3Surface::Clone() const
 }
 
 /*----------------------------------------------------------------------*
+ |                                                             (public) |
+ |                                                          u.kue 03/07 |
+ *----------------------------------------------------------------------*/
+DRT::Element::DiscretizationType DRT::Elements::Fluid3Surface::Shape() const
+{
+  switch (NumNode())
+  {
+  case 4: return quad4;
+  case 8: return quad8;
+  case 9: return quad9;
+  default:
+    dserror("unexpected number of nodes %d", NumNode());
+  }
+  return dis_none;
+}
+
+/*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/

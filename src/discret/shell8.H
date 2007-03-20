@@ -42,12 +42,12 @@ namespace DRT
 {
 // forward declarations
 class Discretization;
-class Shell8Register;
 
 namespace Elements
 {
 // forward declarations
 class Shell8Line;
+class Shell8Register;
 
 /*!
 \class Shell8
@@ -69,7 +69,7 @@ public:
 
   /*!
   \brief Standard Constructor
-  
+
   \param id : A unique global id
   */
   Shell8(int id, int owner);
@@ -78,23 +78,28 @@ public:
   \brief Copy Constructor
 
   Makes a deep copy of a Element
-  
+
   */
   Shell8(const Shell8& old);
 
   /*!
   \brief Deep copy this instance of Shell8 and return pointer to the copy
-  
+
   The Clone() method is used from the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
-  
+
   */
   DRT::Element* Clone() const;
 
   /*!
+  \brief Get shape type of element
+  */
+  virtual DiscretizationType Shape() const;
+
+  /*!
   \brief Return number of lines of this element
   */
-  virtual int NumLine() const 
+  virtual int NumLine() const
   {if (NumNode()==4 || NumNode()==9) return 4; else return 3;}
 
   /*!
@@ -104,19 +109,19 @@ public:
 
   /*!
   \brief Get vector of ptrs to the lines of this element
-  
+
   */
   virtual DRT::Element** Lines();
 
   /*!
   \brief Get vector of ptrs to the surfaces of this element
-  
+
   */
   virtual DRT::Element** Surfaces();
 
   /*!
   \brief Return unique ParObject id
-  
+
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
@@ -124,15 +129,15 @@ public:
 
   /*!
   \brief Pack this class so it can be communicated
-  
+
   \ref Pack and \ref Unpack are used to communicate this element
-  
+
   */
   virtual void Pack(vector<char>& data) const;
 
   /*!
   \brief Unpack data from a char vector into this class
-  
+
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
@@ -148,11 +153,11 @@ public:
 
   //! @name Acess methods
 
-  
+
   /*!
   \brief Get number of degrees of freedom of a certain node
          (implements pure virtual DRT::Element)
-  
+
   The element decides how many degrees of freedom its nodes must have.
   As this may vary along a simulation, the element can redecide the
   number of degrees of freedom per node along the way for each of it's nodes
@@ -163,10 +168,10 @@ public:
   /*!
   \brief Get number of degrees of freedom per element
          (implements pure virtual DRT::Element)
-  
+
   The element decides how many element degrees of freedom it has.
   It can redecide along the way of a simulation.
-  
+
   \note Element degrees of freedom mentioned here are dofs that are visible
         at the level of the total system of equations. Purely internal
         element dofs that are condensed internally should NOT be considered.
@@ -180,7 +185,7 @@ public:
 
   /*!
   \brief Allocate and return a DesignElementRegister class
-  
+
   Every implementation of DRT::Element must also implement
   an DRT::ElementRegister. This method allocates and returns
   an instance of a matching DRT::ElementRegister.
@@ -202,29 +207,29 @@ public:
 
   /*!
   \brief Evaluate an element
-  
+
   Evaluate shell8 element stiffness, mass, internal forces etc
-  
+
   \param params (in/out): ParameterList for communication between control routine
                           and elements
-  \param elemat1 (out)  : matrix to be filled by element. If NULL on input, 
+  \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
                           the controling method does not epxect the element to fill
                           this matrix.
-  \param elemat2 (out)  : matrix to be filled by element. If NULL on input, 
+  \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
                           the controling method does not epxect the element to fill
                           this matrix.
-  \param elevec1 (out)  : vector to be filled by element. If NULL on input, 
+  \param elevec1 (out)  : vector to be filled by element. If NULL on input,
                           the controlling method does not epxect the element
-                          to fill this vector 
-  \param elevec2 (out)  : vector to be filled by element. If NULL on input, 
+                          to fill this vector
+  \param elevec2 (out)  : vector to be filled by element. If NULL on input,
                           the controlling method does not epxect the element
-                          to fill this vector 
-  \param elevec3 (out)  : vector to be filled by element. If NULL on input, 
+                          to fill this vector
+  \param elevec3 (out)  : vector to be filled by element. If NULL on input,
                           the controlling method does not epxect the element
-                          to fill this vector 
+                          to fill this vector
   \return 0 if successful, negative otherwise
   */
-  int Evaluate(ParameterList& params, 
+  int Evaluate(ParameterList& params,
                DRT::Discretization&      discretization,
                vector<int>&              lm,
                Epetra_SerialDenseMatrix& elemat1,
@@ -236,25 +241,25 @@ public:
 
   /*!
   \brief Evaluate a Neumann boundary condition
-  
+
   this method evaluates a surfaces Neumann condition on the shell element
-  
+
   \param params (in/out)    : ParameterList for communication between control routine
                               and elements
   \param discretization (in): A reference to the underlying discretization
   \param condition (in)     : The condition to be evaluated
   \param lm (in)            : location vector of this element
-  \param elevec1 (out)      : vector to be filled by element. If NULL on input, 
+  \param elevec1 (out)      : vector to be filled by element. If NULL on input,
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateNeumann(ParameterList& params, 
+  virtual int EvaluateNeumann(ParameterList& params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
                               vector<int>&              lm,
                               Epetra_SerialDenseVector& elevec1);
-  
-  
+
+
   //@}
 
   //! @name Other
@@ -263,7 +268,7 @@ public:
   \brief Get ptr to nodal thicknesses
   */
   vector<double>* GetThickness() { return data_.Get<vector<double> >("thick");}
-  
+
   /*!
   \brief Get reference to directors
   */
@@ -298,104 +303,104 @@ private:
     s8_rst_ortho
   };
   //! type of force calculation
-  ForceType                                       forcetype_; 
+  ForceType                                       forcetype_;
   //! shell thickness
-  double                                          thickness_; 
+  double                                          thickness_;
   //! no. gaussian points in each spatial dimension
-  int                                             ngp_[3];    
+  int                                             ngp_[3];
   //! no. gaussian points for triangle elements
-  int                                             ngptri_;    
+  int                                             ngptri_;
   //! no. of internal eas dofs
-  int                                             nhyb_;      
+  int                                             nhyb_;
   //! eas parameters
-  int                                             eas_[5];    
-  //! type of ANS: 0=none 1=Q 2=T 3=QT  
-  int                                             ans_;       
+  int                                             eas_[5];
+  //! type of ANS: 0=none 1=Q 2=T 3=QT
+  int                                             ans_;
   //! scaled director conditioning
-  double                                          sdc_;       
+  double                                          sdc_;
   //! number of the material law
-  int                                             material_;  
+  int                                             material_;
   //! container containing all kind of shell8 thisandthat
-  DRT::Container                                  data_;      
+  DRT::Container                                  data_;
   //! vector of surfaces of this element (length 1)
-  vector<DRT::Element*>                           surfaces_;  
+  vector<DRT::Element*>                           surfaces_;
   //! vector of lines adjacent to this element (shell8: 3 or 4 lines)
-  vector<RefCountPtr<DRT::Elements::Shell8Line> > lines_;     
+  vector<RefCountPtr<DRT::Elements::Shell8Line> > lines_;
   //! vector of lines adjacent to this element (shell8: 3 or 4 lines)
   vector<DRT::Elements::Shell8Line*>              lineptrs_;
-  
+
   // internal calculation methods
 
   // don't want = operator
-  Shell8 operator = (const Shell8& old);
-  
-  void s8_nlnstiffmass(vector<int>&              lm, 
-                       vector<double>&           disp, 
+  Shell8& operator = (const Shell8& old);
+
+  void s8_nlnstiffmass(vector<int>&              lm,
+                       vector<double>&           disp,
                        vector<double>&           residual,
                        Epetra_SerialDenseMatrix* stiffmatrix,
                        Epetra_SerialDenseMatrix* massmatrix,
                        Epetra_SerialDenseVector* force,
                        struct _MATERIAL*         material);
-  
+
   void s8stress(struct _MATERIAL* material, vector<double>& mydisp);
-  
+
   void s8_surfaceload(ParameterList& params,Epetra_SerialDenseVector& elevec1,
                     const vector<double>& disp);
 
   void s8_integration_points(struct _S8_DATA& data);
-  
+
   void s8BtDB(Epetra_SerialDenseMatrix& estif, const Epetra_SerialDenseMatrix& bop,
               const double D[][12], const int iel, const int numdf, const double weight);
-  
-  void s8tvkg(Epetra_SerialDenseMatrix& estif, double stress_r[], 
+
+  void s8tvkg(Epetra_SerialDenseMatrix& estif, double stress_r[],
               const vector<double>& funct, const Epetra_SerialDenseMatrix& deriv,
               const int numdf, const int iel, const double weight,
               const double e1, const double e2);
-  
-  void s8anstvkg(Epetra_SerialDenseMatrix& estif, double stress_r[], 
+
+  void s8anstvkg(Epetra_SerialDenseMatrix& estif, double stress_r[],
                  const vector<double>& funct, const Epetra_SerialDenseMatrix& deriv,
                  const int numdf, const int iel, const double weight,
                  const double e1, const double e2,
-                 const double frq[], const double fsq[], 
+                 const double frq[], const double fsq[],
                  const vector<double> funct1q[], const vector<double> funct2q[],
                  const Epetra_SerialDenseMatrix deriv1q[], const Epetra_SerialDenseMatrix deriv2q[],
                  const int ansq, const int nsansq);
 
   void s8intforce(Epetra_SerialDenseVector& intforce, const double stress_r[],
-                  const Epetra_SerialDenseMatrix& bop, const int iel, 
+                  const Epetra_SerialDenseMatrix& bop, const int iel,
                   const int numdf, const int nstress_r, const double weight);
 
   void s8tmas(const vector<double>& funct, const vector<double>& thick,
               Epetra_SerialDenseMatrix& emass, const int iel, const int numdf,
               const double facv, const double facw, const double facvw);
 
-  void s8tmat(struct _MATERIAL* material, 
+  void s8tmat(struct _MATERIAL* material,
               double stress[], double strain[], double** C,
-              double gmkovc[][3], double gmkonc[][3], 
+              double gmkovc[][3], double gmkonc[][3],
               double gmkovr[][3], double gmkonr[][3],
               double gkovc[][3], double gkonc[][3],
-              double gkovr[][3], double gkonr[][3], 
-              const double detc, const double detr, 
-              const double e3, const int option, 
+              double gkovr[][3], double gkonr[][3],
+              const double detc, const double detr,
+              const double e3, const int option,
               const int ngauss);
-  
-  void s8tvma(double D[][12], double** C, double stress[], double stress_r[], 
+
+  void s8tvma(double D[][12], double** C, double stress[], double stress_r[],
               const double e3, const double fact, const double condfac);
-  
+
   void s8_YpluseqAx(vector<double>& y, const Epetra_SerialDenseMatrix& A,
-                    const vector<double>& x, const double factor, 
+                    const vector<double>& x, const double factor,
                     const bool init);
   void s8_YpluseqAx(Epetra_SerialDenseVector& y, const Epetra_SerialDenseMatrix& A,
-                    const vector<double>& x, const double factor, 
+                    const vector<double>& x, const double factor,
                     const bool init);
-  
+
   void s8inv3(double a[][3], double* det);
-  
+
   void s8trans3(double a[][3]);
-  
+
   void s8unvc(double* enorm, double vec[], const int n);
-  
-  void s8matmatdense(Epetra_SerialDenseMatrix& R, 
+
+  void s8matmatdense(Epetra_SerialDenseMatrix& R,
                      const Epetra_SerialDenseMatrix& A,
                      const Epetra_SerialDenseMatrix& B,
                      const int ni,
@@ -403,7 +408,7 @@ private:
                      const int nj,
                      const int init,
                      const double factor);
-  void s8matmatdense(Epetra_SerialDenseMatrix& R, 
+  void s8matmatdense(Epetra_SerialDenseMatrix& R,
                      const double A[][12],
                      const Epetra_SerialDenseMatrix& B,
                      const int ni,
@@ -420,20 +425,20 @@ private:
                         const int init,
                         const double factor);
   void s8mattrnvecdense(vector<double>& r,
-                        const Epetra_SerialDenseMatrix& A, 
+                        const Epetra_SerialDenseMatrix& A,
                         const double b[],
                         const int ni,
                         const int nk,
                         const int init,
                         const double factor);
-  
+
   const double s8_localcoordsofnode(const int node, const int flag,
                                     const int numnode) const;
-  
+
   void s8_shapefunctions(vector<double>& funct, Epetra_SerialDenseMatrix& deriv,
-                               const double r, const double s, const int numnode, 
+                               const double r, const double s, const int numnode,
                                const int doderiv) const;
-  
+
   void s8tvbo(const double e1, const double e2,
               Epetra_SerialDenseMatrix& bop,
               const vector<double>& funct,
@@ -443,9 +448,9 @@ private:
               const double akov[][3],
               const double a3kvp[][2],
               const int nsansq);
-  
-  void s8tvmr(const double x[][MAXNOD_SHELL8], 
-              const double a3[][MAXNOD_SHELL8], 
+
+  void s8tvmr(const double x[][MAXNOD_SHELL8],
+              const double a3[][MAXNOD_SHELL8],
               double akov[][3],
               double akon[][3],
               double amkov[][3],
@@ -471,7 +476,7 @@ private:
               const double condfac,
               const int flag);
 
-  void s8tvhe(double gmkovr[][3], double gmkovc[][3], 
+  void s8tvhe(double gmkovr[][3], double gmkovc[][3],
               double gmkonr[][3], double gmkonc[][3],
               double gkovr[][3], double gkovc[][3],
               double* detr, double* detc,
@@ -523,20 +528,20 @@ private:
                                  double       a3kvpc2q[][3][2],
                                  double* detr, double* detc);
 
-  void s8_ans_colloquationcoords(double xqr1[], double xqs1[], 
+  void s8_ans_colloquationcoords(double xqr1[], double xqs1[],
                                  double xqr2[], double xqs2[],
                                  const int iel, const int ans);
 
-  void s8_ansqshapefunctions(double frq[], double fsq[], const double r, 
+  void s8_ansqshapefunctions(double frq[], double fsq[], const double r,
                              const double s, const int iel, const int nsansq);
 
-  void s8ansbbarq(Epetra_SerialDenseMatrix& bop, 
+  void s8ansbbarq(Epetra_SerialDenseMatrix& bop,
                   const double frq[], const double fsq[],
                   const vector<double> funct1q[], const vector<double> funct2q[],
                   const Epetra_SerialDenseMatrix deriv1q[], const Epetra_SerialDenseMatrix deriv2q[],
                   const double akovc1q[][3][3], const double akovc2q[][3][3],
                   const double a3kvpc1q[][3][2], const double a3kvpc2q[][3][2],
-                  const int& iel, const int& numdf, const int& nsansq); 
+                  const int& iel, const int& numdf, const int& nsansq);
 
   void s8anstvheq(double gmkovr[][3], double gmkovc[][3], double gmkonr[][3], double gmkonc[][3],
                   double gkovr[][3], double gkovc[][3], double amkovc[][3], double amkovr[][3],
@@ -548,7 +553,7 @@ private:
                   double amkovr2q[][3][3], double amkovc2q[][3][3],
                   double akovr2q[][3][3], double akovc2q[][3][3],
                   double a3kvpr2q[][3][2], double a3kvpc2q[][3][2],
-                  double frq[], double fsq[], const double e3, 
+                  double frq[], double fsq[], const double e3,
                   const int nansq, const int iel, const double condfac);
 
   void s8eas(const int nhyb, const double e1, const double e2, const int iel,
@@ -586,7 +591,7 @@ public:
 
   /*!
   \brief Standard Constructor
-  
+
   */
   Shell8Register(DRT::Element::ElementType etype);
 
@@ -594,22 +599,22 @@ public:
   \brief Copy Constructor
 
   Makes a deep copy of an Shell8Register
-  
+
   */
   Shell8Register(const DRT::Elements::Shell8Register& old);
 
   /*!
   \brief Deep copy this instance of Shell8Register and return pointer to the copy
-  
+
   The Clone() method is used from the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
-  
+
   */
   DRT::Elements::Shell8Register* Clone() const;
 
   /*!
   \brief Return unique ParObject id
-  
+
   every class imploementing ParObject needs a unique id defined at the
   top of this file.
   */
@@ -617,15 +622,15 @@ public:
 
   /*!
   \brief Pack this class so it can be communicated
-  
+
   \ref Pack and \ref Unpack are used to communicate this element
-  
+
   */
   virtual void Pack(vector<char>& data) const;
 
   /*!
   \brief Unpack data from a char vector into this class
-  
+
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
@@ -652,7 +657,7 @@ public:
 
   /*!
   \brief Call Element init routines
-  
+
   The method performs all steps needed to init the shell8 elements. it e.g. calculates the
   field of averaged directors at nodes.
   */
@@ -677,7 +682,7 @@ private:
 
 \brief An element representing a line edge of a shell8 element
 
-\note This is a pure Neumann boundary condition element. It's only 
+\note This is a pure Neumann boundary condition element. It's only
       purpose is to evaluate line Neumann boundary conditions that might be
       adjacent to a parent shell8 element. It therefore does not implement
       the DRT::Element::Evaluate method and does not have its own ElementRegister class.
@@ -692,7 +697,7 @@ public:
 
   /*!
   \brief Standard Constructor
-  
+
   \param id : A unique global id
   \param owner: Processor owning this line
   \param nnode: Number of nodes attached to this element
@@ -708,22 +713,22 @@ public:
   \brief Copy Constructor
 
   Makes a deep copy of a Element
-  
+
   */
   Shell8Line(const Shell8Line& old);
 
   /*!
   \brief Deep copy this instance of an element and return pointer to the copy
-  
+
   The Clone() method is used from the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
-  
+
   */
   DRT::Element* Clone() const;
 
   /*!
   \brief Return unique ParObject id
-  
+
   every class implementing ParObject needs a unique id defined at the
   top of the drt_parobject.H file.
   */
@@ -731,15 +736,15 @@ public:
 
   /*!
   \brief Pack this class so it can be communicated
-  
+
   \ref Pack and \ref Unpack are used to communicate this element
-  
+
   */
   virtual void Pack(vector<char>& data) const;
 
   /*!
   \brief Unpack data from a char vector into this class
-  
+
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
@@ -755,26 +760,30 @@ public:
 
   //! @name Acess methods
 
-  
+  /*!
+  \brief Get shape type of element
+  */
+  virtual DiscretizationType Shape() const;
+
   /*!
   \brief Get number of degrees of freedom of a certain node
          (implements pure virtual DRT::Element)
-  
+
   The element decides how many degrees of freedom its nodes must have.
   As this may vary along a simulation, the element can redecide the
   number of degrees of freedom per node along the way for each of it's nodes
   separately.
   */
-  virtual int NumDofPerNode(const DRT::Node& node) const 
+  virtual int NumDofPerNode(const DRT::Node& node) const
   {return node.Dof().NumDof();}
 
   /*!
   \brief Get number of degrees of freedom per element
          (implements pure virtual DRT::Element)
-  
+
   The element decides how many element degrees of freedom it has.
   It can redecide along the way of a simulation.
-  
+
   \note Element degrees of freedom mentioned here are dofs that are visible
         at the level of the total system of equations. Purely internal
         element dofs that are condensed internally should NOT be considered.
@@ -788,7 +797,7 @@ public:
 
   /*!
   \brief Allocate and return a ElementRegister class
-  
+
   Every implementation of DRT::Element must also implement
   an DRT::ElementRegister. This method allocates and returns
   an instance of a matching DRT::ElementRegister.
@@ -801,19 +810,19 @@ public:
 
   /*!
   \brief Evaluate a Neumann boundary condition
-  
+
   this method evaluates a line Neumann condition on the shell element
-  
+
   \param params (in/out)    : ParameterList for communication between control routine
                               and elements
   \param discretization (in): A reference to the underlying discretization
   \param condition (in)     : The condition to be evaluated
   \param lm (in)            : location vector of this element
-  \param elevec1 (out)      : vector to be filled by element. If NULL on input, 
+  \param elevec1 (out)      : vector to be filled by element. If NULL on input,
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateNeumann(ParameterList& params, 
+  virtual int EvaluateNeumann(ParameterList& params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
                               vector<int>&              lm,
@@ -824,12 +833,12 @@ public:
 private:
 
   // don't want = operator
-  Shell8Line operator = (const Shell8Line& old);
-  
+  Shell8Line& operator = (const Shell8Line& old);
+
   //! The parent element of this line
-  DRT::Elements::Shell8* parent_;  
+  DRT::Elements::Shell8* parent_;
   //! The local line number of this line w.r.t to the parent_ element
-  int                    lline_;   
+  int                    lline_;
 
 }; // class Shell8Line
 
