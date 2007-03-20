@@ -155,6 +155,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          solv->solvertyp = aztec_msr;
          solv->azvar = (AZVAR*)CCACALLOC(1,sizeof(AZVAR));
          azvar = solv->azvar;
+	 azvar->azconv = AZ_noscaled; /* default value */
 #endif
       }
       /*---------------------------------------- HYPRE solver BoomerAMG */
@@ -335,6 +336,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          if (strncmp("MLFLUID2",buffer,8)==0)         azvar->azprectyp = azprec_MLfluid2;
 #endif
       }
+      /* the corresponding numbers are defined in az_aztec_defs.h ... */
       frint("AZOUTPUT"  ,&(azvar->azoutput) ,&ierr);
       frint("AZREUSE"   ,&(azvar->azreuse)  ,&ierr);
       frint("AZGFILL"   ,&(azvar->azgfill)  ,&ierr);
@@ -347,6 +349,19 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("AZDROP" ,&(azvar->azdrop)   ,&ierr);
       frdouble("AZFILL" ,&(azvar->azfill)   ,&ierr);
       frdouble("AZTOL"  ,&(azvar->aztol)    ,&ierr);
+      frchar("AZCONV"    ,buffer,&ierr);
+      if(ierr==1)
+      {
+	  if (strncmp("AZ_r0"             ,buffer, 5)==0) azvar->azconv = 0;
+	  if (strncmp("AZ_rhs"            ,buffer, 6)==0) azvar->azconv = 1;
+	  if (strncmp("AZ_Anorm"          ,buffer, 8)==0) azvar->azconv = 2;
+	  if (strncmp("AZ_sol"            ,buffer, 6)==0) azvar->azconv = 3;
+	  if (strncmp("AZ_weighted"       ,buffer,11)==0) azvar->azconv = 4;
+	  if (strncmp("AZ_expected_values",buffer,18)==0) azvar->azconv = 5;
+	  if (strncmp("AZ_noscaled"       ,buffer,11)==0) azvar->azconv = 6;
+	  if (strncmp("AZTECOO_conv_test" ,buffer,17)==0) azvar->azconv = 7;
+	  if (strncmp("AZ_inf_noscaled"   ,buffer,15)==0) azvar->azconv = 8;
+      }
       frdouble("AZOMEGA",&(azvar->azomega)  ,&ierr);
 #ifdef TRILINOS_PACKAGE
       frchar("AZSCAL"    ,buffer,&ierr);

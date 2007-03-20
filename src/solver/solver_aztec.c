@@ -174,7 +174,7 @@ case 1:
    msr_array->options[AZ_overlap]  = 0;
    msr_array->options[AZ_poly_ord] = azvar->azpoly;
    msr_array->options[AZ_output]   = azvar->azoutput;/*AZ_all;AZ_warnings;AZ_last;AZ_none;10; */
-   msr_array->options[AZ_conv]     = AZ_noscaled;
+   msr_array->options[AZ_conv]     = azvar->azconv;
    msr_array->params[AZ_tol]       = azvar->aztol;
    msr_array->params[AZ_drop]      = azvar->azdrop;
    msr_array->options[AZ_scaling]  = AZ_sym_diag; /*AZ_none  */

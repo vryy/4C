@@ -371,7 +371,7 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
     else
       azlist.set("AZ_output",azvar->azoutput);
     azlist.set("AZ_diagnostics",AZ_none);          // AZ_none AZ_all
-    azlist.set("AZ_conv",AZ_noscaled);
+    azlist.set("AZ_conv",azvar->azconv);           // AZ_conv from input
     azlist.set("AZ_tol",azvar->aztol);
     azlist.set("AZ_drop",azvar->azdrop);
     azlist.set("AZ_scaling",AZ_none);              // use epetra scaling instead, see below

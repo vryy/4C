@@ -257,6 +257,15 @@ typedef struct _AZVAR
                                                  using it, default: 0.0 */
   DOUBLE                  azfill;             /* allowed fill-in in percent of the memory
                                                  used by the sparse matrix */
+ INT                     azconv;             /*  Convergence check applied by
+					      *  Aztec solver (for example
+					      *  (||r|| unscaled,
+					      *   ||r||/||r0||,
+					      *   ||r||/||rhs||, ...)
+					      *  The corresponding integer
+					      *  numbers are defined in a
+					      *  header and prescribed by the
+					      *  AZTEC package */
   DOUBLE                  aztol;              /* tolerance */
   DOUBLE                  azomega;            /* relaxation parameter for some preconditioners */
   INT                     blockdiag;
