@@ -42,6 +42,9 @@ VISUAL2_LIB="-L/usr/X11R6/lib -lVisual2 -lX11"
 VISUAL3_INC=""
 VISUAL3_LIB="-L/usr/X11R6/lib -lVisual3 -lg2c -lGLU -lGL -lX11 -lXext -ldl -lpthread"
 
+# hdf5
+HDF5_LIB="-lhdf5_hl -lhdf5 -lpthread -lz"
+
 #LIBS="-lc -lm -lg2c -llapack -lgoto_p4_512-r0.6 -lxerbla -lmetis -laztec -lspoolesMPI -lspooles"
 #LIBS="-lc -lm -lg2c -llapack -lblas -lmetis"
 #LIBS="-llapack-gcc-3.3 -lblas-gcc-3.3 -lmetis-gcc-3.3"
