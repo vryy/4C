@@ -104,7 +104,7 @@ extern struct _CURVE *curve;
 
 void dyn_fluid_drt()
 {
-
+  double tt,t2;
 
  DSTraceHelper dst("dyn_fluid_drt");
 
@@ -259,6 +259,9 @@ void dyn_fluid_drt()
    /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
    /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
    /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
+   t2=ds_cputime();
+   
+   
    while (stop_timeloop==false)
    {
     // increase counters and time
@@ -654,12 +657,18 @@ void dyn_fluid_drt()
     // update time step sizes
     fdyn->dtp = fdyn->dta;
     
-    
+    // time measurement
+    tt=ds_cputime()-t2;
+    if (myrank==0)
+    {     
+      printf("\ntotal time for this time step: %10.3e \n",tt);
+    }
+        
     // check steady state, maxiter and maxtime
     if(fdyn->step==fdyn->nstep||fdyn->acttime>=fdyn->maxtime)
     {
 	stop_timeloop=true;
-    }
+    }   
    }
   
   }
