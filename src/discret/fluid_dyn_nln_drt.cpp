@@ -259,11 +259,13 @@ void dyn_fluid_drt()
    /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
    /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
    /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
-   t2=ds_cputime();
    
    
    while (stop_timeloop==false)
    {
+    // get cpu time
+    t2=ds_cputime();
+    
     // increase counters and time
     fdyn->step++;
     fdyn->dta  = fdyn->dt;                   /* constant time step size */
