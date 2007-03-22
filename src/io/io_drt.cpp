@@ -267,12 +267,20 @@ void DiscretizationWriter::NewStep(int step, double time)
       );
     if (write_file) {
       if (dis_->Comm().NumProc() > 1)
+      {
         fprintf(bin_out_main.control_file,
                 "    num_output_proc = %d\n",
                 dis_->Comm().NumProc());
+      }
+      string filename;
+      string::size_type pos = resultfilename_.find_last_of('/');
+      if (pos==string::npos)
+        filename = resultfilename_;
+      else
+        filename = resultfilename_.substr(pos+1);
       fprintf(bin_out_main.control_file,
               "    result_file = \"%s\"\n\n",
-              resultfilename_.c_str()
+              filename.c_str()
         );
     }
     fflush(bin_out_main.control_file);
@@ -403,9 +411,15 @@ void DiscretizationWriter::WriteMesh(int step, double time)
                 "    num_output_proc = %d\n",
                 dis_->Comm().NumProc());
       }
+      string filename;
+      string::size_type pos = meshfilename_.find_last_of('/');
+      if (pos==string::npos)
+        filename = meshfilename_;
+      else
+        filename = meshfilename_.substr(pos+1);
       fprintf(bin_out_main.control_file,
               "    mesh_file = \"%s\"\n\n",
-              meshfilename_.c_str());
+              filename.c_str());
     }
     fflush(bin_out_main.control_file);
   }
