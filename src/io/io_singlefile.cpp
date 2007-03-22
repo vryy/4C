@@ -378,6 +378,9 @@ void init_bin_out_main(CHAR* outputname)
               outputname);
     }
 
+#ifndef CCADISCRET
+    // So this is old stuff. Not used with the new discretization.
+
     /* Write some internal enums. Afterwards we are free to use the
      * enum values (integer) in the binary files. It will always be
      * possible to restore their meaning. */
@@ -411,6 +414,8 @@ void init_bin_out_main(CHAR* outputname)
        * element chunks. */
       out_print_element_versions(bin_out_main.control_file);
     }
+
+#endif
 
     fflush(bin_out_main.control_file);
   }

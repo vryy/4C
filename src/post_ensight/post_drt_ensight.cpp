@@ -34,12 +34,42 @@ extern "C" {
 using namespace std;
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 class EnsightWriter
 {
 public:
 
   EnsightWriter(PostField* field, string filename);
+  virtual ~EnsightWriter() {}
+
+  //! write the whole thing
   void WriteFiles();
+
+protected:
+
+  //! look for problem dependent result entries and write them
+  virtual void WriteResults(PostField* field) = 0;
+
+  /*!
+    \brief write all time steps of a result
+
+    Write nodal results. The results are taken from a reconstructed
+    Epetra_Vector. In many cases this vector will contain just one
+    variable (displacements) and thus is easy to write as a whole. At
+    other times, however, there is more than one result (velocity,
+    pressure) and we want to write just one part of it. So we have to
+    specify which part.
+
+    \param groupname  (in): name of the result group in the control file
+    \param name       (in): name of the result to be written
+    \param numdf      (in): number of dofs per node to this result
+    \param from       (in): start position of values in nodes
+
+    \author u.kue
+    \date 03/07
+  */
+  void WriteResults(string groupname, string name, int numdf, int from=0);
 
 private:
 
@@ -54,8 +84,7 @@ private:
   void WriteString(ofstream& stream, string str);
   void WriteCoordinates();
   void WriteCells();
-  void WriteResults(string name, int numdf);
-  void WriteResult(ofstream& file, PostResult& result, string name, int numdf);
+  void WriteResult(ofstream& file, PostResult& result, string groupname, string name, int numdf, int from);
   void WriteIndexTable(ofstream& file, const vector<ofstream::pos_type>& filepos);
 
   PostField* field_;
@@ -133,10 +162,7 @@ void EnsightWriter::WriteFiles()
             << "VARIABLE\n\n";
 
   // whatever result we need
-  WriteResults("displacement",field_->problem()->num_dim());
-  WriteResults("velocity",field_->problem()->num_dim());
-  WriteResults("acceleration",field_->problem()->num_dim());
-  WriteResults("pressure",1);
+  WriteResults(field_);
 
   casefile_ << "\nTIME\n"
             << "time set:\t\t1\n"
@@ -400,20 +426,20 @@ void EnsightWriter::WriteCells()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EnsightWriter::WriteResults(string name, int numdf)
+void EnsightWriter::WriteResults(string groupname, string name, int numdf, int from)
 {
   PostResult result = PostResult(field_);
   result.next_result();
-  if (!map_has_map(result.group(), const_cast<char*>(name.c_str())))
+  if (!map_has_map(result.group(), const_cast<char*>(groupname.c_str())))
     return;
 
   string filename = filename_ + "_" + field_->name() + "." + name;
   ofstream file(filename.c_str());
 
-  WriteResult(file,result, name, numdf);
+  WriteResult(file, result, groupname, name, numdf, from);
   while (result.next_result())
   {
-    WriteResult(file,result, name, numdf);
+    WriteResult(file, result, groupname, name, numdf, from);
   }
 
   // append index table
@@ -424,13 +450,18 @@ void EnsightWriter::WriteResults(string name, int numdf)
   {
     casefile_ << "vector per node:\t1\t1\t" << name << "\t" << filename << "\n";
   }
+  else if (numdf==1)
+  {
+    casefile_ << "scalar per node:\t1\t1\t" << name << "\t" << filename << "\n";
+  }
 }
 
 
 /*----------------------------------------------------------------------*/
 //! Write nodal values. Each node has to have the same number of dofs.
 /*----------------------------------------------------------------------*/
-void EnsightWriter::WriteResult(ofstream& file, PostResult& result, string name, int numdf)
+void EnsightWriter::WriteResult(ofstream& file, PostResult& result,
+                                string groupname, string name, int numdf, int from)
 {
   vector<ofstream::pos_type>& filepos = resultfilepos_[name];
   Write(file,"BEGIN TIME STEP");
@@ -447,7 +478,7 @@ void EnsightWriter::WriteResult(ofstream& file, PostResult& result, string name,
   if (nodemap->NumMyElements()!=nodemap->NumGlobalElements())
     dserror("filter cannot be run in parallel");
 
-  RefCountPtr<Epetra_Vector> data = result.read_result(name);
+  RefCountPtr<Epetra_Vector> data = result.read_result(groupname);
   const Epetra_BlockMap& datamap = data->Map();
 
   int numnp = nodemap->NumMyElements();
@@ -457,11 +488,22 @@ void EnsightWriter::WriteResult(ofstream& file, PostResult& result, string name,
     {
       DRT::Node* n = dis->lRowNode(i);
       DRT::DofSet s = n->Dof();
-      Write(file,static_cast<float>((*data)[datamap.LID(s[j])]));
+      int lid = datamap.LID(s[from+j]);
+      if (lid > -1)
+      {
+        Write(file,static_cast<float>((*data)[lid]));
+      }
+      else
+      {
+        // Assume we have to write a value here.
+        Write<float>(file,0.);
+      }
     }
   }
 
+#if 0
   // 2 component vectors in a 3d problem require a row of zeros.
+  // do we really need this?
   if (numdf>1 && numdf<field_->problem()->num_dim())
   {
     for (int i=0; i<numnp; i++)
@@ -469,6 +511,7 @@ void EnsightWriter::WriteResult(ofstream& file, PostResult& result, string name,
       Write<float>(file,0.);
     }
   }
+#endif
 
   Write(file,"END TIME STEP");
 }
@@ -492,6 +535,9 @@ void EnsightWriter::WriteIndexTable(ofstream& file, const vector<ofstream::pos_t
 
 
 /*----------------------------------------------------------------------*/
+/*!
+  \brief write strings of exactly 80 chars
+ */
 /*----------------------------------------------------------------------*/
 void EnsightWriter::WriteString(ofstream& stream, string str)
 {
@@ -503,7 +549,72 @@ void EnsightWriter::WriteString(ofstream& stream, string str)
 }
 
 
+
 /*----------------------------------------------------------------------*/
+/*
+  \brief Writer for structural problems
+ */
+/*----------------------------------------------------------------------*/
+class StructureEnsightWriter : public EnsightWriter
+{
+public:
+  StructureEnsightWriter(PostField* field, string filename)
+    : EnsightWriter(field,filename) {}
+
+protected:
+
+  virtual void WriteResults(PostField* field);
+};
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void StructureEnsightWriter::WriteResults(PostField* field)
+{
+  EnsightWriter::WriteResults("displacement","displacement",field->problem()->num_dim());
+  EnsightWriter::WriteResults("velocity","velocity",field->problem()->num_dim());
+  EnsightWriter::WriteResults("acceleration","acceleration",field->problem()->num_dim());
+}
+
+
+/*----------------------------------------------------------------------*/
+/*
+  \brief Writer for fluid problems
+ */
+/*----------------------------------------------------------------------*/
+class FluidEnsightWriter : public EnsightWriter
+{
+public:
+  FluidEnsightWriter(PostField* field, string filename)
+    : EnsightWriter(field,filename) {}
+
+protected:
+
+  virtual void WriteResults(PostField* field);
+};
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FluidEnsightWriter::WriteResults(PostField* field)
+{
+  EnsightWriter::WriteResults("vel_and_pres","velocity",field->problem()->num_dim());
+  EnsightWriter::WriteResults("vel_and_pres","pressure",1,field->problem()->num_dim());
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief filter main routine
+
+  Write binary ensight format.
+
+  The ens_checker that is part of ensight can be used to verify the
+  files generated here.
+
+  \author u.kue
+  \date 03/07
+ */
 /*----------------------------------------------------------------------*/
 int main(int argc, char** argv)
 {
@@ -514,12 +625,34 @@ int main(int argc, char** argv)
 
   PostProblem problem = PostProblem(My_CLP,argc,argv);
 
-  // just write the mesh
+#if 0
   for (int i = 0; i<problem.num_discr(); ++i)
   {
     PostField* field = problem.get_discretization(i);
-    EnsightWriter writer(field, problem.basename());
+    StructureEnsightWriter writer(field, problem.basename());
     writer.WriteFiles();
+  }
+#endif
+
+  // each problem type is different and writes different results
+  switch (problem.Problemtype())
+  {
+  case prb_structure:
+  {
+    PostField* field = problem.get_discretization(0);
+    StructureEnsightWriter writer(field, problem.basename());
+    writer.WriteFiles();
+    break;
+  }
+  case prb_fluid:
+  {
+    PostField* field = problem.get_discretization(0);
+    FluidEnsightWriter writer(field, problem.basename());
+    writer.WriteFiles();
+    break;
+  }
+  default:
+    dserror("problem type %d not yet supported", problem.Problemtype());
   }
 
   return 0;
