@@ -23,6 +23,7 @@ Maintainer: Peter Gamnitzer
 #include <ctime>
 #include <cstdlib>
 #include <iostream>
+#include <Teuchos_TimeMonitor.hpp> 
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -91,8 +92,6 @@ extern struct _CURVE *curve;
 
 
 
-//#include "fluid_dyn_nln_drt.H"
-
 
 /*----------------------------------------------------------------------*
  * Time integration loop for fluid.
@@ -107,8 +106,21 @@ void dyn_fluid_drt()
   double tt,t2;
 
  DSTraceHelper dst("dyn_fluid_drt");
-
-
+  // -------------------------------------------------------------------
+  // create timers
+  // -------------------------------------------------------------------
+  Teuchos::RefCountPtr<Time> timedyntot  = TimeMonitor::getNewTimer("dynamic routine total");
+  Teuchos::RefCountPtr<Time> timedyninit = TimeMonitor::getNewTimer(" + initial phase");
+  Teuchos::RefCountPtr<Time> timedynloop = TimeMonitor::getNewTimer(" + time loop");
+  Teuchos::RefCountPtr<Time> timenlnloop = TimeMonitor::getNewTimer("   + nonlinear iteration");  
+  Teuchos::RefCountPtr<Time> timeeleloop = TimeMonitor::getNewTimer("      + element calls");
+  Teuchos::RefCountPtr<Time> timeapplydirich = TimeMonitor::getNewTimer("      + apply dirich cond.");
+  Teuchos::RefCountPtr<Time> timesolver  = TimeMonitor::getNewTimer("      + solver calls");
+  
+  
+  {TimeMonitor tm0(*timedyntot);
+   Teuchos::RefCountPtr<TimeMonitor> tm1_ref = rcp(new TimeMonitor(*timedyninit));
+   
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
@@ -120,7 +132,6 @@ void dyn_fluid_drt()
   }
   // set degrees of freedom in the discretization
   if (!actdis->Filled()) actdis->FillComplete();
-
   
   // -------------------------------------------------------------------
   // get a communicator and myrank
@@ -237,7 +248,9 @@ void dyn_fluid_drt()
   output.NewStep(fdyn->step, fdyn->acttime);
   output.WriteVector("vel_and_pres", velnp);
 
-  
+  // time measurement
+  tm1_ref = null; // this causes the TimeMonitor tm1 to stop here (call of destructor)
+   
   {
    // save all fluid-dynamic info which will be overwritten by startingalgo
    FLUID_TIMEINTTYPE iop_s    = fdyn->iop;
@@ -265,7 +278,8 @@ void dyn_fluid_drt()
    {
     // get cpu time
     t2=ds_cputime();
-    
+    TimeMonitor tm2(*timedynloop);
+       
     // increase counters and time
     fdyn->step++;
     fdyn->dta  = fdyn->dt;                   /* constant time step size */
@@ -398,6 +412,7 @@ void dyn_fluid_drt()
     /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
     /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
     /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
+     TimeMonitor tm6(*timenlnloop);
      int  n_itnum=0;
      bool stop_nonliniter=false;
      if(myrank == 0)
@@ -435,8 +450,11 @@ void dyn_fluid_drt()
        actdis->SetState("old solution data for rhs"  ,hist );
 
        // call loop over elements
+       {
+       TimeMonitor tm3(*timeeleloop);
        actdis->Evaluate(params,sys_mat,null,residual,null,null);
        actdis->ClearState();
+       }
 
        // finalize the system matrix
        LINALG::Complete(*sys_mat);
@@ -449,9 +467,11 @@ void dyn_fluid_drt()
       //          boundary conditions
       incvel->PutScalar(0.0);
       zeros->PutScalar(0.0);
+      {
+      TimeMonitor tm4(*timeapplydirich);
       LINALG::ApplyDirichlettoSystem(sys_mat,incvel,residual,
 				     zeros,dirichtoggle);
-      
+      }
       
       
       //-------solve for residual displacements to correct incremental displacements
@@ -460,7 +480,10 @@ void dyn_fluid_drt()
       {
 	   initsolver = true; 
       }
+      {
+      TimeMonitor tm5(*timesolver);
       solver.Solve(sys_mat,incvel,residual,true,initsolver);
+      }
 
       
 #if 0  // DEBUG IO --- the whole systemmatrix
@@ -537,16 +560,26 @@ void dyn_fluid_drt()
 	       n_itnum,fdyn->itemax,fdyn->ittol,incvelnorm_L2/velnorm_L2);
        }
        
-       if(incvelnorm_L2/velnorm_L2<fdyn->ittol
-	  ||
-	  n_itnum == fdyn->itemax)
-       {
+       if(incvelnorm_L2/velnorm_L2 <= fdyn->ittol)
+       {	  
 	stop_nonliniter=true;
 	if(myrank == 0)
 	{
 	 printf("-------------------------------------------------\n");
 	}
        }
+       
+       if (n_itnum == fdyn->itemax && incvelnorm_L2/velnorm_L2 > fdyn->ittol)
+       {
+	stop_nonliniter=true;
+	if(myrank == 0)
+	{
+	 printf("------------------------------------------------- \n");
+         printf("|    >>>>>> not converged in itemax steps!      | \n");
+         printf("------------------------------------------------- \n");
+	}
+       }
+       
       }
      }
 
@@ -681,6 +714,12 @@ void dyn_fluid_drt()
   /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
   /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
   /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
+  
+  } // end of TimeMonitor tm0(*timedyntot);
+  
+  // print the results of time measurements
+  cout<<endl<<endl;
+  TimeMonitor::summarize();
   
   
   //---------- this is the end. Beautiful friend. My only friend, The end.
