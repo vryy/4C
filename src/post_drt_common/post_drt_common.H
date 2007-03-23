@@ -117,7 +117,7 @@ public:
   vector<MAP*>* result_groups() { return &result_group_; }
 
   //! returns the number of discretizations
-  int num_discr() { return static_cast<int>(fields_.size()); }
+  int num_discr();
 
   //! returns the number of dimensions the problem has
   int num_dim() { return ndim_; }
@@ -351,6 +351,12 @@ private:
   MAP* group_;
   HDFReader file_;
 };
+
+
+inline int PostProblem::num_discr()
+{
+  return static_cast<int>(fields_.size());
+}
 
 
 #endif
