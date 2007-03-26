@@ -87,6 +87,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
       vector<double> myprenp(numnode);
       vector<double> myvelnp(3*numnode);
       vector<double> myvhist(3*numnode);
+      
       for (int i=0;i<numnode;++i)
        {
        myvelnp[0+(i*3)]=my_vel_pre_np[0+(i*4)];
@@ -100,14 +101,24 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
        myvhist[2+(i*3)]=myhist[2+(i*4)];
        }
 
-      // calculate element coefficient matrix and rhs
-      f3_sys_mat(lm,myvelnp,myprenp,myvhist,&elemat1,&elevec1,actmat,params);
+      // use local variables instead of directly write into elemat1, elevec1.
+      // this speeds up computations by 3%-5%
+      Epetra_SerialDenseVector  eforce(4*numnode);      	// rhs vector                       
+      Epetra_SerialDenseMatrix 	estif(4*numnode,4*numnode); 	// element coefficient matrix
+      
+      // calculate element coefficient matrix and rhs       
+      f3_sys_mat(lm,myvelnp,myprenp,myvhist,&estif,&eforce,actmat,params);  
+      
+      // copy values
+      elemat1 = estif;
+      elevec1 = eforce;
   
       // outputs for debugging
-//if (Id()<=10)
 
+// if (Id()==10 || Id()==15)
 {
-	
+
+	//printf("Element %5d\n",Id());	
 #if 0
 
 	for (int i=0;i<32;++i)
@@ -139,7 +150,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
 	    }
 #endif
 
-}
+} // end of debug part
 
     }
     break;
@@ -200,6 +211,8 @@ if(!is_ale_)
    }
 
    /*---------------------------------------------- get viscosity ---*/
+   // check here, if we really have a fluid !!
+   if(material->mattyp != m_fluid) dserror("Material law is not of type m_fluid.");
    const double  visc = material->m.fluid->viscosity;
 
    /*--------------------------------------------- stab-parameter ---*/
@@ -220,28 +233,27 @@ if(!is_ale_)
    vector<double> 		ephing(iel);
    vector<double> 		iedgnod(iel);
    Epetra_SerialDenseMatrix 	wa1(100,100);  // working matrix used as dummy
-
-vector<double>    		histvec(3); /* history data at integration point              */
-  double         		hk;
-  double         		norm_p, pe, re, xi1, xi2;
-  double         		val, strle;
-  vector<double>         	velino(3); /* normed velocity at element centre */
-  double         		det, vol;
-  FLUID_DATA            	data;
-  double         		e1, e2, e3;
-  double         		facr=0.0, facs=0.0, fact=0.0;
-  double         		mk=0.0;
-  vector<double>     		velint(3);
-  double 			timefac;
-  timefac=params.get<double>("time constant for integration",0.0);
+   vector<double>    		histvec(3); /* history data at integration point              */
+   double         		hk;
+   double         		norm_p, pe, re, xi1, xi2;
+   double         		val, strle;
+   vector<double>         	velino(3); /* normed velocity at element centre */
+   double         		det, vol;
+   FLUID_DATA            	data;
+   double         		e1, e2, e3;
+   double         		facr=0.0, facs=0.0, fact=0.0;
+   double         		mk=0.0;
+   vector<double>     		velint(3);
+   double 			timefac;
+   vector<double>               tau(3); // stab parameters
 
   /*------------------------------------------------------- initialise ---*/
-
   // gaussian points
   f3_integration_points(data);
+  timefac=params.get<double>("time constant for integration",0.0);
 
 
-/*---------------------- shape functions and derivs at element center --*/
+   /*---------------------- shape functions and derivs at element center --*/
 switch(iel)
 {
 case 8: case 20: case 27:   /* --> hex - element */
@@ -325,7 +337,6 @@ for (int i=0;i<iel;i++) /* loop element nodes */
 } /* end of loop over elements */
 strle=TWO/val;
 
-vector<double> tau(3);
 /*--------------------------------------------------------- get tau_Mu ---*/
 pe = 4.0 * timefac * visc / (mk * DSQR(strle)); /* viscous : reactive forces */
 re = mk * norm_p * strle / (2.0 * visc);       /* advective : viscous forces */
@@ -354,24 +365,20 @@ tau[2] = norm_p * hk * 0.5 * xi2;
 // end of old f3_caltau function
 /*----------------------------------------------------------------------*/
 
-
-
 // integration loop for one Fluid3 element using USFEM
 
-
-int       intc;       /* "integration case" for tri for further infos
+int       intc=0;      /* "integration case" for tri for further infos
                           see f2_inpele.c and f2_intg.c                 */
-int       nir,nis,nit;/* number of integration nodesin r,s,t direction  */
-int       ihoel=0;    /* flag for higher order elements                 */
-int       icode=2;    /* flag for eveluation of shape functions         */
-double    fac;        /* total integration factor */
-vector<double>    gridvelint(3); /* grid velocity                       */
-vector<double>    gradp(3);   /* pressure gradient at integration point         */
+int       nir=0;       /* number of integration nodesin r direction     */
+int       nis=0;       /* number of integration nodesin s direction     */
+int       nit=0;       /* number of integration nodesin t direction      */
+int       ihoel=0;     /* flag for higher order elements                 */
+int       icode=2;     /* flag for eveluation of shape functions         */
+double    fac;         /* total integration factor */
 double    press;
-intc = 0;
-nir  = 0;
-nis  = 0;
-nit  = 0;
+vector<double>    gridvelint(3); /* grid velocity                       */
+vector<double>    gradp(3);      /* pressure gradient at integration point         */
+
 
 switch (iel)
 {
@@ -396,7 +403,8 @@ case 4:    /* initialise integration */
    break;
 default:
    dserror("typ unknown!");
-} /* end switch (iel) */
+} // end switch (iel) //
+
 
 /*----------------------------------------------------------------------*
  |               start loop over integration points                     |
@@ -464,40 +472,40 @@ for (int lt=0;lt<nit;lt++)
 
     /*---------------------- get velocities (n+g,i) at integration point */
    // expression for f3_veci(velint,funct,evelnp,iel);
-    for (int i=0;i<3;i++)
-{
-   velint[i]=ZERO;
-   for (int j=0;j<iel;j++)
+   for (int i=0;i<3;i++)
    {
+   velint[i]=ZERO;
+     for (int j=0;j<iel;j++)
+     {
      velint[i] += funct[j]*evelnp[i+(3*j)];
-   }
-} //end loop over i
+     }
+   } //end loop over i
 
    /*---------------- get history data (n,i) at integration point ---*/
     //expression for f3_veci(histvec,funct,evhist,iel);
    for (int i=0;i<3;i++)
-{
-   histvec[i]=ZERO;
-   for (int j=0;j<iel;j++)
    {
-      histvec[i] += funct[j]*evhist[i+(3*j)];
-   } /* end of loop over j */
-} /* end of loop over i */
+   histvec[i]=ZERO;
+     for (int j=0;j<iel;j++)
+     {
+        histvec[i] += funct[j]*evhist[i+(3*j)];
+     } /* end of loop over j */
+   } /* end of loop over i */
 
    /*----------- get velocity (np,i) derivatives at integration point */
    // expression for f3_vder(vderxy,derxy,evelnp,iel);
    for (int i=0;i<3;i++)
-{
-   vderxy(0,i)=ZERO;
-   vderxy(1,i)=ZERO;
-   vderxy(2,i)=ZERO;
-   for (int j=0;j<iel;j++)
    {
-      vderxy(0,i) += derxy(i,j)*evelnp[0+(3*j)];
-      vderxy(1,i) += derxy(i,j)*evelnp[1+(3*j)];
-      vderxy(2,i) += derxy(i,j)*evelnp[2+(3*j)];
-   } /* end of loop over j */
-} /* end of loop over i */
+     vderxy(0,i)=ZERO;
+     vderxy(1,i)=ZERO;
+     vderxy(2,i)=ZERO;
+     for (int j=0;j<iel;j++)
+     { 
+       vderxy(0,i) += derxy(i,j)*evelnp[0+(3*j)];
+       vderxy(1,i) += derxy(i,j)*evelnp[1+(3*j)];
+       vderxy(2,i) += derxy(i,j)*evelnp[2+(3*j)];
+     } /* end of loop over j */
+   } /* end of loop over i */
 
    /*--------------------- get grid velocity at integration point ---*/
    if(is_ale_)
@@ -526,20 +534,19 @@ for (int lt=0;lt<nit;lt++)
    }
 
    /*-------------- perform integration for entire matrix and rhs ---*/
- vector<double>    eforce(3*iel); /* rhs vector                       */
- Epetra_SerialDenseMatrix 	estif(4*iel,4*iel); // element coefficient matrix
-
-//f3_calmat(estif,eforce,velint,histvec,gridvelint,press,vderxy,vderxy2,gradp,funct,tau,derxy,derxy2,fac,visc,iel,params);
-f3_calmat(*sys_mat,*residual,velint,histvec,gridvelint,press,vderxy,vderxy2,gradp,funct,tau,derxy,derxy2,fac,visc,iel,params);
+   f3_calmat(*sys_mat,*residual,velint,histvec,gridvelint,press,vderxy,vderxy2,gradp,funct,tau,derxy,derxy2,fac,visc,iel,params);
 
 	     
 } /* end of loop over integration points lt*/
 } /* end of loop over integration points ls */
 } /* end of loop over integration points lr */
 
+
 } // end of case !is_ale = true
 else
    dserror("ALE net algorithm not supported at the moment!\n");
+
+
 
 
 return;
@@ -1927,7 +1934,25 @@ bm(4,5) = xjm(0,1)*xjm(2,2)+xjm(2,1)*xjm(0,2);
 bm(5,5) = xjm(1,1)*xjm(2,2)+xjm(2,1)*xjm(1,2);
 
 /*-------------------------------------- inverse of jacobian_bar matrix */
+
 LINALG::NonSymmetricInverse(bm,6);
+
+// output for debug 
+// (for more details see the comments in definition of NonSymmetricInverse()
+#if 0
+for (int i = 0 ; i < 6; ++i)
+{
+for (int j = 0 ; j < 6; ++j)
+{
+       if (bm(i,j)!=0.0)
+       printf("bm[%d][%d] %22.16e ",i,j,bm(i,j));
+       else
+        printf("bm[%d][%d] 0.000 ",i,j);
+       printf("\n");
+}
+printf("\n");
+}
+#endif
 
 /*----------------------------------------------------------- initialise*/
 for (int i=0;i<3;i++)
@@ -2007,7 +2032,7 @@ return;
 
 /*
 In this routine the Gauss point contributions to the elemental coefficient
-matrix of a stabilised fluid2 element are calculated. The procedure is
+matrix of a stabilised fluid3 element are calculated. The procedure is
 based on the Rothe method of first integrating in time. Hence the
 resulting terms include coefficients containing time integration variables
 such as theta or delta t which are represented by 'timefac'.
@@ -2121,39 +2146,39 @@ void DRT::Elements::Fluid3::f3_calmat( Epetra_SerialDenseMatrix& estif,
 		ParameterList& 	  params
                 )
 {
-//DOUBLE  aux;
-//DOUBLE  auxmat[3][3];
 //DOUBLE  viscous[3][3][3*iel];	/* viscous term partially integrated */
 
 /*========================= further variables =========================*/
 
 Epetra_SerialDenseMatrix  viscs2(3,3*iel);   	/* viscous term incluiding 2nd derivatives */
-vector<double>  conv_c(iel); 	/* linearisation of convect, convective part */
+vector<double>  conv_c(iel); 		/* linearisation of convect, convective part */
 vector<double>  conv_g(iel);       	/* linearisation of convect, grid part */
 Epetra_SerialDenseMatrix  conv_r(3,3*iel);	/* linearisation of convect, reactive part */
 vector<double>  div(3*iel);          	/* divergence of u or v              */
 Epetra_SerialDenseMatrix  ugradv(iel,3*iel);	/* linearisation of u * grad v   */
-vector<double>  conv_old(3); 	/* convective term evalaluated with old velocities */
+vector<double>  conv_old(3); 		/* convective term evalaluated with old velocities */
 vector<double>  conv_g_old(3);
-vector<double>   visc_old(3); 	/* viscous term evaluated with old velocities      */
+vector<double>  visc_old(3); 		/* viscous term evaluated with old velocities      */
 vector<double>  rhsint(3);   		/* total right hand side terms at int.-point       */
 Epetra_SerialDenseMatrix  vconv_r(3,iel);
 
 /*========================== initialisation ============================*/
-/* One-step-Theta: timefac = theta*dt
-   BDF2:           timefac = 2/3 * dt               */
+// One-step-Theta: timefac = theta*dt
+// BDF2:           timefac = 2/3 * dt               
 double timefac = params.get<double>("time constant for integration",-1.0);
   if (timefac == -1.0) dserror("No time constant for integration supplied");
-/* time step size*/
+
+// time step size
 //double dt = params.get<double>("delta time",-1.0);
 //  if (dt == -1.0) dserror("No dta supplied");
-/* stabilisation parameter            */
+
+// stabilisation parameter            
 double tau_M  = tau[0]*fac;
 double tau_Mp = tau[1]*fac;
 double tau_C  = tau[2]*fac;
 
-/* integration factors and coefficients of single terms */
-//double time2nue   = timefac * 2.0 * visc;
+// integration factors and coefficients of single terms 
+// double time2nue   = timefac * 2.0 * visc;
 double timetauM   = timefac * tau_M;
 double timetauMp  = timefac * tau_Mp;
 
@@ -2162,10 +2187,10 @@ double ttimetauMp = timefac * timetauMp;
 double timefacfac = timefac * fac;
 
 /*------------------------- evaluate rhs vector at integration point ---*/
+// no switch here at the moment w.r.t. is_ale
     rhsint[0] = histvec[0];
     rhsint[1] = histvec[1];
     rhsint[2] = histvec[2];
-// no switch here at the moment
 /*----------------- get numerical representation of single operators ---*/
 
 /* Convective term  u_old * grad u_old: */
@@ -2373,8 +2398,8 @@ for (int i=0; i<iel; i++) /* loop over nodes of element */
   }
   else
   {
-#include "fluid3_stiff.cpp"
-#include "fluid3_rhs_incr.cpp"
+   #include "fluid3_stiff.cpp"
+   #include "fluid3_rhs_incr.cpp"
   }
 
 #undef estif_

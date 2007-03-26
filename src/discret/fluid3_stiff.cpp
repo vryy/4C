@@ -1,7 +1,8 @@
-for (int vi=0; vi<iel; ++vi)
+for (int ui=0; ui<iel; ++ui)    // exchanged ui- and vi-loop => slight speedup!?   g.bau 03/07
 {
-  for (int ui=0; ui<iel; ++ui)
+  for (int vi=0; vi<iel; ++vi)
   {
+
     /* Konvektionsterm */
     estif_(vi*4, ui*4)         += timefacfac*funct_(vi)*(conv_c_(ui) + conv_r_(0, 0, ui)) ;
     estif_(vi*4, ui*4 + 1)     += timefacfac*funct_(vi)*conv_r_(0, 1, ui) ;
