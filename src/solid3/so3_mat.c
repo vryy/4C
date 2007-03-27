@@ -43,6 +43,7 @@ extern GENPROB genprob;
 /*!
 \brief Select proper material law
 
+\param *container CONTAINER      (i)   container
 \param *ele       ELEMENT        (i)   pointer to current element
 \param *mat       MATERIAL       (i)   pointer to current material
 \param ip         INT            (i)   current Gauss point index
@@ -132,7 +133,7 @@ void so3_mat_sel(CONTAINER *container,
       }
 #else
       {
-        INT mfac = Emod/((1.0+nu)*(1.0-2.0*nu));  /* factor */
+        DOUBLE mfac = Emod/((1.0+nu)*(1.0-2.0*nu));  /* factor */
         /* constitutive matrix */
         /* set the whole thing to zero */
         for (istr=0; istr<NUMSTR_SOLID3; istr++)
@@ -184,7 +185,7 @@ void so3_mat_sel(CONTAINER *container,
       /* strain due to thermal expansion */
 #ifdef D_TSI
 #ifdef D_THERM3
-      if ((genprob.probtyp == prb_tsi) && (1==0))
+      if (genprob.probtyp == prb_tsi)
       {
         DOUBLE tem;  /* temperature */
         /* temperature at Gauss point */

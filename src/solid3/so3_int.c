@@ -75,9 +75,6 @@ void so3_int_fintstifmass(CONTAINER *container,
   /* integration */
   INT ngp;  /* total number of Gauss points in domain */
   INT igp;  /* current total index of Gauss point */
-/*   DOUBLE gpcr;  /\* r-coord current GP *\/ */
-/*   DOUBLE gpcs;  /\* s-coord current GP *\/ */
-/*   DOUBLE gpct;  /\* t-coord current GP *\/ */
   DOUBLE fac;  /* integration factors */
   INT inod;  /* node index */
   NODE *actnode;  /* pointer to current node */
