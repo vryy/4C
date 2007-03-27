@@ -75,9 +75,9 @@ void so3_int_fintstifmass(CONTAINER *container,
   /* integration */
   INT ngp;  /* total number of Gauss points in domain */
   INT igp;  /* current total index of Gauss point */
-  DOUBLE gpcr;  /* r-coord current GP */
-  DOUBLE gpcs;  /* s-coord current GP */
-  DOUBLE gpct;  /* t-coord current GP */
+/*   DOUBLE gpcr;  /\* r-coord current GP *\/ */
+/*   DOUBLE gpcs;  /\* s-coord current GP *\/ */
+/*   DOUBLE gpct;  /\* t-coord current GP *\/ */
   DOUBLE fac;  /* integration factors */
   INT inod;  /* node index */
   NODE *actnode;  /* pointer to current node */
@@ -149,9 +149,10 @@ void so3_int_fintstifmass(CONTAINER *container,
   {
     /*------------------------------------------------------------------*/
     /* Gauss point */
-    gpcr = gpshade->gpco[igp][0];  /* r-coordinate */
-    gpcs = gpshade->gpco[igp][1];  /* s-coordinate */
-    gpct = gpshade->gpco[igp][2];  /* t-coordinate */
+    gds.igp = igp;
+    gds.gpc[0] = gpshade->gpco[igp][0];  /* r-coordinate */
+    gds.gpc[1] = gpshade->gpco[igp][1];  /* s-coordinate */
+    gds.gpc[2] = gpshade->gpco[igp][2];  /* t-coordinate */
     fac = gpshade->gpwg[igp];  /* weight */
     /*------------------------------------------------------------------*/
     /* compute Jacobian matrix, its determinant and inverse */
@@ -179,13 +180,13 @@ void so3_int_fintstifmass(CONTAINER *container,
       dserror("Cannot digest chosen type of spatial kinematic\n");
     }
 #if 0
-    /* dedug pruposes */
+    /* dedug purposes */
       INT xxx;
       printf("Element %d, GP %d \n", ele->Id, igp);
       for (xxx=0; xxx<6; xxx++)
       {
         printf("Strain %d : (% 5.2f,% 5.2f,% 5.2f) : %f\n", 
-               xxx, gpcr, gpcs, gpct, gds.stnglv[xxx]);
+               xxx, gds.gpc[0], gds.gpc[1], gds.gpc[2], gds.stnglv[xxx]);
       }
 #endif
     /*------------------------------------------------------------------*/
@@ -195,7 +196,7 @@ void so3_int_fintstifmass(CONTAINER *container,
             gds.defgrd, bopn, bop);
     /*------------------------------------------------------------------*/
     /* call material law */
-    so3_mat_sel(ele, mat, igp, &gds, stress, cmat);
+    so3_mat_sel(container, ele, mat, igp, &gds, stress, cmat);
     /*------------------------------------------------------------------*/
     /* element internal force from integration of stresses */
     if (eforc_global != NULL)

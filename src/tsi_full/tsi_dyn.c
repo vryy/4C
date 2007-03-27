@@ -170,6 +170,7 @@ void tsi_dyn()
   {
     /* prescribed TSI */
     case tsi_therm_pred_struct_dyn:
+      dserror("Sorry, predefined temperature field is not implemented!");
       break;
     /* semi TSI : static thermal and dynamic structure field */
     case tsi_therm_stat_struct_genalp: 
@@ -188,12 +189,14 @@ void tsi_dyn()
       break;
     /* semi TSI : prescribed thermal and dynamic structure field */
     case tsi_therm_presc_struct_genalp:
+      dserror("Sorry, prescription of temperature field is not implemented!");
       break;
-    /* full TSI */
-    case tsi_full:
-      dserror("Full thermal-structure-interation is not implemented!\n");
+    /* full explicit TIS with Fehlberg */
+    case tsi_full_fehlbg:
+      dserror("Sorry, full thermo-structure interaction is not implemented!\n");
       break;
     /* default */
+    case tsi_none:
     default:
       dserror("Unknown KIND of TSI");
       break;

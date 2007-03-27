@@ -1070,7 +1070,7 @@ void tsi_st_fehlbg(INT disnum_s,
     }
 #endif
     /* ascii output */
-    if (par.myrank==0 && ioflags.output_gid==1)
+    if ( (par.myrank == 0) && (ioflags.output_gid == 1) )
     {
       if (mod_disp == 0)
       {
@@ -1094,7 +1094,8 @@ void tsi_st_fehlbg(INT disnum_s,
       }
     }
     /* write restart data to pss file */
-    if (mod_res_write == 0) {
+    if (mod_res_write == 0)
+    {
 #ifdef BINIO
       restart_write_bin_nlnstructdyn(&out_context,
                                      sdyn, &dynvar,
@@ -1157,13 +1158,13 @@ void tsi_st_fehlbg(INT disnum_s,
   /*--------------------------------------------------------------------*/
   /* cleaning up phase */
   amdel(&intforce_a);
-  solserv_del_vec(&(actsolv->rhs),actsolv->nrhs);
-  solserv_del_vec(&(actsolv->sol),actsolv->nsol);
-  solserv_del_vec(&dispi,1);
-  solserv_del_vec(&vel,1);
-  solserv_del_vec(&acc,1);
-  solserv_del_vec(&fint,3);
-  solserv_del_vec(&work,3);
+  solserv_del_vec(&(actsolv->rhs), actsolv->nrhs);
+  solserv_del_vec(&(actsolv->sol), actsolv->nsol);
+  solserv_del_vec(&dispi, 1);
+  solserv_del_vec(&vel, 1);
+  solserv_del_vec(&acc, 1);
+  solserv_del_vec(&fint, 3);
+  solserv_del_vec(&work, 3);
 
   /*--------------------------------------------------------------------*/
   /* printout footer */

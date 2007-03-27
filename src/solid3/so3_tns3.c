@@ -830,6 +830,7 @@ void so3_tns3_spcdcmp(DOUBLE at[3][3],  /* input tensor */
   DOUBLE p, q, disc, rho, phi, rhort;
   DOUBLE y1, y2, y3;
   DOUBLE lam1, lam2, lam3;
+  INT duplicity;
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -847,10 +848,10 @@ void so3_tns3_spcdcmp(DOUBLE at[3][3],  /* input tensor */
    *    lam^3 - I_A*lam^2 + II_A*lam - III_A = 0
    * with reduced equation y=lam-II_A/3 (or lam=y+II_A/3)
    *    y^3 + p*y + q = 0   with   p = (3*II_A - I_A^2)/3
-   *                               q = (2*I_A^3 + 9*I_A*II_A + 27*III_A)/27
+   *                               q = (-2*I_A^3 + 9*I_A*II_A - 27*III_A)/27
    */
   p = (3.0*aii - ai*ai)/3.0;
-  q = (2.0*ai*ai*ai + 9.0*ai*aii + 27.0*aiii)/27.0;
+  q = (-2.0*ai*ai*ai + 9.0*ai*aii - 27.0*aiii)/27.0;
 
   /* discriminant */
   disc = (4.0*p*p*p + 27.0*q*q)/108.0;
@@ -861,6 +862,7 @@ void so3_tns3_spcdcmp(DOUBLE at[3][3],  /* input tensor */
     /* triple real root */
     if ( (abs(p) < EPS12) && (abs(q) < EPS12) )
     {
+      duplicity = 3;
       y1 = 0.0;  /* triple real solution */
       lam1 = y1 + aii/3.0;  /* triple real solution */
       lam2 = lam1;
@@ -869,6 +871,7 @@ void so3_tns3_spcdcmp(DOUBLE at[3][3],  /* input tensor */
     /* 1 real root and 1 double real y root */
     else
     {
+      duplicity = 2;
       /* should always be the case, but you never know ... */
       if (p < 0.0)  
       {
@@ -890,6 +893,7 @@ void so3_tns3_spcdcmp(DOUBLE at[3][3],  /* input tensor */
   /* discriminant<0  ==>  3 different real roots in y  */
   else if (disc < 0.0)
   {
+    duplicity = 1;
     rho = sqrt(-p*p*p/27.0);
     phi = acos(-q/2.0/rho);
     rhort = 2.0 * pow(rho, 1.0/3.0);
@@ -905,6 +909,7 @@ void so3_tns3_spcdcmp(DOUBLE at[3][3],  /* input tensor */
   else
   {
     /* 1 real and 2 conjugated complex y roots */
+    /* printf("discriminant %f\n", disc); */
     dserror("Discriminant is positive!\n");
     *err = 1;
   }
@@ -915,6 +920,22 @@ void so3_tns3_spcdcmp(DOUBLE at[3][3],  /* input tensor */
     ew[1] = lam2;
     ew[2] = lam3;
   }
+
+/*   if (*err == 1) */
+/*   { */
+/*     if (duplicity == 3) */
+/*     { */
+/*     } */
+/*     else if (duplicity == 2) */
+/*     { */
+/*     } */
+/*     else if (duplicity == 1) */
+/*     { */
+/*     } */
+/*     else */
+/*     { */
+/*     } */
+/*   } */
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG

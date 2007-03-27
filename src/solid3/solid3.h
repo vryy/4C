@@ -207,6 +207,11 @@ typedef struct _SO3_GEODEFSTR
    *     parameter frame (r,s,t coordinates) and material frame
    *     (X,Y,Z coordinates)
    */
+  /*--------------------------------------------------------------------*/
+  /* (total) Gauss point index */
+  INT igp;
+  /* Gauss point co-ordinate */
+  DOUBLE gpc[NDIM_SOLID3];
   /* (FE-) Jacobi matrix J (isoparametric)
    *         [ J_11  J_12  J_13 ]   [ X_{,r}  Y_{,r}  Z_{,r} ]
    *     J = [ J_21  J_22  J_23 ] = [ X_{,s}  Y_{,s}  Z_{,s} ]
@@ -558,7 +563,8 @@ void solid3(PARTITION *actpart,
 
 /*----------------------------------------------------------------------*/
 /* file so3_mat.c */
-void so3_mat_sel(ELEMENT *ele,
+void so3_mat_sel(CONTAINER *container,
+                 ELEMENT *ele,
                  MATERIAL *mat,
                  INT ip,
                  SO3_GEODEFSTR *gds,
@@ -571,13 +577,13 @@ void so3_mat_density(MATERIAL *mat,
 /*----------------------------------------------------------------------*/
 /* file so3_metr.c */
 void so3_metr_jaco(ELEMENT *ele,
-                   INT      enod,
-                   DOUBLE   ex[MAXNOD_SOLID3][NDIM_SOLID3],
-                   DOUBLE   deriv[MAXNOD_SOLID3][NDIM_SOLID3],
-                   INT      flag,
-                   DOUBLE   xjm[NDIM_SOLID3][NDIM_SOLID3],
-                   DOUBLE  *det,
-                   DOUBLE   xji[NDIM_SOLID3][NDIM_SOLID3]);
+                   INT enod,
+                   DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3],
+                   DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3],
+                   INT flag,
+                   DOUBLE xjm[NDIM_SOLID3][NDIM_SOLID3],
+                   DOUBLE *det,
+                   DOUBLE xji[NDIM_SOLID3][NDIM_SOLID3]);
 void so3_metr_surf(ELEMENT *ele, 
                    INT nelenod, 
                    DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3],
@@ -694,6 +700,20 @@ void so3_tns3_v2tsym(DOUBLE av[6],
 void so3_tns3_spcdcmp(DOUBLE at[3][3],  /* input tensor */
                       INT *err,
                       DOUBLE ew[3]);
+
+/*----------------------------------------------------------------------*/
+/* file so3_tsi.c */
+#ifdef D_TSI
+#ifdef D_THERM3
+void so3_tsi_temper(const CONTAINER *container,
+                    const ELEMENT *ele,
+                    const DOUBLE r, 
+                    const DOUBLE s,
+                    const DOUBLE t,
+                    DOUBLE *temper);
+#endif
+#endif
+
 
 /*----------------------------------------------------------------------*/
 #endif /*end of #ifdef D_SOLID3 */

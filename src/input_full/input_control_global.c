@@ -2021,7 +2021,7 @@ void inpctr_dyn_tsi(TSI_DYNAMIC *tsidyn)
 
   /*--------------------------------------------------------------------*/
   /* set important defaults */
-  tsidyn->kind = tsi_full;  /* default: full thermostructural coupling */
+  tsidyn->kind = tsi_none;  /* default: none */
 
   /*--------------------------------------------------------------------*/
   /* read settings in input file */
@@ -2033,9 +2033,9 @@ void inpctr_dyn_tsi(TSI_DYNAMIC *tsidyn)
     frchar("KIND", buffer, &ierr);
     if (ierr == 1)
     {
-      if (frwordcmp(buffer,"full") == 0)
+      if (frwordcmp(buffer,"full_fehlberg") == 0)
       {
-	 tsidyn->kind = tsi_full;
+	 tsidyn->kind = tsi_full_fehlbg;
       }
       else if (frwordcmp(buffer, "thermal_static_structure_genalpha") == 0)
       {

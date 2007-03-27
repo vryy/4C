@@ -343,7 +343,7 @@ void so3_stress(CONTAINER *cont,
             bopn, bop);
     /*------------------------------------------------------------------*/
     /* call material law ==> 2nd PK-stresses and constitutive matrix */
-    so3_mat_sel(ele, mat, igp, &gds, stress, cmat);
+    so3_mat_sel(cont, ele, mat, igp, &gds, stress, cmat);
     /*------------------------------------------------------------------*/
     /* store stress of current Gauss point */
     for (istr=0; istr<NUMSTR_SOLID3; istr++)
@@ -444,7 +444,7 @@ void so3_stress_rst(DOUBLE xrvi[NUMSTR_SOLID3][NUMSTR_SOLID3],
 
 /*======================================================================*/
 /*!
-\brief Principial stresses and principial directions at current
+\brief Principal stresses and principal directions at current
        Gauss point
 
 \param  *stress       DOUBLE   (i)   stress vector
@@ -459,7 +459,7 @@ void so3_stress_123(DOUBLE stress[NUMSTR_SOLID3],
 
 {
   DOUBLE stresst[NDIM_SOLID3][NDIM_SOLID3];  /* stress tensor */
-  DOUBLE ew[NDIM_SOLID3];  /* principial stresses */
+  DOUBLE ew[NDIM_SOLID3];  /* principal stresses */
   INT err;  /* error 0=PASSED, 1=ERROR */
 
 #ifdef DEBUG
@@ -472,7 +472,7 @@ void so3_stress_123(DOUBLE stress[NUMSTR_SOLID3],
   /* principial stresses */
   so3_tns3_spcdcmp(stresst, &err, ew);
 
-  /* write principial stresses -- if found */
+  /* write principal stresses -- if found */
   if (err == 0)
   {
     stress123[0] = ew[0];  /* 1st principal stress */

@@ -237,6 +237,27 @@ void so3_inp(ELEMENT *ele)
     ele->e.so3->stresstype = so3_stress_none;
   }
 
+  /*--------------------------------------------------------------------*/
+  /* read TSI coupling */
+#ifdef D_TSI
+  ele->e.so3->tsi_couptyp = tsi_coup_none;  /* default */
+  frchar("TSI_COUPTYP",buffer,&ierr);
+  if (ierr)
+  {
+    if (strncmp(buffer,"None",4)==0)
+    {
+      ele->e.so3->tsi_couptyp = tsi_coup_none;
+    }
+    if (strncmp(buffer,"Thermconf",9)==0)
+    {
+      ele->e.so3->tsi_couptyp = tsi_coup_thermconf;
+    }
+    if (strncmp(buffer,"Thermcreate",11)==0)
+    {
+      ele->e.so3->tsi_couptyp = tsi_coup_thermcreate;
+    }
+  }
+#endif
 
   /*--------------------------------------------------------------------*/
   /* finalise */

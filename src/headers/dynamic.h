@@ -231,8 +231,10 @@ typedef struct _TSI_DYNAMIC
 {
   enum
   {
-    tsi_full,                       /* fully coupled analysis,
-                                     * both fields vary in time */
+    tsi_none,                       /* default */
+    tsi_full_fehlbg,                /* fully coupled analysis,
+                                     * both fields vary in time
+                                     * and are solved with Fehlberg4/5 */
     tsi_therm_presc_struct_genalp,  /* A steady thermal field is solved
                                      * at each time step by prescribed
                                      * heat load. Subsequently, the

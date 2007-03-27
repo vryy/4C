@@ -296,6 +296,13 @@ void tsi_coupling(FIELD *structfield,
     actsnode = &(structfield->dis[disnum_s].node[i]);
     actsgnode = actsnode->gnode;
 
+    /* debug: */
+    /* printf("SNode %d: (x,y,z)=(%f,%f,%f)\n", 
+           actsnode->Id,
+           actsnode->x[0],
+           actsnode->x[1],
+           actsnode->x[2]); */
+
     /* initialise partner counter */
     partner = 0;
     /* initialise adjacent element counter */
@@ -374,6 +381,14 @@ void tsi_coupling(FIELD *structfield,
         {
           /* get pointer on actual thermal node */
           acttnode = &(thermfield->dis[disnum_t].node[j]);
+
+          /* debug: */
+          /* printf("TNode %d: (x,y,z)=(%f,%f,%f)\n", 
+                 acttnode->Id,
+                 acttnode->x[0],
+                 acttnode->x[1],
+                 acttnode->x[2]); */
+
           /* check distance of coords */
           cheque_distance(&(actsnode->x[0]), &(acttnode->x[0]), 
                           tol, &ierr);
@@ -413,6 +428,10 @@ void tsi_coupling(FIELD *structfield,
     }
     else
     {
+      printf("(x,y,z)=(%f,%f,%f)\n", 
+             actsnode->x[0],
+             actsnode->x[1],
+             actsnode->x[2]);
       dserror("Corresponding thermal node was not found!");
     }
 
