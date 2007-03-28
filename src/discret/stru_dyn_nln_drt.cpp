@@ -158,7 +158,7 @@ void dyn_nlnstructural_drt()
   genalphaparams.set<FILE*> ("err file",allfiles.out_err);
 
   // takes values "full newton" , "modified newton" , "nonlinear cg"
-  genalphaparams.set<string>("equilibrium iteration","nonlinear cg");
+  genalphaparams.set<string>("equilibrium iteration","full newton");
 
   StruGenAlpha timeintegrator(genalphaparams,*actdis,solver,output);
   
