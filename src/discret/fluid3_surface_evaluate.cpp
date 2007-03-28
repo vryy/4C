@@ -40,24 +40,7 @@ int DRT::Elements::Fluid3Surface::EvaluateNeumann(
 {  
   DSTraceHelper dst("Fluid3Surface::EvaluateNeumann");
   dserror("Surface Neumann condition not yet implemented for Fluid3");
-  // find out whether we will use a time curve
-  
 
-  // find out whether we will use a time curve and get the factor
-
-
-  // init gaussian points of parent element
-  FLUID_DATA data;
-  parent_->f3_integration_points(data);
-
-  // number of parent element nodes
-  const int iel = parent_->NumNode();
-
-  const int nir = parent_->ngp_[0];
-  const int nis = parent_->ngp_[1];
-  const int nit = parent_->ngp_[2];
-  const int numdf = 4;
-  
   return 0;
 }
 
