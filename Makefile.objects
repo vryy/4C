@@ -688,6 +688,7 @@ OBJS_WALLGE   = src/wallge/wge_setdof.o \
 #               thermal structure interaction
 OBJS_TSI      = src/tsi_full/tsi_coupling.o \
                 src/tsi_full/tsi_dyn.o \
+                src/tsi_full/tsi_fehlbg4.o \
 		src/tsi_full/tsi_init.o \
                 src/tsi_full/tsi_st_cendif.o \
                 src/tsi_full/tsi_st_fehlbg.o \

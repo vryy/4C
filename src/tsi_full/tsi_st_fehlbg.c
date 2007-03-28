@@ -23,6 +23,7 @@ Maintainer: Burkhard Bornemann
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 #include "../io/io.h"
+#include "tsi_fehlbg4.h"
 
 
 /*----------------------------------------------------------------------*/
@@ -182,19 +183,6 @@ void tsi_st_fehlbg(INT disnum_s,
 
   /* Fehlberg4 parameters */
   const INT nstg = 5;
-  DOUBLE fb4a[5][5] = { { 0., 0., 0., 0., 0. },
-                        { 1./4., 0., 0., 0., 0. },
-                        { 3./32., 9./32., 0., 0., 0. },
-                        { 1932./2197., -7200./2197., 7296./2197., 0., 0. },
-                        { 439./216., -8., 3680./513., -845./4104., 0. } };
-  DOUBLE fb4b[5] = { 25./216., 0., 1408./2565., 2197./4104, -1./5. };
-  DOUBLE fb4c[5] = { 0., 1./4., 3./8., 12./13., 1. };
-  DOUBLE fb4aa[5][5] = { { 0., 0., 0., 0., 0. },
-                         { 0., 0., 0., 0., 0. },
-                         { 9./128., 0., 0., 0., 0. },
-                         { -1116./2197., 2052./2197., 0., 0., 0. },
-                         { -353./234., 35./13., -80./117., 0., 0. } };
-  DOUBLE fb4bb[5] = { 25./216., 0., 176./513., 169./4104., 0. };
 
   DOUBLE dt;
   INT nstep;
@@ -428,7 +416,7 @@ void tsi_st_fehlbg(INT disnum_s,
   }
 
   /*--------------------------------------------------------------------*/
-  /* allocate one vector vel */
+  /* allocate two vector vel */
   solserv_create_vec(&vel, 2, numeq_total, numeq, "DV");
   solserv_zero_vec(&(vel[0]));
   solserv_zero_vec(&(vel[1]));
@@ -535,6 +523,7 @@ void tsi_st_fehlbg(INT disnum_s,
 
   /*--------------------------------------------------------------------*/
   /* write output of mesh to gid */
+  /* This has ALREADY been done */
 /*   if (par.myrank==0 && ioflags.output_gid==1) */
 /*   { */
 /*     out_gid_msh(); */
@@ -846,25 +835,26 @@ void tsi_st_fehlbg(INT disnum_s,
       /*----------------------------------------------------------------*/
       /* time stage 
        *    t_{n+1} = t_n + dt*c_i */
-      tim[istg] = acttime + dt*fb4c[istg];
+      tim[istg] = acttime + dt*tsi_fehlbg4_c(istg);
       /*----------------------------------------------------------------*/
       /* velocity at stage
        *    V_{n+c_i} += dt_n * \sum{j=1}{s} ( a_{ij} * k_j ) */
       solserv_copy_vec(&(vel[0]), &(veln[istg]));
       for (jstg=0; jstg<istg; jstg++)
       {
-        solserv_add_vec(&(accn[jstg]), &(veln[istg]), dt*fb4a[istg][jstg]);
+        solserv_add_vec(&(accn[jstg]), &(veln[istg]), 
+                        dt*tsi_fehlbg4_a(istg,jstg));
       }
       /*----------------------------------------------------------------*/
       /* displacement at stage
        *    D_{n+c_i} += c_i * dt * V_n 
        *               + dt_n^2 * \sum{j=1}{s} ( aa_{ij} * k_j )*/
       solserv_copy_vec(&(actsolv->sol[0]), &(disn[istg]));
-      solserv_add_vec(&(vel[0]), &(disn[istg]), dt*fb4c[istg]);
+      solserv_add_vec(&(vel[0]), &(disn[istg]), dt*tsi_fehlbg4_c(istg));
       for (jstg=0; jstg<istg-1; jstg++)
       {
         solserv_add_vec(&(accn[jstg]), &(disn[istg]), 
-                        dt*dt*fb4aa[istg][jstg]);
+                        dt*dt*tsi_fehlbg4_aa(istg,jstg));
       }
       /* put the displacements to the nodes */
       solserv_result_total(actfield, disnum, actintra, &(disn[istg]), 
@@ -925,8 +915,8 @@ void tsi_st_fehlbg(INT disnum_s,
       /*----------------------------------------------------------------*/
       /* inertial force at stage (actsolv->rhs[0])
        *    F_{Inertial;n+c_i} = M . A_{n+c_i} 
-       *                     = F_{Ext;n+c_i} - F_{Int;n+c_i} 
-       *                     - C . V_{n+c_i} */
+       *                       = F_{Ext;n+c_i} - F_{Int;n+c_i} 
+       *                         - C . V_{n+c_i} */
       solserv_copy_vec(&(fext[0]), &(actsolv->rhs[0]));
       solserv_add_vec(&(fint[2]), &(actsolv->rhs[0]), -1.0);
       solserv_add_vec(&(fvsc[0]), &(actsolv->rhs[0]), -1.0);
@@ -945,9 +935,10 @@ void tsi_st_fehlbg(INT disnum_s,
       solserv_copy_vec(&(work[0]), &(accn[istg]));
       /*----------------------------------------------------------------*/
       /* add contribution of current stage to new displacement */
-      solserv_add_vec(&(accn[istg]), &(actsolv->sol[1]), dt*dt*fb4bb[istg]);
+      solserv_add_vec(&(accn[istg]), &(actsolv->sol[1]), 
+                      dt*dt*tsi_fehlbg4_bb(istg));
       /* add contribution of current stage to new velocity */
-      solserv_add_vec(&(accn[istg]), &(vel[1]), dt*fb4b[istg]);
+      solserv_add_vec(&(accn[istg]), &(vel[1]), dt*tsi_fehlbg4_b(istg));
     }  /* end of for */
 
     /*------------------------------------------------------------------*/

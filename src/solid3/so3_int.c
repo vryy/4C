@@ -228,7 +228,6 @@ void so3_int_fintstifmass(CONTAINER *container,
     /* element mass matrix */
     if (emass_global != NULL)
     {
-      
       so3_int_mass(mat, nelenod, gpshade->gpshape[igp], fac, emass);
     }
   }

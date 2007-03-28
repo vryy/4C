@@ -73,25 +73,25 @@ void c1_tsi_thstrain(CONTAINER *container,
   /* type of material */
   switch (mat->mattyp)
   {
-      case m_stvenant:
-        /* coefficient of linear thermal expansion */
-        thermexpans = mat->m.stvenant->thermexpans;
-        /* thermal strain vector */
-        thstrain[0] = thermexpans * tem;  /* E_xx */
-        thstrain[1] = thermexpans * tem;  /* E_yy */
-        thstrain[2] = thermexpans * tem;  /* E_zz */
-        thstrain[3] = 0.0;                /* E_xy */
-        thstrain[4] = 0.0;                /* E_yz */
-        thstrain[5] = 0.0;                /* E_zx */
-        /* add thermal strain to kinematic strain */
-        for (i=0; i<numstr; i++)
-        {
-          strain[i] = strain[i] - thstrain[i];
-        }
-        break;
-      default:
-        dserror("Unknown type of material law");
-        break;
+    case m_stvenant:
+      /* coefficient of linear thermal expansion */
+      thermexpans = mat->m.stvenant->thermexpans;
+      /* thermal strain vector */
+      thstrain[0] = thermexpans * tem;  /* E_xx */
+      thstrain[1] = thermexpans * tem;  /* E_yy */
+      thstrain[2] = thermexpans * tem;  /* E_zz */
+      thstrain[3] = 0.0;                /* E_xy */
+      thstrain[4] = 0.0;                /* E_yz */
+      thstrain[5] = 0.0;                /* E_zx */
+      /* add thermal strain to kinematic strain */
+      for (i=0; i<numstr; i++)
+      {
+        strain[i] = strain[i] - thstrain[i];
+      }
+      break;
+    default:
+      dserror("Unknown type of material law");
+      break;
   }  /* end of switch */
 
   /*--------------------------------------------------------------------*/
