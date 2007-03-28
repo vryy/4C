@@ -215,6 +215,9 @@ void DRT::Discretization::EvaluateDirichlet(ParameterList& params,
   bool usetime = true;
   const double time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
+  
+  // make temp. copy of system vector
+  Epetra_Vector backup(systemvector);
 
   multimap<string,RefCountPtr<Condition> >::iterator fool;
   //--------------------------------------------------------
@@ -252,13 +255,21 @@ void DRT::Discretization::EvaluateDirichlet(ParameterList& params,
     if (fool->second->Type() != DRT::Condition::LineDirichlet) continue;
     DoDirichletCondition(*(fool->second),*this,usetime,time,systemvector,toggle);
   }
-  // Do LineDirichlet
+  // Do PointDirichlet
   for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
   {
     if (fool->first != (string)"Dirichlet") continue;
     if (fool->second->Type() != DRT::Condition::PointDirichlet) continue;
     DoDirichletCondition(*(fool->second),*this,usetime,time,systemvector,toggle);
   }
+  
+  // copy all values not marked as Dirichlet in toggle from
+  // temporary copy back to systemvector
+  const int mylength = systemvector.MyLength();
+  for (int i=0; i<mylength; ++i)
+    if (toggle[i]==0.0)
+      systemvector[i] = backup[i];
+  
   return;
 }
 
@@ -291,7 +302,13 @@ void DoDirichletCondition(DRT::Condition&      cond,
     const int* dofs  = actnode->Dof().Dofs();
     for (int j=0; j<numdf; ++j)
     {
-      if ((*onoff)[j]==0) continue;
+      if ((*onoff)[j]==0) 
+      {
+        const int lid = systemvector.Map().LID(dofs[j]);
+        if (lid<0) dserror("Global id %d not on this proc in system vector",dofs[j]);
+        toggle[lid] = 0.0;
+        continue;
+      }
       const int gid = dofs[j];
       double value  = (*val)[j];
       
