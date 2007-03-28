@@ -122,6 +122,7 @@ OBJS_DISCRET  = \
                 src/discret/fluid3_input.o \
                 src/discret/fluid3_surface_evaluate.o \
                 src/discret/stru_dyn_nln_drt.o \
+                src/discret/strugenalpha.o \
                 src/discret/linalg_solver.o \
                 src/discret/linalg_solver_spooles.o \
                 src/discret/stru_genalpha_drt.o\
