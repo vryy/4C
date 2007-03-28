@@ -442,5 +442,31 @@ void LINALG::ApplyDirichlettoSystem(RefCountPtr<Epetra_CrsMatrix>&   A,
 }
 
 
+/*----------------------------------------------------------------------*
+ |  Apply dirichlet conditions  (public)                     mwgee 02/07|
+ *----------------------------------------------------------------------*/
+void LINALG::ApplyDirichlettoSystem(RefCountPtr<Epetra_Vector>&      x,
+                                    RefCountPtr<Epetra_Vector>&      b,
+                                    const RefCountPtr<Epetra_Vector> dbcval,
+                                    const RefCountPtr<Epetra_Vector> dbctoggle)
+{
+  const Epetra_Vector& dbct = *dbctoggle;
+  if (x != null && b != null)
+  {
+    Epetra_Vector&       X    = *x;
+    Epetra_Vector&       B    = *b;
+    const Epetra_Vector& dbcv = *dbcval;
+    // set the prescribed value in x and b
+    const int mylength = dbcv.MyLength();
+    for (int i=0; i<mylength; ++i)
+      if (dbct[i]==1.0)
+      {
+        X[i] = dbcv[i];
+        B[i] = dbcv[i];
+      }
+  }
+  return;
+}
+
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
