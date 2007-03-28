@@ -1075,7 +1075,7 @@ void StruGenAlpha::Integrate()
   else dserror("Unknown type of equilibrium iteration");
   
   return;
-}
+} 
 
 
 
