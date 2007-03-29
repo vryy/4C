@@ -610,11 +610,16 @@ void calelm(FIELD        *actfield,     /* active field */
          assemble_intforce(actele,&eforce_global,container,actintra);
       }
 #ifndef FLUID_INCREMENTAL
-   /*-------------- assemble the vector edforce_global to iteration rhs */
-      if (hasdirich!=0)
+#ifdef D_FLUID2_TDS
+      if (alldyn[genprob.numff].fdyn->iop != 8)
+#endif
       {
-         container->dvec = container->frhs;
-         assemble_intforce(actele,&edforce_global,container,actintra);
+   /*-------------- assemble the vector edforce_global to iteration rhs */
+	 if (hasdirich!=0)
+	 {
+	     container->dvec = container->frhs;
+	     assemble_intforce(actele,&edforce_global,container,actintra);
+	 }
       }
 #endif
 #ifdef D_FLUID_PM
