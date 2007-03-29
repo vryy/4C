@@ -605,7 +605,8 @@ void  add_trilinos(
 #if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
         // do stiffness matrix (nonzero values only)
         int err = 0;
-        if (abs(estif[i][j])>EPS10 || i==j)
+//        if (abs(estif[i][j])>EPS10 || i==j)
+        if (abs(estif[i][j])>0 || i==j)
         {
           err = mat1->SumIntoGlobalValues(ii,1,&(estif[i][j]),&jj);
           if (err)
@@ -614,7 +615,8 @@ void  add_trilinos(
         }
         // do mass matrix if present (nonzero values only)
         if (mat2)
-        if (abs(emass[i][j])>EPS10 || i==j)
+//        if (abs(estif[i][j])>EPS10 || i==j)
+        if (abs(emass[i][j])>0 || i==j)
         {
           err = mat2->SumIntoGlobalValues(ii,1,&(emass[i][j]),&jj);
           if (err)
