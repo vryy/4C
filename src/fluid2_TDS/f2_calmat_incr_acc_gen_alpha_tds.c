@@ -101,7 +101,6 @@ void f2_calgalmat_gen_alpha_tds(
  
  double    aux;
  
-
 #ifdef DEBUG
  dstrc_enter("f2_calgalmat_gen_alpha_tds");
 #endif
@@ -127,7 +126,7 @@ void f2_calgalmat_gen_alpha_tds(
 	  1 |  2 N_x,x    N_x,y + N_y,x  |    with N_x .. x-line of N
 	  - |                            |         N_y .. y-line of N
 	  2 |  N_y,x + N_x,y    2 N_y,y  |
-	  \                             /                                   */
+	  \                             /                                 */
      viscous[0][0][2*i]   = derxy[0][i];
      viscous[0][0][2*i+1] = 0.0;                /* 1st index:             */
      viscous[0][1][2*i]   = 0.5 * derxy[1][i];  /*   line of epsilon      */
@@ -147,8 +146,7 @@ void f2_calgalmat_gen_alpha_tds(
    /*--------------------------------------------------------------*/
 
    /* 'mass matrix' alpha_M * (Dacc,v) */
-      
-   aux = alpha_M * fac;
+   aux = alpha_M * fac ;
  
    estif[ri*3  ][ci*3  ] += funct[ri] * funct[ci] * aux;
    estif[ri*3+1][ci*3+1] += funct[ri] * funct[ci] * aux;
@@ -158,7 +156,6 @@ void f2_calgalmat_gen_alpha_tds(
    /*------------------------------------------------------------------*/
 
    /*  alpha_F * theta * dt * (2 * nu * epsilon(Dacc), epsilon(v)) */
-
    aux = 2 * visc * aftdt * fac;
    
    estif[ri*3  ][ci*3  ] += (viscous[0][0][ri*2  ]*viscous[0][0][ci*2  ] 
@@ -187,24 +184,22 @@ void f2_calgalmat_gen_alpha_tds(
    /*-------------------------------------------------------------------*/ 
 
    /*  alpha_F * theta * dt * (div Dacc, q) */
-
    aux = aftdt * fac;
    
    
-   estif[ri*3+2][ci*3]   += funct[ri] * derxy[0][ci] * aux;
+   estif[ri*3+2][ci*3  ] += funct[ri] * derxy[0][ci] * aux;
    estif[ri*3+2][ci*3+1] += funct[ri] * derxy[1][ci] * aux;
 
  
    /*-------------------------------------------------------------------*/
    /*                         GALERKIN KVP                              */
-   /*-------------------------------------------------------------------*/ 
+   /*-------------------------------------------------------------------*/
 
    /* - ( Dp , div v ) */
    aux = fac;
    
-   estif[ri*3][ci*3+2]   -= derxy[0][ri] * funct[ci] * aux;
+   estif[ri*3  ][ci*3+2] -= derxy[0][ri] * funct[ci] * aux;
    estif[ri*3+1][ci*3+2] -= derxy[1][ri] * funct[ci] * aux;
- 
   } /* end loop over column index ci */
  } /* end loop over row index ri */
  
@@ -282,7 +277,8 @@ void f2_calstabmat_gen_alpha_tds(
  double    tau_M;    /* stabilisation parameter --- momentum        */
  
  DOUBLE  viscs2 [2][2*MAXNOD]; /* viscous term incluiding 2nd derivatives */
- 
+ DOUBLE  div[2*MAXNOD];             /* divergence of u or v              */
+
  FLUID_DYNAMIC   *fdyn;
  
  double    aux;
@@ -322,6 +318,9 @@ void f2_calstabmat_gen_alpha_tds(
    viscs2[1][2*i]   = - 0.5 * ( derxy2[2][i] );
    viscs2[1][2*i+1] = - 0.5 * ( derxy2[0][i] + 2.0 * derxy2[1][i] );
 
+   /*--- divergence u term ---------------------------------------------*/
+   div[2*i]   = derxy[0][i];
+   div[2*i+1] = derxy[1][i];
  }    
  
  for (ri=0; ri<iel; ri++)       /* row index    */
@@ -336,21 +335,17 @@ void f2_calstabmat_gen_alpha_tds(
       /* term  : (u_old * grad u, grad q) */
       
 
-      
 
       /* factor: tau_M /(alpha_M * tau_M + dt * alpha_F * theta)
        *          * alpha_M                                         */
       /* term  : (Dacc, grad q)                                     */
-      
       aux = tau_M/(alpha_M * tau_M + aftdt) *alpha_M * aftdt * fac;
 
-      estif[ri*3+2][ci*3]   += derxy[0][ri] * funct[ci] * aux;
+      estif[ri*3+2][ci*3  ] += derxy[0][ri] * funct[ci] * aux;
       estif[ri*3+2][ci*3+1] += derxy[1][ri] * funct[ci] * aux;
-
 
       /* (div epsilon(Dacc), grad q) */
       /* viscs already contains - sign!!                                   */
-
       aux = 2 * visc * tau_M/(alpha_M * tau_M + aftdt) * aftdt * aftdt *fac;
       
       estif[ri*3+2][ci*3]   += (derxy[0][ri] * viscs2[0][2*ci]
@@ -369,55 +364,79 @@ void f2_calstabmat_gen_alpha_tds(
 
       /* factor:                                                    */
       /* term  : (div Dacc, div v)                                  */
-
       aux = theta*dt*(tau_C/(alpha_M*tau_C+aftdt))*aftdt*fac;
-      
-      estif[ri*3  ][ci*3  ] += derxy[0][ri]*derxy[0][ci]*aux;
-      estif[ri*3  ][ci*3+1] += derxy[0][ri]*derxy[1][ci]*aux;
-      estif[ri*3+1][ci*3  ] += derxy[1][ri]*derxy[0][ci]*aux;
-      estif[ri*3+1][ci*3+1] += derxy[1][ri]*derxy[1][ci]*aux;
 
+      estif[ri*3  ][ci*3  ] += div[ri*2  ] * div[ci*2  ] * aux;
+      estif[ri*3  ][ci*3+1] += div[ri*2  ] * div[ci*2+1] * aux;
+      estif[ri*3+1][ci*3  ] += div[ri*2+1] * div[ci*2  ] * aux;
+      estif[ri*3+1][ci*3+1] += div[ri*2+1] * div[ci*2+1] * aux;
 
       /* factor:                                                    */
       /* term  : (grad Dp, div eps(v))                                  */
-      /* viscs already contains - sign!!                                   */
-
+      /* viscs already contains - sign!!                              */
       aux = tau_M/(alpha_M * tau_M + aftdt) * 2 * visc *fac * aftdt;
       
-      estif[ri*3][ci*3+2]   -= (viscs2[0][2*ri] * derxy[0][ci]
-                               +viscs2[1][2*ri] * derxy[1][ci]) * aux;
+      estif[ri*3  ][ci*3+2] -= (viscs2[0][2*ri  ] * derxy[0][ci]
+                               +viscs2[1][2*ri  ] * derxy[1][ci]) * aux;
       estif[ri*3+1][ci*3+2] -= (viscs2[0][2*ri+1] * derxy[0][ci]
                                +viscs2[1][2*ri+1] * derxy[1][ci]) * aux;
 
 
 
-      /* factor:                                                    */
+      /* factor:                                                     */
       /* term  : (Dacc, div eps(v))                                  */
-      /* viscs already contains - sign!!                                   */
+      /* viscs already contains - sign!!                             */
+      aux = funct[ci] * alpha_M * 2 * visc * aftdt *
+	  tau_M/(alpha_M * tau_M + aftdt) * fac;
 
-      aux = funct[ci] * alpha_M * 2 * visc * tau_M/(alpha_M * tau_M + aftdt) * aftdt * fac;
-      estif[ri*3][ci*3]     -= viscs2[0][2*ri] * aux;
-      estif[ri*3][ci*3+1]   -= viscs2[1][2*ri] * aux;
-      estif[ri*3+1][ci*3]   -= viscs2[0][2*ri+1] * aux;
+      estif[ri*3  ][ci*3  ] -= viscs2[0][2*ri  ] * aux;
+      estif[ri*3  ][ci*3+1] -= viscs2[1][2*ri  ] * aux;
+      estif[ri*3+1][ci*3  ] -= viscs2[0][2*ri+1] * aux;
       estif[ri*3+1][ci*3+1] -= viscs2[1][2*ri+1] * aux;
 
 
-      /* factor:                                                    */
-      /* term  : (div epsilon(Dacc), div epsilon(v))                                  */
-      /* viscs already contains - sign!!                                   */
-
-      aux = tau_M/(alpha_M * tau_M + aftdt) * 4 * visc * visc * aftdt * aftdt * fac;
+      /* factor:                                                     */
+      /* term  : (div epsilon(Dacc), div epsilon(v))                 */
+      /* viscs already contains - sign!!                             */
+      aux = tau_M/(alpha_M * tau_M + aftdt) *
+	  4 * visc * visc * aftdt * aftdt * fac;
       
-      estif[ri*3][ci*3]     -= (viscs2[0][2*ri]   * viscs2[0][2*ci]
-                               +viscs2[1][2*ri]   * viscs2[1][2*ci]) * aux;
-      estif[ri*3+1][ci*3]   -= (viscs2[0][2*ri+1] * viscs2[0][2*ci]
-                               +viscs2[1][2*ri+1] * viscs2[1][2*ci]) * aux;
-      estif[ri*3][ci*3+1]   -= (viscs2[0][2*ri]   * viscs2[0][2*ci+1]
-                               +viscs2[1][2*ri]   * viscs2[1][2*ci+1]) * aux;
+      estif[ri*3  ][ci*3  ] -= (viscs2[0][2*ri  ] * viscs2[0][2*ci  ]
+                               +viscs2[1][2*ri  ] * viscs2[1][2*ci  ]) * aux;
+      estif[ri*3+1][ci*3  ] -= (viscs2[0][2*ri+1] * viscs2[0][2*ci  ]
+                               +viscs2[1][2*ri+1] * viscs2[1][2*ci  ]) * aux;
+      estif[ri*3  ][ci*3+1] -= (viscs2[0][2*ri  ] * viscs2[0][2*ci+1]
+                               +viscs2[1][2*ri  ] * viscs2[1][2*ci+1]) * aux;
       estif[ri*3+1][ci*3+1] -= (viscs2[0][2*ri+1] * viscs2[0][2*ci+1]
                                +viscs2[1][2*ri+1] * viscs2[1][2*ci+1]) * aux;
 
+
+      /* factor:                                                    */
+      /* term  : (grad Dp, v)                                       */
+      aux = alpha_M * tau_M/(alpha_M * tau_M + aftdt) * fac;
       
+      estif[ri*3  ][ci*3+2] -= funct[ri] * derxy[0][ci] * aux;
+      estif[ri*3+1][ci*3+2] -= funct[ri] * derxy[1][ci] * aux;
+      
+
+
+      /* factor:                                                    */
+      /* term (Dacc,v) */
+      aux = alpha_M * alpha_M * tau_M/(alpha_M * tau_M + aftdt) * fac;
+      
+      estif[ri*3  ][ci*3  ] -= funct[ri] * funct[ci] * aux;
+      estif[ri*3+1][ci*3+1] -= funct[ri] * funct[ci] * aux;
+
+
+      /* factor:                                                     */
+      /* term  : (div eps(Dacc), v)                                  */
+      /* viscs already contains - sign!!                             */
+      aux = 2 * visc * aftdt * alpha_M * tau_M/(alpha_M * tau_M + aftdt) * fac;
+      
+      estif[ri*3  ][ci*3  ]   -= funct[ri] * viscs2[0][2*ci  ] * aux;
+      estif[ri*3  ][ci*3+1]   -= funct[ri] * viscs2[1][2*ci  ] * aux;
+      estif[ri*3+1][ci*3  ]   -= funct[ri] * viscs2[0][2*ci+1] * aux;
+      estif[ri*3+1][ci*3+1]   -= funct[ri] * viscs2[1][2*ci+1] * aux;
   } /* end loop over column index ci */
  } /* end loop over row index ri */
  
