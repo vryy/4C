@@ -183,13 +183,11 @@ tau_C  = fdyn->tau[2]*fac;
 facC       = 1./(fdyn->tau[2]+theta*dt);
 facCtau    = fdyn->tau[2]*facC;
 
-
 facM       = 1./(fdyn->tau[0]+theta*dt);
 facMtau    = fdyn->tau[0]*facM;
 
 old_facC   = 1./(fdyn->tau_old[2]+theta*dt);
 old_facCtau= fdyn->tau_old[2]*facC;
-
 
 old_facM   = 1./(fdyn->tau_old[0]+theta*dt);
 old_facMtau= fdyn->tau_old[0]*facM;
@@ -338,8 +336,8 @@ for (ri=0; ri<iel; ri++)      /* row index */
       /* N_c (u_old * grad u, v) */
       /* N_r (u * grad u_old, v) */
       aux = funct[ri] * ( funct[ci]*fac + timefacfac*conv_c[ci] );
-      estif[ri*3][ci*3]     += funct[ri] * conv_r[0][2*ci] * timefacfac + aux;
-      estif[ri*3][ci*3+1]   += funct[ri] * conv_r[0][2*ci+1] * timefacfac;
+      estif[ri*3  ][ci*3]   += funct[ri] * conv_r[0][2*ci] * timefacfac + aux;
+      estif[ri*3  ][ci*3+1] += funct[ri] * conv_r[0][2*ci+1] * timefacfac;
       estif[ri*3+1][ci*3]   += funct[ri] * conv_r[1][2*ci] * timefacfac;
       estif[ri*3+1][ci*3+1] += funct[ri] * conv_r[1][2*ci+1] * timefacfac + aux;
       /* ALE: N_c (-u_G * grad u, v) */
@@ -378,9 +376,8 @@ for (ri=0; ri<iel; ri++)      /* row index */
       /* G^T ( div u, q) */
       estif[ri*3+2][ci*3]   += timefacfac * funct[ri] * derxy[0][ci];
       estif[ri*3+2][ci*3+1] += timefacfac * funct[ri] * derxy[1][ci];
-
+   
 /*=================== Stabilisation part of the matrix =================*/
-
 #if 0
       /* ALE: -tau_M*timefac*timefac*(-u_G * grad u, u_old * grad v) */
       if(isale)
@@ -755,8 +752,6 @@ for (ri=0; ri<iel; ri++)      /* row index */
       estif[ri*3  ][ci*3+1] -= funct[ri] * ( viscs2[0][2*ci+1]*aux );
       estif[ri*3+1][ci*3  ] -= funct[ri] * ( viscs2[1][2*ci  ]*aux );
       estif[ri*3+1][ci*3+1] -= funct[ri] * ( viscs2[1][2*ci+1]*aux );
-
-      
    }  /* end column loop (ci) */
 
 
@@ -811,7 +806,6 @@ for (ri=0; ri<iel; ri++)      /* row index */
    aux = fac;
    eforce[ri*3]   += (sub_vel[0]) * funct[ri] * aux;
    eforce[ri*3+1] += (sub_vel[1]) * funct[ri] * aux;
-
 
    /* TIME DEPENDENT STABILISATION --- SUBSCALE PRESSURE STABILISATION */
 
@@ -881,6 +875,7 @@ for (ri=0; ri<iel; ri++)      /* row index */
    eforce[ri*3]   -= (sub_vel[0]+old_vel[0]+timefac*edeadng[0]) * funct[ri] * aux;
    eforce[ri*3+1] -= (sub_vel[1]+old_vel[1]+timefac*edeadng[1]) * funct[ri] * aux;
 
+   /* old subscale acceleration */
    aux = (1.-theta) * dt * facMtau * fac ;
    eforce[ri*3]   += (sub_vel[0]/fdyn->tau_old[0]+res_old[0]) * funct[ri] * aux;
    eforce[ri*3+1] += (sub_vel[1]/fdyn->tau_old[0]+res_old[1]) * funct[ri] * aux;
