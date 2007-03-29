@@ -415,6 +415,364 @@ offset when results shall be written to .flavia.res when time adaptivity is on
 \begin{verbatim}
 -----------------------------------------------------FLUID DYNAMIC
 \end{verbatim}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Time integration, algorithm:}
+
+\noindent\kw{DYNAMICTYP (}
+\begin{tabular}[t]{lc}
+\kw{Nlin_Time_Int}                  &{\kor}\\
+\kw{Projection_Method or PM_discont}&{\kor}\\
+\kw{PM_cont}                        &{\kor}\\
+\kw{PM_laplace}			    &\kw{)}
+\end{tabular}
+
+Select Projection method (\kw{PM}) or classical time integration
+
+\noindent\kw{TIMEINTEGR (}
+\begin{tabular}[t]{lc}
+\kw{Stationary}            &{\kor}\\
+\kw{One_Step_Theta}        &{\kor}\\
+\kw{Gen_Alfa or Gen_Alpha} &{\kor}\\
+\kw{BDF2}                  &\kw{)}
+\end{tabular}
+
+Selects the time integration algorithm. Remarks:
+\begin{center}
+\begin{tabular}{l|p{0.3\textwidth}}
+\kw{Stationary}            & (not implemented) \\\hline
+\kw{One_Step_Theta}        & 1 step method     \\\hline
+\kw{Gen_Alfa or Gen_Alpha} & pressure evaluated at the 
+                             intermediate timestep\\\hline
+\kw{BDF2}                  & 2 step method, second order  
+\end{tabular}
+\end{center}
+
+\noindent\kw{NUMSTEP} $int$
+
+Maximum number of timesteps
+
+\noindent\kw{MAXTIME} $real$
+
+Maximum simulation time
+
+\noindent\kw{TIMESTEP} $real$
+
+Time step size
+
+\noindent\kw{THETA} $real$
+
+Parameter for one step theta (and generalized alpha). Remarks:
+\begin{itemize}
+\item $0.5\leq$\kw{THETA}$\leq1$
+\item \kw{THETA}$=0.5$ for one step theta (Crank Nicholson) would be second
+order but causes oscillations in practice
+\end{itemize}
+
+\noindent\kw{ALPHA_F} $real$
+
+\noindent\kw{ALPHA_M} $real$
+
+Parameters for generalized alpha method. Remarks:
+\begin{center}
+\begin{tabular}{l|p{0.4\textwidth}}
+\kw{ALPHA_F} & force, $0\leq$\kw{ALPHA_F}$\leq1$\\\hline
+\kw{ALPHA_M} & momentum, $0\leq$\kw{ALPHA_M}$\leq1$
+\end{tabular}
+\end{center}
+
+Second order Gen\_Alpha schemes require a certain choice of the parameters!
+
+\noindent\kw{STARTINGALGO (One_Step_Theta)}
+
+Option to start with different time integration scheme. Useful for BDF2. Only
+one step theta available.
+
+\noindent\kw{NUMSTASTEPS} $int$
+
+Number of starting algorithm steps
+
+\noindent\kw{START_THETA} $real$
+
+Theta for starting algorithm
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Time integration, check for stationary flows:}
+\nopagebreak
+
+\noindent\kw{STEADYCHECK (}
+\begin{tabular}[t]{lc}
+\kw{No}             &{\kor}\\
+\kw{L_infinity_norm}&{\kor}\\
+\kw{L_1_norm}       &{\kor}\\
+\kw{L_2_norm}	    &\kw{)}
+\end{tabular}
+
+Norm of time increment for steady state check. Remarks:
+\begin{center}
+\begin{tabular}{l|p{0.3\textwidth}}
+\kw{No}             & don't do anything\\\hline
+\kw{L_infinity_norm}& Max. norm\\\hline
+\kw{L_1_norm}       & Integral of absolute values\\\hline
+\kw{L_2_norm}	    & Integral of sqrt of values\^2
+\end{tabular}
+\end{center}
+
+\noindent\kw{STEADYSTEP} $int$
+
+Steady state check every \kw{STEADYSTEP} steps. $-1$ means no check.
+
+\noindent\kw{STEADYTOL} $real$
+
+Tolerance for steady state check. Choice must depend on \kw{TIMESTEP}!
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Time integration, adaptive:}
+\nopagebreak
+
+\noindent\kw{ADAPT_TIME (yes}\kor\kw{no)}
+
+Use adaptive time integration
+
+\noindent\kw{LOC_TRUN_ERR } $real$
+
+Local truncation error for adaptive timestepping
+
+\noindent\kw{MAX_DT} $real$
+
+\noindent\kw{MIN_DT} $real$
+
+Interval for timestep size
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Nonlinear iteration:}
+\nopagebreak
+
+\noindent\kw{NONLINITER (}
+\begin{tabular}[t]{lc}
+\kw{fixed_point_like}&{\kor}\\
+\kw{Newton}	     &\kw{)}
+\end{tabular}
+
+Only for GLS stabilized elements --- for USFEM, Newton is the default!
+
+\noindent\kw{QNEWTON (yes}\kor\kw{no)}
+Keep matrix on elements over several steps
+
+\noindent\kw{ITEMAX} $int$
+
+Maximum number of nonlinear iteration steps per timestep. Remark:
+\begin{itemize}
+\item Algorithm will continue with next timestep, even  if convergence wasn't
+achieved!
+\end{itemize}
+
+\noindent\kw{CONVCHECK (}
+\begin{tabular}[t]{lc}
+\kw{No}             &{\kor}\\
+\kw{L_infinity_norm}&{\kor}\\
+\kw{L_1_norm}       &{\kor}\\
+\kw{L_2_norm}	    &\kw{)}
+\end{tabular}
+
+Norm for convergence check of nonlinear iteration. Increments are 
+checked, not the residual!!!
+\begin{center}
+\begin{tabular}{l|p{0.3\textwidth}}
+\kw{No}             & don't do anything\\\hline
+\kw{L_infinity_norm}& Max. norm\\\hline
+\kw{L_1_norm}       & Integral of absolute values\\\hline
+\kw{L_2_norm}	    & Integral of sqrt of values\^2
+\end{tabular}
+\end{center}
+
+\noindent\kw{CONVTOL} $real$
+
+Tolerance for convergence of nonlinear iteration 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{{Simple turbulence models:}}
+\nopagebreak
+
+\noindent\kw{TURBULENCE (}
+\begin{tabular}[t]{lc}
+\kw{No}             &{\kor}\\
+\kw{algebraic}      &{\kor}\\
+\kw{kappa-eps}      &{\kor}\\
+\kw{kappa-omega}    &\kw{)}
+\end{tabular}
+
+Use turbulence model to model Reynolds stress tensor.
+
+\noindent\kw{INT_LENGHT} $real$
+
+Internal lenght of problem.
+
+\noindent\kw{ROUGHTNESS} $real$
+
+Roughness of solid boundaries
+
+\noindent\kw{SC_COORD_X} $real$
+
+\noindent\kw{SC_COORD_Y} $real$
+
+Coordinates for scaling the turbulence variables.
+
+\noindent\kw{DISC_CAPT (Yes}\kor\kw{No)}
+
+Discontinuity capturing for turbulence model.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{In-\slash output, restart}
+\nopagebreak
+
+\noindent\kw{UPOUT} $int$
+
+Output to .out every \kw{UPOUT} steps --- nodal values and convergence ratios
+of nonlinear iteration
+
+\noindent\kw{UPPSS} $int$
+
+Old binary output every \kw{UPPSS} steps
+
+\noindent\kw{UPRES} $int$
+
+Uut to gid every \kw{UPRES} steps
+
+\noindent\kw{RESTARTEVRY} $int$
+
+Write all restart information every \kw{RESTARTEVRY} steps --- this one's
+connected to binio \ldots
+
+\noindent\kw{RESSTEP} $int$
+
+restart from step \kw{RESSTEP} if \kw{RESSTEP}$\geq0$
+\begin{itemize}
+\item This is not the binary io restart
+\item Instead, it is connected to read fluid\_start.data
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Free surfaces:}
+\nopagebreak
+
+\noindent\kw{FREESURFACE (}
+\begin{tabular}[t]{lc}
+\kw{no}              &{\kor}\\
+\kw{loclag_exp}      &{\kor}\\
+\kw{loclag_imp}      &{\kor}\\
+\kw{hf_vert_sep}     &{\kor}\\
+\kw{hf_vert_imp}     &{\kor}\\
+\kw{genfs}	     &\kw{)}
+\end{tabular}
+
+\noindent\kw{SURFTENSION (yes}\kor\kw{no)}
+
+Include surface tension effects for freesurface.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{ALE related:}
+\nopagebreak
+
+\noindent\kw{CHECKAREA (yes}\kor\kw{no)}
+
+Check total area of fluid field.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Analytical solutions, starting solutions:}
+\nopagebreak
+
+\noindent\kw{FREESURFACE (}
+\begin{tabular}[t]{lc}
+\kw{zero_field}        &{\kor}\\
+\kw{field_from_file}   &{\kor}\\
+\kw{field_by_function} &{\kor}\\
+\kw{SOLWAVE}           &{\kor}\\
+\kw{WAVEBREAKING}      &{\kor}\\
+\kw{BELTRAMI-FLOW}     &{\kor}\\
+\kw{KIM-MOIN-FLOW}     &{\kor}\\
+\kw{BREAKING-DAM}      &\kw{)}
+\end{tabular}
+
+Read\slash set initial field. Remarks:
+\begin{center}
+\begin{tabular}{l|p{0.6\textwidth}}
+\kw{zero_field}        & initialise field to 0 \\\hline
+\kw{field_from_file}   & read field from file fluid\_start.data\\\hline
+\kw{field_by_function} & using starting function \kw{STARTFUNCNO}\\\hline
+\kw{SOLWAVE}           & solitary wave, free surface\\\hline
+\kw{WAVEBREAKING}      & wavebreaking problem, free surface\\\hline
+\kw{BELTRAMI-FLOW}     & analytical solution used for error calculation\\\hline
+\kw{KIM-MOIN-FLOW}     & analytical solution used for error calculation\\\hline
+\kw{BREAKING-DAM}      & not available, free surface
+\end{tabular}
+\end{center}
+
+\noindent\kw{STARTFUNCNO (8}\kor\kw{9)}
+
+\kw{STARTFUNCNO} and \kw{INITIALFILED} set the same integer variable 
+\kw{fdyn->init}
+\begin{center}
+\begin{tabular}[t]{l|l}
+\kw{8}        & beltrami\\\hline
+\kw{9}        & kim-moin
+\end{tabular}
+\end{center}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Lift and drag calculation:}
+\nopagebreak
+
+\noindent\kw{LIFTDRAG (}
+\begin{tabular}[t]{lc}
+\kw{yes} or \kw{stress}  &{\kor}\\
+\kw{no}                  &{\kor}\\
+\kw{nodeforce}           &\kw{)}
+\end{tabular}
+
+Activate lift and drag calculation. Remarks:
+\begin{center}
+\begin{tabular}{l|p{0.6\textwidth}}
+\kw{yes} or \kw{stress} & stress calculation in gausspoints, 
+                          extrapolation to surface\\\hline
+\kw{no}                 & no stress calculation\\\hline
+\kw{nodeforce}          & stress calculation by nodal forces
+\end{tabular}
+\end{center}
+
+
+\noindent\kw{VISCSTRESS (yes}\kor\kw{no)}
+
+Viscous stresses are included in stress calculation.
+	     
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Obsolete flags:}
+\nopagebreak
+
+\noindent\kw{ALPHA} $real$
+
+\noindent\kw{GAMMA} $real$
+
+\noindent\kw{TIME_RHS (mass}\kor\kw{classic)}
+
+\kw{mass} is the default now!
+
+\noindent\kw{ERRORCAL (yes}\kor\kw{no)}
+
+\noindent\kw{SAVESTEP} $int$
+
+\noindent\kw{SOLVE_FLUID}
+
+\noindent\kw{FLUID_START1} $real$
+
+\noindent\kw{NUMDF} $int$
+
+\noindent\kw{NUMCONT} $int$
+
+\noindent\kw{IPRERHS} $int$
+
 
 
 % \kw{DYNAMICTYP *GenData(Fluid_Dynamictype)}\\
@@ -756,6 +1114,120 @@ objective
 \begin{verbatim}
 ------------------------------------------------------FLUID SOLVER
 \end{verbatim}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Solver}
+\noindent\kw{SOLVER (}
+
+\begin{tabular}[t]{lc}
+\kw{Aztec_MSR} &{\kor}\\
+\kw{SPOOLES_nonsym} &{\kor}\\
+\kw{Superlu} &{\kor}\\
+\kw{Colsol} &{\kor}\\
+\kw{UMFPACK} &{\kor}\\
+\kw{Amesos_KLU_sym} &{\kor}\\
+\kw{Amesos_KLU_nonsym} &{\kor}\\
+\kw{LAPACK_sym} &{\kor}\\
+\kw{LAPACK_nonsym} &\kw{)}
+\end{tabular}
+
+Available solvers and solver packages.
+\begin{center}
+\begin{tabular}[t]{l|l}
+\kw{Aztec_MSR} &{iterative, parallel}\\\hline
+\kw{SPOOLES_nonsym} &{direct, parallel}\\\hline
+\kw{Superlu} &{}\\\hline
+\kw{Colsol} &{}\\\hline
+\kw{UMFPACK} &{direct, serial}\\\hline
+\kw{Amesos_KLU_sym} &{}\\\hline
+\kw{Amesos_KLU_nonsym} &{default}\\\hline
+\kw{LAPACK_sym} &{}\\\hline
+\kw{LAPACK_nonsym} &{}
+\end{tabular}
+\end{center}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Special AZTEC solver variables}
+
+\noindent\kw{AZSOLVE (}
+\begin{tabular}[t]{lc}
+\kw{BiCGSTAB} &{\kor}\\
+\kw{CG} &{\kor}\\
+\kw{GMRES} &{\kor}\\
+\kw{CGS} &{\kor}\\
+\kw{LU} &{\kor}\\
+\kw{TFQMR} &\kw{)}
+\end{tabular}
+
+Available iterative solution algorithms.
+
+\noindent\kw{AZCONV (}
+\begin{tabular}[t]{lc}
+\kw{AZ_r0             } &{\kor}\\
+\kw{AZ_rhs            } &{\kor}\\
+\kw{AZ_Anorm          } &{\kor}\\
+\kw{AZ_sol            } &{\kor}\\
+\kw{AZ_weighted       } &{\kor}\\
+\kw{AZ_expected_values} &{\kor}\\
+\kw{AZ_noscaled       } &{\kor}\\
+\kw{AZTECOO_conv_test } &{\kor}\\
+\kw{AZ_inf_noscaled   } &\kw{)}
+\end{tabular}
+
+Convergence check for iterative AZTEC solver. Remarks:
+\begin{itemize}
+\item The default \kw{AZ_noscaled} is not suitable for 
+      \kw{FLUID_INCREMENTAL} problems
+\item In such cases try for example \kw{AZ_rhs}
+\item Detailed explanations in the AZTEC manual
+\end{itemize}
+\begin{center}
+\begin{tabular}[t]{l|l}
+\kw{AZ_r0             } &{residual divided by $\|\boldsymbol{r}\|$}\\\hline
+\kw{AZ_rhs            } &{residual divided by $\|\boldsymbol{b}\|$}\\\hline
+\kw{AZ_Anorm          } &{}\\\hline
+\kw{AZ_sol            } &{}\\\hline
+\kw{AZ_weighted       } &{}\\\hline
+\kw{AZ_expected_values} &{}\\\hline
+\kw{AZ_noscaled       } &{default}\\\hline
+\kw{AZTECOO_conv_test } &{}\\\hline
+\kw{AZ_inf_noscaled   } &{}
+\end{tabular}
+\end{center}
+
+\noindent\kw{AZTOL} $real$
+
+Tolerance for \kw{AZCONV}-scaled residual required by AZTEC
+
+\noindent\kw{AZITER} $int$
+
+Maximum number of iterations\slash restarts for AZTEC GMRES? 
+
+\noindent\kw{AZSUB} $int$
+
+Dimension of Krylov subspace for AZTEC GMRES.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Special AZTEC preconditioner variables}
+
+\noindent\kw{AZPREC (}
+\begin{tabular}[t]{lc}
+\kw{none} &{\kor}\\
+\kw{ML} &{\kor}\\
+\kw{MLFLUID} &{\kor}\\
+\kw{MLFLUID2} &{\kor}\\
+\kw{ILU} &{\kor}\\
+\kw{ILUT} &{\kor}\\
+\kw{ICC} &{\kor}\\
+\kw{LU} &{\kor}\\
+\kw{Jacobi} &{\kor}\\
+\kw{SymmGaussSeidel} &{\kor}\\
+\kw{Least_Squares} &{\kor}\\
+\kw{Neumann} &\kw{)}
+\end{tabular}
+
+
 
 % *if(strcmp(GenData(Flu_Solver),"Aztec_MSR")==0)
 % SOLVER         Aztec_MSR          // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -1555,6 +2027,70 @@ contact conditions needed for the wall1  master slave contact (selfcontact not i
 -----------------------DESIGN FLUID SURFACE STABILISING CONDITIONS
 \end{verbatim}
 
+There are three available stabilisation procedures: GLS, USFEM and TDS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Galerkin Least Squares, old implementation}
+\begin{verbatim}
+      (1) (2) (3)  (4) (5) (6) (7) (8) (9)      (10)      (11) (12)
+E X - GLS yes yes GLS- yes  35 L_2  -1 533 at_center at_center  1.0
+
+The meaning of the single parameters:
+ (1) GLS: use Galerkin Least Squares stabilization
+ (2) activate advection stabilization (yes/no)
+ (3) activate pressure stabilization (yes/no)
+     this one is absolutely mandatory because of the LBB condition!!!
+ (4) viscous and reactive stabilization: 
+     GLS-      : reactive with +1, viscous with +1
+     GLS+      : reactive with +1, viscous with -1
+     USFEM     : reactive with -1, viscous with -1
+     no_GLS    : reactive with +1, no viscous stabilization
+     no_USFEM  : reactive with -1, no viscous stabilization
+ (5) continuity stabilization (yes or no)
+ (6) stabilization parameter for (stationary) instationary case
+ (7) norm for velocity used to calculate stabilization parameter
+     (L1 or L2)
+ (8) mk --- this determines how mk is evaluated --- mk is a parameter
+     used during the calculation of the stabilization parameter. It
+     is necessary because the inverse estimate for the advection
+     diffusion equation (the relation between the norms of the first 
+     and second derivatives on an element) depends on the degree of
+     the shape functions;
+     -1    higher order element diameter (hk) modifications, no 
+           changes on mk
+      0    no diameter modifications for higher order elements, but
+           different mk's for linear and quadratic elements
+ (9) How the element length hk should be calculated
+             element length for vel stabilization tau[0]
+                       |
+                       | element length for continuity stabilization tau[2]
+                       | |
+                       533
+                        |
+                        element length for pressure stabilization tau[1]
+
+      1    sqrt(area)       \
+      2    2*sqrt(area/PI)   | area based hk's
+      3    sqrt(2*area/PI)  /
+      4    diagonal based hk
+      5    streamlength based hk
+(10) number of integ. points for streamlength 
+     (at_center or every_intpt)
+(11) ??????????????????????????????????????
+(12) Scaling factor for continuity stabilization terms
+\end{verbatim}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{USFEM}
+\begin{verbatim}
+E X - USFEM
+\end{verbatim}
+Galerkin least squares, stabilisation parameter by Franca, Newton linearised elements
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{TDS}
+\begin{verbatim}
+E X - TDS
+\end{verbatim}
+Like USFEM with time dependent subscales --- only 2d up to now
+
 % // DOBJECT STABTYPE IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
 % *tcl(Dsurfstab)*\
 
@@ -1562,6 +2098,8 @@ contact conditions needed for the wall1  master slave contact (selfcontact not i
 \begin{verbatim}
 ------------------------DESIGN FLUID VOLUME STABILISING CONDITIONS
 \end{verbatim}
+
+See \kw{DESIGN FLUID SURFACE STABILISING CONDITIONS}
 
 % // DOBJECT STABTYPE IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
 % *tcl(Dvolstab)*\
