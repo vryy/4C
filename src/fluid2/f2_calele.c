@@ -230,7 +230,7 @@ if (init==1) /* allocate working arrays and set pointers */
    emass   = emass_global->a.da;
    eforce  = eforce_global->a.dv;
    edforce = edforce_global->a.dv;
-
+   
    fdyn = alldyn[genprob.numff].fdyn;
    goto end;
 } /* endif (init==1) */
@@ -241,10 +241,11 @@ if (init==1) /* allocate working arrays and set pointers */
 #endif
 
 /*------------------------------------------------ initialise with ZERO */
-amzero(estif_global);
-amzero(emass_global);
-amzero(eforce_global);
-amzero(edforce_global);
+memset(   estif[0],0,MAXNOD*MAXDOFPERNODE*MAXNOD*MAXDOFPERNODE*sizeof(DOUBLE));
+memset(   emass[0],0,MAXNOD*MAXDOFPERNODE*MAXNOD*MAXDOFPERNODE*sizeof(DOUBLE));
+memset(  eforce   ,0,MAXNOD*MAXDOFPERNODE*sizeof(DOUBLE));
+memset( edforce   ,0,MAXNOD*MAXDOFPERNODE*sizeof(DOUBLE));
+
 *hasdirich=0;
 *hasext=0;
 
@@ -253,7 +254,7 @@ switch(ele->e.f2->is_ale)
 case 0:
 /*---------------------------------------------------- set element data */
 #ifdef D_FLUID2_TDS
-    if(ele->e.f2->stab_type!=stab_tds)
+   if(ele->e.f2->stab_type!=stab_tds)
 #endif
    f2_calset(ele,xyze,eveln,evelng,evhist,epren,edeadn,edeadng,ipos,hasext);
 
@@ -316,7 +317,8 @@ case 0:
       {
 	  /*---------------------------------- set default element data */
 	  f2_inc_gen_alpha_calset(
-	      ele,xyze,
+	      ele,
+	      xyze,
 	      eaccng,
 	      evelng,
 	      epreng,
@@ -325,11 +327,11 @@ case 0:
 	      &visc
 	      );
 
-
 	  /*----------------------------------------- stab-parameter ---*/
 	  f2_get_time_dependent_sub_tau(ele,xyze,funct,deriv,
 					evelng,NULL,visc);
 
+	  
 	  /*---------------------------- start loop over gausspoints ---*/
 	  f2_int_gen_alpha_tds(ele,
 			       hasext,
