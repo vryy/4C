@@ -372,7 +372,7 @@ for (lr=0;lr<nir;lr++)
 	  res    [dim]+=gradp    [dim];
 	  
 	  res    [dim]-=edeadng[dim];
- 
+
       }
 
       /*---------------------- get new estimate for subscale velocities */
@@ -393,8 +393,6 @@ for (lr=0;lr<nir;lr++)
 
    } /* end of loop over integration points ls*/
 } /* end of loop over integration points lr */
-
-
 
 /*------------------------------------------- assure assembly of rhs ---*/
 if (!is_relax)
@@ -481,6 +479,7 @@ void f2_int_gen_alpha_tds(
 	             )
 {
 INT       i;          /* a counter                                      */
+INT       dim;        /* a counter for xyz                              */
     
 INT       iel;        /* number of nodes                                */
 INT       intc=0;     /* "integration case" for tri for further infos
@@ -505,6 +504,10 @@ DOUBLE    velint[2];  /* velocity vector at integration point
 		                                            (n+alpha_F) */
 DOUBLE    accint[2];  /* acceleration vector at integration point
 		                                            (n+alpha_M) */
+DOUBLE    hot   [2];
+
+DOUBLE    res   [2];
+
 
 DOUBLE    svel_trial[2];/* trial subscale velocity at integration point */
 DOUBLE    sacc_trial[2];/* trial subscale acceleration at integration point */
@@ -520,7 +523,7 @@ FLUID_DATA      *data;
 #ifdef DEBUG
     dstrc_enter("f2_int_gen_alpha_tds");
 #endif
-
+    
 /*--------------------------------------------------- initialisation ---*/
 iel    = ele->numnp;
 typ    = ele->distyp;
@@ -562,6 +565,7 @@ default:
 } /* end switch(typ) */
 
 
+
 /*----------------------------------------------------------------------*
  |               start loop over integration points                     |
  *----------------------------------------------------------------------*/
@@ -573,9 +577,9 @@ for (lr=0;lr<nir;lr++)
       switch(typ)
       {
       case quad4: case quad8: case quad9:   /* --> quad - element */
-         e1   = data->qxg[lr][nir-1];
+         e1   = data->qxg [lr][nir-1];
          facr = data->qwgt[lr][nir-1];
-         e2   = data->qxg[ls][nis-1];
+         e2   = data->qxg [ls][nis-1];
          facs = data->qwgt[ls][nis-1];
          f2_rec(funct,deriv,deriv2,e1,e2,typ,icode);
       break;
@@ -590,22 +594,6 @@ for (lr=0;lr<nir;lr++)
          dserror("typ unknown!");
       } /* end switch(typ) */
 
-      /* subscale velocity and acceleration */
-      for(i=0;i<2;i++)
-      {
-	  svel_trial[i]=
-	      (alpha_F  )*ele->e.f2->sub_vel_trial.a.da[i][lr*nis+ls]
-	      +
-	      (1-alpha_F)*ele->e.f2->sub_vel.a.da[i][lr*nis+ls];
-	  sacc_trial[i]=
-	      (alpha_M  )*ele->e.f2->sub_vel_acc_trial.a.da[i][lr*nis+ls]
-	      +		  
-	      (1-alpha_M)*ele->e.f2->sub_vel_acc_trial.a.da[i][lr*nis+ls];
-      }
-
-      /* subscale pressure */
-      spres_trial=ele->e.f2->sub_pres_trial.a.dv[lr*nis+ls];
-      
       /*------------------------ compute Jacobian matrix at time n+1 ---*/
       f2_jaco(xyze,deriv,xjm,&det,iel,ele);
       fac = facr * facs * det;
@@ -637,9 +625,28 @@ for (lr=0;lr<nir;lr++)
 
 	  /*---------- get second velocity derivatives (n+alpha_F,i) at
 	                                              integration point */
-	  f2_vder2(vderxy2    ,derxy2,evelng,iel);
+	  f2_vder2(vderxy2,derxy2,evelng,iel);
       }
 
+      /* subscale velocity and acceleration */
+      for(i=0;i<2;i++)
+      {
+	  svel_trial[i]=
+	      (alpha_F  )*ele->e.f2->sub_vel_trial.a.da[i][lr*nis+ls]
+	      +
+	      (1-alpha_F)*ele->e.f2->sub_vel.a.da[i][lr*nis+ls];
+	  
+	  sacc_trial[i]=
+	      (alpha_M  )*ele->e.f2->sub_vel_acc_trial.a.da[i][lr*nis+ls]
+	      +		  
+	      (1-alpha_M)*ele->e.f2->sub_vel_acc.a.da[i][lr*nis+ls];
+
+      }
+
+      /* subscale pressure */
+      spres_trial=ele->e.f2->sub_pres_trial.a.dv[lr*nis+ls];
+
+      
       /*------------ perform integration for galerkin part of matrix ---*/
       f2_calgalmat_gen_alpha_tds(estif,
 				 velint,
@@ -658,7 +665,6 @@ for (lr=0;lr<nir;lr++)
 				  fac,
 				  visc,
 				  iel);
-
       /*------------------ perform integration for galerkin rhs part ---*/
       f2_calgalrhs_gen_alpha_tds(eforce,
 				 velint,
@@ -673,7 +679,6 @@ for (lr=0;lr<nir;lr++)
 				 fac,
 				 visc,
 				 iel);
-
       /*------------- perform integration for stabilisation rhs part ---*/
       f2_calstabrhs_gen_alpha_tds(eforce,
 		 		  velint,
@@ -692,13 +697,8 @@ for (lr=0;lr<nir;lr++)
 				  fac,
 				  visc,
 				  iel);
-
-
    } /* end of loop over integration points ls*/
 } /* end of loop over integration points lr */
-
-
-
 /*------------------------------------------- assure assembly of rhs ---*/
 *hasext = 1;
 
