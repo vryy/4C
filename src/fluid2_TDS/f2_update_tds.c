@@ -86,9 +86,11 @@ int      nele;
 /* element related data */
 int      ls,lr;
 int      nis=0,nir=0;
-int      icode;
+int      icode,intc=0;
 int      ihoel;
 double   det;
+DOUBLE   e1,e2;             /* natural coordinates of integr. point */
+FLUID_DATA      *data;      /* Information on Gausspoints etc.      */
 
 ELEMENT *ele;
 NODE    *actnode;
@@ -129,6 +131,8 @@ static ARRAY     derxy_a;  /* coordinate - derivatives                  */
 static DOUBLE  **derxy;
 static ARRAY     vderxy_a; /* vel - derivatives                         */
 static DOUBLE  **vderxy;
+static ARRAY     deriv2_a; /* second natural derivatives                */
+static DOUBLE  **deriv2;
 
 
 /*----------------------------------------------------------------------*/
@@ -138,6 +142,7 @@ dstrc_enter("f2_update_subscale_pres");
 
 /*========================== initialisation ============================*/
 fdyn = alldyn[genprob.numff].fdyn;
+data   = fdyn->data;
 
 dt   =fdyn->dt;
 theta=fdyn->theta;
@@ -150,6 +155,7 @@ eveln     = amdef("eveln"    ,&eveln_a    ,NUM_F2_VELDOF,MAXNOD_F2,"DA");
 evelng    = amdef("evelng"   ,&evelng_a   ,NUM_F2_VELDOF,MAXNOD_F2,"DA");
 vderxy    = amdef("vderxy"   ,&vderxy_a   ,2,2,"DA");
 derxy     = amdef("derxy"    ,&derxy_a    ,2,MAXNOD_F2,"DA");
+deriv2     = amdef("deriv2"   ,&deriv2_a   ,3,MAXNOD_F2,"DA");
   
 
 
@@ -199,6 +205,7 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 	evelng[1][i]=actnode->sol_increment.a.da[ipos->velnp][1];
 	eveln [0][i]=actnode->sol_increment.a.da[ipos->veln ][0];
 	eveln [1][i]=actnode->sol_increment.a.da[ipos->veln ][1];
+
     } /* end of loop over nodes of element */
 
     
@@ -222,13 +229,30 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
     {
 	for (ls=0;ls<nis;ls++)
 	{
+	    /*------- get values of  shape functions and their derivatives ---*/
+	    switch(ele->distyp)
+	    {
+		case quad4: case quad8: case quad9:   /* --> quad - element */
+		    e1   = data->qxg[lr][nir-1];
+		    e2   = data->qxg[ls][nis-1];
+		    f2_rec(funct,deriv,deriv2,e1,e2,ele->distyp,icode);
+		    break;
+		case tri3: case tri6:   /* --> tri - element */
+		    e1   = data->txgr[lr][intc];
+		    e2   = data->txgs[lr][intc];
+		    f2_tri(funct,deriv,deriv2,e1,e2,ele->distyp,icode);
+		    break;
+		default:
+		    dserror("typ unknown!");
+	    } /* end switch(typ) */
+
 	    
 	    /*------------------ compute Jacobian matrix at time n+1 ---*/
 	    f2_jaco(xyze,deriv,xjm,&det,ele->numnp,ele);
 	    
 	    /*----------------------------- compute global derivates ---*/
 	    f2_gder(derxy,deriv,xjm,det,ele->numnp);
-   
+
 	    /*--- get velocity (n+1,i) derivatives at integration point */
 	    f2_vder(vderxy,derxy,evelng,ele->numnp);
 
@@ -264,6 +288,7 @@ amdel(&eveln_a);
 amdel(&evelng_a);
 amdel(&derxy_a);
 amdel(&vderxy_a);
+amdel(&deriv2_a);
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -689,6 +714,7 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 			      +theta    *dt* res_new[dim]
 			      +(1-theta)*dt* res_old[dim])
 		    -facMtau/fdyn->tau_old[0] * (1-theta)*dt* sv_old[dim];
+
 	    }
 	} /* end of loop over integration points ls*/
     } /* end of loop over integration points lr */
@@ -885,7 +911,13 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 {
     ele=actpart->pdis[disnum_calc].element[nele];
 
-
+    /*------------------------------------------ set element coordinates -*/
+    for(i=0;i<ele->numnp;i++)
+    {
+	xyze[0][i]=ele->node[i]->x[0];
+	xyze[1][i]=ele->node[i]->x[1];
+    }
+    
     /*---------------------------------------------- get viscosity ---*/
     visc = mat[ele->mat-1].m.fluid->viscosity;
 
@@ -917,13 +949,6 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 	    dserror("typ unknown!");
     } /* end switch(typ) */
     
-    /*------------------------------------------ set element coordinates -*/
-    for(i=0;i<ele->numnp;i++)
-    {
-	xyze[0][i]=ele->node[i]->x[0];
-	xyze[1][i]=ele->node[i]->x[1];
-    }
-
     /* -> implicit time integration method ---------*/
     for(i=0;i<ele->numnp;i++) /* loop nodes of element */
     {
@@ -939,11 +964,10 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
     f2_get_time_dependent_sub_tau(ele,xyze,funct,deriv,evelng,NULL,visc);
     
     tau_C  = fdyn->tau[2];
-    
-    C1 = (alpha_M-theta)*dt*(tau_C/(alpha_M*tau_C+aftdt));
-    C2 = ((alpha_F-1)*dt*theta+alpha_M*tau_C)/(alpha_M*tau_C+aftdt);   
-    C3 = (tau_C/(alpha_M*tau_C+aftdt))*theta*dt;
 
+    C1 = (alpha_M-theta)*dt*(tau_C/(alpha_M*tau_C+aftdt));
+    C2 = ((alpha_F-1.0)*dt*theta+alpha_M*tau_C)/(alpha_M*tau_C+aftdt);   
+    C3 = (tau_C/(alpha_M*tau_C+aftdt))*theta*dt;
 
 /*----------------------------------------------------------------------*
  |               start loop over integration points                     |
@@ -952,7 +976,7 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
     {
 	for (ls=0;ls<nis;ls++)
 	{
-            /*------- get integraton data and check if elements are
+	    /*------- get integraton data and check if elements are
 	                                                 "higher order" */
 	    switch (ele->distyp)
 	    {
@@ -975,13 +999,12 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 		    dserror("typ unknown!");
 	    } /* end switch(typ) */
 	    
-	    
 	    /*------------------ compute Jacobian matrix at time n+1 ---*/
 	    f2_jaco(xyze,deriv,xjm,&det,ele->numnp,ele);
 
 	    /*----------------------------- compute global derivates ---*/
 	    f2_gder(derxy,deriv,xjm,det,ele->numnp);
-   
+
 	    /*--- get velocity (n+alpha_F,i) derivatives at integration
 	                                                          point */
 	    f2_vder(vderxy,derxy,evelng,ele->numnp);
@@ -995,9 +1018,10 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 	    ele->e.f2->sub_pres_trial.a.dv[lr*nis+ls]=
 		C1*sp_acc_old +	C2*sp_old - C3*divu;
 
-	    ele->e.f2->sub_pres_acc_trial.a.dv[lr*nis+ls]=(theta-1.)/theta*sp_acc_old
+	    ele->e.f2->sub_pres_acc_trial.a.dv[lr*nis+ls]=
+		(theta-1.)/theta*sp_acc_old
 		+(ele->e.f2->sub_pres_trial.a.dv[lr*nis+ls]-sp_old)/(theta*dt);
-	    
+
 	} /* end of loop over integration points ls*/
     } /* end of loop over integration points lr */
 } /* end of loop over elements nele */
@@ -1084,7 +1108,6 @@ DOUBLE    e1,e2;      /* natural coordinates of integr. point           */
 
 
 ELEMENT *ele;
-NODE    *actnode;
 
 /* material properties */
 double   visc;
@@ -1095,12 +1118,12 @@ double   sv_old    [2];
 double   sv_acc_old[2];
 
 /* the new subscale velocities and accelerations */
-double   sv_new    [2];
-double   sv_acc_new[2];
+double   sv_new        [2];
+double   sv_acc_new    [2];
+double   sv_acc_mod_new[2];
 
 /* temporary variables */
-double   res[2]; /* the residual of the momentum equation */
-double   tin[2]; /* the time increment of the subscale acceleration */
+double   res_mod[2]; /* the residual of the momentum equation without f */
 
 /* higher order terms */
 DOUBLE  hot   [2];
@@ -1119,6 +1142,12 @@ double   theta,alpha_F,alpha_M;
 double   dt;
 
 double   aftdt;
+double   amtau_M;
+
+
+/* constants containing dt and the stabilisation parameter */
+double  facM;
+
 
 FLUID_DYNAMIC   *fdyn;
 FLUID_DATA      *data;
@@ -1178,7 +1207,7 @@ wa2       = amdef("wa2"      ,&w2_a       ,MAXDOFPERELE,MAXDOFPERELE,"DA");
 derxy2    = amdef("derxy2"   ,&derxy2_a   ,3,MAXNOD_F2,"DA");
 vderxy2   = amdef("vderxy2"  ,&vderxy2_a  ,2,3,"DA");
 epreng    = amdef("epreng"   ,&epreng_a   ,MAXNOD_F2,1,"DV");
-edeadng    = amdef("edeadng"   ,&edeadng_a   ,2,1,"DV");
+edeadng   = amdef("edeadng"  ,&edeadng_a  ,2,1,"DV");
 
 
 fdyn   = alldyn[genprob.numff].fdyn;
@@ -1191,6 +1220,7 @@ alpha_M= fdyn->alpha_m;
 
 dt     = fdyn->dt;
 aftdt  = alpha_F*theta*dt;
+
 for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 {
     ele=actpart->pdis[disnum_calc].element[nele];
@@ -1225,36 +1255,29 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 	default:
 	    dserror("typ unknown!");
     } /* end switch(typ) */
-    
+
+
+
     /*------------------------------------------ set element coordinates -*/
-    for(i=0;i<ele->numnp;i++)
-    {
-	xyze[0][i]=ele->node[i]->x[0];
-	xyze[1][i]=ele->node[i]->x[1];
-    }
-
-    /* -> implicit time integration method ---------*/
-    for(i=0;i<ele->numnp;i++) /* loop nodes of element */
-    {
-	actnode=ele->node[i];
-        /*--------------------------- set element velocities at n+alpha_F */
-	evelng[0][i]=actnode->sol_increment.a.da[ipos->velnm][0];
-	evelng[1][i]=actnode->sol_increment.a.da[ipos->velnm][1];
-
-        /*------------------------ set element accelerations at n+alpha_M */
-	eaccng[0][i]=actnode->sol_increment.a.da[ipos->accnm][0];
-	eaccng[1][i]=actnode->sol_increment.a.da[ipos->accnm][1];
-
-
-        /*------------------------ set element pressure at n+1 --- */
-	epreng   [i]=actnode->sol_increment.a.da[ipos->velnp][2];
-    } /* end of loop over nodes of element */
+    f2_inc_gen_alpha_calset(
+	ele,
+	xyze,
+	eaccng,
+	evelng,
+	epreng,
+	edeadng,
+	ipos,
+	&visc
+	);
 
 
     /*--------------------------------------------- stab-parameter ---*/
     f2_get_time_dependent_sub_tau(ele,xyze,funct,deriv,evelng,NULL,visc);
     
     tau_M  = fdyn->tau[0];
+
+    amtau_M= alpha_M*tau_M;
+    facM   = 1./(amtau_M+aftdt);
 
     
 /*----------------------------------------------------------------------*
@@ -1312,8 +1335,9 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 	    for(i=0;i<2;i++) 
 	    {
 		sv_old    [i]=ele->e.f2->sub_vel.a.da    [i][lr*nis+ls];
-		
-		sv_acc_old[i]=ele->e.f2->sub_vel_acc.a.da[i][lr*nis+ls];
+
+		sv_acc_old[i]=ele->e.f2->sub_vel_acc.a.da[i][lr*nis+ls]
+		    +1./alpha_M*edeadng[i];
 	    }
 
 	    /*------------------------------ get higher order terms ---*/
@@ -1343,24 +1367,26 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
  
 	    for(i=0;i<2;i++) 
 	    {
-		res[i] = accint[i] + 0 - 2*visc*hot[i]
-		    + gradp[i] - edeadng[i];
+		/* residual without body force */
+		res_mod[i] = accint[i] + 0 - 2*visc*hot[i]
+		    + gradp[i];
 
-		tin[i] = tau_M * sv_acc_old[i] + sv_old[i]
-		    + dt * alpha_F * sv_acc_old[i] + tau_M * res[i];
+		
+		sv_acc_mod_new[i] = - facM * sv_old[i]
+		    - facM * (tau_M+alpha_F*dt-amtau_M-aftdt)*sv_acc_old[i]
+		    - facM * (tau_M*res_mod[i]+aftdt/alpha_M*edeadng[i]);
 
-		tin[i]*=-1./(alpha_M*tau_M+aftdt);
+		ele->e.f2->sub_vel_acc_trial.a.da[i][lr*nis+ls]
+		    =sv_acc_mod_new[i];
 
-		sv_acc_new[i] = sv_acc_old[i] + tin[i];
+		sv_acc_new[i] = sv_acc_mod_new[i]+ 1./alpha_M*edeadng[i];
+
 
 		sv_new[i] = sv_old[i] + dt*sv_acc_old[i]
 		    + dt*theta *(sv_acc_new[i]-sv_acc_old[i]);
-	    }
-    
-	    for(i=0;i<2;i++) 
-	    {
-		ele->e.f2->sub_vel_trial    .a.da[i][lr*nis+ls]=sv_new    [i];
-		ele->e.f2->sub_vel_acc_trial.a.da[i][lr*nis+ls]=sv_acc_new[i];
+		
+		ele->e.f2->sub_vel_trial.a.da[i][lr*nis+ls]=sv_new [i];
+
 	    }
 	} /* end of loop over integration points ls*/
     } /* end of loop over integration points lr */
@@ -1479,18 +1505,17 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 
 	    ele->e.f2->sub_pres.a.dv[lr*nis+ls]
 		=ele->e.f2->sub_pres_trial.a.dv[lr*nis+ls];
-	    
+
 	    ele->e.f2->sub_pres_acc.a.dv[lr*nis+ls]
-		=ele->e.f2->sub_pres_acc_trial.a.dv[lr*nis+ls]*(theta-1.)/theta;
-	    
+		=ele->e.f2->sub_pres_acc_trial.a.dv[lr*nis+ls];
+
 	    for(i=0;i<2;i++) 
 	    {
 		ele->e.f2->sub_vel.a.da[i][lr*nis+ls]
 		    =ele->e.f2->sub_vel_trial.a.da[i][lr*nis+ls];
 
 		ele->e.f2->sub_vel_acc.a.da[i][lr*nis+ls]=
-		    ele->e.f2->sub_vel_acc_trial.a.da[i][lr*nis+ls]*(theta-1.)/theta;
-		    
+		    ele->e.f2->sub_vel_acc_trial.a.da[i][lr*nis+ls];
 	    }
 	} /* end of loop over integration points ls*/
     } /* end of loop over integration points lr */
