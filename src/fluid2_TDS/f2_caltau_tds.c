@@ -220,16 +220,14 @@ else if (fdyn->iop==8)               /* intermediate tau for gena alpha */
     f2_veci(velint,funct,evelng,iel);
 
     /*--------------------------------------------------- get p-norm ---*/
-    norm_p = sqrt(DSQR(velint[0]) + DSQR(velint[1]));
+    norm_p =  sqrt(DSQR(velint[0]) + DSQR(velint[1]));
     
     re = mk * norm_p * hk / (2.0 * visc); /* advective : viscous forces */
-    
+
     xi2 = DMAX(re,1.0);
 
     
     fdyn->tau[0] = DSQR(hk) / (2 * visc/mk + (4.0 * visc/mk) * xi2);
-
-    fdyn->tau[0] = (1.)/(/*1./fdyn->dt+*/12*visc/(hk*hk));
     
     fdyn->tau[2]=  DSQR(hk) /(fdyn->tau[0]*2./mk);
 
