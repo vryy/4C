@@ -340,6 +340,7 @@ OBJS_WALL1    = src/wall1/w1_bop.o \
                 src/wall1/w1_init.o \
                 src/wall1/w1_inpele.o \
                 src/wall1/w1_intg.o \
+                src/wall1/w1_final.o \
                 src/wall1/w1_jaco.o \
                 src/wall1/w1_main.o \
                 src/wall1/w1_mat_linel.o \

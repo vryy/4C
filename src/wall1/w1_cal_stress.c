@@ -97,7 +97,7 @@ DOUBLE fv, r, s;
 #ifdef DEBUG
 dstrc_enter("w1_cal_stress");
 #endif
-/*------------------------------------------------- some working arrays */
+/*--------------------------------------------- allocate working arrays */
 if (init==1)
 {
 funct     = amdef("funct"  ,&funct_a,MAXNOD_WALL1,1 ,"DV");
@@ -114,6 +114,25 @@ transm    = amdef("transm"  ,&transm_a ,numstr,numstr,"DA");
 transmi   = amdef("transmi"  ,&transmi_a ,numstr,numstr,"DA");
 spar      = amdef("spar"  ,&spar_a ,numstr,16,"DA");
 work      = amdef("work"  ,&work_a ,4,4,"DA");
+goto end;
+}
+/*--------------------------------------------- deallocate working arrays */
+if (init==-1)
+{
+amdel(&funct_a);
+amdel(&deriv_a);
+amdel(&D_a);
+amdel(&xjm_a);
+amdel(&xjm0_a);
+amdel(&xji_a);
+amdel(&F_a);
+amdel(&bop_a);
+amdel(&gop_a);
+amdel(&alpha_a);
+amdel(&transm_a);
+amdel(&transmi_a);
+amdel(&spar_a);
+amdel(&work_a);
 goto end;
 }
 /*------------------------------------------- integration parameters ---*/

@@ -159,6 +159,12 @@ void w1intg(ELEMENT   *ele,    /* actual element                        */
             W1_DATA   *data,   /* wall1 data                            */
             INT        option);/* index for function evaluation         */
 /*-----------------------------------------------------------------------*
+|  w1_final.c                                             bborn 3/07     |
+|  finalize the element                                                  |
+*-----------------------------------------------------------------------*/
+void w1_final(PARTITION *actpart,
+              MATERIAL *mat);/* actual material                       */
+/*-----------------------------------------------------------------------*
 |  w1_jaco.c                                                 al 9/01     |
 |  calculate operator matrix at point r,s                                |
 *-----------------------------------------------------------------------*/

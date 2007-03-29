@@ -1174,6 +1174,13 @@ void tsi_st_fehlbg(INT disnum_s,
   solserv_del_vec(&work, 3);
 
   /*--------------------------------------------------------------------*/
+  /* finalise the element calculating routines */
+  *action = calc_struct_final;
+  /* WARNING: This call might cause problems,
+   *          however, a new (e.g. `calfinal') is postponed */
+  calinit(actfield, actpart, action, &container);
+
+  /*--------------------------------------------------------------------*/
   /* printout footer */
   if (par.myrank == 0)
   {
