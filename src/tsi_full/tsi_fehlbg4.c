@@ -6,6 +6,7 @@
 Features:
    - explicit
    - 4th order accurate
+   - with embedded 5th order associate
 
 <pre>
 Maintainer: Burkhard Bornemann
@@ -23,128 +24,133 @@ Maintainer: Burkhard Bornemann
 #include "../headers/standardtypes.h"
 #include "tsi_fehlbg4.h"
 
-
 /*======================================================================*/
 /*!
-\brief get compononent of A array
+\brief get number of stages
+
+\return number of stages
 
 \author bborn
 \date 03/07
 */
-DOUBLE tsi_fehlbg4_a(const INT i,  /*!< 1st index */
-                     const INT j)  /*!< 2nd index */
+void tsi_fehlbg4_setpara(TSI_FEHLBG4* para)
 {
-  DOUBLE fb4a[5][5] = { { 0., 0., 0., 0., 0. },
-                        { 1./4., 0., 0., 0., 0. },
-                        { 3./32., 9./32., 0., 0., 0. },
-                        { 1932./2197., -7200./2197., 7296./2197., 0., 0. },
-                        { 439./216., -8., 3680./513., -845./4104., 0. } };
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
-  dstrc_enter("tsi_fehlbg4_a");
+  dstrc_enter("tsi_fehlbg4_setpara");
+#endif
+
+  /*--------------------------------------------------------------------*/
+  /* set parameters */
+
+  /* number of stages */
+  para->stg = TSI_FEHLBG4_STG;
+
+  /* A matrix */
+  para->a[0][0] = 0.;
+  para->a[0][1] = 0.;
+  para->a[0][2] = 0.;
+  para->a[0][3] = 0.;
+  para->a[0][4] = 0.;
+  para->a[1][0] = 1./4.;
+  para->a[1][1] = 0.;
+  para->a[1][2] = 0.;
+  para->a[1][3] = 0.;
+  para->a[1][4] = 0.;
+  para->a[2][0] = 3./32.;
+  para->a[2][1] = 9./32.;
+  para->a[2][2] = 0.;
+  para->a[2][3] = 0.;
+  para->a[2][4] = 0.;
+  para->a[3][0] = 1932./2197.;
+  para->a[3][1] = -7200./2197.;
+  para->a[3][2] = 7296./2197.;
+  para->a[3][3] = 0.;
+  para->a[3][4] = 0.;
+  para->a[4][0] = 439./216.;
+  para->a[4][1] = -8.;
+  para->a[4][2] = 3680./513.;
+  para->a[4][3] = -845./4104.;
+  para->a[4][4] = 0.;
+
+  /* b vector */
+  para->b[0] = 25./216.;
+  para->b[1] = 0.;
+  para->b[2] = 1408./2565.;
+  para->b[3] = 2197./4104;
+  para->b[4] = -1./5.;
+
+  /* c vector */
+  para->c[0] = 0.;
+  para->c[1] = 1./4.;
+  para->c[2] = 3./8.;
+  para->c[3] = 12./13.;
+  para->c[4] = 1.;
+
+  /* A.A matrix */
+  para->aa[0][0] = 0.;
+  para->aa[0][1] = 0.;
+  para->aa[0][2] = 0.;
+  para->aa[0][3] = 0.;
+  para->aa[0][4] = 0.;
+  para->aa[1][0] = 0.;
+  para->aa[1][1] = 0.;
+  para->aa[1][2] = 0.;
+  para->aa[1][3] = 0.;
+  para->aa[1][4] = 0.;
+  para->aa[2][0] = 9./128.;
+  para->aa[2][1] = 0.;
+  para->aa[2][2] = 0.;
+  para->aa[2][3] = 0.;
+  para->aa[2][4] = 0.;
+  para->aa[3][0] = -1116./2197.;
+  para->aa[3][1] = 2052./2197.;
+  para->aa[3][2] = 0.;
+  para->aa[3][3] = 0.;
+  para->aa[3][4] = 0.;
+  para->aa[4][0] = -353./234.;
+  para->aa[4][1] = 35./13.;
+  para->aa[4][2] = -80./117.;
+  para->aa[4][3] = 0.;
+  para->aa[4][4] = 0.;
+
+  /* b.A vector */
+  para->bb[0] = 25./216.;
+  para->bb[1] = 0.;
+  para->bb[2] = 176./513.;
+  para->bb[3] = 169./4104.;
+  para->bb[4] = 0.;
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+
+/*======================================================================*/
+/*!
+\brief get number of stages
+
+\return number of stages
+
+\author bborn
+\date 03/07
+*/
+INT tsi_fehlbg4_stages()
+{
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_enter("tsi_fehlbg4_stages");
 #endif
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_exit();
 #endif
-  return fb4a[i][j];
+  return TSI_FEHLBG4_STG;
 }
 
-/*======================================================================*/
-/*!
-\brief get compononent of b vector
 
-\author bborn
-\date 03/07
-*/
-DOUBLE tsi_fehlbg4_b(const INT i)
-{
-  DOUBLE fb4b[5] = { 25./216., 0., 1408./2565., 2197./4104, -1./5. };
-
-  /*--------------------------------------------------------------------*/
-#ifdef DEBUG
-  dstrc_enter("tsi_fehlbg4_b");
-#endif
-
-  /*--------------------------------------------------------------------*/
-#ifdef DEBUG
-  dstrc_exit();
-#endif
-  return fb4b[i];
-}
-
-/*======================================================================*/
-/*!
-\brief get compononent of c vector
-
-\author bborn
-\date 03/07
-*/
-DOUBLE tsi_fehlbg4_c(const INT i)
-{
-  DOUBLE fb4c[5] = { 0., 1./4., 3./8., 12./13., 1. };
-
-  /*--------------------------------------------------------------------*/
-#ifdef DEBUG
-  dstrc_enter("tsi_fehlbg4_c");
-#endif
-
-  /*--------------------------------------------------------------------*/
-#ifdef DEBUG
-  dstrc_exit();
-#endif
-  return fb4c[i];
-}
-
-/*======================================================================*/
-/*!
-\brief get compononent of A.A array
-
-\author bborn
-\date 03/07
-*/
-DOUBLE tsi_fehlbg4_aa(const INT i,
-                      const INT j)
-{
-  DOUBLE fb4aa[5][5] = { { 0., 0., 0., 0., 0. },
-                         { 0., 0., 0., 0., 0. },
-                         { 9./128., 0., 0., 0., 0. },
-                         { -1116./2197., 2052./2197., 0., 0., 0. },
-                         { -353./234., 35./13., -80./117., 0., 0. } };
-
-  /*--------------------------------------------------------------------*/
-#ifdef DEBUG
-  dstrc_enter("tsi_fehlbg4_aa");
-#endif
-
-  /*--------------------------------------------------------------------*/
-#ifdef DEBUG
-  dstrc_exit();
-#endif
-  return fb4aa[i][j];
-}
-
-/*======================================================================*/
-/*!
-\brief get compononent of b vector
-
-\author bborn
-\date 03/07
-*/
-DOUBLE tsi_fehlbg4_bb(const INT i)
-{
-  DOUBLE fb4bb[5] = { 25./216., 0., 176./513., 169./4104., 0. };
-
-  /*--------------------------------------------------------------------*/
-#ifdef DEBUG
-  dstrc_enter("tsi_fehlbg4_bb");
-#endif
-
-  /*--------------------------------------------------------------------*/
-#ifdef DEBUG
-  dstrc_exit();
-#endif
-  return fb4bb[i];
-}

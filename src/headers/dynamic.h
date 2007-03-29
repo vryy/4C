@@ -270,4 +270,7 @@ typedef struct _TSI_DYNAMIC
   INT              maxiter;         /* maximum number of iterations */
   DOUBLE           entol;           /* tolerance for energy check 
                                        over fields */
+
+  /* Runge-Kutta thingies */
+  INT              istg;            /* current stage */
 } TSI_DYNAMIC;

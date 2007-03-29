@@ -331,12 +331,35 @@ typedef enum _SO3_STRESSOUT
 
 /*----------------------------------------------------------------------*/
 /*!
+\brief Material internal variables (MIV) used for 
+       visco-plastic Robinson material
+
+\author bborn
+\date 03/07
+*/
+typedef struct _SO3_MIV_ROBINSON
+{
+  /* visco-plastic strain at t_{n} */
+  ARRAY vicstn;
+  /* visco-plastic strain at t_{n+1} */
+  ARRAY vicstnn;
+  /* back stress at t_n */
+  ARRAY bacsts;
+  /* back stress at t_{n+1} */
+  ARRAY bacstsn;
+  /* visco-plastic strain rate at intermediate time stages t_{n+c_i} */
+  ARRAY4D dvicstn;
+  /* back stress rate at intermediate time stages t_{n+c_i} */
+  ARRAY4D dbacsts;
+} SO3_MIV_ROBINSON;
+
+/*----------------------------------------------------------------------*/
+/*!
 \brief Definition of SOLID3 type holding SOLID3 element properties
 
 \author mf
 \date 10/06
 */
-/*----------------------------------------------------------------------*/
 typedef struct _SOLID3
 {
   SO3_KINEMATICS kintype;  /* type of kinematics */
@@ -375,6 +398,11 @@ typedef struct _SOLID3
 #ifdef D_TSI
   TSI_COUPTYP tsi_couptyp;  /* TSI coupling type */
   ELEMENT *therm_ele;  /* pointer to conforming THERM3 element */
+#endif
+
+  /* Robinson material, only with TSI */
+#ifdef D_TSI
+  SO3_MIV_ROBINSON* miv_rob;
 #endif
 
 } SOLID3;
@@ -563,6 +591,10 @@ void solid3(PARTITION *actpart,
 
 /*----------------------------------------------------------------------*/
 /* file so3_mat.c */
+void so3_mat_init(PARTITION* part,
+                  const MATERIAL* mat);
+void so3_mat_final(PARTITION* part,  /*!< partition */
+                   const MATERIAL* mat);  /*!< material */
 void so3_mat_sel(CONTAINER *container,
                  ELEMENT *ele,
                  MATERIAL *mat,
@@ -573,6 +605,10 @@ void so3_mat_sel(CONTAINER *container,
 void so3_mat_density(MATERIAL *mat, 
                      DOUBLE *density);
 
+/*----------------------------------------------------------------------*/
+/* file so3_mat_robinson.c */
+void so3_mat_robinson_init(ELEMENT* ele);
+void so3_mat_robinson_final(ELEMENT* ele);  /*!< current element */
 
 /*----------------------------------------------------------------------*/
 /* file so3_metr.c */

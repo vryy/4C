@@ -36,7 +36,6 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 \author bborn
 \date 03/06
 */
-/*----------------------------------------------------------------------*/
 FILES allfiles;
 
 
@@ -50,7 +49,6 @@ global variable GENPROB genprob is defined in global_control.c
 \auther bborn
 \date 03/06
 */
-/*----------------------------------------------------------------------*/
 extern GENPROB genprob;
 
 
@@ -63,7 +61,6 @@ defined in global_control.c
 \author bborn
 \date 03/06
 */
-/*----------------------------------------------------------------------*/
 extern FIELD *field;
 
 
@@ -80,7 +77,6 @@ necessary.
 \author bborn
 \date 03/06
 */
-/*----------------------------------------------------------------------*/
 extern PAR par;
 
 
@@ -94,7 +90,6 @@ dedfined in global_control.c
 \auther bborn
 \date 03/06
 */
-/*----------------------------------------------------------------------*/
 extern ALLDYNA *alldyn;
 
 
@@ -109,11 +104,11 @@ extern ALLDYNA *alldyn;
 \date 03/06
 */
 /*----------------------------------------------------------------------*/
-void tsi_init_chkfld(INT *numfld, /* total number of fields */
-                     INT *numsf,  /* number (index) of structure field */
-                     INT *numtf,  /* number (index) of thermal field */
-                     FIELD **structfield,  /* structure field */
-                     FIELD **thermfield)  /* thermal field */
+void tsi_init_chkfld(INT *numfld, /*!< total number of fields */
+                     INT *numsf,  /*!< number (index) of structure field */
+                     INT *numtf,  /*!< number (index) of thermal field */
+                     FIELD **structfield,  /*!< structure field */
+                     FIELD **thermfield)  /*!< thermal field */
 
 {
 

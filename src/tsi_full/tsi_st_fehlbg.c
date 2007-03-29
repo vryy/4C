@@ -159,6 +159,17 @@ extern CALC_ACTION calc_action[MAXFIELD];
 DOUBLE acttime;
 DOUBLE deltat;
 
+
+/*---------------------------------------------------------------------*/
+/*!
+\brief Fehlberg4 parameters
+
+\author bborn
+\date 03/07
+*/
+TSI_FEHLBG4 tsi_fehlbg4;
+
+
 /*======================================================================*/
 /*!
 \brief Central differences time integration of structural field
@@ -182,7 +193,7 @@ void tsi_st_fehlbg(INT disnum_s,
   INT timeadapt;  /* flag to switch time adaption on/off */
 
   /* Fehlberg4 parameters */
-  const INT nstg = 5;
+  const INT nstg = tsi_fehlbg4_stages();
 
   DOUBLE dt;
   INT nstep;
@@ -203,6 +214,7 @@ void tsi_st_fehlbg(INT disnum_s,
   INTRA *actintra;  /* pointer to active intra-communicator */
   CALC_ACTION *action;  /* pointer to the structure cal_action enum */
   STRUCT_DYNAMIC *sdyn;  /* pointer to structural dynamic input data */
+  TSI_DYNAMIC *tsidyn;  /* pointer to TSI dynamics data */
 
   DIST_VECTOR *vel;  /* total velocities: V_n and V_{n+1} */
   DIST_VECTOR *acc;  /* total accelerations: A_n and A_{n+1} */
@@ -245,6 +257,10 @@ void tsi_st_fehlbg(INT disnum_s,
 
   /*--------------------------------------------------------------------*/
   container.isdyn = 1;   /* dynamic calculation */
+
+  /*--------------------------------------------------------------------*/
+  /* set Fehlberg4 parameters */
+  tsi_fehlbg4_setpara(&tsi_fehlbg4);
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -835,7 +851,7 @@ void tsi_st_fehlbg(INT disnum_s,
       /*----------------------------------------------------------------*/
       /* time stage 
        *    t_{n+1} = t_n + dt*c_i */
-      tim[istg] = acttime + dt*tsi_fehlbg4_c(istg);
+      tim[istg] = acttime + dt*tsi_fehlbg4.c[istg];
       /*----------------------------------------------------------------*/
       /* velocity at stage
        *    V_{n+c_i} += dt_n * \sum{j=1}{s} ( a_{ij} * k_j ) */
@@ -843,18 +859,18 @@ void tsi_st_fehlbg(INT disnum_s,
       for (jstg=0; jstg<istg; jstg++)
       {
         solserv_add_vec(&(accn[jstg]), &(veln[istg]), 
-                        dt*tsi_fehlbg4_a(istg,jstg));
+                        dt*tsi_fehlbg4.a[istg][jstg]);
       }
       /*----------------------------------------------------------------*/
       /* displacement at stage
        *    D_{n+c_i} += c_i * dt * V_n 
        *               + dt_n^2 * \sum{j=1}{s} ( aa_{ij} * k_j )*/
       solserv_copy_vec(&(actsolv->sol[0]), &(disn[istg]));
-      solserv_add_vec(&(vel[0]), &(disn[istg]), dt*tsi_fehlbg4_c(istg));
+      solserv_add_vec(&(vel[0]), &(disn[istg]), dt*tsi_fehlbg4.c[istg]);
       for (jstg=0; jstg<istg-1; jstg++)
       {
         solserv_add_vec(&(accn[jstg]), &(disn[istg]), 
-                        dt*dt*tsi_fehlbg4_aa(istg,jstg));
+                        dt*dt*tsi_fehlbg4.aa[istg][jstg]);
       }
       /* put the displacements to the nodes */
       solserv_result_total(actfield, disnum, actintra, &(disn[istg]), 
@@ -936,9 +952,9 @@ void tsi_st_fehlbg(INT disnum_s,
       /*----------------------------------------------------------------*/
       /* add contribution of current stage to new displacement */
       solserv_add_vec(&(accn[istg]), &(actsolv->sol[1]), 
-                      dt*dt*tsi_fehlbg4_bb(istg));
+                      dt*dt*tsi_fehlbg4.bb[istg]);
       /* add contribution of current stage to new velocity */
-      solserv_add_vec(&(accn[istg]), &(vel[1]), dt*tsi_fehlbg4_b(istg));
+      solserv_add_vec(&(accn[istg]), &(vel[1]), dt*tsi_fehlbg4.b[istg]);
     }  /* end of for */
 
     /*------------------------------------------------------------------*/

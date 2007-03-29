@@ -41,6 +41,135 @@ extern GENPROB genprob;
 
 /*======================================================================*/
 /*!
+\brief Allocate internal variables due to non-elastic material laws
+\author bborn
+\date 03/07
+*/
+void so3_mat_init(PARTITION* part,  /*!< partition */
+                  const MATERIAL* mat)  /*!< material */
+{
+  INT jdis;  /* discretisation loop jndex */
+  INT iele;  /* element loop index */
+  ELEMENT* actele;  /* pointer to current element */
+  MATERIAL* actmat;  /* material of element */
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_enter("so3_mat_init");
+#endif
+
+  /*--------------------------------------------------------------------*/
+  /* allocate material internal variables stored in each element */
+  /* loop over all discretisations of partition thermal field */
+  for (jdis=0; jdis<part->ndis; jdis++)
+  {
+    /* loop over all elements of current discretisation */
+    for (iele=0; iele<part->pdis[jdis].numele; iele++)
+    {
+      /* set current element */
+      actele = part->pdis[jdis].element[iele];
+      /* check if SOLID3 element */
+      if (actele->eltyp == el_solid3)
+      {
+        /* get element material */
+        actmat = &(mat[actele->mat-1]);
+        /* switch according to element material */
+        switch (actmat->mattyp)
+        {
+          /* St. Venant-Kirchhoff material */
+          case m_stvenant:
+            /* step over */
+            break;
+          /* Robison's material */
+#ifdef D_TSI
+          case m_vp_robinson:
+            so3_mat_robinson_init(actele);
+            break;
+#endif
+          /* catch the remainders */
+          default:
+            /* do nothing */
+            break;
+        }
+      }  /* end if */
+    }  /* end for */
+  }  /* end for */
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}  /* end so3_mat_init() */
+
+
+/*======================================================================*/
+/*!
+\brief Deallocate internal variables due to non-elastic material laws
+\author bborn
+\date 03/07
+*/
+void so3_mat_final(PARTITION* part,  /*!< partition */
+                   const MATERIAL* mat)  /*!< material */
+{
+  INT jdis;  /* discretisation loop jndex */
+  INT iele;  /* element loop index */
+  ELEMENT* actele;  /* pointer to current element */
+  MATERIAL* actmat;  /* material of element */
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_enter("so3_mat_init");
+#endif
+
+  /*--------------------------------------------------------------------*/
+  /* deallocate material internal variables stored in each element */
+  /* loop over all discretisations of partition thermal field */
+  for (jdis=0; jdis<part->ndis; jdis++)
+  {
+    /* loop over all elements of current discretisation */
+    for (iele=0; iele<part->pdis[jdis].numele; iele++)
+    {
+      /* set current element */
+      actele = part->pdis[jdis].element[iele];
+      /* check if SOLID3 element */
+      if (actele->eltyp == el_solid3)
+      {
+        /* get element material */
+        actmat = &(mat[actele->mat-1]);
+        /* switch according to element material */
+        switch (actmat->mattyp)
+        {
+          /* St. Venant-Kirchhoff material */
+          case m_stvenant:
+            /* step over */
+            break;
+          /* Robison's material */
+#ifdef D_TSI
+          case m_vp_robinson:
+            so3_mat_robinson_final(actele);
+            break;
+#endif
+          /* catch the remainders */
+          default:
+            /* do nothing */
+            break;
+        }
+      }  /* end if */
+    }  /* end for */
+  }  /* end for */
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}  /* end so3_mat_final() */
+
+
+
+/*======================================================================*/
+/*!
 \brief Select proper material law
 
 \param *container CONTAINER      (i)   container

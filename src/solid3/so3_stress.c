@@ -70,7 +70,6 @@ static DOUBLE *stress;
 */
 void so3_stress_init(PARTITION *actpart)
 {
-  PARTITION *tpart;
   INT jdis;  /* discretisation loop jndex */
   INT iele;  /* element loop index */
   ELEMENT *actele;  /* pointer to current element */
@@ -83,15 +82,14 @@ void so3_stress_init(PARTITION *actpart)
   
   /*--------------------------------------------------------------------*/
   /* allocate stress arrays stored at each element */
-  tpart = actpart;  /*&(actpart[genprob.numtf]);*/
-  /* loop over all discretisations of partition thermal field */
-  for (jdis=0; jdis<tpart->ndis; jdis++)
+  /* loop over all discretisations of partition structural field */
+  for (jdis=0; jdis<actpart->ndis; jdis++)
   {
     /* loop over all elements of current discretisation */
-    for (iele=0; iele<tpart->pdis[jdis].numele; iele++)
+    for (iele=0; iele<actpart->pdis[jdis].numele; iele++)
     {
       /* set current element */
-      actele = tpart->pdis[jdis].element[iele];
+      actele = actpart->pdis[jdis].element[iele];
       /* check if SOLID3 element */
       if (actele->eltyp == el_solid3)
       {
@@ -99,20 +97,20 @@ void so3_stress_init(PARTITION *actpart)
         actso3 = actele->e.so3;
         /* allocate stress arrays per element */
         amdef("stress_gpxyz", &(actso3->stress_gpxyz), 
-              MAXGAUSS_SOLID3, NUMSTR_SOLID3, "DA");
+              actso3->gptot, NUMSTR_SOLID3, "DA");
         amdef("stress_gprst", &(actso3->stress_gprst), 
-              MAXGAUSS_SOLID3, NUMSTR_SOLID3, "DA");
+              actso3->gptot, NUMSTR_SOLID3, "DA");
         amdef("stress_gp123", &(actso3->stress_gp123), 
-              MAXGAUSS_SOLID3, 4*NDIM_SOLID3, "DA");
+              actso3->gptot, 4*NDIM_SOLID3, "DA");
         amdef("stress_ndxyz", &(actso3->stress_ndxyz), 
-              MAXNOD_SOLID3, NUMSTR_SOLID3, "DA");
+              actele->numnp, NUMSTR_SOLID3, "DA");
         amdef("stress_ndrst", &(actso3->stress_ndrst), 
-              MAXNOD_SOLID3, NUMSTR_SOLID3, "DA");
+              actele->numnp, NUMSTR_SOLID3, "DA");
         amdef("stress_nd123", &(actso3->stress_nd123), 
-              MAXNOD_SOLID3, 4*NDIM_SOLID3, "DA");
+              actele->numnp, 4*NDIM_SOLID3, "DA");
         /* allocate Gauss point coordinates */
         amdef("gpco_xyz", &(actso3->gpco_xyz), 
-              MAXGAUSS_SOLID3, NDIM_SOLID3, "DA");
+              actso3->gptot, NDIM_SOLID3, "DA");
       }  /* end if */
     }  /* end for */
   }  /* end for */
