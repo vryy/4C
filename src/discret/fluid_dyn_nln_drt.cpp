@@ -418,6 +418,7 @@ void dyn_fluid_drt()
      if(myrank == 0)
      {
       printf("-------------------------------------------------\n");
+      printf("|- step/max -|- tol      [norm] -|-    error   -| \n");
      }
      while (stop_nonliniter==false)
      {
