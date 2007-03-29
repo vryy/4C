@@ -87,11 +87,11 @@ void f2_calgalrhs_gen_alpha_tds(
               )
 {
  int       ri;       /* counter for row index                       */
- 
+
 #ifdef DEBUG
  dstrc_enter("f2_calgalrhs_gen_alpha_tds");
 #endif
-
+ 
  for (ri=0; ri<iel; ri++)       /* row index    */
  {
 
@@ -104,23 +104,24 @@ void f2_calgalrhs_gen_alpha_tds(
      eforce[ri*3+1] += derxy[1][ri] * presint * fac;
      
      /* (2 * nu * epsilon(u_old), epsilon(v)) */
-     eforce[ri*3  ] -= visc * fac
+     eforce[ri*3  ] -= visc * fac 
 	 * ( (2*vderxy[0][0]) * derxy[0][ri]+
 	     (vderxy[0][1]+vderxy[1][0]) * derxy[1][ri]);
      
-     eforce[ri*3+1] -= visc * fac
+     eforce[ri*3+1] -= visc * fac 
 	 * ( (vderxy[0][1]+vderxy[1][0]) * derxy[0][ri]+
 	     (2*vderxy[1][1]) * derxy[1][ri]);
+
+     /* - (f, v) */
+/* This expression is already contained in the modified subscale
+ * acceleration!!!                                                  */
      
      /* (div u_old, q) */
      eforce[ri*3+2] -=  (vderxy[0][0] + vderxy[1][1]) * funct[ri] * fac;
      
-     /* - (f, v) */
-     eforce[ri*3  ] += funct[ri] * edeadng[0] * fac;
-     eforce[ri*3+1] += funct[ri] * edeadng[1] * fac;
-
  } /* end loop over row index */
  /*-----------------------------------------------------------------*/
+
 #ifdef DEBUG
  dstrc_exit();
 #endif
@@ -186,92 +187,71 @@ void f2_calstabrhs_gen_alpha_tds(
  int       ri;       /* counter for row index                       */
 
  int       i;
- 
- double    tau_C;    /* stabilisation parameter --- continuity      */
- double    tau_M;    /* stabilisation parameter --- momentum        */
 
+ DOUBLE  viscs2[2][2*MAXNOD]; /* viscous term incluiding 2nd derivatives */
+
+/* time integration */
  FLUID_DYNAMIC   *fdyn;
+ 
+ double  alpha_M;
 
- double    alpha_M;  /* generalised alpha parameter                 */
-                     /* accelerations -> intermediate accelerations */
- double    alpha_F;  /* generalised alpha parameter                 */
-                     /* velocities -> intermediate velocities       */
- double    theta;    /* generalised alpha parameter                 */
-                     /* accelerations -> velocities                 */
- double    dt;       /* timestepsize                                */
-
- double    aftdt;    /* alpha_F * theta * dt                        */
-
- double    visc_old[2];
-
- double    div_eps_v_x[2], div_eps_v_y[2];
-
+ 
 #ifdef DEBUG
- dstrc_enter("f2_calgalmat_gen_alpha_tds");
+ dstrc_enter("f2_calstabrhs_gen_alpha_tds");
 #endif
 
- /*----------------------- get time integration control information */
- fdyn    = alldyn[genprob.numff].fdyn;
 
- /*----------------------------- set constants for time integration */
- dt      = fdyn->dt;
- theta   = fdyn->theta;
- alpha_M = fdyn->alpha_m;
- alpha_F = fdyn->alpha_f;
+fdyn = alldyn[genprob.numff].fdyn;
+alpha_M     = fdyn->alpha_m;
 
- aftdt   = alpha_F*theta*dt;
  
- tau_M   = fdyn->tau[0];
- tau_C   = fdyn->tau[2];
-
- /* Viscous term  div epsilon(u_old) */
- visc_old[0] = 0.5 * (2.0*vderxy2[0][0] + vderxy2[0][1] + vderxy2[1][2]);
- visc_old[1] = 0.5 * (2.0*vderxy2[1][1] + vderxy2[1][0] + vderxy2[0][2]);
-
  /* Viscous test term  div epsilon(v) */
- div_eps_v_x[0]=0;
- div_eps_v_x[1]=0;
-
- div_eps_v_y[0]=0;
- div_eps_v_y[1]=0;
  for(i=0;i<iel;i++)
  {
-     div_eps_v_x[0]+=derxy2[0][i]+0.5*derxy2[1][i];
-     div_eps_v_x[1]+=0.5*derxy2[2][i];
-     
-     div_eps_v_y[0]+=0.5*derxy2[2][i];
-     div_eps_v_y[1]+=0.5*derxy2[0][i]+derxy2[1][i];
+   /*--- viscous term  - grad * epsilon(u): ----------------------------*/
+   /*   /                              \
+      1 |  2 N_x,xx + N_x,yy + N_y,xy  |    with N_x .. x-line of N
+    - - |                              |         N_y .. y-line of N
+      2 |  N_y,xx + N_x,yx + 2 N_y,yy  |
+        \                             /                                 */
+   viscs2[0][2*i]   = - 0.5 * ( 2.0 * derxy2[0][i] + derxy2[1][i] );
+   viscs2[0][2*i+1] = - 0.5 * ( derxy2[2][i] );
+   viscs2[1][2*i]   = - 0.5 * ( derxy2[2][i] );
+   viscs2[1][2*i+1] = - 0.5 * ( derxy2[0][i] + 2.0 * derxy2[1][i] );
+
  }
 
  
- 
  for (ri=0; ri<iel; ri++)       /* row index    */
  {
-
      /* -2 * nu * (u_sub , div epsilon(v)) */
-     eforce[ri*3  ] += (svel[0]*div_eps_v_x[0]
+     /* viscs2 already contains a - sign */
+     eforce[ri*3  ] -= (svel[0]*viscs2[0][2*ri  ]
 			+
-			svel[1]*div_eps_v_x[1])*2*visc*fac;
-     
-     eforce[ri*3+1] += (svel[0]*div_eps_v_y[0]
+			svel[1]*viscs2[1][2*ri  ])*2*visc*fac;
+
+     eforce[ri*3+1] -= (svel[0]*viscs2[0][2*ri+1]
 			+
-			svel[1]*div_eps_v_y[1])*2*visc*fac;
+			svel[1]*viscs2[1][2*ri+1])*2*visc*fac;
 
 
      /* - (p_sub , div v) */
-     eforce[ri*3  ] += spres*(derxy[0][ri]+derxy[1][ri])*fac;
-     eforce[ri*3+1] += spres*(derxy[0][ri]+derxy[1][ri])*fac;
-     
+     eforce[ri*3  ] += spres * derxy[0][ri] * fac;
+     eforce[ri*3+1] += spres * derxy[1][ri] * fac;
+
      /* -(u_sub^{n+alpha_F}_i,grad q) */
-     eforce[ri*3+2] += derxy[0][ri] * (svel[0])*fac;
-     eforce[ri*3+2] += derxy[1][ri] * (svel[1])*fac;
+     eforce[ri*3+2] += (derxy[0][ri] * svel[0]
+			+
+			derxy[1][ri] * svel[1])* fac;
 
      /* (sacc^{n+alpha_M},v) */
-     eforce[ri*3  ] -= (sacc[0]*funct[ri])*fac;
-     
-     eforce[ri*3+1] -= (sacc[1]*funct[ri])*fac;
+     eforce[ri*3  ] -= sacc[0] * funct[ri] * fac;
+     eforce[ri*3+1] -= sacc[1] * funct[ri] * fac;
+
+     /* this one is bogus, cause it isn't n+alpha_M but n+1 ... */
      
  } /* end loop over row index */
+
  /*-----------------------------------------------------------------*/
 #ifdef DEBUG
  dstrc_exit();
