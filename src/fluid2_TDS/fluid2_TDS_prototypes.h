@@ -209,8 +209,7 @@ void f2_inc_gen_alpha_calset(
 		DOUBLE          *edeadng,
                 ARRAY_POSITION *ipos,
 		double         *visc
-	      )
-    ;
+    );
 
 void fluid_result_incre_for_genalpha(
                           FIELD             *actfield,
@@ -224,8 +223,16 @@ void fluid_result_incre_for_genalpha(
 			  DOUBLE            *vrat,
 			  DOUBLE            *prat,
                           DOUBLE            *grat
-		       )
-    ;
+    );
+
+void f2_estimate_new_trial_values_for_inc_gen_alpha(
+     PARTITION      *actpart,
+     INTRA          *actintra,
+     FIELD          *actfield,
+     ARRAY_POSITION *ipos,
+     INT             disnum_calc
+    );
+
 
 /************************************************************************
  | f2_calrhs_incr_acc_gen_alpha_tds.c                                   |

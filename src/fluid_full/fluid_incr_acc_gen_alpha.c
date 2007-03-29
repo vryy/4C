@@ -595,15 +595,13 @@ while (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime && steady==0)
   
  fdyn->acttime += fdyn->dta;
  
- 
- 
+
+/*--------- reset counter and convergence criterion for nonlin. iter. */
+ itnum    =1;
+ converged=0;
+
 /*------------------------------------------------ output to the screen */
  if (par.myrank==0) fluid_algoout();
- 
-
-/*-------- set dirichlet boundary conditions to sol_increment[velnp] ---*/
- fluid_setdirich(actfield, disnum_calc, ipos,ipos->velnp);
-
  
 /*------------------------------------- start time step on the screen---*/
  if (fdyn->itnorm!=fncc_no && par.myrank==0)
@@ -612,46 +610,21 @@ while (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime && steady==0)
      printf("|- step/max -|-  tol     [norm] -|- vel. error -|- pre. error -| \n");
  }
 
- /*--------- reset counter and convergence criterion for nonlin. iter. */
- itnum    =1;
- converged=0;
+/*-------- set dirichlet boundary conditions to sol_increment[velnp] ---*/
+ fluid_setdirich(actfield, disnum_calc,ipos,ipos->velnp);
 
- /*-------------------------- estimate new acceleration (and pressure)
+/*-------------------------- estimate new acceleration (and pressure)
                              --- I assume constant velo's and pressure */
 
- solserv_sol_zero(actfield,disnum_calc,node_array_sol_increment,ipos->accnp);
- fact = (fdyn->theta - 1.0)/(fdyn->theta);
- solserv_sol_add(actfield,disnum_calc,node_array_sol_increment,
-		 node_array_sol_increment,
-		 ipos->accn,ipos->accnp, fact);
-
- /*
- solserv_sol_copy(actfield,disnum_calc,node_array_sol_increment,
-		  node_array_sol_increment,ipos->velnp,ipos->velnm);
-*/
- 
- solserv_sol_zero(actfield,disnum_calc,node_array_sol_increment,ipos->velnm);
-
-
-
- solserv_sol_add(actfield,disnum_calc,node_array_sol_increment,
-		 node_array_sol_increment,
-		 ipos->veln ,ipos->velnm,1-fdyn->alpha_f);
- 
- solserv_sol_add(actfield,disnum_calc,node_array_sol_increment,
-		 node_array_sol_increment,
-		 ipos->velnp,ipos->velnm,fdyn->alpha_f);
- 
-
-/*-- transfer dirichlet boundary conditions to the accelerations */
-
- solserv_sol_zero(actfield,disnum_calc,node_array_sol_increment,ipos->accnm);
- solserv_sol_add(actfield,disnum_calc,node_array_sol_increment,
-		 node_array_sol_increment,
-		 ipos->accn ,ipos->accnm,1-fdyn->alpha_m);
- solserv_sol_add(actfield,disnum_calc,node_array_sol_increment,
-		 node_array_sol_increment,
-		 ipos->accnp,ipos->accnm,fdyn->alpha_m);
+ if(actfield->dis[disnum_calc].element[0].e.f2->stab_type == stab_tds)
+ {
+     f2_estimate_new_trial_values_for_inc_gen_alpha(
+	 actpart,
+	 actintra,
+	 actfield,
+	 ipos,
+	 disnum_calc);
+ }
 
 
 /*======================================================================*
@@ -705,8 +678,14 @@ while (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime && steady==0)
 		  1.0
 	 );
 
-
-
+     
+#if 0						
+    for(i=0;i<actsolv->rhs[0].numeq_total;i++)
+     {
+	 printf("rhs[%3d] %12.5e\n",i,actsolv->rhs[0].vec.a.dv[i]);
+     }
+#endif
+     
     /*---------------------------------------------------- solve system */
 #ifdef PERF
      perf_begin(80);
@@ -715,6 +694,7 @@ while (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime && steady==0)
 
      init=0;
      t1=ds_cputime();
+
      solver_control(actfield,disnum_calc,actsolv, actintra,
 		    &(actsolv->sysarray_typ[actsysarray]),
 		    &(actsolv->sysarray[actsysarray]),
@@ -743,7 +723,6 @@ while (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime && steady==0)
 			&(actsolv->sysarray[actsysarray]),
 			&(actsolv->sysarray_typ[actsysarray]),
 			&vrat,&prat,NULL);
-                        
 
      /*---------------- update of estimate for time dependent subscales */
      if(actfield->dis[disnum_calc].element[0].e.f2->stab_type == stab_tds)
