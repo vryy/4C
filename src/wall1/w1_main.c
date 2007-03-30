@@ -362,14 +362,16 @@ case calc_struct_ssi_coup_force:
    }
 break;/*----------------------------------------------------------------*/
 #endif
-/*----------------------- finalise element (ie dellocate internal vars) */
+/*---------------------------------------------------- finalise element */
 case calc_struct_final:
-   /* NOTE: This is not fully implemented for WALL1 elements. */
+   /* In essence, dynamically allocated variables are deallocated */
    w1_final(actpart, mat);
    w1static_ke(NULL,NULL,NULL,NULL,NULL,NULL,-1);
    w1static_keug(NULL,NULL,NULL,NULL,NULL,NULL,-1,NULL);
    w1_cal_stress(NULL,NULL,NULL,0,-1);
    w1_eleload(NULL,NULL,NULL,-1,-1);
+   w1_write_restart(NULL,NULL,0,NULL,-1);
+   w1_read_restart(NULL,NULL,NULL,-1);
 break;
 default:
    dserror("action unknown");
