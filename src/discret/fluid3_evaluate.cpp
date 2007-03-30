@@ -101,51 +101,56 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
        myvhist[2+(i*3)]=myhist[2+(i*4)];
        }
 
+      // calculate element coefficient matrix and rhs       
+      f3_sys_mat(lm,myvelnp,myprenp,myvhist,&elemat1,&elevec1,actmat,params);
+
+
+      /* the following has to be checked again !!! */
       // use local variables instead of directly write into elemat1, elevec1.
       // this speeds up computations by 3%-5%
-      Epetra_SerialDenseVector  eforce(4*numnode);      	// rhs vector                       
-      Epetra_SerialDenseMatrix 	estif(4*numnode,4*numnode); 	// element coefficient matrix
+      //Epetra_SerialDenseVector  eforce(4*numnode);      	// rhs vector                       
+      //Epetra_SerialDenseMatrix 	estif(4*numnode,4*numnode); 	// element coefficient matrix
       
       // calculate element coefficient matrix and rhs       
-      f3_sys_mat(lm,myvelnp,myprenp,myvhist,&estif,&eforce,actmat,params);  
+      //f3_sys_mat(lm,myvelnp,myprenp,myvhist,&estif,&eforce,actmat,params);  
       
       // copy values
-      elemat1 = estif;
-      elevec1 = eforce;
+      //elemat1 = estif;
+      //elevec1 = eforce;
   
+   
       // outputs for debugging
 
-// if (Id()==10 || Id()==15)
+// if (Id()==10 || Id()==21)
 {
 
 	//printf("Element %5d\n",Id());	
 #if 0
 
-	for (int i=0;i<32;++i)
+	for (int i=0;i<elevec1.size();++i)
 	    {
-	    printf("eforce[%d]: %22.16e\n",i,elevec1[i]);
+	    printf("eforce[%d]: %26.16e\n",i,elevec1[i]);
 	    ;
 	    }
 	    printf("\n");
 #endif
 #if 0
-	int iel = NumNode();
-        if (Id()==0)
+        //if (Id()==0)
 	    for (int i=0;i<elemat1.ColDim();++i)
 	{
-//	    for (int j=0;j<elemat1.RowDim();++j)
+	    for (int j=0;j<elemat1.RowDim();++j)
 	    {
-//		printf("%26.19e\n",elemat1(i,j));
-		printf("%3d res %26.19e\n",Id(),elevec1[i]);
+		printf("%26.16e\n",elemat1(i,j));
+//		printf("%3d res %26.19e\n",Id(),elevec1[i]);
 
 	    }
+	    printf("\n");
 	}
 #endif
 
 #if 0
-	int iel = NumNode();
         for (unsigned int i=0;i<myvelnp.size();++i){
-	    printf("vel %22.16e ",myvelnp[i]);
+	    printf("vel %26.16e ",myvelnp[i]);
 	    printf("\n");   
 	    }
 #endif
@@ -1887,6 +1892,7 @@ void DRT::Elements::Fluid3::f3_gder2(const Epetra_SerialDenseMatrix& xyze,
 				    )
 {
 double r0,r1,r2,r3,r4,r5;
+//--------------------------------------------initialize and zero out everything
 Epetra_SerialDenseMatrix bm(6,6);
 Epetra_SerialDenseMatrix xder2(6,3);
 
@@ -1955,10 +1961,13 @@ printf("\n");
 #endif
 
 /*----------------------------------------------------------- initialise*/
+/*   already initialized by constructor of EpetraSerialDenseMeatrix
 for (int i=0;i<3;i++)
 {
    for (int j=0;j<6;j++) xder2(j,i)=ZERO;
 }
+*/
+
 for (int i=0;i<iel;i++)
 {
    for (int j=0;j<6;j++) derxy2(j,i)=ZERO;
