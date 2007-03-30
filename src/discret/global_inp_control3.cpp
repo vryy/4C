@@ -279,9 +279,6 @@ for (int i=0; i<(int)ndnode_fenode.size(); i++)
    nextdnode:
    frrewind();
 }
-/*----------------------------------------------------------------------*/
-if (found == 0) dserror("Cannot make DNODE-NODE topology");
-/*----------------------------------------------------------------------*/
 
 end:
 return;
