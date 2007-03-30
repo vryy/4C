@@ -47,7 +47,7 @@ defined in global_control.c
 \author mf
 \date 10/06
 */
-extern struct _MATERIAL *mat;
+extern MATERIAL *mat;
 
 
 /*----------------------------------------------------------------------*/

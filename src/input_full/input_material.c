@@ -472,6 +472,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
        dserror("Insufficient conduction parameters!");
      }
    }
+   /* Robinson's visco-plastic material for structures */
+   frchk("MAT_Struct_Robinson",&ierr);
+   if (ierr==1)
+   {
+     mat[i].mattyp = m_vp_robinson;
+     mat[i].m.vp_robinson = (VP_ROBINSON*) CCACALLOC(1,sizeof(VP_ROBINSON));
+   }
    /*multi layer material */
    frchk("MAT_Multilayer",&ierr);
    if (ierr==1)
