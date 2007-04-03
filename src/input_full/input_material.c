@@ -478,6 +478,242 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
      mat[i].mattyp = m_vp_robinson;
      mat[i].m.vp_robinson = (VP_ROBINSON*) CCACALLOC(1,sizeof(VP_ROBINSON));
+     VP_ROBINSON* robin = mat[i].m.vp_robinson;
+     frdouble("YOUNG", &(robin->youngs), &ierr);
+     frdouble("NUE", &(robin->possionratio), &ierr);
+     frdouble("DENS", &(robin->density), &ierr);
+     frdouble("THEXPANS", &(robin->thermexpans), &ierr);
+     frdouble("HRDN_FACT", &(robin->hrdn_fact), &ierr);
+     frdouble("HRDN_EXPO", &(robin->hrdn_expo), &ierr);
+     /* SHRTHRSHLD */
+     robin->shrthrshld_ipl = vp_robinson_ipl_none;
+     frchk("SHRTHRSHLD", &ierr);
+     if (ierr == 1)
+     {
+       /* polynomial interpolation */
+       frchk("SHRTHRSHLD POLY", &ierr);
+       if ( (ierr == 1) && (robin->shrthrshld == NULL) )
+       {
+         robin->shrthrshld_ipl = vp_robinson_ipl_poly;
+         frint("SHRTHRSHLD POLY", &(robin->shrthrshld_n), &ierr);
+         if (robin->shrthrshld_n >= 1)
+         {
+           DOUBLE* robin_tmp = (DOUBLE*) CCACALLOC(robin->shrthrshld_n+1, sizeof(DOUBLE));
+           frdouble_n("SHRTHRSHLD POLY", &(robin_tmp[0]), robin->shrthrshld_n+1, &ierr);
+           robin->shrthrshld = (DOUBLE*) CCACALLOC(robin->shrthrshld_n, sizeof(DOUBLE));
+           INT i;
+           for (i=0; i<robin->shrthrshld_n; ++i)
+           {
+             robin->shrthrshld[i] = robin_tmp[i+1];
+           }
+           CCAFREE(robin_tmp);
+         }
+       }
+       /* piecewise linear interpolation */
+       frchk("SHRTHRSHLD PCWS", &ierr);
+       if ( (ierr == 1) && (robin->shrthrshld == NULL) )
+       {
+         robin->shrthrshld_ipl = vp_robinson_ipl_pcwslnr;
+         frint("SHRTHRSHLD PCWS", &(robin->shrthrshld_n), &ierr);
+         if (robin->shrthrshld_n >= 1)
+         {
+           DOUBLE* robin_tmp = (DOUBLE*) CCACALLOC(robin->shrthrshld_n+1, sizeof(DOUBLE));
+           frdouble_n("SHRTHRSHLD PCWS", &(robin_tmp[0]), robin->shrthrshld_n+1, &ierr);
+           robin->shrthrshld = (DOUBLE*) CCACALLOC(robin->shrthrshld_n, sizeof(DOUBLE));
+           INT i;
+           for (i=0; i<robin->shrthrshld_n; ++i)
+           {
+             robin->shrthrshld[i] = robin_tmp[i+1];
+           }
+           CCAFREE(robin_tmp);
+         }
+       }
+       /* constant */
+       if (robin->shrthrshld == NULL)
+       {
+         robin->shrthrshld_ipl = vp_robinson_ipl_const;
+         robin->shrthrshld_n = 1;
+         robin->shrthrshld = (DOUBLE*) CCACALLOC(1, sizeof(DOUBLE));
+         frdouble("SHRTHRSHLD", &(robin->shrthrshld[0]), &ierr);
+       }
+     }
+     /* RCVRY */
+     robin->rcvry_ipl = vp_robinson_ipl_none;
+     frchk("RCVRY", &ierr);
+     if (ierr == 1)
+     {
+       /* polynomial interpolation */
+       frchk("RCVRY POLY", &ierr);
+       if ( (ierr == 1) && (robin->rcvry == NULL) )
+       {
+         robin->rcvry_ipl = vp_robinson_ipl_poly;
+         frint("RCVRY POLY", &(robin->rcvry_n), &ierr);
+         if (robin->rcvry_n >= 1)
+         {
+           DOUBLE* robin_tmp = (DOUBLE*) CCACALLOC(robin->rcvry_n+1, sizeof(DOUBLE));
+           frdouble_n("RCVRY POLY", &(robin_tmp[0]), robin->rcvry_n+1, &ierr);
+           robin->rcvry = (DOUBLE*) CCACALLOC(robin->rcvry_n, sizeof(DOUBLE));
+           INT i;
+           for (i=0; i<robin->rcvry_n; ++i)
+           {
+             robin->rcvry[i] = robin_tmp[i+1];
+           }
+           CCAFREE(robin_tmp);
+         }
+       }
+       /* piecewise linear interpolation */
+       frchk("RCVRY PCWS", &ierr);
+       if ( (ierr == 1) && (robin->rcvry == NULL) )
+       {
+         robin->rcvry_ipl = vp_robinson_ipl_pcwslnr;
+         frint("RCVRY PCWS", &(robin->rcvry_n), &ierr);
+         if (robin->rcvry_n >= 1)
+         {
+           DOUBLE* robin_tmp = (DOUBLE*) CCACALLOC(robin->rcvry_n+1, sizeof(DOUBLE));
+           frdouble_n("RCVRY PCWS", &(robin_tmp[0]), robin->rcvry_n+1, &ierr);
+           robin->rcvry = (DOUBLE*) CCACALLOC(robin->rcvry_n, sizeof(DOUBLE));
+           INT i;
+           for (i=0; i<robin->rcvry_n; ++i)
+           {
+             robin->rcvry[i] = robin_tmp[i+1];
+           }
+           CCAFREE(robin_tmp);
+         }
+       }
+       /* constant */
+       if (robin->rcvry == NULL)
+       {
+         robin->rcvry_ipl = vp_robinson_ipl_const;
+         robin->rcvry_n = 1;
+         robin->rcvry = (DOUBLE*) CCACALLOC(1, sizeof(DOUBLE));
+         frdouble("RCVRY", &(robin->rcvry[0]), &ierr);
+       }
+     }
+     frdouble("ACTV_TMPR", &(robin->actv_tmpr), &ierr);
+     frdouble("ACTV_ERGY", &(robin->actv_ergy), &ierr);
+     frdouble("G0", &(robin->g0), &ierr);
+     frdouble("M_EXPO", &(robin->m), &ierr);
+     /* BETA */
+     robin->beta_ipl = vp_robinson_ipl_none;
+     frchk("BETA", &ierr);
+     if (ierr == 1)
+     {
+       /* polynomial interpolation */
+       frchk("BETA POLY", &ierr);
+       if ( (ierr == 1) && (robin->beta == NULL) )
+       {
+         robin->beta_ipl = vp_robinson_ipl_poly;
+         frint("BETA POLY", &(robin->beta_n), &ierr);
+         if (robin->beta_n >= 1)
+         {
+           DOUBLE* robin_tmp = (DOUBLE*) CCACALLOC(robin->beta_n+1, sizeof(DOUBLE));
+           frdouble_n("BETA POLY", &(robin_tmp[0]), robin->beta_n+1, &ierr);
+           robin->beta = (DOUBLE*) CCACALLOC(robin->beta_n, sizeof(DOUBLE));
+           INT i;
+           for (i=0; i<robin->beta_n; ++i)
+           {
+             robin->beta[i] = robin_tmp[i+1];
+           }
+           CCAFREE(robin_tmp);
+         }
+       }
+       /* piecewise linear interpolation */
+       frchk("BETA PCWS", &ierr);
+       if ( (ierr == 1) && (robin->beta == NULL) )
+       {
+         robin->beta_ipl = vp_robinson_ipl_pcwslnr;
+         frint("BETA PCWS", &(robin->beta_n), &ierr);
+         if (robin->beta_n >= 1)
+         {
+           DOUBLE* robin_tmp = (DOUBLE*) CCACALLOC(robin->beta_n+1, sizeof(DOUBLE));
+           frdouble_n("BETA PCWS", &(robin_tmp[0]), robin->beta_n+1, &ierr);
+           robin->beta = (DOUBLE*) CCACALLOC(robin->beta_n, sizeof(DOUBLE));
+           INT i;
+           for (i=0; i<robin->beta_n; ++i)
+           {
+             robin->beta[i] = robin_tmp[i+1];
+           }
+           CCAFREE(robin_tmp);
+         }
+       }
+       /* constant */
+       if (robin->beta == NULL)
+       {
+         robin->beta_ipl = vp_robinson_ipl_const;
+         robin->beta_n = 1;
+         robin->beta = (DOUBLE*) CCACALLOC(1, sizeof(DOUBLE));
+         frdouble("BETA", &(robin->beta[0]), &ierr);
+       }
+     }
+     /* H_FACT */
+     robin->h_ipl = vp_robinson_ipl_none;
+     frchk("H_FACT", &ierr);
+     if (ierr == 1)
+     {
+       /* polynomial interpolation */
+       frchk("H_FACT POLY", &ierr);
+       if ( (ierr == 1) && (robin->h == NULL) )
+       {
+         robin->h_ipl = vp_robinson_ipl_poly;
+         frint("H_FACT POLY", &(robin->h_n), &ierr);
+         if (robin->h_n >= 1)
+         {
+           DOUBLE* robin_tmp = (DOUBLE*) CCACALLOC(robin->h_n+1, sizeof(DOUBLE));
+           frdouble_n("H_FACT POLY", &(robin_tmp[0]), robin->h_n+1, &ierr);
+           robin->h = (DOUBLE*) CCACALLOC(robin->h_n, sizeof(DOUBLE));
+           INT i;
+           for (i=0; i<robin->h_n; ++i)
+           {
+             robin->h[i] = robin_tmp[i+1];
+           }
+           CCAFREE(robin_tmp);
+         }
+       }
+       /* piecewise linear interpolation */
+       frchk("H_FACT PCWS", &ierr);
+       if ( (ierr == 1) && (robin->h == NULL) )
+       {
+         robin->h_ipl = vp_robinson_ipl_pcwslnr;
+         frint("H_FACT PCWS", &(robin->h_n), &ierr);
+         if (robin->h_n >= 1)
+         {
+           DOUBLE* robin_tmp = (DOUBLE*) CCACALLOC(robin->h_n+1, sizeof(DOUBLE));
+           frdouble_n("H_FACT PCWS", &(robin_tmp[0]), robin->h_n+1, &ierr);
+           robin->h = (DOUBLE*) CCACALLOC(robin->h_n, sizeof(DOUBLE));
+           INT i;
+           for (i=0; i<robin->h_n; ++i)
+           {
+             robin->h[i] = robin_tmp[i+1];
+           }
+           CCAFREE(robin_tmp);
+         }
+       }
+       /* constant */
+       if (robin->h == NULL)
+       {
+         robin->h_ipl = vp_robinson_ipl_const;
+         robin->h_n = 1;
+         robin->h = (DOUBLE*) CCACALLOC(1, sizeof(DOUBLE));
+         frdouble("H_FACT", &(robin->h[0]), &ierr);
+       }
+     }
+     /* check if allocatables have indeed been allocated */
+     if (robin->beta == NULL)
+     {
+       dserror("Beta was not found!");
+     }
+     if (robin->shrthrshld == NULL)
+     {
+       dserror("Shear threshold was not found!");
+     }
+     if (robin->rcvry == NULL)
+     {
+       dserror("Recovery factor was not found!");
+     }
+     if (robin->h == NULL)
+     {
+       dserror("h was not found!");
+     }
    }
    /*multi layer material */
    frchk("MAT_Multilayer",&ierr);

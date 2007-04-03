@@ -551,10 +551,12 @@ typedef struct _TH_FOURIER_GEN
  *----------------------------------------------------------------------*/
 typedef enum _VP_ROBINSON_INTPOL
 {
-     vp_robinson_ip_none,                      /* no interpolation */
-     vp_robinson_ip_const,                     /* constant, allright, this is polynomial as well, but be treated quickly */
-     vp_robinson_ip_poly,                      /* polynomial */
-     vp_robinson_ip_pcwslnr                    /* piecewise linear */
+     vp_robinson_ipl_none,                  /* no interpolation */
+     vp_robinson_ipl_const,                 /* constant, allright, this 
+                                             * is polynomial as well, 
+                                             * but can be treated quickly */
+     vp_robinson_ipl_poly,                  /* polynomial */
+     vp_robinson_ipl_pcwslnr                /* piecewise linear */
 } VP_ROBINSON_INTPOL;
 /*----------------------------------------------------------------------*
  | Robinson's visco-plastic material                        bborn 03/07 |
@@ -562,26 +564,34 @@ typedef enum _VP_ROBINSON_INTPOL
  *----------------------------------------------------------------------*/
 typedef struct _VP_ROBINSON
 {
-     DOUBLE                    youngs;         /* Young's modulus `E' */
-     DOUBLE                    possionratio;   /* Possion ratio `nu' */
-     DOUBLE                    density;        /* material specific weight `rho' */
-     DOUBLE                    thermexpans;    /* coefficient of thermal expansion `alpha' */
-     DOUBLE                    hrdn_factor;    /* hardening factor `A' */
-     DOUBLE                    hrdn_power;     /* hardening power `n' */
-     DOUBLE                    activ_temper;   /* activation temperature `T_0' */
-     DOUBLE                    activ_ergy;     /* activation energy `Q_0' */
-     DOUBLE                    m;              /* `m' */
-     DOUBLE                    g_0;            /* `G_0' */
-     VP_ROBINSON_INTPOL        beta_ip;        /* interpolation type of beta */
+     DOUBLE                    youngs;         /* Young's modulus 'E' */
+     DOUBLE                    possionratio;   /* Possion's ratio 'nu' */
+     DOUBLE                    density;        /* material specific 
+						* weight 'rho' */
+     DOUBLE                    thermexpans;    /* coefficient of thermal 
+						* expansion 'alpha' */
+     DOUBLE                    hrdn_fact;      /* hardening factor 'A' */
+     DOUBLE                    hrdn_expo;      /* hardening power 'n' */
+     VP_ROBINSON_INTPOL        shrthrshld_ipl; /* interpolation type of 
+						* shear stress threshold */
+     INT                       shrthrshld_n;   /* number of interpolation 
+						* data of shear thres. */
+     DOUBLE*                   shrthrshld;     /* Bingam-Prager shear 
+						* stress threshold 'K^2' */
+     DOUBLE                    actv_tmpr;      /* activation temperature 'T_0' */
+     DOUBLE                    actv_ergy;      /* activation energy 'Q_0' */
+     DOUBLE                    m;              /* 'm' */
+     DOUBLE                    g0;             /* 'G_0' */
+     VP_ROBINSON_INTPOL        beta_ipl;       /* interpolation type of beta */
      INT                       beta_n;         /* number of data */
-     DOUBLE*                   beta;           /* `beta' */
-     VP_ROBINSON_INTPOL        shr_thrshld_ip; /* interpolation type of shear stress threshold */
-     INT                       shr_thrshld_n;  /* number of interpolation data of shear thres. */
-     DOUBLE*                   shr_thrshld;    /* Bingam-Prager shear stress threshold `K^2' */
-     VP_ROBINSON_INTPOL        rcvry_ip;       /* interpolation type of recovery factor */
-     INT                       rcvry_n;        /* number of interpolation data of recovery factor */
-     DOUBLE*                   rcvry;          /* recovery factor `R_0' */
-     VP_ROBINSON_INTPOL        h_ip;           /* interpolation of `h' */
-     INT                       h_n;            /* number of interpolation data of `h' */
-     DOUBLE*                   h;              /* `h' */
+     DOUBLE*                   beta;           /* 'beta' */
+     VP_ROBINSON_INTPOL        rcvry_ipl;      /* interpolation type of 
+						* recovery factor */
+     INT                       rcvry_n;        /* number of interpolation 
+						* data of recovery factor */
+     DOUBLE*                   rcvry;          /* recovery factor 'R_0' */
+     VP_ROBINSON_INTPOL        h_ipl;          /* interpolation of 'H' */
+     INT                       h_n;            /* number of interpolation 
+						* data of 'H' */
+     DOUBLE*                   h;              /* 'H' */
 } VP_ROBINSON;
