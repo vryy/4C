@@ -498,9 +498,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          frint("SHRTHRSHLD POLY", &(robin->shrthrshld_n), &ierr);
          if (robin->shrthrshld_n >= 1)
          {
-           DOUBLE* robin_tmp = (DOUBLE*) CCACALLOC(robin->shrthrshld_n+1, sizeof(DOUBLE));
-           frdouble_n("SHRTHRSHLD POLY", &(robin_tmp[0]), robin->shrthrshld_n+1, &ierr);
-           robin->shrthrshld = (DOUBLE*) CCACALLOC(robin->shrthrshld_n, sizeof(DOUBLE));
+           DOUBLE* robin_tmp 
+             = (DOUBLE*) CCACALLOC(robin->shrthrshld_n+1, sizeof(DOUBLE));
+           frdouble_n("SHRTHRSHLD POLY", &(robin_tmp[0]),
+                      robin->shrthrshld_n+1, &ierr);
+           robin->shrthrshld 
+             = (DOUBLE*) CCACALLOC(robin->shrthrshld_n, sizeof(DOUBLE));
            INT i;
            for (i=0; i<robin->shrthrshld_n; ++i)
            {
@@ -517,9 +520,12 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          frint("SHRTHRSHLD PCWS", &(robin->shrthrshld_n), &ierr);
          if (robin->shrthrshld_n >= 1)
          {
-           DOUBLE* robin_tmp = (DOUBLE*) CCACALLOC(robin->shrthrshld_n+1, sizeof(DOUBLE));
-           frdouble_n("SHRTHRSHLD PCWS", &(robin_tmp[0]), robin->shrthrshld_n+1, &ierr);
-           robin->shrthrshld = (DOUBLE*) CCACALLOC(robin->shrthrshld_n, sizeof(DOUBLE));
+           DOUBLE* robin_tmp 
+             = (DOUBLE*) CCACALLOC(robin->shrthrshld_n+1, sizeof(DOUBLE));
+           frdouble_n("SHRTHRSHLD PCWS", &(robin_tmp[0]),
+                      robin->shrthrshld_n+1, &ierr);
+           robin->shrthrshld 
+             = (DOUBLE*) CCACALLOC(robin->shrthrshld_n, sizeof(DOUBLE));
            INT i;
            for (i=0; i<robin->shrthrshld_n; ++i)
            {
@@ -550,7 +556,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          frint("RCVRY POLY", &(robin->rcvry_n), &ierr);
          if (robin->rcvry_n >= 1)
          {
-           DOUBLE* robin_tmp = (DOUBLE*) CCACALLOC(robin->rcvry_n+1, sizeof(DOUBLE));
+           DOUBLE* robin_tmp 
+             = (DOUBLE*) CCACALLOC(robin->rcvry_n+1, sizeof(DOUBLE));
            frdouble_n("RCVRY POLY", &(robin_tmp[0]), robin->rcvry_n+1, &ierr);
            robin->rcvry = (DOUBLE*) CCACALLOC(robin->rcvry_n, sizeof(DOUBLE));
            INT i;
@@ -569,9 +576,11 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          frint("RCVRY PCWS", &(robin->rcvry_n), &ierr);
          if (robin->rcvry_n >= 1)
          {
-           DOUBLE* robin_tmp = (DOUBLE*) CCACALLOC(robin->rcvry_n+1, sizeof(DOUBLE));
+           DOUBLE* robin_tmp 
+             = (DOUBLE*) CCACALLOC(robin->rcvry_n+1, sizeof(DOUBLE));
            frdouble_n("RCVRY PCWS", &(robin_tmp[0]), robin->rcvry_n+1, &ierr);
-           robin->rcvry = (DOUBLE*) CCACALLOC(robin->rcvry_n, sizeof(DOUBLE));
+           robin->rcvry 
+             = (DOUBLE*) CCACALLOC(robin->rcvry_n, sizeof(DOUBLE));
            INT i;
            for (i=0; i<robin->rcvry_n; ++i)
            {
@@ -606,7 +615,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          frint("BETA POLY", &(robin->beta_n), &ierr);
          if (robin->beta_n >= 1)
          {
-           DOUBLE* robin_tmp = (DOUBLE*) CCACALLOC(robin->beta_n+1, sizeof(DOUBLE));
+           DOUBLE* robin_tmp 
+             = (DOUBLE*) CCACALLOC(robin->beta_n+1, sizeof(DOUBLE));
            frdouble_n("BETA POLY", &(robin_tmp[0]), robin->beta_n+1, &ierr);
            robin->beta = (DOUBLE*) CCACALLOC(robin->beta_n, sizeof(DOUBLE));
            INT i;
@@ -625,7 +635,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          frint("BETA PCWS", &(robin->beta_n), &ierr);
          if (robin->beta_n >= 1)
          {
-           DOUBLE* robin_tmp = (DOUBLE*) CCACALLOC(robin->beta_n+1, sizeof(DOUBLE));
+           DOUBLE* robin_tmp 
+             = (DOUBLE*) CCACALLOC(robin->beta_n+1, sizeof(DOUBLE));
            frdouble_n("BETA PCWS", &(robin_tmp[0]), robin->beta_n+1, &ierr);
            robin->beta = (DOUBLE*) CCACALLOC(robin->beta_n, sizeof(DOUBLE));
            INT i;
@@ -658,7 +669,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          frint("H_FACT POLY", &(robin->h_n), &ierr);
          if (robin->h_n >= 1)
          {
-           DOUBLE* robin_tmp = (DOUBLE*) CCACALLOC(robin->h_n+1, sizeof(DOUBLE));
+           DOUBLE* robin_tmp 
+             = (DOUBLE*) CCACALLOC(robin->h_n+1, sizeof(DOUBLE));
            frdouble_n("H_FACT POLY", &(robin_tmp[0]), robin->h_n+1, &ierr);
            robin->h = (DOUBLE*) CCACALLOC(robin->h_n, sizeof(DOUBLE));
            INT i;
@@ -677,7 +689,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          frint("H_FACT PCWS", &(robin->h_n), &ierr);
          if (robin->h_n >= 1)
          {
-           DOUBLE* robin_tmp = (DOUBLE*) CCACALLOC(robin->h_n+1, sizeof(DOUBLE));
+           DOUBLE* robin_tmp 
+             = (DOUBLE*) CCACALLOC(robin->h_n+1, sizeof(DOUBLE));
            frdouble_n("H_FACT PCWS", &(robin_tmp[0]), robin->h_n+1, &ierr);
            robin->h = (DOUBLE*) CCACALLOC(robin->h_n, sizeof(DOUBLE));
            INT i;
@@ -712,7 +725,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
      }
      if (robin->h == NULL)
      {
-       dserror("h was not found!");
+       dserror("H was not found!");
      }
    }
    /*multi layer material */

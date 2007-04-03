@@ -152,5 +152,91 @@ void so3_mat_robinson_final(ELEMENT* ele)  /*!< current element */
   return;
 }  /* end so3_mat_robinson_init */
 
+/*======================================================================*/
+/*!
+\brief Get temperature-dependent material parameter at current temperature
+\author bborn
+\date 04/07
+*/
+void so3_mat_robinson_prmbytmpr(VP_ROBINSON_INTPOL ipl,  /*!< interpolation 
+                                                           type */
+                                INT prm_n,  /*!< magnitude param data */
+                                DOUBLE* prm,  /*!< parameter data */
+                                DOUBLE tmpr,  /*!< curr. temperature */
+                                DOUBLE* prmbytempr)  /*!< param. at current
+                                                      temperature */
+{
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_enter("so3_mat_robinson_prmbytmpr");
+#endif
+
+  /*--------------------------------------------------------------------*/
+  /* constant */
+  if (ipl == vp_robinson_ipl_const)
+  {
+    *prmbytempr = prm[0];
+  }
+  /* polynomial */
+  else if (ipl == vp_robinson_ipl_poly)
+  {
+    *prmbytempr = 0.0;  /* initialise */
+    INT tmpr_pow = 1.0;
+    INT i;
+    for (i=0; i<prm_n; ++i)
+    {
+      *prmbytempr += prm[i] * tmpr_pow;
+      tmpr_pow *= tmpr;
+    }
+  }
+  /* piece-wise linear */
+  else if (ipl == vp_robinson_ipl_pcwslnr)
+  {
+    /* constant if lower than smallest provided temperature */
+    if (tmpr <= prm[0])
+    {
+      *prmbytempr = prm[1];
+    }
+    /* constant if greater than largest provided temperature */
+    else if (tmpr > prm[prm_n-2])
+    {
+      *prmbytempr = prm[prm_n-1];
+    }
+    /* linear interpolation */
+    else
+    {
+      INT i;
+      for (i=0; i<prm_n-2; i+=2)
+      {
+        if (tmpr <= prm[i+2])
+        {
+          /* we got the correct interval */
+          DOUBLE x1 = prm[i];
+          DOUBLE y1 = prm[i+1];
+          DOUBLE x2 = prm[i+2];
+          DOUBLE y2 = prm[i+3];
+          DOUBLE x = tmpr;
+          *prmbytempr = (y2*(x2-x) - y1*(x1-x))/(x2-x1);
+          break;
+        }
+      }
+    }
+  }
+  else if (ipl == vp_robinson_ipl_none)
+  {
+    dserror("Interpolation type is unknown!");
+  }
+  else
+  {
+    dserror("Interpolation type is unknown!");
+  }
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+
 #endif  /* end D_TSI */
 #endif  /* end D_SOLID3 */

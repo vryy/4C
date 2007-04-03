@@ -739,6 +739,7 @@ OBJS_SOLID3   = src/solid3/so3_bop.o \
                 src/solid3/so3_main.o \
                 src/solid3/so3_mat.o \
                 src/solid3/so3_mat_robinson.o \
+                src/solid3/so3_mat_stvenant.o \
                 src/solid3/so3_metr.o \
                 src/solid3/so3_out.o \
                 src/solid3/so3_shape.o \

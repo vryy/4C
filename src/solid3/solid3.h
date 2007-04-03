@@ -609,6 +609,23 @@ void so3_mat_density(MATERIAL *mat,
 /* file so3_mat_robinson.c */
 void so3_mat_robinson_init(ELEMENT* ele);
 void so3_mat_robinson_final(ELEMENT* ele);  /*!< current element */
+void so3_mat_robinson_prmbytmpr(VP_ROBINSON_INTPOL ipl,  /*!< interpolation 
+                                                           type */
+                                INT prm_n,  /*!< magnitude param data */
+                                DOUBLE* prm,  /*!< parameter data */
+                                DOUBLE tmpr,  /*!< curr. temperature */
+                                DOUBLE* prmbytempr);  /*!< param. at current
+                                                      temperature */
+
+/*----------------------------------------------------------------------*/
+/* file so3_mat_stvenant.c */
+void so3_mat_stvenant_sel(CONTAINER* container,
+                          ELEMENT* ele,
+                          MATERIAL* mat,
+                          INT ip,
+                          SO3_GEODEFSTR* gds,
+                          DOUBLE stress[NUMSTR_SOLID3],
+                          DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3]);
 
 /*----------------------------------------------------------------------*/
 /* file so3_metr.c */
