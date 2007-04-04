@@ -1,6 +1,9 @@
 #ifndef FSI_NOX_JACOBIAN_H
 #define FSI_NOX_JACOBIAN_H
 
+#ifdef TRILINOS_PACKAGE
+#ifdef D_FSI
+
 #include <Epetra_Comm.h>
 
 #include <Epetra_Operator.h>	           // base class
@@ -131,4 +134,6 @@ protected:
   NOX::Utils utils;
 };
 
+#endif
+#endif
 #endif

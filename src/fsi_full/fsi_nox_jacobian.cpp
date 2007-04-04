@@ -1,4 +1,7 @@
 
+#ifdef TRILINOS_PACKAGE
+#ifdef D_FSI
+
 #include "fsi_nox_jacobian.H"
 
 #include <Epetra_Comm.h>
@@ -272,3 +275,6 @@ void FSIMatrixFree::setGroupForComputeF(const NOX::Abstract::Group& group)
   groupPtr = group.clone();
   return;
 }
+
+#endif
+#endif
