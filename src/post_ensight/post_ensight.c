@@ -22,7 +22,7 @@ static int ACTDIM;
 
 static long actbytes;   /*keeps the bytesize of the file we write at the moment*/
 
-static char basename[80]; /*basename of our problem*/
+static char basename[800]; /*basename of our problem*/
 
 static INT nsteps;     /*total number of steps*/
 static INT wsteps;     /*number of written steps (e.g. slices) */
@@ -141,7 +141,8 @@ void pe_write_data()
       /*read the node_director information*/
       node_director=(DOUBLE*)CCACALLOC(3*(numnp_struct),sizeof(DOUBLE));
       post_read_shell8_info(discret, node_director, struct_idx);
-      SHELL=1;
+
+      SHELL=0;			/* better turn 3d shell off */
     }
 
     /*open the .geo file*/
