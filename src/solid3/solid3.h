@@ -604,6 +604,9 @@ void so3_mat_sel(CONTAINER *container,
                  DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3]);
 void so3_mat_density(MATERIAL *mat, 
                      DOUBLE *density);
+void so3_mat_mivupd(CONTAINER *container,
+                    ELEMENT *ele,
+                    MATERIAL *mat);
 
 /*----------------------------------------------------------------------*/
 /* file so3_mat_robinson.c */
@@ -625,6 +628,19 @@ void so3_mat_robinson_sel(CONTAINER* container,
                           SO3_GEODEFSTR* gds,
                           DOUBLE stress[NUMSTR_SOLID3],
                           DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3]);
+void so3_mat_robinson_stnvscrat(const VP_ROBINSON* mat_robin,
+                                const DOUBLE tmpr,
+                                const DOUBLE stsdev[NUMSTR_SOLID3],
+                                const DOUBLE stsovr[NUMSTR_SOLID3],
+                                DOUBLE dstnvsc[NUMSTR_SOLID3]);
+void so3_mat_robinson_stsbckrat(const VP_ROBINSON* mat_robin,  /*!< material */
+                                const DOUBLE tmpr,  /*!< temperature */
+                                const DOUBLE stsdev[NUMSTR_SOLID3],  /*!< deviatoric stress */
+                                const DOUBLE stsbck[NUMSTR_SOLID3],  /*!< back stress */
+                                const DOUBLE dstnvsc[NUMSTR_SOLID3],  /*!< visc. strain rate */
+                                DOUBLE dstsbck[NUMSTR_SOLID3]);  /*!< back stressrate */
+void so3_mat_robinson_mivupd(ELEMENT* ele,  /*!< curr. elem. */
+                             VP_ROBINSON* mat_robin);  /*!< elem. mater. */
 #endif
 
 /*----------------------------------------------------------------------*/
@@ -781,6 +797,14 @@ void so3_tsi_temper(const CONTAINER *container,
 /* file so3_vct6.c */
 void so3_vct6_zero(DOUBLE iv[NUMSTR_SOLID3]);
 void so3_vct6_id(DOUBLE iv[NUMSTR_SOLID3]);
+void so3_vct6_ass(const DOUBLE av[NUMSTR_SOLID3],  /*!< input vector */
+                  DOUBLE bv[NUMSTR_SOLID3]);  /*!< assigned vector */
+void so3_vct6_assscl(const DOUBLE scl,  /*!< scale */
+                     const DOUBLE av[NUMSTR_SOLID3],  /*!< input vector */
+                     DOUBLE bv[NUMSTR_SOLID3]);
+void so3_vct6_updscl(const DOUBLE scl,  /*!< scale */
+                     const DOUBLE av[NUMSTR_SOLID3],  /*!< input vector */
+                     DOUBLE bv[NUMSTR_SOLID3]);  /*!< updated vector */
 void so3_vct6_tr(const DOUBLE av[NUMSTR_SOLID3],  /*!< input vector */
                  DOUBLE *tr);  /*!< trace */
 void so3_vct6_det(const DOUBLE av[NUMSTR_SOLID3],  /*!< input vector */
@@ -790,6 +814,9 @@ void so3_vct6_dev(const DOUBLE av[NUMSTR_SOLID3],  /*!< input vector */
 void so3_vct6_sub(const DOUBLE av[NUMSTR_SOLID3],  /*!< 1st input vector */
                   const DOUBLE bv[NUMSTR_SOLID3],  /*!< 2nd input vector */
                   DOUBLE cv[NUMSTR_SOLID3]);  /*!< output vector */
+void so3_vct6_dblctr(const DOUBLE av[NUMSTR_SOLID3],  /*!< 1st input vector */
+                     const DOUBLE bv[NUMSTR_SOLID3],  /*!< 2nd input vector */
+                     DOUBLE* prd);  /*!< double product */
 
 /*----------------------------------------------------------------------*/
 #endif /*end of #ifdef D_SOLID3 */

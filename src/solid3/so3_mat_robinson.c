@@ -305,7 +305,8 @@ void so3_mat_robinson_sel(CONTAINER* container,  /*!< container */
   DOUBLE stsdev[NUMSTR_SOLID3];  /* stress deviator */
   DOUBLE stsovr[NUMSTR_SOLID3];  /* overstress */
 
-  INT fb4_stg = tsi_fehlbg4_stages();
+  DOUBLE tem;  /* temperature */
+
   INT itsidyn = genprob.numfld;  /* index of TSI dynamics data */
   TSI_DYNAMIC* tsidyn = alldyn[itsidyn].tsidyn;  /* TSI dynamics data */
   INT actstg = tsidyn->actstg;  /* curr. RK stage */
@@ -349,7 +350,6 @@ void so3_mat_robinson_sel(CONTAINER* container,  /*!< container */
   /* thermal strain */
 #ifdef D_THERM3
   {
-    DOUBLE tem;  /* temperature */
     /* temperature at Gauss point */
     so3_tsi_temper(container, ele,
                    gds->gpc[0], gds->gpc[1], gds->gpc[2], 
@@ -466,16 +466,189 @@ void so3_mat_robinson_sel(CONTAINER* container,  /*!< container */
   }
 
   /*--------------------------------------------------------------------*/
-  /* deviatoric stress at t_{n+c_i} */
+  /* deviatoric stress 's' at t_{n+c_i} */
   so3_vct6_dev(stress, stsdev);
 
   /*--------------------------------------------------------------------*/
-  /* overstress */
+  /* overstress 'Sig' */
   so3_vct6_sub(stsdev, stsbac, stsovr);
 
   /*--------------------------------------------------------------------*/
   /* viscous strain rate at t_{n+c_i} */
+  so3_mat_robinson_stnvscrat(mat_robin, tem, stsovr, stsdev,
+                             actso3->miv_rob->dvicstn.a.d3[ip][actstg]);
 
+  /*--------------------------------------------------------------------*/
+  /* back stress rate */
+  so3_mat_robinson_stsbckrat(mat_robin, tem, stsdev, stsbac,
+                             actso3->miv_rob->dvicstn.a.d3[ip][actstg],
+                             actso3->miv_rob->dbacsts.a.d3[ip][actstg]);
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+
+/*======================================================================*/
+/*!
+\brief Viscous strain rate
+\author bborn
+\date 04/07
+*/
+void so3_mat_robinson_stnvscrat(const VP_ROBINSON* mat_robin,  /*!< material */
+                                const DOUBLE tmpr,  /*!< temperature */
+                                const DOUBLE stsdev[NUMSTR_SOLID3],  /*!< deviatoric stress */
+                                const DOUBLE stsovr[NUMSTR_SOLID3],  /*!< over stress */
+                                DOUBLE dstnvsc[NUMSTR_SOLID3])  /*!< visc. strain rate */
+{
+  DOUBLE j2;  /* 'J_2' */
+  DOUBLE shrthrshld;  /* shear threshold 'K^2' */
+  DOUBLE ff;  /* 'F' */
+  DOUBLE ss;  /* */
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_enter("so3_mat_robinson_stnvscrat");
+#endif
+
+  /*--------------------------------------------------------------------*/
+  /* preliminaries */
+  /* J_2 = 1/2 Sig : Sig  with Sig...overstress */
+  so3_vct6_dblctr(stsovr, stsovr, &j2);
+  j2 *= 0.5;
+  /* Bingham-Prager shear stress threshold at current temperature */
+  so3_mat_robinson_prmbytmpr(mat_robin->shrthrshld_ipl,
+                             mat_robin->shrthrshld_n,
+                             mat_robin->shrthrshld,
+                             tmpr, &shrthrshld);
+  /* F = (J_2 - K^2)/K_2 */
+  if (abs(shrthrshld) <= EPS10)
+  {
+    dserror("Division by zero: Shear threshold very close to zero");
+  }
+  else
+  {
+    ff = (j2 - shrthrshld)/shrthrshld;
+  }
+  /* ss = 1/2 s : Sig  with  Sig...overstress, s...deviat.stress */
+  so3_vct6_dblctr(stsovr, stsdev, &ss);
+
+  /*--------------------------------------------------------------------*/
+  /* viscous strain rate at t_{n+c_i} */
+  if ( (ff > 0.0) && (ss > 0.0) )
+  {
+    DOUBLE fct 
+      = mat_robin->hrdn_fact*pow(ff, mat_robin->hrdn_expo)/sqrt(j2);
+    so3_vct6_assscl(fct, stsovr, dstnvsc);
+  }
+  else
+  {
+    so3_vct6_zero(dstnvsc);
+  }
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+
+/*======================================================================*/
+/*!
+\brief Back stress rate
+\author bborn
+\date 04/07
+*/
+void so3_mat_robinson_stsbckrat(const VP_ROBINSON* mat_robin,  /*!< material */
+                                const DOUBLE tmpr,  /*!< temperature */
+                                const DOUBLE stsdev[NUMSTR_SOLID3],  /*!< deviatoric stress */
+                                const DOUBLE stsbck[NUMSTR_SOLID3],  /*!< back stress */
+                                const DOUBLE dstnvsc[NUMSTR_SOLID3],  /*!< visc. strain rate */
+                                DOUBLE dstsbck[NUMSTR_SOLID3])  /*!< back stressrate */
+{
+  DOUBLE i2;  /* 'I_2' */
+  DOUBLE tem0;  /* activation temperature */
+  DOUBLE shrthrshld0;  /* shear threshold 'K_0^2' */
+  DOUBLE hh;  /* 'H' */
+  DOUBLE beta;  /* 'beta' */
+  DOUBLE mm;  /* 'm' */
+  DOUBLE rr0;  /* recovery factor 'R_0' */
+  DOUBLE rr;  /* recovery term 'R' */
+  DOUBLE gg0;  /* 'G_0' */
+  DOUBLE gg;  /* 'G' */
+  DOUBLE sa;  /* */
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_enter("so3_mat_robinson_stsbckrat");
+#endif
+
+  /*--------------------------------------------------------------------*/
+  /* preliminaries */
+  /* I_2 = 1/2 * Alpha : Alpha  with Alpha...back stress */
+  so3_vct6_dblctr(stsbck, stsbck, &i2);
+  /* activation temperature */
+  tem0 = mat_robin->actv_tmpr;
+  /* Bingham-Prager shear stress threshold at activation temperature */
+  so3_mat_robinson_prmbytmpr(mat_robin->shrthrshld_ipl,
+                             mat_robin->shrthrshld_n,
+                             mat_robin->shrthrshld,
+                             tem0,
+                             &shrthrshld0);
+  /* 'H' at current temperature */
+  so3_mat_robinson_prmbytmpr(mat_robin->h_ipl,
+                             mat_robin->h_n,
+                             mat_robin->h,
+                             tmpr, 
+                             &hh);
+  /* 'beta' at current temperature */
+  so3_mat_robinson_prmbytmpr(mat_robin->beta_ipl,
+                             mat_robin->beta_n,
+                             mat_robin->beta,
+                             tmpr, 
+                             &beta);
+  /* 'm' */
+  mm = mat_robin->m;
+  /* recovery factor 'R_0' */
+  so3_mat_robinson_prmbytmpr(mat_robin->rcvry_ipl,
+                             mat_robin->rcvry_n,
+                             mat_robin->rcvry,
+                             tmpr, 
+                             &rr0);
+  /* 'R' */
+  rr = rr0 * exp(mat_robin->actv_ergy*(tmpr-tem0)/(tmpr*tem0));
+  /* 'G_0' */
+  gg0 = mat_robin->g0;
+  /* G = I_2/K_0^2 */
+  if (abs(shrthrshld0) <= EPS10)
+  {
+    dserror("Division by zero: Shear threshold very close to zero");
+  }
+  else
+  {
+    gg = i2/shrthrshld0;
+  }
+  /* ss = 1/2 * s : Alpha  with  Alpha...backstress, s...deviat.stress */
+  so3_vct6_dblctr(stsbck, stsdev, &sa);
+
+  /*--------------------------------------------------------------------*/
+  /* viscous strain rate at t_{n+c_i} */
+  if ( (gg > gg0) && (sa > 0.0) )
+  {
+    DOUBLE fcte = hh/pow(gg, beta);
+    so3_vct6_assscl(fcte, dstnvsc, dstsbck);
+    DOUBLE fcta = -rr*pow(gg, (mm-beta))/sqrt(i2);
+    so3_vct6_updscl(fcta, stsbck, dstsbck);
+  }
+  else
+  {
+    DOUBLE fcte = hh/pow(gg, beta);
+    so3_vct6_assscl(fcte, dstnvsc, dstsbck);
+    DOUBLE fcta = -rr*pow(gg0, (mm-beta))/sqrt(i2);
+    so3_vct6_updscl(fcta, stsbck, dstsbck);
+  }
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -490,19 +663,52 @@ void so3_mat_robinson_sel(CONTAINER* container,  /*!< container */
 \author bborn
 \date 04/07
 */
-void so3_mat_robinson_mivupd(CONTAINER* container,  /*!< container */
-                             ELEMENT* ele,  /*!< curr. elem. */
-                             MATERIAL* mat,  /*!< elem. mater. */
-                             INT ip,  /*!< total Gauss pnt. index */
-                             SO3_GEODEFSTR* gds,  /*!< elem. data at Gauss 
-                                                 point */
-                          DOUBLE stress[NUMSTR_SOLID3],  /*!< stress */
-                          DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3])  /*!< elasticity tensor */
+void so3_mat_robinson_mivupd(ELEMENT* ele,  /*!< curr. elem. */
+                             VP_ROBINSON* mat_robin)  /*!< elem. mater. */
 {
+  SOLID3* actso3 = ele->e.so3;  /* point to SOLID3 element bits */
+  INT gptot = actso3->gptot;  /* total number of GPs in domain */
+  INT ip;  /* total GP index */
+  INT itsidyn = genprob.numfld;  /* index of TSI dynamics data */
+  TSI_DYNAMIC* tsidyn = alldyn[itsidyn].tsidyn;  /* TSI dynamics data */
+  DOUBLE dt = tsidyn->dt;  /* time step size */
+
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_enter("so3_mat_robinson_mivupd");
 #endif
+
+  /*--------------------------------------------------------------------*/
+  /* update viscous strain */
+  for (ip=0; ip<gptot; ip++)
+  {
+    DOUBLE stnvscn[NUMSTR_SOLID3];
+    so3_vct6_ass(actso3->miv_rob->vicstn.a.da[ip], stnvscn);
+    INT istg;
+    for (istg=0; istg<tsi_fehlbg4.stg; istg++)
+    {
+      DOUBLE fct = dt * tsi_fehlbg4.b[istg];
+      so3_vct6_updscl(fct, actso3->miv_rob->dvicstn.a.d3[ip][istg], 
+                      stnvscn);
+    }
+    so3_vct6_ass(stnvscn, actso3->miv_rob->vicstn.a.da[ip]);
+  }
+
+  /*--------------------------------------------------------------------*/
+  /* update back stress 'Alpha' */
+  for (ip=0; ip<gptot; ip++)
+  {
+    DOUBLE stsbckn[NUMSTR_SOLID3];
+    so3_vct6_ass(actso3->miv_rob->bacsts.a.da[ip], stsbckn);
+    INT istg;
+    for (istg=0; istg<tsi_fehlbg4.stg; istg++)
+    {
+      DOUBLE fct = dt * tsi_fehlbg4.b[istg];
+      so3_vct6_updscl(fct, actso3->miv_rob->dbacsts.a.d3[ip][istg], 
+                      stsbckn);
+    }
+    so3_vct6_ass(stsbckn, actso3->miv_rob->bacsts.a.da[ip]);
+  }
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG

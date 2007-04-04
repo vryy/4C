@@ -106,6 +106,86 @@ void so3_vct6_id(DOUBLE iv[NUMSTR_SOLID3])
 
 /*======================================================================*/
 /*!
+\brief Assign vector by another vector
+\author bborn
+\date 04/07
+*/
+void so3_vct6_ass(const DOUBLE av[NUMSTR_SOLID3],  /*!< input vector */
+                  DOUBLE bv[NUMSTR_SOLID3])  /*!< assigned vector */
+{
+  INT i;  /* index */
+
+#ifdef DEBUG
+  dstrc_enter("so3_vct6_ass");
+#endif
+
+  for (i=0; i<NUMSTR_SOLID3; i++)
+  {
+    bv[i] = av[i];
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+
+/*======================================================================*/
+/*!
+\brief Assign vector by another vector and scale it
+\author bborn
+\date 04/07
+*/
+void so3_vct6_assscl(const DOUBLE scl,  /*!< scale */
+                     const DOUBLE av[NUMSTR_SOLID3],  /*!< input vector */
+                     DOUBLE bv[NUMSTR_SOLID3])  /*!< assigned vector */
+{
+  INT i;  /* index */
+
+#ifdef DEBUG
+  dstrc_enter("so3_vct6_assscl");
+#endif
+
+  for (i=0; i<NUMSTR_SOLID3; i++)
+  {
+    bv[i] = scl * av[i];
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+
+/*======================================================================*/
+/*!
+\brief Update vector by another vector and scale it
+\author bborn
+\date 04/07
+*/
+void so3_vct6_updscl(const DOUBLE scl,  /*!< scale */
+                     const DOUBLE av[NUMSTR_SOLID3],  /*!< input vector */
+                     DOUBLE bv[NUMSTR_SOLID3])  /*!< updated vector */
+{
+  INT i;  /* index */
+
+#ifdef DEBUG
+  dstrc_enter("so3_vct6_updscl");
+#endif
+
+  for (i=0; i<NUMSTR_SOLID3; i++)
+  {
+    bv[i] += scl * av[i];
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+
+/*======================================================================*/
+/*!
 \brief Trace of a vector
 
 Explicitly
@@ -240,6 +320,44 @@ void so3_vct6_sub(const DOUBLE av[NUMSTR_SOLID3],  /*!< 1st input vector */
   for (i=0; i<NUMSTR_SOLID3; i++)
   {
     cv[i] = av[i] - bv[i];
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+
+/*======================================================================*/
+/*!
+\brief Double contraction of 2 vectors 
+
+Explicitly
+       av : bv = a_11*b_11 + a_22*b_22 + a_33*b_33
+               + 2*a_12*b_12 + 2*a_23*b_23 + 2*a_31*b_31
+
+\return void
+\author bborn
+\date 04/07
+*/
+void so3_vct6_dblctr(const DOUBLE av[NUMSTR_SOLID3],  /*!< 1st input vector */
+                     const DOUBLE bv[NUMSTR_SOLID3],  /*!< 2nd input vector */
+                     DOUBLE* prd)  /*!< double product */
+{
+  INT i;  /* index */
+
+#ifdef DEBUG
+  dstrc_enter("so3_vct6_dblprd");
+#endif
+
+  *prd = 0.0;
+  for (i=0; i<3; i++)
+  {
+    *prd += av[i] * bv[i];
+  }
+  for (i=3; i<NUMSTR_SOLID3; i++)
+  {
+    *prd += 2.0 * av[i] * bv[i];
   }
 
 #ifdef DEBUG

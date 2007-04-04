@@ -203,7 +203,7 @@ void solid3(PARTITION *actpart,
        * enhanced assumed strain.
        * Currently, SOLID3 can only do Hooke/St. Venant-Kirchhoff 
        * material */
-      /* so3_mat_mivupd(container, ele, actmat); */
+      so3_mat_mivupd(container, ele, actmat);
       break;
     /*------------------------------------------------------------------*/
     /* calculate stresses */

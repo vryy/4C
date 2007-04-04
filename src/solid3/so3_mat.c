@@ -288,5 +288,58 @@ void so3_mat_density(MATERIAL *mat,
 }
 
 /*======================================================================*/
+/*!
+\brief Select proper material law
+
+\param *container CONTAINER      (i)   container
+\param *ele       ELEMENT        (i)   pointer to current element
+\param *mat       MATERIAL       (i)   pointer to current material
+\param ip         INT            (i)   current Gauss point index
+\param *gds       SO3_GEODEFSTR  (i)   geom. & def. data at Gauss point
+\param stress[]   DOUBLE         (o)   linear(Biot)/2.Piola-Kirchhoff stress
+\param cmat[][]   DOUBLE         (o)   constitutive matrix
+\return void
+
+\author bborn
+\date 03/07
+*/
+void so3_mat_mivupd(CONTAINER *container,
+                    ELEMENT *ele,
+                    MATERIAL *mat)
+{
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_enter("so3_mat_mivupd");
+#endif
+
+  /*====================================================================*/
+  /* the material law (it's a material world!) */
+  switch (mat->mattyp)
+  {
+    /*------------------------------------------------------------------*/
+    /* St. Venant-Kirchhoff material */
+    case m_stvenant:
+      /* do nothing */
+      break;
+    /*------------------------------------------------------------------*/
+    /* Robinson's visco-plastic temperature-dependent material */
+#ifdef D_TSI
+    case m_vp_robinson:
+      so3_mat_robinson_mivupd(ele, mat->m.vp_robinson);
+      break;
+#endif
+    default:
+      dserror("Type of material law is not applicable");
+      break;
+  }  /* end of switch (mat->mattyp) */
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+
+/*======================================================================*/
 #endif  /* end of #ifdef D_SOLID3 */
 /*! @} (documentation module close) */

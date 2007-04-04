@@ -219,7 +219,6 @@ void so3_stress(CONTAINER *cont,
                 INT imyrank,
                 MATERIAL *mat)
 {
-  const INT place = 0;
   INT nelenod;  /* number of element nodes */
   INT neledof;  /* total number of element DOFs */
   DIS_TYP distyp;  /* type of discretisation */
