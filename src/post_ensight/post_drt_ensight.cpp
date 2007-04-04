@@ -446,7 +446,7 @@ void EnsightWriter::WriteResults(string groupname, string name, int numdf, int f
   WriteIndexTable(file,resultfilepos_[name]);
   resultfilepos_[name].clear();
 
-  if (numdf==3)
+  if (numdf>1)
   {
     casefile_ << "vector per node:\t1\t1\t" << name << "\t" << filename << "\n";
   }
@@ -501,17 +501,15 @@ void EnsightWriter::WriteResult(ofstream& file, PostResult& result,
     }
   }
 
-#if 0
   // 2 component vectors in a 3d problem require a row of zeros.
   // do we really need this?
-  if (numdf>1 && numdf<field_->problem()->num_dim())
+  if (numdf==2)
   {
     for (int i=0; i<numnp; i++)
     {
       Write<float>(file,0.);
     }
   }
-#endif
 
   Write(file,"END TIME STEP");
 }

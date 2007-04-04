@@ -463,6 +463,19 @@ void dyn_fluid_drt()
       }
 
 
+
+#if 0  // DEBUG IO --- the toggle vector 
+      {
+	  int rr;
+	  double* data = dirichtoggle->Values();
+	  for(rr=0;rr<dirichtoggle->MyLength();rr++)
+	  {
+	      printf("dirichtoggle[%4d] %22.15e\n",rr,data[rr]);
+	  }
+      }
+#endif
+      
+
       //--------- Apply dirichlet boundary conditions to system of equations
       //          residual discplacements are supposed to be zero at
       //          boundary conditions
@@ -519,7 +532,7 @@ void dyn_fluid_drt()
 	  double* data = residual->Values();
 	  for(rr=0;rr<residual->MyLength();rr++)
 	  {
-	      printf("global %26.19e\n",data[rr]);
+	      printf("global %22.15e\n",data[rr]);
 	  }    
       }
 
@@ -532,7 +545,7 @@ void dyn_fluid_drt()
 	  double* data = incvel->Values();
 	  for(rr=0;rr<incvel->MyLength();rr++)
 	  {
-	      printf("sol %26.19e\n",data[rr]);
+	      printf("sol[%4d] %26.19e\n",rr,data[rr]);
 	  }    
       }
 
@@ -595,15 +608,16 @@ void dyn_fluid_drt()
     }
 
 #if 0  // DEBUG IO --- the solution vector after convergence
+    if(fdyn->step==199 ||fdyn->step==5)
       {
 	  int rr;
 	  double* data = velnp->Values();
 	  for(rr=0;rr<velnp->MyLength();rr++)
 	  {
-	      printf("velnp %26.19e\n",data[rr]);
-	  }    
+	      printf("velnp %22.15e\n",data[rr]);
+	  }
       }
-#endif    
+#endif
 
     //-------------------------------------------- output of solution
     output.NewStep(fdyn->step, fdyn->acttime);

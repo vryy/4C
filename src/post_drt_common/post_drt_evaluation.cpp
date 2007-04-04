@@ -23,6 +23,7 @@ filter. But to link the filter stubs of these functions are needed.
 
 #include "post_drt_common.H"
 #include "../discret/shell8.H"
+#include "../discret/fluid2.H"
 #include "../discret/fluid3.H"
 
 
@@ -190,5 +191,47 @@ int Elements::Fluid3Surface::EvaluateNeumann(ParameterList& params,
   return 0;
 }
 
+    
+int Elements::Fluid2Register::Initialize(Discretization&)
+{
+  // dserror("Elements::Fluid2Register::Initialize undefined");
+  return 0;
+}
+
+bool Elements::Fluid2::ReadElement()
+{
+  dserror("Elements::Fluid2::ReadElement undefined");
+  return false;
+}
+
+int Elements::Fluid2::Evaluate(ParameterList&,
+                               Discretization&,
+                               vector<int>&,
+                               Epetra_SerialDenseMatrix&,
+                               Epetra_SerialDenseMatrix&,
+                               Epetra_SerialDenseVector&,
+                               Epetra_SerialDenseVector&,
+                               Epetra_SerialDenseVector&)
+{
+  dserror("Elements::Fluid2::Evaluate undefined");
+  return 0;
+}
+
+int Elements::Fluid2::EvaluateNeumann(ParameterList&, Discretization&, Condition&, vector<int>&, Epetra_SerialDenseVector&)
+{
+  dserror("Elements::Fluid2::EvaluateNeumann undefined");
+  return 0;
+}
+
+int Elements::Fluid2Surface::EvaluateNeumann(ParameterList& params,
+                                          Discretization&      discretization,
+                                          Condition&           condition,
+                                          vector<int>&              lm,
+                                          Epetra_SerialDenseVector& elevec1)
+{
+  dserror("Elements::Fluid2Surface::EvaluateNeumann undefined");
+  return 0;
+}
+    
 #endif
 #endif

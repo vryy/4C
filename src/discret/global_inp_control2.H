@@ -34,6 +34,9 @@ Maintainer: Michael Gee
 #ifdef D_SHELL8
 #include "shell8.H"
 #endif
+#ifdef D_FLUID2
+#include "fluid2.H"
+#endif
 #ifdef D_FLUID3
 #include "fluid3.H"
 #endif

@@ -136,6 +136,9 @@ using namespace std;
 #define ParObject_Fluid3                (int)10
 #define ParObject_Fluid3Register        (int)11
 #define ParObject_Fluid3Surface         (int)12
+#define ParObject_Fluid2                (int)16
+#define ParObject_Fluid2Register        (int)17
+#define ParObject_Fluid2Line            (int)18
 
 
 /*!

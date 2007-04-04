@@ -32,6 +32,7 @@ extern "C"
 #include "drt_node.H"
 #include "drt_dofset.H"
 #include "shell8.H"
+#include "fluid2.H"
 #include "fluid3.H"
 #include "drt_dserror.H"
 
@@ -91,6 +92,23 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
     }
     break;
 #endif    
+#ifdef D_FLUID2
+    case ParObject_Fluid2:
+    {
+      DRT::Elements::Fluid2* object = new DRT::Elements::Fluid2(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_Fluid2Register:
+    {
+      DRT::Elements::Fluid2Register* object =
+                      new DRT::Elements::Fluid2Register(DRT::Element::element_fluid2);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+#endif    
 #ifdef D_FLUID3
     case ParObject_Fluid3:
     {
@@ -140,6 +158,7 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
     none,
     shell8,
     wall1,
+    fluid2,
     fluid3
   };
   
@@ -147,6 +166,7 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
   if (eletype=="none"); // dummy
   else if (eletype=="SHELL8") type = shell8;
   else if (eletype=="WALL1")  type = wall1;
+  else if (eletype=="FLUID2") type = fluid2;
   else if (eletype=="FLUID3") type = fluid3;
   // continue to add elements here....
   else dserror("Unknown type of finite element");
@@ -158,6 +178,14 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
     case shell8:
     {
       RefCountPtr<DRT::Element> ele = rcp(new DRT::Elements::Shell8(id,owner));
+      return ele;
+    }
+    break;
+#endif
+#ifdef D_FLUID2
+    case fluid2:
+    {
+      RefCountPtr<DRT::Element> ele = rcp(new DRT::Elements::Fluid2(id,owner));
       return ele;
     }
     break;

@@ -80,6 +80,8 @@ public:
     element_none,
     element_shell8,
     element_shell8line,
+    element_fluid2,
+    element_fluid2line,
     element_fluid3,
     element_fluid3surface
   };
