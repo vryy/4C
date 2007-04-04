@@ -223,13 +223,13 @@ int Elements::Fluid2::EvaluateNeumann(ParameterList&, Discretization&, Condition
   return 0;
 }
 
-int Elements::Fluid2Surface::EvaluateNeumann(ParameterList& params,
+int Elements::Fluid2Line::EvaluateNeumann(ParameterList& params,
                                           Discretization&      discretization,
                                           Condition&           condition,
                                           vector<int>&              lm,
                                           Epetra_SerialDenseVector& elevec1)
 {
-  dserror("Elements::Fluid2Surface::EvaluateNeumann undefined");
+  dserror("Elements::Fluid2Line::EvaluateNeumann undefined");
   return 0;
 }
     
