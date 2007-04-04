@@ -429,6 +429,8 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
   // keep a copy
   oldx_ = Teuchos::rcp(new Epetra_Vector(x));
 
+  //cout << x.Map();
+
   // make x redundant
   redundantsol_->PutScalar(0);
   int err = redundantsol_->Import(x,*importredundant_,Insert);
@@ -438,15 +440,22 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
   DistributeDisplacements dd(*redundantsol_,ipos->mf_dispnp);
   loop_interface(structfield,dd,*redundantsol_);
 
-#if 0
+#if 1
   if (par.myrank==0)
   {
     static int in_counter;
     std::ostringstream filename;
-    filename << "plot/x_" << in_counter << ".plot";
+    //filename << "plot/x_" << in_counter << ".plot";
+    filename << allfiles.outputfile_kenner
+             << ".x"
+             << "." << Timestep()
+             << "." << NlIterCount()
+             << "." << LinCount()
+             << ".plot";
+
     std::cout << "write '" YELLOW_LIGHT << filename.str() << END_COLOR "'\n";
     std::ofstream out(filename.str().c_str());
-    for (int i=0; i<=60; i+=2)
+    for (int i=0; i<redundantsol_->GlobalLength()-1; i+=2)
     {
       out << i << " " << (*redundantsol_)[i] << " " << (*redundantsol_)[i+1] << "\n";
     }
@@ -458,9 +467,12 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
   // ones.
 
   /*------------------------------- CMD -------------------------------*/
-  perf_begin(44);
-  fsi_ale_calc(ale_work_,alefield,a_disnum_calc,a_disnum_io,structfield,s_disnum_calc);
-  perf_begin(44);
+  if (fillFlag!=User)
+  {
+    perf_begin(44);
+    fsi_ale_calc(ale_work_,alefield,a_disnum_calc,a_disnum_io,structfield,s_disnum_calc);
+    perf_begin(44);
+  }
 
 //   debug_out_data(alefield, "ale_disp_incr", node_array_sol_increment, alefield->dis[a_disnum_calc].ipos.dispnp);
   debug_out_data(alefield, "ale_disp", node_array_sol_mf, alefield->dis[a_disnum_calc].ipos.mf_dispnp);
@@ -471,6 +483,10 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
 
   // We might want to do just one linear fluid solution in matrix free
   // or finite difference settings.
+
+  // be careful: NUMSTASTEPS = -1 in FLUID DYNAMIC input section
+  // needed for this to work. Otherwise the start step might reset
+  // itemax!
 
   if (fillFlag==FD_Res && fdresitemax_ > 0)
     fdyn->itemax = fdresitemax_;
@@ -504,22 +520,34 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
   // don't have a direct mapping, so loop all structural nodes and
   // select the dofs that belong to the local part of the interface.
 
-  GatherResiduum gr(F,ipos->mf_dispnp,ipos->mf_reldisp);
+  GatherDisplacements gr(F,ipos->mf_dispnp);
   loop_interface(structfield,gr,F);
+  F.Update(-1.0,x,1.0);
 
   // keep a copy
   oldf_ = Teuchos::rcp(new Epetra_Vector(F));
 
-#if 0
+#if 1
   if (par.myrank==0)
   {
     static int out_counter;
     std::ostringstream filename;
-    filename << "plot/interface_" << out_counter << ".plot";
+    //filename << "plot/interface_" << out_counter << ".plot";
+    filename << allfiles.outputfile_kenner
+             << ".f"
+             << "." << Timestep()
+             << "." << NlIterCount()
+             << "." << LinCount()
+             << ".plot";
+
     std::cout << "write '" YELLOW_LIGHT << filename.str() << END_COLOR "'\n";
     std::ofstream out(filename.str().c_str());
-    OutputDisplacements od(out,ipos->mf_dispnp,ipos->mf_reldisp);
-    loop_interface(structfield,od,F);
+    //OutputDisplacements od(out,ipos->mf_dispnp,ipos->mf_reldisp);
+    //loop_interface(structfield,od,F);
+    for (int i=0; i<F.MyLength()-1; i+=2)
+    {
+      out << i << " " << F[i] << " " << F[i+1] << "\n";
+    }
     out_counter += 1;
   }
 #endif
@@ -556,6 +584,7 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
       sout << "\n\n";
     }
 
+#if 0
     filename.str("");
     filename << allfiles.outputfile_kenner
              << ".fluid"
@@ -582,6 +611,7 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
       }
       fout << "\n\n";
     }
+#endif
   }
 #endif
 
@@ -938,7 +968,7 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
 
       FSIMF = Teuchos::rcp(new FSIMatrixFree(printParams, interface, noxSoln));
       iJac = FSIMF;
-      J = MF;
+      J = FSIMF;
     }
 
     // Matrix Free Newton Krylov. This is supposed to be the most

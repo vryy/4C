@@ -4,6 +4,8 @@
 
 #include "fsi_nox_jacobian.H"
 
+#include <iostream>
+
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
@@ -21,9 +23,14 @@ FSIMatrixFree::FSIMatrixFree(Teuchos::ParameterList& printParams,
   label("FSI-Matrix-Free"),
   interface(i),
   currentX(x),
+  perturbX(x),
+  perturbY(x),
   useGroupForComputeF(false),
   utils(printParams)
 {
+  perturbX.init(0.0);
+  perturbY.init(0.0);
+
   // Epetra_Operators require Epetra_Maps, so anyone using block maps
   // (Epetra_BlockMap) won't be able to directly use the AztecOO solver.
   // We get around this by creating an Epetra_Map from the Epetra_BlockMap.
@@ -77,17 +84,25 @@ int FSIMatrixFree::Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) con
   NOX::Epetra::Vector nevX(wrappedX, NOX::Epetra::Vector::CreateView);
   NOX::Epetra::Vector nevY(wrappedY, NOX::Epetra::Vector::CreateView);
 
+  //std::cout << X;
+
+  // Of course this is nonsense. But for some strange reason
+  // currentX.Map()!=X.Map() and we are bound to call computeF with
+  // the right map.
+  perturbX = currentX;
+  perturbX.update(1.0,nevX,0.0);
+
   if (!useGroupForComputeF)
-    interface->computeF(nevX.getEpetraVector(), nevY.getEpetraVector(),
+    interface->computeF(perturbX.getEpetraVector(), perturbY.getEpetraVector(),
 			NOX::Epetra::Interface::Required::User);
   else
   {
-    groupPtr->setX(nevX);
+    groupPtr->setX(perturbX);
     groupPtr->computeF();
-    nevY = groupPtr->getF();
+    perturbY = groupPtr->getF();
   }
 
-  //nevY.update(-1.0, fp, 1.0);
+  nevY.update(1.0, perturbY, 0.0);
 
 #if 0
   // Use a directional derivative to compute y = Jx

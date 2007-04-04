@@ -119,6 +119,12 @@ protected:
   //! The current solution vector
   NOX::Epetra::Vector currentX;
 
+  //! Perturbed solution vector
+  mutable NOX::Epetra::Vector perturbX;
+
+  //! Perturbed solution vector
+  mutable NOX::Epetra::Vector perturbY;
+
   //! Epetra_Map object used in the returns of the Epetra_Operator derived methods.
   /*! If the user is using Epetra_BlockMaps, then NOX::Epetra::MatrixFree must create an equivalent Epetra_Map from the Epetra_BlockMap that can be used as the return object of the OperatorDomainMap() and OperatorRangeMap() methods.
    */
