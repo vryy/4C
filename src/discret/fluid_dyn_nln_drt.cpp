@@ -103,9 +103,11 @@ extern struct _CURVE *curve;
 
 void dyn_fluid_drt()
 {
+  // variables to store cpu time
   double tt,t2;
+  double delta_t_evaluate,delta_t_solve;
 
- DSTraceHelper dst("dyn_fluid_drt");
+  DSTraceHelper dst("dyn_fluid_drt");
   // -------------------------------------------------------------------
   // create timers
   // -------------------------------------------------------------------
@@ -161,12 +163,60 @@ void dyn_fluid_drt()
   // -------------------------------------------------------------------
   const Epetra_Map* dofrowmap = actdis->DofRowMap();
 
+  // -------------------------------------------------------------------
+  // get a vector layout from the discretization for a vector which only
+  // contains the velocity dofs and for one vector which only contains
+  // pressure degrees of freedom.
+  //
+  // The maps are designed assuming that every node has pressure and
+  // velocity degrees of freedom --- this won't work for inf-sup stable
+  // elements at the moment!
+  // -------------------------------------------------------------------
+  RefCountPtr<Epetra_Map> velrowmap;
+  RefCountPtr<Epetra_Map> prerowmap;
+  {
+    // Allocate integer vectors which will hold the dof number of the
+    // velocity or pressure dofs
+    vector<int> velmapdata;
+    vector<int> premapdata;
+
+    velmapdata.reserve(actdis->NumMyRowNodes()*genprob.ndim);
+    premapdata.reserve(actdis->NumMyRowNodes());
+
+    for (int i=0; i<actdis->NumMyRowNodes(); ++i)
+    {
+      DRT::Node* node = actdis->lRowNode(i);
+      for (int j=0; j<genprob.ndim; ++j)
+      {
+	  // add this velocity dof to the velmapdata vector
+	  velmapdata.push_back(node->Dof()[j]);
+      }
+      // add this pressure dof to the premapdata vector
+      premapdata.push_back(node->Dof()[genprob.ndim]);
+    }
+
+    // the rowmaps are generated according to the pattern provided by
+    // the data vectors
+    velrowmap = rcp(new Epetra_Map(actdis->NumGlobalNodes()*genprob.ndim,
+				   velmapdata.size(),&velmapdata[0],0,
+				   Comm));
+    prerowmap = rcp(new Epetra_Map(actdis->NumGlobalNodes(),
+				   premapdata.size(),&premapdata[0],0,
+				   Comm));
+  }
 
   // -------------------------------------------------------------------
   // create empty system matrix --- stiffness and mass are assembled in
   // one system matrix!
   // -------------------------------------------------------------------
-  int maxentriesperrow = 81;
+
+  // This is a first estimate for the number of non zeros in a row of
+  // the matrix. Assuming a structured 3d-fluid mesh we have 27 adjacent
+  // nodes with 4 dofs each. (27*4=108)
+  // We do not need the exact number here, just for performance reasons
+  // a 'good' estimate
+  int maxentriesperrow = 108;
+  
   RefCountPtr<Epetra_CrsMatrix> sys_mat = null;
 
 
@@ -220,6 +270,13 @@ void dyn_fluid_drt()
   // Nonlinear iteration increment vector
   RefCountPtr<Epetra_Vector> incvel = LINALG::CreateVector(*dofrowmap,true);
 
+  
+  // Vectors used for convergence check 
+  // ----------------------------------
+
+  RefCountPtr<Epetra_Vector> onlyvel = LINALG::CreateVector(*velrowmap,true);
+  RefCountPtr<Epetra_Vector> onlypre = LINALG::CreateVector(*prerowmap,true);
+  
   /*------------------------------------------- set initial step and time */
   fdyn->step    =   0;
   fdyn->acttime = 0.0;
@@ -417,8 +474,8 @@ void dyn_fluid_drt()
      bool stop_nonliniter=false;
      if(myrank == 0)
      {
-      printf("-------------------------------------------------\n");
-      printf("|- step/max -|- tol      [norm] -|-    error   -| \n");
+      printf("+------------+-------------------+--------------+--------------+ \n");
+      printf("|- step/max -|- tol      [norm] -|- vel-error --|- pre-error --| \n");
      }
      while (stop_nonliniter==false)
      {
@@ -452,9 +509,15 @@ void dyn_fluid_drt()
 
        // call loop over elements
        {
-       TimeMonitor tm3(*timeeleloop);
-       actdis->Evaluate(params,sys_mat,null,residual,null,null);
-       actdis->ClearState();
+         double t_pre_ele;
+	 TimeMonitor tm3(*timeeleloop);
+
+	 // get cpu time
+	 t_pre_ele=ds_cputime();
+	 
+	 actdis->Evaluate(params,sys_mat,null,residual,null,null);
+	 actdis->ClearState();
+	 delta_t_evaluate=ds_cputime()-t_pre_ele;
        }
 
        // finalize the system matrix
@@ -495,8 +558,14 @@ void dyn_fluid_drt()
 	   initsolver = true; 
       }
       {
-      TimeMonitor tm5(*timesolver);
-      solver.Solve(sys_mat,incvel,residual,true,initsolver);
+	  double t_pre_solve;
+
+	  // get cpu time
+	  t_pre_solve=ds_cputime();
+	  
+	  TimeMonitor tm5(*timesolver);
+	  solver.Solve(sys_mat,incvel,residual,true,initsolver);
+	  delta_t_solve=ds_cputime()-t_pre_solve;
       }
 
       
@@ -554,43 +623,67 @@ void dyn_fluid_drt()
       //------------------------------------------------ update (u,p) trial
       velnp->Update(1.0,*incvel,1.0);
 
-      // check convergence
+      //------------------------------------------------- check convergence
       {
+       // extract velocity and pressure increments from increment vector
+       LINALG::Export(*incvel,*onlyvel);
+       LINALG::Export(*incvel,*onlypre);
+       // calculate L2_Norm of increments
        double incvelnorm_L2;
-       incvel->Norm2(&incvelnorm_L2);
-       
+       double incprenorm_L2;
+       onlyvel->Norm2(&incvelnorm_L2);
+       onlypre->Norm2(&incprenorm_L2);
+
+       // extract velocity and pressure solutions from solution vector
+       LINALG::Export(*velnp,*onlyvel);
+       LINALG::Export(*velnp,*onlypre);
+       // calculate L2_Norm of solution
        double velnorm_L2;
-       velnp->Norm2(&velnorm_L2);
-       
+       double prenorm_L2;
+       onlyvel->Norm2(&velnorm_L2);
+       onlypre->Norm2(&prenorm_L2);
        
        if (velnorm_L2<EPS5)
        {
 	velnorm_L2 = 1.0;
        }
-       
+       if (prenorm_L2<EPS5)
+       {
+	prenorm_L2 = 1.0;
+       }
+
+       // out to screen
        if(myrank == 0)
        {
-	printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   |\n",
-	       n_itnum,fdyn->itemax,fdyn->ittol,incvelnorm_L2/velnorm_L2);
+	printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |",
+	       n_itnum,fdyn->itemax,fdyn->ittol,incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
+	printf(" (te=%10.3E,ts=%10.3E)\n",delta_t_evaluate,delta_t_solve);
        }
-       
-       if(incvelnorm_L2/velnorm_L2 <= fdyn->ittol)
+
+       // this is the convergence check
+       if(incvelnorm_L2/velnorm_L2 <= fdyn->ittol && incprenorm_L2/prenorm_L2 <= fdyn->ittol)
        {	  
 	stop_nonliniter=true;
 	if(myrank == 0)
 	{
-	 printf("-------------------------------------------------\n");
+	    printf("+------------+-------------------+--------------+--------------+ \n");
 	}
        }
        
-       if (n_itnum == fdyn->itemax && incvelnorm_L2/velnorm_L2 > fdyn->ittol)
+       // warn if itemax is reached without convergence, but proceed to
+       // next timestep...
+       if (n_itnum == fdyn->itemax
+	   &&
+	   (incvelnorm_L2/velnorm_L2 > fdyn->ittol
+	    ||
+	    incprenorm_L2/prenorm_L2 > fdyn->ittol))
        {
 	stop_nonliniter=true;
 	if(myrank == 0)
 	{
-	 printf("------------------------------------------------- \n");
-         printf("|    >>>>>> not converged in itemax steps!      | \n");
-         printf("------------------------------------------------- \n");
+	 printf("+---------------------------------------------------------------+\n");
+         printf("|            >>>>>> not converged in itemax steps!              |\n");
+	 printf("+---------------------------------------------------------------+\n");
 	}
        }
        
