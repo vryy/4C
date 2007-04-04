@@ -9,6 +9,7 @@
 #include "fsi_dyn_nox.H"
 #include "fsi_nox_aitken.H"
 #include "fsi_nox_fixpoint.H"
+#include "fsi_nox_jacobian.H"
 #include "../discret/dstrc.H"
 
 #include <fstream>
@@ -258,7 +259,7 @@ FSI_InterfaceProblem::FSI_InterfaceProblem(Epetra_Comm& Comm,
                 // coupled, but the dofs of the structural node are
                 // actually used.
                 int err = rawGraph_->InsertGlobalIndices(actsnode->dof[dof1],anode->numdf,snode->dof);
-                if (err != 0)
+                if (err < 0)
                   dserror("Epetra_CrsGraph::InsertGlobalIndices returned %d", err);
               }
             }
@@ -425,8 +426,20 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
   if (itnum == 0)
     solserv_sol_copy(structfield,s_disnum_calc,node_array_sol,node_array_sol,12, 1);
 
-#ifdef DEBUG
-  if (getenv("DEBUG")!=NULL && Comm_.NumProc()==1)
+  // keep a copy
+  oldx_ = Teuchos::rcp(new Epetra_Vector(x));
+
+  // make x redundant
+  redundantsol_->PutScalar(0);
+  int err = redundantsol_->Import(x,*importredundant_,Insert);
+  if (err!=0)
+    dserror("Import failed with err=%d",err);
+
+  DistributeDisplacements dd(*redundantsol_,ipos->mf_dispnp);
+  loop_interface(structfield,dd,*redundantsol_);
+
+#if 0
+  if (par.myrank==0)
   {
     static int in_counter;
     std::ostringstream filename;
@@ -435,23 +448,11 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
     std::ofstream out(filename.str().c_str());
     for (int i=0; i<=60; i+=2)
     {
-      out << i << " " << x[i] << " " << x[i+1] << "\n";
+      out << i << " " << (*redundantsol_)[i] << " " << (*redundantsol_)[i+1] << "\n";
     }
     in_counter += 1;
   }
 #endif
-
-  // keep a copy
-  oldx_ = Teuchos::rcp(new Epetra_Vector(x));
-
-  // make x redundan
-  redundantsol_->PutScalar(0);
-  int err = redundantsol_->Import(x,*importredundant_,Insert);
-  if (err!=0)
-    dserror("Import failed with err=%d",err);
-
-  DistributeDisplacements dd(*redundantsol_,ipos->mf_dispnp);
-  loop_interface(structfield,dd,*redundantsol_);
 
   // Calculate new interface displacements starting from the given
   // ones.
@@ -481,6 +482,9 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
   if (fillFlag==MF_Jac && mfresitemax_ > 0)
     fdyn->itemax = mfresitemax_;
 
+  if (fillFlag==User && mfresitemax_ > 0)
+    fdyn->itemax = mfresitemax_;
+
   perf_begin(42);
   fsi_fluid_calc(fluid_work_,fluidfield,f_disnum_calc,f_disnum_io,alefield,a_disnum_calc);
   perf_end(42);
@@ -506,8 +510,8 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
   // keep a copy
   oldf_ = Teuchos::rcp(new Epetra_Vector(F));
 
-#ifdef DEBUG
-  if (getenv("DEBUG")!=NULL && Comm_.NumProc()==1)
+#if 0
+  if (par.myrank==0)
   {
     static int out_counter;
     std::ostringstream filename;
@@ -898,6 +902,7 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
 
     // Ok. The variables.
 
+    Teuchos::RefCountPtr<FSIMatrixFree> FSIMF;
     Teuchos::RefCountPtr<NOX::Epetra::MatrixFree> MF;
     Teuchos::RefCountPtr<NOX::Epetra::FiniteDifferenceColoring> FDC;
     Teuchos::RefCountPtr<NOX::Epetra::FiniteDifferenceColoring> FDC1;
@@ -920,9 +925,25 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     std::string jacobian = nlParams.get("Jacobian", "Matrix Free");
     std::string preconditioner = nlParams.get("Preconditioner", "None");
 
+    // Special FSI based matrix free method
+    if (jacobian=="FSI Matrix Free")
+    {
+      // Is there a reason to do more that one linear fluid solve
+      // here?
+      Teuchos::ParameterList& mfParams = nlParams.sublist("FSI Matrix Free");
+      mfresitemax_ = mfParams.get("itemax", 1);
+
+      // MatrixFree seems to be the most interessting choice. But you
+      // must set a rather low tolerance for the linear solver.
+
+      FSIMF = Teuchos::rcp(new FSIMatrixFree(printParams, interface, noxSoln));
+      iJac = FSIMF;
+      J = MF;
+    }
+
     // Matrix Free Newton Krylov. This is supposed to be the most
     // appropiate choice.
-    if (jacobian=="Matrix Free")
+    else if (jacobian=="Matrix Free")
     {
       Teuchos::ParameterList& mfParams = nlParams.sublist("Matrix Free");
       double lambda = mfParams.get("lambda", 1.0e-6);
