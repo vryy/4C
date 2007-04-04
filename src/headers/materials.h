@@ -564,7 +564,7 @@ typedef enum _VP_ROBINSON_INTPOL
  *----------------------------------------------------------------------*/
 typedef struct _VP_ROBINSON
 {
-     DOUBLE                    youngs;         /* Young's modulus 'E' */
+     DOUBLE                    youngmodul;     /* Young's modulus 'E' */
      DOUBLE                    possionratio;   /* Possion's ratio 'nu' */
      DOUBLE                    density;        /* material specific 
 						* weight 'rho' */

@@ -479,7 +479,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
      mat[i].mattyp = m_vp_robinson;
      mat[i].m.vp_robinson = (VP_ROBINSON*) CCACALLOC(1,sizeof(VP_ROBINSON));
      VP_ROBINSON* robin = mat[i].m.vp_robinson;
-     frdouble("YOUNG", &(robin->youngs), &ierr);
+     frdouble("YOUNG", &(robin->youngmodul), &ierr);
      frdouble("NUE", &(robin->possionratio), &ierr);
      frdouble("DENS", &(robin->density), &ierr);
      frdouble("THEXPANS", &(robin->thermexpans), &ierr);

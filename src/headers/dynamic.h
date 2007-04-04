@@ -272,5 +272,5 @@ typedef struct _TSI_DYNAMIC
                                        over fields */
 
   /* Runge-Kutta thingies */
-  INT              istg;            /* current stage */
+  INT              actstg;          /* current stage */
 } TSI_DYNAMIC;

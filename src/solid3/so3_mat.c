@@ -51,7 +51,7 @@ void so3_mat_init(PARTITION* part,  /*!< partition */
   INT jdis;  /* discretisation loop jndex */
   INT iele;  /* element loop index */
   ELEMENT* actele;  /* pointer to current element */
-  MATERIAL* actmat;  /* material of element */
+  const MATERIAL* actmat;  /* material of element */
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -115,7 +115,7 @@ void so3_mat_final(PARTITION* part,  /*!< partition */
   INT jdis;  /* discretisation loop jndex */
   INT iele;  /* element loop index */
   ELEMENT* actele;  /* pointer to current element */
-  MATERIAL* actmat;  /* material of element */
+  const MATERIAL* actmat;  /* material of element */
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -205,7 +205,7 @@ void so3_mat_sel(CONTAINER *container,
    *      Right now, only the simple St.Venant-Kirchhoff material
    *      is included to test the element.
    *
-   * ===> central material routines
+   * ===> Do it, have fun. Or don't.
    */
 
   /*====================================================================*/
@@ -217,6 +217,14 @@ void so3_mat_sel(CONTAINER *container,
     case m_stvenant:
       so3_mat_stvenant_sel(container, ele, mat, ip, gds, stress, cmat);
       break;
+    /*------------------------------------------------------------------*/
+    /* Robinson's visco-plastic temperature-dependent material */
+#ifdef D_TSI
+    case m_vp_robinson:
+      so3_mat_robinson_sel(container, ele, mat->m.vp_robinson, ip, gds, 
+                           stress, cmat);
+      break;
+#endif
     default:
       dserror("Type of material law is not applicable");
       break;

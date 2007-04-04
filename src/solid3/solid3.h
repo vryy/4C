@@ -607,6 +607,8 @@ void so3_mat_density(MATERIAL *mat,
 
 /*----------------------------------------------------------------------*/
 /* file so3_mat_robinson.c */
+#ifdef D_TSI
+void so3_mat_robinson_ctxtvrfy();
 void so3_mat_robinson_init(ELEMENT* ele);
 void so3_mat_robinson_final(ELEMENT* ele);  /*!< current element */
 void so3_mat_robinson_prmbytmpr(VP_ROBINSON_INTPOL ipl,  /*!< interpolation 
@@ -616,6 +618,14 @@ void so3_mat_robinson_prmbytmpr(VP_ROBINSON_INTPOL ipl,  /*!< interpolation
                                 DOUBLE tmpr,  /*!< curr. temperature */
                                 DOUBLE* prmbytempr);  /*!< param. at current
                                                       temperature */
+void so3_mat_robinson_sel(CONTAINER* container,
+                          ELEMENT* ele,
+                          VP_ROBINSON* mat_robin,
+                          INT ip,
+                          SO3_GEODEFSTR* gds,
+                          DOUBLE stress[NUMSTR_SOLID3],
+                          DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3]);
+#endif
 
 /*----------------------------------------------------------------------*/
 /* file so3_mat_stvenant.c */
@@ -767,6 +777,19 @@ void so3_tsi_temper(const CONTAINER *container,
 #endif
 #endif
 
+/*----------------------------------------------------------------------*/
+/* file so3_vct6.c */
+void so3_vct6_zero(DOUBLE iv[NUMSTR_SOLID3]);
+void so3_vct6_id(DOUBLE iv[NUMSTR_SOLID3]);
+void so3_vct6_tr(const DOUBLE av[NUMSTR_SOLID3],  /*!< input vector */
+                 DOUBLE *tr);  /*!< trace */
+void so3_vct6_det(const DOUBLE av[NUMSTR_SOLID3],  /*!< input vector */
+                  DOUBLE *det);  /*!< determinant */
+void so3_vct6_dev(const DOUBLE av[NUMSTR_SOLID3],  /*!< input vector */
+                  DOUBLE adev[NUMSTR_SOLID3]);  /*!< deviator vector */
+void so3_vct6_sub(const DOUBLE av[NUMSTR_SOLID3],  /*!< 1st input vector */
+                  const DOUBLE bv[NUMSTR_SOLID3],  /*!< 2nd input vector */
+                  DOUBLE cv[NUMSTR_SOLID3]);  /*!< output vector */
 
 /*----------------------------------------------------------------------*/
 #endif /*end of #ifdef D_SOLID3 */

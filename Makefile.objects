@@ -752,7 +752,8 @@ OBJS_SOLID3   = src/solid3/so3_bop.o \
                 src/solid3/so3_strain.o \
                 src/solid3/so3_stress.o \
                 src/solid3/so3_tns3.o \
-                src/solid3/so3_tsi.o
+                src/solid3/so3_tsi.o \
+                src/solid3/so3_vct6.o
 #               visual
 OBJS_VISUAL   = src/visual/visual_global.o \
                 src/visual/visual_readflaviares.o \

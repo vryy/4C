@@ -54,9 +54,10 @@ void so3_mat_stvenant_sel(CONTAINER* container,
   DOUBLE Emod = mat->m.stvenant->youngs;
   /* Poisson's ratio */
   DOUBLE nu = mat->m.stvenant->possionratio;
-  INT istrn, istss, istr, jstr;
+  /* INT istrn, istss, istr, jstr; */
   DOUBLE strain[NUMSTR_SOLID3];  /* strain vector */
-  /*--------------------------------------------------------------*/
+
+  /*--------------------------------------------------------------------*/
   /* isotropic elasticity tensor C in matrix notion */
   /*                       [ 1-nu     nu     nu |          0    0    0 ]
    *                       [        1-nu     nu |          0    0    0 ]
@@ -83,6 +84,7 @@ void so3_mat_stvenant_sel(CONTAINER* container,
     /* retrieve elasticity matrix */
     mat_el_iso(Emod, nu, ccmat);
     /* copy arrays */
+    INT istr, jstr;
     for (istr=0; istr<NUMSTR_SOLID3; istr++)
     {
       for (jstr=0; jstr<NUMSTR_SOLID3; jstr++)
@@ -98,6 +100,7 @@ void so3_mat_stvenant_sel(CONTAINER* container,
     DOUBLE mfac = Emod/((1.0+nu)*(1.0-2.0*nu));  /* factor */
     /* constitutive matrix */
     /* set the whole thing to zero */
+    INT istr, jstr;
     for (istr=0; istr<NUMSTR_SOLID3; istr++)
     {
       for (jstr=0; jstr<NUMSTR_SOLID3; jstr++)
@@ -126,6 +129,7 @@ void so3_mat_stvenant_sel(CONTAINER* container,
   if (ele->e.so3->kintype == so3_geo_lin)
   {
     /* linear (engineering) strain vector */
+    INT istrn;
     for (istrn=0; istrn<NUMSTR_SOLID3; istrn++)
     {
       strain[istrn] = gds->stnengv[istrn];
@@ -134,6 +138,7 @@ void so3_mat_stvenant_sel(CONTAINER* container,
   else if (ele->e.so3->kintype == so3_total_lagr)
   {
     /* Green-Lagrange strain vector */
+    INT istrn;
     for (istrn=0; istrn<NUMSTR_SOLID3; istrn++)
     {
       strain[istrn] = gds->stnglv[istrn];
@@ -156,6 +161,7 @@ void so3_mat_stvenant_sel(CONTAINER* container,
                    &tem);
     /* coefficient of linear thermal expansion */
     DOUBLE thermexpans = mat->m.stvenant->thermexpans;
+
     /* thermal strain vector */
     strain[0] -= thermexpans * tem;  /* E_xx */
     strain[1] -= thermexpans * tem;  /* E_yy */
@@ -166,8 +172,10 @@ void so3_mat_stvenant_sel(CONTAINER* container,
 #endif
   /*--------------------------------------------------------------*/
   /* compute stress vector */
+  INT istss;
   for (istss=0; istss<NUMSTR_SOLID3; istss++)
   {
+    INT istrn;
     DOUBLE stresssum = 0.0;  /* intermediate row * column sum */
     for (istrn=0; istrn<NUMSTR_SOLID3; istrn++)
     {
