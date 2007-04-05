@@ -67,7 +67,6 @@ typedef struct _STVENANT
      DOUBLE                    possionratio;   /* Possion ratio */
      DOUBLE                    density;        /* material specific weight */
      DOUBLE                    thermexpans;    /* coefficient of thermal expansion */
-     DOUBLE                    really;         /* just for test purposes */   
 } STVENANT;
 
 
