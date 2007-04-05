@@ -84,13 +84,24 @@ int FSIMatrixFree::Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) con
   NOX::Epetra::Vector nevX(wrappedX, NOX::Epetra::Vector::CreateView);
   NOX::Epetra::Vector nevY(wrappedY, NOX::Epetra::Vector::CreateView);
 
-  //std::cout << X;
+  // The trial vector x is not guaranteed to be a suitable interface
+  // displacement. It might be much too large to fit the ALE
+  // algorithm. But we know our residual to be linear, so we can
+  // easily scale x.
 
-  // Of course this is nonsense. But for some strange reason
-  // currentX.Map()!=X.Map() and we are bound to call computeF with
-  // the right map.
+  double xscale = 1e4*nevX.norm();
+  if (xscale==0)
+  {
+    // In the first call is x=0. No need to calculate the
+    // residuum. y=0 in that case.
+    nevY.init(0.);
+    return 0;
+  }
+
+  // For some strange reason currentX.Map()!=X.Map() and we are bound
+  // to call computeF with the right map.
   perturbX = currentX;
-  perturbX.update(0.1,nevX,0.0);
+  perturbX.update(1./xscale,nevX,0.0);
 
   if (!useGroupForComputeF)
     interface->computeF(perturbX.getEpetraVector(), perturbY.getEpetraVector(),
@@ -102,108 +113,9 @@ int FSIMatrixFree::Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) con
     perturbY = groupPtr->getF();
   }
 
-  nevY.update(10.0, perturbY, -1.0, nevX, 0.0);
+  // scale back
+  nevY.update(xscale, perturbY, 0.0);
 
-#if 0
-  // Use a directional derivative to compute y = Jx
-  /*
-   * eta = scalar perturbation
-   * u = solution vector used to evaluate f
-   * f = function evaluation (RHS)
-   * x = vector that J is applied to
-   *
-   *        f(u+eta*x) - f(u)
-   * Jx =   -----------------
-   *               eta
-   */
-
-
-  // Compute perturbation constant, eta
-  // Taken from LOCA v1.0 manual SAND2002-0396 p. 28 eqn. 2.43
-  // eta = lambda*(lambda + 2norm(u)/2norm(x))
-  double solutionNorm = 1.0;
-  double vectorNorm = 1.0;
-
-  solutionNorm = currentX.norm();
-  vectorNorm = currentX.getVectorSpace()->norm(*wrappedX);
-
-  // Make sure the norm is not zero, otherwise we can get an inf perturbation
-  if (vectorNorm == 0.0) {
-    //utils.out(Utils::Warning) << "Warning: NOX::Epetra::FSIMatrixFree::Apply() - vectorNorm is zero" << endl;
-    vectorNorm = 1.0;
-  }
-
-#if 0
-  // Create an extra perturbed residual vector pointer if needed
-  if ( diffType == Centered )
-    if ( Teuchos::is_null(fmPtr) )
-      fmPtr = Teuchos::rcp(new NOX::Epetra::Vector(fo));
-#endif
-
-  double scaleFactor = 1.0;
-#if 0
-  if ( diffType == Backward )
-  scaleFactor = -1.0;
-#endif
-
-  if (computeEta) {
-    if (useNewPerturbation) {
-      double dotprod = currentX.getVectorSpace()->
-	innerProduct(currentX.getEpetraVector(), *wrappedX);
-      if (dotprod==0.0)
-	dotprod = 1.0e-12;
-      eta = lambda*(1.0e-12/lambda + fabs(dotprod)/(vectorNorm * vectorNorm))
-	* dotprod/fabs(dotprod);
-    }
-    else
-      eta = lambda*(lambda + solutionNorm/vectorNorm);
-  }
-  else
-    eta = userEta;
-
-  // Compute the perturbed RHS
-  perturbX = currentX;
-  Y = X;
-  Y.Scale(eta);
-  perturbX.update(1.0,nevY,1.0);
-
-  if (!useGroupForComputeF)
-    interface->computeF(perturbX.getEpetraVector(), fp.getEpetraVector(),
-			NOX::Epetra::Interface::Required::MF_Res);
-  else{
-    groupPtr->setX(perturbX);
-    groupPtr->computeF();
-    fp = dynamic_cast<const NOX::Epetra::Vector&>
-      (groupPtr->getF());
-  }
-
-#if 0
-  if ( diffType == Centered ) {
-    Y.Scale(-2.0);
-    perturbX.update(scaleFactor,nevY,1.0);
-    if (!useGroupForComputeF)
-      interface->computeF(perturbX.getEpetraVector(), fmPtr->getEpetraVector(),
-			  NOX::Epetra::Interface::Required::MF_Res);
-    else{
-      groupPtr->setX(perturbX);
-      groupPtr->computeF();
-      *fmPtr = dynamic_cast<const NOX::Epetra::Vector&>
-        (groupPtr->getF());
-    }
-  }
-#endif
-
-  // Compute the directional derivative
-  if ( diffType != Centered ) {
-    nevY.update(1.0, fp, -1.0, fo, 0.0);
-    nevY.scale( 1.0/(scaleFactor * eta) );
-  }
-  else {
-    nevY.update(1.0, fp, -1.0, *fmPtr, 0.0);
-    nevY.scale( 1.0/(2.0 * eta) );
-  }
-
-#endif
   return 0;
 }
 
@@ -255,26 +167,6 @@ const Epetra_Map& FSIMatrixFree::OperatorRangeMap() const
 
 bool FSIMatrixFree::computeJacobian(const Epetra_Vector& x, Epetra_Operator& Jac)
 {
-#if 0
-  // Since we have no explicit Jacobian we set our currentX to the
-  // incoming value and evaluate the RHS.  When the Jacobian is applied,
-  // we compute the perturbed residuals and the directional
-  // derivative.  Ignore Jac.
-  currentX = x;
-
-  bool ok = false;
-  if (!useGroupForComputeF)
-    ok = interface->computeF(x, fo.getEpetraVector(),
-			     NOX::Epetra::Interface::Required::MF_Jac);
-  else {
-    groupPtr->setX(currentX);
-    groupPtr->computeF();
-    fo = dynamic_cast<const NOX::Epetra::Vector&>
-      (groupPtr->getF());
-    ok = true;
-  }
-#endif
-
   // Remember the current interface displacements.
   currentX = x;
 

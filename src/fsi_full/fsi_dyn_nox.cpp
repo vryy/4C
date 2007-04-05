@@ -344,7 +344,7 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
   // backup from the outside.
   INT itnum = 1;
 
-#if 1
+#if 0
   if (par.nprocs==1)
   {
     static int in_counter;
@@ -367,6 +367,9 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
   }
 #endif
 
+  // User residuum calculation in this case means the linear steepest
+  // descent version. This is used for our FSI specific matrix free
+  // method.
   if (fillFlag==User)
   {
     // use the explicit tangent calculation we own
@@ -420,9 +423,11 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
     //GatherDisplacements gr(F,ipos->mf_dispnp);
     GatherRelaxation gr(F,8);
     loop_interface(structfield,gr,F);
-    //F.Update(-1.0,x,-1.0);
+    F.Update(-1.0,x,1.0);
 
   }
+
+  // Normal FSI interface residuum calculation.
   else
   {
 
@@ -483,9 +488,6 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
     if (fillFlag==MF_Jac && mfresitemax_ > 0)
       fdyn->itemax = mfresitemax_;
 
-    if (fillFlag==User && mfresitemax_ > 0)
-      fdyn->itemax = mfresitemax_;
-
     perf_begin(42);
     fsi_fluid_calc(fluid_work_,fluidfield,f_disnum_calc,f_disnum_io,alefield,a_disnum_calc);
     perf_end(42);
@@ -516,7 +518,7 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
     oldf_ = Teuchos::rcp(new Epetra_Vector(F));
   }
 
-#if 1
+#if 0
   if (par.nprocs==1)
   {
     static int out_counter;
@@ -947,13 +949,13 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     // Special FSI based matrix free method
     if (jacobian=="FSI Matrix Free")
     {
-      // Is there a reason to do more that one linear fluid solve
-      // here?
-      Teuchos::ParameterList& mfParams = nlParams.sublist("FSI Matrix Free");
-      mfresitemax_ = mfParams.get("itemax", 1);
+      //Teuchos::ParameterList& mfParams = nlParams.sublist("FSI Matrix Free");
 
-      // MatrixFree seems to be the most interessting choice. But you
-      // must set a rather low tolerance for the linear solver.
+      // MatrixFree seems to be the most interessting choice. This
+      // version builds on our steepest descent relaxation
+      // implementation to approximate the Jacobian times x.
+
+      // This is the default method.
 
       FSIMF = Teuchos::rcp(new FSIMatrixFree(printParams, interface, noxSoln));
       iJac = FSIMF;
