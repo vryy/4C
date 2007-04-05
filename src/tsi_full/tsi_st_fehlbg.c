@@ -329,17 +329,15 @@ void tsi_st_fehlbg(INT disnum_s,
   /*--------------------------------------------------------------------*/
   /* check presence of damping matrix
    * and set indices of stiffness and mass sparse matrices */
-  if (sdyn->damp == 1)
+  if (sdyn->damp == 1)  /* damped */
   {
-    /* damped */
     actsolv->nsysarray = 3;
     stiff_array = 0;
     mass_array = 1;
     damp_array = 2;
   }
-  else
+  else  /* undamped */
   {
-    /* undamped */
     actsolv->nsysarray = 2;
     stiff_array = 0;
     mass_array = 1;
@@ -547,6 +545,9 @@ void tsi_st_fehlbg(INT disnum_s,
 
   /*--------------------------------------------------------------------*/
   /* call elements to calculate stiffness and mass */
+  /* REMARK: stiffness array may be unusable: not all materials 
+   *         are linerised. In this case Rayleigh's damping matrix
+   *         will be screwed up. */
   *action = calc_struct_nlnstiffmass;
   container.dvec = NULL;
   container.dirich = NULL;
@@ -554,11 +555,10 @@ void tsi_st_fehlbg(INT disnum_s,
   container.dirichfacs = NULL;
   container.kstep = 0;
   calelm(actfield, actsolv, actpart, actintra, 
-         stiff_array, mass_array, &container,action);
-
+         stiff_array, mass_array, &container, action);
 
   /*--------------------------------------------------------------------*/
-  /* calculate Rayleigh damping matrix */
+  /* calculate mass matrix and Rayleigh damping matrix */
   /*   C = k_damp * K_{T}(D_0) + m_damp * M */
   if (damp_array > 0)
   {
@@ -586,7 +586,7 @@ void tsi_st_fehlbg(INT disnum_s,
   isolres = &(ipos->isolres);
 
   /*--------------------------------------------------------------------*/
-  /* compute initial energy */
+  /* compute initial kinetic energy */
   dyne(&dynvar, actintra, actsolv, mass_array, &vel[0], &work[0]);
 
   /*--------------------------------------------------------------------*/
@@ -1001,6 +1001,15 @@ void tsi_st_fehlbg(INT disnum_s,
                          &acc[0], isol->accn,
                          &(actsolv->sysarray[stiff_array]),
                          &(actsolv->sysarray_typ[stiff_array]));
+    /*------------------------------------------------------------------*/
+    /* update material internal variables */
+    *action = calc_struct_update_istep;
+    container.dvec = NULL;
+    container.dirich = NULL;
+    container.global_numeq = 0;
+    container.kstep = 0;
+    calelm(actfield, actsolv, actpart, actintra, 
+           stiff_array, -1, &container, action);
 
     /*------------------------------------------------------------------*/
     /* check whether to write results or not */

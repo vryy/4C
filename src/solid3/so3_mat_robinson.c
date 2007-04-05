@@ -62,6 +62,9 @@ extern TSI_FEHLBG4 tsi_fehlbg4;
 */
 void so3_mat_robinson_ctxtvrfy()
 {
+  const INT itsidyn = genprob.numfld;  /* index of TSI dynamics data */
+  const TSI_DYNAMIC* tsidyn = alldyn[itsidyn].tsidyn;  /* TSI dynamics data */
+
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_enter("so3_mat_robinson_ctxtvrfy");
@@ -74,13 +77,9 @@ void so3_mat_robinson_ctxtvrfy()
   }
 
   /*--------------------------------------------------------------------*/
+  if (tsidyn->kind != tsi_therm_stat_struct_fehlbg)
   {
-    INT itsidyn = genprob.numfld;  /* index of TSI dynamics data */
-    TSI_DYNAMIC* tsidyn = alldyn[itsidyn].tsidyn;  /* TSI dynamics data */
-    if (tsidyn->kind != tsi_therm_stat_struct_fehlbg)
-    {
-      dserror("Robinson's material only applicable in Fehlberg4 TSI");
-    }
+    dserror("Robinson's material only applicable in Fehlberg4 TSI");
   }
 
   /*--------------------------------------------------------------------*/

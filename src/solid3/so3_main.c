@@ -145,7 +145,7 @@ void solid3(PARTITION *actpart,
                            NULL, estif_global, NULL);
       break;
     /*------------------------------------------------------------------*/
-    /* nonlinear stiffness matrix */
+    /* nonlinear stiffness matrix and internal force vector */
     case calc_struct_nlnstiff:
       actmat = &(mat[ele->mat-1]);
       so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));

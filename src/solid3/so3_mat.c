@@ -275,6 +275,10 @@ void so3_mat_density(MATERIAL *mat,
     case m_hyper_polyconvex:
       *density = mat ->m.hyper_polyconvex->density;
       break;
+    /* Robinson's visco-plastic material */
+    case m_vp_robinson:
+      *density = mat ->m.vp_robinson->density;
+      break;
     /* */
     default:
       dserror("Density of chosen material is not defined!");
