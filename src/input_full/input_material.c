@@ -77,6 +77,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("NUE"    ,&(mat[i].m.stvenant->possionratio),&ierr);
       frdouble("DENS"   ,&(mat[i].m.stvenant->density)     ,&ierr);
       frdouble("THEXPANS",&(mat[i].m.stvenant->thermexpans) ,&ierr);
+      frdouble("REALLYIMPORTANT",&(mat[i].m.stvenant->really) ,&ierr);
    }
    frchk("MAT_Struct_Orthotropic",&ierr);
    if (ierr==1)
