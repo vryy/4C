@@ -90,7 +90,7 @@ int FSIMatrixFree::Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) con
   // currentX.Map()!=X.Map() and we are bound to call computeF with
   // the right map.
   perturbX = currentX;
-  perturbX.update(1.0,nevX,0.0);
+  perturbX.update(0.1,nevX,0.0);
 
   if (!useGroupForComputeF)
     interface->computeF(perturbX.getEpetraVector(), perturbY.getEpetraVector(),
@@ -102,7 +102,7 @@ int FSIMatrixFree::Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) con
     perturbY = groupPtr->getF();
   }
 
-  nevY.update(1.0, perturbY, 0.0);
+  nevY.update(10.0, perturbY, -1.0, nevX, 0.0);
 
 #if 0
   // Use a directional derivative to compute y = Jx

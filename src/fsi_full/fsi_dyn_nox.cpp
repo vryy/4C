@@ -330,10 +330,8 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
 
   // set new interface displacement x
   ARRAY_POSITION *ipos = &(structfield->dis[s_disnum_calc].ipos);
-#if 0
   ARRAY_POSITION *fluid_ipos = &(fluidfield->dis[f_disnum_calc].ipos);
   ARRAY_POSITION *ale_ipos = &(alefield->dis[a_disnum_calc].ipos);
-#endif
 
   // enforce linear residuum call counter array size
   while (NlIterCount() >= static_cast<int>(linsolvcount_.size()))
@@ -346,28 +344,42 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
   // backup from the outside.
   INT itnum = 1;
 
-  // Use the special SD implementation for finite differences. This is
-  // a test only. I do not think this is the way to go in general.
-#if 0
-  if (fillFlag==FD_Res)
+#if 1
+  if (par.nprocs==1)
+  {
+    static int in_counter;
+    std::ostringstream filename;
+    //filename << "plot/x_" << in_counter << ".plot";
+    filename << allfiles.outputfile_kenner
+             << ".x"
+             << "." << Timestep()
+             << "." << NlIterCount()
+             << "." << LinCount()
+             << ".plot";
+
+    std::cout << "write '" YELLOW_LIGHT << filename.str() << END_COLOR "'\n";
+    std::ofstream out(filename.str().c_str());
+    for (int i=0; i<x.MyLength()-1; i+=2)
+    {
+      out << i << " " << x[i] << " " << x[i+1] << "\n";
+    }
+    in_counter += 1;
+  }
+#endif
+
+  if (fillFlag==User)
   {
     // use the explicit tangent calculation we own
 
     FLUID_DYNAMIC* fdyn = alldyn[genprob.numff].fdyn;
 
-    // we get x+delta v and all we need is delta v. Thus we have to
-    // substract the x. Fortunatelly it is known.
-
+    // make x redundant
     redundantsol_->PutScalar(0);
     int err = redundantsol_->Import(x,*importredundant_,Insert);
     if (err!=0)
       dserror("Import failed with err=%d",err);
-    redundantf_->PutScalar(0);
-    err = redundantf_->Import(*oldx_,*importredundant_,Insert);
-    if (err!=0)
-      dserror("Import failed with err=%d",err);
 
-    DistributeDelta dd(*redundantsol_,*redundantf_,ipos->mf_sd_g);
+    DistributeDisplacements dd(*redundantsol_,ipos->mf_sd_g);
     loop_interface(structfield,dd,*redundantsol_);
 
     /*--------------------- solve Ale mesh with sol_mf[6][i] used as DBC ---*/
@@ -405,130 +417,107 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
     /*-------------------------------------------------- solve structure ---*/
     fsi_struct_sd(struct_work_,structfield,s_disnum_calc,s_disnum_io,0,fluidfield,f_disnum_calc);
 
-    // We get here F(delta v). But nox wants to substract F(x), so it
-    // expects F(x + delta v). We know the old (last) F(x) and add it
-    // here.
-
+    //GatherDisplacements gr(F,ipos->mf_dispnp);
     GatherRelaxation gr(F,8);
     loop_interface(structfield,gr,F);
+    //F.Update(-1.0,x,-1.0);
 
-    F.Update(1,*oldf_,1);
-
-    return true;
   }
-#endif
-
-  // restore structfield state
-  solserv_sol_copy(structfield, s_disnum_calc, node_array_sol_mf, node_array_sol_mf, 8,ipos->mf_dispnp);
-  solserv_sol_copy(structfield, s_disnum_calc, node_array_sol_mf, node_array_sol_mf, 9,ipos->mf_reldisp);
-  if (itnum > 0)
-    solserv_sol_copy(structfield,s_disnum_calc,node_array_sol,node_array_sol,11, 9);
-  if (itnum == 0)
-    solserv_sol_copy(structfield,s_disnum_calc,node_array_sol,node_array_sol,12, 1);
-
-  // keep a copy
-  oldx_ = Teuchos::rcp(new Epetra_Vector(x));
-
-  //cout << x.Map();
-
-  // make x redundant
-  redundantsol_->PutScalar(0);
-  int err = redundantsol_->Import(x,*importredundant_,Insert);
-  if (err!=0)
-    dserror("Import failed with err=%d",err);
-
-  DistributeDisplacements dd(*redundantsol_,ipos->mf_dispnp);
-  loop_interface(structfield,dd,*redundantsol_);
-
-#if 1
-  if (par.myrank==0)
+  else
   {
-    static int in_counter;
-    std::ostringstream filename;
-    //filename << "plot/x_" << in_counter << ".plot";
-    filename << allfiles.outputfile_kenner
-             << ".x"
-             << "." << Timestep()
-             << "." << NlIterCount()
-             << "." << LinCount()
-             << ".plot";
 
-    std::cout << "write '" YELLOW_LIGHT << filename.str() << END_COLOR "'\n";
-    std::ofstream out(filename.str().c_str());
-    for (int i=0; i<redundantsol_->GlobalLength()-1; i+=2)
+    // restore structfield state
+    solserv_sol_copy(structfield, s_disnum_calc, node_array_sol_mf, node_array_sol_mf, 8,ipos->mf_dispnp);
+    solserv_sol_copy(structfield, s_disnum_calc, node_array_sol_mf, node_array_sol_mf, 9,ipos->mf_reldisp);
+    if (itnum > 0)
+      solserv_sol_copy(structfield,s_disnum_calc,node_array_sol,node_array_sol,11, 9);
+    if (itnum == 0)
+      solserv_sol_copy(structfield,s_disnum_calc,node_array_sol,node_array_sol,12, 1);
+
+    // keep a copy
+    oldx_ = Teuchos::rcp(new Epetra_Vector(x));
+
+    //cout << x.Map();
+
+    // make x redundant
+    redundantsol_->PutScalar(0);
+    int err = redundantsol_->Import(x,*importredundant_,Insert);
+    if (err!=0)
+      dserror("Import failed with err=%d",err);
+
+    DistributeDisplacements dd(*redundantsol_,ipos->mf_dispnp);
+    loop_interface(structfield,dd,*redundantsol_);
+
+    // Calculate new interface displacements starting from the given
+    // ones.
+
+    /*------------------------------- CMD -------------------------------*/
+    if (fillFlag!=User)
     {
-      out << i << " " << (*redundantsol_)[i] << " " << (*redundantsol_)[i+1] << "\n";
+      perf_begin(44);
+      fsi_ale_calc(ale_work_,alefield,a_disnum_calc,a_disnum_io,structfield,s_disnum_calc);
+      perf_begin(44);
     }
-    in_counter += 1;
-  }
-#endif
-
-  // Calculate new interface displacements starting from the given
-  // ones.
-
-  /*------------------------------- CMD -------------------------------*/
-  if (fillFlag!=User)
-  {
-    perf_begin(44);
-    fsi_ale_calc(ale_work_,alefield,a_disnum_calc,a_disnum_io,structfield,s_disnum_calc);
-    perf_begin(44);
-  }
 
 //   debug_out_data(alefield, "ale_disp_incr", node_array_sol_increment, alefield->dis[a_disnum_calc].ipos.dispnp);
-  debug_out_data(alefield, "ale_disp", node_array_sol_mf, alefield->dis[a_disnum_calc].ipos.mf_dispnp);
+    debug_out_data(alefield, "ale_disp", node_array_sol_mf, alefield->dis[a_disnum_calc].ipos.mf_dispnp);
 
-  /*------------------------------- CFD -------------------------------*/
-  FLUID_DYNAMIC* fdyn = alldyn[genprob.numff].fdyn;
-  int itemax = fdyn->itemax;
+    /*------------------------------- CFD -------------------------------*/
+    FLUID_DYNAMIC* fdyn = alldyn[genprob.numff].fdyn;
+    int itemax = fdyn->itemax;
 
-  // We might want to do just one linear fluid solution in matrix free
-  // or finite difference settings.
+    // We might want to do just one linear fluid solution in matrix free
+    // or finite difference settings.
 
-  // be careful: NUMSTASTEPS = -1 in FLUID DYNAMIC input section
-  // needed for this to work. Otherwise the start step might reset
-  // itemax!
+    // be careful: NUMSTASTEPS = -1 in FLUID DYNAMIC input section
+    // needed for this to work. Otherwise the start step might reset
+    // itemax!
 
-  if (fillFlag==FD_Res && fdresitemax_ > 0)
-    fdyn->itemax = fdresitemax_;
+    if (fillFlag==FD_Res && fdresitemax_ > 0)
+      fdyn->itemax = fdresitemax_;
 
-  if (fillFlag==MF_Res && mfresitemax_ > 0)
-    fdyn->itemax = mfresitemax_;
+    if (fillFlag==MF_Res && mfresitemax_ > 0)
+      fdyn->itemax = mfresitemax_;
 
-  // not sure about that
-  if (fillFlag==MF_Jac && mfresitemax_ > 0)
-    fdyn->itemax = mfresitemax_;
+    // not sure about that
+    if (fillFlag==MF_Jac && mfresitemax_ > 0)
+      fdyn->itemax = mfresitemax_;
 
-  if (fillFlag==User && mfresitemax_ > 0)
-    fdyn->itemax = mfresitemax_;
+    if (fillFlag==User && mfresitemax_ > 0)
+      fdyn->itemax = mfresitemax_;
 
-  perf_begin(42);
-  fsi_fluid_calc(fluid_work_,fluidfield,f_disnum_calc,f_disnum_io,alefield,a_disnum_calc);
-  perf_end(42);
+    perf_begin(42);
+    fsi_fluid_calc(fluid_work_,fluidfield,f_disnum_calc,f_disnum_io,alefield,a_disnum_calc);
+    perf_end(42);
 
-  fdyn->itemax = itemax;
+    fdyn->itemax = itemax;
 
-  debug_out_data(fluidfield, "fluid_vel", node_array_sol_increment, fluidfield->dis[0].ipos.velnp);
+    debug_out_data(fluidfield, "fluid_vel", node_array_sol_increment, fluidfield->dis[0].ipos.velnp);
 
-  /*------------------------------- CSD -------------------------------*/
-  perf_begin(43);
-  fsi_struct_calc(struct_work_,structfield,s_disnum_calc,s_disnum_io,itnum,fluidfield,f_disnum_calc);
-  perf_end(43);
+    /*------------------------------- CSD -------------------------------*/
+    perf_begin(43);
+    fsi_struct_calc(struct_work_,structfield,s_disnum_calc,s_disnum_io,itnum,fluidfield,f_disnum_calc);
+    perf_end(43);
 
-  debug_out_data(structfield, "struct_disp", node_array_sol, 0);
+    debug_out_data(structfield, "struct_disp", node_array_sol, 0);
 
-  // Fill the distributed interface displacement vector F. We
-  // don't have a direct mapping, so loop all structural nodes and
-  // select the dofs that belong to the local part of the interface.
+    // Fill the distributed interface displacement vector F. We
+    // don't have a direct mapping, so loop all structural nodes and
+    // select the dofs that belong to the local part of the interface.
 
-  GatherDisplacements gr(F,ipos->mf_dispnp);
-  loop_interface(structfield,gr,F);
-  F.Update(-1.0,x,1.0);
+    // F = -R = d(i+1) - d(i)
+    // This is the rhs of our equation!
 
-  // keep a copy
-  oldf_ = Teuchos::rcp(new Epetra_Vector(F));
+    GatherDisplacements gr(F,ipos->mf_dispnp);
+    loop_interface(structfield,gr,F);
+    F.Update(-1.0,x,1.0);
+
+    // keep a copy
+    oldf_ = Teuchos::rcp(new Epetra_Vector(F));
+  }
 
 #if 1
-  if (par.myrank==0)
+  if (par.nprocs==1)
   {
     static int out_counter;
     std::ostringstream filename;
