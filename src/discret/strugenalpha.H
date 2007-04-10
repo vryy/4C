@@ -449,9 +449,7 @@ public:
   */
   virtual const Epetra_Vector* getSolution()
   {
-    cout << "getSolution not yet impl.\n"; fflush(stdout);
-    exit(0);
-    return NULL;
+    return integrator_.disi_.get();
   }
 
   /*!
@@ -491,7 +489,7 @@ public:
 
 
   /*!
-  \brief For problems with non-constant nodal block size on can use the
+  \brief For problems with non-constant nodal block size one can use the
          VBMETIS coarsening scheme (currently not supported).
   
   */

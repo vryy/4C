@@ -756,7 +756,7 @@ void StruGenAlpha::NonlinearCG()
   mlparams.set("nlnML output",                                      outlevel   ); // ML-output-level (0-10)
   mlparams.set("nlnML max levels",                                  maxlevel   ); // max. # levels (minimum = 2 !)
   mlparams.set("nlnML coarse: max size",                            maxcsize   ); // the size ML stops generating coarser levels
-  mlparams.set("nlnML is linear preconditioner",                    true       );
+  mlparams.set("nlnML is linear preconditioner",                    false      );
   mlparams.set("nlnML is matrixfree",                               false      ); 
   mlparams.set("nlnML apply constraints",                           false      ); 
   mlparams.set("nlnML Jacobian fix diagonal",                       false      ); 
@@ -777,25 +777,25 @@ void StruGenAlpha::NonlinearCG()
   mlparams.set("nlnML nodes per aggregate",                         9          ); // # nodes per agg for coarsening METIS and VBMETIS
 
   mlparams.set("nlnML use nlncg on fine level",                     true); // use nlnCG or mod. Newton's method   
-  mlparams.set("nlnML use nlncg on medium level",                   true);    
+  mlparams.set("nlnML use nlncg on medium level",                   false);    
   mlparams.set("nlnML use nlncg on coarsest level",                 false);    
   
-  mlparams.set("nlnML max iterations newton-krylov fine level",     1000); // # iterations of lin. CG in mod. Newton's method    
-  mlparams.set("nlnML max iterations newton-krylov medium level" ,  1000);    
-  mlparams.set("nlnML max iterations newton-krylov coarsest level", 50);    
+  mlparams.set("nlnML max iterations newton-krylov fine level",     30); // # iterations of lin. CG in mod. Newton's method    
+  mlparams.set("nlnML max iterations newton-krylov medium level" ,  50);    
+  mlparams.set("nlnML max iterations newton-krylov coarsest level", 150);    
 
   mlparams.set("nlnML linear smoother type fine level",             "MLS"); // MLS SGS BSGS Jacobi MLS Bcheby AmesosKLU   
   mlparams.set("nlnML linear smoother type medium level",           "MLS"); 
   mlparams.set("nlnML linear smoother type coarsest level",         "AmesosKLU"); 
-  mlparams.set("nlnML linear smoother sweeps fine level",           6);
+  mlparams.set("nlnML linear smoother sweeps fine level",           24);
   mlparams.set("nlnML linear smoother sweeps medium level",         6);
   mlparams.set("nlnML linear smoother sweeps coarsest level",       1);
 
   mlparams.set("nlnML nonlinear presmoothing sweeps fine level",    0);
   mlparams.set("nlnML nonlinear presmoothing sweeps medium level",  0);
-  mlparams.set("nlnML nonlinear smoothing sweeps coarse level",     1);
-  mlparams.set("nlnML nonlinear postsmoothing sweeps medium level", 3);
-  mlparams.set("nlnML nonlinear postsmoothing sweeps fine level",   3);
+  mlparams.set("nlnML nonlinear smoothing sweeps coarse level",     3);
+  mlparams.set("nlnML nonlinear postsmoothing sweeps medium level", 1);
+  mlparams.set("nlnML nonlinear postsmoothing sweeps fine level",   5);
   
   // create the fine level interface if it does not exist
   if (fineinterface_==null)
@@ -809,6 +809,43 @@ void StruGenAlpha::NonlinearCG()
     prec_ = rcp(new NLNML::NLNML_Preconditioner(fineinterface_,mlparams,discret_.Comm()));
   // tell preconditioner to recompute from scratch
   prec_->setinit(false);
+
+#if 1 // use the nonlinear preconditioner as a solver without the outer nox loop
+  {
+    Epetra_Time timer(discret_.Comm());
+    double t0 = timer.ElapsedTime();
+    prec_->solve();
+    double t1 = timer.ElapsedTime();
+    
+    // get status and print output message
+    if (printscreen && myrank_==0)
+    {
+      printf("NOX/ML :============solve time incl. setup : %15.4f sec\n",t1-t0);
+      double appltime = fineinterface_->getsumtime();
+      printf("NOX/ML :===========of which time in ccarat : %15.4f sec\n",appltime);
+      cout << "NOX/ML :======number calls to computeF in this solve : " 
+           << fineinterface_->getnumcallscomputeF() << "\n\n\n";
+      fflush(stdout);
+    }
+    fineinterface_->resetsumtime();
+    fineinterface_->setnumcallscomputeF(0);
+    
+    //------------------------- do update for mid configuration quantities
+    // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
+    dism_->Update(1.-alphaf,*disi_,1.0);
+    // V_{n+1-alpha_f} := V_{n+1-alpha_f}
+    //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
+    velm_->Update((1.-alphaf)*gamma/(beta*dt),*disi_,1.0);
+    // A_{n+1-alpha_m} := A_{n+1-alpha_m}
+    //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
+    accm_->Update((1.-alpham)/(beta*dt*dt),*disi_,1.0);
+    
+    //-------------------------------------- don't need this at the moment
+    stiff_ = null;
+    return;
+  }
+#endif
+
 
   // create a matrix free operator if it does not exist
   if (matfreeoperator_==null)
@@ -1075,7 +1112,7 @@ void StruGenAlpha::Integrate()
   else dserror("Unknown type of equilibrium iteration");
   
   return;
-} 
+}
 
 
 
