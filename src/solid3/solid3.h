@@ -560,23 +560,50 @@ void so3_load(ELEMENT *ele,  /* actual element */
               SO3_GPSHAPEDERIV *gpshade,
               INT imyrank,
               ARRAY *eforc_global); /* global element load vector fext */
-void so3_load_vol(ELEMENT *ele,
-                  INT nelenod,
-                  DOUBLE shape[MAXNOD_SOLID3],
-                  DOUBLE fac,
-                  DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3]);
-void so3_load_surf(ELEMENT *ele,
-                   INT nelenod,
-                   GSURF *gsurf,
-                   DOUBLE shape[MAXNOD_SOLID3],
-                   DOUBLE fac,
-                   DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3]);
-void so3_load_line(ELEMENT *ele,
-                   INT nelenod,
-                   GLINE *gline,
-                   DOUBLE shape[MAXNOD_SOLID3],
-                   DOUBLE fac,
-                   DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3]);
+
+
+/*----------------------------------------------------------------------*/
+/* file so3_load_line.c */
+void so3_load_line_int(ELEMENT* ele,
+                       SO3_DATA* data,  /*!< Gauss point data */
+                       DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3],
+                       INT ngline,
+                       GLINE* gsurf[MAXEDG_SOLID3],
+                       DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3]);
+void so3_load_line_val(ELEMENT *ele,
+                       INT nelenod,
+                       GLINE *gline,
+                       DOUBLE shape[MAXNOD_SOLID3],
+                       DOUBLE fac,
+                       DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3]);
+
+/*----------------------------------------------------------------------*/
+/* file so3_load_surf.c */
+void so3_load_surf_int(ELEMENT* ele,
+                       SO3_DATA* data,  /*!< Gauss point data */
+                       DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3],
+                       INT ngsurf,
+                       GSURF* gsurf[MAXSID_SOLID3],
+                       DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3]);
+void so3_load_surf_val(ELEMENT* ele,
+                       INT nelenod,
+                       GSURF* gsurf,
+                       DOUBLE shape[MAXNOD_SOLID3],
+                       DOUBLE fac,
+                       DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3]);
+
+/*----------------------------------------------------------------------*/
+/* file so3_load_vol.c */
+void so3_load_vol_int(ELEMENT* ele,
+                      SO3_GPSHAPEDERIV *gpshade,
+                      DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3],
+                      GVOL* gvol,
+                      DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3]);
+void so3_load_vol_val(ELEMENT* ele,
+                      INT nelenod,
+                      DOUBLE shape[MAXNOD_SOLID3],
+                      DOUBLE fac,
+                      DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3]);
 
 /*----------------------------------------------------------------------*/
 /* file so3_main.c */
