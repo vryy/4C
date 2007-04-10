@@ -164,9 +164,6 @@ void ntainp_ccadiscret()
 #endif
 
   // all reading is done at this point!
-  // Note that all discretizations and designs have everything on proc 0 here
-  // Note that all discretizations and all design use MPI_COMM_WORLD here
-  // These things will be fixed in create_communicators_ccadiscret
 
   return;
 } // end of ntainp_ccadiscret()
