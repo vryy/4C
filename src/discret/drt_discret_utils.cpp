@@ -54,7 +54,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   
   // get the first element of the discretization
   // Note that a processor might not have any elements
-  // We assume that every proc has an element
+  // We assume that every proc has an element and they are of equal type
   if (!NumMyRowElements()) dserror("Proc does not have any elements");
   DRT::Element* ele = lRowElement(0);
   switch (ele->Type())
@@ -62,6 +62,10 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     case DRT::Element::element_shell8:
       numdf = 6;
       dimns = 6;
+    break;
+    case DRT::Element::element_fluid3:
+      numdf = 4;
+      dimns = 4;
     break;
     case DRT::Element::element_none:
     default:
@@ -227,6 +231,49 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   p   |    0       0       0       1
   */
 
+  if (ele->Type() == DRT::Element::element_fluid3)
+  {
+    for (int i=0; i<NumMyRowNodes(); ++i)
+    {
+      DRT::Node* actnode = lRowNode(i);
+      for (int j=0; j<actnode->Dof().NumDof(); ++j)
+      {
+        const int dof = actnode->Dof().Dofs()[j];
+        const int lid = rowmap->LID(dof);
+        if (lid<0) dserror("Cannot find dof");
+        switch (j) // j is degree of freedom
+        {
+        case 0:
+          mode[0][lid] = 1.0;
+          mode[1][lid] = 0.0;
+          mode[2][lid] = 0.0;
+          mode[3][lid] = 0.0;
+        break;
+        case 1:
+          mode[0][lid] = 0.0;
+          mode[1][lid] = 1.0;
+          mode[2][lid] = 0.0;
+          mode[3][lid] = 0.0;
+        break;
+        case 2:
+          mode[0][lid] = 0.0;
+          mode[1][lid] = 0.0;
+          mode[2][lid] = 1.0;
+          mode[3][lid] = 0.0;
+        break;
+        case 3:
+          mode[0][lid] = 0.0;
+          mode[1][lid] = 0.0;
+          mode[2][lid] = 0.0;
+          mode[3][lid] = 1.0;
+        break;
+        default:
+          dserror("Only dofs 0 - 3 supported");
+        break;
+        } // switch (j)
+      } // for (int j=0; j<actnode->Dof().NumDof(); ++j)
+    } // for (int i=0; i<NumMyRowNodes(); ++i)
+  }
 
 
   return;
