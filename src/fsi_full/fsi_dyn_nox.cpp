@@ -385,6 +385,15 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
     DistributeDisplacements dd(*redundantsol_,ipos->mf_sd_g);
     loop_interface(structfield,dd,*redundantsol_);
 
+    // The prescribed displacement x is an addition to our current
+    // displacement. Why don't we do that?
+//     solserv_sol_add(alefield,a_disnum_calc,
+//                     node_array_sol_mf,
+//                     node_array_sol_mf,
+//                     ale_ipos->mf_dispnp,
+//                     ale_ipos->mf_posnp,
+//                     1.0);
+
     /*--------------------- solve Ale mesh with sol_mf[6][i] used as DBC ---*/
     fsi_ale_sd(ale_work_,alefield, a_disnum_calc, a_disnum_io,structfield,s_disnum_calc);
 
@@ -407,10 +416,28 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
       {
         double actr   = actanode->sol_increment.a.da[ale_ipos->dispnp][j];
         double initr  = actanode->x[j];
+#if 0
+        // Normal case. As we do it with sd relaxation.
+
         /* grid velocity */
         actfnode->sol_increment.a.da[fluid_ipos->gridv][j] = actr/fdyn->dta;
         /* grid position */
         actanode->sol_mf.a.da[ale_ipos->mf_posnp][j] = actr + initr;
+#else
+        // No moving grid. Just velocity conditions at the FSI interface.
+
+        // grid velocity
+        actfnode->sol_increment.a.da[fluid_ipos->gridv][j] = 0;
+        // grid position
+        actanode->sol_mf.a.da[ale_ipos->mf_posnp][j] = initr;
+        // fsi interface condition
+        if ((actfnode->gnode->dirich!=NULL) &&
+            (actfnode->gnode->dirich->dirich_type==DIRICH_CONDITION::dirich_FSI))
+        {
+          //actfnode->sol_increment.a.da[fluid_ipos->relax][j] = actr/fdyn->dta;
+          actfnode->sol_increment.a.da[fluid_ipos->gridv][j] = actr/fdyn->dta;
+        }
+#endif
       }
     }
 

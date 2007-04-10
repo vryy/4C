@@ -430,7 +430,13 @@ for (i=0;i<numnp_total;i++)
 	incr = actnode->sol_increment.a.da;
 	ale_node = actnode->gnode->mfcpnode[genprob.numaf];
 	mf = ale_node->sol_mf.a.da;
+#if 0
+	/* quadratic version */
 	incr[pos][j] = 2*(mf[1][j] - mf[0][j])/fdyn->dta - incr[ipos->veln][j];
+#else
+	/* linear version */
+	incr[pos][j] = (mf[1][j] - mf[0][j])/fdyn->dta;
+#endif
       }
 #endif
    break;
