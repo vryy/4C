@@ -349,6 +349,7 @@ void LINALG::Solver::Solve_aztec(const bool reset)
     }
     if (resolve)
     {
+#if 0
 #ifdef PARALLEL
       if (Comm().MyPID()==0) cout << "Retrying using SuperLU\n"; fflush(stdout);
       Amesos_Superludist superlusolver(*lp_);
@@ -367,6 +368,7 @@ void LINALG::Solver::Solve_aztec(const bool reset)
       if (err) dserror("Amesos_Klu.NumericFactorization() returned %d",err);
       err     = klusolver.Solve();
       if (err) dserror("Amesos_Klu.Solve() returned %d",err);        
+#endif
 #endif      
     }
   } // if (status[AZ_why] != AZ_normal)
@@ -672,7 +674,7 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
       break;
       case azprec_MLfluid2: // full Pretrov-Galerkin unsymmetric smoothed
         mllist.set("energy minimization: enable",true);
-        mllist.set("energy minimization: type",2); // 1,2,3 cheap -> expensive
+        mllist.set("energy minimization: type",3); // 1,2,3 cheap -> expensive
         mllist.set("aggregation: block scaling",false); 
       break;
       default: dserror("Unknown type of ml preconditioner");

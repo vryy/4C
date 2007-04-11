@@ -63,9 +63,17 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
       numdf = 6;
       dimns = 6;
     break;
+    case DRT::Element::element_wall1:
+      numdf = 2;
+      dimns = 3;
+    break;
     case DRT::Element::element_fluid3:
       numdf = 4;
       dimns = 4;
+    break;
+    case DRT::Element::element_fluid2:
+      numdf = 3;
+      dimns = 3;
     break;
     case DRT::Element::element_none:
     default:
@@ -114,9 +122,10 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   
 #ifdef D_SHELL8
   // special for shell8
-  Epetra_SerialDenseMatrix dir(NumMyRowNodes(),3);
+  Epetra_SerialDenseMatrix dir;
   if (ele->Type()==DRT::Element::element_shell8)
   {
+    dir.Shape(NumMyRowNodes(),3);
     for (int i=0; i<NumMyRowNodes(); ++i)
     {
       DRT::Node* actnode = lRowNode(i);
@@ -219,7 +228,40 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
         } // switch (j)
       } // for (int j=0; j<actnode->Dof().NumDof(); ++j)
     } // for (int i=0; i<NumMyRowNodes(); ++i)
-  }
+  } // if (ele->Type() == DRT::Element::element_shell8)
+
+
+  else if (ele->Type() == DRT::Element::element_wall1)
+  {
+    for (int i=0; i<NumMyRowNodes(); ++i)
+    {
+      DRT::Node* actnode = lRowNode(i);
+      const double* x = actnode->X();
+      for (int j=0; j<actnode->Dof().NumDof(); ++j)
+      {
+        const int dof = actnode->Dof().Dofs()[j];
+        const int lid = rowmap->LID(dof);
+        if (lid<0) dserror("Cannot find dof");
+        switch (j) // j is degree of freedom
+        {
+        case 0:
+          mode[0][lid] = 1.0;
+          mode[1][lid] = 0.0;
+          mode[2][lid] = -x[1] + x0[1];
+        break;
+        case 1:
+          mode[0][lid] = 0.0;
+          mode[1][lid] = 1.0;
+          mode[2][lid] = x[0] - x0[0];
+        break;
+        default:
+          dserror("Only dofs 0 - 1 supported");
+        break;
+        } // switch (j)
+      } // for (int j=0; j<actnode->Dof().NumDof(); ++j)
+    } // for (int i=0; i<NumMyRowNodes(); ++i)
+  } // else if (ele->Type() == DRT::Element::element_wall1)
+
 
   /* the rigid body modes for fluids are:
         xtrans   ytrans  ztrans   pressure
@@ -231,7 +273,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   p   |    0       0       0       1
   */
 
-  if (ele->Type() == DRT::Element::element_fluid3)
+  else if (ele->Type() == DRT::Element::element_fluid3)
   {
     for (int i=0; i<NumMyRowNodes(); ++i)
     {
@@ -273,8 +315,47 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
         } // switch (j)
       } // for (int j=0; j<actnode->Dof().NumDof(); ++j)
     } // for (int i=0; i<NumMyRowNodes(); ++i)
-  }
+  } // else if (ele->Type() == DRT::Element::element_fluid3)
 
+  else if (ele->Type() == DRT::Element::element_fluid2)
+  {
+    for (int i=0; i<NumMyRowNodes(); ++i)
+    {
+      DRT::Node* actnode = lRowNode(i);
+      for (int j=0; j<actnode->Dof().NumDof(); ++j)
+      {
+        const int dof = actnode->Dof().Dofs()[j];
+        const int lid = rowmap->LID(dof);
+        if (lid<0) dserror("Cannot find dof");
+        switch (j) // j is degree of freedom
+        {
+        case 0:
+          mode[0][lid] = 1.0;
+          mode[1][lid] = 0.0;
+          mode[2][lid] = 0.0;
+          mode[3][lid] = 0.0;
+        break;
+        case 1:
+          mode[0][lid] = 0.0;
+          mode[1][lid] = 1.0;
+          mode[2][lid] = 0.0;
+          mode[3][lid] = 0.0;
+        break;
+        case 2:
+          mode[0][lid] = 0.0;
+          mode[1][lid] = 0.0;
+          mode[2][lid] = 1.0;
+          mode[3][lid] = 0.0;
+        break;
+        default:
+          dserror("Only dofs 0 - 2 supported");
+        break;
+        } // switch (j)
+      } // for (int j=0; j<actnode->Dof().NumDof(); ++j)
+    } // for (int i=0; i<NumMyRowNodes(); ++i)
+  } // else if (ele->Type() == DRT::Element::element_fluid2)
+  
+  else ; // do nothing
 
   return;
 }
