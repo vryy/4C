@@ -182,6 +182,31 @@ void f2_time_update_subscales_for_incr_gen_alpha (
     INT             disnum_calc
     );
 
+void f2_up_tds_at_gp_genalpha (
+  double  *sp_trial       , 
+  double  *sp_acc_trial   , 
+  double  *su_trial       , 
+  double  *su_acc_mod     , 
+  double   sp_old         , 
+  double   sp_acc_old     , 
+  double   su_old      [2], 
+  double   su_acc_old  [2], 
+  int      ihoel        ,
+  double   alpha_M      ,
+  double   alpha_F      ,
+  double   theta        ,
+  double   dt           ,
+  double   tau_M        ,
+  double   tau_C        ,
+  double   visc         ,
+  double   velint [2]   ,
+  double   accint [2]   ,
+  double   gradp  [2]   ,
+  double **vderxy       ,
+  double **vderxy2      ,
+  double  *edeadng       
+  );
+
 
 /************************************************************************
  | f2_caltau_tds.c                                                       |

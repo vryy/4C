@@ -151,6 +151,9 @@ case calc_fluid_initvort:
 break;
 
 /*------------------------------------------- call the element routines */
+#ifdef D_FLUID2_TDS
+case calc_fluid_time_update:
+#endif
 case calc_fluid:
 /*---------------------------------------------------- multi-level FEM? */
 #ifdef FLUID2_ML

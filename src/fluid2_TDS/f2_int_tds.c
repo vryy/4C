@@ -182,15 +182,15 @@ theta  =fdyn->theta;
 switch (typ)
 {
 case quad4: case quad8: case quad9:  /* --> quad - element */
-   icode   = 3; /* flag for higher order elements                 */
-   ihoel   = 1;	/* flag for eveluation of shape functions         */
+   icode   = 3; /* flag for eveluation of shape functions         */
+   ihoel   = 1;	/* flag for higher order elements                 */
    /* initialise integration */
    nir = ele->e.f2->nGP[0];
    nis = ele->e.f2->nGP[1];
 break;
 case tri6: /* --> tri - element */
-   icode   = 3; /* flag for higher order elements                 */
-   ihoel   = 1;	/* flag for eveluation of shape functions         */
+   icode   = 3; /* flag for eveluation of shape functions         */
+   ihoel   = 1;	/* flag for higher order elements                 */
    /* initialise integration */
    nir  = ele->e.f2->nGP[0];
    nis  = 1;
@@ -478,7 +478,6 @@ void f2_int_gen_alpha_tds(
 	              DOUBLE         **wa2
 	             )
 {
-INT       i;          /* a counter                                      */
 INT       dim;        /* a counter for xyz                              */
     
 INT       iel;        /* number of nodes                                */
@@ -504,18 +503,22 @@ DOUBLE    velint[2];  /* velocity vector at integration point
 		                                            (n+alpha_F) */
 DOUBLE    accint[2];  /* acceleration vector at integration point
 		                                            (n+alpha_M) */
-DOUBLE    hot   [2];
+DOUBLE   *su_trial     ;/* trial subscale velocity at integration point     */
+DOUBLE   *su_acc_mod   ;/* trial subscale acceleration at integration point */
+DOUBLE    su_old    [2];/* old subscale velocity at integration point       */
+DOUBLE    su_acc_old[2];/* old subscale acceleration at integration point   */
+DOUBLE    sp_trial     ;/* trial subscale pressure at integration point     */
+DOUBLE    sp_acc_trial ;/* trial subscale pressure at integration point     */
+DOUBLE    sp_old       ;/* old subscale pressure at integration point       */
+DOUBLE    sp_acc_old   ;/* old subscale pressure at integration point       */
 
-DOUBLE    res   [2];
-
-
-DOUBLE    svel_trial[2];/* trial subscale velocity at integration point */
-DOUBLE    sacc_trial[2];/* trial subscale acceleration at integration point */
-
-DOUBLE    spres_trial;  /* trial subscale pressure at integration point */
-DIS_TYP   typ;	      /* element type                                   */
+DIS_TYP   typ;	        /* element type                                   */
 
 DOUBLE    alpha_M,alpha_F;
+DOUBLE    theta;
+DOUBLE    dt;
+
+DOUBLE    tau_M,tau_C;
 
 FLUID_DYNAMIC   *fdyn;
 FLUID_DATA      *data; 
@@ -533,6 +536,14 @@ is_ale = ele->e.f2->is_ale;
 
 alpha_F=fdyn->alpha_f;
 alpha_M=fdyn->alpha_m;
+theta  =fdyn->theta;
+dt     =fdyn->dt;
+
+tau_M  = fdyn->tau[0];
+tau_C  = fdyn->tau[2];
+
+su_trial  =CCACALLOC(1,2*sizeof(double));
+su_acc_mod=CCACALLOC(1,2*sizeof(double));
 
 /*------- get integraton data and check if elements are "higher order" */
 switch (typ)
@@ -601,19 +612,13 @@ for (lr=0;lr<nir;lr++)
       /*----------------------------------- compute global derivates ---*/
       f2_gder(derxy,deriv,xjm,det,iel);
 
-      /*---------- get velocities (n+alpha_F,i) at integration point ---*/
-      f2_veci(velint,funct,evelng,iel);
-
+      
       /*------- get accelerations (n+alpha_M,i) at integration point ---*/
       f2_veci(accint,funct,eaccng,iel);
 
-      /*------------------------------- get pressure at time (n+1,i) ---*/
-      presint = f2_scali(funct,epreng,iel);
+      /*---------- get velocities (n+alpha_F,i) at integration point ---*/
+      f2_veci(velint,funct,evelng,iel);
 
-      /*---------------------get pressure derivative at time (n+1,i) ---*/
-
-      f2_pder(gradpint,derxy,epreng,iel);
-      
       /*-- get velocity (n+alpha_F,i) derivatives at integration point -*/
       f2_vder(vderxy,derxy,evelng,iel);
 
@@ -628,24 +633,101 @@ for (lr=0;lr<nir;lr++)
 	  f2_vder2(vderxy2,derxy2,evelng,iel);
       }
 
-      /* subscale velocity and acceleration */
-      for(i=0;i<2;i++)
-      {
-	  svel_trial[i]=
-	      (alpha_F  )*ele->e.f2->sub_vel_trial.a.da[i][lr*nis+ls]
-	      +
-	      (1-alpha_F)*ele->e.f2->sub_vel.a.da[i][lr*nis+ls];
-	  
-	  sacc_trial[i]=
-	      (alpha_M  )*ele->e.f2->sub_vel_acc_trial.a.da[i][lr*nis+ls]
-	      +		  
-	      (1-alpha_M)*ele->e.f2->sub_vel_acc.a.da[i][lr*nis+ls];
+      /*------------------------------- get pressure at time (n+1,i) ---*/
+      presint = f2_scali(funct,epreng,iel);
 
+      /*---------------------get pressure derivative at time (n+1,i) ---*/
+      f2_pder(gradpint,derxy,epreng,iel);
+
+      /*------ get the old values of the subscales at integration point */
+
+      sp_old      =ele->e.f2->sub_pres.a.dv    [lr*nis+ls];
+      sp_acc_old  =ele->e.f2->sub_pres_acc.a.dv[lr*nis+ls];
+
+      for(dim=0;dim<2;dim++)
+      {
+        su_old      [dim] =ele->e.f2->sub_vel.a.da    [dim][lr*nis+ls];
+        /* remember: we store the modified acceleration without
+         *           bodyforce!                                         */
+        su_acc_old  [dim] =ele->e.f2->sub_vel_acc.a.da[dim][lr*nis+ls];
       }
 
-      /* subscale pressure */
-      spres_trial=ele->e.f2->sub_pres_trial.a.dv[lr*nis+ls];
+#if 0
+      printf("sp_trial     %22.15e\n"        ,sp_trial);
+      printf("sp_acc_trial %22.15e\n"        ,sp_acc_trial);
+      printf("su_trial     %22.15e %22.15e\n",su_trial[0],su_trial[1]);
+      printf("su_acc_mod   %22.15e %22.15e\n",su_acc_mod[0],su_acc_mod[1]);
+      printf("sp_old       %22.15e\n"        ,sp_old);
+      printf("sp_acc_old   %22.15e\n"        ,sp_acc_old);
+      printf("su_old       %22.15e %22.15e\n",su_old[0],su_old[1]);
+      printf("su_acc_old   %22.15e %22.15e\n",su_acc_old[0],su_acc_old[1]);
+      printf("edeadng      %22.15e %22.15e\n",edeadng[0],edeadng[1]);
+#endif
+      
+      f2_up_tds_at_gp_genalpha (
+        &sp_trial      ,
+        &sp_acc_trial  ,
+        su_trial       ,
+        su_acc_mod     ,
+        sp_old         ,
+        sp_acc_old     ,
+        su_old         ,
+        su_acc_old     ,
+        ihoel          ,
+        alpha_M        ,
+        alpha_F        ,
+        theta          ,
+        dt             ,
+        tau_M          ,
+        tau_C          ,
+        visc           ,
+        velint         ,
+        accint         ,
+        gradpint       ,
+        vderxy         ,
+        vderxy2        ,
+        edeadng 
+        );
 
+      /* we store the calculated subscale quantities on the element.
+       * This is not really necessary, but convenient for easy coding...*/
+      
+      ele->e.f2->sub_pres_trial.a.dv[lr*nis+ls]    =sp_trial;
+      ele->e.f2->sub_pres_acc_trial.a.dv[lr*nis+ls]=sp_acc_trial;
+
+      for(dim=0;dim<2;dim++)
+      {
+        ele->e.f2->sub_vel_trial    .a.da[dim][lr*nis+ls] =su_trial  [dim];
+        ele->e.f2->sub_vel_acc_trial.a.da[dim][lr*nis+ls] =su_acc_mod[dim];
+      }
+      
+      if(0)
+      {
+        printf("sp_trial %22.15e\n",sp_trial);
+        printf("su     %22.15e\n",su_trial[0]);
+        printf("su_acc %22.15e\n",su_acc_mod[0]);
+      }
+
+      /* the subscale pressure is evaluated at time (n+1), the same as
+       * the pressure                                                   */
+      sp_trial=ele->e.f2->sub_pres_trial.a.dv[lr*nis+ls];
+
+
+      for(dim=0;dim<2;dim++)
+      {
+        /* we need the subscale acceleration at the intermediate
+         * timestep (n+alpha_M)                                         */
+        su_acc_mod[dim]=
+          (1-alpha_M)*su_acc_old[dim]
+          +
+          alpha_M*ele->e.f2->sub_vel_acc_trial.a.da[dim][lr*nis+ls];
+        /* and the subscale velocity at the intermediate timestep
+         * (n+alpha_F)                                                  */
+        su_trial[dim]=
+          (1-alpha_F)*su_old[dim]
+          +
+          alpha_F*ele->e.f2->sub_vel_trial.a.da[dim][lr*nis+ls];
+      }
       
       /*------------ perform integration for galerkin part of matrix ---*/
       f2_calgalmat_gen_alpha_tds(estif,
@@ -691,9 +773,9 @@ for (lr=0;lr<nir;lr++)
 				  derxy2,
 				  vderxy,
 				  vderxy2,
-				  svel_trial,
-				  sacc_trial,
-				  spres_trial,
+				  su_trial,
+				  su_acc_mod,
+				  sp_trial,
 				  fac,
 				  visc,
 				  iel);
@@ -701,7 +783,8 @@ for (lr=0;lr<nir;lr++)
 } /* end of loop over integration points lr */
 /*------------------------------------------- assure assembly of rhs ---*/
 *hasext = 1;
-
+CCAFREE(su_trial);
+CCAFREE(su_acc_mod);
 #ifdef DEBUG
     dstrc_exit();
 #endif

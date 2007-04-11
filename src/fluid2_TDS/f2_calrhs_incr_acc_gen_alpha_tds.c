@@ -176,8 +176,8 @@ void f2_calstabrhs_gen_alpha_tds(
 		DOUBLE **derxy2,
 		DOUBLE **vderxy,
                 DOUBLE **vderxy2,
-		DOUBLE   svel[2],
-		DOUBLE   sacc[2],
+		DOUBLE  *svel,
+		DOUBLE  *sacc,
 		DOUBLE   spres,
 		DOUBLE   fac,
 		DOUBLE   visc,
@@ -247,8 +247,6 @@ alpha_M     = fdyn->alpha_m;
      /* (sacc^{n+alpha_M},v) */
      eforce[ri*3  ] -= sacc[0] * funct[ri] * fac;
      eforce[ri*3+1] -= sacc[1] * funct[ri] * fac;
-
-     /* this one is bogus, cause it isn't n+alpha_M but n+1 ... */
      
  } /* end loop over row index */
 

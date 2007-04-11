@@ -178,7 +178,6 @@ DOUBLE          t1,t2,ts,te,tt;	    /*					*/
 DOUBLE          tes=0.0;            /*					*/
 DOUBLE          tss=0.0;            /*					*/
 DOUBLE          tts=0.0;            /*					*/
-DOUBLE          fact;
 FLUID_STRESS    str;
 
 SOLVAR         *actsolv;            /* pointer to active sol. structure */
@@ -613,17 +612,44 @@ while (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime && steady==0)
 /*-------- set dirichlet boundary conditions to sol_increment[velnp] ---*/
  fluid_setdirich(actfield, disnum_calc,ipos,ipos->velnp);
 
+ 
 /*-------------------------- estimate new acceleration (and pressure)
                              --- I assume constant velo's and pressure */
 
  if(actfield->dis[disnum_calc].element[0].e.f2->stab_type == stab_tds)
  {
-     f2_estimate_new_trial_values_for_inc_gen_alpha(
-	 actpart,
-	 actintra,
-	 actfield,
-	 ipos,
-	 disnum_calc);
+   f2_estimate_new_trial_values_for_inc_gen_alpha(
+     actpart,
+     actintra,
+     actfield,
+     ipos,
+     disnum_calc);
+ }
+
+ /*---------------- update of estimate for time dependent subscales */
+ if (fdyn->step == 1)
+ {
+   /* dummy assembly of global matrix to update the subscale velocities
+    * to the last iteration step                                        */
+   
+   *action = calc_fluid_time_update;
+   t1=ds_cputime();
+   container.dvec         = NULL;
+   container.frhs         = frhs;
+   container.global_numeq = numeq_total;
+   container.nii          = fdyn->nii;
+   container.kstep        = 0;
+   container.is_relax     = 0;
+   calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,
+          &container,action);
+
+   /* copy the converged subscale quantities to the last timestep      */
+   f2_time_update_subscales_for_incr_gen_alpha (
+     actpart,
+     actintra,
+     actfield,
+     ipos,
+     disnum_calc);
  }
 
 
@@ -724,25 +750,6 @@ while (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime && steady==0)
 			&(actsolv->sysarray_typ[actsysarray]),
 			&vrat,&prat,NULL);
 
-     /*---------------- update of estimate for time dependent subscales */
-     if(actfield->dis[disnum_calc].element[0].e.f2->stab_type == stab_tds)
-     {
-	 f2_update_subscale_pres_for_inc_gen_alpha(
-	     actpart,
-	     actintra,
-	     actfield,
-	     ipos,
-	     disnum_calc);
-	 
-	 f2_update_subscale_vel_for_inc_gen_alpha(
-	     actpart,
-	     actintra,
-	     actfield,
-	     ipos,
-	     disnum_calc);
-     }
-
-     
      /*----------------------------------- iteration convergence check */
      converged = fluid_convcheck(vrat,prat,ZERO,itnum,te,ts);
 
@@ -753,13 +760,30 @@ while (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime && steady==0)
  | -->  end of nonlinear iteration                                      |
  *----------------------------------------------------------------------*/
 
- f2_time_update_subscales_for_incr_gen_alpha (
+ /*---------------- update of estimate for time dependent subscales */
+ {
+   /* dummy assembly of global matrix to update the subscale velocities
+    * to the last iteration step                                        */
+   
+   *action = calc_fluid_time_update;
+   t1=ds_cputime();
+   container.dvec         = NULL;
+   container.frhs         = frhs;
+   container.global_numeq = numeq_total;
+   container.nii          = fdyn->nii;
+   container.kstep        = 0;
+   container.is_relax     = 0;
+   calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,
+          &container,action);
+
+   /* copy the converged subscale quantities to the last timestep      */
+   f2_time_update_subscales_for_incr_gen_alpha (
      actpart,
      actintra,
      actfield,
      ipos,
      disnum_calc);
-
+ }
 /*-------------------------------------------------- steady state check */
  if (fdyn->stchk==iststep)
  {

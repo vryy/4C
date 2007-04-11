@@ -318,6 +318,7 @@ typedef enum _CALC_ACTION
 		       calc_fluid_init,
 		       calc_fluid_initvort,
 		       calc_fluid,
+                       calc_fluid_time_update,
 		       calc_fluid_f2pro,
 		       calc_fluid_f2pro_rhs_both,
 		       calc_fluid_amatrix,

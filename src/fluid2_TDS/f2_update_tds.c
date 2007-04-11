@@ -1446,81 +1446,53 @@ void f2_time_update_subscales_for_incr_gen_alpha (
     ARRAY_POSITION *ipos,
     INT             disnum_calc)
 {
-/* multi purpose counter */
-int      i;
+/* dimension counter */
+  int      dim;
 
 /* counter for elements */
-int      nele;
-
+  int      nele;
+  
 /* element related data */
-int      ls,lr;
-int      nis=0,nir=0;
-
-double   theta;
-
-ELEMENT *ele;
-
-FLUID_DYNAMIC   *fdyn;
-
+  ELEMENT *ele;
+  int      ls,lr;
+  int      nis=0,nir=0;
+  
 
 #ifdef DEBUG
 dstrc_enter("f2_time_update_subscales_for_incr_gen_alpha");
 #endif
 
-fdyn   = alldyn[genprob.numff].fdyn;
-
-theta  = fdyn->theta;
-
     
 for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 {
     ele=actpart->pdis[disnum_calc].element[nele];
-
-/*------- get integraton data and check if elements are "higher order" */
-	    switch (ele->distyp)
-	    {
-		case quad4: case quad8: case quad9:  /* --> quad - element */
-		    nir = ele->e.f2->nGP[0];
-		    nis = ele->e.f2->nGP[1];
-		    break;
-		case tri6: /* --> tri - element */
-		    nir  = ele->e.f2->nGP[0];
-		    nis  = 1;
-		    break;
-		case tri3:
-		    nir  = ele->e.f2->nGP[0];
-		    nis  = 1;
-		    break;
-		default:
-		    dserror("typ unknown!");
-	    } /* end switch(typ) */
     
 /*----------------------------------------------------------------------*
- |               start loop over integration points                     |
- *----------------------------------------------------------------------*/
+  |               start loop over integration points                     |
+  *----------------------------------------------------------------------*/
     for (lr=0;lr<nir;lr++)
     {
-	for (ls=0;ls<nis;ls++)
-	{
+      for (ls=0;ls<nis;ls++)
+      {
 
-	    ele->e.f2->sub_pres.a.dv[lr*nis+ls]
-		=ele->e.f2->sub_pres_trial.a.dv[lr*nis+ls];
+        ele->e.f2->sub_pres.a.dv[lr*nis+ls]
+          =ele->e.f2->sub_pres_trial.a.dv[lr*nis+ls];
+      
+        ele->e.f2->sub_pres_acc.a.dv[lr*nis+ls]
+          =ele->e.f2->sub_pres_acc_trial.a.dv[lr*nis+ls];
 
-	    ele->e.f2->sub_pres_acc.a.dv[lr*nis+ls]
-		=ele->e.f2->sub_pres_acc_trial.a.dv[lr*nis+ls];
+        for(dim=0;dim<2;dim++) 
+        {
+          ele->e.f2->sub_vel.a.da[dim][lr*nis+ls]
+            =ele->e.f2->sub_vel_trial.a.da[dim][lr*nis+ls];
 
-	    for(i=0;i<2;i++) 
-	    {
-		ele->e.f2->sub_vel.a.da[i][lr*nis+ls]
-		    =ele->e.f2->sub_vel_trial.a.da[i][lr*nis+ls];
+          ele->e.f2->sub_vel_acc.a.da[dim][lr*nis+ls]=
+            ele->e.f2->sub_vel_acc_trial.a.da[dim][lr*nis+ls];
+        }
 
-		ele->e.f2->sub_vel_acc.a.da[i][lr*nis+ls]=
-		    ele->e.f2->sub_vel_acc_trial.a.da[i][lr*nis+ls];
-	    }
-	} /* end of loop over integration points ls*/
+      } /* end of loop over integration points ls*/
     } /* end of loop over integration points lr */
 } /* end of loop over elements nele */
-
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
 dstrc_exit();
@@ -1530,6 +1502,216 @@ return;
     
 }
 
+/*!---------------------------------------------------------------------
+\brief update of time dependent subscales for inc acc genalpha
+
+<pre>                                                        gammi 04/07
+
+time dependent subscale trial values are calculated in one gausspoint of
+one element. This function is called during the loop over the
+gausspoints before calculating the element matrix and the element force
+vector!
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The time dependent pressure subscales are updated according to a
+one step theta timestepping scheme.
+
+                  dp_sub       1
+                  ------ = - ----- * p_sub + res_C(u)
+                    dt       tau_C
+
+Here, res_C(u)=div(u) is the residual of the continuity equation.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The time dependent velocity subscales are updated according to a
+one step theta time integration scheme of the equation
+
+                  du_sub       1
+                  ------ = - ----- * u_sub + res_M(u)
+                    dt       tau_M
+
+Here, res_M(u) is the residual of the momentum equation and contains a
+time derivative, a convective term, a diffusion term, the pressure
+gradient and the volume force.
+
+
+</pre>
+\param  sp_trial              *double             (o) 
+\param  sp_acc_trial          *double             (o) 
+\param  sub_u_trial           *double             (o) 
+\param  sub_u_acc_trial       *double             (o) 
+\param  sp_old                 double[2]          (i)            
+\param  sp_acc_old             double[2]          (i) 
+\param  sub_u                  double[2]          (i) 
+\param  sub_u_acc              double[2]          (i) 
+\param  ihoel                  int                (i) 
+\param  alpha_M                double             (i)       
+\param  alpha_F                double             (i) 
+\param  theta                  double             (i) 
+\param  dt                     double             (i) 
+\param  tau_M                  double             (i) 
+\param  tau_C                  double             (i)       
+\param  visc                   double             (i) 
+\param  velint                 double[2]          (i) 
+\param  accint                 double[2]          (i) 
+\param  gradp                  double[2]          (i) 
+\param  vderxy                 double**           (i)    
+\param  vderxy2                double**           (i) 
+\param  edeadng                double*            (i) 
+
+\return void
+
+------------------------------------------------------------------------*/
+void f2_up_tds_at_gp_genalpha (
+  double  *sp_trial       , /* trial value for subscale pressure        */
+  double  *sp_acc_trial   , /* trial value for acc. of subscale p       */
+  double  *su_trial       , /* trial value for subscale velocity        */
+  double  *su_acc_mod     , /* subscale u acceleration wo bodyforce     */
+  double   sp_old         , /* old subscale pressure                    */
+  double   sp_acc_old     , /* old acceleration of subscale pressure    */
+  double   su_old      [2], /* old subscale velocity                    */
+  double   su_acc_old  [2], /* old acceleration of subscale velocity    */
+  int      ihoel        ,/* flag for higher order elements              */
+  double   alpha_M      ,/* momentum parameter of genalpha              */
+  double   alpha_F      ,/* force parameter of genalpha                 */
+  double   theta        ,/* parameter relating acc and vel of genalpha  */
+  double   dt           ,/* timestepsize                                */
+  double   tau_M        ,/* stabilisation parameter, velocity           */
+  double   tau_C        ,/* stabilisation parameter, continuity         */
+  double   visc         ,/* kinematic viscosity                         */
+  double   velint [2]   ,/* velocity at t=t^{n+alpha_F}                 */
+  double   accint [2]   ,/* acceleration at t=t^{n+alpha_M}             */
+  double   gradp  [2]   ,/* pressure gradient at t=t^{n+1}              */
+  double **vderxy       ,/* velocity derivatives at t=t^{n+alpha_F}     */
+  double **vderxy2      ,/* second der. of velocity at t=t^{n+alpha_F}  */
+  double  *edeadng       /* body force at time t=???                    */
+  )
+{
+
+  int       dim;         /* counter for dimensions (x,y) */
+  
+  double    aftdt;
+  double    amtauC;
+
+  double    facM;
+  double    amtauM;
+
+  
+  double    C1,C2,C3;
+
+  double    hot         [2]; /* higher order terms                     */
+  double    res_mod     [2]; /* residual of momentum equation without
+                                                            body force */
+#ifdef DEBUG
+  dstrc_enter("f2_up_tds_at_gp_genalpha");
+#endif
+
+  aftdt   = alpha_F*dt*theta;
+
+  
+  /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*
+   *                                                                   *
+   *                  update of SUBSCALE PRESSURE                      *
+   *                                                                   *
+   *%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
+
+  amtauC  = alpha_M*tau_C;
+  
+  C1 = (alpha_M-theta)*dt*(tau_C/(amtauC+aftdt));
+  C2 = (dt*theta)/(amtauC+aftdt);   
+  C3 = dt*tau_C*theta/(amtauC+aftdt);
+
+  
+/*  printf("C1 %22.15e C2 %22.15e  C3  %22.15e\n",C1,C2,C3);*/
+  
+  
+  sp_trial[0]  = C1*sp_acc_old                   ;
+  sp_trial[0] -= C2*sp_old                       ;
+  sp_trial[0] -= C3*(vderxy[0][0] + vderxy[1][1]);
+  sp_trial[0] += sp_old;
+
+  sp_acc_trial[0] = (1.0-1./theta)*sp_acc_old;
+  sp_acc_trial[0]+= (sp_trial[0]-sp_old)/(theta*dt);
+
+  /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*
+   *                                                                   *
+   *                  update of SUBSCALE VELOCITY                      *
+   *                                                                   *
+   *%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
+
+  amtauM   = alpha_M*tau_M;
+  facM     = 1./(amtauM+aftdt);
+
+  /*------------------------------ get higher order terms ---*/
+  if(ihoel!=0)
+  {
+    hot    [0]=0.5 * (2.0*vderxy2[0][0]
+                      +
+                      (vderxy2[0][1] + vderxy2[1][2]));
+    hot    [1]=0.5 * (2.0*vderxy2[1][1]
+                      +
+                      (vderxy2[1][0] + vderxy2[0][2]));
+  }	
+  else
+  {
+    hot    [0]=0;
+    hot    [1]=0;
+  }
+
+  for(dim=0;dim<2;dim++) 
+  {
+    /* residual without body force */
+    res_mod[dim] =
+      accint[dim]
+      + 0
+      - 2*visc*hot[dim]
+      + gradp[dim];
+
+    /* this is a modified subscale acceleration --- it doesn't contain
+     * the full contribution of the body force!!                       */
+    su_acc_mod[dim] =
+      su_old[dim]
+      + (tau_M*(1-alpha_M)+alpha_F*dt*(1-theta))*su_acc_old[dim]
+      + (tau_M*res_mod[dim]+aftdt/alpha_M*edeadng[dim]);
+    su_acc_mod[dim] *=-facM;
+
+    if(0)
+    {
+      printf("res_mod              [%d]               %22.15e\n",
+             dim,res_mod[dim]);
+      printf("su_acc_old           [%d]               %22.15e\n",
+             dim,su_acc_old [dim]);
+      printf("aftdt/alpha_M*edeadng[%d]               %22.15e\n",
+             dim,aftdt/alpha_M*edeadng[dim]);
+      printf("tau_M*(1-alpha_M)+alpha_F*dt*(1-theta) %22.15e\n",
+             tau_M*(1-alpha_M)+alpha_F*dt*(1-theta));
+    }
+#if 0
+    if(alldyn->fdyn->step == 1 || 0)
+    {
+    su_trial[dim] = su_old[dim]
+      + dt*(1.-theta)*(su_acc_old[dim])
+      + dt*    theta *(su_acc_mod[dim])
+      + dt*(theta)*(edeadng[dim]/alpha_M);
+    }
+    else
+#endif
+    { 
+    su_trial[dim] = su_old[dim]
+      + dt*(1.-theta)*(su_acc_old[dim])
+      + dt*    theta *(su_acc_mod[dim])
+      + dt*(edeadng[dim]/alpha_M);
+    }
+  }
+  
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+
+}
 
 #endif /*D_FLUID2_TDS*/
 #endif /*D_FLUID2*/
