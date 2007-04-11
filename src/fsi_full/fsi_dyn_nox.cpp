@@ -8,6 +8,7 @@
 
 #include "fsi_dyn_nox.H"
 #include "fsi_nox_aitken.H"
+#include "fsi_nox_extrapolate.H"
 #include "fsi_nox_fixpoint.H"
 #include "fsi_nox_jacobian.H"
 #include "../discret/dstrc.H"
@@ -416,8 +417,15 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
       {
         double actr   = actanode->sol_increment.a.da[ale_ipos->dispnp][j];
         double initr  = actanode->x[j];
+
+        double dxyzn  = actanode->sol_mf.a.da[ale_ipos->mf_dispn ][j];
+        double dxyz   = actanode->sol_mf.a.da[ale_ipos->mf_dispnp][j];
+
 #if 0
         // Normal case. As we do it with sd relaxation.
+
+        // add the underlying mesh displacement
+        //actr += dxyz-dxyzn;
 
         /* grid velocity */
         actfnode->sol_increment.a.da[fluid_ipos->gridv][j] = actr/fdyn->dta;
@@ -427,15 +435,15 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
         // No moving grid. Just velocity conditions at the FSI interface.
 
         // grid velocity
-        actfnode->sol_increment.a.da[fluid_ipos->gridv][j] = 0;
+        actfnode->sol_increment.a.da[fluid_ipos->gridv][j] = (dxyz-dxyzn)/fdyn->dta;
         // grid position
-        actanode->sol_mf.a.da[ale_ipos->mf_posnp][j] = initr;
+        actanode->sol_mf.a.da[ale_ipos->mf_posnp][j] = initr + dxyz-dxyzn;
         // fsi interface condition
         if ((actfnode->gnode->dirich!=NULL) &&
             (actfnode->gnode->dirich->dirich_type==DIRICH_CONDITION::dirich_FSI))
         {
-          //actfnode->sol_increment.a.da[fluid_ipos->relax][j] = actr/fdyn->dta;
-          actfnode->sol_increment.a.da[fluid_ipos->gridv][j] = actr/fdyn->dta;
+          actfnode->sol_increment.a.da[fluid_ipos->relax][j] = actr/fdyn->dta;
+          //actfnode->sol_increment.a.da[fluid_ipos->gridv][j] = actr/fdyn->dta;
         }
 #endif
       }
@@ -802,6 +810,18 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     // We change the method here.
     linesearch.set("Method","User Defined");
     linesearch.set("User Defined Line Search",aitken);
+  }
+
+  // the very special experimental extrapolation
+  else if (nlParams.sublist("Line Search").get("Method","Full Step")=="Extrapolate")
+  {
+    // insert user defined extrapolate relaxation
+    Teuchos::ParameterList& linesearch = nlParams.sublist("Line Search");
+    Teuchos::RefCountPtr<NOX::LineSearch::Generic> extrapolate = Teuchos::rcp(new Extrapolate(utils,linesearch));
+
+    // We change the method here.
+    linesearch.set("Method","User Defined");
+    linesearch.set("User Defined Line Search",extrapolate);
   }
 
   // ==================================================================

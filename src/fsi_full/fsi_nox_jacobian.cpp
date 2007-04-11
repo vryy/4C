@@ -90,6 +90,7 @@ int FSIMatrixFree::Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) con
   // easily scale x.
 
   double xscale = 1e4*nevX.norm();
+  //double xscale = nevX.norm();
   if (xscale==0)
   {
     // In the first call is x=0. No need to calculate the
@@ -101,7 +102,8 @@ int FSIMatrixFree::Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) con
   // For some strange reason currentX.Map()!=X.Map() and we are bound
   // to call computeF with the right map.
   perturbX = currentX;
-  perturbX.update(1./xscale,nevX,0.0);
+  //perturbX.update(1./xscale,nevX,0.0);
+  perturbX.update(1.,nevX,0.0);
 
   if (!useGroupForComputeF)
     interface->computeF(perturbX.getEpetraVector(), perturbY.getEpetraVector(),
@@ -114,7 +116,8 @@ int FSIMatrixFree::Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) con
   }
 
   // scale back
-  nevY.update(xscale, perturbY, 0.0);
+  //nevY.update(xscale, perturbY, 0.0);
+  nevY.update(1., perturbY, 0.0);
 
   return 0;
 }
