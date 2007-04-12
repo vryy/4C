@@ -165,6 +165,11 @@ typedef struct _SO3_DATA
   DOUBLE rededgt[MAXEDG_SOLID3][NDIM_SOLID3];  /* dimension reduction
                                                 * matrix multiplied
                                                 * on Jacobi matrix */
+  /*--------------------------------------------------------------------*/
+  /* base vectors of surface plus outward normal are common 
+   * coordinate system (Rechtssystem) if ==0 else ==1 not */
+  INT nrmsidh[MAXEDG_SOLID3];  /* hex */
+  INT nrmsidt[MAXEDG_SOLID3];  /* tet */
 } SO3_DATA;
 
 
@@ -580,17 +585,34 @@ void so3_load_line_val(ELEMENT *ele,
 /*----------------------------------------------------------------------*/
 /* file so3_load_surf.c */
 void so3_load_surf_int(ELEMENT* ele,
-                       SO3_DATA* data,  /*!< Gauss point data */
+                       SO3_DATA* data,
                        DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3],
+                       DOUBLE exc[MAXNOD_SOLID3][NDIM_SOLID3],
                        INT ngsurf,
                        GSURF* gsurf[MAXSID_SOLID3],
                        DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3]);
-void so3_load_surf_val(ELEMENT* ele,
-                       INT nelenod,
-                       GSURF* gsurf,
-                       DOUBLE shape[MAXNOD_SOLID3],
-                       DOUBLE fac,
-                       DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3]);
+void so3_load_surf_valh(ELEMENT* ele,
+                        SO3_DATA* data,
+                        INT igsurf,
+                        GSURF* gsurf,
+                        DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3],
+                        DOUBLE exs[MAXNOD_SOLID3][NDIM_SOLID3],
+                        DOUBLE gpc[NDIM_SOLID3],
+                        DOUBLE shape[MAXNOD_SOLID3],
+                        DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3],
+                        DOUBLE fac,
+                        DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3]);
+void so3_load_surf_valt(ELEMENT* ele,
+                        SO3_DATA* data,
+                        INT igsurf,
+                        GSURF* gsurf,
+                        DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3],
+                        DOUBLE exs[MAXNOD_SOLID3][NDIM_SOLID3],
+                        DOUBLE gpc[NDIM_SOLID3],
+                        DOUBLE shape[MAXNOD_SOLID3],
+                        DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3],
+                        DOUBLE fac,
+                        DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3]);
 
 /*----------------------------------------------------------------------*/
 /* file so3_load_vol.c */
@@ -695,6 +717,7 @@ void so3_metr_surf(ELEMENT *ele,
                    DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3],
                    DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3],
                    DOUBLE sidredm[DIMSID_SOLID3][NDIM_SOLID3],
+                   DOUBLE gamtt[DIMSID_SOLID3][NDIM_SOLID3],
                    DOUBLE *metr);
 void so3_metr_line(ELEMENT *ele, 
                    INT nelenod, 
@@ -806,6 +829,16 @@ void so3_tns3_v2tsym(DOUBLE av[6],
 void so3_tns3_spcdcmp(DOUBLE at[3][3],  /* input tensor */
                       INT *err,
                       DOUBLE ew[3]);
+void so3_tns3_norm2(DOUBLE av[NDIM_SOLID3],
+                    DOUBLE* norm);
+void so3_tns3_unitvct(DOUBLE av[NDIM_SOLID3]);
+void so3_tns3_crsprd(DOUBLE av[NDIM_SOLID3],
+                     DOUBLE bv[NDIM_SOLID3],
+                     DOUBLE cv[NDIM_SOLID3]);
+void so3_tns3_unrm(DOUBLE av[NDIM_SOLID3],
+                   DOUBLE bv[NDIM_SOLID3],
+                   INT swp,
+                   DOUBLE cv[NDIM_SOLID3]);
 
 /*----------------------------------------------------------------------*/
 /* file so3_tsi.c */

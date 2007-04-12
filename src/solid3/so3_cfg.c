@@ -405,7 +405,7 @@ void so3_cfg_init(SO3_DATA *data)
   /* hexahedra anchors and spans */
   if (MAXSID_SOLID3 >= 6)
   {
-    /* side 0 */
+    /* side 0  with (xi,eta)=(r,s) */
     data->ancsidh[0][0] = 0.0;  /* anchor r-coord */
     data->ancsidh[0][1] = 0.0;  /* anchor s-ccord */
     data->ancsidh[0][2] = -1.0;  /* anchor t-ccord */
@@ -415,7 +415,8 @@ void so3_cfg_init(SO3_DATA *data)
     data->redsidh[0][1][0] = 0.0;
     data->redsidh[0][1][1] = 1.0;
     data->redsidh[0][1][2] = 0.0;
-    /* side 5 */
+    data->nrmsidh[0] = 1;
+    /* side 5  with (xi,eta)=(r,s) */
     data->ancsidh[5][0] = 0.0;
     data->ancsidh[5][1] = 0.0;
     data->ancsidh[5][2] = 1.0;
@@ -425,7 +426,8 @@ void so3_cfg_init(SO3_DATA *data)
     data->redsidh[5][1][0] = 0.0;
     data->redsidh[5][1][1] = 1.0;
     data->redsidh[5][1][2] = 0.0;
-    /* side 1 */
+    data->nrmsidh[5] = 0;
+    /* side 1  with (xi,eta)=(r,t) */
     data->ancsidh[1][0] = 0.0;
     data->ancsidh[1][1] = -1.0;
     data->ancsidh[1][2] = 0.0;
@@ -435,7 +437,8 @@ void so3_cfg_init(SO3_DATA *data)
     data->redsidh[1][1][0] = 0.0;
     data->redsidh[1][1][1] = 0.0;
     data->redsidh[1][1][2] = 1.0;
-    /* side 2 */
+    data->nrmsidh[1] = 0;
+    /* side 2  with (xi,eta)=(s,t) */
     data->ancsidh[2][0] = 1.0;
     data->ancsidh[2][1] = 0.0;
     data->ancsidh[2][2] = 0.0;
@@ -445,17 +448,19 @@ void so3_cfg_init(SO3_DATA *data)
     data->redsidh[2][1][0] = 0.0;
     data->redsidh[2][1][1] = 0.0;
     data->redsidh[2][1][2] = 1.0;
-    /* side 3 */
+    data->nrmsidh[2] = 0;
+    /* side 3  with (xi,eta)=(r,t) */
     data->ancsidh[3][0] = 0.0;
     data->ancsidh[3][1] = 1.0;
     data->ancsidh[3][2] = 0.0;
     data->redsidh[3][0][0] = 1.0;
     data->redsidh[3][0][1] = 0.0;
     data->redsidh[3][0][2] = 0.0;
-    data->redsidh[3][1][0] = 0.0;
+    data->redsidh[3][1][0] = 1.0;
     data->redsidh[3][1][1] = 0.0;
     data->redsidh[3][1][2] = 1.0;
-    /* side 4 */
+    data->nrmsidh[3] = 1;
+    /* side 4  with (xi,eta)=(s,t) */
     data->ancsidh[4][0] = -1.0;
     data->ancsidh[4][1] = 0.0;
     data->ancsidh[4][2] = 0.0;
@@ -465,6 +470,7 @@ void so3_cfg_init(SO3_DATA *data)
     data->redsidh[4][1][0] = 0.0;
     data->redsidh[4][1][1] = 0.0;
     data->redsidh[4][1][2] = 1.0;
+    data->nrmsidh[4] = 1;
   }
     
 
@@ -897,7 +903,7 @@ void so3_cfg_init(SO3_DATA *data)
   /* tetrahedron sides anchors and directions */
   if (MAXSID_SOLID3 >= 4)
   {
-    /* side 0 */
+    /* side 0  with (xi,eta)=((r,-t),(s,-t)) */
     data->ancsidt[0][0] = 0.0;  /* anchor r-coord */
     data->ancsidt[0][1] = 0.0;  /* anchor s-coord */
     data->ancsidt[0][2] = 1.0;  /* anchor t-coord */
@@ -907,7 +913,8 @@ void so3_cfg_init(SO3_DATA *data)
     data->redsidt[0][1][0] = 0.0;
     data->redsidt[0][1][1] = 1.0;
     data->redsidt[0][1][2] = -1.0;
-    /* side 1 */
+    data->nrmsidt[0] = 0; 
+    /* side 1  with (xi,eta)=(r,s) */
     data->ancsidt[1][0] = 0.0;  /* anchor r-coord */
     data->ancsidt[1][1] = 0.0;  /* anchor s-coord */
     data->ancsidt[1][2] = 0.0;  /* anchor t-coord */
@@ -917,7 +924,8 @@ void so3_cfg_init(SO3_DATA *data)
     data->redsidt[1][1][0] = 0.0;
     data->redsidt[1][1][1] = 1.0;
     data->redsidt[1][1][2] = 0.0;
-    /* side 2 */
+    data->nrmsidt[1] = 1;
+    /* side 2  with (xi,eta)=(r,t) */
     data->ancsidt[2][0] = 0.0;  /* anchor r-coord */
     data->ancsidt[2][1] = 0.0;  /* anchor s-coord */
     data->ancsidt[2][2] = 0.0;  /* anchor t-coord */
@@ -927,7 +935,8 @@ void so3_cfg_init(SO3_DATA *data)
     data->redsidt[2][1][0] = 0.0;
     data->redsidt[2][1][1] = 0.0;
     data->redsidt[2][1][2] = 1.0;
-    /* side 3 */
+    data->nrmsidt[2] = 0;
+    /* side 3  with (xi,eta)=(s,t) */
     data->ancsidt[3][0] = 0.0;  /* anchor r-coord */
     data->ancsidt[3][1] = 0.0;  /* anchor s-coord */
     data->ancsidt[3][2] = 0.0;  /* anchor t-coord */
@@ -937,6 +946,7 @@ void so3_cfg_init(SO3_DATA *data)
     data->redsidt[3][1][0] = 0.0;
     data->redsidt[3][1][1] = 0.0;
     data->redsidt[3][1][2] = 1.0;
+    data->nrmsidt[3] = 1;
   }
   /*--------------------------------------------------------------------*/
   /* edges (or sides)

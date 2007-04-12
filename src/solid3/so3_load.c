@@ -74,6 +74,7 @@ void so3_load(ELEMENT *ele,  /* actual element */
   INT neledof;  /* element DOF */
   DIS_TYP distyp;  /* local copy of discretisation type */
   DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3];  /* material coord. of element */
+  DOUBLE exs[MAXNOD_SOLID3][NDIM_SOLID3];  /* spatial coord. of element */
 
   /* volume load */
   GVOL *gvol;  /* local pointer to geometry volume of element */
@@ -166,8 +167,11 @@ void so3_load(ELEMENT *ele,  /* actual element */
         case neum_dead:
           foundgsurfneum = 1;
           break;
+        case neum_orthopressure:
+          foundgsurfneum = 1;
+          break;
         default:
-          dserror("Neumann BC type is not available on side!");
+          dserror("Neumann BC type is not available at face!");
           break;
       }
     }
@@ -208,6 +212,13 @@ void so3_load(ELEMENT *ele,  /* actual element */
       for (jdim=0; jdim<NDIM_SOLID3; jdim++)
       {
         ex[inod][jdim] = actnode->x[jdim];
+        /* THE FOLLOWING HARD-CODED `0' IS SHARED AMONG ALL STRUCTURE ELEMENTS
+         * AND SOLUTION TECHNIQUES (BOTH STATICS, DYNAMICS AND FSI).
+         * IT ACCESSES THE CURRENT NODAL DISPLACEMENTS STORED IN sol ARRAY.
+         * THIS HARD-CODED `0' SHOULD BE REPLACED BY A SOFT-CODED VERSION.
+         * NEW SOFT-CODED INDEX FOR OLD DISCRETISATION ==> array_position.h
+         * NEW SOFT-CODED INDEX FOR NEW DISCRETISATION ==> TO BE ANNOUNCED */
+        exs[inod][jdim] = actnode->x[jdim] + actnode->sol.a.da[0][jdim];
       }
     }
   }
@@ -225,7 +236,7 @@ void so3_load(ELEMENT *ele,  /* actual element */
   /* side loads ==> surface stress, tractions, fluxes */
   if (foundgsurfneum > 0)
   {
-    so3_load_surf_int(ele, data, ex, ngsurf, gsurf, eload);
+    so3_load_surf_int(ele, data, ex, exs, ngsurf, gsurf, eload);
   }
 
   /*====================================================================*/

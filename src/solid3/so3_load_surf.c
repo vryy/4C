@@ -22,27 +22,34 @@ Maintainer: Burkhard Bornemann
 /*!
 \brief Spatial integration of
        surface tractions on element von Neumann boundaries
+
+\param  ele       ELEMENT*      (i)  current element
+\param  data      SO3_DATA*     (i)  Gauss point data
+\param  ex        DOUBLE[]      (i)  material element node coord.
+\param  exs       DOUBLE[]      (i)  spatial element node coord.s
+\param  ngsurf    INT           (i)  number of element surfaces
+\param  gsurf     GSURF*[]      (i)  geometry surf.
+\param  eload     DOUBLE[][]    (io) element load vector (is changed)
+\return void
+
 \author bborn
 \date 04/07
 */
-void so3_load_surf_int(ELEMENT* ele,  /*!< current element */
-                        SO3_DATA* data,  /*!< Gauss point data */
-                        DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3],  /*!< deform. element node coord. */
-                        INT ngsurf,  /*!< number of element surfaces */
-                        GSURF* gsurf[MAXSID_SOLID3],  /*!< geometry surf. */
-                        DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3])  /*!< element load vector (is changed) */
-
+void so3_load_surf_int(ELEMENT* ele,
+                       SO3_DATA* data,
+                       DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3],
+                       DOUBLE exs[MAXNOD_SOLID3][NDIM_SOLID3],
+                       INT ngsurf,
+                       GSURF* gsurf[MAXSID_SOLID3],
+                       DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3])
 {
   /* element */
   const DIS_TYP distyp = ele->distyp;  /* local copy of discretisation type */
-  const INT nelenod = ele->numnp;  /* number of element nodes */
 
   /* surface */
   INT igsurf;  /* element surface index */
   INT idim;  /* dimension index */
   INT idimsid;  /* dimension of surface index */
-  DOUBLE sidredm[DIMSID_SOLID3][NDIM_SOLID3];  /* dimens. reduct. matrix */
-  DOUBLE metr;  /* metric */
   DOUBLE gpcidim;  /* dummy Gauss point coordinate */
 
   /* integration */
@@ -75,17 +82,6 @@ void so3_load_surf_int(ELEMENT* ele,  /*!< current element */
         if (gsurf[igsurf]->neum != NULL)
         {
           /*------------------------------------------------------------*/
-          /* get dimension reduction matrix */
-          /* sidredm = &&(data->redsidh[igsurf][0][0]); */
-          for (idimsid=0; idimsid<DIMSID_SOLID3; idimsid++)
-          {
-            for (idim=0; idim<NDIM_SOLID3; idim++)
-            {
-              sidredm[idimsid][idim] 
-                = data->redsidh[igsurf][idimsid][idim];
-            }
-          }
-          /*------------------------------------------------------------*/
           /* get number of Gauss points in each direction */
           idimsid = 0;  /* initialise dimension index */
           for (idim=0; idim<NDIM_SOLID3; idim++)
@@ -116,7 +112,7 @@ void so3_load_surf_int(ELEMENT* ele,  /*!< current element */
                 {
                   /* add coordinate components */
                   gpcidim = gpcidim 
-                    + sidredm[idimsid][idim] 
+                    + data->redsidh[igsurf][idimsid][idim] 
                       * data->ghlc[gpintc[idimsid]][igp[idimsid]];
                 }  /* end for */
                 /* final set of idim-component */
@@ -135,15 +131,10 @@ void so3_load_surf_int(ELEMENT* ele,  /*!< current element */
               so3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1, 
                               shape, deriv);
               /*--------------------------------------------------------*/
-              /* Jacobi matrix and determinant */
-              so3_metr_surf(ele, nelenod, ex, deriv, sidredm, &metr);
-              /*--------------------------------------------------------*/
-              /* integration factor */
-              fac = fac * metr;
-              /*--------------------------------------------------------*/
               /* add surface load contribution ==> eload modified */
-              so3_load_surf_val(ele, nelenod, gsurf[igsurf], shape, fac, 
-                            eload);
+              so3_load_surf_valh(ele, data, igsurf, gsurf[igsurf], 
+                                ex, exs, gpc, shape, deriv,
+                                fac, eload);
             }  /* end for */
           }  /* end for */
           /*------------------------------------------------------------*/
@@ -169,16 +160,6 @@ void so3_load_surf_int(ELEMENT* ele,  /*!< current element */
         if (gsurf[igsurf]->neum != NULL)
         {
           /*------------------------------------------------------------*/
-          /* set dimension reduction matrix */
-          for (idimsid=0; idimsid<DIMSID_SOLID3; idimsid++)
-          {
-            for (idim=0; idim<NDIM_SOLID3; idim++)
-            {
-              sidredm[idimsid][idim] 
-                = data->redsidt[igsurf][idimsid][idim];
-            }
-          }
-          /*------------------------------------------------------------*/
           /* integration loop */
           for (igp[0]=0; igp[0]<gpnum[0]; igp[0]++)
           {
@@ -192,7 +173,7 @@ void so3_load_surf_int(ELEMENT* ele,  /*!< current element */
               for (idimsid=0; idimsid<DIMSID_SOLID3; idimsid++)
               {
                 gpcidim = gpcidim
-                  + sidredm[idim][idimsid]
+                  + data->redsidt[igsurf][idimsid][idim]
                     * data->gtsc[gpintc[0]][igp[0]][idimsid];
               }  /* end for */
               /* final set of idim-component */
@@ -206,15 +187,10 @@ void so3_load_surf_int(ELEMENT* ele,  /*!< current element */
             so3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1, 
                             shape, deriv);
             /*----------------------------------------------------------*/
-            /* Jacobi matrix and determinant */
-            so3_metr_surf(ele, nelenod, ex, deriv, sidredm, &metr);
-            /*----------------------------------------------------------*/
-            /* integration factor */
-            fac = fac * metr;
-            /*----------------------------------------------------------*/
             /* add surface load contribution ==> eload modified */
-            so3_load_surf_val(ele, nelenod, gsurf[igsurf], shape, fac, 
-                          eload);
+            so3_load_surf_valt(ele, data, igsurf, gsurf[igsurf], 
+                              ex, exs, gpc, shape, deriv, 
+                              fac, eload);
           }  /* end for */
         }  /* end for */
         /*--------------------------------------------------------------*/
@@ -234,37 +210,54 @@ void so3_load_surf_int(ELEMENT* ele,  /*!< current element */
   dstrc_exit();
 #endif
   return;
-} /* end of so3_load_surf_itgr */
+} /* end of so3_load_surf_int */
+
 
 /*======================================================================*/
 /*!
 \brief Determine load due to tractions on element faces (surfaces)
+       (Hexahedra)
 
-\param   *ele      ELEMENT      (i)    actual element
-\param    nelenod  INT          (i)    number of element nodes
-\param   *gsurf    GSURF        (i)    current geometry surface
-\param    shape[]  DOUBLE       (i)    shape function at Gauss point
+\param    ele      ELEMENT*     (i)    actual element
+\param    data     SO3_DATA*    (i)    Gauss point data
+\param    igsurf   INT          (i)    curr. geom. surf. index
+\param    gsurf    GSURF*       (i)    current geometry surface
+\param    ex       DOUBLE[][]   (i)    material (undeformed) node coord.s
+\param    exs      DOUBLE[][]   (i)    spatial (deformed) node coord.s
+\param    gpc      DOUBLE[]     (i)    r,s,t-coord current GP
+\param    shape    DOUBLE[]     (i)    shape function at Gauss point
+\param    deriv    DOUBLE[][]   (i)    derivatives of shape fct. at Gauss point
 \param    fac      DOUBLE       (i)    integration factor at Gauss point
-\param    eload[][]DOUBLE       (io)   element load vector contribution
+\param    eload    DOUBLE[][]   (io)   element load vector contribution
 \return void
 
 \author bborn
-\date 01/07
+\date 04/07
 */
-void so3_load_surf_val(ELEMENT* ele,
-                       INT nelenod,
-                       GSURF* gsurf,
-                       DOUBLE shape[MAXNOD_SOLID3],
-                       DOUBLE fac,
-                       DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3])
+void so3_load_surf_valh(ELEMENT* ele,
+                        SO3_DATA* data,
+                        INT igsurf,
+                        GSURF* gsurf,
+                        DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3],
+                        DOUBLE exs[MAXNOD_SOLID3][NDIM_SOLID3],
+                        DOUBLE gpc[NDIM_SOLID3],
+                        DOUBLE shape[MAXNOD_SOLID3],
+                        DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3],
+                        DOUBLE fac,
+                        DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3])
 {
+  const DOUBLE pressureminus = -1.0;
+  const INT nelenod = ele->numnp;  /* number of element nodes */
+  DOUBLE metr;  /* metric */
   INT onoff[NUMDOF_SOLID3];
   DOUBLE traction[NUMDOF_SOLID3];  /* elem. bound. traction [force/area] */
-  INT idof, inode;  /* loopers */
+  INT idof, jdof, inode;  /* loopers */
+  DOUBLE gamt[DIMSID_SOLID3][NDIM_SOLID3];  /* base vectors physically oriented */
+  DOUBLE unrm[NDIM_SOLID3];  /* unit normal */
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
-  dstrc_enter("so3_load_surf_val");
+  dstrc_enter("so3_load_surf_valh");
 #endif
 
   /*--------------------------------------------------------------------*/
@@ -274,6 +267,10 @@ void so3_load_surf_val(ELEMENT* ele,
     /*------------------------------------------------------------------*/
     /* uniform traction applied in undeformed configuration */
     case neum_dead:
+      /* metric at Gauss point */
+      so3_metr_surf(ele, nelenod, ex, deriv, data->redsidh[igsurf], 
+                    NULL, &metr);
+      /* copy switch and values */
       for (idof=0; idof<NUMDOF_SOLID3; idof++)
       {
         onoff[idof] = gsurf->neum->neum_onoff.a.iv[idof];
@@ -287,7 +284,146 @@ void so3_load_surf_val(ELEMENT* ele,
           /* if load is switched on : apply */
           if (onoff[idof] == 1)
           {
-            eload[inode][idof] += shape[inode] * traction[idof] * fac;
+            eload[inode][idof] += shape[inode] * traction[idof] * fac * metr;
+          }
+        }
+      }
+      break;
+    /*------------------------------------------------------------------*/
+    /* uniform orthogonal pressure on deformed configuration */
+    case neum_orthopressure:
+      idof = 0;  /* only 1st index relevant */
+      onoff[idof] = gsurf->neum->neum_onoff.a.iv[idof];
+      if (onoff[idof] == 1)
+      {
+        /* pressure value */
+        traction[idof] = pressureminus * gsurf->neum->neum_val.a.dv[idof];
+        /* physically oriented parametric base vectors */
+        so3_metr_surf(ele, nelenod, exs, deriv, 
+                      data->redsidh[igsurf], gamt, &metr);
+        /* unit normal in deformed space */
+        so3_tns3_unrm(gamt[0], gamt[1], data->nrmsidh[igsurf], unrm);
+        /* apply load to element load vector */
+        for (inode=0; inode<nelenod; inode++)
+        {
+          for (jdof=0; jdof<NUMDOF_SOLID3; jdof++)
+          {
+            eload[inode][jdof] += shape[inode] * traction[idof] 
+              * unrm[jdof] * fac * metr;
+          }
+        }
+      }
+      break;
+    /*------------------------------------------------------------------*/
+    default:
+      dserror("load case unknown");
+      break;
+  }
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+} /* end of so3_load_surf_val(...) */
+
+
+/*======================================================================*/
+/*!
+\brief Determine load due to tractions on element faces (surfaces)
+       (Tetrahedra)
+
+\param    ele      ELEMENT*     (i)    actual element
+\param    data     SO3_DATA*    (i)    Gauss point data
+\param    igsurf   INT          (i)    curr. geom. surf. index
+\param    gsurf    GSURF*       (i)    current geometry surface
+\param    ex       DOUBLE[][]   (i)    material (undeformed) node coord.s
+\param    exs      DOUBLE[][]   (i)    spatial (deformed) node coord.s
+\param    gpc      DOUBLE[]     (i)    r,s,t-coord current GP
+\param    shape    DOUBLE[]     (i)    shape function at Gauss point
+\param    deriv    DOUBLE[][]   (i)    derivatives of shape fct. at Gauss point
+\param    fac      DOUBLE       (i)    integration factor at Gauss point
+\param    eload    DOUBLE[][]   (io)   element load vector contribution
+
+\author bborn
+\date 04/07
+*/
+void so3_load_surf_valt(ELEMENT* ele,
+                        SO3_DATA* data,
+                        INT igsurf,
+                        GSURF* gsurf,
+                        DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3],
+                        DOUBLE exs[MAXNOD_SOLID3][NDIM_SOLID3],
+                        DOUBLE gpc[NDIM_SOLID3],
+                        DOUBLE shape[MAXNOD_SOLID3],
+                        DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3],
+                        DOUBLE fac,
+                        DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3])
+{
+  const DOUBLE pressureminus = -1.0;
+  const INT nelenod = ele->numnp;  /* number of element nodes */
+  DOUBLE metr;  /* metric */
+  INT onoff[NUMDOF_SOLID3];
+  DOUBLE traction[NUMDOF_SOLID3];  /* elem. bound. traction [force/area] */
+  INT idof, jdof, inode;  /* loopers */
+  DOUBLE gamt[DIMSID_SOLID3][NDIM_SOLID3];  /* base vectors physically oriented */
+  DOUBLE unrm[NDIM_SOLID3];  /* unit normal */
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_enter("so3_load_surf_valt");
+#endif
+
+  /*--------------------------------------------------------------------*/
+  /* distinguish load type */
+  switch(gsurf->neum->neum_type)
+  {
+    /*------------------------------------------------------------------*/
+    /* uniform traction applied in undeformed configuration */
+    case neum_dead:
+      /* metric at Gauss point */
+      so3_metr_surf(ele, nelenod, ex, deriv, data->redsidt[igsurf], 
+                    NULL, &metr);
+      /* copy switch and values */
+      for (idof=0; idof<NUMDOF_SOLID3; idof++)
+      {
+        onoff[idof] = gsurf->neum->neum_onoff.a.iv[idof];
+        traction[idof] = gsurf->neum->neum_val.a.dv[idof];
+      }
+      /* add load vector component to element load vector */
+      for (inode=0; inode<nelenod; inode++)
+      {
+        for (idof=0; idof<NUMDOF_SOLID3; idof++)
+        {
+          /* if load is switched on : apply */
+          if (onoff[idof] == 1)
+          {
+            eload[inode][idof] += shape[inode] * traction[idof] * fac * metr;
+          }
+        }
+      }
+      break;
+    /*------------------------------------------------------------------*/
+    /* uniform orthogonal pressure on deformed configuration */
+    case neum_orthopressure:
+      idof = 0;  /* only 1st index relevant */
+      onoff[idof] = gsurf->neum->neum_onoff.a.iv[idof];
+      if (onoff[idof] == 1)
+      {
+        /* pressure value */
+        traction[idof] = pressureminus * gsurf->neum->neum_val.a.dv[idof];
+        /* physically oriented parametric base vectors */
+        so3_metr_surf(ele, nelenod, exs, deriv, 
+                      data->redsidt[igsurf], gamt, &metr);
+        /* unit normal in deformed space */
+        so3_tns3_unrm(gamt[0], gamt[1], data->nrmsidt[igsurf], unrm);
+        /* apply load to element load vector */
+        for (inode=0; inode<nelenod; inode++)
+        {
+          for (jdof=0; jdof<NUMDOF_SOLID3; jdof++)
+          {
+            eload[inode][jdof] += shape[inode] * traction[idof] 
+              * unrm[jdof] * fac * metr;
           }
         }
       }

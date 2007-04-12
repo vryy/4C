@@ -435,13 +435,6 @@ void so3_int_stiffgeo(INT enod,
       estif[idof][jdof] += bopstrbop;
       estif[idof+1][jdof+1] += bopstrbop;
       estif[idof+2][jdof+2] += bopstrbop;
-/*       for (idof=inod*NDIM_SOLID3; idof<(inod+1)*NDIM_SOLID3; idof++) */
-/*       { */
-/*         for (jdof=jnod*NDIM_SOLID3; jdof<(jnod+1)*NDIM_SOLID3; jdof++) */
-/*         { */
-/*           estif[idof][jdof] += bopstrbop; */
-/*         } */
-/*       } */
     }
   }
 

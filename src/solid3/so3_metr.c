@@ -155,12 +155,19 @@ void so3_metr_jaco(ELEMENT *ele,
 /*!
 \brief Determine metric at Gauss point by reducing the Jacobian
        matrix 
+       Determine physical orientation of parametric base vectors 
+       of surface at Gauss point
+       This can be either the material/initial/reference configuration
+       or the spatial/deformed/current configuration depending on
+       the kind of node coordinates.
 
 \param ele     ELEMENT*     (i)  pointer to current element
 \param nelelod INT          (i)  number of element nodes
 \param ex      DOUBLE[][]   (i)  element node coordinates
 \param deriv   DOUBLE**     (i)  derivatives of shape fct at Gauss point
 \param sired   DOUBLE**     (i)  matrix for dimension reduction
+\param gamtt   DOUBLE[][]   (o)  physically oriented parametric base vectors
+                                 (optional)
 \param metr    DOUBLE*      (o)  metric
 \return void
 
@@ -172,6 +179,7 @@ void so3_metr_surf(ELEMENT *ele,
                    DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3],
                    DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3],
                    DOUBLE sidredm[DIMSID_SOLID3][NDIM_SOLID3],
+                   DOUBLE gamtt[DIMSID_SOLID3][NDIM_SOLID3],
                    DOUBLE *metr)
 {
   DOUBLE xjm[NDIM_SOLID3][NDIM_SOLID3];  /* Jacobian matrix */
@@ -188,7 +196,7 @@ void so3_metr_surf(ELEMENT *ele,
 
   /*--------------------------------------------------------------------*/
   /* get Jacobian matrix xjm (xji is not computed) */
-  so3_metr_jaco(ele, nelenod, ex, deriv, 0, xjm, &det, xji);
+  so3_metr_jaco(ele, nelenod, ex, deriv, 0, xjm, &det, NULL);
 
   /*--------------------------------------------------------------------*/
   /* build gamma tensor */
@@ -227,6 +235,17 @@ void so3_metr_surf(ELEMENT *ele,
       for (jdim=0; jdim<NDIM_SOLID3; jdim++)
       {
         gamt[kdimsid][jdim] += sidredm[kdimsid][idim] * xjm[idim][jdim];
+      }
+    }
+  }
+  /* set output */
+  if (gamtt != NULL)
+  {
+    for (kdimsid=0; kdimsid<DIMSID_SOLID3; kdimsid++)
+    {
+      for (jdim=0; jdim<NDIM_SOLID3; jdim++)
+      {
+        gamtt[kdimsid][jdim] = gamt[kdimsid][jdim];
       }
     }
   }

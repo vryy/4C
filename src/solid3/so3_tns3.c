@@ -816,6 +816,8 @@ The tensor
          [ A_31  A_32  A_33 ]
 
 \param  at     DOUBLE[][]    (i)  tensor A
+\param  err    INT*          (o)  error
+\param  ew     DOULE[]       (o)  eigen values
 \return void
 
 \author bborn
@@ -921,21 +923,162 @@ void so3_tns3_spcdcmp(DOUBLE at[3][3],  /* input tensor */
     ew[2] = lam3;
   }
 
-/*   if (*err == 1) */
-/*   { */
-/*     if (duplicity == 3) */
-/*     { */
-/*     } */
-/*     else if (duplicity == 2) */
-/*     { */
-/*     } */
-/*     else if (duplicity == 1) */
-/*     { */
-/*     } */
-/*     else */
-/*     { */
-/*     } */
-/*   } */
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+
+/*======================================================================*/
+/*!
+\brief Euclidian norm of a vector
+\param
+
+\author bborn
+\date 04/07
+*/
+void so3_tns3_norm2(DOUBLE av[NDIM_SOLID3],
+                    DOUBLE* norm)
+{
+  INT idim;  /* index */
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_enter("so3_tns3_unitvct");
+#endif
+
+  /*--------------------------------------------------------------------*/
+  *norm = 0.0;
+  for (idim=0; idim<NDIM_SOLID3; idim++)
+  {
+    *norm += av[idim] * av[idim];
+  }
+  *norm = sqrt(*norm);
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+
+
+/*======================================================================*/
+/*!
+\brief Scale vector to attain unit length
+
+           c
+    c_ = -----
+         ||c||_2
+
+\author bborn
+\date 04/07
+*/
+void so3_tns3_unitvct(DOUBLE av[NDIM_SOLID3])
+{
+  DOUBLE norm;  /* Euclidian norm */
+  INT idim;  /* index */
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_enter("so3_tns3_unitvct");
+#endif
+
+  /*--------------------------------------------------------------------*/
+  /* get Euclidian norm */
+  so3_tns3_norm2(av, &norm);
+  if (ABS(norm) < EPS12)
+  {
+    dserror("Trying to normalise zero vector!");
+  }
+
+  /*--------------------------------------------------------------------*/
+  /* scale vector */
+  for (idim=0; idim<NDIM_SOLID3; idim++)
+  {
+    av[idim] = av[idim] / norm;
+  }
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+
+
+/*======================================================================*/
+/*!
+\brief Cross product of two vectors
+\param   av   DOUBLE[]   (i)   1st input vector
+\param   bv   DOUBLE[]   (i)   2nd input vector
+\param   cv   DOUBLE[]   (o)   outpu vector
+\author bborn
+\date 04/07
+*/
+void so3_tns3_crsprd(DOUBLE av[NDIM_SOLID3],
+                     DOUBLE bv[NDIM_SOLID3],
+                     DOUBLE cv[NDIM_SOLID3])
+{
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_enter("so3_tns3_unrm");
+#endif
+
+  /*--------------------------------------------------------------------*/
+  /* the cross product */
+  cv[0] = av[1]*bv[2] - av[2]*bv[1];
+  cv[1] = av[2]*bv[0] - av[0]*bv[2];
+  cv[2] = av[0]*bv[1] - av[1]*bv[0];
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+
+
+/*======================================================================*/
+/*!
+\brief Determine unit orthogonal vector on two non-colinear vectors
+
+The unit vector is
+           a x b           1      [ a_1 ]   [ b_1 ]
+    c = ----------- = ----------- [ a_2 ] x [ b_2 ]
+        || a x b ||   || a x b || [ a_3 ]   [ b_3 ]
+
+\param   av  DOUBLE[]  (i) 1st input vector
+\param   bv  DOUBLE[]  (i) 2nd input vector
+\param   swp INT       (i) ==1 swap a and b vector
+                           ==0 do not swap
+\param   cv  DOUBLE[]  (o) output unit normal vector
+*/
+void so3_tns3_unrm(DOUBLE av[NDIM_SOLID3],
+                   DOUBLE bv[NDIM_SOLID3],
+                   INT swp,
+                   DOUBLE cv[NDIM_SOLID3])
+{
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_enter("so3_tns3_unrm");
+#endif
+
+  /*--------------------------------------------------------------------*/
+  /* cross product */
+  if (swp) 
+  {
+    so3_tns3_crsprd(bv, av, cv);
+  }
+  else
+  {
+    so3_tns3_crsprd(av, bv, cv);
+  }
+
+  /*--------------------------------------------------------------------*/
+  /* make unit vector */
+  so3_tns3_unitvct(cv);
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
