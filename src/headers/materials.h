@@ -55,7 +55,20 @@ typedef struct _MATERIAL
 } MATERIAL;
 
 
-
+/*----------------------------------------------------------------------*
+ | Robinson's visco-plastic material                        bborn 03/07 |
+ | interpolation types of non-const parameters                          |
+ *----------------------------------------------------------------------*/
+typedef enum _MAT_PARAM_INTPOL
+{
+     mat_param_ipl_none,                  /* no interpolation */
+     mat_param_ipl_const,                 /* constant, allright, this 
+                                           * is polynomial as well, 
+                                           * but can be treated quickly */
+     mat_param_ipl_poly,                  /* polynomial */
+     mat_param_ipl_pcwslnr,               /* piecewise linear */
+     mat_param_ipl_exp                    /* exponential */
+} MAT_PARAM_INTPOL;
 
 
 /*----------------------------------------------------------------------*
@@ -547,19 +560,6 @@ typedef struct _TH_FOURIER_GEN
 } TH_FOURIER_GEN;
 /*----------------------------------------------------------------------*
  | Robinson's visco-plastic material                        bborn 03/07 |
- | interpolation types of non-const parameters                          |
- *----------------------------------------------------------------------*/
-typedef enum _VP_ROBINSON_INTPOL
-{
-     vp_robinson_ipl_none,                  /* no interpolation */
-     vp_robinson_ipl_const,                 /* constant, allright, this 
-                                             * is polynomial as well, 
-                                             * but can be treated quickly */
-     vp_robinson_ipl_poly,                  /* polynomial */
-     vp_robinson_ipl_pcwslnr                /* piecewise linear */
-} VP_ROBINSON_INTPOL;
-/*----------------------------------------------------------------------*
- | Robinson's visco-plastic material                        bborn 03/07 |
  | material parameters                                                  |
  *----------------------------------------------------------------------*/
 typedef struct _VP_ROBINSON
@@ -572,7 +572,7 @@ typedef struct _VP_ROBINSON
 						* expansion 'alpha' */
      DOUBLE                    hrdn_fact;      /* hardening factor 'A' */
      DOUBLE                    hrdn_expo;      /* hardening power 'n' */
-     VP_ROBINSON_INTPOL        shrthrshld_ipl; /* interpolation type of 
+     MAT_PARAM_INTPOL        shrthrshld_ipl; /* interpolation type of 
 						* shear stress threshold */
      INT                       shrthrshld_n;   /* number of interpolation 
 						* data of shear thres. */
@@ -582,15 +582,15 @@ typedef struct _VP_ROBINSON
      DOUBLE                    actv_ergy;      /* activation energy 'Q_0' */
      DOUBLE                    m;              /* 'm' */
      DOUBLE                    g0;             /* 'G_0' */
-     VP_ROBINSON_INTPOL        beta_ipl;       /* interpolation type of beta */
+     MAT_PARAM_INTPOL        beta_ipl;       /* interpolation type of beta */
      INT                       beta_n;         /* number of data */
      DOUBLE*                   beta;           /* 'beta' */
-     VP_ROBINSON_INTPOL        rcvry_ipl;      /* interpolation type of 
+     MAT_PARAM_INTPOL        rcvry_ipl;      /* interpolation type of 
 						* recovery factor */
      INT                       rcvry_n;        /* number of interpolation 
 						* data of recovery factor */
      DOUBLE*                   rcvry;          /* recovery factor 'R_0' */
-     VP_ROBINSON_INTPOL        h_ipl;          /* interpolation of 'H' */
+     MAT_PARAM_INTPOL        h_ipl;          /* interpolation of 'H' */
      INT                       h_n;            /* number of interpolation 
 						* data of 'H' */
      DOUBLE*                   h;              /* 'H' */

@@ -199,7 +199,7 @@ void so3_mat_robinson_final(ELEMENT* ele)  /*!< current element */
 \author bborn
 \date 04/07
 */
-void so3_mat_robinson_prmbytmpr(VP_ROBINSON_INTPOL ipl,  /*!< interpolation 
+void so3_mat_robinson_prmbytmpr(MAT_PARAM_INTPOL ipl,  /*!< interpolation 
                                                            type */
                                 INT prm_n,  /*!< magnitude param data */
                                 DOUBLE* prm,  /*!< parameter data */
@@ -214,12 +214,12 @@ void so3_mat_robinson_prmbytmpr(VP_ROBINSON_INTPOL ipl,  /*!< interpolation
 
   /*--------------------------------------------------------------------*/
   /* constant */
-  if (ipl == vp_robinson_ipl_const)
+  if (ipl == mat_param_ipl_const)
   {
     *prmbytempr = prm[0];
   }
   /* polynomial */
-  else if (ipl == vp_robinson_ipl_poly)
+  else if (ipl == mat_param_ipl_poly)
   {
     *prmbytempr = 0.0;  /* initialise */
     INT tmpr_pow = 1.0;
@@ -231,7 +231,7 @@ void so3_mat_robinson_prmbytmpr(VP_ROBINSON_INTPOL ipl,  /*!< interpolation
     }
   }
   /* piece-wise linear */
-  else if (ipl == vp_robinson_ipl_pcwslnr)
+  else if (ipl == mat_param_ipl_pcwslnr)
   {
     /* constant if lower than smallest provided temperature */
     if (tmpr <= prm[0])
@@ -263,7 +263,7 @@ void so3_mat_robinson_prmbytmpr(VP_ROBINSON_INTPOL ipl,  /*!< interpolation
       }
     }
   }
-  else if (ipl == vp_robinson_ipl_none)
+  else if (ipl == mat_param_ipl_none)
   {
     dserror("Interpolation type is unknown!");
   }

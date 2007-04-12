@@ -663,7 +663,7 @@ void so3_mat_mivupd(CONTAINER *container,
 void so3_mat_robinson_ctxtvrfy();
 void so3_mat_robinson_init(ELEMENT* ele);
 void so3_mat_robinson_final(ELEMENT* ele);  /*!< current element */
-void so3_mat_robinson_prmbytmpr(VP_ROBINSON_INTPOL ipl,  /*!< interpolation 
+void so3_mat_robinson_prmbytmpr(MAT_PARAM_INTPOL ipl,  /*!< interpolation 
                                                            type */
                                 INT prm_n,  /*!< magnitude param data */
                                 DOUBLE* prm,  /*!< parameter data */
