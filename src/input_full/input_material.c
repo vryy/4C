@@ -646,7 +646,7 @@ void inp_mat_nonconstparam(CHAR* param_w,  /* parameter key word */
       INT i;
       for (i=0; i<*param_n; ++i)
       {
-        *param[i] = param_tmp[i+1];
+        (*param)[i] = param_tmp[i+1];
       }
       CCAFREE(param_tmp);
     }
@@ -680,7 +680,7 @@ void inp_mat_nonconstparam(CHAR* param_w,  /* parameter key word */
     *param_ipl = mat_param_ipl_const;
     *param_n = 1;
     *param = (DOUBLE*) CCACALLOC(1, sizeof(DOUBLE));
-    frdouble(param_w, &(*param[0]), &ierr);
+    frdouble(param_w, &((*param)[0]), &ierr);
   }
 
   /*--------------------------------------------------------------------*/
