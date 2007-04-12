@@ -89,17 +89,17 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
       vector<double> myvhist(3*numnode);
       
       for (int i=0;i<numnode;++i)
-       {
-       myvelnp[0+(i*3)]=my_vel_pre_np[0+(i*4)];
-       myvelnp[1+(i*3)]=my_vel_pre_np[1+(i*4)];
-       myvelnp[2+(i*3)]=my_vel_pre_np[2+(i*4)];
+      {
+        myvelnp[0+(i*3)]=my_vel_pre_np[0+(i*4)];
+        myvelnp[1+(i*3)]=my_vel_pre_np[1+(i*4)];
+        myvelnp[2+(i*3)]=my_vel_pre_np[2+(i*4)];
 
-       myprenp[i]=my_vel_pre_np[3+(i*4)];
+        myprenp[i]=my_vel_pre_np[3+(i*4)];
 
-       myvhist[0+(i*3)]=myhist[0+(i*4)];
-       myvhist[1+(i*3)]=myhist[1+(i*4)];
-       myvhist[2+(i*3)]=myhist[2+(i*4)];
-       }
+        myvhist[0+(i*3)]=myhist[0+(i*4)];
+        myvhist[1+(i*3)]=myhist[1+(i*4)];
+        myvhist[2+(i*3)]=myhist[2+(i*4)];
+      }
 
       // calculate element coefficient matrix and rhs       
       f3_sys_mat(lm,myvelnp,myprenp,myvhist,&elemat1,&elevec1,actmat,params);
@@ -119,11 +119,10 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
       //elevec1 = eforce;
   
    
-      // outputs for debugging
+// outputs for debugging
 
 // if (Id()==10 || Id()==21)
 {
-
 	//printf("Element %5d\n",Id());	
 #if 0
 
@@ -154,7 +153,6 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
 	    printf("\n");   
 	    }
 #endif
-
 } // end of debug part
 
     }
@@ -513,9 +511,11 @@ for (int lt=0;lt<nit;lt++)
    } /* end of loop over i */
 
    /*--------------------- get grid velocity at integration point ---*/
+   /*
    if(is_ale_)
      dserror("No ALE algorithms supported by Fluid3 element up to now.");
    else
+   */
    {
      gridvelint[0] = 0.0;
      gridvelint[1] = 0.0;
@@ -2400,16 +2400,18 @@ for (int i=0; i<iel; i++) /* loop over nodes of element */
   /* We keep two versions: with and without ale. The laster one is a
    * little faster. (more than 10%) */
 
-  if (is_ale_)
+  //if (!is_ale_)
+  {
+    #include "fluid3_stiff.cpp"
+    #include "fluid3_rhs_incr.cpp"
+  }
+  /*
+  else
   {
   dserror("No ALE support in Fluid3.");
   // #include "f3_stiff_ale.c"
   }
-  else
-  {
-   #include "fluid3_stiff.cpp"
-   #include "fluid3_rhs_incr.cpp"
-  }
+  */
 
 #undef estif_
 #undef eforce_
