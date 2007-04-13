@@ -346,7 +346,7 @@ void so3_mat_robinson_sel(CONTAINER* container,  /*!< container */
   }
 
   /*--------------------------------------------------------------------*/
-  /* thermal strain */
+  /* temperature and thermal strain */
 #ifdef D_THERM3
   {
     /* temperature at Gauss point */
@@ -399,7 +399,11 @@ void so3_mat_robinson_sel(CONTAINER* container,  /*!< container */
   /*--------------------------------------------------------------------*/
   /* elasticity tensor */
   {
-    DOUBLE emod = mat_robin->youngmodul;
+    DOUBLE emod;
+    so3_mat_robinson_prmbytmpr(mat_robin->youngmodul_ipl,
+                               mat_robin->youngmodul_n,
+                               mat_robin->youngmodul,
+                               tem, &emod);
     DOUBLE prat = mat_robin->possionratio;
     DOUBLE mfac = emod/((1.0+prat)*(1.0-2.0*prat));  /* factor */
     /* zero content */

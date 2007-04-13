@@ -564,7 +564,9 @@ typedef struct _TH_FOURIER_GEN
  *----------------------------------------------------------------------*/
 typedef struct _VP_ROBINSON
 {
-     DOUBLE                    youngmodul;     /* Young's modulus 'E' */
+     MAT_PARAM_INTPOL          youngmodul_ipl;
+     INT                       youngmodul_n;
+     DOUBLE*                   youngmodul;     /* Young's modulus 'E' */
      DOUBLE                    possionratio;   /* Possion's ratio 'nu' */
      DOUBLE                    density;        /* material specific 
 						* weight 'rho' */
@@ -572,7 +574,7 @@ typedef struct _VP_ROBINSON
 						* expansion 'alpha' */
      DOUBLE                    hrdn_fact;      /* hardening factor 'A' */
      DOUBLE                    hrdn_expo;      /* hardening power 'n' */
-     MAT_PARAM_INTPOL        shrthrshld_ipl; /* interpolation type of 
+     MAT_PARAM_INTPOL          shrthrshld_ipl; /* interpolation type of 
 						* shear stress threshold */
      INT                       shrthrshld_n;   /* number of interpolation 
 						* data of shear thres. */
@@ -582,15 +584,15 @@ typedef struct _VP_ROBINSON
      DOUBLE                    actv_ergy;      /* activation energy 'Q_0' */
      DOUBLE                    m;              /* 'm' */
      DOUBLE                    g0;             /* 'G_0' */
-     MAT_PARAM_INTPOL        beta_ipl;       /* interpolation type of beta */
+     MAT_PARAM_INTPOL          beta_ipl;       /* interpolation type of beta */
      INT                       beta_n;         /* number of data */
      DOUBLE*                   beta;           /* 'beta' */
-     MAT_PARAM_INTPOL        rcvry_ipl;      /* interpolation type of 
+     MAT_PARAM_INTPOL          rcvry_ipl;      /* interpolation type of 
 						* recovery factor */
      INT                       rcvry_n;        /* number of interpolation 
 						* data of recovery factor */
      DOUBLE*                   rcvry;          /* recovery factor 'R_0' */
-     MAT_PARAM_INTPOL        h_ipl;          /* interpolation of 'H' */
+     MAT_PARAM_INTPOL          h_ipl;          /* interpolation of 'H' */
      INT                       h_n;            /* number of interpolation 
 						* data of 'H' */
      DOUBLE*                   h;              /* 'H' */
