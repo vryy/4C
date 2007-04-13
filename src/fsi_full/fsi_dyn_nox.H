@@ -140,6 +140,16 @@ public:
 
 private:
 
+  //! compute F based on interface displacements x
+  bool ComputeDispF(const Epetra_Vector& x,
+                    Epetra_Vector& F,
+                    const FillType fillFlag);
+
+  //! compute F based on interface forces x
+  bool ComputeForceF(const Epetra_Vector& x,
+                     Epetra_Vector& F,
+                     const FillType fillFlag);
+
   //! current time step
   int Timestep() const;
 
@@ -227,6 +237,9 @@ private:
     Defaults to -1 and thus no constraint.
    */
   int fdresitemax_;
+
+  //! we couple based on displacements
+  bool displacementcoupling_;
 };
 
 

@@ -68,6 +68,25 @@ public:
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+class DistributeForces
+{
+  const Epetra_Vector& x_;
+  int pos_;
+
+public:
+  DistributeForces(const Epetra_Vector& x,int pos)
+    : x_(x), pos_(pos) {}
+
+  void operator()(NODE* actsnode, int dof, int LID)
+    {
+      NODE* actfnode = actsnode->gnode->mfcpnode[genprob.numff];
+      actfnode->sol_mf.a.da[pos_][dof] = x_[LID];
+    }
+};
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 class DistributeDelta
 {
   const Epetra_Vector& x_;
@@ -151,6 +170,25 @@ public:
 
   void operator()(NODE* actsnode, int dof, int LID)
     { soln_[LID] = actsnode->sol_mf.a.da[pos_][dof]; }
+};
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+class GatherForces
+{
+  Epetra_Vector& soln_;
+  int pos_;
+
+public:
+  GatherForces(Epetra_Vector& soln,int pos)
+    : soln_(soln), pos_(pos) {}
+
+  void operator()(NODE* actsnode, int dof, int LID)
+    {
+      NODE* actfnode = actsnode->gnode->mfcpnode[genprob.numff];
+      soln_[LID] = actfnode->sol_mf.a.da[pos_][dof];
+    }
 };
 
 

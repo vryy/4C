@@ -159,7 +159,8 @@ FSI_InterfaceProblem::FSI_InterfaceProblem(Epetra_Comm& Comm,
     Comm_(Comm),
     counter_(7),
     mfresitemax_(-1),
-    fdresitemax_(-1)
+    fdresitemax_(-1),
+    displacementcoupling_(globalparameterlist->get("Displacement Coupling", true))
 {
   fsidyn_ = alldyn[3].fsidyn;
 
@@ -305,6 +306,19 @@ int FSI_InterfaceProblem::Timestep() const
 bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
                                     Epetra_Vector& F,
                                     const FillType fillFlag)
+{
+  if (displacementcoupling_)
+    return ComputeDispF(x,F,fillFlag);
+  else
+    return ComputeForceF(x,F,fillFlag);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool FSI_InterfaceProblem::ComputeDispF(const Epetra_Vector& x,
+                                        Epetra_Vector& F,
+                                        const FillType fillFlag)
 {
   char* flags[] = { "Residual", "Jac", "Prec", "FD_Res", "MF_Res", "MF_Jac", "User", NULL };
 
@@ -648,15 +662,216 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+bool FSI_InterfaceProblem::ComputeForceF(const Epetra_Vector& x,
+                                         Epetra_Vector& F,
+                                         const FillType fillFlag)
+{
+  char* flags[] = { "Residual", "Jac", "Prec", "FD_Res", "MF_Res", "MF_Jac", "User", NULL };
+
+  if (Comm_.MyPID()==0)
+    cout << "\n==================================================================================================\n"
+         << "FSI_InterfaceProblem::computeF: fillFlag = " RED << flags[fillFlag] << END_COLOR "\n"
+         << "Force coupling\n\n";
+
+  // we count the number of times the residuum is build
+  counter_[fillFlag] += 1;
+
+  if (!x.Map().UniqueGIDs())
+    dserror("source map not unique");
+
+  FIELD* structfield = struct_work_->struct_field;
+  FIELD* fluidfield  = fluid_work_ ->fluid_field;
+  FIELD* alefield    = ale_work_   ->ale_field;
+
+  // subdivision is not supported.
+  INT a_disnum_calc = 0;
+  INT a_disnum_io   = 0;
+  INT f_disnum_calc = 0;
+  INT f_disnum_io   = 0;
+  INT s_disnum_calc = 0;
+  INT s_disnum_io   = 0;
+
+  // set new interface displacement x
+  ARRAY_POSITION *ipos = &(structfield->dis[s_disnum_calc].ipos);
+  ARRAY_POSITION *fluid_ipos = &(fluidfield->dis[f_disnum_calc].ipos);
+  ARRAY_POSITION *ale_ipos = &(alefield->dis[a_disnum_calc].ipos);
+
+  // enforce linear residuum call counter array size
+  while (NlIterCount() >= static_cast<int>(linsolvcount_.size()))
+    linsolvcount_.push_back(0);
+
+  // count this call
+  linsolvcount_[NlIterCount()] += 1;
+
+  // no consecutive iterations here. We have to care about the fields
+  // backup from the outside.
+  INT itnum = 1;
+
+#if 0
+  if (par.nprocs==1)
+  {
+    static int in_counter;
+    std::ostringstream filename;
+    //filename << "plot/x_" << in_counter << ".plot";
+    filename << allfiles.outputfile_kenner
+             << ".x"
+             << "." << Timestep()
+             << "." << NlIterCount()
+             << "." << LinCount()
+             << ".plot";
+
+    std::cout << "write '" YELLOW_LIGHT << filename.str() << END_COLOR "'\n";
+    std::ofstream out(filename.str().c_str());
+    for (int i=0; i<x.MyLength()-1; i+=2)
+    {
+      out << i << " " << x[i] << " " << x[i+1] << "\n";
+    }
+    in_counter += 1;
+  }
+#endif
+
+  // User residuum calculation in this case means the linear steepest
+  // descent version. This is used for our FSI specific matrix free
+  // method.
+  if (fillFlag==User)
+  {
+    dserror("No SD support for force based iteration yet.");
+  }
+
+  // Normal FSI interface residuum calculation.
+  else
+  {
+
+    // restore structfield state
+    solserv_sol_copy(structfield, s_disnum_calc, node_array_sol_mf, node_array_sol_mf, 8,ipos->mf_dispnp);
+    solserv_sol_copy(structfield, s_disnum_calc, node_array_sol_mf, node_array_sol_mf, 9,ipos->mf_reldisp);
+    if (itnum > 0)
+      solserv_sol_copy(structfield,s_disnum_calc,node_array_sol,node_array_sol,11, 9);
+    if (itnum == 0)
+      solserv_sol_copy(structfield,s_disnum_calc,node_array_sol,node_array_sol,12, 1);
+
+    // keep a copy
+    oldx_ = Teuchos::rcp(new Epetra_Vector(x));
+
+    //cout << x.Map();
+
+    // make x redundant
+    redundantsol_->PutScalar(0);
+    int err = redundantsol_->Import(x,*importredundant_,Insert);
+    if (err!=0)
+      dserror("Import failed with err=%d",err);
+
+    DistributeForces dd(*redundantsol_,fluid_ipos->mf_forcenp);
+    loop_interface(structfield,dd,*redundantsol_);
+
+    // Calculate new interface forces starting from the given ones.
+
+    /*------------------------------- CSD -------------------------------*/
+    perf_begin(43);
+    fsi_struct_calc(struct_work_,structfield,s_disnum_calc,s_disnum_io,itnum,fluidfield,f_disnum_calc);
+    perf_end(43);
+
+    /*------------------------------- CMD -------------------------------*/
+    perf_begin(44);
+    fsi_ale_calc(ale_work_,alefield,a_disnum_calc,a_disnum_io,structfield,s_disnum_calc);
+    perf_begin(44);
+
+    /*------------------------------- CFD -------------------------------*/
+    FLUID_DYNAMIC* fdyn = alldyn[genprob.numff].fdyn;
+    int itemax = fdyn->itemax;
+
+    // We might want to do just one linear fluid solution in matrix free
+    // or finite difference settings.
+
+    // be careful: NUMSTASTEPS = -1 in FLUID DYNAMIC input section
+    // needed for this to work. Otherwise the start step might reset
+    // itemax!
+
+    if (fillFlag==FD_Res && fdresitemax_ > 0)
+      fdyn->itemax = fdresitemax_;
+
+    if (fillFlag==MF_Res && mfresitemax_ > 0)
+      fdyn->itemax = mfresitemax_;
+
+    // not sure about that
+    if (fillFlag==MF_Jac && mfresitemax_ > 0)
+      fdyn->itemax = mfresitemax_;
+
+    perf_begin(42);
+    fsi_fluid_calc(fluid_work_,fluidfield,f_disnum_calc,f_disnum_io,alefield,a_disnum_calc);
+    perf_end(42);
+
+    fdyn->itemax = itemax;
+
+
+    // Fill the distributed interface displacement vector F. We
+    // don't have a direct mapping, so loop all structural nodes and
+    // select the dofs that belong to the local part of the interface.
+
+    // F = -R = d(i+1) - d(i)
+    // This is the rhs of our equation!
+
+    GatherForces gr(F,fluid_ipos->mf_forcenp);
+    loop_interface(structfield,gr,F);
+    F.Update(-1.0,x,1.0);
+
+    // keep a copy
+    oldf_ = Teuchos::rcp(new Epetra_Vector(F));
+  }
+
+#if 0
+  if (par.nprocs==1)
+  {
+    static int out_counter;
+    std::ostringstream filename;
+    //filename << "plot/interface_" << out_counter << ".plot";
+    filename << allfiles.outputfile_kenner
+             << ".f"
+             << "." << Timestep()
+             << "." << NlIterCount()
+             << "." << LinCount()
+             << ".plot";
+
+    std::cout << "write '" YELLOW_LIGHT << filename.str() << END_COLOR "'\n";
+    std::ofstream out(filename.str().c_str());
+    //OutputDisplacements od(out,ipos->mf_dispnp,ipos->mf_reldisp);
+    //loop_interface(structfield,od,F);
+    for (int i=0; i<F.MyLength()-1; i+=2)
+    {
+      out << i << " " << F[i] << " " << F[i+1] << "\n";
+    }
+    out_counter += 1;
+  }
+#endif
+
+  return true;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RefCountPtr<Epetra_Vector> FSI_InterfaceProblem::soln()
 {
   FIELD *structfield = struct_work_->struct_field;
 
-  int disnum = 0;
-  ARRAY_POSITION *ipos = &(structfield->dis[disnum].ipos);
+  if (displacementcoupling_)
+  {
+    int disnum = 0;
+    ARRAY_POSITION *ipos = &(structfield->dis[disnum].ipos);
 
-  GatherDisplacements gd(*soln_,ipos->mf_dispnp);
-  loop_interface(structfield,gd,*soln_);
+    GatherDisplacements gd(*soln_,ipos->mf_dispnp);
+    loop_interface(structfield,gd,*soln_);
+  }
+  else
+  {
+    FIELD *fluidfield = fluid_work_->fluid_field;
+
+    int disnum = 0;
+    ARRAY_POSITION *ipos = &(fluidfield->dis[disnum].ipos);
+
+    GatherForces gd(*soln_,ipos->mf_forcenp);
+    loop_interface(structfield,gd,*soln_);
+  }
 
   return soln_;
 }
