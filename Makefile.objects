@@ -514,7 +514,8 @@ OBJS_FSI_CPP  = src/fsi_full/fsi_dyn_nox.o \
 		src/fsi_full/fsi_nox_fixpoint.o \
 		src/fsi_full/fsi_nox_aitken.o \
 		src/fsi_full/fsi_nox_jacobian.o \
-		src/fsi_full/fsi_nox_extrapolate.o
+		src/fsi_full/fsi_nox_extrapolate.o \
+		src/fsi_full/fsi_nox_michler.o
 #                shell9
 OBJS_SHELL9   = src/shell9/s9_main.o \
                 src/shell9/s9_a3.o \

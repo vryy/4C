@@ -9,6 +9,7 @@
 #include "fsi_dyn_nox.H"
 #include "fsi_nox_aitken.H"
 #include "fsi_nox_extrapolate.H"
+#include "fsi_nox_michler.H"
 #include "fsi_nox_fixpoint.H"
 #include "fsi_nox_jacobian.H"
 #include "../discret/dstrc.H"
@@ -345,7 +346,7 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
   // backup from the outside.
   INT itnum = 1;
 
-#if 0
+#if 1
   if (par.nprocs==1)
   {
     static int in_counter;
@@ -553,7 +554,7 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
     oldf_ = Teuchos::rcp(new Epetra_Vector(F));
   }
 
-#if 0
+#if 1
   if (par.nprocs==1)
   {
     static int out_counter;
@@ -1033,6 +1034,16 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
       Teuchos::RefCountPtr<NOX::Direction::Generic> fixpoint = Teuchos::rcp(new FixPoint(utils,nlParams));
       dirParams.set("Method","User Defined");
       dirParams.set("User Defined Direction",fixpoint);
+      lsParams.set("Preconditioner","None");
+      preconditioner="None";
+    }
+
+    // the strange coupling proposed by Michler
+    else if (jacobian=="Michler")
+    {
+      Teuchos::RefCountPtr<NOX::Direction::Generic> michler = Teuchos::rcp(new Michler(utils,nlParams));
+      dirParams.set("Method","User Defined");
+      dirParams.set("User Defined Direction",michler);
       lsParams.set("Preconditioner","None");
       preconditioner="None";
     }
