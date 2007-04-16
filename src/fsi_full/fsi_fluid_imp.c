@@ -330,7 +330,8 @@ void fsi_fluid_imp_setup(
   ipos->mf_velnp = 0;
   ipos->mf_forcenp = 1;
 
-  if (fsidyn->ifsi==fsi_iter_stagg_AITKEN_rel_force)
+  if ((fsidyn->ifsi==fsi_iter_stagg_AITKEN_rel_force) ||
+      (fsidyn->ifsi==fsi_iter_nox))
   {
     ipos->nummf += 1;
     ipos->mf_forcen = 2;
@@ -970,7 +971,8 @@ nonlniter:
       fsidyn->ifsi==fsi_iter_nox)
   {
     if (fsidyn->ifsi==fsi_iter_stagg_AITKEN_rel_force ||
-	fsidyn->ifsi==fsi_iter_stagg_steep_desc_force)
+	fsidyn->ifsi==fsi_iter_stagg_steep_desc_force ||
+	fsidyn->ifsi==fsi_iter_nox)
     {
       /* Store the old nodal forces */
       solserv_sol_copy(actfield,disnum_calc,

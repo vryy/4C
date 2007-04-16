@@ -147,6 +147,31 @@ extern "C" void debug_out_data(FIELD *actfield, CHAR* n, NODE_ARRAY array, INT p
 }
 
 
+extern "C" void debug_out_vector(CHAR* n, DIST_VECTOR* vec)
+{
+  static INT call = 0;
+  INT i;
+  FILE* f;
+  CHAR name[50];
+
+  if (getenv("DEBUG")==NULL || par.myrank!=0)
+    return;
+
+  sprintf(name, "plot/%s%d.plot", n, call);
+  printf("write '" YELLOW_LIGHT "%s" END_COLOR "'\n", name);
+
+  f = fopen(name, "w");
+
+  for (i=0; i<vec->vec.fdim; ++i)
+  {
+    fprintf(f, "%d %e\n",i,vec->vec.a.dv[i]);
+  }
+
+  fclose(f);
+  call++;
+}
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI_InterfaceProblem::FSI_InterfaceProblem(Epetra_Comm& Comm,
@@ -308,9 +333,13 @@ bool FSI_InterfaceProblem::computeF(const Epetra_Vector& x,
                                     const FillType fillFlag)
 {
   if (displacementcoupling_)
+  {
     return ComputeDispF(x,F,fillFlag);
+  }
   else
+  {
     return ComputeForceF(x,F,fillFlag);
+  }
 }
 
 
@@ -360,7 +389,7 @@ bool FSI_InterfaceProblem::ComputeDispF(const Epetra_Vector& x,
   // backup from the outside.
   INT itnum = 1;
 
-#if 1
+#if 0
   if (par.nprocs==1)
   {
     static int in_counter;
@@ -568,7 +597,7 @@ bool FSI_InterfaceProblem::ComputeDispF(const Epetra_Vector& x,
     oldf_ = Teuchos::rcp(new Epetra_Vector(F));
   }
 
-#if 1
+#if 0
   if (par.nprocs==1)
   {
     static int out_counter;
@@ -750,6 +779,13 @@ bool FSI_InterfaceProblem::ComputeForceF(const Epetra_Vector& x,
     if (itnum == 0)
       solserv_sol_copy(structfield,s_disnum_calc,node_array_sol,node_array_sol,12, 1);
 
+    // restore fluidfield state
+    solserv_sol_copy(fluidfield, f_disnum_calc,
+                     node_array_sol_mf,
+                     node_array_sol_mf,
+                     fluid_ipos->mf_forcen,
+                     fluid_ipos->mf_forcenp);
+
     // keep a copy
     oldx_ = Teuchos::rcp(new Epetra_Vector(x));
 
@@ -766,10 +802,14 @@ bool FSI_InterfaceProblem::ComputeForceF(const Epetra_Vector& x,
 
     // Calculate new interface forces starting from the given ones.
 
+    debug_out_data(fluidfield, "fluid_force", node_array_sol_mf, fluid_ipos->mf_forcenp);
+
     /*------------------------------- CSD -------------------------------*/
     perf_begin(43);
     fsi_struct_calc(struct_work_,structfield,s_disnum_calc,s_disnum_io,itnum,fluidfield,f_disnum_calc);
     perf_end(43);
+
+    debug_out_data(structfield, "struct_disp", node_array_sol_mf, ipos->mf_dispnp);
 
     /*------------------------------- CMD -------------------------------*/
     perf_begin(44);
@@ -802,7 +842,6 @@ bool FSI_InterfaceProblem::ComputeForceF(const Epetra_Vector& x,
     perf_end(42);
 
     fdyn->itemax = itemax;
-
 
     // Fill the distributed interface displacement vector F. We
     // don't have a direct mapping, so loop all structural nodes and
@@ -1163,24 +1202,6 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
 
     NOX::Epetra::Vector noxSoln(soln(), NOX::Epetra::Vector::CreateView);
 
-#ifdef DEBUG
-    if (getenv("DEBUG")!=NULL && Comm_.NumProc()==1)
-    {
-      static int out_counter;
-      std::ostringstream filename;
-      filename << "plot/noxSoln_" << out_counter << ".plot";
-      std::cout << "write '" YELLOW_LIGHT << filename.str() << END_COLOR "'\n";
-      std::ofstream out(filename.str().c_str());
-      //noxSoln.print(out);
-      const Epetra_Vector& s = noxSoln.getEpetraVector();
-      for (int i=0; i<=60; i+=2)
-      {
-        out << i << " " << s[i] << " " << s[i+1] << "\n";
-      }
-      out_counter += 1;
-    }
-#endif
-
     // Create the linear system
     Teuchos::RefCountPtr<NOX::Epetra::Interface::Required> iReq = interface;
 
@@ -1495,23 +1516,6 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
         utils->out() << endl;
       }
 
-#ifdef DEBUG
-    if (getenv("DEBUG")!=NULL && Comm_.NumProc()==1)
-    {
-      static int out_counter;
-      std::ostringstream filename;
-      filename << "plot/finalSolution_" << out_counter << ".plot";
-      std::cout << "write '" YELLOW_LIGHT << filename.str() << END_COLOR "'\n";
-      std::ofstream out(filename.str().c_str());
-      for (int i=0; i<=60; i+=2)
-      {
-        out << i << " " << finalSolution[i]+finalF[i] << " " << finalSolution[i+1]+finalF[i+1] << "\n";
-      }
-      //finalGroup.getX().print(out);
-      out_counter += 1;
-    }
-#endif
-
     // ==================================================================
     // return results
 
@@ -1527,9 +1531,16 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     if (err!=0)
       dserror("Import failed with err=%d",err);
 
-    //DistributeDisplacements dd(*redundantsol_,ipos->mf_dispnp);
-    DistributeSolution dd(*redundantsol_,*redundantf_,ipos->mf_dispnp);
-    loop_interface(structfield,dd,*redundantsol_);
+    if (displacementcoupling_)
+    {
+      //DistributeDisplacements dd(*redundantsol_,ipos->mf_dispnp);
+      DistributeSolution dd(*redundantsol_,*redundantf_,ipos->mf_dispnp);
+      loop_interface(structfield,dd,*redundantsol_);
+    }
+    else
+    {
+      // do we need to distribute the new interface forces?
+    }
 
     // ==================================================================
 
