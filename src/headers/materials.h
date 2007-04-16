@@ -561,9 +561,20 @@ typedef struct _TH_FOURIER_GEN
 /*----------------------------------------------------------------------*
  | Robinson's visco-plastic material                        bborn 03/07 |
  | material parameters                                                  |
+ | [1] Butler, Aboudi and Pindera: "Role of the material constitutive   |
+ |     model in simulating the reusable launch vehicle thrust cell      |
+ |     liner response", J Aerospace Engrg, 18(1), 2005.                 |
+ | [2] Arya: "Analytical and finite element solutions of some problems  |
+ |     using a vsicoplastic model", Comput & Struct, 33(4), 1989.       |
  *----------------------------------------------------------------------*/
 typedef struct _VP_ROBINSON
 {
+     INT                       kind;           /* kind of Robinson
+                                                  material (slight
+                                                  differences)
+                                                  ==0: unset
+                                                  ==1: Butler et al, 2005 [1]
+                                                  ==2: Arya, 1989 [2] */
      MAT_PARAM_INTPOL          youngmodul_ipl;
      INT                       youngmodul_n;
      DOUBLE*                   youngmodul;     /* Young's modulus 'E' */

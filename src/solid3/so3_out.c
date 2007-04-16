@@ -118,12 +118,15 @@ void so3_out_stress(ELEMENT *actele,
       fprintf(out, "r2,s2,t2 ---> angles to the second principal direction\n");
       fprintf(out, "r3,s3,t3 ---> angles to the third  principal direction\n\n");
       fprintf(out, "INT.point   stress-11    stress-22    stress-33"
-                   "  ang-r1  ang-s1   ang-t1  "
-                   "  ang-r2  ang-s2   ang-t2  "
-                   "  ang-r3  ang-s3   ang-t3\n");
+                   "  ang-r1  ang-s1  ang-t1  "
+                   "  ang-r2  ang-s2  ang-t2  "
+                   "  ang-r3  ang-s3  ang-t3\n");
       for (igp=0; igp<ngauss; igp++)
       {
-        fprintf(out,"  %-6d %12.3E %12.3E %12.3E %5.2f    %5.2f    %5.2f    %5.2f    %5.2f    %5.2f    %5.2f    %5.2f    %5.2f \n",
+        fprintf(out,"  %-6d %12.3E %12.3E %12.3E"
+                    "  %6.2f  %6.2f  %6.2f"
+                    "    %6.2f  %6.2f  %6.2f"
+                    "    %6.2f  %6.2f  %6.2f \n",
                 igp,
                 actso3->stress_gp123.a.da[igp][0],  /* stress-11 */
                 actso3->stress_gp123.a.da[igp][1],  /* stress-22 */
@@ -182,7 +185,10 @@ void so3_out_stress(ELEMENT *actele,
                    "  ang-r3  ang-s3  ang-t3\n");
       for (inod=0; inod<actele->numnp; inod++)
       {
-        fprintf(out, "  %-6d %12.3E %12.3E %12.3E %5.2f    %5.2f    %5.2f    %5.2f    %5.2f    %5.2f    %5.2f    %5.2f    %5.2f \n",
+        fprintf(out, "  %-6d %12.3E %12.3E %12.3E"
+                     "  %6.2f  %6.2f  %6.2f"
+                     "    %6.2f  %6.2f  %6.2f"
+                     "    %6.2f  %6.2f  %6.2f \n",
                 inod,
                 actso3->stress_nd123.a.da[inod][0],  /* stress-11 */
                 actso3->stress_nd123.a.da[inod][1],  /* stress-22 */

@@ -829,6 +829,12 @@ void so3_tns3_v2tsym(DOUBLE av[6],
 void so3_tns3_spcdcmp(DOUBLE at[3][3],  /* input tensor */
                       INT *err,
                       DOUBLE ew[3]);
+void so3_tns3_symspcdcmp_jit(DOUBLE at[NDIM_SOLID3][NDIM_SOLID3],
+                             DOUBLE itertol,
+                             INT itermax,
+                             DOUBLE ew[NDIM_SOLID3],
+                             DOUBLE ev[NDIM_SOLID3][NDIM_SOLID3],
+                             INT* err);
 void so3_tns3_norm2(DOUBLE av[NDIM_SOLID3],
                     DOUBLE* norm);
 void so3_tns3_unitvct(DOUBLE av[NDIM_SOLID3]);

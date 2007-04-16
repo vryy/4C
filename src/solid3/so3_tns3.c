@@ -547,15 +547,15 @@ void so3_tns3_plrdcmp(DOUBLE ft[3][3],  /* input tensor */
   /* solution with Cardan's formulae */
   disc = (4.0*pp*pp*pp + 27.0*qq*qq)/108.0;  /* discriminant */
   /* discriminant==0  ==>  3 real roots in x */
-  if (abs(disc) < EPS12)
+  if (FABS(disc) < EPS12)
   {
     /* triple real root */
-    if ( (abs(pp) < EPS12) && (abs(qq) < EPS12) )
+    if ( (FABS(pp) < EPS12) && (FABS(qq) < EPS12) )
     {
       x1 = 0.0;  /* triple real solution */
       z1 = x1 - 2.0*p/3.0;  /* triple real solution */
       z1rt = sqrt(z1);
-      if (abs(-z1rt*z1rt*z1rt - q) < EPS12)
+      if (FABS(-z1rt*z1rt*z1rt - q) < EPS12)
       {
         ui = 1.5*z1rt;
       }
@@ -579,7 +579,7 @@ void so3_tns3_plrdcmp(DOUBLE ft[3][3],  /* input tensor */
         /* radicals of roots of cubic resolvent */
         z1rt = sqrt(z1);  /* single */
         z2rt = sqrt(z2);  /* double */
-        if (abs(-z1rt*z2rt*z2rt - q) < EPS12)
+        if (FABS(-z1rt*z2rt*z2rt - q) < EPS12)
         {
           ui = 0.5*(z1rt + 2.0*z2rt);
         }
@@ -612,7 +612,7 @@ void so3_tns3_plrdcmp(DOUBLE ft[3][3],  /* input tensor */
     z1rt = sqrt(z1);
     z2rt = sqrt(z2);
     z3rt = sqrt(z3);
-    if (abs(-z1rt*z2rt*z3rt - q) < EPS12)
+    if (FABS(-z1rt*z2rt*z3rt - q) < EPS12)
     {
       ui = 0.5*(z1rt + z2rt + z3rt);
     }
@@ -808,7 +808,7 @@ void so3_tns3_v2tsym(DOUBLE av[6],
 
 /*======================================================================*/
 /*!
-\brief Spectral decomposition
+\brief Spectral decomposition directlt calculated using Cardan's formulas
 
 The tensor 
          [ A_11  A_12  A_13 ]
@@ -856,13 +856,15 @@ void so3_tns3_spcdcmp(DOUBLE at[3][3],  /* input tensor */
   q = (-2.0*ai*ai*ai + 9.0*ai*aii - 27.0*aiii)/27.0;
 
   /* discriminant */
-  disc = (4.0*p*p*p + 27.0*q*q)/108.0;
+  /* disc = (4.0*p*p*p + 27.0*q*q)/108.0; */
+  disc = (27.0*aiii*aiii - 18.0*ai*aii*aiii + 4.0*ai*ai*ai*aiii
+          + 4.0*aii*aii*aii - ai*ai*aii*aii)/108.0; /* less round-off */
 
   /* discriminant==0  ==>  3 real roots in y */
-  if (abs(disc) < EPS12)
+  if (FABS(disc) < EPS12)
   {
     /* triple real root */
-    if ( (abs(p) < EPS12) && (abs(q) < EPS12) )
+    if ( (FABS(p) < EPS12) && (FABS(q) < EPS12) )
     {
       duplicity = 3;
       y1 = 0.0;  /* triple real solution */
@@ -911,7 +913,8 @@ void so3_tns3_spcdcmp(DOUBLE at[3][3],  /* input tensor */
   else
   {
     /* 1 real and 2 conjugated complex y roots */
-    /* printf("discriminant %f\n", disc); */
+    printf("discriminant %24.12e\n", disc);
+    printf("I_A %30.20e;  II_A %30.20e;  III_A %30.20e\n", ai, aii, aiii);
     dserror("Discriminant is positive!\n");
     *err = 1;
   }
@@ -921,6 +924,172 @@ void so3_tns3_spcdcmp(DOUBLE at[3][3],  /* input tensor */
     ew[0] = lam1;
     ew[1] = lam2;
     ew[2] = lam3;
+  }
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+
+/*======================================================================*/
+/*!
+\brief Spectral decomposition of symmetric 2-tensor calculated
+       iteratively using Jacobi's method
+
+References:
+[1] I.N. Bronstein & K.A. Semendjajew, "Taschenbuch der
+        Mathematik", Teubner, 25.ed, 1991.
+        esp. p. 741 ff.
+
+\param   at        DOUBLE[][]   (i)  input tensor _symmetric_
+\param   itertol   DOUBLE       (i)  tolerance
+\param   itermax   INT          (i)  maximally allowd iteration steps
+\param   ev        DOUBLE[]     (o)  eigenvalues
+\param   ew        DOUBLE[][]   (o)  eigenvectors (direction cosines)
+\param   err       INT*         (o)  error
+\author bborn
+\date 04/07
+*/
+void so3_tns3_symspcdcmp_jit(DOUBLE at[NDIM_SOLID3][NDIM_SOLID3],
+                             DOUBLE itertol,
+                             INT itermax,
+                             DOUBLE ew[NDIM_SOLID3],
+                             DOUBLE ev[NDIM_SOLID3][NDIM_SOLID3],
+                             INT* err)
+{
+  DOUBLE ewt[NDIM_SOLID3][NDIM_SOLID3];  /* eigenvalue diagonal tensor */
+  DOUBLE asum;  /* sum of all entries (moduli) in at */
+  INT itercnt;  /* iteration counter */
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_enter("so3_tns3_symspcdcmp_jit");
+#endif
+
+  /*--------------------------------------------------------------------*/
+  /* initialise eigenvalue tensor and eigenvector tensor */
+  {
+    asum = 0.0;
+    INT idim, jdim;
+    for (idim=0; idim<NDIM_SOLID3; idim++)
+    {
+      for (jdim=0; jdim<NDIM_SOLID3; jdim++)
+      {
+        asum += fabs(at[idim][jdim]);
+        ewt[idim][jdim] = at[idim][jdim];
+        ev[idim][jdim] = 0.0;
+      }
+      ev[idim][idim] = 1.0;
+    }
+  }
+
+  /*--------------------------------------------------------------------*/
+  /* check for trivial problem */
+  if (asum < EPS12)
+  {
+    ew[0] = 0.0;
+    ew[1] = 0.0;
+    ew[2] = 0.0;
+    return;
+  }
+
+  /*--------------------------------------------------------------------*/
+  /* scale sum of at compenents to achieve relative convergence check */
+  asum /= (DOUBLE) (NDIM_SOLID3 * NDIM_SOLID3);
+
+  /*--------------------------------------------------------------------*/
+  /* reduce ewt to diagonal (the eigenvalues) */
+  itercnt = 0;  /* initialise iteration index <i> */
+  while (itercnt < itermax)
+  {
+    DOUBLE vsum = 0.0;  /* sum of all subtriangluar entries */
+    INT idim, jdim;  /* dimension indices */
+    /* loop lower triangle */
+    for (jdim=1; jdim<NDIM_SOLID3; jdim++)
+    {
+      for (idim=0; idim<jdim; idim++)
+      {
+        /* sum of all triag entries */
+        vsum += ewt[idim][jdim];
+        /*--------------------------------------------------------------*/
+        /* rotation angle th
+         * 2*th = atan(2*evt[idim][jdim]/(ewt[idim,idim]-ewt[jdim,jdim]) */
+        DOUBLE th 
+          = 0.5*atan2(2.0*ewt[idim][jdim],ewt[idim][idim]-ewt[jdim][jdim]);
+        DOUBLE sith = sin(th);  /* sine of rotation angle */
+        DOUBLE coth = cos(th);  /* cosine of rotation angle */
+        /* this defines the rotation matrix,
+         * e.g.
+         * 
+         *             [ T_{idim,idim}  0  T_{idim,jdim} ]
+         *   T^<i+1> = [             0  1              0 ]
+         *             [ T_{jdim,idim}  0  T_{jdim,jdim} ]
+         *       
+         *       [ cos(th)  0  -sin(th) ]
+         *     = [       0  1         0 ]
+         *       [ sin(th)  0   cos(th) ]
+         */
+        /*--------------------------------------------------------------*/
+        /* update eigenvector matrix by right-multiplying with T
+         * T is mostly 0 thus it is more efficient to do explicitly
+         *    ev^<i+1> = ev^<i> . T^<i+1> */
+        INT kdim;
+        for (kdim=0; kdim<NDIM_SOLID3; kdim++)
+        {
+          DOUBLE evki = ev[kdim][idim];
+          ev[kdim][idim] = coth*evki + sith*ev[kdim][jdim];
+          ev[kdim][jdim] = -sith*evki + coth*ev[kdim][jdim];
+        }
+        /*--------------------------------------------------------------*/
+        /* update eigenvalue tensor by right-multiplying with T and
+         * left-multiplying with transposed T
+         *    ewt^<i+1> = transposed(T^<i+1>) . ewt^<i> . T^<i+1> */
+        /* modify "idim" and "jdim" columns */
+        for (kdim=0; kdim<NDIM_SOLID3; kdim++)
+        {
+          DOUBLE ewtki = ewt[kdim][idim];
+          ewt[kdim][idim] = coth*ewtki + sith*ewt[kdim][jdim];
+          ewt[kdim][jdim] = -sith*ewtki + coth*ewt[kdim][jdim];
+        }
+        /* modify diagonal terms */
+        ewt[idim][idim] = coth*ewt[idim][idim] + sith*ewt[jdim][idim];
+        ewt[jdim][jdim] = -sith*ewt[idim][jdim] + coth*ewt[jdim][jdim];
+        ewt[idim][jdim] = 0.0;
+        /* make symmetric */
+        for (kdim=0; kdim<NDIM_SOLID3; kdim++)
+        {
+          ewt[idim][kdim] = ewt[kdim][idim];
+          ewt[jdim][kdim] = ewt[kdim][jdim];
+        }
+      }
+    }
+    /*------------------------------------------------------------------*/
+    /* check convergence */
+    if (fabs(vsum)/asum < itertol)
+    {
+      break;
+    }
+    /* increment iteration index */
+    itercnt += 1;
+  }
+
+  /*--------------------------------------------------------------------*/
+  /* check if iteration loop was divergent */
+  if (itercnt == itermax)
+  {
+    *err = 1;  /* failed */
+    dserror("Convergence in specral decomposition not found!");
+  }
+  else
+  {
+    *err = 0;  /* passed */
+    INT kdim;
+    for (kdim=0; kdim<NDIM_SOLID3; kdim++)
+    {
+      ew[kdim] = ewt[kdim][kdim];
+    }
   }
 
   /*--------------------------------------------------------------------*/
@@ -988,7 +1157,7 @@ void so3_tns3_unitvct(DOUBLE av[NDIM_SOLID3])
   /*--------------------------------------------------------------------*/
   /* get Euclidian norm */
   so3_tns3_norm2(av, &norm);
-  if (ABS(norm) < EPS12)
+  if (FABS(norm) < EPS12)
   {
     dserror("Trying to normalise zero vector!");
   }

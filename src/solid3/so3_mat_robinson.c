@@ -527,23 +527,38 @@ void so3_mat_robinson_stnvscrat(const VP_ROBINSON* mat_robin,  /*!< material */
                              mat_robin->shrthrshld,
                              tmpr, &shrthrshld);
   /* F = (J_2 - K^2)/K_2 */
-  if (abs(shrthrshld) <= EPS10)
+  if (FABS(shrthrshld) <= EPS10)
   {
     dserror("Division by zero: Shear threshold very close to zero");
   }
   else
   {
+    /* debug: */
+    printf("J_2 %f;  K^2 %f\n", j2, shrthrshld);
     ff = (j2 - shrthrshld)/shrthrshld;
   }
   /* ss = 1/2 s : Sig  with  Sig...overstress, s...deviat.stress */
   so3_vct6_dblctr(stsovr, stsdev, &ss);
+  /* debug: */
+  printf("F %f;  s:s %f\n", ff, ss);
 
   /*--------------------------------------------------------------------*/
   /* viscous strain rate at t_{n+c_i} */
   if ( (ff > 0.0) && (ss > 0.0) )
   {
-    DOUBLE fct 
-      = mat_robin->hrdn_fact*pow(ff, mat_robin->hrdn_expo)/sqrt(j2);
+    DOUBLE fct;
+    if (mat_robin->kind == 1)  /* Butler */
+    {
+      fct = mat_robin->hrdn_fact * pow(ff, mat_robin->hrdn_expo) / sqrt(j2);
+    }
+    else if (mat_robin->kind == 2)  /* Arya */
+    {
+      fct = mat_robin->hrdn_fact * pow(ff, mat_robin->hrdn_expo);
+    }
+    else
+    {
+      dserror("Kind of Robinson material is unknown");
+    }
     so3_vct6_assscl(fct, stsovr, dstnvsc);
   }
   else
@@ -625,7 +640,7 @@ void so3_mat_robinson_stsbckrat(const VP_ROBINSON* mat_robin,  /*!< material */
   /* 'G_0' */
   gg0 = mat_robin->g0;
   /* G = I_2/K_0^2 */
-  if (abs(shrthrshld0) <= EPS10)
+  if (FABS(shrthrshld0) <= EPS10)
   {
     dserror("Division by zero: Shear threshold very close to zero");
   }
@@ -647,9 +662,25 @@ void so3_mat_robinson_stsbckrat(const VP_ROBINSON* mat_robin,  /*!< material */
   }
   else
   {
-    DOUBLE fcte = hh/pow(gg, beta);
+    DOUBLE fcte;
+    if (mat_robin->kind == 1)
+    {
+      fcte = hh / pow(gg, beta);
+    }
+    else if (mat_robin->kind == 2)
+    {
+      fcte = hh / pow(gg0, beta);
+    }
     so3_vct6_assscl(fcte, dstnvsc, dstsbck);
-    DOUBLE fcta = -rr*pow(gg0, (mm-beta))/sqrt(i2);
+    DOUBLE fcta;
+    if (mat_robin->kind == 1)
+    {
+      fcta = -rr * pow(gg0, (mm-beta)) / sqrt(i2);
+    }
+    else if (mat_robin->kind == 2)
+    {
+      fcta = -rr * pow(gg0, (mm-beta));
+    }
     so3_vct6_updscl(fcta, stsbck, dstsbck);
   }
 
@@ -695,6 +726,8 @@ void so3_mat_robinson_mivupd(ELEMENT* ele,  /*!< curr. elem. */
                       stnvscn);
     }
     so3_vct6_ass(stnvscn, actso3->miv_rob->vicstn.a.da[ip]);
+    /* debug: */
+    /* printf("VSTN %f\n", actso3->miv_rob->vicstn.a.da[ip][0]); */
   }
 
   /*--------------------------------------------------------------------*/
@@ -711,6 +744,8 @@ void so3_mat_robinson_mivupd(ELEMENT* ele,  /*!< curr. elem. */
                       stsbckn);
     }
     so3_vct6_ass(stsbckn, actso3->miv_rob->bacsts.a.da[ip]);
+    /* debug: */
+    /* printf("BSTS %f\n", actso3->miv_rob->bacsts.a.da[ip][0]); */
   }
 
   /*--------------------------------------------------------------------*/

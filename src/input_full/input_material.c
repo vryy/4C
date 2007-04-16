@@ -479,6 +479,27 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
      mat[i].mattyp = m_vp_robinson;
      mat[i].m.vp_robinson = (VP_ROBINSON*) CCACALLOC(1,sizeof(VP_ROBINSON));
      VP_ROBINSON* robin = mat[i].m.vp_robinson;
+     CHAR word[16];
+     frchar("KIND", word, &ierr);  /* see also material.h */
+     if (ierr == 1)
+     {
+       if (strcmp(word, "Butler") == 0)
+       {
+         robin->kind = 1;
+       }
+       else if (strcmp(word, "Arya") == 0)
+       {
+         robin->kind = 2;
+       }
+       else
+       {
+         dserror("Kind of Robinson material could not be determined!");
+       }
+     }
+     else
+     {
+       robin->kind = 0;
+     }
      robin->youngmodul_ipl = mat_param_ipl_none;
      frchk("YOUNG", &ierr);
      if (ierr == 1)
@@ -538,6 +559,10 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
                              &(robin->h));
      }
      /* check if allocatables have indeed been allocated */
+     if (robin->youngmodul == NULL)
+     {
+       dserror("Young's modulus was not found!");
+     }
      if (robin->beta == NULL)
      {
        dserror("Beta was not found!");

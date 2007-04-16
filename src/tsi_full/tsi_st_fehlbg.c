@@ -1014,7 +1014,15 @@ void tsi_st_fehlbg(INT disnum_s,
     /*------------------------------------------------------------------*/
     /* check whether to write results or not */
     mod_disp = sdyn->step % sdyn->updevry_disp;
-    mod_stress = sdyn->step % sdyn->updevry_stress;
+    /* check whether print stress or not */
+    if (sdyn->updevry_stress > 0)
+    {
+      mod_stress = sdyn->step % sdyn->updevry_stress;
+    }
+    else
+    {
+      mod_stress = -1;
+    }
     /* check whether to write restart or not */
     if (sdyn->res_write_evry > 0)
     {
@@ -1144,7 +1152,7 @@ void tsi_st_fehlbg(INT disnum_s,
     }
     /*------------------------------------------------------------------*/
     /* print time step */
-    if (par.myrank == 0) 
+    if ( (par.myrank == 0) && (mod_disp == 0) )
     {
       /* dyn_nlnstruct_outstep(&dynvar, sdyn, 0, sdyn->dt); */
       /* to STDOUT */

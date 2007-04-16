@@ -149,7 +149,7 @@ void so3_stress_final(PARTITION *actpart)
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
-  dstrc_enter("so3_hlux_final");
+  dstrc_enter("so3_stress_final");
 #endif
 
   /*--------------------------------------------------------------------*/
@@ -346,21 +346,19 @@ void so3_stress(CONTAINER *cont,
     for (istr=0; istr<NUMSTR_SOLID3; istr++)
     {
       ele->e.so3->stress_gpxyz.a.da[igp][istr] = stress[istr];
+      /* debug: */
+      /* printf("Stress %d %d : %f\n", igp, istr, stress[istr]); */
     }
     /*------------------------------------------------------------------*/
     /* construct rotational component of inverse FE-Jacobian */
     so3_metr_rot(gds.xjm, gds.xrm, gds.xrvm, gds.xrvi);
     /*------------------------------------------------------------------*/
     /* store stress in parameter space co-ordinates (r,s,t) */
-#if 1
     so3_stress_rst(gds.xrvi, stress, 
                    ele->e.so3->stress_gprst.a.da[igp]);
-#endif
     /*------------------------------------------------------------------*/
     /* store principle and direction angles at current Gauss point */
-#if 1
     so3_stress_123(stress, ele->e.so3->stress_gp123.a.da[igp]);
-#endif
   }
 
   /*--------------------------------------------------------------------*/
@@ -381,9 +379,7 @@ void so3_stress(CONTAINER *cont,
       ele->e.so3->stress_ndxyz.a.da[inod][istr] = stress[istr];
     }
     /* store principle and direction angles at current Gauss point */
-#if 1
     so3_stress_123(stress, ele->e.so3->stress_nd123.a.da[inod]);
-#endif
   }
 
   /*--------------------------------------------------------------------*/
@@ -457,6 +453,7 @@ void so3_stress_123(DOUBLE stress[NUMSTR_SOLID3],
 {
   DOUBLE stresst[NDIM_SOLID3][NDIM_SOLID3];  /* stress tensor */
   DOUBLE ew[NDIM_SOLID3];  /* principal stresses */
+  DOUBLE ev[NDIM_SOLID3][NDIM_SOLID3];  /* principal directions */
   INT err;  /* error 0=PASSED, 1=ERROR */
 
 #ifdef DEBUG
@@ -467,7 +464,7 @@ void so3_stress_123(DOUBLE stress[NUMSTR_SOLID3],
   so3_tns3_v2tsym(stress, stresst);
 
   /* principial stresses */
-  so3_tns3_spcdcmp(stresst, &err, ew);
+  so3_tns3_symspcdcmp_jit(stresst, EPS10, 10, ew, ev, &err);
 
   /* write principal stresses -- if found */
   if (err == 0)
@@ -475,15 +472,15 @@ void so3_stress_123(DOUBLE stress[NUMSTR_SOLID3],
     stress123[0] = ew[0];  /* 1st principal stress */
     stress123[1] = ew[1];  /* 2nd principal stress */
     stress123[2] = ew[2];  /* 3rd principal stress */
-    stress123[3] = -1.0;  /* 1st stress 1st direction */
-    stress123[4] = -1.0;  /* 1st stress 2nd direction */
-    stress123[5] = -1.0;  /* 1st stress 3rd direction */
-    stress123[6] = -1.0;  /* 2st stress 1st direction */
-    stress123[7] = -1.0;  /* 2st stress 2nd direction */
-    stress123[8] = -1.0;  /* 2st stress 3rd direction */
-    stress123[9] = -1.0;  /* 3rd stress 1st direction */
-    stress123[10] = -1.0;  /* 3rd stress 2nd direction */
-    stress123[11] = -1.0;  /* 3rd stress 3rd direction */
+    stress123[3] = acos(ev[0][0])/RAD;  /* 1st stress 1st direction */
+    stress123[4] = acos(ev[1][0])/RAD;  /* 1st stress 2nd direction */
+    stress123[5] = acos(ev[2][0])/RAD;  /* 1st stress 3rd direction */
+    stress123[6] = acos(ev[0][1])/RAD;  /* 2st stress 1st direction */
+    stress123[7] = acos(ev[1][1])/RAD;  /* 2st stress 2nd direction */
+    stress123[8] = acos(ev[2][1])/RAD;  /* 2st stress 3rd direction */
+    stress123[9] = acos(ev[0][2])/RAD;  /* 3rd stress 1st direction */
+    stress123[10] = acos(ev[1][2])/RAD;  /* 3rd stress 2nd direction */
+    stress123[11] = acos(ev[2][2])/RAD;  /* 3rd stress 3rd direction */
   }
   else
   {
@@ -697,7 +694,7 @@ void so3_stress_extrpol(ELEMENT *ele,
     /*------------------------------------------------------------------*/
     /* tetrahedron elements */
     case tet4: case tet10:
-      dserror("Extrapolation is not available to tet elements!");
+      dserror("Extrapolation is not available for tet elements!");
       break;
     /*------------------------------------------------------------------*/
     /* catch unfitting elements */
