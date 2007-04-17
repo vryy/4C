@@ -533,7 +533,7 @@ void so3_tns3_plrdcmp(DOUBLE ft[3][3],  /* input tensor */
    * with */
   p = -2.0*ci;  /* p = -2*I_C */
   q = -8.0*sqrt(ciii);  /* q = -8*(III_C)^{1/2} likely always < 0 */
-  r = ci*ci - 4.0*cii;  /* r = I_C^2 - 2*II_C */
+  r = ci*ci - 4.0*cii;  /* r = I_C^2 - 4*II_C */
 
   /* associated cubic resolvent
    *     z^3 + 2*p*z^2 + (p^2-4*r)*z - q^2 = 0
@@ -547,15 +547,15 @@ void so3_tns3_plrdcmp(DOUBLE ft[3][3],  /* input tensor */
   /* solution with Cardan's formulae */
   disc = (4.0*pp*pp*pp + 27.0*qq*qq)/108.0;  /* discriminant */
   /* discriminant==0  ==>  3 real roots in x */
-  if (FABS(disc) < EPS12)
+  if (fabs(disc) < EPS12)
   {
-    /* triple real root */
-    if ( (FABS(pp) < EPS12) && (FABS(qq) < EPS12) )
+    /* triple real root  :  x^3 = 0 */
+    if ( (fabs(pp) < EPS12) && (fabs(qq) < EPS12) )
     {
       x1 = 0.0;  /* triple real solution */
-      z1 = x1 - 2.0*p/3.0;  /* triple real solution */
+      z1 = (3.0*x1 - 2.0*p)/3.0;  /* triple real solution */
       z1rt = sqrt(z1);
-      if (FABS(-z1rt*z1rt*z1rt - q) < EPS12)
+      if (fabs(-z1rt*z1rt*z1rt - q) < EPS12)
       {
         ui = 1.5*z1rt;
       }
@@ -571,15 +571,23 @@ void so3_tns3_plrdcmp(DOUBLE ft[3][3],  /* input tensor */
       if (pp < 0.0)  
       {
         /* roots of normal form of cubic resolvent */
-        x1 = -2.0*sqrt(-pp/3.0);  /* single root */
-        x2 = sqrt(-pp/3.0);  /* double root */
+        if (qq > 0.0)
+        {
+          x1 = -2.0*sqrt(-pp/3.0);  /* single root */
+          x2 = sqrt(-pp/3.0);  /* double root */
+        }
+        else
+        {
+          x1 = 2.0*sqrt(-pp/3.0);  /* single root */
+          x2 = -sqrt(-pp/3.0);  /* double root */
+        }
         /* roots of cubic resolvent */
-        z1 = x1 - 2.0*p/3.0;
-        z2 = x2 - 2.0*p/3.0;
+        z1 = (3.0*x1 - 2.0*p)/3.0;
+        z2 = (3.0*x2 - 2.0*p)/3.0;
         /* radicals of roots of cubic resolvent */
         z1rt = sqrt(z1);  /* single */
         z2rt = sqrt(z2);  /* double */
-        if (FABS(-z1rt*z2rt*z2rt - q) < EPS12)
+        if (fabs(-z1rt*z2rt*z2rt - q) < EPS12)
         {
           ui = 0.5*(z1rt + 2.0*z2rt);
         }
@@ -602,17 +610,17 @@ void so3_tns3_plrdcmp(DOUBLE ft[3][3],  /* input tensor */
     rhort = 2.0 * pow(rho, 1.0/3.0);
     /* roots of normal form of cubic resolvent */
     x1 = rhort * cos(phi/3.0);
-    x2 = rhort * cos(phi/3.0 + 2.0*PI/3.0);
-    x3 = rhort * cos(phi/3.0 + 4.0*PI/3.0);
+    x2 = rhort * cos((phi + 2.0*PI)/3.0);
+    x3 = rhort * cos((phi + 4.0*PI)/3.0);
     /* roots of cubic resolvent */
-    z1 = x1 - 2.0*p/3.0;
-    z2 = x2 - 2.0*p/3.0;
-    z3 = x3 - 2.0*p/3.0;
+    z1 = (3.0*x1 - 2.0*p)/3.0;
+    z2 = (3.0*x2 - 2.0*p)/3.0;
+    z3 = (3.0*x3 - 2.0*p)/3.0;
     /* radicals of roots of cubic resolvent */
     z1rt = sqrt(z1);
     z2rt = sqrt(z2);
     z3rt = sqrt(z3);
-    if (FABS(-z1rt*z2rt*z3rt - q) < EPS12)
+    if (fabs(-z1rt*z2rt*z3rt - q) < EPS12)
     {
       ui = 0.5*(z1rt + z2rt + z3rt);
     }
@@ -665,11 +673,11 @@ void so3_tns3_plrdcmp(DOUBLE ft[3][3],  /* input tensor */
 
   /*--------------------------------------------------------------------*/
   /* rotation tensor R = F . U^{-1} */
-  if (rt != NULL)
+  if (rt)
   {
     so3_tns3_dotprod(ft, invut, rt);
   }
-  else if (vt != NULL)
+  else if (vt)
   {
     so3_tns3_dotprod(ft, invut, rtx);
   }
@@ -686,7 +694,7 @@ void so3_tns3_plrdcmp(DOUBLE ft[3][3],  /* input tensor */
   /* alternative:
    * U could be calculated based on R later: U = R^T . F
    */
-  if (ut != NULL)
+  if (ut)
   {
     denom = uii*(uii*(uii+ci) + cii) + ciii;
     pc2 = -(ui*uii - uiii);
@@ -704,9 +712,9 @@ void so3_tns3_plrdcmp(DOUBLE ft[3][3],  /* input tensor */
 
   /*--------------------------------------------------------------------*/
   /* spatial stretch tensor V could be  V = F . R^T */
-  if (vt != NULL)
+  if (vt)
   {
-    if (rt != NULL)
+    if (rt)
     {
       so3_tns3_dotprod_tr(ft, rt, vt);
     }
@@ -861,10 +869,10 @@ void so3_tns3_spcdcmp(DOUBLE at[3][3],  /* input tensor */
           + 4.0*aii*aii*aii - ai*ai*aii*aii)/108.0; /* less round-off */
 
   /* discriminant==0  ==>  3 real roots in y */
-  if (FABS(disc) < EPS12)
+  if (fabs(disc) < EPS12)
   {
     /* triple real root */
-    if ( (FABS(p) < EPS12) && (FABS(q) < EPS12) )
+    if ( (fabs(p) < EPS12) && (fabs(q) < EPS12) )
     {
       duplicity = 3;
       y1 = 0.0;  /* triple real solution */
@@ -1080,7 +1088,7 @@ void so3_tns3_symspcdcmp_jit(DOUBLE at[NDIM_SOLID3][NDIM_SOLID3],
   if (itercnt == itermax)
   {
     *err = 1;  /* failed */
-    dserror("Convergence in specral decomposition not found!");
+    dserror("Divergent spectral decomposition (Jacobi's iterative method)!");
   }
   else
   {
@@ -1157,7 +1165,7 @@ void so3_tns3_unitvct(DOUBLE av[NDIM_SOLID3])
   /*--------------------------------------------------------------------*/
   /* get Euclidian norm */
   so3_tns3_norm2(av, &norm);
-  if (FABS(norm) < EPS12)
+  if (fabs(norm) < EPS12)
   {
     dserror("Trying to normalise zero vector!");
   }

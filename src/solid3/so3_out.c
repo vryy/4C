@@ -22,6 +22,17 @@ Maintainer: Burkhard Bornemann
 #include "../headers/standardtypes.h"
 #include "solid3.h"
 
+/*----------------------------------------------------------------------*/
+/*!
+\brief Vector of material laws
+
+defined in global_control.c
+
+\author mf
+\date 04/07
+*/
+extern MATERIAL *mat;
+
 /*!
 \addtogroup SOLID3
 *//*! @{ (documentation module open)*/
@@ -87,6 +98,54 @@ void so3_out_stress(ELEMENT *actele,
                 actso3->stress_gpxyz.a.da[igp][4],  /* stress-yz */
                 actso3->stress_gpxyz.a.da[igp][5]);  /* stress-zx */
       }
+#ifdef D_TSI
+      {
+        MATERIAL* actmat = &(mat[actele->mat-1]);
+        if (actmat->mattyp == m_vp_robinson)
+        {
+          /* print back stress */
+          fprintf(out, "INT.point   x-coord.     y-coord.     z-coord. "
+                  "    bacsts-xx    bacsts-yy    bacsts-zz"
+                  "    bacsts-xy    bacsts-yz    bacsts-zx\n");
+          for (igp=0; igp<ngauss; igp++)
+          {
+            fprintf(out,"  %-6d"
+                    " %12.3E %12.3E %12.3E"
+                    " %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E \n",
+                    igp,
+                    actso3->gpco_xyz.a.da[igp][0],  /* x-coord */
+                    actso3->gpco_xyz.a.da[igp][1],  /* y-coord */
+                    actso3->gpco_xyz.a.da[igp][2],  /* z-ccord */
+                    actso3->miv_rob->bacsts.a.da[igp][0],  /* back stress-xx */
+                    actso3->miv_rob->bacsts.a.da[igp][1],  /* back stress-yy */
+                    actso3->miv_rob->bacsts.a.da[igp][2],  /* back stress-zz */
+                    actso3->miv_rob->bacsts.a.da[igp][3],  /* back stress-xy */
+                    actso3->miv_rob->bacsts.a.da[igp][4],  /* back stress-yz */
+                    actso3->miv_rob->bacsts.a.da[igp][5]);  /* back stress-zx */
+          }
+          /* print viscous strain */
+          fprintf(out, "INT.point   x-coord.     y-coord.     z-coord. "
+                  "    vicstn-xx    vicstn-yy    vicstn-zz"
+                  "    vicstn-xy    vicstn-yz    vicstn-zx\n");
+          for (igp=0; igp<ngauss; igp++)
+          {
+            fprintf(out,"  %-6d"
+                    " %12.3E %12.3E %12.3E"
+                    " %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E \n",
+                    igp,
+                    actso3->gpco_xyz.a.da[igp][0],  /* x-coord */
+                    actso3->gpco_xyz.a.da[igp][1],  /* y-coord */
+                    actso3->gpco_xyz.a.da[igp][2],  /* z-ccord */
+                    actso3->miv_rob->vicstn.a.da[igp][0],  /* vis. strain-xx */
+                    actso3->miv_rob->vicstn.a.da[igp][1],  /* vis. strain-yy */
+                    actso3->miv_rob->vicstn.a.da[igp][2],  /* vis. strain-zz */
+                    actso3->miv_rob->vicstn.a.da[igp][3],  /* vis. strain-xy */
+                    actso3->miv_rob->vicstn.a.da[igp][4],  /* vis. strain-yz */
+                    actso3->miv_rob->vicstn.a.da[igp][5]);  /* vis. strain-zx */
+          }
+        }
+      }
+#endif
       break;
     /* output stress rst-oriented at Gauss point */
     case so3_stress_gprst:

@@ -237,9 +237,77 @@ void so3_mat_sel(CONTAINER *container,
   return;
 }  /* end of so3_mat_sel */
 
+
 /*======================================================================*/
 /*!
-\brief get density out of material law
+\brief Select material law to return stress (called for stress output)
+\param *container CONTAINER      (i)   container
+\param *ele       ELEMENT        (i)   pointer to current element
+\param *mat       MATERIAL       (i)   pointer to current material
+\param ip         INT            (i)   current Gauss point index
+\param *gds       SO3_GEODEFSTR  (i)   geom. & def. data at Gauss point
+\param stress[]   DOUBLE         (o)   linear(Biot)/2.Piola-Kirchhoff stress
+\param cmat[][]   DOUBLE         (o)   constitutive matrix
+\return void
+\author bborn
+\date 04/07
+*/
+void so3_mat_stress(CONTAINER *container,
+                    ELEMENT *ele,
+                    MATERIAL *mat,
+                    INT ip,
+                    SO3_GEODEFSTR *gds,
+                    DOUBLE stress[NUMSTR_SOLID3],
+                    DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3])
+{
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_enter("so3_mat_stress");
+#endif
+
+  /*====================================================================*/
+  /* ===> central material routines
+   *
+   *      These materials are supposed to be connected to the 
+   *      existant (or new?) central material routines.
+   *      Right now, only the simple St.Venant-Kirchhoff material
+   *      is included to test the element.
+   *
+   * ===> Do it, have fun. Or don't.
+   */
+
+  /*====================================================================*/
+  /* the material law (it's a material world!) */
+  switch (mat->mattyp)
+  {
+    /*------------------------------------------------------------------*/
+    /* St. Venant-Kirchhoff material */
+    case m_stvenant:
+      so3_mat_stvenant_sel(container, ele, mat, ip, gds, stress, cmat);
+      break;
+    /*------------------------------------------------------------------*/
+    /* Robinson's visco-plastic temperature-dependent material */
+#ifdef D_TSI
+    case m_vp_robinson:
+      so3_mat_robinson_stress(container, ele, mat->m.vp_robinson, ip, gds, 
+                              stress, cmat);
+      break;
+#endif
+    default:
+      dserror("Type of material law is not applicable");
+      break;
+  }  /* end of switch (mat->mattyp) */
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}  /* end of so3_mat_sel */
+
+/*======================================================================*/
+/*!
+\brief Get density of material law
 
 \param  mat       MATERIAL*   (i)   material data
 \param  density   DOUBLE*     (o)   density value
@@ -259,7 +327,7 @@ void so3_mat_density(MATERIAL *mat,
   /* switch material type */
   switch(mat->mattyp)
   {
-    /* ST.VENANT-KIRCHHOFF-MATERIAL */
+    /* de St.Venant-Kirchhoff material */
     case m_stvenant:
       *density = mat->m.stvenant->density;
       break;
@@ -293,7 +361,7 @@ void so3_mat_density(MATERIAL *mat,
 
 /*======================================================================*/
 /*!
-\brief Select proper material law
+\brief Update material internal variables 
 
 \param *container CONTAINER      (i)   container
 \param *ele       ELEMENT        (i)   pointer to current element

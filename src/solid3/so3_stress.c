@@ -98,19 +98,26 @@ void so3_stress_init(PARTITION *actpart)
         /* allocate stress arrays per element */
         amdef("stress_gpxyz", &(actso3->stress_gpxyz), 
               actso3->gptot, NUMSTR_SOLID3, "DA");
+        amzero(&(actso3->stress_gpxyz));
         amdef("stress_gprst", &(actso3->stress_gprst), 
               actso3->gptot, NUMSTR_SOLID3, "DA");
+        amzero(&(actso3->stress_gprst));
         amdef("stress_gp123", &(actso3->stress_gp123), 
               actso3->gptot, 4*NDIM_SOLID3, "DA");
+        amzero(&(actso3->stress_gp123));
         amdef("stress_ndxyz", &(actso3->stress_ndxyz), 
               actele->numnp, NUMSTR_SOLID3, "DA");
+        amzero(&(actso3->stress_ndxyz));
         amdef("stress_ndrst", &(actso3->stress_ndrst), 
               actele->numnp, NUMSTR_SOLID3, "DA");
+        amzero(&(actso3->stress_ndrst));
         amdef("stress_nd123", &(actso3->stress_nd123), 
               actele->numnp, 4*NDIM_SOLID3, "DA");
+        amzero(&(actso3->stress_nd123));
         /* allocate Gauss point coordinates */
         amdef("gpco_xyz", &(actso3->gpco_xyz), 
               actso3->gptot, NDIM_SOLID3, "DA");
+        amzero(&(actso3->gpco_xyz));
       }  /* end if */
     }  /* end for */
   }  /* end for */
@@ -120,6 +127,7 @@ void so3_stress_init(PARTITION *actpart)
   if (stress == NULL)
   {
     stress = amdef("stress", &(stress_a), NUMSTR_SOLID3, 1,"DV");
+    amzero(&(stress_a));
   }
 
   /*--------------------------------------------------------------------*/
@@ -240,8 +248,8 @@ void so3_stress(CONTAINER *cont,
                        * Gauss point */
   DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3];
   DOUBLE stress[NUMSTR_SOLID3];
-  DOUBLE bopn[MAXDOF_SOLID3][NUMDOF_SOLID3];
-  DOUBLE bop[NUMSTR_SOLID3][MAXDOF_SOLID3];
+  /* DOUBLE bopn[MAXDOF_SOLID3][NUMDOF_SOLID3]; */
+  /* DOUBLE bop[NUMSTR_SOLID3][MAXDOF_SOLID3]; */
 
 
 
@@ -336,13 +344,13 @@ void so3_stress(CONTAINER *cont,
     }
     /*------------------------------------------------------------------*/
     /* calculate B-operator */
-    so3_bop(ele, nelenod, gpshade->gpderiv[igp], gds.xji, gds.defgrd,
-            bopn, bop);
+    /* so3_bop(ele, nelenod, gpshade->gpderiv[igp], gds.xji, gds.defgrd,
+       bopn, bop); */
     /*------------------------------------------------------------------*/
     /* call material law ==> 2nd PK-stresses and constitutive matrix */
-    so3_mat_sel(cont, ele, mat, igp, &gds, stress, cmat);
+    so3_mat_stress(cont, ele, mat, igp, &gds, stress, cmat);
     /*------------------------------------------------------------------*/
-    /* store stress of current Gauss point */
+    /* store stress at current Gauss point */
     for (istr=0; istr<NUMSTR_SOLID3; istr++)
     {
       ele->e.so3->stress_gpxyz.a.da[igp][istr] = stress[istr];
@@ -352,6 +360,16 @@ void so3_stress(CONTAINER *cont,
     /*------------------------------------------------------------------*/
     /* construct rotational component of inverse FE-Jacobian */
     so3_metr_rot(gds.xjm, gds.xrm, gds.xrvm, gds.xrvi);
+    /* debug: */
+    /* INT i, j; */
+/*     for (i=0; i<3; i++) */
+/*     { */
+/*       for (j=0; j<3; j++) */
+/*       { */
+/*         printf("xjm %d %d: %f\n", i, j, gds.xjm[i][j]); */
+/*       } */
+/*     } */
+    
     /*------------------------------------------------------------------*/
     /* store stress in parameter space co-ordinates (r,s,t) */
     so3_stress_rst(gds.xrvi, stress, 
@@ -359,7 +377,7 @@ void so3_stress(CONTAINER *cont,
     /*------------------------------------------------------------------*/
     /* store principle and direction angles at current Gauss point */
     so3_stress_123(stress, ele->e.so3->stress_gp123.a.da[igp]);
-  }
+  }  /* end loop over Gauss points */
 
   /*--------------------------------------------------------------------*/
   /* Stresses at Gauss points are extrapolated to element nodes. */
@@ -464,7 +482,7 @@ void so3_stress_123(DOUBLE stress[NUMSTR_SOLID3],
   so3_tns3_v2tsym(stress, stresst);
 
   /* principial stresses */
-  so3_tns3_symspcdcmp_jit(stresst, EPS10, 10, ew, ev, &err);
+  so3_tns3_symspcdcmp_jit(stresst, EPS10, 15, ew, ev, &err);
 
   /* write principal stresses -- if found */
   if (err == 0)

@@ -651,6 +651,13 @@ void so3_mat_sel(CONTAINER *container,
                  SO3_GEODEFSTR *gds,
                  DOUBLE stress[NUMSTR_SOLID3],
                  DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3]);
+void so3_mat_stress(CONTAINER *container,
+                    ELEMENT *ele,
+                    MATERIAL *mat,
+                    INT ip,
+                    SO3_GEODEFSTR *gds,
+                    DOUBLE stress[NUMSTR_SOLID3],
+                    DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3]);
 void so3_mat_density(MATERIAL *mat, 
                      DOUBLE *density);
 void so3_mat_mivupd(CONTAINER *container,
@@ -662,7 +669,7 @@ void so3_mat_mivupd(CONTAINER *container,
 #ifdef D_TSI
 void so3_mat_robinson_ctxtvrfy();
 void so3_mat_robinson_init(ELEMENT* ele);
-void so3_mat_robinson_final(ELEMENT* ele);  /*!< current element */
+void so3_mat_robinson_final(ELEMENT* ele);
 void so3_mat_robinson_prmbytmpr(MAT_PARAM_INTPOL ipl,  /*!< interpolation 
                                                            type */
                                 INT prm_n,  /*!< magnitude param data */
@@ -682,14 +689,21 @@ void so3_mat_robinson_stnvscrat(const VP_ROBINSON* mat_robin,
                                 const DOUBLE stsdev[NUMSTR_SOLID3],
                                 const DOUBLE stsovr[NUMSTR_SOLID3],
                                 DOUBLE dstnvsc[NUMSTR_SOLID3]);
-void so3_mat_robinson_stsbckrat(const VP_ROBINSON* mat_robin,  /*!< material */
-                                const DOUBLE tmpr,  /*!< temperature */
-                                const DOUBLE stsdev[NUMSTR_SOLID3],  /*!< deviatoric stress */
-                                const DOUBLE stsbck[NUMSTR_SOLID3],  /*!< back stress */
-                                const DOUBLE dstnvsc[NUMSTR_SOLID3],  /*!< visc. strain rate */
-                                DOUBLE dstsbck[NUMSTR_SOLID3]);  /*!< back stressrate */
+void so3_mat_robinson_stsbckrat(const VP_ROBINSON* mat_robin,
+                                const DOUBLE tmpr,
+                                const DOUBLE stsdev[NUMSTR_SOLID3],
+                                const DOUBLE stsbck[NUMSTR_SOLID3],
+                                const DOUBLE dstnvsc[NUMSTR_SOLID3],
+                                DOUBLE dstsbck[NUMSTR_SOLID3]);
 void so3_mat_robinson_mivupd(ELEMENT* ele,  /*!< curr. elem. */
                              VP_ROBINSON* mat_robin);  /*!< elem. mater. */
+void so3_mat_robinson_stress(CONTAINER* container,
+                             ELEMENT* ele,
+                             VP_ROBINSON* mat_robin,
+                             INT ip,
+                             SO3_GEODEFSTR* gds,
+                             DOUBLE stress[NUMSTR_SOLID3],
+                             DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3]);
 #endif
 
 /*----------------------------------------------------------------------*/
