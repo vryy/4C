@@ -198,7 +198,7 @@ void th3_temper_cal(CONTAINER *container,
   }
 
   /*--------------------------------------------------------------------*/
-  /* get shape funtions at (r,s) */
+  /* get shape funtions at (r,s,t) */
   th3_shape_deriv(ele->distyp, rr, ss, tt, 0, shape, deriv);
 
   /*--------------------------------------------------------------------*/
@@ -213,7 +213,7 @@ void th3_temper_cal(CONTAINER *container,
   *tem = 0.0;
   for (k=0; k<nelenod; k++)
   {
-    *tem = *tem + shape[k]*nodtem[k];
+    *tem += shape[k]*nodtem[k];
   }
 
   /*====================================================================*/

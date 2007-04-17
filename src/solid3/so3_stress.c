@@ -242,7 +242,6 @@ void so3_stress(CONTAINER *cont,
   NODE *actnode;  /* current node */
 
   DOUBLE fac;  /* a factor */
-  DOUBLE gpc[NDIM_SOLID3] = {0.0, 0.0, 0.0};  /* GP rst-coord */
   DOUBLE rst[NDIM_SOLID3];  /* natural coordinate a point */
   SO3_GEODEFSTR gds;  /* isoparametric Jacobian, deformation grad, etc at
                        * Gauss point */
@@ -291,9 +290,10 @@ void so3_stress(CONTAINER *cont,
   {
     /*------------------------------------------------------------------*/
     /* Gauss point */
-    gpc[0] = gpshade->gpco[igp][0];  /* r-coordinate */
-    gpc[1] = gpshade->gpco[igp][1];  /* s-coordinate */
-    gpc[2] = gpshade->gpco[igp][2];  /* t-coordinate */
+    gds.igp = igp;  /* total Gauss point index */
+    gds.gpc[0] = gpshade->gpco[igp][0];  /* r-coordinate */
+    gds.gpc[1] = gpshade->gpco[igp][1];  /* s-coordinate */
+    gds.gpc[2] = gpshade->gpco[igp][2];  /* t-coordinate */
     fac = gpshade->gpwg[igp];  /* weight */
     /*------------------------------------------------------------------*/
     /* Gauss point coordinate in material XYZ-frame */
@@ -354,21 +354,10 @@ void so3_stress(CONTAINER *cont,
     for (istr=0; istr<NUMSTR_SOLID3; istr++)
     {
       ele->e.so3->stress_gpxyz.a.da[igp][istr] = stress[istr];
-      /* debug: */
-      /* printf("Stress %d %d : %f\n", igp, istr, stress[istr]); */
     }
     /*------------------------------------------------------------------*/
     /* construct rotational component of inverse FE-Jacobian */
     so3_metr_rot(gds.xjm, gds.xrm, gds.xrvm, gds.xrvi);
-    /* debug: */
-    /* INT i, j; */
-/*     for (i=0; i<3; i++) */
-/*     { */
-/*       for (j=0; j<3; j++) */
-/*       { */
-/*         printf("xjm %d %d: %f\n", i, j, gds.xjm[i][j]); */
-/*       } */
-/*     } */
     
     /*------------------------------------------------------------------*/
     /* store stress in parameter space co-ordinates (r,s,t) */

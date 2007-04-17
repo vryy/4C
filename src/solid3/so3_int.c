@@ -177,7 +177,8 @@ void so3_int_fintstifmass(CONTAINER *container,
       dserror("Cannot digest chosen type of spatial kinematic\n");
     }
 #if 0
-    /* dedug purposes */
+    /* debug: purposes */
+    {
       INT xxx;
       printf("Element %d, GP %d \n", ele->Id, igp);
       for (xxx=0; xxx<6; xxx++)
@@ -185,6 +186,7 @@ void so3_int_fintstifmass(CONTAINER *container,
         printf("Strain %d : (% 5.2f,% 5.2f,% 5.2f) : %f\n", 
                xxx, gds.gpc[0], gds.gpc[1], gds.gpc[2], gds.stnglv[xxx]);
       }
+    }
 #endif
     /*------------------------------------------------------------------*/
     /* calculate B-operator
