@@ -105,6 +105,8 @@ OBJS_DISCRET_LIB  = src/discret/drt_discret.o \
                 src/discret/drt_exporter.o \
                 src/discret/shell8.o \
                 src/discret/shell8_line.o \
+                src/discret/wall1.o \
+                src/discret/wall1_line.o \
                 src/discret/fluid2.o \
                 src/discret/fluid2_line.o \
                 src/discret/fluid3.o \
@@ -120,6 +122,9 @@ OBJS_DISCRET  = \
                 src/discret/shell8_evaluate.o \
                 src/discret/shell8_input.o \
                 src/discret/shell8_line_evaluate.o \
+                src/discret/wall1_evaluate.o \
+                src/discret/wall1_input.o \
+                src/discret/wall1_line_evaluate.o \
                 src/discret/fluid2_evaluate.o \
 		src/discret/fluid2_input.o \
 		src/discret/fluid2_line_evaluate.o \
