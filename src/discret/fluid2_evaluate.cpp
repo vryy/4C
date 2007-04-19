@@ -288,7 +288,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
 /*----------------------------------------------- get element length ---*/
 /*  the element length is chosen as the square root of the element area */
 	{
-	    double area;
+	    double area=0;
 	    double a,b,c;
     
 	    switch(iel)
@@ -1540,9 +1540,7 @@ void DRT::Elements::Fluid2::f2_gder2(const Epetra_SerialDenseMatrix& xyze,
     bm(2,1) =                   xjm(0,1)*xjm(1,1);
     bm(2,2) = xjm(0,0)*xjm(1,1)+xjm(0,1)*xjm(1,0);
 
-/*-------------------------------------- inverse of jacobian_bar matrix */
-//    LINALG::NonSymmetricInverse(bm,3);
-
+    //init sol to zero
     memset(derxy2.A(),0,derxy2.M()*derxy2.N()*sizeof(double));
 
     
