@@ -113,7 +113,7 @@ bool DRT::Elements::Fluid2::ReadElement()
   // read number of gaussian points for triangle elements */
   if (nnode==3 || nnode==6)
   {
-    frint("GP_TET",&ngp_[0],&ierr);
+    frint("GP_TRI",&ngp_[0],&ierr);
     if (ierr!=1) dserror("Reading of FLUID2 element failed: GP_TRI\n");
 
     frchar("GP_ALT",buffer,&ierr);
@@ -132,7 +132,7 @@ bool DRT::Elements::Fluid2::ReadElement()
         if (strncmp(buffer,"standard",8)==0)
           ngp_[1]=0;
         else
-          dserror("Reading of FLUID23 element failed: GP_ALT: gauss-radau not possible!\n");
+          dserror("Reading of FLUID2 element failed: GP_ALT: gauss-radau not possible!\n");
         break;
       case 4:
         if (strncmp(buffer,"standard",8)==0)
