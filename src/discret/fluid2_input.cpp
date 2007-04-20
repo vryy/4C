@@ -134,7 +134,7 @@ bool DRT::Elements::Fluid2::ReadElement()
         else
           dserror("Reading of FLUID2 element failed: GP_ALT: gauss-radau not possible!\n");
         break;
-      case 4:
+      case 3:
         if (strncmp(buffer,"standard",8)==0)
           ngp_[1]=1;
         else if (strncmp(buffer,"gaussrad",8)==0)
@@ -142,12 +142,44 @@ bool DRT::Elements::Fluid2::ReadElement()
         else
           dserror("Reading of FLUID2 element failed: GP_ALT\n");
         break;
-      case 5:
+      case 4:
         if (strncmp(buffer,"standard",8)==0)
           ngp_[1]=3;
         else
-          dserror("Reading of FLUID2 element failed: GP_ALT: gauss-radau not possible!\n");
+          dserror("Reading of FLUID2 element failed: gauss-radau not possible!\n");
         break;
+      case 6:
+        if (strncmp(buffer,"standard",8)==0)
+          ngp_[1]=4;
+        else if (strncmp(buffer,"gaussrad",8)==0)
+          ngp_[1]=5;
+        dserror("Reading of FLUID2 element failed: GP_ALT\n");
+        break;
+      case 7:
+        if (strncmp(buffer,"standard",8)==0)
+          ngp_[1]=6;
+        else if (strncmp(buffer,"gaussrad",8)==0)
+          ngp_[1]=7;
+        dserror("Reading of FLUID2 element failed: GP_ALT\n");
+      case 9:
+        if (strncmp(buffer,"standard",8)==0)
+          ngp_[1]=8;
+        else
+          dserror("Reading of FLUID2 element failed: gauss-radau not possible!\n");
+        break;
+      case 12:
+        if (strncmp(buffer,"standard",8)==0)
+          ngp_[1]=9;
+        else
+          dserror("Reading of FLUID2 element failed: gauss-radau not possible!\n");
+        break;
+      case 13:
+        if (strncmp(buffer,"standard",8)==0)
+          ngp_[1]=10;
+        else
+          dserror("Reading of FLUID2 element failed: gauss-radau not possible!\n");
+        break;
+        
       default:
         dserror("Reading of FLUID2 element failed: integration points\n");
     }
