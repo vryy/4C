@@ -443,11 +443,11 @@ void th3_shape_deriv(DIS_TYP     typ,
 /* file th2_temper.c */
 void th3_temper_init();
 void th3_temper_final();
-void th3_temper_cal(CONTAINER *container,
-                    ELEMENT *ele,
-                    DOUBLE r,
-                    DOUBLE s,
-                    DOUBLE t,
+void th3_temper_cal(const CONTAINER *container,
+                    const ELEMENT *ele,
+                    const DOUBLE r,
+                    const DOUBLE s,
+                    const DOUBLE t,
                     DOUBLE *tem);
 
 /*----------------------------------------------------------------------*/

@@ -159,6 +159,84 @@ void so3_vct6_assscl(const DOUBLE scl,  /*!< scale */
 
 /*======================================================================*/
 /*!
+\brief Assign vector by another vector and scale it
+       Due to the fact that strain vector component have a doubled
+       shear components (cf. solid3.h), but stress vectors have not,
+       we need a special assignment function to scale shear components
+       accordingly.
+\param   scl     DOUBLE    (i)    scale
+\param   av      DOUBLE[]  (i)    input vector ('stress-vector-like')
+\param   bv      DOUBLE[]  (o)    assigned vector ('strain-vector-like')
+\return  void
+\author bborn
+\date 04/07
+*/
+void so3_vct6_2_assscl(const DOUBLE scl,
+                       const DOUBLE av[NUMSTR_SOLID3],
+                       DOUBLE bv[NUMSTR_SOLID3])
+{
+  INT i;  /* index */
+
+#ifdef DEBUG
+  dstrc_enter("so3_vct6_assscl");
+#endif
+
+  for (i=0; i<3; i++)
+  {
+    bv[i] = scl * av[i];
+  }
+  for (i=3; i<NUMSTR_SOLID3; i++)
+  {
+    bv[i] = scl * 2.0 * av[i];
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+
+/*======================================================================*/
+/*!
+\brief Assign vector by another vector and scale it
+       Due to the fact that strain vector component have a doubled
+       shear components (cf. solid3.h), but stress vectors have not,
+       we need a special assignment function to scale shear components
+       accordingly.
+\param   scl     DOUBLE    (i)    scale
+\param   av      DOUBLE[]  (i)    input vector ('strain-vector-like')
+\param   bv      DOUBLE[]  (o)    assigned vector ('stress-vector-like')
+\return  void
+\author bborn
+\date 04/07
+*/
+void so3_vct6_05_assscl(const DOUBLE scl,
+                        const DOUBLE av[NUMSTR_SOLID3],
+                        DOUBLE bv[NUMSTR_SOLID3])
+{
+  INT i;  /* index */
+
+#ifdef DEBUG
+  dstrc_enter("so3_vct6_assscl");
+#endif
+
+  for (i=0; i<3; i++)
+  {
+    bv[i] = scl * av[i];
+  }
+  for (i=3; i<NUMSTR_SOLID3; i++)
+  {
+    bv[i] = scl * 0.5 * av[i];
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+
+/*======================================================================*/
+/*!
 \brief Update vector by another vector and scale it
 \author bborn
 \date 04/07
@@ -258,9 +336,9 @@ or
                  [ a_22 ]       [ a_11 + a_22 + a_33 ]
                  [ a_33 ]     1 [ a_11 + a_22 + a_33 ]
        dev(av) = [ ~~~~ ]  -  - [ ~~~~~~~~~~~~~~~~~~ ]
-                 [ a_12 ]     3 [        a_12        ]
-                 [ a_23 ]       [        a_23        ]
-                 [ a_13 ]       [        a_13        ]
+                 [ a_12 ]     3 [         0          ]
+                 [ a_23 ]       [         0          ]
+                 [ a_13 ]       [         0          ]
 
 \return void
 \author bborn

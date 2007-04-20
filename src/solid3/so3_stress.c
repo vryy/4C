@@ -209,7 +209,7 @@ void so3_stress_final(PARTITION *actpart)
 \brief Evaluate element stresses 
 
 \param  cont      CONTAINER*         (i)    see container.h
-\param  ele       ELE*               (io)   current element
+\param  ele       ELEMENT*           (io)   current element
 \param  data      SO3_DATA*          (i)    common SOLID3 data
 \param  gpshade   SO3_GPSHAPEDERIV*  (i)    Gauss point coords
                                             and shape functions

@@ -821,7 +821,7 @@ void so3_cfg_init(SO3_DATA *data)
    *                si1  :  (xi,eta) = (r,s)
    *                si2  :  (xi,eta) = (r,t)
    *                si3  :  (xi,eta) = (s,t)
-   *             The inclinded side has
+   *             The inclined side has
    *                si0  : (xi,eta) = (r,s)
    *             Thus si0 is integrated on its projection to rs-plane, 
    *             i.e. {(r,s) | 0<=r<=1, 0<=s<=1-r }

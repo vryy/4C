@@ -37,7 +37,7 @@ Maintainer: Burkhard Bornemann
 \author bborn
 \date 01/07
 */
-void so3_tns3_zero(DOUBLE it[3][3])
+void so3_tns3_zero(DOUBLE ot[3][3])
 {
   INT i, j;  /* indices */
 
@@ -49,7 +49,7 @@ void so3_tns3_zero(DOUBLE it[3][3])
   {
     for (j=0; j<3; j++)
     {
-      it[i][j] = 0.0;
+      ot[i][j] = 0.0;
     }
   }
 
@@ -832,9 +832,8 @@ The tensor
 \date 01/07
 */
 void so3_tns3_spcdcmp(DOUBLE at[3][3],  /* input tensor */
-                      INT *err,
-                      DOUBLE ew[3])     /* eigen values */
-/*                      DOUBLE ev[3][3])  /\* eigen vectors *\/ */
+                      DOUBLE ew[3],  /* eigen values */
+                      INT *err) 
 {
   DOUBLE ai, aii, aiii;  /* invariants of A */
   DOUBLE p, q, disc, rho, phi, rhort;
@@ -1110,12 +1109,13 @@ void so3_tns3_symspcdcmp_jit(DOUBLE at[NDIM_SOLID3][NDIM_SOLID3],
 /*======================================================================*/
 /*!
 \brief Euclidian norm of a vector
-\param
-
+\param    av    DOUBLE[]     input 1-tensor
+\param    norm  DOUBLE       its L2-norm
+\return   void
 \author bborn
 \date 04/07
 */
-void so3_tns3_norm2(DOUBLE av[NDIM_SOLID3],
+void so3_tns3_norm2(const DOUBLE av[NDIM_SOLID3],
                     DOUBLE* norm)
 {
   INT idim;  /* index */
@@ -1194,8 +1194,8 @@ void so3_tns3_unitvct(DOUBLE av[NDIM_SOLID3])
 \author bborn
 \date 04/07
 */
-void so3_tns3_crsprd(DOUBLE av[NDIM_SOLID3],
-                     DOUBLE bv[NDIM_SOLID3],
+void so3_tns3_crsprd(const DOUBLE av[NDIM_SOLID3],
+                     const DOUBLE bv[NDIM_SOLID3],
                      DOUBLE cv[NDIM_SOLID3])
 {
   /*--------------------------------------------------------------------*/
@@ -1232,9 +1232,9 @@ The unit vector is
                            ==0 do not swap
 \param   cv  DOUBLE[]  (o) output unit normal vector
 */
-void so3_tns3_unrm(DOUBLE av[NDIM_SOLID3],
-                   DOUBLE bv[NDIM_SOLID3],
-                   INT swp,
+void so3_tns3_unrm(const DOUBLE av[NDIM_SOLID3],
+                   const DOUBLE bv[NDIM_SOLID3],
+                   const INT swp,
                    DOUBLE cv[NDIM_SOLID3])
 {
   /*--------------------------------------------------------------------*/

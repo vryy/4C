@@ -142,11 +142,11 @@ for the linear planar heat conduction problem.
 \author bborn
 \date 10/06
 */
-void th3_temper_cal(CONTAINER *container,
-                    ELEMENT *ele,
-                    DOUBLE r,
-                    DOUBLE s,
-                    DOUBLE t,
+void th3_temper_cal(const CONTAINER *container,
+                    const ELEMENT *ele,
+                    const DOUBLE r,
+                    const DOUBLE s,
+                    const DOUBLE t,
                     DOUBLE *tem)
 {
   ARRAY_POSITION_SOL *isol 

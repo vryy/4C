@@ -286,6 +286,8 @@ void tsi_st_fehlbg(INT disnum_s,
   container.disnum = disnum;
   container.disnum_s = disnum_s;  /* structure discretisation index ( ==0 ) */
   container.disnum_t = disnum_t;  /* thermo-discretisation index ( ==0 ) */
+  tsidyn = alldyn[genprob.numfld].tsidyn;  /* TSI dynamic control */
+  tsidyn->dt = sdyn->dt;
 /*   actsysarray = numsf;  /\* ? *\/ */
   actsolv = &(solv[numsf]);
   actpart = &(partition[numsf]);
@@ -546,7 +548,7 @@ void tsi_st_fehlbg(INT disnum_s,
   /*--------------------------------------------------------------------*/
   /* call elements to calculate stiffness and mass */
   /* REMARK: stiffness array may be unusable: not all materials 
-   *         are linerised. In this case Rayleigh's damping matrix
+   *         are linearised. In this case Rayleigh's damping matrix
    *         will be screwed up. */
   *action = calc_struct_nlnstiffmass;
   container.dvec = NULL;
@@ -653,6 +655,19 @@ void tsi_st_fehlbg(INT disnum_s,
                  &(dispi[0]),
                  &(actsolv->rhs[2]),
                  init);
+  /* solver UMFPACK:  matrix format CCF */
+  if (actsolv->sysarray_typ[stiff_array] == ccf)
+  {
+    if (actsolv->sysarray[stiff_array].ccf->is_factored == 1)
+    {
+      /* the factorised mass matrix will be readily used from now on */
+      actsolv->sysarray[stiff_array].ccf->reuse = 1;
+    }
+    else
+    {
+      dserror("Cannot reuse factorised mass matrix: Factorisation failed");
+    }
+  }
 
 
   /*====================================================================*/
@@ -782,6 +797,7 @@ void tsi_st_fehlbg(INT disnum_s,
       t0_res = ds_cputime();
       /* save the stepsize as it will be overwritten in sdyn */
       dt = sdyn->dt;
+      tsidyn->dt = dt;
       /* save the number of steps, as it will be overwritten in sdyn */
       nstep = sdyn->nstep;
       /* save the restart interval, as it will be overwritten */
@@ -864,7 +880,7 @@ void tsi_st_fehlbg(INT disnum_s,
       /*----------------------------------------------------------------*/
       /* displacement at stage
        *    D_{n+c_i} += c_i * dt * V_n 
-       *               + dt_n^2 * \sum{j=1}{s} ( aa_{ij} * k_j )*/
+       *               + dt_n^2 * \sum{j=1}{i-1} ( aa_{ij} * k_j )*/
       solserv_copy_vec(&(actsolv->sol[0]), &(disn[istg]));
       solserv_add_vec(&(vel[0]), &(disn[istg]), dt*tsi_fehlbg4.c[istg]);
       for (jstg=0; jstg<istg-1; jstg++)
@@ -910,9 +926,10 @@ void tsi_st_fehlbg(INT disnum_s,
       container.global_numeq = numeq_total;
       container.dirichfacs = NULL;
       container.kstep = 0;
+      tsidyn->actstg = istg;
       calelm(actfield, actsolv, actpart, actintra, stiff_array, -1,
              &container, action);
-      /* store positive internal forces on fie[2] */
+      /* store positive internal forces on fint[2] */
       solserv_zero_vec(&fint[2]);
       assemble_vec(actintra, &(actsolv->sysarray_typ[stiff_array]),
                    &(actsolv->sysarray[stiff_array]), 
@@ -937,7 +954,7 @@ void tsi_st_fehlbg(INT disnum_s,
       solserv_add_vec(&(fint[2]), &(actsolv->rhs[0]), -1.0);
       solserv_add_vec(&(fvsc[0]), &(actsolv->rhs[0]), -1.0);
       /*----------------------------------------------------------------*/
-      /* accerleration at stage A_{n+c_i} */
+      /* acceleration at stage A_{n+c_i} */
       /* new accelerations A_{n+1} = M^{-1} . F_{Inertial;n+c_i} */
       /* solve for system --- stiff_array is the mass matrix */
       solserv_zero_vec(&work[0]);
@@ -955,7 +972,7 @@ void tsi_st_fehlbg(INT disnum_s,
                       dt*dt*tsi_fehlbg4.bb[istg]);
       /* add contribution of current stage to new velocity */
       solserv_add_vec(&(accn[istg]), &(vel[1]), dt*tsi_fehlbg4.b[istg]);
-    }  /* end of for */
+    }  /* end of loop Runge-Kutta stages */
 
     /*------------------------------------------------------------------*/
     /* set new external force, last stage load is c_nstg==1 */
@@ -1046,7 +1063,7 @@ void tsi_st_fehlbg(INT disnum_s,
         container.dirich = NULL;
         container.global_numeq = 0;
         container.dirichfacs = NULL;
-        container.kstep = 0;
+        container.kstep = sdyn->step;
         calelm(actfield, actsolv, actpart, actintra,
                stiff_array, -1, &container, action);
         /* reduce stresses, so they can be written */

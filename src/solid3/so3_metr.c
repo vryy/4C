@@ -184,7 +184,6 @@ void so3_metr_surf(ELEMENT *ele,
 {
   DOUBLE xjm[NDIM_SOLID3][NDIM_SOLID3];  /* Jacobian matrix */
   DOUBLE det;  /* determinat of Jacobian matrix */
-  DOUBLE xji[NDIM_SOLID3][NDIM_SOLID3];  /* inverse Jacobian matrix */
   DOUBLE gamt[DIMSID_SOLID3][NDIM_SOLID3];  /* differential */
   DOUBLE metm[DIMSID_SOLID3][DIMSID_SOLID3];  /* metric matrix */
   INT idim, jdim, kdimsid, jdimsid;  /* dimension indices */
@@ -408,9 +407,7 @@ void so3_metr_rot(DOUBLE xjm[NDIM_SOLID3][NDIM_SOLID3],
    *          frame.
    *          Thus rotation matrix is transposed
    *          (and left and right stretch are switched) */
-  DOUBLE dum1[NDIM_SOLID3][NDIM_SOLID3];
-  DOUBLE dum2[NDIM_SOLID3][NDIM_SOLID3];
-  so3_tns3_plrdcmp(xjm, xrm, dum1, dum2);
+  so3_tns3_plrdcmp(xjm, xrm, NULL, NULL);
 
   /*--------------------------------------------------------------------*/
   /* rotation matrix R in components (accounting for transposedness) */

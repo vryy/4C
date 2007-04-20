@@ -269,10 +269,10 @@ typedef struct _SO3_GEODEFSTR
   /* strain:
    *     Strains referred to different frames */
   /* Green-Lagrange strain tensor in vector notion Ev
-   *     Ev^T = [ E_11  E_22  E_33  E_12  E_23  E_31 ] */
+   *     Ev^T = [ E_11  E_22  E_33  2*E_12  2*E_23  2*E_31 ] */
   DOUBLE stnglv[NUMSTR_SOLID3];
   /* Linear (engineering strain) in vector notion epsv
-   *     epsv^T = [ eps_11  eps_22  eps_33  eps_12  eps_23  eps_31 ] */
+   *     epsv^T = [ eps_11  eps_22  eps_33  2*eps_12  2*eps_23  2*eps_31 ] */
   DOUBLE stnengv[NUMSTR_SOLID3];
   /*--------------------------------------------------------------------*/
   /* stress:
@@ -338,23 +338,29 @@ typedef enum _SO3_STRESSOUT
 /*!
 \brief Material internal variables (MIV) used for 
        visco-plastic Robinson material
+       These fields are allocated at every Gauss point
+       ==> so3_mat_robinson.c
 
 \author bborn
 \date 03/07
 */
 typedef struct _SO3_MIV_ROBINSON
 {
-  /* visco-plastic strain at t_{n} */
+  /* visco-plastic strain vector Ev^<g> at t_{n} for every Gauss point g
+   *    Ev^<g>T = [ E_11  E_22  E_33  2*E_12  2*E_23  2*E_31 ]^<g> */
   ARRAY vicstn;
-  /* visco-plastic strain at t_{n+1} */
-  ARRAY vicstnn;
-  /* back stress at t_n */
+  /* back stress vector Av^<g> at t_n for every Gauss point g
+   *    Av^<g>T = [ A_11  A_22  A_33  A_12  A_23  A_31 ]^<g> */
   ARRAY bacsts;
-  /* back stress at t_{n+1} */
-  ARRAY bacstsn;
-  /* visco-plastic strain rate at intermediate time stages t_{n+c_i} */
+  /* visco-plastic strain rate vector dEv^<g><i> 
+   * for every intermediate time stages t_{n+c_i} (with i=1,...,s)
+   * and every Gauss point g
+   *    dEv^<g><i>T = [ dE_11  dE_22  dE_33  2*dE_12  2*dE_23  2*dE_31 ] */
   ARRAY4D dvicstn;
-  /* back stress rate at intermediate time stages t_{n+c_i} */
+  /* back stress rate vector dAv^<g><i> 
+   * for every intermediate time stages t_{n+c_i} (with i=1,...,s)
+   * and every Gauss point g
+   *    dAv^<g><i>T = [ dA_11  dA_22  dA_33  dA_12  dA_23  dA_31 ] */
   ARRAY4D dbacsts;
 } SO3_MIV_ROBINSON;
 
@@ -670,18 +676,16 @@ void so3_mat_mivupd(CONTAINER *container,
 void so3_mat_robinson_ctxtvrfy();
 void so3_mat_robinson_init(ELEMENT* ele);
 void so3_mat_robinson_final(ELEMENT* ele);
-void so3_mat_robinson_prmbytmpr(MAT_PARAM_INTPOL ipl,  /*!< interpolation 
-                                                           type */
-                                INT prm_n,  /*!< magnitude param data */
-                                DOUBLE* prm,  /*!< parameter data */
-                                DOUBLE tmpr,  /*!< curr. temperature */
-                                DOUBLE* prmbytempr);  /*!< param. at current
-                                                      temperature */
-void so3_mat_robinson_sel(CONTAINER* container,
-                          ELEMENT* ele,
-                          VP_ROBINSON* mat_robin,
-                          INT ip,
-                          SO3_GEODEFSTR* gds,
+void so3_mat_robinson_prmbytmpr(const MAT_PARAM_INTPOL ipl,
+                                const INT prm_n,
+                                const DOUBLE* prm,
+                                const DOUBLE tmpr,
+                                DOUBLE* prmbytempr);
+void so3_mat_robinson_sel(const CONTAINER* container,
+                          const ELEMENT* ele,
+                          const VP_ROBINSON* mat_robin,
+                          const INT ip,
+                          const SO3_GEODEFSTR* gds,
                           DOUBLE stress[NUMSTR_SOLID3],
                           DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3]);
 void so3_mat_robinson_stnvscrat(const VP_ROBINSON* mat_robin,
@@ -697,11 +701,11 @@ void so3_mat_robinson_stsbckrat(const VP_ROBINSON* mat_robin,
                                 DOUBLE dstsbck[NUMSTR_SOLID3]);
 void so3_mat_robinson_mivupd(ELEMENT* ele,  /*!< curr. elem. */
                              VP_ROBINSON* mat_robin);  /*!< elem. mater. */
-void so3_mat_robinson_stress(CONTAINER* container,
-                             ELEMENT* ele,
-                             VP_ROBINSON* mat_robin,
-                             INT ip,
-                             SO3_GEODEFSTR* gds,
+void so3_mat_robinson_stress(const CONTAINER* container,
+                             const ELEMENT* ele,
+                             const VP_ROBINSON* mat_robin,
+                             const INT ip,
+                             const SO3_GEODEFSTR* gds,
                              DOUBLE stress[NUMSTR_SOLID3],
                              DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3]);
 #endif
@@ -813,7 +817,7 @@ void so3_stress_extrpol(ELEMENT *ele,
 
 /*----------------------------------------------------------------------*/
 /* file so3_tns3.c */
-void so3_tns3_zero(DOUBLE it[3][3]);
+void so3_tns3_zero(DOUBLE ot[3][3]);
 void so3_tns3_id(DOUBLE it[3][3]);
 void so3_tns3_tr(DOUBLE at[3][3],
                  DOUBLE *tr);
@@ -841,23 +845,23 @@ void so3_tns3_tsym2v(DOUBLE at[3][3],
 void so3_tns3_v2tsym(DOUBLE av[6],
                      DOUBLE at[3][3]);
 void so3_tns3_spcdcmp(DOUBLE at[3][3],  /* input tensor */
-                      INT *err,
-                      DOUBLE ew[3]);
+                      DOUBLE ew[3],
+                      INT *err);
 void so3_tns3_symspcdcmp_jit(DOUBLE at[NDIM_SOLID3][NDIM_SOLID3],
                              DOUBLE itertol,
                              INT itermax,
                              DOUBLE ew[NDIM_SOLID3],
                              DOUBLE ev[NDIM_SOLID3][NDIM_SOLID3],
                              INT* err);
-void so3_tns3_norm2(DOUBLE av[NDIM_SOLID3],
+void so3_tns3_norm2(const DOUBLE av[NDIM_SOLID3],
                     DOUBLE* norm);
 void so3_tns3_unitvct(DOUBLE av[NDIM_SOLID3]);
-void so3_tns3_crsprd(DOUBLE av[NDIM_SOLID3],
-                     DOUBLE bv[NDIM_SOLID3],
+void so3_tns3_crsprd(const DOUBLE av[NDIM_SOLID3],
+                     const DOUBLE bv[NDIM_SOLID3],
                      DOUBLE cv[NDIM_SOLID3]);
-void so3_tns3_unrm(DOUBLE av[NDIM_SOLID3],
-                   DOUBLE bv[NDIM_SOLID3],
-                   INT swp,
+void so3_tns3_unrm(const DOUBLE av[NDIM_SOLID3],
+                   const DOUBLE bv[NDIM_SOLID3],
+                   const INT swp,
                    DOUBLE cv[NDIM_SOLID3]);
 
 /*----------------------------------------------------------------------*/
@@ -882,6 +886,12 @@ void so3_vct6_ass(const DOUBLE av[NUMSTR_SOLID3],  /*!< input vector */
 void so3_vct6_assscl(const DOUBLE scl,  /*!< scale */
                      const DOUBLE av[NUMSTR_SOLID3],  /*!< input vector */
                      DOUBLE bv[NUMSTR_SOLID3]);
+void so3_vct6_2_assscl(const DOUBLE scl,
+                       const DOUBLE av[NUMSTR_SOLID3],
+                       DOUBLE bv[NUMSTR_SOLID3]);
+void so3_vct6_05_assscl(const DOUBLE scl,
+                        const DOUBLE av[NUMSTR_SOLID3],
+                        DOUBLE bv[NUMSTR_SOLID3]);
 void so3_vct6_updscl(const DOUBLE scl,  /*!< scale */
                      const DOUBLE av[NUMSTR_SOLID3],  /*!< input vector */
                      DOUBLE bv[NUMSTR_SOLID3]);  /*!< updated vector */
