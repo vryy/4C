@@ -352,15 +352,19 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frchar("AZCONV"    ,buffer,&ierr);
       if(ierr==1)
       {
-	  if (strncmp("AZ_r0"             ,buffer, 5)==0) azvar->azconv = 0;
-	  if (strncmp("AZ_rhs"            ,buffer, 6)==0) azvar->azconv = 1;
-	  if (strncmp("AZ_Anorm"          ,buffer, 8)==0) azvar->azconv = 2;
-	  if (strncmp("AZ_sol"            ,buffer, 6)==0) azvar->azconv = 3;
-	  if (strncmp("AZ_weighted"       ,buffer,11)==0) azvar->azconv = 4;
-	  if (strncmp("AZ_expected_values",buffer,18)==0) azvar->azconv = 5;
-	  if (strncmp("AZ_noscaled"       ,buffer,11)==0) azvar->azconv = 6;
-	  if (strncmp("AZTECOO_conv_test" ,buffer,17)==0) azvar->azconv = 7;
-	  if (strncmp("AZ_inf_noscaled"   ,buffer,15)==0) azvar->azconv = 8;
+             if (strncmp("AZ_r0"             ,buffer, 5)==0) azvar->azconv = AZ_r0;
+        else if (strncmp("AZ_rhs"            ,buffer, 6)==0) azvar->azconv = AZ_rhs;
+        else if (strncmp("AZ_Anorm"          ,buffer, 8)==0) azvar->azconv = AZ_Anorm;
+	else if (strncmp("AZ_sol"            ,buffer, 6)==0) azvar->azconv = AZ_sol;
+        else if (strncmp("AZ_weighted"       ,buffer,11)==0) azvar->azconv = AZ_weighted;
+        else if (strncmp("AZ_expected_values",buffer,18)==0) azvar->azconv = AZ_expected_values;
+        else if (strncmp("AZ_noscaled"       ,buffer,11)==0) azvar->azconv = AZ_noscaled;
+#ifdef TRILINOS_PACKAGE
+        else if (strncmp("AZTECOO_conv_test" ,buffer,17)==0) azvar->azconv = AZTECOO_conv_test;
+        else if (strncmp("AZ_inf_noscaled"   ,buffer,15)==0) azvar->azconv = AZ_inf_noscaled;
+#endif
+        else
+          dserror("unsupported AZCONV value");
       }
       frdouble("AZOMEGA",&(azvar->azomega)  ,&ierr);
 #ifdef TRILINOS_PACKAGE
