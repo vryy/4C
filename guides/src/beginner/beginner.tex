@@ -331,8 +331,8 @@ Ask your friendly LNM administrator. Ask politely.
 the Administrator with \texttt{passwd }
 \item Create new SSH key with \texttt{ssh-keygen -t rsa} and press enter
 without entering a password
-\item in the folder \texttt{\textasciitilde{}/.ssh} copy the generated key
-into the authorized key file with \texttt{cp id\_rsa.pub authorized\_keys}.
+\item in the folder \texttt{\textasciitilde{}/.ssh} append the generated key
+into the authorized key file with \texttt{cat < id\_rsa.pub >> authorized\_keys}.
 This allows to connect to all nodes on the cluster and is essential
 for running any kind of job 
 \end{itemize}
