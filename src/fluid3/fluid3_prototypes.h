@@ -854,3 +854,10 @@ void f3_calerr(
 
 
 
+void f3_calneumann(ELEMENT         *ele,
+                   DOUBLE          *eforce,
+                   DOUBLE         **xyze,
+                   DOUBLE          *funct,
+                   DOUBLE         **deriv,
+                   DOUBLE         **xjm,
+                   DOUBLE          *edeadng);

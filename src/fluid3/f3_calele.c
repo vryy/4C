@@ -297,6 +297,9 @@ if (!is_relax)			/* calculation for relaxation parameter	*/
   f3_massrhs(ele,emass,ehist,edeadng,eforce,hasext);
 }
 
+/* look for neumann bc */
+f3_calneumann(ele, eforce, xyze, funct, deriv, xjm, edeadng);
+
 /*-------------------------------------------- local co-ordinate system */
 if(ele->locsys==locsys_yes)
    locsys_trans(ele,estif,NULL,NULL,eforce);

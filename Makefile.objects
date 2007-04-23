@@ -194,7 +194,8 @@ OBJS_FLUID3   = src/fluid3/f3_calele.o \
                 src/fluid3/f3_main.o \
                 src/fluid3/f3_liftdrag.o \
                 src/fluid3/f3_out.o \
-                src/fluid3/f3_restart.o
+                src/fluid3/f3_restart.o \
+                src/fluid3/f3_calextrhs.o
 #               fluid3_fast
 OBJS_F3F      = src/fluid3_fast/f3f_calele.o \
                 src/fluid3_fast/f3f_calint.o \

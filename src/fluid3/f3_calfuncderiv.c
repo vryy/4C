@@ -1721,6 +1721,81 @@ dstrc_exit();
 return;
 } /* end of f3_edgejaco */
 
+
+/*------------------------------------------------------------------------*/
+void f3_edgejaco1( DOUBLE    **xyze,
+		   DOUBLE    **deriv,
+		   DOUBLE    **xjm,
+		   DOUBLE     *det,
+		   INT        *iedgnod,
+		   INT         iel,
+		   ELEMENT    *ele
+  )
+
+{
+  INT k;
+  INT node;
+
+#ifdef DEBUG
+  dstrc_enter("f3_edgejaco1");
+#endif
+
+/*---------------------------------- determine jacobian at point r,s ---*/
+  xjm[0][0] = ZERO ;
+  xjm[0][1] = ZERO ;
+  xjm[1][0] = ZERO ;
+  xjm[1][1] = ZERO ;
+  for (k=0; k<iel; k++) /* loop all nodes of the element */
+  {
+    node = iedgnod[k];
+    xjm[0][0] += deriv[0][k] * xyze[0][node] ;
+    xjm[0][1] += deriv[0][k] * xyze[1][node] ;
+    xjm[1][0] += deriv[1][k] * xyze[0][node] ;
+    xjm[1][1] += deriv[1][k] * xyze[1][node] ;
+  } /* end loop over iel */
+
+/*------------------------------------------ determinant of jacobian ---*/
+  *det =  xjm[0][0]* xjm[1][1] - xjm[1][0]* xjm[0][1];
+  if(*det<0.0)
+  {
+    *det = *det * (-1.0);
+  }
+
+  if(*det<ZERO)
+  {
+    printf("\n");
+    printf("GLOBAL ELEMENT %i\n",ele->Id);
+    printf("NEGATIVE JACOBIAN DETERMINANT: %lf\n",*det);
+#ifdef PARALLEL
+    dserror("Stopped not regulary!\n");
+#else
+#ifdef D_FSI
+    if (genprob.probtyp==prb_fluid && genprob.numfld==2)
+    {
+      fluid_mf(99);
+      dserror("Stopped regulary!\n");
+    }
+    else if (genprob.probtyp==prb_fsi)
+    {
+      dyn_fsi(99);
+      dserror("Stopped regulary!\n");
+    }
+    else dserror("Stopped not regulary!\n");
+#else
+    dserror("Stopped not regulary!\n");
+#endif /* endif D_FSI */
+#endif /* endif PARALLEL */
+  }
+
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+
+  return;
+} /* end of f3_edgejaco1 */
+
+
 /*!---------------------------------------------------------------------
 \brief calculate metric of element edge
 
