@@ -99,8 +99,8 @@ public:
   \brief Return number of lines of this element
   */
   virtual int NumLine() 
-  {if (NumNode()==9 || NumNode()==8) return 4;
-      else if (NumNode()==4 || NumNode()==6) return 3;
+  {if (NumNode()==9 || NumNode()==8 || NumNode()==4) return 4;
+      else if (NumNode()==3 || NumNode()==6) return 3;
       else {
 	  dserror("Could not determine number of lines");
 	  return -1;
