@@ -466,7 +466,7 @@ for(i=0;i<ele->numnp;i++)
    actfnode = ele->node[i];
    actfgnode = actfnode->gnode;
    actanode = actfgnode->mfcpnode[genprob.numaf];
-   dsassert(actanode!=NULL,"cannot read from NULL-pointer!\n");
+   dsassert(actanode!=NULL,"ALE node not found (NULL-pointer)!\n");
 
    if(actfnode->xfs==NULL) /* no free surface */
    {

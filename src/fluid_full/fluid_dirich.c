@@ -245,9 +245,9 @@ if (fdyn->init==0)
          afnode = firstnode->gnode->mfcpnode[genprob.numaf];
          alnode = lastnode->gnode->mfcpnode[genprob.numaf];
          actanode=actgnode->mfcpnode[genprob.numaf];
-         dsassert(actanode!=NULL,"cannot read from NULL-pointer!\n");
-         dsassert(afnode!=NULL,"cannot read from NULL-pointer!\n");
-         dsassert(alnode!=NULL,"cannot read from NULL-pointer!\n");
+         dsassert(actanode!=NULL,"ALE node not found (NULL-pointer)!\n");
+         dsassert(afnode!=NULL,"ALE node not found (NULL-pointer)!\n");
+         dsassert(alnode!=NULL,"ALE node not found (NULL-pointer)!\n");
          length=actgnode->slipdirich->length;
          alpha =actgnode->slipdirich->alpha;
          actcurve = actgnode->slipdirich->curve-1;
