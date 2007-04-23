@@ -362,6 +362,9 @@ if (par.myrank==0)
   for (i=0; i<allfiles.numrows; i++)
   {
     fprintf(allfiles.out_err,"%s",allfiles.input_file[i]);
+#ifdef CCADISCRET
+    fprintf(allfiles.out_err,"\n");
+#endif
   }
   fprintf(allfiles.out_err,"===========================================\n");
   fprintf(allfiles.out_err,"end of broadcasted copy of input file      \n");
