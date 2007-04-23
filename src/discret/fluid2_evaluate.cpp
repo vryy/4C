@@ -60,11 +60,11 @@ int DRT::Elements::Fluid2::Evaluate(ParameterList& params,
   // get the action required
   string action = params.get<string>("action","none");
   if (action == "none") dserror("No action supplied");
-  else if (action == "calc_fluid_systemmat_and_residual")      
+  else if (action == "calc_fluid_systemmat_and_residual")
   	act = Fluid2::calc_fluid_systemmat_and_residual;
   else dserror("Unknown type of action for Fluid2");
 
-  // get the material 
+  // get the material
   MATERIAL* actmat = &(mat[material_-1]);
 
   switch(act)
@@ -75,7 +75,7 @@ int DRT::Elements::Fluid2::Evaluate(ParameterList& params,
       RefCountPtr<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (trial)");
       RefCountPtr<const Epetra_Vector> hist  = discretization.GetState("old solution data for rhs");
       if (vel_pre_np==null || hist==null) dserror("Cannot get state vectors 'velnp' and/or 'hist'");
-      
+
       // extract local values from the global vectors
       vector<double> my_vel_pre_np(lm.size());
       DRT::Utils::ExtractMyValues(*vel_pre_np,my_vel_pre_np,lm);
@@ -88,7 +88,7 @@ int DRT::Elements::Fluid2::Evaluate(ParameterList& params,
       vector<double> myprenp(numnode);
       vector<double> myvelnp(2*numnode);
       vector<double> myvhist(2*numnode);
-      
+
       for (int i=0;i<numnode;++i)
        {
        myvelnp[0+(i*2)]=my_vel_pre_np[0+(i*3)];
@@ -100,7 +100,7 @@ int DRT::Elements::Fluid2::Evaluate(ParameterList& params,
        myvhist[1+(i*2)]=myhist[1+(i*3)];
        }
 
-      // calculate element coefficient matrix and rhs       
+      // calculate element coefficient matrix and rhs
       f2_sys_mat(lm,myvelnp,myprenp,myvhist,&elemat1,&elevec1,actmat,params);
 
 
@@ -130,7 +130,7 @@ int DRT::Elements::Fluid2::Evaluate(ParameterList& params,
 #if 0
         for (unsigned int i=0;i<myvelnp.size();++i){
 	    printf("vel %26.16e ",myvelnp[i]);
-	    printf("\n");   
+	    printf("\n");
 	    }
 #endif
 
@@ -192,7 +192,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
 	    xyze(1,i)=Nodes()[i]->X()[1];
 	}
 
-	
+
 	/*---------------------------------------------- get viscosity ---*/
 	// check here, if we really have a fluid !!
 	if(material->mattyp != m_fluid) dserror("Material law is not of type m_fluid.");
@@ -242,8 +242,8 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
 		facr = data.qwgt[0][0];
 		e2   = data.qxg [0][0];
 		facs = data.qwgt[0][0];
-   
-		f2_shape_function(funct,deriv,wa1,e1,e2,iel,2); //wa1 as dummy for not wanted second derivatives  
+
+		f2_shape_function(funct,deriv,wa1,e1,e2,iel,2); //wa1 as dummy for not wanted second derivatives
 		break;
 	    case 3: case 6:   /* --> tri - element */
 		e1   = data.txgr[0][0];
@@ -251,7 +251,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
 
 		facr = data.twgt[0][0];
 		facs = ONE;
-	  
+
 		f2_shape_function(funct,deriv,wa1,e1,e2,iel,2); //wa1 as dummy for not wanted second derivatives
 		break;
 	    default:
@@ -290,7 +290,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
 	{
 	    double area=0;
 	    double a,b,c;
-    
+
 	    switch(iel)
 	    {
 		case 3:
@@ -334,7 +334,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
 	/* parameter relating viscous : reactive forces */
 	pe = 4.0 * timefac * visc / (mk * DSQR(hk));
 	/* parameter relating advective : viscous forces */
-	re = mk * norm_p * hk / (2.0 * visc);      
+	re = mk * norm_p * hk / (2.0 * visc);
 
 	xi1 = DMAX(pe,1.0);
 	xi2 = DMAX(re,1.0);
@@ -363,7 +363,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
 	double    press;
 	vector<double>    gridvelint(2); /* grid velocity                       */
 	vector<double>    gradp(2);      /* pressure gradient at integration point         */
-	
+
 	switch (iel)
 	{
 	    case 4: case 8: case 9:  /* --> quad - element */
@@ -386,8 +386,8 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
 	    default:
 		dserror("typ unknown!");
 	} // end switch (iel) //
-	
-	
+
+
 /*----------------------------------------------------------------------*
   |               start loop over integration points                     |
   *----------------------------------------------------------------------*/
@@ -417,20 +417,20 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
 			e1 = e2 = 0.0;
 			dserror("typ unknown!");
 		} /* end switch (iel) */
-		    
+
 		/*----------------------------------------- compute Jacobian matrix */
-		
+
 		f2_jaco(xyze,deriv,xjm,&det,iel);
 		fac = facr*facs*det;
-		
+
 		/*---------------------------------------- compute global derivates */
 		f2_gder(derxy,deriv,xjm,det,iel);
-		
+
 		/*--------------------------------- compute second global derivative */
 		if (ihoel!=0)
 		{
 		    f2_gder2(xyze,xjm,derxy,derxy2,deriv2,iel);
-			
+
 		    /*------calculate 2nd velocity derivatives at integration point */
 		    // former f2_vder2(vderxy2,derxy2,evelnp,iel);
 		    for (int i=0;i<3;i++)
@@ -474,12 +474,12 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
 		    vderxy(0,i)=ZERO;
 		    vderxy(1,i)=ZERO;
 		    for (int j=0;j<iel;j++)
-		    { 
+		    {
 			vderxy(0,i) += derxy(i,j)*evelnp[0+(2*j)];
 			vderxy(1,i) += derxy(i,j)*evelnp[1+(2*j)];
 		    } /* end of loop over j */
 		} /* end of loop over i */
-		
+
 		/*--------------------- get grid velocity at integration point ---*/
 		if(is_ale_)
 		    dserror("No ALE algorithms supported by Fluid2 element up to now.");
@@ -491,13 +491,13 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
 
 		/*------------------------------------- get pressure gradients ---*/
 		gradp[0] = gradp[1] = 0.0;
-		
+
 		for (int i=0; i<iel; i++)
 		{
 		    gradp[0] += derxy(0,i) * eprenp[i];
 		    gradp[1] += derxy(1,i) * eprenp[i];
 		}
-		
+
 		press = 0;
 		for (int i=0;i<iel;i++)
 		{
@@ -512,7 +512,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
 			  derxy,derxy2,
 			  fac,visc,iel,
 			  params);
-   
+
 	    } /* end of loop over integration points ls */
 	} /* end of loop over integration points lr */
     } // end of case !is_ale = true
@@ -547,7 +547,7 @@ void DRT::Elements::Fluid2::f2_integration_points(struct _FLUID_DATA& data)
 	  /* set coordinates (r,s) coordinates of integration point     */
 	  data.txgr[i][k] = ZERO;
 	  data.txgs[i][k] = ZERO;
-	  
+
 	  /* innitialise the vector of gaussweights */
 	  data.twgt[i][k] = ZERO;
       }
@@ -642,7 +642,7 @@ void DRT::Elements::Fluid2::f2_integration_points(struct _FLUID_DATA& data)
  *----------------------------------------------------------------------*/
       data.txgr[0][0]    =  Q13 ;
       data.txgs[0][0]    =  Q13 ;
-      
+
       data.twgt[0][0]    =  Q12 ;
 /*----------------------------------------------------------------------*
  |    GAUSS INTEGRATION        3 SAMPLING POINTS, DEG.OF PRECISION 2    |
@@ -654,7 +654,7 @@ void DRT::Elements::Fluid2::f2_integration_points(struct _FLUID_DATA& data)
       data.txgs[0][1]    =  ZERO ;
       data.txgs[1][1]    =  Q12  ;
       data.txgs[2][1]    =  Q12  ;
-      
+
       data.twgt[0][1]    =  Q16  ;
       data.twgt[1][1]    =  Q16  ;
       data.twgt[2][1]    =  Q16  ;
@@ -668,7 +668,7 @@ void DRT::Elements::Fluid2::f2_integration_points(struct _FLUID_DATA& data)
       data.txgs[0][2]    =  Q16  ;
       data.txgs[1][2]    =  Q16  ;
       data.txgs[2][2]    =  Q23  ;
-      
+
       data.twgt[0][2]    =  Q16  ;
       data.twgt[1][2]    =  Q16  ;
       data.twgt[2][2]    =  Q16  ;
@@ -684,7 +684,7 @@ void DRT::Elements::Fluid2::f2_integration_points(struct _FLUID_DATA& data)
       data.txgs[1][3]    =  0.2                ;
       data.txgs[2][3]    =  0.6                ;
       data.txgs[3][3]    =  Q13                ;
-      
+
       data.twgt[0][3]    =  0.2604166666667    ;
       data.twgt[1][3]    =  data.twgt[0][2]    ;
       data.twgt[2][3]    =  data.twgt[0][2]    ;
@@ -705,7 +705,7 @@ void DRT::Elements::Fluid2::f2_integration_points(struct _FLUID_DATA& data)
       data.txgs[3][4]    =  data.txgr[5][3] 	;
       data.txgs[4][4]    =  data.txgr[3][3] 	;
       data.txgs[5][4]    =  data.txgr[3][3] 	;
-      
+
       data.twgt[0][4]   =  0.0549758718277	;
       data.twgt[1][4]   =  data.twgt[0][3]	;
       data.twgt[2][4]   =  data.twgt[0][3]	;
@@ -728,7 +728,7 @@ void DRT::Elements::Fluid2::f2_integration_points(struct _FLUID_DATA& data)
       data.txgs[3][5]    =  data.txgr[1][3] 	;
       data.txgs[4][5]    =  data.txgr[2][3] 	;
       data.txgs[5][5]    =  data.txgr[2][3] 	;
-      
+
       data.twgt[0][5]   =  0.0833333333333	;
       data.twgt[1][5]   =  data.twgt[0][3]	;
       data.twgt[2][5]   =  data.twgt[0][3]	;
@@ -753,7 +753,7 @@ void DRT::Elements::Fluid2::f2_integration_points(struct _FLUID_DATA& data)
       data.txgs[4][6]    =  data.txgr[2][4]       ;
       data.txgs[5][6]    =  data.txgr[1][4]       ;
       data.txgs[6][6]    =  Q13	      ;
-      
+
       data.twgt[0][6]    =  0.0629695902724 ;
       data.twgt[1][6]    =  0.0661970763943 ;
       data.twgt[2][6]    =  data.twgt[0][4]      ;
@@ -779,7 +779,7 @@ void DRT::Elements::Fluid2::f2_integration_points(struct _FLUID_DATA& data)
       data.txgs[4][7]    =  data.txgr[1][4] ;
       data.txgs[5][7]    =  data.txgr[0][4] ;
       data.txgs[6][7]    =  Q13	            ;
-      
+
       data.twgt[0][7]    =  0.0520833333333 ;
       data.twgt[1][7]    =  data.twgt[0][4] ;
       data.twgt[2][7]    =  data.twgt[0][4] ;
@@ -809,7 +809,7 @@ void DRT::Elements::Fluid2::f2_integration_points(struct _FLUID_DATA& data)
       data.txgs[6][8]    =  data.txgr[2][5]     ;
       data.txgs[7][8]    =  data.txgr[1][5]     ;
       data.txgs[8][8]    =  data.txgr[0][5]     ;
-      
+
       data.twgt[0][8]    =  0.0318457071431     ;
       data.twgt[1][8]    =  0.1029752523804     ;
       data.twgt[2][8]    =  data.twgt[0][5]     ;
@@ -999,7 +999,7 @@ Numbering of the nodes:
                    2|
                     o
                     |\
-                    | \ 
+                    | \
                    5o  o4
                     |   \
                     |    \
@@ -1007,8 +1007,8 @@ Numbering of the nodes:
 	           0   3   1
 
 
-                                                            
-  
+
+
  \param   funct    vector<double>&             (o)    shape functions
  \param   deriv    Epetra_SerialDenseMatrix&   (o)    1st natural deriv.
                                                       of shape funct.
@@ -1017,7 +1017,7 @@ Numbering of the nodes:
  \param   r        DOUBLE&                     (i)    coordinate
  \param   s        DOUBLE&                     (i)    coordinate
  \param   iel      const int&                  (i)    number of nodes
- \param   icode    int         	               (i)    flag on (higher 
+ \param   icode    int         	               (i)    flag on (higher
                                                       order) derivatives
 
  *----------------------------------------------------------------------*/
@@ -1048,41 +1048,41 @@ void DRT::Elements::Fluid2::f2_shape_function(
 	double rm=ONE-r;
 	double sp=ONE+s;
 	double sm=ONE-s;
-	
+
 	funct[0]=Q14*rp*sp;
 	funct[1]=Q14*rm*sp;
 	funct[2]=Q14*rm*sm;
 	funct[3]=Q14*rp*sm;
-	
+
 	if(icode>1) /* --> first derivative evaluation */
 	{
 	    deriv(0,0)= Q14*sp;
 	    deriv(1,0)= Q14*rp;
-	    
+
 	    deriv(0,1)=-Q14*sp;
 	    deriv(1,1)= Q14*rm;
-	    
+
 	    deriv(0,2)=-Q14*sm;
 	    deriv(1,2)=-Q14*rm;
-	    
+
 	    deriv(0,3)= Q14*sm;
 	    deriv(1,3)=-Q14*rp;
 	} /* endif (icode>1) */
-	
+
 	if(icode==3) /* --> second derivative evaluation */
 	{
 	    deriv2(0,0)= ZERO;
 	    deriv2(1,0)= ZERO;
 	    deriv2(2,0)= Q14;
-	    
+
 	    deriv2(0,1)= ZERO;
 	    deriv2(1,1)= ZERO;
 	    deriv2(2,1)=-Q14;
-	    
+
 	    deriv2(0,2)= ZERO;
 	    deriv2(1,2)= ZERO;
 	    deriv2(2,2)= Q14;
-	    
+
 	    deriv2(0,3)= ZERO;
 	    deriv2(1,3)=ZERO;
 	    deriv2(2,3)=-Q14;
@@ -1112,28 +1112,28 @@ void DRT::Elements::Fluid2::f2_shape_function(
 	{
 	    deriv(0,0)= Q14*sp;
 	    deriv(1,0)= Q14*rp;
-	    
+
 	    deriv(0,1)=-Q14*sp;
 	    deriv(1,1)= Q14*rm;
-	    
+
 	    deriv(0,2)=-Q14*sm;
 	    deriv(1,2)=-Q14*rm;
-	    
+
 	    deriv(0,3)= Q14*sm;
 	    deriv(1,3)=-Q14*rp;
-	    
+
 	    deriv(0,4)=-ONE*r*sp;
 	    deriv(1,4)= Q12*r2;
-	    
+
 	    deriv(0,5)=-Q12*  s2;
 	    deriv(1,5)=-ONE*rm*s;
-	    
+
 	    deriv(0,6)=-ONE*r*sm;
 	    deriv(1,6)=-Q12*r2;
-	    
+
 	    deriv(0,7)= Q12*  s2;
 	    deriv(1,7)=-ONE*rp*s;
-	    
+
 	    deriv(0,0)-= Q12*(deriv(0,4)+deriv(0,7));
 	    deriv(1,0)-= Q12*(deriv(1,4)+deriv(1,7));
 
@@ -1150,39 +1150,39 @@ void DRT::Elements::Fluid2::f2_shape_function(
 	    deriv2(0,0)= ZERO;
 	    deriv2(1,0)= ZERO;
 	    deriv2(2,0)= Q14;
-	    
+
 	    deriv2(0,1)= ZERO;
 	    deriv2(1,1)= ZERO;
 	    deriv2(2,1)=-Q14;
-	    
+
 	    deriv2(0,2)= ZERO;
 	    deriv2(1,2)= ZERO;
 	    deriv2(2,2)= Q14;
-	    
+
 	    deriv2(0,3)= ZERO;
 	    deriv2(1,3)= ZERO;
 	    deriv2(2,3)=-Q14;
-	    
+
 	    deriv2(0,4)=-(ONE+s);
 	    deriv2(1,4)= ZERO;
 	    deriv2(2,4)=-r;
-	    
+
 	    deriv2(0,5)= ZERO;
 	    deriv2(1,5)=-(ONE-r);
 	    deriv2(2,5)= s;
-	    
+
 	    deriv2(0,6)=-(ONE-s);
 	    deriv2(1,6)= ZERO;
 	    deriv2(2,6)= r;
-	    
+
 	    deriv2(0,7)= ZERO;
 	    deriv2(1,7)=-(ONE+r);
 	    deriv2(2,7)=-s;
-	    
+
 	    deriv2(0,0) -= Q12*(deriv2(0,4)+deriv2(0,7));
 	    deriv2(1,0) -= Q12*(deriv2(1,4)+deriv2(1,7));
 	    deriv2(2,0) -= Q12*(deriv2(2,4)+deriv2(2,7));
-	    
+
 	    for(int i=1;i<4;i++)
 	    {
 		int ii=i+3;
@@ -1225,66 +1225,66 @@ void DRT::Elements::Fluid2::f2_shape_function(
 	{
 	    deriv(0,0)= rhp*sh*sp;
 	    deriv(1,0)= shp*rh*rp;
-	    
+
 	    deriv(0,1)= rhm*sh*sp;
 	    deriv(1,1)=-shp*rh*rm;
-	    
+
 	    deriv(0,2)=-rhm*sh*sm;
 	    deriv(1,2)=-shm*rh*rm;
-	    
+
 	    deriv(0,3)=-rhp*sh*sm;
 	    deriv(1,3)= shm*rh*rp;
-	    
+
 	    deriv(0,4)=-TWO*r*sh*sp;
 	    deriv(1,4)= shp*r2;
-	    
+
 	    deriv(0,5)= rhm*s2;
 	    deriv(1,5)= TWO*s*rh*rm;
-	    
+
 	    deriv(0,6)= TWO*r*sh*sm;
 	    deriv(1,6)= shm*r2;
-	    
+
 	    deriv(0,7)= rhp*s2;
-	    deriv(1,7)=-TWO*s*rh*rp;      
-	    
+	    deriv(1,7)=-TWO*s*rh*rp;
+
 	    deriv(0,8)=-TWO*r*s2;
 	    deriv(1,8)=-TWO*s*r2;
 	} /* endif (icode>1) */
-	
+
 	if(icode==3) /* --> second derivative evaluation */
 	{
 	    deriv2(0,0)= sh*sp;
 	    deriv2(1,0)= rh*rp;
 	    deriv2(2,0)= shp*rhp;
-	    
+
 	    deriv2(0,1)= sh*sp;
 	    deriv2(1,1)=-rh*rm;
 	    deriv2(2,1)= shp*rhm;
-	    
+
 	    deriv2(0,2)=-sh*sm;
 	    deriv2(1,2)=-rh*rm;
 	    deriv2(2,2)= shm*rhm;
-	    
+
 	    deriv2(0,3)=-sh*sm;
 	    deriv2(1,3)= rh*rp;
 	    deriv2(2,3)= shm*rhp;
-	    
+
 	    deriv2(0,4)=-TWO*sh*sp;
 	    deriv2(1,4)= r2;
 	    deriv2(2,4)=-TWO*r*shp;
-	    
+
 	    deriv2(0,5)= s2;
 	    deriv2(1,5)= TWO*rh*rm;
 	    deriv2(2,5)=-TWO*s*rhm;
-	    
+
 	    deriv2(0,6)= TWO*sh*sm;
 	    deriv2(1,6)= r2;
 	    deriv2(2,6)=-TWO*r*shm;
-	    
+
 	    deriv2(0,7)= s2;
 	    deriv2(1,7)=-TWO*rh*rp;
 	    deriv2(2,7)=-TWO*s*rhp;
-	    
+
 	    deriv2(0,8)=-TWO*s2;
 	    deriv2(1,8)=-TWO*r2;
 	    deriv2(2,8)= TWO*s*TWO*r;
@@ -1298,7 +1298,7 @@ void DRT::Elements::Fluid2::f2_shape_function(
 	funct[0]=ONE-r-s;
 	funct[1]=r;
 	funct[2]=s;
-	
+
 	if(icode>1) /* --> first derivative evaluation */
 	{
 	    deriv(0,0)=-ONE;
@@ -1324,50 +1324,50 @@ void DRT::Elements::Fluid2::f2_shape_function(
 	funct[3]=FOUR*(r-rr-rs);
 	funct[4]=FOUR*rs;
 	funct[5]=FOUR*(s-rs-ss);
-	
+
 	if(icode>1) /* --> first derivative evaluation */
 	{
 	    deriv(0,0)=-THREE+FOUR*(r+s);
 	    deriv(1,0)= deriv(0,0);
-	    
+
 	    deriv(0,1)= FOUR*r-ONE;
 	    deriv(1,1)= ZERO;
-	    
+
 	    deriv(0,2)= ZERO;
 	    deriv(1,2)= FOUR*s-ONE;
-	    
+
 	    deriv(0,3)= FOUR*(ONE-TWO*r-s);
 	    deriv(1,3)=-FOUR*r;
-	    
+
 	    deriv(0,4)= FOUR*s;
 	    deriv(1,4)= FOUR*r;
-	    
+
 	    deriv(0,5)=-FOUR*s;
 	    deriv(1,5)= FOUR*(ONE-r-TWO*s);
 	} /* endif (icode>1) */
-	
+
 	if(icode==3) /* --> second derivative evaluation */
 	{
 	    deriv2(0,0)= FOUR;
 	    deriv2(1,0)= FOUR;
 	    deriv2(2,0)= FOUR;
-	    
+
 	    deriv2(0,1)= FOUR;
 	    deriv2(1,1)= ZERO;
 	    deriv2(2,1)= ZERO;
-	    
+
 	    deriv2(0,2)= ZERO;
 	    deriv2(1,2)= FOUR;
 	    deriv2(2,2)= ZERO;
-	    
+
 	    deriv2(0,3)=-EIGHT;
 	    deriv2(1,3)= ZERO;
 	    deriv2(2,3)=-FOUR;
-	    
+
 	    deriv2(0,4)= ZERO;
 	    deriv2(1,4)= ZERO;
 	    deriv2(2,4)= FOUR;
-	    
+
 	    deriv2(0,5)= ZERO;
 	    deriv2(1,5)=-EIGHT;
 	    deriv2(2,5)=-FOUR;
@@ -1400,11 +1400,11 @@ return;
  |                        |
  |                        |
  |                        |
- |                      J^{-1}
- | 
+ |                      J^{-T}
+ |
  | To calculate the derivatives, the actual Jacobian matrix is
  | inverted.
- | 
+ |
  *----------------------------------------------------------------------*/
 void DRT::Elements::Fluid2::f2_gder(Epetra_SerialDenseMatrix& derxy,
 				    const Epetra_SerialDenseMatrix& deriv,
@@ -1418,32 +1418,32 @@ void DRT::Elements::Fluid2::f2_gder(Epetra_SerialDenseMatrix& derxy,
   Epetra_SerialDenseMatrix 	xji(2,2);   // inverse of jacobian matrix
 
 
- /*----------calculate global derivatives w.r.t. x,y at point r,s ---*/
+  /*----------calculate global derivatives w.r.t. x,y at point r,s ---*/
 
   /*------------------------------------------------------- initialistion */
-for(int k=0;k<iel;k++)
-{
-   derxy(0,k)=ZERO;
-   derxy(1,k)=ZERO;
-} /* end of loop over k */
+  for(int k=0;k<iel;k++)
+  {
+    derxy(0,k)=ZERO;
+    derxy(1,k)=ZERO;
+  } /* end of loop over k */
 
 
-/*------------------------------------------------- inverse of jacobian */
-xji(0,0) =  xjm(1,1)/det;
-xji(1,0) = -xjm(1,0)/det;
-xji(0,1) = -xjm(0,1)/det;
-xji(1,1) =  xjm(0,0)/det;
+  /*------------------------------------------------- inverse of jacobian */
+  xji(0,0) =  xjm(1,1)/det;
+  xji(1,0) = -xjm(1,0)/det;
+  xji(0,1) = -xjm(0,1)/det;
+  xji(1,1) =  xjm(0,0)/det;
 
-/*---------------------------------------- calculate global derivatives */
-for (int k=0;k<iel;k++)
-{
-   derxy(0,k) +=   xji(0,0) * deriv(0,k) + xji(0,1) * deriv(1,k) ;
-   derxy(1,k) +=   xji(1,0) * deriv(0,k) + xji(1,1) * deriv(1,k) ;
-} /* end of loop over k */
+  /*---------------------------------------- calculate global derivatives */
+  for (int k=0;k<iel;k++)
+  {
+    derxy(0,k) +=   xji(0,0) * deriv(0,k) + xji(0,1) * deriv(1,k) ;
+    derxy(1,k) +=   xji(1,0) * deriv(0,k) + xji(1,1) * deriv(1,k) ;
+  } /* end of loop over k */
 
-	/*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
 
-return;
+  return;
 } // end of DRT:Elements:Fluid2:f2_gder
 
 /*----------------------------------------------------------------------*
@@ -1473,7 +1473,7 @@ return;
  | the matrix system
  |
  | +-                                        -+   +-    -+
- | |   /dx\^2        /dy\^2         dy dx     |	  | d^2N | 
+ | |   /dx\^2        /dy\^2         dy dx     |	  | d^2N |
  | |  | -- |        | ---|        2*--*--     |	  | ---- |
  | |   \dr/	     \dr/ 	    dr dr     |	  | dx^2 |
  | |					      |	  |      |
@@ -1485,7 +1485,7 @@ return;
  | |   --*--         --*--      --*-- + --*-- |   | ---- |
  | |   dr ds	     dr ds	dr ds   dr ds |	  | dxdy |
  | +-					     -+	  +-    -+
- | 
+ |
  |             +-    -+   +-                 -+
  | 	       | d^2N |	  | d^2x dN   d^2y dN |
  | 	       | ---- |	  | ----*-- + ----*-- |
@@ -1543,24 +1543,24 @@ void DRT::Elements::Fluid2::f2_gder2(const Epetra_SerialDenseMatrix& xyze,
     //init sol to zero
     memset(derxy2.A(),0,derxy2.M()*derxy2.N()*sizeof(double));
 
-    
+
   /*------------------ determine 2nd derivatives of coord.-functions */
 
-  /* 
+  /*
   |                                             0 1
-  |         0 1              0...iel-1         +-+-+ 
+  |         0 1              0...iel-1         +-+-+
   |        +-+-+             +-+-+-+-+         | | | 0
-  |        | | | 0           | | | | | 0       +-+-+ 
+  |        | | | 0           | | | | | 0       +-+-+
   |        +-+-+             +-+-+-+-+         | | | .
   |        | | | 1     =     | | | | | 1     * +-+-+ .
   |        +-+-+             +-+-+-+-+         | | | .
-  |        | | | 2           | | | | | 2       +-+-+ 
+  |        | | | 2           | | | | | 2       +-+-+
   |        +-+-+             +-+-+-+-+         | | | iel-1
-  |		     	      	     	       +-+-+ 
-  |		     	      	     	      	 
+  |		     	      	     	       +-+-+
+  |
   |        xder2               deriv2          xyze^T
-  |		     	      	     	      	   
-  |		     	      	     	      	   
+  |
+  |
   |                                     +-           -+
   |  	   	    	    	        | d^2x   d^2y |
   |  	   	    	    	        | ----   ---- |
@@ -1580,37 +1580,37 @@ void DRT::Elements::Fluid2::f2_gder2(const Epetra_SerialDenseMatrix& xyze,
     xder2.Multiply('N','T',1.0,deriv2,xyze,0.0);
 
   /*
-  |        0...iel-1             0 1                           
-  |        +-+-+-+-+            +-+-+               0...iel-1  
-  |        | | | | | 0          | | | 0             +-+-+-+-+  
+  |        0...iel-1             0 1
+  |        +-+-+-+-+            +-+-+               0...iel-1
+  |        | | | | | 0          | | | 0             +-+-+-+-+
   |        +-+-+-+-+            +-+-+               | | | | | 0
   |        | | | | | 1     =    | | | 1     *       +-+-+-+-+   * (-1)
   |        +-+-+-+-+            +-+-+               | | | | | 1
-  |        | | | | | 2          | | | 2             +-+-+-+-+  
-  |        +-+-+-+-+            +-+-+                	       
-  |		     	      				    	      
-  |       chainrulerhs          xder2                 derxy               
+  |        | | | | | 2          | | | 2             +-+-+-+-+
+  |        +-+-+-+-+            +-+-+
+  |
+  |       chainrulerhs          xder2                 derxy
   */
     xder2.Multiply(false,derxy,chainrulerhs);
     chainrulerhs.Scale(-1.0);
 
   /*
-  |        0...iel-1             0...iel-1             0...iel-1           
-  |        +-+-+-+-+             +-+-+-+-+             +-+-+-+-+           
-  |        | | | | | 0           | | | | | 0           | | | | | 0         
-  |        +-+-+-+-+             +-+-+-+-+             +-+-+-+-+           
+  |        0...iel-1             0...iel-1             0...iel-1
+  |        +-+-+-+-+             +-+-+-+-+             +-+-+-+-+
+  |        | | | | | 0           | | | | | 0           | | | | | 0
+  |        +-+-+-+-+             +-+-+-+-+             +-+-+-+-+
   |        | | | | | 1     =     | | | | | 1     +     | | | | | 1
-  |        +-+-+-+-+             +-+-+-+-+             +-+-+-+-+           
-  |        | | | | | 2           | | | | | 2           | | | | | 2         
-  |        +-+-+-+-+             +-+-+-+-+             +-+-+-+-+           
-  |		     	      	     	      	    	     	      
+  |        +-+-+-+-+             +-+-+-+-+             +-+-+-+-+
+  |        | | | | | 2           | | | | | 2           | | | | | 2
+  |        +-+-+-+-+             +-+-+-+-+             +-+-+-+-+
+  |
   |       chainrulerhs          chainrulerhs             deriv2
   */
     chainrulerhs+=deriv2;
 
 
   /*
-  | 
+  |
   |          0  1  2         i        i
   | 	   +--+--+--+       +-+      +-+
   | 	   |  |  |  | 0     | | 0    | | 0
@@ -1624,22 +1624,22 @@ void DRT::Elements::Fluid2::f2_gder2(const Epetra_SerialDenseMatrix& xyze,
   |                        derxy2[i]  |
   |                                   |
   |                              chainrulerhs[i]
-  | 
   |
   |
-  |                   0...iel-1     
-  |		     +-+-+-+-+     
-  |		     | | | | | 0   
-  |		     +-+-+-+-+     
-  |	  yields     | | | | | 1   
-  |		     +-+-+-+-+     
-  |                  | | | | | 2     
-  | 		     +-+-+-+-+     
-  |		         	       
-  |                    derxy2      
-  | 
+  |
+  |                   0...iel-1
+  |		     +-+-+-+-+
+  |		     | | | | | 0
+  |		     +-+-+-+-+
+  |	  yields     | | | | | 1
+  |		     +-+-+-+-+
+  |                  | | | | | 2
+  | 		     +-+-+-+-+
+  |
+  |                    derxy2
+  |
   */
-    
+
     Epetra_SerialDenseSolver solver;
     solver.SetMatrix (bm);
     solver.SetVectors(derxy2,chainrulerhs);
@@ -1787,17 +1787,17 @@ vector<double>            rhsint(2);   	    /* total right hand side terms at in
 
 /*========================== initialisation ============================*/
 // One-step-Theta: timefac = theta*dt
-// BDF2:           timefac = 2/3 * dt               
+// BDF2:           timefac = 2/3 * dt
 double timefac = params.get<double>("time constant for integration",-1.0);
 
 if (timefac == -1.0) dserror("No time constant for integration supplied");
 
-// stabilisation parameter            
+// stabilisation parameter
 double tau_M  = tau[0]*fac;
 double tau_Mp = tau[0]*fac;
 double tau_C  = tau[2]*fac;
 
-// integration factors and coefficients of single terms 
+// integration factors and coefficients of single terms
 double time2nue   = timefac * 2.0 * visc;
 double timetauM   = timefac * tau_M;
 double timetauMp  = timefac * tau_Mp;
@@ -1861,14 +1861,14 @@ for (int i=0; i<iel; i++) /* loop over nodes of element */
    viscs2(0,2*i+1) = - 0.5 * ( derxy2(2,i) );
    viscs2(1,2*i  ) = - 0.5 * ( derxy2(2,i) );
    viscs2(1,2*i+1) = - 0.5 * ( derxy2(0,i) + 2.0 * derxy2(1,i) );
-   
+
    /* pressure gradient term derxy, funct without or with integration   *
     * by parts, respectively                                            */
 
    /*--- divergence u term ---------------------------------------------*/
    div[2*i]   = derxy(0,i);
    div[2*i+1] = derxy(1,i);
-   
+
    /*--- ugradv-Term ---------------------------------------------------*/
    /*
      /                                                          \
