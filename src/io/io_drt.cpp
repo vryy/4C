@@ -21,6 +21,7 @@ Maintainer: Ulrich Kuettler
 #include <string>
 
 #include "io_drt.H"
+#include "../discret/linalg_utils.H"
 
 using namespace std;
 
@@ -54,6 +55,19 @@ extern BIN_OUT_MAIN bin_out_main;
 
 /*----------------------------------------------------------------------*/
 /*!
+  \brief The static variables used for input.
+
+  This structure needs to be initialized at startup. The whole input
+  mechanism is based on it.
+
+  \author u.kue
+  \date 08/04
+*/
+/*----------------------------------------------------------------------*/
+extern BIN_IN_MAIN bin_in_main;
+
+/*----------------------------------------------------------------------*/
+/*!
   \brief All fields names.
 
   \author u.kue
@@ -63,6 +77,197 @@ extern BIN_OUT_MAIN bin_out_main;
 extern CHAR* fieldnames[];
 
 #endif
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+static void FindPosition(RefCountPtr<DRT::Discretization> dis, int& field_pos, unsigned int& disnum)
+{
+#ifdef BINIO
+
+  for (field_pos=0;field_pos<genprob.numfld; ++field_pos)
+  {
+    vector<RefCountPtr<DRT::Discretization> >* discretizations =
+      static_cast<vector<RefCountPtr<DRT::Discretization> >*>
+      (field[field_pos].ccadis);
+    for (disnum=0;disnum<discretizations->size();++disnum)
+    {
+      if ((*discretizations)[disnum] == dis)
+      {
+        return;
+      }
+    }
+  }
+  // no field found
+  dserror("unregistered field object");
+#endif
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+DiscretizationReader::DiscretizationReader(RefCountPtr<DRT::Discretization> dis, int step)
+  : dis_(dis)
+{
+  restart_step_ = FindResultGroup(step);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+DiscretizationReader::~DiscretizationReader()
+{
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DiscretizationReader::ReadVector(RefCountPtr<Epetra_Vector> vec, string name)
+{
+#ifdef BINIO
+  MAP* result = map_read_map(restart_step_, const_cast<char*>(name.c_str()));
+  string id_path = map_read_string(result, "ids");
+  string value_path = map_read_string(result, "values");
+  RefCountPtr<Epetra_Vector> nv = reader_->ReadResultData(id_path, value_path, dis_->Comm());
+  LINALG::Export(*nv, *vec);
+#endif
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+int DiscretizationReader::ReadInt(string name)
+{
+  return map_read_int(restart_step_, const_cast<char*>(name.c_str()));
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double DiscretizationReader::ReadDouble(string name)
+{
+  return map_read_real(restart_step_, const_cast<char*>(name.c_str()));
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+MAP *DiscretizationReader::FindResultGroup(int step)
+{
+#ifdef BINIO
+
+  MAP *result_info = NULL;
+  SYMBOL *symbol;
+  int field_pos;
+  unsigned disnum;
+
+  FindPosition(dis_, field_pos, disnum);
+
+  FIELD *actfield = &(field[field_pos]);
+
+  /*
+   * Iterate all symbols under the name "result" and get the one that
+   * matches the given step. Note that this iteration starts from the
+   * last result group and goes backward. */
+
+  symbol = map_find_symbol(&(bin_in_main.table), "result");
+  while (symbol != NULL)
+  {
+    if (symbol_is_map(symbol))
+    {
+      MAP* map;
+      symbol_get_map(symbol, &map);
+      if (map_has_string(map, "field", fieldnames[actfield->fieldtyp]) &&
+          map_has_int(map, "field_pos", field_pos) &&
+          map_has_int(map, "discretization", disnum) &&
+          map_has_int(map, "step", step))
+      {
+        result_info = map;
+        break;
+      }
+    }
+    symbol = symbol->next;
+  }
+  if (symbol == NULL)
+  {
+    dserror("No restart entry for step %d in symbol table. Control file corrupt?",step);
+  }
+
+  /*--------------------------------------------------------------------*/
+  /* open file to read */
+
+  /* We have a symbol and its map that corresponds to the step we are
+   * interessted in. Now we need to continue our search to find the
+   * step that defines the output file used for our step. */
+
+  while (symbol != NULL)
+  {
+    if (symbol_is_map(symbol))
+    {
+      MAP* map;
+      symbol_get_map(symbol, &map);
+      if (map_has_string(map, "field", fieldnames[actfield->fieldtyp]) &&
+          map_has_int(map, "field_pos", field_pos) &&
+          map_has_int(map, "discretization", disnum))
+      {
+        /*
+         * If one of these files is here the other one has to be
+         * here, too. If it's not, it's a bug in the input. */
+        if (map_symbol_count(map, "result_file") > 0)
+        {
+          OpenDataFiles(map);
+          break;
+        }
+      }
+    }
+    symbol = symbol->next;
+  }
+
+  /* No restart files defined? */
+  if (symbol == NULL)
+  {
+    dserror("no restart file definitions found in control file");
+  }
+
+  return result_info;
+#else
+  return NULL;
+#endif
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DiscretizationReader::OpenDataFiles(MAP* result_step)
+{
+#ifdef BINIO
+  int numoutputproc;
+  if (!map_find_int(result_step,"num_output_proc",&numoutputproc))
+  {
+    numoutputproc = 1;
+  }
+
+  string name = bin_out_main.name;
+
+  string dirname;
+  string::size_type pos = name.find_last_of('/');
+  if (pos==string::npos)
+  {
+    dirname = "";
+  }
+  else
+  {
+    dirname = name.substr(0,pos+1);
+  }
+
+  string filename;
+  filename = map_read_string(result_step, "result_file");
+
+  reader_ = rcp(new HDFReader(dirname));
+  reader_->Open(filename,numoutputproc);
+#endif
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -83,7 +288,7 @@ DiscretizationWriter::DiscretizationWriter(RefCountPtr<DRT::Discretization> dis)
   resultfile_changed_(-1),
   meshfile_changed_(-1)
 {
-  FindPosition(field_pos_,disnum_);
+  FindPosition(dis_, field_pos_, disnum_);
 #ifndef BINIO
   cerr << "compiled without BINIO: no output will be written\n";
 #endif
@@ -194,30 +399,6 @@ void DiscretizationWriter::CreateResultFile(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DiscretizationWriter::FindPosition(int& field_pos, unsigned int& disnum)
-{
-#ifdef BINIO
-
-  for (field_pos=0;field_pos<genprob.numfld; ++field_pos)
-  {
-    vector<RefCountPtr<DRT::Discretization> >* discretizations =
-      static_cast<vector<RefCountPtr<DRT::Discretization> >*>
-      (field[field_pos].ccadis);
-    for (disnum=0;disnum<discretizations->size();++disnum)
-    {
-      if ((*discretizations)[disnum] == dis_) {
-        return;
-      }
-    }
-  }
-  // no field found
-  dserror("unregistered field object");
-#endif
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void DiscretizationWriter::NewStep(int step, double time)
 {
 #ifdef BINIO
@@ -230,7 +411,8 @@ void DiscretizationWriter::NewStep(int step, double time)
   ostringstream groupname;
   groupname << "step" << step_;
 
-  if (resultgroup_ != -1) {
+  if (resultgroup_ != -1)
+  {
     status = H5Gclose(resultgroup_);
     if (status < 0)
     {
@@ -265,7 +447,8 @@ void DiscretizationWriter::NewStep(int step, double time)
             time,
             step
       );
-    if (write_file) {
+    if (write_file)
+    {
       if (dis_->Comm().NumProc() > 1)
       {
         fprintf(bin_out_main.control_file,

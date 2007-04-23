@@ -18,6 +18,7 @@ Maintainer: Ulrich Kuettler
 
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
+#ifdef BINIO
 
 #include <H5LT.h>
 #include <string>
@@ -101,13 +102,9 @@ public:
 
     \param id_path      (in): hdf5 path to map array (from control file)
     \param value_path   (in): hdf5 path to value array (from control file)
-    \param new_proc_num (in): number of processors reading
-    \param my_id        (in): my rank
-    \param Comm         (in): the communicator itself
+    \param Comm         (in): the communicator
    */
-  RefCountPtr<Epetra_Vector>
-  ReadResultData(string id_path, string value_path, int new_proc_num, int my_id,
-                 RefCountPtr<Epetra_Comm> Comm);
+  RefCountPtr<Epetra_Vector> ReadResultData(string id_path, string value_path, const Epetra_Comm& Comm);
 
 private:
 
@@ -167,6 +164,7 @@ private:
 };
 
 
+#endif
 #endif
 #endif
 #endif // HDF_READER_H

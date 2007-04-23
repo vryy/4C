@@ -226,10 +226,25 @@ void PostProblem::setup_filter(const char* output_name)
 
   table = &control_table_;
 
+  INT pos;
+  CHAR* separator;
+
+  /* copy directory information */
+  separator = rindex(output_name, '/');
+  if (separator != NULL)
+  {
+    pos = separator-output_name+1;
+    input_dir_ = output_name;
+    input_dir_ = input_dir_.substr(0,pos);
+  }
+  else
+  {
+    pos = 0;
+    input_dir_ = "";
+  }
+
   while (map_symbol_count(table, "restarted_run") > 0)
   {
-    INT pos;
-    CHAR* separator;
     FILE* f;
     SYMBOL* first_result;
     SYMBOL* previous_results;
@@ -238,19 +253,7 @@ void PostProblem::setup_filter(const char* output_name)
     INT counter;
 
     /* copy directory information */
-    separator = rindex(output_name, '/');
-    if (separator != NULL)
-    {
-      pos = separator-output_name+1;
-      control_file_name = output_name;
-      control_file_name = control_file_name.substr(0,pos);
-    }
-    else
-    {
-      pos = 0;
-      control_file_name = "../";
-    }
-    input_dir_ = control_file_name;
+    control_file_name = input_dir_;
 
     /* copy file name */
     control_file_name += map_read_string(table, "restarted_run");
@@ -641,8 +644,7 @@ RefCountPtr<Epetra_Vector> PostResult::read_result(string name)
   MAP* result = map_read_map(group_, const_cast<char*>(name.c_str()));
   string id_path = map_read_string(result, "ids");
   string value_path = map_read_string(result, "values");
-  return file_.ReadResultData(id_path.c_str(), value_path.c_str(), comm->NumProc(),
-                                comm->MyPID(), comm);
+  return file_.ReadResultData(id_path, value_path, *comm);
 }
 
 #endif

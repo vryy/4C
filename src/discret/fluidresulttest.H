@@ -1,3 +1,18 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fluidresulttest.H
+
+\brief tesing of fluid calculation results
+
+<pre>
+Maintainer: Ulrich Kuettler
+            kuettler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/kuettler
+            089 - 289-15238
+</pre>
+*/
+/*----------------------------------------------------------------------*/
+
 #ifndef FLUIDRESULTTEST_H
 #define FLUIDRESULTTEST_H
 

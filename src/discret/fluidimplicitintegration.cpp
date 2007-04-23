@@ -32,27 +32,31 @@ Maintainer: Peter Gamnitzer
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-FluidImplicitTimeInt::FluidImplicitTimeInt(DRT::Discretization&  actdis,
+FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actdis,
                                            LINALG::Solver&       solver,
                                            ParameterList&        params,
                                            DiscretizationWriter& output) :
-// call constructor for "nontrivial" objects
-discret_(actdis),
-solver_ (solver),
-params_ (params),
-output_ (output)
+  // call constructor for "nontrivial" objects
+  discret_(actdis),
+  solver_ (solver),
+  params_ (params),
+  output_ (output),
+  time_(0.0),
+  step_(0),
+  restartstep_(0),
+  uprestart_(params.get("write restart every", -1))
 {
 
   int numdim = params_.get<int>("number of velocity degrees of freedom");
 
   // ensure that degrees of freedom in the discretization have been set
-  if (!discret_.Filled()) discret_.FillComplete();
+  if (!discret_->Filled()) discret_->FillComplete();
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
   //                 local <-> global dof numbering
   // -------------------------------------------------------------------
-  const Epetra_Map* dofrowmap = discret_.DofRowMap();
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization for a vector which only
@@ -69,12 +73,12 @@ output_ (output)
     vector<int> velmapdata;
     vector<int> premapdata;
 
-    velmapdata.reserve(discret_.NumMyRowNodes()*numdim);
-    premapdata.reserve(discret_.NumMyRowNodes());
+    velmapdata.reserve(discret_->NumMyRowNodes()*numdim);
+    premapdata.reserve(discret_->NumMyRowNodes());
 
-    for (int i=0; i<discret_.NumMyRowNodes(); ++i)
+    for (int i=0; i<discret_->NumMyRowNodes(); ++i)
     {
-      DRT::Node* node = discret_.lRowNode(i);
+      DRT::Node* node = discret_->lRowNode(i);
       for (int j=0; j<numdim; ++j)
       {
 	  // add this velocity dof to the velmapdata vector
@@ -86,19 +90,19 @@ output_ (output)
 
     // the rowmaps are generated according to the pattern provided by
     // the data vectors
-    velrowmap_ = rcp(new Epetra_Map(discret_.NumGlobalNodes()*numdim,
+    velrowmap_ = rcp(new Epetra_Map(discret_->NumGlobalNodes()*numdim,
                                     velmapdata.size(),&velmapdata[0],0,
-                                    discret_.Comm()));
-    prerowmap_ = rcp(new Epetra_Map(discret_.NumGlobalNodes(),
+                                    discret_->Comm()));
+    prerowmap_ = rcp(new Epetra_Map(discret_->NumGlobalNodes(),
                                     premapdata.size(),&premapdata[0],0,
-                                    discret_.Comm()));
+                                    discret_->Comm()));
 
   }
 
   // -------------------------------------------------------------------
   // get the processor ID from the communicator
   // -------------------------------------------------------------------
-  myrank_  = discret_.Comm().MyPID();
+  myrank_  = discret_->Comm().MyPID();
 
 
 
@@ -193,15 +197,11 @@ output_ (output)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FluidImplicitTimeInt::Integrate()
 {
-
-
   // time measurement --- start TimeMonitor tm0 and tm1
   tm0_ref_        = rcp(new TimeMonitor(*timedyntot_ ));
   tm1_ref_        = rcp(new TimeMonitor(*timedyninit_));
 
   // initialise some variables
-  int    step = 0;
-  double time = 0.0;
   double dta  = 0.0;
   double dtp  = 0.0;
 
@@ -222,7 +222,7 @@ void FluidImplicitTimeInt::Integrate()
   double starttheta          =params_.get<double>("start theta");
   FLUID_TIMEINTTYPE startalgo=timeint_one_step_theta;
 
-  dta  =params_.get<double>("time step size");
+  dtp = dta  =params_.get<double>("time step size");
 
   // time measurement --- this causes the TimeMonitor tm1 to stop here
   //                                                (call of destructor)
@@ -231,11 +231,11 @@ void FluidImplicitTimeInt::Integrate()
   // place for restart
 
   // start procedure
-  if (numstasteps>step)
+  if (numstasteps>step_)
   {
     this->TimeIntegrateFromTo(
-      step,
-      time,
+      step_,
+      time_,
       dta,
       dtp,
       numstasteps,
@@ -247,8 +247,8 @@ void FluidImplicitTimeInt::Integrate()
 
   // continue with the final time integration
   this->TimeIntegrateFromTo(
-    step,
-    time,
+    step_,
+    time_,
     dta,
     dtp,
     stepmax,
@@ -373,18 +373,18 @@ void FluidImplicitTimeInt::TimeIntegrateFromTo(
      eleparams.set("delta time",dta);
 
      // set vector values needed by elements
-     discret_.ClearState();
-     discret_.SetState("u and p at time n+1 (trial)",velnp_);
+     discret_->ClearState();
+     discret_->SetState("u and p at time n+1 (trial)",velnp_);
      // predicted dirichlet values
      // velnp then also holds prescribed new dirichlet values
      // dirichtoggle is 1 for dirichlet dofs, 0 elsewhere
-     discret_.EvaluateDirichlet(eleparams,*velnp_,*dirichtoggle_);
-     discret_.ClearState();
+     discret_->EvaluateDirichlet(eleparams,*velnp_,*dirichtoggle_);
+     discret_->ClearState();
 
      // evaluate Neumann conditions
      neumann_loads_->PutScalar(0.0);
-     discret_.EvaluateNeumann(eleparams,*neumann_loads_);
-     discret_.ClearState();
+     discret_->EvaluateNeumann(eleparams,*neumann_loads_);
+     discret_->ClearState();
     }
 
     // -------------------------------------------------------------------
@@ -550,7 +550,7 @@ void FluidImplicitTimeInt::NonlinearSolve(
   // start time measurement for nonlinear iteration
   tm6_ref_ = rcp(new TimeMonitor(*timenlnloop_));
 
-  const Epetra_Map* dofrowmap       = discret_.DofRowMap();
+  const Epetra_Map* dofrowmap       = discret_->DofRowMap();
 
   int               itnum         = 0;
   bool              stopnonliniter = false;
@@ -597,14 +597,14 @@ void FluidImplicitTimeInt::NonlinearSolve(
       // other parameters that might be needed by the elements
       eleparams.set("time constant for integration",theta*dta);
       // set vector values needed by elements
-      discret_.ClearState();
-      discret_.SetState("u and p at time n+1 (trial)",velnp_);
-      discret_.SetState("old solution data for rhs"  ,hist_ );
+      discret_->ClearState();
+      discret_->SetState("u and p at time n+1 (trial)",velnp_);
+      discret_->SetState("old solution data for rhs"  ,hist_ );
 
       // call loop over elements
       {
-        discret_.Evaluate(eleparams,sysmat_,null,residual_,null,null);
-        discret_.ClearState();
+        discret_->Evaluate(eleparams,sysmat_,null,residual_,null,null);
+        discret_->ClearState();
       }
 
       // finalize the system matrix
@@ -869,7 +869,16 @@ void FluidImplicitTimeInt::Output(
   output_.NewStep    (step,time);
   output_.WriteVector("vel_and_pres", velnp_);
 
+  // do restart if we have to
+  restartstep_ += 1;
+  if (restartstep_ == uprestart_)
+  {
+    restartstep_ = 0;
 
+    output_.WriteVector("accn", accn_);
+    output_.WriteVector("veln", veln_);
+    output_.WriteVector("velnm", velnm_);
+  }
 
 #if 0  // DEBUG IO --- the whole systemmatrix
       {
@@ -938,6 +947,21 @@ void FluidImplicitTimeInt::Output(
   return;
 } // FluidImplicitTimeInt::Output
 
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FluidImplicitTimeInt::ReadRestart(int step)
+{
+  DiscretizationReader reader(discret_,step);
+  time_ = reader.ReadDouble("time");
+  step_ = reader.ReadInt("step");
+
+  reader.ReadVector(velnp_,"vel_and_pres");
+  reader.ReadVector(veln_, "veln");
+  reader.ReadVector(velnm_,"velnm");
+  reader.ReadVector(accn_, "accn");
+}
 
 
 

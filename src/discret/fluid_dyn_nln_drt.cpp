@@ -185,11 +185,19 @@ void dyn_fluid_drt()
   // stop nonlinear iteration when both incr-norms are below this bound
   fluidtimeparams.set<double>          ("tolerance for nonlin iter" ,fdyn->ittol);
 
+  // restart
+  fluidtimeparams.set                  ("write restart every"       ,fdyn->uprestart);
+
   // the only parameter required here is the number of velocity degrees of freedom
-  FluidImplicitTimeInt fluidimplicit(*actdis,
-                                      solver,
-                                      fluidtimeparams,
-                                      output);
+  FluidImplicitTimeInt fluidimplicit(actdis,
+                                     solver,
+                                     fluidtimeparams,
+                                     output);
+
+  if (genprob.restart)
+  {
+    fluidimplicit.ReadRestart(genprob.restart);
+  }
 
   fluidimplicit.Integrate();
 

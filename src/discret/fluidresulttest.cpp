@@ -54,23 +54,32 @@ void FluidResultTest::TestNode(RESULTDESCR* res, int& nerr, int& test_count)
   if (res->dis != 0)
     dserror("fix me: only one fluid discretization supported for testing");
 
-  if (fluid_.discret_.HaveGlobalNode(res->node))
+  if (fluid_.discret_->HaveGlobalNode(res->node))
   {
-    DRT::Node* actnode = fluid_.discret_.gNode(res->node);
+    DRT::Node* actnode = fluid_.discret_->gNode(res->node);
+
+    // Strange! It seems we might actually have a global node around
+    // even if it does not belong to us. But here we are just
+    // interested in our nodes!
+    if (actnode->Owner() != fluid_.discret_->Comm().MyPID())
+      return;
+
     double result = 0.;
+
+    const Epetra_BlockMap& velnpmap = fluid_.velnp_->Map();
 
     string position = res->position;
     if (position=="velx")
     {
-      result = (*fluid_.velnp_)[actnode->Dof()[0]];
+      result = (*fluid_.velnp_)[velnpmap.LID(actnode->Dof()[0])];
     }
     else if (position=="vely")
     {
-      result = (*fluid_.velnp_)[actnode->Dof()[1]];
+      result = (*fluid_.velnp_)[velnpmap.LID(actnode->Dof()[1])];
     }
     else if (position=="velz")
     {
-      result = (*fluid_.velnp_)[actnode->Dof()[2]];
+      result = (*fluid_.velnp_)[velnpmap.LID(actnode->Dof()[2])];
     }
     else if (position=="pressure")
     {
@@ -78,13 +87,13 @@ void FluidResultTest::TestNode(RESULTDESCR* res, int& nerr, int& test_count)
       {
         if (actnode->Dof().NumDof()<3)
           dserror("too few dofs at node %d for pressure testing",actnode->Id());
-        result = (*fluid_.velnp_)[actnode->Dof()[2]];
+        result = (*fluid_.velnp_)[velnpmap.LID(actnode->Dof()[2])];
       }
       else
       {
         if (actnode->Dof().NumDof()<4)
           dserror("too few dofs at node %d for pressure testing",actnode->Id());
-        result = (*fluid_.velnp_)[actnode->Dof()[3]];
+        result = (*fluid_.velnp_)[velnpmap.LID(actnode->Dof()[3])];
       }
     }
     else

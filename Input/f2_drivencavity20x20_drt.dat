@@ -4,7 +4,7 @@
 //             http://www.uni-stuttgart.de/ibs/members/genkinger/
 //             0711 - 685-6127
 //
-// necessary defines: D_FLUID D_FLUID2 AZTEC_PACKAGE RESULTTEST DEBUG CCADISCRET TRILINOS_PACKAGE SOLVE_DIRICH SOLVE_DIRICH2 UMFPACK
+// necessary defines: D_FLUID D_FLUID2 AZTEC_PACKAGE RESULTTEST DEBUG CCADISCRET TRILINOS_PACKAGE SOLVE_DIRICH SOLVE_DIRICH2 UMFPACK BINIO
 //
 //
 // #define MAXNOD           (4)
@@ -29,6 +29,7 @@ PROBLEMTYP   Fluid
 NUMFIELD     1
 TIMETYP      Dynamic
 RESTART      0
+//!RESTART      5
 ----------------------------------------------------------------IO
 STRUCT_DISP_FILE   No
 STRUCT_STRESS_FILE No

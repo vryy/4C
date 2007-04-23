@@ -22,6 +22,7 @@ Maintainer: Ulrich Kuettler
 #include "../discret/drt_discret.H"
 #include "Teuchos_RefCountPtr.hpp"
 #include "io.h"
+#include "hdf_reader.H"
 
 #ifdef BINIO
 #include <H5LT.h>
@@ -29,9 +30,49 @@ Maintainer: Ulrich Kuettler
 
 extern "C" {
 #include "../headers/standardtypes.h"
+#include "../pss_full/pss_table.h"
 }
 
 #include "../discret/dstrc.H" /* needs standardtypes.h */
+
+
+/*!
+  \class DiscretizationReader
+
+  \brief base class of baci restart
+
+  \author m.kue
+  \date 04/07
+ */
+class DiscretizationReader
+{
+public:
+
+  explicit DiscretizationReader(RefCountPtr<DRT::Discretization> dis, int step);
+  ~DiscretizationReader();
+
+  /// read into given vector
+  void ReadVector(RefCountPtr<Epetra_Vector> vec, string name);
+
+  int ReadInt(string name);
+
+  double ReadDouble(string name);
+
+private:
+
+  MAP* FindResultGroup(int step);
+
+  void OpenDataFiles(MAP* result_step);
+
+  //! my discretization
+  RefCountPtr<DRT::Discretization> dis_;
+
+  MAP *restart_step_;
+
+#ifdef BINIO
+  RefCountPtr<HDFReader> reader_;
+#endif
+};
 
 
 /*!
@@ -94,9 +135,6 @@ private:
 
   //! open new result file
   void CreateResultFile(int step);
-
-  //! find position of my discretization in (old) ccarat arrays
-  void FindPosition(int& field_pos, unsigned int& dis);
 
   //! my discretization
   RefCountPtr<DRT::Discretization> dis_;

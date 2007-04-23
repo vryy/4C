@@ -342,6 +342,8 @@ OBJS_IO       = src/io/io_singlefile.o \
                 src/io/io_packing.o \
                 src/io/io_elements.o \
                 src/io/io_drt.o
+#
+OBJS_IO_LIB   = src/io/hdf_reader.o
 #                wall1
 OBJS_WALL1    = src/wall1/w1_bop.o \
                 src/wall1/w1_b_barop.o \
@@ -808,8 +810,7 @@ OBJS_POST_COMMON = src/post_common/post_am.o \
                 src/post_common/post_common.o
 
 OBJS_POST_DRT_COMMON = src/post_drt_common/post_drt_common.o \
-		src/post_drt_common/post_drt_evaluation.o \
-                src/io/hdf_reader.o
+		src/post_drt_common/post_drt_evaluation.o
 
 #                post_gid
 OBJS_POST_GID_COMMON = src/post_gid/post_gid.o \

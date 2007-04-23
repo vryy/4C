@@ -74,10 +74,10 @@ public:
   \brief Standard Constructor
 
   */
-  explicit FluidImplicitTimeInt(DRT::Discretization&  dis,
-                                LINALG::Solver&       solver,
-                                ParameterList&        params,
-                                DiscretizationWriter& output);
+  FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> dis,
+                       LINALG::Solver&       solver,
+                       ParameterList&        params,
+                       DiscretizationWriter& output);
 
 
   /*!
@@ -185,21 +185,25 @@ public:
 
   //@}
 
+  void ReadRestart(int step);
+
 protected:
 
   // don't want = operator and cctor
   FluidImplicitTimeInt operator = (const FluidImplicitTimeInt& old);
   FluidImplicitTimeInt (const FluidImplicitTimeInt& old);
 
-  DRT::Discretization&          discret_;
+  RefCountPtr<DRT::Discretization> discret_;
   LINALG::Solver&               solver_;
   ParameterList&                params_;
   DiscretizationWriter&         output_;
   int                           myrank_;
   int                           maxentriesperrow_;
 
-
-
+  double time_;
+  int step_;
+  int restartstep_;
+  int uprestart_;
 
   // system matrix --- stiffness and mass are assembled in one matrix!
   RefCountPtr<Epetra_CrsMatrix> sysmat_;
