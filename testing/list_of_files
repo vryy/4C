@@ -24,6 +24,7 @@ Input/dyn_shell_neum.dat                x        x        x        x        -   
 Input/f2_channel_neumann.dat            x        x        x        x        -        -
 Input/f2_dc2D_usfem_ld.dat              x        x        x        x        -        -
 Input/f2_drivencavity20x20.dat          x        x        x        x        -        -
+Input/f2_drivencavity20x20_drt.dat      x        x        -        -        -        -
 Input/f2_drivencavity20x20_is.dat       x        x        x        x        -        -
 Input/f2_drivencavity20x20_q.dat        x        x        x        x        -        -
 Input/f2_drivencavity20x20_sd.dat       x        x        x        x        -        -

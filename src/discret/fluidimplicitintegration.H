@@ -3,7 +3,7 @@
 \brief Control routine for fluid time integration. Associated with
        fluidimplicitintegration.cpp
 
-     
+
 <pre>
 Maintainer: Peter Gamnitzer
             gamnitzer@lnm.mw.tum.de
@@ -39,7 +39,7 @@ Maintainer: Peter Gamnitzer
 #include <ctime>
 #include <cstdlib>
 #include <iostream>
-#include <Teuchos_TimeMonitor.hpp> 
+#include <Teuchos_TimeMonitor.hpp>
 
 
 extern "C" /* stuff which is c and is accessed from c++ */
@@ -62,13 +62,17 @@ using namespace Teuchos;
 */
 class FluidImplicitTimeInt
 {
+#ifdef RESULTTEST
+  friend class FluidResultTest;
+#endif
+
 public:
 
   // @{ \name Constructors and destructors
 
   /*!
   \brief Standard Constructor
-  
+
   */
   explicit FluidImplicitTimeInt(DRT::Discretization&  dis,
                                 LINALG::Solver&       solver,
@@ -86,17 +90,17 @@ public:
   //@}
 
   // @{ \name calculation methods
-  
+
   /*!
   \brief Create default parameter list
-  
+
   */
   static void SetDefaults(ParameterList& params);
-  
+
   /*!
   \brief do explicit predictor step to start nonlinear iteration from
          a better initial value
-  
+
   */
   void ExplicitPredictor(
     double dta,
@@ -116,14 +120,14 @@ public:
 
   /*!
   \brief start time loop for startingalgo, normal problems and restarts
-  
+
   */
   void Integrate();
 
-  
+
   /*!
   \brief Do time integration (time loop)
-  
+
   */
   void TimeIntegrateFromTo(
     int&               step,
@@ -139,7 +143,7 @@ public:
   /*!
   \brief do nonlinear iteration, e.g. full Newton, Newton like or
          Fixpoint iteration
-  
+
   */
   void NonlinearSolve(
     double dta,
@@ -148,7 +152,7 @@ public:
 
   /*!
   \brief compute convergence check after a nonlinear iteration step
-  
+
   */
   void NonlinearConvCheck(
     bool&  stopnonliniter,
@@ -172,7 +176,7 @@ public:
 
   /*!
   \brief update confiuration and output to file/screen
-  
+
   */
   void Output(
     int    step,
@@ -202,7 +206,7 @@ protected:
 
   // toggle vector indicating which dofs have Dirichlet BCs
   RefCountPtr<Epetra_Vector>    dirichtoggle_;
-  
+
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
   RefCountPtr<Epetra_Vector>    zeros_;
 
@@ -227,15 +231,15 @@ protected:
   //                or veln, accn (One-Step-Theta)
   RefCountPtr<Epetra_Vector>    hist_;
 
-  
-  // Vectors used for convergence check 
+
+  // Vectors used for convergence check
   // ----------------------------------
   RefCountPtr<Epetra_Map>       velrowmap_;
   RefCountPtr<Epetra_Map>       prerowmap_;
 
   RefCountPtr<Epetra_Vector>    onlyvel;
   RefCountPtr<Epetra_Vector>    onlypre;
-  
+
 
   // time measurement
   // ----------------
@@ -261,6 +265,6 @@ protected:
 
 
 #endif  // #ifndef FLUIDIMPLICITINTEGRATION_H
-#endif  // D_FLUID 
+#endif  // D_FLUID
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

@@ -116,6 +116,7 @@ OBJS_DISCRET_LIB  = src/discret/drt_discret.o \
                 src/discret/distribute_grids.o
 OBJS_DISCRET  = \
                 src/discret/drt_discret_evaluate.o \
+                src/discret/drt_resulttest.o \
                 src/discret/global_inp_control2.o \
                 src/discret/global_inp_control3.o \
                 src/discret/input_conditions.o \
@@ -135,9 +136,10 @@ OBJS_DISCRET  = \
                 src/discret/strugenalpha.o \
                 src/discret/linalg_solver.o \
                 src/discret/linalg_solver_spooles.o \
-                src/discret/stru_genalpha_drt.o\
-		src/discret/fluid_dyn_nln_drt.o\
-		src/discret/fluidimplicitintegration.o
+                src/discret/stru_genalpha_drt.o \
+		src/discret/fluid_dyn_nln_drt.o \
+		src/discret/fluidimplicitintegration.o \
+		src/discret/fluidresulttest.o
 #                pss_full
 OBJS_PSS      = src/pss_full/pss_am.o \
                 src/pss_full/pss_ds.o \

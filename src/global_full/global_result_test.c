@@ -37,6 +37,7 @@ undetected.
 
 */
 
+#ifndef CCADISCRET
 #ifdef RESULTTEST
 #include "../headers/standardtypes.h"
 #include "../axishell/axishell.h"
@@ -591,4 +592,5 @@ end:
 #endif
   return;
 } /* end of global_result_test */
+#endif
 #endif

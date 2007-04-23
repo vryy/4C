@@ -8,7 +8,7 @@
                                      start step)
 
 
-     
+
 <pre>
 Maintainer: Peter Gamnitzer
             gamnitzer@lnm.mw.tum.de
@@ -37,14 +37,14 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(DRT::Discretization&  actdis,
                                            ParameterList&        params,
                                            DiscretizationWriter& output) :
 // call constructor for "nontrivial" objects
-discret_(actdis), 
+discret_(actdis),
 solver_ (solver),
 params_ (params),
 output_ (output)
 {
 
   int numdim = params_.get<int>("number of velocity degrees of freedom");
-  
+
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_.Filled()) discret_.FillComplete();
   // -------------------------------------------------------------------
@@ -101,7 +101,7 @@ output_ (output)
   myrank_  = discret_.Comm().MyPID();
 
 
-  
+
   // -------------------------------------------------------------------
   // create empty system matrix --- stiffness and mass are assembled in
   // one system matrix!
@@ -113,16 +113,16 @@ output_ (output)
   // We do not need the exact number here, just for performance reasons
   // a 'good' estimate
   maxentriesperrow_ = 108;
-  
+
   sysmat_ = null;
 
   // -------------------------------------------------------------------
-  // create empty vectors 
+  // create empty vectors
   // -------------------------------------------------------------------
 
   // Vectors passed to the element
   // -----------------------------
-  
+
   // accelerations at time n and n-1
   accn_         = LINALG::CreateVector(*dofrowmap,true);
   accnm_        = LINALG::CreateVector(*dofrowmap,true);
@@ -133,12 +133,12 @@ output_ (output)
   velnm_        = LINALG::CreateVector(*dofrowmap,true);
 
   // histvector --- a linear combination of velnm, veln (BDF)
-  //                or veln, accn (One-Step-Theta)             
+  //                or veln, accn (One-Step-Theta)
   hist_         = LINALG::CreateVector(*dofrowmap,true);
-  
+
   // Vectors associated to boundary conditions
   // -----------------------------------------
-  
+
   // toggle vector indicating which dofs have Dirichlet BCs
   dirichtoggle_ = LINALG::CreateVector(*dofrowmap,true);
 
@@ -149,8 +149,8 @@ output_ (output)
   // the vector containing body and surface forces
   neumann_loads_= LINALG::CreateVector(*dofrowmap,true);
 
-  
-  // Vectors used for solution process 
+
+  // Vectors used for solution process
   // ---------------------------------
 
   // The residual vector --- more or less the rhs for the incremental
@@ -167,13 +167,13 @@ output_ (output)
   timedyntot_     = TimeMonitor::getNewTimer("dynamic routine total"     );
   timedyninit_    = TimeMonitor::getNewTimer(" + initial phase"          );
   timedynloop_    = TimeMonitor::getNewTimer(" + time loop"              );
-  timenlnloop_    = TimeMonitor::getNewTimer("   + nonlinear iteration"  );  
+  timenlnloop_    = TimeMonitor::getNewTimer("   + nonlinear iteration"  );
   timeeleloop_    = TimeMonitor::getNewTimer("      + element calls"     );
   timeapplydirich_= TimeMonitor::getNewTimer("      + apply dirich cond.");
   timesolver_     = TimeMonitor::getNewTimer("      + solver calls"      );
 
   return;
-  
+
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
 
 
@@ -198,7 +198,7 @@ void FluidImplicitTimeInt::Integrate()
   // time measurement --- start TimeMonitor tm0 and tm1
   tm0_ref_        = rcp(new TimeMonitor(*timedyntot_ ));
   tm1_ref_        = rcp(new TimeMonitor(*timedyninit_));
-  
+
   // initialise some variables
   int    step = 0;
   double time = 0.0;
@@ -206,9 +206,9 @@ void FluidImplicitTimeInt::Integrate()
   double dtp  = 0.0;
 
   // ----------------------------------------------------- stop criteria
-  // bound for the number of startsteps 
+  // bound for the number of startsteps
   int    numstasteps         =params_.get<int>   ("number of start steps");
-  // bound for the number of timesteps 
+  // bound for the number of timesteps
   int    stepmax             =params_.get<int>   ("max number timesteps");
   // max. sim. time
   double maxtime             =params_.get<double>("total time");
@@ -226,7 +226,7 @@ void FluidImplicitTimeInt::Integrate()
 
   // time measurement --- this causes the TimeMonitor tm1 to stop here
   //                                                (call of destructor)
-  tm1_ref_ = null; 
+  tm1_ref_ = null;
 
   // place for restart
 
@@ -244,7 +244,7 @@ void FluidImplicitTimeInt::Integrate()
       starttheta
       );
   }
-  
+
   // continue with the final time integration
   this->TimeIntegrateFromTo(
     step,
@@ -258,11 +258,11 @@ void FluidImplicitTimeInt::Integrate()
     );
 
   // print the results of time measurements
-  
+
   tm0_ref_ = null; // end total time measurement
   cout<<endl<<endl;
   TimeMonitor::summarize();
-  
+
   return;
 } // FluidImplicitTimeInt::Integrate
 
@@ -292,7 +292,7 @@ void FluidImplicitTimeInt::TimeIntegrateFromTo(
   tm2_ref_ = rcp(new TimeMonitor(*timedynloop_));
 
   bool stop_timeloop=false;
-  
+
   while (stop_timeloop==false)
   {
     // -------------------------------------------------------------------
@@ -320,14 +320,14 @@ void FluidImplicitTimeInt::TimeIntegrateFromTo(
           default:
             dserror("parameter out of range: IOP\n");
       } /* end of switch(timealgo) */
-      
+
     }
-    
+
 
     // -------------------------------------------------------------------
     // set part of the rhs vector belonging to the old timestep
     //
-    //         
+    //
     //         One-step-Theta:
     //
     //                 hist_ = veln_ + dta*(1-Theta)*accn_
@@ -348,15 +348,15 @@ void FluidImplicitTimeInt::TimeIntegrateFromTo(
     // velnp_ =veln_ + dta | | 1 + --- | accn_ - ----- ------------ |
     //                     | \     dtp /          dtp     dtp       |
     //                     +-                                      -+
-    //                     
+    //
     // -------------------------------------------------------------------
     if (step>1)
     {
       this->ExplicitPredictor(dta,dtp);
     }
-    
+
     // -------------------------------------------------------------------
-    //         evaluate dirichlet and neumann boundary conditions 
+    //         evaluate dirichlet and neumann boundary conditions
     // -------------------------------------------------------------------
     {
      ParameterList eleparams;
@@ -394,7 +394,7 @@ void FluidImplicitTimeInt::TimeIntegrateFromTo(
 
 
     // -------------------------------------------------------------------
-    //                         update solution 
+    //                         update solution
     //        current solution becomes old solution of next timestep
     //
     // One-step-Theta: (step>1)
@@ -418,20 +418,20 @@ void FluidImplicitTimeInt::TimeIntegrateFromTo(
     //
     //  velnm_ =veln_
     //  veln_  =velnp_
-    //             
+    //
     // BDF2 and  One-step-Theta: (step==1)
-    //  
+    //
     // The given formulas are only valid from the second timestep. In the
     // first step, the acceleration is calculated simply by
     //
     //  accn_  = (velnp_-veln_) / (dt)
-    //  
+    //
     // -------------------------------------------------------------------
     this->TimeUpdate(timealgo,step,dta,dtp,theta);
 
     // -------------------------------------------------------------------
-    //                         output of solution 
-    // ------------------------------------------------------------------- 
+    //                         output of solution
+    // -------------------------------------------------------------------
     this->Output(step,time);
 
 
@@ -440,22 +440,22 @@ void FluidImplicitTimeInt::TimeIntegrateFromTo(
     // -------------------------------------------------------------------
     dtp = dta;
 
-    
+
     // -------------------------------------------------------------------
     //                    stop criterium for timeloop
-    // ------------------------------------------------------------------- 
+    // -------------------------------------------------------------------
 
     if(step==endstep||time>=endtime)
     {
 	stop_timeloop=true;
     }
-    
+
   }
 
-    
+
   // end time measurement for timeloop
   tm2_ref_ = null;
-  
+
   return;
 } // FluidImplicitTimeInt::TimeIntegrateFromTo
 
@@ -486,22 +486,22 @@ void FluidImplicitTimeInt::SetOldPartOfRighthandside(
   BDF2: for constant time step:
 
                  hist_ = 4/3 veln_ - 1/3 velnm_
-                  
+
   */
   switch (time_algo)
   {
       case timeint_one_step_theta: /* One step Theta time integration */
-          
+
         hist_->PutScalar(0.0);
         hist_->Update(               1.0,*veln_,1.0);
         hist_->Update(dta * (1.0 -theta),*accn_,1.0);
         break;
-          
+
       case timeint_bdf2:	/* 2nd order backward differencing BDF2	*/
         hist_->Update(4./3.,*veln_,-1./3.,*velnm_,0.0);
         break;
       default:
-        dserror("Time integration scheme unknown!");	    
+        dserror("Time integration scheme unknown!");
   }
   return;
 }
@@ -551,20 +551,20 @@ void FluidImplicitTimeInt::NonlinearSolve(
   tm6_ref_ = rcp(new TimeMonitor(*timenlnloop_));
 
   const Epetra_Map* dofrowmap       = discret_.DofRowMap();
-  
+
   int               itnum         = 0;
   bool              stopnonliniter = false;
 
   double            dtsolve;
   double            dtele  ;
   double            tcpu   ;
-  
+
   if(myrank_ == 0)
   {
     printf("+------------+-------------------+--------------+--------------+ \n");
     printf("|- step/max -|- tol      [norm] -|- vel-error --|- pre-error --| \n");
   }
-  
+
   while (stopnonliniter==false)
   {
     itnum++;
@@ -577,12 +577,12 @@ void FluidImplicitTimeInt::NonlinearSolve(
       tm3_ref_ = rcp(new TimeMonitor(*timeeleloop_));
       // get cpu time
       tcpu=ds_cputime();
-      
+
       // zero out the stiffness matrix
       sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
       // zero out residual
       residual_->PutScalar(0.0);
-	  
+
       // create the parameters for the discretization
       ParameterList eleparams;
 
@@ -624,27 +624,27 @@ void FluidImplicitTimeInt::NonlinearSolve(
     {
       // start time measurement for application of dirichlet conditions
       tm4_ref_ = rcp(new TimeMonitor(*timeapplydirich_));
-   
+
       LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,
 				     zeros_,dirichtoggle_);
 
       // end time measurement for application of dirichlet conditions
       tm4_ref_=null;
     }
-    
+
     //-------solve for residual displacements to correct incremental displacements
     {
       // start time measurement for element call
       tm5_ref_ = rcp(new TimeMonitor(*timesolver_));
       // get cpu time
       tcpu=ds_cputime();
-      
+
       bool initsolver = false;
       if (itnum==1) // init solver in first iteration only
       {
-        initsolver = true; 
+        initsolver = true;
       }
-      
+
       solver_.Solve(sysmat_,incvel_,residual_,true,initsolver);
 
       // end time measurement for application of dirichlet conditions
@@ -657,10 +657,10 @@ void FluidImplicitTimeInt::NonlinearSolve(
     //------------------------------------------------- check convergence
     this->NonlinearConvCheck(stopnonliniter,itnum,dtele,dtsolve);
   }
-  
+
   // end time measurement for nonlinear iteration
   tm6_ref_ = null;
-  
+
   return;
 } // FluidImplicitTimeInt::NonlinearSolve
 
@@ -685,14 +685,14 @@ void FluidImplicitTimeInt::NonlinearConvCheck(
   RefCountPtr<Epetra_Vector> onlypre_ = LINALG::CreateVector(*prerowmap_,true);
 
   // ---------------------------------------------- nonlinear iteration
-  // maximum number of nonlinear iteration steps 
+  // maximum number of nonlinear iteration steps
   int     itemax    =params_.get<int>   ("max nonlin iter steps");
 
   // ------------------------------- stop nonlinear iteration when both
   //                                 increment-norms are below this bound
   double  ittol     =params_.get<double>("tolerance for nonlin iter");
 
-     
+
   // extract velocity and pressure increments from increment vector
   LINALG::Export(*incvel_,*onlyvel_);
   LINALG::Export(*incvel_,*onlypre_);
@@ -710,7 +710,7 @@ void FluidImplicitTimeInt::NonlinearConvCheck(
   double prenorm_L2;
   onlyvel_->Norm2(&velnorm_L2);
   onlypre_->Norm2(&prenorm_L2);
-       
+
   if (velnorm_L2<EPS5)
   {
     velnorm_L2 = 1.0;
@@ -730,14 +730,14 @@ void FluidImplicitTimeInt::NonlinearConvCheck(
 
   // this is the convergence check
   if(incvelnorm_L2/velnorm_L2 <= ittol && incprenorm_L2/prenorm_L2 <= ittol)
-  {	  
+  {
     stopnonliniter=true;
     if(myrank_ == 0)
     {
       printf("+------------+-------------------+--------------+--------------+ \n");
     }
   }
-       
+
   // warn if itemax is reached without convergence, but proceed to
   // next timestep...
   if (itnum == itemax
@@ -754,7 +754,7 @@ void FluidImplicitTimeInt::NonlinearConvCheck(
       printf("+---------------------------------------------------------------+\n");
     }
   }
-       
+
 }// FluidImplicitTimeInt::NonlinearConvCheck
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -775,35 +775,35 @@ void FluidImplicitTimeInt::TimeUpdate(
   double            theta
   )
 {
-  
+
   // update acceleration
   if (step == 1)
   {
     accnm_->PutScalar(0.0);
-    
+
     // do just a linear interpolation within the first timestep
     accn_->Update( 1.0/dta,*velnp_,1.0);
-    
+
     accn_->Update(-1.0/dta,*veln_ ,1.0);
-    
+
     // ???
     accnm_->Update(1.0,*accn_,0.0);
-    
+
   }
   else
   {
     // prev. acceleration becomes (n-1)-accel. of next time step
     accnm_->Update(1.0,*accn_,0.0);
-    
+
     /*
-      
+
     One-step-Theta:
-    
+
     acc(n+1) = (vel(n+1)-vel(n)) / (Theta * dt(n)) - (1/Theta -1) * acc(n)
-    
-    
+
+
     BDF2:
-    
+
                    2*dt(n)+dt(n-1)		    dt(n)+dt(n-1)
       acc(n+1) = --------------------- vel(n+1) - --------------- vel(n)
                  dt(n)*[dt(n)+dt(n-1)]	            dt(n)*dt(n-1)
@@ -824,7 +824,7 @@ void FluidImplicitTimeInt::TimeUpdate(
             accn_->Update( fact1,*velnp_,0.0);
             accn_->Update(-fact1,*veln_ ,1.0);
             accn_->Update( fact2,*accnm_ ,1.0);
-		    
+
             break;
           }
           case timeint_bdf2:	/* 2nd order backward differencing BDF2	*/
@@ -832,14 +832,14 @@ void FluidImplicitTimeInt::TimeUpdate(
             if (dta*dtp < EPS15)
               dserror("Zero time step size!!!!!");
             double sum = dta + dtp;
-		 
+
             accn_->Update((2.0*dta+dtp)/(dta*sum),*velnp_,
                                  - sum /(dta*dtp),*veln_ ,0.0);
             accn_->Update(dta/(dtp*sum),*velnm_,1.0);
           }
           break;
           default:
-            dserror("Time integration scheme unknown for mass rhs!");	    
+            dserror("Time integration scheme unknown for mass rhs!");
       }
     }
 
@@ -878,7 +878,7 @@ void FluidImplicitTimeInt::Output(
 	  for(rr=0;rr<residual_->MyLength();rr++)
 	  {
 	      int NumEntries;
-	      
+
 	      vector<double> Values(maxentriesperrow);
 	      vector<int> Indices(maxentriesperrow);
 
@@ -894,7 +894,7 @@ void FluidImplicitTimeInt::Output(
 	      }
 	  }
       }
-#endif            
+#endif
 
 
 #if 0  // DEBUG IO  --- rhs of linear system
@@ -904,10 +904,10 @@ void FluidImplicitTimeInt::Output(
 	  for(rr=0;rr<residual_->MyLength();rr++)
 	  {
 	      printf("global %22.15e\n",data[rr]);
-	  }    
+	  }
       }
 
-#endif            
+#endif
 
 
 #if 0  // DEBUG IO --- incremental solution
@@ -917,10 +917,10 @@ void FluidImplicitTimeInt::Output(
 	  for(rr=0;rr<incvel_->MyLength();rr++)
 	  {
 	      printf("sol[%4d] %26.19e\n",rr,data[rr]);
-	  }    
+	  }
       }
 
-#endif      
+#endif
 
 
 #if 0  // DEBUG IO --- the solution vector after convergence
@@ -933,8 +933,8 @@ void FluidImplicitTimeInt::Output(
         }
       }
 #endif
-      
-  
+
+
   return;
 } // FluidImplicitTimeInt::Output
 
@@ -973,11 +973,11 @@ void FluidImplicitTimeInt::SetDefaults(ParameterList& params)
   params.set<double>           ("start theta"              ,0.6667);
 
   // ---------------------------------------------- nonlinear iteration
-  // maximum number of nonlinear iteration steps 
+  // maximum number of nonlinear iteration steps
   params.set<int>             ("max nonlin iter steps"     ,5);
   // stop nonlinear iteration when both incr-norms are below this bound
   params.set<double>          ("tolerance for nonlin iter" ,1E-6);
-  
+
   return;
 }
 
@@ -989,6 +989,8 @@ FluidImplicitTimeInt::~FluidImplicitTimeInt()
 {
   return;
 }// FluidImplicitTimeInt::~FluidImplicitTimeInt::
+
+
 #endif /* D_FLUID          */
 #endif /* TRILINOS_PACKAGE */
 #endif /* CCADISCRET       */

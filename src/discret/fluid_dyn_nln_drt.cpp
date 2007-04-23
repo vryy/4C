@@ -7,7 +7,7 @@
      o Two step BDF2 Gear's methode with one-step-theta start step
 
 
-     
+
 <pre>
 Maintainer: Peter Gamnitzer
             gamnitzer@lnm.mw.tum.de
@@ -23,7 +23,7 @@ Maintainer: Peter Gamnitzer
 #include <ctime>
 #include <cstdlib>
 #include <iostream>
-#include <Teuchos_TimeMonitor.hpp> 
+#include <Teuchos_TimeMonitor.hpp>
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -31,6 +31,8 @@ Maintainer: Peter Gamnitzer
 
 #include "fluid_dyn_nln_drt.H"
 #include "fluidimplicitintegration.H"
+#include "drt_resulttest.H"
+#include "fluidresulttest.H"
 
 
 /*----------------------------------------------------------------------*
@@ -96,7 +98,7 @@ extern struct _CURVE *curve;
 
 /*----------------------------------------------------------------------*
  * Time integration loop for fluid.
- * 
+ *
  *        o One-step-theta
  *        o BDF2
  *
@@ -106,7 +108,7 @@ void dyn_fluid_drt()
 
   DSTraceHelper dst("dyn_fluid_drt");
 
- 
+
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
@@ -119,7 +121,7 @@ void dyn_fluid_drt()
   // set degrees of freedom in the discretization
   if (!actdis->Filled()) actdis->FillComplete();
 
- 
+
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
@@ -130,21 +132,21 @@ void dyn_fluid_drt()
   // set some pointers and variables
   // -------------------------------------------------------------------
   SOLVAR        *actsolv  = &solv[0];
-  
+
   FLUID_DYNAMIC *fdyn     = alldyn[0].fdyn;
   fdyn->step              =   0;
   fdyn->acttime           = 0.0;
-    
-  
+
+
   // -------------------------------------------------------------------
   // init all applied time curves
   // -------------------------------------------------------------------
   for (int actcurve=0; actcurve<numcurve; actcurve++)
   {
-   /* the last three parameters are obsolete!!! */  
+   /* the last three parameters are obsolete!!! */
    dyn_init_curve(actcurve,fdyn->step,fdyn->dt,fdyn->maxtime);
   }
-  
+
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
@@ -178,11 +180,11 @@ void dyn_fluid_drt()
 
 
   // ---------------------------------------------- nonlinear iteration
-  // maximum number of nonlinear iteration steps 
+  // maximum number of nonlinear iteration steps
   fluidtimeparams.set<int>             ("max nonlin iter steps"     ,fdyn->itemax);
   // stop nonlinear iteration when both incr-norms are below this bound
   fluidtimeparams.set<double>          ("tolerance for nonlin iter" ,fdyn->ittol);
-  
+
   // the only parameter required here is the number of velocity degrees of freedom
   FluidImplicitTimeInt fluidimplicit(*actdis,
                                       solver,
@@ -191,9 +193,15 @@ void dyn_fluid_drt()
 
   fluidimplicit.Integrate();
 
+#ifdef RESULTTEST
+  DRT::ResultTestManager testmanager(actdis->Comm());
+  testmanager.AddFieldTest(rcp(new FluidResultTest(fluidimplicit)));
+  testmanager.TestAll();
+#endif
+
   //---------- this is the end. Beautiful friend. My only friend, The end.
   // thanks to RefCountPtr<> we do not need to delete anything here!
-  
+
   return;
 
 } // end of dyn_fluid_drt()
