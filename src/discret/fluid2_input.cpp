@@ -153,13 +153,15 @@ bool DRT::Elements::Fluid2::ReadElement()
           ngp_[1]=4;
         else if (strncmp(buffer,"gaussrad",8)==0)
           ngp_[1]=5;
-        dserror("Reading of FLUID2 element failed: GP_ALT\n");
+        else
+          dserror("Reading of FLUID2 element failed: GP_ALT\n");
         break;
       case 7:
         if (strncmp(buffer,"standard",8)==0)
           ngp_[1]=6;
         else if (strncmp(buffer,"gaussrad",8)==0)
           ngp_[1]=7;
+        else
         dserror("Reading of FLUID2 element failed: GP_ALT\n");
       case 9:
         if (strncmp(buffer,"standard",8)==0)
