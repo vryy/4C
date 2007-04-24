@@ -81,6 +81,7 @@ public:
     element_shell8,
     element_shell8line,
     element_wall1,
+    element_wall1line,
     element_fluid2,
     element_fluid2line,
     element_fluid3,

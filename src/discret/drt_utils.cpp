@@ -34,6 +34,7 @@ extern "C"
 #include "shell8.H"
 #include "fluid2.H"
 #include "fluid3.H"
+#include "wall1.H"
 #include "drt_dserror.H"
 
 
@@ -165,7 +166,7 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
   TypeofElement type = none;
   if (eletype=="none"); // dummy
   else if (eletype=="SHELL8") type = shell8;
-  else if (eletype=="WALL1")  type = wall1;
+  else if (eletype=="WALL")  type = wall1;
   else if (eletype=="FLUID2") type = fluid2;
   else if (eletype=="FLUID3") type = fluid3;
   // continue to add elements here....
@@ -194,6 +195,14 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
     case fluid3:
     {
       RefCountPtr<DRT::Element> ele = rcp(new DRT::Elements::Fluid3(id,owner));
+      return ele;
+    }
+    break;
+#endif
+#ifdef D_WALL1
+    case wall1:
+    {
+      RefCountPtr<DRT::Element> ele = rcp(new DRT::Elements::Wall1(id,owner));
       return ele;
     }
     break;

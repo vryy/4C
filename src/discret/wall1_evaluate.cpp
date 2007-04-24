@@ -153,6 +153,9 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
   W1_DATA w1data;
   w1_integration_points(w1data);
   
+  //thickness_ = 5; //data_.Get<vector<double> >("thick");
+  //if (!thickness_) dserror("Cannot find nodal thicknesses");
+  
 
   // ------------------------------------ check calculation of mass matrix
   int imass=0;
@@ -184,13 +187,20 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
   {
     /*================================== gaussian point and weight at it */
     const double e1   = w1data.xgrr[lr];
+    double facr = w1data.wgtr[lr];
       for (int ls=0; ls<nis; ++ls)
     {
       const double e2   = w1data.xgss[ls];
+      double facs = w1data.wgts[ls];
       /*-------------------- shape functions at gp e1,e2 on mid surface */
       w1_shapefunctions(funct,deriv,e1,e2,iel,1);
       /*--------------------------------------- compute jacobian Matrix */ 
       w1_jacobianmatrix(xrefe,deriv,xjm,&det,iel);
+      /*------------------------------------ integration factor  -------*/
+     double fac=0; 
+     fac = facr * facs * det * thickness_;
+
+     cout << fac; exit(0);
       
        ngauss++;
     } // for (int ls=0; ls<nis; ++ls)
@@ -540,8 +550,13 @@ void DRT::Elements::Wall1::w1_jacobianmatrix(double xrefe[2][MAXNOD_WALL1],
         xjm(1,0) += deriv(1,k) * xrefe[0][k];
         xjm(1,1) += deriv(1,k) * xrefe[1][k];
    }
- cout << xjm; exit(0);
 
+/*------------------------------------------ determinant of jacobian ---*/
+     *det = xjm[0][0]* xjm[1][1] - xjm[1][0]* xjm[0][1];
+
+      if (*det<0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
+/*----------------------------------------------------------------------*/
+ 
    return;
 } // DRT::Elements::Wall1::w1_jacobianmatrix
 
