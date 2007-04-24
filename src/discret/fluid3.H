@@ -657,6 +657,24 @@ private:
   //! The local surface number of this surface w.r.t to the parent_ element
   int                    lsurface_;
 
+  // shape functions and their derivatives for the surface elements
+  void f3_shapefunction_for_surface(
+                         vector<double>          & funct,
+                         Epetra_SerialDenseMatrix& deriv,
+                         const int                 iel  ,
+                         const double              r    ,
+                         const double              s
+    );
+
+  //  compute kovariant metric tensor G for fluid surface element
+  //                                                  gammi 04/07 
+
+  void  f3_metric_tensor_for_surface(
+    const Epetra_SerialDenseMatrix  xyze,
+    const Epetra_SerialDenseMatrix  deriv,
+    Epetra_SerialDenseMatrix&       metrictensor,
+    double                         *drs);
+  
 }; // class Fluid3Surface
 
 
