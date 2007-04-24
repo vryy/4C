@@ -867,7 +867,7 @@ void FluidImplicitTimeInt::Output(
 
   //-------------------------------------------- output of solution
   output_.NewStep    (step,time);
-  output_.WriteVector("vel_and_pres", velnp_);
+  output_.WriteVector("velnp", velnp_);
 
   // do restart if we have to
   restartstep_ += 1;
@@ -957,7 +957,7 @@ void FluidImplicitTimeInt::ReadRestart(int step)
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
 
-  reader.ReadVector(velnp_,"vel_and_pres");
+  reader.ReadVector(velnp_,"velnp");
   reader.ReadVector(veln_, "veln");
   reader.ReadVector(velnm_,"velnm");
   reader.ReadVector(accn_, "accn");

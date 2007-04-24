@@ -596,8 +596,8 @@ protected:
 /*----------------------------------------------------------------------*/
 void FluidEnsightWriter::WriteResults(PostField* field)
 {
-  EnsightWriter::WriteResults("vel_and_pres","velocity",field->problem()->num_dim());
-  EnsightWriter::WriteResults("vel_and_pres","pressure",1,field->problem()->num_dim());
+  EnsightWriter::WriteResults("velnp","velocity",field->problem()->num_dim());
+  EnsightWriter::WriteResults("velnp","pressure",1,field->problem()->num_dim());
 }
 
 
