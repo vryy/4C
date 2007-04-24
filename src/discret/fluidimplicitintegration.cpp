@@ -96,15 +96,12 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
     prerowmap_ = rcp(new Epetra_Map(discret_->NumGlobalNodes(),
                                     premapdata.size(),&premapdata[0],0,
                                     discret_->Comm()));
-
   }
 
   // -------------------------------------------------------------------
   // get the processor ID from the communicator
   // -------------------------------------------------------------------
   myrank_  = discret_->Comm().MyPID();
-
-
 
   // -------------------------------------------------------------------
   // create empty system matrix --- stiffness and mass are assembled in
@@ -149,12 +146,10 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
   zeros_        = LINALG::CreateVector(*dofrowmap,true);
 
-
   // the vector containing body and surface forces
   neumann_loads_= LINALG::CreateVector(*dofrowmap,true);
 
-
-  // Vectors used for solution process
+  // Vectors used for solution process 
   // ---------------------------------
 
   // The residual vector --- more or less the rhs for the incremental
@@ -231,7 +226,7 @@ void FluidImplicitTimeInt::Integrate()
   // place for restart
 
   // start procedure
-  if (numstasteps>step_)
+  if (step_<numstasteps)
   {
     this->TimeIntegrateFromTo(
       step_,
@@ -302,6 +297,12 @@ void FluidImplicitTimeInt::TimeIntegrateFromTo(
 
     time+=dta;
 
+    // for bdf2 theta is set  by the timestepsizes, 2/3 for const. dt
+    if(timealgo==timeint_bdf2)
+    {
+      theta= (dta+dtp)/(2.0*dta + dtp);
+    }
+    
     // -------------------------------------------------------------------
     //                         out to screen
     // -------------------------------------------------------------------
@@ -371,6 +372,7 @@ void FluidImplicitTimeInt::TimeIntegrateFromTo(
      // other parameters needed by the elements
      eleparams.set("total time",time);
      eleparams.set("delta time",dta);
+     eleparams.set("time constant for integration",theta*dta);
 
      // set vector values needed by elements
      discret_->ClearState();
@@ -382,6 +384,9 @@ void FluidImplicitTimeInt::TimeIntegrateFromTo(
      discret_->ClearState();
 
      // evaluate Neumann conditions
+     eleparams.set("total time",time);
+     eleparams.set("time constant for integration",theta*dta);
+
      neumann_loads_->PutScalar(0.0);
      discret_->EvaluateNeumann(eleparams,*neumann_loads_);
      discret_->ClearState();
@@ -582,6 +587,7 @@ void FluidImplicitTimeInt::NonlinearSolve(
       sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
       // zero out residual
       residual_->PutScalar(0.0);
+      residual_->Update(1.0,*neumann_loads_,0.0);
 
       // create the parameters for the discretization
       ParameterList eleparams;
@@ -918,21 +924,35 @@ void FluidImplicitTimeInt::Output(
 
 #endif
 
-
-#if 0  // DEBUG IO --- incremental solution
+#if 0  // DEBUG IO --- neumann_loads
       {
 	  int rr;
-	  double* data = incvel_->Values();
+	  double* data = neumann_loads_->Values();
 	  for(rr=0;rr<incvel_->MyLength();rr++)
 	  {
-	      printf("sol[%4d] %26.19e\n",rr,data[rr]);
+	      printf("neum[%4d] %26.19e\n",rr,data[rr]);
 	  }
       }
 
 #endif
 
 
+#if 0  // DEBUG IO --- incremental solution
+      if (myrank_==0)
+      {
+        int rr;
+        double* data = incvel_->Values();
+        for(rr=0;rr<incvel_->MyLength();rr++)
+        {
+          printf("sol[%4d] %26.19e\n",rr,data[rr]);
+        }    
+      }
+
+#endif      
+
+
 #if 0  // DEBUG IO --- the solution vector after convergence
+      if (myrank_==0)
       {
         int rr;
         double* data = velnp_->Values();
