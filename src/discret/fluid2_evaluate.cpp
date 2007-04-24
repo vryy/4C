@@ -695,23 +695,23 @@ void DRT::Elements::Fluid2::f2_integration_points(struct _FLUID_DATA& data)
  *----------------------------------------------------------------------*/
       data.txgr[0][4]    =  0.0915762135098	;
       data.txgr[1][4]    =  0.8168475729805	;
-      data.txgr[2][4]    =  data.txgr[0][3] 	;
+      data.txgr[2][4]    =  0.0915762135098 	;
       data.txgr[3][4]    =  0.4459484909160	;
-      data.txgr[4][4]    =  data.txgr[3][3] 	;
+      data.txgr[4][4]    =  0.4459484909160 	;
       data.txgr[5][4]    =  0.1081030181681	;
-      data.txgs[0][4]    =  data.txgr[0][3] 	;
-      data.txgs[1][4]    =  data.txgr[0][3] 	;
-      data.txgs[2][4]    =  data.txgr[1][3] 	;
-      data.txgs[3][4]    =  data.txgr[5][3] 	;
-      data.txgs[4][4]    =  data.txgr[3][3] 	;
-      data.txgs[5][4]    =  data.txgr[3][3] 	;
+      data.txgs[0][4]    =  0.0915762135098 	;
+      data.txgs[1][4]    =  0.0915762135098 	;
+      data.txgs[2][4]    =  0.8168475729805 	;
+      data.txgs[3][4]    =  0.1081030181681 	;
+      data.txgs[4][4]    =  0.4459484909160 	;
+      data.txgs[5][4]    =  0.4459484909160 	;
 
       data.twgt[0][4]   =  0.0549758718277	;
-      data.twgt[1][4]   =  data.twgt[0][3]	;
-      data.twgt[2][4]   =  data.twgt[0][3]	;
+      data.twgt[1][4]   =  0.0549758718277	;
+      data.twgt[2][4]   =  0.0549758718277	;
       data.twgt[3][4]   =  0.1116907948390	;
-      data.twgt[4][4]   =  data.twgt[3][3]	;
-      data.twgt[5][4]   =  data.twgt[3][3]	;
+      data.twgt[4][4]   =  0.1116907948390	;
+      data.twgt[5][4]   =  0.1116907948390	;
 /*----------------------------------------------------------------------*
  |    ALT.GAUSS INTEGRATION    6 SAMPLING POINTS, DEG.OF PRECISION 3    |
  |                             CASE 5                                   |
@@ -719,22 +719,24 @@ void DRT::Elements::Fluid2::f2_integration_points(struct _FLUID_DATA& data)
       data.txgr[0][5]    =  0.1090390090729	;
       data.txgr[1][5]    =  0.2319333685530	;
       data.txgr[2][5]    =  0.6590276223741	;
-      data.txgr[3][5]    =  data.txgr[2][3] 	;
-      data.txgr[4][5]    =  data.txgr[1][3] 	;
-      data.txgr[5][5]    =  data.txgr[0][3] 	;
-      data.txgs[0][5]    =  data.txgr[1][3] 	;
-      data.txgs[1][5]    =  data.txgr[0][3] 	;
-      data.txgs[2][5]    =  data.txgr[0][3] 	;
-      data.txgs[3][5]    =  data.txgr[1][3] 	;
-      data.txgs[4][5]    =  data.txgr[2][3] 	;
-      data.txgs[5][5]    =  data.txgr[2][3] 	;
+      data.txgr[3][5]    =  0.0915762135098 	;
+      data.txgr[4][5]    =  0.8168475729805 	;
+      data.txgr[5][5]    =  0.0915762135098 	;
+      data.txgs[0][5]    =  0.8168475729805 	;
+      data.txgs[1][5]    =  0.0915762135098 	;
+      data.txgs[2][5]    =  0.0915762135098 	;
+      data.txgs[3][5]    =  0.8168475729805 	;
+      data.txgs[4][5]    =  0.0915762135098 	;
+      data.txgs[5][5]    =  0.0915762135098 	;
+
+     
 
       data.twgt[0][5]   =  0.0833333333333	;
-      data.twgt[1][5]   =  data.twgt[0][3]	;
-      data.twgt[2][5]   =  data.twgt[0][3]	;
-      data.twgt[3][5]   =  data.twgt[0][3]	;
-      data.twgt[4][5]   =  data.twgt[0][3]	;
-      data.twgt[5][5]   =  data.twgt[0][3]	;
+      data.twgt[1][5]   =  0.0833333333333	;
+      data.twgt[2][5]   =  0.0833333333333	;
+      data.twgt[3][5]   =  0.0833333333333	;
+      data.twgt[4][5]   =  0.0833333333333	;
+      data.twgt[5][5]   =  0.0833333333333	;
 /*----------------------------------------------------------------------*
  |    GAUSS INTEGRATION        7 SAMPLING POINTS, DEG.OF PRECISION 5    |
  |                             CASE 6                                   |
