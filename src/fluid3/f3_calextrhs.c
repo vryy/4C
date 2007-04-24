@@ -538,8 +538,7 @@ void f3_calneumann(ELEMENT         *ele,
 /*      f2_degrectri(funct,deriv,e1,typ,1); -> only for rectangles
  */
 	/*------------------------------- compute jacobian determinant */
-	f3_edgejaco1(xyze,deriv,xjm,&det,iedgnod,ngnode,ele);
-/*      f3_edgejaco(xyze,deriv,xjm,&det,iedgnod,ngnode,ele); */
+        f3_edgejaco(xyze,deriv,xjm,&det,iedgnod,ngnode,ele); 
 	fac = det*facr*facs;
 
 	actcurve = surfneum[surf]->curve-1;
