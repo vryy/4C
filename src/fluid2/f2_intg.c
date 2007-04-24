@@ -210,24 +210,25 @@ if (option==0)
  |    GAUSS INTEGRATION        6 SAMPLING POINTS, DEG.OF PRECISION 4    |
  |                             CASE 4                                   |
  *----------------------------------------------------------------------*/
+      /*changed the second index from 3 to 4 gammi 04/07 */
       xgr[0][4]    =  0.0915762135098	;
       xgr[1][4]    =  0.8168475729805	;
-      xgr[2][4]    =  xgr[0][3] 	;
+      xgr[2][4]    =  xgr[0][4] 	;
       xgr[3][4]    =  0.4459484909160	;
-      xgr[4][4]    =  xgr[3][3] 	;
+      xgr[4][4]    =  xgr[3][4] 	;
       xgr[5][4]    =  0.1081030181681	;
-      xgs[0][4]    =  xgr[0][3] 	;
-      xgs[1][4]    =  xgr[0][3] 	;
-      xgs[2][4]    =  xgr[1][3] 	;
-      xgs[3][4]    =  xgr[5][3] 	;
-      xgs[4][4]    =  xgr[3][3] 	;
-      xgs[5][4]    =  xgr[3][3] 	;
+      xgs[0][4]    =  xgr[0][4] 	;
+      xgs[1][4]    =  xgr[0][4] 	;
+      xgs[2][4]    =  xgr[1][4] 	;
+      xgs[3][4]    =  xgr[5][4] 	;
+      xgs[4][4]    =  xgr[3][4] 	;
+      xgs[5][4]    =  xgr[3][4] 	;
       wgtt[0][4]   =  0.0549758718277	;
-      wgtt[1][4]   =  wgtt[0][3]	;
-      wgtt[2][4]   =  wgtt[0][3]	;
+      wgtt[1][4]   =  wgtt[0][4]	;
+      wgtt[2][4]   =  wgtt[0][4]	;
       wgtt[3][4]   =  0.1116907948390	;
-      wgtt[4][4]   =  wgtt[3][3]	;
-      wgtt[5][4]   =  wgtt[3][3]	;
+      wgtt[4][4]   =  wgtt[3][4]	;
+      wgtt[5][4]   =  wgtt[3][4]	;
 /*----------------------------------------------------------------------*
  |    ALT.GAUSS INTEGRATION    6 SAMPLING POINTS, DEG.OF PRECISION 3    |
  |                             CASE 5                                   |
