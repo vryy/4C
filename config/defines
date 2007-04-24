@@ -2,25 +2,34 @@
 #=============================
 
 #   even though we never make mistakes debugging is an option
-# DEBUG
+DEBUG
+
+MAXNOD_BRICK1=8
+#MAXNOD=8
+MAXNOD=27
+MAXELE=20
+MAXGAUSS=8
+
+NONPOT_LOAD
+SURFACE_ENERGY
 
 # MEMDEBUG           # Only apply DEBUG to memory allocation
 
 #   all possible elements
 #  =======================
-# D_ALE              # ale element (2D+3D)
+D_ALE              # ale element (2D+3D)
 # D_AXISHELL         # axisymmetric shell element
 # D_BEAM3            # beam3
-# D_BRICK1           # brick1
+D_BRICK1           # brick1
 # D_FLUID2           # fluid2
 # D_FLUID2_PRO       # fluid2 with projection method
 # FLUID2_ML          # fluid2 with multilevel
 # D_FLUID2_TDS       # fluid2 with time dependent subscales 
-# D_FLUID3           # fluid3
+D_FLUID3           # fluid3
 # D_FLUID3_F         # fluid3_fast
 # D_FLUID3_PRO       # fluid3 with projection method
 # FLUID3_ML          # fluid3 with multilevel
-# D_SHELL8           # shell8
+D_SHELL8           # shell8
 # D_SHELL9           # shell9
 # D_WALL1            # wall1
 # D_INTERF           # interface element
@@ -35,7 +44,7 @@
 #  ===============
 # D_FLUID            # general fluid problem
 # D_FLUID_PM         # fluid problem solved by projection method
-# D_FSI              # general FSI problem
+D_FSI              # general FSI problem
 # D_SSI              # general SSI problem
 # D_MORTAR           # mortar coupling problem (FSI/SSI)
 # D_OPTIM            # optimization
@@ -45,7 +54,7 @@
 
 #   additional features
 #  =====================
-# D_MAT              # defines materials
+D_MAT              # defines materials
 # S8CONTACT          # contact algorithms for shell8 contact
 # WALLCONTACT        # contact algorithms for wall contact
 # GEMM               # Generalized Energy-Momentum Int. Scheme
@@ -53,10 +62,10 @@
                      # requires a lot of memory !!!
 # FAST_ASS2          # use a faster procedure for assembling
                      # requires allmost no extra memory
-# BINIO              # binary io
+BINIO              # binary io
 # NO_TEXT_OUTPUT     # suppress output to text files
-# SOLVE_DIRICH       # solve also for dirichlet dofs
-# SOLVE_DIRICH2      # solve also for dirichlet dofs (normal main diag, zero off diagonal)
+SOLVE_DIRICH       # solve also for dirichlet dofs
+SOLVE_DIRICH2      # solve also for dirichlet dofs (normal main diag, zero off diagonal)
 # OUTPUT_INPUT       # write a copy of the input-file to *.err
 # SPLIT_HEX20        # split up hex20 elements into 8 hex8 elements
                      # when writing output to GiD
@@ -68,8 +77,8 @@
 
 #   tools
 #  =======
-# RESULTTEST         # result testing
-# PERF               # routines for exact time measurements  (overhead!!)
+RESULTTEST         # result testing
+PERF               # routines for exact time measurements  (overhead!!)
 
 
 #   fancy stuff
@@ -82,11 +91,11 @@
 
 #   possible solver packages
 #  ==========================
-# AZTEC_PACKAGE      # solver library AZTEC
-# UMFPACK            # solver library Umfpack
+AZTEC_PACKAGE      # solver library AZTEC
+UMFPACK            # solver library Umfpack
 # SPOOLES_PACKAGE    # solver library Spooles (only in parallel)
 # MLPCG              # interface and solver mlpcg
-# TRILINOS_PACKAGE   # linear algebra subsystem Trillinos recommended 
+TRILINOS_PACKAGE   # linear algebra subsystem Trillinos recommended 
                      # to combine with SOLVE_DIRICH, SOLVE_DIRICH2, AZTEC_PACKAGE
 
 #   inactive solvers

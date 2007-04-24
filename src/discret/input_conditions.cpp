@@ -114,35 +114,35 @@ void input_conditions()
   frint("NDVOL",&ndvol,&ierr);    if (!ierr) dserror("Cannot read design");
   frrewind();
   //------------------------------- myrank and nproc from discretization
-  vector<RefCountPtr<DRT::Discretization> >* discretization = 
+  vector<RefCountPtr<DRT::Discretization> >* discretization =
     (vector<RefCountPtr<DRT::Discretization> >*)field[0].ccadis;
   RefCountPtr<DRT::Discretization> actdis = (*discretization)[0];
   //--------------------------------------------- read generic node sets
   // read design nodes <-> nodes
   vector<int> ndnode_fenode(ndnode);
   vector<vector<int> > dnode_fenode(ndnode);
-  for (int i=0; i<ndnode; ++i) 
-    ndnode_fenode[i] = 0; 
+  for (int i=0; i<ndnode; ++i)
+    ndnode_fenode[i] = 0;
   input_design_dpoint_fenode_read(dnode_fenode,ndnode_fenode);
-  
+
   // read design lines <-> nodes
   vector<int> ndline_fenode(ndline);
   vector<vector<int> > dline_fenode(ndline);
-  for (int i=0; i<ndline; ++i) 
+  for (int i=0; i<ndline; ++i)
     ndline_fenode[i] = 0;
-  input_design_dline_fenode_read(dline_fenode,ndline_fenode); 
-  
+  input_design_dline_fenode_read(dline_fenode,ndline_fenode);
+
   // read design surfaces <-> nodes
   vector<int> ndsurf_fenode(ndsurf);
   vector<vector<int> > dsurf_fenode(ndsurf);
-  for (int i=0; i<ndsurf; ++i) 
+  for (int i=0; i<ndsurf; ++i)
     ndsurf_fenode[i] = 0;
   input_design_dsurf_fenode_read(dsurf_fenode,ndsurf_fenode);
 
   // read design volumes <-> nodes
   vector<int> ndvol_fenode(ndvol);
   vector<vector<int> > dvol_fenode(ndvol);
-  for (int i=0; i<ndvol; ++i) 
+  for (int i=0; i<ndvol; ++i)
     ndvol_fenode[i] = 0;
   input_design_dvol_fenode_read(dvol_fenode,ndvol_fenode);
 
@@ -199,18 +199,18 @@ void input_conditions()
   // iterate through surface neumann conditions and add fe nodes
   for (curr=volneum.begin(); curr!=volneum.end(); ++curr)
     add_nodeids_to_condition(curr->first,curr->second,ndvol_fenode,dvol_fenode);
-    
-  // Iterate through all discretizations and sort the appropiate condition into 
+
+  // Iterate through all discretizations and sort the appropiate condition into
   // the correct discretization it applies to
   for (int i=0; i<genprob.numfld; i++)
   {
-    vector<RefCountPtr<DRT::Discretization> >* discretization = 
+    vector<RefCountPtr<DRT::Discretization> >* discretization =
               (vector<RefCountPtr<DRT::Discretization> >*)field[i].ccadis;
     for (int j=0;j<field[i].ndis;j++)
     {
       RefCountPtr<DRT::Discretization> actdis = (*discretization)[j];
       const Epetra_Map* noderowmap = actdis->NodeRowMap();
-      
+
       // point dirichlet
       for (curr=pointdirich.begin(); curr!=pointdirich.end(); ++curr)
       {
@@ -263,7 +263,7 @@ void input_conditions()
         if (found)
           actdis->SetCondition("Dirichlet",curr->second);
       }
-      
+
       // point neumann
       for (curr=pointneum.begin(); curr!=pointneum.end(); ++curr)
       {
@@ -329,10 +329,10 @@ void add_nodeids_to_condition(const int id, RefCountPtr<DRT::Condition> cond,
                                      const vector<vector<int> > d_fenode)
 {
   DSTraceHelper dst("add_nodeids_to_condition");
-  
+
   // vector of finite element node ids in this node set
   const vector<int>& nodes = d_fenode[id];
-  
+
   // add the list of nodal ids to the condition
   cond->Add("Node Ids",nodes);
   return;
@@ -347,21 +347,21 @@ void input_point_neum(multimap<int,RefCountPtr<DRT::Condition> >& pnmap)
 {
   DSTraceHelper dst("input_point_neum");
 
-  // currently, we alsways have 6 values read from file
+  // currently, we always have 6 values read from file
   // this might change at some point
   const int numread = 6;
 
   /*-------------------- find the beginning of nodal dirichlet conditions */
   if (frfind("--DESIGN POINT NEUMANN CONDITIONS")==0) return;
   frread();
-  
+
   /*------------------------ read number of design points with conditions */
   int ierr=0;
   int ndnode=0;
   frint("DPOINT",&ndnode,&ierr);
   dsassert(ierr==1,"Cannot read design-nodal neumann conditions");
   frread();
-  
+
   /*-------------------------------------- start reading the design nodes */
   while(strncmp(allfiles.actplace,"------",6)!=0)
   {
@@ -374,7 +374,7 @@ void input_point_neum(multimap<int,RefCountPtr<DRT::Condition> >& pnmap)
     char* colptr = strstr(allfiles.actplace,"-");
     dsassert(colptr!=NULL,"Cannot read design-nodal neumann conditions");
     colptr++;
-    
+
     //------------------------------- define some temporary reading vectors
     vector<int>    neum_onoff(MAXDOFPERNODE);
     vector<double> neum_val(MAXDOFPERNODE);
@@ -383,7 +383,7 @@ void input_point_neum(multimap<int,RefCountPtr<DRT::Condition> >& pnmap)
       neum_onoff[i] = 0;
       neum_val[i]   = 0.0;
     }
-    
+
     //---------------------------------- read the curve number of "none"
     int curve=0;
     char buffer[200];
@@ -404,8 +404,8 @@ void input_point_neum(multimap<int,RefCountPtr<DRT::Condition> >& pnmap)
        colptr = strpbrk(colptr,"1234567890");
        colptr++;
     }
-    
-    
+
+
     /* NOTE: number of read values = 6  does not need to be */
     /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
     // read on/off toggles
@@ -414,19 +414,19 @@ void input_point_neum(multimap<int,RefCountPtr<DRT::Condition> >& pnmap)
         neum_onoff[i] = strtol(colptr,&colptr,10);
       else
         strtol(colptr,&colptr,10);
-       
+
     // read values
     for (int i=0; i<numread; ++i)
       if (i<MAXDOFPERNODE)
         neum_val[i] = strtod(colptr,&colptr);
       else
         strtod(colptr,&colptr);
-       
+
     // create boundary condition
-    RefCountPtr<DRT::Condition> condition = 
+    RefCountPtr<DRT::Condition> condition =
              rcp(new DRT::Condition(dnodeid,DRT::Condition::PointNeumann,false,
                                     DRT::Condition::Point));
-    
+
     // read whether load is on surface (shells)
     frchk("Mid",&ierr);
     if (ierr) condition->Add("surface","mid");
@@ -439,7 +439,7 @@ void input_point_neum(multimap<int,RefCountPtr<DRT::Condition> >& pnmap)
     condition->Add("onoff",neum_onoff);
     condition->Add("val",neum_val);
     condition->Add("curve",&curve,1);
-    
+
     //------------------------------- put condition in map of conditions
     pnmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dnodeid,condition));
     //-------------------------------------------------- read the next line
@@ -455,25 +455,25 @@ void input_line_neum(multimap<int,RefCountPtr<DRT::Condition> >& lnmap)
 {
   DSTraceHelper dst("input_line_neum");
 
-  // currently, we alsways have 6 values read from file
+  // currently, we always have 6 values read from file
   // this might change at some point
   const int numread = 6;
 
-  /*-------------------- find the beginning of nodal dirichlet conditions */
+  /*-------------------- find the beginning of line dirichlet conditions */
   if (frfind("--DESIGN LINE NEUMANN CONDITIONS")==0) return;
   frread();
-  
-  /*------------------------ read number of design points with conditions */
+
+  /*------------------------ read number of design lines with conditions */
   int ierr=0;
   int ndline=0;
   frint("DLINE",&ndline,&ierr);
   dsassert(ierr==1,"Cannot read design-line neumann conditions");
   frread();
-  
-  /*-------------------------------------- start reading the design nodes */
+
+  /*------------------------------------- start reading the design lines */
   while(strncmp(allfiles.actplace,"------",6)!=0)
   {
-    /*------------------------------------------ read the design node Id */
+    /*------------------------------------------ read the design line Id */
     int dlineid = -1;
     frint("E",&dlineid,&ierr);
     dsassert(ierr==1,"Cannot read design-line neumann conditions");
@@ -482,7 +482,7 @@ void input_line_neum(multimap<int,RefCountPtr<DRT::Condition> >& lnmap)
     char* colptr = strstr(allfiles.actplace,"-");
     dsassert(colptr!=NULL,"Cannot read design-line neumann conditions");
     colptr++;
-    
+
     //------------------------------- define some temporary reading vectors
     vector<int>    neum_onoff(MAXDOFPERNODE);
     vector<double> neum_val(MAXDOFPERNODE);
@@ -491,7 +491,7 @@ void input_line_neum(multimap<int,RefCountPtr<DRT::Condition> >& lnmap)
       neum_onoff[i] = 0;
       neum_val[i]   = 0.0;
     }
-    
+
     //---------------------------------- read the curve number of "none"
     int curve=0;
     char buffer[200];
@@ -512,8 +512,8 @@ void input_line_neum(multimap<int,RefCountPtr<DRT::Condition> >& lnmap)
        colptr = strpbrk(colptr,"1234567890");
        colptr++;
     }
-    
-    
+
+
     /* NOTE: number of read values = 6  does not need to be */
     /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
     // read on/off toggles
@@ -522,19 +522,19 @@ void input_line_neum(multimap<int,RefCountPtr<DRT::Condition> >& lnmap)
         neum_onoff[i] = strtol(colptr,&colptr,10);
       else
         strtol(colptr,&colptr,10);
-       
+
     // read values
     for (int i=0; i<numread; ++i)
       if (i<MAXDOFPERNODE)
         neum_val[i] = strtod(colptr,&colptr);
       else
         strtod(colptr,&colptr);
-       
+
     // create boundary condition
-    RefCountPtr<DRT::Condition> condition = 
+    RefCountPtr<DRT::Condition> condition =
               rcp(new DRT::Condition(dlineid,DRT::Condition::LineNeumann,true,
                                      DRT::Condition::Line));
-    
+
     // read whether load is on surface (shells)
     condition->Add("type","neum_live");
     frchk("Live",&ierr);
@@ -558,7 +558,7 @@ void input_line_neum(multimap<int,RefCountPtr<DRT::Condition> >& lnmap)
     if (ierr) condition->Add("surface","top");
     frchk("Bot",&ierr);
     if (ierr) condition->Add("surface","bot");
-    
+
     // add stuff to boundary condition
     condition->Add("onoff",neum_onoff);
     condition->Add("val",neum_val);
@@ -583,25 +583,25 @@ void input_surf_neum(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
 {
   DSTraceHelper dst("input_surf_neum");
 
-  // currently, we alsways have 6 values read from file
+  // currently, we always have 6 values read from file
   // this might change at some point
   const int numread = 6;
 
-  /*-------------------- find the beginning of nodal dirichlet conditions */
+  /*----------------- find the beginning of surface dirichlet conditions */
   if (frfind("--DESIGN SURF NEUMANN CONDITIONS")==0) return;
   frread();
-  
-  /*------------------------ read number of design points with conditions */
+
+  /*------------------------ read number of design surfs with conditions */
   int ierr=0;
   int ndsurf=0;
   frint("DSURF",&ndsurf,&ierr);
   dsassert(ierr==1,"Cannot read design-surface neumann conditions");
   frread();
-  
-  /*-------------------------------------- start reading the design nodes */
+
+  /*------------------------------------- start reading the design surfs */
   while(strncmp(allfiles.actplace,"------",6)!=0)
   {
-    /*------------------------------------------ read the design node Id */
+    /*------------------------------------------ read the design surf Id */
     int dsurfid = -1;
     frint("E",&dsurfid,&ierr);
     dsassert(ierr==1,"Cannot read design-surface neumann conditions");
@@ -610,7 +610,7 @@ void input_surf_neum(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
     char* colptr = strstr(allfiles.actplace,"-");
     dsassert(colptr!=NULL,"Cannot read design-surface neumann conditions");
     colptr++;
-    
+
     //------------------------------- define some temporary reading vectors
     vector<int>    neum_onoff(MAXDOFPERNODE);
     vector<double> neum_val(MAXDOFPERNODE);
@@ -619,7 +619,7 @@ void input_surf_neum(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
       neum_onoff[i] = 0;
       neum_val[i]   = 0.0;
     }
-    
+
     //---------------------------------- read the curve number of "none"
     int curve=0;
     char buffer[200];
@@ -640,8 +640,8 @@ void input_surf_neum(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
        colptr = strpbrk(colptr,"1234567890");
        colptr++;
     }
-    
-    
+
+
     /* NOTE: number of read values = 6  does not need to be */
     /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
     // read on/off toggles
@@ -650,19 +650,19 @@ void input_surf_neum(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
         neum_onoff[i] = strtol(colptr,&colptr,10);
       else
         strtol(colptr,&colptr,10);
-       
+
     // read values
     for (int i=0; i<numread; ++i)
       if (i<MAXDOFPERNODE)
         neum_val[i] = strtod(colptr,&colptr);
       else
         strtod(colptr,&colptr);
-       
+
     // create boundary condition
-    RefCountPtr<DRT::Condition> condition = 
+    RefCountPtr<DRT::Condition> condition =
            rcp(new DRT::Condition(dsurfid,DRT::Condition::SurfaceNeumann,true,
                                   DRT::Condition::Surface));
-    
+
     // read whether load is on surface (shells)
     condition->Add("type","neum_live");
     frchk("Live",&ierr);
@@ -686,7 +686,7 @@ void input_surf_neum(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
     if (ierr) condition->Add("surface","top");
     frchk("Bot",&ierr);
     if (ierr) condition->Add("surface","bot");
-    
+
     // add stuff to boundary condition
     condition->Add("onoff",neum_onoff);
     condition->Add("val",neum_val);
@@ -711,25 +711,25 @@ void input_vol_neum(multimap<int,RefCountPtr<DRT::Condition> >& vnmap)
 {
   DSTraceHelper dst("input_vol_neum");
 
-  // currently, we alsways have 6 values read from file
+  // currently, we always have 6 values read from file
   // this might change at some point
   const int numread = 6;
 
-  /*-------------------- find the beginning of nodal dirichlet conditions */
+  /*------------------ find the beginning of volume dirichlet conditions */
   if (frfind("--DESIGN VOL NEUMANN CONDITIONS")==0) return;
   frread();
-  
-  /*------------------------ read number of design points with conditions */
+
+  /*---------------------- read number of design volumes with conditions */
   int ierr=0;
   int ndvol=0;
   frint("DVOL",&ndvol,&ierr);
   dsassert(ierr==1,"Cannot read design-volume neumann conditions");
   frread();
-  
-  /*-------------------------------------- start reading the design nodes */
+
+  /*----------------------------------- start reading the design volumes */
   while(strncmp(allfiles.actplace,"------",6)!=0)
   {
-    /*------------------------------------------ read the design node Id */
+    /*---------------------------------------- read the design volume Id */
     int dvolid = -1;
     frint("E",&dvolid,&ierr);
     dsassert(ierr==1,"Cannot read design-volume neumann conditions");
@@ -738,7 +738,7 @@ void input_vol_neum(multimap<int,RefCountPtr<DRT::Condition> >& vnmap)
     char* colptr = strstr(allfiles.actplace,"-");
     dsassert(colptr!=NULL,"Cannot read design-volume neumann conditions");
     colptr++;
-    
+
     //------------------------------- define some temporary reading vectors
     vector<int>    neum_onoff(MAXDOFPERNODE);
     vector<double> neum_val(MAXDOFPERNODE);
@@ -747,7 +747,7 @@ void input_vol_neum(multimap<int,RefCountPtr<DRT::Condition> >& vnmap)
       neum_onoff[i] = 0;
       neum_val[i]   = 0.0;
     }
-    
+
     //---------------------------------- read the curve number of "none"
     int curve=0;
     char buffer[200];
@@ -768,8 +768,8 @@ void input_vol_neum(multimap<int,RefCountPtr<DRT::Condition> >& vnmap)
        colptr = strpbrk(colptr,"1234567890");
        colptr++;
     }
-    
-    
+
+
     /* NOTE: number of read values = 6  does not need to be */
     /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
     // read on/off toggles
@@ -778,26 +778,26 @@ void input_vol_neum(multimap<int,RefCountPtr<DRT::Condition> >& vnmap)
         neum_onoff[i] = strtol(colptr,&colptr,10);
       else
         strtol(colptr,&colptr,10);
-       
+
     // read values
     for (int i=0; i<numread; ++i)
       if (i<MAXDOFPERNODE)
         neum_val[i] = strtod(colptr,&colptr);
       else
         strtod(colptr,&colptr);
-       
+
     // create boundary condition
-    RefCountPtr<DRT::Condition> condition = 
+    RefCountPtr<DRT::Condition> condition =
             rcp(new DRT::Condition(dvolid,DRT::Condition::VolumeNeumann,true,
                                    DRT::Condition::Volume));
-    
+
     // read whether load is on surface (shells)
     condition->Add("type","neum_dead");
     frchk("Dead",&ierr);
     if (ierr) condition->Add("type","neum_dead");
     frchk("LAS",&ierr);
     if (ierr) condition->Add("type","neum_LAS");
-    
+
     // add stuff to boundary condition
     condition->Add("onoff",neum_onoff);
     condition->Add("val",neum_val);
@@ -827,14 +827,14 @@ void input_point_dirich(multimap<int,RefCountPtr<DRT::Condition> >& pdmap)
   /*-------------------- find the beginning of nodal dirichlet conditions */
   if (frfind("--DESIGN POINT DIRICH CONDITIONS")==0) return;
   frread();
-  
+
   /*------------------------ read number of design points with conditions */
   int ierr=0;
   int ndnode=0;
   frint("DPOINT",&ndnode,&ierr);
   dsassert(ierr==1,"Cannot read design-nodal dirichlet conditions");
   frread();
-  
+
   /*-------------------------------------- start reading the design nodes */
   while(strncmp(allfiles.actplace,"------",6)!=0)
   {
@@ -847,7 +847,7 @@ void input_point_dirich(multimap<int,RefCountPtr<DRT::Condition> >& pdmap)
     char* colptr = strstr(allfiles.actplace,"-");
     dsassert(colptr!=NULL,"Cannot read design-nodal dirichlet conditions");
     colptr++;
-    
+
     //------------------------------- define some temporary reading vectors
     vector<int>    dirich_onoff(MAXDOFPERNODE);
     vector<double> dirich_val(MAXDOFPERNODE);
@@ -860,7 +860,7 @@ void input_point_dirich(multimap<int,RefCountPtr<DRT::Condition> >& pdmap)
       dirich_curve[i] = -1;
       dirich_funct[i] = 0;
     }
-    
+
     /* NOTE: number of read values = 6  does not need to be */
     /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
     // read on/off toggles
@@ -869,14 +869,14 @@ void input_point_dirich(multimap<int,RefCountPtr<DRT::Condition> >& pdmap)
         dirich_onoff[i] = strtol(colptr,&colptr,10);
       else
         strtol(colptr,&colptr,10);
-       
+
     // read values
     for (int i=0; i<numread; ++i)
       if (i<MAXDOFPERNODE)
         dirich_val[i] = strtod(colptr,&colptr);
       else
         strtod(colptr,&colptr);
-       
+
     // read curve number or 'none'
     for (int i=0; i<numread; ++i)
     {
@@ -902,7 +902,7 @@ void input_point_dirich(multimap<int,RefCountPtr<DRT::Condition> >& pdmap)
         colptr++;
       }
     }
-    
+
     // read function number
     for (int i=0; i<numread; ++i)
     {
@@ -911,16 +911,16 @@ void input_point_dirich(multimap<int,RefCountPtr<DRT::Condition> >& pdmap)
       else
         strtol(colptr,&colptr,10);
     }
-    
+
     // create boundary condition
-    RefCountPtr<DRT::Condition> condition = 
+    RefCountPtr<DRT::Condition> condition =
           rcp(new DRT::Condition(dnodeid,DRT::Condition::PointDirichlet,false,
                                  DRT::Condition::Point));
     condition->Add("onoff",dirich_onoff);
     condition->Add("val",dirich_val);
     condition->Add("curve",dirich_curve);
     condition->Add("funct",dirich_funct);
-    
+
     //---------------------- add the condition to the map of all conditions
     pdmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dnodeid,condition));
 
@@ -937,25 +937,25 @@ void input_line_dirich(multimap<int,RefCountPtr<DRT::Condition> >& ldmap)
 {
   DSTraceHelper dst("input_line_dirich");
 
-  // currently, we alsways have 6 values read from file
+  // currently, we always have 6 values read from file
   // this might change at some point
   const int numread = 6;
 
   /*-------------------- find the beginning of line dirichlet conditions */
   if (frfind("--DESIGN LINE DIRICH CONDITIONS")==0) return;
   frread();
-  
+
   /*------------------------ read number of design lines with conditions */
   int ierr=0;
   int ndline=0;
   frint("DLINE",&ndline,&ierr);
   dsassert(ierr==1,"Cannot read design-line dirichlet conditions");
   frread();
-  
+
   /*-------------------------------------- start reading the design lines */
   while(strncmp(allfiles.actplace,"------",6)!=0)
   {
-    /*------------------------------------------ read the design node Id */
+    /*------------------------------------------ read the design line Id */
     int dlineid = -1;
     frint("E",&dlineid,&ierr);
     dsassert(ierr==1,"Cannot read design-line dirichlet conditions");
@@ -964,7 +964,7 @@ void input_line_dirich(multimap<int,RefCountPtr<DRT::Condition> >& ldmap)
     char* colptr = strstr(allfiles.actplace,"-");
     dsassert(colptr!=NULL,"Cannot read design-line dirichlet conditions");
     colptr++;
-    
+
     //------------------------------- define some temporary reading vectors
     vector<int>    dirich_onoff(MAXDOFPERNODE);
     vector<double> dirich_val(MAXDOFPERNODE);
@@ -977,7 +977,7 @@ void input_line_dirich(multimap<int,RefCountPtr<DRT::Condition> >& ldmap)
       dirich_curve[i] = -1;
       dirich_funct[i] = 0;
     }
-    
+
     /* NOTE: number of read values = 6  does not need to be */
     /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
     // read on/off toggles
@@ -986,14 +986,14 @@ void input_line_dirich(multimap<int,RefCountPtr<DRT::Condition> >& ldmap)
         dirich_onoff[i] = strtol(colptr,&colptr,10);
       else
         strtol(colptr,&colptr,10);
-       
+
     // read values
     for (int i=0; i<numread; ++i)
       if (i<MAXDOFPERNODE)
         dirich_val[i] = strtod(colptr,&colptr);
       else
         strtod(colptr,&colptr);
-       
+
     // read curve number or 'none'
     for (int i=0; i<numread; ++i)
     {
@@ -1019,23 +1019,23 @@ void input_line_dirich(multimap<int,RefCountPtr<DRT::Condition> >& ldmap)
         colptr++;
       }
     }
-    
+
     // read function number
     for (int i=0; i<numread; ++i)
       if (i < MAXDOFPERNODE)
         dirich_funct[i] = strtol(colptr,&colptr,10);
       else
         strtol(colptr,&colptr,10);
-    
+
     // create boundary condition
-    RefCountPtr<DRT::Condition> condition = 
+    RefCountPtr<DRT::Condition> condition =
            rcp(new DRT::Condition(dlineid,DRT::Condition::LineDirichlet,false,
                                   DRT::Condition::Line));
     condition->Add("onoff",dirich_onoff);
     condition->Add("val",dirich_val);
     condition->Add("curve",dirich_curve);
     condition->Add("funct",dirich_funct);
-    
+
     //---------------------- add the condition to the map of all conditions
     ldmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dlineid,condition));
     //-------------------------------------------------- read the next line
@@ -1051,25 +1051,25 @@ void input_surf_dirich(multimap<int,RefCountPtr<DRT::Condition> >& sdmap)
 {
   DSTraceHelper dst("input_surf_dirich");
 
-  // currently, we alsways have 6 values read from file
+  // currently, we always have 6 values read from file
   // this might change at some point
   const int numread = 6;
 
-  /*-------------------- find the beginning of line dirichlet conditions */
+  /*----------------- find the beginning of surface dirichlet conditions */
   if (frfind("--DESIGN SURF DIRICH CONDITIONS")==0) return;
   frread();
-  
+
   /*------------------------ read number of design surfs with conditions */
   int ierr=0;
   int ndsurf=0;
   frint("DSURF",&ndsurf,&ierr);
   dsassert(ierr==1,"Cannot read design-surface dirichlet conditions");
   frread();
-  
-  /*-------------------------------------- start reading the design lines */
+
+  /*------------------------------------- start reading the design surfs */
   while(strncmp(allfiles.actplace,"------",6)!=0)
   {
-    /*------------------------------------------ read the design node Id */
+    /*------------------------------------------ read the design surf Id */
     int dsurfid = -1;
     frint("E",&dsurfid,&ierr);
     dsassert(ierr==1,"Cannot read design-surface dirichlet conditions");
@@ -1078,7 +1078,7 @@ void input_surf_dirich(multimap<int,RefCountPtr<DRT::Condition> >& sdmap)
     char* colptr = strstr(allfiles.actplace,"-");
     dsassert(colptr!=NULL,"Cannot read design-surface dirichlet conditions");
     colptr++;
-    
+
     //------------------------------- define some temporary reading vectors
     vector<int>    dirich_onoff(MAXDOFPERNODE);
     vector<double> dirich_val(MAXDOFPERNODE);
@@ -1091,7 +1091,7 @@ void input_surf_dirich(multimap<int,RefCountPtr<DRT::Condition> >& sdmap)
       dirich_curve[i] = -1;
       dirich_funct[i] = 0;
     }
-    
+
     /* NOTE: number of read values = 6  does not need to be */
     /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
     // read on/off toggles
@@ -1100,14 +1100,14 @@ void input_surf_dirich(multimap<int,RefCountPtr<DRT::Condition> >& sdmap)
         dirich_onoff[i] = strtol(colptr,&colptr,10);
       else
         strtol(colptr,&colptr,10);
-       
+
     // read values
     for (int i=0; i<numread; ++i)
       if (i<MAXDOFPERNODE)
         dirich_val[i] = strtod(colptr,&colptr);
       else
         strtod(colptr,&colptr);
-       
+
     // read curve number or 'none'
     for (int i=0; i<numread; ++i)
     {
@@ -1133,23 +1133,23 @@ void input_surf_dirich(multimap<int,RefCountPtr<DRT::Condition> >& sdmap)
         colptr++;
       }
     }
-    
+
     // read function number
     for (int i=0; i<numread; ++i)
       if (i < MAXDOFPERNODE)
         dirich_funct[i] = strtol(colptr,&colptr,10);
       else
         strtol(colptr,&colptr,10);
-    
+
     // create boundary condition
-    RefCountPtr<DRT::Condition> condition = 
+    RefCountPtr<DRT::Condition> condition =
         rcp(new DRT::Condition(dsurfid,DRT::Condition::SurfaceDirichlet,false,
                                DRT::Condition::Surface));
     condition->Add("onoff",dirich_onoff);
     condition->Add("val",dirich_val);
     condition->Add("curve",dirich_curve);
     condition->Add("funct",dirich_funct);
-    
+
     //--------------------------------- add condition to map of conditions
     sdmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dsurfid,condition));
     //-------------------------------------------------- read the next line
@@ -1165,25 +1165,25 @@ void input_vol_dirich(multimap<int,RefCountPtr<DRT::Condition> >& vdmap)
 {
   DSTraceHelper dst("input_vol_dirich");
 
-  // currently, we alsways have 6 values read from file
+  // currently, we always have 6 values read from file
   // this might change at some point
   const int numread = 6;
 
-  /*-------------------- find the beginning of line dirichlet conditions */
+  /*------------------ find the beginning of volume dirichlet conditions */
   if (frfind("--DESIGN VOL DIRICH CONDITIONS")==0) return;
   frread();
-  
-  /*------------------------ read number of design surfs with conditions */
+
+  /*---------------------- read number of design volumes with conditions */
   int ierr=0;
   int ndvol=0;
   frint("DVOL",&ndvol,&ierr);
-  dsassert(ierr==1,"Cannot read design-surface dirichlet conditions");
+  dsassert(ierr==1,"Cannot read design-volume dirichlet conditions");
   frread();
-  
-  /*-------------------------------------- start reading the design lines */
+
+  /*----------------------------------- start reading the design volumes */
   while(strncmp(allfiles.actplace,"------",6)!=0)
   {
-    /*------------------------------------------ read the design node Id */
+    /*---------------------------------------- read the design volume Id */
     int dvolid = -1;
     frint("E",&dvolid,&ierr);
     dsassert(ierr==1,"Cannot read design-volume dirichlet conditions");
@@ -1192,7 +1192,7 @@ void input_vol_dirich(multimap<int,RefCountPtr<DRT::Condition> >& vdmap)
     char* colptr = strstr(allfiles.actplace,"-");
     dsassert(colptr!=NULL,"Cannot read design-volume dirichlet conditions");
     colptr++;
-    
+
     //------------------------------- define some temporary reading vectors
     vector<int>    dirich_onoff(MAXDOFPERNODE);
     vector<double> dirich_val(MAXDOFPERNODE);
@@ -1205,7 +1205,7 @@ void input_vol_dirich(multimap<int,RefCountPtr<DRT::Condition> >& vdmap)
       dirich_curve[i] = -1;
       dirich_funct[i] = 0;
     }
-    
+
     /* NOTE: number of read values = 6  does not need to be */
     /*       equivalent to the MAXDOFPERNODE -> e.g. for shell9! sh 12/02 */
     // read on/off toggles
@@ -1214,14 +1214,14 @@ void input_vol_dirich(multimap<int,RefCountPtr<DRT::Condition> >& vdmap)
         dirich_onoff[i] = strtol(colptr,&colptr,10);
       else
         strtol(colptr,&colptr,10);
-       
+
     // read values
     for (int i=0; i<numread; ++i)
       if (i<MAXDOFPERNODE)
         dirich_val[i] = strtod(colptr,&colptr);
       else
         strtod(colptr,&colptr);
-       
+
     // read curve number or 'none'
     for (int i=0; i<numread; ++i)
     {
@@ -1242,28 +1242,28 @@ void input_vol_dirich(multimap<int,RefCountPtr<DRT::Condition> >& vdmap)
           ierr=sscanf(colptr," %d ",&dirich_curve[i]);
           dirich_curve[i]--;
         }
-        dsassert(ierr==1,"Cannot read design-line volume conditions");
+        dsassert(ierr==1,"Cannot read design-volume conditions");
         colptr = strpbrk(colptr,"1234567890");
         colptr++;
       }
     }
-    
+
     // read function number
     for (int i=0; i<numread; ++i)
       if (i < MAXDOFPERNODE)
         dirich_funct[i] = strtol(colptr,&colptr,10);
       else
         strtol(colptr,&colptr,10);
-    
+
     // create boundary condition
-    RefCountPtr<DRT::Condition> condition = 
+    RefCountPtr<DRT::Condition> condition =
           rcp(new DRT::Condition(dvolid,DRT::Condition::VolumeDirichlet,false,
                                  DRT::Condition::Volume));
     condition->Add("onoff",dirich_onoff);
     condition->Add("val",dirich_val);
     condition->Add("curve",dirich_curve);
     condition->Add("funct",dirich_funct);
-    
+
     //--------------------------------- put condition in map of conditions
     vdmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dvolid,condition));
     //-------------------------------------------------- read the next line
