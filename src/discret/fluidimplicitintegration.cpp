@@ -184,7 +184,6 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
  |                                                                      |
  |  o starting steps with different algorithms                          |
  |  o the "standard" time integration                                   |
- |  o restarts (soon)                                                   |
  |                                                           gammi 04/07|
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -199,6 +198,7 @@ void FluidImplicitTimeInt::Integrate()
   // initialise some variables
   double dta  = 0.0;
   double dtp  = 0.0;
+
 
   // ----------------------------------------------------- stop criteria
   // bound for the number of startsteps
@@ -222,8 +222,6 @@ void FluidImplicitTimeInt::Integrate()
   // time measurement --- this causes the TimeMonitor tm1 to stop here
   //                                                (call of destructor)
   tm1_ref_ = null;
-
-  // place for restart
 
   // start procedure
   if (step_<numstasteps)
@@ -951,7 +949,7 @@ void FluidImplicitTimeInt::Output(
 #endif      
 
 
-#if 0  // DEBUG IO --- the solution vector after convergence
+#if 1  // DEBUG IO --- the solution vector after convergence
       if (myrank_==0)
       {
         int rr;
@@ -968,9 +966,15 @@ void FluidImplicitTimeInt::Output(
 } // FluidImplicitTimeInt::Output
 
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |                                                             kue 04/07|
+ -----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FluidImplicitTimeInt::ReadRestart(int step)
 {
   DiscretizationReader reader(discret_,step);
@@ -981,6 +985,110 @@ void FluidImplicitTimeInt::ReadRestart(int step)
   reader.ReadVector(veln_, "veln");
   reader.ReadVector(velnm_,"velnm");
   reader.ReadVector(accn_, "accn");
+}
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  set initial flow field for test cases                    gammi 04/07|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FluidImplicitTimeInt::SetInitialFlowField(
+  int whichinitialfield
+  )
+{
+  //------------------------------------------------------- beltrami flow
+  if(whichinitialfield == 8)
+  {
+    int gid;
+    int lid;
+
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+    
+    int err =0;
+
+    int numdim  = params_.get<int>("number of velocity degrees of freedom");
+    int npredof = numdim;
+    
+    double         p;
+    vector<double> u  (numdim);
+    vector<double> xyz(numdim);
+
+      
+    if(numdim!=3)
+    {
+      dserror("Beltrami flow is three dimensional flow!");
+    }
+
+    // set constants for analytical solution
+    double a      = PI/4.0;
+    double d      = PI/2.0;
+    
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
+      
+      // the set of degrees of freedom associated with the node
+      DRT::DofSet nodedofset = lnode->Dof();
+
+      // set node coordinates
+      for(int dim=0;dim<numdim;dim++)
+      {
+        xyz[dim]=lnode->X()[dim];
+      }
+
+      // compute initial pressure
+      p = -a*a/2.0 *
+        ( exp(2.0*a*xyz[0])
+          + exp(2.0*a*xyz[1])
+          + exp(2.0*a*xyz[2])
+          + 2.0 * sin(a*xyz[0] + d*xyz[1]) * cos(a*xyz[2] + d*xyz[0]) * exp(a*(xyz[1]+xyz[2]))
+          + 2.0 * sin(a*xyz[1] + d*xyz[2]) * cos(a*xyz[0] + d*xyz[1]) * exp(a*(xyz[2]+xyz[0]))
+          + 2.0 * sin(a*xyz[2] + d*xyz[0]) * cos(a*xyz[1] + d*xyz[2]) * exp(a*(xyz[0]+xyz[1]))
+          );
+
+      // compute initial velocities
+      u[0] = -a * ( exp(a*xyz[0]) * sin(a*xyz[1] + d*xyz[2]) +
+                    exp(a*xyz[2]) * cos(a*xyz[0] + d*xyz[1]) );
+      u[1] = -a * ( exp(a*xyz[1]) * sin(a*xyz[2] + d*xyz[0]) +
+                    exp(a*xyz[0]) * cos(a*xyz[1] + d*xyz[2]) );
+      u[2] = -a * ( exp(a*xyz[2]) * sin(a*xyz[0] + d*xyz[1]) +
+                    exp(a*xyz[1]) * cos(a*xyz[2] + d*xyz[0]) );
+      // initial velocities
+      for(int nveldof=0;nveldof<numdim;nveldof++)
+      {
+        gid = nodedofset[nveldof];
+        lid = dofrowmap->LID(gid);
+        err += velnp_->ReplaceMyValues(1,&(u[nveldof]),&lid);
+        err += veln_ ->ReplaceMyValues(1,&(u[nveldof]),&lid);
+        err += velnm_->ReplaceMyValues(1,&(u[nveldof]),&lid);
+     }
+      
+      // initial pressure
+      gid = nodedofset[npredof];
+      lid = dofrowmap->LID(gid);
+      err += velnp_->ReplaceMyValues(1,&p,&lid);
+      err += veln_ ->ReplaceMyValues(1,&p,&lid);
+      err += velnm_->ReplaceMyValues(1,&p,&lid);
+
+    } // end loop nodes lnodeid
+    if(err!=0)
+    {
+      dserror("dof not on proc");
+    }
+  }
+  else
+  {
+    dserror("no other initial fields than zero and beltrami are available up to now");
+  }
+  
+  return;
 }
 
 

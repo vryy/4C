@@ -187,7 +187,11 @@ void dyn_fluid_drt()
   // restart
   fluidtimeparams.set                  ("write restart every"       ,fdyn->uprestart);
 
-  // the only parameter required here is the number of velocity degrees of freedom
+
+  // create all vectors and variables associated with the time 
+  // integration (call the constructor)
+  // the only parameter from the list required here is the number of
+  // velocity degrees of freedom
   FluidImplicitTimeInt fluidimplicit(actdis,
                                      solver,
                                      fluidtimeparams,
@@ -195,11 +199,24 @@ void dyn_fluid_drt()
 
   if (genprob.restart)
   {
+    // read the restart information, set vectors and variables
     fluidimplicit.ReadRestart(genprob.restart);
   }
+  else
+  {
+    // set initial field for analytical test problems etc
+    if(fdyn->init>0)
+    {
+      fluidimplicit.SetInitialFlowField(fdyn->init);
+    }
+  }
 
+  // do the time integration (start algo and standard algo)
   fluidimplicit.Integrate();
 
+  // evaluate error for test flows with analytical solutions
+
+  // do the result test
 #ifdef RESULTTEST
   DRT::ResultTestManager testmanager(actdis->Comm());
   testmanager.AddFieldTest(rcp(new FluidResultTest(fluidimplicit)));

@@ -183,6 +183,14 @@ public:
     double time
     );
 
+  /*!
+  \brief set initial flow field for analytical test problems
+
+  */
+  void SetInitialFlowField(
+    int whichinitialfield
+    );
+  
   //@}
 
   void ReadRestart(int step);
