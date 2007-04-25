@@ -172,7 +172,11 @@ extern "C"
 
 
 /*----------------------------------------------------------------------*
- |  Integrate a Volume Neumann boundary condition (public)   g.bau 03/07|
+ |  do nothing (public)                                      gammi 04/07|
+ |                                                                      |
+ |  The function is just a dummy. For the fluid elements, the           |
+ |  integration of the volume neumann loads takes place in the element. |
+ |  We need it there for the stabilisation terms!                       |
  *----------------------------------------------------------------------*/
 int DRT::Elements::Fluid3::EvaluateNeumann(ParameterList& params,
                                            DRT::Discretization&      discretization,
@@ -180,14 +184,13 @@ int DRT::Elements::Fluid3::EvaluateNeumann(ParameterList& params,
                                            vector<int>&              lm,
                                            Epetra_SerialDenseVector& elevec1)
 {
-  dserror("Volume Neumann conditions not yet implemented for Fluid3");
   return 0;
 }
 
 
 /*----------------------------------------------------------------------*
- |  calculate system matrix and rhs (private)                g.bau 03/07|
- *----------------------------------------------------------------------*/
+  |  calculate system matrix and rhs (private)                g.bau 03/07|
+  *----------------------------------------------------------------------*/
 void DRT::Elements::Fluid3::f3_sys_mat(vector<int>&              lm,
                                        vector<double>&           evelnp,
 				       vector<double>&           eprenp,
@@ -196,435 +199,449 @@ void DRT::Elements::Fluid3::f3_sys_mat(vector<int>&              lm,
                                        Epetra_SerialDenseVector* residual,
                                        struct _MATERIAL*         material,
 				       ParameterList& 		 params
-				       )
+  )
 {
 
-if(!is_ale_)
- {
-   /*---------------------------------------------------- set element data */
-   const int iel = NumNode();
-   Epetra_SerialDenseMatrix xyze(3,iel);
+  if(!is_ale_)
+  {
+    /*---------------------------------------------------- set element data */
+    const int iel = NumNode();
+    Epetra_SerialDenseMatrix xyze(3,iel);
 
-   // get node coordinates
-   for(int i=0;i<iel;i++)
-   {
-     xyze(0,i)=Nodes()[i]->X()[0];
-     xyze(1,i)=Nodes()[i]->X()[1];
-     xyze(2,i)=Nodes()[i]->X()[2];
-   }
+    // get node coordinates
+    for(int i=0;i<iel;i++)
+    {
+      xyze(0,i)=Nodes()[i]->X()[0];
+      xyze(1,i)=Nodes()[i]->X()[1];
+      xyze(2,i)=Nodes()[i]->X()[2];
+    }
 
-   /*---------------------------------------------- get viscosity ---*/
-   // check here, if we really have a fluid !!
-   if(material->mattyp != m_fluid) dserror("Material law is not of type m_fluid.");
-   const double  visc = material->m.fluid->viscosity;
+    // dead load in element nodes
+    Epetra_SerialDenseMatrix bodyforce(3,iel);
+    this->f3_getbodyforce(bodyforce,iel,params);
+    
+    /*---------------------------------------------- get viscosity ---*/
+    // check here, if we really have a fluid !!
+    if(material->mattyp != m_fluid) dserror("Material law is not of type m_fluid.");
+    const double  visc = material->m.fluid->viscosity;
 
-   /*--------------------------------------------- stab-parameter ---*/
-   // USFEM stabilization is default. No switch here at the moment.
+    /*--------------------------------------------- stab-parameter ---*/
+    // USFEM stabilization is default. No switch here at the moment.
 
-  /*----------------------------------------- declaration of variables ---*/
-   vector<double> 		funct(iel);
-   Epetra_SerialDenseMatrix 	deriv(3,iel);
-   Epetra_SerialDenseMatrix 	deriv2(6,iel);
-   Epetra_SerialDenseMatrix 	xjm(3,3);
-   Epetra_SerialDenseMatrix 	vderxy(3,3);
-   vector<double> 		pderxy(3);
-   Epetra_SerialDenseMatrix 	vderxy2(3,6);
-   Epetra_SerialDenseMatrix 	derxy(3,iel);
-   Epetra_SerialDenseMatrix 	derxy2(6,iel);
-   Epetra_SerialDenseMatrix 	sigmaint(6,iel);
-   vector<double> 		ephin(iel);
-   vector<double> 		ephing(iel);
-   vector<double> 		iedgnod(iel);
-   Epetra_SerialDenseMatrix 	wa1(100,100);  // working matrix used as dummy
-   vector<double>    		histvec(3); /* history data at integration point              */
-   double         		hk;
-   double         		val, strle;
-   vector<double>         	velino(3); /* normed velocity at element centre */
-   double         		det, vol;
-   FLUID_DATA            	data;
-   double         		e1, e2, e3;
-   double         		facr=0.0, facs=0.0, fact=0.0;
-   double         		mk=0.0;
-   vector<double>     		velint(3);
-   double 			timefac;
-   vector<double>               tau(3); // stab parameters
+    /*----------------------------------------- declaration of variables ---*/
+    vector<double> 		funct(iel);
+    Epetra_SerialDenseMatrix 	deriv(3,iel);
+    Epetra_SerialDenseMatrix 	deriv2(6,iel);
+    Epetra_SerialDenseMatrix 	xjm(3,3);
+    Epetra_SerialDenseMatrix 	vderxy(3,3);
+    vector<double> 		pderxy(3);
+    Epetra_SerialDenseMatrix 	vderxy2(3,6);
+    Epetra_SerialDenseMatrix 	derxy(3,iel);
+    Epetra_SerialDenseMatrix 	derxy2(6,iel);
+    vector<double>              edeadng(3);
+    Epetra_SerialDenseMatrix 	wa1(100,100);  // working matrix used as dummy
+    vector<double>    		histvec(3); /* history data at integration point              */
+    double         		hk;
+    double         		val, strle;
+    vector<double>         	velino(3); /* normed velocity at element centre */
+    double         		det, vol;
+    FLUID_DATA            	data;
+    double         		e1, e2, e3;
+    double         		facr=0.0, facs=0.0, fact=0.0;
+    double         		mk=0.0;
+    vector<double>     		velint(3);
+    double 			timefac;
+    vector<double>               tau(3); // stab parameters
 
-  /*------------------------------------------------------- initialise ---*/
-  // gaussian points
-  f3_integration_points(data);
-  timefac=params.get<double>("time constant for integration",0.0);
+    /*------------------------------------------------------- initialise ---*/
+    // gaussian points
+    f3_integration_points(data);
+    timefac=params.get<double>("time constant for integration",0.0);
 
 
-   /*---------------------- shape functions and derivs at element center --*/
-switch(iel)
-{
-case 8: case 20: case 27:   /* --> hex - element */
-   e1   = data.qxg[0][0];
-   facr = data.qwgt[0][0];
-   e2   = data.qxg[0][0];
-   facs = data.qwgt[0][0];
-   e3   = data.qxg[0][0];
-   fact = data.qwgt[0][0];
+    /*---------------------- shape functions and derivs at element center --*/
+    switch(iel)
+    {
+        case 8: case 20: case 27:   /* --> hex - element */
+          e1   = data.qxg[0][0];
+          facr = data.qwgt[0][0];
+          e2   = data.qxg[0][0];
+          facs = data.qwgt[0][0];
+          e3   = data.qxg[0][0];
+          fact = data.qwgt[0][0];
 
-   f3_shape_function(funct,deriv,wa1,e1,e2,e3,iel,2); //wa1 as dummy for not wanted second derivatives  
-break;
-case 4: case 10:   /* --> tet - element */
-   e1   = data.txgr[0][0];
-   facr = data.twgt[0][0];
-   e2   = data.txgs[0][0];
-   facs = ONE;
-   e3   = data.txgs[0][0];
-   fact = ONE;
-   f3_shape_function(funct,deriv,wa1,e1,e2,e3,iel,2); //wa1 as dummy for not wanted second derivatives
-break;
-default:
-   dserror("type unknown!\n");
-} /*end switch(iel) */
+          f3_shape_function(funct,deriv,wa1,e1,e2,e3,iel,2); //wa1 as dummy for not wanted second derivatives  
+          break;
+        case 4: case 10:   /* --> tet - element */
+          e1   = data.txgr[0][0];
+          facr = data.twgt[0][0];
+          e2   = data.txgs[0][0];
+          facs = ONE;
+          e3   = data.txgs[0][0];
+          fact = ONE;
+          f3_shape_function(funct,deriv,wa1,e1,e2,e3,iel,2); //wa1 as dummy for not wanted second derivatives
+          break;
+        default:
+          dserror("type unknown!\n");
+    } /*end switch(iel) */
 
 /*------------------------------- get element type constant for tau ---*/
-switch(iel)
-   {
-   case 4:
-   case 8:
-      mk = 0.333333333333333333333;
-   break;
-   case 20:
-   case 27:
-   case 10:
-      mk = 0.083333333333333333333;
-   break;
-   default: dserror("type unknown!\n");
-   }
+    switch(iel)
+    {
+        case 4:
+        case 8:
+          mk = 0.333333333333333333333;
+          break;
+        case 20:
+        case 27:
+        case 10:
+          mk = 0.083333333333333333333;
+          break;
+        default: dserror("type unknown!\n");
+    }
 /*--------------------------------- get velocities at element center ---*/
-for (int i=0;i<3;i++)
-{
-   velint[i]=ZERO;
-   for (int j=0;j<iel;j++)
-   {
-     velint[i] += funct[j]*evelnp[i+(3*j)];
-   }
-} //end loop over i
+    for (int i=0;i<3;i++)
+    {
+      velint[i]=ZERO;
+      for (int j=0;j<iel;j++)
+      {
+        velint[i] += funct[j]*evelnp[i+(3*j)];
+      }
+    } //end loop over i
 
 #if 0
-{
-  // stabilisation parameter a la Foerster
-  double norm_p, pe, re, xi1, xi2;
+    {
+      // stabilisation parameter a la Foerster
+      double norm_p, pe, re, xi1, xi2;
   
-  /*------------------------------ get Jacobian matrix and determinant ---*/
-  f3_jaco(xyze,deriv,xjm,&det,iel);
-  vol=facr*facs*fact*det;
+      /*------------------------------ get Jacobian matrix and determinant ---*/
+      f3_jaco(xyze,deriv,xjm,&det,iel);
+      vol=facr*facs*fact*det;
 
-  /*----------------------------------------------- get element length ---*/
-  hk = pow((SIX*vol/PI),(ONE/THREE))/sqrt(THREE);
+      /*----------------------------------------------- get element length ---*/
+      hk = pow((SIX*vol/PI),(ONE/THREE))/sqrt(THREE);
 
-  /*------------------------------------------------- get streamlength ---*/
-  f3_gder(derxy,deriv,xjm,det,iel);
-  val = ZERO;
-  /* get p-norm */
-  norm_p=sqrt( velint[0]*velint[0]
-               + velint[1]*velint[1]
-               + velint[2]*velint[2]);
-  if(norm_p>=EPS6)
-  {
-    velino[0] = velint[0]/norm_p;
-    velino[1] = velint[1]/norm_p;
-    velino[2] = velint[2]/norm_p;
-  }
-  else
-  {
-    velino[0] = ONE;
-    velino[1] = ZERO;
-    velino[2] = ZERO;
-  }
-  for (int i=0;i<iel;i++) /* loop element nodes */
-  {
-    val += FABS(velino[0]*derxy(0,i) \
-                +velino[1]*derxy(1,i) \
-                +velino[2]*derxy(2,i));
-  } /* end of loop over elements */
-  strle=TWO/val;
+      /*------------------------------------------------- get streamlength ---*/
+      f3_gder(derxy,deriv,xjm,det,iel);
+      val = ZERO;
+      /* get p-norm */
+      norm_p=sqrt( velint[0]*velint[0]
+                   + velint[1]*velint[1]
+                   + velint[2]*velint[2]);
+      if(norm_p>=EPS6)
+      {
+        velino[0] = velint[0]/norm_p;
+        velino[1] = velint[1]/norm_p;
+        velino[2] = velint[2]/norm_p;
+      }
+      else
+      {
+        velino[0] = ONE;
+        velino[1] = ZERO;
+        velino[2] = ZERO;
+      }
+      for (int i=0;i<iel;i++) /* loop element nodes */
+      {
+        val += FABS(velino[0]*derxy(0,i) \
+                    +velino[1]*derxy(1,i) \
+                    +velino[2]*derxy(2,i));
+      } /* end of loop over elements */
+      strle=TWO/val;
 
-  /*--------------------------------------------------------- get tau_Mu ---*/
-  pe = 4.0 * timefac * visc / (mk * DSQR(strle)); /* viscous : reactive forces */
-  re = mk * norm_p * strle / (2.0 * visc);       /* advective : viscous forces */
+      /*--------------------------------------------------------- get tau_Mu ---*/
+      pe = 4.0 * timefac * visc / (mk * DSQR(strle)); /* viscous : reactive forces */
+      re = mk * norm_p * strle / (2.0 * visc);       /* advective : viscous forces */
 
-  xi1 = DMAX(pe,1.0);
-  /*xi1 = pe; */
-  xi2 = DMAX(re,1.0);
+      xi1 = DMAX(pe,1.0);
+      /*xi1 = pe; */
+      xi2 = DMAX(re,1.0);
 
-  tau[0] = DSQR(strle) / (DSQR(strle)*xi1+(4.0*timefac*visc/mk)*xi2);
+      tau[0] = DSQR(strle) / (DSQR(strle)*xi1+(4.0*timefac*visc/mk)*xi2);
 
-/*--------------------------------------------------------- get tau_Mp ---*/
-  pe = 4.0 * timefac * visc / (mk * DSQR(hk)); /* viscous : reactive forces */
-  re = mk * norm_p * hk / (2.0 * visc);       /* advective : viscous forces */
+      /*--------------------------------------------------------- get tau_Mp ---*/
+      pe = 4.0 * timefac * visc / (mk * DSQR(hk)); /* viscous : reactive forces */
+      re = mk * norm_p * hk / (2.0 * visc);       /* advective : viscous forces */
 
-  xi1 = DMAX(pe,1.0);
-  /*xi1 = pe; */
-  xi2 = DMAX(re,1.0);
+      xi1 = DMAX(pe,1.0);
+      /*xi1 = pe; */
+      xi2 = DMAX(re,1.0);
 
-  tau[1] = DSQR(hk) / (DSQR(hk) * xi1 + (4.0*timefac * visc/mk) * xi2);
+      tau[1] = DSQR(hk) / (DSQR(hk) * xi1 + (4.0*timefac * visc/mk) * xi2);
 
-  /*---------------------------------------------------------- get tau_C ---*/
-  tau[2] = norm_p * hk * 0.5 * xi2;
-}
+      /*---------------------------------------------------------- get tau_C ---*/
+      tau[2] = norm_p * hk * 0.5 * xi2;
+    }
 #endif
 #if 1
-{
-  // stabilisation parameter a la Gravemeier
-  double vel_norm, re1, re2, xi1, xi2;
+    {
+      // stabilisation parameter a la Gravemeier
+      double vel_norm, re1, re2, xi1, xi2;
 
-  /*------------------------------ get Jacobian matrix and determinant ---*/
-  f3_jaco(xyze,deriv,xjm,&det,iel);
-  vol=facr*facs*fact*det;
+      /*------------------------------ get Jacobian matrix and determinant ---*/
+      f3_jaco(xyze,deriv,xjm,&det,iel);
+      vol=facr*facs*fact*det;
 
-  /* get element length for tau_Mp/tau_C: volume-equival. diameter/sqrt(3)*/
-  hk = pow((SIX*vol/PI),(ONE/THREE))/sqrt(THREE);
+      /* get element length for tau_Mp/tau_C: volume-equival. diameter/sqrt(3)*/
+      hk = pow((SIX*vol/PI),(ONE/THREE))/sqrt(THREE);
 
-  /*------------------------------------------------- get streamlength ---*/
-  f3_gder(derxy,deriv,xjm,det,iel);
-  val = ZERO;
+      /*------------------------------------------------- get streamlength ---*/
+      f3_gder(derxy,deriv,xjm,det,iel);
+      val = ZERO;
 
   
-  /* get velocity norm */
-  vel_norm=sqrt( velint[0]*velint[0]
-                 + velint[1]*velint[1]
-                 + velint[2]*velint[2]);
-  if(vel_norm>=EPS6)
-  {
-    velino[0] = velint[0]/vel_norm;
-    velino[1] = velint[1]/vel_norm;
-    velino[2] = velint[2]/vel_norm;
-  }
-  else
-  {
-    velino[0] = ONE;
-    velino[1] = ZERO;
-    velino[2] = ZERO;
-  }
-  for (int i=0;i<iel;i++) /* loop element nodes */
-  {
-    val += FABS(velino[0]*derxy(0,i) \
-                +velino[1]*derxy(1,i) \
-                +velino[2]*derxy(2,i));
-  } /* end of loop over elements */
-  strle=TWO/val;
+      /* get velocity norm */
+      vel_norm=sqrt( velint[0]*velint[0]
+                     + velint[1]*velint[1]
+                     + velint[2]*velint[2]);
+      if(vel_norm>=EPS6)
+      {
+        velino[0] = velint[0]/vel_norm;
+        velino[1] = velint[1]/vel_norm;
+        velino[2] = velint[2]/vel_norm;
+      }
+      else
+      {
+        velino[0] = ONE;
+        velino[1] = ZERO;
+        velino[2] = ZERO;
+      }
+      for (int i=0;i<iel;i++) /* loop element nodes */
+      {
+        val += FABS(velino[0]*derxy(0,i) \
+                    +velino[1]*derxy(1,i) \
+                    +velino[2]*derxy(2,i));
+      } /* end of loop over elements */
+      strle=TWO/val;
 
-  /*----------------------------------------------------- compute tau_Mu ---*/
-  /* stability parameter definition according to Franca and Valentin (2000) */
-  re1 = 2.0 * timefac * visc / (mk * DSQR(strle)); /* viscous : reactive forces */
-  re2 = mk * vel_norm * strle / visc;            /* convective : viscous forces */
+      /*----------------------------------------------------- compute tau_Mu ---*/
+      /* stability parameter definition according to Franca and Valentin (2000) */
+      re1 = 2.0 * timefac * visc / (mk * DSQR(strle)); /* viscous : reactive forces */
+      re2 = mk * vel_norm * strle / visc;            /* convective : viscous forces */
 
-  xi1 = DMAX(re1,1.0);
-  xi2 = DMAX(re2,1.0);
+      xi1 = DMAX(re1,1.0);
+      xi2 = DMAX(re2,1.0);
 
-  tau[0] = DSQR(strle) / (DSQR(strle)*xi1+(2.0*timefac*visc/mk)*xi2);
+      tau[0] = DSQR(strle) / (DSQR(strle)*xi1+(2.0*timefac*visc/mk)*xi2);
 
-  /*------------------------------------------------------compute tau_Mp ---*/
-  /* stability parameter definition according to Franca and Valentin (2000) */
-  re1 = 2.0 * timefac * visc / (mk * DSQR(hk)); /* viscous : reactive forces */
-  re2 = mk * vel_norm * hk / visc;       /* convective : viscous forces */
+      /*------------------------------------------------------compute tau_Mp ---*/
+      /* stability parameter definition according to Franca and Valentin (2000) */
+      re1 = 2.0 * timefac * visc / (mk * DSQR(hk)); /* viscous : reactive forces */
+      re2 = mk * vel_norm * hk / visc;       /* convective : viscous forces */
 
-  xi1 = DMAX(re1,1.0);
-  xi2 = DMAX(re2,1.0);
+      xi1 = DMAX(re1,1.0);
+      xi2 = DMAX(re2,1.0);
 
-  tau[1] = DSQR(hk) / (DSQR(hk) * xi1 + (2.0*timefac * visc/mk) * xi2);
+      tau[1] = DSQR(hk) / (DSQR(hk) * xi1 + (2.0*timefac * visc/mk) * xi2);
 
-  /*------------------------------------------------------ compute tau_C ---*/
-  /*-- stability parameter definition according to Codina (2002), CMAME 191 */
-  tau[2] = sqrt(DSQR(visc)+DSQR(0.5*vel_norm*hk));
-}
+      /*------------------------------------------------------ compute tau_C ---*/
+      /*-- stability parameter definition according to Codina (2002), CMAME 191 */
+      tau[2] = sqrt(DSQR(visc)+DSQR(0.5*vel_norm*hk));
+    }
 #endif
-/*----------------------------------------------------------------------*/
-// end of old f3_caltau function
-/*----------------------------------------------------------------------*/
+    /*----------------------------------------------------------------------*/
+    // end of old f3_caltau function
+    /*----------------------------------------------------------------------*/
 
-// integration loop for one Fluid3 element using USFEM
+    // integration loop for one Fluid3 element using USFEM
 
-int       intc=0;      /* "integration case" for tri for further infos
-                          see f2_inpele.c and f2_intg.c                 */
-int       nir=0;       /* number of integration nodesin r direction     */
-int       nis=0;       /* number of integration nodesin s direction     */
-int       nit=0;       /* number of integration nodesin t direction      */
-int       ihoel=0;     /* flag for higher order elements                 */
-int       icode=2;     /* flag for eveluation of shape functions         */
-double    fac;         /* total integration factor */
-double    press;
-vector<double>    gridvelint(3); /* grid velocity                       */
-vector<double>    gradp(3);      /* pressure gradient at integration point         */
-
-
-switch (iel)
-{
-case 8: case 20: case 27:  /* --> hex - element */
-   icode   = 3;
-   ihoel   = 1;
-   /* initialise integration */
-   nir = ngp_[0];
-   nis = ngp_[1];
-   nit = ngp_[2];
-   intc= 0;
-   break;
-case 10: /* --> tet - element */
-   icode   = 3;
-   ihoel   = 1;
-/* do NOT break at this point!!! */
-case 4:    /* initialise integration */
-   nir  = ngp_[0]; // for tets in ngp_[0] the number of gauss points is stored !
-   nis  = 1;
-   nit  = 1;
-   intc = ngp_[1];
-   break;
-default:
-   dserror("typ unknown!");
-} // end switch (iel) //
+    int       intc=0;      /* "integration case" for tri for further infos
+                              see f2_inpele.c and f2_intg.c                 */
+    int       nir=0;       /* number of integration nodesin r direction     */
+    int       nis=0;       /* number of integration nodesin s direction     */
+    int       nit=0;       /* number of integration nodesin t direction      */
+    int       ihoel=0;     /* flag for higher order elements                 */
+    int       icode=2;     /* flag for eveluation of shape functions         */
+    double    fac;         /* total integration factor */
+    double    press;
+    vector<double>    gridvelint(3); /* grid velocity                       */
+    vector<double>    gradp(3);      /* pressure gradient at integration point         */
 
 
-/*----------------------------------------------------------------------*
- |               start loop over integration points                     |
- *----------------------------------------------------------------------*/
-for (int lr=0;lr<nir;lr++)
-{
-for (int ls=0;ls<nis;ls++)
-{
-for (int lt=0;lt<nit;lt++)
-{
-/*------------- get values of  shape functions and their derivatives ---*/
-   switch(iel)
-   {
-   case 8: case 20: case 27:   /* --> hex - element */
-      e1   = data.qxg[lr][nir-1];
-      facr = data.qwgt[lr][nir-1];
-      e2   = data.qxg[ls][nis-1];
-      facs = data.qwgt[ls][nis-1];
-      e3   = data.qxg[lt][nit-1];
-      fact = data.qwgt[lt][nit-1];
-      f3_shape_function(funct,deriv,deriv2,e1,e2,e3,iel,icode);
-      break;
-   case 4: case 10:   /* --> tet - element */
-      e1   = data.txgr[lr][intc];
-      facr = data.twgt[lr][intc];
-      e2   = data.txgs[lr][intc];
-      facs = ONE;
-      e3   = data.txgt[lr][intc];
-      fact = ONE;
-      f3_shape_function(funct,deriv,deriv2,e1,e2,e3,iel,icode);
-      break;
-   default:
-      facr = facs = fact = 0.0;
-      e1 = e2 = e3 = 0.0;
-      dserror("typ unknown!");
-   } /* end switch (iel) */
+    switch (iel)
+    {
+        case 8: case 20: case 27:  /* --> hex - element */
+          icode   = 3;
+          ihoel   = 1;
+          /* initialise integration */
+          nir = ngp_[0];
+          nis = ngp_[1];
+          nit = ngp_[2];
+          intc= 0;
+          break;
+        case 10: /* --> tet - element */
+          icode   = 3;
+          ihoel   = 1;
+          /* do NOT break at this point!!! */
+        case 4:    /* initialise integration */
+          nir  = ngp_[0]; // for tets in ngp_[0] the number of gauss points is stored !
+          nis  = 1;
+          nit  = 1;
+          intc = ngp_[1];
+          break;
+        default:
+          dserror("typ unknown!");
+    } // end switch (iel) //
 
-   /*----------------------------------------- compute Jacobian matrix */
-   f3_jaco(xyze,deriv,xjm,&det,iel);
-   fac = facr*facs*fact*det;
 
-   /*---------------------------------------- compute global derivates */
-   f3_gder(derxy,deriv,xjm,det,iel);
+    /*----------------------------------------------------------------------*
+     |               start loop over integration points                     |
+     *----------------------------------------------------------------------*/
+    for (int lr=0;lr<nir;lr++)
+    {
+      for (int ls=0;ls<nis;ls++)
+      {
+        for (int lt=0;lt<nit;lt++)
+        {
+          /*------------- get values of  shape functions and their derivatives ---*/
+          switch(iel)
+          {
+              case 8: case 20: case 27:   /* --> hex - element */
+                e1   = data.qxg[lr][nir-1];
+                facr = data.qwgt[lr][nir-1];
+                e2   = data.qxg[ls][nis-1];
+                facs = data.qwgt[ls][nis-1];
+                e3   = data.qxg[lt][nit-1];
+                fact = data.qwgt[lt][nit-1];
+                f3_shape_function(funct,deriv,deriv2,e1,e2,e3,iel,icode);
+                break;
+              case 4: case 10:   /* --> tet - element */
+                e1   = data.txgr[lr][intc];
+                facr = data.twgt[lr][intc];
+                e2   = data.txgs[lr][intc];
+                facs = ONE;
+                e3   = data.txgt[lr][intc];
+                fact = ONE;
+                f3_shape_function(funct,deriv,deriv2,e1,e2,e3,iel,icode);
+                break;
+              default:
+                facr = facs = fact = 0.0;
+                e1 = e2 = e3 = 0.0;
+                dserror("typ unknown!");
+          } /* end switch (iel) */
 
-   /*--------------------------------- compute second global derivative */
-   if (ihoel!=0)
-   {
-      f3_gder2(xyze,xjm,derxy,derxy2,deriv2,iel);
+          /*----------------------------------------- compute Jacobian matrix */
+          f3_jaco(xyze,deriv,xjm,&det,iel);
+          fac = facr*facs*fact*det;
 
-        /*------calculate 2nd velocity derivatives at integration point */
-	// former f3_vder2(vderxy2,derxy2,evelnp,iel);
-      for (int i=0;i<6;i++)
-	{
-   	vderxy2(0,i)=ZERO;
-   	vderxy2(1,i)=ZERO;
-   	vderxy2(2,i)=ZERO;
-   	for (int j=0;j<iel;j++)
-   	{
-          vderxy2(0,i) += derxy2(i,j)*evelnp[0+(3*j)];
-          vderxy2(1,i) += derxy2(i,j)*evelnp[1+(3*j)];
-          vderxy2(2,i) += derxy2(i,j)*evelnp[2+(3*j)];
-   	} /* end of loop over j */
-	} /* end of loop over i */
-   }
+          /*---------------------------------------- compute global derivates */
+          f3_gder(derxy,deriv,xjm,det,iel);
 
-    /*---------------------- get velocities (n+g,i) at integration point */
-   // expression for f3_veci(velint,funct,evelnp,iel);
-   for (int i=0;i<3;i++)
-   {
-   velint[i]=ZERO;
-     for (int j=0;j<iel;j++)
-     {
-     velint[i] += funct[j]*evelnp[i+(3*j)];
-     }
-   } //end loop over i
+          /*--------------------------------- compute second global derivative */
+          if (ihoel!=0)
+          {
+            f3_gder2(xyze,xjm,derxy,derxy2,deriv2,iel);
 
-   /*---------------- get history data (n,i) at integration point ---*/
-    //expression for f3_veci(histvec,funct,evhist,iel);
-   for (int i=0;i<3;i++)
-   {
-   histvec[i]=ZERO;
-     for (int j=0;j<iel;j++)
-     {
-        histvec[i] += funct[j]*evhist[i+(3*j)];
-     } /* end of loop over j */
-   } /* end of loop over i */
+            /*------calculate 2nd velocity derivatives at integration point */
+            // former f3_vder2(vderxy2,derxy2,evelnp,iel);
+            for (int i=0;i<6;i++)
+            {
+              vderxy2(0,i)=ZERO;
+              vderxy2(1,i)=ZERO;
+              vderxy2(2,i)=ZERO;
+              for (int j=0;j<iel;j++)
+              {
+                vderxy2(0,i) += derxy2(i,j)*evelnp[0+(3*j)];
+                vderxy2(1,i) += derxy2(i,j)*evelnp[1+(3*j)];
+                vderxy2(2,i) += derxy2(i,j)*evelnp[2+(3*j)];
+              } /* end of loop over j */
+            } /* end of loop over i */
+          }
 
-   /*----------- get velocity (np,i) derivatives at integration point */
-   // expression for f3_vder(vderxy,derxy,evelnp,iel);
-   for (int i=0;i<3;i++)
-   {
-     vderxy(0,i)=ZERO;
-     vderxy(1,i)=ZERO;
-     vderxy(2,i)=ZERO;
-     for (int j=0;j<iel;j++)
-     { 
-       vderxy(0,i) += derxy(i,j)*evelnp[0+(3*j)];
-       vderxy(1,i) += derxy(i,j)*evelnp[1+(3*j)];
-       vderxy(2,i) += derxy(i,j)*evelnp[2+(3*j)];
-     } /* end of loop over j */
-   } /* end of loop over i */
+          /*---------------------- get velocities (n+g,i) at integration point */
+          // expression for f3_veci(velint,funct,evelnp,iel);
+          for (int i=0;i<3;i++)
+          {
+            velint[i]=ZERO;
+            for (int j=0;j<iel;j++)
+            {
+              velint[i] += funct[j]*evelnp[i+(3*j)];
+            }
+          } //end loop over i
 
-   /*--------------------- get grid velocity at integration point ---*/
-   /*
-   if(is_ale_)
-     dserror("No ALE algorithms supported by Fluid3 element up to now.");
-   else
-   */
-   {
-     gridvelint[0] = 0.0;
-     gridvelint[1] = 0.0;
-     gridvelint[2] = 0.0;
-   }
+          /*---------------- get history data (n,i) at integration point ---*/
+          //expression for f3_veci(histvec,funct,evhist,iel);
+          for (int i=0;i<3;i++)
+          {
+            histvec[i]=ZERO;
+            for (int j=0;j<iel;j++)
+            {
+              histvec[i] += funct[j]*evhist[i+(3*j)];
+            } /* end of loop over j */
+          } /* end of loop over i */
 
-   /*------------------------------------- get pressure gradients ---*/
-   gradp[0] = gradp[1] = gradp[2] = 0.0;
+          /*----------- get velocity (np,i) derivatives at integration point */
+          // expression for f3_vder(vderxy,derxy,evelnp,iel);
+          for (int i=0;i<3;i++)
+          {
+            vderxy(0,i)=ZERO;
+            vderxy(1,i)=ZERO;
+            vderxy(2,i)=ZERO;
+            for (int j=0;j<iel;j++)
+            { 
+              vderxy(0,i) += derxy(i,j)*evelnp[0+(3*j)];
+              vderxy(1,i) += derxy(i,j)*evelnp[1+(3*j)];
+              vderxy(2,i) += derxy(i,j)*evelnp[2+(3*j)];
+            } /* end of loop over j */
+          } /* end of loop over i */
 
-   for (int i=0; i<iel; i++)
-   {
-      gradp[0] += derxy(0,i) * eprenp[i];
-      gradp[1] += derxy(1,i) * eprenp[i];
-      gradp[2] += derxy(2,i) * eprenp[i];            
-   }
+          /*--------------------- get grid velocity at integration point ---*/
+          /*
+            if(is_ale_)
+            dserror("No ALE algorithms supported by Fluid3 element up to now.");
+            else
+          */
+          {
+            gridvelint[0] = 0.0;
+            gridvelint[1] = 0.0;
+            gridvelint[2] = 0.0;
+          }
 
-   press = 0;
-   for (int i=0;i<iel;i++)
-   {
-     press += funct[i]*eprenp[i];
-   }
+          /*------------------------------------- get pressure gradients ---*/
+          gradp[0] = gradp[1] = gradp[2] = 0.0;
 
-   /*-------------- perform integration for entire matrix and rhs ---*/
-   f3_calmat(*sys_mat,*residual,velint,histvec,gridvelint,press,vderxy,vderxy2,gradp,funct,tau,derxy,derxy2,fac,visc,iel,params);
+          for (int i=0; i<iel; i++)
+          {
+            gradp[0] += derxy(0,i) * eprenp[i];
+            gradp[1] += derxy(1,i) * eprenp[i];
+            gradp[2] += derxy(2,i) * eprenp[i];            
+          }
+
+          press = 0;
+          for (int i=0;i<iel;i++)
+          {
+            press += funct[i]*eprenp[i];
+          }
+
+          /*--------------------------------- get bodyforce in gausspoint---*/
+          for (int dim=0;dim<3;dim++)
+          {
+            edeadng[dim] = 0;
+            
+            for (int i=0;i<iel;i++)
+            {
+              edeadng[dim]+= bodyforce(dim,i)*funct[i];
+            }
+          }
+          
+          /*-------------- perform integration for entire matrix and rhs ---*/
+          f3_calmat(*sys_mat,*residual,velint,histvec,gridvelint,
+                    press,vderxy,vderxy2,gradp,funct,tau,
+                    derxy,derxy2,edeadng,fac,visc,iel,params);
 
 	     
-} /* end of loop over integration points lt*/
-} /* end of loop over integration points ls */
-} /* end of loop over integration points lr */
+        } /* end of loop over integration points lt*/
+      } /* end of loop over integration points ls */
+    } /* end of loop over integration points lr */
 
 
-} // end of case !is_ale = true
-else
-   dserror("ALE net algorithm not supported at the moment!\n");
+  } // end of case !is_ale = true
+  else
+    dserror("ALE net algorithm not supported at the moment!\n");
 
 
 
 
-return;
+  return;
 } // DRT::Elements::Fluid3::f3_sys_mat
 
 
@@ -1896,6 +1913,84 @@ return;
 } // end of DRT:Elements:Fluid3:f3_shape_function
 
 
+/*----------------------------------------------------------------------*
+ |  get the body force in the nodes of the element (private) gammi 04/07|
+ |  the Neumann condition associated with the nodes is stored in the    |
+ |  array edeadng only if all nodes have a VolumeNeumann condition      |
+ *----------------------------------------------------------------------*/
+void DRT::Elements::Fluid3::f3_getbodyforce
+  (Epetra_SerialDenseMatrix& edeadng,
+   const int                 iel    ,
+   ParameterList& 	     params
+)
+{
+  DSTraceHelper dst("Fluid3::f3_getbodyforce");
+
+  vector<DRT::Condition*> myneumcond;
+
+  // check whether all nodes have a unique VolumeNeumann condition
+  int count=0;
+  for(int nn=0;nn<iel;nn++)
+  {
+    Nodes()[nn]->GetCondition("VolumeNeumann",myneumcond);
+          
+    if (myneumcond.size()>1)
+    {
+      dserror("more than one VolumeNeumann cond on one node");
+    }
+    if (myneumcond.size()==1)
+    {
+      count++;
+    }
+  }
+
+  if (count == iel)
+  {
+    // find out whether we will use a time curve
+    bool usetime = true;
+    const double time = params.get("total time",-1.0);
+    if (time<0.0) usetime = false;
+        
+    vector<int>* curve  = myneumcond[0]->Get<vector<int> >("curve");
+    int curvenum = -1;
+
+    // get the factor for the timecurve
+    if (curve) curvenum = (*curve)[0]; 
+    double curvefac = 1.0;
+    if (curvenum>=0 && usetime)
+      dyn_facfromcurve(curvenum,time,&curvefac); 
+        
+    // set this condition to the edeadng array
+    for(int nn=0;nn<iel;nn++)
+    {
+      Nodes()[nn]->GetCondition("VolumeNeumann",myneumcond);
+
+      // get values and switches from the condition
+      vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
+      vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
+
+      for(int dim=0;dim<3;dim++)
+      {
+        edeadng(dim,nn)=(*onoff)[dim]*(*val)[dim]*curvefac;
+      }
+    }
+  }
+  else
+  {
+    // we have no dead load
+    for(int nn=0;nn<iel;nn++)
+    {
+      for(int dim=0;dim<3;dim++)
+      {
+        edeadng(dim,nn)=0.0;
+      }
+    }
+  }
+
+  return;
+}
+
+
 
 /*----------------------------------------------------------------------*
  |  calculate global derivatives w.r.t. x,y,z at point r,s,t (private)genk05/02
@@ -2208,21 +2303,22 @@ for further comments see comment lines within code.
 
 void DRT::Elements::Fluid3::f3_calmat( Epetra_SerialDenseMatrix& estif,
                 Epetra_SerialDenseVector&  eforce,
-                vector<double>&   velint,
-                vector<double>&   histvec,
-                vector<double>&   gridvint,
-		double&   	  press,
-                Epetra_SerialDenseMatrix& vderxy,
-                Epetra_SerialDenseMatrix& vderxy2,
-                vector<double>&   gradp,
-                vector<double>&   funct,
-                vector<double>&   tau,
-                Epetra_SerialDenseMatrix& derxy,
-                Epetra_SerialDenseMatrix& derxy2,
-                double&           fac,
-                const double&     visc,
-                const int&        iel,
-		ParameterList& 	  params
+                vector<double>&            velint,
+                vector<double>&            histvec,
+                vector<double>&            gridvint,
+		double&   	           press,
+                Epetra_SerialDenseMatrix&  vderxy,
+                Epetra_SerialDenseMatrix&  vderxy2,
+                vector<double>&            gradp,
+                vector<double>&            funct,
+                vector<double>&            tau,
+                Epetra_SerialDenseMatrix&  derxy,
+                Epetra_SerialDenseMatrix&  derxy2,
+                vector<double>&            edeadng,
+                double&                    fac,
+                const double&              visc,
+                const int&                 iel,
+		ParameterList& 	           params
                 )
 {
 //DOUBLE  viscous[3][3][3*iel];	/* viscous term partially integrated */
@@ -2267,9 +2363,9 @@ double timefacfac = timefac * fac;
 
 /*------------------------- evaluate rhs vector at integration point ---*/
 // no switch here at the moment w.r.t. is_ale
-    rhsint[0] = histvec[0];
-    rhsint[1] = histvec[1];
-    rhsint[2] = histvec[2];
+    rhsint[0] = histvec[0] + edeadng[0]*timefac;
+    rhsint[1] = histvec[1] + edeadng[1]*timefac;
+    rhsint[2] = histvec[2] + edeadng[2]*timefac;
 /*----------------- get numerical representation of single operators ---*/
 
 /* Convective term  u_old * grad u_old: */

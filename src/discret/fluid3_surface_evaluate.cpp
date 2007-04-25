@@ -2,11 +2,14 @@
 \file fluid3_surface_evaluate.cpp
 \brief
 
+Integrate a Surface Neumann boundary condition on a given boundary
+element (tri or quad)
+
 <pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
+Maintainer: Peter Gamnitzer
+            gamnitzer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15235
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -226,8 +229,6 @@ int DRT::Elements::Fluid3Surface::EvaluateNeumann(
     double fac;
     fac  = gaussweight[gpid] * drs * curvefac * thsl;
 
-    printf("%5f %5f %5f %5f\n",gaussweight[gpid], drs,curvefac,thsl);
-    
     for (int node=0;node<iel;++node)
     {
       for(int dim=0;dim<3;dim++)

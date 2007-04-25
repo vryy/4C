@@ -346,6 +346,11 @@ private:
                		const int          icode
           		);
 
+  // get the body force from the nodes condition
+  void f3_getbodyforce (Epetra_SerialDenseMatrix& edeadng,
+                        const int                 iel     ,
+                        ParameterList&    	  params);
+
   // calculate global derivatives w.r.t. x,y,z at point r,s,t are
     void f3_gder(Epetra_SerialDenseMatrix& derxy,
 		 const Epetra_SerialDenseMatrix& deriv,
@@ -365,22 +370,23 @@ private:
 
   // evaluate fluid coefficient matrix
     void f3_calmat( Epetra_SerialDenseMatrix& estif,
-                Epetra_SerialDenseVector&  	eforce,
-                vector<double>&  	velint,
-                vector<double>&   	histvec,
-                vector<double>&   	gridvint,
-                double&   		press,
-                Epetra_SerialDenseMatrix& vderxy,
-                Epetra_SerialDenseMatrix& vderxy2,
-                vector<double>&   	gradp,
-                vector<double>&   	funct,
-		vector<double>&   	tau,
-                Epetra_SerialDenseMatrix& derxy,
-                Epetra_SerialDenseMatrix& derxy2,
-                double&   	fac,
-                const double&   	visc,
-                const int&      	iel,
-		ParameterList& 		 params
+                Epetra_SerialDenseVector&     eforce,
+                vector<double>&  	      velint,
+                vector<double>&   	      histvec,
+                vector<double>&   	      gridvint,
+                double&   		      press,
+                Epetra_SerialDenseMatrix&     vderxy,
+                Epetra_SerialDenseMatrix&     vderxy2,
+                vector<double>&   	      gradp,
+                vector<double>&   	      funct,
+		vector<double>&   	      tau,
+                Epetra_SerialDenseMatrix&     derxy,
+                Epetra_SerialDenseMatrix&     derxy2,
+                vector<double>&               edeadng,
+                double&               	      fac,
+                const double&   	      visc,
+                const int&      	      iel,
+		ParameterList& 		      params
       		);
 
 }; // class Fluid3
