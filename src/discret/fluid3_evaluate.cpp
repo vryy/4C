@@ -309,70 +309,6 @@ void DRT::Elements::Fluid3::f3_sys_mat(vector<int>&              lm,
       }
     } //end loop over i
 
-#if 0
-    {
-      // stabilisation parameter a la Foerster
-      double norm_p, pe, re, xi1, xi2;
-  
-      /*------------------------------ get Jacobian matrix and determinant ---*/
-      f3_jaco(xyze,deriv,xjm,&det,iel);
-      vol=facr*facs*fact*det;
-
-      /*----------------------------------------------- get element length ---*/
-      hk = pow((SIX*vol/PI),(ONE/THREE))/sqrt(THREE);
-
-      /*------------------------------------------------- get streamlength ---*/
-      f3_gder(derxy,deriv,xjm,det,iel);
-      val = ZERO;
-      /* get p-norm */
-      norm_p=sqrt( velint[0]*velint[0]
-                   + velint[1]*velint[1]
-                   + velint[2]*velint[2]);
-      if(norm_p>=EPS6)
-      {
-        velino[0] = velint[0]/norm_p;
-        velino[1] = velint[1]/norm_p;
-        velino[2] = velint[2]/norm_p;
-      }
-      else
-      {
-        velino[0] = ONE;
-        velino[1] = ZERO;
-        velino[2] = ZERO;
-      }
-      for (int i=0;i<iel;i++) /* loop element nodes */
-      {
-        val += FABS(velino[0]*derxy(0,i) \
-                    +velino[1]*derxy(1,i) \
-                    +velino[2]*derxy(2,i));
-      } /* end of loop over elements */
-      strle=TWO/val;
-
-      /*--------------------------------------------------------- get tau_Mu ---*/
-      pe = 4.0 * timefac * visc / (mk * DSQR(strle)); /* viscous : reactive forces */
-      re = mk * norm_p * strle / (2.0 * visc);       /* advective : viscous forces */
-
-      xi1 = DMAX(pe,1.0);
-      /*xi1 = pe; */
-      xi2 = DMAX(re,1.0);
-
-      tau[0] = DSQR(strle) / (DSQR(strle)*xi1+(4.0*timefac*visc/mk)*xi2);
-
-      /*--------------------------------------------------------- get tau_Mp ---*/
-      pe = 4.0 * timefac * visc / (mk * DSQR(hk)); /* viscous : reactive forces */
-      re = mk * norm_p * hk / (2.0 * visc);       /* advective : viscous forces */
-
-      xi1 = DMAX(pe,1.0);
-      /*xi1 = pe; */
-      xi2 = DMAX(re,1.0);
-
-      tau[1] = DSQR(hk) / (DSQR(hk) * xi1 + (4.0*timefac * visc/mk) * xi2);
-
-      /*---------------------------------------------------------- get tau_C ---*/
-      tau[2] = norm_p * hk * 0.5 * xi2;
-    }
-#endif
-#if 1
     {
       // stabilisation parameter a la Gravemeier
       double vel_norm, re1, re2, xi1, xi2;
@@ -414,30 +350,54 @@ void DRT::Elements::Fluid3::f3_sys_mat(vector<int>&              lm,
       strle=TWO/val;
 
       /*----------------------------------------------------- compute tau_Mu ---*/
-      /* stability parameter definition according to Franca and Valentin (2000) */
-      re1 = 2.0 * timefac * visc / (mk * DSQR(strle)); /* viscous : reactive forces */
-      re2 = mk * vel_norm * strle / visc;            /* convective : viscous forces */
+      /* stability parameter definition according to
+
+                  Barrenechea, G.R. and Valentin, F.: An unusual stabilized finite
+                  element method for a generalized Stokes problem. Numerische
+                  Mathematik, Vol. 92, pp. 652-677, 2002.
+                  http://www.lncc.br/~valentin/publication.htm
+        and:
+                  Franca, L.P. and Valentin, F.: On an Improved Unusual Stabilized
+                  Finite Element Method for the Advective-Reactive-Diffusive
+                  Equation. Computer Methods in Applied Mechanics and Enginnering,
+                  Vol. 190, pp. 1785-1800, 2000.
+                  http://www.lncc.br/~valentin/publication.htm                   */
+
+      
+      re1 =/* 2.0*/ 4.0 * timefac * visc / (mk * DSQR(strle)); /* viscous : reactive forces */
+      re2 = mk * vel_norm * strle / /* *1.0 */(2.0 * visc);    /* convective : viscous forces */
 
       xi1 = DMAX(re1,1.0);
       xi2 = DMAX(re2,1.0);
 
-      tau[0] = DSQR(strle) / (DSQR(strle)*xi1+(2.0*timefac*visc/mk)*xi2);
+      tau[0] = DSQR(strle) / (DSQR(strle)*xi1+(/* 2.0*/ 4.0 * timefac*visc/mk)*xi2);
 
       /*------------------------------------------------------compute tau_Mp ---*/
-      /* stability parameter definition according to Franca and Valentin (2000) */
-      re1 = 2.0 * timefac * visc / (mk * DSQR(hk)); /* viscous : reactive forces */
-      re2 = mk * vel_norm * hk / visc;       /* convective : viscous forces */
+      /* stability parameter definition according to Franca and Valentin (2000)
+       *                                    and Barrenechea and Valentin (2002) */
+      re1 = /* 2.0*/ 4.0 * timefac * visc / (mk * DSQR(hk)); /* viscous : reactive forces */
+      re2 = mk * vel_norm * hk / /* *1.0 */(2.0 * visc);     /* convective : viscous forces */
 
       xi1 = DMAX(re1,1.0);
       xi2 = DMAX(re2,1.0);
 
-      tau[1] = DSQR(hk) / (DSQR(hk) * xi1 + (2.0*timefac * visc/mk) * xi2);
+      tau[1] = DSQR(hk) / (DSQR(hk) * xi1 + (/* 2.0*/ 4.0 * timefac * visc/mk) * xi2);
 
       /*------------------------------------------------------ compute tau_C ---*/
-      /*-- stability parameter definition according to Codina (2002), CMAME 191 */
-      tau[2] = sqrt(DSQR(visc)+DSQR(0.5*vel_norm*hk));
+      /*-- stability parameter definition according to Codina (2002), CMAME 191
+       *
+       * Analysis of a stabilized finite element approximation of the transient
+       * convection-diffusion-reaction equation using orthogonal subscales.
+       * Ramon Codina, Jordi Blasco; Comput. Visual. Sci., 4 (3): 167-174, 2002.
+       *
+       * */
+      //tau[2] = sqrt(DSQR(visc)+DSQR(0.5*vel_norm*hk));
+
+      // Wall Diss. 99  
+      tau[2] = vel_norm * hk * 0.5 * xi2;
     }
-#endif
+
+    
     /*----------------------------------------------------------------------*/
     // end of old f3_caltau function
     /*----------------------------------------------------------------------*/
