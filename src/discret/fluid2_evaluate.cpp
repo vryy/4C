@@ -332,9 +332,9 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
         vel_norm = sqrt(DSQR(velint[0]) + DSQR(velint[1]));
 	
 	// get control parameter
-	bool isstationary = params.get<bool>("using stationary solver",false);
+	bool is_stationary = params.get<bool>("using stationary formulation",false);
 	
-	if (isstationary == false)
+	if (is_stationary == false)
 	{// stabilization parameters for instationary case (default)
 	
 	 /* parameter relating viscous : reactive forces */
@@ -528,7 +528,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
 		}
 
 		/*-------------- perform integration for entire matrix and rhs ---*/
-		if(isstationary==false)
+		if(is_stationary==false)
 		   f2_calmat(*sys_mat,*residual,
 			  velint,histvec,gridvelint,press,
 			  vderxy,vderxy2,gradp,

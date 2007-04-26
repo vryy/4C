@@ -141,6 +141,22 @@ public:
     );
 
   /*!
+  \brief Solve stationary problem
+
+  */
+  void SolveStationaryProblem(
+    int&               step,
+    double&            time,
+    double&            dta,
+    double&            dtp,
+    int                endstep,
+    double             endtime,
+    FLUID_TIMEINTTYPE  timealgo,
+    double             theta
+    );
+
+
+  /*!
   \brief do nonlinear iteration, e.g. full Newton, Newton like or
          Fixpoint iteration
 
@@ -175,7 +191,7 @@ public:
     );
 
   /*!
-  \brief update confiuration and output to file/screen
+  \brief update configuration and output to file/screen
 
   */
   void Output(

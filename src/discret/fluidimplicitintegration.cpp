@@ -23,6 +23,7 @@ Maintainer: Peter Gamnitzer
 
 #include "fluidimplicitintegration.H"
 
+
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -223,13 +224,27 @@ void FluidImplicitTimeInt::Integrate()
   //                                                (call of destructor)
   tm1_ref_ = null;
 
-  // start procedure
-  if (step_<numstasteps)
-  {
-    if(numstasteps>stepmax)
+  if (timealgo==timeint_stationary)
+    // stationary case
+    this->SolveStationaryProblem(
+      step_,
+      time_,
+      dta,
+      dtp,
+      stepmax,
+      maxtime,
+      timealgo,
+      theta
+      );
+  else  // instationary case
+  { 
+    // start procedure
+    if (step_<numstasteps)
     {
-      dserror("more startsteps than steps");
-    }
+      if(numstasteps>stepmax)
+      {
+        dserror("more startsteps than steps");
+      }
     
     this->TimeIntegrateFromTo(
       step_,
@@ -241,20 +256,21 @@ void FluidImplicitTimeInt::Integrate()
       startalgo,
       starttheta
       );
+    }
+
+    // continue with the final time integration
+    this->TimeIntegrateFromTo(
+      step_,
+      time_,
+      dta,
+      dtp,
+      stepmax,
+      maxtime,
+      timealgo,
+      theta
+      );
   }
-
-  // continue with the final time integration
-  this->TimeIntegrateFromTo(
-    step_,
-    time_,
-    dta,
-    dtp,
-    stepmax,
-    maxtime,
-    timealgo,
-    theta
-    );
-
+  
   // print the results of time measurements
 
   tm0_ref_ = null; // end total time measurement
@@ -612,6 +628,7 @@ void FluidImplicitTimeInt::NonlinearSolve(
       eleparams.set("assemble vector 3",false);
       // other parameters that might be needed by the elements
       eleparams.set("time constant for integration",theta*dta);
+      eleparams.set("using stationary formulation",true);
       // set vector values needed by elements
       discret_->ClearState();
       discret_->SetState("u and p at time n+1 (trial)",velnp_);
@@ -1223,6 +1240,132 @@ void FluidImplicitTimeInt::SetDefaults(ParameterList& params)
 
   return;
 }
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | solve stationary fluid problem   			     g.bau 04/07|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FluidImplicitTimeInt::SolveStationaryProblem(
+  int&               step,
+  double&            time,
+  double&            dta,
+  double&            dtp,
+  int                endstep,
+  double             endtime,
+  FLUID_TIMEINTTYPE  timealgo,
+  double             theta
+  )
+{
+  // start time measurement for timeloop
+  tm2_ref_ = rcp(new TimeMonitor(*timedynloop_));
+
+  
+  // pseudo time loop (continuation loop) 
+  // slightly increasing b.c. values by given timecurves to have convergence
+  // also in higher Reynolds number flows
+  bool stop_timeloop=false;
+
+  while (stop_timeloop==false)
+  {
+    // -------------------------------------------------------------------
+    //              set time dependent parameters
+    // -------------------------------------------------------------------
+    step++;
+    time+=dta;
+   
+    // -------------------------------------------------------------------
+    //                         out to screen
+    // -------------------------------------------------------------------
+    if (myrank_==0)
+    {
+      // printf("TIME: %11.4E/%11.4E  DT = %11.4E  Stationary  STEP = %4d/%4d \n",
+      //         time,endtime,dta,step,endstep);
+       printf("Stationary Solver - STEP = %4d/%4d \n",step,endstep);	       
+    }
+
+    // -------------------------------------------------------------------
+    //         evaluate dirichlet and neumann boundary conditions
+    // -------------------------------------------------------------------
+    {
+     ParameterList eleparams;
+     // action for elements
+     eleparams.set("action","calc_fluid_eleload");
+     // choose what to assemble
+     eleparams.set("assemble matrix 1",false);
+     eleparams.set("assemble matrix 2",false);
+     eleparams.set("assemble vector 1",true);
+     eleparams.set("assemble vector 2",false);
+     eleparams.set("assemble vector 3",false);
+     // other parameters needed by the elements
+     eleparams.set("total time",time);
+     eleparams.set("delta time",dta);
+     //eleparams.set("time constant for integration",theta*dta);
+
+     // set vector values needed by elements
+     discret_->ClearState();
+     discret_->SetState("u and p at time n+1 (trial)",velnp_);
+     // predicted dirichlet values
+     // velnp then also holds prescribed new dirichlet values
+     // dirichtoggle is 1 for dirichlet dofs, 0 elsewhere
+     discret_->EvaluateDirichlet(eleparams,*velnp_,*dirichtoggle_);
+     discret_->ClearState();
+
+     // evaluate Neumann conditions
+     eleparams.set("total time",time);
+     //eleparams.set("time constant for integration",theta*dta);
+
+     neumann_loads_->PutScalar(0.0);
+     discret_->EvaluateNeumann(eleparams,*neumann_loads_);
+     discret_->ClearState();
+    }
+
+    // -------------------------------------------------------------------
+    //                     solve nonlinear equation
+    // -------------------------------------------------------------------
+    this->NonlinearSolve(dta,theta);
+
+   
+    // -------------------------------------------------------------------
+    // evaluate error for test flows with analytical solutions
+    // -------------------------------------------------------------------
+    //this->EvaluateErrorComparedToAnalyticalSol(time);
+
+    
+    // -------------------------------------------------------------------
+    //                         output of solution
+    // -------------------------------------------------------------------
+    this->Output(step,time);
+
+
+    // -------------------------------------------------------------------
+    //                       update time step sizes
+    // -------------------------------------------------------------------
+    dtp = dta;
+
+
+    // -------------------------------------------------------------------
+    //                    stop criterium for timeloop
+    // -------------------------------------------------------------------
+
+    if(step==endstep||time>=endtime)
+    {
+	stop_timeloop=true;
+    }
+
+  }
+
+
+  // end time measurement for timeloop
+  tm2_ref_ = null;
+
+  return;
+} // FluidImplicitTimeInt::SolveStationaryProblem
 
 
 /*----------------------------------------------------------------------*
