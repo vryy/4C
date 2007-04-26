@@ -1678,6 +1678,11 @@ void f3_edgejaco( DOUBLE    **xyze,
   xjm[1][0] = ZERO ;
   xjm[1][1] = ZERO ;
 
+  for (i=0;i<3;i++)
+  {
+    dxyzdrs[0][i]=0;
+    dxyzdrs[1][i]=0;
+  }
   /* WARNING: WHATEVER WE COMPUTE, THIS IS NOT THE JACOBIAN!!!! */
   /* IT'S THE COVARIANT METRIC TENSOR G */
   for (k=0; k<iel; k++) /* loop all nodes of the element */
@@ -1686,10 +1691,11 @@ void f3_edgejaco( DOUBLE    **xyze,
     for (i=0;i<3;i++)
     {
     
-      dxyzdrs[0][i]=deriv[0][k]*xyze[i][node];
-      dxyzdrs[1][i]=deriv[1][k]*xyze[i][node];
+      dxyzdrs[0][i]+=deriv[0][k]*xyze[i][node];
+      dxyzdrs[1][i]+=deriv[1][k]*xyze[i][node];
     }
   }
+
 
 
   for (i=0;i<3;i++)
@@ -1699,7 +1705,6 @@ void f3_edgejaco( DOUBLE    **xyze,
     xjm[1][0]+=dxyzdrs[1][i]*dxyzdrs[0][i];
     xjm[1][1]+=dxyzdrs[1][i]*dxyzdrs[1][i];
   }
-
 
 
 #if 0
