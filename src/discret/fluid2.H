@@ -367,10 +367,30 @@ private:
 		vector<double>&   	tau,
                 Epetra_SerialDenseMatrix& derxy,
                 Epetra_SerialDenseMatrix& derxy2,
-                double&   	fac,
+                double&   		fac,
                 const double&   	visc,
                 const int&      	iel,
-		ParameterList& 		 params
+		ParameterList& 		params
+      		);
+		
+  // evaluate fluid coefficient matrix for stationary problems
+    void f2_calmat_stationary( Epetra_SerialDenseMatrix& estif,
+                Epetra_SerialDenseVector&  	eforce,
+                vector<double>&  	velint,
+                vector<double>&   	histvec,
+                vector<double>&   	gridvint,
+                double&   		press,
+                Epetra_SerialDenseMatrix& vderxy,
+                Epetra_SerialDenseMatrix& vderxy2,
+                vector<double>&   	gradp,
+                vector<double>&   	funct,
+		vector<double>&   	tau,
+                Epetra_SerialDenseMatrix& derxy,
+                Epetra_SerialDenseMatrix& derxy2,
+                double&   		fac,
+                const double&   	visc,
+                const int&      	iel,
+		ParameterList& 		params
       		);
 
 }; // class Fluid2

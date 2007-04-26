@@ -217,7 +217,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
 	Epetra_SerialDenseMatrix 	wa1(100,100);  // working matrix used as dummy
 	vector<double>    		histvec(2); /* history data at integration point      */
 	double         		hk;         /* element length for calculation of tau  */
-	double         		norm_p, pe, re, xi1, xi2;
+	double         		vel_norm, pe, re, xi1, xi2, xi;
 	vector<double>         	velino(2); /* normed velocity at element centre */
 	double         		det;
 	FLUID_DATA            	data;
@@ -328,23 +328,46 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
 	    hk = sqrt(area);
 	}
 
-	/*----------------------------------------------- get p-norm ---*/
-	norm_p = sqrt(DSQR(velint[0]) + DSQR(velint[1]));
+        /*----------------------------------------------- get vel_norm ---*/
+        vel_norm = sqrt(DSQR(velint[0]) + DSQR(velint[1]));
+	
+	// get control parameter
+	bool isstationary = params.get<bool>("using stationary solver",false);
+	
+	if (isstationary == false)
+	{// stabilization parameters for instationary case (default)
+	
+	 /* parameter relating viscous : reactive forces */
+	 pe = 4.0 * timefac * visc / (mk * DSQR(hk));
+	 /* parameter relating advective : viscous forces */
+	 re = mk * vel_norm * hk / (2.0 * visc);
 
-	/* parameter relating viscous : reactive forces */
-	pe = 4.0 * timefac * visc / (mk * DSQR(hk));
-	/* parameter relating advective : viscous forces */
-	re = mk * norm_p * hk / (2.0 * visc);
-
-	xi1 = DMAX(pe,1.0);
-	xi2 = DMAX(re,1.0);
+	 xi1 = DMAX(pe,1.0);
+	 xi2 = DMAX(re,1.0);
 
 
-	/*------------------------------------------------ get tau_M ---*/
-	tau[0] = DSQR(hk)/(DSQR(hk)*xi1 + (4.0*timefac*visc/mk)*xi2);
+	 /*-------------------------------------------- compute tau_M ---*/
+	 tau[0] = DSQR(hk)/(DSQR(hk)*xi1 + (4.0*timefac*visc/mk)*xi2);
 
-        /*------------------------------------------------ get tau_C ---*/
-	tau[2] = norm_p * hk * 0.5 * xi2;
+         /*-------------------------------------------- compute tau_C ---*/
+	 tau[2] = vel_norm * hk * 0.5 * xi2;
+	}
+	else
+	{// stabilization parameters for stationary case
+		
+	 /*------------------------------------------------------ compute tau_M ---*/
+	 /* stability parameter definition according to Franca and Valentin (2000) */
+ 	 re = mk * vel_norm * hk / 2.0 * visc;       /* convective : viscous forces */
+
+	 xi = DMAX(re,1.0);
+
+	 tau[0] = 0.5*(DSQR(hk)*mk)/(4.0*visc*xi);
+
+	 /*------------------------------------------------------ compute tau_C ---*/
+	 /*-- stability parameter definition according to Codina (2002), CMAME 191 */
+	 tau[2] = 0.5*vel_norm*hk*xi;
+	}
+
 
 
 /*----------------------------------------------------------------------*/
@@ -505,13 +528,23 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
 		}
 
 		/*-------------- perform integration for entire matrix and rhs ---*/
-		f2_calmat(*sys_mat,*residual,
+		if(isstationary==false)
+		   f2_calmat(*sys_mat,*residual,
 			  velint,histvec,gridvelint,press,
 			  vderxy,vderxy2,gradp,
 			  funct,tau,
 			  derxy,derxy2,
 			  fac,visc,iel,
-			  params);
+			  params);                
+		else
+		   f2_calmat_stationary(*sys_mat,*residual,
+			  velint,histvec,gridvelint,press,
+			  vderxy,vderxy2,gradp,
+			  funct,tau,
+			  derxy,derxy2,
+			  fac,visc,iel,
+			  params);		
+		 
 
 	    } /* end of loop over integration points ls */
 	} /* end of loop over integration points lr */
@@ -1791,8 +1824,7 @@ vector<double>            rhsint(2);   	    /* total right hand side terms at in
 // One-step-Theta: timefac = theta*dt
 // BDF2:           timefac = 2/3 * dt
 double timefac = params.get<double>("time constant for integration",-1.0);
-
-if (timefac == -1.0) dserror("No time constant for integration supplied");
+if (timefac < 0.0) dserror("No time constant for integration supplied");
 
 // stabilisation parameter
 double tau_M  = tau[0]*fac;
@@ -1951,6 +1983,180 @@ for (int i=0; i<iel; i++) /* loop over nodes of element */
 return;
 } // end of DRT:Elements:Fluid2:f2_calmat
 
+
+void DRT::Elements::Fluid2::f2_calmat_stationary(
+    Epetra_SerialDenseMatrix& estif,
+    Epetra_SerialDenseVector& eforce,
+    vector<double>&           velint,
+    vector<double>&           histvec,
+    vector<double>&           gridvint,
+    double&   	              press,
+    Epetra_SerialDenseMatrix& vderxy,
+    Epetra_SerialDenseMatrix& vderxy2,
+    vector<double>&           gradp,
+    vector<double>&           funct,
+    vector<double>&           tau,
+    Epetra_SerialDenseMatrix& derxy,
+    Epetra_SerialDenseMatrix& derxy2,
+    double&                   fac,
+    const double&             visc,
+    const int&                iel,
+    ParameterList& 	      params
+    )
+{
+/*========================= further variables =========================*/
+
+Epetra_SerialDenseMatrix  viscs2(2,2*iel);  /* viscous term incluiding 2nd derivatives         */
+vector<double>            conv_c(iel); 	    /* linearisation of convect, convective part       */
+vector<double>            conv_g(iel); 	    /* linearisation of convect, grid part             */
+Epetra_SerialDenseMatrix  conv_r(2,2*iel);  /* linearisation of convect, reactive part         */
+vector<double>            div(2*iel);  	    /* divergence of u or v                            */
+Epetra_SerialDenseMatrix  ugradv(iel,2*iel);/* linearisation of u * grad v                     */
+vector<double>            conv_old(2);      /* convective term evalaluated with old velocities */
+vector<double>            conv_g_old(2);
+vector<double>            visc_old(2); 	    /* viscous term evaluated with old velocities      */
+vector<double>            rhsint(2);   	    /* total right hand side terms at int.-point       */
+
+/*========================== initialisation ============================*/
+
+// stabilisation parameter
+double tau_M  = tau[0]*fac;
+double tau_Mp = tau[0]*fac;
+double tau_C  = tau[2]*fac;
+
+/*------------------------- evaluate rhs vector at integration point ---*/
+// no switch here at the moment w.r.t. is_ale
+rhsint[0] = histvec[0];
+rhsint[1] = histvec[1];
+
+/*----------------- get numerical representation of single operators ---*/
+/* Convective term  u_old * grad u_old: */
+conv_old[0] = vderxy(0,0) * velint[0] + vderxy(0,1) * velint[1];
+conv_old[1] = vderxy(1,0) * velint[0] + vderxy(1,1) * velint[1];
+
+/* Viscous term  div epsilon(u_old) */
+visc_old[0] = 0.5 * (2.0*vderxy2(0,0) + vderxy2(0,1) + vderxy2(1,2));
+visc_old[1] = 0.5 * (2.0*vderxy2(1,1) + vderxy2(1,0) + vderxy2(0,2));
+
+for (int i=0; i<iel; i++) /* loop over nodes of element */
+{
+   /* Reactive term  u:  funct */
+   /* linearise convective term */
+
+   /*--- convective part u_old * grad (funct) --------------------------*/
+   /* u_old_x * N,x  +  u_old_y * N,y   with  N .. form function matrix */
+    conv_c[i] = derxy(0,i) * velint[0] + derxy(1,i) * velint[1] ;
+
+   /*--- convective grid part u_G * grad (funct) -----------------------*/
+   /* u_old_x * N,x  +  u_old_y * N,y   with  N .. form function matrix */
+   if(is_ale_)
+   {
+       conv_g[i] = - derxy(0,i) * gridvint[0] - derxy(1,i) * gridvint[1];
+   }
+   else
+   {
+     conv_g[i] = 0;
+   }
+
+   /*--- reactive part funct * grad (u_old) ----------------------------*/
+   /* /                          \
+      |  u_old_x,x   u_old_x,y   |
+      |                          | * N   with  N .. form function matrix
+      |  u_old_y,x   u_old_y,y   |
+      \                         /                                       */
+   conv_r(0,2*i  ) = vderxy(0,0)*funct[i];
+   conv_r(0,2*i+1) = vderxy(0,1)*funct[i];
+   conv_r(1,2*i  ) = vderxy(1,0)*funct[i];
+   conv_r(1,2*i+1) = vderxy(1,1)*funct[i];
+
+   /*--- viscous term  - grad * epsilon(u): ----------------------------*/
+   /*   /                              \
+      1 |  2 N_x,xx + N_x,yy + N_y,xy  |    with N_x .. x-line of N
+    - - |                              |         N_y .. y-line of N
+      2 |  N_y,xx + N_x,yx + 2 N_y,yy  |
+        \                             /                                 */
+   viscs2(0,2*i  ) = - 0.5 * ( 2.0 * derxy2(0,i) + derxy2(1,i) );
+   viscs2(0,2*i+1) = - 0.5 * ( derxy2(2,i) );
+   viscs2(1,2*i  ) = - 0.5 * ( derxy2(2,i) );
+   viscs2(1,2*i+1) = - 0.5 * ( derxy2(0,i) + 2.0 * derxy2(1,i) );
+
+   /* pressure gradient term derxy, funct without or with integration   *
+    * by parts, respectively                                            */
+
+   /*--- divergence u term ---------------------------------------------*/
+   div[2*i]   = derxy(0,i);
+   div[2*i+1] = derxy(1,i);
+
+   /*--- ugradv-Term ---------------------------------------------------*/
+   /*
+     /                                                          \
+     |  N1*N1,x  N1*N1,y  N2*N1,x  N2*N1,y  N3*N1,x ...       . |
+     |                                                          |
+     |  N1*N2,x  N1*N2,y  N2*N2,x  N2*N2,y  N3*N2,x ...       . |
+     |                                                          |
+     |  N1*N3,x  N1*N3,y  N2*N3,x  N2*N3,y  N3*N3,x ...       . |
+     |                                           .              |
+     |  . . .                                        .          |
+     |                                                  Ni*Ni,y |
+     \                                                          /       */
+   /* remark: vgradu = ugradv^T */
+   for (int j=0; j<iel; j++)
+   {
+       ugradv(i,2*j  ) = derxy(0,i) * funct[j];
+       ugradv(i,2*j+1) = derxy(1,i) * funct[j];
+   }
+
+} // end of loop over nodes of element
+
+/*--------------------------------- now build single stiffness terms ---*/
+
+#define estif_(i,j)    estif(i,j)
+#define eforce_(i)     eforce[i]
+#define funct_(i)      funct[i]
+#define vderxy_(i,j)   vderxy(i,j)
+#define conv_c_(j)     conv_c[j]
+//#define conv_g_(j)     conv_g[j]
+#define conv_r_(i,j,k) conv_r(i,2*(k)+j)
+#define conv_old_(j)   conv_old[j]
+//#define conv_g_old_(j) conv_g_old[j]
+#define derxy_(i,j)    derxy(i,j)
+//#define gridvint_(j)   gridvint[j]
+#define velint_(j)     velint[j]
+#define viscs2_(i,j,k) viscs2(i,2*(k)+j)
+#define visc_old_(i)   visc_old[i]
+#define rhsint_(i)     rhsint[i]
+#define gradp_(j)      gradp[j]
+#define nu_            visc
+#define thsl           timefac
+
+  /* This code is generated using MuPAD. Ask me for the MuPAD. u.kue */
+
+  {
+   #include "fluid2_stiff_stationary.cpp"
+   #include "fluid2_rhs_incr_stationary.cpp"
+  }
+
+#undef estif_
+#undef eforce_
+#undef conv_c_
+//#undef conv_g_
+#undef conv_r_
+#undef conv_old_
+//#undef conv_g_old_
+#undef derxy_
+//#undef gridvint_
+#undef velint_
+#undef viscs2_
+#undef gradp_
+#undef funct_
+#undef vderxy_
+#undef visc_old_
+#undef rhsint_
+#undef nu_
+#undef thsl
+
+return;
+} // end of DRT:Elements:Fluid2:f2_calmat_stationary
 
 
 //=======================================================================
