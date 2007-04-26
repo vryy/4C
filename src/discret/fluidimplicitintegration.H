@@ -190,6 +190,15 @@ public:
   void SetInitialFlowField(
     int whichinitialfield
     );
+
+  /*!
+  \brief calculate error between a analytical solution and the
+         numerical solution of a test problems
+
+  */
+  void EvaluateErrorComparedToAnalyticalSol(
+    double time
+    );
   
   //@}
 

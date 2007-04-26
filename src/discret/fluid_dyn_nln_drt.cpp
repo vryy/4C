@@ -187,7 +187,12 @@ void dyn_fluid_drt()
   // restart
   fluidtimeparams.set                  ("write restart every"       ,fdyn->uprestart);
 
-
+  //--------------------------------------------------
+  // evaluate error for test flows with analytical solutions
+  fluidtimeparams.set                  ("eval err for analyt sol"   ,fdyn->init);
+  
+  
+  //--------------------------------------------------
   // create all vectors and variables associated with the time 
   // integration (call the constructor)
   // the only parameter from the list required here is the number of
@@ -197,6 +202,7 @@ void dyn_fluid_drt()
                                      fluidtimeparams,
                                      output);
 
+  //--------------------------------------------------
   if (genprob.restart)
   {
     // read the restart information, set vectors and variables
@@ -211,11 +217,11 @@ void dyn_fluid_drt()
     }
   }
 
+  //--------------------------------------------------
   // do the time integration (start algo and standard algo)
   fluidimplicit.Integrate();
 
-  // evaluate error for test flows with analytical solutions
-
+  //--------------------------------------------------
   // do the result test
 #ifdef RESULTTEST
   DRT::ResultTestManager testmanager(actdis->Comm());

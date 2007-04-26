@@ -61,6 +61,8 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
   if (action == "none") dserror("No action supplied");
   else if (action == "calc_fluid_systemmat_and_residual")      
   	act = Fluid3::calc_fluid_systemmat_and_residual;
+  else if (action == "calc_fluid_beltrami_error")      
+  	act = Fluid3::calc_fluid_beltrami_error;
   else dserror("Unknown type of action for Fluid3");
 
   // get the material 
@@ -68,97 +70,130 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
 
   switch(act)
   {
-    case calc_fluid_systemmat_and_residual:
-    {
-      // need current velocity and history vector
-      RefCountPtr<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (trial)");
-      RefCountPtr<const Epetra_Vector> hist  = discretization.GetState("old solution data for rhs");
-      if (vel_pre_np==null || hist==null) dserror("Cannot get state vectors 'velnp' and/or 'hist'");
-      
-      // extract local values from the global vectors
-      vector<double> my_vel_pre_np(lm.size());
-      DRT::Utils::ExtractMyValues(*vel_pre_np,my_vel_pre_np,lm);
-      vector<double> myhist(lm.size());
-      DRT::Utils::ExtractMyValues(*hist,myhist,lm);
-
-      // split "my_vel_pre_np" into velocity part "myvelnp" and pressure part "myprenp"
-      // Additionally only the velocity components of myhist are important!
-      int numnode = NumNode();
-      vector<double> myprenp(numnode);
-      vector<double> myvelnp(3*numnode);
-      vector<double> myvhist(3*numnode);
-      
-      for (int i=0;i<numnode;++i)
+      case calc_fluid_systemmat_and_residual:
       {
-        myvelnp[0+(i*3)]=my_vel_pre_np[0+(i*4)];
-        myvelnp[1+(i*3)]=my_vel_pre_np[1+(i*4)];
-        myvelnp[2+(i*3)]=my_vel_pre_np[2+(i*4)];
-
-        myprenp[i]=my_vel_pre_np[3+(i*4)];
-
-        myvhist[0+(i*3)]=myhist[0+(i*4)];
-        myvhist[1+(i*3)]=myhist[1+(i*4)];
-        myvhist[2+(i*3)]=myhist[2+(i*4)];
-      }
-
-      // calculate element coefficient matrix and rhs       
-      f3_sys_mat(lm,myvelnp,myprenp,myvhist,&elemat1,&elevec1,actmat,params);
-
-
-      /* the following has to be checked again !!! */
-      // use local variables instead of directly write into elemat1, elevec1.
-      // this speeds up computations by 3%-5%
-      //Epetra_SerialDenseVector  eforce(4*numnode);      	// rhs vector                       
-      //Epetra_SerialDenseMatrix 	estif(4*numnode,4*numnode); 	// element coefficient matrix
+        // need current velocity and history vector
+        RefCountPtr<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (trial)");
+        RefCountPtr<const Epetra_Vector> hist  = discretization.GetState("old solution data for rhs");
+        if (vel_pre_np==null || hist==null) dserror("Cannot get state vectors 'velnp' and/or 'hist'");
       
-      // calculate element coefficient matrix and rhs       
-      //f3_sys_mat(lm,myvelnp,myprenp,myvhist,&estif,&eforce,actmat,params);  
+        // extract local values from the global vectors
+        vector<double> my_vel_pre_np(lm.size());
+        DRT::Utils::ExtractMyValues(*vel_pre_np,my_vel_pre_np,lm);
+        vector<double> myhist(lm.size());
+        DRT::Utils::ExtractMyValues(*hist,myhist,lm);
+
+        // split "my_vel_pre_np" into velocity part "myvelnp" and pressure part "myprenp"
+        // Additionally only the velocity components of myhist are important!
+        int numnode = NumNode();
+        vector<double> myprenp(numnode);
+        vector<double> myvelnp(3*numnode);
+        vector<double> myvhist(3*numnode);
       
-      // copy values
-      //elemat1 = estif;
-      //elevec1 = eforce;
+        for (int i=0;i<numnode;++i)
+        {
+          myvelnp[0+(i*3)]=my_vel_pre_np[0+(i*4)];
+          myvelnp[1+(i*3)]=my_vel_pre_np[1+(i*4)];
+          myvelnp[2+(i*3)]=my_vel_pre_np[2+(i*4)];
+
+          myprenp[i]=my_vel_pre_np[3+(i*4)];
+
+          myvhist[0+(i*3)]=myhist[0+(i*4)];
+          myvhist[1+(i*3)]=myhist[1+(i*4)];
+          myvhist[2+(i*3)]=myhist[2+(i*4)];
+        }
+
+        // calculate element coefficient matrix and rhs       
+        f3_sys_mat(lm,myvelnp,myprenp,myvhist,&elemat1,&elevec1,actmat,params);
+
+
+        /* the following has to be checked again !!! */
+        // use local variables instead of directly write into elemat1, elevec1.
+        // this speeds up computations by 3%-5%
+        //Epetra_SerialDenseVector  eforce(4*numnode);      	// rhs vector                       
+        //Epetra_SerialDenseMatrix 	estif(4*numnode,4*numnode); 	// element coefficient matrix
+      
+        // calculate element coefficient matrix and rhs       
+        //f3_sys_mat(lm,myvelnp,myprenp,myvhist,&estif,&eforce,actmat,params);  
+      
+        // copy values
+        //elemat1 = estif;
+        //elevec1 = eforce;
   
    
 // outputs for debugging
 
 // if (Id()==10 || Id()==21)
-{
-	//printf("Element %5d\n",Id());	
+        {
+          //printf("Element %5d\n",Id());	
 #if 0
 
-	for (int i=0;i<elevec1.size();++i)
-	    {
+          for (int i=0;i<elevec1.size();++i)
+          {
 	    printf("eforce[%d]: %26.16e\n",i,elevec1[i]);
 	    ;
-	    }
-	    printf("\n");
+          }
+          printf("\n");
 #endif
 #if 0
-        //if (Id()==0)
-	    for (int i=0;i<elemat1.ColDim();++i)
-	{
+          //if (Id()==0)
+          for (int i=0;i<elemat1.ColDim();++i)
+          {
 	    for (int j=0;j<elemat1.RowDim();++j)
 	    {
-		printf("%26.16e\n",elemat1(i,j));
+              printf("%26.16e\n",elemat1(i,j));
 //		printf("%3d res %26.19e\n",Id(),elevec1[i]);
 
 	    }
 	    printf("\n");
-	}
+          }
 #endif
 
 #if 0
-        for (unsigned int i=0;i<myvelnp.size();++i){
+          for (unsigned int i=0;i<myvelnp.size();++i){
 	    printf("vel %26.16e ",myvelnp[i]);
 	    printf("\n");   
-	    }
+          }
 #endif
-} // end of debug part
+        } // end of debug part
 
-    }
-    break;
-    default:
-      dserror("Unknown type of action for Fluid3");
+      }
+      break;
+      case calc_fluid_beltrami_error:
+      {
+        // add error only for elements which are not ghosted
+        if(this->Owner() == discretization.Comm().MyPID())
+        {
+        
+          // need current velocity and history vector
+          RefCountPtr<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (converged)");
+          if (vel_pre_np==null) dserror("Cannot get state vectors 'velnp'");
+      
+          // extract local values from the global vectors
+          vector<double> my_vel_pre_np(lm.size());
+          DRT::Utils::ExtractMyValues(*vel_pre_np,my_vel_pre_np,lm);
+
+          // split "my_vel_pre_np" into velocity part "myvelnp" and pressure part "myprenp"
+          int numnode = NumNode();
+          vector<double> myprenp(numnode);
+          vector<double> myvelnp(3*numnode);
+      
+          for (int i=0;i<numnode;++i)
+          {
+            myvelnp[0+(i*3)]=my_vel_pre_np[0+(i*4)];
+            myvelnp[1+(i*3)]=my_vel_pre_np[1+(i*4)];
+            myvelnp[2+(i*3)]=my_vel_pre_np[2+(i*4)];
+
+            myprenp[i]=my_vel_pre_np[3+(i*4)];
+          }
+
+          // integrate beltrami error
+          f3_int_beltrami_err(myvelnp,myprenp,actmat,params);
+        }
+      }
+      break;
+      default:
+        dserror("Unknown type of action for Fluid3");
   } // end of switch(act)
 
   return 0;
@@ -2562,6 +2597,228 @@ for (int i=0; i<iel; i++) /* loop over nodes of element */
 return;
 } // end of DRT:Elements:Fluid3:f3_calmat
 
+
+/*---------------------------------------------------------------------*
+ |  calculate error for beltrami test problem (private)     gammi 04/07|
+ *---------------------------------------------------------------------*/
+void DRT::Elements::Fluid3::f3_int_beltrami_err(
+  vector<double>&           evelnp,
+  vector<double>&           eprenp,
+  struct _MATERIAL*         material,
+  ParameterList& 	    params
+  )
+{
+
+  /*-------------------------- add element error to "integrated" error */
+  double velerr = params.get<double>("L2 integrated velocity error");
+  double preerr = params.get<double>("L2 integrated pressure error");
+  
+  /*------------------------------------------------- set element data */
+  const int iel = NumNode();
+
+  int       intc=0;   /* "integration case" for tri for further infos
+                         see f2_inpele.c and f2_intg.c                 */
+  int       nir=0;    /* number of integration nodesin r direction     */
+  int       nis=0;    /* number of integration nodesin s direction     */
+  int       nit=0;    /* number of integration nodesin t direction     */
+  int       ihoel=0;  /* flag for higher order elements                */
+  int       icode=2;  /* flag for eveluation of shape functions        */
+  double    fac;      /* total integration factor                      */
+
+
+  vector<double>                funct(iel);
+  Epetra_SerialDenseMatrix 	xjm(3,3);
+  Epetra_SerialDenseMatrix 	deriv(3,iel);
+  Epetra_SerialDenseMatrix 	deriv2(6,iel);
+
+  double         		det;
+  double         		e1, e2, e3;
+  double         		facr=0.0, facs=0.0, fact=0.0;
+
+  FLUID_DATA            	data;
+
+
+  // get node coordinates of element
+  Epetra_SerialDenseMatrix xyze(3,iel);
+  for(int i=0;i<iel;i++)
+  {
+    xyze(0,i)=Nodes()[i]->X()[0];
+    xyze(1,i)=Nodes()[i]->X()[1];
+    xyze(2,i)=Nodes()[i]->X()[2];
+  }
+  
+  //------------------------------ set constants for analytical solution
+  const double t = params.get("total time",-1.0);
+  if (t<0)
+  {
+    dserror("beltrami: no total time for error calculation");
+  }
+
+  double a      = PI/4.0;
+  double d      = PI/2.0;
+
+  /* get viscosity ---*/
+  const double  visc = material->m.fluid->viscosity;
+
+  
+  /*-------------------------------------------------- initialise ---*/
+  // gaussian points
+  f3_integration_points(data);
+
+
+  
+  switch (iel)
+  {
+      case 8: case 20: case 27:  /* --> hex - element */
+        icode   = 3;
+        ihoel   = 1;
+        /* initialise integration */
+        nir = ngp_[0];
+        nis = ngp_[1];
+        nit = ngp_[2];
+        intc= 0;
+        break;
+      case 10: /* --> tet - element */
+        icode   = 3;
+        ihoel   = 1;
+        /* do NOT break at this point!!! */
+      case 4:    /* initialise integration */
+        nir  = ngp_[0]; // for tets in ngp_[0] the number of gauss points is stored !
+        nis  = 1;
+        nit  = 1;
+        intc = ngp_[1];
+        break;
+      default:
+        dserror("typ unknown!");
+  } // end switch (iel) //
+
+
+  /*----------------------------------------------------------------------*
+   |               start loop over integration points                     |
+   *----------------------------------------------------------------------*/
+
+  double         preint;
+  vector<double> velint  (3);
+  vector<double> xint    (3);
+
+  double         p;
+  vector<double> u       (3);
+
+  double         deltap;
+  vector<double> deltavel(3);
+
+  
+  for (int lr=0;lr<nir;lr++)
+  {
+    for (int ls=0;ls<nis;ls++)
+    {
+      for (int lt=0;lt<nit;lt++)
+      {
+        /*------------- get values of  shape functions and their derivatives ---*/
+        switch(iel)
+        {
+            case 8: case 20: case 27:   /* --> hex - element */
+              e1   = data.qxg[lr][nir-1];
+              facr = data.qwgt[lr][nir-1];
+              e2   = data.qxg[ls][nis-1];
+              facs = data.qwgt[ls][nis-1];
+              e3   = data.qxg[lt][nit-1];
+              fact = data.qwgt[lt][nit-1];
+              f3_shape_function(funct,deriv,deriv2,e1,e2,e3,iel,icode);
+              break;
+            case 4: case 10:   /* --> tet - element */
+              e1   = data.txgr[lr][intc];
+              facr = data.twgt[lr][intc];
+              e2   = data.txgs[lr][intc];
+              facs = ONE;
+              e3   = data.txgt[lr][intc];
+              fact = ONE;
+              f3_shape_function(funct,deriv,deriv2,e1,e2,e3,iel,icode);
+              break;
+            default:
+              facr = facs = fact = 0.0;
+              e1 = e2 = e3 = 0.0;
+              dserror("typ unknown!");
+        } /* end switch (iel) */
+
+          /*------------------------------------ compute Jacobian matrix */
+        f3_jaco(xyze,deriv,xjm,&det,iel);
+        fac = facr*facs*fact*det;
+
+        /*---------------------- get velocity sol at integration point */
+        for (int i=0;i<3;i++)
+        {
+          velint[i]=ZERO;
+          for (int j=0;j<iel;j++)
+          {
+            velint[i] += funct[j]*evelnp[i+(3*j)];
+          }
+        } //end loop over i
+
+          /*---------------------- get pressure sol at integration point */
+        preint = 0;
+        for (int i=0;i<iel;i++)
+        {
+          preint += funct[i]*eprenp[i];
+        }
+          
+        /*---------------------- get velocity sol at integration point */
+        for (int i=0;i<3;i++)
+        {
+          xint[i]=ZERO;
+          for (int j=0;j<iel;j++)
+          {
+            xint[i] += funct[j]*xyze(i,j);
+          }
+        } //end loop over i
+
+
+          // compute analytical pressure
+        p = -a*a/2.0 *
+          ( exp(2.0*a*xint[0])
+            + exp(2.0*a*xint[1])
+            + exp(2.0*a*xint[2])
+            + 2.0 * sin(a*xint[0] + d*xint[1]) * cos(a*xint[2] + d*xint[0]) * exp(a*(xint[1]+xint[2]))
+            + 2.0 * sin(a*xint[1] + d*xint[2]) * cos(a*xint[0] + d*xint[1]) * exp(a*(xint[2]+xint[0]))
+            + 2.0 * sin(a*xint[2] + d*xint[0]) * cos(a*xint[1] + d*xint[2]) * exp(a*(xint[0]+xint[1]))
+            )* exp(-2.0*visc*d*d*t);
+
+        // compute analytical velocities
+        u[0] = -a * ( exp(a*xint[0]) * sin(a*xint[1] + d*xint[2]) +
+                      exp(a*xint[2]) * cos(a*xint[0] + d*xint[1]) ) * exp(-visc*d*d*t);
+        u[1] = -a * ( exp(a*xint[1]) * sin(a*xint[2] + d*xint[0]) +
+                      exp(a*xint[0]) * cos(a*xint[1] + d*xint[2]) ) * exp(-visc*d*d*t);
+        u[2] = -a * ( exp(a*xint[2]) * sin(a*xint[0] + d*xint[1]) +
+                      exp(a*xint[1]) * cos(a*xint[2] + d*xint[0]) ) * exp(-visc*d*d*t);
+          
+        // compute difference between analytical solution and numerical solution
+        deltap = preint - p;
+
+        for (int dim=0;dim<3;dim++)
+        {
+          deltavel[dim]=velint[dim]-u[dim];
+        }
+
+        // add square to L2 error
+        for (int dim=0;dim<3;dim++)
+        {
+          velerr += deltavel[dim]*deltavel[dim]*fac;
+        }
+        preerr += deltap*deltap*fac;
+        
+      } /* end of loop over integration points lt*/
+    } /* end of loop over integration points ls */
+  } /* end of loop over integration points lr */
+
+
+  // we use the parameterlist as a container to transport the calculated
+  // errors from the elements to the dynamic routine
+  
+  params.set<double>("L2 integrated velocity error",velerr);
+  params.set<double>("L2 integrated pressure error",preerr);
+    
+  return;
+}
 
 
 //=======================================================================

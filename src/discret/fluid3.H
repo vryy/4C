@@ -284,7 +284,8 @@ private:
   enum ActionType
   {
     none,
-    calc_fluid_systemmat_and_residual
+    calc_fluid_systemmat_and_residual,
+    calc_fluid_beltrami_error
   };
 
   //! no. gaussian points in each spatial dimension
@@ -367,6 +368,13 @@ private:
 				    const Epetra_SerialDenseMatrix& deriv2,
                                     const int iel
 				    );
+  // evaluate error for beltrami test problem
+  void f3_int_beltrami_err(
+    vector<double>&       myvelnp,
+    vector<double>&       myprenp,
+    struct _MATERIAL*     material,
+    ParameterList&    	  params
+    );
 
   // evaluate fluid coefficient matrix
     void f3_calmat( Epetra_SerialDenseMatrix& estif,

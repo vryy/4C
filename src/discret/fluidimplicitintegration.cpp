@@ -226,6 +226,11 @@ void FluidImplicitTimeInt::Integrate()
   // start procedure
   if (step_<numstasteps)
   {
+    if(numstasteps>stepmax)
+    {
+      dserror("more startsteps than steps");
+    }
+    
     this->TimeIntegrateFromTo(
       step_,
       time_,
@@ -432,6 +437,13 @@ void FluidImplicitTimeInt::TimeIntegrateFromTo(
     // -------------------------------------------------------------------
     this->TimeUpdate(timealgo,step,dta,dtp,theta);
 
+    
+    // -------------------------------------------------------------------
+    // evaluate error for test flows with analytical solutions
+    // -------------------------------------------------------------------
+    this->EvaluateErrorComparedToAnalyticalSol(time);
+
+    
     // -------------------------------------------------------------------
     //                         output of solution
     // -------------------------------------------------------------------
@@ -949,7 +961,7 @@ void FluidImplicitTimeInt::Output(
 #endif      
 
 
-#if 1  // DEBUG IO --- the solution vector after convergence
+#if 0  // DEBUG IO --- the solution vector after convergence
       if (myrank_==0)
       {
         int rr;
@@ -1092,6 +1104,82 @@ void FluidImplicitTimeInt::SetInitialFlowField(
 }
 
 
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | evaluate error for test cases with analytical solutions   gammi 04/07|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol(
+  double time
+  )
+{
+
+  int calcerr = params_.get<int>("eval err for analyt sol");
+  
+  //------------------------------------------------------- beltrami flow
+  switch (calcerr)
+  {
+      case 0:
+        // do nothing --- no analytical solution available
+        break;
+      case 8:
+      {
+        // create the parameters for the discretization
+        ParameterList eleparams;
+
+        eleparams.set<double>("L2 integrated velocity error",0.0);
+        eleparams.set<double>("L2 integrated pressure error",0.0);
+        
+        // action for elements
+        eleparams.set("action","calc_fluid_beltrami_error");
+        // actual time for elements
+        eleparams.set("total time",time);
+        // choose what to assemble --- nothing
+        eleparams.set("assemble matrix 1",false);
+        eleparams.set("assemble matrix 2",false);
+        eleparams.set("assemble vector 1",false);
+        eleparams.set("assemble vector 2",false);
+        eleparams.set("assemble vector 3",false);
+        // set vector values needed by elements
+        discret_->ClearState();
+        discret_->SetState("u and p at time n+1 (converged)",velnp_);
+
+        // call loop over elements
+        discret_->Evaluate(eleparams,sysmat_,null,residual_,null,null);
+        discret_->ClearState();
+
+
+        double locvelerr = eleparams.get<double>("L2 integrated velocity error");
+        double locpreerr = eleparams.get<double>("L2 integrated pressure error");
+
+        double velerr = 0;
+        double preerr = 0;
+        
+        discret_->Comm().SumAll(&locvelerr,&velerr,1);
+        discret_->Comm().SumAll(&locpreerr,&preerr,1);
+          
+        // for the L2 norm, we need the square root
+        velerr = sqrt(velerr);
+        preerr = sqrt(preerr);
+
+
+        if (myrank_ == 0)
+        {
+          printf("\n  L2_err for beltrami flow:  velocity %15.8e  pressure %15.8e\n\n",
+                 velerr,preerr);
+        }
+      }
+      break;
+      default:
+        dserror("Cannot calculate error. Unknown type of analytical test problem");
+  }
+  return;
+}
+
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1107,6 +1195,9 @@ void FluidImplicitTimeInt::SetDefaults(ParameterList& params)
   // number of degrees of freedom
   // if this one is not set afterwards, the algo hopefully crashes
   params.set<int> ("number of velocity degrees of freedom" ,-1);
+
+  // evaluate error compared to analytical solution
+  params.set<int>("eval err for analyt sol",0);
 
   // -------------------------------------------------- time integration
   // timestepsize
