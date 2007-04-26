@@ -73,8 +73,6 @@ void DRT::Discretization::ExportColumnNodes(const Epetra_Map& newmap)
   for (int i=0; i<oldmap.NumMyElements(); ++i)
   {
     int gid = oldmap.GID(i);
-    cout << oldmap;
-    cout << newmap;
     if (!(newmap.MyGID(gid))) dserror("Proc %d: Node gid=%d from oldmap is not in newmap",myrank,gid);
   }
   

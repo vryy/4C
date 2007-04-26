@@ -142,6 +142,7 @@ OBJS_DISCRET  = \
                 src/discret/stru_genalpha_drt.o\
                 src/discret/fluid_dyn_nln_drt.o \
                 src/discret/fluidimplicitintegration.o \
+                src/discret/fluidresulttest.o \
                 src/drt_so3/so_hex8.o \
                 src/drt_so3/so_hex8_evaluate.o \
                 src/drt_so3/so_hex8_input.o

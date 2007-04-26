@@ -48,13 +48,16 @@ bool DRT::Elements::So_hex8::ReadElement()
   int ierr=0;
   const int nnode=8;
   int nodes[8]; 
-  frchk("SO_HEX8",&ierr);
+  frchk("SOLIDH8",&ierr);
   if (ierr==1)
   {
     frint_n("HEX8",nodes,nnode,&ierr);
     if (ierr != 1) dserror("Reading of ELEMENT Topology failed");
   }
-  
+  else
+  {
+    dserror ("Reading of SOLIDH8 failed");
+  }
   // reduce node numbers by one
   for (int i=0; i<nnode; ++i) nodes[i]--;
   

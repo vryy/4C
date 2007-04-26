@@ -188,7 +188,7 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
   else if (eletype=="WALL")  type = wall1;
   else if (eletype=="FLUID2") type = fluid2;
   else if (eletype=="FLUID3") type = fluid3;
-  else if (eletype=="SO_HEX8") type = so_hex8;
+  else if (eletype=="SOLIDH8") type = so_hex8;
   // continue to add elements here....
   else dserror("Unknown type of finite element");
   
