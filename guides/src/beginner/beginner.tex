@@ -24,12 +24,14 @@
 \newcommand{\gauss}{{\tt gauss}}
 
 
-\chapter{Getting Started: Setup Guide to \ccarat{}}
+\chapter{Getting Started: Setup Guide to \baci{}}
 
 
-Notes on setting up and running \ccarat{}, the Finite-Element code
-at the Chair of Computational Mechanics.
-For information about solving specific types of problems using \ccarat{}
+Notes on setting up and running \baci{}, the Finite-Element code
+at the Chair of Computational Mechanics. This finite element code had been
+formerly known as \ccarat{}, and was renamed to \baci{} in spring 2007. You
+can still find its old name at many places.
+For information about solving specific types of problems using \baci{}
 see the problem introduction guides. For information about the inner
 workings of the code and recommendations for developers see the developing
 guide.
@@ -37,7 +39,7 @@ guide.
 
 \section{Getting the code}
 
-The \ccarat{} code lives in an subversion repository on \gauss{},
+The \baci{} code lives in an subversion repository on \gauss{},
 the central LNM file server. There are two ways to get the code.
 
 \begin{itemize}
@@ -58,11 +60,11 @@ online.
 
 \subsection{svn hints}
 
-Once you have a copy of \ccarat{} in your home directory and you start
+Once you have a copy of \baci{} in your home directory and you start
 working on it you will need only a small set of subversion commands:
 
 Check the current state of your copy (compared to the version
-\ccarat{} you fetched from the repository) with \texttt{svn~status}, get
+\baci{} you fetched from the repository) with \texttt{svn~status}, get
 new versions with \texttt{svn~update}, mark files and directories to
 be added or removed with \texttt{svn~add} and \texttt{svn~remove}
 and commit your changes with \texttt{svn~commit}.
@@ -73,7 +75,7 @@ them. To do this you can easily save your changes in a separate file:
 \begin{lyxcode}
 svn~diff~>~patchfile
 \end{lyxcode}
-These patches can be applied to a clean version of \ccarat{} using
+These patches can be applied to a clean version of \baci{} using
 \begin{lyxcode}
 patch~-p0~<~patchfile
 \end{lyxcode}

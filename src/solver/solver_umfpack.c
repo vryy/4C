@@ -147,7 +147,9 @@ case 0:
    /*------------------------------ solution is only done on imyrank==0 */
    if (imyrank==0)
    {
+#ifndef NO_PRINT_SOLVER_TIME
        t = umfpack_timer ( ) ;
+#endif
        /* get the default control parameters */
        umfpack_di_defaults (control) ;
        control [UMFPACK_PIVOT_TOLERANCE] = 1.0;
@@ -198,8 +200,10 @@ case 0:
              dserror("umfpack_di_solve failed") ;
           }
 #endif
+#ifndef NO_PRINT_SOLVER_TIME
           t = umfpack_timer ( ) - t ;
           fprintf(allfiles.out_err,"umfpack solve complete.  Total time: %5.2f (seconds)\n", t);
+#endif
           ccf->is_factored = 1;
        }/* if (ccf->reuse==0)*/
 
@@ -215,9 +219,10 @@ case 0:
              dserror("umfpack_di_solve failed") ;
           }
 #endif
-
+#ifndef NO_PRINT_SOLVER_TIME
           t = umfpack_timer ( ) - t ;
           fprintf(allfiles.out_err,"umfpack solve complete.  Total time: %5.2f (seconds)\n", t);
+#endif
        }/* end else if (ccf->reuse==1)*/
 
 /*#ifdef DEBUG

@@ -673,7 +673,6 @@ void so3_mat_mivupd(CONTAINER *container,
 /*----------------------------------------------------------------------*/
 /* file so3_mat_robinson.c */
 #ifdef D_TSI
-void so3_mat_robinson_ctxtvrfy();
 void so3_mat_robinson_init(ELEMENT* ele);
 void so3_mat_robinson_final(ELEMENT* ele);
 void so3_mat_robinson_prmbytmpr(const MAT_PARAM_INTPOL ipl,
@@ -688,17 +687,6 @@ void so3_mat_robinson_sel(const CONTAINER* container,
                           const SO3_GEODEFSTR* gds,
                           DOUBLE stress[NUMSTR_SOLID3],
                           DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3]);
-void so3_mat_robinson_stnvscrat(const VP_ROBINSON* mat_robin,
-                                const DOUBLE tmpr,
-                                const DOUBLE stsdev[NUMSTR_SOLID3],
-                                const DOUBLE stsovr[NUMSTR_SOLID3],
-                                DOUBLE dstnvsc[NUMSTR_SOLID3]);
-void so3_mat_robinson_stsbckrat(const VP_ROBINSON* mat_robin,
-                                const DOUBLE tmpr,
-                                const DOUBLE stsdev[NUMSTR_SOLID3],
-                                const DOUBLE stsbck[NUMSTR_SOLID3],
-                                const DOUBLE dstnvsc[NUMSTR_SOLID3],
-                                DOUBLE dstsbck[NUMSTR_SOLID3]);
 void so3_mat_robinson_mivupd(ELEMENT* ele,  /*!< curr. elem. */
                              VP_ROBINSON* mat_robin);  /*!< elem. mater. */
 void so3_mat_robinson_stress(const CONTAINER* container,
@@ -708,6 +696,40 @@ void so3_mat_robinson_stress(const CONTAINER* container,
                              const SO3_GEODEFSTR* gds,
                              DOUBLE stress[NUMSTR_SOLID3],
                              DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3]);
+#endif
+
+/*----------------------------------------------------------------------*/
+/* file so3_mat_robinson_fb4.c */
+#ifdef D_TSI
+void so3_mat_robinson_fb4_init(SOLID3* actso3);
+void so3_mat_robinson_fb4_final(SOLID3* actso3);
+void so3_mat_robinson_fb4_sel(const CONTAINER* container,
+                              const ELEMENT* ele,
+                              const VP_ROBINSON* mat_robin,
+                              const INT ip,
+                              const SO3_GEODEFSTR* gds,
+                              DOUBLE stress[NUMSTR_SOLID3],
+                              DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3]);
+void so3_mat_robinson_fb4_stnvscrat(const VP_ROBINSON* mat_robin,
+                                    const DOUBLE tmpr,
+                                    const DOUBLE stsdev[NUMSTR_SOLID3],
+                                    const DOUBLE stsovr[NUMSTR_SOLID3],
+                                    DOUBLE dstnvsc[NUMSTR_SOLID3]);
+void so3_mat_robinson_fb4_stsbckrat(const VP_ROBINSON* mat_robin,
+                                    const DOUBLE tmpr,
+                                    const DOUBLE stsdev[NUMSTR_SOLID3],
+                                    const DOUBLE stsbck[NUMSTR_SOLID3],
+                                    const DOUBLE dstnvsc[NUMSTR_SOLID3],
+                                    DOUBLE dstsbck[NUMSTR_SOLID3]);
+void so3_mat_robinson_fb4_mivupd(ELEMENT* ele,
+                                 VP_ROBINSON* mat_robin);
+void so3_mat_robinson_fb4_stress(const CONTAINER* container,
+                                 const ELEMENT* ele,
+                                 const VP_ROBINSON* mat_robin,
+                                 const INT ip,
+                                 const SO3_GEODEFSTR* gds,
+                                 DOUBLE stress[NUMSTR_SOLID3],
+                                 DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3]);
 #endif
 
 /*----------------------------------------------------------------------*/
@@ -867,14 +889,12 @@ void so3_tns3_unrm(const DOUBLE av[NDIM_SOLID3],
 /*----------------------------------------------------------------------*/
 /* file so3_tsi.c */
 #ifdef D_TSI
-#ifdef D_THERM3
 void so3_tsi_temper(const CONTAINER *container,
                     const ELEMENT *ele,
                     const DOUBLE r, 
                     const DOUBLE s,
                     const DOUBLE t,
                     DOUBLE *temper);
-#endif
 #endif
 
 /*----------------------------------------------------------------------*/

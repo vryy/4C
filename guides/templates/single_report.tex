@@ -7,6 +7,7 @@
 \usepackage{url}
 
 \newcommand{\ccarat}{{\tt ccarat}}
+\newcommand{\baci}{\textsc{BACI}}
 
 \usepackage{hyperref}
 
@@ -33,9 +34,9 @@
 \setlength{\textwidth}{17cm}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\title{Technical Reports on CCARAT\\
+\title{Technical Reports on \baci{}\\
 \vspace{2cm}
-\includegraphics[width=0.3\textwidth]{templates/lnm-notext}
+\includegraphics[width=0.3\textwidth]{templates/gfx/lnm-notext}
 }
 
 \author{Individual Author}
@@ -44,7 +45,30 @@
 %------------------------------------------------
 \begin{document}
 
-\maketitle
+%------------------------------------------------
+% title
+\begin{titlepage}
+\vspace{5cm}
+\begin{center}
+\huge{Technical Report on \baci{}}
+
+\vspace{2cm}
+
+\includegraphics[width=0.3\textwidth]{templates/gfx/lnm-notext}
+
+\vspace{2cm}
+
+\copyright{}Lehrstuhl f\"{u}r Numerische Mechanik
+
+\vspace{2cm}
+
+\small{compiled on \today}
+
+\end{center}
+\end{titlepage}
+
+%------------------------------------------------
+% contents
 \addcontentsline{toc}{chapter}{Table of Contents}
 \tableofcontents
 

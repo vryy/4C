@@ -75,7 +75,9 @@ dstrc_enter("solver_control");
 #endif
 
 /*----------------------------------------------------------------------*/
+#ifndef NO_PRINT_SOLVER_TIME
 t0=ds_cputime();
+#endif
 /*----------------------------------------------------------------------*/
 if (genprob.usetrilinosalgebra) /* Use Trilinos solver interfaces */
 {
@@ -154,10 +156,12 @@ else /* Use ccarat generic interfaces */
   }
 }
 /*----------------------------------------------------------------------*/
+#ifndef NO_PRINT_SOLVER_TIME
 t1=ds_cputime();
 t1 -= t0;
 fprintf(allfiles.out_err,"Time for this solver call: %f\n",t1);
 fflush(allfiles.out_err);
+#endif
 /*----------------------------------------------------------------------*/
 
 #ifdef PERF

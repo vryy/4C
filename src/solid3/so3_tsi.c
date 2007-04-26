@@ -15,7 +15,6 @@ Maintainer: Burkhard Bornemann
 */
 #ifdef D_SOLID3
 #ifdef D_TSI
-#ifdef D_THERM3
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -27,12 +26,12 @@ Maintainer: Burkhard Bornemann
 /*!
 \brief Compute strain due to temperature elevation
 
-\param  container *CONTAINER (i)    container
-\param  *ele     ELEMENT     (i)    pointer to current (wall) element
-\param  r        DOUBLE      (i)    r-coord of (r,s,t)
-\param  s        DOUBLE      (i)    s-coord of (r,s,t)
-\param  t        DOUBLE      (i)    s-coord of (r,s,t)
-\param  temper   *DOUBLE     (o)    temperarture at (r,s,t)
+\param  container CONTAINER*  (i)    container
+\param  ele       ELEMENT*    (i)    pointer to current (wall) element
+\param  r         DOUBLE      (i)    r-coord of (r,s,t)
+\param  s         DOUBLE      (i)    s-coord of (r,s,t)
+\param  t         DOUBLE      (i)    s-coord of (r,s,t)
+\param  temper    DOUBLE*     (o)    temperarture at (r,s,t)
 
 \return void
 
@@ -54,7 +53,17 @@ void so3_tsi_temper(const CONTAINER *container,
 
   /*--------------------------------------------------------------------*/
   /* temperature at Gauss point (r,s,t) */
-  th3_temper_cal(container, ele->e.so3->therm_ele, r, s, t, temper);
+  switch (ele->e.so3->therm_ele->eltyp)
+  {
+#ifdef D_THERM3
+    case el_therm3:
+      th3_temper_cal(container, ele->e.so3->therm_ele, r, s, t, temper);
+      break;
+#endif
+    default:
+      dserror("Associated thermal element does not exist!");
+      break;
+  }
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -65,6 +74,5 @@ void so3_tsi_temper(const CONTAINER *container,
 
 
 /*======================================================================*/
-#endif  /* end of #ifdef D_THERM3 */
 #endif  /* end of #ifdef D_TSI */
-#endif
+#endif  /* end of #ifdef D_SOLID3 */

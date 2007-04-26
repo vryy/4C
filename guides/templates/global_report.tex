@@ -7,6 +7,7 @@
 \usepackage{url}
 
 \newcommand{\ccarat}{{\tt ccarat}}
+\newcommand{\baci}{\textsc{BACI}}
 
 \usepackage{hyperref}
 
@@ -33,20 +34,56 @@
 \setlength{\textwidth}{16cm}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\title{Technical Reports on CCARAT\\
+\title{Technical Reports on \baci{}\\
 \vspace{2cm}
-\includegraphics[width=0.3\textwidth]{templates/lnm-notext}
+\includegraphics[width=0.3\textwidth]{templates/gfx/lnm-notext}
 }
 
-\author{Lehrstuhl für Numerische Mechanik}
+\author{Lehrstuhl f\"{u}r Numerische Mechanik}
+
+
 
 
 
 %------------------------------------------------
 \begin{document}
 
-\maketitle
+%------------------------------------------------
+\frontmatter
+
+%------------------------------------------------
+% title
+\begin{titlepage}
+\vspace{5cm}
+\begin{center}
+\huge{Technical Reports on \baci{}}
+
+\vspace{2cm}
+
+\includegraphics[width=0.3\textwidth]{templates/gfx/lnm-notext}
+
+\vspace{2cm}
+
+\copyright{}Lehrstuhl f\"{u}r Numerische Mechanik
+
+\vspace{2cm}
+
+\small{compiled on \today}
+
+\vspace{10cm}
+\begin{flushright}
+\includegraphics[width=3cm,angle=7]{templates/gfx/hundredpercentfem}
+\end{flushright}
+
+\end{center}
+\end{titlepage}
+
+%------------------------------------------------
+% contents
 \addcontentsline{toc}{chapter}{Table of Contents}
 \tableofcontents
+
+%------------------------------------------------
+\mainmatter
 
 \newpage
