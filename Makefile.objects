@@ -111,6 +111,9 @@ OBJS_DISCRET_LIB  = src/discret/drt_discret.o \
                 src/discret/fluid2_line.o \
                 src/discret/fluid3.o \
                 src/discret/fluid3_surface.o \
+                src/drt_so3/so_hex8_surface.o \
+                src/drt_so3/so_hex8_line.o \
+                src/drt_so3/so_hex8_volume.o \
                 src/discret/drt_dserror.o \
                 src/discret/linalg_utils.o \
                 src/discret/distribute_grids.o
@@ -127,8 +130,8 @@ OBJS_DISCRET  = \
                 src/discret/wall1_input.o \
                 src/discret/wall1_line_evaluate.o \
                 src/discret/fluid2_evaluate.o \
-		src/discret/fluid2_input.o \
-		src/discret/fluid2_line_evaluate.o \
+                src/discret/fluid2_input.o \
+                src/discret/fluid2_line_evaluate.o \
                 src/discret/fluid3_evaluate.o \
                 src/discret/fluid3_input.o \
                 src/discret/fluid3_surface_evaluate.o \
@@ -136,10 +139,12 @@ OBJS_DISCRET  = \
                 src/discret/strugenalpha.o \
                 src/discret/linalg_solver.o \
                 src/discret/linalg_solver_spooles.o \
-                src/discret/stru_genalpha_drt.o \
-		src/discret/fluid_dyn_nln_drt.o \
-		src/discret/fluidimplicitintegration.o \
-		src/discret/fluidresulttest.o
+                src/discret/stru_genalpha_drt.o\
+                src/discret/fluid_dyn_nln_drt.o \
+                src/discret/fluidimplicitintegration.o \
+                src/drt_so3/so_hex8.o \
+                src/drt_so3/so_hex8_evaluate.o \
+                src/drt_so3/so_hex8_input.o
 #                pss_full
 OBJS_PSS      = src/pss_full/pss_am.o \
                 src/pss_full/pss_ds.o \

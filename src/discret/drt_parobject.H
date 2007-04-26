@@ -142,6 +142,11 @@ using namespace std;
 #define ParObject_Fluid2                (int)16
 #define ParObject_Fluid2Register        (int)17
 #define ParObject_Fluid2Line            (int)18
+#define ParObject_So_hex8               (int)19
+#define ParObject_Soh8Register          (int)20
+#define ParObject_Soh8Surface           (int)21
+#define ParObject_Soh8Line              (int)22
+#define ParObject_Soh8Volume            (int)23  
 
 
 /*!

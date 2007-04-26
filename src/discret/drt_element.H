@@ -85,7 +85,11 @@ public:
     element_fluid2,
     element_fluid2line,
     element_fluid3,
-    element_fluid3surface
+    element_fluid3surface,
+    element_so_hex8,
+    element_soh8surface,
+    element_soh8line,
+    element_soh8volume,
   };
 
   /*!

@@ -1083,6 +1083,8 @@ void inpnodes_ccadiscret_jumbo(RefCountPtr<DRT::Discretization>& dis,
 
   } // for (int block=0; block<nblock; ++block)
 
+  cout << *rownodes;
+  
   // last thing to do here is to produce nodal ghosting/overlap
   dis->ExportColumnNodes(*colnodes);
 

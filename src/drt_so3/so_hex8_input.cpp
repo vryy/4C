@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file solid3_input.cpp
+\file so_hex8_input.cpp
 \brief
 
 <pre>
@@ -10,7 +10,7 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOLID3
+#ifdef D_SOH8
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
@@ -34,53 +34,24 @@ extern "C"
  *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
 }
-#include "solid3.H"
-#include "dstrc.H"
+#include "so_hex8.H"
+#include "../discret/dstrc.H"
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
-bool DRT::Elements::Solid3::ReadElement()
+bool DRT::Elements::So_hex8::ReadElement()
 {
-  DSTraceHelper dst("Solid3::ReadElement");
+  DSTraceHelper dst("So_hex8::ReadElement");
   
   // read element's nodes
   int ierr=0;
-  int nnode=0;
-  int nodes[27]; 
-  frchk("HEX8",&ierr);   // 8-node hexahedron
+  const int nnode=8;
+  int nodes[8]; 
+  frchk("SO_HEX8",&ierr);
   if (ierr==1)
   {
-    nnode = 8;
     frint_n("HEX8",nodes,nnode,&ierr);
-    if (ierr != 1) dserror("Reading of ELEMENT Topology failed");
-  }
-  frchk("HEX20",&ierr);
-  if (ierr==1)
-  {
-    nnode = 20;
-    frint_n("HEX20",nodes,nnode,&ierr);
-    if (ierr != 1) dserror("Reading of ELEMENT Topology failed");
-  }
-  frchk("HEX27",&ierr);
-  if (ierr==1)
-  {
-    nnode = 27;
-    frint_n("HEX27",nodes,nnode,&ierr);
-    if (ierr != 1) dserror("Reading of ELEMENT Topology failed");
-  }
-  frchk("TET4",&ierr);
-  if (ierr==1)
-  {
-    nnode = 4;
-    frint_n("TET4",nodes,nnode,&ierr);
-    if (ierr != 1) dserror("Reading of ELEMENT Topology failed");
-  }
-  frchk("TET10",&ierr);
-  if (ierr==1)
-  {
-    nnode = 10;
-    frint_n("TET10",nodes,nnode,&ierr);
     if (ierr != 1) dserror("Reading of ELEMENT Topology failed");
   }
   
@@ -92,12 +63,12 @@ bool DRT::Elements::Solid3::ReadElement()
   // read number of material model
   material_ = 0;
   frint("MAT",&material_,&ierr);
-  if (ierr!=1) dserror("Reading of SOLID3 element material failed");
+  if (ierr!=1) dserror("Reading of SO_HEX8 element material failed");
   
   // read gaussian points
   frint_n("GP",ngp_,3,&ierr);
   if (ierr!=1) dserror("Reading of SOLID3 element gp failed");
-  for (int i=0; i<3; ++i) if (ngp_[i]!=2) dserror("Only 2 GP yet");
+  for (int i=0; i<3; ++i) if (ngp_[i]!=2) dserror("Only 2 GP for HEX8 yet");
     
   // read kinematic type
   char buffer[50];
@@ -105,47 +76,33 @@ bool DRT::Elements::Solid3::ReadElement()
   if (ierr)
   {
    // geometrically linear
-   if      (strncmp(buffer,"Geolin",6)==0)    kintype_ = so3_geolin;
+   if      (strncmp(buffer,"Geolin",6)==0)    kintype_ = soh8_geolin;
    // geometrically non-linear with Total Lagrangean approach
-   else if (strncmp(buffer,"Totlag",6)==0)    kintype_ = so3_totlag;
+   else if (strncmp(buffer,"Totlag",6)==0)    kintype_ = soh8_totlag;
    // geometrically non-linear with Updated Lagrangean approach
    else if (strncmp(buffer,"Updlag",6)==0)
    {
-       kintype_ = so3_updlag;
-       dserror("Updated Lagrange for SOLID3 is not implemented!");
+       kintype_ = soh8_updlag;
+       dserror("Updated Lagrange for SO_HEX8 is not implemented!");
    }
-   else dserror("Reading of SOLID3 element failed");
+   else dserror("Reading of SO_HEX8 element failed");
   }
   
   // read stress evaluation/output type
   frchar("STRESS",buffer,&ierr);
-  if (ierr!=1) dserror("reading of SOLID3 stress failed");
-  if (strncmp(buffer,"none",4)==0)  stresstype_= so3_stress_none;
-  if (strncmp(buffer,"Gpxyz",5)==0) stresstype_= so3_stress_gpxyz;
-  if (strncmp(buffer,"Gprst",5)==0) stresstype_= so3_stress_gprst;
-  if (strncmp(buffer,"Gp123",5)==0) stresstype_= so3_stress_gp123;
-  if (strncmp(buffer,"Ndxyz",5)==0) stresstype_= so3_stress_ndxyz;
-  if (strncmp(buffer,"Ndrst",5)==0) stresstype_= so3_stress_ndrst;
-  if (strncmp(buffer,"Nd123",5)==0) stresstype_= so3_stress_nd123;
+  if (ierr!=1) dserror("reading of SO_HEX8 stress failed");
+  if (strncmp(buffer,"none",4)==0)  stresstype_= soh8_stress_none;
+  if (strncmp(buffer,"Gpxyz",5)==0) stresstype_= soh8_stress_gpxyz;
+  if (strncmp(buffer,"Gprst",5)==0) stresstype_= soh8_stress_gprst;
+  if (strncmp(buffer,"Gp123",5)==0) stresstype_= soh8_stress_gp123;
+  if (strncmp(buffer,"Ndxyz",5)==0) stresstype_= soh8_stress_ndxyz;
+  if (strncmp(buffer,"Ndrst",5)==0) stresstype_= soh8_stress_ndrst;
+  if (strncmp(buffer,"Nd123",5)==0) stresstype_= soh8_stress_nd123;
   // set default: no stresses
-  else stresstype_= so3_stress_none; 
+  else stresstype_= soh8_stress_none; 
    
   return true;
-} // Solid3::ReadElement()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+} // So_hex8::ReadElement()
 
 
 #endif  // #ifdef TRILINOS_PACKAGE
