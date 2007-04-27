@@ -1265,6 +1265,8 @@ void FluidImplicitTimeInt::SolveStationaryProblem(
   // start time measurement for timeloop
   tm2_ref_ = rcp(new TimeMonitor(*timedynloop_));
 
+  // theta is set to one
+  theta = 1.0;
   
   // pseudo time loop (continuation loop) 
   // slightly increasing b.c. values by given timecurves to have convergence
@@ -1305,7 +1307,7 @@ void FluidImplicitTimeInt::SolveStationaryProblem(
      // other parameters needed by the elements
      eleparams.set("total time",time);
      eleparams.set("delta time",dta);
-     //eleparams.set("time constant for integration",theta*dta);
+     eleparams.set("time constant for integration",theta*dta);
 
      // set vector values needed by elements
      discret_->ClearState();
@@ -1318,7 +1320,7 @@ void FluidImplicitTimeInt::SolveStationaryProblem(
 
      // evaluate Neumann conditions
      eleparams.set("total time",time);
-     //eleparams.set("time constant for integration",theta*dta);
+     eleparams.set("time constant for integration",theta*dta);
 
      neumann_loads_->PutScalar(0.0);
      discret_->EvaluateNeumann(eleparams,*neumann_loads_);
