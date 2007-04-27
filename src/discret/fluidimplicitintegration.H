@@ -163,7 +163,8 @@ public:
   */
   void NonlinearSolve(
     double dta,
-    double theta
+    double theta,
+    bool is_stat
     );
 
   /*!

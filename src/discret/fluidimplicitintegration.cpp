@@ -414,7 +414,7 @@ void FluidImplicitTimeInt::TimeIntegrateFromTo(
     // -------------------------------------------------------------------
     //                     solve nonlinear equation
     // -------------------------------------------------------------------
-    this->NonlinearSolve(dta,theta);
+    this->NonlinearSolve(dta,theta,false);
 
 
     // -------------------------------------------------------------------
@@ -575,7 +575,8 @@ void FluidImplicitTimeInt::ExplicitPredictor(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FluidImplicitTimeInt::NonlinearSolve(
   double dta,
-  double theta
+  double theta,
+  bool is_stat //if true, stationary formulations are used in the element
   )
 {
   // start time measurement for nonlinear iteration
@@ -628,7 +629,7 @@ void FluidImplicitTimeInt::NonlinearSolve(
       eleparams.set("assemble vector 3",false);
       // other parameters that might be needed by the elements
       eleparams.set("time constant for integration",theta*dta);
-      eleparams.set("using stationary formulation",true);
+      eleparams.set("using stationary formulation",is_stat);
       // set vector values needed by elements
       discret_->ClearState();
       discret_->SetState("u and p at time n+1 (trial)",velnp_);
@@ -1264,10 +1265,10 @@ void FluidImplicitTimeInt::SolveStationaryProblem(
 {
   // start time measurement for timeloop
   tm2_ref_ = rcp(new TimeMonitor(*timedynloop_));
-
-  // theta is set to one
-  theta = 1.0;
   
+  // set theta to one
+  theta = 1.0;
+    
   // pseudo time loop (continuation loop) 
   // slightly increasing b.c. values by given timecurves to have convergence
   // also in higher Reynolds number flows
@@ -1308,7 +1309,8 @@ void FluidImplicitTimeInt::SolveStationaryProblem(
      eleparams.set("total time",time);
      eleparams.set("delta time",dta);
      eleparams.set("time constant for integration",theta*dta);
-
+     eleparams.set("using stationary formulation",true);    
+     
      // set vector values needed by elements
      discret_->ClearState();
      discret_->SetState("u and p at time n+1 (trial)",velnp_);
@@ -1330,7 +1332,7 @@ void FluidImplicitTimeInt::SolveStationaryProblem(
     // -------------------------------------------------------------------
     //                     solve nonlinear equation
     // -------------------------------------------------------------------
-    this->NonlinearSolve(dta,theta);
+    this->NonlinearSolve(dta,theta,true);
 
    
     // -------------------------------------------------------------------
