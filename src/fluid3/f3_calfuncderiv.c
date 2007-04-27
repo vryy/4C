@@ -1706,21 +1706,6 @@ void f3_edgejaco( DOUBLE    **xyze,
     xjm[1][1]+=dxyzdrs[1][i]*dxyzdrs[1][i];
   }
 
-
-#if 0
-  for (k=0; k<iel; k++) /* loop all nodes of the element */
-  {
-    node = iedgnod[k];
-    xjm[0][0] += deriv[0][k] * xyze[0][node] ;
-    xjm[0][1] += deriv[0][k] * xyze[1][node] ;
-    xjm[1][0] += deriv[1][k] * xyze[0][node] ;
-    xjm[1][1] += deriv[1][k] * xyze[1][node] ;
-  } /* end loop over iel */
-
-/*-------------------------------------- determinant of metric tensor ---*/
-  *det = xjm[0][0]* xjm[1][1] - xjm[1][0]* xjm[0][1];
-
-#endif
   *det = xjm[0][0]* xjm[1][1] - xjm[1][0]* xjm[0][1];
 
   if(*det<ZERO)

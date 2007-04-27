@@ -260,7 +260,7 @@ static int compare_values(
     ret = 1;
   }
   else if (FABS(actresult-givenresult) > res->tolerance) {
-    printf("RESULTCHECK: %s not correct. actresult=%f, givenresult=%f\n",
+    printf("RESULTCHECK: %s not correct. actresult=%15.9e, givenresult=%15.9e\n",
         res->name, actresult, givenresult);
     ret = 1;
   }
