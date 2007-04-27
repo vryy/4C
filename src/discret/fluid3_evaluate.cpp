@@ -420,6 +420,20 @@ void DRT::Elements::Fluid3::f3_sys_mat(vector<int>&              lm,
       xi1 = DMAX(re1,1.0);
       xi2 = DMAX(re2,1.0);
 
+      /*
+                  xi1,xi2 ^
+                          |      /
+                          |     /
+                          |    /
+                        1 +---+
+                          |
+                          |
+                          |
+                          +--------------> re1,re2
+                              1
+       */
+
+      
       tau[1] = DSQR(hk) / (DSQR(hk) * xi1 + (/* 2.0*/ 4.0 * timefac * visc/mk) * xi2);
 
       /*------------------------------------------------------ compute tau_C ---*/
@@ -432,25 +446,38 @@ void DRT::Elements::Fluid3::f3_sys_mat(vector<int>&              lm,
        * */
       //tau[2] = sqrt(DSQR(visc)+DSQR(0.5*vel_norm*hk));
 
-      // Wall Diss. 99  
+      // Wall Diss. 99
+      /*
+                      xi2 ^
+                          |   
+                        1 |   +-----------
+                          |  / 
+                          | /
+                          |/
+                          +--------------> Re2
+                              1
+      */
+      xi2 = DMIN(re2,1.0);
+
       tau[2] = vel_norm * hk * 0.5 * xi2;
       }
       else
       {// stabilization parameters for stationary case
 	
 	/*----------------------------------------------------- compute tau_Mu ---*/	
-	re = mk * vel_norm * strle / 2.0 * visc;   /* convective : viscous forces */
+	re = mk * vel_norm * strle / (2.0 * visc);   /* convective : viscous forces */
  	xi = DMAX(re,1.0);
 
 	tau[0] = (DSQR(strle)*mk)/(4.0*visc*xi);
 	 
       	/*------------------------------------------------------compute tau_Mp ---*/
-	re = mk * vel_norm * hk / 2.0 * visc;      /* convective : viscous forces */
+	re = mk * vel_norm * hk / (2.0 * visc);      /* convective : viscous forces */
       	xi = DMAX(re,1.0);
 
       	tau[1] = (DSQR(hk)*mk)/(4.0*visc*xi);	 
 
 	/*------------------------------------------------------ compute tau_C ---*/
+      	xi = DMIN(re,1.0);
 	tau[2] = 0.5*vel_norm*hk*xi;
       }
     } 
