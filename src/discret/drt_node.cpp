@@ -24,8 +24,8 @@ Maintainer: Michael Gee
 DRT::Node::Node(int id, const double* coords, const int owner) :
 ParObject(),
 id_(id),
-owner_(owner),
-dofset_()
+lid_(-1),
+owner_(owner)
 {
   for (int i=0; i<3; ++i) x_[i] = coords[i];
   return;
@@ -37,12 +37,12 @@ dofset_()
 DRT::Node::Node(const DRT::Node& old) :
 ParObject(old),
 id_(old.id_),
+lid_(old.lid_),
 owner_(old.owner_),
-dofset_(old.dofset_),
 element_(old.element_)
 {
   for (int i=0; i<3; ++i) x_[i] = old.x_[i];
-  
+
   // we do NOT want a deep copy of the condition_ a condition is
   // only a reference in the node anyway
   map<string,RefCountPtr<Condition> >::const_iterator fool;
@@ -76,7 +76,7 @@ DRT::Node* DRT::Node::Clone() const
  *----------------------------------------------------------------------*/
 ostream& operator << (ostream& os, const DRT::Node& node)
 {
-  node.Print(os); 
+  node.Print(os);
   return os;
 }
 
@@ -89,16 +89,11 @@ void DRT::Node::Print(ostream& os) const
   // Print id and coordinates
   os << "Node " << setw(12) << Id()
      << " Owner " << setw(4) << Owner()
-     << " Coords " 
-     << setw(12) << X()[0] << " " 
-     << setw(12) << X()[1] << " " 
+     << " Coords "
+     << setw(12) << X()[0] << " "
+     << setw(12) << X()[1] << " "
      << setw(12) << X()[2] << " ";
-  // print dofs if there are any
-  if (Dof().NumDof())
-  {
-    os << Dof();
-  }
-  
+
   // Print conditions if there are any
   int numcond = condition_.size();
   if (numcond)
@@ -121,7 +116,7 @@ void DRT::Node::Print(ostream& os) const
 void DRT::Node::Pack(vector<char>& data) const
 {
   data.resize(0);
-  
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -133,11 +128,7 @@ void DRT::Node::Pack(vector<char>& data) const
   AddtoPack(data,owner);
   // x_
   AddtoPack(data,x_,3*sizeof(double));
-  // dofset
-  vector<char> dofsetpack(0);
-  dofset_.Pack(dofsetpack);
-  AddtoPack(data,dofsetpack);
-  
+
   return;
 }
 
@@ -159,15 +150,11 @@ void DRT::Node::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,owner_);
   // x_
   ExtractfromPack(position,data,x_,3*sizeof(double));
-  // dofset_
-  vector<char> dofpack(0);
-  ExtractfromPack(position,data,dofpack);
-  dofset_.Unpack(dofpack);
-  
+
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
-} 
+}
 
 
 /*----------------------------------------------------------------------*
@@ -178,9 +165,9 @@ void DRT::Node::GetCondition(const string& name,vector<DRT::Condition*>& out)
 {
   const int num = condition_.count(name);
   out.resize(num);
-  multimap<string,RefCountPtr<Condition> >::iterator startit = 
+  multimap<string,RefCountPtr<Condition> >::iterator startit =
                                          condition_.lower_bound(name);
-  multimap<string,RefCountPtr<Condition> >::iterator endit = 
+  multimap<string,RefCountPtr<Condition> >::iterator endit =
                                          condition_.upper_bound(name);
   int count=0;
   multimap<string,RefCountPtr<Condition> >::iterator curr;
@@ -196,7 +183,7 @@ void DRT::Node::GetCondition(const string& name,vector<DRT::Condition*>& out)
  *----------------------------------------------------------------------*/
 DRT::Condition* DRT::Node::GetCondition(const string& name)
 {
-  multimap<string,RefCountPtr<Condition> >::iterator curr = 
+  multimap<string,RefCountPtr<Condition> >::iterator curr =
                                          condition_.find(name);
   if (curr==condition_.end()) return NULL;
   curr = condition_.lower_bound(name);

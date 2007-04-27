@@ -53,7 +53,7 @@ void write_vector_result(string result_name, PostField* field, PostResult* resul
   for (int k = 0; k < field->num_nodes(); ++k)
   {
     DRT::Node* n = field->discretization()->lRowNode(k);
-    DRT::DofSet s = n->Dof();
+    std::vector<int> s = field->discretization()->Dof(n);
     for (int i = 0; i < field->problem()->num_dim(); ++i)
     {
       // The order of the result vector is defined by the map. It is

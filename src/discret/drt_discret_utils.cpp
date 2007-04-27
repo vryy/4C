@@ -31,14 +31,14 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
 {
   // see whether we have a sublist indicating usage of Trilinos::ML
   if (!solveparams.isSublist("ML Parameters")) return;
-  
+
   // see whether we have previously computed the nullspace
   // and recomputation is enforced
   ParameterList& mllist = solveparams.sublist("ML Parameters");
   RefCountPtr<vector<double> > ns =
              mllist.get<RefCountPtr<vector<double> > >("nullspace",null);
   if (ns != null && !recompute) return;
-  
+
   // do the usual tests
   if (!Filled()) dserror("FillComplete was not called on discretization");
   if (!HaveDofs()) dserror("Discretization has no dofs assigned");
@@ -51,7 +51,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   const Epetra_Map* rowmap = DofRowMap();
   int numdf = 1; // default value for no. of degrees of freedom
   int dimns = 1; // default value for sirze of nullspace
-  
+
   // get the first element of the discretization
   // Note that a processor might not have any elements
   // We assume that every proc has an element and they are of equal type
@@ -111,7 +111,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     for (int i=0; i<lrows; ++i) nullsp[i] = 1.0;
     return;
   }
-  
+
   // nodal center of the discretization
   double x0send[3] = {0.0,0.0,0.0};
   double x0[3];
@@ -119,7 +119,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     for (int j=0; j<3; ++j) x0send[j] += lRowNode(i)->X()[j];
   Comm().SumAll(x0send,x0,3);
   for (int i=0; i<3; ++i) x0[i] /= NumGlobalNodes();
-  
+
 #ifdef D_SHELL8
   // special for shell8
   Epetra_SerialDenseMatrix dir;
@@ -129,7 +129,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     for (int i=0; i<NumMyRowNodes(); ++i)
     {
       DRT::Node* actnode = lRowNode(i);
-      DRT::Elements::Shell8* s8 = 
+      DRT::Elements::Shell8* s8 =
         dynamic_cast<DRT::Elements::Shell8*>(actnode->Elements()[0]);
       if (!s8) dserror("Cannot cast to Shell8");
       int j;
@@ -165,9 +165,10 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     {
       DRT::Node* actnode = lRowNode(i);
       const double* x = actnode->X();
-      for (int j=0; j<actnode->Dof().NumDof(); ++j)
+      vector<int> dofs = Dof(actnode);
+      for (unsigned j=0; j<dofs.size(); ++j)
       {
-        const int dof = actnode->Dof().Dofs()[j];
+        const int dof = dofs[j];
         const int lid = rowmap->LID(dof);
         if (lid<0) dserror("Cannot find dof");
         switch (j) // j is degree of freedom
@@ -237,9 +238,10 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     {
       DRT::Node* actnode = lRowNode(i);
       const double* x = actnode->X();
-      for (int j=0; j<actnode->Dof().NumDof(); ++j)
+      vector<int> dofs = Dof(actnode);
+      for (unsigned j=0; j<dofs.size(); ++j)
       {
-        const int dof = actnode->Dof().Dofs()[j];
+        const int dof = dofs[j];
         const int lid = rowmap->LID(dof);
         if (lid<0) dserror("Cannot find dof");
         switch (j) // j is degree of freedom
@@ -278,9 +280,10 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     for (int i=0; i<NumMyRowNodes(); ++i)
     {
       DRT::Node* actnode = lRowNode(i);
-      for (int j=0; j<actnode->Dof().NumDof(); ++j)
+      vector<int> dofs = Dof(actnode);
+      for (unsigned j=0; j<dofs.size(); ++j)
       {
-        const int dof = actnode->Dof().Dofs()[j];
+        const int dof = dofs[j];
         const int lid = rowmap->LID(dof);
         if (lid<0) dserror("Cannot find dof");
         switch (j) // j is degree of freedom
@@ -322,9 +325,10 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     for (int i=0; i<NumMyRowNodes(); ++i)
     {
       DRT::Node* actnode = lRowNode(i);
-      for (int j=0; j<actnode->Dof().NumDof(); ++j)
+      vector<int> dofs = Dof(actnode);
+      for (unsigned j=0; j<dofs.size(); ++j)
       {
-        const int dof = actnode->Dof().Dofs()[j];
+        const int dof = dofs[j];
         const int lid = rowmap->LID(dof);
         if (lid<0) dserror("Cannot find dof");
         switch (j) // j is degree of freedom
@@ -354,7 +358,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
       } // for (int j=0; j<actnode->Dof().NumDof(); ++j)
     } // for (int i=0; i<NumMyRowNodes(); ++i)
   } // else if (ele->Type() == DRT::Element::element_fluid2)
-  
+
   else ; // do nothing
 
   return;

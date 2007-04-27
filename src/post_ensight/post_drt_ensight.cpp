@@ -487,8 +487,7 @@ void EnsightWriter::WriteResult(ofstream& file, PostResult& result,
     for (int i=0; i<numnp; i++)
     {
       DRT::Node* n = dis->lRowNode(i);
-      DRT::DofSet s = n->Dof();
-      int lid = datamap.LID(s[from+j]);
+      int lid = datamap.LID(dis->Dof(n,from+j));
       if (lid > -1)
       {
         Write(file,static_cast<float>((*data)[lid]));

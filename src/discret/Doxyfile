@@ -551,7 +551,7 @@ INCLUDE_FILE_PATTERNS  =
 # or name=definition (no spaces). If the definition and the = are 
 # omitted =1 is assumed. 
 
-PREDEFINED             = CCADISCRET TRILINOS_PACKAGE D_SHELL8 D_FLUID3 D_WALL1 DEBUG PARALLEL SPOOLES_PACKAGE
+PREDEFINED             = CCADISCRET TRILINOS_PACKAGE D_SHELL8 D_FLUID3 D_WALL1 DEBUG PARALLEL SPOOLES_PACKAGE RESULTTEST BINIO D_FLUID D_FLUID2 D_FLUID3
 
 # If the MACRO_EXPANSION and EXPAND_PREDEF_ONLY tags are set to YES then 
 # this tag can be used to specify a list of macro names that should be expanded. 

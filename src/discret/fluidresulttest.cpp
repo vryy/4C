@@ -71,29 +71,29 @@ void FluidResultTest::TestNode(RESULTDESCR* res, int& nerr, int& test_count)
     string position = res->position;
     if (position=="velx")
     {
-      result = (*fluid_.velnp_)[velnpmap.LID(actnode->Dof()[0])];
+      result = (*fluid_.velnp_)[velnpmap.LID(fluid_.discret_->Dof(actnode,0))];
     }
     else if (position=="vely")
     {
-      result = (*fluid_.velnp_)[velnpmap.LID(actnode->Dof()[1])];
+      result = (*fluid_.velnp_)[velnpmap.LID(fluid_.discret_->Dof(actnode,1))];
     }
     else if (position=="velz")
     {
-      result = (*fluid_.velnp_)[velnpmap.LID(actnode->Dof()[2])];
+      result = (*fluid_.velnp_)[velnpmap.LID(fluid_.discret_->Dof(actnode,2))];
     }
     else if (position=="pressure")
     {
       if (genprob.ndim==2)
       {
-        if (actnode->Dof().NumDof()<3)
+        if (fluid_.discret_->NumDof(actnode)<3)
           dserror("too few dofs at node %d for pressure testing",actnode->Id());
-        result = (*fluid_.velnp_)[velnpmap.LID(actnode->Dof()[2])];
+        result = (*fluid_.velnp_)[velnpmap.LID(fluid_.discret_->Dof(actnode,2))];
       }
       else
       {
-        if (actnode->Dof().NumDof()<4)
+        if (fluid_.discret_->NumDof(actnode)<4)
           dserror("too few dofs at node %d for pressure testing",actnode->Id());
-        result = (*fluid_.velnp_)[velnpmap.LID(actnode->Dof()[3])];
+        result = (*fluid_.velnp_)[velnpmap.LID(fluid_.discret_->Dof(actnode,3))];
       }
     }
     else

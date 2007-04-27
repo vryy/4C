@@ -77,7 +77,7 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
       dserror("DRT::Element is pure virtual, cannot create instance");
     }
     break;
-#ifdef D_SHELL8    
+#ifdef D_SHELL8
     case ParObject_Shell8:
     {
       DRT::Elements::Shell8* object = new DRT::Elements::Shell8(-1,-1);
@@ -93,7 +93,7 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
       return object;
     }
     break;
-#endif    
+#endif
 #ifdef D_FLUID2
     case ParObject_Fluid2:
     {
@@ -110,7 +110,7 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
       return object;
     }
     break;
-#endif    
+#endif
 #ifdef D_FLUID3
     case ParObject_Fluid3:
     {
@@ -145,13 +145,6 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
     }
     break;
 #endif
-    case ParObject_DofSet:
-    {
-      DRT::DofSet* object = new DRT::DofSet();
-      object->Unpack(data);
-      return object;
-    }
-    break;
     case ParObject_ElementRegister:
     {
       dserror("DRT::ElementRegister is pure virtual, cannot create instance");
@@ -168,8 +161,8 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  allocate an element of a specific type (public)          mwgee 03|07|
  *----------------------------------------------------------------------*/
-RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype, 
-                                              const int id, 
+RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
+                                              const int id,
                                               const int owner)
 {
   enum TypeofElement
@@ -181,7 +174,7 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
     fluid3,
     so_hex8
   };
-  
+
   TypeofElement type = none;
   if (eletype=="none"); // dummy
   else if (eletype=="SHELL8") type = shell8;
@@ -191,8 +184,8 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
   else if (eletype=="SOLIDH8") type = so_hex8;
   // continue to add elements here....
   else dserror("Unknown type of finite element");
-  
-  
+
+
   switch (type)
   {
 #ifdef D_SHELL8
@@ -240,7 +233,7 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
       dserror("Unknown type of finite element");
     break;
   }
-  
+
   return null;
 }
 

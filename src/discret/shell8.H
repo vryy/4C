@@ -775,7 +775,7 @@ public:
   separately.
   */
   virtual int NumDofPerNode(const DRT::Node& node) const
-  {return node.Dof().NumDof();}
+  {return 6;}
 
   /*!
   \brief Get number of degrees of freedom per element

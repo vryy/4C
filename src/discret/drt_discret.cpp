@@ -30,8 +30,10 @@ DRT::Discretization::Discretization(const string name, RefCountPtr<Epetra_Comm> 
 name_(name),
 comm_(comm),
 filled_(false),
-havedof_(false)
+havedof_(false),
+currentdofset_(0)
 {
+  dofsets_.push_back(DofSet());
 }
 
 /*----------------------------------------------------------------------*
@@ -53,6 +55,10 @@ state_(old.state_)
   map<int,RefCountPtr<DRT::Node> >::const_iterator ncurr;
   for (ncurr=old.node_.begin(); ncurr!=old.node_.end(); ++ncurr)
     node_[ncurr->first] = rcp(ncurr->second->Clone());
+
+  currentdofset_ = old.currentdofset_;
+  for (unsigned i=0; i<old.dofsets_.size(); ++i)
+    dofsets_.push_back(DofSet(old.dofsets_[i]));
 
   // do fillcomplete if old was fillcomplete
   if (old.Filled()) FillComplete();
@@ -382,46 +388,10 @@ void DRT::Discretization::SetDesignEntityIds(Node::OnDesignEntity type,
  *----------------------------------------------------------------------*/
 const Epetra_Map* DRT::Discretization::DofRowMap()
 {
-  if (dofrowmap_ != null) return dofrowmap_.get();
   if (!Filled()) dserror("FillComplete was not called on this discretization");
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() not called on this discretization");
 
-  // loop my row nodes and count dofs
-  int numnodaldof = 0;
-  for (int i=0; i<NumMyRowNodes(); ++i)
-    numnodaldof += lRowNode(i)->Dof().NumDof();
-
-  // loop my row elements and count dofs
-  int numeledof = 0;
-  for (int i=0; i<NumMyRowElements(); ++i)
-    numeledof += lRowElement(i)->Dof().NumDof();
-
-  vector<int> mygid(numnodaldof+numeledof);
-
-  // loop my row nodes and record dofs
-  int count=0;
-  for (int i=0; i<NumMyRowNodes(); ++i)
-  {
-    DRT::Node* actnode = lRowNode(i);
-    for (int j=0; j<actnode->Dof().NumDof(); ++j)
-      mygid[count++] = actnode->Dof()[j];
-  }
-
-  // loop elements and record dofs
-  for (int i=0; i<NumMyRowElements(); ++i)
-  {
-    DRT::Element* actele = lRowElement(i);
-    for (int j=0; j<actele->Dof().NumDof(); ++j)
-      mygid[count++] = actele->Dof()[j];
-  }
-
-  if (count !=  numnodaldof+numeledof)
-    dserror("Mismatch in no. of dofs %d <-> %d",count,numnodaldof+numeledof);
-
-  dofrowmap_ = rcp(new Epetra_Map(-1,numnodaldof+numeledof,&mygid[0],0,Comm()));
-  if (!dofrowmap_->UniqueGIDs()) dserror("Dof row map is not unique");
-
-  return dofrowmap_.get();
+  return dofsets_[currentdofset_].DofRowMap();
 }
 
 
@@ -430,45 +400,10 @@ const Epetra_Map* DRT::Discretization::DofRowMap()
  *----------------------------------------------------------------------*/
 const Epetra_Map* DRT::Discretization::DofColMap()
 {
-  if (dofcolmap_ != null) return dofcolmap_.get();
   if (!Filled()) dserror("FillComplete was not called on this discretization");
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() not called on this discretization");
 
-  // loop my column nodes and count dofs
-  int numnodaldof = 0;
-  for (int i=0; i<NumMyColNodes(); ++i)
-    numnodaldof += lColNode(i)->Dof().NumDof();
-
-  // loop my column elements and count dofs
-  int numeledof = 0;
-  for (int i=0; i<NumMyColElements(); ++i)
-    numeledof += lColElement(i)->Dof().NumDof();
-
-  vector<int> mygid(numnodaldof+numeledof);
-
-  // loop my column nodes and record dofs
-  int count=0;
-  for (int i=0; i<NumMyColNodes(); ++i)
-  {
-    DRT::Node* actnode = lColNode(i);
-    for (int j=0; j<actnode->Dof().NumDof(); ++j)
-      mygid[count++] = actnode->Dof()[j];
-  }
-
-  // loop elements and record dofs
-  for (int i=0; i<NumMyColElements(); ++i)
-  {
-    DRT::Element* actele = lColElement(i);
-    for (int j=0; j<actele->Dof().NumDof(); ++j)
-      mygid[count++] = actele->Dof()[j];
-  }
-
-  if (count !=  numnodaldof+numeledof)
-    dserror("Mismatch in no. of dofs %d <-> %d",count,numnodaldof+numeledof);
-
-  dofcolmap_ = rcp(new Epetra_Map(-1,numnodaldof+numeledof,&mygid[0],0,Comm()));
-
-  return dofcolmap_.get();
+  return dofsets_[currentdofset_].DofColMap();
 }
 
 
@@ -545,6 +480,7 @@ DRT::Condition* DRT::Discretization::GetCondition(const string& name)
  *----------------------------------------------------------------------*/
 RefCountPtr<vector<char> > DRT::Discretization::PackMyElements()
 {
+  if (!Filled()) dserror("FillComplete was not called on this discretization");
   RefCountPtr<vector<char> > block = rcp(new vector<char>);
   for (vector<DRT::Element*>::iterator i=elerowptr_.begin();
        i!=elerowptr_.end();
@@ -564,6 +500,7 @@ RefCountPtr<vector<char> > DRT::Discretization::PackMyElements()
  *----------------------------------------------------------------------*/
 RefCountPtr<vector<char> > DRT::Discretization::PackMyNodes()
 {
+  if (!Filled()) dserror("FillComplete was not called on this discretization");
   RefCountPtr<vector<char> > block = rcp(new vector<char>);
   for (vector<DRT::Node*>::iterator i=noderowptr_.begin();
        i!=noderowptr_.end();

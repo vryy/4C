@@ -15,6 +15,7 @@ Maintainer: Michael Gee
 
 #include "drt_element.H"
 #include "drt_node.H"
+#include "drt_discret.H"
 #include "drt_dserror.H"
 
 
@@ -24,9 +25,9 @@ Maintainer: Michael Gee
 DRT::Element::Element(int id, ElementType etype, int owner) :
 ParObject(),
 id_(id),
+lid_(-1),
 owner_(owner),
-etype_(etype),
-dofset_()
+etype_(etype)
 {
   return;
 }
@@ -37,11 +38,11 @@ dofset_()
 DRT::Element::Element(const DRT::Element& old) :
 ParObject(old),
 id_(old.id_),
+lid_(old.lid_),
 owner_(old.owner_),
 etype_(old.etype_),
 nodeid_(old.nodeid_),
-node_(old.node_),
-dofset_(old.dofset_)
+node_(old.node_)
 {
   // we do NOT want a deep copy of the condition_ as the condition
   // is only a reference in the elements anyway
@@ -66,7 +67,7 @@ DRT::Element::~Element()
  *----------------------------------------------------------------------*/
 ostream& operator << (ostream& os, const DRT::Element& element)
 {
-  element.Print(os); 
+  element.Print(os);
   return os;
 }
 
@@ -84,10 +85,7 @@ void DRT::Element::Print(ostream& os) const
     os << " Nodes ";
     for (int i=0; i<nnode; ++i) os << setw(10) << nodes[i] << " ";
   }
-  // Print dofs if there are any
-  if (Dof().NumDof())
-    cout << Dof() << " ";
-  
+
   // Print conditions if there are any
   int numcond = condition_.size();
   if (numcond)
@@ -100,8 +98,8 @@ void DRT::Element::Print(ostream& os) const
       os << *(curr->second) << endl;
     }
   }
-  
-  
+
+
   return;
 }
 
@@ -136,7 +134,7 @@ void DRT::Element::SetNodeIds(const int nnode, const int* nodes)
 void DRT::Element::Pack(vector<char>& data) const
 {
   data.resize(0);
-  
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -151,11 +149,7 @@ void DRT::Element::Pack(vector<char>& data) const
   AddtoPack(data,etype);
   // add vector nodeid_
   AddtoPack(data,nodeid_);
-  // dofset
-  vector<char> dofsetpack(0);
-  dofset_.Pack(dofsetpack);
-  AddtoPack(data,dofsetpack);
-  
+
   return;
 }
 
@@ -179,19 +173,15 @@ void DRT::Element::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,etype_);
   // nodeid_
   ExtractfromPack(position,data,nodeid_);
-  // dofset_
-  vector<char> dofpack(0);
-  ExtractfromPack(position,data,dofpack);
-  dofset_.Unpack(dofpack);
-  
+
   // node_ is NOT communicated
   node_.resize(0);
-  
+
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
-} 
- 
+}
+
 
 /*----------------------------------------------------------------------*
  |  Build nodal pointers                                    (protected) |
@@ -207,9 +197,9 @@ bool DRT::Element::BuildNodalPointers(map<int,RefCountPtr<DRT::Node> >& nodes)
     map<int,RefCountPtr<DRT::Node> >::iterator curr = nodes.find(nodeids[i]);
     // this node is not on this proc
     if (curr==nodes.end()) dserror("Element %d cannot find node %d",Id(),nodeids[i]);
-    else 
+    else
       node_[i] = curr->second.get();
-  } 
+  }
   return true;
 }
 
@@ -219,7 +209,7 @@ bool DRT::Element::BuildNodalPointers(map<int,RefCountPtr<DRT::Node> >& nodes)
  *----------------------------------------------------------------------*/
 bool DRT::Element::BuildNodalPointers(DRT::Node** nodes)
 {
-  node_.resize(NumNode()); 
+  node_.resize(NumNode());
   for (int i=0; i<NumNode(); ++i) node_[i] = nodes[i];
   return true;
 }
@@ -233,9 +223,9 @@ void DRT::Element::GetCondition(const string& name,vector<DRT::Condition*>& out)
 {
   const int num = condition_.count(name);
   out.resize(num);
-  multimap<string,RefCountPtr<Condition> >::iterator startit = 
+  multimap<string,RefCountPtr<Condition> >::iterator startit =
                                          condition_.lower_bound(name);
-  multimap<string,RefCountPtr<Condition> >::iterator endit = 
+  multimap<string,RefCountPtr<Condition> >::iterator endit =
                                          condition_.upper_bound(name);
   int count=0;
   multimap<string,RefCountPtr<Condition> >::iterator curr;
@@ -251,7 +241,7 @@ void DRT::Element::GetCondition(const string& name,vector<DRT::Condition*>& out)
  *----------------------------------------------------------------------*/
 DRT::Condition* DRT::Element::GetCondition(const string& name)
 {
-  multimap<string,RefCountPtr<Condition> >::iterator curr = 
+  multimap<string,RefCountPtr<Condition> >::iterator curr =
                                          condition_.find(name);
   if (curr==condition_.end()) return NULL;
   curr = condition_.lower_bound(name);
@@ -262,27 +252,14 @@ DRT::Condition* DRT::Element::GetCondition(const string& name)
  |  Get degrees of freedom used by this element                (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
-void DRT::Element::LocationVector(vector<int>& lm, vector<int>& lmdirich, 
+void DRT::Element::LocationVector(const Discretization& dis,
+                                  vector<int>& lm, vector<int>& lmdirich,
                                   vector<int>& lmowner)
 {
   const int numnode = NumNode();
-  // count how many degrees of freedom I have
-  int count=0;
-  // count nodal dofs
   DRT::Node** nodes = Nodes();
-  if (nodes)
-    for (int i=0; i<numnode; ++i)
-      count += nodes[i]->Dof().NumDof();
-  // add element dofs
-  count += Dof().NumDof();
 
-  lm.resize(count);
-  lmdirich.resize(count);
-  lmowner.resize(count);
-  for (int i=0; i<count; ++i) lmdirich[i] = 0;
-  
   // fill the vector with nodal dofs
-  int count2=0;
   if (nodes)
     for (int i=0; i<numnode; ++i)
     {
@@ -298,13 +275,15 @@ void DRT::Element::LocationVector(vector<int>& lm, vector<int>& lmdirich,
         flag = dirich->Get<vector<int> >("onoff");
       }
       const int owner = nodes[i]->Owner();
-      for (int j=0; j<nodes[i]->Dof().NumDof(); ++j)
+      vector<int> dof = dis.Dof(nodes[i]);
+      for (unsigned j=0; j<dof.size(); ++j)
       {
-        if (flag)
-          if ((*flag)[j]) 
-            lmdirich[count2] = 1;
-        lmowner[count2] = owner;
-        lm[count2++]    = nodes[i]->Dof()[j];
+        if (flag && (*flag)[j])
+          lmdirich.push_back(1);
+        else
+          lmdirich.push_back(0);
+        lmowner.push_back(owner);
+        lm.push_back(dof[j]);
       }
     }
 
@@ -321,17 +300,17 @@ void DRT::Element::LocationVector(vector<int>& lm, vector<int>& lmdirich,
     flag = dirich->Get<vector<int> >("onoff");
   }
   const int owner = Owner();
-  for (int j=0; j<Dof().NumDof(); ++j)
+  vector<int> dof = dis.Dof(this);
+  for (unsigned j=0; j<dof.size(); ++j)
   {
-    if (flag)
-      if ((*flag)[j]) 
-        lmdirich[count2] = 1;
-    lmowner[count2] = owner;
-    lm[count2++]    = Dof()[j];
+    if (flag && (*flag)[j])
+      lmdirich.push_back(1);
+    else
+      lmdirich.push_back(0);
+    lmowner.push_back(owner);
+    lm.push_back(dof[j]);
   }
-    
-  if (count2!=count) dserror("Mismatch in no. of dofs");
-  
+
   return;
 }
 
@@ -340,45 +319,33 @@ void DRT::Element::LocationVector(vector<int>& lm, vector<int>& lmdirich,
  |  Get degrees of freedom used by this element                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Element::LocationVector(vector<int>& lm, vector<int>& lmowner)
+void DRT::Element::LocationVector(const Discretization& dis, vector<int>& lm, vector<int>& lmowner)
 {
   const int numnode = NumNode();
-  // count how many degrees of freedom I have
-  int count=0;
-  // count nodal dofs
   DRT::Node** nodes = Nodes();
-  if (nodes)
-    for (int i=0; i<numnode; ++i)
-      count += nodes[i]->Dof().NumDof();
-  // add element dofs
-  count += Dof().NumDof();
 
-  lm.resize(count);
-  lmowner.resize(count);
-  
   // fill the vector with nodal dofs
-  int count2=0;
   if (nodes)
     for (int i=0; i<numnode; ++i)
     {
       const int owner = nodes[i]->Owner();
-      for (int j=0; j<nodes[i]->Dof().NumDof(); ++j)
+      vector<int> dof = dis.Dof(nodes[i]);
+      for (unsigned j=0; j<dof.size(); ++j)
       {
-        lmowner[count2] = owner;
-        lm[count2++]    = nodes[i]->Dof()[j];
+        lmowner.push_back(owner);
+        lm.push_back(dof[j]);
       }
     }
 
   // fill the vector with element dofs
   const int owner = Owner();
-  for (int j=0; j<Dof().NumDof(); ++j)
+  vector<int> dof = dis.Dof(this);
+  for (unsigned j=0; j<dof.size(); ++j)
   {
-    lmowner[count2] = owner;
-    lm[count2++]    = Dof()[j];
+    lmowner.push_back(owner);
+    lm.push_back(dof[j]);
   }
-    
-  if (count2!=count) dserror("Mismatch in no. of dofs");
-  
+
   return;
 }
 
@@ -403,7 +370,7 @@ int DRT::Element::Evaluate(ParameterList& params,
 /*----------------------------------------------------------------------*
  |  evaluate Neumann BC dummy (public)                       mwgee 01/07|
  *----------------------------------------------------------------------*/
-int DRT::Element::EvaluateNeumann(ParameterList& params, 
+int DRT::Element::EvaluateNeumann(ParameterList& params,
                                   DRT::Discretization&      discretization,
                                   DRT::Condition&           condition,
                                   vector<int>&              lm,

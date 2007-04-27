@@ -32,7 +32,6 @@ using namespace std;
 using namespace Teuchos;
 #include "drt_parobject.H"
 #include "drt_condition.H"
-#include "drt_dofset.H"
 
 
 /*!
@@ -196,6 +195,11 @@ public:
   inline int Id() const { return id_; }
 
   /*!
+  \brief Return processor local col map id
+  */
+  virtual inline int LID() const { return lid_; }
+
+  /*!
   \brief Return owner of this element
   */
   virtual inline int Owner() const { return owner_; }
@@ -335,22 +339,6 @@ public:
   virtual int NumDofPerElement() const = 0;
 
   /*!
-  \brief Return reference to the set of degrees of freedom
-
-  In case the derived element does not have element degrees of freedom,
-  the dofset is of size zero.
-  */
-  virtual inline DRT::DofSet& Dof() { return dofset_; }
-
-  /*!
-  \brief Return reference to the set of degrees of freedom
-
-  In case the derived element does not have element degrees of freedom,
-  the dofset is of size zero.
-  */
-  virtual inline const DRT::DofSet& Dof() const { return dofset_; }
-
-  /*!
   \brief Print this element
 
   Prints basic information about this element to ostream. This method would
@@ -371,6 +359,12 @@ public:
 
   */
   virtual bool ReadElement();
+
+  /*!
+    \brief Set processor local col id
+    \param lid: processor local col id
+   */
+  virtual inline void SetLID(int lid) { lid_ = lid; }
 
   /*!
   \brief Set ownership
@@ -474,6 +468,7 @@ public:
         Depending on the element implementation, output might also include
         element dofs.
 
+  \param dis (in)      : the discretization this element belongs to
   \param lm (out)      : vector of degrees of freedom adressed by this element
   \param lmdirich (out): vector of zeros and ones indicating which
                          dofs have dirichlet boundary conditions. Ordering
@@ -483,7 +478,7 @@ public:
                          matches dofs in lm.
 
   */
-  virtual void LocationVector(vector<int>& lm, vector<int>& lmdirich, vector<int>& lmowner);
+  virtual void LocationVector(const Discretization& dis, vector<int>& lm, vector<int>& lmdirich, vector<int>& lmowner);
 
   /*!
   \brief Return the location vector of this element
@@ -504,13 +499,14 @@ public:
         Depending on the element implementation, output might also include
         element dofs.
 
+  \param dis (in)      : the discretization this element belongs to
   \param lm (out)      : vector of degrees of freedom adressed by this element
   \param lmowner (out) : vector of proc numbers indicating which dofs are owned
                          by which procs in a dof row map. Ordering
                          matches dofs in lm.
 
   */
-  virtual void LocationVector(vector<int>& lm, vector<int>& lmowner);
+  virtual void LocationVector(const Discretization& dis, vector<int>& lm, vector<int>& lmowner);
 
   /*!
   \brief Evaluate an element
@@ -606,6 +602,9 @@ private:
   //! \brief A unique global element id
   int id_;
 
+  //! local col map id
+  int lid_;
+
   //! \brief owner processor of this element
   int owner_;
 
@@ -617,9 +616,6 @@ private:
 
   //! \brief Pointers to adjacent nodes in element local ordering
   vector<DRT::Node*> node_;
-
-  //! \brief A set of degrees of freedom
-  DRT::DofSet dofset_;
 
   //! \brief Some conditions e.g. BCs
   multimap<string,RefCountPtr<Condition> > condition_;

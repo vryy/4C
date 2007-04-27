@@ -1,8 +1,6 @@
 /*!----------------------------------------------------------------------
 \file drt_discret.H
 
-\class DRT::Discretization
-
 \brief a class to manage one discretization
 
 <pre>
@@ -29,6 +27,7 @@ using namespace Teuchos;
 #include "drt_element.H"
 #include "drt_elementregister.H"
 #include "drt_node.H"
+#include "drt_dofset.H"
 #include "drt_dserror.H"
 
 /*!
@@ -39,7 +38,7 @@ namespace DRT
 {
 
 /*!
-\class Discretization
+\class DRT::Discretization
 
 \brief A class to manage a discretization in parallel
 
@@ -89,6 +88,70 @@ public:
   before any calculations using this discretization can be made
   */
   virtual inline bool HaveDofs() const {return havedof_;}
+
+  /*!
+  \brief Get number of dofs for given node.
+  Ask the current DofSet for the number of dofs of this node.
+  There is a variable number of DofSets and one is currently selected.
+  - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+  \param node (in)      : the node those number of dofs are requested
+  */
+  virtual int NumDof(Node* node) const
+    { dsassert(havedof_,"no dofs assigned"); return dofsets_[currentdofset_].NumDof(node); }
+
+  /*!
+  \brief Get number of dofs for given element.
+  Ask the current DofSet for the number of dofs of this element.
+  There is a variable number of DofSets and one is currently selected.
+  - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+  \param element (in)      : the element those number of dofs are requested
+  */
+  virtual int NumDof(Element* element) const
+    { dsassert(havedof_,"no dofs assigned"); return dofsets_[currentdofset_].NumDof(element); }
+
+  /*!
+  \brief Get the gid of a dof for given node.
+  Ask the current DofSet for the gid of the dof of this node.
+  There is a variable number of DofSets and one is currently selected.
+  - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+  \param node (in)      : the node
+  \param dof (in)       : the node local dof number
+  */
+  virtual int Dof(Node* node, int dof) const
+    { dsassert(havedof_,"no dofs assigned"); return dofsets_[currentdofset_].Dof(node,dof); }
+
+  /*!
+  \brief Get the gid of a dof for given element.
+  Ask the current DofSet for the gid of the dof of this element.
+  There is a variable number of DofSets and one is currently selected.
+  - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+  \param element (in)      : the element
+  \param dof (in)          : the element local dof number
+  */
+  virtual int Dof(Element* element, int dof) const
+    { dsassert(havedof_,"no dofs assigned"); return dofsets_[currentdofset_].Dof(element,dof); }
+
+  /*!
+  \brief Get the gid of all dofs of a node.
+  Ask the current DofSet for the gids of the dofs of this node. The
+  required vector is created and filled on the fly. So better keep it
+  if you need more that one dof gid.
+  - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+  \param node (in)      : the node
+  */
+  virtual vector<int> Dof(Node* node) const
+    { dsassert(havedof_,"no dofs assigned"); return dofsets_[currentdofset_].Dof(node); }
+
+  /*!
+  \brief Get the gid of all dofs of a element.
+  Ask the current DofSet for the gids of the dofs of this element. The
+  required vector is created and filled on the fly. So better keep it
+  if you need more that one dof gid.
+  - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+  \param element (in)      : the element
+  */
+  virtual vector<int> Dof(Element* element) const
+    { dsassert(havedof_,"no dofs assigned"); return dofsets_[currentdofset_].Dof(element); }
 
   /*!
   \brief Print this discretization to stdout (Filled()==true NOT prerequisite)
@@ -213,7 +276,7 @@ public:
 
   Returns the element with global row id gid if element is on this proc.
   Will return row or column element, ghosted or not.
-  This is an individual call. Will test on existance of element in 
+  This is an individual call. Will test on existance of element in
   DEBUG version and thorw error message of not. Will crash in non-DEBUG
   version if element does not exist on calling processor.
 
@@ -347,7 +410,7 @@ public:
   \brief Complete construction of a discretization  (Filled()==true NOT prerequisite)
 
   After adding or deleting nodes or elements or redistributing them in parallel,
-  or adding/deleting boundary conditions, this method has to be called to (re)construct 
+  or adding/deleting boundary conditions, this method has to be called to (re)construct
   pointer topologies.<br>
   It builds in this order:<br>
   - row map of nodes
@@ -444,7 +507,7 @@ public:
   - build element maps (row and column)
   - do export of row/col nodes and row/col elements
   - call Fillcomplete()
-  
+
   \param noderowmap (in): new node map the discretization shall have on exit
   \param nodecolmap (in): new column map the discretization shall have on exit
 
@@ -628,7 +691,7 @@ public:
   \brief Get a reference to a data vector
 
   Providing a name of a solution state, get a reference to the solution vector.
-  If a vector under the provided name does not exist, the method will throw 
+  If a vector under the provided name does not exist, the method will throw
   a lethal error message.
 
   \param name (in): Name of solution state
@@ -655,7 +718,7 @@ public:
   \brief Call elements to evaluate
 
   Call element routines to perform integration and return element contributions to
-  system vectors and matrices. Type of action taken by the elements and type of 
+  system vectors and matrices. Type of action taken by the elements and type of
   assembly is controlled by the params parameter.<br>
   Parameters that control assembly are:<br>
   \code
@@ -674,8 +737,8 @@ public:
   params.set("total time",1.23);     // current total time of simulation
   params.set("delta time",0.01);     // time increment
   \endcode
-  
- 
+
+
   \param params (in): Parameter list past to the elements containing
                       commands and parameters for the elements and
                       containing assembly intructions
@@ -690,22 +753,22 @@ public:
   \param systemvector1 (out):    Distributed vector that may be filled by
                                  aasembly of element contributions.
                                  May be Teuchos::null on entry.
-                                 Vector will NOT be initialized to zero by 
+                                 Vector will NOT be initialized to zero by
                                  the underlying assembly methods that add element
                                  contributions.
   \param systemvector2 (out):    Distributed vector that may be filled by
                                  aasembly of element contributions.
                                  May be Teuchos::null on entry.
-                                 Vector will NOT be initialized to zero by 
+                                 Vector will NOT be initialized to zero by
                                  the underlying assembly methods that add element
                                  contributions.
   \param systemvector3 (out):    Distributed vector that may be filled by
                                  aasembly of element contributions.
                                  May be Teuchos::null on entry.
-                                 Vector will NOT be initialized to zero by 
+                                 Vector will NOT be initialized to zero by
                                  the underlying assembly methods that add element
                                  contributions.
-                                 
+
 
   */
   virtual void Evaluate(ParameterList&                params,
@@ -749,15 +812,15 @@ public:
   and evaluates the appropiate time curves at that time for each
   Dirichlet condition separately. If "total time" is not included
   in the parameters, no time curves are used.
-  
+
   \note Opposed to the other 'Evaluate' method does this one NOT assembly but
-        OVERWRITE values in the output vector systemvector. For this reason, 
+        OVERWRITE values in the output vector systemvector. For this reason,
         dirichlet boundary conditions are evaluated in the following order:
         First "VolumeDirichlet", then "SurfaceDirichlet", then "LineDirichlet"
         and finally "PointDirichlet". This way, the lower entity dirichlet BCs override
         the higher ones and a point Dirichlet BCs has priority over other dirichlet
         BCs in the input file.
-  
+
   Parameters recognized by this method:
   \code
   params.set("total time",acttime); // current total time
@@ -778,7 +841,7 @@ public:
   is used as preconditioner. AMG desires the nullspace of the
   system of equations which is then computed here if it does not already exist
   in the parameter list.
-  
+
   \note This method is supposed to go away and live somewhere else soon....
 
   \param solveparams (in): List of parameters
@@ -790,39 +853,48 @@ public:
   //@}
 
   //! @name IO methods
-  
+
   /*!
     \brief Pack local elements (row map) into buffer.
-    
-    Ulrich is missing his documentation....
-    
+
+    Call Pack on all local (row map) elements and put the results into
+    a common vector. This is used to output the discretization.
+
+    \note Filled()=true is a prerequisite
    */
   RefCountPtr<vector<char> > PackMyElements();
 
   /*!
     \brief Pack local nodes (row map) into buffer.
 
-    Ulrich is missing his documentation....
+    Call Pack on all local (row map) nodes and put the results into
+    a common vector. This is used to output the discretization.
+
+    \note Filled()=true is a prerequisite
    */
   RefCountPtr<vector<char> > PackMyNodes();
 
   /*!
     \brief Unpack element buffer and create local elements.
 
-    Takes the ownership of the unpacked elements.
-    Ulrich: a little bit more details?
+    Interprets the argument as packed elements and unpacks them on the
+    local processor. Takes the ownership of the unpacked elements.
 
     \param e (in): buffer of packed elements
+
+    \note Sets Filled()=false
    */
   void UnPackMyElements(RefCountPtr<vector<char> > e);
 
   /*!
     \brief Unpack nodal buffer and create local nodes.
 
-    Takes the ownership of the unpacked nodes.
-    Ulrich: a little bit more details?
+    Interprets the argument as packed nodes and unpacks them on the
+    local processor. Takes the ownership of the unpacked nodes.
 
     \param e (in): buffer of packed nodes
+
+    \note Sets Filled()=false
    */
   void UnPackMyNodes(RefCountPtr<vector<char> > e);
 
@@ -836,7 +908,7 @@ private:
 
   /*!
   \brief Reset all maps and set Filled()=false (Filled()==true NOT prerequisite)
-  
+
   Resets all maps and sets flags filled_ and havedof_ to false.
 
   \note This is a collective call
@@ -906,10 +978,10 @@ private:
 
   /*!
   \brief (Re)create a map of ElementRegister objects
-  
+
   (Re)creates the map elementregister_ containing ONE register class
   for each type of element present in this discretization.
-  The register class will be called from FillComplete() to initialize 
+  The register class will be called from FillComplete() to initialize
   the finite elements of a certain type.
 
   */
@@ -997,6 +1069,11 @@ protected:
 
   multimap<string,RefCountPtr<Condition> >      condition_;       // some conditions e.g. BCs
 
+  /// set of DofSets
+  vector<DofSet>                                dofsets_;
+
+  /// number of the DofSet we are currently working with
+  int                                           currentdofset_;
 }; // class Discretization
 } // namespace DRT
 

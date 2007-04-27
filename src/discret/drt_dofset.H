@@ -1,12 +1,7 @@
 /*!----------------------------------------------------------------------
 \file drt_dofset.H
 
-\class DRT::DofSet
-
 \brief A set of degrees of freedom
-
-A set of degrees of freedom to be used in a node or an element or so.
-This is a VERY simple class...
 
 <pre>
 Maintainer: Michael Gee
@@ -21,10 +16,18 @@ Maintainer: Michael Gee
 #ifndef DOFSET_H
 #define DOFSET_H
 
+#include <vector>
+
+#include <Epetra_IntVector.h>
+#include <Teuchos_RefCountPtr.hpp>
+#include <Epetra_Comm.h>
+#include <Epetra_Map.h>
 
 using namespace std;
-#include "drt_parobject.H"
+
 #include "drt_dserror.H"
+#include "drt_element.H"
+#include "drt_node.H"
 
 /*!
 \brief DRT: namespace of the ccarat discretization module
@@ -33,14 +36,73 @@ using namespace std;
 namespace DRT
 {
 
+class Discretization;
+
+
 /*!
-\class DofSet
+\class DRT::DofSet
 
 \brief A set of degrees of freedom
 
-\author gee (gee@lnm.mw.tum.de)
+\note This is an internal class of the discretization module that one
+should not need to touch on an ordinary day. It is here to support the
+Discretization class. Everyday use should happen via the
+Discretization class only.
+
+<h3>Purpose</h3>
+
+This class represents one set of degrees of freedom for the
+Discretization class in the usual parallel fashion. That is there is a
+DofRowMap() and a DofColMap() that return the maps of the global FE
+system of equation in row and column setting respectively. These maps
+are used by the algorithm's Epetra_Vector classes amoung others.
+
+There can be dofs in nodes and in elements. And additionally to the
+above maps this class needs to know the global dof ids of all nodes
+and elements. In order to provide this information nodal and elemental
+column vectors are provided that store the number of dofs and the
+local column map id of the first dof for each node and element. Since
+dof numbers to one object are always consecutive this is all that's
+needed. So the methods NumDof() and Dof() can be provided for nodes
+and elements.
+
+One has to keep in mind, however, that the lookup of one dof gid
+involves some table lookups. Therefore there is a special version of
+Dof() that gathers and returns all dof gids to one node or element at
+once. This is to be prefered if more that one lookup is needed.
+
+The point of holding these maps and vectors in a class of its own is
+to enable multiple sets of dofs on the same mesh. But judging from
+past experience this feature will not be used that often. So effort
+has been made to hide the possibility of multiple DofSets.
+
+The setup is done by AssignDegreesOfFreedom(). This method uses two
+redundant nodal and elemental vectors. It would be hard to avoid
+those. Lets hope we can always afford them.
+
+\note It is guaranteed that the same mesh (nodes and elements are all
+the same with the same global ids) is assigned the same set of dofs
+all the time independent of its parallel distribution. That's crucial
+to be able to redistribute a mesh without losing the old vectors.
+
+<h3>Invariants</h3>
+
+There are two possible states in this class: Reset and setup. To
+change back and forth use AssignDegreesOfFreedom() and Reset().
+
+<h3>Copying behaviour</h3>
+
+Please note that even though Michael does not like it this class
+contains neither copy constructor nor assignment operatior. This is
+intended. It is legal to copy this objects of class. The internal
+variables (all RefCountPtrs) know how to copy themselves. So the
+default versions will do just fine. (Far better that buggy hand
+written versions.) And due to the two possible states there is no
+reason to deep copy any of the local map and vector variables.
+
+\author u.kue
 */
-class DofSet : public DRT::ParObject
+class DofSet
 {
 public:
 
@@ -49,17 +111,9 @@ public:
 
   /*!
   \brief Standard Constructor
-  
+
   */
   DofSet();
-
-  /*!
-  \brief Copy Constructor
-
-  Makes a deep copy
-  
-  */
-  DofSet(const DRT::DofSet& old);
 
   /*!
   \brief Destructor
@@ -67,93 +121,90 @@ public:
   */
   virtual ~DofSet();
 
-  /*!
-  \brief Return unique ParObject id
-  
-  see DRT::ParObject
-  */
-  virtual int UniqueParObjectId() const { return ParObject_DofSet;}
-
-  /*!
-  \brief Pack this class so it can be communicated
-  
-  \ref Pack and \ref Unpack are used to communicate this class
-  
-  */
-  virtual void Pack(vector<char>& data) const;
-
-  /*!
-  \brief Unpack data from a char vector into this class
-  
-  \ref Pack and \ref Unpack are used to communicate this class
-
-  */
-  virtual void Unpack(const vector<char>& data);
-
   //@}
 
-  // @{ \name Acess methods
+  // @{ \name Access methods
+
+  /// Get number of dofs for given node
+  virtual int NumDof(Node* node) const
+    { return (*numdfcolnodes_)[node->LID()]; }
+
+  /// Get number of dofs for given element
+  virtual int NumDof(Element* element) const
+    { return (*numdfcolelements_)[element->LID()]; }
+
+  /// Get the gid of a dof for given node
+  virtual int Dof(Node* node, int dof) const
+    { return dofcolmap_->GID((*idxcolnodes_)[node->LID()]+dof); }
+
+  /// Get the gid of a dof for given element
+  virtual int Dof(Element* element, int dof) const
+    { return dofcolmap_->GID((*idxcolelements_)[element->LID()]+dof); }
+
+  /// Get the gid of all dofs of a node
+  virtual vector<int> Dof(Node* node) const
+    {
+      int lid = node->LID();
+      int idx = (*idxcolnodes_)[lid];
+      vector<int> dof((*numdfcolnodes_)[lid]);
+      for (unsigned i=0; i<dof.size(); ++i)
+        dof[i] = dofcolmap_->GID(idx+i);
+      return dof;
+    }
+
+  /// Get the gid of all dofs of a element
+  virtual vector<int> Dof(Element* element) const
+    {
+      int lid = element->LID();
+      int idx = (*idxcolelements_)[lid];
+      vector<int> dof((*numdfcolelements_)[lid]);
+      for (unsigned i=0; i<dof.size(); ++i)
+        dof[i] = dofcolmap_->GID(idx+i);
+      return dof;
+    }
+
+  /// Get degree of freedom row map
+  virtual const Epetra_Map* DofRowMap() const { return dofrowmap_.get(); }
+
+  /// Get degree of freedom column map
+  virtual const Epetra_Map* DofColMap() const { return dofcolmap_.get(); }
 
   /*!
   \brief Print this class
   */
   virtual void Print(ostream& os) const ;
 
-  /*!
-  \brief Return no. of degrees of freedom
-  */
-  virtual inline int NumDof() const { return (int)dofs_.size(); }
-
-  /*!
-  \brief Return degrees of freedom
-  */
-  virtual inline const int* Dofs() const 
-  { if (NumDof()) return &dofs_[0]; else return NULL;}
-
-  /*!
-  \brief Return one local degree of freedom
-  
-  \param index (in): local index of the degree of freedom to be accessed
-  */
-  virtual inline int operator [] (const int index) const 
-  { 
-#ifdef DEBUG
-    if (NumDof()>index) return dofs_[index]; else return -1;
-#else
-    return dofs_[index];
-#endif
-  }
-
   //@}
 
   // @{ \name Construction
 
-  /*!
-  \brief change no. of degrees of freedom
-  
-  \param size (in) : new number of degrees of freedom in this set
-  */
-  virtual void SetNumDof(const int size); 
+  /// Assign dof numbers to all elements and nodes of the discretization.
+  virtual int AssignDegreesOfFreedom(const Discretization& dis, const int start);
 
-  /*!
-  \brief Set degrees of freedom
-  
-  \param dofs (in): degrees of freedom to be stored in this class
-  \param size (in): number of degrees of freedom in dofs
-  */
-  virtual void SetDof(const int* dofs, const int size); 
+  /// reset all internal variables
+  virtual void Reset();
 
   //@}
 
-private:
-
-  // don't want = operator
-  DofSet operator = (const DofSet& old);
-  
-
 protected:
 
-  vector<int>   dofs_;  // vector of degrees of freedom
+  /// unique row map of degrees of freedom (node and element dofs))
+  RefCountPtr<Epetra_Map>                       dofrowmap_;
+
+  /// unique column map of degrees of freedom (node and element dofs))
+  RefCountPtr<Epetra_Map>                       dofcolmap_;
+
+  /// number of dofs for each node
+  RefCountPtr<Epetra_IntVector>                 numdfcolnodes_;
+
+  /// number of dofs for each element
+  RefCountPtr<Epetra_IntVector>                 numdfcolelements_;
+
+  /// column map lid of first dof for each node
+  RefCountPtr<Epetra_IntVector>                 idxcolnodes_;
+
+  /// column map lid of first dof for each element
+  RefCountPtr<Epetra_IntVector>                 idxcolelements_;
 
 }; // class DofSet
 } // namespace DRT

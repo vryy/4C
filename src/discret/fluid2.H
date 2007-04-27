@@ -98,7 +98,7 @@ public:
   /*!
   \brief Return number of lines of this element
   */
-  virtual int NumLine() 
+  virtual int NumLine()
   {if (NumNode()==9 || NumNode()==8 || NumNode()==4) return 4;
       else if (NumNode()==3 || NumNode()==6) return 3;
       else {
@@ -602,7 +602,7 @@ public:
   separately.
   */
   virtual int NumDofPerNode(const DRT::Node& node) const
-  {return node.Dof().NumDof();}
+  {return 3;}
 
   /*!
   \brief Get number of degrees of freedom per element

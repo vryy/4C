@@ -80,13 +80,14 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
     for (int i=0; i<discret_->NumMyRowNodes(); ++i)
     {
       DRT::Node* node = discret_->lRowNode(i);
+      vector<int> dof = discret_->Dof(node);
       for (int j=0; j<numdim; ++j)
       {
 	  // add this velocity dof to the velmapdata vector
-	  velmapdata.push_back(node->Dof()[j]);
+	  velmapdata.push_back(dof[j]);
       }
       // add this pressure dof to the premapdata vector
-      premapdata.push_back(node->Dof()[numdim]);
+      premapdata.push_back(dof[numdim]);
     }
 
     // the rowmaps are generated according to the pattern provided by
@@ -150,7 +151,7 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   // the vector containing body and surface forces
   neumann_loads_= LINALG::CreateVector(*dofrowmap,true);
 
-  // Vectors used for solution process 
+  // Vectors used for solution process
   // ---------------------------------
 
   // The residual vector --- more or less the rhs for the incremental
@@ -237,7 +238,7 @@ void FluidImplicitTimeInt::Integrate()
       theta
       );
   else  // instationary case
-  { 
+  {
     // start procedure
     if (step_<numstasteps)
     {
@@ -245,7 +246,7 @@ void FluidImplicitTimeInt::Integrate()
       {
         dserror("more startsteps than steps");
       }
-    
+
     this->TimeIntegrateFromTo(
       step_,
       time_,
@@ -270,7 +271,7 @@ void FluidImplicitTimeInt::Integrate()
       theta
       );
   }
-  
+
   // print the results of time measurements
 
   tm0_ref_ = null; // end total time measurement
@@ -321,7 +322,7 @@ void FluidImplicitTimeInt::TimeIntegrateFromTo(
     {
       theta= (dta+dtp)/(2.0*dta + dtp);
     }
-    
+
     // -------------------------------------------------------------------
     //                         out to screen
     // -------------------------------------------------------------------
@@ -453,13 +454,13 @@ void FluidImplicitTimeInt::TimeIntegrateFromTo(
     // -------------------------------------------------------------------
     this->TimeUpdate(timealgo,step,dta,dtp,theta);
 
-    
+
     // -------------------------------------------------------------------
     // evaluate error for test flows with analytical solutions
     // -------------------------------------------------------------------
     this->EvaluateErrorComparedToAnalyticalSol(time);
 
-    
+
     // -------------------------------------------------------------------
     //                         output of solution
     // -------------------------------------------------------------------
@@ -973,10 +974,10 @@ void FluidImplicitTimeInt::Output(
         for(rr=0;rr<incvel_->MyLength();rr++)
         {
           printf("sol[%4d] %26.19e\n",rr,data[rr]);
-        }    
+        }
       }
 
-#endif      
+#endif
 
 
 #if 0  // DEBUG IO --- the solution vector after convergence
@@ -1038,17 +1039,17 @@ void FluidImplicitTimeInt::SetInitialFlowField(
 
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-    
+
     int err =0;
 
     int numdim  = params_.get<int>("number of velocity degrees of freedom");
     int npredof = numdim;
-    
+
     double         p;
     vector<double> u  (numdim);
     vector<double> xyz(numdim);
 
-      
+
     if(numdim!=3)
     {
       dserror("Beltrami flow is three dimensional flow!");
@@ -1057,15 +1058,15 @@ void FluidImplicitTimeInt::SetInitialFlowField(
     // set constants for analytical solution
     double a      = PI/4.0;
     double d      = PI/2.0;
-    
+
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
     {
       // get the processor local node
       DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
-      
+
       // the set of degrees of freedom associated with the node
-      DRT::DofSet nodedofset = lnode->Dof();
+      vector<int> nodedofset = discret_->Dof(lnode);
 
       // set node coordinates
       for(int dim=0;dim<numdim;dim++)
@@ -1099,7 +1100,7 @@ void FluidImplicitTimeInt::SetInitialFlowField(
         err += veln_ ->ReplaceMyValues(1,&(u[nveldof]),&lid);
         err += velnm_->ReplaceMyValues(1,&(u[nveldof]),&lid);
      }
-      
+
       // initial pressure
       gid = nodedofset[npredof];
       lid = dofrowmap->LID(gid);
@@ -1117,7 +1118,7 @@ void FluidImplicitTimeInt::SetInitialFlowField(
   {
     dserror("no other initial fields than zero and beltrami are available up to now");
   }
-  
+
   return;
 }
 
@@ -1137,7 +1138,7 @@ void FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol(
 {
 
   int calcerr = params_.get<int>("eval err for analyt sol");
-  
+
   //------------------------------------------------------- beltrami flow
   switch (calcerr)
   {
@@ -1151,7 +1152,7 @@ void FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol(
 
         eleparams.set<double>("L2 integrated velocity error",0.0);
         eleparams.set<double>("L2 integrated pressure error",0.0);
-        
+
         // action for elements
         eleparams.set("action","calc_fluid_beltrami_error");
         // actual time for elements
@@ -1176,10 +1177,10 @@ void FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol(
 
         double velerr = 0;
         double preerr = 0;
-        
+
         discret_->Comm().SumAll(&locvelerr,&velerr,1);
         discret_->Comm().SumAll(&locpreerr,&preerr,1);
-          
+
         // for the L2 norm, we need the square root
         velerr = sqrt(velerr);
         preerr = sqrt(preerr);
@@ -1265,11 +1266,11 @@ void FluidImplicitTimeInt::SolveStationaryProblem(
 {
   // start time measurement for timeloop
   tm2_ref_ = rcp(new TimeMonitor(*timedynloop_));
-  
+
   // set theta to one
   theta = 1.0;
-    
-  // pseudo time loop (continuation loop) 
+
+  // pseudo time loop (continuation loop)
   // slightly increasing b.c. values by given timecurves to have convergence
   // also in higher Reynolds number flows
   bool stop_timeloop=false;
@@ -1281,7 +1282,7 @@ void FluidImplicitTimeInt::SolveStationaryProblem(
     // -------------------------------------------------------------------
     step++;
     time+=dta;
-   
+
     // -------------------------------------------------------------------
     //                         out to screen
     // -------------------------------------------------------------------
@@ -1289,7 +1290,7 @@ void FluidImplicitTimeInt::SolveStationaryProblem(
     {
       // printf("TIME: %11.4E/%11.4E  DT = %11.4E  Stationary  STEP = %4d/%4d \n",
       //         time,endtime,dta,step,endstep);
-       printf("Stationary Solver - STEP = %4d/%4d \n",step,endstep);	       
+       printf("Stationary Solver - STEP = %4d/%4d \n",step,endstep);
     }
 
     // -------------------------------------------------------------------
@@ -1309,8 +1310,8 @@ void FluidImplicitTimeInt::SolveStationaryProblem(
      eleparams.set("total time",time);
      eleparams.set("delta time",dta);
      eleparams.set("time constant for integration",theta*dta);
-     eleparams.set("using stationary formulation",true);    
-     
+     eleparams.set("using stationary formulation",true);
+
      // set vector values needed by elements
      discret_->ClearState();
      discret_->SetState("u and p at time n+1 (trial)",velnp_);
@@ -1334,13 +1335,13 @@ void FluidImplicitTimeInt::SolveStationaryProblem(
     // -------------------------------------------------------------------
     this->NonlinearSolve(dta,theta,true);
 
-   
+
     // -------------------------------------------------------------------
     // evaluate error for test flows with analytical solutions
     // -------------------------------------------------------------------
     //this->EvaluateErrorComparedToAnalyticalSol(time);
 
-    
+
     // -------------------------------------------------------------------
     //                         output of solution
     // -------------------------------------------------------------------

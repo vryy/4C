@@ -627,7 +627,7 @@ public:
   separately.
   */
   virtual int NumDofPerNode(const DRT::Node& node) const
-  {return node.Dof().NumDof();}
+  {return 4;}
 
   /*!
   \brief Get number of degrees of freedom per element
@@ -702,14 +702,14 @@ private:
     );
 
   //  compute kovariant metric tensor G for fluid surface element
-  //                                                  gammi 04/07 
+  //                                                  gammi 04/07
 
   void  f3_metric_tensor_for_surface(
     const Epetra_SerialDenseMatrix  xyze,
     const Epetra_SerialDenseMatrix  deriv,
     Epetra_SerialDenseMatrix&       metrictensor,
     double                         *drs);
-  
+
 }; // class Fluid3Surface
 
 
