@@ -350,6 +350,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
 	 tau[0] = DSQR(hk)/(DSQR(hk)*xi1 + (4.0*timefac*visc/mk)*xi2);
 
          /*-------------------------------------------- compute tau_C ---*/
+	 xi2 = DMIN(re,1.0);	 
 	 tau[2] = vel_norm * hk * 0.5 * xi2;
 	}
 	else
@@ -365,6 +366,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
 
 	 /*------------------------------------------------------ compute tau_C ---*/
 	 /*-- stability parameter definition according to Codina (2002), CMAME 191 */
+	 xi = DMIN(re,1.0);	 
 	 tau[2] = 0.5*vel_norm*hk*xi;
 	}
 
