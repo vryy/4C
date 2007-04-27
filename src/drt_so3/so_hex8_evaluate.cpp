@@ -32,6 +32,7 @@ extern "C"
 // see if we can avoid this #include "../shell8/shell8.h"
 }
 #include "../discret/dstrc.H"
+using namespace std; // cout etc.
 
 /*----------------------------------------------------------------------*
  |                                                         maf 04/07    |
@@ -192,12 +193,14 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(vector<int>&              lm,
   Epetra_SerialDenseMatrix* shapefct; //[NUMNOD_SOH8][NUMGPT_SOH8]
 /* pointer to (static) shape function derivatives array 
  * for each node wrt to each direction, evaluated at each gp*/
-  Epetra_SerialDenseMatrix* deriv;    //[NUMNOD_SOH8*NUMDIM][NUMGPT_SOH8]
+  Epetra_SerialDenseMatrix* deriv;    //[NUMGPT_SOH8*NUMDIM][NUMNOD_SOH8]
 /* pointer to (static) weight factors at each gp */  
   Epetra_SerialDenseVector* weights;  //[NUMGPT_SOH8]
+/* ======================================================================*/
+  
  
   soh8_shapederiv(&shapefct,&deriv,&weights);
-
+  
   // update geometry
   Epetra_SerialDenseMatrix ex(NUMNOD_SOH8,NUMDIM_SOH8);  // material coord. of element
   Epetra_SerialDenseMatrix edis(NUMNOD_SOH8,NUMDIM_SOH8);// curr. element displacements
@@ -212,9 +215,71 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(vector<int>&              lm,
     edis(i,1) = ex(i,1) + disp[i*NUMDOF_SOH8+1];
     edis(i,2) = ex(i,2) + disp[i*NUMDOF_SOH8+2];
   }
- 
- 
-  (*shapefct)(8,1);
+  /* compute the Jacobian matrix which looks like:
+   *         [ x_,r  y_,r  z_,r ]
+   *     J = [ x_,s  y_,s  z_,s ]
+   *         [ x_,t  y_,t  z_,t ]
+   * for all GP: J(GP)=dN,i(GP) * X
+   * therefore every 3 rows belong to one GP -> 3*8 rows */ 
+  Epetra_SerialDenseMatrix jac(NUMDOF_SOH8,NUMDIM_SOH8);
+  jac.Multiply('N','N',1.0,*deriv,ex,1.0);
+  
+  /* ================================================= Loop over Gauss Points */
+  for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+  {
+    // compute determinant of J(GP) by Sarrus' rule
+    double detJ=0.0;
+    detJ= jac(3*gp+0,0) * jac(3*gp+1,1) * jac(3*gp+2,2)
+        + jac(3*gp+0,1) * jac(3*gp+1,2) * jac(3*gp+2,0)
+        + jac(3*gp+0,2) * jac(3*gp+1,0) * jac(3*gp+2,1)
+        - jac(3*gp+0,0) * jac(3*gp+1,2) * jac(3*gp+2,1)
+        - jac(3*gp+0,1) * jac(3*gp+1,0) * jac(3*gp+2,2)
+        - jac(3*gp+0,2) * jac(3*gp+1,1) * jac(3*gp+2,0);
+    if (detJ == 0.0) dserror("ZERO JACOBIAN DETERMINANT");
+    else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
+    
+    // compute inverse of J(GP)[3][3]
+    Epetra_SerialDenseMatrix invjac(3,3);
+    invjac(0,0) = jac(3*gp+1,1)*jac(3*gp+2,2) - jac(3*gp+2,1)*jac(3*gp+1,2);
+    invjac(0,1) = jac(3*gp+0,2)*jac(3*gp+2,1) - jac(3*gp+0,1)*jac(3*gp+2,2);
+    invjac(0,2) = jac(3*gp+0,1)*jac(3*gp+1,2) - jac(3*gp+0,2)*jac(3*gp+1,1);
+    invjac(1,0) = jac(3*gp+1,2)*jac(3*gp+2,0) - jac(3*gp+2,2)*jac(3*gp+1,0);
+    invjac(1,1) = jac(3*gp+0,0)*jac(3*gp+2,2) - jac(3*gp+0,2)*jac(3*gp+2,0);
+    invjac(1,2) = jac(3*gp+0,2)*jac(3*gp+1,0) - jac(3*gp+0,0)*jac(3*gp+1,2);
+    invjac(2,0) = jac(3*gp+1,0)*jac(3*gp+2,1) - jac(3*gp+2,0)*jac(3*gp+1,1);
+    invjac(2,1) = jac(3*gp+0,1)*jac(3*gp+2,0) - jac(3*gp+0,0)*jac(3*gp+2,1);
+    invjac(2,2) = jac(3*gp+0,0)*jac(3*gp+1,1) - jac(3*gp+0,1)*jac(3*gp+1,0);
+    // Scalarmultiply with 1/detJ later !!
+    // invjac.Scale(1/detJ);
+    
+    // is this the same: ?
+    Epetra_SerialDenseMatrix inv2jac(3,3);
+    inv2jac.ApplyInverse(jac,inv2jac);  // seems not working!!
+    
+    // build submatrix of deriv at actual gp
+    Epetra_SerialDenseMatrix deriv_gp(NUMDIM_SOH8,NUMGPT_SOH8);
+    for (int m=0; m<NUMDIM_SOH8; ++m)
+    {
+        for (int n=0; n<NUMGPT_SOH8; ++n)
+        {
+            deriv_gp(m,n)=(*deriv)(3*gp+m,n);
+        }
+    }
+    Epetra_SerialDenseMatrix N_XYZ(NUMDIM_SOH8,NUMNOD_SOH8);
+    N_XYZ.Multiply('N','N',1/detJ,invjac,deriv_gp,1.0);
+    
+    cout << N_XYZ;
+    
+  } // ==================================================== of Loop over GP
+  
+  
+//  cout << "jaco " << jaco.M() << " " << jaco.N() << endl;
+//  cout << "ex " << ex.M() << " " << ex.N() << endl;
+//  cout << "deriv " << deriv->M() << " " << deriv->N() << endl;
+//  cout << jaco;
+  
+  
+  
   
   
   return;
@@ -232,9 +297,9 @@ void DRT::Elements::So_hex8::soh8_shapederiv(
 {
   DSTraceHelper dst("So_hex8::soh8_shapederiv");
   
-  //static matrix objects with dimensions such that access of gp(=column) should be fast 
+  //static matrix objects 
   static Epetra_SerialDenseMatrix  f(NUMNOD_SOH8,NUMGPT_SOH8);
-  static Epetra_SerialDenseMatrix df(NUMDOF_SOH8,NUMGPT_SOH8);
+  static Epetra_SerialDenseMatrix df(NUMDOF_SOH8,NUMNOD_SOH8);
   static Epetra_SerialDenseVector weightfactors(NUMGPT_SOH8);
   static int fdf_eval;                        // flag for re-evaluation
   
@@ -300,7 +365,7 @@ void DRT::Elements::So_hex8::soh8_shapederiv(
         df(NUMDIM_SOH8*i+2,4) =  (1.0-r[i])*(1.0-s[i])*0.125;
         df(NUMDIM_SOH8*i+2,5) =  (1.0+r[i])*(1.0-s[i])*0.125;
         df(NUMDIM_SOH8*i+2,6) =  (1.0+r[i])*(1.0+s[i])*0.125;
-        df(NUMDIM_SOH8*i+2,7) = -(1.0-r[i])*(1.0+s[i])*0.125;
+        df(NUMDIM_SOH8*i+2,7) =  (1.0-r[i])*(1.0+s[i])*0.125;
     }
     *shapefct = &f;             // return adress of static object to target of pointer
     *deriv = &df;               // return adress of static object to target of pointer

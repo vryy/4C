@@ -23,6 +23,7 @@ Maintainer: Moritz Frenzel
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_Vector.h"
 #include "Epetra_SerialDenseVector.h"
+#include "Epetra_SerialDenseMatrix.h"
 using namespace std;
 using namespace Teuchos;
 
