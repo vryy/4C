@@ -333,8 +333,6 @@ typedef struct _GSURF
   DOUBLE con_quot_temp;
   DOUBLE con_quot;            /* non-dimensionalized surfactant
                                * concentration */
-  DOUBLE d_con_quot_temp;
-  DOUBLE d_con_quot;
 #endif
 #endif
 

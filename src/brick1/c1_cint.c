@@ -646,7 +646,6 @@ for (r=0;r<actgvol->ngsurf;r++)
         {
           actgsurf->A_old=0.;
           actgsurf->con_quot=0.;
-          actgsurf->d_con_quot=0.;
         }
       }
 
@@ -669,7 +668,6 @@ for (r=0;r<actgvol->ngsurf;r++)
         {
           actgsurf->A_old=actgsurf->A_old_temp;
           actgsurf->con_quot=actgsurf->con_quot_temp;
-          actgsurf->d_con_quot=actgsurf->d_con_quot_temp;
         }
       }
 
@@ -677,7 +675,6 @@ for (r=0;r<actgvol->ngsurf;r++)
       {
         A_old=actgsurf->A_old;
         con_quot=actgsurf->con_quot;
-        d_con_quot=actgsurf->d_con_quot;
 
         k1=actgsurf->dsurf->k1;
         k2=actgsurf->dsurf->k2;
@@ -689,8 +686,7 @@ for (r=0;r<actgvol->ngsurf;r++)
         gamma_min_eq=actgsurf->dsurf->gamma_min_eq;
 
         c1_surf(surface_flag,k1,k2,C,m1,m2,gamma_0,gamma_min,gamma_min_eq,0,
-                xyz_curr,K_surf,fie_surf,nodevec,deltat,r,step,&A_old,&con_quot,
-                &d_con_quot);
+                xyz_curr,K_surf,fie_surf,nodevec,deltat,r,step,&A_old,&con_quot);
       }
 
       else if (surface_flag==1)
@@ -698,8 +694,7 @@ for (r=0;r<actgvol->ngsurf;r++)
         const_gamma=actgsurf->dsurf->const_gamma;
 
         c1_surf(surface_flag,0,0,0,0,0,0,0,0,const_gamma,
-                xyz_curr,K_surf,fie_surf,nodevec,0,r,step,NULL,NULL,
-                NULL);
+                xyz_curr,K_surf,fie_surf,nodevec,0,r,step,NULL,NULL);
       }
 
       for (k=0;k<4;k++)                       /* sort K_surf into estif */
@@ -734,7 +729,6 @@ for (r=0;r<actgvol->ngsurf;r++)
       {
         actgsurf->A_old_temp=A_old;
         actgsurf->con_quot_temp=con_quot;
-        actgsurf->d_con_quot_temp=d_con_quot;
       }
 
       for (i=0;i<12;i++)

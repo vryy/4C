@@ -733,8 +733,7 @@ void c1_surf(
              int      r,
              int      step,
              double  *A_old,
-             double  *con_quot,
-             DOUBLE  *d_con_quot
+             double  *con_quot
             );
 /*----------------------------------------------------------------------*
  | calculation of surface area, derivative of angles of normal lw 08/06 |

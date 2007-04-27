@@ -35,7 +35,6 @@ static void gamma_calc(
                        DOUBLE *gamma,
                        DOUBLE *dgamma,
                        DOUBLE *con_quot,
-                       DOUBLE *d_con_quot,
                        DOUBLE *A_old,
                        DOUBLE A_new,
                        DOUBLE dt,
@@ -91,9 +90,6 @@ arbitrary starting values are assumed.
 \param         step  INT      (i)   current step number
 \param        A_old  DOUBLE* (i/o)  interfacial area
 \param     con_quot  DOUBLE* (i/o)  surfactant concentration
-\param   d_con_quot  DOUBLE* (i/o)  derivative of surfactant
-                                    concentration with respect to
-                                    interfacial area
 
 \warning There is nothing special to this routine
 \return void
@@ -119,8 +115,7 @@ void c1_surf(
              INT     r,
              INT     step,
              DOUBLE *A_old,
-             DOUBLE *con_quot,
-             DOUBLE *d_con_quot
+             DOUBLE *con_quot
             )
 {
   DOUBLE gamma, dgamma;
@@ -129,7 +124,7 @@ void c1_surf(
   DOUBLE con_quot_eq;
   DOUBLE con_quot_max;
   INT i, j;
-  DOUBLE con, a_old, d_con;
+  DOUBLE con, a_old;
 
   /*-------------------------------------------------------------------*/
   #ifdef DEBUG
@@ -150,30 +145,25 @@ void c1_surf(
   if (surface_flag==0)                                   /* SURFACTANT */
   {
     con_quot_max=(gamma_min_eq-gamma_min)/m2+1.;
-    con_quot_eq=(k1/k2*C)/(k1/k2*C+1.);
+    con_quot_eq=(k1*C)/(k1*C+k2);
 
     /*------------calculation of current surface stress and its partial
      *-----------------derivative with respect to the interfacial area */
+    a_old=*A_old;
 
     if (step<100)             /* gradual application of surface stress */
     {
       gamma=gamma_0-m1*con_quot_eq;
       con=con_quot_eq;
       *con_quot=con;
-      d_con=k1*C/(k1*C+k2);
-      dgamma=-m1*(d_con-con_quot_eq)/A;
-      *d_con_quot=d_con;
+      dgamma=0.;
     }
     else
     {
       con=*con_quot;
-      a_old=*A_old;
-      d_con=*d_con_quot;
-
-      gamma_calc(&gamma, &dgamma, &con, &d_con, &a_old, A, dt, step, k1, k2, C, m1,
+      gamma_calc(&gamma, &dgamma, &con, &a_old, A, dt, step, k1, k2, C, m1,
                m2, gamma_0, gamma_min, gamma_min_eq, con_quot_max);
       *con_quot=con;
-      *d_con_quot=d_con;
     }
   }
 
@@ -497,7 +487,6 @@ static void gamma_calc(
                        DOUBLE *gamma,
                        DOUBLE *dgamma,
                        DOUBLE *con_quot,
-                       DOUBLE *d_con_quot,
                        DOUBLE *A_old,
                        DOUBLE A_new,
                        DOUBLE dt,
@@ -522,8 +511,6 @@ static void gamma_calc(
   DOUBLE M_old;                 /*old mass of surfactant*/
   DOUBLE con;
   DOUBLE a_old;
-  DOUBLE d_con;
-  DOUBLE d_con_new;
 
   /*-------------------------------------------------------------------*/
   #ifdef DEBUG
@@ -533,7 +520,6 @@ static void gamma_calc(
 
   con=*con_quot;
   a_old=*A_old;
-  d_con=*d_con_quot;
   M_old=con*a_old;
 
   /*-------------------------------------------------------------------*
@@ -592,8 +578,7 @@ static void gamma_calc(
   if (con_quot_new<1.)
   {
     *gamma=gamma_0-m1*con_quot_new;
-    d_con_new=(1./dt*d_con+k1*C)/(1./dt+k1*C+k2);
-    *dgamma=-m1/A_new*(d_con_new-con_quot_new);
+    *dgamma=m1/dt*M_old/(A_new*A_new*(1/dt+k1*C+k2));
   }
   else
   {
@@ -602,18 +587,14 @@ static void gamma_calc(
     {
       *gamma=gamma_min_eq-m2*(con_quot_new-1.);
       *dgamma=m2*con_quot_new/A_new;
-      d_con_new=0.;
     }
     /*----------------------------Regime 3: "Squeeze out"/Film collapse*/
     else
     {
       *gamma=gamma_min;
       *dgamma=0.;
-      d_con_new=con_quot_max;
     }
   }
-
-  *d_con_quot=d_con_new;
  /*-------------------------------------------------------------------*/
   #ifdef DEBUG
   dstrc_exit();
