@@ -116,12 +116,12 @@ public:
   \brief Return number of surfaces of this element
   */
   virtual int NumSurface() const {return 6;}
-   
+
   /*!
   \brief Return number of lines of this element
   */
   virtual int NumLine() const {return 12;}
-   
+
   /*!
   \brief Get vector of ptrs to the lines of this element
 
@@ -300,7 +300,7 @@ private:
     calc_struct_update_istep
   };
 
-  //! kinematic types of so_hex8 
+  //! kinematic types of so_hex8
   enum KinematicType
   {
     soh8_geolin,
@@ -327,15 +327,15 @@ private:
   int                                             material_;
   //! container containing all kind of solid3 thisandthat
   DRT::Container                                  data_;
-  //! vector of volume (length 1) of this element 
+  //! vector of volume (length 1) of this element
   vector<RefCountPtr<DRT::Elements::Soh8Volume> > volume_;
-  //! vector of surfaces of this element 
+  //! vector of surfaces of this element
   vector<RefCountPtr<DRT::Elements::Soh8Surface> > surfaces_;
-  //! vector of surfaces of this element 
+  //! vector of surfaces of this element
   vector<DRT::Elements::Soh8Surface*>           surfaceptrs_;
-  //! vector of lines adjacent to this element 
+  //! vector of lines adjacent to this element
   vector<RefCountPtr<DRT::Elements::Soh8Line> > lines_;
-  //! vector of lines adjacent to this element 
+  //! vector of lines adjacent to this element
   vector<DRT::Elements::Soh8Line*>              lineptrs_;
 
   // internal calculation methods
@@ -352,11 +352,11 @@ private:
                          struct _MATERIAL*         material);
 
   void soh8_stress(struct _MATERIAL* material, vector<double>& mydisp);
-  
+
   void soh8_shapederiv(Epetra_SerialDenseMatrix** shapefct,
                        Epetra_SerialDenseMatrix** deriv,
                        Epetra_SerialDenseVector** weights);
-  
+
 
 }; // class So_hex8
 
@@ -566,7 +566,7 @@ public:
   separately.
   */
   virtual int NumDofPerNode(const DRT::Node& node) const
-  {return node.Dof().NumDof();}
+  {return 3;}
 
   /*!
   \brief Get number of degrees of freedom per element
@@ -734,7 +734,7 @@ public:
   separately.
   */
   virtual int NumDofPerNode(const DRT::Node& node) const
-  {return node.Dof().NumDof();}
+  {return 3;}
 
   /*!
   \brief Get number of degrees of freedom per element
@@ -899,7 +899,7 @@ public:
   separately.
   */
   virtual int NumDofPerNode(const DRT::Node& node) const
-  {return node.Dof().NumDof();}
+  {return 3;}
 
   /*!
   \brief Get number of degrees of freedom per element
