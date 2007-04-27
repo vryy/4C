@@ -126,6 +126,51 @@ void so3_mat_robinson_be_final(SOLID3* actso3)
 
 /*======================================================================*/
 /*!
+\brief Predictor (constant) of material internal variables
+\param   ele          ELEMENT*        (io)   curr. elem.
+\parm    mat_robin    VP_ROBINSON*    ()     elem. mater.
+\author bborn
+\date 04/07
+*/
+void so3_mat_robinson_be_prd(ELEMENT* ele,
+                             VP_ROBINSON* mat_robin)
+{
+  SOLID3* actso3 = ele->e.so3;  /* point to SOLID3 element bits */
+  INT gptot = actso3->gptot;  /* total number of GPs in domain */
+  INT ip;  /* total GP index */
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_enter("so3_mat_robinson_be_prd");
+#endif
+
+  /*--------------------------------------------------------------------*/
+  /* update viscous strain
+   *    eps_{n}^v := eps_{n+1}^v at every Gauss point <b> */
+  for (ip=0; ip<gptot; ip++)
+  {
+    so3_vct6_ass(actso3->miv_rob->vicstnn.a.da[ip],
+                 actso3->miv_rob->vicstn.a.da[ip]);
+  }
+
+  /*--------------------------------------------------------------------*/
+  /* update back stress 'Alpha'
+   *    al_{n} := al_{n+1} at every Gauss point <g> */
+  for (ip=0; ip<gptot; ip++)
+  {
+    so3_vct6_ass(actso3->miv_rob->bacstsn.a.da[ip],
+                 actso3->miv_rob->bacsts.a.da[ip]);
+  }
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+
+/*======================================================================*/
+/*!
 \brief Select Robinson's material and integrate internal variables
 \param   container   CONTAINER*     (i)   container.h data
 \param   ele         ELEMENT*       (i)   curr. element
@@ -154,7 +199,7 @@ void so3_mat_robinson_be_sel(const CONTAINER* container,
   DOUBLE stntot[NUMSTR_SOLID3];  /* total strain */
   DOUBLE stnela[NUMSTR_SOLID3];  /* elastic strain */
   DOUBLE stnthr[NUMSTR_SOLID3];  /* thermal strain */
-  DOUBLE stnvsc[NUMSTR_SOLID3];  /* viscous strain */
+  DOUBLE vscstn[NUMSTR_SOLID3];  /* viscous strain */
   
   DOUBLE stsbac[NUMSTR_SOLID3];  /* back stress */
   DOUBLE stsdev[NUMSTR_SOLID3];  /* stress deviator */
@@ -203,25 +248,8 @@ void so3_mat_robinson_be_sel(const CONTAINER* container,
   }
 
   /*--------------------------------------------------------------------*/
-  /* viscous strain at t_{n+c_i} */
-/*   { */
-/*     /\* initialise viscous strain at t_{n+c_i} *\/ */
-/*     INT istn; */
-/*     for (istn=0; istn<NUMSTR_SOLID3; istn++) */
-/*     { */
-/*       stnvsc[istn] = actso3->miv_rob->vicstn.a.da[ip][istn]; */
-/*     } */
-/*     /\* create value (this is Fehlberg4) *\/ */
-/*     INT istg; */
-/*     for (istg=0; istg<actstg; istg++) */
-/*     { */
-/*       for (istn=0; istn<NUMSTR_SOLID3; istn++) */
-/*       { */
-/*         stnvsc[istn] += dt * tsi_fehlbg4.a[actstg][istn] */
-/*           * actso3->miv_rob->dvicstn.a.d3[ip][istg][istn]; */
-/*       } */
-/*     } */
-/*   } */
+  /* viscous strain eps_{n+1}^{i} at t_{n+1} */
+  so3_vct6_ass(actso3->miv_rob->vicstnn.a.da[ip], vscstn);
 
   /*--------------------------------------------------------------------*/
   /* elastic strain at t_{n+c_i} */
@@ -229,7 +257,7 @@ void so3_mat_robinson_be_sel(const CONTAINER* container,
     INT istr;  /* strain index */
     for (istr=0; istr<NUMSTR_SOLID3; istr++)
     {
-      stnela[istr] = stntot[istr] - stnvsc[istr] - stnthr[istr];
+      stnela[istr] = stntot[istr] - vscstn[istr] - stnthr[istr];
     }
   }
 
@@ -269,7 +297,7 @@ void so3_mat_robinson_be_sel(const CONTAINER* container,
   }
 
   /*--------------------------------------------------------------------*/
-  /* stress at t_{n+c_i} */
+  /* stress sig_{n+1}^i at t_{n+1} */
   {
     INT istss;  /* stress index */
     for (istss=0; istss<NUMSTR_SOLID3; istss++)
@@ -605,11 +633,12 @@ void so3_mat_robinson_be_dbcksts(const VP_ROBINSON* mat_robin,
 \date 04/07
 */
 void so3_mat_robinson_be_mivupd(ELEMENT* ele,
-                                VP_ROBINSON* mat_robin)
+                                const VP_ROBINSON* mat_robin,
+                                const INT ip,
+                                const SO3_GEODEFSTR* gds)
 {
   SOLID3* actso3 = ele->e.so3;  /* point to SOLID3 element bits */
   INT gptot = actso3->gptot;  /* total number of GPs in domain */
-  INT ip;  /* total GP index */
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -617,22 +646,8 @@ void so3_mat_robinson_be_mivupd(ELEMENT* ele,
 #endif
 
   /*--------------------------------------------------------------------*/
-  /* update viscous strain
-   *    eps_{n}^v := eps_{n+1}^v at every Gauss point <b> */
-  for (ip=0; ip<gptot; ip++)
-  {
-    so3_vct6_ass(actso3->miv_rob->vicstnn.a.da[ip],
-                 actso3->miv_rob->vicstn.a.da[ip]);
-  }
-
-  /*--------------------------------------------------------------------*/
-  /* update back stress 'Alpha'
-   *    al_{n} := al_{n+1} at every Gauss point <g> */
-  for (ip=0; ip<gptot; ip++)
-  {
-    so3_vct6_ass(actso3->miv_rob->bacstsn.a.da[ip],
-                 actso3->miv_rob->bacsts.a.da[ip]);
-  }
+  /* break it */
+  dserror("Not available");
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG

@@ -760,6 +760,7 @@ OBJS_SOLID3   = src/solid3/so3_bop.o \
                 src/solid3/so3_inp.o \
                 src/solid3/so3_int.o \
                 src/solid3/so3_intg.o \
+                src/solid3/so3_iv.o \
                 src/solid3/so3_load.o \
                 src/solid3/so3_load_line.o \
                 src/solid3/so3_load_surf.o \

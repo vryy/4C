@@ -1019,14 +1019,16 @@ void tsi_st_fehlbg(INT disnum_s,
                          &(actsolv->sysarray[stiff_array]),
                          &(actsolv->sysarray_typ[stiff_array]));
     /*------------------------------------------------------------------*/
+    /* NEXT BLOCK HAS MOVED TO STANDARD SOLUTION CALL,
+     * IF istg == nstg-1 THEN MATERIAL INTERNAL VARIABLES ARE UPDATED */
     /* update material internal variables */
-    *action = calc_struct_update_istep;
-    container.dvec = NULL;
-    container.dirich = NULL;
-    container.global_numeq = 0;
-    container.kstep = 0;
-    calelm(actfield, actsolv, actpart, actintra, 
-           stiff_array, -1, &container, action);
+/*     *action = calc_struct_update_istep; */
+/*     container.dvec = NULL; */
+/*     container.dirich = NULL; */
+/*     container.global_numeq = 0; */
+/*     container.kstep = 0; */
+/*     calelm(actfield, actsolv, actpart, actintra,  */
+/*            stiff_array, -1, &container, action); */
 
     /*------------------------------------------------------------------*/
     /* check whether to write results or not */

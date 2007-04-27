@@ -194,16 +194,15 @@ void solid3(PARTITION *actpart,
       so3_load(ele, &(so3_data), &(so3_gpshade), imyrank, eforc_global);
       break;
     /*------------------------------------------------------------------*/
-    /* update internal variables */
+    /* incremental update of internal variables */
     case calc_struct_update_istep:
       actmat = &(mat[ele->mat-1]);
       /* The update of internal variables is necessary for
        * advanced material laws, e.g. plastic, visco-elastic or
        * visco-plastic materials, or anti-locking means, e.g.
-       * enhanced assumed strain.
-       * Currently, SOLID3 can only do Hooke/St. Venant-Kirchhoff 
-       * material */
-      so3_mat_mivupd(container, ele, actmat);
+       * enhanced assumed strain. */
+      so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
+      so3_iv_upd(container, ele, &(so3_gpshade), actmat);
       break;
     /*------------------------------------------------------------------*/
     /* calculate stresses */

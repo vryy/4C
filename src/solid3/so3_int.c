@@ -83,8 +83,6 @@ void so3_int_fintstifmass(CONTAINER *container,
   /* quantities at Gauss point */
   SO3_GEODEFSTR gds;  /* isoparametric Jacobian, deformation grad, etc at
                        * Gauss point */
-  DOUBLE bopn[MAXNOD_SOLID3][NDIM_SOLID3];  /* nodal B-operator */
-  DOUBLE bop[NUMSTR_SOLID3][MAXDOF_SOLID3];  /* B-operator */
   DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3];  /* constitutive matrix */
   DOUBLE stress[NUMSTR_SOLID3];  /* stress vector */
 
@@ -192,7 +190,7 @@ void so3_int_fintstifmass(CONTAINER *container,
     /* calculate B-operator
      * bop differs depending on geometrically linearity/non-linearity */
     so3_bop(ele, nelenod, gpshade->gpderiv[igp], gds.xji, 
-            gds.defgrd, bopn, bop);
+            gds.defgrd, gds.bopn, gds.bop);
     /*------------------------------------------------------------------*/
     /* call material law */
     so3_mat_sel(container, ele, mat, igp, &gds, stress, cmat);
@@ -200,7 +198,7 @@ void so3_int_fintstifmass(CONTAINER *container,
     /* element internal force from integration of stresses */
     if (eforc_global != NULL)
     {
-      so3_int_fintcont(neledof, bop, stress, fac, eforce);
+      so3_int_fintcont(neledof, gds.bop, stress, fac, eforce);
     }
     /*------------------------------------------------------------------*/
     /* element stiffness matrix */
@@ -210,15 +208,15 @@ void so3_int_fintstifmass(CONTAINER *container,
       if (ele->e.so3->kintype == so3_geo_lin)
       {
         /* `elastic' stiffness */
-        so3_int_stiffeu(neledof, bop, cmat, fac, estif);
+        so3_int_stiffeu(neledof, gds.bop, cmat, fac, estif);
       }
       /* geometrically non-linear kinematics (in space) */ 
       else if (ele->e.so3->kintype == so3_total_lagr)
       {
         /* `elastic' and `initial-displacement' stiffness */
-        so3_int_stiffeu(neledof, bop, cmat, fac, estif);
+        so3_int_stiffeu(neledof, gds.bop, cmat, fac, estif);
         /* `geometric' stiffness */
-        so3_int_stiffgeo(nelenod, bopn, stress, fac, estif);
+        so3_int_stiffgeo(nelenod, gds.bopn, stress, fac, estif);
       }
       /* catch unknown spatial kinematics */
       else

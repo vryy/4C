@@ -288,6 +288,12 @@ typedef struct _SO3_GEODEFSTR
   /* 1st Piola-Kirchhoff stress vector Pv
    *     Pv^T = [ P_11  P_22  P_33  P_12  P_21  P_23  P_32  P_31  P_13 ] */
   /* DOUBLE sts1pkv[NUMDFGR_SOLID3]; */
+  /*--------------------------------------------------------------------*/
+  /* B-operators */
+  /* nodal B-operator */
+  DOUBLE bopn[MAXNOD_SOLID3][NDIM_SOLID3];
+  /* B-operator (geometrically linear/non-linear) */
+  DOUBLE bop[NUMSTR_SOLID3][MAXDOF_SOLID3];
 } SO3_GEODEFSTR;
 
 
@@ -349,6 +355,8 @@ typedef enum _SO3_STRESSOUT
        ==> so3_mat_robinson.c
            ==> so3_mat_robinson_fb4.c  (Fehlberg4)
            ==> so3_mat_robinson_be.c  (Backward Euler)
+
+\note Mief, Mief, Miiiieeeef!
 
 \author bborn
 \date 03/07
@@ -580,6 +588,13 @@ void so3_intg_eleinp(ELEMENT *actele,
 void so3_intg_init(SO3_DATA *data);
 
 /*----------------------------------------------------------------------*/
+/* file so3_iv.c */
+void so3_iv_upd(const CONTAINER* container,
+                ELEMENT* ele,
+                const SO3_GPSHAPEDERIV* gpshade,
+                const MATERIAL* mat);
+
+/*----------------------------------------------------------------------*/
 /* file so3_load.c */
 void so3_load(ELEMENT *ele,  /* actual element */
               SO3_DATA *data,
@@ -681,9 +696,11 @@ void so3_mat_stress(CONTAINER *container,
                     DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3]);
 void so3_mat_density(MATERIAL *mat, 
                      DOUBLE *density);
-void so3_mat_mivupd(CONTAINER *container,
-                    ELEMENT *ele,
-                    MATERIAL *mat);
+void so3_mat_mivupd(const CONTAINER* container,
+                    ELEMENT* ele,
+                    const MATERIAL* mat,
+                    const INT ip,
+                    const SO3_GEODEFSTR* gds);
 
 /*----------------------------------------------------------------------*/
 /* file so3_mat_robinson.c */
@@ -703,7 +720,9 @@ void so3_mat_robinson_sel(const CONTAINER* container,
                           DOUBLE stress[NUMSTR_SOLID3],
                           DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3]);
 void so3_mat_robinson_mivupd(ELEMENT* ele,  /*!< curr. elem. */
-                             VP_ROBINSON* mat_robin);  /*!< elem. mater. */
+                             const VP_ROBINSON* mat_robin,
+                             const INT ip,
+                             const SO3_GEODEFSTR* gds);
 void so3_mat_robinson_stress(const CONTAINER* container,
                              const ELEMENT* ele,
                              const VP_ROBINSON* mat_robin,
@@ -718,6 +737,8 @@ void so3_mat_robinson_stress(const CONTAINER* container,
 #ifdef D_TSI
 void so3_mat_robinson_be_init(SOLID3* actso3);
 void so3_mat_robinson_be_final(SOLID3* actso3);
+void so3_mat_robinson_be_prd(ELEMENT* ele,
+                             VP_ROBINSON* mat_robin);
 void so3_mat_robinson_be_sel(const CONTAINER* container,
                              const ELEMENT* ele,
                              const VP_ROBINSON* mat_robin,
@@ -737,7 +758,9 @@ void so3_mat_robinson_be_dvscstn(const VP_ROBINSON* mat_robin,
                                  const DOUBLE stsovr[NUMSTR_SOLID3],
                                  DOUBLE dstnvsc[NUMSTR_SOLID3]);
 void so3_mat_robinson_be_mivupd(ELEMENT* ele,
-                                VP_ROBINSON* mat_robin);
+                                const VP_ROBINSON* mat_robin,
+                                const INT ip,
+                                const SO3_GEODEFSTR* gds);
 void so3_mat_robinson_be_stress(const CONTAINER* container,
                                 const ELEMENT* ele,
                                 const VP_ROBINSON* mat_robin,
@@ -771,7 +794,8 @@ void so3_mat_robinson_fb4_stsbckrat(const VP_ROBINSON* mat_robin,
                                     const DOUBLE dstnvsc[NUMSTR_SOLID3],
                                     DOUBLE dstsbck[NUMSTR_SOLID3]);
 void so3_mat_robinson_fb4_mivupd(ELEMENT* ele,
-                                 VP_ROBINSON* mat_robin);
+                                 const VP_ROBINSON* mat_robin,
+                                 const INT ip);
 void so3_mat_robinson_fb4_stress(const CONTAINER* container,
                                  const ELEMENT* ele,
                                  const VP_ROBINSON* mat_robin,

@@ -375,9 +375,11 @@ void so3_mat_density(MATERIAL *mat,
 \author bborn
 \date 03/07
 */
-void so3_mat_mivupd(CONTAINER *container,
-                    ELEMENT *ele,
-                    MATERIAL *mat)
+void so3_mat_mivupd(const CONTAINER* container,
+                    ELEMENT* ele,
+                    const MATERIAL* mat,
+                    const INT ip,
+                    const SO3_GEODEFSTR* gds)
 {
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -397,7 +399,7 @@ void so3_mat_mivupd(CONTAINER *container,
     /* Robinson's visco-plastic temperature-dependent material */
 #ifdef D_TSI
     case m_vp_robinson:
-      so3_mat_robinson_mivupd(ele, mat->m.vp_robinson);
+      so3_mat_robinson_mivupd(ele, mat->m.vp_robinson, ip, gds);
       break;
 #endif
     default:

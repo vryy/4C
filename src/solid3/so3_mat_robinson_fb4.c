@@ -169,6 +169,7 @@ void so3_mat_robinson_fb4_sel(const CONTAINER* container,
 
   const INT itsidyn = genprob.numfld;  /* index of TSI dynamics data */
   const TSI_DYNAMIC* tsidyn = alldyn[itsidyn].tsidyn;  /* TSI dynamics data */
+  const INT numstg = tsi_fehlbg4.stg;  /* number of RK stages */
   const INT actstg = tsidyn->actstg;  /* curr. RK stage */
   const DOUBLE dt = tsidyn->dt;  /* time step size */
 
@@ -343,6 +344,13 @@ void so3_mat_robinson_fb4_sel(const CONTAINER* container,
   so3_mat_robinson_fb4_stsbckrat(mat_robin, tem, stsdev, stsbac,
                                  actso3->miv_rob->dvicstn.a.d3[ip][actstg],
                                  actso3->miv_rob->dbacsts.a.d3[ip][actstg]);
+
+  /*--------------------------------------------------------------------*/
+  /* update internal variables if we are in last RK stage */
+  if (actstg == (numstg - 1) )
+  {
+    so3_mat_robinson_fb4_mivupd(ele, mat_robin, ip);
+  }
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -620,16 +628,17 @@ void so3_mat_robinson_fb4_stsbckrat(const VP_ROBINSON* mat_robin,
 /*!
 \brief Update Robinson's internal material variables 
 \param   ele          ELEMENT*        (io)   curr. elem.
-\parm    mat_robin    VP_ROBINSON*    ()     elem. mater.
+\parm    mat_robin    VP_ROBINSON*    (i)    elem. mater.
+\param   ip           INT             (i)    curr. Gauss point index
 \author bborn
 \date 04/07
 */
 void so3_mat_robinson_fb4_mivupd(ELEMENT* ele,
-                                 VP_ROBINSON* mat_robin)
+                                 const VP_ROBINSON* mat_robin,
+                                 const INT ip)
 {
   SOLID3* actso3 = ele->e.so3;  /* point to SOLID3 element bits */
   INT gptot = actso3->gptot;  /* total number of GPs in domain */
-  INT ip;  /* total GP index */
   const INT itsidyn = genprob.numfld;  /* index of TSI dynamics data */
   const TSI_DYNAMIC* tsidyn = alldyn[itsidyn].tsidyn;  /* TSI dynamics data */
   const DOUBLE dt = tsidyn->dt;  /* time step size */
@@ -645,7 +654,6 @@ void so3_mat_robinson_fb4_mivupd(ELEMENT* ele,
 
   /*--------------------------------------------------------------------*/
   /* update viscous strain */
-  for (ip=0; ip<gptot; ip++)
   {
     DOUBLE stnvscn[NUMSTR_SOLID3];
     so3_vct6_ass(actso3->miv_rob->vicstn.a.da[ip], stnvscn);
@@ -657,13 +665,10 @@ void so3_mat_robinson_fb4_mivupd(ELEMENT* ele,
                       stnvscn);
     }
     so3_vct6_ass(stnvscn, actso3->miv_rob->vicstn.a.da[ip]);
-    /* debug: */
-    /* printf("VSTN %f\n", actso3->miv_rob->vicstn.a.da[ip][0]); */
   }
 
   /*--------------------------------------------------------------------*/
   /* update back stress 'Alpha' */
-  for (ip=0; ip<gptot; ip++)
   {
     DOUBLE stsbckn[NUMSTR_SOLID3];
     so3_vct6_ass(actso3->miv_rob->bacsts.a.da[ip], stsbckn);
@@ -675,8 +680,6 @@ void so3_mat_robinson_fb4_mivupd(ELEMENT* ele,
                       stsbckn);
     }
     so3_vct6_ass(stsbckn, actso3->miv_rob->bacsts.a.da[ip]);
-    /* debug: */
-    /* printf("BSTS %f\n", actso3->miv_rob->bacsts.a.da[ip][0]); */
   }
 
   /*--------------------------------------------------------------------*/

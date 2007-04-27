@@ -756,11 +756,11 @@ void tsi_st_genalp(INT disnum_s,
     /*------------------------------------------------------------------*/
     /*  call elements */
     *action = calc_struct_nlnstiffmass;
-    container.dvec          = intforce;
-    container.dirich        = dirich;
-    container.global_numeq  = numeq_total;
-    container.dirichfacs    = dirichfacs;
-    container.kstep         = 0;
+    container.dvec = intforce;
+    container.dirich = dirich;
+    container.global_numeq = numeq_total;
+    container.dirichfacs = dirichfacs;
+    container.kstep = 0;
     calelm(actfield, actsolv, actpart, actintra, 
            stiff_array, mass_array, &container, action);
 
