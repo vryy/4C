@@ -74,28 +74,11 @@ void so3_mat_robinson_init(ELEMENT* ele)  /*!< current element */
   }
   else if (tsidyn->kind == tsi_therm_stat_struct_genalp)
   {
-    /* allocation of MIVar */
-    if (actso3->miv_rob == NULL)
-    {
-      /* allocation of MIVar */
-      actso3->miv_rob 
-        = (SO3_MIV_ROBINSON*) CCACALLOC(1, sizeof(SO3_MIV_ROBINSON));
-      /* allocation of arrays in MIV */
-      amdef("miv_rob_vicstn", &(actso3->miv_rob->vicstn),
-            actso3->gptot, NUMSTR_SOLID3, "DA");
-      amzero(&(actso3->miv_rob->vicstn));
-      amdef("miv_rob_bacsts", &(actso3->miv_rob->bacsts),
-            actso3->gptot, NUMSTR_SOLID3, "DA");
-      amzero(&(actso3->miv_rob->bacsts));
-    }
-    else
-    {
-      dserror("Material internal variables already allocated!");
-    }
+    so3_mat_robinson_be_init(actso3);
   }
   else
   {
-    dserror("Trying to use Robinson's material with wrong time integration");
+    dserror("Trying to use Robinson's material with unimplemented time integration");
   }
 
   /*--------------------------------------------------------------------*/
@@ -131,17 +114,7 @@ void so3_mat_robinson_final(ELEMENT* ele)  /*!< current element */
   }
   else if (tsidyn->kind == tsi_therm_stat_struct_genalp)
   {
-    /* deallocation of MIVar */
-    if (actso3->miv_rob != NULL)
-    {
-      amdel(&(actso3->miv_rob->vicstn));
-      amdel(&(actso3->miv_rob->bacsts));
-      CCAFREE(actso3->miv_rob);
-    }
-    else
-    {
-      dserror("Material internal variables are not allocated!");
-    }
+    so3_mat_robinson_be_final(actso3);
   }
 
   /*--------------------------------------------------------------------*/
@@ -285,6 +258,17 @@ void so3_mat_robinson_sel(const CONTAINER* container,
   }
   else if (tsidyn->kind == tsi_therm_stat_struct_genalp)
   {
+    so3_mat_robinson_be_sel(container,
+                            ele,
+                            mat_robin,
+                            ip,
+                            gds,
+                            stress,
+                            cmat);
+  }
+  else
+  {
+    dserror("TSI time integration is not available for Robinson's material");
   }
 
   /*--------------------------------------------------------------------*/
@@ -374,6 +358,18 @@ void so3_mat_robinson_stress(const CONTAINER* container,
   }
   else if (tsidyn->kind == tsi_therm_stat_struct_genalp)
   {
+    so3_mat_robinson_be_stress(container,
+                               ele,
+                               mat_robin,
+                               ip,
+                               gds,
+                               stress,
+                               cmat);
+  }
+  else
+  {
+    dserror("Cannot use Robinson's material"
+            " with selected TSI time integration");
   }
 
   /*--------------------------------------------------------------------*/

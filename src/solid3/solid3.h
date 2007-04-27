@@ -101,6 +101,11 @@ Maintainer: Moritz Frenzel
 #else
 #endif
 
+#define TESTROBIN_SOLID3        /* Special debug areas are activated during
+                                 * development of the Robinson material.
+                                 * This CPP definition should be turned
+                                 * off as soon as possible */
+
 /*======================================================================*/
 /* global declarations, variables etc */
 
@@ -336,10 +341,14 @@ typedef enum _SO3_STRESSOUT
 
 /*----------------------------------------------------------------------*/
 /*!
-\brief Material internal variables (MIV) used for 
+\brief Material internal variables (MIV) used for the
        visco-plastic Robinson material
-       These fields are allocated at every Gauss point
+       These fields are allocated at every Gauss point.
+       Not every field is allocated, it depends on the used
+       time integration of the MIV flow rules.
        ==> so3_mat_robinson.c
+           ==> so3_mat_robinson_fb4.c  (Fehlberg4)
+           ==> so3_mat_robinson_be.c  (Backward Euler)
 
 \author bborn
 \date 03/07
@@ -349,9 +358,15 @@ typedef struct _SO3_MIV_ROBINSON
   /* visco-plastic strain vector Ev^<g> at t_{n} for every Gauss point g
    *    Ev^<g>T = [ E_11  E_22  E_33  2*E_12  2*E_23  2*E_31 ]^<g> */
   ARRAY vicstn;
+  /* visco-plastic strain vector Ev^<g> at t_{n+1} for every Gauss point g
+   *    Ev^<g>T = [ E_11  E_22  E_33  2*E_12  2*E_23  2*E_31 ]^<g> */
+  ARRAY vicstnn;
   /* back stress vector Av^<g> at t_n for every Gauss point g
    *    Av^<g>T = [ A_11  A_22  A_33  A_12  A_23  A_31 ]^<g> */
   ARRAY bacsts;
+  /* back stress vector Av^<g> at t_{n+1} for every Gauss point g
+   *    Av^<g>T = [ A_11  A_22  A_33  A_12  A_23  A_31 ]^<g> */
+  ARRAY bacstsn;
   /* visco-plastic strain rate vector dEv^<g><i> 
    * for every intermediate time stages t_{n+c_i} (with i=1,...,s)
    * and every Gauss point g
@@ -696,6 +711,40 @@ void so3_mat_robinson_stress(const CONTAINER* container,
                              const SO3_GEODEFSTR* gds,
                              DOUBLE stress[NUMSTR_SOLID3],
                              DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3]);
+#endif
+
+/*----------------------------------------------------------------------*/
+/* file so3_mat_robinson_be.c */
+#ifdef D_TSI
+void so3_mat_robinson_be_init(SOLID3* actso3);
+void so3_mat_robinson_be_final(SOLID3* actso3);
+void so3_mat_robinson_be_sel(const CONTAINER* container,
+                             const ELEMENT* ele,
+                             const VP_ROBINSON* mat_robin,
+                             const INT ip,
+                             const SO3_GEODEFSTR* gds,
+                             DOUBLE stress[NUMSTR_SOLID3],
+                             DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3]);
+void so3_mat_robinson_be_dbcksts(const VP_ROBINSON* mat_robin,
+                                 const DOUBLE tmpr,
+                                 const DOUBLE stsdev[NUMSTR_SOLID3],
+                                 const DOUBLE stsbck[NUMSTR_SOLID3],
+                                 const DOUBLE dstnvsc[NUMSTR_SOLID3],
+                                 DOUBLE dstsbck[NUMSTR_SOLID3]);
+void so3_mat_robinson_be_dvscstn(const VP_ROBINSON* mat_robin,
+                                 const DOUBLE tmpr,
+                                 const DOUBLE stsdev[NUMSTR_SOLID3],
+                                 const DOUBLE stsovr[NUMSTR_SOLID3],
+                                 DOUBLE dstnvsc[NUMSTR_SOLID3]);
+void so3_mat_robinson_be_mivupd(ELEMENT* ele,
+                                VP_ROBINSON* mat_robin);
+void so3_mat_robinson_be_stress(const CONTAINER* container,
+                                const ELEMENT* ele,
+                                const VP_ROBINSON* mat_robin,
+                                const INT ip,
+                                const SO3_GEODEFSTR* gds,
+                                DOUBLE stress[NUMSTR_SOLID3],
+                                DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3]);
 #endif
 
 /*----------------------------------------------------------------------*/
