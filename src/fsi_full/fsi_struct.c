@@ -1166,6 +1166,11 @@ iterloop:
   solserv_vecnorm_euclid(actintra,&(work->dispi[0]),&(dynvar->dnorm));
   solserv_vecnorm_Linf(actintra,&(work->work[0]),&dmax);
 
+  if (par.myrank==0)
+  {
+    printf("                                                   Residual %10.5E\n",dynvar->dinorm);
+    fflush(stdout);
+  }
 
   if (dynvar->dinorm < sdyn->toldisp ||
       dynvar->dnorm  < EPS14 ||
