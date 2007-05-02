@@ -136,15 +136,19 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
   const int nd      = numnode*numdf;
 
   // general arrays
-  vector<double>           funct(numnode);        
+  vector<double>           funct(numnode);
   Epetra_SerialDenseMatrix deriv;
   deriv.Shape(2,numnode);
   Epetra_SerialDenseMatrix xjm;
   xjm.Shape(2,2);
-  Epetra_SerialDenseMatrix bop;
-  bop.Shape(12,nd);//????
+  Epetra_SerialDenseMatrix boplin;
+  boplin.Shape(4,2*numnode);
   Epetra_SerialDenseVector intforce;
-  intforce.Size(nd);//????
+  intforce.Size(nd);
+  Epetra_SerialDenseVector F;
+  F.Size(4);
+  Epetra_SerialDenseVector strain;
+  strain.Size(4);  
   double det; 
   double xrefe[2][MAXNOD_WALL1];
   double xcure[2][MAXNOD_WALL1];
@@ -179,7 +183,7 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
     
     xcure[0][k] = xrefe[0][k] + disp[k*numdf+0];
     xcure[1][k] = xrefe[1][k] + disp[k*numdf+1];
-
+    
   }
 
   /*=================================================== integration loops */
@@ -200,7 +204,30 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
      double fac=0; 
      fac = facr * facs * det * thickness_;
 
-     cout << fac; exit(0);
+      /*------------------------------compute mass matrix if imass-----*/
+      if (imass)
+      {
+       double facm = fac * density;
+       for (int a=0; a<iel; a++)
+       {
+        for (int b=0; b<iel; b++)
+        {
+         (*massmatrix)(2*a,2*b)     += facm * funct[a] * funct[b]; /* a,b even */
+         (*massmatrix)(2*a+1,2*b+1) += facm * funct[a] * funct[b]; /* a,b odd  */
+        } 
+       }
+      }
+     /*----------------------------------- calculate operator Blin  ---*/
+     w1_boplin(boplin,deriv,xjm,det,iel);
+
+     /*----------------- calculate defgrad F, Green-Lagrange-strain ---*/
+     w1_defgrad(F,strain,xrefe,xcure,boplin,iel);
+
+     /*-------------------------calculate defgrad F in matrix notation*/
+//     w1_defgrad_matrix(ele,F_matrix,int_F_matrix,boplin,F,numeps,nd,ip);
+
+
+     cout << F; exit(0);
       
        ngauss++;
     } // for (int ls=0; ls<nis; ++ls)
@@ -560,7 +587,91 @@ void DRT::Elements::Wall1::w1_jacobianmatrix(double xrefe[2][MAXNOD_WALL1],
    return;
 } // DRT::Elements::Wall1::w1_jacobianmatrix
 
+/*----------------------------------------------------------------------*
+ |  Matrix boplin (private)                                  mgit 04/07|
+ *----------------------------------------------------------------------*/
+
+void DRT::Elements::Wall1::w1_boplin(Epetra_SerialDenseMatrix& boplin,
+                           Epetra_SerialDenseMatrix& deriv,
+                           Epetra_SerialDenseMatrix& xjm,
+                           double& det,  
+                           const int iel) 
+{
+
+  int inode;
+  int dnode;
+  double dum;
+  double xji[2][2];
+  /*---------------------------------------------- inverse of jacobian ---*/
+  dum = 1.0/det;
+  xji[0][0] = xjm(1,1)* dum;
+  xji[0][1] =-xjm(0,1)* dum;
+  xji[1][0] =-xjm(1,0)* dum;
+  xji[1][1] = xjm(0,0)* dum;
+  /*----------------------------- get operator boplin of global derivatives -*/
+  /*-------------- some comments, so that even fluid people are able to
+   understand this quickly :-)
+   the Boplin looks like
+       | Nk,x    0   |
+       |   0    Nk,y |
+       | Nk,y    0   |
+       |  0     Nk,x |
+  */
+  for (inode=0; inode<iel; inode++)
+  {
+    dnode = inode*2;
+
+    boplin(0,dnode+0) = deriv(0,inode)*xji[0][0] + deriv(1,inode)*xji[0][1];
+    boplin(1,dnode+1) = deriv(0,inode)*xji[1][0] + deriv(1,inode)*xji[1][1];
+    boplin(2,dnode+0) = boplin(1,dnode+1);
+    boplin(3,dnode+1) = boplin(0,dnode+0);
+  } /* end of loop over nodes */
+ return;
+}  
+
+/* DRT::Elements::Wall1::w1_boplin */
+
+/*----------------------------------------------------------------------*
+ | Deformation gradient F and Green-Langrange strain (private)  mgit 04/07|
+ *----------------------------------------------------------------------*/
+
+void DRT::Elements::Wall1::w1_defgrad(Epetra_SerialDenseVector& F,
+                           Epetra_SerialDenseVector& strain, 
+                           const double xrefe[][MAXNOD_WALL1],
+                           const double xcure[][MAXNOD_WALL1], 
+                           Epetra_SerialDenseMatrix& boplin,
+                           const int iel) 
+{
+  /*------------------calculate defgrad --------- (Summenschleife->+=) ---*
+  defgrad looks like:
   
+        |  1 + Ux,x  |
+        |  1 + Uy,y  |
+        |      Ux,y  |
+        |      Uy,x  |
+  */
+
+  memset(F.A(),0,F.N()*F.M()*sizeof(double)); 
+  
+  F[0]=1;
+  F[1]=1;
+  for (int inode=0; inode<iel; inode++)
+  {
+     F[0] += boplin(0,2*inode)   * (xcure[0][inode] - xrefe[0][inode]);
+     F[1] += boplin(1,2*inode+1) * (xcure[1][inode] - xrefe[1][inode]);
+     F[2] += boplin(2,2*inode)   * (xcure[0][inode] - xrefe[0][inode]);
+     F[3] += boplin(3,2*inode+1) * (xcure[1][inode] - xrefe[1][inode]);
+  } /* end of loop over nodes */
+  /*-----------------------calculate Green-Lagrange strain ---------------*/
+  strain[0]=0.5 * (F[0] * F[0] + F[3] * F[3] - 1);
+  strain(1)=0.5 * (F[2] * F[2] + F[1] * F[1] - 1);
+  strain[2]=0.5 * (F[0] * F[2] + F[3] * F[1]);
+  strain[3]=strain[2];
+
+ return;
+}  
+
+/* DRT::Elements::Wall1::w1_defgrad */
 
 
 

@@ -351,6 +351,18 @@ private:
 			 double* det,
                          const int iel);
 
+  void w1_boplin(Epetra_SerialDenseMatrix& boplin,
+                 Epetra_SerialDenseMatrix& deriv,
+                 Epetra_SerialDenseMatrix& xjm,
+                 double& det,  
+                 const int iel);
+
+  void w1_defgrad(Epetra_SerialDenseVector& F,
+                  Epetra_SerialDenseVector& strain, 
+                  const double xrefe[][MAXNOD_WALL1],
+                  const double xcure[][MAXNOD_WALL1], 
+                  Epetra_SerialDenseMatrix& boplin,
+                  const int iel); 				    
 
   // don't want = operator
   Wall1& operator = (const Wall1& old);
