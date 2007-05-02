@@ -152,6 +152,11 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
   double det; 
   double xrefe[2][MAXNOD_WALL1];
   double xcure[2][MAXNOD_WALL1];
+  const int numeps = 4;
+  Epetra_SerialDenseMatrix b_cure;
+  b_cure.Shape(numeps,nd);
+  Epetra_SerialDenseMatrix int_b_cure;
+  int_b_cure.Shape(numeps,nd); 
 
   // gaussian points
   W1_DATA w1data;
@@ -223,8 +228,8 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
      /*----------------- calculate defgrad F, Green-Lagrange-strain ---*/
      w1_defgrad(F,strain,xrefe,xcure,boplin,iel);
 
-     /*-------------------------calculate defgrad F in matrix notation*/
-//     w1_defgrad_matrix(ele,F_matrix,int_F_matrix,boplin,F,numeps,nd,ip);
+     /*-calculate defgrad F in matrix notation and Blin in curent conf.*/
+     w1_boplin_cure(b_cure,int_b_cure,boplin,F,numeps,nd);
 
 
      cout << F; exit(0);
@@ -590,7 +595,7 @@ void DRT::Elements::Wall1::w1_jacobianmatrix(double xrefe[2][MAXNOD_WALL1],
 } // DRT::Elements::Wall1::w1_jacobianmatrix
 
 /*----------------------------------------------------------------------*
- |  Matrix boplin (private)                                  mgit 04/07|
+ |  Matrix boplin in reference configuration (private)         mgit 04/07|
  *----------------------------------------------------------------------*/
 
 void DRT::Elements::Wall1::w1_boplin(Epetra_SerialDenseMatrix& boplin,
@@ -675,6 +680,23 @@ void DRT::Elements::Wall1::w1_defgrad(Epetra_SerialDenseVector& F,
 
 /* DRT::Elements::Wall1::w1_defgrad */
 
+
+/*----------------------------------------------------------------------*
+ | Deformation gradient F in matrix notation and B in 
+ reference configuration (private)                             mgit 04/07|
+ *----------------------------------------------------------------------*/
+
+void DRT::Elements::Wall1::w1_boplin_cure(Epetra_SerialDenseMatrix& b_cure,
+                                          Epetra_SerialDenseMatrix& int_b_cure,
+                                          Epetra_SerialDenseMatrix& boplin,
+                                          Epetra_SerialDenseMatrix&F,
+                                          int numeps,
+                                          int nd) 
+{
+  return;
+}  
+
+/* DRT::Elements::Wall1::w1_boplin_cure */
 
 
 
