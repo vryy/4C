@@ -616,6 +616,8 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
       }
       if (resolve)
       {
+#if 0
+        // this is not such a good idea after all...
 #ifdef PARALLEL
         if (matrix->Comm().MyPID()==0) cout << "Falling back to SuperLU\n";
         Amesos_Superludist superlusolver(*lp);
@@ -633,7 +635,8 @@ void solve_aztecoo(TRILINOSMATRIX* tri,
         err     = klusolver.NumericFactorization();
         if (err) dserror("Amesos_Klu.NumericFactorization() returned %d",err);
         err     = klusolver.Solve();
-        if (err) dserror("Amesos_Klu.Solve() returned %d",err);        
+        if (err) dserror("Amesos_Klu.Solve() returned %d",err);
+#endif
 #endif
       }
     }
