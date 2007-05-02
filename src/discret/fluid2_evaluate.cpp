@@ -358,7 +358,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
 		
 	 /*------------------------------------------------------ compute tau_M ---*/
 	 /* stability parameter definition according to Franca and Valentin (2000) */
- 	 re = mk * vel_norm * hk / 2.0 * visc;       /* convective : viscous forces */
+ 	 re = mk * vel_norm * hk / (2.0 * visc);       /* convective : viscous forces */
 
 	 xi = DMAX(re,1.0);
 
