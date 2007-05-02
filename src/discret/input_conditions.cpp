@@ -1177,7 +1177,7 @@ void input_vol_dirich(multimap<int,RefCountPtr<DRT::Condition> >& vdmap)
   int ierr=0;
   int ndvol=0;
   frint("DVOL",&ndvol,&ierr);
-  dsassert(ierr==1,"Cannot read design-volume dirichlet conditions");
+  dsassert(ierr==1,"Cannot read volume dirichlet conditions");
   frread();
 
   /*----------------------------------- start reading the design volumes */
