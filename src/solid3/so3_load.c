@@ -192,6 +192,15 @@ void so3_load(ELEMENT *ele,  /* actual element */
         case neum_dead:
           foundglineneum = 1;
           break;
+#if 0
+        /* quick hack to apply tangential 'line load' on a cylindrical 
+         * cantilever beam (length 120) subjected to a torsional torque
+         * at its tip. (bborn/mgit 04/07)
+         * ==> so3_load_line.c */
+        case neum_orthopressure:
+          foundglineneum = 1;
+          break;
+#endif
         default:
           dserror("Neumann BC type is not available on edge!");
           break;
@@ -243,7 +252,7 @@ void so3_load(ELEMENT *ele,  /* actual element */
   /* edge loads ==> edge tractions */
   if (foundglineneum > 0)
   {
-    so3_load_line_int(ele, data, ex, ngline, gline, eload);
+    so3_load_line_int(ele, data, ex, exs, ngline, gline, eload);
   }
 
   /*====================================================================*/

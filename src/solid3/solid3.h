@@ -606,17 +606,34 @@ void so3_load(ELEMENT *ele,  /* actual element */
 /*----------------------------------------------------------------------*/
 /* file so3_load_line.c */
 void so3_load_line_int(ELEMENT* ele,
-                       SO3_DATA* data,  /*!< Gauss point data */
+                       SO3_DATA* data,
                        DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3],
+                       DOUBLE exs[MAXNOD_SOLID3][NDIM_SOLID3],
                        INT ngline,
                        GLINE* gsurf[MAXEDG_SOLID3],
                        DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3]);
-void so3_load_line_val(ELEMENT *ele,
-                       INT nelenod,
-                       GLINE *gline,
-                       DOUBLE shape[MAXNOD_SOLID3],
-                       DOUBLE fac,
-                       DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3]);
+void so3_load_line_valh(ELEMENT* ele,
+                        SO3_DATA* data,
+                        INT igline,
+                        GLINE* gline,
+                        DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3],
+                        DOUBLE exs[MAXNOD_SOLID3][NDIM_SOLID3],
+                        DOUBLE gpc[NDIM_SOLID3],
+                        DOUBLE shape[MAXNOD_SOLID3],
+                        DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3],
+                        DOUBLE fac,
+                        DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3]);
+void so3_load_line_valt(ELEMENT* ele,
+                        SO3_DATA* data,
+                        INT igline,
+                        GLINE* gline,
+                        DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3],
+                        DOUBLE exs[MAXNOD_SOLID3][NDIM_SOLID3],
+                        DOUBLE gpc[NDIM_SOLID3],
+                        DOUBLE shape[MAXNOD_SOLID3],
+                        DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3],
+                        DOUBLE fac,
+                        DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3]);
 
 /*----------------------------------------------------------------------*/
 /* file so3_load_surf.c */
@@ -837,6 +854,7 @@ void so3_metr_line(ELEMENT *ele,
                    DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3],
                    DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3], 
                    DOUBLE linredv[NDIM_SOLID3],
+                   DOUBLE gamtt[NDIM_SOLID3],
                    DOUBLE *metr);
 void so3_metr_rot(DOUBLE xjm[NDIM_SOLID3][NDIM_SOLID3],
                   DOUBLE xrm[NDIM_SOLID3][NDIM_SOLID3],

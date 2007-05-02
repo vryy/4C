@@ -304,6 +304,8 @@ void so3_metr_surf(ELEMENT *ele,
 \param ex      DOUBLE[][]   (i)  element node coordinates
 \param deriv   DOUBLE[][]   (i)  derivatives of shape fct at Gauss point
 \param sired   DOUBLE[][]   (i)  matrix for dimension reduction
+\param gamtt   DOUBLE[]     (o)  physically oriented parametric base vector
+                                 (optional)
 \param metr    DOUBLE*      (o)  metric
 \return void
 
@@ -315,6 +317,7 @@ void so3_metr_line(ELEMENT *ele,
                    DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3],
                    DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3], 
                    DOUBLE linredv[NDIM_SOLID3],
+                   DOUBLE gamtt[NDIM_SOLID3],
                    DOUBLE *metr)
 {
   DOUBLE xjm[NDIM_SOLID3][NDIM_SOLID3];  /* Jacobian matrix */
@@ -343,6 +346,14 @@ void so3_metr_line(ELEMENT *ele,
     for (jdim=0; jdim<NDIM_SOLID3; jdim++)
     {
       gamt[jdim] += linredv[idim] * xjm[idim][jdim];
+    }
+  }
+  /* set output */
+  if (gamtt != NULL)
+  {
+    for (jdim=0; jdim<NDIM_SOLID3; jdim++)
+    {
+      gamtt[jdim] = gamt[jdim];
     }
   }
 
