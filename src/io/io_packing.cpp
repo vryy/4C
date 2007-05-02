@@ -2200,6 +2200,70 @@ static void out_pack_average_pressure(BIN_OUT_CHUNK *chunk,
 
 /*----------------------------------------------------------------------*/
 /*!
+  \brief Pack the fsi coupling forces in some buffer to send them to
+  their writing processor.
+
+  There are two or three coupling force values per node depending on
+  the number of dimensions.
+
+  \author u.kue
+  \date 04/07
+  \sa out_pack_items
+*/
+/*----------------------------------------------------------------------*/
+static void out_pack_coupforce(BIN_OUT_CHUNK *chunk,
+                               INT place,
+                               PARTDISCRET *actpdis,
+                               DOUBLE *send_buf,
+                               INT send_count,
+                               INT *send_size_buf,
+                               INT dst_first_id,
+                               INT dst_num)
+{
+  INT j, counter, ndim;
+
+#ifdef DEBUG
+  dstrc_enter("out_pack_velocity");
+#endif
+
+  ndim = chunk->value_entry_length;
+
+  /* gather the nodes to be send to processor i */
+  counter = 0;
+  dsassert(chunk->size_entry_length == 0, "invalid size entry length");
+  for (j=0; j<actpdis->numnp; ++j)
+  {
+    NODE* actnode = actpdis->node[j];
+    if ((actnode->Id_loc >= dst_first_id) &&
+        (actnode->Id_loc < dst_first_id+dst_num))
+    {
+      INT k;
+      DOUBLE *ptr = actnode->sol_mf.a.da[place];
+
+      dsassert((actnode->sol_mf.fdim > place) &&
+               (actnode->sol_mf.sdim >= ndim), "sol array too small");
+
+#ifdef PARALLEL
+      send_size_buf[counter] = actnode->Id_loc;
+#endif
+
+      for (k=0; k<ndim; ++k)
+      {
+        send_buf[ndim*counter+k] = *ptr++;
+      }
+      counter += 1;
+    }
+  }
+  dsassert(counter*ndim == send_count, "node pack count mismatch");
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
   \brief Pack the element's stresses.
 
   Here the element based stresses are handled, that is the stresses at
@@ -4002,6 +4066,9 @@ void out_pack_items(struct _BIN_OUT_CHUNK *chunk,
     break;
   case cc_stress:
     out_pack_stress(chunk, array, actpdis, send_buf, send_count, send_size_buf, dst_first_id, dst_num);
+    break;
+  case cc_coupforce:
+    out_pack_coupforce(chunk, array, actpdis, send_buf, send_count, send_size_buf, dst_first_id, dst_num);
     break;
   case cc_domain:
     /* array flag unused here */

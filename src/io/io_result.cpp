@@ -226,6 +226,11 @@ void out_results(struct _BIN_OUT_FIELD* context,
     }
   }
 
+  if (flags & OUTPUT_COUPFORCE)
+  {
+    out_node_chunk(context, "coupforce", cc_coupforce, genprob.ndim, 0, place);
+  }
+
   if (flags & OUTPUT_CONTACT)
   {
     printf(RED_LIGHT "binary output of " GREEN_LIGHT "contact" RED_LIGHT " not yet supported\n" END_COLOR);

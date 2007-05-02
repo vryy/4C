@@ -1622,12 +1622,15 @@ void fsi_fluid_imp_output(
   {
     INT             numff;              /* actual number of fluid field     */
     FLUID_DYNAMIC  *fdyn;               /* fluid dynamic variables   */
+    ARRAY_POSITION *ipos;
 
     numff         = genprob.numff;
     fdyn          = alldyn[numff].fdyn;
+    ipos = &(actfield->dis[disnum_calc].ipos);
 
     out_results(&work->out_context, fdyn->acttime, fdyn->step, 0, OUTPUT_VELOCITY);
     out_results(&work->out_context, fdyn->acttime, fdyn->step, 0, OUTPUT_PRESSURE);
+    out_results(&work->out_context, fdyn->acttime, fdyn->step, ipos->mf_forcenp, OUTPUT_COUPFORCE);
   }
 #endif
 }

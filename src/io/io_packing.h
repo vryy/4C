@@ -88,6 +88,7 @@ typedef enum _CHUNK_CONTENT_TYPE {
   cc_av_pressure,
   cc_stress,
   cc_domain,
+  cc_coupforce,
 
   cc_dist_vector,
 
