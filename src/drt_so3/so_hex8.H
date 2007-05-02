@@ -357,7 +357,8 @@ private:
   void soh8_shapederiv(Epetra_SerialDenseMatrix** shapefct,
                        Epetra_SerialDenseMatrix** deriv,
                        Epetra_SerialDenseVector** weights);
-
+                       
+  void soh8_mat_sel(Epetra_SerialDenseMatrix* cmat);
 
 }; // class So_hex8
 
