@@ -229,12 +229,14 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
 
      cout << F; exit(0);
       
-       ngauss++;
+      ngauss++;
     } // for (int ls=0; ls<nis; ++ls)
   } // for (int lr=0; lr<nir; ++lr)
 
-return;
+  return;
 }
+
+
 /*----------------------------------------------------------------------*
  |  evaluate the element integration points (private)        mgit 03/07|
  *----------------------------------------------------------------------*/
