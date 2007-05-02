@@ -37,7 +37,7 @@ Maintainer: Burkhard Bornemann
 \author bborn
 \date 01/07
 */
-void so3_tns3_zero(DOUBLE ot[3][3])
+void so3_tns3_zero(DOUBLE ot[NDIM_SOLID3][NDIM_SOLID3])
 {
   INT i, j;  /* indices */
 
@@ -45,9 +45,9 @@ void so3_tns3_zero(DOUBLE ot[3][3])
   dstrc_enter("so3_tns3_zero");
 #endif
 
-  for (i=0; i<3; i++)
+  for (i=0; i<NDIM_SOLID3; i++)
   {
-    for (j=0; j<3; j++)
+    for (j=0; j<NDIM_SOLID3; j++)
     {
       ot[i][j] = 0.0;
     }
@@ -70,7 +70,7 @@ void so3_tns3_zero(DOUBLE ot[3][3])
 \author bborn
 \date 01/07
 */
-void so3_tns3_id(DOUBLE it[3][3])
+void so3_tns3_id(DOUBLE it[NDIM_SOLID3][NDIM_SOLID3])
 {
   INT i;  /* index */
 
@@ -79,7 +79,7 @@ void so3_tns3_id(DOUBLE it[3][3])
 #endif
 
   so3_tns3_zero(it);
-  for (i=0; i<3; i++)
+  for (i=0; i<NDIM_SOLID3; i++)
   {
     it[i][i] = 1.0;
   }
@@ -105,7 +105,7 @@ About:
 \author bborn
 \date 01/07
 */
-void so3_tns3_tr(DOUBLE at[3][3],
+void so3_tns3_tr(DOUBLE at[NDIM_SOLID3][NDIM_SOLID3],
                  DOUBLE *tr)
 {
   INT i;  /* index */
@@ -116,7 +116,7 @@ void so3_tns3_tr(DOUBLE at[3][3],
 #endif
 
   trace = 0.0;
-  for (i=0; i<3; i++)
+  for (i=0; i<NDIM_SOLID3; i++)
   {
     trace += at[i][i];
   }
@@ -139,7 +139,7 @@ void so3_tns3_tr(DOUBLE at[3][3],
 \author bborn
 \date 01/07
 */
-void so3_tns3_det(DOUBLE at[3][3],
+void so3_tns3_det(DOUBLE at[NDIM_SOLID3][NDIM_SOLID3],
                   DOUBLE *det)
 {
 
@@ -181,7 +181,7 @@ void so3_tns3_det(DOUBLE at[3][3],
 \author bborn
 \date 01/07
 */
-void so3_tns3_inva(DOUBLE at[3][3],
+void so3_tns3_inva(DOUBLE at[NDIM_SOLID3][NDIM_SOLID3],
                    DOUBLE *ai,
                    DOUBLE *aii,
                    DOUBLE *aiii)
@@ -211,9 +211,9 @@ void so3_tns3_inva(DOUBLE at[3][3],
       so3_tns3_tr(at, &aix);
       aiix = aix*aix;
     }
-    for (i=0; i<3; i++)
+    for (i=0; i<NDIM_SOLID3; i++)
     {
-      for (j=0; j<3; j++)
+      for (j=0; j<NDIM_SOLID3; j++)
       {
         aiix -= at[i][j]*at[j][i];
       }
@@ -250,9 +250,9 @@ void so3_tns3_inva(DOUBLE at[3][3],
 \author bborn
 \date 01/07
 */
-void so3_tns3_dotprod(DOUBLE at[3][3],
-                      DOUBLE bt[3][3],
-                      DOUBLE ct[3][3])
+void so3_tns3_dotprod(DOUBLE at[NDIM_SOLID3][NDIM_SOLID3],
+                      DOUBLE bt[NDIM_SOLID3][NDIM_SOLID3],
+                      DOUBLE ct[NDIM_SOLID3][NDIM_SOLID3])
 {
   INT i, j, k;  /* indices */
   DOUBLE ctjk;  /* auxiliar resulting component */
@@ -261,12 +261,12 @@ void so3_tns3_dotprod(DOUBLE at[3][3],
   dstrc_enter("so3_tns3_dotprod");
 #endif
 
-  for (j=0; j<3; j++)
+  for (j=0; j<NDIM_SOLID3; j++)
   {
-    for (k=0; k<3; k++)
+    for (k=0; k<NDIM_SOLID3; k++)
     {
       ctjk = 0.0;
-      for (i=0; i<3; i++)
+      for (i=0; i<NDIM_SOLID3; i++)
       {
         ctjk += at[j][i] * bt[i][k];
       }
@@ -296,9 +296,9 @@ We talk about the trivial
 \author bborn
 \date 01/07
 */
-void so3_tns3_dotprod_tl(DOUBLE at[3][3],
-                         DOUBLE bt[3][3],
-                         DOUBLE ct[3][3])
+void so3_tns3_dotprod_tl(DOUBLE at[NDIM_SOLID3][NDIM_SOLID3],
+                         DOUBLE bt[NDIM_SOLID3][NDIM_SOLID3],
+                         DOUBLE ct[NDIM_SOLID3][NDIM_SOLID3])
 {
   INT i, j, k;  /* indices */
   DOUBLE ctjk;  /* auxiliar resulting component */
@@ -308,12 +308,12 @@ void so3_tns3_dotprod_tl(DOUBLE at[3][3],
   dstrc_enter("so3_tns3_dotprod_tl");
 #endif
 
-  for (j=0; j<3; j++)
+  for (j=0; j<NDIM_SOLID3; j++)
   {
-    for (k=0; k<3; k++)
+    for (k=0; k<NDIM_SOLID3; k++)
     {
       ctjk = 0.0;
-      for (i=0; i<3; i++)
+      for (i=0; i<NDIM_SOLID3; i++)
       {
         ctjk += at[i][j] * bt[i][k];
       }
@@ -344,9 +344,9 @@ We talk about the trivial
 \author bborn
 \date 01/07
 */
-void so3_tns3_dotprod_tr(DOUBLE at[3][3],
-                         DOUBLE bt[3][3],
-                         DOUBLE ct[3][3])
+void so3_tns3_dotprod_tr(DOUBLE at[NDIM_SOLID3][NDIM_SOLID3],
+                         DOUBLE bt[NDIM_SOLID3][NDIM_SOLID3],
+                         DOUBLE ct[NDIM_SOLID3][NDIM_SOLID3])
 {
   INT i, j, k;  /* indices */
   DOUBLE ctjk;  /* auxiliar resulting component */
@@ -356,12 +356,12 @@ void so3_tns3_dotprod_tr(DOUBLE at[3][3],
   dstrc_enter("so3_tns3_dotprod_tr");
 #endif
 
-  for (j=0; j<3; j++)
+  for (j=0; j<NDIM_SOLID3; j++)
   {
-    for (k=0; k<3; k++)
+    for (k=0; k<NDIM_SOLID3; k++)
     {
       ctjk = 0.0;
-      for (i=0; i<3; i++)
+      for (i=0; i<NDIM_SOLID3; i++)
       {
         ctjk += at[j][i] * bt[k][i];
       }
@@ -413,18 +413,18 @@ References:
 \author bborn
 \date 01/07
 */
-void so3_tns3_plrdcmp(DOUBLE ft[3][3],  /* input tensor */
-                      DOUBLE rt[3][3],  /* rotation matrix */
-                      DOUBLE ut[3][3],  /* right stretch tensor */
-                      DOUBLE vt[3][3])  /* left stretch tensor */
+void so3_tns3_plrdcmp(DOUBLE ft[NDIM_SOLID3][NDIM_SOLID3],  /* input tensor */
+                      DOUBLE rt[NDIM_SOLID3][NDIM_SOLID3],  /* rotation matrix */
+                      DOUBLE ut[NDIM_SOLID3][NDIM_SOLID3],  /* right stretch tensor */
+                      DOUBLE vt[NDIM_SOLID3][NDIM_SOLID3])  /* left stretch tensor */
 {
-  DOUBLE it[3][3];  /* identity 2-tensor I */
-  DOUBLE ct[3][3];  /* right Cauchy-Green tensor C */
+  DOUBLE it[NDIM_SOLID3][NDIM_SOLID3];  /* identity 2-tensor I */
+  DOUBLE ct[NDIM_SOLID3][NDIM_SOLID3];  /* right Cauchy-Green tensor C */
   DOUBLE ci, cii, ciii;  /* invarients of C */
-  DOUBLE c2t[3][3];  /* squared Cauchy-Green tensor */
+  DOUBLE c2t[NDIM_SOLID3][NDIM_SOLID3];  /* squared Cauchy-Green tensor */
   DOUBLE c2i;  /* invariants of C^2 */
   DOUBLE ui, uii, uiii;  /* invariants of U */
-  DOUBLE invut[3][3];  /* inverted material stretch tensor */
+  DOUBLE invut[NDIM_SOLID3][NDIM_SOLID3];  /* inverted material stretch tensor */
   INT i, j;  /* indices */
   DOUBLE denom, pc2, pc, pi;  /* coefficients */
   DOUBLE p, q, r;  /* coefficients in quartic polynomial of tr(U) */
@@ -433,7 +433,7 @@ void so3_tns3_plrdcmp(DOUBLE ft[3][3],  /* input tensor */
   DOUBLE x1, x2, x3;  /* roots of normalised cubic resolvent */
   DOUBLE z1, z2, z3;  /* roots of cubic resolvent */
   DOUBLE z1rt, z2rt, z3rt;  /* radicals of roots of cubic resolvent */
-  DOUBLE rtx[3][3];  /* auxiliar rotation matrix in case of solely
+  DOUBLE rtx[NDIM_SOLID3][NDIM_SOLID3];  /* auxiliar rotation matrix in case of solely
                       * interested in vt */
 
   /*--------------------------------------------------------------------*/
@@ -662,9 +662,9 @@ void so3_tns3_plrdcmp(DOUBLE ft[3][3],  /* input tensor */
   pc = -(ui*uii - uiii)*(uiii + ui*ci);
   pi = uii*uiii*(uiii + ui*ci)
     + ui*ui*(uii*cii + ciii);
-  for (i=0; i<3; i++)
+  for (i=0; i<NDIM_SOLID3; i++)
   {
-    for (j=0; j<3; j++)
+    for (j=0; j<NDIM_SOLID3; j++)
     {
       invut[i][j] = pc2*c2t[i][j] + pc*ct[i][j] + pi*it[i][j];
       invut[i][j] /= denom;
@@ -700,9 +700,9 @@ void so3_tns3_plrdcmp(DOUBLE ft[3][3],  /* input tensor */
     pc2 = -(ui*uii - uiii);
     pc = (ui*uii - uiii)*(uii + ci);
     pi = ui*ciii + uiii*(uii*(uii+ci) + cii);
-    for (i=0; i<3; i++)
+    for (i=0; i<NDIM_SOLID3; i++)
     {
-      for (j=0; j<3; j++)
+      for (j=0; j<NDIM_SOLID3; j++)
       {
         ut[i][j] = pc2*c2t[i][j] + pc*ct[i][j] + pi*it[i][j];
         ut[i][j] /= denom;
@@ -751,8 +751,8 @@ is stored as
 \author bborn
 \date 01/07
 */
-void so3_tns3_tsym2v(DOUBLE at[3][3],
-                     DOUBLE av[6])
+void so3_tns3_tsym2v(DOUBLE at[NDIM_SOLID3][NDIM_SOLID3],
+                     DOUBLE av[NUMSTR_SOLID3])
 {
 
   /*--------------------------------------------------------------------*/
@@ -792,8 +792,8 @@ is stored as tensor
 \author bborn
 \date 01/07
 */
-void so3_tns3_v2tsym(DOUBLE av[6],
-                     DOUBLE at[3][3])
+void so3_tns3_v2tsym(DOUBLE av[NUMSTR_SOLID3],
+                     DOUBLE at[NDIM_SOLID3][NDIM_SOLID3])
 {
 
   /*--------------------------------------------------------------------*/
@@ -831,8 +831,8 @@ The tensor
 \author bborn
 \date 01/07
 */
-void so3_tns3_spcdcmp(DOUBLE at[3][3],  /* input tensor */
-                      DOUBLE ew[3],  /* eigen values */
+void so3_tns3_spcdcmp(DOUBLE at[NDIM_SOLID3][NDIM_SOLID3],  /* input tensor */
+                      DOUBLE ew[NDIM_SOLID3],  /* eigen values */
                       INT *err) 
 {
   DOUBLE ai, aii, aiii;  /* invariants of A */
@@ -1095,7 +1095,7 @@ void so3_tns3_symspcdcmp_jit(DOUBLE at[NDIM_SOLID3][NDIM_SOLID3],
     INT kdim;
     for (kdim=0; kdim<NDIM_SOLID3; kdim++)
     {
-      ew[kdim] = ewt[kdim][kdim];
+      ew[kdim] = ewt[kdim][kdim];  /* eigenvalues */
     }
   }
 

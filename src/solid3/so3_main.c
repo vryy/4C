@@ -201,8 +201,7 @@ void solid3(PARTITION *actpart,
        * advanced material laws, e.g. plastic, visco-elastic or
        * visco-plastic materials, or anti-locking means, e.g.
        * enhanced assumed strain. */
-      so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
-      so3_iv_upd(container, ele, &(so3_gpshade), actmat);
+      so3_iv_upd(container, ele, actmat);
       break;
     /*------------------------------------------------------------------*/
     /* calculate stresses */

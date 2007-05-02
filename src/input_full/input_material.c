@@ -500,14 +500,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
      {
        robin->kind = 0;
      }
-     robin->youngmodul_ipl = mat_param_ipl_none;
+     robin->youngmodul.ipl = mat_param_ipl_none;
      frchk("YOUNG", &ierr);
      if (ierr == 1)
      {
        inp_mat_nonconstparam("YOUNG", 
-                             &(robin->youngmodul_ipl), 
-                             &(robin->youngmodul_n), 
-                             &(robin->youngmodul));
+                             &(robin->youngmodul.ipl), 
+                             &(robin->youngmodul.n), 
+                             &(robin->youngmodul.d));
      }
      frdouble("NUE", &(robin->possionratio), &ierr);
      frdouble("DENS", &(robin->density), &ierr);
@@ -515,67 +515,67 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
      frdouble("HRDN_FACT", &(robin->hrdn_fact), &ierr);
      frdouble("HRDN_EXPO", &(robin->hrdn_expo), &ierr);
      /* SHRTHRSHLD */
-     robin->shrthrshld_ipl = mat_param_ipl_none;
+     robin->shrthrshld.ipl = mat_param_ipl_none;
      frchk("SHRTHRSHLD", &ierr);
      if (ierr == 1)
      {
        inp_mat_nonconstparam("SHRTHRSHLD", 
-                             &(robin->shrthrshld_ipl), 
-                             &(robin->shrthrshld_n), 
-                             &(robin->shrthrshld));
+                             &(robin->shrthrshld.ipl), 
+                             &(robin->shrthrshld.n), 
+                             &(robin->shrthrshld.d));
      }
      /* RCVRY */
-     robin->rcvry_ipl = mat_param_ipl_none;
+     robin->rcvry.ipl = mat_param_ipl_none;
      frchk("RCVRY", &ierr);
      if (ierr == 1)
      {
        inp_mat_nonconstparam("RCVRY", 
-                             &(robin->rcvry_ipl), 
-                             &(robin->rcvry_n), 
-                             &(robin->rcvry));
+                             &(robin->rcvry.ipl), 
+                             &(robin->rcvry.n), 
+                             &(robin->rcvry.d));
      }
      frdouble("ACTV_TMPR", &(robin->actv_tmpr), &ierr);
      frdouble("ACTV_ERGY", &(robin->actv_ergy), &ierr);
      frdouble("G0", &(robin->g0), &ierr);
      frdouble("M_EXPO", &(robin->m), &ierr);
      /* BETA */
-     robin->beta_ipl = mat_param_ipl_none;
+     robin->beta.ipl = mat_param_ipl_none;
      frchk("BETA", &ierr);
      if (ierr == 1)
      {
        inp_mat_nonconstparam("BETA", 
-                             &(robin->beta_ipl), 
-                             &(robin->beta_n), 
-                             &(robin->beta));
+                             &(robin->beta.ipl), 
+                             &(robin->beta.n), 
+                             &(robin->beta.d));
      }
      /* H_FACT */
-     robin->h_ipl = mat_param_ipl_none;
+     robin->h.ipl = mat_param_ipl_none;
      frchk("H_FACT", &ierr);
      if (ierr == 1)
      {
        inp_mat_nonconstparam("H_FACT", 
-                             &(robin->h_ipl), 
-                             &(robin->h_n), 
-                             &(robin->h));
+                             &(robin->h.ipl), 
+                             &(robin->h.n), 
+                             &(robin->h.d));
      }
      /* check if allocatables have indeed been allocated */
-     if (robin->youngmodul == NULL)
+     if (robin->youngmodul.d == NULL)
      {
        dserror("Young's modulus was not found!");
      }
-     if (robin->beta == NULL)
+     if (robin->beta.d == NULL)
      {
        dserror("Beta was not found!");
      }
-     if (robin->shrthrshld == NULL)
+     if (robin->shrthrshld.d == NULL)
      {
        dserror("Shear threshold was not found!");
      }
-     if (robin->rcvry == NULL)
+     if (robin->rcvry.d == NULL)
      {
        dserror("Recovery factor was not found!");
      }
-     if (robin->h == NULL)
+     if (robin->h.d == NULL)
      {
        dserror("H was not found!");
      }

@@ -258,10 +258,7 @@ void so3_mat_robinson_fb4_sel(const CONTAINER* container,
   /* elasticity tensor */
   {
     DOUBLE emod;
-    so3_mat_robinson_prmbytmpr(mat_robin->youngmodul_ipl,
-                               mat_robin->youngmodul_n,
-                               mat_robin->youngmodul,
-                               tem, &emod);
+    so3_mat_robinson_prmbytmpr(mat_robin->youngmodul, tem, &emod);
     DOUBLE prat = mat_robin->possionratio;
     DOUBLE mfac = emod/((1.0+prat)*(1.0-2.0*prat));  /* factor */
     /* zero content */
@@ -328,11 +325,11 @@ void so3_mat_robinson_fb4_sel(const CONTAINER* container,
 
   /*--------------------------------------------------------------------*/
   /* deviatoric stress 's' at t_{n+c_i} */
-  so3_vct6_dev(stress, stsdev);
+  so3_mv6_v_dev(stress, stsdev);
 
   /*--------------------------------------------------------------------*/
   /* overstress 'Sig' = 's' - 'alpha' */
-  so3_vct6_sub(stsdev, stsbac, stsovr);
+  so3_mv6_v_sub(stsdev, stsbac, stsovr);
 
   /*--------------------------------------------------------------------*/
   /* viscous strain rate at t_{n+c_i} */
@@ -344,13 +341,6 @@ void so3_mat_robinson_fb4_sel(const CONTAINER* container,
   so3_mat_robinson_fb4_stsbckrat(mat_robin, tem, stsdev, stsbac,
                                  actso3->miv_rob->dvicstn.a.d3[ip][actstg],
                                  actso3->miv_rob->dbacsts.a.d3[ip][actstg]);
-
-  /*--------------------------------------------------------------------*/
-  /* update internal variables if we are in last RK stage */
-  if (actstg == (numstg - 1) )
-  {
-    so3_mat_robinson_fb4_mivupd(ele, mat_robin, ip);
-  }
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -389,13 +379,10 @@ void so3_mat_robinson_fb4_stnvscrat(const VP_ROBINSON* mat_robin,
   /*--------------------------------------------------------------------*/
   /* preliminaries */
   /* J_2 = 1/2 * Sig : Sig  with Sig...overstress */
-  so3_vct6_dblctr(stsovr, stsovr, &j2);
+  so3_mv6_v_dblctr(stsovr, stsovr, &j2);
   j2 *= 0.5;
   /* Bingham-Prager shear stress threshold at current temperature */
-  so3_mat_robinson_prmbytmpr(mat_robin->shrthrshld_ipl,
-                             mat_robin->shrthrshld_n,
-                             mat_robin->shrthrshld,
-                             tmpr, &shrthrshld);
+  so3_mat_robinson_prmbytmpr(mat_robin->shrthrshld, tmpr, &shrthrshld);
   /* F = (J_2 - K^2)/K_2 */
   if (fabs(shrthrshld) <= EPS10)
   {
@@ -409,7 +396,7 @@ void so3_mat_robinson_fb4_stnvscrat(const VP_ROBINSON* mat_robin,
     ff = (j2 - shrthrshld)/shrthrshld;
   }
   /* ss = 1/2 * s : Sig  with  Sig...overstress, s...deviat.stress */
-  so3_vct6_dblctr(stsovr, stsdev, &ss);
+  so3_mv6_v_dblctr(stsovr, stsdev, &ss);
   ss *= 0.5;
 
   /*--------------------------------------------------------------------*/
@@ -430,11 +417,11 @@ void so3_mat_robinson_fb4_stnvscrat(const VP_ROBINSON* mat_robin,
       fct = -1.0;
       dserror("Kind of Robinson material is unknown");
     }
-    so3_vct6_2_assscl(fct, stsovr, dstnvsc);
+    so3_mv6_v2_assscl(fct, stsovr, dstnvsc);
   }
   else
   {
-    so3_vct6_zero(dstnvsc);
+    so3_mv6_v_zero(dstnvsc);
   }
 
   /*--------------------------------------------------------------------*/
@@ -483,7 +470,7 @@ void so3_mat_robinson_fb4_stsbckrat(const VP_ROBINSON* mat_robin,
   /*--------------------------------------------------------------------*/
   /* preliminaries */
   /* I_2 = 1/2 * Alpha : Alpha  with Alpha...back stress */
-  so3_vct6_dblctr(stsbck, stsbck, &i2);
+  so3_mv6_v_dblctr(stsbck, stsbck, &i2);
   i2 *= 0.5;
   /* debug: */
 /*   printf("I_2 %f\n", sqrt(i2)); */
@@ -491,31 +478,15 @@ void so3_mat_robinson_fb4_stsbckrat(const VP_ROBINSON* mat_robin,
   /* activation temperature */
   tem0 = mat_robin->actv_tmpr;
   /* Bingham-Prager shear stress threshold at activation temperature */
-  so3_mat_robinson_prmbytmpr(mat_robin->shrthrshld_ipl,
-                             mat_robin->shrthrshld_n,
-                             mat_robin->shrthrshld,
-                             tem0,
-                             &shrthrshld0);
+  so3_mat_robinson_prmbytmpr(mat_robin->shrthrshld, tem0, &shrthrshld0);
   /* 'H' at current temperature */
-  so3_mat_robinson_prmbytmpr(mat_robin->h_ipl,
-                             mat_robin->h_n,
-                             mat_robin->h,
-                             tmpr, 
-                             &hh);
+  so3_mat_robinson_prmbytmpr(mat_robin->h, tmpr, &hh);
   /* 'beta' at current temperature */
-  so3_mat_robinson_prmbytmpr(mat_robin->beta_ipl,
-                             mat_robin->beta_n,
-                             mat_robin->beta,
-                             tmpr, 
-                             &beta);
+  so3_mat_robinson_prmbytmpr(mat_robin->beta, tmpr, &beta);
   /* 'm' */
   mm = mat_robin->m;
   /* recovery factor 'R_0' */
-  so3_mat_robinson_prmbytmpr(mat_robin->rcvry_ipl,
-                             mat_robin->rcvry_n,
-                             mat_robin->rcvry,
-                             tmpr, 
-                             &rr0);
+  so3_mat_robinson_prmbytmpr(mat_robin->rcvry, tmpr, &rr0);
   /* 'R' */
   rr = rr0 * exp(mat_robin->actv_ergy*(tmpr-tem0)/(tmpr*tem0));
   /* 'G_0' */
@@ -541,7 +512,7 @@ void so3_mat_robinson_fb4_stsbckrat(const VP_ROBINSON* mat_robin,
     }
   }
   /* ss = 1/2 * s : Alpha  with  Alpha...backstress, s...deviat.stress */
-  so3_vct6_dblctr(stsbck, stsdev, &sa);
+  so3_mv6_v_dblctr(stsbck, stsdev, &sa);
   sa *= 0.5;
 
   /*--------------------------------------------------------------------*/
@@ -561,7 +532,7 @@ void so3_mat_robinson_fb4_stsbckrat(const VP_ROBINSON* mat_robin,
     {
       fcte = -1.0;
     }
-    so3_vct6_05_assscl(fcte, dstnvsc, dstsbck);
+    so3_mv6_v05_assscl(fcte, dstnvsc, dstsbck);
     DOUBLE fcta;
     if (mat_robin->kind == 1)
     {
@@ -575,7 +546,7 @@ void so3_mat_robinson_fb4_stsbckrat(const VP_ROBINSON* mat_robin,
     {
       fcta = -1.0;
     }
-    so3_vct6_updscl(fcta, stsbck, dstsbck);
+    so3_mv6_v_updscl(fcta, stsbck, dstsbck);
   }
   else
   {
@@ -592,7 +563,7 @@ void so3_mat_robinson_fb4_stsbckrat(const VP_ROBINSON* mat_robin,
     {
       fcte = -1.0;
     }
-    so3_vct6_05_assscl(fcte, dstnvsc, dstsbck);
+    so3_mv6_v05_assscl(fcte, dstnvsc, dstsbck);
     DOUBLE fcta;
     if (mat_robin->kind == 1)
     {
@@ -614,7 +585,7 @@ void so3_mat_robinson_fb4_stsbckrat(const VP_ROBINSON* mat_robin,
     {
       fcta = -1.0;
     }
-    so3_vct6_updscl(fcta, stsbck, dstsbck);
+    so3_mv6_v_updscl(fcta, stsbck, dstsbck);
   }
 
   /*--------------------------------------------------------------------*/
@@ -634,14 +605,14 @@ void so3_mat_robinson_fb4_stsbckrat(const VP_ROBINSON* mat_robin,
 \date 04/07
 */
 void so3_mat_robinson_fb4_mivupd(ELEMENT* ele,
-                                 const VP_ROBINSON* mat_robin,
-                                 const INT ip)
+                                 const VP_ROBINSON* mat_robin)
 {
   SOLID3* actso3 = ele->e.so3;  /* point to SOLID3 element bits */
-  INT gptot = actso3->gptot;  /* total number of GPs in domain */
+  const INT gptot = actso3->gptot;  /* total number of GPs in domain */
   const INT itsidyn = genprob.numfld;  /* index of TSI dynamics data */
   const TSI_DYNAMIC* tsidyn = alldyn[itsidyn].tsidyn;  /* TSI dynamics data */
   const DOUBLE dt = tsidyn->dt;  /* time step size */
+  INT ip;  /* Gauss point index */
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -654,32 +625,34 @@ void so3_mat_robinson_fb4_mivupd(ELEMENT* ele,
 
   /*--------------------------------------------------------------------*/
   /* update viscous strain */
+  for (ip=0; ip<gptot; ip++)
   {
     DOUBLE stnvscn[NUMSTR_SOLID3];
-    so3_vct6_ass(actso3->miv_rob->vicstn.a.da[ip], stnvscn);
+    so3_mv6_v_ass(actso3->miv_rob->vicstn.a.da[ip], stnvscn);
     INT istg;
     for (istg=0; istg<tsi_fehlbg4.stg; istg++)
     {
       DOUBLE fct = dt * tsi_fehlbg4.b[istg];
-      so3_vct6_updscl(fct, actso3->miv_rob->dvicstn.a.d3[ip][istg], 
+      so3_mv6_v_updscl(fct, actso3->miv_rob->dvicstn.a.d3[ip][istg], 
                       stnvscn);
     }
-    so3_vct6_ass(stnvscn, actso3->miv_rob->vicstn.a.da[ip]);
+    so3_mv6_v_ass(stnvscn, actso3->miv_rob->vicstn.a.da[ip]);
   }
 
   /*--------------------------------------------------------------------*/
   /* update back stress 'Alpha' */
+  for (ip=0; ip<gptot; ip++)
   {
     DOUBLE stsbckn[NUMSTR_SOLID3];
-    so3_vct6_ass(actso3->miv_rob->bacsts.a.da[ip], stsbckn);
+    so3_mv6_v_ass(actso3->miv_rob->bacsts.a.da[ip], stsbckn);
     INT istg;
     for (istg=0; istg<tsi_fehlbg4.stg; istg++)
     {
       DOUBLE fct = dt * tsi_fehlbg4.b[istg];
-      so3_vct6_updscl(fct, actso3->miv_rob->dbacsts.a.d3[ip][istg], 
+      so3_mv6_v_updscl(fct, actso3->miv_rob->dbacsts.a.d3[ip][istg], 
                       stsbckn);
     }
-    so3_vct6_ass(stsbckn, actso3->miv_rob->bacsts.a.da[ip]);
+    so3_mv6_v_ass(stsbckn, actso3->miv_rob->bacsts.a.da[ip]);
   }
 
   /*--------------------------------------------------------------------*/
@@ -797,10 +770,7 @@ void so3_mat_robinson_fb4_stress(const CONTAINER* container,
   /* elasticity tensor */
   {
     DOUBLE emod;  /* modulus of elasticity */
-    so3_mat_robinson_prmbytmpr(mat_robin->youngmodul_ipl,
-                               mat_robin->youngmodul_n,
-                               mat_robin->youngmodul,
-                               tem, &emod);
+    so3_mat_robinson_prmbytmpr(mat_robin->youngmodul, tem, &emod);
     DOUBLE prat = mat_robin->possionratio;  /* Poisson's ratio */
     DOUBLE mfac = emod/((1.0+prat)*(1.0-2.0*prat));  /* factor */
     /* zero out content */
@@ -850,10 +820,10 @@ void so3_mat_robinson_fb4_stress(const CONTAINER* container,
   {
     DOUBLE stsdev[NUMSTR_SOLID3];
     /* stress deviator */
-    so3_vct6_dev(stress, stsdev);
+    so3_mv6_v_dev(stress, stsdev);
     /* overstress 'Sig' = 's' - 'alpha' */
     DOUBLE stsovr[NUMSTR_SOLID3];
-    so3_vct6_sub(stsdev, actso3->miv_rob->bacsts.a.da[ip], stsovr);
+    so3_mv6_v_sub(stsdev, actso3->miv_rob->bacsts.a.da[ip], stsovr);
     FILE* oo = fopen("so3_mat_robin_ip0.dat", "a+");
     fprintf(oo, "# Time step %d Gauss point %d\n", container->kstep, ip);
     fprintf(oo, "# step strain-tot strain-ela strain-vis strain-thr"
@@ -876,10 +846,10 @@ void so3_mat_robinson_fb4_stress(const CONTAINER* container,
   {
     DOUBLE stsdev[NUMSTR_SOLID3];
     /* stress deviator */
-    so3_vct6_dev(stress, stsdev);
+    so3_mv6_v_dev(stress, stsdev);
     /* overstress 'Sig' = 's' - 'alpha' */
     DOUBLE stsovr[NUMSTR_SOLID3];
-    so3_vct6_sub(stsdev, actso3->miv_rob->bacsts.a.da[ip], stsovr);
+    so3_mv6_v_sub(stsdev, actso3->miv_rob->bacsts.a.da[ip], stsovr);
     FILE* oo = fopen("so3_mat_robin_ip7.dat", "a+");
     fprintf(oo, "# Time step %d Gauss point %d\n", container->kstep, ip);
     fprintf(oo, "# step strain-tot strain-ela strain-vis strain-thr"

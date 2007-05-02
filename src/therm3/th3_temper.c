@@ -149,10 +149,10 @@ void th3_temper_cal(const CONTAINER *container,
                     const DOUBLE t,
                     DOUBLE *tem)
 {
-  ARRAY_POSITION_SOL *isol 
-    = &(field[genprob.numtf].dis[container->disnum_t].ipos.isol); 
-  INT nelenod;
-  INT neledof;
+  const ARRAY_POSITION_SOL *isol 
+    = &(field[genprob.numtf].dis[container->disnum_t].ipos.isol);
+  const INT nelenod = ele->numnp;
+  const INT neledof = NUMDOF_THERM3 * nelenod;
   DOUBLE rr=0.0, ss=0.0, tt=0.0;  /* Gauss coordinate in THERM3 parameter space */
   DOUBLE shape[MAXNOD_THERM3];  /* shape functions */
   DOUBLE deriv[MAXNOD_THERM3][NDIM_THERM3];  /* derivatives of shape fct */
@@ -162,11 +162,6 @@ void th3_temper_cal(const CONTAINER *container,
 #ifdef DEBUG
   dstrc_enter("th3_temper_cal");
 #endif
-
-  /*--------------------------------------------------------------------*/
-  /* dimensions */
-  nelenod = ele->numnp;
-  neledof = NUMDOF_THERM3 * nelenod;
 
   /*--------------------------------------------------------------------*/
   /* reset to zero nodal temper., shape funct. and derivatives */

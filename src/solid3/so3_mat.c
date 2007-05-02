@@ -187,6 +187,7 @@ void so3_mat_final(PARTITION* part,  /*!< partition */
 void so3_mat_sel(CONTAINER *container,
                  ELEMENT *ele,
                  MATERIAL *mat,
+                 SO3_GPSHAPEDERIV *gpshade,
                  INT ip,
                  SO3_GEODEFSTR *gds,
                  DOUBLE stress[NUMSTR_SOLID3],
@@ -221,8 +222,8 @@ void so3_mat_sel(CONTAINER *container,
     /* Robinson's visco-plastic temperature-dependent material */
 #ifdef D_TSI
     case m_vp_robinson:
-      so3_mat_robinson_sel(container, ele, mat->m.vp_robinson, ip, gds, 
-                           stress, cmat);
+      so3_mat_robinson_sel(container, ele, mat->m.vp_robinson, gpshade,
+                           ip, gds, stress, cmat);
       break;
 #endif
     default:
@@ -377,9 +378,7 @@ void so3_mat_density(MATERIAL *mat,
 */
 void so3_mat_mivupd(const CONTAINER* container,
                     ELEMENT* ele,
-                    const MATERIAL* mat,
-                    const INT ip,
-                    const SO3_GEODEFSTR* gds)
+                    const MATERIAL* mat)
 {
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -399,7 +398,7 @@ void so3_mat_mivupd(const CONTAINER* container,
     /* Robinson's visco-plastic temperature-dependent material */
 #ifdef D_TSI
     case m_vp_robinson:
-      so3_mat_robinson_mivupd(ele, mat->m.vp_robinson, ip, gds);
+      so3_mat_robinson_mivupd(container, ele, mat->m.vp_robinson);
       break;
 #endif
     default:

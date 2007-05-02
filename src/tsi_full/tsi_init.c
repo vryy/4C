@@ -300,7 +300,7 @@ void tsi_init_nodsol(FIELD *structfield,
   /* sol_increment array */
   ipos_s->numincr = 3;
   isolinc_s = &(ipos_s->isolinc);
-  isolinc_s->disinc = 0; 
+  isolinc_s->disinc = 0;  /* iterative incremental displacements */
   isolinc_s->fint = 1;  /* internal force f_{int;n} at t_n */
   isolinc_s->fintn = 2;  /* internal force at t_{n+1} */
   /*--------------------------------------------------------------------*/

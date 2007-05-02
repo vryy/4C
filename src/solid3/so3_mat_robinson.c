@@ -136,12 +136,14 @@ void so3_mat_robinson_final(ELEMENT* ele)  /*!< current element */
 \author bborn
 \date 04/07
 */
-void so3_mat_robinson_prmbytmpr(const MAT_PARAM_INTPOL ipl,
-                                const INT prm_n,
-                                const DOUBLE* prm,
+void so3_mat_robinson_prmbytmpr(const MAT_PARAM_MULT prm,
                                 const DOUBLE tmpr,
                                 DOUBLE* prmbytempr)
 {
+  const MAT_PARAM_INTPOL ipl = prm.ipl;
+  const INT prm_n = prm.n;
+  const DOUBLE* prm_d = prm.d;
+
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_enter("so3_mat_robinson_prmbytmpr");
@@ -151,7 +153,7 @@ void so3_mat_robinson_prmbytmpr(const MAT_PARAM_INTPOL ipl,
   /* constant */
   if (ipl == mat_param_ipl_const)
   {
-    *prmbytempr = prm[0];
+    *prmbytempr = prm_d[0];
   }
   /* polynomial */
   else if (ipl == mat_param_ipl_poly)
@@ -161,7 +163,7 @@ void so3_mat_robinson_prmbytmpr(const MAT_PARAM_INTPOL ipl,
     INT i;
     for (i=0; i<prm_n; ++i)
     {
-      *prmbytempr += prm[i] * tmpr_pow;
+      *prmbytempr += prm_d[i] * tmpr_pow;
       tmpr_pow *= tmpr;
     }
   }
@@ -169,14 +171,14 @@ void so3_mat_robinson_prmbytmpr(const MAT_PARAM_INTPOL ipl,
   else if (ipl == mat_param_ipl_pcwslnr)
   {
     /* constant if lower than smallest provided temperature */
-    if (tmpr <= prm[0])
+    if (tmpr <= prm_d[0])
     {
-      *prmbytempr = prm[1];
+      *prmbytempr = prm_d[1];
     }
     /* constant if greater than largest provided temperature */
-    else if (tmpr > prm[prm_n-2])
+    else if (tmpr > prm_d[prm_n-2])
     {
-      *prmbytempr = prm[prm_n-1];
+      *prmbytempr = prm_d[prm_n-1];
     }
     /* linear interpolation */
     else
@@ -184,13 +186,13 @@ void so3_mat_robinson_prmbytmpr(const MAT_PARAM_INTPOL ipl,
       INT i;
       for (i=0; i<prm_n-2; i+=2)
       {
-        if (tmpr <= prm[i+2])
+        if (tmpr <= prm_d[i+2])
         {
           /* we got the correct interval */
-          DOUBLE x1 = prm[i];
-          DOUBLE y1 = prm[i+1];
-          DOUBLE x2 = prm[i+2];
-          DOUBLE y2 = prm[i+3];
+          DOUBLE x1 = prm_d[i];
+          DOUBLE y1 = prm_d[i+1];
+          DOUBLE x2 = prm_d[i+2];
+          DOUBLE y2 = prm_d[i+3];
           DOUBLE x = tmpr;
           *prmbytempr = (y2*(x2-x) - y1*(x1-x))/(x2-x1);
           break;
@@ -216,6 +218,62 @@ void so3_mat_robinson_prmbytmpr(const MAT_PARAM_INTPOL ipl,
 
 /*======================================================================*/
 /*!
+\brief Linear elasticity tensor
+\param   mat_robin      VP_ROBINSON*   (i)   Robinson's material param.s
+\param   tem            DOUBLE         (i)   temperature
+\param   cmat           DOUBLE[][]     (o)   elasticity matrix
+\return  void
+\author bborn
+\date 04/07
+*/
+void so3_mat_robinson_elmat(const VP_ROBINSON* mat_robin,
+                            const DOUBLE tem,
+                            DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3])
+{
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_enter("so3_mat_robinson_elmat");
+#endif
+
+  /*--------------------------------------------------------------------*/
+  DOUBLE emod;
+  so3_mat_robinson_prmbytmpr(mat_robin->youngmodul, tem, &emod);
+  DOUBLE prat = mat_robin->possionratio;
+  DOUBLE mfac = emod/((1.0+prat)*(1.0-2.0*prat));  /* factor */
+  /* zero content */
+  INT istr, jstr;
+  for (istr=0; istr<NUMSTR_SOLID3; istr++)
+  {
+    for (jstr=0; jstr<NUMSTR_SOLID3; jstr++)
+    {
+      cmat[istr][jstr] = 0.0;
+    }
+  }
+  /* non-zero content --- axial */
+  cmat[0][0] = mfac*(1.0-prat);
+  cmat[0][1] = mfac*prat;
+  cmat[0][2] = mfac*prat;
+  cmat[1][0] = mfac*prat;
+  cmat[1][1] = mfac*(1.0-prat);
+  cmat[1][2] = mfac*prat;
+  cmat[2][0] = mfac*prat;
+  cmat[2][1] = mfac*prat;
+  cmat[2][2] = mfac*(1.0-prat);
+  /* non-zero content --- shear */
+  cmat[3][3] = mfac*0.5*(1.0-2.0*prat);
+  cmat[4][4] = mfac*0.5*(1.0-2.0*prat);
+  cmat[5][5] = mfac*0.5*(1.0-2.0*prat);
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+
+/*======================================================================*/
+/*!
 \brief Select Robinson's material and integrate internal variables
 \param   container   CONTAINER*     (i)   container.h data
 \param   ele         ELEMENT*       (i)   curr. element
@@ -231,8 +289,9 @@ void so3_mat_robinson_prmbytmpr(const MAT_PARAM_INTPOL ipl,
 void so3_mat_robinson_sel(const CONTAINER* container,
                           const ELEMENT* ele,
                           const VP_ROBINSON* mat_robin,
+                          SO3_GPSHAPEDERIV* gpshade,
                           const INT ip,
-                          const SO3_GEODEFSTR* gds,
+                          SO3_GEODEFSTR* gds,
                           DOUBLE stress[NUMSTR_SOLID3],
                           DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3])
 {
@@ -261,6 +320,7 @@ void so3_mat_robinson_sel(const CONTAINER* container,
     so3_mat_robinson_be_sel(container,
                             ele,
                             mat_robin,
+                            gpshade,
                             ip,
                             gds,
                             stress,
@@ -288,10 +348,9 @@ void so3_mat_robinson_sel(const CONTAINER* container,
 \author bborn
 \date 04/07
 */
-void so3_mat_robinson_mivupd(ELEMENT* ele,
-                             const VP_ROBINSON* mat_robin,
-                             const INT ip,
-                             const SO3_GEODEFSTR* gds)
+void so3_mat_robinson_mivupd(CONTAINER* container,
+                             ELEMENT* ele,
+                             const VP_ROBINSON* mat_robin)
 {
   const INT itsidyn = genprob.numfld;  /* index of TSI dynamics data */
   const TSI_DYNAMIC* tsidyn = alldyn[itsidyn].tsidyn;  /* TSI dynamics data */
@@ -305,11 +364,11 @@ void so3_mat_robinson_mivupd(ELEMENT* ele,
   /* distinguish time integration scheme */
   if (tsidyn->kind == tsi_therm_stat_struct_fehlbg)
   {
-    /* do nothing */
+    so3_mat_robinson_fb4_mivupd(ele, mat_robin);
   }
   else if (tsidyn->kind == tsi_therm_stat_struct_genalp)
   {
-    so3_mat_robinson_be_mivupd(ele, mat_robin, ip, gds);
+    so3_mat_robinson_be_mivupd(ele, mat_robin);
   }
   else
   {

@@ -771,14 +771,14 @@ OBJS_SOLID3   = src/solid3/so3_bop.o \
                 src/solid3/so3_mat_robinson_be.o \
                 src/solid3/so3_mat_robinson_fb4.o \
                 src/solid3/so3_mat_stvenant.o \
+                src/solid3/so3_mv6.o \
                 src/solid3/so3_metr.o \
                 src/solid3/so3_out.o \
                 src/solid3/so3_shape.o \
                 src/solid3/so3_strain.o \
                 src/solid3/so3_stress.o \
                 src/solid3/so3_tns3.o \
-                src/solid3/so3_tsi.o \
-                src/solid3/so3_vct6.o
+                src/solid3/so3_tsi.o
 #               visual
 OBJS_VISUAL   = src/visual/visual_global.o \
                 src/visual/visual_readflaviares.o \

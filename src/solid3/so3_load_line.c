@@ -28,7 +28,7 @@ Maintainer: Burkhard Bornemann
 \param  ex        DOUBLE[]      (i)  material element node coord.
 \param  exs       DOUBLE[]      (i)  spatial element node coord.s
 \param  ngline    INT           (i)  number of geometry lines
-\param  gline     GLINE*[]      (i)   element geometry lines (is changed)
+\param  gline     GLINE*[]      (i)  element geometry lines (is changed)
 \param  eload     DOUBLE[][]    (io) element load vector (is changed)
 \author bborn
 \date 04/07
@@ -200,16 +200,21 @@ void so3_load_line_int(ELEMENT* ele,
 /*!
 \brief Determine load due to tractions on element edges (lines)
 
-\param   *ele      ELEMENT      (i)    actual element
-\param    nelenod  INT          (i)    number of element nodes
-\param   *igline   GLINE        (i)    current geometry line
-\param    shape[]  DOUBLE       (i)    shape function at Gauss point
+\param    ele      ELEMENT*     (i)    actual element
+\param    data     SO3_DATA*    (i)    element configuration data
+\param    igline   INT          (i)    current geometry line index
+\param    gline    GLINE*       (i)    current geometry line
+\param    ex       DOUBLE[][]   (i)    material node coord.s
+\param    exs      DOUBLE[][]   (i)    spatial node coord.s
+\param    gpc      DOUBLE[]     (i)    curr. Gauss point coord.s
+\param    shape    DOUBLE[]     (i)    shape function at Gauss point
+\param    deriv    DOUBLE[][]   (i)    shape fct derivatives at curr. GP
 \param    fac      DOUBLE       (i)    integration factor
-\param    eload[][]DOUBLE       (io)   element load vector contribution
+\param    eload    DOUBLE[][]   (io)   element load vector contribution
 \return void
 
 \author bborn
-\date 01/07
+\date 04/07
 */
 void so3_load_line_valh(ELEMENT* ele,
                         SO3_DATA* data,
@@ -229,7 +234,7 @@ void so3_load_line_valh(ELEMENT* ele,
   DOUBLE traction[NUMDOF_SOLID3];  /* traction on edge [force/length] */
   INT idof, jdof, inode;  /* loopers */
   DOUBLE metr;  /* metric */
-  DOUBLE gamt[NDIM_SOLID3];  /* base vector physically oriented */
+  DOUBLE gamt[NDIM_SOLID3];  /* base vector in physical space */
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -283,6 +288,8 @@ void so3_load_line_valh(ELEMENT* ele,
         /* make unit base vector */
         so3_tns3_unitvct(gamt);
         /* check orientation of line */
+        /* This is the difficulty. We do not know in which direction
+         * points the line parameter. */
         INT node0 = data->nodedghl[igline][0];
         INT node1 = data->nodedghl[igline][1];
         DOUBLE cc[NDIM_SOLID3] = {120.0, 0.0, 0.0};
@@ -305,7 +312,7 @@ void so3_load_line_valh(ELEMENT* ele,
         {
           dir = -1.0;
         }
-        /* */
+        /* build load vector */
         for (inode=0; inode<nelenod; inode++)
         {
           for (jdof=0; jdof<NUMDOF_SOLID3; jdof++)
@@ -334,16 +341,20 @@ void so3_load_line_valh(ELEMENT* ele,
 /*!
 \brief Determine load due to tractions on element edges (lines)
 
-\param   *ele      ELEMENT      (i)    actual element
-\param    nelenod  INT          (i)    number of element nodes
-\param   *igline   GLINE        (i)    current geometry line
-\param    shape[]  DOUBLE       (i)    shape function at Gauss point
+\param    ele      ELEMENT*     (i)    actual element
+\param    data     SO3_DATA*    (i)    element configuration data
+\param    igline   INT          (i)    current geometry line index
+\param    gline    GLINE*       (i)    current geometry line
+\param    ex       DOUBLE[][]   (i)    material node coord.s
+\param    exs      DOUBLE[][]   (i)    spatial node coord.s
+\param    gpc      DOUBLE[]     (i)    curr. Gauss point coord.s
+\param    shape    DOUBLE[]     (i)    shape function at Gauss point
+\param    deriv    DOUBLE[][]   (i)    shape fct derivatives at curr. GP
 \param    fac      DOUBLE       (i)    integration factor
-\param    eload[][]DOUBLE       (io)   element load vector contribution
-\return void
+\param    eload    DOUBLE[][]   (io)   element load vector contribution
 
 \author bborn
-\date 01/07
+\date 04/07
 */
 void so3_load_line_valt(ELEMENT* ele,
                         SO3_DATA* data,
