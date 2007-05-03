@@ -185,7 +185,9 @@ void tsi_st_genalp(INT disnum_s,
   INT numeq;  /* number of equations on this proc */
   INT numeq_total;  /* total number of equations */
   INT init;  /* flag for solver_control call */
-  INT mod_disp, mod_stress;
+  INT mod_stdout;  /* indicates whether to write to STDOUT */
+  INT mod_disp;  /* indicate whether to print displacements */
+  INT mod_stress;  /* indicate whether to print stresses */
   INT mod_res_write;
   INT disnum = 0;
   INT timeadapt;  /* flag to switch time adaption on/off */
@@ -669,6 +671,10 @@ void tsi_st_genalp(INT disnum_s,
     /* repeatcount = 0; */
 
     /*------------------------------------------------------------------*/
+    /* check whether write results to STDOUT or not*/
+    mod_stdout = actdyn->step % actdyn->updevry_disp;
+
+    /*------------------------------------------------------------------*/
     /* set new time */
     actdyn->time += actdyn->dt;
     /* put time to global variable for time-dependent load distributions */
@@ -895,7 +901,7 @@ void tsi_st_genalp(INT disnum_s,
     solserv_vecnorm_euclid(actintra, &(dispi[0]), &(dynvar.dinorm));
     solserv_vecnorm_euclid(actintra, &(dispi[0]), &(dynvar.dnorm));
     solserv_vecnorm_Linf(actintra, &(dispi[0]), &dmax);
-    if (par.myrank == 0) 
+    if ( (par.myrank == 0) && (mod_stdout == 0) )
     {
       printf("                                                   "
              "Residual %10.5E\n", dynvar.dinorm);
@@ -1072,7 +1078,7 @@ void tsi_st_genalp(INT disnum_s,
       solserv_vecnorm_euclid(actintra, &(work[0]), &(dynvar.dinorm));
       solserv_vecnorm_euclid(actintra, &(dispi[0]), &(dynvar.dnorm));
       solserv_vecnorm_Linf(actintra, &(work[0]), &dmax);
-      if (par.myrank == 0) 
+      if ( (par.myrank == 0) && (mod_stdout == 0) )
       {
         printf("                                                   "
                "Residual %10.5E\n", dynvar.dinorm);
@@ -1082,7 +1088,10 @@ void tsi_st_genalp(INT disnum_s,
            || (dynvar.dnorm < EPS14)
            || ( (dynvar.dinorm < EPS14) && (dmax < EPS12) ) )
       {
-        printf("Convergence reached\n");
+        if (mod_stdout == 0)
+        {
+          printf("Convergence reached\n");
+        }
         convergence = 1;
       }
 
@@ -1334,7 +1343,7 @@ void tsi_st_genalp(INT disnum_s,
 
     /*------------------------------------------------------------------*/
     /* print time step */
-    if (par.myrank==0 && !timeadapt)
+    if ( (par.myrank==0) && !timeadapt && (mod_stdout==0) )
     {
       dyn_nlnstruct_outstep(&dynvar, actdyn, itnum, actdyn->dt);
     }
@@ -1345,7 +1354,7 @@ void tsi_st_genalp(INT disnum_s,
     fprintf(allfiles.out_err, "TIME for step %d is %f sec\n", 
             actdyn->step, t1-t0);
 
-    }  /* end of time loop */
+  }  /* end of time loop */
   /*====================================================================*/
   /* END OF TIME STEP LOOP */
   /*====================================================================*/
