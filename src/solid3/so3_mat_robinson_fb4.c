@@ -169,7 +169,7 @@ void so3_mat_robinson_fb4_sel(const CONTAINER* container,
 
   const INT itsidyn = genprob.numfld;  /* index of TSI dynamics data */
   const TSI_DYNAMIC* tsidyn = alldyn[itsidyn].tsidyn;  /* TSI dynamics data */
-  const INT numstg = tsi_fehlbg4.stg;  /* number of RK stages */
+/*   const INT numstg = tsi_fehlbg4.stg;  /\* number of RK stages *\/ */
   const INT actstg = tsidyn->actstg;  /* curr. RK stage */
   const DOUBLE dt = tsidyn->dt;  /* time step size */
 
@@ -692,8 +692,8 @@ void so3_mat_robinson_fb4_stress(const CONTAINER* container,
   
   DOUBLE tem;  /* temperature */
 
-  INT itsidyn = genprob.numfld;  /* index of TSI dynamics data */
-  TSI_DYNAMIC* tsidyn = alldyn[itsidyn].tsidyn;  /* TSI dynamics data */
+/*   INT itsidyn = genprob.numfld;  /\* index of TSI dynamics data *\/ */
+/*   TSI_DYNAMIC* tsidyn = alldyn[itsidyn].tsidyn;  /\* TSI dynamics data *\/ */
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG

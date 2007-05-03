@@ -229,12 +229,14 @@ void so3_load_line_valh(ELEMENT* ele,
                         DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3])
 {
   const INT nelenod = ele->numnp;  /* number of element nodes */
-  const DIS_TYP distyp = ele->distyp;  /* local copy of discretisation type */
   INT onoff[NUMDOF_SOLID3];
   DOUBLE traction[NUMDOF_SOLID3];  /* traction on edge [force/length] */
-  INT idof, jdof, inode;  /* loopers */
+  INT idof, inode;  /* loopers */
   DOUBLE metr;  /* metric */
+#ifdef TANGLINELOAD_SOLID3
+  INT jdof;
   DOUBLE gamt[NDIM_SOLID3];  /* base vector in physical space */
+#endif
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -271,7 +273,7 @@ void so3_load_line_valh(ELEMENT* ele,
       break;
     /*------------------------------------------------------------------*/
     /* uniform tangential line load */
-#if 0
+#ifdef TANGLINELOAD_SOLID3
     /* quick hack to apply tangential 'line load' on a cylindrical 
      * cantilever beam (length 120) subjected to a torsional torque
      * at its tip. (bborn/mgit 04/07) */

@@ -159,84 +159,6 @@ void so3_mv6_v_assscl(const DOUBLE scl,  /*!< scale */
 
 /*======================================================================*/
 /*!
-\brief Assign vector by another vector and scale it
-       Due to the fact that strain vector component have a doubled
-       shear components (cf. solid3.h), but stress vectors have not,
-       we need a special assignment function to scale shear components
-       accordingly.
-\param   scl     DOUBLE    (i)    scale
-\param   av      DOUBLE[]  (i)    input vector ('stress-vector-like')
-\param   bv      DOUBLE[]  (o)    assigned vector ('strain-vector-like')
-\return  void
-\author bborn
-\date 04/07
-*/
-void so3_mv6_v2_assscl(const DOUBLE scl,
-                       const DOUBLE av[NUMSTR_SOLID3],
-                       DOUBLE bv[NUMSTR_SOLID3])
-{
-  INT i;  /* index */
-
-#ifdef DEBUG
-  dstrc_enter("so3_mv6_v2_assscl");
-#endif
-
-  for (i=0; i<3; i++)
-  {
-    bv[i] = scl * av[i];
-  }
-  for (i=3; i<NUMSTR_SOLID3; i++)
-  {
-    bv[i] = scl * 2.0 * av[i];
-  }
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
-  return;
-}
-
-/*======================================================================*/
-/*!
-\brief Assign vector by another vector and scale it
-       Due to the fact that strain vector component have a doubled
-       shear components (cf. solid3.h), but stress vectors have not,
-       we need a special assignment function to scale shear components
-       accordingly.
-\param   scl     DOUBLE    (i)    scale
-\param   av      DOUBLE[]  (i)    input vector ('strain-vector-like')
-\param   bv      DOUBLE[]  (o)    assigned vector ('stress-vector-like')
-\return  void
-\author bborn
-\date 04/07
-*/
-void so3_mv6_v05_assscl(const DOUBLE scl,
-                        const DOUBLE av[NUMSTR_SOLID3],
-                        DOUBLE bv[NUMSTR_SOLID3])
-{
-  INT i;  /* index */
-
-#ifdef DEBUG
-  dstrc_enter("so3_mv6_v05_assscl");
-#endif
-
-  for (i=0; i<3; i++)
-  {
-    bv[i] = scl * av[i];
-  }
-  for (i=3; i<NUMSTR_SOLID3; i++)
-  {
-    bv[i] = scl * 0.5 * av[i];
-  }
-
-#ifdef DEBUG
-  dstrc_exit();
-#endif
-  return;
-}
-
-/*======================================================================*/
-/*!
 \brief Update vector by another vector and scale it
 \author bborn
 \date 04/07
@@ -497,6 +419,118 @@ void so3_mv6_v_assmvp(DOUBLE am[NUMSTR_SOLID3][NUMSTR_SOLID3],
 
 /*======================================================================*/
 /*!
+\brief Assign vector by another vector and scale it
+       Due to the fact that strain vector component have a doubled
+       shear components (cf. solid3.h), but stress vectors have not,
+       we need a special assignment function to scale shear components
+       accordingly.
+\param   scl     DOUBLE    (i)    scale
+\param   av      DOUBLE[]  (i)    input vector ('stress-vector-like')
+\param   bv      DOUBLE[]  (o)    assigned vector ('strain-vector-like')
+\return  void
+\author bborn
+\date 04/07
+*/
+void so3_mv6_v2_assscl(const DOUBLE scl,
+                       const DOUBLE av[NUMSTR_SOLID3],
+                       DOUBLE bv[NUMSTR_SOLID3])
+{
+  INT i;  /* index */
+
+#ifdef DEBUG
+  dstrc_enter("so3_mv6_v2_assscl");
+#endif
+
+  for (i=0; i<3; i++)
+  {
+    bv[i] = scl * av[i];
+  }
+  for (i=3; i<NUMSTR_SOLID3; i++)
+  {
+    bv[i] = scl * 2.0 * av[i];
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+
+/*======================================================================*/
+/*!
+\brief Assign vector by another vector and scale it
+       Due to the fact that strain vector component have a doubled
+       shear components (cf. solid3.h), but stress vectors have not,
+       we need a special assignment function to scale shear components
+       accordingly.
+\param   scl     DOUBLE    (i)    scale
+\param   av      DOUBLE[]  (i)    input vector ('strain-vector-like')
+\param   bv      DOUBLE[]  (o)    assigned vector ('stress-vector-like')
+\return  void
+\author bborn
+\date 04/07
+*/
+void so3_mv6_v05_assscl(const DOUBLE scl,
+                        const DOUBLE av[NUMSTR_SOLID3],
+                        DOUBLE bv[NUMSTR_SOLID3])
+{
+  INT i;  /* index */
+
+#ifdef DEBUG
+  dstrc_enter("so3_mv6_v05_assscl");
+#endif
+
+  for (i=0; i<3; i++)
+  {
+    bv[i] = scl * av[i];
+  }
+  for (i=3; i<NUMSTR_SOLID3; i++)
+  {
+    bv[i] = scl * 0.5 * av[i];
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+
+/*======================================================================*/
+/*!
+\brief Assign vector by another vector and scale it
+       Due to the fact that strain vector component have a doubled
+       shear components (cf. solid3.h), i.e.
+          av = [ a11 a22 a33 | 2*a12 2*a23 2*a31 ]
+       but stress vectors have not, i.e.
+          av = [ a11 a22 a33 | a12 a23 a31 ]
+       we need to scale the last three entries.
+\param   av      DOUBLE[]  (io)   input vector ('strain-vector-like')
+                                  output vector ('stress-vector-like')
+\return  void
+\author bborn
+\date 05/07
+*/
+void so3_mv6_v05_updvtov05(DOUBLE av[NUMSTR_SOLID3])
+{
+  INT i;  /* index */
+
+#ifdef DEBUG
+  dstrc_enter("so3_mv6_v05_updvtov05");
+#endif
+
+  for (i=NDIM_SOLID3; i<NUMSTR_SOLID3; i++)
+  {
+    av[i] *= 0.5;
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+
+/*======================================================================*/
+/*!
 \brief Zero matrix
 \param   am      DOUBLE[][]   (i)   input matrix
 \return void
@@ -597,6 +631,8 @@ void so3_mv6_m_idscl(const DOUBLE scale,
 #endif
   return;
 }
+
+
 
 /*======================================================================*/
 /*!
@@ -712,6 +748,8 @@ void so3_mv6_m_ass(const DOUBLE am[NUMSTR_SOLID3][NUMSTR_SOLID3],
   return;
 }
 
+
+
 /*======================================================================*/
 /*!
 \brief Assign vector by another vector and scale it
@@ -753,7 +791,7 @@ void so3_mv6_m_assscl(const DOUBLE scl,  /*!< scale */
 \date 04/07
 */
 void so3_mv6_m_updscl(const DOUBLE scl,
-                      const DOUBLE am[NUMSTR_SOLID3][NUMSTR_SOLID3],
+                      DOUBLE am[NUMSTR_SOLID3][NUMSTR_SOLID3],
                       DOUBLE bm[NUMSTR_SOLID3][NUMSTR_SOLID3])
 {
   INT i, j;  /* index */
@@ -783,8 +821,8 @@ void so3_mv6_m_updscl(const DOUBLE scl,
 \author bborn
 \date 04/07
 */
-void so3_mv6_m_sub(const DOUBLE am[NUMSTR_SOLID3][NUMSTR_SOLID3],
-                   const DOUBLE bm[NUMSTR_SOLID3][NUMSTR_SOLID3],
+void so3_mv6_m_sub(DOUBLE am[NUMSTR_SOLID3][NUMSTR_SOLID3],
+                   DOUBLE bm[NUMSTR_SOLID3][NUMSTR_SOLID3],
                    DOUBLE cm[NUMSTR_SOLID3][NUMSTR_SOLID3])
 {
   INT i, j;  /* index */
@@ -806,8 +844,6 @@ void so3_mv6_m_sub(const DOUBLE am[NUMSTR_SOLID3][NUMSTR_SOLID3],
 #endif
   return;
 }
-
-
 
 /*======================================================================*/
 /*!
@@ -1009,6 +1045,122 @@ void so3_mv6_m_updmprd(DOUBLE am[NUMSTR_SOLID3][NUMSTR_SOLID3],
       cm[i][j] += rcsum;
     }
   }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+
+/*======================================================================*/
+/*!
+\brief Identity matrix
+
+Explicitly
+            [  s  0  0  |   0   0   0  ]
+            [  0  s  0  |   0   0   0  ]
+            [  0  0  s  |   0   0   0  ]
+       iv = [ ~~~~~~~~~   ~~~~~~~~~~~~ ]
+            [  0  0  0  |  2*s  0   0  ]
+            [  0  0  0  |   0  2*s  0  ]
+            [  0  0  0  |   0   0  2*s ]
+
+\return void
+\author bborn
+\date 04/07
+*/
+void so3_mv6_m2_idscl(const DOUBLE scale,
+                      DOUBLE im[NUMSTR_SOLID3][NUMSTR_SOLID3])
+{
+  INT i;  /* index */
+
+#ifdef DEBUG
+  dstrc_enter("so3_mv6_m2_idscl");
+#endif
+
+  memset(im, 0, sizeof(im));
+
+  for (i=0; i<NDIM_SOLID3; i++)
+  {
+    im[i][i] = scale;
+  }
+  for (i=NDIM_SOLID3; i<NUMSTR_SOLID3; i++)
+  {
+    im[i][i] = scale * 2.0;
+  }
+  
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+
+/*======================================================================*/
+/*!
+\brief Update m-matrix to m2-matrix
+\author bborn
+\date 05/07
+*/
+void so3_mv6_m2_updmtom2(DOUBLE am[NUMSTR_SOLID3][NUMSTR_SOLID3]) 
+{
+  INT i, j;
+
+#ifdef DEBUG
+  dstrc_enter("so3_mv6_m2_updmtom");
+#endif
+
+  for (i=NDIM_SOLID3; i<NUMSTR_SOLID3; i++)
+  {
+    for (j=0; j<NUMSTR_SOLID3; j++)
+    {
+      am[i][j] *= 2.0;
+    }
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+
+/*======================================================================*/
+/*!
+\brief Identity m05-matrix
+
+Explicitly
+            [  s  0  0  |   0      0     0   ]
+            [  0  s  0  |   0      0     0   ]
+            [  0  0  s  |   0      0     0   ]
+       iv = [ ~~~~~~~~~   ~~~~~~~~~~~~~~~~~~ ]
+            [  0  0  0  |  0.5*s   0     0   ]
+            [  0  0  0  |   0    0.5*s   0   ]
+            [  0  0  0  |   0      0   0.5*s ]
+
+\return void
+\author bborn
+\date 04/07
+*/
+void so3_mv6_m05_idscl(const DOUBLE scale,
+                       DOUBLE im[NUMSTR_SOLID3][NUMSTR_SOLID3])
+{
+  INT i;  /* index */
+
+#ifdef DEBUG
+  dstrc_enter("so3_mv6_m05_idscl");
+#endif
+
+  memset(im, 0, sizeof(im));
+
+  for (i=0; i<NDIM_SOLID3; i++)
+  {
+    im[i][i] = scale;
+  }
+  for (i=NDIM_SOLID3; i<NUMSTR_SOLID3; i++)
+  {
+    im[i][i] = scale * 0.5;
+  }
+  
 
 #ifdef DEBUG
   dstrc_exit();

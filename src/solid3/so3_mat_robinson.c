@@ -287,7 +287,7 @@ void so3_mat_robinson_elmat(const VP_ROBINSON* mat_robin,
 \date 04/07
 */
 void so3_mat_robinson_sel(const CONTAINER* container,
-                          const ELEMENT* ele,
+                          ELEMENT* ele,
                           const VP_ROBINSON* mat_robin,
                           SO3_GPSHAPEDERIV* gpshade,
                           const INT ip,
@@ -348,7 +348,7 @@ void so3_mat_robinson_sel(const CONTAINER* container,
 \author bborn
 \date 04/07
 */
-void so3_mat_robinson_mivupd(CONTAINER* container,
+void so3_mat_robinson_mivupd(const CONTAINER* container,
                              ELEMENT* ele,
                              const VP_ROBINSON* mat_robin)
 {

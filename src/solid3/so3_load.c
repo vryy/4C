@@ -192,7 +192,7 @@ void so3_load(ELEMENT *ele,  /* actual element */
         case neum_dead:
           foundglineneum = 1;
           break;
-#if 0
+#ifdef TANGLINELOAD_SOLID3
         /* quick hack to apply tangential 'line load' on a cylindrical 
          * cantilever beam (length 120) subjected to a torsional torque
          * at its tip. (bborn/mgit 04/07)

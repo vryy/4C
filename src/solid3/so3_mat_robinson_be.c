@@ -54,6 +54,16 @@ dedfined in global_control.c
 */
 extern ALLDYNA* alldyn;
 
+/*----------------------------------------------------------------------*/
+/*!
+\brief IO files
+\author bborn
+\date 05/07
+*/
+#ifdef TESTROBIN_SOLID3
+extern FILES allfiles;
+#endif
+
 /*======================================================================*/
 /*!
 \brief Allocate material internal variables (MIVs)
@@ -184,10 +194,10 @@ void so3_mat_robinson_be_sel(const CONTAINER* container,
   DOUBLE stntotn[NUMSTR_SOLID3];  /* total strain */
   DOUBLE stnela[NUMSTR_SOLID3];  /* elastic strain */
   DOUBLE stnthr[NUMSTR_SOLID3];  /* thermal strain */
-  DOUBLE vscstnn[NUMSTR_SOLID3];  /* viscous strain */
+  DOUBLE stnvscn[NUMSTR_SOLID3];  /* viscous strain */
   
   DOUBLE devstsn[NUMSTR_SOLID3];  /* stress deviator */
-  DOUBLE ovrstsn[NUMSTR_SOLID3];  /* over stress */
+  DOUBLE stsovrn[NUMSTR_SOLID3];  /* over stress */
 
   DOUBLE vscstnr[NUMSTR_SOLID3];  /* visc. strain residual */
   DOUBLE bckstsr[NUMSTR_SOLID3];  /* back stress residual */
@@ -212,9 +222,11 @@ void so3_mat_robinson_be_sel(const CONTAINER* container,
   /* Material internal variables (visc. strain and back stress) are
    * updated by their iterative increments.
    * Their iterative increments are expressed in terms of the iterative
-   * increment of the total strain. */
-  if ( (actso3->miv_rob->vscstns.a.iv[ip] != 0)
-       && (actso3->miv_rob->bckstss.a.iv[ip] != 0) )
+   * increment of the total strain.
+   * Here the reduction matrices --- stored in the previous iteration ---
+   * are used. */
+  if ( (actso3->miv_rob->vscstns.a.iv[ip] != so3_mat_robinson_state_vague)
+       && (actso3->miv_rob->bckstss.a.iv[ip] != so3_mat_robinson_state_vague) )
   {
     so3_mat_robinson_be_mivupditr(container, ele, 
                                   gpshade->gpderiv[ip],
@@ -239,7 +251,7 @@ void so3_mat_robinson_be_sel(const CONTAINER* container,
   }
   else
   {
-    dserror("Cannot digest chosen type of spatial kinematic\n");
+    dserror("Cannot digest chosen type of spatial kinematics\n");
   }
 
   /*--------------------------------------------------------------------*/
@@ -262,7 +274,7 @@ void so3_mat_robinson_be_sel(const CONTAINER* container,
 
   /*--------------------------------------------------------------------*/
   /* viscous strain eps_{n+1}^{i} at t_{n+1} */
-  so3_mv6_v_ass(actso3->miv_rob->vicstnn.a.da[ip], vscstnn);
+  so3_mv6_v_ass(actso3->miv_rob->vicstnn.a.da[ip], stnvscn);
 
   /*--------------------------------------------------------------------*/
   /* elastic strain at t_{n+c_i} */
@@ -270,13 +282,19 @@ void so3_mat_robinson_be_sel(const CONTAINER* container,
     INT istr;  /* strain index */
     for (istr=0; istr<NUMSTR_SOLID3; istr++)
     {
-      stnela[istr] = stntotn[istr] - vscstnn[istr] - stnthr[istr];
+      stnela[istr] = stntotn[istr] - stnvscn[istr] - stnthr[istr];
     }
   }
 
   /*--------------------------------------------------------------------*/
   /* elasticity tensor */
-  so3_mat_robinson_elmat(mat_robin, tem, cmat);
+  so3_mat_robinson_elmat(mat_robin, tem, cmat);  /* cmat == kee */
+
+  /*--------------------------------------------------------------------*/
+  /* tangents of stress equation */
+  /* so3_mv6_ass(cmat, kee); */
+  so3_mv6_m_assscl(-1.0, cmat, kev);
+  so3_mv6_m_id(kea);
 
   /*--------------------------------------------------------------------*/
   /* stress sig_{n+1}^i at t_{n+1} */
@@ -288,7 +306,7 @@ void so3_mat_robinson_be_sel(const CONTAINER* container,
 
   /*--------------------------------------------------------------------*/
   /* overstress Sig_{n+1}^i = s_{n+1}^i - al_{n+1}^i */
-  so3_mv6_v_sub(devstsn, actso3->miv_rob->bacstsn.a.da[ip], ovrstsn);
+  so3_mv6_v_sub(devstsn, actso3->miv_rob->bacstsn.a.da[ip], stsovrn);
 
   /*--------------------------------------------------------------------*/
   /* residual of visc. strain eps_{n+1}
@@ -296,7 +314,7 @@ void so3_mat_robinson_be_sel(const CONTAINER* container,
   so3_mat_robinson_be_rvscstn(ele, mat_robin, dt, tem,
                               actso3->miv_rob->vicstn.a.da[ip],
                               actso3->miv_rob->vicstnn.a.da[ip],
-                              devstsn, ovrstsn,
+                              devstsn, stsovrn,
                               &(actso3->miv_rob->vscstns.a.iv[ip]),
                               vscstnr, kve, kvv, kva);
 
@@ -313,13 +331,8 @@ void so3_mat_robinson_be_sel(const CONTAINER* container,
                               bckstsr, kae, kav, kaa);
 
   /*--------------------------------------------------------------------*/
-  /* tangents of stress equation */
-  /* so3_mv6_ass(cmat, kee); */
-  so3_mv6_m_assscl(-1.0, cmat, kev);
-  so3_mv6_m_id(kea);
-
-  /*--------------------------------------------------------------------*/
-  /* build reduced stress and tangent */
+  /* build reduced stress and tangent
+   * ==> static condensation */
   so3_mat_robinson_be_red(stress, cmat, kev, kea,
                           vscstnr, kve, kvv, kva,
                           bckstsr, kae, kav, kaa,
@@ -369,7 +382,6 @@ void so3_mat_robinson_be_rvscstn(ELEMENT* ele,
                                  DOUBLE kva[NUMSTR_SOLID3][NUMSTR_SOLID3])
 
 {
-/*   const SOLID3* actso3 = ele->e.so3; */
   DOUBLE j2;  /* 'J_2' */
   DOUBLE shrthrshld;  /* shear threshold 'K^2' */
   DOUBLE aa;  /* hardening factor 'A' */
@@ -377,14 +389,12 @@ void so3_mat_robinson_be_rvscstn(ELEMENT* ele,
   DOUBLE ff;  /* 'F' */
   DOUBLE ss;  /* ss = 1/2 * s : Sig */
 
-  DOUBLE dvscstn[NUMSTR_SOLID3];
-  DOUBLE kvs[NUMSTR_SOLID3][NUMSTR_SOLID3];
-  DOUBLE ksv[NUMSTR_SOLID3][NUMSTR_SOLID3];
-  DOUBLE kse[NUMSTR_SOLID3][NUMSTR_SOLID3];
+  DOUBLE dvscstn[NUMSTR_SOLID3];  /* viscous strain rate */
+  DOUBLE kvs[NUMSTR_SOLID3][NUMSTR_SOLID3];  /* d eps^v/d Sig */
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
-  dstrc_enter("so3_mat_robinson_be_stnvscrat");
+  dstrc_enter("so3_mat_robinson_be_rvscstn");
 #endif
 
   /*--------------------------------------------------------------------*/
@@ -413,31 +423,32 @@ void so3_mat_robinson_be_rvscstn(ELEMENT* ele,
   nn = mat_robin->hrdn_expo;
 
   /*--------------------------------------------------------------------*/
-  /* determine mode */
-  if (*vscstns == 0)
+  /* determine mode
+   * The mode is determined for every time step once. The iteration
+   * sticks to the initially determined mode. */
+  if (*vscstns == so3_mat_robinson_state_vague)
   {
     /* viscous mode */
     if ( (ff > 0.0) && (ss > 0.0) )
     {
-      *vscstns = 2;
+      *vscstns = so3_mat_robinson_state_inelastic;
     }
     /* elastic mode */
     else
     {
-      *vscstns = 1;
+      *vscstns = so3_mat_robinson_state_elastic;
     }
   }
 
   /*--------------------------------------------------------------------*/
   /* residual of viscous strain rate at t_{n+1} */
-  if (*vscstns == 1)
+  if (*vscstns == so3_mat_robinson_state_elastic)
   {
     so3_mv6_v_zero(dvscstn);
   }
-  else if (*vscstns == 2)
+  else if (*vscstns == so3_mat_robinson_state_inelastic)
   {
-    DOUBLE fct;
-    fct = aa * pow(ff, nn) / sqrt(j2);
+    DOUBLE fct = aa * pow(ff, nn) / sqrt(j2);
     so3_mv6_v2_assscl(fct, ovrstsn, dvscstn);
   }
   else
@@ -458,12 +469,12 @@ void so3_mat_robinson_be_rvscstn(ELEMENT* ele,
   }
 
   /*--------------------------------------------------------------------*/
-  /* derivative of viscous residual with respect to over stress Sig */
-  if (*vscstns == 1)
+  /* derivative of viscous residual with respect to over stress \Sig */
+  if (*vscstns == so3_mat_robinson_state_elastic)
   {
     so3_mv6_m_zero(kvs);
   }
-  else if (*vscstns == 2)
+  else if (*vscstns == so3_mat_robinson_state_inelastic)
   {
     const DOUBLE rhssign = -1.0;
     /* kvs = \frac{\pd res^v}{\pd Sig} */
@@ -474,17 +485,22 @@ void so3_mat_robinson_be_rvscstn(ELEMENT* ele,
       = rhssign * nn * aa * pow(ff, nn-1.0) / (sqrt(j2) * shrthrshld)
       - rhssign * aa * pow(ff, nn) / (2.0 * pow(j2, 1.5));
     so3_mv6_m_upddydscl(fcto, ovrstsn, ovrstsn, kvs);
+    /* multiply by 2 last 3 rows to conform with definition
+     * of strain vectors */
+    so3_mv6_m2_updmtom2(kvs);
   }
 
   /*--------------------------------------------------------------------*/
   /* derivative with respect to total strain eps
    *    kve = \frac{\pd res_{n+1}^v}{\pd \eps_{n+1}}|^i */
-  if (*vscstns == 1)
+  if (*vscstns == so3_mat_robinson_state_elastic)
   {
     so3_mv6_m_zero(kve);
   }
-  else if (*vscstns == 2)
+  else if (*vscstns == so3_mat_robinson_state_inelastic)
   {
+    DOUBLE kse[NUMSTR_SOLID3][NUMSTR_SOLID3];
+    so3_mat_robinson_elmat(mat_robin, tmpr, kse);
     DOUBLE iv[NUMSTR_SOLID3];
     so3_mv6_v_id(iv);
     DOUBLE civ[NUMSTR_SOLID3];
@@ -496,11 +512,11 @@ void so3_mat_robinson_be_rvscstn(ELEMENT* ele,
 
   /*--------------------------------------------------------------------*/
   /* derivative with respect to visc. strain eps^v */
-  if (*vscstns == 1)
+  if (*vscstns == so3_mat_robinson_state_elastic)
   {
     so3_mv6_m_idscl(1.0/dt, kvv);
   }
-  else if (*vscstns == 2)
+  else if (*vscstns == so3_mat_robinson_state_inelastic)
   {
     /* matrix  Im - 1/3 Iv . Iv^T */
     DOUBLE fm[NUMSTR_SOLID3][NUMSTR_SOLID3];
@@ -510,6 +526,7 @@ void so3_mat_robinson_be_rvscstn(ELEMENT* ele,
     DOUBLE cm[NUMSTR_SOLID3][NUMSTR_SOLID3];
     so3_mat_robinson_elmat(mat_robin, tmpr, cm);
     /* matrix  ksv = factm . (-cmat) */
+    DOUBLE ksv[NUMSTR_SOLID3][NUMSTR_SOLID3];
     so3_mv6_m_mprdscl(-1.0, fm, cm, ksv);
     /* matrix  kvv part I */
     so3_mv6_m_idscl(1.0/dt, kvv);
@@ -519,11 +536,11 @@ void so3_mat_robinson_be_rvscstn(ELEMENT* ele,
 
   /*--------------------------------------------------------------------*/
   /* derivative with respect to back stress al */
-  if (*vscstns == 1)
+  if (*vscstns == so3_mat_robinson_state_elastic)
   {
     so3_mv6_m_zero(kva);
   }
-  else if (*vscstns == 2)
+  else if (*vscstns == so3_mat_robinson_state_inelastic)
   {
     so3_mv6_m_assscl(-1.0, kvs, kva);
   }
@@ -576,11 +593,11 @@ void so3_mat_robinson_be_rbcksts(ELEMENT* ele,
   DOUBLE gg;  /* 'G' */
   DOUBLE sa;  /* */
 
-  DOUBLE vscstnd[NUMSTR_SOLID3];
+  DOUBLE vscstnd05[NUMSTR_SOLID3];
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
-  dstrc_enter("so3_mat_robinson_be_stsbckrat");
+  dstrc_enter("so3_mat_robinson_be_rbcksts");
 #endif
 
   /*--------------------------------------------------------------------*/
@@ -611,14 +628,7 @@ void so3_mat_robinson_be_rbcksts(ELEMENT* ele,
   }
   else
   {
-    if (mat_robin->kind == 1)
-    {
-      gg = i2/kk0;
-    }
-    else if (mat_robin->kind == 2)
-    {
-      gg = sqrt(i2/kk0);
-    }
+    gg = sqrt(i2/kk0);
   }
   /* ss = 1/2 * s : Alpha  with  Alpha...backstress, s...deviat.stress */
   so3_mv6_v_dblctr(bacstsn, devstsn, &sa);
@@ -626,28 +636,30 @@ void so3_mat_robinson_be_rbcksts(ELEMENT* ele,
 
   /*--------------------------------------------------------------------*/
   /* determine mode */
-  if (*bckstss == 0)
+  if (*bckstss == so3_mat_robinson_state_vague)
   {
     /* viscous mode */
     if ( (gg > gg0) && (sa > 0.0) )
     {
-      *bckstss = 2;
+      *bckstss = so3_mat_robinson_state_inelastic;
     }
     /* elastic mode */
     else
     {
-      *bckstss = 1;
+      *bckstss = so3_mat_robinson_state_elastic;
     }
   }
 
   /*--------------------------------------------------------------------*/
   /* difference of current and last viscous strains
-   *    \incr \eps^v = \eps_{n+1}^v - \eps_{n}^v */
-  so3_mv6_v_sub(vscstnn, vscstn, vscstnd);
+   *    \incr \eps^v = \eps_{n+1}^v - \eps_{n}^v
+   * with halved entries to conform with stress vectors */
+  so3_mv6_v_sub(vscstnn, vscstn, vscstnd05);
+  so3_mv6_v05_updvtov05(vscstnd05);
 
   /*--------------------------------------------------------------------*/
   /* residual of back stress rate */
-  if (*bckstss == 1)
+  if (*bckstss == so3_mat_robinson_state_elastic)
   {
     DOUBLE fctv = hh / pow(gg0, beta);
     DOUBLE fcta;
@@ -663,63 +675,65 @@ void so3_mat_robinson_be_rbcksts(ELEMENT* ele,
     INT istr;
     for (istr=0; istr<NUMSTR_SOLID3; istr++)
     {
-      bckstsr[istr] = (bacstsn[istr] - bacsts[istr])/dt
-        - fctv * vscstnd[istr]/dt
-        + fcta * bacstsn[istr];
+      bckstsr[istr] = ( bacstsn[istr] - bacsts[istr]
+                        - fctv * vscstnd05[istr]
+                        + dt * fcta * bacstsn[istr] ) / dt;
     }
   }
-  else if (*bckstss == 2)
+  else if (*bckstss == so3_mat_robinson_state_inelastic)
   {
     DOUBLE fctv = hh / pow(gg, beta);
     DOUBLE fcta = rr * pow(gg, (mm-beta)) / sqrt(i2);
     INT istr;
     for (istr=0; istr<NUMSTR_SOLID3; istr++)
     {
-      bckstsr[istr] = (bacstsn[istr] - bacsts[istr])/dt
-        - fctv * vscstnd[istr]/dt
-        + fcta * bacstsn[istr];
+      bckstsr[istr] = ( bacstsn[istr] - bacsts[istr]
+                        - fctv * vscstnd05[istr]
+                        + dt * fcta * bacstsn[istr] ) / dt;
     }
   }
 
   /*--------------------------------------------------------------------*/
   /* derivative of back stress residual with respect to total strains */
-  if ( (*bckstss == 1) || (*bckstss == 2) )
+  if ( (*bckstss == so3_mat_robinson_state_elastic) 
+       || (*bckstss == so3_mat_robinson_state_inelastic) ) 
   {
     so3_mv6_m_zero(kae);
-  }
+  } 
 
   /*--------------------------------------------------------------------*/
   /* derivative of back stress residual with respect to viscous strains
    *    kav = \frac{\pd res_{n+1}^al}{\pd eps_{n+1}^v} */
-  if (*bckstss == 1)
+  if (*bckstss == so3_mat_robinson_state_elastic)
   {
     DOUBLE fctv = -hh / (pow(gg0, beta) * dt);
-    so3_mv6_m_idscl(fctv, kav);
+    so3_mv6_m05_idscl(fctv, kav);
   }
-  else if (*bckstss == 2)
+  else if (*bckstss == so3_mat_robinson_state_inelastic)
   {
     DOUBLE fctv = -hh / (pow(gg, beta) * dt);
-    so3_mv6_m_idscl(fctv, kav);
+    so3_mv6_m05_idscl(fctv, kav);
   }
+  
 
   /*--------------------------------------------------------------------*/
   /* derivative of back stress residual with respect to back stress
    *    kaa = \frac{\pd res_{n+1}^al}{\pd al_{n+1}^v} */
-  if (*bckstss == 1)
+  if (*bckstss == so3_mat_robinson_state_elastic)
   {
     DOUBLE fctu = 1.0/dt  +  rr * pow(gg0,(mm-beta)) / sqrt(i2);
     DOUBLE fcta = - rr * pow(gg,(mm-beta)) / (2.0 * pow(i2, 1.5));
     so3_mv6_m_idscl(fctu, kaa);
     so3_mv6_m_upddydscl(fcta, bacstsn, bacstsn, kaa);
   }
-  else if (*bckstss == 2)
+  else if (*bckstss == so3_mat_robinson_state_inelastic)
   {
     DOUBLE fctu = 1.0/dt  +  rr * pow(gg,(mm-beta)) / sqrt(i2);
     DOUBLE fctv = beta * hh / ( pow(gg,(beta+1.0)) * dt * kk0 );
     DOUBLE fcta = rr * (mm-beta) * pow(gg,(mm-beta-1.0)) / (sqrt(i2) * kk0)
-      - rr * pow(gg,(mm-beta)) / (2.0 * pow(i2, 1.5));
+                - rr * pow(gg,(mm-beta)) / (2.0 * pow(i2, 1.5));
     so3_mv6_m_idscl(fctu, kaa);
-    so3_mv6_m_upddydscl(fctv, vscstnd, bacstsn, kaa);
+    so3_mv6_m_upddydscl(fctv, vscstnd05, bacstsn, kaa);
     so3_mv6_m_upddydscl(fcta, bacstsn, bacstsn, kaa);
   }
 
@@ -1007,10 +1021,11 @@ void so3_mat_robinson_be_mivupditr(const CONTAINER* container,
       INT jdim;
       for (jdim=0; jdim<NDIM_SOLID3; jdim++)
       {
-        /* reconstruct displacement increment of last iteration <i-1> */
+        /* reconstruct displacement increment \inc\D_{n+1}^<i-1> 
+         * of previous iteration <i-1> */
         ediso[inod][jdim] = actnode->sol.a.da[isol->disn][jdim]
           - actnode->sol_residual.a.da[isolres->disres][jdim];
-        /* build iterative/residual displacement vector */
+        /* build iterative/residual displacements \iinc\D_{n+1}^<i> */
         disii[inod*NDIM_SOLID3+jdim] 
           = actnode->sol_residual.a.da[isolres->disres][jdim];
       }
@@ -1150,7 +1165,7 @@ void so3_mat_robinson_be_mivupditr(const CONTAINER* container,
     INT istr;
     for (istr=0; istr<NUMSTR_SOLID3; istr++)
     {
-      DOUBLE rcsum = kvarva[istr];
+      DOUBLE rcsum = kvarva[istr];  /* visc. resid. contribution */
       INT jstr;
       for (jstr=0; jstr<NUMSTR_SOLID3; jstr++)
       {
@@ -1161,11 +1176,12 @@ void so3_mat_robinson_be_mivupditr(const CONTAINER* container,
   }
 
   /*--------------------------------------------------------------------*/
+  /* update back stress */
   {
     INT istr;
     for (istr=0; istr<NUMSTR_SOLID3; istr++)
     {
-      DOUBLE rcsum = kvarva[NUMSTR_SOLID3+istr];
+      DOUBLE rcsum = kvarva[NUMSTR_SOLID3+istr];  /* back str. resid. contr */
       INT jstr;
       for (jstr=0; jstr<NUMSTR_SOLID3; jstr++)
       {
@@ -1207,13 +1223,13 @@ void so3_mat_robinson_be_mivupd(ELEMENT* ele,
   for (ip=0; ip<gptot; ip++)
   {
     /* reset visous strain mode */
-    actso3->miv_rob->vscstns.a.iv[ip] = 0;
+    actso3->miv_rob->vscstns.a.iv[ip] = so3_mat_robinson_state_vague;
     /* update viscous strain
-     *    eps_{n}^v := eps_{n+1}^v at every Gauss point <b> */
+     *    eps_{n}^v := eps_{n+1}^v at every Gauss point <g> */
     so3_mv6_v_ass(actso3->miv_rob->vicstnn.a.da[ip],
                   actso3->miv_rob->vicstn.a.da[ip]);
     /* reset back stress mode */
-    actso3->miv_rob->bckstss.a.iv[ip] = 0;
+    actso3->miv_rob->bckstss.a.iv[ip] = so3_mat_robinson_state_vague;
     /* update back stress 'Alpha'
      *    al_{n} := al_{n+1} at every Gauss point <g> */
     so3_mv6_v_ass(actso3->miv_rob->bacstsn.a.da[ip],
@@ -1251,10 +1267,10 @@ void so3_mat_robinson_be_stress(const CONTAINER* container,
                                 DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3])
 {
   SOLID3* actso3 = ele->e.so3;  /* point to SOLID3 element bits */
-  DOUBLE stntot[NUMSTR_SOLID3];  /* total strain */
-  DOUBLE stnela[NUMSTR_SOLID3];  /* elastic strain */
-  DOUBLE stnthr[NUMSTR_SOLID3];  /* thermal strain */
-  DOUBLE stnvsc[NUMSTR_SOLID3];  /* viscous strain */
+  DOUBLE totstn[NUMSTR_SOLID3];  /* total strain */
+  DOUBLE elastn[NUMSTR_SOLID3];  /* elastic strain */
+  DOUBLE thrstn[NUMSTR_SOLID3];  /* thermal strain */
+  DOUBLE vscstn[NUMSTR_SOLID3];  /* viscous strain */
   
   DOUBLE tem;  /* temperature */
 
@@ -1271,12 +1287,12 @@ void so3_mat_robinson_be_stress(const CONTAINER* container,
   if (actso3->kintype == so3_geo_lin)
   {
     /* linear (engineering) strain vector */
-    so3_mv6_v_ass(gds->stnengv, stntot);
+    so3_mv6_v_ass(gds->stnengv, totstn);
   } 
   else if (actso3->kintype == so3_total_lagr)
   {
     /* Green-Lagrange strain vector */
-    so3_mv6_v_ass(gds->stnglv, stntot);
+    so3_mv6_v_ass(gds->stnglv, totstn);
   }
   else
   {
@@ -1293,17 +1309,17 @@ void so3_mat_robinson_be_stress(const CONTAINER* container,
     /* coefficient of linear thermal expansion */
     DOUBLE thermexpans = mat_robin->thermexpans;
     /* thermal strain vector */
-    stnthr[0] = thermexpans * tem;  /* E_xx */
-    stnthr[1] = thermexpans * tem;  /* E_yy */
-    stnthr[2] = thermexpans * tem;  /* E_zz */
-    stnthr[3] = 0.0;  /* E_xy */
-    stnthr[4] = 0.0;  /* E_yz */
-    stnthr[5] = 0.0;  /* E_zx */
+    thrstn[0] = thermexpans * tem;  /* E_xx */
+    thrstn[1] = thermexpans * tem;  /* E_yy */
+    thrstn[2] = thermexpans * tem;  /* E_zz */
+    thrstn[3] = 0.0;  /* E_xy */
+    thrstn[4] = 0.0;  /* E_yz */
+    thrstn[5] = 0.0;  /* E_zx */
   }
 
   /*--------------------------------------------------------------------*/
   /* viscous strain at t_{n} */
-  so3_mv6_v_ass(actso3->miv_rob->vicstn.a.da[ip], stnvsc);
+  so3_mv6_v_ass(actso3->miv_rob->vicstn.a.da[ip], vscstn);
 
   /*--------------------------------------------------------------------*/
   /* elastic strain at t_{n} */
@@ -1311,41 +1327,13 @@ void so3_mat_robinson_be_stress(const CONTAINER* container,
     INT istr;  /* strain index */
     for (istr=0; istr<NUMSTR_SOLID3; istr++)
     {
-      stnela[istr] = stntot[istr] - stnvsc[istr] - stnthr[istr];
+      elastn[istr] = totstn[istr] - vscstn[istr] - thrstn[istr];
     }
   }
 
   /*--------------------------------------------------------------------*/
   /* elasticity tensor */
-  {
-    DOUBLE emod;  /* modulus of elasticity */
-    so3_mat_robinson_prmbytmpr(mat_robin->youngmodul, tem, &emod);
-    DOUBLE prat = mat_robin->possionratio;  /* Poisson's ratio */
-    DOUBLE mfac = emod/((1.0+prat)*(1.0-2.0*prat));  /* factor */
-    /* zero out content */
-    INT istr, jstr;
-    for (istr=0; istr<NUMSTR_SOLID3; istr++)
-    {
-      for (jstr=0; jstr<NUMSTR_SOLID3; jstr++)
-      {
-        cmat[istr][jstr] = 0.0;
-      }
-    }
-    /* non-zero content --- axial */
-    cmat[0][0] = mfac*(1.0-prat);
-    cmat[0][1] = mfac*prat;
-    cmat[0][2] = mfac*prat;
-    cmat[1][0] = mfac*prat;
-    cmat[1][1] = mfac*(1.0-prat);
-    cmat[1][2] = mfac*prat;
-    cmat[2][0] = mfac*prat;
-    cmat[2][1] = mfac*prat;
-    cmat[2][2] = mfac*(1.0-prat);
-    /* non-zero content --- shear */
-    cmat[3][3] = mfac*0.5*(1.0-2.0*prat);
-    cmat[4][4] = mfac*0.5*(1.0-2.0*prat);
-    cmat[5][5] = mfac*0.5*(1.0-2.0*prat);
-  }
+  so3_mat_robinson_elmat(mat_robin, tem, cmat);
 
   /*--------------------------------------------------------------------*/
   /* stress at t_{n} */
@@ -1357,7 +1345,7 @@ void so3_mat_robinson_be_stress(const CONTAINER* container,
       DOUBLE stresssum = 0.0;  /* intermediate row * column sum */
       for (istrn=0; istrn<NUMSTR_SOLID3; istrn++)
       {
-        stresssum += cmat[istss][istrn] * stnela[istrn];
+        stresssum += cmat[istss][istrn] * elastn[istrn];
       }
       stress[istss] = stresssum;
     }
@@ -1374,7 +1362,7 @@ void so3_mat_robinson_be_stress(const CONTAINER* container,
     /* overstress 'Sig' = 's' - 'alpha' */
     DOUBLE stsovr[NUMSTR_SOLID3];
     so3_mv6_v_sub(stsdev, actso3->miv_rob->bacsts.a.da[ip], stsovr);
-    FILE* oo = fopen("so3_mat_robin_ip0.dat", "a+");
+    FILE* oo = allfiles.gnu;
     fprintf(oo, "# Time step %d Gauss point %d\n", container->kstep, ip);
     fprintf(oo, "# step strain-tot strain-ela strain-vis strain-thr"
             "  stress-tot stress-dev stress-back stress-over\n");
@@ -1383,14 +1371,13 @@ void so3_mat_robinson_be_stress(const CONTAINER* container,
     {
       fprintf(oo, "%d %f %f %f %f  %f %f %f %f\n", 
               container->kstep,
-              stntot[i], stnela[i], stnvsc[i], stnthr[i],
+              totstn[i], elastn[i], vscstn[i], thrstn[i],
               stress[i], 
               stsdev[i], 
               actso3->miv_rob->bacsts.a.da[ip][i], 
               stsovr[i]);
     }
     /* fprintf(oo, "\n"); */
-    fclose(oo);
   }
   if (ip == 7)
   {
@@ -1400,7 +1387,7 @@ void so3_mat_robinson_be_stress(const CONTAINER* container,
     /* overstress 'Sig' = 's' - 'alpha' */
     DOUBLE stsovr[NUMSTR_SOLID3];
     so3_mv6_v_sub(stsdev, actso3->miv_rob->bacsts.a.da[ip], stsovr);
-    FILE* oo = fopen("so3_mat_robin_ip7.dat", "a+");
+    FILE* oo = allfiles.gnu;
     fprintf(oo, "# Time step %d Gauss point %d\n", container->kstep, ip);
     fprintf(oo, "# step strain-tot strain-ela strain-vis strain-thr"
             "  stress-tot stress-dev stress-back stress-over\n");
@@ -1409,12 +1396,11 @@ void so3_mat_robinson_be_stress(const CONTAINER* container,
     {
       fprintf(oo, "%d %f %f %f %f  %f %f %f %f\n", 
               container->kstep,
-              stntot[i], stnela[i], stnvsc[i], stnthr[i],
+              totstn[i], elastn[i], vscstn[i], thrstn[i],
               stress[i], stsdev[i], 
               actso3->miv_rob->bacsts.a.da[ip][i], stsovr[i]);
     }
     /* fprintf(oo, "\n"); */
-    fclose(oo);
   }
 #endif
 

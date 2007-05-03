@@ -98,14 +98,20 @@ Maintainer: Moritz Frenzel
 
 #ifdef DEBUG
 /*#define TEST_SOLID3*/             /* compile test routines if ... */
-#else
 #endif
 
 /* debug: */
-#define TESTROBIN_SOLID3        /* Special debug areas are activated during
+/*#define TESTROBIN_SOLID3*/    /* Special debug areas are activated during
                                  * development of the Robinson material.
                                  * This CPP definition should be turned
                                  * off as soon as possible */
+
+/* quick hack */
+/*#define TANGLINELOAD_SOLID3*/ /* quick hack to apply tangential 
+                                 * 'line load' on a cylindrical 
+                                 * cantilever beam (length 120) subjected 
+                                 * to a torsional torque at its tip. 
+                                 * (bborn/mgit 04/07) */
 
 /*======================================================================*/
 /* global declarations, variables etc */
@@ -133,7 +139,7 @@ typedef struct _SO3_DATA
   DOUBLE gtdw[GTINTC_SOLID3][GTMAXP_SOLID3];  /* weights */
   /* tetrahedron sides */
   DOUBLE gtsc[GSINTC_SOLID3][GSMAXP_SOLID3][DIMSID_SOLID3];  /* coordinates 
-                                                                in side */
+                                                              * in side */
   DOUBLE gtsw[GSINTC_SOLID3][GSMAXP_SOLID3];  /* weights */
   /* triangle edges --> line [0,+1] */
   DOUBLE gtlc[GLINTC_SOLID3][GLMAXP_SOLID3];  /* coordinates */
@@ -344,6 +350,19 @@ typedef enum _SO3_STRESSOUT
   so3_stress_ndxyz123,
   so3_stress_ndeqv
 } SO3_STRESSOUT;
+
+/*----------------------------------------------------------------------*/
+/*!
+\brief Mode/Status in Robinson's visco-plastic material
+\author bborn
+\date 05/07
+*/
+typedef enum _SO3_MAT_ROBINSON_STATE
+{
+  so3_mat_robinson_state_vague = 0,
+  so3_mat_robinson_state_elastic,
+  so3_mat_robinson_state_inelastic,
+} SO3_MAT_ROBINSON_STATE;
 
 
 /*----------------------------------------------------------------------*/
@@ -746,14 +765,14 @@ void so3_mat_robinson_elmat(const VP_ROBINSON* mat_robin,
                             const DOUBLE tem,
                             DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3]);
 void so3_mat_robinson_sel(const CONTAINER* container,
-                          const ELEMENT* ele,
+                          ELEMENT* ele,
                           const VP_ROBINSON* mat_robin,
                           SO3_GPSHAPEDERIV* gpshade,
                           const INT ip,
                           SO3_GEODEFSTR* gds,
                           DOUBLE stress[NUMSTR_SOLID3],
                           DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3]);
-void so3_mat_robinson_mivupd(CONTAINER* container,
+void so3_mat_robinson_mivupd(const CONTAINER* container,
                              ELEMENT* ele,
                              const VP_ROBINSON* mat_robin);
 void so3_mat_robinson_stress(const CONTAINER* container,
@@ -1047,12 +1066,6 @@ void so3_mv6_v_ass(const DOUBLE av[NUMSTR_SOLID3],
 void so3_mv6_v_assscl(const DOUBLE scl,
                      const DOUBLE av[NUMSTR_SOLID3],
                      DOUBLE bv[NUMSTR_SOLID3]);
-void so3_mv6_v2_assscl(const DOUBLE scl,
-                       const DOUBLE av[NUMSTR_SOLID3],
-                       DOUBLE bv[NUMSTR_SOLID3]);
-void so3_mv6_v05_assscl(const DOUBLE scl,
-                        const DOUBLE av[NUMSTR_SOLID3],
-                        DOUBLE bv[NUMSTR_SOLID3]);
 void so3_mv6_v_updscl(const DOUBLE scl,
                      const DOUBLE av[NUMSTR_SOLID3],
                      DOUBLE bv[NUMSTR_SOLID3]);
@@ -1063,14 +1076,21 @@ void so3_mv6_v_det(const DOUBLE av[NUMSTR_SOLID3],
 void so3_mv6_v_dev(const DOUBLE av[NUMSTR_SOLID3],
                   DOUBLE adev[NUMSTR_SOLID3]);
 void so3_mv6_v_sub(const DOUBLE av[NUMSTR_SOLID3],
-                  const DOUBLE bv[NUMSTR_SOLID3],
-                  DOUBLE cv[NUMSTR_SOLID3]);
+                   const DOUBLE bv[NUMSTR_SOLID3],
+                   DOUBLE cv[NUMSTR_SOLID3]);
 void so3_mv6_v_dblctr(const DOUBLE av[NUMSTR_SOLID3],
-                     const DOUBLE bv[NUMSTR_SOLID3],
-                     DOUBLE* prd);
+                      const DOUBLE bv[NUMSTR_SOLID3],
+                      DOUBLE* prd);
 void so3_mv6_v_assmvp(DOUBLE am[NUMSTR_SOLID3][NUMSTR_SOLID3],
                       const DOUBLE bv[NUMSTR_SOLID3],
                       DOUBLE cv[NUMSTR_SOLID3]);
+void so3_mv6_v2_assscl(const DOUBLE scl,
+                       const DOUBLE av[NUMSTR_SOLID3],
+                       DOUBLE bv[NUMSTR_SOLID3]);
+void so3_mv6_v05_assscl(const DOUBLE scl,
+                        const DOUBLE av[NUMSTR_SOLID3],
+                        DOUBLE bv[NUMSTR_SOLID3]);
+void so3_mv6_v05_updvtov05(DOUBLE av[NUMSTR_SOLID3]);
 void so3_mv6_m_zero(DOUBLE am[NUMSTR_SOLID3][NUMSTR_SOLID3]);
 void so3_mv6_m_id(DOUBLE id[NUMSTR_SOLID3][NUMSTR_SOLID3]);
 void so3_mv6_m_idscl(const DOUBLE scale,
@@ -1084,10 +1104,10 @@ void so3_mv6_m_assscl(const DOUBLE scl,
                       DOUBLE am[NUMSTR_SOLID3][NUMSTR_SOLID3],
                       DOUBLE mv[NUMSTR_SOLID3][NUMSTR_SOLID3]);
 void so3_mv6_m_updscl(const DOUBLE scl,
-                      const DOUBLE am[NUMSTR_SOLID3][NUMSTR_SOLID3],
+                      DOUBLE am[NUMSTR_SOLID3][NUMSTR_SOLID3],
                       DOUBLE bm[NUMSTR_SOLID3][NUMSTR_SOLID3]);
-void so3_mv6_m_sub(const DOUBLE am[NUMSTR_SOLID3][NUMSTR_SOLID3],
-                   const DOUBLE bm[NUMSTR_SOLID3][NUMSTR_SOLID3],
+void so3_mv6_m_sub(DOUBLE am[NUMSTR_SOLID3][NUMSTR_SOLID3],
+                   DOUBLE bm[NUMSTR_SOLID3][NUMSTR_SOLID3],
                    DOUBLE cm[NUMSTR_SOLID3][NUMSTR_SOLID3]);
 void so3_mv6_m_assdyd(const DOUBLE av[NUMSTR_SOLID3],
                       const DOUBLE bv[NUMSTR_SOLID3],
@@ -1106,6 +1126,11 @@ void so3_mv6_m_mprdscl(const DOUBLE scl,
 void so3_mv6_m_updmprd(DOUBLE am[NUMSTR_SOLID3][NUMSTR_SOLID3],
                        DOUBLE bm[NUMSTR_SOLID3][NUMSTR_SOLID3],
                        DOUBLE cm[NUMSTR_SOLID3][NUMSTR_SOLID3]);
+void so3_mv6_m2_idscl(const DOUBLE scale,
+                      DOUBLE im[NUMSTR_SOLID3][NUMSTR_SOLID3]);
+void so3_mv6_m2_updmtom2(DOUBLE am[NUMSTR_SOLID3][NUMSTR_SOLID3]);
+void so3_mv6_m05_idscl(const DOUBLE scale,
+                       DOUBLE im[NUMSTR_SOLID3][NUMSTR_SOLID3]);
 
 /*----------------------------------------------------------------------*/
 #endif /*end of #ifdef D_SOLID3 */
