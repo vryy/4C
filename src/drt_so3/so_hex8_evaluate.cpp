@@ -185,9 +185,9 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(vector<int>&              lm,
 {
   DSTraceHelper dst("So_hex8::soh8_nlnstiffmass");  
 
-/* ======================================================================*
- * SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
- * ======================================================================*/
+/* ============================================================================*
+** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
+** ============================================================================*/
 /* pointer to (static) shape function array 
  * for each node, evaluated at each gp*/
   Epetra_SerialDenseMatrix* shapefct; //[NUMNOD_SOH8][NUMGPT_SOH8]
@@ -196,19 +196,13 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(vector<int>&              lm,
   Epetra_SerialDenseMatrix* deriv;    //[NUMGPT_SOH8*NUMDIM][NUMNOD_SOH8]
 /* pointer to (static) weight factors at each gp */  
   Epetra_SerialDenseVector* weights;  //[NUMGPT_SOH8]
-/* ======================================================================*/
-  Epetra_SerialDenseVector internalforce(NUMDOF_SOH8);
-  Epetra_SerialDenseMatrix keu(NUMDOF_SOH8,NUMDOF_SOH8);
-  Epetra_SerialDenseMatrix kgeo(NUMDOF_SOH8,NUMDOF_SOH8);
- 
-  soh8_shapederiv(&shapefct,&deriv,&weights);
+  soh8_shapederiv(&shapefct,&deriv,&weights);   // call to evaluate
+/* ============================================================================*/
   
-  // update geometry
+  // update element geometry
   Epetra_SerialDenseMatrix xrefe(NUMNOD_SOH8,NUMDIM_SOH8);  // material coord. of element
-  Epetra_SerialDenseMatrix xcurr(NUMNOD_SOH8,NUMDIM_SOH8);  // curr. element displacements
-  
-  for (int i=0; i<NUMNOD_SOH8; ++i)
-  {
+  Epetra_SerialDenseMatrix xcurr(NUMNOD_SOH8,NUMDIM_SOH8);  // current  coord. of element
+  for (int i=0; i<NUMNOD_SOH8; ++i){
     xrefe(i,0) = Nodes()[i]->X()[0];
     xrefe(i,1) = Nodes()[i]->X()[1];
     xrefe(i,2) = Nodes()[i]->X()[2];
@@ -217,177 +211,178 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(vector<int>&              lm,
     xcurr(i,1) = xrefe(i,1) + disp[i*NUMDOF_SOH8+1];
     xcurr(i,2) = xrefe(i,2) + disp[i*NUMDOF_SOH8+2];
   }
-  /*// testing ************
-  double delta=0.1905;
-  xcurr(1,0) += delta;
-  xcurr(2,0) += delta;
-  xcurr(5,0) += delta;
-  xcurr(6,0) += delta;
-  // testing ************/
   
-  /* compute the Jacobian matrix which looks like:
-   *         [ x_,r  y_,r  z_,r ]
-   *     J = [ x_,s  y_,s  z_,s ]
-   *         [ x_,t  y_,t  z_,t ]
-   * for all GP: J(GP)=dN,i(GP) * X
-   * therefore every 3 rows belong to one GP -> 3*8 rows */ 
-  Epetra_SerialDenseMatrix jac(NUMDOF_SOH8,NUMDIM_SOH8);
-  jac.Multiply('N','N',1.0,*deriv,xrefe,1.0);
+//  // testing ************
+//  double delta=0.1905;
+//  xcurr(1,0) += delta;
+//  xcurr(2,0) += delta;
+//  xcurr(5,0) += delta;
+//  xcurr(6,0) += delta;
+//  // testing ************/
+  
   
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
-  for (int gp=0; gp<NUMGPT_SOH8; ++gp)
-  {
-    // compute determinant of J(GP) by Sarrus' rule
-    double detJ=0.0;
-    detJ= jac(3*gp+0,0) * jac(3*gp+1,1) * jac(3*gp+2,2)
-        + jac(3*gp+0,1) * jac(3*gp+1,2) * jac(3*gp+2,0)
-        + jac(3*gp+0,2) * jac(3*gp+1,0) * jac(3*gp+2,1)
-        - jac(3*gp+0,0) * jac(3*gp+1,2) * jac(3*gp+2,1)
-        - jac(3*gp+0,1) * jac(3*gp+1,0) * jac(3*gp+2,2)
-        - jac(3*gp+0,2) * jac(3*gp+1,1) * jac(3*gp+2,0);
+  for (int gp=0; gp<NUMGPT_SOH8; ++gp){
+    
+    // get submatrix of deriv at actual gp
+    Epetra_SerialDenseMatrix deriv_gp(NUMDIM_SOH8,NUMGPT_SOH8);
+    for (int m=0; m<NUMDIM_SOH8; ++m){
+      for (int n=0; n<NUMGPT_SOH8; ++n){
+        deriv_gp(m,n)=(*deriv)(3*gp+m,n);
+      }
+    }
+
+    /* compute the Jacobian matrix which looks like:
+    **         [ x_,r  y_,r  z_,r ]
+    **     J = [ x_,s  y_,s  z_,s ]
+    **         [ x_,t  y_,t  z_,t ]
+    */
+    Epetra_SerialDenseMatrix jac(NUMDIM_SOH8,NUMDIM_SOH8);
+    jac.Multiply('N','N',1.0,deriv_gp,xrefe,1.0);
+
+    // compute determinant of Jacobian by Sarrus' rule
+    double detJ= jac(0,0) * jac(1,1) * jac(2,2)
+               + jac(0,1) * jac(1,2) * jac(2,0)
+               + jac(0,2) * jac(1,0) * jac(2,1)
+               - jac(0,0) * jac(1,2) * jac(2,1)
+               - jac(0,1) * jac(1,0) * jac(2,2)
+               - jac(0,2) * jac(1,1) * jac(2,0);
     if (detJ == 0.0) dserror("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
     
-    // compute inverse of J(GP)[3][3]
-    Epetra_SerialDenseMatrix invjac(3,3);
-    invjac(0,0) = jac(3*gp+1,1)*jac(3*gp+2,2) - jac(3*gp+2,1)*jac(3*gp+1,2);
-    invjac(0,1) = jac(3*gp+0,2)*jac(3*gp+2,1) - jac(3*gp+0,1)*jac(3*gp+2,2);
-    invjac(0,2) = jac(3*gp+0,1)*jac(3*gp+1,2) - jac(3*gp+0,2)*jac(3*gp+1,1);
-    invjac(1,0) = jac(3*gp+1,2)*jac(3*gp+2,0) - jac(3*gp+2,2)*jac(3*gp+1,0);
-    invjac(1,1) = jac(3*gp+0,0)*jac(3*gp+2,2) - jac(3*gp+0,2)*jac(3*gp+2,0);
-    invjac(1,2) = jac(3*gp+0,2)*jac(3*gp+1,0) - jac(3*gp+0,0)*jac(3*gp+1,2);
-    invjac(2,0) = jac(3*gp+1,0)*jac(3*gp+2,1) - jac(3*gp+2,0)*jac(3*gp+1,1);
-    invjac(2,1) = jac(3*gp+0,1)*jac(3*gp+2,0) - jac(3*gp+0,0)*jac(3*gp+2,1);
-    invjac(2,2) = jac(3*gp+0,0)*jac(3*gp+1,1) - jac(3*gp+0,1)*jac(3*gp+1,0);
-    // Scalarmultiply with 1/detJ later (at N_XYZ) !
+    // compute inverse of Jacobian
+    Epetra_SerialDenseMatrix invjac(NUMDIM_SOH8,NUMDIM_SOH8);
+    invjac(0,0) = (jac(1,1)*jac(2,2) - jac(2,1)*jac(1,2)) / detJ;
+    invjac(0,1) = (jac(0,2)*jac(2,1) - jac(0,1)*jac(2,2)) / detJ;
+    invjac(0,2) = (jac(0,1)*jac(1,2) - jac(0,2)*jac(1,1)) / detJ;
+    invjac(1,0) = (jac(1,2)*jac(2,0) - jac(2,2)*jac(1,0)) / detJ;
+    invjac(1,1) = (jac(0,0)*jac(2,2) - jac(0,2)*jac(2,0)) / detJ;
+    invjac(1,2) = (jac(0,2)*jac(1,0) - jac(0,0)*jac(1,2)) / detJ;
+    invjac(2,0) = (jac(1,0)*jac(2,1) - jac(2,0)*jac(1,1)) / detJ;
+    invjac(2,1) = (jac(0,1)*jac(2,0) - jac(0,0)*jac(2,1)) / detJ;
+    invjac(2,2) = (jac(0,0)*jac(1,1) - jac(0,1)*jac(1,0)) / detJ;
     
-    // build submatrix of deriv at actual gp
-    Epetra_SerialDenseMatrix deriv_gp(NUMDIM_SOH8,NUMGPT_SOH8);
-    for (int m=0; m<NUMDIM_SOH8; ++m)
-    {
-        for (int n=0; n<NUMGPT_SOH8; ++n)
-        {
-            deriv_gp(m,n)=(*deriv)(3*gp+m,n);
-        }
-    }
-    // Derivatives at gp w.r.t. material coordinates
+    // derivatives at gp w.r.t. material coordinates
     Epetra_SerialDenseMatrix N_XYZ(NUMDIM_SOH8,NUMNOD_SOH8);
-    N_XYZ.Multiply('N','N',1/detJ,invjac,deriv_gp,1.0);
+    N_XYZ.Multiply('N','N',1.0,invjac,deriv_gp,1.0);
+    
     // (material) deformation gradient F = d xxurr / d xrefe
     Epetra_SerialDenseMatrix defgrd(NUMDIM_SOH8,NUMDIM_SOH8);
-    for (int i=0; i<NUMNOD_SOH8; ++i)
-    {
-        defgrd(0,0) += xcurr(i,0) * N_XYZ(0,i);     // dx/dX
-        defgrd(1,1) += xcurr(i,1) * N_XYZ(1,i);     // dy/dY
-        defgrd(2,2) += xcurr(i,2) * N_XYZ(2,i);     // dz/dZ
-        defgrd(0,1) += xcurr(i,0) * N_XYZ(1,i);     // dx/dY
-        defgrd(0,2) += xcurr(i,0) * N_XYZ(2,i);     // dx/dZ
-        defgrd(1,0) += xcurr(i,1) * N_XYZ(0,i);     // dy/dX
-        defgrd(1,2) += xcurr(i,1) * N_XYZ(2,i);     // dy/dZ
-        defgrd(2,0) += xcurr(i,2) * N_XYZ(0,i);     // dz/dX
-        defgrd(2,1) += xcurr(i,2) * N_XYZ(1,i);     // dz/dY
-    }
-    // Cauchy-Green Tensor = F^T * F
+    defgrd.Multiply('N','N',1.0,N_XYZ,xcurr,1.0);
+    
+    // Right Cauchy-Green tensor = F^T * F
     Epetra_SerialDenseMatrix cauchygreen(NUMDIM_SOH8,NUMDIM_SOH8);
     cauchygreen.Multiply('T','N',1.0,defgrd,defgrd,1.0);
-    // Green-Lagrange strains matrix E = 0.5 * (cauchygreen - Identity)
-    // GL strains Vector strain={E11,E22,E33,2*E12,2*E23,2*E31}
-    Epetra_SerialDenseVector strain(NUMSTR_SOH8);
-    strain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
-    strain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
-    strain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
-    strain(3) = cauchygreen(0,1);
-    strain(4) = cauchygreen(1,2);
-    strain(5) = cauchygreen(2,0);
-    /* non-linear B-operator (may so be called, meaning
-     * of B-operator is not so sharp in the non-linear realm) *
-     * B = F . Bl *
-     *
-     *      [ ... | F_11*N_{,1}^k  F_21*N_{,1}^k  F_31*N_{,1}^k | ... ]
-     *      [ ... | F_12*N_{,2}^k  F_22*N_{,2}^k  F_32*N_{,2}^k | ... ]
-     *      [ ... | F_13*N_{,3}^k  F_23*N_{,3}^k  F_33*N_{,3}^k | ... ]
-     * B =  [ ~~~   ~~~~~~~~~~~~~  ~~~~~~~~~~~~~  ~~~~~~~~~~~~~   ~~~ ]
-     *      [       F_11*N_{,2}^k+F_12*N_{,1}^k                       ]
-     *      [ ... |          F_21*N_{,2}^k+F_22*N_{,1}^k        | ... ]
-     *      [                       F_31*N_{,2}^k+F_32*N_{,1}^k       ]
-     *      [                                                         ]
-     *      [       F_12*N_{,3}^k+F_13*N_{,2}^k                       ]
-     *      [ ... |          F_22*N_{,3}^k+F_23*N_{,2}^k        | ... ]
-     *      [                       F_32*N_{,3}^k+F_33*N_{,2}^k       ]
-     *      [                                                         ]
-     *      [       F_13*N_{,1}^k+F_11*N_{,3}^k                       ]
-     *      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
-     *      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
-     */
-    Epetra_SerialDenseMatrix bop(NUMSTR_SOH8,NUMDOF_SOH8);
-    for (int i=0; i<NUMNOD_SOH8; ++i)
-    {
-        bop(0,NODDOF_SOH8*i+0) = defgrd(0,0)*N_XYZ(0,i);
-        bop(0,NODDOF_SOH8*i+1) = defgrd(1,0)*N_XYZ(0,i);
-        bop(0,NODDOF_SOH8*i+2) = defgrd(2,0)*N_XYZ(0,i);
-        bop(1,NODDOF_SOH8*i+0) = defgrd(0,1)*N_XYZ(1,i);
-        bop(1,NODDOF_SOH8*i+1) = defgrd(1,1)*N_XYZ(1,i);
-        bop(1,NODDOF_SOH8*i+2) = defgrd(2,1)*N_XYZ(1,i);
-        bop(2,NODDOF_SOH8*i+0) = defgrd(0,2)*N_XYZ(2,i);
-        bop(2,NODDOF_SOH8*i+1) = defgrd(1,2)*N_XYZ(2,i);
-        bop(2,NODDOF_SOH8*i+2) = defgrd(2,2)*N_XYZ(2,i);
-        /* ~~~ */
-        bop(3,NODDOF_SOH8*i+0) = defgrd(0,0)*N_XYZ(1,i) + defgrd(0,1)*N_XYZ(0,i);
-        bop(3,NODDOF_SOH8*i+1) = defgrd(1,0)*N_XYZ(1,i) + defgrd(1,1)*N_XYZ(0,i);
-        bop(3,NODDOF_SOH8*i+2) = defgrd(2,0)*N_XYZ(1,i) + defgrd(2,1)*N_XYZ(0,i);
-        bop(4,NODDOF_SOH8*i+0) = defgrd(0,1)*N_XYZ(2,i) + defgrd(0,2)*N_XYZ(1,i);
-        bop(4,NODDOF_SOH8*i+1) = defgrd(1,1)*N_XYZ(2,i) + defgrd(1,2)*N_XYZ(1,i);
-        bop(4,NODDOF_SOH8*i+2) = defgrd(2,1)*N_XYZ(2,i) + defgrd(2,2)*N_XYZ(1,i);
-        bop(5,NODDOF_SOH8*i+0) = defgrd(0,2)*N_XYZ(0,i) + defgrd(0,0)*N_XYZ(2,i);
-        bop(5,NODDOF_SOH8*i+1) = defgrd(1,2)*N_XYZ(0,i) + defgrd(1,0)*N_XYZ(2,i);
-        bop(5,NODDOF_SOH8*i+2) = defgrd(2,2)*N_XYZ(0,i) + defgrd(2,0)*N_XYZ(2,i);
-    }
-    // call material law
-    Epetra_SerialDenseMatrix cmat(NUMSTR_SOH8,NUMSTR_SOH8);
-    soh8_mat_sel(&cmat);
     
-    // evaluate stresses
+    // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
+    // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
+    Epetra_SerialDenseVector glstrain(NUMSTR_SOH8);
+    glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
+    glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
+    glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
+    glstrain(3) = cauchygreen(0,1);
+    glstrain(4) = cauchygreen(1,2);
+    glstrain(5) = cauchygreen(2,0);
+    
+    /* non-linear B-operator (may so be called, meaning
+    ** of B-operator is not so sharp in the non-linear realm) *
+    ** B = F . Bl *
+    **
+    **      [ ... | F_11*N_{,1}^k  F_21*N_{,1}^k  F_31*N_{,1}^k | ... ]
+    **      [ ... | F_12*N_{,2}^k  F_22*N_{,2}^k  F_32*N_{,2}^k | ... ]
+    **      [ ... | F_13*N_{,3}^k  F_23*N_{,3}^k  F_33*N_{,3}^k | ... ]
+    ** B =  [ ~~~   ~~~~~~~~~~~~~  ~~~~~~~~~~~~~  ~~~~~~~~~~~~~   ~~~ ]
+    **      [       F_11*N_{,2}^k+F_12*N_{,1}^k                       ]
+    **      [ ... |          F_21*N_{,2}^k+F_22*N_{,1}^k        | ... ]
+    **      [                       F_31*N_{,2}^k+F_32*N_{,1}^k       ]
+    **      [                                                         ]
+    **      [       F_12*N_{,3}^k+F_13*N_{,2}^k                       ]
+    **      [ ... |          F_22*N_{,3}^k+F_23*N_{,2}^k        | ... ]
+    **      [                       F_32*N_{,3}^k+F_33*N_{,2}^k       ]
+    **      [                                                         ]
+    **      [       F_13*N_{,1}^k+F_11*N_{,3}^k                       ]
+    **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
+    **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
+    */
+    Epetra_SerialDenseMatrix bop(NUMSTR_SOH8,NUMDOF_SOH8);
+    for (int i=0; i<NUMNOD_SOH8; ++i){
+      bop(0,NODDOF_SOH8*i+0) = defgrd(0,0)*N_XYZ(0,i);
+      bop(0,NODDOF_SOH8*i+1) = defgrd(1,0)*N_XYZ(0,i);
+      bop(0,NODDOF_SOH8*i+2) = defgrd(2,0)*N_XYZ(0,i);
+      bop(1,NODDOF_SOH8*i+0) = defgrd(0,1)*N_XYZ(1,i);
+      bop(1,NODDOF_SOH8*i+1) = defgrd(1,1)*N_XYZ(1,i);
+      bop(1,NODDOF_SOH8*i+2) = defgrd(2,1)*N_XYZ(1,i);
+      bop(2,NODDOF_SOH8*i+0) = defgrd(0,2)*N_XYZ(2,i);
+      bop(2,NODDOF_SOH8*i+1) = defgrd(1,2)*N_XYZ(2,i);
+      bop(2,NODDOF_SOH8*i+2) = defgrd(2,2)*N_XYZ(2,i);
+      /* ~~~ */
+      bop(3,NODDOF_SOH8*i+0) = defgrd(0,0)*N_XYZ(1,i) + defgrd(0,1)*N_XYZ(0,i);
+      bop(3,NODDOF_SOH8*i+1) = defgrd(1,0)*N_XYZ(1,i) + defgrd(1,1)*N_XYZ(0,i);
+      bop(3,NODDOF_SOH8*i+2) = defgrd(2,0)*N_XYZ(1,i) + defgrd(2,1)*N_XYZ(0,i);
+      bop(4,NODDOF_SOH8*i+0) = defgrd(0,1)*N_XYZ(2,i) + defgrd(0,2)*N_XYZ(1,i);
+      bop(4,NODDOF_SOH8*i+1) = defgrd(1,1)*N_XYZ(2,i) + defgrd(1,2)*N_XYZ(1,i);
+      bop(4,NODDOF_SOH8*i+2) = defgrd(2,1)*N_XYZ(2,i) + defgrd(2,2)*N_XYZ(1,i);
+      bop(5,NODDOF_SOH8*i+0) = defgrd(0,2)*N_XYZ(0,i) + defgrd(0,0)*N_XYZ(2,i);
+      bop(5,NODDOF_SOH8*i+1) = defgrd(1,2)*N_XYZ(0,i) + defgrd(1,0)*N_XYZ(2,i);
+      bop(5,NODDOF_SOH8*i+2) = defgrd(2,2)*N_XYZ(0,i) + defgrd(2,0)*N_XYZ(2,i);
+    }
+    
+    /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
+    ** Here all possible material laws need to be incorporated,
+    ** the stress vector, a C-matrix, and a density must be retrieved,
+    ** every necessary data must be passed.
+    */
+    Epetra_SerialDenseMatrix cmat(NUMSTR_SOH8,NUMSTR_SOH8);
     Epetra_SerialDenseVector stress(NUMSTR_SOH8);
-    cmat.Multiply('N',strain,stress);               // sigma = C * epsilon
+    double density;
+    soh8_mat_sel(&stress,&cmat,&density,&glstrain);
+    // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
+    
     // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
-    internalforce.Multiply('T','N',detJ * (*weights)(gp),bop,stress,1.0); // local intforce
     (*force).Multiply('T','N',detJ * (*weights)(gp),bop,stress,1.0);
     
     // integrate `elastic' and `initial-displacement' stiffness matrix
     // keu = keu + (B^T . C . B) * detJ * w(gp)
     Epetra_SerialDenseMatrix cb(NUMSTR_SOH8,NUMDOF_SOH8);
-    cb.Multiply('N','N',1.0,cmat,bop,1.0);          // C . B
-    keu.Multiply('T','N',detJ * (*weights)(gp),bop,cb,1.0);  // local keu
+    cb.Multiply('N','N',1.0,cmat,bop,1.0);          // C . B  
     (*stiffmatrix).Multiply('T','N',detJ * (*weights)(gp),bop,cb,1.0);
     
-    // intergrate `geometric' stiffness matrix and add to keu
-    // kgeo = kgeo + (BLin^T . sigma . BLin) * detJ * w(gp)  with BLin = Ni,Xj see NiliFEM-Skript
-    Epetra_SerialDenseVector sfac(stress);     // auxiliary integrated stress
-    sfac.Scale(detJ * (*weights)(gp));         // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
-    vector<double> SmBlin(NUMDIM_SOH8);        // intermediate Sm.Blin
-    for (int inod=0; inod<NUMNOD_SOH8; ++inod)
-    {
-      SmBlin[0] = sfac(0) * N_XYZ(0,inod) + sfac(3) * N_XYZ(1,inod) + sfac(5) * N_XYZ(2,inod); 
-      SmBlin[1] = sfac(3) * N_XYZ(0,inod) + sfac(2) * N_XYZ(1,inod) + sfac(4) * N_XYZ(2,inod); 
-      SmBlin[2] = sfac(5) * N_XYZ(0,inod) + sfac(4) * N_XYZ(1,inod) + sfac(3) * N_XYZ(2,inod);
-      for (int jnod=0; jnod<NUMNOD_SOH8; ++jnod)
-      {
-        double bopstrbop = 0.0;
-        for (int idim=0; idim<NUMDIM_SOH8; ++idim) bopstrbop += N_XYZ(idim,jnod) * SmBlin[idim];
-        kgeo(NUMDIM_SOH8*inod+0,NUMDIM_SOH8*jnod+0) += bopstrbop;   // local kgeo
-        kgeo(NUMDIM_SOH8*inod+1,NUMDIM_SOH8*jnod+1) += bopstrbop;   // local kgeo
-        kgeo(NUMDIM_SOH8*inod+2,NUMDIM_SOH8*jnod+2) += bopstrbop;   // local kgeo
+    // intergrate `geometric' stiffness matrix and add to keu *****************
+    Epetra_SerialDenseVector sfac(stress); // auxiliary integrated stress
+    sfac.Scale(detJ * (*weights)(gp));     // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
+    vector<double> SmB_L(NUMDIM_SOH8);     // intermediate Sm.B_L
+    // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
+    for (int inod=0; inod<NUMNOD_SOH8; ++inod){
+      SmB_L[0] = sfac(0) * N_XYZ(0,inod) + sfac(3) * N_XYZ(1,inod) + sfac(5) * N_XYZ(2,inod); 
+      SmB_L[1] = sfac(3) * N_XYZ(0,inod) + sfac(2) * N_XYZ(1,inod) + sfac(4) * N_XYZ(2,inod); 
+      SmB_L[2] = sfac(5) * N_XYZ(0,inod) + sfac(4) * N_XYZ(1,inod) + sfac(3) * N_XYZ(2,inod);
+      for (int jnod=0; jnod<NUMNOD_SOH8; ++jnod){
+        double bopstrbop = 0.0;            // intermediate value
+        for (int idim=0; idim<NUMDIM_SOH8; ++idim) bopstrbop += N_XYZ(idim,jnod) * SmB_L[idim];
         (*stiffmatrix)(NUMDIM_SOH8*inod+0,NUMDIM_SOH8*jnod+0) += bopstrbop;
         (*stiffmatrix)(NUMDIM_SOH8*inod+1,NUMDIM_SOH8*jnod+1) += bopstrbop;
         (*stiffmatrix)(NUMDIM_SOH8*inod+2,NUMDIM_SOH8*jnod+2) += bopstrbop;
       }
-    } // end of intergrate `geometric' stiffness matrix
+    } // end of intergrate `geometric' stiffness ******************************
+    
+    if (*massmatrix != null){ // evaluate mass matrix +++++++++++++++++++++++++
+      // integrate concistent mass matrix
+      for (int inod=0; inod<NUMNOD_SOH8; ++inod){
+        for (int jnod=0; jnod<NUMNOD_SOH8; ++jnod){
+          double massfactor = (*shapefct)(inod,gp) * density * (*shapefct)(jnod,gp)
+                            * detJ * (*weights)(gp);     // intermediate factor
+          (*massmatrix)(NUMDIM_SOH8*inod+0,NUMDIM_SOH8*jnod+0) += massfactor;
+          (*massmatrix)(NUMDIM_SOH8*inod+1,NUMDIM_SOH8*jnod+1) += massfactor;
+          (*massmatrix)(NUMDIM_SOH8*inod+2,NUMDIM_SOH8*jnod+2) += massfactor;
+        }
+      } 
+    } // end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
+    
    /* =========================================================================*/
   }/* ==================================================== end of Loop over GP */
    /* =========================================================================*/
-  
   return;
 } // DRT::Elements::Shell8::s8_nlnstiffmass
 
@@ -481,13 +476,18 @@ void DRT::Elements::So_hex8::soh8_shapederiv(
   return;
 }  // of soh8_shapederiv
 
-void DRT::Elements::So_hex8::soh8_mat_sel(Epetra_SerialDenseMatrix* cmat)
+void DRT::Elements::So_hex8::soh8_mat_sel(Epetra_SerialDenseVector* stress,
+                                          Epetra_SerialDenseMatrix* cmat,
+                                          double* density,
+                                          const Epetra_SerialDenseVector* glstrain)
 {
   DSTraceHelper dst("So_hex8::soh8_mat_sel");
   /* Young's modulus (modulus of elasticity */
   double Emod = mat->m.stvenant->youngs;
   /* Poisson's ratio */
   double nu = mat->m.stvenant->possionratio;
+  /* Density, returned for evaluating mass matrix */
+  (*density) = mat->m.stvenant->density;
   /*--------------------------------------------------------------------*/
   /* isotropic elasticity tensor C in matrix notion */
   /*                       [ 1-nu     nu     nu |          0    0    0 ]
@@ -513,6 +513,9 @@ void DRT::Elements::So_hex8::soh8_mat_sel(Epetra_SerialDenseMatrix* cmat)
   (*cmat)(3,3) = mfac*0.5*(1.0-2.0*nu);
   (*cmat)(4,4) = mfac*0.5*(1.0-2.0*nu);
   (*cmat)(5,5) = mfac*0.5*(1.0-2.0*nu);
+
+  // evaluate stresses
+  (*cmat).Multiply('N',(*glstrain),(*stress));   // sigma = C * epsilon
   
   return;
 }  // of soh8_mat_sel

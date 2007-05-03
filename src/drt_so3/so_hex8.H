@@ -358,7 +358,10 @@ private:
                        Epetra_SerialDenseMatrix** deriv,
                        Epetra_SerialDenseVector** weights);
                        
-  void soh8_mat_sel(Epetra_SerialDenseMatrix* cmat);
+  void soh8_mat_sel(Epetra_SerialDenseVector* stress,
+                    Epetra_SerialDenseMatrix* cmat,
+                    double* density,
+                    const Epetra_SerialDenseVector* glstrain);
 
 }; // class So_hex8
 
