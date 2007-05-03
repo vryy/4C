@@ -211,6 +211,7 @@ void tsi_st_genalp(INT disnum_s,
   CALC_ACTION *action;  /* pointer to the structure cal_action enum */
   STRUCT_DYNAMIC *actdyn;  /* pointer to structural dynamic input data */
   INT actsysarray;  /* index of actual system array */
+  TSI_DYNAMIC *tsidyn;  /* pointer to TSI dynamics data */
   
   const INT vel_num = 1;  /* number of veloc. vectors */
   DIST_VECTOR *vel;  /* total velocities */
@@ -281,6 +282,8 @@ void tsi_st_genalp(INT disnum_s,
   container.disnum = disnum;
   container.disnum_s = disnum_s;  /* structure discretisation index ( ==0 ) */
   container.disnum_t = disnum_t;  /* thermo-discretisation index ( ==0 ) */
+  tsidyn = alldyn[genprob.numfld].tsidyn;  /* TSI dynamic control */
+  tsidyn->dt = actdyn->dt;
   actsysarray = numsf;  /* ? */
   actsolv = &(solv[numsf]);
   if (actsolv->nsysarray == 1)
@@ -655,7 +658,6 @@ void tsi_st_genalp(INT disnum_s,
   while ( (actdyn->step < actdyn->nstep-1) 
           && (actdyn->time <= actdyn->maxtime) )
   {
-    
     /*------------------------------------------------------------------*/
     /* wall clock time ?????? */
     t0 = ds_cputime();
@@ -663,6 +665,7 @@ void tsi_st_genalp(INT disnum_s,
     /*------------------------------------------------------------------*/
     /* increment step */
     actdyn->step++;
+    tsidyn->step = actdyn->step;
     /* repeatcount = 0; */
 
     /*------------------------------------------------------------------*/
@@ -874,6 +877,18 @@ void tsi_st_genalp(INT disnum_s,
                          &(actsolv->sysarray_typ[stiff_array]));
 
     /*------------------------------------------------------------------*/
+    /* return residual displacements iinc D_{n+1}^<i+1> to the nodes */
+#if 1
+    solserv_result_resid(actfield, disnum, actintra, 
+                         &(dispi[0]),
+                         isolres->disres,
+                         &(actsolv->sysarray[stiff_array]),
+                         &(actsolv->sysarray_typ[stiff_array]));
+#endif
+
+
+
+    /*------------------------------------------------------------------*/
     /* check convergence of predictor */
     convergence = 0;
     dmax        = 0.0;
@@ -1073,7 +1088,7 @@ void tsi_st_genalp(INT disnum_s,
 
       /*----------------------------------------------------------------*/
       /* increase iteration counter */
-      itnum = itnum + 1;
+      ++itnum;
 
     }  /* end of equilibrium iteration */
     /*==================================================================*/
@@ -1147,7 +1162,7 @@ void tsi_st_genalp(INT disnum_s,
 
     /*------------------------------------------------------------------*/
     /* incremental update of element internal variables */
-#if 0
+#if 1
     *action = calc_struct_update_istep;
     container.dvec = NULL;
     container.dirich = NULL;

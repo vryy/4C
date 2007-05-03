@@ -194,6 +194,18 @@ void so3_int_fintstifmass(CONTAINER *container,
     /*------------------------------------------------------------------*/
     /* call material law */
     so3_mat_sel(container, ele, mat, gpshade, igp, &gds, stress, cmat);
+#if 0
+    /* debug: purposes */
+    {
+      INT xxx;
+      printf("Element %d, GP %d \n", ele->Id, igp);
+      for (xxx=0; xxx<6; xxx++)
+      {
+        printf("Stress %d : (% 5.2f,% 5.2f,% 5.2f) : %f\n", 
+               xxx, gds.gpc[0], gds.gpc[1], gds.gpc[2], stress[xxx]);
+      }
+    }
+#endif
     /*------------------------------------------------------------------*/
     /* element internal force from integration of stresses */
     if (eforc_global != NULL)

@@ -544,7 +544,7 @@ void so3_mv6_m_zero(DOUBLE am[NUMSTR_SOLID3][NUMSTR_SOLID3])
   dstrc_enter("so3_mv6_m_zero");
 #endif
 
-  memset(am, 0, sizeof(am));
+  memset(am, 0, NUMSTR_SOLID3*NUMSTR_SOLID3*sizeof(DOUBLE));
 
 #ifdef DEBUG
   dstrc_exit();
@@ -578,7 +578,7 @@ void so3_mv6_m_id(DOUBLE im[NUMSTR_SOLID3][NUMSTR_SOLID3])
   dstrc_enter("so3_mv6_m_id");
 #endif
 
-  memset(im, 0, sizeof(im));
+  memset(im, 0, NUMSTR_SOLID3*NUMSTR_SOLID3*sizeof(DOUBLE));
 
   for (i=0; i<NUMSTR_SOLID3; i++)
   {
@@ -618,7 +618,7 @@ void so3_mv6_m_idscl(const DOUBLE scale,
   dstrc_enter("so3_mv6_m_idscl");
 #endif
 
-  memset(im, 0, sizeof(im));
+  memset(im, 0, NUMSTR_SOLID3*NUMSTR_SOLID3*sizeof(DOUBLE));
 
   for (i=0; i<NUMSTR_SOLID3; i++)
   {
@@ -659,7 +659,7 @@ void so3_mv6_m_one(DOUBLE om[NUMSTR_SOLID3][NUMSTR_SOLID3])
   dstrc_enter("so3_mv6_m_one");
 #endif
 
-  memset(om, 0, sizeof(om));
+  memset(om, 0, NUMSTR_SOLID3*NUMSTR_SOLID3*sizeof(DOUBLE));
 
   for (i=0; i<3; i++)
   {
@@ -1078,7 +1078,7 @@ void so3_mv6_m2_idscl(const DOUBLE scale,
   dstrc_enter("so3_mv6_m2_idscl");
 #endif
 
-  memset(im, 0, sizeof(im));
+  memset(im, 0, NUMSTR_SOLID3*NUMSTR_SOLID3*sizeof(DOUBLE));
 
   for (i=0; i<NDIM_SOLID3; i++)
   {
@@ -1150,7 +1150,7 @@ void so3_mv6_m05_idscl(const DOUBLE scale,
   dstrc_enter("so3_mv6_m05_idscl");
 #endif
 
-  memset(im, 0, sizeof(im));
+  memset(im, 0, NUMSTR_SOLID3*NUMSTR_SOLID3*sizeof(DOUBLE));
 
   for (i=0; i<NDIM_SOLID3; i++)
   {

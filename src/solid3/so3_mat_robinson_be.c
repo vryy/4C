@@ -718,11 +718,22 @@ void so3_mat_robinson_be_rbcksts(ELEMENT* ele,
 
   /*--------------------------------------------------------------------*/
   /* derivative of back stress residual with respect to back stress
-   *    kaa = \frac{\pd res_{n+1}^al}{\pd al_{n+1}^v} */
+   *    kaa = \frac{\pd res_{n+1}^al}{\pd al_{n+1}} */
   if (*bckstss == so3_mat_robinson_state_elastic)
   {
-    DOUBLE fctu = 1.0/dt  +  rr * pow(gg0,(mm-beta)) / sqrt(i2);
-    DOUBLE fcta = - rr * pow(gg,(mm-beta)) / (2.0 * pow(i2, 1.5));
+    DOUBLE fctu = 1.0/dt;
+    DOUBLE fcta;
+    if (sqrt(i2) < EPS10)
+    {
+      DOUBLE ii2 = 1.0e12;  /* sqrt(i2) := 1.0e6 assures units are OK */
+      fctu += rr * pow(gg0,(mm-beta)) / sqrt(ii2);
+      fcta = -rr * pow(gg0,(mm-beta)) / (2.0 * pow(ii2, 1.5));
+    }
+    else
+    {
+      fctu += rr * pow(gg0,(mm-beta)) / sqrt(i2);
+      fcta = -rr * pow(gg0,(mm-beta)) / (2.0 * pow(i2, 1.5));
+    }
     so3_mv6_m_idscl(fctu, kaa);
     so3_mv6_m_upddydscl(fcta, bacstsn, bacstsn, kaa);
   }
@@ -894,8 +905,8 @@ void so3_mat_robinson_be_red(DOUBLE stress[NUMSTR_SOLID3],
     dserror("Lapack factorisation failed");
   }
   /* back substitution of residuals */
-  trans = 'A';
-  dgetrs(&trans,  /* type: 'A'=normal */
+  trans = 'N';
+  dgetrs(&trans,  /* type: 'N'=normal */
          &numstr_2,  /* number of columns of matrix */
          &one,  /* number of RHSs */
          kvvvaavaa,  /* factorised matrix */
@@ -909,8 +920,8 @@ void so3_mat_robinson_be_red(DOUBLE stress[NUMSTR_SOLID3],
     dserror("Lapack back substitution failed (vector)");
   }
   /* back substitution of tangent */
-  trans = 'A';
-  dgetrs(&trans,  /* type: 'A'=normal */
+  trans = 'N';
+  dgetrs(&trans,  /* type: 'N'=normal */
          &numstr_2,  /* number of columns of matrix */
          &numstr,  /* number of RHSs */
          kvvvaavaa,  /* factorised matrix */
@@ -1274,8 +1285,8 @@ void so3_mat_robinson_be_stress(const CONTAINER* container,
   
   DOUBLE tem;  /* temperature */
 
-/*   INT itsidyn = genprob.numfld;  /\* index of TSI dynamics data *\/ */
-/*   TSI_DYNAMIC* tsidyn = alldyn[itsidyn].tsidyn;  /\* TSI dynamics data *\/ */
+  INT itsidyn = genprob.numfld;  /* index of TSI dynamics data */
+  TSI_DYNAMIC* tsidyn = alldyn[itsidyn].tsidyn;  /* TSI dynamics data */
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -1356,6 +1367,7 @@ void so3_mat_robinson_be_stress(const CONTAINER* container,
 #ifdef TESTROBIN_SOLID3
   if (ip == 0)
   {
+    INT kstep = tsidyn->step;  /* current time step */
     DOUBLE stsdev[NUMSTR_SOLID3];
     /* stress deviator */
     so3_mv6_v_dev(stress, stsdev);
@@ -1363,14 +1375,14 @@ void so3_mat_robinson_be_stress(const CONTAINER* container,
     DOUBLE stsovr[NUMSTR_SOLID3];
     so3_mv6_v_sub(stsdev, actso3->miv_rob->bacsts.a.da[ip], stsovr);
     FILE* oo = allfiles.gnu;
-    fprintf(oo, "# Time step %d Gauss point %d\n", container->kstep, ip);
+    fprintf(oo, "# Time step %d Gauss point %d\n", kstep, ip);
     fprintf(oo, "# step strain-tot strain-ela strain-vis strain-thr"
             "  stress-tot stress-dev stress-back stress-over\n");
     INT i;
     for (i=0; i<NUMSTR_SOLID3; i++)
     {
-      fprintf(oo, "%d %f %f %f %f  %f %f %f %f\n", 
-              container->kstep,
+      fprintf(oo, "%d %12.4e %12.4e %12.4e %12.4e  %12.4e %12.4e %12.4e %12.4e\n", 
+              kstep,
               totstn[i], elastn[i], vscstn[i], thrstn[i],
               stress[i], 
               stsdev[i], 
@@ -1381,6 +1393,7 @@ void so3_mat_robinson_be_stress(const CONTAINER* container,
   }
   if (ip == 7)
   {
+    INT kstep = tsidyn->step;  /* current time step */
     DOUBLE stsdev[NUMSTR_SOLID3];
     /* stress deviator */
     so3_mv6_v_dev(stress, stsdev);
@@ -1388,14 +1401,14 @@ void so3_mat_robinson_be_stress(const CONTAINER* container,
     DOUBLE stsovr[NUMSTR_SOLID3];
     so3_mv6_v_sub(stsdev, actso3->miv_rob->bacsts.a.da[ip], stsovr);
     FILE* oo = allfiles.gnu;
-    fprintf(oo, "# Time step %d Gauss point %d\n", container->kstep, ip);
+    fprintf(oo, "# Time step %d Gauss point %d\n", kstep, ip);
     fprintf(oo, "# step strain-tot strain-ela strain-vis strain-thr"
             "  stress-tot stress-dev stress-back stress-over\n");
     INT i;
     for (i=0; i<NUMSTR_SOLID3; i++)
     {
-      fprintf(oo, "%d %f %f %f %f  %f %f %f %f\n", 
-              container->kstep,
+      fprintf(oo, "%d %12.4e %12.4e %12.4e %12.4e  %12.4e %12.4e %12.4e %12.4e\n", 
+              kstep,
               totstn[i], elastn[i], vscstn[i], thrstn[i],
               stress[i], stsdev[i], 
               actso3->miv_rob->bacsts.a.da[ip][i], stsovr[i]);
