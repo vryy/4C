@@ -127,24 +127,46 @@ public:
 
   /// Get number of dofs for given node
   virtual int NumDof(Node* node) const
-    { return (*numdfcolnodes_)[node->LID()]; }
+    { 
+      int lid = node->LID();
+      if (lid==-1)
+        return 0;
+      return (*numdfcolnodes_)[lid];
+    }
 
   /// Get number of dofs for given element
   virtual int NumDof(Element* element) const
-    { return (*numdfcolelements_)[element->LID()]; }
+    {
+      int lid = element->LID();
+      if (lid==-1)
+        return 0;
+      return (*numdfcolelements_)[lid]; 
+    }
 
   /// Get the gid of a dof for given node
   virtual int Dof(Node* node, int dof) const
-    { return dofcolmap_->GID((*idxcolnodes_)[node->LID()]+dof); }
+    { 
+      int lid = node->LID();
+      if (lid==-1)
+        return -1;
+      return dofcolmap_->GID((*idxcolnodes_)[lid]+dof); 
+    }
 
   /// Get the gid of a dof for given element
   virtual int Dof(Element* element, int dof) const
-    { return dofcolmap_->GID((*idxcolelements_)[element->LID()]+dof); }
+    { 
+      int lid = element->LID();
+      if (lid==-1)
+        return -1;
+      return dofcolmap_->GID((*idxcolelements_)[lid]+dof); 
+    }
 
   /// Get the gid of all dofs of a node
   virtual vector<int> Dof(Node* node) const
     {
       int lid = node->LID();
+      if (lid==-1)
+        return vector<int>();
       int idx = (*idxcolnodes_)[lid];
       vector<int> dof((*numdfcolnodes_)[lid]);
       for (unsigned i=0; i<dof.size(); ++i)
@@ -156,6 +178,8 @@ public:
   virtual vector<int> Dof(Element* element) const
     {
       int lid = element->LID();
+      if (lid==-1)
+        return vector<int>();
       int idx = (*idxcolelements_)[lid];
       vector<int> dof((*numdfcolelements_)[lid]);
       for (unsigned i=0; i<dof.size(); ++i)
