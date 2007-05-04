@@ -25,6 +25,8 @@ filter. But to link the filter stubs of these functions are needed.
 #include "../discret/shell8.H"
 #include "../discret/fluid2.H"
 #include "../discret/fluid3.H"
+#include "../discret/wall1.H"
+#include "../drt_so3/so_hex8.H"
 
 
 extern "C" void ReadDat()
@@ -191,7 +193,7 @@ int Elements::Fluid3Surface::EvaluateNeumann(ParameterList& params,
   return 0;
 }
 
-    
+
 int Elements::Fluid2Register::Initialize(Discretization&)
 {
   // dserror("Elements::Fluid2Register::Initialize undefined");
@@ -232,6 +234,94 @@ int Elements::Fluid2Line::EvaluateNeumann(ParameterList& params,
   dserror("Elements::Fluid2Line::EvaluateNeumann undefined");
   return 0;
 }
-    
+
+#if 0
+int Elements::Soh8Register::Initialize(Discretization&)
+{
+  // dserror("Elements::Soh8Register::Initialize undefined");
+  return 0;
+}
+#endif
+
+bool Elements::So_hex8::ReadElement()
+{
+  dserror("Elements::So_hex8::ReadElement undefined");
+  return false;
+}
+
+int Elements::So_hex8::Evaluate(ParameterList&,
+                               Discretization&,
+                               vector<int>&,
+                               Epetra_SerialDenseMatrix&,
+                               Epetra_SerialDenseMatrix&,
+                               Epetra_SerialDenseVector&,
+                               Epetra_SerialDenseVector&,
+                               Epetra_SerialDenseVector&)
+{
+  dserror("Elements::So_hex8::Evaluate undefined");
+  return 0;
+}
+
+int Elements::So_hex8::EvaluateNeumann(ParameterList&, Discretization&, Condition&, vector<int>&, Epetra_SerialDenseVector&)
+{
+  dserror("Elements::So_hex8::EvaluateNeumann undefined");
+  return 0;
+}
+
+#if 0
+int Elements::Soh8Surface::EvaluateNeumann(ParameterList& params,
+                                          Discretization&      discretization,
+                                          Condition&           condition,
+                                          vector<int>&              lm,
+                                          Epetra_SerialDenseVector& elevec1)
+{
+  dserror("Elements::Soh8Surface::EvaluateNeumann undefined");
+  return 0;
+}
+#endif
+
+#if 0
+int Elements::Wall1Register::Initialize(Discretization&)
+{
+  // dserror("Elements::Wall1Register::Initialize undefined");
+  return 0;
+}
+#endif
+
+bool Elements::Wall1::ReadElement()
+{
+  dserror("Elements::Wall1::ReadElement undefined");
+  return false;
+}
+
+int Elements::Wall1::Evaluate(ParameterList&,
+                               Discretization&,
+                               vector<int>&,
+                               Epetra_SerialDenseMatrix&,
+                               Epetra_SerialDenseMatrix&,
+                               Epetra_SerialDenseVector&,
+                               Epetra_SerialDenseVector&,
+                               Epetra_SerialDenseVector&)
+{
+  dserror("Elements::Wall1::Evaluate undefined");
+  return 0;
+}
+
+int Elements::Wall1::EvaluateNeumann(ParameterList&, Discretization&, Condition&, vector<int>&, Epetra_SerialDenseVector&)
+{
+  dserror("Elements::Wall1::EvaluateNeumann undefined");
+  return 0;
+}
+
+int Elements::Wall1Line::EvaluateNeumann(ParameterList& params,
+                                          Discretization&      discretization,
+                                          Condition&           condition,
+                                          vector<int>&              lm,
+                                          Epetra_SerialDenseVector& elevec1)
+{
+  dserror("Elements::Wall1Line::EvaluateNeumann undefined");
+  return 0;
+}
+
 #endif
 #endif
