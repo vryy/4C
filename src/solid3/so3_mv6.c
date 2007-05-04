@@ -111,7 +111,7 @@ void so3_mv6_v_id(DOUBLE iv[NUMSTR_SOLID3])
 \date 04/07
 */
 void so3_mv6_v_ass(const DOUBLE av[NUMSTR_SOLID3],  /*!< input vector */
-                  DOUBLE bv[NUMSTR_SOLID3])  /*!< assigned vector */
+                   DOUBLE bv[NUMSTR_SOLID3])  /*!< assigned vector */
 {
   INT i;  /* index */
 

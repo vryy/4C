@@ -93,7 +93,7 @@ void so3_mat_robinson_be_init(SOLID3* actso3)
     amzero(&(actso3->miv_rob->vicstn));
     amdef("miv_rob_vicstnn", &(actso3->miv_rob->vicstnn),
           actso3->gptot, NUMSTR_SOLID3, "DA");
-    amzero(&(actso3->miv_rob->vicstn));
+    amzero(&(actso3->miv_rob->vicstnn));
     amdef("miv_rob_bckstss", &(actso3->miv_rob->bckstss),
           actso3->gptot, 1, "IV");
     amzero(&(actso3->miv_rob->bckstss));
@@ -102,7 +102,7 @@ void so3_mat_robinson_be_init(SOLID3* actso3)
     amzero(&(actso3->miv_rob->bacsts));
     amdef("miv_rob_bacstsn", &(actso3->miv_rob->bacstsn),
           actso3->gptot, NUMSTR_SOLID3, "DA");
-    amzero(&(actso3->miv_rob->bacsts));
+    amzero(&(actso3->miv_rob->bacstsn));
     amdef("miv_rob_kvarva", &(actso3->miv_rob->kvarva),
           actso3->gptot, 2*NUMSTR_SOLID3, "DA");
     amzero(&(actso3->miv_rob->kvarva));

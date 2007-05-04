@@ -178,11 +178,14 @@ void so3_int_fintstifmass(CONTAINER *container,
     /* debug: purposes */
     {
       INT xxx;
-      printf("Element %d, GP %d \n", ele->Id, igp);
+      printf("Element %d, GP %d \n", ele->Id_loc, igp);
       for (xxx=0; xxx<6; xxx++)
       {
-        printf("Strain %d : (% 5.2f,% 5.2f,% 5.2f) : %f\n", 
-               xxx, gds.gpc[0], gds.gpc[1], gds.gpc[2], gds.stnglv[xxx]);
+        if (isnan(gds.stnglv[xxx]))
+        {
+          printf("Strain %d : (% 5.2f,% 5.2f,% 5.2f) : %f\n", 
+                 xxx, gds.gpc[0], gds.gpc[1], gds.gpc[2], gds.stnglv[xxx]);
+        }
       }
     }
 #endif
@@ -198,11 +201,14 @@ void so3_int_fintstifmass(CONTAINER *container,
     /* debug: purposes */
     {
       INT xxx;
-      printf("Element %d, GP %d \n", ele->Id, igp);
+      printf("Element %d, GP %d \n", ele->Id_loc, igp);
       for (xxx=0; xxx<6; xxx++)
       {
-        printf("Stress %d : (% 5.2f,% 5.2f,% 5.2f) : %f\n", 
-               xxx, gds.gpc[0], gds.gpc[1], gds.gpc[2], stress[xxx]);
+        if (isnan(stress[xxx]))
+        {
+          printf("Stress %d : (% 5.2f,% 5.2f,% 5.2f) : %f\n", 
+                 xxx, gds.gpc[0], gds.gpc[1], gds.gpc[2], stress[xxx]);
+        }
       }
     }
 #endif
