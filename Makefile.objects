@@ -117,6 +117,7 @@ OBJS_DISCRET_LIB  = src/discret/drt_discret.o \
                 src/drt_so3/so_hex8.o \
                 src/discret/drt_dserror.o \
                 src/discret/linalg_utils.o \
+                src/discret/linalg_serialdensematrix.o \
                 src/discret/distribute_grids.o
 OBJS_DISCRET  = \
                 src/discret/drt_discret_evaluate.o \
