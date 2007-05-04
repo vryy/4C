@@ -3430,7 +3430,6 @@ if (strncmp(string,"stress",stringlenght)==0)
       fprintf(out,"#-------------------------------------------------------------------------------\n");
       fprintf(out,"# RESULT shell8_forces on FIELD %s, DIS %1i\n",actgid->fieldname,disnum);
       fprintf(out,"#-------------------------------------------------------------------------------\n");
-      fprintf(out, "Monsterkacke\n");
       fprintf(out,"RESULT %cshell8_forces%c %cccarat%c %d %s %s %c%s_dis_%1i%c\n",
                                                              sign,sign,
                                                              sign,sign,
