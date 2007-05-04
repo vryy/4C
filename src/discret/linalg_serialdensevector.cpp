@@ -64,6 +64,13 @@ LINALG::SerialDenseVector::~SerialDenseVector()
 {
 }
 
+// << operator
+ostream& operator << (ostream& os, const LINALG::SerialDenseVector& vector)
+{
+  vector.Print(os);
+  return os;
+}
+
 /*----------------------------------------------------------------------*
  |  size the matrix but do not init to zero  (public)       mwgee 05/07|
  *----------------------------------------------------------------------*/

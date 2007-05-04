@@ -25,6 +25,9 @@ Maintainer: Moritz Frenzel
 #include "../discret/drt_exporter.H"
 #include "../discret/drt_dserror.H"
 #include "../discret/linalg_utils.H"
+#include "../discret/linalg_serialdensematrix.H"
+#include "../discret/linalg_serialdensevector.H"
+#include "Epetra_SerialDenseSolver.h"
 
 extern "C" 
 {
@@ -33,6 +36,7 @@ extern "C"
 }
 #include "../discret/dstrc.H"
 using namespace std; // cout etc.
+using namespace LINALG; // our linear algebra
 
 /*----------------------------------------------------------------------*
  |                                                         maf 04/07    |
@@ -213,10 +217,17 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     xrefe(i,1) = Nodes()[i]->X()[1];
     xrefe(i,2) = Nodes()[i]->X()[2];
     
-    xcurr(i,0) = xrefe(i,0) + disp[i*NUMDOF_SOH8+0];
-    xcurr(i,1) = xrefe(i,1) + disp[i*NUMDOF_SOH8+1];
-    xcurr(i,2) = xrefe(i,2) + disp[i*NUMDOF_SOH8+2];
+    xcurr(i,0) = xrefe(i,0);// + disp[i*NUMDOF_SOH8+0];
+    xcurr(i,1) = xrefe(i,1);// + disp[i*NUMDOF_SOH8+1];
+    xcurr(i,2) = xrefe(i,2);// + disp[i*NUMDOF_SOH8+2];
   }
+  // testing ************
+  double delta=0.1905;
+  xcurr(1,0) += delta;
+  xcurr(2,0) += delta;
+  xcurr(5,0) += delta;
+  xcurr(6,0) += delta;
+  // testing ************/
   
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -249,21 +260,16 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     if (detJ == 0.0) dserror("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
     
-    // compute inverse of Jacobian
-    Epetra_SerialDenseMatrix invjac(NUMDIM_SOH8,NUMDIM_SOH8);
-    invjac(0,0) = (jac(1,1)*jac(2,2) - jac(2,1)*jac(1,2)) / detJ;
-    invjac(0,1) = (jac(0,2)*jac(2,1) - jac(0,1)*jac(2,2)) / detJ;
-    invjac(0,2) = (jac(0,1)*jac(1,2) - jac(0,2)*jac(1,1)) / detJ;
-    invjac(1,0) = (jac(1,2)*jac(2,0) - jac(2,2)*jac(1,0)) / detJ;
-    invjac(1,1) = (jac(0,0)*jac(2,2) - jac(0,2)*jac(2,0)) / detJ;
-    invjac(1,2) = (jac(0,2)*jac(1,0) - jac(0,0)*jac(1,2)) / detJ;
-    invjac(2,0) = (jac(1,0)*jac(2,1) - jac(2,0)*jac(1,1)) / detJ;
-    invjac(2,1) = (jac(0,1)*jac(2,0) - jac(0,0)*jac(2,1)) / detJ;
-    invjac(2,2) = (jac(0,0)*jac(1,1) - jac(0,1)*jac(1,0)) / detJ;
-    
-    // derivatives at gp w.r.t. material coordinates
+    /* compute derivatives N_XYZ at gp w.r.t. material coordinates
+    ** by solving   Jac . N_XYZ = N_rst   for N_XYZ
+    ** Inverse of Jacobian is therefore not explicitly computed
+    */
     Epetra_SerialDenseMatrix N_XYZ(NUMDIM_SOH8,NUMNOD_SOH8);
-    N_XYZ.Multiply('N','N',1.0,invjac,deriv_gp,1.0);
+    Epetra_SerialDenseSolver solve_for_inverseJac;  // solve A.X=B
+    solve_for_inverseJac.SetMatrix(jac);            // set A=jac
+    solve_for_inverseJac.SetVectors(N_XYZ,deriv_gp);// set X=N_XYZ, B=deriv_gp
+    int err = solve_for_inverseJac.Solve();         // N_XYZ = J^-1.N_rst
+    if (err != 0) dserror("Inversion of Jacobian failed");
     
     // (material) deformation gradient F = d xxurr / d xrefe
     Epetra_SerialDenseMatrix defgrd(NUMDIM_SOH8,NUMDIM_SOH8);

@@ -77,6 +77,13 @@ LINALG::SerialDenseMatrix::~SerialDenseMatrix()
 {
 }
 
+// << operator
+ostream& operator << (ostream& os, const LINALG::SerialDenseMatrix& matrix)
+{
+  matrix.Print(os);
+  return os;
+}
+
 /*----------------------------------------------------------------------*
  |  shape the matrix but do not init to zero  (public)       mwgee 05/07|
  *----------------------------------------------------------------------*/

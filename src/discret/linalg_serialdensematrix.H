@@ -133,6 +133,7 @@ ostream& operator << (ostream& os, const LINALG::SerialDenseMatrix& matrix);
 
 
 
+
 #endif  // #ifndef SERIALDENSEMATRIX_H
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
