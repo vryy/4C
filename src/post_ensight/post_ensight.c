@@ -371,6 +371,7 @@ void pe_write_fluid_case_file(FILE* case_file)
   /*pe_write_field_result(field, name of result, case_file, dimension
    * of result*/
   pe_write_field_result(fluid_idx, "velocity", case_file, 3);
+  pe_write_field_result(fluid_idx, "coupforce", case_file, 3);
   pe_write_field_result(fluid_idx, "pressure", case_file, 1);
   pe_write_field_result(fluid_idx, "average_pressure", case_file, 1);
 

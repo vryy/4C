@@ -114,6 +114,7 @@ OBJS_DISCRET_LIB  = src/discret/drt_discret.o \
                 src/drt_so3/so_hex8_surface.o \
                 src/drt_so3/so_hex8_line.o \
                 src/drt_so3/so_hex8_volume.o \
+                src/drt_so3/so_hex8.o \
                 src/discret/drt_dserror.o \
                 src/discret/linalg_utils.o \
                 src/discret/distribute_grids.o
@@ -143,7 +144,6 @@ OBJS_DISCRET  = \
                 src/discret/fluid_dyn_nln_drt.o \
                 src/discret/fluidimplicitintegration.o \
                 src/discret/fluidresulttest.o \
-                src/drt_so3/so_hex8.o \
                 src/drt_so3/so_hex8_evaluate.o \
                 src/drt_so3/so_hex8_input.o
 #                pss_full

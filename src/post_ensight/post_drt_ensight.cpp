@@ -597,6 +597,7 @@ void FluidEnsightWriter::WriteResults(PostField* field)
 {
   EnsightWriter::WriteResults("velnp","velocity",field->problem()->num_dim());
   EnsightWriter::WriteResults("velnp","pressure",1,field->problem()->num_dim());
+  EnsightWriter::WriteResults("residual","residual",field->problem()->num_dim());
 }
 
 
