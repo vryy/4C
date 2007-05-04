@@ -91,6 +91,7 @@ public:
 
   /*!
   \brief Get number of dofs for given node.
+
   Ask the current DofSet for the number of dofs of this node.
   There is a variable number of DofSets and one is currently selected.
   - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
@@ -101,6 +102,7 @@ public:
 
   /*!
   \brief Get number of dofs for given element.
+
   Ask the current DofSet for the number of dofs of this element.
   There is a variable number of DofSets and one is currently selected.
   - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
@@ -111,6 +113,7 @@ public:
 
   /*!
   \brief Get the gid of a dof for given node.
+
   Ask the current DofSet for the gid of the dof of this node.
   There is a variable number of DofSets and one is currently selected.
   - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
@@ -122,6 +125,7 @@ public:
 
   /*!
   \brief Get the gid of a dof for given element.
+
   Ask the current DofSet for the gid of the dof of this element.
   There is a variable number of DofSets and one is currently selected.
   - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
@@ -133,9 +137,10 @@ public:
 
   /*!
   \brief Get the gid of all dofs of a node.
+
   Ask the current DofSet for the gids of the dofs of this node. The
   required vector is created and filled on the fly. So better keep it
-  if you need more that one dof gid.
+  if you need more than one dof gid.
   - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
   \param node (in)      : the node
   */
@@ -144,6 +149,7 @@ public:
 
   /*!
   \brief Get the gid of all dofs of a element.
+
   Ask the current DofSet for the gids of the dofs of this element. The
   required vector is created and filled on the fly. So better keep it
   if you need more that one dof gid.
@@ -1069,11 +1075,9 @@ protected:
 
   multimap<string,RefCountPtr<Condition> >      condition_;       // some conditions e.g. BCs
 
-  /// set of DofSets
-  vector<DofSet>                                dofsets_;
+  vector<DofSet>                                dofsets_;         // set of DofSets
+  int                                           currentdofset_;   // number of the DofSet we are currently working with
 
-  /// number of the DofSet we are currently working with
-  int                                           currentdofset_;
 }; // class Discretization
 } // namespace DRT
 
