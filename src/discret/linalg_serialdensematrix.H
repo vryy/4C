@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file drt_node.H
+\file linalg_serialdensematrix.H
 
 \class LINALG::SerialDenseMatrix
 

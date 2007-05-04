@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
-\file linalg_serialdensematrix.cpp
-\brief A class that wraps Epetra_SerialDenseMatrix with minor modifications
+\file linalg_serialdensevector.cpp
+\brief A class that wraps Epetra_SerialDenseVector with minor modifications
        in the constructor
 
 <pre>
@@ -14,14 +14,14 @@ Maintainer: Michael Gee
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
-#include "linalg_serialdensematrix.H"
+#include "linalg_serialdensevector.H"
 
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                             mwgee 05/07|
  *----------------------------------------------------------------------*/
-LINALG::SerialDenseMatrix::SerialDenseMatrix(bool set_object_label) :
-Epetra_SerialDenseMatrix(set_object_label)
+LINALG::SerialDenseVector::SerialDenseVector() :
+Epetra_SerialDenseVector()
 {
 }
 
@@ -29,22 +29,9 @@ Epetra_SerialDenseMatrix(set_object_label)
 /*----------------------------------------------------------------------*
  | ctor (public)                                             mwgee 05/07|
  *----------------------------------------------------------------------*/
-LINALG::SerialDenseMatrix::SerialDenseMatrix(int NumRows, int NumCols,
-                                             bool init, bool set_object_label) :
-Epetra_SerialDenseMatrix(set_object_label)                                     
+LINALG::SerialDenseVector::SerialDenseVector(int Length) :
+Epetra_SerialDenseVector(Length)                                     
 {
-  if(NumRows < 0)
-	throw ReportError("NumRows = " + toString(NumRows) + ". Should be >= 0", -1);
-  if(NumCols < 0)
-	throw ReportError("NumCols = " + toString(NumCols) + ". Should be >= 0", -1);
-
-  int errorcode = 0;
-  if (init==true)
-    errorcode = Shape(NumRows, NumCols);
-  else
-    errorcode = LightShape(NumRows, NumCols);
-  if(errorcode != 0)
-    throw ReportError("Shape returned non-zero value", errorcode);
 }
 
 
@@ -52,10 +39,10 @@ Epetra_SerialDenseMatrix(set_object_label)
 /*----------------------------------------------------------------------*
  | ctor (public)                                             mwgee 05/07|
  *----------------------------------------------------------------------*/
-LINALG::SerialDenseMatrix::SerialDenseMatrix(Epetra_DataAccess CV, double* A, int LDA,
-                                                   int NumRows, int NumCols,
-                                                   bool set_object_label) :
-Epetra_SerialDenseMatrix(CV,A,LDA,NumRows,NumCols,set_object_label)
+LINALG::SerialDenseVector::SerialDenseVector(Epetra_DataAccess CV,
+                                                   double* Values,
+                                                   int Length) :
+Epetra_SerialDenseVector(CV,Values,Length)
 {
 }
 
@@ -64,8 +51,8 @@ Epetra_SerialDenseMatrix(CV,A,LDA,NumRows,NumCols,set_object_label)
 /*----------------------------------------------------------------------*
  | copy-ctor (public)                                        mwgee 05/07|
  *----------------------------------------------------------------------*/
-LINALG::SerialDenseMatrix::SerialDenseMatrix(const SerialDenseMatrix& Source) :
-Epetra_SerialDenseMatrix(Source)
+LINALG::SerialDenseVector::SerialDenseVector(const SerialDenseVector& Source) :
+Epetra_SerialDenseVector(Source)
 {
 }
 
@@ -73,20 +60,20 @@ Epetra_SerialDenseMatrix(Source)
 /*----------------------------------------------------------------------*
  | dtor (public)                                             mwgee 05/07|
  *----------------------------------------------------------------------*/
-LINALG::SerialDenseMatrix::~SerialDenseMatrix()
+LINALG::SerialDenseVector::~SerialDenseVector()
 {
 }
 
 /*----------------------------------------------------------------------*
- |  shape the matrix but do not init to zero  (public)       mwgee 05/07|
+ |  size the matrix but do not init to zero  (public)       mwgee 05/07|
  *----------------------------------------------------------------------*/
-int LINALG::SerialDenseMatrix::LightShape(int NumRows, int NumCols) 
+int LINALG::SerialDenseVector::LightSize(int Length) 
 {
-  if(NumRows < 0 || NumCols < 0) return(-1);
+  if(Length < 0) return(-1);
 
   CleanupData(); // Get rid of anything that might be already allocated
-  M_ = NumRows;
-  N_ = NumCols;
+  M_ = Length;
+  N_ = 1;        // this is a vector, therefore ONE column
   LDA_ = M_;
 	const int newsize = LDA_ * N_;
 	if(newsize > 0) {
@@ -99,27 +86,27 @@ int LINALG::SerialDenseMatrix::LightShape(int NumRows, int NumCols)
 
 
 /*----------------------------------------------------------------------*
- |  reshape the matrix but do not init excess space to zero  mwgee 05/07|
+ |  resize the matrix but do not init excess space to zero  mwgee 05/07|
  *----------------------------------------------------------------------*/
-int LINALG::SerialDenseMatrix::LightReshape(int NumRows, int NumCols) 
+int LINALG::SerialDenseVector::LightResize(int Length) 
 {
-	if(NumRows < 0 || NumCols < 0)
+	if(Length < 0)
 		return(-1);
 
 	double* A_tmp = 0;
-	const int newsize = NumRows * NumCols;
+	const int newsize = Length;    // ONE column
 
 	if(newsize > 0) {
 		// Allocate space for new matrix
 		A_tmp = new double[newsize];
-		int M_tmp = EPETRA_MIN(M_, NumRows);
-		int N_tmp = EPETRA_MIN(N_, NumCols);
+		int M_tmp = EPETRA_MIN(M_, Length);
+		int N_tmp = EPETRA_MIN(N_, 1);
 		if (A_ != 0) 
-			CopyMat(A_, LDA_, M_tmp, N_tmp, A_tmp, NumRows); // Copy principal submatrix of A to new A
+			CopyMat(A_, LDA_, M_tmp, N_tmp, A_tmp, Length); // Copy principal submatrix of A to new A
   }
   CleanupData(); // Get rid of anything that might be already allocated  
-  M_ = NumRows;
-  N_ = NumCols;
+  M_ = Length;
+  N_ = 1;
   LDA_ = M_;
 	if(newsize > 0) {
 		A_ = A_tmp; // Set pointer to new A
