@@ -1126,6 +1126,10 @@ void so3_mv6_m_mprdscl(const DOUBLE scl,
 void so3_mv6_m_updmprd(DOUBLE am[NUMSTR_SOLID3][NUMSTR_SOLID3],
                        DOUBLE bm[NUMSTR_SOLID3][NUMSTR_SOLID3],
                        DOUBLE cm[NUMSTR_SOLID3][NUMSTR_SOLID3]);
+void so3_mv6_m_updmprdscl(const DOUBLE scl,
+                          DOUBLE am[NUMSTR_SOLID3][NUMSTR_SOLID3],
+                          DOUBLE bm[NUMSTR_SOLID3][NUMSTR_SOLID3],
+                          DOUBLE cm[NUMSTR_SOLID3][NUMSTR_SOLID3]);
 void so3_mv6_m2_idscl(const DOUBLE scale,
                       DOUBLE im[NUMSTR_SOLID3][NUMSTR_SOLID3]);
 void so3_mv6_m2_updmtom2(DOUBLE am[NUMSTR_SOLID3][NUMSTR_SOLID3]);

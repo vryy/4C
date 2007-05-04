@@ -69,7 +69,7 @@ void so3_mat_stvenant_sel(CONTAINER* container,
    */
 #ifdef D_MAT
   {
-    /* We need to create a dynmically allocated array to hold
+    /* We need to create a dynamically allocated array to hold
      * elasticity matrix. The reason is due to C being incapable of
      * treating statically and dynamically allocated multi-dimensional
      * arrays. In short: mat_el_iso(...) requires a DOUBLE**, whereas
@@ -100,14 +100,15 @@ void so3_mat_stvenant_sel(CONTAINER* container,
     DOUBLE mfac = Emod/((1.0+nu)*(1.0-2.0*nu));  /* factor */
     /* constitutive matrix */
     /* set the whole thing to zero */
-    INT istr, jstr;
-    for (istr=0; istr<NUMSTR_SOLID3; istr++)
-    {
-      for (jstr=0; jstr<NUMSTR_SOLID3; jstr++)
-      {
-        cmat[istr][jstr] = 0.0;
-      }
-    }
+    memset(cmat, 0, NUMSTR_SOLID3*NUMSTR_SOLID3*sizeof(DOUBLE));
+/*     INT istr, jstr; */
+/*     for (istr=0; istr<NUMSTR_SOLID3; istr++) */
+/*     { */
+/*       for (jstr=0; jstr<NUMSTR_SOLID3; jstr++) */
+/*       { */
+/*         cmat[istr][jstr] = 0.0; */
+/*       } */
+/*     } */
     /* write non-zero components */
     cmat[0][0] = mfac*(1.0-nu);
     cmat[0][1] = mfac*nu;
@@ -151,7 +152,6 @@ void so3_mat_stvenant_sel(CONTAINER* container,
   /*--------------------------------------------------------------*/
   /* strain due to thermal expansion */
 #ifdef D_TSI
-#ifdef D_THERM3
   if (genprob.probtyp == prb_tsi)
   {
     DOUBLE tem;  /* temperature */
@@ -168,7 +168,6 @@ void so3_mat_stvenant_sel(CONTAINER* container,
     strain[2] -= thermexpans * tem;  /* E_zz */
     /* do nothing with E_xy, E_yz and E_zx */
   }
-#endif
 #endif
   /*--------------------------------------------------------------*/
   /* compute stress vector */

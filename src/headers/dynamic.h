@@ -229,6 +229,7 @@ typedef struct _THERM_DYNAMIC
  *----------------------------------------------------------------------*/
 typedef struct _TSI_DYNAMIC
 {
+  /* core algorithm choice */
   enum
   {
     tsi_none,                       /* default */
@@ -273,4 +274,7 @@ typedef struct _TSI_DYNAMIC
 
   /* Runge-Kutta thingies */
   INT              actstg;          /* current stage */
+
+  /* output */
+  INT              out_std_ev;      /* print to STDOUT every */
 } TSI_DYNAMIC;

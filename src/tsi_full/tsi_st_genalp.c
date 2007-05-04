@@ -192,13 +192,13 @@ void tsi_st_genalp(INT disnum_s,
   INT disnum = 0;
   INT timeadapt;  /* flag to switch time adaption on/off */
 
-  DOUBLE deltaepot=0.0;
+  DOUBLE deltaepot = 0.0;
 
-  INT convergence;  /* convergence flag */
+  INT converged;  /* convergence flag */
   INT itnum;  /* iterator */
   DOUBLE dmax;  /* infinity norm of residual displacements */
 
-  DOUBLE t0, t1;
+  DOUBLE t0, t1;  /* wall clock times for measuring */
   
   INT stiff_array;  /* indice of the active system sparse matrix */
   INT mass_array;  /* indice of the active system sparse matrix */
@@ -258,11 +258,14 @@ void tsi_st_genalp(INT disnum_s,
 
   /*--------------------------------------------------------------------*/
   /* a word to the user */
-  printf("==============================================================="
-         "=========\n");
-  printf("TSI structural time integration with generalised-alpha\n");
-  printf("---------------------------------------------------------------"
-         "---------\n");
+  if (par.myrank == 0)
+  { 
+    printf("============================================================="
+           "=============\n");
+    printf("TSI structural time integration with generalised-alpha\n");
+    printf("-------------------------------------------------------------"
+           "-------------\n");
+  }
 
   /*--------------------------------------------------------------------*/
   /* set up pointers and container */
@@ -286,6 +289,7 @@ void tsi_st_genalp(INT disnum_s,
   container.disnum_t = disnum_t;  /* thermo-discretisation index ( ==0 ) */
   tsidyn = alldyn[genprob.numfld].tsidyn;  /* TSI dynamic control */
   tsidyn->dt = actdyn->dt;
+  tsidyn->out_std_ev = actdyn->updevry_disp;
   actsysarray = numsf;  /* ? */
   actsolv = &(solv[numsf]);
   if (actsolv->nsysarray == 1)
@@ -661,7 +665,7 @@ void tsi_st_genalp(INT disnum_s,
           && (actdyn->time <= actdyn->maxtime) )
   {
     /*------------------------------------------------------------------*/
-    /* wall clock time ?????? */
+    /* wall clock time in the beginning of current time step*/
     t0 = ds_cputime();
 
     /*------------------------------------------------------------------*/
@@ -671,11 +675,11 @@ void tsi_st_genalp(INT disnum_s,
     /* repeatcount = 0; */
 
     /*------------------------------------------------------------------*/
-    /* check whether write results to STDOUT or not*/
+    /* check whether results are written to STDOUT or are not */
     mod_stdout = actdyn->step % actdyn->updevry_disp;
 
     /*------------------------------------------------------------------*/
-    /* set new time */
+    /* set new time t_{n+1} */
     actdyn->time += actdyn->dt;
     /* put time to global variable for time-dependent load distributions */
     acttime = actdyn->time;
@@ -797,7 +801,7 @@ void tsi_st_genalp(INT disnum_s,
 
     /*------------------------------------------------------------------*/
     /* determine external mid-force vector by interpolating */
-    /* forces rhs[0] = (1-alphaf)rhs[1] + alphaf*rhs[2] */
+    /* forces rhs[0] = (1-alphaf)*rhs[1] + alphaf*rhs[2] */
     solserv_copy_vec(&(actsolv->rhs[2]), &(actsolv->rhs[0]));
     solserv_scalarprod_vec(&(actsolv->rhs[0]), actdyn->alpha_f);
     solserv_add_vec(&(actsolv->rhs[1]), &(actsolv->rhs[0]), 
@@ -883,21 +887,19 @@ void tsi_st_genalp(INT disnum_s,
                          &(actsolv->sysarray_typ[stiff_array]));
 
     /*------------------------------------------------------------------*/
-    /* return residual displacements iinc D_{n+1}^<i+1> to the nodes */
-#if 1
+    /* return residual/iterative displacements \iinc D_{n+1}^<i+1> 
+     * to the nodes
+     * These are needed by non-linear materials. */
     solserv_result_resid(actfield, disnum, actintra, 
                          &(dispi[0]),
                          isolres->disres,
                          &(actsolv->sysarray[stiff_array]),
                          &(actsolv->sysarray_typ[stiff_array]));
-#endif
-
-
 
     /*------------------------------------------------------------------*/
     /* check convergence of predictor */
-    convergence = 0;
-    dmax        = 0.0;
+    converged = 0;
+    dmax = 0.0;
     solserv_vecnorm_euclid(actintra, &(dispi[0]), &(dynvar.dinorm));
     solserv_vecnorm_euclid(actintra, &(dispi[0]), &(dynvar.dnorm));
     solserv_vecnorm_Linf(actintra, &(dispi[0]), &dmax);
@@ -911,14 +913,14 @@ void tsi_st_genalp(INT disnum_s,
          || (dynvar.dnorm < EPS14)
          || ( (dynvar.dinorm < EPS14) && (dmax < EPS12) ) )
     {
-      convergence = 1;  /* inefficient ... otherwise residuals */
+      converged = 1;  /* inefficient ... otherwise residuals */
     }
 
     /*==================================================================*/
     /* PERFORM EQUILIBRIUM ITERATION */
     /*==================================================================*/
     itnum = 0;
-    while ( (convergence != 1) && (itnum <= actdyn->maxiter) )
+    while ( (converged != 1) && (itnum <= actdyn->maxiter) )
     {
 
       /*----------------------------------------------------------------*/
@@ -951,7 +953,7 @@ void tsi_st_genalp(INT disnum_s,
 
       /*----------------------------------------------------------------*/
       /* zero the stiffness matrix 
-       * and vector for internal forces and dirichlet forces */
+       * and vector for internal forces and Dirichlet forces */
       solserv_zero_mat(actintra, 
                        &(actsolv->sysarray[stiff_array]),
                        &(actsolv->sysarray_typ[stiff_array]));
@@ -1022,7 +1024,7 @@ void tsi_st_genalp(INT disnum_s,
                     work, stiff_array, mass_array, damp_array);
 
       /*----------------------------------------------------------------*/
-      /* solve keff * rsd[0] = rhs[0] */
+      /* solve keff * work[0] = rhs[0] */
       /* solve for residual/iterative displacements \iinc\D_{n+1}^<i+1>
        * to correct incremental displacements \inc\D_{n+1}^<i> */
       init = 0;
@@ -1078,21 +1080,25 @@ void tsi_st_genalp(INT disnum_s,
       solserv_vecnorm_euclid(actintra, &(work[0]), &(dynvar.dinorm));
       solserv_vecnorm_euclid(actintra, &(dispi[0]), &(dynvar.dnorm));
       solserv_vecnorm_Linf(actintra, &(work[0]), &dmax);
-      if ( (par.myrank == 0) && (mod_stdout == 0) )
-      {
-        printf("                                                   "
-               "Residual %10.5E\n", dynvar.dinorm);
-      }
       fflush(stdout);
       if ( (dynvar.dinorm < actdyn->toldisp)
            || (dynvar.dnorm < EPS14)
            || ( (dynvar.dinorm < EPS14) && (dmax < EPS12) ) )
       {
-        if (mod_stdout == 0)
+        if ( (par.myrank == 0) && (mod_stdout == 0) )
         {
-          printf("Convergence reached\n");
+          printf("                                                   "
+                 "Residual %10.5E -- Convergence reached\n", dynvar.dinorm);
         }
-        convergence = 1;
+        converged = 1;
+      }
+      else
+      {
+        if ( (par.myrank == 0) && (mod_stdout == 0) )
+        {
+          printf("                                                   "
+                 "Residual %10.5E\n", dynvar.dinorm);
+        }
       }
 
       /*----------------------------------------------------------------*/
@@ -1133,15 +1139,15 @@ void tsi_st_genalp(INT disnum_s,
     dyn_nlnstructupd(actfield,
                      disnum,
                      &dynvar, actdyn, actsolv,
-                     &(actsolv->sol[0]),/* total displ. at time t-dt */
-                     &(actsolv->sol[1]),/* total displ. at time t    */
-                     &(actsolv->rhs[1]),/* load vector  at time t    */
-                     &(actsolv->rhs[2]),/* load vector  at time t-dt */
-                     &(vel[0]),         /* velocities   at time t    */
-                     &(acc[0]),         /* accelerat.   at time t    */
-                     &(work[0]),        /* working arrays            */
-                     &(work[1]),        /* working arrays            */
-                     &(work[2]));       /* working arrays            */
+                     &(actsolv->sol[0]),  /* total displ. at time t_{n} */
+                     &(actsolv->sol[1]),  /* total displ. at time t_{n+1} */
+                     &(actsolv->rhs[1]),  /* load vector at time t_{n} */
+                     &(actsolv->rhs[2]),  /* load vector at time t_{n+1} */
+                     &(vel[0]),  /* velocities at time t_n */
+                     &(acc[0]),  /* accelerations at time t_n */
+                     &(work[0]),  /* working vector */
+                     &(work[1]),  /* working vector */
+                     &(work[2]));  /* working vector */
     
     /*------------------------------------------------------------------*/
     /* return velocities to the nodes */
@@ -1171,7 +1177,6 @@ void tsi_st_genalp(INT disnum_s,
 
     /*------------------------------------------------------------------*/
     /* incremental update of element internal variables */
-#if 1
     *action = calc_struct_update_istep;
     container.dvec = NULL;
     container.dirich = NULL;
@@ -1179,7 +1184,6 @@ void tsi_st_genalp(INT disnum_s,
     container.kstep = 0;
     calelm(actfield, actsolv, actpart, actintra,
            stiff_array, -1, &container, action);
-#endif
 
     /*------------------------------------------------------------------*/
     /* It is a bit messed up, but anyway:
@@ -1283,8 +1287,8 @@ void tsi_st_genalp(INT disnum_s,
     /* print out results to out */
     if ( (mod_stress == 0) || (mod_disp == 0) )
     {
-      if ( (ioflags.struct_stress == 1) 
-           && (ioflags.struct_disp == 1) 
+      if ( (ioflags.struct_stress == 1)
+           && (ioflags.struct_disp == 1)
            && (ioflags.output_out == 1) )
       {
         out_sol(actfield, actpart, disnum, actintra, actdyn->step, 0);
@@ -1293,8 +1297,8 @@ void tsi_st_genalp(INT disnum_s,
 
     /*------------------------------------------------------------------*/
     /* printout results to gid no time adaptivity */
-    if ( (timeadapt == 0) 
-         && (par.myrank == 0) 
+    if ( (timeadapt == 0)
+         && (par.myrank == 0)
          && (ioflags.output_gid == 1) )
     {
       if ( (mod_disp == 0) && (ioflags.struct_disp == 1) )
@@ -1361,6 +1365,7 @@ void tsi_st_genalp(INT disnum_s,
   
   /*--------------------------------------------------------------------*/
   end:
+
   /*--------------------------------------------------------------------*/
   /* cleaning up phase */
   amdel(&intforce_a);
@@ -1383,11 +1388,14 @@ void tsi_st_genalp(INT disnum_s,
 
   /*--------------------------------------------------------------------*/
   /* a last word to the nervously waiting user */
-  printf("---------------------------------------------------------------"
-         "---------\n");
-  printf("TSI structural time integration generalised-alpha finished.\n");
-  printf("==============================================================="
-         "=========\n");
+  if (par.myrank == 0)
+  {
+    printf("-------------------------------------------------------------"
+           "-----------\n");
+    printf("TSI structural time integration generalised-alpha finished.\n");
+    printf("============================================================="
+           "===========\n");
+  }
 
 #ifdef DEBUG
   dstrc_exit();

@@ -722,6 +722,9 @@ void so3_mv6_m_updonescl(const DOUBLE scl,
 /*======================================================================*/
 /*!
 \brief Assign matrix by another matrix
+\param  am        DOUBLE[][]   (i)   input matrix
+\param  bm        DOUBLE[][]   (o)   output matrix
+\return void
 \author bborn
 \date 04/07
 */
@@ -753,10 +756,14 @@ void so3_mv6_m_ass(const DOUBLE am[NUMSTR_SOLID3][NUMSTR_SOLID3],
 /*======================================================================*/
 /*!
 \brief Assign vector by another vector and scale it
+\param  scl       DOUBLE       (i)   scale
+\param  am        DOUBLE[][]   (i)   input matrix
+\param  bm        DOUBLE[][]   (o)   output matrix
+\return void
 \author bborn
 \date 04/07
 */
-void so3_mv6_m_assscl(const DOUBLE scl,  /*!< scale */
+void so3_mv6_m_assscl(const DOUBLE scl,
                       DOUBLE am[NUMSTR_SOLID3][NUMSTR_SOLID3],
                       DOUBLE bm[NUMSTR_SOLID3][NUMSTR_SOLID3])
 {
@@ -1030,7 +1037,7 @@ void so3_mv6_m_updmprd(DOUBLE am[NUMSTR_SOLID3][NUMSTR_SOLID3],
   DOUBLE rcsum;
 
 #ifdef DEBUG
-  dstrc_enter("so3_mv6_m_mprdscl");
+  dstrc_enter("so3_mv6_m_updmprd");
 #endif
 
   for (i=0; i<NUMSTR_SOLID3; i++)
@@ -1041,6 +1048,51 @@ void so3_mv6_m_updmprd(DOUBLE am[NUMSTR_SOLID3][NUMSTR_SOLID3],
       for (k=0; k<NUMSTR_SOLID3; k++)
       {
         rcsum += am[i][k] * bm[k][j];
+      }
+      cm[i][j] += rcsum;
+    }
+  }
+
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+
+/*======================================================================*/
+/*!
+\brief Assign matrix by scaled matrix-matrix product (inner product)
+
+Explicitly
+    Cm += s * Am . Bm
+
+\param  scl      DOUBLE       (i)    scale
+\param  am       DOUBLE[][]   (i)    output matrix
+\param  bm       DOUBLE[][]   (i)    output matrix
+\param  cm       DOUBLE[][]   (o)    assigned matrix
+\author bborn
+\date 04/07
+*/
+void so3_mv6_m_updmprdscl(const DOUBLE scl,
+                          DOUBLE am[NUMSTR_SOLID3][NUMSTR_SOLID3],
+                          DOUBLE bm[NUMSTR_SOLID3][NUMSTR_SOLID3],
+                          DOUBLE cm[NUMSTR_SOLID3][NUMSTR_SOLID3])
+{
+  INT i, j, k;  /* indices */
+  DOUBLE rcsum;
+
+#ifdef DEBUG
+  dstrc_enter("so3_mv6_m_updmprdscl");
+#endif
+
+  for (i=0; i<NUMSTR_SOLID3; i++)
+  {
+    for (j=0; j<NUMSTR_SOLID3; j++)
+    {
+      rcsum = 0.0;
+      for (k=0; k<NUMSTR_SOLID3; k++)
+      {
+        rcsum += scl * am[i][k] * bm[k][j];
       }
       cm[i][j] += rcsum;
     }
