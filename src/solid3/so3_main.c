@@ -111,6 +111,7 @@ void solid3(PARTITION *actpart,
 
   MATERIAL *actmat;
   INT imyrank;
+  INT updreq;  /* status if update is rquired */
 
   /*====================================================================*/
 #ifdef DEBUG
@@ -194,6 +195,17 @@ void solid3(PARTITION *actpart,
       so3_load(ele, &(so3_data), &(so3_gpshade), imyrank, eforc_global);
       break;
     /*------------------------------------------------------------------*/
+    /* iterative update of internal variables */
+    case calc_struct_update_iterstep:
+      actmat = &(mat[ele->mat-1]);
+      so3_iv_updreq(ele, actmat, &(updreq));
+      if (updreq)
+      {
+        so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
+        so3_iv_upditer(container, ele, &(so3_gpshade), actmat);
+      }
+      break;
+    /*------------------------------------------------------------------*/
     /* incremental update of internal variables */
     case calc_struct_update_istep:
       actmat = &(mat[ele->mat-1]);
@@ -201,7 +213,7 @@ void solid3(PARTITION *actpart,
        * advanced material laws, e.g. plastic, visco-elastic or
        * visco-plastic materials, or anti-locking means, e.g.
        * enhanced assumed strain. */
-      so3_iv_upd(container, ele, actmat);
+      so3_iv_updincr(container, ele, actmat);
       break;
     /*------------------------------------------------------------------*/
     /* calculate stresses */

@@ -225,17 +225,17 @@ void so3_mat_robinson_be_sel(const CONTAINER* container,
    * increment of the total strain.
    * Here the reduction matrices --- stored in the previous iteration ---
    * are used. */
-  if ( (actso3->miv_rob->vscstns.a.iv[ip] != so3_mat_robinson_state_vague)
-       && (actso3->miv_rob->bckstss.a.iv[ip] != so3_mat_robinson_state_vague) )
-  {
-    so3_mat_robinson_be_mivupditr(container, ele, 
-                                  gpshade->gpderiv[ip],
-                                  gds,
-                                  actso3->miv_rob->kvarva.a.da[ip],
-                                  actso3->miv_rob->kvakvae.a.da[ip],
-                                  actso3->miv_rob->vicstnn.a.da[ip],
-                                  actso3->miv_rob->bacstsn.a.da[ip]);
-  }
+/*   if ( (actso3->miv_rob->vscstns.a.iv[ip] != so3_mat_robinson_state_vague) */
+/*        && (actso3->miv_rob->bckstss.a.iv[ip] != so3_mat_robinson_state_vague) ) */
+/*   { */
+/*     so3_mat_robinson_be_mivupditr(container, ele, */
+/*                                   gpshade->gpderiv[ip], */
+/*                                   gds, */
+/*                                   actso3->miv_rob->kvarva.a.da[ip], */
+/*                                   actso3->miv_rob->kvakvae.a.da[ip], */
+/*                                   actso3->miv_rob->vicstnn.a.da[ip], */
+/*                                   actso3->miv_rob->bacstsn.a.da[ip]); */
+/*   } */
 
   /*--------------------------------------------------------------------*/
   /* total strain eps_{n+1} at t_{n+1} */
@@ -400,10 +400,10 @@ void so3_mat_robinson_be_rvscstn(ELEMENT* ele,
   /*--------------------------------------------------------------------*/
   /* preliminaries */
   /* J_2 = 1/2 * Sig : Sig  with Sig...overstress */
-  so3_mv6_v_dblctr(ovrstsn, ovrstsn, &j2);
+  so3_mv6_v_dblctr(ovrstsn, ovrstsn, &(j2));
   j2 *= 0.5;
   /* Bingham-Prager shear stress threshold at current temperature */
-  so3_mat_robinson_prmbytmpr(mat_robin->shrthrshld, tmpr, &kksq);
+  so3_mat_robinson_prmbytmpr(mat_robin->shrthrshld, tmpr, &(kksq));
   /* F = (J_2 - K^2)/K_2 */
   if (fabs(kksq) <= EPS10)
   {
@@ -415,7 +415,7 @@ void so3_mat_robinson_be_rvscstn(ELEMENT* ele,
     ff = (j2 - kksq)/kksq;
   }
   /* ss = 1/2 * s : Sig  with  Sig...overstress, s...deviat.stress */
-  so3_mv6_v_dblctr(ovrstsn, devstsn, &ss);
+  so3_mv6_v_dblctr(ovrstsn, devstsn, &(ss));
   ss *= 0.5;
   /* hardening factor aa */
   aa = mat_robin->hrdn_fact;
@@ -608,15 +608,15 @@ void so3_mat_robinson_be_rbcksts(ELEMENT* ele,
   /* activation temperature */
   tem0 = mat_robin->actv_tmpr;
   /* Bingham-Prager shear stress threshold at activation temperature */
-  so3_mat_robinson_prmbytmpr(mat_robin->shrthrshld, tem0, &kk0sq);
+  so3_mat_robinson_prmbytmpr(mat_robin->shrthrshld, tem0, &(kk0sq));
   /* 'H' at current temperature */
-  so3_mat_robinson_prmbytmpr(mat_robin->h, tmpr, &hh);
+  so3_mat_robinson_prmbytmpr(mat_robin->h, tmpr, &(hh));
   /* 'beta' at current temperature */
-  so3_mat_robinson_prmbytmpr(mat_robin->beta, tmpr, &beta);
+  so3_mat_robinson_prmbytmpr(mat_robin->beta, tmpr, &(beta));
   /* 'm' */
   mm = mat_robin->m;
   /* recovery factor 'R_0' */
-  so3_mat_robinson_prmbytmpr(mat_robin->rcvry, tmpr, &rr0);
+  so3_mat_robinson_prmbytmpr(mat_robin->rcvry, tmpr, &(rr0));
   /* 'R' */
   rr = rr0 * exp(mat_robin->actv_ergy*(tmpr-tem0)/(tmpr*tem0));
   /* 'G_0' */
@@ -631,7 +631,7 @@ void so3_mat_robinson_be_rbcksts(ELEMENT* ele,
     gg = sqrt(i2/kk0sq);
   }
   /* ss = 1/2 * s : Alpha  with  Alpha...backstress, s...deviat.stress */
-  so3_mv6_v_dblctr(bacstsn, devstsn, &sa);
+  so3_mv6_v_dblctr(bacstsn, devstsn, &(sa));
   sa *= 0.5;
 
   /*--------------------------------------------------------------------*/
@@ -905,7 +905,7 @@ void so3_mat_robinson_be_red(DOUBLE stress[NUMSTR_SOLID3],
   }
 
   /*--------------------------------------------------------------------*/
-  /* factorise kvvvaavaa */
+  /* factorise kvvvaavaa and solve */
 #ifndef AZTEC_PACKAGE
   /* factorise kvvvaavaa */
   dgetrf(&numstr_2,  /* number of rows of matrix */
@@ -1003,186 +1003,53 @@ void so3_mat_robinson_be_red(DOUBLE stress[NUMSTR_SOLID3],
 
 /*======================================================================*/
 /*!
-\brief Iterative update Robinson's internal material variables
+\brief Set requirement of update of material internal variables
 \author bborn
 \date 05/07
 */
-void so3_mat_robinson_be_mivupditr(const CONTAINER* container,
-                                   ELEMENT* ele,
-                                   DOUBLE gpderiv[MAXNOD_SOLID3][NDIM_SOLID3],
-                                   SO3_GEODEFSTR* gds,
-                                   const DOUBLE* kvarva,
-                                   const DOUBLE* kvakvae,
-                                   DOUBLE vscstnn[NUMSTR_SOLID3],
-                                   DOUBLE bckstsn[NUMSTR_SOLID3])
+void so3_mat_robinson_be_mivupdreq(ELEMENT* ele,
+                                   VP_ROBINSON* mat_robin,
+                                   INT* updreq)
 {
-  const INT numstr_2 = 2*NUMSTR_SOLID3;
-  const ARRAY_POSITION_SOL *isol
-    = &(field[genprob.numsf].dis[container->disnum_s].ipos.isol);
-  const ARRAY_POSITION_SOLRES *isolres
-    = &(field[genprob.numsf].dis[container->disnum_s].ipos.isolres);
-  const INT nelenod = ele->numnp;  /* number of element nodes */
-  const INT neledof = NUMDOF_SOLID3 * nelenod;  /* total elem. DOFs */
-  DOUBLE ediso[MAXNOD_SOLID3][NDIM_SOLID3];  /* current elem. displ. at
-                                              * last iteration */
-  DOUBLE disii[MAXDOF_SOLID3];  /* iterative displacements */
-  DOUBLE disgrdv[NUMDFGR_SOLID3];  /* displacement gradient vector */
-  DOUBLE defgrd[NDIM_SOLID3][NDIM_SOLID3];  /* deformation gradient tensor */
-  DOUBLE bop[NUMSTR_SOLID3][MAXDOF_SOLID3];  /* B-operator */
-  DOUBLE epsii[NUMSTR_SOLID3];  /* iterative/residual total strain */
-
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
-  dstrc_enter("so3_mat_robinson_be_mivupditr");
+  dstrc_enter("so3_mat_robinson_be_mivupdreq");
 #endif
 
   /*--------------------------------------------------------------------*/
-  /* element nodal displacements are last iteration dis_{n+1}^<i-1> */
-  {
-    INT inod;
-    for (inod=0; inod<nelenod; inod++)
-    {
-      NODE* actnode = ele->node[inod];
-      INT jdim;
-      for (jdim=0; jdim<NDIM_SOLID3; jdim++)
-      {
-        /* reconstruct displacement increment \inc\D_{n+1}^<i-1> 
-         * of previous iteration <i-1> */
-        ediso[inod][jdim] = actnode->sol.a.da[isol->disn][jdim]
-          - actnode->sol_residual.a.da[isolres->disres][jdim];
-        /* build iterative/residual displacements \iinc\D_{n+1}^<i> */
-        disii[inod*NDIM_SOLID3+jdim] 
-          = actnode->sol_residual.a.da[isolres->disres][jdim];
-      }
-    }
-  }
-    
-  /*--------------------------------------------------------------------*/
-  /* deformation tensor and displacement gradient */
-  so3_def_grad(nelenod, ediso, gpderiv, gds->xji, 
-               disgrdv, defgrd);
-  
-  /*--------------------------------------------------------------------*/
-  /* calculate B-operator
-   * bop differs depending on geometrically linearity/non-linearity */
-  if (ele->e.so3->kintype == so3_geo_lin)
-  {
-    /* loop over element nodes */
-    INT inod;
-    for (inod=0; inod<nelenod; inod++)
-    {
-      /* nodally stored B-operator */
-      /*           [ ... | N_{,1}^k | ... ]
-       *    Bn^T = [ ... | N_{,2}^k | ... ]
-       *           [ ... | N_{,3}^k | ... ]
-       */
-      DOUBLE N_X = gds->bopn[inod][0];
-      DOUBLE N_Y = gds->bopn[inod][1];
-      DOUBLE N_Z = gds->bopn[inod][2];
-      /* address node-column in operator matrix */
-      INT idof_X = inod * NUMDOF_SOLID3;
-      INT idof_Y = idof_X + 1;
-      INT idof_Z = idof_X + 2;
-      /* linear B-operator */
-      /* 
-       *     [ ... | N_{,X}^k                       | ... ]
-       *     [ ... |            N_{,Y}^k            | ... ]
-       *     [ ... |                       N_{,Z}^k | ... ]
-       * B = [ ~~~   ~~~~~~~    ~~~~~~~~   ~~~~~~~~   ~~~ ]
-       *     [ ... | N_{,Y}^k   N_{,X}^k            | ... ]
-       *     [ ... |            N_{,Z}^k   N_{,Y}^k | ... ]
-       *     [ ... | N_{,Z}^k              N_{,X}^k | ....]
-       */
-      bop[0][idof_X] = N_X;  bop[0][idof_Y] = 0.0;  bop[0][idof_Z] = 0.0;
-      bop[1][idof_X] = 0.0;  bop[1][idof_Y] = N_Y;  bop[1][idof_Z] = 0.0;
-      bop[2][idof_X] = 0.0;  bop[2][idof_Y] = 0.0;  bop[2][idof_Z] = N_Z;
-      /* ~~~ */
-      bop[3][idof_X] = N_Y;  bop[3][idof_Y] = N_X;  bop[3][idof_Z] = 0.0;
-      bop[4][idof_X] = 0.0;  bop[4][idof_Y] = N_Z;  bop[4][idof_Z] = N_Y;
-      bop[5][idof_X] = N_Z;  bop[5][idof_Y] = 0.0;  bop[5][idof_Z] = N_X;   
-    } 
-  }
-  else if (ele->e.so3->kintype == so3_total_lagr)
-  {
-    /* loop over element nodes */
-    INT inod;
-    for (inod=0; inod<nelenod; inod++)
-    {
-      /* nodally stored B-operator */
-      /*           [ ... | N_{,1}^k | ... ]
-       *    Bn^T = [ ... | N_{,2}^k | ... ]
-       *           [ ... | N_{,3}^k | ... ]
-       */
-      DOUBLE N_X = gds->bopn[inod][0];
-      DOUBLE N_Y = gds->bopn[inod][1];
-      DOUBLE N_Z = gds->bopn[inod][2];
-      /* address node-column in operator matrix */
-      INT idof_X = inod * NUMDOF_SOLID3;
-      INT idof_Y = idof_X + 1;
-      INT idof_Z = idof_X + 2;
-      /* non-linear B-operator (may so be called, meaning
-       * of B-operator is not so sharp in the non-linear realm) */
-      /*
-       * B = F . Bl
-       *
-       *      [ ... | F_11*N_{,1}^k  F_21*N_{,1}^k  F_31*N_{,1}^k | ... ]
-       *      [ ... | F_12*N_{,2}^k  F_22*N_{,2}^k  F_32*N_{,2}^k | ... ]
-       *      [ ... | F_13*N_{,3}^k  F_23*N_{,3}^k  F_33*N_{,3}^k | ... ]
-       * B =  [ ~~~   ~~~~~~~~~~~~~  ~~~~~~~~~~~~~  ~~~~~~~~~~~~~   ~~~ ]
-       *      [       F_11*N_{,2}^k+F_12*N_{,1}^k                       ]
-       *      [ ... |          F_21*N_{,2}^k+F_22*N_{,1}^k        | ... ]
-       *      [                       F_31*N_{,2}^k+F_32*N_{,1}^k       ]
-       *      [                                                         ]
-       *      [       F_12*N_{,3}^k+F_13*N_{,2}^k                       ]
-       *      [ ... |          F_22*N_{,3}^k+F_23*N_{,2}^k        | ... ]
-       *      [                       F_32*N_{,3}^k+F_33*N_{,2}^k       ]
-       *      [                                                         ]
-       *      [       F_13*N_{,1}^k+F_11*N_{,3}^k                       ]
-       *      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
-       *      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
-       */
-      bop[0][idof_X] = defgrd[0][0]*N_X;
-      bop[0][idof_Y] = defgrd[1][0]*N_X;
-      bop[0][idof_Z] = defgrd[2][0]*N_X;
-      bop[1][idof_X] = defgrd[0][1]*N_Y;
-      bop[1][idof_Y] = defgrd[1][1]*N_Y;
-      bop[1][idof_Z] = defgrd[2][1]*N_Y;
-      bop[2][idof_X] = defgrd[0][2]*N_Z; 
-      bop[2][idof_Y] = defgrd[1][2]*N_Z; 
-      bop[2][idof_Z] = defgrd[2][2]*N_Z; 
-      /* ~~~ */
-      bop[3][idof_X] = defgrd[0][0]*N_Y + defgrd[0][1]*N_X;
-      bop[3][idof_Y] = defgrd[1][0]*N_Y + defgrd[1][1]*N_X;
-      bop[3][idof_Z] = defgrd[2][0]*N_Y + defgrd[2][1]*N_X;
-      bop[4][idof_X] = defgrd[0][1]*N_Z + defgrd[0][2]*N_Y;
-      bop[4][idof_Y] = defgrd[1][1]*N_Z + defgrd[1][2]*N_Y;
-      bop[4][idof_Z] = defgrd[2][1]*N_Z + defgrd[2][2]*N_Y;
-      bop[5][idof_X] = defgrd[0][2]*N_X + defgrd[0][0]*N_Z;
-      bop[5][idof_Y] = defgrd[1][2]*N_X + defgrd[1][0]*N_Z;
-      bop[5][idof_Z] = defgrd[2][2]*N_X + defgrd[2][0]*N_Z;
-    }
-  }
-  else
-  {
-    dserror("Cannot compute B-operator for chosen kinematics.");
-  }
+  /* require */
+  *updreq += 1;
 
   /*--------------------------------------------------------------------*/
-  /* iterative total strain increment \iinc\eps
-   *    \iinc\eps_{n+1}^<i-1> = \B . \iinc\D_{n+1}^<i-1> */
-  {
-    INT istr;
-    for (istr=0; istr<NUMSTR_SOLID3; istr++)
-    {
-      DOUBLE rcsum = 0.0;
-      INT idof;
-      for (idof=0; idof<neledof; idof++)
-      {
-        rcsum += bop[istr][idof] * disii[idof];
-      }
-      epsii[istr] = rcsum;
-    }
-  }
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+
+/*======================================================================*/
+/*!
+\brief Iterative update of material internal variables
+\author bborn
+\date 05/07
+*/
+void so3_mat_robinson_be_mivupditer(const CONTAINER* container,
+                                    ELEMENT* ele,
+                                    const VP_ROBINSON* mat_robin,
+                                    const INT ip,
+                                    const DOUBLE epsii[NUMSTR_SOLID3])
+{
+  const INT numstr_2 = 2 * NUMSTR_SOLID3;
+  SOLID3* actso3 = ele->e.so3;  /* curr. SOLID3 element */
+  DOUBLE* kvarva = actso3->miv_rob->kvarva.a.da[ip];
+  DOUBLE* kvakvae = actso3->miv_rob->kvakvae.a.da[ip];
+  DOUBLE* vscstnn = actso3->miv_rob->vicstnn.a.da[ip];
+  DOUBLE* bckstsn = actso3->miv_rob->bacstsn.a.da[ip];
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_enter("so3_mat_robinson_be_mivupditer");
+#endif
 
   /*--------------------------------------------------------------------*/
   /* update visc. strain */
@@ -1223,6 +1090,7 @@ void so3_mat_robinson_be_mivupditr(const CONTAINER* container,
   return;
 }
 
+
 /*======================================================================*/
 /*!
 \brief Incremental update Robinson's internal material variables 
@@ -1231,8 +1099,8 @@ void so3_mat_robinson_be_mivupditr(const CONTAINER* container,
 \author bborn
 \date 05/07
 */
-void so3_mat_robinson_be_mivupd(ELEMENT* ele,
-                                const VP_ROBINSON* mat_robin)
+void so3_mat_robinson_be_mivupdincr(ELEMENT* ele,
+                                    const VP_ROBINSON* mat_robin)
 {
   SOLID3* actso3 = ele->e.so3;  /* point to SOLID3 element bits */
   INT gptot = actso3->gptot;  /* total number of GPs in domain */
@@ -1240,7 +1108,7 @@ void so3_mat_robinson_be_mivupd(ELEMENT* ele,
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
-  dstrc_enter("so3_mat_robinson_be_mivupd");
+  dstrc_enter("so3_mat_robinson_be_mivupdincr");
 #endif
 
   /*--------------------------------------------------------------------*/

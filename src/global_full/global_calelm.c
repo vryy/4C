@@ -530,6 +530,7 @@ void calelm(FIELD        *actfield,     /* active field */
    case calc_struct_dmc             : assemble_action = assemble_do_nothing; break;
    case update_struct_odens         : assemble_action = assemble_do_nothing; break;
    case calc_struct_update_istep    : assemble_action = assemble_do_nothing; break;
+   case calc_struct_update_iterstep : assemble_action = assemble_do_nothing; break;
    case calc_struct_update_stepback : assemble_action = assemble_do_nothing; break;
    case calc_ale_stiff              : assemble_action = assemble_one_matrix; break;
    case calc_ale_rhs                : assemble_action = assemble_do_nothing; break;
@@ -721,6 +722,7 @@ case update_struct_odens         : assemble_action = assemble_do_nothing;   brea
 case calc_struct_dee             : assemble_action = assemble_do_nothing;   break;
 case calc_deriv_self_adj         : assemble_action = assemble_do_nothing;   break;
 case calc_struct_update_istep    : assemble_action = assemble_do_nothing;   break;
+case calc_struct_update_iterstep : assemble_action = assemble_do_nothing;   break;
 case calc_struct_update_stepback : assemble_action = assemble_do_nothing;   break;
 case calc_ale_stiff              : assemble_action = assemble_one_exchange; break;
 case calc_ale_stiff_nln          : assemble_action = assemble_one_exchange; break;
@@ -794,6 +796,7 @@ case update_struct_odens         : assemble_action = assemble_do_nothing;   brea
 case calc_struct_dee             : assemble_action = assemble_do_nothing;   break;
 case calc_deriv_self_adj         : assemble_action = assemble_do_nothing;   break;
 case calc_struct_update_istep    : assemble_action = assemble_do_nothing;   break;
+case calc_struct_update_iterstep : assemble_action = assemble_do_nothing;   break;
 case calc_struct_update_stepback : assemble_action = assemble_do_nothing;   break;
 case calc_ale_stiff              : assemble_action = assemble_close_1matrix; break;
 case calc_ale_rhs                : assemble_action = assemble_do_nothing;    break;
@@ -854,6 +857,7 @@ if(actsolv->sysarray_typ[sysarray1]==oll)
       case calc_fluid_shearvelo        :
       case update_struct_odens         :
       case calc_struct_update_istep    :
+      case calc_struct_update_iterstep :
       case calc_struct_update_stepback : break;
       case calc_ale_stiff              :
                                          actsolv->sysarray[sysarray1].oll->is_masked = 1; break;

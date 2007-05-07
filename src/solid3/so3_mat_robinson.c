@@ -340,7 +340,95 @@ void so3_mat_robinson_sel(const CONTAINER* container,
 
 /*======================================================================*/
 /*!
-\brief Update Robinson's internal material variables 
+\brief Test whether an update of material internal variables is required
+\author bborn
+\date 05/07
+*/
+void so3_mat_robinson_mivupdreq(ELEMENT* ele,
+                                VP_ROBINSON* mat_robin,
+                                INT* updreq)
+{
+  const INT itsidyn = genprob.numfld;  /* index of TSI dynamics data */
+  const TSI_DYNAMIC* tsidyn = alldyn[itsidyn].tsidyn;  /* TSI dynamics data */
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_enter("so3_mat_robinson_mivupdreq");
+#endif
+
+  /*--------------------------------------------------------------------*/
+  /* distinguish time integration scheme */
+  if (tsidyn->kind == tsi_therm_stat_struct_fehlbg)
+  {
+    /* do nothing */
+  }
+  else if (tsidyn->kind == tsi_therm_stat_struct_genalp)
+  {
+    so3_mat_robinson_be_mivupdreq(ele, mat_robin, updreq);
+  }
+  else
+  {
+    dserror("TSI time integration is not available for Robinson's material");
+  }
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+
+/*======================================================================*/
+/*!
+\brief Iterative update Robinson's internal material variables
+\param   container    CONTAINER*      (i)    container
+\param   ele          ELEMENT*        (io)   curr. elem.
+\param   mat_robin    VP_ROBINSON*    (i)    elem. mater.
+\param   ip           INT             (i)    curr. Gauss point index
+\param   gds          SO3_GEODEFSTR*  (i)    data at curr. Gauss point
+\param   epsii        DOUBLE[]        (i)    iterative strain increments
+\author bborn
+\date 05/07
+*/
+void so3_mat_robinson_mivupditer(const CONTAINER* container,
+                                 ELEMENT* ele,
+                                 const VP_ROBINSON* mat_robin,
+                                 const INT ip,
+                                 const DOUBLE epsii[NUMSTR_SOLID3])
+{
+  const INT itsidyn = genprob.numfld;  /* index of TSI dynamics data */
+  const TSI_DYNAMIC* tsidyn = alldyn[itsidyn].tsidyn;  /* TSI dynamics data */
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_enter("so3_mat_robinson_mivupdincr");
+#endif
+
+  /*--------------------------------------------------------------------*/
+  /* distinguish time integration scheme */
+  if (tsidyn->kind == tsi_therm_stat_struct_fehlbg)
+  {
+    /* do nothing */
+  }
+  else if (tsidyn->kind == tsi_therm_stat_struct_genalp)
+  {
+    so3_mat_robinson_be_mivupditer(container, ele, mat_robin, ip, epsii);
+  }
+  else
+  {
+    dserror("TSI time integration is not available for Robinson's material");
+  }
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+
+/*======================================================================*/
+/*!
+\brief Inremental update Robinson's internal material variables 
 \param   ele          ELEMENT*        (io)   curr. elem.
 \param   mat_robin    VP_ROBINSON*    (i)    elem. mater.
 \param   ip           INT             (i)    curr. Gauss point index
@@ -348,27 +436,27 @@ void so3_mat_robinson_sel(const CONTAINER* container,
 \author bborn
 \date 04/07
 */
-void so3_mat_robinson_mivupd(const CONTAINER* container,
-                             ELEMENT* ele,
-                             const VP_ROBINSON* mat_robin)
+void so3_mat_robinson_mivupdincr(const CONTAINER* container,
+                                 ELEMENT* ele,
+                                 const VP_ROBINSON* mat_robin)
 {
   const INT itsidyn = genprob.numfld;  /* index of TSI dynamics data */
   const TSI_DYNAMIC* tsidyn = alldyn[itsidyn].tsidyn;  /* TSI dynamics data */
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
-  dstrc_enter("so3_mat_robinson_mivupd");
+  dstrc_enter("so3_mat_robinson_mivupdincr");
 #endif
 
   /*--------------------------------------------------------------------*/
   /* distinguish time integration scheme */
   if (tsidyn->kind == tsi_therm_stat_struct_fehlbg)
   {
-    so3_mat_robinson_fb4_mivupd(ele, mat_robin);
+    so3_mat_robinson_fb4_mivupdincr(ele, mat_robin);
   }
   else if (tsidyn->kind == tsi_therm_stat_struct_genalp)
   {
-    so3_mat_robinson_be_mivupd(ele, mat_robin);
+    so3_mat_robinson_be_mivupdincr(ele, mat_robin);
   }
   else
   {

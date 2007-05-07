@@ -855,8 +855,28 @@ void tsi_st_genalp(INT disnum_s,
                    &(actsolv->sysarray[stiff_array]),
                    &(dispi[0]), &(actsolv->rhs[0]), init);
 
+    /*------------------------------------------------------------------*/
+    /* return residual/iterative displacements \iinc D_{n+1}^<i+1> 
+     * to the nodes
+     * These are needed for updating internal element variables. */
+    solserv_result_resid(actfield, disnum, actintra, 
+                         &(dispi[0]),
+                         isolres->disres,
+                         &(actsolv->sysarray[stiff_array]),
+                         &(actsolv->sysarray_typ[stiff_array]));
+
     /*==================================================================*/
     /* update */
+
+    /*------------------------------------------------------------------*/
+    /* iterative update of internal variables of elements */
+    *action = calc_struct_update_iterstep;
+    container.dvec = NULL;
+    container.dirich = NULL;
+    container.global_numeq = 0;
+    container.kstep = 0;
+    calelm(actfield, actsolv, actpart, actintra,
+           stiff_array, -1, &container, action);
 
     /*------------------------------------------------------------------*/
     /* update displacements sol[1] = sol[0] + dispi[0] */
@@ -883,16 +903,6 @@ void tsi_st_genalp(INT disnum_s,
     solserv_result_incre(actfield, disnum, actintra,
                          &dispi[0],
                          isolinc->disinc,
-                         &(actsolv->sysarray[stiff_array]),
-                         &(actsolv->sysarray_typ[stiff_array]));
-
-    /*------------------------------------------------------------------*/
-    /* return residual/iterative displacements \iinc D_{n+1}^<i+1> 
-     * to the nodes
-     * These are needed by non-linear materials. */
-    solserv_result_resid(actfield, disnum, actintra, 
-                         &(dispi[0]),
-                         isolres->disres,
                          &(actsolv->sysarray[stiff_array]),
                          &(actsolv->sysarray_typ[stiff_array]));
 
@@ -1044,6 +1054,16 @@ void tsi_st_genalp(INT disnum_s,
 
       /*================================================================*/
       /* update */
+
+      /*----------------------------------------------------------------*/
+      /* iterative update of internal variables of elements */
+      *action = calc_struct_update_iterstep;
+      container.dvec = NULL;
+      container.dirich = NULL;
+      container.global_numeq = 0;
+      container.kstep = 0;
+      calelm(actfield, actsolv, actpart, actintra,
+             stiff_array, -1, &container, action);
 
       /*----------------------------------------------------------------*/
       /* update the incremental displacements by the residual/iterative 
@@ -1280,8 +1300,8 @@ void tsi_st_genalp(INT disnum_s,
         *action = calc_struct_stressreduce;
         container.kstep = 0;
         calreduce(actfield, actpart, disnum, actintra, action, &container);
-      }  /* end of if (ioflags.struct_stress == 1) */
-    }  /* end of  if ( (mod_stress == 0) || (mod_disp == 0) ) */
+      }
+    }
 
     /*------------------------------------------------------------------*/
     /* print out results to out */
@@ -1292,8 +1312,8 @@ void tsi_st_genalp(INT disnum_s,
            && (ioflags.output_out == 1) )
       {
         out_sol(actfield, actpart, disnum, actintra, actdyn->step, 0);
-      }  /* end of if */
-    }  /* end of if */
+      }
+    }
 
     /*------------------------------------------------------------------*/
     /* printout results to gid no time adaptivity */
@@ -1312,8 +1332,8 @@ void tsi_st_genalp(INT disnum_s,
       {
         out_gid_soldyn("stress", actfield, disnum_s, actintra, 
                        actdyn->step, 0, actdyn->time);
-      }  /* end of if */
-    }  /* end of if  */
+      }
+    }
 
     /*------------------------------------------------------------------*/
     /* write restart data to pss file */

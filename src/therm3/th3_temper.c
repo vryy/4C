@@ -149,10 +149,11 @@ void th3_temper_cal(const CONTAINER *container,
                     const DOUBLE t,
                     DOUBLE *tem)
 {
-  const ARRAY_POSITION_SOL *isol 
+  const ARRAY_POSITION_SOL* isol 
     = &(field[genprob.numtf].dis[container->disnum_t].ipos.isol);
+  const INT item = isol->tem;  /* temperature index */
   const INT nelenod = ele->numnp;
-  const INT neledof = NUMDOF_THERM3 * nelenod;
+  /* const INT neledof = NUMDOF_THERM3 * nelenod; */
   DOUBLE rr=0.0, ss=0.0, tt=0.0;  /* Gauss coordinate in THERM3 parameter space */
   DOUBLE shape[MAXNOD_THERM3];  /* shape functions */
   DOUBLE deriv[MAXNOD_THERM3][NDIM_THERM3];  /* derivatives of shape fct */
@@ -166,8 +167,8 @@ void th3_temper_cal(const CONTAINER *container,
   /*--------------------------------------------------------------------*/
   /* reset to zero nodal temper., shape funct. and derivatives */
   amzero(&nodtem_a);
-  memset(shape, 0, sizeof(shape));
-  memset(deriv, 0, sizeof(deriv));
+  memset(shape, 0, MAXNOD_THERM3*sizeof(DOUBLE));
+  memset(deriv, 0, MAXNOD_THERM3*NDIM_THERM3*sizeof(DOUBLE));
 
   /*--------------------------------------------------------------------*/
   /* transform parametric coordinates if necessary */
@@ -200,7 +201,7 @@ void th3_temper_cal(const CONTAINER *container,
   /* current nodal temperature */
   for (k=0; k<nelenod; k++)
   {
-    nodtem[k] = ele->node[k]->sol.a.da[isol->tem][0];
+    nodtem[k] = ele->node[k]->sol.a.da[item][0];
   }
 
   /*--------------------------------------------------------------------*/

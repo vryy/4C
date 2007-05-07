@@ -597,15 +597,15 @@ void so3_mat_robinson_fb4_stsbckrat(const VP_ROBINSON* mat_robin,
 
 /*======================================================================*/
 /*!
-\brief Update Robinson's internal material variables 
+\brief (Incremental) Update Robinson's internal material variables 
 \param   ele          ELEMENT*        (io)   curr. elem.
 \parm    mat_robin    VP_ROBINSON*    (i)    elem. mater.
 \param   ip           INT             (i)    curr. Gauss point index
 \author bborn
 \date 04/07
 */
-void so3_mat_robinson_fb4_mivupd(ELEMENT* ele,
-                                 const VP_ROBINSON* mat_robin)
+void so3_mat_robinson_fb4_mivupdincr(ELEMENT* ele,
+                                     const VP_ROBINSON* mat_robin)
 {
   SOLID3* actso3 = ele->e.so3;  /* point to SOLID3 element bits */
   const INT gptot = actso3->gptot;  /* total number of GPs in domain */
@@ -616,7 +616,7 @@ void so3_mat_robinson_fb4_mivupd(ELEMENT* ele,
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
-  dstrc_enter("so3_mat_robinson_fb4_mivupd");
+  dstrc_enter("so3_mat_robinson_fb4_mivupdincr");
 #endif
 
   /*--------------------------------------------------------------------*/

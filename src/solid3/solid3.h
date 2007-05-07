@@ -625,18 +625,24 @@ void so3_intg_init(SO3_DATA *data);
 
 /*----------------------------------------------------------------------*/
 /* file so3_iv.c */
-void so3_iv_upd(const CONTAINER* container,
-                ELEMENT* ele,
-                const MATERIAL* mat);
+void so3_iv_updreq(ELEMENT* ele,
+                   MATERIAL* actmat,
+                   INT* updreq);
+void so3_iv_upditer(CONTAINER* container,
+                    ELEMENT* ele,
+                    SO3_GPSHAPEDERIV* gpshade,
+                    MATERIAL* mat);
+void so3_iv_updincr(const CONTAINER* container,
+                    ELEMENT* ele,
+                    const MATERIAL* mat);
 
 /*----------------------------------------------------------------------*/
 /* file so3_load.c */
-void so3_load(ELEMENT *ele,  /* actual element */
+void so3_load(ELEMENT *ele,
               SO3_DATA *data,
               SO3_GPSHAPEDERIV *gpshade,
               INT imyrank,
-              ARRAY *eforc_global); /* global element load vector fext */
-
+              ARRAY *eforc_global);
 
 /*----------------------------------------------------------------------*/
 /* file so3_load_line.c */
@@ -749,9 +755,18 @@ void so3_mat_stress(CONTAINER *container,
                     DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3]);
 void so3_mat_density(MATERIAL *mat, 
                      DOUBLE *density);
-void so3_mat_mivupd(const CONTAINER* container,
-                    ELEMENT* ele,
-                    const MATERIAL* mat);
+void so3_mat_mivupdreq(ELEMENT* ele,
+                       MATERIAL* mat,
+                       INT* updreq);
+void so3_mat_mivupditer(const CONTAINER* container,
+                        ELEMENT* ele,
+                        const MATERIAL* mat,
+                        const INT ip,
+                        const SO3_GEODEFSTR* gds,
+                        const DOUBLE epsii[NUMSTR_SOLID3]);
+void so3_mat_mivupdincr(const CONTAINER* container,
+                        ELEMENT* ele,
+                        const MATERIAL* mat);
 
 /*----------------------------------------------------------------------*/
 /* file so3_mat_robinson.c */
@@ -772,9 +787,17 @@ void so3_mat_robinson_sel(const CONTAINER* container,
                           SO3_GEODEFSTR* gds,
                           DOUBLE stress[NUMSTR_SOLID3],
                           DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3]);
-void so3_mat_robinson_mivupd(const CONTAINER* container,
-                             ELEMENT* ele,
-                             const VP_ROBINSON* mat_robin);
+void so3_mat_robinson_mivupdreq(ELEMENT* ele,
+                                VP_ROBINSON* mat_robin,
+                                INT* updreq);
+void so3_mat_robinson_mivupditer(const CONTAINER* container,
+                                 ELEMENT* ele,
+                                 const VP_ROBINSON* mat_robin,
+                                 const INT ip,
+                                 const DOUBLE epsii[NUMSTR_SOLID3]);
+void so3_mat_robinson_mivupdincr(const CONTAINER* container,
+                                 ELEMENT* ele,
+                                 const VP_ROBINSON* mat_robin);
 void so3_mat_robinson_stress(const CONTAINER* container,
                              const ELEMENT* ele,
                              const VP_ROBINSON* mat_robin,
@@ -838,16 +861,16 @@ void so3_mat_robinson_be_red(DOUBLE stress[NUMSTR_SOLID3],
                              DOUBLE kaa[NUMSTR_SOLID3][NUMSTR_SOLID3],
                              DOUBLE* kvarva,
                              DOUBLE* kvakvae);
-void so3_mat_robinson_be_mivupditr(const CONTAINER* container,
-                                   ELEMENT* ele,
-                                   DOUBLE gpderiv[MAXNOD_SOLID3][NDIM_SOLID3],
-                                   SO3_GEODEFSTR* gds,
-                                   const DOUBLE* kvarva,
-                                   const DOUBLE* kvakvae,
-                                   DOUBLE vscstnn[NUMSTR_SOLID3],
-                                   DOUBLE bckstsn[NUMSTR_SOLID3]);
-void so3_mat_robinson_be_mivupd(ELEMENT* ele,
-                                const VP_ROBINSON* mat_robin);
+void so3_mat_robinson_be_mivupdreq(ELEMENT* ele,
+                                   VP_ROBINSON* mat_robin,
+                                   INT* updreq);
+void so3_mat_robinson_be_mivupditer(const CONTAINER* container,
+                                    ELEMENT* ele,
+                                    const VP_ROBINSON* mat_robin,
+                                    const INT ip,
+                                    const DOUBLE epsii[NUMSTR_SOLID3]);
+void so3_mat_robinson_be_mivupdincr(ELEMENT* ele,
+                                    const VP_ROBINSON* mat_robin);
 void so3_mat_robinson_be_stress(const CONTAINER* container,
                                 const ELEMENT* ele,
                                 const VP_ROBINSON* mat_robin,
@@ -880,7 +903,7 @@ void so3_mat_robinson_fb4_stsbckrat(const VP_ROBINSON* mat_robin,
                                     const DOUBLE stsbck[NUMSTR_SOLID3],
                                     const DOUBLE dstnvsc[NUMSTR_SOLID3],
                                     DOUBLE dstsbck[NUMSTR_SOLID3]);
-void so3_mat_robinson_fb4_mivupd(ELEMENT* ele,
+void so3_mat_robinson_fb4_mivupdincr(ELEMENT* ele,
                                  const VP_ROBINSON* mat_robin);
 void so3_mat_robinson_fb4_stress(const CONTAINER* container,
                                  const ELEMENT* ele,

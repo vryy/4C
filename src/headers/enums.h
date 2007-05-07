@@ -310,6 +310,7 @@ typedef enum _CALC_ACTION
                        calc_struct_fsiload,
                        calc_struct_fsiload_mtr,
                        calc_struct_update_istep,
+                       calc_struct_update_iterstep,
                        calc_struct_update_stepback,
                        calc_struct_ssi_coup_force,
                        calc_struct_ssiload,
