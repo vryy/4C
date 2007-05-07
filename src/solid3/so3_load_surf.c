@@ -17,6 +17,13 @@ Maintainer: Burkhard Bornemann
 #include "../headers/standardtypes.h"
 #include "solid3.h"
 
+/*----------------------------------------------------------------------*/
+/*!
+\brief General problem data
+\author bborn
+\date 05/07
+*/
+extern GENPROB genprob;
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -27,6 +34,7 @@ Maintainer: Burkhard Bornemann
 \param  data      SO3_DATA*     (i)  Gauss point data
 \param  ex        DOUBLE[]      (i)  material element node coord.
 \param  exs       DOUBLE[]      (i)  spatial element node coord.s
+\param  timen     DOUBLE        (i)  curr. load factor/curr. time
 \param  ngsurf    INT           (i)  number of element surfaces
 \param  gsurf     GSURF*[]      (i)  geometry surf.
 \param  eload     DOUBLE[][]    (io) element load vector (is changed)
@@ -39,12 +47,16 @@ void so3_load_surf_int(ELEMENT* ele,
                        SO3_DATA* data,
                        DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3],
                        DOUBLE exs[MAXNOD_SOLID3][NDIM_SOLID3],
+                       const DOUBLE timen,
                        INT ngsurf,
                        GSURF* gsurf[MAXSID_SOLID3],
                        DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3])
 {
   /* element */
   const DIS_TYP distyp = ele->distyp;  /* local copy of discretisation type */
+
+  INT curve;  /* curve index */
+  DOUBLE cfac;  /* curve factor */
 
   /* surface */
   INT igsurf;  /* element surface index */
@@ -81,6 +93,26 @@ void so3_load_surf_int(ELEMENT* ele,
         /* check if current side is subjected to a load */
         if (gsurf[igsurf]->neum != NULL)
         {
+          /*------------------------------------------------------------*/
+          /* curve factor */
+          curve = gsurf[igsurf]->neum->curve;
+          if (curve < 0)
+          {
+            cfac = 1.0;
+          }
+          else
+          {
+            if (genprob.timetyp == time_static)
+            {
+              /* not implemented, could be something like: */
+              /* dyn_facfromcurve(curve, timen, &(cfac)); */
+              cfac = 1.0;  /* remove this */
+            }
+            else if (genprob.timetyp == time_dynamic)
+            {
+              dyn_facfromcurve(curve, timen, &(cfac));
+            }
+          }
           /*------------------------------------------------------------*/
           /* get number of Gauss points in each direction */
           idimsid = 0;  /* initialise dimension index */
@@ -120,7 +152,7 @@ void so3_load_surf_int(ELEMENT* ele,
               }  /* end for */
               /*--------------------------------------------------------*/
               /* Gauss weight */
-              fac = 1.0;  /* initialise integration factor */
+              fac = cfac;  /* initialise integration factor */
               for (idimsid=0; idimsid<DIMSID_SOLID3; idimsid++)
               {
                 /* multiply weight */
@@ -160,6 +192,26 @@ void so3_load_surf_int(ELEMENT* ele,
         if (gsurf[igsurf]->neum != NULL)
         {
           /*------------------------------------------------------------*/
+          /* curve factor */
+          curve = gsurf[igsurf]->neum->curve;
+          if (curve < 0)
+          {
+            cfac = 1.0;
+          }
+          else
+          {
+            if (genprob.timetyp == time_static)
+            {
+              /* not implemented, could be something like: */
+              /* dyn_facfromcurve(curve, timen, &(cfac)); */
+              cfac = 1.0;  /* remove this */
+            }
+            else if (genprob.timetyp == time_dynamic)
+            {
+              dyn_facfromcurve(curve, timen, &(cfac));
+            }
+          }
+          /*------------------------------------------------------------*/
           /* integration loop */
           for (igp[0]=0; igp[0]<gpnum[0]; igp[0]++)
           {
@@ -181,7 +233,7 @@ void so3_load_surf_int(ELEMENT* ele,
             }  /* end for */
             /*----------------------------------------------------------*/
             /* multiply weight */
-            fac = data->ghlw[gpintc[0]][igp[0]];
+            fac = cfac * data->gtsw[gpintc[0]][igp[0]];
             /*----------------------------------------------------------*/
             /* Shape functions at Gauss point */
             so3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1, 

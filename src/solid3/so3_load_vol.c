@@ -19,20 +19,40 @@ Maintainer: Burkhard Bornemann
 #include "solid3.h"
 
 
+/*----------------------------------------------------------------------*/
+/*!
+\brief General problem data
+\author bborn
+\date 05/07
+*/
+extern GENPROB genprob;
+
+
+
 /*======================================================================*/
 /*!
 \brief Spatial integration of 
        body force in element domain (volume) [force/volume]
+\param  ele        ELEMENT*           (i)   pointer to current element
+\param  gpshade    SO3_GPSHAPEDERIV*  (i)   Gauss point coords etc
+\param  ex         DOUBLE[][]         (i)   material coord. of element
+\param  timen      DOUBLE             (i)   curr. load factor/curr. time
+\param  gvol       GVOL*              (io)  geometry volume of element
+\param  eload      DOUBLE[][]         (io)  element load
 \author bborn
 \date 04/07
 */
-void so3_load_vol_int(ELEMENT* ele,  /*!< pointer to current element */
-                      SO3_GPSHAPEDERIV *gpshade, /*!< Gauss point coords */
-                      DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3],  /*!< material coord. of element */
-                      GVOL* gvol,  /*!< geometry volume of element (is changed) */
-                      DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3])  /*!< element load (is changed) */
+void so3_load_vol_int(ELEMENT* ele,
+                      SO3_GPSHAPEDERIV* gpshade,
+                      DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3],
+                      const DOUBLE timen,
+                      GVOL* gvol,
+                      DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3])
 {
   const INT nelenod = ele->numnp;  /* number of element nodes */
+
+  const INT curve = gvol->neum->curve;  /* load curve */
+  DOUBLE cfac;  /* curve factor */
 
   const INT ngp = gpshade->gptot;  /* total number of Gauss points */
   INT jgp;  /* Gauss point index */
@@ -48,17 +68,37 @@ void so3_load_vol_int(ELEMENT* ele,  /*!< pointer to current element */
 #endif
 
   /*--------------------------------------------------------------------*/
+  /* load-step-dependent/time-step-dependent scale */
+  if (curve < 0)
+  {
+    cfac = 1.0;
+  }
+  else
+  {
+    if (genprob.timetyp == time_static)
+    {
+      /* not implemented, could be something like: */
+      /* dyn_facfromcurve(curve, timen, &(cfac)); */
+      cfac = 1.0;  /* remove this */
+    }
+    else if (genprob.timetyp == time_dynamic)
+    {
+      dyn_facfromcurve(curve, timen, &(cfac));
+    }
+  }
+
+  /*--------------------------------------------------------------------*/
   /* integration loop */
   for (jgp=0; jgp<ngp; jgp++)
   {
     /* initialise intgration factor */
-    fac = gpshade->gpwg[jgp];  /* Gauss weight */
+    fac = cfac * gpshade->gpwg[jgp];  /* Curve factor * Gauss weight */
     /* compute Jacobian matrix, its determinant
      * inverse Jacobian is not calculated */
-    so3_metr_jaco(ele, nelenod, ex, gpshade->gpderiv[jgp], 1, 
+    so3_metr_jaco(ele, nelenod, ex, gpshade->gpderiv[jgp], 0,
                   xjm, &det, xji);
     /* integration (quadrature) factor */
-    fac = fac * det;
+    fac *= det;
     /* volume-load  ==> eload modified */
     so3_load_vol_val(ele, nelenod, gpshade->gpshape[jgp], fac, eload);
   }  /* end of for */

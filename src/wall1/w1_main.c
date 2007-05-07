@@ -221,6 +221,12 @@ case calc_struct_fsiload:
    actmat = &(mat[ele->mat-1]);
    w1_fsiload(ele,&actdata,intforce,0,ipos,imyrank);
 break;/*----------------------------------------------------------------*/
+/*------------------------------ iterative update of internal variables */
+case calc_struct_update_iterstep:
+/* do nothing */
+/* The iterative update of internal variables is used in the SOLID3
+ * element (May 2007). This action is occurs here only for compatiblity. */
+break;/*----------------------------------------------------------------*/
 /*--------------------------------------- update after incremental step */
 case calc_struct_update_istep:
 #ifdef D_MLSTRUCT

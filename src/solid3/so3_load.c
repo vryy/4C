@@ -34,6 +34,37 @@ global variable GENPROB genprob is defined in global_control.c
 */
 extern GENPROB genprob;
 
+/*----------------------------------------------------------------------*/
+/*!
+\brief Fields
+
+vector of numfld FIELDs, defined in global_control.c
+
+\author bborn
+\date 05/07
+*/
+extern FIELD* field;
+
+/*----------------------------------------------------------------------*/
+/*!
+\brief variables of static solution
+\author bborn
+\dat 05/07
+*/
+extern STATIC_VAR* statvar;
+
+/*----------------------------------------------------------------------*/
+/*!
+\brief Alldyn dynamic control
+
+pointer to allocate dynamic variables if needed
+dedfined in global_control.c
+
+\auther bborn
+\date 05/07
+*/
+extern ALLDYNA* alldyn;
+
 
 /*======================================================================*/
 /*!
@@ -66,18 +97,19 @@ void so3_load(ELEMENT *ele,  /* actual element */
               INT imyrank,
               ARRAY *eforc_global) /* global element load vector */
 {
+  DOUBLE timen;  /* current time/load factor */
 
   /* general variables */
   INT jdim, inod, idof;  /* some counters */
   NODE *actnode;
-  INT nelenod;  /* number of element nodes */
-  INT neledof;  /* element DOF */
-  DIS_TYP distyp;  /* local copy of discretisation type */
+  const INT nelenod = ele->numnp;  /* number of element nodes */
+  /* const INT neledof = nelenod * NUMDOF_SOLID3;  /\* element DOF *\/ */
+  /* const DIS_TYP distyp = ele->distyp;  /\* discretisation type *\/ */
   DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3];  /* material coord. of element */
   DOUBLE exs[MAXNOD_SOLID3][NDIM_SOLID3];  /* spatial coord. of element */
 
   /* volume load */
-  GVOL *gvol;  /* local pointer to geometry volume of element */
+  GVOL *gvol = ele->g.gvol;  /* local pointer to geometry volume of element */
   INT foundgvolneum;  /* flag for identifying loaded volume */
 
   /* surface load */
@@ -114,21 +146,8 @@ void so3_load(ELEMENT *ele,  /* actual element */
   }
 
   /*--------------------------------------------------------------------*/
-  /* element properties */
-  nelenod = ele->numnp;  /* element nodes */
-  neledof = nelenod * NUMDOF_SOLID3;  /* total number of element DOFs */
-  distyp = ele->distyp;
-  gvol = ele->g.gvol;
-
-  /*--------------------------------------------------------------------*/
   /* initialize vectors */
-  for (inod=0; inod<nelenod; inod++)
-  {
-    for (idof=0; idof<NUMDOF_SOLID3; idof++)
-    {
-      eload[inod][idof] = 0.0;
-    }
-  }
+  memset(eload, 0, MAXNOD_SOLID3*NUMDOF_SOLID3*sizeof(DOUBLE));
 
   /*====================================================================*/
   /* check if external load is applied */
@@ -210,11 +229,12 @@ void so3_load(ELEMENT *ele,  /* actual element */
 
   
   /*--------------------------------------------------------------------*/
-  /* material coordinates of element nodes */
+  /* element data etc required in case of integration */
   if ( (foundgvolneum > 0) 
        || (foundgsurfneum > 0) 
        || (foundglineneum > 0) )
   {
+    /* material coordinates of element nodes */
     for (inod=0; inod<nelenod; inod++)
     {
       actnode = ele->node[inod];
@@ -230,6 +250,20 @@ void so3_load(ELEMENT *ele,  /* actual element */
         exs[inod][jdim] = actnode->x[jdim] + actnode->sol.a.da[0][jdim];
       }
     }
+    /* current load factor / current time */
+    if (genprob.timetyp == time_static)
+    {
+      /* not implemented, could be something like: */
+      /* timen = statvar->kstep * statvar->stepsize; */  /* curr. load fact. */
+      /* WARNING: statvar->kstep must be added in static_analysis.h */
+      timen = -1.0;  /* remove this */
+    }
+    else if (genprob.timetyp == time_dynamic)
+    {
+      const INT isdyn = genprob.numsf;  /* index of structure dynamics data */
+      const STRUCT_DYNAMIC* sdyn = alldyn[isdyn].sdyn;  /* struct. dyn. data */
+      timen = sdyn->time;
+    }
   }
 
 
@@ -237,7 +271,7 @@ void so3_load(ELEMENT *ele,  /* actual element */
   /* domain load ==> volume load, body load, source term */
   if ( (foundgvolneum > 0) && (imyrank == ele->proc) )
   {
-    so3_load_vol_int(ele, gpshade, ex, gvol, eload);
+    so3_load_vol_int(ele, gpshade, ex, timen, gvol, eload);
   }
 
 
@@ -245,14 +279,14 @@ void so3_load(ELEMENT *ele,  /* actual element */
   /* side loads ==> surface stress, tractions, fluxes */
   if (foundgsurfneum > 0)
   {
-    so3_load_surf_int(ele, data, ex, exs, ngsurf, gsurf, eload);
+    so3_load_surf_int(ele, data, ex, exs, timen, ngsurf, gsurf, eload);
   }
 
   /*====================================================================*/
   /* edge loads ==> edge tractions */
   if (foundglineneum > 0)
   {
-    so3_load_line_int(ele, data, ex, exs, ngline, gline, eload);
+    so3_load_line_int(ele, data, ex, exs, timen, ngline, gline, eload);
   }
 
   /*====================================================================*/

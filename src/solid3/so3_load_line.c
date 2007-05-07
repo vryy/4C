@@ -18,6 +18,14 @@ Maintainer: Burkhard Bornemann
 #include "../headers/standardtypes.h"
 #include "solid3.h"
 
+/*----------------------------------------------------------------------*/
+/*!
+\brief General problem data
+\author bborn
+\date 05/07
+*/
+extern GENPROB genprob;
+
 /*======================================================================*/
 /*!
 \brief Spatial integration of 
@@ -27,6 +35,7 @@ Maintainer: Burkhard Bornemann
 \param  data      SO3_DATA*     (i)  Gauss point data
 \param  ex        DOUBLE[]      (i)  material element node coord.
 \param  exs       DOUBLE[]      (i)  spatial element node coord.s
+\param  timen     DOUBLE        (i)  curr. load factor/curr. time
 \param  ngline    INT           (i)  number of geometry lines
 \param  gline     GLINE*[]      (i)  element geometry lines (is changed)
 \param  eload     DOUBLE[][]    (io) element load vector (is changed)
@@ -37,12 +46,17 @@ void so3_load_line_int(ELEMENT* ele,
                        SO3_DATA* data,
                        DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3],
                        DOUBLE exs[MAXNOD_SOLID3][NDIM_SOLID3],
+                       const DOUBLE timen,
                        INT ngline,
                        GLINE* gline[MAXEDG_SOLID3],
                        DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3])
 {
   /* element */
   const DIS_TYP distyp = ele->distyp;  /* local copy of discretisation type */
+
+  /* load curve */
+  INT curve;  /* curve index */
+  DOUBLE cfac;  /* curve factor */
 
   /* line */
   INT igline;  /* line index */
@@ -79,6 +93,26 @@ void so3_load_line_int(ELEMENT* ele,
         if (gline[igline]->neum != NULL)
         {
           /*------------------------------------------------------------*/
+          /* curve factor */
+          curve = gline[igline]->neum->curve;
+          if (curve < 0)
+          {
+            cfac = 1.0;
+          }
+          else
+          {
+            if (genprob.timetyp == time_static)
+            {
+              /* not implemented, could be something like: */
+              /* dyn_facfromcurve(curve, timen, &(cfac)); */
+              cfac = 1.0;  /* remove this */
+            }
+            else if (genprob.timetyp == time_dynamic)
+            {
+              dyn_facfromcurve(curve, timen, &(cfac));
+            }
+          }
+          /*------------------------------------------------------------*/
           /* get number of Gauss points for current line
            * these could change depending on the set Gauss point numbers
            * in r-, s- and t-direction */
@@ -114,7 +148,7 @@ void so3_load_line_int(ELEMENT* ele,
             }  /* end for */
             /*----------------------------------------------------------*/
             /* set weight */
-            fac = data->ghlw[gpintc[0]][igp[0]];
+            fac = cfac * data->ghlw[gpintc[0]][igp[0]];
             /*----------------------------------------------------------*/
             /* Shape functions at Gauss point */
             so3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1, 
@@ -148,6 +182,26 @@ void so3_load_line_int(ELEMENT* ele,
         if (gline[igline]->neum != NULL)
         {
           /*------------------------------------------------------------*/
+          /* curve factor */
+          curve = gline[igline]->neum->curve;
+          if (curve < 0)
+          {
+            cfac = 1.0;  /* default */
+          }
+          else
+          {
+            if (genprob.timetyp == time_static)
+            {
+              /* not implemented, could be something like: */
+              /* dyn_facfromcurve(curve, timen, &(cfac)); */
+              cfac = 1.0;  /* remove this */
+            }
+            else if (genprob.timetyp == time_dynamic)
+            {
+              dyn_facfromcurve(curve, timen, &(cfac));
+            }
+          }
+          /*------------------------------------------------------------*/
           /* integration loops 
            * For each side one of the following loops is not repeated,
            * but as all sides are generally integrated here. */
@@ -167,6 +221,9 @@ void so3_load_line_int(ELEMENT* ele,
               /* final set of idim-component */
               gpc[idim] = gpcidim;
             }  /* end for */
+            /*----------------------------------------------------------*/
+            /* set weight */
+            fac = cfac * data->gtlw[gpintc[0]][igp[0]];
             /*----------------------------------------------------------*/
             /* shape functions at Gauss point */
             so3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1, 

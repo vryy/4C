@@ -25,7 +25,6 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 /*!
 \brief General problem data
-
 \author bborn
 \date 03/07
 */
@@ -34,9 +33,7 @@ extern GENPROB genprob;
 /*----------------------------------------------------------------------*/
 /*!
 \brief Fields
-
-vector of numfld FIELDs, defined in global_control.c
-
+       vector of numfld FIELDs, defined in global_control.c
 \author bborn
 \date 05/07
 */
@@ -45,10 +42,8 @@ extern FIELD *field;
 /*----------------------------------------------------------------------*/
 /*!
 \brief Alldyn dynamic control
-
-pointer to allocate dynamic variables if needed
-dedfined in global_control.c
-
+       pointer to allocate dynamic variables if needed
+       defined in global_control.c
 \auther bborn
 \date 03/06
 */
@@ -69,7 +64,7 @@ extern FILES allfiles;
 \brief Allocate material internal variables (MIVs)
 \author bborn
 \date 04/07
- */
+*/
 void so3_mat_robinson_be_init(SOLID3* actso3)
 {
   /*--------------------------------------------------------------------*/
@@ -1030,6 +1025,14 @@ void so3_mat_robinson_be_mivupdreq(ELEMENT* ele,
 /*======================================================================*/
 /*!
 \brief Iterative update of material internal variables
+
+Material internal variables (visc. strain and back stress) are
+updated by their iterative increments.
+Their iterative increments are expressed in terms of the iterative
+increment of the total strain.
+Here the reduction matrices --- stored in the previous iteration ---
+are used.
+
 \author bborn
 \date 05/07
 */
