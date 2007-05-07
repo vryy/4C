@@ -147,7 +147,7 @@ dstrc_enter("c1_call_mat");
   case m_pl_epc:/*---------- elastoplastic concrete material law ---*/
     dserror(" elastoplastic concrete material law not implemented for brick");
   break;
-  case m_hyper_polyconvex:
+  case m_hyper_polyconvex:/*-- holzapfel law for biological tissues */
     c1_mat_hyper_polyconvex(
     					mat->m.hyper_polyconvex->c,
     					mat->m.hyper_polyconvex->k1,
@@ -157,6 +157,13 @@ dstrc_enter("c1_call_mat");
     					disd,
     					stress,
     					d);
+  break;
+  case m_compogden:/*--------------------------------- kompressible ogden */
+    c1_mat_ogden_uncoupled(
+		    mat->m.compogden,
+		    disd,
+		    stress,
+		    d);
   break;
   default:
     dserror("unknown type of material law");
@@ -266,6 +273,9 @@ case m_stvenpor:/*------------------------ porous linear elastic ---*/
 break;
 case m_hyper_polyconvex:/*--------------hyperelastic polyconvex material*/
 	*density = mat ->m.hyper_polyconvex->density;
+break;
+case m_compogden:/*--------------hyperelastic polyconvex material*/
+	*density = mat->m.compogden->density;
 break;
 default:
    dserror("Ilegal typ of material for this element");

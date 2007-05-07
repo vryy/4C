@@ -253,7 +253,8 @@ void c1_mat_hyper_polyconvex (	DOUBLE c,
 	/*----------------------------------------------------------------------Structural Tensor*/
 	for (i=0; i<3; i++) {
 		for (j=0; j<3; j++) {
-			H [i][j] = kappa*I[i][j] + (1-(3*kappa))*M[i][j]; } }	
+			/*H [i][j] = kappa*I[i][j] + (1-(3*kappa))*M[i][j]; } }	*/
+			H [i][j] = kappa*I[i][j]; } }
 	/*--------------------------------------------------------Deformation Gradient, transposed*/
 	
 	FT[0][0]=disd[0]+1.0;

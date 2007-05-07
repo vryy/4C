@@ -9,18 +9,18 @@ fi
 
 F77=g77
 CC=gcc
-LD=gcc
+LD=g77
 
 PLAIN_F77=g77
 PLAIN_CC=gcc
 PLAIN_LD=gcc
 
-BASEDIR="/d/mydocs/kuettler/lib"
+BASEDIR="/home/Robert/lib"
 
 #INCLUDEDIRS="-I/e/programme/minigw/include -I/h/ccarat/include"
 #LIBDIRS="-L/e/programme/minigw/lib -L$BASEDIR/blas -L$BASEDIR/lapack" 
-INCLUDEDIRS="-I/d/mydocs/kuettler/include"
-LIBDIRS="-L$BASEDIR/blas -L$BASEDIR/lapack" 
+INCLUDEDIRS="-I/home/Robert/include -T/usr/include"
+LIBDIRS="-L$BASEDIR/blas -L$BASEDIR/lapack -L$BASEDIR/amd" 
 
 # aztec
 AZTEC_INC=""
@@ -32,7 +32,8 @@ SPOOLES_LIB=""
 
 # umfpack
 UMFPACK_INC=""
-UMFPACK_LIB="-L$BASEDIR/umfpack/ -lumfpack"
+UMFPACK_LIB="-L$BASEDIR/umfpack/ -lumfpack -L$BASEDIR/amd/ -lamd"
+
 
 # visual2
 if grep '^VISUAL2_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
@@ -51,13 +52,14 @@ VISUAL3_INC=""
 VISUAL3_LIB=""
 
 
-LIBS="-llapack  -lblas -lm -lg2c"
+LIBS="-llapack  -lblas"
 
 # FAST
-PROGRAMNAME=ccarat.exe
+PROGRAMNAME=ccarat_win.exe
 CFLAGS_OPT="-O"
 FFLAGS_OPT="-O"
 CFLAGS="-c -ansi -Wall"
 FFLAGS="-Wall"
 LDFLAGS=""
 
+LOOPL="-DLOOPL=15"
