@@ -58,13 +58,13 @@ for the linear, 3dim heat conduction
 \author bborn
 \date 09/06
 */
-void th3_lin_tang(CONTAINER *cont,
-                  ELEMENT *ele,
-                  TH3_DATA *data,
-                  MATERIAL *mat,
-                  ARRAY *estif_global,
-                  ARRAY *emass_global,
-                  DOUBLE *force)
+void th3_lin_tang(CONTAINER* cont,
+                  ELEMENT* ele,
+                  TH3_DATA* data,
+                  MATERIAL* mat,
+                  ARRAY* estif_global,
+                  ARRAY* emass_global,
+                  DOUBLE* force)
 {
   /* general variables/constants */
   INT nelenod;  /* numnp of this element */
@@ -239,11 +239,11 @@ void th3_lin_tang(CONTAINER *cont,
 \author bborn
 \date 03/06
 */
-void th3_lin_bcb(INT       neledof,
-                 DOUBLE    bop[NDIM_THERM3][NUMDOF_THERM3*MAXNOD_THERM3],
-                 DOUBLE    cmat[NUMHFLX_THERM3][NUMTMGR_THERM3],
-                 DOUBLE    fac,
-                 DOUBLE  **tmat)
+void th3_lin_bcb(INT neledof,
+                 DOUBLE bop[NDIM_THERM3][NUMDOF_THERM3*MAXNOD_THERM3],
+                 DOUBLE cmat[NUMHFLX_THERM3][NUMTMGR_THERM3],
+                 DOUBLE fac,
+                 DOUBLE** tmat)
 {
   INT i, j, k, l;  /* counters */
   DOUBLE bopcmati, tkl;  /* intermediate sums */
@@ -305,11 +305,11 @@ of the current Gauss point
 \author bborn
 \date 03/06
 */
-void th3_lin_fint(INT      neledof,
-                  DOUBLE   bop[NDIM_THERM3][NUMDOF_THERM3*MAXNOD_THERM3],
-                  DOUBLE   hflux[NUMHFLX_THERM3],
-                  DOUBLE   fac,
-                  DOUBLE  *intfor)
+void th3_lin_fint(INT neledof,
+                  DOUBLE bop[NDIM_THERM3][NUMDOF_THERM3*MAXNOD_THERM3],
+                  DOUBLE hflux[NUMHFLX_THERM3],
+                  DOUBLE fac,
+                  DOUBLE* intfor)
 {
   /*--------------------------------------------------------------------*/
   INT i, k;  /* counters */

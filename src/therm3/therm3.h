@@ -344,30 +344,30 @@ void th3_metr_line(ELEMENT *ele,
 
 /*----------------------------------------------------------------------*/
 /* file th2_lin.c */
-void th3_lin_tang(CONTAINER *cont,
-                  ELEMENT  *ele,
-                  TH3_DATA *data,
-                  MATERIAL *mat,
-                  ARRAY    *estif_global,
-                  ARRAY    *emass_global,
-                  DOUBLE   *force);
-void th3_lin_bcb(INT       neledof,
-                 DOUBLE    bop[NDIM_THERM3][NUMDOF_THERM3*MAXNOD_THERM3],
-                 DOUBLE    cmat[NUMHFLX_THERM3][NUMTMGR_THERM3],
-                 DOUBLE    fac,
-                 DOUBLE  **tmat);
-void th3_lin_fint(INT      neledof,
-                  DOUBLE   bop[NDIM_THERM3][NUMDOF_THERM3*MAXNOD_THERM3],
-                  DOUBLE   hflux[NUMHFLX_THERM3],
-                  DOUBLE   fac,
-                  DOUBLE  *intfor);
+void th3_lin_tang(CONTAINER* cont,
+                  ELEMENT* ele,
+                  TH3_DATA* data,
+                  MATERIAL* mat,
+                  ARRAY* estif_global,
+                  ARRAY* emass_global,
+                  DOUBLE* force);
+void th3_lin_bcb(INT neledof,
+                 DOUBLE bop[NDIM_THERM3][NUMDOF_THERM3*MAXNOD_THERM3],
+                 DOUBLE cmat[NUMHFLX_THERM3][NUMTMGR_THERM3],
+                 DOUBLE fac,
+                 DOUBLE** tmat);
+void th3_lin_fint(INT neledof,
+                  DOUBLE bop[NDIM_THERM3][NUMDOF_THERM3*MAXNOD_THERM3],
+                  DOUBLE hflux[NUMHFLX_THERM3],
+                  DOUBLE fac,
+                  DOUBLE* intfor);
 
 /*----------------------------------------------------------------------*/
 /* file th3_load.c */
-void th3_load_heat(ELEMENT *ele,  /* actual element */
-                   TH3_DATA *data,
+void th3_load_heat(ELEMENT* ele,
+                   TH3_DATA* data,
                    INT imyrank,
-                   DOUBLE *loadvec); /* global element load vector fext */
+                   DOUBLE* loadvec);
 void th3_load_vol(ELEMENT *ele,
                   INT nelenod,
                   DOUBLE shape[MAXNOD_THERM3],

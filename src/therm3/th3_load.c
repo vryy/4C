@@ -26,13 +26,21 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 /*!
 \brief General problem data
-
-global variable GENPROB genprob is defined in global_control.c
-
+       global variable GENPROB genprob is defined in global_control.c
 \author bborn
 \date 03/06
 */
 extern GENPROB genprob;
+
+/*----------------------------------------------------------------------*/
+/*!
+\brief Alldyn dynamic control
+       pointer to allocate dynamic variables if needed
+       dedfined in global_control.c
+\auther bborn
+\date 05/07
+*/
+extern ALLDYNA* alldyn;
 
 
 /*======================================================================*/
@@ -59,20 +67,25 @@ Tetrahedra  { (r,s,t) | -1<=r<=1, -1<=s<=1-r, -1<=t<=1-r-s }
 \author bborn
 \date 09/06
 */
-void th3_load_heat(ELEMENT *ele,  /* actual element */
+void th3_load_heat(ELEMENT *ele,
                    TH3_DATA *data,
                    INT imyrank,
-                   DOUBLE *loadvec) /* global element load vector fext */
+                   DOUBLE *loadvec)
 {
+  const INT itdyn = genprob.numtf;  /* index of therm dynamics data */
+  const THERM_DYNAMIC* tdyn = alldyn[itdyn].tdyn;  /* therm. dyn. data */
+  const DOUBLE timen = tdyn->time;  /* current time */
+  INT curve;  /* curve index */
+  DOUBLE cfac;  /* curve factor */
 
   /* general variables */
   INT idim, inode, idof;  /* some counters */
-  INT nelenod;  /* number of element nodes */
-  INT neledof;  /* element DOF */
-  DIS_TYP distyp;  /* local copy of discretisation type */
+  const INT nelenod = ele->numnp;  /* number of element nodes */
+  /* const INT neledof = nelenod * NUMDOF_THERM3;  /\* element DOF *\/ */
+  const DIS_TYP distyp = ele->distyp;  /* elem. discretisation type */
 
   /* volume load */
-  GVOL *gvol;  /* local pointer to geometry volume of element */
+  GVOL* gvol = ele->g.gvol;  /* local pointer to geometry volume of element */
   INT foundgvolneum;  /* flag for identifying loaded volume */
   DOUBLE shape[MAXNOD_THERM3];  /* shape functions */
   DOUBLE deriv[MAXNOD_THERM3][NDIM_THERM3];
@@ -94,7 +107,7 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
   INT foundglineneum;  /* flag for identifying loaded line */
   INT ngline;  /* number of geometry line of volumetric element */
   INT igline;  /* line index */
-  GLINE *gline[MAXEDG_THERM3];  /* local pointers to lines */
+  GLINE* gline[MAXEDG_THERM3];  /* local pointers to lines */
   DOUBLE linredv[NDIM_THERM3];  /* dimension reduction vector */
 
   /* integration */
@@ -114,22 +127,8 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
 #endif
 
   /*--------------------------------------------------------------------*/
-  /* element properties */
-  nelenod = ele->numnp;  /* element nodes */
-  neledof = nelenod * NUMDOF_THERM3;  /* total number of element DOFs */
-  distyp = ele->distyp;
-  gvol = ele->g.gvol;
-
-  /*--------------------------------------------------------------------*/
   /* initialize vectors */
-  memset(eload, 0, sizeof(eload));  /* set eload to zero */
-/*   for (idim=0; idim<NUMDOF_THERM3; idim++)  /\* element load *\/ */
-/*   { */
-/*     for (inode=0; inode<nelenod; inode++) */
-/*     { */
-/*       eload[idim][inode] = 0.0; */
-/*     } */
-/*   } */
+  memset(eload, 0, NUMDOF_THERM3*MAXNOD_THERM3*sizeof(DOUBLE));  /* set eload to zero */
 
   /*====================================================================*/
   /* check if external heat is applied (load) */
@@ -197,7 +196,6 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
     }
   }
 
-
   /*====================================================================*/
   /* domain load ==> volume heat load, heat source */
   /*------------------------------------------------------------------- */
@@ -228,6 +226,26 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
       dserror("ele->distyp unknown!");
     } /* end of if */
     /*------------------------------------------------------------------*/
+    /* load curve factor at current time */
+    curve = gvol->neum->curve - 1;  /* load curve index */
+    if (curve < 0)
+    {
+      cfac = 1.0;  /* default */
+    }
+    else
+    {
+      if (genprob.timetyp == time_static)
+      {
+        /* not implemented, could be something like: */
+        /* dyn_facfromcurve(curve, timen, &(cfac)); */
+        cfac = 1.0;  /* remove this */
+      }
+      else if (genprob.timetyp == time_dynamic)
+      {
+        dyn_facfromcurve(curve, timen, &(cfac));
+      }
+    }
+    /*------------------------------------------------------------------*/
     /* integration loops */
     for (igp[0]=0; igp[0]<gpnum[0]; igp[0]++)
     {
@@ -237,7 +255,7 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
         {
           /*------------------------------------------------------------*/
           /* initialise intgration factor */
-          fac = 1.0;
+          fac = cfac;
           /*------------------------------------------------------------*/
           /* obtain current Gauss coordinates and weights */
           switch (distyp)
@@ -249,7 +267,7 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
                 /* r,s,t-coordinate */
                 gpc[idim] = data->ghlc[gpintc[idim]][igp[idim]];
                 /* weight */
-                fac = fac * data->ghlw[gpintc[idim]][igp[idim]];
+                fac *= data->ghlw[gpintc[idim]][igp[idim]];
               }
               break;
             /* tetrahedra */
@@ -272,7 +290,7 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
           th3_metr_jaco(ele, nelenod, deriv, 0, xjm, &det, xji);
           /*------------------------------------------------------------*/
           /* integration (quadrature) factor */
-          fac = fac * det;
+          fac *= det;
           /*------------------------------------------------------------*/
           /* volume-load  ==> eload modified */
           th3_load_vol(ele, nelenod, shape, fac, eload);
@@ -308,6 +326,26 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
           /* check if current side is subjected to a load */
           if (gsurf[igsurf]->neum != NULL)
           {
+            /*----------------------------------------------------------*/
+            /* curve factor */
+            curve = gsurf[igsurf]->neum->curve - 1;
+            if (curve < 0)
+            {
+              cfac = 1.0;
+            }
+            else
+            {
+              if (genprob.timetyp == time_static)
+              {
+                /* not implemented, could be something like: */
+                /* dyn_facfromcurve(curve, timen, &(cfac)); */
+                cfac = 1.0;  /* remove this */
+              }
+              else if (genprob.timetyp == time_dynamic)
+              {
+                dyn_facfromcurve(curve, timen, &(cfac));
+              }
+            }
             /*----------------------------------------------------------*/
             /* get dimension reduction matrix */
             /* sidredm = &&(data->redsidh[igsurf][0][0]); */
@@ -349,8 +387,7 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
                   for (idimsid=0; idimsid<DIMSID_THERM3; idimsid++)
                   {
                     /* add coordinate components */
-                    gpcidim = gpcidim 
-                      + sidredm[idimsid][idim] 
+                    gpcidim += sidredm[idimsid][idim] 
                         * data->ghlc[gpintc[idimsid]][igp[idimsid]];
                   }  /* end for */
                   /* final set of idim-component */
@@ -358,11 +395,11 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
                 }  /* end for */
                 /*------------------------------------------------------*/
                 /* Gauss weight */
-                fac = 1.0;  /* initialise integration factor */
+                fac = cfac;  /* initialise integration factor */
                 for (idimsid=0; idimsid<DIMSID_THERM3; idimsid++)
                 {
                   /* multiply weight */
-                  fac = fac * data->ghlw[gpintc[idimsid]][igp[idimsid]];
+                  fac *= data->ghlw[gpintc[idimsid]][igp[idimsid]];
                 }
                 /*------------------------------------------------------*/
                 /* Shape functions at Gauss point */
@@ -373,7 +410,7 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
                 th3_metr_surf(ele, nelenod, deriv, sidredm, &metr);
                 /*------------------------------------------------------*/
                 /* integration factor */
-                fac = fac * metr;
+                fac *= metr;
                 /*------------------------------------------------------*/
                 /* add surface load contribution ==> eload modified */
                 th3_load_surf(ele, nelenod, gsurf[igsurf], shape, fac, 
@@ -403,6 +440,26 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
           if (gsurf[igsurf]->neum != NULL)
           {
             /*----------------------------------------------------------*/
+            /* curve factor */
+            curve = gsurf[igsurf]->neum->curve - 1;
+            if (curve < 0)
+            {
+              cfac = 1.0;
+            }
+            else
+            {
+              if (genprob.timetyp == time_static)
+              {
+                /* not implemented, could be something like: */
+                /* dyn_facfromcurve(curve, timen, &(cfac)); */
+                cfac = 1.0;  /* remove this */
+              }
+              else if (genprob.timetyp == time_dynamic)
+              {
+                dyn_facfromcurve(curve, timen, &(cfac));
+              }
+            }
+            /*----------------------------------------------------------*/
             /* set dimension reduction matrix */
             for (idimsid=0; idimsid<DIMSID_THERM3; idimsid++)
             {
@@ -425,8 +482,7 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
                 /* add position sideways */
                 for (idimsid=0; idimsid<DIMSID_THERM3; idimsid++)
                 {
-                  gpcidim = gpcidim
-                    + sidredm[idim][idimsid]
+                  gpcidim += sidredm[idim][idimsid]
                       * data->gtsc[gpintc[0]][igp[0]][idimsid];
                 }  /* end for */
                 /* final set of idim-component */
@@ -434,7 +490,7 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
               }  /* end for */
               /*--------------------------------------------------------*/
               /* multiply weight */
-              fac = data->ghlw[gpintc[0]][igp[0]];
+              fac = cfac * data->ghlw[gpintc[0]][igp[0]];
               /*--------------------------------------------------------*/
               /* Shape functions at Gauss point */
               th3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1, 
@@ -444,7 +500,7 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
               th3_metr_surf(ele, nelenod, deriv, sidredm, &metr);
               /*--------------------------------------------------------*/
               /* integration factor */
-              fac = fac * metr;
+              fac *= metr;
               /*--------------------------------------------------------*/
               /* add surface load contribution ==> eload modified */
               th3_load_surf(ele, nelenod, gsurf[igsurf], shape, fac, 
@@ -486,6 +542,26 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
           if (gline[igline]->neum != NULL)
           {
             /*----------------------------------------------------------*/
+            /* curve factor */
+            curve = gline[igline]->neum->curve - 1;
+            if (curve < 0)
+            {
+              cfac = 1.0;
+            }
+            else
+            {
+              if (genprob.timetyp == time_static)
+              {
+                /* not implemented, could be something like: */
+                /* dyn_facfromcurve(curve, timen, &(cfac)); */
+                cfac = 1.0;  /* remove this */
+              }
+              else if (genprob.timetyp == time_dynamic)
+              {
+                dyn_facfromcurve(curve, timen, &(cfac));
+              }
+            }
+            /*----------------------------------------------------------*/
             /* get dimension reduction matrix */
             for (idim=0; idim<NDIM_THERM3; idim++)
             {
@@ -520,14 +596,13 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
                  * parameter coordinate plane */
                 gpcidim = data->ancedgh[igline][idim];
                 /* add coordinate components */
-                gpcidim = gpcidim
-                  + linredv[idim] * data->ghlc[gpintc[0]][igp[0]];
+                gpcidim += linredv[idim] * data->ghlc[gpintc[0]][igp[0]];
                 /* final set of idim-component */
                 gpc[idim] = gpcidim;
               }  /* end for */
               /*--------------------------------------------------------*/
               /* set weight */
-              fac = data->ghlw[gpintc[0]][igp[0]];
+              fac = cfac * data->ghlw[gpintc[0]][igp[0]];
               /*--------------------------------------------------------*/
               /* Shape functions at Gauss point */
               th3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1, 
@@ -537,7 +612,7 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
               th3_metr_line(ele, nelenod, deriv, linredv, &metr);
               /*--------------------------------------------------------*/
               /* integration factor */
-              fac = fac * metr;
+              fac *= metr;
               /*--------------------------------------------------------*/
               /* add surface load contribution ==> eload modified */
               th3_load_line(ele, nelenod, gline[igline], shape, fac, 
@@ -566,6 +641,26 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
           if (gline[igline]->neum != NULL)
           {
             /*----------------------------------------------------------*/
+            /* curve factor */
+            curve = gline[igline]->neum->curve - 1;
+            if (curve < 0)
+            {
+              cfac = 1.0;
+            }
+            else
+            {
+              if (genprob.timetyp == time_static)
+              {
+                /* not implemented, could be something like: */
+                /* dyn_facfromcurve(curve, timen, &(cfac)); */
+                cfac = 1.0;  /* remove this */
+              }
+              else if (genprob.timetyp == time_dynamic)
+              {
+                dyn_facfromcurve(curve, timen, &(cfac));
+              }
+            }
+            /*----------------------------------------------------------*/
             /* get dimension reduction matrix */
             for (idim=0; idim<NDIM_THERM3; idim++)
             {
@@ -586,14 +681,13 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
                  * parameter coordinate plane */
                 gpcidim = data->ancedgt[igline][idim];
                 /* add coordinate components */
-                gpcidim = gpcidim
-                  + linredv[idim] * data->gtlc[gpintc[0]][igp[0]];
+                gpcidim += linredv[idim] * data->gtlc[gpintc[0]][igp[0]];
                 /* final set of idim-component */
                 gpc[idim] = gpcidim;
               }  /* end for */
               /*--------------------------------------------------------*/
               /* set weight */
-              fac = data->gtlw[gpintc[0]][igp[0]];
+              fac = cfac * data->gtlw[gpintc[0]][igp[0]];
               /*--------------------------------------------------------*/
               /* shape functions at Gauss point */
               th3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1, 
@@ -603,7 +697,7 @@ void th3_load_heat(ELEMENT *ele,  /* actual element */
               th3_metr_line(ele, nelenod, deriv, linredv, &metr);
               /*--------------------------------------------------------*/
               /* integration factor */
-              fac = fac * metr;
+              fac *= metr;
               /*--------------------------------------------------------*/
               /* add surface load contribution ==> eload modified */
               th3_load_line(ele, nelenod, gline[igline], shape, fac, 

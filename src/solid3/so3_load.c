@@ -26,9 +26,7 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 /*!
 \brief General problem data
-
-global variable GENPROB genprob is defined in global_control.c
-
+       global variable GENPROB genprob is defined in global_control.c
 \author bborn
 \date 01/07
 */
@@ -37,9 +35,7 @@ extern GENPROB genprob;
 /*----------------------------------------------------------------------*/
 /*!
 \brief Fields
-
-vector of numfld FIELDs, defined in global_control.c
-
+       vector of numfld FIELDs, defined in global_control.c
 \author bborn
 \date 05/07
 */
@@ -56,10 +52,8 @@ extern STATIC_VAR* statvar;
 /*----------------------------------------------------------------------*/
 /*!
 \brief Alldyn dynamic control
-
-pointer to allocate dynamic variables if needed
-dedfined in global_control.c
-
+       pointer to allocate dynamic variables if needed
+       dedfined in global_control.c
 \auther bborn
 \date 05/07
 */
