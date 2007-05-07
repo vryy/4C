@@ -13,124 +13,30 @@
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
+DRT::Exporter::Exporter(const Epetra_Comm& comm) :
+dummymap_(0,0,comm),
+frommap_(dummymap_),
+tomap_(dummymap_),
+comm_(comm),
+myrank_(comm.MyPID()),
+numproc_(comm.NumProc())
+{
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  ctor (public)                                            mwgee 11/06|
+ *----------------------------------------------------------------------*/
 DRT::Exporter::Exporter(const Epetra_Map& frommap,const Epetra_Map& tomap, 
                         const Epetra_Comm& comm) :
+dummymap_(0,0,comm),
 frommap_(frommap),
 tomap_(tomap),
 comm_(comm),
 myrank_(comm.MyPID()),
 numproc_(comm.NumProc())
 {
-  if (SourceMap().PointSameAs(TargetMap())) return;
-
-  // allocate a sendplan array and init to zero
-  // SendPlan():
-  // SendPlan()(lid,proc)    = 1 for data with local id lid needs sending to proc
-  // SendPlan()(lid,proc)    = 0 otherwise
-  // SendPlan()(lid,MyPID()) = 0 always! (I never send to myself)
-  SendPlan().Shape(SourceMap().NumMyElements(),NumProc());
-  
-  // allocate a receive plan
-  // RecvPlan():
-  // RecvPlan()(lid,proc) = 1 data with local id lid will be received from proc
-  // RecvPlan()(lid,proc) = 0 otherwise
-  // RecvPlan()(lid,MyPID()) = 0 always! (I never receive from myself)
-  RecvPlan().Shape(TargetMap().NumMyElements(),NumProc());
-  
-  // allocate a send buffer for ParObject packs
-  SendBuff().resize(SourceMap().NumMyElements());
-  SendSize().resize(SourceMap().NumMyElements());
-  for (int i=0; i<(int)SendSize().size(); ++i) SendSize()[i] = 0;
-  
-  // To build these plans, everybody has to communicate what he has and wants:
-  // bundle this info to save on communication:
-  int sizes[2];
-  sizes[0] = SourceMap().NumMyElements(); 
-  sizes[1] = TargetMap().NumMyElements(); 
-  const int sendsize = sizes[0]+sizes[1];
-  vector<int> sendbuff(sendsize);
-  for (int i=0; i<sizes[0]; ++i)
-    sendbuff[i] = SourceMap().MyGlobalElements()[i]; 
-  for (int i=0; i<sizes[1]; ++i)
-    sendbuff[i+sizes[0]] = TargetMap().MyGlobalElements()[i]; 
-  
-  for (int proc=0; proc<NumProc(); ++proc)
-  {
-    int recvsizes[2];
-    recvsizes[0] = sizes[0];
-    recvsizes[1] = sizes[1];
-    Comm().Broadcast(recvsizes,2,proc);
-    const int recvsize = recvsizes[0]+recvsizes[1];
-    vector<int> recvbuff(recvsize);
-    if (proc==MyPID()) 
-      for (int i=0; i<recvsize; ++i) recvbuff[i] = sendbuff[i];
-    Comm().Broadcast(&recvbuff[0],recvsize,proc);
-    const int* have = &recvbuff[0];            // this is what proc has
-    const int* want = &recvbuff[recvsizes[0]]; // this is what proc needs
-    
-    // Loop what proc has and what I need (RecvPlan)
-    // (I do not receive from myself)
-    if (proc != MyPID())
-      for (int i=0; i<recvsizes[0]; ++i)
-      {
-        const int gid = have[i];
-        if (TargetMap().MyGID(gid))
-        {
-          const int lid = TargetMap().LID(gid);
-          RecvPlan()(lid,proc) = 1;
-        }
-      }
-    
-    // Loop what proc wants and what I have (SendPlan)
-    if (proc != MyPID())
-      for (int i=0; i<recvsizes[1]; ++i)
-      {
-        const int gid = want[i];
-        if (SourceMap().MyGID(gid))
-        {
-          const int lid = SourceMap().LID(gid);
-          SendPlan()(lid,proc) = 1;
-        }
-      }
-    Comm().Barrier();
-  } // for (int proc=0; proc<NumProc(); ++proc)
-
-
-
-#if 0
-  // make test print of RecvPlan
-  for (int proc=0; proc<NumProc(); ++proc)
-  {
-    if (MyPID()==proc)
-    {
-      for (int i=0; i<RecvPlan().M(); ++i)
-        for (int j=0; j<RecvPlan().N(); ++j)
-          if (RecvPlan()(i,j))
-            cout << "Proc " << MyPID() << " wants gid " 
-                 << TargetMap().MyGlobalElements()[i] 
-                 << " from proc " << j << endl;
-    }
-    fflush(stdout);
-    Comm().Barrier();
-  }
-  cout << endl;
-  // make test print of SendPlan
-  for (int proc=0; proc<NumProc(); ++proc)
-  {
-    if (MyPID()==proc)
-    {
-      for (int i=0; i<SendPlan().M(); ++i)
-        for (int j=0; j<SendPlan().N(); ++j)
-          if (SendPlan()(i,j))
-          cout << "Proc " << MyPID() << " sends gid " 
-               << SourceMap().MyGlobalElements()[i]
-               << " to proc " << j << endl;
-    }
-    fflush(stdout);
-    Comm().Barrier();
-  }
-#endif  
-
+  ConstructExporter();
   return;
 }
 
@@ -138,6 +44,7 @@ numproc_(comm.NumProc())
  |  copy-ctor (public)                                       mwgee 11/06|
  *----------------------------------------------------------------------*/
 DRT::Exporter::Exporter(const DRT::Exporter& old) :
+dummymap_(old.dummymap_),
 frommap_(old.frommap_),
 tomap_(old.tomap_),
 comm_(old.comm_),
@@ -303,6 +210,125 @@ void DRT::Exporter::ReceiveAny(int& source, int&tag,
   return;
 }
 #endif  
+
+/*----------------------------------------------------------------------*
+ |  the acrual exporter constructor (private)                mwgee 05/07|
+ *----------------------------------------------------------------------*/
+void DRT::Exporter::ConstructExporter()
+{
+  if (SourceMap().PointSameAs(TargetMap())) return;
+
+  // allocate a sendplan array and init to zero
+  // SendPlan():
+  // SendPlan()(lid,proc)    = 1 for data with local id lid needs sending to proc
+  // SendPlan()(lid,proc)    = 0 otherwise
+  // SendPlan()(lid,MyPID()) = 0 always! (I never send to myself)
+  SendPlan().Shape(SourceMap().NumMyElements(),NumProc());
+  
+  // allocate a receive plan
+  // RecvPlan():
+  // RecvPlan()(lid,proc) = 1 data with local id lid will be received from proc
+  // RecvPlan()(lid,proc) = 0 otherwise
+  // RecvPlan()(lid,MyPID()) = 0 always! (I never receive from myself)
+  RecvPlan().Shape(TargetMap().NumMyElements(),NumProc());
+  
+  // allocate a send buffer for ParObject packs
+  SendBuff().resize(SourceMap().NumMyElements());
+  SendSize().resize(SourceMap().NumMyElements());
+  for (int i=0; i<(int)SendSize().size(); ++i) SendSize()[i] = 0;
+  
+  // To build these plans, everybody has to communicate what he has and wants:
+  // bundle this info to save on communication:
+  int sizes[2];
+  sizes[0] = SourceMap().NumMyElements(); 
+  sizes[1] = TargetMap().NumMyElements(); 
+  const int sendsize = sizes[0]+sizes[1];
+  vector<int> sendbuff(sendsize);
+  for (int i=0; i<sizes[0]; ++i)
+    sendbuff[i] = SourceMap().MyGlobalElements()[i]; 
+  for (int i=0; i<sizes[1]; ++i)
+    sendbuff[i+sizes[0]] = TargetMap().MyGlobalElements()[i]; 
+  
+  for (int proc=0; proc<NumProc(); ++proc)
+  {
+    int recvsizes[2];
+    recvsizes[0] = sizes[0];
+    recvsizes[1] = sizes[1];
+    Comm().Broadcast(recvsizes,2,proc);
+    const int recvsize = recvsizes[0]+recvsizes[1];
+    vector<int> recvbuff(recvsize);
+    if (proc==MyPID()) 
+      for (int i=0; i<recvsize; ++i) recvbuff[i] = sendbuff[i];
+    Comm().Broadcast(&recvbuff[0],recvsize,proc);
+    const int* have = &recvbuff[0];            // this is what proc has
+    const int* want = &recvbuff[recvsizes[0]]; // this is what proc needs
+    
+    // Loop what proc has and what I need (RecvPlan)
+    // (I do not receive from myself)
+    if (proc != MyPID())
+      for (int i=0; i<recvsizes[0]; ++i)
+      {
+        const int gid = have[i];
+        if (TargetMap().MyGID(gid))
+        {
+          const int lid = TargetMap().LID(gid);
+          RecvPlan()(lid,proc) = 1;
+        }
+      }
+    
+    // Loop what proc wants and what I have (SendPlan)
+    if (proc != MyPID())
+      for (int i=0; i<recvsizes[1]; ++i)
+      {
+        const int gid = want[i];
+        if (SourceMap().MyGID(gid))
+        {
+          const int lid = SourceMap().LID(gid);
+          SendPlan()(lid,proc) = 1;
+        }
+      }
+    Comm().Barrier();
+  } // for (int proc=0; proc<NumProc(); ++proc)
+
+
+
+#if 0
+  // make test print of RecvPlan
+  for (int proc=0; proc<NumProc(); ++proc)
+  {
+    if (MyPID()==proc)
+    {
+      for (int i=0; i<RecvPlan().M(); ++i)
+        for (int j=0; j<RecvPlan().N(); ++j)
+          if (RecvPlan()(i,j))
+            cout << "Proc " << MyPID() << " wants gid " 
+                 << TargetMap().MyGlobalElements()[i] 
+                 << " from proc " << j << endl;
+    }
+    fflush(stdout);
+    Comm().Barrier();
+  }
+  cout << endl;
+  // make test print of SendPlan
+  for (int proc=0; proc<NumProc(); ++proc)
+  {
+    if (MyPID()==proc)
+    {
+      for (int i=0; i<SendPlan().M(); ++i)
+        for (int j=0; j<SendPlan().N(); ++j)
+          if (SendPlan()(i,j))
+          cout << "Proc " << MyPID() << " sends gid " 
+               << SourceMap().MyGlobalElements()[i]
+               << " to proc " << j << endl;
+    }
+    fflush(stdout);
+    Comm().Barrier();
+  }
+#endif  
+
+  return;
+}
+
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

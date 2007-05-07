@@ -75,6 +75,16 @@ public:
   /*!
   \brief Standard Constructor
   
+  this ctor constructs an exporter with no maps. It can than be used to do
+  point-to-point communication only, map based exportes are not possible!
+  
+  \param comm    (in): Communicator that shall be used in exports
+  */
+  Exporter(const Epetra_Comm& comm);
+
+  /*!
+  \brief Standard Constructor
+  
   \param frommap (in): The source map data shall be exported from
   \param tomap   (in): The target map data shall be exported to
   \param comm    (in): Communicator that shall be used in exports
@@ -336,6 +346,11 @@ public:
 private:
 
   /*!
+  \brief Do initialization of the exporter
+  */
+  void ConstructExporter();
+  
+  /*!
   \brief Get PID
   */
   inline int MyPID() const { return myrank_; }
@@ -367,6 +382,8 @@ private:
 
 private:
   
+  //! dummy map in case of empty exporter
+  Epetra_Map               dummymap_;
   //! source layout
   const Epetra_Map&        frommap_;   
   //! target map 
