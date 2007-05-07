@@ -652,7 +652,8 @@ OBJS_MAT      = src/materials/mat_el_iso.o \
                 src/materials/mat_pl_hoff.o \
                 src/materials/mat_pl_mises_lin.o \
                 src/materials/mat_pl_epc.o \
-                src/materials/mat_pl_dp_lin.o
+                src/materials/mat_pl_dp_lin.o \
+		src/materials/mat_el_ogden.o
 #               structure-structure interaction
 OBJS_SSI      = src/ssi_full/ssi_dyn.o \
                 src/ssi_full/ssi_coupling.o \

@@ -1,15 +1,21 @@
 /*---------------------------------------------------------------------                                    
- * \file
- * \brief
- *
- * <pre>
- * Maintainer:		Robert Metzke
- * 			metzke@lnm.mw.tum.de
- *			http://www.lnm.mw.tum.de/Members/metzke
- *			089 - 289 15244
- *  </pre>
- *
- *-------------------------------------------------------------------*/
+\file
+\brief contains the routine
+ - c1_mat_ogden_uncoupled:	calculates the principal stretches and
+ 				the eigenvectors of right Cauchy Green
+				and calls the decoupled ogden material
+				law at the materials folder and gives
+				back the stress and constitutive tensor
+ - c1_ogden_principal_CG:	prepares the right Cauchy Green tensor
+ 				for spectral decomposition
+<pre>
+Maintainer:		Robert Metzke
+ 			metzke@lnm.mw.tum.de
+			http://www.lnm.mw.tum.de/Members/metzke
+			089 - 289 15244
+</pre>
+
+*-------------------------------------------------------------------*/
 #ifdef D_BRICK1
 #include "../headers/standardtypes.h"
 #include "brick1.h"
@@ -19,14 +25,13 @@
  * split in volumetric and deviatoric strains                           |
  * adapted from shell 8 to brick                               rm 03/07 |
  *----------------------------------------------------------------------*/
-
 void c1_mat_ogden_uncoupled(
 		 COMPOGDEN *mat,
 		 DOUBLE *disd,
 		 DOUBLE *stress,
 		 DOUBLE **d)
 {
-	INT i,j,k,l,p;
+	INT i,j,k;
 	
 	DOUBLE  FT[3][3];
 	DOUBLE  CG[3][3];
@@ -75,10 +80,7 @@ void c1_mat_ogden_uncoupled(
 	for (i=0; i<3; i++) mat->l[i] = lam[i];
 #endif
 /*------------------------------ call ogden material in material folder */
-	/* call to mat_ogden 
-	 * send lambda and N
-	 * get PK2 and C
-	 * */	
+	mat_el_ogden_uncoupled(mat,lam,N,PK2,C);
 /*------------------------------------------------------------ Stresses */
 	stress[0] = PK2[0][0];
 	stress[1] = PK2[1][1];
