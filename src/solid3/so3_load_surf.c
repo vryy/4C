@@ -95,7 +95,7 @@ void so3_load_surf_int(ELEMENT* ele,
         {
           /*------------------------------------------------------------*/
           /* curve factor */
-          curve = gsurf[igsurf]->neum->curve;
+          curve = gsurf[igsurf]->neum->curve - 1;
           if (curve < 0)
           {
             cfac = 1.0;
@@ -193,7 +193,7 @@ void so3_load_surf_int(ELEMENT* ele,
         {
           /*------------------------------------------------------------*/
           /* curve factor */
-          curve = gsurf[igsurf]->neum->curve;
+          curve = gsurf[igsurf]->neum->curve - 1;
           if (curve < 0)
           {
             cfac = 1.0;

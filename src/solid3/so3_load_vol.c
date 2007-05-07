@@ -51,12 +51,12 @@ void so3_load_vol_int(ELEMENT* ele,
 {
   const INT nelenod = ele->numnp;  /* number of element nodes */
 
-  const INT curve = gvol->neum->curve;  /* load curve */
+  const INT curve = gvol->neum->curve - 1;  /* load curve */
   DOUBLE cfac;  /* curve factor */
 
   const INT ngp = gpshade->gptot;  /* total number of Gauss points */
   INT jgp;  /* Gauss point index */
-  INT fac;  /* integration factor */
+  DOUBLE fac;  /* integration factor */
 
   DOUBLE xjm[NDIM_SOLID3][NDIM_SOLID3];  /* Jacobian matrix */
   DOUBLE det;  /* Jacobi determinant */
@@ -71,7 +71,7 @@ void so3_load_vol_int(ELEMENT* ele,
   /* load-step-dependent/time-step-dependent scale */
   if (curve < 0)
   {
-    cfac = 1.0;
+    cfac = 1.0;  /* default */
   }
   else
   {

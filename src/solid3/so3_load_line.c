@@ -94,7 +94,7 @@ void so3_load_line_int(ELEMENT* ele,
         {
           /*------------------------------------------------------------*/
           /* curve factor */
-          curve = gline[igline]->neum->curve;
+          curve = gline[igline]->neum->curve - 1;
           if (curve < 0)
           {
             cfac = 1.0;
@@ -183,7 +183,7 @@ void so3_load_line_int(ELEMENT* ele,
         {
           /*------------------------------------------------------------*/
           /* curve factor */
-          curve = gline[igline]->neum->curve;
+          curve = gline[igline]->neum->curve - 1;
           if (curve < 0)
           {
             cfac = 1.0;  /* default */

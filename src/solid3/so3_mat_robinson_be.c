@@ -37,7 +37,7 @@ extern GENPROB genprob;
 \author bborn
 \date 05/07
 */
-extern FIELD *field;
+extern FIELD* field;
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -212,25 +212,6 @@ void so3_mat_robinson_be_sel(const CONTAINER* container,
 #ifdef DEBUG
   dstrc_enter("so3_mat_robinson_be_sel");
 #endif
-
-  /*--------------------------------------------------------------------*/
-  /* Material internal variables (visc. strain and back stress) are
-   * updated by their iterative increments.
-   * Their iterative increments are expressed in terms of the iterative
-   * increment of the total strain.
-   * Here the reduction matrices --- stored in the previous iteration ---
-   * are used. */
-/*   if ( (actso3->miv_rob->vscstns.a.iv[ip] != so3_mat_robinson_state_vague) */
-/*        && (actso3->miv_rob->bckstss.a.iv[ip] != so3_mat_robinson_state_vague) ) */
-/*   { */
-/*     so3_mat_robinson_be_mivupditr(container, ele, */
-/*                                   gpshade->gpderiv[ip], */
-/*                                   gds, */
-/*                                   actso3->miv_rob->kvarva.a.da[ip], */
-/*                                   actso3->miv_rob->kvakvae.a.da[ip], */
-/*                                   actso3->miv_rob->vicstnn.a.da[ip], */
-/*                                   actso3->miv_rob->bacstsn.a.da[ip]); */
-/*   } */
 
   /*--------------------------------------------------------------------*/
   /* total strain eps_{n+1} at t_{n+1} */
@@ -1030,7 +1011,7 @@ Material internal variables (visc. strain and back stress) are
 updated by their iterative increments.
 Their iterative increments are expressed in terms of the iterative
 increment of the total strain.
-Here the reduction matrices --- stored in the previous iteration ---
+Here the reduction matrices --- stored at previous call of ---
 are used.
 
 \author bborn
