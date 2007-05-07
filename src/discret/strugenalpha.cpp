@@ -995,6 +995,24 @@ void StruGenAlpha::UpdateandOutput()
   //    F_{ext;n} := F_{ext;n+1}
   fext_->Update(1.0,*fextn_,0.0);
 
+  //----- update anything that needs to be updated at the element level
+  {
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_struct_update_istep");
+    // choose what to assemble
+    p.set("assemble matrix 1",false);
+    p.set("assemble matrix 2",false);
+    p.set("assemble vector 1",false);
+    p.set("assemble vector 2",false);
+    p.set("assemble vector 3",false);
+    // other parameters that might be needed by the elements
+    p.set("total time",time);
+    p.set("delta time",dt);
+    discret_.Evaluate(p,null,null,null,null,null);
+  }
+
   //----------------------------------------------------- output results
   int mod_disp = istep % updevrydisp;
   if (!mod_disp && iodisp)
@@ -1028,24 +1046,6 @@ void StruGenAlpha::UpdateandOutput()
     discret_.SetState("displacement",dis_);
     discret_.Evaluate(p,null,null,null,null,null);
     discret_.ClearState();
-  }
-
-  //----- update anything that needs to be updated at the element level
-  {
-    // create the parameters for the discretization
-    ParameterList p;
-    // action for elements
-    p.set("action","calc_struct_update_istep");
-    // choose what to assemble
-    p.set("assemble matrix 1",false);
-    p.set("assemble matrix 2",false);
-    p.set("assemble vector 1",false);
-    p.set("assemble vector 2",false);
-    p.set("assemble vector 3",false);
-    // other parameters that might be needed by the elements
-    p.set("total time",time);
-    p.set("delta time",dt);
-    discret_.Evaluate(p,null,null,null,null,null);
   }
 
   //---------------------------------------------------------- print out

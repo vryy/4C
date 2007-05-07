@@ -574,6 +574,24 @@ void stru_genalpha_drt()
     //    F_{ext;n} := F_{ext;n+1}
     fext->Update(1.0, *fextn, 0.0);
 
+    //----- update anything that needs to be updated at the element level
+    {
+      // create the parameters for the discretization
+      ParameterList params;
+      // action for elements
+      params.set("action","calc_struct_update_istep");
+      // choose what to assemble
+      params.set("assemble matrix 1",false);
+      params.set("assemble matrix 2",false);
+      params.set("assemble vector 1",false);
+      params.set("assemble vector 2",false);
+      params.set("assemble vector 3",false);
+      // other parameters that might be needed by the elements
+      params.set("total time",timen);
+      params.set("delta time",dt);
+      actdis->Evaluate(params,null,null,null,null,null);
+    }
+
     //------------------------------------------------ increment time step
     ++istep;  // step n := n + 1
     time += dt;  // time t_n := t_{n+1} = t_n + Delta t
@@ -613,25 +631,6 @@ void stru_genalpha_drt()
       actdis->ClearState();
     }
     
-    //----- update anything that needs to be updated at the element level
-    {
-      // create the parameters for the discretization
-      ParameterList params;
-      // action for elements
-      params.set("action","calc_struct_update_istep");
-      // choose what to assemble
-      params.set("assemble matrix 1",false);
-      params.set("assemble matrix 2",false);
-      params.set("assemble vector 1",false);
-      params.set("assemble vector 2",false);
-      params.set("assemble vector 3",false);
-      // other parameters that might be needed by the elements
-      params.set("total time",timen);
-      params.set("delta time",dt);
-      actdis->Evaluate(params,null,null,null,null,null);
-    }
-    
-
     //---------------------------------------------------------- print out
     if (!myrank)
     {
