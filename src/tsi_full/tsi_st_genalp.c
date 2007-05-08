@@ -205,40 +205,40 @@ void tsi_st_genalp(INT disnum_s,
   INT damp_array;  /* indice of the active system sparse matrix */
   INT actcurve;  /* indice of active time curve */
   
-  SOLVAR *actsolv;  /* pointer to active solution structure */
-  PARTITION *actpart;  /* pointer to active partition */
+  SOLVAR* actsolv;  /* pointer to active solution structure */
+  PARTITION* actpart;  /* pointer to active partition */
   INT numsf;  /* number (index) of structure field */
-  FIELD *actfield;  /* pointer to active field */
-  INTRA *actintra;  /* pointer to active intra-communicator */
-  CALC_ACTION *action;  /* pointer to the structure cal_action enum */
-  STRUCT_DYNAMIC *actdyn;  /* pointer to structural dynamic input data */
+  FIELD* actfield;  /* pointer to active field */
+  INTRA* actintra;  /* pointer to active intra-communicator */
+  CALC_ACTION* action;  /* pointer to the structure cal_action enum */
+  STRUCT_DYNAMIC* actdyn;  /* pointer to structural dynamic input data */
   INT actsysarray;  /* index of actual system array */
-  TSI_DYNAMIC *tsidyn;  /* pointer to TSI dynamics data */
+  TSI_DYNAMIC* tsidyn;  /* pointer to TSI dynamics data */
   
   const INT vel_num = 1;  /* number of veloc. vectors */
-  DIST_VECTOR *vel;  /* total velocities */
+  DIST_VECTOR* vel;  /* total velocities */
   const INT acc_num = 1;  /* number of accel. vectors */
-  DIST_VECTOR *acc;  /* total accelerations */
+  DIST_VECTOR* acc;  /* total accelerations */
   const INT fie_num = 3;  /* number of force vectors */
-  DIST_VECTOR *fie;  /* internal forces and working array */
+  DIST_VECTOR* fie;  /* internal forces and working array */
   const INT dispi_num = 1;  /* number of increm. displ. vectors */
-  DIST_VECTOR *dispi;  /* distributed vector to hold increm. displacments */
+  DIST_VECTOR* dispi;  /* distributed vector to hold increm. displacments */
   const INT work_num = 3;  /* number of work vectors */
-  DIST_VECTOR *work;  /* working vectors */
+  DIST_VECTOR* work;  /* working vectors */
   
   ARRAY intforce_a;  /* redundant vect. of full length for internal forces */
-  DOUBLE *intforce;
+  DOUBLE* intforce;
   ARRAY dirich_a;  /* redund. vect. of full length for dirichlet-part of rhs */
-  DOUBLE *dirich;
+  DOUBLE* dirich;
   DOUBLE dirichfacs[10];  /* factors needed for dirichlet-part of rhs */
   
   STRUCT_DYN_CALC dynvar;  /* variables to perform dynamic structural simulation */
 
-  ARRAY_POSITION *ipos;   /* named positions of NODE sol etc. arrays */
-  ARRAY_POSITION_SOL *isol;  /* named positions (indices) of NODE sol array */
-  ARRAY_POSITION_SOLINC *isolinc;  /* named positions (indices) of 
+  ARRAY_POSITION* ipos;   /* named positions of NODE sol etc. arrays */
+  ARRAY_POSITION_SOL* isol;  /* named positions (indices) of NODE sol array */
+  ARRAY_POSITION_SOLINC* isolinc;  /* named positions (indices) of 
                                     * NODE sol_increment array */
-  ARRAY_POSITION_SOLRES *isolres;  /* named positions (indices) of 
+  ARRAY_POSITION_SOLRES* isolres;  /* named positions (indices) of 
                                     * NODE sol_residual array */
 
 #ifdef BINIO

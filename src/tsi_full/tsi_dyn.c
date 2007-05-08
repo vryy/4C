@@ -176,14 +176,15 @@ void tsi_dyn()
     case tsi_therm_stat_struct_genalp: 
       tsi_th_stat(disnum_s, disnum_t);
       tsi_st_genalp(disnum_s, disnum_t);
+      /* tsi_st_genalp_sub(disnum_s, disnum_t); */ /* modularised gen-alpha */
       break;
     /* semi TSI : static thermal and dynamic structure field */
-    case tsi_therm_stat_struct_cendif: 
+    case tsi_therm_stat_struct_cendif:
       tsi_th_stat(disnum_s, disnum_t);
       tsi_st_cendif(disnum_s, disnum_t);
       break;
     /* semi TSI : static thermal and dynamic structure field */
-    case tsi_therm_stat_struct_fehlbg: 
+    case tsi_therm_stat_struct_fehlbg:
       tsi_th_stat(disnum_s, disnum_t);
       tsi_st_fehlbg(disnum_s, disnum_t);
       break;

@@ -134,7 +134,7 @@ ALLDYNA               *alldyn;
 \date 03/06
 */
 /*----------------------------------------------------------------------*/
-extern ALLDYNA *alldyn;
+extern ALLDYNA* alldyn;
 
 
 /*----------------------------------------------------------------------*/
@@ -152,7 +152,7 @@ struct _CURVE        *curve;
 */
 /*----------------------------------------------------------------------*/
 extern INT numcurve;
-extern CURVE *curve;
+extern CURVE* curve;
 
 
 /*----------------------------------------------------------------------*/
@@ -205,15 +205,15 @@ void tsi_th_stat(INT disnum_s,
   DOUBLE rhsfact;  /* factor to multiply RHS */
 
   static ARRAY dirich_a;
-  static DOUBLE *dirich;
+  static DOUBLE* dirich;
 
-  static THERM_DYNAMIC *actdyn;  /* pointer to dynamic control 
+  static THERM_DYNAMIC* actdyn;  /* pointer to dynamic control 
 				  * --- allright, static control */
-  SOLVAR *actsolv;  /* pointer to field SOLVAR */
-  PARTITION *actpart;  /* pointer to the fields PARTITION structure */
+  SOLVAR* actsolv;  /* pointer to field SOLVAR */
+  PARTITION* actpart;  /* pointer to the fields PARTITION structure */
   INT numtf;  /* number (index) of thermal field */
-  FIELD *actfield;  /* pointer to the thermal FIELD */
-  INTRA *actintra;  /* pointer to the fields intra-communicator structure */
+  FIELD* actfield;  /* pointer to the thermal FIELD */
+  INTRA* actintra;  /* pointer to the fields intra-communicator structure */
   CALC_ACTION *action;  /* pointer to the structures cal_action enum */
   INT actcurve;  /* index of active time curve */
 
