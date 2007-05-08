@@ -663,8 +663,6 @@ void StruGenAlpha::ModifiedNewton()
 } // StruGenAlpha::ModifiedNewton()
 
 
-
-
 /*----------------------------------------------------------------------*
  |  do nonlinear cg iteration (public)                       mwgee 03/07|
  *----------------------------------------------------------------------*/
@@ -687,6 +685,14 @@ void StruGenAlpha::NonlinearCG()
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
   if (!errfile) printerr = false;
 
+  // get ml stuff from input file
+  bool hasml = solver_.Params().isSublist("ML Parameters");
+  if (!hasml) dserror("Solver does not have ML configured from input file");
+  ParameterList& linearmllist = solver_.Params().sublist("ML Parameters");
+  int outlevel = linearmllist.get<int>("output",0);
+  int maxlevel = linearmllist.get<int>("max levels",3);
+  int maxcsize = linearmllist.get<int>("coarse: max size",1);
+  
   // check whether we have a stiffness matrix, that is not filled yet
   // and mass and damping are present
   if (stiff_==null)     dserror("stiffness matrix = null");
@@ -707,14 +713,17 @@ void StruGenAlpha::NonlinearCG()
   printParams.set("MyPID",myrank_); 
   printParams.set("Output Precision", 9);
   printParams.set("Output Processor", 0);
-  printParams.set("Output Information", 
-                  NOX::Utils::OuterIteration + 
-                  //NOX::Utils::OuterIterationStatusTest + 
-                  //NOX::Utils::InnerIteration +
-                  //NOX::Utils::Parameters + 
-                  //NOX::Utils::Details + 
-                  NOX::Utils::Warning
-                  );
+  if (outlevel)
+    printParams.set("Output Information", 
+                    NOX::Utils::OuterIteration + 
+                    //NOX::Utils::OuterIterationStatusTest + 
+                    //NOX::Utils::InnerIteration +
+                    //NOX::Utils::Parameters + 
+                    //NOX::Utils::Details + 
+                    NOX::Utils::Warning
+                    );
+  else
+    printParams.set("Output Information",0);
 
   // Set the nonlinear solver method as line search
   noxparams.set("Nonlinear Solver","Line Search Based");
@@ -743,20 +752,12 @@ void StruGenAlpha::NonlinearCG()
   lsParams.set("Preconditioning", "User Supplied Preconditioner");
   lsParams.set("Preconditioner","User Defined"); 
   
-  // get ml stuff from input file
-  bool hasml = solver_.Params().isSublist("ML Parameters");
-  if (!hasml) dserror("Solver does not have ML configured from input file");
-  ParameterList& linearmllist = solver_.Params().sublist("ML Parameters");
-  int outlevel = linearmllist.get<int>("output",0);
-  int maxlevel = linearmllist.get<int>("max levels",2);
-  int maxcsize = linearmllist.get<int>("coarse: max size",1);
-  
   // create the nonlinear ml parameter list
   ParameterList& mlparams = params_.sublist("ml parameters");
   mlparams.set("nlnML output",                                      outlevel   ); // ML-output-level (0-10)
   mlparams.set("nlnML max levels",                                  maxlevel   ); // max. # levels (minimum = 2 !)
   mlparams.set("nlnML coarse: max size",                            maxcsize   ); // the size ML stops generating coarser levels
-  mlparams.set("nlnML is linear preconditioner",                    false      );
+  mlparams.set("nlnML is linear preconditioner",                    true      );
   mlparams.set("nlnML is matrixfree",                               false      ); 
   mlparams.set("nlnML apply constraints",                           false      ); 
   mlparams.set("nlnML Jacobian fix diagonal",                       false      ); 
@@ -777,10 +778,10 @@ void StruGenAlpha::NonlinearCG()
   mlparams.set("nlnML nodes per aggregate",                         9          ); // # nodes per agg for coarsening METIS and VBMETIS
 
   mlparams.set("nlnML use nlncg on fine level",                     true); // use nlnCG or mod. Newton's method   
-  mlparams.set("nlnML use nlncg on medium level",                   false);    
-  mlparams.set("nlnML use nlncg on coarsest level",                 false);    
+  mlparams.set("nlnML use nlncg on medium level",                   true);    
+  mlparams.set("nlnML use nlncg on coarsest level",                 true);    
   
-  mlparams.set("nlnML max iterations newton-krylov fine level",     30); // # iterations of lin. CG in mod. Newton's method    
+  mlparams.set("nlnML max iterations newton-krylov fine level",     100); // # iterations of lin. CG in mod. Newton's method    
   mlparams.set("nlnML max iterations newton-krylov medium level" ,  50);    
   mlparams.set("nlnML max iterations newton-krylov coarsest level", 150);    
 
@@ -788,13 +789,13 @@ void StruGenAlpha::NonlinearCG()
   mlparams.set("nlnML linear smoother type medium level",           "MLS"); 
   mlparams.set("nlnML linear smoother type coarsest level",         "AmesosKLU"); 
   mlparams.set("nlnML linear smoother sweeps fine level",           24);
-  mlparams.set("nlnML linear smoother sweeps medium level",         6);
+  mlparams.set("nlnML linear smoother sweeps medium level",         24);
   mlparams.set("nlnML linear smoother sweeps coarsest level",       1);
 
   mlparams.set("nlnML nonlinear presmoothing sweeps fine level",    0);
   mlparams.set("nlnML nonlinear presmoothing sweeps medium level",  0);
-  mlparams.set("nlnML nonlinear smoothing sweeps coarse level",     3);
-  mlparams.set("nlnML nonlinear postsmoothing sweeps medium level", 1);
+  mlparams.set("nlnML nonlinear smoothing sweeps coarse level",     15);
+  mlparams.set("nlnML nonlinear postsmoothing sweeps medium level", 5);
   mlparams.set("nlnML nonlinear postsmoothing sweeps fine level",   5);
   
   // create the fine level interface if it does not exist
@@ -810,15 +811,16 @@ void StruGenAlpha::NonlinearCG()
   // tell preconditioner to recompute from scratch
   prec_->setinit(false);
 
-#if 1 // use the nonlinear preconditioner as a solver without the outer nox loop
+#if 0 // use the nonlinear preconditioner as a solver without the outer nox loop
   {
     Epetra_Time timer(discret_.Comm());
     double t0 = timer.ElapsedTime();
+    //prec_->solve_variant();
     prec_->solve();
     double t1 = timer.ElapsedTime();
     
     // get status and print output message
-    if (printscreen && myrank_==0)
+    if (outlevel && myrank_==0)
     {
       printf("NOX/ML :============solve time incl. setup : %15.4f sec\n",t1-t0);
       double appltime = fineinterface_->getsumtime();
@@ -919,7 +921,7 @@ void StruGenAlpha::NonlinearCG()
   if (status != NOX::StatusTest::Converged) converged = false;
   
   // get status and print output message
-  if (printscreen && myrank_==0)
+  if (outlevel && myrank_==0)
   {
     printf("NOX/ML :============solve time incl. setup : %15.4f sec\n",t1-t0);
     double appltime = fineinterface_->getsumtime();
