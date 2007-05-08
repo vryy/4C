@@ -87,9 +87,9 @@ void tsi_st_genalp_init(PARTITION* actpart,
                         STRUCT_DYNAMIC* actdyn,
                         STRUCT_DYN_CALC* dynvar,
                         CONTAINER* container,
-#ifdef BINIO
-                        BIN_OUT_FIELD* out_context,
-#endif
+/* #ifdef BINIO */
+/*                         BIN_OUT_FIELD* out_context, */
+/* #endif */
                         INT vel_num,
                         DIST_VECTOR** vel,
                         INT acc_num,
@@ -179,9 +179,9 @@ void tsi_st_genalp_out(PARTITION* actpart,
                        STRUCT_DYNAMIC* actdyn,
                        STRUCT_DYN_CALC* dynvar,
                        CONTAINER* container,
-#ifdef BINIO
-                       BIN_OUT_FIELD* out_context,
-#endif
+/* #ifdef BINIO */
+/*                        BIN_OUT_FIELD* out_context, */
+/* #endif */
                        INT dispi_num,
                        DIST_VECTOR* dispi,
                        INT vel_num,

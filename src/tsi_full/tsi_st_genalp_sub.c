@@ -167,9 +167,9 @@ void tsi_st_genalp_init(PARTITION* actpart,
                         STRUCT_DYNAMIC* actdyn,
                         STRUCT_DYN_CALC* dynvar,
                         CONTAINER* container,
-#ifdef BINIO
-                        BIN_OUT_FIELD* out_context,
-#endif
+/* #ifdef BINIO */
+/*                         BIN_OUT_FIELD* out_context, */
+/* #endif */
                         INT vel_num,
                         DIST_VECTOR** vel,
                         INT acc_num,
@@ -183,6 +183,10 @@ void tsi_st_genalp_init(PARTITION* actpart,
                         ARRAY* intforce_a,
                         ARRAY* dirich_a)
 {
+#ifdef BINIO
+  BIN_OUT_FIELD* out_context;
+#endif
+
   const INT numsf = genprob.numsf;  /* index of structure field */
   CALC_ACTION* action = &(calc_action[numsf]);  /* structure cal_action */
   INT i;  /* index */
@@ -1173,9 +1177,9 @@ void tsi_st_genalp_out(PARTITION* actpart,
                        STRUCT_DYNAMIC* actdyn,
                        STRUCT_DYN_CALC* dynvar,
                        CONTAINER* container,
-#ifdef BINIO
-                       BIN_OUT_FIELD* out_context,
-#endif
+/* #ifdef BINIO */
+/*                        BIN_OUT_FIELD* out_context, */
+/* #endif */
                        INT dispi_num,
                        DIST_VECTOR* dispi,
                        INT vel_num,
@@ -1189,6 +1193,10 @@ void tsi_st_genalp_out(PARTITION* actpart,
                        ARRAY* intforce_a,
                        ARRAY* dirich_a)
 {
+#ifdef BINIO
+  BIN_OUT_FIELD* out_context;
+#endif
+
   const INT timeadapt = 0;  /* no time step adaptivity */
   INT disnum = disnum_s;
   INT mod_disp;  /* indicate whether to print displacements */
@@ -1536,9 +1544,9 @@ void tsi_st_genalp_sub(INT disnum_s,
                      &(stiff_array), &(mass_array), &(damp_array),
                      actdyn, &(dynvar),
                      &(container),
-#ifdef BINIO
-                     &(out_context),
-#endif
+/* #ifdef BINIO */
+/*                      &(out_context), */
+/* #endif */
                      vel_num, &(vel),
                      acc_num, &(acc),
                      fie_num, &(fie),
@@ -1733,9 +1741,9 @@ void tsi_st_genalp_sub(INT disnum_s,
                       actdyn,
                       &(dynvar),
                       &(container),
-#ifdef BINIO
-                      &(out_context),
-#endif
+/* #ifdef BINIO */
+/*                       &(out_context), */
+/* #endif */
                       dispi_num,
                       dispi,
                       vel_num,
