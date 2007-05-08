@@ -50,8 +50,8 @@ void caldyn()
 #ifndef CCADISCRET
       dyn_nln_structural();
 #else
-      stru_genalpha_drt();
-      /* dyn_nlnstructural_drt(); */
+      /* stru_genalpha_drt(); */
+      dyn_nlnstructural_drt();
 #endif
       break;
     /* Generalized Energy-Momentum time integration */
