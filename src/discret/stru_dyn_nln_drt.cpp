@@ -163,15 +163,7 @@ void dyn_nlnstructural_drt()
   StruGenAlpha timeintegrator(genalphaparams,*actdis,solver,output);
   
   timeintegrator.Integrate();
-/*  
-  timeintegrator.ConstantPredictor();
-  timeintegrator.NonlinearCG();
-  timeintegrator.UpdateandOutput();
 
-  timeintegrator.ConstantPredictor();
-  timeintegrator.NonlinearCG();
-  timeintegrator.UpdateandOutput();
-*/
   return;
 } // end of dyn_nlnstructural_drt()
 
