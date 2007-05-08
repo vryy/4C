@@ -62,7 +62,7 @@ public:
   \param Length           (in): supposed length of vector
 
   */
-  SerialDenseVector(int Length);
+  SerialDenseVector(int Length, bool init=false);
 
   /*!
   \brief Standard Constructor wrapping
@@ -113,7 +113,7 @@ protected:
 
 
 // << operator
-ostream& operator << (ostream& os, const LINALG::SerialDenseVector& vector);
+// ostream& operator << (ostream& os, const LINALG::SerialDenseVector& vector);
 
 
 

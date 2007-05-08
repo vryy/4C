@@ -29,6 +29,7 @@ Maintainer: Moritz Frenzel
 #include "../discret/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
 
+
 extern "C" 
 {
 #include "../headers/standardtypes.h"
@@ -132,11 +133,11 @@ int DRT::Elements::So_hex8::Evaluate(ParameterList& params,
     
     // evaluate stresses
     case calc_struct_stress: {
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp==null) dserror("Cannot get state vectors 'displacement'");
-      vector<double> mydisp(lm.size());
-      DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
-      soh8_stress(actmat,mydisp);
+//      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+//      if (disp==null) dserror("Cannot get state vectors 'displacement'");
+//      vector<double> mydisp(lm.size());
+//      DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
+//      soh8_stress(actmat,mydisp);
     }
     break;
     
@@ -160,14 +161,6 @@ int DRT::Elements::So_hex8::Evaluate(ParameterList& params,
 }
 
 
-/*----------------------------------------------------------------------*
- |  Do stress calculation (private)                            maf 04/07|
- *----------------------------------------------------------------------*/
-void DRT::Elements::So_hex8::soh8_stress(struct _MATERIAL* material, 
-                                    vector<double>& mydisp)
-{
-    dserror("Stress evaluation not yet ready");
-}
 
 /*----------------------------------------------------------------------*
  |  Integrate a Surface Neumann boundary condition (public)    maf 04/07|
@@ -217,17 +210,20 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     xrefe(i,1) = Nodes()[i]->X()[1];
     xrefe(i,2) = Nodes()[i]->X()[2];
     
-    xcurr(i,0) = xrefe(i,0);// + disp[i*NUMDOF_SOH8+0];
-    xcurr(i,1) = xrefe(i,1);// + disp[i*NUMDOF_SOH8+1];
-    xcurr(i,2) = xrefe(i,2);// + disp[i*NUMDOF_SOH8+2];
+    xcurr(i,0) = xrefe(i,0) + disp[i*NODDOF_SOH8+0];
+    xcurr(i,1) = xrefe(i,1) + disp[i*NODDOF_SOH8+1];
+    xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_SOH8+2];
   }
+//  cout << "xrefe " << xrefe << endl;
+//  cout << "xcurr " << xcurr << endl;
   // testing ************
-  double delta=0.1905;
-  xcurr(1,0) += delta;
-  xcurr(2,0) += delta;
-  xcurr(5,0) += delta;
-  xcurr(6,0) += delta;
+//  double delta=0.19047619047619;
+//  xcurr(1,0) += delta;
+//  xcurr(2,0) += delta;
+//  xcurr(5,0) += delta;
+//  xcurr(6,0) += delta;
   // testing ************/
+  
   
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -238,7 +234,7 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     Epetra_SerialDenseMatrix deriv_gp(NUMDIM_SOH8,NUMGPT_SOH8);
     for (int m=0; m<NUMDIM_SOH8; ++m) {
       for (int n=0; n<NUMGPT_SOH8; ++n) {
-        deriv_gp(m,n)=(*deriv)(3*gp+m,n);
+        deriv_gp(m,n)=(*deriv)(NUMDIM_SOH8*gp+m,n);
       }
     }
 
@@ -382,10 +378,10 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
         }
       } 
     } // end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
-    
    /* =========================================================================*/
   }/* ==================================================== end of Loop over GP */
    /* =========================================================================*/
+  
   return;
 } // DRT::Elements::Shell8::s8_nlnstiffmass
 

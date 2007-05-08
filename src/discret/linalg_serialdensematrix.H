@@ -48,39 +48,31 @@ public:
   \brief Standard Constructor wrapping
          Epetra_SerialDenseMatrix(bool set_object_label=true);
          
-  Default behavior of set_object_label is false as opposed to the Epetra_SerialDenseMatrix
-  base class
-
   */
-  SerialDenseMatrix(bool set_object_label=false);
+  SerialDenseMatrix(bool set_object_label=true);
 
   /*!
   \brief Standard Constructor wrapping
          Epetra_SerialDenseMatrix(int NumRows, int NumCols, bool set_object_label=true);
          
   Opposed to the base class constructor, this one does NOT initialize the matrix to zero.
-  default behavior of set_object_label is also reversed compared to base class 
-  Epetra_SerialDenseMatrix
   
   \param NumRows          (in): no. of rows the matrix is supposed to have
   \param NumCols          (in): no. of cols the matrix is supposed to have
   \param init             (in): flag indicating whether matrix is zeroed out (defaults to false!)
-  \param set_object_label (in): set an epetra object label for print out (defaults to false!)
+  \param set_object_label (in): set an epetra object label for print out (defaults to true!)
 
   */
-  SerialDenseMatrix(int NumRows, int NumCols, bool init=false, bool set_object_label=false);
+  SerialDenseMatrix(int NumRows, int NumCols, bool init=false, bool set_object_label=true);
 
   /*!
   \brief Standard Constructor wrapping
          Epetra_SerialDenseMatrix(Epetra_DataAccess CV, double* A, int LDA, int NumRows, int NumCols,
                                   bool set_object_label=true);
 
-  Default behavior of set_object_label is false as opposed to the Epetra_SerialDenseMatrix
-  base class
-
   */
   SerialDenseMatrix(Epetra_DataAccess CV, double* A, int LDA, int NumRows, int NumCols,
-                           bool set_object_label=false);
+                           bool set_object_label=true);
 
   /*!
   \brief Standard Copy Constructor wraps
@@ -120,10 +112,6 @@ protected:
 
 }; // class SerialDenseMatrix
 } // namespace LINALG
-
-
-// << operator
-ostream& operator << (ostream& os, const LINALG::SerialDenseMatrix& matrix);
 
 
 

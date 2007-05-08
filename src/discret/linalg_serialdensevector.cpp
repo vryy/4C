@@ -23,15 +23,27 @@ Maintainer: Michael Gee
 LINALG::SerialDenseVector::SerialDenseVector() :
 Epetra_SerialDenseVector()
 {
+  SetLabel("LINALG::SerialDenseVector");
 }
 
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                             mwgee 05/07|
  *----------------------------------------------------------------------*/
-LINALG::SerialDenseVector::SerialDenseVector(int Length) :
-Epetra_SerialDenseVector(Length)                                     
+LINALG::SerialDenseVector::SerialDenseVector(int Length, bool init) :
+Epetra_SerialDenseVector()                                     
 {
+  SetLabel("LINALG::SerialDenseVector");
+  if(Length < 0)
+  throw ReportError("Length = " + toString(Length) + ". Should be >= 0", -1);
+
+  int errorcode = 0;
+  if (init==true)
+    errorcode = Shape(Length, 1);
+  else
+    errorcode = LightSize(Length);
+  if(errorcode != 0)
+    throw ReportError("LightSize returned non-zero value", errorcode);
 }
 
 
@@ -44,6 +56,7 @@ LINALG::SerialDenseVector::SerialDenseVector(Epetra_DataAccess CV,
                                                    int Length) :
 Epetra_SerialDenseVector(CV,Values,Length)
 {
+  SetLabel("LINALG::SerialDenseVector");
 }
 
 
@@ -65,11 +78,11 @@ LINALG::SerialDenseVector::~SerialDenseVector()
 }
 
 // << operator
-ostream& operator << (ostream& os, const LINALG::SerialDenseVector& vector)
-{
-  vector.Print(os);
-  return os;
-}
+//ostream& operator << (ostream& os, const LINALG::SerialDenseVector& vector)
+//{
+//  vector.Print(os);
+//  return os;
+//}
 
 /*----------------------------------------------------------------------*
  |  size the matrix but do not init to zero  (public)       mwgee 05/07|

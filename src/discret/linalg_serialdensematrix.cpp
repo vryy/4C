@@ -21,8 +21,9 @@ Maintainer: Michael Gee
  | ctor (public)                                             mwgee 05/07|
  *----------------------------------------------------------------------*/
 LINALG::SerialDenseMatrix::SerialDenseMatrix(bool set_object_label) :
-Epetra_SerialDenseMatrix(set_object_label)
+Epetra_SerialDenseMatrix(false)
 {
+  if (set_object_label) SetLabel("LINALG::SerialDenseMatrix");
 }
 
 
@@ -31,8 +32,9 @@ Epetra_SerialDenseMatrix(set_object_label)
  *----------------------------------------------------------------------*/
 LINALG::SerialDenseMatrix::SerialDenseMatrix(int NumRows, int NumCols,
                                              bool init, bool set_object_label) :
-Epetra_SerialDenseMatrix(set_object_label)                                     
+Epetra_SerialDenseMatrix(false)                                     
 {
+  if (set_object_label) SetLabel("LINALG::SerialDenseMatrix");
   if(NumRows < 0)
 	throw ReportError("NumRows = " + toString(NumRows) + ". Should be >= 0", -1);
   if(NumCols < 0)
@@ -55,8 +57,9 @@ Epetra_SerialDenseMatrix(set_object_label)
 LINALG::SerialDenseMatrix::SerialDenseMatrix(Epetra_DataAccess CV, double* A, int LDA,
                                                    int NumRows, int NumCols,
                                                    bool set_object_label) :
-Epetra_SerialDenseMatrix(CV,A,LDA,NumRows,NumCols,set_object_label)
+Epetra_SerialDenseMatrix(CV,A,LDA,NumRows,NumCols,false)
 {
+  if (set_object_label) SetLabel("LINALG::SerialDenseMatrix");
 }
 
 
@@ -75,13 +78,6 @@ Epetra_SerialDenseMatrix(Source)
  *----------------------------------------------------------------------*/
 LINALG::SerialDenseMatrix::~SerialDenseMatrix()
 {
-}
-
-// << operator
-ostream& operator << (ostream& os, const LINALG::SerialDenseMatrix& matrix)
-{
-  matrix.Print(os);
-  return os;
 }
 
 /*----------------------------------------------------------------------*
