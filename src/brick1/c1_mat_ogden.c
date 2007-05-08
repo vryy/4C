@@ -20,6 +20,9 @@ Maintainer:		Robert Metzke
 #include "../headers/standardtypes.h"
 #include "brick1.h"
 #include "brick1_prototypes.h"
+#ifdef D_MAT
+	#include "../materials/mat_prototypes.h"
+#endif
 /*----------------------------------------------------------------------*
  * compressible ogden-material                               m.gee 6/03 |
  * split in volumetric and deviatoric strains                           |
@@ -80,7 +83,11 @@ void c1_mat_ogden_uncoupled(
 	for (i=0; i<3; i++) mat->l[i] = lam[i];
 #endif
 /*------------------------------ call ogden material in material folder */
-	mat_el_ogden_uncoupled(mat,lam,N,PK2,C);
+#ifdef D_MAT
+	    mat_el_ogden_uncoupled(mat,lam,N,PK2,C);
+#else
+            dserror("Please use D_MAT, mate!");
+#endif 
 /*------------------------------------------------------------ Stresses */
 	stress[0] = PK2[0][0];
 	stress[1] = PK2[1][1];
@@ -146,13 +153,42 @@ void c1_mat_ogden_uncoupled(
  *----------------------------------------------------------------------*/
 void c1_ogden_principal_CG(DOUBLE CG[3][3], DOUBLE lambda[3], DOUBLE N[3][3])
 {
-	INT          i;
+	INT          i,j;
 	DOUBLE       fstrain[9];
 	DOUBLE       fn[9];
+	DOUBLE       lam2[3];
+	static DOUBLE **CGt;
+ 	static ARRAY CGt_a;
+	static DOUBLE **Nt;
+	static ARRAY Nt_a;
+	
+	CGt = amdef("CGt",&CGt_a,3,3,"DA");
+	Nt = amdef("Nt",&Nt_a,3,3,"DA");
+ 
 #ifdef DEBUG
 	dstrc_enter("c1_ogden_principal_CG");
 #endif
 /*----------------------------------------------------------------------*/
+
+	for(i=0; i<3; i++) {
+		for(j=0; j<3; j++) {
+			CGt[i][j] = CG[i][j];
+		}
+	}
+	
+	c1_calc_eigenval_eigenvec_jacobi(CGt,lam2,Nt);
+
+	lambda[0] = lam2[0];
+	lambda[1] = lam2[1];
+	lambda[2] = lam2[2];
+
+	for(i=0; i<3; i++) {
+		for(j=0; j<3; j++) {
+			N[i][j] = Nt[i][j];
+		}
+	}
+	
+/*
 	for (i=0; i<9; i++) fn[i] = 0.0;
 
 	fstrain[0] = CG[0][0];
@@ -184,12 +220,131 @@ void c1_ogden_principal_CG(DOUBLE CG[3][3], DOUBLE lambda[3], DOUBLE N[3][3])
 	N[0][2] = fn[6];
 	N[1][2] = fn[7];
 	N[2][2] = fn[8];
+*/
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
 	dstrc_exit();
 #endif
 return;
 } /* end of c1_ogden_principal_CG */
+
+
+/*----------------------------------------------------------------------*
+ * eigenvalues and eigenvectors of a matrix, applying the jacobi method |
+ * taken from Numerical Recipes and specialized to 3x3 case    rm 03.07 |
+ *----------------------------------------------------------------------*/
+void c1_calc_eigenval_eigenvec_jacobi (DOUBLE **C, DOUBLE *d, DOUBLE **V)
+{
+#ifdef DEBUG
+	dstrc_enter("c1_calc_eigenval_eigenvec_jacobi");
+#endif
+	INT n=3;
+	INT j,iq,ip,i;
+	DOUBLE tresh,theta,tau,t,sm,s,h,g,c;
+	/*DOUBLE C_loc[3][3];*/
+	DOUBLE **C_loc;
+	ARRAY C_loc_a;
+	
+	C_loc = amdef("C_loc",&C_loc_a,3,3,"DA");
+	DOUBLE b[n];
+	DOUBLE z[n];
+/*------------------------------------------------------ Einheitsmatrix */
+	for (i=0; i<3; i++) {
+		for (j=0; j<3; j++) {
+			C_loc[i][j]=C[i][j];
+		}
+	}
+	for (ip=0; ip<n; ip++) {
+		for (iq=0; iq<n; iq++) {
+			V[ip][iq]=0.0;
+			V[ip][ip]=1.0;
+		}
+	}
+/*---------------------- vectors b,d = diagonal elements of A, z = NULL */
+	for (ip=0;ip<n;ip++) {
+		b[ip]=d[ip]=C_loc[ip][ip];
+		z[ip]=0.0;
+	}
+/*------------------------------------------------------- 50 Iterationen*/
+	for (i=1;i<=50;i++) {
+		sm=0.0;
+		for (ip=0;ip<n-1;ip++) {
+			for (iq=ip+1;iq<n;iq++) {
+				sm += fabs(C_loc[ip][iq]);
+			}
+		}
+		if (sm == 0.0) {
+			return;
+		}
+		if (i < 4) 
+			tresh=0.2*sm/(n*n);
+		else
+			tresh=0.0;
+		for (ip=0;ip<n-1;ip++) {
+			for (iq=ip+1;iq<n;iq++) {
+				g=100.0 * fabs(C_loc[ip][iq]);
+				if (i > 4 && (fabs(d[ip])+g) == fabs(d[ip]) && (fabs(d[iq])+g) == fabs(d[iq]))
+					C_loc[ip][iq]=0.0;
+				else if (fabs(C_loc[ip][iq]) > tresh){
+					h=d[iq]-d[ip];
+					if ((fabs(h)+g) == fabs(h))
+						t=(C_loc[ip][iq])/h;
+					else {
+						theta=0.5f*h/(C_loc[ip][iq]);
+						t=1.0/(fabs(theta)+sqrt(1.0+theta*theta));
+						if (theta < 0.0f)
+							t = -t;
+					}
+					c=1.0/sqrt(1+t*t);
+					s=t*c;
+					tau=s/(1.0+c);
+					h=t*C[ip][iq];
+					z[ip] -= h;
+					z[iq] += h;
+					d[ip] -= h;
+					d[iq] += h;
+					C_loc[ip][iq]=0.0;
+					for (j=0;j<=ip-1;j++) {
+						c1_rotation(C_loc,j,ip,j,iq,tau,s);
+					}
+					for (j=ip+1;j<=iq-1;j++) {
+						c1_rotation(C_loc,ip,j,j,iq,tau,s);
+					}
+					for (j=iq+1;j<n;j++) {
+						c1_rotation(C_loc,ip,j,iq,j,tau,s);
+					}
+					for (j=0;j<n;j++) {
+						c1_rotation(V,j,ip,j,iq,tau,s);
+					}
+				}
+			}
+		}
+		for (ip=0;ip<n;ip++) {
+			b[ip] += z[ip];
+			d[ip]=b[ip];
+			z[ip]=0.0;
+		}
+	}
+}
+
+
+void c1_rotation (DOUBLE **C, INT i, INT j, INT k, INT l, DOUBLE tau, DOUBLE s)
+{
+#ifdef DEBUG
+	dstrc_enter("c1_rotation");
+#endif
+	DOUBLE g,h;
+	g=C[i][j];
+	h=C[k][l];
+	C[i][j]=g-s*(h+g*tau);
+	C[k][l]=h+s*(g-h*tau);
+#ifdef DEBUG
+	dstrc_exit();
+#endif
+	return;
+}
+
+
 
 #endif
 

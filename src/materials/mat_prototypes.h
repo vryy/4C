@@ -406,6 +406,8 @@ void mat_el_ogden_uncoupled (
 		DOUBLE C[3][3][3][3]);
 void mat_ogden_cartPK2(DOUBLE PK2[3][3], DOUBLE PK2main[3], DOUBLE N[3][3]);
 void mat_ogden_Ccart(DOUBLE C[3][3][3][3], DOUBLE C_cart[3][3][3][3], DOUBLE N[3][3]);
+void c1_calc_eigenval_eigenvec_jacobi (DOUBLE **C, DOUBLE *d, DOUBLE **V);
+void c1_rotation (DOUBLE **C, INT i, INT j, INT k, INT l, DOUBLE tau, DOUBLE s);
 /*----------------------------------------------------------------------*
  | prototypes for fortran routines                               al 9/01|
  *----------------------------------------------------------------------*/
