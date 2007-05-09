@@ -171,7 +171,7 @@ ALE_TYPE     classic_lin
 RESEVRYDISP  1
 QUALITY      none
 -------------------------------------------------------TSI DYNAMIC
-KIND         thermal_prescribed_structure_genalpha
+KIND         thermal_static_structure_genalpha
 MAXTIME      5.0
 TIMESTEP     0.05
 NUMSTEP      2

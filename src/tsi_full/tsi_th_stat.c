@@ -363,13 +363,6 @@ void tsi_th_stat(INT disnum_s,
   calinit(actfield, actpart, action, &container);
 
   /*--------------------------------------------------------------------*/
-  /* init all applied time curves -*/
-  for (actcurve=0; actcurve<numcurve; actcurve++)
-  {
-    dyn_init_curve(actcurve, actdyn->nstep, actdyn->dt, actdyn->maxtime);
-  }
-
-  /*--------------------------------------------------------------------*/
   /* sol indices */
   ipos = &(actfield->dis[disnum].ipos);  /* position array */
   isol = &(ipos->isol);  /* position array of sol */
