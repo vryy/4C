@@ -645,10 +645,6 @@ void tsi_th_presc_st_genalp(INT disnum_s,
                       &(intforce_a),
                       &(ddirich_a));
 
-  /* clean BINIO */
-#ifdef BINIO
-  destroy_bin_out_field(&out_context_s);
-#endif
   /* clean PARALLEL */
 #ifndef PARALLEL
   CCAFREE(intra);
