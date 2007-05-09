@@ -396,18 +396,16 @@ void mat_pl_epc_preval(DOUBLE    sig[6],
                        DOUBLE   *R,
                        DOUBLE   *I1_0);
 /*----------------------------------------------------------------------*
- * viscous Ogden material law adapted from shell 8            rm 01/07  |
+ * decoupled Ogden material law adapted from shell 8          rm 01/07  |
  * ---------------------------------------------------------------------*/
-void mat_el_ogden_uncoupled (
+void mat_el_ogden_decoupled (
 		COMPOGDEN *mat,
-		DOUBLE lam[3],
-		DOUBLE N[3][3],
-		DOUBLE stress[3][3],
+		DOUBLE *lam,
+		DOUBLE **N,
+		DOUBLE **stress,
 		DOUBLE C[3][3][3][3]);
-void mat_ogden_cartPK2(DOUBLE PK2[3][3], DOUBLE PK2main[3], DOUBLE N[3][3]);
-void mat_ogden_Ccart(DOUBLE C[3][3][3][3], DOUBLE C_cart[3][3][3][3], DOUBLE N[3][3]);
-void c1_calc_eigenval_eigenvec_jacobi (DOUBLE **C, DOUBLE *d, DOUBLE **V);
-void c1_rotation (DOUBLE **C, INT i, INT j, INT k, INT l, DOUBLE tau, DOUBLE s);
+void mat_ogden_cartPK2(DOUBLE **PK2, DOUBLE *PK2main, DOUBLE **N);
+void mat_ogden_Ccart(DOUBLE C[3][3][3][3], DOUBLE C_cart[3][3][3][3], DOUBLE **N);
 /*----------------------------------------------------------------------*
  | prototypes for fortran routines                               al 9/01|
  *----------------------------------------------------------------------*/

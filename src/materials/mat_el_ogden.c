@@ -1,6 +1,12 @@
-/*---------------------------------------------------------------------                                    
+/*!--------------------------------------------------------------------
 \file
-\brief
+\brief contains the routine
+mat_el_ogden_decoupled	calculates the stress and elasticity tensor
+			following the decoupled Ogden law for
+			compressible rubber like materials.
+mat_ogden_cartPK2	transform principal streeses PK2 in cartesian
+			stresses PK2
+mat_ogden_Ccart		transform C in cartesian bases
 
 <pre>
 Maintainer:     Robert Metzke
@@ -13,11 +19,36 @@ Maintainer:     Robert Metzke
 #include "../headers/standardtypes.h"
 #include "mat_prototypes.h"
 
-void mat_el_ogden_uncoupled (
+/*!
+\addtogroup MAT
+*//*! @{ (documentation module open)*/
+
+/*!----------------------------------------------------------------------
+\brief consitutive matrix for rubber like elastic orthotropic material
+
+<pre>                                                            rm 05/07
+This routine calculates the stress and constitutive tensor for a rubber
+like elastic, orthotropic material following the decoupled Helmholtz free
+energy formulation from Ogden. Based on the formulation from Holzapfel's
+book [1], Page 244ff., Equation (6.137), (6.138) and (6.139).
+
+[1] Holzapfel Gerhard A., Nonlinear Solid Mechanics, Wiley 2001
+</pre>
+\param  DOUBLE    *mat	        (i)  material information
+\param  DOUBLE    *lam          (i)  principal stretches
+\param  DOUBLE    **N           (i)  Eigenvectors of right Cauchy Green
+\param  DOUBLE    *stress       (o)  stress tensor
+\param  DOUBLE    C[3][3][3][3] (o)  constitutive matrix
+
+\warning There is nothing special to this routine
+\return void
+\sa mat_ogden_cartPK2,mat_ogden_Ccart,c1_mat_ogden_decoupled
+*----------------------------------------------------------------------*/
+void mat_el_ogden_decoupled (
 		COMPOGDEN *mat,
-		DOUBLE lam[3],
-		DOUBLE N[3][3],
-		DOUBLE stress[3][3],
+		DOUBLE *lam,
+		DOUBLE **N,
+		DOUBLE **stress,
 		DOUBLE C[3][3][3][3])
 {
 	INT i,j,k,l,p;
@@ -36,20 +67,50 @@ void mat_el_ogden_uncoupled (
 	DOUBLE  J;
 	DOUBLE  scal;
 	
-	DOUBLE  Neigen[3][3];
-	DOUBLE  Ncross[3];
-	DOUBLE  lam2[3];
-	DOUBLE  lamdev[3];
-	DOUBLE  lamdevpowalfap[3][3];
+	static DOUBLE **Neigen;
+	static ARRAY Neigen_a;
+	static DOUBLE *Ncross;
+	static ARRAY Ncross_a;
+	static DOUBLE *lam2;
+	static ARRAY lam2_a;
+	static DOUBLE *lamdev;
+	static ARRAY lamdev_a;
+	static DOUBLE **lamdevpowalfap;
+	static ARRAY lamdevpowalfap_a;
 
-        /*
-	DOUBLE  psi1,psi2,psi;
-	*/
+	static DOUBLE *PK2dev;
+	static ARRAY PK2dev_a;
+	static DOUBLE *PK2vol;
+	static ARRAY PK2vol_a;
+	static DOUBLE *PK2;
+	static ARRAY PK2_a;
+	static DOUBLE **PK2cart;
+	static ARRAY PK2cart_a;
+
+	if (Neigen==NULL)
+	{
+		Neigen = amdef("Neigen",&Neigen_a,3,3,"DA");
+		Ncross = amdef("Ncross",&Ncross_a,3,1,"DV");
+		lam2 = amdef("lam2",&lam2_a,3,1,"DV");
+		lamdev = amdef("lamdev",&lamdev_a,3,1,"DV");
+		lamdevpowalfap = amdef("lamdevpowalfap",&lamdevpowalfap_a,3,3,"DA");
+		
+		PK2dev= amdef("PK2dev",&PK2dev_a,3,1,"DV");
+		PK2vol = amdef("PK2vol",&PK2vol_a,3,1,"DV");
+		PK2 = amdef("PK2",&PK2_a,3,1,"DV");
+		PK2cart = amdef("PK2cart",&PK2cart_a,3,3,"DA");
+	}
+
+	amzero(&Neigen_a);
+	amzero(&Ncross_a);
+	amzero(&lam2_a);
+	amzero(&lamdev_a);
+	amzero(&lamdevpowalfap_a);
 	
-	DOUBLE      PK2dev[3];
-	DOUBLE      PK2vol[3];
-	DOUBLE      PK2[3];
-	DOUBLE      PK2cart[3][3];
+	amzero(&PK2dev_a);
+	amzero(&PK2vol_a);
+	amzero(&PK2_a);
+	amzero(&PK2cart_a);
 
 	DOUBLE      Cdev0000=0.0;
 	DOUBLE      Cdev0011=0.0;
@@ -78,41 +139,26 @@ void mat_el_ogden_uncoupled (
 	dstrc_enter("c1_mat_ogden_uncoupled");
 #endif
 /*-------------------------------------- init some local arrays to zero */
-	for (i=0; i<3; i++) {
-	Ncross[i] = 0.0;
-	lam2[i] = 0.0;
-	lamdev[i] = 0.0;
-	PK2dev[i] = 0.0;
-	PK2vol[i] = 0.0;
-	PK2[i] = 0.0;
-	for (j=0; j<3; j++) {
-		Neigen[i][j] = 0.0;
-		lamdevpowalfap[i][j] = 0.0;
-		PK2cart[i][j] = 0.0;
-		stress[i][j] = 0.0;
-		for (k=0; k<3; k++)
-			for (l=0; l<3; l++) {
-				Ceigen[i][j][k][l] = 0.0;
-				C[i][j][k][l] = 0.0;
-			}
-	}
+	for (i=0; i<3; i++)
+	for (j=0; j<3; j++)
+	for (k=0; k<3; k++)
+	for (l=0; l<3; l++)
+	{
+		Ceigen[i][j][k][l] = 0.0;
+		C[i][j][k][l] = 0.0;
 	}
 /*------------------------------------------------- init some constants */
 	if (!(mat->init))
 	{
-		/* make mu = 2.0 * shear modulus */
-		mu = 0.0;
+		mu = 0.0; /* make mu = 2.0 * shear modulus */
 		for (i=0; i<3; i++) mu += mat->alfap[i] * mat->mup[i];
-		/* make Young's modulus */
-		E  = mu*(1.0+mat->nue);
-		/* make shear modulus */
-		mu /= 2.0;
+		E  = mu*(1.0+mat->nue); /* make Young's modulus */
+		mu /= 2.0; /* make shear modulus */
 		/* make bulk modulus */
 		kappa = mat->kappa = E / (3.0*(1-2.0*(mat->nue)));
 		/* make lame constant no. 1 */
 		mat->lambda = mat->kappa - (2.0/3.0)*mu;
-		/* set init flag */
-		mat->init=1;
+		mat->init=1; /* set init flag */
 	}
 /*-------------------------------------------------- get some constants */
 	nue       = mat->nue;
@@ -163,6 +209,8 @@ void mat_el_ogden_uncoupled (
 			   lamdevpowalfap[i][p] = pow(lamdev[i],alfap[p]);
 /*--------------------------------------------------------- make energy */
 #if 0
+{
+	DOUBLE  psi1,psi2,psi;
 	psi1 = 0.0;
 	for (p=0; p<3; p++)
 	{
@@ -171,6 +219,7 @@ void mat_el_ogden_uncoupled (
 	psi2 = (kappa/(beta*beta)) * (beta*log(J) + pow(J,mbeta)-1.0);
 	psi = psi1+psi2;
 	printf("uncoupled PSI1 %20.10f PSI2 %20.10f PSI %20.10f\n\n",psi1,psi2,psi);fflush(stdout);
+}
 #endif
 /*----------------------------------------------------------------------*/
 /*-------------------------------------------------------------- stress */
@@ -308,7 +357,7 @@ printf("PK2        [0] %14.8f PK2        [1] %14.8f PK2        [2] %14.8f\n\n",P
  * transform principal streeses PK2 in cartesian stresses PK2 m.gee 6/03|
  * PK2 = PK2main_a * N[][a] dyad N[][a] (sum over a)                    |
  *----------------------------------------------------------------------*/
-void mat_ogden_cartPK2(DOUBLE PK2[3][3], DOUBLE PK2main[3], DOUBLE N[3][3])
+void mat_ogden_cartPK2(DOUBLE **PK2, DOUBLE *PK2main, DOUBLE **N)
 {
 	INT i,j;
 	DOUBLE dyad0[3][3],dyad1[3][3],dyad2[3][3];
@@ -364,7 +413,7 @@ void mat_ogden_cartPK2(DOUBLE PK2[3][3], DOUBLE PK2main[3], DOUBLE N[3][3])
 /*----------------------------------------------------------------------*
  * transform C in cartesian bases                         PK2 m.gee 6/03|
  *----------------------------------------------------------------------*/
-void mat_ogden_Ccart(DOUBLE C[3][3][3][3], DOUBLE C_cart[3][3][3][3], DOUBLE N[3][3])
+void mat_ogden_Ccart(DOUBLE C[3][3][3][3], DOUBLE C_cart[3][3][3][3], DOUBLE **N)
 {
 	INT i,j,k,l;
 #ifdef DEBUG
@@ -414,7 +463,5 @@ void mat_ogden_Ccart(DOUBLE C[3][3][3][3], DOUBLE C_cart[3][3][3][3], DOUBLE N[3
 	return;
 } /* end of mat_ogden_Ccart */
 
-					
-	
-
 #endif /*D_MAT*/
+/*! @} (documentation module close)*/

@@ -159,7 +159,7 @@ dstrc_enter("c1_call_mat");
     					d);
   break;
   case m_compogden:/*--------------------------------- kompressible ogden */
-    c1_mat_ogden_uncoupled(
+    c1_mat_ogden_decoupled(
 		    mat->m.compogden,
 		    disd,
 		    stress,

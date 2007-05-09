@@ -1,13 +1,15 @@
-/*---------------------------------------------------------------------                                    
+/*!--------------------------------------------------------------------
 \file
 \brief contains the routine
- - c1_mat_ogden_uncoupled:	calculates the principal stretches and
- 				the eigenvectors of right Cauchy Green
-				and calls the decoupled ogden material
-				law at the materials folder and gives
-				back the stress and constitutive tensor
- - c1_ogden_principal_CG:	prepares the right Cauchy Green tensor
- 				for spectral decomposition
+c1_mat_ogden_uncoupled:	calculates the principal stretches and
+			the eigenvectors of right Cauchy Green
+			and calls the decoupled ogden material
+			law at the materials folder and gives
+			back the stress and constitutive tensor
+c1_calc_eigenval_eigenvec_jacobi:	spectral decomposition of a
+					3x3 tensor following Numerical
+					Recip 11.1
+c1_rotation		helper function for spectral decomposition
 <pre>
 Maintainer:		Robert Metzke
  			metzke@lnm.mw.tum.de
@@ -23,58 +25,86 @@ Maintainer:		Robert Metzke
 #ifdef D_MAT
 	#include "../materials/mat_prototypes.h"
 #endif
-/*----------------------------------------------------------------------*
- * compressible ogden-material                               m.gee 6/03 |
- * split in volumetric and deviatoric strains                           |
- * adapted from shell 8 to brick                               rm 03/07 |
- *----------------------------------------------------------------------*/
-void c1_mat_ogden_uncoupled(
+/*!----------------------------------------------------------------------
+\brief consitutive matrix for rubber like elastic orthotropic material
+
+<pre>                                                            rm 05/07
+This routine prepares the data for the decoupled Ogden material in the
+materials folder (D_MAT). In order to work you need to use D_MAT flag in
+your configure file.
+history:
+compressible ogden-material                               m.gee 6/03
+split in volumetric and deviatoric strains
+adapted from shell 8 to brick                               rm 03/07
+</pre>
+\param  DOUBLE    *mat	        (i)  material information
+\param  DOUBLE    *disd         (i)  displacement derivatives
+\param  DOUBLE    *stress       (o)  stress tensor
+\param  DOUBLE    **d           (o)  constitutive matrix
+
+\warning There is nothing special to this routine
+\return void
+\sa c1_calc_eigenval_eigenvec_jacobi,mat_el_ogden_decoupled
+*----------------------------------------------------------------------*/
+void c1_mat_ogden_decoupled(
 		 COMPOGDEN *mat,
 		 DOUBLE *disd,
 		 DOUBLE *stress,
 		 DOUBLE **d)
 {
 	INT i,j,k;
+	static DOUBLE **FT;
+	static ARRAY FT_a;
+	static DOUBLE **CG;
+	static ARRAY CG_a;
+	static DOUBLE **N;
+	static ARRAY N_a;
+	static DOUBLE *lam;
+	static ARRAY lam_a;
+	static DOUBLE *lam2;
+	static ARRAY lam2_a;
+	static DOUBLE **PK2;
+	static ARRAY PK2_a;
 	
-	DOUBLE  FT[3][3];
-	DOUBLE  CG[3][3];
-	DOUBLE  N[3][3];
-	DOUBLE  lam[3];
-	DOUBLE  lam2[3];
+	if (FT==NULL)
+	{
+		FT = amdef("FT",&FT_a,3,3,"DA");
+		CG = amdef("CG",&CG_a,3,3,"DA");
+		N = amdef("N",&N_a,3,3,"DA");
+		lam = amdef("lam",&lam_a,3,1,"DV");
+		lam2 = amdef("lam2",&lam2_a,3,1,"DV");
+		PK2 = amdef("PK2",&PK2_a,3,3,"DA");
+	}
 
-	DOUBLE  PK2[3][3];
+	amzero(&FT_a);
+	amzero(&CG_a);
+	amzero(&N_a);
+	amzero(&lam_a);
+	amzero(&lam2_a);
+	amzero(&PK2_a);
+
 	DOUBLE  C[3][3][3][3];
 
 #ifdef DEBUG
 	dstrc_enter("c1_mat_ogden_uncoupled");
 #endif
-/*-------------------------------------- init some local arrays to zero */
-	for (i=0; i<3; i++) {
-		lam[i] = 0.0;
-		lam2[i] = 0.0;
-		for (j=0; j<3; j++) {
-			N[i][j] = 0.0;
-			FT[i][j] = 0.0;
-			CG[i][j] = 0.0;
-		}
-	}
 /*----------------------------------- Deformation Gradient, transposed */
 	FT[0][0]=disd[0]+1.0;
 	FT[1][1]=disd[1]+1.0;
 	FT[2][2]=disd[2]+1.0;
-	FT[0][1]=disd[3];/*---------------------disd[4];*/
-	FT[1][0]=disd[4];/*---------------------disd[3];*/
-	FT[1][2]=disd[5];/*---------------------disd[6];*/
-	FT[2][1]=disd[6];/*---------------------disd[5];*/
-	FT[0][2]=disd[7];/*---------------------disd[8];*/
-	FT[2][0]=disd[8];/*---------------------disd[7];*/
+	FT[0][1]=disd[3];
+	FT[1][0]=disd[4];
+	FT[1][2]=disd[5];
+	FT[2][1]=disd[6];
+	FT[0][2]=disd[7];
+	FT[2][0]=disd[8];
 /*------------------------------------------- Right Cauchy Green Tensor*/
 	for (k=0; k<3; k++) {
 		for (i=0; i<3; i++) {
 			for (j=0; j<3; j++) {
 				CG[i][k]+=(FT[i][j]*FT[k][j]); } } }
 /*------------------------------------ make spectral decoposition of CG */
-	c1_ogden_principal_CG(CG,lam2,N);
+	c1_calc_eigenval_eigenvec_jacobi(CG,lam2,N);
 /*-------------------------------------------- make principal stretches */
 	lam[0] = sqrt(lam2[0]);
 	lam[1] = sqrt(lam2[1]);
@@ -84,9 +114,9 @@ void c1_mat_ogden_uncoupled(
 #endif
 /*------------------------------ call ogden material in material folder */
 #ifdef D_MAT
-	    mat_el_ogden_uncoupled(mat,lam,N,PK2,C);
+	    mat_el_ogden_decoupled(mat,lam,N,PK2,C);
 #else
-            dserror("Please use D_MAT, mate!");
+            dserror("Please use D_MAT in your configure file, mate!");
 #endif 
 /*------------------------------------------------------------ Stresses */
 	stress[0] = PK2[0][0];
@@ -144,89 +174,6 @@ void c1_mat_ogden_uncoupled(
 	return;
 } /* end of c1_mat_ogden_uncoupled */
 
-
-
-
-/*----------------------------------------------------------------------*
- * make eigenvalue decomposition of Cauchy-Green strains  m.gee 6/03    |
- * adapted to brick1                                      rm 03.07      |
- *----------------------------------------------------------------------*/
-void c1_ogden_principal_CG(DOUBLE CG[3][3], DOUBLE lambda[3], DOUBLE N[3][3])
-{
-	INT          i,j;
-	DOUBLE       fstrain[9];
-	DOUBLE       fn[9];
-	DOUBLE       lam2[3];
-	static DOUBLE **CGt;
- 	static ARRAY CGt_a;
-	static DOUBLE **Nt;
-	static ARRAY Nt_a;
-	
-	CGt = amdef("CGt",&CGt_a,3,3,"DA");
-	Nt = amdef("Nt",&Nt_a,3,3,"DA");
- 
-#ifdef DEBUG
-	dstrc_enter("c1_ogden_principal_CG");
-#endif
-/*----------------------------------------------------------------------*/
-
-	for(i=0; i<3; i++) {
-		for(j=0; j<3; j++) {
-			CGt[i][j] = CG[i][j];
-		}
-	}
-	
-	c1_calc_eigenval_eigenvec_jacobi(CGt,lam2,Nt);
-
-	lambda[0] = lam2[0];
-	lambda[1] = lam2[1];
-	lambda[2] = lam2[2];
-
-	for(i=0; i<3; i++) {
-		for(j=0; j<3; j++) {
-			N[i][j] = Nt[i][j];
-		}
-	}
-	
-/*
-	for (i=0; i<9; i++) fn[i] = 0.0;
-
-	fstrain[0] = CG[0][0];
-	fstrain[1] = CG[1][0];
-	fstrain[2] = CG[2][0];
-
-	fstrain[3] = CG[0][1];
-	fstrain[4] = CG[1][1];
-	fstrain[5] = CG[2][1];
-
-	fstrain[6] = CG[0][2];
-	fstrain[7] = CG[1][2];
-	fstrain[8] = CG[2][2];
-
-	s8jacb(fstrain,fn);
-
-	lambda[0] = fstrain[0];
-	lambda[1] = fstrain[4];
-	lambda[2] = fstrain[8];
-
-	N[0][0] = fn[0];
-	N[1][0] = fn[1];
-	N[2][0] = fn[2];
-
-	N[0][1] = fn[3];
-	N[1][1] = fn[4];
-	N[2][1] = fn[5];
-
-	N[0][2] = fn[6];
-	N[1][2] = fn[7];
-	N[2][2] = fn[8];
-*/
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG
-	dstrc_exit();
-#endif
-return;
-} /* end of c1_ogden_principal_CG */
 
 
 /*----------------------------------------------------------------------*
@@ -344,7 +291,5 @@ void c1_rotation (DOUBLE **C, INT i, INT j, INT k, INT l, DOUBLE tau, DOUBLE s)
 	return;
 }
 
-
-
-#endif
-
+#endif /*D_BRICK1 */
+/*! @} (documentation module close)*/
