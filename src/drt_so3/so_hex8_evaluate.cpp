@@ -133,11 +133,12 @@ int DRT::Elements::So_hex8::Evaluate(ParameterList& params,
     
     // evaluate stresses
     case calc_struct_stress: {
-//      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-//      if (disp==null) dserror("Cannot get state vectors 'displacement'");
-//      vector<double> mydisp(lm.size());
-//      DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
-//      soh8_stress(actmat,mydisp);
+      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==null) dserror("Cannot get state vectors 'displacement'");
+      vector<double> mydisp(lm.size());
+      DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
+      Epetra_SerialDenseMatrix stresses(NUMGPT_SOH8,NUMSTR_SOH8);
+      soh8_stress(actmat,mydisp,&stresses);
     }
     break;
     
@@ -163,7 +164,7 @@ int DRT::Elements::So_hex8::Evaluate(ParameterList& params,
 
 
 /*----------------------------------------------------------------------*
- |  Integrate a Surface Neumann boundary condition (public)    maf 04/07|
+ |  Integrate a Volume Neumann boundary condition (public)     maf 04/07|
  *----------------------------------------------------------------------*/
 int DRT::Elements::So_hex8::EvaluateNeumann(ParameterList& params, 
                                            DRT::Discretization&      discretization,
@@ -171,8 +172,88 @@ int DRT::Elements::So_hex8::EvaluateNeumann(ParameterList& params,
                                            vector<int>&              lm,
                                            Epetra_SerialDenseVector& elevec1)
 {
+  DSTraceHelper dst("So_hex8::EvaluateNeumann");
+    
+  // get values and switches from the condition
+  vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
+  vector<double>* val   = condition.Get<vector<double> >("val"  );
+
+  /*
+  **    TIME CURVE BUSINESS
+  */
+  // find out whether we will use a time curve
+  bool usetime = true;
+  const double time = params.get("total time",-1.0);
+  if (time<0.0) usetime = false;
+
+  // find out whether we will use a time curve and get the factor
+  vector<int>* curve  = condition.Get<vector<int> >("curve");
+  int curvenum = -1;
+  if (curve) curvenum = (*curve)[0]; 
+  double curvefac = 1.0;
+  if (curvenum>=0 && usetime)
+    dyn_facfromcurve(curvenum,time,&curvefac); 
+  // **
+
+/* ============================================================================*
+** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
+** ============================================================================*/
+/* pointer to (static) shape function array 
+ * for each node, evaluated at each gp*/
+  Epetra_SerialDenseMatrix* shapefct; //[NUMNOD_SOH8][NUMGPT_SOH8]
+/* pointer to (static) shape function derivatives array 
+ * for each node wrt to each direction, evaluated at each gp*/
+  Epetra_SerialDenseMatrix* deriv;    //[NUMGPT_SOH8*NUMDIM][NUMNOD_SOH8]
+/* pointer to (static) weight factors at each gp */  
+  Epetra_SerialDenseVector* weights;  //[NUMGPT_SOH8]
+  soh8_shapederiv(&shapefct,&deriv,&weights);   // call to evaluate
+/* ============================================================================*/
+  
+  // update element geometry
+  Epetra_SerialDenseMatrix xrefe(NUMNOD_SOH8,NUMDIM_SOH8);  // material coord. of element
+  for (int i=0; i<NUMNOD_SOH8; ++i){
+    xrefe(i,0) = Nodes()[i]->X()[0];
+    xrefe(i,1) = Nodes()[i]->X()[1];
+    xrefe(i,2) = Nodes()[i]->X()[2];
+  }
+  
+  /* ================================================= Loop over Gauss Points */
+  for (int gp=0; gp<NUMGPT_SOH8; ++gp) {
+    
+    // get submatrix of deriv at actual gp
+    Epetra_SerialDenseMatrix deriv_gp(NUMDIM_SOH8,NUMGPT_SOH8);
+    for (int m=0; m<NUMDIM_SOH8; ++m) {
+      for (int n=0; n<NUMGPT_SOH8; ++n) {
+        deriv_gp(m,n)=(*deriv)(NUMDIM_SOH8*gp+m,n);
+      }
+    }
+
+    // compute the Jacobian matrix 
+    Epetra_SerialDenseMatrix jac(NUMDIM_SOH8,NUMDIM_SOH8);
+    jac.Multiply('N','N',1.0,deriv_gp,xrefe,1.0);
+
+    // compute determinant of Jacobian by Sarrus' rule
+    double detJ= jac(0,0) * jac(1,1) * jac(2,2)
+               + jac(0,1) * jac(1,2) * jac(2,0)
+               + jac(0,2) * jac(1,0) * jac(2,1)
+               - jac(0,0) * jac(1,2) * jac(2,1)
+               - jac(0,1) * jac(1,0) * jac(2,2)
+               - jac(0,2) * jac(1,1) * jac(2,0);
+    if (detJ == 0.0) dserror("ZERO JACOBIAN DETERMINANT");
+    else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
+    
+    double fac = (*weights)(gp) * curvefac * detJ;          // integration factor
+    // distribute/add over element load vector
+    for (int nodid=0; nodid<NUMNOD_SOH8; ++nodid) {
+      for(int dim=0; dim<NUMDIM_SOH8; dim++) {
+        elevec1[nodid+dim] += (*shapefct)(nodid,gp) * (*onoff)[dim] * (*val)[dim] * fac;
+      }
+    }
+    
+  }/* ==================================================== end of Loop over GP */
+
   return 0;
-}
+} // DRT::Elements::Shell8::s8_EvaluateNeumann
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                             maf 04/07|

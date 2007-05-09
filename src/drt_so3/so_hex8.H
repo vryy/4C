@@ -352,7 +352,9 @@ private:
                          Epetra_SerialDenseVector* force,
                          struct _MATERIAL*         material);
 
-  void soh8_stress(struct _MATERIAL* material, vector<double>& mydisp);
+  void soh8_stress(struct _MATERIAL* material,
+                   vector<double>& mydisp,
+                   Epetra_SerialDenseMatrix* stresses);
 
   void soh8_shapederiv(Epetra_SerialDenseMatrix** shapefct,
                        Epetra_SerialDenseMatrix** deriv,
@@ -471,172 +473,6 @@ private:
 //=======================================================================
 //=======================================================================
 //=======================================================================
-
-/*!
-\class Soh8Volume
-
-\brief An element representing a volume of a So_hex8 element
-
-\note This is a pure Neumann boundary condition element. It's only
-      purpose is to evaluate surface Neumann boundary conditions that might be
-      adjacent to a parent fluid3 element. It therefore does not implement
-      the DRT::Element::Evaluate method and does not have its own ElementRegister class.
-
-\author maf (frenzel@lnm.mw.tum.de)
-*/
-class Soh8Volume : public DRT::Element
-{
-public:
-
-  //! @name Constructors and destructors and related methods
-
-  /*!
-  \brief Standard Constructor
-
-  \param id : A unique global id
-  \param owner: Processor owning this surface
-  \param nnode: Number of nodes attached to this element
-  \param nodeids: global ids of nodes attached to this element
-  \param nodes: the discretizations map of nodes to build ptrs to nodes from
-  \param parent: The parent fluid element of this surface
-  \param lsurface: the local surface number of this surface w.r.t. the parent element
-  */
-  Soh8Volume(int id, int owner, int nnode, const int* nodeids,
-             DRT::Node** nodes, DRT::Elements::So_hex8* parent, const int lvolume);
-
-  /*!
-  \brief Copy Constructor
-
-  Makes a deep copy of a Element
-
-  */
-  Soh8Volume(const Soh8Volume& old);
-
-  /*!
-  \brief Deep copy this instance of an element and return pointer to the copy
-
-  The Clone() method is used from the virtual base class Element in cases
-  where the type of the derived class is unknown and a copy-ctor is needed
-
-  */
-  DRT::Element* Clone() const;
-
-  /*!
-  \brief Get shape type of element
-  */
-  virtual DiscretizationType Shape() const;
-
-  /*!
-  \brief Return unique ParObject id
-
-  every class implementing ParObject needs a unique id defined at the
-  top of the drt_parobject.H file.
-  */
-  virtual int UniqueParObjectId() const { return ParObject_Soh8Volume;}
-
-  /*!
-  \brief Pack this class so it can be communicated
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Pack(vector<char>& data) const;
-
-  /*!
-  \brief Unpack data from a char vector into this class
-
-  \ref Pack and \ref Unpack are used to communicate this element
-
-  */
-  virtual void Unpack(const vector<char>& data);
-
-  /*!
-  \brief Destructor
-
-  */
-  virtual ~Soh8Volume();
-
-  //@}
-
-  //! @name Acess methods
-
-
-  /*!
-  \brief Get number of degrees of freedom of a certain node
-         (implements pure virtual DRT::Element)
-
-  The element decides how many degrees of freedom its nodes must have.
-  As this may vary along a simulation, the element can redecide the
-  number of degrees of freedom per node along the way for each of it's nodes
-  separately.
-  */
-  virtual int NumDofPerNode(const DRT::Node& node) const
-  {return 3;}
-
-  /*!
-  \brief Get number of degrees of freedom per element
-         (implements pure virtual DRT::Element)
-
-  The element decides how many element degrees of freedom it has.
-  It can redecide along the way of a simulation.
-
-  \note Element degrees of freedom mentioned here are dofs that are visible
-        at the level of the total system of equations. Purely internal
-        element dofs that are condensed internally should NOT be considered.
-  */
-  virtual int NumDofPerElement() const { return 0; }
-
-  /*!
-  \brief Print this element
-  */
-  void Print(ostream& os) const;
-
-  /*!
-  \brief Allocate and return a ElementRegister class
-
-  Every implementation of DRT::Element must also implement
-  an DRT::ElementRegister. This method allocates and returns
-  an instance of a matching DRT::ElementRegister.
-  */
-  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const { return null; }
-
-  //@}
-
-  //! @name Evaluate methods
-
-  /*!
-  \brief Evaluate a Neumann boundary condition
-
-  this method evaluates a surface Neumann condition on the fluid3 element
-
-  \param params (in/out)    : ParameterList for communication between control routine
-                              and elements
-  \param discretization (in): A reference to the underlying discretization
-  \param condition (in)     : The condition to be evaluated
-  \param lm (in)            : location vector of this element
-  \param elevec1 (out)      : vector to be filled by element. If NULL on input,
-
-  \return 0 if successful, negative otherwise
-  */
-  virtual int EvaluateNeumann(ParameterList& params,
-                              DRT::Discretization&      discretization,
-                              DRT::Condition&           condition,
-                              vector<int>&              lm,
-                              Epetra_SerialDenseVector& elevec1);
-
-  //@}
-
-private:
-
-  // don't want = operator
-  Soh8Volume& operator = (const Soh8Volume& old);
-
-  //! The parent element of this surface
-  DRT::Elements::So_hex8* parent_;
-  //! The local surface number of this surface w.r.t to the parent_ element
-  int                    lvolume_;
-
-}; // class Soh8Volume
 
 
 /*!
@@ -804,6 +640,12 @@ private:
   //! The local surface number of this surface w.r.t to the parent_ element
   int                    lsurface_;
 
+  void soh8_surface_integ(
+      vector<double>* funct,                 // (o) shape functions
+      double* sqrtdetg,                      // (o) pointer to sqrt of det(g)
+      const Epetra_SerialDenseMatrix* xsrefe,// (i) material element coords
+      const double r,                        // (i) coord in r-direction 
+      const double s);                       // (i) coord in s-direction
 }; // class Soh8Surface
 
 /*!
