@@ -259,7 +259,7 @@ void tsi_th_presc_st_genalp(INT disnum_s,
   dstrc_enter("tsi_th_presc_st_genalp");
 #endif
 
-  /*--------------------------------------------------------------------*/
+  /*====================================================================*/
   /* a word to the user */
   if (par.myrank == 0)
   { 
@@ -345,44 +345,6 @@ void tsi_th_presc_st_genalp(INT disnum_s,
                    &(tdirich_a));
 
   /*====================================================================*/
-  /* solve thermal field */
-  tsi_th_stat_equi(part_t,
-                   intra_t,
-                   field_t,
-                   disnum_s,
-                   isol_t,
-                   solv_t,
-                   numeq_t,
-                   numeq_total_t,
-                   sysarray_t,
-                   tdyn,
-                   &(container_t),
-                   &(tdirich_a));
-
-  /*====================================================================*/
-  /* output thermal field */
-  tsi_th_stat_out(part_t,
-                  intra_t,
-                  field_t,
-                  disnum_s,
-                  isol_t,
-                  solv_t,
-                  sysarray_t,
-                  tdyn,
-                  &(container_t));
-
-  /*====================================================================*/
-  /* a word to the user */
-  if (par.myrank == 0)
-  {
-    printf("-------------------------------------------------------------"
-           "-------------\n");    
-    printf("thermal field finished ... structural field started\n");
-    printf("-------------------------------------------------------------"
-           "-------------\n");
-  }
-
-  /*====================================================================*/
   /* initialise structural field */
   tsi_st_genalp_init(part_s,
                      intra_s,
@@ -454,8 +416,8 @@ void tsi_th_presc_st_genalp(INT disnum_s,
    *    +=  ...   evaluation in this step
    *
    */    
-  while ( (sdyn->step < sdyn->nstep-1) 
-          && (sdyn->time <= sdyn->maxtime) )
+  while ( (tsidyn->step < tsidyn->nstep-1) 
+          && (tsidyn->time <= tsidyn->maxtime) )
   {
     /*------------------------------------------------------------------*/
     /* wall clock time in the beginning of current time step*/
@@ -472,13 +434,40 @@ void tsi_th_presc_st_genalp(INT disnum_s,
     tsidyn->time += tsidyn->dt;
     sdyn->time = tsidyn->time;
     tdyn->time = tsidyn->time;
-    /* put time to global variable for time-dependent load distributions */
-/*     acttime = tsidyn->time; */
+
+    /*==================================================================*/
+    /* THERMAL FIELD  :  SOLUTION */
+    /*==================================================================*/
+    /* inform user */
+    if ( (par.myrank == 0) && (mod_stdout == 0) )
+    {
+      printf("\nStep %d: Solve thermal field...\n", tdyn->step);
+    }
+    /* solve thermal field */
+    tsi_th_stat_equi(part_t,
+                     intra_t,
+                     field_t,
+                     disnum_s,
+                     isol_t,
+                     solv_t,
+                     numeq_t, numeq_total_t,
+                     sysarray_t,
+                     tdyn,
+                     &(container_t),
+                     &(tdirich_a));
+
 
 
     /*==================================================================*/
-    /* PREDICTOR */
+    /* STRUCTURAL FIELD  :  PREDICTOR */
     /*==================================================================*/
+    /* inform user */
+    if ( (par.myrank == 0) && (mod_stdout == 0) )
+    {
+      printf("Step %d: Solve structural field...\n", sdyn->step);
+    }
+    /*------------------------------------------------------------------*/
+    /* predictor */
     tsi_st_genalp_pred(part_s,
                        intra_s,
                        field_s,
@@ -497,7 +486,7 @@ void tsi_th_presc_st_genalp(INT disnum_s,
                        work,
                        &(ddirich_a),
                        &(intforce_a));
-    /*==================================================================*/
+    /*------------------------------------------------------------------*/
     /* convergence check */
     converged = 0;
     tsi_st_genalp_chkcnv(intra_s,
@@ -509,7 +498,7 @@ void tsi_th_presc_st_genalp(INT disnum_s,
                          &(converged));
 
     /*==================================================================*/
-    /* PERFORM EQUILIBRIUM ITERATION */
+    /* STRUCTURAL FIELD  :  EQUILIBRIUM ITERATION */
     /*==================================================================*/
     itnum = 0;
     while ( (converged != 1) && (itnum <= sdyn->maxiter) )
@@ -522,7 +511,7 @@ void tsi_th_presc_st_genalp(INT disnum_s,
         dserror("No convergence in maxiter steps");
       }
 
-      /*================================================================*/
+      /*----------------------------------------------------------------*/
       /* make the equilibrium iteration */
       tsi_st_genalp_equi(part_s,
                          intra_s,
@@ -542,7 +531,7 @@ void tsi_th_presc_st_genalp(INT disnum_s,
                          &(intforce_a),
                          &(ddirich_a));
 
-      /*================================================================*/
+      /*----------------------------------------------------------------*/
       /* convergence check */
       tsi_st_genalp_chkcnv(intra_s,
                            sdyn,
@@ -562,8 +551,8 @@ void tsi_th_presc_st_genalp(INT disnum_s,
     /*==================================================================*/
 
 
-    /*==================================================================*/
-    /* incremental update */
+    /*------------------------------------------------------------------*/
+    /* incremental update of structural field */
     tsi_st_genalp_updincr(part_s,
                           intra_s,
                           field_s,
@@ -580,7 +569,22 @@ void tsi_th_presc_st_genalp(INT disnum_s,
                           work);
 
     /*==================================================================*/
-    /* output */
+    /* OUTPUT */
+    /*==================================================================*/
+    /*------------------------------------------------------------------*/
+    /* output thermal field */
+    tsi_th_stat_out(part_t,
+                    intra_t,
+                    field_t,
+                    disnum_s,
+                    isol_t,
+                    solv_t,
+                    sysarray_t,
+                    tdyn,
+                    &(container_t));
+
+    /*------------------------------------------------------------------*/
+    /* output structural field */
     tsi_st_genalp_out(part_s,
                       intra_s,
                       field_s,
@@ -601,17 +605,17 @@ void tsi_th_presc_st_genalp(INT disnum_s,
                       &(intforce_a),
                       &(ddirich_a));
 
-  /*--------------------------------------------------------------------*/
-  /* print time step */
-  if ( (par.myrank==0) && !timeadapt && (mod_stdout==0) )
-  {
-    dyn_nlnstruct_outstep(&(sdynvar), sdyn, itnum, sdyn->dt);
-  }
+    /*------------------------------------------------------------------*/
+    /* print time step to STDOUT*/
+    if ( (par.myrank==0) && (!timeadapt) && (mod_stdout==0) )
+    {
+      dyn_nlnstruct_outstep(&(sdynvar), sdyn, itnum, sdyn->dt);
+    }
 
-  /*--------------------------------------------------------------------*/
-  /*  measure wall clock time for this step */
-  t1 = ds_cputime();
-  fprintf(allfiles.out_err, "TIME for step %d is %f sec\n", 
+    /*------------------------------------------------------------------*/
+    /*  measure wall clock time for this step */
+    t1 = ds_cputime();
+    fprintf(allfiles.out_err, "TIME for step %d is %f sec\n", 
             tsidyn->step, t1-t0);
 
   }  /* end of time loop */
@@ -650,13 +654,14 @@ void tsi_th_presc_st_genalp(INT disnum_s,
   CCAFREE(intra);
 #endif
 
-  /*--------------------------------------------------------------------*/
+  /*====================================================================*/
   /* a last word to the nervously waiting user */
   if (par.myrank == 0)
   {
     printf("-------------------------------------------------------------"
            "-----------\n");
-    printf("TSI structural time integration generalised-alpha finished.\n");
+    printf("Finished: Thermo-structure interaction\n");
+    /* printf("Thank you for your attention.\n"); */
     printf("============================================================="
            "===========\n");
   }

@@ -306,6 +306,7 @@ void tsi_th_stat_equi(PARTITION* actpart,
   DOUBLE rhsfact;  /* factor to multiply RHS */
   INT init;  /* init flag for solver */
   DOUBLE* dirich = dirich_a->a.dv;
+  INT i;  /* an index */
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -320,6 +321,14 @@ void tsi_th_stat_equi(PARTITION* actpart,
   solserv_putdirich_to_dof(actfield, disnum, 
                            node_array_sol, isol->tem, timcur);
 
+  /*------------------------------------------------------------------*/
+  /* calculate tangential stiffness/mass 
+   * and internal forces at time t_{n} */
+  solserv_zero_mat(actintra, 
+                   &(actsolv->sysarray[actsysarray]),
+                   &(actsolv->sysarray_typ[actsysarray]));
+  amzero(dirich_a);
+
   /*--------------------------------------------------------------------*/
   /* call element routines to calculate & assemble tangent matrix */
   *action = calc_therm_tang;
@@ -333,6 +342,7 @@ void tsi_th_stat_equi(PARTITION* actpart,
 
   /*--------------------------------------------------------------------*/
   /* call rhs-routines to assemble rhs */
+  solserv_zero_vec(&(actsolv->rhs[actsysarray]));
   container->kstep = 0;  /* WORK */
   container->inherit = 1;  /* ? */
   container->point_neum = 1;  /* ? */

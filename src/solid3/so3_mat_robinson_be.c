@@ -563,6 +563,7 @@ void so3_mat_robinson_be_rbcksts(ELEMENT* ele,
   DOUBLE hh;  /* 'H' */
   DOUBLE beta;  /* 'beta' */
   DOUBLE mm;  /* 'm' */
+  DOUBLE q0;  /* activation energy */
   DOUBLE rr0;  /* recovery factor 'R_0' */
   DOUBLE rr;  /* recovery term 'R' */
   DOUBLE gg0;  /* 'G_0' */
@@ -591,10 +592,26 @@ void so3_mat_robinson_be_rbcksts(ELEMENT* ele,
   so3_mat_robinson_prmbytmpr(mat_robin->beta, tmpr, &(beta));
   /* 'm' */
   mm = mat_robin->m;
+  /* 'Q_0' */
+  q0 = mat_robin->actv_ergy;
   /* recovery factor 'R_0' */
   so3_mat_robinson_prmbytmpr(mat_robin->rcvry, tmpr, &(rr0));
   /* 'R' */
-  rr = rr0 * exp(mat_robin->actv_ergy*(tmpr-tem0)/(tmpr*tem0));
+  if (fabs(tmpr*tem0) <= EPS12)
+  {
+    if (fabs(tem0) <= EPS12)
+    {
+      rr = rr0;
+    }
+    else
+    {
+      rr = rr0 * exp(q0/tem0);
+    }
+  }
+  else
+  {
+    rr = rr0 * exp(q0*(tmpr-tem0)/(tmpr*tem0));
+  }
   /* 'G_0' */
   gg0 = mat_robin->g0;
   /* G = I_2/K_0^2 */
