@@ -185,14 +185,11 @@ void tsi_st_genalp_init(PARTITION* actpart,
                         ARRAY* intforce_a,
                         ARRAY* dirich_a)
 {
-/* #ifdef BINIO */
-/*   BIN_OUT_FIELD* out_context; */
-/* #endif */
-
   const INT numsf = genprob.numsf;  /* index of structure field */
   CALC_ACTION* action = &(calc_action[numsf]);  /* structure cal_action */
   INT i;  /* index */
   INT init;  /* solver init flag */
+  INT actsysarray;  /* WHY???? */
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -203,6 +200,17 @@ void tsi_st_genalp_init(PARTITION* actpart,
   /* init the variables in dynvar to zero */
   /* Set all variables to zero. No matter what changes in future. */
   memset(dynvar, 0, sizeof(STRUCT_DYN_CALC));
+
+  /*--------------------------------------------------------------------*/
+  /* check solvar variable */
+  if (actsolv->nsysarray == 1)
+  {
+    actsysarray = 0;
+  }
+  else
+  {
+    dserror("More than 1 system arrays (actsolv->nsysarray)!");
+  }
 
   /*--------------------------------------------------------------------*/
   /* damping */
@@ -1195,10 +1203,6 @@ void tsi_st_genalp_out(PARTITION* actpart,
                        ARRAY* intforce_a,
                        ARRAY* dirich_a)
 {
-/* #ifdef BINIO */
-/*   BIN_OUT_FIELD* out_context; */
-/* #endif */
-
   const INT timeadapt = 0;  /* no time step adaptivity */
   INT disnum = disnum_s;
   INT mod_disp;  /* indicate whether to print displacements */
@@ -1357,8 +1361,6 @@ void tsi_st_genalp_final(SOLVAR* actsolv,
 
   /*--------------------------------------------------------------------*/
   /* cleaning up phase */
-  amdel(intforce_a);
-  amdel(dirich_a);
   solserv_del_vec(&(actsolv->rhs), actsolv->nrhs);
   solserv_del_vec(&(actsolv->sol), actsolv->nsol);
   solserv_del_vec(dispi, dispi_num);
@@ -1366,6 +1368,8 @@ void tsi_st_genalp_final(SOLVAR* actsolv,
   solserv_del_vec(acc, acc_num);
   solserv_del_vec(fie, fie_num);
   solserv_del_vec(work, work_num);
+  amdel(intforce_a);
+  amdel(dirich_a);
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -1417,7 +1421,6 @@ void tsi_st_genalp_sub(INT disnum_s,
   INT stiff_array;  /* index of the active system sparse matrix */
   INT mass_array;  /* index of the active system sparse matrix */
   INT damp_array;  /* index of the active system sparse matrix */
-  INT actsysarray;  /* index of actual system array */
   
   /* dynamic control */
   STRUCT_DYNAMIC* actdyn = alldyn[numsf].sdyn;  /* structural dynamics */
@@ -1474,7 +1477,6 @@ void tsi_st_genalp_sub(INT disnum_s,
     printf("============================================================="
            "=============\n");
     printf("TSI structural time integration with generalised-alpha\n");
-    printf("NEW WAY\n");
     printf("-------------------------------------------------------------"
            "-------------\n");
   }
@@ -1498,18 +1500,6 @@ void tsi_st_genalp_sub(INT disnum_s,
   if (timeadapt)
   {
     dserror("Time step size adaptivity is not available!");
-  }
-
-  /*--------------------------------------------------------------------*/
-  /* check solvar variable */
-  actsysarray = numsf;  /* ??? */
-  if (actsolv->nsysarray == 1)
-  {
-    actsysarray = 0;
-  }
-  else
-  {
-    dserror("More than 1 system arrays (actsolv->nsysarray)!");
   }
 
   /*--------------------------------------------------------------------*/

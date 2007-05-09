@@ -101,8 +101,6 @@ extern ALLDYNA *alldyn;
 
 
 
-
-
 /*----------------------------------------------------------------------*/
 /*!
 \brief Thermal structure interaction analyses chooser
@@ -162,7 +160,7 @@ void tsi_dyn()
 
   /*--------------------------------------------------------------------*/
   /* initialise load curves */
-  tsi_init_curve();
+  tsi_init_curve(tsidyn);
 
   /*--------------------------------------------------------------------*/
   /* select different analyses */
@@ -176,7 +174,6 @@ void tsi_dyn()
     case tsi_therm_stat_struct_genalp: 
       tsi_th_stat(disnum_s, disnum_t);
       tsi_st_genalp(disnum_s, disnum_t);
-      /* tsi_st_genalp_sub(disnum_s, disnum_t); */ /* modularised gen-alpha */
       break;
     /* semi TSI : static thermal and dynamic structure field */
     case tsi_therm_stat_struct_cendif:
@@ -190,7 +187,8 @@ void tsi_dyn()
       break;
     /* semi TSI : prescribed thermal and dynamic structure field */
     case tsi_therm_presc_struct_genalp:
-      dserror("Sorry, prescription of temperature field is not implemented!");
+      tsi_th_stat_sub(disnum_s, disnum_t);  /* modularised static therm */
+      tsi_st_genalp_sub(disnum_s, disnum_t);  /* modularised gen-alpha */
       break;
     /* full explicit TIS with Fehlberg */
     case tsi_full_fehlbg:

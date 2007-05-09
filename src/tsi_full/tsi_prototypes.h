@@ -57,7 +57,7 @@ void tsi_init_nodsol(FIELD *structfield,
                      INT disnum_s,
                      FIELD *thermfield, 
                      INT disnum_t);
-void tsi_init_curve();
+void tsi_init_curve(TSI_DYNAMIC *tsidyn);
 
 /*----------------------------------------------------------------------*/
 /* file tsi_st_cendif.c */
@@ -219,3 +219,44 @@ void tsi_st_genalp_sub(INT disnum_s,
 /* file tsi_th_stat.c */
 void tsi_th_stat(INT disnum_s,
                  INT disnum_t);
+
+/*----------------------------------------------------------------------*/
+/* file tsi_th_stat_sub.c */
+void tsi_th_stat_init(PARTITION* actpart,
+                      INTRA* actintra,
+                      FIELD* actfield,
+                      INT disnum,
+                      SOLVAR* actsolv,
+                      INT* numeq,
+                      INT* numeq_total,
+                      INT* actsysarray,
+                      CONTAINER* container,
+                      ARRAY* dirich_a);
+void tsi_th_stat_equi(PARTITION* actpart,
+                      INTRA* actintra,
+                      FIELD* actfield,
+                      INT disnum,
+                      ARRAY_POSITION_SOL* isol,
+                      SOLVAR* actsolv,
+                      INT numeq,
+                      INT numeq_total,
+                      INT actsysarray,
+                      THERM_DYNAMIC* actdyn,
+                      CONTAINER* container,
+                      ARRAY* dirich_a);
+void tsi_th_stat_out(PARTITION* actpart,
+                     INTRA* actintra,
+                     FIELD* actfield,
+                     INT disnum,
+                     ARRAY_POSITION_SOL* isol,
+                     SOLVAR* actsolv,
+                     INT actsysarray,
+                     THERM_DYNAMIC* actdyn,
+                     CONTAINER* container);
+void tsi_th_stat_final(SOLVAR* actsolv,
+#ifdef BINIO
+                       BIN_OUT_FIELD* out_context,
+#endif
+                       ARRAY* dirich_a);
+void tsi_th_stat_sub(INT disnum_s,
+                     INT disnum_t);

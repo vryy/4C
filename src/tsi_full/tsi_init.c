@@ -92,9 +92,17 @@ dedfined in global_control.c
 */
 extern ALLDYNA *alldyn;
 
-
-
-
+/*----------------------------------------------------------------------*/
+/*!
+\brief Load curve, load factor function
+       number of load curves numcurve
+       vector of structures of curves
+       defined in input_curves.c
+\author bborn
+\date 03/06
+*/
+extern INT numcurve;
+extern CURVE* curve;
 
 /*======================================================================*/
 /*!
@@ -334,15 +342,21 @@ void tsi_init_nodsol(FIELD *structfield,
 \author bborn
 \date 10/06
 */
-void tsi_init_curve()
+void tsi_init_curve(TSI_DYNAMIC* tsidyn)
 {
+  INT actcurve;  /* curve index */
+
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_enter("tsi_init_curve");
 #endif
 
   /*--------------------------------------------------------------------*/
-  
+  /* init all applied time curves -*/
+  for (actcurve=0; actcurve<numcurve; actcurve++)
+  {
+    dyn_init_curve(actcurve, tsidyn->nstep, tsidyn->dt, tsidyn->maxtime);
+  }
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
