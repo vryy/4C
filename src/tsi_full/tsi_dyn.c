@@ -22,7 +22,9 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 /* header files */
 #include "../headers/standardtypes.h"
+#ifdef BINIO
 #include "../io/io.h"
+#endif
 #include "../solver/solver.h"
 #include "tsi_prototypes.h"
 
@@ -187,8 +189,9 @@ void tsi_dyn()
       break;
     /* semi TSI : prescribed thermal and dynamic structure field */
     case tsi_therm_presc_struct_genalp:
-      tsi_th_stat_sub(disnum_s, disnum_t);  /* modularised static therm */
-      tsi_st_genalp_sub(disnum_s, disnum_t);  /* modularised gen-alpha */
+/*       tsi_th_stat_sub(disnum_s, disnum_t);  /\* modularised static therm *\/ */
+/*       tsi_st_genalp_sub(disnum_s, disnum_t);  /\* modularised gen-alpha *\/ */
+      tsi_th_presc_st_genalp(disnum_s, disnum_t);
       break;
     /* full explicit TIS with Fehlberg */
     case tsi_full_fehlbg:

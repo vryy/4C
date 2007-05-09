@@ -200,6 +200,9 @@ void tsi_st_genalp_out(PARTITION* actpart,
                        ARRAY* intforce_a,
                        ARRAY* dirich_a);
 void tsi_st_genalp_final(SOLVAR* actsolv,
+#ifdef BINIO
+                         BIN_OUT_FIELD* out_context,
+#endif
 			 const INT dispi_num,
 			 DIST_VECTOR** dispi,
 			 const INT vel_num,
@@ -214,6 +217,11 @@ void tsi_st_genalp_final(SOLVAR* actsolv,
 			 ARRAY* dirich_a);
 void tsi_st_genalp_sub(INT disnum_s,
                        INT disnum_t);
+
+/*----------------------------------------------------------------------*/
+/* file tsi_th_presc_st_genalp.c */
+void tsi_th_presc_st_genalp(INT disnum_s,
+                            INT disnum_t);
 
 /*----------------------------------------------------------------------*/
 /* file tsi_th_stat.c */

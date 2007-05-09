@@ -22,6 +22,7 @@ Maintainer: Burkhard Bornemann
 #ifdef BINIO
 #include "../io/io.h"
 #endif
+#include "tsi_prototypes.h"
 
 
 /*----------------------------------------------------------------------*/
@@ -150,6 +151,35 @@ DOUBLE deltat;
 /*======================================================================*/
 /*!
 \brief Initialise generalised-alpha time integration of structure field
+\param  actpart     PARTITION*      (io)   partition
+\param  actintra    INTRA*          (i)    intra-communicator
+\param  actfield    FIELD           (i)    thermal field
+\param  disnum      INT             (i)    discretisation index
+\param  ipos        ARRAY_POSITION* (i)    indices in NODE arrays
+\param  isol        ARRAY_POSITION_SOL*(i) indices in NODE sol arrays
+\param  isolinc     ARRAY_POSITION_SOLINC*(i) indices in NODE sol_increment
+\param  actsolv     SOLVAR*         (io)   solution variables
+\param  numeq_total INT*            (o)    total number of equations
+\param  numeq       INT*            (o)    number of equations
+\param  stiff_array INT*            (o)    tangent array index
+\param  mass_array  INT*            (o)    mass array index
+\param  damp_array  INT*            (o)    damp array index
+\param  actdyn      STRUCT_DYNAMIC* (i)    structure dyn. control
+\param  dynvar      STRUCT_DYN_CALC*(i)    dynamic variables
+\param  container   CONTAINER*      (i)    container
+\param  out_context BIN_OUT_FIELD*  (io)   BINIO context
+\param  dispi_num   INT             (i)    number of dispi vectors
+\param  dispi       DIST_VECTOR**   (io)   dispi vectors
+\param  vel_num     INT             (i)    number of vel vectors
+\param  vel         DIST_VECTOR**   (io)   velocity vectors
+\param  acc_num     INT             (i)    number of acc vectors
+\param  acc         DIST_VECTOR**   (io)   acceleration vectors
+\param  fie_num     INT             (i)    number of fie vectors
+\param  fie         DIST_VECTOR**   (io)   internal force vectors
+\param  work_num    INT             (i)    number of work vectors
+\param  work        DIST_VECTOR**   (io)   working vectors
+\param  intforce_a  ARRAY*          (io)   global int. force vector
+\param  dirich_a    ARRAY*          (io)   Dirichlet RHS contribution
 \author bborn
 \date 05/07
 */
@@ -479,6 +509,28 @@ void tsi_st_genalp_init(PARTITION* actpart,
 /*======================================================================*/
 /*!
 \brief Implicit predictor
+\param  actpart     PARTITION*      (io)   partition
+\param  actintra    INTRA*          (i)    intra-communicator
+\param  actfield    FIELD           (i)    thermal field
+\param  disnum      INT             (i)    discretisation index
+\param  isol        ARRAY_POSITION_SOL*(i) indices in NODE sol arrays
+\param  isolinc     ARRAY_POSITION_SOLINC*(i) indices in NODE sol_increment
+\param  isolres     ARRAY_POSITION_SOLRES*(i) indices in NODE sol_residual
+\param  actsolv     SOLVAR*         (io)   solution variables
+\param  numeq_total INT             (i)    total number of equations
+\param  stiff_array INT             (i)    tangent array index
+\param  mass_array  INT             (i)    mass array index
+\param  damp_array  INT             (i)    damp array index
+\param  actdyn      STRUCT_DYNAMIC* (i)    structure dyn. control
+\param  dynvar      STRUCT_DYN_CALC*(i)    dynamic variables
+\param  container   CONTAINER*      (i)    container
+\param  dispi       DIST_VECTOR*    (io)   dispi vectors
+\param  vel         DIST_VECTOR*    (io)   velocity vectors
+\param  acc         DIST_VECTOR*    (io)   acceleration vectors
+\param  fie         DIST_VECTOR*    (io)   internal force vectors
+\param  work        DIST_VECTOR*    (io)   working vectors
+\param  intforce_a  ARRAY*          (io)   global int. force vector
+\param  dirich_a    ARRAY*          (io)   Dirichlet RHS contribution
 \author bborn
 \date 05/07
 */
@@ -744,6 +796,28 @@ void tsi_st_genalp_pred(PARTITION* actpart,
 /*======================================================================*/
 /*!
 \brief Equilibrium iteration
+\param  actpart     PARTITION*      (io)   partition
+\param  actintra    INTRA*          (i)    intra-communicator
+\param  actfield    FIELD           (i)    thermal field
+\param  disnum      INT             (i)    discretisation index
+\param  isol        ARRAY_POSITION_SOL*(i) indices in NODE sol arrays
+\param  isolinc     ARRAY_POSITION_SOLINC*(i) indices in NODE sol_increment
+\param  isolres     ARRAY_POSITION_SOLRES*(i) indices in NODE sol_residual
+\param  actsolv     SOLVAR*         (io)   solution variables
+\param  numeq       INT             (i)    number of equations
+\param  stiff_array INT             (i)    tangent array index
+\param  mass_array  INT             (i)    mass array index
+\param  damp_array  INT             (i)    damp array index
+\param  actdyn      STRUCT_DYNAMIC* (i)    structure dyn. control
+\param  dynvar      STRUCT_DYN_CALC*(i)    dynamic variables
+\param  container   CONTAINER*      (i)    container
+\param  dispi       DIST_VECTOR*    (io)   dispi vectors
+\param  vel         DIST_VECTOR*    (io)   velocity vectors
+\param  acc         DIST_VECTOR*    (io)   acceleration vectors
+\param  fie         DIST_VECTOR*    (io)   internal force vectors
+\param  work        DIST_VECTOR*    (io)   working vectors
+\param  intforce_a  ARRAY*          (io)   global int. force vector
+\param  dirich_a    ARRAY*          (io)   Dirichlet RHS contribution
 \author bborn
 \date 05/07
 */
@@ -945,8 +1019,15 @@ void tsi_st_genalp_equi(PARTITION* actpart,
 /*======================================================================*/
 /*!
 \brief Check convergence
+\brief Update increment
+\param  actintra    INTRA*          (i)    intra-communicator
+\param  actdyn      STRUCT_DYNAMIC* (i)    structure dyn. control
+\param  dynvar      STRUCT_DYN_CALC*(i)    dynamic variables
+\param  dispi       DIST_VECTOR*    (i)    incremental displ. increment
+\param  work        DIST_VECTOR*    (i)    iterative displ. increment
+\param  mod_stdout  INT             (i)    print to STDOUT if 0
+\param  converged   INT*            (o)    converged: 1=TRUE,0=FALSE
 \author bborn
-\date 05/07
 */
 void tsi_st_genalp_chkcnv(INTRA* actintra,
                           STRUCT_DYNAMIC* actdyn,
@@ -1002,6 +1083,23 @@ void tsi_st_genalp_chkcnv(INTRA* actintra,
 /*======================================================================*/
 /*!
 \brief Update increment
+\param  actpart     PARTITION*      (io)   partition
+\param  actintra    INTRA*          (i)    intra-communicator
+\param  actfield    FIELD           (i)    thermal field
+\param  disnum      INT             (i)    discretisation index
+\param  isol        ARRAY_POSITION_SOL*(i) indices in NODE sol arrays
+\param  isolinc     ARRAY_POSITION_SOLINC*(i) indices in NODE sol_increment a.
+\param  actsolv     SOLVAR*         (io)   solution variables
+\param  mass_array  INT             (i)    mass array index
+\param  stiff_array INT             (i)    tangent array index
+\param  actdyn      STRUCT_DYNAMIC* (i)    structure dyn. control
+\param  dynvar      STRUCT_DYN_CALC*(i)    dynamic variables
+\param  container   CONTAINER*      (i)    container
+\param  dispi       DIST_VECTOR*    (io)   dispi vectors
+\param  vel         DIST_VECTOR*    (io)   velocity vectors
+\param  acc         DIST_VECTOR*    (io)   acceleration vectors
+\param  fie         DIST_VECTOR*    (io)   internal force vectors
+\param  work        DIST_VECTOR*    (io)   working vectors
 \author bborn
 \date 05/07
 */
@@ -1174,13 +1272,36 @@ void tsi_st_genalp_updincr(PARTITION* actpart,
 /*======================================================================*/
 /*!
 \brief Output
+\param  actpart     PARTITION*      (io)   partition
+\param  actintra    INTRA*          (i)    intra-communicator
+\param  actfield    FIELD           (i)    thermal field
+\param  disnum      INT             (i)    discretisation index
+\param  isol        ARRAY_POSITION_SOL*(i) indices in NODE sol arrays
+\param  actsolv     SOLVAR*         (io)   solution variables
+\param  stiff_array INT             (i)    tangent array index
+\param  actdyn      STRUCT_DYNAMIC* (i)    structure dyn. control
+\param  dynvar      STRUCT_DYN_CALC*(i)    dynamic variables
+\param  container   CONTAINER*      (i)    container
+\param  out_context BIN_OUT_FIELD*  (io)   BINIO context
+\param  dispi_num   INT             (i)    number of dispi vectors
+\param  dispi       DIST_VECTOR*    (io)   dispi vectors
+\param  vel_num     INT             (i)    number of vel vectors
+\param  vel         DIST_VECTOR*    (io)   velocity vectors
+\param  acc_num     INT             (i)    number of acc vectors
+\param  acc         DIST_VECTOR*    (io)   acceleration vectors
+\param  fie_num     INT             (i)    number of fie vectors
+\param  fie         DIST_VECTOR*    (io)   internal force vectors
+\param  work_num    INT             (i)    number of work vectors
+\param  work        DIST_VECTOR*    (io)   working vectors
+\param  intforce_a  ARRAY*          (io)   global int. force vector
+\param  dirich_a    ARRAY*          (io)   Dirichlet RHS contribution
 \author bborn
 \date 05/07
 */
 void tsi_st_genalp_out(PARTITION* actpart,
                        INTRA* actintra,
                        FIELD* actfield,
-                       INT disnum_s,
+                       INT disnum,
                        ARRAY_POSITION_SOL* isol,
                        SOLVAR* actsolv,
                        INT stiff_array,
@@ -1204,7 +1325,6 @@ void tsi_st_genalp_out(PARTITION* actpart,
                        ARRAY* dirich_a)
 {
   const INT timeadapt = 0;  /* no time step adaptivity */
-  INT disnum = disnum_s;
   INT mod_disp;  /* indicate whether to print displacements */
   INT mod_stress;  /* indicate whether to print stresses */
   INT mod_stdout;  /* indicates whether to write to STDOUT */
@@ -1282,15 +1402,15 @@ void tsi_st_genalp_out(PARTITION* actpart,
   {
     if ( (mod_disp == 0) && (ioflags.struct_disp == 1) )
     {
-      out_gid_soldyn("displacement", actfield, disnum_s, actintra, 
+      out_gid_soldyn("displacement", actfield, disnum, actintra, 
                      actdyn->step, 0, actdyn->time);
-      /*out_gid_soldyn("velocity",actfield,disnum_s,actintra,actdyn->step,1,actdyn->time);*/
-      /*out_gid_soldyn("accelerations",actfield,disnum_s,actintra,actdyn->step,2,actdyn->time);*/
+      /*out_gid_soldyn("velocity",actfield,disnum,actintra,actdyn->step,1,actdyn->time);*/
+      /*out_gid_soldyn("accelerations",actfield,disnum,actintra,actdyn->step,2,actdyn->time);*/
     }  /* end of if */
     if ( (mod_stress == 0) && (ioflags.struct_stress == 1) )
     {
       /* change hard-coded 0==place ??? */
-      out_gid_soldyn("stress", actfield, disnum_s, actintra, 
+      out_gid_soldyn("stress", actfield, disnum, actintra, 
                      actdyn->step, 0, actdyn->time);
     }
   }
@@ -1337,10 +1457,27 @@ void tsi_st_genalp_out(PARTITION* actpart,
 /*======================================================================*/
 /*!
 \brief Finalise generalised-alpha for structural dynamics
+\param  actsolv     SOLVAR*         (io)   solution variables
+\param  out_context BIN_OUT_FIELD*  (io)   BINIO context
+\param  dispi_num   INT             (i)    number of dispi vectors
+\param  dispi       DIST_VECTOR**   (io)   dispi vectors
+\param  vel_num     INT             (i)    number of vel vectors
+\param  vel         DIST_VECTOR**   (io)   velocity vectors
+\param  acc_num     INT             (i)    number of acc vectors
+\param  acc         DIST_VECTOR**   (io)   acceleration vectors
+\param  fie_num     INT             (i)    number of fie vectors
+\param  fie         DIST_VECTOR**   (io)   internal force vectors
+\param  work_num    INT             (i)    number of work vectors
+\param  work        DIST_VECTOR**   (io)   working vectors
+\param  intforce_a  ARRAY*          (io)   global int. force vector
+\param  dirich_a    ARRAY*          (io)   Dirichlet RHS contribution
 \author bborn
 \date 05/07
 */
 void tsi_st_genalp_final(SOLVAR* actsolv,
+#ifdef BINIO
+                         BIN_OUT_FIELD* out_context,
+#endif
 			 const INT dispi_num,
 			 DIST_VECTOR** dispi,
 			 const INT vel_num,
@@ -1370,6 +1507,10 @@ void tsi_st_genalp_final(SOLVAR* actsolv,
   solserv_del_vec(work, work_num);
   amdel(intforce_a);
   amdel(dirich_a);
+  /* clean BINIO */
+#ifdef BINIO
+  destroy_bin_out_field(out_context);
+#endif
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -1381,7 +1522,9 @@ void tsi_st_genalp_final(SOLVAR* actsolv,
 /*======================================================================*/
 /*!
 \brief Generalised-alpha time integration of structural field
-
+       Modularised
+\param   disnum_s     INT    (i)   index of structural discretisation
+\param   disnum_t     INT    (i)   index of thermal discretisation
 \author bborn
 \date 03/06
 */
@@ -1781,10 +1924,7 @@ void tsi_st_genalp_sub(INT disnum_s,
                       &(intforce_a),
                       &(dirich_a));
 
-  /* clean BINIO */
-#ifdef BINIO
-  destroy_bin_out_field(&out_context);
-#endif
+
   /* clean PARALLEL */
 #ifndef PARALLEL
   CCAFREE(actintra);

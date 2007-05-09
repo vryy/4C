@@ -20,7 +20,9 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 /* header files */
 #include "../headers/standardtypes.h"
+#ifdef BINIO
 #include "../io/io.h"
+#endif
 #include "../solver/solver.h"
 #include "tsi_prototypes.h"
 

@@ -724,6 +724,7 @@ OBJS_TSI      = src/tsi_full/tsi_coupling.o \
                 src/tsi_full/tsi_st_fehlbg.o \
                 src/tsi_full/tsi_st_genalp.o \
                 src/tsi_full/tsi_st_genalp_sub.o \
+                src/tsi_full/tsi_th_presc_st_genalp.o \
                 src/tsi_full/tsi_th_stat.o \
                 src/tsi_full/tsi_th_stat_sub.o
 #               planar thermal

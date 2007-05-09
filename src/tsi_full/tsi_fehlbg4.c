@@ -22,6 +22,7 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 /* header files */
 #include "../headers/standardtypes.h"
+#include "tsi_prototypes.h"
 #include "tsi_fehlbg4.h"
 
 /*======================================================================*/

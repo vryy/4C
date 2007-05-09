@@ -23,8 +23,10 @@ Maintainer: Burkhard Bornemann
 /* header files */
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
+#ifdef BINIO
 #include "../io/io.h"
-
+#endif
+#include "tsi_prototypes.h"
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -215,7 +217,6 @@ void tsi_th_stat(INT disnum_s,
   FIELD* actfield;  /* pointer to the thermal FIELD */
   INTRA* actintra;  /* pointer to the fields intra-communicator structure */
   CALC_ACTION *action;  /* pointer to the structures cal_action enum */
-  INT actcurve;  /* index of active time curve */
 
   DOUBLE timcur;  /* current time */
   DOUBLE timstp;  /* current time step */

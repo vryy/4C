@@ -25,7 +25,7 @@ Maintainer: Burkhard Bornemann
 #ifdef BINIO
 #include "../io/io.h"
 #endif
-
+#include "tsi_prototypes.h"
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -149,7 +149,17 @@ extern CALC_ACTION calc_action[MAXFIELD];
 
 /*======================================================================*/
 /*!
-\brief Initialise
+\brief Initialise thermal field
+\param   actpart      PARTITION*   (i)   partition
+\param   actintra     INTRA*       (i)   intra-communicator
+\param   actfield     FIELD        (i)   thermal field
+\param   disnum       INT          (i)   discretisation index
+\param   actsolv      SOLVAR*      (io)  solution variables
+\param   numeq        INT*         (o)   number of equations
+\param   numeq_total  INT*         (o)   total number of equations
+\param   actsysarray  INT*         (o)   tangent array index
+\param   container    CONTAINER*   (i)   container
+\param   dirich_a     ARRAY*       (o)   Dirich. RHS contribution
 \author bborn
 \date 05/07
 */
@@ -261,6 +271,18 @@ void tsi_th_stat_init(PARTITION* actpart,
 /*======================================================================*/
 /*!
 \brief Equilibrium
+\param   actpart      PARTITION*   (i)   partition
+\param   actintra     INTRA*       (i)   intra-communicator
+\param   actfield     FIELD        (i)   thermal field
+\param   disnum       INT          (i)   discretisation index
+\param   actsolv      SOLVAR*      (io)  solution variables
+\param   isol         ARRAY_POSITION_SOL* (i) indices in NODE sol arrays
+\param   numeq        INT          (i)   number of equations
+\param   numeq_total  INT          (i)   total number of equations
+\param   actsysarray  INT          (i)   tangent array index
+\param   actdyn       THERM_DYNAMIC* (i) thermal control
+\param   container    CONTAINER*   (i)   container
+\param   dirich_a     ARRAY*       (o)   Dirich. RHS contribution
 \author bborn
 date 05/07
 */
@@ -268,7 +290,7 @@ void tsi_th_stat_equi(PARTITION* actpart,
                       INTRA* actintra,
                       FIELD* actfield,
                       INT disnum,
-                      ARRAY_POSITION_SOL *isol,
+                      ARRAY_POSITION_SOL* isol,
                       SOLVAR* actsolv,
                       INT numeq,
                       INT numeq_total,
@@ -352,6 +374,15 @@ void tsi_th_stat_equi(PARTITION* actpart,
 /*======================================================================*/
 /*!
 \brief Output
+\param   actpart      PARTITION*   (io)  partition
+\param   actintra     INTRA*       (i)   intra-communicator
+\param   actfield     FIELD        (i)   thermal field
+\param   disnum       INT          (i)   discretisation index
+\param   actsolv      SOLVAR*      (i)  solution variables
+\param   isol         ARRAY_POSITION_SOL* (i) indices in NODE sol arrays
+\param   actsysarray  INT          (i)   tangent array index
+\param   actdyn       THERM_DYNAMIC* (i) thermal control
+\param   container    CONTAINER*   (i)   container
 \author bborn
 \date 05/07
 */
@@ -359,7 +390,7 @@ void tsi_th_stat_out(PARTITION* actpart,
                      INTRA* actintra,
                      FIELD* actfield,
                      INT disnum,
-                     ARRAY_POSITION_SOL *isol,
+                     ARRAY_POSITION_SOL* isol,
                      SOLVAR* actsolv,
                      INT actsysarray,
                      THERM_DYNAMIC* actdyn,
@@ -448,6 +479,9 @@ void tsi_th_stat_out(PARTITION* actpart,
 /*======================================================================*/
 /*!
 \brief Finalise
+\param   actsolv      SOLVAR*        (io)  solution variables
+\param   out_context  BIN_OUT_FIELD* (io)  BINIO context
+\param   dirich_a     ARRAY*         (io)  Dirichlet RHS contribution
 \author bborn
 \date 05/07
 */
@@ -487,6 +521,9 @@ void tsi_th_stat_final(SOLVAR* actsolv,
 /*======================================================================*/
 /*!
 \brief Static iso-thermal solution of thermal field
+       Modularised
+\param   disnum_s     INT    (i)   index of structural discretisation
+\param   disnum_t     INT    (i)   index of thermal discretisation
 \author bborn
 \date 03/06
 */
@@ -509,9 +546,9 @@ void tsi_th_stat_sub(INT disnum_s,
    * of one of the actfield->ndis discretisations.
    * Simply said: disnum != n(um)dis */
   /* named positions of NODE sol etc. arrays */
-  ARRAY_POSITION *ipos = &(actfield->dis[disnum_t].ipos);
+  ARRAY_POSITION* ipos = &(actfield->dis[disnum_t].ipos);
   /* named positions (indices) of NODE sol array */
-  ARRAY_POSITION_SOL *isol = &(ipos->isol);
+  ARRAY_POSITION_SOL* isol = &(ipos->isol);
 
   /* solution variable */
   SOLVAR* actsolv = &(solv[numtf]);  /* pointer to field SOLVAR */
@@ -549,6 +586,7 @@ void tsi_th_stat_sub(INT disnum_s,
   printf("==============================================================="
          "=========\n");
   printf("TSI quasi static thermal solution routine reached.\n");
+  printf("SUB TYPE\n");
   printf("---------------------------------------------------------------"
          "---------\n");
 
