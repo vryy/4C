@@ -1916,6 +1916,9 @@ void tsi_st_genalp_sub(INT disnum_s,
   /*====================================================================*/
   /* deallocate stuff */
   tsi_st_genalp_final(actsolv,
+#ifdef BINIO
+                      &(out_context),
+#endif
                       dispi_num, &(dispi),
                       vel_num, &(vel),
                       acc_num, &(acc),

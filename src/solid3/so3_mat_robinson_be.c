@@ -181,9 +181,9 @@ void so3_mat_robinson_be_sel(const CONTAINER* container,
                              DOUBLE stress[NUMSTR_SOLID3],
                              DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3])
 {
-  const INT itsidyn = genprob.numfld;  /* index of TSI dynamics data */
-  const TSI_DYNAMIC* tsidyn = alldyn[itsidyn].tsidyn;  /* TSI dynamics data */
-  const DOUBLE dt = tsidyn->dt;  /* time step size */
+  const INT isdyn = genprob.numsf;  /* index of structure dynamics data */
+  const STRUCT_DYNAMIC* sdyn = alldyn[isdyn].sdyn;  /* struct. dynamics data */
+  const DOUBLE dt = sdyn->dt;  /* time step size */
 
   DOUBLE tempr;  /* temperature */
 

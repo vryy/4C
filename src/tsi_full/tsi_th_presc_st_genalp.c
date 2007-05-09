@@ -634,6 +634,9 @@ void tsi_th_presc_st_genalp(INT disnum_s,
   /*====================================================================*/
   /* deallocate structure stuff */
   tsi_st_genalp_final(solv_s,
+#ifdef BINIO
+                      &(out_context_s),
+#endif
                       dispi_num, &(dispi),
                       vel_num, &(vel),
                       acc_num, &(acc),
