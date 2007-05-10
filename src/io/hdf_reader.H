@@ -30,13 +30,13 @@ Maintainer: Ulrich Kuettler
 #include <mpi.h>
 #endif
 
-#include "../discret/drt_discret.H"
+#include "../drt_lib/drt_discret.H"
 #include "Teuchos_RefCountPtr.hpp"
 
 extern "C" {
 #include "../headers/standardtypes.h"
 }
-#include "../discret/dstrc.H"
+#include "../drt_lib/dstrc.H"
 
 #ifdef PARALLEL
 #include <Epetra_MpiComm.h>

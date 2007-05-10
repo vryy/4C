@@ -21,7 +21,7 @@ Maintainer: Ulrich Kuettler
 #include <string>
 
 #include "io_drt.H"
-#include "../discret/linalg_utils.H"
+#include "../drt_lib/linalg_utils.H"
 
 using namespace std;
 

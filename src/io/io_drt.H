@@ -19,7 +19,7 @@ Maintainer: Ulrich Kuettler
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
-#include "../discret/drt_discret.H"
+#include "../drt_lib/drt_discret.H"
 #include "Teuchos_RefCountPtr.hpp"
 #include "io.h"
 #include "hdf_reader.H"
@@ -33,7 +33,7 @@ extern "C" {
 #include "../pss_full/pss_table.h"
 }
 
-#include "../discret/dstrc.H" /* needs standardtypes.h */
+#include "../drt_lib/dstrc.H" /* needs standardtypes.h */
 
 
 /*!
