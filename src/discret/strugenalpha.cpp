@@ -680,7 +680,7 @@ void StruGenAlpha::NonlinearCG()
   double alpham    = params_.get<double>("alpha m"                ,0.378);
   double alphaf    = params_.get<double>("alpha f"                ,0.459);
   double toldisp   = params_.get<double>("tolerance displacements",1.0e-07);
-  bool printscreen = params_.get<bool>  ("print to screen",true);
+  //bool printscreen = params_.get<bool>  ("print to screen",true);
   bool printerr    = params_.get<bool>  ("print to err",false);
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
   if (!errfile) printerr = false;
