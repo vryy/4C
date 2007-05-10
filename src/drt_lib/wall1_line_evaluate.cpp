@@ -163,7 +163,7 @@ int DRT::Elements::Wall1Line::EvaluateNeumann(ParameterList& params,
           xjm[i][j] += deriv(i,k)*xrefe[j][k];
       }
      // ds = |g1| in dir=0 and ds = |g2| in dir=1
-    double ds = sqrt(xjm[dir][0]*xjm[dir][0]+xjm[dir][1]*xjm[dir][1]+xjm[dir][2]*xjm[dir][2]);
+    double ds = sqrt(xjm[dir][0]*xjm[dir][0]+xjm[dir][1]*xjm[dir][1]);
     // load vector ar
     double ar[2];
     // loop the dofs of a node
@@ -176,6 +176,7 @@ int DRT::Elements::Wall1Line::EvaluateNeumann(ParameterList& params,
       {
          elevec1[node*numdf+j] += funct[lnode[node]] *ar[j];
       }
+ 
   } // for (int gp=0; gp<ngp; ++gp)
 
 

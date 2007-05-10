@@ -365,11 +365,36 @@ private:
                   const int iel);
 
   void w1_boplin_cure(Epetra_SerialDenseMatrix& b_cure,
-                      Epetra_SerialDenseMatrix& int_b_cure,
                       Epetra_SerialDenseMatrix& boplin,
-                      Epetra_SerialDenseMatrix&F,
+                      Epetra_SerialDenseVector& F,
                       int numeps,
-                      int nd);  				    
+                      int nd);  
+
+  void w1_call_matgeononl(Epetra_SerialDenseVector& strain,
+                          Epetra_SerialDenseMatrix& stress,
+                          Epetra_SerialDenseMatrix& C,                    
+                          const int numeps,
+                          struct _MATERIAL* material);
+
+  void w1_kg(Epetra_SerialDenseMatrix& kg,
+             Epetra_SerialDenseMatrix& boplin,
+             Epetra_SerialDenseMatrix& stress,
+             double fac,
+             int nd,
+             int numeps);
+
+  void w1_keu(Epetra_SerialDenseMatrix& keu,
+              Epetra_SerialDenseMatrix& b_cure,
+              Epetra_SerialDenseMatrix& C,
+              double fac,
+              int nd,
+              int numeps);  
+  
+  void w1_fint(Epetra_SerialDenseMatrix& stress,
+               Epetra_SerialDenseMatrix& b_cure,
+               Epetra_SerialDenseVector& intforce,
+               double fac,
+               int nd);				    
 
   // don't want = operator
   Wall1& operator = (const Wall1& old);

@@ -98,6 +98,11 @@ int DRT::Elements::Wall1::Evaluate(ParameterList& params,
       w1_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,actmat);
     }
     break;
+    case calc_struct_update_istep:
+    {
+      ;// there is nothing to do here at the moment
+    }
+    break;
     default:
       dserror("Unknown type of action for Wall1 %d", act);
   }
@@ -143,8 +148,6 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
   xjm.Shape(2,2);
   Epetra_SerialDenseMatrix boplin;
   boplin.Shape(4,2*numnode);
-  Epetra_SerialDenseVector intforce;
-  intforce.Size(nd);
   Epetra_SerialDenseVector F;
   F.Size(4);
   Epetra_SerialDenseVector strain;
@@ -155,17 +158,19 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
   const int numeps = 4;
   Epetra_SerialDenseMatrix b_cure;
   b_cure.Shape(numeps,nd);
-  Epetra_SerialDenseMatrix int_b_cure;
-  int_b_cure.Shape(numeps,nd); 
-
+  Epetra_SerialDenseMatrix stress;
+  stress.Shape(4,4); 
+  Epetra_SerialDenseMatrix C;
+  C.Shape(4,4);
+  Epetra_SerialDenseMatrix kg;
+  kg.Shape(nd,nd);
+  Epetra_SerialDenseMatrix keu;
+  keu.Shape(nd,nd);            
+  
   // gaussian points
   W1_DATA w1data;
   w1_integration_points(w1data);
   
-  //thickness_ = 5; //data_.Get<vector<double> >("thick");
-  //if (!thickness_) dserror("Cannot find nodal thicknesses");
-  
-
   // ------------------------------------ check calculation of mass matrix
   int imass=0;
   double density=0.0;
@@ -229,14 +234,31 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
      w1_defgrad(F,strain,xrefe,xcure,boplin,iel);
 
      /*-calculate defgrad F in matrix notation and Blin in curent conf.*/
-     w1_boplin_cure(b_cure,int_b_cure,boplin,F,numeps,nd);
+     w1_boplin_cure(b_cure,boplin,F,numeps,nd);
+     /*------------------------------------------ call material law ---*/
+     w1_call_matgeononl(strain,stress,C,numeps,material);
+     /*---------------------- geometric part of stiffness matrix kg ---*/
+     w1_kg(kg,boplin,stress,fac,nd,numeps);
+     /*------------------ elastic+displacement stiffness matrix keu ---*/
+     w1_keu(keu,b_cure,C,fac,nd,numeps);
+     /*------------------------------- stiffness matrix keug=keu+kg ---*/
+      for (int a=0; a<nd; a++)
+      {
+         for (int b=0; b<nd; b++)
+         {
+           (*stiffmatrix)(a,b) = kg[a][b] + keu[a][b];
+         }
+       }
+     /*--------------- nodal forces fi from integration of stresses ---*/
+       if (force) w1_fint(stress,b_cure,*force,fac,nd);
 
-
-     cout << F; exit(0);
+//    cout << "(" << facr << "," << facs << ")" << *force;
       
       ngauss++;
     } // for (int ls=0; ls<nis; ++ls)
   } // for (int lr=0; lr<nir; ++lr)
+
+//cout << *force; exit(0);
 
   return;
 }
@@ -670,8 +692,8 @@ void DRT::Elements::Wall1::w1_defgrad(Epetra_SerialDenseVector& F,
      F[3] += boplin(3,2*inode+1) * (xcure[1][inode] - xrefe[1][inode]);
   } /* end of loop over nodes */
   /*-----------------------calculate Green-Lagrange strain ---------------*/
-  strain[0]=0.5 * (F[0] * F[0] + F[3] * F[3] - 1);
-  strain(1)=0.5 * (F[2] * F[2] + F[1] * F[1] - 1);
+  strain[0]=0.5 * (F[0] * F[0] + F[3] * F[3] - 1.0);
+  strain[1]=0.5 * (F[2] * F[2] + F[1] * F[1] - 1.0);
   strain[2]=0.5 * (F[0] * F[2] + F[3] * F[1]);
   strain[3]=strain[2];
 
@@ -687,16 +709,242 @@ void DRT::Elements::Wall1::w1_defgrad(Epetra_SerialDenseVector& F,
  *----------------------------------------------------------------------*/
 
 void DRT::Elements::Wall1::w1_boplin_cure(Epetra_SerialDenseMatrix& b_cure,
-                                          Epetra_SerialDenseMatrix& int_b_cure,
                                           Epetra_SerialDenseMatrix& boplin,
-                                          Epetra_SerialDenseMatrix&F,
+                                          Epetra_SerialDenseVector& F,
                                           int numeps,
                                           int nd) 
 {
+
+   
+     Epetra_SerialDenseMatrix Fmatrix;
+     Fmatrix.Shape(4,4); 
+        
+
+  /*---------------------------write Vector F as a matrix Fmatrix*/
+
+     Fmatrix(0,0) = F[0];
+     Fmatrix(0,2) = 0.5 * F[2];
+     Fmatrix(0,3) = 0.5 * F[2];
+     Fmatrix(1,1) = F[1];
+     Fmatrix(1,2) = 0.5 * F[3];
+     Fmatrix(1,3) = 0.5 * F[3];
+     Fmatrix(2,1) = F[2];
+     Fmatrix(2,2) = 0.5 * F[0];
+     Fmatrix(2,3) = 0.5 * F[0];
+     Fmatrix(3,0) = F[3];
+     Fmatrix(3,2) = 0.5 * F[1];
+     Fmatrix(3,3) = 0.5 * F[1];
+    /*-------------------------------------------------int_b_cure operator*/
+      memset(b_cure.A(),0,b_cure.N()*b_cure.M()*sizeof(double));
+      for(int i=0; i<numeps; i++)
+        for(int j=0; j<nd; j++)
+          for(int k=0; k<numeps; k++)
+          b_cure(i,j) += Fmatrix(k,i)*boplin(k,j);
+    /*----------------------------------------------------------------*/
+    
   return;
 }  
 
 /* DRT::Elements::Wall1::w1_boplin_cure */
+
+/*----------------------------------------------------------------------*
+ | Constitutive matrix C and stresses (private)                mgit 05/07|
+ *----------------------------------------------------------------------*/
+
+void DRT::Elements::Wall1::w1_call_matgeononl(Epetra_SerialDenseVector& strain,
+                                              Epetra_SerialDenseMatrix& stress,
+                                              Epetra_SerialDenseMatrix& C,                                   
+                                              const int numeps,
+                                              struct _MATERIAL* material)
+                                     
+{
+  /*--------------------------- call material law -> get tangent modulus--*/
+    switch(material->mattyp)
+    {
+    case m_stvenant:/*--------------------------------- linear elastic ---*/
+    {
+      double ym = material->m.stvenant->youngs;  
+      double pv = material->m.stvenant->possionratio;
+ 
+
+  /*-------------- some comments, so that even fluid people are able to
+     understand this quickly :-)
+     the "strain" vector looks like:
+
+         | EPS_xx |
+         | EPS_yy |
+         | EPS_xy |
+         | EPS_yx |
+
+  */
+  /*---------------------------------material-tangente-- plane stress ---*/
+    switch(wtype_)
+    {
+    case plane_stress:
+      {
+      double e1=ym/(1. - pv*pv);
+      double e2=pv*e1;
+      double e3=e1*(1. - pv)/2.;
+
+      C(0,0)=e1;
+      C(0,1)=e2;
+      C(0,2)=0.;
+      C(0,3)=0.;
+
+      C(1,0)=e2;
+      C(1,1)=e1;
+      C(1,2)=0.;
+      C(1,3)=0.;
+
+      C(2,0)=0.;
+      C(2,1)=0.;
+      C(2,2)=e3;
+      C(2,3)=e3;
+
+      C(3,0)=0.;
+      C(3,1)=0.;
+      C(3,2)=e3;
+      C(3,3)=e3;
+      }
+      break; 
+      default:
+     /*----------- material-tangente - plane strain, rotational symmetry ---*/
+      {
+      double c1=ym/(1.0+pv);
+      double b1=c1*pv/(1.0-2.0*pv);
+      double a1=b1+c1;
+
+      C(0,0)=a1;
+      C(0,1)=b1;
+      C(0,2)=0.;
+      C(0,3)=0.;
+
+      C(1,0)=b1;
+      C(1,1)=a1;
+      C(1,2)=0.;
+      C(1,3)=0.;
+
+      C(2,0)=0.;
+      C(2,1)=0.;
+      C(2,2)=c1/2.;
+      C(2,3)=c1/2.;
+
+      C(3,0)=0.;
+      C(3,1)=0.;
+      C(3,2)=c1/2;
+      C(3,3)=c1/2;
+      }    
+     }
+  /*-------------------------- evaluate 2.PK-stresses -------------------*/
+  /*------------------ Summenschleife -> += (2.PK stored as vecor) ------*/
+  
+  Epetra_SerialDenseVector svector;
+  svector.Size(4);
+
+  for (int k=0; k<3; k++)
+  {
+        for (int i=0; i<numeps; i++)
+    {
+       svector[k] += C[k][i] * strain[i];
+    } 
+  }
+  /*------------------ 2.PK stored as matrix -----------------------------*/
+  stress(0,0)=svector[0];
+  stress(0,2)=svector[2];
+  stress(1,1)=svector[1];
+  stress(1,3)=svector[2];
+  stress(2,0)=svector[2];
+  stress(2,2)=svector[1];
+  stress(3,1)=svector[2];
+  stress(3,3)=svector[0];
+
+  }    
+     
+    break;
+    default:
+    dserror(" unknown type of material law");
+    } 
+
+  return;
+}  
+
+/* DRT::Elements::Wall1::w1_call_matgeononl */
+
+
+/*----------------------------------------------------------------------*
+| geometric stiffness part (total lagrange)                   mgit 05/07|
+*----------------------------------------------------------------------*/
+
+void DRT::Elements::Wall1::w1_kg(Epetra_SerialDenseMatrix& kg,
+                                 Epetra_SerialDenseMatrix& boplin,
+                                 Epetra_SerialDenseMatrix& stress,
+                                 double fac,
+                                 int nd,
+                                 int numeps) 
+{
+  /*---------------------------------------------- perform B^T * SIGMA * B*/
+  for(int i=0; i<nd; i++)
+     for(int j=0; j<nd; j++)
+      for(int r=0; r<numeps; r++)
+         for(int m=0; m<numeps; m++)
+            kg(i,j) += boplin(r,i)*stress(r,m)*boplin(m,j)*fac;
+
+  return;
+}  
+
+/* DRT::Elements::Wall1::w1_kg */
+
+/*----------------------------------------------------------------------*
+| elastic and initial displacement stiffness (total lagrange)  mgit 05/07                   mgit 05/07|
+*----------------------------------------------------------------------*/
+
+void DRT::Elements::Wall1::w1_keu(Epetra_SerialDenseMatrix& keu,
+                                  Epetra_SerialDenseMatrix& b_cure,
+                                  Epetra_SerialDenseMatrix& C,
+                                  double fac,
+                                  int nd,
+                                  int numeps) 
+{
+  /*------------- perform B_cure^T * D * B_cure, whereas B_cure = F^T * B */
+  for(int i=0; i<nd; i++)
+     for(int j=0; j<nd; j++)
+        for(int k=0; k<numeps; k++)
+           for(int m=0; m<numeps; m++)
+
+            keu(i,j) +=  b_cure(k,i)*C(k,m)*b_cure(m,j)*fac;
+
+  return;
+}  
+
+/* DRT::Elements::Wall1::w1_keu */
+
+/*----------------------------------------------------------------------*
+ | evaluate internal element forces for large def (total Lagr) mgit 05/07  |
+ *----------------------------------------------------------------------*/
+
+void DRT::Elements::Wall1::w1_fint(Epetra_SerialDenseMatrix& stress,
+                                   Epetra_SerialDenseMatrix& b_cure,
+                                   Epetra_SerialDenseVector& intforce,
+                                   double fac,
+                                   int nd)
+                                 
+{
+  Epetra_SerialDenseVector st;
+  st.Size(4);
+
+  st[0] = fac * stress(0,0);
+  st[1] = fac * stress(1,1);
+  st[2] = fac * stress(0,2);
+  st[3] = fac * stress(0,2);
+
+  for(int i=0; i<nd; i++)
+    for(int j=0; j<4; j++)
+      intforce[i] += b_cure(j,i)*st[j];
+ 
+  return;
+}  
+
+/* DRT::Elements::Wall1::w1_fint */
 
 
 
