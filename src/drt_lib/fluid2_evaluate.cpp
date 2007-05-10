@@ -362,7 +362,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
 
 	 xi = DMAX(re,1.0);
 
-	 tau[0] = (DSQR(hk)*mk)/(4.0*visc*xi);
+	 tau[0] = 0.5*(DSQR(hk)*mk)/(4.0*visc*xi);
 
 	 /*------------------------------------------------------ compute tau_C ---*/
 	 /*-- stability parameter definition according to Codina (2002), CMAME 191 */
