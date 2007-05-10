@@ -15,7 +15,7 @@ Maintainer: Michael Gee
 #include "../fluid_full/fluid_prototypes.h"
 #include "../fsi_full/fsi_prototypes.h"
 #ifdef CCADISCRET
-#include "../discret/stru_dyn_nln_drt.H"
+#include "../drt_lib/stru_dyn_nln_drt.H"
 #endif
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
