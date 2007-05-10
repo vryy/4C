@@ -16,7 +16,7 @@ extern "C"
   \brief Simplify dstrc_enter and dstrc_exit calls in c++
  */
 /*----------------------------------------------------------------------*/
-#include "../discret/dstrc.H"
+#include "../drt_lib/dstrc.H"
 
 
 void construct_trilinos_matrix(INTRA *actintra, TRILINOSMATRIX *trimatrix);
