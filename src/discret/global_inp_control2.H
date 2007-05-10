@@ -32,7 +32,7 @@ Maintainer: Michael Gee
 #include "drt_condition.H"
 #include "drt_utils.H"
 #ifdef D_SHELL8
-#include "shell8.H"
+#include "../drt_s8/shell8.H"
 #endif
 #ifdef D_FLUID2
 #include "fluid2.H"

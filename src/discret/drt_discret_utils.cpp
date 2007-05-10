@@ -18,7 +18,7 @@ Maintainer: Michael Gee
 #include "drt_dserror.H"
 #include "linalg_utils.H"
 #ifdef D_SHELL8
-#include "shell8.H"
+#include "../drt_s8/shell8.H"
 #endif
 
 
