@@ -393,7 +393,7 @@ void tsi_th_stat(INT disnum_s,
    * free temperatures */
   /* HINT: time curve is called indirectly */
   solserv_putdirich_to_dof(actfield, disnum, 
-                           node_array_sol, isol->tem, timcur);
+                           node_array_sol, isol->temdn, timcur);
 
   /*--------------------------------------------------------------------*/
   /* call element routines to calculate & assemble tangent matrix */
@@ -402,6 +402,7 @@ void tsi_th_stat(INT disnum_s,
   container.dirich = dirich;
   container.global_numeq = numeq_total;
   container.kstep = 0;  /* WORK */
+  container.isoltemdn = isol->temdn;
   i2ndsysmat = -1;  /* we do not have a second system matrix */
   calelm(actfield, actsolv, actpart, actintra, actsysarray,
          i2ndsysmat, &container, action);
@@ -428,6 +429,14 @@ void tsi_th_stat(INT disnum_s,
                  &(actsolv->sol[actsysarray]),
                  &(actsolv->rhs[actsysarray]),
                  init);
+
+  /*--------------------------------------------------------------------*/
+  /* put the scaled prescribed temperatures to the nodes
+   * in field sol (node_array_sol==0) at place isol->tem==0 together with 
+   * free temperatures */
+  /* HINT: time curve is called indirectly */
+  solserv_putdirich_to_dof(actfield, disnum, 
+                           node_array_sol, isol->tem, timcur);
 
   /*--------------------------------------------------------------------*/
   /* allreduce the result and put it to the node sol arrays */

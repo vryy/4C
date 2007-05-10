@@ -167,6 +167,7 @@ void tsi_th_stat_init(PARTITION* actpart,
                       INTRA* actintra,
                       FIELD* actfield,
                       INT disnum,
+                      ARRAY_POSITION* ipos,
                       SOLVAR* actsolv,
                       INT* numeq,
                       INT* numeq_total,
@@ -252,6 +253,14 @@ void tsi_th_stat_init(PARTITION* actpart,
   calinit(actfield, actpart, action, container);
 
   /*--------------------------------------------------------------------*/
+  /* put a zero to the place ipos->num=12 in node->sol to init the 
+   * velocities and accels of prescribed displacements */
+  /* HINT: This actually redefines/reallocates/enlarges the sol
+   *       array of each structure node to dimension 12x2 (or 12x3)
+   *       from originally 1x2 (or 1x3) */
+  solserv_sol_zero(actfield, disnum, node_array_sol, ipos->num-1);
+
+  /*--------------------------------------------------------------------*/
 #ifdef BINIO
   /* initialize binary output */
   if (ioflags.output_bin == 1)
@@ -306,7 +315,6 @@ void tsi_th_stat_equi(PARTITION* actpart,
   DOUBLE rhsfact;  /* factor to multiply RHS */
   INT init;  /* init flag for solver */
   DOUBLE* dirich = dirich_a->a.dv;
-  INT i;  /* an index */
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -319,11 +327,11 @@ void tsi_th_stat_equi(PARTITION* actpart,
    * free temperatures */
   /* HINT: time curve is called indirectly */
   solserv_putdirich_to_dof(actfield, disnum, 
-                           node_array_sol, isol->tem, timcur);
+                           node_array_sol, isol->temdn, timcur);
 
   /*------------------------------------------------------------------*/
-  /* calculate tangential stiffness/mass 
-   * and internal forces at time t_{n} */
+  /* initialise tangent and Dirichlet-RHS loads */
+  /* */
   solserv_zero_mat(actintra, 
                    &(actsolv->sysarray[actsysarray]),
                    &(actsolv->sysarray_typ[actsysarray]));
@@ -336,6 +344,7 @@ void tsi_th_stat_equi(PARTITION* actpart,
   container->dirich = dirich;
   container->global_numeq = numeq_total;
   container->kstep = 0;  /* WORK */
+  container->isoltemdn = isol->temdn;
   i2ndsysmat = -1;  /* we do not have a second system matrix */
   calelm(actfield, actsolv, actpart, actintra, actsysarray,
          i2ndsysmat, container, action);
@@ -357,12 +366,21 @@ void tsi_th_stat_equi(PARTITION* actpart,
   /*--------------------------------------------------------------------*/
   /* call solver */
   init = 0;
+  solserv_zero_vec(&(actsolv->sol[actsysarray]));
   solver_control(actfield, disnum, actsolv, actintra,
                  &(actsolv->sysarray_typ[actsysarray]),
                  &(actsolv->sysarray[actsysarray]),
                  &(actsolv->sol[actsysarray]),
                  &(actsolv->rhs[actsysarray]),
                  init);
+
+  /*--------------------------------------------------------------------*/
+  /* put the scaled prescribed temperatures to the nodes
+   * in field sol (1st 0) at place 0 (2nd 0) together with 
+   * free temperatures */
+  /* HINT: time curve is called indirectly */
+  solserv_putdirich_to_dof(actfield, disnum, 
+                           node_array_sol, isol->tem, timcur);
 
   /*--------------------------------------------------------------------*/
   /* allreduce the result and put it to the node sol arrays */
@@ -637,6 +655,7 @@ void tsi_th_stat_sub(INT disnum_s,
                    actintra,
                    actfield,
                    disnum_t,
+                   ipos,
                    actsolv,
                    &(numeq),
                    &(numeq_total),

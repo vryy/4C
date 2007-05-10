@@ -668,15 +668,19 @@ void calelm(FIELD        *actfield,     /* active field */
 #ifdef D_TSI
    case thermal:
       /*------------------ assemble internal force or external forces */
-      if (container->dvec)
-      assemble_intforce(actele,&intforce_global,container,actintra);
+      if (container->dvec) {
+        assemble_intforce(actele,&intforce_global,container,actintra);
+      } 
       /*--- assemble the rhs vector of condensed dirichlet conditions */
       /* static case */
-      if (container->dirich && container->isdyn==0)
-      assemble_dirich(actele,&estif_global,container);
+      if (container->dirich && container->isdyn==0) {
+        assemble_dirich_therm(actele,&estif_global,container);
+      }
       /* dynamic case */
-      if (container->dirich && container->isdyn==1)
-      assemble_dirich_dyn(actele,&estif_global,&emass_global,container);
+      if (container->dirich && container->isdyn==1) {
+        dserror("Dynamic thermal field is not implemented.");
+        /* assemble_dirich_dyn(actele,&estif_global,&emass_global,container); */
+      }
    break;
 #endif
    default:

@@ -600,7 +600,7 @@ void tsi_st_genalp_pred(PARTITION* actpart,
   /* WARNING: This control routine at the moment always uses curve 0 
    *          for the RHS */
   /* Get factor at new time t_{n+1} */
-  dyn_facfromcurve(actcurve, actdyn->time, &(dynvar->rldfac));
+  /* dyn_facfromcurve(actcurve, actdyn->time, &(dynvar->rldfac)); */
   dynvar->rldfac = 1.0;
   solserv_scalarprod_vec(&(actsolv->rhs[1]), dynvar->rldfac);
 
@@ -612,7 +612,7 @@ void tsi_st_genalp_pred(PARTITION* actpart,
                            isol->disdn, actdyn->time);
 
   /*--------------------------------------------------------------------*/
-  /* put presdisplacements(t) - presdisplacements(t-dt) in place 5 */
+  /* put presdisplacements(t_{n+1}) - presdisplacements(t_n) in place 5 */
   solserv_adddirich(actfield, disnum, node_array_sol, 
                     isol->disd, isol->disdn, isol->disdi, -1.0, 1.0);
 
@@ -1699,7 +1699,7 @@ void tsi_st_genalp_sub(INT disnum_s,
   /* printout head */
   if (par.myrank == 0) 
   {
-    dyn_nlnstruct_outhead(&dynvar, actdyn);
+    dyn_nlnstruct_outhead(&(dynvar), actdyn);
   }
 
 

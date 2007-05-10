@@ -1425,3 +1425,97 @@ dstrc_exit();
 return;
 } /* end of assemble_dirich */
 
+
+
+/*---------------------------------------------------------------------------*
+ |  dirichlet conditions to an element vector elevec_a      bborn 05/07      |
+ |  and then assembles this element vector of cond. dirich.conditions to the |
+ |  global vector fullvec                                                    |
+ *---------------------------------------------------------------------------*/
+#ifdef D_TSI
+void assemble_dirich_therm(ELEMENT *actele, 
+                           ARRAY *estif_global, 
+                           CONTAINER *container)
+{
+INT                   i,j;
+INT                   numdf;
+INT                   nd=0;
+DOUBLE              **estif;
+DOUBLE                dirich[MAXDOFPERELE];
+DOUBLE                dforces[MAXDOFPERELE];
+INT                   dirich_onoff[MAXDOFPERELE];
+INT                   lm[MAXDOFPERELE];
+GNODE                *actgnode;
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
+NODE*                 actnode;
+#endif
+const INT isoltemdn = container->isoltemdn;
+
+
+#ifdef DEBUG
+dstrc_enter("assemble_dirich_therm");
+#endif
+/*----------------------------------------------------------------------*/
+estif  = estif_global->a.da;
+/*---------------------------------- set number of dofs on this element */
+for (i=0; i<actele->numnp; i++) nd += actele->node[i]->numdf;
+/*---------------------------- init the vectors dirich and dirich_onoff */
+for (i=0; i<nd; i++)
+{
+   dirich[i] = 0.0;
+   dforces[i] = 0.0;
+   dirich_onoff[i] = 0;
+}
+/*-------------------------------- fill vectors dirich and dirich_onoff */
+for (i=0; i<actele->numnp; i++)
+{
+   numdf    = actele->node[i]->numdf;
+   actgnode = actele->node[i]->gnode;
+   for (j=0; j<numdf; j++)
+   {
+      lm[i*numdf+j] = actele->node[i]->dof[j];
+      if (actgnode->dirich==NULL) continue;
+      dirich_onoff[i*numdf+j] = actgnode->dirich->dirich_onoff.a.iv[j];
+      dirich[i*numdf+j] = actgnode->node->sol.a.da[isoltemdn][j];
+   }
+}
+/*----------------------------------------- loop rows of element matrix */
+for (i=0; i<nd; i++)
+{
+   /*------------------------------------- do nothing for supported row */
+   if (dirich_onoff[i]!=0) continue;
+   /*---------------------------------- loop columns of unsupported row */
+   for (j=0; j<nd; j++)
+   {
+      /*---------------------------- do nothing for unsupported columns */
+      if (dirich_onoff[j]==0) continue;
+      dforces[i] += estif[i][j] * dirich[j];
+   }/* loop j over columns */
+}/* loop i over rows */
+/*-------- now assemble the vector dforces to the global vector fullvec */
+#if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
+for (i=0; i<actele->numnp; i++)
+{
+  actnode = actele->node[i];
+  for (j=0; j<actnode->numdf; j++)
+  {
+    if (actnode->gnode->dirich!=NULL &&
+        actnode->gnode->dirich->dirich_onoff.a.iv[j]!=0)
+        continue;
+    container->dirich[actnode->dof[j]] += dforces[i*numdf+j];
+  }
+}
+#else
+for (i=0; i<nd; i++)
+{
+   if (lm[i] >= container->global_numeq) continue;
+   container->dirich[lm[i]] += dforces[i];
+}
+#endif
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
+dstrc_exit();
+#endif
+return;
+} /* end of assemble_dirich */
+#endif  /* end #ifdef D_TSI */

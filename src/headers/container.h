@@ -98,5 +98,6 @@ typedef struct _CONTAINER
 #ifdef D_TSI
   INT            disnum_s;   /* structure discretisation index ( ==0 ) */
   INT            disnum_t;   /* thermo-discretisation index ( ==0 ) */
+  INT            isoltemdn;  /* position in sol array of presc. temperatures */
 #endif
 } CONTAINER;
