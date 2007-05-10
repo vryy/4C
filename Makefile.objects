@@ -89,58 +89,58 @@ OBJS_SOLVER_CPP = src/solver/solver_trilinos_service.o \
                   src/solver/solver_trilinos_ml.o \
                   src/solver/solver_trilinos_spooles.o
 #               discretization (c++)
-OBJS_DRT_LIB  = src/discret/drt_discret.o \
-                src/discret/drt_discret_fillcomplete.o \
-                src/discret/drt_discret_conditions.o \
-                src/discret/drt_discret_partition.o \
-                src/discret/drt_discret_utils.o \
-                src/discret/drt_element.o \
-                src/discret/drt_elementregister.o \
-                src/discret/drt_node.o \
-                src/discret/drt_container.o \
-                src/discret/drt_condition.o \
-                src/discret/drt_dofset.o \
-                src/discret/drt_utils.o \
-                src/discret/drt_parobject.o \
-                src/discret/drt_exporter.o \
-                src/discret/wall1.o \
-                src/discret/wall1_line.o \
-                src/discret/fluid2.o \
-                src/discret/fluid2_line.o \
-                src/discret/fluid3.o \
-                src/discret/fluid3_surface.o \
+OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
+                src/drt_lib/drt_discret_fillcomplete.o \
+                src/drt_lib/drt_discret_conditions.o \
+                src/drt_lib/drt_discret_partition.o \
+                src/drt_lib/drt_discret_utils.o \
+                src/drt_lib/drt_element.o \
+                src/drt_lib/drt_elementregister.o \
+                src/drt_lib/drt_node.o \
+                src/drt_lib/drt_container.o \
+                src/drt_lib/drt_condition.o \
+                src/drt_lib/drt_dofset.o \
+                src/drt_lib/drt_utils.o \
+                src/drt_lib/drt_parobject.o \
+                src/drt_lib/drt_exporter.o \
+                src/drt_lib/wall1.o \
+                src/drt_lib/wall1_line.o \
+                src/drt_lib/fluid2.o \
+                src/drt_lib/fluid2_line.o \
+                src/drt_lib/fluid3.o \
+                src/drt_lib/fluid3_surface.o \
                 src/drt_so3/so_hex8_surface.o \
                 src/drt_so3/so_hex8_line.o \
                 src/drt_so3/so_hex8.o \
                 src/drt_so3/so_hex8_stress.o \
-                src/discret/drt_dserror.o \
-                src/discret/linalg_utils.o \
-                src/discret/linalg_serialdensematrix.o \
-                src/discret/linalg_serialdensevector.o \
-                src/discret/distribute_grids.o
+                src/drt_lib/drt_dserror.o \
+                src/drt_lib/linalg_utils.o \
+                src/drt_lib/linalg_serialdensematrix.o \
+                src/drt_lib/linalg_serialdensevector.o \
+                src/drt_lib/distribute_grids.o
 OBJS_DRT      = \
-                src/discret/drt_discret_evaluate.o \
-                src/discret/drt_resulttest.o \
-                src/discret/global_inp_control2.o \
-                src/discret/global_inp_control3.o \
-                src/discret/input_conditions.o \
-                src/discret/wall1_evaluate.o \
-                src/discret/wall1_input.o \
-                src/discret/wall1_line_evaluate.o \
-                src/discret/fluid2_evaluate.o \
-                src/discret/fluid2_input.o \
-                src/discret/fluid2_line_evaluate.o \
-                src/discret/fluid3_evaluate.o \
-                src/discret/fluid3_input.o \
-                src/discret/fluid3_surface_evaluate.o \
-                src/discret/stru_dyn_nln_drt.o \
-                src/discret/strugenalpha.o \
-                src/discret/linalg_solver.o \
-                src/discret/linalg_solver_spooles.o \
-                src/discret/stru_genalpha_drt.o\
-                src/discret/fluid_dyn_nln_drt.o \
-                src/discret/fluidimplicitintegration.o \
-                src/discret/fluidresulttest.o \
+                src/drt_lib/drt_discret_evaluate.o \
+                src/drt_lib/drt_resulttest.o \
+                src/drt_lib/global_inp_control2.o \
+                src/drt_lib/global_inp_control3.o \
+                src/drt_lib/input_conditions.o \
+                src/drt_lib/wall1_evaluate.o \
+                src/drt_lib/wall1_input.o \
+                src/drt_lib/wall1_line_evaluate.o \
+                src/drt_lib/fluid2_evaluate.o \
+                src/drt_lib/fluid2_input.o \
+                src/drt_lib/fluid2_line_evaluate.o \
+                src/drt_lib/fluid3_evaluate.o \
+                src/drt_lib/fluid3_input.o \
+                src/drt_lib/fluid3_surface_evaluate.o \
+                src/drt_lib/stru_dyn_nln_drt.o \
+                src/drt_lib/strugenalpha.o \
+                src/drt_lib/linalg_solver.o \
+                src/drt_lib/linalg_solver_spooles.o \
+                src/drt_lib/stru_genalpha_drt.o\
+                src/drt_lib/fluid_dyn_nln_drt.o \
+                src/drt_lib/fluidimplicitintegration.o \
+                src/drt_lib/fluidresulttest.o \
                 src/drt_so3/so_hex8_evaluate.o \
                 src/drt_so3/so_hex8_input.o
 #                pss_full
