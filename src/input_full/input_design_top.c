@@ -487,7 +487,7 @@ for (i=0; i<design->ndnode; i++)
    frrewind();
 }
 /*----------------------------------------------------------------------*/
-if (found == 0) dserror("Cannot make DNODE-NODE topology");
+if (found == 0) dserror("Cannot make DNODE-NODE topology\nPlease reassign design numbers");
 /*----------------------------------------------------------------------*/
 
 end:
