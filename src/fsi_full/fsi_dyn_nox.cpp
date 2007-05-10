@@ -12,7 +12,7 @@
 #include "fsi_nox_michler.H"
 #include "fsi_nox_fixpoint.H"
 #include "fsi_nox_jacobian.H"
-#include "../discret/dstrc.H"
+#include "../drt_lib/dstrc.H"
 
 #include <fstream>
 #include <iostream>
@@ -98,6 +98,14 @@ extern "C" void debug_out_data(FIELD *actfield, CHAR* n, NODE_ARRAY array, INT p
   FILE* f;
   CHAR name[50];
 
+  int nodes_quad4[] = {0,1,2,3,0,-1,-2};
+  int nodes_hex8[] = {0,1,2,3,0,-1,
+                       4,5,6,7,4,-1,
+                       0,4,-1,
+                       1,5,-1,
+                       2,6,-1,
+                       3,7,-1,-2};
+
   if (getenv("DEBUG")==NULL || par.myrank!=0)
     return;
 
@@ -108,38 +116,60 @@ extern "C" void debug_out_data(FIELD *actfield, CHAR* n, NODE_ARRAY array, INT p
 
   for (i=0; i<actfield->dis[0].numele; ++i)
   {
-    INT j;
     ELEMENT* actele = &(actfield->dis[0].element[i]);
     fprintf(f, "# element %d\n", actele->Id);
-    for (j=0; j<=actele->numnp; ++j)
+
+    int* nodes = NULL;
+    switch (actele->distyp)
     {
-      INT k;
-      NODE* actnode = actele->node[j%actele->numnp];
-      fprintf(f, "%e %e ",
-              actnode->x[0], actnode->x[1]);
-      for (k=0; k<actnode->numdf; ++k)
-      {
-        switch (array)
-        {
-        case node_array_sol:
-          fprintf(f, "%20.20e ",
-                  actnode->sol.a.da[pos][k]);
-          break;
-        case node_array_sol_increment:
-          fprintf(f, "%20.20e ",
-                  actnode->sol_increment.a.da[pos][k]);
-          break;
-        case node_array_sol_mf:
-          fprintf(f, "%20.20e ",
-                  actnode->sol_mf.a.da[pos][k]);
-          break;
-        default:
-          dserror("node array %d unsupported", array);
-        }
-      }
-      fprintf(f, "\t\t# node %d\n", actnode->Id);
+    case quad4:
+      nodes = nodes_quad4;
+      break;
+    case hex8:
+      nodes = nodes_hex8;
+      break;
+    default:
+      dserror("dis type %d not supported", actele->distyp);
     }
-    fprintf(f, "\n\n");
+
+    for (int j=0; nodes[j]>-2; ++j)
+    {
+      if (nodes[j]>-1)
+      {
+        INT k;
+        NODE* actnode = actele->node[nodes[j]];
+
+        if (genprob.ndim==2)
+          fprintf(f, "%e %e ",
+                  actnode->x[0], actnode->x[1]);
+        else
+          fprintf(f, "%e %e %e ",
+                  actnode->x[0], actnode->x[1], actnode->x[2]);
+        for (k=0; k<actnode->numdf; ++k)
+        {
+          switch (array)
+          {
+          case node_array_sol:
+            fprintf(f, "%20.20e ",
+                    actnode->sol.a.da[pos][k]);
+            break;
+          case node_array_sol_increment:
+            fprintf(f, "%20.20e ",
+                    actnode->sol_increment.a.da[pos][k]);
+            break;
+          case node_array_sol_mf:
+            fprintf(f, "%20.20e ",
+                    actnode->sol_mf.a.da[pos][k]);
+            break;
+          default:
+            dserror("node array %d unsupported", array);
+          }
+        }
+        fprintf(f, "\t\t# node %d\n", actnode->Id);
+      }
+      else
+        fprintf(f, "\n\n");
+    }
   }
 
   fclose(f);

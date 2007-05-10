@@ -15,16 +15,16 @@ Maintainer: Moritz Frenzel
 #ifdef TRILINOS_PACKAGE
 
 #include "so_hex8.H"
-#include "../discret/linalg_utils.H"
-#include "../discret/drt_utils.H"
-#include "../discret/drt_discret.H"
-#include "../discret/drt_dserror.H"
+#include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_dserror.H"
 
 extern "C"
 {
 #include "../headers/standardtypes.h"
 }
-#include "../discret/dstrc.H"
+#include "../drt_lib/dstrc.H"
 
 
 
@@ -150,10 +150,10 @@ int DRT::Elements::Soh8Surface::EvaluateNeumann(ParameterList&           params,
   // find out whether we will use a time curve and get the factor
   vector<int>* curve  = condition.Get<vector<int> >("curve");
   int curvenum = -1;
-  if (curve) curvenum = (*curve)[0]; 
+  if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
   if (curvenum>=0 && usetime)
-    dyn_facfromcurve(curvenum,time,&curvefac); 
+    dyn_facfromcurve(curvenum,time,&curvefac);
   // **
 
   // element geometry
@@ -164,12 +164,12 @@ int DRT::Elements::Soh8Surface::EvaluateNeumann(ParameterList&           params,
     xsrefe(i,1) = Nodes()[i]->X()[1];
     xsrefe(i,2) = Nodes()[i]->X()[2];
   }
-  
+
   /*
   ** Here, we integrate a 4-node surface with 2x2 Gauss Points
   */
   const int ngp = 4;
-  
+
   // gauss parameters
   const double gpweight = 1.0;
   const double gploc    = 1.0/sqrt(3.0);
@@ -199,7 +199,7 @@ int DRT::Elements::Soh8Surface::EvaluateNeumann(ParameterList&           params,
   }
   return 0;
 }
-                                                   
+
 /*----------------------------------------------------------------------*
  * Evaluate sqrt of determinant of metric at gp (private)      maf 05/07*
  * ---------------------------------------------------------------------*/
@@ -207,11 +207,11 @@ void DRT::Elements::Soh8Surface::soh8_surface_integ(
       vector<double>* funct,                 // (o) shape functions
       double* sqrtdetg,                      // (o) pointer to sqrt of det(g)
       const Epetra_SerialDenseMatrix* xsrefe,// (i) material element coords
-      const double r,                        // (i) coord in r-direction 
+      const double r,                        // (i) coord in r-direction
       const double s)                        // (i) coord in s-direction
 {
   DSTraceHelper dst("Soh8Surface::soh8_surface_metric");
-  
+
   // shape functions for 4 nodes
   (*funct)[0] = 0.25 * (1.0-r) * (1.0-s);
   (*funct)[1] = 0.25 * (1.0+r) * (1.0-s);
@@ -227,11 +227,11 @@ void DRT::Elements::Soh8Surface::soh8_surface_integ(
   deriv(2,1) =  0.25 * (1.0+r);
   deriv(3,0) = -0.25 * (1.0+s);
   deriv(3,1) =  0.25 * (1.0-r);
-                        
+
   // compute dXYZ / drs
   Epetra_SerialDenseMatrix dxyzdrs(2,3);
   dxyzdrs.Multiply('T','N',1.0,deriv,xsrefe,1.0);
-  
+
   /* compute covariant metric tensor G for surface element
   **                        | g11   g12 |
   **                    G = |           |
@@ -247,8 +247,8 @@ void DRT::Elements::Soh8Surface::soh8_surface_integ(
   (*sqrtdetg) = sqrt( metrictensor(0,0)*metrictensor(1,1)
                      -metrictensor(0,1)*metrictensor(1,0));
   return;
-}                     
-  
+}
+
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

@@ -20,7 +20,7 @@ Maintainer: Moritz Frenzel
 #include "mpi.h"
 #endif
 
-extern "C" 
+extern "C"
 {
 #include "../headers/standardtypes.h"
 /*!----------------------------------------------------------------------
@@ -35,7 +35,7 @@ extern "C"
 extern struct _FILES  allfiles;
 }
 #include "so_hex8.H"
-#include "../discret/dstrc.H"
+#include "../drt_lib/dstrc.H"
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                                maf 04/07|
@@ -43,11 +43,11 @@ extern struct _FILES  allfiles;
 bool DRT::Elements::So_hex8::ReadElement()
 {
   DSTraceHelper dst("So_hex8::ReadElement");
-  
+
   // read element's nodes
   int ierr=0;
   const int nnode=8;
-  int nodes[8]; 
+  int nodes[8];
   frchk("SOLIDH8",&ierr);
   if (ierr==1)
   {
@@ -60,19 +60,19 @@ bool DRT::Elements::So_hex8::ReadElement()
   }
   // reduce node numbers by one
   for (int i=0; i<nnode; ++i) nodes[i]--;
-  
+
   SetNodeIds(nnode,nodes);
-  
+
   // read number of material model
   material_ = 0;
   frint("MAT",&material_,&ierr);
   if (ierr!=1) dserror("Reading of SO_HEX8 element material failed");
-  
+
   // read gaussian points
   frint_n("GP",ngp_,3,&ierr);
   if (ierr!=1) dserror("Reading of SOLID3 element gp failed");
   for (int i=0; i<3; ++i) if (ngp_[i]!=2) dserror("Only 2 GP for HEX8 yet");
-    
+
   // read kinematic type
   char buffer[50];
   frchar("KINEM",buffer,&ierr);
@@ -90,7 +90,7 @@ bool DRT::Elements::So_hex8::ReadElement()
    }
    else dserror("Reading of SO_HEX8 element failed");
   }
-  
+
   // read stress evaluation/output type
   frchar("STRESS",buffer,&ierr);
   if (ierr!=1) dserror("reading of SO_HEX8 stress failed");
@@ -102,8 +102,8 @@ bool DRT::Elements::So_hex8::ReadElement()
   if (strncmp(buffer,"Ndrst",5)==0) stresstype_= soh8_stress_ndrst;
   if (strncmp(buffer,"Nd123",5)==0) stresstype_= soh8_stress_nd123;
   // set default: no stresses
-  else stresstype_= soh8_stress_none; 
-   
+  else stresstype_= soh8_stress_none;
+
   return true;
 } // So_hex8::ReadElement()
 

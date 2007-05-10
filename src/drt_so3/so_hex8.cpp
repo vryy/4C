@@ -15,9 +15,9 @@ Maintainer: Moritz Frenzel
 #ifdef TRILINOS_PACKAGE
 
 #include "so_hex8.H"
-#include "../discret/drt_discret.H"
-#include "../discret/drt_utils.H"
-#include "../discret/drt_dserror.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_dserror.H"
 
 
 
@@ -165,33 +165,33 @@ RefCountPtr<DRT::ElementRegister> DRT::Elements::So_hex8::ElementRegister() cons
   /*====================================================================*/
   /* 8-node hexhedra node topology*/
   /*--------------------------------------------------------------------*/
-  /* parameter coordinates (r,s,t) of nodes 
-   * of biunit cube [-1,1]x[-1,1]x[-1,1] 
-   *  8-node hexahedron: node 0,1,...,7 
-   *                      t                                             
-   *                      |                                             
-   *             4========|================7                           
-   *           //|        |               /||                           
-   *          // |        |              //||                            
-   *         //  |        |             // ||                           
-   *        //   |        |            //  ||                           
-   *       //    |        |           //   ||                           
-   *      //     |        |          //    ||                         
-   *     //      |        |         //     ||                           
-   *     5=========================6       ||                           
-   *    ||       |        |        ||      ||                           
-   *    ||       |        o--------||---------s                      
-   *    ||       |       /         ||      ||                           
-   *    ||       0------/----------||------3                            
-   *    ||      /      /           ||     //                            
-   *    ||     /      /            ||    //                             
-   *    ||    /      /             ||   //                              
-   *    ||   /      /              ||  //                                
-   *    ||  /      /               || //                                
-   *    || /      r                ||//                                 
-   *    ||/                        ||/                                  
-   *     1=========================2                                    
-   *                                                                    
+  /* parameter coordinates (r,s,t) of nodes
+   * of biunit cube [-1,1]x[-1,1]x[-1,1]
+   *  8-node hexahedron: node 0,1,...,7
+   *                      t
+   *                      |
+   *             4========|================7
+   *           //|        |               /||
+   *          // |        |              //||
+   *         //  |        |             // ||
+   *        //   |        |            //  ||
+   *       //    |        |           //   ||
+   *      //     |        |          //    ||
+   *     //      |        |         //     ||
+   *     5=========================6       ||
+   *    ||       |        |        ||      ||
+   *    ||       |        o--------||---------s
+   *    ||       |       /         ||      ||
+   *    ||       0------/----------||------3
+   *    ||      /      /           ||     //
+   *    ||     /      /            ||    //
+   *    ||    /      /             ||   //
+   *    ||   /      /              ||  //
+   *    ||  /      /               || //
+   *    || /      r                ||//
+   *    ||/                        ||/
+   *     1=========================2
+   *
    */
   /*====================================================================*/
 
@@ -206,7 +206,7 @@ DRT::Element** DRT::Elements::So_hex8::Volumes()
 
  /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                             maf 04/07|
- |  surface normals always point outward                                 |   
+ |  surface normals always point outward                                 |
  *----------------------------------------------------------------------*/
 DRT::Element** DRT::Elements::So_hex8::Surfaces()
 {
@@ -302,7 +302,7 @@ DRT::Element** DRT::Elements::So_hex8::Lines()
   lineptrs_.resize(nline);
   int nodeids[100];
   DRT::Node* nodes[100];
-  
+
   nodeids[0] = NodeIds()[0];
   nodeids[1] = NodeIds()[1];
   nodes[0] = Nodes()[0];
@@ -334,7 +334,7 @@ DRT::Element** DRT::Elements::So_hex8::Lines()
   lines_[3] =
     rcp(new DRT::Elements::Soh8Line(3,Owner(),2,nodeids,nodes,this,3));
   lineptrs_[3] = lines_[3].get();
-  
+
   nodeids[0] = NodeIds()[0];
   nodeids[1] = NodeIds()[4];
   nodes[0] = Nodes()[0];
@@ -366,7 +366,7 @@ DRT::Element** DRT::Elements::So_hex8::Lines()
   lines_[7] =
     rcp(new DRT::Elements::Soh8Line(7,Owner(),2,nodeids,nodes,this,7));
   lineptrs_[7] = lines_[7].get();
-  
+
   nodeids[0] = NodeIds()[4];
   nodeids[1] = NodeIds()[5];
   nodes[0] = Nodes()[4];

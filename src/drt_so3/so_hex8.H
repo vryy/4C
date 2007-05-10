@@ -27,9 +27,9 @@ Maintainer: Moritz Frenzel
 using namespace std;
 using namespace Teuchos;
 
-#include "../discret/drt_element.H"
-#include "../discret/drt_elementregister.H"
-#include "../discret/drt_node.H"
+#include "../drt_lib/drt_element.H"
+#include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_node.H"
 
 // Several parameters which are fixed for Solid Hex8
 #define NUMNOD_SOH8 8      // number of nodes
@@ -359,7 +359,7 @@ private:
   void soh8_shapederiv(Epetra_SerialDenseMatrix** shapefct,
                        Epetra_SerialDenseMatrix** deriv,
                        Epetra_SerialDenseVector** weights);
-                       
+
   void soh8_mat_sel(Epetra_SerialDenseVector* stress,
                     Epetra_SerialDenseMatrix* cmat,
                     double* density,
@@ -644,7 +644,7 @@ private:
       vector<double>* funct,                 // (o) shape functions
       double* sqrtdetg,                      // (o) pointer to sqrt of det(g)
       const Epetra_SerialDenseMatrix* xsrefe,// (i) material element coords
-      const double r,                        // (i) coord in r-direction 
+      const double r,                        // (i) coord in r-direction
       const double s);                       // (i) coord in s-direction
 }; // class Soh8Surface
 
