@@ -28,9 +28,17 @@ void DRT::Discretization::ExportRowNodes(const Epetra_Map& newmap)
   // destroy all ghosted nodes
   const int myrank = Comm().MyPID();
   map<int,RefCountPtr<DRT::Node> >::iterator curr;
-  for (curr=node_.begin(); curr!=node_.end(); ++curr)
+  for (curr=node_.begin(); curr!=node_.end();)
+  {
     if (curr->second->Owner() != myrank)
-      node_.erase(curr->first);
+    {
+      node_.erase(curr++);
+    }
+    else
+    {
+      ++curr;
+    }
+  }
   
   // build rowmap of nodes noderowmap_ if it does not exist
   if (noderowmap_==null) BuildNodeRowMap();
@@ -60,10 +68,17 @@ void DRT::Discretization::ExportColumnNodes(const Epetra_Map& newmap)
   // destroy all ghosted nodes
   const int myrank = Comm().MyPID();
   map<int,RefCountPtr<DRT::Node> >::iterator curr;
-  for (curr=node_.begin(); curr!=node_.end(); ++curr)
+  for (curr=node_.begin(); curr!=node_.end();)
+  {
     if (curr->second->Owner() != myrank)
-      node_.erase(curr->first);
-  
+    {
+      node_.erase(curr++);
+    }
+    else
+    {
+      ++curr;
+    }
+  }
   // build rowmap of nodes noderowmap_ if it does not exist
   if (noderowmap_==null) BuildNodeRowMap();
   const Epetra_Map& oldmap = *noderowmap_;
@@ -96,9 +111,17 @@ void DRT::Discretization::ExportRowElements(const Epetra_Map& newmap)
   // destroy all ghosted elements
   const int myrank = Comm().MyPID();
   map<int,RefCountPtr<DRT::Element> >::iterator curr;
-  for (curr=element_.begin(); curr!=element_.end(); ++curr)
+  for (curr=element_.begin(); curr!=element_.end();)
+  {
     if (curr->second->Owner() != myrank)
-      element_.erase(curr);
+    {
+      element_.erase(curr++);
+    }
+    else
+    {
+      ++curr;
+    }
+  }
 
   // build map of elements elerowmap_ if it does not exist
   if (elerowmap_==null) BuildElementRowMap();
@@ -144,9 +167,17 @@ void DRT::Discretization::ExportColumnElements(const Epetra_Map& newmap)
   // destroy all ghosted elements
   const int myrank = Comm().MyPID();
   map<int,RefCountPtr<DRT::Element> >::iterator curr;
-  for (curr=element_.begin(); curr!=element_.end(); ++curr)
+  for (curr=element_.begin(); curr!=element_.end();)
+  {
     if (curr->second->Owner() != myrank)
-      element_.erase(curr->first);
+    {
+      element_.erase(curr++);
+    }
+    else
+    {
+      ++curr;
+    }
+  }
   
   // build map of elements elerowmap_ if it does not exist
   if (elerowmap_==null) BuildElementRowMap();
@@ -402,7 +433,7 @@ void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap,
   ExportColumnNodes(nodecolmap);
   ExportRowElements(*elerowmap);
   ExportColumnElements(*elecolmap);
-  
+
   // these exports have set Filled()=false as all maps are invalid now
   int err = FillComplete();
   if (err) dserror("FillComplete() returned err=%d",err);
