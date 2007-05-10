@@ -9,7 +9,7 @@ extern "C" {
 #include "../headers/standardtypes.h"
 }
 
-#include "../discret/dstrc.H" /* needs standardtypes.h */
+#include "../drt_lib/dstrc.H" /* needs standardtypes.h */
 
 #endif
 #endif
