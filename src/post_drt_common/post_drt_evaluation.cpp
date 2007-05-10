@@ -22,7 +22,7 @@ filter. But to link the filter stubs of these functions are needed.
 #ifdef TRILINOS_PACKAGE
 
 #include "post_drt_common.H"
-#include "../discret/shell8.H"
+#include "../drt_s8/shell8.H"
 #include "../discret/fluid2.H"
 #include "../discret/fluid3.H"
 #include "../discret/wall1.H"
