@@ -20,18 +20,18 @@ Maintainer: Michael Gee
 #include "mpi.h"
 #endif
 #include "shell8.H"
-#include "../discret/drt_discret.H"
-#include "../discret/drt_utils.H"
-#include "../discret/drt_exporter.H"
-#include "../discret/drt_dserror.H"
-#include "../discret/linalg_utils.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_exporter.H"
+#include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/linalg_utils.H"
 
 extern "C" 
 {
 #include "../headers/standardtypes.h"
 #include "../shell8/shell8.h"
 }
-#include "../discret/dstrc.H"
+#include "../drt_lib/dstrc.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |

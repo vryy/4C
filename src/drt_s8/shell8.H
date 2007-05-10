@@ -25,9 +25,9 @@ Maintainer: Michael Gee
 using namespace std;
 using namespace Teuchos;
 
-#include "../discret/drt_element.H"
-#include "../discret/drt_elementregister.H"
-#include "../discret/drt_node.H"
+#include "../drt_lib/drt_element.H"
+#include "../drt_lib/drt_elementregister.H"
+#include "../drt_lib/drt_node.H"
 
 
 // forward declarations

@@ -15,17 +15,17 @@ Maintainer: Michael Gee
 #ifdef TRILINOS_PACKAGE
 
 #include "shell8.H"
-#include "../discret/linalg_utils.H"
-#include "../discret/drt_utils.H"
-#include "../discret/drt_discret.H"
-#include "../discret/drt_dserror.H"
+#include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_dserror.H"
 
 extern "C"
 {
 #include "../headers/standardtypes.h"
 #include "../shell8/shell8.h"
 }
-#include "../discret/dstrc.H"
+#include "../drt_lib/dstrc.H"
 
 
 
