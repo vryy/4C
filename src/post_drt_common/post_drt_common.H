@@ -38,7 +38,7 @@ The new filters can be used in parallel.
 #include <mpi.h>
 #endif
 
-#include "../discret/drt_discret.H"
+#include "../drt_lib/drt_discret.H"
 #include <Teuchos_RefCountPtr.hpp>
 #include <Teuchos_CommandLineProcessor.hpp>
 
@@ -48,7 +48,7 @@ extern "C" {
 #include "../pss_full/pss_table_iter.h"
 }
 
-#include "../discret/dstrc.H" /* needs standardtypes.h */
+#include "../drt_lib/dstrc.H" /* needs standardtypes.h */
 
 #ifdef PARALLEL
 #include <Epetra_MpiComm.h>

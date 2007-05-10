@@ -28,8 +28,8 @@ extern "C" {
 #include "../headers/standardtypes.h"
 }
 
-#include "../discret/drt_discret.H"
-#include "../discret/drt_node.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_node.H"
 
 using namespace std;
 
