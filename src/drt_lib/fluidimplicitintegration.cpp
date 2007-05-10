@@ -903,6 +903,7 @@ void FluidImplicitTimeInt::Output(
   //-------------------------------------------- output of solution
   output_.NewStep    (step,time);
   output_.WriteVector("velnp", velnp_);
+  output_.WriteVector("residual", residual_);
 
   // do restart if we have to
   restartstep_ += 1;
