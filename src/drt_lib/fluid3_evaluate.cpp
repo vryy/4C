@@ -459,7 +459,7 @@ void DRT::Elements::Fluid3::f3_sys_mat(vector<int>&              lm,
       */
       xi2 = DMIN(re2,1.0);
 
-      tau[2] = vel_norm * hk * 0.5 * xi2;
+      tau[2] = vel_norm * hk * 0.5 * xi2 /timefac;
       }
       else
       {// stabilization parameters for stationary case
