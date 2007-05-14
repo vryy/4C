@@ -895,14 +895,14 @@ void th3_load_surf(CONTAINER* container,
     case neum_heatconvection:
     {
       const INT jdof = 0;
-      INT have_envtem = gsurf->neum->neum_onoff.a.iv[0];
-      INT have_bastem1 = gsurf->neum->neum_onoff.a.iv[1];
-      INT have_coeff1 = gsurf->neum->neum_onoff.a.iv[2];
-      INT have_bastem2 = gsurf->neum->neum_onoff.a.iv[3];
-      INT have_coeff2 = gsurf->neum->neum_onoff.a.iv[4];
-      if ( (have_envtem) 
-           && (have_bastem1) && (have_coeff1)
-           && (have_bastem2) && (have_coeff2) )
+      INT have_val0 = gsurf->neum->neum_onoff.a.iv[0];
+      INT have_val1 = gsurf->neum->neum_onoff.a.iv[1];
+      INT have_val2 = gsurf->neum->neum_onoff.a.iv[2];
+      INT have_val3 = gsurf->neum->neum_onoff.a.iv[3];
+      INT have_val4 = gsurf->neum->neum_onoff.a.iv[4];
+      if ( (have_val0) 
+           && (have_val1) && (have_val2)
+           && (have_val3) && (have_val4) )
       {
         /* environmental temperature T_infty */
         DOUBLE envtem = gsurf->neum->neum_val.a.dv[0];
@@ -928,6 +928,23 @@ void th3_load_surf(CONTAINER* container,
         DOUBLE convcoeff = ((c2-c1)*bastem + c1*t2 - c2*t1)/(t2-t1);
         /* convective boundary flux */
         DOUBLE hflx = convcoeff * (bastem - tem);
+        /* add load vector component to element load vector */
+        for (inode=0; inode<nelenod; inode++)
+        {
+          eload[jdof][inode] += shape[inode] * hflx * fac;
+        }
+      }
+      else if ( (have_val0) && (have_val1) )
+      {
+        /* environmental temperature T_infty */
+        DOUBLE envtem = gsurf->neum->neum_val.a.dv[0];
+        /* convection coefficient */
+        DOUBLE convcoeff = gsurf->neum->neum_val.a.dv[1];
+        /* temperature of last converged state */
+        DOUBLE tem;
+        th3_temper_sh(container, ele, shape, &tem);
+        /* convective boundary flux */
+        DOUBLE hflx = convcoeff * (envtem - tem);
         /* add load vector component to element load vector */
         for (inode=0; inode<nelenod; inode++)
         {

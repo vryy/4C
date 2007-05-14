@@ -303,12 +303,14 @@ void tsi_th_ost_st_genalp(INT disnum_s,
 
   /*--------------------------------------------------------------------*/
   /* synchronise structural dynamic control */
+  sdyn->nstep = tsidyn->nstep;
   sdyn->dt = tsidyn->dt;
   sdyn->updevry_disp = tsidyn->out_res_ev;
   sdyn->updevry_stress = tsidyn->out_res_ev;
 
   /*--------------------------------------------------------------------*/
   /* synchronise thermal dynamic control */
+  tdyn->nstep = tsidyn->nstep;
   tdyn->dt = tsidyn->dt;
   tdyn->out_res_ev = tsidyn->out_res_ev;
   tdyn->gamma = tsidyn->th_gamma;
