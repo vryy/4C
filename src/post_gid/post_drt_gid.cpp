@@ -73,38 +73,86 @@ void write_mesh(PostProblem* problem, int disnum)
 {
   PostField* field = problem->get_discretization(disnum);
 
-  // Let's assume there are only shell8_4_22 elements
-  GiD_BeginGaussPoint("shell8_4_22", GiD_Quadrilateral, "shell8_4_22", 4, 0, 1);
-  GiD_EndGaussPoint();
+  // ==================================================================
+  // We expect all elements in a mesh to be of the same type (shape
+  // and everything)
+  RefCountPtr<DRT::Discretization> dis = field->discretization();
+  const Epetra_Map* elementmap = dis->ElementRowMap();
+  DRT::Element* actele = dis->gElement(elementmap->GID(0));
 
-  GiD_BeginMesh("shell8_4_22",GiD_3D,GiD_Quadrilateral,4);
-  // We have ony one mesh, so it's the first
-  GiD_BeginCoordinates();
   double x[3];
   x[2] = 0;
-  for (int i = 0; i < field->discretization()->NumGlobalNodes(); ++i)
+  
+  switch (actele->Shape())
   {
-    for (int j = 0; j < field->problem()->num_dim(); ++j)
+  case DRT::Element::hex8:
+    // Gid output for so_hex8
+    GiD_BeginGaussPoint("so_hex8", GiD_Hexahedra, "so_hex8", 8, 0, 1);
+    GiD_EndGaussPoint();
+  
+    GiD_BeginMesh("so_hex8",GiD_3D,GiD_Hexahedra,8);
+    // We have ony one mesh, so it's the first
+    GiD_BeginCoordinates();
+    for (int i = 0; i < field->discretization()->NumGlobalNodes(); ++i)
     {
-      x[j] = field->discretization()->gNode(i)->X()[j];
+      for (int j = 0; j < field->problem()->num_dim(); ++j)
+      {
+        x[j] = field->discretization()->gNode(i)->X()[j];
+      }
+      int id = field->discretization()->gNode(i)->Id();
+      GiD_WriteCoordinates(id+1, x[0], x[1], x[2]);
     }
-    int id = field->discretization()->gNode(i)->Id();
-    GiD_WriteCoordinates(id+1, x[0], x[1], x[2]);
-  }
-  GiD_EndCoordinates();
-
-  GiD_BeginElements();
-  for (int i=0; i<field->discretization()->NumGlobalElements(); ++i)
-  {
-    int mesh_entry[MAXNOD];
-    for (int j = 0; j < field->discretization()->gElement(i)->NumNode(); ++j)
+    GiD_EndCoordinates();
+  
+    GiD_BeginElements();
+    for (int i=0; i<field->discretization()->NumGlobalElements(); ++i)
     {
-      mesh_entry[j] = field->discretization()->gElement(i)->NodeIds()[j]+1;
+      int mesh_entry[MAXNOD];
+      for (int j = 0; j < field->discretization()->gElement(i)->NumNode(); ++j)
+      {
+        mesh_entry[j] = field->discretization()->gElement(i)->NodeIds()[j]+1;
+      }
+      GiD_WriteElement(field->discretization()->gElement(i)->Id()+1,mesh_entry);
     }
-    GiD_WriteElement(field->discretization()->gElement(i)->Id()+1,mesh_entry);
+    GiD_EndElements();
+    GiD_EndMesh();
+    break;
+  case DRT::Element::quad4:
+    // Let's assume there are only shell8_4_22 elements
+    GiD_BeginGaussPoint("shell8_4_22", GiD_Quadrilateral, "shell8_4_22", 4, 0, 1);
+    GiD_EndGaussPoint();
+  
+    GiD_BeginMesh("shell8_4_22",GiD_3D,GiD_Quadrilateral,4);
+    // We have ony one mesh, so it's the first
+    GiD_BeginCoordinates();
+    for (int i = 0; i < field->discretization()->NumGlobalNodes(); ++i)
+    {
+      for (int j = 0; j < field->problem()->num_dim(); ++j)
+      {
+        x[j] = field->discretization()->gNode(i)->X()[j];
+      }
+      int id = field->discretization()->gNode(i)->Id();
+      GiD_WriteCoordinates(id+1, x[0], x[1], x[2]);
+    }
+    GiD_EndCoordinates();
+  
+    GiD_BeginElements();
+    for (int i=0; i<field->discretization()->NumGlobalElements(); ++i)
+    {
+      int mesh_entry[MAXNOD];
+      for (int j = 0; j < field->discretization()->gElement(i)->NumNode(); ++j)
+      {
+        mesh_entry[j] = field->discretization()->gElement(i)->NodeIds()[j]+1;
+      }
+      GiD_WriteElement(field->discretization()->gElement(i)->Id()+1,mesh_entry);
+    }
+    GiD_EndElements();  
+    GiD_EndMesh();  
+    break;
+  default:
+    dserror("element type : %d", actele->Shape());
+    break;
   }
-  GiD_EndElements();
-  GiD_EndMesh();
 }
 
 

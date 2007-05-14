@@ -459,7 +459,7 @@ public:
   The method performs all steps needed to init the shell8 elements. it e.g. calculates the
   field of averaged directors at nodes.
   */
-  //int Initialize(DRT::Discretization& dis);
+  int Initialize(DRT::Discretization& dis);
 
   //@}
 

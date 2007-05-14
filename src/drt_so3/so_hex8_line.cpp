@@ -141,6 +141,7 @@ int DRT::Elements::Soh8Line::EvaluateNeumann(ParameterList&         params,
                                              vector<int>&           lm,
                                              Epetra_SerialDenseVector& elevec1)
 {
+  dserror("Neumann condition on line not implemented");
     return 0;
 }
 

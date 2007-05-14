@@ -110,7 +110,7 @@ void Discretization::EvaluateDirichlet(ParameterList& params,
   dserror("Discretization::EvaluateDirichlet undefined");
 }
 
-
+#ifdef SHELL8_H
 int Elements::Shell8Register::Initialize(Discretization&)
 {
   // dserror("Elements::Shell8Register::Initialize undefined");
@@ -151,6 +151,8 @@ int Elements::Shell8Line::EvaluateNeumann(ParameterList& params,
   dserror("Elements::Shell8Line::EvaluateNeumann undefined");
   return 0;
 }
+#endif
+
 
 #ifdef FLUID3_H
 
@@ -197,6 +199,7 @@ int Elements::Fluid3Surface::EvaluateNeumann(ParameterList& params,
 
 #endif
 
+#ifdef FLUID2_H
 int Elements::Fluid2Register::Initialize(Discretization&)
 {
   // dserror("Elements::Fluid2Register::Initialize undefined");
@@ -238,13 +241,14 @@ int Elements::Fluid2Line::EvaluateNeumann(ParameterList& params,
   return 0;
 }
 
-#if 0
+#endif
+
+#ifdef SOH8_H
 int Elements::Soh8Register::Initialize(Discretization&)
 {
-  // dserror("Elements::Soh8Register::Initialize undefined");
+  //dserror("Elements::Soh8Register::Initialize undefined");
   return 0;
 }
-#endif
 
 bool Elements::So_hex8::ReadElement()
 {
@@ -271,7 +275,6 @@ int Elements::So_hex8::EvaluateNeumann(ParameterList&, Discretization&, Conditio
   return 0;
 }
 
-#if 0
 int Elements::Soh8Surface::EvaluateNeumann(ParameterList& params,
                                           Discretization&      discretization,
                                           Condition&           condition,
@@ -281,15 +284,15 @@ int Elements::Soh8Surface::EvaluateNeumann(ParameterList& params,
   dserror("Elements::Soh8Surface::EvaluateNeumann undefined");
   return 0;
 }
+
 #endif
 
-#if 0
+#ifdef WALL1_H
 int Elements::Wall1Register::Initialize(Discretization&)
 {
   // dserror("Elements::Wall1Register::Initialize undefined");
   return 0;
 }
-#endif
 
 bool Elements::Wall1::ReadElement()
 {
@@ -325,6 +328,7 @@ int Elements::Wall1Line::EvaluateNeumann(ParameterList& params,
   dserror("Elements::Wall1Line::EvaluateNeumann undefined");
   return 0;
 }
+#endif
 
 #endif
 #endif

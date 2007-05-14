@@ -112,7 +112,6 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_so3/so_hex8_surface.o \
                 src/drt_so3/so_hex8_line.o \
                 src/drt_so3/so_hex8.o \
-                src/drt_so3/so_hex8_stress.o \
                 src/drt_lib/drt_dserror.o \
                 src/drt_lib/linalg_utils.o \
                 src/drt_lib/linalg_serialdensematrix.o \
@@ -142,6 +141,8 @@ OBJS_DRT      = \
                 src/drt_lib/fluidimplicitintegration.o \
                 src/drt_lib/fluidresulttest.o \
                 src/drt_so3/so_hex8_evaluate.o \
+                src/drt_so3/so_hex8_surface_evaluate.o \
+                src/drt_so3/so_hex8_stress.o \
                 src/drt_so3/so_hex8_input.o
 #                pss_full
 OBJS_PSS      = src/pss_full/pss_am.o \

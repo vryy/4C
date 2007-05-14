@@ -592,6 +592,13 @@ void DRT::Elements::So_hex8::soh8_mat_sel(
   return;
 }  // of soh8_mat_sel
 
+/*----------------------------------------------------------------------*
+ |  init the element (public)                                mwgee 12/06|
+ *----------------------------------------------------------------------*/
+int DRT::Elements::Soh8Register::Initialize(DRT::Discretization& dis)
+{
+  return 0;
+}
 
 
 #endif  // #ifdef TRILINOS_PACKAGE
