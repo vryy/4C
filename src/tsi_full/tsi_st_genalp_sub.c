@@ -220,6 +220,7 @@ void tsi_st_genalp_init(PARTITION* actpart,
   INT i;  /* index */
   INT init;  /* solver init flag */
   INT actsysarray;  /* WHY???? */
+  DIST_VECTOR* distemp1;
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -362,30 +363,42 @@ void tsi_st_genalp_init(PARTITION* actpart,
 
   /*--------------------------------------------------------------------*/
   /* create 1 redundant full-length vector for internal forces */
-  amdef("intforce", intforce_a, *numeq_total, 1, "DV");
+  amdef("intforce_s", intforce_a, *numeq_total, 1, "DV");
 
   /*--------------------------------------------------------------------*/
   /* create 1 vector of full length for Dirichlet part of RHS */
-  amdef("dirich", dirich_a, *numeq_total, 1, "DV");
+  amdef("dirich_s", dirich_a, *numeq_total, 1, "DV");
 
   /*--------------------------------------------------------------------*/
   /* allocate 3 dist. vectors for internal forces */
   /* internal force at t_{n+1}
    * internal force at t_{n}
-   * mid-internal force at t_{n+1/2} */
+   * mid-internal force at t_{n+1/2} */ /*fie_x, fie_y, fie_z;*/
+#if 1
   solserv_create_vec(fie, fie_num, *numeq_total, *numeq, "DV");
   for (i=0; i<fie_num; i++)
   {
     solserv_zero_vec(fie[i]);
   }
+#endif
 
   /*--------------------------------------------------------------------*/
   /* allocate 3 dist. working vectors */
+#if 1
   solserv_create_vec(work, work_num, *numeq_total, *numeq, "DV");
   for (i=0; i<work_num; i++)
   {
     solserv_zero_vec(work[i]);
   }
+#endif
+
+  /*--------------------------------------------------------------------*/
+  /* b */
+  solserv_create_vec(&distemp1, work_num, *numeq_total, *numeq, "DV");
+  for (i=0; i<work_num; i++)
+  {
+    solserv_zero_vec(&(distemp1[i]));
+  }  
 
   /*--------------------------------------------------------------------*/
   /* initialize solver on all matrices */
@@ -403,12 +416,11 @@ void tsi_st_genalp_init(PARTITION* actpart,
 		 &(actsolv->sysarray_typ[*stiff_array]),
                  &(actsolv->sysarray[*stiff_array]),
                  dispi[0], &(actsolv->rhs[0]), init);
-
-  solver_control(actfield, disnum, actsolv, actintra, 
+#if 1
+  solver_control(actfield, disnum, actsolv, actintra,
                  &(actsolv->sysarray_typ[*mass_array]),
                  &(actsolv->sysarray[*mass_array]),
                  work[0], work[1], init);
-
   if (*damp_array > 0)
   {
     solver_control(actfield, disnum, actsolv, actintra, 
@@ -416,6 +428,19 @@ void tsi_st_genalp_init(PARTITION* actpart,
                    &(actsolv->sysarray[*damp_array]),
                    work[0], work[1], init);
   }
+#else
+  solver_control(actfield, disnum, actsolv, actintra,
+                 &(actsolv->sysarray_typ[*mass_array]),
+                 &(actsolv->sysarray[*mass_array]),
+                 &(distemp1[0]), &(distemp1[1]), init);
+  if (*damp_array > 0)
+  {
+    solver_control(actfield, disnum, actsolv, actintra, 
+		   &(actsolv->sysarray_typ[*damp_array]),
+                   &(actsolv->sysarray[*damp_array]),
+                   &(distemp1[0]), &(distemp1[1]), init);
+  }
+#endif
 
   /*--------------------------------------------------------------------*/
   /* init the assembly for stiffness and for mass matrix */
@@ -430,15 +455,18 @@ void tsi_st_genalp_init(PARTITION* actpart,
   
   /*--------------------------------------------------------------------*/
   /* call elements to calculate stiffness and mass */
+  if (*damp_array > 0)
+  {
   *action = calc_struct_nlnstiffmass;
   container->dvec = NULL;
   container->dirich = NULL;
-  container->global_numeq = 0;
+  container->global_numeq = 0;  /* WHY NOT  *numeq_total */
   container->dirichfacs = NULL;
   container->kstep = 0;
 /*   deltat = actdyn->dt;  /\* NECESSARY ???????? *\/ */
   calelm(actfield, actsolv, actpart, actintra,
          *stiff_array, *mass_array, container, action);
+  }
 
   /*--------------------------------------------------------------------*/
   /* calculate damping matrix */
@@ -594,6 +622,19 @@ void tsi_st_genalp_pred(PARTITION* actpart,
   *action = calc_struct_eleload;
   calrhs(actfield, actsolv, actpart, actintra, stiff_array,
          &(actsolv->rhs[1]), action, container);
+#if 0
+  {
+    INT i;
+    for (i=0; i<numeq_total; i++)
+    {
+      if (isnan(actsolv->rhs[1].vec.a.dv[i]))
+      {
+        printf("Load %d: %24.10e\n", i, actsolv->rhs[1].vec.a.dv[i]);
+        abort();
+      }
+    }
+  }
+#endif
     
   /*--------------------------------------------------------------------*/
   /* multiply rhs[1] by load factor based on factor rldfac of curve 0 */
@@ -655,7 +696,8 @@ void tsi_st_genalp_pred(PARTITION* actpart,
   solserv_zero_mat(actintra, 
                    &(actsolv->sysarray[stiff_array]),
                    &(actsolv->sysarray_typ[stiff_array]));
-  solserv_zero_mat(actintra, &(actsolv->sysarray[mass_array]),
+  solserv_zero_mat(actintra, 
+                   &(actsolv->sysarray[mass_array]),
                    &(actsolv->sysarray_typ[mass_array]));
   amzero(dirich_a);
   amzero(intforce_a);
@@ -663,6 +705,7 @@ void tsi_st_genalp_pred(PARTITION* actpart,
   /*--------------------------------------------------------------------*/
   /*  call elements */
   *action = calc_struct_nlnstiffmass;
+  container->isdyn = 1;
   container->dvec = intforce;
   container->dirich = dirich;
   container->global_numeq = numeq_total;
@@ -670,10 +713,28 @@ void tsi_st_genalp_pred(PARTITION* actpart,
   container->kstep = 0;
   calelm(actfield, actsolv, actpart, actintra, 
          stiff_array, mass_array, container, action);
+#if 0
+  {
+    INT i;
+    for (i=0; i<numeq_total; i++)
+    {
+      if (isnan(intforce[i]))
+      {
+        printf("Intforce %d: %24.10e\n", i, intforce[i]);
+        exit(0);
+      }
+      if (isnan(dirich[i]))
+      {
+        printf("DirichForce %d: %24.10e\n", i, dirich[i]);
+        abort();
+      }
+    }
+  }
+#endif
 
   /*------------------------------------------------------------------*/
   /* store positive internal forces on fie[1] */
-  solserv_zero_vec(&fie[1]);
+  solserv_zero_vec(&(fie[1]));
   assemble_vec(actintra, 
                &(actsolv->sysarray_typ[stiff_array]),
                &(actsolv->sysarray[stiff_array]),

@@ -459,6 +459,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
      mat[i].mattyp = m_th_fourier_iso;
      mat[i].m.th_fourier_iso = (TH_FOURIER_ISO*)CCACALLOC(1,sizeof(TH_FOURIER_ISO));
      frdouble("CONDUCT"  ,&(mat[i].m.th_fourier_iso->conduct)   ,&ierr);
+     frdouble("CAPACITY" ,&(mat[i].m.th_fourier_iso->capacity)  ,&ierr);
    }
    /* Fourier's law of general heat conduction --> heat cond. matrix */
    frchk("MAT_Therm_Fourier_gen",&ierr);
@@ -485,11 +486,15 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
      {
        if (strcmp(word, "Butler") == 0)
        {
-         robin->kind = 1;
+         robin->kind = vp_robinson_kind_butler;
        }
        else if (strcmp(word, "Arya") == 0)
        {
-         robin->kind = 2;
+         robin->kind = vp_robinson_kind_arya;
+       }
+       else if (strcmp(word, "Arya_NarloyZ") == 0)
+       {
+         robin->kind = vp_robinson_kind_arya_narloyz;
        }
        else
        {
@@ -498,7 +503,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
      }
      else
      {
-       robin->kind = 0;
+       robin->kind = vp_robinson_kind_vague;
      }
      robin->youngmodul.ipl = mat_param_ipl_none;
      frchk("YOUNG", &ierr);

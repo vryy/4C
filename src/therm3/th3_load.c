@@ -67,11 +67,13 @@ Tetrahedra  { (r,s,t) | -1<=r<=1, -1<=s<=1-r, -1<=t<=1-r-s }
 \author bborn
 \date 09/06
 */
-void th3_load_heat(ELEMENT *ele,
+void th3_load_heat(CONTAINER* container,
+                   ELEMENT *ele,
                    TH3_DATA *data,
                    INT imyrank,
-                   DOUBLE *loadvec)
+                   ARRAY* intforce_global)
 {
+  DOUBLE* loadvec = intforce_global->a.dv;  /* internal load vector */
   const INT itdyn = genprob.numtf;  /* index of therm dynamics data */
   const THERM_DYNAMIC* tdyn = alldyn[itdyn].tdyn;  /* therm. dyn. data */
   const DOUBLE timen = tdyn->time;  /* current time */
@@ -167,6 +169,9 @@ void th3_load_heat(ELEMENT *ele,
         case neum_dead:
           foundgsurfneum = 1;
           break;
+        case neum_heatconvection:
+          foundgsurfneum = 1;
+          break;
         default:
           dserror("Neumann BC type is not available on side!");
           break;
@@ -255,7 +260,7 @@ void th3_load_heat(ELEMENT *ele,
         {
           /*------------------------------------------------------------*/
           /* initialise intgration factor */
-          fac = cfac;
+          fac = 1.0;
           /*------------------------------------------------------------*/
           /* obtain current Gauss coordinates and weights */
           switch (distyp)
@@ -293,7 +298,7 @@ void th3_load_heat(ELEMENT *ele,
           fac *= det;
           /*------------------------------------------------------------*/
           /* volume-load  ==> eload modified */
-          th3_load_vol(ele, nelenod, shape, fac, eload);
+          th3_load_vol(ele, nelenod, shape, fac, cfac, eload);
         }  /* end of for */
       }  /* end of for */
     }  /* end of for */
@@ -395,7 +400,7 @@ void th3_load_heat(ELEMENT *ele,
                 }  /* end for */
                 /*------------------------------------------------------*/
                 /* Gauss weight */
-                fac = cfac;  /* initialise integration factor */
+                fac = 1.0;  /* initialise integration factor */
                 for (idimsid=0; idimsid<DIMSID_THERM3; idimsid++)
                 {
                   /* multiply weight */
@@ -413,8 +418,8 @@ void th3_load_heat(ELEMENT *ele,
                 fac *= metr;
                 /*------------------------------------------------------*/
                 /* add surface load contribution ==> eload modified */
-                th3_load_surf(ele, nelenod, gsurf[igsurf], shape, fac, 
-                              eload);
+                th3_load_surf(container, ele, nelenod, gsurf[igsurf], 
+                              shape, fac, cfac, eload);
               }  /* end for */
             }  /* end for */
             /*----------------------------------------------------------*/
@@ -490,7 +495,7 @@ void th3_load_heat(ELEMENT *ele,
               }  /* end for */
               /*--------------------------------------------------------*/
               /* multiply weight */
-              fac = cfac * data->ghlw[gpintc[0]][igp[0]];
+              fac = data->ghlw[gpintc[0]][igp[0]];
               /*--------------------------------------------------------*/
               /* Shape functions at Gauss point */
               th3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1, 
@@ -503,8 +508,8 @@ void th3_load_heat(ELEMENT *ele,
               fac *= metr;
               /*--------------------------------------------------------*/
               /* add surface load contribution ==> eload modified */
-              th3_load_surf(ele, nelenod, gsurf[igsurf], shape, fac, 
-                            eload);
+              th3_load_surf(container, ele, nelenod, gsurf[igsurf], shape, 
+                            fac, cfac, eload);
             }  /* end for */
           }  /* end for */
           /*------------------------------------------------------------*/
@@ -602,7 +607,7 @@ void th3_load_heat(ELEMENT *ele,
               }  /* end for */
               /*--------------------------------------------------------*/
               /* set weight */
-              fac = cfac * data->ghlw[gpintc[0]][igp[0]];
+              fac = data->ghlw[gpintc[0]][igp[0]];
               /*--------------------------------------------------------*/
               /* Shape functions at Gauss point */
               th3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1, 
@@ -615,7 +620,7 @@ void th3_load_heat(ELEMENT *ele,
               fac *= metr;
               /*--------------------------------------------------------*/
               /* add surface load contribution ==> eload modified */
-              th3_load_line(ele, nelenod, gline[igline], shape, fac, 
+              th3_load_line(ele, nelenod, gline[igline], shape, fac, cfac,
                             eload);
             }  /* end for */
             /*----------------------------------------------------------*/
@@ -687,7 +692,7 @@ void th3_load_heat(ELEMENT *ele,
               }  /* end for */
               /*--------------------------------------------------------*/
               /* set weight */
-              fac = cfac * data->gtlw[gpintc[0]][igp[0]];
+              fac = data->gtlw[gpintc[0]][igp[0]];
               /*--------------------------------------------------------*/
               /* shape functions at Gauss point */
               th3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1, 
@@ -700,7 +705,7 @@ void th3_load_heat(ELEMENT *ele,
               fac *= metr;
               /*--------------------------------------------------------*/
               /* add surface load contribution ==> eload modified */
-              th3_load_line(ele, nelenod, gline[igline], shape, fac, 
+              th3_load_line(ele, nelenod, gline[igline], shape, fac, cfac,
                             eload);
             }  /* end for */
             /*----------------------------------------------------------*/
@@ -758,6 +763,7 @@ void th3_load_vol(ELEMENT *ele,
                   INT nelenod,
                   DOUBLE shape[MAXNOD_THERM3],
                   DOUBLE fac,
+                  DOUBLE cfac,
                   DOUBLE eload[NUMDOF_THERM3][MAXNOD_THERM3])
 {
   const INT heatminus = -1.0;  /* heat minus occuring in heat conduction */
@@ -770,7 +776,7 @@ void th3_load_vol(ELEMENT *ele,
 #endif
   /*--------------------------------------------------------------------*/
   /* apply heat minus */
-  fac = heatminus * fac;
+  fac *= heatminus;
   /*--------------------------------------------------------------------*/
   /* distinguish load type */
   switch(ele->g.gvol->neum->neum_type)
@@ -787,7 +793,7 @@ void th3_load_vol(ELEMENT *ele,
       {
         for (idof=0; idof<NUMDOF_THERM3; idof++)
         {
-          eload[idof][inode] += shape[inode] * heatsource[idof] * fac;
+          eload[idof][inode] += shape[inode] * heatsource[idof] * fac * cfac;
         }
       }
       break;
@@ -821,22 +827,26 @@ void th3_load_vol(ELEMENT *ele,
 /*!
 \brief Determine load due to heat fluxes on element sides (surfaces)
 
-\param   *ele      ELEMENT      (i)    actual element
-\param    nelenod  INT          (i)    number of element nodes
-\param   *gsurf    GSURF        (i)    current geometry surface
-\param   *shape    DOUBLE       (i)    shape function at Gauss point
-\param    fac      DOUBLE       (i)    integration factor at Gauss point
-\param  **eload    DOUBLE       (io)   element load vector contribution
+\param   container  CONTAINER*  (i)    container
+\param   ele        ELEMENT*    (i)    actual element
+\param   nelenod    INT         (i)    number of element nodes
+\param   gsurf      GSURF*      (i)    current geometry surface
+\param   shape      DOUBLE[]    (i)    shape function at Gauss point
+\param   fac        DOUBLE      (i)    integration factor at Gauss point
+\param   cfac       DOUBLE      (i)    load curve scale  
+\param   eload      DOUBLE[][]  (io)   element load vector contribution
 \return void
 
 \author bborn
 \date 09/06
 */
-void th3_load_surf(ELEMENT *ele,
+void th3_load_surf(CONTAINER* container,
+                   ELEMENT *ele,
                    INT nelenod,
                    GSURF *gsurf,
                    DOUBLE shape[MAXNOD_THERM3],
                    DOUBLE fac,
+                   DOUBLE cfac,
                    DOUBLE eload[NUMDOF_THERM3][MAXNOD_THERM3])
 {
   const INT heatminus = -1.0;
@@ -850,7 +860,7 @@ void th3_load_surf(ELEMENT *ele,
 #endif
   /*--------------------------------------------------------------------*/
   /* apply heat minus */
-  fac = heatminus * fac;
+  fac *= heatminus;
   /*--------------------------------------------------------------------*/
   /* distinguish load type */
   switch(gsurf->neum->neum_type)
@@ -858,7 +868,7 @@ void th3_load_surf(ELEMENT *ele,
     /*------------------------------------------------------------------*/
     /* uniform prescribed surface load */
     case neum_dead:
-      for (idof=0; idof<NUMDOF_THERM3; idof++)
+      for (idof=0; idof<NUMDOF_THERM3; idof++)  /* mark NUMDOF_THERM3==1 */
       {
         onoff[idof] = gsurf->neum->neum_onoff.a.iv[idof];
         heatflux[idof] = gsurf->neum->neum_val.a.dv[idof];
@@ -871,11 +881,65 @@ void th3_load_surf(ELEMENT *ele,
           /* if load is switched on : apply */
           if (onoff[idof] == 1)
           {
-            eload[idof][inode] += shape[inode] * heatflux[idof] * fac;
+            eload[idof][inode] += shape[inode] * heatflux[idof] * fac * cfac;
           }
         }
       }
       break;
+    /*------------------------------------------------------------------*/
+    /* heat convection
+     * Strictly speacking this is an non-linear heat load type,
+     * do to its dependence on the current heat state (follower load-like).
+     * Here, we will use the _last converged_ temperature to avoid
+     * the effort of a linearisation. */
+    case neum_heatconvection:
+    {
+      const INT jdof = 0;
+      INT have_envtem = gsurf->neum->neum_onoff.a.iv[0];
+      INT have_bastem1 = gsurf->neum->neum_onoff.a.iv[1];
+      INT have_coeff1 = gsurf->neum->neum_onoff.a.iv[2];
+      INT have_bastem2 = gsurf->neum->neum_onoff.a.iv[3];
+      INT have_coeff2 = gsurf->neum->neum_onoff.a.iv[4];
+      if ( (have_envtem) 
+           && (have_bastem1) && (have_coeff1)
+           && (have_bastem2) && (have_coeff2) )
+      {
+        /* environmental temperature T_infty */
+        DOUBLE envtem = gsurf->neum->neum_val.a.dv[0];
+        /* 1st base temperature */
+        DOUBLE t1 = gsurf->neum->neum_val.a.dv[1];
+        /* 1st convection coefficient */
+        DOUBLE c1 = gsurf->neum->neum_val.a.dv[2];
+        /* 2nd base temperature */
+        DOUBLE t2 = gsurf->neum->neum_val.a.dv[3];
+        /* 1st convection coefficient */
+        DOUBLE c2 = gsurf->neum->neum_val.a.dv[4];
+        /* temperature of last converged state */
+        DOUBLE tem;
+        th3_temper_sh(container, ele, shape, &tem);
+        /* base temperature */
+        DOUBLE bastem = cfac*envtem;
+        /* check denominator */
+        if (fabs(t2-t1) < EPS12)
+        {
+          dserror("Division by zero");
+        }
+        /* convection coefficient */
+        DOUBLE convcoeff = ((c2-c1)*bastem + c1*t2 - c2*t1)/(t2-t1);
+        /* convective boundary flux */
+        DOUBLE hflx = convcoeff * (bastem - tem);
+        /* add load vector component to element load vector */
+        for (inode=0; inode<nelenod; inode++)
+        {
+          eload[jdof][inode] += shape[inode] * hflx * fac;
+        }
+      }
+      else
+      {
+        dserror("Not enough parameters for heat convection");
+      }
+      break;
+    }
     /*------------------------------------------------------------------*/
     case pres_domain_load:
       dserror("load case unknown");
@@ -922,6 +986,7 @@ void th3_load_line(ELEMENT *ele,
                    GLINE *gline,
                    DOUBLE shape[MAXNOD_THERM3],
                    DOUBLE fac,
+                   DOUBLE cfac,
                    DOUBLE eload[NUMDOF_THERM3][MAXNOD_THERM3])
 {
   const INT heatminus = -1.0;
@@ -935,7 +1000,7 @@ void th3_load_line(ELEMENT *ele,
 #endif
   /*--------------------------------------------------------------------*/
   /* apply heat minus */
-  fac = heatminus * fac;
+  fac *= heatminus;
   /*--------------------------------------------------------------------*/
   /* distinguish load type */
   switch(gline->neum->neum_type)
@@ -956,7 +1021,7 @@ void th3_load_line(ELEMENT *ele,
           /* if load is switched on : apply */
           if (onoff[idof] == 1)
           {
-            eload[idof][inode] += shape[inode] * heatflux[idof] * fac;
+            eload[idof][inode] += shape[inode] * heatflux[idof] * fac * cfac;
           }
         }
       }

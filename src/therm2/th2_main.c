@@ -126,7 +126,7 @@ void therm2(PARTITION *actpart,
       th2_temper_init();
 #endif
       break;
-    case calc_therm_tang:
+    case calc_therm_tang_stat:
       actmat = &(mat[ele->mat-1]);
       th2_lin_stiff(ele, &(th2_data), actmat, estif_global, NULL, NULL);
       break;

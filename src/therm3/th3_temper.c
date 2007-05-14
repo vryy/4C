@@ -69,7 +69,7 @@ void th3_temper_init()
 {
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
-  dstrc_enter("th2_temper_init");
+  dstrc_enter("th3_temper_init");
 #endif
 
   /*--------------------------------------------------------------------*/
@@ -86,7 +86,7 @@ void th3_temper_init()
   dstrc_exit();
 #endif
   return;
-}  /* end of th2_temper_init */
+}  /* end of th3_temper_init */
 
 
 /*=====================================================================*/
@@ -142,16 +142,16 @@ for the linear planar heat conduction problem.
 \author bborn
 \date 10/06
 */
-void th3_temper_cal(const CONTAINER *container,
-                    const ELEMENT *ele,
-                    const DOUBLE r,
-                    const DOUBLE s,
-                    const DOUBLE t,
-                    DOUBLE *tem)
+void th3_temper_caln(const CONTAINER *container,
+                     const ELEMENT *ele,
+                     const DOUBLE r,
+                     const DOUBLE s,
+                     const DOUBLE t,
+                     DOUBLE *tem)
 {
   const ARRAY_POSITION_SOL* isol 
     = &(field[genprob.numtf].dis[container->disnum_t].ipos.isol);
-  const INT item = isol->tem;  /* temperature index */
+  const INT itemn = isol->temn;  /* temperature index */
   const INT nelenod = ele->numnp;
   /* const INT neledof = NUMDOF_THERM3 * nelenod; */
   DOUBLE rr=0.0, ss=0.0, tt=0.0;  /* Gauss coordinate in THERM3 parameter space */
@@ -161,7 +161,7 @@ void th3_temper_cal(const CONTAINER *container,
 
   /*====================================================================*/
 #ifdef DEBUG
-  dstrc_enter("th3_temper_cal");
+  dstrc_enter("th3_temper_caln");
 #endif
 
   /*--------------------------------------------------------------------*/
@@ -201,7 +201,7 @@ void th3_temper_cal(const CONTAINER *container,
   /* current nodal temperature */
   for (k=0; k<nelenod; k++)
   {
-    nodtem[k] = ele->node[k]->sol.a.da[item][0];
+    nodtem[k] = ele->node[k]->sol.a.da[itemn][0];
   }
 
   /*--------------------------------------------------------------------*/
@@ -210,6 +210,60 @@ void th3_temper_cal(const CONTAINER *container,
   for (k=0; k<nelenod; k++)
   {
     *tem += shape[k]*nodtem[k];
+  }
+
+  /*====================================================================*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}  /* end of th3_temper_cal */
+
+/*======================================================================*/
+/*!
+\brief Calculate last temperature at point on element parameter domain
+       The shape functions at the point of interest are already known.
+
+\param    container     CONTAINER*  (i)   container data
+\param    ele           ELEMENT*    (i)   pointer to current element
+\param    shape         DOUBLE[]    (i)   shape funtions at point (r,s,t)
+\param    tem           DOUBLE*     (o)   temperature at (r,s,t)
+
+\return void
+
+\author bborn
+\date 10/06
+*/
+void th3_temper_sh(const CONTAINER *container,
+                   const ELEMENT *ele,
+                   const DOUBLE shape[MAXNOD_THERM3],
+                   DOUBLE *tem)
+{
+  const INT idof = 0;  /* the only DOF */
+  const ARRAY_POSITION_SOL* isol 
+    = &(field[genprob.numtf].dis[container->disnum_t].ipos.isol);
+  const INT item = isol->tem;  /* temperature index of last converged */
+  const INT nelenod = ele->numnp;
+  INT k;  /* loop index */
+
+  /*====================================================================*/
+#ifdef DEBUG
+  dstrc_enter("th3_temper_sh");
+#endif
+
+  /*--------------------------------------------------------------------*/
+  /* last converged nodal temperatures */
+  for (k=0; k<nelenod; k++)
+  {
+    nodtem[k] = ele->node[k]->sol.a.da[item][idof];
+  }
+
+  /*--------------------------------------------------------------------*/
+  /* interpolate temperature */
+  *tem = 0.0;
+  for (k=0; k<nelenod; k++)
+  {
+    *tem += shape[k] * nodtem[k];
   }
 
   /*====================================================================*/

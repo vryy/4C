@@ -33,8 +33,8 @@ Maintainer: Burkhard Bornemann
 \param *cont      CONTAIMER (i)   container data
 \param *ele       ELEMENT   (i)   pointer to current element
 \param *mat       MATERIAL  (i)   pointer to current material
-\param **bop      DOUBLE    (i)   B-operator
 \param ip         INT       (i)   current Gauss point index
+\param tmgr       DOUBLE[]  (i)   temperature gradient
 \param *heatflux  DOUBLE    (o)   heat flux
 \param **cmat     DOUBLE    (o)   constitutive matrix
 \return void
@@ -45,8 +45,8 @@ Maintainer: Burkhard Bornemann
 void th3_mat_sel(CONTAINER *cont,
                  ELEMENT *ele,
                  MATERIAL *mat,
-                 DOUBLE bop[NDIM_THERM3][NUMDOF_THERM3*MAXNOD_THERM3],
                  INT ip,
+                 DOUBLE tmgr[NUMTMGR_THERM3],
                  DOUBLE heatflux[NUMHFLX_THERM3],
                  DOUBLE cmat[NUMHFLX_THERM3][NUMTMGR_THERM3])
 {
@@ -63,7 +63,7 @@ void th3_mat_sel(CONTAINER *cont,
       th3_matlin_iso(cont,
                      mat->m.th_fourier_iso->conduct,
                      ele,
-                     bop,
+                     tmgr,
                      heatflux,
                      cmat);
       break;
@@ -79,6 +79,38 @@ void th3_mat_sel(CONTAINER *cont,
   return;
 }  /* end of th3_mat_sel */
 
+
+/*======================================================================*/
+/*!
+\brief Heat capacity coefficient
+\author bborn
+\date 05/07
+*/
+void th3_mat_capacity(MATERIAL* mat,
+                      DOUBLE* capacity)
+{
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_enter("th3_mat_capacity");
+#endif
+
+  /*--------------------------------------------------------------------*/
+  /* the material law (it's a material world!) */
+  switch (mat->mattyp)
+  {
+    case m_th_fourier_iso:
+      *capacity = mat->m.th_fourier_iso->capacity;
+      break;
+    default:
+      dserror("Capacity of chosen material cannot be determined");
+      break;
+  }  /* end of switch (mat->mattyp) */
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}  /* end void th3_mat_capacity() */
 
 /*======================================================================*/
 #endif  /* end of #ifdef D_THERM3 */

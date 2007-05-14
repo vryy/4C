@@ -57,7 +57,7 @@ void so3_tsi_temper(const CONTAINER *container,
   {
 #ifdef D_THERM3
     case el_therm3:
-      th3_temper_cal(container, ele->e.so3->therm_ele, r, s, t, temper);
+      th3_temper_caln(container, ele->e.so3->therm_ele, r, s, t, temper);
       break;
 #endif
     default:

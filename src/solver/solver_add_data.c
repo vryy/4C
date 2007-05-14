@@ -1434,13 +1434,15 @@ return;
  *---------------------------------------------------------------------------*/
 #ifdef D_TSI
 void assemble_dirich_therm(ELEMENT *actele, 
-                           ARRAY *estif_global, 
+                           ARRAY *estif_global,
+                           ARRAY *emass_global,
                            CONTAINER *container)
 {
 INT                   i,j;
 INT                   numdf;
 INT                   nd=0;
 DOUBLE              **estif;
+DOUBLE              **emass;
 DOUBLE                dirich[MAXDOFPERELE];
 DOUBLE                dforces[MAXDOFPERELE];
 INT                   dirich_onoff[MAXDOFPERELE];
@@ -1450,6 +1452,9 @@ GNODE                *actgnode;
 NODE*                 actnode;
 #endif
 const INT isoltemdn = container->isoltemdn;
+DOUBLE                dtinv = 0.0;
+DOUBLE                gamma = 0.0;
+
 
 
 #ifdef DEBUG
@@ -1457,6 +1462,15 @@ dstrc_enter("assemble_dirich_therm");
 #endif
 /*----------------------------------------------------------------------*/
 estif  = estif_global->a.da;
+if (emass_global != NULL)
+{
+  emass = emass_global->a.da;
+}
+if (container->dirichfacs != NULL)
+{
+  dtinv = container->dirichfacs[0];
+  gamma = container->dirichfacs[1];
+}
 /*---------------------------------- set number of dofs on this element */
 for (i=0; i<actele->numnp; i++) nd += actele->node[i]->numdf;
 /*---------------------------- init the vectors dirich and dirich_onoff */
@@ -1480,18 +1494,38 @@ for (i=0; i<actele->numnp; i++)
    }
 }
 /*----------------------------------------- loop rows of element matrix */
-for (i=0; i<nd; i++)
+if (emass_global == NULL)
 {
-   /*------------------------------------- do nothing for supported row */
-   if (dirich_onoff[i]!=0) continue;
-   /*---------------------------------- loop columns of unsupported row */
-   for (j=0; j<nd; j++)
-   {
+  for (i=0; i<nd; i++)
+  {
+    /*------------------------------------ do nothing for supported row */
+    if (dirich_onoff[i]!=0) continue;
+    /*--------------------------------- loop columns of unsupported row */
+    for (j=0; j<nd; j++)
+    {
       /*---------------------------- do nothing for unsupported columns */
       if (dirich_onoff[j]==0) continue;
       dforces[i] += estif[i][j] * dirich[j];
-   }/* loop j over columns */
-}/* loop i over rows */
+    }/* loop j over columns */
+  }/* loop i over rows */
+}
+else
+{
+  for (i=0; i<nd; i++)
+  {
+    /*------------------------------------ do nothing for supported row */
+    if (dirich_onoff[i]!=0) continue;
+    /*--------------------------------- loop columns of unsupported row */
+    for (j=0; j<nd; j++)
+    {
+      /*---------------------------- do nothing for unsupported columns */
+      if (dirich_onoff[j]==0) continue;
+      dforces[i] += ( gamma * estif[i][j] 
+                      + dtinv * emass[i][j] ) * dirich[j];
+        
+    }/* loop j over columns */
+  }/* loop i over rows */
+}
 /*-------- now assemble the vector dforces to the global vector fullvec */
 #if defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
 for (i=0; i<actele->numnp; i++)

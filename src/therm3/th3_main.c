@@ -69,7 +69,7 @@ void therm3(PARTITION *actpart,
             ELEMENT *ele,
             ARRAY *estif_global,
             ARRAY *emass_global,
-            ARRAY *intforce_global,
+            ARRAY *eforc_global,
             CALC_ACTION *action,
             CONTAINER *container)   /* contains variables defined 
                                      * in container.h */
@@ -77,26 +77,20 @@ void therm3(PARTITION *actpart,
 
   static TH3_DATA th3_data; /* global variable th3_data */
 
-  MATERIAL *actmat;
+  MATERIAL* actmat;
 
   INT imyrank;
-  DOUBLE *intforce;
-
 
   /*====================================================================*/
 #ifdef DEBUG
   dstrc_enter("therm3");
 #endif
 
-  if (intforce_global)
-  {
-    intforce = intforce_global->a.dv;
-  }
-
   /*--------------------------------------------------------------------*/
   /* switch according to ACTION */
   switch (*action)
   {
+    /*------------------------------------------------------------------*/
     /* initialise generally element type */
     case calc_therm_init:
       /* these are only called once! */
@@ -113,28 +107,44 @@ void therm3(PARTITION *actpart,
       th3_temper_init();
 #endif
       break;
-    /* determine tangent */
-    case calc_therm_tang:
+    /*------------------------------------------------------------------*/
+    /* stationary tangent */
+    case calc_therm_tang_stat:
       actmat = &(mat[ele->mat-1]);
       th3_lin_tang(container, ele, &(th3_data), actmat, 
                    estif_global, NULL, NULL);
       break;
+    /*------------------------------------------------------------------*/
+    /* in-stationary tangent */
+    case calc_therm_tang_instat:
+      actmat = &(mat[ele->mat-1]);
+      th3_lin_tang(container, ele, &(th3_data), actmat, 
+                   estif_global, emass_global, eforc_global);
+      break;
+    /*------------------------------------------------------------------*/
+    /* external element nodal heat flux vector */
     case calc_therm_heatload:
       imyrank = actintra->intra_rank;
       actmat = &(mat[ele->mat-1]);
-      th3_load_heat(ele, &(th3_data), imyrank, intforce);
+      th3_load_heat(container, ele, &(th3_data), imyrank, eforc_global);
       break;
+    /*------------------------------------------------------------------*/
+    /* heat flux at Gauss points */
     case calc_therm_heatflux:
       imyrank = actintra->intra_rank;
       actmat = &(mat[ele->mat-1]);
       th3_hflux_cal(container, ele, &(th3_data), actmat);
       break;
+    /*------------------------------------------------------------------*/
+    /* finalise */
     case calc_therm_final:
       th3_hflux_final(actpart);
 #ifdef D_TSI
       th3_temper_final();
 #endif
       break;
+    /*------------------------------------------------------------------*/
+    /* catch */
     default:
       dserror("action unknown");
       break;

@@ -2057,16 +2057,28 @@ void inpctr_dyn_tsi(TSI_DYNAMIC *tsidyn)
       {
          tsidyn->kind = tsi_therm_pred_struct_dyn;
       }
+      else if (frwordcmp(buffer, "thermal_onesteptheta_structure_genalpha") == 0)
+      {
+         tsidyn->kind = tsi_therm_ost_struct_genalp;
+      }
       else
       {
          dserror("KIND of TSI unknown");
       }
     }
-
+    /* time */
     frint("NUMSTEP", &(tsidyn->nstep), &ierr);
     frdouble("TIMESTEP", &(tsidyn->dt), &ierr);
     frdouble("MAXTIME", &(tsidyn->maxtime), &ierr);
-
+    frint("RESEVRY", &(tsidyn->out_res_ev), &ierr);
+    frint("STDEVRY", &(tsidyn->out_std_ev), &ierr);
+    /* integrators */
+    frdouble("TH_GAMMA", &(tsidyn->th_gamma), &ierr);
+    frdouble("ST_BETA", &(tsidyn->st_beta), &ierr);
+    frdouble("ST_GAMMA", &(tsidyn->st_gamma), &ierr);
+    frdouble("ST_ALPHA_M", &(tsidyn->st_alpha_m), &ierr);
+    frdouble("ST_ALPHA_F", &(tsidyn->st_alpha_f), &ierr);
+    /* iteration */
     frint("ITEMAX", &(tsidyn->maxiter), &ierr);
 
     frread();

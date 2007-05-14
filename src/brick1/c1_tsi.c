@@ -66,8 +66,8 @@ void c1_tsi_thstrain(CONTAINER *container,
   amzero(&thstrain_a);
 
   /*--------------------------------------------------------------------*/
-  /* temperature at Gauss point (r,s) */
-  th3_temper_cal(container, ele->e.c1->therm_ele, r, s, t, &tem);
+  /* temperature at Gauss point (r,s,t) */
+  th3_temper_caln(container, ele->e.c1->therm_ele, r, s, t, &tem);
 
   /*--------------------------------------------------------------------*/
   /* type of material */

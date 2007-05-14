@@ -37,7 +37,8 @@ typedef struct _NEUM_CONDITION
      neum_consthydro_z,
      neum_increhydro_z,
      neum_orthopressure,
-     neum_LAS
+     neum_LAS,
+     neum_heatconvection
      }                         neum_type;
 
      enum

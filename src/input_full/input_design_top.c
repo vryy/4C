@@ -713,7 +713,7 @@ static void inpdesign_dpoint_fenode(
     actdnode = &(design->dnode[i]);
 
     if (act_dnode_fenode[i] == NULL)
-      dserror("DNODE without FE node. Uncollapsed nodes in GiD?");
+      dserror("DNODE %d without FE node. Uncollapsed nodes in GiD?", i+1);
 
     if (design->ndnode_fenode[i] == 0 )
       continue;

@@ -73,7 +73,8 @@ void so3_mat_robinson_init(ELEMENT* ele)  /*!< current element */
     so3_mat_robinson_fb4_init(actso3);
   }
   else if ( (tsidyn->kind == tsi_therm_stat_struct_genalp)
-            || (tsidyn->kind == tsi_therm_presc_struct_genalp) )
+            || (tsidyn->kind == tsi_therm_presc_struct_genalp)
+            || (tsidyn->kind == tsi_therm_ost_struct_genalp) )
   {
     so3_mat_robinson_be_init(actso3);
   }
@@ -114,7 +115,8 @@ void so3_mat_robinson_final(ELEMENT* ele)  /*!< current element */
     so3_mat_robinson_fb4_final(actso3);
   }
   else if ( (tsidyn->kind == tsi_therm_stat_struct_genalp)
-            || (tsidyn->kind == tsi_therm_presc_struct_genalp) )
+            || (tsidyn->kind == tsi_therm_presc_struct_genalp)
+            || (tsidyn->kind == tsi_therm_ost_struct_genalp) )
   {
     so3_mat_robinson_be_final(actso3);
   }
@@ -161,7 +163,7 @@ void so3_mat_robinson_prmbytmpr(const MAT_PARAM_MULT prm,
   else if (ipl == mat_param_ipl_poly)
   {
     *prmbytempr = 0.0;  /* initialise */
-    INT tmpr_pow = 1.0;
+    DOUBLE tmpr_pow = 1.0;
     INT i;
     for (i=0; i<prm_n; ++i)
     {
@@ -241,15 +243,24 @@ void so3_mat_robinson_elmat(const VP_ROBINSON* mat_robin,
   /*--------------------------------------------------------------------*/
   DOUBLE emod;
   so3_mat_robinson_prmbytmpr(mat_robin->youngmodul, tem, &emod);
+#if 0
+  printf("Emod %f\n", emod);
+#endif
   DOUBLE prat = mat_robin->possionratio;
+#if 0
+  printf("ue %f\n", prat);
+#endif
   DOUBLE mfac = emod/((1.0+prat)*(1.0-2.0*prat));  /* factor */
   /* zero content */
-  INT istr, jstr;
-  for (istr=0; istr<NUMSTR_SOLID3; istr++)
+  /* memset(cmat, 0, NUMSTR_SOLID3*NUMSTR_SOLID3*sizeof(DOUBLE)); */
   {
-    for (jstr=0; jstr<NUMSTR_SOLID3; jstr++)
+    INT istr, jstr;
+    for (istr=0; istr<NUMSTR_SOLID3; istr++)
     {
-      cmat[istr][jstr] = 0.0;
+      for (jstr=0; jstr<NUMSTR_SOLID3; jstr++)
+      {
+        cmat[istr][jstr] = 0.0;
+      }
     }
   }
   /* non-zero content --- axial */
@@ -318,7 +329,8 @@ void so3_mat_robinson_sel(const CONTAINER* container,
                              cmat);
   }
   else if ( (tsidyn->kind == tsi_therm_stat_struct_genalp)
-            || (tsidyn->kind == tsi_therm_presc_struct_genalp) )
+            || (tsidyn->kind == tsi_therm_presc_struct_genalp)
+            || (tsidyn->kind == tsi_therm_ost_struct_genalp) )
   {
     so3_mat_robinson_be_sel(container,
                             ele,
@@ -328,6 +340,15 @@ void so3_mat_robinson_sel(const CONTAINER* container,
                             gds,
                             stress,
                             cmat);
+#if 0
+      {
+        INT i;
+        for (i=0; i<NUMSTR_SOLID3; i++)
+        {
+          printf("(so3_mat_robinson_sel) Stress %d : %g\n", i, stress[i]);
+        }
+      }
+#endif
   }
   else
   {
@@ -366,7 +387,8 @@ void so3_mat_robinson_mivupdreq(ELEMENT* ele,
     /* do nothing */
   }
   else if ( (tsidyn->kind == tsi_therm_stat_struct_genalp)
-            || (tsidyn->kind == tsi_therm_presc_struct_genalp) )
+            || (tsidyn->kind == tsi_therm_presc_struct_genalp)
+            || (tsidyn->kind == tsi_therm_ost_struct_genalp) )
   {
     so3_mat_robinson_be_mivupdreq(ele, mat_robin, updreq);
   }
@@ -415,7 +437,8 @@ void so3_mat_robinson_mivupditer(const CONTAINER* container,
     /* do nothing */
   }
   else if ( (tsidyn->kind == tsi_therm_stat_struct_genalp)
-            || (tsidyn->kind == tsi_therm_presc_struct_genalp) )
+            || (tsidyn->kind == tsi_therm_presc_struct_genalp)
+            || (tsidyn->kind == tsi_therm_ost_struct_genalp) )
   {
     so3_mat_robinson_be_mivupditer(container, ele, mat_robin, ip, epsii);
   }
@@ -460,7 +483,8 @@ void so3_mat_robinson_mivupdincr(const CONTAINER* container,
     so3_mat_robinson_fb4_mivupdincr(ele, mat_robin);
   }
   else if ( (tsidyn->kind == tsi_therm_stat_struct_genalp)
-            || (tsidyn->kind == tsi_therm_presc_struct_genalp) )
+            || (tsidyn->kind == tsi_therm_presc_struct_genalp)
+            || (tsidyn->kind == tsi_therm_ost_struct_genalp) )
   {
     so3_mat_robinson_be_mivupdincr(ele, mat_robin);
   }
@@ -519,7 +543,8 @@ void so3_mat_robinson_stress(const CONTAINER* container,
                                 cmat);
   }
   else if ( (tsidyn->kind == tsi_therm_stat_struct_genalp)
-            || (tsidyn->kind == tsi_therm_presc_struct_genalp) )
+            || (tsidyn->kind == tsi_therm_presc_struct_genalp)
+            || (tsidyn->kind == tsi_therm_ost_struct_genalp) )
   {
     so3_mat_robinson_be_stress(container,
                                ele,

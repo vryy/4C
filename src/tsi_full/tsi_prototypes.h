@@ -219,6 +219,70 @@ void tsi_st_genalp_sub(INT disnum_s,
                        INT disnum_t);
 
 /*----------------------------------------------------------------------*/
+/* file tsi_th_ost_st_genalp.c */
+void tsi_th_ost_st_genalp(INT disnum_s,
+                          INT disnum_t);
+
+/*----------------------------------------------------------------------*/
+/* file tsi_th_ost_sub.c */
+void tsi_th_ost_init(PARTITION* actpart,
+                     INTRA* actintra,
+                     FIELD* actfield,
+                     INT disnum,
+                     ARRAY_POSITION* ipos,
+                     SOLVAR* actsolv,
+                     INT* numeq,
+                     INT* numeq_total,
+                     INT* stiff_array,
+                     INT* mass_array,
+                     CONTAINER* container,
+                     DIST_VECTOR** tem,
+                     DIST_VECTOR** fext,
+                     DIST_VECTOR** fextn,
+                     DIST_VECTOR** fint,
+                     ARRAY* intforce_a,
+                     ARRAY* dirich_a);
+void tsi_th_ost_equi(PARTITION* actpart,
+                     INTRA* actintra,
+                     FIELD* actfield,
+                     INT disnum,
+                     ARRAY_POSITION_SOL* isol,
+                     SOLVAR* actsolv,
+                     INT numeq,
+                     INT numeq_total,
+                     INT stiff_array,
+                     INT mass_array,
+                     THERM_DYNAMIC* actdyn,
+                     CONTAINER* container,
+                     DIST_VECTOR* tem,
+                     DIST_VECTOR* fint,
+                     DIST_VECTOR* fext,
+                     DIST_VECTOR* fextn,
+                     ARRAY* intforce_a,
+                     ARRAY* dirich_a);
+void tsi_th_ost_out(PARTITION* actpart,
+                    INTRA* actintra,
+                    FIELD* actfield,
+                    INT disnum,
+                    ARRAY_POSITION_SOL* isol,
+                    SOLVAR* actsolv,
+                    INT actsysarray,
+                    THERM_DYNAMIC* actdyn,
+                    CONTAINER* container);
+void tsi_th_ost_final(SOLVAR* actsolv,
+#ifdef BINIO
+                      BIN_OUT_FIELD* out_context,
+#endif
+                      DIST_VECTOR** tem,
+                      DIST_VECTOR** fext,
+                      DIST_VECTOR** fextn,
+                      DIST_VECTOR** fint,
+                      ARRAY* intforce_a,
+                      ARRAY* dirich_a);
+void tsi_th_ost_sub(INT disnum_s,
+                    INT disnum_t);
+
+/*----------------------------------------------------------------------*/
 /* file tsi_th_presc_st_genalp.c */
 void tsi_th_presc_st_genalp(INT disnum_s,
                             INT disnum_t);

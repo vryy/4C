@@ -552,7 +552,8 @@ void calelm(FIELD        *actfield,     /* active field */
    case calc_fluid_amatrix          : assemble_action = assemble_do_nothing; break;
    case calc_fluid_f2pro_rhs_both   : assemble_action = assemble_two_matrix; break;
 #ifdef D_TSI
-   case calc_therm_tang             : assemble_action = assemble_one_matrix; break;
+   case calc_therm_tang_stat        : assemble_action = assemble_one_matrix; break;
+   case calc_therm_tang_instat      : assemble_action = assemble_two_matrix; break;
    case calc_therm_heatload         : assemble_action = assemble_do_nothing; break;
    case calc_therm_heatflux         : assemble_action = assemble_do_nothing; break;
 #endif
@@ -670,16 +671,15 @@ void calelm(FIELD        *actfield,     /* active field */
       /*------------------ assemble internal force or external forces */
       if (container->dvec) {
         assemble_intforce(actele,&intforce_global,container,actintra);
-      } 
-      /*--- assemble the rhs vector of condensed dirichlet conditions */
-      /* static case */
-      if (container->dirich && container->isdyn==0) {
-        assemble_dirich_therm(actele,&estif_global,container);
       }
-      /* dynamic case */
+      /*--- assemble the rhs vector of condensed dirichlet conditions */
+      /* stationary case */
+      if (container->dirich && container->isdyn==0) {
+        assemble_dirich_therm(actele,&estif_global,NULL,container);
+      }
+      /* in-stationary case */
       if (container->dirich && container->isdyn==1) {
-        dserror("Dynamic thermal field is not implemented.");
-        /* assemble_dirich_dyn(actele,&estif_global,&emass_global,container); */
+        assemble_dirich_therm(actele,&estif_global,&emass_global,container);
       }
    break;
 #endif
@@ -746,7 +746,8 @@ case calc_fluid_f2pro            : assemble_action = assemble_do_nothing;   brea
 case calc_fluid_amatrix          : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_f2pro_rhs_both   : assemble_action = assemble_two_exchange; break;
 #ifdef D_TSI
-case calc_therm_tang             : assemble_action = assemble_one_exchange; break;
+case calc_therm_tang_stat        : assemble_action = assemble_one_exchange; break;
+case calc_therm_tang_instat      : assemble_action = assemble_two_exchange; break;
 case calc_therm_heatload         : assemble_action = assemble_do_nothing;   break;
 case calc_therm_heatflux         : assemble_action = assemble_do_nothing;   break;
 #endif
@@ -820,7 +821,8 @@ case calc_fluid_f2pro            : assemble_action = assemble_do_nothing;   brea
 case calc_fluid_amatrix          : assemble_action = assemble_do_nothing;   break;
 case calc_fluid_f2pro_rhs_both   : assemble_action = assemble_do_nothing;   break;
 #ifdef D_TSI
-case calc_therm_tang             : assemble_action = assemble_close_1matrix; break;
+case calc_therm_tang_stat        : assemble_action = assemble_close_1matrix; break;
+case calc_therm_tang_instat      : assemble_action = assemble_close_2matrix; break;
 case calc_therm_heatload         : assemble_action = assemble_do_nothing;   break;
 case calc_therm_heatflux         : assemble_action = assemble_do_nothing;   break;
 #endif

@@ -184,7 +184,7 @@ void th2_temper_cal(CONTAINER *container,
   /* current nodal temperature */
   for (k=0; k<nelenod; k++)
   {
-    nodtem[k] = ele->node[k]->sol.a.da[isol->tem][0];
+    nodtem[k] = ele->node[k]->sol.a.da[isol->temn][0];
   }
 
   /*--------------------------------------------------------------------*/

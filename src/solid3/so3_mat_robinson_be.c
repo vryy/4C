@@ -259,6 +259,9 @@ void so3_mat_robinson_be_sel(const CONTAINER* container,
     for (istr=0; istr<NUMSTR_SOLID3; istr++)
     {
       stnela[istr] = stntotn[istr] - stnvscn[istr] - stnthr[istr];
+#if 0
+      printf("Ele %d: ViscStress %g; Elestrain %g; TotStrain %g; ThStrain %g\n", ele->Id_loc, stnvscn[istr], stnela[istr], stntotn[istr], stnthr[istr]);
+#endif
     }
   }
 
@@ -275,6 +278,20 @@ void so3_mat_robinson_be_sel(const CONTAINER* container,
   /*--------------------------------------------------------------------*/
   /* stress sig_{n+1}^<i> at t_{n+1} */
   so3_mv6_v_assmvp(cmat, stnela, stress);
+#if 0
+  {
+    INT i;
+    for (i=0; i<6; i++)
+    {
+      if (isnan(stress[i]))
+      {
+        printf("Ele %d: Stress %g; TotStrain %g; ViscStrain %g; BackStress %g\n", ele->Id_loc, stress[i], stntotn[i], actso3->miv_rob->vicstnn.a.da[ip], actso3->miv_rob->bacstsn.a.da[ip]);
+        abort();
+      }
+    }
+  }
+#endif
+
 
   /*--------------------------------------------------------------------*/
   /* deviatoric stress s_{n+1}^<i> at t_{n+1} */
@@ -306,6 +323,16 @@ void so3_mat_robinson_be_sel(const CONTAINER* container,
                               &(actso3->miv_rob->bckstss.a.iv[ip]),
                               bckstsr, kae, kav, kaa);
 
+#if 0
+      {
+        INT i;
+        for (i=0; i<NUMSTR_SOLID3; i++)
+        {
+          printf("(so3_mat_robinson_be_sel_1) Stress %d : %g\n", i, stress[i]);
+        }
+      }
+#endif
+
   /*--------------------------------------------------------------------*/
   /* build reduced stress and tangent
    * ==> static condensation */
@@ -316,6 +343,15 @@ void so3_mat_robinson_be_sel(const CONTAINER* container,
                           actso3->miv_rob->kvakvae.a.da[ip]);
 
 
+#if 0
+      {
+        INT i;
+        for (i=0; i<NUMSTR_SOLID3; i++)
+        {
+          printf("(so3_mat_robinsonbe_sel_2) Stress %d : %g\n", i, stress[i]);
+        }
+      }
+#endif
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -586,16 +622,32 @@ void so3_mat_robinson_be_rbcksts(ELEMENT* ele,
   tem0 = mat_robin->actv_tmpr;
   /* Bingham-Prager shear stress threshold at activation temperature */
   so3_mat_robinson_prmbytmpr(mat_robin->shrthrshld, tem0, &(kk0sq));
-  /* 'H' at current temperature */
-  so3_mat_robinson_prmbytmpr(mat_robin->h, tmpr, &(hh));
   /* 'beta' at current temperature */
   so3_mat_robinson_prmbytmpr(mat_robin->beta, tmpr, &(beta));
   /* 'm' */
   mm = mat_robin->m;
+  /* 'H' at current temperature */
+  if (mat_robin->kind == vp_robinson_kind_arya_narloyz)
+  {
+    so3_mat_robinson_prmbytmpr(mat_robin->h, tmpr, &(hh));
+    hh *= pow(6.896,1.0+beta) / (3.0*kk0sq*1.e-8);
+  }
+  else
+  {
+    so3_mat_robinson_prmbytmpr(mat_robin->h, tmpr, &(hh));
+  }
   /* 'Q_0' */
   q0 = mat_robin->actv_ergy;
   /* recovery factor 'R_0' */
-  so3_mat_robinson_prmbytmpr(mat_robin->rcvry, tmpr, &(rr0));
+  if (mat_robin->kind == vp_robinson_kind_arya_narloyz)
+  {
+    so3_mat_robinson_prmbytmpr(mat_robin->rcvry, tmpr, &(rr0));
+    rr0 *= pow(6.896,1.0+beta+mm) * pow(3.0*kk0sq*1.e-8,mm-beta);
+  }
+  else
+  {
+    so3_mat_robinson_prmbytmpr(mat_robin->rcvry, tmpr, &(rr0));
+  }
   /* 'R' */
   if (fabs(tmpr*tem0) <= EPS12)
   {
@@ -611,6 +663,10 @@ void so3_mat_robinson_be_rbcksts(ELEMENT* ele,
   else
   {
     rr = rr0 * exp(q0*(tmpr-tem0)/(tmpr*tem0));
+    if (isinf(rr))
+    {
+      rr = rr0;
+    }
   }
   /* 'G_0' */
   gg0 = mat_robin->g0;
@@ -626,6 +682,24 @@ void so3_mat_robinson_be_rbcksts(ELEMENT* ele,
   /* ss = 1/2 * s : Alpha  with  Alpha...backstress, s...deviat.stress */
   so3_mv6_v_dblctr(bacstsn, devstsn, &(sa));
   sa *= 0.5;
+
+#if 0
+  {
+    printf("(so3_mat_robinson_be_rbcksts) i2 %g\n", i2);
+    printf("(so3_mat_robinson_be_rbcksts) tem0 %g\n", tem0);
+    printf("(so3_mat_robinson_be_rbcksts) tmpr %g\n", tmpr);
+    printf("(so3_mat_robinson_be_rbcksts) kk0sq %g\n", kk0sq);
+    printf("(so3_mat_robinson_be_rbcksts) beta %g\n", beta);
+    printf("(so3_mat_robinson_be_rbcksts) mm %g\n", mm);
+    printf("(so3_mat_robinson_be_rbcksts) hh %g\n", hh);
+    printf("(so3_mat_robinson_be_rbcksts) q0 %g\n", q0);
+    printf("(so3_mat_robinson_be_rbcksts) rr0 %g\n", rr0);
+    printf("(so3_mat_robinson_be_rbcksts) rr %g\n", rr);
+    printf("(so3_mat_robinson_be_rbcksts) gg0 %g\n", gg0);
+    printf("(so3_mat_robinson_be_rbcksts) gg %g\n", gg);
+    printf("(so3_mat_robinson_be_rbcksts) sa %g\n", sa);
+  }
+#endif
 
   /*--------------------------------------------------------------------*/
   /* determine mode */
@@ -652,6 +726,11 @@ void so3_mat_robinson_be_rbcksts(ELEMENT* ele,
 
   /*--------------------------------------------------------------------*/
   /* residual of back stress rate */
+#if 0
+  DOUBLE debug__fctv;
+  DOUBLE debug__fcta;
+#endif
+
   if (*bckstss == so3_mat_robinson_state_elastic)
   {
     DOUBLE fctv = hh / pow(gg0, beta);
@@ -672,6 +751,10 @@ void so3_mat_robinson_be_rbcksts(ELEMENT* ele,
                         - fctv * vscstnd05[istr]
                         + dt * fcta * bacstsn[istr] ) / dt;
     }
+#if 0
+    debug__fctv = fctv;
+    debug__fcta = fcta;
+#endif
   }
   else if (*bckstss == so3_mat_robinson_state_inelastic)
   {
@@ -684,7 +767,36 @@ void so3_mat_robinson_be_rbcksts(ELEMENT* ele,
                         - fctv * vscstnd05[istr]
                         + dt * fcta * bacstsn[istr] ) / dt;
     }
+#if 0
+    debug__fctv = fctv;
+    debug__fcta = fcta;
+#endif
   }
+
+#if 0
+  {
+    INT i;
+    for (i=0; i<NUMSTR_SOLID3; i++)
+    {
+      printf("(so3_mat_robinson_be_rbcksts) BckStressResid %d : %g\n", i, bckstsr[i]);
+    }
+    for (i=0; i<NUMSTR_SOLID3; i++)
+    {
+      printf("(so3_mat_robinson_be_rbcksts) BckStressn %d : %g\n", i, bacstsn[i]);
+    }
+    for (i=0; i<NUMSTR_SOLID3; i++)
+    {
+      printf("(so3_mat_robinson_be_rbcksts) BckStress %d : %g\n", i, bacsts[i]);
+    }
+    for (i=0; i<NUMSTR_SOLID3; i++)
+    {
+      printf("(so3_mat_robinson_be_rbcksts) Vscstrain %d : %g\n", i, vscstnd05[i]);
+    }
+    printf("(so3_mat_robinson_be_rbcksts) factv %g\n", debug__fctv);
+    printf("(so3_mat_robinson_be_rbcksts) facta %g\n", debug__fcta);
+    printf("(so3_mat_robinson_be_rbcksts) dt %g\n", dt);
+  }
+#endif
 
   /*--------------------------------------------------------------------*/
   /* derivative of back stress residual with respect to total strains
@@ -897,9 +1009,19 @@ void so3_mat_robinson_be_red(DOUBLE stress[NUMSTR_SOLID3],
     }
   }
 
+#if 0
+  {
+    INT i;
+    for (i=0; i<numstr_2; i++)
+    {
+      printf("(so3_mat_robinson_be_red_1) kvarva %d : %g\n", i, kvarva[i]);
+    }
+  }
+#endif
+
   /*--------------------------------------------------------------------*/
   /* factorise kvvvaavaa and solve */
-#ifndef AZTEC_PACKAGE
+#if !defined(AZTEC_PACKAGE) || defined(TRILINOS_PACKAGE)
   /* factorise kvvvaavaa */
   dgetrf(&numstr_2,  /* number of rows of matrix */
          &numstr_2,  /* number of columns of matrix */
@@ -942,7 +1064,26 @@ void so3_mat_robinson_be_red(DOUBLE stress[NUMSTR_SOLID3],
     dserror("Lapack back substitution failed (matrix)");
   }
 #else
-  dserror("solver Lapack conflicts with compilation with -DAZTEC_PACKAGE");
+   dserror("solver Lapack conflicts with compilation with -DAZTEC_PACKAGE without -DTRILINOS_PACKAGE");
+#endif
+
+#if 0
+  {
+    INT i;
+    for (i=0; i<numstr_2; i++)
+    {
+      printf("(so3_mat_robinson_be_red_2) kvarva %d : %g\n", i, kvarva[i]);
+    }
+  }
+#endif
+#if 0
+      {
+        INT i;
+        for (i=0; i<NUMSTR_SOLID3; i++)
+        {
+          printf("(so3_mat_robinsonbe_be_red_4) Stress %d : %g\n", i, stress[i]);
+        }
+      }
 #endif
 
   /*--------------------------------------------------------------------*/
@@ -961,6 +1102,16 @@ void so3_mat_robinson_be_red(DOUBLE stress[NUMSTR_SOLID3],
     }
   }
   
+#if 0
+      {
+        INT i;
+        for (i=0; i<NUMSTR_SOLID3; i++)
+        {
+          printf("(so3_mat_robinsonbe_be_red_4) Stress %d : %g\n", i, stress[i]);
+        }
+      }
+#endif
+
   /*--------------------------------------------------------------------*/
   /* reduce tangent */
   {

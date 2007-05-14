@@ -38,10 +38,12 @@ typedef struct _ARRAY_POSITION_SOL
   INT acc;
 
   /* specifically thermal names */
-  INT tem;
+  INT temn;
   INT temd;
   INT temdn;
   INT temdi;
+  INT tem;
+/*   INT tem; */
 } ARRAY_POSITION_SOL;
 
 

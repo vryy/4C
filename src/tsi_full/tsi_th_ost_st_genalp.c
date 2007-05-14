@@ -1,7 +1,10 @@
 /*======================================================================*/
 /*!
 \file
-\brief TSI - time integration of structure field
+\brief Thermal-structure interaction
+       - semi-coupled & staggered
+       - instationary temperature field solved by one-step-thete
+       - dynamic displacement field solved by generalised-alpha
 
 <pre>
 Maintainer: Burkhard Bornemann
@@ -11,7 +14,7 @@ Maintainer: Burkhard Bornemann
 </pre>
 
 \author bborn
-\date 03/06
+\date 05/07
 */
 
 
@@ -147,8 +150,8 @@ extern CALC_ACTION calc_action[MAXFIELD];
 \author bborn
 \date 03/06
 */
-void tsi_th_presc_st_genalp(INT disnum_s,
-                            INT disnum_t)
+void tsi_th_ost_st_genalp(INT disnum_s,
+                          INT disnum_t)
 {
   /* field */
   INT numfld = genprob.numfld;  /* number of fields, i.e. ==2 */
@@ -204,8 +207,9 @@ void tsi_th_presc_st_genalp(INT disnum_s,
   SOLVAR* solv_t = &(solv[numtf]);  /* pointer to field SOLVAR */
   INT numeq_t;  /* number of equations on this proc */
   INT numeq_total_t;  /* total number of equations on all procs */
-  INT sysarray_t;  /* active sparse system matrix in 
-                     * actsolv->sysarray[] */
+  INT stiff_array_t;  /* active sparse system matrix in 
+                       * actsolv->sysarray[] */
+  INT mass_array_t;  /* index of the active system sparse matrix */
   
   /* dynamic control */
   STRUCT_DYNAMIC* sdyn = alldyn[numsf].sdyn;  /* structural dynamics */
@@ -247,16 +251,23 @@ void tsi_th_presc_st_genalp(INT disnum_s,
   const INT work_num = 3;  /* number of work vectors */
   DIST_VECTOR* work;  /* working vectors */
   ARRAY intforce_a;  /* redundant vect. of full length for internal forces */
-  ARRAY ddirich_a;  /* redund. full length vector for Dirichlet-part of RHS */
+  ARRAY dirforce_a;  /* redund. full length vector for Dirichlet-part of RHS */
 
   /* global vectors of thermal field */
-  ARRAY tdirich_a;   /* redund. full length vect. for Dirichlet-part of RHS */
+  DIST_VECTOR* tem;  /* global temperature (1) vector */
+  DIST_VECTOR* hint;  /* internal heat vector */
+  DIST_VECTOR* hext;  /* external heat vector */
+  DIST_VECTOR* hextn;  /* new external heat vector */
+  ARRAY intheat_a;  /* redund. full length vect. for internal heat */
+  ARRAY dirheat_a;   /* redund. full length vect. for Dirichlet-part of RHS */
+
+  INT i;
   
   /*====================================================================*/
   /* begin body */
 
 #ifdef DEBUG
-  dstrc_enter("tsi_th_presc_st_genalp");
+  dstrc_enter("tsi_th_ost_st_genalp");
 #endif
 
   /*====================================================================*/
@@ -266,7 +277,7 @@ void tsi_th_presc_st_genalp(INT disnum_s,
     printf("============================================================="
            "=============\n");
     printf("Thermo-structure interaction: staggered, semi-coupled\n");
-    printf("Thermal static solution\n");
+    printf("Thermal in-stationary solution\n");
     printf("Structural dynamic solution with generalised-alpha\n");
     printf("-------------------------------------------------------------"
            "-------------\n");
@@ -291,12 +302,16 @@ void tsi_th_presc_st_genalp(INT disnum_s,
   container_t.disnum_s = disnum_s;  /* structural discretisation index */
 
   /*--------------------------------------------------------------------*/
-  /* synchronise structural and thermal dyna */
+  /* synchronise structural dynamic control */
   sdyn->dt = tsidyn->dt;
-  tdyn->dt = tsidyn->dt;
   sdyn->updevry_disp = tsidyn->out_res_ev;
   sdyn->updevry_stress = tsidyn->out_res_ev;
+
+  /*--------------------------------------------------------------------*/
+  /* synchronise thermal dynamic control */
+  tdyn->dt = tsidyn->dt;
   tdyn->out_res_ev = tsidyn->out_res_ev;
+  tdyn->gamma = tsidyn->th_gamma;
 
   /*--------------------------------------------------------------------*/
   /* check time step adaptivity */
@@ -335,17 +350,23 @@ void tsi_th_presc_st_genalp(INT disnum_s,
 
   /*====================================================================*/
   /* initialise thermal field */
-  tsi_th_stat_init(part_t,
-                   intra_t,
-                   field_t,
-                   disnum_t,
-                   ipos_t,
-                   solv_t,
-                   &(numeq_t),
-                   &(numeq_total_t),
-                   &(sysarray_t),
-                   &(container_t),
-                   &(tdirich_a));
+  tsi_th_ost_init(part_t,
+                  intra_t,
+                  field_t,
+                  disnum_t,
+                  ipos_t,
+                  solv_t,
+                  &(numeq_t),
+                  &(numeq_total_t),
+                  &(stiff_array_t),
+                  &(mass_array_t),
+                  &(container_t),
+                  &(tem),
+                  &(hint),
+                  &(hext),
+                  &(hextn),
+                  &(intheat_a),
+                  &(dirheat_a));
 
   /*====================================================================*/
   /* initialise structural field */
@@ -368,7 +389,20 @@ void tsi_th_presc_st_genalp(INT disnum_s,
                      dispi_num, &(dispi),
                      work_num, &(work),
                      &(intforce_a),
-                     &(ddirich_a));
+                     &(dirforce_a));
+#if 0
+  solserv_create_vec(&fie, fie_num, numeq_total_s, numeq_s, "DV");
+  for (i=0; i<fie_num; i++)
+  {
+    solserv_zero_vec(&(fie[i]));
+  }
+  solserv_create_vec(&work, work_num, numeq_total_s, numeq_s, "DV");
+  for (i=0; i<work_num; i++)
+  {
+    solserv_zero_vec(&(work[i]));
+  }
+#endif
+
   /*--------------------------------------------------------------------*/
   /* set initial step and time */
 /*   acttime = tsidyn->time;  /\* initial time *\/ */
@@ -440,14 +474,7 @@ void tsi_th_presc_st_genalp(INT disnum_s,
 
     /*------------------------------------------------------------------*/
     /* output to STDOUT */
-    if ( tsidyn->out_std_ev == 0)
-    {
-      mod_stdout = -1;
-    }
-    else
-    {
-      mod_stdout = tsidyn->step % tsidyn->out_std_ev;
-    }
+    mod_stdout = tsidyn->step % tsidyn->out_std_ev;  
 
     /*==================================================================*/
     /* THERMAL FIELD  :  SOLUTION */
@@ -458,18 +485,31 @@ void tsi_th_presc_st_genalp(INT disnum_s,
       printf("\nStep %d: Solve thermal field...\n", tdyn->step);
     }
     /* solve thermal field */
-    tsi_th_stat_equi(part_t,
-                     intra_t,
-                     field_t,
-                     disnum_t,
-                     isol_t,
-                     solv_t,
-                     numeq_t, numeq_total_t,
-                     sysarray_t,
-                     tdyn,
-                     &(container_t),
-                     &(tdirich_a));
-
+    tsi_th_ost_equi(part_t,
+                    intra_t,
+                    field_t,
+                    disnum_t,
+                    isol_t,
+                    solv_t,
+                    numeq_t, numeq_total_t,
+                    stiff_array_t, mass_array_t,
+                    tdyn,
+                    &(container_t),
+                    tem,
+                    hint,
+                    hext,
+                    hextn,
+                    &(intheat_a),
+                    &(dirheat_a));
+#if 0
+    {
+      INT i;
+      for (i=0; i<numeq_t; i++)
+      {
+        printf("temp %d: %24.10e\n", i, tem->vec.a.dv[i]);
+      }
+    }
+#endif
 
 
     /*==================================================================*/
@@ -498,8 +538,18 @@ void tsi_th_presc_st_genalp(INT disnum_s,
                        fie,
                        dispi,
                        work,
-                       &(ddirich_a),
+                       &(dirforce_a),
                        &(intforce_a));
+#if 0
+    {
+      INT i;
+      for (i=0; i<numeq_t; i++)
+      {
+        printf("temp %d: %24.10e\n", i, dispi->vec.a.dv[i]);
+      }
+    }
+#endif
+
     /*------------------------------------------------------------------*/
     /* convergence check */
     converged = 0;
@@ -522,7 +572,7 @@ void tsi_th_presc_st_genalp(INT disnum_s,
       /* check if maximally permitted iterations reached */
       if ( (itnum == sdyn->maxiter) && !timeadapt )
       {
-        dserror("No convergence in maxiter steps");
+        printf("No convergence in maxiter steps\n");
       }
 
       /*----------------------------------------------------------------*/
@@ -543,7 +593,7 @@ void tsi_th_presc_st_genalp(INT disnum_s,
                          dispi,
                          work,
                          &(intforce_a),
-                         &(ddirich_a));
+                         &(dirforce_a));
 
       /*----------------------------------------------------------------*/
       /* convergence check */
@@ -587,15 +637,15 @@ void tsi_th_presc_st_genalp(INT disnum_s,
     /*==================================================================*/
     /*------------------------------------------------------------------*/
     /* output thermal field */
-    tsi_th_stat_out(part_t,
-                    intra_t,
-                    field_t,
-                    disnum_s,
-                    isol_t,
-                    solv_t,
-                    sysarray_t,
-                    tdyn,
-                    &(container_t));
+    tsi_th_ost_out(part_t,
+                   intra_t,
+                   field_t,
+                   disnum_s,
+                   isol_t,
+                   solv_t,
+                   stiff_array_t,
+                   tdyn,
+                   &(container_t));
 
     /*------------------------------------------------------------------*/
     /* output structural field */
@@ -617,7 +667,7 @@ void tsi_th_presc_st_genalp(INT disnum_s,
                       fie_num, fie,
                       work_num, work,
                       &(intforce_a),
-                      &(ddirich_a));
+                      &(dirforce_a));
 
     /*------------------------------------------------------------------*/
     /* print time step to STDOUT*/
@@ -643,11 +693,16 @@ void tsi_th_presc_st_genalp(INT disnum_s,
 
   /*====================================================================*/
   /* deallocate thermo stuff */
-  tsi_th_stat_final(solv_t,
+  tsi_th_ost_final(solv_t,
 #ifdef BINIO
-                    &(out_context_t),
+                   &(out_context_t),
 #endif
-                    &(tdirich_a));
+                   &(tem),
+                   &(hint),
+                   &(hext),
+                   &(hextn),
+                   &(intheat_a),
+                   &(dirheat_a));
 
   /*====================================================================*/
   /* deallocate structure stuff */
@@ -661,7 +716,7 @@ void tsi_th_presc_st_genalp(INT disnum_s,
                       fie_num, &(fie),
                       work_num, &(work),
                       &(intforce_a),
-                      &(ddirich_a));
+                      &(dirforce_a));
 
   /* clean PARALLEL */
 #ifndef PARALLEL

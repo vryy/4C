@@ -67,13 +67,13 @@ void so3_int_fintstifmass(CONTAINER *container,
                           ARRAY *emass_global)
 {
   /* general variables/constants */
-  INT nelenod;  /* numnp of this element */
-  INT neledof;  /* total number of element DOFs */
+  INT nelenod = ele->numnp;  /* numnp of this element */
+  INT neledof = NUMDOF_SOLID3 * nelenod;  /* total number of element DOFs */
   DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3];  /* material coord. of element */
   DOUBLE edis[MAXNOD_SOLID3][NDIM_SOLID3];  /* cur. element displacements */
 
   /* integration */
-  INT ngp;  /* total number of Gauss points in domain */
+  INT ngp = gpshade->gptot;  /* total number of Gauss points in domain */
   INT igp;  /* current total index of Gauss point */
   DOUBLE fac;  /* integration factors */
   INT inod;  /* node index */
@@ -84,7 +84,8 @@ void so3_int_fintstifmass(CONTAINER *container,
   SO3_GEODEFSTR gds;  /* isoparametric Jacobian, deformation grad, etc at
                        * Gauss point */
   DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3];  /* constitutive matrix */
-  DOUBLE stress[NUMSTR_SOLID3];  /* stress vector */
+  /* DOUBLE stress[NUMSTR_SOLID3];  /\* stress vector *\/ */
+  DOUBLE* stress = calloc(NUMSTR_SOLID3, sizeof(DOUBLE));
 
   /* convenience */
   DOUBLE **estif;  /* element stiffness matrix */
@@ -105,27 +106,43 @@ void so3_int_fintstifmass(CONTAINER *container,
     amzero(estif_global);  /* element tangent matrix */
     estif = estif_global->a.da;
   }
+  else
+  {
+    estif = NULL;
+  }
   if (emass_global != NULL)
   {
     amzero(emass_global); /* element mass matrix */
     emass = emass_global->a.da;
+  }
+  else
+  {
+    emass = NULL;
   }
   if (eforc_global != NULL)
   {
     amzero(eforc_global);
     eforce = eforc_global->a.dv;
   }
+  else
+  {
+    eforce = NULL;
+  }
 
   /*--------------------------------------------------------------------*/
-  /* element properties */
-  nelenod = ele->numnp;
-  neledof = NUMDOF_SOLID3 * nelenod;
+  /* element geometry and displacements */
   for (inod=0; inod<nelenod; inod++)
   {
     actnode = ele->node[inod];
     for (jdim=0; jdim<NDIM_SOLID3; jdim++)
     {
       ex[inod][jdim] = actnode->x[jdim];
+#if 1
+      if (isnan(ex[inod][jdim]))
+      {
+        printf("Ele %d: Node %d: Dir %d: Coordinate %g\n", ele->Id_loc, inod, jdim, ex[inod][jdim]);
+      }
+#endif
       /* THE FOLLOWING HARD-CODED `0' IS SHARED AMONG ALL STRUCTURE ELEMENTS
        * AND SOLUTION TECHNIQUES (BOTH STATICS, DYNAMICS AND FSI).
        * IT ACCESSES THE CURRENT NODAL DISPLACEMENTS STORED IN sol ARRAY.
@@ -134,9 +151,15 @@ void so3_int_fintstifmass(CONTAINER *container,
        * NEW SOFT-CODED INDEX FOR NEW DISCRETISATION ==> TO BE ANNOUNCED
        * ==> IN FEM WE TRUST. */
       edis[inod][jdim] = actnode->sol.a.da[0][jdim];
+#if 1
+      if (isnan(edis[inod][jdim]))
+      {
+        printf("Ele %d: Node %d: Dir %d: Displ %g\n", ele->Id_loc, inod, jdim, ex[inod][jdim]);
+/*         exit(-1); */
+      }
+#endif
     }
   }
-  ngp = gpshade->gptot;  /* total number of Gauss points in domain */
 
   /*--------------------------------------------------------------------*/
   /* integration loop */
@@ -155,7 +178,7 @@ void so3_int_fintstifmass(CONTAINER *container,
                   gds.xjm, &(gds.xjdet), gds.xji);
     /*------------------------------------------------------------------*/
     /* integration (quadrature) factor */
-    fac = fac * gds.xjdet;
+    fac *= gds.xjdet;
     /*------------------------------------------------------------------*/
     /* deformation tensor and displacement gradient */
     so3_def_grad(nelenod, edis, gpshade->gpderiv[igp], gds.xji, 
@@ -178,13 +201,14 @@ void so3_int_fintstifmass(CONTAINER *container,
     /* debug: purposes */
     {
       INT xxx;
-      printf("Element %d, GP %d \n", ele->Id_loc, igp);
       for (xxx=0; xxx<6; xxx++)
       {
-        if (isnan(gds.stnglv[xxx]))
+        if (isnan(stress[xxx]))
         {
-          printf("Strain %d : (% 5.2f,% 5.2f,% 5.2f) : %f\n", 
-                 xxx, gds.gpc[0], gds.gpc[1], gds.gpc[2], gds.stnglv[xxx]);
+          printf("Element %d, GP %d \n", ele->Id_loc, igp);
+          printf("Prior Stress %d : (% 5.2f,% 5.2f,% 5.2f) : %f\n", 
+                 xxx, gds.gpc[0], gds.gpc[1], gds.gpc[2], stress[xxx]);
+          /* abort(); */
         }
       }
     }
@@ -201,26 +225,32 @@ void so3_int_fintstifmass(CONTAINER *container,
     /* debug: purposes */
     {
       INT xxx;
-      printf("Element %d, GP %d \n", ele->Id_loc, igp);
       for (xxx=0; xxx<6; xxx++)
       {
         if (isnan(stress[xxx]))
         {
-          printf("Stress %d : (% 5.2f,% 5.2f,% 5.2f) : %f\n", 
+          printf("Element %d, GP %d \n", ele->Id_loc, igp);
+          printf("Stress %d : (% 5.2f,% 5.2f,% 5.2f) : %g\n", 
                  xxx, gds.gpc[0], gds.gpc[1], gds.gpc[2], stress[xxx]);
+          INT i, j;
+          for (i=0; i<NUMSTR_SOLID3; i++)
+          {
+            printf("Stress %d : %g\n", i, stress[i]);
+          }
+          /* abort(); */
         }
       }
     }
 #endif
     /*------------------------------------------------------------------*/
     /* element internal force from integration of stresses */
-    if (eforc_global != NULL)
+    if (eforce != NULL)
     {
       so3_int_fintcont(neledof, gds.bop, stress, fac, eforce);
     }
     /*------------------------------------------------------------------*/
     /* element stiffness matrix */
-    if (estif_global != NULL)
+    if (estif != NULL)
     {
       /* geometrically linear kinematics (in space) */
       if (ele->e.so3->kintype == so3_geo_lin)
@@ -244,7 +274,7 @@ void so3_int_fintstifmass(CONTAINER *container,
     }
     /*------------------------------------------------------------------*/
     /* element mass matrix */
-    if (emass_global != NULL)
+    if (emass != NULL)
     {
       so3_int_mass(mat, nelenod, gpshade->gpshape[igp], fac, emass);
     }
@@ -254,6 +284,8 @@ void so3_int_fintstifmass(CONTAINER *container,
   /* local co-system */
   dsassert(ele->locsys == locsys_no,
            "locsys not implemented for this element!\n");
+
+  free(stress);
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG

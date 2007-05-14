@@ -520,8 +520,9 @@ void assemble_vec(INTRA        *actintra,
 void assemble_intforce(ELEMENT *actele, ARRAY *elevec_a, CONTAINER *container, INTRA *actintra);
 void assemble_dirich(ELEMENT *actele,ARRAY *estif_global,CONTAINER *container);
 #ifdef D_TSI
-void assemble_dirich_therm(ELEMENT *actele, 
-                           ARRAY *estif_global, 
+void assemble_dirich_therm(ELEMENT *actele,
+                           ARRAY *estif_global,
+                           ARRAY *emass_global,
                            CONTAINER *container);
 #endif
 /*----------------------------------------------------------------------*

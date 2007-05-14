@@ -216,11 +216,14 @@ typedef struct _THERM_DYNAMIC
   DOUBLE             dt;         /* stepsize */
   DOUBLE             time;       /* actual time */
   INT                step;       /* actual step */
+  /* integrator thingies */
+  DOUBLE             gamma;      /* 'theta' in one-step-theta */
   /* NRI thingies */
   INT                iter;       /* number of active iteration */
   INT                maxiter;    /* maximum number of iterations */
   DOUBLE             toldisp;    /* displacement tolerance */
-
+  /* output thingies */
+  INT                out_res_ev; /* print result every */
 } THERM_DYNAMIC;
 
 
@@ -236,6 +239,12 @@ typedef struct _TSI_DYNAMIC
     tsi_full_fehlbg,                /* fully coupled analysis,
                                      * both fields vary in time
                                      * and are solved with Fehlberg4/5 */
+    tsi_therm_ost_struct_genalp,    /* An instationary thermal field is solved
+                                     * at each time step by prescribed
+                                     * BCs by one-step-theta. Subsequently, the
+                                     * structural dyamics is solved by
+                                     * generalised-alpha introducing
+                                     * the current temperature. */
     tsi_therm_presc_struct_genalp,  /* A steady thermal field is solved
                                      * at each time step by prescribed
                                      * heat load. Subsequently, the
@@ -260,21 +269,35 @@ typedef struct _TSI_DYNAMIC
                                      * is integrated in time */
   }                kind;            /* kind of analysis */
 
-  /* time thingies */
+  /* time constants */
   DOUBLE           maxtime;         /* total (final) time */
   INT              nstep;           /* number of steps */
   DOUBLE           dt;              /* time step size */
+
+  /* time variables */
   DOUBLE           time;            /* time */
   INT              step;            /* current time step */
 
-  /* iteration thingies */
+  /* iteration constants */
   INT              maxiter;         /* maximum number of iterations */
   DOUBLE           entol;           /* tolerance for energy check 
                                        over fields */
 
-  /* Runge-Kutta thingies */
-  INT              actstg;          /* current stage */
+  /* integrator constants */
+  DOUBLE           th_gamma;        /* 'theta' of one-step-theta */
+  DOUBLE           st_beta;         /* 0.0<'beta'<=0.5 in 
+                                     * generalised-alpha/Newmark's method */
+  DOUBLE           st_gamma;        /* 0.0<'gamma'<=1.0 in 
+                                     * generalised-alpha/Newmark's method */
+  DOUBLE           st_alpha_m;      /* 0.0<'alpha_m'<1.0 in 
+                                     * generalised-alpha method */
+  DOUBLE           st_alpha_f;      /* 0.0<'alpha_f'<1.0 in 
+                                     * generalised-alpha method */
 
-  /* output */
+  /* integrator variables */
+  INT              actstg;          /* RK current stage */
+
+  /* output constants */
   INT              out_std_ev;      /* print to STDOUT every */
+  INT              out_res_ev;      /* print result every */
 } TSI_DYNAMIC;

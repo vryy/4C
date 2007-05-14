@@ -555,7 +555,9 @@ typedef struct _HYPER_POLYCONVEX
 typedef struct _TH_FOURIER_ISO
 {
      DOUBLE                    conduct;        /* heat conduction
-                                                * coefficient */
+                                                * coefficient [W/(m*K)] */
+     DOUBLE                    capacity;       /* heat capacity 
+                                                * coefficient [J/(kg*K)] */
 } TH_FOURIER_ISO;
 /*----------------------------------------------------------------------*
  | General heat conduction coefficient matrix               bborn 04/06 |
@@ -576,15 +578,19 @@ typedef struct _TH_FOURIER_GEN
  |     liner response", J Aerospace Engrg, 18(1), 2005.                 |
  | [2] Arya: "Analytical and finite element solutions of some problems  |
  |     using a vsicoplastic model", Comput & Struct, 33(4), 1989.       |
+ | [3] Arya: "Viscoplastic analysis of an experimental cylindrical      |
+ |     thrust chamber liner", AIAA J, 30(3), 1992.                      |
  *----------------------------------------------------------------------*/
 typedef struct _VP_ROBINSON
 {
-     INT                       kind;           /* kind of Robinson
+     enum VP_ROBINSON_KIND {                   /* kind of Robinson
                                                   material (slight
-                                                  differences)
-                                                  ==0: unset
-                                                  ==1: Butler et al, 2005 [1]
-                                                  ==2: Arya, 1989 [2] */
+                                                  differences) */
+       vp_robinson_kind_vague=0,               /* unset */
+       vp_robinson_kind_butler,                /* Butler et al, 2005 [1] */
+       vp_robinson_kind_arya,                  /* Arya, 1989 [2] */
+       vp_robinson_kind_arya_narloyz           /* Arya, 1992 [3] */
+     }                         kind;
      MAT_PARAM_MULT            youngmodul;     /* Young's modulus 'E' */
      DOUBLE                    possionratio;   /* Possion's ratio 'nu' */
      DOUBLE                    density;        /* material specific 

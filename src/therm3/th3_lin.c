@@ -31,13 +31,19 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 /*!
 \brief General problem data
-
 \author bborn
 \date 03/06
 */
 extern GENPROB genprob;
 
-
+/*----------------------------------------------------------------------*/
+/*!
+\brief Fields
+       vector of numfld FIELDs, defined in global_control.c
+\author bborn
+\date 05/07
+*/
+extern FIELD* field;
 
 /*======================================================================*/
 /*!
@@ -58,18 +64,30 @@ for the linear, 3dim heat conduction
 \author bborn
 \date 09/06
 */
-void th3_lin_tang(CONTAINER* cont,
+void th3_lin_tang(CONTAINER* container,
                   ELEMENT* ele,
                   TH3_DATA* data,
                   MATERIAL* mat,
                   ARRAY* estif_global,
                   ARRAY* emass_global,
-                  DOUBLE* force)
+                  ARRAY* eforc_global)
 {
+  /* locator */
+#ifdef D_TSI
+  const ARRAY_POSITION_SOL* isol 
+    = &(field[genprob.numtf].dis[container->disnum_t].ipos.isol);
+  const INT itemn = isol->temn;  /* curr. temperature index */
+#else
+  const INT itemn = 0;  /* curr. temperature index */
+#endif
+
   /* general variables/constants */
-  INT nelenod;  /* numnp of this element */
-  INT neledof;  /* total number of element DOFs */
-  DIS_TYP distyp;  /* type of discretisation */
+  INT nelenod = ele->numnp;  /* numnp of this element */
+  INT neledof = NUMDOF_THERM3 * nelenod;  /* total number of element DOFs */
+  DIS_TYP distyp = ele->distyp;  /* type of discretisation */
+  const INT tdof = 0;
+  DOUBLE ex[MAXNOD_THERM3][NDIM_THERM3];  /* material coord. of element */
+  DOUBLE etem[MAXDOF_THERM3];  /* curr. element temperature vector */
 
   /* integration */
   INT igpr, igps, igpt;  /* Gauss point indices */
@@ -84,6 +102,9 @@ void th3_lin_tang(CONTAINER* cont,
   DOUBLE gpcr;  /* r-coord current GP */
   DOUBLE gpcs;  /* s-coord current GP */
   DOUBLE gpct;  /* t-coord current GP */
+  INT inod;  /* nodal index */
+  NODE* actnode;  /* pointer to current node */
+  INT jdim;  /* dimension index */
 
   /* quantities at Gauss point */
   DOUBLE shape[MAXNOD_THERM3];  /* shape functions */
@@ -93,10 +114,13 @@ void th3_lin_tang(CONTAINER* cont,
   DOUBLE xji[NDIM_THERM3][NDIM_THERM3];  /* inverse Jacobian matrix */
   DOUBLE bop[NUMTMGR_THERM3][NUMDOF_THERM3*MAXNOD_THERM3]; /* B-operator */
   DOUBLE cmat[NUMHFLX_THERM3][NUMTMGR_THERM3];  /* conductivity matrix */
+  DOUBLE tmgr[NUMTMGR_THERM3];  /* temp. gradient */
   DOUBLE hflux[NUMHFLX_THERM3];  /* heat flux */
 
   /* convenience */
-  DOUBLE **estif;  /* element stiffness matrix */
+  DOUBLE** estif;  /* element stiffness matrix */
+  DOUBLE** emass;  /* element capacity matrix */
+  DOUBLE* eforce;  /* element nodal heat flux vector */
 
   /*--------------------------------------------------------------------*/
   /* start */
@@ -106,19 +130,45 @@ void th3_lin_tang(CONTAINER* cont,
 
   /*--------------------------------------------------------------------*/
   /* some of the fields have to be reinitialized to zero */
-  amzero(estif_global);  /* element tangent matrix */
-  estif = estif_global->a.da;
-  /* element capacity (mass) matrix is not dealt with --- yet */
+  if (estif_global != NULL)
+  {
+    amzero(estif_global);  /* element tangent matrix */
+    estif = estif_global->a.da;
+  }
+  else
+  {
+    estif = NULL;
+  }
   if (emass_global != NULL)
   {
-    amzero(emass_global);
+    amzero(emass_global);  /* element capacity (mass) matrix */
+    emass = emass_global->a.da;
+  }
+  else
+  {
+    emass = NULL;
+  }
+  if (eforc_global != NULL)
+  {
+    amzero(eforc_global);  /* element nodal heat flux vector */
+    eforce = eforc_global->a.dv;
+  }
+  else
+  {
+    eforce = NULL;
   }
 
   /*--------------------------------------------------------------------*/
-  /* element properties */
-  nelenod = ele->numnp;
-  neledof = NUMDOF_THERM3 * nelenod;
-  distyp = ele->distyp;
+  /* element geometry and temperature */
+  for (inod=0; inod<nelenod; inod++)
+  {
+    actnode = ele->node[inod];
+    for (jdim=0; jdim<NDIM_THERM3; jdim++)
+    {
+      ex[inod][jdim] = actnode->x[jdim];
+    }
+    etem[inod] = actnode->sol.a.da[itemn][tdof];  /* inod==idof */
+  }
 
   /*--------------------------------------------------------------------*/
   /* Gauss integraton data */
@@ -185,23 +235,35 @@ void th3_lin_tang(CONTAINER* cont,
         th3_metr_jaco(ele, nelenod, deriv, 1, xjm, &det, xji);
         /*--------------------------------------------------------------*/
         /* integration (quadrature) factor */
-        fac = fac * det;
+        fac *= det;
         /*--------------------------------------------------------------*/
         /* calculate B-operator */
         th3_bop(nelenod, deriv, xji, bop);
         /*--------------------------------------------------------------*/
+        /* temperature gradient */
+        th3_lin_temgrad(ele, bop, etem, tmgr);
+        /*--------------------------------------------------------------*/
         /* call material law */
-        th3_mat_sel(cont, ele, mat, bop, igp, hflux, cmat);
+        th3_mat_sel(container, ele, mat, igp, tmgr, hflux, cmat);
         /*--------------------------------------------------------------*/
         /* element tangent matrix estif add contribution at Gauss point
          * (like element stiffness matrix) */
-        th3_lin_bcb(neledof, bop, cmat, fac, estif);
+        if (estif != NULL)
+        {
+          th3_lin_bcb(neledof, bop, cmat, fac, estif);
+        }
         /*--------------------------------------------------------------*/
         /* element nodal heat flux from integration of heat fluxes
          * (like element internal forces) */
-        if (force != NULL)
+        if (eforce != NULL)
         {
-          th3_lin_fint(neledof, bop, hflux, fac, force);
+          th3_lin_fint(neledof, bop, hflux, fac, eforce);
+        }
+        /*--------------------------------------------------------------*/
+        /* element capacity (mass) matrix */
+        if (emass != NULL)
+        {
+          th3_lin_mass(mat, nelenod, shape, fac, emass);
         }
         /*--------------------------------------------------------------*/
         /* increment total Gauss point index */
@@ -222,6 +284,48 @@ void th3_lin_tang(CONTAINER* cont,
   return;
 } /* end of th3_lin_tang(...) */
 
+
+/*======================================================================*/
+/*!
+\brief Temperature gradient at Gauss point
+\param   bop       DOUBLE[][]           (i)   B-operator at GP
+\param   etem      DOUBLE[]             (i)   temperature DOFs
+\param   tmgr      DOUBLE[]             (o)   temperature gradient
+\author bborn
+\date 05/07
+*/
+void th3_lin_temgrad(ELEMENT* ele,
+                     DOUBLE bop[NDIM_THERM3][MAXDOF_THERM3], 
+                     DOUBLE etem[NUMDOF_THERM3*MAXNOD_THERM3], 
+                     DOUBLE tmgr[NUMTMGR_THERM3])
+{
+  const INT numdof = ele->numnp * NUMDOF_THERM3;
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_enter("th3_lin_temgrad");
+#endif
+
+  /*--------------------------------------------------------------------*/
+  /* temperature gradient at GP */
+  INT itmgr;
+  for (itmgr=0; itmgr<NUMTMGR_THERM3; itmgr++)
+  {
+    DOUBLE tmgrsum = 0.0;
+    INT jdof;
+    for (jdof=0; jdof<numdof; jdof++)
+    {
+      tmgrsum += bop[itmgr][jdof] * etem[jdof];
+    }
+    tmgr[itmgr] = tmgrsum;
+  }
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
 
 /*======================================================================*/
 /*!
@@ -327,7 +431,7 @@ void th3_lin_fint(INT neledof,
     intfork = 0.0;
     for (i=0; i<NUMHFLX_THERM3; i++)
     {
-      intfork = intfork + bop[i][k]*hflux[i]*fac;
+      intfork += bop[i][k] * hflux[i] * fac;
     }
     intfor[k] += intfork;
   }
@@ -338,6 +442,55 @@ void th3_lin_fint(INT neledof,
 #endif
   return;
 }  /* end of th3_lin_fint(...) */
+
+/*======================================================================*/
+/*!
+\brief Heat capacity matrix (mass matrix) contribution at Gauss point
+\param  mat         MATERIAL     (i)  element material
+\param  nelenod     INT          (i)  number of element nodes
+\param  shape       DOUBLE[]     (i)  shape functions at curr. Gauss point
+\param  fac         DOUBLE       (i)  quadrature factor
+\param  emass       DOUBLE**     (io) capacity matrix
+\author bborn
+\date 05/07
+*/
+void th3_lin_mass(MATERIAL* mat,
+                  INT nelenod,
+                  DOUBLE shape[MAXNOD_THERM3],
+                  DOUBLE fac,
+                  DOUBLE** emass)
+{
+  const INT heatminus = -1.0;
+  DOUBLE capacity;  /* heat capacity coefficient */
+  INT inod, jnod;  /* indices */
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_enter("th3_lin_mass");
+#endif
+
+  /*--------------------------------------------------------------------*/
+  /* retrieve heat capacity coefficient */
+  th3_mat_capacity(mat, &(capacity));
+
+  /*--------------------------------------------------------------------*/
+  /* build matrix
+   * We only have 1 DOF per node, thus, we get directly: */
+  for (inod=0; inod<nelenod; inod++)
+  {
+    DOUBLE shapeinod = fac * capacity * shape[inod];
+    for (jnod=0; jnod<nelenod; jnod++)
+    {
+      emass[inod][jnod] += heatminus * shapeinod * shape[jnod];
+    }
+  }
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}  /* end void th3_lin_mass() */
 
 
 /*======================================================================*/

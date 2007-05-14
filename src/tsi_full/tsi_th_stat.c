@@ -397,7 +397,7 @@ void tsi_th_stat(INT disnum_s,
 
   /*--------------------------------------------------------------------*/
   /* call element routines to calculate & assemble tangent matrix */
-  *action = calc_therm_tang;
+  *action = calc_therm_tang_stat;
   container.dvec = NULL;
   container.dirich = dirich;
   container.global_numeq = numeq_total;
@@ -436,7 +436,7 @@ void tsi_th_stat(INT disnum_s,
    * free temperatures */
   /* HINT: time curve is called indirectly */
   solserv_putdirich_to_dof(actfield, disnum, 
-                           node_array_sol, isol->tem, timcur);
+                           node_array_sol, isol->temn, timcur);
 
   /*--------------------------------------------------------------------*/
   /* allreduce the result and put it to the node sol arrays */
@@ -444,7 +444,7 @@ void tsi_th_stat(INT disnum_s,
                        disnum,
                        actintra,
                        &(actsolv->sol[actsysarray]),
-                       isol->tem,
+                       isol->temn,
                        &(actsolv->sysarray[actsysarray]),
                        &(actsolv->sysarray_typ[actsysarray]));
 
@@ -490,7 +490,7 @@ void tsi_th_stat(INT disnum_s,
     /* ATTENTION : iplace is also used for 
      *             actnode->sol.a.da[iplace][nodeindex]
      *             while printing the temperature */
-    out_sol(actfield, actpart, disnum, actintra, timstp, isol->tem);
+    out_sol(actfield, actpart, disnum, actintra, timstp, isol->temn);
   }
 
   /*--------------------------------------------------------------------*/

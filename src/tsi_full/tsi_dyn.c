@@ -187,11 +187,13 @@ void tsi_dyn()
       tsi_th_stat(disnum_s, disnum_t);
       tsi_st_fehlbg(disnum_s, disnum_t);
       break;
-    /* semi TSI : prescribed thermal and dynamic structure field */
+    /* semi TSI : stationary prescribed thermal and dynamic structure field */
     case tsi_therm_presc_struct_genalp:
-/*       tsi_th_stat_sub(disnum_s, disnum_t);  /\* modularised static therm *\/ */
-/*       tsi_st_genalp_sub(disnum_s, disnum_t);  /\* modularised gen-alpha *\/ */
       tsi_th_presc_st_genalp(disnum_s, disnum_t);
+      break;
+    /* semi-coupled TSI : instationary thermal and dynamic structural field */
+    case tsi_therm_ost_struct_genalp:
+      tsi_th_ost_st_genalp(disnum_s, disnum_t);
       break;
     /* full explicit TIS with Fehlberg */
     case tsi_full_fehlbg:

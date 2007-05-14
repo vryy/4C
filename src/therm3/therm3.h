@@ -57,6 +57,8 @@ Maintainer: Burkhard Bornemann
 #define NUMDOF_THERM3    (1)    /* number of thermal DOFs at each node :
                                  * temperature */
 
+#define MAXDOF_THERM3    (MAXNOD_THERM3*NUMDOF_THERM3)  /* max. tot. DOFs */
+
 #define NUMTMGR_THERM3   (3)    /* number of temperature gradients */
 
 #define NUMHFLX_THERM3   (3)    /* number of heat fluxes : q_x, q_y, q_z */
@@ -350,7 +352,11 @@ void th3_lin_tang(CONTAINER* cont,
                   MATERIAL* mat,
                   ARRAY* estif_global,
                   ARRAY* emass_global,
-                  DOUBLE* force);
+                  ARRAY* eforc_global);
+void th3_lin_temgrad(ELEMENT* ele,
+                     DOUBLE bop[NDIM_THERM3][MAXDOF_THERM3], 
+                     DOUBLE etem[NUMDOF_THERM3*MAXNOD_THERM3], 
+                     DOUBLE tmgr[NUMTMGR_THERM3]);
 void th3_lin_bcb(INT neledof,
                  DOUBLE bop[NDIM_THERM3][NUMDOF_THERM3*MAXNOD_THERM3],
                  DOUBLE cmat[NUMHFLX_THERM3][NUMTMGR_THERM3],
@@ -361,29 +367,39 @@ void th3_lin_fint(INT neledof,
                   DOUBLE hflux[NUMHFLX_THERM3],
                   DOUBLE fac,
                   DOUBLE* intfor);
+void th3_lin_mass(MATERIAL* mat,
+                  INT nelenod,
+                  DOUBLE shape[MAXNOD_THERM3],
+                  DOUBLE fac,
+                  DOUBLE** emass);
 
 /*----------------------------------------------------------------------*/
 /* file th3_load.c */
-void th3_load_heat(ELEMENT* ele,
+void th3_load_heat(CONTAINER* container,
+                   ELEMENT* ele,
                    TH3_DATA* data,
                    INT imyrank,
-                   DOUBLE* loadvec);
+                   ARRAY* intforce_global);
 void th3_load_vol(ELEMENT *ele,
                   INT nelenod,
                   DOUBLE shape[MAXNOD_THERM3],
                   DOUBLE fac,
+                  DOUBLE cfac,
                   DOUBLE eload[NUMDOF_THERM3][MAXNOD_THERM3]);
-void th3_load_surf(ELEMENT *ele,
+void th3_load_surf(CONTAINER* container,
+                   ELEMENT *ele,
                    INT nelenod,
                    GSURF *gsurf,
                    DOUBLE shape[MAXNOD_THERM3],
                    DOUBLE fac,
+                   DOUBLE cfac,
                    DOUBLE eload[NUMDOF_THERM3][MAXNOD_THERM3]);
 void th3_load_line(ELEMENT *ele,
                    INT nelenod,
                    GLINE *gline,
                    DOUBLE shape[MAXNOD_THERM3],
                    DOUBLE fac,
+                   DOUBLE cfac,
                    DOUBLE eload[NUMDOF_THERM3][MAXNOD_THERM3]);
 
 
@@ -405,17 +421,19 @@ void therm3(PARTITION *actpart,
 void th3_mat_sel(CONTAINER *cont,
                  ELEMENT *ele,
                  MATERIAL *mat,
-                 DOUBLE bop[NDIM_THERM3][NUMDOF_THERM3*MAXNOD_THERM3],
                  INT ip,
+                 DOUBLE tmgr[NUMTMGR_THERM3],
                  DOUBLE heatflux[NUMHFLX_THERM3],
                  DOUBLE cmat[NUMHFLX_THERM3][NUMTMGR_THERM3]);
+void th3_mat_capacity(MATERIAL* mat,
+                      DOUBLE* capacity);
 
 /*----------------------------------------------------------------------*/
 /* file th3_matlin.c */
 void th3_matlin_iso(CONTAINER *cont,
                     DOUBLE con,
                     ELEMENT *ele,
-                    DOUBLE bop[NDIM_THERM3][NUMDOF_THERM3*MAXNOD_THERM3],
+                    DOUBLE tmgr[NUMTMGR_THERM3],
                     DOUBLE heatflux[NUMHFLX_THERM3],
                     DOUBLE cmat[NUMHFLX_THERM3][NUMTMGR_THERM3]);
 void th3_matlin_gen(DOUBLE **con,
@@ -443,12 +461,16 @@ void th3_shape_deriv(DIS_TYP     typ,
 /* file th2_temper.c */
 void th3_temper_init();
 void th3_temper_final();
-void th3_temper_cal(const CONTAINER *container,
-                    const ELEMENT *ele,
-                    const DOUBLE r,
-                    const DOUBLE s,
-                    const DOUBLE t,
-                    DOUBLE *tem);
+void th3_temper_caln(const CONTAINER *container,
+                     const ELEMENT *ele,
+                     const DOUBLE r,
+                     const DOUBLE s,
+                     const DOUBLE t,
+                     DOUBLE *tem);
+void th3_temper_sh(const CONTAINER *container,
+                   const ELEMENT *ele,
+                   const DOUBLE shape[MAXNOD_THERM3],
+                   DOUBLE *tem);
 
 /*----------------------------------------------------------------------*/
 #endif /*end of #ifdef D_THERM3 */

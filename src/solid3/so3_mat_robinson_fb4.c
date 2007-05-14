@@ -404,11 +404,11 @@ void so3_mat_robinson_fb4_stnvscrat(const VP_ROBINSON* mat_robin,
   if ( (ff > 0.0) && (ss > 0.0) )
   {
     DOUBLE fct;
-    if (mat_robin->kind == 1)  /* Butler */
+    if (mat_robin->kind == vp_robinson_kind_butler)  /* Butler */
     {
       fct = mat_robin->hrdn_fact * pow(ff, mat_robin->hrdn_expo) / sqrt(j2);
     }
-    else if (mat_robin->kind == 2)  /* Arya */
+    else if (mat_robin->kind == vp_robinson_kind_arya)  /* Arya */
     {
       fct = mat_robin->hrdn_fact * pow(ff, mat_robin->hrdn_expo) / sqrt(j2);
     }
@@ -498,11 +498,11 @@ void so3_mat_robinson_fb4_stsbckrat(const VP_ROBINSON* mat_robin,
   }
   else
   {
-    if (mat_robin->kind == 1)
+    if (mat_robin->kind == vp_robinson_kind_butler)
     {
       gg = i2/shrthrshld0;
     }
-    else if (mat_robin->kind == 2)
+    else if (mat_robin->kind == vp_robinson_kind_arya)
     {
       gg = sqrt(i2/shrthrshld0);
     }
@@ -520,11 +520,11 @@ void so3_mat_robinson_fb4_stsbckrat(const VP_ROBINSON* mat_robin,
   if ( (gg > gg0) && (sa > 0.0) )
   {
     DOUBLE fcte;
-    if (mat_robin->kind == 1)
+    if (mat_robin->kind == vp_robinson_kind_butler)
     {
       fcte = hh / pow(gg, beta);
     }
-    else if (mat_robin->kind == 2)
+    else if (mat_robin->kind == vp_robinson_kind_arya)
     {
       fcte = hh / pow(gg, beta);
     }
@@ -534,11 +534,11 @@ void so3_mat_robinson_fb4_stsbckrat(const VP_ROBINSON* mat_robin,
     }
     so3_mv6_v05_assscl(fcte, dstnvsc, dstsbck);
     DOUBLE fcta;
-    if (mat_robin->kind == 1)
+    if (mat_robin->kind == vp_robinson_kind_butler)
     {
       fcta = -rr * pow(gg, (mm-beta)) / sqrt(i2);
     }
-    else if (mat_robin->kind == 2)
+    else if (mat_robin->kind == vp_robinson_kind_arya)
     {
       fcta = -rr * pow(gg, (mm-beta)) / sqrt(i2);
     }
@@ -551,11 +551,11 @@ void so3_mat_robinson_fb4_stsbckrat(const VP_ROBINSON* mat_robin,
   else
   {
     DOUBLE fcte;
-    if (mat_robin->kind == 1)
+    if (mat_robin->kind == vp_robinson_kind_butler)
     {
       fcte = hh / pow(gg, beta);
     }
-    else if (mat_robin->kind == 2)
+    else if (mat_robin->kind == vp_robinson_kind_arya)
     {
       fcte = hh / pow(gg0, beta);
     }
@@ -565,11 +565,11 @@ void so3_mat_robinson_fb4_stsbckrat(const VP_ROBINSON* mat_robin,
     }
     so3_mv6_v05_assscl(fcte, dstnvsc, dstsbck);
     DOUBLE fcta;
-    if (mat_robin->kind == 1)
+    if (mat_robin->kind == vp_robinson_kind_butler)
     {
       fcta = -rr * pow(gg0, (mm-beta)) / sqrt(i2);
     }
-    else if (mat_robin->kind == 2)
+    else if (mat_robin->kind == vp_robinson_kind_arya)
     {
       if (sqrt(i2) < EPS10)
       {

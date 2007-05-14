@@ -41,8 +41,8 @@ extern FIELD *field;
 \param *cont       CONTAINER        (i)   container data
 \param con         DOUBLE           (i)   isotropic thermal conductivity
 \param *ele        ELEMENT          (i)   pointer to current element
-\param **bop       DOUBLE           (i)   B-operator at GP
-\param *heatflux   DOUBLE           (io)  heat flux
+\param tmgr        DOUBLE[]         (i)   temperature gradient
+\param *heatflux   DOUBLE           (o)   heat flux
 \param **cmat      DOUBLE           (o)   constitutive matrix
                                           conductivity matrix
 \return void
@@ -53,16 +53,11 @@ extern FIELD *field;
 void th3_matlin_iso(CONTAINER *cont,
                     DOUBLE con,
                     ELEMENT *ele,
-                    DOUBLE bop[NDIM_THERM3][NUMDOF_THERM3*MAXNOD_THERM3],
+                    DOUBLE tmgr[NUMTMGR_THERM3],
                     DOUBLE heatflux[NUMHFLX_THERM3],
                     DOUBLE cmat[NUMHFLX_THERM3][NUMTMGR_THERM3])
 {
-  ARRAY_POSITION_SOL *isol 
-    = &(field[genprob.numtf].dis[cont->disnum_t].ipos.isol);
-  DOUBLE tmgr[NUMTMGR_THERM3];  /* temperature gradient vector */
   INT itmgr; /* temperature gradient counter */
-  DOUBLE tmgrsum;  /* temp. grad. dummy sum */
-  INT inode;  /* element node counter */
   INT ihflux;  /* heat flux component counter */
   DOUBLE hfluxsum;   /* dummy heat flux sum */
   
@@ -73,17 +68,13 @@ void th3_matlin_iso(CONTAINER *cont,
 #endif
 
   /*--------------------------------------------------------------------*/
-  /* temperature gradient at GP */
-  for (itmgr=0; itmgr<NUMTMGR_THERM3; itmgr++)
+  /* debug: */
+  if (tmgr == NULL)
   {
-    tmgrsum = 0.0;
-    for (inode=0; inode<ele->numnp; inode++)
-    {
-      tmgrsum += bop[itmgr][inode] 
-        * ele->node[inode]->sol.a.da[isol->tem][0];
-    }
-    tmgr[itmgr] = tmgrsum;
+    dserror("Temperature gradient is NULL");
   }
+
+  /*--------------------------------------------------------------------*/
   /* constitutive matrix */
   cmat[0][0] = -con;
   cmat[0][1] = 0.0;

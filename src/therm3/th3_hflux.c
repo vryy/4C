@@ -46,6 +46,14 @@ global variable GENPROB genprob is defined in global_control.c
 */
 extern GENPROB genprob;
 
+/*----------------------------------------------------------------------*/
+/*!
+\brief Fields
+       vector of numfld FIELDs, defined in global_control.c
+\author bborn
+\date 05/07
+*/
+extern FIELD* field;
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -202,10 +210,22 @@ void th3_hflux_cal(CONTAINER *cont,
                    TH3_DATA *data,
                    MATERIAL *mat)
 {
+  /* locator */
+#ifdef D_TSI
+  const ARRAY_POSITION_SOL* isol 
+    = &(field[genprob.numtf].dis[cont->disnum_t].ipos.isol);
+  const INT itemn = isol->temn;  /* curr. temperature index */
+#else
+  const INT itemn = 0;  /* curr. temperature index */
+#endif
   const INT place = 0;
-  INT nelenod;  /* number of element nodes */
-  INT neledof;  /* total number of element DOFs */
-  DIS_TYP distyp;  /* type of discretisation */
+
+  INT nelenod = ele->numnp;  /* number of element nodes */
+  INT neledof = NUMDOF_THERM3 * nelenod;  /* total number of element DOFs */
+  DIS_TYP distyp = ele->distyp;  /* type of discretisation */
+  const INT tdof = 0;
+  DOUBLE ex[MAXNOD_THERM3][NDIM_THERM3];  /* material coord. of element */
+  DOUBLE etem[MAXDOF_THERM3];  /* curr. element temperature vector */
   
   INT gpnumr = 0;  /* Gauss points in r-direction */
   INT gpnums = 0;  /* Gauss points in s-direction */
@@ -220,6 +240,9 @@ void th3_hflux_cal(CONTAINER *cont,
   DOUBLE gpcr = 0.0;  /* GP r-coord */
   DOUBLE gpcs = 0.0;  /* GP s-coord */
   DOUBLE gpct = 0.0;  /* GP t-coord */
+  INT inod;  /* nodal index */
+  NODE* actnode;  /* pointer to current node */
+  INT jdim;  /* dimension index */
 
   DOUBLE det;  /* Jacobi determinants */
   DOUBLE rst[NDIM_THERM3];  /* natural coordinate a point */
@@ -229,6 +252,8 @@ void th3_hflux_cal(CONTAINER *cont,
   DOUBLE xji[NDIM_THERM3][NDIM_THERM3];
   DOUBLE bop[NUMTMGR_THERM3][NUMDOF_THERM3*MAXNOD_THERM3];
   DOUBLE cmat[NUMHFLX_THERM3][NUMTMGR_THERM3];
+  DOUBLE tmgr[NUMTMGR_THERM3];  /* temp. gradient */
+  DOUBLE hflux[NUMHFLX_THERM3];  /* heat flux */
 
   INT ihflx;  /* heat flux index */
   INT inode;  /* element nodal index */
@@ -239,12 +264,6 @@ void th3_hflux_cal(CONTAINER *cont,
 #ifdef DEBUG
   dstrc_enter("th3_hflux_cal");
 #endif
-
-  /*--------------------------------------------------------------------*/
-  /* element properties */
-  nelenod = ele->numnp;
-  neledof = NUMDOF_THERM3 * nelenod;
-  distyp = ele->distyp;
 
   /*--------------------------------------------------------------------*/
   /* number of Gauss points */
@@ -275,6 +294,18 @@ void th3_hflux_cal(CONTAINER *cont,
     default:
       dserror("distyp unknown!");
   }  /* end switch */
+
+  /*--------------------------------------------------------------------*/
+  /* element geometry and temperature */
+  for (inod=0; inod<nelenod; inod++)
+  {
+    actnode = ele->node[inod];
+    for (jdim=0; jdim<NDIM_THERM3; jdim++)
+    {
+      ex[inod][jdim] = actnode->x[jdim];
+    }
+    etem[inod] = actnode->sol.a.da[itemn][tdof];  /* inod==idof */
+  }
 
   /*--------------------------------------------------------------------*/
   /* heat flux at every Gauss point */
@@ -323,8 +354,11 @@ void th3_hflux_cal(CONTAINER *cont,
         /* calculate B-operator */
         th3_bop(nelenod, deriv, xji, bop);
         /*--------------------------------------------------------------*/
+        /* temperature gradient */
+        th3_lin_temgrad(ele, bop, etem, tmgr);
+        /*--------------------------------------------------------------*/
         /* call material law */
-        th3_mat_sel(cont, ele, mat, bop, igp, hflux, cmat);
+        th3_mat_sel(cont, ele, mat, igp, tmgr, hflux, cmat);
         /*--------------------------------------------------------------*/
         /* store heat flux of current Gauss point */
         for (ihflx=0; ihflx<NUMHFLX_THERM3; ihflx++)
