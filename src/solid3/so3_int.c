@@ -137,7 +137,7 @@ void so3_int_fintstifmass(CONTAINER *container,
     for (jdim=0; jdim<NDIM_SOLID3; jdim++)
     {
       ex[inod][jdim] = actnode->x[jdim];
-#if 1
+#if 0
       if (isnan(ex[inod][jdim]))
       {
         printf("Ele %d: Node %d: Dir %d: Coordinate %g\n", ele->Id_loc, inod, jdim, ex[inod][jdim]);
@@ -151,7 +151,7 @@ void so3_int_fintstifmass(CONTAINER *container,
        * NEW SOFT-CODED INDEX FOR NEW DISCRETISATION ==> TO BE ANNOUNCED
        * ==> IN FEM WE TRUST. */
       edis[inod][jdim] = actnode->sol.a.da[0][jdim];
-#if 1
+#if 0
       if (isnan(edis[inod][jdim]))
       {
         printf("Ele %d: Node %d: Dir %d: Displ %g\n", ele->Id_loc, inod, jdim, ex[inod][jdim]);

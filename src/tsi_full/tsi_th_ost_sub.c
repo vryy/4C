@@ -270,6 +270,15 @@ void tsi_th_ost_init(PARTITION* actpart,
   /* global temperature vectors */
   solserv_create_vec(tem, 1, *numeq_total, *numeq, "DV");
   solserv_zero_vec(tem[0]);
+#if 1
+  {
+    INT idof;
+    for (idof=0; idof<*numeq_total; idof++)
+    {
+      tem[0]->vec.a.dv[idof] = 298.0;
+    }
+  }
+#endif
 
   /*--------------------------------------------------------------------*/
   /* external heat loads */
@@ -476,19 +485,54 @@ void tsi_th_ost_equi(PARTITION* actpart,
    *         + (1-gamma) * Fext_n 
    *         - Fdirichlet */
   solserv_zero_vec(&(actsolv->rhs[stiff_array]));
+#if 0
+  printf("load %g %g\n",
+         actsolv->rhs[stiff_array].vec.a.dv[0],
+         actsolv->rhs[stiff_array].vec.a.dv[0]);
+#endif
   solserv_sparsematvec(actintra,
                        &(actsolv->rhs[stiff_array]),
                        &(actsolv->sysarray[mass_array]),
                        &(actsolv->sysarray_typ[mass_array]),
                        &(tem[0]));
-  solserv_scalarprod_vec(&(tem[0]), 1.0/dt);
+#if 0
+  printf("load %g %g\n",
+         actsolv->rhs[stiff_array].vec.a.dv[0],
+         actsolv->rhs[stiff_array].vec.a.dv[1]);
+#endif
+  solserv_scalarprod_vec(&(actsolv->rhs[stiff_array]), 1.0/dt);
+#if 0
+  printf("load %g %g\n",
+         actsolv->rhs[stiff_array].vec.a.dv[0],
+         actsolv->rhs[stiff_array].vec.a.dv[1]);
+#endif
   solserv_add_vec(&(fint[0]), &(actsolv->rhs[stiff_array]), -(1.0-gamma));
+#if 0
+  printf("load %g %g\n",
+         actsolv->rhs[stiff_array].vec.a.dv[0],
+         actsolv->rhs[stiff_array].vec.a.dv[1]);
+#endif
   solserv_add_vec(&(fextn[0]), &(actsolv->rhs[stiff_array]), gamma);
+#if 0
+  printf("load %g %g\n",
+         actsolv->rhs[stiff_array].vec.a.dv[0],
+         actsolv->rhs[stiff_array].vec.a.dv[1]);
+#endif
   solserv_add_vec(&(fext[0]), &(actsolv->rhs[stiff_array]), 1.0-gamma);
+#if 0
+  printf("load %g %g\n",
+         actsolv->rhs[stiff_array].vec.a.dv[0],
+         actsolv->rhs[stiff_array].vec.a.dv[1]);
+#endif
   /* add Dirichlet forces */
   assemble_vec(actintra, &(actsolv->sysarray_typ[stiff_array]),
                &(actsolv->sysarray[stiff_array]),
                &(actsolv->rhs[stiff_array]), dirich, -1.0);
+#if 0
+  printf("load %g %g\n",
+         actsolv->rhs[stiff_array].vec.a.dv[0],
+         actsolv->rhs[stiff_array].vec.a.dv[1]);
+#endif
   
   /*--------------------------------------------------------------------*/
   /* call solver */

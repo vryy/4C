@@ -367,7 +367,7 @@ void th3_lin_bcb(INT neledof,
       bopcmati = 0.0;
       for (j=0; j<NUMHFLX_THERM3; j++)
       {
-        bopcmati = bopcmati + bop[j][k]*cmat[j][i]*fac;
+        bopcmati += bop[j][k] * cmat[j][i] * fac;
       }
       bopcmat[i] = bopcmati;
     }
@@ -377,9 +377,9 @@ void th3_lin_bcb(INT neledof,
       tkl = 0.0;
       for (i=0; i<NUMTMGR_THERM3; i++)
       {
-        tkl = tkl + bopcmat[i]*bop[i][l];
+        tkl += bopcmat[i] * bop[i][l];
       }
-      tmat[k][l] = tmat[k][l] + tkl;
+      tmat[k][l] += tkl;
     }
   }
 
@@ -478,10 +478,10 @@ void th3_lin_mass(MATERIAL* mat,
    * We only have 1 DOF per node, thus, we get directly: */
   for (inod=0; inod<nelenod; inod++)
   {
-    DOUBLE shapeinod = fac * capacity * shape[inod];
+    DOUBLE shapeinod = heatminus * fac * capacity * shape[inod];
     for (jnod=0; jnod<nelenod; jnod++)
     {
-      emass[inod][jnod] += heatminus * shapeinod * shape[jnod];
+      emass[inod][jnod] += shapeinod * shape[jnod];
     }
   }
 

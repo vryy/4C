@@ -927,7 +927,23 @@ void th3_load_surf(CONTAINER* container,
         /* convection coefficient */
         DOUBLE convcoeff = ((c2-c1)*bastem + c1*t2 - c2*t1)/(t2-t1);
         /* convective boundary flux */
+#if 0
+        DOUBLE hflx = convcoeff * bastem;
+#else
         DOUBLE hflx = convcoeff * (bastem - tem);
+#endif
+#if 0
+        if (envtem < 0.0)
+        {
+          DOUBLE hflx = 0.0;
+        }
+#endif
+#if 0
+        if ( ele->Id_loc == 713)
+          printf("Ele %d: T %g; T_infty %g; Coeff %g; Flux %g\n", ele->Id_loc, tem, bastem, convcoeff, hflx);
+        if ( ele->Id_loc == 709)
+          printf("Ele %d: T %g; T_infty %g; Coeff %g; Flux %g\n", ele->Id_loc, tem, bastem,  convcoeff, hflx);
+#endif
         /* add load vector component to element load vector */
         for (inode=0; inode<nelenod; inode++)
         {
@@ -953,7 +969,9 @@ void th3_load_surf(CONTAINER* container,
       }
       else
       {
+#if 0
         dserror("Not enough parameters for heat convection");
+#endif
       }
       break;
     }

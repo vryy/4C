@@ -277,7 +277,7 @@ void tsi_th_ost_st_genalp(INT disnum_s,
     printf("============================================================="
            "=============\n");
     printf("Thermo-structure interaction: staggered, semi-coupled\n");
-    printf("Thermal in-stationary solution\n");
+    printf("Thermal in-stationary solution with one-step-theta\n");
     printf("Structural dynamic solution with generalised-alpha\n");
     printf("-------------------------------------------------------------"
            "-------------\n");
@@ -486,6 +486,15 @@ void tsi_th_ost_st_genalp(INT disnum_s,
     {
       printf("\nStep %d: Solve thermal field...\n", tdyn->step);
     }
+#if 0
+    {
+      INT i;
+      for (i=0; i<2; i++)
+      {
+        printf("temp %d: %24.10e\n", i, tem->vec.a.dv[i]);
+      }
+    }
+#endif
     /* solve thermal field */
     tsi_th_ost_equi(part_t,
                     intra_t,
@@ -506,7 +515,7 @@ void tsi_th_ost_st_genalp(INT disnum_s,
 #if 0
     {
       INT i;
-      for (i=0; i<numeq_t; i++)
+      for (i=0; i<2; i++)
       {
         printf("temp %d: %24.10e\n", i, tem->vec.a.dv[i]);
       }
