@@ -20,6 +20,7 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
+#include <set>
 
 #include <EpetraExt_MapColoring.h>
 #include <EpetraExt_MapColoringIndex.h>
@@ -27,11 +28,16 @@
 #include <Epetra_IntVector.h>
 #include <Epetra_MapColoring.h>
 #include <Epetra_SerialComm.h>
+
+#include <EpetraExt_RowMatrixOut.h>
+
 #include <NOX_Abstract_Group.H>
 #include <NOX_Epetra_BroydenOperator.H>
 #include <NOX_Epetra_FiniteDifferenceColoring.H>
 #include <NOX_Epetra_Vector.H>
 #include <NOX_Solver_Manager.H>
+
+#include <mrtr_utils.H>
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
@@ -280,6 +286,55 @@ FSI_InterfaceProblem::FSI_InterfaceProblem(Epetra_Comm& Comm,
   // create connection graph of interface elements
   rawGraph_ = Teuchos::rcp(new Epetra_CrsGraph(Copy,*StandardMap_,12));
 
+#if 1
+
+  // Make the graph full. For Testing.
+
+  std::set<int> interface_dofs;
+
+  numnp_total = structfield->dis[disnum].numnp;
+  for (int i=0; i<numnp_total; ++i)
+  {
+    NODE* actsnode = &(structfield->dis[disnum].node[i]);
+    GNODE* actsgnode = actsnode->gnode;
+
+    if (actsnode->proc!=Comm.MyPID())
+      continue;
+
+    NODE* actanode  = actsgnode->mfcpnode[numaf];
+    if (actanode != NULL)
+    {
+      GNODE* actagnode = actanode->gnode;
+      if ((actagnode->dirich != NULL) &&
+          (actagnode->dirich->dirich_type == DIRICH_CONDITION::dirich_FSI))
+      {
+        // So this is a node at the FSI interface. Couple it with all
+        // the nodes of this element that are at the interface as
+        // well.
+        for (int dof1=0; dof1<actanode->numdf; ++dof1)
+        {
+          interface_dofs.insert(actsnode->dof[dof1]);
+        }
+      }
+    }
+  }
+
+  for (std::set<int>::iterator i=interface_dofs.begin();
+       i!=interface_dofs.end(); ++i)
+  {
+    for (std::set<int>::iterator j=interface_dofs.begin();
+         j!=interface_dofs.end(); ++j)
+    {
+      int err = rawGraph_->InsertGlobalIndices(*i,1,const_cast<int*>(&*j));
+      if (err < 0)
+        dserror("Epetra_CrsGraph::InsertGlobalIndices returned %d", err);
+    }
+  }
+
+  rawGraph_->FillComplete();
+
+#else
+
   int numele_total = structfield->dis[disnum].numele;
   for (int i=0; i<numele_total; ++i)
   {
@@ -313,7 +368,7 @@ FSI_InterfaceProblem::FSI_InterfaceProblem(Epetra_Comm& Comm,
             {
               for (int dof1=0; dof1<actanode->numdf; ++dof1)
               {
-                // The ale node known the number of dofs to be
+                // The ale node knows the number of dofs to be
                 // coupled, but the dofs of the structural node are
                 // actually used.
                 int err = rawGraph_->InsertGlobalIndices(actsnode->dof[dof1],anode->numdf,snode->dof);
@@ -327,6 +382,19 @@ FSI_InterfaceProblem::FSI_InterfaceProblem(Epetra_Comm& Comm,
     }
   }
   rawGraph_->FillComplete();
+
+  // Now this is stupid but very easy.
+  // We need to enlarge the graph by one node in all directions. So we
+  // do an (expensive!) matrix-matrix multiplication that gives us the
+  // desired graph.
+  Epetra_CrsMatrix A(Copy, *rawGraph_);
+  A.PutScalar(0.);
+
+  // C = A^T * A
+  Teuchos::RefCountPtr<Epetra_CrsMatrix> C = rcp(MOERTEL::MatMatMult(A,true,A,false,0));
+
+  rawGraph_ = rcp(new Epetra_CrsGraph(C->Graph()));
+#endif
 }
 
 
@@ -1239,6 +1307,7 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
 
     Teuchos::RefCountPtr<FSIMatrixFree> FSIMF;
     Teuchos::RefCountPtr<NOX::Epetra::MatrixFree> MF;
+    Teuchos::RefCountPtr<NOX::Epetra::FiniteDifference> FD;
     Teuchos::RefCountPtr<NOX::Epetra::FiniteDifferenceColoring> FDC;
     Teuchos::RefCountPtr<NOX::Epetra::FiniteDifferenceColoring> FDC1;
     Teuchos::RefCountPtr<NOX::Epetra::BroydenOperator> B;
@@ -1312,6 +1381,30 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
       dirParams.set("User Defined Direction",michler);
       lsParams.set("Preconditioner","None");
       preconditioner="None";
+    }
+
+    else if (jacobian=="Dumb Finite Difference")
+    {
+      Teuchos::ParameterList& fdParams = nlParams.sublist("Finite Difference");
+      fdresitemax_ = fdParams.get("itemax", -1);
+      double alpha = fdParams.get("alpha", 1.0e-4);
+      double beta  = fdParams.get("beta",  1.0e-6);
+      std::string dt = fdParams.get("Difference Type","Forward");
+      NOX::Epetra::FiniteDifference::DifferenceType dtype = NOX::Epetra::FiniteDifference::Forward;
+      if (dt=="Forward")
+        dtype = NOX::Epetra::FiniteDifference::Forward;
+      else if (dt=="Backward")
+        dtype = NOX::Epetra::FiniteDifference::Backward;
+      else if (dt=="Centered")
+        dtype = NOX::Epetra::FiniteDifference::Centered;
+      else
+        dserror("unsupported difference type '%s'",dt.c_str());
+
+      FD = Teuchos::rcp(new NOX::Epetra::FiniteDifference(printParams, interface, noxSoln, rawGraph_, beta, alpha));
+      FD->setDifferenceMethod(dtype);
+
+      iJac = FD;
+      J = FD;
     }
 
     // Finite Difference with coloring. Build a Jacobian as good as it
@@ -1488,6 +1581,16 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
 
     // Create the Group
     Teuchos::RefCountPtr<NOX::Epetra::Group> grp = Teuchos::rcp(new NOX::Epetra::Group(printParams, iReq, noxSoln, linSys));
+
+#if 0
+    // debug FD Jacobian
+    grp->computeJacobian();
+    if (!Teuchos::is_null(FD))
+      EpetraExt::RowMatrixToMatlabFile("UnderlyingMatrix.fd",FD->getUnderlyingMatrix());
+    else
+      EpetraExt::RowMatrixToMatlabFile("UnderlyingMatrix.fdc",FDC->getUnderlyingMatrix());
+    exit(1);
+#endif
 
     // Create the convergence tests
     Teuchos::RefCountPtr<NOX::StatusTest::Combo> combo       = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
