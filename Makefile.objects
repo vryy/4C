@@ -227,9 +227,9 @@ OBJS_F3F_F    = src/fluid3_fast/f3f_calextrhs.o \
                 src/fluid3_fast/f3f_calmatvec_usfem.o \
                 src/fluid3_fast/f3f_massrhs.o
 #               drt version of shell8
-OBJS_DRT_S8   = src/drt_s8/shell8.o \
-                src/drt_s8/shell8_line.o \
-                src/drt_s8/shell8_evaluate.o \
+OBJS_DRT_S8_LIB = src/drt_s8/shell8.o \
+                  src/drt_s8/shell8_line.o
+OBJS_DRT_S8   = src/drt_s8/shell8_evaluate.o \
                 src/drt_s8/shell8_input.o \
                 src/drt_s8/shell8_line_evaluate.o
 #               old version of shell8
