@@ -155,21 +155,28 @@ int DRT::Elements::Wall1Line::EvaluateNeumann(ParameterList& params,
     // metrics
     // g1,g2 stored in xjm
     // Jacobian matrix J = (g1,g2)
-    for (int i=0; i<2; ++i)
+    for (int i=0; i<2; ++i){
       for (int j=0; j<2; ++j)
       {
         xjm[i][j] = 0.0;
         for (int k=0; k<iel; ++k)
           xjm[i][j] += deriv(i,k)*xrefe[j][k];
       }
+    }
      // ds = |g1| in dir=0 and ds = |g2| in dir=1
     double ds = sqrt(xjm[dir][0]*xjm[dir][0]+xjm[dir][1]*xjm[dir][1]);
     // load vector ar
     double ar[2];
     // loop the dofs of a node
     // ar[i] = ar[i] * facr * ds * onoff[i] * val[i]
-    for (int i=0; i<2; ++i)
+    for (int i=0; i<2; ++i){
       ar[i] = facr * ds * (*onoff)[i]*(*val)[i];
+
+      int testonoff=(*onoff)[i];
+      double testval=(*val)[i];
+
+    }
+
     // add load components
     for (int node=0; node<NumNode(); ++node)
       for (int j=0; j<2; ++j)
@@ -178,8 +185,6 @@ int DRT::Elements::Wall1Line::EvaluateNeumann(ParameterList& params,
       }
  
   } // for (int gp=0; gp<ngp; ++gp)
-
-
 
 
 return 0;
