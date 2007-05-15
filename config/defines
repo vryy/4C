@@ -29,7 +29,7 @@
 # D_THERM2           # planar thermal elment
 # D_THERM3           # spatial thermal element
 # D_SOLID3           # spatial solid element
-# D_SOH(						 # spatial 8-node hex element for new discretization
+# D_SOH8						 # spatial 8-node hex element for new discretization
 
 
 #   problem types
