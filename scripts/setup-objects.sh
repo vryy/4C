@@ -144,7 +144,7 @@ fi
 
 # SHELL8
 if grep '^[[:blank:]]*D_SHELL8' "$definefile" 2>&1 > /dev/null ; then
-    OBJECTS="$OBJECTS \$(OBJS_SHELL8) \$(OBJS_DRT_S8)"
+    OBJECTS="$OBJECTS \$(OBJS_SHELL8) \$(OBJS_DRT_S8) \$(OBJS_DRT_S8_LIB)"
 fi
 
 # SHELL9
