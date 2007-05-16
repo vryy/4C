@@ -15,17 +15,17 @@ Maintainer: Markus Gitterle
 #ifdef TRILINOS_PACKAGE
 
 #include "wall1.H"
-#include "linalg_utils.H"
-#include "drt_utils.H"
-#include "drt_discret.H"
-#include "drt_dserror.H"
+#include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_dserror.H"
 
 extern "C"
 {
 #include "../headers/standardtypes.h"
 #include "../wall1/wall1.h"
 }
-#include "dstrc.H"
+#include "../drt_lib/dstrc.H"
 
 
 /*----------------------------------------------------------------------*

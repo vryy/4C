@@ -15,9 +15,9 @@ Maintainer: Maarkus Gitterle
 #ifdef TRILINOS_PACKAGE
 
 #include "wall1.H"
-#include "drt_discret.H"
-#include "drt_utils.H"
-#include "drt_dserror.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_dserror.H"
 
 
 

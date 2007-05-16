@@ -20,11 +20,11 @@ Maintainer: Markus Gitterle
 #include "mpi.h"
 #endif
 #include "wall1.H"
-#include "drt_discret.H"
-#include "drt_utils.H"
-#include "drt_exporter.H"
-#include "drt_dserror.H"
-#include "linalg_utils.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_exporter.H"
+#include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/linalg_utils.H"
 
 extern "C" 
 {
@@ -32,7 +32,7 @@ extern "C"
 #include "../wall1/wall1.h"
 #include "../wall1/wall1_prototypes.h"
 }
-#include "dstrc.H"
+#include "../drt_lib/dstrc.H"
 
 /*----------------------------------------------------------------------*
  |                                                        mgit 03/07    |

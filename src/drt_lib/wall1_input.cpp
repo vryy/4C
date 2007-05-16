@@ -35,7 +35,7 @@ extern "C"
 extern struct _FILES  allfiles;
 }
 #include "wall1.H"
-#include "dstrc.H"
+#include "../drt_lib/dstrc.H"
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                              mwgit 03/07|
