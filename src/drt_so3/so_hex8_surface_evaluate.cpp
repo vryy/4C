@@ -60,7 +60,7 @@ int DRT::Elements::Soh8Surface::EvaluateNeumann(ParameterList&           params,
 
   // element geometry
   const int numnod = 4;
-  Epetra_SerialDenseMatrix xsrefe(NUMNOD_SOH8,NUMDIM_SOH8);  // material coord. of element
+  Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_SOH8);  // material coord. of element
   for (int i=0; i<numnod; ++i){
     xsrefe(i,0) = Nodes()[i]->X()[0];
     xsrefe(i,1) = Nodes()[i]->X()[1];
@@ -85,7 +85,7 @@ int DRT::Elements::Soh8Surface::EvaluateNeumann(ParameterList&           params,
   gpcoord(3,0) =   gploc;
   gpcoord(3,1) =   gploc;
 
-  for (int gpid = 0; gpid < ngp; ++gpid) {    // loop over intergration points
+  for (int gpid = 0; gpid < 4; ++gpid) {    // loop over intergration points
     // get shape functions and derivatives of element surface
     vector<double> funct(ngp);                // 4 shape function values
     double drs;                               // surface area factor
@@ -93,12 +93,16 @@ int DRT::Elements::Soh8Surface::EvaluateNeumann(ParameterList&           params,
     double fac = gpweight * drs * curvefac;   // integration factor
 
     // distribute over element load vector
-    for (int nodid=0; nodid<NUMNOD_SOH8; ++nodid) {
-      for(int dim=0; dim<NUMDIM_SOH8; dim++) {
-        elevec1[nodid+dim] += funct[nodid] * (*onoff)[dim] * (*val)[dim] * fac;
+    for (int nodid=0; nodid < 4; ++nodid) {
+      for(int dim=0; dim < NUMDIM_SOH8; ++dim) {
+//        int on_off=(*onoff)[dim];
+//        double value=(*val)[dim];
+//        cout << "id: " << nodid*NUMDOF_SOH8 + dim << "onoff: " << on_off << " value: " << value << endl;
+        elevec1[nodid*NUMDIM_SOH8 + dim] += funct[nodid] * (*onoff)[dim] * (*val)[dim] * fac;
       }
     }
   }
+//    cout << elevec1 << endl;
   return 0;
 }
 
@@ -132,7 +136,7 @@ void DRT::Elements::Soh8Surface::soh8_surface_integ(
 
   // compute dXYZ / drs
   Epetra_SerialDenseMatrix dxyzdrs(2,3);
-  dxyzdrs.Multiply('T','N',1.0,deriv,xsrefe,1.0);
+  dxyzdrs.Multiply('T','N',1.0,deriv,(*xsrefe),1.0);
 
   /* compute covariant metric tensor G for surface element
   **                        | g11   g12 |

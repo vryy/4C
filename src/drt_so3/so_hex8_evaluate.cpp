@@ -296,6 +296,9 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_SOH8+2];
   }
 
+//  cout << "xrefe " << xrefe << endl;
+//  cout << "xcurr " << xcurr << endl;
+
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
@@ -338,9 +341,9 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     int err = solve_for_inverseJac.Solve();         // N_XYZ = J^-1.N_rst
     if (err != 0) dserror("Inversion of Jacobian failed");
 
-    // (material) deformation gradient F = d xxurr / d xrefe
+    // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
     Epetra_SerialDenseMatrix defgrd(NUMDIM_SOH8,NUMDIM_SOH8);
-    defgrd.Multiply('N','N',1.0,N_XYZ,xcurr,1.0);
+    defgrd.Multiply('T','T',1.0,xcurr,N_XYZ,1.0);
 
     // Right Cauchy-Green tensor = F^T * F
     Epetra_SerialDenseMatrix cauchygreen(NUMDIM_SOH8,NUMDIM_SOH8);
@@ -449,10 +452,14 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
         }
       }
     } // end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
+//  cout << "mass " << (*massmatrix) << endl;
+//  cout << "force " << (*force) << endl;
    /* =========================================================================*/
   }/* ==================================================== end of Loop over GP */
    /* =========================================================================*/
-
+  
+//  cout << "stiff " << (*stiffmatrix) << endl;
+//  cout << "force " << (*force) << endl;
   return;
 } // DRT::Elements::Shell8::s8_nlnstiffmass
 
