@@ -80,6 +80,13 @@ static void input_line_neum(multimap<int,RefCountPtr<DRT::Condition> >& lnmap);
 static void input_surf_neum(multimap<int,RefCountPtr<DRT::Condition> >& snmap);
 static void input_vol_neum(multimap<int,RefCountPtr<DRT::Condition> >& vnmap);
 
+/*----------------------------------------------------------------------*
+ | Some b.c. for incompressible flows                 vanderbos 05/07   |
+ *----------------------------------------------------------------------*/
+static void input_line_isothermnoslipwall(multimap<int,RefCountPtr<DRT::Condition> >& bcmap);
+static void input_line_subsonicinflow(multimap<int,RefCountPtr<DRT::Condition> >& bcmap);
+static void input_line_subsonicoutflow(multimap<int,RefCountPtr<DRT::Condition> >& bcmap);
+
 static void add_nodeids_to_condition(const int id, RefCountPtr<DRT::Condition> cond,
                                      const vector<int> nd_fenode,
                                      const vector<vector<int> > d_fenode);
@@ -158,6 +165,7 @@ void input_conditions()
   //-------------------------------------read volume dirichlet conditions
   multimap<int,RefCountPtr<DRT::Condition> > voldirich;
   input_vol_dirich(voldirich);
+
   //--------------------------------------- read point neumann conditions
   multimap<int,RefCountPtr<DRT::Condition> > pointneum;
   input_point_neum(pointneum);
@@ -170,6 +178,17 @@ void input_conditions()
   //--------------------------------------- read vol neumann conditions
   multimap<int,RefCountPtr<DRT::Condition> > volneum;
   input_vol_neum(volneum);
+
+  //--------------------------------------- read line isothermal noslip wall conditions
+  multimap<int,RefCountPtr<DRT::Condition> > lineisothermnoslip;
+  input_line_isothermnoslipwall(lineisothermnoslip);
+  //--------------------------------------- read line subsonic inflow conditions
+  multimap<int,RefCountPtr<DRT::Condition> > linesubsonicinflow;
+  input_line_subsonicinflow(linesubsonicinflow);
+  //--------------------------------------- read line subsonic outflow conditions
+  multimap<int,RefCountPtr<DRT::Condition> > linesubsonicoutflow;
+  input_line_subsonicoutflow(linesubsonicoutflow);
+
 
   // Iterate through all conditions and add the finite element node ids
   // to the condition itself
@@ -199,6 +218,20 @@ void input_conditions()
   // iterate through surface neumann conditions and add fe nodes
   for (curr=volneum.begin(); curr!=volneum.end(); ++curr)
     add_nodeids_to_condition(curr->first,curr->second,ndvol_fenode,dvol_fenode);
+
+  /* iterate through 
+     -line isothermal no-slip wall, 
+     -line subsonic inflow 
+     -line subsonic outflow b.c.
+     and add fe nodes
+  */
+  for (curr=lineisothermnoslip.begin(); curr!=lineisothermnoslip.end(); ++curr)
+    add_nodeids_to_condition(curr->first,curr->second,ndline_fenode,dline_fenode);
+  for (curr=linesubsonicinflow.begin(); curr!=linesubsonicinflow.end(); ++curr)
+    add_nodeids_to_condition(curr->first,curr->second,ndline_fenode,dline_fenode);
+  for (curr=linesubsonicoutflow.begin(); curr!=linesubsonicoutflow.end(); ++curr)
+    add_nodeids_to_condition(curr->first,curr->second,ndline_fenode,dline_fenode);
+
 
   // Iterate through all discretizations and sort the appropiate condition into
   // the correct discretization it applies to
@@ -315,6 +348,45 @@ void input_conditions()
         noderowmap->Comm().SumAll(&foundit,&found,1);
         if (found)
           actdis->SetCondition("VolumeNeumann",curr->second);
+      }
+      // isothermal no-slip wall b.c.
+      for (curr=lineisothermnoslip.begin(); curr!=lineisothermnoslip.end(); ++curr)
+      {
+        const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
+        if (!(int)nodes->size()) dserror("Condition has no nodal cloud");
+        const int firstnode = (*nodes)[0];
+        int foundit = 0;
+        if (noderowmap->MyGID(firstnode)) foundit = 1;
+        int found=0;
+        noderowmap->Comm().SumAll(&foundit,&found,1);
+        if (found)
+          actdis->SetCondition("LineIsothermalNoslip",curr->second);
+      }
+      // subsonic inflow b.c.
+      for (curr=linesubsonicinflow.begin(); curr!=linesubsonicinflow.end(); ++curr)
+      {
+        const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
+        if (!(int)nodes->size()) dserror("Condition has no nodal cloud");
+        const int firstnode = (*nodes)[0];
+        int foundit = 0;
+        if (noderowmap->MyGID(firstnode)) foundit = 1;
+        int found=0;
+        noderowmap->Comm().SumAll(&foundit,&found,1);
+        if (found)
+          actdis->SetCondition("LineSubsonicInflow",curr->second);
+      }
+      // subsonic outflow b.c.
+      for (curr=linesubsonicoutflow.begin(); curr!=linesubsonicoutflow.end(); ++curr)
+      {
+        const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
+        if (!(int)nodes->size()) dserror("Condition has no nodal cloud");
+        const int firstnode = (*nodes)[0];
+        int foundit = 0;
+        if (noderowmap->MyGID(firstnode)) foundit = 1;
+        int found=0;
+        noderowmap->Comm().SumAll(&foundit,&found,1);
+        if (found)
+          actdis->SetCondition("LineSubsonicOutflow",curr->second);
       }
     }  // for (int j=0;j<field[i].ndis;j++)
   } // for (int i=0; i<genprob.numfld; i++)
@@ -1271,6 +1343,185 @@ void input_vol_dirich(multimap<int,RefCountPtr<DRT::Condition> >& vdmap)
   } // while(strncmp(allfiles.actplace,"------",6)!=0)
   return;
 } // input_vol_dirich
+
+
+
+
+/*----------------------------------------------------------------------*
+ | input of line isothermal no-slipp wall b.c.        vanderbos 05/07   |
+ *----------------------------------------------------------------------*/
+void input_line_isothermnoslipwall(multimap<int,RefCountPtr<DRT::Condition> >& bcmap)
+{
+  DSTraceHelper dst("input_line_isothermnoslipwall");
+
+  /* Isothermal no-slip wall b.c. requires the following input variable(s): 
+     - wall u-vel
+     - wall v-vel
+     - wall temperature
+  */
+
+  /*-------------------- find the beginning of line dirichlet conditions */
+  if (frfind("--DESIGN ISOTHERM NO-SLIP LINE CONDITIONS")==0) return;
+  frread();
+
+  /*------------------------ read number of design lines with conditions */
+  int ierr=0;
+  int ndline=0;
+  frint("DLINE",&ndline,&ierr);
+  dsassert(ierr==1,"Cannot read design-line isothermal no-slip conditions");
+  frread();
+
+  /*-------------------------------------- start reading the design lines */
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    /*------------------------------------------ read the design line Id */
+    int dlineid = -1;
+    frint("E",&dlineid,&ierr);
+    dsassert(ierr==1,"Cannot read design-line isothermal no-slip conditions");
+    dlineid--;
+    /*--------------------------------- move pointer behind the "-" sign */
+    char* colptr = strstr(allfiles.actplace,"-");
+    dsassert(colptr!=NULL,"Cannot read design-line isothermal no-slip conditions");
+    colptr++;
+
+    //------------------------------- define some temporary reading vectors
+    double wall_uvel=strtol(colptr,&colptr,10);
+    double wall_vvel=strtol(colptr,&colptr,10);
+    double wall_temp=strtol(colptr,&colptr,10);
+
+    // create boundary condition
+    RefCountPtr<DRT::Condition> condition =
+           rcp(new DRT::Condition(dlineid,DRT::Condition::LineIsothermalNoslip,false,
+                                  DRT::Condition::Line));
+    condition->Add("wall_uvel",wall_uvel);
+    condition->Add("wall_vvel",wall_vvel);
+    condition->Add("wall_temp",wall_temp);
+
+    //---------------------- add the condition to the map of all conditions
+    bcmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dlineid,condition));
+    //-------------------------------------------------- read the next line
+    frread();
+  } // while(strncmp(allfiles.actplace,"------",6)!=0)
+  return;
+} // input_line_isothermnoslipwall
+
+
+/*----------------------------------------------------------------------*
+ | input of line subsonic inflow b.c.                 vanderbos 05/07   |
+ *----------------------------------------------------------------------*/
+void input_line_subsonicinflow(multimap<int,RefCountPtr<DRT::Condition> >& bcmap)
+{
+  DSTraceHelper dst("input_line_subsonicinflow");
+
+  /* The line subsonic inflow b.c. requires the following input variable(s): 
+     - far-field density
+     - far-field u-velocity
+     - far-field v-velocity
+  */
+
+  /*-------------------- find the beginning of line dirichlet conditions */
+  if (frfind("--DESIGN SUBSONIC INFLOW LINE CONDITIONS")==0) return;
+  frread();
+
+  /*------------------------ read number of design lines with conditions */
+  int ierr=0;
+  int ndline=0;
+  frint("DLINE",&ndline,&ierr);
+  dsassert(ierr==1,"Cannot read design-line subsonic inflow conditions");
+  frread();
+
+  /*-------------------------------------- start reading the design lines */
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    /*------------------------------------------ read the design line Id */
+    int dlineid = -1;
+    frint("E",&dlineid,&ierr);
+    dsassert(ierr==1,"Cannot read design-line subsonic inflow conditions");
+    dlineid--;
+    /*--------------------------------- move pointer behind the "-" sign */
+    char* colptr = strstr(allfiles.actplace,"-");
+    dsassert(colptr!=NULL,"Cannot read design-line subsonic inflow conditions");
+    colptr++;
+
+    //------------------------------- define some temporary reading vectors
+    double farfield_density=strtol(colptr,&colptr,10);
+    double farfield_uvel=strtol(colptr,&colptr,10);
+    double farfield_vvel=strtol(colptr,&colptr,10);
+
+
+    // create boundary condition
+    RefCountPtr<DRT::Condition> condition =
+           rcp(new DRT::Condition(dlineid,DRT::Condition::LineSubsonicInflow,false,
+                                  DRT::Condition::Line));
+    condition->Add("farfield_density",farfield_density);
+    condition->Add("farfield_uvel",farfield_uvel);
+    condition->Add("farfield_vvel",farfield_vvel);
+
+    //---------------------- add the condition to the map of all conditions
+    bcmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dlineid,condition));
+    //-------------------------------------------------- read the next line
+    frread();
+  } // while(strncmp(allfiles.actplace,"------",6)!=0)
+  return;
+} // input_line_subsonicinflow
+
+
+/*----------------------------------------------------------------------*
+ | input of line subsonic outflow b.c.                vanderbos 05/07   |
+ *----------------------------------------------------------------------*/
+void input_line_subsonicoutflow(multimap<int,RefCountPtr<DRT::Condition> >& bcmap)
+{
+  DSTraceHelper dst("input_line_subsonicoutflow");
+
+  /* The line subsonic outflow b.c. requires the following input variable(s): 
+     - far-field pressure
+  */
+
+  /*-------------------- find the beginning of line dirichlet conditions */
+  if (frfind("--DESIGN SUBSONIC OUTFLOW LINE CONDITIONS")==0) return;
+  frread();
+
+  /*------------------------ read number of design lines with conditions */
+  int ierr=0;
+  int ndline=0;
+  frint("DLINE",&ndline,&ierr);
+  dsassert(ierr==1,"Cannot read design-line subsonic outflow conditions");
+  frread();
+
+  /*-------------------------------------- start reading the design lines */
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    /*------------------------------------------ read the design line Id */
+    int dlineid = -1;
+    frint("E",&dlineid,&ierr);
+    dsassert(ierr==1,"Cannot read design-line subsonic outflow conditions");
+    dlineid--;
+    /*--------------------------------- move pointer behind the "-" sign */
+    char* colptr = strstr(allfiles.actplace,"-");
+    dsassert(colptr!=NULL,"Cannot read design-line subsonic outflow conditions");
+    colptr++;
+
+    //------------------------------- define some temporary reading vectors
+    double farfield_pressure=strtol(colptr,&colptr,10);
+
+
+    // create boundary condition
+    RefCountPtr<DRT::Condition> condition =
+           rcp(new DRT::Condition(dlineid,DRT::Condition::LineSubsonicOutflow,false,
+                                  DRT::Condition::Line));
+    condition->Add("farfield_pressure",farfield_pressure);
+
+    //---------------------- add the condition to the map of all conditions
+    bcmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dlineid,condition));
+    //-------------------------------------------------- read the next line
+    frread();
+  } // while(strncmp(allfiles.actplace,"------",6)!=0)
+  return;
+} // input_line_subsonicoutflow
+
+
+
+
 
 
 #endif  // #ifdef TRILINOS_PACKAGE
