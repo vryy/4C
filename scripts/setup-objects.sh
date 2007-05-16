@@ -154,7 +154,7 @@ fi
 
 # WALL1
 if grep '^[[:blank:]]*D_WALL1' "$definefile" 2>&1 > /dev/null ; then
-    OBJECTS="$OBJECTS \$(OBJS_WALL1)"
+    OBJECTS="$OBJECTS \$(OBJS_WALL1) \$(OBJS_DRT_W1_LIB) \$(OBJS_DRT_W1)"
     OBJ_W1=1
 fi
 
