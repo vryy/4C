@@ -125,6 +125,103 @@ void th3_temper_final()
 
 /*======================================================================*/
 /*!
+\brief Calculate initial temperature at point on element parameter domain
+
+The element stiffness matrix, ie the tangent operator, is determined
+for the linear planar heat conduction problem.
+
+\param   *container     CONTAINER   (i)   container data
+\param   *ele           ELEMENT     (i)   pointer to current element
+\param    r             DOUBLE      (i)   r-coord of parameter (r,s,t)
+\param    s             DOUBLE      (i)   s-coord of parameter (r,s,t)
+\param    t             DOUBLE      (i)   t-coord of parameter (r,s,t)
+\param   *tem           DOUBLE      (o)   temperature at (r,s)
+
+\return void
+
+\author bborn
+\date 10/06
+*/
+void th3_temper_cal0(const CONTAINER *container,
+                     const ELEMENT *ele,
+                     const DOUBLE r,
+                     const DOUBLE s,
+                     const DOUBLE t,
+                     DOUBLE *tem)
+{
+  const ARRAY_POSITION_SOL* isol 
+    = &(field[genprob.numtf].dis[container->disnum_t].ipos.isol);
+  const INT item0 = isol->tem0;  /* temperature index */
+  const INT nelenod = ele->numnp;
+  /* const INT neledof = NUMDOF_THERM3 * nelenod; */
+  DOUBLE rr=0.0, ss=0.0, tt=0.0;  /* Gauss coordinate in THERM3 parameter space */
+  DOUBLE shape[MAXNOD_THERM3];  /* shape functions */
+  DOUBLE deriv[MAXNOD_THERM3][NDIM_THERM3];  /* derivatives of shape fct */
+  INT k;  /* loop index */
+
+  /*====================================================================*/
+#ifdef DEBUG
+  dstrc_enter("th3_temper_cal0");
+#endif
+
+  /*--------------------------------------------------------------------*/
+  /* reset to zero nodal temper., shape funct. and derivatives */
+  amzero(&nodtem_a);
+  memset(shape, 0, MAXNOD_THERM3*sizeof(DOUBLE));
+  memset(deriv, 0, MAXNOD_THERM3*NDIM_THERM3*sizeof(DOUBLE));
+
+  /*--------------------------------------------------------------------*/
+  /* transform parametric coordinates if necessary */
+  switch (ele->e.th3->struct_ele->eltyp)
+  {
+#ifdef D_BRICK1
+    case el_brick1:
+      rr = s;
+      ss = -r;
+      tt = t;
+      break;
+#endif
+#ifdef D_SOLID3
+    case el_solid3:
+      rr = r;
+      ss = s;
+      tt = t;
+      break;
+#endif
+    default:
+      dserror("Element type is not permissible!");
+      break;
+  }
+
+  /*--------------------------------------------------------------------*/
+  /* get shape funtions at (r,s,t) */
+  th3_shape_deriv(ele->distyp, rr, ss, tt, 0, shape, deriv);
+
+  /*--------------------------------------------------------------------*/
+  /* current nodal temperature */
+  for (k=0; k<nelenod; k++)
+  {
+    nodtem[k] = ele->node[k]->sol.a.da[item0][0];
+  }
+
+  /*--------------------------------------------------------------------*/
+  /* interpolate temperature */
+  *tem = 0.0;
+  for (k=0; k<nelenod; k++)
+  {
+    *tem += shape[k]*nodtem[k];
+  }
+
+  /*====================================================================*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}  /* end of th3_temper_cal */
+
+
+/*======================================================================*/
+/*!
 \brief Calculate temperature at point on element parameter domain
 
 The element stiffness matrix, ie the tangent operator, is determined

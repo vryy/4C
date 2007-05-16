@@ -327,6 +327,7 @@ void tsi_init_nodsol(FIELD *structfield,
   ipos_t->num = 7;  /* dimension of sol array */
   isol_t = &(ipos_t->isol);  /* pointer to sol names */
   isol_t->temn = 0;  /* temperature at t_{n+1} */
+  isol_t->tem0 = 1;  /* temperature at t_0 */
   isol_t->temd = 3;  /* temperature th_n at t_n of presc. DOFs */
   isol_t->temdn = 4; /* temperature th_{n+1} of prescribed DOFs */
   isol_t->temdi = 5;  /* tempr. increment th_{n+1} - th_n of presc. DOFs */

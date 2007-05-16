@@ -2080,7 +2080,9 @@ void inpctr_dyn_tsi(TSI_DYNAMIC *tsidyn)
     frdouble("ST_ALPHA_F", &(tsidyn->st_alpha_f), &ierr);
     /* iteration */
     frint("ITEMAX", &(tsidyn->maxiter), &ierr);
-
+    /* fields */
+    tsidyn->th_initmpr = 0.0;
+    frdouble("TH_INITMPR", &(tsidyn->th_initmpr), &ierr);
     frread();
   }
   frrewind();

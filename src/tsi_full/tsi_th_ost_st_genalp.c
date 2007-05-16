@@ -314,6 +314,7 @@ void tsi_th_ost_st_genalp(INT disnum_s,
   tdyn->dt = tsidyn->dt;
   tdyn->out_res_ev = tsidyn->out_res_ev;
   tdyn->gamma = tsidyn->th_gamma;
+  tdyn->initmpr = tsidyn->th_initmpr;
 
   /*--------------------------------------------------------------------*/
   /* check time step adaptivity */
@@ -356,12 +357,13 @@ void tsi_th_ost_st_genalp(INT disnum_s,
                   intra_t,
                   field_t,
                   disnum_t,
-                  ipos_t,
+                  ipos_t, isol_t,
                   solv_t,
                   &(numeq_t),
                   &(numeq_total_t),
                   &(stiff_array_t),
                   &(mass_array_t),
+                  tdyn,
                   &(container_t),
                   &(tem),
                   &(hint),

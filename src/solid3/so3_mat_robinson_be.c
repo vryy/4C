@@ -185,7 +185,8 @@ void so3_mat_robinson_be_sel(const CONTAINER* container,
   const STRUCT_DYNAMIC* sdyn = alldyn[isdyn].sdyn;  /* struct. dynamics data */
   const DOUBLE dt = sdyn->dt;  /* time step size */
 
-  DOUBLE tempr;  /* temperature */
+  DOUBLE tempr0;  /* initial temperature */
+  DOUBLE tempr;  /* current temperature */
 
   SOLID3* actso3 = ele->e.so3;  /* point to SOLID3 element bits */
   DOUBLE stntotn[NUMSTR_SOLID3];  /* total strain */
@@ -233,16 +234,20 @@ void so3_mat_robinson_be_sel(const CONTAINER* container,
   /*--------------------------------------------------------------------*/
   /* temperature and thermal strain */
   {
-    /* temperature at Gauss point */
+    /* current temperature at Gauss point */
+    so3_tsi_temper0(container, ele,
+                    gds->gpc[0], gds->gpc[1], gds->gpc[2], 
+                    &tempr0);
+    /* current temperature at Gauss point */
     so3_tsi_temper(container, ele,
                    gds->gpc[0], gds->gpc[1], gds->gpc[2], 
                    &tempr);
     /* coefficient of linear thermal expansion */
     DOUBLE thermexpans = mat_robin->thermexpans;
     /* thermal strain vector */
-    stnthr[0] = thermexpans * tempr;  /* E_xx */
-    stnthr[1] = thermexpans * tempr;  /* E_yy */
-    stnthr[2] = thermexpans * tempr;  /* E_zz */
+    stnthr[0] = thermexpans * (tempr - tempr0);  /* E_xx */
+    stnthr[1] = thermexpans * (tempr - tempr0);  /* E_yy */
+    stnthr[2] = thermexpans * (tempr - tempr0);  /* E_zz */
     stnthr[3] = 0.0;  /* 2*E_xy */
     stnthr[4] = 0.0;  /* 2*E_yz */
     stnthr[5] = 0.0;  /* 2*E_zx */
@@ -1067,25 +1072,6 @@ void so3_mat_robinson_be_red(DOUBLE stress[NUMSTR_SOLID3],
    dserror("solver Lapack conflicts with compilation with -DAZTEC_PACKAGE without -DTRILINOS_PACKAGE");
 #endif
 
-#if 0
-  {
-    INT i;
-    for (i=0; i<numstr_2; i++)
-    {
-      printf("(so3_mat_robinson_be_red_2) kvarva %d : %g\n", i, kvarva[i]);
-    }
-  }
-#endif
-#if 0
-      {
-        INT i;
-        for (i=0; i<NUMSTR_SOLID3; i++)
-        {
-          printf("(so3_mat_robinsonbe_be_red_4) Stress %d : %g\n", i, stress[i]);
-        }
-      }
-#endif
-
   /*--------------------------------------------------------------------*/
   /* reduce stress vector */
   {
@@ -1102,16 +1088,6 @@ void so3_mat_robinson_be_red(DOUBLE stress[NUMSTR_SOLID3],
     }
   }
   
-#if 0
-      {
-        INT i;
-        for (i=0; i<NUMSTR_SOLID3; i++)
-        {
-          printf("(so3_mat_robinsonbe_be_red_4) Stress %d : %g\n", i, stress[i]);
-        }
-      }
-#endif
-
   /*--------------------------------------------------------------------*/
   /* reduce tangent */
   {

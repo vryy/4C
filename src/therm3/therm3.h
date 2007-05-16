@@ -467,6 +467,12 @@ void th3_temper_caln(const CONTAINER *container,
                      const DOUBLE s,
                      const DOUBLE t,
                      DOUBLE *tem);
+void th3_temper_cal0(const CONTAINER *container,
+                     const ELEMENT *ele,
+                     const DOUBLE r,
+                     const DOUBLE s,
+                     const DOUBLE t,
+                     DOUBLE *tem);
 void th3_temper_sh(const CONTAINER *container,
                    const ELEMENT *ele,
                    const DOUBLE shape[MAXNOD_THERM3],

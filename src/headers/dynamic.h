@@ -224,6 +224,8 @@ typedef struct _THERM_DYNAMIC
   DOUBLE             toldisp;    /* displacement tolerance */
   /* output thingies */
   INT                out_res_ev; /* print result every */
+  /* field thingies */
+  DOUBLE             initmpr;    /* (flat) initial domain temperature */
 } THERM_DYNAMIC;
 
 
@@ -300,4 +302,7 @@ typedef struct _TSI_DYNAMIC
   /* output constants */
   INT              out_std_ev;      /* print to STDOUT every */
   INT              out_res_ev;      /* print result every */
+
+  /* field settings */
+  DOUBLE           th_initmpr;      /* (flat) initial domain temperature */
 } TSI_DYNAMIC;

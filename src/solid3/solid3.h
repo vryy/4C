@@ -1075,6 +1075,12 @@ void so3_tns3_unrm(const DOUBLE av[NDIM_SOLID3],
 /*----------------------------------------------------------------------*/
 /* file so3_tsi.c */
 #ifdef D_TSI
+void so3_tsi_temper0(const CONTAINER *container,
+                     const ELEMENT *ele,
+                     const DOUBLE r, 
+                     const DOUBLE s,
+                     const DOUBLE t,
+                     DOUBLE *temper);
 void so3_tsi_temper(const CONTAINER *container,
                     const ELEMENT *ele,
                     const DOUBLE r, 

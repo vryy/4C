@@ -168,11 +168,13 @@ void tsi_th_ost_init(PARTITION* actpart,
                      FIELD* actfield,
                      INT disnum,
                      ARRAY_POSITION* ipos,
+                     ARRAY_POSITION_SOL* isol,
                      SOLVAR* actsolv,
                      INT* numeq,
                      INT* numeq_total,
                      INT* stiff_array,
                      INT* mass_array,
+                     THERM_DYNAMIC* actdyn,
                      CONTAINER* container,
                      DIST_VECTOR** tem,
                      DIST_VECTOR** fext,
@@ -269,16 +271,17 @@ void tsi_th_ost_init(PARTITION* actpart,
   /*--------------------------------------------------------------------*/
   /* global temperature vectors */
   solserv_create_vec(tem, 1, *numeq_total, *numeq, "DV");
-  solserv_zero_vec(tem[0]);
-#if 1
+  /* solserv_zero_vec(tem[0]); */
+  /* set initial temperature in field */
   {
     INT idof;
-    for (idof=0; idof<*numeq_total; idof++)
+    for (idof=0; idof<*numeq; idof++)
     {
-      tem[0]->vec.a.dv[idof] = 298.0;
+      tem[0]->vec.a.dv[idof] = actdyn->initmpr;
     }
   }
-#endif
+  /* spawn initial temperature to nodes */
+  solserv_sol_zero(actfield, disnum, node_array_sol, isol->tem0);
 
   /*--------------------------------------------------------------------*/
   /* external heat loads */
@@ -860,6 +863,7 @@ void tsi_th_ost_sub(INT disnum_s,
   /*--------------------------------------------------------------------*/
   /* one-step-theta (the theta is gamma) time integration scheme */
   actdyn->gamma = 0.5;
+  actdyn->initmpr = 0.0;
 
   /*====================================================================*/
   /* initialise */
@@ -868,11 +872,13 @@ void tsi_th_ost_sub(INT disnum_s,
                   actfield,
                   disnum_t,
                   ipos,
+                  isol,
                   actsolv,
                   &(numeq),
                   &(numeq_total),
                   &(stiff_array),
                   &(mass_array),
+                  actdyn,
                   &(container),
                   &(tem),
                   &(fint),
