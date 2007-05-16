@@ -103,8 +103,6 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/drt_utils.o \
                 src/drt_lib/drt_parobject.o \
                 src/drt_lib/drt_exporter.o \
-                src/drt_lib/wall1.o \
-                src/drt_lib/wall1_line.o \
                 src/drt_lib/fluid2.o \
                 src/drt_lib/fluid2_line.o \
                 src/drt_lib/fluid3.o \
@@ -123,9 +121,6 @@ OBJS_DRT      = \
                 src/drt_lib/global_inp_control2.o \
                 src/drt_lib/global_inp_control3.o \
                 src/drt_lib/input_conditions.o \
-                src/drt_lib/wall1_evaluate.o \
-                src/drt_lib/wall1_input.o \
-                src/drt_lib/wall1_line_evaluate.o \
                 src/drt_lib/fluid2_evaluate.o \
                 src/drt_lib/fluid2_input.o \
                 src/drt_lib/fluid2_line_evaluate.o \
@@ -226,13 +221,13 @@ OBJS_F3F_F    = src/fluid3_fast/f3f_calextrhs.o \
                 src/fluid3_fast/f3f_calstabmat.o \
                 src/fluid3_fast/f3f_calmatvec_usfem.o \
                 src/fluid3_fast/f3f_massrhs.o
-#               drt version of shell8
+# -------------------------------------------------- drt version of shell8
 OBJS_DRT_S8_LIB = src/drt_s8/shell8.o \
                   src/drt_s8/shell8_line.o
 OBJS_DRT_S8   = src/drt_s8/shell8_evaluate.o \
                 src/drt_s8/shell8_input.o \
                 src/drt_s8/shell8_line_evaluate.o
-#               old version of shell8
+#-------------------------------------------------- old version of shell8
 OBJS_SHELL8   = src/shell8/s8_main.o \
                 src/shell8/s8_restart.o \
                 src/shell8/s8_inpele.o \
@@ -355,7 +350,13 @@ OBJS_IO       = src/io/io_singlefile.o \
                 src/io/io_drt.o
 #
 OBJS_IO_LIB   = src/io/hdf_reader.o
-#                wall1
+#------------------------------------------------- w1 drt version
+OBJS_DRT_W1_LIB = src/drt_w1/wall1.o \
+                  src/drt_w1/wall1_line.o
+OBJS_DRT_W1   = src/drt_w1/wall1_evaluate.o \
+                src/drt_w1/wall1_input.o \
+                src/drt_w1/wall1_line_evaluate.o
+#---------------------------------------------------------- wall1
 OBJS_WALL1    = src/wall1/w1_bop.o \
                 src/wall1/w1_b_barop.o \
                 src/wall1/w1_cal_deriv.o \
