@@ -1465,11 +1465,15 @@ estif  = estif_global->a.da;
 if (emass_global != NULL)
 {
   emass = emass_global->a.da;
+  if (container->dirichfacs != NULL)
+  {
+    dtinv = container->dirichfacs[0];
+    gamma = container->dirichfacs[1];
+  }
 }
-if (container->dirichfacs != NULL)
+else
 {
-  dtinv = container->dirichfacs[0];
-  gamma = container->dirichfacs[1];
+  emass = NULL;
 }
 /*---------------------------------- set number of dofs on this element */
 for (i=0; i<actele->numnp; i++) nd += actele->node[i]->numdf;

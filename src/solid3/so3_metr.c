@@ -114,11 +114,11 @@ void so3_metr_jaco(ELEMENT *ele,
   /* check if negative Jacobian */
   if (*det == 0.0)
   {
-    dserror("ZERO JACOBIAN DETERMINANT");
+    dserror("ZERO JACOBIAN DETERMINANT %g IN ELEMENT %d\n", *det, ele->Id);
   }
   else if (*det < 0.0)
   {
-    dserror("NEGATIVE JACOBIAN DETERMINANT");
+    dserror("NEGATIVE JACOBIAN DETERMINANT %g IN ELEMENT %d\n", *det, ele->Id);
   }
 
   /*--------------------------------------------------------------------*/

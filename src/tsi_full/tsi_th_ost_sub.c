@@ -195,6 +195,14 @@ void tsi_th_ost_init(PARTITION* actpart,
 #endif
 
   /*--------------------------------------------------------------------*/
+  /* put a zero to the place ipos->num=12 in node->sol to init the 
+   * velocities and accels of prescribed displacements */
+  /* HINT: This actually redefines/reallocates/enlarges the sol
+   *       array of each structure node to dimension 12x2 (or 12x3)
+   *       from originally 1x2 (or 1x3) */
+  solserv_sol_zero(actfield, disnum, node_array_sol, ipos->num-1);
+
+  /*--------------------------------------------------------------------*/
   /* distributed system matrix, which is used for solving */
   if (actsolv->nsysarray == 1)
   {
@@ -281,7 +289,13 @@ void tsi_th_ost_init(PARTITION* actpart,
     }
   }
   /* spawn initial temperature to nodes */
-  solserv_sol_zero(actfield, disnum, node_array_sol, isol->tem0);
+  solserv_result_total(actfield,
+                       disnum,
+                       actintra,
+                       tem[0],
+                       isol->tem0,
+                       &(actsolv->sysarray[*stiff_array]),
+                       &(actsolv->sysarray_typ[*stiff_array]));
 
   /*--------------------------------------------------------------------*/
   /* external heat loads */
@@ -335,14 +349,6 @@ void tsi_th_ost_init(PARTITION* actpart,
   /* init the element calculating routines */
   *action = calc_therm_init;
   calinit(actfield, actpart, action, container);
-
-  /*--------------------------------------------------------------------*/
-  /* put a zero to the place ipos->num=12 in node->sol to init the 
-   * velocities and accels of prescribed displacements */
-  /* HINT: This actually redefines/reallocates/enlarges the sol
-   *       array of each structure node to dimension 12x2 (or 12x3)
-   *       from originally 1x2 (or 1x3) */
-  solserv_sol_zero(actfield, disnum, node_array_sol, ipos->num-1);
 
   /*--------------------------------------------------------------------*/
 #ifdef BINIO

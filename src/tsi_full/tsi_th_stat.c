@@ -194,6 +194,9 @@ DOUBLE acttime;
 void tsi_th_stat(INT disnum_s,
                  INT disnum_t)
 {
+  INT numtf = genprob.numtf;  /* number (index) of thermal field */
+  FIELD* actfield = &(field[numtf]);  /* pointer to the thermal FIELD */
+  PARTITION* actpart = &(partition[numtf]);  /* pointer to the fields PARTITION structure */
 
   INT i;  /* a counter */
   INT numeq;  /* number of equations on this proc */
@@ -206,17 +209,18 @@ void tsi_th_stat(INT disnum_s,
   INT i2ndsysmat;  /* flag 2nd system matrix or not */
   DOUBLE rhsfact;  /* factor to multiply RHS */
 
-  static ARRAY dirich_a;
-  static DOUBLE* dirich;
+  ARRAY dirich_a;
+  DOUBLE* dirich;
 
-  static THERM_DYNAMIC* actdyn;  /* pointer to dynamic control 
-				  * --- allright, static control */
-  SOLVAR* actsolv;  /* pointer to field SOLVAR */
-  PARTITION* actpart;  /* pointer to the fields PARTITION structure */
-  INT numtf;  /* number (index) of thermal field */
-  FIELD* actfield;  /* pointer to the thermal FIELD */
+  THERM_DYNAMIC* actdyn = alldyn[numtf].tdyn;  /* pointer to dynamic control 
+                                                       * --- allright, static control */
+  TSI_DYNAMIC* tsidyn = alldyn[genprob.numfld].tsidyn;
+
+  SOLVAR* actsolv = &(solv[numtf]);  /* pointer to field SOLVAR */
+  
+  
   INTRA* actintra;  /* pointer to the fields intra-communicator structure */
-  CALC_ACTION *action;  /* pointer to the structures cal_action enum */
+  CALC_ACTION *action = &(calc_action[numtf]);  /* pointer to the structures cal_action enum */
 
   DOUBLE timcur;  /* current time */
   DOUBLE timstp;  /* current time step */
@@ -227,6 +231,8 @@ void tsi_th_stat(INT disnum_s,
   ARRAY_POSITION_SOL *isol;  /* named positions (indices) of NODE sol array */
 
   SPARSE_TYP array_typ;  /* type of psarse system matrix */
+
+  DIST_VECTOR* initem;  /* initial temperature */
 
 #ifdef BINIO
   BIN_OUT_FIELD out_context;
@@ -251,13 +257,7 @@ void tsi_th_stat(INT disnum_s,
 
   /*--------------------------------------------------------------------*/
   /* link to global variables & a settings */
-  /* thermal field */
-  numtf = genprob.numtf;
-  actfield = &(field[numtf]);
   container.fieldtyp = actfield->fieldtyp;
-  /* dynamic control */
-  actdyn = alldyn[numtf].tdyn;
-  /* container */
   container.isdyn = 0;  /* static calculation */  /* ? */
   container.kintyp = 0;  /* kintyp  = 0: geo_lin */  /* ? */
   disnum = disnum_t;  /* only a single discretisation
@@ -270,7 +270,6 @@ void tsi_th_stat(INT disnum_s,
   container.disnum_s = disnum_s;
   /* distributed system matrix, which is used for solving */
   actsysarray = numtf;  /* ? */
-  actsolv = &(solv[numtf]);
   if (actsolv->nsysarray == 1)
   {
     actsysarray = 0;
@@ -279,8 +278,6 @@ void tsi_th_stat(INT disnum_s,
   {
     dserror("More than 1 system arrays (actsolv->nsysarray)!");
   }
-  actpart = &(partition[numtf]);  /* of thermal field */
-  action = &(calc_action[numtf]);  /* ? */
 
   /*--------------------------------------------------------------------*/
   /* intra communicator */
@@ -388,6 +385,35 @@ void tsi_th_stat(INT disnum_s,
   /*   } */
 
   /*--------------------------------------------------------------------*/
+  /* put a zero to the place ipos->num=12 in node->sol to init the 
+   * velocities and accels of prescribed displacements */
+  /* HINT: This actually redefines/reallocates/enlarges the sol
+   *       array of each structure node to dimension 12x2 (or 12x3)
+   *       from originally 1x2 (or 1x3) */
+  solserv_sol_zero(actfield, disnum, node_array_sol, ipos->num-1);
+
+  /*--------------------------------------------------------------------*/
+  /* initial temperature in field */
+  solserv_create_vec(&initem, 1, numeq_total, numeq, "DV");
+  /* set initial temperature in field */
+  actdyn->initmpr = tsidyn->th_initmpr;
+  {
+    INT idof;
+    for (idof=0; idof<numeq; idof++)
+    {
+      initem->vec.a.dv[idof] = actdyn->initmpr;
+    }
+  }
+  /* spawn initial temperature to nodes */
+  solserv_result_total(actfield,
+                       disnum,
+                       actintra,
+                       initem,
+                       isol->tem0,
+                       &(actsolv->sysarray[actsysarray]),
+                       &(actsolv->sysarray_typ[actsysarray]));
+
+  /*--------------------------------------------------------------------*/
   /* put the scaled prescribed temperatures to the nodes
    * in field sol (1st 0) at place 0 (2nd 0) together with 
    * free temperatures */
@@ -447,17 +473,6 @@ void tsi_th_stat(INT disnum_s,
                        isol->temn,
                        &(actsolv->sysarray[actsysarray]),
                        &(actsolv->sysarray_typ[actsysarray]));
-
-  /*--------------------------------------------------------------------*/
-  /* allreduce the result and put it to the node sol_mf arrays */
-  /* iplace = 0;  /\* place values in the ARRAY node->sol_mf[iplace][...] *\/ */
-/*   solserv_result_mf(actfield, */
-/*                     disnum, */
-/*                     actintra, */
-/*                     &(actsolv->sol[actsysarray]), */
-/*                     iplace, */
-/*                     &(actsolv->sysarray[actsysarray]), */
-/*                     &(actsolv->sysarray_typ[actsysarray])); */
 
   /*--------------------------------------------------------------------*/
   /* perform heat flux calculation */
