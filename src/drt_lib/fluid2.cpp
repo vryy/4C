@@ -15,15 +15,15 @@ Maintainer: Peter Gamnitzer
 #ifdef TRILINOS_PACKAGE
 
 #include "fluid2.H"
-#include "drt_discret.H"
-#include "drt_utils.H"
-#include "drt_dserror.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_dserror.H"
 
 
 
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                            mwgee 11/06|
+ |  ctor (public)                                            gammi 11/06|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::Elements::Fluid2::Fluid2(int id, int owner) :
@@ -39,7 +39,7 @@ data_()
 }
 
 /*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       mwgee 11/06|
+ |  copy-ctor (public)                                       gammi 11/06|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::Elements::Fluid2::Fluid2(const DRT::Elements::Fluid2& old) :
@@ -57,7 +57,7 @@ lineptrs_(old.lineptrs_)
 
 /*----------------------------------------------------------------------*
  |  Deep copy this instance of Fluid2 and return pointer to it (public) |
- |                                                            gee 11/06 |
+ |                                                          gammi 11/06 |
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::Elements::Fluid2::Clone() const
 {
@@ -86,7 +86,7 @@ DRT::Element::DiscretizationType DRT::Elements::Fluid2::Shape() const
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
- |                                                            gee 02/07 |
+ |                                                          gammi 02/07 |
  *----------------------------------------------------------------------*/
 void DRT::Elements::Fluid2::Pack(vector<char>& data) const
 {
@@ -116,7 +116,7 @@ void DRT::Elements::Fluid2::Pack(vector<char>& data) const
 
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
- |                                                            gee 02/07 |
+ |                                                          gammi 02/07 |
  *----------------------------------------------------------------------*/
 void DRT::Elements::Fluid2::Unpack(const vector<char>& data)
 {
@@ -147,7 +147,7 @@ void DRT::Elements::Fluid2::Unpack(const vector<char>& data)
 
 
 /*----------------------------------------------------------------------*
- |  dtor (public)                                            mwgee 11/06|
+ |  dtor (public)                                            gammi 11/06|
  *----------------------------------------------------------------------*/
 DRT::Elements::Fluid2::~Fluid2()
 {
@@ -156,7 +156,7 @@ DRT::Elements::Fluid2::~Fluid2()
 
 
 /*----------------------------------------------------------------------*
- |  print this element (public)                              mwgee 11/06|
+ |  print this element (public)                              gammi 11/06|
  *----------------------------------------------------------------------*/
 void DRT::Elements::Fluid2::Print(ostream& os) const
 {

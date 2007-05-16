@@ -20,11 +20,11 @@ Maintainer: Peter Gamnitzer
 #include "mpi.h"
 #endif
 #include "fluid2.H"
-#include "drt_discret.H"
-#include "drt_utils.H"
-#include "drt_exporter.H"
-#include "drt_dserror.H"
-#include "linalg_utils.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_exporter.H"
+#include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/linalg_utils.H"
 #include "Epetra_SerialDenseSolver.h"
 
 extern "C"
@@ -32,7 +32,7 @@ extern "C"
 #include "../headers/standardtypes.h"
 #include "../fluid2/fluid2.h"
 }
-#include "dstrc.H"
+#include "../drt_lib/dstrc.H"
 
 
 /*----------------------------------------------------------------------*
