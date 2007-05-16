@@ -34,7 +34,7 @@ extern "C"
 #include "../drt_s8/shell8.H"
 #include "fluid2.H"
 #include "fluid3.H"
-#include "wall1.H"
+#include "../drt_w1/wall1.H"
 #include "../drt_so3/so_hex8.H"
 #include "drt_dserror.H"
 
