@@ -103,8 +103,6 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/drt_utils.o \
                 src/drt_lib/drt_parobject.o \
                 src/drt_lib/drt_exporter.o \
-                src/drt_lib/fluid2.o \
-                src/drt_lib/fluid2_line.o \
                 src/drt_lib/fluid3.o \
                 src/drt_lib/fluid3_surface.o \
                 src/drt_so3/so_hex8_surface.o \
@@ -121,9 +119,6 @@ OBJS_DRT      = \
                 src/drt_lib/global_inp_control2.o \
                 src/drt_lib/global_inp_control3.o \
                 src/drt_lib/input_conditions.o \
-                src/drt_lib/fluid2_evaluate.o \
-                src/drt_lib/fluid2_input.o \
-                src/drt_lib/fluid2_line_evaluate.o \
                 src/drt_lib/fluid3_evaluate.o \
                 src/drt_lib/fluid3_input.o \
                 src/drt_lib/fluid3_surface_evaluate.o \
@@ -417,7 +412,13 @@ OBJS_WALL1    = src/wall1/w1_bop.o \
                 src/wall1/w1_dam_service.o \
                 src/wall1/w1_tri_service.o \
                 src/wall1/w1_tsi.o
-#               fluid2
+#------------------------------------ fluid2 (drt version)
+OBJS_DRT_F2   = src/drt_f2/fluid2_evaluate.o \
+                src/drt_f2/fluid2_input.o \
+                src/drt_f2/fluid2_line_evaluate.o
+OBJS_DRT_F2_LIB = src/drt_f2/fluid2.o \
+                  src/drt_f2/fluid2_line.o
+#------------------------------------------------- fluid2
 OBJS_FLUID2   = src/fluid2/f2_calcurvature.o \
                 src/fluid2/f2_calelesize.o \
                 src/fluid2/f2_calele.o \
