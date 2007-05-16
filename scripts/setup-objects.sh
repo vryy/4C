@@ -36,11 +36,11 @@ fi
 # FLUID2
 if grep '^[[:blank:]]*D_FLUID2' "$definefile" 2>&1 > /dev/null ; then
     if [ "x$OBJ_FLUID" = "x0" ] ; then
-        OBJECTS="$OBJECTS \$(OBJS_FLUID2) \$(OBJS_FLUID)"
+        OBJECTS="$OBJECTS \$(OBJS_FLUID2) \$(OBJS_FLUID) \$(OBJS_DRT_F2) \$(OBJS_DRT_F2_LIB)"
         DEFINES="$DEFINES -DD_FLUID"
         OBJ_FLUID=1
     else
-        OBJECTS="$OBJECTS \$(OBJS_FLUID2)"
+        OBJECTS="$OBJECTS \$(OBJS_FLUID2) \$(OBJS_DRT_F2) \$(OBJS_DRT_F2_LIB)"
     fi
 fi
 
