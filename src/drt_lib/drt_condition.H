@@ -94,7 +94,10 @@ public:
     PointNeumann,
     LineNeumann,
     SurfaceNeumann,
-    VolumeNeumann
+    VolumeNeumann,
+    LineIsothermalNoslip,
+    LineSubsonicInflow,
+    LineSubsonicOutflow
   };
 
   /*!
