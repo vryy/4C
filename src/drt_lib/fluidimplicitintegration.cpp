@@ -22,6 +22,8 @@ Maintainer: Peter Gamnitzer
 #ifdef D_FLUID
 
 #include "fluidimplicitintegration.H"
+#include "drt_nodematchingoctree.H"
+#include "drt_periodicbc.H"
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -50,6 +52,12 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
 
   int numdim = params_.get<int>("number of velocity degrees of freedom");
 
+  // -------------------------------------------------------------------
+  // connect degrees of freedom for periodic boundary conditions
+  // -------------------------------------------------------------------
+  PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(discret_);
+  pbc.UpdateDofsForPeriodicBoundaryConditions();
+  
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled()) discret_->FillComplete();
   // -------------------------------------------------------------------
@@ -77,29 +85,43 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
     velmapdata.reserve(discret_->NumMyRowNodes()*numdim);
     premapdata.reserve(discret_->NumMyRowNodes());
 
+    int countveldofs = 0;
+    int countpredofs = 0;
+    
     for (int i=0; i<discret_->NumMyRowNodes(); ++i)
     {
       DRT::Node* node = discret_->lRowNode(i);
       vector<int> dof = discret_->Dof(node);
-      for (int j=0; j<numdim; ++j)
+
+      int numdofs=discret_->Dof(node).size();
+      if(numdofs==numdim+1)
       {
+        for (int j=0; j<numdofs-1; ++j)
+        {
 	  // add this velocity dof to the velmapdata vector
 	  velmapdata.push_back(dof[j]);
+          countveldofs+=1;
+        }
+
+        // add this pressure dof to the premapdata vector
+        premapdata.push_back(dof[numdofs-1]);
+        countpredofs += 1;
       }
-      // add this pressure dof to the premapdata vector
-      premapdata.push_back(dof[numdim]);
+      else
+      {
+        dserror("up to know fluid expects numdim vel + one pre dofs");
+      }
     }
 
     // the rowmaps are generated according to the pattern provided by
     // the data vectors
-    velrowmap_ = rcp(new Epetra_Map(discret_->NumGlobalNodes()*numdim,
+    velrowmap_ = rcp(new Epetra_Map(-1,
                                     velmapdata.size(),&velmapdata[0],0,
                                     discret_->Comm()));
-    prerowmap_ = rcp(new Epetra_Map(discret_->NumGlobalNodes(),
+    prerowmap_ = rcp(new Epetra_Map(-1,
                                     premapdata.size(),&premapdata[0],0,
                                     discret_->Comm()));
   }
-
   // -------------------------------------------------------------------
   // get the processor ID from the communicator
   // -------------------------------------------------------------------
@@ -679,7 +701,6 @@ void FluidImplicitTimeInt::NonlinearSolve(
       {
         initsolver = true;
       }
-
       solver_.Solve(sysmat_,incvel_,residual_,true,initsolver);
 
       // end time measurement for application of dirichlet conditions
@@ -904,7 +925,7 @@ void FluidImplicitTimeInt::Output(
   output_.NewStep    (step,time);
   output_.WriteVector("velnp", velnp_);
   output_.WriteVector("residual", residual_);
-
+  
   // do restart if we have to
   restartstep_ += 1;
   if (restartstep_ == uprestart_)
@@ -940,7 +961,6 @@ void FluidImplicitTimeInt::Output(
 	  }
       }
 #endif
-
 
 #if 0  // DEBUG IO  --- rhs of linear system
       {
@@ -992,7 +1012,6 @@ void FluidImplicitTimeInt::Output(
         }
       }
 #endif
-
 
   return;
 } // FluidImplicitTimeInt::Output
@@ -1121,7 +1140,7 @@ void FluidImplicitTimeInt::SetInitialFlowField(
   }
 
   return;
-}
+} // end SetInitialFlowField
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1198,8 +1217,7 @@ void FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol(
         dserror("Cannot calculate error. Unknown type of analytical test problem");
   }
   return;
-}
-
+} // end EvaluateErrorComparedToAnalyticalSol
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

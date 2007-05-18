@@ -81,11 +81,18 @@ static void input_surf_neum(multimap<int,RefCountPtr<DRT::Condition> >& snmap);
 static void input_vol_neum(multimap<int,RefCountPtr<DRT::Condition> >& vnmap);
 
 /*----------------------------------------------------------------------*
+ | periodic boundary conditions                           gammi 05/07   |
+ *----------------------------------------------------------------------*/
+static void input_line_periodic(multimap<int,RefCountPtr<DRT::Condition> >& lpbcmap);
+static void input_surf_periodic(multimap<int,RefCountPtr<DRT::Condition> >& spbcmap);
+
+
+/*----------------------------------------------------------------------*
  | Some b.c. for incompressible flows                 vanderbos 05/07   |
  *----------------------------------------------------------------------*/
 static void input_line_isothermnoslipwall(multimap<int,RefCountPtr<DRT::Condition> >& bcmap);
 static void input_line_subsonicinflow(multimap<int,RefCountPtr<DRT::Condition> >& bcmap);
-static void input_line_subsonicoutflow(multimap<int,RefCountPtr<DRT::Condition> >& bcmap);
+static void input_line_subsonicoutflow(multimap<int,RefCountPtr<DRT::<<Condition> >& bcmap);
 
 static void add_nodeids_to_condition(const int id, RefCountPtr<DRT::Condition> cond,
                                      const vector<int> nd_fenode,
@@ -178,7 +185,13 @@ void input_conditions()
   //--------------------------------------- read vol neumann conditions
   multimap<int,RefCountPtr<DRT::Condition> > volneum;
   input_vol_neum(volneum);
-
+  //------------------------------------------- read line periodic condition
+  multimap<int,RefCountPtr<DRT::Condition> > linepbc;
+  input_line_periodic(linepbc);
+  //---------------------------------------- read surface periodic condition
+  multimap<int,RefCountPtr<DRT::Condition> > surfpbc;
+  input_surf_periodic(surfpbc);
+  
   //--------------------------------------- read line isothermal noslip wall conditions
   multimap<int,RefCountPtr<DRT::Condition> > lineisothermnoslip;
   input_line_isothermnoslipwall(lineisothermnoslip);
@@ -215,10 +228,17 @@ void input_conditions()
   // iterate through surface neumann conditions and add fe nodes
   for (curr=surfneum.begin(); curr!=surfneum.end(); ++curr)
     add_nodeids_to_condition(curr->first,curr->second,ndsurf_fenode,dsurf_fenode);
-  // iterate through surface neumann conditions and add fe nodes
+  // iterate through volume neumann conditions and add fe nodes
   for (curr=volneum.begin(); curr!=volneum.end(); ++curr)
     add_nodeids_to_condition(curr->first,curr->second,ndvol_fenode,dvol_fenode);
 
+  // iterate through line periodic condition and add fe nodes
+  for (curr=linepbc.begin(); curr!=linepbc.end(); ++curr)
+    add_nodeids_to_condition(curr->first,curr->second,ndline_fenode,dline_fenode);
+  // iterate through surface periodic condition and add fe nodes
+  for (curr=surfpbc.begin(); curr!=surfpbc.end(); ++curr)
+    add_nodeids_to_condition(curr->first,curr->second,ndsurf_fenode,dsurf_fenode);
+  
   /* iterate through 
      -line isothermal no-slip wall, 
      -line subsonic inflow 
@@ -349,6 +369,37 @@ void input_conditions()
         if (found)
           actdis->SetCondition("VolumeNeumann",curr->second);
       }
+<<<<<<< .mine
+      // line periodic condition
+      for (curr=linepbc.begin(); curr!=linepbc.end(); ++curr)
+      {
+        const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
+        if (!(int)nodes->size()) dserror("Condition has no nodal cloud");
+        const int firstnode = (*nodes)[0];
+        int foundit = 0;
+        if (noderowmap->MyGID(firstnode)) foundit = 1;
+        int found=0;
+        noderowmap->Comm().SumAll(&foundit,&found,1);
+        if (found)
+        {
+          actdis->SetCondition("LinePeriodic",curr->second);
+          dserror("I did set a pbc for a line, but they are not implemented yet");
+        }
+      }
+      // surface periodic condition
+      for (curr=surfpbc.begin(); curr!=surfpbc.end(); ++curr)
+      {
+        const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
+        if (!(int)nodes->size()) dserror("Condition has no nodal cloud");
+        const int firstnode = (*nodes)[0];
+        int foundit = 0;
+        if (noderowmap->MyGID(firstnode)) foundit = 1;
+        int found=0;
+        noderowmap->Comm().SumAll(&foundit,&found,1);
+        if (found)
+          actdis->SetCondition("SurfacePeriodic",curr->second);
+      }
+=======
       // isothermal no-slip wall b.c.
       for (curr=lineisothermnoslip.begin(); curr!=lineisothermnoslip.end(); ++curr)
       {
@@ -388,6 +439,7 @@ void input_conditions()
         if (found)
           actdis->SetCondition("LineSubsonicOutflow",curr->second);
       }
+>>>>>>> .r3151
     }  // for (int j=0;j<field[i].ndis;j++)
   } // for (int i=0; i<genprob.numfld; i++)
   return;
@@ -1345,6 +1397,165 @@ void input_vol_dirich(multimap<int,RefCountPtr<DRT::Condition> >& vdmap)
 } // input_vol_dirich
 
 
+<<<<<<< .mine
+/*----------------------------------------------------------------------*
+ | input of design line periodic boundary conditions (for 2d channel    |
+ | flows and similar things)                              gammi 04/07   |
+ *----------------------------------------------------------------------*/
+void input_line_periodic(
+  multimap<int,RefCountPtr<DRT::Condition> >& lpbcmap)
+{
+  DSTraceHelper dst("input_line_periodic");
+
+  /*--------- find the beginning of line periodic boundary conditions */
+  if (frfind("--DESIGN LINE PERIODIC BOUNDARY CONDITIONS")==0) return;
+  frread();
+
+  /*---------------------- read number of design lines with conditions */
+  int ierr=0;
+  int ndline=0;
+  frint("DLINE",&ndline,&ierr);
+  
+  dsassert(ierr==1,"Cannot read design-line pbc");
+  frread();
+
+  /*----------------------------------- start reading the design lines */
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+
+    //-------------------------------------------------- read the next line
+    frread();
+  }
+  return;
+} // input_line_periodic
+
+
+
+/*----------------------------------------------------------------------*
+ | input of design surface periodic boundary conditions for 3d channel  |
+ | flows (and similar things)                             gammi 04/07   |
+ *----------------------------------------------------------------------*/
+void input_surf_periodic(
+  multimap<int,RefCountPtr<DRT::Condition> >& spbcmap)
+{
+  DSTraceHelper dst("input_surf_periodic");
+
+  /*--------- find the beginning of line periodic boundary conditions */
+  if (frfind("--DESIGN SURF PERIODIC BOUNDARY CONDITIONS")==0) return;
+  frread();
+
+  /*------------------- read number of design surfs with conditions */
+  int ierr=0;
+  int ndsurf=0;
+  frint("DSURF",&ndsurf,&ierr);
+  dsassert(ierr==1,"Cannot read design-surf pbc");
+  frread();
+
+  // the number of matching pbc pairs
+  int numdiffpbc=ndsurf/2;
+  
+  dsassert(ndsurf%2==0,"Pbc requires matching pairs of surfaces");
+
+  vector<int> togglemasterslave(numdiffpbc);
+  for(int i=0;i<numdiffpbc;i++)
+  {
+    togglemasterslave[i]=0;
+  }
+  
+  /*-------------------------------- start reading the design surfaces */
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    /*------------------------------------------ read the design surf Id */
+    int dsurfid = -1;
+    frint("E",&dsurfid,&ierr);
+    dsassert(ierr==1,"Cannot read design-surface pbc");
+    dsurfid--;
+
+
+    /*--------------------------------- move pointer behind the "-" sign */
+    char* colptr = strstr(allfiles.actplace,"-");
+    dsassert(colptr!=NULL,"Cannot read design-surface pbc");
+    colptr++;
+
+    //----------------- define some temporary reading vectors and variables
+    char     buffer[50];
+    // the id of the pbc
+    int         dsurfpbcid;
+    // degrees of freedom defining the periodic boundary conditions plane
+    vector<int> dofsforpbcplane(2);
+
+    // read Id of pbc. Must be smaller than or equal to the number of pbc pairs
+    dsurfpbcid = strtol(colptr,&colptr,10);
+
+    
+    if (dsurfpbcid>numdiffpbc)
+    {
+      dserror("number of pbc higher than number of different pbcs!");
+    }
+
+    // we use the id to adress data in a C array -> start from 0
+    dsurfpbcid--;
+
+    // we expect master/slave pairs of pbcs!!!
+    if (togglemasterslave[dsurfpbcid] >1)
+    {
+      dserror("you are not allowed to use more than two matching pbc surfaces yet");
+    }
+
+    // read the orientation of the plane which contains the pbc --- required for
+    // node matching
+    frchar("PLANE",buffer,&ierr);
+    if (ierr!=1) dserror("cannot read orientation of pbc plane\n");
+
+    if (strncmp(buffer,"xy",2)==0 || strncmp(buffer,"yx",2)==0)
+    {
+      dofsforpbcplane[0]=0;
+      dofsforpbcplane[1]=1;
+    }
+    else if (strncmp(buffer,"yz",2)==0 || strncmp(buffer,"zy",2)==0)
+    {
+      dofsforpbcplane[0]=1;
+      dofsforpbcplane[1]=2;
+    }
+    else if (strncmp(buffer,"xz",2)==0 || strncmp(buffer,"zx",2)==0)
+    {
+      dofsforpbcplane[0]=0;
+      dofsforpbcplane[1]=2;
+    }
+
+    // create periodic boundary condition
+    RefCountPtr<DRT::Condition> condition =
+          rcp(new DRT::Condition(dsurfid,
+                                 DRT::Condition::SurfacePeriodic,
+                                 false,
+                                 DRT::Condition::Surface));
+
+    condition->Add("Is slave periodic boundary condition",&(togglemasterslave[dsurfpbcid]),1);
+    condition->Add("Id of periodic boundary condition"   ,&dsurfpbcid,1);
+    condition->Add("degrees of freedom for the pbc plane",dofsforpbcplane);
+
+    // the next pbc with this Id will be the slave condition
+    togglemasterslave[dsurfpbcid]++;
+    
+    //--------------------------------- put condition in map of conditions
+    spbcmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dsurfid,condition));
+    
+    //-------------------------------------------------- read the next line
+    frread();
+  }
+
+  for(int i=0;i<numdiffpbc;i++)
+  {
+    if(togglemasterslave[i]!=2)
+    {
+      dserror("reading of pbc pairs failed");
+    }
+  }
+  
+  return;
+} // input_surf_periodic
+
+=======
 
 
 /*----------------------------------------------------------------------*
@@ -1524,5 +1735,6 @@ void input_line_subsonicoutflow(multimap<int,RefCountPtr<DRT::Condition> >& bcma
 
 
 
+>>>>>>> .r3151
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

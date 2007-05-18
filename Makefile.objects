@@ -100,6 +100,7 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/drt_container.o \
                 src/drt_lib/drt_condition.o \
                 src/drt_lib/drt_dofset.o \
+                src/drt_lib/drt_pbcdofset.o \
                 src/drt_lib/drt_utils.o \
                 src/drt_lib/drt_parobject.o \
                 src/drt_lib/drt_exporter.o \
@@ -122,6 +123,8 @@ OBJS_DRT      = \
                 src/drt_lib/stru_static_drt.o \
                 src/drt_lib/fluid_dyn_nln_drt.o \
                 src/drt_lib/fluidimplicitintegration.o \
+		src/drt_lib/drt_nodematchingoctree.o \
+		src/drt_lib/drt_periodicbc.o \
                 src/drt_lib/fluidresulttest.o
 #                pss_full
 OBJS_PSS      = src/pss_full/pss_am.o \

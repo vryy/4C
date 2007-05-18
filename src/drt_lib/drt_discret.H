@@ -98,7 +98,7 @@ public:
   \param node (in)      : the node those number of dofs are requested
   */
   virtual int NumDof(Node* node) const
-    { dsassert(havedof_,"no dofs assigned"); return dofsets_[currentdofset_].NumDof(node); }
+    { dsassert(havedof_,"no dofs assigned"); return dofsets_[currentdofset_]->NumDof(node); }
 
   /*!
   \brief Get number of dofs for given element.
@@ -109,7 +109,7 @@ public:
   \param element (in)      : the element those number of dofs are requested
   */
   virtual int NumDof(Element* element) const
-    { dsassert(havedof_,"no dofs assigned"); return dofsets_[currentdofset_].NumDof(element); }
+    { dsassert(havedof_,"no dofs assigned"); return dofsets_[currentdofset_]->NumDof(element); }
 
   /*!
   \brief Get the gid of a dof for given node.
@@ -121,7 +121,7 @@ public:
   \param dof (in)       : the node local dof number
   */
   virtual int Dof(Node* node, int dof) const
-    { dsassert(havedof_,"no dofs assigned"); return dofsets_[currentdofset_].Dof(node,dof); }
+    { dsassert(havedof_,"no dofs assigned"); return dofsets_[currentdofset_]->Dof(node,dof); }
 
   /*!
   \brief Get the gid of a dof for given element.
@@ -133,7 +133,7 @@ public:
   \param dof (in)          : the element local dof number
   */
   virtual int Dof(Element* element, int dof) const
-    { dsassert(havedof_,"no dofs assigned"); return dofsets_[currentdofset_].Dof(element,dof); }
+    { dsassert(havedof_,"no dofs assigned"); return dofsets_[currentdofset_]->Dof(element,dof); }
 
   /*!
   \brief Get the gid of all dofs of a node.
@@ -145,7 +145,7 @@ public:
   \param node (in)      : the node
   */
   virtual vector<int> Dof(Node* node) const
-    { dsassert(havedof_,"no dofs assigned"); return dofsets_[currentdofset_].Dof(node); }
+    { dsassert(havedof_,"no dofs assigned"); return dofsets_[currentdofset_]->Dof(node); }
 
   /*!
   \brief Get the gid of all dofs of a element.
@@ -157,7 +157,7 @@ public:
   \param element (in)      : the element
   */
   virtual vector<int> Dof(Element* element) const
-    { dsassert(havedof_,"no dofs assigned"); return dofsets_[currentdofset_].Dof(element); }
+    { dsassert(havedof_,"no dofs assigned"); return dofsets_[currentdofset_]->Dof(element); }
 
   /*!
   \brief Print this discretization to stdout (Filled()==true NOT prerequisite)
@@ -167,6 +167,13 @@ public:
   */
   virtual void Print(ostream& os) const;
 
+
+  /*!
+  \brief Replace the dofset associated with the discretisation by a new dofset.
+                 Sets havedof_ to false.
+  */
+  virtual void ReplaceDofSet(RefCountPtr<DofSet> newdofset);
+  
   /*!
   \brief Get degree of freedom row map (Filled()==true prerequisite)
 
@@ -519,6 +526,7 @@ public:
 
   \note Filled()==true is a prerequisite, Filled()==true on exit
   */
+  
   virtual void Redistribute(const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap);
 
   /*!
@@ -1075,9 +1083,8 @@ protected:
 
   multimap<string,RefCountPtr<Condition> >      condition_;       // some conditions e.g. BCs
 
-  vector<DofSet>                                dofsets_;         // set of DofSets
+  vector<RefCountPtr<DofSet> >                  dofsets_;         // set of DofSets
   int                                           currentdofset_;   // number of the DofSet we are currently working with
-
 }; // class Discretization
 } // namespace DRT
 

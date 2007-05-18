@@ -33,7 +33,7 @@ filled_(false),
 havedof_(false),
 currentdofset_(0)
 {
-  dofsets_.push_back(DofSet());
+  dofsets_.push_back(rcp(new DofSet()));
 }
 
 /*----------------------------------------------------------------------*
@@ -58,7 +58,7 @@ state_(old.state_)
 
   currentdofset_ = old.currentdofset_;
   for (unsigned i=0; i<old.dofsets_.size(); ++i)
-    dofsets_.push_back(DofSet(old.dofsets_[i]));
+    dofsets_.push_back(rcp(new DRT::DofSet::DofSet(*(old.dofsets_[i]))));
 
   // do fillcomplete if old was fillcomplete
   if (old.Filled()) FillComplete();
@@ -382,6 +382,15 @@ void DRT::Discretization::SetDesignEntityIds(Node::OnDesignEntity type,
 
 
 
+/*----------------------------------------------------------------------*
+ |  replace the dofset of the discretisation (public)        gammi 05/07|
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::ReplaceDofSet(RefCountPtr<DofSet> newdofset)
+{
+  havedof_ = false;
+  dofsets_[currentdofset_] = newdofset;
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |  get dof row map (public)                                 mwgee 12/06|
@@ -391,7 +400,7 @@ const Epetra_Map* DRT::Discretization::DofRowMap()
   if (!Filled()) dserror("FillComplete was not called on this discretization");
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() not called on this discretization");
 
-  return dofsets_[currentdofset_].DofRowMap();
+  return dofsets_[currentdofset_]->DofRowMap();
 }
 
 
@@ -403,7 +412,7 @@ const Epetra_Map* DRT::Discretization::DofColMap()
   if (!Filled()) dserror("FillComplete was not called on this discretization");
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() not called on this discretization");
 
-  return dofsets_[currentdofset_].DofColMap();
+  return dofsets_[currentdofset_]->DofColMap();
 }
 
 

@@ -28,7 +28,7 @@ void DRT::Discretization::Reset()
   filled_ = false;
   havedof_= false;
   for (unsigned i=0; i<dofsets_.size(); ++i)
-    dofsets_[i].Reset();
+    dofsets_[i]->Reset();
   dofrowmap_ = null;
   dofcolmap_ = null;
   elerowmap_ = null;
@@ -365,7 +365,7 @@ int DRT::Discretization::AssignDegreesOfFreedom(const int start)
   if (!ElementRowMap()->UniqueGIDs()) dserror("Element row map is not unique");
 
   havedof_ = true;
-  return dofsets_[currentdofset_].AssignDegreesOfFreedom(*this,start);
+  return dofsets_[currentdofset_]->AssignDegreesOfFreedom(*this,start);
 }
 
 

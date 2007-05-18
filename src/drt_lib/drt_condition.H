@@ -95,6 +95,8 @@ public:
     LineNeumann,
     SurfaceNeumann,
     VolumeNeumann,
+    LinePeriodic,
+    SurfacePeriodic,
     LineIsothermalNoslip,
     LineSubsonicInflow,
     LineSubsonicOutflow

@@ -216,7 +216,7 @@ public:
   void EvaluateErrorComparedToAnalyticalSol(
     double time
     );
-  
+
   //@}
 
   void ReadRestart(int step);
