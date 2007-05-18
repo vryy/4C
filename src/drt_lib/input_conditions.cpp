@@ -91,8 +91,8 @@ static void input_surf_periodic(multimap<int,RefCountPtr<DRT::Condition> >& spbc
  | Some b.c. for incompressible flows                 vanderbos 05/07   |
  *----------------------------------------------------------------------*/
 static void input_line_isothermnoslipwall(multimap<int,RefCountPtr<DRT::Condition> >& bcmap);
-static void input_line_subsonicinflow(multimap<int,RefCountPtr<DRT::Condition> >& bcmap);
-static void input_line_subsonicoutflow(multimap<int,RefCountPtr<DRT::<<Condition> >& bcmap);
+static void input_line_subsonicinflow    (multimap<int,RefCountPtr<DRT::Condition> >& bcmap);
+static void input_line_subsonicoutflow   (multimap<int,RefCountPtr<DRT::Condition> >& bcmap);
 
 static void add_nodeids_to_condition(const int id, RefCountPtr<DRT::Condition> cond,
                                      const vector<int> nd_fenode,
@@ -369,7 +369,7 @@ void input_conditions()
         if (found)
           actdis->SetCondition("VolumeNeumann",curr->second);
       }
-<<<<<<< .mine
+
       // line periodic condition
       for (curr=linepbc.begin(); curr!=linepbc.end(); ++curr)
       {
@@ -399,7 +399,7 @@ void input_conditions()
         if (found)
           actdis->SetCondition("SurfacePeriodic",curr->second);
       }
-=======
+
       // isothermal no-slip wall b.c.
       for (curr=lineisothermnoslip.begin(); curr!=lineisothermnoslip.end(); ++curr)
       {
@@ -439,7 +439,6 @@ void input_conditions()
         if (found)
           actdis->SetCondition("LineSubsonicOutflow",curr->second);
       }
->>>>>>> .r3151
     }  // for (int j=0;j<field[i].ndis;j++)
   } // for (int i=0; i<genprob.numfld; i++)
   return;
@@ -1397,7 +1396,6 @@ void input_vol_dirich(multimap<int,RefCountPtr<DRT::Condition> >& vdmap)
 } // input_vol_dirich
 
 
-<<<<<<< .mine
 /*----------------------------------------------------------------------*
  | input of design line periodic boundary conditions (for 2d channel    |
  | flows and similar things)                              gammi 04/07   |
@@ -1554,9 +1552,6 @@ void input_surf_periodic(
   
   return;
 } // input_surf_periodic
-
-=======
-
 
 /*----------------------------------------------------------------------*
  | input of line isothermal no-slipp wall b.c.        vanderbos 05/07   |
@@ -1730,11 +1725,5 @@ void input_line_subsonicoutflow(multimap<int,RefCountPtr<DRT::Condition> >& bcma
   return;
 } // input_line_subsonicoutflow
 
-
-
-
-
-
->>>>>>> .r3151
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
