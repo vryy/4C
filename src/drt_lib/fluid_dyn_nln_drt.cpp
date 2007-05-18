@@ -118,7 +118,10 @@ void dyn_fluid_drt()
               (vector<RefCountPtr<DRT::Discretization> >*)field[0].ccadis;
     actdis = (*fool)[0];
   }
+
+  // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
+  // -------------------------------------------------------------------  
   if (!actdis->Filled()) actdis->FillComplete();
 
 
