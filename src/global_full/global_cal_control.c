@@ -215,11 +215,11 @@ case prb_structure:
 
   switch (genprob.timetyp) {
   case time_static:
-#ifndef CCADISCRET
     calsta();
+/*#ifndef CCADISCRET
 #else
     dserror("calsta with DRT not yet impl.");
-#endif
+#endif*/
     break;
   case time_dynamic:
     caldyn();

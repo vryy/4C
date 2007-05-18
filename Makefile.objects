@@ -119,6 +119,7 @@ OBJS_DRT      = \
                 src/drt_lib/linalg_solver.o \
                 src/drt_lib/linalg_solver_spooles.o \
                 src/drt_lib/stru_genalpha_drt.o\
+                src/drt_lib/stru_static_drt.o \
                 src/drt_lib/fluid_dyn_nln_drt.o \
                 src/drt_lib/fluidimplicitintegration.o \
                 src/drt_lib/fluidresulttest.o

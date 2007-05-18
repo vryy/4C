@@ -85,7 +85,12 @@ if (statvar->linear==1)
 }
 if (statvar->nonlinear==1)
 {
-   stanln();
+#ifndef CCADISCRET
+      stanln();
+#else
+      /* nonlinear statics with new discretization */
+      stru_static_drt();
+#endif
 }
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG

@@ -3,18 +3,18 @@
 \brief
 
 <pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
+Maintainer: Moritz Frenzel
+            frenzel@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15240
 </pre>
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
-#ifndef STRU_DYN_NLN_DRT_H
-#define STRU_DYN_NLN_DRT_H
+#ifndef STRU_STA_NLN_DRT_H
+#define STRU_STA_NLN_DRT_H
 
 
 #ifdef __cplusplus /* stuff which is c++ specific */
@@ -57,8 +57,7 @@ extern "C"
 {
 #endif
 
-void dyn_nlnstructural_drt();
-void stru_genalpha_drt();
+void stru_static_drt();
 
 #ifdef __cplusplus
 }
@@ -69,6 +68,6 @@ void stru_genalpha_drt();
 
 
 
-#endif  /* #ifndef STRU_DYN_NLN_DRT_H */
+#endif  /* #ifndef STRU_STA_NLN_DRT_H */
 #endif  /* #ifdef TRILINOS_PACKAGE */
 #endif  /* #ifdef CCADISCRET */
