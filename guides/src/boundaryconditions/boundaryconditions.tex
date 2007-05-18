@@ -1,0 +1,41 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Boundary conditions}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Implementation of periodic boundary conditions}
+
+The periodic boundary conditions which are implemented are suitable only for
+rectangular boxes with surfaces oriented parallel to the coordinate planes.
+
+Each pair of boundary conditions defines master and corresponding slave
+nodes. The slave nodes get a pointer to the degrees of freedom of their
+masternode. This means, that the size of the dofset is reduced in comparison
+to a calculation without periodic boundary nodes!
+
+In addition to that, master and slave nodes have to be owned by the same proc
+and are only allowed to be ghosted in pairs to be able to assign the degrees
+of freedom.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Construction of the master slave matching}
+The master slave matching is constructed using a parallel octree search. For
+this purpose, we search for each master node the closest slave node on all
+processors. For this purpose, one of the slaves coordinates is modified
+in such a way that the new coordinate is in the master plane.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Redistribution of nodes}
+The nodes are redistributed among the processors. Each couple is owned by a
+unique processor and if a slave is ghosted on a processor, the corresponding
+master is ghosted there, too.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Renumbering the degrees of freedom}
+All slave nodes do not get their own degrees of freedom. Instead, their index
+for the access of the degrees of freedom from nodes is set to the index of
+their corresponding masternode. (This is what makes it necessary to ghost the
+master if you ghost the slave)
+

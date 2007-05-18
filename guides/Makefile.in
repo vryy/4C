@@ -20,5 +20,6 @@ src/shell8/shell8.tex
 src/shell9/shell9.tex
 src/axishell/axishell.tex
 src/beam3/beam3.tex
+src/boundaryconditions/boundaryconditions.tex
 src/struct_mat/struct_mat.tex
 src/postprocessing/postprocessing.tex
