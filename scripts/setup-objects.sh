@@ -28,6 +28,11 @@ if grep '^[[:blank:]]*D_BEAM3' "$definefile" 2>&1 > /dev/null ; then
     OBJECTS="$OBJECTS \$(OBJS_BEAM3)"
 fi
 
+# drt solid hex 8
+if grep '^[[:blank:]]*D_SOH8' "$definefile" 2>&1 > /dev/null ; then
+    OBJECTS="$OBJECTS \$(OBJS_SOH8) \$(OBJS_SOH8_LIB)"
+fi
+
 # BRICK1
 if grep '^[[:blank:]]*D_BRICK1' "$definefile" 2>&1 > /dev/null ; then
     OBJECTS="$OBJECTS \$(OBJS_BRICK1)"
