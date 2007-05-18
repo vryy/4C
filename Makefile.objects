@@ -103,8 +103,6 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/drt_utils.o \
                 src/drt_lib/drt_parobject.o \
                 src/drt_lib/drt_exporter.o \
-                src/drt_lib/fluid3.o \
-                src/drt_lib/fluid3_surface.o \
                 src/drt_lib/drt_dserror.o \
                 src/drt_lib/linalg_utils.o \
                 src/drt_lib/linalg_serialdensematrix.o \
@@ -116,9 +114,6 @@ OBJS_DRT      = \
                 src/drt_lib/global_inp_control2.o \
                 src/drt_lib/global_inp_control3.o \
                 src/drt_lib/input_conditions.o \
-                src/drt_lib/fluid3_evaluate.o \
-                src/drt_lib/fluid3_input.o \
-                src/drt_lib/fluid3_surface_evaluate.o \
                 src/drt_lib/stru_dyn_nln_drt.o \
                 src/drt_lib/strugenalpha.o \
                 src/drt_lib/linalg_solver.o \
@@ -162,7 +157,13 @@ OBJS_INPUT    = src/input_full/input_control_global.o \
                 src/input_full/input_submesh.o
 # c++ part of input
 OBJS_INPUT_CPP= src/input_full/input_parameterlist.o
-#                fluid3
+# -------------------------------------------------- drt version of fluid3
+OBJS_DRT_F3_LIB = src/drt_f3/fluid3.o \
+                  src/drt_f3/fluid3_surface.o
+OBJS_DRT_F3   = src/drt_f3/fluid3_evaluate.o \
+                src/drt_f3/fluid3_input.o \
+                src/drt_f3/fluid3_surface_evaluate.o
+#------------------------------------------------------------------ fluid3
 OBJS_FLUID3   = src/fluid3/f3_calele.o \
                 src/fluid3/f3_calelesize.o \
                 src/fluid3/f3_calfuncderiv.o \
