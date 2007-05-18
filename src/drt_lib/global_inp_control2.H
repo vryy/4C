@@ -35,7 +35,7 @@ Maintainer: Michael Gee
 #include "../drt_s8/shell8.H"
 #endif
 #ifdef D_FLUID2
-#include "fluid2.H"
+#include "../drt_f2/fluid2.H"
 #endif
 #ifdef D_FLUID3
 #include "fluid3.H"
