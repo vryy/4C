@@ -33,7 +33,7 @@ extern "C"
 #include "drt_dofset.H"
 #include "../drt_s8/shell8.H"
 #include "../drt_f2/fluid2.H"
-#include "fluid3.H"
+#include "../drt_f3/fluid3.H"
 #include "../drt_w1/wall1.H"
 #include "../drt_so3/so_hex8.H"
 #include "drt_dserror.H"
@@ -89,6 +89,23 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
     {
       DRT::Elements::Shell8Register* object =
                       new DRT::Elements::Shell8Register(DRT::Element::element_shell8);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+#endif
+#ifdef D_WALL1
+    case ParObject_Wall1:
+    {
+      DRT::Elements::Wall1* object = new DRT::Elements::Wall1(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_Wall1Register:
+    {
+      DRT::Elements::Wall1Register* object =
+                      new DRT::Elements::Wall1Register(DRT::Element::element_wall1);
       object->Unpack(data);
       return object;
     }
