@@ -20,18 +20,18 @@ Maintainer: Georg Bauer
 #include "mpi.h"
 #endif
 #include "fluid3.H"
-#include "drt_discret.H"
-#include "drt_utils.H"
-#include "drt_exporter.H"
-#include "drt_dserror.H"
-#include "linalg_utils.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_exporter.H"
+#include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/linalg_utils.H"
 
 extern "C"
 {
 #include "../headers/standardtypes.h"
 #include "../fluid3/fluid3.h"
 }
-#include "dstrc.H"
+#include "../drt_lib/dstrc.H"
 
 
 /*----------------------------------------------------------------------*
