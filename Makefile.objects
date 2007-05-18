@@ -105,9 +105,6 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/drt_exporter.o \
                 src/drt_lib/fluid3.o \
                 src/drt_lib/fluid3_surface.o \
-                src/drt_so3/so_hex8_surface.o \
-                src/drt_so3/so_hex8_line.o \
-                src/drt_so3/so_hex8.o \
                 src/drt_lib/drt_dserror.o \
                 src/drt_lib/linalg_utils.o \
                 src/drt_lib/linalg_serialdensematrix.o \
@@ -129,11 +126,7 @@ OBJS_DRT      = \
                 src/drt_lib/stru_genalpha_drt.o\
                 src/drt_lib/fluid_dyn_nln_drt.o \
                 src/drt_lib/fluidimplicitintegration.o \
-                src/drt_lib/fluidresulttest.o \
-                src/drt_so3/so_hex8_evaluate.o \
-                src/drt_so3/so_hex8_surface_evaluate.o \
-                src/drt_so3/so_hex8_stress.o \
-                src/drt_so3/so_hex8_input.o
+                src/drt_lib/fluidresulttest.o
 #                pss_full
 OBJS_PSS      = src/pss_full/pss_am.o \
                 src/pss_full/pss_ds.o \
@@ -295,7 +288,15 @@ OBJS_ALE      = src/ale3/ale_call_stiff.o \
 OBJS_PAR      = src/parallel/par_initmetis.o \
                 src/parallel/par_make_comm.o \
                 src/parallel/par_assignmesh.o
-#               brick1
+#------------------------------------------------ drt solid hex 8
+OBJS_SOH8     = src/drt_so3/so_hex8_evaluate.o \
+                src/drt_so3/so_hex8_surface_evaluate.o \
+                src/drt_so3/so_hex8_stress.o \
+                src/drt_so3/so_hex8_input.o
+OBJS_SOH8_LIB = src/drt_so3/so_hex8_surface.o \
+                src/drt_so3/so_hex8_line.o \
+                src/drt_so3/so_hex8.o
+#--------------------------------------------------------- brick1
 OBJS_BRICK1   = src/brick1/c1_out.o \
                 src/brick1/c1_gid.o \
                 src/brick1/c1_bop.o \

@@ -128,6 +128,16 @@ $(OBJS_PAR):
 	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
 	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@ > /dev/stderr
 
+$(OBJS_SOH8):
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
+	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
+
+$(OBJS_SOH8_LIB):
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
+	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
+
 $(OBJS_BRICK1):
 	@mkdir -p ${DEST}/${@D}
 	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
