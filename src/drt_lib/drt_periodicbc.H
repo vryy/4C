@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file drt_periodicbc.cpp
 
-\brief
+\brief Methods to apply periodic boundary conditions
 
 
 <pre>
@@ -41,6 +41,12 @@ public:
   /*!
   \brief Standard Constructor
 
+  \param  dis (i) Discretisation which contains the nodes of the
+                  periodc boundary condition
+
+                  
+  \return void
+  
   */
   PeriodicBoundaryConditions(RefCountPtr<DRT::Discretization> dis);
   
@@ -56,6 +62,8 @@ public:
 
   /*!
   \brief Proceeds all pairs of periodic boundary conditions
+  
+  \return void
 
   */
   void UpdateDofsForPeriodicBoundaryConditions();
@@ -68,6 +76,13 @@ public:
   /*!
   \brief Couple nodes for specific pair of periodic boundary conditions
 
+  \param  midtosid        (o) map from master to slavenodes
+  \param  masternodeids   (i) all master node ids
+  \param  slavenodeids    (i) all slave node ids
+  \param  dofsforpbcplane (i) periodic boundary is in this plane
+
+  \return void
+  
   */
   void CreateNodeCouplingForSinglePBC(
     map<int,int>       &midtosid,
@@ -81,6 +96,11 @@ public:
   Redistribute the nodes and assign the dofs to the
   current distribution of nodes
 
+  \param  midtosid        (i) map from master to slavenodes
+  \param  pbcid           (i) the id of the periodic boundary condition
+  
+  \return void
+
   */
   void AddConnectivityRedistributeAndCreateDofCoupling(
     map<int,int> &midtosid,const int pbcid);
@@ -89,47 +109,24 @@ public:
 
   
 protected:
-  // the discretisation
+  //!\brief the discretisation
   RefCountPtr<DRT::Discretization> discret_;
   
-  // number of pairs of periodic boundary conditions
+  //!\brief number of pairs of periodic boundary conditions
   int                     numpbcpairs_;
 
-  // vector of periodic surface boundary conditions
+  //!\brief vector of periodic surface boundary conditions
   vector<DRT::Condition*> mysurfpbcs_;
 
-  // map connecting master to slave nodes owned by this proc
+  //!\brief map connecting master to slave nodes owned by this proc
   //       master node -> list of his slave node(s)
   RefCountPtr<map<int,vector<int> > > allcoupledrownodes_;
 
-  // map connecting master to slave nodes owned or ghosted by this proc
+  //!\brief map connecting master to slave nodes owned or ghosted by this proc
   //       master node -> list of his slave node(s)
   RefCountPtr<map<int,vector<int> > > allcoupledcolnodes_;
 
 };
-
-/*!
-\class DRT::PeriodicBoundaryConditions
-
-\brief
-
-\note 
-\author gammi
-*/
-/*  
-class PBCDofSet:DofSet
-{
-public:
-  
-protected:
-  
-};
-*/
-
-
-
-
-
 
 #endif  // #ifndef PERIODICBC_H
 #endif  // #ifdef TRILINOS_PACKAGE

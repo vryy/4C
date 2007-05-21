@@ -39,3 +39,27 @@ for the access of the degrees of freedom from nodes is set to the index of
 their corresponding masternode. (This is what makes it necessary to ghost the
 master if you ghost the slave)
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Periodic boundary conditions and IO}
+The assignement of periodic boundary conditions changes the numbering of the
+degrees of freedom. For this reason, the conditions have to be written to the
+output to be able to reconstruct the dof pattern during the setup of the
+discretisation in the postprocessing filters.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Periodic boundary combined with additional 
+  (Dirichlet) conditions}
+For periodic boundary conditions several nodes correspond to the same set of
+degrees of freedom. If you want to assign an additional condition to such a
+node make sure that you assign the same condition to all corresponding nodes.
+
+This necessity is caused by the hirarchical way in which conditions are
+assigned to the dofs. Each node belonging to this condition sets its condition
+onto the degrees of freedom, overriding previously set conditions.
+So, if you want to make sure that this condition is set, you have to assign it
+to all coressponding nodes or the result depends on the order in which the
+nodes in the condition are processed.
+
+Another thing of practical interest might be that the assignement of periodic
+boundary conditions may lead to purely Dirichlet constrained problems
+(examples channel flow or a Couette flow). 

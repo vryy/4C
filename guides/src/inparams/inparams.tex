@@ -2136,6 +2136,42 @@ See \kw{DESIGN FLUID SURFACE STABILISING CONDITIONS}
 % // DOBJECT Id
 % *tcl(DLocsysvol)*\
 
+\subsection{DESIGN LINE PERIODIC BOUNDARY CONDITIONS}
+
+\begin{verbatim}
+--------------------------DESIGN LINE PERIODIC BOUNDARY CONDITIONS
+// DOBJECT PBC_ID ORIENTATION
+DLINE 2
+E 2 - 1 PLANE yz
+E 4 - 1 PLANE yz
+\end{verbatim}
+
+Details see corresponding surface condition.
+
+\subsection{DESIGN SURF PERIODIC BOUNDARY CONDITIONS}
+
+\begin{verbatim}
+--------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
+// DOBJECT PBC_ID ORIENTATION
+DSURF 6
+E 1 - 1 PLANE yz
+E 2 - 2 PLANE xy
+E 3 - 1 PLANE yz
+E 4 - 2 PLANE xy
+E 5 - 3 PLANE xz
+E 6 - 3 PLANE xz
+\end{verbatim}
+
+\verb$DSURF$ must be twice the number of \verb$PBC_ID$s. \verb$PBC_ID$s have
+to be assigned succesively from 1 to the number of pairs of periodic boundary
+conditions. The orientation has to be specified by the coordinate plane
+parallel to the design surface.
+You are only allowed to specify pairs of matching periodic boundary
+conditions (parallel planes, difference only a offset in direction of the
+plane normal).
+The meshes on both corresponding surfaces have to match exactly.
+
+
 \subsection{DNODE}
 \begin{verbatim}
 -----------------------------------------------DNODE-NODE TOPOLOGY

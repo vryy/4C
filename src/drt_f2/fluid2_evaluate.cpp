@@ -30,7 +30,7 @@ Maintainer: Peter Gamnitzer
 extern "C"
 {
 #include "../headers/standardtypes.h"
-#include "../fluid2/fluid2.h"
+//#include "../fluid2/fluid2.h"
 }
 #include "../drt_lib/dstrc.H"
 

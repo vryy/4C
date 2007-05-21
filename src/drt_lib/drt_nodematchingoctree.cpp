@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file
+\file drt_nodematchingoctree.cpp
 \brief Search closest node in given set of nodes using an octree search
 
 
@@ -21,8 +21,21 @@ Maintainer: Peter Gamnitzer
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- | Constructor (public)                                                 |
- | Set up processor local octree                             gammi 04/07|
+\brief Constructor (public)
+
+<pre> 
+
+ Set up processor local octree                               gammi 04/07
+
+<pre>
+
+\param    RefCountPtr<DRT::Discretization> (i) discretisation
+\param    const vector <int> &             (i) list of masternodeids
+\param    int                              (i) parameter for octree
+\param    double                           (i) tolerance for octree
+
+\return void
+
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

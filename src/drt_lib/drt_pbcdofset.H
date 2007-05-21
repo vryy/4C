@@ -47,8 +47,6 @@ class Discretization;
 
 \brief A set of degrees of freedom
 
-\note
-
 \author gammi
 */
 class PBCDofSet: public DofSet
@@ -61,6 +59,19 @@ public:
   /*!
   \brief Standard Constructor
 
+
+  <pre>
+
+  create a dofset that allows coupled nodes for periodic boundary
+  conditions                                         gammi 05/07
+  
+  </pre>
+
+  \param couplednodes (i) list of coupled nodes
+
+
+  \return void
+  
   */
   PBCDofSet(RefCountPtr<map<int,vector<int> > >  couplednodes);
 
@@ -74,15 +85,34 @@ public:
 
 
   // @{ \name Construction
+
+
+  /*!
+  \brief Assign dof numbers to all elements and nodes of the discretization.
+
+  <pre>
+
+  Assign dof numbers to all elements and nodes of the discretization.
+  This version of AssignDegreesOfFreedom takes care of the numbering
+  of coupled degrees of freedom (for periodic boundary conditions,
+  several coupled nodes have the same degrees of freedom)   gammi 05/07
   
-  /// Assign dof numbers to all elements and nodes of the discretization.
+  </pre>
+
+  \param  dis   (i) discretisation
+  \param  start (i) start numbering of dofs with this index
+
+
+  \return int highest dof number assigned up tpo now
+  
+  */
   virtual int AssignDegreesOfFreedom(const Discretization& dis, const int start);
 
   //@}
 
 protected:
 
-  // master and slave node connectivity for periodic boundary conditions
+  //!\brief master and slave node connectivity for periodic boundary conditions
   RefCountPtr<map<int,vector<int> > >           perbndcouples_;   
 }; // class PBCDofSet
 } // namespace DRT

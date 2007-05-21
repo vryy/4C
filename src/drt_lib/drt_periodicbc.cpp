@@ -40,6 +40,11 @@ PeriodicBoundaryConditions::PeriodicBoundaryConditions
   // get periodic surface boundary conditions
   discret_->GetCondition("SurfacePeriodic",mysurfpbcs_);
 
+  if(mysurfpbcs_.empty())
+  {
+    discret_->GetCondition("LinePeriodic",mysurfpbcs_);
+  }
+
   // set number of pairs of periodic boundary conditions
   numpbcpairs_ = mysurfpbcs_.size()/2;
 
@@ -402,6 +407,11 @@ void PeriodicBoundaryConditions::AddConnectivityRedistributeAndCreateDofCoupling
           vector<DRT::Condition*> thiscond;
           actnode->GetCondition("SurfacePeriodic",thiscond);
 
+          if(thiscond.empty())
+          {
+            actnode->GetCondition("LinePeriodic",thiscond);
+          }
+
           // loop them and check, whether this is a pbc slave node of the
           // current condition
           vector<int>* myid;
@@ -582,7 +592,6 @@ void PeriodicBoundaryConditions::AddConnectivityRedistributeAndCreateDofCoupling
     // create a new dofset specialisation for periodic boundary conditions
 
     discret_->ReplaceDofSet(rcp(new DRT::PBCDofSet(allcoupledcolnodes_)));
-//    discret_->SetPeriodicBoundaryConditionCouples();
 
     //--------------------------------------------------
     // redistribute the nodes

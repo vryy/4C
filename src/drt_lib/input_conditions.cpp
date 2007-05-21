@@ -383,7 +383,10 @@ void input_conditions()
         if (found)
         {
           actdis->SetCondition("LinePeriodic",curr->second);
-          dserror("I did set a pbc for a line, but they are not implemented yet");
+          if(genprob.ndim==3)
+          {
+            dserror("Trying to set a pbc for a line, but only surfaces are allowed in 3d");
+          }
         }
       }
       // surface periodic condition
@@ -1417,10 +1420,97 @@ void input_line_periodic(
   dsassert(ierr==1,"Cannot read design-line pbc");
   frread();
 
+  // the number of matching pbc pairs
+  int numdiffpbc=ndline/2;
+  
+  dsassert(ndline%2==0,"Pbc requires matching pairs of lines");
+
+  vector<int> togglemasterslave(numdiffpbc);
+  for(int i=0;i<numdiffpbc;i++)
+  {
+    togglemasterslave[i]=0;
+  }
+
   /*----------------------------------- start reading the design lines */
   while(strncmp(allfiles.actplace,"------",6)!=0)
   {
+    /*------------------------------------------ read the design surf Id */
+    int dlineid = -1;
+    frint("E",&dlineid,&ierr);
+    dsassert(ierr==1,"Cannot read design-line pbc");
+    dlineid--;
 
+
+    /*--------------------------------- move pointer behind the "-" sign */
+    char* colptr = strstr(allfiles.actplace,"-");
+    dsassert(colptr!=NULL,"Cannot read design-line pbc");
+    colptr++;
+
+    //----------------- define some temporary reading vectors and variables
+    char     buffer[50];
+    // the id of the pbc
+    int         dlinepbcid;
+    // degrees of freedom defining the periodic boundary conditions plane
+    vector<int> dofsforpbcplane(2);
+
+    // read Id of pbc. Must be smaller than or equal to the number of pbc pairs
+    dlinepbcid = strtol(colptr,&colptr,10);
+
+    
+    if (dlinepbcid>numdiffpbc)
+    {
+      dserror("number of pbc higher than number of different pbcs!");
+    }
+
+    // we use the id to adress data in a C array -> start from 0
+    dlinepbcid--;
+
+    // we expect master/slave pairs of pbcs!!!
+    if (togglemasterslave[dlinepbcid] >1)
+    {
+      dserror("you are not allowed to use more than two matching pbc lines yet");
+    }
+
+    // read the orientation of the plane which contains the pbc --- required for
+    // node matching
+    frchar("PLANE",buffer,&ierr);
+    if (ierr!=1) dserror("cannot read orientation of pbc plane\n");
+
+    if (strncmp(buffer,"xy",2)==0 || strncmp(buffer,"yx",2)==0)
+    {
+      dofsforpbcplane[0]=0;
+      dofsforpbcplane[1]=1;
+    }
+    else if (strncmp(buffer,"yz",2)==0 || strncmp(buffer,"zy",2)==0)
+    {
+      dofsforpbcplane[0]=1;
+      dofsforpbcplane[1]=2;
+    }
+    else if (strncmp(buffer,"xz",2)==0 || strncmp(buffer,"zx",2)==0)
+    {
+      dofsforpbcplane[0]=0;
+      dofsforpbcplane[1]=2;
+    }
+
+    // create periodic boundary condition
+    RefCountPtr<DRT::Condition> condition =
+          rcp(new DRT::Condition(dlineid,
+                                 DRT::Condition::LinePeriodic,
+                                 false,
+                                 DRT::Condition::Line));
+
+    condition->Add("Is slave periodic boundary condition",&(togglemasterslave[dlinepbcid]),1);
+    condition->Add("Id of periodic boundary condition"   ,&dlinepbcid,1);
+    condition->Add("degrees of freedom for the pbc plane",dofsforpbcplane);
+
+    // the next pbc with this Id will be the slave condition
+    togglemasterslave[dlinepbcid]++;
+    
+    //--------------------------------- put condition in map of conditions
+    lpbcmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dlineid,condition));
+
+
+    
     //-------------------------------------------------- read the next line
     frread();
   }
