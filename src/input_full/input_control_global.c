@@ -334,6 +334,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #ifdef D_TSI
     else if (frwordcmp("Thermal_Structure_Interaction",buffer)==0) genprob.probtyp = prb_tsi;
 #endif
+#ifdef STRUCT_MULTI
+    else if (frwordcmp("Structure_Multiscale",buffer)==0) genprob.probtyp = prb_struct_multi;
+#endif
     else dserror("problem type not recognized");
   }
 

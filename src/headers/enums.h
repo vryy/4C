@@ -15,22 +15,23 @@ Maintainer: Malte Neumann
  *----------------------------------------------------------------------*/
 typedef enum _PROBLEM_TYP
 {
-                       prb_fsi,       /*  fluid structure interaction problem */
-		       prb_ssi,       /*  structure structure interaction problem */
-                       prb_structure, /*  structural  problem */
-                       prb_fluid,     /*  fluid  problem */
-                       prb_opt,       /*  strctural optimization  problem */
-		       prb_ale,       /*  pure ale problem */
-                       prb_tsi,       /*  thermal structure interaction */
-		       prb_fluid_pm,  /*  fluid with (any) projection method */
-                       prb_pfsi,      /*  projection fsi */
-                       prb_fsi_xfem,  /*  fluid structure interaction problem */
+                       prb_fsi,          /*  fluid structure interaction problem */
+		       prb_ssi,          /*  structure structure interaction problem */
+                       prb_structure,    /*  structural  problem */
+                       prb_fluid,        /*  fluid  problem */
+                       prb_opt,          /*  structural optimization  problem */
+		       prb_ale,          /*  pure ale problem */
+                       prb_tsi,          /*  thermal structure interaction */
+		       prb_fluid_pm,     /*  fluid with (any) projection method */
+                       prb_pfsi,         /*  projection fsi */
+                       prb_fsi_xfem,     /*  fluid structure interaction problem */
+                       prb_struct_multi, /*  multi-scale problem (structure) */
 } PROBLEM_TYP;
 /* Mapping from problem type numbers to printable names. To be used to
  * initialize static variables. Keep in sync!
  * The trailing NULL is essential for the filters to read the problem
  * type! */
-#define PROBLEMNAMES { "fsi","ssi","structure","fluid","opt","ale","tsi","fluid_pm","pfsi","fsi_xfem", NULL }
+#define PROBLEMNAMES { "fsi","ssi","structure","fluid","opt","ale","tsi","fluid_pm","pfsi","fsi_xfem", "struct_multi", NULL }
 /*----------------------------------------------------------------------*
  | TIME TYPES                                             m.gee 7/01    |
  *----------------------------------------------------------------------*/
