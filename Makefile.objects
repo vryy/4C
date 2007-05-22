@@ -108,7 +108,9 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/linalg_utils.o \
                 src/drt_lib/linalg_serialdensematrix.o \
                 src/drt_lib/linalg_serialdensevector.o \
-                src/drt_lib/distribute_grids.o
+                src/drt_lib/distribute_grids.o\
+		src/drt_lib/drt_nodematchingoctree.o \
+		src/drt_lib/drt_periodicbc.o
 OBJS_DRT      = \
                 src/drt_lib/drt_discret_evaluate.o \
                 src/drt_lib/drt_resulttest.o \
@@ -123,8 +125,6 @@ OBJS_DRT      = \
                 src/drt_lib/stru_static_drt.o \
                 src/drt_lib/fluid_dyn_nln_drt.o \
                 src/drt_lib/fluidimplicitintegration.o \
-		src/drt_lib/drt_nodematchingoctree.o \
-		src/drt_lib/drt_periodicbc.o \
                 src/drt_lib/fluidresulttest.o
 #                pss_full
 OBJS_PSS      = src/pss_full/pss_am.o \
