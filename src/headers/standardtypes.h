@@ -306,12 +306,18 @@ typedef struct _GENPROB
   INT               numtf;         /* actual number of the thermal field */
 
   INT               graderw;       /* flag is gradient enhanced material model */
-  INT               multisc_struct;/* flag is structural multiscale analysis */
+  INT               multisc_struct;/* flag is structural multiscale analysis -> Andrea Hund */
 
 
 #ifdef RESULTTEST
   INT               numresults;    /* number of known results waiting to
                                     * be compared to the calculated ones. */
+#endif
+
+#ifdef STRUCT_MULTI
+  INT               micro_nele;     /* number of elements in microstructure */
+  INT               micro_nnode;    /* number of nodes in microstructure */
+  INT               micro_nmat;     /* number of material laws in microstructure */
 #endif
 
   INT               usetrilinosalgebra; /* use trilinos for vectors/matrices or

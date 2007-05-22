@@ -289,6 +289,27 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 /*------------------------------------------------------ check values */
 if (genprob.nmat<=0)
    dserror("No Material defined!");
+
+#ifdef STRUCT_MULTI
+if (frfind("-MICROSTRUCTURE PROBLEM SIZE")==0)
+{
+  dserror("frfind: MICROSTRUCTURE PROBLEM SIZE not in input file");
+}
+frread();
+while(strncmp(allfiles.actplace,"------",6)!=0)
+{
+  frint("MICRO ELEMENTS", &(genprob.micro_nele),&ierr);
+  frint("MICRO NODES",    &(genprob.micro_nnode),&ierr);
+  frint("MICRO MATERIALS",&(genprob.micro_nmat),&ierr);
+
+  frread();
+}
+/*------------------------------------------------------ check values */
+if (genprob.micro_nmat<=0)
+   dserror("No Material for microstructure defined!");
+#endif
+
+
 /*-------------------------------------- default value for monitoring */
 ioflags.monitor=0;
 /*----------------------------------------- default values for output */
