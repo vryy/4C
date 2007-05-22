@@ -112,7 +112,13 @@ extern "C" unsigned ReadDat(char* filename)
   exclude.push_back("--STRUCTURE ELEMENTS");
   exclude.push_back("--FLUID ELEMENTS");
   exclude.push_back("--ALE ELEMENTS");
-  //exclude.push_back("--DNODE-NODE TOPOLOGY");
+
+#ifdef STRUCT_MULTI
+  exclude.push_back("--MICROSTRUCTURE NODE COORDS");
+  exclude.push_back("--MICROSTRUCTURE ELEMENTS");
+#endif
+
+//exclude.push_back("--DNODE-NODE TOPOLOGY");
   //exclude.push_back("--DLINE-NODE TOPOLOGY");
   //exclude.push_back("--DSURF-NODE TOPOLOGY");
   //exclude.push_back("--DVOL-NODE TOPOLOGY");
