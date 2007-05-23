@@ -434,6 +434,13 @@ case prb_ssi:
   break;
 }
 #endif
+#ifdef STRUCT_MULTI
+case prb_struct_multi:
+{
+  genprob.numsf=0;
+  break;
+}
+#endif
 #ifdef D_TSI
 case prb_tsi:
 {
