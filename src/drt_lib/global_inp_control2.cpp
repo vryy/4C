@@ -212,6 +212,11 @@ void inpfield_ccadiscret_jumbo()
   RefCountPtr<DRT::Discretization> structdis = null;
   RefCountPtr<DRT::Discretization> fluiddis  = null;
 
+#ifdef STRUCT_MULTI
+  RefCountPtr<DRT::Discretization> structdis_macro = null;
+  RefCountPtr<DRT::Discretization> structdis_micro = null;
+#endif
+
   if (genprob.probtyp == prb_fsi)
     dserror("prb_fsi not yet impl.");
 
@@ -417,7 +422,7 @@ void inpfield_ccadiscret_jumbo()
     // all maps rownodes, colnodes, roweles, coleles match the
     // actual distribution of objects and
     // the actual distribution of objects matches each other (nodes<->elements)
-    roweles = rcp(new Epetra_Map(gnele,0,*comm));
+    roweles = rcp(new Epetra_Map(gnele_macro,0,*comm));
     input_field_jumbo(structdis_macro,rownodes,colnodes,roweles,coleles,"--STRUCTURE ELEMENTS");
     if (!myrank) cout << time.ElapsedTime() << " secs\n"; fflush(stdout);
     time.ResetStartTime();
@@ -426,6 +431,66 @@ void inpfield_ccadiscret_jumbo()
     // Now we will find out whether structdis_macro can fly....
     int err = structdis_macro->FillComplete();
     if (err) dserror("structdis_macro->FillComplete() returned %d",err);
+    if (!myrank) cout << time.ElapsedTime() << " secs\n"; fflush(stdout);
+
+
+    // Input of microscale discretization
+
+    rownodes   = null;
+    colnodes   = null;
+    roweles    = null;
+    coleles    = null;
+
+    if (!myrank) cout << "Read, create and partition microscale problem graph in...."; fflush(stdout);
+    // rownodes, colnodes and graph reflect final parallel layout
+    int gnele_micro = 0; // global number of macroscale elements is detected here as well
+    input_field_graph(gnele_micro,comm,rownodes,colnodes,graph,"--MICROSTRUCTURE ELEMENTS");
+    if (!myrank) cout << time.ElapsedTime() << " secs\n"; fflush(stdout);
+    time.ResetStartTime();
+
+    // this guy is VERY big and we don't need him anymore now
+    graph = null;
+
+    // allocate empty structural macroscale discretization
+    structdis_micro = rcp(new DRT::Discretization("Structure",comm));
+
+    if (!myrank) cout << "Read, create and partition microscale nodes         in...."; fflush(stdout);
+    // all processors enter the input of the nodes
+    inpnodes_ccadiscret_jumbo(structdis_micro,rownodes,colnodes, "--MICROSTRUCTURE NODE COORDS");
+    if (!myrank) cout << time.ElapsedTime() << " secs\n"; fflush(stdout);
+    time.ResetStartTime();
+
+    // at this point, we have all microscale nodes in structdis_macro and they already
+    // have the final distribution!
+
+    // put our discretization in there
+    (*discretization)[1] = structdis_micro;
+
+    if (!myrank) cout << "Read, create and partition microscale elements      in...."; fflush(stdout);
+    // read structural microscale elements from file (in jumbo mode)
+    // we assume some stupid linear distribution of elements here because
+    // we don't know any better (yet).
+    // This linear distribution is used while reading the elements to avoid
+    // proc 0 storing all elements at the same time.
+    // Proc 0 will read and immediately distribute junks of elements to other
+    // processors.
+    // roweles is going to be replaced inside input_field_jumbo
+    // by something very resonable matching the distribution of nodes
+    // in rownodes and colnodes once reading is done.
+    // coleles will be created as well
+    // elements on output have proper distribution and ghosting, such that
+    // all maps rownodes, colnodes, roweles, coleles match the
+    // actual distribution of objects and
+    // the actual distribution of objects matches each other (nodes<->elements)
+    roweles = rcp(new Epetra_Map(gnele_micro,0,*comm));
+    input_field_jumbo(structdis_micro,rownodes,colnodes,roweles,coleles,"--MICROSTRUCTURE ELEMENTS");
+    if (!myrank) cout << time.ElapsedTime() << " secs\n"; fflush(stdout);
+    time.ResetStartTime();
+
+    if (!myrank) cout << "Complete microscale discretization                  in...."; fflush(stdout);
+    // Now we will find out whether structdis_micro can fly....
+    int err = structdis_micro->FillComplete();
+    if (err) dserror("structdis_micro->FillComplete() returned %d",err);
     if (!myrank) cout << time.ElapsedTime() << " secs\n"; fflush(stdout);
   }
 #endif
