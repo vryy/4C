@@ -268,7 +268,8 @@ void input_conditions()
       for (curr=pointdirich.begin(); curr!=pointdirich.end(); ++curr)
       {
         const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
-        if (!(int)nodes->size()) dserror("Condition has no nodal cloud");
+        if (!(int)nodes->size()) dserror("Point Dirichlet condition %d has no nodal cloud",
+					curr->second->Id());
         const int firstnode = (*nodes)[0];
         int foundit = 0;
         if (noderowmap->MyGID(firstnode)) foundit = 1;
@@ -281,7 +282,8 @@ void input_conditions()
       for (curr=linedirich.begin(); curr!=linedirich.end(); ++curr)
       {
         const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
-        if (!(int)nodes->size()) dserror("Condition has no nodal cloud");
+        if (!(int)nodes->size()) dserror("Line Dirichlet condition %d has no nodal cloud",
+					curr->second->Id());
         const int firstnode = (*nodes)[0];
         int foundit = 0;
         if (noderowmap->MyGID(firstnode)) foundit = 1;
@@ -294,7 +296,8 @@ void input_conditions()
       for (curr=surfdirich.begin(); curr!=surfdirich.end(); ++curr)
       {
         const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
-        if (!(int)nodes->size()) dserror("Condition has no nodal cloud");
+        if (!(int)nodes->size()) dserror("Surface Dirichlet condition %d has no nodal cloud",
+					curr->second->Id());
         const int firstnode = (*nodes)[0];
         int foundit = 0;
         if (noderowmap->MyGID(firstnode)) foundit = 1;
@@ -307,7 +310,8 @@ void input_conditions()
       for (curr=voldirich.begin(); curr!=voldirich.end(); ++curr)
       {
         const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
-        if (!(int)nodes->size()) dserror("Condition has no nodal cloud");
+        if (!(int)nodes->size()) dserror("Volume Dirichlet condition %d has no nodal cloud",
+					curr->second->Id());
         const int firstnode = (*nodes)[0];
         int foundit = 0;
         if (noderowmap->MyGID(firstnode)) foundit = 1;
@@ -321,7 +325,8 @@ void input_conditions()
       for (curr=pointneum.begin(); curr!=pointneum.end(); ++curr)
       {
         const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
-        if (!(int)nodes->size()) dserror("Condition has no nodal cloud");
+        if (!(int)nodes->size()) dserror("Point Neumann condition %d has no nodal cloud",
+					curr->second->Id());
         const int firstnode = (*nodes)[0];
         int foundit = 0;
         if (noderowmap->MyGID(firstnode)) foundit = 1;
@@ -334,7 +339,8 @@ void input_conditions()
       for (curr=lineneum.begin(); curr!=lineneum.end(); ++curr)
       {
         const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
-        if (!(int)nodes->size()) dserror("Condition has no nodal cloud");
+        if (!(int)nodes->size()) dserror("Line Neumann condition %d has no nodal cloud",
+					curr->second->Id());
         const int firstnode = (*nodes)[0];
         int foundit = 0;
         if (noderowmap->MyGID(firstnode)) foundit = 1;
@@ -347,7 +353,8 @@ void input_conditions()
       for (curr=surfneum.begin(); curr!=surfneum.end(); ++curr)
       {
         const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
-        if (!(int)nodes->size()) dserror("Condition has no nodal cloud");
+        if (!(int)nodes->size()) dserror("Surface Neumann condition %d has no nodal cloud",
+					curr->second->Id());
         const int firstnode = (*nodes)[0];
         int foundit = 0;
         if (noderowmap->MyGID(firstnode)) foundit = 1;
@@ -360,7 +367,8 @@ void input_conditions()
       for (curr=volneum.begin(); curr!=volneum.end(); ++curr)
       {
         const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
-        if (!(int)nodes->size()) dserror("Condition has no nodal cloud");
+        if (!(int)nodes->size()) dserror("Volume Neumann condition %d has no nodal cloud",
+					curr->second->Id());
         const int firstnode = (*nodes)[0];
         int foundit = 0;
         if (noderowmap->MyGID(firstnode)) foundit = 1;
@@ -374,7 +382,8 @@ void input_conditions()
       for (curr=linepbc.begin(); curr!=linepbc.end(); ++curr)
       {
         const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
-        if (!(int)nodes->size()) dserror("Condition has no nodal cloud");
+        if (!(int)nodes->size()) dserror("Line periodic condition %d has no nodal cloud",
+					curr->second->Id());
         const int firstnode = (*nodes)[0];
         int foundit = 0;
         if (noderowmap->MyGID(firstnode)) foundit = 1;
@@ -393,7 +402,8 @@ void input_conditions()
       for (curr=surfpbc.begin(); curr!=surfpbc.end(); ++curr)
       {
         const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
-        if (!(int)nodes->size()) dserror("Condition has no nodal cloud");
+        if (!(int)nodes->size()) dserror("Surface periodic condition %d has no nodal cloud",
+					curr->second->Id());
         const int firstnode = (*nodes)[0];
         int foundit = 0;
         if (noderowmap->MyGID(firstnode)) foundit = 1;
@@ -407,7 +417,8 @@ void input_conditions()
       for (curr=lineisothermnoslip.begin(); curr!=lineisothermnoslip.end(); ++curr)
       {
         const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
-        if (!(int)nodes->size()) dserror("Condition has no nodal cloud");
+        if (!(int)nodes->size()) dserror("Isothermal no-slip wall condition %d has no nodal cloud",
+					curr->second->Id());
         const int firstnode = (*nodes)[0];
         int foundit = 0;
         if (noderowmap->MyGID(firstnode)) foundit = 1;
@@ -420,7 +431,8 @@ void input_conditions()
       for (curr=linesubsonicinflow.begin(); curr!=linesubsonicinflow.end(); ++curr)
       {
         const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
-        if (!(int)nodes->size()) dserror("Condition has no nodal cloud");
+        if (!(int)nodes->size()) dserror("Subsonic inflow condition %d has no nodal cloud",
+					curr->second->Id());
         const int firstnode = (*nodes)[0];
         int foundit = 0;
         if (noderowmap->MyGID(firstnode)) foundit = 1;
@@ -433,7 +445,8 @@ void input_conditions()
       for (curr=linesubsonicoutflow.begin(); curr!=linesubsonicoutflow.end(); ++curr)
       {
         const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
-        if (!(int)nodes->size()) dserror("Condition has no nodal cloud");
+        if (!(int)nodes->size()) dserror("Subsonic outflow condition %d has no nodal cloud",
+					curr->second->Id());
         const int firstnode = (*nodes)[0];
         int foundit = 0;
         if (noderowmap->MyGID(firstnode)) foundit = 1;
