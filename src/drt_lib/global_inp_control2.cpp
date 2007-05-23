@@ -489,7 +489,7 @@ void inpfield_ccadiscret_jumbo()
 
     if (!myrank) cout << "Complete microscale discretization                  in...."; fflush(stdout);
     // Now we will find out whether structdis_micro can fly....
-    int err = structdis_micro->FillComplete();
+    err = structdis_micro->FillComplete();
     if (err) dserror("structdis_micro->FillComplete() returned %d",err);
     if (!myrank) cout << time.ElapsedTime() << " secs\n"; fflush(stdout);
   }

@@ -235,6 +235,14 @@ dstrc_enter("inpctr");
       break;
    }
 #endif
+
+#ifdef STRUCT_MULTI
+   case prb_struct_multi:
+   {
+     printf("Input of solver data for multi-scale problem still missing!");
+     break;
+   }
+#endif
    default:
      dserror("problem type %d unknown",genprob.probtyp);
    }

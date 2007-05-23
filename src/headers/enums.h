@@ -25,7 +25,7 @@ typedef enum _PROBLEM_TYP
 		       prb_fluid_pm,     /*  fluid with (any) projection method */
                        prb_pfsi,         /*  projection fsi */
                        prb_fsi_xfem,     /*  fluid structure interaction problem */
-                       prb_struct_multi, /*  multi-scale problem (structure) */
+                       prb_struct_multi  /*  multi-scale problem (structure) */
 } PROBLEM_TYP;
 /* Mapping from problem type numbers to printable names. To be used to
  * initialize static variables. Keep in sync!
