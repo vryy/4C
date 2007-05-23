@@ -240,7 +240,7 @@ void inpfield_ccadiscret_jumbo()
 
     if (!myrank) cout << "Read, create and partition nodes         in...."; fflush(stdout);
     // all processors enter the input of the nodes
-    inpnodes_ccadiscret_jumbo(fluiddis,rownodes,colnodes);
+    inpnodes_ccadiscret_jumbo(fluiddis,rownodes,colnodes, "--NODE COORDS");
     if (!myrank) cout << time.ElapsedTime() << " secs\n"; fflush(stdout);
     time.ResetStartTime();
 
@@ -314,7 +314,7 @@ void inpfield_ccadiscret_jumbo()
 
     if (!myrank) cout << "Read, create and partition nodes         in...."; fflush(stdout);
     // all processors enter the input of the nodes
-    inpnodes_ccadiscret_jumbo(structdis,rownodes,colnodes);
+    inpnodes_ccadiscret_jumbo(structdis,rownodes,colnodes, "--NODE COORDS");
     if (!myrank) cout << time.ElapsedTime() << " secs\n"; fflush(stdout);
     time.ResetStartTime();
 
@@ -384,9 +384,9 @@ void inpfield_ccadiscret_jumbo()
     // allocate empty structural macroscale discretization
     structdis_macro = rcp(new DRT::Discretization("Structure",comm));
 
-    if (!myrank) cout << "Read, create and partition nodes         in...."; fflush(stdout);
+    if (!myrank) cout << "Read, create and partition macroscale nodes         in...."; fflush(stdout);
     // all processors enter the input of the nodes
-    inpnodes_ccadiscret_jumbo(structdis_macro,rownodes,colnodes);
+    inpnodes_ccadiscret_jumbo(structdis_macro,rownodes,colnodes, "--NODE COORDS");
     if (!myrank) cout << time.ElapsedTime() << " secs\n"; fflush(stdout);
     time.ResetStartTime();
 
@@ -401,7 +401,7 @@ void inpfield_ccadiscret_jumbo()
     // put our discretization in there
     (*discretization)[0] = structdis_macro;
 
-    if (!myrank) cout << "Read, create and partition elements      in...."; fflush(stdout);
+    if (!myrank) cout << "Read, create and partition macroscale elements      in...."; fflush(stdout);
     // read structural macroscale elements from file (in jumbo mode)
     // we assume some stupid linear distribution of elements here because
     // we don't know any better (yet).
@@ -423,7 +423,7 @@ void inpfield_ccadiscret_jumbo()
     time.ResetStartTime();
 
     if (!myrank) cout << "Complete macroscale discretization                  in...."; fflush(stdout);
-    // Now we will find out whether structdis can fly....
+    // Now we will find out whether structdis_macro can fly....
     int err = structdis_macro->FillComplete();
     if (err) dserror("structdis_macro->FillComplete() returned %d",err);
     if (!myrank) cout << time.ElapsedTime() << " secs\n"; fflush(stdout);
@@ -1074,7 +1074,8 @@ void inpnodes_ccadiscret(Epetra_SerialDenseMatrix& tmpnodes)
   *---------------------------------------------------------------------*/
 void inpnodes_ccadiscret_jumbo(RefCountPtr<DRT::Discretization>& dis,
                                RefCountPtr<Epetra_Map>& rownodes,
-                               RefCountPtr<Epetra_Map>& colnodes)
+                               RefCountPtr<Epetra_Map>& colnodes,
+                               const string& searchword)
 {
   DSTraceHelper dst("inpnodes_ccadiscret_jumbo");
 
@@ -1111,7 +1112,7 @@ void inpnodes_ccadiscret_jumbo(RefCountPtr<DRT::Discretization>& dis,
   // open input file at the right position
   // note that stream is valid on proc 0 only!
   ifstream file(allfiles.inputfile_name);
-  file.seekg(ExcludedSectionPositions["--NODE COORDS"]);
+  file.seekg(ExcludedSectionPositions[searchword]);
   string tmp;
   // note that the last block is special....
   int filecount=0;

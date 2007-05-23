@@ -54,7 +54,8 @@ using namespace Teuchos;
 void inpnodes_ccadiscret(Epetra_SerialDenseMatrix& tmpnodes);
 void inpnodes_ccadiscret_jumbo(RefCountPtr<DRT::Discretization>& dis,
                                RefCountPtr<Epetra_Map>& rownodes,
-                               RefCountPtr<Epetra_Map>& colnodes);
+                               RefCountPtr<Epetra_Map>& colnodes,
+                               const string& searchword);
 void input_structural_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm);
 void input_fluid_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm);
 void input_field_jumbo(RefCountPtr<DRT::Discretization>& dis,
@@ -94,7 +95,7 @@ extern "C"
 void ntainp_ccadiscret();
 void inpfield_ccadiscret();
 void inpfield_ccadiscret_jumbo();
-void input_conditions();                                
+void input_conditions();
 void distribute_drt_grids();
 void dyn_nlnstructural_drt();
 
