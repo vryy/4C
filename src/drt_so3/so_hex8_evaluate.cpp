@@ -89,7 +89,7 @@ int DRT::Elements::So_hex8::Evaluate(ParameterList& params,
       for (int i=0; i<(int)mydisp.size(); ++i) mydisp[i] = 0.0;
       vector<double> myres(lm.size());
       for (int i=0; i<(int)myres.size(); ++i) myres[i] = 0.0;
-      soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,actmat);
+      soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,actmat);
     }
     break;
 
@@ -103,7 +103,7 @@ int DRT::Elements::So_hex8::Evaluate(ParameterList& params,
       DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::Utils::ExtractMyValues(*res,myres,lm);
-      soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,actmat);
+      soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,actmat);
     }
     break;
 
@@ -296,9 +296,6 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_SOH8+2];
   }
 
-//  cout << "xrefe " << xrefe << endl;
-//  cout << "xcurr " << xcurr << endl;
-
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
@@ -412,7 +409,7 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     double density;
     soh8_mat_sel(&stress,&cmat,&density,&glstrain);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
-
+    
     // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
     (*force).Multiply('T','N',detJ * (*weights)(gp),bop,stress,1.0);
 
@@ -440,7 +437,7 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
       }
     } // end of intergrate `geometric' stiffness ******************************
 
-    if (*massmatrix != null){ // evaluate mass matrix +++++++++++++++++++++++++
+    if (massmatrix != NULL){ // evaluate mass matrix +++++++++++++++++++++++++
       // integrate concistent mass matrix
       for (int inod=0; inod<NUMNOD_SOH8; ++inod) {
         for (int jnod=0; jnod<NUMNOD_SOH8; ++jnod) {
@@ -452,14 +449,10 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
         }
       }
     } // end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
-//  cout << "mass " << (*massmatrix) << endl;
-//  cout << "force " << (*force) << endl;
    /* =========================================================================*/
   }/* ==================================================== end of Loop over GP */
    /* =========================================================================*/
   
-//  cout << "stiff " << (*stiffmatrix) << endl;
-//  cout << "force " << (*force) << endl;
   return;
 } // DRT::Elements::Shell8::s8_nlnstiffmass
 

@@ -190,9 +190,6 @@ void stru_static_drt()
     params.set("assemble vector 1",true);
     params.set("assemble vector 2",false);
     params.set("assemble vector 3",false);
-    // other parameters needed by the elements
-    params.set("total time",time);
-    params.set("delta time",dt);
     // set vector values needed by elements
     actdis->ClearState();
     actdis->SetState("displacement",dis);
@@ -215,7 +212,7 @@ void stru_static_drt()
   output.WriteVector("displacement", dis);
 
   //========================================== start of time/loadstep loop
-  while ( istep <= statvar->nstep)
+  while ( istep < statvar->nstep)
   {
     //--------------------------------------------------- predicting state
     // constant predictor : displacement in domain
@@ -228,9 +225,8 @@ void stru_static_drt()
     // eval fint and stiffness matrix at current istep
     // and apply new displacements at DBCs
     {
-      // zero out stiffness
-      const int maxentriesperrow = stiff_mat->MaxNumEntries();
-      stiff_mat = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow);
+      // destroy and create new matrix
+      stiff_mat = LINALG::CreateMatrix(*dofrowmap,81);
       // create the parameters for the discretization
       ParameterList params;
       // action for elements
@@ -241,9 +237,6 @@ void stru_static_drt()
       params.set("assemble vector 1",true);
       params.set("assemble vector 2",false);
       params.set("assemble vector 3",false);
-      // other parameters that might be needed by the elements
-      params.set("total time",time);
-      params.set("delta time",dt);
       // set vector values needed by elements
       actdis->ClearState();
       actdis->SetState("residual displacement",disi);
@@ -258,10 +251,13 @@ void stru_static_drt()
     // complete stiffness matrix
     LINALG::Complete(*stiff_mat);
     const int maxentriesperrow = stiff_mat->MaxNumEntries();
+    
+    double stiffnorm;
+    stiffnorm = stiff_mat->NormFrobenius();
 
     // evaluate residual at current istep
     // R{istep,numiter=0} = F_int{istep,numiter=0} - F_ext{istep}
-    fresm->Update(1.0,*fint,-1.0,*fextn,0.0);
+   fresm->Update(1.0,*fint,-1.0,*fextn,0.0);
     
     // blank residual at DOFs on Dirichlet BC
     {
@@ -272,17 +268,18 @@ void stru_static_drt()
     //------------------------------------------------ build residual norm
     double norm;
     fresm->Norm2(&norm);
-    if (!myrank) cout << "Predictor residual forces " << norm << endl; fflush(stdout);
+    if (!myrank) cout << "load factor="<< dt << " Predictor residual forces " << norm << endl; fflush(stdout);
 
     //=================================================== equilibrium loop
     int numiter=0;
-    while (norm > statvar->tolresid && numiter <= statvar->maxiter)
+    while (norm > statvar->toldisp && numiter < statvar->maxiter)
     {
       //----------------------- apply dirichlet BCs to system of equations
       fresm->Scale(-1.0);     // rhs = -R = -fresm
       disi->PutScalar(0.0);   // Useful? depends on solver and more
       LINALG::ApplyDirichlettoSystem(stiff_mat,disi,fresm,zeros,dirichtoggle);
 
+      
       // solve for disi
       // Solve K . IncD = -R  ===>  IncD_{n+1}
       if (numiter==0)
@@ -297,7 +294,7 @@ void stru_static_drt()
       // update displacements
       // D_{istep,numiter+1} := D_{istep,numiter} + IncD_{numiter}
       disn->Update(1.0, *disi, 1.0);
-
+      
       // compute internal forces and stiffness at current iterate numiter
       {
         // zero out stiffness
@@ -312,9 +309,6 @@ void stru_static_drt()
         params.set("assemble vector 1",true);
         params.set("assemble vector 2",false);
         params.set("assemble vector 3",false);
-        // other parameters that might be needed by the elements
-        params.set("total time",time);
-        params.set("delta time",dt);
         // set vector values needed by elements
         actdis->ClearState();
         actdis->SetState("residual displacement",disi);
@@ -325,12 +319,12 @@ void stru_static_drt()
       }
       // complete stiffness matrix
       LINALG::Complete(*stiff_mat);
-      const int maxentriesperrow = stiff_mat->MaxNumEntries();
 
       // evaluate new residual fresm at current iterate numiter
       // R{istep,numiter} = F_int{istep,numiter} - F_ext{istep}
       fresm->Update(1.0,*fint,-1.0,*fextn,0.0);
-      // blank residual DOFs with are on Dirichlet BC
+
+      // blank residual DOFs which are on Dirichlet BC
       {
         Epetra_Vector fresmcopy(*fresm);
         fresm->Multiply(1.0,*invtoggle,fresmcopy,0.0);
@@ -357,13 +351,16 @@ void stru_static_drt()
     } //============================================= end equilibrium loop
 
     //-------------------------------- test whether max iterations was hit
-    if (numiter==statvar->maxiter) dserror("Newton unconverged in %d iterations",numiter);
-
+    if (statvar->maxiter == 1 && statvar->nstep == 1) 
+      printf("computed 1 step with 1 iteration: static linear solution\n");
+    else if (numiter==statvar->maxiter)
+      dserror("Newton unconverged in %d iterations",numiter);
+    
     //---------------------------- determine new end-quantities and update
     // new displacements at t_{n+1} -> t_n
     // D_{n} := D_{n+1} 
     dis->Update(1.0, *disn, 0.0);
-
+    
     //----- update anything that needs to be updated at the element level
     {
       // create the parameters for the discretization
@@ -376,9 +373,6 @@ void stru_static_drt()
       params.set("assemble vector 1",false);
       params.set("assemble vector 2",false);
       params.set("assemble vector 3",false);
-      // other parameters that might be needed by the elements
-      params.set("total time",time);
-      params.set("delta time",dt);
       actdis->Evaluate(params,null,null,null,null,null);
     }
 
@@ -408,9 +402,6 @@ void stru_static_drt()
       params.set("assemble vector 1",false);
       params.set("assemble vector 2",false);
       params.set("assemble vector 3",false);
-      // other parameters that might be needed by the elements
-      params.set("total time",time);
-      params.set("delta time",dt);
       // set vector values needed by elements
       actdis->ClearState();
       actdis->SetState("residual displacement",zeros);
@@ -438,7 +429,7 @@ void stru_static_drt()
 
   //----------------------------- this is the end my lonely friend the end
   return;
-} // end of dyn_static_drt()
+} // end of stru_static_drt()
 
 
 
