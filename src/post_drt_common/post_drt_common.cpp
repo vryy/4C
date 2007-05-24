@@ -23,6 +23,12 @@ Maintainer: Ulrich Kuettler
 #include "../io/hdf_reader.H"
 #include <sstream>
 
+#if 1
+#include "../drt_lib/drt_parobject.H"
+#include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_periodicbc.H"
+#endif
+
 
 /*----------------------------------------------------------------------*
  * Some functions and global variables, most of them are only
@@ -388,12 +394,44 @@ void PostProblem::read_meshes()
         reader.ReadElementData(step, comm_->NumProc(), comm_->MyPID());
       currfield.discretization()->UnPackMyElements(element_data);
 
+#if 1
+      // read periodic boundary conditions if available
+      RefCountPtr<vector<char> > pbcs =
+      reader.ReadPeriodicBoundaryConditions(step, comm_->NumProc(), comm_->MyPID());
+      {
+        int index = 0;
+        while (index < static_cast<int>(pbcs->size()))
+        {
+          vector<char> data;
+          DRT::ParObject::ExtractfromPack(index,*pbcs,data);
+
+          DRT::ParObject* o = DRT::Utils::Factory(data);
+
+          DRT::Condition* thispbc = dynamic_cast<DRT::Condition*>(o);
+          if (thispbc == NULL)
+          {
+            dserror("Failed to build a periodic boundary condition from the stored data");
+          }
+          currfield.discretization()->SetCondition("SurfacePeriodic",rcp(thispbc));
+        }
+      }
+#endif      
       // before we can call discretization functions (in parallel) we
       // need field based communicators.
       create_communicators();
 
       distribute_drt_grids();
       currfield.discretization()->FillComplete();
+#if 1
+      // -------------------------------------------------------------------
+      // connect degrees of freedom for periodic boundary conditions
+      // -------------------------------------------------------------------
+      if(!pbcs->empty())
+      {
+        PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(currfield.discretization());
+        pbc.UpdateDofsForPeriodicBoundaryConditions();
+      }
+#endif
       fields_.push_back(currfield);
     }
     mesh = mesh->next;

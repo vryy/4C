@@ -95,6 +95,17 @@ public:
   */
   RefCountPtr<std::vector<char> > ReadNodeData(int step, int new_proc_num=0, int my_id=0);
 
+#if 1
+/*!reads the packed periodic boundary condition data from the mesh files
+ *!
+  Note: this function should only be called when the HDFReader opened
+  the mesh files
+ *----------------------------------------------------------------------*/
+RefCountPtr<std::vector<char> > ReadPeriodicBoundaryConditions (
+  int step, int new_proc_num, int my_id);
+#endif
+
+  
   //! read an Epetra_Vector from the result files
   /*!
     Right now an Epetra_Vector has to be read along with its map. Thus

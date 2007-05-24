@@ -73,6 +73,53 @@ RefCountPtr<std::vector<char> > HDFReader::ReadElementData(int step, int new_pro
   return ReadCharData(path.str(),start,end);
 }
 
+#if 1
+/*----------------------------------------------------------------------*
+ * reads the packed periodic bc data from the mesh files
+ * Note: this function should only be called when the HDFReader opened
+ * the mesh files                                          gammi 05/07
+ *----------------------------------------------------------------------*/
+RefCountPtr<std::vector<char> > HDFReader::ReadPeriodicBoundaryConditions
+(int step, int new_proc_num, int my_id)
+{
+  RefCountPtr<std::vector<char> > thebcs;
+  
+  thebcs = rcp(new std::vector<char>());
+
+    
+  if (files_.size()==0 || files_[0] == -1)
+    dserror("Tried to read data without opening any file");
+  ostringstream path;
+  path << "/step" << step << "/periodicbc";
+  int start,end;
+
+  // only one proc (PROC 0) wrote this conditions to the mesh file
+  start =0;
+  end   =1;
+
+  /* Save old error handler */
+  herr_t (*old_func)(void*);
+  void *old_client_data;
+  H5Eget_auto(&old_func, &old_client_data);
+
+  /* Turn off error handling */
+  H5Eset_auto(NULL, NULL);
+
+  /* Probe. Likely to fail, but that's okay */
+  hid_t dataset = H5Dopen(files_[0],(path.str()).c_str());
+
+  /* Restore previous error handler */
+  H5Eset_auto(old_func, old_client_data);
+
+  if (dataset > -1)
+  {
+    thebcs=ReadCharData(path.str(),start,end);
+  }
+  
+  return thebcs;
+}
+#endif
+
 /*----------------------------------------------------------------------*
  * reads the packed node data from the mesh files
  * Note: this function should only be called when the HDFReader opened

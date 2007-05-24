@@ -60,6 +60,7 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled()) discret_->FillComplete();
+
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
@@ -109,7 +110,7 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
       }
       else
       {
-        dserror("up to know fluid expects numdim vel + one pre dofs");
+        dserror("up to now fluid expects numdim vel + one pre dofs");
       }
     }
 
@@ -936,7 +937,7 @@ void FluidImplicitTimeInt::Output(
     output_.WriteVector("veln", veln_);
     output_.WriteVector("velnm", velnm_);
   }
-
+  
 #if 0  // DEBUG IO --- the whole systemmatrix
       {
 	  int rr;

@@ -22,7 +22,9 @@ Maintainer: Ulrich Kuettler
 
 #include "io_drt.H"
 #include "../drt_lib/linalg_utils.H"
-
+#if 1
+#include "../drt_lib/drt_parobject.H"
+#endif
 using namespace std;
 
 #ifdef BINIO
@@ -564,6 +566,54 @@ void DiscretizationWriter::WriteMesh(int step, double time)
 
   if (dis_->Comm().MyPID() == 0)
   {
+#if 1
+    {
+      //--------------------------------------------------
+      // pack all periodic boundary conditions
+      RefCountPtr<vector<char> > pbcblock = rcp(new vector<char>);
+      // get all periodic boundary conditions
+      vector<DRT::Condition*> percond;
+
+      // first the surfaces
+      dis_->GetCondition("SurfacePeriodic",percond);
+  
+      for (vector<DRT::Condition*>::iterator i=percond.begin();
+           i!=percond.end();
+           ++i)
+      {
+        vector<char> perconddata;
+        (*i)->Pack(perconddata);
+        DRT::ParObject::AddtoPack(*pbcblock,perconddata);
+      }
+
+      // then the lines
+      dis_->GetCondition("LinePeriodic",percond);
+
+      for (vector<DRT::Condition*>::iterator i=percond.begin();
+           i!=percond.end();
+           ++i)
+      {
+        vector<char> perconddata;
+        (*i)->Pack(perconddata);
+        DRT::ParObject::AddtoPack(*pbcblock,perconddata);
+      }
+
+      
+      //--------------------------------------------------
+      // write pbcblock to file
+      if(!pbcblock->empty())
+      {
+        dim[0] = static_cast<hsize_t>(pbcblock->size());
+        status = H5LTmake_dataset_char(meshgroup_,
+                                       "periodicbc",
+                                       1,
+                                       dim,
+                                       &((*pbcblock)[0]));
+        if (status < 0)
+          dserror("Failed to create dataset in HDF-meshfile");
+      }
+    }
+#endif
     fprintf(bin_out_main.control_file,
             "field:\n"
             "    field = \"%s\"\n"
