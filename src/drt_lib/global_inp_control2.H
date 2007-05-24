@@ -32,6 +32,7 @@ Maintainer: Michael Gee
 #include "drt_exporter.H"
 #include "drt_condition.H"
 #include "drt_utils.H"
+#include "linalg_utils.H"
 #ifdef D_SHELL8
 #include "../drt_s8/shell8.H"
 #endif

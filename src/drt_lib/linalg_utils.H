@@ -26,6 +26,7 @@ Maintainer: Michael Gee
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Teuchos_RefCountPtr.hpp"
+#include "drt_exporter.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -209,6 +210,63 @@ namespace LINALG
                               RefCountPtr<Epetra_Vector>&      b,
                               const RefCountPtr<Epetra_Vector> dbcval,
                               const RefCountPtr<Epetra_Vector> dbctoggle);
+
+
+
+  /*!
+  \brief docu to come next week ;-)
+    
+  
+  */
+  template<typename T> void Gather(vector<T>&         sdata,
+                                   vector<T>&         rdata,
+                                   const int          ntargetprocs,
+                                   const int*         tprocs, 
+                                   const Epetra_Comm& comm)
+  {
+    const int myrank  = comm.MyPID();
+    const int numproc = comm.NumProc();
+    if (numproc==1) return; // nothing to do in serial
+    // build a map of data
+    map<int,vector<T> > datamap;
+    datamap[myrank] = sdata;
+    // build a source map
+    Epetra_Map source(numproc,1,&myrank,0,comm);
+    // build a target map which is redundant on all target procs and zero everywhere else
+    bool iamtarget = false;
+    for (int i=0; i<ntargetprocs; ++i)
+      if (tprocs[i]==myrank)
+      {
+        iamtarget = true;
+        break;
+      }
+    vector<int> targetvec(0);
+    if (iamtarget)
+    {
+      targetvec.resize(numproc);
+      for (int i=0; i<numproc; ++i) targetvec[i] = i;
+    }
+    const int tnummyelements = (int)targetvec.size();
+    Epetra_Map target(-1,tnummyelements,&targetvec[0],0,comm);
+    // build an exporter and export data
+    DRT::Exporter exporter(source,target,comm);
+    exporter.Export(datamap);
+    // put data from map in rdata
+    rdata.clear();
+    int count=0;
+    map<int,vector<int> >::iterator curr;
+    for (curr=datamap.begin(); curr != datamap.end(); ++curr)
+    {
+      vector<T>& current = curr->second;
+      const int size = (int)current.size();
+      rdata.resize((int)rdata.size()+size);
+      for (int i=0; i<size; ++i)
+      rdata[count+i] = current[i];
+      count += size;
+    }
+    return;
+  }
+
 
 } // namespace LINALG
 
