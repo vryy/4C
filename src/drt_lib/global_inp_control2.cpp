@@ -360,7 +360,7 @@ void inpfield_ccadiscret_jumbo()
     int err = structdis->FillComplete();
     if (err) dserror("structdis->FillComplete() returned %d",err);
     if (!myrank) cout << time.ElapsedTime() << " secs\n"; fflush(stdout);
-  }
+  } // end of else if (genprob.probtyp==prb_structure)
 
 #ifdef STRUCT_MULTI
   else if (genprob.probtyp==prb_struct_multi)
@@ -387,7 +387,7 @@ void inpfield_ccadiscret_jumbo()
     graph = null;
 
     // allocate empty structural macroscale discretization
-    structdis_macro = rcp(new DRT::Discretization("Structure",comm));
+    structdis_macro = rcp(new DRT::Discretization("Macro Structure",comm));
 
     if (!myrank) cout << "Read, create and partition macroscale nodes         in...."; fflush(stdout);
     // all processors enter the input of the nodes
@@ -443,7 +443,7 @@ void inpfield_ccadiscret_jumbo()
 
     if (!myrank) cout << "Read, create and partition microscale problem graph in...."; fflush(stdout);
     // rownodes, colnodes and graph reflect final parallel layout
-    int gnele_micro = 0; // global number of macroscale elements is detected here as well
+    int gnele_micro = 0; // global number of microscale elements is detected here as well
     input_field_graph(gnele_micro,comm,rownodes,colnodes,graph,"--MICROSTRUCTURE ELEMENTS");
     if (!myrank) cout << time.ElapsedTime() << " secs\n"; fflush(stdout);
     time.ResetStartTime();
@@ -452,7 +452,7 @@ void inpfield_ccadiscret_jumbo()
     graph = null;
 
     // allocate empty structural macroscale discretization
-    structdis_micro = rcp(new DRT::Discretization("Structure",comm));
+    structdis_micro = rcp(new DRT::Discretization("Micro Structure",comm));
 
     if (!myrank) cout << "Read, create and partition microscale nodes         in...."; fflush(stdout);
     // all processors enter the input of the nodes
@@ -460,7 +460,7 @@ void inpfield_ccadiscret_jumbo()
     if (!myrank) cout << time.ElapsedTime() << " secs\n"; fflush(stdout);
     time.ResetStartTime();
 
-    // at this point, we have all microscale nodes in structdis_macro and they already
+    // at this point, we have all microscale nodes in structdis_micro and they already
     // have the final distribution!
 
     // put our discretization in there
@@ -492,7 +492,7 @@ void inpfield_ccadiscret_jumbo()
     err = structdis_micro->FillComplete();
     if (err) dserror("structdis_micro->FillComplete() returned %d",err);
     if (!myrank) cout << time.ElapsedTime() << " secs\n"; fflush(stdout);
-  }
+  } // end of else if (genprob.probtyp==prb_struct_multi)
 #endif
 
   else dserror("Type of problem unknown");
@@ -1147,25 +1147,51 @@ void inpnodes_ccadiscret_jumbo(RefCountPtr<DRT::Discretization>& dis,
   const int myrank  = dis->Comm().MyPID();
   const int numproc = dis->Comm().NumProc();
 
-  // there is no guarantee that all nodes in the input file belong
-  // to this discretization. As proc 0 is the only one that will read the
-  // input, proc 0 needs to know globally what nodes are in the map rownodes
-  // -> manually export rownodes to proc 0
-  vector<int> send(rownodes->NumGlobalElements());
-  vector<int> recv(rownodes->NumGlobalElements());
-  for (int i=0; i<rownodes->NumGlobalElements(); ++i) send[i] = 0;
-  for (int i=0; i<rownodes->NumMyElements(); ++i)
+  // we have to collapse rownodes on proc 0 without doing
+  // any assumptions except that it is unique
+  map<int,vector<int> > collapsemap;
   {
-    const int gid = rownodes->GID(i);
-    send[gid] = gid;
+    const int* mygids        = rownodes->MyGlobalElements();
+    const int  nummyelements = rownodes->NumMyElements();
+    vector<int> sbuff(0);
+    collapsemap[myrank] = sbuff;
+    collapsemap[myrank].resize(nummyelements);
+    for (int i=0; i<nummyelements; ++i) collapsemap[myrank][i] = mygids[i];
+    // build a source map where every proc has his data
+    Epetra_Map source(numproc,1,&myrank,0,dis->Comm());
+    // build a target map where proc 0 has all data
+    vector<int> targetvec(0);
+    if (!myrank)
+    {
+      targetvec.resize(numproc);
+      for (int i=0; i<numproc; ++i) targetvec[i] = i;
+    }
+    const int tnummyelements = (int)targetvec.size();
+    Epetra_Map target(numproc,tnummyelements,&targetvec[0],0,dis->Comm());
+    // export the map to target map (everything on proc 0)
+    DRT::Exporter exporter(source,target,dis->Comm());
+    exporter.Export(collapsemap);
   }
-
-  rownodes->Comm().SumAll(&send[0],&recv[0],rownodes->NumGlobalElements());
-  send.clear();
-  if (myrank != 0) recv.clear();
-  Epetra_Map collapsedrows(rownodes->NumGlobalElements(),(int)recv.size(),
-                           &recv[0],0,rownodes->Comm());
-  recv.clear();
+  // build collapsedrows map
+  vector<int> collapsedrowsvec(0);
+  if (myrank==0)
+  {
+    int count=0;
+    map<int,vector<int> >::iterator curr;
+    for (curr=collapsemap.begin(); curr != collapsemap.end(); ++curr)
+    {
+      vector<int>& current = curr->second;
+      int size = (int)current.size();
+      collapsedrowsvec.resize(collapsedrowsvec.size()+size);
+      for (int i=0; i<size; ++i)
+        collapsedrowsvec[count+i] = current[i];
+      count += size;
+    }
+  }
+  Epetra_Map collapsedrows(-1,(int)collapsedrowsvec.size(),&collapsedrowsvec[0],
+                           0,rownodes->Comm());
+  collapsedrowsvec.clear();
+  collapsemap.clear();
 
   // we will read the nodes block wise. we will use one block per processor
   // so the number of blocks is numproc

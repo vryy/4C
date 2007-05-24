@@ -29,6 +29,7 @@ Maintainer: Michael Gee
 #include "Teuchos_RefCountPtr.hpp"
 
 #include "drt_discret.H"
+#include "drt_exporter.H"
 #include "drt_condition.H"
 #include "drt_utils.H"
 #ifdef D_SHELL8
