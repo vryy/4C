@@ -57,6 +57,24 @@ PeriodicBoundaryConditions::PeriodicBoundaryConditions
   // ghosted by this proc
   //       master node -> list of his slave node(s)
   allcoupledcolnodes_=rcp(new map<int,vector<int> >);
+
+
+  // -------------------------------------------------------------------
+  // create timers and time monitor
+  // -------------------------------------------------------------------
+  timepbctot_         = TimeMonitor::getNewTimer("pbc routine total"                   );
+  timepbcmidtosid_    = TimeMonitor::getNewTimer("   +create midtosid maps"            );
+  timepbcmidoct_      = TimeMonitor::getNewTimer("      +make octree"                  );
+  timepbcmidmatch_    = TimeMonitor::getNewTimer("      +search"                       );
+  timepbcreddis_      = TimeMonitor::getNewTimer("   +add connectivity, redistribute"  );
+  timepbcaddcon_      = TimeMonitor::getNewTimer("      +add conditions to list"       );
+  timepbcfetchs_      = TimeMonitor::getNewTimer("      +fetch slaves"                 );
+  timepbcghost_       = TimeMonitor::getNewTimer("      +repair ghosting"              );
+  timepbcmakeghostmap_= TimeMonitor::getNewTimer("          +make colmap for ghosting" );
+  timepbcrenumdofs_   = TimeMonitor::getNewTimer("          +discret->Redistribute"    );
+
+  
+
   
   return;
 
@@ -75,14 +93,16 @@ PeriodicBoundaryConditions::PeriodicBoundaryConditions
 void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
 {
 
+  // time measurement --- start TimeMonitor tm0 
+  tm0_ref_        = rcp(new TimeMonitor(*timepbctot_ ));
 
   // map from global masternodeids (on this proc) to global slavenodeids
   // for a single condition
   map<int,int> midtosid;
 
   // pointers to master and slave condition
-  DRT::Condition* mastercond;
-  DRT::Condition* slavecond;
+  DRT::Condition* mastercond=NULL;
+  DRT::Condition* slavecond =NULL;
 
   // global master node Ids and global slave node Ids
   vector <int>* masternodeids;
@@ -92,9 +112,19 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
   //          LOOP PAIRS OF PERIODIC BOUNDARY CONDITIONS
   //----------------------------------------------------------------------
 
+  
   // loop pairs of periodic boundary conditions
   for (int pbcid=0;pbcid<numpbcpairs_;++pbcid)
   {
+    if (discret_->Comm().MyPID() == 0)
+    {
+      cout << "doing pbc pair " << pbcid << " ";
+      fflush(stdout);
+    }
+    
+    // time measurement --- start TimeMonitor tm1
+    tm1_ref_        = rcp(new TimeMonitor(*timepbcmidtosid_ ));
+
     //--------------------------------------------------
     // get master and slave condition pair
     {
@@ -122,7 +152,7 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
         }
       }
     }
-
+  
     //--------------------------------------------------
     // vector specifying the plane of this pair
     //
@@ -156,26 +186,66 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
     // conditions!!!
     midtosid.clear();
 
+    if (discret_->Comm().MyPID() == 0)
+    {
+      cout << " creating midtosid-map ... ";
+      fflush(stdout);
+    }
+    
     // get map master on this proc -> slave on some proc
     CreateNodeCouplingForSinglePBC(
       midtosid,
       *masternodeids,
       *slavenodeids ,
       *dofsforpbcplane);
+    // time measurement --- this causes the TimeMonitor tm1 to stop here
+    tm1_ref_ = null;
 
+    if (discret_->Comm().MyPID() == 0)
+    {
+      cout << "redistributing ...  ";
+      fflush(stdout);
+    }
+    
+    // time measurement --- start TimeMonitor tm4
+    tm4_ref_        = rcp(new TimeMonitor(*timepbcreddis_ ));
+        
     // Add the connectivity from this condition to the connectivity
     // of all previously processed periodic boundary conditions.
     // Redistribute the nodes (rownodes+ghosting)
     // Assign the same degrees of freedom to coupled nodes
     AddConnectivityRedistributeAndCreateDofCoupling(
       midtosid,pbcid);
-      
+
+    // time measurement --- this causes the TimeMonitor tm4 to stop here
+    tm4_ref_ = null;
+    
+    if (discret_->Comm().MyPID() == 0)
+    {
+      cout << " done\n";
+      fflush(stdout);
+    }    
   } // end loop pairs of periodic boundary conditions
 
   // eventually call METIS to optimally distribute the nodes --- up to
   // now, a periodic boundary condition might remove all nodes from a
   // proc ...
-  
+
+
+  // time measurement --- this causes the TimeMonitor tm0 to stop here
+  //                                                (call of destructor)
+  tm0_ref_ = null;
+
+
+  if(discret_->Comm().MyPID()==0)
+  {
+    cout<<endl<<endl;
+  }
+  TimeMonitor::summarize();
+  if(discret_->Comm().MyPID()==0)
+  {
+    cout<<endl<<endl;
+  }  
   return;
   
 }// UpdateDofsForPeriodicBoundaryConditions()
@@ -208,6 +278,9 @@ void PeriodicBoundaryConditions::CreateNodeCouplingForSinglePBC(
   //----------------------------------------------------------------------
   //                   BUILD PROCESSOR LOCAL OCTREE
   //----------------------------------------------------------------------
+  // time measurement --- start TimeMonitor tm2
+  tm2_ref_        = rcp(new TimeMonitor(*timepbcmidoct_ ));
+
   // build processor local octree
   NodeMatchingOctree nodematchingoctree(
     discret_      ,
@@ -215,12 +288,15 @@ void PeriodicBoundaryConditions::CreateNodeCouplingForSinglePBC(
     maxnodeperleaf,
     tol
     );
-      
+  // time measurement --- this causes the TimeMonitor tm2 to stop here
+  tm2_ref_ = null;
 
   //----------------------------------------------------------------------
   //  SEARCH CLOSEST NODES IN OCTREES ON ALL PROCESSORS
   //----------------------------------------------------------------------
 
+  // time measurement --- start TimeMonitor tm3
+  tm3_ref_        = rcp(new TimeMonitor(*timepbcmidmatch_ ));
   // create connectivity for this condition in this direction
   {
 
@@ -231,6 +307,9 @@ void PeriodicBoundaryConditions::CreateNodeCouplingForSinglePBC(
       midtosid
       );
   }
+
+  // time measurement --- this causes the TimeMonitor tm3 to stop here
+  tm3_ref_ = null;  
 
   return;
 } // PeriodicBoundaryConditions::CreateNodeCouplingForSinglePBC
@@ -263,7 +342,11 @@ void PeriodicBoundaryConditions::AddConnectivityRedistributeAndCreateDofCoupling
   
   // rcp to the constructed rowmap
   RefCountPtr<Epetra_Map> newrownodemap;
-  
+
+
+  // time measurement --- start TimeMonitor tm5
+  tm5_ref_        = rcp(new TimeMonitor(*timepbcaddcon_ ));
+
   //----------------------------------------------------------------------
   //  ADD THE CONNECTIVITY FROM THIS CONDITION TO THE CONNECTIVITY OF
   //                           ALL CONDITIONS
@@ -313,7 +396,12 @@ void PeriodicBoundaryConditions::AddConnectivityRedistributeAndCreateDofCoupling
     // number of nodes concerned is very small (edge and cornernodes,
     // for example in a 32x32x32 channel flow we talk about 33 nodes)
     // I think we could afford these intermediate redistributions
-    // 
+    //
+    // its really expensive )-:, all time is spend in Redistribute!
+    //
+    // maybe it would be an idea do distribute all multiple couples
+    // to all procs --- this would probably accelerate the code by
+    // far...
     {
       map<int,vector<int> >::iterator curr;
       vector<int >         ::iterator alreadyin;
@@ -321,7 +409,7 @@ void PeriodicBoundaryConditions::AddConnectivityRedistributeAndCreateDofCoupling
       bool toggle = false;
       for( curr = allcoupledrownodes_->begin(); curr != allcoupledrownodes_->end(); ++curr )
       {
-        // we have a node which is coupled to more then one nodes
+        // we have a node which is coupled to more than one nodes
         if(curr->second.size()>1)
         {
           map<int,vector<int> >::iterator found;
@@ -381,12 +469,17 @@ void PeriodicBoundaryConditions::AddConnectivityRedistributeAndCreateDofCoupling
       }
     } // end complete matching
   }
-      
+  // time measurement --- this causes the TimeMonitor tm5 to stop here
+  tm5_ref_ = null;  
+  
   //----------------------------------------------------------------------
   // REDISTRIBUTE ALL MASTER/SLAVE PAIRS OF THIS CONDITION TO THE
   //                      SAME PROCESSOR
   //----------------------------------------------------------------------
   {
+    // time measurement --- start TimeMonitor tm6
+    tm6_ref_        = rcp(new TimeMonitor(*timepbcfetchs_ ));
+    
     // a list of all nodes on this proc
     vector<int> nodesonthisproc(discret_->NodeRowMap()->NumMyElements());
       
@@ -497,6 +590,18 @@ void PeriodicBoundaryConditions::AddConnectivityRedistributeAndCreateDofCoupling
                                        0,
                                        discret_->Comm()));
 
+    // time measurement --- this causes the TimeMonitor tm6 to stop here
+    tm6_ref_ = null;  
+
+    
+    // time measurement --- start TimeMonitor tm7
+    tm7_ref_        = rcp(new TimeMonitor(*timepbcghost_ ));
+    //----------------------------------------------------------------------
+    //       GHOSTED NODES NEED INFORMATION ON THEIR COUPLED NODES
+    //----------------------------------------------------------------------
+    // time measurement --- start TimeMonitor tm8
+    tm8_ref_        = rcp(new TimeMonitor(*timepbcmakeghostmap_ ));
+
     // create the inverse map --- slavenode -> masternode
     inversenodecoupling->clear();
         
@@ -509,9 +614,7 @@ void PeriodicBoundaryConditions::AddConnectivityRedistributeAndCreateDofCoupling
         (*inversenodecoupling)[curr->second[rr]].push_back(curr->first);
       }
     }
-    //----------------------------------------------------------------------
-    //       GHOSTED NODES NEED INFORMATION ON THEIR COUPLED NODES
-    //----------------------------------------------------------------------
+    
     *allcoupledcolnodes_=(*allcoupledrownodes_);
 #ifdef PARALLEL
     {
@@ -584,26 +687,37 @@ void PeriodicBoundaryConditions::AddConnectivityRedistributeAndCreateDofCoupling
       }
 #endif
     }
-
-
+    // time measurement --- this causes the TimeMonitor tm9 to stop here
+    tm8_ref_ = null;
+    
     // Create a new DofSet special for Periodic boundary conditions with
     // this type of node coupling
 
     // create a new dofset specialisation for periodic boundary conditions
 
     discret_->ReplaceDofSet(rcp(new DRT::PBCDofSet(allcoupledcolnodes_)));
-
+    
     //--------------------------------------------------
     // redistribute the nodes
     //
     // this contains a call to FillComplete and assigns the same
     // degree of freedom to the matching nodes
-    discret_->Redistribute(*newrownodemap,*newcolnodemap);
 
+    // time measurement --- start TimeMonitor tm9
+    tm9_ref_        = rcp(new TimeMonitor(*timepbcrenumdofs_ ));
+
+    discret_->Redistribute(*newrownodemap,*newcolnodemap);
+    
+    // time measurement --- this causes the TimeMonitor tm9 to stop here
+    tm9_ref_ = null;
+    
     // throw away old nodegraph
     oldnodegraph = null;
-  }
 
+    // time measurement --- this causes the TimeMonitor tm7 to stop here
+    tm7_ref_ = null;  
+  }
+  
   return;
 }// PeriodicBoundaryConditions::AddConnectivityRedistributeAndCreateDofCoupling
 

@@ -22,6 +22,7 @@ Maintainer: Peter Gamnitzer
 #include "drt_dofset.H"
 #include "drt_pbcdofset.H"
 #include "drt_nodematchingoctree.H"
+#include <Teuchos_TimeMonitor.hpp>
 
 using namespace Teuchos;
 
@@ -126,6 +127,43 @@ protected:
   //       master node -> list of his slave node(s)
   RefCountPtr<map<int,vector<int> > > allcoupledcolnodes_;
 
+
+
+  //!\brief time measurement (total)
+  RefCountPtr<Time> timepbctot_     ;
+  //!\brief time measurement (create master slave matching for pairs)
+  RefCountPtr<Time> timepbcmidtosid_;
+  //!\brief time measurement (create octree)
+  RefCountPtr<Time> timepbcmidoct_  ;
+  //!\brief time measurement (search in octree)
+  RefCountPtr<Time> timepbcmidmatch_;
+  //!\brief time measurement (redistribute nodes)
+  RefCountPtr<Time> timepbcreddis_  ;
+  //!\brief time measurement (add connectivity to previous pbcs)
+  RefCountPtr<Time> timepbcaddcon_  ;
+  //!\brief time measurement (fetch slave nodes to masterproc)
+  RefCountPtr<Time> timepbcfetchs_  ;
+  //!\brief time measurement (repair ghosting)
+  RefCountPtr<Time> timepbcghost_   ;
+  //!\brief time measurement (make colmap for ghosting) 
+  RefCountPtr<Time> timepbcmakeghostmap_   ;
+  //!\brief time measurement (discret->Redistribute)
+  RefCountPtr<Time> timepbcrenumdofs_   ;
+
+  
+  RefCountPtr<TimeMonitor> tm0_ref_ ;
+  RefCountPtr<TimeMonitor> tm1_ref_ ;
+  RefCountPtr<TimeMonitor> tm2_ref_ ;
+  RefCountPtr<TimeMonitor> tm3_ref_ ;
+  RefCountPtr<TimeMonitor> tm4_ref_ ;
+  RefCountPtr<TimeMonitor> tm5_ref_ ;
+  RefCountPtr<TimeMonitor> tm6_ref_ ;
+  RefCountPtr<TimeMonitor> tm7_ref_ ;
+  RefCountPtr<TimeMonitor> tm8_ref_ ;
+  RefCountPtr<TimeMonitor> tm9_ref_ ;
+
+
+  
 };
 
 #endif  // #ifndef PERIODICBC_H
