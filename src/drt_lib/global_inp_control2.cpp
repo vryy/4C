@@ -895,6 +895,14 @@ void input_field_graph(int& nele,
 
   // create a node map that has all nodes on proc 0
   int numglobalnodes = genprob.nnode;
+
+#ifdef STRUCT_MULTI
+  if (searchword == "--MICROSTRUCTURE ELEMENTS")
+  {
+    numglobalnodes = genprob.micro_nnode;
+  }
+#endif
+
   int nummynodes     = numglobalnodes;
   if (comm->MyPID() != 0) nummynodes = 0;
   rownodes = rcp(new Epetra_Map(numglobalnodes,nummynodes,0,*comm));
@@ -1215,6 +1223,7 @@ void inpnodes_ccadiscret_jumbo(RefCountPtr<DRT::Discretization>& dis,
       for (; file; ++filecount)
       {
         file >> tmp;
+
         if (tmp=="NODE")
         {
           double coords[3];
