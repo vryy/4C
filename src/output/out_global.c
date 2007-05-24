@@ -193,6 +193,11 @@ void out_general()
         fprintf(out,"Type of Problem           : Thermal-Structure-Interaction\n");
         break;
 #endif
+#ifdef STRUCT_MULTI
+      case prb_struct_multi:
+        fprintf(out,"Type of Problem           : Multi-Scale Problem (Structure)\n");
+        break;
+#endif
       default:
         dserror("Cannot print problem type");
         break;
