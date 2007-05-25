@@ -167,6 +167,8 @@ void stru_static_drt()
   // also known at out-of-balance-force
   RefCountPtr<Epetra_Vector> fresm = LINALG::CreateVector(*dofrowmap,false);
 
+  if (statvar->nr_controltyp != control_load) dserror("Only load control implemented");
+  
   /*
   ** solution control parameters are inherited from dynamic routine:
   ** dt     = stepsize
@@ -352,7 +354,7 @@ void stru_static_drt()
 
     //-------------------------------- test whether max iterations was hit
     if (statvar->maxiter == 1 && statvar->nstep == 1) 
-      printf("computed 1 step with 1 iteration: static linear solution\n");
+      printf("computed 1 step with 1 iteration: STATIC LINEAR SOLUTION\n");
     else if (numiter==statvar->maxiter)
       dserror("Newton unconverged in %d iterations",numiter);
     

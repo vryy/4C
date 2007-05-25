@@ -318,14 +318,27 @@ private:
     soh8_stress_ndrst,
     soh8_stress_nd123,
   };
+  // EAS technology types of so_hex8
+  enum EASType
+  {
+    soh8_easfull,
+    soh8_easmild,
+    soh8_easnone,
+  };
   //! kinematic type
   KinematicType                                   kintype_;
   //! type of stress evaluation
   StressType                                      stresstype_;
+  //! type of EAS technology
+  EASType                                         eastype_;
+  //! number of EAS parameters (alphas)
+  int                                             neas_;
   //! no. gaussian points in each spatial dimension
   int                                             ngp_[3];
   //! number of the material law
   int                                             material_;
+  //! container containing so_hex3 eas stuff
+  DRT::Container                                  easdata_;
   //! container containing all kind of solid3 thisandthat
   DRT::Container                                  data_;
   //! vector of volume (length 1) of this element
@@ -364,6 +377,9 @@ private:
                     Epetra_SerialDenseMatrix* cmat,
                     double* density,
                     const Epetra_SerialDenseVector* glstrain);
+  
+  // EAS technology section
+  void soh8_easinit();
 
 }; // class So_hex8
 
