@@ -7,10 +7,10 @@ LINUX_DIST=fc6
 MPI_VERSION=lam
 
 PROGRAMNAME=cca_"$LINUX_DIST"_"$MPI_VERSION"
-F77="LAMMPIF77=g77 mpif77"
-CC=mpicc
-CP=mpic++
-LD=mpic++
+F77="LC_ALL=C LAMMPIF77=g77 mpif77"
+CC="LC_ALL=C mpicc"
+CP="LC_ALL=C mpic++"
+LD="LC_ALL=C mpic++"
 
 MPIBOOT=lamboot
 MPIHALT=lamhalt
