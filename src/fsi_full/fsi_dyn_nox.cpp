@@ -563,6 +563,7 @@ bool FSI_InterfaceProblem::ComputeDispF(const Epetra_Vector& x,
         double dxyzn  = actanode->sol_mf.a.da[ale_ipos->mf_dispn ][j];
         double dxyz   = actanode->sol_mf.a.da[ale_ipos->mf_dispnp][j];
 
+#if 1
 #if 0
         // Normal case. As we do it with sd relaxation.
 
@@ -573,6 +574,26 @@ bool FSI_InterfaceProblem::ComputeDispF(const Epetra_Vector& x,
         actfnode->sol_increment.a.da[fluid_ipos->gridv][j] = actr/fdyn->dta;
         /* grid position */
         actanode->sol_mf.a.da[ale_ipos->mf_posnp][j] = actr + initr;
+#else
+	// The original SD seems to work better than my test. So lets try
+	// another approach. Here we have a mesh position independent of the
+	// given trial vector, but still the grid velocity depends on the
+	// trial vector only and matches the SD case. It should not be such a
+	// difference, should it?
+
+        /* grid velocity */
+        actfnode->sol_increment.a.da[fluid_ipos->gridv][j] = actr/fdyn->dta;
+        /* grid position */
+        actanode->sol_mf.a.da[ale_ipos->mf_posnp][j] = initr + dxyz-dxyzn;
+
+        // fsi interface condition
+        if ((actfnode->gnode->dirich!=NULL) &&
+            (actfnode->gnode->dirich->dirich_type==DIRICH_CONDITION::dirich_FSI))
+        {
+          actfnode->sol_increment.a.da[fluid_ipos->relax][j] = actr/fdyn->dta;
+          //actfnode->sol_increment.a.da[fluid_ipos->gridv][j] = actr/fdyn->dta;
+        }
+#endif
 #else
         // No moving grid. Just velocity conditions at the FSI interface.
 
