@@ -665,6 +665,10 @@ fielditer:
     fsi_ale_calc(&ale_work,alefield,a_disnum_calc,a_disnum_io,structfield,s_disnum_calc);
     perf_begin(44);
 
+#ifdef DEBUG
+    debug_out_data(alefield, "ale_disp", node_array_sol_mf, alefield->dis[0].ipos.mf_dispnp);
+#endif
+
     /*------------------------------- CFD -------------------------------*/
     perf_begin(42);
     fsi_fluid_calc(&fluid_work,fluidfield,f_disnum_calc,f_disnum_io,alefield,a_disnum_calc);
@@ -683,6 +687,10 @@ fielditer:
     perf_begin(43);
     fsi_struct_calc(&struct_work,structfield,s_disnum_calc,s_disnum_io,itnum,fluidfield,f_disnum_calc);
     perf_end(43);
+
+#ifdef DEBUG
+    debug_out_data(structfield, "struct_disp", node_array_sol, 0);
+#endif
 
     break;
   }

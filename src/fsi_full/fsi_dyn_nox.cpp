@@ -642,7 +642,9 @@ bool FSI_InterfaceProblem::ComputeDispF(const Epetra_Vector& x,
     }
 
 //   debug_out_data(alefield, "ale_disp_incr", node_array_sol_increment, alefield->dis[a_disnum_calc].ipos.dispnp);
+#ifdef DEBUG
     debug_out_data(alefield, "ale_disp", node_array_sol_mf, alefield->dis[a_disnum_calc].ipos.mf_dispnp);
+#endif
 
     /*------------------------------- CFD -------------------------------*/
     FLUID_DYNAMIC* fdyn = alldyn[genprob.numff].fdyn;
@@ -671,14 +673,18 @@ bool FSI_InterfaceProblem::ComputeDispF(const Epetra_Vector& x,
 
     fdyn->itemax = itemax;
 
+#ifdef DEBUG
     debug_out_data(fluidfield, "fluid_vel", node_array_sol_increment, fluidfield->dis[0].ipos.velnp);
+#endif
 
     /*------------------------------- CSD -------------------------------*/
     perf_begin(43);
     fsi_struct_calc(struct_work_,structfield,s_disnum_calc,s_disnum_io,itnum,fluidfield,f_disnum_calc);
     perf_end(43);
 
+#ifdef DEBUG
     debug_out_data(structfield, "struct_disp", node_array_sol, 0);
+#endif
 
     // Fill the distributed interface displacement vector F. We
     // don't have a direct mapping, so loop all structural nodes and
@@ -900,14 +906,18 @@ bool FSI_InterfaceProblem::ComputeForceF(const Epetra_Vector& x,
 
     // Calculate new interface forces starting from the given ones.
 
+#ifdef DEBUG
     debug_out_data(fluidfield, "fluid_force", node_array_sol_mf, fluid_ipos->mf_forcenp);
+#endif
 
     /*------------------------------- CSD -------------------------------*/
     perf_begin(43);
     fsi_struct_calc(struct_work_,structfield,s_disnum_calc,s_disnum_io,itnum,fluidfield,f_disnum_calc);
     perf_end(43);
 
+#ifdef DEBUG
     debug_out_data(structfield, "struct_disp", node_array_sol_mf, ipos->mf_dispnp);
+#endif
 
     /*------------------------------- CMD -------------------------------*/
     perf_begin(44);
