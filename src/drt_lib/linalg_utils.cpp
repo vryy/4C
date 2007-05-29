@@ -272,8 +272,8 @@ void LINALG::SymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim)
 
 
 /*----------------------------------------------------------------------*
- |  invert a dense nonsymmetric matrix  (public)             g.bau 03/07|
- *----------------------------------------------------------------------*/
+| invert a dense nonsymmetric matrix (public)       g.bau 03/07|
+*----------------------------------------------------------------------*/
 #include <Epetra_SerialDenseSolver.h>
 
 void LINALG::NonSymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim)

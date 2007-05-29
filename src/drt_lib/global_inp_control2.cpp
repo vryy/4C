@@ -26,7 +26,7 @@ Maintainer: Michael Gee
 
 #include "Epetra_SerialDenseMatrix.h"
 #include "global_inp_control2.H"
-
+#include "Epetra_SerialComm.h"
 
 
 /*----------------------------------------------------------------------*
@@ -216,6 +216,7 @@ void inpfield_ccadiscret_jumbo()
 #ifdef STRUCT_MULTI
   RefCountPtr<DRT::Discretization> structdis_macro = null;
   RefCountPtr<DRT::Discretization> structdis_micro = null;
+  RefCountPtr<DRT::Discretization> structdis_micro_serial = null;
 #endif
 
   if (genprob.probtyp == prb_fsi)
@@ -430,6 +431,7 @@ void inpfield_ccadiscret_jumbo()
     if (!myrank) cout << time.ElapsedTime() << " secs\n"; fflush(stdout);
   } // end of else if (genprob.probtyp==prb_structure)
 
+
 #ifdef STRUCT_MULTI
   else if (genprob.probtyp==prb_struct_multi)
   {
@@ -528,41 +530,90 @@ void inpfield_ccadiscret_jumbo()
     if (!myrank) cout << time.ElapsedTime() << " secs\n"; fflush(stdout);
     time.ResetStartTime();
 
-    // at this point, we have all microscale nodes in structdis_micro and they already
-    // have the final distribution!
-
-    // put our discretization in there
-    (*discretization)[1] = structdis_micro;
+    // at this point, we have all microscale nodes in structdis_micro
+    // in parallel!
 
     if (!myrank) cout << "Read, create and partition microscale elements      in...."; fflush(stdout);
     // read structural microscale elements from file (in jumbo mode)
-    // we assume some stupid linear distribution of elements here because
-    // we don't know any better (yet).
-    // This linear distribution is used while reading the elements to avoid
-    // proc 0 storing all elements at the same time.
-    // Proc 0 will read and immediately distribute junks of elements to other
-    // processors.
-    // roweles is going to be replaced inside input_field_jumbo
-    // by something very resonable matching the distribution of nodes
-    // in rownodes and colnodes once reading is done.
-    // coleles will be created as well
-    // elements on output have proper distribution and ghosting, such that
-    // all maps rownodes, colnodes, roweles, coleles match the
-    // actual distribution of objects and
-    // the actual distribution of objects matches each other (nodes<->elements)
+    // confer macroscale discretization
     roweles = rcp(new Epetra_Map(gnele_micro,0,*comm));
     input_field_jumbo(structdis_micro,rownodes,colnodes,roweles,coleles,"--MICROSTRUCTURE ELEMENTS");
     if (!myrank) cout << time.ElapsedTime() << " secs\n"; fflush(stdout);
     time.ResetStartTime();
 
-    if (!myrank) cout << "Complete microscale discretization                  in...."; fflush(stdout);
     // Now we will find out whether structdis_micro can fly....
     err = structdis_micro->FillComplete();
     if (err) dserror("structdis_micro->FillComplete() returned %d",err);
     if (!myrank) cout << time.ElapsedTime() << " secs\n"; fflush(stdout);
 
+
+    // microscale discretization is distributed over processors but it
+    // is needed on every processor redundantly
+
+    RefCountPtr<Epetra_SerialComm> serialcomm = rcp(new Epetra_SerialComm());
+    structdis_micro_serial = rcp(new DRT::Discretization("Micro Structure Serial",serialcomm));
+    (*discretization)[1] = structdis_micro_serial;
+
+    RefCountPtr<Epetra_Map> parallel_rownodes = rcp(new Epetra_Map(*structdis_micro->NodeRowMap()));
+    RefCountPtr<Epetra_Map> parallel_roweles  = rcp(new Epetra_Map(*structdis_micro->ElementRowMap()));
+
+    // build redundant colnodes
+    vector<int> mygid(parallel_rownodes->NumMyElements());
+    for (int i=0; i<parallel_rownodes->NumMyElements(); ++i) mygid[i] = parallel_rownodes->MyGlobalElements()[i];
+    vector<int> rmygid(0);
+    vector<int> targetprocs(structdis_micro->Comm().NumProc());
+    for (int i=0; i<structdis_micro->Comm().NumProc(); ++i) targetprocs[i] = i;
+    LINALG::Gather(mygid,rmygid,structdis_micro->Comm().NumProc(),&targetprocs[0], structdis_micro->Comm());
+    RefCountPtr<Epetra_Map> redundantmap = rcp(new Epetra_Map(-1,(int)rmygid.size(),&rmygid[0],0,structdis_micro->Comm()));
+
+    // build redundant coleles
+    vector<int> mygid_ele(parallel_roweles->NumMyElements());
+    for (int i=0; i<parallel_roweles->NumMyElements(); ++i) mygid_ele[i] = parallel_roweles->MyGlobalElements()[i];
+    vector<int> rmygid_ele(0);
+    LINALG::Gather(mygid_ele,rmygid_ele,structdis_micro->Comm().NumProc(),&targetprocs[0], structdis_micro->Comm());
+    RefCountPtr<Epetra_Map> redundantmap_ele = rcp(new Epetra_Map(-1,(int)rmygid_ele.size(),&rmygid_ele[0],0,structdis_micro->Comm()));
+
+    structdis_micro->ExportColumnNodes(*redundantmap);
+    structdis_micro->ExportColumnElements(*redundantmap_ele);
+    err = structdis_micro->FillComplete();
+    if (err) dserror("structdis_micro->FillComplete() returned %d",err);
+
+    for (int i=0; i<structdis_micro->NumMyColElements(); ++i)
+    {
+      DRT::Element* actele = structdis_micro->lColElement(i);
+      RefCountPtr<DRT::Element> newele = rcp(actele->Clone());
+      newele->SetOwner(0);
+      structdis_micro_serial->AddElement(newele);
+    }
+    for (int i=0; i<structdis_micro->NumMyColNodes(); ++i)
+    {
+      DRT::Node* actnode = structdis_micro->lColNode(i);
+      RefCountPtr<DRT::Node> newnode = rcp(actnode->Clone());
+      newnode->SetOwner(0);
+      structdis_micro_serial->AddNode(newnode);
+    }
+    if (!myrank) cout << "Complete microscale discretization in serial        in...."; fflush(stdout);
+    err = structdis_micro_serial->FillComplete();
+
+    if (0)
+    {
+    for (int i=0; i<structdis_micro->Comm().NumProc(); ++i)
+    {
+      cout << "\n";
+      if (structdis_micro->Comm().MyPID()==i)
+      {
+        cout << "Proc " << i << "meine serielle Diskretisierung:\n";
+        cout << *structdis_micro_serial;
+      }
+      structdis_micro->Comm().Barrier();
+    }
+    cout << "\n";
+    }
+
+    if (!myrank) cout << time.ElapsedTime() << " secs\n"; fflush(stdout);
   } // end of else if (genprob.probtyp==prb_struct_multi)
 #endif
+
 
   else dserror("Type of problem unknown");
 
