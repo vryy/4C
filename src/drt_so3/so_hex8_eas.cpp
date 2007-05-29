@@ -39,14 +39,14 @@ using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
 
 /*----------------------------------------------------------------------*
- |  initialize EAS data (private)                              maf 04/07|
+ |  initialize EAS data (private)                              maf 05/07|
  *----------------------------------------------------------------------*/
 void DRT::Elements::So_hex8::soh8_easinit()
 {
   DSTraceHelper dst("So_hex8::soh8_easinit");
   
   // EAS enhanced strain parameters
-  Epetra_SerialDenseVector alpha(neas_);
+  Epetra_SerialDenseMatrix alpha(neas_,1);
   // EAS portion of internal forces, also called enhacement vector s or Rtilde
   Epetra_SerialDenseVector feas(neas_);
   // EAS matrix K_{alpha alpha}, also called Dtilde
@@ -63,6 +63,133 @@ void DRT::Elements::So_hex8::soh8_easinit()
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  setup of constant EAS data (private)                       maf 05/07|
+ *----------------------------------------------------------------------*/
+void DRT::Elements::So_hex8::soh8_eassetup(
+          Epetra_SerialDenseMatrix** M_GP,    // M-matrix evaluated at GPs
+          double& detJ0,                      // det of Jacobian at origin
+          Epetra_SerialDenseMatrix& T0invT,   // maps M(origin) local to global
+          const Epetra_SerialDenseMatrix& xrefe)    // material element coords
+{
+  DSTraceHelper dst("So_hex8::soh8_eassetup");
+  
+  // vector of df(origin)
+  double df0_vector[NUMDOF_SOH8*NUMNOD_SOH8] =
+               {-0.125,+0.125,+0.125,-0.125,-0.125,+0.125,+0.125,-0.125, 
+                -0.125,-0.125,+0.125,+0.125,-0.125,-0.125,+0.125,+0.125, 
+                -0.125,-0.125,-0.125,-0.125,+0.125,+0.125,+0.125,+0.125};
+  // shape function derivatives, evaluated at origin (r=s=t=0.0)
+  Epetra_DataAccess CV = Copy;
+  Epetra_SerialDenseMatrix df0(CV,df0_vector,NUMDOF_SOH8,NUMDOF_SOH8,NUMNOD_SOH8);
+  
+  // compute Jacobian, evaluated at element origin (r=s=t=0.0)
+  Epetra_SerialDenseMatrix jac0(NUMDIM_SOH8,NUMDIM_SOH8);
+  jac0.Multiply('N','N',1.0,df0,xrefe,1.0);
+  
+  // compute determinant of Jacobian at origin by Sarrus' rule
+  detJ0 = jac0(0,0) * jac0(1,1) * jac0(2,2)
+           + jac0(0,1) * jac0(1,2) * jac0(2,0)
+           + jac0(0,2) * jac0(1,0) * jac0(2,1)
+           - jac0(0,0) * jac0(1,2) * jac0(2,1)
+           - jac0(0,1) * jac0(1,0) * jac0(2,2)
+           - jac0(0,2) * jac0(1,1) * jac0(2,0);
+  
+  // first, build T0 transformation matrix which maps the M-matrix
+  // between global (r,s,t)-coordinates and local (x,y,z)-coords
+  // later, invert the transposed to map from local to global
+  // see literature for details (e.g. Andelfinger)
+  // it is based on the voigt notation for strains: xx,yy,zz,xy,yz,xz
+  T0invT(0,0) = jac0(0,0) * jac0(0,0);
+  T0invT(0,1) = jac0(1,0) * jac0(1,0);
+  T0invT(0,2) = jac0(2,0) * jac0(2,0);
+  T0invT(0,3) = 2 * jac0(0,0) * jac0(1,0);
+  T0invT(0,4) = 2 * jac0(0,0) * jac0(2,0);
+  T0invT(0,5) = 2 * jac0(1,0) * jac0(2,0);
+  
+  T0invT(1,0) = jac0(0,1) * jac0(0,1);
+  T0invT(1,1) = jac0(1,1) * jac0(1,1);
+  T0invT(1,2) = jac0(2,1) * jac0(2,1);
+  T0invT(1,3) = 2 * jac0(0,1) * jac0(1,1);
+  T0invT(1,4) = 2 * jac0(0,1) * jac0(2,1);
+  T0invT(1,5) = 2 * jac0(1,1) * jac0(2,1);
+
+  T0invT(2,0) = jac0(0,2) * jac0(0,2);
+  T0invT(2,1) = jac0(1,2) * jac0(1,2);
+  T0invT(2,2) = jac0(2,2) * jac0(2,2);
+  T0invT(2,3) = 2 * jac0(0,2) * jac0(1,2);
+  T0invT(2,4) = 2 * jac0(0,2) * jac0(2,2);
+  T0invT(2,5) = 2 * jac0(1,2) * jac0(2,2);
+  
+  T0invT(3,0) = jac0(0,0) * jac0(0,1);
+  T0invT(3,1) = jac0(1,0) * jac0(1,1);
+  T0invT(3,2) = jac0(2,0) * jac0(2,1);
+  T0invT(3,3) = jac0(0,0) * jac0(1,1) + jac0(1,0) * jac0(0,1);
+  T0invT(3,4) = jac0(0,0) * jac0(2,1) + jac0(2,0) * jac0(0,1);
+  T0invT(3,5) = jac0(1,0) * jac0(2,1) + jac0(2,0) * jac0(1,1);
+
+  T0invT(4,0) = jac0(0,0) * jac0(0,2);
+  T0invT(4,1) = jac0(1,0) * jac0(1,2);
+  T0invT(4,2) = jac0(2,0) * jac0(2,2);
+  T0invT(4,3) = jac0(0,0) * jac0(1,2) + jac0(1,0) * jac0(0,2);
+  T0invT(4,4) = jac0(0,0) * jac0(2,2) + jac0(2,0) * jac0(0,2);
+  T0invT(4,5) = jac0(1,0) * jac0(2,2) + jac0(2,0) * jac0(1,2);
+
+  T0invT(5,0) = jac0(0,1) * jac0(0,2);
+  T0invT(5,1) = jac0(1,1) * jac0(1,2);
+  T0invT(5,2) = jac0(2,1) * jac0(2,2);
+  T0invT(5,3) = jac0(0,1) * jac0(1,2) + jac0(1,1) * jac0(0,2);
+  T0invT(5,4) = jac0(0,1) * jac0(2,2) + jac0(2,1) * jac0(0,2);
+  T0invT(5,5) = jac0(1,1) * jac0(2,2) + jac0(2,1) * jac0(1,2);
+  
+  // now evaluate T0^{-T} with solver
+  Epetra_SerialDenseSolver solve_for_inverseT0;
+  solve_for_inverseT0.SetMatrix(T0invT);
+  solve_for_inverseT0.SolveWithTranspose(true);
+  solve_for_inverseT0.Invert();
+  
+  // build EAS interpolation matrix M, evaluated at the 8 GPs of so_hex8
+  static Epetra_SerialDenseMatrix M(NUMSTR_SOH8*NUMGPT_SOH8,neas_);
+  static bool M_eval;
+
+  if (M_eval==true){          // if true M already evaluated
+      *M_GP = &M;             // return adress of static object to target of pointer
+    return;
+  } else {
+    // (r,s,t) gp-locations of fully integrated linear 8-node Hex
+    const double gploc    = 1.0/sqrt(3.0);    // gp sampling point value for linear fct
+    const double r[NUMGPT_SOH8] = {-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc,-gploc};
+    const double s[NUMGPT_SOH8] = {-gploc,-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc};
+    const double t[NUMGPT_SOH8] = {-gploc,-gploc,-gploc,-gploc, gploc, gploc, gploc, gploc};
+
+    // fill up M at each gp
+    /* THIS is the EAS interpolation of 9 modes, based on
+    **            r 0 0   0 0 0 0 0 0
+    **            0 s 0   0 0 0 0 0 0
+    **    M =     0 0 t   0 0 0 0 0 0
+    **            0 0 0   r s 0 0 0 0
+    **            0 0 0   0 0 s t 0 0 
+    **            0 0 0   0 0 0 0 r t 
+    */
+    for (int i=0; i<NUMGPT_SOH8; ++i) {
+      M(i*NUMSTR_SOH8+0,0) = r[i];
+      M(i*NUMSTR_SOH8+1,1) = s[i];
+      M(i*NUMSTR_SOH8+2,2) = t[i];
+      
+      M(i*NUMSTR_SOH8+3,3) = r[i]; M(i*NUMSTR_SOH8+3,4) = s[i];
+      M(i*NUMSTR_SOH8+4,5) = s[i]; M(i*NUMSTR_SOH8+4,6) = t[i];
+      M(i*NUMSTR_SOH8+5,7) = r[i]; M(i*NUMSTR_SOH8+3,8) = t[i];
+    }
+
+    // return adress of just evaluated matrix
+    *M_GP = &M;            // return adress of static object to target of pointer
+    M_eval = true;         // now the array is filled statically
+  }
+} // end of soh8_eassetup
+  
+      
+  
+  
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

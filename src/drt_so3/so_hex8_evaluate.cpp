@@ -295,6 +295,31 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     xcurr(i,1) = xrefe(i,1) + disp[i*NODDOF_SOH8+1];
     xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_SOH8+2];
   }
+  
+  /*
+  ** EAS Technology: intialize, set up, and alpha history
+  */
+  if (eastype_ != soh8_easnone) {
+    // get stored EAS alphas (history variables)
+    Epetra_SerialDenseMatrix* oldalpha;
+    oldalpha = easdata_.Get<Epetra_SerialDenseMatrix>("alpha");
+    // EAS matrix M defining interpolation of enhanced strains alpha, evaluated at GPs
+    Epetra_SerialDenseMatrix* M_GP; //(NUMSTR_SOH8*NUMGPT_SOH8,neas_);
+    // EAS portion of internal forces, also called enhacement vector s or Rtilde
+    Epetra_SerialDenseVector feas(neas_);
+    // EAS matrix K_{alpha alpha}, also called Dtilde
+    Epetra_SerialDenseMatrix Kaa(neas_,neas_);
+    // EAS matrix K_{d alpha}
+    Epetra_SerialDenseMatrix Kda(neas_,NUMDOF_SOH8);
+    // determinant of Jacobi matrix at element origin (r=s=t=0.0)
+    double detJ0;
+    // transformation matrix T0, maps M-matrix evaluated at origin
+    // between local element coords and global coords
+    // here we already get the inverse transposed T0
+    Epetra_SerialDenseMatrix T0invT(NUMSTR_SOH8,NUMSTR_SOH8);
+    // evaluation of variables (which are constant for the following)
+    soh8_eassetup(&M_GP,detJ0,T0invT,xrefe);
+  }
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */

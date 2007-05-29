@@ -380,6 +380,13 @@ private:
   
   // EAS technology section
   void soh8_easinit();
+  
+  void soh8_eassetup(
+          Epetra_SerialDenseMatrix** M_GP,    // M-matrix evaluated at GPs
+          double& detJ0,                      // det of Jacobian at origin
+          Epetra_SerialDenseMatrix& T0invT,   // maps M(origin) local to global
+          const Epetra_SerialDenseMatrix& xrefe);     // material element coords
+  
 
 }; // class So_hex8
 

@@ -98,13 +98,13 @@ bool DRT::Elements::So_hex8::ReadElement()
     // full EAS technology
     if      (strncmp(buffer,"full",4)==0){
       eastype_ = soh8_easfull;
-      neas_ = 6;               // number of eas parameters for full EAS
+      neas_ = 9;               // number of eas parameters for full EAS
       soh8_easinit();
     }
     // mild EAS technology
     else if (strncmp(buffer,"mild",4)==0){
       eastype_ = soh8_easmild;
-      neas_ = 3;               // number of eas parameters for mild EAS
+      neas_ = 9;               // number of eas parameters for mild EAS
       soh8_easinit();
     }
     // no EAS technology
