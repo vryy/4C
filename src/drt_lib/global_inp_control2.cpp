@@ -560,6 +560,7 @@ void inpfield_ccadiscret_jumbo()
     err = structdis_micro->FillComplete();
     if (err) dserror("structdis_micro->FillComplete() returned %d",err);
     if (!myrank) cout << time.ElapsedTime() << " secs\n"; fflush(stdout);
+
   } // end of else if (genprob.probtyp==prb_struct_multi)
 #endif
 
@@ -1223,51 +1224,17 @@ void inpnodes_ccadiscret_jumbo(RefCountPtr<DRT::Discretization>& dis,
   const int myrank  = dis->Comm().MyPID();
   const int numproc = dis->Comm().NumProc();
 
-  // we have to collapse rownodes on proc 0 without doing
-  // any assumptions except that it is unique
-  map<int,vector<int> > collapsemap;
-  {
-    const int* mygids        = rownodes->MyGlobalElements();
-    const int  nummyelements = rownodes->NumMyElements();
-    vector<int> sbuff(0);
-    collapsemap[myrank] = sbuff;
-    collapsemap[myrank].resize(nummyelements);
-    for (int i=0; i<nummyelements; ++i) collapsemap[myrank][i] = mygids[i];
-    // build a source map where every proc has his data
-    Epetra_Map source(numproc,1,&myrank,0,dis->Comm());
-    // build a target map where proc 0 has all data
-    vector<int> targetvec(0);
-    if (!myrank)
-    {
-      targetvec.resize(numproc);
-      for (int i=0; i<numproc; ++i) targetvec[i] = i;
-    }
-    const int tnummyelements = (int)targetvec.size();
-    Epetra_Map target(numproc,tnummyelements,&targetvec[0],0,dis->Comm());
-    // export the map to target map (everything on proc 0)
-    DRT::Exporter exporter(source,target,dis->Comm());
-    exporter.Export(collapsemap);
-  }
-  // build collapsedrows map
-  vector<int> collapsedrowsvec(0);
-  if (myrank==0)
-  {
-    int count=0;
-    map<int,vector<int> >::iterator curr;
-    for (curr=collapsemap.begin(); curr != collapsemap.end(); ++curr)
-    {
-      vector<int>& current = curr->second;
-      int size = (int)current.size();
-      collapsedrowsvec.resize(collapsedrowsvec.size()+size);
-      for (int i=0; i<size; ++i)
-        collapsedrowsvec[count+i] = current[i];
-      count += size;
-    }
-  }
-  Epetra_Map collapsedrows(-1,(int)collapsedrowsvec.size(),&collapsedrowsvec[0],
-                           0,rownodes->Comm());
-  collapsedrowsvec.clear();
-  collapsemap.clear();
+  // collapse rownodes on proc 0 so it knows what to read and what to ignore
+  vector<int> sbuff(rownodes->NumMyElements());
+  vector<int> rbuff(0);
+  const int* mygids = rownodes->MyGlobalElements();
+  for (int i=0; i<rownodes->NumMyElements(); ++i) sbuff[i] = mygids[i];
+  // gather all global ids on proc 0
+  int target = 0;
+  LINALG::Gather(sbuff,rbuff,1,&target,dis->Comm());
+  Epetra_Map collapsedrows(-1,(int)rbuff.size(),&rbuff[0],0,rownodes->Comm());
+  sbuff.clear();
+  rbuff.clear();
 
   // we will read the nodes block wise. we will use one block per processor
   // so the number of blocks is numproc
