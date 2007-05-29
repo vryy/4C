@@ -214,7 +214,27 @@ namespace LINALG
 
 
   /*!
-  \brief docu to come next week ;-)
+  \brief Gather information of type vector<T> on a subset of processors
+  
+  This template gathers information provided in sdata on a subset of
+  processors tprocs, where the length of the array tprocs is ntargetprocs.
+  The redistributed data is returned in rdata which has appropiate size
+  on output (size of rdata on input is arbitrary). ntargetprocs can be
+  one to reduce data to one proc, it also can be equal to the total number
+  of processors to make sdata redundant on all procs.
+  
+  \note Functionality of this method is equal to that of Epetra_Comm::GatherAll
+        except for that the Epetra version demands the data to be of constant
+        size over all procs which this method does not require!
+  
+  \param sdata (in) : Information to be gathered on tprocs.
+                      Length of sdata can be different on every proc.
+  \param rdata (out): Information from sdata gathered on a subset of procs.
+                      size of rdata on input is arbitrary, it is exact on output.
+  \param ntargetprocs (in): length of tprocs
+  \param tprocs (in): vector of procs ids the information in sdata shall be
+                      gathered on.
+  \param comm (in):   communicator to be used.
     
   
   */
