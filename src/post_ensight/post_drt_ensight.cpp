@@ -118,7 +118,7 @@ void EnsightWriter::WriteFiles()
 
   // loop all results
   PostResult result = PostResult(field_);
-  while (result.next_result())
+  if (result.next_result())
   {
     time_.push_back(result.time());
 
@@ -146,6 +146,10 @@ void EnsightWriter::WriteFiles()
 
     Write(geofile_,"END TIME STEP");
   }
+  while (result.next_result())
+  {
+    time_.push_back(result.time());
+  }
 
   // append index table
   WriteIndexTable(geofile_,fileposition_);
@@ -158,7 +162,7 @@ void EnsightWriter::WriteFiles()
             << "FORMAT\n\n"
             << "type:\tensight gold\n\n"
             << "GEOMETRY\n\n"
-            << "model:\t1\t1\t" << geofilename << "\n\n"
+            << "model:\t2\t2\t" << geofilename << "\n\n"
             << "VARIABLE\n\n";
 
   // whatever result we need
@@ -174,10 +178,15 @@ void EnsightWriter::WriteFiles()
     if (i%8==0 && i!=0)
       casefile_ << "\n";
   }
-  casefile_ << "\n\n"
+  casefile_ << "\n\ntime set:\t\t2\n"
+            << "number of steps:\t1\n"
+            << "time values: " << time_[0] << "\n";
+  casefile_ << "\n"
             << "FILE\n"
             << "file set:\t\t1\n"
-            << "number of steps:\t" << time_.size() << "\n"
+            << "number of steps:\t" << time_.size() << "\n\n"
+            << "file set:\t\t2\n"
+            << "number of steps:\t1\n"
     ;
 
   casefile_.close();
@@ -602,6 +611,31 @@ void FluidEnsightWriter::WriteResults(PostField* field)
 
 
 /*----------------------------------------------------------------------*/
+/*
+  \brief Writer for ale problems
+ */
+/*----------------------------------------------------------------------*/
+class AleEnsightWriter : public EnsightWriter
+{
+public:
+  AleEnsightWriter(PostField* field, string filename)
+    : EnsightWriter(field,filename) {}
+
+protected:
+
+  virtual void WriteResults(PostField* field);
+};
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void AleEnsightWriter::WriteResults(PostField* field)
+{
+  EnsightWriter::WriteResults("dispnp","displacement",field->problem()->num_dim());
+}
+
+
+/*----------------------------------------------------------------------*/
 /*!
   \brief filter main routine
 
@@ -646,6 +680,13 @@ int main(int argc, char** argv)
   {
     PostField* field = problem.get_discretization(0);
     FluidEnsightWriter writer(field, problem.basename());
+    writer.WriteFiles();
+    break;
+  }
+  case prb_ale:
+  {
+    PostField* field = problem.get_discretization(0);
+    AleEnsightWriter writer(field, problem.basename());
     writer.WriteFiles();
     break;
   }
