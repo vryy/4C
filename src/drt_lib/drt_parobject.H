@@ -146,7 +146,10 @@ using namespace std;
 #define ParObject_Soh8Register          (int)20
 #define ParObject_Soh8Surface           (int)21
 #define ParObject_Soh8Line              (int)22
-#define ParObject_Soh8Volume            (int)23  
+#define ParObject_Soh8Volume            (int)23
+#define ParObject_Ale3                  (int)24
+#define ParObject_Ale3Register          (int)25
+#define ParObject_Ale3Surface           (int)26
 
 
 /*!
@@ -256,7 +259,7 @@ public:
     memcpy(&data[oldsize],&stuff,size);
     return;
   }
-  
+
   /*!
   \brief Add stuff to the end of a char vector data
 
@@ -341,7 +344,7 @@ public:
     position += size;
     return;
   }
-  
+
   /*!
   \brief Extract stuff from a char vector data and increment position
 
@@ -353,7 +356,7 @@ public:
 
   */
   static void ExtractfromPack(int& position, const vector<char>& data, vector<int>& stuff);
-  
+
   /*!
   \brief Extract stuff from a char vector data and increment position
 

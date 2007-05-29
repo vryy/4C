@@ -70,6 +70,7 @@ extern struct _FIELD      *sm_field;
 #ifdef CCADISCRET
 #include "../drt_lib/global_inp_control2.H"
 #include "../drt_lib/fluid_dyn_nln_drt.H"
+#include "../drt_fsi/ale_dyn.H"
 #endif
 
 /*----------------------------------------------------------------------*
@@ -261,7 +262,11 @@ case prb_ssi:
 
 #ifdef D_ALE
 case prb_ale:
+#ifndef CCADISCRET
   dyn_ale();
+#else
+  dyn_ale_drt();
+#endif
   break;
 #endif
 

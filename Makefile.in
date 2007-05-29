@@ -4,11 +4,11 @@ post_gid: $(OBJS_POST_GID_BIN) $(OBJS_POST_GID_COMMON) $(OBJS_POST_COMMON)
 post_gid_txt: $(OBJS_POST_GID_TXT) $(OBJS_POST_GID_COMMON) $(OBJS_POST_COMMON)
 	$(PLAIN_LD) $(LDFLAGS) $(PLAIN_LIBS) $(OBJS_POST_GID_TXT) $(OBJS_POST_GID_COMMON) $(OBJS_POST_COMMON) -o post_gid_txt
 
-post_drt_gid: $(OBJS_POST_DRT_GID) $(OBJS_POST_GID_TXT) $(OBJS_POST_DRT_COMMON) $(OBJS_IO_LIB) $(OBJS_DRT_LIB) $(OBJS_PSS) $(OBJS_PAR) $(OBJS_DRT_F2_LIB) $(OBJS_DRT_F3_LIB) $(OBJS_DRT_S8_LIB) $(OBJS_SOH8_LIB)
-	$(LD) $(LDFLAGS) $(OBJS_POST_DRT_GID) $(OBJS_POST_GID_TXT) $(OBJS_POST_DRT_COMMON) $(OBJS_IO_LIB) $(OBJS_DRT_LIB) $(OBJS_PSS) $(OBJS_PAR) $(OBJS_DRT_F2_LIB) $(OBJS_DRT_F3_LIB) $(OBJS_DRT_S8_LIB) $(OBJS_SOH8_LIB) $(FILTER_LIBS) -o post_drt_gid
+post_drt_gid: $(OBJS_POST_DRT_GID) $(OBJS_POST_GID_TXT) $(OBJS_POST_DRT_COMMON) $(OBJS_IO_LIB) $(OBJS_DRT_LIB) $(OBJS_PSS) $(OBJS_PAR) $(OBJS_DRT_F2_LIB) $(OBJS_DRT_F3_LIB) $(OBJS_DRT_S8_LIB) $(OBJS_SOH8_LIB) $(OBJS_DRT_W1_LIB) $(OBJS_DRT_ALE_LIB)
+	$(LD) $(LDFLAGS) $(OBJS_POST_DRT_GID) $(OBJS_POST_GID_TXT) $(OBJS_POST_DRT_COMMON) $(OBJS_IO_LIB) $(OBJS_DRT_LIB) $(OBJS_PSS) $(OBJS_PAR) $(OBJS_DRT_F2_LIB) $(OBJS_DRT_F3_LIB) $(OBJS_DRT_S8_LIB) $(OBJS_SOH8_LIB) $(OBJS_DRT_W1_LIB) $(OBJS_DRT_ALE_LIB) $(FILTER_LIBS) -o post_drt_gid
 
-post_drt_ensight: $(OBJS_POST_DRT_ENSIGHT) $(OBJS_POST_DRT_COMMON) $(OBJS_IO_LIB) $(OBJS_DRT_LIB) $(OBJS_PSS) $(OBJS_PAR) $(OBJS_DRT_F2_LIB) $(OBJS_DRT_F3_LIB) $(OBJS_DRT_S8_LIB) $(OBJS_SOH8_LIB)
-	$(LD) $(LDFLAGS) $(OBJS_POST_DRT_ENSIGHT) $(OBJS_POST_DRT_COMMON) $(OBJS_IO_LIB) $(OBJS_DRT_LIB) $(OBJS_PSS) $(OBJS_PAR) $(OBJS_DRT_F2_LIB) $(OBJS_DRT_F3_LIB) $(OBJS_DRT_S8_LIB) $(OBJS_SOH8_LIB) $(FILTER_LIBS) -o post_drt_ensight
+post_drt_ensight: $(OBJS_POST_DRT_ENSIGHT) $(OBJS_POST_DRT_COMMON) $(OBJS_IO_LIB) $(OBJS_DRT_LIB) $(OBJS_PSS) $(OBJS_PAR) $(OBJS_DRT_F2_LIB) $(OBJS_DRT_F3_LIB) $(OBJS_DRT_S8_LIB) $(OBJS_SOH8_LIB) $(OBJS_DRT_W1_LIB) $(OBJS_DRT_ALE_LIB)
+	$(LD) $(LDFLAGS) $(OBJS_POST_DRT_ENSIGHT) $(OBJS_POST_DRT_COMMON) $(OBJS_IO_LIB) $(OBJS_DRT_LIB) $(OBJS_PSS) $(OBJS_PAR) $(OBJS_DRT_F2_LIB) $(OBJS_DRT_F3_LIB) $(OBJS_DRT_S8_LIB) $(OBJS_SOH8_LIB) $(OBJS_DRT_W1_LIB) $(OBJS_DRT_ALE_LIB) $(FILTER_LIBS) -o post_drt_ensight
 
 post_out: $(OBJS_POST_OUT) $(OBJS_POST_COMMON)
 	$(PLAIN_LD) $(LDFLAGS) $(PLAIN_LIBS) $(OBJS_POST_OUT) $(OBJS_POST_COMMON) -o post_out
@@ -72,6 +72,11 @@ $(OBJS_DRT):
 	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
 	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
 
+$(OBJS_DRT_FSI):
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
+	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
+
 $(OBJS_PSS):
 	@mkdir -p ${DEST}/${@D}
 	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
@@ -131,6 +136,16 @@ $(OBJS_ALE):
 	@mkdir -p ${DEST}/${@D}
 	@echo "$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@"
 	@$(CC) $(CFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.c -o ${DEST}/$@ > /dev/stderr
+
+$(OBJS_DRT_ALE_LIB):
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
+	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
+
+$(OBJS_DRT_ALE):
+	@mkdir -p ${DEST}/${@D}
+	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
+	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
 
 $(OBJS_PAR):
 	@mkdir -p ${DEST}/${@D}

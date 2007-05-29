@@ -82,14 +82,14 @@ void write_mesh(PostProblem* problem, int disnum)
 
   double x[3];
   x[2] = 0;
-  
+
   switch (actele->Shape())
   {
   case DRT::Element::hex8:
     // Gid output for so_hex8
     GiD_BeginGaussPoint("so_hex8", GiD_Hexahedra, "so_hex8", 8, 0, 1);
     GiD_EndGaussPoint();
-  
+
     GiD_BeginMesh("so_hex8",GiD_3D,GiD_Hexahedra,8);
     // We have ony one mesh, so it's the first
     GiD_BeginCoordinates();
@@ -103,7 +103,7 @@ void write_mesh(PostProblem* problem, int disnum)
       GiD_WriteCoordinates(id+1, x[0], x[1], x[2]);
     }
     GiD_EndCoordinates();
-  
+
     GiD_BeginElements();
     for (int i=0; i<field->discretization()->NumGlobalElements(); ++i)
     {
@@ -121,7 +121,7 @@ void write_mesh(PostProblem* problem, int disnum)
     // Let's assume there are only shell8_4_22 elements
     GiD_BeginGaussPoint("shell8_4_22", GiD_Quadrilateral, "shell8_4_22", 4, 0, 1);
     GiD_EndGaussPoint();
-  
+
     GiD_BeginMesh("shell8_4_22",GiD_3D,GiD_Quadrilateral,4);
     // We have ony one mesh, so it's the first
     GiD_BeginCoordinates();
@@ -135,7 +135,7 @@ void write_mesh(PostProblem* problem, int disnum)
       GiD_WriteCoordinates(id+1, x[0], x[1], x[2]);
     }
     GiD_EndCoordinates();
-  
+
     GiD_BeginElements();
     for (int i=0; i<field->discretization()->NumGlobalElements(); ++i)
     {
@@ -146,8 +146,8 @@ void write_mesh(PostProblem* problem, int disnum)
       }
       GiD_WriteElement(field->discretization()->gElement(i)->Id()+1,mesh_entry);
     }
-    GiD_EndElements();  
-    GiD_EndMesh();  
+    GiD_EndElements();
+    GiD_EndMesh();
     break;
   default:
     dserror("element type : %d", actele->Shape());
@@ -184,6 +184,10 @@ int main(int argc, char** argv)
       if (map_has_map(result.group(), "displacement"))
       {
         write_vector_result("displacement", field, &result);
+      }
+      if (map_has_map(result.group(), "dispnp"))
+      {
+        write_vector_result("dispnp", field, &result);
       }
       if (map_has_map(result.group(), "velocity"))
       {

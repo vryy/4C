@@ -15,7 +15,7 @@ OBJECTS="\$(OBJS_MAIN) \$(OBJS_GLOBAL) \$(OBJS_GLOBAL_CPP) \$(OBJS_SOLVER) \$(OB
 
 # ALE
 if grep '^[[:blank:]]*D_ALE' "$definefile" 2>&1 > /dev/null ; then
-    OBJECTS="$OBJECTS \$(OBJS_ALE)"
+    OBJECTS="$OBJECTS \$(OBJS_ALE) \$(OBJS_DRT_ALE_LIB) \$(OBJS_DRT_ALE)"
 fi
 
 # AXISHELL
@@ -227,7 +227,7 @@ fi
 
 # FSI
 if grep '^[[:blank:]]*D_FSI' "$definefile" 2>&1 > /dev/null ; then
-    OBJECTS="$OBJECTS \$(OBJS_FSI) \$(OBJS_FSI_CPP)"
+    OBJECTS="$OBJECTS \$(OBJS_FSI) \$(OBJS_FSI_CPP) \$(OBJS_DRT_FSI)"
 fi
 
 # SSI
