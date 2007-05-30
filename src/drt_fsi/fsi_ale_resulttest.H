@@ -1,6 +1,7 @@
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 #ifdef D_ALE
+#ifdef RESULTTEST
 
 #ifndef FSI_ALE_RESULTTEST_H
 #define FSI_ALE_RESULTTEST_H
@@ -36,6 +37,7 @@ private:
 
 }
 
+#endif
 #endif
 #endif
 #endif
