@@ -117,13 +117,6 @@ DiscretizationReader::DiscretizationReader(RefCountPtr<DRT::Discretization> dis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DiscretizationReader::~DiscretizationReader()
-{
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void DiscretizationReader::ReadVector(RefCountPtr<Epetra_Vector> vec, string name)
 {
 #ifdef BINIO
@@ -576,7 +569,7 @@ void DiscretizationWriter::WriteMesh(int step, double time)
 
       // first the surfaces
       dis_->GetCondition("SurfacePeriodic",percond);
-  
+
       for (vector<DRT::Condition*>::iterator i=percond.begin();
            i!=percond.end();
            ++i)
@@ -598,7 +591,7 @@ void DiscretizationWriter::WriteMesh(int step, double time)
         DRT::ParObject::AddtoPack(*pbcblock,perconddata);
       }
 
-      
+
       //--------------------------------------------------
       // write pbcblock to file
       if(!pbcblock->empty())

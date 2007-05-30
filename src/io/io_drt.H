@@ -48,30 +48,30 @@ class DiscretizationReader
 {
 public:
 
-  /// not yet doxygented
+  /// construct reader for a given discretization to read a particular time step
   explicit DiscretizationReader(RefCountPtr<DRT::Discretization> dis, int step);
-
-  /// not yet doxygented
-  ~DiscretizationReader();
 
   /// read into given vector
   void ReadVector(RefCountPtr<Epetra_Vector> vec, string name);
 
-  /// not yet doxygented
+  /// read an integer value from the control file
   int ReadInt(string name);
 
-  /// not yet doxygented
+  /// read a double value from the control file
   double ReadDouble(string name);
 
 private:
 
+  /// find control file entry to given time step
   MAP* FindResultGroup(int step);
 
+  /// Open data files. You guess it.
   void OpenDataFiles(MAP* result_step);
 
   //! my discretization
   RefCountPtr<DRT::Discretization> dis_;
 
+  /// control file entry of this step
   MAP *restart_step_;
 
 #ifdef BINIO
@@ -97,11 +97,10 @@ class DiscretizationWriter
 {
 public:
 
-
   /// Writer constructor always needs a discretization
   explicit DiscretizationWriter(RefCountPtr<DRT::Discretization> dis);
 
-  /// not yet doxygented
+  /// cleanup, close hdf5 files
   ~DiscretizationWriter();
 
 
