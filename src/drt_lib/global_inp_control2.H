@@ -53,25 +53,10 @@ using namespace std;
 using namespace Teuchos;
 
 // headers and prototypes of functions acessible from c++
-void inpnodes_ccadiscret(Epetra_SerialDenseMatrix& tmpnodes);
 void inpnodes_ccadiscret_jumbo(RefCountPtr<DRT::Discretization>& dis,
                                RefCountPtr<Epetra_Map>& rownodes,
                                RefCountPtr<Epetra_Map>& colnodes,
                                const string& searchword);
-void input_structural_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm);
-void input_fluid_field(FIELD *structfield, RefCountPtr<Epetra_Comm> comm);
-void input_field_jumbo(RefCountPtr<DRT::Discretization>& dis,
-                                  RefCountPtr<Epetra_Map>& rownodes,
-                                  RefCountPtr<Epetra_Map>& colnodes,
-                                  RefCountPtr<Epetra_Map>& roweles,
-                                  RefCountPtr<Epetra_Map>& coleles,
-                                  const string& searchword);
-void input_field_graph(int& nele,
-                                  RefCountPtr<Epetra_Comm> comm,
-                                  RefCountPtr<Epetra_Map>& rownodes,
-                                  RefCountPtr<Epetra_Map>& colnodes,
-                                  RefCountPtr<Epetra_CrsGraph>& graph,
-                                  const string& searchword);
 void input_assign_nodes(DRT::Discretization& actdis,Epetra_SerialDenseMatrix* tmpnodes);
 void input_design_dpoint_fenode_read(vector<vector<int> >& dnode_fenode,
                                      vector<int>& ndnode_fenode);
@@ -95,7 +80,6 @@ extern "C"
 
 
 void ntainp_ccadiscret();
-void inpfield_ccadiscret();
 void inpfield_ccadiscret_jumbo();
 void input_conditions();
 void distribute_drt_grids();
