@@ -48,14 +48,19 @@ class DiscretizationReader
 {
 public:
 
+  /// not yet doxygented
   explicit DiscretizationReader(RefCountPtr<DRT::Discretization> dis, int step);
+
+  /// not yet doxygented
   ~DiscretizationReader();
 
   /// read into given vector
   void ReadVector(RefCountPtr<Epetra_Vector> vec, string name);
 
+  /// not yet doxygented
   int ReadInt(string name);
 
+  /// not yet doxygented
   double ReadDouble(string name);
 
 private:
@@ -92,14 +97,13 @@ class DiscretizationWriter
 {
 public:
 
-  //!@name Constructors and destructors
-  //@{
 
-  //! Writer constructor always needs a discretization
+  /// Writer constructor always needs a discretization
   explicit DiscretizationWriter(RefCountPtr<DRT::Discretization> dis);
+
+  /// not yet doxygented
   ~DiscretizationWriter();
 
-  //@}
 
   //!@name Output methods
   //@{
