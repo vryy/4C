@@ -27,6 +27,7 @@ Maintainer: Michael Gee
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_Time.h"
 #include "Teuchos_RefCountPtr.hpp"
+#include "drt_inputreader.H"
 
 #include "drt_discret.H"
 #include "drt_exporter.H"
@@ -57,7 +58,6 @@ void inpnodes_ccadiscret_jumbo(RefCountPtr<DRT::Discretization>& dis,
                                RefCountPtr<Epetra_Map>& rownodes,
                                RefCountPtr<Epetra_Map>& colnodes,
                                const string& searchword);
-void input_assign_nodes(DRT::Discretization& actdis,Epetra_SerialDenseMatrix* tmpnodes);
 void input_design_dpoint_fenode_read(vector<vector<int> >& dnode_fenode,
                                      vector<int>& ndnode_fenode);
 void input_design_dline_fenode_read(vector<vector<int> >& dline_fenode,
