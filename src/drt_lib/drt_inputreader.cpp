@@ -168,10 +168,6 @@ void ElementReader::Partition()
   roweles_ = rcp(new Epetra_Map(-1,mysize,&eids[myrank*bsize],0,*comm_));
   eids.clear();
 
-  // We need to remember all node ids on processor 0 in order to
-  // create the preliminary nodal row map.
-  set<int> nodes;
-
   // For simplicity we remember all node ids of all elements on
   // processor 0. This way we can create the graph on processor 0 and
   // use serial metis. If this turns out to be too memory consuming,
@@ -229,7 +225,7 @@ void ElementReader::Partition()
           const int  numnode = ele->NumNode();
           const int* nodeids = ele->NodeIds();
 
-          copy(nodeids, nodeids+numnode, inserter(nodes, nodes.begin()));
+          copy(nodeids, nodeids+numnode, inserter(nodes_, nodes_.begin()));
           elementnodes.push_back(vector<int>(nodeids, nodeids+numnode));
 
           ++bcount;
@@ -261,8 +257,7 @@ void ElementReader::Partition()
     cout << "Read, create and partition problem graph in....";
     fflush(stdout);
 
-    copy(nodes.begin(), nodes.end(), back_inserter(nids));
-    nodes.clear();
+    copy(nodes_.begin(), nodes_.end(), back_inserter(nids));
   }
 
   // create preliminary node row map
@@ -340,22 +335,6 @@ void ElementReader::Partition()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ElementReader::CollapseRowMap()
-{
-  // collapse rownodes on proc 0 so it knows what to read and what to ignore
-  const int* mygids = rownodes_->MyGlobalElements();
-  vector<int> sbuff(mygids, mygids+rownodes_->NumMyElements());
-  vector<int> rbuff;
-
-  // gather all global ids on proc 0
-  int target = 0;
-  LINALG::Gather(sbuff,rbuff,1,&target,*comm_);
-  collapsedrows_ = rcp(new Epetra_Map(-1,(int)rbuff.size(),&rbuff[0],0,*comm_));
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void ElementReader::Complete()
 {
   const int myrank  = comm_->MyPID();
@@ -394,9 +373,9 @@ RefCountPtr<DRT::Discretization> NodeReader::FindDisNode(int nodeid)
 {
   for (unsigned i=0; i<ereader_.size(); ++i)
   {
-    if (ereader_[i]->collapsedrows_->MyGID(nodeid))
+    if (ereader_[i]->HasNode(nodeid))
     {
-      return ereader_[i]->dis_;
+      return ereader_[i]->Discretization();
     }
   }
   return null;
@@ -414,7 +393,6 @@ void NodeReader::Read()
   for (unsigned i=0; i<ereader_.size(); ++i)
   {
     ereader_[i]->Partition();
-    ereader_[i]->CollapseRowMap();
     numnodes += ereader_[i]->rownodes_->NumGlobalElements();
   }
 

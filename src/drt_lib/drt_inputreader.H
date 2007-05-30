@@ -82,6 +82,11 @@ public:
   /// construct element reader for a given field that reads a given section
   /*!
     Create empty discretization and append it to given field.
+
+    \param name (i) name of the new discretization
+    \param pos (i) number of the field the discretization belongs to
+    \param comm (i) our communicator
+    \param sectionname (i) the section that contains the element lines
    */
   ElementReader(string name, int pos, RefCountPtr<Epetra_Comm> comm, string sectionname);
 
@@ -93,8 +98,12 @@ private:
   /// read elements, partition node graph
   void Partition();
 
-  /// allreduce node row map to simplify node reading
-  void CollapseRowMap();
+  /// tell whether the given node belongs to us
+  /*!
+    \note This is based on the redundant nodes_ set and only available
+    on processor 0.
+   */
+  bool HasNode(int nodeid) { return nodes_.find(nodeid)!=nodes_.end(); }
 
   /// finialize reading. FillComplete.
   void Complete();
@@ -108,6 +117,14 @@ private:
   /// my section to read
   string sectionname_;
 
+  /// all global node ids of a discretization on processor 0
+  /*!
+    This is a redundant set of all node numbers. But it is only valid
+    on processor 0. We need it to easily figure out to which
+    discretization a node belongs.
+   */
+  set<int> nodes_;
+
   /// my discretization
   RefCountPtr<DRT::Discretization> dis_;
 
@@ -116,9 +133,6 @@ private:
 
   /// node col map
   RefCountPtr<Epetra_Map> colnodes_;
-
-  /// allreduced node map
-  RefCountPtr<Epetra_Map> collapsedrows_;
 
   /// element row map
   RefCountPtr<Epetra_Map> roweles_;
@@ -145,9 +159,33 @@ public:
   NodeReader(RefCountPtr<Epetra_Comm> comm, string sectionname);
 
   /// add an element reader for each discretization
+  /*!
+    Each discretization needs its own ElementReader. These readers
+    have to be registered at the NodeReader.
+
+    \param er (i) a reader of one discretization that uses (a fraction of) our nodes
+   */
   void AddElementReader(RefCountPtr<ElementReader> er) { ereader_.push_back(er); }
 
   /// do the actual reading
+  /*!
+    This method contains the whole machinery. The reading consists of
+    three steps:
+
+    - Reading and distributing elements using each registered
+      ElementReader. This includes creating the connectivity graph,
+      partitioning, building the node row and column maps.
+
+    - Reading and distributing all nodes. Each node gets assigned to
+      its discretization.
+
+    - Finalizing the discretizations.
+
+    Actually most of the work gets done by the ElementReader. The
+    reading of both elements and nodes happens in blocks on processor
+    0. After each block read the discretizations are redistributed.
+
+   */
   void Read();
 
 private:
