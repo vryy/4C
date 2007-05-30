@@ -103,7 +103,6 @@ class Solver
 {
 public:
 
-  //! @name Constructors and destructors and related methods
   
   /*!
   \brief Standard Constructor
@@ -122,7 +121,6 @@ public:
   */
   virtual ~Solver();
 
-  //@}
   
   //! @name Solve and ApplyInverse methods
 

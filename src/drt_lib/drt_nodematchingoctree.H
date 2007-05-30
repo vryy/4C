@@ -32,7 +32,7 @@ class OctreeElement;
 class NodeMatchingOctree
 {
 public:
-  // @{ \name Constructors and destructors
+  
 
   /*!
    
@@ -53,7 +53,6 @@ public:
   
   
   */
-
   NodeMatchingOctree(
     RefCountPtr<DRT::Discretization> actdis,
     const vector <int> &             masternodeids,
@@ -67,10 +66,9 @@ public:
   */
   virtual ~NodeMatchingOctree();
 
-  //@}
 
 
-  // @{ \name Methods to create global node matching
+  //! @name Methods to create global node matching
 
   /*!
    
@@ -125,6 +123,7 @@ public:
     int           & idofclosestpoint,
     double        & distofclosestpoint
   );
+  
   //@}
   
   
@@ -147,7 +146,7 @@ class OctreeElement
 {
 
 public:
-  // @{ \name Constructors and destructors
+  
 
   /*!
   \brief Standard Constructor
@@ -185,9 +184,8 @@ public:
   */
   virtual ~OctreeElement();
 
-  //@}
 
-  // @{ \name Octree element functions
+  //! @name Octree element functions
 
   /*!
   \brief Question if coordinate is in bounding box
@@ -286,10 +284,13 @@ public:
   
   */
   void Print(ostream& os) const;
+  
   //@}
+  
 protected:
 
 private:
+  
   //! \brief all nodes belong to this discretisation
   RefCountPtr<DRT::Discretization> discret_;
   //! \brief the bounding box of the element

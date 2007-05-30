@@ -37,7 +37,6 @@ using namespace Teuchos;
 class PeriodicBoundaryConditions
 {
 public:
-  // @{ \name Constructors and destructors
 
   /*!
   \brief Standard Constructor
@@ -57,9 +56,8 @@ public:
   */
   virtual ~PeriodicBoundaryConditions();
 
-  //@}
 
-  // @{ \name Framework
+  //! @name Framework
 
   /*!
   \brief Proceeds all pairs of periodic boundary conditions
@@ -71,7 +69,7 @@ public:
   //@}
 
 
-  // @{ \name Methods to process one pair of pbcs
+  //! @name Methods to process one pair of pbcs
 
   
   /*!

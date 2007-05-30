@@ -34,6 +34,10 @@ Maintainer: Ulrich Kuettler
 class FluidResultTest : public DRT::ResultTest
 {
 public:
+
+  /*!
+  \brief not documented yet
+  */
   FluidResultTest(FluidImplicitTimeInt& fluid);
 
   /// our version of nodal value tests

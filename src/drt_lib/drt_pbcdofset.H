@@ -54,7 +54,6 @@ class PBCDofSet: public DofSet
 public:
 
 
-  // @{ \name Constructors and destructors
 
   /*!
   \brief Standard Constructor
@@ -81,10 +80,9 @@ public:
   */
   virtual ~PBCDofSet();
 
-  //@}
 
 
-  // @{ \name Construction
+  //! @name Construction
 
 
   /*!

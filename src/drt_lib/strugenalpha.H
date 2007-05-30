@@ -57,7 +57,6 @@ public:
   */
   friend class NoxInterface;
 
-  // @{ \name Constructors and destructors
 
   /*!
   \brief Standard Constructor
@@ -76,9 +75,7 @@ public:
   virtual ~StruGenAlpha();
 
 
-  //@}
 
-  // @{ \name calculation methods
   
   /*!
   \brief Create default parameter list
@@ -117,12 +114,11 @@ public:
   void NonlinearCG();
 
   /*!
-  \brief update confiuration and output to file/screen
+  \brief update configuration and output to file/screen
   
   */
   void UpdateandOutput();
 
-  //@}
 
 protected:
 
@@ -184,8 +180,6 @@ class NoxInterface : public NLNML::NLNML_FineLevelNoxInterface
 public:
 
 
-  // @{ \name Constructors and destructors
-
   /*!
   \brief Standard Constructor
   
@@ -213,9 +207,8 @@ public:
   }
 
 
-  //@}
 
-  // @{ \name calculation methods
+  //! @name calculation methods
   
   /*!
   \brief For some given solution vector x, compute residual forces F

@@ -107,7 +107,6 @@ class DofSet
 public:
 
 
-  // @{ \name Constructors and destructors
 
   /*!
   \brief Standard Constructor
@@ -121,7 +120,6 @@ public:
   */
   virtual ~DofSet();
 
-  //@}
 
   // @{ \name Access methods
 

@@ -172,7 +172,6 @@ class ParObject
 public:
 
 
-  //! @name Constructors and destructors
 
   /*!
   \brief Standard Constructor
@@ -194,7 +193,6 @@ public:
   */
   virtual ~ParObject();
 
-  //@}
 
   //! @name pure virtual Packing and Unpacking
 

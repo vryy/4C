@@ -68,7 +68,6 @@ class FluidImplicitTimeInt
 
 public:
 
-  // @{ \name Constructors and destructors
 
   /*!
   \brief Standard Constructor
@@ -87,9 +86,7 @@ public:
   virtual ~FluidImplicitTimeInt();
 
 
-  //@}
 
-  // @{ \name calculation methods
 
   /*!
   \brief Create default parameter list
@@ -217,7 +214,6 @@ public:
     double time
     );
 
-  //@}
 
   void ReadRestart(int step);
 

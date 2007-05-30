@@ -55,7 +55,11 @@ namespace DRT
   class ResultTest
   {
   public:
+    
+    /// not yet doxumented
     ResultTest();
+    
+    /// not yet doxumented
     virtual ~ResultTest();
 
     /// perform element value test
@@ -91,7 +95,11 @@ namespace DRT
   class ResultTestManager
   {
   public:
+
+    /// not yet doxumented
     ResultTestManager(const Epetra_Comm& comm);
+
+    /// not yet doxumented
     virtual ~ResultTestManager();
 
     /// add field specific result test object
