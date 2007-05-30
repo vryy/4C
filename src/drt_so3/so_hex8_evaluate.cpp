@@ -297,29 +297,42 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
   }
   
   /*
-  ** EAS Technology: intialize, set up, and alpha history
+  ** EAS Technology: declare, intialize, set up, and alpha history -------- EAS
   */
+  // in any case declare variables, sizes etc. only in eascase  
+  Epetra_SerialDenseMatrix* alpha;  // EAS alphas
+  Epetra_SerialDenseMatrix* M_GP;   // EAS matrix M at all GPs
+  Epetra_SerialDenseMatrix M;       // EAS matrix M at current GP
+  Epetra_SerialDenseVector feas;    // EAS portion of internal forces
+  Epetra_SerialDenseMatrix Kaa;     // EAS matrix Kaa
+  Epetra_SerialDenseMatrix Kda;     // EAS matrix Kda
+  double detJ0;                     // detJ(origin)
+  Epetra_SerialDenseMatrix T0invT;  // trafo matrix
   if (eastype_ != soh8_easnone) {
     // get stored EAS alphas (history variables)
-    Epetra_SerialDenseMatrix* oldalpha;
-    oldalpha = easdata_.Get<Epetra_SerialDenseMatrix>("alpha");
-    // EAS matrix M defining interpolation of enhanced strains alpha, evaluated at GPs
-    Epetra_SerialDenseMatrix* M_GP; //(NUMSTR_SOH8*NUMGPT_SOH8,neas_);
+    alpha = easdata_.Get<Epetra_SerialDenseMatrix>("alpha");
+    
     // EAS portion of internal forces, also called enhacement vector s or Rtilde
-    Epetra_SerialDenseVector feas(neas_);
+    feas.Size(neas_);
+    
     // EAS matrix K_{alpha alpha}, also called Dtilde
-    Epetra_SerialDenseMatrix Kaa(neas_,neas_);
+    Kaa.Shape(neas_,neas_);
+    
     // EAS matrix K_{d alpha}
-    Epetra_SerialDenseMatrix Kda(neas_,NUMDOF_SOH8);
-    // determinant of Jacobi matrix at element origin (r=s=t=0.0)
-    double detJ0;
+    Kda.Shape(neas_,NUMDOF_SOH8);
+    
     // transformation matrix T0, maps M-matrix evaluated at origin
     // between local element coords and global coords
     // here we already get the inverse transposed T0
-    Epetra_SerialDenseMatrix T0invT(NUMSTR_SOH8,NUMSTR_SOH8);
-    // evaluation of variables (which are constant for the following)
+    T0invT.Shape(NUMSTR_SOH8,NUMSTR_SOH8);
+    
+    /* evaluation of EAS variables (which are constant for the following):
+    ** - M defining interpolation of enhanced strains alpha, evaluated at GPs
+    ** - determinant of Jacobi matrix at element origin (r=s=t=0.0)
+    ** - T0^{-T}
+    */
     soh8_eassetup(&M_GP,detJ0,T0invT,xrefe);
-  }
+  } // -------------------------------------------------------------------- EAS
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -380,6 +393,26 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     glstrain(3) = cauchygreen(0,1);
     glstrain(4) = cauchygreen(1,2);
     glstrain(5) = cauchygreen(2,0);
+    
+    // EAS technology: "enhance the strains"  ----------------------------- EAS
+    if (eastype_ != soh8_easnone) {
+      // get EAS matrix M at current gausspoint gp
+      M.Shape(NUMSTR_SOH8,neas_);
+      for (int m=0; m<NUMSTR_SOH8; ++m) {
+        for (int n=0; n<neas_; ++n) {
+          M(m,n)=(*M_GP)(NUMSTR_SOH8*gp+m,n);
+        }
+      }
+      // map local M to global, also enhancement is refered to element origin
+      // M = detJ0/detJ T0^{-T} . M
+      M.Multiply('N','N',detJ0/detJ,T0invT,M,1.0);
+      // enhanced strains = M . alpha
+      Epetra_SerialDenseVector enh_strain(NUMSTR_SOH8);
+      enh_strain.Multiply('N','N',1.0,M,alpha,1.0);
+      // add to GL strains to "unlock" element
+      glstrain += enh_strain;
+    } // ------------------------------------------------------------------ EAS
+    
 
     /* non-linear B-operator (may so be called, meaning
     ** of B-operator is not so sharp in the non-linear realm) *
@@ -441,7 +474,7 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     // integrate `elastic' and `initial-displacement' stiffness matrix
     // keu = keu + (B^T . C . B) * detJ * w(gp)
     Epetra_SerialDenseMatrix cb(NUMSTR_SOH8,NUMDOF_SOH8);
-    cb.Multiply('N','N',1.0,cmat,bop,1.0);          // C . B
+    cb.Multiply('N','N',1.0,cmat,bop,1.0);          // temporary C . B
     (*stiffmatrix).Multiply('T','N',detJ * (*weights)(gp),bop,cb,1.0);
 
     // intergrate `geometric' stiffness matrix and add to keu *****************
@@ -461,6 +494,21 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
         (*stiffmatrix)(NUMDIM_SOH8*inod+2,NUMDIM_SOH8*jnod+2) += bopstrbop;
       }
     } // end of intergrate `geometric' stiffness ******************************
+    
+    // EAS technology: integrate matrices --------------------------------- EAS
+    if (eastype_ != soh8_easnone) {
+      double integrationfactor = detJ * (*weights)(gp);
+      // integrate Kaa: Kaa += (M^T . cmat . M) * detJ * w(gp)
+      Epetra_SerialDenseMatrix cM(NUMSTR_SOH8,neas_); // temporary c . M
+      cM.Multiply('N','N',1.0,cmat,M,1.0);
+      Kaa.Multiply('T','N',integrationfactor,M,cM,1.0);
+      
+      // integrate Kda: Kda += (M^T . cmat . B) * detJ * w(gp)
+      Kda.Multiply('T','N',integrationfactor,M,cb,1.0);
+      
+      // integrate feas: feas += (M^T . sigma) * detJ *wp(gp)
+      feas.Multiply('T','N',integrationfactor,M,stress,1.0);
+    } // ------------------------------------------------------------------ EAS
 
     if (massmatrix != NULL){ // evaluate mass matrix +++++++++++++++++++++++++
       // integrate concistent mass matrix
@@ -477,6 +525,40 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
    /* =========================================================================*/
   }/* ==================================================== end of Loop over GP */
    /* =========================================================================*/
+  
+  // EAS technology: ------------------------------------------------------ EAS
+  // subtract EAS matrices from disp-based Kdd to "soften" element
+  if (eastype_ != soh8_easnone) {
+    // we need the inverse of Kaa
+    Epetra_SerialDenseSolver solve_for_inverseKaa;
+    solve_for_inverseKaa.SetMatrix(Kaa);
+    solve_for_inverseKaa.Invert();
+    
+    Epetra_SerialDenseMatrix KdaKaa(NUMDOF_SOH8,neas_); // temporary Kda.Kaa^{-1}
+    KdaKaa.Multiply('T','N',1.0,Kda,Kaa,1.0);
+    
+    // EAS-stiffness matrix is: Kdd - Kda^T . Kaa^-1 . Kda
+    (*stiffmatrix).Multiply('N','N',-1.0,KdaKaa,Kda,1.0);
+    
+    // EAS-internal force is: fint - Kda^T . Kaa^-1 . feas
+    (*force).Multiply('N','N',-1.0,KdaKaa,feas,1.0);
+    
+    // evaluate new alpha in the following
+    Epetra_SerialDenseMatrix alphanew(neas_);
+    // first we need delta_d
+    Epetra_SerialDenseVector delta_d(NUMDOF_SOH8);
+    for (int i=0; i<NUMDOF_SOH8; ++i) delta_d(i) = disp[i] - residual[i];
+    // add Kda . delta_d to feas
+    feas.Multiply('N','N',1.0,Kda,delta_d,1.0);
+    // new alpha is: - Kaa^-1 . (feas + Kda . delta_d), here: - Kaa^-1 . feas
+    alphanew.Multiply('N','N',-1.0,Kaa,feas,1.0);
+    
+    // update EAS alphas
+    easdata_.Add("alpha",alphanew);
+  } // -------------------------------------------------------------------- EAS
+    
+     
+    
   
   return;
 } // DRT::Elements::Shell8::s8_nlnstiffmass
