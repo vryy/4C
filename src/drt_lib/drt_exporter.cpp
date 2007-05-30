@@ -27,7 +27,7 @@ numproc_(comm.NumProc())
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-DRT::Exporter::Exporter(const Epetra_Map& frommap,const Epetra_Map& tomap, 
+DRT::Exporter::Exporter(const Epetra_Map& frommap,const Epetra_Map& tomap,
                         const Epetra_Comm& comm) :
 dummymap_(0,0,comm),
 frommap_(frommap),
@@ -69,11 +69,11 @@ DRT::Exporter::~Exporter()
 /*----------------------------------------------------------------------*
  |  do a send of data (public)                               mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Exporter::ISend(const int frompid, 
-                          const int topid, 
-                          const char* data, 
+void DRT::Exporter::ISend(const int frompid,
+                          const int topid,
+                          const char* data,
                           const int dsize,
-                          const int tag, 
+                          const int tag,
                           MPI_Request& request)
 {
   if (MyPID()!=frompid) return;
@@ -82,17 +82,17 @@ void DRT::Exporter::ISend(const int frompid,
   MPI_Isend((void*)data,dsize,MPI_CHAR,topid,tag,comm->Comm(),&request);
   return;
 }
-#endif  
+#endif
 
 #ifdef PARALLEL
 /*----------------------------------------------------------------------*
  |  do a send of data (public)                               mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Exporter::ISend(const int frompid, 
-                          const int topid, 
-                          const int* data, 
+void DRT::Exporter::ISend(const int frompid,
+                          const int topid,
+                          const int* data,
                           const int dsize,
-                          const int tag, 
+                          const int tag,
                           MPI_Request& request)
 {
   if (MyPID()!=frompid) return;
@@ -101,17 +101,17 @@ void DRT::Exporter::ISend(const int frompid,
   MPI_Isend((void*)data,dsize,MPI_INT,topid,tag,comm->Comm(),&request);
   return;
 }
-#endif  
+#endif
 
 #ifdef PARALLEL
 /*----------------------------------------------------------------------*
  |  do a send of data (public)                               mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Exporter::ISend(const int frompid, 
-                          const int topid, 
-                          const double* data, 
+void DRT::Exporter::ISend(const int frompid,
+                          const int topid,
+                          const double* data,
                           const int dsize,
-                          const int tag, 
+                          const int tag,
                           MPI_Request& request)
 {
   if (MyPID()!=frompid) return;
@@ -120,13 +120,13 @@ void DRT::Exporter::ISend(const int frompid,
   MPI_Isend((void*)data,dsize,MPI_DOUBLE,topid,tag,comm->Comm(),&request);
   return;
 }
-#endif  
+#endif
 
 #ifdef PARALLEL
 /*----------------------------------------------------------------------*
  |  receive anything (public)                                mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Exporter::ReceiveAny(int& source, int&tag, 
+void DRT::Exporter::ReceiveAny(int& source, int&tag,
                                vector<char>& recvbuff,int& length)
 {
   const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
@@ -143,13 +143,13 @@ void DRT::Exporter::ReceiveAny(int& source, int&tag,
   MPI_Recv(&recvbuff[0],length,MPI_CHAR,source,tag,comm->Comm(),&status);
   return;
 }
-#endif  
+#endif
 
 #ifdef PARALLEL
 /*----------------------------------------------------------------------*
  |  receive anything (public)                                mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Exporter::ReceiveAny(int& source, int& tag, 
+void DRT::Exporter::ReceiveAny(int& source, int& tag,
                                vector<int>& recvbuff,int& length)
 {
   const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
@@ -166,13 +166,13 @@ void DRT::Exporter::ReceiveAny(int& source, int& tag,
   MPI_Recv(&recvbuff[0],length,MPI_INT,source,tag,comm->Comm(),&status);
   return;
 }
-#endif  
+#endif
 
 #ifdef PARALLEL
 /*----------------------------------------------------------------------*
  |  receive specific (public)                                mwgee 03/07|
  *----------------------------------------------------------------------*/
-void DRT::Exporter::Receive(const int source,const int tag, 
+void DRT::Exporter::Receive(const int source,const int tag,
                             vector<int>& recvbuff,int& length)
 {
   const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
@@ -186,13 +186,13 @@ void DRT::Exporter::Receive(const int source,const int tag,
   MPI_Recv(&recvbuff[0],length,MPI_INT,source,tag,comm->Comm(),&status);
   return;
 }
-#endif  
+#endif
 
 #ifdef PARALLEL
 /*----------------------------------------------------------------------*
  |  receive anything (public)                                mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Exporter::ReceiveAny(int& source, int&tag, 
+void DRT::Exporter::ReceiveAny(int& source, int&tag,
                                vector<double>& recvbuff,int& length)
 {
   const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
@@ -209,14 +209,14 @@ void DRT::Exporter::ReceiveAny(int& source, int&tag,
   MPI_Recv(&recvbuff[0],length,MPI_DOUBLE,source,tag,comm->Comm(),&status);
   return;
 }
-#endif  
+#endif
 
 /*----------------------------------------------------------------------*
  |  the acrual exporter constructor (private)                mwgee 05/07|
  *----------------------------------------------------------------------*/
 void DRT::Exporter::ConstructExporter()
 {
-  if (SourceMap().PointSameAs(TargetMap())) return;
+  if (SourceMap().SameAs(TargetMap())) return;
 
   // allocate a sendplan array and init to zero
   // SendPlan():
@@ -224,31 +224,31 @@ void DRT::Exporter::ConstructExporter()
   // SendPlan()(lid,proc)    = 0 otherwise
   // SendPlan()(lid,MyPID()) = 0 always! (I never send to myself)
   SendPlan().Shape(SourceMap().NumMyElements(),NumProc());
-  
+
   // allocate a receive plan
   // RecvPlan():
   // RecvPlan()(lid,proc) = 1 data with local id lid will be received from proc
   // RecvPlan()(lid,proc) = 0 otherwise
   // RecvPlan()(lid,MyPID()) = 0 always! (I never receive from myself)
   RecvPlan().Shape(TargetMap().NumMyElements(),NumProc());
-  
+
   // allocate a send buffer for ParObject packs
   SendBuff().resize(SourceMap().NumMyElements());
   SendSize().resize(SourceMap().NumMyElements());
   for (int i=0; i<(int)SendSize().size(); ++i) SendSize()[i] = 0;
-  
+
   // To build these plans, everybody has to communicate what he has and wants:
   // bundle this info to save on communication:
   int sizes[2];
-  sizes[0] = SourceMap().NumMyElements(); 
-  sizes[1] = TargetMap().NumMyElements(); 
+  sizes[0] = SourceMap().NumMyElements();
+  sizes[1] = TargetMap().NumMyElements();
   const int sendsize = sizes[0]+sizes[1];
   vector<int> sendbuff(sendsize);
   for (int i=0; i<sizes[0]; ++i)
-    sendbuff[i] = SourceMap().MyGlobalElements()[i]; 
+    sendbuff[i] = SourceMap().MyGlobalElements()[i];
   for (int i=0; i<sizes[1]; ++i)
-    sendbuff[i+sizes[0]] = TargetMap().MyGlobalElements()[i]; 
-  
+    sendbuff[i+sizes[0]] = TargetMap().MyGlobalElements()[i];
+
   for (int proc=0; proc<NumProc(); ++proc)
   {
     int recvsizes[2];
@@ -257,12 +257,12 @@ void DRT::Exporter::ConstructExporter()
     Comm().Broadcast(recvsizes,2,proc);
     const int recvsize = recvsizes[0]+recvsizes[1];
     vector<int> recvbuff(recvsize);
-    if (proc==MyPID()) 
+    if (proc==MyPID())
       for (int i=0; i<recvsize; ++i) recvbuff[i] = sendbuff[i];
     Comm().Broadcast(&recvbuff[0],recvsize,proc);
     const int* have = &recvbuff[0];            // this is what proc has
     const int* want = &recvbuff[recvsizes[0]]; // this is what proc needs
-    
+
     // Loop what proc has and what I need (RecvPlan)
     // (I do not receive from myself)
     if (proc != MyPID())
@@ -275,7 +275,7 @@ void DRT::Exporter::ConstructExporter()
           RecvPlan()(lid,proc) = 1;
         }
       }
-    
+
     // Loop what proc wants and what I have (SendPlan)
     if (proc != MyPID())
       for (int i=0; i<recvsizes[1]; ++i)
@@ -301,8 +301,8 @@ void DRT::Exporter::ConstructExporter()
       for (int i=0; i<RecvPlan().M(); ++i)
         for (int j=0; j<RecvPlan().N(); ++j)
           if (RecvPlan()(i,j))
-            cout << "Proc " << MyPID() << " wants gid " 
-                 << TargetMap().MyGlobalElements()[i] 
+            cout << "Proc " << MyPID() << " wants gid "
+                 << TargetMap().MyGlobalElements()[i]
                  << " from proc " << j << endl;
     }
     fflush(stdout);
@@ -317,14 +317,14 @@ void DRT::Exporter::ConstructExporter()
       for (int i=0; i<SendPlan().M(); ++i)
         for (int j=0; j<SendPlan().N(); ++j)
           if (SendPlan()(i,j))
-          cout << "Proc " << MyPID() << " sends gid " 
+          cout << "Proc " << MyPID() << " sends gid "
                << SourceMap().MyGlobalElements()[i]
                << " to proc " << j << endl;
     }
     fflush(stdout);
     Comm().Barrier();
   }
-#endif  
+#endif
 
   return;
 }

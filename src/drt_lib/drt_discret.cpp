@@ -426,6 +426,9 @@ void DRT::Discretization::SetState(const string& name,RefCountPtr<const Epetra_V
   const Epetra_BlockMap& vecmap = state->Map();
 
   // if it's already in column map just set a reference
+  // This is a rought test, but it might be ok at this place. It is an
+  // error anyway to hand in a vector that is not related to our dof
+  // maps.
   if (vecmap.PointSameAs(*colmap))
     state_[name] = state;
   // if it's not in column map export and allocate

@@ -380,12 +380,12 @@ void LINALG::ApplyDirichlettoSystem(RefCountPtr<Epetra_CrsMatrix>&   A,
   const Epetra_Map& rowmap = A->RowMap();
 #ifdef DEBUG
   if (x != null)
-    if (!rowmap.PointSameAs(x->Map())) dserror("x does not match A");
+    if (!rowmap.SameAs(x->Map())) dserror("x does not match A");
   if (b != null)
-    if (!rowmap.PointSameAs(b->Map())) dserror("b does not match A");
+    if (!rowmap.SameAs(b->Map())) dserror("b does not match A");
   if (dbcval != null)
-    if (!rowmap.PointSameAs(dbcval->Map())) dserror("dbcval does not match A");
-  if (!rowmap.PointSameAs(dbctoggle->Map())) dserror("dbctoggle does not match A");
+    if (!rowmap.SameAs(dbcval->Map())) dserror("dbcval does not match A");
+  if (!rowmap.SameAs(dbctoggle->Map())) dserror("dbctoggle does not match A");
   if (A->Filled()!=true) dserror("FillComplete was not called on A");
 #endif
 

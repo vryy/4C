@@ -74,17 +74,17 @@ public:
 
   /*!
   \brief Standard Constructor
-  
+
   this ctor constructs an exporter with no maps. It can than be used to do
   point-to-point communication only, map based exportes are not possible!
-  
+
   \param comm    (in): Communicator that shall be used in exports
   */
   Exporter(const Epetra_Comm& comm);
 
   /*!
   \brief Standard Constructor
-  
+
   \param frommap (in): The source map data shall be exported from
   \param tomap   (in): The target map data shall be exported to
   \param comm    (in): Communicator that shall be used in exports
@@ -110,7 +110,7 @@ public:
   \brief Get communicator
   */
   inline const Epetra_Comm& Comm() const { return comm_; }
-  
+
   /*!
   \brief Get source map
   */
@@ -127,9 +127,9 @@ public:
 
   /*!
   \brief Communicate a map of objects that implement ParObject
-  
+
   This method takes a map of objects and redistributes them according to
-  the send and receive plans. It is implicitly assumed, that the key in 
+  the send and receive plans. It is implicitly assumed, that the key in
   the map of objects pointwise matches SourceMap(). It is also assumed
   (and tested), that type T implements the ParObject class.
 
@@ -143,13 +143,13 @@ public:
 
   /*!
   \brief Communicate a map of vectors of some basic data type T
-  
+
   This method takes a map of vectors and redistributes them according to
-  the send and receive plans. It is implicitly assumed, that the key in 
+  the send and receive plans. It is implicitly assumed, that the key in
   the map of vectors pointwise matches SourceMap().
-  
+
   \note T can be int, double or char. The method will not compile will other
-        then these basic data types (and will give a rater kryptic error message)           
+        then these basic data types (and will give a rater kryptic error message)
 
   \param data (in/out): A map of vectors<T>. On input, the map
                         has a distribution matching SourceMap().
@@ -163,7 +163,7 @@ public:
 #ifdef PARALLEL
   /*!
   \brief Send data from one processor to another (nonblocking)
-  
+
   The method will send an array of chars in a nonblocking way meaning that this method
   will return immediately on the calling processor - even if communcation has not
   finished yet. The char array must not be altered or destroyed as long as the
@@ -172,7 +172,7 @@ public:
   The receiving processor should call DRT::Exporter::ReceiveAny to receive the message.
   Note that messages from one explicit proc to another explicit proc are non-overtaking meaning
   they will arrive in the order they have been sent.
-  
+
   \note This is an individual call.
 
   \param frompid (in)  : sending processors' pid
@@ -186,12 +186,12 @@ public:
 
   \note This is an individual call
   */
-  void ISend(const int frompid, const int topid, const char* data, 
+  void ISend(const int frompid, const int topid, const char* data,
             const int dsize, const int tag, MPI_Request& request);
 
   /*!
   \brief Send data from one processor to another (nonblocking)
-  
+
   The method will send an array of ints in a nonblocking way meaning that this method
   will return immediately on the calling processor - even if communcation has not
   finished yet. The int array must not be altered or destroyed as long as the
@@ -200,7 +200,7 @@ public:
   The receiving processor should call DRT::Exporter::ReceiveAny to receive the message.
   Note that messages from one explicit proc to another explicit proc are non-overtaking meaning
   they will arrive in the order they have been sent.
-  
+
   \note This is an individual call.
 
   \param frompid (in)  : sending processors' pid
@@ -214,12 +214,12 @@ public:
 
   \note This is an individual call
   */
-  void ISend(const int frompid, const int topid, const int* data, 
+  void ISend(const int frompid, const int topid, const int* data,
             const int dsize, const int tag, MPI_Request& request);
 
   /*!
   \brief Send data from one processor to another (nonblocking)
-  
+
   The method will send an array of doubles in a nonblocking way meaning that this method
   will return immediately on the calling processor - even if communcation has not
   finished yet. The double array must not be altered or destroyed as long as the
@@ -228,7 +228,7 @@ public:
   The receiving processor should call DRT::Exporter::ReceiveAny to receive the message.
   Note that messages from one explicit proc to another explicit proc are non-overtaking meaning
   they will arrive in the order they have been sent.
-  
+
   \note This is an individual call.
 
   \param frompid (in)  : sending processors' pid
@@ -242,54 +242,54 @@ public:
 
   \note This is an individual call
   */
-  void ISend(const int frompid, const int topid, const double* data, 
+  void ISend(const int frompid, const int topid, const double* data,
             const int dsize, const int tag, MPI_Request& request);
 
   /*!
   \brief Receive anything joker (blocking)
-  
+
   This method receives an MPI_CHAR string message from any source proc with
-  any message tag of any length. It simply takes the first message that's 
-  coming in no matter from which sender of with which tag. 
+  any message tag of any length. It simply takes the first message that's
+  coming in no matter from which sender of with which tag.
   recvbuff is resized to fit received message.
   the method is blocking for the calling (receiving) proc but for none of the
   other processors.
-  It is used together with ISend and Wait to do nonblocking chaotic 
+  It is used together with ISend and Wait to do nonblocking chaotic
   point to point communication.
-  
+
   \note This is an individual call.
-  
+
   \warning There is absolutely no guarantee about the order messages are
            received with this method except for one: Messages from the SAME sender
            to the SAME receiver will not overtake each other (which is not a really strong
            statement).
-  
+
   \param source (output): source the message came from
   \param tag (output): message tag of message received
   \param recvbuff (output): buffer containing received data
   \param length (output): length of message upon receive
   */
   void ReceiveAny(int& source, int& tag, vector<char>& recvbuff, int& length);
-  
+
   /*!
   \brief Receive anything joker (blocking)
-  
+
   This method receives an MPI_INT message from any source proc with
-  any message tag of any length. It simply takes the first message that's 
-  coming in no matter from which sender of with which tag. 
+  any message tag of any length. It simply takes the first message that's
+  coming in no matter from which sender of with which tag.
   recvbuff is resized to fit received message.
   the method is blocking for the calling (receiving) proc but for none of the
   other processors.
-  It is used together with ISend and Wait to do nonblocking chaotic 
+  It is used together with ISend and Wait to do nonblocking chaotic
   point to point communication.
-  
+
   \note This is an individual call.
-  
+
   \warning There is absolutely no guarantee about the order messages are
            received with this method except for one: Messages from the SAME sender
            to the SAME receiver will not overtake each other (which is not a really strong
            statement).
-  
+
   \param source (output): source the message came from
   \param tag (output): message tag of message received
   \param recvbuff (output): buffer containing received data
@@ -300,23 +300,23 @@ public:
 
   /*!
   \brief Receive anything joker (blocking)
-  
+
   This method receives an MPI_DOUBLE message from any source proc with
-  any message tag of any length. It simply takes the first message that's 
-  coming in no matter from which sender of with which tag. 
+  any message tag of any length. It simply takes the first message that's
+  coming in no matter from which sender of with which tag.
   recvbuff is resized to fit received message.
   the method is blocking for the calling (receiving) proc but for none of the
   other processors.
-  It is used together with ISend and Wait to do nonblocking chaotic 
+  It is used together with ISend and Wait to do nonblocking chaotic
   point to point communication.
-  
+
   \note This is an individual call.
-  
+
   \warning There is absolutely no guarantee about the order messages are
            received with this method except for one: Messages from the SAME sender
            to the SAME receiver will not overtake each other (which is not a really strong
            statement).
-  
+
   \param source (output): source the message came from
   \param tag (output): message tag of message received
   \param recvbuff (output): buffer containing received data
@@ -326,19 +326,19 @@ public:
 
   /*!
   \brief wait for nonblocking send to finish
-  
+
   The method is used together with Isend and ReceiveAny to guarantee finalization
   of a communication. It is an individual call done by the sending processor to guarantee
   that message was taken from the sendbuffer before destroying the sendbuffer.
   This method is blocking and will return one communication associated with request has
   left the sender.
-  
+
   \param request (in): mpi request handle
-  
+
   */
   void Wait(MPI_Request& request) { MPI_Status status; MPI_Wait(&request,&status); return;}
 
-            
+
 #endif
 
   //@}
@@ -349,7 +349,7 @@ private:
   \brief Do initialization of the exporter
   */
   void ConstructExporter();
-  
+
   /*!
   \brief Get PID
   */
@@ -381,29 +381,29 @@ private:
 
 
 private:
-  
+
   //! dummy map in case of empty exporter
   Epetra_Map               dummymap_;
   //! source layout
-  const Epetra_Map&        frommap_;   
-  //! target map 
-  const Epetra_Map&        tomap_;     
+  const Epetra_Map&        frommap_;
+  //! target map
+  const Epetra_Map&        tomap_;
   //! communicator
-  const Epetra_Comm&       comm_;      
+  const Epetra_Comm&       comm_;
   //! PID
-  int                      myrank_;    
+  int                      myrank_;
   //! no. of processors
-  int                      numproc_;   
+  int                      numproc_;
   //! sending information
-  Epetra_SerialDenseMatrix sendplan_;  
+  Epetra_SerialDenseMatrix sendplan_;
   //! receiving information
-  Epetra_SerialDenseMatrix recvplan_;  
+  Epetra_SerialDenseMatrix recvplan_;
   //! a sendbuffer
-  vector<vector<char> >    sendbuff_;  
+  vector<vector<char> >    sendbuff_;
   //! sendsize_[i] is length of vector sendbuff_[i]
-  vector<int>              sendsize_;  
-  
-  
+  vector<int>              sendsize_;
+
+
 }; // class Exporter
 } // namespace DRT
 
@@ -415,7 +415,8 @@ private:
 template<typename T> void DRT::Exporter::Export(
                                      map<int,RefCountPtr<T> >& parobjects)
 {
-  if (SourceMap().PointSameAs(TargetMap())) return;
+  if (SendPlan().N()==0) return;
+  //if (SourceMap().SameAs(TargetMap())) return;
 
   // test whether type T implements ParObject
   {
@@ -427,7 +428,7 @@ template<typename T> void DRT::Exporter::Export(
       if (!tester) dserror("typename T in template does not implement class ParObject (dynamic_cast failed)");
     }
   }
-  
+
 
 #ifdef PARALLEL
   // allocate requests for unknown number of sends
@@ -445,8 +446,8 @@ template<typename T> void DRT::Exporter::Export(
     if (tproc>NumProc()-1) tproc -= NumProc();
     if (sproc>NumProc()-1) sproc -= NumProc();
     //cout << "Proc " << MyPID() << " tproc " << tproc << " sproc " << sproc << endl;
-    //fflush(stdout); 
-    
+    //fflush(stdout);
+
     //------------------------------------------------ do sending to tproc
     // count how many objects will actually be send to tproc
     int nsend=0;
@@ -459,12 +460,12 @@ template<typename T> void DRT::Exporter::Export(
       if (curr==parobjects.end()) continue;
       nsend++;
     }
-    
+
     // send tproc no. of messages tproc must receive
     vector<int> snmessages(1);
     snmessages[0] = nsend;
     ISend(MyPID(),tproc,&snmessages[0],1,1,sizerequest);
-    
+
     // do the sending of the objects
     for (int i=0; i<SourceMap().NumMyElements(); ++i)
     {
@@ -479,10 +480,10 @@ template<typename T> void DRT::Exporter::Export(
       SendSize()[lid] = SendBuff()[lid].size();
       if (countsend>=(int)request.size()) request.resize(request.size()+500);
       ISend(MyPID(),tproc,&SendBuff()[lid][0],SendSize()[lid],gid,request[countsend]);
-      ++countsend; 
+      ++countsend;
     }
     if (countsend!=nsend) dserror("No. of send messages wrong");
-    
+
     //---------------------------------------- do the receiving from sproc
     // receive how many messages I will receive from sproc
     vector<int> rnmessages(1);
@@ -493,7 +494,7 @@ template<typename T> void DRT::Exporter::Export(
     Receive(source,tag,rnmessages,length);
     if (length!=1) dserror("Messages got mixed up");
     int nrecv = rnmessages[0];
-    
+
     // receive the objects
     vector<char> recvbuff(500);
     for (int i=0; i<nrecv; ++i)
@@ -518,9 +519,9 @@ template<typename T> void DRT::Exporter::Export(
       parobjects[gid] = refptr;
     }
 
-    //----------------------------------- do waiting for messages to tproc to leave    
+    //----------------------------------- do waiting for messages to tproc to leave
     Wait(sizerequest);
-    for (int i=0; i<countsend; ++i) 
+    for (int i=0; i<countsend; ++i)
     {
       Wait(request[i]);
     }
@@ -529,7 +530,7 @@ template<typename T> void DRT::Exporter::Export(
       SendBuff()[i].clear();
       SendSize()[i] = 0;
     }
-    
+
     // make sure we do not get mixed up messages as we use wild card receives here
     Comm().Barrier();
   } // for (int i=0; i<NumProc()-1; ++i)
@@ -544,7 +545,7 @@ template<typename T> void DRT::Exporter::Export(
   for (fool=newmap.begin(); fool != newmap.end(); ++fool)
     parobjects[fool->first] = fool->second;
 
-#endif  
+#endif
   return;
 }
 
@@ -555,7 +556,8 @@ template<typename T> void DRT::Exporter::Export(
 template<typename T> void DRT::Exporter::Export(
                                      map<int,RefCountPtr<T> >& parobjects)
 {
-  if (SourceMap().PointSameAs(TargetMap())) return;
+  if (SendPlan().N()==0) return;
+  //if (SourceMap().SameAs(TargetMap())) return;
 
   // test whether type T implements ParObject
   {
@@ -567,20 +569,20 @@ template<typename T> void DRT::Exporter::Export(
       if (!tester) dserror("typename T in template does not implement class ParObject (dynamic_cast failed)");
     }
   }
-  
+
 
 #ifdef PARALLEL
   // allocate requests for unknown number of sends
   vector<MPI_Request> request(200);
   int nsend=0;
-  
+
   //-------------------------------------------------------- do the sending
   for (int i=0; i<SourceMap().NumMyElements(); ++i)
   {
     // get the global id
     const int gid = SourceMap().MyGlobalElements()[i];
     const int lid = i;
-    // check whether there will be any send to do at all 
+    // check whether there will be any send to do at all
     bool issend = false;
     for (int j=0; j<NumProc(); ++j)
       if (MyPID() != j)
@@ -590,8 +592,8 @@ template<typename T> void DRT::Exporter::Export(
           break;
         }
     if (!issend) continue;
-    
-    
+
+
     // get the object to send
     typename map<int,RefCountPtr<T> >::iterator curr = parobjects.find(gid);
     if (curr==parobjects.end()) dserror("Cannot find object with gid %d",gid);
@@ -603,13 +605,13 @@ template<typename T> void DRT::Exporter::Export(
     for (int j=0; j<NumProc(); ++j)
       if (j != MyPID() && SendPlan()(lid,j)==1)
       {
-        if (nsend>=(int)request.size()) 
+        if (nsend>=(int)request.size())
           request.resize(request.size()+200);
         ISend(MyPID(),j,&SendBuff()[lid][0],SendSize()[lid],gid,request[nsend]);
         ++nsend;
       }
   }
-  
+
   //-------------------------------------------------------- do receiving
   // count how many receives I want to do
   int nrecv=0;
@@ -632,7 +634,7 @@ template<typename T> void DRT::Exporter::Export(
     // This can happen if I've received it before from someone else
     // In this case, do nothing (keep what I have)
     typename map<int,RefCountPtr<T> >::iterator curr = parobjects.find(gid);
-    if (curr != parobjects.end()) 
+    if (curr != parobjects.end())
       continue;
     // Create an empty object and unpack
     DRT::ParObject* object = DRT::Utils::Factory(recvbuff);
@@ -644,7 +646,7 @@ template<typename T> void DRT::Exporter::Export(
   }
 
   //--------- loop map and kick out everything that's not in TargetMap()
-  // (this is done strangely here because of a mysterious bug when 
+  // (this is done strangely here because of a mysterious bug when
   //  deleting from the parobjects map)
   map<int,RefCountPtr<T> > newmap;
   typename map<int,RefCountPtr<T> >::iterator fool;
@@ -664,7 +666,7 @@ template<typename T> void DRT::Exporter::Export(
     SendBuff()[i].clear();
     SendSize()[i] = 0;
   }
-#endif  
+#endif
   return;
 }
 #endif // old version!
@@ -676,7 +678,8 @@ template<typename T> void DRT::Exporter::Export(
  *----------------------------------------------------------------------*/
 template<typename T> void DRT::Exporter::Export(map<int,vector<T> >& data)
 {
-  if (SourceMap().PointSameAs(TargetMap())) return;
+  if (SendPlan().N()==0) return;
+  //if (SourceMap().SameAs(TargetMap())) return;
 #ifdef PARALLEL
   // allocate requests for unknown number of sends
   vector<MPI_Request> request(100);
@@ -696,7 +699,7 @@ template<typename T> void DRT::Exporter::Export(map<int,vector<T> >& data)
     if (sproc<0) sproc += NumProc();
     if (tproc>NumProc()-1) tproc -= NumProc();
     if (sproc>NumProc()-1) sproc -= NumProc();
-  
+
     //------------------------------------------------ do sending to tproc
     // count how many objects will actually be send to tproc
     int nsend=0;
@@ -709,7 +712,7 @@ template<typename T> void DRT::Exporter::Export(map<int,vector<T> >& data)
       if (curr==data.end()) continue;
       nsend++;
     }
-    
+
     // send tproc no. of messages tproc must receive
     vector<int> snmessages(1);
     snmessages[0] = nsend;
@@ -728,10 +731,10 @@ template<typename T> void DRT::Exporter::Export(map<int,vector<T> >& data)
       SendSize()[lid] = (int)actobject.size();
       if (countsend>=(int)request.size()) request.resize(request.size()+500);
       ISend(MyPID(),tproc,sendbuff[lid],SendSize()[lid],gid,request[countsend]);
-      ++countsend; 
+      ++countsend;
     }
     if (countsend!=nsend) dserror("No. of send messages wrong");
-  
+
     //---------------------------------------- do the receiving from sproc
     // receive how many messages I will receive from sproc
     vector<int> rnmessages(1);
@@ -760,10 +763,10 @@ template<typename T> void DRT::Exporter::Export(map<int,vector<T> >& data)
       if (curr != data.end()) continue;
       data[gid] = recvbuff;
     }
-  
-    //----------------------------------- do waiting for messages to tproc to leave    
+
+    //----------------------------------- do waiting for messages to tproc to leave
     Wait(sizerequest);
-    for (int i=0; i<countsend; ++i) 
+    for (int i=0; i<countsend; ++i)
       Wait(request[i]);
 
     // make sure we do not get mixed up messages as we use wild card receives here
@@ -771,7 +774,7 @@ template<typename T> void DRT::Exporter::Export(map<int,vector<T> >& data)
   } // for (int i=0; i<NumProc()-1; ++i)
 
   //--------- loop map and kick out everything that's not in TargetMap()
-  // (this is done strangely here because of a mysterious bug when 
+  // (this is done strangely here because of a mysterious bug when
   //  deleting from the parobjects map)
   map<int,vector<T> > newmap;
   typename map<int,vector<T> >::iterator fool;
@@ -782,7 +785,7 @@ template<typename T> void DRT::Exporter::Export(map<int,vector<T> >& data)
   for (fool=newmap.begin(); fool != newmap.end(); ++fool)
     data[fool->first] = fool->second;
 
-#endif  
+#endif
   return;
 }
 
@@ -796,19 +799,20 @@ template<typename T> void DRT::Exporter::Export(map<int,vector<T> >& data)
   // allocate requests for unknown number of sends
   vector<MPI_Request> request(200);
   int nsend=0;
-  
-  if (SourceMap().PointSameAs(TargetMap())) return;
-  
+
+  if (SendPlan().N()==0) return;
+  //if (SourceMap().SameAs(TargetMap())) return;
+
   // allocate a sendbuffer
   vector<T*> sendbuff(SourceMap().NumMyElements());
-  
+
   //-------------------------------------------------------- do the sending
   for (int i=0; i<SourceMap().NumMyElements(); ++i)
   {
     // get the global id
     const int gid = SourceMap().MyGlobalElements()[i];
     const int lid = i;
-    // check whether there will be any send to do at all 
+    // check whether there will be any send to do at all
     bool issend = false;
     for (int j=0; j<NumProc(); ++j)
       if (MyPID() != j)
@@ -818,8 +822,8 @@ template<typename T> void DRT::Exporter::Export(map<int,vector<T> >& data)
           break;
         }
     if (!issend) continue;
-    
-    
+
+
     // get the object to send
     typename map<int,vector<T> >::iterator curr = data.find(gid);
     if (curr==data.end()) dserror("Cannot find object with gid %d",gid);
@@ -831,14 +835,14 @@ template<typename T> void DRT::Exporter::Export(map<int,vector<T> >& data)
     for (int j=0; j<NumProc(); ++j)
       if (j != MyPID() && SendPlan()(lid,j)==1)
       {
-        if (nsend>=(int)request.size()) 
+        if (nsend>=(int)request.size())
           request.resize(request.size()+200);
         ISend(MyPID(),j,sendbuff[lid],SendSize()[lid],gid,request[nsend]);
         ++nsend;
       }
   }
-  
-  
+
+
   //-------------------------------------------------------- do receiving
   // count how many receives I want to do
   int nrecv=0;
@@ -860,14 +864,14 @@ template<typename T> void DRT::Exporter::Export(map<int,vector<T> >& data)
     // This can happen if I've received it before from someone else
     // In this case, do nothing (keep what I have)
     typename map<int,vector<T> >::iterator curr = data.find(gid);
-    if (curr != data.end()) 
+    if (curr != data.end())
       continue;
     data[gid].resize(length);
     for (int i=0; i<length; ++i) data[gid][i] = recvbuff[i];
   }
 
   //--------- loop map and kick out everything that's not in TargetMap()
-  // (this is done strangely here because of a mysterious bug when 
+  // (this is done strangely here because of a mysterious bug when
   //  deleting from the parobjects map)
   map<int,vector<T> > newmap;
   typename map<int,vector<T> >::iterator fool;
@@ -881,7 +885,7 @@ template<typename T> void DRT::Exporter::Export(map<int,vector<T> >& data)
   //---------------------------------------------------------- do waiting
   for (int i=0; i<nsend; ++i) Wait(request[i]);
 
-#endif  
+#endif
   return;
 }
 #endif

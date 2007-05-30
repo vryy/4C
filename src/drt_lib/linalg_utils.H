@@ -39,16 +39,16 @@ namespace LINALG
 {
   /*!
   \brief Create a new Epetra_CrsMatrix and return RefcountPtr to it
-  
+
   \param rowmap (in): row map of matrix
   \param npr (in): estimated number of entries per row.
                    (need not be exact, better should be too big rather then too small)
   */
   RefCountPtr<Epetra_CrsMatrix> CreateMatrix(const Epetra_Map& rowmap, const int npr);
-  
+
   /*!
   \brief Create a new Epetra_Vector and return RefcountPtr to it
-  
+
   \param rowmap (in): row map of vector
   \param init (in): initializa vector to zero upon construction
   */
@@ -56,13 +56,13 @@ namespace LINALG
 
   /*!
   \brief Export a vector to a different map
-  
+
   Values of source are copied to target where maps don't have to match.
   Prerequisite: Either the map of source OR the map of target has to be unique
                 (will be tested)
   \warning When source is overlapping (and therefore target is unique), values
-           in the overlapping region are inserted into the target on a first come 
-           first serve basis, meaning they should be equal in the source to 
+           in the overlapping region are inserted into the target on a first come
+           first serve basis, meaning they should be equal in the source to
            be deterministic
   \param source (in) : source vector values are taken from
   \param target (out): target vector values will be inserted in
@@ -71,15 +71,15 @@ namespace LINALG
 
   /*!
   \brief Invert a symmetric dim*dim square matrix
-  
+
   \param A (in/out): Matrix to be inverted
   \param dim (in) :  Dimension of matrix
   */
   void SymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim);
-  
+
   /*!
   \brief Invert a nonsymmetric dim*dim square matrix
-  
+
   \param A (in/out): Matrix to be inverted
   \param dim (in) :  Dimension of matrix
   */
@@ -87,35 +87,35 @@ namespace LINALG
 
   /*!
   \brief Assemble a Epetra_SerialDenseMatrix into a Epetra_CrsMatrix
-  
+
   This is an individual call. Matrix A is not completed upon return.
   Will only assemble locally and will never do any commmunication.
   All values that can not be assembled locally will be ignored.
   Will use the communicator and rowmap from matrix A to determine ownerships.
   Local matrix Aele has to be square.
-  
+
   \param A (out)   : Sparse matrix to be assembled on
   \param Aele (in) : dense matrix to be assembled
   \param lm (in) : vector with gids
   \param lmowner (in) : vector with owner procs of gids
   */
-  void Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix& Aele, 
+  void Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix& Aele,
                 const vector<int>& lm, const vector<int>& lmowner);
 
   /*!
   \brief Assemble a Epetra_SerialDenseVector into a Epetra_Vector
-  
+
   This is an individual call.
   Will only assemble locally and will never do any commmunication.
   All values that can not be assembled locally will be ignored.
   Will use the communicator from vector V to determine ownerships.
-  
+
   \param V (out)   : Sparse matrix to be assembled on
   \param Vele (in) : dense matrix to be assembled
   \param lm (in) : vector with gids
   \param lmowner (in) : vector with owner procs of gids
   */
-  void Assemble(Epetra_Vector& V, const Epetra_SerialDenseVector& Vele, 
+  void Assemble(Epetra_Vector& V, const Epetra_SerialDenseVector& Vele,
                 const vector<int>& lm, const vector<int>& lmowner);
 
 
@@ -126,14 +126,14 @@ namespace LINALG
 
   /*!
   \brief Add a (transposed) Epetra_CrsMatrix to another: B = B*scalarB + A(^T)*scalarA
-  
+
   Add one matrix to another. the matrix B to be added to must not be
   completed. Sparsity patterns of A and B need not match and A and B can be
   nonsymmetric in value and pattern.
   Range, Row and Domain maps of A(^T) and B have to match.
-  
+
   Note that this is a true parallel add, even in the transposed case!
-  
+
   \param A          (in)     : Matrix to add to B (must have Filled()==true)
   \param transposeA (in)     : flag indicating whether transposed of A should be used
   \param scalarA    (in)     : scaling factor for A
@@ -145,33 +145,33 @@ namespace LINALG
 
   /*!
   \brief Apply dirichlet boundary condition to a linear system of equations
-  
+
   Modifies a system of equations such that dirichlet boundary conditions are enforced.
   Prescribed dirichlet BC values are supplied in dbcval and dbctoggle, where
   a prescribed value is dbcval[i] and dbctoggle[i] = 1.0. No BC is enforced in
   all places where dbctoggle[i] != 1.0.<br>
-  Let us denote the \f$ A_{2 \times 2} \f$ blocks of \f$A\f$ by 
-  \f$A_{ff}, A_{fD}, A_{Df}, A_{DD}\f$, where \f$f\f$ stands for 'free' and 
+  Let us denote the \f$ A_{2 \times 2} \f$ blocks of \f$A\f$ by
+  \f$A_{ff}, A_{fD}, A_{Df}, A_{DD}\f$, where \f$f\f$ stands for 'free' and
   \f$D\f$ stands for 'Dirichlet BC'. Then, after a call to this method<br>
-  
+
   \f$ A_{ff} = A_{ff}, \f$<br>
   \f$ A_{fD} = A_{fD}, \f$<br>
   \f$ A_{Df} = 0_{Df}, \f$<br>
   \f$ A_{DD} = I_{DD}, \f$<br>
   \f$ x_{D} = dbcval_{D}, \f$<br>
   \f$ b_{D} = dbcval_{D} \f$<br>
-  
+
   and
-  
+
   \f$ A_{ff} x_f + A_{fD} x_D = b_f \f$<br>
   \f$ 0 x_f + I_{DD} x_D = x_D \f$.<br>
-  
+
   \note The matrix is then nonsymmetric. When using iterative methods on this
-        linear system of equations that depend on the symmetry of the matrix (such as e.g. CG), 
+        linear system of equations that depend on the symmetry of the matrix (such as e.g. CG),
         the initial guess supplied to the solver has to be exact at the
         Dirichlet BCs. This should be easy, as the values at the Dirichlet BCs
         are known.
-  
+
   \param A         (in/out) : Matrix of Ax=b
   \param x         (in/out) : initial guess vector x of Ax=b
   \param b         (in/out) : rhs vector b of Ax=b
@@ -187,8 +187,8 @@ namespace LINALG
 
   /*!
   \brief Apply dirichlet boundary condition to a linear system of equations
-    
-  
+
+
   \param A         (in/out) : Matrix to of Ax=b
   \param dbctoggle (in)     : vector holding 1.0 where dirichlet should be applied
                               and 0.0 everywhere else
@@ -198,8 +198,8 @@ namespace LINALG
 
   /*!
   \brief Apply dirichlet boundary condition to a linear system of equations
-    
-  
+
+
   \param dbctoggle (in)     : vector holding 1.0 where dirichlet should be applied
   \param x         (in/out) : initial guess vector x of Ax=b
   \param b         (in/out) : rhs vector b of Ax=b
@@ -215,18 +215,18 @@ namespace LINALG
 
   /*!
   \brief Gather information of type vector<T> on a subset of processors
-  
+
   This template gathers information provided in sdata on a subset of
   processors tprocs, where the length of the array tprocs is ntargetprocs.
   The redistributed data is returned in rdata which has appropiate size
   on output (size of rdata on input is arbitrary). ntargetprocs can be
   one to reduce data to one proc, it also can be equal to the total number
   of processors to make sdata redundant on all procs.
-  
+
   \note Functionality of this method is equal to that of Epetra_Comm::GatherAll
         except for that the Epetra version demands the data to be of constant
         size over all procs which this method does not require!
-  
+
   \param sdata (in) : Information to be gathered on tprocs.
                       Length of sdata can be different on every proc.
   \param rdata (out): Information from sdata gathered on a subset of procs.
@@ -235,18 +235,24 @@ namespace LINALG
   \param tprocs (in): vector of procs ids the information in sdata shall be
                       gathered on.
   \param comm (in):   communicator to be used.
-    
-  
+
+
   */
   template<typename T> void Gather(vector<T>&         sdata,
                                    vector<T>&         rdata,
                                    const int          ntargetprocs,
-                                   const int*         tprocs, 
+                                   const int*         tprocs,
                                    const Epetra_Comm& comm)
   {
     const int myrank  = comm.MyPID();
     const int numproc = comm.NumProc();
-    if (numproc==1) return; // nothing to do in serial
+    if (numproc==1)
+    {
+      rdata.clear();
+      rdata.reserve(sdata.size());
+      copy(sdata.begin(),sdata.end(),back_inserter(rdata));
+      return;
+    }
     // build a map of data
     map<int,vector<T> > datamap;
     datamap[myrank] = sdata;
