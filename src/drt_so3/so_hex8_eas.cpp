@@ -55,10 +55,10 @@ void DRT::Elements::So_hex8::soh8_easinit()
   Epetra_SerialDenseMatrix Kda(neas_,NUMDOF_SOH8);
   
   // save EAS data into element container easdata_
-  easdata_.Add("alpha",alpha);
-  easdata_.Add("feas",feas);
-  easdata_.Add("Kaa",Kaa);
-  easdata_.Add("Kda",Kda);
+  data_.Add("alpha",alpha);
+  data_.Add("feas",feas);
+  data_.Add("Kaa",Kaa);
+  data_.Add("Kda",Kda);
   
   return;
 }

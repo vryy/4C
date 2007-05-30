@@ -91,26 +91,26 @@ bool DRT::Elements::So_hex8::ReadElement()
    else dserror("Reading of SO_HEX8 element failed");
   }
   
-//  // read EAS technology flag
-//  eastype_ = soh8_easnone;     // default: no EAS
-//  frchar("EAS",buffer,&ierr);
-//  if (ierr){
-//    // full EAS technology
-//    if      (strncmp(buffer,"full",4)==0){
-//      eastype_ = soh8_easfull;
-//      neas_ = 9;               // number of eas parameters for full EAS
-//      soh8_easinit();
-//    }
-//    // mild EAS technology
-//    else if (strncmp(buffer,"mild",4)==0){
-//      eastype_ = soh8_easmild;
-//      neas_ = 9;               // number of eas parameters for mild EAS
-//      soh8_easinit();
-//    }
-//    // no EAS technology
-//    else if (strncmp(buffer,"none",4)==0) eastype_ = soh8_easnone;
-//    else dserror("Reading of SO_HEX8 EAS technology failed");
-//  } 
+  // read EAS technology flag
+  eastype_ = soh8_easnone;     // default: no EAS
+  frchar("EAS",buffer,&ierr);
+  if (ierr){
+    // full EAS technology
+    if      (strncmp(buffer,"full",4)==0){
+      eastype_ = soh8_easfull;
+      neas_ = 9;               // number of eas parameters for full EAS
+      soh8_easinit();
+    }
+    // mild EAS technology
+    else if (strncmp(buffer,"mild",4)==0){
+      eastype_ = soh8_easmild;
+      neas_ = 9;               // number of eas parameters for mild EAS
+      soh8_easinit();
+    }
+    // no EAS technology
+    else if (strncmp(buffer,"none",4)==0) eastype_ = soh8_easnone;
+    else dserror("Reading of SO_HEX8 EAS technology failed");
+  } 
 
   // read stress evaluation/output type
   frchar("STRESS",buffer,&ierr);

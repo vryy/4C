@@ -310,7 +310,7 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
   Epetra_SerialDenseMatrix T0invT;  // trafo matrix
   if (eastype_ != soh8_easnone) {
     // get stored EAS alphas (history variables)
-    alpha = easdata_.Get<Epetra_SerialDenseMatrix>("alpha");
+    alpha = data_.Get<Epetra_SerialDenseMatrix>("alpha");
     
     // EAS portion of internal forces, also called enhacement vector s or Rtilde
     feas.Size(neas_);
@@ -554,7 +554,7 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     alphanew.Multiply('N','N',-1.0,Kaa,feas,1.0);
     
     // update EAS alphas
-    easdata_.Add("alpha",alphanew);
+    data_.Add("alpha",alphanew);
   } // -------------------------------------------------------------------- EAS
     
      

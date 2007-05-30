@@ -91,9 +91,17 @@ void DRT::Elements::So_hex8::Pack(vector<char>& data) const
   Element::Pack(basedata);
   AddtoPack(data,basedata);
   // ngp_
-  AddtoPack(data,ngp_,3*sizeof(int));
+  //AddtoPack(data,ngp_,3*sizeof(int));
   // material_
   AddtoPack(data,material_);
+  // stresstype_
+  AddtoPack(data,stresstype_);
+  // kintype_
+  AddtoPack(data,kintype_);
+  // eastype_
+  AddtoPack(data,eastype_);
+  // neas_
+  AddtoPack(data,neas_);
   // data_
   vector<char> tmp(0);
   data_.Pack(tmp);
@@ -119,9 +127,17 @@ void DRT::Elements::So_hex8::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
   // ngp_
-  ExtractfromPack(position,data,ngp_,3*sizeof(int));
+  //ExtractfromPack(position,data,ngp_,3*sizeof(int));
   // material_
   ExtractfromPack(position,data,material_);
+  // stresstype_
+  ExtractfromPack(position,data,stresstype_);
+  // kintype_
+  ExtractfromPack(position,data,kintype_);
+  // eastype_
+  ExtractfromPack(position,data,eastype_);
+  // neas_
+  ExtractfromPack(position,data,neas_);
   // data_
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
