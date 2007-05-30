@@ -161,19 +161,18 @@ bool DRT::Elements::Fluid3::ReadElement()
     if (strncmp(buffer,"ale",3)==0 ||
         strncmp(buffer,"ALE",3)==0 ||
         strncmp(buffer,"Ale",3)==0 )
-        {
-	is_ale_=true;
-	dserror("ALE net algorithm for FLUID3 element is not supported\n");
-	}
-	
+    {
+      is_ale_=true;
+    }
+
     else if (strncmp(buffer,"euler",5)==0 ||
-        strncmp(buffer,"EULER",5)==0 ||
-        strncmp(buffer,"Euler",5)==0 )
-        is_ale_=false;
+             strncmp(buffer,"EULER",5)==0 ||
+             strncmp(buffer,"Euler",5)==0 )
+      is_ale_=false;
     else
       dserror("Reading of FLUID3 element failed: Euler/Ale\n");
   }
-   else
+  else
     dserror("Reading of FLUID3 element net algorithm failed: NA\n");
 
 

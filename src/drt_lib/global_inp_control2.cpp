@@ -162,11 +162,11 @@ void inpfield_ccadiscret_jumbo()
 {
   DSTraceHelper dst("inpfield_ccadiscret_jumbo");
 
-  int myrank = 0;
-  int nproc  = 1;
   fflush(stdout);
 
 #ifdef PARALLEL
+  int myrank = 0;
+  int nproc  = 1;
   MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
   MPI_Comm_size(MPI_COMM_WORLD, &nproc);
   Epetra_MpiComm* com = new Epetra_MpiComm(MPI_COMM_WORLD);

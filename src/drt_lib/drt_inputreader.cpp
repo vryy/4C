@@ -22,6 +22,7 @@ Maintainer: Ulrich Kuettler
 #include "linalg_utils.H"
 
 #include <Epetra_Time.h>
+#include <iterator>
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -264,6 +265,20 @@ void ElementReader::Partition()
   rownodes_ = rcp(new Epetra_Map(-1,nids.size(),&nids[0],0,*comm_));
   nids.clear();
 
+#if 0
+  if (myrank==0)
+  {
+    cout << "\n\nelementnodes: size=" << elementnodes.size() << endl;
+    for (list<vector<int> >::iterator i=elementnodes.begin();
+         i!=elementnodes.end();
+         ++i)
+    {
+      copy(i->begin(), i->end(), ostream_iterator<int>(cout, " "));
+      cout << endl;
+    }
+  }
+#endif
+
   // construct graph
   RefCountPtr<Epetra_CrsGraph> graph = rcp(new Epetra_CrsGraph(Copy,*rownodes_,81,false));
   if (myrank==0)
@@ -285,6 +300,8 @@ void ElementReader::Partition()
     }
   }
 
+  elementnodes.clear();
+
   // finalize construction of this graph
   int err = graph->FillComplete(*rownodes_,*rownodes_);
   if (err) dserror("graph->FillComplete returned %d",err);
@@ -300,12 +317,12 @@ void ElementReader::Partition()
   // do stupid conversion from Epetra_BlockMap to Epetra_Map
   const Epetra_BlockMap& brow = graph->RowMap();
   const Epetra_BlockMap& bcol = graph->ColMap();
-  rownodes_ = rcp(new Epetra_Map(-1,
+  rownodes_ = rcp(new Epetra_Map(brow.NumGlobalElements(),
                                  brow.NumMyElements(),
                                  brow.MyGlobalElements(),
                                  0,
                                  *comm_));
-  colnodes_ = rcp(new Epetra_Map(-1,
+  colnodes_ = rcp(new Epetra_Map(bcol.NumGlobalElements(),
                                  bcol.NumMyElements(),
                                  bcol.MyGlobalElements(),
                                  0,

@@ -28,6 +28,9 @@ extern "C"
 #endif
 #endif
 
+#include <algorithm>
+#include <numeric>
+
 #include "drt_utils.H"
 #include "drt_node.H"
 #include "drt_dofset.H"
@@ -282,6 +285,59 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
   return null;
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+int DRT::Utils::FindMyPos(int myrank, int numproc, const Epetra_Map& emap)
+{
+  vector<int> snum(numproc);
+  vector<int> rnum(numproc);
+  fill(snum.begin(), snum.end(), 0);
+  snum[myrank] = emap.NumMyElements();
+
+  emap.Comm().SumAll(&snum[0],&rnum[0],numproc);
+
+  return std::accumulate(&rnum[0], &rnum[myrank], 0);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::Utils::AllreduceEMap(vector<int>& rredundant, const Epetra_Map& emap)
+{
+  const int myrank  = emap.Comm().MyPID();
+  const int numproc = emap.Comm().NumProc();
+
+  rredundant.resize(emap.NumGlobalElements());
+
+  int mynodepos = FindMyPos(myrank, numproc, emap);
+
+  vector<int> sredundant(emap.NumGlobalElements());
+  fill(sredundant.begin(), sredundant.end(), 0);
+
+  int* gids = emap.MyGlobalElements();
+  copy(gids, gids+emap.NumMyElements(), &sredundant[mynodepos]);
+
+  emap.Comm().SumAll(&sredundant[0], &rredundant[0], emap.NumGlobalElements());
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::Utils::AllreduceEMap(map<int,int>& idxmap, const Epetra_Map& emap)
+{
+  idxmap.clear();
+
+  vector<int> rredundant(emap.NumGlobalElements());
+  AllreduceEMap(rredundant, emap);
+
+  for (unsigned i=0; i<rredundant.size(); ++i)
+  {
+    idxmap[rredundant[i]] = i;
+  }
+}
+
+
 /*----------------------------------------------------------------------*
  |  partition a graph using metis  (public)                  mwgee 11/06|
  *----------------------------------------------------------------------*/
@@ -310,19 +366,16 @@ RefCountPtr<Epetra_CrsGraph> DRT::Utils::PartGraphUsingMetis(
                     tmp.MyGlobalElements(),0,graph.Comm());
 
   // build a target map that stores everything on proc workrank
-  vector<int> rowsend(rowmap.NumGlobalElements());
+  // We have arbirtary gids here and we do not tell metis about
+  // them. So we have to keep rowrecv until the redistributed map is
+  // build.
   vector<int> rowrecv(rowmap.NumGlobalElements());
-  for (int i=0; i<(int)rowsend.size(); ++i) rowsend[i] = 0;
-  for (int i=0; i<rowmap.NumMyElements(); ++i)
-  {
-    const int gid = rowmap.GID(i);
-    rowsend[gid] = gid;
-  }
-  rowmap.Comm().SumAll(&rowsend[0],&rowrecv[0],rowmap.NumGlobalElements());
-  rowsend.clear();
-  if (myrank != workrank) rowrecv.clear();
-  Epetra_Map tmap(rowmap.NumGlobalElements(),(int)rowrecv.size(),&rowrecv[0],0,rowmap.Comm());
-  rowrecv.clear();
+  AllreduceEMap(rowrecv, rowmap);
+  Epetra_Map tmap(rowmap.NumGlobalElements(),
+                  (myrank == workrank) ? (int)rowrecv.size() : 0,
+                  &rowrecv[0],
+                  0,
+                  rowmap.Comm());
 
   // export the graph to tmap
   Epetra_CrsGraph tgraph(Copy,tmap,108,false);
@@ -341,6 +394,14 @@ RefCountPtr<Epetra_CrsGraph> DRT::Utils::PartGraphUsingMetis(
   vector<int> part(tmap.NumMyElements());
   if (myrank==workrank)
   {
+    // metis requests indexes. So we need a reverse lookup from gids
+    // to indexes.
+    map<int,int> idxmap;
+    for (unsigned i=0; i<rowrecv.size(); ++i)
+    {
+      idxmap[rowrecv[i]] = i;
+    }
+
     vector<int> xadj(tmap.NumMyElements()+1);
     vector<int> adjncy(tgraph.NumGlobalNonzeros()); // the size is an upper bound
     vector<int> vwgt(tweights.MyLength());
@@ -361,7 +422,7 @@ RefCountPtr<Epetra_CrsGraph> DRT::Utils::PartGraphUsingMetis(
       {
         int gcid = tgraph.ColMap().GID(lindices[col]);
         if (gcid==grid) continue;
-        adjncy[count] = gcid;
+        adjncy[count] = idxmap[gcid];
         //cout << adjncy[count] << " ";
         ++count;
       }
@@ -372,6 +433,8 @@ RefCountPtr<Epetra_CrsGraph> DRT::Utils::PartGraphUsingMetis(
     //cout << "tgraph.NumGlobalNonzeros() " << tgraph.NumGlobalNonzeros() << endl
     //     << "tmap.NumMyElements()       " << tmap.NumMyElements() << endl
     //     << "count                      " << count << endl;
+
+    idxmap.clear();
 
     if (numproc<8) // better for smaller no. of partitions
     {
@@ -431,9 +494,11 @@ RefCountPtr<Epetra_CrsGraph> DRT::Utils::PartGraphUsingMetis(
   for (int i=0; i<size; ++i)
     if (part[i]==myrank)
     {
-      part[count] = i;
+      part[count] = rowrecv[i];
       ++count;
     }
+
+  rowrecv.clear();
 
   // create map with new layout
   Epetra_Map newmap(size,count,&part[0],0,graph.Comm());

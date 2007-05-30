@@ -210,43 +210,6 @@ public:
 
 protected:
 
-  /// Create an allreduced gid to index map from the given Epetra_Map
-  /*!
-    We have nodes and elements with unique but otherwise arbitrary
-    global ids. But unfortunately we need an allreduced vector of dof
-    numbers during the dof assignment phase. In order use such a
-    vector we need to map from global ids to vector indexes. Here we
-    provide that map.
-
-    \note This is a general function but since you are not supposed to
-    use redundant vectors in normal situations it is hidden here.
-
-    \param idxmap (o) map from global ids to (redundant) vector indexes
-    \param emap (i) distributed Epetra_Map
-
-    \author u.kue
-    \date 05/07
-   */
-  void AllreduceEMap(map<int,int>& idxmap, const Epetra_Map& emap);
-
-  /// find position of my map elements in a consecutive vector
-  /*!
-    The idea is to put the entries of a given map into a redundant
-    vector, ordered by processor number. The map is assumed to be
-    nonoverlapping. Here we figure out the index of our first entry in
-    that vector.
-
-    \param myrank (i) rank
-    \param numproc (i) number of processors
-    \param emap (i) distributed Epetra_Map
-
-    \return vector position of first entry on each processor
-
-    \author u.kue
-    \date 05/07
-   */
-  int FindMyPos(int myrank, int numproc, const Epetra_Map& emap);
-
   /// unique row map of degrees of freedom (node and element dofs))
   RefCountPtr<Epetra_Map>                       dofrowmap_;
 
