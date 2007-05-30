@@ -27,7 +27,8 @@ Maintainer: Maarkus Gitterle
  *----------------------------------------------------------------------*/
 DRT::Elements::Wall1::Wall1(int id, int owner) :
 DRT::Element(id,element_wall1,owner),
-material_(0)
+material_(0),
+thickness_(0.0)
 {
   lines_.resize(0);
   lineptrs_.resize(0);
