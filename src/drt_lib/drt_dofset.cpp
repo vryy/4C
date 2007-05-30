@@ -14,6 +14,8 @@ Maintainer: Michael Gee
 #ifdef TRILINOS_PACKAGE
 
 #include <iostream>
+#include <algorithm>
+#include <numeric>
 
 #include "drt_dofset.H"
 #include "drt_discret.H"
@@ -69,6 +71,49 @@ void DRT::DofSet::Reset()
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+int DRT::DofSet::FindMyPos(int myrank, int numproc, const Epetra_Map& emap)
+{
+  vector<int> snum(numproc);
+  vector<int> rnum(numproc);
+  fill(snum.begin(), snum.end(), 0);
+  snum[myrank] = emap.NumMyElements();
+
+  emap.Comm().SumAll(&snum[0],&rnum[0],numproc);
+
+  return std::accumulate(&rnum[0], &rnum[myrank], 0);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::DofSet::AllreduceEMap(map<int,int>& idxmap, const Epetra_Map& emap)
+{
+  const int myrank  = emap.Comm().MyPID();
+  const int numproc = emap.Comm().NumProc();
+
+  idxmap.clear();
+
+  int mynodepos = FindMyPos(myrank, numproc, emap);
+
+  vector<int> sredundant(emap.NumGlobalElements());
+  vector<int> rredundant(emap.NumGlobalElements());
+  fill(sredundant.begin(), sredundant.end(), 0);
+
+  int* gids = emap.MyGlobalElements();
+  copy(gids, gids+emap.NumMyElements(), &sredundant[mynodepos]);
+
+  emap.Comm().SumAll(&sredundant[0], &rredundant[0], emap.NumGlobalElements());
+  sredundant.clear();
+
+  for (unsigned i=0; i<rredundant.size(); ++i)
+  {
+    idxmap[rredundant[i]] = i;
+  }
+}
+
+
 /*----------------------------------------------------------------------*
  |  setup everything  (public)                                ukue 04/07|
  *----------------------------------------------------------------------*/
@@ -106,6 +151,9 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const int sta
 
   // do the nodes first
 
+  map<int,int> nidx;
+  AllreduceEMap(nidx, *dis.NodeRowMap());
+
   // build a redundant that holds all the node's numdof
   vector<int> sredundantnodes(dis.NumGlobalNodes());
   fill(sredundantnodes.begin(), sredundantnodes.end(), 0);
@@ -124,7 +172,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const int sta
     for (int j=0; j<numele; ++j)
       numdf = max(numdf,myele[j]->NumDofPerNode(*actnode));
     const int gid = actnode->Id();
-    sredundantnodes[gid] = numdf;
+    sredundantnodes[nidx[gid]] = numdf;
     lnumdof += numdf;
   }
 
@@ -148,7 +196,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const int sta
   // nodes from our local row map. Use that information.
   for (unsigned i=0; i<sredundantnodes.size(); ++i)
   {
-    int numdf = sredundantnodes[i];
+    int numdf = sredundantnodes[nidx[i]];
 
     // we know our row nodes from the redundant vector
     if (numdf!=0)
@@ -162,7 +210,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const int sta
     // the col nodes we might have to look up
     if ((numdf!=0) || dis.NodeColMap()->MyGID(i))
     {
-      numdf = rredundantnodes[i];
+      numdf = rredundantnodes[nidx[i]];
 
       // remember numdf and index for nodal based lookup
       int lid = dis.NodeColMap()->LID(i);
@@ -178,7 +226,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const int sta
     else
     {
       // but in any case we need to increase our dof count
-      numdf = rredundantnodes[i];
+      numdf = rredundantnodes[nidx[i]];
     }
 
     count += numdf;
@@ -186,10 +234,14 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const int sta
 
   sredundantnodes.clear();
   rredundantnodes.clear();
+  nidx.clear();
 
   //////////////////////////////////////////////////////////////////
 
   // Now do all this fun again for the elements
+
+  map<int,int> eidx;
+  AllreduceEMap(eidx, *dis.ElementRowMap());
 
   vector<int> sredundantelements(dis.NumGlobalElements());
   fill(sredundantelements.begin(), sredundantelements.end(), 0);
@@ -202,7 +254,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const int sta
     DRT::Element* actele = dis.lRowElement(i);
     const int gid = actele->Id();
     int numdf = actele->NumDofPerElement();
-    sredundantelements[gid] = numdf;
+    sredundantelements[eidx[gid]] = numdf;
     localelenumdf[i] = numdf;
     lnumdof += numdf;
   }
@@ -216,7 +268,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const int sta
 
   for (unsigned i=0; i<sredundantelements.size(); ++i)
   {
-    int numdf = sredundantelements[i];
+    int numdf = sredundantelements[eidx[i]];
 
     // we know our row elements from the redundant vector
     if (numdf!=0)
@@ -230,7 +282,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const int sta
     // the col elements we might have to look up
     if ((numdf!=0) || dis.ElementColMap()->MyGID(i))
     {
-      numdf = rredundantelements[i];
+      numdf = rredundantelements[eidx[i]];
 
       // remember numdf and index for elemental based lookup
       int lid = dis.ElementColMap()->LID(i);
@@ -246,7 +298,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const int sta
     else
     {
       // but in any case we need to increase our dof count
-      numdf = rredundantelements[i];
+      numdf = rredundantelements[eidx[i]];
     }
 
     count += numdf;
@@ -254,6 +306,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const int sta
 
   sredundantelements.clear();
   rredundantelements.clear();
+  eidx.clear();
 
   // Now finally we have everything in place to build the maps.
 
