@@ -405,12 +405,9 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
       }
       // map local M to global, also enhancement is refered to element origin
       // M = detJ0/detJ T0^{-T} . M
-      M.Multiply('N','N',detJ0/detJ,T0invT,M,1.0);
-      // enhanced strains = M . alpha
-      Epetra_SerialDenseVector enh_strain(NUMSTR_SOH8);
-      enh_strain.Multiply('N','N',1.0,M,alpha,1.0);
-      // add to GL strains to "unlock" element
-      glstrain += enh_strain;
+      M.Multiply('N','N',detJ0/detJ,T0invT,M,0.0);
+      // add enhanced strains = M . alpha to GL strains to "unlock" element
+      glstrain.Multiply('N','N',1.0,M,(*alpha),0.0);
     } // ------------------------------------------------------------------ EAS
     
 
@@ -500,7 +497,7 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
       double integrationfactor = detJ * (*weights)(gp);
       // integrate Kaa: Kaa += (M^T . cmat . M) * detJ * w(gp)
       Epetra_SerialDenseMatrix cM(NUMSTR_SOH8,neas_); // temporary c . M
-      cM.Multiply('N','N',1.0,cmat,M,1.0);
+      cM.Multiply('N','N',1.0,cmat,M,0.0);
       Kaa.Multiply('T','N',integrationfactor,M,cM,1.0);
       
       // integrate Kda: Kda += (M^T . cmat . B) * detJ * w(gp)
@@ -535,7 +532,7 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     solve_for_inverseKaa.Invert();
     
     Epetra_SerialDenseMatrix KdaKaa(NUMDOF_SOH8,neas_); // temporary Kda.Kaa^{-1}
-    KdaKaa.Multiply('T','N',1.0,Kda,Kaa,1.0);
+    KdaKaa.Multiply('T','N',1.0,Kda,Kaa,0.0);
     
     // EAS-stiffness matrix is: Kdd - Kda^T . Kaa^-1 . Kda
     (*stiffmatrix).Multiply('N','N',-1.0,KdaKaa,Kda,1.0);
@@ -544,14 +541,14 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     (*force).Multiply('N','N',-1.0,KdaKaa,feas,1.0);
     
     // evaluate new alpha in the following
-    Epetra_SerialDenseMatrix alphanew(neas_);
+    Epetra_SerialDenseMatrix alphanew(neas_,1);
     // first we need delta_d
     Epetra_SerialDenseVector delta_d(NUMDOF_SOH8);
     for (int i=0; i<NUMDOF_SOH8; ++i) delta_d(i) = disp[i] - residual[i];
     // add Kda . delta_d to feas
     feas.Multiply('N','N',1.0,Kda,delta_d,1.0);
     // new alpha is: - Kaa^-1 . (feas + Kda . delta_d), here: - Kaa^-1 . feas
-    alphanew.Multiply('N','N',-1.0,Kaa,feas,1.0);
+    alphanew.Multiply('N','N',-1.0,Kaa,feas,0.0);
     
     // update EAS alphas
     data_.Add("alpha",alphanew);

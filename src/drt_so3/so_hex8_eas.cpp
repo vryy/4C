@@ -81,7 +81,7 @@ void DRT::Elements::So_hex8::soh8_eassetup(
                 -0.125,-0.125,-0.125,-0.125,+0.125,+0.125,+0.125,+0.125};
   // shape function derivatives, evaluated at origin (r=s=t=0.0)
   Epetra_DataAccess CV = Copy;
-  Epetra_SerialDenseMatrix df0(CV,df0_vector,NUMDOF_SOH8,NUMDOF_SOH8,NUMNOD_SOH8);
+  Epetra_SerialDenseMatrix df0(CV,df0_vector,NUMDIM_SOH8,NUMDIM_SOH8,NUMNOD_SOH8);
   
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)
   Epetra_SerialDenseMatrix jac0(NUMDIM_SOH8,NUMDIM_SOH8);
