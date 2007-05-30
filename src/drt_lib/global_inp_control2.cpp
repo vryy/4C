@@ -787,12 +787,9 @@ void inpfield_ccadiscret_jumbo()
   RefCountPtr<DRT::Discretization> structdis = null;
   RefCountPtr<DRT::Discretization> fluiddis  = null;
   RefCountPtr<DRT::Discretization> aledis    = null;
-
-#ifdef STRUCT_MULTI
   RefCountPtr<DRT::Discretization> structdis_macro = null;
   RefCountPtr<DRT::Discretization> structdis_micro = null;
   RefCountPtr<DRT::Discretization> structdis_micro_serial = null;
-#endif
 
   if (genprob.probtyp == prb_fsi)
   {
@@ -860,8 +857,6 @@ void inpfield_ccadiscret_jumbo()
     nodereader.Read();
   } // end of else if (genprob.probtyp==prb_structure)
 
-
-#ifdef STRUCT_MULTI
   else if (genprob.probtyp==prb_struct_multi)
   {
     // allocate and input general old stuff....
@@ -883,7 +878,7 @@ void inpfield_ccadiscret_jumbo()
 
     vector<RefCountPtr<DRT::Discretization> >* discretization;
     discretization = (vector<RefCountPtr<DRT::Discretization> >*)field[genprob.numsf].ccadis;
-    RefCountPtr<Discretization> structdis_micro = (*discretization)[1];
+    RefCountPtr<DRT::Discretization> structdis_micro = (*discretization)[1];
 
     RefCountPtr<Epetra_SerialComm> serialcomm = rcp(new Epetra_SerialComm());
     structdis_micro_serial = rcp(new DRT::Discretization("Micro Structure Serial",serialcomm));
@@ -910,7 +905,7 @@ void inpfield_ccadiscret_jumbo()
 
     structdis_micro->ExportColumnNodes(*redundantmap);
     structdis_micro->ExportColumnElements(*redundantmap_ele);
-    err = structdis_micro->FillComplete();
+    int err = structdis_micro->FillComplete();
     if (err) dserror("structdis_micro->FillComplete() returned %d",err);
 
     for (int i=0; i<structdis_micro->NumMyColElements(); ++i)
@@ -927,10 +922,9 @@ void inpfield_ccadiscret_jumbo()
       newnode->SetOwner(0);
       structdis_micro_serial->AddNode(newnode);
     }
-    if (!myrank) cout << "Complete microscale discretization in serial        in...."; fflush(stdout);
     err = structdis_micro_serial->FillComplete();
 
-    if (0)
+    if (1)
     {
     for (int i=0; i<structdis_micro->Comm().NumProc(); ++i)
     {
@@ -944,11 +938,7 @@ void inpfield_ccadiscret_jumbo()
     }
     cout << "\n";
     }
-
-    if (!myrank) cout << time.ElapsedTime() << " secs\n"; fflush(stdout);
   } // end of else if (genprob.probtyp==prb_struct_multi)
-#endif
-
 
   else dserror("Type of problem unknown");
 

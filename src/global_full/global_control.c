@@ -159,7 +159,7 @@ void ntam(
   ntainp();
 #else
   ntainp_ccadiscret();
-#endif  
+#endif
 
 #ifdef PERF
   perf_end(1);

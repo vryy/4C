@@ -314,11 +314,9 @@ typedef struct _GENPROB
                                     * be compared to the calculated ones. */
 #endif
 
-#ifdef STRUCT_MULTI
   INT               micro_nele;     /* number of elements in microstructure */
   INT               micro_nnode;    /* number of nodes in microstructure */
   INT               micro_nmat;     /* number of material laws in microstructure */
-#endif
 
   INT               usetrilinosalgebra; /* use trilinos for vectors/matrices or
                                          * ccarat internal (solver dependent)

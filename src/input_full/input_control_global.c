@@ -236,13 +236,12 @@ dstrc_enter("inpctr");
    }
 #endif
 
-#ifdef STRUCT_MULTI
    case prb_struct_multi:
    {
      printf("Input of solver data for multi-scale problem still missing!");
      break;
    }
-#endif
+
    default:
      dserror("problem type %d unknown",genprob.probtyp);
    }
@@ -298,26 +297,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 if (genprob.nmat<=0)
    dserror("No Material defined!");
 
-#ifdef STRUCT_MULTI
-if (frfind("-MICROSTRUCTURE PROBLEM SIZE")==0)
-{
-  dserror("frfind: MICROSTRUCTURE PROBLEM SIZE not in input file");
-}
-frread();
-while(strncmp(allfiles.actplace,"------",6)!=0)
-{
-  frint("MICRO ELEMENTS", &(genprob.micro_nele),&ierr);
-  frint("MICRO NODES",    &(genprob.micro_nnode),&ierr);
-  frint("MICRO MATERIALS",&(genprob.micro_nmat),&ierr);
-
-  frread();
-}
-/*------------------------------------------------------ check values */
-if (genprob.micro_nmat<=0)
-   dserror("No Material for microstructure defined!");
-#endif
-
-
 /*-------------------------------------- default value for monitoring */
 ioflags.monitor=0;
 /*----------------------------------------- default values for output */
@@ -363,9 +342,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #ifdef D_TSI
     else if (frwordcmp("Thermal_Structure_Interaction",buffer)==0) genprob.probtyp = prb_tsi;
 #endif
-#ifdef STRUCT_MULTI
     else if (frwordcmp("Structure_Multiscale",buffer)==0) genprob.probtyp = prb_struct_multi;
-#endif
     else dserror("problem type not recognized");
   }
 
@@ -442,13 +419,11 @@ case prb_ssi:
   break;
 }
 #endif
-#ifdef STRUCT_MULTI
 case prb_struct_multi:
 {
   genprob.numsf=0;
   break;
 }
-#endif
 #ifdef D_TSI
 case prb_tsi:
 {
@@ -586,6 +561,27 @@ if (frfind("---IO")==1)
   }
 }
 
+/* Read microstructure details if necessary*/
+
+if (genprob.probtyp == prb_struct_multi)
+{
+  if (frfind("-MICROSTRUCTURE PROBLEM SIZE")==0)
+  {
+    dserror("frfind: MICROSTRUCTURE PROBLEM SIZE not in input file");
+  }
+  frread();
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    frint("MICRO ELEMENTS", &(genprob.micro_nele),&ierr);
+    frint("MICRO NODES",    &(genprob.micro_nnode),&ierr);
+    frint("MICRO MATERIALS",&(genprob.micro_nmat),&ierr);
+
+    frread();
+  }
+  /*------------------------------------------------------ check values */
+  if (genprob.micro_nmat<=0)
+    dserror("No Material for microstructure defined!");
+}
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
 dstrc_exit();
