@@ -295,19 +295,13 @@ void inpfield_ccadiscret_jumbo()
     RefCountPtr<Epetra_Map> parallel_roweles  = rcp(new Epetra_Map(*structdis_micro->ElementRowMap()));
 
     // build redundant colnodes
-    vector<int> mygid(parallel_rownodes->NumMyElements());
-    for (int i=0; i<parallel_rownodes->NumMyElements(); ++i) mygid[i] = parallel_rownodes->MyGlobalElements()[i];
-    vector<int> rmygid(0);
-    vector<int> targetprocs(structdis_micro->Comm().NumProc());
-    for (int i=0; i<structdis_micro->Comm().NumProc(); ++i) targetprocs[i] = i;
-    LINALG::Gather(mygid,rmygid,structdis_micro->Comm().NumProc(),&targetprocs[0], structdis_micro->Comm());
+    vector<int> rmygid;
+    DRT::Utils::AllreduceEMap(rmygid, *parallel_rownodes);
     RefCountPtr<Epetra_Map> redundantmap = rcp(new Epetra_Map(-1,(int)rmygid.size(),&rmygid[0],0,structdis_micro->Comm()));
 
     // build redundant coleles
-    vector<int> mygid_ele(parallel_roweles->NumMyElements());
-    for (int i=0; i<parallel_roweles->NumMyElements(); ++i) mygid_ele[i] = parallel_roweles->MyGlobalElements()[i];
-    vector<int> rmygid_ele(0);
-    LINALG::Gather(mygid_ele,rmygid_ele,structdis_micro->Comm().NumProc(),&targetprocs[0], structdis_micro->Comm());
+    vector<int> rmygid_ele;
+    DRT::Utils::AllreduceEMap(rmygid_ele, *parallel_roweles);
     RefCountPtr<Epetra_Map> redundantmap_ele = rcp(new Epetra_Map(-1,(int)rmygid_ele.size(),&rmygid_ele[0],0,structdis_micro->Comm()));
 
     structdis_micro->ExportColumnNodes(*redundantmap);
