@@ -45,8 +45,16 @@ This routine performs integration of an 3D-hex-element.
 \param          data C1_DATA*  (i)   hex element data
 \param          mat MATERIAL*  (i)   material data
 \param    estif_global ARRAY*  (o)   element stiffness matrix
+\param    emass_global ARRAY*  (o)   element mass matrix
 \param          force DOUBLE*  (o)   vector for internal forces
 \param             init  INT*  (i)   flag for initialization (alloc mem...)
+                                     0:  stiffness & mass & intforce
+                                     1:  initialisation
+                                     2:  update internal variables (EAS & material)
+                                     3:  stress for output
+                                     4:  linear stiffness & lumped mass (MASS MATRIX DYSFUNCTIONAL???)
+                                     5:  stiffness, consistent mass, internal force
+                                     6:  internal force vector
 \param   container CONTAINER*  (i)   container data
 
 

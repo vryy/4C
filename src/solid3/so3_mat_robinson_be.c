@@ -264,9 +264,6 @@ void so3_mat_robinson_be_sel(const CONTAINER* container,
     for (istr=0; istr<NUMSTR_SOLID3; istr++)
     {
       stnela[istr] = stntotn[istr] - stnvscn[istr] - stnthr[istr];
-#if 0
-      printf("Ele %d: ViscStress %g; Elestrain %g; TotStrain %g; ThStrain %g\n", ele->Id_loc, stnvscn[istr], stnela[istr], stntotn[istr], stnthr[istr]);
-#endif
     }
   }
 
@@ -283,20 +280,6 @@ void so3_mat_robinson_be_sel(const CONTAINER* container,
   /*--------------------------------------------------------------------*/
   /* stress sig_{n+1}^<i> at t_{n+1} */
   so3_mv6_v_assmvp(cmat, stnela, stress);
-#if 0
-  {
-    INT i;
-    for (i=0; i<6; i++)
-    {
-      if (isnan(stress[i]))
-      {
-        printf("Ele %d: Stress %g; TotStrain %g; ViscStrain %g; BackStress %g\n", ele->Id_loc, stress[i], stntotn[i], actso3->miv_rob->vicstnn.a.da[ip], actso3->miv_rob->bacstsn.a.da[ip]);
-        abort();
-      }
-    }
-  }
-#endif
-
 
   /*--------------------------------------------------------------------*/
   /* deviatoric stress s_{n+1}^<i> at t_{n+1} */
@@ -328,16 +311,6 @@ void so3_mat_robinson_be_sel(const CONTAINER* container,
                               &(actso3->miv_rob->bckstss.a.iv[ip]),
                               bckstsr, kae, kav, kaa);
 
-#if 0
-      {
-        INT i;
-        for (i=0; i<NUMSTR_SOLID3; i++)
-        {
-          printf("(so3_mat_robinson_be_sel_1) Stress %d : %g\n", i, stress[i]);
-        }
-      }
-#endif
-
   /*--------------------------------------------------------------------*/
   /* build reduced stress and tangent
    * ==> static condensation */
@@ -346,17 +319,6 @@ void so3_mat_robinson_be_sel(const CONTAINER* container,
                           bckstsr, kae, kav, kaa,
                           actso3->miv_rob->kvarva.a.da[ip],
                           actso3->miv_rob->kvakvae.a.da[ip]);
-
-
-#if 0
-      {
-        INT i;
-        for (i=0; i<NUMSTR_SOLID3; i++)
-        {
-          printf("(so3_mat_robinsonbe_sel_2) Stress %d : %g\n", i, stress[i]);
-        }
-      }
-#endif
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -435,7 +397,20 @@ void so3_mat_robinson_be_rvscstn(ELEMENT* ele,
   so3_mv6_v_dblctr(ovrstsn, devstsn, &(ss));
   ss *= 0.5;
   /* hardening factor aa */
-  aa = mat_robin->hrdn_fact;
+  if (mat_robin->kind == vp_robinson_kind_arya_crmosteel)
+  {
+    DOUBLE mu = mat_robin->hrdn_fact;
+    DOUBLE th1 = (23.8*tmpr - 2635.0)*(1.0/811.0 - 1.0/tmpr);
+    if (isinf(th1))
+    {
+      dserror("Inifinite theta1");
+    }
+    aa = 0.5/(mu*exp(-th1));
+  }
+  else
+  {
+    aa = mat_robin->hrdn_fact;
+  }
   /* hardening exponent nn */
   nn = mat_robin->hrdn_expo;
 
@@ -637,6 +612,12 @@ void so3_mat_robinson_be_rbcksts(ELEMENT* ele,
     so3_mat_robinson_prmbytmpr(mat_robin->h, tmpr, &(hh));
     hh *= pow(6.896,1.0+beta) / (3.0*kk0sq*1.e-8);
   }
+  else if (mat_robin->kind == vp_robinson_kind_arya_crmosteel)
+  {
+    DOUBLE mu = mat_robin->hrdn_fact;
+    so3_mat_robinson_prmbytmpr(mat_robin->h, tmpr, &(hh));
+    hh *= 2.0 * mu;
+  }
   else
   {
     so3_mat_robinson_prmbytmpr(mat_robin->h, tmpr, &(hh));
@@ -688,24 +669,6 @@ void so3_mat_robinson_be_rbcksts(ELEMENT* ele,
   so3_mv6_v_dblctr(bacstsn, devstsn, &(sa));
   sa *= 0.5;
 
-#if 0
-  {
-    printf("(so3_mat_robinson_be_rbcksts) i2 %g\n", i2);
-    printf("(so3_mat_robinson_be_rbcksts) tem0 %g\n", tem0);
-    printf("(so3_mat_robinson_be_rbcksts) tmpr %g\n", tmpr);
-    printf("(so3_mat_robinson_be_rbcksts) kk0sq %g\n", kk0sq);
-    printf("(so3_mat_robinson_be_rbcksts) beta %g\n", beta);
-    printf("(so3_mat_robinson_be_rbcksts) mm %g\n", mm);
-    printf("(so3_mat_robinson_be_rbcksts) hh %g\n", hh);
-    printf("(so3_mat_robinson_be_rbcksts) q0 %g\n", q0);
-    printf("(so3_mat_robinson_be_rbcksts) rr0 %g\n", rr0);
-    printf("(so3_mat_robinson_be_rbcksts) rr %g\n", rr);
-    printf("(so3_mat_robinson_be_rbcksts) gg0 %g\n", gg0);
-    printf("(so3_mat_robinson_be_rbcksts) gg %g\n", gg);
-    printf("(so3_mat_robinson_be_rbcksts) sa %g\n", sa);
-  }
-#endif
-
   /*--------------------------------------------------------------------*/
   /* determine mode */
   if (*bckstss == so3_mat_robinson_state_vague)
@@ -731,11 +694,6 @@ void so3_mat_robinson_be_rbcksts(ELEMENT* ele,
 
   /*--------------------------------------------------------------------*/
   /* residual of back stress rate */
-#if 0
-  DOUBLE debug__fctv;
-  DOUBLE debug__fcta;
-#endif
-
   if (*bckstss == so3_mat_robinson_state_elastic)
   {
     DOUBLE fctv = hh / pow(gg0, beta);
@@ -756,10 +714,6 @@ void so3_mat_robinson_be_rbcksts(ELEMENT* ele,
                         - fctv * vscstnd05[istr]
                         + dt * fcta * bacstsn[istr] ) / dt;
     }
-#if 0
-    debug__fctv = fctv;
-    debug__fcta = fcta;
-#endif
   }
   else if (*bckstss == so3_mat_robinson_state_inelastic)
   {
@@ -772,36 +726,7 @@ void so3_mat_robinson_be_rbcksts(ELEMENT* ele,
                         - fctv * vscstnd05[istr]
                         + dt * fcta * bacstsn[istr] ) / dt;
     }
-#if 0
-    debug__fctv = fctv;
-    debug__fcta = fcta;
-#endif
   }
-
-#if 0
-  {
-    INT i;
-    for (i=0; i<NUMSTR_SOLID3; i++)
-    {
-      printf("(so3_mat_robinson_be_rbcksts) BckStressResid %d : %g\n", i, bckstsr[i]);
-    }
-    for (i=0; i<NUMSTR_SOLID3; i++)
-    {
-      printf("(so3_mat_robinson_be_rbcksts) BckStressn %d : %g\n", i, bacstsn[i]);
-    }
-    for (i=0; i<NUMSTR_SOLID3; i++)
-    {
-      printf("(so3_mat_robinson_be_rbcksts) BckStress %d : %g\n", i, bacsts[i]);
-    }
-    for (i=0; i<NUMSTR_SOLID3; i++)
-    {
-      printf("(so3_mat_robinson_be_rbcksts) Vscstrain %d : %g\n", i, vscstnd05[i]);
-    }
-    printf("(so3_mat_robinson_be_rbcksts) factv %g\n", debug__fctv);
-    printf("(so3_mat_robinson_be_rbcksts) facta %g\n", debug__fcta);
-    printf("(so3_mat_robinson_be_rbcksts) dt %g\n", dt);
-  }
-#endif
 
   /*--------------------------------------------------------------------*/
   /* derivative of back stress residual with respect to total strains
@@ -1013,16 +938,6 @@ void so3_mat_robinson_be_red(DOUBLE stress[NUMSTR_SOLID3],
       kvarva[NUMSTR_SOLID3+i] = bckstsr[i];
     }
   }
-
-#if 0
-  {
-    INT i;
-    for (i=0; i<numstr_2; i++)
-    {
-      printf("(so3_mat_robinson_be_red_1) kvarva %d : %g\n", i, kvarva[i]);
-    }
-  }
-#endif
 
   /*--------------------------------------------------------------------*/
   /* factorise kvvvaavaa and solve */
@@ -1379,7 +1294,7 @@ void so3_mat_robinson_be_stress(const CONTAINER* container,
     INT out_std_mod;
     if (tsidyn->out_std_ev == 0)
     {
-      out_std_mod = -1;  /* never print */
+      out_std_mod = -1;  /* will never print */
     }
     else
     {

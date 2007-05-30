@@ -357,16 +357,32 @@ void so3_stress(CONTAINER *cont,
     }
     /*------------------------------------------------------------------*/
     /* construct rotational component of inverse FE-Jacobian */
-#if 0
     so3_metr_rot(gds.xjm, gds.xrm, gds.xrvm, gds.xrvi);
-#endif
     /*------------------------------------------------------------------*/
     /* store stress in parameter space co-ordinates (r,s,t) */
+#ifdef GIDOUTSTRAIN_SOLID3
+    /* quick hack to get strains to Gid */
+    {
+      INT i;
+      for (i=0; i<3; i++)
+      {
+        ele->e.so3->stress_gprst.a.da[igp][i] = gds.stnengv[i];
+      }
+      for (i=3; i<6; i++)
+      {
+        ele->e.so3->stress_gprst.a.da[igp][i] = 0.5*gds.stnengv[i];
+      }
+    }
+#else
     so3_stress_rst(gds.xrvi, stress, 
                    ele->e.so3->stress_gprst.a.da[igp]);
+#endif
     /*------------------------------------------------------------------*/
     /* store principle and direction angles at current Gauss point */
+#ifdef GIDOUTSTRAIN_SOLID3
+#else
     so3_stress_123(stress, ele->e.so3->stress_gp123.a.da[igp]);
+#endif
   }  /* end loop over Gauss points */
 
   /*--------------------------------------------------------------------*/

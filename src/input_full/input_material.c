@@ -496,6 +496,10 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
        {
          robin->kind = vp_robinson_kind_arya_narloyz;
        }
+       else if (strcmp(word, "Arya_CrMoSteel") == 0)
+       {
+         robin->kind = vp_robinson_kind_arya_crmosteel;
+       }
        else
        {
          dserror("Kind of Robinson material could not be determined!");

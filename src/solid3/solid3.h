@@ -113,6 +113,12 @@ Maintainer: Moritz Frenzel
                                  * to a torsional torque at its tip. 
                                  * (bborn/mgit 04/07) */
 
+/* quick hack */
+/*#define GIDOUTSTRAIN_SOLID3*/ /* quick hack to write strains
+                                 * at Gauss points to Gid output file
+                                 * here, the strains are written
+                                 * instead of the stresses */
+
 /*======================================================================*/
 /* global declarations, variables etc */
 

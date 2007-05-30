@@ -630,26 +630,47 @@ void so3_gid_stress(CHAR resstring[],
         break;
       /* xyz-oriented stresses at Gauss points */
       case so3_stress_gpxyz:
+#ifdef GIDOUTSTRAIN_SOLID3
+        resultname        = "solid3_strain";
+#else
         resultname        = "solid3_stress";
+#endif
         resulttype        = "MATRIX";
         resultplace       = "ONGAUSSPOINTS";
         gpset             = actgid->solid3_h8_222_name;
         rangetable        = actgid->standardrangetable;
         ncomponent        = 6;
+#ifdef  GIDOUTSTRAIN_SOLID3
+        componentnames[0] = "Strain-xx";
+        componentnames[1] = "Strain-yy";
+        componentnames[2] = "Strain-zz";
+        componentnames[3] = "Strain-xy";
+        componentnames[4] = "Strain-yz";
+        componentnames[5] = "Strain-zx";
+#else
         componentnames[0] = "Stress-xx";
         componentnames[1] = "Stress-yy";
         componentnames[2] = "Stress-zz";
         componentnames[3] = "Stress-xy";
         componentnames[4] = "Stress-yz";
         componentnames[5] = "Stress-zx";
+#endif
         nelenod           = 8;
         gperm             = &(gperm_h_222[0]);
         ngauss            = 8;
+#ifdef GIDOUTSTRAIN_SOLID3
+        so3_gid_stress_gp(actfield, disnum, actele, actgid, 
+                          so3_stress_gprst, resultname, step,
+                          resulttype, resultplace, gpset,
+                          ncomponent, componentnames,
+                          nelenod, gperm, ngauss, out);
+#else
         so3_gid_stress_gp(actfield, disnum, actele, actgid, 
                           so3_stress_gpxyz, resultname, step,
                           resulttype, resultplace, gpset,
                           ncomponent, componentnames,
                           nelenod, gperm, ngauss, out);
+#endif
         break;
       /* catch the remaining stress types */
       default:

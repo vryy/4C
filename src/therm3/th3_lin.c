@@ -85,7 +85,7 @@ void th3_lin_tang(CONTAINER* container,
   INT nelenod = ele->numnp;  /* numnp of this element */
   INT neledof = NUMDOF_THERM3 * nelenod;  /* total number of element DOFs */
   DIS_TYP distyp = ele->distyp;  /* type of discretisation */
-  const INT tdof = 0;
+  const INT tdof = 0;  /* temperature degree-of-freedom (it's only a single DOF) */
   DOUBLE ex[MAXNOD_THERM3][NDIM_THERM3];  /* material coord. of element */
   DOUBLE etem[MAXDOF_THERM3];  /* curr. element temperature vector */
 

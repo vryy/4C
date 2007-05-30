@@ -589,7 +589,8 @@ typedef struct _VP_ROBINSON
        vp_robinson_kind_vague=0,               /* unset */
        vp_robinson_kind_butler,                /* Butler et al, 2005 [1] */
        vp_robinson_kind_arya,                  /* Arya, 1989 [2] */
-       vp_robinson_kind_arya_narloyz           /* Arya, 1992 [3] */
+       vp_robinson_kind_arya_narloyz,          /* Arya, 1992 [3] */
+       vp_robinson_kind_arya_crmosteel         /* Arya, 1992 [3] */
      }                         kind;
      MAT_PARAM_MULT            youngmodul;     /* Young's modulus 'E' */
      DOUBLE                    possionratio;   /* Possion's ratio 'nu' */

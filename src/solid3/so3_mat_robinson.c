@@ -243,16 +243,9 @@ void so3_mat_robinson_elmat(const VP_ROBINSON* mat_robin,
   /*--------------------------------------------------------------------*/
   DOUBLE emod;
   so3_mat_robinson_prmbytmpr(mat_robin->youngmodul, tem, &emod);
-#if 0
-  printf("Emod %f\n", emod);
-#endif
   DOUBLE prat = mat_robin->possionratio;
-#if 0
-  printf("ue %f\n", prat);
-#endif
   DOUBLE mfac = emod/((1.0+prat)*(1.0-2.0*prat));  /* factor */
   /* zero content */
-  /* memset(cmat, 0, NUMSTR_SOLID3*NUMSTR_SOLID3*sizeof(DOUBLE)); */
   {
     INT istr, jstr;
     for (istr=0; istr<NUMSTR_SOLID3; istr++)
@@ -340,15 +333,6 @@ void so3_mat_robinson_sel(const CONTAINER* container,
                             gds,
                             stress,
                             cmat);
-#if 0
-      {
-        INT i;
-        for (i=0; i<NUMSTR_SOLID3; i++)
-        {
-          printf("(so3_mat_robinson_sel) Stress %d : %g\n", i, stress[i]);
-        }
-      }
-#endif
   }
   else
   {

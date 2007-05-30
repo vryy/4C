@@ -152,7 +152,8 @@ void th3_temper_cal0(const CONTAINER *container,
   const ARRAY_POSITION_SOL* isol 
     = &(field[genprob.numtf].dis[container->disnum_t].ipos.isol);
   const INT item0 = isol->tem0;  /* temperature index */
-  const INT nelenod = ele->numnp;
+  const INT tdof = 0;  /* temperature degree-of-freedom (it's only one) */
+  const INT nelenod = ele->numnp;  /* number of element nodes */
   /* const INT neledof = NUMDOF_THERM3 * nelenod; */
   DOUBLE rr=0.0, ss=0.0, tt=0.0;  /* Gauss coordinate in THERM3 parameter space */
   DOUBLE shape[MAXNOD_THERM3];  /* shape functions */
@@ -201,7 +202,7 @@ void th3_temper_cal0(const CONTAINER *container,
   /* current nodal temperature */
   for (k=0; k<nelenod; k++)
   {
-    nodtem[k] = ele->node[k]->sol.a.da[item0][0];
+    nodtem[k] = ele->node[k]->sol.a.da[item0][tdof];
   }
 
   /*--------------------------------------------------------------------*/
@@ -249,6 +250,7 @@ void th3_temper_caln(const CONTAINER *container,
   const ARRAY_POSITION_SOL* isol 
     = &(field[genprob.numtf].dis[container->disnum_t].ipos.isol);
   const INT itemn = isol->temn;  /* temperature index */
+  const INT tdof = 0;  /* temperature degree-of-freedom (it's only one) */
   const INT nelenod = ele->numnp;
   /* const INT neledof = NUMDOF_THERM3 * nelenod; */
   DOUBLE rr=0.0, ss=0.0, tt=0.0;  /* Gauss coordinate in THERM3 parameter space */
@@ -298,7 +300,7 @@ void th3_temper_caln(const CONTAINER *container,
   /* current nodal temperature */
   for (k=0; k<nelenod; k++)
   {
-    nodtem[k] = ele->node[k]->sol.a.da[itemn][0];
+    nodtem[k] = ele->node[k]->sol.a.da[itemn][tdof];
   }
 
   /*--------------------------------------------------------------------*/
@@ -336,7 +338,7 @@ void th3_temper_sh(const CONTAINER *container,
                    const DOUBLE shape[MAXNOD_THERM3],
                    DOUBLE *tem)
 {
-  const INT idof = 0;  /* the only DOF */
+  const INT tdof = 0;  /* the only DOF */
   const ARRAY_POSITION_SOL* isol 
     = &(field[genprob.numtf].dis[container->disnum_t].ipos.isol);
   const INT item = isol->tem;  /* temperature index of last converged */
@@ -352,7 +354,7 @@ void th3_temper_sh(const CONTAINER *container,
   /* last converged nodal temperatures */
   for (k=0; k<nelenod; k++)
   {
-    nodtem[k] = ele->node[k]->sol.a.da[item][idof];
+    nodtem[k] = ele->node[k]->sol.a.da[item][tdof];
   }
 
   /*--------------------------------------------------------------------*/
