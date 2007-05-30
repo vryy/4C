@@ -246,12 +246,10 @@ namespace LINALG
   {
     const int myrank  = comm.MyPID();
     const int numproc = comm.NumProc();
-    if (numproc==1)
+    if (numproc==1) 
     {
-      rdata.clear();
-      rdata.reserve(sdata.size());
-      copy(sdata.begin(),sdata.end(),back_inserter(rdata));
-      return;
+      rdata = sdata;
+      return; // nothing to do in serial
     }
     // build a map of data
     map<int,vector<T> > datamap;
