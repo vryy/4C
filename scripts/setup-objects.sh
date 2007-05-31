@@ -11,7 +11,8 @@ OBJ_IF=0
 # objects:
 OBJECTS="\$(OBJS_MAIN) \$(OBJS_GLOBAL) \$(OBJS_GLOBAL_CPP) \$(OBJS_SOLVER) \$(OBJS_SOLVER_CPP) \
 \$(OBJS_DRT) \$(OBJS_DRT_LIB) \$(OBJS_PSS) \$(OBJS_PSS_CPP) \$(OBJS_INPUT) \$(OBJS_INPUT_CPP) \$(OBJS_PAR) \$(OBJS_MATH) \
-\$(OBJS_OUTPUT) \$(OBJS_FORTRAN) \$(OBJS_VISUAL) \$(OBJS_STRUCTURE) \$(OBJS_IO) \$(OBJS_IO_LIB)"
+\$(OBJS_OUTPUT) \$(OBJS_FORTRAN) \$(OBJS_VISUAL) \$(OBJS_STRUCTURE) \$(OBJS_IO) \$(OBJS_IO_LIB) \
+\$(OBJS_DRT_FSI)"
 
 # ALE
 if grep '^[[:blank:]]*D_ALE' "$definefile" 2>&1 > /dev/null ; then
@@ -227,7 +228,7 @@ fi
 
 # FSI
 if grep '^[[:blank:]]*D_FSI' "$definefile" 2>&1 > /dev/null ; then
-    OBJECTS="$OBJECTS \$(OBJS_FSI) \$(OBJS_FSI_CPP) \$(OBJS_DRT_FSI)"
+    OBJECTS="$OBJECTS \$(OBJS_FSI) \$(OBJS_FSI_CPP)"
 fi
 
 # SSI

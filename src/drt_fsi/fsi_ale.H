@@ -1,7 +1,6 @@
 
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
-#ifdef D_ALE
 
 #ifndef FSI_ALE_H
 #define FSI_ALE_H
@@ -23,6 +22,16 @@
 
 namespace FSI {
 
+
+/// General ALE interface
+class Ale
+{
+public:
+  virtual ~Ale() {}
+};
+
+
+/// linear ALE algorithm
 class AleLinear : public NOX::Epetra::Interface::Required,
                   public NOX::Epetra::Interface::Jacobian
 {
@@ -81,7 +90,6 @@ private:
 
 }
 
-#endif
 #endif
 #endif
 #endif

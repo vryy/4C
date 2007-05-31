@@ -1,7 +1,6 @@
 
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
-#ifdef D_ALE
 
 #include "ale_dyn.H"
 #include "fsi_ale.H"
@@ -146,6 +145,5 @@ void dyn_ale_drt()
 }
 
 
-#endif
 #endif
 #endif

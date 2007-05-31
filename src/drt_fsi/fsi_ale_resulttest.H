@@ -1,6 +1,5 @@
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
-#ifdef D_ALE
 #ifdef RESULTTEST
 
 #ifndef FSI_ALE_RESULTTEST_H
@@ -13,6 +12,7 @@ namespace FSI {
 
 class AleLinear;
 
+/// Result test subclass for linear ale algorithm
 class AleResultTest : public DRT::ResultTest
 {
 public:
@@ -25,19 +25,18 @@ public:
    */
   virtual void TestNode(RESULTDESCR* res, int& nerr, int& test_count);
 
-  /// return true if this is a fluid test
+  /// return true if this is a ale test
   virtual bool Match(RESULTDESCR* res);
 
 private:
 
-  /// our fluid algorithmus
+  /// our ale algorithmus
   AleLinear& ale_;
 
 };
 
 }
 
-#endif
 #endif
 #endif
 #endif

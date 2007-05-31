@@ -244,7 +244,7 @@ WARN_FORMAT            = "$file:$line: $text"
 # directories like "/usr/src/myproject". Separate the files or directories 
 # with spaces. 
 
-INPUT                  = index.doc ./ ../drt_xfem ../drt_s8 ../drt_w1 ../drt_f2 ../drt_f3 ../drt_f3_xfem ../drt_so3 ../io
+INPUT                  = index.doc ./ ../drt_xfem ../drt_s8 ../drt_w1 ../drt_f2 ../drt_f3 ../drt_f3_xfem ../drt_so3 ../io ../drt_fsi ../drt_ale3
 # If the value of the INPUT tag contains directories, you can use the 
 # FILE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp 
 # and *.h) to filter out the source-files in the directories. If left 

@@ -1,7 +1,6 @@
 
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
-#ifdef D_ALE
 
 #include "fsi_ale.H"
 
@@ -138,6 +137,5 @@ void FSI::AleLinear::EvaluateElements()
   maxentriesperrow_ = sysmat_->MaxNumEntries();
 }
 
-#endif
 #endif
 #endif

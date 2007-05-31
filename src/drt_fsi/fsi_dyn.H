@@ -1,8 +1,8 @@
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
-#ifndef ALE_DYN_H
-#define ALE_DYN_H
+#ifndef FSI_DYN_H
+#define FSI_DYN_H
 
 #ifdef __cplusplus
 extern "C"
@@ -10,7 +10,7 @@ extern "C"
 #endif
 
 /* headers and prototypes of functions also accessible from c */
-void dyn_ale_drt();
+void fsi_ale_drt();
 
 #ifdef __cplusplus
 }

@@ -71,6 +71,7 @@ extern struct _FIELD      *sm_field;
 #include "../drt_lib/global_inp_control2.H"
 #include "../drt_lib/fluid_dyn_nln_drt.H"
 #include "../drt_fsi/ale_dyn.H"
+#include "../drt_fsi/fsi_dyn.H"
 #endif
 
 /*----------------------------------------------------------------------*
@@ -249,7 +250,7 @@ case prb_pfsi:
 #ifndef CCADISCRET
   dyn_fsi(0);
 #else
-  dserror("dyn_fsi(0) with DRT not yet impl.");
+  fsi_ale_drt();
 #endif
   break;
 #endif
