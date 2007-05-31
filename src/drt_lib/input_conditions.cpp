@@ -653,6 +653,8 @@ void input_surf_neum(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
     if (ierr) condition->Add("type","neum_orthopressure");
     frchk("LAS",&ierr);
     if (ierr) condition->Add("type","neum_LAS");
+    frchk("BioPressure",&ierr);
+    if (ierr) condition->Add("type","neum_BioPressure");
     /*----------- read if load is applied on surface -> shell elements */
     frchk("Mid",&ierr);
     if (ierr) condition->Add("surface","mid");
