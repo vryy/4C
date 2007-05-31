@@ -25,6 +25,7 @@ filter. But to link the filter stubs of these functions are needed.
 #include "../drt_s8/shell8.H"
 #include "../drt_f2/fluid2.H"
 #include "../drt_f3/fluid3.H"
+#include "../drt_f3_xfem/fluid3_xfem.H"
 #include "../drt_w1/wall1.H"
 #include "../drt_so3/so_hex8.H"
 #include "../drt_ale3/ale3.H"
