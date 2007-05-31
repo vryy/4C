@@ -1,15 +1,15 @@
 /*!----------------------------------------------------------------------
 \file fluid3_xfem.H
 
-\class DRT::Elements::Fluid3
+\class DRT::Elements::XFluid3
 
-\brief A C++ wrapper for the fluid3 element
+\brief A XFEM enabled copy of the fluid3 element
 
 <pre>
-Maintainer: Georg Bauer
-            bauer@lnm.mw.tum.de
+Maintainer: Axel Gerstenberger
+            gerstenberger@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15252
+            089 - 289-15236
 </pre>
 
 *----------------------------------------------------------------------*/

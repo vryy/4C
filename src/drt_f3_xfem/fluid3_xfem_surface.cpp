@@ -3,10 +3,10 @@
 \brief
 
 <pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
+Maintainer: Axel Gerstenberger
+            gerstenberger@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15236
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -23,9 +23,7 @@ Maintainer: Michael Gee
 extern "C"
 {
 #include "../headers/standardtypes.h"
-#include "../fluid3/fluid3.h"
 }
-#include "../drt_lib/dstrc.H"
 
 
 
@@ -44,7 +42,6 @@ DRT::Element(id,element_xfluid3surface,owner),
 parent_(parent),
 lsurface_(lsurface)
 {
-  DSTraceHelper dst("XFluid3Surface::XFluid3Surface");
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
   return;
@@ -58,7 +55,6 @@ DRT::Element(old),
 parent_(old.parent_),
 lsurface_(old.lsurface_)
 {
-  DSTraceHelper dst("XFluid3Surface::XFluid3Surface");
   return;
 }
 
@@ -68,7 +64,6 @@ lsurface_(old.lsurface_)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::Elements::XFluid3Surface::Clone() const
 {
-  DSTraceHelper dst("XFluid3Surface::Clone");
   DRT::Elements::XFluid3Surface* newelement = new DRT::Elements::XFluid3Surface(*this);
   return newelement;
 }
@@ -98,7 +93,6 @@ DRT::Element::DiscretizationType DRT::Elements::XFluid3Surface::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::Elements::XFluid3Surface::Pack(vector<char>& data) const
 {
-  DSTraceHelper dst("Fluid3Surface::Pack");
   data.resize(0);
   dserror("this Fluid3Surface element does not support communication");
 
@@ -111,7 +105,6 @@ void DRT::Elements::XFluid3Surface::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void DRT::Elements::XFluid3Surface::Unpack(const vector<char>& data)
 {
-  DSTraceHelper dst("XFluid3Surface::Unpack");
   dserror("this XFluid3Surface element does not support communication");
   return;
 }
@@ -121,7 +114,6 @@ void DRT::Elements::XFluid3Surface::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
 DRT::Elements::XFluid3Surface::~XFluid3Surface()
 {
-  DSTraceHelper dst("XFluid3Surface::~XFluid3Surface");
   return;
 }
 
@@ -131,7 +123,6 @@ DRT::Elements::XFluid3Surface::~XFluid3Surface()
  *----------------------------------------------------------------------*/
 void DRT::Elements::XFluid3Surface::Print(ostream& os) const
 {
-  DSTraceHelper dst("XFluid3Surface::Print");
   os << "XFluid3Surface ";
   Element::Print(os);
   return;

@@ -3,10 +3,10 @@
 \brief
 
 <pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
+Maintainer: Axel Gerstenberger
+            gerstenberger@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15236
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -35,15 +35,12 @@ extern "C"
 extern struct _FILES  allfiles;
 }
 #include "fluid3_xfem.H"
-#include "../drt_lib/dstrc.H"
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                              g.bau 03/07|
  *----------------------------------------------------------------------*/
 bool DRT::Elements::XFluid3::ReadElement()
 {
-  DSTraceHelper dst("XFluid3::ReadElement");
-
   // read element's nodes
   int   ierr = 0;
   int   nnode = 0;

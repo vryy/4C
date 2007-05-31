@@ -3,10 +3,10 @@
 \brief
 
 <pre>
-Maintainer: Georg Bauer
-            bauer@lnm.mw.tum.de
+Maintainer: Axel Gerstenberger
+            gerstenberger@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15252
+            089 - 289-15236
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -29,7 +29,6 @@ Maintainer: Georg Bauer
 extern "C"
 {
 #include "../headers/standardtypes.h"
-#include "../fluid3/fluid3.h"
 }
 
 /*----------------------------------------------------------------------*

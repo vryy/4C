@@ -6,10 +6,10 @@ Integrate a Surface Neumann boundary condition on a given boundary
 element (tri or quad)
 
 <pre>
-Maintainer: Peter Gamnitzer
-            gamnitzer@lnm.mw.tum.de
+Maintainer: Axel Gerstenberger
+            gerstenberger@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15235
+            089 - 289-15236
 </pre>
 
 *----------------------------------------------------------------------*/
