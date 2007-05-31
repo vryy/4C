@@ -16,8 +16,8 @@ Maintainer: Georg Bauer
 #ifdef D_FLUID3
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
-#ifndef FLUID3_H
-#define FLUID3_H
+#ifndef DRT_FLUID3_H
+#define DRT_FLUID3_H
 
 
 #include "Teuchos_RefCountPtr.hpp"
