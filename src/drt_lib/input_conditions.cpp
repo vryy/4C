@@ -88,14 +88,24 @@ static void input_surf_periodic(multimap<int,RefCountPtr<DRT::Condition> >& spbc
 
 
 /*----------------------------------------------------------------------*
+ | fsi coupling conditions                                u.kue 05/07   |
+ *----------------------------------------------------------------------*/
+static void input_line_fsi_coupling(multimap<int,RefCountPtr<DRT::Condition> >& lfsicoupmap);
+static void input_surf_fsi_coupling(multimap<int,RefCountPtr<DRT::Condition> >& sfsicoupmap);
+
+
+/*----------------------------------------------------------------------*
  | Some b.c. for incompressible flows                 vanderbos 05/07   |
  *----------------------------------------------------------------------*/
 static void input_line_isothermnoslipwall(multimap<int,RefCountPtr<DRT::Condition> >& bcmap);
 static void input_line_subsonicinflow    (multimap<int,RefCountPtr<DRT::Condition> >& bcmap);
 static void input_line_subsonicoutflow   (multimap<int,RefCountPtr<DRT::Condition> >& bcmap);
 
+static void setup_condition(string name,
+                            string description,
+                            const multimap<int,RefCountPtr<DRT::Condition> >& cond,
+                            const vector<vector<int> >& fenode);
 static void add_nodeids_to_condition(const int id, RefCountPtr<DRT::Condition> cond,
-                                     const vector<int> nd_fenode,
                                      const vector<vector<int> > d_fenode);
 
 /*----------------------------------------------------------------------*
@@ -163,95 +173,83 @@ void input_conditions()
   //-------------------------------------read point dirichlet conditions
   multimap<int,RefCountPtr<DRT::Condition> > pointdirich;
   input_point_dirich(pointdirich);
+  setup_condition("Dirichlet", "Point Dirichlet", pointdirich, dnode_fenode);
   //-------------------------------------read line dirichlet conditions
   multimap<int,RefCountPtr<DRT::Condition> > linedirich;
   input_line_dirich(linedirich);
+  setup_condition("Dirichlet", "Line Dirichlet", linedirich, dline_fenode);
   //-------------------------------------read surface dirichlet conditions
   multimap<int,RefCountPtr<DRT::Condition> > surfdirich;
   input_surf_dirich(surfdirich);
+  setup_condition("Dirichlet", "Surface Dirichlet", surfdirich, dsurf_fenode);
   //-------------------------------------read volume dirichlet conditions
   multimap<int,RefCountPtr<DRT::Condition> > voldirich;
   input_vol_dirich(voldirich);
+  setup_condition("Dirichlet", "Volume Dirichlet", voldirich, dvol_fenode);
 
   //--------------------------------------- read point neumann conditions
   multimap<int,RefCountPtr<DRT::Condition> > pointneum;
   input_point_neum(pointneum);
+  setup_condition("PointNeumann", "Point Neumann", pointneum, dnode_fenode);
   //--------------------------------------- read line neumann conditions
   multimap<int,RefCountPtr<DRT::Condition> > lineneum;
   input_line_neum(lineneum);
+  setup_condition("LineNeumann", "Line Neumann", lineneum, dline_fenode);
   //--------------------------------------- read surface neumann conditions
   multimap<int,RefCountPtr<DRT::Condition> > surfneum;
   input_surf_neum(surfneum);
+  setup_condition("SurfaceNeumann", "Surface Neumann", surfneum, dsurf_fenode);
   //--------------------------------------- read vol neumann conditions
   multimap<int,RefCountPtr<DRT::Condition> > volneum;
   input_vol_neum(volneum);
+  setup_condition("VolumeNeumann", "Volume Neumann", volneum, dvol_fenode);
+
   //------------------------------------------- read line periodic condition
   multimap<int,RefCountPtr<DRT::Condition> > linepbc;
   input_line_periodic(linepbc);
+  setup_condition("LinePeriodic", "Line periodic", linepbc, dline_fenode);
   //---------------------------------------- read surface periodic condition
   multimap<int,RefCountPtr<DRT::Condition> > surfpbc;
   input_surf_periodic(surfpbc);
-  
+  setup_condition("SurfacePeriodic", "Surface periodic", surfpbc, dsurf_fenode);
+
+  //--------------------------------------- read line fsi coupling condition
+  multimap<int,RefCountPtr<DRT::Condition> > linefsicoup;
+  input_line_fsi_coupling(linefsicoup);
+  setup_condition("FSICoupling", "FSI Coupling", linefsicoup, dline_fenode);
+  //------------------------------------ read surface fsi coupling condition
+  multimap<int,RefCountPtr<DRT::Condition> > surffsicoup;
+  input_surf_fsi_coupling(surffsicoup);
+  setup_condition("FSICoupling", "FSI Coupling", surffsicoup, dsurf_fenode);
+
   //--------------------------------------- read line isothermal noslip wall conditions
   multimap<int,RefCountPtr<DRT::Condition> > lineisothermnoslip;
   input_line_isothermnoslipwall(lineisothermnoslip);
+  setup_condition("LineIsothermalNoslip", "Isothermal no-slip wall", lineisothermnoslip, dline_fenode);
   //--------------------------------------- read line subsonic inflow conditions
   multimap<int,RefCountPtr<DRT::Condition> > linesubsonicinflow;
   input_line_subsonicinflow(linesubsonicinflow);
+  setup_condition("LineSubsonicInflow", "Subsonic inflow", linesubsonicinflow, dline_fenode);
   //--------------------------------------- read line subsonic outflow conditions
   multimap<int,RefCountPtr<DRT::Condition> > linesubsonicoutflow;
   input_line_subsonicoutflow(linesubsonicoutflow);
+  setup_condition("LineSubsonicOutflow", "Subsonic outflow", linesubsonicoutflow, dline_fenode);
+
+} /* end of input_conditions */
 
 
-  // Iterate through all conditions and add the finite element node ids
-  // to the condition itself
-  multimap<int,RefCountPtr<DRT::Condition> >::iterator curr;
-  // iterate through point dirichlet conditions and add fe nodes
-  for (curr=pointdirich.begin(); curr!=pointdirich.end(); ++curr)
-    add_nodeids_to_condition(curr->first,curr->second,ndnode_fenode,dnode_fenode);
-  // iterate through line dirichlet conditions and add fe nodes
-  for (curr=linedirich.begin(); curr!=linedirich.end(); ++curr)
-    add_nodeids_to_condition(curr->first,curr->second,ndline_fenode,dline_fenode);
-  // iterate through surface dirichlet conditions and add fe nodes
-  for (curr=surfdirich.begin(); curr!=surfdirich.end(); ++curr)
-    add_nodeids_to_condition(curr->first,curr->second,ndsurf_fenode,dsurf_fenode);
-  // iterate through surface dirichlet conditions and add fe nodes
-  for (curr=voldirich.begin(); curr!=voldirich.end(); ++curr)
-    add_nodeids_to_condition(curr->first,curr->second,ndvol_fenode,dvol_fenode);
-
-  // iterate through point neumann conditions and add fe nodes
-  for (curr=pointneum.begin(); curr!=pointneum.end(); ++curr)
-    add_nodeids_to_condition(curr->first,curr->second,ndnode_fenode,dnode_fenode);
-  // iterate through line neumann conditions and add fe nodes
-  for (curr=lineneum.begin(); curr!=lineneum.end(); ++curr)
-    add_nodeids_to_condition(curr->first,curr->second,ndline_fenode,dline_fenode);
-  // iterate through surface neumann conditions and add fe nodes
-  for (curr=surfneum.begin(); curr!=surfneum.end(); ++curr)
-    add_nodeids_to_condition(curr->first,curr->second,ndsurf_fenode,dsurf_fenode);
-  // iterate through volume neumann conditions and add fe nodes
-  for (curr=volneum.begin(); curr!=volneum.end(); ++curr)
-    add_nodeids_to_condition(curr->first,curr->second,ndvol_fenode,dvol_fenode);
-
-  // iterate through line periodic condition and add fe nodes
-  for (curr=linepbc.begin(); curr!=linepbc.end(); ++curr)
-    add_nodeids_to_condition(curr->first,curr->second,ndline_fenode,dline_fenode);
-  // iterate through surface periodic condition and add fe nodes
-  for (curr=surfpbc.begin(); curr!=surfpbc.end(); ++curr)
-    add_nodeids_to_condition(curr->first,curr->second,ndsurf_fenode,dsurf_fenode);
-  
-  /* iterate through 
-     -line isothermal no-slip wall, 
-     -line subsonic inflow 
-     -line subsonic outflow b.c.
-     and add fe nodes
-  */
-  for (curr=lineisothermnoslip.begin(); curr!=lineisothermnoslip.end(); ++curr)
-    add_nodeids_to_condition(curr->first,curr->second,ndline_fenode,dline_fenode);
-  for (curr=linesubsonicinflow.begin(); curr!=linesubsonicinflow.end(); ++curr)
-    add_nodeids_to_condition(curr->first,curr->second,ndline_fenode,dline_fenode);
-  for (curr=linesubsonicoutflow.begin(); curr!=linesubsonicoutflow.end(); ++curr)
-    add_nodeids_to_condition(curr->first,curr->second,ndline_fenode,dline_fenode);
-
+/*----------------------------------------------------------------------*
+ | setup condition and add it to discretization           u.kue 05/07   |
+ *----------------------------------------------------------------------*/
+void setup_condition(string name,
+                     string description,
+                     const multimap<int,RefCountPtr<DRT::Condition> >& cond,
+                     const vector<vector<int> >& fenode)
+{
+  multimap<int,RefCountPtr<DRT::Condition> >::const_iterator curr;
+  // iterate through conditions and add fe nodes
+  for (curr=cond.begin(); curr!=cond.end(); ++curr)
+    add_nodeids_to_condition(curr->first,curr->second,fenode);
 
   // Iterate through all discretizations and sort the appropiate condition into
   // the correct discretization it applies to
@@ -264,211 +262,30 @@ void input_conditions()
       RefCountPtr<DRT::Discretization> actdis = (*discretization)[j];
       const Epetra_Map* noderowmap = actdis->NodeRowMap();
 
-      // point dirichlet
-      for (curr=pointdirich.begin(); curr!=pointdirich.end(); ++curr)
+      for (curr=cond.begin(); curr!=cond.end(); ++curr)
       {
         const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
-        if (!(int)nodes->size()) dserror("Point Dirichlet condition %d has no nodal cloud",
-					curr->second->Id());
+        if (!(int)nodes->size()) dserror("%s condition %d has no nodal cloud",
+                                         description.c_str(),
+                                         curr->second->Id());
         const int firstnode = (*nodes)[0];
         int foundit = 0;
         if (noderowmap->MyGID(firstnode)) foundit = 1;
         int found=0;
         noderowmap->Comm().SumAll(&foundit,&found,1);
         if (found)
-          actdis->SetCondition("Dirichlet",curr->second);
+          actdis->SetCondition(name,curr->second);
       }
-      // line dirichlet
-      for (curr=linedirich.begin(); curr!=linedirich.end(); ++curr)
-      {
-        const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
-        if (!(int)nodes->size()) dserror("Line Dirichlet condition %d has no nodal cloud",
-					curr->second->Id());
-        const int firstnode = (*nodes)[0];
-        int foundit = 0;
-        if (noderowmap->MyGID(firstnode)) foundit = 1;
-        int found=0;
-        noderowmap->Comm().SumAll(&foundit,&found,1);
-        if (found)
-          actdis->SetCondition("Dirichlet",curr->second);
-      }
-      // surface dirichlet
-      for (curr=surfdirich.begin(); curr!=surfdirich.end(); ++curr)
-      {
-        const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
-        if (!(int)nodes->size()) dserror("Surface Dirichlet condition %d has no nodal cloud",
-					curr->second->Id());
-        const int firstnode = (*nodes)[0];
-        int foundit = 0;
-        if (noderowmap->MyGID(firstnode)) foundit = 1;
-        int found=0;
-        noderowmap->Comm().SumAll(&foundit,&found,1);
-        if (found)
-          actdis->SetCondition("Dirichlet",curr->second);
-      }
-      // volume dirichlet
-      for (curr=voldirich.begin(); curr!=voldirich.end(); ++curr)
-      {
-        const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
-        if (!(int)nodes->size()) dserror("Volume Dirichlet condition %d has no nodal cloud",
-					curr->second->Id());
-        const int firstnode = (*nodes)[0];
-        int foundit = 0;
-        if (noderowmap->MyGID(firstnode)) foundit = 1;
-        int found=0;
-        noderowmap->Comm().SumAll(&foundit,&found,1);
-        if (found)
-          actdis->SetCondition("Dirichlet",curr->second);
-      }
-
-      // point neumann
-      for (curr=pointneum.begin(); curr!=pointneum.end(); ++curr)
-      {
-        const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
-        if (!(int)nodes->size()) dserror("Point Neumann condition %d has no nodal cloud",
-					curr->second->Id());
-        const int firstnode = (*nodes)[0];
-        int foundit = 0;
-        if (noderowmap->MyGID(firstnode)) foundit = 1;
-        int found=0;
-        noderowmap->Comm().SumAll(&foundit,&found,1);
-        if (found)
-          actdis->SetCondition("PointNeumann",curr->second);
-      }
-      // line neumann
-      for (curr=lineneum.begin(); curr!=lineneum.end(); ++curr)
-      {
-        const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
-        if (!(int)nodes->size()) dserror("Line Neumann condition %d has no nodal cloud",
-					curr->second->Id());
-        const int firstnode = (*nodes)[0];
-        int foundit = 0;
-        if (noderowmap->MyGID(firstnode)) foundit = 1;
-        int found=0;
-        noderowmap->Comm().SumAll(&foundit,&found,1);
-        if (found)
-          actdis->SetCondition("LineNeumann",curr->second);
-      }
-      // surface neumann
-      for (curr=surfneum.begin(); curr!=surfneum.end(); ++curr)
-      {
-        const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
-        if (!(int)nodes->size()) dserror("Surface Neumann condition %d has no nodal cloud",
-					curr->second->Id());
-        const int firstnode = (*nodes)[0];
-        int foundit = 0;
-        if (noderowmap->MyGID(firstnode)) foundit = 1;
-        int found=0;
-        noderowmap->Comm().SumAll(&foundit,&found,1);
-        if (found)
-          actdis->SetCondition("SurfaceNeumann",curr->second);
-      }
-      // volume neumann
-      for (curr=volneum.begin(); curr!=volneum.end(); ++curr)
-      {
-        const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
-        if (!(int)nodes->size()) dserror("Volume Neumann condition %d has no nodal cloud",
-					curr->second->Id());
-        const int firstnode = (*nodes)[0];
-        int foundit = 0;
-        if (noderowmap->MyGID(firstnode)) foundit = 1;
-        int found=0;
-        noderowmap->Comm().SumAll(&foundit,&found,1);
-        if (found)
-          actdis->SetCondition("VolumeNeumann",curr->second);
-      }
-
-      // line periodic condition
-      for (curr=linepbc.begin(); curr!=linepbc.end(); ++curr)
-      {
-        const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
-        if (!(int)nodes->size()) dserror("Line periodic condition %d has no nodal cloud",
-					curr->second->Id());
-        const int firstnode = (*nodes)[0];
-        int foundit = 0;
-        if (noderowmap->MyGID(firstnode)) foundit = 1;
-        int found=0;
-        noderowmap->Comm().SumAll(&foundit,&found,1);
-        if (found)
-        {
-          actdis->SetCondition("LinePeriodic",curr->second);
-          if(genprob.ndim==3)
-          {
-            dserror("Trying to set a pbc for a line, but only surfaces are allowed in 3d");
-          }
-        }
-      }
-      // surface periodic condition
-      for (curr=surfpbc.begin(); curr!=surfpbc.end(); ++curr)
-      {
-        const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
-        if (!(int)nodes->size()) dserror("Surface periodic condition %d has no nodal cloud",
-					curr->second->Id());
-        const int firstnode = (*nodes)[0];
-        int foundit = 0;
-        if (noderowmap->MyGID(firstnode)) foundit = 1;
-        int found=0;
-        noderowmap->Comm().SumAll(&foundit,&found,1);
-        if (found)
-          actdis->SetCondition("SurfacePeriodic",curr->second);
-      }
-
-      // isothermal no-slip wall b.c.
-      for (curr=lineisothermnoslip.begin(); curr!=lineisothermnoslip.end(); ++curr)
-      {
-        const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
-        if (!(int)nodes->size()) dserror("Isothermal no-slip wall condition %d has no nodal cloud",
-					curr->second->Id());
-        const int firstnode = (*nodes)[0];
-        int foundit = 0;
-        if (noderowmap->MyGID(firstnode)) foundit = 1;
-        int found=0;
-        noderowmap->Comm().SumAll(&foundit,&found,1);
-        if (found)
-          actdis->SetCondition("LineIsothermalNoslip",curr->second);
-      }
-      // subsonic inflow b.c.
-      for (curr=linesubsonicinflow.begin(); curr!=linesubsonicinflow.end(); ++curr)
-      {
-        const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
-        if (!(int)nodes->size()) dserror("Subsonic inflow condition %d has no nodal cloud",
-					curr->second->Id());
-        const int firstnode = (*nodes)[0];
-        int foundit = 0;
-        if (noderowmap->MyGID(firstnode)) foundit = 1;
-        int found=0;
-        noderowmap->Comm().SumAll(&foundit,&found,1);
-        if (found)
-          actdis->SetCondition("LineSubsonicInflow",curr->second);
-      }
-      // subsonic outflow b.c.
-      for (curr=linesubsonicoutflow.begin(); curr!=linesubsonicoutflow.end(); ++curr)
-      {
-        const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
-        if (!(int)nodes->size()) dserror("Subsonic outflow condition %d has no nodal cloud",
-					curr->second->Id());
-        const int firstnode = (*nodes)[0];
-        int foundit = 0;
-        if (noderowmap->MyGID(firstnode)) foundit = 1;
-        int found=0;
-        noderowmap->Comm().SumAll(&foundit,&found,1);
-        if (found)
-          actdis->SetCondition("LineSubsonicOutflow",curr->second);
-      }
-    }  // for (int j=0;j<field[i].ndis;j++)
-  } // for (int i=0; i<genprob.numfld; i++)
-  return;
-} /* end of input_conditions */
+    }
+  }
+}
 
 /*----------------------------------------------------------------------*
  | add node ids to a condition                            m.gee 01/07   |
  *----------------------------------------------------------------------*/
 void add_nodeids_to_condition(const int id, RefCountPtr<DRT::Condition> cond,
-                                     const vector<int> nd_fenode,
-                                     const vector<vector<int> > d_fenode)
+                              const vector<vector<int> > d_fenode)
 {
-  DSTraceHelper dst("add_nodeids_to_condition");
-
   // vector of finite element node ids in this node set
   const vector<int>& nodes = d_fenode[id];
 
@@ -1477,7 +1294,7 @@ void input_line_periodic(
   int ierr=0;
   int ndline=0;
   frint("DLINE",&ndline,&ierr);
-  
+
   if(ierr!=1)
     dserror("Cannot read design-line pbc");
   frread();
@@ -1521,7 +1338,7 @@ void input_line_periodic(
     // read Id of pbc. Must be smaller than or equal to the number of pbc pairs
     dlinepbcid = strtol(colptr,&colptr,10);
 
-    
+
     if (dlinepbcid>numdiffpbc)
     {
       dserror("number of pbc higher than number of different pbcs!");
@@ -1570,12 +1387,12 @@ void input_line_periodic(
 
     // the next pbc with this Id will be the slave condition
     togglemasterslave[dlinepbcid]++;
-    
+
     //--------------------------------- put condition in map of conditions
     lpbcmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dlineid,condition));
 
 
-    
+
     //-------------------------------------------------- read the next line
     frread();
   }
@@ -1617,14 +1434,14 @@ void input_surf_periodic(
   {
     togglemasterslave[i]=0;
   }
-  
+
   /*-------------------------------- start reading the design surfaces */
   while(strncmp(allfiles.actplace,"------",6)!=0)
   {
     /*------------------------------------------ read the design surf Id */
     int dsurfid = -1;
     frint("E",&dsurfid,&ierr);
-    if(ierr!=1)    
+    if(ierr!=1)
       dserror("Cannot read design-surface pbc");
     dsurfid--;
 
@@ -1645,7 +1462,7 @@ void input_surf_periodic(
     // read Id of pbc. Must be smaller than or equal to the number of pbc pairs
     dsurfpbcid = strtol(colptr,&colptr,10);
 
-    
+
     if (dsurfpbcid>numdiffpbc)
     {
       dserror("number of pbc higher than number of different pbcs!");
@@ -1694,10 +1511,10 @@ void input_surf_periodic(
 
     // the next pbc with this Id will be the slave condition
     togglemasterslave[dsurfpbcid]++;
-    
+
     //--------------------------------- put condition in map of conditions
     spbcmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dsurfid,condition));
-    
+
     //-------------------------------------------------- read the next line
     frread();
   }
@@ -1709,9 +1526,121 @@ void input_surf_periodic(
       dserror("reading of pbc pairs failed");
     }
   }
-  
+
   return;
 } // input_surf_periodic
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void input_line_fsi_coupling(multimap<int,RefCountPtr<DRT::Condition> >& lfsicoupmap)
+{
+  if (frfind("--DESIGN FSI COUPLING LINE CONDITIONS")==0) return;
+  frread();
+
+  /*---------------------- read number of design lines with conditions */
+  int ierr=0;
+  int ndline=0;
+  frint("DLINE",&ndline,&ierr);
+
+  if (ierr!=1) dserror("Cannot read line fsi coupling");
+  frread();
+
+  /*----------------------------------- start reading the design lines */
+  while (strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    /*------------------------------------------ read the design surf Id */
+    int dlineid = -1;
+    frint("E",&dlineid,&ierr);
+    if (ierr!=1) dserror("Cannot read line fsi coupling");
+    dlineid--;
+
+    /*--------------------------------- move pointer behind the "-" sign */
+    char* colptr = strstr(allfiles.actplace,"-");
+    if (colptr==NULL) dserror("Cannot read line fsi coupling");
+    colptr++;
+
+    /*----------------------------------------- read the  fsi couplingId */
+    int coupleId=-1;
+    coupleId = strtol(colptr,&colptr,10);
+    if (coupleId<=0) dserror("Cannot read line fsi coupling");
+
+    /*------------------------------------------------ read the fieldtyp */
+    char buffer[50];
+    ierr=sscanf(colptr," %s ",buffer);
+    if (ierr!=1) dserror("Cannot read line fsi coupling");
+
+    // create periodic boundary condition
+    RefCountPtr<DRT::Condition> condition = rcp(new DRT::Condition(dlineid,
+                                                                   DRT::Condition::FSICoupling,
+                                                                   false,
+                                                                   DRT::Condition::Line));
+    condition->Add("field", string(buffer));
+
+    //--------------------------------- put condition in map of conditions
+    lfsicoupmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dlineid,condition));
+
+    //-------------------------------------------------- read the next line
+    frread();
+  }
+}
+
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void input_surf_fsi_coupling(multimap<int,RefCountPtr<DRT::Condition> >& sfsicoupmap)
+{
+  if (frfind("--DESIGN FSI COUPLING SURFACE CONDITIONS")==0) return;
+  frread();
+
+  /*---------------------- read number of design surfaces with conditions */
+  int ierr=0;
+  int ndsurface=0;
+  frint("DSURF",&ndsurface,&ierr);
+
+  if (ierr!=1) dserror("Cannot read surface fsi coupling");
+  frread();
+
+  /*----------------------------------- start reading the design surfaces */
+  while (strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    /*------------------------------------------ read the design surface Id */
+    int dsurfaceid = -1;
+    frint("E",&dsurfaceid,&ierr);
+    if (ierr!=1) dserror("Cannot read surface fsi coupling");
+    dsurfaceid--;
+
+    /*--------------------------------- move pointer behind the "-" sign */
+    char* colptr = strstr(allfiles.actplace,"-");
+    if (colptr==NULL) dserror("Cannot read surface fsi coupling");
+    colptr++;
+
+    /*----------------------------------------- read the  fsi couplingId */
+    int coupleId=-1;
+    coupleId = strtol(colptr,&colptr,10);
+    if (coupleId<=0) dserror("Cannot read surface fsi coupling");
+
+    /*------------------------------------------------ read the fieldtyp */
+    char buffer[50];
+    ierr=sscanf(colptr," %s ",buffer);
+    if (ierr!=1) dserror("Cannot read surface fsi coupling");
+
+    // create periodic boundary condition
+    RefCountPtr<DRT::Condition> condition = rcp(new DRT::Condition(dsurfaceid,
+                                                                   DRT::Condition::FSICoupling,
+                                                                   false,
+                                                                   DRT::Condition::Surface));
+    condition->Add("field", string(buffer));
+
+    //--------------------------------- put condition in map of conditions
+    sfsicoupmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dsurfaceid,condition));
+
+    //-------------------------------------------------- read the next surface
+    frread();
+  }
+}
+
 
 /*----------------------------------------------------------------------*
  | input of line isothermal no-slipp wall b.c.        vanderbos 05/07   |
@@ -1720,7 +1649,7 @@ void input_line_isothermnoslipwall(multimap<int,RefCountPtr<DRT::Condition> >& b
 {
   DSTraceHelper dst("input_line_isothermnoslipwall");
 
-  /* Isothermal no-slip wall b.c. requires the following input variable(s): 
+  /* Isothermal no-slip wall b.c. requires the following input variable(s):
      - wall u-vel
      - wall v-vel
      - wall temperature
@@ -1779,7 +1708,7 @@ void input_line_subsonicinflow(multimap<int,RefCountPtr<DRT::Condition> >& bcmap
 {
   DSTraceHelper dst("input_line_subsonicinflow");
 
-  /* The line subsonic inflow b.c. requires the following input variable(s): 
+  /* The line subsonic inflow b.c. requires the following input variable(s):
      - far-field density
      - far-field u-velocity
      - far-field v-velocity
@@ -1839,7 +1768,7 @@ void input_line_subsonicoutflow(multimap<int,RefCountPtr<DRT::Condition> >& bcma
 {
   DSTraceHelper dst("input_line_subsonicoutflow");
 
-  /* The line subsonic outflow b.c. requires the following input variable(s): 
+  /* The line subsonic outflow b.c. requires the following input variable(s):
      - far-field pressure
   */
 
