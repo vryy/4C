@@ -111,7 +111,7 @@ void Discretization::EvaluateDirichlet(ParameterList& params,
   dserror("Discretization::EvaluateDirichlet undefined");
 }
 
-#ifdef SHELL8_H
+#ifdef D_SHELL8
 int Elements::Shell8Register::Initialize(Discretization&)
 {
   // dserror("Elements::Shell8Register::Initialize undefined");
@@ -155,7 +155,7 @@ int Elements::Shell8Line::EvaluateNeumann(ParameterList& params,
 #endif
 
 
-#ifdef FLUID3_H
+#ifdef D_FLUID3
 
 int Elements::Fluid3Register::Initialize(Discretization&)
 {
@@ -200,7 +200,52 @@ int Elements::Fluid3Surface::EvaluateNeumann(ParameterList& params,
 
 #endif
 
-#ifdef FLUID2_H
+#ifdef D_FLUID3_XFEM
+
+int Elements::XFluid3Register::Initialize(Discretization&)
+{
+  // dserror("Elements::XFluid3Register::Initialize undefined");
+  return 0;
+}
+
+bool Elements::XFluid3::ReadElement()
+{
+  dserror("Elements::XFluid3::ReadElement undefined");
+  return false;
+}
+
+int Elements::XFluid3::Evaluate(ParameterList&,
+                               Discretization&,
+                               vector<int>&,
+                               Epetra_SerialDenseMatrix&,
+                               Epetra_SerialDenseMatrix&,
+                               Epetra_SerialDenseVector&,
+                               Epetra_SerialDenseVector&,
+                               Epetra_SerialDenseVector&)
+{
+  dserror("Elements::XFluid3::Evaluate undefined");
+  return 0;
+}
+
+int Elements::XFluid3::EvaluateNeumann(ParameterList&, Discretization&, Condition&, vector<int>&, Epetra_SerialDenseVector&)
+{
+  dserror("Elements::XFluid3::EvaluateNeumann undefined");
+  return 0;
+}
+
+int Elements::XFluid3Surface::EvaluateNeumann(ParameterList& params,
+                                          Discretization&      discretization,
+                                          Condition&           condition,
+                                          vector<int>&              lm,
+                                          Epetra_SerialDenseVector& elevec1)
+{
+  dserror("Elements::XFluid3Surface::EvaluateNeumann undefined");
+  return 0;
+}
+
+#endif
+
+#ifdef D_FLUID2
 int Elements::Fluid2Register::Initialize(Discretization&)
 {
   // dserror("Elements::Fluid2Register::Initialize undefined");
@@ -244,7 +289,7 @@ int Elements::Fluid2Line::EvaluateNeumann(ParameterList& params,
 
 #endif
 
-#ifdef SOH8_H
+#ifdef D_SOH8
 int Elements::Soh8Register::Initialize(Discretization&)
 {
   //dserror("Elements::Soh8Register::Initialize undefined");
@@ -288,7 +333,7 @@ int Elements::Soh8Surface::EvaluateNeumann(ParameterList& params,
 
 #endif
 
-#ifdef WALL1_H
+#ifdef D_WALL1
 
 #if 0
 int Elements::Wall1Register::Initialize(Discretization&)
