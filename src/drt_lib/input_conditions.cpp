@@ -498,7 +498,8 @@ void input_point_neum(multimap<int,RefCountPtr<DRT::Condition> >& pnmap)
   int ierr=0;
   int ndnode=0;
   frint("DPOINT",&ndnode,&ierr);
-  dsassert(ierr==1,"Cannot read design-nodal neumann conditions");
+  if(ierr!=1)
+    dserror("Cannot read design-nodal neumann conditions");
   frread();
 
   /*-------------------------------------- start reading the design nodes */
@@ -507,11 +508,13 @@ void input_point_neum(multimap<int,RefCountPtr<DRT::Condition> >& pnmap)
     /*------------------------------------------ read the design node Id */
     int dnodeid = -1;
     frint("E",&dnodeid,&ierr);
-    dsassert(ierr==1,"Cannot read design-nodal neumann conditions");
+    if(ierr!=1)
+      dserror("Cannot read design-nodal neumann conditions");
     dnodeid--;
     /*--------------------------------- move pointer behind the "-" sign */
     char* colptr = strstr(allfiles.actplace,"-");
-    dsassert(colptr!=NULL,"Cannot read design-nodal neumann conditions");
+    if(colptr==NULL)
+      dserror("Cannot read design-nodal neumann conditions");
     colptr++;
 
     //------------------------------- define some temporary reading vectors
@@ -527,19 +530,22 @@ void input_point_neum(multimap<int,RefCountPtr<DRT::Condition> >& pnmap)
     int curve=0;
     char buffer[200];
     ierr=sscanf(colptr," %s ",buffer);
-    dsassert(ierr==1,"Cannot read design-nodal neumann conditions");
+    if(ierr!=1)
+      dserror("Cannot read design-nodal neumann conditions");
     if (strncmp(buffer,"none",4)==0)
     {
        curve = -1;
        colptr = strstr(allfiles.actplace,"none");
-       dsassert(colptr!=NULL,"Cannot read design-nodal neumann conditions");
+       if(colptr==NULL)
+         dserror("Cannot read design-nodal neumann conditions");
        colptr += 4;
     }
     else
     {
        ierr=sscanf(colptr," %d ",&curve);
        curve--;
-       dsassert(ierr==1,"Cannot read design-nodal neumann conditions");
+       if(ierr!=1)
+       dserror("Cannot read design-nodal neumann conditions");
        colptr = strpbrk(colptr,"1234567890");
        colptr++;
     }
@@ -606,7 +612,8 @@ void input_line_neum(multimap<int,RefCountPtr<DRT::Condition> >& lnmap)
   int ierr=0;
   int ndline=0;
   frint("DLINE",&ndline,&ierr);
-  dsassert(ierr==1,"Cannot read design-line neumann conditions");
+  if(ierr!=1)
+    dserror("Cannot read design-line neumann conditions");
   frread();
 
   /*------------------------------------- start reading the design lines */
@@ -615,11 +622,13 @@ void input_line_neum(multimap<int,RefCountPtr<DRT::Condition> >& lnmap)
     /*------------------------------------------ read the design line Id */
     int dlineid = -1;
     frint("E",&dlineid,&ierr);
-    dsassert(ierr==1,"Cannot read design-line neumann conditions");
+    if(ierr!=1)
+      dserror("Cannot read design-line neumann conditions");
     dlineid--;
     /*--------------------------------- move pointer behind the "-" sign */
     char* colptr = strstr(allfiles.actplace,"-");
-    dsassert(colptr!=NULL,"Cannot read design-line neumann conditions");
+    if(colptr==NULL)
+      dserror("Cannot read design-line neumann conditions");
     colptr++;
 
     //------------------------------- define some temporary reading vectors
@@ -635,19 +644,22 @@ void input_line_neum(multimap<int,RefCountPtr<DRT::Condition> >& lnmap)
     int curve=0;
     char buffer[200];
     ierr=sscanf(colptr," %s ",buffer);
-    dsassert(ierr==1,"Cannot read design-line neumann conditions");
+    if(ierr!=1)
+      dserror("Cannot read design-line neumann conditions");
     if (strncmp(buffer,"none",4)==0)
     {
        curve = -1;
        colptr = strstr(allfiles.actplace,"none");
-       dsassert(colptr!=NULL,"Cannot read design-line neumann conditions");
+       if(colptr==NULL)
+         dserror("Cannot read design-line neumann conditions");
        colptr += 4;
     }
     else
     {
        ierr=sscanf(colptr," %d ",&curve);
        curve--;
-       dsassert(ierr==1,"Cannot read design-line neumann conditions");
+       if(ierr!=1)
+         dserror("Cannot read design-line neumann conditions");
        colptr = strpbrk(colptr,"1234567890");
        colptr++;
     }
@@ -734,7 +746,8 @@ void input_surf_neum(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
   int ierr=0;
   int ndsurf=0;
   frint("DSURF",&ndsurf,&ierr);
-  dsassert(ierr==1,"Cannot read design-surface neumann conditions");
+  if(ierr!=1)
+    dserror("Cannot read design-surface neumann conditions");
   frread();
 
   /*------------------------------------- start reading the design surfs */
@@ -743,11 +756,13 @@ void input_surf_neum(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
     /*------------------------------------------ read the design surf Id */
     int dsurfid = -1;
     frint("E",&dsurfid,&ierr);
-    dsassert(ierr==1,"Cannot read design-surface neumann conditions");
+    if(ierr!=1)
+      dserror("Cannot read design-surface neumann conditions");
     dsurfid--;
     /*--------------------------------- move pointer behind the "-" sign */
     char* colptr = strstr(allfiles.actplace,"-");
-    dsassert(colptr!=NULL,"Cannot read design-surface neumann conditions");
+    if(colptr==NULL)
+      dserror("Cannot read design-surface neumann conditions");
     colptr++;
 
     //------------------------------- define some temporary reading vectors
@@ -763,19 +778,22 @@ void input_surf_neum(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
     int curve=0;
     char buffer[200];
     ierr=sscanf(colptr," %s ",buffer);
-    dsassert(ierr==1,"Cannot read design-surface neumann conditions");
+    if(ierr!=1)
+      dserror("Cannot read design-surface neumann conditions");
     if (strncmp(buffer,"none",4)==0)
     {
        curve = -1;
        colptr = strstr(allfiles.actplace,"none");
-       dsassert(colptr!=NULL,"Cannot read design-surface neumann conditions");
+       if(colptr==NULL)
+         dserror("Cannot read design-surface neumann conditions");
        colptr += 4;
     }
     else
     {
        ierr=sscanf(colptr," %d ",&curve);
        curve--;
-       dsassert(ierr==1,"Cannot read design-surface neumann conditions");
+       if(ierr!=1)
+         dserror("Cannot read design-surface neumann conditions");
        colptr = strpbrk(colptr,"1234567890");
        colptr++;
     }
@@ -862,7 +880,8 @@ void input_vol_neum(multimap<int,RefCountPtr<DRT::Condition> >& vnmap)
   int ierr=0;
   int ndvol=0;
   frint("DVOL",&ndvol,&ierr);
-  dsassert(ierr==1,"Cannot read design-volume neumann conditions");
+  if(ierr!=1)
+    dserror("Cannot read design-volume neumann conditions");
   frread();
 
   /*----------------------------------- start reading the design volumes */
@@ -871,11 +890,13 @@ void input_vol_neum(multimap<int,RefCountPtr<DRT::Condition> >& vnmap)
     /*---------------------------------------- read the design volume Id */
     int dvolid = -1;
     frint("E",&dvolid,&ierr);
-    dsassert(ierr==1,"Cannot read design-volume neumann conditions");
+    if(ierr!=1)
+      dserror("Cannot read design-volume neumann conditions");
     dvolid--;
     /*--------------------------------- move pointer behind the "-" sign */
     char* colptr = strstr(allfiles.actplace,"-");
-    dsassert(colptr!=NULL,"Cannot read design-volume neumann conditions");
+    if(colptr==NULL)
+      dserror("Cannot read design-volume neumann conditions");
     colptr++;
 
     //------------------------------- define some temporary reading vectors
@@ -891,19 +912,22 @@ void input_vol_neum(multimap<int,RefCountPtr<DRT::Condition> >& vnmap)
     int curve=0;
     char buffer[200];
     ierr=sscanf(colptr," %s ",buffer);
-    dsassert(ierr==1,"Cannot read design-volume neumann conditions");
+    if(ierr!=1)
+      dserror("Cannot read design-volume neumann conditions");
     if (strncmp(buffer,"none",4)==0)
     {
        curve = -1;
        colptr = strstr(allfiles.actplace,"none");
-       dsassert(colptr!=NULL,"Cannot read design-volume neumann conditions");
+       if(colptr==NULL)
+         dserror("Cannot read design-volume neumann conditions");
        colptr += 4;
     }
     else
     {
        ierr=sscanf(colptr," %d ",&curve);
        curve--;
-       dsassert(ierr==1,"Cannot read design-volume neumann conditions");
+       if(ierr!=1)
+         dserror("Cannot read design-volume neumann conditions");
        colptr = strpbrk(colptr,"1234567890");
        colptr++;
     }
@@ -971,7 +995,8 @@ void input_point_dirich(multimap<int,RefCountPtr<DRT::Condition> >& pdmap)
   int ierr=0;
   int ndnode=0;
   frint("DPOINT",&ndnode,&ierr);
-  dsassert(ierr==1,"Cannot read design-nodal dirichlet conditions");
+  if(ierr!=1)
+    dserror("Cannot read design-nodal dirichlet conditions");
   frread();
 
   /*-------------------------------------- start reading the design nodes */
@@ -980,11 +1005,13 @@ void input_point_dirich(multimap<int,RefCountPtr<DRT::Condition> >& pdmap)
     /*------------------------------------------ read the design node Id */
     int dnodeid = -1;
     frint("E",&dnodeid,&ierr);
-    dsassert(ierr==1,"Cannot read design-nodal dirichlet conditions");
+    if(ierr!=1)
+      dserror("Cannot read design-nodal dirichlet conditions");
     dnodeid--;
     /*--------------------------------- move pointer behind the "-" sign */
     char* colptr = strstr(allfiles.actplace,"-");
-    dsassert(colptr!=NULL,"Cannot read design-nodal dirichlet conditions");
+    if(colptr==NULL)
+      dserror("Cannot read design-nodal dirichlet conditions");
     colptr++;
 
     //------------------------------- define some temporary reading vectors
@@ -1021,11 +1048,13 @@ void input_point_dirich(multimap<int,RefCountPtr<DRT::Condition> >& pdmap)
     {
       char buffer[200];
       ierr=sscanf(colptr," %s ",buffer);
-      dsassert(ierr==1,"Cannot read design-nodal dirichlet conditions");
+      if(ierr!=1)
+        dserror("Cannot read design-nodal dirichlet conditions");
       if (strncmp(buffer,"none",4)==0)
       {
         colptr = strstr(colptr,"none");
-        dsassert(colptr!=NULL,"Cannot read design-nodal dirichlet conditions");
+        if(colptr==NULL)
+          dserror("Cannot read design-nodal dirichlet conditions");
         colptr += 4;
       }
       else
@@ -1036,7 +1065,8 @@ void input_point_dirich(multimap<int,RefCountPtr<DRT::Condition> >& pdmap)
           ierr=sscanf(colptr," %d ",&dirich_curve[i]);
           dirich_curve[i]--;
         }
-        dsassert(ierr==1,"Cannot read design-nodal dirichlet conditions");
+        if(ierr!=1)
+          dserror("Cannot read design-nodal dirichlet conditions");
         colptr = strpbrk(colptr,"1234567890");
         colptr++;
       }
@@ -1088,7 +1118,8 @@ void input_line_dirich(multimap<int,RefCountPtr<DRT::Condition> >& ldmap)
   int ierr=0;
   int ndline=0;
   frint("DLINE",&ndline,&ierr);
-  dsassert(ierr==1,"Cannot read design-line dirichlet conditions");
+  if(ierr!=1)
+    dserror("Cannot read design-line dirichlet conditions");
   frread();
 
   /*-------------------------------------- start reading the design lines */
@@ -1097,11 +1128,13 @@ void input_line_dirich(multimap<int,RefCountPtr<DRT::Condition> >& ldmap)
     /*------------------------------------------ read the design line Id */
     int dlineid = -1;
     frint("E",&dlineid,&ierr);
-    dsassert(ierr==1,"Cannot read design-line dirichlet conditions");
+    if(ierr!=1)
+      dserror("Cannot read design-line dirichlet conditions");
     dlineid--;
     /*--------------------------------- move pointer behind the "-" sign */
     char* colptr = strstr(allfiles.actplace,"-");
-    dsassert(colptr!=NULL,"Cannot read design-line dirichlet conditions");
+    if(colptr==NULL)
+      dserror("Cannot read design-line dirichlet conditions");
     colptr++;
 
     //------------------------------- define some temporary reading vectors
@@ -1138,11 +1171,13 @@ void input_line_dirich(multimap<int,RefCountPtr<DRT::Condition> >& ldmap)
     {
       char buffer[200];
       ierr=sscanf(colptr," %s ",buffer);
-      dsassert(ierr==1,"Cannot read design-line dirichlet conditions");
+      if(ierr!=1)
+        dserror("Cannot read design-line dirichlet conditions");
       if (strncmp(buffer,"none",4)==0)
       {
         colptr = strstr(colptr,"none");
-        dsassert(colptr!=NULL,"Cannot read design-line dirichlet conditions");
+        if(colptr==NULL)
+          dserror("Cannot read design-line dirichlet conditions");
         colptr += 4;
       }
       else
@@ -1153,7 +1188,8 @@ void input_line_dirich(multimap<int,RefCountPtr<DRT::Condition> >& ldmap)
           ierr=sscanf(colptr," %d ",&dirich_curve[i]);
           dirich_curve[i]--;
         }
-        dsassert(ierr==1,"Cannot read design-line dirichlet conditions");
+        if(ierr!=1)
+          dserror("Cannot read design-line dirichlet conditions");
         colptr = strpbrk(colptr,"1234567890");
         colptr++;
       }
@@ -1202,7 +1238,8 @@ void input_surf_dirich(multimap<int,RefCountPtr<DRT::Condition> >& sdmap)
   int ierr=0;
   int ndsurf=0;
   frint("DSURF",&ndsurf,&ierr);
-  dsassert(ierr==1,"Cannot read design-surface dirichlet conditions");
+  if(ierr!=1)
+    dserror("Cannot read design-surface dirichlet conditions");
   frread();
 
   /*------------------------------------- start reading the design surfs */
@@ -1211,11 +1248,13 @@ void input_surf_dirich(multimap<int,RefCountPtr<DRT::Condition> >& sdmap)
     /*------------------------------------------ read the design surf Id */
     int dsurfid = -1;
     frint("E",&dsurfid,&ierr);
-    dsassert(ierr==1,"Cannot read design-surface dirichlet conditions");
+    if(ierr!=1)
+      dserror("Cannot read design-surface dirichlet conditions");
     dsurfid--;
     /*--------------------------------- move pointer behind the "-" sign */
     char* colptr = strstr(allfiles.actplace,"-");
-    dsassert(colptr!=NULL,"Cannot read design-surface dirichlet conditions");
+    if(colptr==NULL)
+      dserror("Cannot read design-surface dirichlet conditions");
     colptr++;
 
     //------------------------------- define some temporary reading vectors
@@ -1252,11 +1291,13 @@ void input_surf_dirich(multimap<int,RefCountPtr<DRT::Condition> >& sdmap)
     {
       char buffer[200];
       ierr=sscanf(colptr," %s ",buffer);
-      dsassert(ierr==1,"Cannot read design-surface dirichlet conditions");
+      if(ierr!=1)
+        dserror("Cannot read design-surface dirichlet conditions");
       if (strncmp(buffer,"none",4)==0)
       {
         colptr = strstr(colptr,"none");
-        dsassert(colptr!=NULL,"Cannot read design-surface dirichlet conditions");
+        if(colptr==NULL)
+          dserror("Cannot read design-surface dirichlet conditions");
         colptr += 4;
       }
       else
@@ -1267,7 +1308,8 @@ void input_surf_dirich(multimap<int,RefCountPtr<DRT::Condition> >& sdmap)
           ierr=sscanf(colptr," %d ",&dirich_curve[i]);
           dirich_curve[i]--;
         }
-        dsassert(ierr==1,"Cannot read design-line surface conditions");
+        if(ierr!=1)
+          dserror("Cannot read design-line surface conditions");
         colptr = strpbrk(colptr,"1234567890");
         colptr++;
       }
@@ -1316,7 +1358,8 @@ void input_vol_dirich(multimap<int,RefCountPtr<DRT::Condition> >& vdmap)
   int ierr=0;
   int ndvol=0;
   frint("DVOL",&ndvol,&ierr);
-  dsassert(ierr==1,"Cannot read volume dirichlet conditions");
+  if(ierr!=1)
+    dserror("Cannot read volume dirichlet conditions");
   frread();
 
   /*----------------------------------- start reading the design volumes */
@@ -1325,11 +1368,13 @@ void input_vol_dirich(multimap<int,RefCountPtr<DRT::Condition> >& vdmap)
     /*---------------------------------------- read the design volume Id */
     int dvolid = -1;
     frint("E",&dvolid,&ierr);
-    dsassert(ierr==1,"Cannot read design-volume dirichlet conditions");
+    if(ierr!=1)
+      dserror("Cannot read design-volume dirichlet conditions");
     dvolid--;
     /*--------------------------------- move pointer behind the "-" sign */
     char* colptr = strstr(allfiles.actplace,"-");
-    dsassert(colptr!=NULL,"Cannot read design-volume dirichlet conditions");
+    if(colptr==NULL)
+      dserror("Cannot read design-volume dirichlet conditions");
     colptr++;
 
     //------------------------------- define some temporary reading vectors
@@ -1366,11 +1411,13 @@ void input_vol_dirich(multimap<int,RefCountPtr<DRT::Condition> >& vdmap)
     {
       char buffer[200];
       ierr=sscanf(colptr," %s ",buffer);
-      dsassert(ierr==1,"Cannot read design-volume dirichlet conditions");
+      if(ierr!=1)
+        dserror("Cannot read design-volume dirichlet conditions");
       if (strncmp(buffer,"none",4)==0)
       {
         colptr = strstr(colptr,"none");
-        dsassert(colptr!=NULL,"Cannot read design-volume dirichlet conditions");
+        if(colptr==NULL)
+          dserror("Cannot read design-volume dirichlet conditions");
         colptr += 4;
       }
       else
@@ -1381,7 +1428,8 @@ void input_vol_dirich(multimap<int,RefCountPtr<DRT::Condition> >& vdmap)
           ierr=sscanf(colptr," %d ",&dirich_curve[i]);
           dirich_curve[i]--;
         }
-        dsassert(ierr==1,"Cannot read design-volume conditions");
+        if(ierr!=1)
+          dserror("Cannot read design-volume conditions");
         colptr = strpbrk(colptr,"1234567890");
         colptr++;
       }
@@ -1430,13 +1478,15 @@ void input_line_periodic(
   int ndline=0;
   frint("DLINE",&ndline,&ierr);
   
-  dsassert(ierr==1,"Cannot read design-line pbc");
+  if(ierr!=1)
+    dserror("Cannot read design-line pbc");
   frread();
 
   // the number of matching pbc pairs
   int numdiffpbc=ndline/2;
-  
-  dsassert(ndline%2==0,"Pbc requires matching pairs of lines");
+
+  if(ndline%2!=0)
+    dserror("Pbc requires matching pairs of lines");
 
   vector<int> togglemasterslave(numdiffpbc);
   for(int i=0;i<numdiffpbc;i++)
@@ -1450,13 +1500,15 @@ void input_line_periodic(
     /*------------------------------------------ read the design surf Id */
     int dlineid = -1;
     frint("E",&dlineid,&ierr);
-    dsassert(ierr==1,"Cannot read design-line pbc");
+    if(ierr!=1)
+      dserror("Cannot read design-line pbc");
     dlineid--;
 
 
     /*--------------------------------- move pointer behind the "-" sign */
     char* colptr = strstr(allfiles.actplace,"-");
-    dsassert(colptr!=NULL,"Cannot read design-line pbc");
+    if(colptr==NULL)
+      dserror("Cannot read design-line pbc");
     colptr++;
 
     //----------------- define some temporary reading vectors and variables
@@ -1549,13 +1601,16 @@ void input_surf_periodic(
   int ierr=0;
   int ndsurf=0;
   frint("DSURF",&ndsurf,&ierr);
-  dsassert(ierr==1,"Cannot read design-surf pbc");
+
+  if(ierr!=1)
+    dserror("Cannot read design-surf pbc");
   frread();
 
   // the number of matching pbc pairs
   int numdiffpbc=ndsurf/2;
-  
-  dsassert(ndsurf%2==0,"Pbc requires matching pairs of surfaces");
+
+  if(ndsurf%2!=0)
+    dserror("Pbc requires matching pairs of surfaces");
 
   vector<int> togglemasterslave(numdiffpbc);
   for(int i=0;i<numdiffpbc;i++)
@@ -1569,13 +1624,15 @@ void input_surf_periodic(
     /*------------------------------------------ read the design surf Id */
     int dsurfid = -1;
     frint("E",&dsurfid,&ierr);
-    dsassert(ierr==1,"Cannot read design-surface pbc");
+    if(ierr!=1)    
+      dserror("Cannot read design-surface pbc");
     dsurfid--;
 
 
     /*--------------------------------- move pointer behind the "-" sign */
     char* colptr = strstr(allfiles.actplace,"-");
-    dsassert(colptr!=NULL,"Cannot read design-surface pbc");
+    if(colptr==NULL)
+      dserror("Cannot read design-surface pbc");
     colptr++;
 
     //----------------- define some temporary reading vectors and variables
