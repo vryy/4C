@@ -113,8 +113,39 @@ public:
 
   
   /*!
-  \brief Couple nodes for specific pair of periodic boundary conditions
+  \brief Couple nodes for specific pair of periodic boundary conditions.
 
+  On input, this method needs two lists of nodes (master- and
+  slavenodes). For every masternode, the method will look for the
+  "closest" slavenode and insert this connectivity in the midtosid map.
+  In this context, "closest" means, that one coordinate of the slavenode
+  is replaced by the coordinate of the masternode plane for the search
+  of the closest point. This is controlled by the parameter dofsforpbcplane,
+  an int vector of length 3:
+
+
+                     (1,1,0)    xy-plane
+  
+                     (0,1,1)    yz-plane
+  
+                     (1,0,1)    xz-plane
+                                                                      
+  The search algorithm will substitute the coordinate with 0 of the
+  slavenodes by the corresponding coordinate of the masternode plane
+  to calculate the closest node.
+  
+  Keep in mind that the masternodes and the slavenodes are distributed
+  among several processors. The connectivity information will be only
+  available on the proc which owns the specific masternode --- but the
+  corresponding closest slavenode will be searched on all procs!
+
+  The node matching is created in two steps. Step one generates a
+  processor local octree that contains all masternodes available on
+  this proc (NodeMatchingOctree nodematchingoctree).
+  The second part searches for the closest slave node on
+  all processors (nodematchingoctree.CreateGlobalNodeMatching).
+  
+  
   \param  midtosid        (o) map from master to slavenodes
   \param  masternodeids   (i) all master node ids
   \param  slavenodeids    (i) all slave node ids
@@ -130,19 +161,69 @@ public:
     const vector <int>  dofsforpbcplane);
 
   /*!
-  \brief Add the connectivity from this condition to the connectivity
-  of all previously processed periodic boundary conditions.
-  Redistribute the nodes and assign the dofs to the
-  current distribution of nodes
+  \brief Add the connectivity from this condition (midtosid, on input)
+  to the connectivity of all previously processed periodic boundary
+  conditions (allcoupledrownodes_).
 
-  \param  midtosid        (i) map from master to slavenodes
-  \param  pbcid           (i) the id of the periodic boundary condition
+  We are interested in a map of all coupled nodes. For nodes, which have
+  several periodic boundary conditions (for example edge nodes for
+  3d channel flow, see figure below), only one node (the pure master node)
+  is allowed to have its own degrees of freedom. The mixed master/slave
+  nodes must be eliminated and all connectivity information must be
+  transferred to the pure master.
+
+        MM----------MS
+
+         |xxxxxxxxxx|
+
+         |xxxxxxxxxx|
+
+         |xxxxxxxxxx|
+
+        SM----------SS
+         
+  Since not all information is available on every proc, the completion
+  of this coupling requires some additional communication of the coupling
+  behaviour of multiple coupled nodes.
+  
+
+  \param  midtosid        (i) map from master to slavenodes of current condition
+  \param  pbcid           (i) the id of the current periodic boundary condition
   
   \return void
 
   */
-  void AddConnectivityRedistributeAndCreateDofCoupling(
+  void AddConnectivity(
     map<int,int> &midtosid,const int pbcid);
+  
+  //@}
+
+
+  //! @name Methods to finish the coupling after the list of coupled nodes is known.
+
+  /*!
+  \brief Redistribute the nodes and assign the dofs to the
+  current distribution of nodes
+
+  o Create a new rownodemap using the map allcoupledrownodes_
+
+  o Build graph and temporary nodecolmap
+
+  o Fix ghosting (if slaves are ghosted, masternodes have to
+    be ghosted, too)
+    This leads to the newnodecolmap
+
+  o Create a new dofset specialisation for periodic boundary
+    conditions
+
+  o Redistribute nodes and call FillComplete including a call
+    to the modified AssignDegreeesOfFreedom
+    
+  \return void
+
+  */
+  void RedistributeAndCreateDofCoupling();
+  
   
   //@}
 

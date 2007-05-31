@@ -92,160 +92,185 @@ PeriodicBoundaryConditions::PeriodicBoundaryConditions
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
 {
-
-  // time measurement --- start TimeMonitor tm0 
-  tm0_ref_        = rcp(new TimeMonitor(*timepbctot_ ));
-
-  // map from global masternodeids (on this proc) to global slavenodeids
-  // for a single condition
-  map<int,int> midtosid;
-
-  // pointers to master and slave condition
-  DRT::Condition* mastercond=NULL;
-  DRT::Condition* slavecond =NULL;
-
-  // global master node Ids and global slave node Ids
-  vector <int>* masternodeids;
-  vector <int>* slavenodeids;
-  
-  //----------------------------------------------------------------------
-  //          LOOP PAIRS OF PERIODIC BOUNDARY CONDITIONS
-  //----------------------------------------------------------------------
-
-  
-  // loop pairs of periodic boundary conditions
-  for (int pbcid=0;pbcid<numpbcpairs_;++pbcid)
+  if(numpbcpairs_>0)
   {
-    if (discret_->Comm().MyPID() == 0)
-    {
-      cout << "doing pbc pair " << pbcid << " ";
-      fflush(stdout);
-    }
-    
-    // time measurement --- start TimeMonitor tm1
-    tm1_ref_        = rcp(new TimeMonitor(*timepbcmidtosid_ ));
+    // time measurement --- start TimeMonitor tm0 
+    tm0_ref_        = rcp(new TimeMonitor(*timepbctot_ ));
 
-    //--------------------------------------------------
-    // get master and slave condition pair
+    // map from global masternodeids (on this proc) to global slavenodeids
+    // for a single condition
+    map<int,int> midtosid;
+
+    // pointers to master and slave condition
+    DRT::Condition* mastercond=NULL;
+    DRT::Condition* slavecond =NULL;
+
+    // global master node Ids and global slave node Ids
+    vector <int>* masternodeids;
+    vector <int>* slavenodeids;
+  
+    //----------------------------------------------------------------------
+    //          LOOP PAIRS OF PERIODIC BOUNDARY CONDITIONS
+    //----------------------------------------------------------------------
+
+  
+    // loop pairs of periodic boundary conditions
+    for (int pbcid=0;pbcid<numpbcpairs_;++pbcid)
     {
-      for (unsigned numcond=0;numcond<mysurfpbcs_.size();++numcond)
+      if (discret_->Comm().MyPID() == 0)
       {
-        vector<int>* myid
-          = mysurfpbcs_[numcond]->Get<vector<int> >("Id of periodic boundary condition");
-        if (myid[0][0] == pbcid)
+        cout << "pbc pair " << pbcid << ": ";
+        fflush(stdout);
+      }
+    
+      // time measurement --- start TimeMonitor tm1
+      tm1_ref_        = rcp(new TimeMonitor(*timepbcmidtosid_ ));
+
+      //--------------------------------------------------
+      // get master and slave condition pair
+      {
+        for (unsigned numcond=0;numcond<mysurfpbcs_.size();++numcond)
         {
-          vector<int>* mymasterslavetoggle
-            = mysurfpbcs_[numcond]->Get<vector<int> >("Is slave periodic boundary condition");
+          vector<int>* myid
+            = mysurfpbcs_[numcond]->Get<vector<int> >("Id of periodic boundary condition");
+          if (myid[0][0] == pbcid)
+          {
+            vector<int>* mymasterslavetoggle
+              = mysurfpbcs_[numcond]->Get<vector<int> >("Is slave periodic boundary condition");
           
-          if(mymasterslavetoggle[0][0]==0)
-          {
-            mastercond =mysurfpbcs_[numcond];
-          }
-          else if (mymasterslavetoggle[0][0]==1)
-          {
-            slavecond =mysurfpbcs_[numcond];
-          }
-          else
-          {
-            dserror("pbc is neither master nor slave");
+            if(mymasterslavetoggle[0][0]==0)
+            {
+              mastercond =mysurfpbcs_[numcond];
+            }
+            else if (mymasterslavetoggle[0][0]==1)
+            {
+              slavecond =mysurfpbcs_[numcond];
+            }
+            else
+            {
+              dserror("pbc is neither master nor slave");
+            }
           }
         }
       }
+  
+      //--------------------------------------------------
+      // vector specifying the plane of this pair
+      //
+      //     |                           |
+      //     |                           |
+      //     |      parallel planes      |
+      //     |-------------------------->|
+      //     |                           |
+      //     |                           |
+      //     |                           |
+      //   slave                      master
+      //
+      //
+      vector <int>* dofsforpbcplane  =
+        mastercond->Get<vector<int> >("degrees of freedom for the pbc plane");
+        
+
+      //--------------------------------------------------
+      // get global master node Ids and global slave node Ids
+      masternodeids = mastercond->Get<vector<int> >("Node Ids");
+      slavenodeids  = slavecond ->Get<vector<int> >("Node Ids");
+
+
+      //----------------------------------------------------------------------
+      //      CONSTRUCT NODE MATCHING BETWEEN MASTER AND SLAVE NODES
+      //                        FOR THIS CONDITION
+      //----------------------------------------------------------------------
+    
+      // clear map from global masternodeids (on this proc) to global
+      // slavenodeids --- it belongs to this pair of periodic boundary
+      // conditions!!!
+      midtosid.clear();
+
+      if (discret_->Comm().MyPID() == 0)
+      {
+        cout << " creating midtosid-map ... ";
+        fflush(stdout);
+      }
+    
+      // get map master on this proc -> slave on some proc
+      CreateNodeCouplingForSinglePBC(
+        midtosid,
+        *masternodeids,
+        *slavenodeids ,
+        *dofsforpbcplane);
+      // time measurement --- this causes the TimeMonitor tm1 to stop here
+      tm1_ref_ = null;
+
+      if (discret_->Comm().MyPID() == 0)
+      {
+        cout << "adding connectivity to previous pbcs ... ";
+        fflush(stdout);
+      }
+    
+      // time measurement --- start TimeMonitor tm4
+      tm4_ref_        = rcp(new TimeMonitor(*timepbcreddis_ ));
+
+
+      //----------------------------------------------------------------------
+      //      ADD CONNECTIVITY TO CONNECTIVITY OF ALL PREVIOUS PBCS
+      //----------------------------------------------------------------------  
+      // Add the connectivity from this condition to the connectivity
+      // of all previously processed periodic boundary conditions.
+      // Redistribute the nodes (rownodes+ghosting)
+      // Assign the same degrees of freedom to coupled nodes
+      AddConnectivity(midtosid,pbcid);
+
+      // time measurement --- this causes the TimeMonitor tm4 to stop here
+      tm4_ref_ = null;
+    
+      if (discret_->Comm().MyPID() == 0)
+      {
+        cout << " done\n";
+        fflush(stdout);
+      }    
+    } // end loop pairs of periodic boundary conditions
+
+
+    //----------------------------------------------------------------------
+    //         REDISTRIBUTE ACCORDING TO THE GENERATED CONNECTIVITY
+    //----------------------------------------------------------------------  
+
+    if (discret_->Comm().MyPID() == 0)
+    {
+      cout << "Redistributing ... ";
+      fflush(stdout);
     }
   
-    //--------------------------------------------------
-    // vector specifying the plane of this pair
-    //
-    //     |                           |
-    //     |                           |
-    //     |      parallel planes      |
-    //     |-------------------------->|
-    //     |                           |
-    //     |                           |
-    //     |                           |
-    //   slave                      master
-    //
-    //
-    vector <int>* dofsforpbcplane  =
-      mastercond->Get<vector<int> >("degrees of freedom for the pbc plane");
-        
-
-    //--------------------------------------------------
-    // get global master node Ids and global slave node Ids
-    masternodeids = mastercond->Get<vector<int> >("Node Ids");
-    slavenodeids  = slavecond ->Get<vector<int> >("Node Ids");
-
-
-    //----------------------------------------------------------------------
-    //      CONSTRUCT NODE MATCHING BETWEEN MASTER AND SLAVE NODES
-    //                        FOR THIS CONDITION
-    //----------------------------------------------------------------------
-    
-    // clear map from global masternodeids (on this proc) to global
-    // slavenodeids --- it belongs to this pair of periodic boundary
-    // conditions!!!
-    midtosid.clear();
-
-    if (discret_->Comm().MyPID() == 0)
-    {
-      cout << " creating midtosid-map ... ";
-      fflush(stdout);
-    }
-    
-    // get map master on this proc -> slave on some proc
-    CreateNodeCouplingForSinglePBC(
-      midtosid,
-      *masternodeids,
-      *slavenodeids ,
-      *dofsforpbcplane);
-    // time measurement --- this causes the TimeMonitor tm1 to stop here
-    tm1_ref_ = null;
-
-    if (discret_->Comm().MyPID() == 0)
-    {
-      cout << "redistributing ...  ";
-      fflush(stdout);
-    }
-    
-    // time measurement --- start TimeMonitor tm4
-    tm4_ref_        = rcp(new TimeMonitor(*timepbcreddis_ ));
-        
-    // Add the connectivity from this condition to the connectivity
-    // of all previously processed periodic boundary conditions.
-    // Redistribute the nodes (rownodes+ghosting)
-    // Assign the same degrees of freedom to coupled nodes
-    AddConnectivityRedistributeAndCreateDofCoupling(
-      midtosid,pbcid);
-
-    // time measurement --- this causes the TimeMonitor tm4 to stop here
-    tm4_ref_ = null;
-    
+    RedistributeAndCreateDofCoupling();
+  
     if (discret_->Comm().MyPID() == 0)
     {
       cout << " done\n";
       fflush(stdout);
     }    
-  } // end loop pairs of periodic boundary conditions
 
-  // eventually call METIS to optimally distribute the nodes --- up to
-  // now, a periodic boundary condition might remove all nodes from a
-  // proc ...
-
-
-  // time measurement --- this causes the TimeMonitor tm0 to stop here
-  //                                                (call of destructor)
-  tm0_ref_ = null;
+  
+    // eventually call METIS to optimally distribute the nodes --- up to
+    // now, a periodic boundary condition might remove all nodes from a
+    // proc ...
 
 
-  if(discret_->Comm().MyPID()==0)
-  {
-    cout<<endl<<endl;
-  }
-  TimeMonitor::summarize();
-  if(discret_->Comm().MyPID()==0)
-  {
-    cout<<endl<<endl;
-  }  
+    // time measurement --- this causes the TimeMonitor tm0 to stop here
+    //                                                (call of destructor)
+    tm0_ref_ = null;
+
+
+    if(discret_->Comm().MyPID()==0)
+    {
+      cout<<endl<<endl;
+    }
+    TimeMonitor::summarize();
+    if(discret_->Comm().MyPID()==0)
+    {
+      cout<<endl<<endl;
+    }
+  } // end if numpbcpairs_>0
   return;
   
 }// UpdateDofsForPeriodicBoundaryConditions()
@@ -321,14 +346,13 @@ void PeriodicBoundaryConditions::CreateNodeCouplingForSinglePBC(
 /*----------------------------------------------------------------------*
  | Add the connectivity from this condition to the connectivity         |
  | of all previously processed periodic boundary conditions.            |
- | Redistribute the nodes and assign the dofs to the                    |
- | current distribution of nodes                    (public) gammi 05/07|
+ |                                                  (public) gammi 05/07|
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-void PeriodicBoundaryConditions::AddConnectivityRedistributeAndCreateDofCoupling(
+void PeriodicBoundaryConditions::AddConnectivity(
   map<int,int>       &midtosid,
   const int           pbcid
   )
@@ -388,94 +412,221 @@ void PeriodicBoundaryConditions::AddConnectivityRedistributeAndCreateDofCoupling
     //---------------------------------------------------------------
     //     COMPLETE MATCHING FOR NODES WITH MORE THAN ONE PBC
     //---------------------------------------------------------------
-    // complete matching (we are able to do this because of the
-    // communication step which was done in the last iteration
-    // (first step is no problem at all ...)
-    // this might be expensive --- but since I do not expect to have
-    // many periodic boundary conditions (more than three) and the
-    // number of nodes concerned is very small (edge and cornernodes,
-    // for example in a 32x32x32 channel flow we talk about 33 nodes)
-    // I think we could afford these intermediate redistributions
-    //
-    // its really expensive )-:, all time is spend in Redistribute!
-    //
-    // maybe it would be an idea do distribute all multiple couples
-    // to all procs --- this would probably accelerate the code by
-    // far...
+    // complete matching --- we are able to do this because of the
+    // communication step (first step is no problem at all ...)
+
     {
-      map<int,vector<int> >::iterator curr;
-      vector<int >         ::iterator alreadyin;
-
-      bool toggle = false;
-      for( curr = allcoupledrownodes_->begin(); curr != allcoupledrownodes_->end(); ++curr )
+      if(pbcid>0)
       {
-        // we have a node which is coupled to more than one nodes
-        if(curr->second.size()>1)
-        {
-          map<int,vector<int> >::iterator found;
 
-          // the list of matching nodes may be incomplete
-          for (unsigned rr=0;rr<curr->second.size();++rr)
+        // 1) each proc generates a list of his multiple coupled masters
+        // 2) the list is communicated in a round robin pattern to all the
+        //    other procs.
+        // 3) the proc checks the package from each proc and inserts missing
+        //    links into the multiple coupling 
+
+        
+        //--------------------------------------------------------------------
+        // -> 1) create a list of multiple master
+        // Communicate multiple couplings for completion...
+        vector < vector <int> > multiplecouplings;
+        for( iter = midtosid.begin(); iter != midtosid.end(); ++iter )
+        {
+          // get id of masternode and the node itself
+          masterid  = iter->first;
+          DRT::Node* actnode = discret_->gNode(masterid);
+
+          // get all periodic boundary conditions on this node
+          vector<DRT::Condition*> thiscond;
+          actnode->GetCondition("SurfacePeriodic",thiscond);
+
+          if(thiscond.empty())
           {
-            found = allcoupledrownodes_->find(curr->second[rr]);
-                
-            if(found != allcoupledrownodes_->end())
+            actnode->GetCondition("LinePeriodic",thiscond);
+          }
+
+          // loop them and check, whether this is a pbc pure master node
+          // for all previous conditions
+          unsigned ntimesmaster = 0;
+          for (unsigned numcond=0;numcond<thiscond.size();++numcond)
+          {
+            vector<int>* mymasterslavetoggle
+              = thiscond[numcond]->Get<vector<int> >("Is slave periodic boundary condition");
+            
+            if(mymasterslavetoggle[0][0]==0)
             {
-              bool infoused=false;
-              // close the connectivity using the slave node which was the
-              // masternode of the previous condition
-              for (unsigned mm = 0;mm<found->second.size();++mm)
+              ++ntimesmaster;
+            } // end is slave?
+          } // end loop this conditions
+        
+          if(ntimesmaster==thiscond.size())
+          {
+            // yes, we have such a pure master node
+            vector <int> thiscoupling;
+            thiscoupling.push_back(masterid);
+            for(vector<int>::iterator rr=(*allcoupledrownodes_)[masterid].begin();
+                rr!=(*allcoupledrownodes_)[masterid].end();
+                ++rr)
+            {
+              thiscoupling.push_back(*rr);
+            }
+
+            // add it to the list of multiple coupled masters on this proc
+            multiplecouplings.push_back(thiscoupling);
+          }
+        }
+
+        //--------------------------------------------------------------------
+        // -> 2) round robin loop
+        
+        int myrank  =discret_->Comm().MyPID();
+        int numprocs=discret_->Comm().NumProc();
+
+        vector<char> sblock;
+        vector<char> rblock;
+
+        
+#ifdef PARALLEL
+        // create an exporter for point to point comunication
+        DRT::Exporter exporter(discret_->Comm());
+#endif
+        
+        for (int np=0;np<numprocs;np++)
+        {
+          // pack multiple couplings
+          sblock.clear();
+          for(unsigned rr=0;rr<multiplecouplings.size();++rr)
+          { 
+            DRT::ParObject::AddtoPack(sblock,multiplecouplings[rr]);
+          }
+#ifdef PARALLEL
+          MPI_Request request;
+          int         tag    =myrank;
+          
+          int         frompid=myrank;
+          int         topid  =(myrank+1)%numprocs;
+          
+          int         length=sblock.size();
+          
+          exporter.ISend(frompid,topid,
+                         &(sblock[0]),sblock.size(),
+                         tag,request);
+          
+          rblock.clear();
+          
+          // receive from predecessor
+          frompid=(myrank+numprocs-1)%numprocs;
+          exporter.ReceiveAny(frompid,tag,rblock,length);
+          
+          if(tag!=(myrank+numprocs-1)%numprocs)
+          {
+            dserror("received wrong message (ReceiveAny)");
+          }
+          
+          exporter.Wait(request);
+          
+          {
+            // for safety
+            exporter.Comm().Barrier();
+          }
+#endif
+
+          //--------------------------------------------------
+          // Unpack received block.
+          multiplecouplings.clear();
+          
+          int index = 0;
+          while (index < (int)rblock.size())
+          {
+            vector<int> onecoup;
+            DRT::ParObject::ExtractfromPack(index,rblock,onecoup);
+            multiplecouplings.push_back(onecoup);
+          }
+          
+          //--------------------------------------------------
+          // -> 3) Try to complete the matchings
+
+          for(unsigned rr=0;rr<multiplecouplings.size();++rr)
+          {
+            for(unsigned mm=1;mm<multiplecouplings[rr].size();++mm)
+            {
+              int possiblemaster=(multiplecouplings[rr])[mm];
+              
+              map<int,vector<int> >::iterator found
+                = allcoupledrownodes_->find(possiblemaster);
+                
+              if(found != allcoupledrownodes_->end())
               {
-                toggle = false;
-                // add only if not already in list
-                for( alreadyin   = curr->second.begin();
-                     alreadyin  != curr->second.end()  ;
-                     ++alreadyin )
+                // close the connectivity using the slave node which was the
+                // masternode of the previous condition
+                for (unsigned mm = 0;mm<found->second.size();++mm)
                 {
-                  if(*alreadyin == found->second[mm])
+                  bool dontdoit=false;
+                  for(unsigned i = 1 ;i<multiplecouplings[rr].size();++i)
                   {
-                    toggle  = true;
-                    infoused= true;
-                    break; // iter alreadyin
+                    if(found->second[mm]==(multiplecouplings[rr])[i])
+                    {
+                      dontdoit=true;
+                    }
+                  }
+                  if(!dontdoit)
+                  {
+                    multiplecouplings[rr].push_back(found->second[mm]);
                   }
                 }
-
-                if(toggle!=true)
-                {
-                  curr->second.push_back(found->second[mm]);
-                }
-              }
-              // the information was used and the entry is not needed anymore
-              if(infoused=true)
-              {
-                found->second.clear();
-              }
-            } // end if we have a further connectivity information...
-          } // end loop all coupled nodes to this one
-        } // end if we have a node which is coupled to more then one nodes
-      } // end for curr
-
-      // erase all redundant (now empty) connections
-      for( curr = allcoupledrownodes_->begin(); curr != allcoupledrownodes_->end();)
-      {
-        if(curr->second.empty())
-        {
-          allcoupledrownodes_->erase(curr++);
+                allcoupledrownodes_->erase(found);
+              } // end if we have a further connectivity information...
+            }
+          }
         }
-        else
+
+        // add this information to the map of all coupled nodes
+        for(unsigned rr=0;rr<multiplecouplings.size();++rr)
         {
-          ++curr;
+          int multimaster=(multiplecouplings[rr])[0];
+
+          for(unsigned mm=((*allcoupledrownodes_)[multimaster].size()+1);
+              mm<multiplecouplings[rr].size();
+              ++mm)
+          {
+            int thisslave = (multiplecouplings[rr])[mm];
+            (*allcoupledrownodes_)[multimaster].push_back(thisslave);
+          }
         }
       }
     } // end complete matching
   }
-  // time measurement --- this causes the TimeMonitor tm5 to stop here
-  tm5_ref_ = null;  
   
-  //----------------------------------------------------------------------
-  // REDISTRIBUTE ALL MASTER/SLAVE PAIRS OF THIS CONDITION TO THE
-  //                      SAME PROCESSOR
-  //----------------------------------------------------------------------
+  // time measurement --- this causes the TimeMonitor tm5 to stop here
+  tm5_ref_ = null;
+  
+  return;
+}// PeriodicBoundaryConditions::AddConnectivity
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | Redistribute the nodes and assign the dofs to the                    |
+ | current distribution of nodes                    (public) gammi 05/07|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+
+void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
+  )
+{
+  // the "inverse" mapping of allcoupled(row/col)nodes
+  //       slave node -> his master node (list of size 1)
+  RefCountPtr<map<int,vector<int> > > inversenodecoupling;
+  inversenodecoupling=rcp(new map<int,vector<int> >);
+
+  
+  // rcp to the constructed rowmap
+  RefCountPtr<Epetra_Map> newrownodemap;
+
   {
     // time measurement --- start TimeMonitor tm6
     tm6_ref_        = rcp(new TimeMonitor(*timepbcfetchs_ ));
@@ -507,31 +658,24 @@ void PeriodicBoundaryConditions::AddConnectivityRedistributeAndCreateDofCoupling
 
           // loop them and check, whether this is a pbc slave node of the
           // current condition
-          vector<int>* myid;
-            
           bool erased=false;
             
           for (unsigned numcond=0;numcond<thiscond.size();++numcond)
           {
-            myid  = thiscond[numcond]->Get<vector<int> >("Id of periodic boundary condition");
-
-            if (myid[0][0] == pbcid)
+            vector<int>* mymasterslavetoggle
+              = thiscond[numcond]->Get<vector<int> >("Is slave periodic boundary condition");
+            
+            if(mymasterslavetoggle[0][0]==1)
             {
-              vector<int>* mymasterslavetoggle
-                = thiscond[numcond]->Get<vector<int> >("Is slave periodic boundary condition");
-          
-              if(mymasterslavetoggle[0][0]==1)
-              {
-                // erase the coupled nodes from the map --- they are redundant
-                allcoupledrownodes_->erase(*curr);
+              // erase the coupled nodes from the map --- they are redundant
+              allcoupledrownodes_->erase(*curr);
                 // erase id from vector --- be careful, curr is increased by return value!
-                curr=nodesonthisproc.erase(curr);
-                erased=true;
-                break;
-              } // end is slave?
-            }// end if (myid[0][0] == pbcid)
+              curr=nodesonthisproc.erase(curr);
+              erased=true;
+              break;
+            } // end is slave?
           } // end loop this conditions
-
+          
           if(erased==false)
           {
             ++curr;
@@ -547,14 +691,17 @@ void PeriodicBoundaryConditions::AddConnectivityRedistributeAndCreateDofCoupling
         
     // append slavenodes to this list of nodes on this proc
     {
-      map<int,int>::iterator iter;
-      int slaveid;
-      for( iter = midtosid.begin(); iter != midtosid.end(); ++iter )
+      for(map<int,vector<int> >::iterator curr = allcoupledrownodes_->begin();
+          curr != allcoupledrownodes_->end();
+          ++curr )
       {
-        // get id of slavenodes
-        slaveid  = iter->second;     
-        nodesonthisproc.push_back(slaveid);
-      } // end append slavenodes of this proc
+        for (vector<int>::iterator iter=curr->second.begin();iter!=curr->second.end();++iter)
+        {
+          int slaveid  = *iter;     
+  
+          nodesonthisproc.push_back(slaveid);
+        }
+      }
     }
 
     //--------------------------------------------------
@@ -717,9 +864,12 @@ void PeriodicBoundaryConditions::AddConnectivityRedistributeAndCreateDofCoupling
     // time measurement --- this causes the TimeMonitor tm7 to stop here
     tm7_ref_ = null;  
   }
-  
+
   return;
-}// PeriodicBoundaryConditions::AddConnectivityRedistributeAndCreateDofCoupling
+}// PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling
+
+
+
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
