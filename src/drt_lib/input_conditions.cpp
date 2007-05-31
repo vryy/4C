@@ -101,12 +101,15 @@ static void input_line_isothermnoslipwall(multimap<int,RefCountPtr<DRT::Conditio
 static void input_line_subsonicinflow    (multimap<int,RefCountPtr<DRT::Condition> >& bcmap);
 static void input_line_subsonicoutflow   (multimap<int,RefCountPtr<DRT::Condition> >& bcmap);
 
-static void setup_condition(string name,
-                            string description,
-                            const multimap<int,RefCountPtr<DRT::Condition> >& cond,
+static void setup_condition(const multimap<int,RefCountPtr<DRT::Condition> >& cond,
                             const vector<vector<int> >& fenode);
 static void add_nodeids_to_condition(const int id, RefCountPtr<DRT::Condition> cond,
                                      const vector<vector<int> > d_fenode);
+static void register_condition(string name,
+                               string description,
+                               const multimap<int,RefCountPtr<DRT::Condition> >& cond,
+                               RefCountPtr<DRT::Discretization> actdis,
+                               const Epetra_Map* noderowmap);
 
 /*----------------------------------------------------------------------*
  | input of conditions                                    m.gee 11/06   |
@@ -173,112 +176,115 @@ void input_conditions()
   //-------------------------------------read point dirichlet conditions
   multimap<int,RefCountPtr<DRT::Condition> > pointdirich;
   input_point_dirich(pointdirich);
-  setup_condition("Dirichlet", "Point Dirichlet", pointdirich, dnode_fenode);
+  setup_condition(pointdirich, dnode_fenode);
   //-------------------------------------read line dirichlet conditions
   multimap<int,RefCountPtr<DRT::Condition> > linedirich;
   input_line_dirich(linedirich);
-  setup_condition("Dirichlet", "Line Dirichlet", linedirich, dline_fenode);
+  setup_condition(linedirich, dline_fenode);
   //-------------------------------------read surface dirichlet conditions
   multimap<int,RefCountPtr<DRT::Condition> > surfdirich;
   input_surf_dirich(surfdirich);
-  setup_condition("Dirichlet", "Surface Dirichlet", surfdirich, dsurf_fenode);
+  setup_condition(surfdirich, dsurf_fenode);
   //-------------------------------------read volume dirichlet conditions
   multimap<int,RefCountPtr<DRT::Condition> > voldirich;
   input_vol_dirich(voldirich);
-  setup_condition("Dirichlet", "Volume Dirichlet", voldirich, dvol_fenode);
+  setup_condition(voldirich, dvol_fenode);
 
   //--------------------------------------- read point neumann conditions
   multimap<int,RefCountPtr<DRT::Condition> > pointneum;
   input_point_neum(pointneum);
-  setup_condition("PointNeumann", "Point Neumann", pointneum, dnode_fenode);
+  setup_condition(pointneum, dnode_fenode);
   //--------------------------------------- read line neumann conditions
   multimap<int,RefCountPtr<DRT::Condition> > lineneum;
   input_line_neum(lineneum);
-  setup_condition("LineNeumann", "Line Neumann", lineneum, dline_fenode);
+  setup_condition(lineneum, dline_fenode);
   //--------------------------------------- read surface neumann conditions
   multimap<int,RefCountPtr<DRT::Condition> > surfneum;
   input_surf_neum(surfneum);
-  setup_condition("SurfaceNeumann", "Surface Neumann", surfneum, dsurf_fenode);
+  setup_condition(surfneum, dsurf_fenode);
   //--------------------------------------- read vol neumann conditions
   multimap<int,RefCountPtr<DRT::Condition> > volneum;
   input_vol_neum(volneum);
-  setup_condition("VolumeNeumann", "Volume Neumann", volneum, dvol_fenode);
+  setup_condition(volneum, dvol_fenode);
 
   //------------------------------------------- read line periodic condition
   multimap<int,RefCountPtr<DRT::Condition> > linepbc;
   input_line_periodic(linepbc);
-  setup_condition("LinePeriodic", "Line periodic", linepbc, dline_fenode);
+  setup_condition(linepbc, dline_fenode);
   //---------------------------------------- read surface periodic condition
   multimap<int,RefCountPtr<DRT::Condition> > surfpbc;
   input_surf_periodic(surfpbc);
-  setup_condition("SurfacePeriodic", "Surface periodic", surfpbc, dsurf_fenode);
+  setup_condition(surfpbc, dsurf_fenode);
 
   //--------------------------------------- read line fsi coupling condition
   multimap<int,RefCountPtr<DRT::Condition> > linefsicoup;
   input_line_fsi_coupling(linefsicoup);
-  setup_condition("FSICoupling", "FSI Coupling", linefsicoup, dline_fenode);
+  setup_condition(linefsicoup, dline_fenode);
   //------------------------------------ read surface fsi coupling condition
   multimap<int,RefCountPtr<DRT::Condition> > surffsicoup;
   input_surf_fsi_coupling(surffsicoup);
-  setup_condition("FSICoupling", "FSI Coupling", surffsicoup, dsurf_fenode);
+  setup_condition(surffsicoup, dsurf_fenode);
 
   //--------------------------------------- read line isothermal noslip wall conditions
   multimap<int,RefCountPtr<DRT::Condition> > lineisothermnoslip;
   input_line_isothermnoslipwall(lineisothermnoslip);
-  setup_condition("LineIsothermalNoslip", "Isothermal no-slip wall", lineisothermnoslip, dline_fenode);
+  setup_condition(lineisothermnoslip, dline_fenode);
   //--------------------------------------- read line subsonic inflow conditions
   multimap<int,RefCountPtr<DRT::Condition> > linesubsonicinflow;
   input_line_subsonicinflow(linesubsonicinflow);
-  setup_condition("LineSubsonicInflow", "Subsonic inflow", linesubsonicinflow, dline_fenode);
+  setup_condition(linesubsonicinflow, dline_fenode);
   //--------------------------------------- read line subsonic outflow conditions
   multimap<int,RefCountPtr<DRT::Condition> > linesubsonicoutflow;
   input_line_subsonicoutflow(linesubsonicoutflow);
-  setup_condition("LineSubsonicOutflow", "Subsonic outflow", linesubsonicoutflow, dline_fenode);
-
-} /* end of input_conditions */
-
-
-/*----------------------------------------------------------------------*
- | setup condition and add it to discretization           u.kue 05/07   |
- *----------------------------------------------------------------------*/
-void setup_condition(string name,
-                     string description,
-                     const multimap<int,RefCountPtr<DRT::Condition> >& cond,
-                     const vector<vector<int> >& fenode)
-{
-  multimap<int,RefCountPtr<DRT::Condition> >::const_iterator curr;
-  // iterate through conditions and add fe nodes
-  for (curr=cond.begin(); curr!=cond.end(); ++curr)
-    add_nodeids_to_condition(curr->first,curr->second,fenode);
+  setup_condition(linesubsonicoutflow, dline_fenode);
 
   // Iterate through all discretizations and sort the appropiate condition into
   // the correct discretization it applies to
   for (int i=0; i<genprob.numfld; i++)
   {
     vector<RefCountPtr<DRT::Discretization> >* discretization =
-              (vector<RefCountPtr<DRT::Discretization> >*)field[i].ccadis;
+      (vector<RefCountPtr<DRT::Discretization> >*)field[i].ccadis;
     for (int j=0;j<field[i].ndis;j++)
     {
       RefCountPtr<DRT::Discretization> actdis = (*discretization)[j];
       const Epetra_Map* noderowmap = actdis->NodeRowMap();
 
-      for (curr=cond.begin(); curr!=cond.end(); ++curr)
-      {
-        const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
-        if (!(int)nodes->size()) dserror("%s condition %d has no nodal cloud",
-                                         description.c_str(),
-                                         curr->second->Id());
-        const int firstnode = (*nodes)[0];
-        int foundit = 0;
-        if (noderowmap->MyGID(firstnode)) foundit = 1;
-        int found=0;
-        noderowmap->Comm().SumAll(&foundit,&found,1);
-        if (found)
-          actdis->SetCondition(name,curr->second);
-      }
+      register_condition("Dirichlet", "Point Dirichlet", pointdirich, actdis, noderowmap);
+      register_condition("Dirichlet", "Line Dirichlet", linedirich, actdis, noderowmap);
+      register_condition("Dirichlet", "Surface Dirichlet", surfdirich, actdis, noderowmap);
+      register_condition("Dirichlet", "Volume Dirichlet", voldirich, actdis, noderowmap);
+
+      register_condition("PointNeumann", "Point Neumann", pointneum, actdis, noderowmap);
+      register_condition("LineNeumann", "Line Neumann", lineneum, actdis, noderowmap);
+      register_condition("SurfaceNeumann", "Surface Neumann", surfneum, actdis, noderowmap);
+      register_condition("VolumeNeumann", "Volume Neumann", volneum, actdis, noderowmap);
+
+      register_condition("LinePeriodic", "Line periodic", linepbc, actdis, noderowmap);
+      register_condition("SurfacePeriodic", "Surface periodic", surfpbc, actdis, noderowmap);
+
+      register_condition("FSICoupling", "FSI Coupling", linefsicoup, actdis, noderowmap);
+      register_condition("FSICoupling", "FSI Coupling", surffsicoup, actdis, noderowmap);
+
+      register_condition("LineIsothermalNoslip", "Isothermal no-slip wall", lineisothermnoslip, actdis, noderowmap);
+      register_condition("LineSubsonicInflow", "Subsonic inflow", linesubsonicinflow, actdis, noderowmap);
+      register_condition("LineSubsonicOutflow", "Subsonic outflow", linesubsonicoutflow, actdis, noderowmap);
     }
   }
+} /* end of input_conditions */
+
+
+/*----------------------------------------------------------------------*
+ | setup condition                                        u.kue 05/07   |
+ *----------------------------------------------------------------------*/
+void setup_condition(const multimap<int,RefCountPtr<DRT::Condition> >& cond,
+                     const vector<vector<int> >& fenode)
+{
+  multimap<int,RefCountPtr<DRT::Condition> >::const_iterator curr;
+  // iterate through conditions and add fe nodes
+  for (curr=cond.begin(); curr!=cond.end(); ++curr)
+    add_nodeids_to_condition(curr->first,curr->second,fenode);
 }
+
 
 /*----------------------------------------------------------------------*
  | add node ids to a condition                            m.gee 01/07   |
@@ -294,6 +300,32 @@ void add_nodeids_to_condition(const int id, RefCountPtr<DRT::Condition> cond,
   return;
 } // add_nodeids_to_condition
 
+
+/*----------------------------------------------------------------------*
+ | add condition to discretization                        u.kue 05/07   |
+ *----------------------------------------------------------------------*/
+void register_condition(string name,
+                        string description,
+                        const multimap<int,RefCountPtr<DRT::Condition> >& cond,
+                        RefCountPtr<DRT::Discretization> actdis,
+                        const Epetra_Map* noderowmap)
+{
+  multimap<int,RefCountPtr<DRT::Condition> >::const_iterator curr;
+  for (curr=cond.begin(); curr!=cond.end(); ++curr)
+  {
+    const vector<int>* nodes = curr->second->Get<vector<int> >("Node Ids");
+    if (!(int)nodes->size()) dserror("%s condition %d has no nodal cloud",
+                                     description.c_str(),
+                                     curr->second->Id());
+    const int firstnode = (*nodes)[0];
+    int foundit = 0;
+    if (noderowmap->MyGID(firstnode)) foundit = 1;
+    int found=0;
+    noderowmap->Comm().SumAll(&foundit,&found,1);
+    if (found)
+      actdis->SetCondition(name,curr->second);
+  }
+}
 
 
 /*----------------------------------------------------------------------*
