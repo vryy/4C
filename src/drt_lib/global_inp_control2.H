@@ -43,6 +43,9 @@ Maintainer: Michael Gee
 #ifdef D_FLUID3
 #include "../drt_f3/fluid3.H"
 #endif
+#ifdef D_FLUID3_XFEM
+#include "../drt_f3_xfem/fluid3_xfem.H"
+#endif
 
 extern "C" /* stuff which is c and is accessed from c++ */
 {
