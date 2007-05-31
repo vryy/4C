@@ -175,6 +175,12 @@ OBJS_DRT_F3_LIB = src/drt_f3/fluid3.o \
 OBJS_DRT_F3   = src/drt_f3/fluid3_evaluate.o \
                 src/drt_f3/fluid3_input.o \
                 src/drt_f3/fluid3_surface_evaluate.o
+# ------------------------------------------------------------ fluid3 xfem
+OBJS_DRT_XF3_LIB = src/drt_f3_xfem/fluid3_xfem.o \
+                   src/drt_f3_xfem/fluid3_xfem_surface.o
+OBJS_DRT_XF3   = src/drt_f3_xfem/fluid3_xfem_evaluate.o \
+                 src/drt_f3_xfem/fluid3_xfem_input.o \
+                 src/drt_f3_xfem/fluid3_xfem_surface_evaluate.o
 #------------------------------------------------------------------ fluid3
 OBJS_FLUID3   = src/fluid3/f3_calele.o \
                 src/fluid3/f3_calelesize.o \
