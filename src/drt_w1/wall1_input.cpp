@@ -103,6 +103,10 @@ bool DRT::Elements::Wall1::ReadElement()
   frint_n("GP",ngp_,2,&ierr);
   if (ierr!=1) dserror("Reading of WALL1 element failed");
 
+//  // read gaussian points for triangle element
+//  frint("GP_TRI",&ngptri_,&ierr);
+//  if (ierr!=1) dserror("Reading of WALL1 element failed");
+
   //read 2D problem type
   frchk("PLANE_STRESS",&ierr);
   if (ierr==1) wtype_ = plane_stress; 

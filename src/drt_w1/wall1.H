@@ -320,6 +320,8 @@ private:
   vector<DRT::Elements::Wall1Line*>               lineptrs_;
   //! gaussian points
   int                                             ngp_[2];
+//  //! no. gaussian points for triangle elements
+//  int                                             ngptri_;
   //! problem type
   DimensionalReduction                            wtype_;
   //! type of stress calculation
@@ -376,14 +378,14 @@ private:
                           const int numeps,
                           struct _MATERIAL* material);
 
-  void w1_kg(Epetra_SerialDenseMatrix& kg,
+  void w1_kg(Epetra_SerialDenseMatrix& estif,
              Epetra_SerialDenseMatrix& boplin,
              Epetra_SerialDenseMatrix& stress,
              double fac,
              int nd,
              int numeps);
 
-  void w1_keu(Epetra_SerialDenseMatrix& keu,
+  void w1_keu(Epetra_SerialDenseMatrix& estif,
               Epetra_SerialDenseMatrix& b_cure,
               Epetra_SerialDenseMatrix& C,
               double fac,

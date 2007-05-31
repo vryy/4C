@@ -55,7 +55,6 @@ int DRT::Elements::Wall1::Evaluate(ParameterList& params,
 {
   DSTraceHelper dst("Wall1::Evaluate");  
   DRT::Elements::Wall1::ActionType act = Wall1::calc_none;
-  
   // get the action required
   string action = params.get<string>("action","calc_none");
   if (action == "calc_none") dserror("No action supplied");
@@ -111,7 +110,7 @@ int DRT::Elements::Wall1::Evaluate(ParameterList& params,
 }
 
 /*----------------------------------------------------------------------*
- |  Integrate a Surface Neumann boundary condition (public)  mgit 04/07|
+ |  Integrate a Surface Neumann boundary condition (public)  mgit 05/07|
  *----------------------------------------------------------------------*/
 
 int DRT::Elements::Wall1::EvaluateNeumann(ParameterList& params, 
@@ -120,7 +119,104 @@ int DRT::Elements::Wall1::EvaluateNeumann(ParameterList& params,
                                            vector<int>&              lm,
                                            Epetra_SerialDenseVector& elevec1)
 {
-  return 0;
+  RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+  if (disp==null) dserror("Cannot get state vector 'displacement'");
+  vector<double> mydisp(lm.size());
+  DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
+  
+  // find out whether we will use a time curve
+  bool usetime = true;
+  const double time = params.get("total time",-1.0);
+  if (time<0.0) usetime = false;
+
+  // find out whether we will use a time curve and get the factor
+  vector<int>* curve  = condition.Get<vector<int> >("curve");
+  int curvenum = -1;
+  if (curve) curvenum = (*curve)[0]; 
+  double curvefac = 1.0;
+  if (curvenum>=0 && usetime)
+    dyn_facfromcurve(curvenum,time,&curvefac); 
+
+  // no. of nodes on this surface
+  const int iel = NumNode();
+
+ // general arrays
+  int       ngauss  = 0;
+  Epetra_SerialDenseMatrix xjm;
+  xjm.Shape(2,2);
+  double det; 
+  // init gaussian points
+  W1_DATA w1data;
+  w1_integration_points(w1data);
+
+  const int nir = ngp_[0]; 
+  const int nis = ngp_[1]; 
+  const int numdf = 2;
+//  vector<double>* thick = data_.Get<vector<double> >("thick");
+//  if (!thick) dserror("Cannot find vector of nodal thickness");
+
+  vector<double> funct(iel);
+  Epetra_SerialDenseMatrix deriv(2,iel);
+
+  double xrefe[2][MAXNOD_WALL1];
+  double xcure[2][MAXNOD_WALL1];
+
+  /*----------------------------------------------------- geometry update */
+  for (int k=0; k<iel; ++k)
+  {
+    
+    xrefe[0][k] = Nodes()[k]->X()[0];
+    xrefe[1][k] = Nodes()[k]->X()[1];
+    
+    xcure[0][k] = xrefe[0][k] + mydisp[k*numdf+0];
+    xcure[1][k] = xrefe[1][k] + mydisp[k*numdf+1];
+    
+  }
+
+
+  // get values and switches from the condition
+  vector<int>*    onoff = condition.Get<vector<int> >("onoff");
+  vector<double>* val   = condition.Get<vector<double> >("val");
+  /*=================================================== integration loops */
+  for (int lr=0; lr<nir; ++lr)
+  {
+    /*================================== gaussian point and weight at it */
+    const double e1   = w1data.xgrr[lr];
+    double facr = w1data.wgtr[lr];
+      for (int ls=0; ls<nis; ++ls)
+    {
+      const double e2   = w1data.xgss[ls];
+      double facs = w1data.wgts[ls];
+      /*-------------------- shape functions at gp e1,e2 on mid surface */
+      w1_shapefunctions(funct,deriv,e1,e2,iel,1);
+      /*--------------------------------------- compute jacobian Matrix */ 
+      w1_jacobianmatrix(xrefe,deriv,xjm,&det,iel);
+      /*------------------------------------ integration factor  -------*/
+     double fac=0; 
+     fac = facr * facs * det;
+
+    // load vector ar
+    double ar[2];
+    // loop the dofs of a node
+    // ar[i] = ar[i] * facr * ds * onoff[i] * val[i]
+    for (int i=0; i<2; ++i)
+   {
+      ar[i] = fac * (*onoff)[i]*(*val)[i]*curvefac;
+
+    }
+
+    // add load components
+    for (int node=0; node<NumNode(); ++node)
+      for (int dof=0; dof<2; ++dof)
+         elevec1[node*2+dof] += funct[node] *ar[dof];
+    
+      ngauss++;
+    } // for (int ls=0; ls<nis; ++ls)
+  } // for (int lr=0; lr<nir; ++lr)
+
+
+cout << elevec1;
+return 0;
 }
 
 /*----------------------------------------------------------------------*
@@ -140,7 +236,8 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
   int       ngauss  = 0;
   const int nd      = numnode*numdf;
 
-  // general arrays
+
+   // general arrays
   vector<double>           funct(numnode);
   Epetra_SerialDenseMatrix deriv;
   deriv.Shape(2,numnode);
@@ -162,10 +259,6 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
   stress.Shape(4,4); 
   Epetra_SerialDenseMatrix C;
   C.Shape(4,4);
-  Epetra_SerialDenseMatrix kg;
-  kg.Shape(nd,nd);
-  Epetra_SerialDenseMatrix keu;
-  keu.Shape(nd,nd);            
   
   // gaussian points
   W1_DATA w1data;
@@ -238,27 +331,15 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
      /*------------------------------------------ call material law ---*/
      w1_call_matgeononl(strain,stress,C,numeps,material);
      /*---------------------- geometric part of stiffness matrix kg ---*/
-     w1_kg(kg,boplin,stress,fac,nd,numeps);
+     w1_kg(*stiffmatrix,boplin,stress,fac,nd,numeps);
      /*------------------ elastic+displacement stiffness matrix keu ---*/
-     w1_keu(keu,b_cure,C,fac,nd,numeps);
-     /*------------------------------- stiffness matrix keug=keu+kg ---*/
-      for (int a=0; a<nd; a++)
-      {
-         for (int b=0; b<nd; b++)
-         {
-           (*stiffmatrix)(a,b) = kg[a][b] + keu[a][b];
-         }
-       }
+     w1_keu(*stiffmatrix,b_cure,C,fac,nd,numeps);
      /*--------------- nodal forces fi from integration of stresses ---*/
        if (force) w1_fint(stress,b_cure,*force,fac,nd);
-
-//    cout << "(" << facr << "," << facs << ")" << *force;
-      
+     
       ngauss++;
     } // for (int ls=0; ls<nis; ++ls)
   } // for (int lr=0; lr<nir; ++lr)
-
-//cout << *force; exit(0);
 
   return;
 }
@@ -529,11 +610,50 @@ void DRT::Elements::Wall1::w1_shapefunctions(
       return;      
    }
    break;
+//   case 3:
+//   {
+//     funct[0]=1-r-s;
+//     funct[1]=r;
+//     funct[2]=s;
+//     if (doderiv==1)
+//     {
+//       deriv(0,0)=  -1.0;
+//       deriv(0,1)=  1.0;
+//       deriv(0,2)=  0.0;
+//       deriv(1,0)=  -1.0;
+//       deriv(1,1)=  0.0;
+//       deriv(1,2)=  1.0;
+//     }
+//   }
+//   break;
+//    case 6:
+//     funct[0]=(1-2*r-2*s)*(1-r-s);
+//     funct[1]=2*r*r-r;
+//     funct[2]=2*s*s-s;
+//     funct[3]=4*(r-r*r-r*s);
+//     funct[4]=4*r*s;
+//     funct[5]=4*(s-s*s-s*r);
+//     if (doderiv==1)
+//     {
+//       deriv(0,0)= -3.0+4.0*r+4.0*s;
+//       deriv(0,1)= 4.0*r-1.0;
+//       deriv(0,2)= 0.0;
+//       deriv(0,3)= 4.0*(1-2.0*r-s);
+//       deriv(0,4)= 4.0*s;
+//       deriv(0,5)= -4.0*s;
+//       deriv(1,0)= -3.0+4.0*r+4.0*s;
+//       deriv(1,1)= 0.0;
+//       deriv(1,2)= 4.0*s-1.0;
+//       deriv(1,3)= -4.0*r;
+//       deriv(1,4)= 4.0*r;
+//       deriv(1,5)= 4.0*(1.0-2.0*s-r);
+//     }
+//   break;
 
-//*------------------------------------------------- triangular elements */
+///*------------------------------------------------- triangular elements */
 //case tri3: /* LINEAR shape functions and their natural derivatives -----*/
 ///*----------------------------------------------------------------------*/
-//   funct[0]=ONE-r-s;
+//   funct(0)=ONE-r-s;
 //   funct[1]=r;
 //   funct[2]=s;
 //
@@ -875,7 +995,7 @@ void DRT::Elements::Wall1::w1_call_matgeononl(Epetra_SerialDenseVector& strain,
 | geometric stiffness part (total lagrange)                   mgit 05/07|
 *----------------------------------------------------------------------*/
 
-void DRT::Elements::Wall1::w1_kg(Epetra_SerialDenseMatrix& kg,
+void DRT::Elements::Wall1::w1_kg(Epetra_SerialDenseMatrix& estif,
                                  Epetra_SerialDenseMatrix& boplin,
                                  Epetra_SerialDenseMatrix& stress,
                                  double fac,
@@ -887,7 +1007,7 @@ void DRT::Elements::Wall1::w1_kg(Epetra_SerialDenseMatrix& kg,
      for(int j=0; j<nd; j++)
       for(int r=0; r<numeps; r++)
          for(int m=0; m<numeps; m++)
-            kg(i,j) += boplin(r,i)*stress(r,m)*boplin(m,j)*fac;
+            estif(i,j) += boplin(r,i)*stress(r,m)*boplin(m,j)*fac;
 
   return;
 }  
@@ -898,7 +1018,7 @@ void DRT::Elements::Wall1::w1_kg(Epetra_SerialDenseMatrix& kg,
 | elastic and initial displacement stiffness (total lagrange)  mgit 05/07                   mgit 05/07|
 *----------------------------------------------------------------------*/
 
-void DRT::Elements::Wall1::w1_keu(Epetra_SerialDenseMatrix& keu,
+void DRT::Elements::Wall1::w1_keu(Epetra_SerialDenseMatrix& estif,
                                   Epetra_SerialDenseMatrix& b_cure,
                                   Epetra_SerialDenseMatrix& C,
                                   double fac,
@@ -911,7 +1031,7 @@ void DRT::Elements::Wall1::w1_keu(Epetra_SerialDenseMatrix& keu,
         for(int k=0; k<numeps; k++)
            for(int m=0; m<numeps; m++)
 
-            keu(i,j) +=  b_cure(k,i)*C(k,m)*b_cure(m,j)*fac;
+            estif(i,j) +=  b_cure(k,i)*C(k,m)*b_cure(m,j)*fac;
 
   return;
 }  

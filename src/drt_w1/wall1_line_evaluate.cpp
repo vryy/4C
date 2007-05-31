@@ -44,6 +44,19 @@ int DRT::Elements::Wall1Line::EvaluateNeumann(ParameterList& params,
   vector<double> mydisp(lm.size());
   DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
 
+  // find out whether we will use a time curve
+  bool usetime = true;
+  const double time = params.get("total time",-1.0);
+  if (time<0.0) usetime = false;
+
+  // find out whether we will use a time curve and get the factor
+  vector<int>* curve  = condition.Get<vector<int> >("curve");
+  int curvenum = -1;
+  if (curve) curvenum = (*curve)[0];
+  double curvefac = 1.0;
+  if (curvenum>=0 && usetime)
+    dyn_facfromcurve(curvenum,time,&curvefac);
+
   // init gaussian points of parent element
   W1_DATA w1data;
   parent_->w1_integration_points(w1data);
@@ -168,14 +181,11 @@ int DRT::Elements::Wall1Line::EvaluateNeumann(ParameterList& params,
     // load vector ar
     double ar[2];
     // loop the dofs of a node
-    // ar[i] = ar[i] * facr * ds * onoff[i] * val[i]
-    for (int i=0; i<2; ++i){
-      ar[i] = facr * ds * (*onoff)[i]*(*val)[i];
-
-      int testonoff=(*onoff)[i];
-      double testval=(*val)[i];
-
-    }
+    // ar[i] = ar[i] * facr * ds * onoff[i] * val[i]*curvefac
+    for (int i=0; i<2; ++i)
+      {
+      ar[i] = facr * ds * (*onoff)[i]*(*val)[i] * curvefac;
+      }
 
     // add load components
     for (int node=0; node<NumNode(); ++node)
