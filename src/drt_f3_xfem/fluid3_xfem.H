@@ -32,7 +32,25 @@ using namespace Teuchos;
 
 // forward declarations
 struct _MATERIAL;
-struct _FLUID_DATA;
+
+/*!----------------------------------------------------------------------
+\brief integration parameters
+
+<pre>                                                gerstenberger 06/07
+
+In this structure the coordinates and weights used by gauss integration
+are stored.
+
+</pre>
+
+------------------------------------------------------------------------*/
+typedef struct _INTEGRATION_POINTS_3D
+{
+  int           nquad;
+  double        qxg[MAXGAUSS][3];    /*!< coordinates */
+  double        qwgt[MAXGAUSS];      /*!< weights */
+} INTEGRATION_POINTS_3D;
+
 /*!
 \brief DRT: namespace of the ccarat discretization module
 
@@ -287,9 +305,22 @@ private:
     calc_fluid_systemmat_and_residual,
     calc_fluid_beltrami_error
   };
+  
+  //! GaussRules supported by fluid3
+  enum GaussRule
+  {
+    hex_1point,
+    hex_8point,
+    hex_27point,
+    tet_1point,
+    tet_4point,
+    tet_4point_alternative,
+    tet_10point
+  };
+  
 
-  //! no. gaussian points in each spatial dimension
-  int                                             ngp_[3];
+  //! gaussrule used for weak form integration
+  GaussRule                                       gaussrule_;
   //! number of the material law
   int                                             material_;
   //! flag for euler/ale net algorithm
@@ -326,7 +357,8 @@ private:
                  );
 
   // evaluate element integration points (and storing them in data)
-  void f3_integration_points(struct _FLUID_DATA& data);
+  void f3_integration_points(struct _INTEGRATION_POINTS_3D& data,
+                             const GaussRule gaussrule);
 
   // calculate Jacobian matrix and it's determinant
   void f3_jaco(const Epetra_SerialDenseMatrix& xyze,
@@ -354,47 +386,46 @@ private:
 
   // calculate global derivatives w.r.t. x,y,z at point r,s,t are
     void f3_gder(Epetra_SerialDenseMatrix& derxy,
-         const Epetra_SerialDenseMatrix& deriv,
+                 const Epetra_SerialDenseMatrix& deriv,
                  Epetra_SerialDenseMatrix& xjm,
-         double& det,
+                 double& det,
                  const int iel
          );
 
   // calculate second global derivatives w.r.t x/y/z at point r,s,t
     void f3_gder2(const Epetra_SerialDenseMatrix& xyze,
-                    const Epetra_SerialDenseMatrix& xjm,
-                                    const Epetra_SerialDenseMatrix& derxy,
-                    Epetra_SerialDenseMatrix& derxy2,
-                    const Epetra_SerialDenseMatrix& deriv2,
-                                    const int iel
-                    );
+                  const Epetra_SerialDenseMatrix& xjm,
+                  const Epetra_SerialDenseMatrix& derxy,
+                  Epetra_SerialDenseMatrix& derxy2,
+                  const Epetra_SerialDenseMatrix& deriv2,
+                  const int iel
+                  );
   // evaluate error for beltrami test problem
-  void f3_int_beltrami_err(
-    vector<double>&       myvelnp,
-    vector<double>&       myprenp,
-    struct _MATERIAL*     material,
-    ParameterList&        params
-    );
+  void f3_int_beltrami_err(vector<double>&       myvelnp,
+                           vector<double>&       myprenp,
+                           struct _MATERIAL*     material,
+                           ParameterList&        params
+                           );
 
   // evaluate fluid coefficient matrix (instationary case)
-    void f3_calmat( Epetra_SerialDenseMatrix& estif,
-                Epetra_SerialDenseVector&     eforce,
-                vector<double>&           velint,
-                vector<double>&           histvec,
-                vector<double>&           gridvint,
-                double&               press,
-                Epetra_SerialDenseMatrix&     vderxy,
-                Epetra_SerialDenseMatrix&     vderxy2,
-                vector<double>&           gradp,
-                vector<double>&           funct,
-        vector<double>&           tau,
-                Epetra_SerialDenseMatrix&     derxy,
-                Epetra_SerialDenseMatrix&     derxy2,
-                vector<double>&               edeadng,
-                double&                       fac,
-                const double&             visc,
-                const int&                iel,
-        ParameterList&            params
+    void f3_calmat(Epetra_SerialDenseMatrix& estif,
+                   Epetra_SerialDenseVector&     eforce,
+                   vector<double>&           velint,
+                   vector<double>&           histvec,
+                   vector<double>&           gridvint,
+                   double&               press,
+                   Epetra_SerialDenseMatrix&     vderxy,
+                   Epetra_SerialDenseMatrix&     vderxy2,
+                   vector<double>&           gradp,
+                   vector<double>&           funct,
+                   vector<double>&           tau,
+                   Epetra_SerialDenseMatrix&     derxy,
+                   Epetra_SerialDenseMatrix&     derxy2,
+                   vector<double>&               edeadng,
+                   double&                       fac,
+                   const double&             visc,
+                   const int&                iel,
+                   ParameterList&            params
             );
 
   // evaluate fluid coefficient matrix (stationary case)
@@ -408,15 +439,18 @@ private:
                 Epetra_SerialDenseMatrix&     vderxy2,
                 vector<double>&           gradp,
                 vector<double>&           funct,
-        vector<double>&           tau,
+                vector<double>&           tau,
                 Epetra_SerialDenseMatrix&     derxy,
                 Epetra_SerialDenseMatrix&     derxy2,
                 vector<double>&               edeadng,
                 double&                       fac,
                 const double&             visc,
                 const int&                iel,
-        ParameterList&            params
+                ParameterList&            params
             );
+  
+  // get optimal gaussrule for given discretization type
+  GaussRule get_optimal_gaussrule(const DiscretizationType distype);
 
 }; // class Fluid3
 
