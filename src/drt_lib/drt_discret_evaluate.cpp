@@ -15,6 +15,7 @@ Maintainer: Michael Gee
 
 #include "drt_discret.H"
 #include "drt_dserror.H"
+#include "drt_timecurve.H"
 #include "linalg_utils.H"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
@@ -104,10 +105,6 @@ void DRT::Discretization::Evaluate(
   return;
 }
 
-extern "C"
-{
-  void dyn_facfromcurve(int actcurve,double T,double *fac);
-}
 /*----------------------------------------------------------------------*
  |  evaluate Neumann conditions (public)                     mwgee 12/06|
  *----------------------------------------------------------------------*/
@@ -140,7 +137,7 @@ void DRT::Discretization::EvaluateNeumann(ParameterList& params, Epetra_Vector& 
     if (curve) curvenum = (*curve)[0];
     double curvefac = 1.0;
       if (curvenum>=0 && usetime)
-        dyn_facfromcurve(curvenum,time,&curvefac);
+        curvefac = TimeCurveManager::Instance().Curve(curvenum).f(time);
     for (int i=0; i<nnode; ++i)
     {
       // do only nodes in my row map
@@ -317,7 +314,7 @@ void DoDirichletCondition(DRT::Condition&      cond,
       int    curvenum = -1;
       if (curve) curvenum = (*curve)[j];
       if (curvenum>=0 && usetime)
-        dyn_facfromcurve(curvenum,time,&curvefac);
+        curvefac = DRT::TimeCurveManager::Instance().Curve(curvenum).f(time);
       //cout << "Dirichlet value " << value << " curvefac " <<  curvefac << endl;
 
       // factor given by spatial function

@@ -24,6 +24,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_serialdensematrix.H"
 #include "../drt_lib/linalg_serialdensevector.H"
@@ -192,7 +193,7 @@ int DRT::Elements::So_hex8::EvaluateNeumann(ParameterList& params,
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
   if (curvenum>=0 && usetime)
-    dyn_facfromcurve(curvenum,time,&curvefac);
+    curvefac = DRT::TimeCurveManager::Instance().Curve(curvenum).f(time);
   // **
 
 /* ============================================================================*
@@ -295,11 +296,11 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     xcurr(i,1) = xrefe(i,1) + disp[i*NODDOF_SOH8+1];
     xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_SOH8+2];
   }
-  
+
   /*
   ** EAS Technology: declare, intialize, set up, and alpha history -------- EAS
   */
-  // in any case declare variables, sizes etc. only in eascase  
+  // in any case declare variables, sizes etc. only in eascase
   Epetra_SerialDenseMatrix* alpha;  // EAS alphas
   Epetra_SerialDenseMatrix* M_GP;   // EAS matrix M at all GPs
   Epetra_SerialDenseMatrix M;       // EAS matrix M at current GP
@@ -311,21 +312,21 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
   if (eastype_ != soh8_easnone) {
     // get stored EAS alphas (history variables)
     alpha = data_.Get<Epetra_SerialDenseMatrix>("alpha");
-    
+
     // EAS portion of internal forces, also called enhacement vector s or Rtilde
     feas.Size(neas_);
-    
+
     // EAS matrix K_{alpha alpha}, also called Dtilde
     Kaa.Shape(neas_,neas_);
-    
+
     // EAS matrix K_{d alpha}
     Kda.Shape(neas_,NUMDOF_SOH8);
-    
+
     // transformation matrix T0, maps M-matrix evaluated at origin
     // between local element coords and global coords
     // here we already get the inverse transposed T0
     T0invT.Shape(NUMSTR_SOH8,NUMSTR_SOH8);
-    
+
     /* evaluation of EAS variables (which are constant for the following):
     ** - M defining interpolation of enhanced strains alpha, evaluated at GPs
     ** - determinant of Jacobi matrix at element origin (r=s=t=0.0)
@@ -393,7 +394,7 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     glstrain(3) = cauchygreen(0,1);
     glstrain(4) = cauchygreen(1,2);
     glstrain(5) = cauchygreen(2,0);
-    
+
     // EAS technology: "enhance the strains"  ----------------------------- EAS
     if (eastype_ != soh8_easnone) {
       // get EAS matrix M at current gausspoint gp
@@ -409,7 +410,7 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
       // add enhanced strains = M . alpha to GL strains to "unlock" element
       glstrain.Multiply('N','N',1.0,M,(*alpha),0.0);
     } // ------------------------------------------------------------------ EAS
-    
+
 
     /* non-linear B-operator (may so be called, meaning
     ** of B-operator is not so sharp in the non-linear realm) *
@@ -464,7 +465,7 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     double density;
     soh8_mat_sel(&stress,&cmat,&density,&glstrain);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
-    
+
     // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
     (*force).Multiply('T','N',detJ * (*weights)(gp),bop,stress,1.0);
 
@@ -491,7 +492,7 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
         (*stiffmatrix)(NUMDIM_SOH8*inod+2,NUMDIM_SOH8*jnod+2) += bopstrbop;
       }
     } // end of intergrate `geometric' stiffness ******************************
-    
+
     // EAS technology: integrate matrices --------------------------------- EAS
     if (eastype_ != soh8_easnone) {
       double integrationfactor = detJ * (*weights)(gp);
@@ -499,10 +500,10 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
       Epetra_SerialDenseMatrix cM(NUMSTR_SOH8,neas_); // temporary c . M
       cM.Multiply('N','N',1.0,cmat,M,0.0);
       Kaa.Multiply('T','N',integrationfactor,M,cM,1.0);
-      
+
       // integrate Kda: Kda += (M^T . cmat . B) * detJ * w(gp)
       Kda.Multiply('T','N',integrationfactor,M,cb,1.0);
-      
+
       // integrate feas: feas += (M^T . sigma) * detJ *wp(gp)
       feas.Multiply('T','N',integrationfactor,M,stress,1.0);
     } // ------------------------------------------------------------------ EAS
@@ -522,7 +523,7 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
    /* =========================================================================*/
   }/* ==================================================== end of Loop over GP */
    /* =========================================================================*/
-  
+
   // EAS technology: ------------------------------------------------------ EAS
   // subtract EAS matrices from disp-based Kdd to "soften" element
   if (eastype_ != soh8_easnone) {
@@ -530,16 +531,16 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     Epetra_SerialDenseSolver solve_for_inverseKaa;
     solve_for_inverseKaa.SetMatrix(Kaa);
     solve_for_inverseKaa.Invert();
-    
+
     Epetra_SerialDenseMatrix KdaKaa(NUMDOF_SOH8,neas_); // temporary Kda.Kaa^{-1}
     KdaKaa.Multiply('T','N',1.0,Kda,Kaa,0.0);
-    
+
     // EAS-stiffness matrix is: Kdd - Kda^T . Kaa^-1 . Kda
     (*stiffmatrix).Multiply('N','N',-1.0,KdaKaa,Kda,1.0);
-    
+
     // EAS-internal force is: fint - Kda^T . Kaa^-1 . feas
     (*force).Multiply('N','N',-1.0,KdaKaa,feas,1.0);
-    
+
     // evaluate new alpha in the following
     Epetra_SerialDenseMatrix alphanew(neas_,1);
     // first we need delta_d
@@ -549,14 +550,14 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     feas.Multiply('N','N',1.0,Kda,delta_d,1.0);
     // new alpha is: - Kaa^-1 . (feas + Kda . delta_d), here: - Kaa^-1 . feas
     alphanew.Multiply('N','N',-1.0,Kaa,feas,0.0);
-    
+
     // update EAS alphas
     data_.Add("alpha",alphanew);
   } // -------------------------------------------------------------------- EAS
-    
-     
-    
-  
+
+
+
+
   return;
 } // DRT::Elements::Shell8::s8_nlnstiffmass
 

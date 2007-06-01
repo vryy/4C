@@ -19,6 +19,7 @@ Maintainer: Markus Gitterle
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_timecurve.H"
 
 extern "C"
 {
@@ -32,7 +33,7 @@ extern "C"
  |  Integrate a Line Neumann boundary condition (public)     mgit 03/07|
  *----------------------------------------------------------------------*/
 
-int DRT::Elements::Wall1Line::EvaluateNeumann(ParameterList& params, 
+int DRT::Elements::Wall1Line::EvaluateNeumann(ParameterList& params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
                               vector<int>&              lm,
@@ -55,7 +56,7 @@ int DRT::Elements::Wall1Line::EvaluateNeumann(ParameterList& params,
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
   if (curvenum>=0 && usetime)
-    dyn_facfromcurve(curvenum,time,&curvefac);
+    curvefac = DRT::TimeCurveManager::Instance().Curve(curvenum).f(time);
 
   // init gaussian points of parent element
   W1_DATA w1data;
@@ -68,11 +69,11 @@ int DRT::Elements::Wall1Line::EvaluateNeumann(ParameterList& params,
   const int nis = parent_->ngp_[1];
   const int numdf = 2;
 
-  vector<double> funct(iel);                  
-  Epetra_SerialDenseMatrix deriv(2,iel);      
+  vector<double> funct(iel);
+  Epetra_SerialDenseMatrix deriv(2,iel);
 
-  double xrefe[2][MAXNOD_WALL1]; 
-  double xjm[2][2];  
+  double xrefe[2][MAXNOD_WALL1];
+  double xjm[2][2];
 
   // get geometry
   for (int k=0; k<iel; ++k)
@@ -86,7 +87,7 @@ int DRT::Elements::Wall1Line::EvaluateNeumann(ParameterList& params,
   int ngp = 0;
   if (line==0 || line==2) ngp = nir;
   else                    ngp = nis;
-  
+
   double xgp[3];   // coord of integration point in line direction
   double wgp[3];   // weigth of this point
   int    dir;      // direction of integration, either 0 or 1
@@ -193,7 +194,7 @@ int DRT::Elements::Wall1Line::EvaluateNeumann(ParameterList& params,
       {
          elevec1[node*numdf+j] += funct[lnode[node]] *ar[j];
       }
- 
+
   } // for (int gp=0; gp<ngp; ++gp)
 
 

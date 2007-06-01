@@ -25,8 +25,9 @@ Maintainer: Markus Gitterle
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/drt_timecurve.H"
 
-extern "C" 
+extern "C"
 {
 #include "../headers/standardtypes.h"
 #include "../wall1/wall1.h"
@@ -44,7 +45,7 @@ extern struct _MATERIAL  *mat;
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            mwgee 12/06|
  *----------------------------------------------------------------------*/
-int DRT::Elements::Wall1::Evaluate(ParameterList& params, 
+int DRT::Elements::Wall1::Evaluate(ParameterList& params,
                                     DRT::Discretization&      discretization,
                                     vector<int>&              lm,
                                     Epetra_SerialDenseMatrix& elemat1,
@@ -53,7 +54,7 @@ int DRT::Elements::Wall1::Evaluate(ParameterList& params,
                                     Epetra_SerialDenseVector& elevec2,
                                     Epetra_SerialDenseVector& elevec3)
 {
-  DSTraceHelper dst("Wall1::Evaluate");  
+  DSTraceHelper dst("Wall1::Evaluate");
   DRT::Elements::Wall1::ActionType act = Wall1::calc_none;
   // get the action required
   string action = params.get<string>("action","calc_none");
@@ -106,14 +107,14 @@ int DRT::Elements::Wall1::Evaluate(ParameterList& params,
       dserror("Unknown type of action for Wall1 %d", act);
   }
   return 0;
- 
+
 }
 
 /*----------------------------------------------------------------------*
  |  Integrate a Surface Neumann boundary condition (public)  mgit 05/07|
  *----------------------------------------------------------------------*/
 
-int DRT::Elements::Wall1::EvaluateNeumann(ParameterList& params, 
+int DRT::Elements::Wall1::EvaluateNeumann(ParameterList& params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
                                            vector<int>&              lm,
@@ -123,7 +124,7 @@ int DRT::Elements::Wall1::EvaluateNeumann(ParameterList& params,
   if (disp==null) dserror("Cannot get state vector 'displacement'");
   vector<double> mydisp(lm.size());
   DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
-  
+
   // find out whether we will use a time curve
   bool usetime = true;
   const double time = params.get("total time",-1.0);
@@ -132,10 +133,10 @@ int DRT::Elements::Wall1::EvaluateNeumann(ParameterList& params,
   // find out whether we will use a time curve and get the factor
   vector<int>* curve  = condition.Get<vector<int> >("curve");
   int curvenum = -1;
-  if (curve) curvenum = (*curve)[0]; 
+  if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
   if (curvenum>=0 && usetime)
-    dyn_facfromcurve(curvenum,time,&curvefac); 
+    curvefac = DRT::TimeCurveManager::Instance().Curve(curvenum).f(time);
 
   // no. of nodes on this surface
   const int iel = NumNode();
@@ -144,13 +145,13 @@ int DRT::Elements::Wall1::EvaluateNeumann(ParameterList& params,
   int       ngauss  = 0;
   Epetra_SerialDenseMatrix xjm;
   xjm.Shape(2,2);
-  double det; 
+  double det;
   // init gaussian points
   W1_DATA w1data;
   w1_integration_points(w1data);
 
-  const int nir = ngp_[0]; 
-  const int nis = ngp_[1]; 
+  const int nir = ngp_[0];
+  const int nis = ngp_[1];
   const int numdf = 2;
 //  vector<double>* thick = data_.Get<vector<double> >("thick");
 //  if (!thick) dserror("Cannot find vector of nodal thickness");
@@ -164,13 +165,13 @@ int DRT::Elements::Wall1::EvaluateNeumann(ParameterList& params,
   /*----------------------------------------------------- geometry update */
   for (int k=0; k<iel; ++k)
   {
-    
+
     xrefe[0][k] = Nodes()[k]->X()[0];
     xrefe[1][k] = Nodes()[k]->X()[1];
-    
+
     xcure[0][k] = xrefe[0][k] + mydisp[k*numdf+0];
     xcure[1][k] = xrefe[1][k] + mydisp[k*numdf+1];
-    
+
   }
 
 
@@ -189,10 +190,10 @@ int DRT::Elements::Wall1::EvaluateNeumann(ParameterList& params,
       double facs = w1data.wgts[ls];
       /*-------------------- shape functions at gp e1,e2 on mid surface */
       w1_shapefunctions(funct,deriv,e1,e2,iel,1);
-      /*--------------------------------------- compute jacobian Matrix */ 
+      /*--------------------------------------- compute jacobian Matrix */
       w1_jacobianmatrix(xrefe,deriv,xjm,&det,iel);
       /*------------------------------------ integration factor  -------*/
-     double fac=0; 
+     double fac=0;
      fac = facr * facs * det;
 
     // load vector ar
@@ -209,7 +210,7 @@ int DRT::Elements::Wall1::EvaluateNeumann(ParameterList& params,
     for (int node=0; node<NumNode(); ++node)
       for (int dof=0; dof<2; ++dof)
          elevec1[node*2+dof] += funct[node] *ar[dof];
-    
+
       ngauss++;
     } // for (int ls=0; ls<nis; ++ls)
   } // for (int lr=0; lr<nir; ++lr)
@@ -222,15 +223,15 @@ return 0;
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                            mgit 03/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm, 
-                                            vector<double>&           disp, 
+void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
+                                            vector<double>&           disp,
                                             vector<double>&           residual,
                                             Epetra_SerialDenseMatrix* stiffmatrix,
                                             Epetra_SerialDenseMatrix* massmatrix,
                                             Epetra_SerialDenseVector* force,
                                             struct _MATERIAL*         material)
 {
-  DSTraceHelper dst("Wall1::w1_nlnstiffmass");  
+  DSTraceHelper dst("Wall1::w1_nlnstiffmass");
   const int numnode = NumNode();
   const int numdf   = 2;
   int       ngauss  = 0;
@@ -248,22 +249,22 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
   Epetra_SerialDenseVector F;
   F.Size(4);
   Epetra_SerialDenseVector strain;
-  strain.Size(4);  
-  double det; 
+  strain.Size(4);
+  double det;
   double xrefe[2][MAXNOD_WALL1];
   double xcure[2][MAXNOD_WALL1];
   const int numeps = 4;
   Epetra_SerialDenseMatrix b_cure;
   b_cure.Shape(numeps,nd);
   Epetra_SerialDenseMatrix stress;
-  stress.Shape(4,4); 
+  stress.Shape(4,4);
   Epetra_SerialDenseMatrix C;
   C.Shape(4,4);
-  
+
   // gaussian points
   W1_DATA w1data;
   w1_integration_points(w1data);
-  
+
   // ------------------------------------ check calculation of mass matrix
   int imass=0;
   double density=0.0;
@@ -280,13 +281,13 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
   /*----------------------------------------------------- geometry update */
   for (int k=0; k<iel; ++k)
   {
-    
+
     xrefe[0][k] = Nodes()[k]->X()[0];
     xrefe[1][k] = Nodes()[k]->X()[1];
-    
+
     xcure[0][k] = xrefe[0][k] + disp[k*numdf+0];
     xcure[1][k] = xrefe[1][k] + disp[k*numdf+1];
-    
+
   }
 
   /*=================================================== integration loops */
@@ -301,10 +302,10 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
       double facs = w1data.wgts[ls];
       /*-------------------- shape functions at gp e1,e2 on mid surface */
       w1_shapefunctions(funct,deriv,e1,e2,iel,1);
-      /*--------------------------------------- compute jacobian Matrix */ 
+      /*--------------------------------------- compute jacobian Matrix */
       w1_jacobianmatrix(xrefe,deriv,xjm,&det,iel);
       /*------------------------------------ integration factor  -------*/
-     double fac=0; 
+     double fac=0;
      fac = facr * facs * det * thickness_;
 
       /*------------------------------compute mass matrix if imass-----*/
@@ -317,7 +318,7 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
         {
          (*massmatrix)(2*a,2*b)     += facm * funct[a] * funct[b]; /* a,b even */
          (*massmatrix)(2*a+1,2*b+1) += facm * funct[a] * funct[b]; /* a,b odd  */
-        } 
+        }
        }
       }
      /*----------------------------------- calculate operator Blin  ---*/
@@ -336,7 +337,7 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
      w1_keu(*stiffmatrix,b_cure,C,fac,nd,numeps);
      /*--------------- nodal forces fi from integration of stresses ---*/
        if (force) w1_fint(stress,b_cure,*force,fac,nd);
-     
+
       ngauss++;
     } // for (int ls=0; ls<nis; ++ls)
   } // for (int lr=0; lr<nir; ++lr)
@@ -350,16 +351,16 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
  *----------------------------------------------------------------------*/
 void DRT::Elements::Wall1::w1_integration_points(struct _W1_DATA& data)
 {
-  DSTraceHelper dst("Wall1::w1_integration_points");  
-  
+  DSTraceHelper dst("Wall1::w1_integration_points");
+
   const int numnode = NumNode();
 
   const double invsqrtthree = 1./sqrt(3.);
   const double sqrtthreeinvfive = sqrt(3./5.);
   const double wgt  = 5.0/9.0;
   const double wgt0 = 8.0/9.0;
-  
- 
+
+
   // quad elements
   if (numnode==4 || numnode==8 || numnode==9)
   {
@@ -393,7 +394,7 @@ void DRT::Elements::Wall1::w1_integration_points(struct _W1_DATA& data)
         dserror("Unknown no. of gaussian points in r-direction");
       break;
     } // switch(ngp_[0]) // r direction
-    
+
     switch(ngp_[1]) // s direction
     {
       case 1:
@@ -424,7 +425,7 @@ void DRT::Elements::Wall1::w1_integration_points(struct _W1_DATA& data)
         dserror("Unknown no. of gaussian points in s-direction");
       break;
     } // switch(ngp_[0]) // s direction
-    
+
   } // if (numnode==4 || numnode==8 || numnode==9)
 
 //  else if (numnode==3 || numnode==6) // triangle elements
@@ -468,9 +469,9 @@ void DRT::Elements::Wall1::w1_integration_points(struct _W1_DATA& data)
 //      default:
 //        dserror("Unknown no. of gaussian points for triangle");
 //      break;
-//    } 
+//    }
 //  } // else if (numnode==3 || numnode==6)
-  
+
   return;
 }
 
@@ -478,12 +479,12 @@ void DRT::Elements::Wall1::w1_integration_points(struct _W1_DATA& data)
  |  shape functions and derivatives (private)                mgit 12/06|
  *----------------------------------------------------------------------*/
 void DRT::Elements::Wall1::w1_shapefunctions(
-                             vector<double>& funct, 
+                             vector<double>& funct,
                              Epetra_SerialDenseMatrix& deriv,
-                             const double r, const double s, const int numnode, 
+                             const double r, const double s, const int numnode,
                              const int doderiv) const
 {
-  DSTraceHelper dst("Wall1::w1_shapefunctions");  
+  DSTraceHelper dst("Wall1::w1_shapefunctions");
 
   const double q12 = 0.5;
   const double q14 = 0.25;
@@ -496,10 +497,10 @@ void DRT::Elements::Wall1::w1_shapefunctions(
   const double r2 = 1.0-rr;
   const double s2 = 1.0-ss;
   int i;
-  int ii; 
+  int ii;
 
   //const double t;
-   
+
   switch(numnode)
   {
     case 4:
@@ -564,12 +565,12 @@ void DRT::Elements::Wall1::w1_shapefunctions(
              deriv(0,i)=deriv(0,i) - q12*(deriv(0,ii) + deriv(0,ii+1));
              deriv(1,i)=deriv(1,i) - q12*(deriv(1,ii) + deriv(1,ii+1));
          }
-      }      
+      }
       return;
     }
     break;
     case 9:
-    { 
+    {
       const double rh  = q12*r;
       const double sh  = q12*s;
       const double rs  = rh*sh;
@@ -607,7 +608,7 @@ void DRT::Elements::Wall1::w1_shapefunctions(
          deriv(1,7)=-2.0*s*rh*rp;
          deriv(1,8)=-2.0*s*r2;
       }
-      return;      
+      return;
    }
    break;
 //   case 3:
@@ -677,7 +678,7 @@ void DRT::Elements::Wall1::w1_shapefunctions(
 //    funct[3] = FOUR*r*t;
 //    funct[4] = FOUR*r*s;
 //    funct[5] = FOUR*s*t;
-//    
+//
 //    if (option == 1) /* --> first derivative evaluation */
 //    {
 //        /* first natural derivative of funct[0] with respect to r */
@@ -702,7 +703,7 @@ break;
 } /* end of switch typ */
 /*----------------------------------------------------------------------*/
 
-  return;  
+  return;
 
 } /* DRT::Elements::Wall1::w1_shapefunctions */
 
@@ -714,11 +715,11 @@ void DRT::Elements::Wall1::w1_jacobianmatrix(double xrefe[2][MAXNOD_WALL1],
                           const Epetra_SerialDenseMatrix& deriv,
                           Epetra_SerialDenseMatrix& xjm,
 			  double* det,
-                          const int iel) 
+                          const int iel)
 {
 
-   memset(xjm.A(),0,xjm.N()*xjm.M()*sizeof(double)); 
- 
+   memset(xjm.A(),0,xjm.N()*xjm.M()*sizeof(double));
+
    for (int k=0; k<iel; k++)
    {
         xjm(0,0) += deriv(0,k) * xrefe[0][k];
@@ -732,7 +733,7 @@ void DRT::Elements::Wall1::w1_jacobianmatrix(double xrefe[2][MAXNOD_WALL1],
 
       if (*det<0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
 /*----------------------------------------------------------------------*/
- 
+
    return;
 } // DRT::Elements::Wall1::w1_jacobianmatrix
 
@@ -743,8 +744,8 @@ void DRT::Elements::Wall1::w1_jacobianmatrix(double xrefe[2][MAXNOD_WALL1],
 void DRT::Elements::Wall1::w1_boplin(Epetra_SerialDenseMatrix& boplin,
                            Epetra_SerialDenseMatrix& deriv,
                            Epetra_SerialDenseMatrix& xjm,
-                           double& det,  
-                           const int iel) 
+                           double& det,
+                           const int iel)
 {
 
   int inode;
@@ -776,7 +777,7 @@ void DRT::Elements::Wall1::w1_boplin(Epetra_SerialDenseMatrix& boplin,
     boplin(3,dnode+1) = boplin(0,dnode+0);
   } /* end of loop over nodes */
  return;
-}  
+}
 
 /* DRT::Elements::Wall1::w1_boplin */
 
@@ -785,23 +786,23 @@ void DRT::Elements::Wall1::w1_boplin(Epetra_SerialDenseMatrix& boplin,
  *----------------------------------------------------------------------*/
 
 void DRT::Elements::Wall1::w1_defgrad(Epetra_SerialDenseVector& F,
-                           Epetra_SerialDenseVector& strain, 
+                           Epetra_SerialDenseVector& strain,
                            const double xrefe[][MAXNOD_WALL1],
-                           const double xcure[][MAXNOD_WALL1], 
+                           const double xcure[][MAXNOD_WALL1],
                            Epetra_SerialDenseMatrix& boplin,
-                           const int iel) 
+                           const int iel)
 {
   /*------------------calculate defgrad --------- (Summenschleife->+=) ---*
   defgrad looks like:
-  
+
         |  1 + Ux,x  |
         |  1 + Uy,y  |
         |      Ux,y  |
         |      Uy,x  |
   */
 
-  memset(F.A(),0,F.N()*F.M()*sizeof(double)); 
-  
+  memset(F.A(),0,F.N()*F.M()*sizeof(double));
+
   F[0]=1;
   F[1]=1;
   for (int inode=0; inode<iel; inode++)
@@ -818,13 +819,13 @@ void DRT::Elements::Wall1::w1_defgrad(Epetra_SerialDenseVector& F,
   strain[3]=strain[2];
 
  return;
-}  
+}
 
 /* DRT::Elements::Wall1::w1_defgrad */
 
 
 /*----------------------------------------------------------------------*
- | Deformation gradient F in matrix notation and B in 
+ | Deformation gradient F in matrix notation and B in
  reference configuration (private)                             mgit 04/07|
  *----------------------------------------------------------------------*/
 
@@ -832,13 +833,13 @@ void DRT::Elements::Wall1::w1_boplin_cure(Epetra_SerialDenseMatrix& b_cure,
                                           Epetra_SerialDenseMatrix& boplin,
                                           Epetra_SerialDenseVector& F,
                                           int numeps,
-                                          int nd) 
+                                          int nd)
 {
 
-   
+
      Epetra_SerialDenseMatrix Fmatrix;
-     Fmatrix.Shape(4,4); 
-        
+     Fmatrix.Shape(4,4);
+
 
   /*---------------------------write Vector F as a matrix Fmatrix*/
 
@@ -861,9 +862,9 @@ void DRT::Elements::Wall1::w1_boplin_cure(Epetra_SerialDenseMatrix& b_cure,
           for(int k=0; k<numeps; k++)
           b_cure(i,j) += Fmatrix(k,i)*boplin(k,j);
     /*----------------------------------------------------------------*/
-    
+
   return;
-}  
+}
 
 /* DRT::Elements::Wall1::w1_boplin_cure */
 
@@ -873,19 +874,19 @@ void DRT::Elements::Wall1::w1_boplin_cure(Epetra_SerialDenseMatrix& b_cure,
 
 void DRT::Elements::Wall1::w1_call_matgeononl(Epetra_SerialDenseVector& strain,
                                               Epetra_SerialDenseMatrix& stress,
-                                              Epetra_SerialDenseMatrix& C,                                   
+                                              Epetra_SerialDenseMatrix& C,
                                               const int numeps,
                                               struct _MATERIAL* material)
-                                     
+
 {
   /*--------------------------- call material law -> get tangent modulus--*/
     switch(material->mattyp)
     {
     case m_stvenant:/*--------------------------------- linear elastic ---*/
     {
-      double ym = material->m.stvenant->youngs;  
+      double ym = material->m.stvenant->youngs;
       double pv = material->m.stvenant->possionratio;
- 
+
 
   /*-------------- some comments, so that even fluid people are able to
      understand this quickly :-)
@@ -926,7 +927,7 @@ void DRT::Elements::Wall1::w1_call_matgeononl(Epetra_SerialDenseVector& strain,
       C(3,2)=e3;
       C(3,3)=e3;
       }
-      break; 
+      break;
       default:
      /*----------- material-tangente - plane strain, rotational symmetry ---*/
       {
@@ -953,11 +954,11 @@ void DRT::Elements::Wall1::w1_call_matgeononl(Epetra_SerialDenseVector& strain,
       C(3,1)=0.;
       C(3,2)=c1/2;
       C(3,3)=c1/2;
-      }    
+      }
      }
   /*-------------------------- evaluate 2.PK-stresses -------------------*/
   /*------------------ Summenschleife -> += (2.PK stored as vecor) ------*/
-  
+
   Epetra_SerialDenseVector svector;
   svector.Size(4);
 
@@ -966,7 +967,7 @@ void DRT::Elements::Wall1::w1_call_matgeononl(Epetra_SerialDenseVector& strain,
         for (int i=0; i<numeps; i++)
     {
        svector[k] += C[k][i] * strain[i];
-    } 
+    }
   }
   /*------------------ 2.PK stored as matrix -----------------------------*/
   stress(0,0)=svector[0];
@@ -978,15 +979,15 @@ void DRT::Elements::Wall1::w1_call_matgeononl(Epetra_SerialDenseVector& strain,
   stress(3,1)=svector[2];
   stress(3,3)=svector[0];
 
-  }    
-     
+  }
+
     break;
     default:
     dserror(" unknown type of material law");
-    } 
+    }
 
   return;
-}  
+}
 
 /* DRT::Elements::Wall1::w1_call_matgeononl */
 
@@ -1000,7 +1001,7 @@ void DRT::Elements::Wall1::w1_kg(Epetra_SerialDenseMatrix& estif,
                                  Epetra_SerialDenseMatrix& stress,
                                  double fac,
                                  int nd,
-                                 int numeps) 
+                                 int numeps)
 {
   /*---------------------------------------------- perform B^T * SIGMA * B*/
   for(int i=0; i<nd; i++)
@@ -1010,7 +1011,7 @@ void DRT::Elements::Wall1::w1_kg(Epetra_SerialDenseMatrix& estif,
             estif(i,j) += boplin(r,i)*stress(r,m)*boplin(m,j)*fac;
 
   return;
-}  
+}
 
 /* DRT::Elements::Wall1::w1_kg */
 
@@ -1023,7 +1024,7 @@ void DRT::Elements::Wall1::w1_keu(Epetra_SerialDenseMatrix& estif,
                                   Epetra_SerialDenseMatrix& C,
                                   double fac,
                                   int nd,
-                                  int numeps) 
+                                  int numeps)
 {
   /*------------- perform B_cure^T * D * B_cure, whereas B_cure = F^T * B */
   for(int i=0; i<nd; i++)
@@ -1034,7 +1035,7 @@ void DRT::Elements::Wall1::w1_keu(Epetra_SerialDenseMatrix& estif,
             estif(i,j) +=  b_cure(k,i)*C(k,m)*b_cure(m,j)*fac;
 
   return;
-}  
+}
 
 /* DRT::Elements::Wall1::w1_keu */
 
@@ -1047,7 +1048,7 @@ void DRT::Elements::Wall1::w1_fint(Epetra_SerialDenseMatrix& stress,
                                    Epetra_SerialDenseVector& intforce,
                                    double fac,
                                    int nd)
-                                 
+
 {
   Epetra_SerialDenseVector st;
   st.Size(4);
@@ -1060,9 +1061,9 @@ void DRT::Elements::Wall1::w1_fint(Epetra_SerialDenseMatrix& stress,
   for(int i=0; i<nd; i++)
     for(int j=0; j<4; j++)
       intforce[i] += b_cure(j,i)*st[j];
- 
+
   return;
-}  
+}
 
 /* DRT::Elements::Wall1::w1_fint */
 

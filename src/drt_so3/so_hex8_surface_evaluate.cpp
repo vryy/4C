@@ -19,6 +19,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_timecurve.H"
 
 extern "C"
 {
@@ -55,7 +56,7 @@ int DRT::Elements::Soh8Surface::EvaluateNeumann(ParameterList&           params,
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
   if (curvenum>=0 && usetime)
-    dyn_facfromcurve(curvenum,time,&curvefac);
+    curvefac = DRT::TimeCurveManager::Instance().Curve(curvenum).f(time);
   // **
 
   // element geometry

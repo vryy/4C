@@ -51,32 +51,9 @@ extern struct _FILES  allfiles;
  *----------------------------------------------------------------------*/
 extern struct _IO_FLAGS     ioflags;
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 02/02    |
- | number of load curves numcurve                                       |
- | vector of structures of curves                                       |
- | defined in input_curves.c                                            |
- | INT                   numcurve;                                      |
- | struct _CURVE      *curve;                                           |
- *----------------------------------------------------------------------*/
-extern INT            numcurve;
-extern struct _CURVE *curve;
-
 
 void FSI::DirichletNeumannCoupling::Setup()
 {
-  // -------------------------------------------------------------------
-  // init all applied time curves
-  // -------------------------------------------------------------------
-  for (int actcurve=0; actcurve<numcurve; actcurve++)
-  {
-    int step=0;
-    double dt=0.;
-    double maxtime=0.;
-    /* the last three parameters are obsolete!!! */
-    dyn_init_curve(actcurve,step,dt,maxtime);
-  }
-
   SetupStructure();
   SetupFluid();
   SetupAle();

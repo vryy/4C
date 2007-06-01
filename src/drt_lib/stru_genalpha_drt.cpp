@@ -71,16 +71,6 @@ extern struct _SOLVAR  *solv;
  *----------------------------------------------------------------------*/
 extern ALLDYNA      *alldyn;
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 02/02    |
- | number of load curves numcurve                                       |
- | vector of structures of curves                                       |
- | defined in input_curves.c                                            |
- | INT                   numcurve;                                      |
- | struct _CURVE      *curve;                                           |
- *----------------------------------------------------------------------*/
-extern INT            numcurve;
-extern struct _CURVE *curve;
 
 /*----------------------------------------------------------------------*
   | structural nonlinear dynamics (gen-alpha)              m.gee 12/06  |
@@ -152,10 +142,6 @@ void stru_genalpha_drt()
     damping = true;
     damp_mat = LINALG::CreateMatrix(*dofrowmap,81);
   }
-
-  /*--------------------------------------- init all applied time curves -*/
-  for (int actcurve=0; actcurve<numcurve; actcurve++)
-    dyn_init_curve(actcurve,sdyn->nstep,sdyn->dt,sdyn->maxtime);
 
   // -------------------------------------------------------------------
   // create empty vectors
@@ -315,7 +301,7 @@ void stru_genalpha_drt()
     //--------------------------------------------------- predicting state
     // constant predictor : displacement in domain
     disn->Update(1.0, *dis, 0.0);
-    
+
     // apply new displacements at DBCs
     // and get new external force vector
     {
@@ -454,7 +440,7 @@ void stru_genalpha_drt()
       //---------------------------------------------- build effective lhs
       // (using matrix stiff_mat as effective matrix)
       LINALG::Add(*mass_mat,false,(1.-alpham)/(beta*dt*dt),*stiff_mat,1.-alphaf);
-      if (damping) 
+      if (damping)
         LINALG::Add(*damp_mat,false,(1.-alphaf)*gamma/(beta*dt),*stiff_mat,1.0);
       LINALG::Complete(*stiff_mat);
 
@@ -540,7 +526,7 @@ void stru_genalpha_drt()
 
       fresm->Norm2(&norm);
       // a short message
-      if (!myrank) 
+      if (!myrank)
       {
         printf("numiter %d res-norm %e dis-norm %e\n",numiter+1, norm, disinorm);
         fprintf(errfile,"numiter %d res-norm %e dis-norm %e\n",numiter+1, norm, disinorm);
@@ -630,7 +616,7 @@ void stru_genalpha_drt()
       actdis->Evaluate(params,null,null,null,null,null);
       actdis->ClearState();
     }
-    
+
     //---------------------------------------------------------- print out
     if (!myrank)
     {
@@ -645,8 +631,8 @@ void stru_genalpha_drt()
     }
 
   }  //===================================================== end time loop
-  
-  
+
+
 
   //----------------------------- this is the end my lonely friend the end
   return;

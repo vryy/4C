@@ -137,9 +137,6 @@ void ntainp_ccadiscret()
   // Also read time and space functions and local coord systems
   input_conditions();
 
-  /*-------------------------------------------- input of monitoring data */
-  inp_monitor();
-
 #ifdef RESULTTEST
   /*---------------------------------------- input of result descriptions */
   inp_resultdescr();

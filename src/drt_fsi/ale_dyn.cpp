@@ -60,17 +60,6 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 02/02    |
- | number of load curves numcurve                                       |
- | vector of structures of curves                                       |
- | defined in input_curves.c                                            |
- | INT                   numcurve;                                      |
- | struct _CURVE      *curve;                                           |
- *----------------------------------------------------------------------*/
-extern INT            numcurve;
-extern struct _CURVE *curve;
-
 
 using namespace std;
 using namespace Teuchos;
@@ -109,15 +98,6 @@ void dyn_ale_drt()
   ALE_DYNAMIC *adyn     = alldyn[0].adyn;
   adyn->step            =   0;
   adyn->time            = 0.0;
-
-  // -------------------------------------------------------------------
-  // init all applied time curves
-  // -------------------------------------------------------------------
-  for (int actcurve=0; actcurve<numcurve; actcurve++)
-  {
-   /* the last three parameters are obsolete!!! */
-   dyn_init_curve(actcurve,adyn->step,adyn->dt,adyn->maxtime);
-  }
 
   // -------------------------------------------------------------------
   // create a solver

@@ -73,17 +73,6 @@ extern struct _SOLVAR  *solv;
 extern ALLDYNA      *alldyn;
 
 /*----------------------------------------------------------------------*
- |                                                       m.gee 02/02    |
- | number of load curves numcurve                                       |
- | vector of structures of curves                                       |
- | defined in input_curves.c                                            |
- | INT                   numcurve;                                      |
- | struct _CURVE      *curve;                                           |
- *----------------------------------------------------------------------*/
-extern INT            numcurve;
-extern struct _CURVE *curve;
-
-/*----------------------------------------------------------------------*
   | structural nonlinear dynamics (gen-alpha)              m.gee 12/06  |
  *----------------------------------------------------------------------*/
 void dyn_nlnstructural_drt()
@@ -113,10 +102,6 @@ void dyn_nlnstructural_drt()
   // -------------------------------------------------------------------
   SOLVAR*         actsolv  = &solv[0];
   STRUCT_DYNAMIC* sdyn     = alldyn[0].sdyn;
-  
-  /*--------------------------------------- init all applied time curves -*/
-  for (int actcurve=0; actcurve<numcurve; actcurve++)
-    dyn_init_curve(actcurve,sdyn->nstep,sdyn->dt,sdyn->maxtime);
 
   // -------------------------------------------------------------------
   // create a solver
@@ -161,7 +146,7 @@ void dyn_nlnstructural_drt()
   genalphaparams.set<string>("equilibrium iteration","full newton");
 
   StruGenAlpha timeintegrator(genalphaparams,*actdis,solver,output);
-  
+
   timeintegrator.Integrate();
 
   return;

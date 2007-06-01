@@ -115,6 +115,7 @@ OBJS_DRT      = \
                 src/drt_lib/drt_discret_evaluate.o \
                 src/drt_lib/drt_resulttest.o \
                 src/drt_lib/drt_inputreader.o \
+                src/drt_lib/drt_timecurve.o \
                 src/drt_lib/global_inp_control2.o \
                 src/drt_lib/global_inp_control3.o \
                 src/drt_lib/input_conditions.o \

@@ -23,7 +23,7 @@ Maintainer: Michael Gee
 
 #include "Epetra_SerialDenseMatrix.h"
 #include "global_inp_control2.H"
-
+#include "drt_timecurve.H"
 
 
 /*----------------------------------------------------------------------*
@@ -116,9 +116,9 @@ static void register_condition(string name,
  *----------------------------------------------------------------------*/
 void input_conditions()
 {
-  DSTraceHelper dst("input_conditions");
   /*---------------------------------------------- input of time curves */
-  inp_cond_curve();
+  DRT::TimeCurveManager::Instance().ReadInput();
+  //cout << DRT::TimeCurveManager::Instance();
   /*---------------------------------------- input of spatial functions */
   inp_cond_funct();
   //------------------------------- read number of design objects we have

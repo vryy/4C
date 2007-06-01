@@ -145,11 +145,6 @@ int DRT::Elements::Fluid2::Evaluate(ParameterList& params,
 } // end of DRT::Elements::Fluid2::Evaluate
 
 
-extern "C"
-{
-  void dyn_facfromcurve(int actcurve,double T,double *fac);
-}
-
 
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)   gammi 03/07|
@@ -330,13 +325,13 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
 
         /*----------------------------------------------- get vel_norm ---*/
         vel_norm = sqrt(DSQR(velint[0]) + DSQR(velint[1]));
-	
+
 	// get control parameter
 	bool is_stationary = params.get<bool>("using stationary formulation",false);
-	
+
 	if (is_stationary == false)
 	{// stabilization parameters for instationary case (default)
-	
+
 	 /* parameter relating viscous : reactive forces */
 	 pe = 4.0 * timefac * visc / (mk * DSQR(hk));
 	 /* parameter relating advective : viscous forces */
@@ -350,12 +345,12 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
 	 tau[0] = DSQR(hk)/(DSQR(hk)*xi1 + (4.0*timefac*visc/mk)*xi2);
 
          /*-------------------------------------------- compute tau_C ---*/
-	 xi2 = DMIN(re,1.0);	 
+	 xi2 = DMIN(re,1.0);
 	 tau[2] = vel_norm * hk * 0.5 * xi2 /timefac;
 	}
 	else
 	{// stabilization parameters for stationary case
-		
+
 	 /*------------------------------------------------------ compute tau_M ---*/
 	 /* stability parameter definition according to Franca and Valentin (2000) */
  	 re = mk * vel_norm * hk / (2.0 * visc);       /* convective : viscous forces */
@@ -366,7 +361,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
 
 	 /*------------------------------------------------------ compute tau_C ---*/
 	 /*-- stability parameter definition according to Codina (2002), CMAME 191 */
-	 xi = DMIN(re,1.0);	 
+	 xi = DMIN(re,1.0);
 	 tau[2] = 0.5*vel_norm*hk*xi;
 	}
 
@@ -537,7 +532,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
 			  funct,tau,
 			  derxy,derxy2,
 			  fac,visc,iel,
-			  params);                
+			  params);
 		else
 		   f2_calmat_stationary(*sys_mat,*residual,
 			  velint,histvec,gridvelint,press,
@@ -545,8 +540,8 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
 			  funct,tau,
 			  derxy,derxy2,
 			  fac,visc,iel,
-			  params);		
-		 
+			  params);
+
 
 	    } /* end of loop over integration points ls */
 	} /* end of loop over integration points lr */
@@ -764,7 +759,7 @@ void DRT::Elements::Fluid2::f2_integration_points(struct _FLUID_DATA& data)
       data.txgs[4][5]    =  0.0915762135098 	;
       data.txgs[5][5]    =  0.0915762135098 	;
 
-     
+
 
       data.twgt[0][5]   =  0.0833333333333	;
       data.twgt[1][5]   =  0.0833333333333	;

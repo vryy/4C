@@ -72,17 +72,6 @@ extern struct _SOLVAR  *solv;
 extern ALLDYNA      *alldyn;
 
 /*----------------------------------------------------------------------*
- |                                                       m.gee 02/02    |
- | number of load curves numcurve                                       |
- | vector of structures of curves                                       |
- | defined in input_curves.c                                            |
- | INT                   numcurve;                                      |
- | struct _CURVE      *curve;                                           |
- *----------------------------------------------------------------------*/
-extern INT            numcurve;
-extern struct _CURVE *curve;
-
-/*----------------------------------------------------------------------*
   | structural nonlinear dynamics (gen-alpha)              m.gee 12/06  |
  *----------------------------------------------------------------------*/
 void dyn_nlnstructural_drt()
@@ -112,7 +101,7 @@ void dyn_nlnstructural_drt()
   // -------------------------------------------------------------------
   const Epetra_Comm& Comm = actdis->Comm();
   const int myrank  = Comm.MyPID();
-  
+
   // -------------------------------------------------------------------
   // set some pointers and variables
   // -------------------------------------------------------------------
@@ -121,7 +110,7 @@ void dyn_nlnstructural_drt()
   STRUCT_DYN_CALC dynvar;
   memset(&dynvar, 0, sizeof(STRUCT_DYN_CALC));
   double          acttime = 0.0;
-  
+
   //-----------------------------------------------------create a solver
   RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
   LINALG::Solver solver(solveparams,actdis->Comm(),allfiles.out_err);
@@ -141,12 +130,12 @@ void dyn_nlnstructural_drt()
   RefCountPtr<Epetra_CrsMatrix> mass_mat  = LINALG::CreateMatrix(*dofrowmap,81);
   RefCountPtr<Epetra_CrsMatrix> damp_mat  = null;
   bool damping = false;
-  if (sdyn->damp==1) 
+  if (sdyn->damp==1)
   {
     damping = true;
     damp_mat = LINALG::CreateMatrix(*dofrowmap,81);
   }
-  
+
   // -------------------------------------------------------------------
   // create empty vectors
   // -------------------------------------------------------------------
@@ -160,31 +149,31 @@ void dyn_nlnstructural_drt()
   // solution at time t-dt and t
   RefCountPtr<Epetra_Vector> sol0 = LINALG::CreateVector(*dofrowmap,true);
   RefCountPtr<Epetra_Vector> sol1 = LINALG::CreateVector(*dofrowmap,true);
-  
+
   // incremental displacements
   RefCountPtr<Epetra_Vector> dx = LINALG::CreateVector(*dofrowmap,true);
-  
+
   // residual incremental displacements
   RefCountPtr<Epetra_Vector> rdx = LINALG::CreateVector(*dofrowmap,true);
-  
+
   // toggle vector indicating which dofs have Dirichlet BCs
   RefCountPtr<Epetra_Vector> dirichtoggle = LINALG::CreateVector(*dofrowmap,true);
-  
+
   // velocities
   RefCountPtr<Epetra_Vector> vel = LINALG::CreateVector(*dofrowmap,true);
-  
+
   // accelerations
   RefCountPtr<Epetra_Vector> acc = LINALG::CreateVector(*dofrowmap,true);
-  
-  // internal forces at t-dt, t   
+
+  // internal forces at t-dt, t
   RefCountPtr<Epetra_Vector> fie1 = LINALG::CreateVector(*dofrowmap,true);
   RefCountPtr<Epetra_Vector> fie2 = LINALG::CreateVector(*dofrowmap,true);
   // interpolated internal forces
   RefCountPtr<Epetra_Vector> fie  = LINALG::CreateVector(*dofrowmap,true);
-  
+
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
   RefCountPtr<Epetra_Vector> zeros = LINALG::CreateVector(*dofrowmap,true);
-  
+
   // -------------------------------------------------------------------
   // call elements to calculate stiffness and mass
   // -------------------------------------------------------------------
@@ -223,20 +212,15 @@ void dyn_nlnstructural_drt()
     LINALG::Complete(*damp_mat);
   }
   stiff_mat = null;
-  
+
   /*------------------------------------------- set initial step and time */
   sdyn->step = -1;
   sdyn->time = 0.0;
-  
-  /*--------------------------------------- init all applied time curves -*/
-  for (int actcurve=0; actcurve<numcurve; actcurve++)
-    dyn_init_curve(actcurve,sdyn->nstep,sdyn->dt,sdyn->maxtime);
-  
 
-  
+
   /*------------------------------------------------------- printout head */
   if (myrank==0) dyn_nlnstruct_outhead(&dynvar,sdyn);
-  
+
   //------------------------------------------------- output initial state
   output.NewStep(0,0.0);
   output.WriteVector("displacement", sol0);
@@ -259,16 +243,16 @@ void dyn_nlnstructural_drt()
   const double alpham = sdyn->alpha_m;
   const double alphaf = sdyn->alpha_f;
   const double dt     = sdyn->dt;
-  
+
   /*------------------------- set incremental displacements dispi to zero */
   dx->PutScalar(0.0);
   //------------------------------------- set residual displacements to zero
   rdx->PutScalar(0.0);
-  
+
   /*----------------------------------------------------------------------*/
   /*                     PREDICTOR                                        */
   /*----------------------------------------------------------------------*/
-  
+
   //------------------------------------- evaluate Neumann and Dirichlet BCs
   {
     ParameterList params;
@@ -332,7 +316,7 @@ void dyn_nlnstructural_drt()
   //---------------- subtract internal forces from interpolated external forces
   // rhs = rhs - fie1;
   rhs->Update(-1.0,*fie1,1.0);
-  
+
   //========================================================build effective RHS
   // rhs = (1-alphaf)*rhs1 + alphaf*rhs0 - fie1 (already done above)
   //       + M*(-a1*dx + a2*vel + a3*acc)
@@ -366,7 +350,7 @@ void dyn_nlnstructural_drt()
   }
 
   //======================================================= build effective LHS
-  // keff =   (1.0-alphaf)*K 
+  // keff =   (1.0-alphaf)*K
   //        + (1.0-alpham)*(1.0/(beta*dt*dt))*M
   //        + (1.0-alphaf)*(gamma/(beta*dt))*D (if present)
   {
@@ -392,16 +376,16 @@ void dyn_nlnstructural_drt()
   sol1->Update(1.0,*dx,1.0);
   // make dx contain increment of dirichlet BCs
   dx->Update(1.0,*sol1,-1.0,*sol0,0.0);
-  
+
   //------------------ start with residual discplacements zero as initial guess
   rdx->PutScalar(0.0);
-  
+
   /*----------------------------------------------------------------------*/
   /*                     PERFORM EQUILLIBRIUM ITERATION                   */
   /*----------------------------------------------------------------------*/
   int itnum = 0;
   iterloop:
-  
+
   //--------------- call elements to calculate stiffness and internal forces
   {
     // zero out the stiffness matrix
@@ -436,7 +420,7 @@ void dyn_nlnstructural_drt()
 
   //----------------------------------------------- interpolate internal forces
   fie->Update((1.-alphaf),*fie2,alphaf,*fie1,0.0);
-  
+
   //------------------------------ subtract internal forces from external force
   rhs->Update(-1.0,*fie,1.0);
 
@@ -473,7 +457,7 @@ void dyn_nlnstructural_drt()
   }
 
   //------------------------------------------------------ create effective LHS
-  // keff =   (1.0-alphaf)*K 
+  // keff =   (1.0-alphaf)*K
   //        + (1.0-alpham)*(1.0/(beta*dt*dt))*M
   //        + (1.0-alphaf)*(gamma/(beta*dt))*D (if present)
   {
@@ -488,12 +472,12 @@ void dyn_nlnstructural_drt()
   //---------------- Apply dirichlet boundary conditions to system of equations
   // residual discplacements are supposed to be zero at boundary conditions
   LINALG::ApplyDirichlettoSystem(stiff_mat,rdx,rhs,zeros,dirichtoggle);
-  
+
   //-------solve for residual displacements to correct incremental displacements
   rdx->PutScalar(0.0);
   solver.Solve(stiff_mat,rdx,rhs,true,false);
 
-  //--------------- update incremental displacements by residual displacements  
+  //--------------- update incremental displacements by residual displacements
   dx->Update(1.0,*rdx,1.0);
 
   //------------------------------------------------ update total displacements
@@ -538,23 +522,23 @@ void dyn_nlnstructural_drt()
     const double a4 = (gamma/beta)/dt;
     const double a5 = 1.0 - gamma/beta;
     const double a6 = (1.0-(gamma/beta)/2.0)*dt;
-    
+
     // displacement increment is dx (already calculated in Newton iteration)
     // dx contains correct dirichlet BCs increment
 
     // copy load vector from rhs2 to rhs1
     rhs1->Update(1.0,*rhs2,0.0);
-    
+
     // copy internal forces from fie2 to fie1
     fie1->Update(1.0,*fie2,0.0);
-    
+
     // copy displacements from sol1 to sol0
     sol0->Update(1.0,*sol1,0.0);
-    
+
     // temporary copy of acc
     RefCountPtr<Epetra_Vector> acc_old = LINALG::CreateVector(*dofrowmap,false);
     acc_old->Update(1.0,*acc,0.0);
-    
+
     // new accelerations acc = a1*dx + a2*vel + a3*acc_old
     acc->Update(a1,*dx,a2,*vel,a3);
 
@@ -580,7 +564,7 @@ void dyn_nlnstructural_drt()
   //---------------------------------------check whether to write output or not
   int mod_disp   = sdyn->step % sdyn->updevry_disp;
   int mod_stress = sdyn->step % sdyn->updevry_stress;
-  
+
   //--------------------------write displacements, velocities and accelerations
   if (!mod_disp && ioflags.struct_disp==1)
   {
@@ -589,7 +573,7 @@ void dyn_nlnstructural_drt()
     output.WriteVector("velocity", vel);
     output.WriteVector("acceleration", acc);
   }
-  
+
   //----------------------------------------------------- do stress calculation
   if (mod_stress==0 && ioflags.struct_stress==1)
   {
@@ -614,7 +598,7 @@ void dyn_nlnstructural_drt()
     actdis->Evaluate(params,null,null,null,null,null);
     actdis->ClearState();
   }
-  
+
   //---------------- update any material history parameters or something else...
   {
     // create the parameters for the discretization
@@ -632,7 +616,7 @@ void dyn_nlnstructural_drt()
     params.set("delta time",sdyn->dt);
     actdis->Evaluate(params,null,null,null,null,null);
   }
-  
+
   //--------------------------------------------------print output of time step
   if (Comm.MyPID()==0)
   {
@@ -642,7 +626,7 @@ void dyn_nlnstructural_drt()
             sdyn->step,sdyn->nstep,sdyn->time,dt,itnum);
     fflush(stdout);
     fflush(allfiles.out_err);
-    
+
   }
   //--------------------------------------------- print timing to error file
   Comm.Barrier();

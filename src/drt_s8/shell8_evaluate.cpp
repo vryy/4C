@@ -25,6 +25,7 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/drt_timecurve.H"
 
 extern "C"
 {
@@ -500,11 +501,6 @@ void s8tettr(double x[][3], double a[][3], double b[][3])
 }
 
 
-extern "C"
-{
-  void dyn_facfromcurve(int actcurve,double T,double *fac);
-}
-
 enum LoadType
 {
   neum_none,
@@ -636,7 +632,7 @@ int DRT::Elements::Shell8::EvaluateNeumann(ParameterList& params,
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
   if (curvenum>=0 && usetime)
-    dyn_facfromcurve(curvenum,time,&curvefac);
+    curvefac = DRT::TimeCurveManager::Instance().Curve(curvenum).f(time);
 
   // get type of condition
   LoadType ltype;

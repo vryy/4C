@@ -71,12 +71,6 @@ int DRT::Elements::Ale3::Evaluate(ParameterList& params,
 }
 
 
-extern "C"
-{
-  void dyn_facfromcurve(int actcurve,double T,double *fac);
-}
-
-
 /*----------------------------------------------------------------------*
  |  do nothing (public)                                      gammi 04/07|
  |                                                                      |
