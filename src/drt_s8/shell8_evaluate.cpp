@@ -26,7 +26,7 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/linalg_utils.H"
 
-extern "C" 
+extern "C"
 {
 #include "../headers/standardtypes.h"
 #include "../shell8/shell8.h"
@@ -43,7 +43,7 @@ extern struct _MATERIAL  *mat;
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            mwgee 12/06|
  *----------------------------------------------------------------------*/
-int DRT::Elements::Shell8::Evaluate(ParameterList& params, 
+int DRT::Elements::Shell8::Evaluate(ParameterList& params,
                                     DRT::Discretization&      discretization,
                                     vector<int>&              lm,
                                     Epetra_SerialDenseMatrix& elemat1,
@@ -52,9 +52,9 @@ int DRT::Elements::Shell8::Evaluate(ParameterList& params,
                                     Epetra_SerialDenseVector& elevec2,
                                     Epetra_SerialDenseVector& elevec3)
 {
-  DSTraceHelper dst("Shell8::Evaluate");  
+  DSTraceHelper dst("Shell8::Evaluate");
   DRT::Elements::Shell8::ActionType act = Shell8::none;
-  
+
   // get the action required
   string action = params.get<string>("action","none");
   if (action == "none") dserror("No action supplied");
@@ -68,7 +68,7 @@ int DRT::Elements::Shell8::Evaluate(ParameterList& params,
   else if (action=="calc_struct_fsiload")       act = Shell8::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")  act = Shell8::calc_struct_update_istep;
   else dserror("Unknown type of action for Shell8");
-  
+
   // get the material law
   MATERIAL* actmat = &(mat[material_-1]);
   switch(act)
@@ -147,7 +147,7 @@ static void s8tettr(double x[][3], double a[][3], double b[][3]);
 /*----------------------------------------------------------------------*
  |  Do stress calculation (private)                          mwgee 02/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8stress(struct _MATERIAL* material, 
+void DRT::Elements::Shell8::s8stress(struct _MATERIAL* material,
                                     vector<double>& mydisp)
 {
   // no. of nodes on this surface
@@ -156,9 +156,9 @@ void DRT::Elements::Shell8::s8stress(struct _MATERIAL* material,
   // init gaussian points
   S8_DATA s8data;
   s8_integration_points(s8data);
-  
-  const int nir = ngp_[0]; 
-  const int nis = ngp_[1]; 
+
+  const int nir = ngp_[0];
+  const int nis = ngp_[1];
   const int nit = 2;
   const int numdf = 6;
   const double condfac = sdc_;
@@ -170,10 +170,10 @@ void DRT::Elements::Shell8::s8stress(struct _MATERIAL* material,
   for (int i=0; i<3; ++i)
     for (int j=0; j<iel; ++j)
       a3ref2[i][j] = (*a3ref)(i,j);
-      
+
   vector<double> funct(iel);
   Epetra_SerialDenseMatrix deriv(2,iel);
-  
+
   double a3r[3][MAXNOD_SHELL8];
   double a3c[3][MAXNOD_SHELL8];
   double xrefe[3][MAXNOD_SHELL8];
@@ -186,19 +186,19 @@ void DRT::Elements::Shell8::s8stress(struct _MATERIAL* material,
     double h2 = (*thick)[k];
     hte[k] = h2;
     h2/=2.0;
-    
+
     a3r[0][k] = (*a3ref)(0,k)*h2;
     a3r[1][k] = (*a3ref)(1,k)*h2;
     a3r[2][k] = (*a3ref)(2,k)*h2;
-    
+
     xrefe[0][k] = Nodes()[k]->X()[0];
     xrefe[1][k] = Nodes()[k]->X()[1];
     xrefe[2][k] = Nodes()[k]->X()[2];
-    
+
     xcure[0][k] = xrefe[0][k] + mydisp[k*numdf+0];
     xcure[1][k] = xrefe[1][k] + mydisp[k*numdf+1];
     xcure[2][k] = xrefe[2][k] + mydisp[k*numdf+2];
-    
+
     a3c[0][k] = a3r[0][k] + mydisp[k*numdf+3];
     a3c[1][k] = a3r[1][k] + mydisp[k*numdf+4];
     a3c[2][k] = a3r[2][k] + mydisp[k*numdf+5];
@@ -241,7 +241,7 @@ void DRT::Elements::Shell8::s8stress(struct _MATERIAL* material,
       h[0] = akovr[1][0]*akovr[2][1] - akovr[2][0]*akovr[1][1];
       h[1] = akovr[2][0]*akovr[0][1] - akovr[0][0]*akovr[2][1];
       h[2] = akovr[0][0]*akovr[1][1] - akovr[1][0]*akovr[0][1];
-      //------------- make director unit length and get midsurf area da from it      
+      //------------- make director unit length and get midsurf area da from it
       double da;
       s8unvc(&da,h,3);
       //-------------------------------------------------------- clear stresses
@@ -502,7 +502,7 @@ void s8tettr(double x[][3], double a[][3], double b[][3])
 
 extern "C"
 {
-  void dyn_facfromcurve(int actcurve,double T,double *fac);  
+  void dyn_facfromcurve(int actcurve,double T,double *fac);
 }
 
 enum LoadType
@@ -516,10 +516,10 @@ enum LoadType
   neum_opres_FSI
 };
 static void s8loadgaussianpoint(double eload[][MAXNOD_SHELL8], const double hhi,
-                         double wgt, const double xjm[][3], 
+                         double wgt, const double xjm[][3],
                          const vector<double>& funct,
                          const Epetra_SerialDenseMatrix& deriv,
-                         const int iel, 
+                         const int iel,
                          const double xi,
                          const double yi,
                          const double zi,
@@ -531,7 +531,7 @@ static void s8loadgaussianpoint(double eload[][MAXNOD_SHELL8], const double hhi,
 /*----------------------------------------------------------------------*
  |  Integrate a Surface Neumann boundary condition (public)  mwgee 01/07|
  *----------------------------------------------------------------------*/
-int DRT::Elements::Shell8::EvaluateNeumann(ParameterList& params, 
+int DRT::Elements::Shell8::EvaluateNeumann(ParameterList& params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
                                            vector<int>&              lm,
@@ -541,7 +541,7 @@ int DRT::Elements::Shell8::EvaluateNeumann(ParameterList& params,
   if (disp==null) dserror("Cannot get state vector 'displacement'");
   vector<double> mydisp(lm.size());
   DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
-  
+
   // find out whether we will use a time curve
   bool usetime = true;
   const double time = params.get("total time",-1.0);
@@ -553,16 +553,16 @@ int DRT::Elements::Shell8::EvaluateNeumann(ParameterList& params,
   // init gaussian points
   S8_DATA s8data;
   s8_integration_points(s8data);
-  
-  const int nir = ngp_[0]; 
-  const int nis = ngp_[1]; 
+
+  const int nir = ngp_[0];
+  const int nis = ngp_[1];
   const int numdf = 6;
   vector<double>* thick = data_.Get<vector<double> >("thick");
   if (!thick) dserror("Cannot find vector of nodal thicknesses");
-      
+
   vector<double> funct(iel);
   Epetra_SerialDenseMatrix deriv(2,iel);
-  
+
   double a3r[3][MAXNOD_SHELL8];
   double a3c[3][MAXNOD_SHELL8];
   double a3cur[3][MAXNOD_SHELL8];
@@ -603,24 +603,24 @@ int DRT::Elements::Shell8::EvaluateNeumann(ParameterList& params,
     a3[2] *= a3norm;
     for (int j=0; j<3; j++) a3ref[j][i] = a3[j];
   }
-  
+
   // update geometry
   for (int k=0; k<iel; ++k)
   {
     const double h2 = (*thick)[k];
-    
+
     a3r[0][k] = a3ref[0][k]*h2;
     a3r[1][k] = a3ref[1][k]*h2;
     a3r[2][k] = a3ref[2][k]*h2;
-    
+
     xrefe[0][k] = Nodes()[k]->X()[0];
     xrefe[1][k] = Nodes()[k]->X()[1];
     xrefe[2][k] = Nodes()[k]->X()[2];
-    
+
     xcure[0][k] = xrefe[0][k] + mydisp[k*numdf+0];
     xcure[1][k] = xrefe[1][k] + mydisp[k*numdf+1];
     xcure[2][k] = xrefe[2][k] + mydisp[k*numdf+2];
-    
+
     a3c[0][k] = a3r[0][k] + mydisp[k*numdf+3];
     a3c[1][k] = a3r[1][k] + mydisp[k*numdf+4];
     a3c[2][k] = a3r[2][k] + mydisp[k*numdf+5];
@@ -633,11 +633,11 @@ int DRT::Elements::Shell8::EvaluateNeumann(ParameterList& params,
   // find out whether we will use a time curve and get the factor
   vector<int>* curve  = condition.Get<vector<int> >("curve");
   int curvenum = -1;
-  if (curve) curvenum = (*curve)[0]; 
+  if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
   if (curvenum>=0 && usetime)
-    dyn_facfromcurve(curvenum,time,&curvefac); 
-  
+    dyn_facfromcurve(curvenum,time,&curvefac);
+
   // get type of condition
   LoadType ltype;
   string* type = condition.Get<string>("type");
@@ -647,11 +647,11 @@ int DRT::Elements::Shell8::EvaluateNeumann(ParameterList& params,
   else if (*type == "neum_consthydro_z")  ltype = neum_consthydro_z;
   else if (*type == "neum_increhydro_z")  ltype = neum_increhydro_z;
   else dserror("Unknown type of SurfaceNeumann condition");
-  
+
   // get values and switches from the condition
   vector<int>*    onoff = condition.Get<vector<int> >("onoff");
   vector<double>* val   = condition.Get<vector<double> >("val");
-  
+
   // start integration
   double e3=0.0;
   for (int lr=0; lr<nir; ++lr) // loop r direction
@@ -692,27 +692,27 @@ int DRT::Elements::Shell8::EvaluateNeumann(ParameterList& params,
                             *onoff,*val,curvefac,time);
       } // for (int ls=0; ls<nis; ++ls)
     } // for (int lr=0; lr<nir; ++lr)
-  
+
   // add eload to element vector
   for (int inode=0; inode<iel; ++inode)
     for (int dof=0; dof<6; ++dof)
       elevec1[inode*6+dof] += eload[dof][inode];
-      
+
   return 0;
 }
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                            mwgee 12/06|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm, 
-                                            vector<double>&           disp, 
+void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm,
+                                            vector<double>&           disp,
                                             vector<double>&           residual,
                                             Epetra_SerialDenseMatrix* stiffmatrix,
                                             Epetra_SerialDenseMatrix* massmatrix,
                                             Epetra_SerialDenseVector* force,
                                             struct _MATERIAL*         material)
 {
-  DSTraceHelper dst("Shell8::s8_nlnstiffmass");  
+  DSTraceHelper dst("Shell8::s8_nlnstiffmass");
   const int numnode = NumNode();
   const int numdf   = 6;
   int       ngauss  = 0;
@@ -758,7 +758,7 @@ void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm,
   double gkonc[3][3];
   double gmkovc[3][3];
   double gmkonc[3][3];
-  
+
   // for ans
   int ansq=0;
   int nsansq=0;
@@ -768,12 +768,12 @@ void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm,
   double xs2[6];
   double frq[6];
   double fsq[6];
-  
+
   vector<double> funct1q[6];
   vector<double> funct2q[6];
   Epetra_SerialDenseMatrix deriv1q[6];
   Epetra_SerialDenseMatrix deriv2q[6];
-  
+
   double akovr1q[6][3][3];
   double akonr1q[6][3][3];
   double amkovr1q[6][3][3];
@@ -797,9 +797,9 @@ void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm,
   double amkovc2q[6][3][3];
   double amkonc2q[6][3][3];
   double a3kvpc2q[6][3][2];
-  
+
   // for eas
-  Epetra_SerialDenseMatrix P;          
+  Epetra_SerialDenseMatrix P;
   Epetra_SerialDenseMatrix transP;
   Epetra_SerialDenseMatrix T;
   Epetra_SerialDenseMatrix Lt;
@@ -826,11 +826,11 @@ void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm,
   // gaussian points
   S8_DATA s8data;
   s8_integration_points(s8data);
-  
+
   vector<double>* thick = NULL;
   thick = data_.Get<vector<double> >("thick");
   if (!thick) dserror("Cannot find nodal thicknesses");
-  
+
   // eas
   if (nhyb_)
   {
@@ -841,7 +841,7 @@ void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm,
     Lt.Shape(nhyb_,nd);
     Dtild.Shape(nhyb_,nhyb_);
     Dtildinv.Shape(nhyb_,nhyb_);
-    Rtild.resize(nhyb_); 
+    Rtild.resize(nhyb_);
     for (int i=0; i<nhyb_; ++i) Rtild[i] = 0.0;
 
     // access history stuff stored in element
@@ -867,7 +867,7 @@ void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm,
     imass=1;
     s8_getdensity(material,&density);
   }
-  
+
   /*----------------------------------------------- integrationsparameter */
   const int nir = ngp_[0];
   const int nis = ngp_[1];
@@ -880,19 +880,19 @@ void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm,
   for (int k=0; k<iel; ++k)
   {
     const double h2 = (*thick)[k]*condfac/2.0;
-    
+
     a3r[0][k] = (*a3ref)(0,k)*h2;
     a3r[1][k] = (*a3ref)(1,k)*h2;
     a3r[2][k] = (*a3ref)(2,k)*h2;
-    
+
     xrefe[0][k] = Nodes()[k]->X()[0];
     xrefe[1][k] = Nodes()[k]->X()[1];
     xrefe[2][k] = Nodes()[k]->X()[2];
-    
+
     xcure[0][k] = xrefe[0][k] + disp[k*numdf+0];
     xcure[1][k] = xrefe[1][k] + disp[k*numdf+1];
     xcure[2][k] = xrefe[2][k] + disp[k*numdf+2];
-    
+
     a3c[0][k] = a3r[0][k] + disp[k*numdf+3];
     a3c[1][k] = a3r[1][k] + disp[k*numdf+4];
     a3c[2][k] = a3r[2][k] + disp[k*numdf+5];
@@ -923,7 +923,7 @@ void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm,
                               akovc2q,akonc2q,amkovc2q,amkonc2q,a3kvpc2q,
                               &detr,&detc);
   }
-  
+
   /*=============================== metric of element mid point (for eas) */
   if (nhyb_)
   {
@@ -933,7 +933,7 @@ void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm,
     s8tmtr(xcure,a3c,0.0,akovc0,akonc0,amkovc0,amkonc0,&detc0,
               funct,deriv,iel,condfac,0);
   }
-  
+
   /*=================================================== integration loops */
   for (int lr=0; lr<nir; ++lr)
   {
@@ -949,7 +949,7 @@ void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm,
       /*----------------------------- shape functions for querschub-ans */
       if (ansq==1) s8_ansqshapefunctions(frq,fsq,e1,e2,iel,nsansq);
       /*-------- init mid surface material tensor and stress resultants */
-      for (int i=0; i<12; ++i) 
+      for (int i=0; i<12; ++i)
       {
         stress_r[i] = 0.;
         for (int j=0; j<12; ++j) D[i][j] = 0.;
@@ -1028,7 +1028,7 @@ void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm,
        /*----------------------------------- elastic stiffness matrix ke */
        s8BtDB(*stiffmatrix,bop,D,iel,numdf,weight);
        /*--------------------------------- geometric stiffness matrix kg */
-       if (!ansq) s8tvkg(*stiffmatrix,stress_r,funct,deriv,numdf,iel,weight,e1,e2); 
+       if (!ansq) s8tvkg(*stiffmatrix,stress_r,funct,deriv,numdf,iel,weight,e1,e2);
        else       s8anstvkg(*stiffmatrix,stress_r,funct,deriv,numdf,iel,weight,e1,e2,
                             frq,fsq,funct1q,funct2q,deriv1q,deriv2q,ansq,nsansq);
        /*-------------------------------- calculation of internal forces */
@@ -1113,9 +1113,9 @@ void DRT::Elements::Shell8::s8_nlnstiffmass(vector<int>&              lm,
       (*stiffmatrix)(i,j) = average;
       (*stiffmatrix)(j,i) = average;
     }
-  
 
-#if 0  
+
+#if 0
 printf("Element id %d\n",Id());
 
 printf("stiffness\n");
@@ -1126,12 +1126,12 @@ for (int i=0; i<nd; ++i)
   printf("\n");
 }
 printf("internal forces\n");
-for (int i=0; i<nd; ++i) 
+for (int i=0; i<nd; ++i)
   printf("%15.10e\n",(*force)[i]);
 fflush(stdout);
 
-#endif  
-  
+#endif
+
   return;
 } // DRT::Elements::Shell8::s8_nlnstiffmass
 
@@ -1160,11 +1160,11 @@ void DRT::Elements::Shell8::s8tmas(
       double       help  = facv * helpf;
       for (int k=0; k<3; ++k)
         emass(j*numdf+k,i*numdf+k) += help;
-      
+
       help = facw * helpf * hehe;
       for (int k=3; k<6; ++k)
         emass(j*numdf+k,i*numdf+k) += help;
-        
+
       if (abs(facvw)>1.0e-14)
       {
         help = facvw * helpf * he;
@@ -1188,7 +1188,7 @@ void DRT::Elements::Shell8::s8tmas(
  |                                                 (private) 12/06 mgee |
  *----------------------------------------------------------------------*/
 void DRT::Elements::Shell8::s8intforce(Epetra_SerialDenseVector& intforce, const double stress_r[],
-                  const Epetra_SerialDenseMatrix& bop, const int iel, 
+                  const Epetra_SerialDenseMatrix& bop, const int iel,
                   const int numdf, const int nstress_r, const double weight)
 {
   DSTraceHelper dst("Shell8::s8intforce");
@@ -1213,11 +1213,11 @@ void DRT::Elements::Shell8::s8intforce(Epetra_SerialDenseVector& intforce, const
  |                                                 (private) 12/06 mgee |
  *----------------------------------------------------------------------*/
 void DRT::Elements::Shell8::s8anstvkg(
-                 Epetra_SerialDenseMatrix& estif, double stress_r[], 
+                 Epetra_SerialDenseMatrix& estif, double stress_r[],
                  const vector<double>& funct, const Epetra_SerialDenseMatrix& deriv,
                  const int numdf, const int iel, const double weight,
                  const double e1, const double e2,
-                 const double frq[], const double fsq[], 
+                 const double frq[], const double fsq[],
                  const vector<double> funct1q[], const vector<double> funct2q[],
                  const Epetra_SerialDenseMatrix deriv1q[], const Epetra_SerialDenseMatrix deriv2q[],
                  const int ansq, const int nsansq)
@@ -1242,12 +1242,12 @@ void DRT::Elements::Shell8::s8anstvkg(
     {
       const double pi = funct[inode];
       const double pj = funct[jnode];
-      
+
       const double d11 = deriv(0,inode) * deriv(0,jnode);
       const double d12 = deriv(0,inode) * deriv(1,jnode);
       const double d21 = deriv(1,inode) * deriv(0,jnode);
       const double d22 = deriv(1,inode) * deriv(1,jnode);
-      
+
       const double xn = (sn11*d11 + sn21*(d12+d21) + sn22*d22) * weight;
       const double xm = (sm11*d11 + sm21*(d12+d21) + sm22*d22) * weight;
 
@@ -1275,7 +1275,7 @@ void DRT::Elements::Shell8::s8anstvkg(
           pd2ji = deriv2q[i](1,jnode) * funct2q[i][inode] * fsq[i];
           yu += (sn31*pd1ji + sn32*pd2ji) * weight;
           yo += (sn31*pd1ij + sn32*pd2ij) * weight;
-        } 
+        }
       }
       /*---------------- linear part of querschub is always unmodified */
       pd1ij = deriv(0,inode) * pj;
@@ -1284,37 +1284,37 @@ void DRT::Elements::Shell8::s8anstvkg(
       pd2ji = deriv(1,jnode) * pi;
       const double yy = (sm31*(pd1ij+pd1ji) + sm32*(pd2ij+pd2ji)) * weight;
       const double z  = pi*pj*sn33*weight;
-      
+
       estif(inode*numdf+0,jnode*numdf+0) += xn;
       estif(inode*numdf+1,jnode*numdf+1) += xn;
       estif(inode*numdf+2,jnode*numdf+2) += xn;
-      
+
       estif(inode*numdf+3,jnode*numdf+0) += (xm+yu);
       estif(inode*numdf+4,jnode*numdf+1) += (xm+yu);
       estif(inode*numdf+5,jnode*numdf+2) += (xm+yu);
-      
+
       estif(inode*numdf+0,jnode*numdf+3) += (xm+yo);
       estif(inode*numdf+1,jnode*numdf+4) += (xm+yo);
       estif(inode*numdf+2,jnode*numdf+5) += (xm+yo);
-      
+
       estif(inode*numdf+3,jnode*numdf+3) += (yy+z);
       estif(inode*numdf+4,jnode*numdf+4) += (yy+z);
       estif(inode*numdf+5,jnode*numdf+5) += (yy+z);
-      
+
       if (inode!=jnode)
       {
          estif(jnode*numdf+0,inode*numdf+0) += xn;
          estif(jnode*numdf+1,inode*numdf+1) += xn;
          estif(jnode*numdf+2,inode*numdf+2) += xn;
-      
+
          estif(jnode*numdf+0,inode*numdf+3) += (xm+yu);
          estif(jnode*numdf+1,inode*numdf+4) += (xm+yu);
          estif(jnode*numdf+2,inode*numdf+5) += (xm+yu);
-      
+
          estif(jnode*numdf+3,inode*numdf+0) += (xm+yo);
          estif(jnode*numdf+4,inode*numdf+1) += (xm+yo);
          estif(jnode*numdf+5,inode*numdf+2) += (xm+yo);
-      
+
          estif(jnode*numdf+3,inode*numdf+3) += (yy+z);
          estif(jnode*numdf+4,inode*numdf+4) += (yy+z);
          estif(jnode*numdf+5,inode*numdf+5) += (yy+z);
@@ -1334,7 +1334,7 @@ void DRT::Elements::Shell8::s8anstvkg(
  |                                                 (private) 12/06 mgee |
  *----------------------------------------------------------------------*/
 void DRT::Elements::Shell8::s8tvkg(
-              Epetra_SerialDenseMatrix& estif, double stress_r[], 
+              Epetra_SerialDenseMatrix& estif, double stress_r[],
               const vector<double>& funct, const Epetra_SerialDenseMatrix& deriv,
               const int numdf, const int iel, const double weight,
               const double e1, const double e2)
@@ -1358,12 +1358,12 @@ void DRT::Elements::Shell8::s8tvkg(
     {
       const double pi = funct[inode];
       const double pj = funct[jnode];
-      
+
       const double d11 = deriv(0,inode) * deriv(0,jnode);
       const double d12 = deriv(0,inode) * deriv(1,jnode);
       const double d21 = deriv(1,inode) * deriv(0,jnode);
       const double d22 = deriv(1,inode) * deriv(1,jnode);
-      
+
       const double pd1ij = deriv(0,inode) * pj;
       const double pd1ji = deriv(0,jnode) * pi;
       const double pd2ij = deriv(1,inode) * pj;
@@ -1375,37 +1375,37 @@ void DRT::Elements::Shell8::s8tvkg(
       const double yo = (sn31*pd1ij + sn32*pd2ij) * weight;
       const double yy = (sm31*(pd1ij+pd1ji) + sm32*(pd2ij+pd2ji)) * weight;
       const double z  = pi*pj*sn33*weight;
-      
+
       estif(inode*numdf+0,jnode*numdf+0) += xn;
       estif(inode*numdf+1,jnode*numdf+1) += xn;
       estif(inode*numdf+2,jnode*numdf+2) += xn;
-      
+
       estif(inode*numdf+3,jnode*numdf+0) += (xm+yu);
       estif(inode*numdf+4,jnode*numdf+1) += (xm+yu);
       estif(inode*numdf+5,jnode*numdf+2) += (xm+yu);
-      
+
       estif(inode*numdf+0,jnode*numdf+3) += (xm+yo);
       estif(inode*numdf+1,jnode*numdf+4) += (xm+yo);
       estif(inode*numdf+2,jnode*numdf+5) += (xm+yo);
-      
+
       estif(inode*numdf+3,jnode*numdf+3) += (yy+z);
       estif(inode*numdf+4,jnode*numdf+4) += (yy+z);
       estif(inode*numdf+5,jnode*numdf+5) += (yy+z);
-      
+
       if (inode!=jnode)
       {
          estif(jnode*numdf+0,inode*numdf+0) += xn;
          estif(jnode*numdf+1,inode*numdf+1) += xn;
          estif(jnode*numdf+2,inode*numdf+2) += xn;
-      
+
          estif(jnode*numdf+0,inode*numdf+3) += (xm+yu);
          estif(jnode*numdf+1,inode*numdf+4) += (xm+yu);
          estif(jnode*numdf+2,inode*numdf+5) += (xm+yu);
-      
+
          estif(jnode*numdf+3,inode*numdf+0) += (xm+yo);
          estif(jnode*numdf+4,inode*numdf+1) += (xm+yo);
          estif(jnode*numdf+5,inode*numdf+2) += (xm+yo);
-      
+
          estif(jnode*numdf+3,inode*numdf+3) += (yy+z);
          estif(jnode*numdf+4,inode*numdf+4) += (yy+z);
          estif(jnode*numdf+5,inode*numdf+5) += (yy+z);
@@ -1422,7 +1422,7 @@ void DRT::Elements::Shell8::s8tvkg(
  |                                                 (private) 12/06 mgee |
  *----------------------------------------------------------------------*/
 void DRT::Elements::Shell8::s8tvma(
-              double D[][12], double** C, double stress[], double stress_r[], 
+              double D[][12], double** C, double stress[], double stress_r[],
               const double e3, const double fact, const double condfac)
 {
   DSTraceHelper dst("Shell8::s8tvma");
@@ -1459,11 +1459,11 @@ for (int i=0; i<12; i++)
  | calculate Ke += Bt * D * B                                           |
  |                                                 (private) 12/06 mgee |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8BtDB(Epetra_SerialDenseMatrix& estif, 
+void DRT::Elements::Shell8::s8BtDB(Epetra_SerialDenseMatrix& estif,
                                    const Epetra_SerialDenseMatrix& bop,
-                                   const double D[][12], 
-                                   const int iel, 
-                                   const int numdf, 
+                                   const double D[][12],
+                                   const int iel,
+                                   const int numdf,
                                    const double weight)
 {
   DSTraceHelper dst("Shell8::s8BtDB");
@@ -1478,7 +1478,7 @@ void DRT::Elements::Shell8::s8BtDB(Epetra_SerialDenseMatrix& estif,
       for (int k=0; k<12; ++k) sum += D[i][k]*bop(k,j);
       work[i][j] = sum;
     }
-/*--------------------------- make multiplication estif += bop^t * work */    
+/*--------------------------- make multiplication estif += bop^t * work */
   for (int i=0; i<dim; ++i)
     for (int j=0; j<dim; ++j)
     {
@@ -1495,14 +1495,14 @@ void DRT::Elements::Shell8::s8BtDB(Epetra_SerialDenseMatrix& estif,
  | call material laws  (private)                             mwgee 12/06|
  *----------------------------------------------------------------------*/
 void DRT::Elements::Shell8::s8tmat(
-              struct _MATERIAL* material, 
+              struct _MATERIAL* material,
               double stress[], double strain[], double** C,
-              double gmkovc[][3], double gmkonc[][3], 
+              double gmkovc[][3], double gmkonc[][3],
               double gmkovr[][3], double gmkonr[][3],
               double gkovc[][3], double gkonc[][3],
-              double gkovr[][3], double gkonr[][3], 
-              const double detc, const double detr, 
-              const double e3, const int option, 
+              double gkovr[][3], double gkonr[][3],
+              const double detc, const double detr,
+              const double e3, const int option,
               const int ngauss)
 {
   DSTraceHelper dst("Shell8::s8tmat");
@@ -1523,7 +1523,7 @@ void DRT::Elements::Shell8::s8tmat(
       double** gmkonrtmp = (double**)amdef("tmp",&tmp,3,3,"DA");
       for (int i=0; i<3; ++i)
       for (int j=0; j<3; ++j) gmkonrtmp[i][j] = gmkonr[i][j];
-      s8_mat_linel(mat->m.stvenant,gmkonrtmp,C);
+      s8_mat_linel(material->m.stvenant,gmkonrtmp,C);
       s8_mat_stress1(stress,strain,C);
       amdel(&tmp);
     }
@@ -1535,7 +1535,7 @@ void DRT::Elements::Shell8::s8tmat(
       double** gmkonrtmp = (double**)amdef("tmp",&tmp1,3,3,"DA");
       double** gmkonctmp = (double**)amdef("tmp",&tmp2,3,3,"DA");
       for (int i=0; i<3; ++i)
-      for (int j=0; j<3; ++j) 
+      for (int j=0; j<3; ++j)
       {
         gmkonrtmp[i][j] = gmkonr[i][j];
         gmkonctmp[i][j] = gmkonc[i][j];
@@ -1552,7 +1552,7 @@ void DRT::Elements::Shell8::s8tmat(
       double** gkonrtmp = (double**)amdef("tmp",&tmp1,3,3,"DA");
       double** gmkovctmp = (double**)amdef("tmp",&tmp2,3,3,"DA");
       for (int i=0; i<3; ++i)
-      for (int j=0; j<3; ++j) 
+      for (int j=0; j<3; ++j)
       {
         gkonrtmp[i][j] = gkonr[i][j];
         gmkovctmp[i][j] = gmkovc[i][j];
@@ -1562,7 +1562,7 @@ void DRT::Elements::Shell8::s8tmat(
       /*         Ogden hyperelasticity without deviatoric-volumetric split */
       // s8_mat_ogden_coupled(mat->m.compogden,stress,C4,gkonrtmp,gmkovctmp);
       /*            Ogden hyperelasticity with deviatoric-volumetric split */
-      s8_mat_ogden_uncoupled2(mat->m.compogden,stress,C4,gkonrtmp,gmkovctmp);
+      s8_mat_ogden_uncoupled2(material->m.compogden,stress,C4,gkonrtmp,gmkovctmp);
       /* PK2 stresses are cartesian ->  return stresses to curvilinear bases */
       s8_kon_cacu(stress,gkonrtmp);
       /*---------------- C4 is cartesian -> return C4 to curvilinear bases */
@@ -1596,7 +1596,7 @@ C.......................................................................
 C!    GEAENDERTE METRIK DES VERF. SCHALENRAUMS INFOLGE ENHANCED STRAIN .
 C.......................................................................
 */
-void DRT::Elements::Shell8::s8vthv(double gmkovc[][3], double gmkonc[][3], 
+void DRT::Elements::Shell8::s8vthv(double gmkovc[][3], double gmkonc[][3],
                                    const vector<double>& epsh,
                                    double* detc, const double e3, const double condfac)
 {
@@ -1640,11 +1640,11 @@ void DRT::Elements::Shell8::s8anstvheq(
                   double amkovr2q[][3][3], double amkovc2q[][3][3],
                   double akovr2q[][3][3], double akovc2q[][3][3],
                   double a3kvpr2q[][3][2], double a3kvpc2q[][3][2],
-                  double frq[], double fsq[], const double e3, 
+                  double frq[], double fsq[], const double e3,
                   const int nansq, const int iel, const double condfac)
 {
   DSTraceHelper dst("Shell8::s8anstvheq");
-  
+
   double b11c=0.0;
   double b12c=0.0;
   double b21c=0.0;
@@ -1658,7 +1658,7 @@ void DRT::Elements::Shell8::s8anstvheq(
   double b31r=0.0;
   double b32r=0.0;
   const double zeta = e3/condfac;
-  
+
 /*----------------------------------------------------------------------*/
   for (int i=0; i<3; ++i)
   {
@@ -1668,7 +1668,7 @@ void DRT::Elements::Shell8::s8anstvheq(
     b22c += akovc[i][1]*a3kvpc[i][1];
     b31c += akovc[i][2]*a3kvpc[i][0];
     b32c += akovc[i][2]*a3kvpc[i][1];
-  
+
     b11r += akovr[i][0]*a3kvpr[i][0];
     b12r += akovr[i][0]*a3kvpr[i][1];
     b21r += akovr[i][1]*a3kvpr[i][0];
@@ -1701,7 +1701,7 @@ void DRT::Elements::Shell8::s8anstvheq(
   s8inv3(gmkonr,&det_dummy);
   if (det_dummy<=0.0) det_dummy=1.0e-08;
   *detr = sqrt(det_dummy);
-  
+
   for (int i=0; i<3; ++i)
   for (int j=0; j<3; ++j) gmkonc[i][j] = gmkovc[i][j];
   s8inv3(gmkonc,&det_dummy);
@@ -1724,7 +1724,7 @@ c!    gmkovc_ij ungleich gkovc_i*gkovc_j                                        
 C.......................................................................
 */
 void DRT::Elements::Shell8::s8tvhe(
-              double gmkovr[][3], double gmkovc[][3], 
+              double gmkovr[][3], double gmkovc[][3],
               double gmkonr[][3], double gmkonc[][3],
               double gkovr[][3], double gkovc[][3],
               double* detr, double* detc,
@@ -1748,7 +1748,7 @@ void DRT::Elements::Shell8::s8tvhe(
   double b31r=0.0;
   double b32r=0.0;
   const double zeta = e3/condfac;
-  
+
   for (int i=0; i<3; ++i)
   {
     b11c += akovc[i][0]*a3kvpc[i][0];
@@ -1782,7 +1782,7 @@ void DRT::Elements::Shell8::s8tvhe(
   s8inv3(gmkonr,&detdummy);
   if (detdummy<=0.0) detdummy=1.0e-08;
   *detr = sqrt(detdummy);
-  
+
   for (int i=0; i<3; ++i)
   for (int j=0; j<3; ++j) gmkonc[i][j] = gmkovc[i][j];
   s8inv3(gmkonc,&detdummy);
@@ -1797,7 +1797,7 @@ void DRT::Elements::Shell8::s8tvhe(
  |  B-Operator ans modification (private)                    mwgee 12/06|
  *----------------------------------------------------------------------*/
 void DRT::Elements::Shell8::s8ansbbarq(
-     Epetra_SerialDenseMatrix& bop, 
+     Epetra_SerialDenseMatrix& bop,
      const double frq[], const double fsq[],
      const vector<double> funct1q[], const vector<double> funct2q[],
      const Epetra_SerialDenseMatrix deriv1q[], const Epetra_SerialDenseMatrix deriv2q[],
@@ -1806,11 +1806,11 @@ void DRT::Elements::Shell8::s8ansbbarq(
      const int& iel, const int& numdf, const int& nsansq)
 {
   DSTraceHelper dst("Shell8::s8ansbbarq");
-  
+
   for (int inode=0; inode<iel; ++inode)
   {
     int node_start = inode*numdf;
-    
+
     bop(2,node_start+0)= 0.0;
     bop(2,node_start+1)= 0.0;
     bop(2,node_start+2)= 0.0;
@@ -1824,7 +1824,7 @@ void DRT::Elements::Shell8::s8ansbbarq(
     bop(4,node_start+3)= 0.0;
     bop(4,node_start+4)= 0.0;
     bop(4,node_start+5)= 0.0;
-    
+
     for (int isamp=0; isamp<nsansq; ++isamp)
     {
       const double a1x1 = akovc1q[isamp][0][0];
@@ -1914,9 +1914,9 @@ void DRT::Elements::Shell8::s8tvbo(const double e1, const double e2,
     const double pk = funct[inode];
     const double pk1 = deriv(0,inode);
     const double pk2 = deriv(1,inode);
-    
+
     const int node_start = inode*numdf;
-    
+
    bop(0,node_start+0)= pk1*a1x;
    bop(0,node_start+1)= pk1*a1y;
    bop(0,node_start+2)= pk1*a1z;
@@ -1930,7 +1930,7 @@ void DRT::Elements::Shell8::s8tvbo(const double e1, const double e2,
    bop(1,node_start+3)= 0.0;
    bop(1,node_start+4)= 0.0;
    bop(1,node_start+5)= 0.0;
-    
+
    if (!nsansq)
    {
      bop(2,node_start+0)= pk1*a3x;
@@ -1940,14 +1940,14 @@ void DRT::Elements::Shell8::s8tvbo(const double e1, const double e2,
      bop(2,node_start+4)= pk *a1y;
      bop(2,node_start+5)= pk *a1z;
    }
-   
+
    bop(3,node_start+0)= pk2*a2x;
    bop(3,node_start+1)= pk2*a2y;
    bop(3,node_start+2)= pk2*a2z;
    bop(3,node_start+3)= 0.0;
    bop(3,node_start+4)= 0.0;
    bop(3,node_start+5)= 0.0;
-   
+
    if (!nsansq)
    {
      bop(4,node_start+0)= pk2*a3x;
@@ -1957,7 +1957,7 @@ void DRT::Elements::Shell8::s8tvbo(const double e1, const double e2,
      bop(4,node_start+4)= pk *a2y;
      bop(4,node_start+5)= pk *a2z;
    }
-   
+
    bop(5,node_start+0)= 0.0;
    bop(5,node_start+1)= 0.0;
    bop(5,node_start+2)= 0.0;
@@ -2021,11 +2021,11 @@ void DRT::Elements::Shell8::s8transeas(
                   const int nhyb)
 {
   DSTraceHelper dst("Shell8::s8transeas");
-  
+
   const double two=2.0;
   double t11,t12,t13,t21,t22,t23,t31,t32,t33;
   const double factor = detr0/detr;;
-  
+
   /*--------------------------- components of the transformation matrix T */
   t11=0.0;
   t12=0.0;
@@ -2055,21 +2055,21 @@ void DRT::Elements::Shell8::s8transeas(
   T(3,0) = factor*t21*t21;
   T(4,0) = factor*two*t21*t31;
   T(5,0) = factor*t31*t31;
-  
+
   T(0,1) = factor*t11*t12;
   T(1,1) = factor*(t11*t22+t21*t12);
   T(2,1) = factor*(t11*t32+t31*t12);
   T(3,1) = factor*t21*t22;
   T(4,1) = factor*(t21*t32+t31*t22);
   T(5,1) = factor*t31*t32;
-  
+
   T(0,2) = factor*t11*t13;
   T(1,2) = factor*(t11*t23+t21*t13);
   T(2,2) = factor*(t11*t33+t31*t13);
   T(3,2) = factor*t21*t23;
   T(4,2) = factor*(t21*t33+t31*t23);
   T(5,2) = factor*t31*t33;
-  
+
   T(0,3) = factor*t12*t12;
   T(1,3) = factor*two*t12*t22;
   T(2,3) = factor*two*t12*t32;
@@ -2083,66 +2083,66 @@ void DRT::Elements::Shell8::s8transeas(
   T(3,4) = factor*t22*t23          ;
   T(4,4) = factor*(t22*t33+t32*t23);
   T(5,4) = factor*t32*t33          ;
-  
+
   T(0,5) = factor*t13*t13    ;
   T(1,5) = factor*two*t13*t23;
   T(2,5) = factor*two*t13*t33;
   T(3,5) = factor*t23*t23    ;
   T(4,5) = factor*two*t23*t33;
   T(5,5) = factor*t33*t33    ;
-  
+
   T(6,6)  = factor*t11*t11     ;
   T(7,6)  = factor*two*t11*t21 ;
   T(8,6)  = factor*two*t11*t31 ;
   T(9,6)  = factor*t21*t21    ;
   T(10,6) = factor*two*t21*t31;
   T(11,6) = factor*t31*t31    ;
-  
+
   T(6,7)  = factor*t11*t12           ;
   T(7,7)  = factor*(t11*t22+t21*t12) ;
   T(8,7)  = factor*(t11*t32+t31*t12) ;
   T(9,7)  = factor*t21*t22          ;
   T(10,7) = factor*(t21*t32+t31*t22);
   T(11,7) = factor*t31*t32          ;
-  
+
   T(6,8)  = factor*t11*t13           ;
   T(7,8)  = factor*(t11*t23+t21*t13) ;
   T(8,8)  = factor*(t11*t33+t31*t13) ;
   T(9,8)  = factor*t21*t23          ;
   T(10,8) = factor*(t21*t33+t31*t23);
   T(11,8) = factor*t31*t33          ;
-  
+
   T(6,9)  = factor*t12*t12     ;
   T(7,9)  = factor*two*t12*t22 ;
   T(8,9)  = factor*two*t12*t32 ;
   T(9,9)  = factor*t22*t22    ;
   T(10,9) = factor*two*t22*t32;
   T(11,9) = factor*t32*t32    ;
-  
+
   T(6,10)  = factor*t12*t13           ;
   T(7,10)  = factor*(t12*t23+t22*t13) ;
   T(8,10)  = factor*(t12*t33+t32*t13) ;
   T(9,10)  = factor*t22*t23          ;
   T(10,10) = factor*(t22*t33+t32*t23);
   T(11,10) = factor*t32*t33          ;
-  
+
   T(6,11)  = factor*t13*t13     ;
   T(7,11)  = factor*two*t13*t23 ;
   T(8,11)  = factor*two*t13*t33 ;
   T(9,11)  = factor*t23*t23    ;
   T(10,11) = factor*two*t23*t33;
   T(11,11) = factor*t33*t33    ;
-  
+
   for (int i=0; i<6; ++i)
     for (int j=0; j<6; ++j)
     {
       T(i,j+6) = 0.0;
       T(i+6,j) = 0.0;
     }
-    
+
   /*-------------------------------------------- multiply transP = T*P */
   s8matmatdense(transP,T,P,12,12,nhyb,0,1.);
-  
+
   return;
 }
 
@@ -2151,14 +2151,14 @@ void DRT::Elements::Shell8::s8transeas(
 /*----------------------------------------------------------------------*
  |  do eas (private)                                         mwgee 12/06|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8eas(const int nhyb, const double e1, const double e2, 
-                                  const int iel, const int* eas, 
+void DRT::Elements::Shell8::s8eas(const int nhyb, const double e1, const double e2,
+                                  const int iel, const int* eas,
                                   Epetra_SerialDenseMatrix& P)
 {
-  DSTraceHelper dst("Shell8::s8eas");  
+  DSTraceHelper dst("Shell8::s8eas");
 
   int place_P=0;
-  
+
   const int nrr=0;
   const int nss=3;
   const int nrs=1;
@@ -2170,14 +2170,14 @@ void DRT::Elements::Shell8::s8eas(const int nhyb, const double e1, const double 
   const int sr=8;
   const int ss=10;
   const int st=11;
-  
+
   const double e1e2     = e1*e2;
   const double e1e1     = e1*e1;
   const double e2e2     = e2*e2;
   const double e1e1e2   = e1*e1e2;
   const double e1e2e2   = e1e2*e2;
   const double e1e1e2e2 = e1e2*e1e2;
-  
+
   if (iel>4) /*------------------------------------- nine node element */
   {
 /*----------------------------------------------------------------------
@@ -2263,7 +2263,7 @@ void DRT::Elements::Shell8::s8eas(const int nhyb, const double e1, const double 
     default:
       dserror("eas: BIEGUNG: E11,E12,E22 LINEAR other then 0,9,11");
     break;
-  }  
+  }
 /*----------------------------------------------------------------------
       DICKENRICHTUNG: E33 LINEAR (--> 7P - FORMULIERUNG)
   ----------------------------------------------------------------------*/
@@ -2323,7 +2323,7 @@ void DRT::Elements::Shell8::s8eas(const int nhyb, const double e1, const double 
     default:
       dserror("eas: DICKENRICHTUNG: E33 LINEAR other then 0,1,3,4,5,8,9");
     break;
-  }  
+  }
 /*----------------------------------------------------------------------
       QUERSCHUB: E13,E23 KONSTANT
   ----------------------------------------------------------------------*/
@@ -2355,7 +2355,7 @@ void DRT::Elements::Shell8::s8eas(const int nhyb, const double e1, const double 
     default:
       dserror("eas: QUERSCHUB: E13,E23 KONSTANT other then 0,2,4,6");
     break;
-  }  
+  }
 /*----------------------------------------------------------------------
       QUERSCHUB: E13,E23 LINEAR
   ----------------------------------------------------------------------*/
@@ -2387,7 +2387,7 @@ void DRT::Elements::Shell8::s8eas(const int nhyb, const double e1, const double 
     default:
       dserror("eas: QUERSCHUB: E13,E23 LINEAR other then 0,2,4,6");
     break;
-  }  
+  }
 
   } // if (iel>4)
 /*--------------------------------------------------- four node element */
@@ -2441,7 +2441,7 @@ void DRT::Elements::Shell8::s8eas(const int nhyb, const double e1, const double 
       place_P+=7;
     break;
     default:
-      dserror("eas: MEMBRAN: E11,E12,E22 KONSTANT other then 0,1,2,3,4,5,7");      
+      dserror("eas: MEMBRAN: E11,E12,E22 KONSTANT other then 0,1,2,3,4,5,7");
     break;
   }
 /*----------------------------------------------------------------------
@@ -2608,10 +2608,10 @@ void DRT::Elements::Shell8::s8eas(const int nhyb, const double e1, const double 
  |  do ans (private)                                         mwgee 12/06|
  *----------------------------------------------------------------------*/
 void DRT::Elements::Shell8::s8_ansqshapefunctions(
-                             double frq[], double fsq[], const double r, 
+                             double frq[], double fsq[], const double r,
                              const double s, const int iel, const int nsansq)
 {
-  DSTraceHelper dst("Shell8::s8_ansqshapefunctions");  
+  DSTraceHelper dst("Shell8::s8_ansqshapefunctions");
   if (iel==4)
   {
    frq[0] = 0.5 * (1.0 - s);
@@ -2701,11 +2701,11 @@ void DRT::Elements::Shell8::s8_ans_colloquationpoints(
                                  double       a3kvpc2q[][3][2],
                                  double* detr, double* detc)
 {
-  DSTraceHelper dst("Shell8::s8_ans_colloquationpoints");  
-  
+  DSTraceHelper dst("Shell8::s8_ans_colloquationpoints");
+
   /*------------------------------- get coordinates of collocation points */
   s8_ans_colloquationcoords(xr1,xs1,xr2,xs2,iel,ans);
-  
+
   for (int i=0; i<nsansq; ++i)
   {
     s8_shapefunctions(funct1q[i],deriv1q[i],xr1[i],xs1[i],iel,1);
@@ -2713,23 +2713,23 @@ void DRT::Elements::Shell8::s8_ans_colloquationpoints(
            funct1q[i],deriv1q[i],iel,a3kvpr1q[i],0);
     s8tvmr(xcure,a3c,akovc1q[i],akonc1q[i],amkovc1q[i],amkonc1q[i],detc,
            funct1q[i],deriv1q[i],iel,a3kvpc1q[i],0);
-    
+
     s8_shapefunctions(funct2q[i],deriv2q[i],xr2[i],xs2[i],iel,1);
     s8tvmr(xrefe,a3r,akovr2q[i],akonr2q[i],amkovr2q[i],amkonr2q[i],detr,
            funct2q[i],deriv2q[i],iel,a3kvpr2q[i],0);
     s8tvmr(xcure,a3c,akovc2q[i],akonc2q[i],amkovc2q[i],amkonc2q[i],detc,
            funct2q[i],deriv2q[i],iel,a3kvpc2q[i],0);
   }
-  
+
   return;
 }
 
 /*----------------------------------------------------------------------*
  |  do metric (private)                                      mwgee 12/06|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8tmtr(const double x[][MAXNOD_SHELL8], 
+void DRT::Elements::Shell8::s8tmtr(const double x[][MAXNOD_SHELL8],
                                    const double a3[][MAXNOD_SHELL8],
-                                   const double e3, 
+                                   const double e3,
                                    double gkov[][3],
                                    double gkon[][3],
                                    double gmkov[][3],
@@ -2741,7 +2741,7 @@ void DRT::Elements::Shell8::s8tmtr(const double x[][MAXNOD_SHELL8],
                                    const double condfac,
                                    const int flag)
 {
-  DSTraceHelper dst("Shell8::s8tmtr");  
+  DSTraceHelper dst("Shell8::s8tmtr");
 
   /*---------------------------------------------------- sdc-conditioning */
   const double zeta = e3/condfac;
@@ -2799,7 +2799,7 @@ void DRT::Elements::Shell8::s8_jaco(const vector<double>& funct,
                                     double* det,
                                     double* deta)
 {
-  DSTraceHelper dst("Shell8::s8_jaco");  
+  DSTraceHelper dst("Shell8::s8_jaco");
   double gkov[3][3];
   double gkon[3][3];
   double gmkov[3][3];
@@ -2824,16 +2824,16 @@ void DRT::Elements::Shell8::s8_jaco(const vector<double>& funct,
   *deta = DSQR(x1r*x2s - x2r*x1s) + DSQR(x3r*x1s - x3s*x1r) + DSQR(x2r*x3s - x3r*x2s);
   *deta = sqrt(*deta);
   if (*deta <= 1.0e-14) dserror("Element Area equal 0.0 or negativ detected");
-  
+
   return;
 }
 
-  
+
 /*----------------------------------------------------------------------*
  |  do metric (private)                                      mwgee 12/06|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8tvmr(const double x[][MAXNOD_SHELL8], 
-                                   const double a3[][MAXNOD_SHELL8], 
+void DRT::Elements::Shell8::s8tvmr(const double x[][MAXNOD_SHELL8],
+                                   const double a3[][MAXNOD_SHELL8],
                                    double akov[][3],
                                    double akon[][3],
                                    double amkov[][3],
@@ -2845,7 +2845,7 @@ void DRT::Elements::Shell8::s8tvmr(const double x[][MAXNOD_SHELL8],
                                    double a3kvp[][2],
                                    const int flag)
 {
-  DSTraceHelper dst("Shell8::s8tvmr");  
+  DSTraceHelper dst("Shell8::s8tvmr");
 
   /*------------------------------------ interpolation of kovariant a1,a2 */
   for (int ialpha=0; ialpha<2; ialpha++)
@@ -2897,15 +2897,15 @@ void DRT::Elements::Shell8::s8tvmr(const double x[][MAXNOD_SHELL8],
 
   return;
 }
-  
+
 /*----------------------------------------------------------------------*
  |  do ans (private)                                         mwgee 12/06|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8_ans_colloquationcoords(double xqr1[], double xqs1[], 
+void DRT::Elements::Shell8::s8_ans_colloquationcoords(double xqr1[], double xqs1[],
                                                       double xqr2[], double xqs2[],
                                                       const int iel, const int ans)
 {
-  DSTraceHelper dst("Shell8::s8_ans_colloquationcoords");  
+  DSTraceHelper dst("Shell8::s8_ans_colloquationcoords");
   if (ans==1) // ans fuer querschublocking
   {
     if (iel==4)
@@ -2934,8 +2934,8 @@ void DRT::Elements::Shell8::s8_ans_colloquationcoords(double xqr1[], double xqs1
       xqr2[5] =  1.0;     xqs2[5] =  rthreei;
     }
   }
-  
-  
+
+
   return;
 }
 
@@ -2952,7 +2952,7 @@ void DRT::Elements::Shell8::s8_ans_colloquationcoords(double xqr1[], double xqs1
                for the fact, that rows and columns are changed by BLAS )|
  |                                                                      |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8matmatdense(Epetra_SerialDenseMatrix& R, 
+void DRT::Elements::Shell8::s8matmatdense(Epetra_SerialDenseMatrix& R,
                                           const Epetra_SerialDenseMatrix& A,
                                           const Epetra_SerialDenseMatrix& B,
                                           const int ni,
@@ -2982,7 +2982,7 @@ void DRT::Elements::Shell8::s8matmatdense(Epetra_SerialDenseMatrix& R,
       }
   }
   return;
-}                    
+}
 /*----------------------------------------------------------------------*
  |  R[i][j] = A[i][k]*B[k][j] -----  R=A*B                   m.gee12/01 |
  | if init==0 result is inited to 0.0                                   |
@@ -2995,7 +2995,7 @@ void DRT::Elements::Shell8::s8matmatdense(Epetra_SerialDenseMatrix& R,
                for the fact, that rows and columns are changed by BLAS )|
  |                                                                      |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Shell8::s8matmatdense(Epetra_SerialDenseMatrix& R, 
+void DRT::Elements::Shell8::s8matmatdense(Epetra_SerialDenseMatrix& R,
                                           const double A[][12],
                                           const Epetra_SerialDenseMatrix& B,
                                           const int ni,
@@ -3025,7 +3025,7 @@ void DRT::Elements::Shell8::s8matmatdense(Epetra_SerialDenseMatrix& R,
       }
   }
   return;
-}                    
+}
 /*----------------------------------------------------------------------*
  |  R[i][j] = A[k][i]*B[k][j] -----  R=A^t * B               m.gee 7/01 |
  | if init==0 result is inited to 0.0                                   |
@@ -3068,7 +3068,7 @@ void DRT::Elements::Shell8::s8mattrnmatdense(Epetra_SerialDenseMatrix& R,
       }
   }
   return;
-}                    
+}
 
 /*----------------------------------------------------------------------*
  |  r(I) = A(K,I)*b(K) -----  r = A*b                        m.gee 6/01 |
@@ -3077,7 +3077,7 @@ void DRT::Elements::Shell8::s8mattrnmatdense(Epetra_SerialDenseMatrix& R,
  *----------------------------------------------------------------------*/
 void DRT::Elements::Shell8::s8mattrnvecdense(
                         vector<double>& r,
-                        const Epetra_SerialDenseMatrix& A, 
+                        const Epetra_SerialDenseMatrix& A,
                         const double b[],
                         const int ni,
                         const int nk,
@@ -3093,7 +3093,7 @@ void DRT::Elements::Shell8::s8mattrnvecdense(
     r[i] += sum*factor;
   }
   return;
-}                    
+}
 
 
 /*----------------------------------------------------------------------*
@@ -3104,14 +3104,14 @@ void DRT::Elements::Shell8::s8mattrnvecdense(
  *----------------------------------------------------------------------*/
 void DRT::Elements::Shell8::s8_YpluseqAx(Epetra_SerialDenseVector& y,
                                          const Epetra_SerialDenseMatrix& A,
-                                         const vector<double>& x, 
-                                         const double factor, 
+                                         const vector<double>& x,
+                                         const double factor,
                                          const bool init)
 {
   const int rdim = (int)y.Length();
   const int ddim = (int)x.size();
   if (A.M()<rdim || A.N()<ddim) dserror("Mismatch in dimensions");
-  
+
   if (init)
     for (int i=0; i<rdim; ++i) y[i] = 0.0;
   for (int i=0; i<rdim; ++i)
@@ -3121,7 +3121,7 @@ void DRT::Elements::Shell8::s8_YpluseqAx(Epetra_SerialDenseVector& y,
     y[i] += sum*factor;
   }
   return;
-}                    
+}
 
 /*----------------------------------------------------------------------*
  |  y(I) = A(I,K)*x(K)*factor -----  y = A*x*factor         m.gee 12/06 |
@@ -3131,14 +3131,14 @@ void DRT::Elements::Shell8::s8_YpluseqAx(Epetra_SerialDenseVector& y,
  *----------------------------------------------------------------------*/
 void DRT::Elements::Shell8::s8_YpluseqAx(vector<double>& y,
                                          const Epetra_SerialDenseMatrix& A,
-                                         const vector<double>& x, 
-                                         const double factor, 
+                                         const vector<double>& x,
+                                         const double factor,
                                          const bool init)
 {
   const int rdim = (int)y.size();
   const int ddim = (int)x.size();
   if (A.M()<rdim || A.N()<ddim) dserror("Mismatch in dimensions");
-  
+
   if (init)
     for (int i=0; i<rdim; ++i) y[i] = 0.0;
   for (int i=0; i<rdim; ++i)
@@ -3148,7 +3148,7 @@ void DRT::Elements::Shell8::s8_YpluseqAx(vector<double>& y,
     y[i] += sum*factor;
   }
   return;
-}                    
+}
 
 
 /*----------------------------------------------------------------------*
@@ -3166,7 +3166,7 @@ void DRT::Elements::Shell8::s8inv3(double a[][3], double* det)
   const double b20 = a[2][0];
   const double b21 = a[2][1];
   const double b22 = a[2][2];
-  
+
   a[0][0] =   b11*b22 - b21*b12;
   a[1][0] = - b10*b22 + b20*b12;
   a[2][0] =   b10*b21 - b20*b11;
@@ -3176,15 +3176,15 @@ void DRT::Elements::Shell8::s8inv3(double a[][3], double* det)
   a[0][2] =   b01*b12 - b11*b02;
   a[1][2] = - b00*b12 + b10*b02;
   a[2][2] =   b00*b11 - b10*b01;
-  
+
   *det = b00*a[0][0]+b01*a[1][0]+b02*a[2][0];
   const double detinv = 1.0/(*det);
-  
+
   for (int i=0; i<3; ++i)
   for (int j=0; j<3; ++j) a[i][j] *= detinv;
-  
+
   return;
-}                    
+}
 
 /*----------------------------------------------------------------------*
  |  calcs the inverse of an unsym 3x3 matrix and determinant m.gee12/06 |
@@ -3200,7 +3200,7 @@ void DRT::Elements::Shell8::s8trans3(double a[][3])
       a[i][j] = change;
     }
   return;
-}                    
+}
 
 /*----------------------------------------------------------------------*
  |  make a vector unit lenght and return orig lenght         m.gee12/06 |
@@ -3214,22 +3214,22 @@ void DRT::Elements::Shell8::s8unvc(double* enorm, double vec[], const int n)
   if (*enorm<1.e-13) dserror("Vector of lenght < EPS13 appeared");
   for (int i=0; i<n; ++i) vec[i] /= (*enorm);
   return;
-}                    
+}
 
 /*----------------------------------------------------------------------*
  |  evaluate the element integration points (private)        mwgee 12/06|
  *----------------------------------------------------------------------*/
 void DRT::Elements::Shell8::s8_integration_points(struct _S8_DATA& data)
 {
-  DSTraceHelper dst("Shell8::s8_integration_points");  
-  
+  DSTraceHelper dst("Shell8::s8_integration_points");
+
   const int numnode = NumNode();
 
   const double invsqrtthree = 1./sqrt(3.);
   const double sqrtthreeinvfive = sqrt(3./5.);
   const double wgt  = 5.0/9.0;
   const double wgt0 = 8.0/9.0;
-  
+
   switch(ngp_[2])/*---------------- thickness direction t */
   {
     case 2:
@@ -3244,7 +3244,7 @@ void DRT::Elements::Shell8::s8_integration_points(struct _S8_DATA& data)
       dserror("Unknown no. of gaussian points in thickness direction");
     break;
   }
-  
+
   // quad elements
   if (numnode==4 || numnode==8 || numnode==9)
   {
@@ -3278,7 +3278,7 @@ void DRT::Elements::Shell8::s8_integration_points(struct _S8_DATA& data)
         dserror("Unknown no. of gaussian points in r-direction");
       break;
     } // switch(ngp_[0]) // r direction
-    
+
     switch(ngp_[1]) // s direction
     {
       case 1:
@@ -3309,7 +3309,7 @@ void DRT::Elements::Shell8::s8_integration_points(struct _S8_DATA& data)
         dserror("Unknown no. of gaussian points in s-direction");
       break;
     } // switch(ngp_[0]) // s direction
-    
+
   } // if (numnode==4 || numnode==8 || numnode==9)
 
   else if (numnode==3 || numnode==6) // triangle elements
@@ -3353,9 +3353,9 @@ void DRT::Elements::Shell8::s8_integration_points(struct _S8_DATA& data)
       default:
         dserror("Unknown no. of gaussian points for triangle");
       break;
-    } 
+    }
   } // else if (numnode==3 || numnode==6)
-  
+
   return;
 }
 
@@ -3366,10 +3366,10 @@ void DRT::Elements::Shell8::s8_integration_points(struct _S8_DATA& data)
 const double DRT::Elements::Shell8::s8_localcoordsofnode(const int node, const int flag,
                                                          const int numnode) const
 {
-  DSTraceHelper dst("Shell8::s8_localcoordsofnode");  
+  DSTraceHelper dst("Shell8::s8_localcoordsofnode");
   const double node489[9][2] = {{1.0,1.0},{-1.0,1.0},{-1.0,-1.0},{1.0,-1.0},
                                 {0.0,1.0},{-1.0,0.0},{0.0,-1.0},{1.0,0.0},{0.0,0.0}};
-  
+
   switch (numnode)
   {
   case 4:
@@ -3381,8 +3381,8 @@ const double DRT::Elements::Shell8::s8_localcoordsofnode(const int node, const i
     dserror("Unknown no. of nodal points to element");
   break;
   }
-  
-  
+
+
   return 0.0;
 }
 
@@ -3391,13 +3391,13 @@ const double DRT::Elements::Shell8::s8_localcoordsofnode(const int node, const i
  |  shape functions and derivatives (private)                mwgee 12/06|
  *----------------------------------------------------------------------*/
 void DRT::Elements::Shell8::s8_shapefunctions(
-                             vector<double>& funct, 
+                             vector<double>& funct,
                              Epetra_SerialDenseMatrix& deriv,
-                             const double r, const double s, const int numnode, 
+                             const double r, const double s, const int numnode,
                              const int doderiv) const
 {
-  DSTraceHelper dst("Shell8::s8_shapefunctions");  
-  
+  DSTraceHelper dst("Shell8::s8_shapefunctions");
+
   const double q12 = 0.5;
   const double q14 = 0.25;
   const double rr = r*r;
@@ -3408,7 +3408,7 @@ void DRT::Elements::Shell8::s8_shapefunctions(
   const double sm = 1.0-s;
   const double r2 = 1.0-rr;
   const double s2 = 1.0-ss;
-  
+
   switch(numnode)
   {
     case 4:
@@ -3558,10 +3558,10 @@ void DRT::Elements::Shell8::s8_shapefunctions(
  |  calculate shell surface loads at gaussian point (private)mwgee 01/07|
  *----------------------------------------------------------------------*/
 void s8loadgaussianpoint(double eload[][MAXNOD_SHELL8], const double hhi,
-                         double wgt, const double xjm[][3], 
+                         double wgt, const double xjm[][3],
                          const vector<double>& funct,
                          const Epetra_SerialDenseMatrix& deriv,
-                         const int iel, 
+                         const int iel,
                          const double xi,
                          const double yi,
                          const double zi,
@@ -3597,7 +3597,7 @@ void s8loadgaussianpoint(double eload[][MAXNOD_SHELL8], const double hhi,
     }
     break;
     // hydrostatic pressure dependent on z-coordinate of gaussian point
-    case neum_consthydro_z: 
+    case neum_consthydro_z:
     {
       if (onoff[2] != 1) dserror("hydropressure must be on third dof");
       ar[0] = ap[0] * val[2] * wgt * curvefac;
@@ -3624,7 +3624,7 @@ void s8loadgaussianpoint(double eload[][MAXNOD_SHELL8], const double hhi,
           eload[j][i] += funct[i]*ar[j];
     }
     break;
-    // orthogonal pressure dep. on load curve only  
+    // orthogonal pressure dep. on load curve only
     case neum_orthopressure:
     case neum_opres_FSI:
     {
@@ -3650,7 +3650,7 @@ void s8loadgaussianpoint(double eload[][MAXNOD_SHELL8], const double hhi,
 //=======================================================================
 //=======================================================================
 //=======================================================================
-static void s8_averagedirector(Epetra_SerialDenseMatrix& dir_list, 
+static void s8_averagedirector(Epetra_SerialDenseMatrix& dir_list,
                                const int numa3, double a3[]);
 
 /*----------------------------------------------------------------------*
@@ -3672,18 +3672,18 @@ int DRT::Elements::Shell8Register::Initialize(DRT::Discretization& dis)
     Epetra_SerialDenseMatrix tmpmatrix(3,numnode);
     actele->data_.Add("a3ref",tmpmatrix);
     Epetra_SerialDenseMatrix* a3ref = actele->data_.Get<Epetra_SerialDenseMatrix>("a3ref");
-    
+
     // create vector thick
     vector<double> tmpvector(numnode);
     actele->data_.Add("thick",tmpvector);
     vector<double>* thick = actele->data_.Get<vector<double> >("thick");
     for (int i=0; i<numnode; ++i) (*thick)[i] = actele->thickness_;
-    
-    
+
+
     vector<double> funct(numnode);
     Epetra_SerialDenseMatrix deriv;
     deriv.Shape(2,numnode);
-    
+
     for (int i=0; i<numnode; ++i)
     {
       double r = actele->s8_localcoordsofnode(i,0,numnode);
@@ -3720,7 +3720,7 @@ int DRT::Elements::Shell8Register::Initialize(DRT::Discretization& dis)
       forces.Shape(18,actele->ngp_[0]*actele->ngp_[1]); // 18 forces on upto 9 gaussian points
       actele->data_.Add("forces",forces);
     }
-    
+
     //--------------------------------------allocate space for material history
     MATERIAL* actmat = &(mat[actele->material_-1]);
     if (actmat->mattyp==m_viscohyper)/* material is viscohyperelastic */
@@ -3732,11 +3732,11 @@ int DRT::Elements::Shell8Register::Initialize(DRT::Discretization& dis)
       vector<double> his1(size);
       vector<double> his2(size);
       for (int i=0; i<size; ++i) his1[i] = his2[i] = 0.0;
-      actele->data_.Add("mathis1",his1);     
-      actele->data_.Add("mathis2",his2);     
+      actele->data_.Add("mathis1",his1);
+      actele->data_.Add("mathis2",his2);
     }
   } // for (int i=0; i<dis.NumMyColElements(); ++i)
-  
+
 
   //------------------------------------ do directors at nodes Bischoff style
   map<int,vector<double> > a3map;
@@ -3773,7 +3773,7 @@ int DRT::Elements::Shell8Register::Initialize(DRT::Discretization& dis)
     if (numa3 == 1)
     {
       a3map[actnode->Id()].resize(3);
-      for (int k=0; k<3; ++k) 
+      for (int k=0; k<3; ++k)
         a3map[actnode->Id()][k] = collaverdir(k,0);
     }
     else
@@ -3782,9 +3782,9 @@ int DRT::Elements::Shell8Register::Initialize(DRT::Discretization& dis)
       double a3[3];
       s8_averagedirector(collaverdir,numa3,a3);
       a3map[actnode->Id()].resize(3);
-      for (int k=0; k<3; ++k) 
+      for (int k=0; k<3; ++k)
         a3map[actnode->Id()][k] = a3[k];
-    }    
+    }
   } // for (int i=0; i<NumMyRowNodes(); ++i)
 
   // export this map from nodal row map to nodal col map
@@ -3792,7 +3792,7 @@ int DRT::Elements::Shell8Register::Initialize(DRT::Discretization& dis)
   const Epetra_Map* nodecolmap = dis.NodeColMap();
   DRT::Exporter exporter(*noderowmap,*nodecolmap,dis.Comm());
   exporter.Export(a3map);
-  
+
   // loop column nodes and put directors back into discretization
   for (int i=0; i<dis.NumMyColNodes(); ++i)
   {
@@ -3864,7 +3864,7 @@ void s8_averagedirector(Epetra_SerialDenseMatrix& dir_list, const int numa3, dou
                   *DSQR(averdir[2]);
        if (ABS(denom)<=1.e-13) dserror("Making of mod. directors failed");
        const double alpha = (averdir[2]*dir_list(2,i)-DSQR(dir_list(0,i))+averdir[0]*dir_list(0,i)
-                   -DSQR(dir_list(1,i))+dir_list(1,i)*averdir[1]-DSQR(dir_list(2,i)))/denom; 
+                   -DSQR(dir_list(1,i))+dir_list(1,i)*averdir[1]-DSQR(dir_list(2,i)))/denom;
 
        davn[0] =-alpha*DSQR(averdir[1])*dir_list(0,i)+alpha*averdir[1]*averdir[0]*dir_list(1,i)
                 +averdir[0]+alpha*averdir[2]*averdir[0]*dir_list(2,i)-alpha*DSQR(averdir[2])*dir_list(0,i);
@@ -3874,7 +3874,7 @@ void s8_averagedirector(Epetra_SerialDenseMatrix& dir_list, const int numa3, dou
 
        davn[2] =-alpha*DSQR(averdir[1])*dir_list(2,i)+alpha*averdir[1]*averdir[2]*dir_list(1,i)
                 -alpha*DSQR(averdir[0])*dir_list(2,i)+alpha*averdir[0]*averdir[2]*dir_list(0,i)+averdir[2];
-      
+
     }
     a3[0] = davn[0];
     a3[1] = davn[1];
