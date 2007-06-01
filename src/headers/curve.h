@@ -38,6 +38,10 @@ DOUBLE                 T;             /* forgot about it..... */
 DOUBLE                 c1;            /* constant for explicit functions */
 DOUBLE                 c2;            /* constant for explicit functions */
 DOUBLE                 c3;            /* constant for explicit functions */
+DOUBLE                 c4;            /* constant for explicit functions */
+DOUBLE                 c5;            /* constant for explicit functions */
+DOUBLE                 c6;            /* constant for explicit functions */
+DOUBLE                 c7;            /* constant for explicit functions */
   struct _ST_NODE*       funct;	      /* function expression */
 } CURVE;
 

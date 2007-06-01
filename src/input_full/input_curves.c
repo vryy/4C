@@ -220,7 +220,7 @@ for (i=0; i<counter; i++)
      frdouble("t2",&(actcurve->c2),&ierr);
      if (ierr!=1) dserror("cannot read CURVE");
    }
-   frchk("Lung",&ierr);
+   frchk("LungSinus",&ierr);
    if (ierr==1)
    {
      actcurve->curvetyp = curve_explicit;
@@ -234,6 +234,29 @@ for (i=0; i<counter; i++)
      if (ierr!=1) dserror("cannot read CURVE");
 	 frdouble("Phase",&(actcurve->c3),&ierr);
      if (ierr!=1) dserror("cannot read CURVE");
+   }
+   frchk("LungReal",&ierr);
+   if (ierr==1)
+   {
+	   actcurve->curvetyp = curve_explicit;
+	   frchar("FUNC",buffer,&ierr);
+	   if (ierr!=1) dserror("cannot read CURVE\n");
+	   actcurve->numex=-12;
+	   
+	   frdouble("Frequ",&(actcurve->c1),&ierr);
+	   if (ierr!=1) dserror("cannot read CURVE");
+	   frdouble("pPEEP",&(actcurve->c2),&ierr);
+	   if (ierr!=1) dserror("cannot read CURVE");
+	   frdouble("I/E",&(actcurve->c3),&ierr);
+	   if (ierr!=1) dserror("cannot read CURVE");
+	   frdouble("IPause/I",&(actcurve->c4),&ierr);
+	   if (ierr!=1) dserror("cannot read CURVE");
+	   frdouble("ShapeIPauseB",&(actcurve->c5),&ierr);
+	   if (ierr!=1) dserror("cannot read CURVE");
+	   frdouble("ShapeIPauseC",&(actcurve->c6),&ierr);
+	   if (ierr!=1) dserror("cannot read CURVE");
+	   frdouble("ShapeEB",&(actcurve->c7),&ierr);
+	   if (ierr!=1) dserror("cannot read CURVE");
    }
 } /* end of loop over curve lines */
 /*----------------------------------------------------------------------*/

@@ -213,9 +213,10 @@ DOUBLE dyn_facexplcurve(INT actcurve,   /* number of actual time curve  */
 {
 INT numex;          /* number of explicit time curve                    */
 DOUBLE val1, fac=0.0;
-DOUBLE c1,c2,c3;    /* function constants                               */
+DOUBLE c1,c2,c3,c4,c5,c6,c7;    /* function constants                               */
 DOUBLE d,visc;      /* parameters for Beltrami-flow                     */
 DOUBLE a;           /* parameters for Kim-Moin flow */
+DOUBLE t,tinsp,texp,tplateau,tstart,pmaxexp; /* parameters for Lung Curve */
 DOUBLE s0;
 static DOUBLE savefac;
 
@@ -227,6 +228,10 @@ numex=curve[actcurve].numex;
 c1=curve[actcurve].c1;
 c2=curve[actcurve].c2;
 c3=curve[actcurve].c3;
+c4=curve[actcurve].c4;
+c5=curve[actcurve].c5;
+c6=curve[actcurve].c6;
+c7=curve[actcurve].c7;
 
 /*----------------------------------------------------------------------*/
 switch (numex)
@@ -298,7 +303,7 @@ case -9: /* f(t)=t:2-C1:(2PI)*cos(PI*t:C1-PI:2) */
    else
       fac = T - c1 * 0.5;
 break;
-case -10:
+case -10: /* Lung functon shifted sinus with phase */
    if (c3 == 0.0) c3 = 1/c1;
    if (T<=c3) {
 	 fac = 0.5*c2*(1 - cos(1/c3*PI*T));
@@ -313,6 +318,43 @@ case -11: /* f(t)=-0.5*cos(PI*(T-c1)/c2)+0.5 */
         fac = -0.5 * cos(PI * ( T - c1 ) / c2) + 0.5;
     else
         fac = 1.0;
+break;
+case -12: /*Function for alveolar pressure during mechanical ventilation ah/rm 06/07 */
+	if (c1<=0) dserror("parameter Frequ must be > 0");
+	if (c2<0 || c2>1) dserror("parameter Ppeep must be beetween 0 and 1");
+	if (c3<=0) dserror("parameter I/E must be > 0");
+	if (c4<0) dserror("parameter IPause/I must be >= 0");
+	if (c5<=0) dserror("parameter ShapeIPauseB must be > 0");
+	if (c6<c2 || c6>1) dserror("parameter ShapeIPauseC must be beetween Ppeep and 1");
+	if (c7<=0) dserror("parameter ShapeEB must be > 0");
+	
+	tinsp=c3*(1-c4)/(c1*(1+c3)); /*inspiration time (without end-inspiratory plateau)*/
+	texp=1/(c1*(c3+1));     /*expiaration time*/
+	tplateau=c4*c3/(c1*(c3+1)); /*period of the rest at the end of inspiration*/
+	pmaxexp=(1-c6)*exp(-c5*tplateau)+c6; /*pressure at the beginning of expiration*/
+	tstart=2*c2*tinsp/(1-c2); /*time for starting phase*/
+	t=T-tstart-(int)((T-tstart)*c1)/c1; /*t runs through one respiration period*/
+	
+	if (T<=tstart) /*starting phase, quadratic function*/
+	{
+		fac=pow(((1-c2)/2/tinsp),2)/c2*pow(T,2);
+	} else
+	{
+		if (t<=tinsp) /*inspiration, linear function*/
+		{
+			fac = c2+(1-c2)*t/tinsp;
+		} else
+		{
+			if (t<=tplateau+tinsp) /*rest at the end of inspiration, exponential function*/
+			{
+				fac=(1-c6)*exp(-c5*(t-tinsp))+c6;
+			} else /*expiaration, exponential function*/
+			{
+				fac = (c2-pmaxexp)/(exp(-c7*texp)-1)*exp(-c7*(t-tinsp-tplateau))
+				      +pmaxexp-(c2-pmaxexp)/(exp(-c7*texp)-1);
+			}
+		}
+	}
 break;
 default:
    dserror("Number of explicit timecurve (NUMEX) unknown\n");
