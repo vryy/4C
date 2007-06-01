@@ -32,7 +32,8 @@ public:
 
 
 /// linear ALE algorithm
-class AleLinear : public NOX::Epetra::Interface::Required,
+class AleLinear : public Ale,
+                  public NOX::Epetra::Interface::Required,
                   public NOX::Epetra::Interface::Jacobian
 {
 #ifdef RESULTTEST

@@ -18,10 +18,22 @@ class DirichletNeumannCoupling
 {
 public:
 
+  /// setup FSI algorithm
+  void Setup();
+
   /// outer level FSI time loop
-  void timeloop();
+  void Timeloop();
 
 private:
+
+  /// setup structure algorithm
+  void SetupStructure();
+
+  /// setup fluid algorithm
+  void SetupFluid();
+
+  /// setup ale algorithm
+  void SetupAle();
 
   RefCountPtr<Structure> structure_;
   RefCountPtr<Fluid>     fluid_;

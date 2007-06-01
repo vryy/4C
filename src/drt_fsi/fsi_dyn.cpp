@@ -8,7 +8,9 @@
 void fsi_ale_drt()
 {
   FSI::DirichletNeumannCoupling fsi;
-  fsi.timeloop();
+
+  fsi.Setup();
+  fsi.Timeloop();
 }
 
 #endif
