@@ -17,6 +17,7 @@ Maintainer: Peter Gamnitzer
 
 #include "drt_pbcdofset.H"
 #include "drt_discret.H"
+#include "drt_utils.H"
 
 
 
@@ -80,6 +81,9 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const Discretization& dis, const int 
 
   // do the nodes first
 
+  map<int,int> nidx;
+  Utils::AllreduceEMap(nidx, *dis.NodeRowMap());
+  
   // build a redundant that holds all the node's numdof
   vector<int> sredundantnodes(dis.NumGlobalNodes());
   fill(sredundantnodes.begin(), sredundantnodes.end(), 0);
@@ -98,7 +102,7 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const Discretization& dis, const int 
     for (int j=0; j<numele; ++j)
       numdf = max(numdf,myele[j]->NumDofPerNode(*actnode));
     const int gid = actnode->Id();
-    sredundantnodes[gid] = numdf;
+    sredundantnodes[nidx[gid]] = numdf;
     lnumdof += numdf;
   }
 
@@ -130,9 +134,9 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const Discretization& dis, const int 
         }
 #endif        
         // get the number of dofs associated with this slave
-        int numdf = sredundantnodes[*slave];
+        int numdf = sredundantnodes[nidx[*slave]];
         // reset them to zero
-        sredundantnodes[*slave] =0;
+        sredundantnodes[nidx[*slave]] =0;
         // reduce the number of local degrees of freedom 
         lnumdof-=numdf;
       }
@@ -143,6 +147,9 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const Discretization& dis, const int 
   vector<int> rredundantnodes(dis.NumGlobalNodes());
   dis.Comm().SumAll(&sredundantnodes[0],&rredundantnodes[0],dis.NumGlobalNodes());
 
+  for (unsigned i=0; i<rredundantnodes.size(); ++i)
+    if (rredundantnodes[i] > MAXDOFPERNODE)
+      dserror("MAXDOFPERNODE=%d and numdf=%d found", MAXDOFPERNODE, rredundantnodes[i]);
 
   int count=start;
   int localcolpos=0;
@@ -158,9 +165,11 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const Discretization& dis, const int 
 
   // We know all the numdfs of all the nodes and we even know the
   // nodes from our local row map. Use that information.
-  for (unsigned i=0; i<sredundantnodes.size(); ++i)
+  // We have to loop the gids in order. This way we will get an
+  // ordered set of dofs.
+  for (map<int,int>::iterator i=nidx.begin(); i!=nidx.end(); ++i)
   {
-    int numdf = sredundantnodes[i];
+    int numdf = sredundantnodes[i->second];
 
     // we know our row nodes from the redundant vector
     if (numdf!=0)
@@ -172,12 +181,12 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const Discretization& dis, const int 
     }
 
     // the col nodes we might have to look up
-    if ((numdf!=0) || dis.NodeColMap()->MyGID(i))
+    if ((numdf!=0) || dis.NodeColMap()->MyGID(i->first))
     {
-      numdf = rredundantnodes[i];
+      numdf = rredundantnodes[i->second];
 
       // remember numdf and index for nodal based lookup
-      int lid = dis.NodeColMap()->LID(i);
+      int lid = dis.NodeColMap()->LID(i->first);
       (*numdfcolnodes_)[lid] = numdf;
       (*idxcolnodes_)[lid] = localcolpos;
       localcolpos += numdf;
@@ -190,7 +199,7 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const Discretization& dis, const int 
     else
     {
       // but in any case we need to increase our dof count
-      numdf = rredundantnodes[i];
+      numdf = rredundantnodes[i->second];
     }
 
     count += numdf;
@@ -240,10 +249,18 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const Discretization& dis, const int 
 
   sredundantnodes.clear();
   rredundantnodes.clear();
+  nidx.clear();
 
   //////////////////////////////////////////////////////////////////
 
   // Now do all this fun again for the elements
+
+  //////////////////////////////////////////////////////////////////
+
+  // Now do all this fun again for the elements
+
+  map<int,int> eidx;
+  Utils::AllreduceEMap(eidx, *dis.ElementRowMap());
 
   vector<int> sredundantelements(dis.NumGlobalElements());
   fill(sredundantelements.begin(), sredundantelements.end(), 0);
@@ -256,7 +273,7 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const Discretization& dis, const int 
     DRT::Element* actele = dis.lRowElement(i);
     const int gid = actele->Id();
     int numdf = actele->NumDofPerElement();
-    sredundantelements[gid] = numdf;
+    sredundantelements[eidx[gid]] = numdf;
     localelenumdf[i] = numdf;
     lnumdof += numdf;
   }
@@ -264,13 +281,19 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const Discretization& dis, const int 
   vector<int> rredundantelements(dis.NumGlobalElements());
   dis.Comm().SumAll(&sredundantelements[0],&rredundantelements[0],dis.NumGlobalElements());
 
+  for (unsigned i=0; i<rredundantelements.size(); ++i)
+    if (rredundantelements[i] > MAXDOFPERNODE)
+      dserror("MAXDOFPERNODE=%d and numdf=%d found", MAXDOFPERNODE, rredundantelements[i]);
+
   // enlarge the big dof vectors
   localrowdofs.reserve(lnumdof); // exact
   localcoldofs.reserve(lnumdof); // guess
 
-  for (unsigned i=0; i<sredundantelements.size(); ++i)
+  // We have to loop the gids in order. This way we will get an
+  // ordered set of dofs.
+  for (map<int,int>::iterator i=eidx.begin(); i!=eidx.end(); ++i)
   {
-    int numdf = sredundantelements[i];
+    int numdf = sredundantelements[i->second];
 
     // we know our row elements from the redundant vector
     if (numdf!=0)
@@ -282,12 +305,12 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const Discretization& dis, const int 
     }
 
     // the col elements we might have to look up
-    if ((numdf!=0) || dis.ElementColMap()->MyGID(i))
+    if ((numdf!=0) || dis.ElementColMap()->MyGID(i->first))
     {
-      numdf = rredundantelements[i];
+      numdf = rredundantelements[i->second];
 
       // remember numdf and index for elemental based lookup
-      int lid = dis.ElementColMap()->LID(i);
+      int lid = dis.ElementColMap()->LID(i->first);
       (*numdfcolelements_)[lid] = numdf;
       (*idxcolelements_)[lid] = localcolpos;
       localcolpos += numdf;
@@ -300,7 +323,7 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const Discretization& dis, const int 
     else
     {
       // but in any case we need to increase our dof count
-      numdf = rredundantelements[i];
+      numdf = rredundantelements[i->second];
     }
 
     count += numdf;
@@ -308,6 +331,7 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const Discretization& dis, const int 
 
   sredundantelements.clear();
   rredundantelements.clear();
+  eidx.clear();
   
   // Now finally we have everything in place to build the maps.
 

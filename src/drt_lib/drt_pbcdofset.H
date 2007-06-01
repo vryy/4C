@@ -9,7 +9,6 @@
        slavenodes. It is absolutely mandatory that for each slave node
        on this proc the master is (ghosted) on this proc, too!
 
-       Up to now, the numbering of the dofs is contigous.
 <pre>
 Maintainer: Peter Gamnitzer
             gamnitzer@lnm.mw.tum.de
