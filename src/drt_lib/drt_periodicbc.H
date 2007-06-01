@@ -260,8 +260,6 @@ protected:
   RefCountPtr<Time> timepbcreddis_  ;
   //!\brief time measurement (add connectivity to previous pbcs)
   RefCountPtr<Time> timepbcaddcon_  ;
-  //!\brief time measurement (fetch slave nodes to masterproc)
-  RefCountPtr<Time> timepbcfetchs_  ;
   //!\brief time measurement (repair ghosting)
   RefCountPtr<Time> timepbcghost_   ;
   //!\brief time measurement (make colmap for ghosting) 
@@ -270,18 +268,24 @@ protected:
   RefCountPtr<Time> timepbcrenumdofs_   ;
 
   
+  //!\brief time measurement (total)
   RefCountPtr<TimeMonitor> tm0_ref_ ;
+  //!\brief time measurement (create master slave matching for pairs)
   RefCountPtr<TimeMonitor> tm1_ref_ ;
+  //!\brief time measurement (create octree)
   RefCountPtr<TimeMonitor> tm2_ref_ ;
+  //!\brief time measurement (search in octree)
   RefCountPtr<TimeMonitor> tm3_ref_ ;
+  //!\brief time measurement (add connectivity to previous pbcs)
   RefCountPtr<TimeMonitor> tm4_ref_ ;
+  //!\brief time measurement (redistribute nodes)
   RefCountPtr<TimeMonitor> tm5_ref_ ;
+  //!\brief time measurement (make row and colmap for ghosting) 
   RefCountPtr<TimeMonitor> tm6_ref_ ;
+  //!\brief time measurement (repair ghosting)
   RefCountPtr<TimeMonitor> tm7_ref_ ;
+  //!\brief time measurement (discret->Redistribute)
   RefCountPtr<TimeMonitor> tm8_ref_ ;
-  RefCountPtr<TimeMonitor> tm9_ref_ ;
-
-
   
 };
 

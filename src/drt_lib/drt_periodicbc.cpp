@@ -62,16 +62,15 @@ PeriodicBoundaryConditions::PeriodicBoundaryConditions
   // -------------------------------------------------------------------
   // create timers and time monitor
   // -------------------------------------------------------------------
-  timepbctot_         = TimeMonitor::getNewTimer("pbc routine total"                   );
-  timepbcmidtosid_    = TimeMonitor::getNewTimer("   +create midtosid maps"            );
-  timepbcmidoct_      = TimeMonitor::getNewTimer("      +make octree"                  );
-  timepbcmidmatch_    = TimeMonitor::getNewTimer("      +search"                       );
-  timepbcreddis_      = TimeMonitor::getNewTimer("   +add connectivity, redistribute"  );
-  timepbcaddcon_      = TimeMonitor::getNewTimer("      +add conditions to list"       );
-  timepbcfetchs_      = TimeMonitor::getNewTimer("      +fetch slaves"                 );
-  timepbcghost_       = TimeMonitor::getNewTimer("      +repair ghosting"              );
-  timepbcmakeghostmap_= TimeMonitor::getNewTimer("          +make colmap for ghosting" );
-  timepbcrenumdofs_   = TimeMonitor::getNewTimer("          +discret->Redistribute"    );
+  timepbctot_         = TimeMonitor::getNewTimer("0) pbc routine total"                                 );
+  timepbcmidtosid_    = TimeMonitor::getNewTimer("1)   +create midtosid maps"                           );
+  timepbcmidoct_      = TimeMonitor::getNewTimer("2)      +build local octrees"                         );
+  timepbcmidmatch_    = TimeMonitor::getNewTimer("3)      +search closest nodes in octrees on all procs");
+  timepbcaddcon_      = TimeMonitor::getNewTimer("4)   +add connectivity to previous conditions"        );
+  timepbcreddis_      = TimeMonitor::getNewTimer("5)   +Redistribute the nodes"                         );
+  timepbcmakeghostmap_= TimeMonitor::getNewTimer("6)      +build rowmap and temporary colmap"           );
+  timepbcghost_       = TimeMonitor::getNewTimer("7)      +repair ghosting"                             );
+  timepbcrenumdofs_   = TimeMonitor::getNewTimer("8)      +call discret->Redistribute"                  );
 
   
 
@@ -209,7 +208,7 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
       }
     
       // time measurement --- start TimeMonitor tm4
-      tm4_ref_        = rcp(new TimeMonitor(*timepbcreddis_ ));
+      tm4_ref_        = rcp(new TimeMonitor(*timepbcaddcon_ ));
 
 
       //----------------------------------------------------------------------
@@ -236,6 +235,10 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
     //         REDISTRIBUTE ACCORDING TO THE GENERATED CONNECTIVITY
     //----------------------------------------------------------------------  
 
+    // time measurement --- start TimeMonitor tm5
+    tm5_ref_        = rcp(new TimeMonitor(*timepbcreddis_ ));
+
+    
     if (discret_->Comm().MyPID() == 0)
     {
       cout << "Redistributing ... ";
@@ -250,6 +253,8 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
       fflush(stdout);
     }    
 
+    // time measurement --- this causes the TimeMonitor tm5 to stop here
+    tm5_ref_ = null;
   
     // eventually call METIS to optimally distribute the nodes --- up to
     // now, a periodic boundary condition might remove all nodes from a
@@ -366,10 +371,6 @@ void PeriodicBoundaryConditions::AddConnectivity(
   
   // rcp to the constructed rowmap
   RefCountPtr<Epetra_Map> newrownodemap;
-
-
-  // time measurement --- start TimeMonitor tm5
-  tm5_ref_        = rcp(new TimeMonitor(*timepbcaddcon_ ));
 
   //----------------------------------------------------------------------
   //  ADD THE CONNECTIVITY FROM THIS CONDITION TO THE CONNECTIVITY OF
@@ -596,10 +597,7 @@ void PeriodicBoundaryConditions::AddConnectivity(
       }
     } // end complete matching
   }
-  
-  // time measurement --- this causes the TimeMonitor tm5 to stop here
-  tm5_ref_ = null;
-  
+ 
   return;
 }// PeriodicBoundaryConditions::AddConnectivity
 
@@ -629,7 +627,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
 
   {
     // time measurement --- start TimeMonitor tm6
-    tm6_ref_        = rcp(new TimeMonitor(*timepbcfetchs_ ));
+    tm6_ref_        = rcp(new TimeMonitor(*timepbcmakeghostmap_ ));
     
     // a list of all nodes on this proc
     vector<int> nodesonthisproc(discret_->NodeRowMap()->NumMyElements());
@@ -743,11 +741,10 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
     
     // time measurement --- start TimeMonitor tm7
     tm7_ref_        = rcp(new TimeMonitor(*timepbcghost_ ));
+
     //----------------------------------------------------------------------
     //       GHOSTED NODES NEED INFORMATION ON THEIR COUPLED NODES
     //----------------------------------------------------------------------
-    // time measurement --- start TimeMonitor tm8
-    tm8_ref_        = rcp(new TimeMonitor(*timepbcmakeghostmap_ ));
 
     // create the inverse map --- slavenode -> masternode
     inversenodecoupling->clear();
@@ -834,8 +831,13 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
       }
 #endif
     }
-    // time measurement --- this causes the TimeMonitor tm9 to stop here
-    tm8_ref_ = null;
+
+    // time measurement --- this causes the TimeMonitor tm7 to stop here
+    tm7_ref_ = null;  
+
+
+    // time measurement --- start TimeMonitor tm8
+    tm8_ref_        = rcp(new TimeMonitor(*timepbcrenumdofs_ ));
     
     // Create a new DofSet special for Periodic boundary conditions with
     // this type of node coupling
@@ -850,19 +852,14 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
     // this contains a call to FillComplete and assigns the same
     // degree of freedom to the matching nodes
 
-    // time measurement --- start TimeMonitor tm9
-    tm9_ref_        = rcp(new TimeMonitor(*timepbcrenumdofs_ ));
-
     discret_->Redistribute(*newrownodemap,*newcolnodemap);
     
-    // time measurement --- this causes the TimeMonitor tm9 to stop here
-    tm9_ref_ = null;
+    // time measurement --- this causes the TimeMonitor tm8 to stop here
+    tm8_ref_ = null;
     
     // throw away old nodegraph
     oldnodegraph = null;
 
-    // time measurement --- this causes the TimeMonitor tm7 to stop here
-    tm7_ref_ = null;  
   }
 
   return;

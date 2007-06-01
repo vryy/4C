@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file
+\file drt_nodematchingoctree.H
 \brief connect nodes from two nodesets by their distance
 
 
@@ -41,6 +41,23 @@ public:
   <pre> 
   
   Set up processor local octree                               gammi 04/07
+
+
+  On input a list of so called "master"-nodes and a discretisation which
+  contains these "master"-nodes. All nodeids from masternodes owned by
+  this proc are put into a octree structure, i.e. are attached to leafs
+  of an octree.
+
+  The number maxnodeperleaf specifies the upper bound for the number of
+  nodeids attached to a octree leaf. If the number would be higher, the
+  octree element would be split into two children (which could be leafs
+  on their own)
+  
+  If a nodeid is associated with a child of an octree element, it is
+  checked whether its coordinate is inside the bounding box of the
+  octree element. This is done only with a tolerance tol to ensure that
+  each node is guaranteed to be owned by one of the children an could
+  be found later on.
   
   </pre>
   
@@ -78,6 +95,23 @@ public:
 
   Search for closest (slave) nodes on all processors to given (master)
   nodeset (only in bounding box of masternodes)               gammi 05/07
+
+   1) each proc generates a list of his slavenodes (out of slavenodeids)
+
+   2) the list is communicated in a round robin pattern to all the
+      other procs.
+  
+   3) the proc checks the package from each proc and calcs the min
+      distance on each --- the result is kept if distance is smaller
+      than on the preceding processors
+  
+  Again, dofsforpbcplane is used to overwrite the coordinate of the
+  slave perpendicular to the plane of the periodic boundary condition
+  by the coordinate of the masterplane (so to speak, the closest node
+  matching is "exact")
+
+  On output, we get a map from masterids on this proc to slavenodeids
+  (on arbitrary procs).
   
   </pre>
   
@@ -96,21 +130,29 @@ public:
     vector <int>       dofsforpbcplane,
     map<int,int> &     midtosid
     );
+
+  //@}
+
   
+protected:
+
+   //! @name Methods to create processor local node matching
+ 
   /*!
    
   \brief 
   
   <pre> 
 
-  Search closest node to given coordinate in local octree
-  returns false if node is not in bounding box of local octree  
+  Search closest node to given coordinate x in local octree.
+  
+  returns false if node is not in bounding box of local octree
 
   gammi 05/07
   
   </pre>
   
-  \param  x                  (i) list of slavenodeids
+  \param  x                  (i) coordinate of slavenode
   \param  idofclosestpoint   (o) the node id of the closest point
   \param  distofclosestpoint (o) the distance to the closest point
   
@@ -126,8 +168,6 @@ public:
   
   //@}
   
-  
-protected:
 private:
 
   //! \brief all nodes in leafs are nodes of this discretistion
@@ -154,6 +194,13 @@ public:
   <pre>
   
   Create one element in octree                              gammi 05/07
+
+  nodeids is a list of nodes out of discretisation actdis belonging to
+  the element or its children. bounding box specifies the geometry of
+  the element. layer is the number of subdivisions after the octree
+  root. maxnodeperleaf specifies the max number of nodes contained by
+  one leaf element. tol is a tolerance used to assign the nodes to the
+  elements by checking if they are in the bounding box or not.
   
   </pre> 
 
@@ -285,8 +332,7 @@ public:
   */
   void Print(ostream& os) const;
   
-  //@}
-  
+  //@}  
 protected:
 
 private:

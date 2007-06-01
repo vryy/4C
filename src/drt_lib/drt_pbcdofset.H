@@ -2,8 +2,14 @@
 \file drt_pbcdofset.H
 
 \brief A modified set of degrees of freedom for periodic boundary
-       conditions
+       conditions. This class is inherited from dofset and replaces the
+       method AssignDegreesOfFreedom by a version which uses a map
+       of coupled nodes provided by the periodic boundary conditions to
+       assign the same degrees of freedom to coupled pairs of master and
+       slavenodes. It is absolutely mandatory that for each slave node
+       on this proc the master is (ghosted) on this proc, too!
 
+       Up to now, the numbering of the dofs is contigous.
 <pre>
 Maintainer: Peter Gamnitzer
             gamnitzer@lnm.mw.tum.de
@@ -101,7 +107,7 @@ public:
   \param  start (i) start numbering of dofs with this index
 
 
-  \return int highest dof number assigned up tpo now
+  \return int highest dof number assigned up to now
   
   */
   virtual int AssignDegreesOfFreedom(const Discretization& dis, const int start);
