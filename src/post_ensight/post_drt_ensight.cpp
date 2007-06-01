@@ -18,6 +18,8 @@ Maintainer: Ulrich Kuettler
 #ifdef TRILINOS_PACKAGE
 
 #include <iostream>
+#include <sstream>
+#include <cstdio>
 #include <vector>
 #include <map>
 #include <fstream>
@@ -94,6 +96,9 @@ private:
   vector<ofstream::pos_type> fileposition_;
   vector<double> time_;
   map<string, vector<ofstream::pos_type> > resultfilepos_;
+  vector<vector<int> > filesets_;
+
+  static const unsigned FILE_SIZE_LIMIT = 0x7fffffff; // 2GB
 };
 
 
@@ -188,6 +193,15 @@ void EnsightWriter::WriteFiles()
             << "file set:\t\t2\n"
             << "number of steps:\t1\n"
     ;
+  for (unsigned int i = 0; i < filesets_.size(); ++i)
+  {
+    casefile_ << "\nfile set:\t\t" << 3+i << "\n";
+    for (unsigned int j = 0; j < filesets_[i].size(); ++j)
+    {
+      casefile_ << "filename index:\t" << 1+j << "\n"
+                << "number of steps:\t" << filesets_[i][j] << "\n";
+    }
+  }
 
   casefile_.close();
   geofile_.close();
@@ -303,7 +317,7 @@ void EnsightWriter::WriteCells()
       DRT::Node** nodes = actele->Nodes();
       for (int j=0; j<numnp; ++j)
       {
-        Write(geofile_,nodes[j]->Id()+1);
+        Write(geofile_,nodemap->LID(nodes[j]->Id())+1);
       }
       break;
     }
@@ -315,84 +329,84 @@ void EnsightWriter::WriteCells()
       DRT::Node** nodes = actele->Nodes();
 
       /*------------sub element 1*/
-      Write(geofile_,nodes[ 0]->Id()+1);
-      Write(geofile_,nodes[ 8]->Id()+1);
-      Write(geofile_,nodes[20]->Id()+1);
-      Write(geofile_,nodes[11]->Id()+1);
-      Write(geofile_,nodes[12]->Id()+1);
-      Write(geofile_,nodes[21]->Id()+1);
-      Write(geofile_,nodes[26]->Id()+1);
-      Write(geofile_,nodes[24]->Id()+1);
+      Write(geofile_,nodemap->LID(nodes[ 0]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[ 8]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[20]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[11]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[12]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[21]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[26]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[24]->Id())+1);
 
       /*------------sub element 2*/
-      Write(geofile_,nodes[ 8]->Id()+1);
-      Write(geofile_,nodes[ 1]->Id()+1);
-      Write(geofile_,nodes[ 9]->Id()+1);
-      Write(geofile_,nodes[20]->Id()+1);
-      Write(geofile_,nodes[21]->Id()+1);
-      Write(geofile_,nodes[13]->Id()+1);
-      Write(geofile_,nodes[22]->Id()+1);
-      Write(geofile_,nodes[26]->Id()+1);
+      Write(geofile_,nodemap->LID(nodes[ 8]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[ 1]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[ 9]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[20]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[21]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[13]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[22]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[26]->Id())+1);
 
       /*------------sub element 3*/
-      Write(geofile_,nodes[20]->Id()+1);
-      Write(geofile_,nodes[ 9]->Id()+1);
-      Write(geofile_,nodes[ 2]->Id()+1);
-      Write(geofile_,nodes[10]->Id()+1);
-      Write(geofile_,nodes[26]->Id()+1);
-      Write(geofile_,nodes[22]->Id()+1);
-      Write(geofile_,nodes[14]->Id()+1);
-      Write(geofile_,nodes[23]->Id()+1);
+      Write(geofile_,nodemap->LID(nodes[20]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[ 9]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[ 2]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[10]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[26]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[22]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[14]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[23]->Id())+1);
 
       /*------------sub element 4*/
-      Write(geofile_,nodes[11]->Id()+1);
-      Write(geofile_,nodes[20]->Id()+1);
-      Write(geofile_,nodes[10]->Id()+1);
-      Write(geofile_,nodes[ 3]->Id()+1);
-      Write(geofile_,nodes[24]->Id()+1);
-      Write(geofile_,nodes[26]->Id()+1);
-      Write(geofile_,nodes[23]->Id()+1);
-      Write(geofile_,nodes[15]->Id()+1);
+      Write(geofile_,nodemap->LID(nodes[11]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[20]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[10]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[ 3]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[24]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[26]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[23]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[15]->Id())+1);
 
       /*------------sub element 5*/
-      Write(geofile_,nodes[12]->Id()+1);
-      Write(geofile_,nodes[21]->Id()+1);
-      Write(geofile_,nodes[26]->Id()+1);
-      Write(geofile_,nodes[24]->Id()+1);
-      Write(geofile_,nodes[ 4]->Id()+1);
-      Write(geofile_,nodes[16]->Id()+1);
-      Write(geofile_,nodes[25]->Id()+1);
-      Write(geofile_,nodes[19]->Id()+1);
+      Write(geofile_,nodemap->LID(nodes[12]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[21]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[26]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[24]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[ 4]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[16]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[25]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[19]->Id())+1);
 
       /*------------sub element 6*/
-      Write(geofile_,nodes[21]->Id()+1);
-      Write(geofile_,nodes[13]->Id()+1);
-      Write(geofile_,nodes[22]->Id()+1);
-      Write(geofile_,nodes[26]->Id()+1);
-      Write(geofile_,nodes[16]->Id()+1);
-      Write(geofile_,nodes[ 5]->Id()+1);
-      Write(geofile_,nodes[17]->Id()+1);
-      Write(geofile_,nodes[25]->Id()+1);
+      Write(geofile_,nodemap->LID(nodes[21]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[13]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[22]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[26]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[16]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[ 5]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[17]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[25]->Id())+1);
 
       /*------------sub element 7*/
-      Write(geofile_,nodes[26]->Id()+1);
-      Write(geofile_,nodes[22]->Id()+1);
-      Write(geofile_,nodes[14]->Id()+1);
-      Write(geofile_,nodes[23]->Id()+1);
-      Write(geofile_,nodes[25]->Id()+1);
-      Write(geofile_,nodes[17]->Id()+1);
-      Write(geofile_,nodes[ 6]->Id()+1);
-      Write(geofile_,nodes[18]->Id()+1);
+      Write(geofile_,nodemap->LID(nodes[26]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[22]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[14]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[23]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[25]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[17]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[ 6]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[18]->Id())+1);
 
       /*------------sub element 8*/
-      Write(geofile_,nodes[24]->Id()+1);
-      Write(geofile_,nodes[26]->Id()+1);
-      Write(geofile_,nodes[23]->Id()+1);
-      Write(geofile_,nodes[15]->Id()+1);
-      Write(geofile_,nodes[19]->Id()+1);
-      Write(geofile_,nodes[25]->Id()+1);
-      Write(geofile_,nodes[18]->Id()+1);
-      Write(geofile_,nodes[ 7]->Id()+1);
+      Write(geofile_,nodemap->LID(nodes[24]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[26]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[23]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[15]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[19]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[25]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[18]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[ 7]->Id())+1);
       break;
     }
 
@@ -401,28 +415,28 @@ void EnsightWriter::WriteCells()
       DRT::Node** nodes = actele->Nodes();
 
       /*------------sub element 1*/
-      Write(geofile_,nodes[0]->Id()+1);
-      Write(geofile_,nodes[4]->Id()+1);
-      Write(geofile_,nodes[8]->Id()+1);
-      Write(geofile_,nodes[7]->Id()+1);
+      Write(geofile_,nodemap->LID(nodes[0]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[4]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[8]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[7]->Id())+1);
 
       /*------------sub element 2*/
-      Write(geofile_,nodes[4]->Id()+1);
-      Write(geofile_,nodes[1]->Id()+1);
-      Write(geofile_,nodes[5]->Id()+1);
-      Write(geofile_,nodes[8]->Id()+1);
+      Write(geofile_,nodemap->LID(nodes[4]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[1]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[5]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[8]->Id())+1);
 
       /*------------sub element 3*/
-      Write(geofile_,nodes[8]->Id()+1);
-      Write(geofile_,nodes[5]->Id()+1);
-      Write(geofile_,nodes[2]->Id()+1);
-      Write(geofile_,nodes[6]->Id()+1);
+      Write(geofile_,nodemap->LID(nodes[8]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[5]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[2]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[6]->Id())+1);
 
       /*------------sub element 4*/
-      Write(geofile_,nodes[7]->Id()+1);
-      Write(geofile_,nodes[8]->Id()+1);
-      Write(geofile_,nodes[6]->Id()+1);
-      Write(geofile_,nodes[3]->Id()+1);
+      Write(geofile_,nodemap->LID(nodes[7]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[8]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[6]->Id())+1);
+      Write(geofile_,nodemap->LID(nodes[3]->Id())+1);
       break;
     }
 
@@ -442,12 +456,50 @@ void EnsightWriter::WriteResults(string groupname, string name, int numdf, int f
   if (!map_has_map(result.group(), const_cast<char*>(groupname.c_str())))
     return;
 
+  // new for file continuation
+  unsigned int fileset = 1;
+  const Epetra_Map* nodemap = field_->discretization()->NodeRowMap();
+  if (nodemap->NumMyElements()!=nodemap->NumGlobalElements())
+      dserror("filter cannot be run in parallel");
+  int numnp = nodemap->NumMyElements();
+  int stepsize = 5*80+sizeof(int)+numdf*numnp*sizeof(float);
+  int indexsize = 0;
+
   string filename = filename_ + "_" + field_->name() + "." + name;
   ofstream file(filename.c_str());
 
   WriteResult(file, result, groupname, name, numdf, from);
   while (result.next_result())
   {
+    indexsize = 80+2*sizeof(int)+(file.tellp()/stepsize+2)*sizeof(long);
+    if (static_cast<long unsigned int>(file.tellp())+stepsize+indexsize >=
+        FILE_SIZE_LIMIT) {
+      if (fileset == 1) {
+        fileset = filesets_.size()+3;
+        vector<int> numsteps;
+        numsteps.push_back(file.tellp()/stepsize);
+        filesets_.push_back(numsteps);
+        // append index table
+        WriteIndexTable(file,resultfilepos_[name]);
+        resultfilepos_[name].clear();
+        file.close();
+        rename(filename.c_str(), (filename+"001").c_str());
+        file.open((filename+"002").c_str());
+      }
+      else {
+        filesets_[fileset-3].push_back(file.tellp()/stepsize);
+        ostringstream newfilename;
+        newfilename << filename;
+        newfilename.width(3);
+        newfilename.fill('0');
+        newfilename << filesets_[fileset-3].size()+1;
+        // append index table
+        WriteIndexTable(file,resultfilepos_[name]);
+        resultfilepos_[name].clear();
+        file.close();
+        file.open(newfilename.str().c_str());
+      }
+    }
     WriteResult(file, result, groupname, name, numdf, from);
   }
 
@@ -455,13 +507,26 @@ void EnsightWriter::WriteResults(string groupname, string name, int numdf, int f
   WriteIndexTable(file,resultfilepos_[name]);
   resultfilepos_[name].clear();
 
-  if (numdf>1)
+  if (fileset != 1)
   {
-    casefile_ << "vector per node:\t1\t1\t" << name << "\t" << filename << "\n";
+    filesets_[fileset-3].push_back(file.tellp()/stepsize);
+    filename += "***";
+  }
+
+  if (numdf==6)
+  {
+    casefile_ << "tensor symm per node:\t1\t" << fileset << "\t" << name << "\t"
+              << filename << "\n";
+  }
+  else if (numdf==3)
+  {
+    casefile_ << "vector per node:\t1\t" << fileset << "\t" << name << "\t"
+              << filename << "\n";
   }
   else if (numdf==1)
   {
-    casefile_ << "scalar per node:\t1\t1\t" << name << "\t" << filename << "\n";
+    casefile_ << "scalar per node:\t1\t" << fileset << "\t" << name << "\t"
+              << filename << "\n";
   }
 }
 
