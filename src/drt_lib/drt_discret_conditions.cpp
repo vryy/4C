@@ -169,54 +169,65 @@ void DRT::Discretization::BuildLinesinCondition(
     } // for (int i=0; i<actnode->NumElement(); ++i)
   } // for (fool=nodes.begin(); fool != nodes.end(); ++fool)
   
-  // linemap contains a lot of duplicates which need to be detected and deleted
+  // linemap contains all lines in our cloud, but it also contains a lot
+  // of duplicates for now which need to be detected and deleted
   multimap<int,RefCountPtr<DRT::Element> >::iterator linecurr;
-  multimap<int,RefCountPtr<DRT::Element> >::iterator linedel;
   for (linecurr=linemap.begin(); linecurr!=linemap.end(); ++linecurr)
   {
-    // this line was already deleted
+    // this lines was already deleted
     if (linecurr->second == null) continue;
     
-    // get the line
+    // get the lines
     RefCountPtr<DRT::Element> actline = linecurr->second;
     
-    // get all nodal ids on this line
+    // get all nodal ids on this lineace
     const int  nnode   = actline->NumNode();
     const int* nodeids = actline->NodeIds();
+
+    // loop all lines associated with entries of nodeids
     
-    for (linedel=linemap.begin(); linedel!=linemap.end(); ++linedel)
+    for(int nid=0;nid<nnode;nid++)
     {
-      if (linedel->second == null) continue;
-      if (linedel==linecurr) continue;
+      multimap<int,RefCountPtr<DRT::Element> >::iterator startit =
+        linemap.lower_bound(nodeids[nid]);
+      multimap<int,RefCountPtr<DRT::Element> >::iterator endit   =
+        linemap.upper_bound(nodeids[nid]);
       
-      const int nn = linedel->second->NumNode();
-      if (nn != nnode) continue;
-      const int* nids = linedel->second->NodeIds();
-      
-      // nids must contain same ids as nodeids,
-      // where ordering is arbitrary
-      bool ident = true;
-      for (int i=0; i<nnode; ++i)
+      multimap<int,RefCountPtr<DRT::Element> >::iterator curr;
+      for (curr=startit; curr!=endit; ++curr)
       {
-        bool foundit = false;
-        for (int j=0; j<nnode; ++j)
-          if (nodeids[i]==nids[j])
+        if(curr->second == null   ) continue;
+        if(curr         == linecurr) continue;
+          
+        const int nn    = curr->second->NumNode();
+        if (nn != nnode) continue;
+        const int* nids = curr->second->NodeIds();
+
+        // nids must contain same ids as nodeids,
+        // where ordering is arbitrary
+        bool ident = true;
+        for (int i=0; i<nnode; ++i)
+        {
+          bool foundit = false;
+          for (int j=0; j<nnode; ++j)
+            if (nodeids[i]==nids[j])
+            {
+              foundit = true;
+              break;
+            }
+          if (!foundit)
           {
-            foundit = true;
+            ident = false;
             break;
           }
-        if (!foundit)
-        {
-          ident = false;
-          break;
         }
+        if (ident)
+          curr->second = null;
+        else 
+          continue;
       }
-      if (ident)
-        linedel->second = null;
-      else 
-        continue;
-    } // for (linedel=linemap.begin(); linedel!=linemap.end(); ++linedel)
-  } // for (linecurr=linemap.begin(); linecurr!=linemap.end(); ++linecurr)
+    }
+  }
   
   // Build a clean map of the remaining now unique lines
   // and add it to the condition
@@ -331,51 +342,60 @@ void DRT::Discretization::BuildSurfacesinCondition(
   // surfmap contains all surfaces in our cloud, but it also contains a lot
   // of duplicates for now which need to be detected and deleted
   multimap<int,RefCountPtr<DRT::Element> >::iterator surfcurr;
-  multimap<int,RefCountPtr<DRT::Element> >::iterator surfdel;
   for (surfcurr=surfmap.begin(); surfcurr!=surfmap.end(); ++surfcurr)
   {
     // this surface was already deleted
-    if (surfcurr->second==null) continue;
+    if (surfcurr->second == null) continue;
     
     // get the surface
     RefCountPtr<DRT::Element> actsurf = surfcurr->second;
     
-    // get all nodes on actsurf
+    // get all nodal ids on this surface
     const int  nnode   = actsurf->NumNode();
     const int* nodeids = actsurf->NodeIds();
+
+    // loop all surfaces associated with entries of nodeids
     
-    for (surfdel=surfmap.begin(); surfdel!=surfmap.end(); ++surfdel)
+    for(int nid=0;nid<nnode;nid++)
     {
-      if (surfdel->second==null) continue;
-      if (surfdel==surfcurr) continue;
+      multimap<int,RefCountPtr<DRT::Element> >::iterator startit =
+        surfmap.lower_bound(nodeids[nid]);
+      multimap<int,RefCountPtr<DRT::Element> >::iterator endit   =
+        surfmap.upper_bound(nodeids[nid]);
       
-      // get all nodes on surfdel->second
-      const int nn = surfdel->second->NumNode();
-      if (nn != nnode) continue;
-      const int* nids = surfdel->second->NodeIds();
-      
-      // nids must contain same ids as nodeids,
-      // where ordering is arbitrary
-      bool ident = true;
-      for (int i=0; i<nnode; ++i)
+      multimap<int,RefCountPtr<DRT::Element> >::iterator curr;
+      for (curr=startit; curr!=endit; ++curr)
       {
-        bool foundit = false;
-        for (int j=0; j<nnode; ++j)
-          if (nodeids[i]==nids[j])
+        if(curr->second == null   ) continue;
+        if(curr         == surfcurr) continue;
+          
+        const int nn    = curr->second->NumNode();
+        if (nn != nnode) continue;
+        const int* nids = curr->second->NodeIds();
+
+        // nids must contain same ids as nodeids,
+        // where ordering is arbitrary
+        bool ident = true;
+        for (int i=0; i<nnode; ++i)
+        {
+          bool foundit = false;
+          for (int j=0; j<nnode; ++j)
+            if (nodeids[i]==nids[j])
+            {
+              foundit = true;
+              break;
+            }
+          if (!foundit)
           {
-            foundit = true;
+            ident = false;
             break;
           }
-        if (!foundit)
-        {
-          ident = false;
-          break;
         }
+        if (ident)
+          curr->second = null;
+        else 
+          continue;
       }
-      if (ident)
-        surfdel->second = null;
-      else
-        continue;
     }
   }
 
@@ -488,9 +508,8 @@ void DRT::Discretization::BuildVolumesinCondition(
     } // for (int i=0; i<actnode->NumElement(); ++i)
   } // for (fool=nodes.begin(); fool != nodes.end(); ++fool)
   
-  // linemap contains a lot of duplicates which need to be detected and deleted
+  // volmap contains a lot of duplicates which need to be detected and deleted
   multimap<int,RefCountPtr<DRT::Element> >::iterator volcurr;
-  multimap<int,RefCountPtr<DRT::Element> >::iterator voldel;
   for (volcurr=volmap.begin(); volcurr!=volmap.end(); ++volcurr)
   {
     // this volume was already deleted
@@ -502,40 +521,51 @@ void DRT::Discretization::BuildVolumesinCondition(
     // get all nodal ids on this volume
     const int  nnode   = actvol->NumNode();
     const int* nodeids = actvol->NodeIds();
+
+    // loop all volumes associated with entries of nodeids
     
-    for (voldel=volmap.begin(); voldel!=volmap.end(); ++voldel)
+    for(int nid=0;nid<nnode;nid++)
     {
-      if (voldel->second == null) continue;
-      if (voldel==volcurr) continue;
+      multimap<int,RefCountPtr<DRT::Element> >::iterator startit =
+        volmap.lower_bound(nodeids[nid]);
+      multimap<int,RefCountPtr<DRT::Element> >::iterator endit   =
+        volmap.upper_bound(nodeids[nid]);
       
-      const int nn = voldel->second->NumNode();
-      if (nn != nnode) continue;
-      const int* nids = voldel->second->NodeIds();
-      
-      // nids must contain same ids as nodeids,
-      // where ordering is arbitrary
-      bool ident = true;
-      for (int i=0; i<nnode; ++i)
+      multimap<int,RefCountPtr<DRT::Element> >::iterator curr;
+      for (curr=startit; curr!=endit; ++curr)
       {
-        bool foundit = false;
-        for (int j=0; j<nnode; ++j)
-          if (nodeids[i]==nids[j])
+        if(curr->second == null   ) continue;
+        if(curr         == volcurr) continue;
+          
+        const int nn    = curr->second->NumNode();
+        if (nn != nnode) continue;
+        const int* nids = curr->second->NodeIds();
+
+        // nids must contain same ids as nodeids,
+        // where ordering is arbitrary
+        bool ident = true;
+        for (int i=0; i<nnode; ++i)
+        {
+          bool foundit = false;
+          for (int j=0; j<nnode; ++j)
+            if (nodeids[i]==nids[j])
+            {
+              foundit = true;
+              break;
+            }
+          if (!foundit)
           {
-            foundit = true;
+            ident = false;
             break;
           }
-        if (!foundit)
-        {
-          ident = false;
-          break;
         }
+        if (ident)
+          curr->second = null;
+        else 
+          continue;
       }
-      if (ident)
-        voldel->second = null;
-      else 
-        continue;
-    } 
-  } 
+    }
+  }
   
   // Build a clean map of the remaining now unique lines
   // and add it to the condition
