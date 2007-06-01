@@ -59,19 +59,21 @@ PeriodicBoundaryConditions::PeriodicBoundaryConditions
   allcoupledcolnodes_=rcp(new map<int,vector<int> >);
 
 
-  // -------------------------------------------------------------------
-  // create timers and time monitor
-  // -------------------------------------------------------------------
-  timepbctot_         = TimeMonitor::getNewTimer("0) pbc routine total"                                 );
-  timepbcmidtosid_    = TimeMonitor::getNewTimer("1)   +create midtosid maps"                           );
-  timepbcmidoct_      = TimeMonitor::getNewTimer("2)      +build local octrees"                         );
-  timepbcmidmatch_    = TimeMonitor::getNewTimer("3)      +search closest nodes in octrees on all procs");
-  timepbcaddcon_      = TimeMonitor::getNewTimer("4)   +add connectivity to previous conditions"        );
-  timepbcreddis_      = TimeMonitor::getNewTimer("5)   +Redistribute the nodes"                         );
-  timepbcmakeghostmap_= TimeMonitor::getNewTimer("6)      +build rowmap and temporary colmap"           );
-  timepbcghost_       = TimeMonitor::getNewTimer("7)      +repair ghosting"                             );
-  timepbcrenumdofs_   = TimeMonitor::getNewTimer("8)      +call discret->Redistribute"                  );
-
+  if(numpbcpairs_>0)
+  {
+    // -------------------------------------------------------------------
+    // create timers and time monitor
+    // -------------------------------------------------------------------
+    timepbctot_         = TimeMonitor::getNewTimer("0) pbc routine total"                                 );
+    timepbcmidtosid_    = TimeMonitor::getNewTimer("1)   +create midtosid maps"                           );
+    timepbcmidoct_      = TimeMonitor::getNewTimer("2)      +build local octrees"                         );
+    timepbcmidmatch_    = TimeMonitor::getNewTimer("3)      +search closest nodes in octrees on all procs");
+    timepbcaddcon_      = TimeMonitor::getNewTimer("4)   +add connectivity to previous conditions"        );
+    timepbcreddis_      = TimeMonitor::getNewTimer("5)   +Redistribute the nodes"                         );
+    timepbcmakeghostmap_= TimeMonitor::getNewTimer("6)      +build rowmap and temporary colmap"           );
+    timepbcghost_       = TimeMonitor::getNewTimer("7)      +repair ghosting"                             );
+    timepbcrenumdofs_   = TimeMonitor::getNewTimer("8)      +call discret->Redistribute"                  );
+  }
   
 
   
@@ -271,6 +273,7 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
       cout<<endl<<endl;
     }
     TimeMonitor::summarize();
+    
     if(discret_->Comm().MyPID()==0)
     {
       cout<<endl<<endl;
@@ -480,7 +483,9 @@ void PeriodicBoundaryConditions::AddConnectivity(
         //--------------------------------------------------------------------
         // -> 2) round robin loop
         
+#ifdef PARALLEL
         int myrank  =discret_->Comm().MyPID();
+#endif
         int numprocs=discret_->Comm().NumProc();
 
         vector<char> sblock;
@@ -530,6 +535,10 @@ void PeriodicBoundaryConditions::AddConnectivity(
             // for safety
             exporter.Comm().Barrier();
           }
+#else
+          // dummy communication
+          rblock.clear();
+          rblock=sblock;
 #endif
 
           //--------------------------------------------------
