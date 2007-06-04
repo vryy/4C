@@ -50,19 +50,48 @@ void DRT::Elements::So_hex8::soh8_easinit()
   // EAS portion of internal forces, also called enhacement vector s or Rtilde
   Epetra_SerialDenseVector feas(neas_);
   // EAS matrix K_{alpha alpha}, also called Dtilde
-  Epetra_SerialDenseMatrix Kaa(neas_,neas_);
+  Epetra_SerialDenseMatrix invKaa(neas_,neas_);
   // EAS matrix K_{d alpha}
   Epetra_SerialDenseMatrix Kda(neas_,NUMDOF_SOH8);
   
   // save EAS data into element container easdata_
   data_.Add("alpha",alpha);
   data_.Add("feas",feas);
-  data_.Add("Kaa",Kaa);
+  data_.Add("invKaa",invKaa);
   data_.Add("Kda",Kda);
   
   return;
 }
 
+///*----------------------------------------------------------------------*
+// |  update EAS alpha from previous step (private)              maf 05/07|
+// *----------------------------------------------------------------------*/
+//void DRT::Elements::So_hex8::soh8_easupdate(
+//      Epetra_SerialDenseMatrix& alpha,    // reference to alpha which will be updated
+//      vector<double>& current_disp,
+//      vector<double>& prev_deltad)
+//{
+//  DSTraceHelper dst("So_hex8::soh8_easupdate");
+//  
+//  // get stored EAS history
+//  Epetra_SerialDenseMatrix oldfeas(neas_,1);
+//  data_.Get<Epetra_SerialDenseMatrix>("feas",oldfeas);
+//  Epetra_SerialDenseMatrix oldKaainv(neas_,neas_);
+//  data_.Get<Epetra_SerialDenseMatrix>("invKaa",oldKaainv);
+//  Epetra_SerialDenseMatrix oldKda(neas_,NUMDOF_SOH8);
+//  data_.Get<Epetra_SerialDenseMatrix>("Kda",oldKda);
+//  if (!oldalpha || !oldKaa || !oldKdainv || !oldfeas) dserror("Missing EAS history-data");
+//  
+//  Epetra_DataAccess CV = Copy;
+//  Epetra_SerialDenseVector delta_d(CV,prev_deltad,NUMDOF_SOH8);
+//  
+//  // add Kda . delta_d to feas
+//  oldfeas.Multiply('N','N',1.0,oldKda,delta_d,1.0);
+//  // new alpha is: - Kaa^-1 . (feas + Kda . delta_d), here: - Kaa^-1 . feas
+//  alpha.Multiply('N','N',-1.0,oldKaainv,feas,1.0);
+//  
+//  return;
+//}
 /*----------------------------------------------------------------------*
  |  setup of constant EAS data (private)                       maf 05/07|
  *----------------------------------------------------------------------*/
@@ -76,78 +105,96 @@ void DRT::Elements::So_hex8::soh8_eassetup(
   
   // vector of df(origin)
   double df0_vector[NUMDOF_SOH8*NUMNOD_SOH8] =
-               {-0.125,+0.125,+0.125,-0.125,-0.125,+0.125,+0.125,-0.125, 
-                -0.125,-0.125,+0.125,+0.125,-0.125,-0.125,+0.125,+0.125, 
-                -0.125,-0.125,-0.125,-0.125,+0.125,+0.125,+0.125,+0.125};
+//               {-0.125,+0.125,+0.125,-0.125,-0.125,+0.125,+0.125,-0.125, 
+//                -0.125,-0.125,+0.125,+0.125,-0.125,-0.125,+0.125,+0.125, 
+//                -0.125,-0.125,-0.125,-0.125,+0.125,+0.125,+0.125,+0.125};
+               {-0.125,-0.125,-0.125,
+                +0.125,-0.125,-0.125,
+                +0.125,+0.125,-0.125,
+                -0.125,+0.125,-0.125,
+                -0.125,-0.125,+0.125,
+                +0.125,-0.125,+0.125,
+                +0.125,+0.125,+0.125,
+                -0.125,+0.125,+0.125};
   // shape function derivatives, evaluated at origin (r=s=t=0.0)
   Epetra_DataAccess CV = Copy;
   Epetra_SerialDenseMatrix df0(CV,df0_vector,NUMDIM_SOH8,NUMDIM_SOH8,NUMNOD_SOH8);
+  
+  //cout << "df0 " << df0;
+  //cout << "xrefe " << xrefe;
   
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)
   Epetra_SerialDenseMatrix jac0(NUMDIM_SOH8,NUMDIM_SOH8);
   jac0.Multiply('N','N',1.0,df0,xrefe,1.0);
   
+  //cout << "jac0 " << jac0;
+  
   // compute determinant of Jacobian at origin by Sarrus' rule
+  //double detJ0loc;
   detJ0 = jac0(0,0) * jac0(1,1) * jac0(2,2)
            + jac0(0,1) * jac0(1,2) * jac0(2,0)
            + jac0(0,2) * jac0(1,0) * jac0(2,1)
            - jac0(0,0) * jac0(1,2) * jac0(2,1)
            - jac0(0,1) * jac0(1,0) * jac0(2,2)
            - jac0(0,2) * jac0(1,1) * jac0(2,0);
+           
+  //cout << "detJ0loc " << detJ0loc;
   
-  // first, build T0 transformation matrix which maps the M-matrix
+  // first, build T0^T transformation matrix which maps the M-matrix
   // between global (r,s,t)-coordinates and local (x,y,z)-coords
   // later, invert the transposed to map from local to global
   // see literature for details (e.g. Andelfinger)
   // it is based on the voigt notation for strains: xx,yy,zz,xy,yz,xz
   T0invT(0,0) = jac0(0,0) * jac0(0,0);
-  T0invT(0,1) = jac0(1,0) * jac0(1,0);
-  T0invT(0,2) = jac0(2,0) * jac0(2,0);
-  T0invT(0,3) = 2 * jac0(0,0) * jac0(1,0);
-  T0invT(0,4) = 2 * jac0(0,0) * jac0(2,0);
-  T0invT(0,5) = 2 * jac0(1,0) * jac0(2,0);
+  T0invT(1,0) = jac0(1,0) * jac0(1,0);
+  T0invT(2,0) = jac0(2,0) * jac0(2,0);
+  T0invT(3,0) = 2 * jac0(0,0) * jac0(1,0);
+  T0invT(4,0) = 2 * jac0(0,0) * jac0(2,0);
+  T0invT(5,0) = 2 * jac0(1,0) * jac0(2,0);
   
-  T0invT(1,0) = jac0(0,1) * jac0(0,1);
+  T0invT(0,1) = jac0(0,1) * jac0(0,1);
   T0invT(1,1) = jac0(1,1) * jac0(1,1);
-  T0invT(1,2) = jac0(2,1) * jac0(2,1);
-  T0invT(1,3) = 2 * jac0(0,1) * jac0(1,1);
-  T0invT(1,4) = 2 * jac0(0,1) * jac0(2,1);
-  T0invT(1,5) = 2 * jac0(1,1) * jac0(2,1);
+  T0invT(2,1) = jac0(2,1) * jac0(2,1);
+  T0invT(3,1) = 2 * jac0(0,1) * jac0(1,1);
+  T0invT(4,1) = 2 * jac0(0,1) * jac0(2,1);
+  T0invT(5,1) = 2 * jac0(1,1) * jac0(2,1);
 
-  T0invT(2,0) = jac0(0,2) * jac0(0,2);
-  T0invT(2,1) = jac0(1,2) * jac0(1,2);
+  T0invT(0,2) = jac0(0,2) * jac0(0,2);
+  T0invT(1,2) = jac0(1,2) * jac0(1,2);
   T0invT(2,2) = jac0(2,2) * jac0(2,2);
-  T0invT(2,3) = 2 * jac0(0,2) * jac0(1,2);
-  T0invT(2,4) = 2 * jac0(0,2) * jac0(2,2);
-  T0invT(2,5) = 2 * jac0(1,2) * jac0(2,2);
+  T0invT(3,2) = 2 * jac0(0,2) * jac0(1,2);
+  T0invT(4,2) = 2 * jac0(0,2) * jac0(2,2);
+  T0invT(5,2) = 2 * jac0(1,2) * jac0(2,2);
   
-  T0invT(3,0) = jac0(0,0) * jac0(0,1);
-  T0invT(3,1) = jac0(1,0) * jac0(1,1);
-  T0invT(3,2) = jac0(2,0) * jac0(2,1);
+  T0invT(0,3) = jac0(0,0) * jac0(0,1);
+  T0invT(1,3) = jac0(1,0) * jac0(1,1);
+  T0invT(2,3) = jac0(2,0) * jac0(2,1);
   T0invT(3,3) = jac0(0,0) * jac0(1,1) + jac0(1,0) * jac0(0,1);
-  T0invT(3,4) = jac0(0,0) * jac0(2,1) + jac0(2,0) * jac0(0,1);
-  T0invT(3,5) = jac0(1,0) * jac0(2,1) + jac0(2,0) * jac0(1,1);
+  T0invT(4,3) = jac0(0,0) * jac0(2,1) + jac0(2,0) * jac0(0,1);
+  T0invT(5,3) = jac0(1,0) * jac0(2,1) + jac0(2,0) * jac0(1,1);
 
-  T0invT(4,0) = jac0(0,0) * jac0(0,2);
-  T0invT(4,1) = jac0(1,0) * jac0(1,2);
-  T0invT(4,2) = jac0(2,0) * jac0(2,2);
-  T0invT(4,3) = jac0(0,0) * jac0(1,2) + jac0(1,0) * jac0(0,2);
+  T0invT(0,4) = jac0(0,0) * jac0(0,2);
+  T0invT(1,4) = jac0(1,0) * jac0(1,2);
+  T0invT(2,4) = jac0(2,0) * jac0(2,2);
+  T0invT(3,4) = jac0(0,0) * jac0(1,2) + jac0(1,0) * jac0(0,2);
   T0invT(4,4) = jac0(0,0) * jac0(2,2) + jac0(2,0) * jac0(0,2);
-  T0invT(4,5) = jac0(1,0) * jac0(2,2) + jac0(2,0) * jac0(1,2);
+  T0invT(5,4) = jac0(1,0) * jac0(2,2) + jac0(2,0) * jac0(1,2);
 
-  T0invT(5,0) = jac0(0,1) * jac0(0,2);
-  T0invT(5,1) = jac0(1,1) * jac0(1,2);
-  T0invT(5,2) = jac0(2,1) * jac0(2,2);
-  T0invT(5,3) = jac0(0,1) * jac0(1,2) + jac0(1,1) * jac0(0,2);
-  T0invT(5,4) = jac0(0,1) * jac0(2,2) + jac0(2,1) * jac0(0,2);
+  T0invT(0,5) = jac0(0,1) * jac0(0,2);
+  T0invT(1,5) = jac0(1,1) * jac0(1,2);
+  T0invT(2,5) = jac0(2,1) * jac0(2,2);
+  T0invT(3,5) = jac0(0,1) * jac0(1,2) + jac0(1,1) * jac0(0,2);
+  T0invT(4,5) = jac0(0,1) * jac0(2,2) + jac0(2,1) * jac0(0,2);
   T0invT(5,5) = jac0(1,1) * jac0(2,2) + jac0(2,1) * jac0(1,2);
   
   // now evaluate T0^{-T} with solver
   Epetra_SerialDenseSolver solve_for_inverseT0;
   solve_for_inverseT0.SetMatrix(T0invT);
-  solve_for_inverseT0.SolveWithTranspose(true);
+//  solve_for_inverseT0.SolveWithTranspose(true);
   solve_for_inverseT0.Invert();
+//  T0invT.SetUseTranspose(true);
   
+  // cout << "invT0 " << T0invT;
   // build EAS interpolation matrix M, evaluated at the 8 GPs of so_hex8
   static Epetra_SerialDenseMatrix M(NUMSTR_SOH8*NUMGPT_SOH8,neas_);
   static bool M_eval;
@@ -178,8 +225,10 @@ void DRT::Elements::So_hex8::soh8_eassetup(
       
       M(i*NUMSTR_SOH8+3,3) = r[i]; M(i*NUMSTR_SOH8+3,4) = s[i];
       M(i*NUMSTR_SOH8+4,5) = s[i]; M(i*NUMSTR_SOH8+4,6) = t[i];
-      M(i*NUMSTR_SOH8+5,7) = r[i]; M(i*NUMSTR_SOH8+3,8) = t[i];
+      M(i*NUMSTR_SOH8+5,7) = r[i]; M(i*NUMSTR_SOH8+5,8) = t[i];
     }
+    
+    //cout << "M " << M;
 
     // return adress of just evaluated matrix
     *M_GP = &M;            // return adress of static object to target of pointer

@@ -309,9 +309,39 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
   Epetra_SerialDenseMatrix Kda;     // EAS matrix Kda
   double detJ0;                     // detJ(origin)
   Epetra_SerialDenseMatrix T0invT;  // trafo matrix
+  Epetra_SerialDenseMatrix* oldfeas;   // EAS history 
+  Epetra_SerialDenseMatrix* oldKaainv; // EAS history
+  Epetra_SerialDenseMatrix* oldKda;    // EAS history
   if (eastype_ != soh8_easnone) {
-    // get stored EAS alphas (history variables)
-    alpha = data_.Get<Epetra_SerialDenseMatrix>("alpha");
+    /*
+    ** EAS Update of alphas:
+    ** the current alphas are (re-)evaluated out of
+    ** Kaa and Kda of previous step to avoid additional element call.
+    ** This corresponds to the (innermost) element update loop
+    ** in the nonlinear FE-Skript page 120 (load-control alg. with EAS)
+    */
+    //(*alpha).Shape(neas_,1);
+    alpha = data_.Get<Epetra_SerialDenseMatrix>("alpha");   // get old alpha
+//    // evaluate current (updated) EAS alphas (from history variables)
+//    soh8_easupdate(alpha,disp,residual);
+    // get stored EAS history
+    //(*oldfeas).Shape(neas_,1);
+    //(*oldKaainv).Shape(neas_,neas_);
+    //(*oldKda).Shape(neas_,NUMDOF_SOH8);
+    oldfeas = data_.Get<Epetra_SerialDenseMatrix>("feas");
+    oldKaainv = data_.Get<Epetra_SerialDenseMatrix>("invKaa");
+    oldKda = data_.Get<Epetra_SerialDenseMatrix>("Kda");
+    if (!alpha || !oldKaainv || !oldKda || !oldfeas) dserror("Missing EAS history-data");
+  
+    // we need the displacement at the previous step
+    Epetra_SerialDenseVector old_d(NUMDOF_SOH8);
+    for (int i=0; i<NUMDOF_SOH8; ++i) old_d(i) = disp[i] - residual[i];
+  
+    // add Kda . old_d to feas
+    (*oldfeas).Multiply('N','N',1.0,(*oldKda),old_d,1.0);
+    // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
+    (*alpha).Multiply('N','N',-1.0,(*oldKaainv),(*oldfeas),1.0);
+    /* end of EAS Update ******************/
 
     // EAS portion of internal forces, also called enhacement vector s or Rtilde
     feas.Size(neas_);
@@ -328,9 +358,9 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     T0invT.Shape(NUMSTR_SOH8,NUMSTR_SOH8);
 
     /* evaluation of EAS variables (which are constant for the following):
-    ** - M defining interpolation of enhanced strains alpha, evaluated at GPs
-    ** - determinant of Jacobi matrix at element origin (r=s=t=0.0)
-    ** - T0^{-T}
+    ** -> M defining interpolation of enhanced strains alpha, evaluated at GPs
+    ** -> determinant of Jacobi matrix at element origin (r=s=t=0.0)
+    ** -> T0^{-T}
     */
     soh8_eassetup(&M_GP,detJ0,T0invT,xrefe);
   } // -------------------------------------------------------------------- EAS
@@ -406,9 +436,10 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
       }
       // map local M to global, also enhancement is refered to element origin
       // M = detJ0/detJ T0^{-T} . M
-      M.Multiply('N','N',detJ0/detJ,T0invT,M,0.0);
+      Epetra_SerialDenseMatrix Mtemp(M); // temp M for Matrix-Matrix-Product
+      M.Multiply('N','N',detJ0/detJ,T0invT,Mtemp,0.0);
       // add enhanced strains = M . alpha to GL strains to "unlock" element
-      glstrain.Multiply('N','N',1.0,M,(*alpha),0.0);
+      glstrain.Multiply('N','N',1.0,M,(*alpha),1.0);
     } // ------------------------------------------------------------------ EAS
 
 
@@ -541,18 +572,29 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     // EAS-internal force is: fint - Kda^T . Kaa^-1 . feas
     (*force).Multiply('N','N',-1.0,KdaKaa,feas,1.0);
 
-    // evaluate new alpha in the following
-    Epetra_SerialDenseMatrix alphanew(neas_,1);
-    // first we need delta_d
-    Epetra_SerialDenseVector delta_d(NUMDOF_SOH8);
-    for (int i=0; i<NUMDOF_SOH8; ++i) delta_d(i) = disp[i] - residual[i];
-    // add Kda . delta_d to feas
-    feas.Multiply('N','N',1.0,Kda,delta_d,1.0);
-    // new alpha is: - Kaa^-1 . (feas + Kda . delta_d), here: - Kaa^-1 . feas
-    alphanew.Multiply('N','N',-1.0,Kaa,feas,0.0);
+    // store current EAS data in history
+    for (int i=0; i<neas_; ++i)
+    {
+      for (int j=0; j<neas_; ++j) (*oldKaainv)(i,j) = Kaa(i,j);
+      for (int j=0; j<NUMDOF_SOH8; ++j) (*oldKda)(i,j) = Kda(i,j);
+      (*oldfeas)(i,0) = feas(i);
+    }
 
-    // update EAS alphas
-    data_.Add("alpha",alphanew);
+    
+//    // evaluate new alpha in the following
+//    Epetra_SerialDenseMatrix alphanew(neas_,1);
+//    // first we need delta_d
+//    Epetra_SerialDenseVector delta_d(NUMDOF_SOH8);
+//    for (int i=0; i<NUMDOF_SOH8; ++i) delta_d(i) = disp[i] - residual[i];
+//    // add Kda . delta_d to feas
+//    feas.Multiply('N','N',1.0,Kda,delta_d,1.0);
+//    // new alpha is: - Kaa^-1 . (feas + Kda . delta_d), here: - Kaa^-1 . feas
+//    alphanew.Multiply('N','N',-1.0,Kaa,feas,0.0);
+//    
+//    cout << "alphanew " << alphanew;
+//    
+//    // update EAS alphas
+//    data_.Add("alpha",alphanew);
   } // -------------------------------------------------------------------- EAS
 
 
