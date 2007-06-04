@@ -21,7 +21,7 @@ Maintainer: Ulrich Kuettler
 #ifdef RESULTTEST
 #ifdef D_FLUID
 
-#include "drt_resulttest.H"
+#include "../drt_lib/drt_resulttest.H"
 #include "fluidimplicitintegration.H"
 
 /*!
