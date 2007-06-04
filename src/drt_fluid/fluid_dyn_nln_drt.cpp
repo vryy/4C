@@ -31,7 +31,7 @@ Maintainer: Peter Gamnitzer
 
 #include "fluid_dyn_nln_drt.H"
 #include "fluidimplicitintegration.H"
-#include "drt_resulttest.H"
+#include "../drt_lib/drt_resulttest.H"
 #include "fluidresulttest.H"
 
 
@@ -82,6 +82,18 @@ extern struct _SOLVAR  *solv;
  *----------------------------------------------------------------------*/
 extern ALLDYNA      *alldyn;
 
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 02/02    |
+ | number of load curves numcurve                                       |
+ | vector of structures of curves                                       |
+ | defined in input_curves.c                                            |
+ | INT                   numcurve;                                      |
+ | struct _CURVE      *curve;                                           |
+ *----------------------------------------------------------------------*/
+extern INT            numcurve;
+extern struct _CURVE *curve;
+
+
 
 
 /*----------------------------------------------------------------------*
@@ -109,7 +121,7 @@ void dyn_fluid_drt()
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
-  // -------------------------------------------------------------------
+  // -------------------------------------------------------------------  
   if (!actdis->Filled()) actdis->FillComplete();
 
 
@@ -127,6 +139,15 @@ void dyn_fluid_drt()
   FLUID_DYNAMIC *fdyn     = alldyn[0].fdyn;
   fdyn->step              =   0;
   fdyn->acttime           = 0.0;
+
+  // -------------------------------------------------------------------
+  // init all applied time curves
+  // -------------------------------------------------------------------
+  for (int actcurve=0; actcurve<numcurve; actcurve++)
+  {
+   /* the last three parameters are obsolete!!! */
+   dyn_init_curve(actcurve,fdyn->step,fdyn->dt,fdyn->maxtime);
+  }
 
   // -------------------------------------------------------------------
   // create a solver
@@ -172,10 +193,10 @@ void dyn_fluid_drt()
   //--------------------------------------------------
   // evaluate error for test flows with analytical solutions
   fluidtimeparams.set                  ("eval err for analyt sol"   ,fdyn->init);
-
-
+  
+  
   //--------------------------------------------------
-  // create all vectors and variables associated with the time
+  // create all vectors and variables associated with the time 
   // integration (call the constructor)
   // the only parameter from the list required here is the number of
   // velocity degrees of freedom

@@ -124,10 +124,12 @@ OBJS_DRT      = \
                 src/drt_lib/linalg_solver.o \
                 src/drt_lib/linalg_solver_spooles.o \
                 src/drt_lib/stru_genalpha_drt.o\
-                src/drt_lib/stru_static_drt.o \
-                src/drt_lib/fluid_dyn_nln_drt.o \
-                src/drt_lib/fluidimplicitintegration.o \
-                src/drt_lib/fluidresulttest.o
+                src/drt_lib/stru_static_drt.o
+# --------------------------------------------------- drt version of fluid
+OBJS_DRT_FLUID= src/drt_fluid/fluid_dyn_nln_drt.o \
+		src/drt_fluid/fluidimplicitintegration.o \
+		src/drt_fluid/fluidresulttest.o
+# ----------------------------- drt version of fluid structure interaction
 OBJS_DRT_FSI  = src/drt_fsi/ale_dyn.o \
                 src/drt_fsi/fsi_ale.o \
                 src/drt_fsi/fsi_dyn.o \

@@ -5,7 +5,7 @@
 #ifndef FSI_FLUID_H
 #define FSI_FLUID_H
 
-#include "../drt_lib/fluidimplicitintegration.H"
+#include "../drt_fluid/fluidimplicitintegration.H"
 
 namespace FSI {
 

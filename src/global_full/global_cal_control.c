@@ -69,7 +69,7 @@ extern struct _FIELD      *sm_field;
 /* header for DRT style input */
 #ifdef CCADISCRET
 #include "../drt_lib/global_inp_control2.H"
-#include "../drt_lib/fluid_dyn_nln_drt.H"
+#include "../drt_fluid/fluid_dyn_nln_drt.H"
 #include "../drt_fsi/ale_dyn.H"
 #include "../drt_fsi/fsi_dyn.H"
 #endif

@@ -27,9 +27,9 @@ Maintainer: Peter Gamnitzer
 
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
-#include "drt_discret.H"
-#include "linalg_solver.H"
-#include "linalg_utils.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/linalg_solver.H"
+#include "../drt_lib/linalg_utils.H"
 #include "../io/io_drt.H"
 
 #include "Epetra_Vector.h"
@@ -48,7 +48,7 @@ extern "C" /* stuff which is c and is accessed from c++ */
 #include "../fluid_full/fluid_prototypes.h"
 }
 
-#include "dstrc.H" /* needs standardtypes.h */
+#include "../drt_lib/dstrc.H" /* needs standardtypes.h */
 
 using namespace std;
 using namespace Teuchos;
