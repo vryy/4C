@@ -210,29 +210,50 @@ void DRT::Elements::So_hex8::soh8_eassetup(
     const double t[NUMGPT_SOH8] = {-gploc,-gploc,-gploc,-gploc, gploc, gploc, gploc, gploc};
 
     // fill up M at each gp
-    /* THIS is the EAS interpolation of 9 modes, based on
-    **            r 0 0   0 0 0 0 0 0
-    **            0 s 0   0 0 0 0 0 0
-    **    M =     0 0 t   0 0 0 0 0 0
-    **            0 0 0   r s 0 0 0 0
-    **            0 0 0   0 0 s t 0 0 
-    **            0 0 0   0 0 0 0 r t 
-    */
-    for (int i=0; i<NUMGPT_SOH8; ++i) {
-      M(i*NUMSTR_SOH8+0,0) = r[i];
-      M(i*NUMSTR_SOH8+1,1) = s[i];
-      M(i*NUMSTR_SOH8+2,2) = t[i];
-      
-      M(i*NUMSTR_SOH8+3,3) = r[i]; M(i*NUMSTR_SOH8+3,4) = s[i];
-      M(i*NUMSTR_SOH8+4,5) = s[i]; M(i*NUMSTR_SOH8+4,6) = t[i];
-      M(i*NUMSTR_SOH8+5,7) = r[i]; M(i*NUMSTR_SOH8+5,8) = t[i];
-    }
+    if (eastype_ == soh8_easmild) {
+      /* easmild is the EAS interpolation of 9 modes, based on
+      **            r 0 0   0 0 0 0 0 0
+      **            0 s 0   0 0 0 0 0 0
+      **    M =     0 0 t   0 0 0 0 0 0
+      **            0 0 0   r s 0 0 0 0
+      **            0 0 0   0 0 s t 0 0 
+      **            0 0 0   0 0 0 0 r t 
+      */
+      for (int i=0; i<NUMGPT_SOH8; ++i) {
+        M(i*NUMSTR_SOH8+0,0) = r[i];
+        M(i*NUMSTR_SOH8+1,1) = s[i];
+        M(i*NUMSTR_SOH8+2,2) = t[i];
+        
+        M(i*NUMSTR_SOH8+3,3) = r[i]; M(i*NUMSTR_SOH8+3,4) = s[i];
+        M(i*NUMSTR_SOH8+4,5) = s[i]; M(i*NUMSTR_SOH8+4,6) = t[i];
+        M(i*NUMSTR_SOH8+5,7) = r[i]; M(i*NUMSTR_SOH8+5,8) = t[i];
+      }
     
-    //cout << "M " << M;
-
-    // return adress of just evaluated matrix
-    *M_GP = &M;            // return adress of static object to target of pointer
-    M_eval = true;         // now the array is filled statically
+      // return adress of just evaluated matrix
+      *M_GP = &M;            // return adress of static object to target of pointer
+      M_eval = true;         // now the array is filled statically
+    } else if (eastype_ == soh8_easfull) {
+      /* easfull is the EAS interpolation of 21 modes, based on
+      **            r 0 0   0 0 0 0 0 0   0  0  0  0  0  0   rs rt 0  0  0  0  
+      **            0 s 0   0 0 0 0 0 0   0  0  0  0  0  0   0  0  rs st 0  0  
+      **    M =     0 0 t   0 0 0 0 0 0   0  0  0  0  0  0   0  0  0  0  rt st 
+      **            0 0 0   r s 0 0 0 0   rt st 0  0  0  0   0  0  0  0  0  0
+      **            0 0 0   0 0 s t 0 0   0  0  rs st 0  0   0  0  0  0  0  0
+      **            0 0 0   0 0 0 0 r t   0  0  0  0  rs rt  0  0  0  0  0  0 
+      */
+      for (int i=0; i<NUMGPT_SOH8; ++i) {
+        M(i*NUMSTR_SOH8+0,0) = r[i];        M(i*NUMSTR_SOH8+0,15) = r[i]*s[i]; M(i*NUMSTR_SOH8+0,16) = r[i]*t[i];
+        M(i*NUMSTR_SOH8+1,1) = s[i];        M(i*NUMSTR_SOH8+1,17) = r[i]*s[i]; M(i*NUMSTR_SOH8+1,18) = s[i]*t[i];
+        M(i*NUMSTR_SOH8+2,2) = t[i];        M(i*NUMSTR_SOH8+2,19) = r[i]*t[i]; M(i*NUMSTR_SOH8+2,20) = s[i]*t[i];
+        
+        M(i*NUMSTR_SOH8+3,3) = r[i]; M(i*NUMSTR_SOH8+3,4) = s[i];   M(i*NUMSTR_SOH8+3, 9) = r[i]*t[i]; M(i*NUMSTR_SOH8+3,10) = s[i]*t[i];
+        M(i*NUMSTR_SOH8+4,5) = s[i]; M(i*NUMSTR_SOH8+4,6) = t[i];   M(i*NUMSTR_SOH8+4,11) = r[i]*s[i]; M(i*NUMSTR_SOH8+4,12) = s[i]*t[i];
+        M(i*NUMSTR_SOH8+5,7) = r[i]; M(i*NUMSTR_SOH8+5,8) = t[i];   M(i*NUMSTR_SOH8+5,13) = r[i]*s[i]; M(i*NUMSTR_SOH8+5,14) = r[i]*t[i];
+      }
+      // return adress of just evaluated matrix      
+      *M_GP = &M;            // return adress of static object to target of pointer
+      M_eval = true;         // now the array is filled statically
+    } else dserror("eastype not implemented");
   }
 } // end of soh8_eassetup
   
