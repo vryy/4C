@@ -271,7 +271,7 @@ void inpfield_ccadiscret_jumbo()
     inpdis(&(field[genprob.numsf]));
 
     DRT::NodeReader nodereader(comm, "--NODE COORDS");
-    nodereader.AddElementReader(rcp(new DRT::ElementReader("Structure", genprob.numsf, comm, "--STRUCTURE ELEMENTS")));
+    nodereader.AddElementReader(rcp(new DRT::ElementReader("Macro Structure", genprob.numsf, comm, "--STRUCTURE ELEMENTS")));
     nodereader.Read();
 
     DRT::NodeReader micronodereader(comm, "--MICROSTRUCTURE NODE COORDS");

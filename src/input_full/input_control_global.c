@@ -249,10 +249,16 @@ dstrc_enter("inpctr");
    }
 #endif
 
+   /* for multi-scale (structure) */
    case prb_struct_multi:
    {
-     printf("Input of solver data for multi-scale problem still missing!");
-     break;
+    if (genprob.numfld!=1) dserror("numfld != 1 for Structural Multi-Scale Problem");
+
+      solv = (SOLVAR*)CCACALLOC(genprob.numfld,sizeof(SOLVAR));
+
+      solv[genprob.numsf].fieldtyp = structure;
+      inpctrsol(&(solv[genprob.numsf]));
+      break;
    }
 
    default:
