@@ -12,7 +12,7 @@ OBJ_IF=0
 OBJECTS="\$(OBJS_MAIN) \$(OBJS_GLOBAL) \$(OBJS_GLOBAL_CPP) \$(OBJS_SOLVER) \$(OBJS_SOLVER_CPP) \
 \$(OBJS_DRT) \$(OBJS_DRT_LIB) \$(OBJS_PSS) \$(OBJS_PSS_CPP) \$(OBJS_INPUT) \$(OBJS_INPUT_CPP) \$(OBJS_PAR) \$(OBJS_MATH) \
 \$(OBJS_OUTPUT) \$(OBJS_FORTRAN) \$(OBJS_VISUAL) \$(OBJS_STRUCTURE) \$(OBJS_IO) \$(OBJS_IO_LIB) \
-\$(OBJS_DRT_FSI)"
+\$(OBJS_DRT_FSI) \$(OBJS_DRT_FLUID)"
 
 # ALE
 if grep '^[[:blank:]]*D_ALE' "$definefile" 2>&1 > /dev/null ; then
@@ -42,7 +42,7 @@ fi
 # FLUID2
 if grep '^[[:blank:]]*D_FLUID2' "$definefile" 2>&1 > /dev/null ; then
     if [ "x$OBJ_FLUID" = "x0" ] ; then
-        OBJECTS="$OBJECTS \$(OBJS_FLUID2) \$(OBJS_FLUID) \$(OBJS_DRT_FLUID) \$(OBJS_DRT_F2) \$(OBJS_DRT_F2_LIB)"
+        OBJECTS="$OBJECTS \$(OBJS_FLUID2) \$(OBJS_FLUID) \$(OBJS_DRT_F2) \$(OBJS_DRT_F2_LIB)"
         DEFINES="$DEFINES -DD_FLUID"
         OBJ_FLUID=1
     else

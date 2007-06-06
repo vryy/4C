@@ -19,7 +19,6 @@ Maintainer: Peter Gamnitzer
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
-#ifdef D_FLUID
 
 #include "fluidimplicitintegration.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
@@ -1402,6 +1401,5 @@ FluidImplicitTimeInt::~FluidImplicitTimeInt()
 }// FluidImplicitTimeInt::~FluidImplicitTimeInt::
 
 
-#endif /* D_FLUID          */
 #endif /* TRILINOS_PACKAGE */
 #endif /* CCADISCRET       */

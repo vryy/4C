@@ -21,6 +21,8 @@ Maintainer: Michael Gee
 #include "drt_discret.H"
 #include "drt_utils.H"
 
+#include "../headers/define_sizes.h"
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/

@@ -19,6 +19,7 @@ Maintainer: Peter Gamnitzer
 #include "drt_discret.H"
 #include "drt_utils.H"
 
+#include "../headers/define_sizes.h"
 
 
 
@@ -83,7 +84,7 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const Discretization& dis, const int 
 
   map<int,int> nidx;
   Utils::AllreduceEMap(nidx, *dis.NodeRowMap());
-  
+
   // build a redundant that holds all the node's numdof
   vector<int> sredundantnodes(dis.NumGlobalNodes());
   fill(sredundantnodes.begin(), sredundantnodes.end(), 0);
@@ -113,7 +114,7 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const Discretization& dis, const int 
         curr != perbndcouples_->end();
         ++curr )
     {
-        
+
       if(!dis.NodeColMap()->MyGID(curr->first))
       {
         dserror("master not ghosted on proc but in connectivity");
@@ -123,7 +124,7 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const Discretization& dis, const int 
           slave!=curr->second.end();
           ++slave)
       {
-#ifdef DEBUG        
+#ifdef DEBUG
         if((!dis.NodeColMap()->MyGID(*slave)) &&
            (dis.NodeRowMap()->MyGID(curr->first)))
         {
@@ -132,12 +133,12 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const Discretization& dis, const int 
           cout << string;
           dserror(string);
         }
-#endif        
+#endif
         // get the number of dofs associated with this slave
         int numdf = sredundantnodes[nidx[*slave]];
         // reset them to zero
         sredundantnodes[nidx[*slave]] =0;
-        // reduce the number of local degrees of freedom 
+        // reduce the number of local degrees of freedom
         lnumdof-=numdf;
       }
     }
@@ -214,7 +215,7 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const Discretization& dis, const int 
         ++master )
     {
 
-      
+
       int master_lid=dis.NodeColMap()->LID(master->first);
 
       if(master_lid<0)
@@ -222,7 +223,7 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const Discretization& dis, const int 
         dserror("master not on proc\n");
       }
 
-      
+
       for(vector<int>::iterator slave=master->second.begin();
           slave!=master->second.end();
           ++slave)
@@ -236,7 +237,7 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const Discretization& dis, const int 
         }
         else
         {
-#ifdef DEBUG          
+#ifdef DEBUG
           if(dis.NodeRowMap()->MyGID(master->first))
           {
             dserror("slave not on proc but master owned by proc\n");
@@ -332,7 +333,7 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const Discretization& dis, const int 
   sredundantelements.clear();
   rredundantelements.clear();
   eidx.clear();
-  
+
   // Now finally we have everything in place to build the maps.
 
   dofrowmap_ = rcp(new Epetra_Map(-1,localrowdofs.size(),&localrowdofs[0],0,dis.Comm()));
