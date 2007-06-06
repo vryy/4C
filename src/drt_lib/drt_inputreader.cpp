@@ -229,7 +229,7 @@ void DatFileReader::ReadDat()
     // There are no char based functions available! Do it by hand!
     //comm_->Broadcast(&inputfile_[0],arraysize,0);
 
-    const Epetra_MpiComm& mpicomm = dynamic_cast<const Epetra_MpiComm&>(comm_);
+    const Epetra_MpiComm& mpicomm = dynamic_cast<const Epetra_MpiComm&>(*comm_);
 
     MPI_Bcast(&inputfile_[0], arraysize, MPI_CHAR, 0, mpicomm.GetMpiComm());
 #else
