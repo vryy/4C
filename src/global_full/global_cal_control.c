@@ -97,9 +97,6 @@ dstrc_enter("ntacal");
 
 #ifndef CCADISCRET /* the 'old' ccarat style discretization management */
   part_fields();
-#else              /* the 'new' DRT discretization management */
-  /* in jumbo mode input we don't need this anymore...*/
-  if (genprob.nnode<=1) distribute_drt_grids();
 #endif
 #ifdef PERF
   perf_end(12);
@@ -198,8 +195,10 @@ if (genprob.multisc_struct == 1)
 locsys_inherit_to_node();
 #endif
 
+#ifndef CCADISCRET
 /*------------------------------------------------ write general output */
 out_general();
+#endif
 /*--------------------------------------------------- write mesh to gid */
 #ifndef CCADISCRET
 if (par.myrank==0 && ioflags.output_gid)

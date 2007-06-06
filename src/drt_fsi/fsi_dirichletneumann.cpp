@@ -3,6 +3,7 @@
 #ifdef TRILINOS_PACKAGE
 
 #include "fsi_dirichletneumann.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*
   |                                                       m.gee 06/01    |
@@ -65,11 +66,8 @@ void FSI::DirichletNeumannCoupling::SetupStructure()
   // access the discretization
   // -------------------------------------------------------------------
   RefCountPtr<DRT::Discretization> actdis = null;
-  {
-    vector<RefCountPtr<DRT::Discretization> >* fool =
-              (vector<RefCountPtr<DRT::Discretization> >*)field[genprob.numsf].ccadis;
-    actdis = (*fool)[0];
-  }
+  actdis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
+
   // set degrees of freedom in the discretization
   if (!actdis->Filled()) actdis->FillComplete();
 
@@ -138,11 +136,7 @@ void FSI::DirichletNeumannCoupling::SetupFluid()
   // access the discretization
   // -------------------------------------------------------------------
   RefCountPtr<DRT::Discretization> actdis = null;
-  {
-    vector<RefCountPtr<DRT::Discretization> >* fool =
-              (vector<RefCountPtr<DRT::Discretization> >*)field[genprob.numff].ccadis;
-    actdis = (*fool)[0];
-  }
+  actdis = DRT::Problem::Instance()->Dis(genprob.numff,0);
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
@@ -226,11 +220,7 @@ void FSI::DirichletNeumannCoupling::SetupAle()
   // access the discretization
   // -------------------------------------------------------------------
   RefCountPtr<DRT::Discretization> actdis = null;
-  {
-    vector<RefCountPtr<DRT::Discretization> >* fool =
-              (vector<RefCountPtr<DRT::Discretization> >*)field[genprob.numaf].ccadis;
-    actdis = (*fool)[0];
-  }
+  actdis = DRT::Problem::Instance()->Dis(genprob.numaf,0);
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization

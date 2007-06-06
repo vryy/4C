@@ -19,6 +19,7 @@
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_solver.H"
 #include "../drt_lib/drt_resulttest.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #include "../io/io_drt.H"
 
@@ -49,6 +50,13 @@ extern struct _SOLVAR  *solv;
  *----------------------------------------------------------------------*/
 extern ALLDYNA      *alldyn;
 
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
 /*!----------------------------------------------------------------------
 \brief file pointers
 
@@ -72,11 +80,7 @@ void dyn_ale_drt()
   // access the discretization
   // -------------------------------------------------------------------
   RefCountPtr<DRT::Discretization> actdis = null;
-  {
-    vector<RefCountPtr<DRT::Discretization> >* fool =
-              (vector<RefCountPtr<DRT::Discretization> >*)field[0].ccadis;
-    actdis = (*fool)[0];
-  }
+  actdis = DRT::Problem::Instance()->Dis(genprob.numaf,0);
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization

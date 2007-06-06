@@ -94,6 +94,7 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/drt_discret_conditions.o \
                 src/drt_lib/drt_discret_partition.o \
                 src/drt_lib/drt_discret_utils.o \
+                src/drt_lib/drt_globalproblem.o \
                 src/drt_lib/drt_element.o \
                 src/drt_lib/drt_elementregister.o \
                 src/drt_lib/drt_node.o \
@@ -115,6 +116,7 @@ OBJS_DRT      = \
                 src/drt_lib/drt_discret_evaluate.o \
                 src/drt_lib/drt_resulttest.o \
                 src/drt_lib/drt_inputreader.o \
+                src/drt_lib/drt_init_control.o \
                 src/drt_lib/drt_timecurve.o \
                 src/drt_lib/global_inp_control2.o \
                 src/drt_lib/global_inp_control3.o \
@@ -151,7 +153,6 @@ OBJS_PSS      = src/pss_full/pss_am.o \
                 src/pss_full/pss_table_iter.o \
                 src/pss_full/pss_set.o \
 		src/pss_full/pss_parser.o
-OBJS_PSS_CPP  = src/pss_full/pss_readdat.o
 #                input_full
 OBJS_INPUT    = src/input_full/input_control_global.o \
                 src/input_full/input_ctr_head.o \

@@ -142,7 +142,7 @@ private:
   //! my discretization
   RefCountPtr<DRT::Discretization> dis_;
 
-  unsigned int disnum_;
+  int disnum_;
   int field_pos_;
   int step_;
   double time_;

@@ -23,6 +23,7 @@ Maintainer: Moritz Frenzel
 
 #include "stru_static_drt.H"
 #include "../io/io_drt.H"
+#include "drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*
  |                                                         maf 05/07    |
@@ -81,11 +82,8 @@ void stru_static_drt()
   // access the discretization
   // -------------------------------------------------------------------
   RefCountPtr<DRT::Discretization> actdis = null;
-  {
-    vector<RefCountPtr<DRT::Discretization> >* fool =
-              (vector<RefCountPtr<DRT::Discretization> >*)field[0].ccadis;
-    actdis = (*fool)[0];
-  }
+  actdis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
+
   // set degrees of freedom in the discretization
   if (!actdis->Filled()) actdis->FillComplete();
 
@@ -168,7 +166,7 @@ void stru_static_drt()
   RefCountPtr<Epetra_Vector> fresm = LINALG::CreateVector(*dofrowmap,false);
 
   if (statvar->nr_controltyp != control_load) dserror("Only load control implemented");
-  
+
   /*
   ** solution control parameters are inherited from dynamic routine:
   ** dt     = stepsize
@@ -177,9 +175,9 @@ void stru_static_drt()
   */
   //------------------------------------------ time integration parameters
   const double dt     = statvar->stepsize;
-  int istep = 0;  
+  int istep = 0;
   double          time = 0.0;  // we should add an input parameter
-  
+
   //-------------------------------- calculate external force distribution
   //---- which is scaled by the load factor lambda (itself stays constant)
   {
@@ -219,11 +217,11 @@ void stru_static_drt()
     //--------------------------------------------------- predicting state
     // constant predictor : displacement in domain
     disn->Update(1.0, *dis, 0.0);
-    
+
     // evaluate/update current load vector for current istep
     // F_ext(istep) += dlambda * F_ext = dt * F_ext
     fextn->Update(dt, *fext, 1.0);
-    
+
     // eval fint and stiffness matrix at current istep
     // and apply new displacements at DBCs
     {
@@ -253,14 +251,14 @@ void stru_static_drt()
     // complete stiffness matrix
     LINALG::Complete(*stiff_mat);
     const int maxentriesperrow = stiff_mat->MaxNumEntries();
-    
+
     double stiffnorm;
     stiffnorm = stiff_mat->NormFrobenius();
 
     // evaluate residual at current istep
     // R{istep,numiter=0} = F_int{istep,numiter=0} - F_ext{istep}
    fresm->Update(1.0,*fint,-1.0,*fextn,0.0);
-    
+
     // blank residual at DOFs on Dirichlet BC
     {
       Epetra_Vector fresmcopy(*fresm);
@@ -281,7 +279,7 @@ void stru_static_drt()
       disi->PutScalar(0.0);   // Useful? depends on solver and more
       LINALG::ApplyDirichlettoSystem(stiff_mat,disi,fresm,zeros,dirichtoggle);
 
-      
+
       // solve for disi
       // Solve K . IncD = -R  ===>  IncD_{n+1}
       if (numiter==0)
@@ -296,7 +294,7 @@ void stru_static_drt()
       // update displacements
       // D_{istep,numiter+1} := D_{istep,numiter} + IncD_{numiter}
       disn->Update(1.0, *disi, 1.0);
-      
+
       // compute internal forces and stiffness at current iterate numiter
       {
         // zero out stiffness
@@ -338,7 +336,7 @@ void stru_static_drt()
 
       fresm->Norm2(&norm);
       // a short message
-      if (!myrank) 
+      if (!myrank)
       {
         printf("numiter %d res-norm %e dis-norm %e\n",numiter+1, norm, disinorm);
         fprintf(errfile,"numiter %d res-norm %e dis-norm %e\n",numiter+1, norm, disinorm);
@@ -353,16 +351,16 @@ void stru_static_drt()
     } //============================================= end equilibrium loop
 
     //-------------------------------- test whether max iterations was hit
-    if (statvar->maxiter == 1 && statvar->nstep == 1) 
+    if (statvar->maxiter == 1 && statvar->nstep == 1)
       printf("computed 1 step with 1 iteration: STATIC LINEAR SOLUTION\n");
     else if (numiter==statvar->maxiter)
       dserror("Newton unconverged in %d iterations",numiter);
-    
+
     //---------------------------- determine new end-quantities and update
     // new displacements at t_{n+1} -> t_n
-    // D_{n} := D_{n+1} 
+    // D_{n} := D_{n+1}
     dis->Update(1.0, *disn, 0.0);
-    
+
     //----- update anything that needs to be updated at the element level
     {
       // create the parameters for the discretization
@@ -411,7 +409,7 @@ void stru_static_drt()
       actdis->Evaluate(params,null,null,null,null,null);
       actdis->ClearState();
     }
-    
+
     //---------------------------------------------------------- print out
     if (!myrank)
     {
@@ -426,8 +424,8 @@ void stru_static_drt()
     }
 
   }  //=============================================end time/loadstep loop
-  
-  
+
+
 
   //----------------------------- this is the end my lonely friend the end
   return;

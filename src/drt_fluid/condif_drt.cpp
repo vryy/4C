@@ -31,6 +31,7 @@ Maintainer: Volker Gravemeier
 
 #include "condif_drt.H"
 #include "condifimplicitintegration.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 
 /*----------------------------------------------------------------------*
@@ -111,15 +112,11 @@ void dyn_condif_drt()
   // access the discretization
   // -------------------------------------------------------------------
   RefCountPtr<DRT::Discretization> actdis = null;
-  {
-    vector<RefCountPtr<DRT::Discretization> >* fool =
-              (vector<RefCountPtr<DRT::Discretization> >*)field[0].ccadis;
-    actdis = (*fool)[0];
-  }
+  actdis = DRT::Problem::Instance()->Dis(0,0);
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
-  // -------------------------------------------------------------------  
+  // -------------------------------------------------------------------
   if (!actdis->Filled()) actdis->FillComplete();
 
 
@@ -185,10 +182,10 @@ void dyn_condif_drt()
   //--------------------------------------------------
   // evaluate error for test flows with analytical solutions
   condiftimeparams.set                  ("eval err for analyt sol"   ,fdyn->init);
-  
-  
+
+
   //--------------------------------------------------
-  // create all vectors and variables associated with the time 
+  // create all vectors and variables associated with the time
   // integration (call the constructor)
   CondifImplicitTimeInt condifimplicit(actdis,
                                       solver,

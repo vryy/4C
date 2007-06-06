@@ -15,6 +15,9 @@ Maintainer: Malte Neumann
 #include "../headers/standardtypes.h"
 #include "../io/io.h"
 
+#ifdef CCADISCRET
+#include "../drt_lib/drt_init_control.H"
+#endif
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -144,10 +147,11 @@ void ntam(
 
 
   /* init devices, tracing, etc...*/
+#ifndef CCADISCRET
   ntaini(argc,argv);
-
-
-
+#else
+  ntaini_ccadiscret(argc,argv);
+#endif
 
   /* input phase, input of all information */
 
@@ -174,10 +178,11 @@ void ntam(
   }
 
 
+#ifndef CCADISCRET
   /* close the input file, delete the copy */
   /* -> You cannot read anything from input file beyond this point */
   frend();
-
+#endif
 
 
   /*-------------------------------------- check for visualisation mode */

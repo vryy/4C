@@ -18,18 +18,12 @@ Maintainer: Michael Gee
  */
 /*----------------------------------------------------------------------*/
 #ifdef __cplusplus
+// Depreciated! Do not use any more!
 class DSTraceHelper
 {
 public:
-#ifdef DEBUG
-  explicit DSTraceHelper(char* functname)
-    { dstrc_enter(functname); }
-  ~DSTraceHelper()
-    { dstrc_exit(); }
-#else
   explicit DSTraceHelper(char* functname)
     {}
-#endif
 };
 #endif
 

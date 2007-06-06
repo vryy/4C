@@ -22,9 +22,9 @@ Maintainer: Ulrich Kuettler
 
 #include "io_drt.H"
 #include "../drt_lib/linalg_utils.H"
-#if 1
 #include "../drt_lib/drt_parobject.H"
-#endif
+#include "../drt_lib/drt_globalproblem.H"
+
 using namespace std;
 
 #ifdef BINIO
@@ -83,18 +83,15 @@ extern CHAR* fieldnames[];
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-static void FindPosition(RefCountPtr<DRT::Discretization> dis, int& field_pos, unsigned int& disnum)
+static void FindPosition(RefCountPtr<DRT::Discretization> dis, int& field_pos, int& disnum)
 {
 #ifdef BINIO
 
-  for (field_pos=0;field_pos<genprob.numfld; ++field_pos)
+  for (field_pos=0; field_pos<genprob.numfld; ++field_pos)
   {
-    vector<RefCountPtr<DRT::Discretization> >* discretizations =
-      static_cast<vector<RefCountPtr<DRT::Discretization> >*>
-      (field[field_pos].ccadis);
-    for (disnum=0;disnum<discretizations->size();++disnum)
+    for (disnum=0; disnum<field[field_pos].ndis; ++disnum)
     {
-      if ((*discretizations)[disnum] == dis)
+      if (DRT::Problem::Instance()->Dis(field_pos,disnum) == dis)
       {
         return;
       }
@@ -154,7 +151,7 @@ MAP *DiscretizationReader::FindResultGroup(int step)
   MAP *result_info = NULL;
   SYMBOL *symbol;
   int field_pos;
-  unsigned disnum;
+  int disnum;
 
   FindPosition(dis_, field_pos, disnum);
 

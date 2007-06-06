@@ -29,6 +29,7 @@ Maintainer: Michael Gee
 #include "Teuchos_RefCountPtr.hpp"
 #include "drt_inputreader.H"
 
+#include "drt_globalproblem.H"
 #include "drt_discret.H"
 #include "drt_exporter.H"
 #include "drt_condition.H"
@@ -71,6 +72,9 @@ void input_design_dsurf_fenode_read(vector<vector<int> >& dsurf_fenode,
 void input_design_dvol_fenode_read(vector<vector<int> >& dvol_fenode,
                                    vector<int>& ndvol_fenode);
 
+void inpfield_ccadiscret(DRT::Problem& problem, const DRT::DatFileReader& reader);
+
+void input_conditions(const DRT::Problem& problem);
 
 #endif /* end of #ifdef __cplusplus */
 
@@ -82,10 +86,7 @@ extern "C"
 {
 #endif
 
-
 void ntainp_ccadiscret();
-void inpfield_ccadiscret_jumbo();
-void input_conditions();
 void distribute_drt_grids();
 void dyn_nlnstructural_drt();
 

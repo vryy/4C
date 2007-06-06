@@ -34,6 +34,7 @@ Maintainer: Peter Gamnitzer
 #include "fluid_genalpha_integration.H"
 #include "../drt_lib/drt_resulttest.H"
 #include "fluidresulttest.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*
   |                                                       m.gee 06/01    |
@@ -113,15 +114,11 @@ void dyn_fluid_drt()
   // access the discretization
   // -------------------------------------------------------------------
   RefCountPtr<DRT::Discretization> actdis = null;
-  {
-    vector<RefCountPtr<DRT::Discretization> >* fool =
-              (vector<RefCountPtr<DRT::Discretization> >*)field[0].ccadis;
-    actdis = (*fool)[0];
-  }
+  actdis = DRT::Problem::Instance()->Dis(genprob.numff,0);
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
-  // -------------------------------------------------------------------  
+  // -------------------------------------------------------------------
   if (!actdis->Filled()) actdis->FillComplete();
 
 
@@ -200,10 +197,10 @@ void dyn_fluid_drt()
     //--------------------------------------------------
     // evaluate error for test flows with analytical solutions
     fluidtimeparams.set                  ("eval err for analyt sol"   ,fdyn->init);
-  
-  
+
+
     //--------------------------------------------------
-    // create all vectors and variables associated with the time 
+    // create all vectors and variables associated with the time
     // integration (call the constructor)
     // the only parameter from the list required here is the number of
     // velocity degrees of freedom
@@ -232,7 +229,7 @@ void dyn_fluid_drt()
     fluidimplicit.Integrate();
 
 
-      
+
     //--------------------------------------------------
     // do the result test
 #ifdef RESULTTEST
@@ -273,9 +270,9 @@ void dyn_fluid_drt()
 
     //------------evaluate error for test flows with analytical solutions
     fluidtimeparams.set                  ("eval err for analyt sol"   ,fdyn->init);
-    
+
     //--------------------------------------------------
-    // create all vectors and variables associated with the time 
+    // create all vectors and variables associated with the time
     // integration (call the constructor)
     // the only parameter from the list required here is the number of
     // velocity degrees of freedom
@@ -283,7 +280,7 @@ void dyn_fluid_drt()
                                          solver,
                                          fluidtimeparams,
                                          output);
-    
+
 
     //------------- initialise the field from input or restart
     if (genprob.restart)
@@ -302,15 +299,17 @@ void dyn_fluid_drt()
 
     //------------------------- do timeintegration till maxtime
     genalphaint.GenAlphaIntegrateTo(fdyn->nstep,fdyn->maxtime);
-    
+
     //--------------------------------------------------
     // do the result test
 #ifdef RESULTTEST
+#if 0
     DRT::ResultTestManager testmanager(actdis->Comm());
     testmanager.AddFieldTest(rcp(new FluidResultTest(genalphaint)));
     testmanager.TestAll();
 #endif
-    
+#endif
+
   }
   else
   {

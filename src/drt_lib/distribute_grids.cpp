@@ -93,6 +93,10 @@ and the type is in partition.h
 *----------------------------------------------------------------------*/
  extern struct _PAR   par;
 
+#if 0
+
+// Obsolete now that we always read in jumbo mode.
+
 /*----------------------------------------------------------------------*
   |                                                        m.gee 10/06  |
   | replace mpi comms in discretizations                                |
@@ -101,8 +105,6 @@ and the type is in partition.h
  *----------------------------------------------------------------------*/
 void distribute_drt_grids()
 {
-  DSTraceHelper dst("distribute_drt_grids");
-
   //the comm in the design can stay MPI_COMM_WORLD
   // get discretizations and replace their comm
   for (int i=0; i<genprob.numfld; ++i)
@@ -153,6 +155,8 @@ void distribute_drt_grids()
 
   return;
 } // void distribute_drt_grids
+
+#endif
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

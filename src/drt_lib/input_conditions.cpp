@@ -114,7 +114,7 @@ static void register_condition(string name,
 /*----------------------------------------------------------------------*
  | input of conditions                                    m.gee 11/06   |
  *----------------------------------------------------------------------*/
-void input_conditions()
+void input_conditions(const DRT::Problem& problem)
 {
   /*---------------------------------------------- input of time curves */
   DRT::TimeCurveManager::Instance().ReadInput();
@@ -140,10 +140,6 @@ void input_conditions()
   frread();
   frint("NDVOL",&ndvol,&ierr);    if (!ierr) dserror("Cannot read design");
   frrewind();
-  //------------------------------- myrank and nproc from discretization
-  vector<RefCountPtr<DRT::Discretization> >* discretization =
-    (vector<RefCountPtr<DRT::Discretization> >*)field[0].ccadis;
-  RefCountPtr<DRT::Discretization> actdis = (*discretization)[0];
   //--------------------------------------------- read generic node sets
   // read design nodes <-> nodes
   vector<int> ndnode_fenode(ndnode);
@@ -240,13 +236,11 @@ void input_conditions()
 
   // Iterate through all discretizations and sort the appropiate condition into
   // the correct discretization it applies to
-  for (int i=0; i<genprob.numfld; i++)
+  for (unsigned i=0; i<problem.NumFields(); ++i)
   {
-    vector<RefCountPtr<DRT::Discretization> >* discretization =
-      (vector<RefCountPtr<DRT::Discretization> >*)field[i].ccadis;
-    for (int j=0;j<field[i].ndis;j++)
+    for (unsigned j=0; j<problem.NumDis(i); ++j)
     {
-      RefCountPtr<DRT::Discretization> actdis = (*discretization)[j];
+      RefCountPtr<DRT::Discretization> actdis = problem.Dis(i,j);
       const Epetra_Map* noderowmap = actdis->NodeRowMap();
 
       register_condition("Dirichlet", "Point Dirichlet", pointdirich, actdis, noderowmap);

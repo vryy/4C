@@ -38,6 +38,103 @@ using namespace Teuchos;
 namespace DRT
 {
 
+
+/*----------------------------------------------------------------------*/
+/// reading, broadcasting and storing of dat file contents
+/*!
+  The normal baci job needs to read one dat file at the beginning of
+  its execution. This file contains all input parameters as well as
+  the meshes and so on and needs to be available on all
+  processors. However, we cannot rely on a shared file system, so only
+  on process (the first one) can do the actual reading. All others
+  need to get the data via MPI communication.
+
+  This class manages the reading and broadcasting of the input
+  file. To do so processor 0 reads the input file line by line and
+  stores all lines in an array. Afterwards these lines are
+  communicated to all other processors, so each processor has an
+  internal copy of the input file and subsequently parses it.  There
+  is one instance of this class during the input phase of baci. When
+  everything is set up properly this instance goes away and the
+  internal copy of the input file vanishes.
+
+  There are two more details to be considered: First we do not want to
+  read all elements and nodes on each processor. So we skip reading
+  these sections here. Elements and nodes are read in parallel by the
+  ElementReader and NodeReader, respectively.
+
+  The second point is that the DatFileReader has to interact with the
+  old ccarat input system. That is once the input file is read you
+  have to Activate() the reader, which publishes some internal data of
+  the DatFileReader to the ccarat input system. After that the old fr*
+  functions can be used to read as long as the DatFileReader object is
+  alive. You must not read anymore once the active DatFileReader
+  object has been destroyed!
+
+  The point of having this reader is to allow for special problem
+  types that need to read more that one dat file. (Scary!) This can be
+  done be creating a new (additional) reader to read the additional
+  file.
+
+  \author u.kue
+  \date 06/07
+ */
+/*----------------------------------------------------------------------*/
+class DatFileReader
+{
+public:
+
+  /// construct a reader for a given file
+  DatFileReader(string filename, RefCountPtr<Epetra_Comm> comm);
+
+  /// Publish (some) internal data to the old ccarat reading system
+  /*!
+    Note that these links remain intact even when the reader goes
+    away. So you have to be careful not to use the ccarat reading
+    functions any more once the active reader is gone.
+  */
+  void Activate();
+
+  /// get file position of excluded section
+  /*!
+    The big sections (nodes and elements) are excluded from general
+    read so that we can read them in parallel. This is done using the
+    NodeReader and the ElementReader.
+   */
+  ifstream::pos_type ExcludedSectionPosition(string section) const { return positions_.find(section)->second; }
+
+  /// return my communicator
+  RefCountPtr<Epetra_Comm> Comm() const { return comm_; }
+
+private:
+
+  /// actual read dat file, store and broadcast general sections
+  void ReadDat();
+
+  /// dump input file contents to error file
+  void DumpInput();
+
+  /// input file name
+  string filename_;
+
+  /// my communicator
+  RefCountPtr<Epetra_Comm> comm_;
+
+  /// number of lines
+  int numrows_;
+
+  /// the whole input file, lines separated by 0
+  vector<char> inputfile_;
+
+  /// pointers to line beginnings
+  vector<char*> lines_;
+
+  /// file positions of skipped sections
+  map<string,ifstream::pos_type> positions_;
+
+};
+
+
 /*----------------------------------------------------------------------*/
 /*!
   \brief helper class to read the elements of a discretization
@@ -83,15 +180,14 @@ public:
   /*!
     Create empty discretization and append it to given field.
 
-    \param name (i) name of the new discretization
-    \param pos (i) number of the field the discretization belongs to
+    \param dis (i) the new discretization
     \param comm (i) our communicator
     \param sectionname (i) the section that contains the element lines
    */
-  ElementReader(string name, int pos, RefCountPtr<Epetra_Comm> comm, string sectionname);
+  ElementReader(RefCountPtr<Discretization> dis, const DRT::DatFileReader& reader, string sectionname);
 
   /// give the discretization this reader fills
-  RefCountPtr<DRT::Discretization> Discretization() const { return dis_; }
+  RefCountPtr<Discretization> MyDis() const { return dis_; }
 
 private:
 
@@ -110,6 +206,9 @@ private:
 
   /// discretization name
   string name_;
+
+  /// the main dat file reader
+  const DRT::DatFileReader& reader_;
 
   /// my comm
   RefCountPtr<Epetra_Comm> comm_;
@@ -156,7 +255,7 @@ class NodeReader
 public:
 
   /// construct a reader that reads a given section
-  NodeReader(RefCountPtr<Epetra_Comm> comm, string sectionname);
+  NodeReader(const DRT::DatFileReader& reader, string sectionname);
 
   /// add an element reader for each discretization
   /*!
@@ -192,6 +291,9 @@ private:
 
   /// find the discretization that contains the given node
   RefCountPtr<DRT::Discretization> FindDisNode(int nodeid);
+
+  /// the main dat file reader
+  const DRT::DatFileReader& reader_;
 
   /// my comm
   RefCountPtr<Epetra_Comm> comm_;

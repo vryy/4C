@@ -43,11 +43,6 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 extern struct _FILES  allfiles;
 
 
-/* c++ function to read the input file. Ways easier that the stuff
- * below. */
-unsigned ReadDat(char* filename);
-
-
 /* Very simple stack used to include files. */
 
 #ifndef INCLUDE_STACK_DEPTH
@@ -85,7 +80,7 @@ INT     i=0;
 
 #ifdef CCADISCRET
   /* Use the new reading facility for new discretization. */
-  ReadDat(allfiles.inputfile_name);
+dserror("No, you should not end up here. Something got confused.");
 #else
 
 INT     linecount=0;

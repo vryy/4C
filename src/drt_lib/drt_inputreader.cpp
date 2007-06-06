@@ -50,44 +50,256 @@ extern struct _FIELD      *field;
  *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
 
+
 /*----------------------------------------------------------------------*/
 /*!
-  \brief Section start positions of excluded section in input file
+  \brief remove all leading and trailing whitespaces from a string.
 
-  Another global variable!
+  Note: consecutive whitespaces inside the string will be reduced to a
+  single space.
 
   \author u.kue
   \date 03/07
- */
+*/
 /*----------------------------------------------------------------------*/
-extern map<string,ifstream::pos_type> ExcludedSectionPositions;
+static std::string trim(const std::string& line)
+{
+  std::istringstream t;
+  std::string s;
+  std::string newline;
+  t.str(line);
+  while (t >> s)
+  {
+    newline.append(s);
+    newline.append(" ");
+  }
+  if (newline.size()>0)
+    newline.resize(newline.size()-1);
+  return newline;
+}
 
 
 namespace DRT
 {
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-ElementReader::ElementReader(string name,
-                             int pos,
-                             RefCountPtr<Epetra_Comm> comm,
-                             string sectionname)
-  : name_(name), comm_(comm), sectionname_(sectionname),
-    dis_(rcp(new DRT::Discretization(name,comm)))
-{
-  vector<RefCountPtr<DRT::Discretization> >* discretization;
 
-  // We can test for NULL because the field variable was allocated by CCACALLOC.
-  if (field[pos].ccadis==NULL)
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+DatFileReader::DatFileReader(string filename, RefCountPtr<Epetra_Comm> comm)
+  : filename_(filename), comm_(comm)
+{
+  ReadDat();
+  DumpInput();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DatFileReader::Activate()
+{
+  // Publish (some) internal data to the old ccarat reading system
+  // Note that these links remain intact even when the reader goes
+  // away.
+
+  allfiles.numrows = numrows_;
+  allfiles.input_file_hook = &inputfile_[0];
+  allfiles.input_file = &lines_[0];
+  //allfiles.inputfile_name = const_cast<char*>(filename_.c_str());
+
+  // set fr-system to begin of input_file
+  allfiles.actrow = 0;
+  allfiles.actplace = &(allfiles.input_file[0][0]);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DatFileReader::ReadDat()
+{
+  vector<string> exclude;
+
+  exclude.push_back("--NODE COORDS");
+  exclude.push_back("--STRUCTURE ELEMENTS");
+  exclude.push_back("--FLUID ELEMENTS");
+  exclude.push_back("--ALE ELEMENTS");
+
+  int arraysize = 0;
+
+  if (comm_->MyPID()==0)
   {
-    discretization = new vector<RefCountPtr<DRT::Discretization> >();
-    field[pos].ccadis = (void*)discretization;
+    ifstream file(filename_.c_str());
+    list<string> content;
+    bool ignoreline = false;
+    string line;
+
+    // loop all input lines
+    while (getline(file, line))
+    {
+      // remove comments
+      string::size_type loc = line.find("//");
+      if (loc != string::npos)
+      {
+        line = line.substr(0,loc);
+      }
+
+      // remove trailing and leading whitespaces
+      // compact internal whitespaces
+      line = trim(line);
+
+      // exclude all special sections
+      // this includes the section header and all lines in that section
+      if (ignoreline)
+      {
+        if (line.find("--")==0)
+        {
+          ignoreline = false;
+        }
+      }
+
+      // Two sections to be ignored can follow each other. We need
+      // independent tests.
+      if (!ignoreline)
+      {
+        for (vector<int>::size_type i=0; i<exclude.size(); ++i)
+        {
+          if (line.find(exclude[i]) != string::npos)
+          {
+            positions_[exclude[i]] = file.tellg();
+            ignoreline = true;
+            break;
+          }
+        }
+      }
+
+      // remember line
+      if (!ignoreline && line.length() > 0)
+      {
+        content.push_back(line);
+        arraysize += line.length()+1;
+      }
+    }
+
+    // setup global variables
+    numrows_ = static_cast<int>(content.size());
+
+    // allocate space for copy of file
+    inputfile_.resize(arraysize);
+
+    // CAUTION: We allocate one more row pointer that necessary. This
+    // pointer will be used to point to temporary lines when the
+    // excluded section are read (on proc 0). Of course that's just
+    // another EVIL HACK. Don't tell anybody.
+    lines_.reserve(numrows_+1);
+
+    // fill file buffer
+    char* ptr = &inputfile_[0];
+    for (list<string>::iterator i=content.begin(); i!=content.end(); ++i)
+    {
+      strcpy(ptr,i->c_str());
+      lines_.push_back(ptr);
+      ptr += i->length()+1;
+    }
+
+    if (ptr - &inputfile_[0] != static_cast<int>(arraysize))
+      dserror("internal error in file read");
+
+    // add the slot for the temporary line...
+    lines_.push_back(NULL);
   }
-  else
+
+  // Now lets do all the parallel setup. Afterwards all processors
+  // have to be the same.
+
+  if (comm_->NumProc()>1)
   {
-    discretization = (vector<RefCountPtr<DRT::Discretization> >*)field[pos].ccadis;
+    /* Now that we use a variable number of bytes per line we have to
+     * communicate the buffer size as well. */
+    comm_->Broadcast(&arraysize,1,0);
+    comm_->Broadcast(&numrows_,1,0);
+
+    if (comm_->MyPID()>0)
+    {
+      /*--------------------------------------allocate space for copy of file */
+      inputfile_.resize(arraysize);
+      lines_.reserve(numrows_+1);
+    }
+
+#ifdef PARALLEL
+
+    // There are no char based functions available! Do it by hand!
+    //comm_->Broadcast(&inputfile_[0],arraysize,0);
+
+    const Epetra_MpiComm& mpicomm = dynamic_cast<const Epetra_MpiComm&>(comm_);
+
+    MPI_Bcast(&inputfile_[0], arraysize, MPI_CHAR, 0, mpicomm.GetMpiComm());
+#else
+    dserror("How did you get here? Go away!");
+#endif
+
+    /* We have not yet set the row pointers on procs > 0. So do it now. */
+    if (comm_->MyPID()>0)
+    {
+      lines_.push_back(&inputfile_[0]);
+      for (int i=0; i<arraysize; ++i)
+      {
+        if (allfiles.input_file_hook[i]=='\0')
+        {
+          lines_.push_back(&inputfile_[i+1]);
+        }
+      }
+
+      if (static_cast<int>(lines_.size()) != numrows_+1)
+        dserror("line count mismatch: %d lines expected but %d lines received",
+                numrows_+1, lines_.size());
+    }
+
+#ifdef PARALLEL
+    // distribute excluded section positions
+    for (vector<int>::size_type i=0; i<exclude.size(); ++i)
+      //comm_->Broadcast(&positions_[exclude[i]],1,0);
+      MPI_Bcast(&positions_[exclude[i]],1,MPI_INT,0,mpicomm.GetMpiComm());
+#endif
   }
-  discretization->push_back(dis_);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DatFileReader::DumpInput()
+{
+#if defined(DEBUG) || defined(OUTPUT_INPUT)
+  if (comm_->MyPID()==0)
+  {
+    fprintf(allfiles.out_err,
+            "============================================================================\n"
+            "broadcasted copy of input file:\n"
+            "============================================================================\n"
+      );
+    for (unsigned i=0; i<lines_.size()-1; ++i)
+    {
+      fprintf(allfiles.out_err,"%s\n", lines_[i]);
+    }
+    fprintf(allfiles.out_err,
+            "============================================================================\n"
+            "end of broadcasted copy of input file\n"
+            "============================================================================\n"
+      );
+    fflush(allfiles.out_err);
+  }
+#endif
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+ElementReader::ElementReader(RefCountPtr<Discretization> dis,
+                             const DRT::DatFileReader& reader,
+                             string sectionname)
+  : name_(dis->Name()),
+    reader_(reader),
+    comm_(reader.Comm()),
+    sectionname_(sectionname),
+    dis_(dis)
+{
 }
 
 
@@ -123,7 +335,7 @@ void ElementReader::Partition()
 
     // open input file at the right position
     ifstream file(allfiles.inputfile_name);
-    file.seekg(ExcludedSectionPositions[sectionname_]);
+    file.seekg(reader_.ExcludedSectionPosition(sectionname_));
 
     // loop all element lines
     // Comments in the element section are not supported!
@@ -182,7 +394,7 @@ void ElementReader::Partition()
   if (0==myrank)
   {
     file.open(allfiles.inputfile_name);
-    file.seekg(ExcludedSectionPositions[sectionname_]);
+    file.seekg(reader_.ExcludedSectionPosition(sectionname_));
   }
   string line;
   int filecount=0;
@@ -378,8 +590,8 @@ void ElementReader::Complete()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-NodeReader::NodeReader(RefCountPtr<Epetra_Comm> comm, string sectionname)
-  : comm_(comm), sectionname_(sectionname)
+NodeReader::NodeReader(const DRT::DatFileReader& reader, string sectionname)
+  : reader_(reader), comm_(reader.Comm()), sectionname_(sectionname)
 {
 }
 
@@ -392,7 +604,7 @@ RefCountPtr<DRT::Discretization> NodeReader::FindDisNode(int nodeid)
   {
     if (ereader_[i]->HasNode(nodeid))
     {
-      return ereader_[i]->Discretization();
+      return ereader_[i]->MyDis();
     }
   }
   return null;
@@ -433,7 +645,7 @@ void NodeReader::Read()
   if (myrank==0)
   {
     file.open(allfiles.inputfile_name);
-    file.seekg(ExcludedSectionPositions[sectionname_]);
+    file.seekg(reader_.ExcludedSectionPosition(sectionname_));
   }
   string tmp;
 

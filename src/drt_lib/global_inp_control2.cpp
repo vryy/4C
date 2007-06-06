@@ -103,15 +103,21 @@ and the type is in partition.h
  *----------------------------------------------------------------------*/
 void ntainp_ccadiscret()
 {
-  /* the input of the tracing option has not been done yet, so
-     we have to make the dstrc_enter 'by hand'
-     */
-#ifdef DEBUG
-  trace.actroutine = trace.actroutine->next;
-  trace.actroutine->name = "ntainp";
-  trace.actroutine->dsroutcontrol=TRACEROUT::dsin;
-  trace.deepness++;
+#ifdef PARALLEL
+  int myrank = 0;
+  int nproc  = 1;
+  MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+  MPI_Comm_size(MPI_COMM_WORLD, &nproc);
+  Epetra_MpiComm* com = new Epetra_MpiComm(MPI_COMM_WORLD);
+  RefCountPtr<Epetra_Comm> comm = rcp(com);
+#else
+  Epetra_SerialComm* com = new Epetra_SerialComm();
+  RefCountPtr<Epetra_Comm> comm = rcp(com);
 #endif
+
+  // and now the actual reading
+  DRT::DatFileReader reader(allfiles.inputfile_name, comm);
+  reader.Activate();
 
   /* input of not mesh or time based problem data  */
   inpctr();
@@ -122,7 +128,7 @@ void ntainp_ccadiscret()
   inp_multimat();
 
   /* input of fields */
-  inpfield_ccadiscret_jumbo();
+  inpfield_ccadiscret(*DRT::Problem::Instance(), reader);
 
   // read dynamic control data
   if (genprob.timetyp==time_dynamic) inpctrdyn();
@@ -135,7 +141,7 @@ void ntainp_ccadiscret()
 
   // read all types of geometry related conditions (e.g. boundary conditions)
   // Also read time and space functions and local coord systems
-  input_conditions();
+  input_conditions(*DRT::Problem::Instance());
 
 #ifdef RESULTTEST
   /*---------------------------------------- input of result descriptions */
@@ -148,30 +154,14 @@ void ntainp_ccadiscret()
 } // end of ntainp_ccadiscret()
 
 
-
-
 /*----------------------------------------------------------------------*
   | input of fields                                        m.gee 03/07  |
   | This version of the routine uses the new discretization subsystem   |
   | ccadiscret                                                          |
  *----------------------------------------------------------------------*/
-void inpfield_ccadiscret_jumbo()
+void inpfield_ccadiscret(DRT::Problem& problem, const DRT::DatFileReader& reader)
 {
-  DSTraceHelper dst("inpfield_ccadiscret_jumbo");
-
   fflush(stdout);
-
-#ifdef PARALLEL
-  int myrank = 0;
-  int nproc  = 1;
-  MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-  MPI_Comm_size(MPI_COMM_WORLD, &nproc);
-  Epetra_MpiComm* com = new Epetra_MpiComm(MPI_COMM_WORLD);
-  RefCountPtr<Epetra_Comm> comm = rcp(com);
-#else
-  Epetra_SerialComm* com = new Epetra_SerialComm();
-  RefCountPtr<Epetra_Comm> comm = rcp(com);
-#endif
 
   genprob.create_dis = 0;
   genprob.create_ale = 0;
@@ -208,11 +198,19 @@ void inpfield_ccadiscret_jumbo()
     field[genprob.numaf].fieldtyp = ale;
     inpdis(&(field[genprob.numaf]));
 
-    DRT::NodeReader nodereader(comm, "--NODE COORDS");
+    structdis = rcp(new DRT::Discretization("Structure",reader.Comm()));
+    fluiddis = rcp(new DRT::Discretization("Fluid",reader.Comm()));
+    aledis = rcp(new DRT::Discretization("Ale",reader.Comm()));
 
-    nodereader.AddElementReader(rcp(new DRT::ElementReader("Structure", genprob.numsf, comm, "--STRUCTURE ELEMENTS")));
-    nodereader.AddElementReader(rcp(new DRT::ElementReader("Fluid", genprob.numff, comm, "--FLUID ELEMENTS")));
-    nodereader.AddElementReader(rcp(new DRT::ElementReader("Ale", genprob.numaf, comm, "--ALE ELEMENTS")));
+    problem.AddDis(genprob.numsf, structdis);
+    problem.AddDis(genprob.numff, fluiddis);
+    problem.AddDis(genprob.numaf, aledis);
+
+    DRT::NodeReader nodereader(reader, "--NODE COORDS");
+
+    nodereader.AddElementReader(rcp(new DRT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+    nodereader.AddElementReader(rcp(new DRT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+    nodereader.AddElementReader(rcp(new DRT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
     nodereader.Read();
   }
@@ -225,8 +223,11 @@ void inpfield_ccadiscret_jumbo()
     field[genprob.numaf].fieldtyp = ale;
     inpdis(&(field[genprob.numaf]));
 
-    DRT::NodeReader nodereader(comm, "--NODE COORDS");
-    nodereader.AddElementReader(rcp(new DRT::ElementReader("Ale", genprob.numaf, comm, "--ALE ELEMENTS")));
+    aledis = rcp(new DRT::Discretization("Ale",reader.Comm()));
+    problem.AddDis(genprob.numaf, aledis);
+
+    DRT::NodeReader nodereader(reader, "--NODE COORDS");
+    nodereader.AddElementReader(rcp(new DRT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
     nodereader.Read();
   }
 
@@ -238,8 +239,11 @@ void inpfield_ccadiscret_jumbo()
     field[genprob.numff].fieldtyp = fluid;
     inpdis(&(field[genprob.numff]));
 
-    DRT::NodeReader nodereader(comm, "--NODE COORDS");
-    nodereader.AddElementReader(rcp(new DRT::ElementReader("Fluid", genprob.numff, comm, "--FLUID ELEMENTS")));
+    fluiddis = rcp(new DRT::Discretization("Fluid",reader.Comm()));
+    problem.AddDis(genprob.numff, fluiddis);
+
+    DRT::NodeReader nodereader(reader, "--NODE COORDS");
+    nodereader.AddElementReader(rcp(new DRT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
     nodereader.Read();
   }
 
@@ -257,8 +261,11 @@ void inpfield_ccadiscret_jumbo()
     field[genprob.numsf].fieldtyp = structure;
     inpdis(&(field[genprob.numsf]));
 
-    DRT::NodeReader nodereader(comm, "--NODE COORDS");
-    nodereader.AddElementReader(rcp(new DRT::ElementReader("Structure", genprob.numsf, comm, "--STRUCTURE ELEMENTS")));
+    structdis = rcp(new DRT::Discretization("Structure",reader.Comm()));
+    problem.AddDis(genprob.numsf, structdis);
+
+    DRT::NodeReader nodereader(reader, "--NODE COORDS");
+    nodereader.AddElementReader(rcp(new DRT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
     nodereader.Read();
   } // end of else if (genprob.probtyp==prb_structure)
 
@@ -270,24 +277,25 @@ void inpfield_ccadiscret_jumbo()
     field[genprob.numsf].fieldtyp = structure;
     inpdis(&(field[genprob.numsf]));
 
-    DRT::NodeReader nodereader(comm, "--NODE COORDS");
-    nodereader.AddElementReader(rcp(new DRT::ElementReader("Macro Structure", genprob.numsf, comm, "--STRUCTURE ELEMENTS")));
+    structdis = rcp(new DRT::Discretization("Macro Structure",reader.Comm()));
+    problem.AddDis(genprob.numsf, structdis);
+
+    DRT::NodeReader nodereader(reader, "--NODE COORDS");
+    nodereader.AddElementReader(rcp(new DRT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
     nodereader.Read();
 
-    DRT::NodeReader micronodereader(comm, "--MICROSTRUCTURE NODE COORDS");
-    micronodereader.AddElementReader(rcp(new DRT::ElementReader("Micro Structure Parallel", genprob.numsf, comm, "--MICROSTRUCTURE ELEMENTS")));
+    RefCountPtr<DRT::Discretization> structdis_micro = rcp(new DRT::Discretization("Micro Structure Parallel",reader.Comm()));
+
+    DRT::NodeReader micronodereader(reader, "--MICROSTRUCTURE NODE COORDS");
+    micronodereader.AddElementReader(rcp(new DRT::ElementReader(structdis_micro, reader, "--MICROSTRUCTURE ELEMENTS")));
     micronodereader.Read();
 
     // microscale discretization is distributed over processors but it
     // is needed on every processor redundantly
 
-    vector<RefCountPtr<DRT::Discretization> >* discretization;
-    discretization = (vector<RefCountPtr<DRT::Discretization> >*)field[genprob.numsf].ccadis;
-    RefCountPtr<DRT::Discretization> structdis_micro = (*discretization)[1];
-
     RefCountPtr<Epetra_SerialComm> serialcomm = rcp(new Epetra_SerialComm());
     structdis_micro_serial = rcp(new DRT::Discretization("Micro Structure",serialcomm));
-    (*discretization)[1] = structdis_micro_serial;
+    problem.AddDis(genprob.numsf, structdis_micro_serial);
 
     RefCountPtr<Epetra_Map> parallel_rownodes = rcp(new Epetra_Map(*structdis_micro->NodeRowMap()));
     RefCountPtr<Epetra_Map> parallel_roweles  = rcp(new Epetra_Map(*structdis_micro->ElementRowMap()));
@@ -342,8 +350,7 @@ void inpfield_ccadiscret_jumbo()
   else dserror("Type of problem unknown");
 
   return;
-} // void inpfield_ccadiscret_jumbo()
-
+} // void inpfield_ccadiscret()
 
 
 #endif  // #ifdef TRILINOS_PACKAGE
