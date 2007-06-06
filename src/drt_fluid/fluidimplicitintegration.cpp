@@ -1035,7 +1035,7 @@ void FluidImplicitTimeInt::ReadRestart(int step)
   reader.ReadVector(velnp_,"velnp");
   reader.ReadVector(veln_, "veln");
   reader.ReadVector(velnm_,"velnm");
-  reader.ReadVector(accn_, "accn");
+  reader.ReadVector(accn_ ,"accn");
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

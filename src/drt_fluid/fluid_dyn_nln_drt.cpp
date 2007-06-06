@@ -31,9 +31,9 @@ Maintainer: Peter Gamnitzer
 
 #include "fluid_dyn_nln_drt.H"
 #include "fluidimplicitintegration.H"
+#include "fluid_genalpha_integration.H"
 #include "../drt_lib/drt_resulttest.H"
 #include "fluidresulttest.H"
-
 
 /*----------------------------------------------------------------------*
   |                                                       m.gee 06/01    |
@@ -157,80 +157,165 @@ void dyn_fluid_drt()
   solver.TranslateSolverParameters(*solveparams,actsolv);
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
 
-  // -------------------------------------------------------------------
-  // create a fluid nonlinear time integrator
-  // -------------------------------------------------------------------
-  ParameterList fluidtimeparams;
-  FluidImplicitTimeInt::SetDefaults(fluidtimeparams);
-
-  // number of degrees of freedom
-  fluidtimeparams.set<int>              ("number of velocity degrees of freedom" ,genprob.ndim);
-  // the default time step size
-  fluidtimeparams.set<double>           ("time step size"           ,fdyn->dt);
-  // max. sim. time
-  fluidtimeparams.set<double>           ("total time"               ,fdyn->maxtime);
-  // parameter for time-integration
-  fluidtimeparams.set<double>           ("theta"                    ,fdyn->theta);
-  // which kind of time-integration
-  fluidtimeparams.set<FLUID_TIMEINTTYPE>("time int algo"            ,fdyn->iop);
-  // bound for the number of timesteps
-  fluidtimeparams.set<int>              ("max number timesteps"     ,fdyn->nstep);
-  // number of steps with start algorithm
-  fluidtimeparams.set<int>              ("number of start steps"    ,fdyn->nums);
-  // parameter for start algo
-  fluidtimeparams.set<double>           ("start theta"              ,fdyn->thetas);
-
-
-  // ---------------------------------------------- nonlinear iteration
-  // maximum number of nonlinear iteration steps
-  fluidtimeparams.set<int>             ("max nonlin iter steps"     ,fdyn->itemax);
-  // stop nonlinear iteration when both incr-norms are below this bound
-  fluidtimeparams.set<double>          ("tolerance for nonlin iter" ,fdyn->ittol);
-
-  // restart
-  fluidtimeparams.set                  ("write restart every"       ,fdyn->uprestart);
-
-  //--------------------------------------------------
-  // evaluate error for test flows with analytical solutions
-  fluidtimeparams.set                  ("eval err for analyt sol"   ,fdyn->init);
-  
-  
-  //--------------------------------------------------
-  // create all vectors and variables associated with the time 
-  // integration (call the constructor)
-  // the only parameter from the list required here is the number of
-  // velocity degrees of freedom
-  FluidImplicitTimeInt fluidimplicit(actdis,
-                                     solver,
-                                     fluidtimeparams,
-                                     output);
-
-  //--------------------------------------------------
-  if (genprob.restart)
+  if(fdyn->iop == timeint_stationary
+     ||
+     fdyn->iop == timeint_one_step_theta
+     ||
+     fdyn->iop == timeint_bdf2
+    )
   {
-    // read the restart information, set vectors and variables
-    fluidimplicit.ReadRestart(genprob.restart);
+    // -------------------------------------------------------------------
+    // create a fluid nonlinear time integrator
+    // -------------------------------------------------------------------
+    ParameterList fluidtimeparams;
+    FluidImplicitTimeInt::SetDefaults(fluidtimeparams);
+
+    // number of degrees of freedom
+    fluidtimeparams.set<int>              ("number of velocity degrees of freedom" ,genprob.ndim);
+    // the default time step size
+    fluidtimeparams.set<double>           ("time step size"           ,fdyn->dt);
+    // max. sim. time
+    fluidtimeparams.set<double>           ("total time"               ,fdyn->maxtime);
+    // parameter for time-integration
+    fluidtimeparams.set<double>           ("theta"                    ,fdyn->theta);
+    // which kind of time-integration
+    fluidtimeparams.set<FLUID_TIMEINTTYPE>("time int algo"            ,fdyn->iop);
+    // bound for the number of timesteps
+    fluidtimeparams.set<int>              ("max number timesteps"     ,fdyn->nstep);
+    // number of steps with start algorithm
+    fluidtimeparams.set<int>              ("number of start steps"    ,fdyn->nums);
+    // parameter for start algo
+    fluidtimeparams.set<double>           ("start theta"              ,fdyn->thetas);
+
+
+    // ---------------------------------------------- nonlinear iteration
+    // maximum number of nonlinear iteration steps
+    fluidtimeparams.set<int>             ("max nonlin iter steps"     ,fdyn->itemax);
+    // stop nonlinear iteration when both incr-norms are below this bound
+    fluidtimeparams.set<double>          ("tolerance for nonlin iter" ,fdyn->ittol);
+
+    // restart
+    fluidtimeparams.set                  ("write restart every"       ,fdyn->uprestart);
+
+    //--------------------------------------------------
+    // evaluate error for test flows with analytical solutions
+    fluidtimeparams.set                  ("eval err for analyt sol"   ,fdyn->init);
+  
+  
+    //--------------------------------------------------
+    // create all vectors and variables associated with the time 
+    // integration (call the constructor)
+    // the only parameter from the list required here is the number of
+    // velocity degrees of freedom
+    FluidImplicitTimeInt fluidimplicit(actdis,
+                                       solver,
+                                       fluidtimeparams,
+                                       output);
+
+    //--------------------------------------------------
+    if (genprob.restart)
+    {
+      // read the restart information, set vectors and variables
+      fluidimplicit.ReadRestart(genprob.restart);
+    }
+    else
+    {
+      // set initial field for analytical test problems etc
+      if(fdyn->init>0)
+      {
+        fluidimplicit.SetInitialFlowField(fdyn->init);
+      }
+    }
+
+    //--------------------------------------------------
+    // do the time integration (start algo and standard algo)
+    fluidimplicit.Integrate();
+
+
+      
+    //--------------------------------------------------
+    // do the result test
+#ifdef RESULTTEST
+    DRT::ResultTestManager testmanager(actdis->Comm());
+    testmanager.AddFieldTest(rcp(new FluidResultTest(fluidimplicit)));
+    testmanager.TestAll();
+#endif
+  }
+  else if (fdyn->iop == timeint_gen_alpha)
+  {
+    // -------------------------------------------------------------------
+    // create a generalised alpha time integrator for fluid problems
+    // -------------------------------------------------------------------
+    // ------------------ set the parameter list
+    ParameterList fluidtimeparams;
+
+    // number of degrees of freedom
+    fluidtimeparams.set<int>              ("number of velocity degrees of freedom" ,genprob.ndim);
+    // the default time step size
+    fluidtimeparams.set<double>           ("time step size"           ,fdyn->dt);
+    // max. sim. time
+    fluidtimeparams.set<double>           ("total time"               ,fdyn->maxtime);
+    // parameters for time-integration
+    fluidtimeparams.set<double>           ("alpha_M"                  ,fdyn->alpha_m);
+    // parameters for time-integration
+    fluidtimeparams.set<double>           ("alpha_F"                  ,fdyn->alpha_f);
+    // bound for the number of timesteps
+    fluidtimeparams.set<int>              ("max number timesteps"     ,fdyn->nstep);
+
+    // ---------------------------------------------- nonlinear iteration
+    // maximum number of nonlinear iteration steps
+    fluidtimeparams.set<int>             ("max nonlin iter steps"     ,fdyn->itemax);
+    // stop nonlinear iteration when both incr-norms are below this bound
+    fluidtimeparams.set<double>          ("tolerance for nonlin iter" ,fdyn->ittol);
+
+    // ----------------------------------------------- restart and output
+    fluidtimeparams.set                  ("write restart every"       ,fdyn->uprestart);
+
+    //------------evaluate error for test flows with analytical solutions
+    fluidtimeparams.set                  ("eval err for analyt sol"   ,fdyn->init);
+    
+    //--------------------------------------------------
+    // create all vectors and variables associated with the time 
+    // integration (call the constructor)
+    // the only parameter from the list required here is the number of
+    // velocity degrees of freedom
+    FluidGenAlphaIntegration genalphaint(actdis,
+                                         solver,
+                                         fluidtimeparams,
+                                         output);
+    
+
+    //------------- initialise the field from input or restart
+    if (genprob.restart)
+    {
+      // read the restart information, set vectors and variables
+      genalphaint.ReadRestart(genprob.restart);
+    }
+    else
+    {
+      // set initial field for analytical test problems etc
+      if(fdyn->init>0)
+      {
+        genalphaint.SetInitialFlowField(fdyn->init);
+      }
+    }
+
+    //------------------------- do timeintegration till maxtime
+    genalphaint.GenAlphaIntegrateTo(fdyn->nstep,fdyn->maxtime);
+    
+    //--------------------------------------------------
+    // do the result test
+#ifdef RESULTTEST
+    DRT::ResultTestManager testmanager(actdis->Comm());
+    testmanager.AddFieldTest(rcp(new FluidResultTest(genalphaint)));
+    testmanager.TestAll();
+#endif
+    
   }
   else
   {
-    // set initial field for analytical test problems etc
-    if(fdyn->init>0)
-    {
-      fluidimplicit.SetInitialFlowField(fdyn->init);
-    }
+    dserror("Unknown time type for drt fluid");
   }
-
-  //--------------------------------------------------
-  // do the time integration (start algo and standard algo)
-  fluidimplicit.Integrate();
-
-  //--------------------------------------------------
-  // do the result test
-#ifdef RESULTTEST
-  DRT::ResultTestManager testmanager(actdis->Comm());
-  testmanager.AddFieldTest(rcp(new FluidResultTest(fluidimplicit)));
-  testmanager.TestAll();
-#endif
 
   //---------- this is the end. Beautiful friend. My only friend, The end.
   // thanks to RefCountPtr<> we do not need to delete anything here!
