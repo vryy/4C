@@ -275,7 +275,7 @@ void inpfield_ccadiscret_jumbo()
     nodereader.Read();
 
     DRT::NodeReader micronodereader(comm, "--MICROSTRUCTURE NODE COORDS");
-    micronodereader.AddElementReader(rcp(new DRT::ElementReader("Micro Structure", genprob.numsf, comm, "--MICROSTRUCTURE ELEMENTS")));
+    micronodereader.AddElementReader(rcp(new DRT::ElementReader("Micro Structure Parallel", genprob.numsf, comm, "--MICROSTRUCTURE ELEMENTS")));
     micronodereader.Read();
 
     // microscale discretization is distributed over processors but it
@@ -286,7 +286,7 @@ void inpfield_ccadiscret_jumbo()
     RefCountPtr<DRT::Discretization> structdis_micro = (*discretization)[1];
 
     RefCountPtr<Epetra_SerialComm> serialcomm = rcp(new Epetra_SerialComm());
-    structdis_micro_serial = rcp(new DRT::Discretization("Micro Structure Serial",serialcomm));
+    structdis_micro_serial = rcp(new DRT::Discretization("Micro Structure",serialcomm));
     (*discretization)[1] = structdis_micro_serial;
 
     RefCountPtr<Epetra_Map> parallel_rownodes = rcp(new Epetra_Map(*structdis_micro->NodeRowMap()));
