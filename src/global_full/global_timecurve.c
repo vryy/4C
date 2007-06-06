@@ -361,12 +361,13 @@ case -12: /*Function for alveolar pressure during mechanical ventilation ah/rm 0
 		}
 	}
 break;
+#if 0
 case -13: /*Fourier decomposition of respirator data or physiological
 	   * blood waveform*/
 
-  ArrayLength = malloc(allocation * sizeof(double));
-  EvenCoefficient = malloc(allocation * sizeof(double));
-  OddCoefficient = malloc(allocation * sizeof(double));
+  ArrayLength = CCAMALLOC(allocation * sizeof(double));
+  EvenCoefficient = CCAMALLOC(allocation * sizeof(double));
+  OddCoefficient = CCAMALLOC(allocation * sizeof(double));
 
 
 chdir("$HOME");
@@ -402,10 +403,11 @@ fac = EvenCoefficient[0]/2;
     fac = fac+EvenCoefficient[h]*cos(2*PI*h*T/c1)+OddCoefficient[h]*sin(2*PI*h*T/c1);
   }
 
-  free(ArrayLength);
-  free(EvenCoefficient);
-  free(OddCoefficient);
+  CCAFREE(ArrayLength);
+  CCAFREE(EvenCoefficient);
+  CCAFREE(OddCoefficient);
   break;
+#endif
 default:
    dserror("Number of explicit timecurve (NUMEX) unknown\n");
 } /* end switch(numex) */
