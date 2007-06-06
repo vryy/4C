@@ -218,7 +218,7 @@ DOUBLE c1,c2,c3,c4,c5,c6,c7;    /* function constants                           
 DOUBLE d,visc;      /* parameters for Beltrami-flow                     */
 DOUBLE a;           /* parameters for Kim-Moin flow */
 DOUBLE t,tinsp,texp,tplateau,tstart,pmaxexp; /* parameters for Lung Curve */
-DOUBLE *ArrayLength, *EvenCoeffcients, *OddCoefficients, C;
+DOUBLE *ArrayLength, *EvenCoeffcient, *OddCoefficient, C;
 DOUBLE s0;
 static DOUBLE savefac;
 CHAR * string=NULL;
@@ -380,7 +380,7 @@ while (getline(&string,&size,WaveForm) !=EOF){
 	ArrayLength[FileLength++] = atof(strtok(string,"\n"));
 }
 
- fclose(Waveform);
+ fclose(WaveForm);
 
  C = (double)FileLength;
 
@@ -398,7 +398,7 @@ EvenCoefficient[FileLength/2] = EvenCoefficient[FileLength/2]/2;
 OddCoefficient[FileLength/2] = 0;
 fac = EvenCoefficient[0]/2;
 
-  for (h=1; h<=FileLenght/2; h++){
+  for (h=1; h<=FileLength/2; h++){
     fac = fac+EvenCoefficient[h]*cos(2*PI*h*T/c1)+OddCoefficient[h]*sin(2*PI*h*T/c1);
   }
 
