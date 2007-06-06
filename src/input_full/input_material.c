@@ -33,6 +33,7 @@ extern struct _FILES  allfiles;
  | defined in global_control.c
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
+extern struct _MICROMATERIAL *micromat;
 extern struct _MULTIMAT  *multimat;
 /*----------------------------------------------------------------------*
  | input of materials                                     m.gee 4/01    |
@@ -50,6 +51,7 @@ dstrc_enter("inp_material");
 #endif
 /*----------------------------------------------------------------------*/
 mat = (MATERIAL*)CCACALLOC(genprob.nmat,sizeof(MATERIAL));
+micromat = (MICROMATERIAL*)CCACALLOC(genprob.micro_nmat,sizeof(MICROMATERIAL));
 /*----------------------------------------------------------------------*/
 if (frfind("--MATERIALS")==0) dserror("frfind: MATERIALS is not in input file");
 frread();
@@ -513,9 +515,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
      frchk("YOUNG", &ierr);
      if (ierr == 1)
      {
-       inp_mat_nonconstparam("YOUNG", 
-                             &(robin->youngmodul.ipl), 
-                             &(robin->youngmodul.n), 
+       inp_mat_nonconstparam("YOUNG",
+                             &(robin->youngmodul.ipl),
+                             &(robin->youngmodul.n),
                              &(robin->youngmodul.d));
      }
      frdouble("NUE", &(robin->possionratio), &ierr);
@@ -528,9 +530,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
      frchk("SHRTHRSHLD", &ierr);
      if (ierr == 1)
      {
-       inp_mat_nonconstparam("SHRTHRSHLD", 
-                             &(robin->shrthrshld.ipl), 
-                             &(robin->shrthrshld.n), 
+       inp_mat_nonconstparam("SHRTHRSHLD",
+                             &(robin->shrthrshld.ipl),
+                             &(robin->shrthrshld.n),
                              &(robin->shrthrshld.d));
      }
      /* RCVRY */
@@ -538,9 +540,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
      frchk("RCVRY", &ierr);
      if (ierr == 1)
      {
-       inp_mat_nonconstparam("RCVRY", 
-                             &(robin->rcvry.ipl), 
-                             &(robin->rcvry.n), 
+       inp_mat_nonconstparam("RCVRY",
+                             &(robin->rcvry.ipl),
+                             &(robin->rcvry.n),
                              &(robin->rcvry.d));
      }
      frdouble("ACTV_TMPR", &(robin->actv_tmpr), &ierr);
@@ -552,9 +554,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
      frchk("BETA", &ierr);
      if (ierr == 1)
      {
-       inp_mat_nonconstparam("BETA", 
-                             &(robin->beta.ipl), 
-                             &(robin->beta.n), 
+       inp_mat_nonconstparam("BETA",
+                             &(robin->beta.ipl),
+                             &(robin->beta.n),
                              &(robin->beta.d));
      }
      /* H_FACT */
@@ -562,9 +564,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
      frchk("H_FACT", &ierr);
      if (ierr == 1)
      {
-       inp_mat_nonconstparam("H_FACT", 
-                             &(robin->h.ipl), 
-                             &(robin->h.n), 
+       inp_mat_nonconstparam("H_FACT",
+                             &(robin->h.ipl),
+                             &(robin->h.n),
                              &(robin->h.d));
      }
      /* check if allocatables have indeed been allocated */
@@ -648,6 +650,109 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 /*----------------------------------------------------------------------*/
    frread();
 }
+
+
+/*----------------------------------------------------------------------*
+ | input of materials for microscale                      l.w. 06/07    |
+ *----------------------------------------------------------------------*/
+
+if (genprob.probtyp == prb_struct_multi)
+{
+  if (frfind("--MICROSTRUCTURE MATERIALS")==0) dserror("frfind: MICROSTRUCTURE MATERIALS is not in input file");
+  frread();
+  i=0;
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    frchk("MAT_Struct_StVenantKirchhoff",&ierr);
+    if (ierr==1)
+    {
+      mat[i].mattyp = m_stvenant;
+      mat[i].m.stvenant = (STVENANT*)CCACALLOC(1,sizeof(STVENANT));
+      frdouble("YOUNG"  ,&(mat[i].m.stvenant->youngs)      ,&ierr);
+      frdouble("NUE"    ,&(mat[i].m.stvenant->possionratio),&ierr);
+      frdouble("DENS"   ,&(mat[i].m.stvenant->density)     ,&ierr);
+      frdouble("THEXPANS",&(mat[i].m.stvenant->thermexpans) ,&ierr);
+    }
+    frchk("MAT_Struct_Orthotropic",&ierr);
+    if (ierr==1)
+    {
+      mat[i].mattyp = m_el_orth;
+      mat[i].m.el_orth = (EL_ORTH*)CCACALLOC(1,sizeof(EL_ORTH));
+      frdouble("EMOD1"   ,&(mat[i].m.el_orth->emod1)        ,&ierr);
+      frdouble("EMOD2"   ,&(mat[i].m.el_orth->emod2)        ,&ierr);
+      frdouble("EMOD3"   ,&(mat[i].m.el_orth->emod3)        ,&ierr);
+      frdouble("GMOD12"  ,&(mat[i].m.el_orth->gmod12)       ,&ierr);
+      frdouble("GMOD13"  ,&(mat[i].m.el_orth->gmod13)       ,&ierr);
+      frdouble("GMOD23"  ,&(mat[i].m.el_orth->gmod23)       ,&ierr);
+      frdouble("XNUE12"  ,&(mat[i].m.el_orth->xnue12)       ,&ierr);
+      frdouble("XNUE13"  ,&(mat[i].m.el_orth->xnue13)       ,&ierr);
+      frdouble("XNUE23"  ,&(mat[i].m.el_orth->xnue23)       ,&ierr);
+    }
+    frchk("MAT_Struct_NeoHooke",&ierr);
+    if (ierr==1)
+    {
+      mat[i].mattyp = m_neohooke;
+      mat[i].m.neohooke = (NEO_HOOKE*)CCACALLOC(1,sizeof(NEO_HOOKE));
+      frdouble("YOUNG",&(mat[i].m.neohooke->youngs)        ,&ierr);
+      frdouble("NUE"  ,&(mat[i].m.neohooke->possionratio)  ,&ierr);
+      frdouble("DENS",&(mat[i].m.neohooke->density)        ,&ierr);
+    }
+    frchk("MAT_Struct_Ogden",&ierr);
+   if (ierr==1)
+   {
+      mat[i].mattyp = m_compogden;
+      mat[i].m.compogden = (COMPOGDEN*)CCACALLOC(1,sizeof(COMPOGDEN));
+      frdouble("NUE"  ,&(mat[i].m.compogden->nue)     ,&ierr);
+      frdouble("BETA" ,&(mat[i].m.compogden->beta)    ,&ierr);
+      frdouble("ALFA1",&(mat[i].m.compogden->alfap[0]),&ierr);
+      frdouble("ALFA2",&(mat[i].m.compogden->alfap[1]),&ierr);
+      frdouble("ALFA3",&(mat[i].m.compogden->alfap[2]),&ierr);
+      frdouble("NU1"  ,&(mat[i].m.compogden->mup[0])  ,&ierr);
+      frdouble("NU2"  ,&(mat[i].m.compogden->mup[1])  ,&ierr);
+      frdouble("NU3"  ,&(mat[i].m.compogden->mup[2])  ,&ierr);
+      frdouble("DENS" ,&(mat[i].m.compogden->density) ,&ierr);
+   }
+   frchk("MAT_Struct_Viscohyper",&ierr);
+   if (ierr==1)
+   {
+      mat[i].mattyp = m_viscohyper;
+      mat[i].m.viscohyper = (VISCOHYPER*)CCACALLOC(1,sizeof(VISCOHYPER));
+      frdouble("NUE"  ,&(mat[i].m.viscohyper->nue)     ,&ierr);
+      frdouble("BETA" ,&(mat[i].m.viscohyper->beta)    ,&ierr);
+      frdouble("ALFA1",&(mat[i].m.viscohyper->alfap[0]),&ierr);
+      frdouble("ALFA2",&(mat[i].m.viscohyper->alfap[1]),&ierr);
+      frdouble("ALFA3",&(mat[i].m.viscohyper->alfap[2]),&ierr);
+      frdouble("NU1"  ,&(mat[i].m.viscohyper->mup[0])  ,&ierr);
+      frdouble("NU2"  ,&(mat[i].m.viscohyper->mup[1])  ,&ierr);
+      frdouble("NU3"  ,&(mat[i].m.viscohyper->mup[2])  ,&ierr);
+      frdouble("DENS" ,&(mat[i].m.viscohyper->density) ,&ierr);
+      frint   ("NMAXW",&(mat[i].m.viscohyper->nmaxw)   ,&ierr);
+      frdouble("TAU1" ,&(mat[i].m.viscohyper->tau[0])  ,&ierr);
+      frdouble("TAU2" ,&(mat[i].m.viscohyper->tau[1])  ,&ierr);
+      frdouble("TAU3" ,&(mat[i].m.viscohyper->tau[2])  ,&ierr);
+      frdouble("TAU4" ,&(mat[i].m.viscohyper->tau[3])  ,&ierr);
+      frdouble("BETA1",&(mat[i].m.viscohyper->betas[0]),&ierr);
+      frdouble("BETA2",&(mat[i].m.viscohyper->betas[1]),&ierr);
+      frdouble("BETA3",&(mat[i].m.viscohyper->betas[2]),&ierr);
+      frdouble("BETA4",&(mat[i].m.viscohyper->betas[3]),&ierr);
+   }
+   frchk("MAT_HYPER_POLYCONVEX",&ierr);
+   if (ierr==1)
+   {
+      mat[i].mattyp      = m_hyper_polyconvex;
+      mat[i].m.hyper_polyconvex = (HYPER_POLYCONVEX*)CCACALLOC(1,sizeof(HYPER_POLYCONVEX));
+      frdouble("C"       ,&(mat[i].m.hyper_polyconvex->c)       ,&ierr);
+      frdouble("K1"      ,&(mat[i].m.hyper_polyconvex->k1)     ,&ierr);
+      frdouble("K2"      ,&(mat[i].m.hyper_polyconvex->k2)        ,&ierr);
+      frdouble("EPSILON" ,&(mat[i].m.hyper_polyconvex->epsilon)    ,&ierr);
+      frdouble("GAMMA"   ,&(mat[i].m.hyper_polyconvex->gamma)    ,&ierr);
+      frdouble("DENS"    ,&(mat[i].m.hyper_polyconvex->density)     ,&ierr);
+   }
+   i++;
+   /*----------------------------------------------------------------------*/
+   frread();
+  }
+}
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
 dstrc_exit();
@@ -681,7 +786,7 @@ void inp_mat_nonconstparam(CHAR* param_w,  /* parameter key word */
     *param_ipl = mat_param_ipl_poly;
     frint(param_wipl, param_n, &ierr);
     if (*param_n >= 1)
-    { 
+    {
       DOUBLE* param_tmp = (DOUBLE*) CCACALLOC(*param_n+1, sizeof(DOUBLE));
       frdouble_n(param_wipl, &(param_tmp[0]), *param_n+1, &ierr);
       *param = (DOUBLE*) CCACALLOC(*param_n, sizeof(DOUBLE));

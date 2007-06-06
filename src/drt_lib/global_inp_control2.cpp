@@ -195,6 +195,7 @@ void inpfield_ccadiscret_jumbo()
   RefCountPtr<DRT::Discretization> structdis_micro = null;
   RefCountPtr<DRT::Discretization> structdis_micro_serial = null;
 
+
   if (genprob.probtyp == prb_fsi)
   {
     // allocate and input general old stuff....
@@ -322,7 +323,7 @@ void inpfield_ccadiscret_jumbo()
     }
     err = structdis_micro_serial->FillComplete();
 
-    if (1)
+    if (0)
     {
     for (int i=0; i<structdis_micro->Comm().NumProc(); ++i)
     {

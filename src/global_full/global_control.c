@@ -92,8 +92,9 @@ struct _STATIC_VAR   *statvar;
  | vector of material laws                                              |
  | defined in global_control.c
  *----------------------------------------------------------------------*/
-struct _MATERIAL     *mat;
-struct _MULTIMAT     *multimat;
+struct _MATERIAL      *mat;
+struct _MICROMATERIAL *micromat;
+struct _MULTIMAT      *multimat;
 
 
 /*!----------------------------------------------------------------------
