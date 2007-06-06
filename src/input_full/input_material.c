@@ -70,6 +70,13 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("DENS"  ,&(mat[i].m.fluid->density)  ,&ierr);
       frdouble("GAMMA",&(mat[i].m.fluid->gamma)  ,&ierr);
    }
+   frchk("MAT_condif",&ierr);
+   if (ierr==1)
+   {
+      mat[i].mattyp = m_condif;
+      mat[i].m.condif = (CONDIF*)CCACALLOC(1,sizeof(CONDIF));
+      frdouble("DIFFUSIVITY",&(mat[i].m.condif->diffusivity),&ierr);
+   }
    frchk("MAT_Struct_StVenantKirchhoff",&ierr);
    if (ierr==1)
    {

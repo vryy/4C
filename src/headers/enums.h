@@ -23,6 +23,7 @@ typedef enum _PROBLEM_TYP
 		       prb_ale,          /*  pure ale problem */
                        prb_tsi,          /*  thermal structure interaction */
 		       prb_fluid_pm,     /*  fluid with (any) projection method */
+		       prb_condif,       /*  convection-diffusion problem */
                        prb_pfsi,         /*  projection fsi */
                        prb_fsi_xfem,     /*  fluid structure interaction problem */
                        prb_struct_multi  /*  multi-scale problem (structure) */
@@ -31,7 +32,7 @@ typedef enum _PROBLEM_TYP
  * initialize static variables. Keep in sync!
  * The trailing NULL is essential for the filters to read the problem
  * type! */
-#define PROBLEMNAMES { "fsi","ssi","structure","fluid","opt","ale","tsi","fluid_pm","pfsi","fsi_xfem", "struct_multi", NULL }
+#define PROBLEMNAMES { "fsi","ssi","structure","fluid","opt","ale","tsi","fluid_pm","condif","pfsi","fsi_xfem", "struct_multi", NULL }
 /*----------------------------------------------------------------------*
  | TIME TYPES                                             m.gee 7/01    |
  *----------------------------------------------------------------------*/
@@ -171,6 +172,7 @@ typedef enum _ELEMENT_TYP
       "fluid2_pro",                                                     \
       "fluid2_tu",                                                      \
       "fluid2_is",                                                      \
+      "condif2",                                                        \
       "fluid3",                                                         \
       "fluid3_fast",                                                    \
       "fluid3_pro",                                                     \
@@ -252,6 +254,7 @@ typedef enum _MATERIAL_TYP
                        m_compogden,   /* compressible Ogden material (with shell8) */
                        m_viscohyper,  /* compressible viscous Ogden material (with shell8) */
                        m_fluid,       /* fluid */
+                       m_condif,      /* convection-diffusion */
                        m_pl_hash,     /* elpl. hashin delamination material */
                        m_el_orth,     /* elastic orthotropic material */
                        m_mfoc,        /* open cell metal foam */

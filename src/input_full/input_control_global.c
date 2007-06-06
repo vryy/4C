@@ -215,6 +215,15 @@ dstrc_enter("inpctr");
       inpctrsol(&(solv[genprob.numff+1]));
       break;
    }
+   /* for convection-diffusion */
+   case prb_condif:
+   {
+      solv = (SOLVAR*)CCACALLOC(genprob.numfld,sizeof(SOLVAR));
+
+      solv[genprob.numff].fieldtyp = fluid;
+      inpctrsol(&(solv[genprob.numff]));
+      break;
+   }
    /* for (plain) ALE */
    case prb_ale:
    {
@@ -353,6 +362,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
     if (frwordcmp("Structure"                  ,buffer)==0) genprob.probtyp = prb_structure;
     else if (frwordcmp("Fluid"                      ,buffer)==0) genprob.probtyp = prb_fluid;
     else if (frwordcmp("Fluid_Projection"           ,buffer)==0) genprob.probtyp = prb_fluid_pm;
+    else if (frwordcmp("Convection_Diffusion"       ,buffer)==0) genprob.probtyp = prb_condif;
     else if (frwordcmp("Fluid_Structure_Interaction",buffer)==0) genprob.probtyp = prb_fsi;
     else if (frwordcmp("Fluid_Structure_Interaction_XFEM",buffer)==0) genprob.probtyp = prb_fsi_xfem;
     else if (frwordcmp("Projection_Fluid_Structure_Interaction",buffer)==0) genprob.probtyp = prb_pfsi;
@@ -430,6 +440,9 @@ case prb_fluid:
   break;
 }
 case prb_fluid_pm:
+  genprob.numff=0;
+  break;
+case prb_condif:
   genprob.numff=0;
   break;
 case prb_ale:
@@ -1167,6 +1180,8 @@ fdyn->dis_capt=0;
 fdyn->itemax_ke=100;
 fdyn->stepke=0;
 
+/* convection-diffusion velocity field */
+fdyn->cdvel=0;
 
 /* tolerances */
 fdyn->sttol=EPS6;
@@ -1346,6 +1361,18 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    }
    frreadyes("DISC_CAPT",&(fdyn->dis_capt));
    frreadyes("ADAPT_TIME",&(fdyn->adaptive));
+   frchar("CD_VELOCITY"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+      if (frwordcmp(buffer,"Navier_Stokes")==0)
+         fdyn->cdvel=0;
+      else if (frwordcmp(buffer,"30_degree")==0)
+         fdyn->cdvel=1;
+      else if (frwordcmp(buffer,"60_degree")==0)
+         fdyn->cdvel=2;
+      else
+         dserror("CD_VELOCITY unknown!");
+   }
    frchar("CONVECTERM"  ,buffer    ,&ierr);
    if (ierr==1)
    {

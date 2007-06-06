@@ -70,6 +70,7 @@ extern struct _FIELD      *sm_field;
 #ifdef CCADISCRET
 #include "../drt_lib/global_inp_control2.H"
 #include "../drt_fluid/fluid_dyn_nln_drt.H"
+#include "../drt_fluid/condif_drt.H"
 #include "../drt_fsi/ale_dyn.H"
 #include "../drt_fsi/fsi_dyn.H"
 #endif
@@ -238,9 +239,11 @@ case prb_fluid_pm:
 #ifndef CCADISCRET
   dyn_fluid();
 #else
-  dyn_fluid_drt();
-/*  dserror("dyn_fluid with DRT not yet impl.");*/
+  dyn_fluid_drt();  
 #endif
+  break;
+case prb_condif:
+  dyn_condif_drt();
   break;
 #endif
 

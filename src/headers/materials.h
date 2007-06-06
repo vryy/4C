@@ -36,6 +36,7 @@ typedef struct _MATERIAL
      struct _COMPOGDEN        *compogden;    /* compressible ogden hyperelastic material */
      struct _VISCOHYPER       *viscohyper;   /* viscoelastic compressible ogden hyperelastic material */
      struct _FLUID            *fluid;        /* fluid material */
+     struct _CONDIF           *condif;       /* convection-diffusion material */
      struct _PL_HASH          *pl_hash;      /* elpl. hashin delamination material */
      struct _EL_ORTH          *el_orth;      /* elastic orthotropic material */
      struct _MFOC             *mfoc;         /* metal foam, open cell  */
@@ -206,6 +207,13 @@ typedef struct _FLUID
      DOUBLE                    density;
      DOUBLE                    gamma;     /* surface tension coeficient */
 } FLUID;
+/*----------------------------------------------------------------------*
+ | convection-diffusion material                             vg 6/07    |
+ *----------------------------------------------------------------------*/
+typedef struct _CONDIF
+{
+     DOUBLE                    diffusivity; /* kinematic diffusivity */
+} CONDIF;
 /*----------------------------------------------------------------------*
  | plastic mises material                              a.lipka 17/05    |
  *----------------------------------------------------------------------*/

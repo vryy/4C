@@ -127,7 +127,9 @@ OBJS_DRT      = \
                 src/drt_lib/stru_static_drt.o
 # --------------------------------------------------- drt version of fluid
 OBJS_DRT_FLUID= src/drt_fluid/fluid_dyn_nln_drt.o \
+                src/drt_fluid/condif_drt.o \
 		src/drt_fluid/fluidimplicitintegration.o \
+                src/drt_fluid/condifimplicitintegration.o \
 		src/drt_fluid/fluidresulttest.o
 # ----------------------------- drt version of fluid structure interaction
 OBJS_DRT_FSI  = src/drt_fsi/ale_dyn.o \
@@ -444,9 +446,14 @@ OBJS_WALL1    = src/wall1/w1_bop.o \
 #------------------------------------ fluid2 (drt version)
 OBJS_DRT_F2   = src/drt_f2/fluid2_evaluate.o \
                 src/drt_f2/fluid2_input.o \
-                src/drt_f2/fluid2_line_evaluate.o
+                src/drt_f2/fluid2_line_evaluate.o \
+		src/drt_f2/condif2_evaluate.o \
+		src/drt_f2/condif2_input.o \
+		src/drt_f2/condif2_line_evaluate.o
 OBJS_DRT_F2_LIB = src/drt_f2/fluid2.o \
-                  src/drt_f2/fluid2_line.o
+                  src/drt_f2/fluid2_line.o \
+		  src/drt_f2/condif2.o \
+		  src/drt_f2/condif2_line.o
 #------------------------------------------------- fluid2
 OBJS_FLUID2   = src/fluid2/f2_calcurvature.o \
                 src/fluid2/f2_calelesize.o \

@@ -248,6 +248,8 @@ DOUBLE tau_tu_dc;/*!< array for DISCONTINUITY CAPTURING for turbulence*/
 INT    sgvisc;   /*!< type of subgrid viscosity                      */
 DOUBLE sugrvisc; /*!< subgrid viscosity       */
 DOUBLE smagcon;  /*!< Smagorinsky constant       */
+/* parameter related to convection-diffusion solver */
+INT    cdvel;   /*!< convection-diffusion velocity field                      */
 /**/
 struct _FLUID_DYN_ML  *mlvar; /* pointer to fluid ml information        */
 struct _FLUID_DATA    *data;  /* pointer to integration data            */

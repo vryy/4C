@@ -36,6 +36,7 @@ extern "C"
 #include "drt_dofset.H"
 #include "../drt_s8/shell8.H"
 #include "../drt_f2/fluid2.H"
+#include "../drt_f2/condif2.H"
 #include "../drt_f3/fluid3.H"
 #include "../drt_f3_xfem/fluid3_xfem.H"
 #include "../drt_ale3/ale3.H"
@@ -128,6 +129,21 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
     {
       DRT::Elements::Fluid2Register* object =
                       new DRT::Elements::Fluid2Register(DRT::Element::element_fluid2);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_Condif2:
+    {
+      DRT::Elements::Condif2* object = new DRT::Elements::Condif2(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_Condif2Register:
+    {
+      DRT::Elements::Condif2Register* object =
+                      new DRT::Elements::Condif2Register(DRT::Element::element_condif2);
       object->Unpack(data);
       return object;
     }
@@ -227,6 +243,7 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
     shell8,
     wall1,
     fluid2,
+    condif2,
     fluid3,
     xfluid3,
     ale3,
@@ -238,6 +255,7 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
   else if (eletype=="SHELL8") type = shell8;
   else if (eletype=="WALL")  type = wall1;
   else if (eletype=="FLUID2") type = fluid2;
+  else if (eletype=="CONDIF2") type = condif2;
   else if (eletype=="FLUID3") type = fluid3;
   else if (eletype=="XFLUID3") type = xfluid3;
   else if (eletype=="ALE3") type = ale3;
@@ -260,6 +278,12 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
     case fluid2:
     {
       RefCountPtr<DRT::Element> ele = rcp(new DRT::Elements::Fluid2(id,owner));
+      return ele;
+    }
+    break;
+    case condif2:
+    {
+      RefCountPtr<DRT::Element> ele = rcp(new DRT::Elements::Condif2(id,owner));
       return ele;
     }
     break;

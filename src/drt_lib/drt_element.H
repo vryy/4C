@@ -83,6 +83,8 @@ public:
     element_wall1line,
     element_fluid2,
     element_fluid2line,
+    element_condif2,
+    element_condif2line,
     element_fluid3,
     element_fluid3surface,
     element_xfluid3,

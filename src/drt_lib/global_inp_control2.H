@@ -39,6 +39,7 @@ Maintainer: Michael Gee
 #endif
 #ifdef D_FLUID2
 #include "../drt_f2/fluid2.H"
+#include "../drt_f2/condif2.H"
 #endif
 #ifdef D_FLUID3
 #include "../drt_f3/fluid3.H"

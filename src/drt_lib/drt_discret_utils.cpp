@@ -75,6 +75,10 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
       numdf = 3;
       dimns = 3;
     break;
+    case DRT::Element::element_condif2:
+      numdf = 1;
+      dimns = 1;
+    break;
     case DRT::Element::element_none:
     default:
       cout << "WARNING: Computation of nullspace not yet implemented for your discretization\n";
@@ -358,6 +362,30 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
       } // for (int j=0; j<actnode->Dof().NumDof(); ++j)
     } // for (int i=0; i<NumMyRowNodes(); ++i)
   } // else if (ele->Type() == DRT::Element::element_fluid2)
+
+  else if (ele->Type() == DRT::Element::element_condif2)
+  {
+    for (int i=0; i<NumMyRowNodes(); ++i)
+    {
+      DRT::Node* actnode = lRowNode(i);
+      vector<int> dofs = Dof(actnode);
+      for (unsigned j=0; j<dofs.size(); ++j)
+      {
+        const int dof = dofs[j];
+        const int lid = rowmap->LID(dof);
+        if (lid<0) dserror("Cannot find dof");
+        switch (j) // j is degree of freedom
+        {
+        case 0:
+          mode[0][lid] = 1.0;
+        break;
+        default:
+          dserror("Only dof 0 supported");
+        break;
+        } // switch (j)
+      } // for (int j=0; j<actnode->Dof().NumDof(); ++j)
+    } // for (int i=0; i<NumMyRowNodes(); ++i)
+  } // else if (ele->Type() == DRT::Element::element_condif2)
 
   else ; // do nothing
 

@@ -230,7 +230,7 @@ void inpfield_ccadiscret_jumbo()
     nodereader.Read();
   }
 
-  else if (genprob.probtyp==prb_fluid)
+  else if (genprob.probtyp==prb_fluid  || genprob.probtyp==prb_condif)
   {
     // allocate and input general old stuff....
     if (genprob.numfld!=1) dserror("numfld != 1 for fluid problem");

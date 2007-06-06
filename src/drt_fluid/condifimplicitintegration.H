@@ -1,0 +1,200 @@
+/*!----------------------------------------------------------------------
+\file
+\brief Control routine for convection-diffusion time integration. 
+       Associated with condifimplicitintegration.cpp
+
+
+<pre>
+Maintainer: Volker Gravemeier
+            vgravem@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15245
+</pre>
+
+*----------------------------------------------------------------------*/
+
+#ifdef CCADISCRET
+#ifdef TRILINOS_PACKAGE
+#ifndef CONDIFIMPLICITINTEGRATION_H
+#define CONDIFIMPLICITINTEGRATION_H
+
+#ifdef PARALLEL
+#include "Epetra_MpiComm.h"
+#else
+#include "Epetra_SerialComm.h"
+#endif /* PARALLEL */
+
+#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_ParameterList.hpp"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/linalg_solver.H"
+#include "../drt_lib/linalg_utils.H"
+#include "../io/io_drt.H"
+
+#include "Epetra_Vector.h"
+#include "Epetra_Operator.h"
+#include "Epetra_RowMatrix.h"
+
+#include <ctime>
+#include <cstdlib>
+#include <iostream>
+#include <Teuchos_TimeMonitor.hpp>
+
+
+extern "C" /* stuff which is c and is accessed from c++ */
+{
+#include "../headers/standardtypes.h"
+#include "../fluid_full/fluid_prototypes.h"
+}
+
+#include "../drt_lib/dstrc.H" /* needs standardtypes.h */
+
+using namespace std;
+using namespace Teuchos;
+
+/*!
+\class CondifImplicitTimeInt
+
+\brief time integration for convection-diffusion problems
+
+\author vg (vgravem@lnm.mw.tum.de)
+*/
+class CondifImplicitTimeInt
+{
+
+public:
+
+
+  /*!
+  \brief Standard Constructor
+
+  */
+  CondifImplicitTimeInt(RefCountPtr<DRT::Discretization> dis,
+                        LINALG::Solver&       solver,
+                        ParameterList&        params,
+                        DiscretizationWriter& output);
+
+
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~CondifImplicitTimeInt();
+
+
+
+
+  /*!
+  \brief Create default parameter list
+
+  */
+  static void SetDefaults(ParameterList& params);
+
+  /*!
+  \brief start time loop for startingalgo, normal problems and restarts
+
+  */
+  void Integrate();
+
+
+  /*!
+  \brief Do time integration (time loop)
+
+  */
+  void TimeIntegrateFromTo(
+    int&               step,
+    double&            time,
+    double&            dta,
+    double&            dtp,
+    int                cdvel,
+    int                endstep,
+    double             endtime,
+    FLUID_TIMEINTTYPE  timealgo,
+    double             theta
+    );
+
+  /*!
+  \brief Solve stationary problem
+
+  */
+  void SolveStationaryProblem(int cdvel);
+
+  void Solve(
+             double dta,
+             double theta,
+             int cdvel,
+             bool is_stat
+             );
+
+  /*!
+  \brief update configuration and output to file/screen
+
+  */
+  void Output(
+    int    step,
+    double time
+    );
+
+
+  void ReadRestart(int step);
+
+protected:
+
+  // don't want = operator and cctor
+  CondifImplicitTimeInt operator = (const CondifImplicitTimeInt& old);
+  CondifImplicitTimeInt (const CondifImplicitTimeInt& old);
+
+  RefCountPtr<DRT::Discretization> discret_;
+  LINALG::Solver&               solver_;
+  ParameterList&                params_;
+  DiscretizationWriter&         output_;
+  int                           myrank_;
+  int                           maxentriesperrow_;
+
+  double time_;
+  int step_;
+  int restartstep_;
+  int uprestart_;
+
+  // system matrix --- stiffness and mass are assembled in one matrix!
+  RefCountPtr<Epetra_CrsMatrix> sysmat_;
+
+  // toggle vector indicating which dofs have Dirichlet BCs
+  RefCountPtr<Epetra_Vector>    dirichtoggle_;
+
+  // the vector containing body and surface forces
+  RefCountPtr<Epetra_Vector>    neumann_loads_;
+
+  // The residual vector
+  RefCountPtr<Epetra_Vector>    residual_;
+
+  // phi at time n+1, n and n-1
+  RefCountPtr<Epetra_Vector>    phinp_;
+  RefCountPtr<Epetra_Vector>    phin_;
+  RefCountPtr<Epetra_Vector>    phinm_;
+
+
+  // time measurement
+  // ----------------
+  RefCountPtr<Time> timedyntot_     ;
+  RefCountPtr<Time> timedyninit_    ;
+  RefCountPtr<Time> timedynloop_    ;
+  RefCountPtr<Time> timeeleloop_    ;
+  RefCountPtr<Time> timeapplydirich_;
+  RefCountPtr<Time> timesolver_     ;
+
+  RefCountPtr<TimeMonitor> tm0_ref_ ;
+  RefCountPtr<TimeMonitor> tm1_ref_ ;
+  RefCountPtr<TimeMonitor> tm2_ref_ ;
+  RefCountPtr<TimeMonitor> tm3_ref_ ;
+  RefCountPtr<TimeMonitor> tm4_ref_ ;
+  RefCountPtr<TimeMonitor> tm5_ref_ ;
+
+}; // class CondifImplicitTimeInt
+
+
+
+
+#endif  // #ifndef CONDIFIMPLICITINTEGRATION_H
+#endif  // #ifdef TRILINOS_PACKAGE
+#endif  // #ifdef CCADISCRET

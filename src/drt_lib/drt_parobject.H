@@ -153,6 +153,9 @@ using namespace std;
 #define ParObject_XFluid3               (int)27
 #define ParObject_XFluid3Register       (int)28
 #define ParObject_XFluid3Surface        (int)29
+#define ParObject_Condif2               (int)30
+#define ParObject_Condif2Register       (int)31
+#define ParObject_Condif2Line           (int)32
 
 
 /*!
