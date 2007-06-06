@@ -214,7 +214,7 @@ for (i=0; i<counter; i++)
      frchar("FUNC",buffer,&ierr);
      if (ierr!=1) dserror("cannot read CURVE");
      actcurve->funct = pss_parse(buffer);
-     
+
      frdouble("t1",&(actcurve->c1),&ierr);
      if (ierr!=1) dserror("cannot read CURVE");
      frdouble("t2",&(actcurve->c2),&ierr);
@@ -242,7 +242,7 @@ for (i=0; i<counter; i++)
 	   frchar("FUNC",buffer,&ierr);
 	   if (ierr!=1) dserror("cannot read CURVE\n");
 	   actcurve->numex=-12;
-	   
+
 	   frdouble("Frequ",&(actcurve->c1),&ierr);
 	   if (ierr!=1) dserror("cannot read CURVE");
 	   frdouble("pPEEP",&(actcurve->c2),&ierr);
@@ -256,6 +256,17 @@ for (i=0; i<counter; i++)
 	   frdouble("ShapeIPauseC",&(actcurve->c6),&ierr);
 	   if (ierr!=1) dserror("cannot read CURVE");
 	   frdouble("ShapeEB",&(actcurve->c7),&ierr);
+	   if (ierr!=1) dserror("cannot read CURVE");
+   }
+    frchk("FourierInlet",&ierr);
+   if (ierr==1)
+   {
+	   actcurve->curvetyp = curve_explicit;
+	   frchar("FUNC",buffer,&ierr);
+	   if (ierr!=1) dserror("cannot read CURVE");
+	   actcurve->numex=-13;
+
+	   frdouble("TimePeriod",&(actcurve->c1),&ierr);
 	   if (ierr!=1) dserror("cannot read CURVE");
    }
 } /* end of loop over curve lines */

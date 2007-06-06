@@ -162,7 +162,7 @@ case curve_expr:
     t = curve[actcurve].c1;
   else if (t>curve[actcurve].c2)
     t = curve[actcurve].c2;
-  
+
   *fac = pss_evaluate_curve(curve[actcurve].funct,t);
   break;
 }
@@ -211,14 +211,19 @@ DOUBLE dyn_facexplcurve(INT actcurve,   /* number of actual time curve  */
                         DOUBLE T        /* actual time                  */
 		       )
 {
-INT numex;          /* number of explicit time curve                    */
+INT numex;          /* number of explicit time curve 		     * */
+INT i, FileLength=0, h, p, num, size, allocation=1000;
 DOUBLE val1, fac=0.0;
 DOUBLE c1,c2,c3,c4,c5,c6,c7;    /* function constants                               */
 DOUBLE d,visc;      /* parameters for Beltrami-flow                     */
 DOUBLE a;           /* parameters for Kim-Moin flow */
 DOUBLE t,tinsp,texp,tplateau,tstart,pmaxexp; /* parameters for Lung Curve */
+DOUBLE *ArrayLength, *EvenCoeffcients, *OddCoefficients, C;
 DOUBLE s0;
 static DOUBLE savefac;
+CHAR * string=NULL;
+FILE *WaveForm;
+
 
 #ifdef DEBUG
 dstrc_enter("dyn_facexplcurve");
@@ -309,7 +314,7 @@ case -10: /* Lung functon shifted sinus with phase */
 	 fac = 0.5*c2*(1 - cos(1/c3*PI*T));
    } else {
 	 fac = 0.5*(1-c2)*(1 - cos(2*PI*c1*(T - c3))) + c2;
-   } 
+   }
 break;
 case -11: /* f(t)=-0.5*cos(PI*(T-c1)/c2)+0.5 */
    	if (T<c1)
@@ -327,14 +332,14 @@ case -12: /*Function for alveolar pressure during mechanical ventilation ah/rm 0
 	if (c5<=0) dserror("parameter ShapeIPauseB must be > 0");
 	if (c6<c2 || c6>1) dserror("parameter ShapeIPauseC must be beetween Ppeep and 1");
 	if (c7<=0) dserror("parameter ShapeEB must be > 0");
-	
+
 	tinsp=c3*(1-c4)/(c1*(1+c3)); /*inspiration time (without end-inspiratory plateau)*/
 	texp=1/(c1*(c3+1));     /*expiaration time*/
 	tplateau=c4*c3/(c1*(c3+1)); /*period of the rest at the end of inspiration*/
 	pmaxexp=(1-c6)*exp(-c5*tplateau)+c6; /*pressure at the beginning of expiration*/
 	tstart=2*c2*tinsp/(1-c2); /*time for starting phase*/
 	t=T-tstart-(int)((T-tstart)*c1)/c1; /*t runs through one respiration period*/
-	
+
 	if (T<=tstart) /*starting phase, quadratic function*/
 	{
 		fac=pow(((1-c2)/2/tinsp),2)/c2*pow(T,2);
@@ -356,6 +361,51 @@ case -12: /*Function for alveolar pressure during mechanical ventilation ah/rm 0
 		}
 	}
 break;
+case -13: /*Fourier decomposition of respirator data or physiological
+	   * blood waveform*/
+
+  ArrayLength = malloc(allocation * sizeof(double));
+  EvenCoefficient = malloc(allocation * sizeof(double));
+  OddCoefficient = malloc(allocation * sizeof(double));
+
+
+chdir("$HOME");
+if ((WaveForm = fopen("waveform.txt", "r"))==NULL)
+       dserror("Error: Unable to open %s for reading","waveform.txt");
+chdir("$OLDPWD");
+
+
+while (getline(&string,&size,WaveForm) !=EOF){
+
+	ArrayLength[FileLength++] = atof(strtok(string,"\n"));
+}
+
+ fclose(Waveform);
+
+ C = (double)FileLength;
+
+ for (p=0; p<=FileLength/2; p++){
+   EvenCoefficient[p] = 0;
+   OddCoefficient[p] = 0;
+
+   for (num=0; num<=FileLength-1; num++){
+     EvenCoefficient[p] = EvenCoefficient[p]+2/C*ArrayLength[num]*cos(2*PI*p*(num+1)/C);
+     OddCoefficient[p] = OddCoefficient[p]+2/C*ArrayLength[num]*sin(2*PI*p*(num+1)/C);
+   }
+ }
+
+EvenCoefficient[FileLength/2] = EvenCoefficient[FileLength/2]/2;
+OddCoefficient[FileLength/2] = 0;
+fac = EvenCoefficient[0]/2;
+
+  for (h=1; h<=FileLenght/2; h++){
+    fac = fac+EvenCoefficient[h]*cos(2*PI*h*T/c1)+OddCoefficient[h]*sin(2*PI*h*T/c1);
+  }
+
+  free(ArrayLength);
+  free(EvenCoefficient);
+  free(OddCoefficient);
+  break;
 default:
    dserror("Number of explicit timecurve (NUMEX) unknown\n");
 } /* end switch(numex) */
