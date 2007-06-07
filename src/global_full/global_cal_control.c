@@ -242,7 +242,11 @@ case prb_fluid_pm:
 #endif
   break;
 case prb_condif:
+#ifndef CCADISCRET
+  dserror("dyn_condif without DRT not implemented");
+#else
   dyn_condif_drt();
+#endif
   break;
 #endif
 
