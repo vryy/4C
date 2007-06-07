@@ -242,7 +242,7 @@ void DatFileReader::ReadDat()
       lines_.push_back(&inputfile_[0]);
       for (int i=0; i<arraysize; ++i)
       {
-        if (allfiles.input_file_hook[i]=='\0')
+        if (inputfile_[i]=='\0')
         {
           lines_.push_back(&inputfile_[i+1]);
         }
