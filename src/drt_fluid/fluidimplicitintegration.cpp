@@ -46,7 +46,9 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   time_(0.0),
   step_(0),
   restartstep_(0),
-  uprestart_(params.get("write restart every", -1))
+  uprestart_(params.get("write restart every", -1)),
+  writestep_(0),
+  upres_(params.get("write solution every", -1)) 
 {
 
   int numdim = params_.get<int>("number of velocity degrees of freedom");
@@ -922,20 +924,42 @@ void FluidImplicitTimeInt::Output(
 {
 
   //-------------------------------------------- output of solution
-  output_.NewStep    (step,time);
-  output_.WriteVector("velnp", velnp_);
-  output_.WriteVector("residual", residual_);
   
-  // do restart if we have to
-  restartstep_ += 1;
-  if (restartstep_ == uprestart_)
+  //increase counters
+    restartstep_ += 1;
+    writestep_ += 1;
+  
+  if (writestep_ == upres_)  //write solution 
+    {
+      writestep_= 0;
+    
+      output_.NewStep    (step,time);
+      output_.WriteVector("velnp", velnp_);
+      output_.WriteVector("residual", residual_);
+      
+      if (restartstep_ == uprestart_) //add restart data
+      {
+        restartstep_ = 0;
+      
+        output_.WriteVector("accn", accn_);
+    	output_.WriteVector("veln", veln_);
+    	output_.WriteVector("velnm", velnm_);
+      }
+    }
+    
+  // write restart also when uprestart_ is not a integer multiple of upres_
+  if ((restartstep_ == uprestart_) && (writestep_ > 0))  
   {
     restartstep_ = 0;
-
+    
+    output_.NewStep    (step,time);
+    output_.WriteVector("velnp", velnp_);
+    output_.WriteVector("residual", residual_);
     output_.WriteVector("accn", accn_);
     output_.WriteVector("veln", veln_);
     output_.WriteVector("velnm", velnm_);
-  }
+  } 
+  
   
 #if 0  // DEBUG IO --- the whole systemmatrix
       {

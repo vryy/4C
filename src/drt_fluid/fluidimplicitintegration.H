@@ -233,6 +233,8 @@ protected:
   int step_;
   int restartstep_;
   int uprestart_;
+  int writestep_;
+  int upres_;
 
   // system matrix --- stiffness and mass are assembled in one matrix!
   RefCountPtr<Epetra_CrsMatrix> sysmat_;

@@ -193,6 +193,8 @@ void dyn_fluid_drt()
 
     // restart
     fluidtimeparams.set                  ("write restart every"       ,fdyn->uprestart);
+    // solution output
+    fluidtimeparams.set                  ("write solution every"      ,fdyn->upres);    
 
     //--------------------------------------------------
     // evaluate error for test flows with analytical solutions
