@@ -75,7 +75,7 @@ fi
 # FLUID3
 if grep '^[[:blank:]]*D_FLUID3' "$definefile" 2>&1 > /dev/null ; then
     if [ "x$OBJ_FLUID" = "x0" ] ; then
-        OBJECTS="$OBJECTS \$(OBJS_FLUID3) \$(OBJS_FLUID) \$(OBJS_DRT_FLUID) \$(OBJS_DRT_F3_LIB) \$(OBJS_DRT_F3)"
+        OBJECTS="$OBJECTS \$(OBJS_FLUID3) \$(OBJS_FLUID) \$(OBJS_DRT_F3_LIB) \$(OBJS_DRT_F3)"
         DEFINES="$DEFINES -DD_FLUID"
         OBJ_FLUID=1
     else
