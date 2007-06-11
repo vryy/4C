@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file fluid3_evaluate.cpp
+\file fluid3_xfem_evaluate.cpp
 \brief
 
 <pre>
@@ -1910,10 +1910,9 @@ return;
  |  the Neumann condition associated with the nodes is stored in the    |
  |  array edeadng only if all nodes have a VolumeNeumann condition      |
  *----------------------------------------------------------------------*/
-void DRT::Elements::XFluid3::f3_getbodyforce
-  (Epetra_SerialDenseMatrix& edeadng,
-   const int                 iel    ,
-   ParameterList&        params
+void DRT::Elements::XFluid3::f3_getbodyforce(Epetra_SerialDenseMatrix& edeadng,
+                                             const int                 iel    ,
+                                             ParameterList&            params
 )
 {
   vector<DRT::Condition*> myneumcond;
@@ -1948,7 +1947,7 @@ void DRT::Elements::XFluid3::f3_getbodyforce
     if (curve) curvenum = (*curve)[0];
     double curvefac = 1.0;
     if (curvenum>=0 && usetime)
-      curvefac = DRT::TimeCurveManager::Initialize().Curve(curvenum).f(time);
+      curvefac = DRT::TimeCurveManager::Instance().Curve(curvenum).f(time);
 
     // set this condition to the edeadng array
     for(int nn=0;nn<iel;nn++)
