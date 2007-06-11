@@ -184,10 +184,12 @@ OBJS_DRT_F3   = src/drt_f3/fluid3_evaluate.o \
                 src/drt_f3/fluid3_surface_evaluate.o
 # ------------------------------------------------------------ fluid3 xfem
 OBJS_DRT_XF3_LIB = src/drt_f3_xfem/fluid3_xfem.o \
-                   src/drt_f3_xfem/fluid3_xfem_surface.o
+                   src/drt_f3_xfem/fluid3_xfem_surface.o \
+                   src/drt_f3_xfem/fluid3_xfem_line.o
 OBJS_DRT_XF3   = src/drt_f3_xfem/fluid3_xfem_evaluate.o \
                  src/drt_f3_xfem/fluid3_xfem_input.o \
-                 src/drt_f3_xfem/fluid3_xfem_surface_evaluate.o
+                 src/drt_f3_xfem/fluid3_xfem_surface_evaluate.o \
+                 src/drt_f3_xfem/fluid3_xfem_line_evaluate.o
 #------------------------------------------------------------------ fluid3
 OBJS_FLUID3   = src/fluid3/f3_calele.o \
                 src/fluid3/f3_calelesize.o \
@@ -926,3 +928,9 @@ OBJS_POST_ENSIGHT = src/post_ensight/post_ensight.o \
                 src/post_ensight/post_functions.o		              
 #               post_cmp
 OBJS_POST_CMP = src/post_cmp/post_cmp.o
+
+#				test_intersection
+OBJS_INTERSECTION = src/drt_xfem/intersection.o 
+			
+				
+			
