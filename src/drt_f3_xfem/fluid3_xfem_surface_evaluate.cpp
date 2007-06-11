@@ -22,11 +22,44 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_timecurve.H"
 
 extern "C"
 {
 #include "../headers/standardtypes.h"
+}
+
+
+/*----------------------------------------------------------------------*
+ |  evaluate the element (public)                            g.bau 03/07|
+ *----------------------------------------------------------------------*/
+int DRT::Elements::XFluid3Surface::Evaluate(	ParameterList& params,
+                                    			DRT::Discretization&      discretization,
+                                    			vector<int>&              lm,
+                                   	 			Epetra_SerialDenseMatrix& elemat1,
+                                    			Epetra_SerialDenseMatrix& elemat2,
+                                    			Epetra_SerialDenseVector& elevec1,
+                                    			Epetra_SerialDenseVector& elevec2,
+                                    			Epetra_SerialDenseVector& elevec3)
+{
+	DRT::Elements::XFluid3Surface::ActionType act = XFluid3Surface::none;
+	string action = params.get<string>("action","none");
+	if (action == "none") dserror("No action supplied");
+	else if (action == "calc_ShapefunctDeriv1Deriv2")
+  		act = XFluid3Surface::calc_ShapefunctDeriv1Deriv2;
+  	else dserror("Unknown type of action for XFluid3_Surface");
+  	
+  switch(act)
+  {
+		case calc_ShapefunctDeriv1Deriv2:
+      {
+      	// functions, deriv, iel, r, s,               deriv2 is mssing !!!
+      	f3_shapefunction_for_surface(elevec1,elemat1,lm[0],elevec2[0],elevec2[1]);
+      }
+      default:
+        dserror("Unknown type of action for XFluid3_Surface");
+  } // end of switch(act)
+
+  return 0;
 }
 
 
@@ -39,12 +72,12 @@ int DRT::Elements::XFluid3Surface::EvaluateNeumann(
                                            DRT::Condition&           condition,
                                            vector<int>&              lm,
                                            Epetra_SerialDenseVector& elevec1)
-{
-  // there are 3 velocities and 1 pressure
+{  
+  // there are 3 velocities and 1 pressure 
   const int numdf = 4;
 
   const double thsl = params.get("time constant for integration",0.0);
-
+  
   // find out whether we will use a time curve
   bool usetime = true;
   const double time = params.get("total time",-1.0);
@@ -53,10 +86,10 @@ int DRT::Elements::XFluid3Surface::EvaluateNeumann(
   // find out whether we will use a time curve and get the factor
   vector<int>* curve  = condition.Get<vector<int> >("curve");
   int curvenum = -1;
-  if (curve) curvenum = (*curve)[0];
+  if (curve) curvenum = (*curve)[0]; 
   double curvefac = 1.0;
   if (curvenum>=0 && usetime)
-    curvefac = TimeCurveManager::Instance().Curve(curvenum).f(time);
+    dyn_facfromcurve(curvenum,time,&curvefac); 
 
   // get values and switches from the condition
   vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
@@ -68,7 +101,7 @@ int DRT::Elements::XFluid3Surface::EvaluateNeumann(
 
   // set number of nodes
   int iel   = this->NumNode();
-
+  
   switch(this->Shape())
   {
       // the surface element is rectangular
@@ -87,14 +120,14 @@ int DRT::Elements::XFluid3Surface::EvaluateNeumann(
         nis  = 1; /* second loop is 'inactive' */
         break;
       case tri6:
-        nir  = 6; /* precision 4               */
+        nir  = 6; /* precision 4               */ 
         nis  = 1; /* second loop is 'inactive' */
         break;
       default: dserror("parent element type unknown!\n");
   }
 
 
-  vector<double>            gaussweight(nir*nis  );
+  vector<double>            gaussweight(nir*nis  );  
   Epetra_SerialDenseMatrix  gausscoord (nir*nis,2);
 
 
@@ -105,7 +138,7 @@ int DRT::Elements::XFluid3Surface::EvaluateNeumann(
         gaussweight[1]  =  1.0;
         gaussweight[2]  =  1.0;
         gaussweight[3]  =  1.0;
-
+        
         gausscoord(0,0) = -0.5773502691896;
         gausscoord(0,1) = -0.5773502691896;
         gausscoord(1,0) =  0.5773502691896;
@@ -126,7 +159,7 @@ int DRT::Elements::XFluid3Surface::EvaluateNeumann(
         gaussweight[6]  =  0.5555555555556*0.5555555555556;
         gaussweight[7]  =  0.8888888888889*0.5555555555556;
         gaussweight[8]  =  0.5555555555556*0.5555555555556;
-
+        
         gausscoord(0,0) = -0.7745966692415;
         gausscoord(0,1) = -0.7745966692415;
         gausscoord(1,0) =  0.0;
@@ -134,17 +167,17 @@ int DRT::Elements::XFluid3Surface::EvaluateNeumann(
         gausscoord(2,0) =  0.7745966692415;
         gausscoord(2,1) = -0.7745966692415;
         gausscoord(3,0) = -0.7745966692415;
-        gausscoord(3,1) =  0.0;
-        gausscoord(4,0) =  0.0;
+        gausscoord(3,1) =  0.0; 
+        gausscoord(4,0) =  0.0; 
         gausscoord(4,1) =  0.0;
-        gausscoord(5,0) =  0.7745966692415;
+        gausscoord(5,0) =  0.7745966692415; 
         gausscoord(5,1) =  0.0;
-        gausscoord(6,0) = -0.7745966692415;
-        gausscoord(6,1) =  0.7745966692415;
-        gausscoord(7,0) =  0.0;
-        gausscoord(7,1) =  0.7745966692415;
+        gausscoord(6,0) = -0.7745966692415; 
+        gausscoord(6,1) =  0.7745966692415; 
+        gausscoord(7,0) =  0.0;  
+        gausscoord(7,1) =  0.7745966692415; 
         gausscoord(8,0) =  0.7745966692415;
-        gausscoord(8,1) =  0.7745966692415;
+        gausscoord(8,1) =  0.7745966692415; 
         break;
       case tet4 :
         gaussweight[0]  = 1.0/6.0 ;
@@ -176,19 +209,19 @@ int DRT::Elements::XFluid3Surface::EvaluateNeumann(
         gausscoord(3,1) = 0.1081030181681;
         gausscoord(4,0) = 0.4459484909160;
         gausscoord(4,1) = 0.4459484909160;
-        gausscoord(5,0) = 0.1081030181681;
-        gausscoord(5,1) = 0.4459484909160;
+        gausscoord(5,0) = 0.1081030181681; 
+        gausscoord(5,1) = 0.4459484909160; 
         break;
       default: dserror("parent element type unknown!\n");
   }
 
 
   // allocate vector for shape functions and matrix for derivatives
-  vector<double>        funct       (iel);
-  Epetra_SerialDenseMatrix  deriv       (2,iel);
+  Epetra_SerialDenseVector  funct(iel);
+  Epetra_SerialDenseMatrix  deriv(2,iel);
 
   // node coordinates
-  Epetra_SerialDenseMatrix      xyze        (3,iel);
+  Epetra_SerialDenseMatrix      xyze(3,iel);
 
   // the metric tensor and the area of an infintesimal surface element
   Epetra_SerialDenseMatrix  metrictensor(2,2);
@@ -205,13 +238,13 @@ int DRT::Elements::XFluid3Surface::EvaluateNeumann(
   /*----------------------------------------------------------------------*
   |               start loop over integration points                     |
   *----------------------------------------------------------------------*/
-
+  
   for (int gpid=0;gpid<nir*nis;gpid++)
   {
     double e[2];
     e[0] = gausscoord(gpid,0);
     e[1] = gausscoord(gpid,1);
-
+    
     // get shape functions and derivatives in the plane of the element
     f3_shapefunction_for_surface(funct,deriv,iel,e[0],e[1]);
 
@@ -240,7 +273,7 @@ int DRT::Elements::XFluid3Surface::EvaluateNeumann(
   return 0;
 }
 /*----------------------------------------------------------------------*
-get shape function of surface (private) gammi                     04/07
+get shape function of surface (private) gammi                     04/07 
 
 In this routine the shape functions (always) and their natural first
 derivatives with respect to r/s are evaluated for
@@ -263,15 +296,13 @@ Numbering of the nodes:
 
 
 
-
-
                     ^ s
                     |
                     |
                    2|
                     o
                     |\
-                    | \
+                    | \ 
                    5o  o4
                     |   \
                     |    \
@@ -279,8 +310,8 @@ Numbering of the nodes:
                0   3   1
 
 
-
-
+                                                            
+  
  \param   funct    vector<double>&             (o)    shape functions
  \param   deriv    Epetra_SerialDenseMatrix&   (o)    1st natural deriv.
                                                       of shape funct.
@@ -294,214 +325,209 @@ Numbering of the nodes:
 
 
 
-void DRT::Elements::XFluid3Surface::f3_shapefunction_for_surface(
-  vector<double>&           funct ,
-  Epetra_SerialDenseMatrix& deriv ,
-  const int                 iel   ,
-  const double              r     ,
-  const double              s
-  )
+void DRT::Elements::XFluid3Surface::f3_shapefunction_for_surface(	
+											Epetra_SerialDenseVector&	funct ,
+  											Epetra_SerialDenseMatrix& 	deriv ,
+  											const int&                 		iel   ,
+  											const double&              		r     ,
+  											const double&              		s		)
 {
-  double Q12=0.50;
-  double Q14=0.25;
-
-  /*------------------------------- selection of polynomial interpolation */
-  switch (iel)
-  {
-    case 4: /* LINEAR shape functions for quad4 and their natural
-         *                                          derivatives ----*/
-    {
-      /*--------------------------------------------- form basic values */
-    double rp=ONE+r;
-    double rm=ONE-r;
-    double sp=ONE+s;
-    double sm=ONE-s;
-
-    funct[0]=Q14*rp*sp;
-    funct[1]=Q14*rm*sp;
-    funct[2]=Q14*rm*sm;
-    funct[3]=Q14*rp*sm;
-
-        deriv(0,0)= Q14*sp;
-        deriv(1,0)= Q14*rp;
-
-        deriv(0,1)=-Q14*sp;
-        deriv(1,1)= Q14*rm;
-
-        deriv(0,2)=-Q14*sm;
-        deriv(1,2)=-Q14*rm;
-
-        deriv(0,3)= Q14*sm;
-        deriv(1,3)=-Q14*rp;
-    break;
-    }
-    case 8: /* QUADRATIC shape functions for quadrilaterals without
+	double Q12=0.50;
+  	double Q14=0.25;
+  
+  	/*------------------------------- selection of polynomial interpolation */
+  	switch (iel)
+  	{
+    	case 4: /* LINEAR shape functions for quad4 and their natural derivatives ----*/
+    	{    
+    		/*--------------------------------------------- form basic values */
+    		double rp=ONE+r;
+    		double rm=ONE-r;
+    		double sp=ONE+s;
+    		double sm=ONE-s;
+    
+    		funct[0]=Q14*rp*sp;
+    		funct[1]=Q14*rm*sp;
+   		funct[2]=Q14*rm*sm;
+    		funct[3]=Q14*rp*sm;
+    
+    		deriv(0,0)= Q14*sp;
+     		deriv(1,0)= Q14*rp;
+        
+    		deriv(0,1)=-Q14*sp;
+     		deriv(1,1)= Q14*rm;
+        
+    		deriv(0,2)=-Q14*sm;
+     		deriv(1,2)=-Q14*rm;
+        
+     		deriv(0,3)= Q14*sm;
+    		deriv(1,3)=-Q14*rp;
+    		break;
+    	}
+    	case 8: /* QUADRATIC shape functions for quadrilaterals without
            central node and their natural derivatives (serendipity) */
-    {
-    double rp=ONE+r;
-    double rm=ONE-r;
-    double sp=ONE+s;
-    double sm=ONE-s;
-    double r2=ONE-r*r;
-    double s2=ONE-s*s;
+    	{
+    		double rp=ONE+r;
+    		double rm=ONE-r;
+    		double sp=ONE+s;
+    		double sm=ONE-s;
+    		double r2=ONE-r*r;
+    		double s2=ONE-s*s;
 
-    funct[4]=Q12*r2*sp;
-    funct[5]=Q12*rm*s2;
-    funct[6]=Q12*r2*sm;
-    funct[7]=Q12*rp*s2;
-    funct[0]=Q14*rp*sp-Q12*(funct[4]+funct[7]);
-    funct[1]=Q14*rm*sp-Q12*(funct[4]+funct[5]);
-    funct[2]=Q14*rm*sm-Q12*(funct[5]+funct[6]);
-    funct[3]=Q14*rp*sm-Q12*(funct[6]+funct[7]);
+			funct[0]=Q14*rp*sp-Q12*(funct[4]+funct[7]);
+    		funct[1]=Q14*rm*sp-Q12*(funct[4]+funct[5]);
+    		funct[2]=Q14*rm*sm-Q12*(funct[5]+funct[6]);
+    		funct[3]=Q14*rp*sm-Q12*(funct[6]+funct[7]);
+    		funct[4]=Q12*r2*sp;
+    		funct[5]=Q12*rm*s2;
+    		funct[6]=Q12*r2*sm;
+    		funct[7]=Q12*rp*s2;
+    	
+      	deriv(0,0)= Q14*sp;
+      	deriv(1,0)= Q14*rp;
+        
+      	deriv(0,1)=-Q14*sp;
+      	deriv(1,1)= Q14*rm;
+        
+      	deriv(0,2)=-Q14*sm;
+      	deriv(1,2)=-Q14*rm;
+        
+      	deriv(0,3)= Q14*sm;
+      	deriv(1,3)=-Q14*rp;
+        
+      	deriv(0,4)=-ONE*r*sp;
+      	deriv(1,4)= Q12*r2;
+        
+      	deriv(0,5)=-Q12*  s2;
+      	deriv(1,5)=-ONE*rm*s;
+        
+      	deriv(0,6)=-ONE*r*sm;
+      	deriv(1,6)=-Q12*r2;
+        
+      	deriv(0,7)= Q12*s2;
+      	deriv(1,7)=-ONE*rp*s;
+        
+      	deriv(0,0)-= Q12*(deriv(0,4)+deriv(0,7));
+      	deriv(1,0)-= Q12*(deriv(1,4)+deriv(1,7));
 
-        deriv(0,0)= Q14*sp;
-        deriv(1,0)= Q14*rp;
-
-        deriv(0,1)=-Q14*sp;
-        deriv(1,1)= Q14*rm;
-
-        deriv(0,2)=-Q14*sm;
-        deriv(1,2)=-Q14*rm;
-
-        deriv(0,3)= Q14*sm;
-        deriv(1,3)=-Q14*rp;
-
-        deriv(0,4)=-ONE*r*sp;
-        deriv(1,4)= Q12*r2;
-
-        deriv(0,5)=-Q12*  s2;
-        deriv(1,5)=-ONE*rm*s;
-
-        deriv(0,6)=-ONE*r*sm;
-        deriv(1,6)=-Q12*r2;
-
-        deriv(0,7)= Q12*  s2;
-        deriv(1,7)=-ONE*rp*s;
-
-        deriv(0,0)-= Q12*(deriv(0,4)+deriv(0,7));
-        deriv(1,0)-= Q12*(deriv(1,4)+deriv(1,7));
-
-        for(int i=1;i<4;i++)
-        {
-          int ii=i+3;
-          deriv(0,i) -= Q12*(deriv(0,ii)+deriv(0,ii+1));
-          deriv(1,i) -= Q12*(deriv(1,ii)+deriv(1,ii+1));
-        } /* end loop over i */
-    break;
-    }
-    case 9: /* full QUADRATIC shape functions for quadrilaterals with
+    		for(int i=1;i<4;i++)
+   		{
+      		int ii=i+3;
+         	deriv(0,i) -= Q12*(deriv(0,ii)+deriv(0,ii+1));
+         	deriv(1,i) -= Q12*(deriv(1,ii)+deriv(1,ii+1));
+			} /* end loop over i */
+    		break;
+    	}
+    	case 9: /* full QUADRATIC shape functions for quadrilaterals with
                          central node and their natural derivatives */
-    {
-/*--------------------------------------------------- form basic values */
-    double rp=ONE+r;
-    double rm=ONE-r;
-    double sp=ONE+s;
-    double sm=ONE-s;
-    double r2=ONE-r*r;
-    double s2=ONE-s*s;
-    double rh=Q12*r;
-    double sh=Q12*s;
-    double rs=rh*sh;
-    double rhp=r+Q12;
-    double rhm=r-Q12;
-    double shp=s+Q12;
-    double shm=s-Q12;
-
-    funct[0]= rs*rp*sp;
-    funct[1]=-rs*rm*sp;
-    funct[2]= rs*rm*sm;
-    funct[3]=-rs*rp*sm;
-    funct[4]= sh*sp*r2;
-    funct[5]=-rh*rm*s2;
-    funct[6]=-sh*sm*r2;
-    funct[7]= rh*rp*s2;
-    funct[8]= r2*s2;
-
-        deriv(0,0)= rhp*sh*sp;
-        deriv(1,0)= shp*rh*rp;
-
-        deriv(0,1)= rhm*sh*sp;
-        deriv(1,1)=-shp*rh*rm;
-
-        deriv(0,2)=-rhm*sh*sm;
-        deriv(1,2)=-shm*rh*rm;
-
-        deriv(0,3)=-rhp*sh*sm;
-        deriv(1,3)= shm*rh*rp;
-
-        deriv(0,4)=-TWO*r*sh*sp;
-        deriv(1,4)= shp*r2;
-
-        deriv(0,5)= rhm*s2;
-        deriv(1,5)= TWO*s*rh*rm;
-
-        deriv(0,6)= TWO*r*sh*sm;
-        deriv(1,6)= shm*r2;
-
-        deriv(0,7)= rhp*s2;
-        deriv(1,7)=-TWO*s*rh*rp;
-
-        deriv(0,8)=-TWO*r*s2;
-        deriv(1,8)=-TWO*s*r2;
-    break;
-    }
-    case 3: /* LINEAR shape functions for triangles and their natural
-         *                                         derivatives -----*/
-    {
-        /*------------------------------------------- form basic values */
-    funct[0]=ONE-r-s;
-    funct[1]=r;
-    funct[2]=s;
-
-        deriv(0,0)=-ONE;
-        deriv(1,0)=-ONE;
-        deriv(0,1)= ONE;
-        deriv(1,1)=ZERO;
-        deriv(0,2)=ZERO;
-        deriv(1,2)= ONE;
-    break;
-    }
-    case 6: /* QUADRATIC shape functions for triangles and their natural
-         *                                             derivatives -*/
-    {
-        /*------------------------------------------- form basic values */
-    double rr=r*r;
-    double ss=s*s;
-    double rs=r*s;
-
-    funct[0]=(ONE-TWO*r-TWO*s)*(ONE-r-s);
-    funct[1]=TWO*rr-r;
-    funct[2]=TWO*ss-s;
-    funct[3]=FOUR*(r-rr-rs);
-    funct[4]=FOUR*rs;
-    funct[5]=FOUR*(s-rs-ss);
-
-        deriv(0,0)=-THREE+FOUR*(r+s);
-        deriv(1,0)= deriv(0,0);
-
-        deriv(0,1)= FOUR*r-ONE;
-        deriv(1,1)= ZERO;
-
-        deriv(0,2)= ZERO;
-        deriv(1,2)= FOUR*s-ONE;
-
-        deriv(0,3)= FOUR*(ONE-TWO*r-s);
-        deriv(1,3)=-FOUR*r;
-
-        deriv(0,4)= FOUR*s;
-        deriv(1,4)= FOUR*r;
-
-        deriv(0,5)=-FOUR*s;
-        deriv(1,5)= FOUR*(ONE-r-TWO*s);
-    break;
-    }
-    /*------------------------------------------------------------------*/
-    default:
-    dserror("distyp unknown\n");
-  } /* end switch(iel) */
-
-
-  return;
+    	{
+			/*--------------------------------------------------- form basic values */
+			double rp=ONE+r;
+	   	double rm=ONE-r;
+	   	double sp=ONE+s;
+	   	double sm=ONE-s;
+	   	double r2=ONE-r*r;
+	   	double s2=ONE-s*s;
+      	double rh=Q12*r;
+      	double sh=Q12*s;
+      	double rs=rh*sh;
+	   	double rhp=r+Q12;
+	   	double rhm=r-Q12;
+	   	double shp=s+Q12;
+	   	double shm=s-Q12;
+	
+	   	funct[0]= rs*rp*sp;
+	   	funct[1]=-rs*rm*sp;
+	   	funct[2]= rs*rm*sm;
+	   	funct[3]=-rs*rp*sm;
+		   funct[4]= sh*sp*r2;
+		   funct[5]=-rh*rm*s2;
+		   funct[6]=-sh*sm*r2;
+		   funct[7]= rh*rp*s2;
+		   funct[8]= r2*s2;
+	
+			deriv(0,0)= rhp*sh*sp;
+		   deriv(1,0)= shp*rh*rp;
+		     
+		   deriv(0,1)= rhm*sh*sp;
+		   deriv(1,1)=-shp*rh*rm;
+		     
+		   deriv(0,2)=-rhm*sh*sm;
+		   deriv(1,2)=-shm*rh*rm;
+		     
+		   deriv(0,3)=-rhp*sh*sm;
+		   deriv(1,3)= shm*rh*rp;
+		     
+		   deriv(0,4)=-TWO*r*sh*sp;
+		   deriv(1,4)= shp*r2;
+		     
+	      deriv(0,5)= rhm*s2;
+	      deriv(1,5)= TWO*s*rh*rm;
+	     
+	      deriv(0,6)= TWO*r*sh*sm;
+	      deriv(1,6)= shm*r2;
+	     
+	      deriv(0,7)= rhp*s2;
+	      deriv(1,7)=-TWO*s*rh*rp;      
+			
+	      deriv(0,8)=-TWO*r*s2;
+	      deriv(1,8)=-TWO*s*r2;
+	    break;
+    	}
+    	case 3: /* LINEAR shape functions for triangles and their natural derivatives -----*/
+    	{
+			/*------------------------------------------- form basic values */
+    		funct[0]=ONE-r-s;
+    		funct[1]=r;
+    		funct[2]=s;
+    
+      	deriv(0,0)=-ONE;
+      	deriv(1,0)=-ONE;
+      	deriv(0,1)= ONE;
+      	deriv(1,1)=ZERO;
+      	deriv(0,2)=ZERO;
+      	deriv(1,2)= ONE;
+    		break;
+    	}
+    	case 6: /* QUADRATIC shape functions for triangles and their natural derivatives -*/
+    	{
+      	  /*------------------------------------------- form basic values */
+	    	double rr=r*r;
+	    	double ss=s*s;
+	    	double rs=r*s;
+	
+	    	funct[0]=(ONE-TWO*r-TWO*s)*(ONE-r-s);
+	    	funct[1]=TWO*rr-r;
+		    funct[2]=TWO*ss-s;
+		    funct[3]=FOUR*(r-rr-rs);
+		    funct[4]=FOUR*rs;
+		    funct[5]=FOUR*(s-rs-ss);
+	    
+	       deriv(0,0)=-THREE+FOUR*(r+s);
+	       deriv(1,0)= deriv(0,0);
+	        
+	       deriv(0,1)= FOUR*r-ONE;
+	       deriv(1,1)= ZERO;
+	        
+	       deriv(0,2)= ZERO;
+	       deriv(1,2)= FOUR*s-ONE;
+	        
+	       deriv(0,3)= FOUR*(ONE-TWO*r-s);
+	       deriv(1,3)=-FOUR*r;
+	        
+	       deriv(0,4)= FOUR*s;
+	       deriv(1,4)= FOUR*r;
+	        
+	       deriv(0,5)=-FOUR*s;
+	       deriv(1,5)= FOUR*(ONE-r-TWO*s);
+	    	break;
+	    }
+    	/*------------------------------------------------------------------*/
+    	default:
+    		dserror("distyp unknown\n");
+ 	} /* end switch(iel) */
+ 
+  	return;
 }
 
 /* compute kovariant metric tensor G for fluid element        gammi 04/07
@@ -518,16 +544,16 @@ void DRT::Elements::XFluid3Surface::f3_shapefunction_for_surface(
                             dxyz   dxyz
                     g11 =   ---- o ----
                              dr     dr
-
+                    
                             dxyz   dxyz
                     g12 =   ---- o ----
                              dr     ds
-
+                    
                             dxyz   dxyz
                     g22 =   ---- o ----
                              ds     ds
-
-
+                    
+                    
  and the square root of the first fundamental form
 
 
@@ -537,7 +563,7 @@ void DRT::Elements::XFluid3Surface::f3_shapefunction_for_surface(
                       \/
 
  they are needed for the integration over the surface element
-
+               
 */
 void  DRT::Elements::XFluid3Surface::f3_metric_tensor_for_surface(
   const Epetra_SerialDenseMatrix  xyze,
@@ -545,21 +571,21 @@ void  DRT::Elements::XFluid3Surface::f3_metric_tensor_for_surface(
   Epetra_SerialDenseMatrix&       metrictensor,
   double                         *sqrtdetg)
 {
-  /*
+  /* 
   |                                              0 1 2
-  |                                             +-+-+-+
+  |                                             +-+-+-+ 
   |       0 1 2              0...iel-1          | | | | 0
-  |      +-+-+-+             +-+-+-+-+          +-+-+-+
+  |      +-+-+-+             +-+-+-+-+          +-+-+-+ 
   |      | | | | 1           | | | | | 0        | | | | .
   |      +-+-+-+       =     +-+-+-+-+       *  +-+-+-+ .
   |      | | | | 2           | | | | | 1        | | | | .
-  |      +-+-+-+             +-+-+-+-+          +-+-+-+
+  |      +-+-+-+             +-+-+-+-+          +-+-+-+ 
   |                                             | | | | iel-1
-  |                                     +-+-+-+
-  |
+  |                                     +-+-+-+ 
+  |                                      
   |       dxyzdrs             deriv              xyze^T
-  |
-  |
+  |                                        
+  |                                        
   |                                     +-            -+
   |                                 | dx   dy   dz |
   |                                 | --   --   -- |
@@ -572,16 +598,16 @@ void  DRT::Elements::XFluid3Surface::f3_metric_tensor_for_surface(
   |
   */
   Epetra_SerialDenseMatrix dxyzdrs (2,3);
-
+  
   dxyzdrs.Multiply('N','T',1.0,deriv,xyze,0.0);
 
   /*
-  |
+  |                                        
   |      +-           -+    +-            -+   +-            -+ T
   |      |             |    | dx   dy   dz |   | dx   dy   dz |
   |      |  g11   g12  |    | --   --   -- |   | --   --   -- |
   |      |             |    | dr   dr   dr |   | dr   dr   dr |
-  |      |             |  = |              | * |              |
+  |      |             |  = |              | * |              | 
   |      |             |    | dx   dy   dz |   | dx   dy   dz |
   |      |  g21   g22  |    | --   --   -- |   | --   --   -- |
   |      |             |    | ds   ds   ds |   | ds   ds   ds |

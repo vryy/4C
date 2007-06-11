@@ -56,73 +56,75 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
   // get the action required
   string action = params.get<string>("action","none");
   if (action == "none") dserror("No action supplied");
-  else if (action == "calc_fluid_systemmat_and_residual")
+  else if (action == "calc_fluid_systemmat_and_residual")      
     act = XFluid3::calc_fluid_systemmat_and_residual;
-  else if (action == "calc_fluid_beltrami_error")
+  else if (action == "calc_fluid_beltrami_error")      
     act = XFluid3::calc_fluid_beltrami_error;
+  else if (action == "calc_ShapefunctDeriv1Deriv2")
+    act = XFluid3::calc_ShapefunctDeriv1Deriv2;
   else dserror("Unknown type of action for Fluid3");
 
   // get the material
   MATERIAL* actmat = &(mat[material_-1]);
 
-  switch(act)
-  {
-      case calc_fluid_systemmat_and_residual:
+  	switch(act)
+  	{
+   	case calc_fluid_systemmat_and_residual:
       {
-        // need current velocity and history vector
-        RefCountPtr<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (trial)");
-        RefCountPtr<const Epetra_Vector> hist  = discretization.GetState("old solution data for rhs");
-        if (vel_pre_np==null || hist==null) dserror("Cannot get state vectors 'velnp' and/or 'hist'");
+        	// need current velocity and history vector
+        	RefCountPtr<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (trial)");
+        	RefCountPtr<const Epetra_Vector> hist  = discretization.GetState("old solution data for rhs");
+        	if (vel_pre_np==null || hist==null) dserror("Cannot get state vectors 'velnp' and/or 'hist'");
+      
+        	// extract local values from the global vectors
+        	vector<double> my_vel_pre_np(lm.size());
+        	DRT::Utils::ExtractMyValues(*vel_pre_np,my_vel_pre_np,lm);
+        	vector<double> myhist(lm.size());
+        	DRT::Utils::ExtractMyValues(*hist,myhist,lm);
 
-        // extract local values from the global vectors
-        vector<double> my_vel_pre_np(lm.size());
-        DRT::Utils::ExtractMyValues(*vel_pre_np,my_vel_pre_np,lm);
-        vector<double> myhist(lm.size());
-        DRT::Utils::ExtractMyValues(*hist,myhist,lm);
+        	// split "my_vel_pre_np" into velocity part "myvelnp" and pressure part "myprenp"
+        	// Additionally only the velocity components of myhist are important!
+        	int numnode = NumNode();
+        	vector<double> myprenp(numnode);
+        	vector<double> myvelnp(3*numnode);
+        	vector<double> myvhist(3*numnode);
+      
+        	for (int i=0;i<numnode;++i)
+        	{
+          	myvelnp[0+(i*3)]=my_vel_pre_np[0+(i*4)];
+          	myvelnp[1+(i*3)]=my_vel_pre_np[1+(i*4)];
+          	myvelnp[2+(i*3)]=my_vel_pre_np[2+(i*4)];
 
-        // split "my_vel_pre_np" into velocity part "myvelnp" and pressure part "myprenp"
-        // Additionally only the velocity components of myhist are important!
-        int numnode = NumNode();
-        vector<double> myprenp(numnode);
-        vector<double> myvelnp(3*numnode);
-        vector<double> myvhist(3*numnode);
+          	myprenp[i]=my_vel_pre_np[3+(i*4)];
 
-        for (int i=0;i<numnode;++i)
-        {
-          myvelnp[0+(i*3)]=my_vel_pre_np[0+(i*4)];
-          myvelnp[1+(i*3)]=my_vel_pre_np[1+(i*4)];
-          myvelnp[2+(i*3)]=my_vel_pre_np[2+(i*4)];
+          	myvhist[0+(i*3)]=myhist[0+(i*4)];
+          	myvhist[1+(i*3)]=myhist[1+(i*4)];
+          	myvhist[2+(i*3)]=myhist[2+(i*4)];
+        	}
 
-          myprenp[i]=my_vel_pre_np[3+(i*4)];
-
-          myvhist[0+(i*3)]=myhist[0+(i*4)];
-          myvhist[1+(i*3)]=myhist[1+(i*4)];
-          myvhist[2+(i*3)]=myhist[2+(i*4)];
-        }
-
-        // calculate element coefficient matrix and rhs
-        f3_sys_mat(lm,myvelnp,myprenp,myvhist,&elemat1,&elevec1,actmat,params);
-
-
-        /* the following has to be checked again !!! */
-        // use local variables instead of directly write into elemat1, elevec1.
-        // this speeds up computations by 3%-5%
-        //Epetra_SerialDenseVector  eforce(4*numnode);          // rhs vector
-        //Epetra_SerialDenseMatrix  estif(4*numnode,4*numnode);     // element coefficient matrix
-
-        // calculate element coefficient matrix and rhs
-        //f3_sys_mat(lm,myvelnp,myprenp,myvhist,&estif,&eforce,actmat,params);
-
-        // copy values
-        //elemat1 = estif;
-        //elevec1 = eforce;
+        	// calculate element coefficient matrix and rhs       
+        	f3_sys_mat(lm,myvelnp,myprenp,myvhist,&elemat1,&elevec1,actmat,params);
 
 
+        	/* the following has to be checked again !!! */
+        	// use local variables instead of directly write into elemat1, elevec1.
+        	// this speeds up computations by 3%-5%
+        	//Epetra_SerialDenseVector  eforce(4*numnode);          // rhs vector                       
+        	//Epetra_SerialDenseMatrix  estif(4*numnode,4*numnode);     // element coefficient matrix
+      
+        	// calculate element coefficient matrix and rhs       
+        	//f3_sys_mat(lm,myvelnp,myprenp,myvhist,&estif,&eforce,actmat,params);  
+      
+        	// copy values
+        	//elemat1 = estif;
+        	//elevec1 = eforce;
+  
+   
 // outputs for debugging
 
-// if (Id()==10 || Id()==21)
+/* if (Id()==10 || Id()==21)
         {
-          //printf("Element %5d\n",Id());
+          //printf("Element %5d\n",Id());   
 #if 0
 
           for (int i=0;i<elevec1.size();++i)
@@ -149,48 +151,54 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
 #if 0
           for (unsigned int i=0;i<myvelnp.size();++i){
         printf("vel %26.16e ",myvelnp[i]);
-        printf("\n");
+        printf("\n");   
           }
 #endif
         } // end of debug part
-
+*/
+			break;
       }
-      break;
       case calc_fluid_beltrami_error:
       {
-        // add error only for elements which are not ghosted
-        if(this->Owner() == discretization.Comm().MyPID())
-        {
+        	// add error only for elements which are not ghosted
+        	if(this->Owner() == discretization.Comm().MyPID())
+        	{
+        
+          	// need current velocity and history vector
+          	RefCountPtr<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (converged)");
+          	if (vel_pre_np==null) dserror("Cannot get state vectors 'velnp'");
+      
+          	// extract local values from the global vectors
+          	vector<double> my_vel_pre_np(lm.size());
+          	DRT::Utils::ExtractMyValues(*vel_pre_np,my_vel_pre_np,lm);
 
-          // need current velocity and history vector
-          RefCountPtr<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (converged)");
-          if (vel_pre_np==null) dserror("Cannot get state vectors 'velnp'");
+          	// split "my_vel_pre_np" into velocity part "myvelnp" and pressure part "myprenp"
+          	int numnode = NumNode();
+          	vector<double> myprenp(numnode);
+          	vector<double> myvelnp(3*numnode);
+      
+          	for (int i=0;i<numnode;++i)
+          	{
+            	myvelnp[0+(i*3)]=my_vel_pre_np[0+(i*4)];
+            	myvelnp[1+(i*3)]=my_vel_pre_np[1+(i*4)];
+            	myvelnp[2+(i*3)]=my_vel_pre_np[2+(i*4)];
 
-          // extract local values from the global vectors
-          vector<double> my_vel_pre_np(lm.size());
-          DRT::Utils::ExtractMyValues(*vel_pre_np,my_vel_pre_np,lm);
+            	myprenp[i]=my_vel_pre_np[3+(i*4)];
+          	}
 
-          // split "my_vel_pre_np" into velocity part "myvelnp" and pressure part "myprenp"
-          int numnode = NumNode();
-          vector<double> myprenp(numnode);
-          vector<double> myvelnp(3*numnode);
-
-          for (int i=0;i<numnode;++i)
-          {
-            myvelnp[0+(i*3)]=my_vel_pre_np[0+(i*4)];
-            myvelnp[1+(i*3)]=my_vel_pre_np[1+(i*4)];
-            myvelnp[2+(i*3)]=my_vel_pre_np[2+(i*4)];
-
-            myprenp[i]=my_vel_pre_np[3+(i*4)];
-          }
-
-          // integrate beltrami error
-          f3_int_beltrami_err(myvelnp,myprenp,actmat,params);
-        }
+          	// integrate beltrami error
+          	f3_int_beltrami_err(myvelnp,myprenp,actmat,params);
+        	}
+        	break;
       }
-      break;
+      case calc_ShapefunctDeriv1Deriv2:
+      {
+      	// functions, deriv1, deriv2, r, s, t, iel, icode
+      	f3_shape_function(elevec1,elemat1,elemat2,elevec2[0],elevec2[1],elevec2[2],lm[0],lm[1]);
+      	break;
+      }
       default:
-        dserror("Unknown type of action for Fluid3");
+     		dserror("Unknown type of action for Fluid3");
   } // end of switch(act)
 
   return 0;
@@ -258,7 +266,7 @@ void DRT::Elements::XFluid3::f3_sys_mat(vector<int>&              lm,
     // USFEM stabilization is default. No switch here at the moment.
 
     /*----------------------------------------- declaration of variables ---*/
-    vector<double>              funct(numnode);
+    Epetra_SerialDenseVector    funct(numnode);
     Epetra_SerialDenseMatrix    deriv(3,numnode);
     Epetra_SerialDenseMatrix    deriv2(6,numnode);
     Epetra_SerialDenseMatrix    xjm(3,3);
@@ -434,9 +442,9 @@ void DRT::Elements::XFluid3::f3_sys_mat(vector<int>&              lm,
       // Wall Diss. 99
       /*
                       xi2 ^
-                          |
+                          |   
                         1 |   +-----------
-                          |  /
+                          |  / 
                           | /
                           |/
                           +--------------> Re2
@@ -448,24 +456,24 @@ void DRT::Elements::XFluid3::f3_sys_mat(vector<int>&              lm,
       }
       else
       {// stabilization parameters for stationary case
-
-    /*----------------------------------------------------- compute tau_Mu ---*/
+    
+    /*----------------------------------------------------- compute tau_Mu ---*/    
     re = mk * vel_norm * strle / (2.0 * visc);   /* convective : viscous forces */
     xi = DMAX(re,1.0);
 
     tau[0] = (DSQR(strle)*mk)/(4.0*visc*xi);
-
+     
         /*------------------------------------------------------compute tau_Mp ---*/
     re = mk * vel_norm * hk / (2.0 * visc);      /* convective : viscous forces */
         xi = DMAX(re,1.0);
 
-        tau[1] = (DSQR(hk)*mk)/(4.0*visc*xi);
+        tau[1] = (DSQR(hk)*mk)/(4.0*visc*xi);    
 
     /*------------------------------------------------------ compute tau_C ---*/
         xi = DMIN(re,1.0);
     tau[2] = 0.5*vel_norm*hk*xi;
       }
-    }
+    } 
     /*----------------------------------------------------------------------*/
     // end of old f3_caltau function
     /*----------------------------------------------------------------------*/
@@ -514,7 +522,7 @@ void DRT::Elements::XFluid3::f3_sys_mat(vector<int>&              lm,
       e2 = intpoints.qxg[iquad][1];
       e3 = intpoints.qxg[iquad][2];
       f3_shape_function(funct,deriv,deriv2,e1,e2,e3,numnode,icode);
-
+        
       // compute Jacobian matrix
       f3_jaco(xyze,deriv,xjm,&det,numnode);
       fac = intpoints.qwgt[iquad]*det;
@@ -573,7 +581,7 @@ void DRT::Elements::XFluid3::f3_sys_mat(vector<int>&              lm,
         vderxy(1,i)=ZERO;
         vderxy(2,i)=ZERO;
         for (int j=0;j<numnode;j++)
-        {
+        { 
           vderxy(0,i) += derxy(i,j)*evelnp[0+(3*j)];
           vderxy(1,i) += derxy(i,j)*evelnp[1+(3*j)];
           vderxy(2,i) += derxy(i,j)*evelnp[2+(3*j)];
@@ -598,9 +606,9 @@ void DRT::Elements::XFluid3::f3_sys_mat(vector<int>&              lm,
       {
         gradp[0] += derxy(0,i) * eprenp[i];
         gradp[1] += derxy(1,i) * eprenp[i];
-        gradp[2] += derxy(2,i) * eprenp[i];
+        gradp[2] += derxy(2,i) * eprenp[i];            
       }
-
+      
       // get pressure
       press = 0;
       for (int i=0;i<numnode;i++)
@@ -617,9 +625,9 @@ void DRT::Elements::XFluid3::f3_sys_mat(vector<int>&              lm,
           edeadng[dim]+= bodyforce(dim,i)*funct[i];
         }
       }
-
+          
       /*-------------- perform integration for entire matrix and rhs ---*/
-      if(is_stationary==false)
+      if(is_stationary==false)    
         f3_calmat(*sys_mat,*residual,velint,histvec,gridvelint,
                 press,vderxy,vderxy2,gradp,funct,tau,
                 derxy,derxy2,edeadng,fac,visc,numnode,params);
@@ -628,7 +636,7 @@ void DRT::Elements::XFluid3::f3_sys_mat(vector<int>&              lm,
                     press,vderxy,vderxy2,gradp,funct,tau,
                     derxy,derxy2,edeadng,fac,visc,numnode,params);
 
-
+         
     } // end of loop over integration points/
 
 
@@ -882,21 +890,18 @@ void DRT::Elements::XFluid3::f3_jaco(const Epetra_SerialDenseMatrix& xyze,
  |  shape functions and natural derivatives for hexaeder (private) genk 02/04|
  *----------------------------------------------------------------------*/
 
-void DRT::Elements::XFluid3::f3_shape_function(
-               vector<double>&          funct,
-               Epetra_SerialDenseMatrix&    deriv,
-               Epetra_SerialDenseMatrix&    deriv2,
-               const double&      r,
-               const double&      s,
-               const double&      t,
-               const int&         iel,
-               int            icode
-            )
+void DRT::Elements::XFluid3::f3_shape_function(	Epetra_SerialDenseVector&    funct,
+               									Epetra_SerialDenseMatrix&    deriv,
+               									Epetra_SerialDenseMatrix&    deriv2,
+               									const double&      r,
+               									const double&      s,
+               									const double&      t,
+               									const int&         iel,
+               									const int          icode)
 {
 /*
 In this routine the shape functions and their natural first and second
-derivatives with respect to r/s/t are evaluated for
- H E X A H E D E R
+derivatives with respect to r/s/t are evaluated for H E X A H E D E R
 
    Numbering of the nodes:
 
@@ -2297,7 +2302,7 @@ void DRT::Elements::XFluid3::f3_calmat( Epetra_SerialDenseMatrix& estif,
                 Epetra_SerialDenseMatrix&  vderxy,
                 Epetra_SerialDenseMatrix&  vderxy2,
                 vector<double>&            gradp,
-                vector<double>&            funct,
+                Epetra_SerialDenseVector&  funct,
                 vector<double>&            tau,
                 Epetra_SerialDenseMatrix&  derxy,
                 Epetra_SerialDenseMatrix&  derxy2,
@@ -2599,7 +2604,7 @@ void DRT::Elements::XFluid3::f3_calmat_stationary( Epetra_SerialDenseMatrix& est
                 Epetra_SerialDenseMatrix&  vderxy,
                 Epetra_SerialDenseMatrix&  vderxy2,
                 vector<double>&            gradp,
-                vector<double>&            funct,
+                Epetra_SerialDenseVector&            funct,
                 vector<double>&            tau,
                 Epetra_SerialDenseMatrix&  derxy,
                 Epetra_SerialDenseMatrix&  derxy2,
@@ -2884,7 +2889,7 @@ void DRT::Elements::XFluid3::f3_int_beltrami_err(
   double    fac;      /* total integration factor                      */
 
 
-  vector<double>                funct(iel);
+  Epetra_SerialDenseVector  funct(iel);
   Epetra_SerialDenseMatrix  xjm(3,3);
   Epetra_SerialDenseMatrix  deriv(3,iel);
   Epetra_SerialDenseMatrix  deriv2(6,iel);
