@@ -100,7 +100,8 @@ public:
     LineIsothermalNoslip,
     LineSubsonicInflow,
     LineSubsonicOutflow,
-    FSICoupling
+    FSICoupling,
+    FSIXFEM /*Ursula*/
   };
 
   /*!
@@ -229,6 +230,12 @@ public:
   */
   inline const RefCountPtr<Epetra_Comm> Comm() const { return comm_; }
 
+  /*!
+  \brief Get a reference to the geometry description of the condition
+
+  */
+  virtual map<int,RefCountPtr<DRT::Element> >& Geometry() { return geometry_; }
+	
   //@}
 
   // @{ \name Construction
@@ -275,12 +282,6 @@ protected:
   This method is used by the Discretization only
   */
   virtual void ClearGeometry() { geometry_.clear(); return; }
-
-  /*!
-  \brief Get a reference to the geometry description of the condition
-
-  */
-  virtual map<int,RefCountPtr<DRT::Element> >& Geometry() { return geometry_; }
 
   //@}
 
