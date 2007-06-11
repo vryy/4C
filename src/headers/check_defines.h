@@ -70,6 +70,11 @@ Maintainer: Malte Neumann
 #error "Use -DD_FLUID in the makefile."
 #endif
 
+#if defined(D_FLUID3_XFEM) && !defined(D_FLUID)
+#error "D_FLUID3_XFEM needs D_FLUID."
+#error "Use -DD_FLUID in the makefile."
+#endif
+
 /* no fluid2pro without fluid */
 #if defined(D_FLUID2_PRO) && !defined(D_FLUID)
 #error "D_FLUID2_PRO needs D_FLUID."
@@ -95,6 +100,12 @@ Maintainer: Malte Neumann
 #if defined(D_FLUID_PM) && !defined(AZTEC_PACKAGE)
 #error "D_FLUID_PM needs AZTEC_PACKAGE."
 #error "Use -DAZTEC_PACKAGE in the makefile."
+#endif
+
+/* is this really necessary? should work without FLUID3!!!*/
+#if defined(D_FLUID3_XFEM) && !defined(D_FLUID3)
+#error "D_FLUID3_XFEM needs D_FLUID3."
+#error "Use -DD_FLUID3 in the makefile."
 #endif
 
 /* no fsi with gemm */
