@@ -471,16 +471,16 @@ void frread(void);
 
 /*----------------------------------------------------------------------*
  | reads n integers from input_file                       m.gee 4/01    |
- | char string[] (input) keyword to search for in actual line           |
- | INT *var      (output) adress of field to hold values read           |
- | INT num       (input)  number of values to read                      |
- | INT *ierr     (output) =0 keyword not found / =1 values read         |
+ | const char string[] (input) keyword to search for in actual line     |
+ | INT *var            (output) adress of field to hold values read     |
+ | const INT num       (input)  number of values to read                |
+ | INT *ierr           (output) =0 keyword not found / =1 values read   |
  *----------------------------------------------------------------------*/
 void frint_n(
-    char       string[],
-    INT       *var,
-    INT        num,
-    INT       *ierr);
+    const char       string[],
+    INT              *var,
+    const INT        num,
+    INT              *ierr);
 
 /*----------------------------------------------------------------------*
  | reads an integer from input_file                       m.gee 8/00    |
@@ -538,8 +538,8 @@ void frchar(
  | char string[] (input) character string to check actual line for      |
  *----------------------------------------------------------------------*/
 void frchk(
-    char      string[],
-    INT      *ierr);
+    const char      string[],
+    INT             *ierr);
 
 /*----------------------------------------------------------------------*
  | close and delete input file copy                        m.gee 4/01   |
