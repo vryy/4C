@@ -21,10 +21,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 
-extern "C"
-{
-#include "../headers/standardtypes.h"
-}
 
 
 /*----------------------------------------------------------------------*
@@ -96,8 +92,8 @@ void DRT::Elements::XFluid3Line::f3_shapefunction_for_line(
   	{
   		case 2: /* LINEAR shape functions, 1.derivatives, 2.derivatives  ----*/
     	{    
-    		double rp=ONE + r;
-    		double rm=ONE - r;
+    		double rp=1.0 + r;
+    		double rm=1.0 - r;
     
     		funct[0]=Q12*rm;
     		funct[1]=Q12*rp;
@@ -105,28 +101,28 @@ void DRT::Elements::XFluid3Line::f3_shapefunction_for_line(
     		deriv1(0,0)= (-1)*Q12;
      		deriv1(1,0)= Q12;
      		
-     		deriv2(0,0)= ZERO;
-     		deriv2(1,0)= ZERO;
+     		deriv2(0,0)= 0.0;
+     		deriv2(1,0)= 0.0;
      		
     		break;
     	}
     	case 3: /* QUADRATIC shape functions, 1.derivatives, 2.derivatives  */
     	{
-    		double rp= ONE + r;
-    		double rm= ONE - r;
-    		double r2= ONE - r*r;
+    		double rp= 1.0 + r;
+    		double rm= 1.0 - r;
+    		double r2= 1.0 - r*r;
 
     		funct[0]= Q12*r*rm;
     		funct[1]= r2;
     		funct[2]= Q12*r*rp;
  
       	deriv1(0,0)= r - Q12;
-      	deriv1(1,0)= ONE - 2*r;
+      	deriv1(1,0)= 1.0 - 2.0*r;
       	deriv1(2,0)= r + Q12;
       	
-      	deriv2(0,0)= ONE;
-      	deriv2(1,0)= - TWO;
-      	deriv2(2,0)= ONE;     	   
+      	deriv2(0,0)= 1.0;
+      	deriv2(1,0)= - 2.0;
+      	deriv2(2,0)= 1.0;     	   
     		break;
     	}
     	/*------------------------------------------------------------------*/

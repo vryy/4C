@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file fluid3_input.cpp
+\file fluid3_xfem_input.cpp
 \brief
 
 <pre>
@@ -45,7 +45,6 @@ bool DRT::Elements::XFluid3::ReadElement()
   int   ierr = 0;
   int   nnode = 0;
   int   nodes[27];
-  char  buffer[50];
 
   frchk("HEX8",&ierr);
   if (ierr==1)
@@ -82,7 +81,6 @@ bool DRT::Elements::XFluid3::ReadElement()
   frchk("TET10",&ierr); /* rearrangement??????? */
   if (ierr==1)
   {
-    dserror("TET10 element not yet tested!!!\n");
     nnode=10;
     frint_n("TET10",nodes,nnode,&ierr);
     if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
@@ -97,40 +95,11 @@ bool DRT::Elements::XFluid3::ReadElement()
   // read number of material model
   material_ = 0;
   frint("MAT",&material_,&ierr);
-  dsassert(ierr!=1, "Reading of material for FLUID3 element failed\n");
-  dsassert(material_==0, "No material defined for FLUID3 element\n");
+  dsassert(ierr!=1, "Reading of material for XFLUID3 element failed\n");
+  dsassert(material_==0, "No material defined for XFLUID3 element\n");
 
   // read/set gaussian rule
   gaussrule_ = get_optimal_gaussrule(Shape());
-
-  // read net algo
-  frchar("NA",buffer,&ierr);
-  if (ierr==1)
-  {
-    if (strncmp(buffer,"ale",3)==0 ||
-        strncmp(buffer,"ALE",3)==0 ||
-        strncmp(buffer,"Ale",3)==0 )
-    {
-      is_ale_=true;
-    }
-
-    else if (strncmp(buffer,"euler",5)==0 ||
-             strncmp(buffer,"EULER",5)==0 ||
-             strncmp(buffer,"Euler",5)==0 )
-      is_ale_=false;
-    else
-      dserror("Reading of FLUID3 element failed: Euler/Ale\n");
-  }
-  else
-    dserror("Reading of FLUID3 element net algorithm failed: NA\n");
-
-
-
-
-  // input of ale and free surface related stuff is not supported
-  // at the moment. TO DO!
-  // see src/fluid3/f3_inpele.c for missing details
-
 
   return true;
 

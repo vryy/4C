@@ -20,34 +20,28 @@ Maintainer: Axel Gerstenberger (Ursula)
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 
-extern "C"
-{
-#include "../headers/standardtypes.h"
-}
-#include "../drt_lib/dstrc.H"
 
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 01/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Elements::XFluid3Line::XFluid3Line(	int id,
-                                         	int owner,
-                                          int nnode,
-                                          const int* nodeids,
-                                         	DRT::Node** nodes,
-                                         	DRT::Elements::XFluid3Surface* surfaceParent,
-             										DRT::Elements::XFluid3* parent,  
-                                         	const int lline) :
+DRT::Elements::XFluid3Line::XFluid3Line(int id,
+                                        int owner,
+                                        int nnode,
+                                        const int* nodeids,
+                                        DRT::Node** nodes,
+                                        DRT::Elements::XFluid3Surface* surfaceParent,
+                                        DRT::Elements::XFluid3* parent,  
+                                        const int lline) :
 DRT::Element(id,element_xfluid3line,owner),
 surfaceParent_(surfaceParent),
 parent_(parent),
 lline_(lline)
 {
-  DSTraceHelper dst("XFluid3Line::XFluid3Line");	
-  SetNodeIds(nnode,nodeids);
-  BuildNodalPointers(nodes);
-  return;
+    SetNodeIds(nnode,nodeids);
+    BuildNodalPointers(nodes);
+    return;
 }
 
 
@@ -60,7 +54,6 @@ surfaceParent_(old.surfaceParent_),
 parent_(old.parent_),
 lline_(old.lline_)
 {
-  DSTraceHelper dst("XFluid3Line::XFluid3Line");
   return;
 }
 
@@ -71,7 +64,6 @@ lline_(old.lline_)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::Elements::XFluid3Line::Clone() const
 {
-  DSTraceHelper dst("XFluid3Line::Clone");	
   DRT::Elements::XFluid3Line* newelement = new DRT::Elements::XFluid3Line(*this);
   return newelement;
 }
@@ -100,7 +92,6 @@ DRT::Element::DiscretizationType DRT::Elements::XFluid3Line::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::Elements::XFluid3Line::Pack(vector<char>& data) const
 {
-  DSTraceHelper dst("XFluid3Line::Pack");
   data.resize(0);
   dserror("this Fluid3Line element does not support communication");
 
@@ -114,7 +105,6 @@ void DRT::Elements::XFluid3Line::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void DRT::Elements::XFluid3Line::Unpack(const vector<char>& data)
 {
-  DSTraceHelper dst("XFluid3Line::Unpack");	
   dserror("this XFluid3Surface element does not support communication");
   return;
 }
@@ -125,7 +115,6 @@ void DRT::Elements::XFluid3Line::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
 DRT::Elements::XFluid3Line::~XFluid3Line()
 {
-  DSTraceHelper dst("XFluid3Line::~XFluid3Line");	
   return;
 }
 
@@ -135,7 +124,6 @@ DRT::Elements::XFluid3Line::~XFluid3Line()
  *----------------------------------------------------------------------*/
 void DRT::Elements::XFluid3Line::Print(ostream& os) const
 {
-  DSTraceHelper dst("XFluid3Line::Print");	
   os << "XFluid3Line ";
   Element::Print(os);
   return;

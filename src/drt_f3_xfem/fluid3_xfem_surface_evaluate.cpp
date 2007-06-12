@@ -22,11 +22,8 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_timecurve.H"
 
-extern "C"
-{
-#include "../headers/standardtypes.h"
-}
 
 
 /*----------------------------------------------------------------------*
@@ -86,10 +83,11 @@ int DRT::Elements::XFluid3Surface::EvaluateNeumann(
   // find out whether we will use a time curve and get the factor
   vector<int>* curve  = condition.Get<vector<int> >("curve");
   int curvenum = -1;
-  if (curve) curvenum = (*curve)[0]; 
+  // get the factor for the timecurve
+  if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
   if (curvenum>=0 && usetime)
-    dyn_facfromcurve(curvenum,time,&curvefac); 
+    curvefac = DRT::TimeCurveManager::Instance().Curve(curvenum).f(time);
 
   // get values and switches from the condition
   vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
@@ -341,10 +339,10 @@ void DRT::Elements::XFluid3Surface::f3_shapefunction_for_surface(
     	case 4: /* LINEAR shape functions for quad4 and their natural derivatives ----*/
     	{    
     		/*--------------------------------------------- form basic values */
-    		double rp=ONE+r;
-    		double rm=ONE-r;
-    		double sp=ONE+s;
-    		double sm=ONE-s;
+    		double rp=1.0+r;
+    		double rm=1.0-r;
+    		double sp=1.0+s;
+    		double sm=1.0-s;
     
     		funct[0]=Q14*rp*sp;
     		funct[1]=Q14*rm*sp;
@@ -367,12 +365,12 @@ void DRT::Elements::XFluid3Surface::f3_shapefunction_for_surface(
     	case 8: /* QUADRATIC shape functions for quadrilaterals without
            central node and their natural derivatives (serendipity) */
     	{
-    		double rp=ONE+r;
-    		double rm=ONE-r;
-    		double sp=ONE+s;
-    		double sm=ONE-s;
-    		double r2=ONE-r*r;
-    		double s2=ONE-s*s;
+    		double rp=1.0+r;
+    		double rm=1.0-r;
+    		double sp=1.0+s;
+    		double sm=1.0-s;
+    		double r2=1.0-r*r;
+    		double s2=1.0-s*s;
 
 			funct[0]=Q14*rp*sp-Q12*(funct[4]+funct[7]);
     		funct[1]=Q14*rm*sp-Q12*(funct[4]+funct[5]);
@@ -395,17 +393,17 @@ void DRT::Elements::XFluid3Surface::f3_shapefunction_for_surface(
       	deriv(0,3)= Q14*sm;
       	deriv(1,3)=-Q14*rp;
         
-      	deriv(0,4)=-ONE*r*sp;
+      	deriv(0,4)=-1.0*r*sp;
       	deriv(1,4)= Q12*r2;
         
       	deriv(0,5)=-Q12*  s2;
-      	deriv(1,5)=-ONE*rm*s;
+      	deriv(1,5)=-1.0*rm*s;
         
-      	deriv(0,6)=-ONE*r*sm;
+      	deriv(0,6)=-1.0*r*sm;
       	deriv(1,6)=-Q12*r2;
         
       	deriv(0,7)= Q12*s2;
-      	deriv(1,7)=-ONE*rp*s;
+      	deriv(1,7)=-1.0*rp*s;
         
       	deriv(0,0)-= Q12*(deriv(0,4)+deriv(0,7));
       	deriv(1,0)-= Q12*(deriv(1,4)+deriv(1,7));
@@ -422,12 +420,12 @@ void DRT::Elements::XFluid3Surface::f3_shapefunction_for_surface(
                          central node and their natural derivatives */
     	{
 			/*--------------------------------------------------- form basic values */
-			double rp=ONE+r;
-	   	double rm=ONE-r;
-	   	double sp=ONE+s;
-	   	double sm=ONE-s;
-	   	double r2=ONE-r*r;
-	   	double s2=ONE-s*s;
+			double rp=1.0+r;
+	   	double rm=1.0-r;
+	   	double sp=1.0+s;
+	   	double sm=1.0-s;
+	   	double r2=1.0-r*r;
+	   	double s2=1.0-s*s;
       	double rh=Q12*r;
       	double sh=Q12*s;
       	double rs=rh*sh;
@@ -458,35 +456,35 @@ void DRT::Elements::XFluid3Surface::f3_shapefunction_for_surface(
 		   deriv(0,3)=-rhp*sh*sm;
 		   deriv(1,3)= shm*rh*rp;
 		     
-		   deriv(0,4)=-TWO*r*sh*sp;
+		   deriv(0,4)=-2.0*r*sh*sp;
 		   deriv(1,4)= shp*r2;
 		     
 	      deriv(0,5)= rhm*s2;
-	      deriv(1,5)= TWO*s*rh*rm;
+	      deriv(1,5)= 2.0*s*rh*rm;
 	     
-	      deriv(0,6)= TWO*r*sh*sm;
+	      deriv(0,6)= 2.0*r*sh*sm;
 	      deriv(1,6)= shm*r2;
 	     
 	      deriv(0,7)= rhp*s2;
-	      deriv(1,7)=-TWO*s*rh*rp;      
+	      deriv(1,7)=-2.0*s*rh*rp;      
 			
-	      deriv(0,8)=-TWO*r*s2;
-	      deriv(1,8)=-TWO*s*r2;
+	      deriv(0,8)=-2.0*r*s2;
+	      deriv(1,8)=-2.0*s*r2;
 	    break;
     	}
     	case 3: /* LINEAR shape functions for triangles and their natural derivatives -----*/
     	{
 			/*------------------------------------------- form basic values */
-    		funct[0]=ONE-r-s;
+    		funct[0]=1.0-r-s;
     		funct[1]=r;
     		funct[2]=s;
     
-      	deriv(0,0)=-ONE;
-      	deriv(1,0)=-ONE;
-      	deriv(0,1)= ONE;
-      	deriv(1,1)=ZERO;
-      	deriv(0,2)=ZERO;
-      	deriv(1,2)= ONE;
+      	deriv(0,0)=-1.0;
+      	deriv(1,0)=-1.0;
+      	deriv(0,1)= 1.0;
+      	deriv(1,1)= 0.0;
+      	deriv(0,2)= 0.0;
+      	deriv(1,2)= 1.0;
     		break;
     	}
     	case 6: /* QUADRATIC shape functions for triangles and their natural derivatives -*/
@@ -496,30 +494,30 @@ void DRT::Elements::XFluid3Surface::f3_shapefunction_for_surface(
 	    	double ss=s*s;
 	    	double rs=r*s;
 	
-	    	funct[0]=(ONE-TWO*r-TWO*s)*(ONE-r-s);
-	    	funct[1]=TWO*rr-r;
-		    funct[2]=TWO*ss-s;
-		    funct[3]=FOUR*(r-rr-rs);
-		    funct[4]=FOUR*rs;
-		    funct[5]=FOUR*(s-rs-ss);
+	    	funct[0]=(1.0-2.0*r-2.0*s)*(1.0-r-s);
+	    	funct[1]=2.0*rr-r;
+		    funct[2]=2.0*ss-s;
+		    funct[3]=4.0*(r-rr-rs);
+		    funct[4]=4.0*rs;
+		    funct[5]=4.0*(s-rs-ss);
 	    
-	       deriv(0,0)=-THREE+FOUR*(r+s);
+	       deriv(0,0)=-3.0+4.0*(r+s);
 	       deriv(1,0)= deriv(0,0);
 	        
-	       deriv(0,1)= FOUR*r-ONE;
-	       deriv(1,1)= ZERO;
+	       deriv(0,1)= 4.0*r-1.0;
+	       deriv(1,1)= 0.0;
 	        
-	       deriv(0,2)= ZERO;
-	       deriv(1,2)= FOUR*s-ONE;
+	       deriv(0,2)= 0.0;
+	       deriv(1,2)= 4.0*s-1.0;
 	        
-	       deriv(0,3)= FOUR*(ONE-TWO*r-s);
-	       deriv(1,3)=-FOUR*r;
+	       deriv(0,3)= 4.0*(1.0-2.0*r-s);
+	       deriv(1,3)=-4.0*r;
 	        
-	       deriv(0,4)= FOUR*s;
-	       deriv(1,4)= FOUR*r;
+	       deriv(0,4)= 4.0*s;
+	       deriv(1,4)= 4.0*r;
 	        
-	       deriv(0,5)=-FOUR*s;
-	       deriv(1,5)= FOUR*(ONE-r-TWO*s);
+	       deriv(0,5)=-4.0*s;
+	       deriv(1,5)= 4.0*(1.0-r-2.0*s);
 	    	break;
 	    }
     	/*------------------------------------------------------------------*/

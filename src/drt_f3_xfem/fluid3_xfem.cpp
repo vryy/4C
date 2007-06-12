@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file fluid3.cpp
+\file fluid3_xfem.cpp
 \brief
 
 <pre>
@@ -21,7 +21,6 @@ Maintainer: Axel Gerstenberger
 
 
 
-
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
  |  id             (in)  this element's global id                       |
@@ -32,12 +31,12 @@ material_(0),
 is_ale_(false),
 data_()
 {
-  gaussrule_ = hex_27point;
-  surfaces_.resize(0);
-  surfaceptrs_.resize(0);
-  lines_.resize(0);
-  lineptrs_.resize(0);
-  return;
+    gaussrule_ = hex_27point;
+    surfaces_.resize(0);
+    surfaceptrs_.resize(0);
+    lines_.resize(0);
+    lineptrs_.resize(0);
+    return;
 }
 
 /*----------------------------------------------------------------------*
@@ -54,9 +53,8 @@ surfaceptrs_(old.surfaceptrs_),
 lines_(old.lines_),
 lineptrs_(old.lineptrs_)
 {
-  gaussrule_ = old.gaussrule_;
-
-  return;
+    gaussrule_ = old.gaussrule_;
+    return;
 }
 
 /*----------------------------------------------------------------------*
@@ -65,8 +63,8 @@ lineptrs_(old.lineptrs_)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::Elements::XFluid3::Clone() const
 {
-  DRT::Elements::XFluid3* newelement = new DRT::Elements::XFluid3(*this);
-  return newelement;
+    DRT::Elements::XFluid3* newelement = new DRT::Elements::XFluid3(*this);
+    return newelement;
 }
 
 /*----------------------------------------------------------------------*
@@ -75,15 +73,15 @@ DRT::Element* DRT::Elements::XFluid3::Clone() const
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::Elements::XFluid3::Shape() const
 {
-  switch (NumNode())
-  {
-  case  4: return tet4;
-  case  8: return hex8;
-  case 10: return tet10;
-  case 20: return hex20;
-  case 27: return hex27;
-  default:
-    dserror("unexpected number of nodes %d", NumNode());
+    switch (NumNode())
+    {
+    case  4: return tet4;
+    case  8: return hex8;
+    case 10: return tet10;
+    case 20: return hex20;
+    case 27: return hex27;
+    default:
+        dserror("unexpected number of nodes %d", NumNode());
   }
   return dis_none;
 }
@@ -94,27 +92,27 @@ DRT::Element::DiscretizationType DRT::Elements::XFluid3::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::Elements::XFluid3::Pack(vector<char>& data) const
 {
-  data.resize(0);
+    data.resize(0);
 
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data,type);
-  // add base class Element
-  vector<char> basedata(0);
-  Element::Pack(basedata);
-  AddtoPack(data,basedata);
-  // ngp_
-  AddtoPack(data,gaussrule_);
-  // material_
-  AddtoPack(data,material_);
-  // is_ale_
-  AddtoPack(data,is_ale_);
-  // data_
-  vector<char> tmp(0);
-  data_.Pack(tmp);
-  AddtoPack(data,tmp);
+    // pack type of this instance of ParObject
+    int type = UniqueParObjectId();
+    AddtoPack(data,type);
+    // add base class Element
+    vector<char> basedata(0);
+    Element::Pack(basedata);
+    AddtoPack(data,basedata);
+    // ngp_
+    AddtoPack(data,gaussrule_);
+    // material_
+    AddtoPack(data,material_);
+    // is_ale_
+    AddtoPack(data,is_ale_);
+    // data_
+    vector<char> tmp(0);
+    data_.Pack(tmp);
+    AddtoPack(data,tmp);
 
-  return;
+    return;
 }
 
 
@@ -124,27 +122,27 @@ void DRT::Elements::XFluid3::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void DRT::Elements::XFluid3::Unpack(const vector<char>& data)
 {
-  int position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // extract base class Element
-  vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
-  Element::Unpack(basedata);
+    int position = 0;
+    // extract type
+    int type = 0;
+    ExtractfromPack(position,data,type);
+    if (type != UniqueParObjectId()) dserror("wrong instance type data");
+    // extract base class Element
+    vector<char> basedata(0);
+    ExtractfromPack(position,data,basedata);
+    Element::Unpack(basedata);
   
-  ExtractfromPack(position,data,gaussrule_);
-  ExtractfromPack(position,data,material_);
-  ExtractfromPack(position,data,is_ale_);
-  // data_
-  vector<char> tmp(0);
-  ExtractfromPack(position,data,tmp);
-  data_.Unpack(tmp);
+    ExtractfromPack(position,data,gaussrule_);
+    ExtractfromPack(position,data,material_);
+    ExtractfromPack(position,data,is_ale_);
+    // data_
+    vector<char> tmp(0);
+    ExtractfromPack(position,data,tmp);
+    data_.Unpack(tmp);
 
-  if (position != (int)data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-  return;
+    if (position != (int)data.size())
+        dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+    return;
 }
 
 
@@ -153,7 +151,7 @@ void DRT::Elements::XFluid3::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
 DRT::Elements::XFluid3::~XFluid3()
 {
-  return;
+    return;
 }
 
 
@@ -162,11 +160,11 @@ DRT::Elements::XFluid3::~XFluid3()
  *----------------------------------------------------------------------*/
 void DRT::Elements::XFluid3::Print(ostream& os) const
 {
-  os << "XFluid3 ";
-  Element::Print(os);
-  cout << endl;
-  cout << data_;
-  return;
+    os << "XFluid3 ";
+    Element::Print(os);
+    cout << endl;
+    cout << data_;
+    return;
 }
 
 /*----------------------------------------------------------------------*
@@ -174,7 +172,7 @@ void DRT::Elements::XFluid3::Print(ostream& os) const
  *----------------------------------------------------------------------*/
 RefCountPtr<DRT::ElementRegister> DRT::Elements::XFluid3::ElementRegister() const
 {
-  return rcp(new DRT::Elements::XFluid3Register(Type()));
+    return rcp(new DRT::Elements::XFluid3Register(Type()));
 }
 
 
@@ -786,9 +784,9 @@ DRT::Element** DRT::Elements::XFluid3::Surfaces()
  *----------------------------------------------------------------------*/
 DRT::Element** DRT::Elements::XFluid3::Volumes()
 {
-  volume_.resize(1);
-  volume_[0] = this;     //points to XFluid3 element itself
-  return &volume_[0];
+    volume_.resize(1);
+    volume_[0] = this;     //points to XFluid3 element itself
+    return &volume_[0];
 }
  
    
@@ -807,7 +805,7 @@ DRT::Element** DRT::Elements::XFluid3::Volumes()
 DRT::Elements::XFluid3Register::XFluid3Register(DRT::Element::ElementType etype) :
 ElementRegister(etype)
 {
-  return;
+    return;
 }
 
 
@@ -818,7 +816,7 @@ DRT::Elements::XFluid3Register::XFluid3Register(
                                const DRT::Elements::XFluid3Register& old) :
 ElementRegister(old)
 {
-  return;
+    return;
 }
 
 
@@ -858,19 +856,19 @@ void DRT::Elements::XFluid3Register::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void DRT::Elements::XFluid3Register::Unpack(const vector<char>& data)
 {
-  int position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // base class ElementRegister
-  vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
-  ElementRegister::Unpack(basedata);
+    int position = 0;
+    // extract type
+    int type = 0;
+    ExtractfromPack(position,data,type);
+    if (type != UniqueParObjectId()) dserror("wrong instance type data");
+    // base class ElementRegister
+    vector<char> basedata(0);
+    ExtractfromPack(position,data,basedata);
+    ElementRegister::Unpack(basedata);
 
-  if (position != (int)data.size())
-    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
-  return;
+    if (position != (int)data.size())
+        dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+    return;
 }
 
 
@@ -879,7 +877,7 @@ void DRT::Elements::XFluid3Register::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
 DRT::Elements::XFluid3Register::~XFluid3Register()
 {
-  return;
+    return;
 }
 
 
@@ -888,9 +886,9 @@ DRT::Elements::XFluid3Register::~XFluid3Register()
  *----------------------------------------------------------------------*/
 void DRT::Elements::XFluid3Register::Print(ostream& os) const
 {
-  os << "XFluid3Register ";
-  ElementRegister::Print(os);
-  return;
+    os << "XFluid3Register ";
+    ElementRegister::Print(os);
+    return;
 }
 
 
