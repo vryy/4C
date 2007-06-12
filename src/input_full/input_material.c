@@ -51,7 +51,6 @@ dstrc_enter("inp_material");
 #endif
 /*----------------------------------------------------------------------*/
 mat = (MATERIAL*)CCACALLOC(genprob.nmat,sizeof(MATERIAL));
-micromat = (MICROMATERIAL*)CCACALLOC(genprob.micro_nmat,sizeof(MICROMATERIAL));
 /*----------------------------------------------------------------------*/
 if (frfind("--MATERIALS")==0) dserror("frfind: MATERIALS is not in input file");
 frread();
