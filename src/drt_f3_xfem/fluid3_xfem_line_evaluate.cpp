@@ -84,22 +84,19 @@ void DRT::Elements::XFluid3Line::f3_shapefunction_for_line(
   											int&                 		iel   ,
   											double&              		r     )
 {
-	double Q12=0.50;
-  	double Q14=0.25;
-  
-  	/*------------------------------- selection of polynomial interpolation */
-  	switch (iel)
-  	{
-  		case 2: /* LINEAR shape functions, 1.derivatives, 2.derivatives  ----*/
-    	{    
-    		double rp=1.0 + r;
+    /*------------------------------- selection of polynomial interpolation */
+    switch (iel)
+    {
+        case 2: /* LINEAR shape functions, 1.derivatives, 2.derivatives  ----*/
+        {    
+            double rp=1.0 + r;
     		double rm=1.0 - r;
     
-    		funct[0]=Q12*rm;
-    		funct[1]=Q12*rp;
+    		funct[0]=0.5*rm;
+    		funct[1]=0.5*rp;
     
-    		deriv1(0,0)= (-1)*Q12;
-     		deriv1(1,0)= Q12;
+    		deriv1(0,0)= -0.5;
+     		deriv1(1,0)=  0.5;
      		
      		deriv2(0,0)= 0.0;
      		deriv2(1,0)= 0.0;
@@ -108,24 +105,23 @@ void DRT::Elements::XFluid3Line::f3_shapefunction_for_line(
     	}
     	case 3: /* QUADRATIC shape functions, 1.derivatives, 2.derivatives  */
     	{
-    		double rp= 1.0 + r;
+            double rp= 1.0 + r;
     		double rm= 1.0 - r;
     		double r2= 1.0 - r*r;
 
-    		funct[0]= Q12*r*rm;
+    		funct[0]= 0.5*r*rm;
     		funct[1]= r2;
-    		funct[2]= Q12*r*rp;
+    		funct[2]= 0.5*r*rp;
  
-      	deriv1(0,0)= r - Q12;
-      	deriv1(1,0)= 1.0 - 2.0*r;
-      	deriv1(2,0)= r + Q12;
+      	    deriv1(0,0)= r - 0.5;
+      	    deriv1(1,0)= 1.0 - 2.0*r;
+      	    deriv1(2,0)= r + 0.5;
       	
-      	deriv2(0,0)= 1.0;
-      	deriv2(1,0)= - 2.0;
-      	deriv2(2,0)= 1.0;     	   
+      	    deriv2(0,0)=  1.0;
+            deriv2(1,0)= -2.0;
+            deriv2(2,0)=  1.0;     	   
     		break;
     	}
-    	/*------------------------------------------------------------------*/
     	default:
     		dserror("distyp unknown\n");
   } /* end switch(iel) */
