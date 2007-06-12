@@ -74,6 +74,8 @@ void input_design_dvol_fenode_read(vector<vector<int> >& dvol_fenode,
 
 void inpfield_ccadiscret(DRT::Problem& problem, DRT::DatFileReader& reader);
 
+void input_material_ccadiscret(DRT::Problem& problem);
+
 string inp_micro_filename(int mypid);
 
 void input_conditions(const DRT::Problem& problem);

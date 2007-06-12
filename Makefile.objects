@@ -111,7 +111,8 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/linalg_serialdensevector.o \
                 src/drt_lib/distribute_grids.o\
 		src/drt_lib/drt_nodematchingoctree.o \
-		src/drt_lib/drt_periodicbc.o
+		src/drt_lib/drt_periodicbc.o\
+		src/drt_lib/input_material_ccadiscret.o
 OBJS_DRT      = \
                 src/drt_lib/drt_discret_evaluate.o \
                 src/drt_lib/drt_resulttest.o \

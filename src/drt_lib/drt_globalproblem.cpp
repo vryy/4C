@@ -10,6 +10,7 @@
 #include "Epetra_SerialComm.h"
 #endif
 
+extern struct _MATERIAL *mat;
 
 // the instances
 vector<RefCountPtr<DRT::Problem> > DRT::Problem::instances_;
@@ -39,6 +40,19 @@ void DRT::Problem::AddDis(int fieldnum, RefCountPtr<Discretization> dis)
     discretizations_.resize(fieldnum+1);
   }
   discretizations_[fieldnum].push_back(dis);
+}
+
+void DRT::Problem::AddMaterial(const _MATERIAL& m)
+{
+  if (m.m.fluid==NULL)
+    dserror("invalid material added");
+  material_.push_back(m); // copy!
+  ActivateMaterial();     // always reset!
+}
+
+void DRT::Problem::ActivateMaterial()
+{
+  mat = &material_[0];
 }
 
 

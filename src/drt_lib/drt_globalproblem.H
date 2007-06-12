@@ -23,6 +23,14 @@ Maintainer: Ulrich Kuettler
 #include "drt_discret.H"
 #include "drt_inputreader.H"
 
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
+extern "C" /* stuff which is c and is accessed from c++ */
+{
+#include "../headers/standardtypes.h"
+}
+
 namespace DRT
 {
 
@@ -67,6 +75,12 @@ public:
   /// add a discretization to a specific field
   void AddDis(int fieldnum, RefCountPtr<Discretization> dis);
 
+  /// add material vector
+  void AddMaterial(const _MATERIAL& m);
+
+  /// activate material vector of problem instance as global mat
+  void ActivateMaterial();
+
   /// tell number of known fields
   unsigned NumFields() const { return discretizations_.size(); }
 
@@ -89,6 +103,9 @@ private:
 
   /// discretizations of this problem
   vector<vector<RefCountPtr<Discretization> > > discretizations_;
+
+  /// material vector
+  vector<_MATERIAL> material_;
 };
 
 }

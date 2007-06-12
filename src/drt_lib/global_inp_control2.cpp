@@ -24,7 +24,9 @@ Maintainer: Michael Gee
 #include <algorithm>
 
 #ifdef PARALLEL
-#include <mpi.h>
+#include "Epetra_MpiComm.h"
+#else
+#include "Epetra_SerialComm.h"
 #endif
 
 #include "Epetra_SerialDenseMatrix.h"
@@ -123,9 +125,7 @@ void ntainp_ccadiscret()
   inpctr();
 
   /* input of materials */
-  inp_material();
-  /* input of multilayer materials -> shell9  (sh 10/02) */
-  inp_multimat();
+  input_material_ccadiscret(*DRT::Problem::Instance());
 
   /* input of fields */
   inpfield_ccadiscret(*DRT::Problem::Instance(), reader);
@@ -306,9 +306,15 @@ void inpfield_ccadiscret(DRT::Problem& problem, DRT::DatFileReader& reader)
     micronodereader.Read();
 
 
-    // reactivate reader of macroscale -> needed for input of conditions
+    // read materials of microscale
+
+    input_material_ccadiscret(*micro_problem);
+
+
+    // reactivate reader of macroscale as well as macroscale material
 
     reader.Activate();
+    problem.ActivateMaterial();
 
     if (0)
     {
