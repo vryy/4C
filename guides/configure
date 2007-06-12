@@ -261,7 +261,7 @@ echo -e "\\tif [ -e Makefile ] ; then rm Makefile ; fi" >> Makefile
 
 echo -e "\\n" >> Makefile
 
-echo -e "src/src_%.pdf: src/src_%.eps" >> Makefile
+echo -e "src/%.pdf: src/%.eps" >> Makefile
 echo -e "\\t@echo 'Compiling :  ' $< ' to ' \$@" >> Makefile
 echo -e "\\t@epstopdf $<" >> Makefile
 echo -e "" >> Makefile
