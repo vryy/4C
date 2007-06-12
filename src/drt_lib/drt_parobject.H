@@ -157,6 +157,8 @@ using namespace std;
 #define ParObject_Condif2               (int)31
 #define ParObject_Condif2Register       (int)32
 #define ParObject_Condif2Line           (int)33
+#define ParObject_So_sh8                (int)33
+#define ParObject_Sosh8Register         (int)34
 
 
 /*!

@@ -284,7 +284,7 @@ public:
 
   //@}
 
-private:
+protected:
 
   //! action parameters recognized by so_hex8
   enum ActionType
@@ -357,13 +357,13 @@ private:
   // don't want = operator
   So_hex8& operator = (const So_hex8& old);
 
-  void soh8_nlnstiffmass(vector<int>&              lm,
-                         vector<double>&           disp,
-                         vector<double>&           residual,
-                         Epetra_SerialDenseMatrix* stiffmatrix,
-                         Epetra_SerialDenseMatrix* massmatrix,
-                         Epetra_SerialDenseVector* force,
-                         struct _MATERIAL*         material);
+  virtual void soh8_nlnstiffmass(vector<int>&              lm,
+                                 vector<double>&           disp,
+                                 vector<double>&           residual,
+                                 Epetra_SerialDenseMatrix* stiffmatrix,
+                                 Epetra_SerialDenseMatrix* massmatrix,
+                                 Epetra_SerialDenseVector* force,
+                                 struct _MATERIAL*         material);
 
   void soh8_stress(struct _MATERIAL* material,
                    vector<double>& mydisp,

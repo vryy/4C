@@ -42,6 +42,7 @@ extern "C"
 #include "../drt_ale3/ale3.H"
 #include "../drt_w1/wall1.H"
 #include "../drt_so3/so_hex8.H"
+#include "../drt_so3/so_sh8.H"
 #include "drt_dserror.H"
 
 
@@ -211,7 +212,24 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
     case ParObject_Soh8Register:
     {
       DRT::Elements::Soh8Register* object =
-                      new DRT::Elements::Soh8Register(DRT::Element::element_so_hex8);
+                new DRT::Elements::Soh8Register(DRT::Element::element_so_hex8);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+#endif
+#ifdef D_SOSH8
+    case ParObject_So_sh8:
+    {
+      DRT::Elements::So_sh8* object = new DRT::Elements::So_sh8(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_Sosh8Register:
+    {
+      DRT::Elements::Sosh8Register* object =
+                new DRT::Elements::Sosh8Register(DRT::Element::element_sosh8);
       object->Unpack(data);
       return object;
     }
@@ -247,7 +265,8 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
     fluid3,
     xfluid3,
     ale3,
-    so_hex8
+    so_hex8,
+    so_sh8
   };
 
   TypeofElement type = none;
@@ -260,6 +279,7 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
   else if (eletype=="XFLUID3") type = xfluid3;
   else if (eletype=="ALE3") type = ale3;
   else if (eletype=="SOLIDH8") type = so_hex8;
+  else if (eletype=="SOLIDSH8") type = so_sh8;
   // continue to add elements here....
   else dserror("Unknown type of finite element");
 
@@ -324,6 +344,14 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
     case so_hex8:
     {
       RefCountPtr<DRT::Element> ele = rcp(new DRT::Elements::So_hex8(id,owner));
+      return ele;
+    }
+    break;
+#endif
+#ifdef D_SOSH8
+    case so_sh8:
+    {
+      RefCountPtr<DRT::Element> ele = rcp(new DRT::Elements::So_sh8(id,owner));
       return ele;
     }
     break;

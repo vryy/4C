@@ -96,6 +96,7 @@ public:
     element_soh8surface,
     element_soh8line,
     element_soh8volume,
+    element_sosh8,
   };
 
   /*!
@@ -387,6 +388,17 @@ public:
 
   */
   virtual inline void SetOwner(const int owner) { owner_ = owner; return; }
+
+  /*!
+  \brief Set Type
+
+  This method is used by the DRT::Discretiztion to change the type of
+  an element.
+
+  \param type: elementtype to be set
+
+  */
+  virtual inline void SetType(const ElementType type) { etype_ = type; return; }
 
   /*!
   \brief Set a list of node ids this element is connected to
