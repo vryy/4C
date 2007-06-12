@@ -105,9 +105,6 @@ extern struct _CURVE *curve;
 void dyn_condif_drt()
 {
 
-  DSTraceHelper dst("dyn_condif_drt");
-
-
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------

@@ -47,7 +47,6 @@ extern "C" /* stuff which is c and is accessed from c++ */
 #include "../fluid_full/fluid_prototypes.h"
 }
 
-#include "../drt_lib/dstrc.H" /* needs standardtypes.h */
 
 using namespace std;
 using namespace Teuchos;

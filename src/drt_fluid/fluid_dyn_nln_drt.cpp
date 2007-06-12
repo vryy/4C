@@ -107,9 +107,6 @@ extern struct _CURVE *curve;
 void dyn_fluid_drt()
 {
 
-  DSTraceHelper dst("dyn_fluid_drt");
-
-
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
