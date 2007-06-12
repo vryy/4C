@@ -35,15 +35,12 @@ extern "C"
 extern struct _FILES  allfiles;
 }
 #include "fluid3.H"
-#include "../drt_lib/dstrc.H"
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                              g.bau 03/07|
  *----------------------------------------------------------------------*/
 bool DRT::Elements::Fluid3::ReadElement()
 {
-  DSTraceHelper dst("Fluid3::ReadElement");
-
   // read element's nodes
   int   ierr = 0;
   int   nnode = 0;

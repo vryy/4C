@@ -27,11 +27,6 @@ Maintainer: Georg Bauer
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 
-extern "C"
-{
-#include "../headers/standardtypes.h"
-#include "../fluid3/fluid3.h"
-}
 
 
 /*----------------------------------------------------------------------*

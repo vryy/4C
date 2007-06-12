@@ -24,12 +24,6 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
 
-extern "C"
-{
-#include "../headers/standardtypes.h"
-#include "../fluid3/fluid3.h"
-}
-#include "../drt_lib/dstrc.H"
 
 
 /*----------------------------------------------------------------------*
@@ -42,8 +36,6 @@ int DRT::Elements::Fluid3Surface::EvaluateNeumann(
                                            vector<int>&              lm,
                                            Epetra_SerialDenseVector& elevec1)
 {
-  DSTraceHelper dst("Fluid3Surface::EvaluateNeumann");
-
   // there are 3 velocities and 1 pressure
   const int numdf = 4;
 
@@ -306,8 +298,6 @@ void DRT::Elements::Fluid3Surface::f3_shapefunction_for_surface(
   const double              s
   )
 {
-  DSTraceHelper dst("Fluid3Surface::f3_shapefunction_for_surface");
-
   double Q12=0.50;
   double Q14=0.25;
 
@@ -551,8 +541,6 @@ void  DRT::Elements::Fluid3Surface::f3_metric_tensor_for_surface(
   Epetra_SerialDenseMatrix&       metrictensor,
   double                         *sqrtdetg)
 {
-  DSTraceHelper dst("Fluid3Surface::f3_metric_tensor_for_surface");
-
   /*
   |                                              0 1 2
   |                                             +-+-+-+
