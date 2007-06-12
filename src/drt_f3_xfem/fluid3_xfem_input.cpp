@@ -37,55 +37,45 @@ extern struct _FILES  allfiles;
 #include "fluid3_xfem.H"
 
 /*----------------------------------------------------------------------*
- |  read element input (public)                              g.bau 03/07|
+ |  read element input                                       a.ger 06/07|
  *----------------------------------------------------------------------*/
 bool DRT::Elements::XFluid3::ReadElement()
 {
-  // read element's nodes
-  int   ierr = 0;
-  int   nnode = 0;
-  int   nodes[27];
+    // read element's nodes
+    int   ierr = 0;
+    int   nnode = 0;
+    int   nodes[27];
 
-  frchk("HEX8",&ierr);
-  if (ierr==1)
-  {
-    nnode=8;
-    frint_n("HEX8",nodes,nnode,&ierr);
-    if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
-  }
+    typedef map<string, DiscretizationType> Gid2DisType;
+    Gid2DisType gid2distype;
+    gid2distype["HEX8"]  = hex8;
+    gid2distype["HEX20"] = hex20;
+    gid2distype["HEX27"] = hex27;
+    gid2distype["TET4"]  = tet4;
+    gid2distype["TET10"] = tet10;
 
-  frchk("HEX20",&ierr);
-  if (ierr==1)
-  {
-    nnode=20;
-    frint_n("HEX20",nodes,nnode,&ierr);
-    if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
-  }
+    typedef map<DiscretizationType, int> DisType2NumNodes;
+    DisType2NumNodes distype2NumNodes;
+    distype2NumNodes[hex8]  = 8;
+    distype2NumNodes[hex20] = 20;
+    distype2NumNodes[hex27] = 27;
+    distype2NumNodes[tet4]  = 4;
+    distype2NumNodes[tet10] = 10;
 
-  frchk("HEX27",&ierr);
-  if (ierr==1)
-  {
-    nnode=27;
-    frint_n("HEX27",nodes,nnode,&ierr);
-    if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
-  }
-
-  frchk("TET4",&ierr);
-  if (ierr==1)
-  {
-    nnode=4;
-    frint_n("TET4",nodes,nnode,&ierr);
-    if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
-  }
-
-  frchk("TET10",&ierr); /* rearrangement??????? */
-  if (ierr==1)
-  {
-    nnode=10;
-    frint_n("TET10",nodes,nnode,&ierr);
-    if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
-  }
-
+    Gid2DisType::iterator iter;
+    for( iter = gid2distype.begin(); iter != gid2distype.end(); iter++ ) 
+    {
+        const string eletext = iter->first;
+        frchk(eletext.c_str(), &ierr);
+        if (ierr == 1)
+        {
+            DiscretizationType distype = gid2distype[eletext];
+            nnode = distype2NumNodes[distype];
+            frint_n(eletext.c_str(), nodes, nnode, &ierr);
+            dsassert(ierr==1, "Reading of ELEMENT Topology failed\n");
+            break;
+        }
+    }
 
   // reduce node numbers by one
   for (int i=0; i<nnode; ++i) nodes[i]--;
@@ -95,8 +85,8 @@ bool DRT::Elements::XFluid3::ReadElement()
   // read number of material model
   material_ = 0;
   frint("MAT",&material_,&ierr);
-  dsassert(ierr!=1, "Reading of material for XFLUID3 element failed\n");
-  dsassert(material_==0, "No material defined for XFLUID3 element\n");
+  dsassert(ierr==1, "Reading of material for XFLUID3 element failed\n");
+  dsassert(material_!=0, "No material defined for XFLUID3 element\n");
 
   // read/set gaussian rule
   gaussrule_ = get_optimal_gaussrule(Shape());

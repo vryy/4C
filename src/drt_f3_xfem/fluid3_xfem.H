@@ -29,7 +29,6 @@ using namespace Teuchos;
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
 
-#include <tr1/tuple>
 
 // forward declarations
 struct _MATERIAL;
