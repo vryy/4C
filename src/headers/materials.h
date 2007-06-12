@@ -55,52 +55,6 @@ typedef struct _MATERIAL
 
 } MATERIAL;
 
-
-/*----------------------------------------------------------------------*
- | materials for microscale                               l.w. 06/07    |
- | structure to hold all types of material laws                         |
- *----------------------------------------------------------------------*/
-typedef struct _MICROMATERIAL
-{
-     INT                       Id;           /* Id of the material */
-
-     enum _MATERIAL_TYP        mattyp;       /* type of material */
-
-     union
-     {
-     struct _STVENANT         *stvenant;     /* St. Venant-Kirchhoff material */
-     struct _PL_HOFF          *pl_hoff;      /* anisotropic plastic material, based on hoffman-criterion */
-     struct _PL_MISES         *pl_mises;     /* von Mises material */
-     struct _DAMAGE           *damage;       /* CDM material */
-     struct _PL_FOAM          *pl_foam;      /* foam material - large strains */
-     struct _PL_MISES_LS      *pl_mises_ls;  /* von Mises material - large strains*/
-     struct _PL_DP            *pl_dp;        /* Drucker Prager material */
-     struct _PL_EPC           *pl_epc;       /* elastoplastic concrete material */
-     struct _STVENPOR         *stvenpor;     /* porous St. Ven.-Kirch. material */
-     struct _PL_POR_MISES     *pl_por_mises; /* porous von Mises material */
-     struct _NEO_HOOKE        *neohooke;     /* Neo-Hooke material */
-     struct _COMPOGDEN        *compogden;    /* compressible ogden hyperelastic material */
-     struct _VISCOHYPER       *viscohyper;   /* viscoelastic compressible ogden hyperelastic material */
-     struct _FLUID            *fluid;        /* fluid material */
-     struct _PL_HASH          *pl_hash;      /* elpl. hashin delamination material */
-     struct _EL_ORTH          *el_orth;      /* elastic orthotropic material */
-     struct _MFOC             *mfoc;         /* metal foam, open cell  */
-     struct _MFCC             *mfcc;         /* metal foam, closed cell  */
-     struct _NHMFCC           *nhmfcc;       /* foam, closed cell, based on modified Neo Hook */
-     struct _MULTI_LAYER      *multi_layer;  /* multi layer material*/
-     struct _IFMAT            *ifmat;        /* interface elasto-damage-plasto surface material*/
-     struct _INTERF_THERM     *interf_therm; /* themodyn. based interface elasto-damage surface material*/
-     struct _DAM_MP           *dam_mp;       /* isotropic damage material (mazars-pijadier-cabot)*/
-     struct _DAMAGE_GE        *damage_ge;    /* isotropic gradient enhanced damage material */
-     struct _HYPER_POLYCONVEX *hyper_polyconvex; /* hyperelastic polyconvex energy strain function */
-     struct _TH_FOURIER_ISO   *th_fourier_iso;   /* isotropic Fourier's law of heat conduction */
-     struct _TH_FOURIER_GEN   *th_fourier_gen;   /* general heat conduction matrix of Fourier's (linear) law of heat conduction */
-     struct _VP_ROBINSON      *vp_robinson;  /* viscoplastic Robinson material */
-     }                         m;            /* union pointer to material specific structure */
-
-} MICROMATERIAL;
-
-
 /*----------------------------------------------------------------------*
  | interpolation types of non-const parameters              bborn 03/07 |
  *----------------------------------------------------------------------*/
