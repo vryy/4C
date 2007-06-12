@@ -8,6 +8,7 @@ src/fluid_input_details/fluid_input_details.tex
 \part{Development guide}
 src/src_howto_document/src_howto_document.tex
 src/code_commentation/code_commentation.tex
+src/conventions/conventions.tex
 src/binary_io/binary_io.tex
 src/src_fsi/src_fsi.tex
 src/src_free_surface_flow/src_free_surface_flow.tex
