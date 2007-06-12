@@ -32,7 +32,6 @@ extern "C"
 #include "../headers/standardtypes.h"
 #include "../fluid3/fluid3.h"
 }
-#include "../drt_lib/dstrc.H"
 
 
 /*----------------------------------------------------------------------*
@@ -54,7 +53,6 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
                                     Epetra_SerialDenseVector& elevec2,
                                     Epetra_SerialDenseVector& elevec3)
 {
-  DSTraceHelper dst("Fluid3::Evaluate");
   DRT::Elements::Fluid3::ActionType act = Fluid3::none;
 
   // get the action required
@@ -694,8 +692,6 @@ void DRT::Elements::Fluid3::f3_sys_mat(vector<int>&              lm,
  *----------------------------------------------------------------------*/
 void DRT::Elements::Fluid3::f3_integration_points(struct _FLUID_DATA& data)
 {
-  DSTraceHelper dst("Fluid3::f3_integration_points");
-
 const double Q12  = ONE/TWO;
 const double Q14  = ONE/FOUR;
 const double Q16  = ONE/SIX;
@@ -888,8 +884,6 @@ void DRT::Elements::Fluid3::f3_jaco(const Epetra_SerialDenseMatrix& xyze,
                                     const int iel
 				    )
 {
-  DSTraceHelper dst("Fluid3::f3_jaco");
-
   double dum;
 
   /*-------------------------------- determine jacobian at point r,s,t---*/
@@ -943,7 +937,6 @@ void DRT::Elements::Fluid3::f3_shape_function(
                int         	  icode
             )
 {
-  DSTraceHelper dst("Fluid3::f3_shape_function");
 /*
 In this routine the shape functions and their natural first and second
 derivatives with respect to r/s/t are evaluated for
@@ -1967,8 +1960,6 @@ void DRT::Elements::Fluid3::f3_getbodyforce
    ParameterList& 	     params
 )
 {
-  DSTraceHelper dst("Fluid3::f3_getbodyforce");
-
   vector<DRT::Condition*> myneumcond;
 
   // check whether all nodes have a unique VolumeNeumann condition
@@ -2045,8 +2036,6 @@ void DRT::Elements::Fluid3::f3_gder(Epetra_SerialDenseMatrix& derxy,
                                     const int iel
 				    )
 {
-  DSTraceHelper dst("Fluid3::f3_gder");
-
   Epetra_SerialDenseMatrix 	xji(3,3);   // inverse of jacobian matrix
 
 
