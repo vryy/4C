@@ -20,13 +20,6 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 
-extern "C"
-{
-#include "../headers/standardtypes.h"
-#include "../fluid3/fluid3.h"
-}
-#include "../drt_lib/dstrc.H"
-
 
 
 /*----------------------------------------------------------------------*
@@ -42,7 +35,6 @@ DRT::Element(id,element_fluid3surface,owner),
 parent_(parent),
 lsurface_(lsurface)
 {
-  DSTraceHelper dst("Fluid3Surface::Fluid3Surface");
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
   return;
@@ -56,7 +48,6 @@ DRT::Element(old),
 parent_(old.parent_),
 lsurface_(old.lsurface_)
 {
-  DSTraceHelper dst("Fluid3Surface::Fluid3Surface");
   return;
 }
 
@@ -66,7 +57,6 @@ lsurface_(old.lsurface_)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::Elements::Fluid3Surface::Clone() const
 {
-  DSTraceHelper dst("Fluid3Surface::Clone");
   DRT::Elements::Fluid3Surface* newelement = new DRT::Elements::Fluid3Surface(*this);
   return newelement;
 }
@@ -96,7 +86,6 @@ DRT::Element::DiscretizationType DRT::Elements::Fluid3Surface::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::Elements::Fluid3Surface::Pack(vector<char>& data) const
 {
-  DSTraceHelper dst("Fluid3Surface::Pack");
   data.resize(0);
   dserror("this Fluid3Surface element does not support communication");
 
@@ -109,7 +98,6 @@ void DRT::Elements::Fluid3Surface::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void DRT::Elements::Fluid3Surface::Unpack(const vector<char>& data)
 {
-  DSTraceHelper dst("Fluid3Surface::Unpack");
   dserror("this Fluid3Surface element does not support communication");
   return;
 }
@@ -119,7 +107,6 @@ void DRT::Elements::Fluid3Surface::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
 DRT::Elements::Fluid3Surface::~Fluid3Surface()
 {
-  DSTraceHelper dst("Fluid3Surface::~Fluid3Surface");
   return;
 }
 
@@ -129,7 +116,6 @@ DRT::Elements::Fluid3Surface::~Fluid3Surface()
  *----------------------------------------------------------------------*/
 void DRT::Elements::Fluid3Surface::Print(ostream& os) const
 {
-  DSTraceHelper dst("Fluid3Surface::Print");
   os << "Fluid3Surface ";
   Element::Print(os);
   return;
