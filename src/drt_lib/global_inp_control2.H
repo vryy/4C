@@ -72,7 +72,9 @@ void input_design_dsurf_fenode_read(vector<vector<int> >& dsurf_fenode,
 void input_design_dvol_fenode_read(vector<vector<int> >& dvol_fenode,
                                    vector<int>& ndvol_fenode);
 
-void inpfield_ccadiscret(DRT::Problem& problem, const DRT::DatFileReader& reader);
+void inpfield_ccadiscret(DRT::Problem& problem, DRT::DatFileReader& reader);
+
+string inp_micro_filename(int mypid);
 
 void input_conditions(const DRT::Problem& problem);
 

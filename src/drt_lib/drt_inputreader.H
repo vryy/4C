@@ -85,7 +85,7 @@ class DatFileReader
 public:
 
   /// construct a reader for a given file
-  DatFileReader(string filename, RefCountPtr<Epetra_Comm> comm);
+  DatFileReader(string filename, RefCountPtr<Epetra_Comm> comm, int outflag=0);
 
   /// Publish (some) internal data to the old ccarat reading system
   /*!
@@ -94,6 +94,12 @@ public:
     functions any more once the active reader is gone.
   */
   void Activate();
+
+  /// return my inputfile name
+  string MyInputfileName() const;
+
+  /// return my output flag
+  int MyOutputFlag() const;
 
   /// get file position of excluded section
   /*!
@@ -122,6 +128,9 @@ private:
 
   /// number of lines
   int numrows_;
+
+  /// flag for output (default: output should be written)
+  int outflag_;
 
   /// the whole input file, lines separated by 0
   vector<char> inputfile_;

@@ -85,11 +85,27 @@ namespace DRT
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DatFileReader::DatFileReader(string filename, RefCountPtr<Epetra_Comm> comm)
-  : filename_(filename), comm_(comm)
+DatFileReader::DatFileReader(string filename, RefCountPtr<Epetra_Comm> comm, int outflag)
+  : filename_(filename), comm_(comm), outflag_(outflag)
 {
   ReadDat();
   DumpInput();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+string DatFileReader::MyInputfileName() const
+{
+  return filename_;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+int DatFileReader::MyOutputFlag() const
+{
+  return outflag_;
 }
 
 
@@ -321,6 +337,7 @@ void ElementReader::Partition()
 
   vector<int> eids;             // global element ids
   int numele = 0;
+  string inputfile_name = reader_.MyInputfileName();
 
   // We read all elements at proc 0 and keep them. This way we do not
   // need to read (initialize) them again.
@@ -329,12 +346,15 @@ void ElementReader::Partition()
   // distribute at this point already and use parmetis.
   if (myrank==0)
   {
-    cout << "Entering jumbo reading mode for " << name_ << " discretization ...\n"
-         << "Read, create and partition elements      in....";
-    fflush(stdout);
+    if (!reader_.MyOutputFlag())
+    {
+      cout << "Entering jumbo reading mode for " << name_ << " discretization ...\n"
+           << "Read, create and partition elements      in....";
+      fflush(stdout);
+    }
 
     // open input file at the right position
-    ifstream file(allfiles.inputfile_name);
+    ifstream file(inputfile_name.c_str());
     file.seekg(reader_.ExcludedSectionPosition(sectionname_));
 
     // loop all element lines
@@ -393,7 +413,7 @@ void ElementReader::Partition()
   ifstream file;
   if (0==myrank)
   {
-    file.open(allfiles.inputfile_name);
+    file.open(inputfile_name.c_str());
     file.seekg(reader_.ExcludedSectionPosition(sectionname_));
   }
   string line;
@@ -465,10 +485,14 @@ void ElementReader::Partition()
     // Reset fr* functions. Still required.
     frrewind();
 
-    cout << time.ElapsedTime() << " secs\n";
+    if (!reader_.MyOutputFlag())
+      cout << time.ElapsedTime() << " secs\n";
     time.ResetStartTime();
-    cout << "Read, create and partition problem graph in....";
-    fflush(stdout);
+    if (!reader_.MyOutputFlag())
+    {
+      cout << "Read, create and partition problem graph in....";
+      fflush(stdout);
+    }
 
     copy(nodes_.begin(), nodes_.end(), back_inserter(nids));
   }
@@ -554,7 +578,7 @@ void ElementReader::Partition()
   // export to the column map / create ghosting of elements
   dis_->ExportColumnElements(*coleles_);
 
-  if (comm_->MyPID()==0)
+  if (comm_->MyPID()==0 && reader_.MyOutputFlag() == 0)
   {
     cout << time.ElapsedTime() << " secs\n";
     fflush(stdout);
@@ -570,7 +594,7 @@ void ElementReader::Complete()
 
   Epetra_Time time(*comm_);
 
-  if (!myrank)
+  if (!myrank && !reader_.MyOutputFlag())
   {
     cout << "Complete discretization                  in....";
     fflush(stdout);
@@ -580,7 +604,7 @@ void ElementReader::Complete()
   if (err)
     dserror("aledis->FillComplete() returned %d",err);
 
-  if (!myrank)
+  if (!myrank && !reader_.MyOutputFlag())
   {
     cout << time.ElapsedTime() << " secs\n";
     fflush(stdout);
@@ -617,6 +641,7 @@ void NodeReader::Read()
 {
   const int myrank  = comm_->MyPID();
   const int numproc = comm_->NumProc();
+  string inputfile_name = reader_.MyInputfileName();
 
   int numnodes = 0;
   for (unsigned i=0; i<ereader_.size(); ++i)
@@ -627,7 +652,7 @@ void NodeReader::Read()
 
   Epetra_Time time(*comm_);
 
-  if (!myrank)
+  if (!myrank && !reader_.MyOutputFlag())
   {
     cout << "Read, create and partition nodes         in....";
     fflush(stdout);
@@ -644,7 +669,7 @@ void NodeReader::Read()
   ifstream file;
   if (myrank==0)
   {
-    file.open(allfiles.inputfile_name);
+    file.open(inputfile_name.c_str());
     file.seekg(reader_.ExcludedSectionPosition(sectionname_));
   }
   string tmp;
@@ -706,7 +731,7 @@ void NodeReader::Read()
     ereader_[i]->dis_->ExportColumnNodes(*ereader_[i]->colnodes_);
   }
 
-  if (!myrank)
+  if (!myrank && !reader_.MyOutputFlag())
   {
     cout << time.ElapsedTime() << " secs\n";
     fflush(stdout);

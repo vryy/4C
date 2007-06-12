@@ -599,28 +599,6 @@ if (frfind("---IO")==1)
     frread();
   }
 }
-
-/* Read microstructure details if necessary*/
-
-if (genprob.probtyp == prb_struct_multi)
-{
-  if (frfind("-MICROSTRUCTURE PROBLEM SIZE")==0)
-  {
-    dserror("frfind: MICROSTRUCTURE PROBLEM SIZE not in input file");
-  }
-  frread();
-  while(strncmp(allfiles.actplace,"------",6)!=0)
-  {
-    frint("MICRO ELEMENTS", &(genprob.micro_nele),&ierr);
-    frint("MICRO NODES",    &(genprob.micro_nnode),&ierr);
-    frint("MICRO MATERIALS",&(genprob.micro_nmat),&ierr);
-
-    frread();
-  }
-  /*------------------------------------------------------ check values */
-  if (genprob.micro_nmat<=0)
-    dserror("No Material for microstructure defined!");
-}
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
 dstrc_exit();

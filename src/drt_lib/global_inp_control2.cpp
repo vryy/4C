@@ -159,7 +159,7 @@ void ntainp_ccadiscret()
   | This version of the routine uses the new discretization subsystem   |
   | ccadiscret                                                          |
  *----------------------------------------------------------------------*/
-void inpfield_ccadiscret(DRT::Problem& problem, const DRT::DatFileReader& reader)
+void inpfield_ccadiscret(DRT::Problem& problem, DRT::DatFileReader& reader)
 {
   fflush(stdout);
 
@@ -183,7 +183,6 @@ void inpfield_ccadiscret(DRT::Problem& problem, const DRT::DatFileReader& reader
   RefCountPtr<DRT::Discretization> aledis    = null;
   RefCountPtr<DRT::Discretization> structdis_macro = null;
   RefCountPtr<DRT::Discretization> structdis_micro = null;
-  RefCountPtr<DRT::Discretization> structdis_micro_serial = null;
 
 
   if (genprob.probtyp == prb_fsi)
@@ -272,79 +271,60 @@ void inpfield_ccadiscret(DRT::Problem& problem, const DRT::DatFileReader& reader
   else if (genprob.probtyp==prb_struct_multi)
   {
     // allocate and input general old stuff....
+
     if (genprob.numfld!=1) dserror("numfld != 1 for structural multi-scale problem");
     field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
     field[genprob.numsf].fieldtyp = structure;
     inpdis(&(field[genprob.numsf]));
 
-    structdis = rcp(new DRT::Discretization("Macro Structure",reader.Comm()));
-    problem.AddDis(genprob.numsf, structdis);
+
+    // read macroscale fields from main inputfile
+
+    structdis_macro = rcp(new DRT::Discretization("Macro Structure",reader.Comm()));
+    problem.AddDis(genprob.numsf, structdis_macro);
 
     DRT::NodeReader nodereader(reader, "--NODE COORDS");
-    nodereader.AddElementReader(rcp(new DRT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+    nodereader.AddElementReader(rcp(new DRT::ElementReader(structdis_macro, reader, "--STRUCTURE ELEMENTS")));
     nodereader.Read();
 
-    RefCountPtr<DRT::Discretization> structdis_micro = rcp(new DRT::Discretization("Micro Structure Parallel",reader.Comm()));
 
-    DRT::NodeReader micronodereader(reader, "--MICROSTRUCTURE NODE COORDS");
-    micronodereader.AddElementReader(rcp(new DRT::ElementReader(structdis_micro, reader, "--MICROSTRUCTURE ELEMENTS")));
+    // read microscale fields from second inputfile
+
+    RefCountPtr<DRT::Problem> micro_problem = DRT::Problem::Instance(1);
+    RefCountPtr<Epetra_SerialComm> serialcomm = rcp(new Epetra_SerialComm());
+
+    string micro_inputfile_name = inp_micro_filename(structdis_macro->Comm().MyPID());
+
+    DRT::DatFileReader micro_reader(micro_inputfile_name, serialcomm, 1);
+    micro_reader.Activate();
+
+    structdis_micro = rcp(new DRT::Discretization("Micro Structure", micro_reader.Comm()));
+    micro_problem->AddDis(genprob.numsf, structdis_micro);
+
+    DRT::NodeReader micronodereader(micro_reader, "--NODE COORDS");
+    micronodereader.AddElementReader(rcp(new DRT::ElementReader(structdis_micro, micro_reader, "--STRUCTURE ELEMENTS")));
     micronodereader.Read();
 
-    // microscale discretization is distributed over processors but it
-    // is needed on every processor redundantly
 
-    RefCountPtr<Epetra_SerialComm> serialcomm = rcp(new Epetra_SerialComm());
-    structdis_micro_serial = rcp(new DRT::Discretization("Micro Structure",serialcomm));
-    problem.AddDis(genprob.numsf, structdis_micro_serial);
+    // reactivate reader of macroscale -> needed for input of conditions
 
-    RefCountPtr<Epetra_Map> parallel_rownodes = rcp(new Epetra_Map(*structdis_micro->NodeRowMap()));
-    RefCountPtr<Epetra_Map> parallel_roweles  = rcp(new Epetra_Map(*structdis_micro->ElementRowMap()));
-
-    // build redundant colnodes
-    vector<int> rmygid;
-    DRT::Utils::AllreduceEMap(rmygid, *parallel_rownodes);
-    RefCountPtr<Epetra_Map> redundantmap = rcp(new Epetra_Map(-1,(int)rmygid.size(),&rmygid[0],0,structdis_micro->Comm()));
-
-    // build redundant coleles
-    vector<int> rmygid_ele;
-    DRT::Utils::AllreduceEMap(rmygid_ele, *parallel_roweles);
-    RefCountPtr<Epetra_Map> redundantmap_ele = rcp(new Epetra_Map(-1,(int)rmygid_ele.size(),&rmygid_ele[0],0,structdis_micro->Comm()));
-
-    structdis_micro->ExportColumnNodes(*redundantmap);
-    structdis_micro->ExportColumnElements(*redundantmap_ele);
-    int err = structdis_micro->FillComplete();
-    if (err) dserror("structdis_micro->FillComplete() returned %d",err);
-
-    for (int i=0; i<structdis_micro->NumMyColElements(); ++i)
-    {
-      DRT::Element* actele = structdis_micro->lColElement(i);
-      RefCountPtr<DRT::Element> newele = rcp(actele->Clone());
-      newele->SetOwner(0);
-      structdis_micro_serial->AddElement(newele);
-    }
-    for (int i=0; i<structdis_micro->NumMyColNodes(); ++i)
-    {
-      DRT::Node* actnode = structdis_micro->lColNode(i);
-      RefCountPtr<DRT::Node> newnode = rcp(actnode->Clone());
-      newnode->SetOwner(0);
-      structdis_micro_serial->AddNode(newnode);
-    }
-    err = structdis_micro_serial->FillComplete();
+    reader.Activate();
 
     if (0)
     {
-    for (int i=0; i<structdis_micro->Comm().NumProc(); ++i)
+    for (int i=0; i<structdis_macro->Comm().NumProc(); ++i)
     {
       cout << "\n";
-      if (structdis_micro->Comm().MyPID()==i)
+      if (structdis_macro->Comm().MyPID()==i)
       {
         cout << "Proc " << i << "meine serielle Diskretisierung:\n";
-        cout << *structdis_micro_serial;
+        cout << *structdis_micro;
       }
-      structdis_micro->Comm().Barrier();
+      structdis_macro->Comm().Barrier();
     }
     cout << "\n";
     }
+    exit(0);
   } // end of else if (genprob.probtyp==prb_struct_multi)
 
   else dserror("Type of problem unknown");
@@ -352,6 +332,35 @@ void inpfield_ccadiscret(DRT::Problem& problem, const DRT::DatFileReader& reader
   return;
 } // void inpfield_ccadiscret()
 
+
+string inp_micro_filename(int mypid)
+{
+  string microfile = "MICROFILE";
+  string tmp;
+  string micro_inputfile_name;
+  ifstream file(allfiles.inputfile_name);
+  int filecount=0;
+  int found=0;
+
+  for (; file; ++filecount)
+  {
+    file >> tmp;
+
+    if (tmp == microfile)
+    {
+      file >> micro_inputfile_name;
+      found = 1;
+    }
+  }
+
+  if (found == 0)
+    dserror("No inputfile for microstructure given!\n");
+
+  if (!mypid)
+    cout << "input for microscale is read from        " << micro_inputfile_name << "\n";
+
+  return micro_inputfile_name;
+}
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
