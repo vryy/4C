@@ -275,55 +275,20 @@ void DRT::Elements::XFluid3::f3_sys_mat(vector<int>&              lm,
     vector<double>              edeadng(3);
     Epetra_SerialDenseMatrix    wa1(100,100);  // working matrix used as dummy
     vector<double>              histvec(3); /* history data at integration point              */
-    double                      hk;
-    double                      val, strle;
     vector<double>              velino(3); /* normed velocity at element centre */
-    double                      det, vol;
+    double                      det;
     INTEGRATION_POINTS_3D       intpoints;
-    double                      mk=0.0;
     vector<double>              velint(3);
     double                      timefac;
     vector<double>              tau(3); // stab parameters
 
-    /*------------------------------------------------------- initialise ---*/
-    GaussRule integrationrule_stabili;
-    switch(distype)
-    {
-      case hex8: case hex20: case hex27:
-        integrationrule_stabili = hex_1point;
-        break;
-      case tet4: case tet10:
-        integrationrule_stabili = tet_1point;
-        break;
-      default: dserror("invalid discretization type for fluid3");
-    }
-
-    // gaussian points
-    f3_integration_points(intpoints, integrationrule_stabili);
     timefac=params.get<double>("time constant for integration",0.0);
 
     // get control parameter
     bool is_stationary = params.get<bool>("using stationary formulation",false);
-
-    /*---------------------- shape functions and derivs at element center --*/
-    const double e1    = intpoints.qxg[0][0];
-    const double e2    = intpoints.qxg[0][1];
-    const double e3    = intpoints.qxg[0][2];
-    const double wquad = intpoints.qwgt[0];
-    this->f3_shape_function(funct,deriv,wa1,e1,e2,e3,numnode,2); //wa1 as dummy for not wanted second derivatives
-
-    // get element type constant for tau
-    switch(distype)
-    {
-        case tet4: case hex8:
-          mk = 0.333333333333333333333;
-          break;
-        case hex20: case hex27: case tet10:
-          mk = 0.083333333333333333333;
-          break;
-        default: dserror("type unknown!\n");
-    }
+    
     // get velocities at element center
+
     for (int isd=0;isd<NSD_;isd++)
     {
       velint[isd]=0.0;
@@ -332,146 +297,8 @@ void DRT::Elements::XFluid3::f3_sys_mat(vector<int>&              lm,
         velint[isd] += funct[j]*evelnp[isd+(3*j)];
       }
     }
-
-    {
-      double vel_norm, re1, re2, xi1, xi2, re, xi;
-
-      /*------------------------------ get Jacobian matrix and determinant ---*/
-      f3_jaco(xyze,deriv,xjm,&det,numnode);
-      vol=wquad*det;
-
-      /* get element length for tau_Mp/tau_C: volume-equival. diameter/sqrt(3)*/
-      hk = pow((SIX*vol/PI),(1.0/3.0))/sqrt(3.0);
-
-      /*------------------------------------------------- get streamlength ---*/
-      f3_gder(derxy,deriv,xjm,det,numnode);
-      val = 0.0;
-
-
-      /* get velocity norm */
-      vel_norm=sqrt( velint[0]*velint[0]
-                     + velint[1]*velint[1]
-                     + velint[2]*velint[2]);
-      if(vel_norm>=EPS6)
-      {
-        velino[0] = velint[0]/vel_norm;
-        velino[1] = velint[1]/vel_norm;
-        velino[2] = velint[2]/vel_norm;
-      }
-      else
-      {
-        velino[0] = 1.0;
-        velino[1] = 0.0;
-        velino[2] = 0.0;
-      }
-      for (int i=0;i<numnode;i++) /* loop element nodes */
-      {
-        val += FABS(velino[0]*derxy(0,i) \
-                    +velino[1]*derxy(1,i) \
-                    +velino[2]*derxy(2,i));
-      } /* end of loop over elements */
-      strle=2.0/val;
-
-      if (is_stationary == false)
-      {// stabilization parameters for instationary case (default)
-
-      /*----------------------------------------------------- compute tau_Mu ---*/
-      /* stability parameter definition according to
-
-                  Barrenechea, G.R. and Valentin, F.: An unusual stabilized finite
-                  element method for a generalized Stokes problem. Numerische
-                  Mathematik, Vol. 92, pp. 652-677, 2002.
-                  http://www.lncc.br/~valentin/publication.htm
-        and:
-                  Franca, L.P. and Valentin, F.: On an Improved Unusual Stabilized
-                  Finite Element Method for the Advective-Reactive-Diffusive
-                  Equation. Computer Methods in Applied Mechanics and Enginnering,
-                  Vol. 190, pp. 1785-1800, 2000.
-                  http://www.lncc.br/~valentin/publication.htm                   */
-
-
-      re1 =/* 2.0*/ 4.0 * timefac * visc / (mk * DSQR(strle)); /* viscous : reactive forces */
-      re2 = mk * vel_norm * strle / /* *1.0 */(2.0 * visc);    /* convective : viscous forces */
-
-      xi1 = DMAX(re1,1.0);
-      xi2 = DMAX(re2,1.0);
-
-      tau[0] = DSQR(strle) / (DSQR(strle)*xi1+(/* 2.0*/ 4.0 * timefac*visc/mk)*xi2);
-
-      /*------------------------------------------------------compute tau_Mp ---*/
-      /* stability parameter definition according to Franca and Valentin (2000)
-       *                                    and Barrenechea and Valentin (2002) */
-      re1 = /* 2.0*/ 4.0 * timefac * visc / (mk * DSQR(hk)); /* viscous : reactive forces */
-      re2 = mk * vel_norm * hk / /* *1.0 */(2.0 * visc);     /* convective : viscous forces */
-
-      xi1 = DMAX(re1,1.0);
-      xi2 = DMAX(re2,1.0);
-
-      /*
-                  xi1,xi2 ^
-                          |      /
-                          |     /
-                          |    /
-                        1 +---+
-                          |
-                          |
-                          |
-                          +--------------> re1,re2
-                              1
-       */
-
-
-      tau[1] = DSQR(hk) / (DSQR(hk) * xi1 + (/* 2.0*/ 4.0 * timefac * visc/mk) * xi2);
-
-      /*------------------------------------------------------ compute tau_C ---*/
-      /*-- stability parameter definition according to Codina (2002), CMAME 191
-       *
-       * Analysis of a stabilized finite element approximation of the transient
-       * convection-diffusion-reaction equation using orthogonal subscales.
-       * Ramon Codina, Jordi Blasco; Comput. Visual. Sci., 4 (3): 167-174, 2002.
-       *
-       * */
-      //tau[2] = sqrt(DSQR(visc)+DSQR(0.5*vel_norm*hk));
-
-      // Wall Diss. 99
-      /*
-                      xi2 ^
-                          |   
-                        1 |   +-----------
-                          |  / 
-                          | /
-                          |/
-                          +--------------> Re2
-                              1
-      */
-      xi2 = DMIN(re2,1.0);
-
-      tau[2] = vel_norm * hk * 0.5 * xi2 /timefac;
-      }
-      else
-      {// stabilization parameters for stationary case
     
-    /*----------------------------------------------------- compute tau_Mu ---*/    
-    re = mk * vel_norm * strle / (2.0 * visc);   /* convective : viscous forces */
-    xi = DMAX(re,1.0);
-
-    tau[0] = (DSQR(strle)*mk)/(4.0*visc*xi);
-     
-        /*------------------------------------------------------compute tau_Mp ---*/
-    re = mk * vel_norm * hk / (2.0 * visc);      /* convective : viscous forces */
-        xi = DMAX(re,1.0);
-
-        tau[1] = (DSQR(hk)*mk)/(4.0*visc*xi);    
-
-    /*------------------------------------------------------ compute tau_C ---*/
-        xi = DMIN(re,1.0);
-    tau[2] = 0.5*vel_norm*hk*xi;
-      }
-    } 
-    /*----------------------------------------------------------------------*/
-    // end of old f3_caltau function
-    /*----------------------------------------------------------------------*/
-
+    
     // integration loop for one Fluid3 element using USFEM
     int       ihoel=0;     /* flag for higher order elements                 */
     int       icode=2;     /* flag for eveluation of shape functions         */
@@ -1938,7 +1765,7 @@ void DRT::Elements::XFluid3::f3_getbodyforce(Epetra_SerialDenseMatrix& edeadng,
     const double time = params.get("total time",-1.0);
     if (time<0.0) usetime = false;
 
-    vector<int>* curve  = myneumcond[0]->Get<vector<int> >("curve");
+    const vector<int>* curve  = myneumcond[0]->Get<vector<int> >("curve");
     int curvenum = -1;
 
     // get the factor for the timecurve
@@ -1953,8 +1780,8 @@ void DRT::Elements::XFluid3::f3_getbodyforce(Epetra_SerialDenseMatrix& edeadng,
       Nodes()[nn]->GetCondition("VolumeNeumann",myneumcond);
 
       // get values and switches from the condition
-      vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
-      vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
+      const vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
+      const vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
 
       for(int dim=0;dim<3;dim++)
       {
@@ -3035,6 +2862,223 @@ void DRT::Elements::XFluid3::f3_int_beltrami_err(
 
     return;
 }
+
+
+
+vector<double> DRT::Elements::XFluid3::f3_caltau(
+    Epetra_SerialDenseVector&           funct,
+    Epetra_SerialDenseMatrix&           deriv,
+    Epetra_SerialDenseMatrix&           deriv2,
+    Epetra_SerialDenseMatrix&           xyze,
+    Epetra_SerialDenseMatrix&           xjm,
+    Epetra_SerialDenseMatrix&           vderxy,
+    vector<double>&                     pderxy,
+    Epetra_SerialDenseMatrix&           vderxy2,
+    Epetra_SerialDenseMatrix&           derxy,
+    Epetra_SerialDenseMatrix&           derxy2,
+    vector<double>&                         evelnp,
+    vector<double>&                         edeadng,
+    const DRT::Element::DiscretizationType    distype,
+    const double                        visc,
+    const int                           numnode,
+    const bool                          is_stationary
+    )
+{
+    Epetra_SerialDenseMatrix    wa1(100,100);  // working matrix used as dummy
+    vector<double>              histvec(3); /* history data at integration point              */
+    vector<double>              velino(3); /* normed velocity at element centre */
+    double                      det;
+    INTEGRATION_POINTS_3D       intpoints;
+    double                      timefac;
+    vector<double>              tau(3); // stab parameters
+
+
+    /*------------------------------------------------------- initialise ---*/
+    GaussRule integrationrule_stabili;
+    switch(distype)
+    {
+    case hex8: case hex20: case hex27:
+        integrationrule_stabili = hex_1point;
+        break;
+    case tet4: case tet10:
+        integrationrule_stabili = tet_1point;
+        break;
+    default: 
+        dserror("invalid discretization type for fluid3");
+    }
+
+    // gaussian points
+    f3_integration_points(intpoints, integrationrule_stabili);
+
+
+    // shape functions and derivs at element center
+    const double e1    = intpoints.qxg[0][0];
+    const double e2    = intpoints.qxg[0][1];
+    const double e3    = intpoints.qxg[0][2];
+    const double wquad = intpoints.qwgt[0];
+    this->f3_shape_function(funct,deriv,wa1,e1,e2,e3,numnode,2); //wa1 as dummy for not wanted second derivatives
+
+    // get element type constant for tau
+    double mk=0.0;
+    switch(distype)
+    {
+    case tet4: case hex8:
+        mk = 0.333333333333333333333;
+        break;
+    case hex20: case hex27: case tet10:
+        mk = 0.083333333333333333333;
+        break;
+    default: 
+        dserror("type unknown!\n");
+    }
+    
+    // get velocities at element center
+    vector<double>  velint(3);
+    for (int isd=0;isd<NSD_;isd++)
+    {
+        velint[isd]=0.0;
+        for (int j=0;j<numnode;j++)
+        {
+            velint[isd] += funct[j]*evelnp[isd+(3*j)];
+        }
+    }
+
+    // get Jacobian matrix and determinant
+    f3_jaco(xyze,deriv,xjm,&det,numnode);
+    const double vol = wquad*det;
+
+    // get element length for tau_Mp/tau_C: volume-equival. diameter/sqrt(3)
+    const double hk = pow((SIX*vol/PI),(1.0/3.0))/sqrt(3.0);
+
+    // get derivatives
+    f3_gder(derxy,deriv,xjm,det,numnode);
+
+    // get velocity norm
+    const double vel_norm=sqrt( velint[0]*velint[0]
+                              + velint[1]*velint[1]
+                              + velint[2]*velint[2]);
+    
+    if(vel_norm>=EPS6)
+    {
+        velino[0] = velint[0]/vel_norm;
+        velino[1] = velint[1]/vel_norm;
+        velino[2] = velint[2]/vel_norm;
+    }
+    else
+    {
+        velino[0] = 1.0;
+        velino[1] = 0.0;
+        velino[2] = 0.0;
+    }
+    
+    // get streamlength
+    double val = 0.0;
+    for (int inode=0;inode<numnode;inode++)
+    {
+        val += abs(velino[0]*derxy(0,inode) 
+                  +velino[1]*derxy(1,inode) 
+                  +velino[2]*derxy(2,inode));
+    }
+    const double strle=2.0/val;
+
+    if (is_stationary == false)
+    {// stabilization parameters for instationary case (default)
+
+        /*----------------------------------------------------- compute tau_Mu ---*/
+        /* stability parameter definition according to
+
+                  Barrenechea, G.R. and Valentin, F.: An unusual stabilized finite
+                  element method for a generalized Stokes problem. Numerische
+                  Mathematik, Vol. 92, pp. 652-677, 2002.
+                  http://www.lncc.br/~valentin/publication.htm
+        and:
+                  Franca, L.P. and Valentin, F.: On an Improved Unusual Stabilized
+                  Finite Element Method for the Advective-Reactive-Diffusive
+                  Equation. Computer Methods in Applied Mechanics and Enginnering,
+                  Vol. 190, pp. 1785-1800, 2000.
+                  http://www.lncc.br/~valentin/publication.htm                   */
+
+
+        const double re1 =/* 2.0*/ 4.0 * timefac * visc / (mk * DSQR(strle)); /* viscous : reactive forces */
+        const double re2 = mk * vel_norm * strle / /* *1.0 */(2.0 * visc);    /* convective : viscous forces */
+
+        const double xi1 = DMAX(re1,1.0);
+        const double xi2 = DMAX(re2,1.0);
+
+        tau[0] = DSQR(strle) / (DSQR(strle)*xi1+(/* 2.0*/ 4.0 * timefac*visc/mk)*xi2);
+
+        // compute tau_Mp
+        //    stability parameter definition according to Franca and Valentin (2000)
+        //                                       and Barrenechea and Valentin (2002)
+        const double re_viscous = /* 2.0*/ 4.0 * timefac * visc / (mk * DSQR(hk)); /* viscous : reactive forces */
+        const double re_convect = mk * vel_norm * hk / /* *1.0 */(2.0 * visc);     /* convective : viscous forces */
+
+        const double xi_viscous = DMAX(re_viscous,1.0);
+        const double xi_convect = DMAX(re_convect,1.0);
+
+        /*
+                  xi1,xi2 ^
+                          |      /
+                          |     /
+                          |    /
+                        1 +---+
+                          |
+                          |
+                          |
+                          +--------------> re1,re2
+                              1
+        */
+        tau[1] = DSQR(hk) / (DSQR(hk) * xi_viscous + (/* 2.0*/ 4.0 * timefac * visc/mk) * xi_convect);
+    
+        /*------------------------------------------------------ compute tau_C ---*/
+        /*-- stability parameter definition according to Codina (2002), CMAME 191
+         *
+         * Analysis of a stabilized finite element approximation of the transient
+         * convection-diffusion-reaction equation using orthogonal subscales.
+         * Ramon Codina, Jordi Blasco; Comput. Visual. Sci., 4 (3): 167-174, 2002.
+         *
+         * */
+        //tau[2] = sqrt(DSQR(visc)+DSQR(0.5*vel_norm*hk));
+    
+        // Wall Diss. 99
+        /*
+                      xi2 ^
+                          |   
+                        1 |   +-----------
+                          |  / 
+                          | /
+                          |/
+                          +--------------> Re2
+                              1
+        */
+        const double xi_tau_c = DMIN(re2,1.0);
+        tau[2] = vel_norm * hk * 0.5 * xi_tau_c /timefac;
+      
+    }
+    else
+    {// stabilization parameters for stationary case
+    
+        // compute tau_Mu    
+        const double re_tau_mu = mk * vel_norm * strle / (2.0 * visc);   /* convective : viscous forces */
+        const double xi_tau_mu = DMAX(re_tau_mu, 1.0);
+        tau[0] = (DSQR(strle)*mk)/(4.0*visc*xi_tau_mu);
+ 
+        // compute tau_Mp
+        const double re_tau_mp = mk * vel_norm * hk / (2.0 * visc);      /* convective : viscous forces */
+        const double xi_tau_mp = DMAX(re_tau_mp,1.0);
+        tau[1] = (DSQR(hk)*mk)/(4.0*visc*xi_tau_mp);    
+
+        // compute tau_C
+        const double xi_tau_c = DMIN(re_tau_mp, 1.0);
+        tau[2] = 0.5*vel_norm*hk*xi_tau_c;
+    }
+     
+    return tau;
+}
+
+
+
+
 
 
 //=======================================================================
