@@ -11,7 +11,7 @@ if [ "x$USES_CPP" = "x1" ]; then
 fi
 
 # set linker to cpp if trilinos is used
-if grep '^[ \t]TRILINOS_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
+if grep '^[[:blank:]]*TRILINOS_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
   if [ "x$CP" = "x" ] ; then
         echo $0: Error: C++ used, but no C++ compiler available on this platform!!
         exit 1
