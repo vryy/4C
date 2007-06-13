@@ -40,12 +40,12 @@ IS_DEBUG=0
 
 # check for trilinos usage
 IS_TRILINOS=0
-if grep '^TRILINOS_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
+if grep '^[ \t]TRILINOS_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
   IS_TRILINOS=1
 fi
 
 # - from definefile
-if grep '^DEBUG' "$definefile" 2>&1 > /dev/null ; then
+if grep '^[ \t]DEBUG' "$definefile" 2>&1 > /dev/null ; then
   echo DEBUG from definefile
   IS_DEBUG=1
 fi
