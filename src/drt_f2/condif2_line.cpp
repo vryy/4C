@@ -24,7 +24,6 @@ extern "C"
 {
 #include "../headers/standardtypes.h"
 }
-#include "../drt_lib/dstrc.H"
 
 
 
@@ -41,7 +40,6 @@ DRT::Element(id,element_condif2line,owner),
 parent_(parent),
 lline_(lline)
 {
-  DSTraceHelper dst("Condif2Line::Condif2Line");
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
   return;
@@ -55,7 +53,6 @@ DRT::Element(old),
 parent_(old.parent_),
 lline_(old.lline_)
 {
-  DSTraceHelper dst("Condif2Line::Condif2Line");
   return;
 }
 
@@ -65,7 +62,6 @@ lline_(old.lline_)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::Elements::Condif2Line::Clone() const
 {
-  DSTraceHelper dst("Condif2Line::Clone");
   DRT::Elements::Condif2Line* newelement = new DRT::Elements::Condif2Line(*this);
   return newelement;
 }
@@ -92,7 +88,6 @@ DRT::Element::DiscretizationType DRT::Elements::Condif2Line::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::Elements::Condif2Line::Pack(vector<char>& data) const
 {
-  DSTraceHelper dst("Condif2Line::Pack");
   data.resize(0);
   dserror("this Condif2Line element does not support communication");
 
@@ -105,7 +100,6 @@ void DRT::Elements::Condif2Line::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void DRT::Elements::Condif2Line::Unpack(const vector<char>& data)
 {
-  DSTraceHelper dst("Condif2Line::Unpack");
   dserror("this Condif2Line element does not support communication");
   return;
 }
@@ -115,7 +109,6 @@ void DRT::Elements::Condif2Line::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
 DRT::Elements::Condif2Line::~Condif2Line()
 {
-  DSTraceHelper dst("Condif2Line::~Condif2Line");
   return;
 }
 
@@ -125,7 +118,6 @@ DRT::Elements::Condif2Line::~Condif2Line()
  *----------------------------------------------------------------------*/
 void DRT::Elements::Condif2Line::Print(ostream& os) const
 {
-  DSTraceHelper dst("Condif2Line::Print");
   os << "Condif2Line ";
   Element::Print(os);
   return;

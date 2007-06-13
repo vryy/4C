@@ -25,7 +25,6 @@ extern "C"
 #include "../headers/standardtypes.h"
 #include "../fluid2/fluid2.h"
 }
-#include "../drt_lib/dstrc.H"
 
 
 
@@ -42,7 +41,6 @@ DRT::Element(id,element_fluid2line,owner),
 parent_(parent),
 lline_(lline)
 {
-  DSTraceHelper dst("Fluid2Line::Fluid2Line");
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
   return;
@@ -56,7 +54,6 @@ DRT::Element(old),
 parent_(old.parent_),
 lline_(old.lline_)
 {
-  DSTraceHelper dst("Fluid2Line::Fluid2Line");
   return;
 }
 
@@ -66,7 +63,6 @@ lline_(old.lline_)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::Elements::Fluid2Line::Clone() const
 {
-  DSTraceHelper dst("Fluid2Line::Clone");
   DRT::Elements::Fluid2Line* newelement = new DRT::Elements::Fluid2Line(*this);
   return newelement;
 }
@@ -93,7 +89,6 @@ DRT::Element::DiscretizationType DRT::Elements::Fluid2Line::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::Elements::Fluid2Line::Pack(vector<char>& data) const
 {
-  DSTraceHelper dst("Fluid2Line::Pack");
   data.resize(0);
   dserror("this Fluid2Line element does not support communication");
 
@@ -106,7 +101,6 @@ void DRT::Elements::Fluid2Line::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void DRT::Elements::Fluid2Line::Unpack(const vector<char>& data)
 {
-  DSTraceHelper dst("Fluid2Line::Unpack");
   dserror("this Fluid2Line element does not support communication");
   return;
 }
@@ -116,7 +110,6 @@ void DRT::Elements::Fluid2Line::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
 DRT::Elements::Fluid2Line::~Fluid2Line()
 {
-  DSTraceHelper dst("Fluid2Line::~Fluid2Line");
   return;
 }
 
@@ -126,7 +119,6 @@ DRT::Elements::Fluid2Line::~Fluid2Line()
  *----------------------------------------------------------------------*/
 void DRT::Elements::Fluid2Line::Print(ostream& os) const
 {
-  DSTraceHelper dst("Fluid2Line::Print");
   os << "Fluid2Line ";
   Element::Print(os);
   return;

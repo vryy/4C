@@ -32,7 +32,6 @@ extern "C"
 #include "../headers/standardtypes.h"
 //#include "../fluid2/fluid2.h"
 }
-#include "../drt_lib/dstrc.H"
 
 
 /*----------------------------------------------------------------------*
@@ -54,7 +53,6 @@ int DRT::Elements::Fluid2::Evaluate(ParameterList& params,
                                     Epetra_SerialDenseVector& elevec2,
                                     Epetra_SerialDenseVector& elevec3)
 {
-  DSTraceHelper dst("Fluid2::Evaluate");
   DRT::Elements::Fluid2::ActionType act = Fluid2::none;
 
   // get the action required
@@ -560,9 +558,6 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
  *----------------------------------------------------------------------*/
 void DRT::Elements::Fluid2::f2_integration_points(struct _FLUID_DATA& data)
 {
-  DSTraceHelper dst("Fluid2::f2_integration_points");
-
-
   const DOUBLE Q12 = ONE/TWO;
   const DOUBLE Q13 = ONE/THREE;
   const DOUBLE Q16 = ONE/SIX;
@@ -963,8 +958,6 @@ void DRT::Elements::Fluid2::f2_jaco(const Epetra_SerialDenseMatrix& xyze,
                                     const int iel
 				    )
 {
-  DSTraceHelper dst("Fluid2::f2_jaco");
-
   double dum;
 
   /*-------------------------------- determine jacobian at point r,s ---*/
@@ -1064,8 +1057,6 @@ void DRT::Elements::Fluid2::f2_shape_function(
                int         	  icode
             )
 {
-  DSTraceHelper dst("Fluid2::f2_shape_function");
-
   const DOUBLE Q12 = ONE/TWO;
   const DOUBLE Q14 = ONE/FOUR;
 
@@ -1445,8 +1436,6 @@ void DRT::Elements::Fluid2::f2_gder(Epetra_SerialDenseMatrix& derxy,
                                     const int iel
 				    )
 {
-  DSTraceHelper dst("Fluid2::f2_gder");
-
   Epetra_SerialDenseMatrix 	xji(2,2);   // inverse of jacobian matrix
 
 

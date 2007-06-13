@@ -25,7 +25,6 @@ extern "C"
 #include "../headers/standardtypes.h"
 #include "../fluid2/fluid2.h"
 }
-#include "../drt_lib/dstrc.H"
 
 
 /*----------------------------------------------------------------------*
@@ -38,7 +37,6 @@ int DRT::Elements::Fluid2Line::EvaluateNeumann(
     vector<int>&              lm,
     Epetra_SerialDenseVector& elevec1)
 {  
-  DSTraceHelper dst("Fluid2Line::EvaluateNeumann");
   dserror("Line Neumann condition not yet implemented for Fluid2");
 
   return 0;

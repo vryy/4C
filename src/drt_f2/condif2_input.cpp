@@ -35,15 +35,12 @@ extern "C"
 extern struct _FILES  allfiles;
 }
 #include "condif2.H"
-#include "../drt_lib/dstrc.H"
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                              gammi 04/07|
  *----------------------------------------------------------------------*/
 bool DRT::Elements::Condif2::ReadElement()
 {
-  DSTraceHelper dst("Condif2::ReadElement");
-
   // read element's nodes
   int   ierr = 0;
   int   nnode = 0;

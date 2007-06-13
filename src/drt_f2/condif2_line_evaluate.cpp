@@ -24,7 +24,6 @@ extern "C"
 {
 #include "../headers/standardtypes.h"
 }
-#include "../drt_lib/dstrc.H"
 
 
 /*----------------------------------------------------------------------*
@@ -37,7 +36,6 @@ int DRT::Elements::Condif2Line::EvaluateNeumann(
     vector<int>&              lm,
     Epetra_SerialDenseVector& elevec1)
 {  
-  DSTraceHelper dst("Condif2Line::EvaluateNeumann");
   dserror("Line Neumann condition not yet implemented for Condif2");
 
   return 0;

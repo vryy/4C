@@ -31,7 +31,6 @@ extern "C"
 {
 #include "../headers/standardtypes.h"
 }
-#include "../drt_lib/dstrc.H"
 
 
 /*----------------------------------------------------------------------*
@@ -53,7 +52,6 @@ int DRT::Elements::Condif2::Evaluate(ParameterList& params,
                                     Epetra_SerialDenseVector& elevec2,
                                     Epetra_SerialDenseVector& elevec3)
 {
-  DSTraceHelper dst("Condif2::Evaluate");
   DRT::Elements::Condif2::ActionType act = Condif2::none;
 
   // get the action required
@@ -447,9 +445,6 @@ void DRT::Elements::Condif2::condif2_sys_mat(vector<int>&              lm,
  *----------------------------------------------------------------------*/
 void DRT::Elements::Condif2::condif2_integration_points(struct _FLUID_DATA& data)
 {
-  DSTraceHelper dst("Condif2::condif2_integration_points");
-
-
   const DOUBLE Q12 = ONE/TWO;
   const DOUBLE Q13 = ONE/THREE;
   const DOUBLE Q16 = ONE/SIX;
@@ -850,8 +845,6 @@ void DRT::Elements::Condif2::condif2_jaco(const Epetra_SerialDenseMatrix& xyze,
                                     const int iel
 				    )
 {
-  DSTraceHelper dst("Condif2::condif2_jaco");
-
   double dum;
 
   /*-------------------------------- determine jacobian at point r,s ---*/
@@ -951,8 +944,6 @@ void DRT::Elements::Condif2::condif2_shape_function(
                int         	  icode
             )
 {
-  DSTraceHelper dst("Condif2::condif2_shape_function");
-
   const DOUBLE Q12 = ONE/TWO;
   const DOUBLE Q14 = ONE/FOUR;
 
@@ -1332,8 +1323,6 @@ void DRT::Elements::Condif2::condif2_gder(Epetra_SerialDenseMatrix& derxy,
                                     const int iel
 				    )
 {
-  DSTraceHelper dst("Condif2::condif2_gder");
-
   Epetra_SerialDenseMatrix 	xji(2,2);   // inverse of jacobian matrix
 
 
