@@ -76,8 +76,33 @@ bool DRT::Elements::XFluid3::ReadElement()
     vol2surf[0][8] = 20;
 
     vector<int> gid2baciNodeNumbering;
-    for(int i = 0; i < 27; i++ )
-        gid2baciNodeNumbering[i] = i;
+    gid2baciNodeNumbering[0] =   1;
+    gid2baciNodeNumbering[1] =   2;
+    gid2baciNodeNumbering[2] =   3;
+    gid2baciNodeNumbering[3] =   0;
+    gid2baciNodeNumbering[4] =   5;
+    gid2baciNodeNumbering[5] =   6;
+    gid2baciNodeNumbering[6] =   7;
+    gid2baciNodeNumbering[7] =   4;
+    gid2baciNodeNumbering[8] =   9;
+    gid2baciNodeNumbering[9] =  10;
+    gid2baciNodeNumbering[10] = 11;
+    gid2baciNodeNumbering[11] =  8;
+    gid2baciNodeNumbering[12] = 17;
+    gid2baciNodeNumbering[13] = 18;
+    gid2baciNodeNumbering[14] = 19;
+    gid2baciNodeNumbering[15] = 16;
+    gid2baciNodeNumbering[16] = 13;
+    gid2baciNodeNumbering[17] = 14;
+    gid2baciNodeNumbering[18] = 15;
+    gid2baciNodeNumbering[19] = 12;       
+    gid2baciNodeNumbering[20] = 20;
+    gid2baciNodeNumbering[21] = 25;
+    gid2baciNodeNumbering[22] = 23;
+    gid2baciNodeNumbering[23] = 24;
+    gid2baciNodeNumbering[24] = 22;
+    gid2baciNodeNumbering[25] = 21;
+    gid2baciNodeNumbering[26] = 26;
 
     Gid2DisType::iterator iter;
     for( iter = gid2distype.begin(); iter != gid2distype.end(); iter++ ) 
