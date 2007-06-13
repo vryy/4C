@@ -2869,7 +2869,7 @@ vector<double> DRT::Elements::XFluid3::f3_caltau(
     Epetra_SerialDenseVector&           funct,
     Epetra_SerialDenseMatrix&           deriv,
     Epetra_SerialDenseMatrix&           deriv2,
-    Epetra_SerialDenseMatrix&           xyze,
+    const Epetra_SerialDenseMatrix&           xyze,
     Epetra_SerialDenseMatrix&           xjm,
     Epetra_SerialDenseMatrix&           vderxy,
     vector<double>&                     pderxy,

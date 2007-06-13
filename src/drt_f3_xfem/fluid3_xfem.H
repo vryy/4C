@@ -494,6 +494,24 @@ private:
   // get optimal gaussrule for given discretization type
   GaussRule get_optimal_gaussrule(const DiscretizationType distype);
   
+  vector<double> f3_caltau(
+    Epetra_SerialDenseVector&    funct,
+    Epetra_SerialDenseMatrix&    deriv,
+    Epetra_SerialDenseMatrix&    deriv2,
+    const Epetra_SerialDenseMatrix&    xyze,
+    Epetra_SerialDenseMatrix&    xjm,
+    Epetra_SerialDenseMatrix&    vderxy,
+    vector<double>&              pderxy,
+    Epetra_SerialDenseMatrix&    vderxy2,
+    Epetra_SerialDenseMatrix&    derxy,
+    Epetra_SerialDenseMatrix&    derxy2,
+    vector<double>&     evelnp,
+    vector<double>&              edeadng,
+    DRT::Element::DiscretizationType           distype,
+    const double                 visc,
+    const int                    numnode,
+    const bool                   is_stationary
+    );
 
 }; // class Fluid3
 
