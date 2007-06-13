@@ -61,6 +61,23 @@ bool DRT::Elements::XFluid3::ReadElement()
     distype2NumNodes[hex27] = 27;
     distype2NumNodes[tet4]  = 4;
     distype2NumNodes[tet10] = 10;
+    
+    typedef vector<int> Volume2Surface;
+    typedef vector<Volume2Surface> Volume2Surfaces;
+    Volume2Surfaces vol2surf;
+    vol2surf[0][0] = 0;
+    vol2surf[0][1] = 3;
+    vol2surf[0][2] = 2;
+    vol2surf[0][3] = 1;
+    vol2surf[0][4] = 11;
+    vol2surf[0][5] = 10;
+    vol2surf[0][6] = 9;
+    vol2surf[0][7] = 8;
+    vol2surf[0][8] = 20;
+
+    vector<int> gid2baciNodeNumbering;
+    for(int i = 0; i < 27; i++ ) 
+        gid2baciNodeNumbering[i] = i;
 
     Gid2DisType::iterator iter;
     for( iter = gid2distype.begin(); iter != gid2distype.end(); iter++ ) 

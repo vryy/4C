@@ -44,12 +44,31 @@ are stored.
 </pre>
 
 ------------------------------------------------------------------------*/
+typedef struct _INTEGRATION_POINTS_2D
+{
+  int           nquad;
+  double        qxg[MAXGAUSS][2];    /*!< coordinates */
+  double        qwgt[MAXGAUSS];      /*!< weights */
+} INTEGRATION_POINTS_2D;
+
+/*!----------------------------------------------------------------------
+\brief integration parameters
+
+<pre>                                                gerstenberger 06/07
+
+In this structure the coordinates and weights used by gauss integration
+are stored.
+
+</pre>
+
+------------------------------------------------------------------------*/
 typedef struct _INTEGRATION_POINTS_3D
 {
   int           nquad;
   double        qxg[MAXGAUSS][3];    /*!< coordinates */
   double        qwgt[MAXGAUSS];      /*!< weights */
 } INTEGRATION_POINTS_3D;
+
 
 /*!
 \brief DRT: namespace of the ccarat discretization module
@@ -323,7 +342,7 @@ private:
   };
   
   //! GaussRules supported by fluid3
-  enum GaussRule
+  enum GaussRule  
   {
     hex_1point,
     hex_8point,
@@ -333,6 +352,9 @@ private:
     tet_4point_alternative,
     tet_10point
   };
+  
+  // constants
+  static const int                                NSD_ = 3;
   
 
   //! gaussrule used for weak form integration
@@ -805,6 +827,18 @@ private:
   // don't want = operator
   XFluid3Surface& operator = (const XFluid3Surface& old);
 
+  //! GaussRules supported by fluid3surface
+  enum GaussRule  
+  {
+    quad_4point,
+    quad_9point,
+    tri_3point,
+    tri_6point
+  };
+  
+  // constants
+  static const int                                NSD_ = 3;
+  
   //! The parent element of this surface
   DRT::Elements::XFluid3* parent_;
   //! The local surface number of this surface w.r.t to the parent_ element
@@ -832,6 +866,10 @@ private:
     const Epetra_SerialDenseMatrix  deriv,
     Epetra_SerialDenseMatrix&       metrictensor,
     double                         *drs);
+
+  void integration_points(
+    struct _INTEGRATION_POINTS_2D& intpoints,
+    const   GaussRule gaussrule);
 
 }; // class XFluid3Surface
 

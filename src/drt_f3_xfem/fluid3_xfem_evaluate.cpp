@@ -326,8 +326,7 @@ void DRT::Elements::XFluid3::f3_sys_mat(vector<int>&              lm,
         default: dserror("type unknown!\n");
     }
     // get velocities at element center
-    const int NSD = 3;
-    for (int isd=0;isd<NSD;isd++)
+    for (int isd=0;isd<NSD_;isd++)
     {
       velint[isd]=0.0;
       for (int j=0;j<numnode;j++)
@@ -509,7 +508,8 @@ void DRT::Elements::XFluid3::f3_sys_mat(vector<int>&              lm,
         default:
           dserror("typ unknown!");
     }
-
+    
+    f3_integration_points(intpoints, gaussrule_);
     /*----------------------------------------------------------------------*
      |               start loop over integration points                     |
      *----------------------------------------------------------------------*/
@@ -845,12 +845,10 @@ void DRT::Elements::XFluid3::f3_jaco(const Epetra_SerialDenseMatrix& xyze,
                                      const int iel
                     )
 {
-    const int NSD = 3;
-
     // determine jacobian at point r,s,t
-    for (int isd=0; isd<NSD; isd++)
+    for (int isd=0; isd<NSD_; isd++)
     {
-        for (int jsd=0; jsd<NSD; jsd++)
+        for (int jsd=0; jsd<NSD_; jsd++)
         {
             double dum = 0.0;
             for (int inode=0; inode<iel; inode++)
@@ -2873,9 +2871,6 @@ void DRT::Elements::XFluid3::f3_int_beltrami_err(
   ParameterList&        params
   )
 {
-
-    const int NSD = 3;
-
     /*-------------------------- add element error to "integrated" error */
     double velerr = params.get<double>("L2 integrated velocity error");
     double preerr = params.get<double>("L2 integrated pressure error");
@@ -2901,7 +2896,7 @@ void DRT::Elements::XFluid3::f3_int_beltrami_err(
 
 
     // get node coordinates of element
-    Epetra_SerialDenseMatrix xyze(NSD,iel);
+    Epetra_SerialDenseMatrix xyze(NSD_,iel);
     for(int inode=0;inode<iel;inode++)
     {
         xyze(0,inode)=Nodes()[inode]->X()[0];
@@ -2948,14 +2943,14 @@ void DRT::Elements::XFluid3::f3_int_beltrami_err(
     *----------------------------------------------------------------------*/
 
     double         preint;
-    vector<double> velint  (NSD);
-    vector<double> xint    (NSD);
+    vector<double> velint  (NSD_);
+    vector<double> xint    (NSD_);
 
     double         p;
-    vector<double> u       (NSD);
+    vector<double> u       (NSD_);
 
     double         deltap;
-    vector<double> deltavel(NSD);
+    vector<double> deltavel(NSD_);
 
 
     for (int iquad=0;iquad<intpoint.nquad;iquad++)
@@ -2971,7 +2966,7 @@ void DRT::Elements::XFluid3::f3_int_beltrami_err(
         fac = intpoint.qwgt[iquad]*det;
 
         // get velocity at integration point
-        for (int isd=0; isd<NSD; isd++)
+        for (int isd=0; isd<NSD_; isd++)
         {
             velint[isd] = 0.0;
             for (int inode=0;inode<iel;inode++)
@@ -2988,7 +2983,7 @@ void DRT::Elements::XFluid3::f3_int_beltrami_err(
         }
 
         // get velocity sol at integration point
-        for (int isd=0; isd<NSD; isd++)
+        for (int isd=0; isd<NSD_; isd++)
         {
             xint[isd] = 0.0;
             for (int inode=0;inode<iel;inode++)
@@ -3019,13 +3014,13 @@ void DRT::Elements::XFluid3::f3_int_beltrami_err(
         // compute difference between analytical solution and numerical solution
         deltap = preint - p;
 
-        for (int isd=0;isd<NSD;isd++)
+        for (int isd=0;isd<NSD_;isd++)
         {
             deltavel[isd]=velint[isd]-u[isd];
         }
 
         // add square to L2 error
-        for (int isd=0;isd<NSD;isd++)
+        for (int isd=0;isd<NSD_;isd++)
         {
             velerr += deltavel[isd]*deltavel[isd]*fac;
         }
