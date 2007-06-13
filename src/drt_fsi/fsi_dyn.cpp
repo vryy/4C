@@ -5,6 +5,9 @@
 #include "fsi_dyn.H"
 #include "fsi_dirichletneumann.H"
 
+#include "../drt_lib/drt_resulttest.H"
+#include "../drt_fluid/fluidresulttest.H"
+
 #ifdef PARALLEL
 #include <mpi.h>
 #endif
@@ -19,15 +22,20 @@
 void fsi_ale_drt()
 {
 #ifdef PARALLEL
-  Epetra_MpiComm Comm(MPI_COMM_WORLD);
+  Epetra_MpiComm comm(MPI_COMM_WORLD);
 #else
-  Epetra_SerialComm Comm;
+  Epetra_SerialComm comm;
 #endif
 
-  Teuchos::RefCountPtr<FSI::DirichletNeumannCoupling> fsi = rcp(new FSI::DirichletNeumannCoupling(Comm));
+  Teuchos::RefCountPtr<FSI::DirichletNeumannCoupling> fsi = rcp(new FSI::DirichletNeumannCoupling(comm));
 
-  fsi->Setup();
   fsi->Timeloop(fsi);
+
+#ifdef RESULTTEST
+  DRT::ResultTestManager testmanager(comm);
+  testmanager.AddFieldTest(rcp(new FluidResultTest(fsi->FluidField())));
+  testmanager.TestAll();
+#endif
 }
 
 #endif

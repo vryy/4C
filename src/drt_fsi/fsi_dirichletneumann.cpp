@@ -8,11 +8,11 @@
 
 #include "../drt_lib/drt_colors.H"
 
-#include "../fsi_full/fsi_nox_aitken.H"
-#include "../fsi_full/fsi_nox_extrapolate.H"
-#include "../fsi_full/fsi_nox_michler.H"
-#include "../fsi_full/fsi_nox_fixpoint.H"
-#include "../fsi_full/fsi_nox_jacobian.H"
+#include "fsi_nox_aitken.H"
+#include "fsi_nox_extrapolate.H"
+#include "fsi_nox_michler.H"
+#include "fsi_nox_fixpoint.H"
+#include "fsi_nox_jacobian.H"
 
 
 /*----------------------------------------------------------------------*
@@ -70,11 +70,6 @@ extern Teuchos::RefCountPtr<Teuchos::ParameterList> globalparameterlist;
 
 FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
   : comm_(comm)
-{
-}
-
-
-void FSI::DirichletNeumannCoupling::Setup()
 {
   FSI_DYNAMIC *fsidyn = alldyn[3].fsidyn;
   step_ = 0;

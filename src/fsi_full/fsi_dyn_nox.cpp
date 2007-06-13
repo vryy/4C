@@ -7,12 +7,16 @@
 #endif
 
 #include "fsi_dyn_nox.H"
-#include "fsi_nox_aitken.H"
-#include "fsi_nox_extrapolate.H"
-#include "fsi_nox_michler.H"
-#include "fsi_nox_fixpoint.H"
-#include "fsi_nox_jacobian.H"
-#include "../drt_lib/dstrc.H"
+
+// This is old discretization. But we use the same nox enhancements
+// that are used by the new discretization as well. So we are kind of
+// hybrid here. (These enhancements do not depend on anything special
+// to the new discretization.)
+#include "../drt_fsi/fsi_nox_aitken.H"
+#include "../drt_fsi/fsi_nox_extrapolate.H"
+#include "../drt_fsi/fsi_nox_michler.H"
+#include "../drt_fsi/fsi_nox_fixpoint.H"
+#include "../drt_fsi/fsi_nox_jacobian.H"
 
 #include <fstream>
 #include <iostream>
