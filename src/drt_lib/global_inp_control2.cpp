@@ -311,6 +311,12 @@ void inpfield_ccadiscret(DRT::Problem& problem, DRT::DatFileReader& reader)
     input_material_ccadiscret(*micro_problem);
 
 
+    // read conditions of microscale -> note that no time curves and
+    // spatial functions can be read!
+
+    input_conditions(*micro_problem);
+
+
     // reactivate reader of macroscale as well as macroscale material
 
     reader.Activate();

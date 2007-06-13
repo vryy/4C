@@ -66,6 +66,8 @@ DRT::TimeCurveManager DRT::TimeCurveManager::instance_;
 
 void DRT::TimeCurveManager::ReadInput()
 {
+  curves_.clear();
+
   // test for as many curves as there are
   for (int i = 1;; ++i)
   {

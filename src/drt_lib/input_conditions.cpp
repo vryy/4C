@@ -272,7 +272,7 @@ void input_conditions(const DRT::Problem& problem)
 
       register_condition("FSICoupling", "FSI Coupling", linefsicoup, actdis, noderowmap);
       register_condition("FSICoupling", "FSI Coupling", surffsicoup, actdis, noderowmap);
-      
+
       register_condition("FSIXFEM", "FSI XFEM", linefsixfem, actdis, noderowmap);
       register_condition("FSIXFEM", "FSI XFEM", surffsixfem, actdis, noderowmap);
 
