@@ -460,11 +460,11 @@ private:
                    Epetra_SerialDenseMatrix&     vderxy2,
                    vector<double>&           gradp,
                    Epetra_SerialDenseVector&           funct,
-                   vector<double>&           tau,
+                   const vector<double>&           tau,
                    Epetra_SerialDenseMatrix&     derxy,
                    Epetra_SerialDenseMatrix&     derxy2,
                    vector<double>&               edeadng,
-                   double&                       fac,
+                   const double&                       fac,
                    const double&             visc,
                    const int&                iel,
                    ParameterList&            params
@@ -481,7 +481,7 @@ private:
                 Epetra_SerialDenseMatrix&     vderxy2,
                 vector<double>&           gradp,
                 Epetra_SerialDenseVector&           funct,
-                vector<double>&           tau,
+                const vector<double>&           tau,
                 Epetra_SerialDenseMatrix&     derxy,
                 Epetra_SerialDenseMatrix&     derxy2,
                 vector<double>&               edeadng,
@@ -510,6 +510,7 @@ private:
     DRT::Element::DiscretizationType           distype,
     const double                 visc,
     const int                    numnode,
+    const double                 timefac,
     const bool                   is_stationary
     );
 

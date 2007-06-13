@@ -280,23 +280,28 @@ void DRT::Elements::XFluid3::f3_sys_mat(vector<int>&              lm,
     INTEGRATION_POINTS_3D       intpoints;
     vector<double>              velint(3);
     double                      timefac;
-    vector<double>              tau(3); // stab parameters
+    //vector<double>              tau(3); // stab parameters
 
     timefac=params.get<double>("time constant for integration",0.0);
 
     // get control parameter
     bool is_stationary = params.get<bool>("using stationary formulation",false);
     
-    // get velocities at element center
 
-    for (int isd=0;isd<NSD_;isd++)
-    {
-      velint[isd]=0.0;
-      for (int j=0;j<numnode;j++)
-      {
-        velint[isd] += funct[j]*evelnp[isd+(3*j)];
-      }
-    }
+    const vector<double> tau = f3_caltau(funct,
+    deriv,
+    deriv2,
+    xyze,
+    xjm,
+    derxy,
+    evelnp,
+    edeadng,
+    distype,
+    visc,
+    numnode,
+    timefac,
+    is_stationary
+    );
     
     
     // integration loop for one Fluid3 element using USFEM
@@ -2114,16 +2119,16 @@ void DRT::Elements::XFluid3::f3_calmat( Epetra_SerialDenseMatrix& estif,
                 vector<double>&            velint,
                 vector<double>&            histvec,
                 vector<double>&            gridvint,
-        double&                press,
+                double&                press,
                 Epetra_SerialDenseMatrix&  vderxy,
                 Epetra_SerialDenseMatrix&  vderxy2,
                 vector<double>&            gradp,
                 Epetra_SerialDenseVector&  funct,
-                vector<double>&            tau,
+                const vector<double>&            tau,
                 Epetra_SerialDenseMatrix&  derxy,
                 Epetra_SerialDenseMatrix&  derxy2,
                 vector<double>&            edeadng,
-                double&                    fac,
+                const double&                    fac,
                 const double&              visc,
                 const int&                 iel,
         ParameterList&             params
@@ -2421,7 +2426,7 @@ void DRT::Elements::XFluid3::f3_calmat_stationary( Epetra_SerialDenseMatrix& est
                 Epetra_SerialDenseMatrix&  vderxy2,
                 vector<double>&            gradp,
                 Epetra_SerialDenseVector&            funct,
-                vector<double>&            tau,
+                const vector<double>&            tau,
                 Epetra_SerialDenseMatrix&  derxy,
                 Epetra_SerialDenseMatrix&  derxy2,
                 vector<double>&            edeadng,
@@ -2865,18 +2870,15 @@ vector<double> DRT::Elements::XFluid3::f3_caltau(
     Epetra_SerialDenseVector&           funct,
     Epetra_SerialDenseMatrix&           deriv,
     Epetra_SerialDenseMatrix&           deriv2,
-    const Epetra_SerialDenseMatrix&           xyze,
-    Epetra_SerialDenseMatrix&           xjm,
-    //Epetra_SerialDenseMatrix&           vderxy,
-    //vector<double>&                     pderxy,
-    //Epetra_SerialDenseMatrix&           vderxy2,
-    Epetra_SerialDenseMatrix&           derxy,
-    //Epetra_SerialDenseMatrix&           derxy2,
+    const Epetra_SerialDenseMatrix&      xyze,
+    Epetra_SerialDenseMatrix&               xjm,
+    Epetra_SerialDenseMatrix&               derxy,
     vector<double>&                         evelnp,
     vector<double>&                         edeadng,
-    const DRT::Element::DiscretizationType    distype,
-    const double                        visc,
-    const int                           numnode,
+    const DRT::Element::DiscretizationType  distype,
+    const double                            visc,
+    const int                               numnode,
+    const double                            timefac,
     const bool                          is_stationary
     )
 {
@@ -2885,7 +2887,6 @@ vector<double> DRT::Elements::XFluid3::f3_caltau(
     vector<double>              velino(3);     // normed velocity at element centre
     double                      det;
     INTEGRATION_POINTS_3D       intpoints;
-    double                      timefac;
     vector<double>              tau(3); // stab parameters
 
 
@@ -2975,7 +2976,7 @@ vector<double> DRT::Elements::XFluid3::f3_caltau(
                   +velino[1]*derxy(1,inode) 
                   +velino[2]*derxy(2,inode));
     }
-    const double strle=2.0/val;
+    const double strle = 2.0/val;
 
     if (is_stationary == false)
     {// stabilization parameters for instationary case (default)
@@ -3068,7 +3069,9 @@ vector<double> DRT::Elements::XFluid3::f3_caltau(
         const double xi_tau_c = DMIN(re_tau_mp, 1.0);
         tau[2] = 0.5*vel_norm*hk*xi_tau_c;
     }
-     
+    
+    //cout << tau[0] << tau[1] << tau[2] << endl;
+    //dserror("blub");
     return tau;
 }
 
