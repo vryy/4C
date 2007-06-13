@@ -33,7 +33,6 @@ extern struct _FILES  allfiles;
  | defined in global_control.c
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
-extern struct _MICROMATERIAL *micromat;
 extern struct _MULTIMAT  *multimat;
 /*----------------------------------------------------------------------*
  | input of materials                                     m.gee 4/01    |
