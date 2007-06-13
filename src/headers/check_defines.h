@@ -102,12 +102,6 @@ Maintainer: Malte Neumann
 #error "Use -DAZTEC_PACKAGE in the makefile."
 #endif
 
-/* is this really necessary? should work without FLUID3!!!*/
-#if defined(D_FLUID3_XFEM) && !defined(D_FLUID3)
-#error "D_FLUID3_XFEM needs D_FLUID3."
-#error "Use -DD_FLUID3 in the makefile."
-#endif
-
 /* no fsi with gemm */
 #if defined(D_FSI) && defined(GEMM)
 #error "FSI not possible with GEMM."

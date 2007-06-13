@@ -1,7 +1,6 @@
 /*!----------------------------------------------------------------------
-\file fluid3_line_evaluate.cpp
+\file fluid3_xfem_line_evaluate.cpp
 \brief
-
 
 <pre>
 Maintainer: Axel Gerstenberger
@@ -11,7 +10,7 @@ Maintainer: Axel Gerstenberger
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_FLUID3
+#ifdef D_FLUID3_XFEM
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 

@@ -897,14 +897,14 @@ public:
   \param lline: the local line number of this line w.r.t. the parent element
   */
   
-  XFluid3Line( int id, 
-  					int owner, 
-  					int nnode, 
-  					const int* nodeids,
-             	DRT::Node** nodes, 
-             	DRT::Elements::XFluid3Surface* surfaceParent,
-             	DRT::Elements::XFluid3* parent,  
-             	const int lline);   
+  XFluid3Line(  int id, 
+                int owner, 
+                int nnode, 
+                const int* nodeids,
+                DRT::Node** nodes, 
+                DRT::Elements::XFluid3Surface* surfaceParent,
+                DRT::Elements::XFluid3* parent,  
+                const int lline);   
 
   /*!
   \brief Copy Constructor
@@ -972,7 +972,7 @@ public:
   separately.
   */
   virtual int NumDofPerNode(const DRT::Node& node) const
-  {return 3;}
+  {return 4;}
 
   /*!
   \brief Get number of degrees of freedom per element
