@@ -46,6 +46,7 @@ struct _FILES   allfiles;
 struct _PAR     par;
 struct _FIELD  *field;
 struct _GENPROB genprob;
+struct _MATERIAL *mat;
 
 // not actually used, but referenced in par_assignmesh.c
 struct _PARTITION  *partition;
