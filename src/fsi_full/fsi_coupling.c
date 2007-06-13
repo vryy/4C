@@ -237,7 +237,6 @@ void fsi_createfsicoup()
       /* surface is an exterior surface */
       if (actdsurf->ndvol == 1 )
       {
-
         /* create dirichlet condition for ale */
         actdsurf->ale_dirich =
           (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
@@ -250,10 +249,18 @@ void fsi_createfsicoup()
         amzero(&(actdsurf->ale_dirich->funct));
         amzero(&(actdsurf->ale_dirich->curve));
 
+#if 1
         /* initialise for ale boundary */
         for (j=0;j<genprob.ndim;j++)
           actdsurf->ale_dirich->dirich_onoff.a.iv[j] = 1;
         actdsurf->ale_dirich->dirich_type = dirich_none;
+#else
+        /* initialise for ale boundary */
+	actdsurf->ale_dirich->dirich_onoff.a.iv[0] = 1;
+	actdsurf->ale_dirich->dirich_onoff.a.iv[1] = 0;
+	actdsurf->ale_dirich->dirich_onoff.a.iv[2] = 0;
+        actdsurf->ale_dirich->dirich_type = dirich_none;
+#endif
       }
 #endif
 

@@ -23,7 +23,7 @@ Maintainer: Peter Gamnitzer
 /*----------------------------------------------------------------------*
 \brief Constructor (public)
 
-<pre> 
+<pre>
 
  Set up processor local octree                               gammi 04/07
 
@@ -42,7 +42,7 @@ Maintainer: Peter Gamnitzer
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
 NodeMatchingOctree::NodeMatchingOctree(
-  RefCountPtr<DRT::Discretization> actdis,
+  const DRT::Discretization&       actdis,
   const vector <int> &             masternodeids,
   int                              maxnodeperleaf,
   double                           tol
@@ -52,14 +52,14 @@ NodeMatchingOctree::NodeMatchingOctree(
 {
   // extract all masternodes on this proc from the list masternodeids
   vector <int> masternodesonthisproc;
-  
+
   for(int locn=0;locn<(int)masternodeids.size();locn++)
   {
     // if node is on this proc
-    if(discret_->HaveGlobalNode(masternodeids[locn]))
+    if(discret_.HaveGlobalNode(masternodeids[locn]))
     {
       // if node is not ghosted
-      if (discret_->gNode(masternodeids[locn])->Owner() == discret_->Comm().MyPID())
+      if (discret_.gNode(masternodeids[locn])->Owner() == discret_.Comm().MyPID())
       {
         // this masternode is on this proc and is not a ghosted one
         masternodesonthisproc.push_back(masternodeids[locn]);
@@ -79,8 +79,8 @@ NodeMatchingOctree::NodeMatchingOctree(
     //                 +-            -+
     //
     Epetra_SerialDenseMatrix   initialboundingbox(3,2);
-    
-    DRT::Node* actnode = discret_->gNode(masternodesonthisproc[0]);
+
+    DRT::Node* actnode = discret_.gNode(masternodesonthisproc[0]);
     for (int dim=0;dim<3;dim++)
     {
       initialboundingbox(dim,0)=actnode->X()[dim]-tol;
@@ -94,7 +94,7 @@ NodeMatchingOctree::NodeMatchingOctree(
 
     for(unsigned locn=0;locn<masternodesonthisproc.size();locn++)
     {
-      DRT::Node* actnode = discret_->gNode(masternodesonthisproc[locn]);
+      DRT::Node* actnode = discret_.gNode(masternodesonthisproc[locn]);
       for (int dim=0;dim<3;dim++)
       {
         initialboundingbox(dim,0)=DMIN(initialboundingbox(dim,0),
@@ -107,7 +107,7 @@ NodeMatchingOctree::NodeMatchingOctree(
     // create octree root --- initial layer is 0
     // all other layers are generated down here by recursive calls
     int initlayer = 0;
-    
+
     octreeroot_ = rcp(new OctreeElement::OctreeElement(discret_,
                                                        masternodesonthisproc,
                                                        initialboundingbox,
@@ -131,13 +131,13 @@ NodeMatchingOctree::NodeMatchingOctree(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void NodeMatchingOctree::CreateGlobalNodeMatching(
-  vector <int>     slavenodeids,
-  vector <int>     dofsforpbcplane,
-  map<int,int> &   midtosid
+  const vector<int>&     slavenodeids,
+  const vector<int>&     dofsforpbcplane,
+  map<int,int>&          midtosid
   )
 {
-  int myrank  =discret_->Comm().MyPID();
-  int numprocs=discret_->Comm().NumProc();
+  int myrank  =discret_.Comm().MyPID();
+  int numprocs=discret_.Comm().NumProc();
 
   // map from global masternodeids to distances to their global slave
   // counterpart
@@ -158,14 +158,14 @@ void NodeMatchingOctree::CreateGlobalNodeMatching(
 
   sblockofnodes.clear();
   rblockofnodes.clear();
-  
+
   for(int globn=0;globn<(int)slavenodeids.size();globn++)
   {
     // is this slavenode on this proc?
-    if(discret_->HaveGlobalNode(slavenodeids[globn]))
+    if(discret_.HaveGlobalNode(slavenodeids[globn]))
     {
       // get the slavenode
-      DRT::Node* actnode = discret_->gNode(slavenodeids[globn]);
+      DRT::Node* actnode = discret_.gNode(slavenodeids[globn]);
 
       // take only nodes which are not ghosted
       if (actnode->Owner() == myrank)
@@ -181,10 +181,10 @@ void NodeMatchingOctree::CreateGlobalNodeMatching(
 
 
   //--------------------------------------------------------------------
-  // -> 2) round robin loop 
+  // -> 2) round robin loop
 #ifdef PARALLEL
   // create an exporter for point to point comunication
-  DRT::Exporter exporter(discret_->Comm());
+  DRT::Exporter exporter(discret_.Comm());
 #endif
 
   for (int np=0;np<numprocs;np++)
@@ -196,23 +196,23 @@ void NodeMatchingOctree::CreateGlobalNodeMatching(
 #ifdef PARALLEL
       MPI_Request request;
       int         tag    =myrank;
-      
+
       int         frompid=myrank;
       int         topid  =(myrank+1)%numprocs;
-      
+
       int         length=sblockofnodes.size();
 
       exporter.ISend(frompid,topid,
                      &(sblockofnodes[0]),sblockofnodes.size(),
                      tag,request);
-      
+
       // make sure that you do not think you received something if
       // you didn't
       if(rblockofnodes.empty()==false)
       {
         dserror("rblockofnodes not empty");
       }
-        
+
       rblockofnodes.clear();
 
       // receive from predecessor
@@ -223,7 +223,7 @@ void NodeMatchingOctree::CreateGlobalNodeMatching(
       {
         dserror("received wrong message (ReceiveAny)");
       }
-      
+
       exporter.Wait(request);
 
       {
@@ -284,7 +284,7 @@ void NodeMatchingOctree::CreateGlobalNodeMatching(
         if(!dofsforpbcplane.empty())
         {
           int dir=-1;
-          
+
           for (int dim=0;dim<3;dim++)
           {
             if(dofsforpbcplane[0]==dim || dofsforpbcplane[1]==dim)
@@ -312,7 +312,7 @@ void NodeMatchingOctree::CreateGlobalNodeMatching(
         double     distofclosestpoint;
 
         bool       nodeisinbox;
-          
+
         nodeisinbox=this->SearchClosestNodeOnThisProc(
           x,
           idofclosestpoint,
@@ -322,7 +322,7 @@ void NodeMatchingOctree::CreateGlobalNodeMatching(
         // matching a point in the box. We do nothing.
         if(nodeisinbox==true)
         {
-          
+
           map<int,int>::iterator found = midtosid.find(idofclosestpoint);
 
           if( found != midtosid.end() )
@@ -343,12 +343,12 @@ void NodeMatchingOctree::CreateGlobalNodeMatching(
 
           }
         } // end nodeisinbox==true
-          
+
       } // end if (masterplanecoords_.empty()!=true)
     }
 
 
-    
+
     //----------------------------------------------------------------
     // prepare to send nodes to next proc (keep list).
 
@@ -367,9 +367,169 @@ void NodeMatchingOctree::CreateGlobalNodeMatching(
   } // end loop np
 
 
-  
+
   return;
 } // CreateGlobalNodeMatching
+
+
+
+void NodeMatchingOctree::FindMatch(const DRT::Discretization& slavedis,
+                                   const vector<int>& slavenodeids,
+                                   map<int,pair<int,double> >& coupling)
+{
+  int numprocs = discret_.Comm().NumProc();
+
+  int slaverank = slavedis.Comm().MyPID();
+  if (slavedis.Comm().NumProc()!=numprocs)
+    dserror("compared discretizations must live on same procs");
+
+  // 1) each proc generates a list of his slavenodes
+  //
+  // 2) the list is communicated in a round robin pattern to all the
+  //    other procs.
+  //
+  // 3) the proc checks the package from each proc and calcs the min
+  //    distance on each --- the result is kept if distance is smaller
+  //    than on the preceding processors
+
+  //--------------------------------------------------------------------
+  // -> 1) create a list of slave nodes on this proc. Pack it.
+  vector<char> sblockofnodes;
+  vector<char> rblockofnodes;
+
+  for (unsigned globn=0; globn<slavenodeids.size(); ++globn)
+  {
+    // is this slavenode on this proc?
+    if (slavedis.HaveGlobalNode(slavenodeids[globn]))
+    {
+      // get the slavenode
+      DRT::Node* actnode = slavedis.gNode(slavenodeids[globn]);
+
+      // take only nodes which are not ghosted
+      if (actnode->Owner() == slaverank)
+      {
+        // Add node to list of nodes which will be sent to the next proc
+        vector<char> data;
+        actnode->Pack(data);
+        DRT::ParObject::AddtoPack(sblockofnodes,data);
+      }
+    }
+  }
+
+  //--------------------------------------------------------------------
+  // -> 2) round robin loop
+
+  // create an exporter for point to point comunication
+  // We do all communication with the communicator of the original
+  // discretization.
+  DRT::Exporter exporter(discret_.Comm());
+
+  for (int np=0; np<numprocs; np++)
+  {
+    //--------------------------------------------------
+    // Send block to next proc. Receive a block from the last proc
+    if (np > 0) // in the first step, we keep all nodes on this proc
+    {
+#ifdef PARALLEL
+      int myrank   = discret_.Comm().MyPID();
+      MPI_Request request;
+      int         tag    =myrank;
+
+      int         frompid=myrank;
+      int         topid  =(myrank+1)%numprocs;
+
+      int         length=sblockofnodes.size();
+
+      exporter.ISend(frompid,topid,
+                     &(sblockofnodes[0]),sblockofnodes.size(),
+                     tag,request);
+
+      // make sure that you do not think you received something if
+      // you didn't
+      if (not rblockofnodes.empty())
+      {
+        dserror("rblockofnodes not empty");
+      }
+
+      rblockofnodes.clear();
+
+      // receive from predecessor
+      frompid = (myrank+numprocs-1)%numprocs;
+      exporter.ReceiveAny(frompid,tag,rblockofnodes,length);
+
+      if (tag!=(myrank+numprocs-1)%numprocs)
+      {
+        dserror("received wrong message (ReceiveAny)");
+      }
+
+      exporter.Wait(request);
+#else
+      dserror("How did you get here? Go away!");
+#endif
+    }
+    else
+    {
+      // no need to communicate
+      swap(rblockofnodes,sblockofnodes);
+    }
+
+    //--------------------------------------------------
+    // Unpack block.
+    int index = 0;
+    while (index < static_cast<int>(rblockofnodes.size()))
+    {
+      // extract node data from blockofnodes
+      vector<char> data;
+      DRT::ParObject::ExtractfromPack(index,rblockofnodes,data);
+
+      // allocate an "empty node". Fill it with info from
+      // extracted node data
+      DRT::ParObject* o = DRT::Utils::Factory(data);
+
+      // cast ParObject to Node
+      DRT::Node* actnode = dynamic_cast<DRT::Node*>(o);
+      if (actnode==NULL)
+        dserror("unpack of invalid data");
+
+      //----------------------------------------------------------------
+      // there is nothing to do if there are no master nodes on this
+      // proc
+      if (not masterplanecoords_.empty())
+      {
+        // get its coordinates
+        vector<double> x(actnode->X(), actnode->X()+3);
+
+        //--------------------------------------------------------
+        // 3) now search for closest master point on this proc
+        int    gid;
+        double dist;
+
+        // If x is not in the bounding box on this proc, its probably not
+        // matching a point in the box. We do nothing.
+        if (SearchClosestNodeOnThisProc(x, gid, dist))
+        {
+          map<int,pair<int,double> >::iterator found = coupling.find(gid);
+
+          // we are interested in the closest match
+          if (found==coupling.end() or coupling[gid].second > dist)
+          {
+            coupling[gid] = make_pair(actnode->Id(), dist);
+          }
+        }
+      }
+    }
+
+    //----------------------------------------------------------------
+    // prepare to send nodes to next proc (keep list).
+
+    // the received nodes will be sent to the next proc
+    swap(sblockofnodes,rblockofnodes);
+
+    // we need a new receive buffer
+    rblockofnodes.clear();
+  }
+}
+
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -382,7 +542,7 @@ void NodeMatchingOctree::CreateGlobalNodeMatching(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 bool NodeMatchingOctree::SearchClosestNodeOnThisProc(
-  vector <double> x,
+  const vector<double>& x,
   int           & idofclosestpoint,
   double        & distofclosestpoint
   )
@@ -390,7 +550,7 @@ bool NodeMatchingOctree::SearchClosestNodeOnThisProc(
   // flag
   bool nodeisinbox=false;
 
-  nodeisinbox=octreeroot_->IsPointInBoundingBox(x);
+  nodeisinbox = octreeroot_->IsPointInBoundingBox(x);
 
   if (nodeisinbox==true)
   {
@@ -401,23 +561,23 @@ bool NodeMatchingOctree::SearchClosestNodeOnThisProc(
     {
       dserror("No root for octree on proc");
     }
-      
+
     RefCountPtr<OctreeElement> octreeele = octreeroot_;
-    
+
     while(octreeele->IsLeaf()==false)
     {
-      octreeele=octreeele->ReturnChildContainingPoint(x);
+      octreeele = octreeele->ReturnChildContainingPoint(x);
 
       if(octreeele==null)
       {
         dserror("Child is nullpointer");
       }
     }
-    
+
     // now get closest point in leaf
     octreeele->SearchClosestNodeInLeaf(x,idofclosestpoint,distofclosestpoint);
   }
-  
+
   return nodeisinbox;
 }// NodeMatchingOctree::SearchClosestNodeOnThisProc
 
@@ -453,7 +613,7 @@ NodeMatchingOctree::~NodeMatchingOctree()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
 OctreeElement::OctreeElement(
-  RefCountPtr<DRT::Discretization> actdis,
+  const DRT::Discretization&       actdis,
   vector <int> &                   nodeidstoadd,
   Epetra_SerialDenseMatrix&        boundingboxtoadd,
   int                              layer,
@@ -487,14 +647,14 @@ OctreeElement::OctreeElement(
     // calculate mean coordinate for all directions
     for(int locn=0;locn<numnodestoadd;locn++)
     {
-      DRT::Node* actnode = discret_->gNode(nodeidstoadd[locn]);
+      DRT::Node* actnode = discret_.gNode(nodeidstoadd[locn]);
 
       for(int dim=0;dim<3;dim++)
       {
         mean[dim]+=actnode->X()[dim];
       }
     }
-    
+
     for(int dim=0;dim<3;dim++)
     {
       mean[dim]=mean[dim]/numnodestoadd;
@@ -504,30 +664,30 @@ OctreeElement::OctreeElement(
     // value of the mean distance to the "lower" boundary)
     int    direction=0;
 
-    
+
     // the maximum distance of the mean value from the boundary of the box
     double maxdist   =0;
     double wheretocut=0;
-      
+
     // get the coordinate with the maximum distance
     for(int dim=0;dim<3;dim++)
     {
       double thisdist= DMIN(mean[dim]-boundingbox_(dim,0),
                             boundingbox_(dim,1)-mean[dim]);
-      
+
       if(maxdist<thisdist)
       {
         maxdist   = thisdist;
         wheretocut= mean[dim];
         direction = dim;
       }
-    }  
+    }
 
 
-    
+
     // Why choose the coordinate with the maximum distance from both edges
     // and not simply the longest edge?
-    // 
+    //
     // Here is what happens if you do so:
     //
     //
@@ -544,17 +704,17 @@ OctreeElement::OctreeElement(
     // This leads to two children:
     //
     //
-    // +--------------+     
-    // |              |     
-    // |X             |     
-    // |              | 
-    // |X             |     
-    // |              |     
-    // |              |     
-    // +--------------+     
-    // 
+    // +--------------+
+    // |              |
+    // |X             |
+    // |              |
+    // |X             |
+    // |              |
+    // |              |
+    // +--------------+
+    //
     // and
-    // 
+    //
     // +-+
     // | |
     // |X|
@@ -563,9 +723,9 @@ OctreeElement::OctreeElement(
     // | |
     // | |
     // +-+
-    // 
+    //
     // This means an endless loop from the problem (*) ...
-    
+
     // create bounding boxes for the children
     Epetra_SerialDenseMatrix   childboundingbox1(3,2);
     Epetra_SerialDenseMatrix   childboundingbox2(3,2);
@@ -579,14 +739,14 @@ OctreeElement::OctreeElement(
       childboundingbox2(dim,0)=boundingbox_(dim,0);
       childboundingbox2(dim,1)=boundingbox_(dim,1);
     }
-    
+
     // replace the boundaries of component direction to divide cells
     // create initial bounding box for all nodes
     //
     // example direction = 1 , e. g. y-direction:
     //
     // mean = ymin + maxdist
-    // 
+    //
     //   +-            -+      +-               -+   +-               -+
     //   |  xmin  xmax  |      |  xmin  xmax     |   |  xmin     xmax  |
     //   |  ymin  ymax  | ---> |  ymin  mean+eps | + |  mean-eps ymax  |
@@ -595,8 +755,8 @@ OctreeElement::OctreeElement(
     //
     //                         lower bounding box    upper bounding box
     //
-    
-    
+
+
     childboundingbox1(direction,1)=wheretocut+tol;
     childboundingbox2(direction,0)=wheretocut-tol;
 
@@ -605,7 +765,7 @@ OctreeElement::OctreeElement(
     vector <int> childnodeids2;
     for(int locn=0;locn<(int)nodeidstoadd.size();locn++)
     {
-      double coordinate=discret_->gNode(nodeidstoadd[locn])->X()[direction];
+      double coordinate=discret_.gNode(nodeidstoadd[locn])->X()[direction];
 
       // node is in "lower" bounding box
       if(coordinate<childboundingbox1(direction,1))
@@ -618,11 +778,11 @@ OctreeElement::OctreeElement(
         childnodeids2.push_back(nodeidstoadd[locn]);
       }
     }
-    
+
     // we do not need the full node id vector anymore --- it was distributed
     // to the children --> throw it away
     nodeidstoadd.clear();
-    
+
     // append children to parent
     octreechild1_ = rcp(new OctreeElement::OctreeElement(discret_,
                                                          childnodeids1,
@@ -643,7 +803,7 @@ OctreeElement::OctreeElement(
     {
       dserror("Trying to create leaf with no nodes. Stop.");
     }
-    
+
     // we have a leave element
     nodeids_     = nodeidstoadd;
   }
@@ -662,11 +822,11 @@ OctreeElement::OctreeElement(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
 bool OctreeElement::IsPointInBoundingBox(
-  vector <double> &x
+  const vector <double> &x
   )
 {
   bool nodeinboundingbox=true;
-  
+
   for (int dim=0;dim<3;dim++)
   {
     // check whether node is outside of bounding box
@@ -693,7 +853,7 @@ bool OctreeElement::IsPointInBoundingBox(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
 RefCountPtr<OctreeElement> OctreeElement::ReturnChildContainingPoint(
-  vector <double> &x
+  const vector <double> &x
   )
 {
   RefCountPtr<OctreeElement> nextelement;
@@ -705,7 +865,7 @@ RefCountPtr<OctreeElement> OctreeElement::ReturnChildContainingPoint(
 
   if(this->octreechild1_->IsPointInBoundingBox(x) == true)
   {
-    
+
     nextelement=this->octreechild1_;
   }
   else if(this->octreechild2_->IsPointInBoundingBox(x) == true)
@@ -716,7 +876,7 @@ RefCountPtr<OctreeElement> OctreeElement::ReturnChildContainingPoint(
   {
     dserror("point in no bounding box of children, but in parent bounding box!");
   }
-  
+
   return nextelement;
 } //OctreeElement::ReturnChildContainingPoint
 
@@ -735,7 +895,7 @@ RefCountPtr<OctreeElement> OctreeElement::ReturnChildContainingPoint(
 bool OctreeElement::IsLeaf()
 {
   bool isleaf=true;
-  
+
   if (this->nodeids_.size()==0)
   {
     isleaf=false;
@@ -780,35 +940,35 @@ void OctreeElement::Print(ostream& os) const
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void OctreeElement::SearchClosestNodeInLeaf(
-  vector <double> & x,
+  const vector <double> & x,
   int             & idofclosestpoint,
   double          & distofclosestpoint
   )
 {
   double          thisdist;
   vector <double> dx(3);
-  
+
   // the first node is the guess for the closest node
-  DRT::Node* actnode = discret_->gNode(this->nodeids_[0]);
+  DRT::Node* actnode = discret_.gNode(this->nodeids_[0]);
   for (int dim=0;dim<3;dim++)
   {
     dx[dim]=actnode->X()[dim]-x[dim];
   }
-  
+
   distofclosestpoint = sqrt(dx[0]*dx[0]+dx[1]*dx[1]+dx[2]*dx[2]);
   idofclosestpoint   = this->nodeids_[0];
 
   // now loop the others and check whether they are better
   for (int nn=1;nn<(int)this->nodeids_.size();nn++)
   {
-    actnode = discret_->gNode(this->nodeids_[nn]);
+    actnode = discret_.gNode(this->nodeids_[nn]);
 
     for (int dim=0;dim<3;dim++)
     {
       dx[dim]=actnode->X()[dim]-x[dim];
     }
     thisdist = sqrt(dx[0]*dx[0]+dx[1]*dx[1]+dx[2]*dx[2]);
-    
+
     if(thisdist<distofclosestpoint)
     {
       distofclosestpoint=thisdist;

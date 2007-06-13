@@ -173,7 +173,7 @@ public:
                  Sets havedof_ to false.
   */
   virtual void ReplaceDofSet(RefCountPtr<DofSet> newdofset);
-  
+
   /*!
   \brief Get degree of freedom row map (Filled()==true prerequisite)
 
@@ -487,7 +487,7 @@ public:
 
   \return Returns out.size()=0 if condition with that name does not exist
   */
-  virtual void GetCondition(const string& name, vector<DRT::Condition*>& out);
+  virtual void GetCondition(const string& name, vector<DRT::Condition*>& out) const;
 
   /*!
   \brief Get a condition with a certain name
@@ -526,7 +526,7 @@ public:
 
   \note Filled()==true is a prerequisite, Filled()==true on exit
   */
-  
+
   virtual void Redistribute(const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap);
 
   /*!

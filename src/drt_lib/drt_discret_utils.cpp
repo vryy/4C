@@ -142,7 +142,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
       if (j==s8->NumNode()) dserror("Can't find matching node - weird!");
       double h2 = (*s8->GetThickness())[j]/2.0;
       // get director
-      Epetra_SerialDenseMatrix* a3ref = s8->GetDirectors();
+      const Epetra_SerialDenseMatrix* a3ref = s8->GetDirectors();
       dir(i,0) = (*a3ref)(0,j)*h2;
       dir(i,1) = (*a3ref)(1,j)*h2;
       dir(i,2) = (*a3ref)(2,j)*h2;

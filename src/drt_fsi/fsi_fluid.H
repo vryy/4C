@@ -7,17 +7,47 @@
 
 #include "../drt_fluid/fluidimplicitintegration.H"
 
-namespace FSI {
+#include <Epetra_Map.h>
+#include <Teuchos_RefCountPtr.hpp>
+
+
+namespace FSI
+{
 
 /// Fluid algorithm enhanced for FSI
 class Fluid : public FluidImplicitTimeInt
 {
 public:
   Fluid(RefCountPtr<DRT::Discretization> dis,
-        LINALG::Solver&       solver,
-        ParameterList&        params,
-        DiscretizationWriter& output);
+        RefCountPtr<LINALG::Solver> solver,
+        RefCountPtr<ParameterList> params,
+        RefCountPtr<DiscretizationWriter> output);
 
+  /// announce a new time step
+  //virtual void NewStep(int step, double time);
+
+  void SetInterfaceMap(Teuchos::RefCountPtr<Epetra_Map> im);
+
+  Teuchos::RefCountPtr<Epetra_Vector> ExtractInterfaceForces();
+
+  void ApplyInterfaceVelocities(Teuchos::RefCountPtr<Epetra_Vector> ivel);
+
+  void SetMeshMap(Teuchos::RefCountPtr<Epetra_Map> mm);
+
+  void ApplyMeshDisplacement(Teuchos::RefCountPtr<Epetra_Vector> fluiddisp);
+
+  const DRT::Discretization& Discretization() const { return *discret_; };
+
+private:
+  Teuchos::RefCountPtr<Epetra_Map> ivelmap_;
+  Teuchos::RefCountPtr<Epetra_Export> extractor_;
+
+  Teuchos::RefCountPtr<Epetra_Map> meshmap_;
+  Teuchos::RefCountPtr<Epetra_Export> meshextractor_;
+
+  RefCountPtr<LINALG::Solver> solver_;
+  RefCountPtr<ParameterList> params_;
+  RefCountPtr<DiscretizationWriter> output_;
 };
 
 }

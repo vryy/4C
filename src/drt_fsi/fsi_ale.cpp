@@ -8,10 +8,19 @@ using namespace std;
 using namespace Teuchos;
 
 
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+
+
 FSI::AleLinear::AleLinear(RefCountPtr<DRT::Discretization> actdis,
-                          LINALG::Solver&       solver,
-                          ParameterList&        params,
-                          DiscretizationWriter& output)
+                          Teuchos::RefCountPtr<LINALG::Solver> solver,
+                          Teuchos::RefCountPtr<ParameterList> params,
+                          Teuchos::RefCountPtr<DiscretizationWriter> output)
   : discret_(actdis),
     solver_ (solver),
     params_ (params),
@@ -23,9 +32,9 @@ FSI::AleLinear::AleLinear(RefCountPtr<DRT::Discretization> actdis,
     haveF_(false),
     haveJacobian_(false)
 {
-  nstep_   = params_.get<int>("nstep");
-  maxtime_ = params_.get<double>("maxtime");
-  dt_      = params_.get<double>("dt");
+  nstep_   = params_->get<int>("nstep");
+  maxtime_ = params_->get<double>("maxtime");
+  dt_      = params_->get<double>("dt");
 
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
@@ -36,42 +45,53 @@ FSI::AleLinear::AleLinear(RefCountPtr<DRT::Discretization> actdis,
   residual_       = LINALG::CreateVector(*dofrowmap,true);
 
   dirichtoggle_ = LINALG::CreateVector(*dofrowmap,true);
-  zeros_        = LINALG::CreateVector(*dofrowmap,true);
+  //zeros_        = LINALG::CreateVector(*dofrowmap,true);
+}
+
+
+void FSI::AleLinear::PrepareTimeStep()
+{
+  step_ += 1;
+  time_ += dt_;
+
+  ParameterList eleparams;
+  eleparams.set("total time", time_);
+  eleparams.set("delta time", dt_);
+
+  discret_->EvaluateDirichlet(eleparams,*dispnp_,*dirichtoggle_);
+}
+
+
+void FSI::AleLinear::Solve()
+{
+  EvaluateElements();
+
+  LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,dirichtoggle_);
+
+  solver_->Solve(sysmat_,dispnp_,residual_,true,true);
+}
+
+
+void FSI::AleLinear::Update()
+{
+}
+
+
+void FSI::AleLinear::Output()
+{
+  output_->NewStep    (step_,time_);
+  output_->WriteVector("dispnp", dispnp_);
 }
 
 
 void FSI::AleLinear::Integrate()
 {
-  while (step_ < nstep_-1 && time_ <= maxtime_)
+  while (step_ < nstep_-1 and time_ <= maxtime_)
   {
-    step_ += 1;
-    time_ += dt_;
-
-    ParameterList eleparams;
-
-    eleparams.set("total time", time_);
-    eleparams.set("delta time", dt_);
-
-    discret_->EvaluateDirichlet(eleparams,*dispnp_,*dirichtoggle_);
-
-    //double norm;
-    //dispnp_->Norm2(&norm);
-    //cout << "dispnp norm: " << norm << endl;
-
-    EvaluateElements();
-
-    zeros_->PutScalar(0.0);
-    //LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,zeros_,dirichtoggle_);
-    LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,dirichtoggle_);
-
-    //cout << *dispnp_;
-    //cout << *dirichtoggle_;
-    //cout << *residual_;
-
-    solver_.Solve(sysmat_,dispnp_,residual_,true,true);
-
-    output_.NewStep    (step_,time_);
-    output_.WriteVector("dispnp", dispnp_);
+    PrepareTimeStep();
+    Solve();
+    Update();
+    Output();
   }
 }
 
@@ -136,6 +156,35 @@ void FSI::AleLinear::EvaluateElements()
   LINALG::Complete(*sysmat_);
   maxentriesperrow_ = sysmat_->MaxNumEntries();
 }
+
+
+void FSI::AleLinear::SetInterfaceMap(Teuchos::RefCountPtr<Epetra_Map> im)
+{
+  imeshmap_ = im;
+  extractor_ = rcp(new Epetra_Export(*discret_->DofRowMap(), *imeshmap_));
+}
+
+
+void FSI::AleLinear::ApplyInterfaceDisplacements(Teuchos::RefCountPtr<Epetra_Vector> idisp)
+{
+  int err = dispnp_->Import(*idisp,*extractor_,Insert);
+  if (err)
+    dserror("Insert using extractor returned err=%d",err);
+
+  idisp->PutScalar(1.0);
+  err = dirichtoggle_->Import(*idisp,*extractor_,Insert);
+  if (err)
+    dserror("Insert using extractor returned err=%d",err);
+}
+
+
+Teuchos::RefCountPtr<Epetra_Vector> FSI::AleLinear::ExtractDisplacement()
+{
+  // We know that the ale dofs are coupled with their original map. So
+  // we just return them here.
+  return dispnp_;
+}
+
 
 #endif
 #endif

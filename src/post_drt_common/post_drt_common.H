@@ -105,7 +105,7 @@ public:
   // @{ \name Access methods
 
   //! returns the basename of the output files
-  string basename() { return basename_; }
+  string basename() const { return basename_; }
 
   //! sets the basename of the output files to name
   void set_basename(string name) { basename_ = name; }

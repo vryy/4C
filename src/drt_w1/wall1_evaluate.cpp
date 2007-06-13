@@ -131,7 +131,7 @@ int DRT::Elements::Wall1::EvaluateNeumann(ParameterList& params,
   if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor
-  vector<int>* curve  = condition.Get<vector<int> >("curve");
+  const vector<int>* curve  = condition.Get<vector<int> >("curve");
   int curvenum = -1;
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
@@ -176,8 +176,8 @@ int DRT::Elements::Wall1::EvaluateNeumann(ParameterList& params,
 
 
   // get values and switches from the condition
-  vector<int>*    onoff = condition.Get<vector<int> >("onoff");
-  vector<double>* val   = condition.Get<vector<double> >("val");
+  const vector<int>*    onoff = condition.Get<vector<int> >("onoff");
+  const vector<double>* val   = condition.Get<vector<double> >("val");
   /*=================================================== integration loops */
   for (int lr=0; lr<nir; ++lr)
   {

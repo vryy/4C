@@ -74,7 +74,8 @@ public:
   FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> dis,
                        LINALG::Solver&       solver,
                        ParameterList&        params,
-                       DiscretizationWriter& output);
+                       DiscretizationWriter& output,
+                       bool alefluid=false);
 
 
   /*!
@@ -97,21 +98,13 @@ public:
          a better initial value
 
   */
-  void ExplicitPredictor(
-    double dta,
-    double dtp
-    );
+  void ExplicitPredictor();
 
     /*!
   \brief Set the part of the righthandside belonging to the last
          timestep.
   */
-  void SetOldPartOfRighthandside(
-    FLUID_TIMEINTTYPE time_algo,
-    double            dta,
-    double            theta
-    );
-
+  void SetOldPartOfRighthandside();
 
   /*!
   \brief start time loop for startingalgo, normal problems and restarts
@@ -119,48 +112,27 @@ public:
   */
   void Integrate();
 
-
   /*!
   \brief Do time integration (time loop)
 
   */
-  void TimeIntegrateFromTo(
-    int&               step,
-    double&            time,
-    double&            dta,
-    double&            dtp,
-    int                endstep,
-    double             endtime,
-    FLUID_TIMEINTTYPE  timealgo,
-    double             theta
-    );
+  void TimeLoop();
 
   /*!
   \brief Solve stationary problem
 
   */
-  void SolveStationaryProblem(
-    int&               step,
-    double&            time,
-    double&            dta,
-    double&            dtp,
-    int                endstep,
-    double             endtime,
-    FLUID_TIMEINTTYPE  timealgo,
-    double             theta
-    );
+  void SolveStationaryProblem();
 
+  /// setup the variables to do a new time step
+  void PrepareTimeStep();
 
   /*!
   \brief do nonlinear iteration, e.g. full Newton, Newton like or
          Fixpoint iteration
 
   */
-  void NonlinearSolve(
-    double dta,
-    double theta,
-    bool is_stat
-    );
+  void NonlinearSolve(bool is_stat=false);
 
   /*!
   \brief compute convergence check after a nonlinear iteration step
@@ -178,22 +150,13 @@ public:
          iteration. Current solution becomes old solution of next
          timestep.
   */
-  void TimeUpdate(
-    FLUID_TIMEINTTYPE time_algo,
-    int               step,
-    double            dta ,
-    double            dtp ,
-    double            theta
-    );
+  void TimeUpdate();
 
   /*!
   \brief update configuration and output to file/screen
 
   */
-  void Output(
-    int    step,
-    double time
-    );
+  void Output();
 
   /*!
   \brief set initial flow field for analytical test problems
@@ -208,9 +171,7 @@ public:
          numerical solution of a test problems
 
   */
-  void EvaluateErrorComparedToAnalyticalSol(
-    double time
-    );
+  void EvaluateErrorComparedToAnalyticalSol();
 
 
   void ReadRestart(int step);
@@ -227,13 +188,23 @@ protected:
   DiscretizationWriter&         output_;
   int                           myrank_;
   int                           maxentriesperrow_;
+  bool                          alefluid_;
 
   double time_;
   int step_;
+  int stepmax_;
+  double maxtime_;
+
+  FLUID_TIMEINTTYPE timealgo_;
+
   int restartstep_;
   int uprestart_;
   int writestep_;
   int upres_;
+
+  double dta_;
+  double dtp_;
+  double theta_;
 
   // system matrix --- stiffness and mass are assembled in one matrix!
   RefCountPtr<Epetra_CrsMatrix> sysmat_;
@@ -250,6 +221,7 @@ protected:
   // The residual vector --- more or less the rhs for the incremental
   // formulation!!!
   RefCountPtr<Epetra_Vector>    residual_;
+  RefCountPtr<Epetra_Vector>    trueresidual_;
 
   // Nonlinear iteration increment vector
   RefCountPtr<Epetra_Vector>    incvel_;
@@ -261,6 +233,12 @@ protected:
   RefCountPtr<Epetra_Vector>    velnp_;
   RefCountPtr<Epetra_Vector>    veln_;
   RefCountPtr<Epetra_Vector>    velnm_;
+
+  RefCountPtr<Epetra_Vector>    dispnp_;
+  RefCountPtr<Epetra_Vector>    dispn_;
+
+  RefCountPtr<Epetra_Vector>    gridv_;
+
   // histvector --- a linear combination of velnm, veln (BDF)
   //                or veln, accn (One-Step-Theta)
   RefCountPtr<Epetra_Vector>    hist_;

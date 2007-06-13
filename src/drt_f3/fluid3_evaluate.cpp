@@ -1980,7 +1980,7 @@ void DRT::Elements::Fluid3::f3_getbodyforce
     const double time = params.get("total time",-1.0);
     if (time<0.0) usetime = false;
 
-    vector<int>* curve  = myneumcond[0]->Get<vector<int> >("curve");
+    const vector<int>* curve  = myneumcond[0]->Get<vector<int> >("curve");
     int curvenum = -1;
 
     // get the factor for the timecurve
@@ -1995,8 +1995,8 @@ void DRT::Elements::Fluid3::f3_getbodyforce
       Nodes()[nn]->GetCondition("VolumeNeumann",myneumcond);
 
       // get values and switches from the condition
-      vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
-      vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
+      const vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
+      const vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
 
       for(int dim=0;dim<3;dim++)
       {

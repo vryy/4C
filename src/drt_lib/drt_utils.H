@@ -158,7 +158,7 @@ namespace Utils
   has to be in column map style.
 
   \param global (in): global distributed vector with values to be extracted
-  \param local (out): vector holding values etxracted from global
+  \param local (out): vector holding values extracted from global
   \param lm     (in): vector containing global ids to be extracted. Size of lm
                       determines number of values to be extracted.
   */

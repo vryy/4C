@@ -267,12 +267,12 @@ public:
   /*!
   \brief Get ptr to nodal thicknesses
   */
-  vector<double>* GetThickness() { return data_.Get<vector<double> >("thick");}
+  const vector<double>* GetThickness() { return data_.Get<vector<double> >("thick");}
 
   /*!
   \brief Get reference to directors
   */
-  Epetra_SerialDenseMatrix* GetDirectors() { return data_.Get<Epetra_SerialDenseMatrix>("a3ref"); }
+  const Epetra_SerialDenseMatrix* GetDirectors() { return data_.Get<Epetra_SerialDenseMatrix>("a3ref"); }
 
   //@}
 

@@ -334,7 +334,16 @@ void DRT::Discretization::Print(ostream& os) const
         os << "-------------------------- Proc " << proc << " :\n";
       map<int,RefCountPtr<DRT::Element> >:: const_iterator curr;
       for (curr = element_.begin(); curr != element_.end(); ++curr)
-        os << *(curr->second) << endl;
+      {
+        os << *(curr->second);
+        vector<int> dof = Dof(&*(curr->second));
+        if (dof.size())
+        {
+          os << " Dofs ";
+          for (unsigned i=0; i<dof.size(); ++i) os << setw(6) << dof[i] << " ";
+        }
+        os << endl;
+      }
       os << endl;
     }
     Comm().Barrier();
@@ -348,10 +357,33 @@ void DRT::Discretization::Print(ostream& os) const
         os << "-------------------------- Proc " << proc << " :\n";
       map<int,RefCountPtr<DRT::Node> >:: const_iterator curr;
       for (curr = node_.begin(); curr != node_.end(); ++curr)
-        os << *(curr->second) << endl;
+      {
+        os << *(curr->second);
+        vector<int> dof = Dof(&*(curr->second));
+        if (dof.size())
+        {
+          os << " Dofs ";
+          for (unsigned i=0; i<dof.size(); ++i) os << setw(6) << dof[i] << " ";
+        }
+        os << endl;
+      }
       os << endl;
     }
     Comm().Barrier();
+  }
+  if (Comm().MyPID()==0)
+  {
+    int numcond = condition_.size();
+    if (numcond)
+    {
+      os << endl << numcond << " Conditions:\n";
+      map<string,RefCountPtr<Condition> >::const_iterator curr;
+      for (curr=condition_.begin(); curr != condition_.end(); ++curr)
+      {
+        os << curr->first << " ";
+        os << *(curr->second) << endl;
+      }
+    }
   }
   return;
 }
@@ -456,16 +488,16 @@ void DRT::Discretization::SetCondition(const string& name,RefCountPtr<Condition>
  |  Get a condition of a certain name                          (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-void DRT::Discretization::GetCondition(const string& name,vector<DRT::Condition*>& out)
+void DRT::Discretization::GetCondition(const string& name,vector<DRT::Condition*>& out) const
 {
   const int num = condition_.count(name);
   out.resize(num);
-  multimap<string,RefCountPtr<Condition> >::iterator startit =
+  multimap<string,RefCountPtr<Condition> >::const_iterator startit =
                                          condition_.lower_bound(name);
-  multimap<string,RefCountPtr<Condition> >::iterator endit =
+  multimap<string,RefCountPtr<Condition> >::const_iterator endit =
                                          condition_.upper_bound(name);
   int count=0;
-  multimap<string,RefCountPtr<Condition> >::iterator curr;
+  multimap<string,RefCountPtr<Condition> >::const_iterator curr;
   for (curr=startit; curr!=endit; ++curr)
     out[count++] = curr->second.get();
   if (count != num) dserror("Mismatch in number of conditions found");

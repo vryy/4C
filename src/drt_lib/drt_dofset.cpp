@@ -46,6 +46,7 @@ DRT::DofSet::~DofSet()
  *----------------------------------------------------------------------*/
 ostream& operator << (ostream& os, const DRT::DofSet& dofset)
 {
+  dofset.Print(os);
   return os;
 }
 
@@ -55,7 +56,44 @@ ostream& operator << (ostream& os, const DRT::DofSet& dofset)
  *----------------------------------------------------------------------*/
 void DRT::DofSet::Print(ostream& os) const
 {
-  return;
+  for (int proc=0; proc < numdfcolelements_->Comm().NumProc(); ++proc)
+  {
+    if (proc == numdfcolelements_->Comm().MyPID())
+    {
+      if (numdfcolelements_->MyLength())
+        os << "-------------------------- Proc " << proc << " :\n";
+      for (int i=0; i<numdfcolelements_->MyLength(); ++i)
+      {
+        int numdf = (*numdfcolelements_)[i];
+        int idx   = (*idxcolelements_)[i];
+        os << i << ": ";
+        for (int j=0; j<numdf; ++j)
+          os << dofcolmap_->GID(idx+j) << " ";
+        os << "\n";
+      }
+      os << endl;
+    }
+    numdfcolelements_->Comm().Barrier();
+  }
+  for (int proc=0; proc < numdfcolnodes_->Comm().NumProc(); ++proc)
+  {
+    if (proc == numdfcolnodes_->Comm().MyPID())
+    {
+      if (numdfcolnodes_->MyLength())
+        os << "-------------------------- Proc " << proc << " :\n";
+      for (int i=0; i<numdfcolnodes_->MyLength(); ++i)
+      {
+        int numdf = (*numdfcolnodes_)[i];
+        int idx   = (*idxcolnodes_)[i];
+        os << i << ": ";
+        for (int j=0; j<numdf; ++j)
+          os << dofcolmap_->GID(idx+j) << " ";
+        os << "\n";
+      }
+      os << endl;
+    }
+    numdfcolnodes_->Comm().Barrier();
+  }
 }
 
 

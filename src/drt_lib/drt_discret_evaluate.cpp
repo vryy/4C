@@ -129,9 +129,9 @@ void DRT::Discretization::EvaluateNeumann(ParameterList& params, Epetra_Vector& 
     const vector<int>* nodeids = cond.Get<vector<int> >("Node Ids");
     if (!nodeids) dserror("PointNeumann condition does not have nodal cloud");
     const int nnode = (*nodeids).size();
-    vector<int>*    curve  = cond.Get<vector<int> >("curve");
-    vector<int>*    onoff  = cond.Get<vector<int> >("onoff");
-    vector<double>* val    = cond.Get<vector<double> >("val");
+    const vector<int>*    curve  = cond.Get<vector<int> >("curve");
+    const vector<int>*    onoff  = cond.Get<vector<int> >("onoff");
+    const vector<double>* val    = cond.Get<vector<double> >("val");
     // Neumann BCs for some historic reason only have one curve
     int curvenum = -1;
     if (curve) curvenum = (*curve)[0];
@@ -284,10 +284,10 @@ void DoDirichletCondition(DRT::Condition&      cond,
   const vector<int>* nodeids = cond.Get<vector<int> >("Node Ids");
   if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
   const int nnode = (*nodeids).size();
-  vector<int>*    curve  = cond.Get<vector<int> >("curve");
-  vector<int>*    funct  = cond.Get<vector<int> >("funct");
-  vector<int>*    onoff  = cond.Get<vector<int> >("onoff");
-  vector<double>* val    = cond.Get<vector<double> >("val");
+  const vector<int>*    curve  = cond.Get<vector<int> >("curve");
+  const vector<int>*    funct  = cond.Get<vector<int> >("funct");
+  const vector<int>*    onoff  = cond.Get<vector<int> >("onoff");
+  const vector<double>* val    = cond.Get<vector<double> >("val");
 
   for (int i=0; i<nnode; ++i)
   {

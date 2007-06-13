@@ -47,7 +47,7 @@ int DRT::Elements::Fluid3Surface::EvaluateNeumann(
   if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor
-  vector<int>* curve  = condition.Get<vector<int> >("curve");
+  const vector<int>* curve  = condition.Get<vector<int> >("curve");
   int curvenum = -1;
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
@@ -55,8 +55,8 @@ int DRT::Elements::Fluid3Surface::EvaluateNeumann(
     curvefac = DRT::TimeCurveManager::Instance().Curve(curvenum).f(time);
 
   // get values and switches from the condition
-  vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
-  vector<double>* val   = condition.Get<vector<double> >("val"  );
+  const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
+  const vector<double>* val   = condition.Get<vector<double> >("val"  );
 
   // set the number of gausspoints
   int nir   = 0;

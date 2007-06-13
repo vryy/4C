@@ -176,8 +176,8 @@ int DRT::Elements::So_hex8::EvaluateNeumann(ParameterList& params,
   DSTraceHelper dst("So_hex8::EvaluateNeumann");
 
   // get values and switches from the condition
-  vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
-  vector<double>* val   = condition.Get<vector<double> >("val"  );
+  const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
+  const vector<double>* val   = condition.Get<vector<double> >("val"  );
 
   /*
   **    TIME CURVE BUSINESS
@@ -188,7 +188,7 @@ int DRT::Elements::So_hex8::EvaluateNeumann(ParameterList& params,
   if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor
-  vector<int>* curve  = condition.Get<vector<int> >("curve");
+  const vector<int>* curve  = condition.Get<vector<int> >("curve");
   int curvenum = -1;
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
@@ -309,7 +309,7 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
   Epetra_SerialDenseMatrix Kda;     // EAS matrix Kda
   double detJ0;                     // detJ(origin)
   Epetra_SerialDenseMatrix T0invT;  // trafo matrix
-  Epetra_SerialDenseMatrix* oldfeas;   // EAS history 
+  Epetra_SerialDenseMatrix* oldfeas;   // EAS history
   Epetra_SerialDenseMatrix* oldKaainv; // EAS history
   Epetra_SerialDenseMatrix* oldKda;    // EAS history
   if (eastype_ != soh8_easnone) {
@@ -321,22 +321,22 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     ** in the nonlinear FE-Skript page 120 (load-control alg. with EAS)
     */
     //(*alpha).Shape(neas_,1);
-    alpha = data_.Get<Epetra_SerialDenseMatrix>("alpha");   // get old alpha
+    alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");   // get old alpha
 //    // evaluate current (updated) EAS alphas (from history variables)
 //    soh8_easupdate(alpha,disp,residual);
     // get stored EAS history
     //(*oldfeas).Shape(neas_,1);
     //(*oldKaainv).Shape(neas_,neas_);
     //(*oldKda).Shape(neas_,NUMDOF_SOH8);
-    oldfeas = data_.Get<Epetra_SerialDenseMatrix>("feas");
-    oldKaainv = data_.Get<Epetra_SerialDenseMatrix>("invKaa");
-    oldKda = data_.Get<Epetra_SerialDenseMatrix>("Kda");
+    oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
+    oldKaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
+    oldKda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
     if (!alpha || !oldKaainv || !oldKda || !oldfeas) dserror("Missing EAS history-data");
-  
+
     // we need the displacement at the previous step
     Epetra_SerialDenseVector old_d(NUMDOF_SOH8);
     for (int i=0; i<NUMDOF_SOH8; ++i) old_d(i) = disp[i] - residual[i];
-  
+
     // add Kda . old_d to feas
     (*oldfeas).Multiply('N','N',1.0,(*oldKda),old_d,1.0);
     // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
@@ -580,7 +580,7 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
       (*oldfeas)(i,0) = feas(i);
     }
 
-    
+
 //    // evaluate new alpha in the following
 //    Epetra_SerialDenseMatrix alphanew(neas_,1);
 //    // first we need delta_d
@@ -590,9 +590,9 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
 //    feas.Multiply('N','N',1.0,Kda,delta_d,1.0);
 //    // new alpha is: - Kaa^-1 . (feas + Kda . delta_d), here: - Kaa^-1 . feas
 //    alphanew.Multiply('N','N',-1.0,Kaa,feas,0.0);
-//    
+//
 //    cout << "alphanew " << alphanew;
-//    
+//
 //    // update EAS alphas
 //    data_.Add("alpha",alphanew);
   } // -------------------------------------------------------------------- EAS

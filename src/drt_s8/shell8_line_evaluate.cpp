@@ -51,7 +51,7 @@ int DRT::Elements::Shell8Line::EvaluateNeumann(
   if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor
-  vector<int>* curve  = condition.Get<vector<int> >("curve");
+  const vector<int>* curve  = condition.Get<vector<int> >("curve");
   int curvenum = -1;
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
@@ -68,10 +68,10 @@ int DRT::Elements::Shell8Line::EvaluateNeumann(
   const int nir = parent_->ngp_[0];
   const int nis = parent_->ngp_[1];
   const int numdf = 6;
-  vector<double>* thick = parent_->data_.Get<vector<double> >("thick");
+  const vector<double>* thick = parent_->data_.Get<vector<double> >("thick");
   if (!thick) dserror("Cannot find vector of nodal thicknesses");
 
-  Epetra_SerialDenseMatrix* a3ref = parent_->data_.Get<Epetra_SerialDenseMatrix>("a3ref");
+  const Epetra_SerialDenseMatrix* a3ref = parent_->data_.Get<Epetra_SerialDenseMatrix>("a3ref");
   if (!a3ref) dserror("Cannot find array of directors");
 
   vector<double> funct(iel);
@@ -163,8 +163,8 @@ int DRT::Elements::Shell8Line::EvaluateNeumann(
   }
 
   // get values and switches from the condition
-  vector<int>*    onoff = condition.Get<vector<int> >("onoff");
-  vector<double>* val   = condition.Get<vector<double> >("val");
+  const vector<int>*    onoff = condition.Get<vector<int> >("onoff");
+  const vector<double>* val   = condition.Get<vector<double> >("val");
 
 
   // do integration

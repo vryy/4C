@@ -97,6 +97,8 @@ public:
     element_soh8line,
     element_soh8volume,
     element_sosh8,
+    element_ale2,
+    element_ale2line,
   };
 
   /*!

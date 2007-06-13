@@ -144,6 +144,9 @@ void DatFileReader::ReadDat()
   if (comm_->MyPID()==0)
   {
     ifstream file(filename_.c_str());
+    if (not file)
+      dserror("unable to open file: %s", filename_.c_str());
+
     list<string> content;
     bool ignoreline = false;
     string line;

@@ -50,6 +50,21 @@ void DRT::Problem::AddMaterial(const _MATERIAL& m)
   ActivateMaterial();     // always reset!
 }
 
+
+void DRT::Problem::SetDis(int fieldnum, int disnum, RefCountPtr<Discretization> dis)
+{
+  if (fieldnum > static_cast<int>(discretizations_.size())-1)
+  {
+    discretizations_.resize(fieldnum+1);
+  }
+  if (disnum > static_cast<int>(discretizations_[fieldnum].size()-1))
+  {
+    discretizations_[fieldnum].resize(disnum+1);
+  }
+  discretizations_[fieldnum][disnum] = dis;
+}
+
+
 void DRT::Problem::ActivateMaterial()
 {
   mat = &material_[0];

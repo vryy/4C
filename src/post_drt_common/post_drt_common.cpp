@@ -23,6 +23,8 @@ Maintainer: Ulrich Kuettler
 #include "../io/hdf_reader.H"
 #include <sstream>
 
+#include "../drt_lib/drt_globalproblem.H"
+
 #if 1
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/drt_utils.H"
@@ -156,10 +158,13 @@ PostProblem::~PostProblem()
  *----------------------------------------------------------------------*/
 PostField* PostProblem::get_discretization(int num)
 {
-  if (num >= static_cast<int>(fields_.size()))
-    dserror("index for field vector out of range.(index=%i,vector_size=%i)",
-            num,fields_.size());
-  return &fields_[num];
+  for (unsigned i=0; i<fields_.size(); ++i)
+  {
+    if (fields_[i].field_pos()==num)
+      return &fields_[i];
+  }
+  dserror("no field with position %d", num);
+  return NULL;
 }
 
 
@@ -415,12 +420,12 @@ void PostProblem::read_meshes()
           currfield.discretization()->SetCondition("SurfacePeriodic",rcp(thispbc));
         }
       }
-#endif      
+#endif
       // before we can call discretization functions (in parallel) we
       // need field based communicators.
       create_communicators();
 
-      distribute_drt_grids();
+      //distribute_drt_grids();
       currfield.discretization()->FillComplete();
 #if 1
       // -------------------------------------------------------------------
@@ -481,10 +486,6 @@ PostField PostProblem::getfield(MAP* field_info)
 
     for (i=genprob.numfld; i<field_pos+1; ++i)
     {
-      vector<RefCountPtr<DRT::Discretization> >* discretization =
-        new vector<RefCountPtr<DRT::Discretization> >();
-
-      field[i].ccadis = (void*)discretization;
       field[i].dis = NULL;
       field[i].ndis = 0;
     }
@@ -493,15 +494,14 @@ PostField PostProblem::getfield(MAP* field_info)
 
   field[field_pos].fieldtyp = (FIELDTYP)type;
 
-  vector<RefCountPtr<DRT::Discretization> >* discretization =
-    (vector<RefCountPtr<DRT::Discretization> >*)field[field_pos].ccadis;
-  if (static_cast<int>(discretization->size()) <= disnum)
+  if (field[field_pos].ndis <= disnum)
   {
     field[field_pos].ndis = disnum+1;
-    discretization->resize(disnum+1);
   }
-  (*discretization)[disnum] = rcp(new DRT::Discretization(dis_name,comm_));
-  return PostField((*discretization)[disnum], this, field_pos, field_name,
+
+  RefCountPtr<DRT::Discretization> dis = rcp(new DRT::Discretization(dis_name,comm_));
+  DRT::Problem::Instance()->SetDis(field_pos, disnum, dis);
+  return PostField(dis, this, field_pos, field_name,
                    (FIELDTYP)type, disnum,numnd,numele);
 }
 
@@ -661,14 +661,13 @@ void PostResult::close_result_files()
  *----------------------------------------------------------------------*/
 void PostResult::open_result_files(MAP* field_info)
 {
-  DSTraceHelper("PostResult::open_result_files");
   int num_output_procs;
   if (!map_find_int(field_info,"num_output_proc",&num_output_procs))
   {
     num_output_procs = 1;
   }
   string basename = map_read_string(field_info,"result_file");
-  field_->problem()->set_basename(basename);
+  //field_->problem()->set_basename(basename);
   file_.Open(basename,num_output_procs);
 }
 

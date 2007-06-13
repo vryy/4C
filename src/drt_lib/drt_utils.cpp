@@ -30,15 +30,18 @@ extern "C"
 
 #include <algorithm>
 #include <numeric>
+#include <vector>
 
 #include "drt_utils.H"
 #include "drt_node.H"
 #include "drt_dofset.H"
+#include "drt_discret.H"
 #include "../drt_s8/shell8.H"
 #include "../drt_f2/fluid2.H"
 #include "../drt_f2/condif2.H"
 #include "../drt_f3/fluid3.H"
 #include "../drt_f3_xfem/fluid3_xfem.H"
+#include "../drt_ale2/ale2.H"
 #include "../drt_ale3/ale3.H"
 #include "../drt_w1/wall1.H"
 #include "../drt_so3/so_hex8.H"
@@ -201,6 +204,23 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
     }
     break;
 #endif
+#ifdef D_ALE
+    case ParObject_Ale2:
+    {
+      DRT::Elements::Ale2* object = new DRT::Elements::Ale2(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_Ale2Register:
+    {
+      DRT::Elements::Ale2Register* object =
+                      new DRT::Elements::Ale2Register(DRT::Element::element_ale2);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+#endif
 #ifdef D_SOH8
     case ParObject_So_hex8:
     {
@@ -264,6 +284,7 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
     condif2,
     fluid3,
     xfluid3,
+    ale2,
     ale3,
     so_hex8,
     so_sh8
@@ -277,6 +298,7 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
   else if (eletype=="CONDIF2") type = condif2;
   else if (eletype=="FLUID3") type = fluid3;
   else if (eletype=="XFLUID3") type = xfluid3;
+  else if (eletype=="ALE2") type = ale2;
   else if (eletype=="ALE3") type = ale3;
   else if (eletype=="SOLIDH8") type = so_hex8;
   else if (eletype=="SOLIDSH8") type = so_sh8;
@@ -328,6 +350,14 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
     case ale3:
     {
       RefCountPtr<DRT::Element> ele = rcp(new DRT::Elements::Ale3(id,owner));
+      return ele;
+    }
+    break;
+#endif
+#ifdef D_ALE
+    case ale2:
+    {
+      RefCountPtr<DRT::Element> ele = rcp(new DRT::Elements::Ale2(id,owner));
       return ele;
     }
     break;
@@ -614,7 +644,6 @@ void DRT::Utils::ExtractMyValues(const Epetra_Vector& global,
   }
   return;
 }
-
 
 
 #endif  // #ifdef TRILINOS_PACKAGE

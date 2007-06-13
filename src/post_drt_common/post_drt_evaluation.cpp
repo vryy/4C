@@ -28,8 +28,10 @@ filter. But to link the filter stubs of these functions are needed.
 #include "../drt_f3_xfem/fluid3_xfem.H"
 #include "../drt_w1/wall1.H"
 #include "../drt_so3/so_hex8.H"
+#include "../drt_so3/so_sh8.H"
 #include "../drt_ale3/ale3.H"
-
+#include "../drt_ale2/ale2.H"
+#include "../drt_f2/condif2.H"
 
 extern "C" void ReadDat()
 {
@@ -332,6 +334,19 @@ int Elements::Soh8Surface::EvaluateNeumann(ParameterList& params,
   return 0;
 }
 
+
+void Elements::So_hex8::soh8_nlnstiffmass(vector<int>&              lm,
+                                          vector<double>&           disp,
+                                          vector<double>&           residual,
+                                          Epetra_SerialDenseMatrix* stiffmatrix,
+                                          Epetra_SerialDenseMatrix* massmatrix,
+                                          Epetra_SerialDenseVector* force,
+                                          struct _MATERIAL*         material)
+{
+  dserror("Elements::So_hex8::soh8_nlnstiffmass undefined");
+}
+
+
 #endif
 
 #ifdef D_WALL1
@@ -420,6 +435,95 @@ int Elements::Ale3Surface::EvaluateNeumann(ParameterList& params,
                                           Epetra_SerialDenseVector& elevec1)
 {
   dserror("Elements::Ale3Surface::EvaluateNeumann undefined");
+  return 0;
+}
+
+#endif
+
+#ifdef D_ALE
+
+int Elements::Ale2Register::Initialize(Discretization&)
+{
+  // dserror("Elements::Ale2Register::Initialize undefined");
+  return 0;
+}
+
+bool Elements::Ale2::ReadElement()
+{
+  dserror("Elements::Ale2::ReadElement undefined");
+  return false;
+}
+
+int Elements::Ale2::Evaluate(ParameterList&,
+                               Discretization&,
+                               vector<int>&,
+                               Epetra_SerialDenseMatrix&,
+                               Epetra_SerialDenseMatrix&,
+                               Epetra_SerialDenseVector&,
+                               Epetra_SerialDenseVector&,
+                               Epetra_SerialDenseVector&)
+{
+  dserror("Elements::Ale2::Evaluate undefined");
+  return 0;
+}
+
+int Elements::Ale2::EvaluateNeumann(ParameterList&, Discretization&, Condition&, vector<int>&, Epetra_SerialDenseVector&)
+{
+  dserror("Elements::Ale2::EvaluateNeumann undefined");
+  return 0;
+}
+
+int Elements::Ale2Line::EvaluateNeumann(ParameterList& params,
+                                          Discretization&      discretization,
+                                          Condition&           condition,
+                                          vector<int>&              lm,
+                                          Epetra_SerialDenseVector& elevec1)
+{
+  dserror("Elements::Ale2Line::EvaluateNeumann undefined");
+  return 0;
+}
+
+#endif
+
+#ifdef D_FLUID2
+int Elements::Condif2Register::Initialize(Discretization&)
+{
+  // dserror("Elements::Condif2Register::Initialize undefined");
+  return 0;
+}
+
+bool Elements::Condif2::ReadElement()
+{
+  dserror("Elements::Condif2::ReadElement undefined");
+  return false;
+}
+
+int Elements::Condif2::Evaluate(ParameterList&,
+                               Discretization&,
+                               vector<int>&,
+                               Epetra_SerialDenseMatrix&,
+                               Epetra_SerialDenseMatrix&,
+                               Epetra_SerialDenseVector&,
+                               Epetra_SerialDenseVector&,
+                               Epetra_SerialDenseVector&)
+{
+  dserror("Elements::Condif2::Evaluate undefined");
+  return 0;
+}
+
+int Elements::Condif2::EvaluateNeumann(ParameterList&, Discretization&, Condition&, vector<int>&, Epetra_SerialDenseVector&)
+{
+  dserror("Elements::Condif2::EvaluateNeumann undefined");
+  return 0;
+}
+
+int Elements::Condif2Line::EvaluateNeumann(ParameterList& params,
+                                          Discretization&      discretization,
+                                          Condition&           condition,
+                                          vector<int>&              lm,
+                                          Epetra_SerialDenseVector& elevec1)
+{
+  dserror("Elements::Condif2Line::EvaluateNeumann undefined");
   return 0;
 }
 

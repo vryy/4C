@@ -94,6 +94,7 @@ void DRT::Node::Print(ostream& os) const
      << setw(12) << X()[1] << " "
      << setw(12) << X()[2] << " ";
 
+#if 0
   // Print conditions if there are any
   int numcond = condition_.size();
   if (numcond)
@@ -106,6 +107,7 @@ void DRT::Node::Print(ostream& os) const
       os << *(curr->second) << endl;
     }
   }
+#endif
   return;
 }
 

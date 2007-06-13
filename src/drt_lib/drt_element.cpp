@@ -86,6 +86,7 @@ void DRT::Element::Print(ostream& os) const
     for (int i=0; i<nnode; ++i) os << setw(10) << nodes[i] << " ";
   }
 
+#if 0
   // Print conditions if there are any
   int numcond = condition_.size();
   if (numcond)
@@ -98,7 +99,7 @@ void DRT::Element::Print(ostream& os) const
       os << *(curr->second) << endl;
     }
   }
-
+#endif
 
   return;
 }
@@ -264,7 +265,7 @@ void DRT::Element::LocationVector(const Discretization& dis,
     for (int i=0; i<numnode; ++i)
     {
       DRT::Condition* dirich = nodes[i]->GetCondition("Dirichlet");
-      vector<int>* flag = NULL;
+      const vector<int>* flag = NULL;
       if (dirich)
       {
         if (dirich->Type()!=DRT::Condition::PointDirichlet &&
@@ -288,7 +289,7 @@ void DRT::Element::LocationVector(const Discretization& dis,
     }
 
   // fill the vector with element dofs
-  vector<int>* flag = NULL;
+  const vector<int>* flag = NULL;
   DRT::Condition* dirich = GetCondition("Dirichlet");
   if (dirich)
   {

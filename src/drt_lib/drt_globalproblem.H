@@ -75,6 +75,9 @@ public:
   /// add a discretization to a specific field
   void AddDis(int fieldnum, RefCountPtr<Discretization> dis);
 
+  /// set given discretization to specific field at specific position
+  void SetDis(int fieldnum, int disnum, RefCountPtr<Discretization> dis);
+
   /// add material vector
   void AddMaterial(const _MATERIAL& m);
 

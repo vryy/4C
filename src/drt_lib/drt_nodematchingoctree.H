@@ -32,14 +32,14 @@ class OctreeElement;
 class NodeMatchingOctree
 {
 public:
-  
+
 
   /*!
-   
+
   \brief Standard Constructor (public)
-  
-  <pre> 
-  
+
+  <pre>
+
   Set up processor local octree                               gammi 04/07
 
 
@@ -52,29 +52,29 @@ public:
   nodeids attached to a octree leaf. If the number would be higher, the
   octree element would be split into two children (which could be leafs
   on their own)
-  
+
   If a nodeid is associated with a child of an octree element, it is
   checked whether its coordinate is inside the bounding box of the
   octree element. This is done only with a tolerance tol to ensure that
   each node is guaranteed to be owned by one of the children an could
   be found later on.
-  
+
   </pre>
-  
+
   \param   actdis          (i) discretisation
   \param   masternodeids   (i) list of masternodeids
   \param   maxnodeperleaf  (i) parameter for octree
   \param   tol             (i) tolerance for octree
-  
+
   \return void
-  
-  
+
+
   */
   NodeMatchingOctree(
-    RefCountPtr<DRT::Discretization> actdis,
+    const DRT::Discretization&       actdis,
     const vector <int> &             masternodeids,
-    int                              maxnodeperleaf,
-    double                           tol
+    int                              maxnodeperleaf=150,
+    double                           tol=1e-8
     );
 
   /*!
@@ -88,10 +88,10 @@ public:
   //! @name Methods to create global node matching
 
   /*!
-   
+
   \brief Search for closest (slave) nodes on all procs
-  
-  <pre> 
+
+  <pre>
 
   Search for closest (slave) nodes on all processors to given (master)
   nodeset (only in bounding box of masternodes)               gammi 05/07
@@ -100,11 +100,11 @@ public:
 
    2) the list is communicated in a round robin pattern to all the
       other procs.
-  
+
    3) the proc checks the package from each proc and calcs the min
       distance on each --- the result is kept if distance is smaller
       than on the preceding processors
-  
+
   Again, dofsforpbcplane is used to overwrite the coordinate of the
   slave perpendicular to the plane of the periodic boundary condition
   by the coordinate of the masterplane (so to speak, the closest node
@@ -112,66 +112,88 @@ public:
 
   On output, we get a map from masterids on this proc to slavenodeids
   (on arbitrary procs).
-  
+
   </pre>
-  
+
   \param  slavenodeids     (i) list of slavenodeids
   \param  dofsforpbcplane  (i) specification of the plane containing
                                parallel to the boundary condition
                                (used to "shift" nodes in the normal
-                                direction) 
+                                direction)
   \param  midtosid         (o) map from master to slavenodes
-  
+
   \return void
-  
-  */  
+
+  */
   void CreateGlobalNodeMatching(
-    const vector <int> slavenodeids,
-    vector <int>       dofsforpbcplane,
+    const vector<int>& slavenodeids,
+    const vector<int>& dofsforpbcplane,
     map<int,int> &     midtosid
     );
 
+  /// find pairs of nearest nodes
+  /*!
+    Find the pairs of master node and slave node with the smallest
+    distance. The sets of nodes might come from different
+    discretisations, however the communicators of both discretisations
+    need to span the same processors. For communication the master
+    discretisation communicator is used.
+
+    Internally the search is based on the octtree spanned by the
+    master nodes. The slave nodes are gathered on their owning
+    processors and send in a round robin fashion to each processor
+    once.
+
+    \param slavedis     (i) discretization the slave nodes belong to
+    \param slavenodeids (i) gids of nodes to match
+    \param coupling     (o) master node gid to (slave node gid, distance)
+
+   */
+  void FindMatch(const DRT::Discretization& slavedis,
+                 const vector<int>& slavenodeids,
+                 map<int,pair<int,double> >& coupling);
+
   //@}
 
-  
+
 protected:
 
    //! @name Methods to create processor local node matching
- 
+
   /*!
-   
-  \brief 
-  
-  <pre> 
+
+  \brief
+
+  <pre>
 
   Search closest node to given coordinate x in local octree.
-  
+
   returns false if node is not in bounding box of local octree
 
   gammi 05/07
-  
+
   </pre>
-  
+
   \param  x                  (i) coordinate of slavenode
   \param  idofclosestpoint   (o) the node id of the closest point
   \param  distofclosestpoint (o) the distance to the closest point
-  
+
   \return  bool        false if node is not in bounding box of
                        local octree
-  
+
   */
   bool SearchClosestNodeOnThisProc(
-    vector <double> x,
+    const vector<double>& x,
     int           & idofclosestpoint,
     double        & distofclosestpoint
   );
-  
+
   //@}
-  
+
 private:
 
   //! \brief all nodes in leafs are nodes of this discretistion
-  RefCountPtr<DRT::Discretization> discret_;
+  const DRT::Discretization&       discret_;
   //! \brief root of the local search tree
   RefCountPtr<OctreeElement>       octreeroot_;
   //! \brief coordinate of one point in the master plane
@@ -186,13 +208,13 @@ class OctreeElement
 {
 
 public:
-  
+
 
   /*!
   \brief Standard Constructor
 
   <pre>
-  
+
   Create one element in octree                              gammi 05/07
 
   nodeids is a list of nodes out of discretisation actdis belonging to
@@ -201,8 +223,8 @@ public:
   root. maxnodeperleaf specifies the max number of nodes contained by
   one leaf element. tol is a tolerance used to assign the nodes to the
   elements by checking if they are in the bounding box or not.
-  
-  </pre> 
+
+  </pre>
 
   \param  actdis          (i) the discretisation
   \param  nodeids         (i) nodes attached to element
@@ -213,11 +235,11 @@ public:
   \param  tol             (i) Tolerance for octree
 
   \return  void
-  
+
   */
 
   OctreeElement(
-    RefCountPtr<DRT::Discretization> actdis,
+    const DRT::Discretization&       actdis,
     vector <int> &                   nodeids,
     Epetra_SerialDenseMatrix&        boundingbox,
     int                              layer,
@@ -238,32 +260,32 @@ public:
   \brief Question if coordinate is in bounding box
 
   <pre>
-  
+
   Is x in the bounding box of the element?              gammi 05/07
-  
-  </pre> 
+
+  </pre>
 
   \param x         (i) coordinate of point
 
   \return  bool true if point in bounding box
-  
+
   */
   bool IsPointInBoundingBox(
-    vector <double> &x
+    const vector <double> &x
     );
 
   /*!
   \brief Question if octree element is leaf
 
   <pre>
-  
+
   is the octree element a leaf, i.e. does it posess a vector
   of nodes attached to it?                         gammi 05/07
-  
-  </pre> 
+
+  </pre>
 
   \return  bool true if element is leaf
-  
+
   */
   bool IsLeaf();
 
@@ -271,21 +293,21 @@ public:
   \brief Return child containing point
 
   <pre>
-  
+
   Determine which child contains the coordinate x. In some cases
   the return value may not be the unique answer (overlap!)
 
                                                    gammi 05/07
-  
+
   </pre>
 
   \param   x   (i) coordinate
 
   \return  RefCountPtr<OctreeElement> child
-  
+
   */
   RefCountPtr<OctreeElement> ReturnChildContainingPoint(
-    vector <double> &x
+    const vector <double> &x
     );
 
   /*!
@@ -297,7 +319,7 @@ public:
   determines the closest point of all nodes attached to this leaf.
 
                                                    gammi 05/07
-  
+
   </pre>
 
   \param   x                  (i) coordinate of point
@@ -305,11 +327,11 @@ public:
   \param   distofclosestpoint (o) distance of closest point
 
   \return void
-  
+
   */
-  
+
   void SearchClosestNodeInLeaf(
-    vector <double> & x,
+    const vector <double> & x,
     int             & idofclosestpoint,
     double          & distofclosestpoint
   );
@@ -317,28 +339,28 @@ public:
 
   /*!
     Print some information on the octree leaf
-  
+
   <pre>
 
   cout the node coordinates associated to a leaf
                                                    gammi 05/07
-  
+
   </pre>
 
-  \param  os (i) 
+  \param  os (i)
 
   \return void
-  
+
   */
   void Print(ostream& os) const;
-  
-  //@}  
+
+  //@}
 protected:
 
 private:
-  
+
   //! \brief all nodes belong to this discretisation
-  RefCountPtr<DRT::Discretization> discret_;
+  const DRT::Discretization&       discret_;
   //! \brief the bounding box of the element
   Epetra_SerialDenseMatrix         boundingbox_;
   //! \brief the nodeids
@@ -349,7 +371,7 @@ private:
   RefCountPtr<OctreeElement>       octreechild1_;
   //! \brief  pointer to second child
   RefCountPtr<OctreeElement>       octreechild2_;
-  
+
 }; // class OctreeElement
 
 

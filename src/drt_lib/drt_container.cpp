@@ -65,7 +65,7 @@ DRT::Container::~Container()
  *----------------------------------------------------------------------*/
 ostream& operator << (ostream& os, const DRT::Container& cont)
 {
-  cont.Print(os); 
+  cont.Print(os);
   return os;
 }
 
@@ -82,7 +82,7 @@ void DRT::Container::Pack(vector<char>& data) const
   const int doubledatasize = doubledata_.size();
   const int stringdatasize = stringdata_.size();
   const int matdatasize = matdata_.size();
-  
+
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -149,7 +149,7 @@ void DRT::Container::Unpack(const vector<char>& data)
   // extract no. objects in matdata_
   int matdatasize = 0;
   ExtractfromPack(position,data,matdatasize);
-  
+
   // iterate though records of intdata_ and extract
   for (int i=0; i<intdatasize; ++i)
   {
@@ -159,7 +159,7 @@ void DRT::Container::Unpack(const vector<char>& data)
     ExtractfromPack(position,data,value);
     Add(key,value);
   }
-  
+
   // iterate though records of doubledata_ and extract
   for (int i=0; i<doubledatasize; ++i)
   {
@@ -169,7 +169,7 @@ void DRT::Container::Unpack(const vector<char>& data)
     ExtractfromPack(position,data,value);
     Add(key,value);
   }
-  
+
   // iterate though records of stringdata_ and extract
   for (int i=0; i<stringdatasize; ++i)
   {
@@ -189,11 +189,11 @@ void DRT::Container::Unpack(const vector<char>& data)
     ExtractfromPack(position,data,value);
     Add(key,value);
   }
-  
+
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
-} 
+}
 
 
 /*----------------------------------------------------------------------*
@@ -222,7 +222,7 @@ void DRT::Container::Print(ostream& os) const
   map<string,string>::const_iterator scurr;
   for (scurr = stringdata_.begin(); scurr != stringdata_.end(); ++scurr)
     os << scurr->first << " : " << scurr->second << " ";
-    
+
   map<string,RefCountPtr<Epetra_SerialDenseMatrix> >::const_iterator matcurr;
   for (matcurr=matdata_.begin(); matcurr!=matdata_.end(); ++matcurr)
     os << endl << matcurr->first << " :\n" << *(matcurr->second);
@@ -240,7 +240,7 @@ void DRT::Container::Add(const string& name, const int* data, const int num)
   RefCountPtr<vector<int> > storage = rcp(new vector<int>(num));
   vector<int>& access = *storage;
   for (int i=0; i<num; ++i) access[i] = data[i];
-  
+
   // store the vector
   intdata_[name] = storage;
   return;
@@ -290,34 +290,34 @@ void DRT::Container::Add(const string& name, const Epetra_SerialDenseMatrix& mat
 void DRT::Container::Delete(const string& name)
 {
   map<string,RefCountPtr<vector<int> > >::iterator icurr = intdata_.find(name);
-  if (icurr != intdata_.end()) 
+  if (icurr != intdata_.end())
   {
     intdata_.erase(name);
     return;
   }
 
   map<string,RefCountPtr<vector<double> > >::iterator dcurr = doubledata_.find(name);
-  if (dcurr != doubledata_.end()) 
+  if (dcurr != doubledata_.end())
   {
     doubledata_.erase(name);
     return;
   }
 
   map<string,string>::iterator scurr = stringdata_.find(name);
-  if (scurr != stringdata_.end()) 
+  if (scurr != stringdata_.end())
   {
     stringdata_.erase(name);
     return;
   }
-  
+
   map<string,RefCountPtr<Epetra_SerialDenseMatrix> >::iterator matcurr = matdata_.find(name);
-  if (matcurr != matdata_.end()) 
+  if (matcurr != matdata_.end())
   {
     matdata_.erase(name);
     return;
   }
-  
-  
+
+
   return;
 }
 
@@ -330,7 +330,51 @@ namespace DRT
  |  Get a vector<int> specialization                           (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-  template<> vector<int>* Container::Get(const string& name)
+  template<> const vector<int>* Container::Get(const string& name) const
+  {
+    map<string,RefCountPtr<vector<int> > >::const_iterator icurr = intdata_.find(name);
+    if (icurr != intdata_.end())
+      return icurr->second.get();
+    else return NULL;
+  }
+/*----------------------------------------------------------------------*
+ |  Get a vector<double> specialization                        (public) |
+ |                                                            gee 02/07 |
+ *----------------------------------------------------------------------*/
+  template<> const vector<double>* Container::Get(const string& name) const
+  {
+    map<string,RefCountPtr<vector<double> > >::const_iterator dcurr = doubledata_.find(name);
+    if (dcurr != doubledata_.end())
+      return dcurr->second.get();
+    else return NULL;
+  }
+/*----------------------------------------------------------------------*
+ |  Get a string specialization                                (public) |
+ |                                                            gee 02/07 |
+ *----------------------------------------------------------------------*/
+  template<> const string* Container::Get(const string& name) const
+  {
+    map<string,string>::const_iterator scurr = stringdata_.find(name);
+    if (scurr != stringdata_.end())
+      return &(scurr->second);
+    else return NULL;
+  }
+/*----------------------------------------------------------------------*
+ |  Get a Epetra_SerialDensMatrix specialization               (public) |
+ |                                                            gee 02/07 |
+ *----------------------------------------------------------------------*/
+  template<> const Epetra_SerialDenseMatrix* Container::Get(const string& name) const
+  {
+    map<string,RefCountPtr<Epetra_SerialDenseMatrix> >::const_iterator mcurr = matdata_.find(name);
+    if (mcurr != matdata_.end())
+      return mcurr->second.get();
+    else return NULL;
+  }
+/*----------------------------------------------------------------------*
+ |  Get a vector<int> specialization                           (public) |
+ |                                                            gee 02/07 |
+ *----------------------------------------------------------------------*/
+  template<> vector<int>* Container::GetMutable(const string& name)
   {
     map<string,RefCountPtr<vector<int> > >::iterator icurr = intdata_.find(name);
     if (icurr != intdata_.end())
@@ -341,7 +385,7 @@ namespace DRT
  |  Get a vector<double> specialization                        (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-  template<> vector<double>* Container::Get(const string& name)
+  template<> vector<double>* Container::GetMutable(const string& name)
   {
     map<string,RefCountPtr<vector<double> > >::iterator dcurr = doubledata_.find(name);
     if (dcurr != doubledata_.end())
@@ -352,7 +396,7 @@ namespace DRT
  |  Get a string specialization                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-  template<> string* Container::Get(const string& name)
+  template<> string* Container::GetMutable(const string& name)
   {
     map<string,string>::iterator scurr = stringdata_.find(name);
     if (scurr != stringdata_.end())
@@ -363,7 +407,7 @@ namespace DRT
  |  Get a Epetra_SerialDensMatrix specialization               (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-  template<> Epetra_SerialDenseMatrix* Container::Get(const string& name)
+  template<> Epetra_SerialDenseMatrix* Container::GetMutable(const string& name)
   {
     map<string,RefCountPtr<Epetra_SerialDenseMatrix> >::iterator mcurr = matdata_.find(name);
     if (mcurr != matdata_.end())

@@ -1636,7 +1636,7 @@ void input_line_fsi_coupling(multimap<int,RefCountPtr<DRT::Condition> >& lfsicou
  *----------------------------------------------------------------------*/
 void input_surf_fsi_coupling(multimap<int,RefCountPtr<DRT::Condition> >& sfsicoupmap)
 {
-  if (frfind("--DESIGN FSI COUPLING SURFACE CONDITIONS")==0) return;
+  if (frfind("--DESIGN FSI COUPLING SURF CONDITIONS")==0) return;
   frread();
 
   /*---------------------- read number of design surfaces with conditions */

@@ -87,12 +87,12 @@ void dyn_ale_drt()
   // -------------------------------------------------------------------
   if (!actdis->Filled()) actdis->FillComplete();
 
-
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  DiscretizationWriter output(actdis);
-  output.WriteMesh(0,0.0);
+  RefCountPtr<DiscretizationWriter> output =
+    rcp(new DiscretizationWriter(actdis));
+  output->WriteMesh(0,0.0);
 
   // -------------------------------------------------------------------
   // set some pointers and variables
@@ -107,14 +107,15 @@ void dyn_ale_drt()
   // create a solver
   // -------------------------------------------------------------------
   RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
-  LINALG::Solver solver(solveparams,actdis->Comm(),allfiles.out_err);
-  solver.TranslateSolverParameters(*solveparams,actsolv);
+  RefCountPtr<LINALG::Solver> solver =
+    rcp(new LINALG::Solver(solveparams,actdis->Comm(),allfiles.out_err));
+  solver->TranslateSolverParameters(*solveparams,actsolv);
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
 
-  ParameterList params;
-  params.set<int>("nstep", adyn->nstep);
-  params.set<double>("maxtime", adyn->maxtime);
-  params.set<double>("dt", adyn->dt);
+  RefCountPtr<ParameterList> params = rcp(new ParameterList());
+  params->set<int>("nstep", adyn->nstep);
+  params->set<double>("maxtime", adyn->maxtime);
+  params->set<double>("dt", adyn->dt);
 
   FSI::AleLinear ale(actdis, solver, params, output);
 

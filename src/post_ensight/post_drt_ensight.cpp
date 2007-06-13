@@ -518,7 +518,7 @@ void EnsightWriter::WriteResults(string groupname, string name, int numdf, int f
     casefile_ << "tensor symm per node:\t1\t" << fileset << "\t" << name << "\t"
               << filename << "\n";
   }
-  else if (numdf==3)
+  else if (numdf==3 or numdf==2)
   {
     casefile_ << "vector per node:\t1\t" << fileset << "\t" << name << "\t"
               << filename << "\n";
@@ -672,6 +672,7 @@ void FluidEnsightWriter::WriteResults(PostField* field)
   EnsightWriter::WriteResults("velnp","velocity",field->problem()->num_dim());
   EnsightWriter::WriteResults("velnp","pressure",1,field->problem()->num_dim());
   EnsightWriter::WriteResults("residual","residual",field->problem()->num_dim());
+  EnsightWriter::WriteResults("dispnp","displacement",field->problem()->num_dim());
 }
 
 
@@ -734,6 +735,18 @@ int main(int argc, char** argv)
   // each problem type is different and writes different results
   switch (problem.Problemtype())
   {
+  case prb_fsi:
+  {
+    string basename = problem.basename();
+    PostField* structfield = problem.get_discretization(0);
+    StructureEnsightWriter structwriter(structfield, basename);
+    structwriter.WriteFiles();
+
+    PostField* fluidfield = problem.get_discretization(1);
+    FluidEnsightWriter fluidwriter(fluidfield, basename);
+    fluidwriter.WriteFiles();
+    break;
+  }
   case prb_structure:
   {
     PostField* field = problem.get_discretization(0);

@@ -698,6 +698,16 @@ bool FSI_InterfaceProblem::ComputeDispF(const Epetra_Vector& x,
     debug_out_data(fluidfield, "fluid_vel", node_array_sol_increment, fluidfield->dis[0].ipos.velnp);
 #endif
 
+#if 0
+    // debug out fluid interface force
+    {
+      Epetra_Vector iforce(x);
+      GatherForces gr(iforce,fluid_ipos->mf_forcenp);
+      loop_interface(structfield,gr,iforce);
+      cout << "iforce\n" << iforce;
+    }
+#endif
+
     /*------------------------------- CSD -------------------------------*/
     perf_begin(43);
     fsi_struct_calc(struct_work_,structfield,s_disnum_calc,s_disnum_io,itnum,fluidfield,f_disnum_calc);
@@ -716,6 +726,7 @@ bool FSI_InterfaceProblem::ComputeDispF(const Epetra_Vector& x,
 
     GatherDisplacements gr(F,ipos->mf_dispnp);
     loop_interface(structfield,gr,F);
+    //cout << "dispnp\n" << F;
     F.Update(-1.0,x,1.0);
 
     // keep a copy
@@ -808,6 +819,105 @@ bool FSI_InterfaceProblem::ComputeDispF(const Epetra_Vector& x,
     }
 #endif
   }
+#endif
+
+#if 0
+  int struct_nodes[] = {
+//    2240,
+    2235,
+    2232,
+    2223,
+    2212,
+    2202,
+    2186,
+    2171,
+    2153,
+    2133,
+    2110,
+    2094,
+    2071,
+    2050,
+    2020,
+    2003,
+    1973,
+    1944,
+    1927,
+    1902,
+    1882,
+    1849,
+    1824,
+    1802,
+    1781,
+    1768,
+    1739,
+    1725,
+    1707,
+    1695,
+    1686,
+    1674,
+//    1666,
+    -1
+  };
+
+  static int count;
+  count += 1;
+
+  ostringstream name;
+  name << "drt_dump_" << count << ".txt";
+  ofstream out(name.str().c_str());
+
+  Epetra_Vector iforce(x);
+  GatherForces gf(iforce,fluid_ipos->mf_forcenp);
+  loop_interface(structfield,gf,iforce);
+
+  Epetra_Vector idispnp(x);
+  GatherDisplacements gr(idispnp,ipos->mf_dispnp);
+  loop_interface(structfield,gr,idispnp);
+
+  const Epetra_BlockMap& xmap = x.Map();
+  const Epetra_BlockMap& fmap = F.Map();
+  const Epetra_BlockMap& ifmap = iforce.Map();
+  const Epetra_BlockMap& idmap = idispnp.Map();
+
+  for (int i=0; struct_nodes[i]!=-1; ++i)
+  {
+    NODE* actsnode;
+    for (int j=0;j<structfield->dis[0].numnp;j++)
+    {
+      actsnode = &(structfield->dis[0].node[j]);
+      if (actsnode->Id==struct_nodes[i])
+        break;
+    }
+    if (actsnode->Id!=struct_nodes[i])
+      dserror("node %d not found", struct_nodes[i]);
+
+    out << "# " << i << " " << struct_nodes[i] << " "
+        << "(" << actsnode->x[0] << "," << actsnode->x[1] << "," << actsnode->x[2] << ")"
+        << "(" << actsnode->dof[0] << "," << actsnode->dof[1] << ")\n";
+  }
+
+  for (int i=0; struct_nodes[i]!=-1; ++i)
+  {
+    NODE* actsnode;
+    for (int j=0;j<structfield->dis[0].numnp;j++)
+    {
+      actsnode = &(structfield->dis[0].node[j]);
+      if (actsnode->Id==struct_nodes[i])
+        break;
+    }
+
+    out << i << " "
+        << x[xmap.LID(actsnode->dof[0])] << " "
+        << x[xmap.LID(actsnode->dof[1])] << " "
+        << F[fmap.LID(actsnode->dof[0])] << " "
+        << F[fmap.LID(actsnode->dof[1])] << " "
+        << iforce[ifmap.LID(actsnode->dof[0])] << " "
+        << iforce[ifmap.LID(actsnode->dof[1])] << " "
+        << idispnp[idmap.LID(actsnode->dof[0])] << " "
+        << idispnp[idmap.LID(actsnode->dof[1])] << " "
+        << "\n";
+  }
+  out.close();
 #endif
 
   return true;

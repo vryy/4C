@@ -159,7 +159,8 @@ bool DRT::Elements::Fluid3::ReadElement()
         strncmp(buffer,"ALE",3)==0 ||
         strncmp(buffer,"Ale",3)==0 )
     {
-      is_ale_=true;
+      //is_ale_=true;
+      is_ale_=false;
     }
 
     else if (strncmp(buffer,"euler",5)==0 ||

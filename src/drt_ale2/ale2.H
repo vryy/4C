@@ -1,27 +1,13 @@
-/*!----------------------------------------------------------------------
-\file fluid2.H
-
-\class DRT::Elements::Fluid2
-
-\brief A C++ wrapper for the fluid2 element
-
-<pre>
-Maintainer: Peter Gamnitzer
-            gamnitzer@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
-
-*----------------------------------------------------------------------*/
-#ifdef D_FLUID2
+#ifdef D_ALE
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
-#ifndef FLUID2_H
-#define FLUID2_H
 
+#ifndef ALE2_H
+#define ALE2_H
 
-#include "Teuchos_RefCountPtr.hpp"
-#include "Epetra_Vector.h"
+#include <Teuchos_RefCountPtr.hpp>
+#include <Epetra_Vector.h>
+
 using namespace std;
 using namespace Teuchos;
 
@@ -29,39 +15,33 @@ using namespace Teuchos;
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
 
-
-// forward declarations
 struct _MATERIAL;
-struct _FLUID_DATA;
-/*!
-\brief DRT: namespace of the ccarat discretization module
 
-*/
 namespace DRT
 {
-// forward declarations
+
 class Discretization;
-class Fluid2Register;
+class Ale2Register;
 
 namespace Elements
 {
-// forward declarations
-class Fluid2Line;
+
+class Ale2Line;
+
+
 
 /*!
-\class Fluid2
+\class Ale2
 
-\brief A C++ wrapper for the fluid2 element
-
-\author gammi (gamnitzer@lnm.mw.tum.de)
+\brief A C++ wrapper for the ale2 element
 */
-class Fluid2 : public DRT::Element
+class Ale2 : public DRT::Element
 {
 public:
 
   //! @name Friends
-  friend class Fluid2Register;
-  friend class Fluid2Line;
+  friend class Ale2Register;
+  friend class Ale2Surface;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -71,7 +51,7 @@ public:
 
   \param id : A unique global id
   */
-  Fluid2(int id, int owner);
+  Ale2(int id, int owner);
 
   /*!
   \brief Copy Constructor
@@ -79,10 +59,10 @@ public:
   Makes a deep copy of a Element
 
   */
-  Fluid2(const Fluid2& old);
+  Ale2(const Ale2& old);
 
   /*!
-  \brief Deep copy this instance of Fluid2 and return pointer to the copy
+  \brief Deep copy this instance of Ale2 and return pointer to the copy
 
   The Clone() method is used from the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
@@ -98,13 +78,13 @@ public:
   /*!
   \brief Return number of lines of this element
   */
-  virtual int NumLine()
+  virtual int NumLine() const
   {if (NumNode()==9 || NumNode()==8 || NumNode()==4) return 4;
-      else if (NumNode()==3 || NumNode()==6) return 3;
-      else {
-	  dserror("Could not determine number of lines");
-	  return -1;
-      }
+    else if (NumNode()==3 || NumNode()==6) return 3;
+    else {
+      dserror("Could not determine number of lines");
+      return -1;
+    }
   }
 
   /*!
@@ -135,7 +115,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Fluid2;}
+  virtual int UniqueParObjectId() const { return ParObject_Ale2;}
 
   /*!
   \brief Pack this class so it can be communicated
@@ -157,7 +137,7 @@ public:
   \brief Destructor
 
   */
-  virtual ~Fluid2();
+  virtual ~Ale2();
 
   //@}
 
@@ -173,7 +153,7 @@ public:
   number of degrees of freedom per node along the way for each of it's nodes
   separately.
   */
-  virtual int NumDofPerNode(const DRT::Node& node) const {return 3;}
+  virtual int NumDofPerNode(const DRT::Node& node) const {return 2;}
 
   /*!
   \brief Get number of degrees of freedom per element
@@ -218,7 +198,7 @@ public:
   /*!
   \brief Evaluate an element
 
-  Evaluate fluid2 element stiffness, mass, internal forces etc
+  Evaluate ale2 element stiffness, mass, internal forces etc
 
   \param params (in/out): ParameterList for communication between control routine
                           and elements
@@ -252,7 +232,14 @@ public:
   /*!
   \brief Evaluate a Neumann boundary condition
 
-  this method evaluates a line Neumann condition on the fluid2 element
+  this method evaluates a surfaces Neumann condition on the shell element
+
+  \param params (in/out)    : ParameterList for communication between control routine
+                              and elements
+  \param discretization (in): A reference to the underlying discretization
+  \param condition (in)     : The condition to be evaluated
+  \param lm (in)            : location vector of this element
+  \param elevec1 (out)      : vector to be filled by element. If NULL on input,
 
   \return 0 if successful, negative otherwise
   */
@@ -273,129 +260,61 @@ public:
 
 private:
 
-  //! action parameters recognized by fluid2
+  struct ALE2_DATA
+  {
+    double qxg[6][6];    /*!< coordinates for QUADS and HEX */
+    double qwgt[6][6];   /*!< weights for QUADS and HEX */
+
+    double txgr[13][11];   /*!< coordinates in r for TRIS and TETS */
+    double txgs[13][11];   /*!< coordinates in s for TRIS and TETS*/
+    double txgt[13][11];   /*!< coordinates in t for TRIS and TETS*/
+    double twgt[13][11];   /*!< weights for TRIS and TETS*/
+  };
+
+  void static_ke(vector<int>&              lm,
+                 Epetra_SerialDenseMatrix* sys_mat,
+                 Epetra_SerialDenseVector* residual,
+                 struct _MATERIAL*         material,
+                 ParameterList& 	   params);
+
+  void intg(ALE2_DATA& data);
+
+  void funct_deriv(vector<double>& funct,
+                   Epetra_SerialDenseMatrix& deriv,
+                   double      r,
+                   double      s,
+                   DiscretizationType     typ,
+                   int         option);
+
+  //! action parameters recognized by ale2
   enum ActionType
   {
     none,
-    calc_fluid_systemmat_and_residual
+    calc_ale_lin_stiff
   };
 
   //! no. gaussian points in each spatial dimension
   int                                             ngp_[2];
   //! number of the material law
   int                                             material_;
-  //! flag for euler/ale net algorithm
-  bool                                            is_ale_;
 
-  //! container containing all kind of fluid2 thisandthat
+  //! container containing all kind of ale2 thisandthat
   DRT::Container                                  data_;
 
   //! vector of surfaces of this element (length 1)
   vector<DRT::Element*>                           surface_;
 
-  //! vector of lines adjacent to this element (fluid2: 3 or 4 lines)
-  vector<RefCountPtr<DRT::Elements::Fluid2Line> > lines_;
-  //! vector of lines adjacent to this element (fluid2: 3 or 4 lines)
-  vector<DRT::Elements::Fluid2Line*>              lineptrs_;
+  //! vector of lines adjacent to this element (ale2: 3 or 4 lines)
+  vector<RefCountPtr<DRT::Elements::Ale2Line> > lines_;
+  //! vector of lines adjacent to this element (ale2: 3 or 4 lines)
+  vector<DRT::Elements::Ale2Line*>              lineptrs_;
 
 
   // internal calculation methods
 
   // don't want = operator
-  Fluid2& operator = (const Fluid2& old);
-
-  // calculating system matrix
-  void f2_sys_mat(vector<int>&              lm,
-                  vector<double>&           evelnp,
-		  vector<double>&           eprenp,
-                  vector<double>&           ehist,
-                  vector<double>&           edispnp,
-                  vector<double>&           egridv,
-                  Epetra_SerialDenseMatrix* sys_mat,
-                  Epetra_SerialDenseVector* residual,
-                  struct _MATERIAL*         material,
-		  ParameterList&            params
-		  );
-
-  // evaluate element integration points (and storing them in data)
-  void f2_integration_points(struct _FLUID_DATA& data);
-
-  // calculate Jacobian matrix and it's determinant
-  void f2_jaco(const Epetra_SerialDenseMatrix& xyze,
-	       const Epetra_SerialDenseMatrix& deriv,
-               Epetra_SerialDenseMatrix& xjm,
-	       double* 		det,
-               const int 	iel
-	       );
-
-  // shape functions and natural derivatives for hexaeder
-  void f2_shape_function(vector<double>& funct,
-               		Epetra_SerialDenseMatrix& deriv,
-               		Epetra_SerialDenseMatrix& deriv2,
-               		const double&      r,
-               		const double&      s,
-               		const int&         iel,
-               		const int          icode
-          		);
-
-  // calculate global derivatives w.r.t. x,y,z at point r,s,t are
-    void f2_gder(Epetra_SerialDenseMatrix& derxy,
-		 const Epetra_SerialDenseMatrix& deriv,
-                 Epetra_SerialDenseMatrix& xjm,
-		 double& det,
-                 const int iel
-		 );
-
-  // calculate second global derivatives w.r.t x/y/z at point r,s,t
-    void f2_gder2(const Epetra_SerialDenseMatrix& xyze,
-				    const Epetra_SerialDenseMatrix& xjm,
-                                    const Epetra_SerialDenseMatrix& derxy,
-				    Epetra_SerialDenseMatrix& derxy2,
-				    const Epetra_SerialDenseMatrix& deriv2,
-                                    const int iel
-				    );
-
-  // evaluate fluid coefficient matrix
-    void f2_calmat( Epetra_SerialDenseMatrix& estif,
-                Epetra_SerialDenseVector&  	eforce,
-                vector<double>&  	velint,
-                vector<double>&   	histvec,
-                vector<double>&   	gridvint,
-                double&   		press,
-                Epetra_SerialDenseMatrix& vderxy,
-                Epetra_SerialDenseMatrix& vderxy2,
-                vector<double>&   	gradp,
-                vector<double>&   	funct,
-		vector<double>&   	tau,
-                Epetra_SerialDenseMatrix& derxy,
-                Epetra_SerialDenseMatrix& derxy2,
-                double&   		fac,
-                const double&   	visc,
-                const int&      	iel,
-		ParameterList& 		params
-      		);
-
-  // evaluate fluid coefficient matrix for stationary problems
-    void f2_calmat_stationary( Epetra_SerialDenseMatrix& estif,
-                Epetra_SerialDenseVector&  	eforce,
-                vector<double>&  	velint,
-                vector<double>&   	histvec,
-                vector<double>&   	gridvint,
-                double&   		press,
-                Epetra_SerialDenseMatrix& vderxy,
-                Epetra_SerialDenseMatrix& vderxy2,
-                vector<double>&   	gradp,
-                vector<double>&   	funct,
-		vector<double>&   	tau,
-                Epetra_SerialDenseMatrix& derxy,
-                Epetra_SerialDenseMatrix& derxy2,
-                double&   		fac,
-                const double&   	visc,
-                const int&      	iel,
-		ParameterList& 		params
-      		);
-
-}; // class Fluid2
+  Ale2& operator = (const Ale2& old);
+};
 
 
 //=======================================================================
@@ -405,13 +324,13 @@ private:
 
 
 /*!
-\class Fluid2Register
+\class Ale2Register
 
-\brief A register for fluid2 element
+\brief A register for ale2 element
 
-\author gammi (gamnitzer@lnm.mw.tum.de)
+\author gee (gee@lnm.mw.tum.de)
 */
-class Fluid2Register : public DRT::ElementRegister
+class Ale2Register : public DRT::ElementRegister
 {
 public:
 
@@ -421,24 +340,24 @@ public:
   \brief Standard Constructor
 
   */
-  Fluid2Register(DRT::Element::ElementType etype);
+  Ale2Register(DRT::Element::ElementType etype);
 
   /*!
   \brief Copy Constructor
 
-  Makes a deep copy of an Fluid2Register
+  Makes a deep copy of an Ale2Register
 
   */
-  Fluid2Register(const DRT::Elements::Fluid2Register& old);
+  Ale2Register(const DRT::Elements::Ale2Register& old);
 
   /*!
-  \brief Deep copy this instance of Fluid2Register and return pointer to the copy
+  \brief Deep copy this instance of Ale2Register and return pointer to the copy
 
   The Clone() method is used from the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
 
   */
-  DRT::Elements::Fluid2Register* Clone() const;
+  DRT::Elements::Ale2Register* Clone() const;
 
   /*!
   \brief Return unique ParObject id
@@ -446,7 +365,7 @@ public:
   every class imploementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Fluid2Register;}
+  virtual int UniqueParObjectId() const { return ParObject_Ale2Register;}
 
   /*!
   \brief Pack this class so it can be communicated
@@ -468,7 +387,7 @@ public:
   \brief Destructor
 
   */
-  virtual ~Fluid2Register();
+  virtual ~Ale2Register();
 
   //@}
 
@@ -486,7 +405,7 @@ public:
   /*!
   \brief Call Element init routines
 
-  The method performs all steps needed to init the fluid2 elements. it e.g. calculates the
+  The method performs all steps needed to init the ale2 elements. it e.g. calculates the
   field of averaged directors at nodes.
   */
   int Initialize(DRT::Discretization& dis);
@@ -496,7 +415,13 @@ public:
 private:
 
 
-}; // class Fluid2Register
+}; // class Ale2Register
+
+
+//=======================================================================
+//=======================================================================
+//=======================================================================
+//=======================================================================
 
 
 //=======================================================================
@@ -506,18 +431,12 @@ private:
 
 
 /*!
-\class Fluid2Line
+\class Ale2Line
 
-\brief An element representing a line of a fluid2 element
+\brief An element representing a line of a ale2 element
 
-\note This is a pure Neumann boundary condition element. It's only
-      purpose is to evaluate line Neumann boundary conditions that might be
-      adjacent to a parent fluid2 element. It therefore does not implement
-      the DRT::Element::Evaluate method and does not have its own ElementRegister class.
-
-\author gamnitzer (gamnitzer@lnm.mw.tum.de)
 */
-class Fluid2Line : public DRT::Element
+class Ale2Line : public DRT::Element
 {
 public:
 
@@ -531,11 +450,11 @@ public:
   \param nnode: Number of nodes attached to this element
   \param nodeids: global ids of nodes attached to this element
   \param nodes: the discretizations map of nodes to build ptrs to nodes from
-  \param parent: The parent fluid element of this line
+  \param parent: The parent ale element of this line
   \param lline: the local line number of this line w.r.t. the parent element
   */
-  Fluid2Line(int id, int owner, int nnode, const int* nodeids,
-             DRT::Node** nodes, DRT::Elements::Fluid2* parent, const int lline);
+  Ale2Line(int id, int owner, int nnode, const int* nodeids,
+           DRT::Node** nodes, DRT::Elements::Ale2* parent, const int lline);
 
   /*!
   \brief Copy Constructor
@@ -543,7 +462,7 @@ public:
   Makes a deep copy of a Element
 
   */
-  Fluid2Line(const Fluid2Line& old);
+  Ale2Line(const Ale2Line& old);
 
   /*!
   \brief Deep copy this instance of an element and return pointer to the copy
@@ -565,7 +484,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of the drt_parobject.H file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Fluid2Line;}
+  virtual int UniqueParObjectId() const { return ParObject_Ale2Line;}
 
   /*!
   \brief Pack this class so it can be communicated
@@ -587,7 +506,7 @@ public:
   \brief Destructor
 
   */
-  virtual ~Fluid2Line();
+  virtual ~Ale2Line();
 
   //@}
 
@@ -604,7 +523,7 @@ public:
   separately.
   */
   virtual int NumDofPerNode(const DRT::Node& node) const
-  {return 3;}
+  {return 2;}
 
   /*!
   \brief Get number of degrees of freedom per element
@@ -640,7 +559,7 @@ public:
   /*!
   \brief Evaluate a Neumann boundary condition
 
-  this method evaluates a line Neumann condition on the fluid2 element
+  this method evaluates a line Neumann condition on the ale2 element
 
   \param params (in/out)    : ParameterList for communication between control routine
                               and elements
@@ -662,14 +581,14 @@ public:
 private:
 
   // don't want = operator
-  Fluid2Line& operator = (const Fluid2Line& old);
+  Ale2Line& operator = (const Ale2Line& old);
 
   //! The parent element of this line
-  DRT::Elements::Fluid2* parent_;
+  DRT::Elements::Ale2* parent_;
   //! The local line number of this line w.r.t to the parent_ element
   int                    lline_;
 
-}; // class Fluid2Line
+}; // class Ale2Line
 
 
 
@@ -679,8 +598,7 @@ private:
 
 
 
-
-#endif  // #ifndef FLUID2_H
-#endif  // #ifdef TRILINOS_PACKAGE
-#endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_FLUID2
+#endif
+#endif
+#endif
+#endif
