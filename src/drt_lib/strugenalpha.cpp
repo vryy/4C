@@ -216,6 +216,9 @@ void StruGenAlpha::ConstantPredictor()
   int    istep   = params_.get<int>   ("step"      ,0);
   bool   damping = params_.get<bool>  ("damping"   ,false);
   double alphaf  = params_.get<double>("alpha f"   ,0.459);
+  double alpham  = params_.get<double>("alpha m"   ,0.378);
+  double beta    = params_.get<double>("beta"      ,0.292);
+  double gamma   = params_.get<double>("gamma"     ,0.581);
   const Epetra_Map* dofrowmap = discret_.DofRowMap();
 
   // increment time and step
@@ -261,39 +264,35 @@ void StruGenAlpha::ConstantPredictor()
   // V_{n+1} := gamma/(beta*dt) * (D_{n+1} - D_n)
   //          + (beta-gamma)/beta * V_n
   //          + (2.*beta-gamma)/(2.*beta) * A_n
-  //veln_->Update(1.0,*disn_,-1.0,*dis_,0.0);
-  //veln_->Update((beta-gamma)/beta,*vel_,
-  //            (2.*beta-gamma)/(2.*beta),*acc_,
-  //             gamma/(beta*dt));
+  veln_->Update(1.0,*disn_,-1.0,*dis_,0.0);
+  veln_->Update((beta-gamma)/beta,*vel_,(2.*beta-gamma)/(2.*beta),*acc_,gamma/(beta*dt));
   // predicting accelerations A_{n+1} (accn)
   // A_{n+1} := 1./(beta*dt*dt) * (D_{n+1} - D_n)
   //          - 1./(beta*dt) * V_n
   //          + (2.*beta-1.)/(2.*beta) * A_n
-  //accn_->Update(1.0,*disn_,-1.0,*dis_,0.0);
-  //accn_->Update(-1./(beta*dt),*vel_,
-  //            (2.*beta-1.)/(2.*beta),*acc_,
-  //            1./(beta*dt*dt));
+  accn_->Update(1.0,*disn_,-1.0,*dis_,0.0);
+  accn_->Update(-1./(beta*dt),*vel_,(2.*beta-1.)/(2.*beta),*acc_,1./(beta*dt*dt));
 
   // constant predictor
-  veln_->Update(1.0,*vel_,0.0);
-  accn_->Update(1.0,*acc_,0.0);
+  //veln_->Update(1.0,*vel_,0.0);
+  //accn_->Update(1.0,*acc_,0.0);
 
   //------------------------------ compute interpolated dis, vel and acc
   // consistent predictor
   // mid-displacements D_{n+1-alpha_f} (dism)
   //    D_{n+1-alpha_f} := (1.-alphaf) * D_{n+1} + alpha_f * D_{n}
-  //dism_->Update(1.-alphaf,*disn_,alphaf,*dis_,0.0);
+  dism_->Update(1.-alphaf,*disn_,alphaf,*dis_,0.0);
   // mid-velocities V_{n+1-alpha_f} (velm)
   //    V_{n+1-alpha_f} := (1.-alphaf) * V_{n+1} + alpha_f * V_{n}
-  //velm_->Update(1.-alphaf,*veln_,alphaf,*vel_,0.0);
+  velm_->Update(1.-alphaf,*veln_,alphaf,*vel_,0.0);
   // mid-accelerations A_{n+1-alpha_m} (accm)
   //    A_{n+1-alpha_m} := (1.-alpha_m) * A_{n+1} + alpha_m * A_{n}
-  //accm_->Update(1.-alpham,*accn_,alpham,*acc_,0.0);
+  accm_->Update(1.-alpham,*accn_,alpham,*acc_,0.0);
 
   // constant predictor
-  dism_->Update(1.0,*dis_,0.0);
-  velm_->Update(1.0,*vel_,0.0);
-  accm_->Update(1.0,*accm_,0.0);
+  //dism_->Update(1.0,*dis_,0.0);
+  //velm_->Update(1.0,*vel_,0.0);
+  //accm_->Update(1.0,*acc_,0.0);
 
   //------------------------------- compute interpolated external forces
   // external mid-forces F_{ext;n+1-alpha_f} (fextm)
