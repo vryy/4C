@@ -41,11 +41,6 @@ extern struct _FILES  allfiles;
  *----------------------------------------------------------------------*/
 bool DRT::Elements::XFluid3::ReadElement()
 {
-    // read element's nodes
-    int   ierr = 0;
-    int   nnode = 0;
-    int   nodes[27];
-
     typedef map<string, DiscretizationType> Gid2DisType;
     Gid2DisType gid2distype;
     gid2distype["HEX8"]  = hex8;
@@ -62,20 +57,20 @@ bool DRT::Elements::XFluid3::ReadElement()
     distype2NumNodes[tet4]  = 4;
     distype2NumNodes[tet10] = 10;
     
-    typedef vector<int> Volume2Surface;
-    typedef vector<Volume2Surface> Volume2Surfaces;
-    Volume2Surfaces vol2surf;
-    vol2surf[0][0] = 0;
-    vol2surf[0][1] = 3;
-    vol2surf[0][2] = 2;
-    vol2surf[0][3] = 1;
-    vol2surf[0][4] = 11;
-    vol2surf[0][5] = 10;
-    vol2surf[0][6] = 9;
-    vol2surf[0][7] = 8;
-    vol2surf[0][8] = 20;
-
-    vector<int> gid2baciNodeNumbering;
+//    typedef vector<int> Volume2Surface(9);
+//    typedef vector<Volume2Surface> Volume2Surfaces(6);
+//    Volume2Surfaces vol2surf;
+//    vol2surf[0][0] = 0;
+//    vol2surf[0][1] = 3;
+//    vol2surf[0][2] = 2;
+//    vol2surf[0][3] = 1;
+//    vol2surf[0][4] = 11;
+//    vol2surf[0][5] = 10;
+//    vol2surf[0][6] = 9;
+//    vol2surf[0][7] = 8;
+//    vol2surf[0][8] = 20;
+    
+    vector<int> gid2baciNodeNumbering(27);
     gid2baciNodeNumbering[0] =   1;
     gid2baciNodeNumbering[1] =   2;
     gid2baciNodeNumbering[2] =   3;
@@ -103,7 +98,11 @@ bool DRT::Elements::XFluid3::ReadElement()
     gid2baciNodeNumbering[24] = 22;
     gid2baciNodeNumbering[25] = 21;
     gid2baciNodeNumbering[26] = 26;
-
+    
+    int   ierr = 0;
+    int   nnode = 0;
+    int   nodes_read[27];
+    
     Gid2DisType::iterator iter;
     for( iter = gid2distype.begin(); iter != gid2distype.end(); iter++ ) 
     {
@@ -113,28 +112,31 @@ bool DRT::Elements::XFluid3::ReadElement()
         {
             DiscretizationType distype = gid2distype[eletext];
             nnode = distype2NumNodes[distype];
-            frint_n(eletext.c_str(), nodes, nnode, &ierr);
+            frint_n(eletext.c_str(), nodes_read, nnode, &ierr);
             dsassert(ierr==1, "Reading of ELEMENT Topology failed\n");
             break;
         }
     }
+  
+    // reduce node numbers by one
+    for (int i=0; i<nnode; ++i) nodes_read[i]--;
+    
+    // map gid numbering to baci numbering
+    int   nodes[27];
+    for (int i=0; i<nnode; ++i) nodes[i] = nodes_read[gid2baciNodeNumbering[i]];
 
-  // reduce node numbers by one
-  for (int i=0; i<nnode; ++i) nodes[i]--;
+    SetNodeIds(nnode,nodes);
 
-  SetNodeIds(nnode,nodes);
+    // read number of material model
+    material_ = 0;
+    frint("MAT",&material_,&ierr);
+    dsassert(ierr==1, "Reading of material for XFLUID3 element failed\n");
+    dsassert(material_!=0, "No material defined for XFLUID3 element\n");
 
-  // read number of material model
-  material_ = 0;
-  frint("MAT",&material_,&ierr);
-  dsassert(ierr==1, "Reading of material for XFLUID3 element failed\n");
-  dsassert(material_!=0, "No material defined for XFLUID3 element\n");
-
-  // read/set gaussian rule
-  gaussrule_ = get_optimal_gaussrule(Shape());
-
-  return true;
-
+    // read/set gaussian rule
+    gaussrule_ = get_optimal_gaussrule(Shape());
+    
+    return true;
 } // Fluid3::ReadElement()
 
 
