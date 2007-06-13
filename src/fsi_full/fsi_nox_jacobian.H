@@ -2,7 +2,6 @@
 #define FSI_NOX_JACOBIAN_H
 
 #ifdef TRILINOS_PACKAGE
-#ifdef D_FSI
 
 #include <Epetra_Comm.h>
 
@@ -140,6 +139,5 @@ protected:
   NOX::Utils utils;
 };
 
-#endif
 #endif
 #endif

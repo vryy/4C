@@ -1,6 +1,5 @@
 
 #ifdef TRILINOS_PACKAGE
-#ifdef D_FSI
 
 #include "fsi_nox_jacobian.H"
 
@@ -186,5 +185,4 @@ void FSIMatrixFree::setGroupForComputeF(const NOX::Abstract::Group& group)
   return;
 }
 
-#endif
 #endif

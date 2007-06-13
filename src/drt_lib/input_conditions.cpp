@@ -119,6 +119,12 @@ static void register_condition(string name,
                                const Epetra_Map* noderowmap);
 
 /*----------------------------------------------------------------------*
+ | surface stress conditions                                 lw 06/07   |
+ *----------------------------------------------------------------------*/
+static void input_surf_stress(multimap<int,RefCountPtr<DRT::Condition> >& ssmap);
+
+
+/*----------------------------------------------------------------------*
  | input of conditions                                    m.gee 11/06   |
  *----------------------------------------------------------------------*/
 void input_conditions(const DRT::Problem& problem)
@@ -247,6 +253,12 @@ void input_conditions(const DRT::Problem& problem)
   multimap<int,RefCountPtr<DRT::Condition> > linesubsonicoutflow;
   input_line_subsonicoutflow(linesubsonicoutflow);
   setup_condition(linesubsonicoutflow, dline_fenode);
+
+  //--------------------------------------- read surface stress conditions
+  multimap<int,RefCountPtr<DRT::Condition> > surfstress;
+  input_surf_stress(surfstress);
+  setup_condition(surfstress, dsurf_fenode);
+
 
   // Iterate through all discretizations and sort the appropiate condition into
   // the correct discretization it applies to
@@ -1968,6 +1980,120 @@ void input_line_subsonicoutflow(multimap<int,RefCountPtr<DRT::Condition> >& bcma
   } // while(strncmp(allfiles.actplace,"------",6)!=0)
   return;
 } // input_line_subsonicoutflow
+
+
+
+/*----------------------------------------------------------------------*
+ | input of design surface stress conditions                 lw 06/07   |
+ *----------------------------------------------------------------------*/
+void input_surf_stress(multimap<int,RefCountPtr<DRT::Condition> >& ssmap)
+{
+  DSTraceHelper dst("input_surf_stress");
+
+  /*----------------- find the beginning of surface dirichlet conditions */
+  if (frfind("--SURFACE CONDITIONS")==0) return;
+  frread();
+
+  /*------------------------ read number of design surfs with conditions */
+  int ierr=0;
+  int ndsurf=0;
+  frint("DSURF",&ndsurf,&ierr);
+  if(ierr!=1)
+    dserror("Cannot read design-surface stress conditions");
+  frread();
+
+  /*------------------------------------- start reading the design surfs */
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    /*------------------------------------------ read the design surf Id */
+    int dsurfid = -1;
+    frint("E",&dsurfid,&ierr);
+    if(ierr!=1)
+      dserror("Cannot read design-surface stress conditions");
+    dsurfid--;
+
+    // create boundary condition
+    RefCountPtr<DRT::Condition> condition =
+           rcp(new DRT::Condition(dsurfid,DRT::Condition::SurfaceStress,true,
+                                  DRT::Condition::Surface));
+
+    // read input in case of dynamic surfactant model
+
+    ierr=0;
+    frchk("SURFACTANT", &ierr);
+    if (ierr)
+    {
+      double temp;
+      condition->Add("type","surfactant");
+      frdouble("k1", &temp, &ierr);
+      if (ierr == 1)
+        condition->Add("k1", temp);
+      else
+        dserror("Cannot read k1 for surfactant");
+      frdouble("k2", &temp, &ierr);
+      if (ierr == 1)
+        condition->Add("k2", temp);
+      else
+        dserror("Cannot read k2 for surfactant");
+      frdouble("Cbulk", &temp, &ierr);
+      if (ierr == 1)
+        condition->Add("Cbulk", temp);
+      else
+        dserror("Cannot read Cbulk for surfactant");
+      frdouble("m1", &temp, &ierr);
+      if (ierr == 1)
+        condition->Add("m1", temp);
+      else
+        dserror("Cannot read m1 for surfactant");
+      frdouble("m2", &temp, &ierr);
+      if (ierr == 1)
+        condition->Add("m2", temp);
+      else
+        dserror("Cannot read m2 for surfactant");
+      frdouble("gamma_0", &temp, &ierr);
+      if (ierr == 1)
+        condition->Add("gamma_0", temp);
+      else
+        dserror("Cannot read gamma_0 for surfactant");
+      frdouble("gamma_min", &temp, &ierr);
+      if (ierr == 1)
+        condition->Add("gamma_min", temp);
+      else
+        dserror("Cannot read gamma_min for surfactant");
+      frdouble("gamma_min_eq", &temp, &ierr);
+      if (ierr == 1)
+        condition->Add("gamma_min_eq", temp);
+      else
+        dserror("Cannot read gamma_min_eq for surfactant");
+    }
+
+    // read input in case of constant surface tension
+
+    int ierr1=0;
+    frchk("SURFACE TENSION", &ierr1);
+    if (ierr1)
+    {
+      double temp;
+      condition->Add("type","surftension");
+      frdouble("gamma", &temp, &ierr);
+      if (ierr == 1)
+        condition->Add("gamma", temp);
+      else
+        dserror("Cannot read gamma for surfactant");
+    }
+
+    if (ierr1==0 && ierr==0)
+      dserror("Unknown type of surface stress condition");
+
+
+    //------------------------------- put condition in map of conditions
+    ssmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dsurfid,condition));
+
+    //-------------------------------------------------- read the next line
+    frread();
+  } // while(strncmp(allfiles.actplace,"------",6)!=0)
+  return;
+} // input_surf_stress
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

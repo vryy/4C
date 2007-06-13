@@ -142,6 +142,11 @@ OBJS_DRT_FSI  = src/drt_fsi/ale_dyn.o \
                 src/drt_fsi/fsi_fluid.o \
                 src/drt_fsi/fsi_structure.o \
                 src/drt_fsi/fsi_dirichletneumann.o \
+		src/fsi_full/fsi_nox_fixpoint.o \
+		src/fsi_full/fsi_nox_aitken.o \
+		src/fsi_full/fsi_nox_jacobian.o \
+		src/fsi_full/fsi_nox_extrapolate.o \
+		src/fsi_full/fsi_nox_michler.o \
                 src/drt_fsi/fsi_coupling.o \
                 src/drt_fsi/fsi_utils.o \
                 src/drt_fsi/fsi_ale_resulttest.o
@@ -584,12 +589,7 @@ OBJS_FSI      = src/fsi_full/fsi_aitken.o \
                 src/fsi_full/fsi_struct.o \
                 src/fsi_full/fsi_newton.o
 #
-OBJS_FSI_CPP  = src/fsi_full/fsi_dyn_nox.o \
-		src/fsi_full/fsi_nox_fixpoint.o \
-		src/fsi_full/fsi_nox_aitken.o \
-		src/fsi_full/fsi_nox_jacobian.o \
-		src/fsi_full/fsi_nox_extrapolate.o \
-		src/fsi_full/fsi_nox_michler.o
+OBJS_FSI_CPP  = src/fsi_full/fsi_dyn_nox.o
 #                shell9
 OBJS_SHELL9   = src/shell9/s9_main.o \
                 src/shell9/s9_a3.o \

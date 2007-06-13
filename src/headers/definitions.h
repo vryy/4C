@@ -426,21 +426,21 @@ static INT iminarg1,iminarg2;
 #define GRAY_LIGHT          "[37;1m"
 #define END_COLOR           "[m"
 #else
-#define BLACK
-#define BLACK_LIGHT
-#define RED
-#define RED_LIGHT
-#define GREEN
-#define GREEN_LIGHT
-#define YELLOW
-#define YELLOW_LIGHT
-#define BLUE
-#define BLUE_LIGHT
-#define MAGENTA
-#define MAGENTA_LIGHT
-#define BLUE2
-#define BLUE2_LIGHT
-#define GRAY
-#define GRAY_LIGHT
-#define END_COLOR
+#define BLACK               ""
+#define BLACK_LIGHT         ""
+#define RED                 ""
+#define RED_LIGHT           ""
+#define GREEN               ""
+#define GREEN_LIGHT         ""
+#define YELLOW              ""
+#define YELLOW_LIGHT        ""
+#define BLUE                ""
+#define BLUE_LIGHT          ""
+#define MAGENTA             ""
+#define MAGENTA_LIGHT       ""
+#define BLUE2               ""
+#define BLUE2_LIGHT         ""
+#define GRAY                ""
+#define GRAY_LIGHT          ""
+#define END_COLOR           ""
 #endif

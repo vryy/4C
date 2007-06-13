@@ -101,6 +101,7 @@ public:
     LineSubsonicInflow,
     LineSubsonicOutflow,
     FSICoupling,
+    SurfaceStress,
     FSIXFEM /*Ursula*/
   };
 
@@ -235,7 +236,7 @@ public:
 
   */
   virtual map<int,RefCountPtr<DRT::Element> >& Geometry() { return geometry_; }
-	
+
   //@}
 
   // @{ \name Construction
