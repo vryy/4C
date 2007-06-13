@@ -392,7 +392,7 @@ void Intersection::updateForPointWithinElement( Epetra_SerialDenseMatrix& A,
 	int numnodes = element->NumNode();
 	vector<int> actParams(1,0);
 	Epetra_SerialDenseMatrix deriv1(3, numnodes);
-	Epetra_SerialDenseVector funct(numNodes);
+	Epetra_SerialDenseVector funct(numnodes);
 	Epetra_SerialDenseMatrix emptyM;
 	Epetra_SerialDenseVector emptyV;
 	DRT::Discretization dummyDis("dummy discretization", null);
@@ -414,7 +414,7 @@ void Intersection::updateForPointWithinElement( Epetra_SerialDenseMatrix& A,
 	
 	
    for(int dim=0; dim<3; dim++)
-   	for(int i=0; i<numNodes; i++)
+   	for(int i=0; i<numnodes; i++)
 		{
 			b(dim) += (-1) * element->Nodes()[i]->X()[dim] * funct(i);
 		}
@@ -524,11 +524,11 @@ int Intersection::collectIntersectionPoints(	DRT::Element* surfaceElement,
 
 
 
-void computeNewStartingPoint(	DRT::Element* surfaceElement,
-										DRT::Element* lineElement,
-										Epetra_SerialDenseVector& E1,
-     									Epetra_SerialDenseVector& E2,
-     									std::set< Epetra_SerialDenseVector& >& intersectionPointSet)
+void Intersection::computeNewStartingPoint(	DRT::Element* surfaceElement,
+															DRT::Element* lineElement,
+															Epetra_SerialDenseVector& E1,
+     														Epetra_SerialDenseVector& E2,
+     														std::set< Epetra_SerialDenseVector& >& intersectionPointSet)
 {	
 	
 	bool intersected;
@@ -537,8 +537,8 @@ void computeNewStartingPoint(	DRT::Element* surfaceElement,
 	for(int i = 0; i<3; i++)
 		xsi[i] = ( E1[i] + E2[i] )/2;
 		
-	intersected = computeCurveSurfaceIntersection( emptyDis, surfaceElement, lineElement, xsi,
-             							 					  E1, E2, true, 3);
+	intersected = computeCurveSurfaceIntersection(surfaceElement, lineElement, xsi,
+             							 					  E1, E2);
              							 	
 	if(intersected == true)		
    {
@@ -548,6 +548,27 @@ void computeNewStartingPoint(	DRT::Element* surfaceElement,
    }          						
 }
 
+
+/*void Intersection::computeCDT()
+{
+	int dim;  	              
+	int numpoints;           
+	coordT *points;           
+	boolT ismalloc;           
+	char flags[]= "qhull Tv"; 
+	FILE *outfile= stdout;    	
+	                            
+	FILE *errfile= stderr;    
+	int exitcode;            
+	facetT *facet;	         
+	int curlong, totlong;	 
+   	
+	exitcode= qh_new_qhull (dim, numpoints, points, ismalloc,
+							flags, outfile, errfile);
+	
+	
+	tetgenio::initialize();   
+}*/
 
 
 #endif  // #ifdef TRILINOS_PACKAGE
