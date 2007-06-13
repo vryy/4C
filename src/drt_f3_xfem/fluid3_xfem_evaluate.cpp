@@ -1740,68 +1740,64 @@ void DRT::Elements::XFluid3::f3_getbodyforce(Epetra_SerialDenseMatrix& edeadng,
                                              ParameterList&            params
 )
 {
-  vector<DRT::Condition*> myneumcond;
+    vector<DRT::Condition*> myneumcond;
 
-  // check whether all nodes have a unique VolumeNeumann condition
-  int count=0;
-  for(int nn=0;nn<iel;nn++)
-  {
-    Nodes()[nn]->GetCondition("VolumeNeumann",myneumcond);
-
-    if (myneumcond.size()>1)
-    {
-      dserror("more than one VolumeNeumann cond on one node");
-    }
-    if (myneumcond.size()==1)
-    {
-      count++;
-    }
-  }
-
-  if (count == iel)
-  {
-    // find out whether we will use a time curve
-    bool usetime = true;
-    const double time = params.get("total time",-1.0);
-    if (time<0.0) usetime = false;
-
-    const vector<int>* curve  = myneumcond[0]->Get<vector<int> >("curve");
-    int curvenum = -1;
-
-    // get the factor for the timecurve
-    if (curve) curvenum = (*curve)[0];
-    double curvefac = 1.0;
-    if (curvenum>=0 && usetime)
-      curvefac = DRT::TimeCurveManager::Instance().Curve(curvenum).f(time);
-
-    // set this condition to the edeadng array
+    // check whether all nodes have a unique VolumeNeumann condition
+    int count = 0;
     for(int nn=0;nn<iel;nn++)
     {
-      Nodes()[nn]->GetCondition("VolumeNeumann",myneumcond);
-
-      // get values and switches from the condition
-      const vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
-      const vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
-
-      for(int dim=0;dim<3;dim++)
-      {
-        edeadng(dim,nn)=(*onoff)[dim]*(*val)[dim]*curvefac;
-      }
+        Nodes()[nn]->GetCondition("VolumeNeumann",myneumcond);
+        
+        dsassert(myneumcond.size()<2, "more than one VolumeNeumann cond on one node");
+        
+        if (myneumcond.size()==1)
+            count++;
     }
-  }
-  else
-  {
-    // we have no dead load
-    for(int nn=0;nn<iel;nn++)
+
+    if (count == iel)
     {
-      for(int dim=0;dim<3;dim++)
-      {
-        edeadng(dim,nn)=0.0;
-      }
-    }
-  }
+        // find out whether we will use a time curve
+        bool usetime = true;
+        const double time = params.get("total time",-1.0);
+        if (time<0.0) usetime = false;
 
-  return;
+        const vector<int>* curve  = myneumcond[0]->Get<vector<int> >("curve");
+        int curvenum = -1;
+
+        // get the factor for the timecurve
+        if (curve) curvenum = (*curve)[0];
+        double curvefac = 1.0;
+        if (curvenum>=0 && usetime)
+            curvefac = DRT::TimeCurveManager::Instance().Curve(curvenum).f(time);
+
+        // set this condition to the edeadng array
+        for(int nn=0;nn<iel;nn++)
+        {
+            Nodes()[nn]->GetCondition("VolumeNeumann",myneumcond);
+
+            // get values and switches from the condition
+            const vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
+            const vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
+
+            for(int dim=0;dim<3;dim++)
+            {
+                edeadng(dim,nn)=(*onoff)[dim]*(*val)[dim]*curvefac;
+            }
+        }
+    }
+    else
+    {
+        // we have no dead load
+        for(int nn=0;nn<iel;nn++)
+            {
+            for(int dim=0;dim<3;dim++)
+                {
+                edeadng(dim,nn)=0.0;
+            }
+        }
+    }
+
+    return;
 }
 
 
@@ -1810,9 +1806,9 @@ void DRT::Elements::XFluid3::f3_getbodyforce(Epetra_SerialDenseMatrix& edeadng,
  |  calculate global derivatives w.r.t. x,y,z at point r,s,t (private)genk05/02
  *----------------------------------------------------------------------*/
 void DRT::Elements::XFluid3::f3_gder(Epetra_SerialDenseMatrix& derxy,
-                    const Epetra_SerialDenseMatrix& deriv,
-                                    Epetra_SerialDenseMatrix& xjm,
-                    double& det,
+                                    const Epetra_SerialDenseMatrix& deriv,
+                                    const Epetra_SerialDenseMatrix& xjm,
+                                    const double& det,
                                     const int iel
                     )
 {
@@ -2871,11 +2867,11 @@ vector<double> DRT::Elements::XFluid3::f3_caltau(
     Epetra_SerialDenseMatrix&           deriv2,
     const Epetra_SerialDenseMatrix&           xyze,
     Epetra_SerialDenseMatrix&           xjm,
-    Epetra_SerialDenseMatrix&           vderxy,
-    vector<double>&                     pderxy,
-    Epetra_SerialDenseMatrix&           vderxy2,
+    //Epetra_SerialDenseMatrix&           vderxy,
+    //vector<double>&                     pderxy,
+    //Epetra_SerialDenseMatrix&           vderxy2,
     Epetra_SerialDenseMatrix&           derxy,
-    Epetra_SerialDenseMatrix&           derxy2,
+    //Epetra_SerialDenseMatrix&           derxy2,
     vector<double>&                         evelnp,
     vector<double>&                         edeadng,
     const DRT::Element::DiscretizationType    distype,
@@ -2885,8 +2881,8 @@ vector<double> DRT::Elements::XFluid3::f3_caltau(
     )
 {
     Epetra_SerialDenseMatrix    wa1(100,100);  // working matrix used as dummy
-    vector<double>              histvec(3); /* history data at integration point              */
-    vector<double>              velino(3); /* normed velocity at element centre */
+    vector<double>              histvec(3);    // history data at integration point
+    vector<double>              velino(3);     // normed velocity at element centre
     double                      det;
     INTEGRATION_POINTS_3D       intpoints;
     double                      timefac;

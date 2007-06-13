@@ -429,8 +429,8 @@ private:
   // calculate global derivatives w.r.t. x,y,z at point r,s,t are
     void f3_gder(Epetra_SerialDenseMatrix& derxy,
                  const Epetra_SerialDenseMatrix& deriv,
-                 Epetra_SerialDenseMatrix& xjm,
-                 double& det,
+                 const Epetra_SerialDenseMatrix& xjm,
+                 const double& det,
                  const int iel
          );
 
@@ -500,11 +500,11 @@ private:
     Epetra_SerialDenseMatrix&    deriv2,
     const Epetra_SerialDenseMatrix&    xyze,
     Epetra_SerialDenseMatrix&    xjm,
-    Epetra_SerialDenseMatrix&    vderxy,
-    vector<double>&              pderxy,
-    Epetra_SerialDenseMatrix&    vderxy2,
+    //Epetra_SerialDenseMatrix&    vderxy,
+    //vector<double>&              pderxy,
+    //Epetra_SerialDenseMatrix&    vderxy2,
     Epetra_SerialDenseMatrix&    derxy,
-    Epetra_SerialDenseMatrix&    derxy2,
+    //Epetra_SerialDenseMatrix&    derxy2,
     vector<double>&     evelnp,
     vector<double>&              edeadng,
     DRT::Element::DiscretizationType           distype,
