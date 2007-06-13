@@ -34,6 +34,7 @@ int DRT::Elements::XFluid3Line::Evaluate(	ParameterList& params,
                                     		Epetra_SerialDenseVector& elevec2,
                                     		Epetra_SerialDenseVector& elevec3)
 {
+    dserror("Neumann BC not ready for prime time");
 	DRT::Elements::XFluid3Line::ActionType act = XFluid3Line::none;
 	string action = params.get<string>("action","none");
 	if (action == "none") dserror("No action supplied");

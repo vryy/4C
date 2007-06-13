@@ -24,8 +24,8 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/drt_timecurve.H"
 
 
 
@@ -280,8 +280,6 @@ void DRT::Elements::XFluid3::f3_sys_mat(vector<int>&              lm,
     vector<double>              velino(3); /* normed velocity at element centre */
     double                      det, vol;
     INTEGRATION_POINTS_3D       intpoints;
-    double                      e1, e2, e3, wquad;
-    double                      fac=0.0;
     double                      mk=0.0;
     vector<double>              velint(3);
     double                      timefac;
@@ -308,10 +306,10 @@ void DRT::Elements::XFluid3::f3_sys_mat(vector<int>&              lm,
     bool is_stationary = params.get<bool>("using stationary formulation",false);
 
     /*---------------------- shape functions and derivs at element center --*/
-    e1    = intpoints.qxg[0][0];
-    e2    = intpoints.qxg[0][1];
-    e3    = intpoints.qxg[0][2];
-    wquad = intpoints.qwgt[0];
+    const double e1    = intpoints.qxg[0][0];
+    const double e2    = intpoints.qxg[0][1];
+    const double e3    = intpoints.qxg[0][2];
+    const double wquad = intpoints.qwgt[0];
     this->f3_shape_function(funct,deriv,wa1,e1,e2,e3,numnode,2); //wa1 as dummy for not wanted second derivatives
 
     // get element type constant for tau
@@ -340,7 +338,7 @@ void DRT::Elements::XFluid3::f3_sys_mat(vector<int>&              lm,
 
       /*------------------------------ get Jacobian matrix and determinant ---*/
       f3_jaco(xyze,deriv,xjm,&det,numnode);
-      vol=fac*fac*fac*det;
+      vol=wquad*det;
 
       /* get element length for tau_Mp/tau_C: volume-equival. diameter/sqrt(3)*/
       hk = pow((SIX*vol/PI),(1.0/3.0))/sqrt(3.0);
@@ -515,14 +513,14 @@ void DRT::Elements::XFluid3::f3_sys_mat(vector<int>&              lm,
      *----------------------------------------------------------------------*/
     for (int iquad=0;iquad<intpoints.nquad;iquad++)
     {
-      e1 = intpoints.qxg[iquad][0];
-      e2 = intpoints.qxg[iquad][1];
-      e3 = intpoints.qxg[iquad][2];
+      const double e1 = intpoints.qxg[iquad][0];
+      const double e2 = intpoints.qxg[iquad][1];
+      const double e3 = intpoints.qxg[iquad][2];
       f3_shape_function(funct,deriv,deriv2,e1,e2,e3,numnode,icode);
         
       // compute Jacobian matrix
       f3_jaco(xyze,deriv,xjm,&det,numnode);
-      fac = intpoints.qwgt[iquad]*det;
+      double fac = intpoints.qwgt[iquad]*det;
 
       // compute global derivates
       f3_gder(derxy,deriv,xjm,det,numnode);
@@ -643,7 +641,7 @@ void DRT::Elements::XFluid3::f3_sys_mat(vector<int>&              lm,
 
 
 
-
+  //dserror("blub");
   return;
 } // DRT::Elements::Fluid3::f3_sys_mat
 
@@ -656,11 +654,11 @@ void DRT::Elements::XFluid3::f3_integration_points(struct _INTEGRATION_POINTS_3D
                                                    const GaussRule gaussrule)
 {
   const double Q12  = 1.0/2.0;
-  const double Q14  = 1.0/FOUR;
-  const double Q16  = 1.0/SIX;
-  const double Q124 = 1.0/SIX/FOUR;
-  const double Q430 = FOUR/FIVE/SIX;
-  const double Q9120= NINE/FOUR/FIVE/SIX;
+  const double Q14  = 1.0/4.0;
+  const double Q16  = 1.0/6.0;
+  const double Q124 = 1.0/6.0/4.0;
+  const double Q430 = 4.0/5.0/6.0;
+  const double Q9120= 9.0/4.0/5.0/6.0;
 
   const double xi2 = 0.5773502691896;
   const double xi3 = 0.7745966692415;
