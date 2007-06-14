@@ -234,28 +234,28 @@ void DRT::Discretization::EvaluateDirichlet(ParameterList& params,
   // Do VolumeDirichlet first
   for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
   {
-    if (fool->first != (string)"Dirichlet") continue;
+    if (fool->first != "Dirichlet") continue;
     if (fool->second->Type() != DRT::Condition::VolumeDirichlet) continue;
     DoDirichletCondition(*(fool->second),*this,usetime,time,systemvector,toggle);
   }
   // Do SurfaceDirichlet
   for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
   {
-    if (fool->first != (string)"Dirichlet") continue;
+    if (fool->first != "Dirichlet") continue;
     if (fool->second->Type() != DRT::Condition::SurfaceDirichlet) continue;
     DoDirichletCondition(*(fool->second),*this,usetime,time,systemvector,toggle);
   }
   // Do LineDirichlet
   for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
   {
-    if (fool->first != (string)"Dirichlet") continue;
+    if (fool->first != "Dirichlet") continue;
     if (fool->second->Type() != DRT::Condition::LineDirichlet) continue;
     DoDirichletCondition(*(fool->second),*this,usetime,time,systemvector,toggle);
   }
   // Do PointDirichlet
   for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
   {
-    if (fool->first != (string)"Dirichlet") continue;
+    if (fool->first != "Dirichlet") continue;
     if (fool->second->Type() != DRT::Condition::PointDirichlet) continue;
     DoDirichletCondition(*(fool->second),*this,usetime,time,systemvector,toggle);
   }
