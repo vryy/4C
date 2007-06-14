@@ -748,7 +748,7 @@ void DRT::Elements::So_hex8::soh8_mat_sel(
     }
     break;
     default:
-      dserror("Ilegal typ of material for element solid3 hex8");
+      dserror("Illegal type of material for element solid3 hex8");
     break;
   }
 
