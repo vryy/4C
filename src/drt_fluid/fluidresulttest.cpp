@@ -15,7 +15,6 @@ Maintainer: Ulrich Kuettler
 
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
-#ifdef D_FLUID
 #ifdef RESULTTEST
 
 #include <string>
@@ -116,6 +115,5 @@ bool FluidResultTest::Match(RESULTDESCR* res)
 
 
 #endif
-#endif /* D_FLUID          */
 #endif /* TRILINOS_PACKAGE */
 #endif /* CCADISCRET       */
