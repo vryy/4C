@@ -26,22 +26,51 @@ Maintainer: Ulrich Kuettler
 #ifdef PARALLEL
 #include <mpi.h>
 #endif
+
 extern "C" /* stuff which is c and is accessed from c++ */
 {
 #include "../headers/standardtypes.h"
 }
 
+using namespace std;
+using namespace Teuchos;
+
 namespace DRT
 {
 
-/*----------------------------------------------------------------------*/
+
 /// Global problem instance that keeps the discretizations
 /*!
   The point of the Problem class is to store the discretizations in a
   structure that parallels the old ccarat field variables. (The fields
-  are needed never the less, the old input routines depend on them.)
+  are needed nevertheless, the old input routines depend on them.)
   So it is the responsibilty of the input functions to setup the
   ccarat fields and the Problem class in the same way.
+
+  In addition to the discretizations all stuff from the input file
+  that ends up in global variables in the old code naturally belongs
+  here. However, we port things on demand only.
+
+  For a start there is the vector of materials material_. During the
+  reading phase we add one material after the other using
+  AddMaterial(). These material structures are copied and stored here,
+  that is the Problem class takes the ownership of all dynamically
+  allocated memory.
+
+  However, all the code still accesses the material by means of the
+  global variable mat. So we have mat point to our internal vector
+  material_. This is called activating the materials and done by
+  ActivateMaterial(). Don't bother. It works automatically.
+
+  At this point it is crucially to understand that classes like
+  Problem where introduced to gradually get rid of the old global
+  variables. So the whole point of activating a material (and other
+  stuff if need arises) is simply the most non-intrusive modification
+  that allows to keep the materials at an appropiate place, that
+  allows to have more that one set of materials if desired, without
+  touching all the places where materials are actually used. The idea
+  is to provide a default behavior that mimics the global variable
+  approach but enable more advanced uses as well.
 
   This class behaves like a singleton, so there is always one instance
   available. But you can have more than one instance of Problem. In
@@ -58,7 +87,6 @@ namespace DRT
   \author u.kue
   \date 06/07
  */
-/*----------------------------------------------------------------------*/
 class Problem
 {
 public:

@@ -119,6 +119,10 @@ int DRT::Elements::Fluid2::Evaluate(ParameterList& params,
       // calculate element coefficient matrix and rhs
       f2_sys_mat(lm,myvelnp,myprenp,myvhist,mydispnp,mygridv,&elemat1,&elevec1,actmat,params);
 
+      // This is a very poor way to transport the density to the
+      // outside world. Is there a better one?
+      params.set("density", actmat->m.fluid->density);
+
 #if 0
 
 	for (int i=0;i<elevec1.size();++i)

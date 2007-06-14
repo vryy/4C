@@ -100,6 +100,9 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
         // calculate element coefficient matrix and rhs
         f3_sys_mat(lm,myvelnp,myprenp,myvhist,&elemat1,&elevec1,actmat,params);
 
+        // This is a very poor way to transport the density to the
+        // outside world. Is there a better one?
+        params.set("density", actmat->m.fluid->density);
 
         /* the following has to be checked again !!! */
         // use local variables instead of directly write into elemat1, elevec1.

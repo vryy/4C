@@ -97,8 +97,8 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
       DRT::Node* node = discret_->lRowNode(i);
       vector<int> dof = discret_->Dof(node);
 
-      int numdofs=discret_->Dof(node).size();
-      if(numdofs==numdim+1)
+      int numdofs = dof.size();
+      if (numdofs==numdim+1)
       {
         for (int j=0; j<numdofs-1; ++j)
         {
@@ -177,6 +177,8 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
 
   // toggle vector indicating which dofs have Dirichlet BCs
   dirichtoggle_ = LINALG::CreateVector(*dofrowmap,true);
+  // opposite of dirichtoggle vector, ie for each component
+  invtoggle_    = LINALG::CreateVector(*dofrowmap,false);
 
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
   zeros_        = LINALG::CreateVector(*dofrowmap,true);
@@ -548,6 +550,10 @@ void FluidImplicitTimeInt::PrepareTimeStep()
     discret_->EvaluateNeumann(eleparams,*neumann_loads_);
     discret_->ClearState();
   }
+
+  //----------------------- compute an inverse of the dirichtoggle vector
+  invtoggle_->PutScalar(1.0);
+  invtoggle_->Update(-1.0,*dirichtoggle_,1.0);
 }
 
 
@@ -569,11 +575,19 @@ void FluidImplicitTimeInt::NonlinearSolve(
 
   const Epetra_Map* dofrowmap       = discret_->DofRowMap();
 
+  // ---------------------------------------------- nonlinear iteration
+  // maximum number of nonlinear iteration steps
+  int     itemax    =params_.get<int>   ("max nonlin iter steps");
+
+  // ------------------------------- stop nonlinear iteration when both
+  //                                 increment-norms are below this bound
+  double  ittol     =params_.get<double>("tolerance for nonlin iter");
+
   int               itnum         = 0;
   bool              stopnonliniter = false;
 
-  double            dtsolve;
-  double            dtele  ;
+  double            dtsolve = 0;
+  double            dtele   = 0;
   double            tcpu   ;
 
   if (myrank_ == 0)
@@ -585,6 +599,8 @@ void FluidImplicitTimeInt::NonlinearSolve(
   while (stopnonliniter==false)
   {
     itnum++;
+
+    double density = 1;
 
     // -------------------------------------------------------------------
     // call elements to calculate system matrix
@@ -629,6 +645,8 @@ void FluidImplicitTimeInt::NonlinearSolve(
       discret_->Evaluate(eleparams,sysmat_,null,residual_,null,null);
       discret_->ClearState();
 
+      density = eleparams.get("density", 0.0);
+
       // finalize the system matrix
       LINALG::Complete(*sysmat_);
       maxentriesperrow_ = sysmat_->MaxNumEntries();
@@ -639,14 +657,70 @@ void FluidImplicitTimeInt::NonlinearSolve(
     }
 
     // How to extract the density from the fluid material?
-    double rho = 1;
-    trueresidual_->Update(rho/dta_/theta_,*residual_,0.0);
+    trueresidual_->Update(density/dta_/theta_,*residual_,0.0);
+
+    // blank residual DOFs with are on Dirichlet BC
+    // We can do this because the values at the dirichlet positions
+    // are not used anyway.
+    // We could avoid this though, if velrowmap_ and prerowmap_ would
+    // not include the dirichlet values as well. But it is expensive
+    // to avoid that.
+    {
+      Epetra_Vector residual(*residual_);
+      residual_->Multiply(1.0,*invtoggle_,residual,0.0);
+    }
+
+    double vresnorm;
+    double presnorm;
+
+    {
+      Epetra_Vector onlyvel(*velrowmap_);
+      LINALG::Export(*residual_,onlyvel);
+      onlyvel.Norm2(&vresnorm);
+    }
+
+    {
+      Epetra_Vector onlypre(*prerowmap_);
+      LINALG::Export(*residual_,onlypre);
+      onlypre.Norm2(&presnorm);
+    }
+
+    if (myrank_ == 0)
+    {
+      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |",
+             itnum,itemax,ittol,vresnorm,presnorm);
+      printf(" (te=%10.3E,ts=%10.3E)\n",dtele,dtsolve);
+    }
+
+    // this is the convergence check
+    if (vresnorm <= ittol and presnorm <= ittol)
+    {
+      stopnonliniter=true;
+      if (myrank_ == 0)
+      {
+        printf("+------------+-------------------+--------------+--------------+\n");
+      }
+      break;
+    }
+
+    // warn if itemax is reached without convergence, but proceed to
+    // next timestep...
+    if (itnum == itemax and (vresnorm > ittol or presnorm > ittol))
+    {
+      stopnonliniter=true;
+      if (myrank_ == 0)
+      {
+        printf("+---------------------------------------------------------------+\n");
+        printf("|            >>>>>> not converged in itemax steps!              |\n");
+        printf("+---------------------------------------------------------------+\n");
+      }
+      break;
+    }
 
     //--------- Apply dirichlet boundary conditions to system of equations
     //          residual discplacements are supposed to be zero at
     //          boundary conditions
     incvel_->PutScalar(0.0);
-    zeros_->PutScalar(0.0);
     {
       // start time measurement for application of dirichlet conditions
       tm4_ref_ = rcp(new TimeMonitor(*timeapplydirich_));
@@ -665,12 +739,7 @@ void FluidImplicitTimeInt::NonlinearSolve(
       // get cpu time
       tcpu=ds_cputime();
 
-      bool initsolver = false;
-      if (itnum==1) // init solver in first iteration only
-      {
-        initsolver = true;
-      }
-      solver_.Solve(sysmat_,incvel_,residual_,true,initsolver);
+      solver_.Solve(sysmat_,incvel_,residual_,true,itnum==1);
 
       // end time measurement for application of dirichlet conditions
       tm5_ref_=null;
@@ -680,7 +749,7 @@ void FluidImplicitTimeInt::NonlinearSolve(
     velnp_->Update(1.0,*incvel_,1.0);
 
     //------------------------------------------------- check convergence
-    this->NonlinearConvCheck(stopnonliniter,itnum,dtele,dtsolve);
+    //this->NonlinearConvCheck(stopnonliniter,itnum,dtele,dtsolve);
   }
 
   // end time measurement for nonlinear iteration

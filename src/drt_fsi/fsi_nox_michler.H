@@ -9,7 +9,7 @@
 
 //! Michler
 /*!
-  This
+  The FSI coupling algorithm as suggested by Michler et al.
 
  */
 class Michler : public NOX::Direction::Generic

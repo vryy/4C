@@ -83,7 +83,7 @@ GAMMA        1.00
 NONLINITER   fixed_point_like
 ITEMAX       10
 CONVCHECK    L_2_norm
-CONVTOL      1.0E-6
+CONVTOL      1.0E-9
 STEADYCHECK  L_2_norm
 STEADYSTEP   10
 STEADYTOL    1.0E-6

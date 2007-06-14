@@ -60,10 +60,14 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 extern struct _FILES  allfiles;
 
 
+/*----------------------------------------------------------------------*/
 // the static instance
+/*----------------------------------------------------------------------*/
 DRT::TimeCurveManager DRT::TimeCurveManager::instance_;
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DRT::TimeCurveManager::ReadInput()
 {
   curves_.clear();
@@ -208,6 +212,8 @@ void DRT::TimeCurveManager::ReadInput()
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 DRT::PolygonalTimeSlice::PolygonalTimeSlice(double begin,
                                             double end,
                                             double vbegin,
@@ -219,6 +225,8 @@ DRT::PolygonalTimeSlice::PolygonalTimeSlice(double begin,
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 double DRT::PolygonalTimeSlice::f(double t)
 {
   dsassert(contains(t), "wrong time slice called");
@@ -226,6 +234,8 @@ double DRT::PolygonalTimeSlice::f(double t)
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 DRT::ExplicitTimeSlice::ExplicitTimeSlice(int numex, double c1, double c2)
   : TimeSlice(0.,1e100),
     numex_(numex),
@@ -235,6 +245,8 @@ DRT::ExplicitTimeSlice::ExplicitTimeSlice(int numex, double c1, double c2)
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 double DRT::ExplicitTimeSlice::f(double T)
 {
   double fac;
@@ -332,6 +344,8 @@ double DRT::ExplicitTimeSlice::f(double T)
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 DRT::LungTimeSlice::LungTimeSlice(double frequ, double ppeep, double phase)
   : TimeSlice(0.,1e100),
     frequ_(frequ),
@@ -343,6 +357,8 @@ DRT::LungTimeSlice::LungTimeSlice(double frequ, double ppeep, double phase)
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 double DRT::LungTimeSlice::f(double t)
 {
   if (t <= phase_)
@@ -356,6 +372,8 @@ double DRT::LungTimeSlice::f(double t)
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 DRT::ExprTimeSlice::ExprTimeSlice(double begin, double end, char* buf)
   : TimeSlice(begin,end),
     expr_(pss_parse(buf))
@@ -363,12 +381,16 @@ DRT::ExprTimeSlice::ExprTimeSlice(double begin, double end, char* buf)
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 DRT::ExprTimeSlice::~ExprTimeSlice()
 {
   pss_parse_cleanup(expr_);
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 double DRT::ExprTimeSlice::f(double t)
 {
   dsassert(contains(t), "wrong time slice called");
@@ -376,6 +398,8 @@ double DRT::ExprTimeSlice::f(double t)
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 double DRT::TimeCurve::f(double t)
 {
   if (slices_.size()==0)
@@ -403,6 +427,8 @@ double DRT::TimeCurve::f(double t)
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DRT::TimeCurve::AddSlice(Teuchos::RefCountPtr<TimeSlice> slice)
 {
   // Do we need more error checking here?
@@ -410,6 +436,8 @@ void DRT::TimeCurve::AddSlice(Teuchos::RefCountPtr<TimeSlice> slice)
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DRT::PolygonalTimeSlice::Print(std::ostream& out) const
 {
   out << "    PolygonalTimeSlice(begin=" << begin()
@@ -420,6 +448,8 @@ void DRT::PolygonalTimeSlice::Print(std::ostream& out) const
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DRT::ExplicitTimeSlice::Print(std::ostream& out) const
 {
   out << "    ExplicitTimeSlice(numex=" << numex_
@@ -429,6 +459,8 @@ void DRT::ExplicitTimeSlice::Print(std::ostream& out) const
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DRT::LungTimeSlice::Print(std::ostream& out) const
 {
   out << "    LungTimeSlice(frequ=" << frequ_
@@ -438,6 +470,8 @@ void DRT::LungTimeSlice::Print(std::ostream& out) const
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DRT::ExprTimeSlice::Print(std::ostream& out) const
 {
   out << "    ExprTimeSlice(begin=" << begin()
@@ -446,6 +480,8 @@ void DRT::ExprTimeSlice::Print(std::ostream& out) const
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 std::ostream& DRT::operator<<(std::ostream& out, const DRT::TimeSlice& slice)
 {
   slice.Print(out);
@@ -453,6 +489,8 @@ std::ostream& DRT::operator<<(std::ostream& out, const DRT::TimeSlice& slice)
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 std::ostream& DRT::operator<<(std::ostream& out, const DRT::TimeCurve& curve)
 {
   out << "  Time Curve:\n";
@@ -464,6 +502,8 @@ std::ostream& DRT::operator<<(std::ostream& out, const DRT::TimeCurve& curve)
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 std::ostream& DRT::operator<<(std::ostream& out, const DRT::TimeCurveManager& manager)
 {
   out << "Time Curve Manager:\n";

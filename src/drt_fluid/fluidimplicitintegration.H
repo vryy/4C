@@ -206,30 +206,35 @@ protected:
   double dtp_;
   double theta_;
 
-  // system matrix --- stiffness and mass are assembled in one matrix!
+  /// system matrix --- stiffness and mass are assembled in one matrix!
   RefCountPtr<Epetra_CrsMatrix> sysmat_;
 
-  // toggle vector indicating which dofs have Dirichlet BCs
+  /// toggle vector indicating which dofs have Dirichlet BCs
   RefCountPtr<Epetra_Vector>    dirichtoggle_;
 
-  // a vector of zeros to be used to enforce zero dirichlet boundary conditions
+  RefCountPtr<Epetra_Vector>    invtoggle_;
+
+  /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
   RefCountPtr<Epetra_Vector>    zeros_;
 
-  // the vector containing body and surface forces
+  /// the vector containing body and surface forces
   RefCountPtr<Epetra_Vector>    neumann_loads_;
 
-  // The residual vector --- more or less the rhs for the incremental
-  // formulation!!!
+  /// The residual vector --- more or less the rhs for the incremental
+  /// formulation!!!
   RefCountPtr<Epetra_Vector>    residual_;
+
+  /// true (rescaled) residual vector without zeros at dirichlet positions
   RefCountPtr<Epetra_Vector>    trueresidual_;
 
-  // Nonlinear iteration increment vector
+  /// Nonlinear iteration increment vector
   RefCountPtr<Epetra_Vector>    incvel_;
 
-  // accelerations at time n and n-1
+  /// accelerations at time n and n-1
   RefCountPtr<Epetra_Vector>    accn_;
   RefCountPtr<Epetra_Vector>    accnm_;
-  // velocities and pressures at time n+1, n and n-1
+
+  /// velocities and pressures at time n+1, n and n-1
   RefCountPtr<Epetra_Vector>    velnp_;
   RefCountPtr<Epetra_Vector>    veln_;
   RefCountPtr<Epetra_Vector>    velnm_;

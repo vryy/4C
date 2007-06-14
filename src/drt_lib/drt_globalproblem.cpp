@@ -1,3 +1,17 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file drt_globalproblem.cpp
+
+\brief global list of problems
+
+<pre>
+Maintainer: Ulrich Kuettler
+            kuettler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15238
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
 
@@ -12,10 +26,14 @@
 
 extern struct _MATERIAL *mat;
 
+/*----------------------------------------------------------------------*/
 // the instances
+/*----------------------------------------------------------------------*/
 vector<RefCountPtr<DRT::Problem> > DRT::Problem::instances_;
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 RefCountPtr<DRT::Problem> DRT::Problem::Instance(int num)
 {
   if (num > static_cast<int>(instances_.size())-1)
@@ -27,12 +45,16 @@ RefCountPtr<DRT::Problem> DRT::Problem::Instance(int num)
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 RefCountPtr<DRT::Discretization> DRT::Problem::Dis(int fieldnum, int disnum) const
 {
   return discretizations_[fieldnum][disnum];
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DRT::Problem::AddDis(int fieldnum, RefCountPtr<Discretization> dis)
 {
   if (fieldnum > static_cast<int>(discretizations_.size())-1)
@@ -42,6 +64,9 @@ void DRT::Problem::AddDis(int fieldnum, RefCountPtr<Discretization> dis)
   discretizations_[fieldnum].push_back(dis);
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DRT::Problem::AddMaterial(const _MATERIAL& m)
 {
   if (m.m.fluid==NULL)
@@ -51,6 +76,8 @@ void DRT::Problem::AddMaterial(const _MATERIAL& m)
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DRT::Problem::SetDis(int fieldnum, int disnum, RefCountPtr<Discretization> dis)
 {
   if (fieldnum > static_cast<int>(discretizations_.size())-1)
@@ -65,6 +92,8 @@ void DRT::Problem::SetDis(int fieldnum, int disnum, RefCountPtr<Discretization> 
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DRT::Problem::ActivateMaterial()
 {
   mat = &material_[0];
