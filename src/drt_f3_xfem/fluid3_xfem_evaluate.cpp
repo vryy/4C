@@ -50,46 +50,47 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
                                     Epetra_SerialDenseVector& elevec2,
                                     Epetra_SerialDenseVector& elevec3)
 {
-  DRT::Elements::XFluid3::ActionType act = XFluid3::none;
+    DRT::Elements::XFluid3::ActionType act = XFluid3::none;
 
-  // get the action required
-  string action = params.get<string>("action","none");
-  if (action == "none") dserror("No action supplied");
-  else if (action == "calc_fluid_systemmat_and_residual")      
-    act = XFluid3::calc_fluid_systemmat_and_residual;
-  else if (action == "calc_fluid_beltrami_error")      
-    act = XFluid3::calc_fluid_beltrami_error;
-  else if (action == "calc_ShapefunctDeriv1Deriv2")
-    act = XFluid3::calc_ShapefunctDeriv1Deriv2;
-  else dserror("Unknown type of action for Fluid3");
+    // get the action required
+    string action = params.get<string>("action","none");
+    if (action == "none") dserror("No action supplied");
+    else if (action == "calc_fluid_systemmat_and_residual")      
+        act = XFluid3::calc_fluid_systemmat_and_residual;
+    else if (action == "calc_fluid_beltrami_error")      
+        act = XFluid3::calc_fluid_beltrami_error;
+    else if (action == "calc_ShapefunctDeriv1Deriv2")
+        act = XFluid3::calc_ShapefunctDeriv1Deriv2;
+    else 
+        dserror("Unknown type of action for Fluid3");
 
-  // get the material
-  MATERIAL* actmat = &(mat[material_-1]);
+    // get the material
+    MATERIAL* actmat = &(mat[material_-1]);
 
   	switch(act)
   	{
    	case calc_fluid_systemmat_and_residual:
-      {
-        	// need current velocity and history vector
-        	RefCountPtr<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (trial)");
-        	RefCountPtr<const Epetra_Vector> hist  = discretization.GetState("old solution data for rhs");
-        	if (vel_pre_np==null || hist==null) dserror("Cannot get state vectors 'velnp' and/or 'hist'");
+    {
+        // need current velocity and history vector
+        RefCountPtr<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (trial)");
+        RefCountPtr<const Epetra_Vector> hist  = discretization.GetState("old solution data for rhs");
+        if (vel_pre_np==null || hist==null) dserror("Cannot get state vectors 'velnp' and/or 'hist'");
       
-        	// extract local values from the global vectors
-        	vector<double> my_vel_pre_np(lm.size());
-        	DRT::Utils::ExtractMyValues(*vel_pre_np,my_vel_pre_np,lm);
-        	vector<double> myhist(lm.size());
-        	DRT::Utils::ExtractMyValues(*hist,myhist,lm);
+        // extract local values from the global vectors
+        vector<double> my_vel_pre_np(lm.size());
+        DRT::Utils::ExtractMyValues(*vel_pre_np,my_vel_pre_np,lm);
+        vector<double> myhist(lm.size());
+        DRT::Utils::ExtractMyValues(*hist,myhist,lm);
 
-        	// split "my_vel_pre_np" into velocity part "myvelnp" and pressure part "myprenp"
-        	// Additionally only the velocity components of myhist are important!
-        	int numnode = NumNode();
-        	vector<double> myprenp(numnode);
-        	vector<double> myvelnp(3*numnode);
-        	vector<double> myvhist(3*numnode);
+        // split "my_vel_pre_np" into velocity part "myvelnp" and pressure part "myprenp"
+        // Additionally only the velocity components of myhist are important!
+        int numnode = NumNode();
+        vector<double> myprenp(numnode);
+        vector<double> myvelnp(3*numnode);
+        vector<double> myvhist(3*numnode);
       
-        	for (int i=0;i<numnode;++i)
-        	{
+        for (int i=0;i<numnode;++i)
+        {
           	myvelnp[0+(i*3)]=my_vel_pre_np[0+(i*4)];
           	myvelnp[1+(i*3)]=my_vel_pre_np[1+(i*4)];
           	myvelnp[2+(i*3)]=my_vel_pre_np[2+(i*4)];
@@ -99,24 +100,24 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
           	myvhist[0+(i*3)]=myhist[0+(i*4)];
           	myvhist[1+(i*3)]=myhist[1+(i*4)];
           	myvhist[2+(i*3)]=myhist[2+(i*4)];
-        	}
+        }
 
-        	// calculate element coefficient matrix and rhs       
-        	f3_sys_mat(lm,myvelnp,myprenp,myvhist,&elemat1,&elevec1,actmat,params);
+        // calculate element coefficient matrix and rhs       
+        f3_sys_mat(lm,myvelnp,myprenp,myvhist,&elemat1,&elevec1,actmat,params);
 
 
-        	/* the following has to be checked again !!! */
-        	// use local variables instead of directly write into elemat1, elevec1.
-        	// this speeds up computations by 3%-5%
-        	//Epetra_SerialDenseVector  eforce(4*numnode);          // rhs vector                       
-        	//Epetra_SerialDenseMatrix  estif(4*numnode,4*numnode);     // element coefficient matrix
+        /* the following has to be checked again !!! */
+        // use local variables instead of directly write into elemat1, elevec1.
+        // this speeds up computations by 3%-5%
+        //Epetra_SerialDenseVector  eforce(4*numnode);          // rhs vector                       
+        //Epetra_SerialDenseMatrix  estif(4*numnode,4*numnode);     // element coefficient matrix
       
-        	// calculate element coefficient matrix and rhs       
-        	//f3_sys_mat(lm,myvelnp,myprenp,myvhist,&estif,&eforce,actmat,params);  
+        // calculate element coefficient matrix and rhs       
+        //f3_sys_mat(lm,myvelnp,myprenp,myvhist,&estif,&eforce,actmat,params);  
       
-        	// copy values
-        	//elemat1 = estif;
-        	//elevec1 = eforce;
+        // copy values
+        //elemat1 = estif;
+        //elevec1 = eforce;
   
    
 // outputs for debugging
@@ -155,17 +156,17 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
 #endif
         } // end of debug part
 */
-			break;
-      }
-      case calc_fluid_beltrami_error:
-      {
-        	// add error only for elements which are not ghosted
-        	if(this->Owner() == discretization.Comm().MyPID())
-        	{
+	   break;
+    }
+    case calc_fluid_beltrami_error:
+    {
+        // add error only for elements which are not ghosted
+        if(this->Owner() == discretization.Comm().MyPID())
+        {
         
           	// need current velocity and history vector
           	RefCountPtr<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (converged)");
-          	if (vel_pre_np==null) dserror("Cannot get state vectors 'velnp'");
+            dsassert(vel_pre_np!=null, "Cannot get state vectors 'velnp'");
       
           	// extract local values from the global vectors
           	vector<double> my_vel_pre_np(lm.size());
@@ -187,21 +188,21 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
 
           	// integrate beltrami error
           	f3_int_beltrami_err(myvelnp,myprenp,actmat,params);
-        	}
-        	break;
-      }
-      case calc_ShapefunctDeriv1Deriv2:
-      {
+        }
+        break;
+    }
+    case calc_ShapefunctDeriv1Deriv2:
+    {
       	// functions, deriv1, deriv2, r, s, t, iel, icode
         const DiscretizationType distype = this->Shape();
       	shape_function_3D(elevec1,elemat1,elemat2,elevec2[0],elevec2[1],elevec2[2],distype,lm[1]);
       	break;
-      }
-      default:
-     		dserror("Unknown type of action for Fluid3");
-  } // end of switch(act)
+    }
+    default:
+        dserror("Unknown type of action for Fluid3");
+    } // end of switch(act)
 
-  return 0;
+    return 0;
 } // end of DRT::Elements::Fluid3::Evaluate
 
 
@@ -235,151 +236,150 @@ void DRT::Elements::XFluid3::f3_sys_mat(vector<int>&              lm,
                                         ParameterList&            params
   )
 {
+    const int numnode = this->NumNode();
+    const DiscretizationType distype = this->Shape();
 
-  const int numnode = this->NumNode();
-  const DiscretizationType distype = this->Shape();
-
-  if(!is_ale_)
-  {
-    /*---------------------------------------------------- set element data */
-
-    Epetra_SerialDenseMatrix xyze(3,numnode);
-
-    // get node coordinates
-    for(int i=0;i<numnode;i++)
+    if(!is_ale_)
     {
-      xyze(0,i)=Nodes()[i]->X()[0];
-      xyze(1,i)=Nodes()[i]->X()[1];
-      xyze(2,i)=Nodes()[i]->X()[2];
-    }
+        /*---------------------------------------------------- set element data */
 
-    // dead load in element nodes
-    Epetra_SerialDenseMatrix bodyforce(3,numnode);
-    this->f3_getbodyforce(bodyforce,numnode,params);
+        Epetra_SerialDenseMatrix xyze(3,numnode);
 
-    /*---------------------------------------------- get viscosity ---*/
-    // check here, if we really have a fluid !!
-    if(material->mattyp != m_fluid) dserror("Material law is not of type m_fluid.");
-    const double  visc = material->m.fluid->viscosity;
-
-    /*--------------------------------------------- stab-parameter ---*/
-    // USFEM stabilization is default. No switch here at the moment.
-
-    /*----------------------------------------- declaration of variables ---*/
-    Epetra_SerialDenseVector    funct(numnode);
-    Epetra_SerialDenseMatrix    deriv(3,numnode);
-    Epetra_SerialDenseMatrix    deriv2(6,numnode);
-    Epetra_SerialDenseMatrix    xjm(3,3);
-    Epetra_SerialDenseMatrix    vderxy(3,3);
-    vector<double>              pderxy(3);
-    Epetra_SerialDenseMatrix    vderxy2(3,6);
-    Epetra_SerialDenseMatrix    derxy(3,numnode);
-    Epetra_SerialDenseMatrix    derxy2(6,numnode);
-    vector<double>              edeadng(3);
-    Epetra_SerialDenseMatrix    wa1(100,100);  // working matrix used as dummy
-    vector<double>              histvec(3); /* history data at integration point              */
-    vector<double>              velino(3); /* normed velocity at element centre */
-    double                      det;
-    INTEGRATION_POINTS_3D       intpoints;
-    vector<double>              velint(3);
-    double                      timefac;
-    //vector<double>              tau(3); // stab parameters
-
-    timefac=params.get<double>("time constant for integration",0.0);
-
-    // get control parameter
-    bool is_stationary = params.get<bool>("using stationary formulation",false);
-    
-
-    const vector<double> tau = f3_caltau(funct,
-    deriv,
-    deriv2,
-    xyze,
-    xjm,
-    derxy,
-    evelnp,
-    edeadng,
-    distype,
-    visc,
-    numnode,
-    timefac,
-    is_stationary
-    );
-    
-    
-    // integration loop for one Fluid3 element using USFEM
-    int       ihoel=0;     /* flag for higher order elements                 */
-    int       icode=2;     /* flag for eveluation of shape functions         */
-    //double    fac;         /* total integration factor */
-    double    press;
-    vector<double>    gridvelint(3); /* grid velocity                       */
-    vector<double>    gradp(3);      /* pressure gradient at integration point         */
-
-
-    switch (distype)
-    {
-        case hex8:
-          icode   = 3;
-          ihoel   = 1;
-          break;
-        case hex20:
-          icode   = 3;
-          ihoel   = 1;
-          break;
-        case hex27:
-          icode = 3;
-          ihoel = 1;
-          break;
-        case tet10:
-          icode = 3;
-          ihoel = 1;
-          break;
-        case tet4:
-          icode = 3;
-          ihoel = 0;
-          break;
-        default:
-          dserror("typ unknown!");
-    }
-    
-    integration_points_3d(intpoints, gaussrule_);
-    /*----------------------------------------------------------------------*
-     |               start loop over integration points                     |
-     *----------------------------------------------------------------------*/
-    for (int iquad=0;iquad<intpoints.nquad;iquad++)
-    {
-      const double e1 = intpoints.qxg[iquad][0];
-      const double e2 = intpoints.qxg[iquad][1];
-      const double e3 = intpoints.qxg[iquad][2];
-      shape_function_3D(funct,deriv,deriv2,e1,e2,e3,distype,icode);
-        
-      // compute Jacobian matrix
-      f3_jaco(xyze,deriv,xjm,&det,numnode);
-      double fac = intpoints.qwgt[iquad]*det;
-
-      // compute global derivates
-      f3_gder(derxy,deriv,xjm,det,numnode);
-
-      // compute second global derivative
-      if (ihoel!=0)
-      {
-        f3_gder2(xyze,xjm,derxy,derxy2,deriv2,numnode);
-
-        // calculate 2nd velocity derivatives at integration point
-        // former f3_vder2(vderxy2,derxy2,evelnp,iel);
-        for (int i=0;i<6;i++)
+        // get node coordinates
+        for(int i=0;i<numnode;i++)
         {
-          vderxy2(0,i)=0.0;
-          vderxy2(1,i)=0.0;
-          vderxy2(2,i)=0.0;
-          for (int j=0;j<numnode;j++)
-          {
-            vderxy2(0,i) += derxy2(i,j)*evelnp[0+(3*j)];
-            vderxy2(1,i) += derxy2(i,j)*evelnp[1+(3*j)];
-            vderxy2(2,i) += derxy2(i,j)*evelnp[2+(3*j)];
-          } /* end of loop over j */
-        } /* end of loop over i */
-      }
+            xyze(0,i)=Nodes()[i]->X()[0];
+            xyze(1,i)=Nodes()[i]->X()[1];
+            xyze(2,i)=Nodes()[i]->X()[2];
+        }
+
+        // dead load in element nodes
+        Epetra_SerialDenseMatrix bodyforce(3,numnode);
+        this->f3_getbodyforce(bodyforce,numnode,params);
+
+        /*---------------------------------------------- get viscosity ---*/
+        // check here, if we really have a fluid !!
+        if(material->mattyp != m_fluid) dserror("Material law is not of type m_fluid.");
+        const double  visc = material->m.fluid->viscosity;
+
+        /*--------------------------------------------- stab-parameter ---*/
+        // USFEM stabilization is default. No switch here at the moment.
+
+        /*----------------------------------------- declaration of variables ---*/
+        Epetra_SerialDenseVector    funct(numnode);
+        Epetra_SerialDenseMatrix    deriv(3,numnode);
+        Epetra_SerialDenseMatrix    deriv2(6,numnode);
+        Epetra_SerialDenseMatrix    xjm(3,3);
+        Epetra_SerialDenseMatrix    vderxy(3,3);
+        vector<double>              pderxy(3);
+        Epetra_SerialDenseMatrix    vderxy2(3,6);
+        Epetra_SerialDenseMatrix    derxy(3,numnode);
+        Epetra_SerialDenseMatrix    derxy2(6,numnode);
+        vector<double>              edeadng(3);
+        Epetra_SerialDenseMatrix    wa1(100,100);  // working matrix used as dummy
+        vector<double>              histvec(3); /* history data at integration point              */
+        vector<double>              velino(3); /* normed velocity at element centre */
+        double                      det;
+        INTEGRATION_POINTS_3D       intpoints;
+        vector<double>              velint(3);
+        double                      timefac;
+        //vector<double>              tau(3); // stab parameters
+
+        timefac=params.get<double>("time constant for integration",0.0);
+    
+        // get control parameter
+        bool is_stationary = params.get<bool>("using stationary formulation",false);
+        
+    
+        const vector<double> tau = f3_caltau(funct,
+        deriv,
+        deriv2,
+        xyze,
+        xjm,
+        derxy,
+        evelnp,
+        edeadng,
+        distype,
+        visc,
+        numnode,
+        timefac,
+        is_stationary
+        );
+    
+    
+        // integration loop for one Fluid3 element using USFEM
+        int       ihoel=0;     /* flag for higher order elements                 */
+        int       icode=2;     /* flag for eveluation of shape functions         */
+        //double    fac;         /* total integration factor */
+        double    press;
+        vector<double>    gridvelint(3); /* grid velocity                       */
+        vector<double>    gradp(3);      /* pressure gradient at integration point         */
+
+
+        switch (distype)
+        {
+        case hex8:
+            icode   = 3;
+            ihoel   = 1;
+            break;
+        case hex20:
+            icode   = 3;
+            ihoel   = 1;
+            break;
+        case hex27:
+            icode = 3;
+            ihoel = 1;
+            break;
+        case tet10:
+            icode = 3;
+            ihoel = 1;
+            break;
+        case tet4:
+            icode = 3;
+            ihoel = 0;
+            break;
+        default:
+            dserror("typ unknown!");
+        }
+    
+        integration_points_3d(intpoints, gaussrule_);
+        /*----------------------------------------------------------------------*
+        |               start loop over integration points                     |
+        *----------------------------------------------------------------------*/
+        for (int iquad=0;iquad<intpoints.nquad;iquad++)
+        {
+            const double e1 = intpoints.qxg[iquad][0];
+            const double e2 = intpoints.qxg[iquad][1];
+            const double e3 = intpoints.qxg[iquad][2];
+            shape_function_3D(funct,deriv,deriv2,e1,e2,e3,distype,icode);
+        
+            // compute Jacobian matrix
+            f3_jaco(xyze,deriv,xjm,&det,numnode);
+            double fac = intpoints.qwgt[iquad]*det;
+
+            // compute global derivates
+            f3_gder(derxy,deriv,xjm,det,numnode);
+
+            // compute second global derivative
+            if (ihoel!=0)
+            {
+                f3_gder2(xyze,xjm,derxy,derxy2,deriv2,numnode);
+
+                // calculate 2nd velocity derivatives at integration point
+                // former f3_vder2(vderxy2,derxy2,evelnp,iel);
+                for (int i=0;i<6;i++)
+                {
+                    vderxy2(0,i)=0.0;
+                    vderxy2(1,i)=0.0;
+                    vderxy2(2,i)=0.0;
+                    for (int j=0;j<numnode;j++)
+                    {
+                        vderxy2(0,i) += derxy2(i,j)*evelnp[0+(3*j)];
+                        vderxy2(1,i) += derxy2(i,j)*evelnp[1+(3*j)];
+                        vderxy2(2,i) += derxy2(i,j)*evelnp[2+(3*j)];
+                    }
+                }
+            }
 
       // get velocities (n+g,i) at integration point
       // expression for f3_veci(velint,funct,evelnp,iel);
