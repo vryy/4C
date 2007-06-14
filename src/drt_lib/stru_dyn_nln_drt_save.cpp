@@ -23,6 +23,7 @@ Maintainer: Michael Gee
 
 #include "stru_dyn_nln_drt.H"
 #include "../io/io_drt.H"
+#include "drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*
   |                                                       m.gee 06/01    |
@@ -81,12 +82,9 @@ void dyn_nlnstructural_drt()
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  RefCountPtr<DRT::Discretization> actdis = null;
-  {
-    vector<RefCountPtr<DRT::Discretization> >* fool =
-              (vector<RefCountPtr<DRT::Discretization> >*)field[0].ccadis;
-    actdis = (*fool)[0];
-  }
+  RefCountPtr<DRT::Discretization> actdis = 
+    DRT::Problem::Instance()->Dis(genprob.numsf,0);
+
   // set degrees of freedom in the discretization
   if (!actdis->Filled()) actdis->FillComplete();
 
@@ -277,7 +275,7 @@ void dyn_nlnstructural_drt()
     actdis->SetState("displacement",sol0);
     // predicted rhs
     rhs2->PutScalar(0.0);
-    actdis->EvaluateNeumann(params,*rhs2);
+    actdis->EvaluateNeumann(params,*rhs2); cout << *rhs2;
     actdis->ClearState();
   }
 
