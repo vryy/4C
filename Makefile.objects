@@ -194,7 +194,9 @@ OBJS_DRT_F3   = src/drt_f3/fluid3_evaluate.o \
 OBJS_DRT_XF3_LIB = src/drt_f3_xfem/fluid3_xfem.o \
                    src/drt_f3_xfem/fluid3_xfem_surface.o \
                    src/drt_f3_xfem/fluid3_xfem_line.o
-OBJS_DRT_XF3   = src/drt_f3_xfem/fluid3_xfem_evaluate.o \
+OBJS_DRT_XF3   = src/drt_f3_xfem/fluid3_xfem_shape.o \
+                 src/drt_f3_xfem/fluid3_xfem_integration.o \
+                 src/drt_f3_xfem/fluid3_xfem_evaluate.o \
                  src/drt_f3_xfem/fluid3_xfem_input.o \
                  src/drt_f3_xfem/fluid3_xfem_surface_evaluate.o \
                  src/drt_f3_xfem/fluid3_xfem_line_evaluate.o

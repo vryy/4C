@@ -25,6 +25,7 @@ Maintainer: Axel Gerstenberger
 using namespace std;
 using namespace Teuchos;
 
+#include "fluid3_xfem_integration.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
@@ -32,43 +33,6 @@ using namespace Teuchos;
 
 // forward declarations
 struct _MATERIAL;
-
-/*!----------------------------------------------------------------------
-\brief integration parameters
-
-<pre>                                                gerstenberger 06/07
-
-In this structure the coordinates and weights used by gauss integration
-are stored.
-
-</pre>
-
-------------------------------------------------------------------------*/
-typedef struct _INTEGRATION_POINTS_2D
-{
-  int           nquad;
-  double        qxg[MAXGAUSS][2];    /*!< coordinates */
-  double        qwgt[MAXGAUSS];      /*!< weights */
-} INTEGRATION_POINTS_2D;
-
-/*!----------------------------------------------------------------------
-\brief integration parameters
-
-<pre>                                                gerstenberger 06/07
-
-In this structure the coordinates and weights used by gauss integration
-are stored.
-
-</pre>
-
-------------------------------------------------------------------------*/
-typedef struct _INTEGRATION_POINTS_3D
-{
-  int           nquad;
-  double        qxg[MAXGAUSS][3];    /*!< coordinates */
-  double        qwgt[MAXGAUSS];      /*!< weights */
-} INTEGRATION_POINTS_3D;
-
 
 /*!
 \brief DRT: namespace of the ccarat discretization module
@@ -341,18 +305,6 @@ private:
     calc_ShapefunctDeriv1Deriv2
   };
   
-  //! GaussRules supported by fluid3
-  enum GaussRule  
-  {
-    hex_1point,
-    hex_8point,
-    hex_27point,
-    tet_1point,
-    tet_4point,
-    tet_4point_alternative,
-    tet_10point
-  };
-  
   // constants
   static const int                                NSD_ = 3;
   
@@ -398,10 +350,6 @@ private:
                   ParameterList&            params
                  );
 
-  // evaluate element integration points (and storing them in data)
-  void f3_integration_points(struct _INTEGRATION_POINTS_3D& data,
-                             const GaussRule gaussrule);
-
   // calculate Jacobian matrix and it's determinant
   void f3_jaco(const Epetra_SerialDenseMatrix& xyze,
                const Epetra_SerialDenseMatrix& deriv,
@@ -409,17 +357,6 @@ private:
                double*      det,
                const int    iel
               );
-
-  // shape functions and natural derivatives for hexaeder
-  void f3_shape_function(Epetra_SerialDenseVector& funct,
-                    Epetra_SerialDenseMatrix& deriv,
-                    Epetra_SerialDenseMatrix& deriv2,
-                    const double&      r,
-                    const double&      s,
-                    const double&      t,
-                    const int&         iel,
-                    const int          icode
-                );
 
   // get the body force from the nodes condition
   void f3_getbodyforce (Epetra_SerialDenseMatrix& edeadng,
