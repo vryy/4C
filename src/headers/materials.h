@@ -51,6 +51,7 @@ typedef struct _MATERIAL
      struct _TH_FOURIER_ISO   *th_fourier_iso;   /* isotropic Fourier's law of heat conduction */
      struct _TH_FOURIER_GEN   *th_fourier_gen;   /* general heat conduction matrix of Fourier's (linear) law of heat conduction */
      struct _VP_ROBINSON      *vp_robinson;  /* viscoplastic Robinson material */
+     struct _STRUCT_MULTISCALE *struct_multiscale;     /* material parameters are calculated from microscale simulation */
      }                         m;            /* union pointer to material specific structure */
 
 } MATERIAL;
@@ -617,3 +618,15 @@ typedef struct _VP_ROBINSON
      MAT_PARAM_MULT            rcvry;          /* recovery factor 'R_0' */
      MAT_PARAM_MULT            h;              /* 'H' */
 } VP_ROBINSON;
+
+/*-------------------------------------------------------------------*
+ | material parameters are calculated from microscale simulation     |
+ |                                                         lw 06/07  |
+ *-------------------------------------------------------------------*/
+typedef struct _STRUCT_MULTISCALE
+{
+  INT            microdis;     /* Number of corresponding microscale
+                                * discretization -> for the time being
+                                * only one microstructure is used in all
+                                * the Gauss points */
+} STRUCT_MULTISCALE;

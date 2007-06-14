@@ -543,6 +543,18 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 
       }
    }
+   /* Structural micro-scale approach: material parameters are
+    * calculated from microscale simulation */
+   frchk("MAT_Struct_Multiscale",&ierr);
+   if (ierr==1)
+   {
+      localmat.mattyp = m_struct_multiscale;
+      localmat.m.struct_multiscale = new _STRUCT_MULTISCALE();
+      localmat.m.struct_multiscale->microdis = 0; /* currently only one
+                                                   * microscale discretization
+                                                   * is used in all Gauss
+                                                   * points */
+   }
    i++;
 
    /*----------------------------------------------------------------------*/
