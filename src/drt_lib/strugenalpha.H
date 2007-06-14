@@ -242,13 +242,39 @@ public:
     RefCountPtr<Epetra_Vector> velm = LINALG::CreateVector(*dofrowmap,false);
     RefCountPtr<Epetra_Vector> accm = LINALG::CreateVector(*dofrowmap,false);
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
-    dism->Update(1.-alphaf,*disi,1.0,*integrator_.dism_,0.0);
+    //dism->Update(1.-alphaf,*disi,1.0,*integrator_.dism_,0.0);
+    dism->Update(1.-alphaf,*disi,1.0,*integrator_.dis_,0.0);
+    
+    
     // V_{n+1-alpha_f} := V_{n+1-alpha_f}
     //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
-    velm->Update((1.-alphaf)*gamma/(beta*dt),*disi,1.0,*integrator_.velm_,0.0);
+    //velm->Update((1.-alphaf)*gamma/(beta*dt),*disi,1.0,*integrator_.velm_,0.0);
+    
+    // velocities
+    // iterative
+    // V_{n+1-alpha_f} := V_{n+1-alpha_f}
+    //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
+    // incremental (required for constant predictor)
+    velm->Update(1.0,*dism,-1.0,*integrator_.dis_,0.0);
+    velm->Update((beta-(1.0-alphaf)*gamma)/beta,*integrator_.vel_,
+                  (1.0-alphaf)*(2.*beta-gamma)/(2.*beta),*integrator_.acc_,
+                  gamma/(beta*dt));
+    
+    
     // A_{n+1-alpha_m} := A_{n+1-alpha_m}
     //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
-    accm->Update((1.-alpham)/(beta*dt*dt),*disi,1.0,*integrator_.accm_,0.0);
+    //accm->Update((1.-alpham)/(beta*dt*dt),*disi,1.0,*integrator_.accm_,0.0);
+
+    // accelerations
+    // iterative
+    // A_{n+1-alpha_m} := A_{n+1-alpha_m}
+    //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
+    // incremental (required for constant predictor)
+    accm->Update(1.0,*dism,-1.0,*integrator_.dis_,0.0);
+    accm->Update(-(1.-alpham)/(beta*dt),*integrator_.vel_,
+                  (2.*beta-1.+alpham)/(2.*beta),*integrator_.acc_,
+                  (1.-alpham)/((1.-alphaf)*beta*dt*dt));
+
     
     // do we need to update these? 
     // Are done from scratch in predictor?
@@ -308,6 +334,9 @@ public:
     integrator_.fresm_->Scale(-1.0);
     // copy residual forces to nox vector
     F.Update(1.0,*integrator_.fresm_,0.0);
+    double dnorm = 0.0;
+    disi->Norm2(&dnorm);
+    cout << "Meine disi norm " << dnorm << endl;
     // copy disi to time integrator
     integrator_.disi_->Update(1.0,*disi,0.0);
     //========================================================================
