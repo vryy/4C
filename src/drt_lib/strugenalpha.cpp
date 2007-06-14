@@ -209,10 +209,6 @@ output_(output)
 void StruGenAlpha::ConstantPredictor()
 {
 
-   // prelimary define to switch constant/consistent predictor
-   // ==> another method in the future
-#define consistent 0
-
   // -------------------------------------------------------------------
   // get some parameters from parameter list
   // -------------------------------------------------------------------
@@ -221,11 +217,6 @@ void StruGenAlpha::ConstantPredictor()
   int    istep   = params_.get<int>   ("step"      ,0);
   bool   damping = params_.get<bool>  ("damping"   ,false);
   double alphaf  = params_.get<double>("alpha f"   ,0.459);
-#if consistent
-  double alpham  = params_.get<double>("alpha m"   ,0.378);
-  double beta    = params_.get<double>("beta"      ,0.292);
-  double gamma   = params_.get<double>("gamma"     ,0.581);
-#endif
   const Epetra_Map* dofrowmap = discret_.DofRowMap();
 
   // increment time and step
@@ -266,46 +257,17 @@ void StruGenAlpha::ConstantPredictor()
     discret_.ClearState();
   }
 
-#if consistent
-  // consistent predictor
-  // predicting velocity V_{n+1} (veln)
-  // V_{n+1} := gamma/(beta*dt) * (D_{n+1} - D_n)
-  //          + (beta-gamma)/beta * V_n
-  //          + (2.*beta-gamma)/(2.*beta) * A_n
-  veln_->Update(1.0,*disn_,-1.0,*dis_,0.0);
-  veln_->Update((beta-gamma)/beta,*vel_,(2.*beta-gamma)/(2.*beta),*acc_,gamma/(beta*dt));
-  // predicting accelerations A_{n+1} (accn)
-  // A_{n+1} := 1./(beta*dt*dt) * (D_{n+1} - D_n)
-  //          - 1./(beta*dt) * V_n
-  //          + (2.*beta-1.)/(2.*beta) * A_n
-  accn_->Update(1.0,*disn_,-1.0,*dis_,0.0);
-  accn_->Update(-1./(beta*dt),*vel_,(2.*beta-1.)/(2.*beta),*acc_,1./(beta*dt*dt));
-#else
   // constant predictor
   veln_->Update(1.0,*vel_,0.0);
   accn_->Update(1.0,*acc_,0.0);
-#endif
 
   //------------------------------ compute interpolated dis, vel and acc
-#if consistent
-  // consistent predictor
-  // mid-displacements D_{n+1-alpha_f} (dism)
-  //    D_{n+1-alpha_f} := (1.-alphaf) * D_{n+1} + alpha_f * D_{n}
-  dism_->Update(1.-alphaf,*disn_,alphaf,*dis_,0.0);
-  // mid-velocities V_{n+1-alpha_f} (velm)
-  //    V_{n+1-alpha_f} := (1.-alphaf) * V_{n+1} + alpha_f * V_{n}
-  velm_->Update(1.-alphaf,*veln_,alphaf,*vel_,0.0);
-  // mid-accelerations A_{n+1-alpha_m} (accm)
-  //    A_{n+1-alpha_m} := (1.-alpha_m) * A_{n+1} + alpha_m * A_{n}
-  accm_->Update(1.-alpham,*accn_,alpham,*acc_,0.0);
-#else
   // constant predictor
   // mid-displacements D_{n+1-alpha_f} (dism)
   //    D_{n+1-alpha_f} := (1.-alphaf) * D_{n+1} + alpha_f * D_{n}
   dism_->Update(1.-alphaf,*disn_,alphaf,*dis_,0.0);
   velm_->Update(1.0,*vel_,0.0);
   accm_->Update(1.0,*acc_,0.0);
-#endif
 
   //------------------------------- compute interpolated external forces
   // external mid-forces F_{ext;n+1-alpha_f} (fextm)
@@ -374,6 +336,153 @@ void StruGenAlpha::ConstantPredictor()
 
 
 /*----------------------------------------------------------------------*
+ |  do consistent predictor step (public)                    mwgee 07/07|
+ *----------------------------------------------------------------------*/
+void StruGenAlpha::ConsistentPredictor()
+{
+  // -------------------------------------------------------------------
+  // get some parameters from parameter list
+  // -------------------------------------------------------------------
+  double time    = params_.get<double>("total time",0.0);
+  double dt      = params_.get<double>("delta time",0.01);
+  int    istep   = params_.get<int>   ("step"      ,0);
+  bool   damping = params_.get<bool>  ("damping"   ,false);
+  double alphaf  = params_.get<double>("alpha f"   ,0.459);
+  double alpham  = params_.get<double>("alpha m"   ,0.378);
+  double beta    = params_.get<double>("beta"      ,0.292);
+  double gamma   = params_.get<double>("gamma"     ,0.581);
+  const Epetra_Map* dofrowmap = discret_.DofRowMap();
+
+  // increment time and step
+  double timen = time += dt;
+  istep++;
+  params_.set<double>("total time",timen);
+  params_.set<int>   ("step"      ,istep);
+  
+  //--------------------------------------------------- predicting state
+  // constant predictor : displacement in domain
+  disn_->Update(1.0,*dis_,0.0);
+  
+  // apply new displacements at DBCs
+  // and get new external force vector
+  {
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_struct_eleload");
+    // choose what to assemble
+    p.set("assemble matrix 1",false);
+    p.set("assemble matrix 2",false);
+    p.set("assemble vector 1",true);
+    p.set("assemble vector 2",false);
+    p.set("assemble vector 3",false);
+    // other parameters needed by the elements
+    p.set("total time",timen);
+    p.set("delta time",dt);
+    // set vector values needed by elements
+    discret_.ClearState();
+    discret_.SetState("displacement",disn_);
+    // predicted dirichlet values
+    // disn then also holds prescribed new dirichlet displacements
+    discret_.EvaluateDirichlet(p,*disn_,*dirichtoggle_);
+    discret_.ClearState();
+    discret_.SetState("displacement",disn_);
+    fextn_->PutScalar(0.0);  // initialize external force vector (load vect)
+    discret_.EvaluateNeumann(p,*fextn_);
+    discret_.ClearState();
+  }
+
+  // consistent predictor
+  // predicting velocity V_{n+1} (veln)
+  // V_{n+1} := gamma/(beta*dt) * (D_{n+1} - D_n)
+  //          + (beta-gamma)/beta * V_n
+  //          + (2.*beta-gamma)/(2.*beta) * A_n
+  veln_->Update(1.0,*disn_,-1.0,*dis_,0.0);
+  veln_->Update((beta-gamma)/beta,*vel_,(2.*beta-gamma)*dt/(2.*beta),*acc_,gamma/(beta*dt));
+  // predicting accelerations A_{n+1} (accn)
+  // A_{n+1} := 1./(beta*dt*dt) * (D_{n+1} - D_n)
+  //          - 1./(beta*dt) * V_n
+  //          + (2.*beta-1.)/(2.*beta) * A_n
+  accn_->Update(1.0,*disn_,-1.0,*dis_,0.0);
+  accn_->Update(-1./(beta*dt),*vel_,(2.*beta-1.)/(2.*beta),*acc_,1./(beta*dt*dt));
+
+  //------------------------------ compute interpolated dis, vel and acc
+  // consistent predictor
+  // mid-displacements D_{n+1-alpha_f} (dism)
+  //    D_{n+1-alpha_f} := (1.-alphaf) * D_{n+1} + alpha_f * D_{n}
+  dism_->Update(1.-alphaf,*disn_,alphaf,*dis_,0.0);
+  // mid-velocities V_{n+1-alpha_f} (velm)
+  //    V_{n+1-alpha_f} := (1.-alphaf) * V_{n+1} + alpha_f * V_{n}
+  velm_->Update(1.-alphaf,*veln_,alphaf,*vel_,0.0);
+  // mid-accelerations A_{n+1-alpha_m} (accm)
+  //    A_{n+1-alpha_m} := (1.-alpha_m) * A_{n+1} + alpha_m * A_{n}
+  accm_->Update(1.-alpham,*accn_,alpham,*acc_,0.0);
+
+  //------------------------------- compute interpolated external forces
+  // external mid-forces F_{ext;n+1-alpha_f} (fextm)
+  //    F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1}
+  //                         + alpha_f * F_{ext;n}
+  fextm_->Update(1.-alphaf,*fextn_,alphaf,*fext_,0.0);
+
+  //------------- eval fint at interpolated state, eval stiffness matrix
+  {
+    // zero out stiffness
+    stiff_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_struct_nlnstiff");
+    // choose what to assemble
+    p.set("assemble matrix 1",true);
+    p.set("assemble matrix 2",false);
+    p.set("assemble vector 1",true);
+    p.set("assemble vector 2",false);
+    p.set("assemble vector 3",false);
+    // other parameters that might be needed by the elements
+    p.set("total time",timen);
+    p.set("delta time",dt);
+    // set vector values needed by elements
+    discret_.ClearState();
+    discret_.SetState("residual displacement",disi_);
+    discret_.SetState("displacement",dism_);
+    //discret_.SetState("velocity",velm_); // not used at the moment
+    fint_->PutScalar(0.0);  // initialise internal force vector
+    discret_.Evaluate(p,stiff_,null,fint_,null,null);
+    discret_.ClearState();
+    // do NOT finalize the stiffness matrix, add mass and damping to it later
+  }
+
+  //-------------------------------------------- compute residual forces
+  // Res = M . A_{n+1-alpha_m}
+  //     + C . V_{n+1-alpha_f}
+  //     + F_int(D_{n+1-alpha_f})
+  //     - F_{ext;n+1-alpha_f}
+  // add mid-inertial force
+  mass_->Multiply(false,*accm_,*fresm_);
+  // add mid-viscous damping force
+  if (damping)
+  {
+      RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
+      damp_->Multiply(false,*velm_,*fviscm);
+      fresm_->Update(1.0,*fviscm,1.0);
+  }
+
+  // add static mid-balance
+  fresm_->Update(1.0,*fint_,-1.0,*fextm_,1.0);
+
+  // blank residual at DOFs on Dirichlet BC
+  {
+    Epetra_Vector fresmcopy(*fresm_);
+    fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
+  }
+
+  //------------------------------------------------ build residual norm
+  fresm_->Norm2(&norm_);
+  if (!myrank_) cout << "Predictor residual forces " << norm_ << endl; fflush(stdout);
+
+  return;
+} // StruGenAlpha::ConstantPredictor()
+
+/*----------------------------------------------------------------------*
  |  do Newton iteration (public)                             mwgee 03/07|
  *----------------------------------------------------------------------*/
 void StruGenAlpha::FullNewton()
@@ -440,7 +549,7 @@ void StruGenAlpha::FullNewton()
     // incremental (required for constant predictor)
     velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
     velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
-                  (1.0-alphaf)*(2.*beta-gamma)/(2.*beta),*acc_,
+                  (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_, // dt here!!!!!
                   gamma/(beta*dt));
     // accelerations
     // iterative
@@ -607,7 +716,7 @@ void StruGenAlpha::ModifiedNewton()
     // incremental (required for constant predictor)
     velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
     velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
-                  (1.0-alphaf)*(2.*beta-gamma)/(2.*beta),*acc_,
+                  (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
                   gamma/(beta*dt));
     // accelerations
     // iterative
@@ -883,7 +992,7 @@ void StruGenAlpha::NonlinearCG()
   // incremental (required for constant predictor)
   velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
   velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
-                (1.0-alphaf)*(2.*beta-gamma)/(2.*beta),*acc_,
+                (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
                 gamma/(beta*dt));
 
   // accelerations
@@ -1007,7 +1116,7 @@ void StruGenAlpha::NonlinearCG()
   // incremental (required for constant predictor)
   velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
   velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
-                (1.0-alphaf)*(2.*beta-gamma)/(2.*beta),*acc_,
+                (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
                 gamma/(beta*dt));
 
   // accelerations
@@ -1154,13 +1263,23 @@ void StruGenAlpha::Integrate()
 {
   int    istep = params_.get<int>   ("step" ,0);
   int    nstep = params_.get<int>   ("nstep",5);
+  
   // can have values "full newton" , "modified newton" , "nonlinear cg"
   string equil = params_.get<string>("equilibrium iteration","full newton");
+  
+  // can have values takes values "constant" consistent"
+  string pred  = params_.get<string>("predictor","constant");
+  int predictor=-1;
+  if      (pred=="constant")   predictor = 1;
+  else if (pred=="consistent") predictor = 2;
+  else dserror("Unknown type of predictor");
+  
   if (equil=="full newton")
   {
     for (int i=istep; i<nstep; ++i)
     {
-      ConstantPredictor();
+      if      (predictor==1) ConstantPredictor();
+      else if (predictor==2) ConsistentPredictor();
       FullNewton();
       UpdateandOutput();
     }
@@ -1169,7 +1288,8 @@ void StruGenAlpha::Integrate()
   {
     for (int i=istep; i<nstep; ++i)
     {
-      ConstantPredictor();
+      if      (predictor==1) ConstantPredictor();
+      else if (predictor==2) ConsistentPredictor();
       ModifiedNewton();
       UpdateandOutput();
     }
@@ -1178,7 +1298,8 @@ void StruGenAlpha::Integrate()
   {
     for (int i=istep; i<nstep; ++i)
     {
-      ConstantPredictor();
+      if      (predictor==1) ConstantPredictor();
+      else if (predictor==2) ConsistentPredictor();
       NonlinearCG();
       UpdateandOutput();
     }

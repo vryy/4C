@@ -84,16 +84,22 @@ public:
   static void SetDefaults(ParameterList& params);
   
   /*!
-  \brief do implicit predictor step
+  \brief Do time integration
+  
+  */
+  void Integrate();
+
+  /*!
+  \brief do constant predictor step
   
   */
   void ConstantPredictor();
 
   /*!
-  \brief Do time integration
+  \brief do consistent constant predictor step
   
   */
-  void Integrate();
+  void ConsistentPredictor();
 
   /*!
   \brief do full Newton iteration
@@ -257,7 +263,7 @@ public:
     // incremental (required for constant predictor)
     velm->Update(1.0,*dism,-1.0,*integrator_.dis_,0.0);
     velm->Update((beta-(1.0-alphaf)*gamma)/beta,*integrator_.vel_,
-                  (1.0-alphaf)*(2.*beta-gamma)/(2.*beta),*integrator_.acc_,
+                  (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*integrator_.acc_,
                   gamma/(beta*dt));
     
     
