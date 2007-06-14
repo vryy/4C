@@ -143,6 +143,9 @@ void dyn_nlnstructural_drt()
   // takes values "full newton" , "modified newton" , "nonlinear cg"
   genalphaparams.set<string>("equilibrium iteration","full newton");
 
+  // takes values "constant" consistent"  
+  genalphaparams.set<string>("predictor","constant");
+
   StruGenAlpha timeintegrator(genalphaparams,*actdis,solver,output);
 
   timeintegrator.Integrate();
