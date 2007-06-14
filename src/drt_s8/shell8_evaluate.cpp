@@ -44,7 +44,7 @@ extern struct _MATERIAL  *mat;
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            mwgee 12/06|
  *----------------------------------------------------------------------*/
-int DRT::Elements::Shell8::Evaluate(ParameterList& params,
+int DRT::Elements::Shell8::Evaluate(ParameterList&            params, 
                                     DRT::Discretization&      discretization,
                                     vector<int>&              lm,
                                     Epetra_SerialDenseMatrix& elemat1,
