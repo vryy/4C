@@ -208,6 +208,11 @@ output_(output)
  *----------------------------------------------------------------------*/
 void StruGenAlpha::ConstantPredictor()
 {
+
+   // prelimary define to switch constant/consistent predictor
+   // ==> another method in the future
+#define consistent 0
+
   // -------------------------------------------------------------------
   // get some parameters from parameter list
   // -------------------------------------------------------------------
@@ -216,9 +221,11 @@ void StruGenAlpha::ConstantPredictor()
   int    istep   = params_.get<int>   ("step"      ,0);
   bool   damping = params_.get<bool>  ("damping"   ,false);
   double alphaf  = params_.get<double>("alpha f"   ,0.459);
+#if consistent
   double alpham  = params_.get<double>("alpha m"   ,0.378);
   double beta    = params_.get<double>("beta"      ,0.292);
   double gamma   = params_.get<double>("gamma"     ,0.581);
+#endif
   const Epetra_Map* dofrowmap = discret_.DofRowMap();
 
   // increment time and step
@@ -259,6 +266,7 @@ void StruGenAlpha::ConstantPredictor()
     discret_.ClearState();
   }
 
+#if consistent
   // consistent predictor
   // predicting velocity V_{n+1} (veln)
   // V_{n+1} := gamma/(beta*dt) * (D_{n+1} - D_n)
@@ -272,12 +280,14 @@ void StruGenAlpha::ConstantPredictor()
   //          + (2.*beta-1.)/(2.*beta) * A_n
   accn_->Update(1.0,*disn_,-1.0,*dis_,0.0);
   accn_->Update(-1./(beta*dt),*vel_,(2.*beta-1.)/(2.*beta),*acc_,1./(beta*dt*dt));
-
+#else
   // constant predictor
-  //veln_->Update(1.0,*vel_,0.0);
-  //accn_->Update(1.0,*acc_,0.0);
+  veln_->Update(1.0,*vel_,0.0);
+  accn_->Update(1.0,*acc_,0.0);
+#endif
 
   //------------------------------ compute interpolated dis, vel and acc
+#if consistent
   // consistent predictor
   // mid-displacements D_{n+1-alpha_f} (dism)
   //    D_{n+1-alpha_f} := (1.-alphaf) * D_{n+1} + alpha_f * D_{n}
@@ -288,11 +298,14 @@ void StruGenAlpha::ConstantPredictor()
   // mid-accelerations A_{n+1-alpha_m} (accm)
   //    A_{n+1-alpha_m} := (1.-alpha_m) * A_{n+1} + alpha_m * A_{n}
   accm_->Update(1.-alpham,*accn_,alpham,*acc_,0.0);
-
+#else
   // constant predictor
-  //dism_->Update(1.0,*dis_,0.0);
-  //velm_->Update(1.0,*vel_,0.0);
-  //accm_->Update(1.0,*acc_,0.0);
+  // mid-displacements D_{n+1-alpha_f} (dism)
+  //    D_{n+1-alpha_f} := (1.-alphaf) * D_{n+1} + alpha_f * D_{n}
+  dism_->Update(1.-alphaf,*disn_,alphaf,*dis_,0.0);
+  velm_->Update(1.0,*vel_,0.0);
+  accm_->Update(1.0,*acc_,0.0);
+#endif
 
   //------------------------------- compute interpolated external forces
   // external mid-forces F_{ext;n+1-alpha_f} (fextm)
@@ -416,14 +429,29 @@ void StruGenAlpha::FullNewton()
     stiff_ = null;
     
     //---------------------------------- update mid configuration values
+    // displacements
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
     dism_->Update(1.-alphaf,*disi_,1.0);
+    // velocities
+    // iterative
     // V_{n+1-alpha_f} := V_{n+1-alpha_f}
     //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
-    velm_->Update((1.-alphaf)*gamma/(beta*dt),*disi_,1.0);
+    //velm_->Update((1.-alphaf)*gamma/(beta*dt),*disi_,1.0);
+    // incremental (required for constant predictor)
+    velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+    velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
+                  (1.0-alphaf)*(2.*beta-gamma)/(2.*beta),*acc_,
+                  gamma/(beta*dt));
+    // accelerations
+    // iterative
     // A_{n+1-alpha_m} := A_{n+1-alpha_m}
     //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
-    accm_->Update((1.-alpham)/(beta*dt*dt),*disi_,1.0);
+    //accm_->Update((1.-alpham)/(beta*dt*dt),*disi_,1.0);
+    // incremental (required for constant predictor)
+    accm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+    accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
+                  (2.*beta-1.+alpham)/(2.*beta),*acc_,
+                  (1.-alpham)/((1.-alphaf)*beta*dt*dt));
     
     //---------------------------- compute internal forces and stiffness
     {
@@ -568,14 +596,29 @@ void StruGenAlpha::ModifiedNewton()
       solver_.Solve(stiff_,disi_,fresm_,false,false);
     
     //---------------------------------- update mid configuration values
+    // displacements
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
     dism_->Update(1.-alphaf,*disi_,1.0);
+    // velocities
+    // iterative
     // V_{n+1-alpha_f} := V_{n+1-alpha_f}
     //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
-    velm_->Update((1.-alphaf)*gamma/(beta*dt),*disi_,1.0);
+    //velm_->Update((1.-alphaf)*gamma/(beta*dt),*disi_,1.0);
+    // incremental (required for constant predictor)
+    velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+    velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
+                  (1.0-alphaf)*(2.*beta-gamma)/(2.*beta),*acc_,
+                  gamma/(beta*dt));
+    // accelerations
+    // iterative
     // A_{n+1-alpha_m} := A_{n+1-alpha_m}
     //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
-    accm_->Update((1.-alpham)/(beta*dt*dt),*disi_,1.0);
+    //accm_->Update((1.-alpham)/(beta*dt*dt),*disi_,1.0);
+    // incremental (required for constant predictor)
+    accm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+    accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
+                  (2.*beta-1.+alpham)/(2.*beta),*acc_,
+                  (1.-alpham)/((1.-alphaf)*beta*dt*dt));
     
     //----------------------------------------- compute internal forces
     {
@@ -756,7 +799,7 @@ void StruGenAlpha::NonlinearCG()
   mlparams.set("nlnML output",                                      outlevel   ); // ML-output-level (0-10)
   mlparams.set("nlnML max levels",                                  maxlevel   ); // max. # levels (minimum = 2 !)
   mlparams.set("nlnML coarse: max size",                            maxcsize   ); // the size ML stops generating coarser levels
-  mlparams.set("nlnML is linear preconditioner",                    true      );
+  mlparams.set("nlnML is linear preconditioner",                    false      );
   mlparams.set("nlnML is matrixfree",                               false      ); 
   mlparams.set("nlnML apply constraints",                           false      ); 
   mlparams.set("nlnML Jacobian fix diagonal",                       false      ); 
@@ -810,7 +853,7 @@ void StruGenAlpha::NonlinearCG()
   // tell preconditioner to recompute from scratch
   prec_->setinit(false);
 
-#if 0 // use the nonlinear preconditioner as a solver without the outer nox loop
+#if 1 // use the nonlinear preconditioner as a solver without the outer nox loop
   {
     Epetra_Time timer(discret_.Comm());
     double t0 = timer.ElapsedTime();
@@ -831,6 +874,26 @@ void StruGenAlpha::NonlinearCG()
     fineinterface_->resetsumtime();
     fineinterface_->setnumcallscomputeF(0);
     
+  //---------------------------------- update mid configuration values
+  // displacements
+  // incremental (disi is now D_{n+1}-D_{n})
+  dism_->Update((1.-alphaf),*disi_,1.0,*dis_,0.0);
+  
+  // velocities
+  // incremental (required for constant predictor)
+  velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+  velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
+                (1.0-alphaf)*(2.*beta-gamma)/(2.*beta),*acc_,
+                gamma/(beta*dt));
+
+  // accelerations
+  // incremental (required for constant predictor)
+  accm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+  accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
+                (2.*beta-1.+alpham)/(2.*beta),*acc_,
+                (1.-alpham)/((1.-alphaf)*beta*dt*dt));
+
+#if 0
     //------------------------- do update for mid configuration quantities
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
     dism_->Update(1.-alphaf,*disi_,1.0);
@@ -842,6 +905,7 @@ void StruGenAlpha::NonlinearCG()
     accm_->Update((1.-alpham)/(beta*dt*dt),*disi_,1.0);
     
     //-------------------------------------- don't need this at the moment
+#endif
     stiff_ = null;
     return;
   }
@@ -934,15 +998,24 @@ void StruGenAlpha::NonlinearCG()
   fineinterface_->resetsumtime();
   fineinterface_->setnumcallscomputeF(0);
   
-  //------------------------- do update for mid configuration quantities
-  // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
-  dism_->Update(1.-alphaf,*disi_,1.0);
-  // V_{n+1-alpha_f} := V_{n+1-alpha_f}
-  //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
-  velm_->Update((1.-alphaf)*gamma/(beta*dt),*disi_,1.0);
-  // A_{n+1-alpha_m} := A_{n+1-alpha_m}
-  //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
-  accm_->Update((1.-alpham)/(beta*dt*dt),*disi_,1.0);
+  //---------------------------------- update mid configuration values
+  // displacements
+  // incremental (disi is now D_{n+1}-D_{n})
+  dism_->Update((1.-alphaf),*disi_,1.0,*dis_,0.0);
+  
+  // velocities
+  // incremental (required for constant predictor)
+  velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+  velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
+                (1.0-alphaf)*(2.*beta-gamma)/(2.*beta),*acc_,
+                gamma/(beta*dt));
+
+  // accelerations
+  // incremental (required for constant predictor)
+  accm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+  accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
+                (2.*beta-1.+alpham)/(2.*beta),*acc_,
+                (1.-alpham)/((1.-alphaf)*beta*dt*dt));
   
   //-------------------------------------- don't need this at the moment
   stiff_ = null;
