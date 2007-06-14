@@ -266,7 +266,7 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
       Epetra_SerialDenseMatrix* stiffmatrix,    // element stiffness matrix
       Epetra_SerialDenseMatrix* massmatrix,     // element mass matrix
       Epetra_SerialDenseVector* force,          // element internal force vector
-      MATERIAL*                 material)       // element material data
+      struct _MATERIAL*          material)       // element material data
 {
   DSTraceHelper dst("So_hex8::soh8_nlnstiffmass");
 
@@ -494,7 +494,7 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     Epetra_SerialDenseMatrix cmat(NUMSTR_SOH8,NUMSTR_SOH8);
     Epetra_SerialDenseVector stress(NUMSTR_SOH8);
     double density;
-    soh8_mat_sel(&stress,&cmat,&density,&glstrain);
+    soh8_mat_sel(&stress,&cmat,&density,&glstrain, material);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
@@ -692,50 +692,67 @@ void DRT::Elements::So_hex8::soh8_shapederiv(
 }  // of soh8_shapederiv
 
 /*----------------------------------------------------------------------*
- |  shape functions and derivatives for So_hex8                maf 04/07|
+ | material laws for So_hex8                                   maf 04/07|
  *----------------------------------------------------------------------*/
 void DRT::Elements::So_hex8::soh8_mat_sel(
       Epetra_SerialDenseVector* stress,
       Epetra_SerialDenseMatrix* cmat,
       double* density,
-      const Epetra_SerialDenseVector* glstrain)
+      const Epetra_SerialDenseVector* glstrain,
+      struct _MATERIAL* material)
 {
   DSTraceHelper dst("So_hex8::soh8_mat_sel");
 
-  // get material parameters
-  double Emod = mat->m.stvenant->youngs;    // Young's modulus (modulus of elasticity)
-  double nu = mat->m.stvenant->possionratio;// Poisson's ratio (Querdehnzahl)
-  (*density) = mat->m.stvenant->density;    // density, returned to evaluate mass matrix
+  switch (material->mattyp)
+  {
+    case m_stvenant: /*------------------ st.venant-kirchhoff-material */
+    {
+      // get material parameters
+      double Emod = mat->m.stvenant->youngs;    // Young's modulus (modulus of elasticity)
+      double nu = mat->m.stvenant->possionratio;// Poisson's ratio (Querdehnzahl)
+      (*density) = mat->m.stvenant->density;    // density, returned to evaluate mass matrix
+
+      /*--------------------------------------------------------------------*/
+      /* isotropic elasticity tensor C in matrix notion */
+      /*                       [ 1-nu     nu     nu |          0    0    0 ]
+       *                       [        1-nu     nu |          0    0    0 ]
+       *           E           [               1-nu |          0    0    0 ]
+       *   C = --------------- [ ~~~~   ~~~~   ~~~~   ~~~~~~~~~~  ~~~  ~~~ ]
+       *       (1+nu)*(1-2*nu) [                    | (1-2*nu)/2    0    0 ]
+       *                       [                    |      (1-2*nu)/2    0 ]
+       *                       [ symmetric          |           (1-2*nu)/2 ]
+       */
+      double mfac = Emod/((1.0+nu)*(1.0-2.0*nu));  /* factor */
+      /* write non-zero components */
+      (*cmat)(0,0) = mfac*(1.0-nu);
+      (*cmat)(0,1) = mfac*nu;
+      (*cmat)(0,2) = mfac*nu;
+      (*cmat)(1,0) = mfac*nu;
+      (*cmat)(1,1) = mfac*(1.0-nu);
+      (*cmat)(1,2) = mfac*nu;
+      (*cmat)(2,0) = mfac*nu;
+      (*cmat)(2,1) = mfac*nu;
+      (*cmat)(2,2) = mfac*(1.0-nu);
+      /* ~~~ */
+      (*cmat)(3,3) = mfac*0.5*(1.0-2.0*nu);
+      (*cmat)(4,4) = mfac*0.5*(1.0-2.0*nu);
+      (*cmat)(5,5) = mfac*0.5*(1.0-2.0*nu);
+
+      // evaluate stresses
+      (*cmat).Multiply('N',(*glstrain),(*stress));   // sigma = C . epsilon
+    }
+    break;
+    case m_struct_multiscale: /*------------------- multiscale approach */
+    {
+      // Here macro-micro transition (localization) will take place
+    }
+    break;
+    default:
+      dserror("Ilegal typ of material for element solid3 hex8");
+    break;
+  }
 
   /*--------------------------------------------------------------------*/
-  /* isotropic elasticity tensor C in matrix notion */
-  /*                       [ 1-nu     nu     nu |          0    0    0 ]
-   *                       [        1-nu     nu |          0    0    0 ]
-   *           E           [               1-nu |          0    0    0 ]
-   *   C = --------------- [ ~~~~   ~~~~   ~~~~   ~~~~~~~~~~  ~~~  ~~~ ]
-   *       (1+nu)*(1-2*nu) [                    | (1-2*nu)/2    0    0 ]
-   *                       [                    |      (1-2*nu)/2    0 ]
-   *                       [ symmetric          |           (1-2*nu)/2 ]
-   */
-  double mfac = Emod/((1.0+nu)*(1.0-2.0*nu));  /* factor */
-  /* write non-zero components */
-  (*cmat)(0,0) = mfac*(1.0-nu);
-  (*cmat)(0,1) = mfac*nu;
-  (*cmat)(0,2) = mfac*nu;
-  (*cmat)(1,0) = mfac*nu;
-  (*cmat)(1,1) = mfac*(1.0-nu);
-  (*cmat)(1,2) = mfac*nu;
-  (*cmat)(2,0) = mfac*nu;
-  (*cmat)(2,1) = mfac*nu;
-  (*cmat)(2,2) = mfac*(1.0-nu);
-  /* ~~~ */
-  (*cmat)(3,3) = mfac*0.5*(1.0-2.0*nu);
-  (*cmat)(4,4) = mfac*0.5*(1.0-2.0*nu);
-  (*cmat)(5,5) = mfac*0.5*(1.0-2.0*nu);
-
-  // evaluate stresses
-  (*cmat).Multiply('N',(*glstrain),(*stress));   // sigma = C . epsilon
-
   return;
 }  // of soh8_mat_sel
 

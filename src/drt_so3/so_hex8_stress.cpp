@@ -197,7 +197,7 @@ void DRT::Elements::So_hex8::soh8_stress(struct _MATERIAL* material,
     Epetra_SerialDenseMatrix cmat(NUMSTR_SOH8,NUMSTR_SOH8);
     Epetra_SerialDenseVector stress(NUMSTR_SOH8);
     double density;
-    soh8_mat_sel(&stress,&cmat,&density,&glstrain);
+    soh8_mat_sel(&stress,&cmat,&density,&glstrain, material);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // safe gausspoint stresses
