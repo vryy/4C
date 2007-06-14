@@ -224,7 +224,7 @@ if (imyrank==ele->proc)
       /*-------- shape functions (and (not needed)their derivatives) */
       w1_funct_deriv(funct,deriv,e1,e2,ele->distyp,1);
       /*-------------------------------------------- jacobian matrix */
-      w1_jaco (deriv,xjm,&det,ele,iel);
+      w1_jaco(deriv,xjm,&det,ele,iel);
       /*---------------------------------------- integration factor  */
       fac = facr * facs * det;
       /*---------------------------------------------- surface-load  */
