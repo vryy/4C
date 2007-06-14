@@ -105,6 +105,23 @@ void DRT::Discretization::Evaluate(
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ |  evaluate (public)                                        u.kue 06/07|
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::Evaluate(ParameterList&                params,
+                                   RefCountPtr<Epetra_CrsMatrix> systemmatrix,
+                                   RefCountPtr<Epetra_Vector>    systemvector)
+{
+  params.set("assemble matrix 1",true);
+  params.set("assemble matrix 2",false);
+  params.set("assemble vector 1",true);
+  params.set("assemble vector 2",false);
+  params.set("assemble vector 3",false);
+  Evaluate(params, systemmatrix, null, systemvector, null, null);
+}
+
+
 /*----------------------------------------------------------------------*
  |  evaluate Neumann conditions (public)                     mwgee 12/06|
  *----------------------------------------------------------------------*/

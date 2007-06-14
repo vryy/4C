@@ -622,15 +622,11 @@ void FluidImplicitTimeInt::NonlinearSolve(
 
       // action for elements
       eleparams.set("action","calc_fluid_systemmat_and_residual");
-      // choose what to assemble
-      eleparams.set("assemble matrix 1",true);
-      eleparams.set("assemble matrix 2",false);
-      eleparams.set("assemble vector 1",true);
-      eleparams.set("assemble vector 2",false);
-      eleparams.set("assemble vector 3",false);
+
       // other parameters that might be needed by the elements
       eleparams.set("time constant for integration",theta_*dta_);
       eleparams.set("using stationary formulation",is_stat);
+
       // set vector values needed by elements
       discret_->ClearState();
       discret_->SetState("u and p at time n+1 (trial)",velnp_);
@@ -642,7 +638,8 @@ void FluidImplicitTimeInt::NonlinearSolve(
       }
 
       // call loop over elements
-      discret_->Evaluate(eleparams,sysmat_,null,residual_,null,null);
+      discret_->Evaluate(eleparams,sysmat_,residual_);
+
       discret_->ClearState();
 
       density = eleparams.get("density", 0.0);

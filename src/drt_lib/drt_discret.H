@@ -793,6 +793,31 @@ public:
                         RefCountPtr<Epetra_Vector>    systemvector3);
 
 
+  /// Call elements to evaluate
+  /*!
+    Abbreviated Evaluate() call that always assembles one matrix and
+    one vector. No need to set assemble instructions to the
+    ParameterList.
+
+    \param params (in): Parameter list past to the elements containing
+                        commands and parameters for the elements and
+                        containing assembly intructions
+    \param systemmatrix (out) : Sparse matrix that may be filled by
+                                assembly of element contributions.
+                                May not be Teuchos::null.
+                                Matrix must be systemmatrix->Filled()==false on input.
+    \param systemvector (out) : Distributed vector that may be filled by
+                                assembly of element contributions.
+                                May not be Teuchos::null.
+                                Vector will NOT be initialized to zero by
+                                the underlying assembly methods that add element
+                                contributions.
+   */
+  void Evaluate(ParameterList&                params,
+                RefCountPtr<Epetra_CrsMatrix> systemmatrix,
+                RefCountPtr<Epetra_Vector>    systemvector);
+
+
   /*!
   \brief Evaluate Neumann boundary conditions
 
