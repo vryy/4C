@@ -13,6 +13,7 @@
 #include "fsi_nox_michler.H"
 #include "fsi_nox_fixpoint.H"
 #include "fsi_nox_jacobian.H"
+#include "fsi_nox_sd.H"
 
 
 /*----------------------------------------------------------------------*
@@ -69,7 +70,8 @@ extern Teuchos::RefCountPtr<Teuchos::ParameterList> globalparameterlist;
 
 
 FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
-  : comm_(comm)
+  : comm_(comm),
+    counter_(7)
 {
   FSI_DYNAMIC *fsidyn = alldyn[3].fsidyn;
   step_ = 0;
@@ -355,6 +357,18 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
     // We change the method here.
     linesearch.set("Method","User Defined");
     linesearch.set("User Defined Line Search",aitken);
+  }
+
+  // Set user defined steepest descent line search object.
+  else if (nlParams.sublist("Line Search").get("Method","Aitken")=="SD")
+  {
+    // insert user defined aitken relaxation
+    Teuchos::ParameterList& linesearch = nlParams.sublist("Line Search");
+    Teuchos::RefCountPtr<NOX::LineSearch::Generic> sd = Teuchos::rcp(new SDRelaxation(utils,linesearch));
+
+    // We change the method here.
+    linesearch.set("Method","User Defined");
+    linesearch.set("User Defined Line Search",sd);
   }
 
   // the very special experimental extrapolation
@@ -827,151 +841,86 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::InterfaceDisp
 
 bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag)
 {
+  char* flags[] = { "Residual", "Jac", "Prec", "FD_Res", "MF_Res", "MF_Jac", "User", NULL };
+
+  if (comm_.MyPID()==0)
+    cout << "\n==================================================================================================\n"
+         << "FSI::DirichletNeumannCoupling::computeF: fillFlag = " RED << flags[fillFlag] << END_COLOR "\n\n";
+
+  // we count the number of times the residuum is build
+  counter_[fillFlag] += 1;
+
+  if (!x.Map().UniqueGIDs())
+    dserror("source map not unique");
+
   Teuchos::RefCountPtr<Epetra_Vector> idispn = rcp(new Epetra_Vector(x));
 
-  //Teuchos::RefCountPtr<Epetra_Vector> iforce2 = FluidOp(rcp(new Epetra_Vector(*idispn)));
-  Teuchos::RefCountPtr<Epetra_Vector> iforce = FluidOp(idispn);
-
-#if 0
-  iforce2->Update(-1.0,*iforce,1.0);
-  double norm;
-  iforce2->Norm2(&norm);
-  if (norm>1e-10)
-    dserror("got fluid norm %e",norm);
-#endif
-
-  //Teuchos::RefCountPtr<Epetra_Vector> idispnp2 = StructOp(rcp(new Epetra_Vector(*iforce)));
-  Teuchos::RefCountPtr<Epetra_Vector> idispnp = StructOp(iforce);
-
-#if 0
-  idispnp2->Update(-1.0,*idispnp,1.0);
-  idispnp2->Norm2(&norm);
-  if (norm>1e-10)
-    dserror("got structure norm %e",norm);
-#endif
-
-//   cout << "idispn:\n" << *idispn
-//        << "idispnp:\n" << *idispnp
-//        << "iforce:\n" << *iforce
-//     ;
+  Teuchos::RefCountPtr<Epetra_Vector> iforce = FluidOp(idispn, fillFlag);
+  Teuchos::RefCountPtr<Epetra_Vector> idispnp = StructOp(iforce, fillFlag);
 
   F.Update(1.0, *idispnp, -1.0, *idispn, 0.0);
-
-#if 0
-  int struct_nodes[] = {
-    //2240,
-    2235,
-    2232,
-    2223,
-    2212,
-    2202,
-    2186,
-    2171,
-    2153,
-    2133,
-    2110,
-    2094,
-    2071,
-    2050,
-    2020,
-    2003,
-    1973,
-    1944,
-    1927,
-    1902,
-    1882,
-    1849,
-    1824,
-    1802,
-    1781,
-    1768,
-    1739,
-    1725,
-    1707,
-    1695,
-    1686,
-    1674,
-    //1666,
-    -1
-  };
-
-  static int count;
-  count += 1;
-
-  ostringstream name;
-  name << "drt_dump_" << count << ".txt";
-  ofstream out(name.str().c_str());
-
-  const Epetra_BlockMap& xmap = x.Map();
-  const Epetra_BlockMap& fmap = F.Map();
-  const Epetra_BlockMap& ifmap = iforce->Map();
-  const Epetra_BlockMap& idmap = idispnp->Map();
-
-  for (int i=0; struct_nodes[i]!=-1; ++i)
-  {
-    const DRT::Discretization& dis = structure_->Discretization();
-    DRT::Node* actnode = dis.gNode(struct_nodes[i]);
-    vector<int> dof = dis.Dof(actnode);
-
-    out << "# " << i << " " << struct_nodes[i] << " "
-        << "(" << actnode->X()[0] << "," << actnode->X()[1] << "," << actnode->X()[2] << ")"
-        << "(" << dof[0] << "," << dof[1] << ")\n";
-  }
-
-  for (int i=0; struct_nodes[i]!=-1; ++i)
-  {
-    const DRT::Discretization& dis = structure_->Discretization();
-    DRT::Node* actnode = dis.gNode(struct_nodes[i]);
-    vector<int> dof = dis.Dof(actnode);
-
-    out << i << " "
-        << x[xmap.LID(dof[0])] << " "
-        << x[xmap.LID(dof[1])] << " "
-        << F[fmap.LID(dof[0])] << " "
-        << F[fmap.LID(dof[1])] << " "
-        << (*iforce)[ifmap.LID(dof[0])] << " "
-        << (*iforce)[ifmap.LID(dof[1])] << " "
-        << (*idispnp)[idmap.LID(dof[0])] << " "
-        << (*idispnp)[idmap.LID(dof[1])] << " "
-        << "\n";
-  }
-  out.close();
-#endif
 
   return true;
 }
 
 
-Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::FluidOp(Teuchos::RefCountPtr<Epetra_Vector> idisp)
+Teuchos::RefCountPtr<Epetra_Vector>
+FSI::DirichletNeumannCoupling::FluidOp(Teuchos::RefCountPtr<Epetra_Vector> idisp,
+                                       const FillType fillFlag)
 {
-  ale_->ApplyInterfaceDisplacements(StructToAle(idisp));
+  if (fillFlag==User)
+  {
+    // SD relaxation calculation
 
-  // solve ale
-  ale_->Solve();
+    // Do we need to solve the ale here? Would the approximation
+    // suffer otherwise?
+    // Lets start with an unperturbed mesh
+    //ale_->ApplyInterfaceDisplacements(StructToAle(idisp));
+    //ale_->Solve();
 
-  // the displacement -> velocity conversion at the interface
-  Teuchos::RefCountPtr<Epetra_Vector> ivel = InterfaceVelocity(idisp);
+    // the displacement -> velocity conversion at the interface
+    Teuchos::RefCountPtr<Epetra_Vector> ivel = rcp(new Epetra_Vector(*idisp));
+    ivel->Scale(1./dt_);
 
-  Teuchos::RefCountPtr<Epetra_Vector> fluiddisp = AleToFluid(ale_->ExtractDisplacement());
+    //Teuchos::RefCountPtr<Epetra_Vector> fluiddisp = AleToFluid(ale_->ExtractDisplacement());
 
-  fluid_->ApplyInterfaceVelocities(StructToFluid(ivel));
-  fluid_->ApplyMeshDisplacement(fluiddisp);
+    return FluidToStruct(fluid_->RelaxationSolve(StructToFluid(ivel)));
+  }
+  else
+  {
+    // normal fluid solve
 
-  // solve fluid
-  fluid_->NonlinearSolve();
+    ale_->ApplyInterfaceDisplacements(StructToAle(idisp));
+    ale_->Solve();
 
-  return FluidToStruct(fluid_->ExtractInterfaceForces());
+    // the displacement -> velocity conversion at the interface
+    Teuchos::RefCountPtr<Epetra_Vector> ivel = InterfaceVelocity(idisp);
+    Teuchos::RefCountPtr<Epetra_Vector> fluiddisp = AleToFluid(ale_->ExtractDisplacement());
+
+    fluid_->ApplyInterfaceVelocities(StructToFluid(ivel));
+    fluid_->ApplyMeshDisplacement(fluiddisp);
+    fluid_->NonlinearSolve();
+    return FluidToStruct(fluid_->ExtractInterfaceForces());
+  }
 }
 
 
-Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::StructOp(Teuchos::RefCountPtr<Epetra_Vector> iforce)
+Teuchos::RefCountPtr<Epetra_Vector>
+FSI::DirichletNeumannCoupling::StructOp(Teuchos::RefCountPtr<Epetra_Vector> iforce,
+                                        const FillType fillFlag)
 {
-  structure_->ApplyInterfaceForces(iforce);
-
-  // solve structure
-  structure_->FullNewton();
-
-  return structure_->ExtractInterfaceDisplacement();
+  if (fillFlag==User)
+  {
+    // SD relaxation calculation
+    return structure_->RelaxationSolve(iforce);
+  }
+  else
+  {
+    // normal structure solve
+    structure_->ApplyInterfaceForces(iforce);
+    structure_->FullNewton();
+    return structure_->ExtractInterfaceDisplacement();
+  }
 }
 
 

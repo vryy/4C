@@ -128,10 +128,12 @@ public:
 private:
 
   /// interface fluid operator
-  Teuchos::RefCountPtr<Epetra_Vector> FluidOp(Teuchos::RefCountPtr<Epetra_Vector> idisp);
+  Teuchos::RefCountPtr<Epetra_Vector> FluidOp(Teuchos::RefCountPtr<Epetra_Vector> idisp,
+                                              const FillType fillFlag);
 
   /// interface structural operator
-  Teuchos::RefCountPtr<Epetra_Vector> StructOp(Teuchos::RefCountPtr<Epetra_Vector> iforce);
+  Teuchos::RefCountPtr<Epetra_Vector> StructOp(Teuchos::RefCountPtr<Epetra_Vector> iforce,
+                                               const FillType fillFlag);
 
   /// interface velocity calculation given the interface displacements
   Teuchos::RefCountPtr<Epetra_Vector> InterfaceVelocity(Teuchos::RefCountPtr<Epetra_Vector> idispnp);

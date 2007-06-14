@@ -38,12 +38,18 @@ public:
 
   const DRT::Discretization& Discretization() const { return *discret_; };
 
+  /// linear fluid solve with just a interface load
+  Teuchos::RefCountPtr<Epetra_Vector> RelaxationSolve(Teuchos::RefCountPtr<Epetra_Vector> ivel);
+
 private:
+
   Teuchos::RefCountPtr<Epetra_Map> ivelmap_;
   Teuchos::RefCountPtr<Epetra_Export> extractor_;
 
   Teuchos::RefCountPtr<Epetra_Map> meshmap_;
   Teuchos::RefCountPtr<Epetra_Export> meshextractor_;
+
+  Teuchos::RefCountPtr<Epetra_Vector> relax_;
 
   RefCountPtr<LINALG::Solver> solver_;
   RefCountPtr<ParameterList> params_;

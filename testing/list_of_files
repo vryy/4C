@@ -75,6 +75,7 @@ Input/fsi_ow32x32_sd_is.dat             x        x        x        x        -   
 Input/fsi_ow32x32_usfem.dat             x        x        x        x        -        -
 Input/fsi_ow32x32_usfem_2xaztec.dat     x        x        x        x        -        -
 Input/fsi_ow32x32_drt.dat               x        x        -        -        -        -
+Input/fsi_ow32x32_sd_drt.dat            x        x        -        -        -        -
 Input/fsi_ow3D_sd.dat                   x        x        x        x        -        -
 Input/fsi_ow3D_sd_is.dat                x        x        x        x        -        -
 Input/fsi_ow3D_usfem.dat                x        x        x        x        -        -

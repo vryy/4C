@@ -36,6 +36,9 @@ public:
 
   const DRT::Discretization& Discretization() const { return discret_; };
 
+  /// linear structure solve with just a interface load
+  Teuchos::RefCountPtr<Epetra_Vector> RelaxationSolve(Teuchos::RefCountPtr<Epetra_Vector> iforce);
+
 private:
 
   void CalculateStiffness();

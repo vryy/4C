@@ -28,22 +28,23 @@ FSI::Structure::Structure(Teuchos::RefCountPtr<ParameterList> params,
     solver_(solver),
     output_(output)
 {
-  //inserter_  = rcp(new Epetra_Import(dis_->Map(), *idispmap_));
 }
 
 
-// void FSI::Structure::NewStep(int step, double time)
-// {
-//   // Nein!
-//   params_.set<double>("total time",time);
-//   params_.set<int>   ("step"      ,step);
-//   //step_ = step;
-//   //time_ = time;
-// }
-
 void FSI::Structure::PrepareTimeStep()
 {
-  ConstantPredictor();
+  string pred = params_->get<string>("predictor","constant");
+  if (pred=="constant")
+  {
+    ConstantPredictor();
+  }
+  else if (pred=="consistent")
+  {
+    ConsistentPredictor();
+  }
+  else
+    dserror("predictor %s unknown", pred.c_str());
+
   fextncopy_ = rcp(new Epetra_Vector(*fextn_));
 }
 
@@ -90,10 +91,25 @@ void FSI::Structure::ApplyInterfaceForces(Teuchos::RefCountPtr<Epetra_Vector> if
   double alpham  = params_->get<double>("alpha m", 0.378);
 
   // restort initial state
-  dism_->Update(1.-alphaf,*disn_,alphaf,*dis_,0.0);
-  velm_->Update(1.-alphaf,*veln_,alphaf,*vel_,0.0);
-  accm_->Update(1.-alpham,*accn_,alpham,*acc_,0.0);
+  // Do we really want that? We could just as well start from the last
+  // solution. This could be much closer...
+  string pred = params_->get<string>("predictor","constant");
+  if (pred=="constant")
+  {
+    dism_->Update(1.-alphaf,*disn_,alphaf,*dis_,0.0);
+    velm_->Update(1.0,*vel_,0.0);
+    accm_->Update(1.0,*acc_,0.0);
+  }
+  else if (pred=="consistent")
+  {
+    dism_->Update(1.-alphaf,*disn_,alphaf,*dis_,0.0);
+    velm_->Update(1.-alphaf,*veln_,alphaf,*vel_,0.0);
+    accm_->Update(1.-alpham,*accn_,alpham,*acc_,0.0);
+  }
+  else
+    dserror("predictor %s unknown", pred.c_str());
 
+  // reset of external forces is needed
   fextn_->Update(1.0, *fextncopy_, 0.0);
   int err = fextn_->Import(*iforce,*extractor_,Add);
   if (err)
@@ -101,6 +117,7 @@ void FSI::Structure::ApplyInterfaceForces(Teuchos::RefCountPtr<Epetra_Vector> if
 
   fextm_->Update(1.-alphaf,*fextn_,alphaf,*fext_,0.0);
 
+  // and rebuild the stiffness matrix
   CalculateStiffness();
 }
 
@@ -123,12 +140,6 @@ void FSI::Structure::CalculateStiffness()
     ParameterList p;
     // action for elements
     p.set("action","calc_struct_nlnstiff");
-    // choose what to assemble
-    p.set("assemble matrix 1",true);
-    p.set("assemble matrix 2",false);
-    p.set("assemble vector 1",true);
-    p.set("assemble vector 2",false);
-    p.set("assemble vector 3",false);
     // other parameters that might be needed by the elements
     p.set("total time",time);
     p.set("delta time",dt);
@@ -138,7 +149,7 @@ void FSI::Structure::CalculateStiffness()
     discret_.SetState("displacement",dism_);
     //discret_.SetState("velocity",velm_); // not used at the moment
     fint_->PutScalar(0.0);  // initialise internal force vector
-    discret_.Evaluate(p,stiff_,null,fint_,null,null);
+    discret_.Evaluate(p,stiff_,fint_);
     discret_.ClearState();
     // do NOT finalize the stiffness matrix, add mass and damping to it later
   }
@@ -167,6 +178,61 @@ void FSI::Structure::CalculateStiffness()
 
   //------------------------------------------------ build residual norm
   fresm_->Norm2(&norm_);
+}
+
+
+Teuchos::RefCountPtr<Epetra_Vector> FSI::Structure::RelaxationSolve(Teuchos::RefCountPtr<Epetra_Vector> iforce)
+{
+  // -------------------------------------------------------------------
+  // get some parameters from parameter list
+  // -------------------------------------------------------------------
+  double dt        = params_->get<double>("delta time"             ,0.01);
+  bool   damping   = params_->get<bool>  ("damping"                ,false);
+  double beta      = params_->get<double>("beta"                   ,0.292);
+  double gamma     = params_->get<double>("gamma"                  ,0.581);
+  double alpham    = params_->get<double>("alpha m"                ,0.378);
+  double alphaf    = params_->get<double>("alpha f"                ,0.459);
+
+  // set external forces to just the forces at the interface
+  fextn_->PutScalar(0.0);
+  int err = fextn_->Import(*iforce,*extractor_,Insert);
+  if (err)
+    dserror("Insert using extractor returned err=%d",err);
+
+  // we start from zero
+  fextm_->Update(1.-alphaf,*fextn_,0.0);
+
+  // This (re)creates the stiffness matrix at the current
+  // configuration.
+  CalculateStiffness();
+
+  //------------------------------------------- effective rhs is fresm
+  //---------------------------------------------- build effective lhs
+  // (using matrix stiff_ as effective matrix)
+  LINALG::Add(*mass_,false,(1.-alpham)/(beta*dt*dt),*stiff_,1.-alphaf);
+  if (damping)
+    LINALG::Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),*stiff_,1.0);
+  LINALG::Complete(*stiff_);
+
+  //----------------------- apply dirichlet BCs to system of equations
+  disi_->PutScalar(0.0);  // Useful? depends on solver and more
+  LINALG::ApplyDirichlettoSystem(stiff_,disi_,fextm_,zeros_,dirichtoggle_);
+
+  //--------------------------------------------------- solve for disi
+  // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
+  solver_->Solve(stiff_,disi_,fextm_,true,true);
+  stiff_ = null;
+
+  // we are just interessted in the incremental interface displacements
+  Teuchos::RefCountPtr<Epetra_Vector> idisi = rcp(new Epetra_Vector(*idispmap_));
+  err = idisi->Export(*disi_,*extractor_,Insert);
+  if (err)
+    dserror("Export using exporter returned err=%d",err);
+
+  // just to make sure...
+  disi_->PutScalar(0.0);
+
+  return idisi;
 }
 
 

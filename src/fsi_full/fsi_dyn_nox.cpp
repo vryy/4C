@@ -13,6 +13,7 @@
 // hybrid here. (These enhancements do not depend on anything special
 // to the new discretization.)
 #include "../drt_fsi/fsi_nox_aitken.H"
+#include "../drt_fsi/fsi_nox_sd.H"
 #include "../drt_fsi/fsi_nox_extrapolate.H"
 #include "../drt_fsi/fsi_nox_michler.H"
 #include "../drt_fsi/fsi_nox_fixpoint.H"
@@ -1308,6 +1309,18 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     // We change the method here.
     linesearch.set("Method","User Defined");
     linesearch.set("User Defined Line Search",aitken);
+  }
+
+  // Set user defined steepest descent line search object.
+  else if (nlParams.sublist("Line Search").get("Method","Aitken")=="SD")
+  {
+    // insert user defined aitken relaxation
+    Teuchos::ParameterList& linesearch = nlParams.sublist("Line Search");
+    Teuchos::RefCountPtr<NOX::LineSearch::Generic> sd = Teuchos::rcp(new SDRelaxation(utils,linesearch));
+
+    // We change the method here.
+    linesearch.set("Method","User Defined");
+    linesearch.set("User Defined Line Search",sd);
   }
 
   // the very special experimental extrapolation
