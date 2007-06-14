@@ -549,7 +549,7 @@ void StruGenAlpha::FullNewton()
     // incremental (required for constant predictor)
     velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
     velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
-                  (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_, // dt here!!!!!
+                  (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_, 
                   gamma/(beta*dt));
     // accelerations
     // iterative
@@ -1002,19 +1002,6 @@ void StruGenAlpha::NonlinearCG()
                 (2.*beta-1.+alpham)/(2.*beta),*acc_,
                 (1.-alpham)/((1.-alphaf)*beta*dt*dt));
 
-#if 0
-    //------------------------- do update for mid configuration quantities
-    // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
-    dism_->Update(1.-alphaf,*disi_,1.0);
-    // V_{n+1-alpha_f} := V_{n+1-alpha_f}
-    //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
-    velm_->Update((1.-alphaf)*gamma/(beta*dt),*disi_,1.0);
-    // A_{n+1-alpha_m} := A_{n+1-alpha_m}
-    //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
-    accm_->Update((1.-alpham)/(beta*dt*dt),*disi_,1.0);
-    
-    //-------------------------------------- don't need this at the moment
-#endif
     stiff_ = null;
     return;
   }

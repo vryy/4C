@@ -340,9 +340,6 @@ public:
     integrator_.fresm_->Scale(-1.0);
     // copy residual forces to nox vector
     F.Update(1.0,*integrator_.fresm_,0.0);
-    double dnorm = 0.0;
-    disi->Norm2(&dnorm);
-    cout << "Meine disi norm " << dnorm << endl;
     // copy disi to time integrator
     integrator_.disi_->Update(1.0,*disi,0.0);
     //========================================================================
