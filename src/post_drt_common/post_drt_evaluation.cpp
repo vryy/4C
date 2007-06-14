@@ -236,6 +236,20 @@ int Elements::XFluid3::EvaluateNeumann(ParameterList&, Discretization&, Conditio
   return 0;
 }
 
+int Elements::XFluid3Surface::Evaluate(ParameterList&,
+                                       Discretization&,
+                                       vector<int>&,
+                                       Epetra_SerialDenseMatrix&,
+                                       Epetra_SerialDenseMatrix&,
+                                       Epetra_SerialDenseVector&,
+                                       Epetra_SerialDenseVector&,
+                                       Epetra_SerialDenseVector&)
+{
+  dserror("Elements::XFluid3Surface::Evaluate undefined");
+  return 0;
+}
+
+
 int Elements::XFluid3Surface::EvaluateNeumann(ParameterList& params,
                                           Discretization&      discretization,
                                           Condition&           condition,
@@ -246,7 +260,30 @@ int Elements::XFluid3Surface::EvaluateNeumann(ParameterList& params,
   return 0;
 }
 
-#endif
+int Elements::XFluid3Line::Evaluate(ParameterList&,
+                                    Discretization&,
+                                    vector<int>&,
+                                    Epetra_SerialDenseMatrix&,
+                                    Epetra_SerialDenseMatrix&,
+                                    Epetra_SerialDenseVector&,
+                                    Epetra_SerialDenseVector&,
+                                    Epetra_SerialDenseVector&)
+{
+  dserror("Elements::XFluid3Line::Evaluate undefined");
+  return 0;
+}
+
+int Elements::XFluid3Line::EvaluateNeumann(ParameterList& params,
+                                           Discretization&      discretization,
+                                           Condition&           condition,
+                                           vector<int>&              lm,
+                                           Epetra_SerialDenseVector& elevec1)
+{
+  dserror("Elements::XFluid3Line::EvaluateNeumann undefined");
+  return 0;
+}
+
+#endif // #ifdef D_FLUID3_XFEM
 
 #ifdef D_FLUID2
 int Elements::Fluid2Register::Initialize(Discretization&)
