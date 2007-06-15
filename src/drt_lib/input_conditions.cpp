@@ -95,10 +95,10 @@ static void input_surf_fsi_coupling(multimap<int,RefCountPtr<DRT::Condition> >& 
 
 
 /*----------------------------------------------------------------------*
- | fsi xfem                                               u.may 05/07   |
+ | xfem                                                   u.may 05/07   |
  *----------------------------------------------------------------------*/
-static void input_line_fsi_xfem(multimap<int,RefCountPtr<DRT::Condition> >& lfsixfemmap); // Ursula
-static void input_surf_fsi_xfem(multimap<int,RefCountPtr<DRT::Condition> >& sfsixfemmap); //Ursula
+static void input_line_xfem(multimap<int,RefCountPtr<DRT::Condition> >& lxfemmap);
+static void input_surf_xfem(multimap<int,RefCountPtr<DRT::Condition> >& sxfemmap);
 
 
 /*----------------------------------------------------------------------*
@@ -233,14 +233,14 @@ void input_conditions(const DRT::Problem& problem)
   multimap<int,RefCountPtr<DRT::Condition> > surffsicoup;
   input_surf_fsi_coupling(surffsicoup);
   setup_condition(surffsicoup, dsurf_fenode);
-  //--------------------------------------- read line fsi xfem condition
-  multimap<int,RefCountPtr<DRT::Condition> > linefsixfem;
-  input_line_fsi_xfem(linefsixfem);
-  setup_condition(linefsixfem, dline_fenode);
-  //------------------------------------ read surface fsi xfem condition
-  multimap<int,RefCountPtr<DRT::Condition> > surffsixfem;
-  input_surf_fsi_xfem(surffsixfem);
-  setup_condition(surffsixfem, dsurf_fenode);
+  //--------------------------------------- read line xfem condition
+  multimap<int,RefCountPtr<DRT::Condition> > linexfem;
+  input_line_xfem(linexfem);
+  setup_condition(linexfem, dline_fenode);
+  //------------------------------------ read surface xfem condition
+  multimap<int,RefCountPtr<DRT::Condition> > surfxfem;
+  input_surf_xfem(surfxfem);
+  setup_condition(surfxfem, dsurf_fenode);
   //--------------------------------------- read line isothermal noslip wall conditions
   multimap<int,RefCountPtr<DRT::Condition> > lineisothermnoslip;
   input_line_isothermnoslipwall(lineisothermnoslip);
@@ -285,8 +285,8 @@ void input_conditions(const DRT::Problem& problem)
       register_condition("FSICoupling", "FSI Coupling", linefsicoup, actdis, noderowmap);
       register_condition("FSICoupling", "FSI Coupling", surffsicoup, actdis, noderowmap);
 
-      register_condition("FSIXFEM", "FSI XFEM", linefsixfem, actdis, noderowmap);
-      register_condition("FSIXFEM", "FSI XFEM", surffsixfem, actdis, noderowmap);
+      register_condition("XFEM", "XFEM", linexfem, actdis, noderowmap);
+      register_condition("XFEM", "XFEM", surfxfem, actdis, noderowmap);
 
       register_condition("LineIsothermalNoslip", "Isothermal no-slip wall", lineisothermnoslip, actdis, noderowmap);
       register_condition("LineSubsonicInflow", "Subsonic inflow", linesubsonicinflow, actdis, noderowmap);
@@ -1701,9 +1701,9 @@ void input_surf_fsi_coupling(multimap<int,RefCountPtr<DRT::Condition> >& sfsicou
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void input_line_fsi_xfem(multimap<int,RefCountPtr<DRT::Condition> >& lfsixfemmap)
+void input_line_xfem(multimap<int,RefCountPtr<DRT::Condition> >& lxfemmap)
 {
-  if (frfind("--DESIGN FSI XFEM LINE CONDITIONS")==0) return;
+  if (frfind("--DESIGN XFEM LINE CONDITIONS")==0) return;
   frread();
 
   /*---------------------- read number of design lines with conditions */
@@ -1711,7 +1711,7 @@ void input_line_fsi_xfem(multimap<int,RefCountPtr<DRT::Condition> >& lfsixfemmap
   int ndline=0;
   frint("DLINE",&ndline,&ierr);
 
-  if (ierr!=1) dserror("Cannot read line fsi xfem");
+  if (ierr!=1) dserror("Cannot read line xfem");
   frread();
 
   /*----------------------------------- start reading the design lines */
@@ -1720,23 +1720,23 @@ void input_line_fsi_xfem(multimap<int,RefCountPtr<DRT::Condition> >& lfsixfemmap
     /*------------------------------------------ read the design surf Id */
     int dlineid = -1;
     frint("E",&dlineid,&ierr);
-    if (ierr!=1) dserror("Cannot read line fsi xfem");
+    if (ierr!=1) dserror("Cannot read line xfem");
     dlineid--;
 
     /*--------------------------------- move pointer behind the "-" sign */
     char* colptr = strstr(allfiles.actplace,"-");
-    if (colptr==NULL) dserror("Cannot read line fsi xfem");
+    if (colptr==NULL) dserror("Cannot read line xfem");
     colptr++;
 
     /*----------------------------------------- read the  fsi couplingId */
     int coupleId=-1;
     coupleId = strtol(colptr,&colptr,10);
-    if (coupleId<=0) dserror("Cannot read line fsi xfem");
+    if (coupleId<=0) dserror("Cannot read line xfem");
 
     /*------------------------------------------------ read the fieldtyp */
     char buffer[50];
     ierr=sscanf(colptr," %s ",buffer);
-    if (ierr!=1) dserror("Cannot read line fsi xfem");
+    if (ierr!=1) dserror("Cannot read line xfem");
 
     // create periodic boundary condition
     RefCountPtr<DRT::Condition> condition = rcp(new DRT::Condition(dlineid,
@@ -1746,7 +1746,7 @@ void input_line_fsi_xfem(multimap<int,RefCountPtr<DRT::Condition> >& lfsixfemmap
     condition->Add("field", string(buffer));
 
     //--------------------------------- put condition in map of conditions
-    lfsixfemmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dlineid,condition));
+    lxfemmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dlineid,condition));
 
     //-------------------------------------------------- read the next line
     frread();
@@ -1756,7 +1756,7 @@ void input_line_fsi_xfem(multimap<int,RefCountPtr<DRT::Condition> >& lfsixfemmap
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void input_surf_fsi_xfem(multimap<int,RefCountPtr<DRT::Condition> >& sfsixfemmap)
+void input_surf_xfem(multimap<int,RefCountPtr<DRT::Condition> >& sxfemmap)
 {
   if (frfind("--DESIGN FSI XFEM SURFACE CONDITIONS")==0) return;
   frread();
@@ -1766,7 +1766,7 @@ void input_surf_fsi_xfem(multimap<int,RefCountPtr<DRT::Condition> >& sfsixfemmap
   int ndsurface=0;
   frint("DSURF",&ndsurface,&ierr);
 
-  if (ierr!=1) dserror("Cannot read surface fsi xfem");
+  if (ierr!=1) dserror("Cannot read surface xfem");
   frread();
 
   /*----------------------------------- start reading the design surfaces */
@@ -1775,23 +1775,23 @@ void input_surf_fsi_xfem(multimap<int,RefCountPtr<DRT::Condition> >& sfsixfemmap
     /*------------------------------------------ read the design surface Id */
     int dsurfaceid = -1;
     frint("E",&dsurfaceid,&ierr);
-    if (ierr!=1) dserror("Cannot read surface fsi xfem");
+    if (ierr!=1) dserror("Cannot read surface xfem");
     dsurfaceid--;
 
     /*--------------------------------- move pointer behind the "-" sign */
     char* colptr = strstr(allfiles.actplace,"-");
-    if (colptr==NULL) dserror("Cannot read surface fsi xfem");
+    if (colptr==NULL) dserror("Cannot read surface xfem");
     colptr++;
 
-    /*----------------------------------------- read the  fsi xfemId */
+    /*----------------------------------------- read the xfem Id */
     int coupleId=-1;
     coupleId = strtol(colptr,&colptr,10);
-    if (coupleId<=0) dserror("Cannot read surface fsi xfem");
+    if (coupleId<=0) dserror("Cannot read surface xfem");
 
     /*------------------------------------------------ read the fieldtyp */
     char buffer[50];
     ierr=sscanf(colptr," %s ",buffer);
-    if (ierr!=1) dserror("Cannot read surface fsi xfem");
+    if (ierr!=1) dserror("Cannot read surface xfem");
 
     // create periodic boundary condition
     RefCountPtr<DRT::Condition> condition = rcp(new DRT::Condition(dsurfaceid,
@@ -1801,7 +1801,7 @@ void input_surf_fsi_xfem(multimap<int,RefCountPtr<DRT::Condition> >& sfsixfemmap
     condition->Add("field", string(buffer));
 
     //--------------------------------- put condition in map of conditions
-    sfsixfemmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dsurfaceid,condition));
+    sxfemmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dsurfaceid,condition));
 
     //-------------------------------------------------- read the next surface
     frread();
