@@ -243,6 +243,12 @@ public:
     RefCountPtr<Epetra_Vector> disi = rcp(&dx);
     disi.release();
     
+    // blank increment on Dirichlet BC
+    {
+      Epetra_Vector disicopy(*disi);
+      disi->Multiply(1.0,*integrator_.invtoggle_,disicopy,0.0);
+    }
+    
     //---------------------------------- update mid configuration values
     RefCountPtr<Epetra_Vector> dism = LINALG::CreateVector(*dofrowmap,false);
     RefCountPtr<Epetra_Vector> velm = LINALG::CreateVector(*dofrowmap,false);
