@@ -123,8 +123,8 @@ bool DRT::Elements::XFluid3::ReadElement()
     
     // map gid numbering to baci numbering
     int   nodes[27];
-    for (int i=0; i<nnode; ++i) nodes[i] = nodes_read[gid2baciNodeNumbering[i]];
-    //for (int i=0; i<nnode; ++i) nodes[i] = nodes_read[i];
+    //for (int i=0; i<nnode; ++i) nodes[i] = nodes_read[gid2baciNodeNumbering[i]];
+    for (int i=0; i<nnode; ++i) nodes[i] = nodes_read[i];
     
     SetNodeIds(nnode,nodes);
 

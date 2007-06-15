@@ -308,6 +308,13 @@ private:
   // constants
   static const int                                NSD_ = 3;
   
+  
+  static const int                                hex27_surfaces[6][9];
+  static const int                                hex27_lines[12][3];
+  
+  static const int                                tet10_surfaces[4][6];
+  static const int                                tet10_lines[6][3];
+  
 
   //! gaussrule used for weak form integration
   GaussRule                                       gaussrule_;
