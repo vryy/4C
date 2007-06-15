@@ -99,23 +99,30 @@ public:
   //! @name service functions for time loop
 
   /*!
-  \brief Predict acceleration, velocity and pressure of the
-  new timestep.  Up to, we use a constant predictor for the
-  acceleration and the pressure.
+  \brief Predict velocity and pressure of the new timestep. Up to now, we
+  use a constant predictor for the velocity and the pressure.      
   
+  Remark: For Dirichlet nodes, no matter what was set here, velnp  
+          will be overwritten by the prescribed value. The         
+          accelerations are calculated after these Dirichlet values
+          have been set.
   */
   void GenAlphaPredictNewSolutionValues();
 
   /*!
-  \brief Evaluate acceleration and velocity at the intermediate
-  time level n+alpha_M and n+alpha_F
-  
+  \brief Apply Dirichlet boundary conditions to velocity vector.
+  Apply surface Neumann conditions.
+
   */
-  void GenAlphaComputeIntermediateSol(
-    double            dt     ,
-    double            alpha_M,
-    double            alpha_F
-    );
+  void GenAlphaApplyDirichletAndNeumann();
+  
+  /*!
+  \brief calculate initial acceleration according to predicted
+  velocities and boundary values
+
+  */
+  void GenAlphaCalcInitialAccelerations();
+
 
   
   /*!
@@ -137,11 +144,20 @@ public:
 
   //! @name service methods for nonlinear iteration
 
+
+  /*!
+  \brief Evaluate acceleration and velocity at the intermediate
+  time level n+alpha_M and n+alpha_F
+  
+  */
+  void GenAlphaComputeIntermediateSol();
+
   /*!
   \brief Assemble linearised system and solve linear problem
   
   */
   void GenAlphaCalcIncrement(
+    int          itnum  
     );
 
   /*!
@@ -156,6 +172,7 @@ public:
   
   */
   bool GenAlphaNonlinearConvergenceCheck(
+    int          itnum  
     );
 
   //@}
@@ -189,6 +206,9 @@ private:
   ParameterList&                   params_;
   DiscretizationWriter&            output_;
   
+  // the dimension of the problem --- determines which dofs are pressure dofs
+  int                              numdim_;
+  
   // parallelism
   int                              myrank_;
 
@@ -198,6 +218,14 @@ private:
   // current time and step
   double                           time_;
   int                              step_;
+
+  // current time step size
+  double                           dt_;
+
+  // parameters for generalised alpha
+  double                           gamma_;
+  double                           alphaM_;
+  double                           alphaF_;
 
 
   // write restart every uprestart_ steps --- restartstep_ is
@@ -227,11 +255,16 @@ private:
   RefCountPtr<Epetra_Vector>       neumann_loads_;
 
   // acceleration and pressure at time n+1, n and intermediate time step n+alpha_M
+  // in all acc vectors, every component associated to a pressure dof is
+  // completely meaningless --- the Navier Stokes equations are a differential
+  // algebraic equation, there's no evolution equation for the pressure!
   RefCountPtr<Epetra_Vector>       accnp_;
   RefCountPtr<Epetra_Vector>       accn_;
   RefCountPtr<Epetra_Vector>       accam_;
   
   // velocities and pressures at time n+1, n and intermediate time step n+alpha_F
+  // in velaf_, every component associated to a pressure dof is completely
+  // meaningless since the pressure is treated implicitly.
   RefCountPtr<Epetra_Vector>       velnp_;
   RefCountPtr<Epetra_Vector>       veln_;
   RefCountPtr<Epetra_Vector>       velaf_;
