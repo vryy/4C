@@ -117,7 +117,7 @@ case calc_struct_init:
      w1_read_restart(NULL,NULL,NULL,1);
    }/* end of else: if (genprob.multisc_struct == 1) */
 #ifndef LOCALSYSTEMS_ST
-   w1_locsys_check(actpart);
+   w1_locsys_checkoff(actpart);
 #endif
 break;/*----------------------------------------------------------------*/
 /*----------------------------------- calculate linear stiffness matrix */

@@ -22,7 +22,7 @@ Maintainer: Burkhard Bornemann
 
 /*======================================================================*/
 /*!
-\brief Check if an BRICK1 element has an local system
+\brief Check if a BRICK1 element has an local system
 
 \param  *actpart  PARTITION   (i)   pointer to current partition
 \return void
@@ -31,7 +31,7 @@ Maintainer: Burkhard Bornemann
 \date 03/06
 */
 #ifndef LOCALSYSTEMS_ST
-void c1_locsys_check(PARTITION* actpart)
+void c1_locsys_checkoff(PARTITION* actpart)
 {
   INT jdis;  /* discretisation loop jndex */
   INT iele;  /* element loop index */
@@ -40,7 +40,7 @@ void c1_locsys_check(PARTITION* actpart)
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
-  dstrc_enter("c1_locsys_check");
+  dstrc_enter("c1_locsys_checkoff");
 #endif
   
   /*--------------------------------------------------------------------*/

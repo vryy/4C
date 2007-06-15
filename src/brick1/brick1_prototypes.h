@@ -792,7 +792,7 @@ void c1_tsi_thstrain(CONTAINER *container,  /* container data */
  | defined in c1_locsys.c                                               |
  *----------------------------------------------------------------------*/
 #ifndef LOCALSYSTEMS_ST
-void c1_locsys_check(PARTITION* actpart);
+void c1_locsys_checkoff(PARTITION* actpart);
 #endif
 
 #endif

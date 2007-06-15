@@ -137,7 +137,7 @@ void solid3(PARTITION *actpart,
 /*      th2_write_restart(NULL, NULL, 0, NULL, 1); */
 /*      th2_read_restart(NULL, NULL, NULL, 1); */
 #ifndef LOCALSYSTEMS_ST
-      so3_locsys_check(actpart);
+      so3_locsys_checkoff(actpart);
 #endif
       break;
     /*------------------------------------------------------------------*/

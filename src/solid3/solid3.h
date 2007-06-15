@@ -645,7 +645,7 @@ void so3_iv_updincr(const CONTAINER* container,
 /*----------------------------------------------------------------------*/
 /* file so3_locsys.c */
 #ifndef LOCALSYSTEMS_ST
-void so3_locsys_check(PARTITION* actpart);
+void so3_locsys_checkoff(PARTITION* actpart);
 #endif
 
 /*----------------------------------------------------------------------*/

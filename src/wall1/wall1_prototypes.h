@@ -1257,7 +1257,7 @@ void w1_tsi_thstrain(CONTAINER *container,  /* container data */
  |  w1_locsys.c                                                         |
  *----------------------------------------------------------------------*/
 #ifndef LOCALSYSTEMS_ST
-void w1_locsys_check(PARTITION* actpart);
+void w1_locsys_checkoff(PARTITION* actpart);
 #endif
 /*----------------------------------------------------------------------*/
 #endif /*D_WALL1*/
