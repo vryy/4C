@@ -374,7 +374,8 @@ OBJS_BRICK1   = src/brick1/c1_out.o \
                 src/brick1/c1_cstr.o \
                 src/brick1/c1_load.o \
                 src/brick1/c1_tsi.o \
-                src/brick1/c1_surf.o
+                src/brick1/c1_surf.o \
+                src/brick1/c1_locsys.o
 #               math
 OBJS_MATH     = src/math/sort_find.o \
                 src/math/math1.o \
@@ -442,6 +443,7 @@ OBJS_WALL1    = src/wall1/w1_bop.o \
                 src/wall1/w1_mat_trans.o \
                 src/wall1/w1_cal_trans.o \
                 src/wall1/w1_incompmode.o \
+                src/wall1/w1_locsys.o \
                 src/wall1/w1_math.o \
                 src/wall1/w1_restart.o \
                 src/wall1/wallcontact_init.o \
@@ -828,6 +830,7 @@ OBJS_SOLID3   = src/solid3/so3_bop.o \
                 src/solid3/so3_int.o \
                 src/solid3/so3_intg.o \
                 src/solid3/so3_iv.o \
+                src/solid3/so3_locsys.o \
                 src/solid3/so3_load.o \
                 src/solid3/so3_load_line.o \
                 src/solid3/so3_load_surf.o \

@@ -85,8 +85,7 @@ case calc_struct_init:
    c1_cint(NULL,NULL,NULL,NULL,NULL,NULL,1,NULL);
    c1_eleload(NULL,NULL,NULL,1);
 #ifndef LOCALSYSTEMS_ST
-   dsassert(ele->locsys==locsys_no,
-            "locsys not compiled for this element, define LOCALSYSTEMS_ST\n");
+   c1_locsys_check(actpart);
 #endif
 break;/*----------------------------------------------------------------*/
 /*----------------------------------- calculate linear stiffness matrix */

@@ -108,6 +108,7 @@ case calc_struct_init:
 #endif /* D_MLSTRUCT */
    {
      w1init(actpart, mat);
+     w1_locsys_check(actpart);
      w1static_ke(NULL,NULL,NULL,NULL,NULL,NULL,1);
      w1static_keug(NULL,NULL,NULL,NULL,NULL,NULL,1,NULL);
      w1_cal_stress(NULL,NULL,NULL,0,1);
@@ -117,8 +118,7 @@ case calc_struct_init:
      w1_read_restart(NULL,NULL,NULL,1);
    }/* end of else: if (genprob.multisc_struct == 1) */
 #ifndef LOCALSYSTEMS_ST
-   dsassert(ele->locsys==locsys_no,
-            "locsys not compiled for WALL1 element, define LOCALSYSTEMS_ST\n");
+   w1_locsys_check(actpart);
 #endif
 break;/*----------------------------------------------------------------*/
 /*----------------------------------- calculate linear stiffness matrix */

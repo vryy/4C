@@ -643,6 +643,12 @@ void so3_iv_updincr(const CONTAINER* container,
                     const MATERIAL* mat);
 
 /*----------------------------------------------------------------------*/
+/* file so3_locsys.c */
+#ifndef LOCALSYSTEMS_ST
+void so3_locsys_check(PARTITION* actpart);
+#endif
+
+/*----------------------------------------------------------------------*/
 /* file so3_load.c */
 void so3_load(ELEMENT *ele,
               SO3_DATA *data,

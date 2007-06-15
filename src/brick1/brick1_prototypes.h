@@ -787,7 +787,13 @@ void c1_tsi_thstrain(CONTAINER *container,  /* container data */
                      DOUBLE t,  /* Gauss point t-coordinate */
                      INT numstr,  /* dimension of strain vector (6) */
                      DOUBLE *strain);  /* strain vector */
-
+/*----------------------------------------------------------------------*
+ | check element local system                               bborn 06/07 |
+ | defined in c1_locsys.c                                               |
+ *----------------------------------------------------------------------*/
+#ifndef LOCALSYSTEMS_ST
+void c1_locsys_check(PARTITION* actpart);
+#endif
 
 #endif
 /*! @} (documentation module close)*/

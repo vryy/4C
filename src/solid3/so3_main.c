@@ -136,9 +136,9 @@ void solid3(PARTITION *actpart,
       so3_stress_init(actpart);
 /*      th2_write_restart(NULL, NULL, 0, NULL, 1); */
 /*      th2_read_restart(NULL, NULL, NULL, 1); */
+/*       so3_locsys_test(actpart); */
 #ifndef LOCALSYSTEMS_ST
-      dsassert(ele->locsys == locsys_no,
-               "locsys not compiled for SOLID3, define LOCALSYSTEMS_ST\n");
+      so3_locsys_check(actpart);
 #endif
       break;
     /*------------------------------------------------------------------*/

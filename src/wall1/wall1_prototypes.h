@@ -1253,6 +1253,12 @@ void w1_tsi_thstrain(CONTAINER *container,  /* container data */
                      INT numstr,  /* dimension of strain vector 'strain' */
                      DOUBLE *strain);  /* strain vector */
 #endif /* end of #ifdef D_TSI */
+/*----------------------------------------------------------------------*
+ |  w1_locsys.c                                                         |
+ *----------------------------------------------------------------------*/
+#ifndef LOCALSYSTEMS_ST
+void w1_locsys_check(PARTITION* actpart);
+#endif
 /*----------------------------------------------------------------------*/
 #endif /*D_WALL1*/
 /*! @} (documentation module close)*/
