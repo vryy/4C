@@ -97,6 +97,7 @@ Input/so3_elast_geonln.dat              x        -        x        -        -   
 Input/so3_elast_geonln_sd.dat           x        -        x        -        -        -
 Input/so3_neum_geonln.dat               x        -        x        -        -        -
 Input/so3_orthopress_pyra.dat           x        -        x        -        -        -
+Input/so3_dyn_inclined_bc.dat           x        -        x        -        -        -
 Input/ssi_mortar_canti.dat              x        -        x        -        -        -
 Input/struct2ml_ifvers.dat              x        -        x        -        -        -
 Input/tsi_th2sta_w1dyn_3ele.dat         x        -        x        -        -        -

@@ -86,7 +86,7 @@ typedef struct _DNODE
    /*enum _SSI_COUPTYP         ssi_couptyp;*/
    struct _SSI_COUPLE_CONDITION *ssicouple;
 #endif
-   INT                     locsysId;
+   INT                     locsysId;       /* ID of local co-ordinate system */
 } DNODE;
 
 
@@ -146,7 +146,7 @@ typedef struct _DLINE
    struct _SSI_COUPLE_CONDITION *ssicouple;
 #endif
 
-   INT                     locsysId;
+   INT                     locsysId;       /* ID of local co-ordinate system */
 } DLINE;
 
 
@@ -267,7 +267,7 @@ typedef struct _DSURF
   DOUBLE  gamma_min_eq ;    /* minimum equilibrium surface stress
                              * (surfactant) */
 #endif
-   INT                     locsysId;
+   INT                     locsysId;       /* ID of local co-ordinate system */
 } DSURF;
 
 
@@ -330,5 +330,5 @@ typedef struct _DVOL
    struct _DIRICH_CONDITION     *ale_dirich;   /* dirichlet conditions for ale dis */
 #endif
 
-   INT                     locsysId;
+   INT                     locsysId;       /* ID of local co-ordinate system */
 } DVOL;

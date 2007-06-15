@@ -603,13 +603,42 @@ actcurve = 0;
 dyn_facfromcurve(actcurve,sdyn->time,&(dynvar.rldfac));
 solserv_scalarprod_vec(&(actsolv->rhs[1]),dynvar.rldfac);
 
+/*--------------------- rotate Dirichlet displacement into local system */
+/* prior to calculation/assignment of locally oriented prescribed DBC values */
+#ifdef LOCALSYSTEMS_ST
+/*locsys_trans_sol_dirich(actfield, disnum, node_array_sol, 4, 0);*/
+/* solserv_sol_zero(actfield, disnum, node_array_sol, 4); */
+solserv_zerodirich(actfield, disnum, node_array_sol, 4);
+#endif
+
 /* put the prescribed scaled displacements to the nodes in field sol at */
 /*                                  place 4 separate from the free dofs */
 /* these are used to calculate the rhs due to dirichlet conditions */
-solserv_putdirich_to_dof(actfield,0,0,4,sdyn->time);
+/* In the case of locally oriented DBCs, these prescribed DOFs are
+ * given in the local system. */
+solserv_putdirich_to_dof(actfield,disnum,node_array_sol,4,sdyn->time);
+
+/*--------------- rotate Dirichlet displacement back into global system */
+/* post assignment of presc. DBC values;
+ * This operation will not only rotate the prescribed DOFs of the relevant
+ * Dirichlet node, but all (i.e. prescribed & free) its DOFs. */
+#ifdef LOCALSYSTEMS_ST
+locsys_trans_sol_dirich(actfield, disnum, node_array_sol, 4, 1);
+#endif
 
 /*-------- put presdisplacements(t) - presdisplacements(t-dt) in place 5 */
-solserv_adddirich(actfield,0,0,3,4,5,-1.0,1.0);
+solserv_adddirich(actfield,disnum,node_array_sol,3,4,5,-1.0,1.0);
+
+/*----------- rotate Dirichlet displacement increments into local system */
+/* these are needed to determine the so-called Dirichlet forces (in calelm) */
+#ifdef LOCALSYSTEMS_ST
+/* in place 5 of NODE's sol : holds presc. displ. at time t-dt minus at time t */
+locsys_trans_sol_dirich(actfield, disnum, node_array_sol, 5, 0);
+/* on place 6 of NODE's sol : holds the  velocities of prescribed dofs */
+locsys_trans_sol_dirich(actfield, disnum, node_array_sol, 6, 0);
+/* on place 7 of NODE's sol : holds the  accels of prescribed dofs */
+locsys_trans_sol_dirich(actfield, disnum, node_array_sol, 7, 0);
+#endif
 
 /*----- set factors needed for prescribed displacement terms on rhs eff */
 /*
@@ -673,6 +702,17 @@ container.dirichfacs    = dirichfacs;
 container.kstep         = 0;
 calelm(actfield,actsolv,actpart,actintra,stiff_array,mass_array,&container,action);
 
+/*----------- rotate Dirichlet displacement increments back into global system */
+/* these were needed to determine the so-called Dirichlet forces (in calelm) */
+#ifdef LOCALSYSTEMS_ST
+/* in place 5 of NODE's sol : holds presc. displ. at time t-dt minus at time t */
+locsys_trans_sol_dirich(actfield, disnum, node_array_sol, 5, 1);
+/* on place 6 of NODE's sol : holds the  velocities of prescribed dofs */
+locsys_trans_sol_dirich(actfield, disnum, node_array_sol, 6, 1);
+/* on place 7 of NODE's sol : holds the  accels of prescribed dofs */
+locsys_trans_sol_dirich(actfield, disnum, node_array_sol, 7, 1);
+#endif
+
 /*---------------------------- store positive internal forces on fie[1] */
 solserv_zero_vec(&fie[1]);
 assemble_vec(actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[stiff_array]),&(fie[1]),intforce,1.0);
@@ -734,15 +774,33 @@ solver_control(actfield,disnum,actsolv, actintra,&(actsolv->sysarray_typ[stiff_a
 solserv_copy_vec(&(actsolv->sol[0]),&(actsolv->sol[1]));
 solserv_add_vec(&dispi[0],&(actsolv->sol[1]),1.0);
 
+/*--------------------- rotate Dirichlet displacement into local system */
+/* prior to calculation/assignment of locally oriented prescribed DBC values */
+#ifdef LOCALSYSTEMS_ST
+/* locsys_trans_sol_dirich(actfield, disnum, node_array_sol, 0, 0); */
+/* solserv_sol_zero(actfield, disnum, node_array_sol, 0); */
+solserv_zerodirich(actfield, disnum, node_array_sol, 0);
+#endif
+
 /*---------------- put the scaled prescribed displacements to the nodes */
 /*             in field sol at place 0 together with free displacements */
 /* these are used to calculate the stiffness matrix */
-solserv_putdirich_to_dof(actfield,0,0,0,sdyn->time);
+/* In the case of locally oriented DBCs, these prescribed DOFs are
+ * given in the local system. */
+solserv_putdirich_to_dof(actfield,disnum,node_array_sol,0,sdyn->time);
 
 /*----------------------------- return total displacements to the nodes */
 solserv_result_total(actfield,disnum,actintra,
-                   &(actsolv->sol[1]),0,&(actsolv->sysarray[stiff_array]),
-		   &(actsolv->sysarray_typ[stiff_array]));
+                     &(actsolv->sol[1]),0,&(actsolv->sysarray[stiff_array]),
+                     &(actsolv->sysarray_typ[stiff_array]));
+
+/*--------------- rotate Dirichlet displacement back into global system */
+/* post return total displacements to nodes,
+ * This operation will not only rotate the prescribed DOFs of the relevant
+ * Dirichlet node, but all (i.e. prescribed & free) its DOFs. */
+#if defined(LOCALSYSTEMS_ST)
+locsys_trans_sol_dirich(actfield, disnum, node_array_sol, 0, 1);
+#endif
 
 /*--------------------------------------- make testprintout for contact */
 /*
@@ -756,6 +814,15 @@ if (par.myrank==0 && ioflags.struct_disp==1 && ioflags.output_gid==1)
 solserv_result_incre(actfield,disnum,actintra,&dispi[0],0,
                      &(actsolv->sysarray[stiff_array]),
 		     &(actsolv->sysarray_typ[stiff_array]));
+
+/*--------------- rotate Dirichlet displacement back into global system */
+/* post return incremental displacements to nodes
+ * This operation will not only rotate the free DOFs of relevant
+ * Dirichlet nodes, but all (i.e. prescribed & free) its DOFs.
+ * This should not matter, 'coz the increments are zero at prescribed nodes */
+#if defined(LOCALSYSTEMS_ST)
+locsys_trans_sol_dirich(actfield, disnum, node_array_sol_increment, 0, 1);
+#endif
 
 /* here put incremental prescribed displacements from sol[5] to sol_increment[0] ? */
 /*----------------------------------------------------------------------*/
@@ -819,15 +886,37 @@ if (contactflag)
 }
 #endif
 
+/*----------- rotate Dirichlet displacement increments into local system */
+/* these are needed to determine the so-called Dirichlet forces (in calelm) */
+#ifdef LOCALSYSTEMS_ST
+/* in place 5 of NODE's sol : holds presc. displ. at time t-dt minus at time t */
+locsys_trans_sol_dirich(actfield, disnum, node_array_sol, 5, 0);
+/* on place 6 of NODE's sol : holds the  velocities of prescribed dofs */
+locsys_trans_sol_dirich(actfield, disnum, node_array_sol, 6, 0);
+/* on place 7 of NODE's sol : holds the  accels of prescribed dofs */
+locsys_trans_sol_dirich(actfield, disnum, node_array_sol, 7, 0);
+#endif
+
 /* call element routines for calculation of tangential stiffness and intforce */
 *action = calc_struct_nlnstiffmass;
-solserv_sol_zero(actfield,0,node_array_sol_increment,2);
+solserv_sol_zero(actfield,disnum,node_array_sol_increment,2);
 container.dvec          = intforce;
 container.dirich        = dirich;
 container.global_numeq  = numeq_total;
 container.dirichfacs    = dirichfacs;
 container.kstep         = 0;
 calelm(actfield,actsolv,actpart,actintra,stiff_array,mass_array,&container,action);
+
+/*----------- rotate Dirichlet displacement increments back into global system */
+/* these were needed to determine the so-called Dirichlet forces (in calelm) */
+#ifdef LOCALSYSTEMS_ST
+/* in place 5 of NODE's sol : holds presc. displ. at time t-dt minus at time t */
+locsys_trans_sol_dirich(actfield, disnum, node_array_sol, 5, 1);
+/* on place 6 of NODE's sol : holds the  velocities of prescribed dofs */
+locsys_trans_sol_dirich(actfield, disnum, node_array_sol, 6, 1);
+/* on place 7 of NODE's sol : holds the  accels of prescribed dofs */
+locsys_trans_sol_dirich(actfield, disnum, node_array_sol, 7, 1);
+#endif
 
 /*---------------------------- store positive internal forces on fie[2] */
 solserv_zero_vec(&fie[2]);
@@ -883,6 +972,16 @@ solver_control(actfield,disnum,actsolv, actintra,&(actsolv->sysarray_typ[stiff_a
 /*-------------------------- return residual displacements to the nodes */
 solserv_result_resid(actfield,disnum,actintra,&work[0],0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
 
+/*--------------- rotate Dirichlet displacement back into global system */
+/* post return residual displacements to nodes
+ * This operation will not only rotate the free DOFs of relevant
+ * Dirichlet nodes, but all (i.e. prescribed & free) its DOFs.
+ * This should not matter, 'coz the residual displacements are zero 
+ * at prescribed nodes */
+#if defined(LOCALSYSTEMS_ST)
+locsys_trans_sol_dirich(actfield, disnum, node_array_sol_residual, 0, 1);
+#endif
+
 /*-- update the incremental displacements by the residual displacements */
 solserv_add_vec(&work[0],&dispi[0],1.0);
 
@@ -896,6 +995,32 @@ solserv_result_total(actfield,disnum,actintra, &(actsolv->sol[1]),0,
                      &(actsolv->sysarray[stiff_array]),
 		     &(actsolv->sysarray_typ[stiff_array]));
 
+/*---------------- put the scaled prescribed displacements to the nodes */
+/*             in field sol at place 0 together with free displacements */
+/* these are used to calculate the stiffness matrix */
+/* In case of rotated DBCs we have to reevaluate these, because we can
+ * only rotate the complete nodal displacement vector (BRICK1 & SOLID3: triplet,
+ * WALL1: duple, SHELL*: NOT IMPLEMENTED) at once. However, the nodal
+ * displacement vector can be partly free and partly supported. 
+ * Here, we have to assure all displacements components of a DBC-node are 
+ * in the _local_ co-ordinate system (`system in sync'). This is due to:
+ * The free components of a DBC-node are stored in local directions on the
+ * assembled quantities (stiffness & mass matrix, internal and external
+ * force vectors, displacement vector (actsolv->sol), etc.) */
+#if defined(LOCALSYSTEMS_ST)
+solserv_putdirich_to_dof(actfield,disnum,node_array_sol,0,sdyn->time);
+#endif
+
+/*--------------- rotate Dirichlet displacement back into global system */
+/* post return total free and presc. DBC displacements to nodes,
+ * displacements of DBC-less nodes are in global system, but 
+ * displacements of DBC-ish nodes are in local system (this holds for
+ * free and prescribed/supported DOFs of the node) and have to be
+ * rotated into the global system */
+#if defined(LOCALSYSTEMS_ST)
+locsys_trans_sol_dirich(actfield, disnum, node_array_sol, 0, 1);
+#endif
+
 /*--------------------------------------- make testprintout for contact */
 /*
 if (par.myrank==0 && ioflags.struct_disp==1 && ioflags.output_gid==1)
@@ -908,6 +1033,15 @@ if (par.myrank==0 && ioflags.struct_disp==1 && ioflags.output_gid==1)
 solserv_result_incre(actfield,disnum,actintra,&dispi[0],0,
                     &(actsolv->sysarray[stiff_array]),
 		    &(actsolv->sysarray_typ[stiff_array]));
+
+/*--------------- rotate Dirichlet displacement back into global system */
+/* post return incremental displacements to nodes
+ * This operation will not only rotate the free DOFs of relevant
+ * Dirichlet nodes, but all (i.e. prescribed & free) its DOFs.
+ * This should not matter, 'coz the increments are zero at prescribed nodes */
+#if defined(LOCALSYSTEMS_ST)
+locsys_trans_sol_dirich(actfield, disnum, node_array_sol_increment, 0, 1);
+#endif
 
 #ifdef WALLCONTACT
 wall_contact_update(actfield,actintra);
@@ -1020,11 +1154,11 @@ solserv_result_total(actfield,disnum,actintra, &(con[0]),9,&(actsolv->sysarray[s
 /* still needed to compute energies                                     */
 solserv_copy_vec(&(actsolv->rhs[2]),&(actsolv->rhs[0]));
 /*------------------------------ copy disp from sol place 0 to place 10 */
-solserv_sol_copy(actfield,0,node_array_sol,node_array_sol,0,10);
+solserv_sol_copy(actfield,disnum,node_array_sol,node_array_sol,0,10);
 /*------------------------------ copy vels from sol place 1 to place 10 */
-solserv_sol_copy(actfield,0,node_array_sol,node_array_sol,1,11);
+solserv_sol_copy(actfield,disnum,node_array_sol,node_array_sol,1,11);
 /*------------------------------ copy accs from sol place 2 to place 11 */
-solserv_sol_copy(actfield,0,node_array_sol,node_array_sol,2,12);
+solserv_sol_copy(actfield,disnum,node_array_sol,node_array_sol,2,12);
 /*------------------ update displacements, velocities and accelerations */
 dyn_nlnstructupd(actfield,
                  disnum,
@@ -1038,14 +1172,28 @@ dyn_nlnstructupd(actfield,
                  &work[0],          /* working arrays                   */
                  &work[1],          /* working arrays                   */
                  &work[2]);         /* working arrays                   */
+/*-------------------------velocities for prescribed dofs to velocities */
+solserv_adddirich(actfield,disnum,node_array_sol,6,0,1,1.0,0.0);
 /*-------------------------------------- return velocities to the nodes */
 solserv_result_total(actfield,disnum,actintra, &vel[0],1,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
-/*-------------------------velocities for prescribed dofs to velocities */
-solserv_adddirich(actfield,0,0,6,0,1,1.0,0.0);
+/*----------------- rotate Dirichlet velocities back into global system */
+/* post return velocities to nodes,
+ * This operation will not only rotate the prescribed DOFs of the relevant
+ * Dirichlet node, but all (i.e. prescribed & free) its DOFs. */
+#ifdef LOCALSYSTEMS_ST
+locsys_trans_sol_dirich(actfield, disnum, node_array_sol, 1, 1);
+#endif
+/*-------------------------------------------accel. for prescribed dofs */
+solserv_adddirich(actfield,disnum,node_array_sol,7,0,2,1.0,0.0);
 /*------------------------------------------ return accel. to the nodes */
 solserv_result_total(actfield,disnum,actintra, &acc[0],2,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
-/*-------------------------------------------accel. for prescribed dofs */
-solserv_adddirich(actfield,0,0,7,0,2,1.0,0.0);
+/*-------------- rotate Dirichlet accelerations back into global system */
+/* post return accelerations to nodes
+ * This operation will not only rotate the prescribed DOFs of the relevant
+ * Dirichlet node, but all (i.e. prescribed & free) its DOFs. */
+#ifdef LOCALSYSTEMS_ST
+locsys_trans_sol_dirich(actfield, disnum, node_array_sol, 2, 1);
+#endif
 /*
 It is a bit messed up, but anyway:
 in the nodes the results are stored the following way:
@@ -1076,7 +1224,7 @@ place 0 holds residual displacements during iteration (without prescribed dofs)
 
 
 /*---------------------- make incremental potential energy at the nodes */
-dyn_epot(actfield,0,actintra,&dynvar,&deltaepot);
+dyn_epot(actfield,disnum,actintra,&dynvar,&deltaepot);
 dynvar.epot += deltaepot;
 /*-------------------------------- make kinetic energy at element level */
 dyn_ekin(actfield,actsolv,actpart,actintra,action,&container,stiff_array,mass_array);
@@ -1087,7 +1235,7 @@ dyn_eout(&dynvar,sdyn,actintra,actsolv,&dispi[0],&(actsolv->rhs[1]),&(actsolv->r
 dynvar.etot = dynvar.epot + dynvar.ekin;
 /*------------------------- update the internal forces in sol_increment */
 /*       copy from sol_increment.a.da[2][i] to sol_increment.a.da[1][i] */
-solserv_sol_copy(actfield,0,node_array_sol_increment,node_array_sol_increment,2,1);
+solserv_sol_copy(actfield,disnum,node_array_sol_increment,node_array_sol_increment,2,1);
 /*------------------------------- check whether to write results or not */
 mod_disp      = sdyn->step % sdyn->updevry_disp;
 mod_stress    = sdyn->step % sdyn->updevry_stress;

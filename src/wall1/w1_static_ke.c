@@ -322,8 +322,6 @@ if(ele->e.w1->modeltype == incomp_mode  && istore==0)
   for(i=0;i<8;i++)  force[i] -= deltaf[i];
  }
 }
-/*----------------------------------------------------- local co-system */
-dsassert(ele->locsys==locsys_no,"locsys not implemented for this element!\n");
 /*----------------------------------------------------------------------*/
 end:
 /*----------------------------------------------------------------------*/

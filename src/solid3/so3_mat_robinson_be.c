@@ -403,7 +403,7 @@ void so3_mat_robinson_be_rvscstn(ELEMENT* ele,
     DOUBLE th1 = (23.8*tmpr - 2635.0)*(1.0/811.0 - 1.0/tmpr);
     if (isinf(th1))
     {
-      dserror("Inifinite theta1");
+      dserror("Infinite theta1");
     }
     aa = 0.5/(mu*exp(-th1));
   }

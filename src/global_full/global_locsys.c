@@ -59,6 +59,9 @@ Final Remarks:
 #include "../fluid3/fluid3.h"
 #include "../ale2/ale2.h"
 #include "../ale3/ale3.h"
+#ifdef D_SOLID3
+#include "../solid3/solid3.h"
+#endif
 /*!----------------------------------------------------------------------*
  |                                                       m.gee 02/02    |
  | number of load curves numcurve                                       |
@@ -145,19 +148,176 @@ for (i=0; i<genprob.numfld; i++)
       /*---------------------------------------------------- loop nodes */
       for (k=0; k<field[i].dis[j].numnp; k++)
       {
-         actnode=&(field[i].dis[j].node[k]);
+         actnode = &(field[i].dis[j].node[k]);
+         actgnode = actnode->gnode;
+         locsysId = 0;  /* initialise */
          /*------ local co-cordinate system defined by design condition */
-         actgnode=actnode->gnode;
          switch(actgnode->ondesigntyp)
          {
-         case ondnode: locsysId = actgnode->d.dnode->locsysId;   break;
-         case ondline: locsysId = actgnode->d.dline->locsysId;   break;
-         case ondsurf: locsysId = actgnode->d.dsurf->locsysId;   break;
-         case ondvol : locsysId = actgnode->d.dvol->locsysId;    break;
+         case ondnode:
+           /* inherit of design point */
+           if (actgnode->d.dnode->locsysId > 0)
+           {
+             locsysId = actgnode->d.dnode->locsysId;
+           }
+#if 0
+/* #ifdef LOCALSYSTEMS_ST */
+           /* On the one hand, thee following deactivated inheritances are
+            * a nice idea to avoid assignments of local systems to design
+            * entities. On the other hand, the inheritance is not transparent
+            * to the user such that a inherently applied local system affects
+            * 
+           /* inherit of design lines */
+           if (locsysId == 0)
+           {
+             INT idl = 0;  /* design line index */
+             /* loop all adjacent design lines and give its locsysId to
+              * the node */
+             while ( (idl<actgnode->d.dnode->ndline) && (locsysId == 0) )
+             {
+               if (actgnode->d.dnode->dline[idl]->locsysId > 0)
+               {
+                 locsysId = actgnode->d.dnode->dline[idl]->locsysId;
+               }
+               idl++;
+             }
+           }
+           /* inherit of design surfaces */
+           if (locsysId == 0)
+           {
+             INT idl = 0; /* design line index */
+             /* loop all adjacent design lines to loop their design surfaces */
+             while ( (idl<actgnode->d.dnode->ndline) && (locsysId == 0) )
+             {
+               DLINE* dline = actgnode->d.dnode->dline[idl];  /* curr. design line */
+               INT ids = 0;  /* design surface index */
+               /* loop all adjacent surfaces */
+               while ( (ids<dline->ndsurf) && (locsysId == 0) )
+               {
+                 if (dline->dsurf[ids]->locsysId > 0)
+                 {
+                   locsysId = dline->dsurf[ids]->locsysId;
+                 }
+                 ids++;
+               }
+               idl++;
+             }
+           }
+           /* inherit of design volumes */
+           if (locsysId == 0)
+           {
+             INT idl = 0; /* design line index */
+             /* loop all adjacent design lines to loop their design surfaces */
+             while ( (idl<actgnode->d.dnode->ndline) && (locsysId == 0) )
+             {
+               DLINE* dline = actgnode->d.dnode->dline[idl];   /* curr. design line */
+               INT ids = 0;  /* design surface index */
+               /* loop all adjacent surfaces */
+               while ( (ids<dline->ndsurf) && (locsysId == 0) )
+               {
+                 DSURF* dsurf = dline->dsurf[ids];  /* curr. design surface */
+                 INT idv = 0;  /* design volume index */
+                 /* loop all adjacent volumes */
+                 while ( (idv<dsurf->ndvol) && (locsysId == 0) )
+                 {
+                   if (dsurf->dvol[idv]->locsysId > 0)
+                   {
+                     locsysId = dsurf->dvol[idv]->locsysId;
+                   }
+                   idv++;
+                 }
+                 ids++;
+               }
+               idl++;
+             }
+           }
+#endif
+           break;
+         case ondline:
+           /* inherit of design lines */
+           if (actgnode->d.dline->locsysId > 0)
+           {
+             locsysId = actgnode->d.dline->locsysId;
+           }
+#if 0
+/* #ifdef LOCALSYSTEMS_ST */
+           /* inherit of design surfaces */
+           if (locsysId == 0)
+           {
+             DLINE* dline = actgnode->d.dline;  /* curr. design line */
+             INT ids = 0;  /* design surface index */
+             /* loop all adjacent surfaces */
+             while ( (ids<dline->ndsurf) && (locsysId == 0) )
+             {
+               if (dline->dsurf[ids]->locsysId > 0)
+               {
+                 locsysId = dline->dsurf[ids]->locsysId;
+               }
+               ids++;
+             }
+           }
+           /* inherit of design volumes */
+           if (locsysId == 0)
+           {
+             DLINE* dline = actgnode->d.dline;   /* curr. design line */
+             INT ids = 0;  /* design surface index */
+             /* loop all adjacent surfaces */
+             while ( (ids<dline->ndsurf) && (locsysId == 0) )
+             {
+               DSURF* dsurf = dline->dsurf[ids];  /* curr. design surface */
+               INT idv = 0;  /* design volume index */
+               /* loop all adjacent volumes */
+               while ( (idv<dsurf->ndvol) && (locsysId == 0) )
+               {
+                 if (dsurf->dvol[idv]->locsysId > 0)
+                 {
+                   locsysId = dsurf->dvol[idv]->locsysId;
+                 }
+                 idv++;
+               }
+               ids++;
+             }
+           }
+#endif
+           break;
+         case ondsurf:
+           /* inherit of design surface */
+           if (actgnode->d.dsurf->locsysId > 0)
+           {
+             locsysId = actgnode->d.dsurf->locsysId;
+           }
+#if 0
+/* #ifdef LOCALSYSTEMS_ST */
+           /* inherit of design volumes */
+           if (locsysId == 0)
+           {
+             DSURF* dsurf = actgnode->d.dsurf;  /* curr. design surface */
+             INT idv = 0;  /* design volume index */
+             /* loop all adjacent volumes */
+             while ( (idv<dsurf->ndvol) && (locsysId == 0) )
+             {
+               if (dsurf->dvol[idv]->locsysId > 0)
+               {
+                 locsysId = dsurf->dvol[idv]->locsysId;
+               }
+               idv++;
+             }
+           }
+#endif
+           break;
+         case ondvol:
+           /* inherit of design volume */
+           if (actgnode->d.dvol->locsysId > 0)
+           {
+             locsysId = actgnode->d.dvol->locsysId;
+           }
+           break;
          case ondnothing:
-            dserror("GNODE not owned by any design object");     break;
+           dserror("GNODE not owned by any design object");
+           break;
          default:
-            dserror("Cannot create locsys on element level");    break;
+           dserror("Cannot create locsys on element level");
+           break;
          }
          actnode->locsysId=locsysId;
          if (locsysId>0)
@@ -422,6 +582,237 @@ dstrc_exit();
 return;
 } /* end of locsys_trans_ele */
 
+
+/*======================================================================*/
+/*!
+\brief Transform element stiffness matrix components which are
+       subjected to DirichletBCs defined in local systems
+       Different local systems with a single element can be treated.
+
+<pre>
+The XYZ-oriented element stiffness matrix of the current element 
+is transformed to the local x'y'z' system.
+This names are a bit confusing, since the "local" co-ordinate system is
+the one we are solving in, so we better introduce new names:
+
+estif  = stiffness matrix in the given XYZ cartesian co-system
+estif' = stiffness matrix in the alternative x'y'z' co-system defined
+         in the input file
+
+eload  = load vector in the given XYZ cartesian co-system
+eload' = load vector in the alternative x'y'z' co-system
+
+trans  = transformation matrix containing the direction cosines between
+         XYZ and x'y'z'
+</pre>
+
+\param   *ele        ELEMENT     (i)      actual element
+\param  **estif1     DOUBLE      (i/o)    element matrix
+\param  **estif2     DOUBLE      (i/o)    element matrix
+\param   *vec1       DOUBLE      (i/o)    element RHS
+\param   *vec2       DOUBLE      (i/o)    element RHS
+\return void
+
+\author bborn
+\date 06/07
+*/
+#ifdef LOCALSYSTEMS_ST
+void locsys_trans_equant_dirich(ELEMENT* ele, 
+                                ARRAY* estif_global, 
+                                ARRAY* emass_global,
+                                ARRAY* eforce_global,
+                                DOUBLE* eforce)
+{
+  INT nd;  /* total number of element dofs */
+
+#ifdef DEBUG
+  dstrc_enter("locsys_trans_equant_dirich");
+#endif
+
+  /*--------------------------------------------------------------------*/
+  /* initialise matrix */
+  amzero(&trans_a);
+
+  /*--------------------------------------------------------------------*/
+  /* make rotation matrix */
+  switch (ele->eltyp)
+  {
+#ifdef D_WALL1
+  case el_wall1:
+  {
+    nd = 2 * ele->numnp;  /* total number of element DOFs */
+    INT inod;  /* node index */
+    for (inod=0; inod<ele->numnp; inod++)
+    {
+      NODE* actnode = ele->node[inod];
+      const INT xdof = 2*inod + 0;  /* index of X-DOF at node */
+      const INT ydof = xdof + 1;  /* index of Y-DOF at node */
+      if ( (actnode->locsysId > 0) && (actnode->gnode->dirich != NULL) )
+      {
+        const INT ilocsys = actnode->locsysId - 1;  /* 0-based system ID */
+        /* rotation matrix from (XYZ) to (x'y'z') */
+        trans[xdof][xdof] = locsys[ilocsys].lXx;
+        trans[ydof][xdof] = locsys[ilocsys].lXy;
+        trans[xdof][ydof] = locsys[ilocsys].lYx;
+        trans[ydof][ydof] = locsys[ilocsys].lYy;
+      }
+      else
+      {
+        /* identity matrix */
+        trans[xdof][xdof] = 1.0;
+        trans[ydof][xdof] = 0.0;
+        trans[xdof][ydof] = 0.0;
+        trans[ydof][ydof] = 1.0;
+      }
+    }
+    break;
+  }
+#endif
+#ifdef D_BRICK1
+  case el_brick1:
+  {
+    nd = 3 * ele->numnp;  /* total number of element DOFs */
+    INT inod;  /* node index */
+    for (inod=0; inod<ele->numnp; inod++)
+    {
+      NODE* actnode = ele->node[inod];
+      const INT xdof = 3*inod + 0;  /* index of X-DOF at node */
+      const INT ydof = xdof + 1;  /* index of Y-DOF at node */
+      const INT zdof = xdof + 2;  /* index of Z-DOF at node */
+      if ( (actnode->locsysId > 0) && (actnode->gnode->dirich != NULL) )
+      {
+        const INT ilocsys = actnode->locsysId - 1;  /* 0-based system ID */
+        /* rotation matrix from (XYZ) to (x'y'z') */
+        trans[xdof][xdof] = locsys[ilocsys].lXx;
+        trans[ydof][xdof] = locsys[ilocsys].lXy;
+        trans[zdof][xdof] = locsys[ilocsys].lXz;
+        trans[xdof][ydof] = locsys[ilocsys].lYx;
+        trans[ydof][ydof] = locsys[ilocsys].lYy;
+        trans[zdof][ydof] = locsys[ilocsys].lYz;
+        trans[xdof][zdof] = locsys[ilocsys].lZx;
+        trans[ydof][zdof] = locsys[ilocsys].lZy;
+        trans[zdof][zdof] = locsys[ilocsys].lZz;
+      }
+      else
+      {
+        /* identity matrix */
+        trans[xdof][xdof] = 1.0;
+        trans[ydof][xdof] = 0.0;
+        trans[zdof][xdof] = 0.0;
+        trans[xdof][ydof] = 0.0;
+        trans[ydof][ydof] = 1.0;
+        trans[zdof][ydof] = 0.0;
+        trans[xdof][zdof] = 0.0;
+        trans[ydof][zdof] = 0.0;
+        trans[zdof][zdof] = 1.0;
+      }
+    }
+    break;
+  }
+#endif
+#ifdef D_SOLID3
+  case el_solid3:
+  {
+    nd = ele->numnp*NUMDOF_SOLID3;  /* total number of element DOFs */
+    INT inod;  /* node index */
+    for (inod=0; inod<ele->numnp; inod++)
+    {
+      NODE* actnode = ele->node[inod];
+      const INT xdof = NUMDOF_SOLID3*inod + 0;  /* index of X-DOF at node */
+      const INT ydof = xdof + 1;  /* index of Y-DOF at node */
+      const INT zdof = xdof + 2;  /* index of Z-DOF at node */
+      if ( (actnode->locsysId > 0) && (actnode->gnode->dirich != NULL) )
+      {
+        const INT ilocsys = actnode->locsysId - 1;  /* 0-based system ID */
+        /* rotation matrix from (XYZ) to (x'y'z') */
+        trans[xdof][xdof] = locsys[ilocsys].lXx;
+        trans[ydof][xdof] = locsys[ilocsys].lXy;
+        trans[zdof][xdof] = locsys[ilocsys].lXz;
+        trans[xdof][ydof] = locsys[ilocsys].lYx;
+        trans[ydof][ydof] = locsys[ilocsys].lYy;
+        trans[zdof][ydof] = locsys[ilocsys].lYz;
+        trans[xdof][zdof] = locsys[ilocsys].lZx;
+        trans[ydof][zdof] = locsys[ilocsys].lZy;
+        trans[zdof][zdof] = locsys[ilocsys].lZz;
+      }
+      else
+      {
+        /* identity matrix */
+        trans[xdof][xdof] = 1.0;
+        trans[ydof][xdof] = 0.0;
+        trans[zdof][xdof] = 0.0;
+        trans[xdof][ydof] = 0.0;
+        trans[ydof][ydof] = 1.0;
+        trans[zdof][ydof] = 0.0;
+        trans[xdof][zdof] = 0.0;
+        trans[ydof][zdof] = 0.0;
+        trans[zdof][zdof] = 1.0;
+      }
+    }
+    break;
+  }
+#endif
+  default: 
+    dserror("no transformation implemented for this kind of element!\n");
+  } /* end switch (ele->eltyp */
+
+  /*--------------------------------------------------------------------*/
+  /* perform the transformation: estif* = trans * estif * trans^t */
+  if (estif_global != NULL)
+  {
+    DOUBLE** estif1 = estif_global->a.da;
+    /* workm = estif1 * trans^t */
+    math_matmattrndense(workm, estif1, trans, nd, nd, nd, 0, ONE);
+    /* estif1* = trans * workm */
+    math_matmatdense(estif1, trans, workm, nd, nd, nd, 0, ONE);
+  }
+
+  /* perform the transformation: estif* = trans * estif * trans^t */
+  if (emass_global != NULL)
+  {
+    DOUBLE** estif2 = emass_global->a.da;
+    /* workm = estif2 * trans^t */
+    math_matmattrndense(workm, estif2, trans, nd, nd, nd, 0, ONE);
+    /* estif2* = trans * workm */
+    math_matmatdense(estif2, trans, workm, nd, nd, nd, 0, ONE);
+  }
+
+  /* perform the transformation: eload* = trans * eload */
+  if (eforce_global != NULL)
+  {
+    DOUBLE* vec1 = eforce_global->a.dv;
+    /* workv = trans * vec1 */
+    math_matvecdense(workv, trans, vec1, nd, nd, 0, ONE);
+    /* copy result to vec1 */
+    INT i = 0;
+    for(i=0; i<nd; i++)
+    {
+      vec1[i] = workv[i];
+    }
+  }
+
+  /* perform the transformation: eload* = trans * eload */
+  if (eforce != NULL)
+  {
+    DOUBLE* vec2 = eforce;
+    /* workv = trans * vec2 */
+    math_matvecdense(workv, trans, vec2, nd, nd, 0, ONE);
+    /* copy result to vec2 */
+    INT i = 0;
+    for(i=0; i<nd; i++)
+    {
+      vec2[i] = workv[i];
+    }
+  }
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}
+#endif
+
 /*!---------------------------------------------------------------------
 \brief transform solution to global co-ordinate system
 
@@ -554,7 +945,7 @@ GNODE    *actgnode;     /* actual gnode */
 ELEMENT  *actele;       /* actual element */
 
 #ifdef DEBUG
-dstrc_enter("locsys_trans_sol");
+dstrc_enter("locsys_trans_sol_dirich");
 #endif
 
 if (numlocsys==0) goto end;
@@ -754,6 +1145,40 @@ case el_ale2:
    trans[1][0] = actlocsys->lXy;
    trans[0][1] = actlocsys->lYx;
    trans[1][1] = actlocsys->lYy;
+break;
+#endif
+#ifdef D_WALL1
+case el_wall1:
+   trans[0][0] = actlocsys->lXx;
+   trans[1][0] = actlocsys->lXy;
+   trans[0][1] = actlocsys->lYx;
+   trans[1][1] = actlocsys->lYy;
+break;
+#endif
+#ifdef D_BRICK1
+case el_brick1:
+   trans[0][0] = actlocsys->lXx;
+   trans[1][0] = actlocsys->lXy;
+   trans[2][0] = actlocsys->lXz;
+   trans[0][1] = actlocsys->lYx;
+   trans[1][1] = actlocsys->lYy;
+   trans[2][1] = actlocsys->lYz;
+   trans[0][2] = actlocsys->lZx;
+   trans[1][2] = actlocsys->lZy;
+   trans[2][2] = actlocsys->lZz;
+break;
+#endif
+#ifdef D_SOLID3
+case el_solid3:
+   trans[0][0] = actlocsys->lXx;
+   trans[1][0] = actlocsys->lXy;
+   trans[2][0] = actlocsys->lXz;
+   trans[0][1] = actlocsys->lYx;
+   trans[1][1] = actlocsys->lYy;
+   trans[2][1] = actlocsys->lYz;
+   trans[0][2] = actlocsys->lZx;
+   trans[1][2] = actlocsys->lZy;
+   trans[2][2] = actlocsys->lZz;
 break;
 #endif
 default: dserror("no transformation implemented for this kind of element!\n");

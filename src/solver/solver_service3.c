@@ -682,7 +682,12 @@ for (i=0; i<actdis->numnp; i++)
    }
    for (j=0; j<actnode->numdf; j++)
    {
+#ifdef LOCALSYSTEMS_ST
+      if (actnode->locsysId == 0)
+         if (dirich->dirich_onoff.a.iv[j]==0) continue;
+#else
       if (dirich->dirich_onoff.a.iv[j]==0) continue;
+#endif
       array->a.da[to][j] =
       array->a.da[from1][j]*facfrom1 +
       array->a.da[from2][j]*facfrom2;
@@ -762,7 +767,12 @@ for (i=0; i<actdis->numnp; i++)
    }
    for (j=0; j<actnode->numdf; j++)
    {
+#ifdef LOCALSYSTEMS_ST
+      if (actnode->locsysId == 0)
+         if (dirich->dirich_onoff.a.iv[j]==0) continue;
+#else
       if (dirich->dirich_onoff.a.iv[j]==0) continue;
+#endif
       array->a.da[to][j] +=
       array->a.da[from1][j]*facfrom1 +
       array->a.da[from2][j]*facfrom2;
@@ -843,7 +853,12 @@ for (i=0; i<actdis->numnp; i++)
    }
    for (j=0; j<actnode->numdf; j++)
    {
+#ifdef LOCALSYSTEMS_ST
+      if (actnode->locsysId == 0)
+         if (dirich->dirich_onoff.a.iv[j]==0) continue;
+#else
       if (dirich->dirich_onoff.a.iv[j]==0) continue;
+#endif
       array->a.da[to][j] = array->a.da[from][j];
    }
 }
@@ -917,7 +932,12 @@ for (i=0; i<actdis->numnp; i++)
    }
    for (j=0; j<actnode->numdf; j++)
    {
+#ifdef LOCALSYSTEMS_ST
+      if (actnode->locsysId == 0)
+         if (dirich->dirich_onoff.a.iv[j]==0) continue;
+#else
       if (dirich->dirich_onoff.a.iv[j]==0) continue;
+#endif
       array->a.da[place][j] = 0.0;
    }
 }

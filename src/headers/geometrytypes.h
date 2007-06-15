@@ -132,7 +132,8 @@ typedef struct _ELEMENT
 #endif                   /* stop including optimization code to ccarat :*/
 /*----------------------------------------------------------------------*/
 
-     enum _ELECOSYS        locsys;
+     enum _ELECOSYS        locsys;              /* element has an attached local
+                                                 * co-ordinate system */
 
 #ifdef SUBDIV
      struct _ELEMENT      *slave_ele;

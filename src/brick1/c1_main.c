@@ -84,38 +84,82 @@ case calc_struct_init:
    c1init(actpart, mat);
    c1_cint(NULL,NULL,NULL,NULL,NULL,NULL,1,NULL);
    c1_eleload(NULL,NULL,NULL,1);
+#ifndef LOCALSYSTEMS_ST
+   dsassert(ele->locsys==locsys_no,
+            "locsys not compiled for this element, define LOCALSYSTEMS_ST\n");
+#endif
 break;/*----------------------------------------------------------------*/
 /*----------------------------------- calculate linear stiffness matrix */
 case calc_struct_linstiff:
    actmat = &(mat[ele->mat-1]);
    c1_cint(ele,&actdata,actmat,estif_global,NULL,NULL,0,container);
+   /* rotate components at Dirichlet nodes into local system */
+#ifdef LOCALSYSTEMS_ST
+   if (ele->locsys == locsys_yes)
+   {    
+     locsys_trans_equant_dirich(ele, estif_global, NULL, NULL, NULL);
+   }
+#endif
 break;/*----------------------------------------------------------------*/
 /*---------------------------------calculate nonlinear stiffness matrix */
 case calc_struct_nlnstiff:
    actmat = &(mat[ele->mat-1]);
    c1_cint(ele,&actdata,actmat,estif_global,NULL,intforce,0,container);
+   /* rotate components at Dirichlet nodes into local system */
+#ifdef LOCALSYSTEMS_ST
+   if (ele->locsys == locsys_yes)
+   {    
+     locsys_trans_equant_dirich(ele, estif_global, NULL, NULL, intforce);
+   }
+#endif
 break;/*----------------------------------------------------------------*/
 /*--------------- calculate linear stiffness and consistent mass matrix */
 case calc_struct_linstiffmass:
    actmat = &(mat[ele->mat-1]);
    c1_cint(ele,&actdata,actmat,estif_global,emass_global,intforce,5,
            container);
+   /* rotate components at Dirichlet nodes into local system */
+#ifdef LOCALSYSTEMS_ST
+   if (ele->locsys == locsys_yes)
+   {    
+     locsys_trans_equant_dirich(ele, estif_global, emass_global, NULL, intforce);
+   }
+#endif
 break;/*----------------------------------------------------------------*/
 /*-------------------- calculate linear stiffness and lumpedmass matrix */
 case calc_struct_linstifflmass:
    actmat = &(mat[ele->mat-1]);
    c1_cint(ele,&actdata,actmat,estif_global,NULL,intforce,4,container);
+   /* rotate components at Dirichlet nodes into local system */
+#ifdef LOCALSYSTEMS_ST
+   if (ele->locsys == locsys_yes)
+   {    
+     locsys_trans_equant_dirich(ele, estif_global, NULL, NULL, intforce);
+   }
+#endif
 break;/*----------------------------------------------------------------*/
 /*----------------------- calculate nonlinear stiffness and mass matrix */
 case calc_struct_nlnstiffmass:
    actmat = &(mat[ele->mat-1]);
    c1_cint(ele,&actdata,actmat,estif_global,emass_global,intforce,5,
            container);
+#ifdef LOCALSYSTEMS_ST
+   if (ele->locsys == locsys_yes)
+   {    
+     locsys_trans_equant_dirich(ele, estif_global, emass_global, NULL, intforce);
+   }
+#endif
 break;/*----------------------------------------------------------------*/
 case calc_struct_internalforce:
    actmat = &(mat[ele->mat-1]);
    c1_cint(ele,&actdata,actmat,NULL,NULL,intforce,6,
            container);
+#ifdef LOCALSYSTEMS_ST
+   if (ele->locsys == locsys_yes)
+   {    
+     locsys_trans_equant_dirich(ele, NULL, NULL, NULL, intforce);
+   }
+#endif
 break;/*----------------------------------------------------------------*/
 /*-------------------------------- calculate stresses in a certain step */
 case calc_struct_stress:
@@ -126,6 +170,12 @@ break;/*----------------------------------------------------------------*/
 case calc_struct_eleload:
    actmat = &(mat[ele->mat-1]);
    c1_eleload(ele,&actdata,intforce,0);
+#ifdef LOCALSYSTEMS_ST
+   if (ele->locsys == locsys_yes)
+   {    
+     locsys_trans_equant_dirich(ele, NULL, NULL, NULL, intforce);
+   }
+#endif
 break;/*----------------------------------------------------------------*/
 /*--------------------------------------- update after incremental step */
 case calc_struct_update_istep:

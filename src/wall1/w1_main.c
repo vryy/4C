@@ -116,11 +116,22 @@ case calc_struct_init:
      w1_write_restart(NULL,NULL,0,NULL,1);
      w1_read_restart(NULL,NULL,NULL,1);
    }/* end of else: if (genprob.multisc_struct == 1) */
+#ifndef LOCALSYSTEMS_ST
+   dsassert(ele->locsys==locsys_no,
+            "locsys not compiled for WALL1 element, define LOCALSYSTEMS_ST\n");
+#endif
 break;/*----------------------------------------------------------------*/
 /*----------------------------------- calculate linear stiffness matrix */
 case calc_struct_linstiff:
    actmat = &(mat[ele->mat-1]);
    w1static_ke(ele,&actdata,actmat,estif_global,NULL,NULL,0);
+   /* rotate components at Dirichlet nodes into local system */
+#ifdef LOCALSYSTEMS_ST
+   if (ele->locsys == locsys_yes)
+   {
+     locsys_trans_equant_dirich(ele, estif_global, NULL, NULL, NULL);
+   }
+#endif
 break;/*----------------------------------------------------------------*/
 /*---------------------------------calculate nonlinear stiffness matrix */
 case calc_struct_nlnstiff:
@@ -149,6 +160,13 @@ case calc_struct_nlnstiff:
        break;
      }
    }/* end of else: if (genprob.multisc_struct == 1) */
+   /* rotate components at Dirichlet nodes into local system */
+#ifdef LOCALSYSTEMS_ST
+   if (ele->locsys == locsys_yes)
+   {
+     locsys_trans_equant_dirich(ele, estif_global, NULL, NULL, intforce);
+   }
+#endif
 break;/*----------------------------------------------------------------*/
 /*---------------------------------- calculate nonlinear internal force */
 case calc_struct_internalforce:
@@ -170,6 +188,13 @@ case calc_struct_internalforce:
        break;
      }
    }
+   /* rotate components at Dirichlet nodes into local system */
+#ifdef LOCALSYSTEMS_ST
+   if (ele->locsys == locsys_yes)
+   {
+     locsys_trans_equant_dirich(ele, estif_global, NULL, NULL, intforce);
+   }
+#endif
 break;/*----------------------------------------------------------------*/
 /*-------------------------- calculate linear stiffness and mass matrix */
 case calc_struct_linstiffmass:
@@ -190,6 +215,13 @@ case calc_struct_nlnstiffmass:
    }
    if (intforce && container->isdyn && ele->proc == actintra->intra_rank)
       solserv_sol_localassemble(actintra,ele,intforce,1,2);
+   /* rotate components at Dirichlet nodes into local system */
+#ifdef LOCALSYSTEMS_ST
+   if (ele->locsys == locsys_yes)
+   {
+     locsys_trans_equant_dirich(ele, estif_global, emass_global, NULL, intforce);
+   }
+#endif
 break;/*----------------------------------------------------------------*/
 /*-------------------------------- calculate stresses in a certain step */
 case calc_struct_stress:
@@ -215,6 +247,13 @@ case calc_struct_eleload:
    imyrank = actintra->intra_rank;
    actmat = &(mat[ele->mat-1]);
    w1_eleload(ele,&actdata,intforce,0,imyrank);
+   /* rotate components at Dirichlet nodes into local system */
+#ifdef LOCALSYSTEMS_ST
+   if (ele->locsys == locsys_yes)
+   {
+     locsys_trans_equant_dirich(ele, NULL, NULL, NULL, intforce);
+   }
+#endif
 break;/*----------------------------------------------------------------*/
 case calc_struct_fsiload:
    imyrank = actintra->intra_rank;

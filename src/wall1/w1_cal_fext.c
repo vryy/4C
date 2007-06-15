@@ -715,6 +715,7 @@ void w1_fsiload(ELEMENT  *ele,
 		ARRAY_POSITION* ipos,
                 INT       imyrank)
 {
+#ifdef D_FSI
 INT          lr;                 /* integration directions          */
 INT          i,j,jj;             /* some loopers                    */
 INT          inode,idof;         /* some loopers                    */
@@ -745,7 +746,7 @@ DOUBLE          forceline[2];/* lineload value in x and y direct.(inp) */
 DOUBLE          sigmaint[3]; /* fluid stresses at integration point    */
 DOUBLE          nsigma[3][MAXNOD_WALL1]; /* nodal fluid stresses       */
 DOUBLE          xyzl[2][MAXNOD_WALL1]; /* nodal coordinates            */
-
+#endif
 
 #ifdef DEBUG
 dstrc_enter("w1_fsiload");

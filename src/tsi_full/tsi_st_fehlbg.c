@@ -300,7 +300,7 @@ void tsi_st_fehlbg(INT disnum_s,
   /*--------------------------------------------------------------------*/
   /* intra communicator */
 #ifdef PARALLEL
-  actintra = &(par.intra[0]);  /* ???? => numsf ??? */
+  actintra = &(par.intra[numsf]);
 #else
   /* if we are not parallel, we have to allocate an alibi 
    * intra-communicator structure */

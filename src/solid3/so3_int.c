@@ -281,10 +281,7 @@ void so3_int_fintstifmass(CONTAINER *container,
   }
 
   /*--------------------------------------------------------------------*/
-  /* local co-system */
-  dsassert(ele->locsys == locsys_no,
-           "locsys not implemented for this element!\n");
-
+  /* deallocate */
   free(stress);
 
   /*--------------------------------------------------------------------*/

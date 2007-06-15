@@ -136,6 +136,10 @@ void solid3(PARTITION *actpart,
       so3_stress_init(actpart);
 /*      th2_write_restart(NULL, NULL, 0, NULL, 1); */
 /*      th2_read_restart(NULL, NULL, NULL, 1); */
+#ifndef LOCALSYSTEMS_ST
+      dsassert(ele->locsys == locsys_no,
+               "locsys not compiled for SOLID3, define LOCALSYSTEMS_ST\n");
+#endif
       break;
     /*------------------------------------------------------------------*/
     /* linear stiffness matrix */
@@ -144,6 +148,13 @@ void solid3(PARTITION *actpart,
       so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
       so3_int_fintstifmass(container, ele, &(so3_gpshade), actmat, 
                            NULL, estif_global, NULL);
+      /* rotate components at Dirichlet nodes into local system */
+#ifdef LOCALSYSTEMS_ST
+      if (ele->locsys == locsys_yes)
+      {
+        locsys_trans_equant_dirich(ele, estif_global, NULL, NULL, NULL);
+      }
+#endif
       break;
     /*------------------------------------------------------------------*/
     /* nonlinear stiffness matrix and internal force vector */
@@ -152,6 +163,14 @@ void solid3(PARTITION *actpart,
       so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
       so3_int_fintstifmass(container, ele, &(so3_gpshade), actmat, 
                            eforc_global, estif_global, NULL);
+      /* rotate components at Dirichlet nodes into local system */
+#ifdef LOCALSYSTEMS_ST
+      if (ele->locsys == locsys_yes)
+      {
+        locsys_trans_equant_dirich(ele, estif_global, NULL, 
+                                   eforc_global, NULL);
+      }
+#endif
       break;
     /*------------------------------------------------------------------*/
     /* linear stiffness and consistent mass matrix */
@@ -160,6 +179,13 @@ void solid3(PARTITION *actpart,
       so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
       so3_int_fintstifmass(container, ele, &(so3_gpshade), actmat, 
                            eforc_global, estif_global, emass_global);
+#ifdef LOCALSYSTEMS_ST
+      if (ele->locsys == locsys_yes)
+      {
+        locsys_trans_equant_dirich(ele, estif_global, emass_global, 
+                                   eforc_global, NULL);
+      }
+#endif
       break;
     /*------------------------------------------------------------------*/
     /* calculate linear stiffness and lumped mass matrix */
@@ -169,6 +195,13 @@ void solid3(PARTITION *actpart,
       so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
       so3_int_fintstifmass(container, ele, &(so3_gpshade), actmat, 
                            eforc_global, estif_global, emass_global);
+#ifdef LOCALSYSTEMS_ST
+      if (ele->locsys == locsys_yes)
+      {
+        locsys_trans_equant_dirich(ele, estif_global, emass_global, 
+                                   eforc_global, NULL);
+      }
+#endif
       break;
     /*------------------------------------------------------------------*/
     /* internal forces, nonlinear stiffness and mass matrix */
@@ -177,6 +210,13 @@ void solid3(PARTITION *actpart,
       so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
       so3_int_fintstifmass(container, ele, &(so3_gpshade), actmat, 
                            eforc_global, estif_global, emass_global);
+#ifdef LOCALSYSTEMS_ST
+      if (ele->locsys == locsys_yes)
+      {
+        locsys_trans_equant_dirich(ele, estif_global, emass_global, 
+                                   eforc_global, NULL);
+      }
+#endif
       break;
     /*------------------------------------------------------------------*/
     /* internal forces */
@@ -185,6 +225,12 @@ void solid3(PARTITION *actpart,
       so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
       so3_int_fintstifmass(container, ele, &(so3_gpshade), actmat, 
                            eforc_global, NULL, NULL);
+#ifdef LOCALSYSTEMS_ST
+      if (ele->locsys == locsys_yes)
+      {
+        locsys_trans_equant_dirich(ele, NULL, NULL, eforc_global, NULL);
+      }
+#endif
       break;
     /*------------------------------------------------------------------*/
     /* load vector of element loads */
@@ -193,6 +239,13 @@ void solid3(PARTITION *actpart,
       actmat = &(mat[ele->mat-1]);
       so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
       so3_load(ele, &(so3_data), &(so3_gpshade), imyrank, eforc_global);
+      /* rotate components at Dirichlet nodes into local system */
+#ifdef LOCALSYSTEMS_ST
+      if (ele->locsys == locsys_yes)
+      {
+        locsys_trans_equant_dirich(ele, NULL, NULL, eforc_global, NULL);
+      }
+#endif
       break;
     /*------------------------------------------------------------------*/
     /* iterative update of internal variables */

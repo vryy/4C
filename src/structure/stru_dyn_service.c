@@ -676,11 +676,16 @@ void dyn_nlnstructupd(
 
   /* for prescribed displacements: */
   /*   sol[7] = a1*(sol[4]-sol[3])+a2*sol[6]+a3*sol[7] */
-  solserv_cpdirich(actfield,disnum,0,7,8);               /* make a copy of sol[7] in sol[8] */
-  solserv_zerodirich(actfield,disnum,0,7);               /* init sol[7] to zero             */
-  solserv_assdirich_fac(actfield,disnum,0,4,3,7,a1,-a1); /* sol[7]+=a1*sol[4]-a1*sol[3]     */
-  solserv_assdirich_fac(actfield,disnum,0,6,0,7,a2,0.0); /* sol[7]+=a2*sol[6]               */
-  solserv_assdirich_fac(actfield,disnum,0,8,0,7,a3,0.0); /* sol[7]+=a3*sol[8]               */
+  /* (1)  make a copy of sol[7] in sol[8] */
+  solserv_cpdirich(actfield,disnum,node_array_sol,7,8);
+  /* (2)  init sol[7] to zero             */
+  solserv_zerodirich(actfield,disnum,node_array_sol,7);
+  /* (3)  sol[7]+=a1*sol[4]-a1*sol[3]     */
+  solserv_assdirich_fac(actfield,disnum,node_array_sol,4,3,7,a1,-a1);
+  /* (4)  sol[7]+=a2*sol[6]               */
+  solserv_assdirich_fac(actfield,disnum,node_array_sol,6,0,7,a2,0.0);
+  /* (5)  sol[7]+=a3*sol[8]               */
+  solserv_assdirich_fac(actfield,disnum,node_array_sol,8,0,7,a3,0.0);
 
 
 
@@ -697,24 +702,27 @@ void dyn_nlnstructupd(
   /*--------------------------------------- for prescribed displacements: */
   /* sol[6] = a4*(sol[4]-sol[3])+a5*sol[6]+a6*sol[7]_old */
   /*----------------------------------------------------------------------*/
-  solserv_adddirich(actfield,disnum,0,6,0,6,a5,0.0);     /* sol[6] = sol[6] * a5                 */
-  solserv_assdirich_fac(actfield,disnum,0,4,3,6,a4,-a4); /* sol[6] += a4 * sol[4] + -a4 * sol[3] */
-  solserv_assdirich_fac(actfield,disnum,0,8,0,6,a6,0.0); /* sol[6] += a6 * sol[8] (=sol[7]_old)  */
+  /* (1)  sol[6] = sol[6] * a5                 */
+  solserv_adddirich(actfield,disnum,node_array_sol,6,0,6,a5,0.0);
+  /* (2)  sol[6] += a4 * sol[4] + -a4 * sol[3] */
+  solserv_assdirich_fac(actfield,disnum,node_array_sol,4,3,6,a4,-a4);
+  /* (3)  sol[6] += a6 * sol[8] (=sol[7]_old)  */
+  solserv_assdirich_fac(actfield,disnum,node_array_sol,8,0,6,a6,0.0); 
 
 
 
   /*--------------------------------------- zero the working place sol[8] */
-  solserv_zerodirich(actfield,disnum,0,8);
+  solserv_zerodirich(actfield,disnum,node_array_sol,8);
 
 
 
   /*--------------------------------- update the prescribed displacements */
   /*------------------------------------------------ copy u(t) -> u(t-dt) */
   /*                                                copy sol[4] to sol[3] */
-  solserv_adddirich(actfield,disnum,0,4,0,3,1.0,0.0);
+  solserv_adddirich(actfield,disnum,node_array_sol,4,0,3,1.0,0.0);
   /*----------------------------------------------------------- zero u(t) */
   /*                                                          zero sol[4] */
-  solserv_zerodirich(actfield,disnum,0,4);
+  solserv_zerodirich(actfield,disnum,node_array_sol,4);
 
 
 #ifdef DEBUG

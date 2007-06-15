@@ -83,6 +83,13 @@ void ntainp(void);
 void locsys_inherit_to_node(void);
 void locsys_trans(ELEMENT *ele, DOUBLE **estif1, DOUBLE **estif2,
                                 DOUBLE *vec1,    DOUBLE *vec2);
+#ifdef LOCALSYSTEMS_ST
+void locsys_trans_equant_dirich(ELEMENT* ele, 
+                                ARRAY* estif_global, 
+                                ARRAY* emass_global,
+                                ARRAY* eforce_global,
+                                DOUBLE* eforce);
+#endif
 void locsys_trans_sol(FIELD *actfield, INT idis, INT array,
                       INT place, INT flag);
 void locsys_trans_sol_dirich(FIELD *actfield, INT idis, INT array,
