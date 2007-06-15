@@ -1,9 +1,9 @@
 
 //
-// Maintainer: Peter Gamnitzer
-//             gamnitzer@lnm.mw.tum.de
-//             http://www.lnm.mw.tum.de/Members/gammi
-//             089 - 289 - 15235
+// Maintainer: Axel Gerstenberger
+//             gerstenberger@lnm.mw.tum.de
+//             http://www.lnm.mw.tum.de
+//             089 - 289-15236
 //
 // necessary defines: D_FLUID D_FLUID3_XFEM AZTEC_PACKAGE RESULTTEST DEBUG CCADISCRET TRILINOS_PACKAGE SOLVE_DIRICH SOLVE_DIRICH2 UMFPACK BINIO
 //
