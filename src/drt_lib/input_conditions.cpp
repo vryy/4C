@@ -1740,7 +1740,7 @@ void input_line_xfem(multimap<int,RefCountPtr<DRT::Condition> >& lxfemmap)
 
     // create periodic boundary condition
     RefCountPtr<DRT::Condition> condition = rcp(new DRT::Condition(dlineid,
-                                                                   DRT::Condition::FSIXFEM,
+                                                                   DRT::Condition::XFEM,
                                                                    true,
                                                                    DRT::Condition::Line));
     condition->Add("field", string(buffer));
@@ -1758,7 +1758,7 @@ void input_line_xfem(multimap<int,RefCountPtr<DRT::Condition> >& lxfemmap)
  *----------------------------------------------------------------------*/
 void input_surf_xfem(multimap<int,RefCountPtr<DRT::Condition> >& sxfemmap)
 {
-  if (frfind("--DESIGN FSI XFEM SURFACE CONDITIONS")==0) return;
+  if (frfind("--DESIGN XFEM SURFACE CONDITIONS")==0) return;
   frread();
 
   /*---------------------- read number of design surfaces with conditions */
@@ -1795,7 +1795,7 @@ void input_surf_xfem(multimap<int,RefCountPtr<DRT::Condition> >& sxfemmap)
 
     // create periodic boundary condition
     RefCountPtr<DRT::Condition> condition = rcp(new DRT::Condition(dsurfaceid,
-                                                                   DRT::Condition::FSIXFEM,
+                                                                   DRT::Condition::XFEM,
                                                                    true,
                                                                    DRT::Condition::Surface));
     condition->Add("field", string(buffer));

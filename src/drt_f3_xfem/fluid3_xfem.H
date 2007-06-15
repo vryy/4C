@@ -415,7 +415,8 @@ private:
             );
 
   // evaluate fluid coefficient matrix (stationary case)
-    void f3_calmat_stationary( Epetra_SerialDenseMatrix& estif,
+    void f3_calmat_stationary( 
+                Epetra_SerialDenseMatrix& estif,
                 Epetra_SerialDenseVector&           eforce,
                 const vector<double>&               velint,
                 const vector<double>&               histvec,
@@ -432,7 +433,7 @@ private:
                 const double&                       fac,
                 const double&                       visc,
                 const int&                          iel,
-                ParameterList&                       params
+                ParameterList&                      params
             );
   
   // get optimal gaussrule for given discretization type
@@ -441,7 +442,6 @@ private:
   inline vector<double> f3_caltau(
     Epetra_SerialDenseVector&    funct,
     Epetra_SerialDenseMatrix&    deriv,
-    Epetra_SerialDenseMatrix&    deriv2,
     const Epetra_SerialDenseMatrix&    xyze,
     Epetra_SerialDenseMatrix&    xjm,
     Epetra_SerialDenseMatrix&    derxy,

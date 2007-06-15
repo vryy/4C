@@ -21,7 +21,6 @@ Maintainer: Axel Gerstenberger
 
 
 #include "Epetra_Vector.h"
-//#include "../drt_lib/drt_element.H"
 using namespace std;
 using namespace Teuchos;
 

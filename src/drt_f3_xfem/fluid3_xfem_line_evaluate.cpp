@@ -34,7 +34,6 @@ int DRT::Elements::XFluid3Line::Evaluate(	ParameterList& params,
                                     		Epetra_SerialDenseVector& elevec2,
                                     		Epetra_SerialDenseVector& elevec3)
 {
-    dserror("Neumann BC not ready for prime time");
 	DRT::Elements::XFluid3Line::ActionType act = XFluid3Line::none;
 	string action = params.get<string>("action","none");
 	if (action == "none") dserror("No action supplied");
@@ -44,15 +43,14 @@ int DRT::Elements::XFluid3Line::Evaluate(	ParameterList& params,
   	
   	switch(act)
   	{
-		case calc_ShapefunctDeriv1Deriv2:
-      {
+    case calc_ShapefunctDeriv1Deriv2:
       	// functions, deriv1, deriv2 iel, r,          
-      	f3_shapefunction_for_line(elevec1,elemat1,elemat2,lm[0],elevec2[0]); 											
-      	dserror("Implement shapefunctions for XFluid3_Line");
-      }
-      default:
+      	f3_shapefunction_for_line(elevec1,elemat1,elemat2,lm[0],elevec2[0]);
+        break; 											
+    default:
         dserror("Unknown type of action for XFluid3_Line");
   	} // end of switch(act)
+    
   	return 0;
 }
 

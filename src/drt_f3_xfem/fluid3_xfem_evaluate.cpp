@@ -278,7 +278,6 @@ void DRT::Elements::XFluid3::f3_sys_mat(const vector<int>&              lm,
         Epetra_SerialDenseMatrix    derxy(3,numnode);
         Epetra_SerialDenseMatrix    derxy2(6,numnode);
         vector<double>              edeadng(3);
-        Epetra_SerialDenseMatrix    wa1(100,100);  // working matrix used as dummy
         vector<double>              histvec(3); /* history data at integration point              */
         vector<double>              velino(3); /* normed velocity at element centre */
         double                      det;
@@ -291,7 +290,7 @@ void DRT::Elements::XFluid3::f3_sys_mat(const vector<int>&              lm,
         const bool is_stationary = params.get<bool>("using stationary formulation",false);
         
     
-        const vector<double> tau = f3_caltau(funct, deriv, deriv2,
+        const vector<double> tau = f3_caltau(funct, deriv,
                                              xyze, xjm, derxy, evelnp,
                                              distype, visc, numnode, timefac, is_stationary);
     
@@ -1608,7 +1607,6 @@ void DRT::Elements::XFluid3::f3_int_beltrami_err(
 inline vector<double> DRT::Elements::XFluid3::f3_caltau(
     Epetra_SerialDenseVector&           funct,
     Epetra_SerialDenseMatrix&           deriv,
-    Epetra_SerialDenseMatrix&           deriv2,
     const Epetra_SerialDenseMatrix&      xyze,
     Epetra_SerialDenseMatrix&               xjm,
     Epetra_SerialDenseMatrix&               derxy,
@@ -1620,15 +1618,7 @@ inline vector<double> DRT::Elements::XFluid3::f3_caltau(
     const bool                          is_stationary
     )
 {
-    Epetra_SerialDenseMatrix    wa1(100,100);  // working matrix used as dummy
-    vector<double>              histvec(3);    // history data at integration point
-    vector<double>              velino(3);     // normed velocity at element centre
-    double                      det;
-    INTEGRATION_POINTS_3D       intpoints;
-    vector<double>              tau(3); // stab parameters
-
-
-    /*------------------------------------------------------- initialise ---*/
+    // use one point gauss rule to calculate tau at element center
     GaussRule integrationrule_stabili;
     switch(distype)
     {
@@ -1643,6 +1633,7 @@ inline vector<double> DRT::Elements::XFluid3::f3_caltau(
     }
 
     // gaussian points
+    INTEGRATION_POINTS_3D       intpoints;
     integration_points_3d(intpoints, integrationrule_stabili);
 
 
@@ -1680,6 +1671,7 @@ inline vector<double> DRT::Elements::XFluid3::f3_caltau(
     }
 
     // get Jacobian matrix and determinant
+    double  det;
     f3_jaco(xyze,deriv,xjm,&det,numnode);
     const double vol = wquad*det;
 
@@ -1694,6 +1686,8 @@ inline vector<double> DRT::Elements::XFluid3::f3_caltau(
                               + velint[1]*velint[1]
                               + velint[2]*velint[2]);
     
+    // normed velocity at element centre
+    vector<double>  velino(3);     
     if(vel_norm>=EPS6)
     {
         velino[0] = velint[0]/vel_norm;
@@ -1717,6 +1711,8 @@ inline vector<double> DRT::Elements::XFluid3::f3_caltau(
     }
     const double strle = 2.0/val;
 
+    // calculate tau
+    vector<double>  tau(3); // stab parameters
     if (is_stationary == false)
     {// stabilization parameters for instationary case (default)
 

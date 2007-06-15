@@ -38,8 +38,6 @@ int DRT::Elements::XFluid3Surface::Evaluate(	ParameterList& params,
                                     			Epetra_SerialDenseVector& elevec2,
                                     			Epetra_SerialDenseVector& elevec3)
 {
-    
-    dserror("Neumann BC not ready for prime time");
 	DRT::Elements::XFluid3Surface::ActionType act = XFluid3Surface::none;
 	string action = params.get<string>("action","none");
 	if (action == "none") dserror("No action supplied");
@@ -47,18 +45,17 @@ int DRT::Elements::XFluid3Surface::Evaluate(	ParameterList& params,
   		act = XFluid3Surface::calc_ShapefunctDeriv1Deriv2;
   	else dserror("Unknown type of action for XFluid3_Surface");
   	
-  switch(act)
-  {
-		case calc_ShapefunctDeriv1Deriv2:
-      {
-      	// functions, deriv, iel, r, s,               deriv2 is mssing !!!
+    switch(act)
+    {
+	case calc_ShapefunctDeriv1Deriv2:
+        // functions, deriv, iel, r, s,               deriv2 is mssing !!!
       	f3_shapefunction_for_surface(elevec1,elemat1,lm[0],elevec2[0],elevec2[1]);
-      }
-      default:
+        break;
+    default:
         dserror("Unknown type of action for XFluid3_Surface");
-  } // end of switch(act)
+    } // end of switch(act)
 
-  return 0;
+    return 0;
 }
 
 
