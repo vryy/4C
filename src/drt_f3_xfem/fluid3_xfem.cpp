@@ -195,8 +195,8 @@ DRT::Element** DRT::Elements::XFluid3::Lines()
         {
             for (int inode=0;inode<2;inode++)
             {
-                nodeids[inode] = NodeIds()[tet10_lines[iline][inode]];
-                nodes[inode] = Nodes()[tet10_lines[iline][inode]];
+                nodeids[inode] = NodeIds()[tet10_lines_[iline][inode]];
+                nodes[inode] = Nodes()[tet10_lines_[iline][inode]];
             }
             lines_[iline] = rcp(new DRT::Elements::XFluid3Line(iline,Owner(),2,nodeids,nodes,NULL,this,iline));
             lineptrs_[iline] = lines_[iline].get();
@@ -207,8 +207,8 @@ DRT::Element** DRT::Elements::XFluid3::Lines()
         {
             for (int inode=0;inode<3;inode++)
             {
-                nodeids[inode] = NodeIds()[tet10_lines[iline][inode]];
-                nodes[inode] = Nodes()[tet10_lines[iline][inode]];
+                nodeids[inode] = NodeIds()[tet10_lines_[iline][inode]];
+                nodes[inode] = Nodes()[tet10_lines_[iline][inode]];
             }
             lines_[iline] = rcp(new DRT::Elements::XFluid3Line(iline,Owner(),3,nodeids,nodes,NULL,this,iline));
             lineptrs_[iline] = lines_[iline].get();
@@ -217,10 +217,10 @@ DRT::Element** DRT::Elements::XFluid3::Lines()
     case hex8:
         for(int iline=0;iline<nline;iline++)
         {
-	  	    nodeids[0] = NodeIds()[hex27_lines[iline][0]];
-	  	    nodeids[1] = NodeIds()[hex27_lines[iline][1]];
-	  	    nodes[0] = Nodes()[0];
-	  	    nodes[1] = Nodes()[1];
+	  	    nodeids[0] = NodeIds()[hex27_lines_[iline][0]];
+	  	    nodeids[1] = NodeIds()[hex27_lines_[iline][1]];
+	  	    nodes[0] = Nodes()[hex27_lines_[iline][0]];
+	  	    nodes[1] = Nodes()[hex27_lines_[iline][1]];
 	  	    lines_[iline] = rcp(new DRT::Elements::XFluid3Line(iline,Owner(),2,nodeids,nodes,NULL,this,iline));
 	  	    lineptrs_[iline] = lines_[iline].get();
         }    
@@ -228,12 +228,12 @@ DRT::Element** DRT::Elements::XFluid3::Lines()
 	case hex27:
 		for(int iline=0;iline<nline;iline++)
         {
-    		nodeids[0] = NodeIds()[hex27_lines[iline][0]];
-    	  	nodeids[1] = NodeIds()[hex27_lines[iline][1]];
-    	  	nodeids[2] = NodeIds()[hex27_lines[iline][2]];
-    	  	nodes[0] = Nodes()[0];
-    	  	nodes[1] = Nodes()[1];
-    	  	nodes[2] = Nodes()[2];
+    		nodeids[0] = NodeIds()[hex27_lines_[iline][0]];
+    	  	nodeids[1] = NodeIds()[hex27_lines_[iline][1]];
+    	  	nodeids[2] = NodeIds()[hex27_lines_[iline][2]];
+    	  	nodes[0] = Nodes()[hex27_lines_[iline][0]];
+    	  	nodes[1] = Nodes()[hex27_lines_[iline][1]];
+    	  	nodes[2] = Nodes()[hex27_lines_[iline][2]];
 	  	    lines_[iline] =	rcp(new DRT::Elements::XFluid3Line(iline,Owner(),3,nodeids,nodes,NULL,this,iline));
 	  	    lineptrs_[iline] = lines_[iline].get();
         }
@@ -264,8 +264,8 @@ DRT::Element** DRT::Elements::XFluid3::Surfaces()
         {
             for (int inode=0;inode<3;inode++)
             {
-                nodeids[inode] = NodeIds()[tet10_surfaces[isurf][inode]];
-                nodes[inode] = Nodes()[tet10_surfaces[isurf][inode]];
+                nodeids[inode] = NodeIds()[tet10_surfaces_[isurf][inode]];
+                nodes[inode] = Nodes()[tet10_surfaces_[isurf][inode]];
             }
             surfaces_[isurf] = rcp(new DRT::Elements::XFluid3Surface(isurf,Owner(),3,nodeids,nodes,this,isurf));
             surfaceptrs_[isurf] = surfaces_[isurf].get();
@@ -276,8 +276,8 @@ DRT::Element** DRT::Elements::XFluid3::Surfaces()
         {
             for (int inode=0;inode<6;inode++)
             {
-                nodeids[inode] = NodeIds()[tet10_surfaces[isurf][inode]];
-                nodes[inode] = Nodes()[tet10_surfaces[isurf][inode]];
+                nodeids[inode] = NodeIds()[tet10_surfaces_[isurf][inode]];
+                nodes[inode] = Nodes()[tet10_surfaces_[isurf][inode]];
             }
             surfaces_[isurf] = rcp(new DRT::Elements::XFluid3Surface(isurf,Owner(),3,nodeids,nodes,this,isurf));
             surfaceptrs_[isurf] = surfaces_[isurf].get();
@@ -288,8 +288,8 @@ DRT::Element** DRT::Elements::XFluid3::Surfaces()
     	{
             for (int inode=0;inode<4;inode++)
             {
-                nodeids[inode] = NodeIds()[hex27_surfaces[isurf][inode]];
-                nodes[inode] = Nodes()[hex27_surfaces[isurf][inode]];
+                nodeids[inode] = NodeIds()[hex27_surfaces_[isurf][inode]];
+                nodes[inode] = Nodes()[hex27_surfaces_[isurf][inode]];
             }
             surfaces_[isurf] = rcp(new DRT::Elements::XFluid3Surface(isurf,Owner(),4,nodeids,nodes,this,isurf));
             surfaceptrs_[isurf] = surfaces_[isurf].get();
@@ -300,8 +300,8 @@ DRT::Element** DRT::Elements::XFluid3::Surfaces()
         {
             for (int inode=0;inode<9;inode++)
             {
-                nodeids[inode] = NodeIds()[hex27_surfaces[isurf][inode]];
-                nodes[inode] = Nodes()[hex27_surfaces[isurf][inode]];
+                nodeids[inode] = NodeIds()[hex27_surfaces_[isurf][inode]];
+                nodes[inode] = Nodes()[hex27_surfaces_[isurf][inode]];
             }
             surfaces_[isurf] = rcp(new DRT::Elements::XFluid3Surface(isurf,Owner(),9,nodeids,nodes,this,isurf));
             surfaceptrs_[isurf] = surfaces_[isurf].get();
@@ -428,40 +428,6 @@ void DRT::Elements::XFluid3Register::Print(ostream& os) const
     return;
 }
 
-// update!!
-const int DRT::Elements::XFluid3::hex27_surfaces[6][9] = {{0,  3,  2,  1, 11, 10,  9,  8, 20},
-                                                          {4,  5,  6,  7, 12, 13, 14, 15, 21},
-                                                          {0,  1,  5,  4,  8, 17, 12, 16, 22},
-                                                          {2,  3,  7,  6, 10, 19, 14, 18, 23},
-                                                          {0,  4,  7,  3, 16, 15, 19, 11, 24},
-                                                          {1,  2,  6,  5,  9, 18, 13, 17, 25}};
-// update!!
-const int DRT::Elements::XFluid3::hex27_lines[12][3] = {{0,  1,  8},
-                                                        {1,  2,  9},
-                                                        {2,  3, 10},
-                                                        {3,  0, 11},
-                                                        {0,  4, 16},
-                                                        {1,  5, 17},
-                                                        {2,  6, 18},
-                                                        {3,  7, 19},
-                                                        {4,  5, 12},
-                                                        {5,  6, 13},
-                                                        {6,  7, 14},
-                                                        {7,  4, 15}};
-
-// update!!
-const int DRT::Elements::XFluid3::tet10_surfaces[4][6] = {{0,  1,  8,  0,  1,  8},
-                                                          {1,  2,  9,  0,  1,  8},
-                                                          {2,  3, 10,  0,  1,  8},
-                                                          {3,  0, 11,  0,  1,  8}};
-
-// update!!
-const int DRT::Elements::XFluid3::tet10_lines[6][3] = {{0,  1,  8},
-                                                       {1,  2,  9},
-                                                       {2,  3, 10},
-                                                       {3,  0, 11},
-                                                       {0,  4, 16},
-                                                       {1,  5, 17}};
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
