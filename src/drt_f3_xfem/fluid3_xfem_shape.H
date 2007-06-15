@@ -27,16 +27,23 @@ using namespace Teuchos;
 
 
 
-void shape_function_3D( Epetra_SerialDenseVector&                  funct,
-                        Epetra_SerialDenseMatrix&                  deriv,
-                        Epetra_SerialDenseMatrix&                  deriv2,
-                        const double&                              r,
-                        const double&                              s,
-                        const double&                              t,
-                        const DRT::Element::DiscretizationType&    distype,
-                        const int&                                 icode);
+void shape_function_3D_deriv0( Epetra_SerialDenseVector&                  funct,
+                               const double&                              r,
+                               const double&                              s,
+                               const double&                              t,
+                               const DRT::Element::DiscretizationType&    distype);
 
-
+void shape_function_3D_deriv1( Epetra_SerialDenseMatrix&                  deriv,
+                               const double&                              r,
+                               const double&                              s,
+                               const double&                              t,
+                               const DRT::Element::DiscretizationType&    distype);
+                            
+void shape_function_3D_deriv2( Epetra_SerialDenseMatrix&                  deriv2,
+                               const double&                              r,
+                               const double&                              s,
+                               const double&                              t,
+                               const DRT::Element::DiscretizationType&    distype);
 
 
 #endif // #ifndef FLUID3_SHAPE_H

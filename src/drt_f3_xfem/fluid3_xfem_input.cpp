@@ -135,7 +135,8 @@ bool DRT::Elements::XFluid3::ReadElement()
     dsassert(material_!=0, "No material defined for XFLUID3 element\n");
 
     // read/set gaussian rule
-    gaussrule_ = get_optimal_gaussrule(Shape());
+    const DiscretizationType distype = this->Shape();
+    gaussrule_ = get_optimal_gaussrule(distype);
     
     return true;
 } // Fluid3::ReadElement()
