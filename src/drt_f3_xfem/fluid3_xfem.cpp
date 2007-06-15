@@ -185,58 +185,20 @@ DRT::Element** DRT::Elements::XFluid3::Lines()
 	const int nline = NumLine();
 	lines_.resize(nline);
 	lineptrs_.resize(nline);
-	int nodeids[3];
-	DRT::Node* nodes[3];
 	
     switch (distype)
     {
     case tet4:
-        for(int iline=0;iline<nline;iline++)
-        {
-            for (int inode=0;inode<2;inode++)
-            {
-                nodeids[inode] = NodeIds()[tet10_lines_[iline][inode]];
-                nodes[inode] = Nodes()[tet10_lines_[iline][inode]];
-            }
-            lines_[iline] = rcp(new DRT::Elements::XFluid3Line(iline,Owner(),2,nodeids,nodes,NULL,this,iline));
-            lineptrs_[iline] = lines_[iline].get();
-        }
+        CreateLinesTet(6, 2);
         break;
     case tet10:
-        for(int iline=0;iline<nline;iline++)
-        {
-            for (int inode=0;inode<3;inode++)
-            {
-                nodeids[inode] = NodeIds()[tet10_lines_[iline][inode]];
-                nodes[inode] = Nodes()[tet10_lines_[iline][inode]];
-            }
-            lines_[iline] = rcp(new DRT::Elements::XFluid3Line(iline,Owner(),3,nodeids,nodes,NULL,this,iline));
-            lineptrs_[iline] = lines_[iline].get();
-        }
+        CreateLinesTet(6, 3);
         break;
     case hex8:
-        for(int iline=0;iline<nline;iline++)
-        {
-	  	    nodeids[0] = NodeIds()[hex27_lines_[iline][0]];
-	  	    nodeids[1] = NodeIds()[hex27_lines_[iline][1]];
-	  	    nodes[0] = Nodes()[hex27_lines_[iline][0]];
-	  	    nodes[1] = Nodes()[hex27_lines_[iline][1]];
-	  	    lines_[iline] = rcp(new DRT::Elements::XFluid3Line(iline,Owner(),2,nodeids,nodes,NULL,this,iline));
-	  	    lineptrs_[iline] = lines_[iline].get();
-        }    
+        CreateLinesHex(12, 2);
         break;
-	case hex27:
-		for(int iline=0;iline<nline;iline++)
-        {
-    		nodeids[0] = NodeIds()[hex27_lines_[iline][0]];
-    	  	nodeids[1] = NodeIds()[hex27_lines_[iline][1]];
-    	  	nodeids[2] = NodeIds()[hex27_lines_[iline][2]];
-    	  	nodes[0] = Nodes()[hex27_lines_[iline][0]];
-    	  	nodes[1] = Nodes()[hex27_lines_[iline][1]];
-    	  	nodes[2] = Nodes()[hex27_lines_[iline][2]];
-	  	    lines_[iline] =	rcp(new DRT::Elements::XFluid3Line(iline,Owner(),3,nodeids,nodes,NULL,this,iline));
-	  	    lineptrs_[iline] = lines_[iline].get();
-        }
+	case hex20: case hex27:
+		CreateLinesHex(12, 3);
         break;
     default:
         dserror("distype not supported");
@@ -244,6 +206,44 @@ DRT::Element** DRT::Elements::XFluid3::Lines()
   	return (DRT::Element**)(&(lineptrs_[0]));
 }
 
+// support for above
+void DRT::Elements::XFluid3::CreateLinesTet(const int& nline,
+                                            const int& nnode)
+{
+    for(int iline=0;iline<nline;iline++)
+    {
+        int nodeids[nnode];
+        DRT::Node* nodes[nnode];
+        
+        for (int inode=0;inode<2;inode++)
+        {
+             nodeids[inode] = NodeIds()[tet10_lines_[iline][inode]];
+             nodes[inode]   = Nodes()[tet10_lines_[iline][inode]];
+        }
+        lines_[iline] = rcp(new DRT::Elements::XFluid3Line(iline,Owner(),nnode,nodeids,nodes,NULL,this,iline));
+        lineptrs_[iline] = lines_[iline].get();
+    }
+}        
+
+
+// support for above
+void DRT::Elements::XFluid3::CreateLinesHex(const int& nline,
+                                            const int& nnode)
+{
+    for(int iline=0;iline<nline;iline++)
+    {
+        int nodeids[nnode];
+        DRT::Node* nodes[nnode];
+        
+        for (int inode=0;inode<2;inode++)
+        {
+             nodeids[inode] = NodeIds()[hex27_lines_[iline][inode]];
+             nodes[inode]   = Nodes()[hex27_lines_[iline][inode]];
+        }
+        lines_[iline] = rcp(new DRT::Elements::XFluid3Line(iline,Owner(),nnode,nodeids,nodes,NULL,this,iline));
+        lineptrs_[iline] = lines_[iline].get();
+    }
+}   
 
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          g.bau 03/07|
@@ -254,66 +254,67 @@ DRT::Element** DRT::Elements::XFluid3::Surfaces()
     const int nsurf = NumSurface();
   	surfaces_.resize(nsurf);
   	surfaceptrs_.resize(nsurf);
-  	int nodeids[9];
-  	DRT::Node* nodes[9];
     
     switch (distype)
     {
     case tet4:
-        for (int isurf=0;isurf<nsurf;isurf++)
-        {
-            for (int inode=0;inode<3;inode++)
-            {
-                nodeids[inode] = NodeIds()[tet10_surfaces_[isurf][inode]];
-                nodes[inode] = Nodes()[tet10_surfaces_[isurf][inode]];
-            }
-            surfaces_[isurf] = rcp(new DRT::Elements::XFluid3Surface(isurf,Owner(),3,nodeids,nodes,this,isurf));
-            surfaceptrs_[isurf] = surfaces_[isurf].get();
-        }
+        CreateSurfacesTet(4, 3);
         break;
     case tet10:
-        for (int isurf=0;isurf<nsurf;isurf++)
-        {
-            for (int inode=0;inode<6;inode++)
-            {
-                nodeids[inode] = NodeIds()[tet10_surfaces_[isurf][inode]];
-                nodes[inode] = Nodes()[tet10_surfaces_[isurf][inode]];
-            }
-            surfaces_[isurf] = rcp(new DRT::Elements::XFluid3Surface(isurf,Owner(),3,nodeids,nodes,this,isurf));
-            surfaceptrs_[isurf] = surfaces_[isurf].get();
-        }
+        CreateSurfacesTet(4, 6);
         break;
   	case hex8:
-    	for (int isurf=0;isurf<nsurf;isurf++)
-    	{
-            for (int inode=0;inode<4;inode++)
-            {
-                nodeids[inode] = NodeIds()[hex27_surfaces_[isurf][inode]];
-                nodes[inode] = Nodes()[hex27_surfaces_[isurf][inode]];
-            }
-            surfaces_[isurf] = rcp(new DRT::Elements::XFluid3Surface(isurf,Owner(),4,nodeids,nodes,this,isurf));
-            surfaceptrs_[isurf] = surfaces_[isurf].get();
-        }
+        CreateSurfacesHex(6, 4);
         break;
-    case hex27:
-        for (int isurf=0;isurf<nsurf;isurf++)
-        {
-            for (int inode=0;inode<9;inode++)
-            {
-                nodeids[inode] = NodeIds()[hex27_surfaces_[isurf][inode]];
-                nodes[inode] = Nodes()[hex27_surfaces_[isurf][inode]];
-            }
-            surfaces_[isurf] = rcp(new DRT::Elements::XFluid3Surface(isurf,Owner(),9,nodeids,nodes,this,isurf));
-            surfaceptrs_[isurf] = surfaces_[isurf].get();
-	
-  	     }
-         break;
+    case hex20: case hex27:
+        CreateSurfacesHex(6, 9);
+        break;
   	default: 
         dserror("distype not supported");
     }
-
   	return (DRT::Element**)(&(surfaceptrs_[0]));
 }
+
+
+
+// support for above
+void DRT::Elements::XFluid3::CreateSurfacesTet(const int& nsurf,
+                                               const int& nnode)
+{
+    for(int isurf=0;isurf<nsurf;isurf++)
+    {
+        int nodeids[nnode];
+        DRT::Node* nodes[nnode];
+        
+        for (int inode=0;inode<2;inode++)
+        {
+             nodeids[inode] = NodeIds()[tet10_surfaces_[isurf][inode]];
+             nodes[inode]   = Nodes()[  tet10_surfaces_[isurf][inode]];
+        }
+        lines_[isurf] = rcp(new DRT::Elements::XFluid3Line(isurf,Owner(),nnode,nodeids,nodes,NULL,this,isurf));
+        lineptrs_[isurf] = lines_[isurf].get();
+    }
+}        
+
+
+// support for above
+void DRT::Elements::XFluid3::CreateSurfacesHex(const int& nsurf,
+                                               const int& nnode)
+{
+    for(int isurf=0;isurf<nsurf;isurf++)
+    {
+        int nodeids[nnode];
+        DRT::Node* nodes[nnode];
+        
+        for (int inode=0;inode<2;inode++)
+        {
+             nodeids[inode] = NodeIds()[hex27_surfaces_[isurf][inode]];
+             nodes[inode]   = Nodes()[  hex27_surfaces_[isurf][inode]];
+        }
+        lines_[isurf] = rcp(new DRT::Elements::XFluid3Line(isurf,Owner(),nnode,nodeids,nodes,NULL,this,isurf));
+        lineptrs_[isurf] = lines_[isurf].get();
+    }
+}   
 
 
 /*----------------------------------------------------------------------*

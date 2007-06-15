@@ -24,8 +24,8 @@ Maintainer: Axel Gerstenberger
 using namespace std;
 
 
-//! GaussRules supported by fluid3
-enum GaussRule  
+//! GaussRules
+enum GaussRule3D  
   {
     hex_1point,
     hex_8point,
@@ -36,6 +36,17 @@ enum GaussRule
     tet_10point
 };
 
+
+//! GaussRules
+enum GaussRule2D  
+  {
+    quad_1point,
+    quad_4point,
+    quad_9point,
+    tri_1point,
+    tri_3point,
+    tri_6point
+};
 
 /*!----------------------------------------------------------------------
 \brief integration parameters
@@ -74,11 +85,13 @@ typedef struct _INTEGRATION_POINTS_3D
 } INTEGRATION_POINTS_3D;
 
 
-// evaluate element integration points (and storing them in data)
-void integration_points_3d(struct _INTEGRATION_POINTS_3D& data,
-                           const  GaussRule gaussrule);
+// evaluate element integration points (and storing them in intpoints)
+void integration_points_3d(struct _INTEGRATION_POINTS_3D& intpoints,
+                           const  GaussRule3D gaussrule);
 
-
+// evaluate element integration points (and storing them in intpoints)
+void integration_points_2d(struct _INTEGRATION_POINTS_2D& intpoints,
+                           const  GaussRule2D gaussrule);
 
 
 #endif // #ifndef FLUID3_SHAPE_H

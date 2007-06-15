@@ -45,6 +45,22 @@ void shape_function_3D_deriv2( Epetra_SerialDenseMatrix&                  deriv2
                                const DRT::Element::DiscretizationType&    distype);
 
 
+void shape_function_2D_deriv0( Epetra_SerialDenseVector&                  funct,
+                               const double&                              r,
+                               const double&                              s,
+                               const DRT::Element::DiscretizationType&    distype);
+
+void shape_function_2D_deriv1( Epetra_SerialDenseMatrix&                  deriv,
+                               const double&                              r,
+                               const double&                              s,
+                               const DRT::Element::DiscretizationType&    distype);
+
+void shape_function_2D_deriv2( Epetra_SerialDenseMatrix&                  deriv2,
+                               const double&                              r,
+                               const double&                              s,
+                               const DRT::Element::DiscretizationType&    distype);
+
+
 #endif // #ifndef FLUID3_SHAPE_H
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

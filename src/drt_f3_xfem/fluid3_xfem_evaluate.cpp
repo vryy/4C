@@ -1428,9 +1428,9 @@ return;
 
 
 // get optimal gaussrule for discretization type
-GaussRule DRT::Elements::XFluid3::get_optimal_gaussrule(const DiscretizationType& distype)
+GaussRule3D DRT::Elements::XFluid3::get_optimal_gaussrule(const DiscretizationType& distype)
 {
-    GaussRule rule;
+    GaussRule3D rule;
     switch (distype)
     {
     case hex8:
@@ -1619,7 +1619,7 @@ inline vector<double> DRT::Elements::XFluid3::f3_caltau(
     )
 {
     // use one point gauss rule to calculate tau at element center
-    GaussRule integrationrule_stabili;
+    GaussRule3D integrationrule_stabili;
     switch(distype)
     {
     case hex8: case hex20: case hex27:

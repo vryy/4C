@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file fluid3_xfem.cpp
+\file fluid3_xfem_integration.cpp
 \brief
 
 <pre>
@@ -24,7 +24,7 @@ Maintainer: Axel Gerstenberger
  |  evaluate the element integration points (private)        g.bau 03/07|
  *----------------------------------------------------------------------*/
 void integration_points_3d(struct _INTEGRATION_POINTS_3D& intpoints,
-                           const GaussRule gaussrule)
+                           const  GaussRule3D gaussrule)
 {
   const double Q12  = 1.0/2.0;
   const double Q14  = 1.0/4.0;
@@ -201,7 +201,109 @@ void integration_points_3d(struct _INTEGRATION_POINTS_3D& intpoints,
   }
 
   return;
-} //end of DRT::Elements::Fluid3::f3_integration_points
+}
+
+
+/*----------------------------------------------------------------------*
+ |  evaluate the element integration points                             |
+ *----------------------------------------------------------------------*/
+void integration_points_2d(struct _INTEGRATION_POINTS_2D& intpoints,
+                           const   GaussRule2D gaussrule)
+{
+    switch(gaussrule)
+    {
+    case quad_4point :
+        intpoints.nquad = 4;
+        intpoints.qwgt[0]  =  1.0;
+        intpoints.qwgt[1]  =  1.0;
+        intpoints.qwgt[2]  =  1.0;
+        intpoints.qwgt[3]  =  1.0;
+        
+        intpoints.qxg[0][0] = -0.5773502691896;
+        intpoints.qxg[0][1] = -0.5773502691896;
+        intpoints.qxg[1][0] =  0.5773502691896;
+        intpoints.qxg[1][1] = -0.5773502691896;
+        intpoints.qxg[2][0] = -0.5773502691896;
+        intpoints.qxg[2][1] =  0.5773502691896;
+        intpoints.qxg[3][0] =  0.5773502691896;
+        intpoints.qxg[3][1] =  0.5773502691896;
+        break;
+        
+    case quad_9point:
+        intpoints.nquad = 9; 
+        intpoints.qwgt[0]  =  0.5555555555556*0.5555555555556;
+        intpoints.qwgt[1]  =  0.8888888888889*0.5555555555556;
+        intpoints.qwgt[2]  =  0.5555555555556*0.5555555555556;
+        intpoints.qwgt[3]  =  0.5555555555556*0.8888888888889;
+        intpoints.qwgt[4]  =  0.8888888888889*0.8888888888889;
+        intpoints.qwgt[5]  =  0.5555555555556*0.8888888888889;
+        intpoints.qwgt[6]  =  0.5555555555556*0.5555555555556;
+        intpoints.qwgt[7]  =  0.8888888888889*0.5555555555556;
+        intpoints.qwgt[8]  =  0.5555555555556*0.5555555555556;
+        
+        intpoints.qxg[0][0] = -0.7745966692415;
+        intpoints.qxg[0][1] = -0.7745966692415;
+        intpoints.qxg[1][0] =  0.0;
+        intpoints.qxg[1][1] = -0.7745966692415;
+        intpoints.qxg[2][0] =  0.7745966692415;
+        intpoints.qxg[2][1] = -0.7745966692415;
+        intpoints.qxg[3][0] = -0.7745966692415;
+        intpoints.qxg[3][1] =  0.0; 
+        intpoints.qxg[4][0] =  0.0; 
+        intpoints.qxg[4][1] =  0.0;
+        intpoints.qxg[5][0] =  0.7745966692415; 
+        intpoints.qxg[5][1] =  0.0;
+        intpoints.qxg[6][0] = -0.7745966692415; 
+        intpoints.qxg[6][1] =  0.7745966692415; 
+        intpoints.qxg[7][0] =  0.0;  
+        intpoints.qxg[7][1] =  0.7745966692415; 
+        intpoints.qxg[8][0] =  0.7745966692415;
+        intpoints.qxg[8][1] =  0.7745966692415; 
+        break;
+        
+    case tri_3point :
+        intpoints.nquad = 3;                
+        intpoints.qwgt[0]  = 1.0/6.0 ;
+        intpoints.qwgt[1]  = 1.0/6.0 ;
+        intpoints.qwgt[2]  = 1.0/6.0 ;
+
+        intpoints.qxg[0][0] = 0.5;
+        intpoints.qxg[0][1] = 0.0;
+        intpoints.qxg[1][0] = 0.5;
+        intpoints.qxg[1][1] = 0.5;
+        intpoints.qxg[2][0] = 0.0;
+        intpoints.qxg[2][1] = 0.5;
+        break;
+        
+    case tri_6point:
+        intpoints.nquad = 6;
+        intpoints.qwgt[0]  = 0.0549758718277;
+        intpoints.qwgt[1]  = 0.0549758718277;
+        intpoints.qwgt[2]  = 0.0549758718277;
+        intpoints.qwgt[3]  = 0.1116907948390;
+        intpoints.qwgt[4]  = 0.1116907948390;
+        intpoints.qwgt[5]  = 0.1116907948390;
+
+        intpoints.qxg[0][0] = 0.0915762135098;
+        intpoints.qxg[0][1] = 0.0915762135098;
+        intpoints.qxg[1][0] = 0.8168475729805;
+        intpoints.qxg[1][1] = 0.0915762135098;
+        intpoints.qxg[2][0] = 0.0915762135098;
+        intpoints.qxg[2][1] = 0.8168475729805;
+        intpoints.qxg[3][0] = 0.4459484909160;
+        intpoints.qxg[3][1] = 0.1081030181681;
+        intpoints.qxg[4][0] = 0.4459484909160;
+        intpoints.qxg[4][1] = 0.4459484909160;
+        intpoints.qxg[5][0] = 0.1081030181681; 
+        intpoints.qxg[5][1] = 0.4459484909160; 
+        break;
+    default:
+        dserror("unknown integration rule");
+    }
+
+    return;
+}
+
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

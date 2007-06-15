@@ -133,230 +133,72 @@ void DRT::Elements::XFluid3Surface::Print(ostream& os) const
  *----------------------------------------------------------------------*/
 DRT::Element** DRT::Elements::XFluid3Surface::Lines()
 {
-
+    const DiscretizationType distype = Shape();
 	const int nline   = NumLine();
-  	const int numnode = NumNode();
   	lines_.resize(nline);
   	lineptrs_.resize(nline);
-  	int nodeids[100];
-  	DRT::Node* nodes[100];
 
-  	/* triangle elements */
-  	if (nline==3)
-  	{
-    /* mind: The displayed element is not the reference element!
-     *
-     *               2
-     *                X
-     *                |\
-     *                | \       edge1
-     *   edge2       6o  o5    (line1)
-     *  (line2)       |   \
-     *                |    \
-     *                X--o--X
-     *               0   4   1
-     *
-     *             edge0
-     *            (line0)
-     *
-     *
-     *      X nodes for tri3
-     *      o addotional nodes for tri6
-     *                                                                       */
-    /* linear triangles*/
-		if (numnode==3)
-    	{
-      	/* first edge */
-      	// set node id's
-      	nodeids[0] = NodeIds()[0];
-      	nodeids[1] = NodeIds()[1];
-      	// get nodes
-      	nodes[0] = Nodes()[0];
-      	nodes[1] = Nodes()[1];
-      	// create the line and get the line pointer
-      	lines_[0] =
-        		rcp(new DRT::Elements::XFluid3Line(0,Owner(),2,nodeids,nodes,this,NULL,0));
-      	lineptrs_[0] = lines_[0].get();
-
-      	/* second edge */
-      	// set node id's
-     	 	nodeids[0] = NodeIds()[1];
-      	nodeids[1] = NodeIds()[2];
-      	// get nodes
-      	nodes[0] = Nodes()[1];
-      	nodes[1] = Nodes()[2];
-      	// create the line and get the line pointer
-      	lines_[1] =
-        		rcp(new DRT::Elements::XFluid3Line(1,Owner(),2,nodeids,nodes,this,NULL,1));
-      	lineptrs_[1] = lines_[1].get();
-
-	      /* third edge */
-	      // set node id's
-	      nodeids[0] = NodeIds()[2];
-	      nodeids[1] = NodeIds()[0];
-	      // get nodes
-	      nodes[0] = Nodes()[2];
-	      nodes[1] = Nodes()[0];
-	      // create the line and get the line pointer
-	      lines_[2] =
-	        rcp(new DRT::Elements::XFluid3Line(2,Owner(),2,nodeids,nodes,this,NULL,2));
-	      lineptrs_[2] = lines_[2].get();
-    	}
-    	/* quadratic triangles*/
-    	else if (numnode==6)
-    	{
-      	dserror("TRI6 lines not implemented.");
-    	}
-  	}
-  	/* quad elements*/
-  	else if (nline==4)
-  	{
-    /* mind: The displayed element is not the reference element!
-     *
-     *                  
-     *                  edge2	  
-     *		       (line2)
-     *           
-     *              3     6     2
-     *               X----o----X
-     *               |         |
-     *               |         |   
-     *   edge3      7o    O    o5      edge1	  
-     *  (line3)      |    8    |      (line1)
-     *               |         |
-     *               X----o----X
-     *              0     4     1
-     *
-     *                  edge0
-     *                 (line0)
-     *
-     *
-     *      X nodes for quad
-     *      o addotional nodes for quad8
-     *      O addotional nodes for full quadratic quad9
-     *      
-     *                                                                 */
-    	if (numnode==4)
-    	{
-	      /* first edge */
-	      // set node id's
-	      nodeids[0] = NodeIds()[0];
-	      nodeids[1] = NodeIds()[1];
-	      // get nodes
-	      nodes[0] = Nodes()[0];
-	      nodes[1] = Nodes()[1];
-	      // create the line and get the line pointer
-	      lines_[0] =
-	        rcp(new DRT::Elements::XFluid3Line(0,Owner(),2,nodeids,nodes,this,NULL,0));
-	      lineptrs_[0] = lines_[0].get();
-	
-	      /* second edge */
-	      // set node id's
-	      nodeids[0] = NodeIds()[1];
-	      nodeids[1] = NodeIds()[2];
-	      // get nodes
-	      nodes[0] = Nodes()[1];
-	      nodes[1] = Nodes()[2];
-	      // create the line and get the line pointer
-	      lines_[1] =
-	        rcp(new DRT::Elements::XFluid3Line(1,Owner(),2,nodeids,nodes,this,NULL,1));
-	      lineptrs_[1] = lines_[1].get();
-	
-	      /* third edge */
-	      // set node id's
-	      nodeids[0] = NodeIds()[2];
-	      nodeids[1] = NodeIds()[3];
-	      // get nodes
-	      nodes[0] = Nodes()[2];
-	      nodes[1] = Nodes()[3];
-	      // create the line and get the line pointer
-	      lines_[2] =
-	        rcp(new DRT::Elements::XFluid3Line(2,Owner(),2,nodeids,nodes,this,NULL,2));
-	      lineptrs_[2] = lines_[2].get();
-
-	      /* fourth edge */
-	      // set node id's
-	      nodeids[0] = NodeIds()[3];
-	      nodeids[1] = NodeIds()[0];
-	      // get nodes
-	      nodes[0] = Nodes()[3];
-	      nodes[1] = Nodes()[0];
-	      // create the line and get the line pointer
-	      lines_[3] =
-	        rcp(new DRT::Elements::XFluid3Line(3,Owner(),2,nodeids,nodes,this,NULL,3));
-	      lineptrs_[3] = lines_[3].get();
-	      
-    	}
-    	else if (numnode==8)
-    	{
-      	dserror("quad8 lines not implemented.");
-    	}
-    	else if (numnode==9)
-    	{
-      	/* first edge */
-	      // set node id's
-	      nodeids[0] = NodeIds()[0];
-	      nodeids[1] = NodeIds()[4];
-	      nodeids[2] = NodeIds()[1];
-	      // get nodes
-	      nodes[0] = Nodes()[0];
-	      nodes[1] = Nodes()[4];
-	      nodes[2] = Nodes()[1];
-	      // create the line and get the line pointer
-	      lines_[0] =
-	        rcp(new DRT::Elements::XFluid3Line(0,Owner(),3,nodeids,nodes,this,NULL,0));
-	      lineptrs_[0] = lines_[0].get();
-	
-	      /* second edge */
-	      // set node id's
-	      nodeids[0] = NodeIds()[1];
-	      nodeids[1] = NodeIds()[5];
-	      nodeids[2] = NodeIds()[2];
-	      // get nodes
-	      nodes[0] = Nodes()[1];
-	      nodes[1] = Nodes()[5];
-	      nodes[2] = Nodes()[2];
-	      // create the line and get the line pointer
-	      lines_[1] =
-	        rcp(new DRT::Elements::XFluid3Line(1,Owner(),3,nodeids,nodes,this,NULL,1));
-	      lineptrs_[1] = lines_[1].get();
-	
-	      /* third edge */
-	      // set node id's
-	      nodeids[0] = NodeIds()[2];
-	      nodeids[1] = NodeIds()[6];
-	      nodeids[2] = NodeIds()[3];
-	      // get nodes
-	      nodes[0] = Nodes()[2];
-	      nodes[1] = Nodes()[6];
-	      nodes[2] = Nodes()[3];
-	      // create the line and get the line pointer
-	      lines_[2] =
-	        rcp(new DRT::Elements::XFluid3Line(2,Owner(),3,nodeids,nodes,this,NULL,2));
-	      lineptrs_[2] = lines_[2].get();
-
-	      /* fourth edge */
-	      // set node id's
-	      nodeids[0] = NodeIds()[3];
-	      nodeids[1] = NodeIds()[7];
-	      nodeids[2] = NodeIds()[0];
-	      // get nodes
-	      nodes[0] = Nodes()[3];
-	      nodes[1] = Nodes()[7];
-	      nodes[2] = Nodes()[0];
-	      // create the line and get the line pointer
-	      lines_[3] =
-	        rcp(new DRT::Elements::XFluid3Line(3,Owner(),3,nodeids,nodes,this,NULL,3));
-	      lineptrs_[3] = lines_[3].get();
-    	}
-    	else dserror("Number of nodes not supported");
-  	}
-  	else dserror("Number of lines not supported");
+    switch (distype)
+    {
+    case tri3:
+        CreateLinesTri(3, 2);
+        break;
+    case tri6:
+        CreateLinesTri(3, 3);
+        break;
+    case quad4:
+        CreateLinesQuad(4, 2);
+        break;
+    case quad8:
+        CreateLinesQuad(4, 3);
+        break;
+    case quad9:
+        CreateLinesQuad(4, 3);
+        break;
+    default:
+        dserror("distype not supported");
+    }
 
   	return (DRT::Element**)(&(lineptrs_[0]));
 }
 
 
+
+void DRT::Elements::XFluid3Surface::CreateLinesTri(const int& nline,
+                                                   const int& nnode)
+{
+    for(int iline=0;iline<nline;iline++)
+    {
+        int nodeids[nnode];
+        DRT::Node* nodes[nnode];
+        
+        for (int inode=0;inode<2;inode++)
+        {
+             nodeids[inode] = NodeIds()[tri6_lines_[iline][inode]];
+             nodes[inode]   = Nodes()[tri6_lines_[iline][inode]];
+        }
+        lines_[iline] = rcp(new DRT::Elements::XFluid3Line(iline,Owner(),nnode,nodeids,nodes,this,NULL,iline));
+        lineptrs_[iline] = lines_[iline].get();
+    }
+}        
+
+void DRT::Elements::XFluid3Surface::CreateLinesQuad(const int& nline,
+                                                    const int& nnode)
+{
+    for(int iline=0;iline<nline;iline++)
+    {
+        int nodeids[nnode];
+        DRT::Node* nodes[nnode];
+        
+        for (int inode=0;inode<2;inode++)
+        {
+             nodeids[inode] = NodeIds()[quad9_lines_[iline][inode]];
+             nodes[inode]   = Nodes()[quad9_lines_[iline][inode]];
+        }
+        lines_[iline] = rcp(new DRT::Elements::XFluid3Line(iline,Owner(),nnode,nodeids,nodes,this,NULL,iline));
+        lineptrs_[iline] = lines_[iline].get();
+    }
+}    
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

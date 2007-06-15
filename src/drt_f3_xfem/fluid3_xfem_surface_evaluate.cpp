@@ -18,6 +18,8 @@ Maintainer: Axel Gerstenberger
 #ifdef TRILINOS_PACKAGE
 
 #include "fluid3_xfem.H"
+#include "fluid3_xfem_shape.H"
+#include "fluid3_xfem_integration.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_discret.H"
@@ -45,11 +47,13 @@ int DRT::Elements::XFluid3Surface::Evaluate(	ParameterList& params,
   		act = XFluid3Surface::calc_ShapefunctDeriv1Deriv2;
   	else dserror("Unknown type of action for XFluid3_Surface");
   	
+    const DiscretizationType distype = this->Shape();
     switch(act)
     {
 	case calc_ShapefunctDeriv1Deriv2:
         // functions, deriv, iel, r, s,               deriv2 is mssing !!!
-      	f3_shapefunction_for_surface(elevec1,elemat1,lm[0],elevec2[0],elevec2[1]);
+      	shape_function_2D_deriv0(elevec1,elevec2[0],elevec2[1],distype);
+        shape_function_2D_deriv1(elemat1,elevec2[0],elevec2[1],distype);
         break;
     default:
         dserror("Unknown type of action for XFluid3_Surface");
@@ -69,6 +73,7 @@ int DRT::Elements::XFluid3Surface::EvaluateNeumann(
                                            vector<int>&              lm,
                                            Epetra_SerialDenseVector& elevec1)
 {  
+    const DiscretizationType distype = this->Shape();
     // there are 3 velocities and 1 pressure 
     const int numdf = 4;
 
@@ -97,7 +102,7 @@ int DRT::Elements::XFluid3Surface::EvaluateNeumann(
     // set number of nodes
     const int iel   = this->NumNode();
   
-    GaussRule  gaussrule;
+    GaussRule2D  gaussrule;
     switch(this->Shape())
     {
     case quad4:
@@ -139,14 +144,15 @@ int DRT::Elements::XFluid3Surface::EvaluateNeumann(
     |               start loop over integration points                     |
     *----------------------------------------------------------------------*/
     INTEGRATION_POINTS_2D  intpoints;
-    integration_points(intpoints, gaussrule);
+    integration_points_2d(intpoints, gaussrule);
     for (int gpid=0; gpid<intpoints.nquad; gpid++)
     {
         const double e0 = intpoints.qxg[gpid][0];
         const double e1 = intpoints.qxg[gpid][1];
     
         // get shape functions and derivatives in the plane of the element
-        f3_shapefunction_for_surface(funct,deriv,iel,e0,e1);
+        shape_function_2D_deriv0(funct, e0, e1, distype);
+        shape_function_2D_deriv1(deriv, e0, e1, distype);
 
         // compute measure tensor for surface element and the infinitesimal
         // area element drs for the integration
@@ -162,8 +168,7 @@ int DRT::Elements::XFluid3Surface::EvaluateNeumann(
         {
             for(int dim=0;dim<3;dim++)
             {
-                elevec1[node*numdf+dim]+=
-                    funct[node] * (*onoff)[dim] * (*val)[dim] * fac;
+                elevec1[node*numdf+dim] += funct[node] * (*onoff)[dim] * (*val)[dim] * fac;
             }
         }
 
@@ -171,262 +176,7 @@ int DRT::Elements::XFluid3Surface::EvaluateNeumann(
 
     return 0;
 }
-/*----------------------------------------------------------------------*
-get shape function of surface (private) gammi                     04/07 
 
-In this routine the shape functions (always) and their natural first
-derivatives with respect to r/s are evaluated for
-R E C T A N G L E S or T R I A N G L E S
-
-Numbering of the nodes:
-
-
-                    ^ s
-                    |
-              1     |4    0
-              o-----o-----o
-              |           |
-              |           |7
-            5 o     o     o -----> r
-              |     8     |
-              |           |
-              o-----o-----o
-              2     6     3
-
-
-
-                    ^ s
-                    |
-                    |
-                   2|
-                    o
-                    |\
-                    | \ 
-                   5o  o4
-                    |   \
-                    |    \
-                    o--o--o -----> r
-               0   3   1
-
-
-                                                            
-  
- \param   funct    vector<double>&             (o)    shape functions
- \param   deriv    Epetra_SerialDenseMatrix&   (o)    1st natural deriv.
-                                                      of shape funct.
- \param   deriv2   Epetra_SerialDenseMatrix&   (o)    2nd natural deriv.
-                                                      of shape funct.
- \param   iel      const int&                  (i)    number of nodes
- \param   r        DOUBLE&                     (i)    coordinate
- \param   s        DOUBLE&                     (i)    coordinate
-
- *----------------------------------------------------------------------*/
-
-
-
-void DRT::Elements::XFluid3Surface::f3_shapefunction_for_surface(	
-											Epetra_SerialDenseVector&	funct ,
-  											Epetra_SerialDenseMatrix& 	deriv ,
-  											const int&                 		iel   ,
-  											const double&              		r     ,
-  											const double&              		s		)
-{
-	const double Q12=0.50;
-  	const double Q14=0.25;
-  
-  	/*------------------------------- selection of polynomial interpolation */
-  	switch (iel)
-  	{
-    	case 4: /* LINEAR shape functions for quad4 and their natural derivatives ----*/
-    	{    
-    		/*--------------------------------------------- form basic values */
-    		const double rp=1.0+r;
-    		const double rm=1.0-r;
-    		const double sp=1.0+s;
-    		const double sm=1.0-s;
-    
-    		funct[0]=Q14*rp*sp;
-    		funct[1]=Q14*rm*sp;
-            funct[2]=Q14*rm*sm;
-    		funct[3]=Q14*rp*sm;
-    
-    		deriv(0,0)= Q14*sp;
-     		deriv(1,0)= Q14*rp;
-        
-    		deriv(0,1)=-Q14*sp;
-     		deriv(1,1)= Q14*rm;
-        
-    		deriv(0,2)=-Q14*sm;
-     		deriv(1,2)=-Q14*rm;
-        
-     		deriv(0,3)= Q14*sm;
-    		deriv(1,3)=-Q14*rp;
-    		break;
-    	}
-    	case 8: /* QUADRATIC shape functions for quadrilaterals without
-           central node and their natural derivatives (serendipity) */
-    	{
-    		const double rp=1.0+r;
-    		const double rm=1.0-r;
-    		const double sp=1.0+s;
-    		const double sm=1.0-s;
-    		const double r2=1.0-r*r;
-    		const double s2=1.0-s*s;
-
-			funct[0]=Q14*rp*sp-Q12*(funct[4]+funct[7]);
-    		funct[1]=Q14*rm*sp-Q12*(funct[4]+funct[5]);
-    		funct[2]=Q14*rm*sm-Q12*(funct[5]+funct[6]);
-    		funct[3]=Q14*rp*sm-Q12*(funct[6]+funct[7]);
-    		funct[4]=Q12*r2*sp;
-    		funct[5]=Q12*rm*s2;
-    		funct[6]=Q12*r2*sm;
-    		funct[7]=Q12*rp*s2;
-    	
-          	deriv(0,0)= Q14*sp;
-          	deriv(1,0)= Q14*rp;
-            
-          	deriv(0,1)=-Q14*sp;
-          	deriv(1,1)= Q14*rm;
-            
-          	deriv(0,2)=-Q14*sm;
-          	deriv(1,2)=-Q14*rm;
-        
-          	deriv(0,3)= Q14*sm;
-          	deriv(1,3)=-Q14*rp;
-        
-          	deriv(0,4)=-1.0*r*sp;
-          	deriv(1,4)= Q12*r2;
-            
-          	deriv(0,5)=-Q12*  s2;
-          	deriv(1,5)=-1.0*rm*s;
-            
-          	deriv(0,6)=-1.0*r*sm;
-          	deriv(1,6)=-Q12*r2;
-            
-          	deriv(0,7)= Q12*s2;
-          	deriv(1,7)=-1.0*rp*s;
-            
-          	deriv(0,0)-= Q12*(deriv(0,4)+deriv(0,7));
-          	deriv(1,0)-= Q12*(deriv(1,4)+deriv(1,7));
-
-    		for(int i=1;i<4;i++)
-            {
-      		    const int ii=i+3;
-                deriv(0,i) -= Q12*(deriv(0,ii)+deriv(0,ii+1));
-                deriv(1,i) -= Q12*(deriv(1,ii)+deriv(1,ii+1));
-			}
-    		break;
-    	}
-    	case 9: /* full QUADRATIC shape functions for quadrilaterals with
-                         central node and their natural derivatives */
-    	{
-			/*--------------------------------------------------- form basic values */
-			const double rp=1.0+r;
-            const double rm=1.0-r;
-   	        const double sp=1.0+s;
-   	        const double sm=1.0-s;
-   	        const double r2=1.0-r*r;
-   	        const double s2=1.0-s*s;
-            const double rh=Q12*r;
-            const double sh=Q12*s;
-            const double rs=rh*sh;
-            const double rhp=r+Q12;
-   	        const double rhm=r-Q12;
-   	        const double shp=s+Q12;
-           	const double shm=s-Q12;
-            
-            funct[0]= rs*rp*sp;
-            funct[1]=-rs*rm*sp;
-            funct[2]= rs*rm*sm;
-           	funct[3]=-rs*rp*sm;
-            funct[4]= sh*sp*r2;
-            funct[5]=-rh*rm*s2;
-            funct[6]=-sh*sm*r2;
-            funct[7]= rh*rp*s2;
-            funct[8]= r2*s2;
-
-            deriv(0,0)= rhp*sh*sp;
-            deriv(1,0)= shp*rh*rp;
-		    
-            deriv(0,1)= rhm*sh*sp;
-            deriv(1,1)=-shp*rh*rm;
- 
-            deriv(0,2)=-rhm*sh*sm;
-            deriv(1,2)=-shm*rh*rm;
-
-            deriv(0,3)=-rhp*sh*sm;
-            deriv(1,3)= shm*rh*rp;
-		     
-            deriv(0,4)=-2.0*r*sh*sp;
-            deriv(1,4)= shp*r2;
-		     
-            deriv(0,5)= rhm*s2;
-            deriv(1,5)= 2.0*s*rh*rm;
-	     
-            deriv(0,6)= 2.0*r*sh*sm;
-            deriv(1,6)= shm*r2;
-	     
-            deriv(0,7)= rhp*s2;
-            deriv(1,7)=-2.0*s*rh*rp;      
-			
-            deriv(0,8)=-2.0*r*s2;
-            deriv(1,8)=-2.0*s*r2;
-            break;
-    	}
-    	case 3: /* LINEAR shape functions for triangles and their natural derivatives -----*/
-    	{
-			/*------------------------------------------- form basic values */
-    		funct[0]=1.0-r-s;
-    		funct[1]=r;
-    		funct[2]=s;
-    
-            deriv(0,0)=-1.0;
-            deriv(1,0)=-1.0;
-   	        deriv(0,1)= 1.0;
-   	        deriv(1,1)= 0.0;
-            deriv(0,2)= 0.0;
-            deriv(1,2)= 1.0;
-    		break;
-    	}
-    	case 6: /* QUADRATIC shape functions for triangles and their natural derivatives -*/
-    	{
-      	  /*------------------------------------------- form basic values */
-	    	const double rr=r*r;
-	    	const double ss=s*s;
-	    	const double rs=r*s;
-	
-	    	funct[0]=(1.0-2.0*r-2.0*s)*(1.0-r-s);
-	    	funct[1]=2.0*rr-r;
-		    funct[2]=2.0*ss-s;
-		    funct[3]=4.0*(r-rr-rs);
-		    funct[4]=4.0*rs;
-		    funct[5]=4.0*(s-rs-ss);
-	    
-            deriv(0,0)=-3.0+4.0*(r+s);
-            deriv(1,0)= deriv(0,0);
-	        
-            deriv(0,1)= 4.0*r-1.0;
-            deriv(1,1)= 0.0;
-	        
-            deriv(0,2)= 0.0;
-            deriv(1,2)= 4.0*s-1.0;
-	        
-            deriv(0,3)= 4.0*(1.0-2.0*r-s);
-            deriv(1,3)=-4.0*r;
-	        
-            deriv(0,4)= 4.0*s;
-            deriv(1,4)= 4.0*r;
-	        
-            deriv(0,5)=-4.0*s;
-            deriv(1,5)= 4.0*(1.0-r-2.0*s);
-	    	break;
-	    }
-    	default:
-    		dserror("distyp unknown\n");
- 	} /* end switch(iel) */
- 
-  	return;
-}
 
 /* compute kovariant metric tensor G for fluid element        gammi 04/07
 
@@ -529,106 +279,31 @@ void  DRT::Elements::XFluid3Surface::f3_metric_tensor_for_surface(
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  evaluate the element integration points (private)        g.bau 03/07|
- *----------------------------------------------------------------------*/
-void DRT::Elements::XFluid3Surface::integration_points(struct _INTEGRATION_POINTS_2D& intpoints,
-                                                       const   GaussRule gaussrule)
+
+
+// get optimal gaussrule for discretization type
+GaussRule2D DRT::Elements::XFluid3Surface::get_optimal_gaussrule(const DiscretizationType& distype)
 {
-    switch(gaussrule)
+    GaussRule2D  rule;
+    switch(this->Shape())
     {
-    case quad_4point :
-        intpoints.nquad = 4;
-        intpoints.qwgt[0]  =  1.0;
-        intpoints.qwgt[1]  =  1.0;
-        intpoints.qwgt[2]  =  1.0;
-        intpoints.qwgt[3]  =  1.0;
-        
-        intpoints.qxg[0][0] = -0.5773502691896;
-        intpoints.qxg[0][1] = -0.5773502691896;
-        intpoints.qxg[1][0] =  0.5773502691896;
-        intpoints.qxg[1][1] = -0.5773502691896;
-        intpoints.qxg[2][0] = -0.5773502691896;
-        intpoints.qxg[2][1] =  0.5773502691896;
-        intpoints.qxg[3][0] =  0.5773502691896;
-        intpoints.qxg[3][1] =  0.5773502691896;
+    case quad4:
+        rule = quad_4point;
         break;
-        
-    case quad_9point:
-        intpoints.nquad = 9; 
-        intpoints.qwgt[0]  =  0.5555555555556*0.5555555555556;
-        intpoints.qwgt[1]  =  0.8888888888889*0.5555555555556;
-        intpoints.qwgt[2]  =  0.5555555555556*0.5555555555556;
-        intpoints.qwgt[3]  =  0.5555555555556*0.8888888888889;
-        intpoints.qwgt[4]  =  0.8888888888889*0.8888888888889;
-        intpoints.qwgt[5]  =  0.5555555555556*0.8888888888889;
-        intpoints.qwgt[6]  =  0.5555555555556*0.5555555555556;
-        intpoints.qwgt[7]  =  0.8888888888889*0.5555555555556;
-        intpoints.qwgt[8]  =  0.5555555555556*0.5555555555556;
-        
-        intpoints.qxg[0][0] = -0.7745966692415;
-        intpoints.qxg[0][1] = -0.7745966692415;
-        intpoints.qxg[1][0] =  0.0;
-        intpoints.qxg[1][1] = -0.7745966692415;
-        intpoints.qxg[2][0] =  0.7745966692415;
-        intpoints.qxg[2][1] = -0.7745966692415;
-        intpoints.qxg[3][0] = -0.7745966692415;
-        intpoints.qxg[3][1] =  0.0; 
-        intpoints.qxg[4][0] =  0.0; 
-        intpoints.qxg[4][1] =  0.0;
-        intpoints.qxg[5][0] =  0.7745966692415; 
-        intpoints.qxg[5][1] =  0.0;
-        intpoints.qxg[6][0] = -0.7745966692415; 
-        intpoints.qxg[6][1] =  0.7745966692415; 
-        intpoints.qxg[7][0] =  0.0;  
-        intpoints.qxg[7][1] =  0.7745966692415; 
-        intpoints.qxg[8][0] =  0.7745966692415;
-        intpoints.qxg[8][1] =  0.7745966692415; 
+    case quad8: case quad9:
+        rule = quad_9point;
         break;
-        
-    case tri_3point :
-        intpoints.nquad = 3;                
-        intpoints.qwgt[0]  = 1.0/6.0 ;
-        intpoints.qwgt[1]  = 1.0/6.0 ;
-        intpoints.qwgt[2]  = 1.0/6.0 ;
-
-        intpoints.qxg[0][0] = 0.5;
-        intpoints.qxg[0][1] = 0.0;
-        intpoints.qxg[1][0] = 0.5;
-        intpoints.qxg[1][1] = 0.5;
-        intpoints.qxg[2][0] = 0.0;
-        intpoints.qxg[2][1] = 0.5;
+    case tri3 :
+        rule = tri_3point;
         break;
-        
-    case tri_6point:
-        intpoints.nquad = 6;
-        intpoints.qwgt[0]  = 0.0549758718277;
-        intpoints.qwgt[1]  = 0.0549758718277;
-        intpoints.qwgt[2]  = 0.0549758718277;
-        intpoints.qwgt[3]  = 0.1116907948390;
-        intpoints.qwgt[4]  = 0.1116907948390;
-        intpoints.qwgt[5]  = 0.1116907948390;
-
-        intpoints.qxg[0][0] = 0.0915762135098;
-        intpoints.qxg[0][1] = 0.0915762135098;
-        intpoints.qxg[1][0] = 0.8168475729805;
-        intpoints.qxg[1][1] = 0.0915762135098;
-        intpoints.qxg[2][0] = 0.0915762135098;
-        intpoints.qxg[2][1] = 0.8168475729805;
-        intpoints.qxg[3][0] = 0.4459484909160;
-        intpoints.qxg[3][1] = 0.1081030181681;
-        intpoints.qxg[4][0] = 0.4459484909160;
-        intpoints.qxg[4][1] = 0.4459484909160;
-        intpoints.qxg[5][0] = 0.1081030181681; 
-        intpoints.qxg[5][1] = 0.4459484909160; 
+    case tri6:
+        rule = tri_6point; 
         break;
-    default:
-        dserror("unknown integration rule");
+    default: 
+        dserror("shape type unknown!\n");
     }
-
-    return;
-} //end of DRT::Elements::Fluid3::f3_integration_points
-
+    return rule;
+}
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

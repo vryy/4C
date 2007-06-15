@@ -308,16 +308,16 @@ private:
   // constants
   static const int                                NSD_ = 3;
   
-  
+  // constant mappings between volume and its surfaces and lines
+  // they are used as the one and only reference for such numbering
   static const int                                hex27_surfaces_[6][9];
   static const int                                hex27_lines_[12][3];
   
   static const int                                tet10_surfaces_[4][6];
   static const int                                tet10_lines_[6][3];
-  
 
   //! gaussrule used for weak form integration
-  GaussRule                                       gaussrule_;
+  GaussRule3D                                     gaussrule_;
   //! number of the material law
   int                                             material_;
   //! flag for euler/ale net algorithm
@@ -437,7 +437,7 @@ private:
             );
   
   // get optimal gaussrule for given discretization type
-  GaussRule get_optimal_gaussrule(const DiscretizationType& distype);
+  GaussRule3D get_optimal_gaussrule(const DiscretizationType& distype);
   
   inline vector<double> f3_caltau(
     Epetra_SerialDenseVector&    funct,
@@ -455,6 +455,18 @@ private:
 
   inline bool is_higher_order_element(
     const DRT::Element::DiscretizationType  distype);
+    
+  void CreateLinesTet(const int& nline,
+                      const int& nnode);
+  
+  void CreateLinesHex(const int& nline,
+                      const int& nnode);
+                       
+  void CreateSurfacesTet(const int& nline,
+                         const int& nnode);
+  
+  void CreateSurfacesHex(const int& nline,
+                         const int& nnode);
 
 }; // class Fluid3
 
@@ -788,17 +800,12 @@ private:
   // don't want = operator
   XFluid3Surface& operator = (const XFluid3Surface& old);
 
-  //! GaussRules supported by fluid3surface
-  enum GaussRule  
-  {
-    quad_4point,
-    quad_9point,
-    tri_3point,
-    tri_6point
-  };
-  
   // constants
   static const int                                NSD_ = 3;
+  
+  static const int                                quad9_lines_[4][3];
+  
+  static const int                                tri6_lines_[3][3];
   
   //! The parent element of this surface
   DRT::Elements::XFluid3* parent_;
@@ -808,16 +815,6 @@ private:
   vector<RefCountPtr<DRT::Elements::XFluid3Line> > lines_;
   //! vector of lines adjacent to this element
   vector<DRT::Elements::XFluid3Line*>              lineptrs_;
-  
-
-  // shape functions and their derivatives for the surface elements
-  void f3_shapefunction_for_surface(
-                         Epetra_SerialDenseVector& funct,
-                         Epetra_SerialDenseMatrix& deriv,
-                         const int&                 iel  ,
-                         const double&              r    ,
-                         const double&              s
-    );
 
   //  compute kovariant metric tensor G for fluid surface element
   //                                                  gammi 04/07
@@ -828,16 +825,17 @@ private:
     Epetra_SerialDenseMatrix&       metrictensor,
     double                         *drs);
 
-  void integration_points(
-    struct _INTEGRATION_POINTS_2D& intpoints,
-    const   GaussRule gaussrule);
+  GaussRule2D get_optimal_gaussrule(const DiscretizationType& distype);
+
+  void CreateLinesTri(const int& nline,
+                      const int& nnode);
+  
+  void CreateLinesQuad(const int& nline,
+                       const int& nnode);
 
 }; // class XFluid3Surface
 
 
-
-
-/* line Ursula */
 
 
 class XFluid3Line : public DRT::Element
