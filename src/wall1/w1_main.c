@@ -108,7 +108,6 @@ case calc_struct_init:
 #endif /* D_MLSTRUCT */
    {
      w1init(actpart, mat);
-     w1_locsys_check(actpart);
      w1static_ke(NULL,NULL,NULL,NULL,NULL,NULL,1);
      w1static_keug(NULL,NULL,NULL,NULL,NULL,NULL,1,NULL);
      w1_cal_stress(NULL,NULL,NULL,0,1);
