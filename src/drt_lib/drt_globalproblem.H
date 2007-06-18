@@ -91,14 +91,26 @@ class Problem
 {
 public:
 
+  /// @name Instances
+
   /// return an instance of this class
   static RefCountPtr<Problem> Instance(int num=0);
 
   /// return number of problem instances
   static unsigned NumInstances() { return instances_.size(); }
 
+  //@}
+
+  /// @name Discretizations
+
   /// find a particular discretization
   RefCountPtr<Discretization> Dis(int fieldnum, int disnum) const;
+
+  /// tell number of known fields
+  unsigned NumFields() const { return discretizations_.size(); }
+
+  /// tell number of discretizations in a field
+  unsigned NumDis(int fieldnum) const { return discretizations_[fieldnum].size(); }
 
   /// add a discretization to a specific field
   void AddDis(int fieldnum, RefCountPtr<Discretization> dis);
@@ -106,17 +118,20 @@ public:
   /// set given discretization to specific field at specific position
   void SetDis(int fieldnum, int disnum, RefCountPtr<Discretization> dis);
 
+  //@}
+
+  /// @name Materials
+
   /// add material vector
   void AddMaterial(const _MATERIAL& m);
+
+  /// return number of defined materials
+  int NumMaterials() const { return material_.size(); }
 
   /// activate material vector of problem instance as global mat
   void ActivateMaterial();
 
-  /// tell number of known fields
-  unsigned NumFields() const { return discretizations_.size(); }
-
-  /// tell number of discretizations in a field
-  unsigned NumDis(int fieldnum) const { return discretizations_[fieldnum].size(); }
+  //@}
 
 private:
 

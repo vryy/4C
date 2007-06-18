@@ -70,10 +70,10 @@ extern struct _FILES  allfiles;
 
 
 
-static void input_point_dirich(multimap<int,RefCountPtr<DRT::Condition> >& pdmap);
-static void input_line_dirich(multimap<int,RefCountPtr<DRT::Condition> >& ldmap);
-static void input_surf_dirich(multimap<int,RefCountPtr<DRT::Condition> >& sdmap);
-static void input_vol_dirich(multimap<int,RefCountPtr<DRT::Condition> >& vdmap);
+static void input_point_dirich(multimap<int,RefCountPtr<DRT::Condition> >& pdmap, bool ale=false);
+static void input_line_dirich(multimap<int,RefCountPtr<DRT::Condition> >& ldmap, bool ale=false);
+static void input_surf_dirich(multimap<int,RefCountPtr<DRT::Condition> >& sdmap, bool ale=false);
+static void input_vol_dirich(multimap<int,RefCountPtr<DRT::Condition> >& vdmapx);
 
 static void input_point_neum(multimap<int,RefCountPtr<DRT::Condition> >& pnmap);
 static void input_line_neum(multimap<int,RefCountPtr<DRT::Condition> >& lnmap);
@@ -216,6 +216,19 @@ void input_conditions(const DRT::Problem& problem)
   input_vol_neum(volneum);
   setup_condition(volneum, dvol_fenode);
 
+  //-------------------------------------read point aledirichlet conditions
+  multimap<int,RefCountPtr<DRT::Condition> > pointaledirich;
+  input_point_dirich(pointaledirich,true);
+  setup_condition(pointaledirich, dnode_fenode);
+  //-------------------------------------read line aledirichlet conditions
+  multimap<int,RefCountPtr<DRT::Condition> > linealedirich;
+  input_line_dirich(linealedirich,true);
+  setup_condition(linealedirich, dline_fenode);
+  //-------------------------------------read surface aledirichlet conditions
+  multimap<int,RefCountPtr<DRT::Condition> > surfaledirich;
+  input_surf_dirich(surfaledirich,true);
+  setup_condition(surfaledirich, dsurf_fenode);
+
   //------------------------------------------- read line periodic condition
   multimap<int,RefCountPtr<DRT::Condition> > linepbc;
   input_line_periodic(linepbc);
@@ -278,6 +291,10 @@ void input_conditions(const DRT::Problem& problem)
       register_condition("LineNeumann", "Line Neumann", lineneum, actdis, noderowmap);
       register_condition("SurfaceNeumann", "Surface Neumann", surfneum, actdis, noderowmap);
       register_condition("VolumeNeumann", "Volume Neumann", volneum, actdis, noderowmap);
+
+      register_condition("ALEDirichlet", "Point Dirichlet", pointaledirich, actdis, noderowmap);
+      register_condition("ALEDirichlet", "Line Dirichlet", linealedirich, actdis, noderowmap);
+      register_condition("ALEDirichlet", "Surface Dirichlet", surfaledirich, actdis, noderowmap);
 
       register_condition("LinePeriodic", "Line periodic", linepbc, actdis, noderowmap);
       register_condition("SurfacePeriodic", "Surface periodic", surfpbc, actdis, noderowmap);
@@ -853,7 +870,7 @@ void input_vol_neum(multimap<int,RefCountPtr<DRT::Condition> >& vnmap)
 /*----------------------------------------------------------------------*
  | input of design node dirichlet conditions              m.gee 01/07   |
  *----------------------------------------------------------------------*/
-void input_point_dirich(multimap<int,RefCountPtr<DRT::Condition> >& pdmap)
+void input_point_dirich(multimap<int,RefCountPtr<DRT::Condition> >& pdmap, bool ale)
 {
   DSTraceHelper dst("input_point_dirich");
 
@@ -862,7 +879,14 @@ void input_point_dirich(multimap<int,RefCountPtr<DRT::Condition> >& pdmap)
   const int numread = 6;
 
   /*-------------------- find the beginning of nodal dirichlet conditions */
-  if (frfind("--DESIGN POINT DIRICH CONDITIONS")==0) return;
+  if (not ale)
+  {
+    if (frfind("--DESIGN POINT DIRICH CONDITIONS")==0) return;
+  }
+  else
+  {
+    if (frfind("--DESIGN POINT ALE DIRICH CONDITIONS")==0) return;
+  }
   frread();
 
   /*------------------------ read number of design points with conditions */
@@ -976,7 +1000,7 @@ void input_point_dirich(multimap<int,RefCountPtr<DRT::Condition> >& pdmap)
 /*----------------------------------------------------------------------*
  | input of design line dirichlet conditions              m.gee 01/07   |
  *----------------------------------------------------------------------*/
-void input_line_dirich(multimap<int,RefCountPtr<DRT::Condition> >& ldmap)
+void input_line_dirich(multimap<int,RefCountPtr<DRT::Condition> >& ldmap, bool ale)
 {
   DSTraceHelper dst("input_line_dirich");
 
@@ -985,7 +1009,14 @@ void input_line_dirich(multimap<int,RefCountPtr<DRT::Condition> >& ldmap)
   const int numread = 6;
 
   /*-------------------- find the beginning of line dirichlet conditions */
-  if (frfind("--DESIGN LINE DIRICH CONDITIONS")==0) return;
+  if (not ale)
+  {
+    if (frfind("--DESIGN LINE DIRICH CONDITIONS")==0) return;
+  }
+  else
+  {
+    if (frfind("--DESIGN LINE ALE DIRICH CONDITIONS")==0) return;
+  }
   frread();
 
   /*------------------------ read number of design lines with conditions */
@@ -1096,7 +1127,7 @@ void input_line_dirich(multimap<int,RefCountPtr<DRT::Condition> >& ldmap)
 /*----------------------------------------------------------------------*
  | input of design surface dirichlet conditions           m.gee 01/07   |
  *----------------------------------------------------------------------*/
-void input_surf_dirich(multimap<int,RefCountPtr<DRT::Condition> >& sdmap)
+void input_surf_dirich(multimap<int,RefCountPtr<DRT::Condition> >& sdmap, bool ale)
 {
   DSTraceHelper dst("input_surf_dirich");
 
@@ -1105,7 +1136,14 @@ void input_surf_dirich(multimap<int,RefCountPtr<DRT::Condition> >& sdmap)
   const int numread = 6;
 
   /*----------------- find the beginning of surface dirichlet conditions */
-  if (frfind("--DESIGN SURF DIRICH CONDITIONS")==0) return;
+  if (not ale)
+  {
+    if (frfind("--DESIGN SURF DIRICH CONDITIONS")==0) return;
+  }
+  else
+  {
+    if (frfind("--DESIGN SURF ALE DIRICH CONDITIONS")==0) return;
+  }
   frread();
 
   /*------------------------ read number of design surfs with conditions */

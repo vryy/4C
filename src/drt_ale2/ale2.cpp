@@ -302,6 +302,22 @@ DRT::Element** DRT::Elements::Ale2::Surfaces()
 }
 
 
+void DRT::Elements::Ale2::SetGaussPoints()
+{
+  switch (Shape())
+  {
+  case quad4:
+    ngp_[0] = 2; ngp_[1] = 2;
+    break;
+  case quad8:
+  case quad9:
+    ngp_[0] = 3; ngp_[1] = 3;
+    break;
+  default:
+    dserror("unsupported shape %d for gauss point selection", Shape());
+  }
+}
+
 //=======================================================================
 //=======================================================================
 //=======================================================================

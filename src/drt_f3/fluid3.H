@@ -274,6 +274,7 @@ public:
 
   //! @name Other
 
+  bool IsAle() const { return is_ale_; }
 
   //@}
 

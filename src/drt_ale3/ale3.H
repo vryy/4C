@@ -254,6 +254,14 @@ public:
 
   //! @name Other
 
+  /// get material number
+  int Material() const { return material_; }
+
+  /// set material number
+  void SetMaterial(int material) { material_ = material; }
+
+  /// set number of gauss points to element shape default
+  void SetGaussPoints();
 
   //@}
 

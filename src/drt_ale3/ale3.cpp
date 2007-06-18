@@ -283,6 +283,23 @@ DRT::Element** DRT::Elements::Ale3::Volumes()
 }
 
 
+void DRT::Elements::Ale3::SetGaussPoints()
+{
+  switch (Shape())
+  {
+  case hex8:
+    ngp_[0] = 2; ngp_[1] = 2; ngp_[2] = 2;
+    break;
+  case hex20:
+  case hex27:
+    ngp_[0] = 3; ngp_[1] = 3; ngp_[2] = 3;
+    break;
+  default:
+    dserror("unsupported shape %d for gauss point selection", Shape());
+  }
+}
+
+
 //=======================================================================
 //=======================================================================
 //=======================================================================

@@ -14,6 +14,7 @@
 
 namespace FSI
 {
+  /// FSI::Utils: Random stuff that might be helpful when dealing with FSI problems
   namespace Utils
   {
 
@@ -51,6 +52,16 @@ namespace FSI
         }
     };
 
+    /// std unary function version of Epetra_Map::MyGID()
+    struct MyGID : public std::unary_function<int, bool>
+    {
+      const Epetra_Map* emap_;
+      MyGID(const Epetra_Map* emap) : emap_(emap) {}
+      bool operator()(int gid) const
+        {
+          return emap_->MyGID(gid);
+        }
+    };
  }
 }
 
