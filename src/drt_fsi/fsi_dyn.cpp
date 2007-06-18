@@ -87,6 +87,7 @@ void CreateAleDiscretization()
     bool found = false;
     bool myele = fluiddis->ElementRowMap()->MyGID(actele->Id());
 
+#ifdef D_FLUID2
     DRT::Elements::Fluid2* f2 = dynamic_cast<DRT::Elements::Fluid2*>(actele);
     if (not found and f2!=NULL)
     {
@@ -95,7 +96,9 @@ void CreateAleDiscretization()
       if (isale and myele)
         aletype.push_back("ALE2");
     }
+#endif
 
+#ifdef D_FLUID3
     DRT::Elements::Fluid3* f3 = dynamic_cast<DRT::Elements::Fluid3*>(actele);
     if (not found and f3!=NULL)
     {
@@ -104,6 +107,7 @@ void CreateAleDiscretization()
       if (isale and myele)
         aletype.push_back("ALE3");
     }
+#endif
 
     if (not found)
       dserror("unsupported fluid element type '%s'", typeid(*actele).name());
@@ -194,6 +198,7 @@ void CreateAleDiscretization()
     // We need to set material and gauss points to complete element setup.
     // This is again really ugly as we have to extract the actual
     // element type in order to access the material property
+#ifdef D_ALE
     DRT::Elements::Ale2* ale2 = dynamic_cast<DRT::Elements::Ale2*>(aleele.get());
     if (ale2!=NULL)
     {
@@ -201,7 +206,9 @@ void CreateAleDiscretization()
       ale2->SetGaussPoints();
     }
     else
+#endif
     {
+#ifdef D_ALE
       DRT::Elements::Ale3* ale3 = dynamic_cast<DRT::Elements::Ale3*>(aleele.get());
       if (ale3!=NULL)
       {
@@ -209,6 +216,7 @@ void CreateAleDiscretization()
         ale3->SetGaussPoints();
       }
       else
+#endif
       {
         dserror("unsupported ale element type '%s'", typeid(*aleele).name());
       }
