@@ -35,82 +35,6 @@ void shape_function_3D_deriv0( Epetra_SerialDenseVector&                  funct,
 In this routine the shape functions and their natural first and second
 derivatives with respect to r/s/t are evaluated for H E X A H E D E R
 
-   Numbering of the nodes:
-
-                           ^ t
-                           |
-                           |
-                           |
-                    8      |  15        7
-                    o---------o---------o
-                   /|                  /|
-                  / |                 / |
-                 /  |                /  |
-              16o   |     o       14o   |
-               /    o20       o    /    o19
-              /     |             /     |
-             /      |  13      6 /  |
-          5 o---------o---------o   |
-            |   o   |     o     |   o   |  ---------->
-            |       o---------o-|-------o           s
-            |      / 4       11 |      /3
-            |     /             |     /
-          17o    /    o         o18  /
-            | 12o         o     |   o10
-            |  /                |  /
-            | /                 | /
-            |/                  |/
-            o---------o---------o
-        1   /     9         2
-           /
-          /
-         /
-        r
-
-   GiD:
-
-                           ^ t
-                           |
-                           |
-                           |
-                    8      |  19        7
-                    o---------o---------o
-                   /|                  /|
-                  / |                 / |
-                 /  |                /  |
-              20o   |   26o       18o   |
-               /    o16     24o    /    o15
-              /     |             /     |
-             /      |  17      6 /  |
-          5 o---------o---------o   23  |
-            |   o   |   27o     |   o   |  ---------->
-            |  25   o---------o-|-------o           s
-            |      / 4       11 |      /3
-            |     /             |     /
-          13o    /  22o         o14  /
-            | 12o         o     |   o10
-            |  /         21     |  /
-            | /                 | /
-            |/                  |/
-            o---------o---------o
-        1   /     9         2
-           /
-          /
-         /
-        r
-
-
-
-   PROBLEM: GID has a different numbering of the element nodes than this one.
-            So either the shape functions for hex20 and hex27 (see drawing)
-        has to be adapted or during the input phase the numbering has to
-        be adapted to the shape functions.
-        This is all in progress and should be done for fluid3 and
-        brick1 the same way!!!!
-
-   There are no HEX27 Elements in brick1 so we just go ahead here and
-   use the GiD numbering for HEX27.
-
 \param  *funct    DOUBLE   (o)    shape functions
 \param **deriv    DOUBLE   (o)    1st natural deriv. of shape funct.
 \param **deriv2   DOUBLE   (o)    2nd natural deriv. of shape funct.
@@ -256,26 +180,6 @@ derivatives with respect to r/s/t are evaluated for H E X A H E D E R
 /* LINEAR shape functions and their natural derivatives -----*/
 /*--------------------------------------------------- form basic values */
 
-  /*
-   Numbering of the nodes:
-   -----------------------
-   - this is the numbering used in GiD!!
-
-
-          4 o---
-            |\  ---
-            |  \   -o3
-            |   \  / \
-            |     \   \
-            |    / \   \
-            |   /    \  \
-            |  /      \  \
-            | /         \ \
-            |/            \\
-            o---------------o
-           1                2
-   */
-
         t1=1.0-r-s-t;
         t2=r;
         t3=s;
@@ -332,82 +236,6 @@ void shape_function_3D_deriv1(Epetra_SerialDenseMatrix&                  deriv,
 /*
 In this routine the shape functions and their natural first and second
 derivatives with respect to r/s/t are evaluated for H E X A H E D E R
-
-   Numbering of the nodes:
-
-                           ^ t
-                           |
-                           |
-                           |
-                    8      |  15        7
-                    o---------o---------o
-                   /|                  /|
-                  / |                 / |
-                 /  |                /  |
-              16o   |     o       14o   |
-               /    o20       o    /    o19
-              /     |             /     |
-             /      |  13      6 /  |
-          5 o---------o---------o   |
-            |   o   |     o     |   o   |  ---------->
-            |       o---------o-|-------o           s
-            |      / 4       11 |      /3
-            |     /             |     /
-          17o    /    o         o18  /
-            | 12o         o     |   o10
-            |  /                |  /
-            | /                 | /
-            |/                  |/
-            o---------o---------o
-        1   /     9         2
-           /
-          /
-         /
-        r
-
-   GiD:
-
-                           ^ t
-                           |
-                           |
-                           |
-                    8      |  19        7
-                    o---------o---------o
-                   /|                  /|
-                  / |                 / |
-                 /  |                /  |
-              20o   |   26o       18o   |
-               /    o16     24o    /    o15
-              /     |             /     |
-             /      |  17      6 /  |
-          5 o---------o---------o   23  |
-            |   o   |   27o     |   o   |  ---------->
-            |  25   o---------o-|-------o           s
-            |      / 4       11 |      /3
-            |     /             |     /
-          13o    /  22o         o14  /
-            | 12o         o     |   o10
-            |  /         21     |  /
-            | /                 | /
-            |/                  |/
-            o---------o---------o
-        1   /     9         2
-           /
-          /
-         /
-        r
-
-
-
-   PROBLEM: GID has a different numbering of the element nodes than this one.
-            So either the shape functions for hex20 and hex27 (see drawing)
-        has to be adapted or during the input phase the numbering has to
-        be adapted to the shape functions.
-        This is all in progress and should be done for fluid3 and
-        brick1 the same way!!!!
-
-   There are no HEX27 Elements in brick1 so we just go ahead here and
-   use the GiD numbering for HEX27.
 
 \param  *funct    DOUBLE   (o)    shape functions
 \param **deriv    DOUBLE   (o)    1st natural deriv. of shape funct.
@@ -687,26 +515,6 @@ case DRT::Element::hex20: /* QUADRATIC shape functions and their natural derivat
 /* LINEAR shape functions and their natural derivatives -----*/
 /*--------------------------------------------------- form basic values */
 
-  /*
-   Numbering of the nodes:
-   -----------------------
-   - this is the numbering used in GiD!!
-
-
-          4 o---
-            |\  ---
-            |  \   -o3
-            |   \  / \
-            |     \   \
-            |    / \   \
-            |   /    \  \
-            |  /      \  \
-            | /         \ \
-            |/            \\
-            o---------------o
-           1                2
-   */
-
         t1=1.0-r-s-t;
         t2=r;
         t3=s;
@@ -807,82 +615,6 @@ void shape_function_3D_deriv2(
 /*
 In this routine the shape functions and their natural first and second
 derivatives with respect to r/s/t are evaluated for H E X A H E D E R
-
-   Numbering of the nodes:
-
-                           ^ t
-                           |
-                           |
-                           |
-                    8      |  15        7
-                    o---------o---------o
-                   /|                  /|
-                  / |                 / |
-                 /  |                /  |
-              16o   |     o       14o   |
-               /    o20       o    /    o19
-              /     |             /     |
-             /      |  13      6 /  |
-          5 o---------o---------o   |
-            |   o   |     o     |   o   |  ---------->
-            |       o---------o-|-------o           s
-            |      / 4       11 |      /3
-            |     /             |     /
-          17o    /    o         o18  /
-            | 12o         o     |   o10
-            |  /                |  /
-            | /                 | /
-            |/                  |/
-            o---------o---------o
-        1   /     9         2
-           /
-          /
-         /
-        r
-
-   GiD:
-
-                           ^ t
-                           |
-                           |
-                           |
-                    8      |  19        7
-                    o---------o---------o
-                   /|                  /|
-                  / |                 / |
-                 /  |                /  |
-              20o   |   26o       18o   |
-               /    o16     24o    /    o15
-              /     |             /     |
-             /      |  17      6 /  |
-          5 o---------o---------o   23  |
-            |   o   |   27o     |   o   |  ---------->
-            |  25   o---------o-|-------o           s
-            |      / 4       11 |      /3
-            |     /             |     /
-          13o    /  22o         o14  /
-            | 12o         o     |   o10
-            |  /         21     |  /
-            | /                 | /
-            |/                  |/
-            o---------o---------o
-        1   /     9         2
-           /
-          /
-         /
-        r
-
-
-
-   PROBLEM: GID has a different numbering of the element nodes than this one.
-            So either the shape functions for hex20 and hex27 (see drawing)
-        has to be adapted or during the input phase the numbering has to
-        be adapted to the shape functions.
-        This is all in progress and should be done for fluid3 and
-        brick1 the same way!!!!
-
-   There are no HEX27 Elements in brick1 so we just go ahead here and
-   use the GiD numbering for HEX27.
 
 \param  *funct    DOUBLE   (o)    shape functions
 \param **deriv    DOUBLE   (o)    1st natural deriv. of shape funct.
@@ -1424,43 +1156,6 @@ case DRT::Element::hex27: /* QUADRATIC shape functions and their natural derivat
 
 /*----------------------------------------------------------------------*
 get shape function of surface (private) gammi                     04/07 
-
-In this routine the shape functions (always) and their natural first
-derivatives with respect to r/s are evaluated for
-R E C T A N G L E S or T R I A N G L E S
-
-Numbering of the nodes:
-
-
-                    ^ s
-                    |
-              1     |4    0
-              o-----o-----o
-              |           |
-              |           |7
-            5 o     o     o -----> r
-              |     8     |
-              |           |
-              o-----o-----o
-              2     6     3
-
-
-
-                    ^ s
-                    |
-                    |
-                   2|
-                    o
-                    |\
-                    | \ 
-                   5o  o4
-                    |   \
-                    |    \
-                    o--o--o -----> r
-               0   3   1
-
-
-                                                            
   
  \param   funct    vector<double>&             (o)    shape functions
  \param   deriv    Epetra_SerialDenseMatrix&   (o)    1st natural deriv.
@@ -1579,36 +1274,6 @@ get shape function of surface (private) gammi                     04/07
 In this routine the shape functions (always) and their natural first
 derivatives with respect to r/s are evaluated for
 R E C T A N G L E S or T R I A N G L E S
-
-Numbering of the nodes:
-
-
-                    ^ s
-                    |
-              1     |4    0
-              o-----o-----o
-              |           |
-              |           |7
-            5 o     o     o -----> r
-              |     8     |
-              |           |
-              o-----o-----o
-              2     6     3
-
-
-
-                    ^ s
-                    |
-                    |
-                   2|
-                    o
-                    |\
-                    | \ 
-                   5o  o4
-                    |   \
-                    |    \
-                    o--o--o -----> r
-               0   3   1
 
  \param   deriv    Epetra_SerialDenseMatrix&   (o)    1st natural deriv.
                                                       of shape funct.
