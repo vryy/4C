@@ -97,8 +97,8 @@ static void input_surf_fsi_coupling(multimap<int,RefCountPtr<DRT::Condition> >& 
 /*----------------------------------------------------------------------*
  | xfem coupling                                                  u.may 05/07   |
  *----------------------------------------------------------------------*/
-static void input_line_xfem_coupling(multimap<int,RefCountPtr<DRT::Condition> >& lxfemcouplingmap);
-static void input_surf_xfem_coupling(multimap<int,RefCountPtr<DRT::Condition> >& sxfemcouplingmap);
+static void input_line_xfem_coupling(multimap<int,RefCountPtr<DRT::Condition> >& lxfemcoupmap);
+static void input_surf_xfem_coupling(multimap<int,RefCountPtr<DRT::Condition> >& sxfemcoupmap);
 
 
 /*----------------------------------------------------------------------*
@@ -234,13 +234,13 @@ void input_conditions(const DRT::Problem& problem)
   input_surf_fsi_coupling(surffsicoup);
   setup_condition(surffsicoup, dsurf_fenode);
   //--------------------------------------- read line xfem coupling condition
-  multimap<int,RefCountPtr<DRT::Condition> > linexfemcoupling;
-  input_line_xfem_coupling(linexfemcoupling);
-  setup_condition(linexfemcoupling, dline_fenode);
+  multimap<int,RefCountPtr<DRT::Condition> > linexfemcoup;
+  input_line_xfem_coupling(linexfemcoup);
+  setup_condition(linexfemcoup, dline_fenode);
   //------------------------------------ read surface xfem coupling condition
-  multimap<int,RefCountPtr<DRT::Condition> > surfxfemcoupling;
-  input_surf_xfem_coupling(surfxfemcoupling);
-  setup_condition(surfxfemcoupling, dsurf_fenode);
+  multimap<int,RefCountPtr<DRT::Condition> > surfxfemcoup;
+  input_surf_xfem_coupling(surfxfemcoup);
+  setup_condition(surfxfemcoup, dsurf_fenode);
   //--------------------------------------- read line isothermal noslip wall conditions
   multimap<int,RefCountPtr<DRT::Condition> > lineisothermnoslip;
   input_line_isothermnoslipwall(lineisothermnoslip);
@@ -285,8 +285,8 @@ void input_conditions(const DRT::Problem& problem)
       register_condition("FSICoupling", "FSI Coupling", linefsicoup, actdis, noderowmap);
       register_condition("FSICoupling", "FSI Coupling", surffsicoup, actdis, noderowmap);
 
-      register_condition("XFEMCoupling", "XFEM Coupling", linexfemcoupling, actdis, noderowmap);
-      register_condition("XFEMCoupling", "XFEM Coupling", surfxfemcoupling, actdis, noderowmap);
+      register_condition("XFEMCoupling", "XFEM Coupling", linexfemcoup, actdis, noderowmap);
+      register_condition("XFEMCoupling", "XFEM Coupling", surfxfemcoup, actdis, noderowmap);
 
       register_condition("LineIsothermalNoslip", "Isothermal no-slip wall", lineisothermnoslip, actdis, noderowmap);
       register_condition("LineSubsonicInflow", "Subsonic inflow", linesubsonicinflow, actdis, noderowmap);
@@ -1701,7 +1701,7 @@ void input_surf_fsi_coupling(multimap<int,RefCountPtr<DRT::Condition> >& sfsicou
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void input_line_xfem_coupling(multimap<int,RefCountPtr<DRT::Condition> >& lxfemcouplingmap)
+void input_line_xfem_coupling(multimap<int,RefCountPtr<DRT::Condition> >& lxfemcoupmap)
 {
   if (frfind("--DESIGN XFEM COUPLING LINE CONDITIONS")==0) return;
   frread();
@@ -1740,7 +1740,7 @@ void input_line_xfem_coupling(multimap<int,RefCountPtr<DRT::Condition> >& lxfemc
                                                                    DRT::Condition::Line));
 
     //--------------------------------- put condition in map of conditions
-    lxfemcouplingmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dlineid,condition));
+    lxfemcoupmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dlineid,condition));
 
     //-------------------------------------------------- read the next line
     frread();
@@ -1750,7 +1750,7 @@ void input_line_xfem_coupling(multimap<int,RefCountPtr<DRT::Condition> >& lxfemc
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void input_surf_xfem_coupling(multimap<int,RefCountPtr<DRT::Condition> >& sxfemcouplingmap)
+void input_surf_xfem_coupling(multimap<int,RefCountPtr<DRT::Condition> >& sxfemcoupmap)
 {
   if (frfind("--DESIGN XFEM COUPLING SURF CONDITIONS")==0) return;
   frread();
@@ -1789,7 +1789,7 @@ void input_surf_xfem_coupling(multimap<int,RefCountPtr<DRT::Condition> >& sxfemc
                                                                    DRT::Condition::Surface));
     cout << *condition << endl;
     //--------------------------------- put condition in map of conditions
-    sxfemcouplingmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dsurfaceid,condition));
+    sxfemcoupmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dsurfaceid,condition));
 
     //-------------------------------------------------- read the next surface
     frread();

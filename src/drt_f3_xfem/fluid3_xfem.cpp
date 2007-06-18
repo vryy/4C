@@ -215,7 +215,7 @@ void DRT::Elements::XFluid3::CreateLinesTet(const int& nline,
         int nodeids[nnode];
         DRT::Node* nodes[nnode];
         
-        for (int inode=0;inode<2;inode++)
+        for (int inode=0;inode<nnode;inode++)
         {
              nodeids[inode] = NodeIds()[tet10_lines_[iline][inode]];
              nodes[inode]   = Nodes()[tet10_lines_[iline][inode]];
@@ -235,7 +235,7 @@ void DRT::Elements::XFluid3::CreateLinesHex(const int& nline,
         int nodeids[nnode];
         DRT::Node* nodes[nnode];
         
-        for (int inode=0;inode<2;inode++)
+        for (int inode=0;inode<nnode;inode++)
         {
              nodeids[inode] = NodeIds()[hex27_lines_[iline][inode]];
              nodes[inode]   = Nodes()[hex27_lines_[iline][inode]];
@@ -286,13 +286,13 @@ void DRT::Elements::XFluid3::CreateSurfacesTet(const int& nsurf,
         int nodeids[nnode];
         DRT::Node* nodes[nnode];
         
-        for (int inode=0;inode<2;inode++)
+        for (int inode=0;inode<nnode;inode++)
         {
              nodeids[inode] = NodeIds()[tet10_surfaces_[isurf][inode]];
              nodes[inode]   = Nodes()[  tet10_surfaces_[isurf][inode]];
         }
-        lines_[isurf] = rcp(new DRT::Elements::XFluid3Line(isurf,Owner(),nnode,nodeids,nodes,NULL,this,isurf));
-        lineptrs_[isurf] = lines_[isurf].get();
+        surfaces_[isurf] = rcp(new DRT::Elements::XFluid3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
+        surfaceptrs_[isurf] = surfaces_[isurf].get();
     }
 }        
 
@@ -306,13 +306,13 @@ void DRT::Elements::XFluid3::CreateSurfacesHex(const int& nsurf,
         int nodeids[nnode];
         DRT::Node* nodes[nnode];
         
-        for (int inode=0;inode<2;inode++)
+        for (int inode=0;inode<nnode;inode++)
         {
              nodeids[inode] = NodeIds()[hex27_surfaces_[isurf][inode]];
              nodes[inode]   = Nodes()[  hex27_surfaces_[isurf][inode]];
         }
-        lines_[isurf] = rcp(new DRT::Elements::XFluid3Line(isurf,Owner(),nnode,nodeids,nodes,NULL,this,isurf));
-        lineptrs_[isurf] = lines_[isurf].get();
+        surfaces_[isurf] = rcp(new DRT::Elements::XFluid3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
+        surfaceptrs_[isurf] = surfaces_[isurf].get();
     }
 }   
 

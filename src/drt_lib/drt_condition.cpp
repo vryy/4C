@@ -98,6 +98,7 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==LineIsothermalNoslip)        os << "Isothermal no-slip wall boundary condition";
   else if (Type()==LineSubsonicInflow)          os << "Subsonic inflow boundary condition:";
   else if (Type()==LineSubsonicOutflow)         os << "Subsonic outflow boundary condition:";
+  else if (Type()==XFEMCoupling)                os << "XFEM Coupling condition:";
   Container::Print(os);
   if ((int)geometry_.size())
   {

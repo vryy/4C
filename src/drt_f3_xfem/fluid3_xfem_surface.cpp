@@ -172,7 +172,7 @@ void DRT::Elements::XFluid3Surface::CreateLinesTri(const int& nline,
         int nodeids[nnode];
         DRT::Node* nodes[nnode];
         
-        for (int inode=0;inode<2;inode++)
+        for (int inode=0;inode<nnode;inode++)
         {
              nodeids[inode] = NodeIds()[tri6_lines_[iline][inode]];
              nodes[inode]   = Nodes()[tri6_lines_[iline][inode]];
@@ -190,7 +190,7 @@ void DRT::Elements::XFluid3Surface::CreateLinesQuad(const int& nline,
         int nodeids[nnode];
         DRT::Node* nodes[nnode];
         
-        for (int inode=0;inode<2;inode++)
+        for (int inode=0;inode<nnode;inode++)
         {
              nodeids[inode] = NodeIds()[quad9_lines_[iline][inode]];
              nodes[inode]   = Nodes()[quad9_lines_[iline][inode]];
