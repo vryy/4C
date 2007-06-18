@@ -336,7 +336,7 @@ void inpfield_ccadiscret(DRT::Problem& problem, DRT::DatFileReader& reader)
     }
     cout << "\n";
     }
-    exit(0);
+    //exit(0);
   } // end of else if (genprob.probtyp==prb_struct_multi)
 
   else dserror("Type of problem unknown");

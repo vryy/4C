@@ -30,6 +30,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
 
+#include "../drt_mat/micromaterial.H"
 
 extern "C"
 {
@@ -494,7 +495,7 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     Epetra_SerialDenseMatrix cmat(NUMSTR_SOH8,NUMSTR_SOH8);
     Epetra_SerialDenseVector stress(NUMSTR_SOH8);
     double density;
-    soh8_mat_sel(&stress,&cmat,&density,&glstrain, material);
+    soh8_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, material, gp);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
@@ -699,7 +700,9 @@ void DRT::Elements::So_hex8::soh8_mat_sel(
       Epetra_SerialDenseMatrix* cmat,
       double* density,
       const Epetra_SerialDenseVector* glstrain,
-      struct _MATERIAL* material)
+      const Epetra_SerialDenseMatrix* defgrd,
+      struct _MATERIAL* material,
+      int gp)
 {
   DSTraceHelper dst("So_hex8::soh8_mat_sel");
 
@@ -740,16 +743,34 @@ void DRT::Elements::So_hex8::soh8_mat_sel(
 
       // evaluate stresses
       (*cmat).Multiply('N',(*glstrain),(*stress));   // sigma = C . epsilon
+      break;
     }
-    break;
+
     case m_struct_multiscale: /*------------------- multiscale approach */
     {
       // Here macro-micro transition (localization) will take place
+
+      int microdis_num = mat->m.struct_multiscale->microdis;
+
+      if (gp > static_cast<int>(mat_.size())-1)
+      {
+        mat_.resize(gp+1);
+        mat_[gp] = rcp(new MicroMaterial(gp, microdis_num));
+      }
+
+      MicroMaterial* micromat =
+        dynamic_cast<MicroMaterial*>(mat_[gp].get());
+
+      if (micromat == NULL)
+        dserror("Wrong type of derived material class");
+
+      micromat->CalcStressStiffDens(stress, cmat, density, glstrain);
+      break;
     }
-    break;
+
     default:
       dserror("Illegal type of material for element solid3 hex8");
-    break;
+      break;
   }
 
   /*--------------------------------------------------------------------*/

@@ -550,7 +550,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
       localmat.mattyp = m_struct_multiscale;
       localmat.m.struct_multiscale = new _STRUCT_MULTISCALE();
-      localmat.m.struct_multiscale->microdis = 0; /* currently only one
+      localmat.m.struct_multiscale->microdis = 1; /* currently only one
                                                    * microscale discretization
                                                    * is used in all Gauss
                                                    * points */

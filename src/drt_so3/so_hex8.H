@@ -31,6 +31,8 @@ using namespace Teuchos;
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
 
+#include "../drt_mat/material.H"
+
 // Several parameters which are fixed for Solid Hex8
 #define NUMNOD_SOH8 8      // number of nodes
 #define NODDOF_SOH8 3      // number of dofs per node
@@ -351,6 +353,9 @@ protected:
   vector<RefCountPtr<DRT::Elements::Soh8Line> > lines_;
   //! vector of lines adjacent to this element
   vector<DRT::Elements::Soh8Line*>              lineptrs_;
+  //! vector of history variables for each Gauss point
+  vector<RefCountPtr<Material> >                mat_;
+
 
   // internal calculation methods
 
@@ -377,7 +382,9 @@ protected:
                     Epetra_SerialDenseMatrix* cmat,
                     double* density,
                     const Epetra_SerialDenseVector* glstrain,
-                    struct _MATERIAL* material);
+                    const Epetra_SerialDenseMatrix* defgrd,
+                    struct _MATERIAL* material,
+                    int gp);
 
   // EAS technology section
   void soh8_easinit();

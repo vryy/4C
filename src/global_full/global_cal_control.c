@@ -238,7 +238,7 @@ case prb_fluid_pm:
 #ifndef CCADISCRET
   dyn_fluid();
 #else
-  dyn_fluid_drt();  
+  dyn_fluid_drt();
 #endif
   break;
 case prb_condif:
@@ -292,6 +292,21 @@ case prb_tsi:
 #endif
   break;
 #endif
+
+case prb_struct_multi:
+
+  switch (genprob.timetyp) {
+  case time_static:
+    calsta();
+    break;
+  case time_dynamic:
+    caldyn();
+    break;
+  default:
+    dserror("Unspecified time handling");
+  }
+
+  break;
 
 default:
   dserror("solution of unknown problemtyp requested");
