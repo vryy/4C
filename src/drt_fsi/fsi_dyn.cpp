@@ -68,7 +68,8 @@ void CreateAleDiscretization()
   vector<string> aletype;
   aletype.reserve(fluiddis->NumMyRowElements());
 
-  set<int> ngidset;
+  set<int> rownodeset;
+  set<int> colnodeset;
   const Epetra_Map* noderowmap = fluiddis->NodeRowMap();
 
   // Loop all fluid elements and find the ones that live on an ale
@@ -112,27 +113,49 @@ void CreateAleDiscretization()
       if (myele)
         egid.push_back(actele->Id());
 
-      // copy node ids of actele to ngidset but leave those that do
+      // copy node ids of actele to rownodeset but leave those that do
       // not belong to this processor
       remove_copy_if(actele->NodeIds(), actele->NodeIds()+actele->NumNode(),
-                     inserter(ngidset, ngidset.begin()),
+                     inserter(rownodeset, rownodeset.begin()),
                      not1(FSI::Utils::MyGID(noderowmap)));
+
+      copy(actele->NodeIds(), actele->NodeIds()+actele->NumNode(),
+           inserter(colnodeset, colnodeset.begin()));
     }
   }
 
   // construct ale nodes
-  // Make sure the order of the ale nodes will be just the same as
-  // those of the fluid nodes. This is important to preserve the
-  // system matrix sparseness.
   for (int i=0; i<noderowmap->NumMyElements(); ++i)
   {
     int gid = noderowmap->GID(i);
-    if (ngidset.find(gid)!=ngidset.end())
+    if (rownodeset.find(gid)!=rownodeset.end())
     {
       DRT::Node* fluidnode = fluiddis->lRowNode(i);
       aledis->AddNode(rcp(new DRT::Node(gid, fluidnode->X(), myrank)));
     }
   }
+
+  // we get the node maps almost for free
+
+  vector<int> alenoderowvec(rownodeset.begin(), rownodeset.end());
+  rownodeset.clear();
+  RefCountPtr<Epetra_Map> alenoderowmap = rcp(new Epetra_Map(-1,
+                                                             alenoderowvec.size(),
+                                                             &alenoderowvec[0],
+                                                             0,
+                                                             aledis->Comm()));
+  alenoderowvec.clear();
+
+  vector<int> alenodecolvec(colnodeset.begin(), colnodeset.end());
+  colnodeset.clear();
+  RefCountPtr<Epetra_Map> alenodecolmap = rcp(new Epetra_Map(-1,
+                                                             alenodecolvec.size(),
+                                                             &alenodecolvec[0],
+                                                             0,
+                                                             aledis->Comm()));
+  alenodecolvec.clear();
+
+  // now do the elements
 
   // add a new material to use with the ale elements
   _MATERIAL localmat;
@@ -166,7 +189,7 @@ void CreateAleDiscretization()
               back_inserter(nids), mem_fun(&DRT::Node::Id));
 
     // set the same global node ids to the ale element
-    aleele->SetNodeIds(fluidele->NumNode(), &nids[0]);
+    aleele->SetNodeIds(nids.size(), &nids[0]);
 
     // We need to set material and gauss points to complete element setup.
     // This is again really ugly as we have to extract the actual
@@ -195,6 +218,8 @@ void CreateAleDiscretization()
     aledis->AddElement(aleele);
   }
 
+  // conditions
+
   // copy the conditions to the ale discretization
   vector<DRT::Condition*> cond;
   fluiddis->GetCondition("FSICoupling", cond);
@@ -215,6 +240,26 @@ void CreateAleDiscretization()
     aledis->SetCondition("Dirichlet", rcp(new DRT::Condition(*cond[i])));
   }
 
+  // now care about the parallel distribution
+  // redistribute nodes to column (ghost) map
+
+  aledis->ExportColumnNodes(*alenodecolmap);
+
+  RefCountPtr< Epetra_Map > elerowmap;
+  RefCountPtr< Epetra_Map > elecolmap;
+
+  // now we have all elements in a linear map roweles
+  // build resonable maps for elements from the
+  // already valid and final node maps
+  // note that nothing is actually redistributed in here
+  aledis->BuildElementRowColumn(*alenoderowmap, *alenodecolmap, elerowmap, elecolmap);
+
+  // we can now export elements to resonable row element distribution
+  aledis->ExportRowElements(*elerowmap);
+
+  // export to the column map / create ghosting of elements
+  aledis->ExportColumnElements(*elecolmap);
+
   // Now we are done. :)
   aledis->FillComplete();
 }
@@ -231,8 +276,11 @@ void fsi_ale_drt()
   Epetra_SerialComm comm;
 #endif
 
+  RefCountPtr<DRT::Discretization> aledis = DRT::Problem::Instance()->Dis(genprob.numaf,0);
+  if (!aledis->Filled()) aledis->FillComplete();
+
   // create ale elements if the ale discretization is empty
-  if (DRT::Problem::Instance()->Dis(genprob.numaf,0)->NumGlobalNodes()==0)
+  if (aledis->NumGlobalNodes()==0)
     CreateAleDiscretization();
 
   Teuchos::RefCountPtr<FSI::DirichletNeumannCoupling> fsi = rcp(new FSI::DirichletNeumannCoupling(comm));

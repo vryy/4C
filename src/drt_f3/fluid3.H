@@ -322,6 +322,8 @@ private:
                   vector<double>&           evelnp,
 		  vector<double>&           eprenp,
                   vector<double>&           ehist,
+                  vector<double>&           edispnp,
+                  vector<double>&           egridv,
                   Epetra_SerialDenseMatrix* sys_mat,
                   Epetra_SerialDenseVector* residual,
                   struct _MATERIAL*         material,
@@ -348,8 +350,8 @@ private:
                        Epetra_SerialDenseVector& elevec,
                        struct _MATERIAL*         material,
                        ParameterList& 	         params);
-    
-    
+
+
   // calculate the stabilisation parameter
   void f3_calc_stabpar(vector<double>           &tau,
                        int                       iel,
@@ -358,7 +360,7 @@ private:
                        double                    visc,
                        ParameterList            &params,
                        int                       version);
-  
+
   // evaluate element integration points (and storing them in data)
   void f3_integration_points(struct _FLUID_DATA& data);
 
@@ -386,7 +388,7 @@ private:
                         double                    time   ,
                         const int                 iel    ,
                         ParameterList&    	  params);
-  
+
   // calculate global derivatives w.r.t. x,y,z at point r,s,t are
     void f3_gder(Epetra_SerialDenseMatrix& derxy,
 		 const Epetra_SerialDenseMatrix& deriv,
@@ -452,7 +454,7 @@ private:
                 const int&      	      iel,
 		ParameterList& 		      params
       		);
-  
+
   // evaluate fluid coefficient matrix for a generalised
   // alpha problem
   void f3_genalpha_calmat(
@@ -496,7 +498,7 @@ private:
     const int&                 iel,
     ParameterList& 	       params);
 
-  
+
 }; // class Fluid3
 
 

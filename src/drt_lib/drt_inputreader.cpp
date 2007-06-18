@@ -394,7 +394,7 @@ void ElementReader::Partition()
   // number of element junks to split the reading process in
   // approximate block size (just a guess!)
   const int nblock = numproc;
-  int bsize = max(static_cast<int>(eids.size())/nblock, 1);
+  int bsize = static_cast<int>(eids.size())/nblock;
 
   // create a simple (pseudo linear) map
   int mysize = bsize;
@@ -421,17 +421,25 @@ void ElementReader::Partition()
   }
   string line;
   int filecount=0;
+  bool endofsection = false;
 
   // note that the last block is special....
   for (int block=0; block<nblock; ++block)
   {
-    if (0==myrank)
+    if (not endofsection and 0==myrank)
     {
       int bcount=0;
       for (;getline(file, line); ++filecount)
       {
         if (line.find("--")==0)
+        {
+          // If we have an empty element section (or fewer elements
+          // that processors) we cannot read on. But we cannot exit
+          // the block loop beforehand either because the other
+          // processors need to syncronize nblock times.
+          endofsection = true;
           break;
+        }
         else
         {
           istringstream t;
@@ -504,70 +512,81 @@ void ElementReader::Partition()
   rownodes_ = rcp(new Epetra_Map(-1,nids.size(),&nids[0],0,*comm_));
   nids.clear();
 
+  // We want to be able to read empty fields. If we have such a beast
+  // just skip the partitioning.
+  if (rownodes_->NumGlobalElements()>0)
+  {
+
 #if 0
-  if (myrank==0)
-  {
-    cout << "\n\nelementnodes: size=" << elementnodes.size() << endl;
-    for (list<vector<int> >::iterator i=elementnodes.begin();
-         i!=elementnodes.end();
-         ++i)
+    if (myrank==0)
     {
-      copy(i->begin(), i->end(), ostream_iterator<int>(cout, " "));
-      cout << endl;
-    }
-  }
-#endif
-
-  // construct graph
-  RefCountPtr<Epetra_CrsGraph> graph = rcp(new Epetra_CrsGraph(Copy,*rownodes_,81,false));
-  if (myrank==0)
-  {
-    for (list<vector<int> >::iterator i=elementnodes.begin();
-         i!=elementnodes.end();
-         ++i)
-    {
-      // get the node ids of this element
-      int  numnode = static_cast<int>(i->size());
-      int* nodeids = &(*i)[0];
-
-      // loop nodes and add this topology to the row in the graph of every node
-      for (int i=0; i<numnode; ++i)
+      cout << "\n\nelementnodes: size=" << elementnodes.size() << endl;
+      for (list<vector<int> >::iterator i=elementnodes.begin();
+           i!=elementnodes.end();
+           ++i)
       {
-        int err = graph->InsertGlobalIndices(nodeids[i],numnode,nodeids);
-        if (err<0) dserror("graph->InsertGlobalIndices returned %d",err);
+        copy(i->begin(), i->end(), ostream_iterator<int>(cout, " "));
+        cout << endl;
       }
     }
+#endif
+
+    // construct graph
+    RefCountPtr<Epetra_CrsGraph> graph = rcp(new Epetra_CrsGraph(Copy,*rownodes_,81,false));
+    if (myrank==0)
+    {
+      for (list<vector<int> >::iterator i=elementnodes.begin();
+           i!=elementnodes.end();
+           ++i)
+      {
+        // get the node ids of this element
+        int  numnode = static_cast<int>(i->size());
+        int* nodeids = &(*i)[0];
+
+        // loop nodes and add this topology to the row in the graph of every node
+        for (int i=0; i<numnode; ++i)
+        {
+          int err = graph->InsertGlobalIndices(nodeids[i],numnode,nodeids);
+          if (err<0) dserror("graph->InsertGlobalIndices returned %d",err);
+        }
+      }
+    }
+
+    elementnodes.clear();
+
+    // finalize construction of this graph
+    int err = graph->FillComplete(*rownodes_,*rownodes_);
+    if (err) dserror("graph->FillComplete returned %d",err);
+
+    // partition graph using metis
+    Epetra_Vector weights(graph->RowMap(),false);
+    weights.PutScalar(1.0);
+    RefCountPtr<Epetra_CrsGraph> newgraph = DRT::Utils::PartGraphUsingMetis(*graph,weights);
+    graph = newgraph;
+    newgraph = null;
+
+    // replace rownodes, colnodes with row and column maps from the graph
+    // do stupid conversion from Epetra_BlockMap to Epetra_Map
+    const Epetra_BlockMap& brow = graph->RowMap();
+    const Epetra_BlockMap& bcol = graph->ColMap();
+    rownodes_ = rcp(new Epetra_Map(brow.NumGlobalElements(),
+                                   brow.NumMyElements(),
+                                   brow.MyGlobalElements(),
+                                   0,
+                                   *comm_));
+    colnodes_ = rcp(new Epetra_Map(bcol.NumGlobalElements(),
+                                   bcol.NumMyElements(),
+                                   bcol.MyGlobalElements(),
+                                   0,
+                                   *comm_));
+
+    graph = null;
   }
-
-  elementnodes.clear();
-
-  // finalize construction of this graph
-  int err = graph->FillComplete(*rownodes_,*rownodes_);
-  if (err) dserror("graph->FillComplete returned %d",err);
-
-  // partition graph using metis
-  Epetra_Vector weights(graph->RowMap(),false);
-  weights.PutScalar(1.0);
-  RefCountPtr<Epetra_CrsGraph> newgraph = DRT::Utils::PartGraphUsingMetis(*graph,weights);
-  graph = newgraph;
-  newgraph = null;
-
-  // replace rownodes, colnodes with row and column maps from the graph
-  // do stupid conversion from Epetra_BlockMap to Epetra_Map
-  const Epetra_BlockMap& brow = graph->RowMap();
-  const Epetra_BlockMap& bcol = graph->ColMap();
-  rownodes_ = rcp(new Epetra_Map(brow.NumGlobalElements(),
-                                 brow.NumMyElements(),
-                                 brow.MyGlobalElements(),
-                                 0,
-                                 *comm_));
-  colnodes_ = rcp(new Epetra_Map(bcol.NumGlobalElements(),
-                                 bcol.NumMyElements(),
-                                 bcol.MyGlobalElements(),
-                                 0,
-                                 *comm_));
-
-  graph = null;
+  else
+  {
+    // We are empty. Just a proper initialization.
+    colnodes_ = rownodes_;
+  }
 
   // now we have all elements in a linear map roweles
   // build resonable maps for elements from the
