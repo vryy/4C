@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file
 \brief
 
@@ -8,8 +9,11 @@ Maintainer: Steffen Genkinger
             http://www.uni-stuttgart.de/ibs/members/genkinger/
             0711 - 685-6127
 </pre>
+*/
 
-*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+/* different definitions of local systems for input
+ * bborn 06/07 */
 typedef enum _LOCSYSTYP
 {
                        locsys_none,        /* no locsys                */
@@ -20,12 +24,24 @@ typedef enum _LOCSYSTYP
                        locsys_fsnd         /* free surface normal def. */
 } LOCSYSTYP;
 
+/*----------------------------------------------------------------------*/
+/* type to differentiate if an element has local systems or none
+ * bborn 06/07 */
 typedef enum _ELECOSYS
 {
                        locsys_no,
                        locsys_yes
 } ELESOSYS;
 
+/*----------------------------------------------------------------------*/
+/* transformation/rotation matrix 
+   Transformation of displacements (or other unbound vectors)
+     | (Dx*) |   | cos(Xx*)   cos(Yx*)   cos(Zx*) | | (DX) |
+     | (Dy*) | = | cos(Xy*)   cos(Yy*)   cos(Zy*) | | (DY) |
+     | (Dz*) |   | cos(Xz*)   cos(Yz*)   cos(Zz*) | | (DZ) |
+   in which cos(Xx*) is the direction cosine, i.e. the cosine of
+   the angle enclosed by X- and x*-unit-vectors
+*/
 typedef struct _LOCSYS
 {
 INT                    Id;        /*!< Id                               */
@@ -44,11 +60,12 @@ DOUBLE                 lZy;       /*! cos(Zy*)                          */
 DOUBLE                 lZz;       /*! cos(Zz*)                          */
 } LOCSYS;
 
+/*----------------------------------------------------------------------*/
+/* transformation direction
+ * bborn 06/07 */
+typedef enum _LOCSYS_TRF_KIND
+{
+  locsys_trf_XYZ_to_xyz = 0,      /* from XYZ-system to xyz*-system */
+  locsys_trf_xyz_to_XYZ           /* from xyz*-system to XYZ-system */
+} LOCSYS_TRF_KIND;
 
-/*
-    Transformation of displacements:
-
-     | (Dx*) |   | cos(Xx*)   cos(Yx*)   cos(Zx*) | | (DX) |
-     | (Dy*) | = | cos(Xy*)   cos(Yy*)   cos(Zy*) | | (DY) |
-     | (Dz*) |   | cos(Xz*)   cos(Yz*)   cos(Zz*) | | (DZ) |
-*/

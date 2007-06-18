@@ -357,7 +357,9 @@ void so3_stress(CONTAINER *cont,
     }
     /*------------------------------------------------------------------*/
     /* construct rotational component of inverse FE-Jacobian */
+#if 0
     so3_metr_rot(gds.xjm, gds.xrm, gds.xrvm, gds.xrvi);
+#endif
     /*------------------------------------------------------------------*/
     /* store stress in parameter space co-ordinates (r,s,t) */
 #ifdef GIDOUTSTRAIN_SOLID3

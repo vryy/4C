@@ -100,7 +100,7 @@ void th3_load_heat(CONTAINER* container,
   INT ngsurf;  /* number of geometry surfaces of volumetric element */
   INT igsurf; /* surface index */
   INT idimsid; /* surface dimension index */
-  GSURF *gsurf[MAXSID_THERM3];
+  GSURF* gsurf[MAXSID_THERM3];
   DOUBLE sidredm[DIMSID_THERM3][NDIM_THERM3];  /* dimens. reduct. matrix */
   DOUBLE metr;
   DOUBLE gpcidim;  /* dummy Gauss point coordinate */

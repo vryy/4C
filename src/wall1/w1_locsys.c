@@ -28,7 +28,7 @@ Maintainer: Burkhard Bornemann
 \return void
 
 \author bborn
-\date 03/06
+\date 06/07
 */
 #ifndef LOCALSYSTEMS_ST
 void w1_locsys_checkoff(PARTITION* actpart)

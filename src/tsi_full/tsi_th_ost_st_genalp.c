@@ -212,9 +212,9 @@ void tsi_th_ost_st_genalp(INT disnum_s,
   INT mass_array_t;  /* index of the active system sparse matrix */
   
   /* dynamic control */
-  STRUCT_DYNAMIC* sdyn = alldyn[numsf].sdyn;  /* structural dynamics */
+  STRUCT_DYNAMIC* sdyn = alldyn[numsf].sdyn;  /* structural dynamics ctrl */
   THERM_DYNAMIC* tdyn = alldyn[numtf].tdyn;  /* thermal dynamic control */
-  TSI_DYNAMIC* tsidyn = alldyn[numfld].tsidyn;  /* TSI dynamics */
+  TSI_DYNAMIC* tsidyn = alldyn[numfld].tsidyn;  /* TSI dynamics control */
   STRUCT_DYN_CALC sdynvar;  /* variables for dynamic structural simulation */
   INT timeadapt = sdyn->timeadapt;  /* flag to switch time adaption on/off */
 
@@ -261,7 +261,7 @@ void tsi_th_ost_st_genalp(INT disnum_s,
   ARRAY intheat_a;  /* redund. full length vect. for internal heat */
   ARRAY dirheat_a;   /* redund. full length vect. for Dirichlet-part of RHS */
 
-  INT i;
+  /* INT i; */
   
   /*====================================================================*/
   /* begin body */
@@ -411,14 +411,6 @@ void tsi_th_ost_st_genalp(INT disnum_s,
   /* set initial step and time */
 /*   acttime = tsidyn->time;  /\* initial time *\/ */
   tsidyn->step = -1;
-
-  /*--------------------------------------------------------------------*/
-  /* printout head */
-/*   if (par.myrank == 0)  */
-/*   { */
-/*     dyn_nlnstruct_outhead(&sdynvar, sdyn); */
-/*   } */
-
 
   /*====================================================================*/
   /* START LOOP OVER ALL TIME STEPS */

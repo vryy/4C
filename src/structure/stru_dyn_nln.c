@@ -798,7 +798,7 @@ solserv_result_total(actfield,disnum,actintra,
 /* post return total displacements to nodes,
  * This operation will not only rotate the prescribed DOFs of the relevant
  * Dirichlet node, but all (i.e. prescribed & free) its DOFs. */
-#if defined(LOCALSYSTEMS_ST)
+#ifdef LOCALSYSTEMS_ST
 locsys_trans_sol_dirich(actfield, disnum, node_array_sol, 0, 1);
 #endif
 
@@ -810,6 +810,11 @@ if (par.myrank==0 && ioflags.struct_disp==1 && ioflags.output_gid==1)
    counter++;
 }
 */
+/*-------------------- locally oriented increments of DBC displacements */
+/* prior to calculation/assignment */
+#ifdef LOCALSYSTEMS_ST
+solserv_zerodirich(actfield, disnum, node_array_sol_increment, 0);
+#endif
 /*----------------------- return incremental displacements to the nodes */
 solserv_result_incre(actfield,disnum,actintra,&dispi[0],0,
                      &(actsolv->sysarray[stiff_array]),
@@ -820,7 +825,7 @@ solserv_result_incre(actfield,disnum,actintra,&dispi[0],0,
  * This operation will not only rotate the free DOFs of relevant
  * Dirichlet nodes, but all (i.e. prescribed & free) its DOFs.
  * This should not matter, 'coz the increments are zero at prescribed nodes */
-#if defined(LOCALSYSTEMS_ST)
+#ifdef LOCALSYSTEMS_ST
 locsys_trans_sol_dirich(actfield, disnum, node_array_sol_increment, 0, 1);
 #endif
 
@@ -969,6 +974,12 @@ init=0;
 solver_control(actfield,disnum,actsolv, actintra,&(actsolv->sysarray_typ[stiff_array]),&(actsolv->sysarray[stiff_array]),
                &(work[0]),&(actsolv->rhs[0]),init);
 
+/*----------------- locally oriented residual displacements at DBC node */
+/* prior to calculation/assignment */
+#ifdef LOCALSYSTEMS_ST
+solserv_zerodirich(actfield, disnum, node_array_sol_residual, 0);
+#endif
+
 /*-------------------------- return residual displacements to the nodes */
 solserv_result_resid(actfield,disnum,actintra,&work[0],0,&(actsolv->sysarray[stiff_array]),&(actsolv->sysarray_typ[stiff_array]));
 
@@ -978,7 +989,7 @@ solserv_result_resid(actfield,disnum,actintra,&work[0],0,&(actsolv->sysarray[sti
  * Dirichlet nodes, but all (i.e. prescribed & free) its DOFs.
  * This should not matter, 'coz the residual displacements are zero 
  * at prescribed nodes */
-#if defined(LOCALSYSTEMS_ST)
+#ifdef LOCALSYSTEMS_ST
 locsys_trans_sol_dirich(actfield, disnum, node_array_sol_residual, 0, 1);
 #endif
 
@@ -1007,7 +1018,7 @@ solserv_result_total(actfield,disnum,actintra, &(actsolv->sol[1]),0,
  * The free components of a DBC-node are stored in local directions on the
  * assembled quantities (stiffness & mass matrix, internal and external
  * force vectors, displacement vector (actsolv->sol), etc.) */
-#if defined(LOCALSYSTEMS_ST)
+#ifdef LOCALSYSTEMS_ST
 solserv_putdirich_to_dof(actfield,disnum,node_array_sol,0,sdyn->time);
 #endif
 
@@ -1017,7 +1028,7 @@ solserv_putdirich_to_dof(actfield,disnum,node_array_sol,0,sdyn->time);
  * displacements of DBC-ish nodes are in local system (this holds for
  * free and prescribed/supported DOFs of the node) and have to be
  * rotated into the global system */
-#if defined(LOCALSYSTEMS_ST)
+#ifdef LOCALSYSTEMS_ST
 locsys_trans_sol_dirich(actfield, disnum, node_array_sol, 0, 1);
 #endif
 
@@ -1029,6 +1040,11 @@ if (par.myrank==0 && ioflags.struct_disp==1 && ioflags.output_gid==1)
    counter++;
 }
 */
+/*-------------------- locally oriented increments of DBC displacements */
+/* prior to calculation/assignment */
+#ifdef LOCALSYSTEMS_ST
+solserv_zerodirich(actfield, disnum, node_array_sol_increment, 0);
+#endif
 /*----------------------- return incremental displacements to the nodes */
 solserv_result_incre(actfield,disnum,actintra,&dispi[0],0,
                     &(actsolv->sysarray[stiff_array]),
@@ -1039,7 +1055,7 @@ solserv_result_incre(actfield,disnum,actintra,&dispi[0],0,
  * This operation will not only rotate the free DOFs of relevant
  * Dirichlet nodes, but all (i.e. prescribed & free) its DOFs.
  * This should not matter, 'coz the increments are zero at prescribed nodes */
-#if defined(LOCALSYSTEMS_ST)
+#ifdef LOCALSYSTEMS_ST
 locsys_trans_sol_dirich(actfield, disnum, node_array_sol_increment, 0, 1);
 #endif
 
@@ -1239,23 +1255,6 @@ solserv_sol_copy(actfield,disnum,node_array_sol_increment,node_array_sol_increme
 /*------------------------------- check whether to write results or not */
 mod_disp      = sdyn->step % sdyn->updevry_disp;
 mod_stress    = sdyn->step % sdyn->updevry_stress;
-/*-------------------------------- debug: print current displ to STDOUT */
-/* used to diff to new discretisation */
-/* #ifdef DEBUG */
-/* if (sdyn->step % 1 == 0) */
-/* { */
-/* int ii; */
-/* for (ii=0; ii<actsolv->sol[0].numeq; ii++) */
-/* { */
-/*   printf(" %3d  % 16.10e   % 16.10e   % 16.10e\n",  */
-/*          ii,  */
-/*          actsolv->sol[1].vec.a.dv[ii], */
-/*          vel->vec.a.dv[ii], */
-/*          acc->vec.a.dv[ii]); */
-/* } */
-/* printf("\n"); */
-/* } */
-/* #endif */
 /*------------------------------- check whether to write restart or not */
 if (sdyn->res_write_evry > 0)
 {

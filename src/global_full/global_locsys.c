@@ -320,6 +320,12 @@ for (i=0; i<genprob.numfld; i++)
            break;
          }
          actnode->locsysId=locsysId;
+#if 1
+         if (locsysId > 0)
+         {
+           printf("Gid Node %d: Locsys %d\n", actnode->Id+1, actnode->locsysId);
+         }
+#endif
          if (locsysId>0)
          {
             for (l=0;l<actnode->numele;l++)
@@ -833,6 +839,7 @@ array   index of the array,        0 = sol
 
 flag = 1 : transform sol in xyz* to XYZ
 flag = 0 : transform sol in XYZ to xyz*
+HINT: For this flag the type LOCSYS_TRF_KIND is defined in locsys.h
 
 </pre>
 \param   *actfield      FIELD       (i)   actual field
@@ -920,6 +927,7 @@ array   index of the array,        0 = sol
 
 flag = 1 : transform sol in xyz* to XYZ
 flag = 0 : transform sol in XYZ to xyz*
+HINT: For this flag the type LOCSYS_TRF_KIND is defined in locsys.h
 
 </pre>
 \param   *actfield      FIELD       (i)   actual field
@@ -1023,6 +1031,7 @@ T     Transformation matrix
 
 flag = 1 : transform val in xyz* to XYZ
 flag = 0 : transform val in XYZ to xyz*
+HINT: For this flag the type LOCSYS_TRF_KIND is defined in locsys.h
 
 </pre>
 \param   *actele     ELEMENT        (i)   actual element

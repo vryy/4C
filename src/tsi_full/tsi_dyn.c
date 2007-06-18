@@ -175,7 +175,11 @@ void tsi_dyn()
     /* semi TSI : static thermal and dynamic structure field */
     case tsi_therm_stat_struct_genalp: 
       tsi_th_stat(disnum_s, disnum_t);
-      tsi_st_genalp(disnum_s, disnum_t);
+#if 1
+      tsi_st_genalp_sub(disnum_s, disnum_t);  /* modularised version */
+#else
+      tsi_st_genalp(disnum_s, disnum_t);  /* one-sub version */
+#endif
       break;
     /* semi TSI : static thermal and dynamic structure field */
     case tsi_therm_stat_struct_cendif:

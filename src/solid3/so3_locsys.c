@@ -27,7 +27,7 @@ Maintainer: Burkhard Bornemann
 \return void
 
 \author bborn
-\date 03/06
+\date 06/07
 */
 #ifndef LOCALSYSTEMS_ST
 void so3_locsys_checkoff(PARTITION* actpart)
@@ -68,7 +68,7 @@ void so3_locsys_checkoff(PARTITION* actpart)
 #endif
   return;
 }
-#endif
+#endif  /* end #ifndef LOCALSYSTEMS_ST */
 
-
-#endif
+/*======================================================================*/
+#endif  /* end #ifdef D_SOLID3 */

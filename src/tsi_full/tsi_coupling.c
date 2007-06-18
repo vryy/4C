@@ -123,7 +123,7 @@ void tsi_coupling(FIELD *structfield,
   INT tfound;  /* flag for found thermal node */
   INT partner;  /* flag for checking thermal partnership */
 
-  DOUBLE tol = EPS4;  /* critcal tolerance for node distance
+  const DOUBLE tol = EPS4;  /* critcal tolerance for node distance
 
   /* declare and nullify actual nodes */
   NODE *actsnode = NULL;  /* actual structure node */
@@ -474,19 +474,24 @@ void tsi_coupling(FIELD *structfield,
 
     if (acttgnode == NULL)
     {
-      dserror("No thermal node for structure node: #%d", actsnode->Id);
+      dserror("No thermal node for structure node: %d", actsnode->Id);
     }
 
 
-    /* not sure if we need the latter */
-    /* check locsys */
+    /* check that no locsys are applied in structure domain */
+#ifndef LOCALSYSTEMS_ST
     if (actsnode->locsysId != 0)
     {
-      dserror("No locsys at TSI coupling node: #%d", actsnode->Id);
+      dserror("Illegal locsys at TSI structural coupling node: %d", 
+              actsnode->Id);
     }
+#endif
+
+    /* check that no locsys are applied in thermal field */
     if (acttnode->locsysId != 0)
     {
-      dserror("No locsys at TSI coupling node: #%d", acttnode->Id);
+      dserror("Illegal locsys at TSI thermal coupling node: %d", 
+              acttnode->Id);
     }
 
   }  /* for (i=0;i<numanp;i++) */
