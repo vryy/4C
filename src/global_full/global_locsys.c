@@ -319,13 +319,9 @@ for (i=0; i<genprob.numfld; i++)
            dserror("Cannot create locsys on element level");
            break;
          }
+         /* set NODE local system ID */
          actnode->locsysId=locsysId;
-#if 1
-         if (locsysId > 0)
-         {
-           printf("Gid Node %d: Locsys %d\n", actnode->Id+1, actnode->locsysId);
-         }
-#endif
+         /* forward "NODE has local system ID" to its associated elements */
          if (locsysId>0)
          {
             for (l=0;l<actnode->numele;l++)
