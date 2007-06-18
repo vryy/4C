@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file so_hex8_input.cpp
+\file so_sh8_input.cpp
 \brief
 
 <pre>
@@ -34,21 +34,21 @@ extern "C"
  *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
 }
-#include "so_hex8.H"
+#include "so_sh8.H"
 #include "../drt_lib/dstrc.H"
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
-bool DRT::Elements::So_hex8::ReadElement()
+bool DRT::Elements::So_sh8::ReadElement()
 {
-  DSTraceHelper dst("So_hex8::ReadElement");
+  DSTraceHelper dst("So_sh8::ReadElement");
 
   // read element's nodes
   int ierr=0;
   const int nnode=8;
   int nodes[8];
-  frchk("SOLIDH8",&ierr);
+  frchk("SOLIDSH8",&ierr);
   if (ierr==1)
   {
     frint_n("HEX8",nodes,nnode,&ierr);
@@ -56,7 +56,7 @@ bool DRT::Elements::So_hex8::ReadElement()
   }
   else
   {
-    dserror ("Reading of SOLIDH8 failed");
+    dserror ("Reading of SOLIDSH8 failed");
   }
   // reduce node numbers by one
   for (int i=0; i<nnode; ++i) nodes[i]--;
@@ -66,12 +66,12 @@ bool DRT::Elements::So_hex8::ReadElement()
   // read number of material model
   material_ = 0;
   frint("MAT",&material_,&ierr);
-  if (ierr!=1) dserror("Reading of SO_HEX8 element material failed");
+  if (ierr!=1) dserror("Reading of SO_SH8 element material failed");
 
   // read gaussian points
   frint_n("GP",ngp_,3,&ierr);
-  if (ierr!=1) dserror("Reading of So_HEX8 element gp failed");
-  for (int i=0; i<3; ++i) if (ngp_[i]!=2) dserror("Only 2 GP for HEX8");
+  if (ierr!=1) dserror("Reading of SO_SH8 element gp failed");
+  for (int i=0; i<3; ++i) if (ngp_[i]!=2) dserror("Only 2 GP for So_SH8");
 
   // read kinematic type
   char buffer[50];
@@ -86,35 +86,29 @@ bool DRT::Elements::So_hex8::ReadElement()
    else if (strncmp(buffer,"Updlag",6)==0)
    {
        kintype_ = soh8_updlag;
-       dserror("Updated Lagrange for SO_HEX8 is not implemented!");
+       dserror("Updated Lagrange for SO_SH8 is not implemented!");
    }
-   else dserror("Reading of SO_HEX8 element failed");
+   else dserror("Reading of SO_SH8 element failed");
   }
   
   // read EAS technology flag
-  eastype_ = soh8_easnone;     // default: no EAS
+  eastype_ = soh8_eassosh8;     // default: EAS for Solid-Shell8
   frchar("EAS",buffer,&ierr);
   if (ierr){
     // full EAS technology
-    if      (strncmp(buffer,"full",4)==0){
-      eastype_ = soh8_easfull;
-      neas_ = 21;               // number of eas parameters for full EAS
-      soh8_easinit();
-    }
-    // mild EAS technology
-    else if (strncmp(buffer,"mild",4)==0){
-      eastype_ = soh8_easmild;
-      neas_ = 9;               // number of eas parameters for mild EAS
+    if      (strncmp(buffer,"sosh8",5)==0){
+      eastype_ = soh8_eassosh8;
+      neas_ = 7;               // number of eas parameters for EAS_SOSH8
       soh8_easinit();
     }
     // no EAS technology
     else if (strncmp(buffer,"none",4)==0) eastype_ = soh8_easnone;
-    else dserror("Reading of SO_HEX8 EAS technology failed");
+    else dserror("Reading of SO_SH8 EAS technology failed");
   } 
 
   // read stress evaluation/output type
   frchar("STRESS",buffer,&ierr);
-  if (ierr!=1) dserror("reading of SO_HEX8 stress failed");
+  if (ierr!=1) dserror("reading of SO_SH8 stress failed");
   if (strncmp(buffer,"none",4)==0)  stresstype_= soh8_stress_none;
   if (strncmp(buffer,"Gpxyz",5)==0) stresstype_= soh8_stress_gpxyz;
   if (strncmp(buffer,"Gprst",5)==0) stresstype_= soh8_stress_gprst;
@@ -126,7 +120,7 @@ bool DRT::Elements::So_hex8::ReadElement()
   else stresstype_= soh8_stress_none;
 
   return true;
-} // So_hex8::ReadElement()
+} // So_sh8::ReadElement()
 
 
 #endif  // #ifdef TRILINOS_PACKAGE

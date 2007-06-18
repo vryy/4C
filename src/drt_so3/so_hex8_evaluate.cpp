@@ -580,27 +580,7 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
       for (int j=0; j<NUMDOF_SOH8; ++j) (*oldKda)(i,j) = Kda(i,j);
       (*oldfeas)(i,0) = feas(i);
     }
-
-
-//    // evaluate new alpha in the following
-//    Epetra_SerialDenseMatrix alphanew(neas_,1);
-//    // first we need delta_d
-//    Epetra_SerialDenseVector delta_d(NUMDOF_SOH8);
-//    for (int i=0; i<NUMDOF_SOH8; ++i) delta_d(i) = disp[i] - residual[i];
-//    // add Kda . delta_d to feas
-//    feas.Multiply('N','N',1.0,Kda,delta_d,1.0);
-//    // new alpha is: - Kaa^-1 . (feas + Kda . delta_d), here: - Kaa^-1 . feas
-//    alphanew.Multiply('N','N',-1.0,Kaa,feas,0.0);
-//
-//    cout << "alphanew " << alphanew;
-//
-//    // update EAS alphas
-//    data_.Add("alpha",alphanew);
   } // -------------------------------------------------------------------- EAS
-
-
-
-
   return;
 } // DRT::Elements::Shell8::s8_nlnstiffmass
 

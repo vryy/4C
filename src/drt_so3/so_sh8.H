@@ -5,6 +5,14 @@
 
 \brief A C++ 8-node Solid-Shell element inherited from so_hex8
 
+The Solid-Shell element technology is based on the work of
+(1) Vu-Quoc, Tan: "Optimal solid shells for non-linear analyses
+                   of multilayer composites", CMAME 2003
+(2) Klinkel, Gruttmann, Wagner: "A robust non-linear solid shell element
+                                 based on a mixed variational fromulation"
+
+Refer also to the Semesterarbeit of Alexander Popp, 2006                                                    
+
 <pre>
 Maintainer: Moritz Frenzel
             frenzel@lnm.mw.tum.de
@@ -13,11 +21,9 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOSH8
+#ifdef D_SOH8
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
-#ifndef SOSH8_H
-#define SOSH8_H
 
 
 #include "Teuchos_RefCountPtr.hpp"
@@ -130,6 +136,16 @@ public:
   */
   void Print(ostream& os) const;
 
+  //@}
+
+  //! @name Input and Creation
+
+  /*!
+  \brief Read input for this element
+  */
+
+  bool ReadElement();
+
   /*!
   \brief Destructor
 
@@ -189,6 +205,11 @@ private:
                          Epetra_SerialDenseVector* force,
                          struct _MATERIAL*         material);
 
+  void sosh8_anssetup(const int numsp,              // number of sampling points
+                      const int numans,             // number of ans strains
+                      const Epetra_SerialDenseMatrix& xcurr, // current element coords
+                      Epetra_SerialDenseMatrix&  B_ans_loc); // modified B
+                      
 }; // class So_sh8
 
 
@@ -290,7 +311,6 @@ private:
 
 
 
-#endif  // #ifndef SOSH8_H
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOSH8
+#endif  // #ifdef D_SOH8

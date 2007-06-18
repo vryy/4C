@@ -10,7 +10,7 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOSH8
+#ifdef D_SOH8
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
@@ -221,7 +221,7 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
   Epetra_SerialDenseMatrix* oldfeas;   // EAS history 
   Epetra_SerialDenseMatrix* oldKaainv; // EAS history
   Epetra_SerialDenseMatrix* oldKda;    // EAS history
-  if (eastype_ != soh8_easnone) {
+  if (eastype_ == soh8_eassosh8) {
     /*
     ** EAS Update of alphas:
     ** the current alphas are (re-)evaluated out of
@@ -230,16 +230,16 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
     ** in the nonlinear FE-Skript page 120 (load-control alg. with EAS)
     */
     //(*alpha).Shape(neas_,1);
-    alpha = data_.Get<Epetra_SerialDenseMatrix>("alpha");   // get old alpha
+    alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");   // get old alpha
 //    // evaluate current (updated) EAS alphas (from history variables)
 //    soh8_easupdate(alpha,disp,residual);
     // get stored EAS history
     //(*oldfeas).Shape(neas_,1);
     //(*oldKaainv).Shape(neas_,neas_);
     //(*oldKda).Shape(neas_,NUMDOF_SOH8);
-    oldfeas = data_.Get<Epetra_SerialDenseMatrix>("feas");
-    oldKaainv = data_.Get<Epetra_SerialDenseMatrix>("invKaa");
-    oldKda = data_.Get<Epetra_SerialDenseMatrix>("Kda");
+    oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
+    oldKaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
+    oldKda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
     if (!alpha || !oldKaainv || !oldKda || !oldfeas) dserror("Missing EAS history-data");
   
     // we need the displacement at the previous step
@@ -272,7 +272,19 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
     ** -> T0^{-T}
     */
     soh8_eassetup(&M_GP,detJ0,T0invT,xrefe);
-  } // -------------------------------------------------------------------- EAS
+  } else dserror("Solid-Shell8 only with eas_sosh8");// ------------------- EAS
+  
+  /*
+  ** ANS Element technology to remedy
+  *  - transverse-shear locking E_rt and E_st
+  *  - trapezoidal (curvature-thickness) locking E_tt
+  */
+  // modified B-operator in local(parameter) element space
+  const int num_sp = 8;       // number of ANS sampling points
+  const int num_ans = 3;      // number of modified ANS strains (E_rt,E_st,E_tt)
+  Epetra_SerialDenseMatrix B_ans_loc;  
+  B_ans_loc.Shape(num_ans*num_sp,NUMDOF_SOH8);
+  sosh8_anssetup(num_sp,num_ans,xcurr,B_ans_loc);
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -305,6 +317,15 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
     if (detJ == 0.0) dserror("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
 
+    /* compute the CURRENT Jacobian matrix which looks like:
+    **         [ xcurr_,r  ycurr_,r  zcurr_,r ]
+    **  Jcur = [ xcurr_,s  ycurr_,s  zcurr_,s ]
+    **         [ xcurr_,t  ycurr_,t  zcurr_,t ]
+    ** Used to transform the global displacements into parametric space
+    */
+    Epetra_SerialDenseMatrix jac_cur(NUMDIM_SOH8,NUMDIM_SOH8);
+    jac.Multiply('N','N',1.0,deriv_gp,xcurr,1.0);
+    
     /* compute derivatives N_XYZ at gp w.r.t. material coordinates
     ** by solving   Jac . N_XYZ = N_rst   for N_XYZ
     ** Inverse of Jacobian is therefore not explicitly computed
@@ -403,7 +424,7 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
     Epetra_SerialDenseMatrix cmat(NUMSTR_SOH8,NUMSTR_SOH8);
     Epetra_SerialDenseVector stress(NUMSTR_SOH8);
     double density;
-    soh8_mat_sel(&stress,&cmat,&density,&glstrain);
+    soh8_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, material, gp);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
@@ -488,30 +509,135 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
       for (int j=0; j<NUMDOF_SOH8; ++j) (*oldKda)(i,j) = Kda(i,j);
       (*oldfeas)(i,0) = feas(i);
     }
-
-    
-//    // evaluate new alpha in the following
-//    Epetra_SerialDenseMatrix alphanew(neas_,1);
-//    // first we need delta_d
-//    Epetra_SerialDenseVector delta_d(NUMDOF_SOH8);
-//    for (int i=0; i<NUMDOF_SOH8; ++i) delta_d(i) = disp[i] - residual[i];
-//    // add Kda . delta_d to feas
-//    feas.Multiply('N','N',1.0,Kda,delta_d,1.0);
-//    // new alpha is: - Kaa^-1 . (feas + Kda . delta_d), here: - Kaa^-1 . feas
-//    alphanew.Multiply('N','N',-1.0,Kaa,feas,0.0);
-//    
-//    cout << "alphanew " << alphanew;
-//    
-//    // update EAS alphas
-//    data_.Add("alpha",alphanew);
   } // -------------------------------------------------------------------- EAS
-
-
-
-
   return;
 } // DRT::Elements::Shell8::s8_nlnstiffmass
 
+
+/*----------------------------------------------------------------------*
+ |  setup of constant ANS data (private)                       maf 05/07|
+ *----------------------------------------------------------------------*/
+void DRT::Elements::So_sh8::sosh8_anssetup(
+          const int numsp,              // number of sampling points
+          const int numans,             // number of ans strains
+          const Epetra_SerialDenseMatrix& xcurr, // current element coords
+          Epetra_SerialDenseMatrix&  B_ans_loc) // modified B 
+{
+  // static matrix object of derivs at sampling points, kept in memory
+  static Epetra_SerialDenseMatrix df_sp(NUMDIM_SOH8*numsp,NUMNOD_SOH8);
+  static bool dfsp_eval;                      // flag for re-evaluate everything
+  
+  Epetra_SerialDenseMatrix* deriv_sp;
+
+  if (dfsp_eval!=0){             // if true f,df already evaluated
+    *deriv_sp = &df_sp;         // return adress of static object to target of pointer
+    return;
+  } else {
+  /*====================================================================*/
+  /* 8-node hexhedra Solid-Shell node topology
+   * and location of sampling points A to H                             */
+  /*--------------------------------------------------------------------*/
+  /*                      t
+   *                      |
+   *             4========|================7
+   *          // |        |              //||
+   *        //   |        |            //  ||
+   *      //     |        |   D      //    ||
+   *     5=======E=================6       H 
+   *    ||       |        |        ||      ||
+   *    ||   A   |        o--------||-- C -------s
+   *    ||       |       /         ||      ||
+   *    F        0----- B ---------G ------3
+   *    ||     //     /            ||    //
+   *    ||   //     /              ||  //
+   *    || //     r                ||//
+   *     1=========================2
+   *
+   */
+  /*====================================================================*/
+    // (r,s,t) gp-locations of sampling points A,B,C,D,E,F,G,H
+    double r[8] = { 0.0, 1.0, 0.0,-1.0,-1.0, 1.0, 1.0,-1.0};
+    double s[8] = {-1.0, 0.0, 1.0, 0.0,-1.0,-1.0, 1.0, 1.0};
+    double t[8] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+
+    // fill up df_sp w.r.t. rst directions (NUMDIM) at each sp
+    for (int i=0; i<numsp; ++i) {
+        // df wrt to r "+0" for each node(0..7) at each sp [i]
+        df_sp(NUMDIM_SOH8*i+0,0) = -(1.0-s[i])*(1.0-t[i])*0.125;
+        df_sp(NUMDIM_SOH8*i+0,1) =  (1.0-s[i])*(1.0-t[i])*0.125;
+        df_sp(NUMDIM_SOH8*i+0,2) =  (1.0+s[i])*(1.0-t[i])*0.125;
+        df_sp(NUMDIM_SOH8*i+0,3) = -(1.0+s[i])*(1.0-t[i])*0.125;
+        df_sp(NUMDIM_SOH8*i+0,4) = -(1.0-s[i])*(1.0+t[i])*0.125;
+        df_sp(NUMDIM_SOH8*i+0,5) =  (1.0-s[i])*(1.0+t[i])*0.125;
+        df_sp(NUMDIM_SOH8*i+0,6) =  (1.0+s[i])*(1.0+t[i])*0.125;
+        df_sp(NUMDIM_SOH8*i+0,7) = -(1.0+s[i])*(1.0+t[i])*0.125;
+
+        // df wrt to s "+1" for each node(0..7) at each sp [i]
+        df_sp(NUMDIM_SOH8*i+1,0) = -(1.0-r[i])*(1.0-t[i])*0.125;
+        df_sp(NUMDIM_SOH8*i+1,1) = -(1.0+r[i])*(1.0-t[i])*0.125;
+        df_sp(NUMDIM_SOH8*i+1,2) =  (1.0+r[i])*(1.0-t[i])*0.125;
+        df_sp(NUMDIM_SOH8*i+1,3) =  (1.0-r[i])*(1.0-t[i])*0.125;
+        df_sp(NUMDIM_SOH8*i+1,4) = -(1.0-r[i])*(1.0+t[i])*0.125;
+        df_sp(NUMDIM_SOH8*i+1,5) = -(1.0+r[i])*(1.0+t[i])*0.125;
+        df_sp(NUMDIM_SOH8*i+1,6) =  (1.0+r[i])*(1.0+t[i])*0.125;
+        df_sp(NUMDIM_SOH8*i+1,7) =  (1.0-r[i])*(1.0+t[i])*0.125;
+
+        // df wrt to t "+2" for each node(0..7) at each sp [i]
+        df_sp(NUMDIM_SOH8*i+2,0) = -(1.0-r[i])*(1.0-s[i])*0.125;
+        df_sp(NUMDIM_SOH8*i+2,1) = -(1.0+r[i])*(1.0-s[i])*0.125;
+        df_sp(NUMDIM_SOH8*i+2,2) = -(1.0+r[i])*(1.0+s[i])*0.125;
+        df_sp(NUMDIM_SOH8*i+2,3) = -(1.0-r[i])*(1.0+s[i])*0.125;
+        df_sp(NUMDIM_SOH8*i+2,4) =  (1.0-r[i])*(1.0-s[i])*0.125;
+        df_sp(NUMDIM_SOH8*i+2,5) =  (1.0+r[i])*(1.0-s[i])*0.125;
+        df_sp(NUMDIM_SOH8*i+2,6) =  (1.0+r[i])*(1.0+s[i])*0.125;
+        df_sp(NUMDIM_SOH8*i+2,7) =  (1.0-r[i])*(1.0+s[i])*0.125;
+    }
+
+    // return adresses of just evaluated matrices
+    *deriv_sp = &df_sp;         // return adress of static object to target of pointer
+    dfsp_eval = 1;               // now all arrays are filled statically
+  }
+  
+  /*
+  ** Compute modified B-operator in local(parametric) space,
+  ** evaluated at all sampling points
+  */
+  // loop over each sampling point
+  for (int sp = 0; sp < numsp; ++sp) {
+    // get submatrix of deriv_sp at actual sp
+    Epetra_SerialDenseMatrix deriv_asp(NUMDIM_SOH8,numsp);
+    for (int m=0; m<NUMDIM_SOH8; ++m) {
+      for (int n=0; n<numsp; ++n) {
+        deriv_asp(m,n)=(*deriv_sp)(NUMDIM_SOH8*sp+m,n);
+      }
+    }
+    /* compute the CURRENT Jacobian matrix at the sampling point:
+    **         [ xcurr_,r  ycurr_,r  zcurr_,r ]
+    **  Jcur = [ xcurr_,s  ycurr_,s  zcurr_,s ]
+    **         [ xcurr_,t  ycurr_,t  zcurr_,t ]
+    ** Used to transform the global displacements into parametric space
+    */
+    Epetra_SerialDenseMatrix jac_cur(NUMDIM_SOH8,NUMDIM_SOH8);
+    jac_cur.Multiply('N','N',1.0,deriv_asp,xcurr,1.0);
+    
+    // fill up B-operator
+    for (int inode = 0; inode < NUMNOD_SOH8; ++inode) {
+      for (int dim = 0; dim < NUMDIM_SOH8; ++dim) {
+        // modify B_loc_tt = N_t.X_t
+        B_ans_loc(sp*numans+0,inode*3+dim) = deriv_asp(3,inode)*jac_cur(3,dim);
+        // modify B_loc_rt = N_r.X_t + N_t.X_r
+        B_ans_loc(sp*numans+1,inode*3+dim) = deriv_asp(1,inode)*jac_cur(3,dim)
+                                            +deriv_asp(3,inode)*jac_cur(1,dim);
+        // modify B_loc_st = N_s.X_t + N_t.X_s                                          
+        B_ans_loc(sp*numans+2,inode*3+dim) = deriv_asp(2,inode)*jac_cur(3,dim)
+                                            +deriv_asp(3,inode)*jac_cur(2,dim);
+      }
+    }
+  }    
+    
+  
+  return;
+}
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

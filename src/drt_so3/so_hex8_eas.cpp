@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file so_hex8_eas.cpp
-\brief Everything concernign EAS technology for so_hex8
+\brief Everything concerning EAS technology for so_hex8
 
 <pre>
 Maintainer: Moritz Frenzel
@@ -63,35 +63,6 @@ void DRT::Elements::So_hex8::soh8_easinit()
   return;
 }
 
-///*----------------------------------------------------------------------*
-// |  update EAS alpha from previous step (private)              maf 05/07|
-// *----------------------------------------------------------------------*/
-//void DRT::Elements::So_hex8::soh8_easupdate(
-//      Epetra_SerialDenseMatrix& alpha,    // reference to alpha which will be updated
-//      vector<double>& current_disp,
-//      vector<double>& prev_deltad)
-//{
-//  DSTraceHelper dst("So_hex8::soh8_easupdate");
-//  
-//  // get stored EAS history
-//  Epetra_SerialDenseMatrix oldfeas(neas_,1);
-//  data_.Get<Epetra_SerialDenseMatrix>("feas",oldfeas);
-//  Epetra_SerialDenseMatrix oldKaainv(neas_,neas_);
-//  data_.Get<Epetra_SerialDenseMatrix>("invKaa",oldKaainv);
-//  Epetra_SerialDenseMatrix oldKda(neas_,NUMDOF_SOH8);
-//  data_.Get<Epetra_SerialDenseMatrix>("Kda",oldKda);
-//  if (!oldalpha || !oldKaa || !oldKdainv || !oldfeas) dserror("Missing EAS history-data");
-//  
-//  Epetra_DataAccess CV = Copy;
-//  Epetra_SerialDenseVector delta_d(CV,prev_deltad,NUMDOF_SOH8);
-//  
-//  // add Kda . delta_d to feas
-//  oldfeas.Multiply('N','N',1.0,oldKda,delta_d,1.0);
-//  // new alpha is: - Kaa^-1 . (feas + Kda . delta_d), here: - Kaa^-1 . feas
-//  alpha.Multiply('N','N',-1.0,oldKaainv,feas,1.0);
-//  
-//  return;
-//}
 /*----------------------------------------------------------------------*
  |  setup of constant EAS data (private)                       maf 05/07|
  *----------------------------------------------------------------------*/
@@ -105,9 +76,6 @@ void DRT::Elements::So_hex8::soh8_eassetup(
   
   // vector of df(origin)
   double df0_vector[NUMDOF_SOH8*NUMNOD_SOH8] =
-//               {-0.125,+0.125,+0.125,-0.125,-0.125,+0.125,+0.125,-0.125, 
-//                -0.125,-0.125,+0.125,+0.125,-0.125,-0.125,+0.125,+0.125, 
-//                -0.125,-0.125,-0.125,-0.125,+0.125,+0.125,+0.125,+0.125};
                {-0.125,-0.125,-0.125,
                 +0.125,-0.125,-0.125,
                 +0.125,+0.125,-0.125,
@@ -120,14 +88,9 @@ void DRT::Elements::So_hex8::soh8_eassetup(
   Epetra_DataAccess CV = Copy;
   Epetra_SerialDenseMatrix df0(CV,df0_vector,NUMDIM_SOH8,NUMDIM_SOH8,NUMNOD_SOH8);
   
-  //cout << "df0 " << df0;
-  //cout << "xrefe " << xrefe;
-  
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)
   Epetra_SerialDenseMatrix jac0(NUMDIM_SOH8,NUMDIM_SOH8);
   jac0.Multiply('N','N',1.0,df0,xrefe,1.0);
-  
-  //cout << "jac0 " << jac0;
   
   // compute determinant of Jacobian at origin by Sarrus' rule
   //double detJ0loc;
@@ -137,8 +100,6 @@ void DRT::Elements::So_hex8::soh8_eassetup(
            - jac0(0,0) * jac0(1,2) * jac0(2,1)
            - jac0(0,1) * jac0(1,0) * jac0(2,2)
            - jac0(0,2) * jac0(1,1) * jac0(2,0);
-           
-  //cout << "detJ0loc " << detJ0loc;
   
   // first, build T0^T transformation matrix which maps the M-matrix
   // between global (r,s,t)-coordinates and local (x,y,z)-coords
@@ -190,11 +151,8 @@ void DRT::Elements::So_hex8::soh8_eassetup(
   // now evaluate T0^{-T} with solver
   Epetra_SerialDenseSolver solve_for_inverseT0;
   solve_for_inverseT0.SetMatrix(T0invT);
-//  solve_for_inverseT0.SolveWithTranspose(true);
   solve_for_inverseT0.Invert();
-//  T0invT.SetUseTranspose(true);
   
-  // cout << "invT0 " << T0invT;
   // build EAS interpolation matrix M, evaluated at the 8 GPs of so_hex8
   static Epetra_SerialDenseMatrix M(NUMSTR_SOH8*NUMGPT_SOH8,neas_);
   static bool M_eval;
@@ -253,7 +211,26 @@ void DRT::Elements::So_hex8::soh8_eassetup(
       // return adress of just evaluated matrix      
       *M_GP = &M;            // return adress of static object to target of pointer
       M_eval = true;         // now the array is filled statically
-    } else dserror("eastype not implemented");
+    } else if (eastype_ == soh8_eassosh8) {
+      /* eassosh8 is the EAS interpolation for the Solid-Shell with t=thickness dir.
+      ** consisting of 7 modes, based on
+      **            r 0 0   0 0 0  0 
+      **            0 s 0   0 0 0  0 
+      **    M =     0 0 t   0 0 rt st
+      **            0 0 0   r s 0  0
+      **            0 0 0   0 0 0  0 
+      **            0 0 0   0 0 0  0 
+      */
+      for (int i=0; i<NUMGPT_SOH8; ++i) {
+        M(i*NUMSTR_SOH8+0,0) = r[i];
+        M(i*NUMSTR_SOH8+1,1) = s[i];
+        M(i*NUMSTR_SOH8+2,2) = t[i]; M(i*NUMSTR_SOH8+2,5) = r[i]*t[i]; M(i*NUMSTR_SOH8+2,6) = s[i]*t[i];
+        
+        M(i*NUMSTR_SOH8+3,3) = r[i]; M(i*NUMSTR_SOH8+3,4) = s[i];
+      }
+    } else {
+    dserror("eastype not implemented");
+    }
   }
 } // end of soh8_eassetup
   

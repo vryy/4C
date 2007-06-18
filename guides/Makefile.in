@@ -15,6 +15,7 @@ src/src_free_surface_flow/src_free_surface_flow.tex
 src/struct_dynamics/struct_dynamics.tex
 src/struct_statics/struct_statics.tex
 src/brick1/brick1.tex
+src/so_hex8/so_hex8.tex
 src/wall1/wall1.tex
 src/wallge/wallge.tex
 src/shell8/shell8.tex

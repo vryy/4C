@@ -223,7 +223,7 @@ public:
   /*!
   \brief Read input for this element
   */
-  bool ReadElement();
+  virtual bool ReadElement();
 
   //@}
 
@@ -325,6 +325,7 @@ protected:
   {
     soh8_easfull,
     soh8_easmild,
+    soh8_eassosh8,
     soh8_easnone,
   };
   //! kinematic type
