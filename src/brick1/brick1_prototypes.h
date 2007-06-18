@@ -696,6 +696,14 @@ void c1_mat_ogden_decoupled(
 void c1_ogden_principal_CG(DOUBLE CG[3][3], DOUBLE lambda[3], DOUBLE N[3][3]);
 void c1_calc_eigenval_eigenvec_jacobi (DOUBLE **C, DOUBLE *d, DOUBLE **V);
 void c1_rotation (DOUBLE **C, INT i, INT j, INT k, INT l, DOUBLE tau, DOUBLE s);
+
+void c1_mat_ogden_viscous(
+						ELEMENT    *ele,
+						INT ip,
+						VISCOHYPER *mat,
+						DOUBLE *disd,
+						DOUBLE *stress,
+						DOUBLE **d);
 /*----------------------------------------------------------------------*
  |  integration routine for BRICK1 element                     al 6/01  |
  *----------------------------------------------------------------------*/

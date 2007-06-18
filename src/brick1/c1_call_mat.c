@@ -158,6 +158,15 @@ dstrc_enter("c1_call_mat");
     					stress,
     					d);
   break;
+  case m_viscohyper:
+    c1_mat_ogden_viscous(
+		    ele,
+		    ip,
+		    mat->m.viscohyper,
+		    disd,
+		    stress,
+		    d);
+  break;
   case m_compogden:/*--------------------------------- kompressible ogden */
     c1_mat_ogden_decoupled(
 		    mat->m.compogden,
@@ -272,10 +281,13 @@ case m_stvenpor:/*------------------------ porous linear elastic ---*/
    *density = mat->m.stvenpor->density;
 break;
 case m_hyper_polyconvex:/*--------------hyperelastic polyconvex material*/
-	*density = mat ->m.hyper_polyconvex->density;
+	*density = mat->m.hyper_polyconvex->density;
 break;
 case m_compogden:/*--------------hyperelastic polyconvex material*/
 	*density = mat->m.compogden->density;
+break;
+case m_viscohyper:/*---------------------------viscos compressible ogden */
+   *density = mat->m.viscohyper->density;
 break;
 default:
    dserror("Ilegal typ of material for this element");
