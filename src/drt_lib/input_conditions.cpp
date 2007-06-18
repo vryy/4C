@@ -1752,7 +1752,7 @@ void input_line_xfem_coupling(multimap<int,RefCountPtr<DRT::Condition> >& lxfemc
  *----------------------------------------------------------------------*/
 void input_surf_xfem_coupling(multimap<int,RefCountPtr<DRT::Condition> >& sxfemcouplingmap)
 {
-  if (frfind("--DESIGN XFEM COUPLING SURFACE CONDITIONS")==0) return;
+  if (frfind("--DESIGN XFEM COUPLING SURF CONDITIONS")==0) return;
   frread();
 
   /*---------------------- read number of design surfaces with conditions */
@@ -1787,7 +1787,7 @@ void input_surf_xfem_coupling(multimap<int,RefCountPtr<DRT::Condition> >& sxfemc
                                                                    DRT::Condition::XFEMCoupling,
                                                                    true,
                                                                    DRT::Condition::Surface));
-
+    cout << *condition << endl;
     //--------------------------------- put condition in map of conditions
     sxfemcouplingmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dsurfaceid,condition));
 
