@@ -102,7 +102,7 @@ public:
     LineSubsonicOutflow,
     FSICoupling,
     SurfaceStress,
-    XFEM
+    XFEMCoupling
   };
 
   /*!
