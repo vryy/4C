@@ -305,6 +305,24 @@ private:
     calc_ShapefunctDeriv1Deriv2
   };
   
+  //! action parameters recognized by XFluid3
+  enum ShapeDerivativeID
+  {
+    SHPID_D0 = 0,
+    SHPID_DX = 1,
+    SHPID_DY = 2,
+    SHPID_DZ = 3,
+    SHPID_DXDX = 4,
+    SHPID_DXDY = 5,
+    SHPID_DXDZ = 6,
+    SHPID_DYDX = 7,
+    SHPID_DYDY = 8,
+    SHPID_DYDZ = 9,
+    SHPID_DZDX = 10,
+    SHPID_DZDY = 11,
+    SHPID_DZDZ = 12,
+  };
+  
   // constants
   static const int                                NSD_ = 3;
   
@@ -440,11 +458,7 @@ private:
   GaussRule3D get_optimal_gaussrule(const DiscretizationType& distype);
   
   inline vector<double> f3_caltau(
-    Epetra_SerialDenseVector&    funct,
-    Epetra_SerialDenseMatrix&    deriv,
     const Epetra_SerialDenseMatrix&    xyze,
-    Epetra_SerialDenseMatrix&    xjm,
-    Epetra_SerialDenseMatrix&    derxy,
     const vector<double>&        evelnp,
     const DRT::Element::DiscretizationType           distype,
     const double                 visc,
@@ -467,6 +481,17 @@ private:
   
   void CreateSurfacesHex(const int& nline,
                          const int& nnode);
+
+  void integrateTerm(
+    double******         mat_ele,
+    const double****     shp,
+    const int            numnode,
+    const double&        value,
+    const int            adf,
+    const int            shpid_a,
+    const int            bdf,
+    const int            shpid_b
+    );
 
 }; // class Fluid3
 

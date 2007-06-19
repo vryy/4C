@@ -240,19 +240,24 @@ void DRT::Elements::XFluid3::f3_sys_mat(const vector<int>&              lm,
 {
     const int numnode = this->NumNode();
     const DiscretizationType distype = this->Shape();
+    
+    const int numenr = 1; // number of enrichments within element (will be avariable later on)
+    const int NDF = 4; // number of physical dof
+    double  mat_ele[numenr][NDF][numnode][numenr][NDF][numnode]; // system matrix that will fill the epetra matrix
+    double  vec_ele[numenr][NDF][numnode]; // system vector (residual) that will fill the epetra matrix
+
+    
+    
 
     if(!is_ale_)
     {
-        /*---------------------------------------------------- set element data */
-
-        Epetra_SerialDenseMatrix xyze(3,numnode);
-
-        // get node coordinates
-        for(int i=0;i<numnode;i++)
+        // get element node coordinates
+        Epetra_SerialDenseMatrix xyze(NSD_, numnode);
+        for(int inode=0;inode<numnode;inode++)
         {
-            xyze(0,i)=Nodes()[i]->X()[0];
-            xyze(1,i)=Nodes()[i]->X()[1];
-            xyze(2,i)=Nodes()[i]->X()[2];
+            xyze(0,inode)=Nodes()[inode]->X()[0];
+            xyze(1,inode)=Nodes()[inode]->X()[1];
+            xyze(2,inode)=Nodes()[inode]->X()[2];
         }
 
         // dead load in element nodes
@@ -261,7 +266,7 @@ void DRT::Elements::XFluid3::f3_sys_mat(const vector<int>&              lm,
 
         /*---------------------------------------------- get viscosity ---*/
         // check here, if we really have a fluid !!
-        if(material->mattyp != m_fluid) dserror("Material law is not of type m_fluid.");
+        dsassert(material->mattyp == m_fluid, "Material law is not of type m_fluid.");
         const double  visc = material->m.fluid->viscosity;
 
         /*--------------------------------------------- stab-parameter ---*/
@@ -269,41 +274,39 @@ void DRT::Elements::XFluid3::f3_sys_mat(const vector<int>&              lm,
 
         /*----------------------------------------- declaration of variables ---*/
         Epetra_SerialDenseVector    funct(numnode);
-        Epetra_SerialDenseMatrix    deriv(3,numnode);
+        Epetra_SerialDenseMatrix    deriv(NSD_,numnode);
         Epetra_SerialDenseMatrix    deriv2(6,numnode);
-        Epetra_SerialDenseMatrix    xjm(3,3);
+        double  enrshp[12][numenr][NDF][numnode];   //enriched shape function
+        
+        Epetra_SerialDenseMatrix    xjm(NSD_,NSD_);
         Epetra_SerialDenseMatrix    vderxy(3,3);
-        vector<double>              pderxy(3);
+        vector<double>              pderxy(NSD_);
         Epetra_SerialDenseMatrix    vderxy2(3,6);
         Epetra_SerialDenseMatrix    derxy(3,numnode);
         Epetra_SerialDenseMatrix    derxy2(6,numnode);
-        vector<double>              edeadng(3);
-        vector<double>              histvec(3); /* history data at integration point              */
-        vector<double>              velino(3); /* normed velocity at element centre */
-        double                      det;
-        INTEGRATION_POINTS_3D       intpoints;
-        vector<double>              velint(3);
+        // data at integration point
+        vector<double>              edeadng(NSD_); //
+        vector<double>              histvec(NSD_); // history values
+        vector<double>              gradp(NSD_);   // pressure gradient
+        vector<double>              velint(NSD_);  // velocity
 
         // get control parameter
         const double timefac=params.get<double>("time constant for integration",0.0);
     
         const bool is_stationary = params.get<bool>("using stationary formulation",false);
         
-    
-        const vector<double> tau = f3_caltau(funct, deriv,
-                                             xyze, xjm, derxy, evelnp,
-                                             distype, visc, numnode, timefac, is_stationary);
-    
+        // stabilization parameter
+        const vector<double> tau = f3_caltau(xyze, evelnp, distype, visc, numnode, timefac, is_stationary);
     
         // integration loop for one Fluid3 element using USFEM
-        double    press;
         vector<double>    gridvelint(NSD_); // grid velocity
-        vector<double>    gradp(NSD_);      // pressure gradient at integration point
+        
 
 
         // flag for higher order elements
         const bool hoel = is_higher_order_element(distype);
-    
+        
+        INTEGRATION_POINTS_3D       intpoints;
         integration_points_3d(intpoints, gaussrule_);
         
         // start loop over integration points
@@ -315,7 +318,8 @@ void DRT::Elements::XFluid3::f3_sys_mat(const vector<int>&              lm,
             shape_function_3D_deriv0(funct,e1,e2,e3,distype);
             shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
         
-            // compute Jacobian matrix
+            // compute Jacobian matrix and its determinante
+            double  det;
             f3_jaco(xyze,deriv,xjm,&det,numnode);
             const double fac = intpoints.qwgt[iquad]*det;
 
@@ -349,35 +353,35 @@ void DRT::Elements::XFluid3::f3_sys_mat(const vector<int>&              lm,
             for (int isd=0;isd<3;isd++)
             {
                 velint[isd]=0.0;
-                for (int j=0;j<numnode;j++)
+                for (int inode=0;inode<numnode;inode++)
                 {
-                    velint[isd] += funct[j]*evelnp[isd+(3*j)];
+                    velint[isd] += funct[inode]*evelnp[isd+(3*inode)];
                 }
             }
 
             /*---------------- get history data (n,i) at integration point ---*/
             //expression for f3_veci(histvec,funct,evhist,iel);
-            for (int isd=0;isd<3;isd++)
+            for (int isd=0;isd<NSD_;isd++)
             {
                 histvec[isd]=0.0;
-                for (int j=0;j<numnode;j++)
+                for (int inode=0;inode<numnode;inode++)
                 {
-                    histvec[isd] += funct[j]*evhist[isd+(3*j)];
+                    histvec[isd] += funct[inode]*evhist[isd+(3*inode)];
                 }
             }
 
       /*----------- get velocity (np,i) derivatives at integration point */
       // expression for f3_vder(vderxy,derxy,evelnp,iel);
-      for (int i=0;i<3;i++)
+      for (int isd=0;isd<NSD_;isd++)
       {
-        vderxy(0,i)=0.0;
-        vderxy(1,i)=0.0;
-        vderxy(2,i)=0.0;
-        for (int j=0;j<numnode;j++)
+        vderxy(0,isd)=0.0;
+        vderxy(1,isd)=0.0;
+        vderxy(2,isd)=0.0;
+        for (int inode=0;inode<numnode;inode++)
         { 
-          vderxy(0,i) += derxy(i,j)*evelnp[0+(3*j)];
-          vderxy(1,i) += derxy(i,j)*evelnp[1+(3*j)];
-          vderxy(2,i) += derxy(i,j)*evelnp[2+(3*j)];
+          vderxy(0,isd) += derxy(isd,inode)*evelnp[0+(3*inode)];
+          vderxy(1,isd) += derxy(isd,inode)*evelnp[1+(3*inode)];
+          vderxy(2,isd) += derxy(isd,inode)*evelnp[2+(3*inode)];
         }
       }
 
@@ -393,29 +397,29 @@ void DRT::Elements::XFluid3::f3_sys_mat(const vector<int>&              lm,
         gridvelint[2] = 0.0;
       }
 
-      // get pressure gradients
+      // get pressure gradients at integration point
       gradp[0] = gradp[1] = gradp[2] = 0.0;
-      for (int i=0; i<numnode; i++)
+      for (int inode=0; inode<numnode; inode++)
       {
-        gradp[0] += derxy(0,i) * eprenp[i];
-        gradp[1] += derxy(1,i) * eprenp[i];
-        gradp[2] += derxy(2,i) * eprenp[i];            
+        gradp[0] += derxy(0,inode) * eprenp[inode];
+        gradp[1] += derxy(1,inode) * eprenp[inode];
+        gradp[2] += derxy(2,inode) * eprenp[inode];            
       }
       
       // get pressure
-      press = 0;
-      for (int i=0;i<numnode;i++)
+      double press = 0.0;
+      for (int inode=0;inode<numnode;inode++)
       {
-        press += funct[i]*eprenp[i];
+        press += funct[inode]*eprenp[inode];
       }
 
       // get bodyforce in gausspoint
-      for (int dim=0;dim<3;dim++)
+      for (int isd=0;isd<NSD_;isd++)
       {
-        edeadng[dim] = 0;
+        edeadng[isd] = 0.0;
         for (int i=0;i<numnode;i++)
         {
-          edeadng[dim]+= bodyforce(dim,i)*funct[i];
+          edeadng[isd]+= bodyforce(isd,i)*funct[i];
         }
       }
           
@@ -439,7 +443,6 @@ void DRT::Elements::XFluid3::f3_sys_mat(const vector<int>&              lm,
 
 
 
-  //dserror("blub");
   return;
 } // DRT::Elements::Fluid3::f3_sys_mat
 
@@ -455,12 +458,11 @@ void DRT::Elements::XFluid3::f3_sys_mat(const vector<int>&              lm,
  *----------------------------------------------------------------------*/
 void DRT::Elements::XFluid3::f3_jaco(const Epetra_SerialDenseMatrix& xyze,
                                      const Epetra_SerialDenseMatrix& deriv,
-                                     Epetra_SerialDenseMatrix& xjm,
-                                     double* det,
-                                     const int iel
-                    )
+                                     Epetra_SerialDenseMatrix&       xjm,
+                                     double*                         det,
+                                     const int                       iel)
 {
-    // determine jacobian at point r,s,t
+    // determine jacobian matrix at point r,s,t
     for (int isd=0; isd<NSD_; isd++)
     {
         for (int jsd=0; jsd<NSD_; jsd++)
@@ -474,7 +476,7 @@ void DRT::Elements::XFluid3::f3_jaco(const Epetra_SerialDenseMatrix& xyze,
         }
     }
 
-    // determinant of jacobian
+    // determinant of jacobian matrix
     *det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
            xjm(0,1)*xjm(1,2)*xjm(2,0)+
            xjm(0,2)*xjm(1,0)*xjm(2,1)-
@@ -900,25 +902,12 @@ void DRT::Elements::XFluid3::f3_calmat( Epetra_SerialDenseMatrix& estif,
 {
     //DOUBLE  viscous[3][3][3*iel]; /* viscous term partially integrated */
     
-    /*========================= further variables =========================*/
-    
-    Epetra_SerialDenseMatrix  viscs2(3,3*iel);      /* viscous term incluiding 2nd derivatives */
-    vector<double>  conv_c(iel);        /* linearisation of convect, convective part */
-    vector<double>  conv_g(iel);        /* linearisation of convect, grid part */
-    Epetra_SerialDenseMatrix  conv_r(3,3*iel);  /* linearisation of convect, reactive part */
-    vector<double>  div(3*iel);             /* divergence of u or v              */
-    Epetra_SerialDenseMatrix  ugradv(iel,3*iel);    /* linearisation of u * grad v   */
-    vector<double>  conv_old(3);        /* convective term evalaluated with old velocities */
-    vector<double>  conv_g_old(3);
-    vector<double>  visc_old(3);        /* viscous term evaluated with old velocities      */
-    vector<double>  rhsint(3);          /* total right hand side terms at int.-point       */
-    Epetra_SerialDenseMatrix  vconv_r(3,iel);
     
     /*========================== initialisation ============================*/
     // One-step-Theta: timefac = theta*dt
     // BDF2:           timefac = 2/3 * dt
     const double timefac = params.get<double>("time constant for integration",-1.0);
-      if (timefac < 0.0) dserror("No time constant for integration supplied");
+    dsassert(timefac >= 0.0, "No time constant for integration supplied");
     
     // time step size
     //double dt = params.get<double>("delta time",-1.0);
@@ -940,12 +929,14 @@ void DRT::Elements::XFluid3::f3_calmat( Epetra_SerialDenseMatrix& estif,
     
     /*------------------------- evaluate rhs vector at integration point ---*/
     // no switch here at the moment w.r.t. is_ale
+    vector<double>  rhsint(3);  // total right hand side terms at int.-point
     rhsint[0] = histvec[0] + edeadng[0]*timefac;
     rhsint[1] = histvec[1] + edeadng[1]*timefac;
     rhsint[2] = histvec[2] + edeadng[2]*timefac;
     /*----------------- get numerical representation of single operators ---*/
     
     /* Convective term  u_old * grad u_old: */
+    vector<double>  conv_old(3);
     conv_old[0] = vderxy(0,0) * velint[0] + vderxy(0,1) * velint[1]
                 + vderxy(0,2) * velint[2];
     conv_old[1] = vderxy(1,0) * velint[0] + vderxy(1,1) * velint[1]
@@ -955,24 +946,34 @@ void DRT::Elements::XFluid3::f3_calmat( Epetra_SerialDenseMatrix& estif,
     
     /* new for incremental formulation: */
     /* Convective term  u_G_old * grad u_old: */
+    vector<double>  conv_g_old(3);
     conv_g_old[0] = (vderxy(0,0) * gridvint[0] +
-             vderxy(0,1) * gridvint[1] +
-             vderxy(0,2) * gridvint[2]);
+                     vderxy(0,1) * gridvint[1] +
+                     vderxy(0,2) * gridvint[2]);
     conv_g_old[1] = (vderxy(1,0) * gridvint[0] +
-             vderxy(1,1) * gridvint[1] +
-             vderxy(1,2) * gridvint[2]);
+                     vderxy(1,1) * gridvint[1] +
+                     vderxy(1,2) * gridvint[2]);
     conv_g_old[2] = (vderxy(2,0) * gridvint[0] +
-             vderxy(2,1) * gridvint[1] +
-             vderxy(2,2) * gridvint[2]);
+                     vderxy(2,1) * gridvint[1] +
+                     vderxy(2,2) * gridvint[2]);
     
     /* Viscous term  div epsilon(u_old) */
+    vector<double>  visc_old(3);
     visc_old[0] = vderxy2(0,0) + 0.5 * ( vderxy2(0,1) + vderxy2(1,3)
                                         + vderxy2(0,2) + vderxy2(2,4));
     visc_old[1] = vderxy2(1,1) + 0.5 * ( vderxy2(1,0) + vderxy2(0,3)
                                         + vderxy2(1,2) + vderxy2(2,5));
     visc_old[2] = vderxy2(2,2) + 0.5 * ( vderxy2(2,0) + vderxy2(0,4)
                                         + vderxy2(2,1) + vderxy2(1,5));
-
+    
+    
+    vector<double>  conv_c(iel);        /* linearisation of convect, convective part */
+    vector<double>  conv_g(iel);        /* linearisation of convect, grid part */
+    Epetra_SerialDenseMatrix  ugradv(iel,3*iel);    /* linearisation of u * grad v   */
+    Epetra_SerialDenseMatrix  vconv_r(3,iel);
+    Epetra_SerialDenseMatrix  conv_r(3,3*iel);  /* linearisation of convect, reactive part */
+    Epetra_SerialDenseMatrix  viscs2(3,3*iel);      /* viscous term incluiding 2nd derivatives */
+    vector<double>  div(3*iel);             /* divergence of u or v              */
     for (int i=0; i<iel; i++) /* loop over nodes of element */
     {
        /* Reactive term  u:  funct */
@@ -1605,17 +1606,13 @@ void DRT::Elements::XFluid3::f3_int_beltrami_err(
 
 
 inline vector<double> DRT::Elements::XFluid3::f3_caltau(
-    Epetra_SerialDenseVector&           funct,
-    Epetra_SerialDenseMatrix&           deriv,
-    const Epetra_SerialDenseMatrix&      xyze,
-    Epetra_SerialDenseMatrix&               xjm,
-    Epetra_SerialDenseMatrix&               derxy,
-    const vector<double>&                         evelnp,
+    const Epetra_SerialDenseMatrix&         xyze,
+    const vector<double>&                   evelnp,
     const DRT::Element::DiscretizationType  distype,
     const double                            visc,
     const int                               numnode,
     const double                            timefac,
-    const bool                          is_stationary
+    const bool                              is_stationary
     )
 {
     // use one point gauss rule to calculate tau at element center
@@ -1642,6 +1639,9 @@ inline vector<double> DRT::Elements::XFluid3::f3_caltau(
     const double e2    = intpoints.qxg[0][1];
     const double e3    = intpoints.qxg[0][2];
     const double wquad = intpoints.qwgt[0];
+    
+    Epetra_SerialDenseVector    funct(numnode);
+    Epetra_SerialDenseMatrix    deriv(NSD_, numnode);
     shape_function_3D_deriv0(funct,e1,e2,e3,distype);
     shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
     
@@ -1664,14 +1664,15 @@ inline vector<double> DRT::Elements::XFluid3::f3_caltau(
     for (int isd=0;isd<NSD_;isd++)
     {
         velint[isd]=0.0;
-        for (int j=0;j<numnode;j++)
+        for (int inode=0;inode<numnode;inode++)
         {
-            velint[isd] += funct[j]*evelnp[isd+(3*j)];
+            velint[isd] += funct[inode]*evelnp[isd+(3*inode)];
         }
     }
 
     // get Jacobian matrix and determinant
     double  det;
+    Epetra_SerialDenseMatrix    xjm(NSD_, NSD_);
     f3_jaco(xyze,deriv,xjm,&det,numnode);
     const double vol = wquad*det;
 
@@ -1679,6 +1680,7 @@ inline vector<double> DRT::Elements::XFluid3::f3_caltau(
     const double hk = pow((SIX*vol/PI),(1.0/3.0))/sqrt(3.0);
 
     // get derivatives
+    Epetra_SerialDenseMatrix    derxy(NSD_, numnode);
     f3_gder(derxy,deriv,xjm,det,numnode);
 
     // get velocity norm
@@ -1804,14 +1806,11 @@ inline vector<double> DRT::Elements::XFluid3::f3_caltau(
         const double xi_tau_c = DMIN(re_tau_mp, 1.0);
         tau[2] = 0.5*vel_norm*hk*xi_tau_c;
     }
-    
-    //cout << tau[0] << tau[1] << tau[2] << endl;
-    //dserror("blub");
     return tau;
 }
 
 
-
+// check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
 inline bool DRT::Elements::XFluid3::is_higher_order_element(
               const DRT::Element::DiscretizationType  distype)
 {
@@ -1831,12 +1830,26 @@ inline bool DRT::Elements::XFluid3::is_higher_order_element(
 }
 
 
-
-
-
-
-
-
+void DRT::Elements::XFluid3::integrateTerm(
+    double******         mat_ele,
+    const double****     shp,
+    const int            numnode,
+    const double&        value,
+    const int            adf,
+    const int            shpid_a,
+    const int            bdf,
+    const int            shpid_b
+    )
+{
+    const int numenr = 1;
+    for (int aenr=0;aenr<numenr;aenr++)
+        for (int benr=0;benr<numenr;benr++)
+            for (int anode=0;anode<numnode;anode++)
+                for (int bnode=0;bnode<numnode;bnode++)
+                     mat_ele[aenr][adf][anode][benr][bdf][bnode] 
+                            += shp[aenr][shpid_a][anode][adf] * value * shp[benr][shpid_b][bnode][bdf];
+    return;
+}
 
 //=======================================================================
 //=======================================================================
