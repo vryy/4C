@@ -55,17 +55,17 @@ ResultTest::~ResultTest()
 
 void ResultTest::TestElement(RESULTDESCR* res, int& nerr, int& test_count)
 {
-  dserror("no element test availabe");
+  dserror("no element test available");
 }
 
 void ResultTest::TestNode(RESULTDESCR* res, int& nerr, int& test_count)
 {
-  dserror("no node test availabe");
+  dserror("no node test available");
 }
 
 void ResultTest::TestSpecial(RESULTDESCR* res, int& nerr, int& test_count)
 {
-  dserror("no special case test availabe");
+  dserror("no special case test available");
 }
 
 
