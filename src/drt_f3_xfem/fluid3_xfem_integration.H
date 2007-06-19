@@ -86,8 +86,7 @@ typedef struct _INTEGRATION_POINTS_3D
 
 
 // evaluate element integration points (and storing them in intpoints)
-void integration_points_3d(struct _INTEGRATION_POINTS_3D& intpoints,
-                           const  GaussRule3D gaussrule);
+struct _INTEGRATION_POINTS_3D integration_points_3d(const  GaussRule3D gaussrule);
 
 // evaluate element integration points (and storing them in intpoints)
 void integration_points_2d(struct _INTEGRATION_POINTS_2D& intpoints,

@@ -23,8 +23,7 @@ Maintainer: Axel Gerstenberger
 /*----------------------------------------------------------------------*
  |  evaluate the element integration points (private)        g.bau 03/07|
  *----------------------------------------------------------------------*/
-void integration_points_3d(struct _INTEGRATION_POINTS_3D& intpoints,
-                           const  GaussRule3D gaussrule)
+INTEGRATION_POINTS_3D integration_points_3d(const  GaussRule3D gaussrule)
 {
   const double Q12  = 1.0/2.0;
   const double Q14  = 1.0/4.0;
@@ -42,6 +41,8 @@ void integration_points_3d(struct _INTEGRATION_POINTS_3D& intpoints,
 
   const double palpha = (5.0 + 3.0*sqrt(5.0))/20.0;
   const double pbeta  = (5.0 - sqrt(5.0))/20.0;
+
+  INTEGRATION_POINTS_3D  intpoints;
 
   switch(gaussrule)
   {
@@ -200,7 +201,7 @@ void integration_points_3d(struct _INTEGRATION_POINTS_3D& intpoints,
       dserror("unknown integration rule");
   }
 
-  return;
+  return intpoints;
 }
 
 

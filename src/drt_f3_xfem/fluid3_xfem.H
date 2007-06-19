@@ -296,13 +296,29 @@ public:
 
 private:
 
+  enum EnrichmentType
+  {
+    enrichment_type_standard = 0,
+    enrichment_type_jump     = 1
+  };
+
+  typedef struct _ElementEnrichment 
+  {
+    // a global id used to distuinguish several surfaces within one element
+    int             enr_id; 
+    // the specific type of enrichment
+    EnrichmentType  enr_type;
+  } ElementEnrichment;
+
   //! action parameters recognized by XFluid3
   enum ActionType
   {
     none,
     calc_fluid_systemmat_and_residual,
     calc_fluid_beltrami_error,
-    calc_ShapefunctDeriv1Deriv2
+    calc_Shapefunction,
+    calc_ShapeDeriv1,
+    calc_ShapeDeriv2
   };
   
   //! action parameters recognized by XFluid3
@@ -324,6 +340,7 @@ private:
   };
   
   // constants
+  // number of space dimensions
   static const int                                NSD_ = 3;
   
   // constant mappings between volume and its surfaces and lines
@@ -333,6 +350,8 @@ private:
   
   static const int                                tet10_surfaces_[4][6];
   static const int                                tet10_lines_[6][3];
+
+  //vector<ElementEnrichment>                       enrichments_;
 
   //! gaussrule used for weak form integration
   GaussRule3D                                     gaussrule_;
@@ -369,11 +388,10 @@ private:
                   const vector<double>&           evelnp,
                   const vector<double>&           eprenp,
                   const vector<double>&           ehist,
-                  Epetra_SerialDenseMatrix* sys_mat,
-                  Epetra_SerialDenseVector* residual,
+                  Epetra_SerialDenseMatrix*       sys_mat,
+                  Epetra_SerialDenseVector*       residual,
                   const struct _MATERIAL*         material,
-                  ParameterList&            params
-                 );
+                  ParameterList&                  params);
 
   // calculate Jacobian matrix and it's determinant
   void f3_jaco(const Epetra_SerialDenseMatrix& xyze,
@@ -482,16 +500,16 @@ private:
   void CreateSurfacesHex(const int& nline,
                          const int& nnode);
 
-  void integrateTerm(
-    double******         mat_ele,
-    const double****     shp,
-    const int            numnode,
-    const double&        value,
-    const int            adf,
-    const int            shpid_a,
-    const int            bdf,
-    const int            shpid_b
-    );
+//  void integrateTerm(
+//    EnrEleMatrix&        mat_ele,
+//    const double****     shp,
+//    const int            numnode,
+//    const double         value,
+//    const int            adf,
+//    const int            shpid_a,
+//    const int            bdf,
+//    const int            shpid_b
+//    );
 
 }; // class Fluid3
 
@@ -818,8 +836,10 @@ private:
   //! action parameters recognized by XFluid3Surface
   enum ActionType
   {
-  	 none,
-    calc_ShapefunctDeriv1Deriv2
+	none,
+    calc_Shapefunction,
+    calc_ShapeDeriv1,
+    calc_ShapeDeriv2
   };
 
   // don't want = operator
@@ -1054,7 +1074,9 @@ private:
   enum ActionType
   {
 	 none, 		
-    calc_ShapefunctDeriv1Deriv2
+     calc_Shapefunction,
+     calc_ShapeDeriv1,
+     calc_ShapeDeriv2
   };
   
   // don't want = operator
@@ -1071,12 +1093,7 @@ private:
   
   //! The local line number of this line w.r.t to the parent_ element
   int                    lline_;
-  
-  void f3_shapefunction_for_line(	Epetra_SerialDenseVector&	funct ,
-  												Epetra_SerialDenseMatrix& 	deriv1,
-  												Epetra_SerialDenseMatrix& 	deriv2,
-  												int&                 		iel   ,
-  												double&              		r     );
+
 
 }; // class XFluid3Line
 
