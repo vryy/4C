@@ -282,10 +282,12 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
   // modified B-operator in local(parameter) element space
   const int num_sp = 8;       // number of ANS sampling points
   const int num_ans = 3;      // number of modified ANS strains (E_rt,E_st,E_tt)
-  Epetra_SerialDenseMatrix B_ans_loc;  
+  // ANS modified rows of bop in local(parameter) coords
+  Epetra_SerialDenseMatrix B_ans_loc(num_ans*num_sp,NUMDOF_SOH8);
+  // Jacobian evaluated at all ANS sampling points
   Epetra_SerialDenseMatrix jac_sps(NUMDIM_SOH8*num_sp,NUMDIM_SOH8);
+  // CURRENT Jacobian evaluated at all ANS sampling points
   Epetra_SerialDenseMatrix jac_cur_sps(NUMDIM_SOH8*num_sp,NUMDIM_SOH8);
-  B_ans_loc.Shape(num_ans*num_sp,NUMDOF_SOH8);
   sosh8_anssetup(num_sp,num_ans,xrefe,xcurr,jac_sps,jac_cur_sps,B_ans_loc);
   // (r,s) gp-locations of fully integrated linear 8-node Hex
   // necessary for ANS interpolation
@@ -368,10 +370,69 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
     sosh8_evaluateT(jac,TinvT);
     bop.Multiply('N','N',1.0,TinvT,bop,1.0);
     
-    // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
-    // but with modified ANS strains E33, E23 and E13
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
+    // but with modified ANS strains E33, E23 and E13
     Epetra_SerialDenseVector glstrain(NUMSTR_SOH8);
+    // evaluate glstrains in local(parameter) coords
+    // Err = 0.5 * (dx/dr * dx/dr^T - dX/dr * dX/dr^T) 
+    glstrain(0)= 0.5 * ( 
+       +(jac_cur(0,0)*jac_cur(0,0) + jac_cur(0,1)*jac_cur(1,0) + jac_cur(0,2)*jac_cur(2,0))
+       -(jac(0,0)*jac(0,0)         + jac(0,1)*jac(1,0)         + jac(0,2)*jac(2,0)));
+    // Ess = 0.5 * (dy/ds * dy/ds^T - dY/ds * dY/ds^T) 
+    glstrain(1)= 0.5 * ( 
+       +(jac_cur(1,0)*jac_cur(0,1) + jac_cur(1,1)*jac_cur(1,1) + jac_cur(1,2)*jac_cur(2,1))
+       -(jac(1,0)*jac(0,1)         + jac(1,1)*jac(1,1)         + jac(1,2)*jac(2,1)));
+    // Ers = (dx/ds * dy/dr^T - dX/ds * dY/dr^T) 
+    glstrain(3)= ( 
+       +(jac_cur(0,0)*jac_cur(0,1) + jac_cur(0,1)*jac_cur(1,1) + jac_cur(0,2)*jac_cur(2,1))
+       -(jac(0,0)*jac(0,1)         + jac(0,1)*jac(1,1)         + jac(0,2)*jac(2,1)));
+    
+    // ANS modification of strains ************************************** ANS
+    double dydt_A = 0.0; double dYdt_A = 0.0;
+    double dxdt_B = 0.0; double dXdt_B = 0.0;
+    double dydt_C = 0.0; double dYdt_C = 0.0;
+    double dxdt_D = 0.0; double dXdt_D = 0.0;
+    double dzdt_E = 0.0; double dZdt_E = 0.0;
+    double dzdt_F = 0.0; double dZdt_F = 0.0;
+    double dzdt_G = 0.0; double dZdt_G = 0.0;
+    double dzdt_H = 0.0; double dZdt_H = 0.0;
+    // vector product of rows of jacobians at corresponding sampling point
+    for (int dim = 0; dim < NUMDIM_SOH8; ++dim) {
+      dydt_A += jac_cur_sps(1+0*NUMDIM_SOH8,dim) * jac_cur_sps(dim,2+0*NUMDIM_SOH8);
+      dYdt_A += jac_sps(1+0*NUMDIM_SOH8,dim)     * jac_sps(dim,2+0*NUMDIM_SOH8);
+      dxdt_B += jac_cur_sps(0+1*NUMDIM_SOH8,dim) * jac_cur_sps(dim,2+1*NUMDIM_SOH8);
+      dXdt_B += jac_sps(0+1*NUMDIM_SOH8,dim)     * jac_sps(dim,2+1*NUMDIM_SOH8);
+      dydt_C += jac_cur_sps(1+2*NUMDIM_SOH8,dim) * jac_cur_sps(dim,2+2*NUMDIM_SOH8);
+      dYdt_C += jac_sps(1+2*NUMDIM_SOH8,dim)     * jac_sps(dim,2+2*NUMDIM_SOH8);
+      dxdt_D += jac_cur_sps(0+3*NUMDIM_SOH8,dim) * jac_cur_sps(dim,2+3*NUMDIM_SOH8);
+      dXdt_D += jac_sps(0+3*NUMDIM_SOH8,dim)     * jac_sps(dim,2+3*NUMDIM_SOH8);
+      
+      dzdt_E += jac_cur_sps(2+4*NUMDIM_SOH8,dim) * jac_cur_sps(dim,2+4*NUMDIM_SOH8);
+      dZdt_E += jac_sps(2+4*NUMDIM_SOH8,dim)     * jac_sps(dim,2+4*NUMDIM_SOH8);
+      dzdt_F += jac_cur_sps(2+5*NUMDIM_SOH8,dim) * jac_cur_sps(dim,2+5*NUMDIM_SOH8);
+      dZdt_F += jac_sps(2+5*NUMDIM_SOH8,dim)     * jac_sps(dim,2+5*NUMDIM_SOH8);
+      dzdt_G += jac_cur_sps(2+6*NUMDIM_SOH8,dim) * jac_cur_sps(dim,2+6*NUMDIM_SOH8);
+      dZdt_G += jac_sps(2+6*NUMDIM_SOH8,dim)     * jac_sps(dim,2+6*NUMDIM_SOH8);
+      dzdt_H += jac_cur_sps(2+7*NUMDIM_SOH8,dim) * jac_cur_sps(dim,2+7*NUMDIM_SOH8);
+      dZdt_H += jac_sps(2+7*NUMDIM_SOH8,dim)     * jac_sps(dim,2+7*NUMDIM_SOH8);
+    }
+    // E33: remedy of curvature thickness locking 
+    // Ett = 0.5* ( (1-r)(1-s)/4 * Ett(SP E) + ... + (1-r)(1+s)/4 * Ett(SP H) )
+    glstrain(2) = 0.5 * (
+       0.25*(1-r[gp])*(1-s[gp]) * (dzdt_E - dZdt_E)
+      +0.25*(1+r[gp])*(1-s[gp]) * (dzdt_F - dZdt_F)
+      +0.25*(1+r[gp])*(1+s[gp]) * (dzdt_G - dZdt_G)
+      +0.25*(1-r[gp])*(1+s[gp]) * (dzdt_H - dZdt_H));
+    // E23: remedy of transverse shear locking
+    // Est = (1+r)/2 * Est(SP B) + (1-r)/2 * Est(SP D)
+    glstrain(4) = 0.5*(1+r[gp]) * (dxdt_B - dXdt_B) + 0.5*(1-r[gp]) * (dxdt_D - dXdt_B);
+    // E13: remedy of transverse shear locking
+    // Ert = (1-s)/2 * Est(SP A) + (1+s)/2 * Est(SP C)
+    glstrain(5) = 0.5*(1-s[gp]) * (dydt_A - dYdt_A) + 0.5*(1+s[gp]) * (dydt_C - dYdt_C);
+    // ANS modification of strains ************************************** ANS
+    
+    // transformation of local glstrains 'back' to global(material) space
+    glstrain.Multiply('N','N',1.0,TinvT,glstrain,1.0); 
 
     // EAS technology: "enhance the strains"  ----------------------------- EAS
     if (eastype_ != soh8_easnone) {
@@ -400,7 +461,9 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
     Epetra_SerialDenseMatrix cmat(NUMSTR_SOH8,NUMSTR_SOH8);
     Epetra_SerialDenseVector stress(NUMSTR_SOH8);
     double density;
-    Epetra_SerialDenseMatrix defgrd(NUMDIM_SOH8,NUMDIM_SOH8);
+    // Caution!! the defgrd can not be modified with ANS to remedy locking
+    // therefore it is empty and passed only for compatibility reasons
+    Epetra_SerialDenseMatrix defgrd; // Caution!! empty!!
     soh8_mat_sel(material,&stress,&cmat,&density,&glstrain, &defgrd, gp);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
