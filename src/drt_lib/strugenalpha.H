@@ -29,7 +29,7 @@ Maintainer: Michael Gee
 #include "Epetra_Operator.h"
 #include "Epetra_RowMatrix.h"
 #include <NOX.H>
-#include <NOX_Epetra.H> 
+#include <NOX_Epetra.H>
 #include "ml_common.h"
 #include "ml_include.h"
 #include "nlnml_preconditioner.H"
@@ -53,14 +53,14 @@ public:
 
   /*!
   \brief The nox interface is a friend of this class
-  
+
   */
   friend class NoxInterface;
 
 
   /*!
   \brief Standard Constructor
-  
+
   */
   explicit StruGenAlpha(ParameterList& params,
                         DRT::Discretization& dis,
@@ -76,52 +76,52 @@ public:
 
 
 
-  
+
   /*!
   \brief Create default parameter list
-  
+
   */
   static void SetDefaults(ParameterList& params);
-  
+
   /*!
   \brief Do time integration
-  
+
   */
   void Integrate();
 
   /*!
   \brief do constant predictor step
-  
+
   */
   void ConstantPredictor();
 
   /*!
   \brief do consistent constant predictor step
-  
+
   */
   void ConsistentPredictor();
 
   /*!
   \brief do full Newton iteration
-  
+
   */
   void FullNewton();
 
   /*!
   \brief do modified Newton iteration (makes sense with direct solvers only)
-  
+
   */
   void ModifiedNewton();
 
   /*!
   \brief do nonlinear cg iteration using nox
-  
+
   */
   void NonlinearCG();
 
   /*!
   \brief update configuration and output to file/screen
-  
+
   */
   void UpdateandOutput();
 
@@ -139,10 +139,10 @@ protected:
   int                           myrank_;
   int                           maxentriesperrow_;
   double                        norm_;
-  
+
   RefCountPtr<Epetra_CrsMatrix> stiff_;
-  RefCountPtr<Epetra_CrsMatrix> mass_; 
-  RefCountPtr<Epetra_CrsMatrix> damp_; 
+  RefCountPtr<Epetra_CrsMatrix> mass_;
+  RefCountPtr<Epetra_CrsMatrix> damp_;
 
   RefCountPtr<Epetra_Vector>    dirichtoggle_;
   RefCountPtr<Epetra_Vector>    invtoggle_;
@@ -177,7 +177,7 @@ protected:
 /*!
 \class NoxInterface
 
-\brief An interface to Nox/ML for structural gen alpha 
+\brief An interface to Nox/ML for structural gen alpha
 
 \author gee (gee@lnm.mw.tum.de)
 */
@@ -188,14 +188,14 @@ public:
 
   /*!
   \brief Standard Constructor
-  
+
   */
   NoxInterface(StruGenAlpha& integrator, int printlevel) :
     NLNML_FineLevelNoxInterface(),
     integrator_(integrator)
   {
     isnewJacobian_   = false;
-    numJacobian_     = 0; 
+    numJacobian_     = 0;
     t_               = 0.;
     ncalls_computeF_ = 0;
     printlevel_      = printlevel;
@@ -215,12 +215,12 @@ public:
 
 
   //! @name calculation methods
-  
+
   /*!
   \brief For some given solution vector x, compute residual forces F
-  
+
   */
-  virtual bool computeF(const Epetra_Vector& x, Epetra_Vector& F, 
+  virtual bool computeF(const Epetra_Vector& x, Epetra_Vector& F,
 			const FillType fillFlag)
   {
     isnewJacobian_ = false;
@@ -242,13 +242,13 @@ public:
     Epetra_Vector& dx = const_cast<Epetra_Vector&>(x);
     RefCountPtr<Epetra_Vector> disi = rcp(&dx);
     disi.release();
-    
+
     // blank increment on Dirichlet BC
     {
       Epetra_Vector disicopy(*disi);
       disi->Multiply(1.0,*integrator_.invtoggle_,disicopy,0.0);
     }
-    
+
     //---------------------------------- update mid configuration values
     RefCountPtr<Epetra_Vector> dism = LINALG::CreateVector(*dofrowmap,false);
     RefCountPtr<Epetra_Vector> velm = LINALG::CreateVector(*dofrowmap,false);
@@ -256,12 +256,12 @@ public:
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
     //dism->Update(1.-alphaf,*disi,1.0,*integrator_.dism_,0.0);
     dism->Update(1.-alphaf,*disi,1.0,*integrator_.dis_,0.0);
-    
-    
+
+
     // V_{n+1-alpha_f} := V_{n+1-alpha_f}
     //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
     //velm->Update((1.-alphaf)*gamma/(beta*dt),*disi,1.0,*integrator_.velm_,0.0);
-    
+
     // velocities
     // iterative
     // V_{n+1-alpha_f} := V_{n+1-alpha_f}
@@ -271,8 +271,8 @@ public:
     velm->Update((beta-(1.0-alphaf)*gamma)/beta,*integrator_.vel_,
                   (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*integrator_.acc_,
                   gamma/(beta*dt));
-    
-    
+
+
     // A_{n+1-alpha_m} := A_{n+1-alpha_m}
     //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
     //accm->Update((1.-alpham)/(beta*dt*dt),*disi,1.0,*integrator_.accm_,0.0);
@@ -287,14 +287,14 @@ public:
                   (2.*beta-1.+alpham)/(2.*beta),*integrator_.acc_,
                   (1.-alpham)/((1.-alphaf)*beta*dt*dt));
 
-    
-    // do we need to update these? 
+
+    // do we need to update these?
     // Are done from scratch in predictor?
     // are they used in update for new step? yes
     //integrator_.dism_->Update(1.-alphaf,*disi,1.0);
     //integrator_.velm_->Update((1.-alphaf)*gamma/(beta*dt),*disi,1.0);
     //integrator_.accm_->Update((1.-alpham)/(beta*dt*dt),*disi,1.0);
-    
+
     //----------------------------------------- compute internal forces
     {
       // create the parameters for the discretization
@@ -319,7 +319,7 @@ public:
       integrator_.discret_.Evaluate(p,null,null,integrator_.fint_,null,null);
       integrator_.discret_.ClearState();
     }
-    
+
     //------------------------------------------ compute residual forces
     // Res = M . A_{n+1-alpha_m}
     //     + C . V_{n+1-alpha_f}
@@ -359,9 +359,9 @@ public:
 
   /*!
   \brief For some given solution state x, compute tangent matrix J
-  
+
   */
-  virtual bool computeJacobian(const Epetra_Vector& x, 
+  virtual bool computeJacobian(const Epetra_Vector& x,
                                Epetra_Operator& Jac)
   {
     isnewJacobian_ = true;
@@ -370,7 +370,7 @@ public:
     Epetra_Time timer(integrator_.discret_.Comm());
     double t0 = timer.ElapsedTime();
 
-    //========================================================================    
+    //========================================================================
     double time    = integrator_.params_.get<double>("total time",0.0);
     double dt      = integrator_.params_.get<double>("delta time",0.01);
     double beta    = integrator_.params_.get<double>("beta"      ,0.292);
@@ -428,7 +428,7 @@ public:
     //---------------------------------------------- build effective lhs
     // (using matrix stiff_ as effective matrix)
     LINALG::Add(*integrator_.mass_,false,(1.-alpham)/(beta*dt*dt),*integrator_.stiff_,1.-alphaf);
-    if (damping) 
+    if (damping)
       LINALG::Add(*integrator_.damp_,false,(1.-alphaf)*gamma/(beta*dt),*integrator_.stiff_,1.0);
     LINALG::Complete(*integrator_.stiff_);
     LINALG::ApplyDirichlettoSystem(integrator_.stiff_,
@@ -437,7 +437,7 @@ public:
                                    integrator_.zeros_,
                                    integrator_.dirichtoggle_);
 
-    //========================================================================    
+    //========================================================================
     double t1 = timer.ElapsedTime();
     t_ += (t1-t0);
 
@@ -446,7 +446,7 @@ public:
 
   /*!
   \brief Return pointer to last tangent matrix J
-  
+
   */
   virtual Epetra_CrsMatrix* getJacobian()
   {
@@ -456,7 +456,7 @@ public:
 
   /*!
   \brief Return pointer to graph of problem (graph of J)
-  
+
   */
   virtual const Epetra_CrsGraph* getGraph()
   {
@@ -466,7 +466,7 @@ public:
 
   /*!
   \brief Return pointer to graph of problem (graph of J)
-  
+
   */
   virtual const Epetra_CrsGraph* getModifiedGraph()
   {
@@ -476,7 +476,7 @@ public:
 
   /*!
   \brief Return pointer to current solution vector
-  
+
   */
   virtual const Epetra_Vector* getSolution()
   {
@@ -485,7 +485,7 @@ public:
 
   /*!
   \brief Return dofrowmap of problem
-  
+
   */
   virtual const Epetra_Map& getMap()
   {
@@ -493,15 +493,15 @@ public:
   }
 
   /*!
-  \brief Return nullspace of tangent matrix J. 
-  
+  \brief Return nullspace of tangent matrix J.
+
          The nullspace was
          previously computed for ML in the linear solver section
-         and is extracted from there. A copy is made as the 
+         and is extracted from there. A copy is made as the
          nonlinear ml precondition will take ownership of it.
-  
+
   */
-  virtual double* Get_Nullspace(const int nummyrows, const int numpde, 
+  virtual double* Get_Nullspace(const int nummyrows, const int numpde,
                                 const int dim_nullsp)
   {
     ParameterList& p = integrator_.solver_.Params();
@@ -522,7 +522,7 @@ public:
   /*!
   \brief For problems with non-constant nodal block size one can use the
          VBMETIS coarsening scheme (currently not supported).
-  
+
   */
   virtual bool getBlockInfo(int *nblocks, vector<int>& blocks, vector<int>& block_pde)
   {

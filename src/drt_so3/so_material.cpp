@@ -29,6 +29,8 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
 
+#include "../drt_mat/micromaterial.H"
+
 
 extern "C"
 {
@@ -96,6 +98,21 @@ void DRT::Elements::So_hex8::soh8_mat_sel(
     {
       // Here macro-micro transition (localization) will take place
 
+      int microdis_num = material->m.struct_multiscale->microdis;
+
+      if (gp > static_cast<int>(mat_.size())-1)
+      {
+        mat_.resize(gp+1);
+        mat_[gp] = rcp(new MicroMaterial(gp, microdis_num));
+      }
+
+      MicroMaterial* micromat =
+        dynamic_cast<MicroMaterial*>(mat_[gp].get());
+
+      if (micromat == NULL)
+        dserror("Wrong type of derived material class");
+
+      micromat->CalcStressStiffDens(stress, cmat, density, glstrain);
       break;
     }
 

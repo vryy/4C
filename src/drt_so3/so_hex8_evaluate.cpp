@@ -30,8 +30,6 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
 
-#include "../drt_mat/micromaterial.H"
-
 extern "C"
 {
 #include "../headers/standardtypes.h"
