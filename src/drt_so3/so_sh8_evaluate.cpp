@@ -283,8 +283,15 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
   const int num_sp = 8;       // number of ANS sampling points
   const int num_ans = 3;      // number of modified ANS strains (E_rt,E_st,E_tt)
   Epetra_SerialDenseMatrix B_ans_loc;  
+  Epetra_SerialDenseMatrix jac_sps(NUMDIM_SOH8*num_sp,NUMDIM_SOH8);
+  Epetra_SerialDenseMatrix jac_cur_sps(NUMDIM_SOH8*num_sp,NUMDIM_SOH8);
   B_ans_loc.Shape(num_ans*num_sp,NUMDOF_SOH8);
-  sosh8_anssetup(num_sp,num_ans,xcurr,B_ans_loc);
+  sosh8_anssetup(num_sp,num_ans,xrefe,xcurr,jac_sps,jac_cur_sps,B_ans_loc);
+  // (r,s) gp-locations of fully integrated linear 8-node Hex
+  // necessary for ANS interpolation
+  const double gploc    = 1.0/sqrt(3.0);    // gp sampling point value for linear fct
+  const double r[NUMGPT_SOH8] = {-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc,-gploc};
+  const double s[NUMGPT_SOH8] = {-gploc,-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc};
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -324,36 +331,47 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
     ** Used to transform the global displacements into parametric space
     */
     Epetra_SerialDenseMatrix jac_cur(NUMDIM_SOH8,NUMDIM_SOH8);
-    jac.Multiply('N','N',1.0,deriv_gp,xcurr,1.0);
+    jac_cur.Multiply('N','N',1.0,deriv_gp,xcurr,1.0);
     
-    /* compute derivatives N_XYZ at gp w.r.t. material coordinates
-    ** by solving   Jac . N_XYZ = N_rst   for N_XYZ
-    ** Inverse of Jacobian is therefore not explicitly computed
-    */
-    Epetra_SerialDenseMatrix N_XYZ(NUMDIM_SOH8,NUMNOD_SOH8);
-    Epetra_SerialDenseSolver solve_for_inverseJac;  // solve A.X=B
-    solve_for_inverseJac.SetMatrix(jac);            // set A=jac
-    solve_for_inverseJac.SetVectors(N_XYZ,deriv_gp);// set X=N_XYZ, B=deriv_gp
-    int err = solve_for_inverseJac.Solve();         // N_XYZ = J^-1.N_rst
-    if (err != 0) dserror("Inversion of Jacobian failed");
-
-    // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-    Epetra_SerialDenseMatrix defgrd(NUMDIM_SOH8,NUMDIM_SOH8);
-    defgrd.Multiply('T','T',1.0,xcurr,N_XYZ,1.0);
-
-    // Right Cauchy-Green tensor = F^T * F
-    Epetra_SerialDenseMatrix cauchygreen(NUMDIM_SOH8,NUMDIM_SOH8);
-    cauchygreen.Multiply('T','N',1.0,defgrd,defgrd,1.0);
-
+    // set up B-Operator in local(parameter) element space including ANS
+    Epetra_SerialDenseMatrix bop(NUMSTR_SOH8,NUMDOF_SOH8);
+    for (int inode = 0; inode < NUMNOD_SOH8; ++inode) {
+      for (int dim = 0; dim < NUMDIM_SOH8; ++dim) {
+        // B_loc_rr = N_r.X_r
+        bop(0,inode*3+dim) = deriv_gp(0,inode) * jac_cur(0,dim);
+        // B_loc_ss = N_s.X_s
+        bop(1,inode*3+dim) = deriv_gp(1,inode) * jac_cur(1,dim);
+        // B_loc_tt = interpolation along (r x s) of ANS B_loc_tt
+        //          = (1-r)(1-s)/4 * B_ans(SP E) + (1+r)(1-s)/4 * B_ans(SP F)
+        //           +(1+r)(1+s)/4 * B_ans(SP G) + (1-r)(1+s)/4 * B_ans(SP H)
+        bop(2,inode*3+dim) = 0.25*(1-r[gp])*(1-s[gp]) * B_ans_loc(0+4*num_sp,inode*3+dim)
+                              +0.25*(1+r[gp])*(1-s[gp]) * B_ans_loc(0+5*num_sp,inode*3+dim)
+                              +0.25*(1+r[gp])*(1+s[gp]) * B_ans_loc(0+6*num_sp,inode*3+dim)
+                              +0.25*(1-r[gp])*(1+s[gp]) * B_ans_loc(0+7*num_sp,inode*3+dim); 
+        // B_loc_rs = N_r.X_s + N_s.X_r
+        bop(3,inode*3+dim) = deriv_gp(0,inode) * jac_cur(1,dim)
+                              +deriv_gp(1,inode) * jac_cur(0,dim);
+        // B_loc_st = interpolation along r of ANS B_loc_st
+        //          = (1+r)/2 * B_ans(SP B) + (1-r)/2 * B_ans(SP D)
+        bop(4,inode*3+dim) = 0.5*(1.0+r[gp]) * B_ans_loc(1+1*num_sp,inode*3+dim)
+                              +0.5*(1.0-r[gp]) * B_ans_loc(1+3*num_sp,inode*3+dim);
+        // B_loc_rt = interpolation along s of ANS B_loc_rt
+        //          = (1-s)/2 * B_ans(SP A) + (1+s)/2 * B_ans(SP C)
+        bop(5,inode*3+dim) = 0.5*(1.0-s[gp]) * B_ans_loc(2+0*num_sp,inode*3+dim)
+                              +0.5*(1.0+s[gp]) * B_ans_loc(2+2*num_sp,inode*3+dim);
+      }
+    }
+    
+    // transformation from local (parameter) element space to global(material) space
+    // with famous 'T'-matrix already used for EAS but now evaluated at each gp
+    Epetra_SerialDenseMatrix TinvT(NUMSTR_SOH8,NUMSTR_SOH8);
+    sosh8_evaluateT(jac,TinvT);
+    bop.Multiply('N','N',1.0,TinvT,bop,1.0);
+    
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
+    // but with modified ANS strains E33, E23 and E13
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
     Epetra_SerialDenseVector glstrain(NUMSTR_SOH8);
-    glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
-    glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
-    glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
-    glstrain(3) = cauchygreen(0,1);
-    glstrain(4) = cauchygreen(1,2);
-    glstrain(5) = cauchygreen(2,0);
 
     // EAS technology: "enhance the strains"  ----------------------------- EAS
     if (eastype_ != soh8_easnone) {
@@ -373,48 +391,6 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
     } // ------------------------------------------------------------------ EAS
 
 
-    /* non-linear B-operator (may so be called, meaning
-    ** of B-operator is not so sharp in the non-linear realm) *
-    ** B = F . Bl *
-    **
-    **      [ ... | F_11*N_{,1}^k  F_21*N_{,1}^k  F_31*N_{,1}^k | ... ]
-    **      [ ... | F_12*N_{,2}^k  F_22*N_{,2}^k  F_32*N_{,2}^k | ... ]
-    **      [ ... | F_13*N_{,3}^k  F_23*N_{,3}^k  F_33*N_{,3}^k | ... ]
-    ** B =  [ ~~~   ~~~~~~~~~~~~~  ~~~~~~~~~~~~~  ~~~~~~~~~~~~~   ~~~ ]
-    **      [       F_11*N_{,2}^k+F_12*N_{,1}^k                       ]
-    **      [ ... |          F_21*N_{,2}^k+F_22*N_{,1}^k        | ... ]
-    **      [                       F_31*N_{,2}^k+F_32*N_{,1}^k       ]
-    **      [                                                         ]
-    **      [       F_12*N_{,3}^k+F_13*N_{,2}^k                       ]
-    **      [ ... |          F_22*N_{,3}^k+F_23*N_{,2}^k        | ... ]
-    **      [                       F_32*N_{,3}^k+F_33*N_{,2}^k       ]
-    **      [                                                         ]
-    **      [       F_13*N_{,1}^k+F_11*N_{,3}^k                       ]
-    **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
-    **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
-    */
-    Epetra_SerialDenseMatrix bop(NUMSTR_SOH8,NUMDOF_SOH8);
-    for (int i=0; i<NUMNOD_SOH8; ++i) {
-      bop(0,NODDOF_SOH8*i+0) = defgrd(0,0)*N_XYZ(0,i);
-      bop(0,NODDOF_SOH8*i+1) = defgrd(1,0)*N_XYZ(0,i);
-      bop(0,NODDOF_SOH8*i+2) = defgrd(2,0)*N_XYZ(0,i);
-      bop(1,NODDOF_SOH8*i+0) = defgrd(0,1)*N_XYZ(1,i);
-      bop(1,NODDOF_SOH8*i+1) = defgrd(1,1)*N_XYZ(1,i);
-      bop(1,NODDOF_SOH8*i+2) = defgrd(2,1)*N_XYZ(1,i);
-      bop(2,NODDOF_SOH8*i+0) = defgrd(0,2)*N_XYZ(2,i);
-      bop(2,NODDOF_SOH8*i+1) = defgrd(1,2)*N_XYZ(2,i);
-      bop(2,NODDOF_SOH8*i+2) = defgrd(2,2)*N_XYZ(2,i);
-      /* ~~~ */
-      bop(3,NODDOF_SOH8*i+0) = defgrd(0,0)*N_XYZ(1,i) + defgrd(0,1)*N_XYZ(0,i);
-      bop(3,NODDOF_SOH8*i+1) = defgrd(1,0)*N_XYZ(1,i) + defgrd(1,1)*N_XYZ(0,i);
-      bop(3,NODDOF_SOH8*i+2) = defgrd(2,0)*N_XYZ(1,i) + defgrd(2,1)*N_XYZ(0,i);
-      bop(4,NODDOF_SOH8*i+0) = defgrd(0,1)*N_XYZ(2,i) + defgrd(0,2)*N_XYZ(1,i);
-      bop(4,NODDOF_SOH8*i+1) = defgrd(1,1)*N_XYZ(2,i) + defgrd(1,2)*N_XYZ(1,i);
-      bop(4,NODDOF_SOH8*i+2) = defgrd(2,1)*N_XYZ(2,i) + defgrd(2,2)*N_XYZ(1,i);
-      bop(5,NODDOF_SOH8*i+0) = defgrd(0,2)*N_XYZ(0,i) + defgrd(0,0)*N_XYZ(2,i);
-      bop(5,NODDOF_SOH8*i+1) = defgrd(1,2)*N_XYZ(0,i) + defgrd(1,0)*N_XYZ(2,i);
-      bop(5,NODDOF_SOH8*i+2) = defgrd(2,2)*N_XYZ(0,i) + defgrd(2,0)*N_XYZ(2,i);
-    }
 
     /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     ** Here all possible material laws need to be incorporated,
@@ -424,7 +400,8 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
     Epetra_SerialDenseMatrix cmat(NUMSTR_SOH8,NUMSTR_SOH8);
     Epetra_SerialDenseVector stress(NUMSTR_SOH8);
     double density;
-    soh8_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, material, gp);
+    Epetra_SerialDenseMatrix defgrd(NUMDIM_SOH8,NUMDIM_SOH8);
+    soh8_mat_sel(material,&stress,&cmat,&density,&glstrain, &defgrd, gp);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
@@ -436,23 +413,6 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
     cb.Multiply('N','N',1.0,cmat,bop,1.0);          // temporary C . B
     (*stiffmatrix).Multiply('T','N',detJ * (*weights)(gp),bop,cb,1.0);
 
-    // intergrate `geometric' stiffness matrix and add to keu *****************
-    Epetra_SerialDenseVector sfac(stress); // auxiliary integrated stress
-    sfac.Scale(detJ * (*weights)(gp));     // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
-    vector<double> SmB_L(NUMDIM_SOH8);     // intermediate Sm.B_L
-    // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
-    for (int inod=0; inod<NUMNOD_SOH8; ++inod){
-      SmB_L[0] = sfac(0) * N_XYZ(0,inod) + sfac(3) * N_XYZ(1,inod) + sfac(5) * N_XYZ(2,inod);
-      SmB_L[1] = sfac(3) * N_XYZ(0,inod) + sfac(1) * N_XYZ(1,inod) + sfac(4) * N_XYZ(2,inod);
-      SmB_L[2] = sfac(5) * N_XYZ(0,inod) + sfac(4) * N_XYZ(1,inod) + sfac(2) * N_XYZ(2,inod);
-      for (int jnod=0; jnod<NUMNOD_SOH8; ++jnod){
-        double bopstrbop = 0.0;            // intermediate value
-        for (int idim=0; idim<NUMDIM_SOH8; ++idim) bopstrbop += N_XYZ(idim,jnod) * SmB_L[idim];
-        (*stiffmatrix)(NUMDIM_SOH8*inod+0,NUMDIM_SOH8*jnod+0) += bopstrbop;
-        (*stiffmatrix)(NUMDIM_SOH8*inod+1,NUMDIM_SOH8*jnod+1) += bopstrbop;
-        (*stiffmatrix)(NUMDIM_SOH8*inod+2,NUMDIM_SOH8*jnod+2) += bopstrbop;
-      }
-    } // end of intergrate `geometric' stiffness ******************************
 
     // EAS technology: integrate matrices --------------------------------- EAS
     if (eastype_ != soh8_easnone) {
@@ -520,8 +480,11 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
 void DRT::Elements::So_sh8::sosh8_anssetup(
           const int numsp,              // number of sampling points
           const int numans,             // number of ans strains
+          const Epetra_SerialDenseMatrix& xrefe, // material element coords
           const Epetra_SerialDenseMatrix& xcurr, // current element coords
-          Epetra_SerialDenseMatrix&  B_ans_loc) // modified B 
+          Epetra_SerialDenseMatrix& jac_sps,     // jac at all sampling points
+          Epetra_SerialDenseMatrix& jac_cur_sps, // current jac at all sampling points
+          Epetra_SerialDenseMatrix& B_ans_loc) // modified B 
 {
   // static matrix object of derivs at sampling points, kept in memory
   static Epetra_SerialDenseMatrix df_sp(NUMDIM_SOH8*numsp,NUMNOD_SOH8);
@@ -598,6 +561,13 @@ void DRT::Elements::So_sh8::sosh8_anssetup(
     dfsp_eval = 1;               // now all arrays are filled statically
   }
   
+  // compute Jacobian matrix at all sampling points
+  jac_sps.Multiply('N','N',1.0,(*deriv_sp),xrefe,1.0);
+  
+  // compute CURRENT Jacobian matrix at all sampling points
+  jac_cur_sps.Multiply('N','N',1.0,(*deriv_sp),xcurr,1.0);
+  
+  
   /*
   ** Compute modified B-operator in local(parametric) space,
   ** evaluated at all sampling points
@@ -624,13 +594,13 @@ void DRT::Elements::So_sh8::sosh8_anssetup(
     for (int inode = 0; inode < NUMNOD_SOH8; ++inode) {
       for (int dim = 0; dim < NUMDIM_SOH8; ++dim) {
         // modify B_loc_tt = N_t.X_t
-        B_ans_loc(sp*numans+0,inode*3+dim) = deriv_asp(3,inode)*jac_cur(3,dim);
-        // modify B_loc_rt = N_r.X_t + N_t.X_r
-        B_ans_loc(sp*numans+1,inode*3+dim) = deriv_asp(1,inode)*jac_cur(3,dim)
-                                            +deriv_asp(3,inode)*jac_cur(1,dim);
+        B_ans_loc(sp*numans+0,inode*3+dim) = deriv_asp(2,inode)*jac_cur(2,dim);
         // modify B_loc_st = N_s.X_t + N_t.X_s                                          
-        B_ans_loc(sp*numans+2,inode*3+dim) = deriv_asp(2,inode)*jac_cur(3,dim)
-                                            +deriv_asp(3,inode)*jac_cur(2,dim);
+        B_ans_loc(sp*numans+1,inode*3+dim) = deriv_asp(1,inode)*jac_cur(2,dim)
+                                            +deriv_asp(2,inode)*jac_cur(1,dim);
+        // modify B_loc_rt = N_r.X_t + N_t.X_r
+        B_ans_loc(sp*numans+2,inode*3+dim) = deriv_asp(0,inode)*jac_cur(2,dim)
+                                            +deriv_asp(2,inode)*jac_cur(0,dim);
       }
     }
   }    
@@ -638,6 +608,69 @@ void DRT::Elements::So_sh8::sosh8_anssetup(
   
   return;
 }
+
+/*----------------------------------------------------------------------*
+ |  evaluate 'T'-transformation matrix )                       maf 05/07|
+ *----------------------------------------------------------------------*/
+void DRT::Elements::So_sh8::sosh8_evaluateT(const Epetra_SerialDenseMatrix jac,
+                                            Epetra_SerialDenseMatrix& TinvT)
+{
+  // build T^T transformation matrix which maps 
+  // between global (r,s,t)-coordinates and local (x,y,z)-coords
+  // later, invert the transposed to map from local to global
+  // see literature for details (e.g. Andelfinger)
+  // it is based on the voigt notation for strains: xx,yy,zz,xy,yz,xz
+  TinvT(0,0) = jac(0,0) * jac(0,0);
+  TinvT(1,0) = jac(1,0) * jac(1,0);
+  TinvT(2,0) = jac(2,0) * jac(2,0);
+  TinvT(3,0) = 2 * jac(0,0) * jac(1,0);
+  TinvT(4,0) = 2 * jac(0,0) * jac(2,0);
+  TinvT(5,0) = 2 * jac(1,0) * jac(2,0);
+  
+  TinvT(0,1) = jac(0,1) * jac(0,1);
+  TinvT(1,1) = jac(1,1) * jac(1,1);
+  TinvT(2,1) = jac(2,1) * jac(2,1);
+  TinvT(3,1) = 2 * jac(0,1) * jac(1,1);
+  TinvT(4,1) = 2 * jac(0,1) * jac(2,1);
+  TinvT(5,1) = 2 * jac(1,1) * jac(2,1);
+
+  TinvT(0,2) = jac(0,2) * jac(0,2);
+  TinvT(1,2) = jac(1,2) * jac(1,2);
+  TinvT(2,2) = jac(2,2) * jac(2,2);
+  TinvT(3,2) = 2 * jac(0,2) * jac(1,2);
+  TinvT(4,2) = 2 * jac(0,2) * jac(2,2);
+  TinvT(5,2) = 2 * jac(1,2) * jac(2,2);
+  
+  TinvT(0,3) = jac(0,0) * jac(0,1);
+  TinvT(1,3) = jac(1,0) * jac(1,1);
+  TinvT(2,3) = jac(2,0) * jac(2,1);
+  TinvT(3,3) = jac(0,0) * jac(1,1) + jac(1,0) * jac(0,1);
+  TinvT(4,3) = jac(0,0) * jac(2,1) + jac(2,0) * jac(0,1);
+  TinvT(5,3) = jac(1,0) * jac(2,1) + jac(2,0) * jac(1,1);
+
+  TinvT(0,4) = jac(0,0) * jac(0,2);
+  TinvT(1,4) = jac(1,0) * jac(1,2);
+  TinvT(2,4) = jac(2,0) * jac(2,2);
+  TinvT(3,4) = jac(0,0) * jac(1,2) + jac(1,0) * jac(0,2);
+  TinvT(4,4) = jac(0,0) * jac(2,2) + jac(2,0) * jac(0,2);
+  TinvT(5,4) = jac(1,0) * jac(2,2) + jac(2,0) * jac(1,2);
+
+  TinvT(0,5) = jac(0,1) * jac(0,2);
+  TinvT(1,5) = jac(1,1) * jac(1,2);
+  TinvT(2,5) = jac(2,1) * jac(2,2);
+  TinvT(3,5) = jac(0,1) * jac(1,2) + jac(1,1) * jac(0,2);
+  TinvT(4,5) = jac(0,1) * jac(2,2) + jac(2,1) * jac(0,2);
+  TinvT(5,5) = jac(1,1) * jac(2,2) + jac(2,1) * jac(1,2);
+                                              
+  // now evaluate T^{-T} with solver
+  Epetra_SerialDenseSolver solve_for_inverseT;
+  solve_for_inverseT.SetMatrix(TinvT);
+  solve_for_inverseT.Invert();
+  
+  return;
+}
+
+
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

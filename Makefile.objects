@@ -341,6 +341,7 @@ OBJS_PAR      = src/parallel/par_initmetis.o \
 #------------------------------------------------ drt solid hex 8
 OBJS_SOH8     = src/drt_so3/so_hex8_evaluate.o \
                 src/drt_so3/so_hex8_surface_evaluate.o \
+                src/drt_so3/so_material.o \
                 src/drt_so3/so_hex8_stress.o \
                 src/drt_so3/so_hex8_eas.o \
                 src/drt_so3/so_hex8_input.o \

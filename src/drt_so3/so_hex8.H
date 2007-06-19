@@ -379,12 +379,12 @@ protected:
                        Epetra_SerialDenseMatrix** deriv,
                        Epetra_SerialDenseVector** weights);
 
-  void soh8_mat_sel(Epetra_SerialDenseVector* stress,
+  void soh8_mat_sel(struct _MATERIAL* material,
+                    Epetra_SerialDenseVector* stress,
                     Epetra_SerialDenseMatrix* cmat,
                     double* density,
                     const Epetra_SerialDenseVector* glstrain,
                     const Epetra_SerialDenseMatrix* defgrd,
-                    struct _MATERIAL* material,
                     int gp);
 
   // EAS technology section

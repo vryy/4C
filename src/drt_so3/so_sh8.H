@@ -206,10 +206,16 @@ private:
                          struct _MATERIAL*         material);
 
   void sosh8_anssetup(const int numsp,              // number of sampling points
-                      const int numans,             // number of ans strains
-                      const Epetra_SerialDenseMatrix& xcurr, // current element coords
-                      Epetra_SerialDenseMatrix&  B_ans_loc); // modified B
+          const int numans,             // number of ans strains
+          const Epetra_SerialDenseMatrix& xrefe, // material element coords
+          const Epetra_SerialDenseMatrix& xcurr, // current element coords
+          Epetra_SerialDenseMatrix& jac_sps,     // jac at all sampling points
+          Epetra_SerialDenseMatrix& jac_cur_sps, // current jac at all sampling points
+          Epetra_SerialDenseMatrix&  B_ans_loc); // modified B
                       
+  void sosh8_evaluateT(const Epetra_SerialDenseMatrix jac,  // actual jacobian
+                       Epetra_SerialDenseMatrix& TinvT);    // corr. T^{-T}
+
 }; // class So_sh8
 
 
