@@ -565,6 +565,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    /*----------------------------------------------------------------------*/
    frread();
 }
+
+if (i==0)
+  dserror("No material could be read from inputfile\n");
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
 dstrc_exit();
