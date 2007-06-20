@@ -525,6 +525,9 @@ void IO::DiscretizationWriter::CreateResultFile(int step)
     }
   }
 
+  // we will never refer to maps stored in other files
+  mapcache_.clear();
+
   resultfile_ = H5Fcreate(resultname.str().c_str(),
                           H5F_ACC_TRUNC,H5P_DEFAULT,H5P_DEFAULT);
   if (resultfile_ < 0)
@@ -567,7 +570,6 @@ void IO::DiscretizationWriter::NewStep(int step, double time)
   resultgroup_ = H5Gcreate(resultfile_,groupname.str().c_str(),0);
   if (resultgroup_ < 0)
     dserror("Failed to write HDF-group in resultfile");
-
 
   if (dis_->Comm().MyPID() == 0)
   {
@@ -621,30 +623,53 @@ void IO::DiscretizationWriter::WriteVector(string name, RefCountPtr<Epetra_Vecto
 #ifdef BINIO
 
   herr_t status;
-  string valuename = name;
-  valuename.append(".values");
+  string valuename = name + ".values";
   double* data = vec->Values();
   hsize_t size = vec->MyLength();
   status = H5LTmake_dataset_double(resultgroup_,valuename.c_str(),1,&size,data);
   if (status < 0)
     dserror("Failed to create dataset in HDF-resultfile");
-  string idname = name;
-  idname.append(".ids");
-  int* ids = vec->Map().MyGlobalElements();
-  status = H5LTmake_dataset_int(resultgroup_,idname.c_str(),1,&size,ids);
-  if (status < 0)
-    dserror("Failed to create dataset in HDF-resultfile");
+
+  string idname;
+
+  // We maintain a map cache to avoid rewriting the same map all the
+  // time. The idea is that a map is never modified once it is
+  // constructed. Thus the internal data class can be used to find
+  // identical maps easily. This will not find all identical maps, but
+  // all maps with the same data pointer are guaranteed to be
+  // identical.
+
+  ostringstream groupname;
+  groupname << "/step"
+            << step_
+            << "/"
+    ;
+
+  valuename = groupname.str()+valuename;
+
+  const Epetra_BlockMapData* mapdata = vec->Map().DataPtr();
+  std::map<const Epetra_BlockMapData*, std::string>::iterator m = mapcache_.find(mapdata);
+  if (m!=mapcache_.end())
+  {
+    // the map has been written already, just link to it again
+    idname = m->second;
+  }
+  else
+  {
+    idname = name + ".ids";
+    int* ids = vec->Map().MyGlobalElements();
+    status = H5LTmake_dataset_int(resultgroup_,idname.c_str(),1,&size,ids);
+    if (status < 0)
+      dserror("Failed to create dataset in HDF-resultfile");
+
+    idname = groupname.str()+idname;
+
+    // remember where we put the map
+    mapcache_[mapdata] = idname;
+  }
 
   if (dis_->Comm().MyPID() == 0)
   {
-    ostringstream groupname;
-    groupname << "/step"
-              << step_
-              << "/"
-      ;
-
-    valuename = groupname.str()+valuename;
-    idname = groupname.str()+idname;
     fprintf(bin_out_main.control_file,
             "    %s:\n"
             "        values = \"%s\"\n"

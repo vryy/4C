@@ -19,8 +19,13 @@ Maintainer: Ulrich Kuettler
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
+#include <Teuchos_RefCountPtr.hpp>
+#include <Epetra_BlockMap.h>
+
+#include <map>
+#include <string>
+
 #include "../drt_lib/drt_discret.H"
-#include "Teuchos_RefCountPtr.hpp"
 #include "io.h"
 #include "hdf_reader.H"
 
@@ -168,6 +173,8 @@ private:
   hid_t meshgroup_;
   hid_t resultgroup_;
 #endif
+
+  std::map<const Epetra_BlockMapData*, std::string> mapcache_;
 
   int resultfile_changed_;
   int meshfile_changed_;
