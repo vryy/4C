@@ -514,7 +514,7 @@ public:
 
   /*!
   \brief Redistribute the discretization according to provided maps
-         (Filled()==true prerequisite)
+         (Filled()==NOT true prerequisite)
 
   Steps taken in this method are:<br>
   - build element maps (row and column)
