@@ -93,7 +93,6 @@ void dyn_nlnstructural_drt()
   // context for output and restart
   // -------------------------------------------------------------------
   DiscretizationWriter output(actdis);
-  output.WriteMesh(0,0.0);
 
   // -------------------------------------------------------------------
   // set some pointers and variables
@@ -135,7 +134,11 @@ void dyn_nlnstructural_drt()
   genalphaparams.set<bool>  ("io structural disp",ioflags.struct_disp);
   genalphaparams.set<int>   ("io disp every nstep",sdyn->updevry_disp);
   genalphaparams.set<bool>  ("io structural stress",ioflags.struct_stress);
-  genalphaparams.set<int>   ("io disp every nstep",sdyn->updevry_stress);
+  genalphaparams.set<int>   ("io stress every nstep",sdyn->updevry_stress);
+
+  genalphaparams.set<int>   ("restart",genprob.restart);
+  genalphaparams.set<int>   ("write restart every",sdyn->res_write_evry);
+
   genalphaparams.set<bool>  ("print to screen",true);
   genalphaparams.set<bool>  ("print to err",true);
   genalphaparams.set<FILE*> ("err file",allfiles.out_err);
@@ -148,6 +151,16 @@ void dyn_nlnstructural_drt()
 
   StruGenAlpha timeintegrator(genalphaparams,*actdis,solver,output);
 
+  if (genprob.restart)
+  {
+    timeintegrator.ReadRestart(genprob.restart);
+  }
+  
+  // write mesh only if this is not a restart
+  output.WriteMesh(genalphaparams.get<int>("step",0),
+                   genalphaparams.get<double>("total time",0.0));
+
+  // integrate
   timeintegrator.Integrate();
 
   return;
