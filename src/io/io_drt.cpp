@@ -91,7 +91,7 @@ static void FindPosition(RefCountPtr<DRT::Discretization> dis, int& field_pos, i
   {
     for (disnum=0; disnum<field[field_pos].ndis; ++disnum)
     {
-      if (DRT::Problem::Instance()->Dis(field_pos,disnum) == dis)
+      if (DRT::Problem::Instance()->Dis(field_pos,disnum).get() == dis.get())
       {
         return;
       }
@@ -125,6 +125,34 @@ void DiscretizationReader::ReadVector(RefCountPtr<Epetra_Vector> vec, string nam
 #endif
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DiscretizationReader::ReadMesh(int step)
+{
+#ifdef BINIO
+  FindMeshGroup(step);
+
+  RefCountPtr<vector<char> > nodedata =
+    meshreader_->ReadNodeData(step,dis_->Comm().NumProc(),dis_->Comm().MyPID());
+
+  RefCountPtr<vector<char> > elementdata =
+   meshreader_->ReadElementData(step,dis_->Comm().NumProc(),dis_->Comm().MyPID());
+
+  // before we unpack nodes/elements we store a copy of the nodal row/col map
+  RefCountPtr<Epetra_Map> noderowmap = rcp(new Epetra_Map(*dis_->NodeRowMap()));
+  RefCountPtr<Epetra_Map> nodecolmap = rcp(new Epetra_Map(*dis_->NodeColMap()));
+
+  // unpack nodes and elements and redistirbuted to current layout
+  dis_->UnPackMyNodes(nodedata);
+  dis_->UnPackMyElements(elementdata);
+  dis_->Redistribute(*noderowmap,*nodecolmap);
+  int err = dis_->FillComplete();
+  if (err) dserror("FillComplete() returned %d",err);
+  
+#endif
+  return;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -227,6 +255,90 @@ MAP *DiscretizationReader::FindResultGroup(int step)
 #endif
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+MAP *DiscretizationReader::FindMeshGroup(int step)
+{
+#ifdef BINIO
+
+  MAP *result_info = NULL;
+  SYMBOL *symbol;
+  int field_pos;
+  int disnum;
+
+  FindPosition(dis_, field_pos, disnum);
+
+  FIELD *actfield = &(field[field_pos]);
+
+  /*
+   * Iterate all symbols under the name "result" and get the one that
+   * matches the given step. Note that this iteration starts from the
+   * last result group and goes backward. */
+
+  symbol = map_find_symbol(&(bin_in_main.table), "field");
+  while (symbol != NULL)
+  {
+    if (symbol_is_map(symbol))
+    {
+      MAP* map;
+      symbol_get_map(symbol, &map);
+      if (map_has_string(map, "field", fieldnames[actfield->fieldtyp]) &&
+          map_has_int(map, "field_pos", field_pos) &&
+          map_has_int(map, "discretization", disnum) &&
+          map_has_int(map, "step", step))
+      {
+        result_info = map;
+        break;
+      }
+    }
+    symbol = symbol->next;
+  }
+  if (symbol == NULL)
+  {
+    dserror("No restart entry for step %d in symbol table. Control file corrupt?",step);
+  }
+
+  /*--------------------------------------------------------------------*/
+  /* open file to read */
+
+  /* We have a symbol and its map that corresponds to the step we are
+   * interessted in. Now we need to continue our search to find the
+   * step that defines the output file used for our step. */
+
+  while (symbol != NULL)
+  {
+    if (symbol_is_map(symbol))
+    {
+      MAP* map;
+      symbol_get_map(symbol, &map);
+      if (map_has_string(map, "field", fieldnames[actfield->fieldtyp]) &&
+          map_has_int(map, "field_pos", field_pos) &&
+          map_has_int(map, "discretization", disnum))
+      {
+        /*
+         * If one of these files is here the other one has to be
+         * here, too. If it's not, it's a bug in the input. */
+        if (map_symbol_count(map, "mesh_file") > 0)
+        {
+          OpenMeshFiles(map);
+          break;
+        }
+      }
+    }
+    symbol = symbol->next;
+  }
+
+  /* No restart files defined? */
+  if (symbol == NULL)
+  {
+    dserror("no restart file definitions found in control file");
+  }
+
+  return result_info;
+#else
+  return NULL;
+#endif
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -257,6 +369,39 @@ void DiscretizationReader::OpenDataFiles(MAP* result_step)
 
   reader_ = rcp(new HDFReader(dirname));
   reader_->Open(filename,numoutputproc);
+#endif
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DiscretizationReader::OpenMeshFiles(MAP* result_step)
+{
+#ifdef BINIO
+  int numoutputproc;
+  if (!map_find_int(result_step,"num_output_proc",&numoutputproc))
+  {
+    numoutputproc = 1;
+  }
+
+  string name = bin_out_main.name;
+
+  string dirname;
+  string::size_type pos = name.find_last_of('/');
+  if (pos==string::npos)
+  {
+    dirname = "";
+  }
+  else
+  {
+    dirname = name.substr(0,pos+1);
+  }
+
+  string filename;
+  filename = map_read_string(result_step, "mesh_file");
+
+  meshreader_ = rcp(new HDFReader(dirname));
+  meshreader_->Open(filename,numoutputproc);
 #endif
 }
 

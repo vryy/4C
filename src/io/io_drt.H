@@ -60,13 +60,22 @@ public:
   /// read a double value from the control file
   double ReadDouble(string name);
 
+  /// read into the discretization given in the constructor
+  void ReadMesh(int step);
+
 private:
 
   /// find control file entry to given time step
   MAP* FindResultGroup(int step);
 
+  /// find control file entry to given time step
+  MAP* FindMeshGroup(int step);
+
   /// Open data files. You guess it.
   void OpenDataFiles(MAP* result_step);
+
+  /// Open mesh files. You guess it.
+  void OpenMeshFiles(MAP* result_step);
 
   //! my discretization
   RefCountPtr<DRT::Discretization> dis_;
@@ -76,6 +85,7 @@ private:
 
 #ifdef BINIO
   RefCountPtr<HDFReader> reader_;
+  RefCountPtr<HDFReader> meshreader_;
 #endif
 };
 
