@@ -329,19 +329,19 @@ private:
   //! action parameters recognized by XFluid3
   enum ShapeDerivativeID
   {
-    SHPID_D0 = 0,
-    SHPID_DX = 1,
-    SHPID_DY = 2,
-    SHPID_DZ = 3,
-    SHPID_DXDX = 4,
-    SHPID_DXDY = 5,
-    SHPID_DXDZ = 6,
-    SHPID_DYDX = 7,
-    SHPID_DYDY = 8,
-    SHPID_DYDZ = 9,
-    SHPID_DZDX = 10,
-    SHPID_DZDY = 11,
-    SHPID_DZDZ = 12,
+    shpId_d0 = 0,
+    shpId_dx = 1,
+    shpId_dy = 2,
+    shpId_dz = 3,
+    shpId_dxdx = 4,
+    shpId_dxdy = 5,
+    shpId_dxdz = 6,
+    shpId_dydx = 7,
+    shpId_dydy = 8,
+    shpId_dydz = 9,
+    shpId_dzdx = 10,
+    shpId_dzdy = 11,
+    shpId_dzdz = 12,
   };
   
   // constants
@@ -397,13 +397,14 @@ private:
                   const struct _MATERIAL*         material,
                   ParameterList&                  params);
 
-  // calculate Jacobian matrix and it's determinant
-  void f3_jaco(const Epetra_SerialDenseMatrix& xyze,
-               const Epetra_SerialDenseMatrix& deriv,
-               Epetra_SerialDenseMatrix& xjm,
-               double*      det,
-               const int    iel
-              );
+  // calculate Jacobian matrix
+  Epetra_SerialDenseMatrix getJacobiMatrix(
+    const Epetra_SerialDenseMatrix& xyze,
+    const Epetra_SerialDenseMatrix& deriv,
+    const int                       iel);
+
+  // calculate determinant
+  double getDeterminante(const Epetra_SerialDenseMatrix&  xjm);
 
   // get the body force from the nodes condition
   void f3_getbodyforce (Epetra_SerialDenseMatrix& edeadng,
