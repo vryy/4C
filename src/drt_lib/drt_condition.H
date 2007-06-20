@@ -102,6 +102,7 @@ public:
     LineSubsonicOutflow,
     FSICoupling,
     SurfaceStress,
+    MicroBoundary,
     XFEMCoupling
   };
 

@@ -123,6 +123,11 @@ static void register_condition(string name,
  *----------------------------------------------------------------------*/
 static void input_surf_stress(multimap<int,RefCountPtr<DRT::Condition> >& ssmap);
 
+/*----------------------------------------------------------------------*
+ | microscale boundary                                       lw 06/07   |
+ *----------------------------------------------------------------------*/
+static void input_micro_bc(multimap<int,RefCountPtr<DRT::Condition> >& mbcmap);
+
 
 /*----------------------------------------------------------------------*
  | input of conditions                                    m.gee 11/06   |
@@ -272,6 +277,11 @@ void input_conditions(const DRT::Problem& problem)
   input_surf_stress(surfstress);
   setup_condition(surfstress, dsurf_fenode);
 
+  //------------read microscale boundary conditions for multiscale analyses
+  multimap<int,RefCountPtr<DRT::Condition> > microbc;
+  input_micro_bc(microbc);
+  setup_condition(microbc, dsurf_fenode);
+
 
   // Iterate through all discretizations and sort the appropiate condition into
   // the correct discretization it applies to
@@ -304,6 +314,9 @@ void input_conditions(const DRT::Problem& problem)
 
       register_condition("XFEMCoupling", "XFEM Coupling", linexfemcoup, actdis, noderowmap);
       register_condition("XFEMCoupling", "XFEM Coupling", surfxfemcoup, actdis, noderowmap);
+
+      register_condition("SurfaceStress", "Surface Stress", surfstress, actdis, noderowmap);
+      register_condition("MicroBoundary", "Microscale Boundary", microbc, actdis, noderowmap);
 
       register_condition("LineIsothermalNoslip", "Isothermal no-slip wall", lineisothermnoslip, actdis, noderowmap);
       register_condition("LineSubsonicInflow", "Subsonic inflow", linesubsonicinflow, actdis, noderowmap);
@@ -2016,7 +2029,7 @@ void input_surf_stress(multimap<int,RefCountPtr<DRT::Condition> >& ssmap)
 {
   DSTraceHelper dst("input_surf_stress");
 
-  /*----------------- find the beginning of surface dirichlet conditions */
+  /*-------------------- find the beginning of surface stress conditions */
   if (frfind("--SURFACE CONDITIONS")==0) return;
   frread();
 
@@ -2120,6 +2133,50 @@ void input_surf_stress(multimap<int,RefCountPtr<DRT::Condition> >& ssmap)
   } // while(strncmp(allfiles.actplace,"------",6)!=0)
   return;
 } // input_surf_stress
+
+
+/*----------------------------------------------------------------------------*
+ | input of microscale boundary conditions for multiscale analyses   lw 06/07 |
+ *----------------------------------------------------------------------------*/
+void input_micro_bc(multimap<int,RefCountPtr<DRT::Condition> >& mbcmap)
+{
+  DSTraceHelper dst("input_micro_bc");
+
+  /*--------------- find the beginning of microscale boundary conditions */
+  if (frfind("--MICROSCALE CONDITIONS")==0) return;
+  frread();
+
+  /*------------------------ read number of design surfs with conditions */
+  int ierr=0;
+  int ndsurf=0;
+  frint("DSURF",&ndsurf,&ierr);
+  if(ierr!=1)
+    dserror("Cannot read design-surface microscale conditions");
+  frread();
+
+  /*------------------------------------- start reading the design surfs */
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    /*------------------------------------------ read the design surf Id */
+    int dsurfid = -1;
+    frint("E",&dsurfid,&ierr);
+    if(ierr!=1)
+      dserror("Cannot read design-surface stress conditions");
+    dsurfid--;
+
+    // create boundary condition
+    RefCountPtr<DRT::Condition> condition =
+           rcp(new DRT::Condition(dsurfid,DRT::Condition::MicroBoundary,true,
+                                  DRT::Condition::Surface));
+
+    //------------------------------- put condition in map of conditions
+    mbcmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dsurfid,condition));
+
+    //-------------------------------------------------- read the next line
+    frread();
+  } // while(strncmp(allfiles.actplace,"------",6)!=0)
+  return;
+} // input_micro_bc
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

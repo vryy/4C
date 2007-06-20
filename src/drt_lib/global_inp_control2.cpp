@@ -317,6 +317,11 @@ void inpfield_ccadiscret(DRT::Problem& problem, DRT::DatFileReader& reader)
     input_conditions(*micro_problem);
 
 
+    // At this point, everything for the microscale is read,
+    // subsequent reading is only for macroscale
+    structdis_micro->FillComplete();
+
+
     // reactivate reader of macroscale as well as macroscale material
 
     reader.Activate();
