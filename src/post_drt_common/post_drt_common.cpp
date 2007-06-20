@@ -372,73 +372,97 @@ void PostProblem::read_meshes()
 
   while (mesh != NULL)
   {
-    int step;
-    if (!map_find_int(symbol_map(mesh),"step",&step))
-      dserror("No step information in field.");
-    if (step == 0)
+    // only those fields with a mesh file entry are readable here
+    // (each control file is bound to include at least one of those)
+    if (map_find_symbol(symbol_map(mesh), "mesh_file")!=NULL)
     {
-      PostField currfield = getfield(symbol_map(mesh));
+      int field_pos = map_read_int(symbol_map(mesh), "field_pos");
+      int disnum = map_read_int(symbol_map(mesh), "discretization");
 
-      int num_output_procs;
-      if (!map_find_int(symbol_map(mesh),"num_output_proc",&num_output_procs))
+      bool havefield = false;
+      for (unsigned i=0; i<fields_.size(); ++i)
       {
-        num_output_procs = 1;
-      }
-      currfield.set_num_output_procs(num_output_procs);
-      char* fn;
-      if (!map_find_string(symbol_map(mesh),"mesh_file",&fn))
-        dserror("No meshfile name for discretization %s.", currfield.discretization()->Name().c_str());
-      string filename = fn;
-      HDFReader reader = HDFReader(input_dir_);
-      reader.Open(filename,num_output_procs);
-
-      RefCountPtr<vector<char> > node_data =
-        reader.ReadNodeData(step, comm_->NumProc(), comm_->MyPID());
-      currfield.discretization()->UnPackMyNodes(node_data);
-
-      RefCountPtr<vector<char> > element_data =
-        reader.ReadElementData(step, comm_->NumProc(), comm_->MyPID());
-      currfield.discretization()->UnPackMyElements(element_data);
-
-#if 1
-      // read periodic boundary conditions if available
-      RefCountPtr<vector<char> > pbcs =
-      reader.ReadPeriodicBoundaryConditions(step, comm_->NumProc(), comm_->MyPID());
-      {
-        int index = 0;
-        while (index < static_cast<int>(pbcs->size()))
+        if (fields_[i].field_pos()==field_pos and
+            fields_[i].disnum()==disnum)
         {
-          vector<char> data;
-          DRT::ParObject::ExtractfromPack(index,*pbcs,data);
-
-          DRT::ParObject* o = DRT::Utils::Factory(data);
-
-          DRT::Condition* thispbc = dynamic_cast<DRT::Condition*>(o);
-          if (thispbc == NULL)
-          {
-            dserror("Failed to build a periodic boundary condition from the stored data");
-          }
-          currfield.discretization()->SetCondition("SurfacePeriodic",rcp(thispbc));
+          havefield = true;
+          break;
         }
       }
-#endif
-      // before we can call discretization functions (in parallel) we
-      // need field based communicators.
-      create_communicators();
 
-      //distribute_drt_grids();
-      currfield.discretization()->FillComplete();
-#if 1
-      // -------------------------------------------------------------------
-      // connect degrees of freedom for periodic boundary conditions
-      // -------------------------------------------------------------------
-      if(!pbcs->empty())
+      // only read a field that has not yet been read
+      // for now we do not care at which step this field was defined
+      // if we want to support changing meshes one day, we'll need to
+      // change this code...
+      if (not havefield)
       {
-        PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(currfield.discretization());
-        pbc.UpdateDofsForPeriodicBoundaryConditions();
-      }
+        int step;
+        if (!map_find_int(symbol_map(mesh),"step",&step))
+          dserror("No step information in field.");
+
+        PostField currfield = getfield(symbol_map(mesh));
+
+        int num_output_procs;
+        if (!map_find_int(symbol_map(mesh),"num_output_proc",&num_output_procs))
+        {
+          num_output_procs = 1;
+        }
+        currfield.set_num_output_procs(num_output_procs);
+        char* fn;
+        if (!map_find_string(symbol_map(mesh),"mesh_file",&fn))
+          dserror("No meshfile name for discretization %s.", currfield.discretization()->Name().c_str());
+        string filename = fn;
+        HDFReader reader = HDFReader(input_dir_);
+        reader.Open(filename,num_output_procs);
+
+        RefCountPtr<vector<char> > node_data =
+          reader.ReadNodeData(step, comm_->NumProc(), comm_->MyPID());
+        currfield.discretization()->UnPackMyNodes(node_data);
+
+        RefCountPtr<vector<char> > element_data =
+          reader.ReadElementData(step, comm_->NumProc(), comm_->MyPID());
+        currfield.discretization()->UnPackMyElements(element_data);
+
+#if 1
+        // read periodic boundary conditions if available
+        RefCountPtr<vector<char> > pbcs =
+          reader.ReadPeriodicBoundaryConditions(step, comm_->NumProc(), comm_->MyPID());
+        {
+          int index = 0;
+          while (index < static_cast<int>(pbcs->size()))
+          {
+            vector<char> data;
+            DRT::ParObject::ExtractfromPack(index,*pbcs,data);
+
+            DRT::ParObject* o = DRT::Utils::Factory(data);
+
+            DRT::Condition* thispbc = dynamic_cast<DRT::Condition*>(o);
+            if (thispbc == NULL)
+            {
+              dserror("Failed to build a periodic boundary condition from the stored data");
+            }
+            currfield.discretization()->SetCondition("SurfacePeriodic",rcp(thispbc));
+          }
+        }
 #endif
-      fields_.push_back(currfield);
+        // before we can call discretization functions (in parallel) we
+        // need field based communicators.
+        create_communicators();
+
+        //distribute_drt_grids();
+        currfield.discretization()->FillComplete();
+#if 1
+        // -------------------------------------------------------------------
+        // connect degrees of freedom for periodic boundary conditions
+        // -------------------------------------------------------------------
+        if(!pbcs->empty())
+        {
+          PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(currfield.discretization());
+          pbc.UpdateDofsForPeriodicBoundaryConditions();
+        }
+#endif
+        fields_.push_back(currfield);
+      }
     }
     mesh = mesh->next;
   }

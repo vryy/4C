@@ -160,7 +160,7 @@ private:
   // This function is called by the Constructor.
   void read_meshes();
 
-  //! creates and returns a PostField insance from a field MAP.
+  //! creates and returns a PostField instance from a field MAP.
   //
   // Keeps track of global field variable
   PostField getfield(MAP* field_info);
