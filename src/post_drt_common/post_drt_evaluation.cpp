@@ -385,6 +385,27 @@ void Elements::So_hex8::soh8_nlnstiffmass(vector<int>&              lm,
 
 
 #endif
+#ifdef D_SOH8
+bool Elements::So_sh8::ReadElement()
+{
+  dserror("Elements::So_sh8::ReadElement undefined");
+  return false;
+}
+
+int Elements::So_sh8::Evaluate(ParameterList&,
+                               Discretization&,
+                               vector<int>&,
+                               Epetra_SerialDenseMatrix&,
+                               Epetra_SerialDenseMatrix&,
+                               Epetra_SerialDenseVector&,
+                               Epetra_SerialDenseVector&,
+                               Epetra_SerialDenseVector&)
+{
+  dserror("Elements::So_sh8::Evaluate undefined");
+  return 0;
+}
+
+#endif
 
 #ifdef D_WALL1
 
