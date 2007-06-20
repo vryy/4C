@@ -188,22 +188,24 @@ OBJS_INPUT    = src/input_full/input_control_global.o \
 OBJS_INPUT_CPP= src/input_full/input_parameterlist.o
 # -------------------------------------------------- drt version of fluid3
 OBJS_DRT_F3_LIB = src/drt_f3/fluid3.o \
-                  src/drt_f3/fluid3_surface.o
-OBJS_DRT_F3   = src/drt_f3/fluid3_evaluate.o \
-                src/drt_f3/fluid3_input.o \
-                src/drt_f3/fluid3_surface_evaluate.o
+                  src/drt_f3/fluid3_evaluate.o \
+                src/drt_f3/fluid3_surface.o \
+                src/drt_f3/fluid3_surface_evaluate.o \
+                src/drt_f3/fluid3_input.o
+OBJS_DRT_F3   = 
 # ------------------------------------------------------------ fluid3 xfem
 OBJS_DRT_XF3_LIB = src/drt_f3_xfem/fluid3_xfem.o \
                    src/drt_f3_xfem/fluid3_xfem_surface.o \
                    src/drt_f3_xfem/fluid3_xfem_line.o \
                    src/drt_f3_xfem/fluid3_xfem_enrichment.o \
                    src/drt_f3_xfem/fluid3_xfem_nodemap.o \
-                   src/drt_f3_xfem/fluid3_xfem_shape.o
-OBJS_DRT_XF3   = src/drt_f3_xfem/fluid3_xfem_integration.o \
+                   src/drt_f3_xfem/fluid3_xfem_shape.o \
+                src/drt_f3_xfem/fluid3_xfem_integration.o \
                  src/drt_f3_xfem/fluid3_xfem_evaluate.o \
                  src/drt_f3_xfem/fluid3_xfem_input.o \
                  src/drt_f3_xfem/fluid3_xfem_surface_evaluate.o \
                  src/drt_f3_xfem/fluid3_xfem_line_evaluate.o
+OBJS_DRT_XF3   = 
 #------------------------------------------------------------------ fluid3
 OBJS_FLUID3   = src/fluid3/f3_calele.o \
                 src/fluid3/f3_calelesize.o \
@@ -329,19 +331,25 @@ OBJS_ALE      = src/ale3/ale_call_stiff.o \
 OBJS_DRT_ALE_LIB = src/drt_ale3/ale3.o \
                 src/drt_ale3/ale3_surface.o \
                 src/drt_ale2/ale2.o \
-                src/drt_ale2/ale2_line.o
-OBJS_DRT_ALE   = src/drt_ale3/ale3_evaluate.o \
+                src/drt_ale2/ale2_line.o \
+                src/drt_ale3/ale3_evaluate.o \
                 src/drt_ale3/ale3_input.o \
                 src/drt_ale3/ale3_surface_evaluate.o \
                 src/drt_ale2/ale2_evaluate.o \
                 src/drt_ale2/ale2_input.o \
                 src/drt_ale2/ale2_line_evaluate.o
+OBJS_DRT_ALE   = 
 #               parallel
 OBJS_PAR      = src/parallel/par_initmetis.o \
                 src/parallel/par_make_comm.o \
                 src/parallel/par_assignmesh.o
 #------------------------------------------------ drt solid hex 8
-OBJS_SOH8     = src/drt_so3/so_hex8_evaluate.o \
+OBJS_SOH8     = 
+OBJS_SOH8_LIB = src/drt_so3/so_hex8_surface.o \
+                src/drt_so3/so_hex8_line.o \
+                src/drt_so3/so_hex8.o \
+                src/drt_so3/so_sh8.o \
+                src/drt_so3/so_hex8_evaluate.o \
                 src/drt_so3/so_hex8_surface_evaluate.o \
                 src/drt_so3/so_material.o \
                 src/drt_so3/so_hex8_stress.o \
@@ -356,10 +364,6 @@ OBJS_SOH8     = src/drt_so3/so_hex8_evaluate.o \
                 src/drt_so3/so_tet10_surface.o \
                 src/drt_so3/so_tet10_surface_evaluate.o \
                 src/drt_so3/so_tet10_line.o
-OBJS_SOH8_LIB = src/drt_so3/so_hex8_surface.o \
-                src/drt_so3/so_hex8_line.o \
-                src/drt_so3/so_hex8.o \
-                src/drt_so3/so_sh8.o
 #--------------------------------------------------------- brick1
 OBJS_BRICK1   = src/brick1/c1_out.o \
                 src/brick1/c1_gid.o \
@@ -414,10 +418,11 @@ OBJS_IO       = src/io/io_singlefile.o \
 OBJS_IO_LIB   = src/io/hdf_reader.o
 #------------------------------------------------- w1 drt version
 OBJS_DRT_W1_LIB = src/drt_w1/wall1.o \
-                  src/drt_w1/wall1_line.o
-OBJS_DRT_W1   = src/drt_w1/wall1_evaluate.o \
+                  src/drt_w1/wall1_line.o \
+                src/drt_w1/wall1_evaluate.o \
                 src/drt_w1/wall1_input.o \
                 src/drt_w1/wall1_line_evaluate.o
+OBJS_DRT_W1   = 
 #---------------------------------------------------------- wall1
 OBJS_WALL1    = src/wall1/w1_bop.o \
                 src/wall1/w1_b_barop.o \
@@ -481,16 +486,17 @@ OBJS_WALL1    = src/wall1/w1_bop.o \
                 src/wall1/w1_tri_service.o \
                 src/wall1/w1_tsi.o
 #------------------------------------ fluid2 (drt version)
-OBJS_DRT_F2   = src/drt_f2/fluid2_evaluate.o \
+OBJS_DRT_F2_LIB = src/drt_f2/fluid2_evaluate.o \
                 src/drt_f2/fluid2_input.o \
                 src/drt_f2/fluid2_line_evaluate.o \
 		src/drt_f2/condif2_evaluate.o \
 		src/drt_f2/condif2_input.o \
-		src/drt_f2/condif2_line_evaluate.o
-OBJS_DRT_F2_LIB = src/drt_f2/fluid2.o \
+		src/drt_f2/condif2_line_evaluate.o \
+                src/drt_f2/fluid2.o \
                   src/drt_f2/fluid2_line.o \
 		  src/drt_f2/condif2.o \
 		  src/drt_f2/condif2_line.o
+OBJS_DRT_F2 = 
 #------------------------------------------------- fluid2
 OBJS_FLUID2   = src/fluid2/f2_calcurvature.o \
                 src/fluid2/f2_calelesize.o \

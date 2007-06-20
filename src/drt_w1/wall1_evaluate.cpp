@@ -271,7 +271,31 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
   if (massmatrix)
   {
     imass=1;
-    w1_getdensity(material,&density);
+    /*------------------------------------------------ switch material type */
+    switch (material->mattyp)
+    {
+    case m_stvenant:/*-------------------------------------- linear elastic */
+      density = material->m.stvenant->density;
+      break;
+    case m_neohooke:/*------------------------------ kompressible neo-hooke */
+      density = material->m.neohooke->density;
+      break;
+    case m_stvenpor:/*------------------------ porous linear elastic ---*/
+      density = material->m.stvenpor->density;
+      break;
+    case m_pl_mises:/*--------------------------- von mises material law ---*/
+      dserror("Ilegal typ of material for this element");
+      break;
+    case m_pl_mises_3D:/*-------------Stefan's von mises 3D material law ---*/
+      dserror("Ilegal typ of material for this element");
+      break;
+    case m_pl_dp:/*------------------------- drucker prager material law ---*/
+      dserror("Ilegal typ of material for this element");
+      break;
+    default:
+      dserror("Ilegal typ of material for this element");
+      break;
+    }
   }
 
   const int nir = ngp_[0];
