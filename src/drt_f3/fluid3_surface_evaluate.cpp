@@ -52,7 +52,7 @@ int DRT::Elements::Fluid3Surface::EvaluateNeumann(
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
   if (curvenum>=0 && usetime)
-    curvefac = DRT::TimeCurveManager::Instance().Curve(curvenum).f(time);
+    curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
 
   // get values and switches from the condition
   const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");

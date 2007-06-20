@@ -32,6 +32,7 @@ namespace NOX {
 namespace NOX {
   namespace FSI {
 
+/// Matrix Free Newton Krylov based on an approximation of the residuum derivatives
 class FSIMatrixFree : public Epetra_Operator,
                       public virtual NOX::Epetra::Interface::Jacobian
 {

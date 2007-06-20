@@ -29,6 +29,7 @@ extern "C"
 
 
 namespace DRT {
+namespace Utils {
 
   /// abstract interface for spatial functions
   class Function
@@ -121,6 +122,7 @@ namespace DRT {
     /// output operator
     friend std::ostream& operator<<(std::ostream& out, const FunctionManager& manager);
   };
+}
 }
 
 #endif

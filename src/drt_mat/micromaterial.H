@@ -37,6 +37,8 @@ Maintainer: Lena Wiechert
 using namespace std;
 using namespace Teuchos;
 
+namespace MAT {
+
 class MicroMaterial : public Material
 {
 public:
@@ -68,6 +70,8 @@ private:
   RefCountPtr<Epetra_Vector> disp_;
 
 };
+
+}
 
 #endif
 #endif

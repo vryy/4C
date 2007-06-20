@@ -192,7 +192,7 @@ int DRT::Elements::So_hex8::EvaluateNeumann(ParameterList& params,
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
   if (curvenum>=0 && usetime)
-    curvefac = DRT::TimeCurveManager::Instance().Curve(curvenum).f(time);
+    curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
   // **
 
 /* ============================================================================*

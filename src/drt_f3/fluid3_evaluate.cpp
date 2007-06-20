@@ -3065,11 +3065,11 @@ void DRT::Elements::Fluid3::f3_getbodyforce
       // time factor for the intermediate step
       if(time >= 0)
       {
-        curvefac = DRT::TimeCurveManager::Instance().Curve(curvenum).f(time);
+        curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
       }
       else
       {
-        curvefac = DRT::TimeCurveManager::Instance().Curve(curvenum).f(0.0);
+        curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(0.0);
       }
     }
     else // we do not have a timecurve --- timefactors are constant equal 1

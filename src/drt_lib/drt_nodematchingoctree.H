@@ -26,9 +26,13 @@ extern "C"
 {
 #include "../headers/standardtypes.h"
 }
+
+namespace DRT {
+namespace Utils {
+
 class OctreeElement;
 
-
+/// Parallel octree to establish neighborhood relations between two sets of nodes
 class NodeMatchingOctree
 {
 public:
@@ -202,8 +206,7 @@ private:
 
 
 
-
-
+/// Leaf in parallel octree
 class OctreeElement
 {
 
@@ -374,6 +377,8 @@ private:
 
 }; // class OctreeElement
 
+}
+}
 
 #endif  // not NODEMATCHINGOCTREE_H
 

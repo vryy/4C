@@ -103,11 +103,11 @@ void DRT::Elements::So_hex8::soh8_mat_sel(
       if (gp > static_cast<int>(mat_.size())-1)
       {
         mat_.resize(gp+1);
-        mat_[gp] = rcp(new MicroMaterial(gp, microdis_num));
+        mat_[gp] = rcp(new MAT::MicroMaterial(gp, microdis_num));
       }
 
-      MicroMaterial* micromat =
-        dynamic_cast<MicroMaterial*>(mat_[gp].get());
+      MAT::MicroMaterial* micromat =
+        dynamic_cast<MAT::MicroMaterial*>(mat_[gp].get());
 
       if (micromat == NULL)
         dserror("Wrong type of derived material class");

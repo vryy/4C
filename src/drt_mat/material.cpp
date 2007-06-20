@@ -3,7 +3,7 @@
 
 #include "material.H"
 
-Material::~Material()
+MAT::Material::~Material()
 {}
 
 #endif

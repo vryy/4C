@@ -56,7 +56,7 @@ int DRT::Elements::Shell8Line::EvaluateNeumann(
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
   if (curvenum>=0 && usetime)
-    curvefac = DRT::TimeCurveManager::Instance().Curve(curvenum).f(time);
+    curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
 
   // init gaussian points of parent element
   S8_DATA s8data;

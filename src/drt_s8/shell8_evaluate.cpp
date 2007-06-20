@@ -44,7 +44,7 @@ extern struct _MATERIAL  *mat;
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            mwgee 12/06|
  *----------------------------------------------------------------------*/
-int DRT::Elements::Shell8::Evaluate(ParameterList&            params, 
+int DRT::Elements::Shell8::Evaluate(ParameterList&            params,
                                     DRT::Discretization&      discretization,
                                     vector<int>&              lm,
                                     Epetra_SerialDenseMatrix& elemat1,
@@ -632,7 +632,7 @@ int DRT::Elements::Shell8::EvaluateNeumann(ParameterList& params,
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
   if (curvenum>=0 && usetime)
-    curvefac = DRT::TimeCurveManager::Instance().Curve(curvenum).f(time);
+    curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
 
   // get type of condition
   LoadType ltype;

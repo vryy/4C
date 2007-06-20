@@ -6,7 +6,10 @@
 #include <NOX_Direction_Generic.H> // base class
 #include <NOX_Utils.H>
 
+/// NOX: the nonlinear object solver from trilinos with local extensions
 namespace NOX {
+
+  /// NOX::FSI: local extensions to NOX, some of them special to FSI
   namespace FSI {
 
 //! %Calculates the fix point direction.

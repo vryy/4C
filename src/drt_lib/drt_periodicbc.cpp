@@ -315,7 +315,7 @@ void PeriodicBoundaryConditions::CreateNodeCouplingForSinglePBC(
   tm2_ref_        = rcp(new TimeMonitor(*timepbcmidoct_ ));
 
   // build processor local octree
-  NodeMatchingOctree nodematchingoctree(
+  DRT::Utils::NodeMatchingOctree nodematchingoctree(
     *discret_     ,
     masternodeids ,
     maxnodeperleaf,

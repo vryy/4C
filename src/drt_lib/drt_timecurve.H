@@ -32,6 +32,7 @@ extern "C"
 
 
 namespace DRT {
+namespace Utils {
 
 
   /// base of all slices of a time curve with start and end time
@@ -265,6 +266,7 @@ namespace DRT {
     friend std::ostream& operator<<(std::ostream& out, const TimeCurveManager& manager);
   };
 
+}
 }
 
 #endif

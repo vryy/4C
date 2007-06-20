@@ -31,12 +31,12 @@ using namespace Teuchos;
 /*----------------------------------------------------------------------*/
 // the static instance
 /*----------------------------------------------------------------------*/
-DRT::FunctionManager DRT::FunctionManager::instance_;
+DRT::Utils::FunctionManager DRT::Utils::FunctionManager::instance_;
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::FunctionManager::ReadInput()
+void DRT::Utils::FunctionManager::ReadInput()
 {
   functions_.clear();
 
@@ -235,7 +235,7 @@ void DRT::FunctionManager::ReadInput()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::ExprFunction::ExprFunction(char* buf, double x, double y, double z)
+DRT::Utils::ExprFunction::ExprFunction(char* buf, double x, double y, double z)
   : x_(x), y_(y), z_(z),
     expr_(pss_parse(buf))
 {
@@ -244,7 +244,7 @@ DRT::ExprFunction::ExprFunction(char* buf, double x, double y, double z)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::ExprFunction::~ExprFunction()
+DRT::Utils::ExprFunction::~ExprFunction()
 {
   pss_parse_cleanup(expr_);
 }
@@ -252,7 +252,7 @@ DRT::ExprFunction::~ExprFunction()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::ExprFunction::Evaluate(int index, const double* x)
+double DRT::Utils::ExprFunction::Evaluate(int index, const double* x)
 {
   return pss_evaluate_funct(expr_, x[0]-x_, x[1]-y_, x[2]-z_);
 }
@@ -260,7 +260,7 @@ double DRT::ExprFunction::Evaluate(int index, const double* x)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::BeltramiFunction::Evaluate(int index, const double* xp)
+double DRT::Utils::BeltramiFunction::Evaluate(int index, const double* xp)
 {
   double a = M_PI/4.0;
   double d = M_PI/2.0;
@@ -289,7 +289,7 @@ double DRT::BeltramiFunction::Evaluate(int index, const double* xp)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::KimMoinFunction::Evaluate(int index, const double* xp)
+double DRT::Utils::KimMoinFunction::Evaluate(int index, const double* xp)
 {
   double a = 2.0;
 
@@ -309,7 +309,7 @@ double DRT::KimMoinFunction::Evaluate(int index, const double* xp)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::ostream& DRT::operator<<(std::ostream& out, const DRT::Function& funct)
+std::ostream& DRT::Utils::operator<<(std::ostream& out, const DRT::Utils::Function& funct)
 {
   out << "  Function:\n";
   return out;
@@ -318,7 +318,7 @@ std::ostream& DRT::operator<<(std::ostream& out, const DRT::Function& funct)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::ostream& DRT::operator<<(std::ostream& out, const DRT::FunctionManager& manager)
+std::ostream& DRT::Utils::operator<<(std::ostream& out, const DRT::Utils::FunctionManager& manager)
 {
   out << "Function Manager:\n";
   for (unsigned i=0; i<manager.functions_.size(); ++i)

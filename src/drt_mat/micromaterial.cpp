@@ -16,7 +16,7 @@ using namespace Teuchos;
 /// construct an instance of MicroMaterial for a given Gauss point and
 /// microscale discretization
 
-MicroMaterial::MicroMaterial(int gp, int microdis_num)
+MAT::MicroMaterial::MicroMaterial(int gp, int microdis_num)
   : gp_(gp)
 {
   RefCountPtr<DRT::Problem> microproblem = DRT::Problem::Instance(microdis_num);
@@ -27,14 +27,14 @@ MicroMaterial::MicroMaterial(int gp, int microdis_num)
 
 /// destructor
 
-MicroMaterial::~MicroMaterial()
+MAT::MicroMaterial::~MicroMaterial()
 { }
 
 
 /// test routine for calculating stresses, constitutive matrix and density in
 /// case of St Venant Kirchhoff material
 
-void MicroMaterial::CalcStressStiffDens (Epetra_SerialDenseVector* stress,
+void MAT::MicroMaterial::CalcStressStiffDens (Epetra_SerialDenseVector* stress,
                           Epetra_SerialDenseMatrix* cmat,
                           double* density,
                           const Epetra_SerialDenseVector* glstrain)
@@ -62,6 +62,7 @@ void MicroMaterial::CalcStressStiffDens (Epetra_SerialDenseVector* stress,
   // evaluate stresses
   (*cmat).Multiply('N',(*glstrain),(*stress));   // sigma = C . epsilon
 }
+
 #endif
 #endif
 #endif

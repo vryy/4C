@@ -19,6 +19,9 @@ Maintainer: Lena Wiechert
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
+/// MAT: complex materials
+namespace MAT
+{
 
 /// Interface class for complex materials at Gauss points
 /*!
@@ -65,12 +68,6 @@ Maintainer: Lena Wiechert
    \author u. kue and l.w.
    \date 06/07
 */
-
-
-
-
-
-
 class Material
 {
 public:
@@ -78,6 +75,8 @@ public:
   virtual ~Material();
 
 };
+
+}
 
 #endif
 #endif

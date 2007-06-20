@@ -10,10 +10,16 @@
 namespace NOX {
   namespace FSI {
 
-//! Michler
+/// FSI coupling algorithm due to Michler
 /*!
   The FSI coupling algorithm as suggested by Michler et al.
+  This beast does not work. You need to specify a relaxation
+  parameter. The algorithm is very sensitive with respect to that
+  one. And furthermore the linear system of equations that needs to be
+  solved after that is very badly conditioned.
 
+  You are better of by far to use a simple fixed point scheme with
+  relaxation. Aitken would be a good choice.
  */
 class Michler : public NOX::Direction::Generic
 {

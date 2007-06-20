@@ -105,7 +105,7 @@ void FSI::Coupling::MatchNodes(const DRT::Discretization& masterdis,
 {
   // match master and slave nodes using Peter's octtree
 
-  NodeMatchingOctree tree(masterdis, masternodes);
+  DRT::Utils::NodeMatchingOctree tree(masterdis, masternodes);
 
   map<int,pair<int,double> > coupling;
   tree.FindMatch(slavedis, slavenodes, coupling);

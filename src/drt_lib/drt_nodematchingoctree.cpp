@@ -41,7 +41,7 @@ Maintainer: Peter Gamnitzer
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-NodeMatchingOctree::NodeMatchingOctree(
+DRT::Utils::NodeMatchingOctree::NodeMatchingOctree(
   const DRT::Discretization&       actdis,
   const vector <int> &             masternodeids,
   int                              maxnodeperleaf,
@@ -130,7 +130,7 @@ NodeMatchingOctree::NodeMatchingOctree(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void NodeMatchingOctree::CreateGlobalNodeMatching(
+void DRT::Utils::NodeMatchingOctree::CreateGlobalNodeMatching(
   const vector<int>&     slavenodeids,
   const vector<int>&     dofsforpbcplane,
   map<int,int>&          midtosid
@@ -373,7 +373,7 @@ void NodeMatchingOctree::CreateGlobalNodeMatching(
 
 
 
-void NodeMatchingOctree::FindMatch(const DRT::Discretization& slavedis,
+void DRT::Utils::NodeMatchingOctree::FindMatch(const DRT::Discretization& slavedis,
                                    const vector<int>& slavenodeids,
                                    map<int,pair<int,double> >& coupling)
 {
@@ -541,7 +541,7 @@ void NodeMatchingOctree::FindMatch(const DRT::Discretization& slavedis,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-bool NodeMatchingOctree::SearchClosestNodeOnThisProc(
+bool DRT::Utils::NodeMatchingOctree::SearchClosestNodeOnThisProc(
   const vector<double>& x,
   int           & idofclosestpoint,
   double        & distofclosestpoint
@@ -590,7 +590,7 @@ bool NodeMatchingOctree::SearchClosestNodeOnThisProc(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-NodeMatchingOctree::~NodeMatchingOctree()
+DRT::Utils::NodeMatchingOctree::~NodeMatchingOctree()
 {
   return;
 }// NodeMatchingOctree::~NodeMatchingOctree
@@ -612,7 +612,7 @@ NodeMatchingOctree::~NodeMatchingOctree()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-OctreeElement::OctreeElement(
+DRT::Utils::OctreeElement::OctreeElement(
   const DRT::Discretization&       actdis,
   vector <int> &                   nodeidstoadd,
   Epetra_SerialDenseMatrix&        boundingboxtoadd,
@@ -821,7 +821,7 @@ OctreeElement::OctreeElement(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-bool OctreeElement::IsPointInBoundingBox(
+bool DRT::Utils::OctreeElement::IsPointInBoundingBox(
   const vector <double> &x
   )
 {
@@ -852,7 +852,7 @@ bool OctreeElement::IsPointInBoundingBox(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-RefCountPtr<OctreeElement> OctreeElement::ReturnChildContainingPoint(
+RefCountPtr<DRT::Utils::OctreeElement> DRT::Utils::OctreeElement::ReturnChildContainingPoint(
   const vector <double> &x
   )
 {
@@ -892,7 +892,7 @@ RefCountPtr<OctreeElement> OctreeElement::ReturnChildContainingPoint(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-bool OctreeElement::IsLeaf()
+bool DRT::Utils::OctreeElement::IsLeaf()
 {
   bool isleaf=true;
 
@@ -916,7 +916,7 @@ bool OctreeElement::IsLeaf()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-void OctreeElement::Print(ostream& os) const
+void DRT::Utils::OctreeElement::Print(ostream& os) const
 {
   // Print id and coordinates
   os << "Leaf in Layer " << layer_ << " Nodes ";
@@ -939,7 +939,7 @@ void OctreeElement::Print(ostream& os) const
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void OctreeElement::SearchClosestNodeInLeaf(
+void DRT::Utils::OctreeElement::SearchClosestNodeInLeaf(
   const vector <double> & x,
   int             & idofclosestpoint,
   double          & distofclosestpoint
@@ -989,7 +989,7 @@ void OctreeElement::SearchClosestNodeInLeaf(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-OctreeElement::~OctreeElement()
+DRT::Utils::OctreeElement::~OctreeElement()
 {
   return;
 }// ~OctreeElement()

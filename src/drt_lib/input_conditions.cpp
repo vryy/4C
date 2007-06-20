@@ -136,10 +136,10 @@ static void input_micro_bc(multimap<int,RefCountPtr<DRT::Condition> >& mbcmap);
 void input_conditions(const DRT::Problem& problem)
 {
   /*---------------------------------------------- input of time curves */
-  DRT::TimeCurveManager::Instance().ReadInput();
+  DRT::Utils::TimeCurveManager::Instance().ReadInput();
   //cout << DRT::TimeCurveManager::Instance();
   /*---------------------------------------- input of spatial functions */
-  DRT::FunctionManager::Instance().ReadInput();
+  DRT::Utils::FunctionManager::Instance().ReadInput();
   //------------------------------- read number of design objects we have
   // this currently serves to determine how many node sets we might have
   int ndnode=0;

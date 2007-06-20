@@ -155,7 +155,7 @@ void DRT::Discretization::EvaluateNeumann(ParameterList& params, Epetra_Vector& 
     if (curve) curvenum = (*curve)[0];
     double curvefac = 1.0;
       if (curvenum>=0 && usetime)
-        curvefac = TimeCurveManager::Instance().Curve(curvenum).f(time);
+        curvefac = Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
     for (int i=0; i<nnode; ++i)
     {
       // do only nodes in my row map
@@ -332,7 +332,7 @@ void DoDirichletCondition(DRT::Condition&      cond,
       int    curvenum = -1;
       if (curve) curvenum = (*curve)[j];
       if (curvenum>=0 && usetime)
-        curvefac = DRT::TimeCurveManager::Instance().Curve(curvenum).f(time);
+        curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
       //cout << "Dirichlet value " << value << " curvefac " <<  curvefac << endl;
 
       // factor given by spatial function
@@ -365,7 +365,7 @@ double EvaluateFunction(DRT::Node*      node,
 		        int             index,
 			int             funct_num)
 {
-  return DRT::FunctionManager::Instance().Funct(funct_num).Evaluate(index,node->X());
+  return DRT::Utils::FunctionManager::Instance().Funct(funct_num).Evaluate(index,node->X());
 }
 
 
