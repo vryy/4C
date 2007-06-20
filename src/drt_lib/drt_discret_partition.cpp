@@ -421,8 +421,6 @@ void DRT::Discretization::BuildElementRowColumn(
 void DRT::Discretization::Redistribute(const Epetra_Map& noderowmap,
                                        const Epetra_Map& nodecolmap)
 {
-  if (!Filled()) dserror("FillComplete() was not called on this discretization");
-  
   // build the overlapping and non-overlapping element maps
   RefCountPtr<Epetra_Map> elerowmap;
   RefCountPtr<Epetra_Map> elecolmap;
