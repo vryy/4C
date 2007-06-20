@@ -393,16 +393,33 @@ void ElementReader::Partition()
 
   // number of element junks to split the reading process in
   // approximate block size (just a guess!)
-  const int nblock = numproc;
+  int nblock = numproc;
   int bsize = static_cast<int>(eids.size())/nblock;
-
+  
   // create a simple (pseudo linear) map
   int mysize = bsize;
   if (myrank==numproc-1)
     mysize = eids.size()-(numproc-1)*bsize;
 
   roweles_ = rcp(new Epetra_Map(-1,mysize,&eids[myrank*bsize],0,*comm_));
-  eids.clear();
+
+  // for block sizes larger than about 250000 elements (empirical value !)
+  // the code sometimes hangs during ExportRowElements call for the 
+  // second block (block 1). 
+  // Therefore an upper limit of 200000 for bsize is ensured below.
+  
+  int maxblocksize = 200000;
+  
+  if (bsize > maxblocksize)
+  {
+    // without an additional increase of nblock by 1 the last block size 
+    // could reach a maximum value of (2*maxblocksize)-1, potentially 
+    // violating the intended upper limit!
+    nblock = 1+ static_cast<int>(eids.size()/maxblocksize);
+    bsize = maxblocksize;
+  }
+    
+   eids.clear(); 
 
   // For simplicity we remember all node ids of all elements on
   // processor 0. This way we can create the graph on processor 0 and
@@ -425,7 +442,7 @@ void ElementReader::Partition()
 
   // note that the last block is special....
   for (int block=0; block<nblock; ++block)
-  {
+  {  
     if (not endofsection and 0==myrank)
     {
       int bcount=0;
@@ -476,7 +493,7 @@ void ElementReader::Partition()
           if (block != nblock-1) // last block is different....
             if (bcount==bsize)
             {
-              filecount++;
+	      filecount++;
               break;
             }
         }
@@ -484,7 +501,7 @@ void ElementReader::Partition()
     } // if (0==myrank)
     // export block of elements to other processors as reflected in the linear
     // map roweles
-
+    
     // export junk of elements to other processors
     dis_->ExportRowElements(*roweles_);
   }
