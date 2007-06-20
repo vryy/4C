@@ -229,6 +229,11 @@ void DRT::Utils::FunctionManager::ReadInput()
         dserror("end of function definition expected");
 #endif
     }
+    else
+    {
+      // there is no such function, stop reading
+      break;
+    }
   }
 }
 

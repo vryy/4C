@@ -205,7 +205,7 @@ void DRT::Utils::TimeCurveManager::ReadInput()
     }
     else
     {
-      // there is not such curve, stop reading
+      // there is no such curve, stop reading
       break;
     }
   }
