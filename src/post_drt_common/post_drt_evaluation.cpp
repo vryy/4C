@@ -89,6 +89,7 @@ using namespace DRT;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+#if 0
 void Discretization::Evaluate(
                               ParameterList&                params,
                               RefCountPtr<Epetra_CrsMatrix> systemmatrix1,
@@ -113,6 +114,7 @@ void Discretization::EvaluateDirichlet(ParameterList& params,
 {
   dserror("Discretization::EvaluateDirichlet undefined");
 }
+#endif
 
 #ifdef D_SHELL8
 int Elements::Shell8Register::Initialize(Discretization&)

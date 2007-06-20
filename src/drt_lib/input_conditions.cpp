@@ -24,6 +24,7 @@ Maintainer: Michael Gee
 #include "Epetra_SerialDenseMatrix.h"
 #include "global_inp_control2.H"
 #include "drt_timecurve.H"
+#include "drt_function.H"
 
 
 /*----------------------------------------------------------------------*
@@ -138,7 +139,7 @@ void input_conditions(const DRT::Problem& problem)
   DRT::TimeCurveManager::Instance().ReadInput();
   //cout << DRT::TimeCurveManager::Instance();
   /*---------------------------------------- input of spatial functions */
-  inp_cond_funct();
+  DRT::FunctionManager::Instance().ReadInput();
   //------------------------------- read number of design objects we have
   // this currently serves to determine how many node sets we might have
   int ndnode=0;

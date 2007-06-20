@@ -109,16 +109,16 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/linalg_utils.o \
                 src/drt_lib/linalg_serialdensematrix.o \
                 src/drt_lib/linalg_serialdensevector.o \
-                src/drt_lib/distribute_grids.o\
+                src/drt_lib/distribute_grids.o \
 		src/drt_lib/drt_nodematchingoctree.o \
-		src/drt_lib/drt_periodicbc.o\
-		src/drt_lib/input_material_ccadiscret.o
+		src/drt_lib/drt_periodicbc.o \
+                src/drt_lib/drt_timecurve.o \
+                src/drt_lib/drt_function.o \
+                src/drt_lib/drt_discret_evaluate.o
 OBJS_DRT      = \
-                src/drt_lib/drt_discret_evaluate.o \
                 src/drt_lib/drt_resulttest.o \
                 src/drt_lib/drt_inputreader.o \
                 src/drt_lib/drt_init_control.o \
-                src/drt_lib/drt_timecurve.o \
                 src/drt_lib/global_inp_control2.o \
                 src/drt_lib/global_inp_control3.o \
                 src/drt_lib/input_conditions.o \
@@ -126,8 +126,9 @@ OBJS_DRT      = \
                 src/drt_lib/strugenalpha.o \
                 src/drt_lib/linalg_solver.o \
                 src/drt_lib/linalg_solver_spooles.o \
-                src/drt_lib/stru_genalpha_drt.o\
-                src/drt_lib/stru_static_drt.o
+                src/drt_lib/stru_genalpha_drt.o \
+                src/drt_lib/stru_static_drt.o \
+		src/drt_lib/input_material_ccadiscret.o
 # --------------------------------------------------- drt version of fluid
 OBJS_DRT_FLUID= src/drt_fluid/fluid_dyn_nln_drt.o \
                 src/drt_fluid/condif_drt.o \
