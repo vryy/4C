@@ -336,11 +336,14 @@ void DRT::Discretization::Print(ostream& os) const
       for (curr = element_.begin(); curr != element_.end(); ++curr)
       {
         os << *(curr->second);
-        vector<int> dof = Dof(&*(curr->second));
-        if (dof.size())
+        if (Filled())
         {
-          os << " Dofs ";
-          for (unsigned i=0; i<dof.size(); ++i) os << setw(6) << dof[i] << " ";
+          vector<int> dof = Dof(&*(curr->second));
+          if (dof.size())
+          {
+            os << " Dofs ";
+            for (unsigned i=0; i<dof.size(); ++i) os << setw(6) << dof[i] << " ";
+          }
         }
         os << endl;
       }
@@ -359,11 +362,14 @@ void DRT::Discretization::Print(ostream& os) const
       for (curr = node_.begin(); curr != node_.end(); ++curr)
       {
         os << *(curr->second);
-        vector<int> dof = Dof(&*(curr->second));
-        if (dof.size())
+        if (Filled())
         {
-          os << " Dofs ";
-          for (unsigned i=0; i<dof.size(); ++i) os << setw(6) << dof[i] << " ";
+          vector<int> dof = Dof(&*(curr->second));
+          if (dof.size())
+          {
+            os << " Dofs ";
+            for (unsigned i=0; i<dof.size(); ++i) os << setw(6) << dof[i] << " ";
+          }
         }
         os << endl;
       }
@@ -371,6 +377,7 @@ void DRT::Discretization::Print(ostream& os) const
     }
     Comm().Barrier();
   }
+  // print conditions (not sure whether this should be proc 0 only)
   if (Comm().MyPID()==0)
   {
     int numcond = condition_.size();
