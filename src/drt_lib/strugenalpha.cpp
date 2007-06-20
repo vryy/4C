@@ -193,11 +193,6 @@ output_(output)
   istep = 0;
   params_.set<int>("step",istep);
 
-  //------------------------------------------------- output initial state
-  output.NewStep(istep,time);
-  output.WriteVector("displacement",dis_);
-  output.WriteVector("velocity",vel_);
-  output.WriteVector("acceleration",acc_);
 
   return;
 } // StruGenAlpha::StruGenAlpha
@@ -480,7 +475,7 @@ void StruGenAlpha::ConsistentPredictor()
   if (!myrank_) cout << "Predictor residual forces " << norm_ << endl; fflush(stdout);
 
   return;
-} // StruGenAlpha::ConstantPredictor()
+} // StruGenAlpha::ConsistentPredictor()
 
 /*----------------------------------------------------------------------*
  |  do Newton iteration (public)                             mwgee 03/07|
@@ -1141,7 +1136,9 @@ void StruGenAlpha::UpdateandOutput()
   bool   iodisp        = params_.get<bool>  ("io structural disp"     ,true);
   int    updevrydisp   = params_.get<int>   ("io disp every nstep"    ,10);
   bool   iostress      = params_.get<bool>  ("io structural stress"   ,false);
-  int    updevrystress = params_.get<int>   ("io disp every nstep"    ,10);
+  int    updevrystress = params_.get<int>   ("io stress every nstep"  ,10);
+
+  int    writeresevry  = params_.get<int>   ("write restart every"    ,0);
 
   bool   printscreen   = params_.get<bool>  ("print to screen"        ,true);
   bool   printerr      = params_.get<bool>  ("print to err"           ,false);
@@ -1183,19 +1180,8 @@ void StruGenAlpha::UpdateandOutput()
     discret_.Evaluate(p,null,null,null,null,null);
   }
 
-  //----------------------------------------------------- output results
-  int mod_disp = istep % updevrydisp;
-  if (!mod_disp && iodisp)
-  {
-    output_.NewStep(istep, time);
-    output_.WriteVector("displacement",dis_);
-    output_.WriteVector("velocity",vel_);
-    output_.WriteVector("acceleration",acc_);
-  }
-
   //---------------------------------------------- do stress calculation
-  int mod_stress = istep % updevrystress;
-  if (!mod_stress && iostress)
+  if (updevrystress && !istep%updevrystress && iostress)
   {
     // create the parameters for the discretization
     ParameterList p;
@@ -1216,6 +1202,40 @@ void StruGenAlpha::UpdateandOutput()
     discret_.SetState("displacement",dis_);
     discret_.Evaluate(p,null,null,null,null,null);
     discret_.ClearState();
+  }
+  
+  //------------------------------------------------- write restart step
+  bool isdatawritten = false;
+  if (writeresevry && istep%writeresevry==0)
+  {
+    output_.NewStep(istep, time);
+    output_.WriteVector("displacement",dis_);
+    output_.WriteVector("velocity",vel_);
+    output_.WriteVector("acceleration",acc_);
+    output_.WriteVector("fexternal",fext_);
+    output_.WriteMesh(istep,time);
+    isdatawritten = true;
+    
+    if (discret_.Comm().MyPID()==0)
+    {
+      cout << "====== Restart written in step " << istep << endl;
+      fflush(stdout);
+    }
+    if (errfile)
+    {
+      fprintf(errfile,"====== Restart written in step %d\n",istep);
+      fflush(errfile);
+    }
+  }
+
+  //----------------------------------------------------- output results
+  if (iodisp && updevrydisp && !istep%updevrydisp && !isdatawritten)
+  {
+    output_.NewStep(istep, time);
+    output_.WriteVector("displacement",dis_);
+    output_.WriteVector("velocity",vel_);
+    output_.WriteVector("acceleration",acc_);
+    isdatawritten = true;
   }
 
   //---------------------------------------------------------- print out
@@ -1324,8 +1344,37 @@ void StruGenAlpha::SetDefaults(ParameterList& params)
   params.set<int>   ("io disp every nstep"    ,10);
   params.set<bool>  ("io structural stress"   ,false);
   params.set<int>   ("io disp every nstep"    ,10);
+  params.set<int>   ("restart"                ,0);
+  params.set<int>   ("write restart every"    ,0);
+  // takes values "constant" consistent"  
+  params.set<string>("predictor"              ,"constant");
   // takes values "full newton" , "modified newton" , "nonlinear cg"
-  params.set<string>("equilibrium iteration","full newton");
+  params.set<string>("equilibrium iteration"  ,"full newton");
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  read restart (public)                                    mwgee 06/07|
+ *----------------------------------------------------------------------*/
+void StruGenAlpha::ReadRestart(int step)
+{
+  RefCountPtr<DRT::Discretization> rcpdiscret = rcp(&discret_);
+  rcpdiscret.release();
+  DiscretizationReader reader(rcpdiscret,step);
+  double time  = reader.ReadDouble("time");
+  int    rstep = reader.ReadInt("step");
+  if (rstep != step) dserror("Time step on file not equal to given step");
+  
+  reader.ReadVector(dis_, "displacement");
+  reader.ReadVector(vel_, "velocity");
+  reader.ReadVector(acc_, "acceleration");
+  reader.ReadVector(fext_,"fexternal");
+  reader.ReadMesh(step);
+
+  // iverride current time and step with values from file
+  params_.set<double>("total time",time);
+  params_.set<int>   ("step",rstep);
+
   return;
 }
 
