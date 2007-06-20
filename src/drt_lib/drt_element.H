@@ -99,6 +99,10 @@ public:
     element_sosh8,
     element_ale2,
     element_ale2line,
+    element_so_tet10,
+    element_sotet10surface,
+    element_sotet10line,
+    element_sotet10volume,
   };
 
   /*!

@@ -1,23 +1,12 @@
-/*!----------------------------------------------------------------------
-\file so_hex8.H
-
-\class DRT::Elements::So_hex8
-
-\brief A C++ version of the 8-node hex solid element
-
-<pre>
-Maintainer: Moritz Frenzel
-            frenzel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15240
-</pre>
-
-*----------------------------------------------------------------------*/
-#ifdef D_SOH8
+/*-----------------------------------------**
+*/
+#ifdef D_SOTET10
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
-#ifndef SOH8_H
-#define SOH8_H
+#ifndef SO_TET10_H_
+#define SO_TET10_H_
+
+#endif /*SO_TET10_H_*/
 
 
 #include "Teuchos_RefCountPtr.hpp"
@@ -34,12 +23,20 @@ using namespace Teuchos;
 #include "../drt_mat/material.H"
 
 // Several parameters which are fixed for Solid Hex8
-#define NUMNOD_SOH8 8      // number of nodes
-#define NODDOF_SOH8 3      // number of dofs per node
-#define NUMDOF_SOH8 24     // total dofs per element
-#define NUMSTR_SOH8 6      // number of strains/stresses
-#define NUMGPT_SOH8 8      // total gauss points per element
-#define NUMDIM_SOH8 3      // number of dimensions
+////#define NUMNOD_SOH8 8      // number of nodes
+////#define NODDOF_SOH8 3      // number of dofs per node
+////#define NUMDOF_SOH8 24     // total dofs per element
+////#define NUMSTR_SOH8 6      // number of strains/stresses
+////#define NUMGPT_SOH8 8      // total gauss points per element
+////#define NUMDIM_SOH8 3      // number of dimensions
+
+#define NUMNOD_SOTET10 10      // number of nodes
+#define NODDOF_SOTET10 3      // number of dofs per node
+#define NUMDOF_SOTET10 30     // total dofs per element
+/**/ #define NUMSTR_SOTET10 6      // number of strains/stresses
+/**/ #define NUMGPT_SOTET10 8      // total gauss points per element
+/**/ #define NUMDIM_SOTET10 3      // number of dimensions
+
 
 // forward declarations
 struct _MATERIAL;
@@ -56,26 +53,31 @@ class Discretization;
 namespace Elements
 {
 // forward declarations
-class Soh8Volume;
-class Soh8Surface;
-class Soh8Line;
-class Soh8Register;
+class Sotet10Volume;
+class Sotet10Surface;
+class Sotet10Line;
+class Sotet10Register;
 
 /*!
-\class So_hex8
+\class So_tet10
 
-\brief A C++ version of the 8-node hex solid element
+\brief A C++ version of the 10-node tet solid element
 
-\author frenzel (frenzel@lnm.mw.tum.de)
+\author volf (alexander.volf@mytum.de)
 */
-class So_hex8 : public DRT::Element
+
+//class So_hex8 : public DRT::Element
+class So_tet10 : public DRT::Element
 {
 public:
 
   //! @name Friends
-  friend class Soh8Register;
-  friend class Soh8Surface;
-  friend class Soh83Line;
+  //friend class Soh8Register;
+  friend class Tet10Register;
+  //friend class Soh8Surface;
+  friend class Tet10Surface;
+  //friend class Soh83Line;
+  friend class Tet103Line;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -85,16 +87,18 @@ public:
 
   \param id : A unique global id
   */
-  So_hex8(int id, int owner);
-
+  //So_hex8(int id, int owner);
+  So_tet10(int id, int owner);
+  
   /*!
   \brief Copy Constructor
 
   Makes a deep copy of a Element
 
   */
-  So_hex8(const So_hex8& old);
-
+  //So_hex8(const So_hex8& old);
+  So_tet10(const So_tet10& old);
+  
   /*!
   \brief Deep copy this instance of Solid3 and return pointer to the copy
 
@@ -117,12 +121,12 @@ public:
   /*!
   \brief Return number of surfaces of this element
   */
-  virtual int NumSurface() const {return 6;}
+  virtual int NumSurface() const {return 4;}
 
   /*!
   \brief Return number of lines of this element
   */
-  virtual int NumLine() const {return 12;}
+  virtual int NumLine() const {return 6;}
 
   /*!
   \brief Get vector of ptrs to the lines of this element
@@ -148,7 +152,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_So_hex8;}
+  virtual int UniqueParObjectId() const { return ParObject_So_tet10;}
 
   /*!
   \brief Pack this class so it can be communicated
@@ -170,8 +174,8 @@ public:
   \brief Destructor
 
   */
-  virtual ~So_hex8();
-
+  //virtual ~So_hex8();
+  virtual ~So_tet10();
   //@}
 
   //! @name Acess methods
@@ -222,7 +226,7 @@ public:
   /*!
   \brief Read input for this element
   */
-  virtual bool ReadElement();
+  bool ReadElement();
 
   //@}
 
@@ -287,7 +291,8 @@ public:
 
 protected:
 
-  //! action parameters recognized by so_hex8
+  // //! action parameters recognized by so_hex8
+  //! action parameters recognized by so_tet10
   enum ActionType
   {
     none,
@@ -302,58 +307,62 @@ protected:
     calc_struct_update_istep
   };
 
-  //! kinematic types of so_hex8
+  // //! kinematic types of so_hex8
+  //! kinematic types of so_tet10
   enum KinematicType
   {
-    soh8_geolin,
-    soh8_totlag,
-    soh8_updlag,
+    //soh8_geolin,
+    sot10_geolin,
+    //soh8_totlag,
+    sot10_totlag,
+    //soh8_updlag,
+    sot10_updlag,
   };
-  //! stress evaluation types of so_hex8
   enum StressType
   {
-    soh8_stress_none,
-    soh8_stress_gpxyz,
-    soh8_stress_gprst,
-    soh8_stress_gp123,
-    soh8_stress_ndxyz,
-    soh8_stress_ndrst,
-    soh8_stress_nd123,
+    //soh8_stress_none,
+    sot8_stress_none,
+    //soh8_stress_gpxyz,
+    sot8_stress_gpxyz,
+    //soh8_stress_gprst,
+    sot8_stress_gprst,
+    //soh8_stress_gp123,
+    sot8_stress_gp123,
+    //soh8_stress_ndxyz,
+    sot8_stress_ndxyz,
+    //soh8_stress_ndrst,
+    sot8_stress_ndrst,
+    //soh8_stress_nd123,
+    sot8_stress_nd123,
   };
-  //! EAS technology types of so_hex8
-  enum EASType
-  {
-    soh8_easfull,
-    soh8_easmild,
-    soh8_eassosh8,
-    soh8_easnone,
-  };
+
   //! kinematic type
   KinematicType                                   kintype_;
   //! type of stress evaluation
   StressType                                      stresstype_;
-  //! type of EAS technology
-  EASType                                         eastype_;
-  //! number of EAS parameters (alphas)
-  int                                             neas_;
   //! no. gaussian points in each spatial dimension
   int                                             ngp_[3];
   //! number of the material law
   int                                             material_;
-  //! container containing so_hex3 eas stuff
-  DRT::Container                                  easdata_;
+  //! container containing so_hex3 eas stuff//ommited
+  //DRT::Container                                  easdata_;
   //! container containing all kind of solid3 thisandthat
   DRT::Container                                  data_;
   //! vector of volume (length 1) of this element
-  vector<RefCountPtr<DRT::Elements::Soh8Volume> > volume_;
+  //vector<RefCountPtr<DRT::Elements::Soh8Volume> > volume_;
+  vector<RefCountPtr<DRT::Elements::Sotet10Volume> > volume_;
   //! vector of surfaces of this element
-  vector<RefCountPtr<DRT::Elements::Soh8Surface> > surfaces_;
+  //vector<RefCountPtr<DRT::Elements::Soh8Surface> > surfaces_;
+  vector<RefCountPtr<DRT::Elements::Sotet10Surface> > surfaces_;
   //! vector of surfaces of this element
-  vector<DRT::Elements::Soh8Surface*>           surfaceptrs_;
+  //vector<DRT::Elements::Soh8Surface*>           surfaceptrs_;
+  vector<DRT::Elements::Sotet10Surface*>           surfaceptrs_;
   //! vector of lines adjacent to this element
-  vector<RefCountPtr<DRT::Elements::Soh8Line> > lines_;
+  //vector<RefCountPtr<DRT::Elements::Soh8Line> > lines_;
+  vector<RefCountPtr<DRT::Elements::Sotet10Line> > lines_;
   //! vector of lines adjacent to this element
-  vector<DRT::Elements::Soh8Line*>              lineptrs_;
+  //vector<DRT::Elements::Soh8Line*>              lineptrs_;
+  vector<DRT::Elements::Sotet10Line*>              lineptrs_;
   //! vector of history variables for each Gauss point
   vector<RefCountPtr<Material> >                mat_;
 
@@ -361,9 +370,10 @@ protected:
   // internal calculation methods
 
   // don't want = operator
-  So_hex8& operator = (const So_hex8& old);
-
-  virtual void soh8_nlnstiffmass(vector<int>&              lm,
+  //So_hex8& operator = (const So_hex8& old);
+  So_tet10& operator = (const So_tet10& old);
+  //virtual void soh8_nlnstiffmass(vector<int>&              lm,
+  virtual void sot10_nlnstiffmass(vector<int>&              lm,
                                  vector<double>&           disp,
                                  vector<double>&           residual,
                                  Epetra_SerialDenseMatrix* stiffmatrix,
@@ -371,49 +381,38 @@ protected:
                                  Epetra_SerialDenseVector* force,
                                  struct _MATERIAL*         material);
 
-  void soh8_stress(struct _MATERIAL* material,
+  //void soh8_stress(struct _MATERIAL* material,
+  void sot10_stress(struct _MATERIAL* material,
                    vector<double>& mydisp,
                    Epetra_SerialDenseMatrix* stresses);
 
-  void soh8_shapederiv(Epetra_SerialDenseMatrix** shapefct,
+  //void soh8_shapederiv(Epetra_SerialDenseMatrix** shapefct,
+  void sot10_shapederiv(Epetra_SerialDenseMatrix** shapefct,
                        Epetra_SerialDenseMatrix** deriv,
                        Epetra_SerialDenseVector** weights);
 
-  void soh8_mat_sel(struct _MATERIAL* material,
-                    Epetra_SerialDenseVector* stress,
+  //void soh8_mat_sel(Epetra_SerialDenseVector* stress,
+  // #### hier deklariert, in implementierung soll einfach soh8_mat_sel gerufen werden
+  void sot10_mat_sel(Epetra_SerialDenseVector* stress,
                     Epetra_SerialDenseMatrix* cmat,
                     double* density,
                     const Epetra_SerialDenseVector* glstrain,
                     const Epetra_SerialDenseMatrix* defgrd,
+                    struct _MATERIAL* material,
                     int gp);
 
-  // EAS technology section
-  void soh8_easinit();
-
-  void soh8_eassetup(
-          Epetra_SerialDenseMatrix** M_GP,    // M-matrix evaluated at GPs
-          double& detJ0,                      // det of Jacobian at origin
-          Epetra_SerialDenseMatrix& T0invT,   // maps M(origin) local to global
-          const Epetra_SerialDenseMatrix& xrefe);     // material element coords
-
-
-}; // class So_hex8
-
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
+}; // class So_tet10
 
 /*!
-\class Soh8Register
+\class Sotet10Register
 
 \brief A register for shell8 element
 
 \author gee (gee@lnm.mw.tum.de)
 */
-class Soh8Register : public DRT::ElementRegister
+
+//class Soh8Register : public DRT::ElementRegister
+class Sotet10Register : public DRT::ElementRegister
 {
 public:
 
@@ -423,7 +422,8 @@ public:
   \brief Standard Constructor
 
   */
-  Soh8Register(DRT::Element::ElementType etype);
+  //Soh8Register(DRT::Element::ElementType etype);
+  Sotet10Register(DRT::Element::ElementType etype);
 
   /*!
   \brief Copy Constructor
@@ -431,7 +431,8 @@ public:
   Makes a deep copy of an Soh8Register
 
   */
-  Soh8Register(const DRT::Elements::Soh8Register& old);
+  //Soh8Register(const DRT::Elements::Soh8Register& old);
+  Sotet10Register(const DRT::Elements::Sotet10Register& old);
 
   /*!
   \brief Deep copy this instance of Soh8Register and return pointer to the copy
@@ -440,7 +441,8 @@ public:
   where the type of the derived class is unknown and a copy-ctor is needed
 
   */
-  DRT::Elements::Soh8Register* Clone() const;
+  //DRT::Elements::Soh8Register* Clone() const;
+  DRT::Elements::Sotet10Register* Clone() const;
 
   /*!
   \brief Return unique ParObject id
@@ -448,7 +450,8 @@ public:
   every class imploementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Soh8Register;}
+ // virtual int UniqueParObjectId() const { return ParObject_Soh8Register;}
+  virtual int UniqueParObjectId() const { return ParObject_Sotet10Register;}
 
   /*!
   \brief Pack this class so it can be communicated
@@ -470,7 +473,8 @@ public:
   \brief Destructor
 
   */
-  virtual ~Soh8Register();
+  //virtual ~Soh8Register();
+  virtual ~Sotet10Register();
 
   //@}
 
@@ -508,9 +512,9 @@ private:
 
 
 /*!
-\class Soh8Surface
+\class Sotet10Surface
 
-\brief An element representing a surface of a So_hex8 element
+\brief An element representing a surface of a So_tet10 element
 
 \note This is a pure Neumann boundary condition element. It's only
       purpose is to evaluate surface Neumann boundary conditions that might be
@@ -520,7 +524,8 @@ private:
 \author maf (frenzel@lnm.mw.tum.de)
 */
 
-class Soh8Surface : public DRT::Element
+//class Soh8Surface : public DRT::Element
+class Sotet10Surface : public DRT::Element
 {
 public:
 
@@ -537,8 +542,11 @@ public:
   \param parent: The parent fluid element of this surface
   \param lsurface: the local surface number of this surface w.r.t. the parent element
   */
-  Soh8Surface(int id, int owner, int nnode, const int* nodeids,
-             DRT::Node** nodes, DRT::Elements::So_hex8* parent, const int lsurface);
+//  Soh8Surface(int id, int owner, int nnode, const int* nodeids,
+  //           DRT::Node** nodes, DRT::Elements::So_hex8* parent, const int lsurface);
+  Sotet10Surface(int id, int owner, int nnode, const int* nodeids,
+             DRT::Node** nodes, DRT::Elements::So_tet10* parent, const int lsurface);
+
 
   /*!
   \brief Copy Constructor
@@ -546,8 +554,9 @@ public:
   Makes a deep copy of a Element
 
   */
-  Soh8Surface(const Soh8Surface& old);
-
+ // Soh8Surface(const Soh8Surface& old);
+  Sotet10Surface(const Sotet10Surface& old);
+  
   /*!
   \brief Deep copy this instance of an element and return pointer to the copy
 
@@ -568,7 +577,8 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of the drt_parobject.H file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Soh8Surface;}
+  //virtual int UniqueParObjectId() const { return ParObject_Soh8Surface;}
+  virtual int UniqueParObjectId() const { return ParObject_Sotet10Surface;}
 
   /*!
   \brief Pack this class so it can be communicated
@@ -590,7 +600,8 @@ public:
   \brief Destructor
 
   */
-  virtual ~Soh8Surface();
+  //virtual ~Soh8Surface();
+  virtual ~Sotet10Surface();
 
   //@}
 
@@ -665,25 +676,28 @@ public:
 private:
 
   // don't want = operator
-  Soh8Surface& operator = (const Soh8Surface& old);
+  //Soh8Surface& operator = (const Soh8Surface& old);
+  Sotet10Surface& operator = (const Sotet10Surface& old);
 
   //! The parent element of this surface
-  DRT::Elements::So_hex8* parent_;
+  //DRT::Elements::So_hex8* parent_;
+  DRT::Elements::So_tet10* parent_;
   //! The local surface number of this surface w.r.t to the parent_ element
   int                    lsurface_;
 
-  void soh8_surface_integ(
+  //void soh8_surface_integ(
+  void sotet10_surface_integ(
       vector<double>* funct,                 // (o) shape functions
       double* sqrtdetg,                      // (o) pointer to sqrt of det(g)
       const Epetra_SerialDenseMatrix* xsrefe,// (i) material element coords
       const double r,                        // (i) coord in r-direction
       const double s);                       // (i) coord in s-direction
-}; // class Soh8Surface
+}; // class Sotet10Surface
 
 /*!
-\class Soh8Line
+\class Sotet10Line
 
-\brief An element representing a line edge of a So_hex8 element
+\brief An element representing a line edge of a So_tet10 element
 
 \note This is a pure Neumann boundary condition element. It's only
       purpose is to evaluate line Neumann boundary conditions that might be
@@ -692,7 +706,8 @@ private:
 
 \author gee (gee@lnm.mw.tum.de)
 */
-class Soh8Line : public DRT::Element
+//class Soh8Line : public DRT::Element
+class Sotet10Line : public DRT::Element
 {
 public:
 
@@ -709,8 +724,10 @@ public:
   \param parent: The parent shell element of this line
   \param lline: the local line number of this line w.r.t. the parent element
   */
-  Soh8Line(int id, int owner, int nnode, const int* nodeids,
-             DRT::Node** nodes, DRT::Elements::So_hex8* parent, const int lline);
+  //Soh8Line(int id, int owner, int nnode, const int* nodeids,
+    //         DRT::Node** nodes, DRT::Elements::So_hex8* parent, const int lline);
+  Sotet10Line(int id, int owner, int nnode, const int* nodeids,
+               DRT::Node** nodes, DRT::Elements::So_tet10* parent, const int lline);
 
   /*!
   \brief Copy Constructor
@@ -718,7 +735,8 @@ public:
   Makes a deep copy of a Element
 
   */
-  Soh8Line(const Soh8Line& old);
+  //Soh8Line(const So8Line& old);
+  Sotet10Line(const Sotet10Line& old);
 
   /*!
   \brief Deep copy this instance of an element and return pointer to the copy
@@ -735,8 +753,8 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of the drt_parobject.H file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Soh8Line;}
-
+  // virtual int UniqueParObjectId() const { return ParObject_Soh8Line;}
+  virtual int UniqueParObjectId() const { return ParObject_Sotet10Line;}
   /*!
   \brief Pack this class so it can be communicated
 
@@ -757,7 +775,8 @@ public:
   \brief Destructor
 
   */
-  virtual ~Soh8Line();
+  //virtual ~Soh8Line();
+  virtual ~Sotet10Line();
 
   //@}
 
@@ -836,10 +855,12 @@ public:
 private:
 
   // don't want = operator
-  Soh8Line& operator = (const Soh8Line& old);
+  //Soh8Line& operator = (const Soh8Line& old);
 
+  Sotet10Line& operator = (const Sotet10Line& old);
   //! The parent element of this line
-  DRT::Elements::So_hex8* parent_;
+  //DRT::Elements::So_hex8* parent_;
+  DRT::Elements::So_tet10* parent_;
   //! The local line number of this line w.r.t to the parent_ element
   int                    lline_;
 
@@ -851,17 +872,6 @@ private:
 } // namespace Elements
 } // namespace DRT
 
-
-
-
-
-
-
-
-
-
-
-#endif  // #ifndef SOH8_H
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOH8
+#endif  // #ifdef D_SOTET10

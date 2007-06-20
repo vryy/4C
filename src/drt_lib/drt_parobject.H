@@ -162,6 +162,11 @@ using namespace std;
 #define ParObject_Ale2                  (int)35
 #define ParObject_Ale2Register          (int)36
 #define ParObject_Ale2Line              (int)37
+#define ParObject_So_tet10              (int)38
+#define ParObject_Sotet10Register       (int)39
+#define ParObject_Sotet10Volume         (int)40
+#define ParObject_Sotet10Surface        (int)41
+#define ParObject_Sotet10Line           (int)42
 
 /*!
 \brief DRT: namespace of the ccarat discretization module
