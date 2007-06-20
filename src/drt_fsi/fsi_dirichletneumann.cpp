@@ -352,7 +352,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
   {
     // insert user defined aitken relaxation
     Teuchos::ParameterList& linesearch = nlParams.sublist("Line Search");
-    Teuchos::RefCountPtr<NOX::LineSearch::Generic> aitken = Teuchos::rcp(new AitkenRelaxation(utils,linesearch));
+    Teuchos::RefCountPtr<NOX::LineSearch::Generic> aitken = Teuchos::rcp(new NOX::FSI::AitkenRelaxation(utils,linesearch));
 
     // We change the method here.
     linesearch.set("Method","User Defined");
@@ -364,7 +364,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
   {
     // insert user defined aitken relaxation
     Teuchos::ParameterList& linesearch = nlParams.sublist("Line Search");
-    Teuchos::RefCountPtr<NOX::LineSearch::Generic> sd = Teuchos::rcp(new SDRelaxation(utils,linesearch));
+    Teuchos::RefCountPtr<NOX::LineSearch::Generic> sd = Teuchos::rcp(new NOX::FSI::SDRelaxation(utils,linesearch));
 
     // We change the method here.
     linesearch.set("Method","User Defined");
@@ -376,7 +376,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
   {
     // insert user defined extrapolate relaxation
     Teuchos::ParameterList& linesearch = nlParams.sublist("Line Search");
-    Teuchos::RefCountPtr<NOX::LineSearch::Generic> extrapolate = Teuchos::rcp(new Extrapolate(utils,linesearch));
+    Teuchos::RefCountPtr<NOX::LineSearch::Generic> extrapolate = Teuchos::rcp(new NOX::FSI::Extrapolate(utils,linesearch));
 
     // We change the method here.
     linesearch.set("Method","User Defined");
@@ -432,7 +432,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
 
     // Ok. The variables.
 
-    Teuchos::RefCountPtr<FSIMatrixFree> FSIMF;
+    Teuchos::RefCountPtr<NOX::FSI::FSIMatrixFree> FSIMF;
     Teuchos::RefCountPtr<NOX::Epetra::MatrixFree> MF;
     Teuchos::RefCountPtr<NOX::Epetra::FiniteDifference> FD;
     Teuchos::RefCountPtr<NOX::Epetra::FiniteDifferenceColoring> FDC;
@@ -467,7 +467,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
 
       // This is the default method.
 
-      FSIMF = Teuchos::rcp(new FSIMatrixFree(printParams, interface, noxSoln));
+      FSIMF = Teuchos::rcp(new NOX::FSI::FSIMatrixFree(printParams, interface, noxSoln));
       iJac = FSIMF;
       J = FSIMF;
     }
@@ -493,7 +493,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
     // extension, so we have to modify the parameter list here.
     else if (jacobian=="None")
     {
-      Teuchos::RefCountPtr<NOX::Direction::Generic> fixpoint = Teuchos::rcp(new FixPoint(utils,nlParams));
+      Teuchos::RefCountPtr<NOX::Direction::Generic> fixpoint = Teuchos::rcp(new NOX::FSI::FixPoint(utils,nlParams));
       dirParams.set("Method","User Defined");
       dirParams.set("User Defined Direction",fixpoint);
       lsParams.set("Preconditioner","None");
@@ -503,7 +503,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
     // the strange coupling proposed by Michler
     else if (jacobian=="Michler")
     {
-      Teuchos::RefCountPtr<NOX::Direction::Generic> michler = Teuchos::rcp(new Michler(utils,nlParams));
+      Teuchos::RefCountPtr<NOX::Direction::Generic> michler = Teuchos::rcp(new NOX::FSI::Michler(utils,nlParams));
       dirParams.set("Method","User Defined");
       dirParams.set("User Defined Direction",michler);
       lsParams.set("Preconditioner","None");
@@ -772,7 +772,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
     // Get the Epetra_Vector with the final solution from the solver
     const NOX::Epetra::Group& finalGroup = dynamic_cast<const NOX::Epetra::Group&>(solver_->getSolutionGroup());
     const Epetra_Vector& finalSolution = (dynamic_cast<const NOX::Epetra::Vector&>(finalGroup.getX())).getEpetraVector();
-    const Epetra_Vector& finalF        = (dynamic_cast<const NOX::Epetra::Vector&>(finalGroup.getF())).getEpetraVector();
+    //const Epetra_Vector& finalF        = (dynamic_cast<const NOX::Epetra::Vector&>(finalGroup.getF())).getEpetraVector();
 
     idispn_->Update(1.0, finalSolution, 0.0);
 

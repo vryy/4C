@@ -16,9 +16,9 @@
 #include <NOX_Utils.H>
 
 
-FSIMatrixFree::FSIMatrixFree(Teuchos::ParameterList& printParams,
-                             const Teuchos::RefCountPtr<NOX::Epetra::Interface::Required>& i,
-                             const NOX::Epetra::Vector& x) :
+NOX::FSI::FSIMatrixFree::FSIMatrixFree(Teuchos::ParameterList& printParams,
+                                       const Teuchos::RefCountPtr<NOX::Epetra::Interface::Required>& i,
+                                       const NOX::Epetra::Vector& x) :
   label("FSI-Matrix-Free"),
   interface(i),
   currentX(x),
@@ -48,12 +48,13 @@ FSIMatrixFree::FSIMatrixFree(Teuchos::ParameterList& printParams,
 
 }
 
-FSIMatrixFree::~FSIMatrixFree()
+
+NOX::FSI::FSIMatrixFree::~FSIMatrixFree()
 {
 }
 
 
-int FSIMatrixFree::SetUseTranspose(bool UseTranspose)
+int NOX::FSI::FSIMatrixFree::SetUseTranspose(bool UseTranspose)
 {
   if (UseTranspose == true) {
     utils.out() << "ERROR: FSIMatrixFree::SetUseTranspose() - Transpose is unavailable in Matrix-Free mode!"
@@ -63,7 +64,8 @@ int FSIMatrixFree::SetUseTranspose(bool UseTranspose)
   return (-1);
 }
 
-int FSIMatrixFree::Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
+
+int NOX::FSI::FSIMatrixFree::Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
   // Calculate the matrix-vector product:
   //
@@ -121,7 +123,8 @@ int FSIMatrixFree::Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) con
   return 0;
 }
 
-int FSIMatrixFree::ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
+
+int NOX::FSI::FSIMatrixFree::ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
   utils.out() << "ERROR: FSIMatrixFree::ApplyInverse - Not available for Matrix Free!"
               << endl;
@@ -129,7 +132,8 @@ int FSIMatrixFree::ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector&
   return (-1);
 }
 
-double FSIMatrixFree::NormInf() const
+
+double NOX::FSI::FSIMatrixFree::NormInf() const
 {
   utils.out() << "ERROR: FSIMatrixFree::NormInf() - Not Available for Matrix-Free mode!" << endl;
   throw "NOX Error";
@@ -137,37 +141,43 @@ double FSIMatrixFree::NormInf() const
 }
 
 
-const char* FSIMatrixFree::Label () const
+const char* NOX::FSI::FSIMatrixFree::Label () const
 {
   return label.c_str();
 }
 
-bool FSIMatrixFree::UseTranspose() const
+
+bool NOX::FSI::FSIMatrixFree::UseTranspose() const
 {
   return false;
 }
 
-bool FSIMatrixFree::HasNormInf() const
+
+bool NOX::FSI::FSIMatrixFree::HasNormInf() const
 {
   return false;
 }
 
-const Epetra_Comm & FSIMatrixFree::Comm() const
+
+const Epetra_Comm & NOX::FSI::FSIMatrixFree::Comm() const
 {
   return currentX.getEpetraVector().Map().Comm();
 }
 
-const Epetra_Map& FSIMatrixFree::OperatorDomainMap() const
+
+const Epetra_Map& NOX::FSI::FSIMatrixFree::OperatorDomainMap() const
 {
   return *epetraMap;
 }
 
-const Epetra_Map& FSIMatrixFree::OperatorRangeMap() const
+
+const Epetra_Map& NOX::FSI::FSIMatrixFree::OperatorRangeMap() const
 {
   return *epetraMap;
 }
 
-bool FSIMatrixFree::computeJacobian(const Epetra_Vector& x, Epetra_Operator& Jac)
+
+bool NOX::FSI::FSIMatrixFree::computeJacobian(const Epetra_Vector& x, Epetra_Operator& Jac)
 {
   // Remember the current interface displacements.
   currentX = x;
@@ -178,7 +188,8 @@ bool FSIMatrixFree::computeJacobian(const Epetra_Vector& x, Epetra_Operator& Jac
   return ok;
 }
 
-void FSIMatrixFree::setGroupForComputeF(const NOX::Abstract::Group& group)
+
+void NOX::FSI::FSIMatrixFree::setGroupForComputeF(const NOX::Abstract::Group& group)
 {
   useGroupForComputeF = true;
   groupPtr = group.clone();

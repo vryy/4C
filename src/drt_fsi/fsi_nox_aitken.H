@@ -6,6 +6,9 @@
 #include <NOX_LineSearch_Generic.H> // base class
 #include <NOX_Utils.H>
 
+namespace NOX {
+  namespace FSI {
+
 //! Aikten line search - the simple relaxation.
 /*!
   This line search can be called via NOX::LineSearch::Manager.
@@ -47,6 +50,9 @@ private:
   //! Printing utilities
   Teuchos::RefCountPtr<NOX::Utils> utils_;
 };
+
+  }
+}
 
 #endif
 #endif

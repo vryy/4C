@@ -17,6 +17,9 @@ namespace NOX {
 }
 
 
+namespace NOX {
+  namespace FSI {
+
 //! Use NonlinearCG linesearch
 /*!
 
@@ -128,6 +131,9 @@ private:
   Teuchos::RefCountPtr<NOX::Abstract::Vector> vecPtr_;
 
 };
+
+  }
+}
 
 #endif
 #endif

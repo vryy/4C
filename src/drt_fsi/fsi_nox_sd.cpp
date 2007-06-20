@@ -15,20 +15,20 @@
 #include <NOX_GlobalData.H>
 
 
-SDRelaxation::SDRelaxation(const Teuchos::RefCountPtr<NOX::Utils>& utils,
-                           Teuchos::ParameterList& params)
+NOX::FSI::SDRelaxation::SDRelaxation(const Teuchos::RefCountPtr<NOX::Utils>& utils,
+                                     Teuchos::ParameterList& params)
   : utils_(utils)
 {
 }
 
 
-SDRelaxation::~SDRelaxation()
+NOX::FSI::SDRelaxation::~SDRelaxation()
 {
 }
 
 
-bool SDRelaxation::reset(const Teuchos::RefCountPtr<NOX::GlobalData>& gd,
-                         Teuchos::ParameterList& params)
+bool NOX::FSI::SDRelaxation::reset(const Teuchos::RefCountPtr<NOX::GlobalData>& gd,
+                                   Teuchos::ParameterList& params)
 {
   utils_ = gd->getUtils();
   //Teuchos::ParameterList& p = params.sublist("SDRelaxation");
@@ -36,10 +36,10 @@ bool SDRelaxation::reset(const Teuchos::RefCountPtr<NOX::GlobalData>& gd,
 }
 
 
-bool SDRelaxation::compute(NOX::Abstract::Group& newgrp,
-                           double& step,
-                           const NOX::Abstract::Vector& dir,
-                           const NOX::Solver::Generic& s)
+bool NOX::FSI::SDRelaxation::compute(NOX::Abstract::Group& newgrp,
+                                     double& step,
+                                     const NOX::Abstract::Vector& dir,
+                                     const NOX::Solver::Generic& s)
 {
   if (utils_->isPrintType(NOX::Utils::InnerIteration))
   {
@@ -77,8 +77,8 @@ bool SDRelaxation::compute(NOX::Abstract::Group& newgrp,
 
 
 NOX::Abstract::Vector&
-SDRelaxation::computeDirectionalDerivative(const NOX::Abstract::Vector& dir,
-                                           NOX::Epetra::Interface::Required& interface)
+NOX::FSI::SDRelaxation::computeDirectionalDerivative(const NOX::Abstract::Vector& dir,
+                                                     NOX::Epetra::Interface::Required& interface)
 {
   // Allocate space for vecPtr and grpPtr if necessary
   if (Teuchos::is_null(vecPtr_))

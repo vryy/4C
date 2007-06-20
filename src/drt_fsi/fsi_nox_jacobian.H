@@ -29,6 +29,9 @@ namespace NOX {
   }
 }
 
+namespace NOX {
+  namespace FSI {
+
 class FSIMatrixFree : public Epetra_Operator,
                       public virtual NOX::Epetra::Interface::Jacobian
 {
@@ -138,6 +141,9 @@ protected:
   //! Printing utilities.
   NOX::Utils utils;
 };
+
+  }
+}
 
 #endif
 #endif

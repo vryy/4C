@@ -6,6 +6,9 @@
 #include <NOX_Direction_Generic.H> // base class
 #include <NOX_Utils.H>
 
+namespace NOX {
+  namespace FSI {
+
 //! %Calculates the fix point direction.
 /*!
 
@@ -62,6 +65,9 @@ private:
   //! Printing Utils
   Teuchos::RefCountPtr<NOX::Utils> utils_;
 };
+
+  }
+}
 
 #endif
 #endif

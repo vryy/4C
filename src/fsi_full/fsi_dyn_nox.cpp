@@ -963,7 +963,7 @@ bool FSI_InterfaceProblem::ComputeForceF(const Epetra_Vector& x,
   // set new interface displacement x
   ARRAY_POSITION *ipos = &(structfield->dis[s_disnum_calc].ipos);
   ARRAY_POSITION *fluid_ipos = &(fluidfield->dis[f_disnum_calc].ipos);
-  ARRAY_POSITION *ale_ipos = &(alefield->dis[a_disnum_calc].ipos);
+  //ARRAY_POSITION *ale_ipos = &(alefield->dis[a_disnum_calc].ipos);
 
   // enforce linear residuum call counter array size
   while (NlIterCount() >= static_cast<int>(linsolvcount_.size()))
@@ -1304,7 +1304,7 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
   {
     // insert user defined aitken relaxation
     Teuchos::ParameterList& linesearch = nlParams.sublist("Line Search");
-    Teuchos::RefCountPtr<NOX::LineSearch::Generic> aitken = Teuchos::rcp(new AitkenRelaxation(utils,linesearch));
+    Teuchos::RefCountPtr<NOX::LineSearch::Generic> aitken = Teuchos::rcp(new NOX::FSI::AitkenRelaxation(utils,linesearch));
 
     // We change the method here.
     linesearch.set("Method","User Defined");
@@ -1316,7 +1316,7 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
   {
     // insert user defined aitken relaxation
     Teuchos::ParameterList& linesearch = nlParams.sublist("Line Search");
-    Teuchos::RefCountPtr<NOX::LineSearch::Generic> sd = Teuchos::rcp(new SDRelaxation(utils,linesearch));
+    Teuchos::RefCountPtr<NOX::LineSearch::Generic> sd = Teuchos::rcp(new NOX::FSI::SDRelaxation(utils,linesearch));
 
     // We change the method here.
     linesearch.set("Method","User Defined");
@@ -1328,7 +1328,7 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
   {
     // insert user defined extrapolate relaxation
     Teuchos::ParameterList& linesearch = nlParams.sublist("Line Search");
-    Teuchos::RefCountPtr<NOX::LineSearch::Generic> extrapolate = Teuchos::rcp(new Extrapolate(utils,linesearch));
+    Teuchos::RefCountPtr<NOX::LineSearch::Generic> extrapolate = Teuchos::rcp(new NOX::FSI::Extrapolate(utils,linesearch));
 
     // We change the method here.
     linesearch.set("Method","User Defined");
@@ -1463,7 +1463,7 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
 
     // Ok. The variables.
 
-    Teuchos::RefCountPtr<FSIMatrixFree> FSIMF;
+    Teuchos::RefCountPtr<NOX::FSI::FSIMatrixFree> FSIMF;
     Teuchos::RefCountPtr<NOX::Epetra::MatrixFree> MF;
     Teuchos::RefCountPtr<NOX::Epetra::FiniteDifference> FD;
     Teuchos::RefCountPtr<NOX::Epetra::FiniteDifferenceColoring> FDC;
@@ -1498,7 +1498,7 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
 
       // This is the default method.
 
-      FSIMF = Teuchos::rcp(new FSIMatrixFree(printParams, interface, noxSoln));
+      FSIMF = Teuchos::rcp(new NOX::FSI::FSIMatrixFree(printParams, interface, noxSoln));
       iJac = FSIMF;
       J = FSIMF;
     }
@@ -1524,7 +1524,7 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     // extension, so we have to modify the parameter list here.
     else if (jacobian=="None")
     {
-      Teuchos::RefCountPtr<NOX::Direction::Generic> fixpoint = Teuchos::rcp(new FixPoint(utils,nlParams));
+      Teuchos::RefCountPtr<NOX::Direction::Generic> fixpoint = Teuchos::rcp(new NOX::FSI::FixPoint(utils,nlParams));
       dirParams.set("Method","User Defined");
       dirParams.set("User Defined Direction",fixpoint);
       lsParams.set("Preconditioner","None");
@@ -1534,7 +1534,7 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     // the strange coupling proposed by Michler
     else if (jacobian=="Michler")
     {
-      Teuchos::RefCountPtr<NOX::Direction::Generic> michler = Teuchos::rcp(new Michler(utils,nlParams));
+      Teuchos::RefCountPtr<NOX::Direction::Generic> michler = Teuchos::rcp(new NOX::FSI::Michler(utils,nlParams));
       dirParams.set("Method","User Defined");
       dirParams.set("User Defined Direction",michler);
       lsParams.set("Preconditioner","None");

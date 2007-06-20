@@ -654,10 +654,9 @@ void DRT::Elements::Ale2::funct_deriv(
     int         option
     )
 {
-  const DOUBLE   q18 = 1.0/8.0;
+  //const DOUBLE   q18 = 1.0/8.0;
   const DOUBLE   q14 = 1.0/4.0;
   DOUBLE         rp,sp,rm,sm,rrm,ssm;
-  DOUBLE         t1,t2,t3,t4;
 
   /* if option ==0 only funtion evaluation, if option==1 also derivatives */
   rp  = 1.0+r;

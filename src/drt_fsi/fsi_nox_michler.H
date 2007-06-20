@@ -7,6 +7,9 @@
 #include <NOX_Utils.H>
 #include <vector>
 
+namespace NOX {
+  namespace FSI {
+
 //! Michler
 /*!
   The FSI coupling algorithm as suggested by Michler et al.
@@ -52,6 +55,9 @@ private:
 
   double nu_;
 };
+
+  }
+}
 
 #endif
 #endif

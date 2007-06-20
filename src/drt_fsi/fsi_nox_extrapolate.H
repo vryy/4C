@@ -7,6 +7,9 @@
 #include <NOX_Utils.H>
 #include <vector>
 
+namespace NOX {
+  namespace FSI {
+
 //! Extrapolate line search - not even on a straight line.
 /*!
   This line search can be called via NOX::LineSearch::Manager.
@@ -47,6 +50,9 @@ private:
   //! Printing utilities
   Teuchos::RefCountPtr<NOX::Utils> utils_;
 };
+
+  }
+}
 
 #endif
 #endif

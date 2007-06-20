@@ -5,29 +5,29 @@
 #include <NOX_GlobalData.H>
 #include <NOX_Abstract_Group.H>
 
-FixPoint::FixPoint(const Teuchos::RefCountPtr<NOX::Utils>& utils,
-                   Teuchos::ParameterList& params)
+NOX::FSI::FixPoint::FixPoint(const Teuchos::RefCountPtr<NOX::Utils>& utils,
+                             Teuchos::ParameterList& params)
   : utils_(utils)
 {
 }
 
 
-FixPoint::~FixPoint()
+NOX::FSI::FixPoint::~FixPoint()
 {
 }
 
 
-bool FixPoint::reset(const Teuchos::RefCountPtr<NOX::GlobalData>& gd,
-                     Teuchos::ParameterList& params)
+bool NOX::FSI::FixPoint::reset(const Teuchos::RefCountPtr<NOX::GlobalData>& gd,
+                               Teuchos::ParameterList& params)
 {
   utils_ = gd->getUtils();
   return true;
 }
 
 
-bool FixPoint::compute(NOX::Abstract::Vector& dir,
-                       NOX::Abstract::Group& soln,
-                       const NOX::Solver::Generic& solver)
+bool NOX::FSI::FixPoint::compute(NOX::Abstract::Vector& dir,
+                                 NOX::Abstract::Group& soln,
+                                 const NOX::Solver::Generic& solver)
 {
   NOX::Abstract::Group::ReturnType status;
 
@@ -43,16 +43,16 @@ bool FixPoint::compute(NOX::Abstract::Vector& dir,
 }
 
 
-bool FixPoint::compute(NOX::Abstract::Vector& dir,
-                       NOX::Abstract::Group& soln,
-                       const NOX::Solver::LineSearchBased& solver)
+bool NOX::FSI::FixPoint::compute(NOX::Abstract::Vector& dir,
+                                 NOX::Abstract::Group& soln,
+                                 const NOX::Solver::LineSearchBased& solver)
 {
   return NOX::Direction::Generic::compute( dir, soln, solver );
 }
 
 
-void FixPoint::throwError(const string& functionName,
-                          const string& errorMsg)
+void NOX::FSI::FixPoint::throwError(const string& functionName,
+                                    const string& errorMsg)
 {
     if (utils_->isPrintType(NOX::Utils::Error))
       utils_->err() << "FixPoint::" << functionName

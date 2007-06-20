@@ -26,18 +26,18 @@ extern "C"
 using namespace NOX;
 using namespace NOX::LineSearch;
 
-Extrapolate::Extrapolate(const Teuchos::RefCountPtr<NOX::Utils>& utils,
-                         Teuchos::ParameterList& params)
+NOX::FSI::Extrapolate::Extrapolate(const Teuchos::RefCountPtr<NOX::Utils>& utils,
+                                   Teuchos::ParameterList& params)
   : utils_(utils)
 {
 }
 
-Extrapolate::~Extrapolate()
+NOX::FSI::Extrapolate::~Extrapolate()
 {
 }
 
-bool Extrapolate::reset(const Teuchos::RefCountPtr<NOX::GlobalData>& gd,
-                        Teuchos::ParameterList& params)
+bool NOX::FSI::Extrapolate::reset(const Teuchos::RefCountPtr<NOX::GlobalData>& gd,
+                                  Teuchos::ParameterList& params)
 {
   r_.clear();
   x_.clear();
@@ -47,9 +47,9 @@ bool Extrapolate::reset(const Teuchos::RefCountPtr<NOX::GlobalData>& gd,
   return true;
 }
 
-bool Extrapolate::compute(Abstract::Group& grp, double& step,
-                          const Abstract::Vector& dir,
-                          const Solver::Generic& s)
+bool NOX::FSI::Extrapolate::compute(Abstract::Group& grp, double& step,
+                                    const Abstract::Vector& dir,
+                                    const Solver::Generic& s)
 {
   //utils_->out() << YELLOW_LIGHT "Extrapolate::compute" END_COLOR "\n";
   const Abstract::Group& oldGrp = s.getPreviousSolutionGroup();

@@ -13,20 +13,22 @@
 using namespace NOX;
 using namespace NOX::LineSearch;
 
-AitkenRelaxation::AitkenRelaxation(const Teuchos::RefCountPtr<NOX::Utils>& utils,
-                                   Teuchos::ParameterList& params)
+NOX::FSI::AitkenRelaxation::AitkenRelaxation(const Teuchos::RefCountPtr<NOX::Utils>& utils,
+                                             Teuchos::ParameterList& params)
   : utils_(utils)
 {
   Teuchos::ParameterList& p = params.sublist("Aitken");
   nu_ = p.get("Start nu", 0.0);
 }
 
-AitkenRelaxation::~AitkenRelaxation()
+
+NOX::FSI::AitkenRelaxation::~AitkenRelaxation()
 {
 }
 
-bool AitkenRelaxation::reset(const Teuchos::RefCountPtr<NOX::GlobalData>& gd,
-                             Teuchos::ParameterList& params)
+
+bool NOX::FSI::AitkenRelaxation::reset(const Teuchos::RefCountPtr<NOX::GlobalData>& gd,
+                                       Teuchos::ParameterList& params)
 {
   Teuchos::ParameterList& p = params.sublist("Aitken");
 
@@ -47,9 +49,10 @@ bool AitkenRelaxation::reset(const Teuchos::RefCountPtr<NOX::GlobalData>& gd,
   return true;
 }
 
-bool AitkenRelaxation::compute(Abstract::Group& grp, double& step,
-                               const Abstract::Vector& dir,
-                               const Solver::Generic& s)
+
+bool NOX::FSI::AitkenRelaxation::compute(Abstract::Group& grp, double& step,
+                                         const Abstract::Vector& dir,
+                                         const Solver::Generic& s)
 {
   if (utils_->isPrintType(NOX::Utils::InnerIteration))
   {

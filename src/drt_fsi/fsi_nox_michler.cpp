@@ -26,18 +26,20 @@ extern "C"
 using namespace NOX;
 using namespace NOX::Direction;
 
-Michler::Michler(const Teuchos::RefCountPtr<NOX::Utils>& utils,
+NOX::FSI::Michler::Michler(const Teuchos::RefCountPtr<NOX::Utils>& utils,
                  Teuchos::ParameterList& params)
   : utils_(utils), params_(params)
 {
 }
 
-Michler::~Michler()
+
+NOX::FSI::Michler::~Michler()
 {
 }
 
-bool Michler::reset(const Teuchos::RefCountPtr<NOX::GlobalData>& gd,
-                    Teuchos::ParameterList& params)
+
+bool NOX::FSI::Michler::reset(const Teuchos::RefCountPtr<NOX::GlobalData>& gd,
+                              Teuchos::ParameterList& params)
 {
   r_.clear();
   x_.clear();
@@ -51,9 +53,9 @@ bool Michler::reset(const Teuchos::RefCountPtr<NOX::GlobalData>& gd,
 }
 
 
-bool Michler::compute(NOX::Abstract::Vector& dir,
-                      NOX::Abstract::Group& soln,
-                      const NOX::Solver::Generic& solver)
+bool NOX::FSI::Michler::compute(NOX::Abstract::Vector& dir,
+                                NOX::Abstract::Group& soln,
+                                const NOX::Solver::Generic& solver)
 {
   NOX::Abstract::Group::ReturnType status;
 
@@ -174,15 +176,16 @@ bool Michler::compute(NOX::Abstract::Vector& dir,
   return true;
 }
 
-bool Michler::compute(NOX::Abstract::Vector& dir,
-                      NOX::Abstract::Group& soln,
-                      const NOX::Solver::LineSearchBased& solver)
+
+bool NOX::FSI::Michler::compute(NOX::Abstract::Vector& dir,
+                                NOX::Abstract::Group& soln,
+                                const NOX::Solver::LineSearchBased& solver)
 {
   return NOX::Direction::Generic::compute( dir, soln, solver );
 }
 
 
-void Michler::throwError(const string& functionName, const string& errorMsg)
+void NOX::FSI::Michler::throwError(const string& functionName, const string& errorMsg)
 {
     if (utils_->isPrintType(NOX::Utils::Error))
       utils_->err() << "Michler::" << functionName
@@ -194,9 +197,9 @@ void Michler::throwError(const string& functionName, const string& errorMsg)
 
 #if 0
 
-bool Michler::compute(Abstract::Group& grp, double& step,
-                          const Abstract::Vector& dir,
-                          const Solver::Generic& s)
+bool NOX::FSI::Michler::compute(Abstract::Group& grp, double& step,
+                                const Abstract::Vector& dir,
+                                const Solver::Generic& s)
 {
   //utils_->out() << YELLOW_LIGHT "Michler::compute" END_COLOR "\n";
   const Abstract::Group& oldGrp = s.getPreviousSolutionGroup();
