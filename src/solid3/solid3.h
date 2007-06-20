@@ -113,12 +113,6 @@ Maintainer: Moritz Frenzel
                                  * to a torsional torque at its tip. 
                                  * (bborn/mgit 04/07) */
 
-/* quick hack */
-/*#define GIDOUTSTRAIN_SOLID3*/ /* quick hack to write strains
-                                 * at Gauss points to Gid output file
-                                 * here, the strains are written
-                                 * instead of the stresses */
-
 /*======================================================================*/
 /* global declarations, variables etc */
 
@@ -357,6 +351,23 @@ typedef enum _SO3_STRESSOUT
   so3_stress_ndeqv
 } SO3_STRESSOUT;
 
+
+/*----------------------------------------------------------------------*/
+/*!
+\brief Type of strain output
+\author bborn
+\date 06/07
+*/
+#define SOLID3_STRAINTYPE { "so3_strain_none",   \
+      "so3_strain_gpxyz",                        \
+      NULL }
+typedef enum _SO3_STRAINOUT
+{
+  so3_strain_none,
+  so3_strain_gpxyz  /* globally xyz-oriented at Gauss points */
+} SO3_STRAINOUT;
+
+
 /*----------------------------------------------------------------------*/
 /*!
 \brief Mode/Status in Robinson's visco-plastic material
@@ -438,8 +449,8 @@ typedef struct _SO3_MIV_ROBINSON
 */
 typedef struct _SOLID3
 {
-  SO3_KINEMATICS kintype;  /* type of kinematics */
-  SO3_STRESSOUT stresstype;  /* output type of stress */
+  /* type of kinematics */
+  SO3_KINEMATICS kintype;
 
   /* number of Gauss points as obtained at read-in
    * hexahedra:
@@ -455,9 +466,11 @@ typedef struct _SOLID3
   /* total number of GPs in domain */
   INT gptot;
 
-  /* coordinates of Gauss points in material frame */
+  /* coordinates of Gauss points in material frame (for output only) */
   ARRAY gpco_xyz;
 
+  /* output type of stress */
+  SO3_STRESSOUT stresstype;
   /* stress vector at Gauss points or nodes
    *    stress_gpxyz : at Gauss points in global XYZ-components
    *    stress_gprst : at Gauss points in parameter rst-compoonents
@@ -469,6 +482,11 @@ typedef struct _SOLID3
   ARRAY stress_ndrst;
   ARRAY stress_nd123;
   /* ARRAY stress_ndeqv; */
+
+  /* output type of stress */
+  SO3_STRAINOUT straintype;
+  /* strain vector for output */
+  ARRAY strain_gpxyz;  /* strain at Gauss points in global XYZ-components */
 
   /* thermo-structure-interaction */
 #ifdef D_TSI
@@ -588,6 +606,28 @@ void so3_gid_stress_gp(FIELD *actfield,
                        INT *gperm,
                        INT ngauss,
                        FILE *out);
+void so3_gid_strain(CHAR resstring[],
+                    FIELD* actfield,
+                    INT disnum,
+                    INT step,
+                    GIDSET* actgid,
+                    FILE* out);
+void so3_gid_strain_gp(FIELD* actfield,
+                       INT disnum,
+                       ELEMENT* actele,
+                       GIDSET* actgid,
+                       SO3_STRAINOUT straintype,
+                       CHAR* resultname,
+                       INT step,
+                       CHAR* resulttype,
+                       CHAR* resultplace,
+                       CHAR* gpset,
+                       INT ncomp,
+                       CHAR *componentnames[],
+                       INT nelenod,
+                       INT* gperm,
+                       INT ngauss,
+                       FILE* out);
 
 /*----------------------------------------------------------------------*/
 /* file so3_inp.c */
@@ -1015,14 +1055,14 @@ void so3_strain_gl(ELEMENT *ele,
 
 /*----------------------------------------------------------------------*/
 /* file so3_stress.c */
-void so3_stress_init(PARTITION *actpart);
-void so3_stress_final(PARTITION *actpart);
-void so3_stress(CONTAINER *cont,
-                ELEMENT *ele,
-                SO3_DATA *data,
-                SO3_GPSHAPEDERIV *gpshade,
-                INT imyrank,
-                MATERIAL *mat);
+void so3_str_init(PARTITION *actpart);
+void so3_str_final(PARTITION *actpart);
+void so3_str(CONTAINER *cont,
+             ELEMENT *ele,
+             SO3_DATA *data,
+             SO3_GPSHAPEDERIV *gpshade,
+             INT imyrank,
+             MATERIAL *mat);
 void so3_stress_rst(DOUBLE xrvi[NUMSTR_SOLID3][NUMSTR_SOLID3],
                     DOUBLE stress[NUMSTR_SOLID3],
                     DOUBLE *stressrst);

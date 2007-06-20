@@ -610,7 +610,7 @@ void so3_mat_robinson_be_rbcksts(ELEMENT* ele,
   if (mat_robin->kind == vp_robinson_kind_arya_narloyz)
   {
     so3_mat_robinson_prmbytmpr(mat_robin->h, tmpr, &(hh));
-    hh *= pow(6.896,1.0+beta) / (3.0*kk0sq*1.e-8);
+    hh *= pow(6.896,1.0+beta) / (3.0*kk0sq);
   }
   else if (mat_robin->kind == vp_robinson_kind_arya_crmosteel)
   {
@@ -627,8 +627,9 @@ void so3_mat_robinson_be_rbcksts(ELEMENT* ele,
   /* recovery factor 'R_0' */
   if (mat_robin->kind == vp_robinson_kind_arya_narloyz)
   {
+    const DOUBLE pus = 1.0e-4;  /* pressure unit scale : cN/cm^2 = 10^-4 MPa */
     so3_mat_robinson_prmbytmpr(mat_robin->rcvry, tmpr, &(rr0));
-    rr0 *= pow(6.896,1.0+beta+mm) * pow(3.0*kk0sq*1.e-8,mm-beta);
+    rr0 *= pow(6.896,1.0+beta+mm) * pow(3.0*kk0sq*pus*pus,mm-beta);
   }
   else
   {
@@ -1312,7 +1313,7 @@ void so3_mat_robinson_be_stress(const CONTAINER* container,
         so3_mv6_v_sub(stsdev, actso3->miv_rob->bacsts.a.da[ip], stsovr);
         FILE* oo = allfiles.gnu;
         fprintf(oo, "# Time step %d   element %d   Gauss point %d\n", 
-                kstep, ele->Id_loc, ip);
+                kstep, ele->Id, ip);
         fprintf(oo, "# step strain-tot strain-ela strain-vis strain-thr"
                 "  stress-tot stress-dev stress-back stress-over\n");
         INT i;
@@ -1339,7 +1340,7 @@ void so3_mat_robinson_be_stress(const CONTAINER* container,
         so3_mv6_v_sub(stsdev, actso3->miv_rob->bacsts.a.da[ip], stsovr);
         FILE* oo = allfiles.gnu;
         fprintf(oo, "# Time step %d   element %d   Gauss point %d\n", 
-                kstep, ele->Id_loc, ip);
+                kstep, ele->Id, ip);
         fprintf(oo, "# step strain-tot strain-ela strain-vis strain-thr"
                 "  stress-tot stress-dev stress-back stress-over\n");
         INT i;

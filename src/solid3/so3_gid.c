@@ -869,15 +869,23 @@ void so3_gid_stress(CHAR resstring[],
 
 /*======================================================================*/
 /*!
-\brief Print stress in Gid output file
+\brief Print stress to Gid output file
 
-\param    resstring     char        (i)   result string
-\param   *actfield      FIELD       (i)   current field
-\param    disnum        INT         (i)   discretisation index
-\param    step          INT         (i)   time step index
-\param   *actgid        GIDSET      (i)   Gid data
-\param   *out           FILE        (o)   Gid output file
-
+\param   actfield      FIELD*         (i)   current field
+\param   disnum        INT            (i)   discretisation index
+\param   actgid        GIDSET*        (i)   Gid data
+\param   stresstype    SO3_STRESSOUT* (i)   stress type
+\param   resultname    CHAR*          (i)   
+\param   step          INT            (i)   curr. load/time step
+\param   resulttype    CHAR*          (i)
+\param   resultplace   CHAR*          (i)
+\param   gpset         CHAR*          (i)
+\param   ncomp         INT            (i)   number of components
+\param   componentnames CHAR*[]       (i)
+\param   nelenod       INT            (i)   number of element nodes
+\param   gperm         INT*           (i)   Gauss point permutation
+\param   ngauss        INT            (i)   number of Gauss points
+\param   out           FILE*          (i/o) output file
 \return void
 
 \author bborn
@@ -986,6 +994,310 @@ void so3_gid_stress_gp(FIELD *actfield,
 #endif
   return;
 }  /* end void so3_gid_stress_gp */
+
+
+/*======================================================================*/
+/*!
+\brief Print strain in Gid output file
+
+\param    resstring     char        (i)   result string
+\param   *actfield      FIELD       (i)   current field
+\param    disnum        INT         (i)   discretisation index
+\param    step          INT         (i)   time step index
+\param   *actgid        GIDSET      (i)   Gid data
+\param   *out           FILE        (o)   Gid output file
+
+\return void
+
+\author bborn
+\date 10/06
+*/
+void so3_gid_strain(CHAR resstring[],
+                    FIELD* actfield,
+                    INT disnum,
+                    INT step,
+                    GIDSET* actgid,
+                    FILE* out)
+{
+  INT ngauss;  /* number of Gauss points in element domain */
+  INT nelenod;  /* number of element nodes */
+  CHAR* resultname;
+  CHAR* resulttype;
+  CHAR* resultplace;
+  CHAR* gpset = NULL;
+  CHAR* rangetable;
+  INT ncomponent;  /* number of output components */
+  CHAR *componentnames[6];
+  ELEMENT* actele;
+
+  /* Gauss point permutations */
+  INT gperm_h_222[8] = {0,4,6,2,1,5,7,3};
+  INT gperm_h_333[27] = {0,10,24,6,2,20,26,8,
+                         9,21,15,3,1,19,25,7,11,23,17,5,
+                         12,10,22,16,4,14,13};
+  /* INT gperm_t_4[4] = {0,1,2,3}; */
+  /* INT gperm_t_10[10] = {0,1,2,3,4,5,6,7,8,9}; */ /* check this */
+  INT *gperm;  /* pointer to current permutation */
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_enter("so3_gid_strain");
+#endif
+
+  /*--------------------------------------------------------------------*/
+  /* SOLID3s have 6 strain - use 3D matrix */
+  /*--------------------------------------------------------------------*/
+  /* hexahedron element with 8 nodes and 2x2x2 Gauss points */
+  if (actgid->is_solid3_h8_222)
+  {
+    /* check only first element and assume, that the others are the same */
+    actele = &(actfield->dis[disnum].element[0]);
+    /* assure: we deal with SOLID3s */
+    if (actele->eltyp != el_solid3)
+    {
+      dserror("All elements in discretisation must be of SOLID3 kind, "
+              "otherwise Gid output fails.\n");
+    }
+    /* distinguish strain type */
+    switch(actele->e.so3->straintype)
+    {
+      /* xyz-oriented strains at Gauss points */
+      case so3_strain_gpxyz:
+        resultname        = "solid3_strain";
+        resulttype        = "MATRIX";
+        resultplace       = "ONGAUSSPOINTS";
+        gpset             = actgid->solid3_h8_222_name;
+        rangetable        = actgid->standardrangetable;
+        ncomponent        = 6;
+        componentnames[0] = "Strain-xx";
+        componentnames[1] = "Strain-yy";
+        componentnames[2] = "Strain-zz";
+        componentnames[3] = "Strain-xy";
+        componentnames[4] = "Strain-yz";
+        componentnames[5] = "Strain-zx";
+        nelenod           = 8;
+        gperm             = &(gperm_h_222[0]);
+        ngauss            = 8;
+        so3_gid_strain_gp(actfield, disnum, actele, actgid, 
+                          so3_strain_gpxyz, resultname, step,
+                          resulttype, resultplace, gpset,
+                          ncomponent, componentnames,
+                          nelenod, gperm, ngauss, out);
+        break;
+      /* catch the remaining strain types */
+      default:
+        fprintf(out,"# no strains available\n");
+        break;
+    }  /* end switch */
+  }  /* end if */
+  /*--------------------------------------------------------------------*/
+  /* hexahderon element with 20 nodes and 3x3x3 Gauss points */
+  if (actgid->is_solid3_h20_333)
+  {
+    /*check only first element and assume, that the others are the same*/
+    actele = &(actfield->dis[disnum].element[0]);
+    switch(actele->e.so3->straintype)
+    {
+      /* xyz-oriented strains at Gauss points */
+      case so3_strain_gpxyz:
+        resultname        = "solid3_strain";
+        resulttype        = "MATRIX";
+        resultplace       = "ONGAUSSPOINTS";
+        gpset             = actgid->solid3_h20_333_name;
+        rangetable        = actgid->standardrangetable;
+        ncomponent        = 6;
+        componentnames[0] = "Strain-xx";
+        componentnames[1] = "Strain-yy";
+        componentnames[2] = "Strain-zz";
+        componentnames[3] = "Strain-xy";
+        componentnames[4] = "Strain-yz";
+        componentnames[5] = "Strain-zx";
+        nelenod           = 20;
+        gperm             = &(gperm_h_333[0]);
+        ngauss            = 27;
+        /* print */
+        so3_gid_strain_gp(actfield, disnum, actele, actgid, 
+                          so3_strain_gpxyz, resultname, step,
+                          resulttype, resultplace, gpset,
+                          ncomponent, componentnames,
+                          nelenod, gperm, ngauss, out);
+        break;
+      /* catch the remains */
+      default:
+        fprintf(out,"# no strains available\n");
+        break;
+    }  /* end switch */
+  }  /* end if */
+  /*--------------------------------------------------------------------*/
+  /* hexahderon element with 27 nodes and 3x3x3 Gauss points */
+  if (actgid->is_solid3_h27_333)
+  {
+    /*check only first element and assume, that the others are the same*/
+    actele = &(actfield->dis[disnum].element[0]);
+    switch(actele->e.so3->straintype)
+    {
+      /* xyz-oriented strains at Gauss points */
+      case so3_strain_gpxyz:
+        resultname        = "solid3_strain";
+        resulttype        = "MATRIX";
+        resultplace       = "ONGAUSSPOINTS";
+        gpset             = actgid->solid3_h27_333_name;
+        rangetable        = actgid->standardrangetable;
+        ncomponent        = 6;
+        componentnames[0] = "Strain-xx";
+        componentnames[1] = "Strain-yy";
+        componentnames[2] = "Strain-zz";
+        componentnames[3] = "Strain-xy";
+        componentnames[4] = "Strain-yz";
+        componentnames[5] = "Strain-zx";
+        nelenod           = 27;
+        gperm             = &(gperm_h_333[0]);
+        ngauss            = 27;
+        /* print */
+        so3_gid_strain_gp(actfield, disnum, actele, actgid, 
+                          so3_strain_gpxyz, resultname, step,
+                          resulttype, resultplace, gpset,
+                          ncomponent, componentnames,
+                          nelenod, gperm, ngauss, out);
+        break;
+      /* catch the remains */
+      default:
+        fprintf(out,"# no strains available\n");
+        break;
+    }  /* end switch */
+  }  /* end if */
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}  /* end void so3_gid_strain */
+
+
+/*======================================================================*/
+/*!
+\brief Print strain to Gid output file
+
+\param   actfield      FIELD*         (i)   current field
+\param   disnum        INT            (i)   discretisation index
+\param   actgid        GIDSET*        (i)   Gid data
+\param   straintype    SO3_STRAINOUT* (i)   strain type
+\param   resultname    CHAR*          (i)   
+\param   step          INT            (i)   curr. load/time step
+\param   resulttype    CHAR*          (i)
+\param   resultplace   CHAR*          (i)
+\param   gpset         CHAR*          (i)
+\param   ncomp         INT            (i)   number of components
+\param   componentnames CHAR*[]       (i)
+\param   nelenod       INT            (i)   number of element nodes
+\param   gperm         INT*           (i)   Gauss point permutation
+\param   ngauss        INT            (i)   number of Gauss points
+\param   out           FILE*          (i/o) output file
+\return void
+
+\author bborn
+\date 10/06
+*/
+void so3_gid_strain_gp(FIELD* actfield,
+                       INT disnum,
+                       ELEMENT* actele,
+                       GIDSET* actgid,
+                       SO3_STRAINOUT straintype,
+                       CHAR* resultname,
+                       INT step,
+                       CHAR* resulttype,
+                       CHAR* resultplace,
+                       CHAR* gpset,
+                       INT ncomp,
+                       CHAR *componentnames[],
+                       INT nelenod,
+                       INT* gperm,
+                       INT ngauss,
+                       FILE* out)
+{
+  INT icomp;
+  INT iele;
+  INT igp, jgp;
+  DOUBLE** strain;
+  
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_enter("so3_gid_strain_gpxyz");
+#endif
+
+  /*--------------------------------------------------------------------*/
+  /* print header */
+  fprintf(out, "#-------------------------------------------------------------------------------\n");
+  fprintf(out, "# RESULT %s on FIELD %s, DIS %1i\n",
+          resultname, actgid->fieldname, disnum);
+  fprintf(out, "#-------------------------------------------------------------------------------\n");
+  fprintf(out, "RESULT \"%s\" \"ccarat\" %d %s %s \"%s_dis_%1i\"\n",
+          resultname, step, resulttype, resultplace, gpset,disnum);
+  fprintf(out, "COMPONENTNAMES ");
+  for (icomp=0; icomp<ncomp; icomp++)
+  {
+    if (icomp == ncomp-1)
+    {
+      fprintf(out, "\"%s\"\n", componentnames[icomp]);
+    }
+    else
+    {
+      fprintf(out, "\"%s\",", componentnames[icomp]);
+    }
+  }
+  /* print values */
+  fprintf(out, "VALUES\n");
+  for (iele=0; iele<actfield->dis[disnum].numele; iele++)
+  {
+    /* pointer to current element */
+    actele = &(actfield->dis[disnum].element[iele]);
+    /* print straines */
+    if ( (actele->eltyp == el_solid3) && (actele->numnp == nelenod) )
+    {
+      if (straintype == so3_strain_gpxyz)
+      {
+        strain = actele->e.so3->strain_gpxyz.a.da;
+      }
+      else
+      {
+        dserror("straintype is not printable to Gid\n");
+      }
+      /* print values at first Gauss point _with_ element index */
+      igp = gperm[0];  /* get corresponding Gauss point index
+                        * of 0th Gid Gauss point in
+                        * SOLID3 Gauss point numbering */
+      fprintf(out, " %6d %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E\n",
+              actele->Id+1,
+              strain[igp][0],  /* strain xx-component */
+              strain[igp][1],  /* strain yy-component */
+              strain[igp][2],  /* strain zz-component */
+              strain[igp][3],  /* strain xy-component */
+              strain[igp][4],  /* strain yz-component */
+              strain[igp][5]);  /* strain zx-component */
+      /* print values at 2nd to last Gauss point */
+      for (jgp=1; jgp<ngauss; jgp++)
+      {
+        igp = gperm[jgp];
+        fprintf(out, "        %12.3E %12.3E %12.3E %12.3E %12.3E %12.3E\n",
+                strain[igp][0],  /* strain xx-compo */
+                strain[igp][1],  /* strain yy-compo */
+                strain[igp][2],  /* strain zz-compo */
+                strain[igp][3],  /* strain xy-compo */
+                strain[igp][4],  /* strain yz-compo */
+                strain[igp][5]);  /* strain zx-compo */
+      }
+    }
+  }
+  fprintf(out, "END VALUES\n");
+
+  /*--------------------------------------------------------------------*/
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+  return;
+}  /* end void so3_gid_strain_gp */
 
 #endif /* end of #ifdef D_SOLID3 */
 /*! @} (documentation module close)*/

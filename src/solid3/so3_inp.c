@@ -238,6 +238,17 @@ void so3_inp(ELEMENT *ele)
   }
 
   /*--------------------------------------------------------------------*/
+  /* set strain output type in accordance to stress output type */
+  if (ele->e.so3->stresstype == so3_stress_gpxyz)
+  {
+    ele->e.so3->straintype = so3_strain_gpxyz;
+  }
+  else
+  {
+    ele->e.so3->straintype = so3_strain_none;
+  }
+
+  /*--------------------------------------------------------------------*/
   /* read TSI coupling */
 #ifdef D_TSI
   ele->e.so3->tsi_couptyp = tsi_coup_none;  /* default */

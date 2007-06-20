@@ -133,7 +133,7 @@ void solid3(PARTITION *actpart,
 #endif
       so3_shape_gpshade_init(&(so3_gpshade));
       so3_mat_init(actpart, mat);
-      so3_stress_init(actpart);
+      so3_str_init(actpart);
 /*      th2_write_restart(NULL, NULL, 0, NULL, 1); */
 /*      th2_read_restart(NULL, NULL, NULL, 1); */
 #ifndef LOCALSYSTEMS_ST
@@ -268,18 +268,18 @@ void solid3(PARTITION *actpart,
       so3_iv_updincr(container, ele, actmat);
       break;
     /*------------------------------------------------------------------*/
-    /* calculate stresses */
+    /* calculate stresses and strains (for output) */
     case calc_struct_stress:
       imyrank = actintra->intra_rank;
       actmat = &(mat[ele->mat-1]);
       so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
-      so3_stress(container, ele, &(so3_data), &(so3_gpshade), imyrank, actmat);
+      so3_str(container, ele, &(so3_data), &(so3_gpshade), imyrank, actmat);
       break;
     /*------------------------------------------------------------------*/
     /* finalise */
     case calc_struct_final:
       so3_mat_final(actpart, mat);
-      so3_stress_final(actpart);
+      so3_str_final(actpart);
       break;
     /*------------------------------------------------------------------*/
     /* catch errors */

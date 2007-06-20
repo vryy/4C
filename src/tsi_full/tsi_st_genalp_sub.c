@@ -1691,6 +1691,8 @@ void tsi_st_genalp_out(PARTITION* actpart,
       /* change hard-coded 0==place ??? */
       out_gid_soldyn("stress", actfield, disnum, actintra, 
                      actdyn->step, 0, actdyn->time);
+      out_gid_soldyn("strain", actfield, disnum, actintra, 
+                     actdyn->step, 0, actdyn->time);
     }
   }
 

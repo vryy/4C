@@ -313,20 +313,31 @@ for (i=0;i<3;i++) zloc[i] /=norm;
 /*------------------------------------------------ plausibility checks */
 /* vectors have to be orthogonal: check scalar products */
 if (FABS(xloc[0]*yloc[0]+xloc[1]*yloc[1]+xloc[2]*yloc[2])>EPS8)
+{
    dserror("locsys base vectors are not orthogonal: xloc . yloc = %g\n", 
            xloc[0]*yloc[0]+xloc[1]*yloc[1]+xloc[2]*yloc[2]);
+}
 if (FABS(xloc[0]*zloc[0]+xloc[1]*zloc[1]+xloc[2]*zloc[2])>EPS8)
+{
    dserror("locsys base vectors are not orthogonal: xloc . zloc = %g\n",
            xloc[0]*zloc[0]+xloc[1]*zloc[1]+xloc[2]*zloc[2]);
+}
 if (FABS(zloc[0]*yloc[0]+zloc[1]*yloc[1]+zloc[2]*yloc[2])>EPS8)
+{
    dserror("locsys base vectors are not orthogonal: zloc . yloc = %g\n",
            zloc[0]*yloc[0]+zloc[1]*yloc[1]+zloc[2]*yloc[2]);
+}
 
 /* we need a right hand system: check vector product */
 if (FABS(zloc[0]-(xloc[1]*yloc[2] - xloc[2]*yloc[1]))
-   +FABS(zloc[1]-(xloc[2]*yloc[0] - xloc[0]*yloc[2]))
-   +FABS(zloc[2]-(xloc[0]*yloc[1] - xloc[1]*yloc[0]))>EPS8)
-    dserror("chosen local cosys no right hand system!\n");
+    +FABS(zloc[1]-(xloc[2]*yloc[0] - xloc[0]*yloc[2]))
+    +FABS(zloc[2]-(xloc[0]*yloc[1] - xloc[1]*yloc[0]))>EPS8)
+{
+  dserror("chosen local cosys no right hand system: || zloc - (xloc x yloc) ||_1 = %g\n",
+          fabs(zloc[0]-(xloc[1]*yloc[2] - xloc[2]*yloc[1]))
+          + fabs(zloc[1]-(xloc[2]*yloc[0] - xloc[0]*yloc[2]))
+          + fabs(zloc[2]-(xloc[0]*yloc[1] - xloc[1]*yloc[0])));
+}
 
 /*------------------------------------------ store the direction cosini */
 actlocsys->lXx=xloc[0];

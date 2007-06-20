@@ -1,7 +1,7 @@
 /*======================================================================*/
 /*!
 \file
-\brief Evaluate the element stresses
+\brief Evaluate the element stresses and strains (for output)
 
 The element stresses are evaluated at certain points in the element:
        (1) at the Gauss points
@@ -60,7 +60,7 @@ static DOUBLE *stress;
 
 /*======================================================================*/
 /*!
-\brief Allocate element stresses and  working arrays
+\brief Allocate element stresses and strains and working arrays
 
 \param  *actpart  PARTITION   (i)   pointer to current partition
 \return void
@@ -68,7 +68,7 @@ static DOUBLE *stress;
 \author bborn
 \date 03/06
 */
-void so3_stress_init(PARTITION *actpart)
+void so3_str_init(PARTITION *actpart)
 {
   INT jdis;  /* discretisation loop jndex */
   INT iele;  /* element loop index */
@@ -77,7 +77,7 @@ void so3_stress_init(PARTITION *actpart)
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
-  dstrc_enter("so3_stress_init");
+  dstrc_enter("so3_str_init");
 #endif
   
   /*--------------------------------------------------------------------*/
@@ -118,6 +118,10 @@ void so3_stress_init(PARTITION *actpart)
         amdef("gpco_xyz", &(actso3->gpco_xyz), 
               actso3->gptot, NDIM_SOLID3, "DA");
         amzero(&(actso3->gpco_xyz));
+        /* allocate strain arrays */
+        amdef("strain_gpxyz", &(actso3->strain_gpxyz), 
+              actso3->gptot, NUMSTR_SOLID3, "DA");
+        amzero(&(actso3->strain_gpxyz));
       }  /* end if */
     }  /* end for */
   }  /* end for */
@@ -135,7 +139,7 @@ void so3_stress_init(PARTITION *actpart)
   dstrc_exit();
 #endif
   return;
-}  /* end of so3_stress_init */
+}  /* end of so3_str_init */
 
 
 /*======================================================================*/
@@ -148,7 +152,7 @@ void so3_stress_init(PARTITION *actpart)
 \author bborn
 \date 10/06
 */
-void so3_stress_final(PARTITION *actpart)
+void so3_str_final(PARTITION *actpart)
 {
   PARTITION *tpart;
   ELEMENT *actele;
@@ -157,7 +161,7 @@ void so3_stress_final(PARTITION *actpart)
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
-  dstrc_enter("so3_stress_final");
+  dstrc_enter("so3_str_final");
 #endif
 
   /*--------------------------------------------------------------------*/
@@ -185,6 +189,8 @@ void so3_stress_final(PARTITION *actpart)
         amdel(&(actso3->stress_nd123));
         /* deallocate Gauss point coordinates */
         amdel(&(actso3->gpco_xyz));
+        /* deallocate strain arrays */
+        amdel(&(actso3->strain_gpxyz));
       }  /* end if */
     }  /* end for */
   }  /* end for */
@@ -201,12 +207,12 @@ void so3_stress_final(PARTITION *actpart)
   dstrc_exit();
 #endif
   return;
-}  /* end of so3_stress_final */
+}  /* end of so3_str_final */
 
 
 /*======================================================================*/
 /*!
-\brief Evaluate element stresses 
+\brief Evaluate element stresses and strains
 
 \param  cont      CONTAINER*         (i)    see container.h
 \param  ele       ELEMENT*           (io)   current element
@@ -220,13 +226,15 @@ void so3_stress_final(PARTITION *actpart)
 \author bborn
 \date 01/07
 */
-void so3_stress(CONTAINER *cont,
-                ELEMENT *ele,
-                SO3_DATA *data,
-                SO3_GPSHAPEDERIV *gpshade,
-                INT imyrank,
-                MATERIAL *mat)
+void so3_str(CONTAINER *cont,
+             ELEMENT *ele,
+             SO3_DATA *data,
+             SO3_GPSHAPEDERIV *gpshade,
+             INT imyrank,
+             MATERIAL *mat)
 {
+  SOLID3* actso3 = ele->e.so3;  /* current SOLID3 element content */
+
   INT nelenod;  /* number of element nodes */
   INT neledof;  /* total number of element DOFs */
   DIS_TYP distyp;  /* type of discretisation */
@@ -256,7 +264,7 @@ void so3_stress(CONTAINER *cont,
   /* start */
   /* Working arrays (locally globals) MUST be initialised! */ 
 #ifdef DEBUG
-  dstrc_enter("so3_stress");
+  dstrc_enter("so3_str");
 #endif
 
   /*--------------------------------------------------------------------*/
@@ -315,7 +323,7 @@ void so3_stress(CONTAINER *cont,
       {
         gpcxyz += gpshade->gpshape[igp][inod] * ex[inod][idim];
       }
-      ele->e.so3->gpco_xyz.a.da[igp][idim] = gpcxyz;
+      actso3->gpco_xyz.a.da[igp][idim] = gpcxyz;
     }
     /*------------------------------------------------------------------*/
     /* compute Jacobian matrix, its determinant and inverse */
@@ -330,13 +338,17 @@ void so3_stress(CONTAINER *cont,
                  gds.disgrdv, gds.defgrd);
     /*------------------------------------------------------------------*/
     /* Linear/Green-Lagrange strain vector */
-    if (ele->e.so3->kintype == so3_geo_lin)
+    if (actso3->kintype == so3_geo_lin)
     {
       so3_strain_lin(ele, gds.disgrdv, gds.stnengv);
+      /* set strain for output */
+      so3_mv6_v_ass(gds.stnengv, actso3->strain_gpxyz.a.da[igp]);
     }
-    else if (ele->e.so3->kintype == so3_total_lagr)
+    else if (actso3->kintype == so3_total_lagr)
     {
       so3_strain_gl(ele, gds.disgrdv, gds.stnglv);
+      /* set strain for output */
+      so3_mv6_v_ass(gds.stnglv, actso3->strain_gpxyz.a.da[igp]);
     }
     else
     {
@@ -353,7 +365,7 @@ void so3_stress(CONTAINER *cont,
     /* store stress at current Gauss point */
     for (istr=0; istr<NUMSTR_SOLID3; istr++)
     {
-      ele->e.so3->stress_gpxyz.a.da[igp][istr] = stress[istr];
+      actso3->stress_gpxyz.a.da[igp][istr] = stress[istr];
     }
     /*------------------------------------------------------------------*/
     /* construct rotational component of inverse FE-Jacobian */
@@ -368,23 +380,20 @@ void so3_stress(CONTAINER *cont,
       INT i;
       for (i=0; i<3; i++)
       {
-        ele->e.so3->stress_gprst.a.da[igp][i] = gds.stnengv[i];
+        actso3->stress_gprst.a.da[igp][i] = gds.stnengv[i];
       }
       for (i=3; i<6; i++)
       {
-        ele->e.so3->stress_gprst.a.da[igp][i] = 0.5*gds.stnengv[i];
+        actso3->stress_gprst.a.da[igp][i] = 0.5*gds.stnengv[i];
       }
     }
 #else
     so3_stress_rst(gds.xrvi, stress, 
-                   ele->e.so3->stress_gprst.a.da[igp]);
+                   actso3->stress_gprst.a.da[igp]);
 #endif
     /*------------------------------------------------------------------*/
     /* store principle and direction angles at current Gauss point */
-#ifdef GIDOUTSTRAIN_SOLID3
-#else
-    so3_stress_123(stress, ele->e.so3->stress_gp123.a.da[igp]);
-#endif
+    so3_stress_123(stress, actso3->stress_gp123.a.da[igp]);
   }  /* end loop over Gauss points */
 
   /*--------------------------------------------------------------------*/
@@ -398,14 +407,14 @@ void so3_stress(CONTAINER *cont,
     /*------------------------------------------------------------------*/
     /* extrapolate values now */
     so3_stress_extrpol(ele, data, gpnum, 
-                       ele->e.so3->stress_gpxyz.a.da, rst,
+                       actso3->stress_gpxyz.a.da, rst,
                        stress);
     for (istr=0; istr<NUMSTR_SOLID3; istr++)
     {
-      ele->e.so3->stress_ndxyz.a.da[inod][istr] = stress[istr];
+      actso3->stress_ndxyz.a.da[inod][istr] = stress[istr];
     }
     /* store principle and direction angles at current Gauss point */
-    so3_stress_123(stress, ele->e.so3->stress_nd123.a.da[inod]);
+    so3_stress_123(stress, actso3->stress_nd123.a.da[inod]);
   }
 
   /*--------------------------------------------------------------------*/
@@ -413,7 +422,7 @@ void so3_stress(CONTAINER *cont,
   dstrc_exit();
 #endif
   return;
-} /* end of th2_stress_cal */
+} /* end of so3_str */
 
 
 /*======================================================================*/

@@ -717,6 +717,23 @@ if (strncmp(string,"stress",stringlenght)==0)
 
 } /* end of (strncmp(string,"stress",stringlenght)==0) */
 /*======================================================================*/
+/*=============================================== result type is strain */
+/*======================================================================*/
+if (strncmp(string,"strain",stringlenght)==0)
+{
+   /*-------------------now go through the meshes and print the results */
+#ifdef D_SOLID3
+   if ( (actgid->is_solid3_h8_222)
+        || (actgid->is_solid3_h20_333)
+        || (actgid->is_solid3_h27_333)
+        || (actgid->is_solid3_t4_1)
+        || (actgid->is_solid3_t10_4) )
+   {
+     so3_gid_strain(string, actfield, disnum, step, actgid, out);
+   }
+#endif
+} /* end of (strncmp(string,"strain",stringlenght)==0) */
+/*======================================================================*/
 /*========================================= result type is velocity */
 /*======================================================================*/
 if (strncmp(string,"velocity",stringlenght)==0)

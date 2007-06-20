@@ -138,6 +138,7 @@ void so3_int_fintstifmass(CONTAINER *container,
     {
       ex[inod][jdim] = actnode->x[jdim];
 #if 0
+      /* debug purposes */
       if (isnan(ex[inod][jdim]))
       {
         printf("Ele %d: Node %d: Dir %d: Coordinate %g\n", ele->Id_loc, inod, jdim, ex[inod][jdim]);
@@ -152,6 +153,7 @@ void so3_int_fintstifmass(CONTAINER *container,
        * ==> IN FEM WE TRUST. */
       edis[inod][jdim] = actnode->sol.a.da[0][jdim];
 #if 0
+      /* debug purposes */
       if (isnan(edis[inod][jdim]))
       {
         printf("Ele %d: Node %d: Dir %d: Displ %g\n", ele->Id_loc, inod, jdim, ex[inod][jdim]);
