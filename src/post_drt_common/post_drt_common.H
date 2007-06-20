@@ -349,7 +349,7 @@ private:
   PostField* field_;
   int pos_;
   MAP* group_;
-  HDFReader file_;
+  IO::HDFReader file_;
 };
 
 

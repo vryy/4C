@@ -16,7 +16,7 @@ extern struct _GENPROB     genprob;
 FSI::Fluid::Fluid(RefCountPtr<DRT::Discretization> dis,
                   RefCountPtr<LINALG::Solver> solver,
                   RefCountPtr<ParameterList> params,
-                  RefCountPtr<DiscretizationWriter> output)
+                  RefCountPtr<IO::DiscretizationWriter> output)
   : FluidImplicitTimeInt(dis,*solver,*params,*output,true),
     solver_(solver),
     params_(params),

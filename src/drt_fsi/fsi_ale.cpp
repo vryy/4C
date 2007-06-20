@@ -20,7 +20,7 @@ extern struct _GENPROB     genprob;
 FSI::AleLinear::AleLinear(RefCountPtr<DRT::Discretization> actdis,
                           Teuchos::RefCountPtr<LINALG::Solver> solver,
                           Teuchos::RefCountPtr<ParameterList> params,
-                          Teuchos::RefCountPtr<DiscretizationWriter> output)
+                          Teuchos::RefCountPtr<IO::DiscretizationWriter> output)
   : discret_(actdis),
     solver_ (solver),
     params_ (params),

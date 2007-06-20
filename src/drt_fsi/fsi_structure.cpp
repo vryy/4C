@@ -21,7 +21,7 @@ extern struct _GENPROB     genprob;
 FSI::Structure::Structure(Teuchos::RefCountPtr<ParameterList> params,
                           Teuchos::RefCountPtr<DRT::Discretization> dis,
                           Teuchos::RefCountPtr<LINALG::Solver> solver,
-                          Teuchos::RefCountPtr<DiscretizationWriter> output)
+                          Teuchos::RefCountPtr<IO::DiscretizationWriter> output)
 
   : StruGenAlpha(*params, *dis, *solver, *output),
     params_(params),

@@ -23,11 +23,11 @@ Maintainer: Michael Gee
 StruGenAlpha::StruGenAlpha(ParameterList& params,
                            DRT::Discretization& dis,
                            LINALG::Solver& solver,
-                           DiscretizationWriter& output) :
+                           IO::DiscretizationWriter& output) :
 params_(params),
 discret_(dis),
 solver_(solver),
-output_(output)                           
+output_(output)
 {
   // -------------------------------------------------------------------
   // get some parameters from parameter list
@@ -41,7 +41,7 @@ output_(output)
   bool outerr    = params_.get<bool>  ("print to err"    ,false);
   FILE* errfile  = params_.get<FILE*> ("err file"        ,NULL);
   if (!errfile) outerr = false;
-  
+
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
@@ -49,14 +49,14 @@ output_(output)
   if (!discret_.Filled()) discret_.FillComplete();
   const Epetra_Map* dofrowmap = discret_.DofRowMap();
   myrank_ = discret_.Comm().MyPID();
-  
+
   // -------------------------------------------------------------------
   // create empty matrices
   // -------------------------------------------------------------------
   stiff_ = LINALG::CreateMatrix(*dofrowmap,81);
   mass_  = LINALG::CreateMatrix(*dofrowmap,81);
   if (damping) damp_ = LINALG::CreateMatrix(*dofrowmap,81);
-  
+
   // -------------------------------------------------------------------
   // create empty vectors
   // -------------------------------------------------------------------
@@ -219,11 +219,11 @@ void StruGenAlpha::ConstantPredictor()
   istep++;
   params_.set<double>("total time",timen);
   params_.set<int>   ("step"      ,istep);
-  
+
   //--------------------------------------------------- predicting state
   // constant predictor : displacement in domain
   disn_->Update(1.0,*dis_,0.0);
-  
+
   // apply new displacements at DBCs
   // and get new external force vector
   {
@@ -353,11 +353,11 @@ void StruGenAlpha::ConsistentPredictor()
   istep++;
   params_.set<double>("total time",timen);
   params_.set<int>   ("step"      ,istep);
-  
+
   //--------------------------------------------------- predicting state
   // constant predictor : displacement in domain
   disn_->Update(1.0,*dis_,0.0);
-  
+
   // apply new displacements at DBCs
   // and get new external force vector
   {
@@ -506,7 +506,7 @@ void StruGenAlpha::FullNewton()
   if (!mass_->Filled()) dserror("mass matrix must be filled here");
   if (damping)
     if (!damp_->Filled()) dserror("damping matrix must be filled here");
-    
+
   //=================================================== equilibrium loop
   int numiter=0;
   while (norm_>toldisp && numiter<=maxiter)
@@ -515,7 +515,7 @@ void StruGenAlpha::FullNewton()
     //---------------------------------------------- build effective lhs
     // (using matrix stiff_ as effective matrix)
     LINALG::Add(*mass_,false,(1.-alpham)/(beta*dt*dt),*stiff_,1.-alphaf);
-    if (damping) 
+    if (damping)
       LINALG::Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),*stiff_,1.0);
     LINALG::Complete(*stiff_);
 
@@ -523,7 +523,7 @@ void StruGenAlpha::FullNewton()
     fresm_->Scale(-1.0);   // delete this by building fresm with other sign
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
-    
+
     //--------------------------------------------------- solve for disi
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
     if (!numiter)
@@ -531,7 +531,7 @@ void StruGenAlpha::FullNewton()
     else
       solver_.Solve(stiff_,disi_,fresm_,true,false);
     stiff_ = null;
-    
+
     //---------------------------------- update mid configuration values
     // displacements
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
@@ -544,7 +544,7 @@ void StruGenAlpha::FullNewton()
     // incremental (required for constant predictor)
     velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
     velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
-                  (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_, 
+                  (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
                   gamma/(beta*dt));
     // accelerations
     // iterative
@@ -556,7 +556,7 @@ void StruGenAlpha::FullNewton()
     accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
                   (2.*beta-1.+alpham)/(2.*beta),*acc_,
                   (1.-alpham)/((1.-alphaf)*beta*dt*dt));
-    
+
     //---------------------------- compute internal forces and stiffness
     {
       // zero out stiffness
@@ -584,7 +584,7 @@ void StruGenAlpha::FullNewton()
       discret_.ClearState();
       // do NOT finalize the stiffness matrix to add masses to it later
     }
-    
+
     //------------------------------------------ compute residual forces
     // Res = M . A_{n+1-alpha_m}
     //     + C . V_{n+1-alpha_f}
@@ -606,14 +606,14 @@ void StruGenAlpha::FullNewton()
       Epetra_Vector fresmcopy(*fresm_);
       fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
     }
-     
+
     //---------------------------------------------- build residual norm
     double disinorm;
     disi_->Norm2(&disinorm);
 
     fresm_->Norm2(&norm_);
     // a short message
-    if (!myrank_) 
+    if (!myrank_)
     {
       if (printscreen)
       {
@@ -628,12 +628,12 @@ void StruGenAlpha::FullNewton()
     }
     // criteria to stop Newton iteration
     norm_ = disinorm;
-    
+
     //--------------------------------- increment equilibrium loop index
     ++numiter;
   } // while (norm_>toldisp && numiter<=maxiter)
   //============================================= end equilibrium loop
-  
+
   //-------------------------------- test whether max iterations was hit
   if (numiter==maxiter) dserror("Newton unconverged in %d iterations",numiter);
   params_.set<int>("num iterations",numiter);
@@ -674,12 +674,12 @@ void StruGenAlpha::ModifiedNewton()
   if (!mass_->Filled()) dserror("mass matrix must be filled here");
   if (damping)
     if (!damp_->Filled()) dserror("damping matrix must be filled here");
-    
+
   int numiter=0;
   //---------------------------------------------- build effective lhs
   // (using matrix stiff_ as effective matrix)
   LINALG::Add(*mass_,false,(1.-alpham)/(beta*dt*dt),*stiff_,1.-alphaf);
-  if (damping) 
+  if (damping)
     LINALG::Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),*stiff_,1.0);
   LINALG::Complete(*stiff_);
   LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
@@ -691,14 +691,14 @@ void StruGenAlpha::ModifiedNewton()
     //----------------------- apply dirichlet BCs to system of equations
     fresm_->Scale(-1.0);   // delete this by building fresm with other sign
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
-    
+
     //--------------------------------------------------- solve for disi
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
     if (!numiter)
       solver_.Solve(stiff_,disi_,fresm_,true,true);
     else
       solver_.Solve(stiff_,disi_,fresm_,false,false);
-    
+
     //---------------------------------- update mid configuration values
     // displacements
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
@@ -723,7 +723,7 @@ void StruGenAlpha::ModifiedNewton()
     accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
                   (2.*beta-1.+alpham)/(2.*beta),*acc_,
                   (1.-alpham)/((1.-alphaf)*beta*dt*dt));
-    
+
     //----------------------------------------- compute internal forces
     {
       // create the parameters for the discretization
@@ -748,7 +748,7 @@ void StruGenAlpha::ModifiedNewton()
       discret_.Evaluate(p,null,null,fint_,null,null);
       discret_.ClearState();
     }
-    
+
     //------------------------------------------ compute residual forces
     // Res = M . A_{n+1-alpha_m}
     //     + C . V_{n+1-alpha_f}
@@ -770,14 +770,14 @@ void StruGenAlpha::ModifiedNewton()
       Epetra_Vector fresmcopy(*fresm_);
       fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
     }
-     
+
     //---------------------------------------------- build residual norm
     double disinorm;
     disi_->Norm2(&disinorm);
 
     fresm_->Norm2(&norm_);
     // a short message
-    if (!myrank_) 
+    if (!myrank_)
     {
       if (printscreen)
       {
@@ -792,12 +792,12 @@ void StruGenAlpha::ModifiedNewton()
     }
     // criteria to stop Newton iteration
     norm_ = disinorm;
-    
+
     //--------------------------------- increment equilibrium loop index
     ++numiter;
   } // while (norm_>toldisp && numiter<=maxiter)
   //============================================= end equilibrium loop
-  
+
   //-------------------------------- test whether max iterations was hit
   if (numiter==maxiter) dserror("Newton unconverged in %d iterations",numiter);
   params_.set<int>("num iterations",numiter);
@@ -838,7 +838,7 @@ void StruGenAlpha::NonlinearCG()
   int outlevel = linearmllist.get<int>("output",0);
   int maxlevel = linearmllist.get<int>("max levels",3);
   int maxcsize = linearmllist.get<int>("coarse: max size",1);
-  
+
   // check whether we have a stiffness matrix, that is not filled yet
   // and mass and damping are present
   if (stiff_==null)     dserror("stiffness matrix = null");
@@ -846,7 +846,7 @@ void StruGenAlpha::NonlinearCG()
   if (!mass_->Filled()) dserror("mass matrix must be filled here");
   if (damping)
     if (!damp_->Filled()) dserror("damping matrix must be filled here");
-    
+
   //---------------------------------------------- set initial guess
   disi_->PutScalar(0.0);
 
@@ -854,18 +854,18 @@ void StruGenAlpha::NonlinearCG()
   ParameterList& noxparams = params_.sublist("nox parameters");
   RefCountPtr<Teuchos::ParameterList> rcpparams = rcp(&noxparams);
   rcpparams.release();
-  
+
   ParameterList& printParams = noxparams.sublist("Printing");
-  printParams.set("MyPID",myrank_); 
+  printParams.set("MyPID",myrank_);
   printParams.set("Output Precision", 9);
   printParams.set("Output Processor", 0);
   if (outlevel)
-    printParams.set("Output Information", 
-                    NOX::Utils::OuterIteration + 
-                    //NOX::Utils::OuterIterationStatusTest + 
+    printParams.set("Output Information",
+                    NOX::Utils::OuterIteration +
+                    //NOX::Utils::OuterIterationStatusTest +
                     //NOX::Utils::InnerIteration +
-                    //NOX::Utils::Parameters + 
-                    //NOX::Utils::Details + 
+                    //NOX::Utils::Parameters +
+                    //NOX::Utils::Details +
                     NOX::Utils::Warning
                     );
   else
@@ -873,49 +873,49 @@ void StruGenAlpha::NonlinearCG()
 
   // Set the nonlinear solver method as line search
   noxparams.set("Nonlinear Solver","Line Search Based");
-  
+
   // get sublist for type of linesearch
   ParameterList& searchParams = noxparams.sublist("Line Search");
   searchParams.set("Method","NonlinearCG");
-  
+
   // Sublist for direction
   ParameterList& dirParams = noxparams.sublist("Direction");
   dirParams.set("Method", "NonlinearCG");
-  
+
   ParameterList& nlcgParams = dirParams.sublist("Nonlinear CG");
   nlcgParams.set("Precondition","On");
   nlcgParams.set("Orthogonalize","Polak-Ribiere");
   //nlcgParams.set("Orthogonalize", "Fletcher-Reeves");
   nlcgParams.set("Restart Frequency", 25);
-  
+
   ParameterList& lsParams = nlcgParams.sublist("Linear Solver");
-  lsParams.set("Aztec Solver", "GMRES"); 
-  lsParams.set("Max Iterations", 100);  
+  lsParams.set("Aztec Solver", "GMRES");
+  lsParams.set("Max Iterations", 100);
   lsParams.set("Tolerance", 1e-11);
-  lsParams.set("Output Frequency", 10);   
+  lsParams.set("Output Frequency", 10);
   //lsParams.set("Preconditioning", "None");
-  //lsParams.set("Preconditioner","None"); 
+  //lsParams.set("Preconditioner","None");
   lsParams.set("Preconditioning", "User Supplied Preconditioner");
-  lsParams.set("Preconditioner","User Defined"); 
-  
+  lsParams.set("Preconditioner","User Defined");
+
   // create the nonlinear ml parameter list
   ParameterList& mlparams = params_.sublist("ml parameters");
   mlparams.set("nlnML output",                                      outlevel   ); // ML-output-level (0-10)
   mlparams.set("nlnML max levels",                                  maxlevel   ); // max. # levels (minimum = 2 !)
   mlparams.set("nlnML coarse: max size",                            maxcsize   ); // the size ML stops generating coarser levels
   mlparams.set("nlnML is linear preconditioner",                    false      );
-  mlparams.set("nlnML is matrixfree",                               false      ); 
-  mlparams.set("nlnML apply constraints",                           false      ); 
-  mlparams.set("nlnML Jacobian fix diagonal",                       false      ); 
+  mlparams.set("nlnML is matrixfree",                               false      );
+  mlparams.set("nlnML apply constraints",                           false      );
+  mlparams.set("nlnML Jacobian fix diagonal",                       false      );
   mlparams.set("nlnML finite difference fine level",                false      );
-  mlparams.set("nlnML finite difference alpha",                     1.0e-08    );    
-  mlparams.set("nlnML finite difference beta",                      1.0e-07    );    
-  mlparams.set("nlnML finite difference centered",                  false      );     
+  mlparams.set("nlnML finite difference alpha",                     1.0e-08    );
+  mlparams.set("nlnML finite difference beta",                      1.0e-07    );
+  mlparams.set("nlnML finite difference centered",                  false      );
 
   mlparams.set("nlnML absolute residual tolerance",                 toldisp    );
   mlparams.set("nlnML max cycles",                                  maxiter    );
   mlparams.set("nlnML adaptive recompute",                          0.0        ); // recompute if residual is larger then this value
-  mlparams.set("nlnML offset recompute",                            0          ); // every offset this preconditioner is recomputed     
+  mlparams.set("nlnML offset recompute",                            0          ); // every offset this preconditioner is recomputed
   mlparams.set("nlnML additional adaptive nullspace",               0          ); // compute adaptive nullspace (additional kernel vectors)
   mlparams.set("nlnML PDE equations",                               6          ); // dof per node
   mlparams.set("nlnML null space: dimension",                       6          ); // dimension of nullspace
@@ -923,17 +923,17 @@ void StruGenAlpha::NonlinearCG()
   mlparams.set("nlnML coarse: type",                                "Uncoupled"); // Uncoupled METIS VBMETIS
   mlparams.set("nlnML nodes per aggregate",                         9          ); // # nodes per agg for coarsening METIS and VBMETIS
 
-  mlparams.set("nlnML use nlncg on fine level",                     true); // use nlnCG or mod. Newton's method   
-  mlparams.set("nlnML use nlncg on medium level",                   true);    
-  mlparams.set("nlnML use nlncg on coarsest level",                 true);    
-  
-  mlparams.set("nlnML max iterations newton-krylov fine level",     100); // # iterations of lin. CG in mod. Newton's method    
-  mlparams.set("nlnML max iterations newton-krylov medium level" ,  50);    
-  mlparams.set("nlnML max iterations newton-krylov coarsest level", 150);    
+  mlparams.set("nlnML use nlncg on fine level",                     true); // use nlnCG or mod. Newton's method
+  mlparams.set("nlnML use nlncg on medium level",                   true);
+  mlparams.set("nlnML use nlncg on coarsest level",                 true);
 
-  mlparams.set("nlnML linear smoother type fine level",             "MLS"); // MLS SGS BSGS Jacobi MLS Bcheby AmesosKLU   
-  mlparams.set("nlnML linear smoother type medium level",           "MLS"); 
-  mlparams.set("nlnML linear smoother type coarsest level",         "AmesosKLU"); 
+  mlparams.set("nlnML max iterations newton-krylov fine level",     100); // # iterations of lin. CG in mod. Newton's method
+  mlparams.set("nlnML max iterations newton-krylov medium level" ,  50);
+  mlparams.set("nlnML max iterations newton-krylov coarsest level", 150);
+
+  mlparams.set("nlnML linear smoother type fine level",             "MLS"); // MLS SGS BSGS Jacobi MLS Bcheby AmesosKLU
+  mlparams.set("nlnML linear smoother type medium level",           "MLS");
+  mlparams.set("nlnML linear smoother type coarsest level",         "AmesosKLU");
   mlparams.set("nlnML linear smoother sweeps fine level",           24);
   mlparams.set("nlnML linear smoother sweeps medium level",         24);
   mlparams.set("nlnML linear smoother sweeps coarsest level",       1);
@@ -943,14 +943,14 @@ void StruGenAlpha::NonlinearCG()
   mlparams.set("nlnML nonlinear smoothing sweeps coarse level",     15);
   mlparams.set("nlnML nonlinear postsmoothing sweeps medium level", 5);
   mlparams.set("nlnML nonlinear postsmoothing sweeps fine level",   5);
-  
+
   // create the fine level interface if it does not exist
   if (fineinterface_==null)
   {
     int printlevel = mlparams.get("nlnML output",6);
     fineinterface_ = rcp(new NoxInterface(*this,printlevel));
   }
-    
+
   // create the nonlinear ml preconditioner if it does not exist
   if (prec_==null)
     prec_ = rcp(new NLNML::NLNML_Preconditioner(fineinterface_,mlparams,discret_.Comm()));
@@ -964,25 +964,25 @@ void StruGenAlpha::NonlinearCG()
     //prec_->solve_variant();
     prec_->solve();
     double t1 = timer.ElapsedTime();
-    
+
     // get status and print output message
     if (outlevel && myrank_==0)
     {
       printf("NOX/ML :============solve time incl. setup : %15.4f sec\n",t1-t0);
       double appltime = fineinterface_->getsumtime();
       printf("NOX/ML :===========of which time in ccarat : %15.4f sec\n",appltime);
-      cout << "NOX/ML :======number calls to computeF in this solve : " 
+      cout << "NOX/ML :======number calls to computeF in this solve : "
            << fineinterface_->getnumcallscomputeF() << "\n\n\n";
       fflush(stdout);
     }
     fineinterface_->resetsumtime();
     fineinterface_->setnumcallscomputeF(0);
-    
+
   //---------------------------------- update mid configuration values
   // displacements
   // incremental (disi is now D_{n+1}-D_{n})
   dism_->Update((1.-alphaf),*disi_,1.0,*dis_,0.0);
-  
+
   // velocities
   // incremental (required for constant predictor)
   velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
@@ -1006,7 +1006,7 @@ void StruGenAlpha::NonlinearCG()
   // create a matrix free operator if it does not exist
   if (matfreeoperator_==null)
     matfreeoperator_ = rcp(new NOX::Epetra::MatrixFree(printParams,fineinterface_,*disi_,false));
-  
+
   // create a linear system if it does not exist
   if (rcpazlinsys_==null)
   {
@@ -1031,29 +1031,29 @@ void StruGenAlpha::NonlinearCG()
     //                                                        prec,
     //                                                        initialGuess));
   }
-  
+
   // create a group if it does not exist
   NOX::Epetra::Vector initialGuess(*disi_);
   RefCountPtr<NOX::Epetra::Group> rcpgrp = rcp(new NOX::Epetra::Group(printParams,
                                                                       fineinterface_,
                                                                       initialGuess,
                                                                       rcpazlinsys_));
-  
+
   // create a convergence test if it does not exist
   if (combo_==null)
   {
-    RefCountPtr<NOX::StatusTest::NormF> absresid = 
+    RefCountPtr<NOX::StatusTest::NormF> absresid =
       rcp( new NOX::StatusTest::NormF(toldisp));
-    RefCountPtr<NOX::StatusTest::NormUpdate> nupdate = 
+    RefCountPtr<NOX::StatusTest::NormUpdate> nupdate =
       rcp(new NOX::StatusTest::NormUpdate(toldisp));
-    RefCountPtr<NOX::StatusTest::Combo> converged = 
+    RefCountPtr<NOX::StatusTest::Combo> converged =
       rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::AND));
     converged->addStatusTest(absresid);
     converged->addStatusTest(nupdate);
-    RefCountPtr<NOX::StatusTest::FiniteValue> fv = 
+    RefCountPtr<NOX::StatusTest::FiniteValue> fv =
       rcp(new NOX::StatusTest::FiniteValue());
     int maxcycle = mlparams.get("nlnML max cycles",200);
-    RefCountPtr<NOX::StatusTest::MaxIters> maxiters = 
+    RefCountPtr<NOX::StatusTest::MaxIters> maxiters =
       rcp(new NOX::StatusTest::MaxIters(maxcycle));
     combo_ = rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
     combo_->addStatusTest(maxiters);
@@ -1064,23 +1064,23 @@ void StruGenAlpha::NonlinearCG()
   // create nox solver manager if it does not exist
   RefCountPtr<NOX::Solver::Manager> noxsolver = rcp(new NOX::Solver::Manager(rcpgrp,combo_,rcpparams));
   prec_->SetNoxSolver(noxsolver);
-  
+
   // solve nonlinear problem
   Epetra_Time timer(discret_.Comm());
   double t0 = timer.ElapsedTime();
   NOX::StatusTest::StatusType status = noxsolver->solve();
   double t1 = timer.ElapsedTime();
-  
+
   bool converged = true;
   if (status != NOX::StatusTest::Converged) converged = false;
-  
+
   // get status and print output message
   if (outlevel && myrank_==0)
   {
     printf("NOX/ML :============solve time incl. setup : %15.4f sec\n",t1-t0);
     double appltime = fineinterface_->getsumtime();
     printf("NOX/ML :===========of which time in ccarat : %15.4f sec\n",appltime);
-    cout << "NOX/ML :======number calls to computeF in this solve : " 
+    cout << "NOX/ML :======number calls to computeF in this solve : "
          << fineinterface_->getnumcallscomputeF() << "\n\n\n";
     if (!converged)
       cout << "***WRN***: NOX not converged!\n";
@@ -1088,12 +1088,12 @@ void StruGenAlpha::NonlinearCG()
   }
   fineinterface_->resetsumtime();
   fineinterface_->setnumcallscomputeF(0);
-  
+
   //---------------------------------- update mid configuration values
   // displacements
   // incremental (disi is now D_{n+1}-D_{n})
   dism_->Update((1.-alphaf),*disi_,1.0,*dis_,0.0);
-  
+
   // velocities
   // incremental (required for constant predictor)
   velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
@@ -1107,7 +1107,7 @@ void StruGenAlpha::NonlinearCG()
   accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
                 (2.*beta-1.+alpham)/(2.*beta),*acc_,
                 (1.-alpham)/((1.-alphaf)*beta*dt*dt));
-  
+
   //-------------------------------------- don't need this at the moment
   stiff_ = null;
 
@@ -1129,10 +1129,10 @@ void StruGenAlpha::UpdateandOutput()
   int    istep         = params_.get<int>   ("step"                   ,0);
   int    nstep         = params_.get<int>   ("nstep"                  ,5);
   int    numiter       = params_.get<int>   ("num iterations"         ,-1);
-  
+
   double alpham        = params_.get<double>("alpha m"                ,0.378);
   double alphaf        = params_.get<double>("alpha f"                ,0.459);
-  
+
   bool   iodisp        = params_.get<bool>  ("io structural disp"     ,true);
   int    updevrydisp   = params_.get<int>   ("io disp every nstep"    ,10);
   bool   iostress      = params_.get<bool>  ("io structural stress"   ,false);
@@ -1144,7 +1144,7 @@ void StruGenAlpha::UpdateandOutput()
   bool   printerr      = params_.get<bool>  ("print to err"           ,false);
   FILE*  errfile       = params_.get<FILE*> ("err file"               ,NULL);
   if (!errfile) printerr = false;
-  
+
   //---------------------------- determine new end-quantities and update
   // new displacements at t_{n+1} -> t_n
   //    D_{n} := D_{n+1} = 1./(1.-alphaf) * D_{n+1-alpha_f}
@@ -1203,7 +1203,7 @@ void StruGenAlpha::UpdateandOutput()
     discret_.Evaluate(p,null,null,null,null,null);
     discret_.ClearState();
   }
-  
+
   //------------------------------------------------- write restart step
   bool isdatawritten = false;
   if (writeresevry && istep%writeresevry==0)
@@ -1215,7 +1215,7 @@ void StruGenAlpha::UpdateandOutput()
     output_.WriteVector("fexternal",fext_);
     output_.WriteMesh(istep,time);
     isdatawritten = true;
-    
+
     if (discret_.Comm().MyPID()==0)
     {
       cout << "====== Restart written in step " << istep << endl;
@@ -1270,17 +1270,17 @@ void StruGenAlpha::Integrate()
 {
   int    istep = params_.get<int>   ("step" ,0);
   int    nstep = params_.get<int>   ("nstep",5);
-  
+
   // can have values "full newton" , "modified newton" , "nonlinear cg"
   string equil = params_.get<string>("equilibrium iteration","full newton");
-  
+
   // can have values takes values "constant" consistent"
   string pred  = params_.get<string>("predictor","constant");
   int predictor=-1;
   if      (pred=="constant")   predictor = 1;
   else if (pred=="consistent") predictor = 2;
   else dserror("Unknown type of predictor");
-  
+
   if (equil=="full newton")
   {
     for (int i=istep; i<nstep; ++i)
@@ -1312,7 +1312,7 @@ void StruGenAlpha::Integrate()
     }
   }
   else dserror("Unknown type of equilibrium iteration");
-  
+
   return;
 }
 
@@ -1346,7 +1346,7 @@ void StruGenAlpha::SetDefaults(ParameterList& params)
   params.set<int>   ("io disp every nstep"    ,10);
   params.set<int>   ("restart"                ,0);
   params.set<int>   ("write restart every"    ,0);
-  // takes values "constant" consistent"  
+  // takes values "constant" consistent"
   params.set<string>("predictor"              ,"constant");
   // takes values "full newton" , "modified newton" , "nonlinear cg"
   params.set<string>("equilibrium iteration"  ,"full newton");
@@ -1360,11 +1360,11 @@ void StruGenAlpha::ReadRestart(int step)
 {
   RefCountPtr<DRT::Discretization> rcpdiscret = rcp(&discret_);
   rcpdiscret.release();
-  DiscretizationReader reader(rcpdiscret,step);
+  IO::DiscretizationReader reader(rcpdiscret,step);
   double time  = reader.ReadDouble("time");
   int    rstep = reader.ReadInt("step");
   if (rstep != step) dserror("Time step on file not equal to given step");
-  
+
   reader.ReadVector(dis_, "displacement");
   reader.ReadVector(vel_, "velocity");
   reader.ReadVector(acc_, "acceleration");

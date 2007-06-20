@@ -21,7 +21,7 @@ public:
   Fluid(RefCountPtr<DRT::Discretization> dis,
         RefCountPtr<LINALG::Solver> solver,
         RefCountPtr<ParameterList> params,
-        RefCountPtr<DiscretizationWriter> output);
+        RefCountPtr<IO::DiscretizationWriter> output);
 
   /// announce a new time step
   //virtual void NewStep(int step, double time);
@@ -53,7 +53,7 @@ private:
 
   RefCountPtr<LINALG::Solver> solver_;
   RefCountPtr<ParameterList> params_;
-  RefCountPtr<DiscretizationWriter> output_;
+  RefCountPtr<IO::DiscretizationWriter> output_;
 };
 
 }

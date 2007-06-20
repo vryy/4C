@@ -74,7 +74,7 @@ public:
   FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> dis,
                        LINALG::Solver&       solver,
                        ParameterList&        params,
-                       DiscretizationWriter& output,
+                       IO::DiscretizationWriter& output,
                        bool alefluid=false);
 
 
@@ -185,7 +185,7 @@ protected:
   RefCountPtr<DRT::Discretization> discret_;
   LINALG::Solver&               solver_;
   ParameterList&                params_;
-  DiscretizationWriter&         output_;
+  IO::DiscretizationWriter&         output_;
   int                           myrank_;
   int                           maxentriesperrow_;
   bool                          alefluid_;

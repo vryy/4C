@@ -120,7 +120,7 @@ void dyn_condif_drt()
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  DiscretizationWriter output(actdis);
+  IO::DiscretizationWriter output(actdis);
   output.WriteMesh(0,0.0);
 
   // -------------------------------------------------------------------

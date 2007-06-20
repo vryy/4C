@@ -92,7 +92,7 @@ void dyn_nlnstructural_drt()
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  DiscretizationWriter output(actdis);
+  IO::DiscretizationWriter output(actdis);
 
   // -------------------------------------------------------------------
   // set some pointers and variables
@@ -146,7 +146,7 @@ void dyn_nlnstructural_drt()
   // takes values "full newton" , "modified newton" , "nonlinear cg"
   genalphaparams.set<string>("equilibrium iteration","full newton");
 
-  // takes values "constant" consistent"  
+  // takes values "constant" consistent"
   genalphaparams.set<string>("predictor","constant");
 
   StruGenAlpha timeintegrator(genalphaparams,*actdis,solver,output);
@@ -155,7 +155,7 @@ void dyn_nlnstructural_drt()
   {
     timeintegrator.ReadRestart(genprob.restart);
   }
-  
+
   // write mesh only if this is not a restart
   output.WriteMesh(genalphaparams.get<int>("step",0),
                    genalphaparams.get<double>("total time",0.0));

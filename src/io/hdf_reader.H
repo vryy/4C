@@ -48,6 +48,9 @@ extern "C" {
 #include "Epetra_Map.h"
 #include "Epetra_Vector.h"
 
+namespace IO
+{
+
 /*!
   \class HDFReader
   \brief Helper class that handles the HDF5 files while reading.
@@ -105,7 +108,7 @@ RefCountPtr<std::vector<char> > ReadPeriodicBoundaryConditions (
   int step, int new_proc_num, int my_id);
 #endif
 
-  
+
   //! read an Epetra_Vector from the result files
   /*!
     Right now an Epetra_Vector has to be read along with its map. Thus
@@ -173,7 +176,7 @@ private:
   //! number of processors that wrote this set of files
   int num_output_proc_;
 };
-
+}
 
 #endif
 #endif

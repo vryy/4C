@@ -37,7 +37,7 @@ Maintainer: Peter Gamnitzer
 FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actdis,
                                            LINALG::Solver&       solver,
                                            ParameterList&        params,
-                                           DiscretizationWriter& output,
+                                           IO::DiscretizationWriter& output,
                                            bool alefluid) :
   // call constructor for "nontrivial" objects
   discret_(actdis),
@@ -1083,7 +1083,7 @@ void FluidImplicitTimeInt::Output()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FluidImplicitTimeInt::ReadRestart(int step)
 {
-  DiscretizationReader reader(discret_,step);
+  IO::DiscretizationReader reader(discret_,step);
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
 

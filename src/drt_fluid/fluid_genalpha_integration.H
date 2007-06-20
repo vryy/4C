@@ -49,15 +49,15 @@ using namespace Teuchos;
 class FluidGenAlphaIntegration
 {
 public:
- 
+
   /*!
-   
+
   \brief Standard Constructor (public)
 
   o trigger numbering of dofs
 
   o create empty system matrix and right hand side
-  
+
   o allocate distributed solution vectors
 
   o generate maps to split velocity and pressure dofs
@@ -66,12 +66,12 @@ public:
   FluidGenAlphaIntegration(RefCountPtr<DRT::Discretization> actdis,
                            LINALG::Solver&                  solver,
                            ParameterList&                   params,
-                           DiscretizationWriter&            output);
+                           IO::DiscretizationWriter&            output);
 
    /*!
   \brief Destructor
 
-  */ 
+  */
   virtual ~FluidGenAlphaIntegration();
 
   //! @name loops and iterations
@@ -92,7 +92,7 @@ public:
   void DoGenAlphaPredictorCorrectorIteration();
 
 
-  
+
   //@}
 
 
@@ -100,10 +100,10 @@ public:
 
   /*!
   \brief Predict velocity and pressure of the new timestep. Up to now, we
-  use a constant predictor for the velocity and the pressure.      
-  
-  Remark: For Dirichlet nodes, no matter what was set here, velnp  
-          will be overwritten by the prescribed value. The         
+  use a constant predictor for the velocity and the pressure.
+
+  Remark: For Dirichlet nodes, no matter what was set here, velnp
+          will be overwritten by the prescribed value. The
           accelerations are calculated after these Dirichlet values
           have been set.
   */
@@ -115,7 +115,7 @@ public:
 
   */
   void GenAlphaApplyDirichletAndNeumann();
-  
+
   /*!
   \brief calculate initial acceleration according to predicted
   velocities and boundary values
@@ -124,7 +124,7 @@ public:
   void GenAlphaCalcInitialAccelerations();
 
 
-  
+
   /*!
   \brief Update the solution after convergence of the nonlinear
          iteration. Current solution becomes old solution of next
@@ -134,11 +134,11 @@ public:
 
   /*!
   \brief Write solution to file
-  
+
   */
   void GenAlphaOutput();
 
-  
+
   //@}
 
 
@@ -148,40 +148,40 @@ public:
   /*!
   \brief Evaluate acceleration and velocity at the intermediate
   time level n+alpha_M and n+alpha_F
-  
+
   */
   void GenAlphaComputeIntermediateSol();
 
   /*!
   \brief Assemble linearised system and solve linear problem
-  
+
   */
   void GenAlphaCalcIncrement(
-    int          itnum  
+    int          itnum
     );
 
   /*!
   \brief update the current acceleration, velocity and pressure
-  
+
   */
   void GenAlphaNonlinearUpdate(
     );
 
   /*!
   \brief check for convergence of nonlinear iteration
-  
+
   */
   bool GenAlphaNonlinearConvergenceCheck(
-    int          itnum  
+    int          itnum
     );
 
   //@}
 
-  //! @name initialisation 
+  //! @name initialisation
 
   /*!
   \brief set an initial flow field
-  
+
   */
 
   void SetInitialFlowField(
@@ -190,12 +190,12 @@ public:
 
   /*!
   \brief do a restart
-  
+
   */
   void ReadRestart(int step);
 
   //@}
-  
+
 protected:
 
 private:
@@ -204,11 +204,11 @@ private:
   RefCountPtr<DRT::Discretization> discret_;
   LINALG::Solver&                  solver_;
   ParameterList&                   params_;
-  DiscretizationWriter&            output_;
-  
+  IO::DiscretizationWriter&            output_;
+
   // the dimension of the problem --- determines which dofs are pressure dofs
   int                              numdim_;
-  
+
   // parallelism
   int                              myrank_;
 
@@ -244,7 +244,7 @@ private:
   // and pressure increment
   RefCountPtr<Epetra_Vector>       increment_;
 
-    
+
   // toggle vector indicating which dofs have Dirichlet BCs
   RefCountPtr<Epetra_Vector>       dirichtoggle_;
 
@@ -261,7 +261,7 @@ private:
   RefCountPtr<Epetra_Vector>       accnp_;
   RefCountPtr<Epetra_Vector>       accn_;
   RefCountPtr<Epetra_Vector>       accam_;
-  
+
   // velocities and pressures at time n+1, n and intermediate time step n+alpha_F
   // in velaf_, every component associated to a pressure dof is completely
   // meaningless since the pressure is treated implicitly.

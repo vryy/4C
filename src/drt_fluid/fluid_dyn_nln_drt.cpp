@@ -122,7 +122,7 @@ void dyn_fluid_drt()
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  DiscretizationWriter output(actdis);
+  IO::DiscretizationWriter output(actdis);
   output.WriteMesh(0,0.0);
 
   // -------------------------------------------------------------------
@@ -191,7 +191,7 @@ void dyn_fluid_drt()
     // restart
     fluidtimeparams.set                  ("write restart every"       ,fdyn->uprestart);
     // solution output
-    fluidtimeparams.set                  ("write solution every"      ,fdyn->upres);    
+    fluidtimeparams.set                  ("write solution every"      ,fdyn->upres);
 
     //--------------------------------------------------
     // evaluate error for test flows with analytical solutions

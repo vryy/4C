@@ -412,7 +412,7 @@ void PostProblem::read_meshes()
         if (!map_find_string(symbol_map(mesh),"mesh_file",&fn))
           dserror("No meshfile name for discretization %s.", currfield.discretization()->Name().c_str());
         string filename = fn;
-        HDFReader reader = HDFReader(input_dir_);
+        IO::HDFReader reader = IO::HDFReader(input_dir_);
         reader.Open(filename,num_output_procs);
 
         RefCountPtr<vector<char> > node_data =

@@ -35,6 +35,9 @@ extern "C" {
 
 #include "../drt_lib/dstrc.H" /* needs standardtypes.h */
 
+/// IO: input/output facility
+namespace IO
+{
 
 /*!
   \class DiscretizationReader
@@ -169,6 +172,8 @@ private:
   int resultfile_changed_;
   int meshfile_changed_;
 };
+
+}
 
 #endif
 #endif

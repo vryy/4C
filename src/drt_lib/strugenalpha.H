@@ -65,7 +65,7 @@ public:
   explicit StruGenAlpha(ParameterList& params,
                         DRT::Discretization& dis,
                         LINALG::Solver& solver,
-                        DiscretizationWriter& output);
+                        IO::DiscretizationWriter& output);
 
 
   /*!
@@ -127,7 +127,7 @@ public:
 
   /*!
   \brief restart calculation from a given step
-  
+
   */
   void ReadRestart(int step);
 
@@ -140,7 +140,7 @@ protected:
   ParameterList&                params_;
   DRT::Discretization&          discret_;
   LINALG::Solver&               solver_;
-  DiscretizationWriter&         output_;
+  IO::DiscretizationWriter&     output_;
   int                           myrank_;
   int                           maxentriesperrow_;
   double                        norm_;

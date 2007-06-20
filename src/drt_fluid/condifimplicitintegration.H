@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief Control routine for convection-diffusion time integration. 
+\brief Control routine for convection-diffusion time integration.
        Associated with condifimplicitintegration.cpp
 
 
@@ -70,7 +70,7 @@ public:
   CondifImplicitTimeInt(RefCountPtr<DRT::Discretization> dis,
                         LINALG::Solver&       solver,
                         ParameterList&        params,
-                        DiscretizationWriter& output);
+                        IO::DiscretizationWriter& output);
 
 
   /*!
@@ -145,7 +145,7 @@ protected:
   RefCountPtr<DRT::Discretization> discret_;
   LINALG::Solver&               solver_;
   ParameterList&                params_;
-  DiscretizationWriter&         output_;
+  IO::DiscretizationWriter&         output_;
   int                           myrank_;
   int                           maxentriesperrow_;
 

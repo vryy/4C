@@ -65,7 +65,7 @@ public:
   AleLinear(Teuchos::RefCountPtr<DRT::Discretization> actdis,
             Teuchos::RefCountPtr<LINALG::Solver> solver,
             Teuchos::RefCountPtr<ParameterList> params,
-            Teuchos::RefCountPtr<DiscretizationWriter> output);
+            Teuchos::RefCountPtr<IO::DiscretizationWriter> output);
 
   void Integrate();
 
@@ -91,7 +91,7 @@ private:
   Teuchos::RefCountPtr<DRT::Discretization> discret_;
   Teuchos::RefCountPtr<LINALG::Solver> solver_;
   Teuchos::RefCountPtr<ParameterList> params_;
-  Teuchos::RefCountPtr<DiscretizationWriter> output_;
+  Teuchos::RefCountPtr<IO::DiscretizationWriter> output_;
 
   int step_;
   int nstep_;

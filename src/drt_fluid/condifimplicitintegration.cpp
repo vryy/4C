@@ -37,7 +37,7 @@ Maintainer: Volker Gravemeier
 CondifImplicitTimeInt::CondifImplicitTimeInt(RefCountPtr<DRT::Discretization> actdis,
                                              LINALG::Solver&       solver,
                                              ParameterList&        params,
-                                             DiscretizationWriter& output) :
+                                             IO::DiscretizationWriter& output) :
   // call constructor for "nontrivial" objects
   discret_(actdis),
   solver_ (solver),
@@ -54,7 +54,7 @@ CondifImplicitTimeInt::CondifImplicitTimeInt(RefCountPtr<DRT::Discretization> ac
   // -------------------------------------------------------------------
   PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(discret_);
   pbc.UpdateDofsForPeriodicBoundaryConditions();
-  
+
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled()) discret_->FillComplete();
   // -------------------------------------------------------------------
@@ -523,7 +523,7 @@ void CondifImplicitTimeInt::Output(
   output_.NewStep    (step,time);
   output_.WriteVector("phinp", phinp_);
   output_.WriteVector("residual", residual_);
-  
+
   // do restart if we have to
   restartstep_ += 1;
   if (restartstep_ == uprestart_)
@@ -612,7 +612,7 @@ void CondifImplicitTimeInt::Output(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void CondifImplicitTimeInt::ReadRestart(int step)
 {
-  DiscretizationReader reader(discret_,step);
+  IO::DiscretizationReader reader(discret_,step);
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
 

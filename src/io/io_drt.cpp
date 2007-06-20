@@ -105,7 +105,7 @@ static void FindPosition(RefCountPtr<DRT::Discretization> dis, int& field_pos, i
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DiscretizationReader::DiscretizationReader(RefCountPtr<DRT::Discretization> dis, int step)
+IO::DiscretizationReader::DiscretizationReader(RefCountPtr<DRT::Discretization> dis, int step)
   : dis_(dis)
 {
   restart_step_ = FindResultGroup(step);
@@ -114,7 +114,7 @@ DiscretizationReader::DiscretizationReader(RefCountPtr<DRT::Discretization> dis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DiscretizationReader::ReadVector(RefCountPtr<Epetra_Vector> vec, string name)
+void IO::DiscretizationReader::ReadVector(RefCountPtr<Epetra_Vector> vec, string name)
 {
 #ifdef BINIO
   MAP* result = map_read_map(restart_step_, const_cast<char*>(name.c_str()));
@@ -128,7 +128,7 @@ void DiscretizationReader::ReadVector(RefCountPtr<Epetra_Vector> vec, string nam
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DiscretizationReader::ReadMesh(int step)
+void IO::DiscretizationReader::ReadMesh(int step)
 {
 #ifdef BINIO
   FindMeshGroup(step);
@@ -149,14 +149,14 @@ void DiscretizationReader::ReadMesh(int step)
   dis_->Redistribute(*noderowmap,*nodecolmap);
   int err = dis_->FillComplete();
   if (err) dserror("FillComplete() returned %d",err);
-  
+
 #endif
   return;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int DiscretizationReader::ReadInt(string name)
+int IO::DiscretizationReader::ReadInt(string name)
 {
   return map_read_int(restart_step_, const_cast<char*>(name.c_str()));
 }
@@ -164,7 +164,7 @@ int DiscretizationReader::ReadInt(string name)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DiscretizationReader::ReadDouble(string name)
+double IO::DiscretizationReader::ReadDouble(string name)
 {
   return map_read_real(restart_step_, const_cast<char*>(name.c_str()));
 }
@@ -172,7 +172,7 @@ double DiscretizationReader::ReadDouble(string name)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAP *DiscretizationReader::FindResultGroup(int step)
+MAP *IO::DiscretizationReader::FindResultGroup(int step)
 {
 #ifdef BINIO
 
@@ -257,7 +257,7 @@ MAP *DiscretizationReader::FindResultGroup(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAP *DiscretizationReader::FindMeshGroup(int step)
+MAP *IO::DiscretizationReader::FindMeshGroup(int step)
 {
 #ifdef BINIO
 
@@ -342,7 +342,7 @@ MAP *DiscretizationReader::FindMeshGroup(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DiscretizationReader::OpenDataFiles(MAP* result_step)
+void IO::DiscretizationReader::OpenDataFiles(MAP* result_step)
 {
 #ifdef BINIO
   int numoutputproc;
@@ -375,7 +375,7 @@ void DiscretizationReader::OpenDataFiles(MAP* result_step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DiscretizationReader::OpenMeshFiles(MAP* result_step)
+void IO::DiscretizationReader::OpenMeshFiles(MAP* result_step)
 {
 #ifdef BINIO
   int numoutputproc;
@@ -408,7 +408,7 @@ void DiscretizationReader::OpenMeshFiles(MAP* result_step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DiscretizationWriter::DiscretizationWriter(RefCountPtr<DRT::Discretization> dis):
+IO::DiscretizationWriter::DiscretizationWriter(RefCountPtr<DRT::Discretization> dis):
   dis_(dis),
   disnum_(0),
   field_pos_(0),
@@ -434,7 +434,7 @@ DiscretizationWriter::DiscretizationWriter(RefCountPtr<DRT::Discretization> dis)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DiscretizationWriter::~DiscretizationWriter()
+IO::DiscretizationWriter::~DiscretizationWriter()
 {
 #ifdef BINIO
   herr_t status;
@@ -460,7 +460,7 @@ DiscretizationWriter::~DiscretizationWriter()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DiscretizationWriter::CreateMeshFile(int step)
+void IO::DiscretizationWriter::CreateMeshFile(int step)
 {
 #ifdef BINIO
 
@@ -499,7 +499,7 @@ void DiscretizationWriter::CreateMeshFile(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DiscretizationWriter::CreateResultFile(int step)
+void IO::DiscretizationWriter::CreateResultFile(int step)
 {
 #ifdef BINIO
 
@@ -536,7 +536,7 @@ void DiscretizationWriter::CreateResultFile(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DiscretizationWriter::NewStep(int step, double time)
+void IO::DiscretizationWriter::NewStep(int step, double time)
 {
 #ifdef BINIO
 
@@ -616,7 +616,7 @@ void DiscretizationWriter::NewStep(int step, double time)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DiscretizationWriter::WriteVector(string name, RefCountPtr<Epetra_Vector> vec)
+void IO::DiscretizationWriter::WriteVector(string name, RefCountPtr<Epetra_Vector> vec)
 {
 #ifdef BINIO
 
@@ -666,7 +666,7 @@ void DiscretizationWriter::WriteVector(string name, RefCountPtr<Epetra_Vector> v
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DiscretizationWriter::WriteMesh(int step, double time)
+void IO::DiscretizationWriter::WriteMesh(int step, double time)
 {
 #ifdef BINIO
 

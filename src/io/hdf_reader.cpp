@@ -10,7 +10,7 @@ using namespace std;
 /*----------------------------------------------------------------------*
  * The Constructor of the HDFReader (num_proc defaults to 1)
  *----------------------------------------------------------------------*/
-HDFReader::HDFReader(string dir):
+IO::HDFReader::HDFReader(string dir):
   filenames_(0),
   files_(0),
   input_dir_(dir),
@@ -21,7 +21,7 @@ HDFReader::HDFReader(string dir):
 /*----------------------------------------------------------------------*
  * The Destructor
  *----------------------------------------------------------------------*/
-HDFReader::~HDFReader()
+IO::HDFReader::~HDFReader()
 {
   Close();
 }
@@ -31,7 +31,7 @@ HDFReader::~HDFReader()
  * with name basename. When num_output_proc_ > 1 it opens the result
  * files of all processors, by appending .p<proc_num> to the basename.
  *----------------------------------------------------------------------*/
-void HDFReader::Open(string basename,int num_output_procs)
+void IO::HDFReader::Open(string basename,int num_output_procs)
 {
   Close();
   num_output_proc_ = num_output_procs;
@@ -54,7 +54,7 @@ void HDFReader::Open(string basename,int num_output_procs)
  * Note: this function should only be called when the HDFReader opened
  * the mesh files
  *----------------------------------------------------------------------*/
-RefCountPtr<std::vector<char> > HDFReader::ReadElementData(int step, int new_proc_num, int my_id)
+RefCountPtr<std::vector<char> > IO::HDFReader::ReadElementData(int step, int new_proc_num, int my_id)
 {
   if (files_.size()==0 || files_[0] == -1)
     dserror("Tried to read data without opening any file");
@@ -79,14 +79,14 @@ RefCountPtr<std::vector<char> > HDFReader::ReadElementData(int step, int new_pro
  * Note: this function should only be called when the HDFReader opened
  * the mesh files                                          gammi 05/07
  *----------------------------------------------------------------------*/
-RefCountPtr<std::vector<char> > HDFReader::ReadPeriodicBoundaryConditions
+RefCountPtr<std::vector<char> > IO::HDFReader::ReadPeriodicBoundaryConditions
 (int step, int new_proc_num, int my_id)
 {
   RefCountPtr<std::vector<char> > thebcs;
-  
+
   thebcs = rcp(new std::vector<char>());
 
-    
+
   if (files_.size()==0 || files_[0] == -1)
     dserror("Tried to read data without opening any file");
   ostringstream path;
@@ -115,7 +115,7 @@ RefCountPtr<std::vector<char> > HDFReader::ReadPeriodicBoundaryConditions
   {
     thebcs=ReadCharData(path.str(),start,end);
   }
-  
+
   return thebcs;
 }
 #endif
@@ -125,7 +125,7 @@ RefCountPtr<std::vector<char> > HDFReader::ReadPeriodicBoundaryConditions
  * Note: this function should only be called when the HDFReader opened
  * the mesh files
  *----------------------------------------------------------------------*/
-RefCountPtr<std::vector<char> > HDFReader::ReadNodeData(int step, int new_proc_num,
+RefCountPtr<std::vector<char> > IO::HDFReader::ReadNodeData(int step, int new_proc_num,
                                                      int my_id)
 {
   if (files_.size()==0 || files_[0] == -1)
@@ -152,7 +152,7 @@ RefCountPtr<std::vector<char> > HDFReader::ReadNodeData(int step, int new_proc_n
  * of type char (private)
  *----------------------------------------------------------------------*/
 RefCountPtr<std::vector<char> >
-HDFReader::ReadCharData(string path, int start, int end)
+IO::HDFReader::ReadCharData(string path, int start, int end)
 {
   if (end == -1)
     end = num_output_proc_;
@@ -197,7 +197,7 @@ HDFReader::ReadCharData(string path, int start, int end)
  * and returns all the data in one vector<int> (private)
  *----------------------------------------------------------------------*/
 RefCountPtr<std::vector<int> >
-HDFReader::ReadIntData(string path, int start, int end)
+IO::HDFReader::ReadIntData(string path, int start, int end)
 {
   if (end == -1)
     end = num_output_proc_;
@@ -240,7 +240,7 @@ HDFReader::ReadIntData(string path, int start, int end)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 RefCountPtr<std::vector<double> >
-HDFReader::ReadDoubleData(string path, int start, int end)
+IO::HDFReader::ReadDoubleData(string path, int start, int end)
 {
   if (end == -1)
     end = num_output_proc_;
@@ -283,7 +283,7 @@ HDFReader::ReadDoubleData(string path, int start, int end)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 RefCountPtr<Epetra_Vector>
-HDFReader::ReadResultData(string id_path, string value_path, const Epetra_Comm& Comm)
+IO::HDFReader::ReadResultData(string id_path, string value_path, const Epetra_Comm& Comm)
 {
   int new_proc_num = Comm.NumProc();
   int my_id = Comm.MyPID();
@@ -304,7 +304,7 @@ HDFReader::ReadResultData(string id_path, string value_path, const Epetra_Comm& 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void HDFReader::Close()
+void IO::HDFReader::Close()
 {
   for (int i = 0; i < num_output_proc_; ++i)
   {
@@ -322,7 +322,7 @@ void HDFReader::Close()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void HDFReader::CalculateRange(int new_proc_num, int my_id, int& start, int& end)
+void IO::HDFReader::CalculateRange(int new_proc_num, int my_id, int& start, int& end)
 {
   int mod = num_output_proc_ % new_proc_num;
   if (my_id < mod)

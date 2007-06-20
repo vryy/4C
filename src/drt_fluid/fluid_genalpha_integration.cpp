@@ -31,7 +31,7 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   RefCountPtr<DRT::Discretization> actdis,
   LINALG::Solver&       solver,
   ParameterList&        params,
-  DiscretizationWriter& output)
+  IO::DiscretizationWriter& output)
   :
   // call constructor for "nontrivial" objects
   discret_(actdis),
@@ -51,7 +51,7 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // -------------------------------------------------------------------
   PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(discret_);
   pbc.UpdateDofsForPeriodicBoundaryConditions();
-  
+
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled()) discret_->FillComplete();
 
@@ -82,7 +82,7 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
 
     int countveldofs = 0;
     int countpredofs = 0;
-    
+
     for (int i=0; i<discret_->NumMyRowNodes(); ++i)
     {
       DRT::Node* node = discret_->lRowNode(i);
@@ -230,12 +230,12 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
   // order accuracy
   gamma_  = 0.5 + alphaM_ - alphaF_;
 
-  
+
   cout << "Generalized Alpha parameter: alpha_F = " << alphaF_ << &endl;
   cout << "                             alpha_M = " << alphaM_ << &endl;
   cout << "                             gamma   = " << gamma_  << &endl;
 
-  
+
   while (stop_timeloop==false)
   {
     // -------------------------------------------------------------------
@@ -251,7 +251,7 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
     {
       printf("TIME: %11.4E/%11.4E  DT = %11.4E     GenAlpha     STEP = %4d/%4d \n",
              time_,endtime,dt_,step_,endstep);
- 
+
     }
 
     // -------------------------------------------------------------------
@@ -269,17 +269,17 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
     //                  velocities and boundary values
     // -------------------------------------------------------------------
     this->GenAlphaCalcInitialAccelerations();
-    
+
     // -------------------------------------------------------------------
     //                     solve nonlinear equation
     // -------------------------------------------------------------------
     this->DoGenAlphaPredictorCorrectorIteration();
-    
+
     // -------------------------------------------------------------------
     //                         update solution
     // -------------------------------------------------------------------
     this->GenAlphaTimeUpdate();
-    
+
     // -------------------------------------------------------------------
     //                         output of solution
     // -------------------------------------------------------------------
@@ -288,7 +288,7 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
     // -------------------------------------------------------------------
     //                    stop criterium for timeloop
     // -------------------------------------------------------------------
-    
+
     if(step_==endstep||time_>=endtime)
     {
 	stop_timeloop=true;
@@ -317,7 +317,7 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
 
   int               itnum         = 0;
 
-  
+
   if(myrank_ == 0)
   {
     printf("+------------+-------------------+--------------+--------------+ \n");
@@ -335,8 +335,8 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
     //                     n+alpha_M and n+alpha_F
     // -------------------------------------------------------------------
     this->GenAlphaComputeIntermediateSol();
-      
-  
+
+
     // -------------------------------------------------------------------
     // solve for increments
     // -------------------------------------------------------------------
@@ -360,7 +360,7 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
       }
     }
 #endif
-    
+
     // -------------------------------------------------------------------
     // do convergence check
     // -------------------------------------------------------------------
@@ -392,17 +392,17 @@ void FluidGenAlphaIntegration::GenAlphaPredictNewSolutionValues()
 
   //       n+1    n
   //      u    = u
-  //       (0)    
+  //       (0)
   //
   //  and
   //
   //       n+1    n
   //      p    = p
-  //       (0)    
+  //       (0)
 
   velnp_->Update(1.0,*veln_ ,0.0);
 
-  
+
   return;
 } // FluidGenAlphaIntegration::GenAlphaPredictNewSolutionValues
 
@@ -423,7 +423,7 @@ void FluidGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann()
 {
   // --------------------------------------------------
   // apply Dirichlet conditions to velnp
-  
+
   ParameterList eleparams;
   // action for elements
   eleparams.set("action","calc_fluid_eleload");
@@ -446,12 +446,12 @@ void FluidGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann()
   discret_->ClearState();
 
 
-  
+
   // --------------------------------------------------
   // evaluate Neumann conditions
 
   // not implemented yet
-     
+
   return;
 } // FluidGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann
 
@@ -473,7 +473,7 @@ void FluidGenAlphaIntegration::GenAlphaCalcInitialAccelerations()
   // adjust accnp according to Dirichlet values of velnp
   //
   //                                  n+1     n
-  //                               vel   - vel 
+  //                               vel   - vel
   //       n+1      n  gamma-1.0      (0)
   //    acc    = acc * --------- + ------------
   //       (0)           gamma      gamma * dt
@@ -481,7 +481,7 @@ void FluidGenAlphaIntegration::GenAlphaCalcInitialAccelerations()
 
   accnp_->Update(1.0,*velnp_,-1.0,*veln_,0.0);
   accnp_->Update((gamma_-1.0)/gamma_,*accn_,1.0/(gamma_*dt_));
-  
+
   return;
 } // FluidGenAlphaIntegration::GenAlphaCalcInitialAccelerations
 
@@ -499,18 +499,18 @@ void FluidGenAlphaIntegration::GenAlphaCalcInitialAccelerations()
 void FluidGenAlphaIntegration::GenAlphaComputeIntermediateSol()
 {
   //       n+alphaM                n+1                      n
-  //    acc         = alpha_M * acc     + (1-alpha_M) *  acc   
+  //    acc         = alpha_M * acc     + (1-alpha_M) *  acc
   //       (i)                     (i)
-  
+
   accam_->Update((alphaM_),*accnp_,(1.0-alphaM_),*accn_,0.0);
 
   //       n+alphaF              n+1                   n
-  //      u         = alpha_F * u     + (1-alpha_F) * u      
+  //      u         = alpha_F * u     + (1-alpha_F) * u
   //       (i)                   (i)
 
   velaf_->Update((alphaF_),*velnp_,(1.0-alphaF_),*veln_,0.0);
 
-  
+
   return;
 } // FluidGenAlphaIntegration::GenAlphaComputeIntermediateSol
 
@@ -535,7 +535,7 @@ void FluidGenAlphaIntegration::GenAlphaTimeUpdate()
   veln_->Update(1.0,*velnp_ ,0.0);
   // for the accelerations
   accn_->Update(1.0,*accnp_ ,0.0);
-  
+
   return;
 } // FluidGenAlphaIntegration::GenAlphaTimeUpdate
 
@@ -555,7 +555,7 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
   output_.NewStep    (step_,time_);
   output_.WriteVector("velnp"   , velnp_);
   output_.WriteVector("residual", residual_);
-  
+
   // do restart if we have to
   restartstep_ += 1;
   if (restartstep_ == uprestart_)
@@ -587,7 +587,7 @@ void FluidGenAlphaIntegration::GenAlphaCalcIncrement(
 
   const Epetra_Map* dofrowmap       = discret_->DofRowMap();
 
-  
+
   // -------------------------------------------------------------------
   // call elements to calculate system matrix
   // -------------------------------------------------------------------
@@ -636,11 +636,11 @@ void FluidGenAlphaIntegration::GenAlphaCalcIncrement(
   velnp_->PutScalar(0.0);
 
   int    gid  = 0;
-      
+
   double dacc = 1.0;
 
   accnp_->SumIntoGlobalValues(1,&dacc,&gid);
-  
+
   double dvel = gamma_*dt_*dacc;
   velnp_->SumIntoGlobalValues(1,&dvel,&gid);
 
@@ -722,10 +722,10 @@ void FluidGenAlphaIntegration::GenAlphaCalcIncrement(
       discret_->ClearState();
     }
   }
-    
+
   residual_->Update(-1.0,*neumann_loads_,1.0);
 
-#else  
+#else
   // -------------------------------------------------------------------
   // call elements to calculate residual
   // -------------------------------------------------------------------
@@ -764,7 +764,7 @@ void FluidGenAlphaIntegration::GenAlphaCalcIncrement(
     }
   }
 #endif
-  
+
   //--------- Apply dirichlet boundary conditions to system of equations
   //          residual discplacements are supposed to be zero at
   //          boundary conditions
@@ -813,7 +813,7 @@ void FluidGenAlphaIntegration::GenAlphaCalcIncrement(
       }
 #endif
 
-  
+
   //-------solve for residual displacements to correct incremental displacements
   {
     bool initsolver = false;
@@ -834,10 +834,10 @@ void FluidGenAlphaIntegration::GenAlphaCalcIncrement(
       printf("sol[%4d] %26.19e\n",rr,data[rr]);
     }
   }
-  
+
 #endif
 
-  
+
   return;
 } // FluidGenAlphaIntegration::GenAlphaCalcIncrement
 
@@ -858,13 +858,13 @@ void FluidGenAlphaIntegration::GenAlphaNonlinearUpdate()
   {
     DRT::Node* node = discret_->lRowNode(i);
     vector<int> dof = discret_->Dof(node);
-    
+
     int numdofs=discret_->Dof(node).size();
 
     for (int j=0; j<numdofs-1; ++j)
     {
       int    gid  = dof[j];
-      
+
       // ------------------------------------------------------
       // update acceleration
       //
@@ -875,12 +875,12 @@ void FluidGenAlphaIntegration::GenAlphaNonlinearUpdate()
       double dacc = (*increment_)[gid];
 
 //      cout << "dacc " << dof[j] << " " << dacc <<&endl;
-      
+
       accnp_->SumIntoGlobalValues(1,&dacc,&gid);
 
       // ------------------------------------------------------
       // use updated acceleration to update velocity. Since
-      //        
+      //
       //    n+1         n            n                 +-   n+1       n -+
       // vel      =  vel   + dt * acc   + gamma * dt * | acc     - acc   | =
       //    (i+1)                                      +-   (i+1)       -+
@@ -888,21 +888,21 @@ void FluidGenAlphaIntegration::GenAlphaNonlinearUpdate()
       //                n            n                 +-   n+1       n -+
       //          =  vel   + dt * acc   + gamma * dt * | acc     - acc   | +
       //                                               +-   (i)         -+
-      //      
-      //                                      n+1 
+      //
+      //                                      n+1
       //             + gamma * dt * dacc = vel     +  gamma * dt * dacc =
       //                                      (i)
-      //               n+1 
+      //               n+1
       //          = vel     +   dvel
       //               (i)
 
-      //        
+      //
       double dvel = gamma_*dt_*dacc;
 
 //      cout << "dvel " << dof[j] << " " << dvel <<&endl;
-      
+
       velnp_->SumIntoGlobalValues(1,&dvel,&gid);
-      
+
     }
 
     // ------------------------------------------------------
@@ -913,14 +913,14 @@ void FluidGenAlphaIntegration::GenAlphaNonlinearUpdate()
     //         (i+1)        (i)
     //
     int    gid   = dof[numdofs-1];
-    
+
     double dpres = (*increment_)[gid];
     velnp_->SumIntoGlobalValues(1,&dpres,&gid);
   }
-  
+
   return;
 } // FluidGenAlphaIntegration::GenAlphaNonlinearUpdate
-  
+
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -933,7 +933,7 @@ void FluidGenAlphaIntegration::GenAlphaNonlinearUpdate()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 bool FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(
-  int          itnum  
+  int          itnum
   )
 {
   bool stopnonliniter = false;
@@ -1012,7 +1012,7 @@ bool FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(
       printf("+---------------------------------------------------------------+\n");
     }
   }
-  
+
   return stopnonliniter;
 } // FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck
 
@@ -1028,7 +1028,7 @@ bool FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FluidGenAlphaIntegration::ReadRestart(int step)
 {
-  DiscretizationReader reader(discret_,step);
+  IO::DiscretizationReader reader(discret_,step);
   time_ = reader.ReadDouble ("time");
   step_ = reader.ReadInt    ("step");
 

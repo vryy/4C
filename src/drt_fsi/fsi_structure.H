@@ -21,7 +21,7 @@ public:
   Structure(Teuchos::RefCountPtr<ParameterList> params,
             Teuchos::RefCountPtr<DRT::Discretization> dis,
             Teuchos::RefCountPtr<LINALG::Solver> solver,
-            Teuchos::RefCountPtr<DiscretizationWriter> output);
+            Teuchos::RefCountPtr<IO::DiscretizationWriter> output);
 
   /// announce a new time step
   //virtual void NewStep(int step, double time);
@@ -52,7 +52,7 @@ private:
   Teuchos::RefCountPtr<ParameterList> params_;
   //Teuchos::RefCountPtr<DRT::Discretization> dis_;
   Teuchos::RefCountPtr<LINALG::Solver> solver_;
-  Teuchos::RefCountPtr<DiscretizationWriter> output_;
+  Teuchos::RefCountPtr<IO::DiscretizationWriter> output_;
 };
 
 }
