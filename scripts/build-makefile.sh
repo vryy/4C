@@ -59,6 +59,9 @@ LIBS=$LIBDIRS $LIBS
 FILTER_LIBS=$LIBDIRS $FILTER_LIBS
 PLAIN_LIBS=$LIBDIRS $PLAIN_LIBS
 
+OBJECTS=$OBJECTS
+FILTER_OBJECTS=$FILTER_OBJECTS
+
 VISUAL2_LIB=$VISUAL2_LIB
 #VISUAL2_INC=$VISUAL2_INC
 
@@ -75,16 +78,14 @@ ccarat: \$(PROGRAM)
 # Build (nearly) everything.
 # Some filters (like the visual ones) are very specific and system dependent
 # and thus not included here. This rule is supposed to work everywhere.
-#all: \$(PROGRAM) post_gid_txt post_out post_monitor post_file_manager post_cmp post_ensight post_drt_gid
 all: \$(PROGRAM) post_gid_txt post_out post_monitor post_file_manager post_cmp post_ensight
 
-\$(PROGRAM): \\
-		$OBJECTS
-		@echo "Linking \$(LD) \$(LDFLAGS) \$(LIBS) \$(INCLUDES) -o \$(PROGRAM)"
-		@\$(LD) \$(LDFLAGS) \\
-		$OBJECTS \\
-		\$(LIBS)  -o \$(PROGRAM)
-		@echo "\$(PROGRAM) successfully built"
+drt: \$(PROGRAM) post_drt_gid post_drt_ensight
+
+\$(PROGRAM): \$(OBJECTS)
+	@echo "Linking \$(LD) \$(LDFLAGS) \$(LIBS) \$(INCLUDES) -o \$(PROGRAM)"
+	@\$(LD) \$(LDFLAGS) \$(OBJECTS) \$(LIBS) -o \$(PROGRAM)
+	@echo "\$(PROGRAM) successfully built"
 
 reconfig:
 	$0 $@
