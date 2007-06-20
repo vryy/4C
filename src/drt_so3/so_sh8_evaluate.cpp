@@ -288,7 +288,10 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
   Epetra_SerialDenseMatrix jac_sps(NUMDIM_SOH8*num_sp,NUMDIM_SOH8);
   // CURRENT Jacobian evaluated at all ANS sampling points
   Epetra_SerialDenseMatrix jac_cur_sps(NUMDIM_SOH8*num_sp,NUMDIM_SOH8);
-  sosh8_anssetup(num_sp,num_ans,xrefe,xcurr,jac_sps,jac_cur_sps,B_ans_loc);
+  // pointer to derivs evaluated at all sampling points
+  Epetra_SerialDenseMatrix* deriv_sp; //[NUMDIM_SOH8*numsp][NUMNOD_SOH8]
+  // evaluate all necessary variables for ANS
+  sosh8_anssetup(num_sp,num_ans,xrefe,xcurr,&deriv_sp,jac_sps,jac_cur_sps,B_ans_loc);
   // (r,s) gp-locations of fully integrated linear 8-node Hex
   // necessary for ANS interpolation
   const double gploc    = 1.0/sqrt(3.0);    // gp sampling point value for linear fct
@@ -476,6 +479,45 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
     cb.Multiply('N','N',1.0,cmat,bop,1.0);          // temporary C . B
     (*stiffmatrix).Multiply('T','N',detJ * (*weights)(gp),bop,cb,1.0);
 
+    // intergrate `geometric' stiffness matrix and add to keu *****************
+    Epetra_SerialDenseVector sfac(stress); // auxiliary integrated stress
+    sfac.Scale(detJ * (*weights)(gp));     // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
+    vector<double> SmB_L(NUMDIM_SOH8);     // intermediate Sm.B_L
+    // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
+    for (int inod=0; inod<NUMNOD_SOH8; ++inod){
+      for (int jnod=0; jnod<NUMNOD_SOH8; ++jnod){
+        Epetra_SerialDenseVector G_ij(NUMSTR_SOH8);
+        G_ij(0) = deriv_gp(0,inod) * deriv_gp(0,jnod); // rr-dir
+        G_ij(1) = deriv_gp(1,inod) * deriv_gp(1,jnod); // ss-dir
+        G_ij(3) = deriv_gp(0,inod) * deriv_gp(1,jnod) + deriv_gp(1,inod) * deriv_gp(0,jnod); //rs-dir
+        // ANS modification in tt-dir
+        G_ij(2) = 0.25*(1-r[gp])*(1-s[gp]) * (*deriv_sp)(2+4*NUMDIM_SOH8,inod) * (*deriv_sp)(2+4*NUMDIM_SOH8,jnod)
+                 +0.25*(1+r[gp])*(1-s[gp]) * (*deriv_sp)(2+5*NUMDIM_SOH8,inod) * (*deriv_sp)(2+5*NUMDIM_SOH8,jnod)
+                 +0.25*(1+r[gp])*(1+s[gp]) * (*deriv_sp)(2+6*NUMDIM_SOH8,inod) * (*deriv_sp)(2+6*NUMDIM_SOH8,jnod)
+                 +0.25*(1-r[gp])*(1+s[gp]) * (*deriv_sp)(2+7*NUMDIM_SOH8,inod) * (*deriv_sp)(2+7*NUMDIM_SOH8,jnod);
+        // ANS modification in st-dir
+        G_ij(4) = 0.5*((1+r[gp]) * ((*deriv_sp)(1+1*NUMDIM_SOH8,inod) * (*deriv_sp)(2+1*NUMDIM_SOH8,jnod)
+                                   +(*deriv_sp)(2+1*NUMDIM_SOH8,inod) * (*deriv_sp)(1+1*NUMDIM_SOH8,jnod))
+                      +(1-r[gp]) * ((*deriv_sp)(1+3*NUMDIM_SOH8,inod) * (*deriv_sp)(2+3*NUMDIM_SOH8,jnod)
+                                   +(*deriv_sp)(2+3*NUMDIM_SOH8,inod) * (*deriv_sp)(1+3*NUMDIM_SOH8,jnod)));
+        // ANS modification in rt-dir
+        G_ij(5) = 0.5*((1-s[gp]) * ((*deriv_sp)(0+0*NUMDIM_SOH8,inod) * (*deriv_sp)(2+0*NUMDIM_SOH8,jnod)
+                                   +(*deriv_sp)(2+0*NUMDIM_SOH8,inod) * (*deriv_sp)(0+0*NUMDIM_SOH8,jnod))
+                      +(1+s[gp]) * ((*deriv_sp)(0+2*NUMDIM_SOH8,inod) * (*deriv_sp)(2+2*NUMDIM_SOH8,jnod)
+                                   +(*deriv_sp)(2+2*NUMDIM_SOH8,inod) * (*deriv_sp)(0+2*NUMDIM_SOH8,jnod)));
+        // transformation of local(parameter) space 'back' to global(material) space
+        G_ij.Multiply('N','N',1.0,TinvT,G_ij,1.0);
+        
+        // Scalar Gij results from product of G_ij with stress, scaled with detJ*weights
+        Epetra_SerialDenseVector Gij(1); // this is a scalar
+        Gij.Multiply('T','N',detJ * (*weights)(gp),stress,G_ij,1.0);
+        
+        // add "geometric part" Gij times detJ*weights to stiffness matrix
+        (*stiffmatrix)(NUMDIM_SOH8*inod+0,NUMDIM_SOH8*jnod+0) += Gij(0);
+        (*stiffmatrix)(NUMDIM_SOH8*inod+1,NUMDIM_SOH8*jnod+1) += Gij(0);
+        (*stiffmatrix)(NUMDIM_SOH8*inod+2,NUMDIM_SOH8*jnod+2) += Gij(0);
+      }
+    } // end of intergrate `geometric' stiffness ******************************
 
     // EAS technology: integrate matrices --------------------------------- EAS
     if (eastype_ != soh8_easnone) {
@@ -545,6 +587,7 @@ void DRT::Elements::So_sh8::sosh8_anssetup(
           const int numans,             // number of ans strains
           const Epetra_SerialDenseMatrix& xrefe, // material element coords
           const Epetra_SerialDenseMatrix& xcurr, // current element coords
+          Epetra_SerialDenseMatrix** deriv_sp,   // derivs eval. at all sampling points
           Epetra_SerialDenseMatrix& jac_sps,     // jac at all sampling points
           Epetra_SerialDenseMatrix& jac_cur_sps, // current jac at all sampling points
           Epetra_SerialDenseMatrix& B_ans_loc) // modified B 
@@ -552,12 +595,9 @@ void DRT::Elements::So_sh8::sosh8_anssetup(
   // static matrix object of derivs at sampling points, kept in memory
   static Epetra_SerialDenseMatrix df_sp(NUMDIM_SOH8*numsp,NUMNOD_SOH8);
   static bool dfsp_eval;                      // flag for re-evaluate everything
-  
-  Epetra_SerialDenseMatrix* deriv_sp;
 
   if (dfsp_eval!=0){             // if true f,df already evaluated
     *deriv_sp = &df_sp;         // return adress of static object to target of pointer
-    return;
   } else {
   /*====================================================================*/
   /* 8-node hexhedra Solid-Shell node topology
@@ -641,7 +681,7 @@ void DRT::Elements::So_sh8::sosh8_anssetup(
     Epetra_SerialDenseMatrix deriv_asp(NUMDIM_SOH8,numsp);
     for (int m=0; m<NUMDIM_SOH8; ++m) {
       for (int n=0; n<numsp; ++n) {
-        deriv_asp(m,n)=(*deriv_sp)(NUMDIM_SOH8*sp+m,n);
+        deriv_asp(m,n)=(**deriv_sp)(NUMDIM_SOH8*sp+m,n);
       }
     }
     /* compute the CURRENT Jacobian matrix at the sampling point:

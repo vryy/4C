@@ -598,12 +598,12 @@ void DRT::Elements::So_hex8::soh8_shapederiv(
   static Epetra_SerialDenseMatrix  f(NUMNOD_SOH8,NUMGPT_SOH8);  // shape functions
   static Epetra_SerialDenseMatrix df(NUMDOF_SOH8,NUMNOD_SOH8);  // derivatives
   static Epetra_SerialDenseVector weightfactors(NUMGPT_SOH8);   // weights for each gp
-  static int fdf_eval;                      // flag for re-evaluate everything
+  static bool fdf_eval;                      // flag for re-evaluate everything
 
   const double gploc    = 1.0/sqrt(3.0);    // gp sampling point value for linear fct
   const double gpw      = 1.0;              // weight at every gp for linear fct
 
-  if (fdf_eval!=0){             // if true f,df already evaluated
+  if (fdf_eval==true){             // if true f,df already evaluated
     *shapefct = &f;             // return adress of static object to target of pointer
     *deriv    = &df;            // return adress of static object to target of pointer
     *weights  = &weightfactors; // return adress of static object to target of pointer
@@ -665,95 +665,11 @@ void DRT::Elements::So_hex8::soh8_shapederiv(
     *shapefct = &f;             // return adress of static object to target of pointer
     *deriv = &df;               // return adress of static object to target of pointer
     *weights  = &weightfactors; // return adress of static object to target of pointer
-    fdf_eval = 1;               // now all arrays are filled statically
+    fdf_eval = true;               // now all arrays are filled statically
   }
   return;
 }  // of soh8_shapederiv
 
-///*----------------------------------------------------------------------*
-// | material laws for So_hex8                                   maf 04/07|
-// *----------------------------------------------------------------------*/
-//void DRT::Elements::So_hex8::soh8_mat_sel(
-//      Epetra_SerialDenseVector* stress,
-//      Epetra_SerialDenseMatrix* cmat,
-//      double* density,
-//      const Epetra_SerialDenseVector* glstrain,
-//      const Epetra_SerialDenseMatrix* defgrd,
-//      struct _MATERIAL* material,
-//      int gp)
-//{
-//  DSTraceHelper dst("So_hex8::soh8_mat_sel");
-//
-//  switch (material->mattyp)
-//  {
-//    case m_stvenant: /*------------------ st.venant-kirchhoff-material */
-//    {
-//      // get material parameters
-//      double Emod = mat->m.stvenant->youngs;    // Young's modulus (modulus of elasticity)
-//      double nu = mat->m.stvenant->possionratio;// Poisson's ratio (Querdehnzahl)
-//      (*density) = mat->m.stvenant->density;    // density, returned to evaluate mass matrix
-//
-//      /*--------------------------------------------------------------------*/
-//      /* isotropic elasticity tensor C in matrix notion */
-//      /*                       [ 1-nu     nu     nu |          0    0    0 ]
-//       *                       [        1-nu     nu |          0    0    0 ]
-//       *           E           [               1-nu |          0    0    0 ]
-//       *   C = --------------- [ ~~~~   ~~~~   ~~~~   ~~~~~~~~~~  ~~~  ~~~ ]
-//       *       (1+nu)*(1-2*nu) [                    | (1-2*nu)/2    0    0 ]
-//       *                       [                    |      (1-2*nu)/2    0 ]
-//       *                       [ symmetric          |           (1-2*nu)/2 ]
-//       */
-//      double mfac = Emod/((1.0+nu)*(1.0-2.0*nu));  /* factor */
-//      /* write non-zero components */
-//      (*cmat)(0,0) = mfac*(1.0-nu);
-//      (*cmat)(0,1) = mfac*nu;
-//      (*cmat)(0,2) = mfac*nu;
-//      (*cmat)(1,0) = mfac*nu;
-//      (*cmat)(1,1) = mfac*(1.0-nu);
-//      (*cmat)(1,2) = mfac*nu;
-//      (*cmat)(2,0) = mfac*nu;
-//      (*cmat)(2,1) = mfac*nu;
-//      (*cmat)(2,2) = mfac*(1.0-nu);
-//      /* ~~~ */
-//      (*cmat)(3,3) = mfac*0.5*(1.0-2.0*nu);
-//      (*cmat)(4,4) = mfac*0.5*(1.0-2.0*nu);
-//      (*cmat)(5,5) = mfac*0.5*(1.0-2.0*nu);
-//
-//      // evaluate stresses
-//      (*cmat).Multiply('N',(*glstrain),(*stress));   // sigma = C . epsilon
-//      break;
-//    }
-//
-//    case m_struct_multiscale: /*------------------- multiscale approach */
-//    {
-//      // Here macro-micro transition (localization) will take place
-//
-//      int microdis_num = mat->m.struct_multiscale->microdis;
-//
-//      if (gp > static_cast<int>(mat_.size())-1)
-//      {
-//        mat_.resize(gp+1);
-//        mat_[gp] = rcp(new MicroMaterial(gp, microdis_num));
-//      }
-//
-//      MicroMaterial* micromat =
-//        dynamic_cast<MicroMaterial*>(mat_[gp].get());
-//
-//      if (micromat == NULL)
-//        dserror("Wrong type of derived material class");
-//
-//      micromat->CalcStressStiffDens(stress, cmat, density, glstrain);
-//      break;
-//    }
-//
-//    default:
-//      dserror("Illegal type of material for element solid3 hex8");
-//      break;
-//  }
-//
-//  /*--------------------------------------------------------------------*/
-//  return;
-//}  // of soh8_mat_sel
 
 /*----------------------------------------------------------------------*
  |  init the element (public)                                mwgee 12/06|

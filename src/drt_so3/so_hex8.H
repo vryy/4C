@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file so_hex8.H
 
-\class DRT::Elements::So_Hex8
+\class DRT::Elements::So_hex8
 
 \brief A C++ version of the 8-node hex solid element
 
@@ -63,7 +63,7 @@ class Soh8Line;
 class Soh8Register;
 
 /*!
-\class So_Hex8
+\class So_hex8
 
 \brief A C++ version of the 8-node hex solid element
 
@@ -310,6 +310,7 @@ protected:
     soh8_totlag,
     soh8_updlag,
   };
+  //! stress evaluation types of so_hex8
   enum StressType
   {
     soh8_stress_none,
@@ -320,7 +321,7 @@ protected:
     soh8_stress_ndrst,
     soh8_stress_nd123,
   };
-  // EAS technology types of so_hex8
+  //! EAS technology types of so_hex8
   enum EASType
   {
     soh8_easfull,
