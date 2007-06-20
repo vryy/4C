@@ -26,7 +26,7 @@ using namespace std;
 
 //! GaussRules
 enum GaussRule3D  
-  {
+{
     hex_1point,
     hex_8point,
     hex_27point,
@@ -39,7 +39,7 @@ enum GaussRule3D
 
 //! GaussRules
 enum GaussRule2D  
-  {
+{
     quad_1point,
     quad_4point,
     quad_9point,
@@ -59,12 +59,12 @@ are stored.
 </pre>
 
 ------------------------------------------------------------------------*/
-typedef struct _INTEGRATION_POINTS_2D
+typedef struct
 {
   int           nquad;
   double        qxg[MAXGAUSS][2];    /*!< coordinates */
   double        qwgt[MAXGAUSS];      /*!< weights */
-} INTEGRATION_POINTS_2D;
+} IntegrationPoints2D;
 
 /*!----------------------------------------------------------------------
 \brief integration parameters
@@ -77,20 +77,19 @@ are stored.
 </pre>
 
 ------------------------------------------------------------------------*/
-typedef struct _INTEGRATION_POINTS_3D
+typedef struct
 {
   int           nquad;
   double        qxg[MAXGAUSS][3];    /*!< coordinates */
   double        qwgt[MAXGAUSS];      /*!< weights */
-} INTEGRATION_POINTS_3D;
+} IntegrationPoints3D;
 
 
 // evaluate element integration points (and storing them in intpoints)
-struct _INTEGRATION_POINTS_3D integration_points_3d(const  GaussRule3D gaussrule);
+IntegrationPoints3D getIntegrationPoints3D(const  GaussRule3D gaussrule);
 
 // evaluate element integration points (and storing them in intpoints)
-void integration_points_2d(struct _INTEGRATION_POINTS_2D& intpoints,
-                           const  GaussRule2D gaussrule);
+IntegrationPoints2D getIntegrationPoints2D(const  GaussRule2D gaussrule);
 
 
 #endif // #ifndef FLUID3_SHAPE_H

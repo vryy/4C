@@ -19,6 +19,7 @@ Maintainer: Axel Gerstenberger
 #ifndef DRT_FLUID3_XFEM_H
 #define DRT_FLUID3_XFEM_H
 
+#include "tr1/tuple"
 
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_Vector.h"
@@ -296,19 +297,23 @@ public:
 
 private:
 
-  enum EnrichmentType
-  {
-    enrichment_type_standard = 0,
-    enrichment_type_jump     = 1
-  };
+  // this tuple used together with a map or set 
+  //  can be used to address the residual/element matrizes
+  typedef std::tr1::tuple <int, int, int>  drtIdx;
 
-  typedef struct _ElementEnrichment 
-  {
-    // a global id used to distuinguish several surfaces within one element
-    int             enr_id; 
-    // the specific type of enrichment
-    EnrichmentType  enr_type;
-  } ElementEnrichment;
+//  enum EnrichmentType
+//  {
+//    enrichment_type_standard = 0,
+//    enrichment_type_jump     = 1
+//  };
+
+//  typedef struct _ElementEnrichment 
+//  {
+//    // a global id used to distuinguish several surfaces within one element
+//    int             enr_id; 
+//    // the specific type of enrichment
+//    EnrichmentType  enr_type;
+//  } ElementEnrichment;
 
   //! action parameters recognized by XFluid3
   enum ActionType
@@ -342,6 +347,7 @@ private:
   // constants
   // number of space dimensions
   static const int                                NSD_ = 3;
+  static const int                                NDF_ = 4;
   
   // constant mappings between volume and its surfaces and lines
   // they are used as the one and only reference for such numbering
@@ -350,8 +356,6 @@ private:
   
   static const int                                tet10_surfaces_[4][6];
   static const int                                tet10_lines_[6][3];
-
-  //vector<ElementEnrichment>                       enrichments_;
 
   //! gaussrule used for weak form integration
   GaussRule3D                                     gaussrule_;
@@ -510,6 +514,8 @@ private:
 //    const int            bdf,
 //    const int            shpid_b
 //    );
+
+  ActionType convertStringToActionType(const string& action);
 
 }; // class Fluid3
 

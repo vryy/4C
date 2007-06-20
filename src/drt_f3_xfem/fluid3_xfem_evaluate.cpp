@@ -22,6 +22,7 @@ Maintainer: Axel Gerstenberger
 #include "fluid3_xfem.H"
 #include "fluid3_xfem_shape.H"
 #include "fluid3_xfem_integration.H"
+#include "fluid3_xfem_enrichment.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_exporter.H"
@@ -30,6 +31,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_timecurve.H"
 
 
+using namespace Enrichments;
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -50,37 +52,56 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
                                     Epetra_SerialDenseVector& elevec2,
                                     Epetra_SerialDenseVector& elevec3)
 {
-    DRT::Elements::XFluid3::ActionType act = XFluid3::none;
-
     // get the action required
-    string action = params.get<string>("action","none");
-    if (action == "none") dserror("No action supplied");
-    else if (action == "calc_fluid_systemmat_and_residual")      
-        act = XFluid3::calc_fluid_systemmat_and_residual;
-    else if (action == "calc_fluid_beltrami_error")      
-        act = XFluid3::calc_fluid_beltrami_error;
-    else if (action == "calc_Shapefunction")
-        act = XFluid3::calc_Shapefunction;
-    else if (action == "calc_ShapeDeriv1")
-        act = XFluid3::calc_ShapeDeriv1;
-    else if (action == "calc_ShapeDeriv2")
-        act = XFluid3::calc_ShapeDeriv2;
-    else 
-        dserror("Unknown type of action for Fluid3");
+    const string action = params.get<string>("action","none");
+    
+    const DRT::Elements::XFluid3::ActionType act = convertStringToActionType(action);
 
     // get the material
     const MATERIAL* actmat = &(mat[material_-1]);
-
-    const int numenr = 1;
 
   	switch(act)
   	{
    	case calc_fluid_systemmat_and_residual:
     {
+        const int numenr = 1;
+        const int numnode = NumNode();
+        
+        // define once and for all the index mapping within this element call
+        vector<ElementEnrichment>  enrichments;
+        
+        //loop over nodes to find all enrichment id's
+        // for now only standard enrichment shall be available
+        ElementEnrichment ele_enr = ElementEnrichment(0, enrichment_type_standard);
+        enrichments.push_back(ele_enr);
+        
+        map<drtIdx, int> dofmap;
+        for (int ienr=0;ienr<numenr;++ienr)
+        {
+            const ElementEnrichment eleenr = enrichments[ienr];
+            //cout << eleenr.getId() << endl;
+//            for (int inode=0;inode<numnode;++inode)
+//            {
+//                const DRT::Node node = 
+//                if
+//                for (int idf=0;idf<NDF_;++idf)
+//                {
+//                    const drtIdx idx(ienr, inode, idf);
+
+        }
+        
+        
+        
+
+
+
+
+        
         // need current velocity and history vector
         RefCountPtr<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (trial)");
+        dsassert(vel_pre_np!=null, "Cannot get state vectors 'velnp'");
         RefCountPtr<const Epetra_Vector> hist  = discretization.GetState("old solution data for rhs");
-        if (vel_pre_np==null || hist==null) dserror("Cannot get state vectors 'velnp' and/or 'hist'");
+        dsassert(hist!=null, "Cannot get state vectors 'hist'");
       
         // extract local values from the global vectors
         vector<double> my_vel_pre_np(lm.size());
@@ -90,7 +111,7 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList& params,
 
         // split "my_vel_pre_np" into velocity part "myvelnp" and pressure part "myprenp"
         // Additionally only the velocity components of myhist are important!
-        const int numnode = NumNode();
+        
         vector<double> myprenp(numnode);
         vector<double> myvelnp(3*numnode);
         vector<double> myvhist(3*numnode);
@@ -267,7 +288,7 @@ void DRT::Elements::XFluid3::f3_sys_mat(const vector<int>&        lm,
     const bool higher_order_ele = is_higher_order_element(distype);
     
     // gaussian points
-    const INTEGRATION_POINTS_3D  intpoints = integration_points_3d(gaussrule_);
+    const IntegrationPoints3D  intpoints = getIntegrationPoints3D(gaussrule_);
         
     // calculate element volume to check gauss integration
     double  element_volume = 0.0;
@@ -1462,7 +1483,7 @@ void DRT::Elements::XFluid3::f3_int_beltrami_err(
     const double  visc = material->m.fluid->viscosity;
 
 
-    const INTEGRATION_POINTS_3D  intpoint = integration_points_3d(this->gaussrule_);
+    const IntegrationPoints3D  intpoint = getIntegrationPoints3D(gaussrule_);
 
     double         preint;
     vector<double> velint  (NSD_);
@@ -1589,7 +1610,7 @@ inline vector<double> DRT::Elements::XFluid3::f3_caltau(
     }
 
     // gaussian points
-    const INTEGRATION_POINTS_3D  intpoints = integration_points_3d(integrationrule_stabili);
+    const IntegrationPoints3D  intpoints = getIntegrationPoints3D(integrationrule_stabili);
 
     // shape functions and derivs at element center
     const double e1    = intpoints.qxg[0][0];
@@ -1831,10 +1852,31 @@ inline bool DRT::Elements::XFluid3::is_higher_order_element(
 //    return;
 //}
 
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
+
+// converts a string into an Action for this element
+DRT::Elements::XFluid3::ActionType DRT::Elements::XFluid3::convertStringToActionType(
+              const string& action)
+{
+    
+    dsassert(action != "none", "No action supplied");
+    
+    DRT::Elements::XFluid3::ActionType act = XFluid3::none;
+    // get the action required
+    
+    if (action == "calc_fluid_systemmat_and_residual")      
+        act = XFluid3::calc_fluid_systemmat_and_residual;
+    else if (action == "calc_fluid_beltrami_error")      
+        act = XFluid3::calc_fluid_beltrami_error;
+    else if (action == "calc_Shapefunction")
+        act = XFluid3::calc_Shapefunction;
+    else if (action == "calc_ShapeDeriv1")
+        act = XFluid3::calc_ShapeDeriv1;
+    else if (action == "calc_ShapeDeriv2")
+        act = XFluid3::calc_ShapeDeriv2;
+    else 
+        dserror("Unknown type of action for Fluid3");
+    return act;
+}
 
 
 /*----------------------------------------------------------------------*

@@ -23,7 +23,7 @@ Maintainer: Axel Gerstenberger
 /*----------------------------------------------------------------------*
  |  evaluate the element integration points (private)        g.bau 03/07|
  *----------------------------------------------------------------------*/
-INTEGRATION_POINTS_3D integration_points_3d(const  GaussRule3D gaussrule)
+IntegrationPoints3D getIntegrationPoints3D(const  GaussRule3D gaussrule)
 {
   const double Q12  = 1.0/2.0;
   const double Q14  = 1.0/4.0;
@@ -42,7 +42,7 @@ INTEGRATION_POINTS_3D integration_points_3d(const  GaussRule3D gaussrule)
   const double palpha = (5.0 + 3.0*sqrt(5.0))/20.0;
   const double pbeta  = (5.0 - sqrt(5.0))/20.0;
 
-  INTEGRATION_POINTS_3D  intpoints;
+  IntegrationPoints3D  intpoints;
 
   switch(gaussrule)
   {
@@ -53,6 +53,7 @@ INTEGRATION_POINTS_3D integration_points_3d(const  GaussRule3D gaussrule)
       intpoints.qxg[0][2] = 0.0;
       intpoints.qwgt[0] = 8.0;
       break;
+      
     case hex_8point:
       intpoints.nquad = 8;
       intpoints.qxg[0][0] = -xi2; intpoints.qxg[0][1] = -xi2; intpoints.qxg[0][2] = -xi2;
@@ -72,6 +73,7 @@ INTEGRATION_POINTS_3D integration_points_3d(const  GaussRule3D gaussrule)
       intpoints.qwgt[6] = 1.0;
       intpoints.qwgt[7] = 1.0;
       break;
+      
     case hex_27point:
       intpoints.nquad = 27;
       intpoints.qxg[0][0]  = -xi3; intpoints.qxg[0][1]  = -xi3; intpoints.qxg[0][2]  = -xi3;
@@ -129,6 +131,7 @@ INTEGRATION_POINTS_3D integration_points_3d(const  GaussRule3D gaussrule)
       intpoints.qwgt[25] = w2*w3*w3;
       intpoints.qwgt[26] = w3*w3*w3;
       break;
+      
     case tet_1point:
       // GAUSS INTEGRATION         1 SAMPLING POINT, DEG.OF PRECISION 1
       intpoints.nquad = 1;
@@ -136,6 +139,8 @@ INTEGRATION_POINTS_3D integration_points_3d(const  GaussRule3D gaussrule)
       intpoints.qxg[0][1] =  Q14 ;
       intpoints.qxg[0][2] =  Q14 ;
       intpoints.qwgt[0]   =  Q16 ;
+      break;
+      
     case tet_4point:
       // GAUSS INTEGRATION        4 SAMPLING POINTS, DEG.OF PRECISION 2
       intpoints.nquad = 4;
@@ -155,6 +160,8 @@ INTEGRATION_POINTS_3D integration_points_3d(const  GaussRule3D gaussrule)
       intpoints.qwgt[1]   =    Q124  ;
       intpoints.qwgt[2]   =    Q124  ;
       intpoints.qwgt[3]   =    Q124  ;
+      break;
+      
     case tet_4point_alternative:
       // ALT.GAUSS INTEGRATION    4 SAMPLING POINTS, DEG.OF PRECISION 1
       intpoints.qxg[0][0] = 0.0;
@@ -174,6 +181,7 @@ INTEGRATION_POINTS_3D integration_points_3d(const  GaussRule3D gaussrule)
       intpoints.qwgt[2]   = Q124;
       intpoints.qwgt[3]   = Q124;
       break;
+      
     case tet_10point:
       // GAUSS INTEGRATION        5 SAMPLING POINTS, DEG.OF PRECISION 3
       intpoints.qxg[0][0] =     Q14  ;
@@ -197,6 +205,7 @@ INTEGRATION_POINTS_3D integration_points_3d(const  GaussRule3D gaussrule)
       intpoints.qwgt[3]   =     Q9120;
       intpoints.qwgt[4]   =     Q9120;
       break;
+      
     default:
       dserror("unknown integration rule");
   }
@@ -208,9 +217,11 @@ INTEGRATION_POINTS_3D integration_points_3d(const  GaussRule3D gaussrule)
 /*----------------------------------------------------------------------*
  |  evaluate the element integration points                             |
  *----------------------------------------------------------------------*/
-void integration_points_2d(struct _INTEGRATION_POINTS_2D& intpoints,
-                           const   GaussRule2D gaussrule)
+IntegrationPoints2D getIntegrationPoints2D(const  GaussRule2D gaussrule)
 {
+    
+    IntegrationPoints2D  intpoints;
+    
     switch(gaussrule)
     {
     case quad_4point :
@@ -298,11 +309,12 @@ void integration_points_2d(struct _INTEGRATION_POINTS_2D& intpoints,
         intpoints.qxg[5][0] = 0.1081030181681; 
         intpoints.qxg[5][1] = 0.4459484909160; 
         break;
+        
     default:
         dserror("unknown integration rule");
     }
 
-    return;
+    return intpoints;
 }
 
 

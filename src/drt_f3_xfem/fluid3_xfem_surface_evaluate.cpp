@@ -157,8 +157,7 @@ int DRT::Elements::XFluid3Surface::EvaluateNeumann(
     /*----------------------------------------------------------------------*
     |               start loop over integration points                     |
     *----------------------------------------------------------------------*/
-    INTEGRATION_POINTS_2D  intpoints;
-    integration_points_2d(intpoints, gaussrule);
+    const IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
     for (int gpid=0; gpid<intpoints.nquad; gpid++)
     {
         const double e0 = intpoints.qxg[gpid][0];
