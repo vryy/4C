@@ -315,7 +315,8 @@ private:
                   Epetra_SerialDenseMatrix* sys_mat,
                   Epetra_SerialDenseVector* residual,
                   struct _MATERIAL*         material,
-		  ParameterList&            params
+		  double                    timefac,
+                  bool                      is_stationary
 		  );
 
   // evaluate element integration points (and storing them in data)
@@ -331,13 +332,12 @@ private:
 
   // shape functions and natural derivatives for hexaeder
   void f2_shape_function(vector<double>& funct,
-               		Epetra_SerialDenseMatrix& deriv,
-               		Epetra_SerialDenseMatrix& deriv2,
-               		const double&      r,
-               		const double&      s,
-               		const int&         iel,
-               		const int          icode
-          		);
+                         Epetra_SerialDenseMatrix* pderiv,
+                         Epetra_SerialDenseMatrix* pderiv2,
+                         const double&      r,
+                         const double&      s,
+                         const int&         iel
+    );
 
   // calculate global derivatives w.r.t. x,y,z at point r,s,t are
     void f2_gder(Epetra_SerialDenseMatrix& derxy,
@@ -373,7 +373,7 @@ private:
                 double&   		fac,
                 const double&   	visc,
                 const int&      	iel,
-		ParameterList& 		params
+		double                  timefac
       		);
 
   // evaluate fluid coefficient matrix for stationary problems
@@ -392,8 +392,7 @@ private:
                 Epetra_SerialDenseMatrix& derxy2,
                 double&   		fac,
                 const double&   	visc,
-                const int&      	iel,
-		ParameterList& 		params
+                const int&      	iel
       		);
 
 }; // class Fluid2

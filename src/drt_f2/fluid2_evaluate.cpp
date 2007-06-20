@@ -116,8 +116,20 @@ int DRT::Elements::Fluid2::Evaluate(ParameterList& params,
        myvhist[1+(i*2)]=myhist[1+(i*3)];
        }
 
+      // get control parameter
+      bool is_stationary = params.get<bool>("using stationary formulation",false);
+
+      // One-step-Theta: timefac = theta*dt
+      // BDF2:           timefac = 2/3 * dt
+      double timefac = 0;
+      if (not is_stationary)
+      {
+        timefac = params.get<double>("time constant for integration",-1.0);
+        if (timefac < 0.0) dserror("No time constant for integration supplied");
+      }
+
       // calculate element coefficient matrix and rhs
-      f2_sys_mat(lm,myvelnp,myprenp,myvhist,mydispnp,mygridv,&elemat1,&elevec1,actmat,params);
+      f2_sys_mat(lm,myvelnp,myprenp,myvhist,mydispnp,mygridv,&elemat1,&elevec1,actmat,timefac,is_stationary);
 
       // This is a very poor way to transport the density to the
       // outside world. Is there a better one?
@@ -191,7 +203,8 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
                                        Epetra_SerialDenseMatrix* sys_mat,
                                        Epetra_SerialDenseVector* residual,
                                        struct _MATERIAL*         material,
-				       ParameterList& 		 params
+                                       double                    timefac,
+                                       bool                      is_stationary
   )
 {
 
@@ -227,17 +240,17 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
   vector<double> 		funct(iel);
   Epetra_SerialDenseMatrix 	deriv(2,iel);
   Epetra_SerialDenseMatrix 	deriv2(3,iel);
-  Epetra_SerialDenseMatrix 	xjm(2,2);
-  Epetra_SerialDenseMatrix 	vderxy(2,2);
-  vector<double> 		pderxy(2);
-  Epetra_SerialDenseMatrix 	vderxy2(2,3);
+  static Epetra_SerialDenseMatrix 	xjm(2,2);
+  static Epetra_SerialDenseMatrix 	vderxy(2,2);
+  static vector<double> 		pderxy(2);
+  static Epetra_SerialDenseMatrix 	vderxy2(2,3);
   Epetra_SerialDenseMatrix 	derxy(2,iel);
   Epetra_SerialDenseMatrix 	derxy2(3,iel);
   vector<double> 		ephin(iel);
   vector<double> 		ephing(iel);
   vector<double> 		iedgnod(iel);
-  Epetra_SerialDenseMatrix 	wa1(100,100);  // working matrix used as dummy
-  vector<double>    		histvec(2); /* history data at integration point      */
+  //Epetra_SerialDenseMatrix 	wa1(100,100);  // working matrix used as dummy
+  static vector<double>    		histvec(2); /* history data at integration point      */
   double         		hk;         /* element length for calculation of tau  */
   double         		vel_norm, pe, re, xi1, xi2, xi;
   vector<double>         	velino(2); /* normed velocity at element centre */
@@ -246,15 +259,12 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
   double         		e1, e2;
   double         		facr=0.0, facs=0.0;
   double         		mk=0.0;
-  vector<double>     		velint(2);
-  double 			timefac;
-  vector<double>               tau(3); // stab parameters
+  static vector<double>     		velint(2);
+  static vector<double>               tau(3); // stab parameters
 
   /*------------------------------------------------------- initialise ---*/
   // gaussian points
   f2_integration_points(data);
-  timefac=params.get<double>("time constant for integration",0.0);
-
 
   /*---------------------- shape functions and derivs at element center --*/
   switch(iel)
@@ -265,7 +275,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
     e2   = data.qxg [0][0];
     facs = data.qwgt[0][0];
 
-    f2_shape_function(funct,deriv,wa1,e1,e2,iel,2); //wa1 as dummy for not wanted second derivatives
+    f2_shape_function(funct,&deriv,NULL,e1,e2,iel); //wa1 as dummy for not wanted second derivatives
     break;
   case 3: case 6:   /* --> tri - element */
     e1   = data.txgr[0][0];
@@ -274,7 +284,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
     facr = data.twgt[0][0];
     facs = ONE;
 
-    f2_shape_function(funct,deriv,wa1,e1,e2,iel,2); //wa1 as dummy for not wanted second derivatives
+    f2_shape_function(funct,&deriv,NULL,e1,e2,iel); //wa1 as dummy for not wanted second derivatives
     break;
   default:
     dserror("type unknown!\n");
@@ -353,9 +363,6 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
   /*----------------------------------------------- get vel_norm ---*/
   vel_norm = sqrt(DSQR(velint[0]) + DSQR(velint[1]));
 
-  // get control parameter
-  bool is_stationary = params.get<bool>("using stationary formulation",false);
-
   if (is_stationary == false)
   {// stabilization parameters for instationary case (default)
 
@@ -408,8 +415,8 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
   int       icode=2;     /* flag for eveluation of shape functions         */
   double    fac;         /* total integration factor */
   double    press;
-  vector<double>    gridvelint(2); /* grid velocity                       */
-  vector<double>    gradp(2);      /* pressure gradient at integration point         */
+  static vector<double>    gridvelint(2); /* grid velocity                       */
+  static vector<double>    gradp(2);      /* pressure gradient at integration point         */
 
   switch (iel)
   {
@@ -450,14 +457,14 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
         facr = data.qwgt[lr][nir-1];
         e2   = data.qxg [ls][nis-1];
         facs = data.qwgt[ls][nis-1];
-        f2_shape_function(funct,deriv,deriv2,e1,e2,iel,icode);
+        f2_shape_function(funct,&deriv,&deriv2,e1,e2,iel);
         break;
       case 3: case 6:   /* --> tri - element */
         e1   = data.txgr[lr][intc];
         facr = data.twgt[lr][intc];
         e2   = data.txgs[lr][intc];
         facs = ONE;
-        f2_shape_function(funct,deriv,deriv2,e1,e2,iel,icode);
+        f2_shape_function(funct,&deriv,&deriv2,e1,e2,iel);
         break;
       default:
         facr = facs = 0.0;
@@ -568,15 +575,14 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
                   funct,tau,
                   derxy,derxy2,
                   fac,visc,iel,
-                  params);
+                  timefac);
       else
         f2_calmat_stationary(*sys_mat,*residual,
                              velint,histvec,gridvelint,press,
                              vderxy,vderxy2,gradp,
                              funct,tau,
                              derxy,derxy2,
-                             fac,visc,iel,
-                             params);
+                             fac,visc,iel);
 
 
     } /* end of loop over integration points ls */
@@ -1084,12 +1090,11 @@ Numbering of the nodes:
 
 void DRT::Elements::Fluid2::f2_shape_function(
                vector<double>&    		funct,
-               Epetra_SerialDenseMatrix& 	deriv,
-               Epetra_SerialDenseMatrix& 	deriv2,
+               Epetra_SerialDenseMatrix* 	pderiv,
+               Epetra_SerialDenseMatrix* 	pderiv2,
                const double&      r,
                const double&      s,
-               const int&         iel,
-               int         	  icode
+               const int&         iel
             )
 {
   const DOUBLE Q12 = ONE/TWO;
@@ -1112,8 +1117,10 @@ void DRT::Elements::Fluid2::f2_shape_function(
 	funct[2]=Q14*rm*sm;
 	funct[3]=Q14*rp*sm;
 
-	if(icode>1) /* --> first derivative evaluation */
+	if (pderiv) /* --> first derivative evaluation */
 	{
+          Epetra_SerialDenseMatrix& deriv = *pderiv;
+
 	    deriv(0,0)= Q14*sp;
 	    deriv(1,0)= Q14*rp;
 
@@ -1127,8 +1134,10 @@ void DRT::Elements::Fluid2::f2_shape_function(
 	    deriv(1,3)=-Q14*rp;
 	} /* endif (icode>1) */
 
-	if(icode==3) /* --> second derivative evaluation */
+	if (pderiv2) /* --> second derivative evaluation */
 	{
+          Epetra_SerialDenseMatrix& deriv2 = *pderiv2;
+
 	    deriv2(0,0)= ZERO;
 	    deriv2(1,0)= ZERO;
 	    deriv2(2,0)= Q14;
@@ -1166,8 +1175,9 @@ void DRT::Elements::Fluid2::f2_shape_function(
 	funct[2]=Q14*rm*sm-Q12*(funct[5]+funct[6]);
 	funct[3]=Q14*rp*sm-Q12*(funct[6]+funct[7]);
 
-	if(icode>1) /* --> first derivative evaluation */
+	if(pderiv) /* --> first derivative evaluation */
 	{
+          Epetra_SerialDenseMatrix& deriv = *pderiv;
 	    deriv(0,0)= Q14*sp;
 	    deriv(1,0)= Q14*rp;
 
@@ -1203,8 +1213,9 @@ void DRT::Elements::Fluid2::f2_shape_function(
 	    } /* end loop over i */
 	} /* endif (icode>1) */
 
-	if(icode==3) /* --> second derivative evaluation */
+	if (pderiv2) /* --> second derivative evaluation */
 	{
+          Epetra_SerialDenseMatrix& deriv2 = *pderiv2;
 	    deriv2(0,0)= ZERO;
 	    deriv2(1,0)= ZERO;
 	    deriv2(2,0)= Q14;
@@ -1279,8 +1290,9 @@ void DRT::Elements::Fluid2::f2_shape_function(
 	funct[7]= rh*rp*s2;
 	funct[8]= r2*s2;
 
-	if(icode>1) /* --> first derivative evaluation */
+	if(pderiv) /* --> first derivative evaluation */
 	{
+          Epetra_SerialDenseMatrix& deriv = *pderiv;
 	    deriv(0,0)= rhp*sh*sp;
 	    deriv(1,0)= shp*rh*rp;
 
@@ -1309,8 +1321,9 @@ void DRT::Elements::Fluid2::f2_shape_function(
 	    deriv(1,8)=-TWO*s*r2;
 	} /* endif (icode>1) */
 
-	if(icode==3) /* --> second derivative evaluation */
+	if (pderiv2) /* --> second derivative evaluation */
 	{
+          Epetra_SerialDenseMatrix& deriv2 = *pderiv2;
 	    deriv2(0,0)= sh*sp;
 	    deriv2(1,0)= rh*rp;
 	    deriv2(2,0)= shp*rhp;
@@ -1357,8 +1370,9 @@ void DRT::Elements::Fluid2::f2_shape_function(
 	funct[1]=r;
 	funct[2]=s;
 
-	if(icode>1) /* --> first derivative evaluation */
+	if(pderiv) /* --> first derivative evaluation */
 	{
+          Epetra_SerialDenseMatrix& deriv = *pderiv;
 	    deriv(0,0)=-ONE;
 	    deriv(1,0)=-ONE;
 	    deriv(0,1)= ONE;
@@ -1383,8 +1397,9 @@ void DRT::Elements::Fluid2::f2_shape_function(
 	funct[4]=FOUR*rs;
 	funct[5]=FOUR*(s-rs-ss);
 
-	if(icode>1) /* --> first derivative evaluation */
+	if(pderiv) /* --> first derivative evaluation */
 	{
+          Epetra_SerialDenseMatrix& deriv = *pderiv;
 	    deriv(0,0)=-THREE+FOUR*(r+s);
 	    deriv(1,0)= deriv(0,0);
 
@@ -1404,8 +1419,9 @@ void DRT::Elements::Fluid2::f2_shape_function(
 	    deriv(1,5)= FOUR*(ONE-r-TWO*s);
 	} /* endif (icode>1) */
 
-	if(icode==3) /* --> second derivative evaluation */
+	if(pderiv2) /* --> second derivative evaluation */
 	{
+          Epetra_SerialDenseMatrix& deriv2 = *pderiv2;
 	    deriv2(0,0)= FOUR;
 	    deriv2(1,0)= FOUR;
 	    deriv2(2,0)= FOUR;
@@ -1471,7 +1487,7 @@ void DRT::Elements::Fluid2::f2_gder(Epetra_SerialDenseMatrix& derxy,
                                     const int iel
 				    )
 {
-  Epetra_SerialDenseMatrix 	xji(2,2);   // inverse of jacobian matrix
+  static Epetra_SerialDenseMatrix 	xji(2,2);   // inverse of jacobian matrix
 
 
   /*----------calculate global derivatives w.r.t. x,y at point r,s ---*/
@@ -1579,8 +1595,8 @@ void DRT::Elements::Fluid2::f2_gder2(const Epetra_SerialDenseMatrix& xyze,
 				    )
 {
 //--------------------------------------------initialize and zero out everything
-    Epetra_SerialDenseMatrix bm(3,3);
-    Epetra_SerialDenseMatrix xder2(3,2);
+    static Epetra_SerialDenseMatrix bm(3,3);
+    static Epetra_SerialDenseMatrix xder2(3,2);
     Epetra_SerialDenseMatrix chainrulerhs(3,iel);
 
 /*--------------------------- calculate elements of jacobian_bar matrix */
@@ -1825,7 +1841,7 @@ void DRT::Elements::Fluid2::f2_calmat(
     double&                   fac,
     const double&             visc,
     const int&                iel,
-    ParameterList& 	      params
+    double                    timefac
     )
 {
 /*========================= further variables =========================*/
@@ -1836,16 +1852,10 @@ void DRT::Elements::Fluid2::f2_calmat(
   Epetra_SerialDenseMatrix  conv_r(2,2*iel);  /* linearisation of convect, reactive part         */
   vector<double>            div(2*iel);  	    /* divergence of u or v                            */
   Epetra_SerialDenseMatrix  ugradv(iel,2*iel);/* linearisation of u * grad v                     */
-  vector<double>            conv_old(2);      /* convective term evalaluated with old velocities */
+  static vector<double>            conv_old(2);      /* convective term evalaluated with old velocities */
   //vector<double>            conv_g_old(2);
-  vector<double>            visc_old(2); 	    /* viscous term evaluated with old velocities      */
-  vector<double>            rhsint(2);   	    /* total right hand side terms at int.-point       */
-
-/*========================== initialisation ============================*/
-// One-step-Theta: timefac = theta*dt
-// BDF2:           timefac = 2/3 * dt
-  double timefac = params.get<double>("time constant for integration",-1.0);
-  if (timefac < 0.0) dserror("No time constant for integration supplied");
+  static vector<double>            visc_old(2); 	    /* viscous term evaluated with old velocities      */
+  static vector<double>            rhsint(2);   	    /* total right hand side terms at int.-point       */
 
 // stabilisation parameter
   double tau_M  = tau[0]*fac;
@@ -2023,8 +2033,7 @@ void DRT::Elements::Fluid2::f2_calmat_stationary(
     Epetra_SerialDenseMatrix& derxy2,
     double&                   fac,
     const double&             visc,
-    const int&                iel,
-    ParameterList& 	      params
+    const int&                iel
     )
 {
 /*========================= further variables =========================*/
