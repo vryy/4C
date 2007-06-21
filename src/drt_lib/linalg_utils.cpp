@@ -269,7 +269,42 @@ void LINALG::SymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim)
 }
 
 
+/*----------------------------------------------------------------------*
+ |  compute all eigenvalues and, optionally,                            |
+ |  eigenvectors of a real symmetric matrix A  (public)        maf 06/07|
+ *----------------------------------------------------------------------*/
+void LINALG::SymmetricEigen(Epetra_SerialDenseMatrix& A,
+                            Epetra_SerialDenseVector& L,
+                            const int dim, const char jobz)
+{
+  if (A.M() != A.N()) dserror("Matrix is not square");
+  if (A.M() != dim) dserror("Dimension supplied does not match matrix");
+  if (L.Length() != dim) dserror("Dimension of eigenvalues does not match");
+  
+  double* a = A.A();
+  double* w = L.A();
+  const char uplo = {'U'};
+//  char jobz = {'N'};
+//  if (eigv == true) jobz = 'V';
+  const int lda = A.LDA();
+  const int liwork = 3+5*dim;
+  vector<int> iwork(liwork);
+  const int lwork = 2*dim^2 + 7*dim;
+  vector<double> work(lwork);
+  int info=0;
+  
+  Epetra_LAPACK lapack;
+  
+  lapack.SYEVD(jobz,uplo,dim,a,lda,w,&(work[0]),lwork,&(iwork[0]),liwork,&info);
 
+
+  //SYEVD (const char JOBZ, const char UPLO, const int N, double *A, const int LDA, double *W, double *WORK, const int LWORK, int *IWORK, const int LIWORK, int *INFO) const
+  
+  if (info > 0) dserror("Lapack algorithm dsyevd failed");
+  if (info < 0) dserror("Illegal value in Lapack dsyevd call");
+  
+  return;
+}
 
 /*----------------------------------------------------------------------*
 | invert a dense nonsymmetric matrix (public)       g.bau 03/07|

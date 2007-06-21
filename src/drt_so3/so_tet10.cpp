@@ -195,7 +195,7 @@ RefCountPtr<DRT::ElementRegister> DRT::Elements::So_tet10::ElementRegister() con
   return rcp(new DRT::Elements::Sotet10Register(Type()));
 }
 
-  /*====================================================================######*
+  /*====================================================================######*/
   /* 8-node hexhedra node topology*/
   /*--------------------------------------------------------------------*/
   /* parameter coordinates (r,s,t) of nodes

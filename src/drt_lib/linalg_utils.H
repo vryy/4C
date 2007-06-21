@@ -25,6 +25,7 @@ Maintainer: Michael Gee
 #include "Epetra_Import.h"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
+#include "Epetra_LAPACK.h"
 #include "Teuchos_RefCountPtr.hpp"
 #include "drt_exporter.H"
 
@@ -68,6 +69,18 @@ namespace LINALG
   \param target (out): target vector values will be inserted in
   */
   void Export(const Epetra_Vector& source, Epetra_Vector& target);
+
+  /*!
+  \brief Compute all eigenvalues and, optionally, eigenvectors
+   of a real symmetric matrix A
+
+  \param A (in/out): Matrix to be analysed, if eigv=true stores eigenvectors
+  \param L (in/out): Vector of eigenvalues in ascending order
+  \param dim (in) :  Dimension of matrix
+  \param eigv (in):  flag to evaluate also eigenvectors
+  */
+  void SymmetricEigen(Epetra_SerialDenseMatrix& A,
+                      Epetra_SerialDenseVector& L,const int dim, const char eigv='N');
 
   /*!
   \brief Invert a symmetric dim*dim square matrix
