@@ -365,7 +365,7 @@ double EvaluateFunction(DRT::Node*      node,
 		        int             index,
 			int             funct_num)
 {
-  return DRT::Utils::FunctionManager::Instance().Funct(funct_num).Evaluate(index,node->X());
+  return DRT::Utils::FunctionManager::Instance().Funct(funct_num-1).Evaluate(index,node->X());
 }
 
 
