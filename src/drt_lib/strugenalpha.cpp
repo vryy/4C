@@ -207,11 +207,12 @@ void StruGenAlpha::ConstantPredictor()
   // -------------------------------------------------------------------
   // get some parameters from parameter list
   // -------------------------------------------------------------------
-  double time    = params_.get<double>("total time",0.0);
-  double dt      = params_.get<double>("delta time",0.01);
-  int    istep   = params_.get<int>   ("step"      ,0);
-  bool   damping = params_.get<bool>  ("damping"   ,false);
-  double alphaf  = params_.get<double>("alpha f"   ,0.459);
+  double time        = params_.get<double>("total time"     ,0.0);
+  double dt          = params_.get<double>("delta time"     ,0.01);
+  int    istep       = params_.get<int>   ("step"           ,0);
+  bool   damping     = params_.get<bool>  ("damping"        ,false);
+  double alphaf      = params_.get<double>("alpha f"        ,0.459);
+  bool   printscreen = params_.get<bool>  ("print to screen",false);
   const Epetra_Map* dofrowmap = discret_.DofRowMap();
 
   // increment time and step
@@ -324,7 +325,11 @@ void StruGenAlpha::ConstantPredictor()
 
   //------------------------------------------------ build residual norm
   fresm_->Norm2(&norm_);
-  if (!myrank_) cout << "Predictor residual forces " << norm_ << endl; fflush(stdout);
+  if (!myrank_ && printscreen) 
+  {
+    cout << "Predictor residual forces " << norm_ << endl; 
+    fflush(stdout);
+  }
 
   return;
 } // StruGenAlpha::ConstantPredictor()
@@ -338,14 +343,15 @@ void StruGenAlpha::ConsistentPredictor()
   // -------------------------------------------------------------------
   // get some parameters from parameter list
   // -------------------------------------------------------------------
-  double time    = params_.get<double>("total time",0.0);
-  double dt      = params_.get<double>("delta time",0.01);
-  int    istep   = params_.get<int>   ("step"      ,0);
-  bool   damping = params_.get<bool>  ("damping"   ,false);
-  double alphaf  = params_.get<double>("alpha f"   ,0.459);
-  double alpham  = params_.get<double>("alpha m"   ,0.378);
-  double beta    = params_.get<double>("beta"      ,0.292);
-  double gamma   = params_.get<double>("gamma"     ,0.581);
+  double time        = params_.get<double>("total time"     ,0.0);
+  double dt          = params_.get<double>("delta time"     ,0.01);
+  int    istep       = params_.get<int>   ("step"           ,0);
+  bool   damping     = params_.get<bool>  ("damping"        ,false);
+  double alphaf      = params_.get<double>("alpha f"        ,0.459);
+  double alpham      = params_.get<double>("alpha m"        ,0.378);
+  double beta        = params_.get<double>("beta"           ,0.292);
+  double gamma       = params_.get<double>("gamma"          ,0.581);
+  bool   printscreen = params_.get<bool>  ("print to screen",false);
   const Epetra_Map* dofrowmap = discret_.DofRowMap();
 
   // increment time and step
@@ -472,7 +478,11 @@ void StruGenAlpha::ConsistentPredictor()
 
   //------------------------------------------------ build residual norm
   fresm_->Norm2(&norm_);
-  if (!myrank_) cout << "Predictor residual forces " << norm_ << endl; fflush(stdout);
+  if (!myrank_ && printscreen) 
+  {
+    cout << "Predictor residual forces " << norm_ << endl; 
+    fflush(stdout);
+  }
 
   return;
 } // StruGenAlpha::ConsistentPredictor()
@@ -1141,7 +1151,7 @@ void StruGenAlpha::UpdateandOutput()
   int    writeresevry  = params_.get<int>   ("write restart every"    ,0);
 
   bool   printscreen   = params_.get<bool>  ("print to screen"        ,true);
-  bool   printerr      = params_.get<bool>  ("print to err"           ,false);
+  bool   printerr      = params_.get<bool>  ("print to err"           ,true);
   FILE*  errfile       = params_.get<FILE*> ("err file"               ,NULL);
   if (!errfile) printerr = false;
 
@@ -1216,12 +1226,12 @@ void StruGenAlpha::UpdateandOutput()
     output_.WriteMesh(istep,time);
     isdatawritten = true;
 
-    if (discret_.Comm().MyPID()==0)
+    if (discret_.Comm().MyPID()==0 && printscreen)
     {
       cout << "====== Restart written in step " << istep << endl;
       fflush(stdout);
     }
-    if (errfile)
+    if (errfile && printerr)
     {
       fprintf(errfile,"====== Restart written in step %d\n",istep);
       fflush(errfile);
@@ -1229,7 +1239,7 @@ void StruGenAlpha::UpdateandOutput()
   }
 
   //----------------------------------------------------- output results
-  if (iodisp && updevrydisp && !istep%updevrydisp && !isdatawritten)
+  if (iodisp && updevrydisp && istep%updevrydisp==0 && !isdatawritten)
   {
     output_.NewStep(istep, time);
     output_.WriteVector("displacement",dis_);
