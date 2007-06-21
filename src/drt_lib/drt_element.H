@@ -66,11 +66,6 @@ public:
   //! @name Enums and Friends
 
   /*!
-  \brief The Discretization is a friend of Element
-  */
-  friend class Discretization;
-
-  /*!
   \brief Type of element
 
   */
@@ -365,6 +360,11 @@ public:
   //! @name Construction
 
   /*!
+  \brief Set global id of this element
+  */
+  virtual inline void SetId(const int id) { id_ = id; return; }
+
+  /*!
   \brief Read input for this element
 
   This class implements a dummy of this method that prints a warning and
@@ -596,7 +596,6 @@ public:
 
   //@}
 
-protected:
 
   /*!
   \brief Build pointer vector from map of nodes
