@@ -185,7 +185,6 @@ void DRT::Discretization::BuildLinesinCondition(
     const int* nodeids = actline->NodeIds();
 
     // loop all lines associated with entries of nodeids
-    
     for(int nid=0;nid<nnode;nid++)
     {
       multimap<int,RefCountPtr<DRT::Element> >::iterator startit =
@@ -236,16 +235,34 @@ void DRT::Discretization::BuildLinesinCondition(
   for (linecurr=linemap.begin(); linecurr!=linemap.end(); ++linecurr)
   {
     if (linecurr->second == null) continue;
-    linecurr->second->id_ = count;
+    linecurr->second->SetId(count);
     finallines[count] = linecurr->second;
     ++count;
   }
   
-  cond->AddGeometry(finallines);
+  // Build a global numbering for these elements
+  // the elements are in a column map state but the numbering is unique anyway
+  // and does NOT reflect the overlap!
+  // This is somehow dirty but works for the moment
+  vector<int> snelements(Comm().NumProc());
+  vector<int> rnelements(Comm().NumProc());
+  for (int i=0; i<Comm().NumProc(); ++i) snelements[i] = 0;
+  snelements[Comm().MyPID()] = finallines.size();
+  Comm().SumAll(&snelements[0],&rnelements[0],Comm().NumProc());
+  int sum=0;
+  for (int i=0; i<Comm().MyPID(); ++i) sum += rnelements[i];
+  map<int,RefCountPtr<DRT::Element> > finalfinallines;
+  count=0;
+  for (linecurr=finallines.begin(); linecurr!=finallines.end(); ++linecurr)
+  {
+    linecurr->second->SetId(count+sum);
+    finalfinallines[count+sum] = linecurr->second;
+    ++count;
+  }
+  finallines.clear();
+  
+  cond->AddGeometry(finalfinallines);
 
-  // Normally, we would need to do a ton of cleanup here, but due to
-  // RefCountPtr we can forget about everything!
-  // Great, isn't it?
 
   return;
 } // DRT::Discretization::BuildLinesinCondition
@@ -406,16 +423,34 @@ void DRT::Discretization::BuildSurfacesinCondition(
   for (surfcurr=surfmap.begin(); surfcurr!=surfmap.end(); ++surfcurr)
   {
     if (surfcurr->second==null) continue;
-    surfcurr->second->id_ = count;
+    surfcurr->second->SetId(count);
     finalsurfs[count] = surfcurr->second;
     ++count;
   }
   
-  cond->AddGeometry(finalsurfs);
+  // Build a global numbering for these elements
+  // the elements are in a column map state but the numbering is unique anyway
+  // and does NOT reflect the overlap!
+  // This is somehow dirty but works for the moment
+  vector<int> snelements(Comm().NumProc());
+  vector<int> rnelements(Comm().NumProc());
+  for (int i=0; i<Comm().NumProc(); ++i) snelements[i] = 0;
+  snelements[Comm().MyPID()] = finalsurfs.size();
+  Comm().SumAll(&snelements[0],&rnelements[0],Comm().NumProc());
+  int sum=0;
+  for (int i=0; i<Comm().MyPID(); ++i) sum += rnelements[i];
+  map<int,RefCountPtr<DRT::Element> > finalfinalsurfs;
+  count=0;
+  for (surfcurr=finalsurfs.begin(); surfcurr!=finalsurfs.end(); ++surfcurr)
+  {
+    surfcurr->second->SetId(count+sum);
+    finalfinalsurfs[count+sum] = surfcurr->second;
+    ++count;
+  }
+  finalsurfs.clear();
+
+  cond->AddGeometry(finalfinalsurfs);
   
-  // Normally, we would need to do a ton of cleanup here, but due to
-  // RefCountPtr we can forget about everything!
-  // Great, isn't it?
 
   return;
 } // DRT::Discretization::BuildSurfacesinCondition
@@ -574,12 +609,33 @@ void DRT::Discretization::BuildVolumesinCondition(
   for (volcurr=volmap.begin(); volcurr!=volmap.end(); ++volcurr)
   {
     if (volcurr->second == null) continue;
-    volcurr->second->id_ = count;
+    volcurr->second->SetId(count);
     finalvols[count] = volcurr->second;
     ++count;
   }
   
-  cond->AddGeometry(finalvols);
+  // Build a global numbering for these elements
+  // the elements are in a column map state but the numbering is unique anyway
+  // and does NOT reflect the overlap!
+  // This is somehow dirty but works for the moment (gee)
+  vector<int> snelements(Comm().NumProc());
+  vector<int> rnelements(Comm().NumProc());
+  for (int i=0; i<Comm().NumProc(); ++i) snelements[i] = 0;
+  snelements[Comm().MyPID()] = finalvols.size();
+  Comm().SumAll(&snelements[0],&rnelements[0],Comm().NumProc());
+  int sum=0;
+  for (int i=0; i<Comm().MyPID(); ++i) sum += rnelements[i];
+  map<int,RefCountPtr<DRT::Element> > finalfinalvols;
+  count=0;
+  for (volcurr=finalvols.begin(); volcurr!=finalvols.end(); ++volcurr)
+  {
+    volcurr->second->SetId(count+sum);
+    finalfinalvols[count+sum] = volcurr->second;
+    ++count;
+  }
+  finalvols.clear();
+
+  cond->AddGeometry(finalfinalvols);
 
   // Normally, we would need to do a ton of cleanup here, but due to
   // RefCountPtr (and STL) we can forget about everything!
