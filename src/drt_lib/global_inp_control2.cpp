@@ -141,7 +141,17 @@ void ntainp_ccadiscret()
 
   // read all types of geometry related conditions (e.g. boundary conditions)
   // Also read time and space functions and local coord systems
+  Epetra_Time time(*comm);
+  if (comm->MyPID()==0)
+  {
+    cout << "Read conditions                          in....";
+    fflush(stdout);
+  }
   input_conditions(*DRT::Problem::Instance());
+  if (comm->MyPID()==0)
+  {
+    cout << time.ElapsedTime() << " secs\n";
+  }
 
 #ifdef RESULTTEST
   /*---------------------------------------- input of result descriptions */
