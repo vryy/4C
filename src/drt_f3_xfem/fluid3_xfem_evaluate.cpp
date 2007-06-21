@@ -458,7 +458,7 @@ void DRT::Elements::XFluid3::f3_sys_mat(const vector<int>&        lm,
 Epetra_SerialDenseMatrix DRT::Elements::XFluid3::getJacobiMatrix(
                       const Epetra_SerialDenseMatrix& xyze,
                       const Epetra_SerialDenseMatrix& deriv,
-                      const int                       iel)
+                      const int                       iel) const
 {
     
     Epetra_SerialDenseMatrix    xjm(NSD_,NSD_);
@@ -484,7 +484,7 @@ Epetra_SerialDenseMatrix DRT::Elements::XFluid3::getJacobiMatrix(
 /*----------------------------------------------------------------------*
  |  calculate determinant                                               |
  *----------------------------------------------------------------------*/
-double DRT::Elements::XFluid3::getDeterminante(const Epetra_SerialDenseMatrix&  xjm)
+double DRT::Elements::XFluid3::getDeterminante(const Epetra_SerialDenseMatrix&  xjm) const
 {
     // determinant of jacobian matrix
     const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
@@ -548,7 +548,7 @@ void DRT::Elements::XFluid3::f3_getbodyforce(Epetra_SerialDenseMatrix& edeadng,
         if (curve) curvenum = (*curve)[0];
         double curvefac = 1.0;
         if (curvenum>=0 && usetime)
-            curvefac = DRT::TimeCurveManager::Instance().Curve(curvenum).f(time);
+            curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
 
         // set this condition to the edeadng array
         for(int nn=0;nn<iel;nn++)
@@ -590,7 +590,7 @@ void DRT::Elements::XFluid3::f3_gder(Epetra_SerialDenseMatrix& derxy,
                                     const Epetra_SerialDenseMatrix& xjm,
                                     const double& det,
                                     const int iel
-                    )
+                    ) const
 {
   Epetra_SerialDenseMatrix  xji(NSD_,NSD_);   // inverse of jacobian matrix
 
@@ -637,12 +637,12 @@ return;
 
 
 void DRT::Elements::XFluid3::f3_gder2(const Epetra_SerialDenseMatrix& xyze,
-                    const Epetra_SerialDenseMatrix& xjm,
-                                    const Epetra_SerialDenseMatrix& derxy,
-                    Epetra_SerialDenseMatrix& derxy2,
-                    const Epetra_SerialDenseMatrix& deriv2,
-                                    const int iel
-                    )
+                                      const Epetra_SerialDenseMatrix& xjm,
+                                      const Epetra_SerialDenseMatrix& derxy,
+                                      Epetra_SerialDenseMatrix& derxy2,
+                                      const Epetra_SerialDenseMatrix& deriv2,
+                                      const int iel
+                                     ) const
 {
 double r0,r1,r2,r3,r4,r5;
 //--------------------------------------------initialize and zero out everything
@@ -1602,7 +1602,7 @@ void DRT::Elements::XFluid3::f3_int_beltrami_err(
 
 
 
-inline vector<double> DRT::Elements::XFluid3::f3_caltau(
+vector<double> DRT::Elements::XFluid3::f3_caltau(
     const Epetra_SerialDenseMatrix&         xyze,
     const vector<double>&                   evelnp,
     const DRT::Element::DiscretizationType  distype,
@@ -1610,7 +1610,7 @@ inline vector<double> DRT::Elements::XFluid3::f3_caltau(
     const int                               numnode,
     const double                            timefac,
     const bool                              is_stationary
-    )
+    ) const
 {
     // use one point gauss rule to calculate tau at element center
     GaussRule3D integrationrule_stabili;
@@ -1805,8 +1805,8 @@ inline vector<double> DRT::Elements::XFluid3::f3_caltau(
 
 
 // check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
-inline bool DRT::Elements::XFluid3::is_higher_order_element(
-              const DRT::Element::DiscretizationType  distype)
+bool DRT::Elements::XFluid3::is_higher_order_element(
+              const DRT::Element::DiscretizationType  distype) const
 {
     bool hoel = true;
     switch (distype)
@@ -1871,7 +1871,7 @@ inline bool DRT::Elements::XFluid3::is_higher_order_element(
 
 // converts a string into an Action for this element
 DRT::Elements::XFluid3::ActionType DRT::Elements::XFluid3::convertStringToActionType(
-              const string& action)
+              const string& action) const
 {
     
     dsassert(action != "none", "No action supplied");

@@ -401,10 +401,10 @@ private:
   Epetra_SerialDenseMatrix getJacobiMatrix(
     const Epetra_SerialDenseMatrix& xyze,
     const Epetra_SerialDenseMatrix& deriv,
-    const int                       iel);
+    const int                       iel) const;
 
   // calculate determinant
-  double getDeterminante(const Epetra_SerialDenseMatrix&  xjm);
+  double getDeterminante(const Epetra_SerialDenseMatrix&  xjm) const;
 
   // get the body force from the nodes condition
   void f3_getbodyforce (Epetra_SerialDenseMatrix& edeadng,
@@ -417,7 +417,7 @@ private:
                  const Epetra_SerialDenseMatrix& xjm,
                  const double& det,
                  const int iel
-         );
+         ) const;
 
   // calculate second global derivatives w.r.t x/y/z at point r,s,t
     void f3_gder2(const Epetra_SerialDenseMatrix& xyze,
@@ -426,7 +426,7 @@ private:
                   Epetra_SerialDenseMatrix& derxy2,
                   const Epetra_SerialDenseMatrix& deriv2,
                   const int iel
-                  );
+                  ) const;
   // evaluate error for beltrami test problem
   void f3_int_beltrami_err(const vector<double>&       myvelnp,
                            const vector<double>&       myprenp,
@@ -480,7 +480,7 @@ private:
   // get optimal gaussrule for given discretization type
   GaussRule3D get_optimal_gaussrule(const DiscretizationType& distype);
   
-  inline vector<double> f3_caltau(
+  vector<double> f3_caltau(
     const Epetra_SerialDenseMatrix&    xyze,
     const vector<double>&        evelnp,
     const DRT::Element::DiscretizationType           distype,
@@ -488,10 +488,9 @@ private:
     const int                    numnode,
     const double                 timefac,
     const bool                   is_stationary
-    );
+    ) const;
 
-  inline bool is_higher_order_element(
-    const DRT::Element::DiscretizationType  distype);
+  bool is_higher_order_element(const DRT::Element::DiscretizationType  distype) const;
     
   void CreateLinesTet(const int& nline,
                       const int& nnode);
@@ -516,7 +515,7 @@ private:
 //    const int            shpid_b
 //    );
 
-  ActionType convertStringToActionType(const string& action);
+  ActionType convertStringToActionType(const string& action) const;
 
 }; // class Fluid3
 
