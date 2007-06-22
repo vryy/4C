@@ -216,6 +216,17 @@ void DRT::Utils::FunctionManager::ReadInput()
         {
           char   component[255];
           double origin   [3];
+
+          int    dim;
+          frint("COMPONENT",&dim,&ierr);
+          /* plausibility check */
+          if (ierr == 1)
+          {
+            if(dim!=j)
+            {
+              dserror("For vector valued functions the components have to be \nspecified succesively, e.g. 0,1,..,ndof");
+            }
+          }
           
           /* read the position of the function's origin */
           frdouble_n("EXPR",origin,3,&ierr);
