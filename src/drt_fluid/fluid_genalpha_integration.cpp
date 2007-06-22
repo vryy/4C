@@ -4,6 +4,8 @@
 \brief Time integration according to dis. C. Whiting
 
 
+
+
 <pre>
 Maintainer: Peter Gamnitzer
             gamnitzer@lnm.mw.tum.de
@@ -29,9 +31,9 @@ Maintainer: Peter Gamnitzer
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   RefCountPtr<DRT::Discretization> actdis,
-  LINALG::Solver&       solver,
-  ParameterList&        params,
-  IO::DiscretizationWriter& output)
+  LINALG::Solver&                  solver,
+  ParameterList&                   params,
+  IO::DiscretizationWriter&        output)
   :
   // call constructor for "nontrivial" objects
   discret_(actdis),
@@ -51,7 +53,7 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // -------------------------------------------------------------------
   PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(discret_);
   pbc.UpdateDofsForPeriodicBoundaryConditions();
-
+  
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled()) discret_->FillComplete();
 
@@ -82,7 +84,7 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
 
     int countveldofs = 0;
     int countpredofs = 0;
-
+    
     for (int i=0; i<discret_->NumMyRowNodes(); ++i)
     {
       DRT::Node* node = discret_->lRowNode(i);
@@ -230,12 +232,12 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
   // order accuracy
   gamma_  = 0.5 + alphaM_ - alphaF_;
 
-
+  
   cout << "Generalized Alpha parameter: alpha_F = " << alphaF_ << &endl;
   cout << "                             alpha_M = " << alphaM_ << &endl;
-  cout << "                             gamma   = " << gamma_  << &endl;
+  cout << "                             gamma   = " << gamma_  << &endl <<&endl;
 
-
+  
   while (stop_timeloop==false)
   {
     // -------------------------------------------------------------------
@@ -251,7 +253,7 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
     {
       printf("TIME: %11.4E/%11.4E  DT = %11.4E     GenAlpha     STEP = %4d/%4d \n",
              time_,endtime,dt_,step_,endstep);
-
+ 
     }
 
     // -------------------------------------------------------------------
@@ -269,17 +271,17 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
     //                  velocities and boundary values
     // -------------------------------------------------------------------
     this->GenAlphaCalcInitialAccelerations();
-
+    
     // -------------------------------------------------------------------
     //                     solve nonlinear equation
     // -------------------------------------------------------------------
     this->DoGenAlphaPredictorCorrectorIteration();
-
+    
     // -------------------------------------------------------------------
     //                         update solution
     // -------------------------------------------------------------------
     this->GenAlphaTimeUpdate();
-
+    
     // -------------------------------------------------------------------
     //                         output of solution
     // -------------------------------------------------------------------
@@ -288,7 +290,7 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
     // -------------------------------------------------------------------
     //                    stop criterium for timeloop
     // -------------------------------------------------------------------
-
+    
     if(step_==endstep||time_>=endtime)
     {
 	stop_timeloop=true;
@@ -317,26 +319,41 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
 
   int               itnum         = 0;
 
-
+  
   if(myrank_ == 0)
   {
-    printf("+------------+-------------------+--------------+--------------+ \n");
-    printf("|- step/max -|- tol      [norm] -|- vel-error --|- pre-error --| \n");
+    printf("+------------+-------------------+--------------+--------------+--------------+--------------+ \n");
+    printf("|- step/max -|- tol      [norm] -|- vel-error --|- pre-error --|- vres-norm --|- pres-norm --| \n");
   }
 
+
+  // -------------------------------------------------------------------
+  //  Evaluate acceleration and velocity at the intermediate time level
+  //                     n+alpha_M and n+alpha_F
+  //
+  //                             -> (0)
+  // -------------------------------------------------------------------
+  this->GenAlphaComputeIntermediateSol();
+  
+    
+  // -------------------------------------------------------------------
+  // call elements to calculate residual for first iteration
+  // -------------------------------------------------------------------
+  this->GenAlphaAssembleResidual();
+
+  
   bool              stopnonliniter = false;
   while (stopnonliniter==false)
   {
     itnum++;
 
-
     // -------------------------------------------------------------------
-    //  Evaluate acceleration and velocity at the intermediate time level
-    //                     n+alpha_M and n+alpha_F
+    // call elements to calculate systemmatrix. Dirichlet conditions are
+    // applied here to the system. 
     // -------------------------------------------------------------------
-    this->GenAlphaComputeIntermediateSol();
-
-
+    this->GenAlphaAssembleMatrix();
+    
+  
     // -------------------------------------------------------------------
     // solve for increments
     // -------------------------------------------------------------------
@@ -349,18 +366,22 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
     this->GenAlphaNonlinearUpdate();
 
 
-#if 0  // DEBUG IO --- the solution vector after convergence
-    if (myrank_==0)
-    {
-      int rr;
-      double* data = velnp_->Values();
-      for(rr=0;rr<velnp_->MyLength();rr++)
-      {
-        printf("velnp %22.15e\n",data[rr]);
-      }
-    }
-#endif
+    // -------------------------------------------------------------------
+    //  Evaluate acceleration and velocity at the intermediate time level
+    //                     n+alpha_M and n+alpha_F
+    //                     
+    //                          (i)->(i+1)
+    // -------------------------------------------------------------------
+    this->GenAlphaComputeIntermediateSol();
 
+    
+    // -------------------------------------------------------------------
+    // call elements to calculate residual for convergence check and next
+    // step
+    // -------------------------------------------------------------------
+    this->GenAlphaAssembleResidual();
+
+    
     // -------------------------------------------------------------------
     // do convergence check
     // -------------------------------------------------------------------
@@ -392,17 +413,17 @@ void FluidGenAlphaIntegration::GenAlphaPredictNewSolutionValues()
 
   //       n+1    n
   //      u    = u
-  //       (0)
+  //       (0)    
   //
   //  and
   //
   //       n+1    n
   //      p    = p
-  //       (0)
+  //       (0)    
 
   velnp_->Update(1.0,*veln_ ,0.0);
 
-
+  
   return;
 } // FluidGenAlphaIntegration::GenAlphaPredictNewSolutionValues
 
@@ -423,7 +444,7 @@ void FluidGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann()
 {
   // --------------------------------------------------
   // apply Dirichlet conditions to velnp
-
+  
   ParameterList eleparams;
   // action for elements
   eleparams.set("action","calc_fluid_eleload");
@@ -446,12 +467,12 @@ void FluidGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann()
   discret_->ClearState();
 
 
-
+  
   // --------------------------------------------------
   // evaluate Neumann conditions
 
   // not implemented yet
-
+     
   return;
 } // FluidGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann
 
@@ -473,7 +494,7 @@ void FluidGenAlphaIntegration::GenAlphaCalcInitialAccelerations()
   // adjust accnp according to Dirichlet values of velnp
   //
   //                                  n+1     n
-  //                               vel   - vel
+  //                               vel   - vel 
   //       n+1      n  gamma-1.0      (0)
   //    acc    = acc * --------- + ------------
   //       (0)           gamma      gamma * dt
@@ -481,7 +502,7 @@ void FluidGenAlphaIntegration::GenAlphaCalcInitialAccelerations()
 
   accnp_->Update(1.0,*velnp_,-1.0,*veln_,0.0);
   accnp_->Update((gamma_-1.0)/gamma_,*accn_,1.0/(gamma_*dt_));
-
+  
   return;
 } // FluidGenAlphaIntegration::GenAlphaCalcInitialAccelerations
 
@@ -499,18 +520,18 @@ void FluidGenAlphaIntegration::GenAlphaCalcInitialAccelerations()
 void FluidGenAlphaIntegration::GenAlphaComputeIntermediateSol()
 {
   //       n+alphaM                n+1                      n
-  //    acc         = alpha_M * acc     + (1-alpha_M) *  acc
+  //    acc         = alpha_M * acc     + (1-alpha_M) *  acc   
   //       (i)                     (i)
-
+  
   accam_->Update((alphaM_),*accnp_,(1.0-alphaM_),*accn_,0.0);
 
   //       n+alphaF              n+1                   n
-  //      u         = alpha_F * u     + (1-alpha_F) * u
+  //      u         = alpha_F * u     + (1-alpha_F) * u      
   //       (i)                   (i)
 
   velaf_->Update((alphaF_),*velnp_,(1.0-alphaF_),*veln_,0.0);
 
-
+  
   return;
 } // FluidGenAlphaIntegration::GenAlphaComputeIntermediateSol
 
@@ -535,7 +556,7 @@ void FluidGenAlphaIntegration::GenAlphaTimeUpdate()
   veln_->Update(1.0,*velnp_ ,0.0);
   // for the accelerations
   accn_->Update(1.0,*accnp_ ,0.0);
-
+  
   return;
 } // FluidGenAlphaIntegration::GenAlphaTimeUpdate
 
@@ -555,7 +576,7 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
   output_.NewStep    (step_,time_);
   output_.WriteVector("velnp"   , velnp_);
   output_.WriteVector("residual", residual_);
-
+  
   // do restart if we have to
   restartstep_ += 1;
   if (restartstep_ == uprestart_)
@@ -571,11 +592,141 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
 } // FluidGenAlphaIntegration::GenAlphaOutput
 
 
+
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- | Assemble linearised system and solve linear problem       gammi 06/07|
+ | Assemble residual. Dirichlet conditions applied in here.  gammi 06/07|
+ -----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FluidGenAlphaIntegration::GenAlphaAssembleResidual()
+{
+  // -------------------------------------------------------------------
+  // call elements to calculate residual
+  // -------------------------------------------------------------------
+  // zero out residual
+  residual_->PutScalar(0.0);
+
+  // add Neumann loads to residual
+  residual_->Update(1.0,*neumann_loads_,0.0);
+
+  // create the parameters for the discretization
+  ParameterList eleparams;
+  
+  // action for elements
+  eleparams.set("action","calc_fluid_genalpha_residual");
+  // choose what to assemble
+  eleparams.set("assemble matrix 1",false);
+  eleparams.set("assemble matrix 2",false);
+  eleparams.set("assemble vector 1",true);
+  eleparams.set("assemble vector 2",false);
+  eleparams.set("assemble vector 3",false);
+  // other parameters that might be needed by the elements
+  eleparams.set("alpha_M",alphaM_);
+  eleparams.set("alpha_F",alphaF_);
+  eleparams.set("gamma"  ,gamma_ );
+  eleparams.set("time"   ,time_  );
+  eleparams.set("dt"     ,dt_    );
+  // set vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("u and p (n+1      ,trial)",velnp_);
+  discret_->SetState("u and p (n+alpha_F,trial)",velaf_);
+  discret_->SetState("acc     (n+alpha_M,trial)",accam_);
+
+  // call loop over elements
+  {
+    discret_->Evaluate(eleparams,null,null,residual_,null,null);
+    discret_->ClearState();
+  }
+
+  // -------------------------------------------------------------------
+  // apply the Dirichlet boundary conditions to the residual
+  // -------------------------------------------------------------------  
+  LINALG::ApplyDirichlettoSystem(increment_,residual_,
+                                 zeros_,dirichtoggle_);
+  
+  return;
+} // FluidGenAlphaIntegration::GenAlphaAssembleResidual
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | Assemble systemmatrix                                     gammi 06/07|
+ -----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void  FluidGenAlphaIntegration::GenAlphaAssembleMatrix()
+{
+  const Epetra_Map* dofrowmap       = discret_->DofRowMap();
+
+  
+  // -------------------------------------------------------------------
+  // call elements to calculate system matrix
+  // -------------------------------------------------------------------
+  // zero out the stiffness matrix
+  sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+
+  // create the parameters for the discretization
+  ParameterList eleparams;
+
+  // action for elements
+  eleparams.set("action","calc_fluid_genalpha_sysmat");
+  // choose what to assemble
+  eleparams.set("assemble matrix 1",true);
+  eleparams.set("assemble matrix 2",false);
+  eleparams.set("assemble vector 1",false);
+  eleparams.set("assemble vector 2",false);
+  eleparams.set("assemble vector 3",false);
+  // other parameters that might be needed by the elements
+  eleparams.set("alpha_M",alphaM_);
+  eleparams.set("alpha_F",alphaF_);
+  eleparams.set("gamma"  ,gamma_ );
+  eleparams.set("time"   ,time_  );
+  eleparams.set("dt"     ,dt_    );
+  // set vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("u and p (n+1      ,trial)",velnp_);
+  discret_->SetState("u and p (n+alpha_F,trial)",velaf_);
+  discret_->SetState("acc     (n+alpha_M,trial)",accam_);
+
+  // call loop over elements
+  {
+    discret_->Evaluate(eleparams,sysmat_,null,null,null,null);
+    discret_->ClearState();
+  }
+
+  // finalize the system matrix
+  LINALG::Complete(*sysmat_);
+  maxentriesperrow_ = sysmat_->MaxNumEntries();
+
+  
+  // -------------------------------------------------------------------
+  // Apply dirichlet boundary conditions to system of equations residual
+  // discplacements are supposed to be zero at boundary conditions
+  // -------------------------------------------------------------------
+  increment_->PutScalar(0.0);
+  zeros_->PutScalar(0.0);
+  {
+    LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,
+                                   zeros_,dirichtoggle_);
+  }
+return;
+}//FluidGenAlphaIntegration::GenAlphaAssembleMatrix
+
+
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | Solve linear problem                                      gammi 06/07|
  -----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -584,260 +735,16 @@ void FluidGenAlphaIntegration::GenAlphaCalcIncrement(
   int itnum
   )
 {
-
-  const Epetra_Map* dofrowmap       = discret_->DofRowMap();
-
-
-  // -------------------------------------------------------------------
-  // call elements to calculate system matrix
-  // -------------------------------------------------------------------
-  {
-    // zero out the stiffness matrix
-    sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
-
-    // create the parameters for the discretization
-    ParameterList eleparams;
-
-    // action for elements
-    eleparams.set("action","calc_fluid_genalpha_sysmat");
-    // choose what to assemble
-    eleparams.set("assemble matrix 1",true);
-    eleparams.set("assemble matrix 2",false);
-    eleparams.set("assemble vector 1",false);
-    eleparams.set("assemble vector 2",false);
-    eleparams.set("assemble vector 3",false);
-    // other parameters that might be needed by the elements
-    eleparams.set("alpha_M",alphaM_);
-    eleparams.set("alpha_F",alphaF_);
-    eleparams.set("gamma"  ,gamma_ );
-    eleparams.set("time"   ,time_  );
-    eleparams.set("dt"     ,dt_    );
-    // set vector values needed by elements
-    discret_->ClearState();
-    discret_->SetState("u and p (n+1      ,trial)",velnp_);
-    discret_->SetState("u and p (n+alpha_F,trial)",velaf_);
-    discret_->SetState("acc     (n+alpha_M,trial)",accam_);
-
-    // call loop over elements
-    {
-      discret_->Evaluate(eleparams,sysmat_,null,null,null,null);
-      discret_->ClearState();
-    }
-
-    // finalize the system matrix
-    LINALG::Complete(*sysmat_);
-    maxentriesperrow_ = sysmat_->MaxNumEntries();
-  }
-
-
-#if 0
-
-  accnp_->PutScalar(0.0);
-  velnp_->PutScalar(0.0);
-
-  int    gid  = 0;
-
-  double dacc = 1.0;
-
-  accnp_->SumIntoGlobalValues(1,&dacc,&gid);
-
-  double dvel = gamma_*dt_*dacc;
-  velnp_->SumIntoGlobalValues(1,&dvel,&gid);
-
-  this->GenAlphaComputeIntermediateSol();
-
-
-  // -------------------------------------------------------------------
-  // call elements to calculate residual
-  // -------------------------------------------------------------------
-  {
-    // zero out residual
-    residual_->PutScalar(0.0);
-//    residual_->Update(1.0,*neumann_loads_,0.0);
-
-    // create the parameters for the discretization
-    ParameterList eleparams;
-
-    // action for elements
-    eleparams.set("action","calc_fluid_genalpha_residual");
-    // choose what to assemble
-    eleparams.set("assemble matrix 1",false);
-    eleparams.set("assemble matrix 2",false);
-    eleparams.set("assemble vector 1",true);
-    eleparams.set("assemble vector 2",false);
-    eleparams.set("assemble vector 3",false);
-    // other parameters that might be needed by the elements
-    eleparams.set("alpha_M",alphaM_);
-    eleparams.set("alpha_F",alphaF_);
-    eleparams.set("gamma"  ,gamma_ );
-    eleparams.set("time"   ,time_  );
-    eleparams.set("dt"     ,dt_    );
-    // set vector values needed by elements
-    discret_->ClearState();
-    discret_->SetState("u and p (n+1      ,trial)",velnp_);
-    discret_->SetState("u and p (n+alpha_F,trial)",velaf_);
-    discret_->SetState("acc     (n+alpha_M,trial)",accam_);
-
-    // call loop over elements
-    {
-      discret_->Evaluate(eleparams,null,null,residual_,null,null);
-      discret_->ClearState();
-    }
-  }
-
-  {
-    neumann_loads_->PutScalar(0.0);
-    accnp_->PutScalar(0.0);
-    velnp_->PutScalar(0.0);
-
-    this->GenAlphaComputeIntermediateSol();
-
-
-    // create the parameters for the discretization
-    ParameterList eleparams;
-
-    // action for elements
-    eleparams.set("action","calc_fluid_genalpha_residual");
-    // choose what to assemble
-    eleparams.set("assemble matrix 1",false);
-    eleparams.set("assemble matrix 2",false);
-    eleparams.set("assemble vector 1",true);
-    eleparams.set("assemble vector 2",false);
-    eleparams.set("assemble vector 3",false);
-    // other parameters that might be needed by the elements
-    eleparams.set("alpha_M",alphaM_);
-    eleparams.set("alpha_F",alphaF_);
-    eleparams.set("gamma"  ,gamma_ );
-    eleparams.set("time"   ,time_  );
-    eleparams.set("dt"     ,dt_    );
-    // set vector values needed by elements
-    discret_->ClearState();
-    discret_->SetState("u and p (n+1      ,trial)",velnp_);
-    discret_->SetState("u and p (n+alpha_F,trial)",velaf_);
-    discret_->SetState("acc     (n+alpha_M,trial)",accam_);
-
-    // call loop over elements
-    {
-      discret_->Evaluate(eleparams,null,null,neumann_loads_,null,null);
-      discret_->ClearState();
-    }
-  }
-
-  residual_->Update(-1.0,*neumann_loads_,1.0);
-
-#else
-  // -------------------------------------------------------------------
-  // call elements to calculate residual
-  // -------------------------------------------------------------------
-  {
-    // zero out residual
-    residual_->PutScalar(0.0);
-//    residual_->Update(1.0,*neumann_loads_,0.0);
-
-    // create the parameters for the discretization
-    ParameterList eleparams;
-
-    // action for elements
-    eleparams.set("action","calc_fluid_genalpha_residual");
-    // choose what to assemble
-    eleparams.set("assemble matrix 1",false);
-    eleparams.set("assemble matrix 2",false);
-    eleparams.set("assemble vector 1",true);
-    eleparams.set("assemble vector 2",false);
-    eleparams.set("assemble vector 3",false);
-    // other parameters that might be needed by the elements
-    eleparams.set("alpha_M",alphaM_);
-    eleparams.set("alpha_F",alphaF_);
-    eleparams.set("gamma"  ,gamma_ );
-    eleparams.set("time"   ,time_  );
-    eleparams.set("dt"     ,dt_    );
-    // set vector values needed by elements
-    discret_->ClearState();
-    discret_->SetState("u and p (n+1      ,trial)",velnp_);
-    discret_->SetState("u and p (n+alpha_F,trial)",velaf_);
-    discret_->SetState("acc     (n+alpha_M,trial)",accam_);
-
-    // call loop over elements
-    {
-      discret_->Evaluate(eleparams,null,null,residual_,null,null);
-      discret_->ClearState();
-    }
-  }
-#endif
-
-  //--------- Apply dirichlet boundary conditions to system of equations
-  //          residual discplacements are supposed to be zero at
-  //          boundary conditions
-  increment_->PutScalar(0.0);
-  zeros_->PutScalar(0.0);
-  {
-    LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,
-                                   zeros_,dirichtoggle_);
-  }
-
-#if 0  // DEBUG IO --- the whole systemmatrix
-      {
-	  int rr;
-	  int mm;
-	  for(rr=0;rr<residual_->MyLength();rr++)
-	  {
-	      int NumEntries;
-
-	      vector<double> Values(maxentriesperrow_);
-	      vector<int> Indices(maxentriesperrow_);
-
-	      sysmat_->ExtractGlobalRowCopy(rr,
-					    maxentriesperrow_,
-					    NumEntries,
-					    &Values[0],&Indices[0]);
-//	      printf("Row %4d\n",rr);
-
-	      for(mm=0;mm<NumEntries;mm++)
-	      {
-                if(Indices[mm]==0)
-		  printf("mat [%4d] [%4d] %26.19e\n",rr,Indices[mm],Values[mm]);
-	      }
-	  }
-      }
-#endif
-
-#if 0  // DEBUG IO  --- rhs of linear system
-      {
-	  int rr;
-	  double* data = residual_->Values();
-	  for(rr=0;rr<residual_->MyLength();rr++)
-	  {
-            if(data[rr]*data[rr]>10e-30)
-	      printf("global %22.15e\n",data[rr]);
-	  }
-      }
-#endif
-
-
+ 
   //-------solve for residual displacements to correct incremental displacements
+  bool initsolver = false;
+
+  if (itnum==1) // init solver in first iteration only
   {
-    bool initsolver = false;
-    if (itnum==1) // init solver in first iteration only
-    {
-      initsolver = true;
-    }
-    solver_.Solve(sysmat_,increment_,residual_,true,initsolver);
+    initsolver = true;
   }
-
-#if 0  // DEBUG IO --- incremental solution
-  if (myrank_==0)
-  {
-    int rr;
-    double* data = increment_->Values();
-    for(rr=0;rr<increment_->MyLength();rr++)
-    {
-      printf("sol[%4d] %26.19e\n",rr,data[rr]);
-    }
-  }
-
-#endif
-
-
+  solver_.Solve(sysmat_,increment_,residual_,true,initsolver);
+  
   return;
 } // FluidGenAlphaIntegration::GenAlphaCalcIncrement
 
@@ -852,19 +759,28 @@ void FluidGenAlphaIntegration::GenAlphaCalcIncrement(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FluidGenAlphaIntegration::GenAlphaNonlinearUpdate()
 {
+  // -------------------------------------------------------------------
+  // get a vector layout from the discretization to construct matching
+  // vectors and matrices
+  //                 local <-> global dof numbering
+  // -------------------------------------------------------------------
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-  // loop all dofs via loop over all nodes
-  for (int i=0; i<discret_->NumMyRowNodes(); ++i)
+  int numlocdofs = dofrowmap->NumMyElements();
+
+  int*   dof = dofrowmap->MyGlobalElements ();
+  
+
+  int predof = numdim_+1;
+  
+  // loop all dofs on this proc
+  for (int lid=0; lid<numlocdofs; ++lid)
   {
-    DRT::Node* node = discret_->lRowNode(i);
-    vector<int> dof = discret_->Dof(node);
+    int gid = dof[lid];
 
-    int numdofs=discret_->Dof(node).size();
-
-    for (int j=0; j<numdofs-1; ++j)
+    // if the dof is belonging to an acceleration/velocity
+    if ((gid+1)%predof != 0)
     {
-      int    gid  = dof[j];
-
       // ------------------------------------------------------
       // update acceleration
       //
@@ -873,14 +789,12 @@ void FluidGenAlphaIntegration::GenAlphaNonlinearUpdate()
       //        (i+1)       (i)
       //
       double dacc = (*increment_)[gid];
-
-//      cout << "dacc " << dof[j] << " " << dacc <<&endl;
-
+      
       accnp_->SumIntoGlobalValues(1,&dacc,&gid);
 
       // ------------------------------------------------------
       // use updated acceleration to update velocity. Since
-      //
+      //        
       //    n+1         n            n                 +-   n+1       n -+
       // vel      =  vel   + dt * acc   + gamma * dt * | acc     - acc   | =
       //    (i+1)                                      +-   (i+1)       -+
@@ -888,39 +802,37 @@ void FluidGenAlphaIntegration::GenAlphaNonlinearUpdate()
       //                n            n                 +-   n+1       n -+
       //          =  vel   + dt * acc   + gamma * dt * | acc     - acc   | +
       //                                               +-   (i)         -+
-      //
-      //                                      n+1
+      //      
+      //                                      n+1 
       //             + gamma * dt * dacc = vel     +  gamma * dt * dacc =
       //                                      (i)
-      //               n+1
+      //               n+1 
       //          = vel     +   dvel
       //               (i)
 
-      //
+      //        
       double dvel = gamma_*dt_*dacc;
 
-//      cout << "dvel " << dof[j] << " " << dvel <<&endl;
-
       velnp_->SumIntoGlobalValues(1,&dvel,&gid);
+    }
+    else
+    {
+      // ------------------------------------------------------
+      // update pressure
+      //
+      //         n+1          n+1
+      //     pres      =  pres    + dpres
+      //         (i+1)        (i)
+      //
+      
+      double dpres = (*increment_)[gid];
+      velnp_->SumIntoGlobalValues(1,&dpres,&gid);
 
     }
-
-    // ------------------------------------------------------
-    // update pressure
-    //
-    //         n+1          n+1
-    //     pres      =  pres    + dpres
-    //         (i+1)        (i)
-    //
-    int    gid   = dof[numdofs-1];
-
-    double dpres = (*increment_)[gid];
-    velnp_->SumIntoGlobalValues(1,&dpres,&gid);
   }
-
   return;
 } // FluidGenAlphaIntegration::GenAlphaNonlinearUpdate
-
+  
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -933,7 +845,7 @@ void FluidGenAlphaIntegration::GenAlphaNonlinearUpdate()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 bool FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(
-  int          itnum
+  int          itnum  
   )
 {
   bool stopnonliniter = false;
@@ -979,20 +891,33 @@ bool FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(
     prenorm_L2 = 1.0;
   }
 
+  // extract velocity and pressure residuals from rhs vector
+  LINALG::Export(*residual_,*onlyvel_);
+  LINALG::Export(*residual_,*onlypre_);
+  
+  double preresnorm_L2;
+  onlypre_->Norm2(&preresnorm_L2);
+
+  double velresnorm_L2;
+  onlyvel_->Norm2(&velresnorm_L2);
+  
   // out to screen
   if(myrank_ == 0)
   {
-    printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |\n",
-           itnum,itemax,ittol,incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
+    printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |\n",
+           itnum,itemax,ittol,incvelnorm_L2/velnorm_L2,
+           incprenorm_L2/prenorm_L2, velresnorm_L2,preresnorm_L2);
   }
 
   // this is the convergence check
-  if(incvelnorm_L2/velnorm_L2 <= ittol && incprenorm_L2/prenorm_L2 <= ittol)
+  if((incvelnorm_L2/velnorm_L2 <= ittol && incprenorm_L2/prenorm_L2 <= ittol)
+     ||
+     (velresnorm_L2 <= ittol && preresnorm_L2 <= ittol))
   {
     stopnonliniter=true;
     if(myrank_ == 0)
     {
-      printf("+------------+-------------------+--------------+--------------+ \n");
+      printf("+------------+-------------------+--------------+--------------+--------------+--------------+ \n");
     }
   }
 
@@ -1000,19 +925,28 @@ bool FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(
   // next timestep...
   if (itnum == itemax
       &&
-      (incvelnorm_L2/velnorm_L2 > ittol
-       ||
-       incprenorm_L2/prenorm_L2 > ittol))
+      ((incvelnorm_L2/velnorm_L2 > ittol
+        ||
+        incprenorm_L2/prenorm_L2 > ittol
+       )
+       &&
+       (
+         velresnorm_L2 > ittol
+         ||
+         preresnorm_L2 > ittol
+       )
+      )
+    )
   {
     stopnonliniter=true;
     if(myrank_ == 0)
     {
-      printf("+---------------------------------------------------------------+\n");
-      printf("|            >>>>>> not converged in itemax steps!              |\n");
-      printf("+---------------------------------------------------------------+\n");
+      printf("+---------------------------------------------------------------------------------------------+\n");
+      printf("|            >>>>>> not converged in itemax steps!                                            |\n");
+      printf("+---------------------------------------------------------------------------------------------+\n");
     }
   }
-
+  
   return stopnonliniter;
 } // FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck
 
@@ -1049,10 +983,118 @@ void FluidGenAlphaIntegration::ReadRestart(int step)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FluidGenAlphaIntegration::SetInitialFlowField(
-  int whichinitialfield
-  )
+  int whichinitialfield,
+  int startfuncno
+ )
 {
+  if(whichinitialfield==2 ||whichinitialfield==3)
+  {
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
+      // the set of degrees of freedom associated with the node
+      vector<int> nodedofset = discret_->Dof(lnode);
 
+      for(int index=0;index<numdim_+1;++index)
+      {
+        int lid = nodedofset[index];
+        
+        double initialval=DRT::Utils::FunctionManager::Instance().Funct(startfuncno-1).Evaluate(index,lnode->X());
+
+        velnp_->ReplaceMyValues(1,&initialval,&lid);
+        veln_ ->ReplaceMyValues(1,&initialval,&lid);
+      }
+    }
+  }
+#if 0
+  if(whichinitialfield == 11)
+  {
+    int gid;
+    int lid;
+
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+
+    int err =0;
+
+    int numdim  = params_.get<int>("number of velocity degrees of freedom");
+    int npredof = numdim;
+
+
+    double  minz= 0.0;
+    double  maxz= 1.0;
+
+    double  dp  = 1.0;
+    double  visc= 1.0;
+
+    double  A,B,C;
+
+
+    double         p;
+    vector<double> u  (numdim);
+    vector<double> xyz(numdim);
+
+    C=dp/(2*visc);
+    B=C*(maxz+minz);
+    A=-maxz*minz*C;
+    
+    if(numdim!=3)
+    {
+      dserror("Beltrami flow is three dimensional flow!");
+    }
+
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
+
+      // the set of degrees of freedom associated with the node
+      vector<int> nodedofset = discret_->Dof(lnode);
+
+      // set node coordinates
+      for(int dim=0;dim<numdim;dim++)
+      {
+        xyz[dim]=lnode->X()[dim];
+      }
+
+      // compute initial pressure
+      p = 0.0;
+      
+      // compute initial velocities
+      u[0] = A+B*xyz[1]-C*xyz[1]*xyz[1];
+      u[1] = 0;
+      u[2] = 0;
+      
+      // initial velocities
+      for(int nveldof=0;nveldof<numdim;nveldof++)
+      {
+        gid = nodedofset[nveldof];
+        lid = dofrowmap->LID(gid);
+        err += velnp_->ReplaceMyValues(1,&(u[nveldof]),&lid);
+        err += veln_ ->ReplaceMyValues(1,&(u[nveldof]),&lid);
+     }
+
+      // initial pressure
+      gid = nodedofset[npredof];
+      lid = dofrowmap->LID(gid);
+      err += velnp_->ReplaceMyValues(1,&p,&lid);
+      err += veln_ ->ReplaceMyValues(1,&p,&lid);
+
+    } // end loop nodes lnodeid
+    if(err!=0)
+    {
+      dserror("dof not on proc");
+    }
+  }
+  else
+  {
+    dserror("no other initial fields than zero and parabolic for channel up to now");
+  }
+#endif
+  
   return;
 } // end FluidGenAlphaIntegration::SetInitialFlowField
 
