@@ -41,9 +41,20 @@ extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FluidResultTest::FluidResultTest(FluidImplicitTimeInt& fluid)
-  : fluid_(fluid)
 {
+  fluiddis_=fluid.discret_;
+  mysol_   =fluid.velnp_ ;
 }
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+FluidResultTest::FluidResultTest(FluidGenAlphaIntegration& fluid)
+{
+  fluiddis_=fluid.discret_;
+  mysol_   =fluid.velnp_ ;
+}
+
 
 
 /*----------------------------------------------------------------------*/
@@ -53,46 +64,46 @@ void FluidResultTest::TestNode(RESULTDESCR* res, int& nerr, int& test_count)
   if (res->dis != 0)
     dserror("fix me: only one fluid discretization supported for testing");
 
-  if (fluid_.discret_->HaveGlobalNode(res->node))
+  if (fluiddis_->HaveGlobalNode(res->node))
   {
-    DRT::Node* actnode = fluid_.discret_->gNode(res->node);
+    DRT::Node* actnode = fluiddis_->gNode(res->node);
 
     // Strange! It seems we might actually have a global node around
     // even if it does not belong to us. But here we are just
     // interested in our nodes!
-    if (actnode->Owner() != fluid_.discret_->Comm().MyPID())
+    if (actnode->Owner() != fluiddis_->Comm().MyPID())
       return;
 
     double result = 0.;
 
-    const Epetra_BlockMap& velnpmap = fluid_.velnp_->Map();
+    const Epetra_BlockMap& velnpmap = mysol_->Map();
 
     string position = res->position;
     if (position=="velx")
     {
-      result = (*fluid_.velnp_)[velnpmap.LID(fluid_.discret_->Dof(actnode,0))];
+      result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(actnode,0))];
     }
     else if (position=="vely")
     {
-      result = (*fluid_.velnp_)[velnpmap.LID(fluid_.discret_->Dof(actnode,1))];
+      result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(actnode,1))];
     }
     else if (position=="velz")
     {
-      result = (*fluid_.velnp_)[velnpmap.LID(fluid_.discret_->Dof(actnode,2))];
+      result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(actnode,2))];
     }
     else if (position=="pressure")
     {
       if (genprob.ndim==2)
       {
-        if (fluid_.discret_->NumDof(actnode)<3)
+        if (fluiddis_->NumDof(actnode)<3)
           dserror("too few dofs at node %d for pressure testing",actnode->Id());
-        result = (*fluid_.velnp_)[velnpmap.LID(fluid_.discret_->Dof(actnode,2))];
+        result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(actnode,2))];
       }
       else
       {
-        if (fluid_.discret_->NumDof(actnode)<4)
+        if (fluiddis_->NumDof(actnode)<4)
           dserror("too few dofs at node %d for pressure testing",actnode->Id());
-        result = (*fluid_.velnp_)[velnpmap.LID(fluid_.discret_->Dof(actnode,3))];
+        result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(actnode,3))];
       }
     }
     else

@@ -22,6 +22,7 @@ Maintainer: Ulrich Kuettler
 
 #include "../drt_lib/drt_resulttest.H"
 #include "fluidimplicitintegration.H"
+#include "fluid_genalpha_integration.H"
 
 /*!
   \class FluidResultTest
@@ -39,6 +40,11 @@ public:
   */
   FluidResultTest(FluidImplicitTimeInt& fluid);
 
+  /*!
+  \brief not documented yet
+  */
+  FluidResultTest(FluidGenAlphaIntegration& fluid);
+
   /// our version of nodal value tests
   /*!
     Possible position flags are "velx", "vely", "velz" and
@@ -52,7 +58,10 @@ public:
 private:
 
   /// our fluid algorithmus
-  FluidImplicitTimeInt& fluid_;
+//  FluidImplicitTimeInt& fluid_;
+
+  RefCountPtr<DRT::Discretization> fluiddis_;
+  RefCountPtr<Epetra_Vector>       mysol_;
 };
 
 

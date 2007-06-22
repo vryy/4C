@@ -292,7 +292,7 @@ void dyn_fluid_drt()
       // set initial field for analytical test problems etc
       if(fdyn->init>0)
       {
-        genalphaint.SetInitialFlowField(fdyn->init);
+        genalphaint.SetInitialFlowField(fdyn->init,fdyn->startfuncno);
       }
     }
 
@@ -302,7 +302,7 @@ void dyn_fluid_drt()
     //--------------------------------------------------
     // do the result test
 #ifdef RESULTTEST
-#if 0
+#if 1
     DRT::ResultTestManager testmanager(actdis->Comm());
     testmanager.AddFieldTest(rcp(new FluidResultTest(genalphaint)));
     testmanager.TestAll();
