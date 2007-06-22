@@ -1,7 +1,40 @@
 /*!----------------------------------------------------------------------
 \file fluid_genalpha_integration.H
 
-\brief Time integration according to dis. C. Whiting
+\class FluidGenAlphaIntegration
+
+\brief Generalised alpha time integration scheme for incompressible flow
+problems.
+
+Based on the method described in:
+
+<pre>
+  |    "A generalized-alpha method for integrating the filtered
+  |     Navier-Stokes equations with a stabilized finite element method"
+  |
+  |    K.E. Jansen, C. Whiting and G.M. Hulbert
+  |
+  |    Computer Methods in Applied Mechanics and Engineering
+</pre>
+
+The idea for the implicit treatment of the pressure is taken from:
+
+<pre>
+  |    "Stabilized finite element methods for fluid dynamics using a
+  |     hirarchical basis"
+  |
+  |    Christian H. Whiting
+  |
+  |    Dissertation (1999)
+</pre>
+
+In addition to what is described there, we do not evaluate the continuity
+equation time n+alpha_F but at time n+1.
+If the continuity equation is fulfilled exactly at time n, both variants
+are equivalent --- but in the case of a randomly disturbed flow profile,
+which might be used for turbulence calculations, the only fully implicit
+method would provide consistency with the implicit treatment of the
+pressure.
 
 
 <pre>
@@ -31,6 +64,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_solver.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/drt_function.H"
 #include "../io/io_drt.H"
 
 #include "Epetra_Vector.h"
@@ -48,6 +82,10 @@ using namespace Teuchos;
 
 class FluidGenAlphaIntegration
 {
+#ifdef RESULTTEST
+  friend class FluidResultTest;
+#endif
+
 public:
 
   /*!
@@ -66,7 +104,7 @@ public:
   FluidGenAlphaIntegration(RefCountPtr<DRT::Discretization> actdis,
                            LINALG::Solver&                  solver,
                            ParameterList&                   params,
-                           IO::DiscretizationWriter&            output);
+                           IO::DiscretizationWriter&        output);
 
    /*!
   \brief Destructor
@@ -77,8 +115,13 @@ public:
   //! @name loops and iterations
 
   /*!
-  \brief Do time integration (time loop)
+  \brief Do time integration from this step/time to endstep/endtime
 
+  o calculate and set gamma parameter for generalised alpha method
+    according to the second order necessary condition
+    
+  o Do the timeloop
+  
   */
   void GenAlphaIntegrateTo(
     int                endstep,
@@ -88,9 +131,18 @@ public:
   /*!
   \brief do nonlinear iteration, e.g. Newton like iteration
 
+  In each step, the linearised system based on the (partially
+  intermediate) velocities and accelerations is assembled and
+  increments for the acceleration and pressure of the new timestep
+  are calculated.
+  The solutions (acceleration, velocity and pressure) of the new
+  timestep "*np" are updated in each nonlinear iteration step using
+  this increment.
+
+  Convergence is checked by controlling residual- and increment- norms.
+  
   */
   void DoGenAlphaPredictorCorrectorIteration();
-
 
 
   //@}
@@ -133,7 +185,8 @@ public:
   void GenAlphaTimeUpdate();
 
   /*!
-  \brief Write solution to file
+  \brief Write solution to file for IO and restart if we have a
+  restart step.
 
   */
   void GenAlphaOutput();
@@ -149,20 +202,61 @@ public:
   \brief Evaluate acceleration and velocity at the intermediate
   time level n+alpha_M and n+alpha_F
 
+  Has to be called every time after the values at time level np have
+  been updated!
+  
   */
   void GenAlphaComputeIntermediateSol();
 
   /*!
-  \brief Assemble linearised system and solve linear problem
+  \brief Assemble systemmatrix.
 
+  o Zeros out systemmatrix
+
+  o Calls elements for assembly
+
+  o Zeros out increment_ (solution vector)
+
+  o Applies Dirichlet conditions to incremental linear system
+
+  */
+  void GenAlphaAssembleMatrix();
+
+  /*!
+  \brief Assemble residual.
+
+  o Zeros out residual
+
+  o Adds Neumann loads to the residual
+
+  o Dirichlet conditions applied in here to be able to use the
+    residual for the convergence check
+  
+  */
+    void GenAlphaAssembleResidual();
+
+  
+  /*!
+  \brief Solve linear problem.
+
+  The counter itnum of the nonlinear iteration on input allows to
+  do the solver initialisation only in the first step.
+  
   */
   void GenAlphaCalcIncrement(
     int          itnum
     );
 
   /*!
-  \brief update the current acceleration, velocity and pressure
+  \brief update the current acceleration, velocity and pressure (*np)
 
+  o loop all degrees of freedom
+
+     -> if we have a velocity degree of freedom, update accelerations
+        (in accnp) and velocities (in velnp)
+
+     -> if we have a pressure dof, update pressure (in velnp)
+     
   */
   void GenAlphaNonlinearUpdate(
     );
@@ -185,7 +279,8 @@ public:
   */
 
   void SetInitialFlowField(
-    int whichinitialfield
+    int whichinitialfield,
+    int whichfunc
     );
 
   /*!
