@@ -1269,7 +1269,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       else if (frwordcmp(buffer,"field_from_file")==0)
          fdyn->init=1;
       else if (frwordcmp(buffer,"field_by_function")==0)
-         fdyn->init=-1;
+         fdyn->init=2;
+      else if (frwordcmp(buffer,"disturbed_field_from_function")==0)
+         fdyn->init=3;
       else if (frwordcmp(buffer,"SOLWAVE")==0)
          fdyn->init=6;
       else if (frwordcmp(buffer,"WAVEBREAKING")==0)
@@ -1398,8 +1400,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    frint("STARTFUNCNO" ,&i                ,&ierr);
    if (ierr==1)
    {
-      if (fdyn->init==-1)
-          fdyn->init=i;
+      if (fdyn->init==2 || fdyn->init==3)
+      {
+          fdyn->startfuncno=i;
+      }
+      else
+      {
+          fdyn->startfuncno=-1;
+      }
    }
    frint("ITEMAX" ,&(fdyn->itemax) ,&ierr);
 

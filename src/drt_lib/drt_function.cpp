@@ -94,6 +94,7 @@ void DRT::Utils::FunctionManager::ReadInput()
         // that is able to handle straight lines.
         ostringstream expr;
         expr << "(" << b << ") + ((" << x2[0]-x1[0] << ")*x + (" << x2[1]-x1[1] << ")*y + (" << x2[2]-x1[2] << ")*z)/(" << length << ")/(" << length << ")*(" << m << ")";
+        
         functions_.push_back(rcp(new ExprFunction(const_cast<char*>(expr.str().c_str()), x1[0], x1[1], x1[2])));
       }
 
@@ -209,19 +210,39 @@ void DRT::Utils::FunctionManager::ReadInput()
       frchk("EXPR",&ierr);
       if (ierr==1)
       {
-        char expr[255];
-        double x[3];
+        Teuchos::RefCountPtr<ExprFunction> vecfunc = rcp(new ExprFunction());
+        
+        for (int j=0;;++j)
+        {
+          char   component[255];
+          double origin   [3];
+          
+          /* read the position of the function's origin */
+          frdouble_n("EXPR",origin,3,&ierr);
+          if (!ierr) dserror("failed to read coordinates");
+          
+          /* read the expression */
+          frchar("FUNCTION", component , &ierr);
 
-        /* read the position of the function's origin */
-        frdouble_n("EXPR",x,3,&ierr);
-        if (!ierr) dserror("failed to read coordinates");
+          if (!ierr) dserror("failed to read expression string");
 
-        /* read the expression */
-        frchar("FUNCTION", expr, &ierr);
-        if (!ierr) dserror("failed to read expression string");
-        functions_.push_back(rcp(new ExprFunction(expr, x[0], x[1], x[2])));
+          (*vecfunc).AddExpr(component,origin[0],origin[1],origin[2]);
+          
+          frread();
+          // stop if there is no content to this curve
+          // no further curves are read
+          frchk("---",&ierr);
+          if (ierr==1)
+          {
+            break;
+          }
+        }
+        
+        functions_.push_back(vecfunc);
+       
       }
 
+    
 #if 0
       frread();
       frchk("---",&ierr);
@@ -236,22 +257,63 @@ void DRT::Utils::FunctionManager::ReadInput()
     }
   }
 }
-
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::Utils::ExprFunction::ExprFunction(char* buf, double x, double y, double z)
-  : x_(x), y_(y), z_(z),
-    expr_(pss_parse(buf))
+DRT::Utils::ExprFunction::ExprFunction()
 {
+  x_.clear();
+  y_.clear();
+  z_.clear();
+    
+  expr_.clear();
+
+  return;
 }
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+DRT::Utils::ExprFunction::ExprFunction(char* buf,
+                                       double x,
+                                       double y,
+                                       double z)
+{
+
+  x_.push_back(x);
+  y_.push_back(y);
+  z_.push_back(z);
+    
+  expr_.push_back(pss_parse(buf));
+
+  return;
+}
+
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 DRT::Utils::ExprFunction::~ExprFunction()
 {
-  pss_parse_cleanup(expr_);
+  for(unsigned i=0;i!=expr_.size();++i)
+  {
+    pss_parse_cleanup(expr_[i]);
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::Utils::ExprFunction::AddExpr(char* buf,
+                                       double x,
+                                       double y,
+                                       double z
+  )
+{
+  expr_.push_back(pss_parse(buf));
+  x_.push_back(x);
+  y_.push_back(y);
+  z_.push_back(z);
+                    
+  return;
 }
 
 
@@ -259,7 +321,17 @@ DRT::Utils::ExprFunction::~ExprFunction()
 /*----------------------------------------------------------------------*/
 double DRT::Utils::ExprFunction::Evaluate(int index, const double* x)
 {
-  return pss_evaluate_funct(expr_, x[0]-x_, x[1]-y_, x[2]-z_);
+  // single expression for all components. Reset index to 0!
+  if(expr_.size()==1)
+  {
+    index=0;
+  }
+  
+  if(index>(int)expr_.size()-1 || index<0)
+  {
+    dserror("Tried to evaluate a function in a not available dimension.\nSpecify either one function or functions for all dimensions! \n(including one for the pressure)");
+  }
+  return pss_evaluate_funct(expr_[index], x[0]-x_[index], x[1]-y_[index], x[2]-z_[index]);
 }
 
 

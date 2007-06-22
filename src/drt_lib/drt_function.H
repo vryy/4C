@@ -49,9 +49,13 @@ namespace Utils {
   class ExprFunction : public Function
   {
   public:
-
-    /// construct spatial function from expression with given origin
+    /// construct function from expression with given origin
+    /// (one function for all dimensions)
     ExprFunction(char* buf, double x, double y, double z);
+
+
+    /// Default constructor creating empty object. Expressions are added with add function
+    ExprFunction();
 
     /// clean up parse tree
     ~ExprFunction();
@@ -59,14 +63,17 @@ namespace Utils {
     /// evaluate function at given position in space
     double Evaluate(int index, const double* x);
 
+    /// add expression
+    void AddExpr(char* buf, double x, double y, double z);
+
   private:
 
-    double x_;
-    double y_;
-    double z_;
+    vector<double> x_;
+    vector<double> y_;
+    vector<double> z_;
 
     /// expression syntax tree
-    _ST_NODE* expr_;
+    vector<_ST_NODE*> expr_;
   };
 
 
@@ -96,11 +103,11 @@ namespace Utils {
     /// return the single instance we have of this class
     static FunctionManager& Instance() { return instance_; }
 
-    /// read the baci input file and set up all curves
+    /// read the baci input file and set up all functions
     void ReadInput();
 
     /// return a specified function
-    Function& Funct(int num) { return *functions_[num]; }
+    Function& Funct(int num) { return *(functions_[num]); }
 
   private:
 
@@ -113,7 +120,7 @@ namespace Utils {
     /// no copying
     FunctionManager& operator=(const FunctionManager&);
 
-    /// all curves defined
+    /// all functions defined. The functions may be vector valued!
     std::vector<Teuchos::RefCountPtr<Function> > functions_;
 
     /// the single instance
