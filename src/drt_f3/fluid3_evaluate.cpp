@@ -1577,8 +1577,8 @@ void DRT::Elements::Fluid3::f3_calc_stabpar(
         /*------------------------------------------------- initialise ---*/
         // gaussian points
         f3_integration_points(data);
-        timefac=params.get<double>("dt",0.0);
-
+        timefac =params.get<double>("dt",0.0);
+        timefac*=params.get<double>("gamma",0.0);
         /*---------------------- shape functions and derivs at element center --*/
         switch(iel)
         {
@@ -1691,7 +1691,7 @@ void DRT::Elements::Fluid3::f3_calc_stabpar(
             xi1 = DMAX(re1,1.0);
             xi2 = DMAX(re2,1.0);
 
-            tau[0] = DSQR(strle) / (DSQR(strle)*xi1+(/* 2.0*/ 4.0 * timefac*visc/mk)*xi2);
+            tau[0] = timefac* DSQR(strle) / (DSQR(strle)*xi1+(4.0 * timefac*visc/mk)*xi2);
 
             /*------------------------------------------------------compute tau_Mp ---*/
             /* stability parameter definition according to Franca and Valentin (2000)
@@ -1716,7 +1716,7 @@ void DRT::Elements::Fluid3::f3_calc_stabpar(
             */
 
 
-            tau[1] = DSQR(hk) / (DSQR(hk) * xi1 + ( 4.0 * timefac * visc/mk) * xi2);
+            tau[1] = timefac * DSQR(hk) / (DSQR(hk) * xi1 + ( 4.0 * timefac * visc/mk) * xi2);
 
             /*------------------------------------------------------ compute tau_C ---*/
             /*-- stability parameter definition according to Codina (2002), CMAME 191
@@ -1741,7 +1741,7 @@ void DRT::Elements::Fluid3::f3_calc_stabpar(
             */
             xi2 = DMIN(re2,1.0);
 
-            tau[2] = vel_norm * hk * 0.5 * xi2 /timefac;
+            tau[2] = vel_norm * hk * 0.5 * xi2;
           }
 
         }
@@ -4126,7 +4126,6 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
       elemat(vi*4 + 1, ui*4 + 1) += fac*alphaM*funct[ui]*funct[vi] ;
       elemat(vi*4 + 2, ui*4 + 2) += fac*alphaM*funct[ui]*funct[vi] ;
 
-#if 1
       /* convection (intermediate) */
 
       /*  factor: +alphaF*gamma*dt
@@ -4147,7 +4146,6 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
       elemat(vi*4 + 2, ui*4    ) += fac*afgdt*funct[vi]*(conv_r_(2, 0, ui)            ) ;
       elemat(vi*4 + 2, ui*4 + 1) += fac*afgdt*funct[vi]*(conv_r_(2, 1, ui)            ) ;
       elemat(vi*4 + 2, ui*4 + 2) += fac*afgdt*funct[vi]*(conv_r_(2, 2, ui)+conv_c_(ui)) ;
-#endif
 
       /* pressure (implicit) */
 
@@ -4236,7 +4234,6 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
       elemat(vi*4 + 3, ui*4 + 1) += fac*alphaM*tauMp*funct[ui]*derxy(1,vi) ;
       elemat(vi*4 + 3, ui*4 + 2) += fac*alphaM*tauMp*funct[ui]*derxy(2,vi) ;
 
-#if 1
       /* pressure stabilisation --- convection */
 
 
@@ -4273,7 +4270,6 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
                                      derxy(1,vi)*conv_r_(1,2,ui)
                                      +
                                      derxy(2,vi)*conv_r_(2,2,ui)) ;
-#endif
 
       /* pressure stabilisation --- diffusion  */
 
@@ -4366,7 +4362,6 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
       elemat(vi*4 + 1, ui*4 + 3) += fac*alphaM*tauM*conv_c_(vi)*funct[ui] ;
       elemat(vi*4 + 2, ui*4 + 3) += fac*alphaM*tauM*conv_c_(vi)*funct[ui] ;
 
-#if 1
       /* SUPG stabilisation --- convection  */
 
       /* factor: +alphaF*gamma*dt*tauM
@@ -4468,7 +4463,6 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
                                      velintaf[1]*derxy(2, vi)*conv_r_(2, 1, ui)
                                      +
                                      velintaf[2]*derxy(2, vi)*conv_r_(2, 2, ui)) ;
-#endif
 
       /* SUPG stabilisation --- diffusion   */
 
@@ -4744,7 +4738,6 @@ void DRT::Elements::Fluid3::f3_genalpha_calrhs(
     elevec[vi*4 + 1] -= fac*funct[vi]*accintam[1] ;
     elevec[vi*4 + 2] -= fac*funct[vi]*accintam[2] ;
 
-#if 1
     /* convection */
 
     /*  factor: +1
@@ -4771,7 +4764,6 @@ void DRT::Elements::Fluid3::f3_genalpha_calrhs(
                              velintaf[1]*conv_r_(2,1,vi)
                              +
                              velintaf[2]*conv_r_(2,2,vi)) ;
-#endif
 
     /* pressure */
 
@@ -4884,7 +4876,6 @@ void DRT::Elements::Fluid3::f3_genalpha_calrhs(
                          +
                          derxy(2,vi)*accintam[2]);
 
-#if 1
     /* pressure stabilisation --- convection */
 
     /*  factor: +tauMp
@@ -4902,7 +4893,6 @@ void DRT::Elements::Fluid3::f3_genalpha_calrhs(
                          conv_old_(1)*derxy(1,vi)
                          +
                          conv_old_(2)*derxy(2,vi)) ;
-#endif
 
     /* pressure stabilisation --- diffusion  */
 
@@ -4980,7 +4970,6 @@ void DRT::Elements::Fluid3::f3_genalpha_calrhs(
     elevec[vi*4 + 1] -= fac*tauM*conv_c_(vi)*accintam[1] ;
     elevec[vi*4 + 2] -= fac*tauM*conv_c_(vi)*accintam[2] ;
 
-#if 1
     /* SUPG stabilisation --- convection  */
 
     /* factor: +tauM
@@ -4995,7 +4984,6 @@ void DRT::Elements::Fluid3::f3_genalpha_calrhs(
     elevec[vi*4    ] -= fac*tauM*conv_c_(vi)*conv_old_(0) ;
     elevec[vi*4 + 1] -= fac*tauM*conv_c_(vi)*conv_old_(1) ;
     elevec[vi*4 + 2] -= fac*tauM*conv_c_(vi)*conv_old_(2) ;
-#endif
 
     /* SUPG stabilisation --- diffusion   */
 
