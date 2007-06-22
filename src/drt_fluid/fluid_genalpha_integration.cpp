@@ -76,15 +76,14 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   {
     // Allocate integer vectors which will hold the dof number of the
     // velocity or pressure dofs
-    vector<int> velmapdata;
-    vector<int> premapdata;
-
-    velmapdata.reserve(discret_->NumMyRowNodes()*numdim_);
-    premapdata.reserve(discret_->NumMyRowNodes());
-
-    int countveldofs = 0;
-    int countpredofs = 0;
+//    vector<int> velmapdata;
+//    vector<int> premapdata;
+    set<int> veldofset;
+    set<int> predofset;
     
+//    veldofset.reserve(discret_->NumMyRowNodes()*numdim_);
+//    predofset.reserve(discret_->NumMyRowNodes());
+
     for (int i=0; i<discret_->NumMyRowNodes(); ++i)
     {
       DRT::Node* node = discret_->lRowNode(i);
@@ -96,13 +95,13 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
         for (int j=0; j<numdofs-1; ++j)
         {
 	  // add this velocity dof to the velmapdata vector
-	  velmapdata.push_back(dof[j]);
-          countveldofs+=1;
+//	  velmapdata.push_back(dof[j]);
+ 	  veldofset.insert(dof[j]);
         }
 
         // add this pressure dof to the premapdata vector
-        premapdata.push_back(dof[numdofs-1]);
-        countpredofs += 1;
+//        premapdata.push_back(dof[numdofs-1]);
+        predofset.insert(dof[numdofs-1]);
       }
       else
       {
@@ -110,6 +109,9 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
       }
     }
 
+    vector<int> velmapdata(veldofset.begin(),veldofset.end());
+    vector<int> premapdata(predofset.begin(),predofset.end());
+    
     // the rowmaps are generated according to the pattern provided by
     // the data vectors
     velrowmap_ = rcp(new Epetra_Map(-1,
@@ -233,10 +235,12 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
   gamma_  = 0.5 + alphaM_ - alphaF_;
 
   
-  cout << "Generalized Alpha parameter: alpha_F = " << alphaF_ << &endl;
-  cout << "                             alpha_M = " << alphaM_ << &endl;
-  cout << "                             gamma   = " << gamma_  << &endl <<&endl;
-
+  if (myrank_==0)
+  {
+    cout << "Generalized Alpha parameter: alpha_F = " << alphaF_ << &endl;
+    cout << "                             alpha_M = " << alphaM_ << &endl;
+    cout << "                             gamma   = " << gamma_  << &endl <<&endl;
+  }
   
   while (stop_timeloop==false)
   {
@@ -346,7 +350,6 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
   // -------------------------------------------------------------------
   this->GenAlphaAssembleResidual();
 
-  
   bool              stopnonliniter = false;
   while (stopnonliniter==false)
   {
@@ -749,7 +752,7 @@ void FluidGenAlphaIntegration::GenAlphaCalcIncrement(
     initsolver = true;
   }
   solver_.Solve(sysmat_,increment_,residual_,true,initsolver);
-  
+
   return;
 } // FluidGenAlphaIntegration::GenAlphaCalcIncrement
 
@@ -793,7 +796,7 @@ void FluidGenAlphaIntegration::GenAlphaNonlinearUpdate()
       //     acc      =  acc    + dacc
       //        (i+1)       (i)
       //
-      double dacc = (*increment_)[gid];
+      double dacc = (*increment_)[lid];
       
       accnp_->SumIntoGlobalValues(1,&dacc,&gid);
 
@@ -830,11 +833,32 @@ void FluidGenAlphaIntegration::GenAlphaNonlinearUpdate()
       //         (i+1)        (i)
       //
       
-      double dpres = (*increment_)[gid];
+      double dpres = (*increment_)[lid];
       velnp_->SumIntoGlobalValues(1,&dpres,&gid);
 
     }
   }
+
+#if 0  // DEBUG IO  --- rhs of linear system
+  {
+    const Epetra_Map* dofrowmap       = discret_->DofRowMap();
+
+    int rr;
+
+    
+    double* data = velnp_->Values();
+    for(rr=0;rr<residual_->MyLength();rr++)
+    {
+      int  gid = dofrowmap->GID(rr);
+
+      if(gid%4==0)
+      printf("%4d vel %22.15e\n",gid,data[rr]);
+    }
+  }
+
+#endif
+
+  
   return;
 } // FluidGenAlphaIntegration::GenAlphaNonlinearUpdate
   
@@ -928,20 +952,7 @@ bool FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(
 
   // warn if itemax is reached without convergence, but proceed to
   // next timestep...
-  if (itnum == itemax
-      &&
-      ((incvelnorm_L2/velnorm_L2 > ittol
-        ||
-        incprenorm_L2/prenorm_L2 > ittol
-       )
-       &&
-       (
-         velresnorm_L2 > ittol
-         ||
-         preresnorm_L2 > ittol
-       )
-      )
-    )
+  if (itnum == itemax)
   {
     stopnonliniter=true;
     if(myrank_ == 0)
@@ -1023,29 +1034,37 @@ void FluidGenAlphaIntegration::SetInitialFlowField(
     {
       //
       {
+        const Epetra_Map* dofrowmap = discret_->DofRowMap();
+        
         int err =0;
+
+        // 
         double perc = 0.1;
         
         // loop all nodes on the processor
-        for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+        for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();++lnodeid)
         {
           // get the processor local node
           DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
           // the set of degrees of freedom associated with the node
           vector<int> nodedofset = discret_->Dof(lnode);
 
+          // the noise is proportional to the maximum component of the
+          // undisturbed initial field in this point
           double initialval=0;
           for(int index=0;index<numdim_;++index)
           {
             int gid = nodedofset[index];
+            int lid = dofrowmap->LID(gid);
         
-            initialval=(*velnp_)[gid];
-            if (initialval > EPS9)
+            double thisval=(*velnp_)[lid];
+            if (initialval*initialval < thisval*thisval)
             {
-              break;
+              initialval=thisval;
             }
           }
-          
+
+          // add random noise on initial function field
           for(int index=0;index<numdim_;++index)
           {
             int gid = nodedofset[index];
