@@ -425,7 +425,9 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
 
     // Begin Nonlinear Solver ************************************
 
-    NOX::Epetra::Vector noxSoln(InterfaceDisp(), NOX::Epetra::Vector::CreateView);
+    Teuchos::RefCountPtr<Epetra_Vector> soln = displacementcoupling_ ?
+                                               InterfaceDisp() : InterfaceForce();
+    NOX::Epetra::Vector noxSoln(soln, NOX::Epetra::Vector::CreateView);
 
     // Create the linear system
     Teuchos::RefCountPtr<NOX::Epetra::Interface::Required> iReq = interface;
@@ -774,7 +776,10 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
     const Epetra_Vector& finalSolution = (dynamic_cast<const NOX::Epetra::Vector&>(finalGroup.getX())).getEpetraVector();
     //const Epetra_Vector& finalF        = (dynamic_cast<const NOX::Epetra::Vector&>(finalGroup.getF())).getEpetraVector();
 
-    idispn_->Update(1.0, finalSolution, 0.0);
+    if (displacementcoupling_)
+      idispn_->Update(1.0, finalSolution, 0.0);
+    else
+      idispn_ = InterfaceDisp();
 
     // End Nonlinear Solver **************************************
 
@@ -788,18 +793,6 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
         solver_->getList().print(utils->out());
         utils->out() << endl;
       }
-
-    // ==================================================================
-    // return results
-
-    if (displacementcoupling_)
-    {
-    }
-    else
-    {
-      // do we need to distribute the new interface forces?
-    }
-
 
     // ==================================================================
 
@@ -839,6 +832,13 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::InterfaceDisp
 }
 
 
+Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::InterfaceForce()
+{
+  // extract forces
+  return FluidToStruct(fluid_->ExtractInterfaceForces());
+}
+
+
 bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag)
 {
   char* flags[] = { "Residual", "Jac", "Prec", "FD_Res", "MF_Res", "MF_Jac", "User", NULL };
@@ -853,12 +853,24 @@ bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vect
   if (!x.Map().UniqueGIDs())
     dserror("source map not unique");
 
-  Teuchos::RefCountPtr<Epetra_Vector> idispn = rcp(new Epetra_Vector(x));
+  if (displacementcoupling_)
+  {
+    Teuchos::RefCountPtr<Epetra_Vector> idispn = rcp(new Epetra_Vector(x));
 
-  Teuchos::RefCountPtr<Epetra_Vector> iforce = FluidOp(idispn, fillFlag);
-  Teuchos::RefCountPtr<Epetra_Vector> idispnp = StructOp(iforce, fillFlag);
+    Teuchos::RefCountPtr<Epetra_Vector> iforce = FluidOp(idispn, fillFlag);
+    Teuchos::RefCountPtr<Epetra_Vector> idispnp = StructOp(iforce, fillFlag);
 
-  F.Update(1.0, *idispnp, -1.0, *idispn, 0.0);
+    F.Update(1.0, *idispnp, -1.0, *idispn, 0.0);
+  }
+  else
+  {
+    Teuchos::RefCountPtr<Epetra_Vector> iforcen = rcp(new Epetra_Vector(x));
+
+    Teuchos::RefCountPtr<Epetra_Vector> idisp = StructOp(iforcen, fillFlag);
+    Teuchos::RefCountPtr<Epetra_Vector> iforcenp = FluidOp(idisp, fillFlag);
+
+    F.Update(1.0, *iforcenp, -1.0, *iforcen, 0.0);
+  }
 
   return true;
 }

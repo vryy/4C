@@ -143,8 +143,11 @@ private:
   Teuchos::RefCountPtr<Epetra_Vector> FluidToStruct(Teuchos::RefCountPtr<Epetra_Vector> iv);
   Teuchos::RefCountPtr<Epetra_Vector> AleToFluid(Teuchos::RefCountPtr<Epetra_Vector> iv);
 
-  //! current interface displacements
+  /// current interface displacements
   Teuchos::RefCountPtr<Epetra_Vector> InterfaceDisp();
+
+  /// current interface forces
+  Teuchos::RefCountPtr<Epetra_Vector> InterfaceForce();
 
   /// setup structure algorithm
   void SetupStructure();
