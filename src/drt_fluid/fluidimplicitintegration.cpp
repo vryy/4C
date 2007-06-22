@@ -1206,18 +1206,18 @@ void FluidImplicitTimeInt::SetInitialFlowField(
 
       for(int index=0;index<numdim+1;++index)
       {
-        int lid = nodedofset[index];
+        int gid = nodedofset[index];
         
         double initialval=DRT::Utils::FunctionManager::Instance().Funct(startfuncno-1).Evaluate(index,lnode->X());
 
-        velnp_->ReplaceMyValues(1,&initialval,&lid);
-        veln_ ->ReplaceMyValues(1,&initialval,&lid);
+        velnp_->ReplaceGlobalValues(1,&initialval,&gid);
+        veln_ ->ReplaceGlobalValues(1,&initialval,&gid);
       }
     }
   }
   else
   {
-    dserror("no other initial fields than zero and beltrami are available up to now");
+    dserror("no other initial fields than zero, function and beltrami are available up to now");
   }
 
   return;
