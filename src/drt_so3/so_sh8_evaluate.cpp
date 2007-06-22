@@ -339,31 +339,31 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
     jac_cur.Multiply('N','N',1.0,deriv_gp,xcurr,1.0);
     
     // set up B-Operator in local(parameter) element space including ANS
-    Epetra_SerialDenseMatrix bop(NUMSTR_SOH8,NUMDOF_SOH8);
+    Epetra_SerialDenseMatrix bop_loc(NUMSTR_SOH8,NUMDOF_SOH8);
     for (int inode = 0; inode < NUMNOD_SOH8; ++inode) {
       for (int dim = 0; dim < NUMDIM_SOH8; ++dim) {
         // B_loc_rr = N_r.X_r
-        bop(0,inode*3+dim) = deriv_gp(0,inode) * jac_cur(0,dim);
+        bop_loc(0,inode*3+dim) = deriv_gp(0,inode) * jac_cur(0,dim);
         // B_loc_ss = N_s.X_s
-        bop(1,inode*3+dim) = deriv_gp(1,inode) * jac_cur(1,dim);
+        bop_loc(1,inode*3+dim) = deriv_gp(1,inode) * jac_cur(1,dim);
         // B_loc_tt = interpolation along (r x s) of ANS B_loc_tt
         //          = (1-r)(1-s)/4 * B_ans(SP E) + (1+r)(1-s)/4 * B_ans(SP F)
         //           +(1+r)(1+s)/4 * B_ans(SP G) + (1-r)(1+s)/4 * B_ans(SP H)
-        bop(2,inode*3+dim) = 0.25*(1-r[gp])*(1-s[gp]) * B_ans_loc(0+4*num_sp,inode*3+dim)
-                              +0.25*(1+r[gp])*(1-s[gp]) * B_ans_loc(0+5*num_sp,inode*3+dim)
-                              +0.25*(1+r[gp])*(1+s[gp]) * B_ans_loc(0+6*num_sp,inode*3+dim)
-                              +0.25*(1-r[gp])*(1+s[gp]) * B_ans_loc(0+7*num_sp,inode*3+dim); 
+        bop_loc(2,inode*3+dim) = 0.25*(1-r[gp])*(1-s[gp]) * B_ans_loc(0+4*num_ans,inode*3+dim)
+                                +0.25*(1+r[gp])*(1-s[gp]) * B_ans_loc(0+5*num_ans,inode*3+dim)
+                                +0.25*(1+r[gp])*(1+s[gp]) * B_ans_loc(0+6*num_ans,inode*3+dim)
+                                +0.25*(1-r[gp])*(1+s[gp]) * B_ans_loc(0+7*num_ans,inode*3+dim); 
         // B_loc_rs = N_r.X_s + N_s.X_r
-        bop(3,inode*3+dim) = deriv_gp(0,inode) * jac_cur(1,dim)
-                              +deriv_gp(1,inode) * jac_cur(0,dim);
+        bop_loc(3,inode*3+dim) = deriv_gp(0,inode) * jac_cur(1,dim)
+                                +deriv_gp(1,inode) * jac_cur(0,dim);
         // B_loc_st = interpolation along r of ANS B_loc_st
         //          = (1+r)/2 * B_ans(SP B) + (1-r)/2 * B_ans(SP D)
-        bop(4,inode*3+dim) = 0.5*(1.0+r[gp]) * B_ans_loc(1+1*num_sp,inode*3+dim)
-                              +0.5*(1.0-r[gp]) * B_ans_loc(1+3*num_sp,inode*3+dim);
+        bop_loc(4,inode*3+dim) = 0.5*(1.0+r[gp]) * B_ans_loc(1+1*num_ans,inode*3+dim)
+                                +0.5*(1.0-r[gp]) * B_ans_loc(1+3*num_ans,inode*3+dim);
         // B_loc_rt = interpolation along s of ANS B_loc_rt
         //          = (1-s)/2 * B_ans(SP A) + (1+s)/2 * B_ans(SP C)
-        bop(5,inode*3+dim) = 0.5*(1.0-s[gp]) * B_ans_loc(2+0*num_sp,inode*3+dim)
-                              +0.5*(1.0+s[gp]) * B_ans_loc(2+2*num_sp,inode*3+dim);
+        bop_loc(5,inode*3+dim) = 0.5*(1.0-s[gp]) * B_ans_loc(2+0*num_ans,inode*3+dim)
+                                +0.5*(1.0+s[gp]) * B_ans_loc(2+2*num_ans,inode*3+dim);
       }
     }
     
@@ -371,22 +371,23 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
     // with famous 'T'-matrix already used for EAS but now evaluated at each gp
     Epetra_SerialDenseMatrix TinvT(NUMSTR_SOH8,NUMSTR_SOH8);
     sosh8_evaluateT(jac,TinvT);
-    bop.Multiply('N','N',1.0,TinvT,bop,1.0);
+    Epetra_SerialDenseMatrix bop(NUMSTR_SOH8,NUMDOF_SOH8);
+    bop.Multiply('N','N',1.0,TinvT,bop_loc,1.0);
     
-    // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
+    // local GL strain vector lstrain={E11,E22,E33,2*E12,2*E23,2*E31}
     // but with modified ANS strains E33, E23 and E13
-    Epetra_SerialDenseVector glstrain(NUMSTR_SOH8);
+    Epetra_SerialDenseVector lstrain(NUMSTR_SOH8);
     // evaluate glstrains in local(parameter) coords
     // Err = 0.5 * (dx/dr * dx/dr^T - dX/dr * dX/dr^T) 
-    glstrain(0)= 0.5 * ( 
+    lstrain(0)= 0.5 * ( 
        +(jac_cur(0,0)*jac_cur(0,0) + jac_cur(0,1)*jac_cur(1,0) + jac_cur(0,2)*jac_cur(2,0))
        -(jac(0,0)*jac(0,0)         + jac(0,1)*jac(1,0)         + jac(0,2)*jac(2,0)));
     // Ess = 0.5 * (dy/ds * dy/ds^T - dY/ds * dY/ds^T) 
-    glstrain(1)= 0.5 * ( 
+    lstrain(1)= 0.5 * ( 
        +(jac_cur(1,0)*jac_cur(0,1) + jac_cur(1,1)*jac_cur(1,1) + jac_cur(1,2)*jac_cur(2,1))
        -(jac(1,0)*jac(0,1)         + jac(1,1)*jac(1,1)         + jac(1,2)*jac(2,1)));
     // Ers = (dx/ds * dy/dr^T - dX/ds * dY/dr^T) 
-    glstrain(3)= ( 
+    lstrain(3)= ( 
        +(jac_cur(0,0)*jac_cur(0,1) + jac_cur(0,1)*jac_cur(1,1) + jac_cur(0,2)*jac_cur(2,1))
        -(jac(0,0)*jac(0,1)         + jac(0,1)*jac(1,1)         + jac(0,2)*jac(2,1)));
     
@@ -399,43 +400,45 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
     double dzdt_F = 0.0; double dZdt_F = 0.0;
     double dzdt_G = 0.0; double dZdt_G = 0.0;
     double dzdt_H = 0.0; double dZdt_H = 0.0;
+    
     // vector product of rows of jacobians at corresponding sampling point
     for (int dim = 0; dim < NUMDIM_SOH8; ++dim) {
-      dydt_A += jac_cur_sps(1+0*NUMDIM_SOH8,dim) * jac_cur_sps(dim,2+0*NUMDIM_SOH8);
-      dYdt_A += jac_sps(1+0*NUMDIM_SOH8,dim)     * jac_sps(dim,2+0*NUMDIM_SOH8);
-      dxdt_B += jac_cur_sps(0+1*NUMDIM_SOH8,dim) * jac_cur_sps(dim,2+1*NUMDIM_SOH8);
-      dXdt_B += jac_sps(0+1*NUMDIM_SOH8,dim)     * jac_sps(dim,2+1*NUMDIM_SOH8);
-      dydt_C += jac_cur_sps(1+2*NUMDIM_SOH8,dim) * jac_cur_sps(dim,2+2*NUMDIM_SOH8);
-      dYdt_C += jac_sps(1+2*NUMDIM_SOH8,dim)     * jac_sps(dim,2+2*NUMDIM_SOH8);
-      dxdt_D += jac_cur_sps(0+3*NUMDIM_SOH8,dim) * jac_cur_sps(dim,2+3*NUMDIM_SOH8);
-      dXdt_D += jac_sps(0+3*NUMDIM_SOH8,dim)     * jac_sps(dim,2+3*NUMDIM_SOH8);
+      dydt_A += jac_cur_sps(1+0*NUMDIM_SOH8,dim) * jac_cur_sps(dim+0*NUMDIM_SOH8,2);
+      dYdt_A += jac_sps(1+0*NUMDIM_SOH8,dim)     * jac_sps(dim+0*NUMDIM_SOH8,2);
+      dxdt_B += jac_cur_sps(0+1*NUMDIM_SOH8,dim) * jac_cur_sps(dim+1*NUMDIM_SOH8,2);
+      dXdt_B += jac_sps(0+1*NUMDIM_SOH8,dim)     * jac_sps(dim+1*NUMDIM_SOH8,2);
+      dydt_C += jac_cur_sps(1+2*NUMDIM_SOH8,dim) * jac_cur_sps(dim+2*NUMDIM_SOH8,2);
+      dYdt_C += jac_sps(1+2*NUMDIM_SOH8,dim)     * jac_sps(dim+2*NUMDIM_SOH8,2);
+      dxdt_D += jac_cur_sps(0+3*NUMDIM_SOH8,dim) * jac_cur_sps(dim+3*NUMDIM_SOH8,2);
+      dXdt_D += jac_sps(0+3*NUMDIM_SOH8,dim)     * jac_sps(dim+3*NUMDIM_SOH8,2);
       
-      dzdt_E += jac_cur_sps(2+4*NUMDIM_SOH8,dim) * jac_cur_sps(dim,2+4*NUMDIM_SOH8);
-      dZdt_E += jac_sps(2+4*NUMDIM_SOH8,dim)     * jac_sps(dim,2+4*NUMDIM_SOH8);
-      dzdt_F += jac_cur_sps(2+5*NUMDIM_SOH8,dim) * jac_cur_sps(dim,2+5*NUMDIM_SOH8);
-      dZdt_F += jac_sps(2+5*NUMDIM_SOH8,dim)     * jac_sps(dim,2+5*NUMDIM_SOH8);
-      dzdt_G += jac_cur_sps(2+6*NUMDIM_SOH8,dim) * jac_cur_sps(dim,2+6*NUMDIM_SOH8);
-      dZdt_G += jac_sps(2+6*NUMDIM_SOH8,dim)     * jac_sps(dim,2+6*NUMDIM_SOH8);
-      dzdt_H += jac_cur_sps(2+7*NUMDIM_SOH8,dim) * jac_cur_sps(dim,2+7*NUMDIM_SOH8);
-      dZdt_H += jac_sps(2+7*NUMDIM_SOH8,dim)     * jac_sps(dim,2+7*NUMDIM_SOH8);
+      dzdt_E += jac_cur_sps(2+4*NUMDIM_SOH8,dim) * jac_cur_sps(dim+4*NUMDIM_SOH8,2);
+      dZdt_E += jac_sps(2+4*NUMDIM_SOH8,dim)     * jac_sps(dim+4*NUMDIM_SOH8,2);
+      dzdt_F += jac_cur_sps(2+5*NUMDIM_SOH8,dim) * jac_cur_sps(dim+5*NUMDIM_SOH8,2);
+      dZdt_F += jac_sps(2+5*NUMDIM_SOH8,dim)     * jac_sps(dim+5*NUMDIM_SOH8,2);
+      dzdt_G += jac_cur_sps(2+6*NUMDIM_SOH8,dim) * jac_cur_sps(dim+6*NUMDIM_SOH8,2);
+      dZdt_G += jac_sps(2+6*NUMDIM_SOH8,dim)     * jac_sps(dim+6*NUMDIM_SOH8,2);
+      dzdt_H += jac_cur_sps(2+7*NUMDIM_SOH8,dim) * jac_cur_sps(dim+7*NUMDIM_SOH8,2);
+      dZdt_H += jac_sps(2+7*NUMDIM_SOH8,dim)     * jac_sps(dim+7*NUMDIM_SOH8,2);
     }
     // E33: remedy of curvature thickness locking 
     // Ett = 0.5* ( (1-r)(1-s)/4 * Ett(SP E) + ... + (1-r)(1+s)/4 * Ett(SP H) )
-    glstrain(2) = 0.5 * (
+    lstrain(2) = 0.5 * (
        0.25*(1-r[gp])*(1-s[gp]) * (dzdt_E - dZdt_E)
       +0.25*(1+r[gp])*(1-s[gp]) * (dzdt_F - dZdt_F)
       +0.25*(1+r[gp])*(1+s[gp]) * (dzdt_G - dZdt_G)
       +0.25*(1-r[gp])*(1+s[gp]) * (dzdt_H - dZdt_H));
     // E23: remedy of transverse shear locking
     // Est = (1+r)/2 * Est(SP B) + (1-r)/2 * Est(SP D)
-    glstrain(4) = 0.5*(1+r[gp]) * (dxdt_B - dXdt_B) + 0.5*(1-r[gp]) * (dxdt_D - dXdt_B);
+    lstrain(4) = 0.5*(1+r[gp]) * (dxdt_B - dXdt_B) + 0.5*(1-r[gp]) * (dxdt_D - dXdt_B);
     // E13: remedy of transverse shear locking
     // Ert = (1-s)/2 * Est(SP A) + (1+s)/2 * Est(SP C)
-    glstrain(5) = 0.5*(1-s[gp]) * (dydt_A - dYdt_A) + 0.5*(1+s[gp]) * (dydt_C - dYdt_C);
+    lstrain(5) = 0.5*(1-s[gp]) * (dydt_A - dYdt_A) + 0.5*(1+s[gp]) * (dydt_C - dYdt_C);
     // ANS modification of strains ************************************** ANS
     
     // transformation of local glstrains 'back' to global(material) space
-    glstrain.Multiply('N','N',1.0,TinvT,glstrain,1.0); 
+    Epetra_SerialDenseVector glstrain(NUMSTR_SOH8);
+    glstrain.Multiply('N','N',1.0,TinvT,lstrain,1.0); 
 
     // EAS technology: "enhance the strains"  ----------------------------- EAS
     if (eastype_ != soh8_easnone) {
@@ -575,6 +578,13 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
       (*oldfeas)(i,0) = feas(i);
     }
   } // -------------------------------------------------------------------- EAS
+  
+//  Epetra_SerialDenseMatrix K(*stiffmatrix);
+//  Epetra_SerialDenseVector L(NUMDOF_SOH8);
+//  SymmetricEigen(K,L,NUMDOF_SOH8,'N');
+//  
+//  cout << "eigenvalues: " << L;
+  
   return;
 } // DRT::Elements::Shell8::s8_nlnstiffmass
 
@@ -665,11 +675,10 @@ void DRT::Elements::So_sh8::sosh8_anssetup(
   }
   
   // compute Jacobian matrix at all sampling points
-  jac_sps.Multiply('N','N',1.0,(*deriv_sp),xrefe,1.0);
+  jac_sps.Multiply('N','N',1.0,df_sp,xrefe,1.0);
   
   // compute CURRENT Jacobian matrix at all sampling points
-  jac_cur_sps.Multiply('N','N',1.0,(*deriv_sp),xcurr,1.0);
-  
+  jac_cur_sps.Multiply('N','N',1.0,df_sp,xcurr,1.0);
   
   /*
   ** Compute modified B-operator in local(parametric) space,
@@ -681,7 +690,7 @@ void DRT::Elements::So_sh8::sosh8_anssetup(
     Epetra_SerialDenseMatrix deriv_asp(NUMDIM_SOH8,numsp);
     for (int m=0; m<NUMDIM_SOH8; ++m) {
       for (int n=0; n<numsp; ++n) {
-        deriv_asp(m,n)=(**deriv_sp)(NUMDIM_SOH8*sp+m,n);
+        deriv_asp(m,n)=df_sp(NUMDIM_SOH8*sp+m,n);
       }
     }
     /* compute the CURRENT Jacobian matrix at the sampling point:

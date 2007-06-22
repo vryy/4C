@@ -378,7 +378,7 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
     }
     break;
 #endif
-#ifdef D_SOSH8
+#ifdef D_SOH8
     case so_sh8:
     {
       RefCountPtr<DRT::Element> ele = rcp(new DRT::Elements::So_sh8(id,owner));
