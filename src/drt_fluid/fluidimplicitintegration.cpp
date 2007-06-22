@@ -23,6 +23,7 @@ Maintainer: Peter Gamnitzer
 #include "fluidimplicitintegration.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "../drt_lib/drt_periodicbc.H"
+#include "../drt_lib/drt_function.H"
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1103,7 +1104,8 @@ void FluidImplicitTimeInt::ReadRestart(int step)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FluidImplicitTimeInt::SetInitialFlowField(
-  int whichinitialfield
+  int whichinitialfield,
+  int startfuncno
   )
 {
   //------------------------------------------------------- beltrami flow
@@ -1189,6 +1191,30 @@ void FluidImplicitTimeInt::SetInitialFlowField(
       dserror("dof not on proc");
     }
   }
+  else if(whichinitialfield==2 ||whichinitialfield==3)
+  {
+    int numdim = params_.get<int>("number of velocity degrees of freedom");
+
+    
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
+      // the set of degrees of freedom associated with the node
+      vector<int> nodedofset = discret_->Dof(lnode);
+
+      for(int index=0;index<numdim+1;++index)
+      {
+        int lid = nodedofset[index];
+        
+        double initialval=DRT::Utils::FunctionManager::Instance().Funct(startfuncno-1).Evaluate(index,lnode->X());
+
+        velnp_->ReplaceMyValues(1,&initialval,&lid);
+        veln_ ->ReplaceMyValues(1,&initialval,&lid);
+      }
+    }
+  }
   else
   {
     dserror("no other initial fields than zero and beltrami are available up to now");
@@ -1218,7 +1244,12 @@ void FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
   case 0:
     // do nothing --- no analytical solution available
     break;
-
+  case 2:
+    // do nothing --- no analytical solution available
+    break;
+  case 3:
+    // do nothing --- no analytical solution available
+    break;
   case 8:
   {
     // create the parameters for the discretization

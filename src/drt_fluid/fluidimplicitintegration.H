@@ -163,7 +163,8 @@ public:
 
   */
   void SetInitialFlowField(
-    int whichinitialfield
+    int whichinitialfield,
+    int startfuncno
     );
 
   /*!

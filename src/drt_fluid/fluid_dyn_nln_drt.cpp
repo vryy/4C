@@ -219,7 +219,7 @@ void dyn_fluid_drt()
       // set initial field for analytical test problems etc
       if(fdyn->init>0)
       {
-        fluidimplicit.SetInitialFlowField(fdyn->init);
+        fluidimplicit.SetInitialFlowField(fdyn->init,fdyn->startfuncno);
       }
     }
 
