@@ -291,6 +291,18 @@ public:
 
   //@}
 
+
+  //! @name verification (tests)
+
+  /*!
+  \brief error calculation for beltrami flow
+
+  */
+  void EvaluateErrorComparedToAnalyticalSol();
+
+   //@}
+ 
+
 protected:
 
 private:

@@ -244,7 +244,7 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
     //              set time dependent parameters
     // -------------------------------------------------------------------
     step_++;
-    time_++;
+    time_+=dt_;
 
     // -------------------------------------------------------------------
     //                         out to screen
@@ -281,6 +281,11 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
     //                         update solution
     // -------------------------------------------------------------------
     this->GenAlphaTimeUpdate();
+
+    // -------------------------------------------------------------------
+    // evaluate error for test flows with analytical solutions
+    // -------------------------------------------------------------------
+    this->EvaluateErrorComparedToAnalyticalSol();
     
     // -------------------------------------------------------------------
     //                         output of solution
@@ -987,6 +992,10 @@ void FluidGenAlphaIntegration::SetInitialFlowField(
   int startfuncno
  )
 {
+
+  //----------------------------------------------------------------------
+  // Initialfield from function
+  //----------------------------------------------------------------------
   if(whichinitialfield==2 ||whichinitialfield==3)
   {
     // loop all nodes on the processor
@@ -999,17 +1008,70 @@ void FluidGenAlphaIntegration::SetInitialFlowField(
 
       for(int index=0;index<numdim_+1;++index)
       {
-        int lid = nodedofset[index];
+        int gid = nodedofset[index];
         
         double initialval=DRT::Utils::FunctionManager::Instance().Funct(startfuncno-1).Evaluate(index,lnode->X());
 
-        velnp_->ReplaceMyValues(1,&initialval,&lid);
-        veln_ ->ReplaceMyValues(1,&initialval,&lid);
+        velnp_->ReplaceGlobalValues(1,&initialval,&gid);
+        veln_ ->ReplaceGlobalValues(1,&initialval,&gid);
       }
     }
+    //----------------------------------------------------------------------
+    // random perturbations for field 
+    //----------------------------------------------------------------------
+    if (whichinitialfield==3)
+    {
+      //
+      {
+        int err =0;
+        double perc = 0.1;
+        
+        // loop all nodes on the processor
+        for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+        {
+          // get the processor local node
+          DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
+          // the set of degrees of freedom associated with the node
+          vector<int> nodedofset = discret_->Dof(lnode);
+
+          double initialval=0;
+          for(int index=0;index<numdim_;++index)
+          {
+            int gid = nodedofset[index];
+        
+            initialval=(*velnp_)[gid];
+            if (initialval > EPS9)
+            {
+              break;
+            }
+          }
+          
+          for(int index=0;index<numdim_;++index)
+          {
+            int gid = nodedofset[index];
+        
+            double randomnumber = ((double)rand())/((double) RAND_MAX);
+
+            double noise = initialval * randomnumber * perc;
+            
+            err += velnp_->SumIntoGlobalValues(1,&noise,&gid);
+            err += veln_ ->SumIntoGlobalValues(1,&noise,&gid);
+
+          }
+
+          if(err!=0)
+          {
+            dserror("dof not on proc");
+          }
+        }
+      }
+    
+    }
   }
-#if 0
-  if(whichinitialfield == 11)
+  //----------------------------------------------------------------------
+  // Initialfield for Beltrami flow
+  //----------------------------------------------------------------------
+  else if(whichinitialfield==8)
   {
     int gid;
     int lid;
@@ -1022,28 +1084,19 @@ void FluidGenAlphaIntegration::SetInitialFlowField(
     int numdim  = params_.get<int>("number of velocity degrees of freedom");
     int npredof = numdim;
 
-
-    double  minz= 0.0;
-    double  maxz= 1.0;
-
-    double  dp  = 1.0;
-    double  visc= 1.0;
-
-    double  A,B,C;
-
-
     double         p;
     vector<double> u  (numdim);
     vector<double> xyz(numdim);
 
-    C=dp/(2*visc);
-    B=C*(maxz+minz);
-    A=-maxz*minz*C;
-    
+
     if(numdim!=3)
     {
       dserror("Beltrami flow is three dimensional flow!");
     }
+
+    // set constants for analytical solution
+    double a      = PI/4.0;
+    double d      = PI/2.0;
 
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
@@ -1061,13 +1114,22 @@ void FluidGenAlphaIntegration::SetInitialFlowField(
       }
 
       // compute initial pressure
-      p = 0.0;
-      
+      p = -a*a/2.0 *
+        ( exp(2.0*a*xyz[0])
+          + exp(2.0*a*xyz[1])
+          + exp(2.0*a*xyz[2])
+          + 2.0 * sin(a*xyz[0] + d*xyz[1]) * cos(a*xyz[2] + d*xyz[0]) * exp(a*(xyz[1]+xyz[2]))
+          + 2.0 * sin(a*xyz[1] + d*xyz[2]) * cos(a*xyz[0] + d*xyz[1]) * exp(a*(xyz[2]+xyz[0]))
+          + 2.0 * sin(a*xyz[2] + d*xyz[0]) * cos(a*xyz[1] + d*xyz[2]) * exp(a*(xyz[0]+xyz[1]))
+          );
+
       // compute initial velocities
-      u[0] = A+B*xyz[1]-C*xyz[1]*xyz[1];
-      u[1] = 0;
-      u[2] = 0;
-      
+      u[0] = -a * ( exp(a*xyz[0]) * sin(a*xyz[1] + d*xyz[2]) +
+                    exp(a*xyz[2]) * cos(a*xyz[0] + d*xyz[1]) );
+      u[1] = -a * ( exp(a*xyz[1]) * sin(a*xyz[2] + d*xyz[0]) +
+                    exp(a*xyz[0]) * cos(a*xyz[1] + d*xyz[2]) );
+      u[2] = -a * ( exp(a*xyz[2]) * sin(a*xyz[0] + d*xyz[1]) +
+                    exp(a*xyz[1]) * cos(a*xyz[2] + d*xyz[0]) );
       // initial velocities
       for(int nveldof=0;nveldof<numdim;nveldof++)
       {
@@ -1088,15 +1150,96 @@ void FluidGenAlphaIntegration::SetInitialFlowField(
     {
       dserror("dof not on proc");
     }
+
   }
   else
   {
-    dserror("no other initial fields than zero and parabolic for channel up to now");
+    dserror("no other initial fields than zero, function and beltrami are available up to now");
   }
-#endif
-  
   return;
 } // end FluidGenAlphaIntegration::SetInitialFlowField
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | evaluate error for test cases with analytical solutions   gammi 04/07|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FluidGenAlphaIntegration::EvaluateErrorComparedToAnalyticalSol()
+{
+
+  int calcerr = params_.get<int>("eval err for analyt sol");
+
+  //------------------------------------------------------- beltrami flow
+  switch (calcerr)
+  {
+  case 0:
+    // do nothing --- no analytical solution available
+    break;
+  case 2:
+    // do nothing --- no analytical solution available
+    break;
+  case 3:
+    // do nothing --- no analytical solution available
+    break;
+  case 8:
+  {
+    // create the parameters for the discretization
+    ParameterList eleparams;
+
+    eleparams.set<double>("L2 integrated velocity error",0.0);
+    eleparams.set<double>("L2 integrated pressure error",0.0);
+
+    // action for elements
+    eleparams.set("action","calc_fluid_beltrami_error");
+    // actual time for elements
+    eleparams.set("total time",time_);
+    // choose what to assemble --- nothing
+    eleparams.set("assemble matrix 1",false);
+    eleparams.set("assemble matrix 2",false);
+    eleparams.set("assemble vector 1",false);
+    eleparams.set("assemble vector 2",false);
+    eleparams.set("assemble vector 3",false);
+    // set vector values needed by elements
+    discret_->ClearState();
+    discret_->SetState("u and p at time n+1 (converged)",velnp_);
+
+    // call loop over elements
+    discret_->Evaluate(eleparams,sysmat_,null,residual_,null,null);
+    discret_->ClearState();
+
+
+    double locvelerr = eleparams.get<double>("L2 integrated velocity error");
+    double locpreerr = eleparams.get<double>("L2 integrated pressure error");
+
+    double velerr = 0;
+    double preerr = 0;
+
+    discret_->Comm().SumAll(&locvelerr,&velerr,1);
+    discret_->Comm().SumAll(&locpreerr,&preerr,1);
+
+    // for the L2 norm, we need the square root
+    velerr = sqrt(velerr);
+    preerr = sqrt(preerr);
+
+
+    if (myrank_ == 0)
+    {
+      printf("\n  L2_err for beltrami flow:  velocity %15.8e  pressure %15.8e\n\n",
+             velerr,preerr);
+    }
+  }
+  break;
+  default:
+    dserror("Cannot calculate error. Unknown type of analytical test problem");
+  }
+  return;
+} // end EvaluateErrorComparedToAnalyticalSol
+
 
 
 #endif /* D_FLUID          */
