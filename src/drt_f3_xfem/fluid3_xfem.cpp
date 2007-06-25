@@ -19,7 +19,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 
-
+using namespace DRT::Utils;
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
@@ -217,8 +217,8 @@ void DRT::Elements::XFluid3::CreateLinesTet(const int& nline,
         
         for (int inode=0;inode<nnode;inode++)
         {
-             nodeids[inode] = NodeIds()[tet10_lines_[iline][inode]];
-             nodes[inode]   = Nodes()[tet10_lines_[iline][inode]];
+             nodeids[inode] = NodeIds()[eleNodeNumbering_tet10_lines[iline][inode]];
+             nodes[inode]   = Nodes()[eleNodeNumbering_tet10_lines[iline][inode]];
         }
         lines_[iline] = rcp(new DRT::Elements::XFluid3Line(iline,Owner(),nnode,nodeids,nodes,NULL,this,iline));
         lineptrs_[iline] = lines_[iline].get();
@@ -237,8 +237,8 @@ void DRT::Elements::XFluid3::CreateLinesHex(const int& nline,
         
         for (int inode=0;inode<nnode;inode++)
         {
-             nodeids[inode] = NodeIds()[hex27_lines_[iline][inode]];
-             nodes[inode]   = Nodes()[hex27_lines_[iline][inode]];
+             nodeids[inode] = NodeIds()[eleNodeNumbering_hex27_lines[iline][inode]];
+             nodes[inode]   = Nodes()[eleNodeNumbering_hex27_lines[iline][inode]];
         }
         lines_[iline] = rcp(new DRT::Elements::XFluid3Line(iline,Owner(),nnode,nodeids,nodes,NULL,this,iline));
         lineptrs_[iline] = lines_[iline].get();
@@ -288,8 +288,8 @@ void DRT::Elements::XFluid3::CreateSurfacesTet(const int& nsurf,
         
         for (int inode=0;inode<nnode;inode++)
         {
-             nodeids[inode] = NodeIds()[tet10_surfaces_[isurf][inode]];
-             nodes[inode]   = Nodes()[  tet10_surfaces_[isurf][inode]];
+             nodeids[inode] = NodeIds()[eleNodeNumbering_tet10_surfaces[isurf][inode]];
+             nodes[inode]   = Nodes()[  eleNodeNumbering_tet10_surfaces[isurf][inode]];
         }
         surfaces_[isurf] = rcp(new DRT::Elements::XFluid3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
         surfaceptrs_[isurf] = surfaces_[isurf].get();
@@ -308,8 +308,8 @@ void DRT::Elements::XFluid3::CreateSurfacesHex(const int& nsurf,
         
         for (int inode=0;inode<nnode;inode++)
         {
-             nodeids[inode] = NodeIds()[hex27_surfaces_[isurf][inode]];
-             nodes[inode]   = Nodes()[  hex27_surfaces_[isurf][inode]];
+             nodeids[inode] = NodeIds()[eleNodeNumbering_hex27_surfaces[isurf][inode]];
+             nodes[inode]   = Nodes()[  eleNodeNumbering_hex27_surfaces[isurf][inode]];
         }
         surfaces_[isurf] = rcp(new DRT::Elements::XFluid3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
         surfaceptrs_[isurf] = surfaces_[isurf].get();

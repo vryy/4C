@@ -20,7 +20,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 
-
+using namespace DRT::Utils;
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 01/07|
@@ -174,8 +174,8 @@ void DRT::Elements::XFluid3Surface::CreateLinesTri(const int& nline,
         
         for (int inode=0;inode<nnode;inode++)
         {
-             nodeids[inode] = NodeIds()[tri6_lines_[iline][inode]];
-             nodes[inode]   = Nodes()[tri6_lines_[iline][inode]];
+             nodeids[inode] = NodeIds()[eleNodeNumbering_tri6_lines[iline][inode]];
+             nodes[inode]   = Nodes()[  eleNodeNumbering_tri6_lines[iline][inode]];
         }
         lines_[iline] = rcp(new DRT::Elements::XFluid3Line(iline,Owner(),nnode,nodeids,nodes,this,NULL,iline));
         lineptrs_[iline] = lines_[iline].get();
@@ -192,8 +192,8 @@ void DRT::Elements::XFluid3Surface::CreateLinesQuad(const int& nline,
         
         for (int inode=0;inode<nnode;inode++)
         {
-             nodeids[inode] = NodeIds()[quad9_lines_[iline][inode]];
-             nodes[inode]   = Nodes()[quad9_lines_[iline][inode]];
+             nodeids[inode] = NodeIds()[eleNodeNumbering_quad9_lines[iline][inode]];
+             nodes[inode]   = Nodes()[  eleNodeNumbering_quad9_lines[iline][inode]];
         }
         lines_[iline] = rcp(new DRT::Elements::XFluid3Line(iline,Owner(),nnode,nodeids,nodes,this,NULL,iline));
         lineptrs_[iline] = lines_[iline].get();

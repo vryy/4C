@@ -18,7 +18,6 @@ Maintainer: Axel Gerstenberger
 #ifdef TRILINOS_PACKAGE
 
 #include "fluid3_xfem.H"
-#include "fluid3_xfem_shape.H"
 #include "fluid3_xfem_integration.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_utils.H"
@@ -26,7 +25,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
 
-
+using namespace DRT::Utils;
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            g.bau 03/07|

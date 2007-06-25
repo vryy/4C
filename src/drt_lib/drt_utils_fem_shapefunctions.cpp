@@ -10,7 +10,6 @@ Maintainer: Axel Gerstenberger
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_FLUID3_XFEM
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
@@ -21,25 +20,16 @@ Maintainer: Axel Gerstenberger
 
 
 
-/*----------------------------------------------------------------------*
- |  shape functions and natural deriv1atives for hexaeder     a.ger 02/04|
- *----------------------------------------------------------------------*/
-void shape_function_3D( Epetra_SerialDenseVector&                  funct,
-                        const double&                              r,
-                      	const double&                              s,
-                      	const double&                              t,
-                      	const DRT::Element::DiscretizationType&    distype)
+//
+// shape functions
+//
+void DRT::Utils::shape_function_3D( 
+                     Epetra_SerialDenseVector&                  funct,
+                     const double&                              r,
+                     const double&                              s,
+                     const double&                              t,
+                     const DRT::Element::DiscretizationType&    distype)
 {
-/*
-In this routine the shape functions with respect to r/s/t are evaluated
-
-\param  *funct    DOUBLE   (o)    shape functions
-\param   r        DOUBLE   (i)    coordinate
-\param   s        DOUBLE   (i)    coordinate
-\param   t        DOUBLE   (i)    coordinate
-
-------------------------------------------------------------------------*/
-
     const double Q12 = 1.0/2.0;
     const double Q14 = 1.0/4.0;
     const double Q18 = 1.0/8.0;
@@ -67,7 +57,7 @@ In this routine the shape functions with respect to r/s/t are evaluated
     }
     case DRT::Element::hex20:
     {
-        dserror("shape functions for hex20 are not correct!!! Compare with f3f_calfunctderiv1.f \n");
+        dserror("shape functions for hex20 are not validated!!! \n");
 
         const double rp=1.0+r;
         const double rm=1.0-r;
@@ -185,28 +175,16 @@ In this routine the shape functions with respect to r/s/t are evaluated
     return;
 }
 
-
-
-/*----------------------------------------------------------------------*
- |  shape functions and natural deriv1atives for hexaeder     a.ger 02/04|
- *----------------------------------------------------------------------*/
-void shape_function_3D_deriv1( Epetra_SerialDenseMatrix&                 deriv1,
-                               const double&                              r,
-                               const double&                              s,
-                               const double&                              t,
-                               const DRT::Element::DiscretizationType&    distype)
+//
+// first natural derivative of shape functions
+//
+void DRT::Utils::shape_function_3D_deriv1(
+                     Epetra_SerialDenseMatrix&                  deriv1,
+                     const double&                              r,
+                     const double&                              s,
+                     const double&                              t,
+                     const DRT::Element::DiscretizationType&    distype)
 {
-/*
-In this routine the shape functions and their natural first and second
-deriv1atives with respect to r/s/t are evaluated for H E X A H E D E R
-
-\param **deriv1    DOUBLE   (o)    1st natural deriv1. of shape funct.
-\param   r        DOUBLE   (i)    coordinate
-\param   s        DOUBLE   (i)    coordinate
-\param   t        DOUBLE   (i)    coordinate
-
-------------------------------------------------------------------------*/
-    // variables for use in hex elements
     const double Q12 = 1.0/2.0;
     const double Q18 = 1.0/8.0;
 
@@ -345,7 +323,6 @@ deriv1atives with respect to r/s/t are evaluated for H E X A H E D E R
 //      deriv1(0,19)=-deriv1(0,16);
 //      deriv1(1,19)=-deriv1(1,18);
 //      deriv1(2,19)=-Q12*t*rm*sm;
-
         break;
     }
     case DRT::Element::hex27:
@@ -453,7 +430,6 @@ deriv1atives with respect to r/s/t are evaluated for H E X A H E D E R
         deriv1(2,24) = r00*sp1*dt00;
         deriv1(2,25) = r00*s00*dtm1;
         deriv1(2,26) = r00*s00*dt00;
-
         break;
     }
     case DRT::Element::tet4:
@@ -535,27 +511,16 @@ deriv1atives with respect to r/s/t are evaluated for H E X A H E D E R
     return;
 }
 
-
-
-/*----------------------------------------------------------------------*
- |  shape functions and natural deriv1atives for hexaeder     a.ger 02/04|
- *----------------------------------------------------------------------*/
-void shape_function_3D_deriv2( Epetra_SerialDenseMatrix&                  deriv2,
-                               const double&                              r,
-                               const double&                              s,
-                               const double&                              t,
-                               const DRT::Element::DiscretizationType&    distype)
+//
+// Second natural derivative of shape functions
+//
+void DRT::Utils::shape_function_3D_deriv2(
+                     Epetra_SerialDenseMatrix&                  deriv2,
+                     const double&                              r,
+                     const double&                              s,
+                     const double&                              t,
+                     const DRT::Element::DiscretizationType&    distype)
 {
-/*
-In this routine, the second deriv1atives with respect to r/s/t are evaluated
-
-\param **deriv2   DOUBLE   (o)    2nd natural deriv1. of shape funct.
-\param   r        DOUBLE   (i)    coordinate
-\param   s        DOUBLE   (i)    coordinate
-\param   t        DOUBLE   (i)    coordinate
-\param   distype  DOUBLE   (i)    hex8, hex20, ...
-------------------------------------------------------------------------*/
-    
     const double Q12 = 1.0/2.0;
     const double Q18 = 1.0/8.0;
 
@@ -978,8 +943,10 @@ In this routine, the second deriv1atives with respect to r/s/t are evaluated
         break;
     }
     case DRT::Element::tet4:
+    {
         dserror("no second deriv1atives for tet4 elements");
         break;
+    }
     case DRT::Element::tet10:
         dserror("shape functions for tet10 not implemented yet!\n");
 
@@ -1069,26 +1036,14 @@ In this routine, the second deriv1atives with respect to r/s/t are evaluated
     return;
 }
 
-/*----------------------------------------------------------------------*
-get shape function of surface (private) gammi                     04/07 
-  
- \param   funct    vector<double>&             (o)    shape functions
- \param   deriv1    Epetra_SerialDenseMatrix&   (o)    1st natural deriv1.
-                                                      of shape funct.
- \param   deriv2   Epetra_SerialDenseMatrix&   (o)    2nd natural deriv1.
-                                                      of shape funct.
- \param   iel      const int&                  (i)    number of nodes
- \param   r        DOUBLE&                     (i)    coordinate
- \param   s        DOUBLE&                     (i)    coordinate
-
- *----------------------------------------------------------------------*/
-
-
-
-void shape_function_2D( Epetra_SerialDenseVector&                  funct,
-                        const double&                              r,
-                        const double&                              s,
-                        const DRT::Element::DiscretizationType&    distype)
+//
+// shape functions 2D
+//
+void DRT::Utils::shape_function_2D(
+                     Epetra_SerialDenseVector&                  funct,
+                     const double&                              r,
+                     const double&                              s,
+                     const DRT::Element::DiscretizationType&    distype)
 {
     const double Q12=0.50;
     const double Q14=0.25;
@@ -1102,15 +1057,15 @@ void shape_function_2D( Epetra_SerialDenseVector&                  funct,
         const double sp=1.0+s;
         const double sm=1.0-s;
 
-		funct[0]=Q14*rm*sm;
-		funct[1]=Q14*rp*sm;		
+        funct[0]=Q14*rm*sm;
+        funct[1]=Q14*rp*sm;     
         funct[2]=Q14*rp*sp;
         funct[3]=Q14*rm*sp;
         break;
     }
     case DRT::Element::quad8:
     {
-    	dserror("adjust numbering\n");
+        dserror("adjust numbering\n");
         const double rp=1.0+r;
         const double rm=1.0-r;
         const double sp=1.0+s;
@@ -1154,7 +1109,7 @@ void shape_function_2D( Epetra_SerialDenseVector&                  funct,
     }
     case DRT::Element::tri3:
     {
-    	funct[0]=1.0-r-s;
+        funct[0]=1.0-r-s;
         funct[1]=r;
         funct[2]=s;
         break;
@@ -1174,34 +1129,20 @@ void shape_function_2D( Epetra_SerialDenseVector&                  funct,
         break;
     }
     default:
-     dserror("distype unknown\n");
+        dserror("distype unknown\n");
     } /* end switch(distype) */
  
     return;
 }
 
-
-/*----------------------------------------------------------------------*
-get shape function of surface (private) gammi                     04/07 
-
-In this routine the shape functions (always) and their natural first
-deriv1atives with respect to r/s are evaluated for
-R E C T A N G L E S or T R I A N G L E S
-
- \param   deriv1    Epetra_SerialDenseMatrix&   (o)    1st natural deriv1.
-                                                      of shape funct.
- \param   r        DOUBLE&                     (i)    coordinate
- \param   s        DOUBLE&                     (i)    coordinate
- \param   distype  const DRT::Element::DiscretizationType&  (i)    discretizationtype
-
- *----------------------------------------------------------------------*/
-
-
-
-void shape_function_2D_deriv1( Epetra_SerialDenseMatrix&                  deriv1,
-                               const double&                              r,
-                               const double&                              s,
-                               const DRT::Element::DiscretizationType&    distype)
+//
+// shape functions and natural deriv1atives
+//
+void DRT::Utils::shape_function_2D_deriv1(
+                     Epetra_SerialDenseMatrix&                  deriv1,
+                     const double&                              r,
+                     const double&                              s,
+                     const DRT::Element::DiscretizationType&    distype)
 {
     const double Q12=0.50;
     const double Q14=0.25;
@@ -1215,7 +1156,7 @@ void shape_function_2D_deriv1( Epetra_SerialDenseMatrix&                  deriv1
         const double sp=1.0+s;
         const double sm=1.0-s;
 
-		deriv1(0,0)=-Q14*sm;
+        deriv1(0,0)=-Q14*sm;
         deriv1(1,0)=-Q14*rm;
         
         deriv1(0,1)= Q14*sm;
@@ -1230,7 +1171,7 @@ void shape_function_2D_deriv1( Epetra_SerialDenseMatrix&                  deriv1
     }
     case DRT::Element::quad8:
     {
-    	dserror("adjust numbering\n");
+        dserror("adjust numbering\n");
         const double rp=1.0+r;
         const double rm=1.0-r;
         const double sp=1.0+s;
@@ -1288,16 +1229,16 @@ void shape_function_2D_deriv1( Epetra_SerialDenseMatrix&                  deriv1
         const double shp=s+Q12;
         const double shm=s-Q12;
 
-		deriv1(0,0)=-rhm*sh*sm;
+        deriv1(0,0)=-rhm*sh*sm;
         deriv1(1,0)=-shm*rh*rm;
-		
-		deriv1(0,1)=-rhp*sh*sm;
+        
+        deriv1(0,1)=-rhp*sh*sm;
         deriv1(1,1)= shm*rh*rp;
-		
-		deriv1(0,2)= rhp*sh*sp;
+        
+        deriv1(0,2)= rhp*sh*sp;
         deriv1(1,2)= shp*rh*rp;
         
-		deriv1(0,3)= rhm*sh*sp;
+        deriv1(0,3)= rhm*sh*sp;
         deriv1(1,3)=-shp*rh*rm;
         
         deriv1(0,4)= 2.0*r*sh*sm;
@@ -1318,10 +1259,10 @@ void shape_function_2D_deriv1( Epetra_SerialDenseMatrix&                  deriv1
     }
     case DRT::Element::tri3:
     {
-    	deriv1(0,0)=-1.0;
+        deriv1(0,0)=-1.0;
         deriv1(1,0)=-1.0;
         
-    	deriv1(0,1)= 1.0;
+        deriv1(0,1)= 1.0;
         deriv1(1,1)= 0.0;
         
         deriv1(0,2)= 0.0;
@@ -1355,20 +1296,23 @@ void shape_function_2D_deriv1( Epetra_SerialDenseMatrix&                  deriv1
     return;
 }
 
-
-void shape_function_2D_deriv2( Epetra_SerialDenseMatrix&                  deriv2,
-                               const double&                              r,
-                               const double&                              s,
-                               const DRT::Element::DiscretizationType&    distype)
+//
+// shape functions and natural deriv1atives
+//
+void DRT::Utils::shape_function_2D_deriv2(
+                     Epetra_SerialDenseMatrix&                  deriv2,
+                     const double&                              r,
+                     const double&                              s,
+                     const DRT::Element::DiscretizationType&    distype)
 { 
-	const double Q12=0.50;
+    const double Q12=0.50;
     const double Q14=0.25;
     
     switch (distype)
     {
     case DRT::Element::quad4:
     {    
-		deriv2(0,0)= Q14;
+        deriv2(0,0)= Q14;
         deriv2(1,0)= Q14;
         
         deriv2(0,1)=-Q14;
@@ -1392,16 +1336,16 @@ void shape_function_2D_deriv2( Epetra_SerialDenseMatrix&                  deriv2
         const double rh=Q12*r;
         const double sh=Q12*s;
     
-		deriv2(0,0)=-sh*sm;
+        deriv2(0,0)=-sh*sm;
         deriv2(1,0)=-rh*rm;
-		
-		deriv2(0,1)=-sh*sm;
+        
+        deriv2(0,1)=-sh*sm;
         deriv2(1,1)= rh*rp;
-		
-		deriv2(0,2)= sh*sp;
+        
+        deriv2(0,2)= sh*sp;
         deriv2(1,2)= rh*rp;
         
-		deriv2(0,3)= sh*sp;
+        deriv2(0,3)= sh*sp;
         deriv2(1,3)=-rh*rm;
         
         deriv2(0,4)= s*sm;
@@ -1422,7 +1366,7 @@ void shape_function_2D_deriv2( Epetra_SerialDenseMatrix&                  deriv2
     }
     case DRT::Element::tri3:
     {
-    	deriv2(0,0)= 0.0;
+        deriv2(0,0)= 0.0;
         deriv2(1,0)= 0.0;
         
         deriv2(0,1)= 0.0;
@@ -1460,96 +1404,105 @@ void shape_function_2D_deriv2( Epetra_SerialDenseMatrix&                  deriv2
     return;
 }
 
-
-void shape_function_1D( Epetra_SerialDenseVector&                  funct,
-                        const double&                              r,
-                        const DRT::Element::DiscretizationType&    distype)
+//
+// shape functions and natural deriv1atives
+//
+void DRT::Utils::shape_function_1D(
+                     Epetra_SerialDenseVector&                  funct,
+                     const double&                              r,
+                     const DRT::Element::DiscretizationType&    distype)
 {
 
-	const double Q12=0.50;
+    const double Q12=0.50;
 
     switch (distype)
     {
     case DRT::Element::line2:
     {    
-    	const double rp=1.0 + r;
-    	const double rm=1.0 - r;
+        const double rp=1.0 + r;
+        const double rm=1.0 - r;
     
-    	funct[0]=Q12*rm;
-    	funct[1]=Q12*rp;      		
-    	break;
+        funct[0]=Q12*rm;
+        funct[1]=Q12*rp;            
+        break;
     }
     case DRT::Element::line3:
     {
-    	const double rp= 1.0 + r;
-    	const double rm= 1.0 - r;
-    	const double r2= 1.0 - r*r;
+        const double rp= 1.0 + r;
+        const double rm= 1.0 - r;
+        const double r2= 1.0 - r*r;
 
-    	funct[0]= -Q12*r*rm;
-    	funct[1]= Q12*r*rp;
-    	funct[2]= r2;
-    	break;
+        funct[0]= -Q12*r*rm;
+        funct[1]= Q12*r*rp;
+        funct[2]= r2;
+        break;
     }
     default:
-    	dserror("distype unknown\n");
+        dserror("distype unknown\n");
   } /* end switch(distype) */
  
   return;
 
 }
 
-
-void shape_function_1D_deriv1( Epetra_SerialDenseMatrix&                  deriv1,
-                               const double&                              r,
-                               const DRT::Element::DiscretizationType&    distype)
+//
+// shape functions and natural deriv1atives
+//
+void DRT::Utils::shape_function_1D_deriv1(
+                     Epetra_SerialDenseMatrix&                  deriv1,
+                     const double&                              r,
+                     const DRT::Element::DiscretizationType&    distype)
 {
-	const double Q12=0.50;
+    const double Q12=0.50;
 
     switch (distype)
     {
     case DRT::Element::line2:
     {      
-    	deriv1(0,0)= -Q12;
-     	deriv1(1,0)=  Q12;
-    	break;
+        deriv1(0,0)= -Q12;
+        deriv1(1,0)=  Q12;
+        break;
     }
     case DRT::Element::line3:
     {
-      	deriv1(0,0)= r - Q12;
-      	deriv1(1,0)= r + Q12;
-      	deriv1(2,0)= -2.0*r;
-    	break;
+        deriv1(0,0)= r - Q12;
+        deriv1(1,0)= r + Q12;
+        deriv1(2,0)= -2.0*r;
+        break;
     }
     default:
-    	dserror("distype unknown\n");
+        dserror("distype unknown\n");
   } /* end switch(distype) */
  
   return;
 
 }
 
-
-void shape_function_1D_deriv2( Epetra_SerialDenseMatrix&                  deriv2,
-                               const double&                              r,
-                               const DRT::Element::DiscretizationType&    distype)
+//
+// shape functions and natural deriv1atives
+//
+void DRT::Utils::shape_function_1D_deriv2( 
+                     Epetra_SerialDenseMatrix&                  deriv2,
+                     const double&                              r,
+                     const DRT::Element::DiscretizationType&    distype)
 {
     switch (distype)
     {
     case DRT::Element::line2:
     {    
-     	deriv2(0,0)= 0.0;
-     	deriv2(1,0)= 0.0;    		
-    	break;
+        deriv2(0,0)= 0.0;
+        deriv2(1,0)= 0.0;           
+        break;
     }
     case DRT::Element::line3: 
     {
-      	deriv2(0,0)=  1.0;     
-       	deriv2(1,0)=  1.0;  
-       	deriv2(2,0)= -2.0;   	   
-    	break;
+        deriv2(0,0)=  1.0;     
+        deriv2(1,0)=  1.0;  
+        deriv2(2,0)= -2.0;         
+        break;
     }
     default:
-    	dserror("distype unknown\n");
+        dserror("distype unknown\n");
   } /* end switch(distype) */
  
   return;
@@ -1561,4 +1514,3 @@ void shape_function_1D_deriv2( Epetra_SerialDenseMatrix&                  deriv2
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_FLUID3_XFEM

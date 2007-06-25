@@ -20,7 +20,6 @@ Maintainer: Axel Gerstenberger
 #include "mpi.h"
 #endif
 #include "fluid3_xfem.H"
-#include "fluid3_xfem_shape.H"
 #include "fluid3_xfem_integration.H"
 #include "fluid3_xfem_enrichment.H"
 #include "../drt_lib/drt_discret.H"
@@ -32,6 +31,7 @@ Maintainer: Axel Gerstenberger
 
 
 using namespace Enrichments;
+using namespace DRT::Utils;
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |

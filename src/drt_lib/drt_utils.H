@@ -25,6 +25,7 @@ Maintainer: Michael Gee
 
 #include "drt_parobject.H"
 #include "drt_element.H"
+#include "drt_utils_fem_shapefunctions.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -163,69 +164,6 @@ namespace Utils
                       determines number of values to be extracted.
   */
   void ExtractMyValues(const Epetra_Vector& global, vector<double>& local, const vector<int> lm);
-
-
-  /*!
-  \brief Most common nodal mappings describing the relation between volume, surface and line
-         node numbering
-
-  They should be used as the only reference for such relationships.
-  
-  The corresponding graphics and a detailed description can be found
-  in the Baci guide in the Convention chapter.
-  
-  The numbering of lower order elements is included in the higher order element, such that
-  e.g. the hex8 volume element uses only the first 8 nodes of the hex27 mapping
-  
-  
-  */
-  
-  // 6 Surfaces of a Hex27 element with 9 nodes per surface
-  const int     eleNodeNumbering_hex27_surfaces[6][9] = {{0,  3,  2,  1, 11, 10,  9,  8, 20},
-                                                         {0,  1,  5,  4,  8, 13, 16, 12, 21},
-                                                         {1,  2,  6,  5,  9, 14, 17, 13, 22},
-                                                         {2,  3,  7,  6, 10, 15, 18, 14, 23},
-                                                         {0,  4,  7,  3, 12, 19, 15, 11, 24},
-                                                         {4,  5,  6,  7, 16, 17, 18, 19, 25}};
-  
-  // 12 Lines of a Hex27 element with 3 nodes per line
-  const int     eleNodeNumbering_hex27_lines[12][3] = {{0,  1,  8},
-                                                       {1,  2,  9},
-                                                       {2,  3, 10},
-                                                       {0,  3, 11},
-                                                       {0,  4, 12},
-                                                       {1,  5, 13},
-                                                       {2,  6, 14},
-                                                       {3,  7, 15},
-                                                       {4,  5, 16},
-                                                       {5,  6, 17},
-                                                       {6,  7, 18},
-                                                       {4,  7, 19}};
-
-  // 4 Surfaces of a Tet10 element with 6 nodes per surface
-  const int     eleNodeNumbering_tet10_surfaces[4][6] = {{0,  1,  3,  4,  8,  7},
-                                                         {1,  2,  3,  5,  9,  8},
-                                                         {0,  3,  2,  7,  9,  6},
-                                                         {0,  2,  1,  6,  5,  4}};
-
-  // 6 Lines of a Tet10 element with 3 nodes per line
-  const int     eleNodeNumbering_tet10_lines[6][3] = {{0,  1,  4},
-                                                      {1,  2,  5},
-                                                      {0,  2,  6},
-                                                      {0,  3,  7},
-                                                      {1,  3,  8},
-                                                      {2,  3,  9}};
-
-  // 4 Lines of a Quad9 element with 3 nodes per line
-  const int     eleNodeNumbering_quad9_lines[4][3] = {{0,  1,  4},
-                                                      {1,  2,  5},
-                                                      {2,  3,  6},
-                                                      {0,  3,  7}};
-
-  // 3 Lines of a Tri6 element with 3 nodes per line
-  const int     eleNodeNumbering_tri6_lines[3][3] = {{0,  1,  3},
-                                                     {1,  2,  4},
-                                                     {2,  0,  5}};
 
 } // namespace Utils
 } // namespace DRT

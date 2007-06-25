@@ -349,14 +349,6 @@ private:
   static const int                                NSD_ = 3;
   static const int                                NDF_ = 4;
   
-  // constant mappings between volume and its surfaces and lines
-  // they are used as the one and only reference for such numbering
-  static const int                                hex27_surfaces_[6][9];
-  static const int                                hex27_lines_[12][3];
-  
-  static const int                                tet10_surfaces_[4][6];
-  static const int                                tet10_lines_[6][3];
-
   //! gaussrule used for weak form integration
   GaussRule3D                                     gaussrule_;
   //! number of the material law
@@ -853,10 +845,6 @@ private:
 
   // constants
   static const int                                NSD_ = 3;
-  
-  static const int                                quad9_lines_[4][3];
-  
-  static const int                                tri6_lines_[3][3];
   
   //! The parent element of this surface
   DRT::Elements::XFluid3* parent_;

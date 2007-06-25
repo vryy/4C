@@ -102,6 +102,7 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/drt_condition.o \
                 src/drt_lib/drt_dofset.o \
                 src/drt_lib/drt_pbcdofset.o \
+                src/drt_lib/drt_utils_fem_shapefunctions.o \
                 src/drt_lib/drt_utils.o \
                 src/drt_lib/drt_parobject.o \
                 src/drt_lib/drt_exporter.o \
@@ -198,8 +199,6 @@ OBJS_DRT_XF3_LIB = src/drt_f3_xfem/fluid3_xfem.o \
                    src/drt_f3_xfem/fluid3_xfem_surface.o \
                    src/drt_f3_xfem/fluid3_xfem_line.o \
                    src/drt_f3_xfem/fluid3_xfem_enrichment.o \
-                   src/drt_f3_xfem/fluid3_xfem_nodemap.o \
-                   src/drt_f3_xfem/fluid3_xfem_shape.o \
                 src/drt_f3_xfem/fluid3_xfem_integration.o \
                  src/drt_f3_xfem/fluid3_xfem_evaluate.o \
                  src/drt_f3_xfem/fluid3_xfem_input.o \
