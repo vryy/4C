@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file fluid3_xfem.cpp
+\file drt_utils_fem_shapefunctions.cpp
 \brief
 
 <pre>
@@ -201,30 +201,30 @@ void DRT::Utils::shape_function_3D_deriv1(
 
         deriv1(0,0)= Q18*sm*tm;
         deriv1(0,1)= Q18*sp*tm;
-        deriv1(0,2)=-deriv1(0,1);
-        deriv1(0,3)=-deriv1(0,0);
-        deriv1(0,4)= Q18*sm*tp  ;
-        deriv1(0,5)= Q18*sp*tp  ;
-        deriv1(0,6)=-deriv1(0,5);
-        deriv1(0,7)=-deriv1(0,4);
+        deriv1(0,2)=-Q18*sp*tm;
+        deriv1(0,3)=-Q18*sm*tm;
+        deriv1(0,4)= Q18*sm*tp;
+        deriv1(0,5)= Q18*sp*tp;
+        deriv1(0,6)=-Q18*sp*tp;
+        deriv1(0,7)=-Q18*sm*tp;
 
-        deriv1(1,0)=-Q18*tm*rp  ;
-        deriv1(1,1)=-deriv1(1,0);
-        deriv1(1,2)= Q18*tm*rm  ;
-        deriv1(1,3)=-deriv1(1,2);
-        deriv1(1,4)=-Q18*tp*rp  ;
-        deriv1(1,5)=-deriv1(1,4);
-        deriv1(1,6)= Q18*tp*rm  ;
-        deriv1(1,7)=-deriv1(1,6);
+        deriv1(1,0)=-Q18*tm*rp;
+        deriv1(1,1)= Q18*tm*rp;
+        deriv1(1,2)= Q18*tm*rm;
+        deriv1(1,3)=-Q18*tm*rm;
+        deriv1(1,4)=-Q18*tp*rp;
+        deriv1(1,5)= Q18*tp*rp;
+        deriv1(1,6)= Q18*tp*rm;
+        deriv1(1,7)=-Q18*tp*rm;
 
-        deriv1(2,0)=-Q18*rp*sm  ;
-        deriv1(2,1)=-Q18*rp*sp  ;
-        deriv1(2,2)=-Q18*rm*sp  ;
-        deriv1(2,3)=-Q18*rm*sm  ;
-        deriv1(2,4)=-deriv1(2,0);
-        deriv1(2,5)=-deriv1(2,1);
-        deriv1(2,6)=-deriv1(2,2);
-        deriv1(2,7)=-deriv1(2,3);
+        deriv1(2,0)=-Q18*rp*sm;
+        deriv1(2,1)=-Q18*rp*sp;
+        deriv1(2,2)=-Q18*rm*sp;
+        deriv1(2,3)=-Q18*rm*sm;
+        deriv1(2,4)= Q18*rp*sm;
+        deriv1(2,5)= Q18*rp*sp;
+        deriv1(2,6)= Q18*rm*sp;
+        deriv1(2,7)= Q18*rm*sm;
         break;
     }
 
