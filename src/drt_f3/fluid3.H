@@ -372,17 +372,6 @@ private:
                const int 	iel
 	       );
 
-  // shape functions and natural derivatives for hexaeder
-  void f3_shape_function(vector<double>& funct,
-               		Epetra_SerialDenseMatrix& deriv,
-               		Epetra_SerialDenseMatrix& deriv2,
-               		const double&      r,
-               		const double&      s,
-               		const double&      t,
-               		const int&         iel,
-               		const int          icode
-          		);
-
   // get the body force from the nodes condition
   void f3_getbodyforce (Epetra_SerialDenseMatrix& edeadng,
                         double                    time   ,
@@ -423,7 +412,7 @@ private:
                 Epetra_SerialDenseMatrix&     vderxy,
                 Epetra_SerialDenseMatrix&     vderxy2,
                 vector<double>&   	      gradp,
-                vector<double>&   	      funct,
+                const Epetra_SerialDenseVector&   	      funct,
 		vector<double>&   	      tau,
                 Epetra_SerialDenseMatrix&     derxy,
                 Epetra_SerialDenseMatrix&     derxy2,
@@ -444,7 +433,7 @@ private:
                 Epetra_SerialDenseMatrix&     vderxy,
                 Epetra_SerialDenseMatrix&     vderxy2,
                 vector<double>&   	      gradp,
-                vector<double>&   	      funct,
+                const Epetra_SerialDenseVector&   	      funct,
 		vector<double>&   	      tau,
                 Epetra_SerialDenseMatrix&     derxy,
                 Epetra_SerialDenseMatrix&     derxy2,
@@ -454,6 +443,18 @@ private:
                 const int&      	      iel,
 		ParameterList& 		      params
       		);
+
+  void CreateLinesTet(const int& nline,
+                      const int& nnode);
+  
+  void CreateLinesHex(const int& nline,
+                      const int& nnode);
+                       
+  void CreateSurfacesTet(const int& nline,
+                         const int& nnode);
+  
+  void CreateSurfacesHex(const int& nline,
+                         const int& nnode);
 
   // evaluate fluid coefficient matrix for a generalised
   // alpha problem
@@ -468,7 +469,7 @@ private:
     double&                    prenp,
     vector<double>&  	       pderxynp,
     vector<double>&  	       edeadaf,
-    vector<double>&  	       funct,
+    Epetra_SerialDenseVector&  funct,
     Epetra_SerialDenseMatrix&  derxy,
     Epetra_SerialDenseMatrix&  derxy2,
     vector<double>&  	       tau,
@@ -489,7 +490,7 @@ private:
     double&                    prenp,
     vector<double>&  	       pderxynp,
     vector<double>&  	       edeadaf,
-    vector<double>&  	       funct,
+    Epetra_SerialDenseVector&  funct,
     Epetra_SerialDenseMatrix&  derxy,
     Epetra_SerialDenseMatrix&  derxy2,
     vector<double>&  	       tau,
@@ -772,15 +773,6 @@ private:
   DRT::Elements::Fluid3* parent_;
   //! The local surface number of this surface w.r.t to the parent_ element
   int                    lsurface_;
-
-  // shape functions and their derivatives for the surface elements
-  void f3_shapefunction_for_surface(
-                         vector<double>          & funct,
-                         Epetra_SerialDenseMatrix& deriv,
-                         const int                 iel  ,
-                         const double              r    ,
-                         const double              s
-    );
 
   //  compute kovariant metric tensor G for fluid surface element
   //                                                  gammi 04/07
