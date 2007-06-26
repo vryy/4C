@@ -293,7 +293,7 @@ void  DRT::Elements::XFluid3Surface::f3_metric_tensor_for_surface(
 
 
 // get optimal gaussrule for discretization type
-GaussRule2D DRT::Elements::XFluid3Surface::get_optimal_gaussrule(const DiscretizationType& distype)
+GaussRule2D DRT::Elements::XFluid3Surface::getOptimalGaussrule(const DiscretizationType& distype)
 {
     GaussRule2D  rule;
     switch(this->Shape())

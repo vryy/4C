@@ -89,7 +89,7 @@ bool DRT::Elements::XFluid3::ReadElement()
 
     // read/set gaussian rule
     const DiscretizationType distype = this->Shape();
-    gaussrule_ = get_optimal_gaussrule(distype);
+    gaussrule_ = getOptimalGaussrule(distype);
     
     return true;
 } // Fluid3::ReadElement()

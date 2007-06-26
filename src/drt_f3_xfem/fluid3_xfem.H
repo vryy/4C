@@ -470,7 +470,7 @@ private:
             );
   
   // get optimal gaussrule for given discretization type
-  DRT::Utils::GaussRule3D get_optimal_gaussrule(const DiscretizationType& distype);
+  DRT::Utils::GaussRule3D getOptimalGaussrule(const DiscretizationType& distype);
   
   vector<double> f3_caltau(
     const Epetra_SerialDenseMatrix&    xyze,
@@ -864,7 +864,7 @@ private:
     Epetra_SerialDenseMatrix&       metrictensor,
     double                         *drs);
 
-  DRT::Utils::GaussRule2D get_optimal_gaussrule(const DiscretizationType& distype);
+  DRT::Utils::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype);
 
   void CreateLinesTri(const int& nline,
                       const int& nnode);

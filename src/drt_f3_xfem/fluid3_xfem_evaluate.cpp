@@ -1433,7 +1433,7 @@ return;
 
 
 // get optimal gaussrule for discretization type
-GaussRule3D DRT::Elements::XFluid3::get_optimal_gaussrule(const DiscretizationType& distype)
+GaussRule3D DRT::Elements::XFluid3::getOptimalGaussrule(const DiscretizationType& distype)
 {
     GaussRule3D rule;
     switch (distype)
