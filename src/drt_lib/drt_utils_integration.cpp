@@ -329,5 +329,53 @@ DRT::Utils::IntegrationPoints2D DRT::Utils::getIntegrationPoints2D(const  GaussR
 }
 
 
+//
+// evaluate the element integration points                             |
+//
+DRT::Utils::IntegrationPoints1D DRT::Utils::getIntegrationPoints1D(const  GaussRule1D gaussrule)
+{
+    
+    IntegrationPoints1D  intpoints;
+    
+    switch(gaussrule)
+    {
+    case intrule_line_1point :
+    {
+        intpoints.nquad = 1;
+        intpoints.qwgt[0]  =  2.0;
+        intpoints.qxg[0]   =  0.0;
+        break;
+    }
+    case intrule_line_2point :
+    {
+        intpoints.nquad = 2;
+        intpoints.qwgt[0]  =  1.0;
+        intpoints.qwgt[1]  =  1.0;
+        intpoints.qxg[0] = -0.5773502691896;
+        intpoints.qxg[1] =  0.5773502691896;
+        break;
+    }
+    case intrule_line_3point:
+    {
+        intpoints.nquad = 3; 
+        intpoints.qwgt[0]  =  0.5555555555556;
+        intpoints.qwgt[1]  =  0.8888888888889;
+        intpoints.qwgt[2]  =  0.5555555555556;
+        const double xi3 = 0.7745966692415;
+        intpoints.qxg[0] = -xi3;
+        intpoints.qxg[1] =  0.0;
+        intpoints.qxg[2] =  xi3;
+        break;
+    }
+    default:
+        dserror("unknown integration rule");
+    }
+
+    dsassert(intpoints.nquad <= MAXGAUSS, "define a higher MAXGAUSS value in the config file");
+
+    return intpoints;
+}
+
+
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

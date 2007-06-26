@@ -55,6 +55,14 @@ enum GaussRule2D
     intrule_tri_6point
 };
 
+//! GaussRules
+enum GaussRule1D  
+{
+    intrule_line_1point,
+    intrule_line_2point,
+    intrule_line_3point
+};
+
 /*!----------------------------------------------------------------------
 \brief integration parameters
 
@@ -91,6 +99,23 @@ typedef struct
   double        qwgt[MAXGAUSS];      /*!< weights */
 } IntegrationPoints3D;
 
+/*!----------------------------------------------------------------------
+\brief integration parameters
+
+<pre>                                                gerstenberger 06/07
+
+In this structure the coordinates and weights used by gauss integration
+are stored.
+
+</pre>
+
+------------------------------------------------------------------------*/
+typedef struct
+{
+  int           nquad;
+  double        qxg[MAXGAUSS];       /*!< coordinates */
+  double        qwgt[MAXGAUSS];      /*!< weights */
+} IntegrationPoints1D;
 
 /*!
 \brief return object with 3D integration points and weights
@@ -103,10 +128,18 @@ IntegrationPoints3D getIntegrationPoints3D(const  GaussRule3D gaussrule);
 /*!
 \brief return object with 2D integration points and weights
          
-\param GaussRule3D      (in): gaussrule enum
+\param GaussRule2D      (in): gaussrule enum
 
 */
 IntegrationPoints2D getIntegrationPoints2D(const  GaussRule2D gaussrule);
+
+/*!
+\brief return object with 1D integration points and weights
+         
+\param GaussRule1D      (in): gaussrule enum
+
+*/
+IntegrationPoints1D getIntegrationPoints1D(const  GaussRule1D gaussrule);
 
 } // namespace Utils
 } // namespace DRT
