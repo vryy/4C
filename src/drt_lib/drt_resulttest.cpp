@@ -180,7 +180,8 @@ void ResultTestManager::TestAll()
     }
   }
 
-  cout << "\n" MAGENTA_LIGHT "OK" END_COLOR "\n";
+  if (comm_.MyPID()==0)
+    cout << "\n" MAGENTA_LIGHT "OK" END_COLOR "\n";
 }
 
 

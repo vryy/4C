@@ -398,14 +398,17 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int DRT::Utils::FindMyPos(int myrank, int numproc, const Epetra_Map& emap)
+int DRT::Utils::FindMyPos(int nummyelements, const Epetra_Comm& comm)
 {
+  const int myrank  = comm.MyPID();
+  const int numproc = comm.NumProc();
+
   vector<int> snum(numproc);
   vector<int> rnum(numproc);
   fill(snum.begin(), snum.end(), 0);
-  snum[myrank] = emap.NumMyElements();
+  snum[myrank] = nummyelements;
 
-  emap.Comm().SumAll(&snum[0],&rnum[0],numproc);
+  comm.SumAll(&snum[0],&rnum[0],numproc);
 
   return std::accumulate(&rnum[0], &rnum[myrank], 0);
 }
@@ -420,7 +423,7 @@ void DRT::Utils::AllreduceEMap(vector<int>& rredundant, const Epetra_Map& emap)
 
   rredundant.resize(emap.NumGlobalElements());
 
-  int mynodepos = FindMyPos(myrank, numproc, emap);
+  int mynodepos = FindMyPos(emap.NumMyElements(), emap.Comm());
 
   vector<int> sredundant(emap.NumGlobalElements());
   fill(sredundant.begin(), sredundant.end(), 0);

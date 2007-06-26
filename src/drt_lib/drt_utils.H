@@ -140,16 +140,15 @@ namespace Utils
     situations. If you happen to need this method you are probably
     about to do something illegal.
 
-    \param myrank (i) rank
-    \param numproc (i) number of processors
-    \param emap (i) distributed Epetra_Map
+    \param nummyelements (i) number of elements on this proc
+    \param comm (i) communicator
 
     \return vector position of first entry on each processor
 
     \author u.kue
     \date 05/07
    */
-  int FindMyPos(int myrank, int numproc, const Epetra_Map& emap);
+  int FindMyPos(int nummyelements, const Epetra_Comm& comm);
 
   /*!
   \brief Locally extract a subset of values from an Epetra_Vector
