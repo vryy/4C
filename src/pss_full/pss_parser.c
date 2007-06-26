@@ -582,7 +582,7 @@ static ST_NODE* parse_term()
     else if (lex_tok==tok_div)
     {
       lexan();
-      rhs = parse_term();
+      rhs = parse_pow();
       lhs = st_node_new(lt_operator,lhs,rhs);
       lhs->v.operator = '/';
     }
@@ -843,3 +843,47 @@ DOUBLE pss_evaluate_curve(struct _ST_NODE* funct, DOUBLE t)
   return res;
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void pss_parser_print(FILE* out, struct _ST_NODE* node)
+{
+  switch (node->type)
+  {
+  case lt_number:
+    fprintf(out, "%g", node->v.number);
+    break;
+  case lt_operator:
+  {
+    fprintf(out,"(");
+    pss_parser_print(out,node->lhs);
+    fprintf(out,")%c(",node->v.operator);
+    pss_parser_print(out,node->rhs);
+    fprintf(out,")");
+    break;
+  }
+  case lt_variable:
+    fprintf(out,"%c",node->v.variable);
+    break;
+  case lt_function:
+  {
+    int i;
+    for (i=0; function[i].name!=NULL; ++i)
+    {
+      if (function[i].func==node->v.function)
+      {
+        fprintf(out,function[i].name);
+        break;
+      }
+    }
+    if (function[i].name==NULL)
+      dserror("unknown function");
+    fprintf(out,"(");
+    pss_parser_print(out,node->lhs);
+    fprintf(out,")");
+    break;
+  }
+  default:
+    dserror("unknown syntax tree node type");
+  }
+}

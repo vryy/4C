@@ -27,4 +27,7 @@ DOUBLE pss_evaluate_funct(struct _ST_NODE* funct, DOUBLE x, DOUBLE y, DOUBLE z);
 /* global interpreter call for time curves */
 DOUBLE pss_evaluate_curve(struct _ST_NODE* funct, DOUBLE t);
 
+/* print the parsed function */
+void pss_parser_print(FILE* out, struct _ST_NODE* node);
+
 #endif
