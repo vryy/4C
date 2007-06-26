@@ -188,16 +188,19 @@ DRT::Element** DRT::Elements::Fluid3::Surfaces()
     switch (distype)
     {
     case tet4:
-        CreateSurfacesTet(4, 3);
+        CreateSurfacesTet(nsurf, 3);
         break;
     case tet10:
-        CreateSurfacesTet(4, 6);
+        CreateSurfacesTet(nsurf, 6);
         break;
     case hex8:
-        CreateSurfacesHex(6, 4);
+        CreateSurfacesHex(nsurf, 4);
         break;
-    case hex20: case hex27:
-        CreateSurfacesHex(6, 9);
+    case hex20:
+        CreateSurfacesHex(nsurf, 8);
+        break;
+    case hex27:
+        CreateSurfacesHex(nsurf, 9);
         break;
     default: 
         dserror("distype not supported");
