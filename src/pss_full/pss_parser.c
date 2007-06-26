@@ -419,6 +419,7 @@ end:
 */
 /*----------------------------------------------------------------------*/
 static ST_NODE* parse_expr();
+static ST_NODE* parse_pow();
 
 static ST_NODE* parse_primary()
 {
@@ -448,6 +449,18 @@ static ST_NODE* parse_primary()
     lhs->v.number = lex_real;
     lexan();
     break;
+  case tok_sub:
+  {
+    ST_NODE* rhs;
+    lexan();
+    /*rhs = parse_primary();*/
+    rhs = parse_pow();
+    lhs = st_node_new(lt_number,NULL,NULL);
+    lhs->v.number = -1;
+    lhs = st_node_new(lt_operator,lhs,rhs);
+    lhs->v.operator = '*';
+    break;
+  }
   case tok_name:
     lhs = NULL;
     if (lex_int==1)
@@ -462,7 +475,7 @@ static ST_NODE* parse_primary()
 	lhs->v.variable = lex_string[0];
 	lexan();
 	break;
-      default:
+  default:
 	break;
       }
     }
