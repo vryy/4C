@@ -468,7 +468,7 @@ void DRT::Elements::Fluid3::f3_sys_mat(vector<int>&              lm,
     const double timefac=params.get<double>("time constant for integration",0.0);
 
     // get control parameter
-    bool is_stationary = params.get<bool>("using stationary formulation",false);
+    const bool is_stationary = params.get<bool>("using stationary formulation",false);
 
     /*---------------------- shape functions and derivs at element center --*/
     // shape functions and derivs at element center
@@ -1375,8 +1375,6 @@ void DRT::Elements::Fluid3::f3_calc_stabpar(
         double                      val, strle;
         vector<double>              velino(3); /* normed velocity at element centre */
         double                      det, vol;
-        double                      e1, e2, e3;
-        double                      facr=0.0, facs=0.0, fact=0.0;
         double                      mk=0.0;
         vector<double>              velint(3);
 
@@ -1395,11 +1393,15 @@ void DRT::Elements::Fluid3::f3_calc_stabpar(
         default: 
             dserror("invalid discretization type for fluid3");
         }
-        const double timefac =params.get<double>("dt",0.0) * params.get<double>("gamma",0.0);
+        const double timefac = params.get<double>("dt",0.0) * params.get<double>("gamma",0.0);
         
         // gaussian points
         const IntegrationPoints3D  intpoints = getIntegrationPoints3D(integrationrule_stabili);
-        
+
+        const double e1    = intpoints.qxg[0][0];
+        const double e2    = intpoints.qxg[0][1];
+        const double e3    = intpoints.qxg[0][2];
+        const double wquad = intpoints.qwgt[0];
         DRT::Utils::shape_function_3D(funct,e1,e2,e3,distype);
         DRT::Utils::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
 
@@ -1431,8 +1433,9 @@ void DRT::Elements::Fluid3::f3_calc_stabpar(
           double vel_norm, re1, re2, xi1, xi2;
 
           /*------------------------------ get Jacobian matrix and determinant ---*/
+          double det;
           f3_jaco(xyze,deriv,xjm,&det,iel);
-          vol=facr*facs*fact*det;
+          const double vol=wquad*det;
 
           /* get element length for tau_Mp/tau_C: volume-equival. diameter/sqrt(3)*/
           hk = pow((SIX*vol/PI),(ONE/THREE))/sqrt(THREE);
