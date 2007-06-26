@@ -15,7 +15,6 @@ DRT::Elements::Ale3::Ale3(int id, int owner)
     material_(0),
     data_()
 {
-  ngp_[0] = ngp_[1] = ngp_[2] = 0;
   surfaces_.resize(0);
   surfaceptrs_.resize(0);
 }
@@ -28,8 +27,7 @@ DRT::Elements::Ale3::Ale3(const DRT::Elements::Ale3& old)
     surfaces_(old.surfaces_),
     surfaceptrs_(old.surfaceptrs_)
 {
-  for (int i=0; i<3; ++i)
-    ngp_[i] = old.ngp_[i];
+  return;
 }
 
 
@@ -67,8 +65,6 @@ void DRT::Elements::Ale3::Pack(vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
-  // ngp_
-  AddtoPack(data,ngp_,3*sizeof(int));
   // material_
   AddtoPack(data,material_);
   // data_
@@ -89,8 +85,6 @@ void DRT::Elements::Ale3::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  // ngp_
-  ExtractfromPack(position,data,ngp_,3*sizeof(int));
   // material_
   ExtractfromPack(position,data,material_);
   // data_
@@ -145,7 +139,10 @@ DRT::Element** DRT::Elements::Ale3::Surfaces()
     case hex8:
         CreateSurfacesHex(nsurf, 4);
         break;
-    case hex20: case hex27:
+    case hex20:
+        CreateSurfacesHex(nsurf, 8);
+        break;
+    case hex27:
         CreateSurfacesHex(nsurf, 9);
         break;
     default: 
@@ -201,23 +198,6 @@ DRT::Element** DRT::Elements::Ale3::Volumes()
   volume_.resize(1);
   volume_[0] = this; //points to Ale3 element itself
   return &volume_[0];
-}
-
-
-void DRT::Elements::Ale3::SetGaussPoints()
-{
-  switch (Shape())
-  {
-  case hex8:
-    ngp_[0] = 2; ngp_[1] = 2; ngp_[2] = 2;
-    break;
-  case hex20:
-  case hex27:
-    ngp_[0] = 3; ngp_[1] = 3; ngp_[2] = 3;
-    break;
-  default:
-    dserror("unsupported shape %d for gauss point selection", Shape());
-  }
 }
 
 

@@ -14,6 +14,7 @@ using namespace Teuchos;
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
+#include "../drt_lib/drt_utils.H"
 
 struct _MATERIAL;
 
@@ -260,33 +261,16 @@ public:
   /// set material number
   void SetMaterial(int material) { material_ = material; }
 
-  /// set number of gauss points to element shape default
-  void SetGaussPoints();
-
   //@}
 
 
 private:
-
-  struct ALE3_DATA
-  {
-    double xgpr[4];         /*!< natural coordinates r of gaussian points */
-    double wgtr[4];         /*!< weights at natural coordinates r */
-
-    double xgps[4];         /*!< natural coordinates s of gaussian points */
-    double wgts[4];         /*!< weights at natural coordinates r */
-
-    double xgpt[4];         /*!< natural coordinates t of gaussian points */
-    double wgtt[4];         /*!< weights at natural coordinates r */
-  };
 
   void static_ke(vector<int>&              lm,
                  Epetra_SerialDenseMatrix* sys_mat,
                  Epetra_SerialDenseVector* residual,
                  struct _MATERIAL*         material,
                  ParameterList& 	   params);
-
-  void intg(ALE3_DATA& data);
 
   //! action parameters recognized by ale3
   enum ActionType
@@ -295,8 +279,6 @@ private:
     calc_ale_lin_stiff
   };
 
-  //! no. gaussian points in each spatial dimension
-  int                                             ngp_[3];
   //! number of the material law
   int                                             material_;
 
@@ -322,6 +304,9 @@ private:
   
   void CreateSurfacesHex(const int& nline,
                          const int& nnode);
+
+  // get optimal gaussrule for given discretization type
+  DRT::Utils::GaussRule3D getOptimalGaussrule(const DiscretizationType& distype);
 };
 
 

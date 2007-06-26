@@ -13,6 +13,8 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/linalg_utils.H"
 
+using namespace DRT::Utils;
+
 extern "C"
 {
 #include "../headers/standardtypes.h"
@@ -114,71 +116,19 @@ void DRT::Elements::Ale3::static_ke(vector<int>&              lm,
   Epetra_SerialDenseMatrix 	xjm(3,3);
   Epetra_SerialDenseMatrix 	bop(6,3*iel);
   Epetra_SerialDenseMatrix 	D(6,6);
-  ALE3_DATA                     data;
 
-  double         		e1, e2, e3;
-  double         		facr=0.0, facs=0.0, fact=0.0;
-  int                           nir, nis, nit;
   double                        vol=0.;
 
   // gaussian points
-  intg(data);
-
-  // integration parameters
-  switch (Shape())
-  {
-    case hex8:
-    case hex20:
-    case hex27:
-      nir     = ngp_[0];
-      nis     = ngp_[1];
-      nit     = ngp_[2];
-      break;
-    case tet4:
-    case tet10:
-      nir = ngp_[0];
-      nis = 1;
-      nit = 1;
-      break;
-    default:
-      dserror("unknown number of gaussian points in ale2_intg");
-      break;
-  }
+  const GaussRule3D gaussrule = getOptimalGaussrule(distype);
+  const IntegrationPoints3D  intpoints = getIntegrationPoints3D(gaussrule);
 
   // integration loops
-  for (int lr=0; lr<nir; lr++)
+  for (int iquad=0;iquad<intpoints.nquad;iquad++)
   {
-    // gaussian point and weight at it
-    e1   = data.xgpr[lr];
-    facr = data.wgtr[lr];
-    for (int ls=0; ls<nis; ls++)
-    {
-      // gaussian point and weight at it
-      for (int lt=0; lt<nit; lt++)
-      {
-        // gaussian point and weight at it
-        switch (Shape())
-        {
-          case hex8:
-          case hex20:
-          case hex27:
-            e2   = data.xgps[ls];
-            facs = data.wgts[ls];
-            e3   = data.xgpt[lt];
-            fact = data.wgtt[lt];
-            break;
-          case tet4:
-          case tet10:
-            e2   = data.xgps[lr];
-            facs = 1.;
-            e3   = data.xgpt[lr];
-            fact = 1.;
-            break;
-          default:
-            dserror("unknown number of gaussian points in ale2_intg");
-            break;
-        }
-
+        const double e1 = intpoints.qxg[iquad][0];
+        const double e2 = intpoints.qxg[iquad][1];
+        const double e3 = intpoints.qxg[iquad][2];
         // shape functions and their derivatives
         DRT::Utils::shape_function_3D(funct,e1,e2,e3,distype);
         DRT::Utils::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
@@ -209,9 +159,8 @@ void DRT::Elements::Ale3::static_ke(vector<int>&              lm,
 
 
         // calculate element volume
-        vol += facr*facs*fact*det;
-
-        double fac = facr * facs * fact * det;
+        const double fac = intpoints.qwgt[iquad]*det;
+        vol += fac;
 
         // calculate operator B
 
@@ -226,7 +175,7 @@ void DRT::Elements::Ale3::static_ke(vector<int>&              lm,
         double x2t = xjm(2,1);
         double x3t = xjm(2,2);
 
-        double dum=1.0/det;
+        const double dum=1.0/det;
 
         double xi11=dum*(x2s*x3t - x2t*x3s);
         double xi12=dum*(x3r*x2t - x2r*x3t);
@@ -241,15 +190,15 @@ void DRT::Elements::Ale3::static_ke(vector<int>&              lm,
         // get operator b of global derivatives
         for (int i=0; i<iel; i++)
         {
-          int node_start = i*3;
+          const int node_start = i*3;
 
-          double hr   = deriv(0,i);
-          double hs   = deriv(1,i);
-          double ht   = deriv(2,i);
+          const double hr   = deriv(0,i);
+          const double hs   = deriv(1,i);
+          const double ht   = deriv(2,i);
 
-          double h1 = xi11*hr + xi12*hs + xi13*ht;
-          double h2 = xi21*hr + xi22*hs + xi23*ht;
-          double h3 = xi31*hr + xi32*hs + xi33*ht;
+          const double h1 = xi11*hr + xi12*hs + xi13*ht;
+          const double h2 = xi21*hr + xi22*hs + xi23*ht;
+          const double h3 = xi31*hr + xi32*hs + xi33*ht;
 
           bop(0,node_start+0) = h1 ;
           bop(0,node_start+1) = 0.0;
@@ -273,13 +222,13 @@ void DRT::Elements::Ale3::static_ke(vector<int>&              lm,
 
         // call material law
 
-        double ym  = material->m.stvenant->youngs;
-        double pv  = material->m.stvenant->possionratio;
+        const double ym  = material->m.stvenant->youngs;
+        const double pv  = material->m.stvenant->possionratio;
 
         // evaluate basic material values
-        double d1=ym*(1.0 - pv)/((1.0 + pv)*(1.0 - 2.0*pv));
-        double d2=ym*pv/((1.0 + pv)*(1.0 - 2.0*pv));
-        double d3=ym/((1.0 + pv)*2.0);
+        const double d1=ym*(1.0 - pv)/((1.0 + pv)*(1.0 - 2.0*pv));
+        const double d2=ym*pv/((1.0 + pv)*(1.0 - 2.0*pv));
+        const double d3=ym/((1.0 + pv)*2.0);
 
         // set values in material-matrix
         D(0,0)=d1;
@@ -360,16 +309,16 @@ void DRT::Elements::Ale3::static_ke(vector<int>&              lm,
               hourglass control
               Int. J. Num. Meth. Ing.: Vol. 17 (1981) p. 679-706.
          */
-        if (Shape()==hex8 && nir == 1 && nis == 1 && nit == 1)
+        if (distype==hex8 && intpoints.nquad == 1)
         {
-          double ee = material->m.stvenant->youngs;
-          double nu = material->m.stvenant->possionratio;
-          double mu = ee / (2*(1+nu));
+          const double ee = material->m.stvenant->youngs;
+          const double nu = material->m.stvenant->possionratio;
+          const double mu = ee / (2*(1+nu));
 
           // ASQBI
-          double c1 = 1.0/(1.0 - nu);
-          double c2 = (1.0 + nu)/3;
-          double c3 = 1.0/(1.0 - nu);
+          const double c1 = 1.0/(1.0 - nu);
+          const double c2 = (1.0 + nu)/3;
+          const double c3 = 1.0/(1.0 - nu);
 
           double         xc[3][8];
           double         b[3][8];
@@ -407,8 +356,8 @@ void DRT::Elements::Ale3::static_ke(vector<int>&              lm,
             }
           }
 
-          double dum =(a[0][0]*a[1][0]+a[0][1]*a[1][1]+a[0][2]*a[1][2])/
-                      (a[0][0]*a[0][0]+a[0][1]*a[0][1]+a[0][2]*a[0][2]);
+          const double dum =(a[0][0]*a[1][0]+a[0][1]*a[1][1]+a[0][2]*a[1][2])/
+                            (a[0][0]*a[0][0]+a[0][1]*a[0][1]+a[0][2]*a[0][2]);
 
           a[1][0] = a[1][0] - dum * a[0][0];
           a[1][1] = a[1][1] - dum * a[0][1];
@@ -440,8 +389,8 @@ void DRT::Elements::Ale3::static_ke(vector<int>&              lm,
           // B-matrix b[3][8] accord. to (2) Appendix I, eqn (79)
           for (int i=0; i<3; i++)
           {
-            int j = (i+1)%3;
-            int k = (j+1)%3;
+            const int j = (i+1)%3;
+            const int k = (j+1)%3;
             for (int l=0; l<8;l++)
             {
               switch (l)
@@ -491,9 +440,9 @@ void DRT::Elements::Ale3::static_ke(vector<int>&              lm,
               gam[i][j] = 0.125 * h[i][j];
               for (int k=0; k<3; k++)
               {
-                dum = h[i][0]*xc[k][0]+h[i][1]*xc[k][1]+h[i][2]*xc[k][2]+
-                      h[i][3]*xc[k][3]+h[i][4]*xc[k][4]+h[i][5]*xc[k][5]+
-                      h[i][6]*xc[k][6]+h[i][7]*xc[k][7];
+                const double dum = h[i][0]*xc[k][0]+h[i][1]*xc[k][1]+h[i][2]*xc[k][2]+
+                                   h[i][3]*xc[k][3]+h[i][4]*xc[k][4]+h[i][5]*xc[k][5]+
+                                   h[i][6]*xc[k][6]+h[i][7]*xc[k][7];
                 gam[i][j] -= 0.125 * dum * b[k][j];
               }
             }
@@ -594,168 +543,34 @@ void DRT::Elements::Ale3::static_ke(vector<int>&              lm,
             }
           }
         }
-      }
-    }
   }
 
 }
 
 
 
-void DRT::Elements::Ale3::intg(ALE3_DATA& data)
+// get optimal gaussrule for discretization type
+GaussRule3D DRT::Elements::Ale3::getOptimalGaussrule(const DiscretizationType& distype)
 {
-  DOUBLE  q14, q16, q124;
-  DOUBLE  palpha,pbeta;
-
-  switch (Shape())
-  {
-  case hex8:
-  case hex20:
-  case hex27:
-    /*----------------------------------------------------------------------*
-     |     INTEGRATION PARAMETERS FOR    H E X A H E D R A L     ELEMENTS   |
-     |     GAUSS SAMPLING POINTS  AT     R/S/T-COORDINATES   RESPECTIVELY   |
-     |                            AND    CORRESPONDING WEIGHTING  FACTORS   |
-     *----------------------------------------------------------------------*/
-    switch (ngp_[0])
+    GaussRule3D rule;
+    switch (distype)
     {
-    case 3:
-      data.xgpr[0] = -0.7745966692415;
-      data.xgpr[1] =  0.0;
-      data.xgpr[2] =  0.7745966692415;
-
-      data.wgtr[0] =  0.5555555555556;
-      data.wgtr[1] =  0.8888888888889;
-      data.wgtr[2] =  0.5555555555556;
-      break;
-    case 2:
-      data.xgpr[0] = -0.5773502691896;
-      data.xgpr[1] =  0.5773502691896;
-
-      data.wgtr[0] = 1.0            ;
-      data.wgtr[1] = 1.0            ;
-      break;
-    case 1:
-      data.xgpr[0] = 0.0;
-
-      data.wgtr[0] = 2.0;
-      break;
-    default:
-      dserror("unknown number of gaussian points in ale3_intg");
-      break;
+    case hex8:
+        rule = intrule_hex_8point;
+        break;
+    case hex20: case hex27:
+        rule = intrule_hex_27point;
+        break;
+    case tet4:
+        rule = intrule_tet_4point;
+        break;
+    case tet10:
+        rule = intrule_tet_10point;
+        break;
+    default: 
+        dserror("unknown number of nodes for gaussrule initialization");
     }
-    switch (ngp_[1])
-    {
-    case 3:
-      data.xgps[0] = -0.7745966692415;
-      data.xgps[1] =  0.0;
-      data.xgps[2] =  0.7745966692415;
-
-      data.wgts[0] =  0.5555555555556;
-      data.wgts[1] =  0.8888888888889;
-      data.wgts[2] =  0.5555555555556;
-      break;
-    case 2:
-      data.xgps[0] = -0.5773502691896;
-      data.xgps[1] =  0.5773502691896;
-
-      data.wgts[0] = 1.0            ;
-      data.wgts[1] = 1.0            ;
-      break;
-    case 1:
-      data.xgps[0] = 0.0;
-
-      data.wgts[0] = 2.0;
-      break;
-    default:
-      dserror("unknown number of gaussian points in ale3_intg");
-      break;
-    }
-    switch (ngp_[2])
-    {
-    case 3:
-      data.xgpt[0] = -0.7745966692415;
-      data.xgpt[1] =  0.0;
-      data.xgpt[2] =  0.7745966692415;
-
-      data.wgtt[0] =  0.5555555555556;
-      data.wgtt[1] =  0.8888888888889;
-      data.wgtt[2] =  0.5555555555556;
-      break;
-    case 2:
-      data.xgpt[0] = -0.5773502691896;
-      data.xgpt[1] =  0.5773502691896;
-
-      data.wgtt[0] = 1.0            ;
-      data.wgtt[1] = 1.0            ;
-      break;
-    case 1:
-      data.xgpt[0] = 0.0;
-
-      data.wgtt[0] = 2.0;
-      break;
-    default:
-      dserror("unknown number of gaussian points in ale3_intg");
-      break;
-    }
-    break;
-  case tet4:
-  case tet10:
-    q14 = 1.0/4.0;
-    q16 = 1.0/6.0;
-    q124= 1.0/24.0;
-    palpha = (5.0+3.0*sqrt(5.0))/20.0;
-    pbeta  = (5.0-sqrt(5.0))/20.0;
-
-    /*----------------------------------------------------------------------*
-     |     INTEGRATION PARAMETERS FOR    T E T R A H E D R A L   ELEMENTS   |
-     |     GAUSS SAMPLING POINTS  AT     R/S/T-COORDINATES   RESPECTIVELY   |
-     |                            AND    CORRESPONDING WEIGHTING  FACTORS   |
-     *----------------------------------------------------------------------*/
-
-    /*----------------------------------------------------------------------*
-     |    GAUSS INTEGRATION         1 SAMPLING POINT, DEG.OF PRECISION 1    |
-     |                              CASE 0                                  |
-     *----------------------------------------------------------------------*/
-    switch (ngp_[0])
-    {
-    case 1:
-      data.xgpr[0]    =  q14 ;
-      data.xgps[0]    =  q14 ;
-      data.xgpt[0]    =  q14 ;
-      data.wgtr[0]    =  q16 ;
-      break;
-      /*----------------------------------------------------------------*
-       | GAUSS INTEGRATION    4 SAMPLING POINTS, DEG.OF PRECISION 2    |
-       |                      CASE 1                                   |
-       *----------------------------------------------------------------*/
-    case 4:
-      data.xgpr[0]    =    pbeta ;
-      data.xgpr[1]    =    palpha;
-      data.xgpr[2]    =    pbeta ;
-      data.xgpr[3]    =    pbeta ;
-      data.xgps[0]    =    pbeta ;
-      data.xgps[1]    =    pbeta ;
-      data.xgps[2]    =    palpha;
-      data.xgps[3]    =    pbeta ;
-      data.xgpt[0]    =    pbeta ;
-      data.xgpt[1]    =    pbeta ;
-      data.xgpt[2]    =    pbeta ;
-      data.xgpt[3]    =    palpha;
-      data.wgtr[0]    =    q124  ;
-      data.wgtr[1]    =    q124  ;
-      data.wgtr[2]    =    q124  ;
-      data.wgtr[3]    =    q124  ;
-      break;
-    default:
-      dserror("unknown number of gausian points");
-      break;
-    }
-    break;
-  default:
-    dserror("unknown typ of discretisation");
-    break;
-  }
+    return rule;
 }
 
 

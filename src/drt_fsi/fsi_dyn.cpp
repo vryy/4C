@@ -212,7 +212,6 @@ void CreateAleDiscretization()
       if (ale3!=NULL)
       {
         ale3->SetMaterial(matnr);
-        ale3->SetGaussPoints();
       }
       else
 #endif
