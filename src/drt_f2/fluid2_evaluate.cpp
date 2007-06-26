@@ -307,7 +307,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
 /*--------------------------------- get velocities at element center ---*/
   for (int i=0;i<2;i++)
   {
-    velint[i]=ZERO;
+    velint[i]=0.0;
     for (int j=0;j<iel;j++)
     {
       velint[i] += funct[j]*evelnp[i+(2*j)];
@@ -489,8 +489,8 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
         // former f2_vder2(vderxy2,derxy2,evelnp,iel);
         for (int i=0;i<3;i++)
         {
-          vderxy2(0,i)=ZERO;
-          vderxy2(1,i)=ZERO;
+          vderxy2(0,i)=0.0;
+          vderxy2(1,i)=0.0;
           for (int j=0;j<iel;j++)
           {
             vderxy2(0,i) += derxy2(i,j)*evelnp[0+(2*j)];
@@ -503,7 +503,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
       // expression for f2_veci(velint,funct,evelnp,iel);
       for (int i=0;i<2;i++)
       {
-        velint[i]=ZERO;
+        velint[i]=0.0;
         for (int j=0;j<iel;j++)
         {
           velint[i] += funct[j]*evelnp[i+(2*j)];
@@ -514,7 +514,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
       //expression for f2_veci(histvec,funct,evhist,iel);
       for (int i=0;i<2;i++)
       {
-        histvec[i]=ZERO;
+        histvec[i]=0.0;
         for (int j=0;j<iel;j++)
         {
           histvec[i] += funct[j]*evhist[i+(2*j)];
@@ -525,8 +525,8 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
       // expression for f2_vder(vderxy,derxy,evelnp,iel);
       for (int i=0;i<2;i++)
       {
-        vderxy(0,i)=ZERO;
-        vderxy(1,i)=ZERO;
+        vderxy(0,i)=0.0;
+        vderxy(1,i)=0.0;
         for (int j=0;j<iel;j++)
         {
           vderxy(0,i) += derxy(i,j)*evelnp[0+(2*j)];
@@ -611,11 +611,11 @@ void DRT::Elements::Fluid2::f2_integration_points(struct _FLUID_DATA& data)
       for (int k=0; k<MAXTINTC; k++) /* loop integration cases          */
       {
 	  /* set coordinates (r,s) coordinates of integration point     */
-	  data.txgr[i][k] = ZERO;
-	  data.txgs[i][k] = ZERO;
+	  data.txgr[i][k] = 0.0;
+	  data.txgs[i][k] = 0.0;
 
 	  /* innitialise the vector of gaussweights */
-	  data.twgt[i][k] = ZERO;
+	  data.twgt[i][k] = 0.0;
       }
   }
   /* inintialise quadX arrays */
@@ -625,10 +625,10 @@ void DRT::Elements::Fluid2::f2_integration_points(struct _FLUID_DATA& data)
       {
 	  /* set one coordinate of integration points --- the rest is
 	   * 'symmetric'                                               */
-	  data.qxg [i][k] = ZERO;
+	  data.qxg [i][k] = 0.0;
 
 	  /* innitialise the vector of gaussweights */
-	  data.qwgt[i][k] = ZERO;
+	  data.qwgt[i][k] = 0.0;
       }
   }
 
@@ -716,8 +716,8 @@ void DRT::Elements::Fluid2::f2_integration_points(struct _FLUID_DATA& data)
  *----------------------------------------------------------------------*/
       data.txgr[0][1]    =  Q12  ;
       data.txgr[1][1]    =  Q12  ;
-      data.txgr[2][1]    =  ZERO ;
-      data.txgs[0][1]    =  ZERO ;
+      data.txgr[2][1]    =  0.0 ;
+      data.txgs[0][1]    =  0.0 ;
       data.txgs[1][1]    =  Q12  ;
       data.txgs[2][1]    =  Q12  ;
 
@@ -1006,7 +1006,7 @@ void DRT::Elements::Fluid2::f2_jaco(const Epetra_SerialDenseMatrix& xyze,
   {
      for (int j=0; j<2; j++)
      {
-        dum=ZERO;
+        dum=0.0;
         for (int l=0; l<iel; l++)
         {
            dum += deriv(i,l)*xyze(j,l);
@@ -1018,7 +1018,7 @@ void DRT::Elements::Fluid2::f2_jaco(const Epetra_SerialDenseMatrix& xyze,
   /*------------------------------------------ determinant of jacobian---*/
   *det = xjm(0,0)*xjm(1,1) - xjm(1,0)*xjm(0,1);
 
-  if(*det<ZERO)
+  if(*det<0.0)
   {
      printf("\n");
      printf("GLOBAL ELEMENT NO.%i\n",Id());
@@ -1138,20 +1138,20 @@ void DRT::Elements::Fluid2::f2_shape_function(
 	{
           Epetra_SerialDenseMatrix& deriv2 = *pderiv2;
 
-	    deriv2(0,0)= ZERO;
-	    deriv2(1,0)= ZERO;
+	    deriv2(0,0)= 0.0;
+	    deriv2(1,0)= 0.0;
 	    deriv2(2,0)= Q14;
 
-	    deriv2(0,1)= ZERO;
-	    deriv2(1,1)= ZERO;
+	    deriv2(0,1)= 0.0;
+	    deriv2(1,1)= 0.0;
 	    deriv2(2,1)=-Q14;
 
-	    deriv2(0,2)= ZERO;
-	    deriv2(1,2)= ZERO;
+	    deriv2(0,2)= 0.0;
+	    deriv2(1,2)= 0.0;
 	    deriv2(2,2)= Q14;
 
-	    deriv2(0,3)= ZERO;
-	    deriv2(1,3)=ZERO;
+	    deriv2(0,3)= 0.0;
+	    deriv2(1,3)=0.0;
 	    deriv2(2,3)=-Q14;
 	} /* endif (icode==3) */
 	break;
@@ -1216,35 +1216,35 @@ void DRT::Elements::Fluid2::f2_shape_function(
 	if (pderiv2) /* --> second derivative evaluation */
 	{
           Epetra_SerialDenseMatrix& deriv2 = *pderiv2;
-	    deriv2(0,0)= ZERO;
-	    deriv2(1,0)= ZERO;
+	    deriv2(0,0)= 0.0;
+	    deriv2(1,0)= 0.0;
 	    deriv2(2,0)= Q14;
 
-	    deriv2(0,1)= ZERO;
-	    deriv2(1,1)= ZERO;
+	    deriv2(0,1)= 0.0;
+	    deriv2(1,1)= 0.0;
 	    deriv2(2,1)=-Q14;
 
-	    deriv2(0,2)= ZERO;
-	    deriv2(1,2)= ZERO;
+	    deriv2(0,2)= 0.0;
+	    deriv2(1,2)= 0.0;
 	    deriv2(2,2)= Q14;
 
-	    deriv2(0,3)= ZERO;
-	    deriv2(1,3)= ZERO;
+	    deriv2(0,3)= 0.0;
+	    deriv2(1,3)= 0.0;
 	    deriv2(2,3)=-Q14;
 
 	    deriv2(0,4)=-(ONE+s);
-	    deriv2(1,4)= ZERO;
+	    deriv2(1,4)= 0.0;
 	    deriv2(2,4)=-r;
 
-	    deriv2(0,5)= ZERO;
+	    deriv2(0,5)= 0.0;
 	    deriv2(1,5)=-(ONE-r);
 	    deriv2(2,5)= s;
 
 	    deriv2(0,6)=-(ONE-s);
-	    deriv2(1,6)= ZERO;
+	    deriv2(1,6)= 0.0;
 	    deriv2(2,6)= r;
 
-	    deriv2(0,7)= ZERO;
+	    deriv2(0,7)= 0.0;
 	    deriv2(1,7)=-(ONE+r);
 	    deriv2(2,7)=-s;
 
@@ -1376,8 +1376,8 @@ void DRT::Elements::Fluid2::f2_shape_function(
 	    deriv(0,0)=-ONE;
 	    deriv(1,0)=-ONE;
 	    deriv(0,1)= ONE;
-	    deriv(1,1)=ZERO;
-	    deriv(0,2)=ZERO;
+	    deriv(1,1)=0.0;
+	    deriv(0,2)=0.0;
 	    deriv(1,2)= ONE;
 	} /* endif (icode>1) */
 	break;
@@ -1404,9 +1404,9 @@ void DRT::Elements::Fluid2::f2_shape_function(
 	    deriv(1,0)= deriv(0,0);
 
 	    deriv(0,1)= FOUR*r-ONE;
-	    deriv(1,1)= ZERO;
+	    deriv(1,1)= 0.0;
 
-	    deriv(0,2)= ZERO;
+	    deriv(0,2)= 0.0;
 	    deriv(1,2)= FOUR*s-ONE;
 
 	    deriv(0,3)= FOUR*(ONE-TWO*r-s);
@@ -1427,22 +1427,22 @@ void DRT::Elements::Fluid2::f2_shape_function(
 	    deriv2(2,0)= FOUR;
 
 	    deriv2(0,1)= FOUR;
-	    deriv2(1,1)= ZERO;
-	    deriv2(2,1)= ZERO;
+	    deriv2(1,1)= 0.0;
+	    deriv2(2,1)= 0.0;
 
-	    deriv2(0,2)= ZERO;
+	    deriv2(0,2)= 0.0;
 	    deriv2(1,2)= FOUR;
-	    deriv2(2,2)= ZERO;
+	    deriv2(2,2)= 0.0;
 
 	    deriv2(0,3)=-EIGHT;
-	    deriv2(1,3)= ZERO;
+	    deriv2(1,3)= 0.0;
 	    deriv2(2,3)=-FOUR;
 
-	    deriv2(0,4)= ZERO;
-	    deriv2(1,4)= ZERO;
+	    deriv2(0,4)= 0.0;
+	    deriv2(1,4)= 0.0;
 	    deriv2(2,4)= FOUR;
 
-	    deriv2(0,5)= ZERO;
+	    deriv2(0,5)= 0.0;
 	    deriv2(1,5)=-EIGHT;
 	    deriv2(2,5)=-FOUR;
 	} /* endif (icode==3) */
@@ -1495,8 +1495,8 @@ void DRT::Elements::Fluid2::f2_gder(Epetra_SerialDenseMatrix& derxy,
   /*------------------------------------------------------- initialistion */
   for(int k=0;k<iel;k++)
   {
-    derxy(0,k)=ZERO;
-    derxy(1,k)=ZERO;
+    derxy(0,k)=0.0;
+    derxy(1,k)=0.0;
   } /* end of loop over k */
 
 

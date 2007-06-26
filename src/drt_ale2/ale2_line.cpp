@@ -16,13 +16,6 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 
-extern "C"
-{
-#include "../headers/standardtypes.h"
-#include "../ale2/ale2.h"
-}
-#include "../drt_lib/dstrc.H"
-
 
 
 /*----------------------------------------------------------------------*
@@ -86,7 +79,6 @@ DRT::Element::DiscretizationType DRT::Elements::Ale2Line::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::Elements::Ale2Line::Pack(vector<char>& data) const
 {
-  DSTraceHelper dst("Ale2Line::Pack");
   data.resize(0);
   dserror("this Ale2Line element does not support communication");
 
@@ -99,7 +91,6 @@ void DRT::Elements::Ale2Line::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void DRT::Elements::Ale2Line::Unpack(const vector<char>& data)
 {
-  DSTraceHelper dst("Ale2Line::Unpack");
   dserror("this Ale2Line element does not support communication");
   return;
 }
@@ -109,7 +100,6 @@ void DRT::Elements::Ale2Line::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
 DRT::Elements::Ale2Line::~Ale2Line()
 {
-  DSTraceHelper dst("Ale2Line::~Ale2Line");
   return;
 }
 
@@ -119,7 +109,6 @@ DRT::Elements::Ale2Line::~Ale2Line()
  *----------------------------------------------------------------------*/
 void DRT::Elements::Ale2Line::Print(ostream& os) const
 {
-  DSTraceHelper dst("Ale2Line::Print");
   os << "Ale2Line ";
   Element::Print(os);
   return;

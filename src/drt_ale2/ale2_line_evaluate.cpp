@@ -16,13 +16,6 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 
-extern "C"
-{
-#include "../headers/standardtypes.h"
-#include "../ale2/ale2.h"
-}
-#include "../drt_lib/dstrc.H"
-
 
 /*----------------------------------------------------------------------*
  |  Integrate a Line Neumann boundary condition (public)     gammi 04/07|

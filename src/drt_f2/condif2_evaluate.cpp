@@ -180,7 +180,7 @@ void DRT::Elements::Condif2::condif2_sys_mat(vector<int>&              lm,
 		e2   = data.txgs[0][0];
 
 		facr = data.twgt[0][0];
-		facs = ONE;
+		facs = 1.0;
 
 		condif2_shape_function(funct,deriv,wa1,e1,e2,iel,2); //wa1 as dummy for not wanted second derivatives
 		break;
@@ -358,7 +358,7 @@ void DRT::Elements::Condif2::condif2_sys_mat(vector<int>&              lm,
 			e1   = data.txgr[lr][intc];
 			facr = data.twgt[lr][intc];
 			e2   = data.txgs[lr][intc];
-			facs = ONE;
+			facs = 1.0;
 			condif2_shape_function(funct,deriv,deriv2,e1,e2,iel,icode);
 			break;
 		    default:
@@ -392,15 +392,15 @@ void DRT::Elements::Condif2::condif2_sys_mat(vector<int>&              lm,
 	 	}
 
         /*---------------- get solution from time-step n at integration point */
-		phin=ZERO;
+		phin=0.0;
 		for (int j=0;j<iel;j++)
 		{
 			phin += funct[j]*ephin[j];
 		} /* end of loop over j */
 
         /*---------------- get solution derivative from time-step n at integration point */
-		phidern[0]=ZERO;
-		phidern[1]=ZERO;
+		phidern[0]=0.0;
+		phidern[1]=0.0;
 		for (int i=0;i<2;i++)
 		{
 			for (int j=0;j<iel;j++)
@@ -412,9 +412,9 @@ void DRT::Elements::Condif2::condif2_sys_mat(vector<int>&              lm,
         /*---------------- get 2nd solution derivative from time-step n at integration point */
  		if (ihoel!=0)
                 {
-                	phider2n[0]=ZERO;
-			phider2n[1]=ZERO;
-			phider2n[2]=ZERO;
+                	phider2n[0]=0.0;
+			phider2n[1]=0.0;
+			phider2n[2]=0.0;
 			for (int i=0;i<3;i++)
 			{
 				for (int j=0;j<iel;j++)
@@ -445,10 +445,10 @@ void DRT::Elements::Condif2::condif2_sys_mat(vector<int>&              lm,
  *----------------------------------------------------------------------*/
 void DRT::Elements::Condif2::condif2_integration_points(struct _FLUID_DATA& data)
 {
-  const DOUBLE Q12 = ONE/TWO;
-  const DOUBLE Q13 = ONE/THREE;
-  const DOUBLE Q16 = ONE/SIX;
-  const DOUBLE Q23 = TWO/THREE;
+  const DOUBLE Q12 = 1.0/2.0;
+  const DOUBLE Q13 = 1.0/THREE;
+  const DOUBLE Q16 = 1.0/SIX;
+  const DOUBLE Q23 = 2.0/THREE;
 
 /*----------------------------------------------------------------------*/
   /* inintialise triX arrays */
@@ -457,11 +457,11 @@ void DRT::Elements::Condif2::condif2_integration_points(struct _FLUID_DATA& data
       for (int k=0; k<MAXTINTC; k++) /* loop integration cases          */
       {
 	  /* set coordinates (r,s) coordinates of integration point     */
-	  data.txgr[i][k] = ZERO;
-	  data.txgs[i][k] = ZERO;
+	  data.txgr[i][k] = 0.0;
+	  data.txgs[i][k] = 0.0;
 
 	  /* innitialise the vector of gaussweights */
-	  data.twgt[i][k] = ZERO;
+	  data.twgt[i][k] = 0.0;
       }
   }
   /* inintialise quadX arrays */
@@ -471,10 +471,10 @@ void DRT::Elements::Condif2::condif2_integration_points(struct _FLUID_DATA& data
       {
 	  /* set one coordinate of integration points --- the rest is
 	   * 'symmetric'                                               */
-	  data.qxg [i][k] = ZERO;
+	  data.qxg [i][k] = 0.0;
 
 	  /* innitialise the vector of gaussweights */
-	  data.qwgt[i][k] = ZERO;
+	  data.qwgt[i][k] = 0.0;
       }
   }
 
@@ -511,10 +511,10 @@ void DRT::Elements::Condif2::condif2_integration_points(struct _FLUID_DATA& data
       data.qxg[5][5]  =  -data.qxg[0][5] ;
 
 /* weights for one gauss points */
-      data.qwgt[0][0] =  TWO             ;
+      data.qwgt[0][0] =  2.0             ;
 /* weights for two gauss points */
-      data.qwgt[0][1] =  ONE             ;
-      data.qwgt[1][1] =  ONE             ;
+      data.qwgt[0][1] =  1.0             ;
+      data.qwgt[1][1] =  1.0             ;
 /* weights for three gauss points */
       data.qwgt[0][2] =  0.5555555555556 ;
       data.qwgt[1][2] =  0.8888888888889 ;
@@ -562,8 +562,8 @@ void DRT::Elements::Condif2::condif2_integration_points(struct _FLUID_DATA& data
  *----------------------------------------------------------------------*/
       data.txgr[0][1]    =  Q12  ;
       data.txgr[1][1]    =  Q12  ;
-      data.txgr[2][1]    =  ZERO ;
-      data.txgs[0][1]    =  ZERO ;
+      data.txgr[2][1]    =  0.0 ;
+      data.txgs[0][1]    =  0.0 ;
       data.txgs[1][1]    =  Q12  ;
       data.txgs[2][1]    =  Q12  ;
 
@@ -852,7 +852,7 @@ void DRT::Elements::Condif2::condif2_jaco(const Epetra_SerialDenseMatrix& xyze,
   {
      for (int j=0; j<2; j++)
      {
-        dum=ZERO;
+        dum=0.0;
         for (int l=0; l<iel; l++)
         {
            dum += deriv(i,l)*xyze(j,l);
@@ -864,7 +864,7 @@ void DRT::Elements::Condif2::condif2_jaco(const Epetra_SerialDenseMatrix& xyze,
   /*------------------------------------------ determinant of jacobian---*/
   *det = xjm(0,0)*xjm(1,1) - xjm(1,0)*xjm(0,1);
 
-  if(*det<ZERO)
+  if(*det<0.0)
   {
      printf("\n");
      printf("GLOBAL ELEMENT NO.%i\n",Id());
@@ -944,8 +944,8 @@ void DRT::Elements::Condif2::condif2_shape_function(
                int         	  icode
             )
 {
-  const DOUBLE Q12 = ONE/TWO;
-  const DOUBLE Q14 = ONE/FOUR;
+  const DOUBLE Q12 = 1.0/2.0;
+  const DOUBLE Q14 = 1.0/4.0;
 
 /*------------------------------- selection of polynomial interpolation */
   switch (iel)
@@ -954,10 +954,10 @@ void DRT::Elements::Condif2::condif2_shape_function(
 	     *                                          derivatives ----*/
     {
       /*--------------------------------------------- form basic values */
-	double rp=ONE+r;
-	double rm=ONE-r;
-	double sp=ONE+s;
-	double sm=ONE-s;
+	double rp=1.0+r;
+	double rm=1.0-r;
+	double sp=1.0+s;
+	double sm=1.0-s;
 
 	funct[0]=Q14*rp*sp;
 	funct[1]=Q14*rm*sp;
@@ -981,20 +981,20 @@ void DRT::Elements::Condif2::condif2_shape_function(
 
 	if(icode==3) /* --> second derivative evaluation */
 	{
-	    deriv2(0,0)= ZERO;
-	    deriv2(1,0)= ZERO;
+	    deriv2(0,0)= 0.0;
+	    deriv2(1,0)= 0.0;
 	    deriv2(2,0)= Q14;
 
-	    deriv2(0,1)= ZERO;
-	    deriv2(1,1)= ZERO;
+	    deriv2(0,1)= 0.0;
+	    deriv2(1,1)= 0.0;
 	    deriv2(2,1)=-Q14;
 
-	    deriv2(0,2)= ZERO;
-	    deriv2(1,2)= ZERO;
+	    deriv2(0,2)= 0.0;
+	    deriv2(1,2)= 0.0;
 	    deriv2(2,2)= Q14;
 
-	    deriv2(0,3)= ZERO;
-	    deriv2(1,3)=ZERO;
+	    deriv2(0,3)= 0.0;
+	    deriv2(1,3)=0.0;
 	    deriv2(2,3)=-Q14;
 	} /* endif (icode==3) */
 	break;
@@ -1002,12 +1002,12 @@ void DRT::Elements::Condif2::condif2_shape_function(
     case 8: /* QUADRATIC shape functions for quadrilaterals without
   	       central node and their natural derivatives (serendipity) */
     {
-	double rp=ONE+r;
-	double rm=ONE-r;
-	double sp=ONE+s;
-	double sm=ONE-s;
-	double r2=ONE-r*r;
-	double s2=ONE-s*s;
+	double rp=1.0+r;
+	double rm=1.0-r;
+	double sp=1.0+s;
+	double sm=1.0-s;
+	double r2=1.0-r*r;
+	double s2=1.0-s*s;
 
 	funct[4]=Q12*r2*sp;
 	funct[5]=Q12*rm*s2;
@@ -1032,17 +1032,17 @@ void DRT::Elements::Condif2::condif2_shape_function(
 	    deriv(0,3)= Q14*sm;
 	    deriv(1,3)=-Q14*rp;
 
-	    deriv(0,4)=-ONE*r*sp;
+	    deriv(0,4)=-1.0*r*sp;
 	    deriv(1,4)= Q12*r2;
 
 	    deriv(0,5)=-Q12*  s2;
-	    deriv(1,5)=-ONE*rm*s;
+	    deriv(1,5)=-1.0*rm*s;
 
-	    deriv(0,6)=-ONE*r*sm;
+	    deriv(0,6)=-1.0*r*sm;
 	    deriv(1,6)=-Q12*r2;
 
 	    deriv(0,7)= Q12*  s2;
-	    deriv(1,7)=-ONE*rp*s;
+	    deriv(1,7)=-1.0*rp*s;
 
 	    deriv(0,0)-= Q12*(deriv(0,4)+deriv(0,7));
 	    deriv(1,0)-= Q12*(deriv(1,4)+deriv(1,7));
@@ -1057,36 +1057,36 @@ void DRT::Elements::Condif2::condif2_shape_function(
 
 	if(icode==3) /* --> second derivative evaluation */
 	{
-	    deriv2(0,0)= ZERO;
-	    deriv2(1,0)= ZERO;
+	    deriv2(0,0)= 0.0;
+	    deriv2(1,0)= 0.0;
 	    deriv2(2,0)= Q14;
 
-	    deriv2(0,1)= ZERO;
-	    deriv2(1,1)= ZERO;
+	    deriv2(0,1)= 0.0;
+	    deriv2(1,1)= 0.0;
 	    deriv2(2,1)=-Q14;
 
-	    deriv2(0,2)= ZERO;
-	    deriv2(1,2)= ZERO;
+	    deriv2(0,2)= 0.0;
+	    deriv2(1,2)= 0.0;
 	    deriv2(2,2)= Q14;
 
-	    deriv2(0,3)= ZERO;
-	    deriv2(1,3)= ZERO;
+	    deriv2(0,3)= 0.0;
+	    deriv2(1,3)= 0.0;
 	    deriv2(2,3)=-Q14;
 
-	    deriv2(0,4)=-(ONE+s);
-	    deriv2(1,4)= ZERO;
+	    deriv2(0,4)=-(1.0+s);
+	    deriv2(1,4)= 0.0;
 	    deriv2(2,4)=-r;
 
-	    deriv2(0,5)= ZERO;
-	    deriv2(1,5)=-(ONE-r);
+	    deriv2(0,5)= 0.0;
+	    deriv2(1,5)=-(1.0-r);
 	    deriv2(2,5)= s;
 
-	    deriv2(0,6)=-(ONE-s);
-	    deriv2(1,6)= ZERO;
+	    deriv2(0,6)=-(1.0-s);
+	    deriv2(1,6)= 0.0;
 	    deriv2(2,6)= r;
 
-	    deriv2(0,7)= ZERO;
-	    deriv2(1,7)=-(ONE+r);
+	    deriv2(0,7)= 0.0;
+	    deriv2(1,7)=-(1.0+r);
 	    deriv2(2,7)=-s;
 
 	    deriv2(0,0) -= Q12*(deriv2(0,4)+deriv2(0,7));
@@ -1107,12 +1107,12 @@ void DRT::Elements::Condif2::condif2_shape_function(
 	                     central node and their natural derivatives */
     {
 /*--------------------------------------------------- form basic values */
-	double rp=ONE+r;
-	double rm=ONE-r;
-	double sp=ONE+s;
-	double sm=ONE-s;
-	double r2=ONE-r*r;
-	double s2=ONE-s*s;
+	double rp=1.0+r;
+	double rm=1.0-r;
+	double sp=1.0+s;
+	double sm=1.0-s;
+	double r2=1.0-r*r;
+	double s2=1.0-s*s;
 	double rh=Q12*r;
 	double sh=Q12*s;
 	double rs=rh*sh;
@@ -1145,20 +1145,20 @@ void DRT::Elements::Condif2::condif2_shape_function(
 	    deriv(0,3)=-rhp*sh*sm;
 	    deriv(1,3)= shm*rh*rp;
 
-	    deriv(0,4)=-TWO*r*sh*sp;
+	    deriv(0,4)=-2.0*r*sh*sp;
 	    deriv(1,4)= shp*r2;
 
 	    deriv(0,5)= rhm*s2;
-	    deriv(1,5)= TWO*s*rh*rm;
+	    deriv(1,5)= 2.0*s*rh*rm;
 
-	    deriv(0,6)= TWO*r*sh*sm;
+	    deriv(0,6)= 2.0*r*sh*sm;
 	    deriv(1,6)= shm*r2;
 
 	    deriv(0,7)= rhp*s2;
-	    deriv(1,7)=-TWO*s*rh*rp;
+	    deriv(1,7)=-2.0*s*rh*rp;
 
-	    deriv(0,8)=-TWO*r*s2;
-	    deriv(1,8)=-TWO*s*r2;
+	    deriv(0,8)=-2.0*r*s2;
+	    deriv(1,8)=-2.0*s*r2;
 	} /* endif (icode>1) */
 
 	if(icode==3) /* --> second derivative evaluation */
@@ -1179,25 +1179,25 @@ void DRT::Elements::Condif2::condif2_shape_function(
 	    deriv2(1,3)= rh*rp;
 	    deriv2(2,3)= shm*rhp;
 
-	    deriv2(0,4)=-TWO*sh*sp;
+	    deriv2(0,4)=-2.0*sh*sp;
 	    deriv2(1,4)= r2;
-	    deriv2(2,4)=-TWO*r*shp;
+	    deriv2(2,4)=-2.0*r*shp;
 
 	    deriv2(0,5)= s2;
-	    deriv2(1,5)= TWO*rh*rm;
-	    deriv2(2,5)=-TWO*s*rhm;
+	    deriv2(1,5)= 2.0*rh*rm;
+	    deriv2(2,5)=-2.0*s*rhm;
 
-	    deriv2(0,6)= TWO*sh*sm;
+	    deriv2(0,6)= 2.0*sh*sm;
 	    deriv2(1,6)= r2;
-	    deriv2(2,6)=-TWO*r*shm;
+	    deriv2(2,6)=-2.0*r*shm;
 
 	    deriv2(0,7)= s2;
-	    deriv2(1,7)=-TWO*rh*rp;
-	    deriv2(2,7)=-TWO*s*rhp;
+	    deriv2(1,7)=-2.0*rh*rp;
+	    deriv2(2,7)=-2.0*s*rhp;
 
-	    deriv2(0,8)=-TWO*s2;
-	    deriv2(1,8)=-TWO*r2;
-	    deriv2(2,8)= TWO*s*TWO*r;
+	    deriv2(0,8)=-2.0*s2;
+	    deriv2(1,8)=-2.0*r2;
+	    deriv2(2,8)= 2.0*s*2.0*r;
 	} /* endif (icode==3) */
 	break;
     }
@@ -1205,18 +1205,18 @@ void DRT::Elements::Condif2::condif2_shape_function(
 	     *                                         derivatives -----*/
     {
         /*------------------------------------------- form basic values */
-	funct[0]=ONE-r-s;
+	funct[0]=1.0-r-s;
 	funct[1]=r;
 	funct[2]=s;
 
 	if(icode>1) /* --> first derivative evaluation */
 	{
-	    deriv(0,0)=-ONE;
-	    deriv(1,0)=-ONE;
-	    deriv(0,1)= ONE;
-	    deriv(1,1)=ZERO;
-	    deriv(0,2)=ZERO;
-	    deriv(1,2)= ONE;
+	    deriv(0,0)=-1.0;
+	    deriv(1,0)=-1.0;
+	    deriv(0,1)= 1.0;
+	    deriv(1,1)=0.0;
+	    deriv(0,2)=0.0;
+	    deriv(1,2)= 1.0;
 	} /* endif (icode>1) */
 	break;
     }
@@ -1228,59 +1228,59 @@ void DRT::Elements::Condif2::condif2_shape_function(
 	double ss=s*s;
 	double rs=r*s;
 
-	funct[0]=(ONE-TWO*r-TWO*s)*(ONE-r-s);
-	funct[1]=TWO*rr-r;
-	funct[2]=TWO*ss-s;
-	funct[3]=FOUR*(r-rr-rs);
-	funct[4]=FOUR*rs;
-	funct[5]=FOUR*(s-rs-ss);
+	funct[0]=(1.0-2.0*r-2.0*s)*(1.0-r-s);
+	funct[1]=2.0*rr-r;
+	funct[2]=2.0*ss-s;
+	funct[3]=4.0*(r-rr-rs);
+	funct[4]=4.0*rs;
+	funct[5]=4.0*(s-rs-ss);
 
 	if(icode>1) /* --> first derivative evaluation */
 	{
-	    deriv(0,0)=-THREE+FOUR*(r+s);
+	    deriv(0,0)=-THREE+4.0*(r+s);
 	    deriv(1,0)= deriv(0,0);
 
-	    deriv(0,1)= FOUR*r-ONE;
-	    deriv(1,1)= ZERO;
+	    deriv(0,1)= 4.0*r-1.0;
+	    deriv(1,1)= 0.0;
 
-	    deriv(0,2)= ZERO;
-	    deriv(1,2)= FOUR*s-ONE;
+	    deriv(0,2)= 0.0;
+	    deriv(1,2)= 4.0*s-1.0;
 
-	    deriv(0,3)= FOUR*(ONE-TWO*r-s);
-	    deriv(1,3)=-FOUR*r;
+	    deriv(0,3)= 4.0*(1.0-2.0*r-s);
+	    deriv(1,3)=-4.0*r;
 
-	    deriv(0,4)= FOUR*s;
-	    deriv(1,4)= FOUR*r;
+	    deriv(0,4)= 4.0*s;
+	    deriv(1,4)= 4.0*r;
 
-	    deriv(0,5)=-FOUR*s;
-	    deriv(1,5)= FOUR*(ONE-r-TWO*s);
+	    deriv(0,5)=-4.0*s;
+	    deriv(1,5)= FOUR*(1.0-r-2.0*s);
 	} /* endif (icode>1) */
 
 	if(icode==3) /* --> second derivative evaluation */
 	{
-	    deriv2(0,0)= FOUR;
-	    deriv2(1,0)= FOUR;
-	    deriv2(2,0)= FOUR;
+	    deriv2(0,0)= 4.0;
+	    deriv2(1,0)= 4.0;
+	    deriv2(2,0)= 4.0;
 
-	    deriv2(0,1)= FOUR;
-	    deriv2(1,1)= ZERO;
-	    deriv2(2,1)= ZERO;
+	    deriv2(0,1)= 4.0;
+	    deriv2(1,1)= 0.0;
+	    deriv2(2,1)= 0.0;
 
-	    deriv2(0,2)= ZERO;
-	    deriv2(1,2)= FOUR;
-	    deriv2(2,2)= ZERO;
+	    deriv2(0,2)= 0.0;
+	    deriv2(1,2)= 4.0;
+	    deriv2(2,2)= 0.0;
 
 	    deriv2(0,3)=-EIGHT;
-	    deriv2(1,3)= ZERO;
-	    deriv2(2,3)=-FOUR;
+	    deriv2(1,3)= 0.0;
+	    deriv2(2,3)=-4.0;
 
-	    deriv2(0,4)= ZERO;
-	    deriv2(1,4)= ZERO;
-	    deriv2(2,4)= FOUR;
+	    deriv2(0,4)= 0.0;
+	    deriv2(1,4)= 0.0;
+	    deriv2(2,4)= 4.0;
 
-	    deriv2(0,5)= ZERO;
+	    deriv2(0,5)= 0.0;
 	    deriv2(1,5)=-EIGHT;
-	    deriv2(2,5)=-FOUR;
+	    deriv2(2,5)=-4.0;
 	} /* endif (icode==3) */
 	break;
     }
@@ -1331,8 +1331,8 @@ void DRT::Elements::Condif2::condif2_gder(Epetra_SerialDenseMatrix& derxy,
   /*------------------------------------------------------- initialistion */
   for(int k=0;k<iel;k++)
   {
-    derxy(0,k)=ZERO;
-    derxy(1,k)=ZERO;
+    derxy(0,k)=0.0;
+    derxy(1,k)=0.0;
   } /* end of loop over k */
 
 
@@ -1438,11 +1438,11 @@ void DRT::Elements::Condif2::condif2_gder2(const Epetra_SerialDenseMatrix& xyze,
 /*--------------------------- calculate elements of jacobian_bar matrix */
     bm(0,0) =                   xjm(0,0)*xjm(0,0);
     bm(0,1) =                   xjm(0,1)*xjm(0,1);
-    bm(0,2) =               TWO*xjm(0,0)*xjm(0,1);
+    bm(0,2) =               2.0*xjm(0,0)*xjm(0,1);
 
     bm(1,0) =                   xjm(1,0)*xjm(1,0);
     bm(1,1) =                   xjm(1,1)*xjm(1,1);
-    bm(1,2) =               TWO*xjm(1,1)*xjm(1,0);
+    bm(1,2) =               2.0*xjm(1,1)*xjm(1,0);
 
     bm(2,0) =                   xjm(0,0)*xjm(1,0);
     bm(2,1) =                   xjm(0,1)*xjm(1,1);
@@ -1663,7 +1663,7 @@ double ttimetaufacl = thetal* timetaufacl;
 double timetaufaclr = timetaufacl * thetar;
 
 /*-------------------------------- evaluate rhs at integration point ---*/
-rhsint = ZERO;
+rhsint = 0.0;
 //rhsint=1.0;
 
 for (int i=0; i<iel; i++) /* loop over nodes of element */
@@ -1795,7 +1795,7 @@ double                    rhsint;           /* rhs at int. point     */
 double taufac = tau*fac;
 
 /*-------------------------------- evaluate rhs at integration point ---*/
-rhsint = ZERO;
+rhsint = 0.0;
 //rhsint=1.0;
 
 for (int i=0; i<iel; i++) /* loop over nodes of element */

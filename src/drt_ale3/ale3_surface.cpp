@@ -9,12 +9,6 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 
-extern "C"
-{
-#include "../headers/standardtypes.h"
-#include "../ale3/ale3.h"
-}
-
 
 
 DRT::Elements::Ale3Surface::Ale3Surface(int id,

@@ -20,10 +20,6 @@ Maintainer: Volker Gravemeier
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 
-extern "C"
-{
-#include "../headers/standardtypes.h"
-}
 
 
 
