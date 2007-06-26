@@ -14,6 +14,7 @@ using namespace Teuchos;
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
+#include "../drt_lib/drt_utils.H"
 
 struct _MATERIAL;
 
@@ -261,38 +262,18 @@ public:
   void SetMaterial(int material) { material_ = material; }
 
   /// set number of gauss points to element shape default
-  void SetGaussPoints();
+  DRT::Utils::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype);
 
   //@}
 
 
 private:
 
-  struct ALE2_DATA
-  {
-    double qxg[6][6];    /*!< coordinates for QUADS and HEX */
-    double qwgt[6][6];   /*!< weights for QUADS and HEX */
-
-    double txgr[13][11];   /*!< coordinates in r for TRIS and TETS */
-    double txgs[13][11];   /*!< coordinates in s for TRIS and TETS*/
-    double txgt[13][11];   /*!< coordinates in t for TRIS and TETS*/
-    double twgt[13][11];   /*!< weights for TRIS and TETS*/
-  };
-
   void static_ke(vector<int>&              lm,
                  Epetra_SerialDenseMatrix* sys_mat,
                  Epetra_SerialDenseVector* residual,
                  struct _MATERIAL*         material,
                  ParameterList& 	   params);
-
-  void intg(ALE2_DATA& data);
-
-  void funct_deriv(vector<double>& funct,
-                   Epetra_SerialDenseMatrix& deriv,
-                   double      r,
-                   double      s,
-                   DiscretizationType     typ,
-                   int         option);
 
   //! action parameters recognized by ale2
   enum ActionType
@@ -301,8 +282,6 @@ private:
     calc_ale_lin_stiff
   };
 
-  //! no. gaussian points in each spatial dimension
-  int                                             ngp_[2];
   //! number of the material law
   int                                             material_;
 
@@ -322,6 +301,12 @@ private:
 
   // don't want = operator
   Ale2& operator = (const Ale2& old);
+  
+  void CreateLinesTri(const int& nline,
+                      const int& nnode);
+  
+  void CreateLinesQuad(const int& nline,
+                       const int& nnode);
 };
 
 
