@@ -20,7 +20,6 @@ Maintainer: Axel Gerstenberger
 #include "mpi.h"
 #endif
 #include "fluid3_xfem.H"
-#include "fluid3_xfem_integration.H"
 #include "fluid3_xfem_enrichment.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
@@ -1440,16 +1439,16 @@ GaussRule3D DRT::Elements::XFluid3::get_optimal_gaussrule(const DiscretizationTy
     switch (distype)
     {
     case hex8:
-        rule = hex_8point;
+        rule = intrule_hex_8point;
         break;
     case hex20: case hex27:
-        rule = hex_27point;
+        rule = intrule_hex_27point;
         break;
     case tet4:
-        rule = tet_4point;
+        rule = intrule_tet_4point;
         break;
     case tet10:
-        rule = tet_10point;
+        rule = intrule_tet_10point;
         break;
     default: 
         dserror("unknown number of nodes for gaussrule initialization");
@@ -1617,10 +1616,10 @@ vector<double> DRT::Elements::XFluid3::f3_caltau(
     switch(distype)
     {
     case hex8: case hex20: case hex27:
-        integrationrule_stabili = hex_1point;
+        integrationrule_stabili = intrule_hex_1point;
         break;
     case tet4: case tet10:
-        integrationrule_stabili = tet_1point;
+        integrationrule_stabili = intrule_tet_1point;
         break;
     default: 
         dserror("invalid discretization type for fluid3");

@@ -13,39 +13,46 @@ Maintainer: Axel Gerstenberger
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_FLUID3_XFEM
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
-#ifndef FLUID3_XFEM_INTEGRATION_H
-#define FLUID3_XFEM_INTEGRATION_H
+#ifndef UTILS_INTEGRATION_H
+#define UTILS_INTEGRATION_H
 
 
 #include "Epetra_Vector.h"
 using namespace std;
 
+/*!
+\brief DRT: namespace of the ccarat discretization module
+
+*/
+namespace DRT
+{
+namespace Utils
+{
 
 //! GaussRules
 enum GaussRule3D  
 {
-    hex_1point,
-    hex_8point,
-    hex_27point,
-    tet_1point,
-    tet_4point,
-    tet_4point_alternative,
-    tet_10point
+    intrule_hex_1point,
+    intrule_hex_8point,
+    intrule_hex_27point,
+    intrule_tet_1point,
+    intrule_tet_4point,
+    intrule_tet_4point_alternative,
+    intrule_tet_10point
 };
 
 
 //! GaussRules
 enum GaussRule2D  
 {
-    quad_1point,
-    quad_4point,
-    quad_9point,
-    tri_1point,
-    tri_3point,
-    tri_6point
+    intrule_quad_1point,
+    intrule_quad_4point,
+    intrule_quad_9point,
+    intrule_tri_1point,
+    intrule_tri_3point,
+    intrule_tri_6point
 };
 
 /*!----------------------------------------------------------------------
@@ -85,14 +92,25 @@ typedef struct
 } IntegrationPoints3D;
 
 
-// evaluate element integration points (and storing them in intpoints)
+/*!
+\brief return object with 3D integration points and weights
+         
+\param GaussRule3D      (in): gaussrule enum
+
+*/
 IntegrationPoints3D getIntegrationPoints3D(const  GaussRule3D gaussrule);
 
-// evaluate element integration points (and storing them in intpoints)
+/*!
+\brief return object with 2D integration points and weights
+         
+\param GaussRule3D      (in): gaussrule enum
+
+*/
 IntegrationPoints2D getIntegrationPoints2D(const  GaussRule2D gaussrule);
 
+} // namespace Utils
+} // namespace DRT
 
-#endif // #ifndef FLUID3_SHAPE_H
+#endif // #ifndef UTILS_INTEGRATION_H
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_FLUID3_XFEM

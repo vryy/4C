@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file fluid3_xfem_integration.cpp
+\file drt_utils_integration.cpp
 \brief
 
 <pre>
@@ -10,52 +10,42 @@ Maintainer: Axel Gerstenberger
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_FLUID3_XFEM
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
-#include "fluid3_xfem_integration.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_dserror.H"
+#include "drt_utils_integration.H"
+#include "drt_discret.H"
+#include "drt_utils.H"
+#include "drt_dserror.H"
 
 
-/*----------------------------------------------------------------------*
- |  evaluate the element integration points (private)        g.bau 03/07|
- *----------------------------------------------------------------------*/
-IntegrationPoints3D getIntegrationPoints3D(const  GaussRule3D gaussrule)
+//
+// evaluate the element integration points
+//
+DRT::Utils::IntegrationPoints3D DRT::Utils::getIntegrationPoints3D(const GaussRule3D gaussrule)
 {
   const double Q12  = 1.0/2.0;
   const double Q14  = 1.0/4.0;
   const double Q16  = 1.0/6.0;
   const double Q124 = 1.0/6.0/4.0;
-  const double Q430 = 4.0/5.0/6.0;
-  const double Q9120= 9.0/4.0/5.0/6.0;
-
-  const double xi2 = 0.5773502691896;
-  const double xi3 = 0.7745966692415;
-
-  const double w1 = 0.5555555555556;
-  const double w2 = 0.8888888888889;
-  const double w3 = w1;
-
-  const double palpha = (5.0 + 3.0*sqrt(5.0))/20.0;
-  const double pbeta  = (5.0 - sqrt(5.0))/20.0;
 
   IntegrationPoints3D  intpoints;
 
   switch(gaussrule)
   {
-    case hex_1point:
+    case intrule_hex_1point:
+    {
       intpoints.nquad = 1;
       intpoints.qxg[0][0] = 0.0;
       intpoints.qxg[0][1] = 0.0;
       intpoints.qxg[0][2] = 0.0;
       intpoints.qwgt[0] = 8.0;
       break;
-      
-    case hex_8point:
+    }
+    case intrule_hex_8point:
+    {
       intpoints.nquad = 8;
+      const double xi2 = 0.5773502691896;
       intpoints.qxg[0][0] = -xi2; intpoints.qxg[0][1] = -xi2; intpoints.qxg[0][2] = -xi2;
       intpoints.qxg[1][0] =  xi2; intpoints.qxg[1][1] = -xi2; intpoints.qxg[1][2] = -xi2;
       intpoints.qxg[2][0] =  xi2; intpoints.qxg[2][1] =  xi2; intpoints.qxg[2][2] = -xi2;
@@ -73,9 +63,11 @@ IntegrationPoints3D getIntegrationPoints3D(const  GaussRule3D gaussrule)
       intpoints.qwgt[6] = 1.0;
       intpoints.qwgt[7] = 1.0;
       break;
-      
-    case hex_27point:
+    }
+    case intrule_hex_27point:
+    {
       intpoints.nquad = 27;
+      const double xi3 = 0.7745966692415;
       intpoints.qxg[0][0]  = -xi3; intpoints.qxg[0][1]  = -xi3; intpoints.qxg[0][2]  = -xi3;
       intpoints.qxg[1][0]  =  0.0; intpoints.qxg[1][1]  = -xi3; intpoints.qxg[1][2]  = -xi3;
       intpoints.qxg[2][0]  =  xi3; intpoints.qxg[2][1]  = -xi3; intpoints.qxg[2][2]  = -xi3;
@@ -103,6 +95,9 @@ IntegrationPoints3D getIntegrationPoints3D(const  GaussRule3D gaussrule)
       intpoints.qxg[24][0] = -xi3; intpoints.qxg[24][1] =  xi3; intpoints.qxg[24][2] =  xi3;
       intpoints.qxg[25][0] =  0.0; intpoints.qxg[25][1] =  xi3; intpoints.qxg[25][2] =  xi3;
       intpoints.qxg[26][0] =  xi3; intpoints.qxg[26][1] =  xi3; intpoints.qxg[26][2] =  xi3;
+      const double w1 = 0.5555555555556;
+      const double w2 = 0.8888888888889;
+      const double w3 = w1;
       intpoints.qwgt[0]  = w1*w1*w1;
       intpoints.qwgt[1]  = w2*w1*w1;
       intpoints.qwgt[2]  = w3*w1*w1;
@@ -131,8 +126,9 @@ IntegrationPoints3D getIntegrationPoints3D(const  GaussRule3D gaussrule)
       intpoints.qwgt[25] = w2*w3*w3;
       intpoints.qwgt[26] = w3*w3*w3;
       break;
-      
-    case tet_1point:
+    }
+    case intrule_tet_1point:
+    {
       // GAUSS INTEGRATION         1 SAMPLING POINT, DEG.OF PRECISION 1
       intpoints.nquad = 1;
       intpoints.qxg[0][0] =  Q14 ;
@@ -140,10 +136,13 @@ IntegrationPoints3D getIntegrationPoints3D(const  GaussRule3D gaussrule)
       intpoints.qxg[0][2] =  Q14 ;
       intpoints.qwgt[0]   =  Q16 ;
       break;
-      
-    case tet_4point:
+    }
+    case intrule_tet_4point:
+    {
       // GAUSS INTEGRATION        4 SAMPLING POINTS, DEG.OF PRECISION 2
       intpoints.nquad = 4;
+      const double palpha = (5.0 + 3.0*sqrt(5.0))/20.0;
+      const double pbeta  = (5.0 - sqrt(5.0))/20.0;
       intpoints.qxg[0][0]    =    pbeta ;
       intpoints.qxg[1][0]    =    palpha;
       intpoints.qxg[2][0]    =    pbeta ;
@@ -161,8 +160,9 @@ IntegrationPoints3D getIntegrationPoints3D(const  GaussRule3D gaussrule)
       intpoints.qwgt[2]   =    Q124  ;
       intpoints.qwgt[3]   =    Q124  ;
       break;
-      
-    case tet_4point_alternative:
+    }
+    case intrule_tet_4point_alternative:
+    {
       // ALT.GAUSS INTEGRATION    4 SAMPLING POINTS, DEG.OF PRECISION 1
       intpoints.qxg[0][0] = 0.0;
       intpoints.qxg[1][0] = 1.0;
@@ -181,8 +181,9 @@ IntegrationPoints3D getIntegrationPoints3D(const  GaussRule3D gaussrule)
       intpoints.qwgt[2]   = Q124;
       intpoints.qwgt[3]   = Q124;
       break;
-      
-    case tet_10point:
+    }
+    case intrule_tet_10point:
+    {
       // GAUSS INTEGRATION        5 SAMPLING POINTS, DEG.OF PRECISION 3
       intpoints.qxg[0][0] =     Q14  ;
       intpoints.qxg[1][0] =     Q12  ;
@@ -199,32 +200,37 @@ IntegrationPoints3D getIntegrationPoints3D(const  GaussRule3D gaussrule)
       intpoints.qxg[2][2] =     Q16  ;
       intpoints.qxg[3][2] =     Q12  ;
       intpoints.qxg[4][2] =     Q16  ;
+      const double Q430 = 4.0/5.0/6.0;
+      const double Q9120= 9.0/4.0/5.0/6.0;
       intpoints.qwgt[0]   =    -Q430 ;
       intpoints.qwgt[1]   =     Q9120;
       intpoints.qwgt[2]   =     Q9120;
       intpoints.qwgt[3]   =     Q9120;
       intpoints.qwgt[4]   =     Q9120;
       break;
-      
+    }
     default:
       dserror("unknown integration rule");
   }
+
+  dsassert(intpoints.nquad <= MAXGAUSS, "define a higher MAXGAUSS value in the config file");
 
   return intpoints;
 }
 
 
-/*----------------------------------------------------------------------*
- |  evaluate the element integration points                             |
- *----------------------------------------------------------------------*/
-IntegrationPoints2D getIntegrationPoints2D(const  GaussRule2D gaussrule)
+//
+// evaluate the element integration points                             |
+//
+DRT::Utils::IntegrationPoints2D DRT::Utils::getIntegrationPoints2D(const  GaussRule2D gaussrule)
 {
     
     IntegrationPoints2D  intpoints;
     
     switch(gaussrule)
     {
-    case quad_4point :
+    case intrule_quad_4point :
+    {
         intpoints.nquad = 4;
         intpoints.qwgt[0]  =  1.0;
         intpoints.qwgt[1]  =  1.0;
@@ -240,8 +246,9 @@ IntegrationPoints2D getIntegrationPoints2D(const  GaussRule2D gaussrule)
         intpoints.qxg[3][0] =  0.5773502691896;
         intpoints.qxg[3][1] =  0.5773502691896;
         break;
-        
-    case quad_9point:
+    }
+    case intrule_quad_9point:
+    {
         intpoints.nquad = 9; 
         intpoints.qwgt[0]  =  0.5555555555556*0.5555555555556;
         intpoints.qwgt[1]  =  0.8888888888889*0.5555555555556;
@@ -272,8 +279,9 @@ IntegrationPoints2D getIntegrationPoints2D(const  GaussRule2D gaussrule)
         intpoints.qxg[8][0] =  0.7745966692415;
         intpoints.qxg[8][1] =  0.7745966692415; 
         break;
-        
-    case tri_3point :
+    }
+    case intrule_tri_3point:
+    {
         intpoints.nquad = 3;                
         intpoints.qwgt[0]  = 1.0/6.0 ;
         intpoints.qwgt[1]  = 1.0/6.0 ;
@@ -286,8 +294,9 @@ IntegrationPoints2D getIntegrationPoints2D(const  GaussRule2D gaussrule)
         intpoints.qxg[2][0] = 0.0;
         intpoints.qxg[2][1] = 0.5;
         break;
-        
-    case tri_6point:
+    }
+    case intrule_tri_6point:
+    {
         intpoints.nquad = 6;
         intpoints.qwgt[0]  = 0.0549758718277;
         intpoints.qwgt[1]  = 0.0549758718277;
@@ -309,10 +318,12 @@ IntegrationPoints2D getIntegrationPoints2D(const  GaussRule2D gaussrule)
         intpoints.qxg[5][0] = 0.1081030181681; 
         intpoints.qxg[5][1] = 0.4459484909160; 
         break;
-        
+    }
     default:
         dserror("unknown integration rule");
     }
+
+    dsassert(intpoints.nquad <= MAXGAUSS, "define a higher MAXGAUSS value in the config file");
 
     return intpoints;
 }
@@ -320,4 +331,3 @@ IntegrationPoints2D getIntegrationPoints2D(const  GaussRule2D gaussrule)
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_FLUID3_XFEM

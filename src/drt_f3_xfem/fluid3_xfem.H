@@ -26,10 +26,10 @@ Maintainer: Axel Gerstenberger
 using namespace std;
 using namespace Teuchos;
 
-#include "fluid3_xfem_integration.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
+#include "../drt_lib/drt_utils.H"
 
 
 // forward declarations
@@ -350,7 +350,7 @@ private:
   static const int                                NDF_ = 4;
   
   //! gaussrule used for weak form integration
-  GaussRule3D                                     gaussrule_;
+  DRT::Utils::GaussRule3D                         gaussrule_;
   //! number of the material law
   int                                             material_;
   //! flag for euler/ale net algorithm
@@ -470,7 +470,7 @@ private:
             );
   
   // get optimal gaussrule for given discretization type
-  GaussRule3D get_optimal_gaussrule(const DiscretizationType& distype);
+  DRT::Utils::GaussRule3D get_optimal_gaussrule(const DiscretizationType& distype);
   
   vector<double> f3_caltau(
     const Epetra_SerialDenseMatrix&    xyze,
@@ -864,7 +864,7 @@ private:
     Epetra_SerialDenseMatrix&       metrictensor,
     double                         *drs);
 
-  GaussRule2D get_optimal_gaussrule(const DiscretizationType& distype);
+  DRT::Utils::GaussRule2D get_optimal_gaussrule(const DiscretizationType& distype);
 
   void CreateLinesTri(const int& nline,
                       const int& nnode);

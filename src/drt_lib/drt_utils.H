@@ -26,6 +26,7 @@ Maintainer: Michael Gee
 #include "drt_parobject.H"
 #include "drt_element.H"
 #include "drt_utils_fem_shapefunctions.H"
+#include "drt_utils_integration.H"
 
 using namespace std;
 using namespace Teuchos;

@@ -31,7 +31,7 @@ material_(0),
 is_ale_(false),
 data_()
 {
-    gaussrule_ = hex_27point;
+    gaussrule_ = intrule_hex_27point;
     surfaces_.resize(0);
     surfaceptrs_.resize(0);
     lines_.resize(0);

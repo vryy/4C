@@ -18,7 +18,6 @@ Maintainer: Axel Gerstenberger
 #ifdef TRILINOS_PACKAGE
 
 #include "fluid3_xfem.H"
-#include "fluid3_xfem_integration.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_discret.H"
@@ -119,16 +118,16 @@ int DRT::Elements::XFluid3Surface::EvaluateNeumann(
     switch(this->Shape())
     {
     case quad4:
-        gaussrule = quad_4point;
+        gaussrule = intrule_quad_4point;
         break;
     case quad8: case quad9:
-        gaussrule = quad_9point;
+        gaussrule = intrule_quad_9point;
         break;
     case tri3 :
-        gaussrule = tri_3point;
+        gaussrule = intrule_tri_3point;
         break;
     case tri6:
-        gaussrule = tri_6point; 
+        gaussrule = intrule_tri_6point; 
         break;
     default: 
         dserror("shape type unknown!\n");
@@ -300,16 +299,16 @@ GaussRule2D DRT::Elements::XFluid3Surface::get_optimal_gaussrule(const Discretiz
     switch(this->Shape())
     {
     case quad4:
-        rule = quad_4point;
+        rule = intrule_quad_4point;
         break;
     case quad8: case quad9:
-        rule = quad_9point;
+        rule = intrule_quad_9point;
         break;
     case tri3 :
-        rule = tri_3point;
+        rule = intrule_tri_3point;
         break;
     case tri6:
-        rule = tri_6point; 
+        rule = intrule_tri_6point; 
         break;
     default: 
         dserror("shape type unknown!\n");
