@@ -483,7 +483,8 @@ void DRT::Elements::Fluid3::f3_sys_mat(vector<int>&              lm,
     } /*end switch(iel) */
     DRT::Utils::shape_function_3D(funct,e1,e2,e3,distype);
     DRT::Utils::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
-    DRT::Utils::shape_function_3D_deriv2(deriv2,e1,e2,e3,distype);
+    if (distype != tet4)
+        DRT::Utils::shape_function_3D_deriv2(deriv2,e1,e2,e3,distype);
 
 /*------------------------------- get element type constant for tau ---*/
     switch(iel)
@@ -724,7 +725,6 @@ void DRT::Elements::Fluid3::f3_sys_mat(vector<int>&              lm,
           } /* end switch (iel) */
           DRT::Utils::shape_function_3D(funct,e1,e2,e3,distype);
           DRT::Utils::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
-          DRT::Utils::shape_function_3D_deriv2(deriv2,e1,e2,e3,distype);
 
           /*----------------------------------------- compute Jacobian matrix */
           f3_jaco(xyze,deriv,xjm,&det,iel);
@@ -736,6 +736,7 @@ void DRT::Elements::Fluid3::f3_sys_mat(vector<int>&              lm,
           /*--------------------------------- compute second global derivative */
           if (ihoel!=0)
           {
+            DRT::Utils::shape_function_3D_deriv2(deriv2,e1,e2,e3,distype);
             f3_gder2(xyze,xjm,derxy,derxy2,deriv2,iel);
 
             /*------calculate 2nd velocity derivatives at integration point */
@@ -4073,7 +4074,6 @@ void DRT::Elements::Fluid3::f3_int_beltrami_err(
   Epetra_SerialDenseVector  funct(iel);
   Epetra_SerialDenseMatrix 	xjm(3,3);
   Epetra_SerialDenseMatrix 	deriv(3,iel);
-  Epetra_SerialDenseMatrix 	deriv2(6,iel);
 
   double         		det;
   double         		e1, e2, e3;
@@ -4184,7 +4184,6 @@ void DRT::Elements::Fluid3::f3_int_beltrami_err(
         } /* end switch (iel) */
         DRT::Utils::shape_function_3D(funct,e1,e2,e3,distype);
         DRT::Utils::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
-        DRT::Utils::shape_function_3D_deriv2(deriv2,e1,e2,e3,distype);
 
           /*------------------------------------ compute Jacobian matrix */
         f3_jaco(xyze,deriv,xjm,&det,iel);
