@@ -3732,8 +3732,6 @@ void DRT::Elements::Fluid3::f3_int_beltrami_err(
   double         deltap;
   vector<double> deltavel(3);
 
-
-  const bool higher_order_ele = is_higher_order_element(distype);
   // gaussian points
   const GaussRule3D gaussrule = getOptimalGaussrule(distype);
   const IntegrationPoints3D  intpoints = getIntegrationPoints3D(gaussrule);
