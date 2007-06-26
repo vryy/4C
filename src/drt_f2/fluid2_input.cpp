@@ -46,6 +46,7 @@ bool DRT::Elements::Fluid2::ReadElement()
   int   nnode = 0;
   int   nodes[27];
   char  buffer[50];
+  int   ngp_[2];
 
   frchk("QUAD4",&ierr);
   if (ierr==1)

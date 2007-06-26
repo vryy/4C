@@ -18,8 +18,9 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_utils.H"
 
-
+using namespace DRT::Utils;
 
 
 /*----------------------------------------------------------------------*
@@ -32,7 +33,6 @@ material_(0),
 is_ale_(false),
 data_()
 {
-  ngp_[0] = ngp_[1] = 0;
   lines_.resize(0);
   lineptrs_.resize(0);
   return;
@@ -50,8 +50,6 @@ data_(old.data_),
 lines_(old.lines_),
 lineptrs_(old.lineptrs_)
 {
-  for (int i=0; i<2; ++i) ngp_[i] = old.ngp_[i];
-
   return;
 }
 
@@ -99,8 +97,6 @@ void DRT::Elements::Fluid2::Pack(vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
-  // ngp_
-  AddtoPack(data,ngp_,2*sizeof(int));
   // material_
   AddtoPack(data,material_);
   // is_ale_
@@ -129,8 +125,6 @@ void DRT::Elements::Fluid2::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  // ngp_
-  ExtractfromPack(position,data,ngp_,2*sizeof(int));
   // material_
   ExtractfromPack(position,data,material_);
   // is_ale_
@@ -360,6 +354,29 @@ DRT::Element** DRT::Elements::Fluid2::Surfaces()
   return &surface_[0];
 }
 
+
+GaussRule2D DRT::Elements::Fluid2::getOptimalGaussrule(const DiscretizationType& distype)
+{
+    GaussRule2D rule;
+    switch (distype)
+    {
+    case quad4:
+        rule = intrule_quad_4point;
+        break;
+    case quad8: case quad9:
+        rule = intrule_quad_9point;
+        break;
+    case tri3:
+        rule = intrule_tri_3point;
+        break;
+    case tri6:
+        rule = intrule_tri_6point;
+        break;
+    default: 
+        dserror("unknown number of nodes for gaussrule initialization");
+  }
+  return rule;
+}
 
 //=======================================================================
 //=======================================================================

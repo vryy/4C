@@ -30,7 +30,6 @@ Maintainer: Peter Gamnitzer
 extern "C"
 {
 #include "../headers/standardtypes.h"
-//#include "../fluid2/fluid2.h"
 }
 
 
@@ -40,6 +39,8 @@ extern "C"
  | defined in global_control.c
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
+
+using namespace DRT::Utils;
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            gammi 04/07|
@@ -210,6 +211,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
 
   /*---------------------------------------------------- set element data */
   const int iel = NumNode();
+  const DiscretizationType distype = this->Shape();
   Epetra_SerialDenseMatrix xyze(2,iel);
 
   // get node coordinates
@@ -237,7 +239,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
   // USFEM stabilization is default. No switch here at the moment.
 
   /*----------------------------------------- declaration of variables ---*/
-  vector<double> 		funct(iel);
+  Epetra_SerialDenseVector  funct(iel);
   Epetra_SerialDenseMatrix 	deriv(2,iel);
   Epetra_SerialDenseMatrix 	deriv2(3,iel);
   static Epetra_SerialDenseMatrix 	xjm(2,2);
@@ -254,42 +256,34 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
   double         		hk;         /* element length for calculation of tau  */
   double         		vel_norm, pe, re, xi1, xi2, xi;
   vector<double>         	velino(2); /* normed velocity at element centre */
-  double         		det;
-  FLUID_DATA            	data;
-  double         		e1, e2;
-  double         		facr=0.0, facs=0.0;
   double         		mk=0.0;
   static vector<double>     		velint(2);
   static vector<double>               tau(3); // stab parameters
 
   /*------------------------------------------------------- initialise ---*/
-  // gaussian points
-  f2_integration_points(data);
-
-  /*---------------------- shape functions and derivs at element center --*/
-  switch(iel)
+    // use one point gauss rule to calculate tau at element center
+  GaussRule2D integrationrule_stabili;
+  switch(distype)
   {
-  case 4: case 8: case 9:   /* --> quad - element */
-    e1   = data.qxg [0][0];
-    facr = data.qwgt[0][0];
-    e2   = data.qxg [0][0];
-    facs = data.qwgt[0][0];
-
-    f2_shape_function(funct,&deriv,NULL,e1,e2,iel); //wa1 as dummy for not wanted second derivatives
-    break;
-  case 3: case 6:   /* --> tri - element */
-    e1   = data.txgr[0][0];
-    e2   = data.txgs[0][0];
-
-    facr = data.twgt[0][0];
-    facs = ONE;
-
-    f2_shape_function(funct,&deriv,NULL,e1,e2,iel); //wa1 as dummy for not wanted second derivatives
-    break;
-  default:
-    dserror("type unknown!\n");
-  } /*end switch(iel) */
-
+  case quad4: case quad8: case quad9:
+      integrationrule_stabili = intrule_quad_1point;
+      break;
+  case tri3: case tri6:
+      integrationrule_stabili = intrule_tri_1point;
+      break;
+  default: 
+      dserror("invalid discretization type");
+  }
+  // gaussian points
+  const IntegrationPoints2D  intpoints_tau = getIntegrationPoints2D(integrationrule_stabili);
+  
+  // shape functions and derivs at element center
+  const double e1    = intpoints_tau.qxg[0][0];
+  const double e2    = intpoints_tau.qxg[0][1];
+  // shape functions and their derivatives
+  DRT::Utils::shape_function_2D(funct,e1,e2,distype);
+  DRT::Utils::shape_function_2D_deriv1(deriv,e1,e2,distype);
+  
 /*------------------------------- get element type constant for tau ---*/
   switch(iel)
   {
@@ -314,7 +308,8 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
     }
   } //end loop over i
 
-/*------------------------------ get Jacobian matrix and determinant ---*/
+  // get Jacobian matrix and determinant
+  double  det;
   f2_jaco(xyze,deriv,xjm,&det,iel);
 
 /*----------------------------------------------- get element length ---*/
@@ -407,81 +402,41 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
 
 // integration loop for one Fluid2 element using USFEM
 
-  int       intc=0;      /* "integration case" for tri for further infos
-                            see f2_inpele.c and f2_intg.c                 */
-  int       nir=0;       /* number of integration nodesin r direction     */
-  int       nis=0;       /* number of integration nodesin s direction     */
-  int       ihoel=0;     /* flag for higher order elements                 */
-  int       icode=2;     /* flag for eveluation of shape functions         */
-  double    fac;         /* total integration factor */
   double    press;
   static vector<double>    gridvelint(2); /* grid velocity                       */
   static vector<double>    gradp(2);      /* pressure gradient at integration point         */
 
-  switch (iel)
-  {
-  case 4: case 8: case 9:  /* --> quad - element */
-    icode   = 3;
-    ihoel   = 1;
-    /* initialise integration */
-    nir = ngp_[0];
-    nis = ngp_[1];
-    break;
-  case 6: /* --> tri - element */
-    icode   = 3;
-    ihoel   = 1;
-    /* do NOT break at this point!!! */
-  case 3:
-    /* initialise integration */
-    nir  = ngp_[0];
-    nis  = 1;
-    intc = ngp_[1];
-    break;
-  default:
-    dserror("typ unknown!");
-  } // end switch (iel) //
+  // flag for higher order elements
+  const bool higher_order_ele = is_higher_order_element(distype);
+
+  // gaussian points
+  const GaussRule2D gaussrule = getOptimalGaussrule(distype);
+  const IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
 
 
-/*----------------------------------------------------------------------*
-  |               start loop over integration points                     |
-  *----------------------------------------------------------------------*/
-  for (int lr=0;lr<nir;lr++)
+  // integration loops
+  for (int iquad=0;iquad<intpoints.nquad;iquad++)
   {
-    for (int ls=0;ls<nis;ls++)
-    {
-/*------------- get values of  shape functions and their derivatives ---*/
-      switch(iel)
+      const double e1 = intpoints.qxg[iquad][0];
+      const double e2 = intpoints.qxg[iquad][1];
+
+      // shape functions and their derivatives
+      shape_function_2D(funct,e1,e2,distype);
+      shape_function_2D_deriv1(deriv,e1,e2,distype);
+      if (higher_order_ele)
       {
-      case 4: case 8: case 9:   /* --> quad - element */
-        e1   = data.qxg [lr][nir-1];
-        facr = data.qwgt[lr][nir-1];
-        e2   = data.qxg [ls][nis-1];
-        facs = data.qwgt[ls][nis-1];
-        f2_shape_function(funct,&deriv,&deriv2,e1,e2,iel);
-        break;
-      case 3: case 6:   /* --> tri - element */
-        e1   = data.txgr[lr][intc];
-        facr = data.twgt[lr][intc];
-        e2   = data.txgs[lr][intc];
-        facs = ONE;
-        f2_shape_function(funct,&deriv,&deriv2,e1,e2,iel);
-        break;
-      default:
-        facr = facs = 0.0;
-        e1 = e2 = 0.0;
-        dserror("typ unknown!");
-      } /* end switch (iel) */
-
+         shape_function_2D_deriv2(deriv2,e1,e2,distype);
+      }
       /*----------------------------------------- compute Jacobian matrix */
 
       f2_jaco(xyze,deriv,xjm,&det,iel);
-      fac = facr*facs*det;
+      const double fac = intpoints.qwgt[iquad]*det;
 
       /*---------------------------------------- compute global derivates */
       f2_gder(derxy,deriv,xjm,det,iel);
 
       /*--------------------------------- compute second global derivative */
-      if (ihoel!=0)
+      if (higher_order_ele)
       {
         f2_gder2(xyze,xjm,derxy,derxy2,deriv2,iel);
 
@@ -585,396 +540,11 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
                              fac,visc,iel);
 
 
-    } /* end of loop over integration points ls */
-  } /* end of loop over integration points lr */
+  } // end of loop over integration points
 
 
   return;
 } // DRT::Elements::Fluid2::f2_sys_mat
-
-
-
-/*----------------------------------------------------------------------*
- |  evaluate the element integration points (private)        gammi 03/07|
- *----------------------------------------------------------------------*/
-void DRT::Elements::Fluid2::f2_integration_points(struct _FLUID_DATA& data)
-{
-  const DOUBLE Q12 = ONE/TWO;
-  const DOUBLE Q13 = ONE/THREE;
-  const DOUBLE Q16 = ONE/SIX;
-  const DOUBLE Q23 = TWO/THREE;
-
-/*----------------------------------------------------------------------*/
-  /* inintialise triX arrays */
-  for (int i=0; i<MAXTINTP; i++) /* loop over all integration points    */
-  {
-      for (int k=0; k<MAXTINTC; k++) /* loop integration cases          */
-      {
-	  /* set coordinates (r,s) coordinates of integration point     */
-	  data.txgr[i][k] = 0.0;
-	  data.txgs[i][k] = 0.0;
-
-	  /* innitialise the vector of gaussweights */
-	  data.twgt[i][k] = 0.0;
-      }
-  }
-  /* inintialise quadX arrays */
-  for (int i=0; i<MAXQINTP; i++) /* loop over integration points       */
-  {
-      for (int k=0; k<MAXQINTC; k++) /* loop integration cases         */
-      {
-	  /* set one coordinate of integration points --- the rest is
-	   * 'symmetric'                                               */
-	  data.qxg [i][k] = 0.0;
-
-	  /* innitialise the vector of gaussweights */
-	  data.qwgt[i][k] = 0.0;
-      }
-  }
-
-/*----------------------------------------------------------------------*
- |     INTEGRATION PARAMETERS FOR    R E C T A N G U L A R   ELEMENTS   |
- |     GAUSS SAMPLING POINTS  AT     R/S-COORDINATES     RESPECTIVELY   |
- |                            AND    CORRESPONDING WEIGHTING  FACTORS   |
- |    data.qxg[i][j]                                                    |
- |   data.qwgt[i][j]:  i+1 - actual number of gausspoint                |
- |                     j+1 - total number of gausspoints                |
- *----------------------------------------------------------------------*/
-/* coordinates for two gauss points */
-      data.qxg[0][1]  =  -0.5773502691896;
-      data.qxg[1][1]  =  -data.qxg[0][1] ;
-/* coordinates for three gauss points */
-      data.qxg[0][2]  =  -0.7745966692415;
-      data.qxg[2][2]  =  -data.qxg[0][2] ;
-/* coordinates for four gauss points */
-      data.qxg[0][3]  =  -0.8611363115941;
-      data.qxg[1][3]  =  -0.3399810435849;
-      data.qxg[2][3]  =  -data.qxg[1][3] ;
-      data.qxg[3][3]  =  -data.qxg[0][3] ;
-/* coordinates for five gauss points */
-      data.qxg[0][4]  =  -0.9061798459387;
-      data.qxg[1][4]  =  -0.5384693101057;
-      data.qxg[3][4]  =  -data.qxg[1][4] ;
-      data.qxg[4][4]  =  -data.qxg[0][4] ;
-/* coordinates for six gauss points */
-      data.qxg[0][5]  =  -0.9324695142032;
-      data.qxg[1][5]  =  -0.6612093864663;
-      data.qxg[2][5]  =  -0.2386191860832;
-      data.qxg[3][5]  =  -data.qxg[2][5] ;
-      data.qxg[4][5]  =  -data.qxg[1][5] ;
-      data.qxg[5][5]  =  -data.qxg[0][5] ;
-
-/* weights for one gauss points */
-      data.qwgt[0][0] =  TWO             ;
-/* weights for two gauss points */
-      data.qwgt[0][1] =  ONE             ;
-      data.qwgt[1][1] =  ONE             ;
-/* weights for three gauss points */
-      data.qwgt[0][2] =  0.5555555555556 ;
-      data.qwgt[1][2] =  0.8888888888889 ;
-      data.qwgt[2][2] =  data.qwgt[0][2] ;
-/* weights for four gauss points */
-      data.qwgt[0][3] =  0.3478548451375 ;
-      data.qwgt[1][3] =  0.6521451548625 ;
-      data.qwgt[2][3] =  data.qwgt[1][3] ;
-      data.qwgt[3][3] =  data.qwgt[0][3] ;
-/* weights for five gauss points */
-      data.qwgt[0][4] =  0.2369268850562 ;
-      data.qwgt[1][4] =  0.4786286704994 ;
-      data.qwgt[2][4] =  0.5688888888889 ;
-      data.qwgt[3][4] =  data.qwgt[1][4] ;
-      data.qwgt[4][4] =  data.qwgt[0][4] ;
-/* weights for six gauss points */
-      data.qwgt[0][5] =  0.1713244923792 ;
-      data.qwgt[1][5] =  0.3607615730481 ;
-      data.qwgt[2][5] =  0.4679139345727 ;
-      data.qwgt[3][5] =  data.qwgt[2][5] ;
-      data.qwgt[4][5] =  data.qwgt[1][5] ;
-      data.qwgt[5][5] =  data.qwgt[0][5] ;
-
-
-/*----------------------------------------------------------------------*
- |     INTEGRATION PARAMETERS FOR    T R I A N G U L A R     ELEMENTS   |
- |     GAUSS SAMPLING POINTS  AT     R/S-COORDINATES     RESPECTIVELY   |
- |                            AND    CORRESPONDING WEIGHTING  FACTORS   |
- |   data.txgr[i][j]                                                    |
- |  data.twgts[i][j]:  i+1 - actual number of gausspoint                |
- |                     j+1 - number for integration case (from input)   |
- *----------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------*
- |    GAUSS INTEGRATION         1 SAMPLING POINT, DEG.OF PRECISION 1    |
- |                              CASE 0                                  |
- *----------------------------------------------------------------------*/
-      data.txgr[0][0]    =  Q13 ;
-      data.txgs[0][0]    =  Q13 ;
-
-      data.twgt[0][0]    =  Q12 ;
-/*----------------------------------------------------------------------*
- |    GAUSS INTEGRATION        3 SAMPLING POINTS, DEG.OF PRECISION 2    |
- |                             CASE 1                                   |
- *----------------------------------------------------------------------*/
-      data.txgr[0][1]    =  Q12  ;
-      data.txgr[1][1]    =  Q12  ;
-      data.txgr[2][1]    =  0.0 ;
-      data.txgs[0][1]    =  0.0 ;
-      data.txgs[1][1]    =  Q12  ;
-      data.txgs[2][1]    =  Q12  ;
-
-      data.twgt[0][1]    =  Q16  ;
-      data.twgt[1][1]    =  Q16  ;
-      data.twgt[2][1]    =  Q16  ;
-/*----------------------------------------------------------------------*
- |    ALT.GAUSS INTEGRATION    3 SAMPLING POINTS, DEG.OF PRECISION 2    |
- |                             CASE 2                                   |
- *----------------------------------------------------------------------*/
-      data.txgr[0][2]    =  Q16  ;
-      data.txgr[1][2]    =  Q23  ;
-      data.txgr[2][2]    =  Q16  ;
-      data.txgs[0][2]    =  Q16  ;
-      data.txgs[1][2]    =  Q16  ;
-      data.txgs[2][2]    =  Q23  ;
-
-      data.twgt[0][2]    =  Q16  ;
-      data.twgt[1][2]    =  Q16  ;
-      data.twgt[2][2]    =  Q16  ;
-/*----------------------------------------------------------------------*
- |    GAUSS INTEGRATION        4 SAMPLING POINTS, DEG.OF PRECISION 3    |
- |                             CASE 3                                   |
- *----------------------------------------------------------------------*/
-      data.txgr[0][3]    =  0.2                ;
-      data.txgr[1][3]    =  0.6                ;
-      data.txgr[2][3]    =  0.2                ;
-      data.txgr[3][3]    =  Q13                ;
-      data.txgs[0][3]    =  0.2                ;
-      data.txgs[1][3]    =  0.2                ;
-      data.txgs[2][3]    =  0.6                ;
-      data.txgs[3][3]    =  Q13                ;
-
-      data.twgt[0][3]    =  0.2604166666667    ;
-      data.twgt[1][3]    =  data.twgt[0][2]    ;
-      data.twgt[2][3]    =  data.twgt[0][2]    ;
-      data.twgt[3][3]    = -0.28125            ;
-/*----------------------------------------------------------------------*
- |    GAUSS INTEGRATION        6 SAMPLING POINTS, DEG.OF PRECISION 4    |
- |                             CASE 4                                   |
- *----------------------------------------------------------------------*/
-      data.txgr[0][4]    =  0.0915762135098	;
-      data.txgr[1][4]    =  0.8168475729805	;
-      data.txgr[2][4]    =  0.0915762135098 	;
-      data.txgr[3][4]    =  0.4459484909160	;
-      data.txgr[4][4]    =  0.4459484909160 	;
-      data.txgr[5][4]    =  0.1081030181681	;
-      data.txgs[0][4]    =  0.0915762135098 	;
-      data.txgs[1][4]    =  0.0915762135098 	;
-      data.txgs[2][4]    =  0.8168475729805 	;
-      data.txgs[3][4]    =  0.1081030181681 	;
-      data.txgs[4][4]    =  0.4459484909160 	;
-      data.txgs[5][4]    =  0.4459484909160 	;
-
-      data.twgt[0][4]   =  0.0549758718277	;
-      data.twgt[1][4]   =  0.0549758718277	;
-      data.twgt[2][4]   =  0.0549758718277	;
-      data.twgt[3][4]   =  0.1116907948390	;
-      data.twgt[4][4]   =  0.1116907948390	;
-      data.twgt[5][4]   =  0.1116907948390	;
-/*----------------------------------------------------------------------*
- |    ALT.GAUSS INTEGRATION    6 SAMPLING POINTS, DEG.OF PRECISION 3    |
- |                             CASE 5                                   |
- *----------------------------------------------------------------------*/
-      data.txgr[0][5]    =  0.1090390090729	;
-      data.txgr[1][5]    =  0.2319333685530	;
-      data.txgr[2][5]    =  0.6590276223741	;
-      data.txgr[3][5]    =  0.0915762135098 	;
-      data.txgr[4][5]    =  0.8168475729805 	;
-      data.txgr[5][5]    =  0.0915762135098 	;
-      data.txgs[0][5]    =  0.8168475729805 	;
-      data.txgs[1][5]    =  0.0915762135098 	;
-      data.txgs[2][5]    =  0.0915762135098 	;
-      data.txgs[3][5]    =  0.8168475729805 	;
-      data.txgs[4][5]    =  0.0915762135098 	;
-      data.txgs[5][5]    =  0.0915762135098 	;
-
-
-
-      data.twgt[0][5]   =  0.0833333333333	;
-      data.twgt[1][5]   =  0.0833333333333	;
-      data.twgt[2][5]   =  0.0833333333333	;
-      data.twgt[3][5]   =  0.0833333333333	;
-      data.twgt[4][5]   =  0.0833333333333	;
-      data.twgt[5][5]   =  0.0833333333333	;
-/*----------------------------------------------------------------------*
- |    GAUSS INTEGRATION        7 SAMPLING POINTS, DEG.OF PRECISION 5    |
- |                             CASE 6                                   |
- *----------------------------------------------------------------------*/
-      data.txgr[0][6]    =  0.1012865073235 ;
-      data.txgr[1][6]    =  0.4701420641051 ;
-      data.txgr[2][6]    =  0.7974269853531 ;
-      data.txgr[3][6]    =  data.txgr[1][4]       ;
-      data.txgr[4][6]    =  data.txgr[0][4]       ;
-      data.txgr[5][6]    =  0.0597158717898 ;
-      data.txgr[6][6]    =  Q13	      ;
-      data.txgs[0][6]    =  data.txgr[0][4]       ;
-      data.txgs[1][6]    =  data.txgr[5][4]       ;
-      data.txgs[2][6]    =  data.txgr[0][4]       ;
-      data.txgs[3][6]    =  data.txgr[1][4]       ;
-      data.txgs[4][6]    =  data.txgr[2][4]       ;
-      data.txgs[5][6]    =  data.txgr[1][4]       ;
-      data.txgs[6][6]    =  Q13	      ;
-
-      data.twgt[0][6]    =  0.0629695902724 ;
-      data.twgt[1][6]    =  0.0661970763943 ;
-      data.twgt[2][6]    =  data.twgt[0][4]      ;
-      data.twgt[3][6]    =  data.twgt[1][4]      ;
-      data.twgt[4][6]    =  data.twgt[0][4]      ;
-      data.twgt[5][6]    =  data.twgt[1][4]      ;
-      data.twgt[6][6]    =  0.1125	      ;
-/*----------------------------------------------------------------------*
- |    ALT.GAUSS INTEGRATION    7 SAMPLING POINTS, DEG.OF PRECISION 4    |
- |                             CASE 7                                   |
- *----------------------------------------------------------------------*/
-      data.txgr[0][7]    =  0.2379323664724 ;
-      data.txgr[1][7]    =  0.7367124989684 ;
-      data.txgr[2][7]    =  data.txgr[1][4] ;
-      data.txgr[3][7]    =  data.txgr[0][4] ;
-      data.txgr[4][7]    =  0.0253551345591 ;
-      data.txgr[5][7]    =  data.txgr[4][4] ;
-      data.txgr[6][7]    =  Q13	            ;
-      data.txgs[0][7]    =  data.txgr[4][4] ;
-      data.txgs[1][7]    =  data.txgr[4][4] ;
-      data.txgs[2][7]    =  data.txgr[0][4] ;
-      data.txgs[3][7]    =  data.txgr[1][4] ;
-      data.txgs[4][7]    =  data.txgr[1][4] ;
-      data.txgs[5][7]    =  data.txgr[0][4] ;
-      data.txgs[6][7]    =  Q13	            ;
-
-      data.twgt[0][7]    =  0.0520833333333 ;
-      data.twgt[1][7]    =  data.twgt[0][4] ;
-      data.twgt[2][7]    =  data.twgt[0][4] ;
-      data.twgt[3][7]    =  data.twgt[0][4] ;
-      data.twgt[4][7]    =  data.twgt[0][4] ;
-      data.twgt[5][7]    =  data.twgt[0][4] ;
-      data.twgt[6][7]    =  0.1875	    ;
-/*----------------------------------------------------------------------*
- |    GAUSS INTEGRATION        9 SAMPLING POINTS, DEG.OF PRECISION 5    |
- |                             CASE 8                                   |
- *----------------------------------------------------------------------*/
-      data.txgr[0][8]    =  0.1654099273898     ;
-      data.txgr[1][8]    =  0.4375252483834     ;
-      data.txgr[2][8]    =  0.7971126518601     ;
-      data.txgr[3][8]    =  data.txgr[2][5]     ;
-      data.txgr[4][8]    =  data.txgr[1][5]     ;
-      data.txgr[5][8]    =  data.txgr[0][5]     ;
-      data.txgr[6][8]    =  0.0374774207501     ;
-      data.txgr[7][8]    =  0.1249495032332     ;
-      data.txgr[8][8]    =  data.txgr[6][5]     ;
-      data.txgs[0][8]    =  data.txgr[6][5]     ;
-      data.txgs[1][8]    =  data.txgr[7][5]     ;
-      data.txgs[2][8]    =  data.txgr[6][5]     ;
-      data.txgs[3][8]    =  data.txgr[0][5]     ;
-      data.txgs[4][8]    =  data.txgr[1][5]     ;
-      data.txgs[5][8]    =  data.txgr[2][5]     ;
-      data.txgs[6][8]    =  data.txgr[2][5]     ;
-      data.txgs[7][8]    =  data.txgr[1][5]     ;
-      data.txgs[8][8]    =  data.txgr[0][5]     ;
-
-      data.twgt[0][8]    =  0.0318457071431     ;
-      data.twgt[1][8]    =  0.1029752523804     ;
-      data.twgt[2][8]    =  data.twgt[0][5]     ;
-      data.twgt[3][8]    =  data.twgt[0][5]     ;
-      data.twgt[4][8]    =  data.twgt[1][5]     ;
-      data.twgt[5][8]    =  data.twgt[0][5]     ;
-      data.twgt[6][8]    =  data.twgt[0][5]     ;
-      data.twgt[7][8]    =  data.twgt[1][5]     ;
-      data.twgt[8][8]    =  data.twgt[0][5]     ;
- /*----------------------------------------------------------------------*
- |    GAUSS INTEGRATION       12 SAMPLING POINTS, DEG.OF PRECISION 6    |
- |                            CASE 9                                    |
- *----------------------------------------------------------------------*/
-      data.txgr[ 0][9]   =  0.0630890144915     ;
-      data.txgr[ 1][9]   =  0.3103524510338     ;
-      data.txgr[ 2][9]   =  0.6365024991214     ;
-      data.txgr[ 3][9]   =  0.8738219710170     ;
-      data.txgr[ 4][9]   =  data.txgr[ 2][6]    ;
-      data.txgr[ 5][9]   =  data.txgr[ 1][6]    ;
-      data.txgr[ 6][9]   =  data.txgr[ 0][6]    ;
-      data.txgr[ 7][9]   =  0.0531450498448     ;
-      data.txgr[ 8][9]   =  data.txgr[ 7][6]    ;
-      data.txgr[ 9][9]   =  0.2492867451709     ;
-      data.txgr[10][9]   =  0.5014265096582     ;
-      data.txgr[11][9]   =  data.txgr[ 9][6]    ;
-      data.txgs[ 0][9]   =  data.txgr[ 0][6]    ;
-      data.txgs[ 1][9]   =  data.txgr[ 7][6]    ;
-      data.txgs[ 2][9]   =  data.txgr[ 7][6]    ;
-      data.txgs[ 3][9]   =  data.txgr[ 0][6]    ;
-      data.txgs[ 4][9]   =  data.txgr[ 1][6]    ;
-      data.txgs[ 5][9]   =  data.txgr[ 2][6]    ;
-      data.txgs[ 6][9]   =  data.txgr[ 3][6]    ;
-      data.txgs[ 7][9]   =  data.txgr[ 2][6]    ;
-      data.txgs[ 8][9]   =  data.txgr[ 1][6]    ;
-      data.txgs[ 9][9]   =  data.txgr[ 9][6]    ;
-      data.txgs[10][9]   =  data.txgr[ 9][6]    ;
-      data.txgs[11][9]   =  data.txgr[10][6]    ;
-      data.twgt[ 0][9]   =  0.0254224531851     ;
-      data.twgt[ 1][9]   =  0.0414255378092     ;
-      data.twgt[ 2][9]   =  data.twgt[ 1][6]    ;
-      data.twgt[ 3][9]   =  data.twgt[ 0][6]    ;
-      data.twgt[ 4][9]   =  data.twgt[ 1][6]    ;
-      data.twgt[ 5][9]   =  data.twgt[ 1][6]    ;
-      data.twgt[ 6][9]   =  data.twgt[ 0][6]    ;
-      data.twgt[ 7][9]   =  data.twgt[ 1][6]    ;
-      data.twgt[ 8][9]   =  data.twgt[ 1][6]    ;
-      data.twgt[ 9][9]   =  0.0583931378632     ;
-      data.twgt[10][9]   =  data.twgt[ 9][6]    ;
-      data.twgt[11][6]   =  data.twgt[ 9][6]    ;
-/*----------------------------------------------------------------------*
- |    GAUSS INTEGRATION       13 SAMPLING POINTS, DEG.OF PRECISION 7    |
- |                            CASE 10                                   |
- *----------------------------------------------------------------------*/
-      data.txgr[ 0][10]  =  0.0651301029022     ;
-      data.txgr[ 1][10]  =  0.3128654960049     ;
-      data.txgr[ 2][10]  =  0.6384441885698     ;
-      data.txgr[ 3][10]  =  0.8697397941956     ;
-      data.txgr[ 4][10]  =  data.txgr[ 2][7]    ;
-      data.txgr[ 5][10]  =  data.txgr[ 1][7]    ;
-      data.txgr[ 6][10]  =  data.txgr[ 0][7]    ;
-      data.txgr[ 7][10]  =  0.0486903154253     ;
-      data.txgr[ 8][10]  =  data.txgr[ 7][7]    ;
-      data.txgr[ 9][10]  =  0.2603459660790     ;
-      data.txgr[10][10]  =  0.4793080678419     ;
-      data.txgr[11][10]  =  data.txgr[ 9][7]    ;
-      data.txgr[12][10]  =  Q13                 ;
-      data.txgs[ 0][10]  =  data.txgr[ 0][7]    ;
-      data.txgs[ 1][10]  =  data.txgr[ 7][7]    ;
-      data.txgs[ 2][10]  =  data.txgr[ 7][7]    ;
-      data.txgs[ 3][10]  =  data.txgr[ 0][7]    ;
-      data.txgs[ 4][10]  =  data.txgr[ 1][7]    ;
-      data.txgs[ 5][10]  =  data.txgr[ 2][7]    ;
-      data.txgs[ 6][10]  =  data.txgr[ 3][7]    ;
-      data.txgs[ 7][10]  =  data.txgr[ 2][7]    ;
-      data.txgs[ 8][10]  =  data.txgr[ 1][7]    ;
-      data.txgs[ 9][10]  =  data.txgr[ 9][7]    ;
-      data.txgs[10][10]  =  data.txgr[ 9][7]    ;
-      data.txgs[11][10]  =  data.txgr[10][7]    ;
-      data.txgs[12][10]  =  Q13                 ;
-      data.twgt[ 0][10]  =  0.0266736178044     ;
-      data.twgt[ 1][10]  =  0.0385568804451     ;
-      data.twgt[ 2][10]  =  data.twgt[ 1][7]    ;
-      data.twgt[ 3][10]  =  data.twgt[ 0][7]    ;
-      data.twgt[ 4][10]  =  data.twgt[ 1][7]    ;
-      data.twgt[ 5][10]  =  data.twgt[ 1][7]    ;
-      data.twgt[ 6][10]  =  data.twgt[ 0][7]    ;
-      data.twgt[ 7][10]  =  data.twgt[ 1][7]    ;
-      data.twgt[ 8][10]  =  data.twgt[ 1][7]    ;
-      data.twgt[ 9][10]  =  0.0878076287166     ;
-      data.twgt[10][10]  =  data.twgt[ 9][7]    ;
-      data.twgt[11][10]  =  data.twgt[ 9][7]    ;
-      data.twgt[12][10]  = -0.0747850222338     ;
-
-  return;
-} //end of DRT::Elements::Fluid2::f2_integration_points
-
-
 
 
 /*----------------------------------------------------------------------*
@@ -1029,432 +599,6 @@ void DRT::Elements::Fluid2::f2_jaco(const Epetra_SerialDenseMatrix& xyze,
 } //end of DRT::Elements::Fluid2::f2_jaco
 
 
-
-
-
-/*----------------------------------------------------------------------*
-  shape functions and natural derivatives for quadrilaterals (private)
-                                                             gammi 04/07
-
-In this routine the shape functions (always) and their natural first
-(icode==2) and second derivatives (icode==3) with respect to r/s are
-evaluated for  R E C T A N G L E S or T R I A N G L E S
-
-Numbering of the nodes:
-
-
-                    ^ s
-                    |
-              1     |4    0
-              o-----o-----o
-              |           |
-              |           |7
-            5 o     o     o -----> r
-              |     8     |
-              |           |
-              o-----o-----o
-              2     6     3
-
-
-
-
-
-                    ^ s
-                    |
-                    |
-                   2|
-                    o
-                    |\
-                    | \
-                   5o  o4
-                    |   \
-                    |    \
-                    o--o--o -----> r
-	           0   3   1
-
-
-
-
- \param   funct    vector<double>&             (o)    shape functions
- \param   deriv    Epetra_SerialDenseMatrix&   (o)    1st natural deriv.
-                                                      of shape funct.
- \param   deriv2   Epetra_SerialDenseMatrix&   (o)    2nd natural deriv.
-                                                      of shape funct.
- \param   r        DOUBLE&                     (i)    coordinate
- \param   s        DOUBLE&                     (i)    coordinate
- \param   iel      const int&                  (i)    number of nodes
- \param   icode    int         	               (i)    flag on (higher
-                                                      order) derivatives
-
- *----------------------------------------------------------------------*/
-
-void DRT::Elements::Fluid2::f2_shape_function(
-               vector<double>&    		funct,
-               Epetra_SerialDenseMatrix* 	pderiv,
-               Epetra_SerialDenseMatrix* 	pderiv2,
-               const double&      r,
-               const double&      s,
-               const int&         iel
-            )
-{
-  const DOUBLE Q12 = ONE/TWO;
-  const DOUBLE Q14 = ONE/FOUR;
-
-/*------------------------------- selection of polynomial interpolation */
-  switch (iel)
-  {
-    case 4: /* LINEAR shape functions for quad4 and their natural
-	     *                                          derivatives ----*/
-    {
-      /*--------------------------------------------- form basic values */
-	double rp=ONE+r;
-	double rm=ONE-r;
-	double sp=ONE+s;
-	double sm=ONE-s;
-
-	funct[0]=Q14*rp*sp;
-	funct[1]=Q14*rm*sp;
-	funct[2]=Q14*rm*sm;
-	funct[3]=Q14*rp*sm;
-
-	if (pderiv) /* --> first derivative evaluation */
-	{
-          Epetra_SerialDenseMatrix& deriv = *pderiv;
-
-	    deriv(0,0)= Q14*sp;
-	    deriv(1,0)= Q14*rp;
-
-	    deriv(0,1)=-Q14*sp;
-	    deriv(1,1)= Q14*rm;
-
-	    deriv(0,2)=-Q14*sm;
-	    deriv(1,2)=-Q14*rm;
-
-	    deriv(0,3)= Q14*sm;
-	    deriv(1,3)=-Q14*rp;
-	} /* endif (icode>1) */
-
-	if (pderiv2) /* --> second derivative evaluation */
-	{
-          Epetra_SerialDenseMatrix& deriv2 = *pderiv2;
-
-	    deriv2(0,0)= 0.0;
-	    deriv2(1,0)= 0.0;
-	    deriv2(2,0)= Q14;
-
-	    deriv2(0,1)= 0.0;
-	    deriv2(1,1)= 0.0;
-	    deriv2(2,1)=-Q14;
-
-	    deriv2(0,2)= 0.0;
-	    deriv2(1,2)= 0.0;
-	    deriv2(2,2)= Q14;
-
-	    deriv2(0,3)= 0.0;
-	    deriv2(1,3)=0.0;
-	    deriv2(2,3)=-Q14;
-	} /* endif (icode==3) */
-	break;
-    }
-    case 8: /* QUADRATIC shape functions for quadrilaterals without
-  	       central node and their natural derivatives (serendipity) */
-    {
-	double rp=ONE+r;
-	double rm=ONE-r;
-	double sp=ONE+s;
-	double sm=ONE-s;
-	double r2=ONE-r*r;
-	double s2=ONE-s*s;
-
-	funct[4]=Q12*r2*sp;
-	funct[5]=Q12*rm*s2;
-	funct[6]=Q12*r2*sm;
-	funct[7]=Q12*rp*s2;
-	funct[0]=Q14*rp*sp-Q12*(funct[4]+funct[7]);
-	funct[1]=Q14*rm*sp-Q12*(funct[4]+funct[5]);
-	funct[2]=Q14*rm*sm-Q12*(funct[5]+funct[6]);
-	funct[3]=Q14*rp*sm-Q12*(funct[6]+funct[7]);
-
-	if(pderiv) /* --> first derivative evaluation */
-	{
-          Epetra_SerialDenseMatrix& deriv = *pderiv;
-	    deriv(0,0)= Q14*sp;
-	    deriv(1,0)= Q14*rp;
-
-	    deriv(0,1)=-Q14*sp;
-	    deriv(1,1)= Q14*rm;
-
-	    deriv(0,2)=-Q14*sm;
-	    deriv(1,2)=-Q14*rm;
-
-	    deriv(0,3)= Q14*sm;
-	    deriv(1,3)=-Q14*rp;
-
-	    deriv(0,4)=-ONE*r*sp;
-	    deriv(1,4)= Q12*r2;
-
-	    deriv(0,5)=-Q12*  s2;
-	    deriv(1,5)=-ONE*rm*s;
-
-	    deriv(0,6)=-ONE*r*sm;
-	    deriv(1,6)=-Q12*r2;
-
-	    deriv(0,7)= Q12*  s2;
-	    deriv(1,7)=-ONE*rp*s;
-
-	    deriv(0,0)-= Q12*(deriv(0,4)+deriv(0,7));
-	    deriv(1,0)-= Q12*(deriv(1,4)+deriv(1,7));
-
-	    for(int i=1;i<4;i++)
-	    {
-		int ii=i+3;
-		deriv(0,i) -= Q12*(deriv(0,ii)+deriv(0,ii+1));
-		deriv(1,i) -= Q12*(deriv(1,ii)+deriv(1,ii+1));
-	    } /* end loop over i */
-	} /* endif (icode>1) */
-
-	if (pderiv2) /* --> second derivative evaluation */
-	{
-          Epetra_SerialDenseMatrix& deriv2 = *pderiv2;
-	    deriv2(0,0)= 0.0;
-	    deriv2(1,0)= 0.0;
-	    deriv2(2,0)= Q14;
-
-	    deriv2(0,1)= 0.0;
-	    deriv2(1,1)= 0.0;
-	    deriv2(2,1)=-Q14;
-
-	    deriv2(0,2)= 0.0;
-	    deriv2(1,2)= 0.0;
-	    deriv2(2,2)= Q14;
-
-	    deriv2(0,3)= 0.0;
-	    deriv2(1,3)= 0.0;
-	    deriv2(2,3)=-Q14;
-
-	    deriv2(0,4)=-(ONE+s);
-	    deriv2(1,4)= 0.0;
-	    deriv2(2,4)=-r;
-
-	    deriv2(0,5)= 0.0;
-	    deriv2(1,5)=-(ONE-r);
-	    deriv2(2,5)= s;
-
-	    deriv2(0,6)=-(ONE-s);
-	    deriv2(1,6)= 0.0;
-	    deriv2(2,6)= r;
-
-	    deriv2(0,7)= 0.0;
-	    deriv2(1,7)=-(ONE+r);
-	    deriv2(2,7)=-s;
-
-	    deriv2(0,0) -= Q12*(deriv2(0,4)+deriv2(0,7));
-	    deriv2(1,0) -= Q12*(deriv2(1,4)+deriv2(1,7));
-	    deriv2(2,0) -= Q12*(deriv2(2,4)+deriv2(2,7));
-
-	    for(int i=1;i<4;i++)
-	    {
-		int ii=i+3;
-		deriv2(0,i) -= Q12*(deriv2(0,ii)+deriv2(0,ii+1));
-		deriv2(1,i) -= Q12*(deriv2(1,ii)+deriv2(1,ii+1));
-		deriv2(2,i) -= Q12*(deriv2(2,ii)+deriv2(2,ii+1));
-	    } /* end loop over i */
-	} /* endif (icode==3) */
-	break;
-    }
-    case 9: /* full QUADRATIC shape functions for quadrilaterals with
-	                     central node and their natural derivatives */
-    {
-/*--------------------------------------------------- form basic values */
-	double rp=ONE+r;
-	double rm=ONE-r;
-	double sp=ONE+s;
-	double sm=ONE-s;
-	double r2=ONE-r*r;
-	double s2=ONE-s*s;
-	double rh=Q12*r;
-	double sh=Q12*s;
-	double rs=rh*sh;
-	double rhp=r+Q12;
-	double rhm=r-Q12;
-	double shp=s+Q12;
-	double shm=s-Q12;
-
-	funct[0]= rs*rp*sp;
-	funct[1]=-rs*rm*sp;
-	funct[2]= rs*rm*sm;
-	funct[3]=-rs*rp*sm;
-	funct[4]= sh*sp*r2;
-	funct[5]=-rh*rm*s2;
-	funct[6]=-sh*sm*r2;
-	funct[7]= rh*rp*s2;
-	funct[8]= r2*s2;
-
-	if(pderiv) /* --> first derivative evaluation */
-	{
-          Epetra_SerialDenseMatrix& deriv = *pderiv;
-	    deriv(0,0)= rhp*sh*sp;
-	    deriv(1,0)= shp*rh*rp;
-
-	    deriv(0,1)= rhm*sh*sp;
-	    deriv(1,1)=-shp*rh*rm;
-
-	    deriv(0,2)=-rhm*sh*sm;
-	    deriv(1,2)=-shm*rh*rm;
-
-	    deriv(0,3)=-rhp*sh*sm;
-	    deriv(1,3)= shm*rh*rp;
-
-	    deriv(0,4)=-TWO*r*sh*sp;
-	    deriv(1,4)= shp*r2;
-
-	    deriv(0,5)= rhm*s2;
-	    deriv(1,5)= TWO*s*rh*rm;
-
-	    deriv(0,6)= TWO*r*sh*sm;
-	    deriv(1,6)= shm*r2;
-
-	    deriv(0,7)= rhp*s2;
-	    deriv(1,7)=-TWO*s*rh*rp;
-
-	    deriv(0,8)=-TWO*r*s2;
-	    deriv(1,8)=-TWO*s*r2;
-	} /* endif (icode>1) */
-
-	if (pderiv2) /* --> second derivative evaluation */
-	{
-          Epetra_SerialDenseMatrix& deriv2 = *pderiv2;
-	    deriv2(0,0)= sh*sp;
-	    deriv2(1,0)= rh*rp;
-	    deriv2(2,0)= shp*rhp;
-
-	    deriv2(0,1)= sh*sp;
-	    deriv2(1,1)=-rh*rm;
-	    deriv2(2,1)= shp*rhm;
-
-	    deriv2(0,2)=-sh*sm;
-	    deriv2(1,2)=-rh*rm;
-	    deriv2(2,2)= shm*rhm;
-
-	    deriv2(0,3)=-sh*sm;
-	    deriv2(1,3)= rh*rp;
-	    deriv2(2,3)= shm*rhp;
-
-	    deriv2(0,4)=-TWO*sh*sp;
-	    deriv2(1,4)= r2;
-	    deriv2(2,4)=-TWO*r*shp;
-
-	    deriv2(0,5)= s2;
-	    deriv2(1,5)= TWO*rh*rm;
-	    deriv2(2,5)=-TWO*s*rhm;
-
-	    deriv2(0,6)= TWO*sh*sm;
-	    deriv2(1,6)= r2;
-	    deriv2(2,6)=-TWO*r*shm;
-
-	    deriv2(0,7)= s2;
-	    deriv2(1,7)=-TWO*rh*rp;
-	    deriv2(2,7)=-TWO*s*rhp;
-
-	    deriv2(0,8)=-TWO*s2;
-	    deriv2(1,8)=-TWO*r2;
-	    deriv2(2,8)= TWO*s*TWO*r;
-	} /* endif (icode==3) */
-	break;
-    }
-    case 3: /* LINEAR shape functions for triangles and their natural
-	     *                                         derivatives -----*/
-    {
-        /*------------------------------------------- form basic values */
-	funct[0]=ONE-r-s;
-	funct[1]=r;
-	funct[2]=s;
-
-	if(pderiv) /* --> first derivative evaluation */
-	{
-          Epetra_SerialDenseMatrix& deriv = *pderiv;
-	    deriv(0,0)=-ONE;
-	    deriv(1,0)=-ONE;
-	    deriv(0,1)= ONE;
-	    deriv(1,1)=0.0;
-	    deriv(0,2)=0.0;
-	    deriv(1,2)= ONE;
-	} /* endif (icode>1) */
-	break;
-    }
-    case 6: /* QUADRATIC shape functions for triangles and their natural
-	     *                                             derivatives -*/
-    {
-        /*------------------------------------------- form basic values */
-	double rr=r*r;
-	double ss=s*s;
-	double rs=r*s;
-
-	funct[0]=(ONE-TWO*r-TWO*s)*(ONE-r-s);
-	funct[1]=TWO*rr-r;
-	funct[2]=TWO*ss-s;
-	funct[3]=FOUR*(r-rr-rs);
-	funct[4]=FOUR*rs;
-	funct[5]=FOUR*(s-rs-ss);
-
-	if(pderiv) /* --> first derivative evaluation */
-	{
-          Epetra_SerialDenseMatrix& deriv = *pderiv;
-	    deriv(0,0)=-THREE+FOUR*(r+s);
-	    deriv(1,0)= deriv(0,0);
-
-	    deriv(0,1)= FOUR*r-ONE;
-	    deriv(1,1)= 0.0;
-
-	    deriv(0,2)= 0.0;
-	    deriv(1,2)= FOUR*s-ONE;
-
-	    deriv(0,3)= FOUR*(ONE-TWO*r-s);
-	    deriv(1,3)=-FOUR*r;
-
-	    deriv(0,4)= FOUR*s;
-	    deriv(1,4)= FOUR*r;
-
-	    deriv(0,5)=-FOUR*s;
-	    deriv(1,5)= FOUR*(ONE-r-TWO*s);
-	} /* endif (icode>1) */
-
-	if(pderiv2) /* --> second derivative evaluation */
-	{
-          Epetra_SerialDenseMatrix& deriv2 = *pderiv2;
-	    deriv2(0,0)= FOUR;
-	    deriv2(1,0)= FOUR;
-	    deriv2(2,0)= FOUR;
-
-	    deriv2(0,1)= FOUR;
-	    deriv2(1,1)= 0.0;
-	    deriv2(2,1)= 0.0;
-
-	    deriv2(0,2)= 0.0;
-	    deriv2(1,2)= FOUR;
-	    deriv2(2,2)= 0.0;
-
-	    deriv2(0,3)=-EIGHT;
-	    deriv2(1,3)= 0.0;
-	    deriv2(2,3)=-FOUR;
-
-	    deriv2(0,4)= 0.0;
-	    deriv2(1,4)= 0.0;
-	    deriv2(2,4)= FOUR;
-
-	    deriv2(0,5)= 0.0;
-	    deriv2(1,5)=-EIGHT;
-	    deriv2(2,5)=-FOUR;
-	} /* endif (icode==3) */
-	break;
-    }
-    /*------------------------------------------------------------------*/
-    default:
-	dserror("distyp unknown\n");
-  } /* end switch(iel) */
-
-return;
-} // end of DRT:Elements:Fluid2:f2_shape_function
 
 
 
@@ -1834,11 +978,11 @@ void DRT::Elements::Fluid2::f2_calmat(
     Epetra_SerialDenseMatrix& vderxy,
     Epetra_SerialDenseMatrix& vderxy2,
     vector<double>&           gradp,
-    vector<double>&           funct,
+    Epetra_SerialDenseVector& funct,
     vector<double>&           tau,
     Epetra_SerialDenseMatrix& derxy,
     Epetra_SerialDenseMatrix& derxy2,
-    double&                   fac,
+    const double&                   fac,
     const double&             visc,
     const int&                iel,
     double                    timefac
@@ -1858,18 +1002,18 @@ void DRT::Elements::Fluid2::f2_calmat(
   static vector<double>            rhsint(2);   	    /* total right hand side terms at int.-point       */
 
 // stabilisation parameter
-  double tau_M  = tau[0]*fac;
-  double tau_Mp = tau[0]*fac;
-  double tau_C  = tau[2]*fac;
+  const double tau_M  = tau[0]*fac;
+  const double tau_Mp = tau[0]*fac;
+  const double tau_C  = tau[2]*fac;
 
 // integration factors and coefficients of single terms
-  double time2nue   = timefac * 2.0 * visc;
-  double timetauM   = timefac * tau_M;
-  double timetauMp  = timefac * tau_Mp;
+  const double time2nue   = timefac * 2.0 * visc;
+  const double timetauM   = timefac * tau_M;
+  const double timetauMp  = timefac * tau_Mp;
 
-  double ttimetauM  = timefac * timetauM;
-  double ttimetauMp = timefac * timetauMp;
-  double timefacfac = timefac * fac;
+  const double ttimetauM  = timefac * timetauM;
+  const double ttimetauMp = timefac * timetauMp;
+  const double timefacfac = timefac * fac;
 
 /*------------------------- evaluate rhs vector at integration point ---*/
 // no switch here at the moment w.r.t. is_ale
@@ -2027,11 +1171,11 @@ void DRT::Elements::Fluid2::f2_calmat_stationary(
     Epetra_SerialDenseMatrix& vderxy,
     Epetra_SerialDenseMatrix& vderxy2,
     vector<double>&           gradp,
-    vector<double>&           funct,
+    Epetra_SerialDenseVector& funct,
     vector<double>&           tau,
     Epetra_SerialDenseMatrix& derxy,
     Epetra_SerialDenseMatrix& derxy2,
-    double&                   fac,
+    const double&                   fac,
     const double&             visc,
     const int&                iel
     )
@@ -2189,6 +1333,25 @@ for (int i=0; i<iel; i++) /* loop over nodes of element */
 
 return;
 } // end of DRT:Elements:Fluid2:f2_calmat_stationary
+
+// check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
+bool DRT::Elements::Fluid2::is_higher_order_element(
+              const DRT::Element::DiscretizationType  distype) const
+{
+    bool hoel = true;
+    switch (distype)
+    {
+    case quad4: case quad8: case quad9: case tri6:
+        hoel = true;
+        break;
+    case tri3:
+        hoel = false;
+        break;
+    default:
+        dserror("distype unknown!");
+    }
+    return hoel;
+}
 
 
 //=======================================================================

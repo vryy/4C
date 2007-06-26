@@ -28,6 +28,7 @@ using namespace Teuchos;
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
+#include "../drt_lib/drt_utils.H"
 
 
 // forward declarations
@@ -281,8 +282,8 @@ private:
     calc_fluid_systemmat_and_residual
   };
 
-  //! no. gaussian points in each spatial dimension
-  int                                             ngp_[2];
+  bool is_higher_order_element(const DRT::Element::DiscretizationType  distype) const;
+
   //! number of the material law
   int                                             material_;
   //! flag for euler/ale net algorithm
@@ -319,9 +320,6 @@ private:
                   bool                      is_stationary
 		  );
 
-  // evaluate element integration points (and storing them in data)
-  void f2_integration_points(struct _FLUID_DATA& data);
-
   // calculate Jacobian matrix and it's determinant
   void f2_jaco(const Epetra_SerialDenseMatrix& xyze,
 	       const Epetra_SerialDenseMatrix& deriv,
@@ -329,15 +327,6 @@ private:
 	       double* 		det,
                const int 	iel
 	       );
-
-  // shape functions and natural derivatives for hexaeder
-  void f2_shape_function(vector<double>& funct,
-                         Epetra_SerialDenseMatrix* pderiv,
-                         Epetra_SerialDenseMatrix* pderiv2,
-                         const double&      r,
-                         const double&      s,
-                         const int&         iel
-    );
 
   // calculate global derivatives w.r.t. x,y,z at point r,s,t are
     void f2_gder(Epetra_SerialDenseMatrix& derxy,
@@ -366,11 +355,11 @@ private:
                 Epetra_SerialDenseMatrix& vderxy,
                 Epetra_SerialDenseMatrix& vderxy2,
                 vector<double>&   	gradp,
-                vector<double>&   	funct,
+                Epetra_SerialDenseVector& funct,
 		vector<double>&   	tau,
                 Epetra_SerialDenseMatrix& derxy,
                 Epetra_SerialDenseMatrix& derxy2,
-                double&   		fac,
+                const double&   		fac,
                 const double&   	visc,
                 const int&      	iel,
 		double                  timefac
@@ -386,14 +375,17 @@ private:
                 Epetra_SerialDenseMatrix& vderxy,
                 Epetra_SerialDenseMatrix& vderxy2,
                 vector<double>&   	gradp,
-                vector<double>&   	funct,
+                Epetra_SerialDenseVector& funct,
 		vector<double>&   	tau,
                 Epetra_SerialDenseMatrix& derxy,
                 Epetra_SerialDenseMatrix& derxy2,
-                double&   		fac,
+                const double&   		fac,
                 const double&   	visc,
                 const int&      	iel
       		);
+
+  // set number of gauss points to element shape default
+  DRT::Utils::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype);
 
 }; // class Fluid2
 
