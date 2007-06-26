@@ -8,6 +8,8 @@
 #include "../drt_lib/drt_dserror.H"
 
 
+using namespace DRT::Utils;
+
 DRT::Elements::Ale3::Ale3(int id, int owner)
   : DRT::Element(id,element_ale3,owner),
     material_(0),
@@ -122,157 +124,76 @@ RefCountPtr<DRT::ElementRegister> DRT::Elements::Ale3::ElementRegister() const
 }
 
 
+//
+// get vector of surfaces
+//
 DRT::Element** DRT::Elements::Ale3::Surfaces()
 {
-
-  const int nsurf = NumSurface();
-  const int numnode = NumNode();
-  surfaces_.resize(nsurf);
-  surfaceptrs_.resize(nsurf);
-  int nodeids[100];
-  DRT::Node* nodes[100];
-
-  if (nsurf==4)
-  {
-    if (numnode==4)
+    const DiscretizationType distype = Shape(); 
+    const int nsurf = NumSurface();
+    surfaces_.resize(nsurf);
+    surfaceptrs_.resize(nsurf);
+    
+    switch (distype)
     {
-      nodeids[0] = NodeIds()[0];
-      nodeids[1] = NodeIds()[1];
-      nodeids[2] = NodeIds()[2];
-      nodes[0] = Nodes()[0];
-      nodes[1] = Nodes()[1];
-      nodes[2] = Nodes()[2];
-      surfaces_[0] =
-        rcp(new DRT::Elements::Ale3Surface(0,Owner(),3,nodeids,nodes,this,0));
-      surfaceptrs_[0] = surfaces_[0].get();
-
-      nodeids[0] = NodeIds()[0];
-      nodeids[1] = NodeIds()[1];
-      nodeids[2] = NodeIds()[3];
-      nodes[0] = Nodes()[0];
-      nodes[1] = Nodes()[1];
-      nodes[2] = Nodes()[3];
-      surfaces_[1] =
-        rcp(new DRT::Elements::Ale3Surface(1,Owner(),3,nodeids,nodes,this,1));
-      surfaceptrs_[1] = surfaces_[1].get();
-
-      nodeids[0] = NodeIds()[2];
-      nodeids[1] = NodeIds()[0];
-      nodeids[2] = NodeIds()[3];
-      nodes[0] = Nodes()[2];
-      nodes[1] = Nodes()[0];
-      nodes[2] = Nodes()[3];
-      surfaces_[2] =
-        rcp(new DRT::Elements::Ale3Surface(2,Owner(),3,nodeids,nodes,this,2));
-      surfaceptrs_[2] = surfaces_[2].get();
-
-      nodeids[0] = NodeIds()[1];
-      nodeids[1] = NodeIds()[2];
-      nodeids[2] = NodeIds()[3];
-      nodes[0] = Nodes()[1];
-      nodes[1] = Nodes()[2];
-      nodes[2] = Nodes()[3];
-      surfaces_[3] =
-        rcp(new DRT::Elements::Ale3Surface(3,Owner(),3,nodeids,nodes,this,3));
-      surfaceptrs_[3] = surfaces_[3].get();
-
+    case tet4:
+        CreateSurfacesTet(nsurf, 3);
+        break;
+    case tet10:
+        CreateSurfacesTet(nsurf, 6);
+        break;
+    case hex8:
+        CreateSurfacesHex(nsurf, 4);
+        break;
+    case hex20: case hex27:
+        CreateSurfacesHex(nsurf, 9);
+        break;
+    default: 
+        dserror("distype not supported");
     }
-    else if (numnode==10)
-    {
-      dserror("TET10 surfaces not implemented.");
-    }
-    else dserror("Number of nodes not supported");
-  }
-  else if (nsurf==6)
-  {
-    if (numnode==8)
-    {
-      nodeids[0] = NodeIds()[0];
-      nodeids[1] = NodeIds()[3];
-      nodeids[2] = NodeIds()[2];
-      nodeids[3] = NodeIds()[1];
-      nodes[0] = Nodes()[0];
-      nodes[1] = Nodes()[3];
-      nodes[2] = Nodes()[2];
-      nodes[3] = Nodes()[1];
-      surfaces_[0] =
-        rcp(new DRT::Elements::Ale3Surface(0,Owner(),4,nodeids,nodes,this,0));
-      surfaceptrs_[0] = surfaces_[0].get();
-
-      nodeids[0] = NodeIds()[0];
-      nodeids[1] = NodeIds()[1];
-      nodeids[2] = NodeIds()[5];
-      nodeids[3] = NodeIds()[4];
-      nodes[0] = Nodes()[0];
-      nodes[1] = Nodes()[1];
-      nodes[2] = Nodes()[5];
-      nodes[3] = Nodes()[4];
-      surfaces_[1] =
-        rcp(new DRT::Elements::Ale3Surface(1,Owner(),4,nodeids,nodes,this,1));
-      surfaceptrs_[1] = surfaces_[1].get();
-
-      nodeids[0] = NodeIds()[0];
-      nodeids[1] = NodeIds()[4];
-      nodeids[2] = NodeIds()[7];
-      nodeids[3] = NodeIds()[3];
-      nodes[0] = Nodes()[0];
-      nodes[1] = Nodes()[4];
-      nodes[2] = Nodes()[7];
-      nodes[3] = Nodes()[3];
-      surfaces_[2] =
-        rcp(new DRT::Elements::Ale3Surface(2,Owner(),4,nodeids,nodes,this,2));
-      surfaceptrs_[2] = surfaces_[2].get();
-
-      nodeids[0] = NodeIds()[2];
-      nodeids[1] = NodeIds()[3];
-      nodeids[2] = NodeIds()[7];
-      nodeids[3] = NodeIds()[6];
-      nodes[0] = Nodes()[2];
-      nodes[1] = Nodes()[3];
-      nodes[2] = Nodes()[7];
-      nodes[3] = Nodes()[6];
-      surfaces_[3] =
-        rcp(new DRT::Elements::Ale3Surface(3,Owner(),4,nodeids,nodes,this,3));
-      surfaceptrs_[3] = surfaces_[3].get();
-
-      nodeids[0] = NodeIds()[1];
-      nodeids[1] = NodeIds()[2];
-      nodeids[2] = NodeIds()[6];
-      nodeids[3] = NodeIds()[5];
-      nodes[0] = Nodes()[1];
-      nodes[1] = Nodes()[2];
-      nodes[2] = Nodes()[6];
-      nodes[3] = Nodes()[5];
-      surfaces_[4] =
-        rcp(new DRT::Elements::Ale3Surface(4,Owner(),4,nodeids,nodes,this,4));
-      surfaceptrs_[4] = surfaces_[4].get();
-
-      nodeids[0] = NodeIds()[4];
-      nodeids[1] = NodeIds()[5];
-      nodeids[2] = NodeIds()[6];
-      nodeids[3] = NodeIds()[7];
-      nodes[0] = Nodes()[4];
-      nodes[1] = Nodes()[5];
-      nodes[2] = Nodes()[6];
-      nodes[3] = Nodes()[7];
-      surfaces_[5] =
-        rcp(new DRT::Elements::Ale3Surface(5,Owner(),4,nodeids,nodes,this,5));
-      surfaceptrs_[5] = surfaces_[5].get();
-    }
-    else if (numnode==20)
-    {
-      dserror("hex20 surfaces not implemented.");
-    }
-    else if (numnode==27)
-    {
-      dserror("hex27 surfaces not implemented.");
-    }
-    else dserror("Number of nodes not supported");
-  }
-  else dserror("Number of lines not supported");
-
-  return (DRT::Element**)(&(surfaceptrs_[0]));
+    return (DRT::Element**)(&(surfaceptrs_[0]));
 }
+
+
+
+// support for above
+void DRT::Elements::Ale3::CreateSurfacesTet(const int& nsurf,
+                                            const int& nnode)
+{
+    for(int isurf=0;isurf<nsurf;isurf++)
+    {
+        int nodeids[nnode];
+        DRT::Node* nodes[nnode];
+        
+        for (int inode=0;inode<nnode;inode++)
+        {
+             nodeids[inode] = NodeIds()[eleNodeNumbering_tet10_surfaces[isurf][inode]];
+             nodes[inode]   = Nodes()[  eleNodeNumbering_tet10_surfaces[isurf][inode]];
+        }
+        surfaces_[isurf] = rcp(new DRT::Elements::Ale3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
+        surfaceptrs_[isurf] = surfaces_[isurf].get();
+    }
+}        
+
+
+// support for above
+void DRT::Elements::Ale3::CreateSurfacesHex(const int& nsurf,
+                                            const int& nnode)
+{
+    for(int isurf=0;isurf<nsurf;isurf++)
+    {
+        int nodeids[nnode];
+        DRT::Node* nodes[nnode];
+        
+        for (int inode=0;inode<nnode;inode++)
+        {
+             nodeids[inode] = NodeIds()[eleNodeNumbering_hex27_surfaces[isurf][inode]];
+             nodes[inode]   = Nodes()[  eleNodeNumbering_hex27_surfaces[isurf][inode]];
+        }
+        surfaces_[isurf] = rcp(new DRT::Elements::Ale3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
+        surfaceptrs_[isurf] = surfaces_[isurf].get();
+    }
+}   
 
 
 DRT::Element** DRT::Elements::Ale3::Volumes()

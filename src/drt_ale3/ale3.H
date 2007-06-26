@@ -288,14 +288,6 @@ private:
 
   void intg(ALE3_DATA& data);
 
-  void funct_deriv(vector<double>& funct,
-                   Epetra_SerialDenseMatrix& deriv,
-                   double      r,
-                   double      s,
-                   double      t,
-                   DiscretizationType     typ,
-                   int         option);
-
   //! action parameters recognized by ale3
   enum ActionType
   {
@@ -324,6 +316,12 @@ private:
 
   // don't want = operator
   Ale3& operator = (const Ale3& old);
+  
+  void CreateSurfacesTet(const int& nline,
+                         const int& nnode);
+  
+  void CreateSurfacesHex(const int& nline,
+                         const int& nnode);
 };
 
 
