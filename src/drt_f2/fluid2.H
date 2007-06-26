@@ -98,7 +98,7 @@ public:
   /*!
   \brief Return number of lines of this element
   */
-  virtual int NumLine()
+  virtual int NumLine() const
   {if (NumNode()==9 || NumNode()==8 || NumNode()==4) return 4;
       else if (NumNode()==3 || NumNode()==6) return 3;
       else {
