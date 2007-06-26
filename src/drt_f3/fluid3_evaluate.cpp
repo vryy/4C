@@ -27,7 +27,7 @@ Maintainer: Georg Bauer
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 
-
+using namespace DRT::Utils;
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -443,44 +443,39 @@ void DRT::Elements::Fluid3::f3_sys_mat(vector<int>&              lm,
     double         		val, strle;
     vector<double>         	velino(3); /* normed velocity at element centre */
     double         		det, vol;
-    FLUID_DATA            	data;
-    double         		e1, e2, e3;
-    double         		facr=0.0, facs=0.0, fact=0.0;
     double         		mk=0.0;
     vector<double>     		velint(3);
-    double 			timefac;
+
     vector<double>              tau(3); // stab parameters
 
     /*------------------------------------------------------- initialise ---*/
+    // use one point gauss rule to calculate tau at element center
+    GaussRule3D integrationrule_stabili;
+    switch(distype)
+    {
+    case hex8: case hex20: case hex27:
+        integrationrule_stabili = intrule_hex_1point;
+        break;
+    case tet4: case tet10:
+        integrationrule_stabili = intrule_tet_1point;
+        break;
+    default: 
+        dserror("invalid discretization type for fluid3");
+    }
     // gaussian points
-    f3_integration_points(data);
-    timefac=params.get<double>("time constant for integration",0.0);
+    const IntegrationPoints3D  intpoints_tau = getIntegrationPoints3D(integrationrule_stabili);
+    
+    const double timefac=params.get<double>("time constant for integration",0.0);
 
     // get control parameter
     bool is_stationary = params.get<bool>("using stationary formulation",false);
 
     /*---------------------- shape functions and derivs at element center --*/
-    switch(iel)
-    {
-        case 8: case 20: case 27:   /* --> hex - element */
-          e1   = data.qxg[0][0];
-          facr = data.qwgt[0][0];
-          e2   = data.qxg[0][0];
-          facs = data.qwgt[0][0];
-          e3   = data.qxg[0][0];
-          fact = data.qwgt[0][0];
-          break;
-        case 4: case 10:   /* --> tet - element */
-          e1   = data.txgr[0][0];
-          facr = data.twgt[0][0];
-          e2   = data.txgs[0][0];
-          facs = ONE;
-          e3   = data.txgs[0][0];
-          fact = ONE;
-          break;
-        default:
-          dserror("type unknown!\n");
-    } /*end switch(iel) */
+    // shape functions and derivs at element center
+    const double e1    = intpoints_tau.qxg[0][0];
+    const double e2    = intpoints_tau.qxg[0][1];
+    const double e3    = intpoints_tau.qxg[0][2];
+    
     DRT::Utils::shape_function_3D(funct,e1,e2,e3,distype);
     DRT::Utils::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
     if (distype != tet4)
@@ -503,7 +498,7 @@ void DRT::Elements::Fluid3::f3_sys_mat(vector<int>&              lm,
 /*--------------------------------- get velocities at element center ---*/
     for (int i=0;i<3;i++)
     {
-      velint[i]=ZERO;
+      velint[i]=0.0;
       for (int j=0;j<iel;j++)
       {
         velint[i] += funct[j]*evelnp[i+(3*j)];
@@ -515,14 +510,15 @@ void DRT::Elements::Fluid3::f3_sys_mat(vector<int>&              lm,
 
       /*------------------------------ get Jacobian matrix and determinant ---*/
       f3_jaco(xyze,deriv,xjm,&det,iel);
-      vol=facr*facs*fact*det;
+      const double wquad = intpoints_tau.qwgt[0];
+      vol = wquad*det;
 
       /* get element length for tau_Mp/tau_C: volume-equival. diameter/sqrt(3)*/
       hk = pow((SIX*vol/PI),(ONE/THREE))/sqrt(THREE);
 
       /*------------------------------------------------- get streamlength ---*/
       f3_gder(derxy,deriv,xjm,det,iel);
-      val = ZERO;
+      val = 0.0;
 
 
       /* get velocity norm */
@@ -538,8 +534,8 @@ void DRT::Elements::Fluid3::f3_sys_mat(vector<int>&              lm,
       else
       {
         velino[0] = ONE;
-        velino[1] = ZERO;
-        velino[2] = ZERO;
+        velino[1] = 0.0;
+        velino[2] = 0.0;
       }
       for (int i=0;i<iel;i++) /* loop element nodes */
       {
@@ -650,91 +646,39 @@ void DRT::Elements::Fluid3::f3_sys_mat(vector<int>&              lm,
     /*----------------------------------------------------------------------*/
 
     // integration loop for one Fluid3 element using USFEM
-
-    int       intc=0;      /* "integration case" for tri for further infos
-                              see f2_inpele.c and f2_intg.c                 */
-    int       nir=0;       /* number of integration nodesin r direction     */
-    int       nis=0;       /* number of integration nodesin s direction     */
-    int       nit=0;       /* number of integration nodesin t direction      */
-    int       ihoel=0;     /* flag for higher order elements                 */
-    int       icode=2;     /* flag for eveluation of shape functions         */
-    double    fac;         /* total integration factor */
     double    press;
     vector<double>    gridvelint(3); /* grid velocity                       */
     vector<double>    gradp(3);      /* pressure gradient at integration point         */
 
+    // flag for higher order elements
+    const bool higher_order_ele = is_higher_order_element(distype);
 
-    switch (iel)
+    // gaussian points
+    const GaussRule3D gaussrule = getOptimalGaussrule(distype);
+    const IntegrationPoints3D  intpoints = getIntegrationPoints3D(gaussrule);
+
+    // integration loops
+    for (int iquad=0;iquad<intpoints.nquad;iquad++)
     {
-        case 8: case 20: case 27:  /* --> hex - element */
-          icode   = 3;
-          ihoel   = 1;
-          /* initialise integration */
-          nir = ngp_[0];
-          nis = ngp_[1];
-          nit = ngp_[2];
-          intc= 0;
-          break;
-        case 10: /* --> tet - element */
-          icode   = 3;
-          ihoel   = 1;
-          /* do NOT break at this point!!! */
-        case 4:    /* initialise integration */
-          nir  = ngp_[0]; // for tets in ngp_[0] the number of gauss points is stored !
-          nis  = 1;
-          nit  = 1;
-          intc = ngp_[1];
-          break;
-        default:
-          dserror("typ unknown!");
-    } // end switch (iel) //
-
-
-    /*----------------------------------------------------------------------*
-     |               start loop over integration points                     |
-     *----------------------------------------------------------------------*/
-    for (int lr=0;lr<nir;lr++)
-    {
-      for (int ls=0;ls<nis;ls++)
-      {
-        for (int lt=0;lt<nit;lt++)
-        {
-          /*------------- get values of  shape functions and their derivatives ---*/
-          switch(iel)
-          {
-              case 8: case 20: case 27:   /* --> hex - element */
-                e1   = data.qxg[lr][nir-1];
-                facr = data.qwgt[lr][nir-1];
-                e2   = data.qxg[ls][nis-1];
-                facs = data.qwgt[ls][nis-1];
-                e3   = data.qxg[lt][nit-1];
-                fact = data.qwgt[lt][nit-1];
-                break;
-              case 4: case 10:   /* --> tet - element */
-                e1   = data.txgr[lr][intc];
-                facr = data.twgt[lr][intc];
-                e2   = data.txgs[lr][intc];
-                facs = ONE;
-                e3   = data.txgt[lr][intc];
-                fact = ONE;
-                break;
-              default:
-                facr = facs = fact = 0.0;
-                e1 = e2 = e3 = 0.0;
-                dserror("typ unknown!");
-          } /* end switch (iel) */
+          const double e1 = intpoints.qxg[iquad][0];
+          const double e2 = intpoints.qxg[iquad][1];
+          const double e3 = intpoints.qxg[iquad][2];
+          // shape functions and their derivatives
           DRT::Utils::shape_function_3D(funct,e1,e2,e3,distype);
           DRT::Utils::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
-
+          if (higher_order_ele)
+          {  
+              shape_function_3D_deriv2(deriv2,e1,e2,e3,distype);
+          }
           /*----------------------------------------- compute Jacobian matrix */
           f3_jaco(xyze,deriv,xjm,&det,iel);
-          fac = facr*facs*fact*det;
+          const double fac = intpoints.qwgt[iquad]*det;
 
           /*---------------------------------------- compute global derivates */
           f3_gder(derxy,deriv,xjm,det,iel);
 
           /*--------------------------------- compute second global derivative */
-          if (ihoel!=0)
+          if (higher_order_ele)
           {
             DRT::Utils::shape_function_3D_deriv2(deriv2,e1,e2,e3,distype);
             f3_gder2(xyze,xjm,derxy,derxy2,deriv2,iel);
@@ -743,9 +687,9 @@ void DRT::Elements::Fluid3::f3_sys_mat(vector<int>&              lm,
             // former f3_vder2(vderxy2,derxy2,evelnp,iel);
             for (int i=0;i<6;i++)
             {
-              vderxy2(0,i)=ZERO;
-              vderxy2(1,i)=ZERO;
-              vderxy2(2,i)=ZERO;
+              vderxy2(0,i)=0.0;
+              vderxy2(1,i)=0.0;
+              vderxy2(2,i)=0.0;
               for (int j=0;j<iel;j++)
               {
                 vderxy2(0,i) += derxy2(i,j)*evelnp[0+(3*j)];
@@ -759,7 +703,7 @@ void DRT::Elements::Fluid3::f3_sys_mat(vector<int>&              lm,
           // expression for f3_veci(velint,funct,evelnp,iel);
           for (int i=0;i<3;i++)
           {
-            velint[i]=ZERO;
+            velint[i]=0.0;
             for (int j=0;j<iel;j++)
             {
               velint[i] += funct[j]*evelnp[i+(3*j)];
@@ -770,7 +714,7 @@ void DRT::Elements::Fluid3::f3_sys_mat(vector<int>&              lm,
           //expression for f3_veci(histvec,funct,evhist,iel);
           for (int i=0;i<3;i++)
           {
-            histvec[i]=ZERO;
+            histvec[i]=0.0;
             for (int j=0;j<iel;j++)
             {
               histvec[i] += funct[j]*evhist[i+(3*j)];
@@ -781,9 +725,9 @@ void DRT::Elements::Fluid3::f3_sys_mat(vector<int>&              lm,
           // expression for f3_vder(vderxy,derxy,evelnp,iel);
           for (int i=0;i<3;i++)
           {
-            vderxy(0,i)=ZERO;
-            vderxy(1,i)=ZERO;
-            vderxy(2,i)=ZERO;
+            vderxy(0,i)=0.0;
+            vderxy(1,i)=0.0;
+            vderxy(2,i)=0.0;
             for (int j=0;j<iel;j++)
             {
               vderxy(0,i) += derxy(i,j)*evelnp[0+(3*j)];
@@ -849,9 +793,8 @@ void DRT::Elements::Fluid3::f3_sys_mat(vector<int>&              lm,
                     derxy,derxy2,edeadng,fac,visc,iel,params);
 
 
-        } /* end of loop over integration points lt*/
-      } /* end of loop over integration points ls */
-    } /* end of loop over integration points lr */
+
+    } // end of loop over integration points
 
   return;
 } // DRT::Elements::Fluid3::f3_sys_mat
@@ -919,56 +862,18 @@ void DRT::Elements::Fluid3::f3_genalpha_sys_mat(
       f3_calc_stabpar(tau,iel,xyze,myvelaf,visc,params,version);
     }
 
-    /*-------------------------------- initialise the integration ----*/
-    FLUID_DATA            	data;
-    f3_integration_points(data);
+    const bool higher_order_ele = is_higher_order_element(distype);
+    // gaussian points
+    const GaussRule3D gaussrule = getOptimalGaussrule(distype);
+    const IntegrationPoints3D  intpoints = getIntegrationPoints3D(gaussrule);
 
-
-    int       intc=0;      /* "integration case" for tri for further infos
-                              see f2_inpele.c and f2_intg.c                 */
-    int       nir=0;       /* number of integration nodesin r direction     */
-    int       nis=0;       /* number of integration nodesin s direction     */
-    int       nit=0;       /* number of integration nodesin t direction      */
-    int       ihoel=0;     /* flag for higher order elements                 */
-    int       icode=2;     /* flag for eveluation of shape functions         */
-
-    switch (iel)
+    // start loop over integration points
+    for (int iquad=0;iquad<intpoints.nquad;iquad++)
     {
-        case 8: case 20: case 27:  /* --> hex - element */
-          icode   = 3;
-          ihoel   = 1;
-          /* initialise integration */
-          nir = ngp_[0];
-          nis = ngp_[1];
-          nit = ngp_[2];
-          intc= 0;
-          break;
-        case 10: /* --> tet - element */
-          icode   = 3;
-          ihoel   = 1;
-          /* do NOT break at this point!!! */
-        case 4:    /* initialise integration */
-          nir  = ngp_[0]; // for tets in ngp_[0] the number of gauss points is stored !
-          nis  = 1;
-          nit  = 1;
-          intc = ngp_[1];
-          break;
-        default:
-          dserror("typ unknown!");
-    } // end switch (iel) //
-
-
-    /*------------------------------------------------------------------*
-     |              start loop over integration points                  |
-     *------------------------------------------------------------------*/
-    for (int lr=0;lr<nir;lr++)
-    {
-      for (int ls=0;ls<nis;ls++)
-      {
-        for (int lt=0;lt<nit;lt++)
-        {
           /*------------------- declaration of gauss point variables ---*/
-
+          const double e1 = intpoints.qxg[iquad][0];
+          const double e2 = intpoints.qxg[iquad][1];
+          const double e3 = intpoints.qxg[iquad][2];
           // shape functions and derivatives
           Epetra_SerialDenseVector  funct (iel);
           Epetra_SerialDenseMatrix 	deriv (3,iel);
@@ -993,56 +898,25 @@ void DRT::Elements::Fluid3::f3_genalpha_sys_mat(
           // dead load
           vector<double>                edeadaf(3);
 
-          // working matrix used as dummy
-          Epetra_SerialDenseMatrix 	wa1(100,100);
-
-          double         		det;
-
-          // integration data
-          // -> gauss point coordinates
-          double         		e1, e2, e3;
-          // -> gauss weights
-          double         		facr=0.0, facs=0.0, fact=0.0;
-          // -> total integration factor
-          double                        fac;
-
-          /*---- get values of  shape functions and their derivatives ---*/
-          switch(iel)
+          shape_function_3D(funct,e1,e2,e3,distype);
+          shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
+          if (higher_order_ele)
           {
-              case 8: case 20: case 27:   /* --> hex - element */
-                e1   = data.qxg [lr][nir-1];
-                facr = data.qwgt[lr][nir-1];
-                e2   = data.qxg [ls][nis-1];
-                facs = data.qwgt[ls][nis-1];
-                e3   = data.qxg [lt][nit-1];
-                fact = data.qwgt[lt][nit-1];
-                break;
-              case 4: case 10:   /* --> tet - element */
-                e1   = data.txgr[lr][intc];
-                facr = data.twgt[lr][intc];
-                e2   = data.txgs[lr][intc];
-                facs = ONE;
-                e3   = data.txgt[lr][intc];
-                fact = ONE;
-                break;
-              default:
-                dserror("typ unknown!");
-          } /* end switch (iel) */
-          DRT::Utils::shape_function_3D(funct,e1,e2,e3,distype);
-          DRT::Utils::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
-          DRT::Utils::shape_function_3D_deriv2(deriv2,e1,e2,e3,distype);
+            shape_function_3D_deriv2(deriv2,e1,e2,e3,distype);
+          }
 
           /*----------------------------------- compute Jacobian matrix */
+          double                det;
           f3_jaco(xyze,deriv,xjm,&det,iel);
 
           // set total integration factor
-          fac = facr*facs*fact*det;
+          const double fac = intpoints.qwgt[iquad]*det;
 
           /*---------------------------------- compute global derivates */
           f3_gder(derxy,deriv,xjm,det,iel);
 
           /*-------------------------- compute second global derivative */
-          if (ihoel!=0)
+          if (higher_order_ele)
           {
             f3_gder2(xyze,xjm,derxy,derxy2,deriv2,iel);
           }
@@ -1052,7 +926,7 @@ void DRT::Elements::Fluid3::f3_genalpha_sys_mat(
                                                                   point */
           for (int i=0;i<3;i++)
           {
-            accintam[i]=ZERO;
+            accintam[i]=0.0;
             for (int j=0;j<iel;j++)
             {
               accintam[i] += funct[j]*myaccam[i+(3*j)];
@@ -1063,7 +937,7 @@ void DRT::Elements::Fluid3::f3_genalpha_sys_mat(
           /*-------------- get velocities (n+1,i)  at integration point */
           for (int i=0;i<3;i++)
           {
-            velintnp[i]=ZERO;
+            velintnp[i]=0.0;
             for (int j=0;j<iel;j++)
             {
               velintnp[i] += funct[j]*myvelnp[i+(3*j)];
@@ -1074,7 +948,7 @@ void DRT::Elements::Fluid3::f3_genalpha_sys_mat(
           /*--------- get velocities (n+alpha_F,i) at integration point */
           for (int i=0;i<3;i++)
           {
-            velintaf[i]=ZERO;
+            velintaf[i]=0.0;
             for (int j=0;j<iel;j++)
             {
               velintaf[i] += funct[j]*myvelaf[i+(3*j)];
@@ -1085,9 +959,9 @@ void DRT::Elements::Fluid3::f3_genalpha_sys_mat(
           /*----- get velocity (n+1,i) derivatives at integration point */
           for (int i=0;i<3;i++)
           {
-            vderxynp(0,i)=ZERO;
-            vderxynp(1,i)=ZERO;
-            vderxynp(2,i)=ZERO;
+            vderxynp(0,i)=0.0;
+            vderxynp(1,i)=0.0;
+            vderxynp(2,i)=0.0;
             for (int j=0;j<iel;j++)
             {
               vderxynp(0,i) += derxy(i,j)*myvelnp[0+(3*j)];
@@ -1101,9 +975,9 @@ void DRT::Elements::Fluid3::f3_genalpha_sys_mat(
                                                       integration point */
           for (int i=0;i<3;i++)
           {
-            vderxyaf(0,i)=ZERO;
-            vderxyaf(1,i)=ZERO;
-            vderxyaf(2,i)=ZERO;
+            vderxyaf(0,i)=0.0;
+            vderxyaf(1,i)=0.0;
+            vderxyaf(2,i)=0.0;
             for (int j=0;j<iel;j++)
             {
               vderxyaf(0,i) += derxy(i,j)*myvelaf[0+(3*j)];
@@ -1115,13 +989,13 @@ void DRT::Elements::Fluid3::f3_genalpha_sys_mat(
 
           /*------calculate 2nd velocity derivatives at integration
                                                      point (n+alpha_F,i)*/
-          if (ihoel!=0)
+          if (higher_order_ele)
           {
             for (int i=0;i<6;i++)
             {
-              vderxyaf2(0,i)=ZERO;
-              vderxyaf2(1,i)=ZERO;
-              vderxyaf2(2,i)=ZERO;
+              vderxyaf2(0,i)=0.0;
+              vderxyaf2(1,i)=0.0;
+              vderxyaf2(2,i)=0.0;
               for (int j=0;j<iel;j++)
               {
                 vderxyaf2(0,i) += derxy2(i,j)*myvelaf[0+(3*j)];
@@ -1181,9 +1055,7 @@ void DRT::Elements::Fluid3::f3_genalpha_sys_mat(
                              iel,
                              params);
 
-        } /* end of loop over integration points lt*/
-      } /* end of loop over integration points ls */
-    } /* end of loop over integration points lr */
+    } // end of loop over integration points
 
   }
   return;
@@ -1250,54 +1122,18 @@ void DRT::Elements::Fluid3::f3_genalpha_rhs(
       f3_calc_stabpar(tau,iel,xyze,myvelaf,visc,params,version);
     }
 
-    /*-------------------------------- initialise the integration ----*/
-    FLUID_DATA            	data;
-    f3_integration_points(data);
+    const bool higher_order_ele = is_higher_order_element(distype);
+    // gaussian points
+    const GaussRule3D gaussrule = getOptimalGaussrule(distype);
+    const IntegrationPoints3D  intpoints = getIntegrationPoints3D(gaussrule);
 
-
-    int       intc=0;      /* "integration case" for tri for further infos
-                              see f2_inpele.c and f2_intg.c                 */
-    int       nir=0;       /* number of integration nodesin r direction     */
-    int       nis=0;       /* number of integration nodesin s direction     */
-    int       nit=0;       /* number of integration nodesin t direction      */
-    int       ihoel=0;     /* flag for higher order elements                 */
-    int       icode=2;     /* flag for eveluation of shape functions         */
-
-    switch (iel)
+    // start loop over integration points
+    for (int iquad=0;iquad<intpoints.nquad;iquad++)
     {
-        case 8: case 20: case 27:  /* --> hex - element */
-          icode   = 3;
-          ihoel   = 1;
-          /* initialise integration */
-          nir = ngp_[0];
-          nis = ngp_[1];
-          nit = ngp_[2];
-          intc= 0;
-          break;
-        case 10: /* --> tet - element */
-          icode   = 3;
-          ihoel   = 1;
-          /* do NOT break at this point!!! */
-        case 4:    /* initialise integration */
-          nir  = ngp_[0]; // for tets in ngp_[0] the number of gauss points is stored !
-          nis  = 1;
-          nit  = 1;
-          intc = ngp_[1];
-          break;
-        default:
-          dserror("typ unknown!");
-    } // end switch (iel) //
-
-
-    /*------------------------------------------------------------------*
-     |              start loop over integration points                  |
-     *------------------------------------------------------------------*/
-    for (int lr=0;lr<nir;lr++)
-    {
-      for (int ls=0;ls<nis;ls++)
-      {
-        for (int lt=0;lt<nit;lt++)
-        {
+          /*------------------- declaration of gauss point variables ---*/
+          const double e1 = intpoints.qxg[iquad][0];
+          const double e2 = intpoints.qxg[iquad][1];
+          const double e3 = intpoints.qxg[iquad][2];
           /*------------------- declaration of gauss point variables ---*/
 
           // shape functions and derivatives
@@ -1324,56 +1160,26 @@ void DRT::Elements::Fluid3::f3_genalpha_rhs(
           // dead load
           vector<double>                edeadaf(3);
 
-          // working matrix used as dummy
-          Epetra_SerialDenseMatrix 	wa1(100,100);
 
-          double         		det;
-
-          // integration data
-          // -> gauss point coordinates
-          double         		e1, e2, e3;
-          // -> gauss weights
-          double         		facr=0.0, facs=0.0, fact=0.0;
-          // -> total integration factor
-          double                        fac;
-
-          /*---- get values of  shape functions and their derivatives ---*/
-          switch(iel)
-          {
-              case 8: case 20: case 27:   /* --> hex - element */
-                e1   = data.qxg [lr][nir-1];
-                facr = data.qwgt[lr][nir-1];
-                e2   = data.qxg [ls][nis-1];
-                facs = data.qwgt[ls][nis-1];
-                e3   = data.qxg [lt][nit-1];
-                fact = data.qwgt[lt][nit-1];
-                break;
-              case 4: case 10:   /* --> tet - element */
-                e1   = data.txgr[lr][intc];
-                facr = data.twgt[lr][intc];
-                e2   = data.txgs[lr][intc];
-                facs = ONE;
-                e3   = data.txgt[lr][intc];
-                fact = ONE;
-                break;
-              default:
-                dserror("typ unknown!");
-          } /* end switch (iel) */
-          DRT::Utils::shape_function_3D(funct,e1,e2,e3,distype);
-          DRT::Utils::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
-          DRT::Utils::shape_function_3D_deriv2(deriv2,e1,e2,e3,distype);
+          shape_function_3D(funct,e1,e2,e3,distype);
+          shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
+          if (higher_order_ele)
+          {  
+              shape_function_3D_deriv2(deriv2,e1,e2,e3,distype);
+          }
 
           /*----------------------------------- compute Jacobian matrix */
+          double                det;
           f3_jaco(xyze,deriv,xjm,&det,iel);
 
-          // set total integration factor
-          fac = facr*facs*fact*det;
+          // integration constant
+          const double fac = intpoints.qwgt[iquad]*det;
 
           /*---------------------------------- compute global derivates */
           f3_gder(derxy,deriv,xjm,det,iel);
 
           /*-------------------------- compute second global derivative */
-          if (ihoel!=0)
+          if (higher_order_ele)
           {
             f3_gder2(xyze,xjm,derxy,derxy2,deriv2,iel);
           }
@@ -1383,7 +1189,7 @@ void DRT::Elements::Fluid3::f3_genalpha_rhs(
                                                                   point */
           for (int i=0;i<3;i++)
           {
-            accintam[i]=ZERO;
+            accintam[i]=0.0;
             for (int j=0;j<iel;j++)
             {
               accintam[i] += funct[j]*myaccam[i+(3*j)];
@@ -1394,7 +1200,7 @@ void DRT::Elements::Fluid3::f3_genalpha_rhs(
           /*-------------- get velocities (n+1,i)  at integration point */
           for (int i=0;i<3;i++)
           {
-            velintnp[i]=ZERO;
+            velintnp[i]=0.0;
             for (int j=0;j<iel;j++)
             {
               velintnp[i] += funct[j]*myvelnp[i+(3*j)];
@@ -1405,7 +1211,7 @@ void DRT::Elements::Fluid3::f3_genalpha_rhs(
           /*--------- get velocities (n+alpha_F,i) at integration point */
           for (int i=0;i<3;i++)
           {
-            velintaf[i]=ZERO;
+            velintaf[i]=0.0;
             for (int j=0;j<iel;j++)
             {
               velintaf[i] += funct[j]*myvelaf[i+(3*j)];
@@ -1416,9 +1222,9 @@ void DRT::Elements::Fluid3::f3_genalpha_rhs(
           /*----- get velocity (n+1,i) derivatives at integration point */
           for (int i=0;i<3;i++)
           {
-            vderxynp(0,i)=ZERO;
-            vderxynp(1,i)=ZERO;
-            vderxynp(2,i)=ZERO;
+            vderxynp(0,i)=0.0;
+            vderxynp(1,i)=0.0;
+            vderxynp(2,i)=0.0;
             for (int j=0;j<iel;j++)
             {
               vderxynp(0,i) += derxy(i,j)*myvelnp[0+(3*j)];
@@ -1432,9 +1238,9 @@ void DRT::Elements::Fluid3::f3_genalpha_rhs(
                                                       integration point */
           for (int i=0;i<3;i++)
           {
-            vderxyaf(0,i)=ZERO;
-            vderxyaf(1,i)=ZERO;
-            vderxyaf(2,i)=ZERO;
+            vderxyaf(0,i)=0.0;
+            vderxyaf(1,i)=0.0;
+            vderxyaf(2,i)=0.0;
             for (int j=0;j<iel;j++)
             {
               vderxyaf(0,i) += derxy(i,j)*myvelaf[0+(3*j)];
@@ -1446,13 +1252,13 @@ void DRT::Elements::Fluid3::f3_genalpha_rhs(
 
           /*------calculate 2nd velocity derivatives at integration
                                                      point (n+alpha_F,i)*/
-          if (ihoel!=0)
+          if (higher_order_ele)
           {
             for (int i=0;i<6;i++)
             {
-              vderxyaf2(0,i)=ZERO;
-              vderxyaf2(1,i)=ZERO;
-              vderxyaf2(2,i)=ZERO;
+              vderxyaf2(0,i)=0.0;
+              vderxyaf2(1,i)=0.0;
+              vderxyaf2(2,i)=0.0;
               for (int j=0;j<iel;j++)
               {
                 vderxyaf2(0,i) += derxy2(i,j)*myvelaf[0+(3*j)];
@@ -1512,9 +1318,7 @@ void DRT::Elements::Fluid3::f3_genalpha_rhs(
                              iel,
                              params);
 
-        } /* end of loop over integration points lt*/
-      } /* end of loop over integration points ls */
-    } /* end of loop over integration points lr */
+    } // end of loop over integration points
 
   }
   return;
@@ -1567,45 +1371,35 @@ void DRT::Elements::Fluid3::f3_calc_stabpar(
         Epetra_SerialDenseMatrix    deriv(3,iel);
         Epetra_SerialDenseMatrix    xjm(3,3);
         Epetra_SerialDenseMatrix    derxy(3,iel);
-        Epetra_SerialDenseMatrix    wa1(100,100);  // working matrix used as dummy
         double                      hk;
         double                      val, strle;
         vector<double>              velino(3); /* normed velocity at element centre */
         double                      det, vol;
-        FLUID_DATA                  data;
         double                      e1, e2, e3;
         double                      facr=0.0, facs=0.0, fact=0.0;
         double                      mk=0.0;
         vector<double>              velint(3);
-        double                      timefac;
 
         /*------------------------------------------------- initialise ---*/
         // gaussian points
-        f3_integration_points(data);
-        timefac =params.get<double>("dt",0.0);
-        timefac*=params.get<double>("gamma",0.0);
-        /*---------------------- shape functions and derivs at element center --*/
-        switch(iel)
+        // use one point gauss rule to calculate tau at element center
+        GaussRule3D integrationrule_stabili;
+        switch(distype)
         {
-            case 8: case 20: case 27:   /* --> hex - element */
-              e1   = data.qxg[0][0];
-              facr = data.qwgt[0][0];
-              e2   = data.qxg[0][0];
-              facs = data.qwgt[0][0];
-              e3   = data.qxg[0][0];
-              fact = data.qwgt[0][0];
-              break;
-            case 4: case 10:   /* --> tet - element */
-              e1   = data.txgr[0][0];
-              facr = data.twgt[0][0];
-              e2   = data.txgs[0][0];
-              facs = ONE;
-              e3   = data.txgs[0][0];
-              fact = ONE;
-              break;
-            default:
-              dserror("type unknown!\n");
-        } /*end switch(iel) */
+        case hex8: case hex20: case hex27:
+            integrationrule_stabili = intrule_hex_1point;
+            break;
+        case tet4: case tet10:
+            integrationrule_stabili = intrule_tet_1point;
+            break;
+        default: 
+            dserror("invalid discretization type for fluid3");
+        }
+        const double timefac =params.get<double>("dt",0.0) * params.get<double>("gamma",0.0);
+        
+        // gaussian points
+        const IntegrationPoints3D  intpoints = getIntegrationPoints3D(integrationrule_stabili);
+        
         DRT::Utils::shape_function_3D(funct,e1,e2,e3,distype);
         DRT::Utils::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
 
@@ -1626,7 +1420,7 @@ void DRT::Elements::Fluid3::f3_calc_stabpar(
         /*--------------------------------- get velocities at element center ---*/
         for (int i=0;i<3;i++)
         {
-          velint[i]=ZERO;
+          velint[i]=0.0;
           for (int j=0;j<iel;j++)
           {
             velint[i] += funct[j]*myvelnp[i+(3*j)];
@@ -1645,7 +1439,7 @@ void DRT::Elements::Fluid3::f3_calc_stabpar(
 
           /*------------------------------------------------- get streamlength ---*/
           f3_gder(derxy,deriv,xjm,det,iel);
-          val = ZERO;
+          val = 0.0;
 
 
           /* get velocity norm */
@@ -1661,8 +1455,8 @@ void DRT::Elements::Fluid3::f3_calc_stabpar(
           else
           {
             velino[0] = ONE;
-            velino[1] = ZERO;
-            velino[2] = ZERO;
+            velino[1] = 0.0;
+            velino[2] = 0.0;
           }
           for (int i=0;i<iel;i++) /* loop element nodes */
           {
@@ -1760,191 +1554,6 @@ void DRT::Elements::Fluid3::f3_calc_stabpar(
   return;
 } // end of DRT:Elements:Fluid3:f3_calc_stabpar
 
-/*----------------------------------------------------------------------*
- |  evaluate the element integration points (private)        g.bau 03/07|
- *----------------------------------------------------------------------*/
-void DRT::Elements::Fluid3::f3_integration_points(struct _FLUID_DATA& data)
-{
-const double Q12  = ONE/TWO;
-const double Q14  = ONE/FOUR;
-const double Q16  = ONE/SIX;
-const double Q124 = ONE/SIX/FOUR;
-const double Q430 = FOUR/FIVE/SIX;
-const double Q9120= NINE/FOUR/FIVE/SIX;
-
-double  palpha;
-double  pbeta;
-
-/*----------------------------------------------------------------------*/
-                                               /* initialize arrays */
-  for (int i=0; i<MAXTINTP; i++)
-  {
-    for (int k=0; k<MAXTINTC; k++)
-    {
-       data.txgr[i][k] = ZERO;
-       data.txgs[i][k] = ZERO;
-       data.txgt[i][k] = ZERO;
-       data.twgt[i][k] = ZERO;
-    }
-  }
-  for (int i=0; i<MAXQINTP; i++)
-  {
-    for (int k=0; k<MAXQINTC; k++)
-    {
-       data.qxg[i][k] = ZERO;
-       data.qwgt[i][k] = ZERO;
-    }
-  }
-
-  palpha = (FIVE+THREE*sqrt(FIVE))/20.0;
-  pbeta  = (FIVE-sqrt(FIVE))/20.0;
-
-/*----------------------------------------------------------------------*
- |     INTEGRATION PARAMETERS FOR    H E X A H E D R A L    ELEMENTS    |
- |     GAUSS SAMPLING POINTS  AT     R/S-COORDINATES     RESPECTIVELY   |
- |                            AND    CORRESPONDING WEIGHTING  FACTORS   |
- |     xg[i][j]                                                         |
- |    wgt[i][j]:  i+1 - actual number of gausspoint                     |
- |                j+1 - total number of gausspoints                     |
- *----------------------------------------------------------------------*/
-/* coordinates for two gauss points */
-      data.qxg[0][1]  =  -0.5773502691896;
-      data.qxg[1][1]  =  -data.qxg[0][1]       ;
-/* coordinates for three gauss points */
-      data.qxg[0][2]  =  -0.7745966692415;
-      data.qxg[2][2]  =  -data.qxg[0][2]       ;
-/* coordinates for four gauss points */
-      data.qxg[0][3]  =  -0.8611363115941;
-      data.qxg[1][3]  =  -0.3399810435849;
-      data.qxg[2][3]  =  -data.qxg[1][3]       ;
-      data.qxg[3][3]  =  -data.qxg[0][3]       ;
-/* coordinates for five gauss points */
-      data.qxg[0][4]  =  -0.9061798459387;
-      data.qxg[1][4]  =  -0.5384693101057;
-      data.qxg[3][4]  =  -data.qxg[1][4]       ;
-      data.qxg[4][4]  =  -data.qxg[0][4]       ;
-/* coordinates for six gauss points */
-      data.qxg[0][5]  =  -0.9324695142032;
-      data.qxg[1][5]  =  -0.6612093864663;
-      data.qxg[2][5]  =  -0.2386191860832;
-      data.qxg[3][5]  =  -data.qxg[2][5]       ;
-      data.qxg[4][5]  =  -data.qxg[1][5]       ;
-      data.qxg[5][5]  =  -data.qxg[0][5]       ;
-
-/* weights for one gauss points */
-      data.qwgt[0][0] =  TWO             ;
-/* weights for two gauss points */
-      data.qwgt[0][1] =  ONE             ;
-      data.qwgt[1][1] =  ONE             ;
-/* weights for three gauss points */
-      data.qwgt[0][2] =  0.5555555555556 ;
-      data.qwgt[1][2] =  0.8888888888889 ;
-      data.qwgt[2][2] =  data.qwgt[0][2]       ;
-/* weights for four gauss points */
-      data.qwgt[0][3] =  0.3478548451375 ;
-      data.qwgt[1][3] =  0.6521451548625 ;
-      data.qwgt[2][3] =  data.qwgt[1][3] ;
-      data.qwgt[3][3] =  data.qwgt[0][3] ;
-/* weights for five gauss points */
-      data.qwgt[0][4] =  0.2369268850562 ;
-      data.qwgt[1][4] =  0.4786286704994 ;
-      data.qwgt[2][4] =  0.5688888888889 ;
-      data.qwgt[3][4] =  data.qwgt[1][4] ;
-      data.qwgt[4][4] =  data.qwgt[0][4] ;
-/* weights for six gauss points */
-      data.qwgt[0][5] =  0.1713244923792 ;
-      data.qwgt[1][5] =  0.3607615730481 ;
-      data.qwgt[2][5] =  0.4679139345727 ;
-      data.qwgt[3][5] =  data.qwgt[2][5] ;
-      data.qwgt[4][5] =  data.qwgt[1][5] ;
-      data.qwgt[5][5] =  data.qwgt[0][5] ;
-
-/*----------------------------------------------------------------------*
- |     INTEGRATION PARAMETERS FOR    T R I A N G U L A R     ELEMENTS   |
- |     GAUSS SAMPLING POINTS  AT     R/S-COORDINATES     RESPECTIVELY   |
- |                            AND    CORRESPONDING WEIGHTING  FACTORS   |
- |     xgr[i][j]                                                        |
- |    wgts[i][j]:  i+1 - actual number of gausspoint                    |
- |                 j+1 - number for integration case (from input)       |
- *----------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------*
- |    GAUSS INTEGRATION         1 SAMPLING POINT, DEG.OF PRECISION 1    |
- |                              CASE 0                                  |
- *----------------------------------------------------------------------*/
-      data.txgr[0][0]    =  Q14 ;
-      data.txgs[0][0]    =  Q14 ;
-      data.txgt[0][0]    =  Q14 ;
-      data.twgt[0][0]   =  Q16 ;
-/*----------------------------------------------------------------------*
- |    GAUSS INTEGRATION        4 SAMPLING POINTS, DEG.OF PRECISION 2    |
- |                             CASE 1                                   |
- *----------------------------------------------------------------------*/
-      data.txgr[0][1]    =    pbeta ;
-      data.txgr[1][1]    =    palpha;
-      data.txgr[2][1]    =    pbeta ;
-      data.txgr[3][1]    =    pbeta ;
-      data.txgs[0][1]    =    pbeta ;
-      data.txgs[1][1]    =    pbeta ;
-      data.txgs[2][1]    =    palpha;
-      data.txgs[3][1]    =    pbeta ;
-      data.txgt[0][1]    =    pbeta ;
-      data.txgt[1][1]    =    pbeta ;
-      data.txgt[2][1]    =    pbeta ;
-      data.txgt[3][1]    =    palpha;
-      data.twgt[0][1]   =    Q124  ;
-      data.twgt[1][1]   =    Q124  ;
-      data.twgt[2][1]   =    Q124  ;
-      data.twgt[3][1]   =    Q124  ;
-/*----------------------------------------------------------------------*
- |    ALT.GAUSS INTEGRATION    4 SAMPLING POINTS, DEG.OF PRECISION 1    |
- |                             CASE 2                                   |
- *----------------------------------------------------------------------*/
-      data.txgr[0][2]    =     ZERO;
-      data.txgr[1][2]    =     ONE ;
-      data.txgr[2][2]    =     ZERO;
-      data.txgr[3][2]    =     ZERO;
-      data.txgs[0][2]    =     ZERO;
-      data.txgs[1][2]    =     ZERO;
-      data.txgs[2][2]    =     ONE ;
-      data.txgs[3][2]    =     ZERO;
-      data.txgt[0][2]    =     ZERO;
-      data.txgt[1][2]    =     ZERO;
-      data.txgt[2][2]    =     ZERO;
-      data.txgt[3][2]    =     ONE ;
-      data.twgt[0][2]   =     Q124;
-      data.twgt[1][2]   =     Q124;
-      data.twgt[2][2]   =     Q124;
-      data.twgt[3][2]   =     Q124;
-/*----------------------------------------------------------------------*
- |    GAUSS INTEGRATION        5 SAMPLING POINTS, DEG.OF PRECISION 3    |
- |                             CASE 3                                   |
- *----------------------------------------------------------------------*/
-      data.txgr[0][3]    =     Q14  ;
-      data.txgr[1][3]    =     Q12  ;
-      data.txgr[2][3]    =     Q16  ;
-      data.txgr[3][3]    =     Q16  ;
-      data.txgr[4][3]    =     Q16  ;
-      data.txgs[0][3]    =     Q14  ;
-      data.txgs[1][3]    =     Q16  ;
-      data.txgs[2][3]    =     Q16  ;
-      data.txgs[3][3]    =     Q16  ;
-      data.txgs[4][3]    =     Q12  ;
-      data.txgt[0][3]    =     Q14  ;
-      data.txgt[1][3]    =     Q16  ;
-      data.txgt[2][3]    =     Q16  ;
-      data.txgt[3][3]    =     Q12  ;
-      data.txgt[4][3]    =     Q16  ;
-      data.twgt[0][3]   =    -Q430 ;
-      data.twgt[1][3]   =     Q9120;
-      data.twgt[2][3]   =     Q9120;
-      data.twgt[3][3]   =     Q9120;
-      data.twgt[4][3]   =     Q9120;
-
-  return;
-} //end of DRT::Elements::Fluid3::f3_integration_points
-
-
 
 
 /*----------------------------------------------------------------------*
@@ -1964,7 +1573,7 @@ void DRT::Elements::Fluid3::f3_jaco(const Epetra_SerialDenseMatrix& xyze,
   {
      for (int j=0; j<3; j++)
      {
-        dum=ZERO;
+        dum=0.0;
         for (int l=0; l<iel; l++)
         {
            dum += deriv(i,l)*xyze(j,l);
@@ -1981,7 +1590,7 @@ void DRT::Elements::Fluid3::f3_jaco(const Epetra_SerialDenseMatrix& xyze,
          xjm(0,0)*xjm(1,2)*xjm(2,1)-
          xjm(0,1)*xjm(1,0)*xjm(2,2);
 
-  if(*det<ZERO)
+  if(*det<0.0)
   {
      printf("\n");
      printf("GLOBAL ELEMENT NO.%i\n",Id());
@@ -2100,9 +1709,9 @@ void DRT::Elements::Fluid3::f3_gder(Epetra_SerialDenseMatrix& derxy,
 	/*------------------------------------------------------- initialistion */
 for(int k=0;k<iel;k++)
 {
-   derxy(0,k)=ZERO;
-   derxy(1,k)=ZERO;
-   derxy(2,k)=ZERO;
+   derxy(0,k)=0.0;
+   derxy(1,k)=0.0;
+   derxy(2,k)=0.0;
 } /* end of loop over k */
 
 	/*------------------------------------------------- inverse of jacobian */
@@ -2217,13 +1826,13 @@ printf("\n");
 /*   already initialized by constructor of EpetraSerialDenseMeatrix
 for (int i=0;i<3;i++)
 {
-   for (int j=0;j<6;j++) xder2(j,i)=ZERO;
+   for (int j=0;j<6;j++) xder2(j,i)=0.0;
 }
 */
 
 for (int i=0;i<iel;i++)
 {
-   for (int j=0;j<6;j++) derxy2(j,i)=ZERO;
+   for (int j=0;j<6;j++) derxy2(j,i)=0.0;
 }
 
 /*----------------------- determine 2nd derivatives of coord.-functions */
@@ -2403,7 +2012,7 @@ void DRT::Elements::Fluid3::f3_calmat( Epetra_SerialDenseMatrix& estif,
                 Epetra_SerialDenseMatrix&  derxy,
                 Epetra_SerialDenseMatrix&  derxy2,
                 vector<double>&            edeadng,
-                double&                    fac,
+                const double&              fac,
                 const double&              visc,
                 const int&                 iel,
 		ParameterList& 	           params
@@ -2704,7 +2313,7 @@ void DRT::Elements::Fluid3::f3_calmat_stationary( Epetra_SerialDenseMatrix& esti
                 Epetra_SerialDenseMatrix&  derxy,
                 Epetra_SerialDenseMatrix&  derxy2,
                 vector<double>&            edeadng,
-                double&                    fac,
+                const double&                    fac,
                 const double&              visc,
                 const int&                 iel,
 		ParameterList& 	           params
@@ -2957,7 +2566,7 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
     Epetra_SerialDenseMatrix&  derxy,
     Epetra_SerialDenseMatrix&  derxy2,
     vector<double>&  	       tau,
-    double&                    fac,
+    const double&                    fac,
     const double&              visc,
     const int&                 iel,
     ParameterList& 	       params)
@@ -3600,16 +3209,16 @@ void DRT::Elements::Fluid3::f3_genalpha_calrhs(
     Epetra_SerialDenseMatrix&  derxy,
     Epetra_SerialDenseMatrix&  derxy2,
     vector<double>&  	       tau,
-    double&                    fac,
+    const double&                    fac,
     const double&              visc,
     const int&                 iel,
     ParameterList& 	       params)
 {
 
   // set parameters
-  double tauM   = tau[0];
-  double tauMp  = tau[1];
-  double tauC   = tau[2];
+  const double tauM   = tau[0];
+  const double tauMp  = tau[1];
+  const double tauC   = tau[2];
 
   // further variables
   vector<double>            conv_c(iel);     /* linearisation of convect, convective part */
@@ -4041,6 +3650,30 @@ void DRT::Elements::Fluid3::f3_genalpha_calrhs(
 } // end of DRT:Elements:Fluid3:f3_genalpha_calrhs
 
 
+// get optimal gaussrule for discretization type
+GaussRule3D DRT::Elements::Fluid3::getOptimalGaussrule(const DiscretizationType& distype)
+{
+    GaussRule3D rule;
+    switch (distype)
+    {
+    case hex8:
+        rule = intrule_hex_8point;
+        break;
+    case hex20: case hex27:
+        rule = intrule_hex_27point;
+        break;
+    case tet4:
+        rule = intrule_tet_4point;
+        break;
+    case tet10:
+        rule = intrule_tet_10point;
+        break;
+    default: 
+        dserror("unknown number of nodes for gaussrule initialization");
+  }
+  return rule;
+}
+
 
 /*---------------------------------------------------------------------*
  |  calculate error for beltrami test problem (private)     gammi 04/07|
@@ -4061,26 +3694,11 @@ void DRT::Elements::Fluid3::f3_int_beltrami_err(
   const int iel = NumNode();
   const DiscretizationType distype = this->Shape(); 
 
-  int       intc=0;   /* "integration case" for tri for further infos
-                         see f2_inpele.c and f2_intg.c                 */
-  int       nir=0;    /* number of integration nodesin r direction     */
-  int       nis=0;    /* number of integration nodesin s direction     */
-  int       nit=0;    /* number of integration nodesin t direction     */
-  int       ihoel=0;  /* flag for higher order elements                */
-  int       icode=2;  /* flag for eveluation of shape functions        */
-  double    fac;      /* total integration factor                      */
-
-
   Epetra_SerialDenseVector  funct(iel);
   Epetra_SerialDenseMatrix 	xjm(3,3);
   Epetra_SerialDenseMatrix 	deriv(3,iel);
 
   double         		det;
-  double         		e1, e2, e3;
-  double         		facr=0.0, facs=0.0, fact=0.0;
-
-  FLUID_DATA            	data;
-
 
   // get node coordinates of element
   Epetra_SerialDenseMatrix xyze(3,iel);
@@ -4098,48 +3716,11 @@ void DRT::Elements::Fluid3::f3_int_beltrami_err(
     dserror("beltrami: no total time for error calculation");
   }
 
-  double a      = PI/4.0;
-  double d      = PI/2.0;
+  const double a      = PI/4.0;
+  const double d      = PI/2.0;
 
   /* get viscosity ---*/
   const double  visc = material->m.fluid->viscosity;
-
-
-  /*-------------------------------------------------- initialise ---*/
-  // gaussian points
-  f3_integration_points(data);
-
-
-
-  switch (iel)
-  {
-      case 8: case 20: case 27:  /* --> hex - element */
-        icode   = 3;
-        ihoel   = 1;
-        /* initialise integration */
-        nir = ngp_[0];
-        nis = ngp_[1];
-        nit = ngp_[2];
-        intc= 0;
-        break;
-      case 10: /* --> tet - element */
-        icode   = 3;
-        ihoel   = 1;
-        /* do NOT break at this point!!! */
-      case 4:    /* initialise integration */
-        nir  = ngp_[0]; // for tets in ngp_[0] the number of gauss points is stored !
-        nis  = 1;
-        nit  = 1;
-        intc = ngp_[1];
-        break;
-      default:
-        dserror("typ unknown!");
-  } // end switch (iel) //
-
-
-  /*----------------------------------------------------------------------*
-   |               start loop over integration points                     |
-   *----------------------------------------------------------------------*/
 
   double         preint;
   vector<double> velint  (3);
@@ -4152,47 +3733,29 @@ void DRT::Elements::Fluid3::f3_int_beltrami_err(
   vector<double> deltavel(3);
 
 
-  for (int lr=0;lr<nir;lr++)
+  const bool higher_order_ele = is_higher_order_element(distype);
+  // gaussian points
+  const GaussRule3D gaussrule = getOptimalGaussrule(distype);
+  const IntegrationPoints3D  intpoints = getIntegrationPoints3D(gaussrule);
+
+  // start loop over integration points
+  for (int iquad=0;iquad<intpoints.nquad;iquad++)
   {
-    for (int ls=0;ls<nis;ls++)
-    {
-      for (int lt=0;lt<nit;lt++)
-      {
-        /*------------- get values of  shape functions and their derivatives ---*/
-        switch(iel)
-        {
-            case 8: case 20: case 27:   /* --> hex - element */
-              e1   = data.qxg[lr][nir-1];
-              facr = data.qwgt[lr][nir-1];
-              e2   = data.qxg[ls][nis-1];
-              facs = data.qwgt[ls][nis-1];
-              e3   = data.qxg[lt][nit-1];
-              fact = data.qwgt[lt][nit-1];
-              break;
-            case 4: case 10:   /* --> tet - element */
-              e1   = data.txgr[lr][intc];
-              facr = data.twgt[lr][intc];
-              e2   = data.txgs[lr][intc];
-              facs = ONE;
-              e3   = data.txgt[lr][intc];
-              fact = ONE;
-              break;
-            default:
-              facr = facs = fact = 0.0;
-              e1 = e2 = e3 = 0.0;
-              dserror("typ unknown!");
-        } /* end switch (iel) */
-        DRT::Utils::shape_function_3D(funct,e1,e2,e3,distype);
-        DRT::Utils::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
+          /*------------------- declaration of gauss point variables ---*/
+        const double e1 = intpoints.qxg[iquad][0];
+        const double e2 = intpoints.qxg[iquad][1];
+        const double e3 = intpoints.qxg[iquad][2];
+        shape_function_3D(funct,e1,e2,e3,distype);
+        shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
 
           /*------------------------------------ compute Jacobian matrix */
         f3_jaco(xyze,deriv,xjm,&det,iel);
-        fac = facr*facs*fact*det;
+        const double fac = intpoints.qwgt[iquad]*det;
 
         /*---------------------- get velocity sol at integration point */
         for (int i=0;i<3;i++)
         {
-          velint[i]=ZERO;
+          velint[i]=0.0;
           for (int j=0;j<iel;j++)
           {
             velint[i] += funct[j]*evelnp[i+(3*j)];
@@ -4209,7 +3772,7 @@ void DRT::Elements::Fluid3::f3_int_beltrami_err(
         /*---------------------- get velocity sol at integration point */
         for (int i=0;i<3;i++)
         {
-          xint[i]=ZERO;
+          xint[i]=0.0;
           for (int j=0;j<iel;j++)
           {
             xint[i] += funct[j]*xyze(i,j);
@@ -4250,9 +3813,7 @@ void DRT::Elements::Fluid3::f3_int_beltrami_err(
         }
         preerr += deltap*deltap*fac;
 
-      } /* end of loop over integration points lt*/
-    } /* end of loop over integration points ls */
-  } /* end of loop over integration points lr */
+  } // end of loop over integration points
 
 
   // we use the parameterlist as a container to transport the calculated
@@ -4264,6 +3825,25 @@ void DRT::Elements::Fluid3::f3_int_beltrami_err(
   return;
 }
 
+
+// check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
+bool DRT::Elements::Fluid3::is_higher_order_element(
+              const DRT::Element::DiscretizationType  distype) const
+{
+    bool hoel = true;
+    switch (distype)
+    {
+    case hex8: case hex20: case hex27: case tet10:
+        hoel = true;
+        break;
+    case tet4:
+        hoel = false;
+        break;
+    default:
+        dserror("distype unknown!");
+    }
+    return hoel;
+}
 
 //=======================================================================
 //=======================================================================

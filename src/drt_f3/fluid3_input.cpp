@@ -46,6 +46,7 @@ bool DRT::Elements::Fluid3::ReadElement()
   int   nnode = 0;
   int   nodes[27];
   char  buffer[50];
+  int ngp_[3];
 
   frchk("HEX8",&ierr);
   if (ierr==1)

@@ -28,11 +28,11 @@ using namespace Teuchos;
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
+#include "../drt_lib/drt_utils.H"
 
 
 // forward declarations
 struct _MATERIAL;
-struct _FLUID_DATA;
 /*!
 \brief DRT: namespace of the ccarat discretization module
 
@@ -291,8 +291,6 @@ private:
     calc_fluid_beltrami_error
   };
 
-  //! no. gaussian points in each spatial dimension
-  int                                             ngp_[3];
   //! number of the material law
   int                                             material_;
   //! flag for euler/ale net algorithm
@@ -361,9 +359,6 @@ private:
                        ParameterList            &params,
                        int                       version);
 
-  // evaluate element integration points (and storing them in data)
-  void f3_integration_points(struct _FLUID_DATA& data);
-
   // calculate Jacobian matrix and it's determinant
   void f3_jaco(const Epetra_SerialDenseMatrix& xyze,
 	       const Epetra_SerialDenseMatrix& deriv,
@@ -417,7 +412,7 @@ private:
                 Epetra_SerialDenseMatrix&     derxy,
                 Epetra_SerialDenseMatrix&     derxy2,
                 vector<double>&               edeadng,
-                double&               	      fac,
+                const double&               	      fac,
                 const double&   	      visc,
                 const int&      	      iel,
 		ParameterList& 		      params
@@ -438,7 +433,7 @@ private:
                 Epetra_SerialDenseMatrix&     derxy,
                 Epetra_SerialDenseMatrix&     derxy2,
                 vector<double>&               edeadng,
-                double&               	      fac,
+                const double&               	      fac,
                 const double&   	      visc,
                 const int&      	      iel,
 		ParameterList& 		      params
@@ -455,6 +450,9 @@ private:
   
   void CreateSurfacesHex(const int& nline,
                          const int& nnode);
+
+  // get optimal gaussrule for given discretization type
+  DRT::Utils::GaussRule3D getOptimalGaussrule(const DiscretizationType& distype);
 
   // evaluate fluid coefficient matrix for a generalised
   // alpha problem
@@ -473,7 +471,7 @@ private:
     Epetra_SerialDenseMatrix&  derxy,
     Epetra_SerialDenseMatrix&  derxy2,
     vector<double>&  	       tau,
-    double&                    fac,
+    const double&              fac,
     const double&              visc,
     const int&                 iel,
     ParameterList& 	       params);
@@ -494,11 +492,12 @@ private:
     Epetra_SerialDenseMatrix&  derxy,
     Epetra_SerialDenseMatrix&  derxy2,
     vector<double>&  	       tau,
-    double&                    fac,
+    const double&                    fac,
     const double&              visc,
     const int&                 iel,
     ParameterList& 	       params);
 
+    bool is_higher_order_element(const DRT::Element::DiscretizationType  distype) const;
 
 }; // class Fluid3
 

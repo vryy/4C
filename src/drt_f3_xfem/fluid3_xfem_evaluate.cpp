@@ -328,6 +328,8 @@ void DRT::Elements::XFluid3::f3_sys_mat(const vector<int>&        lm,
 
         // compute first global derivates of shape functions
         f3_gder(derxy,deriv,xjm,det,numnode);
+        // integration constant
+        const double fac = intpoints.qwgt[iquad]*det;
 
         // compute second global derivative of shape functions
         if (higher_order_ele)
@@ -335,11 +337,7 @@ void DRT::Elements::XFluid3::f3_sys_mat(const vector<int>&        lm,
             f3_gder2(xyze,xjm,derxy,derxy2,deriv2,numnode);
         }
         
-        // integration constant
-        const double fac = intpoints.qwgt[iquad]*det;
-        
         element_volume += fac;
-
 
         // get velocities (n+g,i) at integration point
         for (int isd=0;isd<NSD_;isd++)

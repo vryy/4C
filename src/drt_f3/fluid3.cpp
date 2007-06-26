@@ -32,7 +32,6 @@ material_(0),
 is_ale_(false),
 data_()
 {
-  ngp_[0] = ngp_[1] = ngp_[2] = 0;
   surfaces_.resize(0);
   surfaceptrs_.resize(0);
   return;
@@ -50,8 +49,6 @@ data_(old.data_),
 surfaces_(old.surfaces_),
 surfaceptrs_(old.surfaceptrs_)
 {
-  for (int i=0; i<3; ++i) ngp_[i] = old.ngp_[i];
-
   return;
 }
 
@@ -99,8 +96,6 @@ void DRT::Elements::Fluid3::Pack(vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
-  // ngp_
-  AddtoPack(data,ngp_,3*sizeof(int));
   // material_
   AddtoPack(data,material_);
   // is_ale_
@@ -129,8 +124,6 @@ void DRT::Elements::Fluid3::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  // ngp_
-  ExtractfromPack(position,data,ngp_,3*sizeof(int));
   // material_
   ExtractfromPack(position,data,material_);
   // is_ale_
