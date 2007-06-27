@@ -455,10 +455,18 @@ static ST_NODE* parse_primary()
     lexan();
     /*rhs = parse_primary();*/
     rhs = parse_pow();
-    lhs = st_node_new(lt_number,NULL,NULL);
-    lhs->v.number = -1;
-    lhs = st_node_new(lt_operator,lhs,rhs);
-    lhs->v.operator = '*';
+    if (rhs->type==lt_number)
+    {
+      rhs->v.number *= -1;
+      lhs = rhs;
+    }
+    else
+    {
+      lhs = st_node_new(lt_number,NULL,NULL);
+      lhs->v.number = -1;
+      lhs = st_node_new(lt_operator,lhs,rhs);
+      lhs->v.operator = '*';
+    }
     break;
   }
   case tok_name:
