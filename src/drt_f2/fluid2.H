@@ -382,7 +382,7 @@ private:
                 const double&   		fac,
                 const double&   	visc,
                 const int&      	iel
-      		);
+			       );
 
   // set number of gauss points to element shape default
   DRT::Utils::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype);
@@ -660,6 +660,21 @@ private:
   DRT::Elements::Fluid2* parent_;
   //! The local line number of this line w.r.t to the parent_ element
   int                    lline_;
+
+    // evaluate shapefunctions for lines
+    void f2_shapefunction_for_line(
+		      vector<double>&           funct ,
+		      Epetra_SerialDenseVector &           deriv ,
+		      const int                 iel   ,
+		      const double              r
+		      );
+
+  // compute infintesimal line element dr for integration along the line
+  void  f2_substitution(
+		      const Epetra_SerialDenseMatrix  xyze,
+		      const Epetra_SerialDenseVector  deriv,
+		      double&               dr);
+
 
 }; // class Fluid2Line
 
