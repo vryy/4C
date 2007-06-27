@@ -386,6 +386,12 @@ private:
 
   // set number of gauss points to element shape default
   DRT::Utils::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype);
+  
+  void CreateLinesTri(const int& nline,
+                      const int& nnode);
+  
+  void CreateLinesQuad(const int& nline,
+                       const int& nnode);
 
 }; // class Fluid2
 
