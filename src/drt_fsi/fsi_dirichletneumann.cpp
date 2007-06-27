@@ -15,6 +15,8 @@
 #include "fsi_nox_jacobian.H"
 #include "fsi_nox_sd.H"
 
+#include <EpetraExt_RowMatrixOut.h>
+
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -119,6 +121,21 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
                         *alenodemap);
 
   fluid_->SetMeshMap(coupfa_.MasterDofMap());
+
+  // create connection graph of interface elements
+  Teuchos::RefCountPtr<Epetra_Map> imap = structure_->InterfaceMap();
+
+  vector<int> rredundant;
+  DRT::Utils::AllreduceEMap(rredundant, *imap);
+
+  rawGraph_ = Teuchos::rcp(new Epetra_CrsGraph(Copy,*imap,12));
+  for (int i=0; i<imap->NumMyElements(); ++i)
+  {
+    int err = rawGraph_->InsertGlobalIndices(imap->GID(i),rredundant.size(),&rredundant[0]);
+    if (err < 0)
+      dserror("Epetra_CrsGraph::InsertGlobalIndices returned %d", err);
+  }
+  rawGraph_->FillComplete();
 }
 
 
@@ -512,7 +529,6 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
       preconditioner="None";
     }
 
-#if 0
     else if (jacobian=="Dumb Finite Difference")
     {
       Teuchos::ParameterList& fdParams = nlParams.sublist("Finite Difference");
@@ -536,7 +552,6 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
       iJac = FD;
       J = FD;
     }
-#endif
 
 #if 0
     // Finite Difference with coloring. Build a Jacobian as good as it
@@ -683,6 +698,27 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
     }
 #endif
 
+    else if (preconditioner=="Dump Finite Difference")
+    {
+      if (lsParams.get("Preconditioner", "None")=="None")
+      {
+        if (comm_.MyPID()==0)
+          utils->out() << RED "Warning: Preconditioner turned off in linear solver settings." END_COLOR "\n";
+      }
+
+      Teuchos::ParameterList& fdParams = nlParams.sublist("Finite Difference");
+      //fdresitemax_ = fdParams.get("itemax", -1);
+      double alpha = fdParams.get("alpha", 1.0e-4);
+      double beta  = fdParams.get("beta",  1.0e-6);
+
+      Teuchos::RefCountPtr<NOX::Epetra::FiniteDifference> precFD =
+        Teuchos::rcp(new NOX::Epetra::FiniteDifference(printParams, interface, noxSoln, rawGraph_, beta, alpha));
+      iPrec = precFD;
+      M = precFD;
+
+      linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams, iJac, J, iPrec, M, noxSoln));
+    }
+
 #if 0
     // Finite Difference with distance 1 coloring. Supposed to be a
     // suitable (and cheap) preconditioner
@@ -723,13 +759,87 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
     Teuchos::RefCountPtr<NOX::Epetra::Group> grp = Teuchos::rcp(new NOX::Epetra::Group(printParams, iReq, noxSoln, linSys));
 
 #if 0
-    // debug FD Jacobian
-    grp->computeJacobian();
-    if (!Teuchos::is_null(FD))
-      EpetraExt::RowMatrixToMatlabFile("UnderlyingMatrix.fd",FD->getUnderlyingMatrix());
-    else
-      EpetraExt::RowMatrixToMatlabFile("UnderlyingMatrix.fdc",FDC->getUnderlyingMatrix());
-    exit(1);
+    if ((step_ % 10) == 0)
+    {
+      // debug FD Jacobian
+      Teuchos::ParameterList& fdParams = nlParams.sublist("Finite Difference");
+      double alpha = fdParams.get("alpha", 1.0e-4);
+      double beta  = fdParams.get("beta",  1.0e-6);
+      //FD = Teuchos::rcp(new NOX::Epetra::FiniteDifference(printParams, interface, noxSoln, rawGraph_, beta, alpha));
+      //if (not FD->computeJacobian(noxSoln->getEpetraVector()))
+      //dserror("failed to calculate Jacobian");
+
+      RefCountPtr<Epetra_CrsMatrix> jacobian = rcp(new Epetra_CrsMatrix(Copy, *rawGraph_));
+      jacobian->FillComplete();
+      jacobian->PutScalar(0.0);
+
+      const Epetra_BlockMap& map = soln->Map();
+      int nummyelements = map.NumMyElements();
+      int mypos = DRT::Utils::FindMyPos(nummyelements, map.Comm());
+      double eta = 0.0;
+
+      Epetra_Vector fo(*soln);
+      Epetra_Vector fp(*soln);
+      Epetra_Vector Jc(*soln);
+
+      // Compute the RHS at the initial solution
+      computeF(*soln, fo, NOX::Epetra::Interface::Required::FD_Res);
+
+      Epetra_Vector x_perturb = *soln;
+
+      for (int i=0; i<map.NumGlobalElements(); ++i)
+      {
+        if (map.Comm().MyPID()==0)
+          cout << "calculate column " << i << "\n";
+
+        int proc = 0;
+        int idx = 0;
+        if (i>=mypos and i<mypos+nummyelements)
+        {
+          eta = alpha*(*soln)[i-mypos] + beta;
+          x_perturb[i-mypos] += eta;
+          idx = map.GID(i-mypos);
+          proc = map.Comm().MyPID();
+        }
+
+        // Find what proc eta is on
+        int broadcastProc = 0;
+        map.Comm().SumAll(&proc, &broadcastProc, 1);
+
+        // Send the perturbation variable, eta, to all processors
+        map.Comm().Broadcast(&eta, 1, broadcastProc);
+
+        map.Comm().Broadcast(&idx, 1, broadcastProc);
+
+        // Compute the perturbed RHS
+        computeF(x_perturb, fp, NOX::Epetra::Interface::Required::FD_Res);
+
+        // Compute the column k of the Jacobian
+        Jc.Update(1.0, fp, -1.0, fo, 0.0);
+        Jc.Scale( 1.0/eta );
+
+        // Insert nonzero column entries into the jacobian
+        for (int j = 0; j < map.NumMyElements(); ++j)
+        {
+          int gid = map.GID(j);
+          if (Jc[j] != 0.0)
+          {
+            int err = jacobian->ReplaceGlobalValues(gid,1,&Jc[j],&idx);
+            if (err != 0)
+              dserror("ReplaceGlobalValues failed");
+          }
+        }
+
+        // Unperturb the solution vector
+        x_perturb = *soln;
+      }
+
+      jacobian->FillComplete();
+
+      ostringstream filename;
+      filename << allfiles.outputfile_kenner << "_" << step_ << ".dump";
+      EpetraExt::RowMatrixToMatlabFile(filename.str().c_str(),*jacobian);
+    }
 #endif
 
     // Create the convergence tests

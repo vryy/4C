@@ -28,6 +28,7 @@ public:
 
   void PrepareTimeStep();
 
+  Teuchos::RefCountPtr<Epetra_Map> InterfaceMap() { return idispmap_; }
   void SetInterfaceMap(Teuchos::RefCountPtr<Epetra_Map> im);
 
   Teuchos::RefCountPtr<Epetra_Vector> ExtractInterfaceDisplacement();

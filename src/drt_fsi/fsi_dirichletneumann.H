@@ -194,6 +194,9 @@ private:
   /// interface displacement from time step begin
   Teuchos::RefCountPtr<Epetra_Vector> idispn_;
 
+  //! connection of interface dofs for finite differences
+  Teuchos::RefCountPtr<Epetra_CrsGraph> rawGraph_;
+
   //! counters on how many times the residuum was called in a time step
   /*!
     NOX knows different types of residuum calls depending on
