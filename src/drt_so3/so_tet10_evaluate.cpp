@@ -725,6 +725,6 @@ double det_volf(&Epetra_SerialDenseMatrix in_matrix)
 }
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
+ // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOTET10
