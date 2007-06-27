@@ -210,7 +210,7 @@ DRT::Utils::IntegrationPoints3D DRT::Utils::getIntegrationPoints3D(const GaussRu
       break;
     }
     default:
-      dserror("unknown integration rule");
+      dserror("unknown 3D integration rule");
   }
 
   dsassert(intpoints.nquad <= MAXGAUSS, "define a higher MAXGAUSS value in the config file");
@@ -295,6 +295,22 @@ DRT::Utils::IntegrationPoints2D DRT::Utils::getIntegrationPoints2D(const  GaussR
         intpoints.qxg[2][1] = 0.5;
         break;
     }
+    case intrule_tri_3point_on_corners:
+    {
+        dserror("to be filled");
+        intpoints.nquad = 3;                
+        intpoints.qwgt[0]  = 1.0/6.0 ;
+        intpoints.qwgt[1]  = 1.0/6.0 ;
+        intpoints.qwgt[2]  = 1.0/6.0 ;
+
+        intpoints.qxg[0][0] = 0.5;
+        intpoints.qxg[0][1] = 0.0;
+        intpoints.qxg[1][0] = 0.5;
+        intpoints.qxg[1][1] = 0.5;
+        intpoints.qxg[2][0] = 0.0;
+        intpoints.qxg[2][1] = 0.5;
+        break;
+    }
     case intrule_tri_6point:
     {
         intpoints.nquad = 6;
@@ -320,7 +336,7 @@ DRT::Utils::IntegrationPoints2D DRT::Utils::getIntegrationPoints2D(const  GaussR
         break;
     }
     default:
-        dserror("unknown integration rule");
+        dserror("unknown 2D integration rule");
     }
 
     dsassert(intpoints.nquad <= MAXGAUSS, "define a higher MAXGAUSS value in the config file");
@@ -368,7 +384,7 @@ DRT::Utils::IntegrationPoints1D DRT::Utils::getIntegrationPoints1D(const  GaussR
         break;
     }
     default:
-        dserror("unknown integration rule");
+        dserror("unknown 1D integration rule");
     }
 
     dsassert(intpoints.nquad <= MAXGAUSS, "define a higher MAXGAUSS value in the config file");
