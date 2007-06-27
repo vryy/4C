@@ -326,22 +326,7 @@ void DRT::Elements::So_tet10::sot10_nlnstiffmass(
     xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_SOTET10+2];
   }
 
-  /*
-  ** EAS Technology: declare, intialize, set up, and alpha history -------- EAS
-  */
-  // in any case declare variables, sizes etc. only in eascase***??????????
-  Epetra_SerialDenseMatrix* alpha;  // EAS alphas
-  Epetra_SerialDenseMatrix* M_GP;   // EAS matrix M at all GPs
-  Epetra_SerialDenseMatrix M;       // EAS matrix M at current GP
-  Epetra_SerialDenseVector feas;    // EAS portion of internal forces
-  Epetra_SerialDenseMatrix Kaa;     // EAS matrix Kaa
-  Epetra_SerialDenseMatrix Kda;     // EAS matrix Kda
-  double detJ0;                     // detJ(origin)
-  Epetra_SerialDenseMatrix T0invT;  // trafo matrix
-  Epetra_SerialDenseMatrix* oldfeas;   // EAS history
-  Epetra_SerialDenseMatrix* oldKaainv; // EAS history
-  Epetra_SerialDenseMatrix* oldKda;    // EAS history
-  
+
   
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -364,9 +349,9 @@ void DRT::Elements::So_tet10::sot10_nlnstiffmass(
 
     /* compute the Jacobian matrix which looks like:
     **         [  1        1        1  	    1      ]
-    **     J = [ x_,ksi1  x_,ksi2  x_,ksi3  x,ksi4 ]
+    **     J = [ x_,xsi1  x_,ksi2  x_,ksi3  x,ksi4 ]
     **         [ y_,ksi1  y_,ksi2  y_,ksi3  y,ksi4 ]
-    * 		   [ z_,ksi1  z_,ksi2  z_,ksi3  z,ksi4 ]
+    * 		     [ z_,ksi1  z_,ksi2  z_,ksi3  z,ksi4 ]
     */
     Epetra_SerialDenseMatrix jac_temp(NUMCOORD_SOTET10-1,NUMCOORD_SOTET10);
     jac_temp.Multiply('T','N',1.0,xrefe,deriv_gp,1.0);
