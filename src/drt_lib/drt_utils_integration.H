@@ -52,6 +52,7 @@ enum GaussRule2D
     intrule_quad_9point,
     intrule_tri_1point,
     intrule_tri_3point,
+    intrule_tri_3point_on_corners,
     intrule_tri_6point
 };
 
