@@ -386,12 +386,14 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
       return ele;
     }
     break;
+#if 0
     case so_tet10:
     {
       RefCountPtr<DRT::Element> ele = rcp(new DRT::Elements::So_tet10(id,owner));
       return ele;
     }
     break;
+#endif
 #endif
     // continue to add types of elements here....
     default:
