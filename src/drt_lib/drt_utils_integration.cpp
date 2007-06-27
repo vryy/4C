@@ -229,6 +229,14 @@ DRT::Utils::IntegrationPoints2D DRT::Utils::getIntegrationPoints2D(const  GaussR
     
     switch(gaussrule)
     {
+    case intrule_quad_1point :
+    {
+        intpoints.nquad = 1;
+        intpoints.qwgt[0]  =  4.0;
+        intpoints.qxg[0][0] =  0.0;
+        intpoints.qxg[0][1] =  0.0;
+        break;
+    }
     case intrule_quad_4point :
     {
         intpoints.nquad = 4;
