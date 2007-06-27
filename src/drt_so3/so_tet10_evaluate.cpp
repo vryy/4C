@@ -29,6 +29,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/linalg_serialdensematrix.H"
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
+#include "so_tet10_evaluate.h"
 
 extern "C"
 {
@@ -46,7 +47,10 @@ using namespace LINALG; // our linear algebra
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
 
-/*----------------------------------------------------------------------**
+
+
+
+/*----------------------------------------------------------------------***+
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/
 //int DRT::Elements::So_hex8::Evaluate(ParameterList& params,
@@ -60,23 +64,24 @@ int DRT::Elements::So_tet10::Evaluate(ParameterList& params,
                                     Epetra_SerialDenseVector& elevec3)
 {
   DSTraceHelper dst("So_tet10::Evaluate");
-   #ifdef TET_NO_IMPLEMENT //not yet implemented
+
+//   #ifdef TET_NO_IMPLEMENT //not yet implemented
   // start with "none"
-  DRT::Elements::So_hex8::ActionType act = So_hex8::none;
+  DRT::Elements::So_tet10::ActionType act = So_tet10::none;
 
   // get the required action
   string action = params.get<string>("action","none");
   if (action == "none") dserror("No action supplied");
-  else if (action=="calc_struct_linstiff")      act = So_hex8::calc_struct_linstiff;
-  else if (action=="calc_struct_nlnstiff")      act = So_hex8::calc_struct_nlnstiff;
-  else if (action=="calc_struct_internalforce") act = So_hex8::calc_struct_internalforce;
-  else if (action=="calc_struct_linstiffmass")  act = So_hex8::calc_struct_linstiffmass;
-  else if (action=="calc_struct_nlnstiffmass")  act = So_hex8::calc_struct_nlnstiffmass;
-  else if (action=="calc_struct_stress")        act = So_hex8::calc_struct_stress;
-  else if (action=="calc_struct_eleload")       act = So_hex8::calc_struct_eleload;
-  else if (action=="calc_struct_fsiload")       act = So_hex8::calc_struct_fsiload;
-  else if (action=="calc_struct_update_istep")  act = So_hex8::calc_struct_update_istep;
-  else dserror("Unknown type of action for So_hex8");
+  else if (action=="calc_struct_linstiff")      act = So_tet10::calc_struct_linstiff;
+  else if (action=="calc_struct_nlnstiff")      act = So_tet10::calc_struct_nlnstiff;
+  else if (action=="calc_struct_internalforce") act = So_tet10::calc_struct_internalforce;
+  else if (action=="calc_struct_linstiffmass")  act = So_tet10::calc_struct_linstiffmass;
+  else if (action=="calc_struct_nlnstiffmass")  act = So_tet10::calc_struct_nlnstiffmass;
+  else if (action=="calc_struct_stress")        act = So_tet10::calc_struct_stress;
+  else if (action=="calc_struct_eleload")       act = So_tet10::calc_struct_eleload;
+  else if (action=="calc_struct_fsiload")       act = So_tet10::calc_struct_fsiload;
+  else if (action=="calc_struct_update_istep")  act = So_tet10::calc_struct_update_istep;
+  else dserror("Unknown type of action for So_tet10");
 
   // get the material law
   MATERIAL* actmat = &(mat[material_-1]);
@@ -90,7 +95,7 @@ int DRT::Elements::So_tet10::Evaluate(ParameterList& params,
       for (int i=0; i<(int)mydisp.size(); ++i) mydisp[i] = 0.0;
       vector<double> myres(lm.size());
       for (int i=0; i<(int)myres.size(); ++i) myres[i] = 0.0;
-      soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,actmat);
+      sotet10_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,actmat);//*
     }
     break;
 
@@ -104,7 +109,7 @@ int DRT::Elements::So_tet10::Evaluate(ParameterList& params,
       DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::Utils::ExtractMyValues(*res,myres,lm);
-      soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,actmat);
+      sotet10_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,actmat);//*
     }
     break;
 
@@ -128,7 +133,7 @@ int DRT::Elements::So_tet10::Evaluate(ParameterList& params,
       DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::Utils::ExtractMyValues(*res,myres,lm);
-      soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,actmat);
+      sotet10_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,actmat);//*
     }
     break;
 
@@ -138,8 +143,8 @@ int DRT::Elements::So_tet10::Evaluate(ParameterList& params,
       if (disp==null) dserror("Cannot get state vectors 'displacement'");
       vector<double> mydisp(lm.size());
       DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
-      Epetra_SerialDenseMatrix stresses(NUMGPT_SOH8,NUMSTR_SOH8);
-      soh8_stress(actmat,mydisp,&stresses);
+      Epetra_SerialDenseMatrix stresses(NUMGPT_SOTET10,NUMSTR_SOTET10);//*
+      sotet10_stress(actmat,mydisp,&stresses); //*
     }
     break;
 
@@ -160,14 +165,21 @@ int DRT::Elements::So_tet10::Evaluate(ParameterList& params,
       dserror("Unknown type of action for Solid3");
   }
   
-   #endif //TET_NO_IMPLEMENT //not yet implemented
-   dserror("");
+
+  dserror("warninng:So_tet10::Evaluate not fully implemented");
   return 0;
 }
 
 
 
-/*----------------------------------------------------------------------*#####
+
+
+
+
+
+
+
+/*----------------------------------------------------------------------**####
  |  Integrate a Volume Neumann boundary condition (public)     maf 04/07|
  *----------------------------------------------------------------------*/
 int DRT::Elements::So_tet10::EvaluateNeumann(ParameterList& params,
@@ -176,7 +188,7 @@ int DRT::Elements::So_tet10::EvaluateNeumann(ParameterList& params,
                                            vector<int>&              lm,
                                            Epetra_SerialDenseVector& elevec1)
 {
-  DSTraceHelper dst("So_hex8::EvaluateNeumann");
+  DSTraceHelper dst("So_tet10::EvaluateNeumann");
    #ifdef TET_NO_IMPLEMENT //not yet implemented
 
   // get values and switches from the condition
@@ -200,11 +212,11 @@ int DRT::Elements::So_tet10::EvaluateNeumann(ParameterList& params,
     curvefac = DRT::TimeCurveManager::Instance().Curve(curvenum).f(time);
   // **
 
-/* ============================================================================*
-** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
-** ============================================================================*/
-/* pointer to (static) shape function array
- * for each node, evaluated at each gp*/
+// ============================================================================
+// CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS
+// ============================================================================
+// pointer to (static) shape function array
+//  for each node, evaluated at each gp
   Epetra_SerialDenseMatrix* shapefct; //[NUMNOD_SOH8][NUMGPT_SOH8]
 /* pointer to (static) shape function derivatives array
  * for each node wrt to each direction, evaluated at each gp*/
@@ -261,6 +273,11 @@ int DRT::Elements::So_tet10::EvaluateNeumann(ParameterList& params,
   return 0;
 } // DRT::Elements::Shell8::s8_EvaluateNeumann
 
+
+
+
+
+
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                             maf 04/07|
  *----------------------------------------------------------------------*/
@@ -273,39 +290,46 @@ void DRT::Elements::So_tet10::sot10_nlnstiffmass(
       Epetra_SerialDenseVector* force,          // element internal force vector
       struct _MATERIAL*          material)       // element material data
 {
-  DSTraceHelper dst("So_tet10::soh8_nlnstiffmass");
-#ifdef TET_NO_IMPLEMENT //not yet implemented
-/* ============================================================================*
-** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
-** ============================================================================*/
+  DSTraceHelper dst("So_tet10::sotet10_nlnstiffmass");
+
+/* =============================================================================*
+** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_10 with 4 GAUSS POINTS*
+** =============================================================================*/
 /* pointer to (static) shape function array
  * for each node, evaluated at each gp*/
-  Epetra_SerialDenseMatrix* shapefct; //[NUMNOD_SOH8][NUMGPT_SOH8]
+  Epetra_SerialDenseMatrix* shapefct; //[NUMNOD_SOTET10][NUMGPT_SOTET10]
 /* pointer to (static) shape function derivatives array
  * for each node wrt to each direction, evaluated at each gp*/
-  Epetra_SerialDenseMatrix* deriv;    //[NUMGPT_SOH8*NUMDIM][NUMNOD_SOH8]
+  Epetra_SerialDenseMatrix* deriv;    //[NUMGPT_SOTET10*NUMDIM][NUMNOD_SOTET10]
 /* pointer to (static) weight factors at each gp */
-  Epetra_SerialDenseVector* weights;  //[NUMGPT_SOH8]
+  Epetra_SerialDenseVector* weights;  //[NUMGPT_SOTET10]
   soh8_shapederiv(&shapefct,&deriv,&weights);   // call to evaluate
 /* ============================================================================*/
 
   // update element geometry
-  Epetra_SerialDenseMatrix xrefe(NUMNOD_SOH8,NUMDIM_SOH8);  // material coord. of element
-  Epetra_SerialDenseMatrix xcurr(NUMNOD_SOH8,NUMDIM_SOH8);  // current  coord. of element
-  for (int i=0; i<NUMNOD_SOH8; ++i){
+  Epetra_SerialDenseMatrix xrefe(NUMNOD_SOTET10,NUMDIM_SOTET10);  // material coord. of element
+  Epetra_SerialDenseMatrix xcurr(NUMNOD_SOTET10,NUMDIM_SOTET10);  // current  coord. of element
+  /* structure of xrefe:
+    **             [  X_1   Y_1   Z_1  ]
+    **     xrefe = [  X_2   Y_2   Z_2  ]
+    **             [   |     |     |   ]
+    **             [  X_10  Y_10  Z_10 ]
+    */
+  
+  for (int i=0; i<NUMNOD_SOTET10; ++i){  					//**+
     xrefe(i,0) = Nodes()[i]->X()[0];
     xrefe(i,1) = Nodes()[i]->X()[1];
     xrefe(i,2) = Nodes()[i]->X()[2];
 
-    xcurr(i,0) = xrefe(i,0) + disp[i*NODDOF_SOH8+0];
-    xcurr(i,1) = xrefe(i,1) + disp[i*NODDOF_SOH8+1];
-    xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_SOH8+2];
+    xcurr(i,0) = xrefe(i,0) + disp[i*NODDOF_SOTET10+0];
+    xcurr(i,1) = xrefe(i,1) + disp[i*NODDOF_SOTET10+1];
+    xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_SOTET10+2];
   }
 
   /*
   ** EAS Technology: declare, intialize, set up, and alpha history -------- EAS
   */
-  // in any case declare variables, sizes etc. only in eascase
+  // in any case declare variables, sizes etc. only in eascase***??????????
   Epetra_SerialDenseMatrix* alpha;  // EAS alphas
   Epetra_SerialDenseMatrix* M_GP;   // EAS matrix M at all GPs
   Epetra_SerialDenseMatrix M;       // EAS matrix M at current GP
@@ -317,87 +341,53 @@ void DRT::Elements::So_tet10::sot10_nlnstiffmass(
   Epetra_SerialDenseMatrix* oldfeas;   // EAS history
   Epetra_SerialDenseMatrix* oldKaainv; // EAS history
   Epetra_SerialDenseMatrix* oldKda;    // EAS history
-  if (eastype_ != soh8_easnone) {
-    /*
-    ** EAS Update of alphas:
-    ** the current alphas are (re-)evaluated out of
-    ** Kaa and Kda of previous step to avoid additional element call.
-    ** This corresponds to the (innermost) element update loop
-    ** in the nonlinear FE-Skript page 120 (load-control alg. with EAS)
-    */
-    //(*alpha).Shape(neas_,1);
-    alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");   // get old alpha
-//    // evaluate current (updated) EAS alphas (from history variables)
-//    soh8_easupdate(alpha,disp,residual);
-    // get stored EAS history
-    //(*oldfeas).Shape(neas_,1);
-    //(*oldKaainv).Shape(neas_,neas_);
-    //(*oldKda).Shape(neas_,NUMDOF_SOH8);
-    oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
-    oldKaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
-    oldKda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
-    if (!alpha || !oldKaainv || !oldKda || !oldfeas) dserror("Missing EAS history-data");
-
-    // we need the displacement at the previous step
-    Epetra_SerialDenseVector old_d(NUMDOF_SOH8);
-    for (int i=0; i<NUMDOF_SOH8; ++i) old_d(i) = disp[i] - residual[i];
-
-    // add Kda . old_d to feas
-    (*oldfeas).Multiply('N','N',1.0,(*oldKda),old_d,1.0);
-    // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
-    (*alpha).Multiply('N','N',-1.0,(*oldKaainv),(*oldfeas),1.0);
-    /* end of EAS Update ******************/
-
-    // EAS portion of internal forces, also called enhacement vector s or Rtilde
-    feas.Size(neas_);
-
-    // EAS matrix K_{alpha alpha}, also called Dtilde
-    Kaa.Shape(neas_,neas_);
-
-    // EAS matrix K_{d alpha}
-    Kda.Shape(neas_,NUMDOF_SOH8);
-
-    // transformation matrix T0, maps M-matrix evaluated at origin
-    // between local element coords and global coords
-    // here we already get the inverse transposed T0
-    T0invT.Shape(NUMSTR_SOH8,NUMSTR_SOH8);
-
-    /* evaluation of EAS variables (which are constant for the following):
-    ** -> M defining interpolation of enhanced strains alpha, evaluated at GPs
-    ** -> determinant of Jacobi matrix at element origin (r=s=t=0.0)
-    ** -> T0^{-T}
-    */
-    soh8_eassetup(&M_GP,detJ0,T0invT,xrefe);
-  } // -------------------------------------------------------------------- EAS
-
+  
+  
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
-  for (int gp=0; gp<NUMGPT_SOH8; ++gp) {
+  for (int gp=0; gp<NUMGPT_SOTET10; ++gp) {
 
     // get submatrix of deriv at actual gp
-    Epetra_SerialDenseMatrix deriv_gp(NUMDIM_SOH8,NUMGPT_SOH8);
-    for (int m=0; m<NUMDIM_SOH8; ++m) {
-      for (int n=0; n<NUMGPT_SOH8; ++n) {
-        deriv_gp(m,n)=(*deriv)(NUMDIM_SOH8*gp+m,n);
+    Epetra_SerialDenseMatrix deriv_gp(NUMNOD_SOTET10 ,NUMCOORD_SOTET10);
+    /*for (int m=0; m<NUMDIM_SOTET10; ++m) {
+      for (int n=0; n<NUMGPT_SOTET10; ++n) {
+        deriv_gp(m,n)=(*deriv)(NUMDIM_SOTET10*gp+m,n);
+      }
+    }*/
+    
+    for (int shape_func=0; shape_func<NUMNOD_SOTET10; ++shape_func) {
+      for (int ksi_num=0;ksi_num<NUMCOORD_SOTET10; ++ksi_num) {
+        deriv_gp(shape_func,ksi_num)=(*deriv)(NUMNOD_SOTET10*ksi_num+shape_func,gp);
       }
     }
 
     /* compute the Jacobian matrix which looks like:
-    **         [ x_,r  y_,r  z_,r ]
-    **     J = [ x_,s  y_,s  z_,s ]
-    **         [ x_,t  y_,t  z_,t ]
+    **         [  1        1        1  	    1      ]
+    **     J = [ x_,ksi1  x_,ksi2  x_,ksi3  x,ksi4 ]
+    **         [ y_,ksi1  y_,ksi2  y_,ksi3  y,ksi4 ]
+    * 		   [ z_,ksi1  z_,ksi2  z_,ksi3  z,ksi4 ]
     */
-    Epetra_SerialDenseMatrix jac(NUMDIM_SOH8,NUMDIM_SOH8);
-    jac.Multiply('N','N',1.0,deriv_gp,xrefe,1.0);
+    Epetra_SerialDenseMatrix jac_temp(NUMCOORD_SOTET10-1,NUMCOORD_SOTET10);
+    jac_temp.Multiply('T','N',1.0,xrefe,deriv_gp,1.0);
+    Epetra_SerialDenseMatrix jac(NUMCOORD_SOTET10,NUMCOORD_SOTET10);
+    for (int i=0; i<4; i++) jac(0,i)=1;
+    for (int row=0;row<3;row++)
+    {
+    	for (int col=0;col<4;col++)
+    	jac(row+1,col)=jac_temp(row,col);	
+    }
+    
+    ~jac_temp;    
 
-    // compute determinant of Jacobian by Sarrus' rule
-    double detJ= jac(0,0) * jac(1,1) * jac(2,2)
+    // compute determinant of Jacobian by Sarrus' rule	//*################
+   /* double detJ= jac(0,0) * jac(1,1) * jac(2,2)
                + jac(0,1) * jac(1,2) * jac(2,0)
                + jac(0,2) * jac(1,0) * jac(2,1)
                - jac(0,0) * jac(1,2) * jac(2,1)
                - jac(0,1) * jac(1,0) * jac(2,2)
-               - jac(0,2) * jac(1,1) * jac(2,0);
+               - jac(0,2) * jac(1,1) * jac(2,0);*/
+    double detJ=det_volf(jac);
     if (detJ == 0.0) dserror("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
 
@@ -405,7 +395,7 @@ void DRT::Elements::So_tet10::sot10_nlnstiffmass(
     ** by solving   Jac . N_XYZ = N_rst   for N_XYZ
     ** Inverse of Jacobian is therefore not explicitly computed
     */
-    Epetra_SerialDenseMatrix N_XYZ(NUMDIM_SOH8,NUMNOD_SOH8);
+    Epetra_SerialDenseMatrix N_XYZ(NUMDIM_SOTET10,NUMNOD_SOTET10);
     Epetra_SerialDenseSolver solve_for_inverseJac;  // solve A.X=B
     solve_for_inverseJac.SetMatrix(jac);            // set A=jac
     solve_for_inverseJac.SetVectors(N_XYZ,deriv_gp);// set X=N_XYZ, B=deriv_gp
@@ -430,25 +420,7 @@ void DRT::Elements::So_tet10::sot10_nlnstiffmass(
     glstrain(4) = cauchygreen(1,2);
     glstrain(5) = cauchygreen(2,0);
 
-    // EAS technology: "enhance the strains"  ----------------------------- EAS
-    if (eastype_ != soh8_easnone) {
-      // get EAS matrix M at current gausspoint gp
-      M.Shape(NUMSTR_SOH8,neas_);
-      for (int m=0; m<NUMSTR_SOH8; ++m) {
-        for (int n=0; n<neas_; ++n) {
-          M(m,n)=(*M_GP)(NUMSTR_SOH8*gp+m,n);
-        }
-      }
-      // map local M to global, also enhancement is refered to element origin
-      // M = detJ0/detJ T0^{-T} . M
-      Epetra_SerialDenseMatrix Mtemp(M); // temp M for Matrix-Matrix-Product
-      M.Multiply('N','N',detJ0/detJ,T0invT,Mtemp,0.0);
-      // add enhanced strains = M . alpha to GL strains to "unlock" element
-      glstrain.Multiply('N','N',1.0,M,(*alpha),1.0);
-    } // ------------------------------------------------------------------ EAS
-
-
-    /* non-linear B-operator (may so be called, meaning
+    /* non-linear B-operator (may be so called, meaning
     ** of B-operator is not so sharp in the non-linear realm) *
     ** B = F . Bl *
     **
@@ -468,6 +440,7 @@ void DRT::Elements::So_tet10::sot10_nlnstiffmass(
     **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
     **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
     */
+    
     Epetra_SerialDenseMatrix bop(NUMSTR_SOH8,NUMDOF_SOH8);
     for (int i=0; i<NUMNOD_SOH8; ++i) {
       bop(0,NODDOF_SOH8*i+0) = defgrd(0,0)*N_XYZ(0,i);
@@ -587,18 +560,21 @@ void DRT::Elements::So_tet10::sot10_nlnstiffmass(
   } // -------------------------------------------------------------------- EAS
   
     #endif //TET_NO_IMPLEMENT //not yet implemented
-  dserror("DRT::Elements::Shell8::s8_nlnstiffmass not implemented yet ");
+  dserror("DRT::Elements::So_tet10::sot10_nlnstiffmass not implemented yet ");
   
   
   return;
-} // DRT::Elements::Shell8::s8_nlnstiffmass
+} // DRT::Elements::So_tet10::sot10_nlnstiffmass
 
 
 
-/*----------------------------------------------------------------------**###
+
+
+
+
+/*----------------------------------------------------------------------****+
  |  shape functions and derivatives for So_tet10              volf 06/07|
  *----------------------------------------------------------------------*/
-//void DRT::Elements::So_hex8::soh8_shapederiv(
 void DRT::Elements::So_tet10::sot10_shapederiv(
       Epetra_SerialDenseMatrix** shapefct,  // pointer to pointer of shapefct
       Epetra_SerialDenseMatrix** deriv,     // pointer to pointer of derivs
@@ -608,77 +584,103 @@ void DRT::Elements::So_tet10::sot10_shapederiv(
 
   #ifdef TET_NO_IMPLEMENT //not yet implemented
   // static matrix objects, kept in memory
-  static Epetra_SerialDenseMatrix  f(NUMNOD_SOH8,NUMGPT_SOH8);  // shape functions
-  static Epetra_SerialDenseMatrix df(NUMDOF_SOH8,NUMNOD_SOH8);  // derivatives
-  static Epetra_SerialDenseVector weightfactors(NUMGPT_SOH8);   // weights for each gp
-  static int fdf_eval;                      // flag for re-evaluate everything
+  static Epetra_SerialDenseMatrix  f(NUMNOD_SOTET10,NUMGPT_SOTET10);  // shape functions
+  static Epetra_SerialDenseMatrix df(NUMDOF_SOTET10,NUMNOD_SOTET10);  // derivatives
+  static Epetra_SerialDenseVector weightfactors(NUMGPT_SOTET10);   // weights for each gp
+  static bool fdf_eval;                      // flag for re-evaluate everything
 
-  const double gploc    = 1.0/sqrt(3.0);    // gp sampling point value for linear fct
-  const double gpw      = 1.0;              // weight at every gp for linear fct
+  //const double gploc    = 1.0/sqrt(3.0);    // gp sampling point value for linear fct
+  //Quadrature rule from Carlos A. Felippa: Adv. FEM  §16.4 
+  const double gploc_alpha    = (5.0 +3.0*sqrt(5))/20.0;    // gp sampling point value for quadr. fct
+  const double gploc_beta     = (5.0 -    sqrt(5))/20.0; 
+  
+  //const double gpw      = 1.0;              // weight at every gp for linear fct
+  const double gpw      = 0.25;              // weight at every gp for linear fct
 
-  if (fdf_eval!=0){             // if true f,df already evaluated
+  if (fdf_eval==true){             // if true f,df already evaluated
     *shapefct = &f;             // return adress of static object to target of pointer
     *deriv    = &df;            // return adress of static object to target of pointer
     *weights  = &weightfactors; // return adress of static object to target of pointer
     return;
   } else {
-    // (r,s,t) gp-locations of fully integrated linear 8-node Hex
-    const double r[NUMGPT_SOH8] = {-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc,-gploc};
-    const double s[NUMGPT_SOH8] = {-gploc,-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc};
-    const double t[NUMGPT_SOH8] = {-gploc,-gploc,-gploc,-gploc, gploc, gploc, gploc, gploc};
-    const double w[NUMGPT_SOH8] = {   gpw,   gpw,   gpw,   gpw,   gpw,   gpw,   gpw,   gpw};
+    // (ksi1, ksi2, ksi3 ,ksi4) gp-locations of fully integrated linear 10-node Tet
+    const double ksi1[NUMGPT_SOTET10] = {gploc_alpha, gploc_beta , gploc_beta , gploc_beta };
+    const double ksi2[NUMGPT_SOTET10] = {gploc_beta , gploc_alpha, gploc_beta , gploc_beta };
+    const double ksi3[NUMGPT_SOTET10] = {gploc_beta , gploc_beta , gploc_alpha, gploc_beta };
+    const double ksi4[NUMGPT_SOTET10] = {gploc_beta , gploc_beta , gploc_beta , gploc_alpha};
+    const double w[NUMGPT_SOTET10] = {   gpw,   gpw,   gpw,   gpw};
 
-    // fill up nodal f at each gp
-    for (int i=0; i<NUMGPT_SOH8; ++i) {
-      f(0,i) = (1.0-r[i])*(1.0-s[i])*(1.0-t[i])*0.125;
-      f(1,i) = (1.0+r[i])*(1.0-s[i])*(1.0-t[i])*0.125;
-      f(2,i) = (1.0+r[i])*(1.0+s[i])*(1.0-t[i])*0.125;
-      f(3,i) = (1.0-r[i])*(1.0+s[i])*(1.0-t[i])*0.125;
-      f(4,i) = (1.0-r[i])*(1.0-s[i])*(1.0+t[i])*0.125;
-      f(5,i) = (1.0+r[i])*(1.0-s[i])*(1.0+t[i])*0.125;
-      f(6,i) = (1.0+r[i])*(1.0+s[i])*(1.0+t[i])*0.125;
-      f(7,i) = (1.0-r[i])*(1.0+s[i])*(1.0+t[i])*0.125;
+    // fill up nodal f at each gp 
+    for (int i=0; i<NUMGPT_SOTET10; ++i) {
+      f(0,i) = ksi1[i] * (2*ksi1[i] -1);
+      f(1,i) = ksi2[i] * (2*ksi2[i] -1);
+      f(2,i) = ksi3[i] * (2*ksi3[i] -1);
+      f(3,i) = ksi4[i] * (2*ksi4[i] -1);
+      f(4,i) = 4 * ksi1[i] * ksi2[i];
+      f(5,i) = 4 * ksi2[i] * ksi3[i];
+      f(6,i) = 4 * ksi3[i] * ksi1[i];
+      f(7,i) = 4 * ksi1[i] * ksi4[i];  
+      f(8,i) = 4 * ksi2[i] * ksi4[i];
+      f(9,i) = 4 * ksi3[i] * ksi4[i];
       weightfactors[i] = w[i]*w[i]*w[i]; // just for clarity how to get weight factors
-    }
+    } 
 
     // fill up df w.r.t. rst directions (NUMDIM) at each gp
-    for (int i=0; i<NUMGPT_SOH8; ++i) {
-        // df wrt to r "+0" for each node(0..7) at each gp [i]
-        df(NUMDIM_SOH8*i+0,0) = -(1.0-s[i])*(1.0-t[i])*0.125;
-        df(NUMDIM_SOH8*i+0,1) =  (1.0-s[i])*(1.0-t[i])*0.125;
-        df(NUMDIM_SOH8*i+0,2) =  (1.0+s[i])*(1.0-t[i])*0.125;
-        df(NUMDIM_SOH8*i+0,3) = -(1.0+s[i])*(1.0-t[i])*0.125;
-        df(NUMDIM_SOH8*i+0,4) = -(1.0-s[i])*(1.0+t[i])*0.125;
-        df(NUMDIM_SOH8*i+0,5) =  (1.0-s[i])*(1.0+t[i])*0.125;
-        df(NUMDIM_SOH8*i+0,6) =  (1.0+s[i])*(1.0+t[i])*0.125;
-        df(NUMDIM_SOH8*i+0,7) = -(1.0+s[i])*(1.0+t[i])*0.125;
+    for (int i=0; i<NUMGPT_SOTET10; ++i) {
+        // df wrt to ksi1 "+0" for each node(0..9) at each gp [i]
+        df(NUMCOORD_SOTET10*0+0,i) = 4 * ksi1[i]-1;
+   		df(NUMCOORD_SOTET10*1+0,i) = 0;
+      	df(NUMCOORD_SOTET10*2+0,i) = 0;
+     	df(NUMCOORD_SOTET10*3+0,i) = 0;
+    	df(NUMCOORD_SOTET10*4+0,i) = 4 * ksi2[i];
+      	df(NUMCOORD_SOTET10*5+0,i) = 0;
+      	df(NUMCOORD_SOTET10*6+0,i) = 4 * ksi3[i];
+      	df(NUMCOORD_SOTET10*7+0,i) = 4 * ksi4[i];  
+      	df(NUMCOORD_SOTET10*8+0,i) = 0;
+      	df(NUMCOORD_SOTET10*9+0,i) = 0;
 
-        // df wrt to s "+1" for each node(0..7) at each gp [i]
-        df(NUMDIM_SOH8*i+1,0) = -(1.0-r[i])*(1.0-t[i])*0.125;
-        df(NUMDIM_SOH8*i+1,1) = -(1.0+r[i])*(1.0-t[i])*0.125;
-        df(NUMDIM_SOH8*i+1,2) =  (1.0+r[i])*(1.0-t[i])*0.125;
-        df(NUMDIM_SOH8*i+1,3) =  (1.0-r[i])*(1.0-t[i])*0.125;
-        df(NUMDIM_SOH8*i+1,4) = -(1.0-r[i])*(1.0+t[i])*0.125;
-        df(NUMDIM_SOH8*i+1,5) = -(1.0+r[i])*(1.0+t[i])*0.125;
-        df(NUMDIM_SOH8*i+1,6) =  (1.0+r[i])*(1.0+t[i])*0.125;
-        df(NUMDIM_SOH8*i+1,7) =  (1.0-r[i])*(1.0+t[i])*0.125;
+        // df wrt to ksi2 "+1" for each node(0..9) at each gp [i]
+        df(NUMCOORD_SOTET10*0+1,i) = 0;
+      	df(NUMCOORD_SOTET10*1+1,i) = 4 * ksi2[i] - 1;
+      	df(NUMCOORD_SOTET10*2+1,i) = 0;
+      	df(NUMCOORD_SOTET10*3+1,i) = 0;
+      	df(NUMCOORD_SOTET10*4+1,i) = 4 * ksi1[i];
+      	df(NUMCOORD_SOTET10*5+1,i) = 4 * ksi3[i];
+      	df(NUMCOORD_SOTET10*6+1,i) = 0;
+      	df(NUMCOORD_SOTET10*7+1,i) = 0;  
+      	df(NUMCOORD_SOTET10*8+1,i) = 4 * ksi4[i];
+      	df(NUMCOORD_SOTET10*9+1,i) = 0;
 
-        // df wrt to t "+2" for each node(0..7) at each gp [i]
-        df(NUMDIM_SOH8*i+2,0) = -(1.0-r[i])*(1.0-s[i])*0.125;
-        df(NUMDIM_SOH8*i+2,1) = -(1.0+r[i])*(1.0-s[i])*0.125;
-        df(NUMDIM_SOH8*i+2,2) = -(1.0+r[i])*(1.0+s[i])*0.125;
-        df(NUMDIM_SOH8*i+2,3) = -(1.0-r[i])*(1.0+s[i])*0.125;
-        df(NUMDIM_SOH8*i+2,4) =  (1.0-r[i])*(1.0-s[i])*0.125;
-        df(NUMDIM_SOH8*i+2,5) =  (1.0+r[i])*(1.0-s[i])*0.125;
-        df(NUMDIM_SOH8*i+2,6) =  (1.0+r[i])*(1.0+s[i])*0.125;
-        df(NUMDIM_SOH8*i+2,7) =  (1.0-r[i])*(1.0+s[i])*0.125;
+        // df wrt to ksi3 "+2" for each node(0..9) at each gp [i]
+        df(NUMCOORD_SOTET10*0+2,i) = 0;
+      	df(NUMCOORD_SOTET10*1+2,i) = 0;
+      	df(NUMCOORD_SOTET10*2+2,i) = 4 * ksi3[i] - 1;
+      	df(NUMCOORD_SOTET10*3+2,i) = 0;
+      	df(NUMCOORD_SOTET10*4+2,i) = 0;
+      	df(NUMCOORD_SOTET10*5+2,i) = 4 * ksi2[i];
+      	df(NUMCOORD_SOTET10*6+2,i) = 4 * ksi1[i];
+      	df(NUMCOORD_SOTET10*7+2,i) = 0;  
+      	df(NUMCOORD_SOTET10*8+2,i) = 0;
+      	df(NUMCOORD_SOTET10*9+2,i) = 4 * ksi4[i];
+        
+        // df wrt to ksi4 "+2" for each node(0..9) at each gp [i]
+        df(NUMCOORD_SOTET10*0+3,i) = 0;
+      	df(NUMCOORD_SOTET10*1+3,i) = 0;
+      	df(NUMCOORD_SOTET10*2+3,i) = 0;
+      	df(NUMCOORD_SOTET10*3+3,i) = 4 * ksi4[i] - 1;
+      	df(NUMCOORD_SOTET10*4+3,i) = 0;
+     	df(NUMCOORD_SOTET10*5+3,i) = 0;
+      	df(NUMCOORD_SOTET10*6+3,i) = 0;
+      	df(NUMCOORD_SOTET10*7+3,i) = 4 * ksi1[i];  
+      	df(NUMCOORD_SOTET10*8+3,i) = 4 * ksi2[i];
+      	df(NUMCOORD_SOTET10*9+3,i) = 4 * ksi3[i];
     }
 
     // return adresses of just evaluated matrices
     *shapefct = &f;             // return adress of static object to target of pointer
     *deriv = &df;               // return adress of static object to target of pointer
     *weights  = &weightfactors; // return adress of static object to target of pointer
-    fdf_eval = 1;               // now all arrays are filled statically
+    fdf_eval = true;               // now all arrays are filled statically
   }
   
   #endif //TET_NO_IMPLEMENT //not yet implemented
@@ -686,100 +688,58 @@ void DRT::Elements::So_tet10::sot10_shapederiv(
   return;
 }  // So_tet10::sotet10_shapederiv
 
-///*----------------------------------------------------------------------*
-// | material laws for So_hex8                                   maf 04/07|
-// *----------------------------------------------------------------------*/
-//void DRT::Elements::So_hex8::soh8_mat_sel(
-//      Epetra_SerialDenseVector* stress,
-//      Epetra_SerialDenseMatrix* cmat,
-//      double* density,
-//      const Epetra_SerialDenseVector* glstrain,
-//      const Epetra_SerialDenseMatrix* defgrd,
-//      struct _MATERIAL* material,
-//      int gp)
-//{
-//  DSTraceHelper dst("So_hex8::soh8_mat_sel");
-//
-//  switch (material->mattyp)
-//  {
-//    case m_stvenant: /*------------------ st.venant-kirchhoff-material */
-//    {
-//      // get material parameters
-//      double Emod = mat->m.stvenant->youngs;    // Young's modulus (modulus of elasticity)
-//      double nu = mat->m.stvenant->possionratio;// Poisson's ratio (Querdehnzahl)
-//      (*density) = mat->m.stvenant->density;    // density, returned to evaluate mass matrix
-//
-//      /*--------------------------------------------------------------------*/
-//      /* isotropic elasticity tensor C in matrix notion */
-//      /*                       [ 1-nu     nu     nu |          0    0    0 ]
-//       *                       [        1-nu     nu |          0    0    0 ]
-//       *           E           [               1-nu |          0    0    0 ]
-//       *   C = --------------- [ ~~~~   ~~~~   ~~~~   ~~~~~~~~~~  ~~~  ~~~ ]
-//       *       (1+nu)*(1-2*nu) [                    | (1-2*nu)/2    0    0 ]
-//       *                       [                    |      (1-2*nu)/2    0 ]
-//       *                       [ symmetric          |           (1-2*nu)/2 ]
-//       */
-//      double mfac = Emod/((1.0+nu)*(1.0-2.0*nu));  /* factor */
-//      /* write non-zero components */
-//      (*cmat)(0,0) = mfac*(1.0-nu);
-//      (*cmat)(0,1) = mfac*nu;
-//      (*cmat)(0,2) = mfac*nu;
-//      (*cmat)(1,0) = mfac*nu;
-//      (*cmat)(1,1) = mfac*(1.0-nu);
-//      (*cmat)(1,2) = mfac*nu;
-//      (*cmat)(2,0) = mfac*nu;
-//      (*cmat)(2,1) = mfac*nu;
-//      (*cmat)(2,2) = mfac*(1.0-nu);
-//      /* ~~~ */
-//      (*cmat)(3,3) = mfac*0.5*(1.0-2.0*nu);
-//      (*cmat)(4,4) = mfac*0.5*(1.0-2.0*nu);
-//      (*cmat)(5,5) = mfac*0.5*(1.0-2.0*nu);
-//
-//      // evaluate stresses
-//      (*cmat).Multiply('N',(*glstrain),(*stress));   // sigma = C . epsilon
-//      break;
-//    }
-//
-//    case m_struct_multiscale: /*------------------- multiscale approach */
-//    {
-//      // Here macro-micro transition (localization) will take place
-//
-//      int microdis_num = mat->m.struct_multiscale->microdis;
-//
-//      if (gp > static_cast<int>(mat_.size())-1)
-//      {
-//        mat_.resize(gp+1);
-//        mat_[gp] = rcp(new MicroMaterial(gp, microdis_num));
-//      }
-//
-//      MicroMaterial* micromat =
-//        dynamic_cast<MicroMaterial*>(mat_[gp].get());
-//
-//      if (micromat == NULL)
-//        dserror("Wrong type of derived material class");
-//
-//      micromat->CalcStressStiffDens(stress, cmat, density, glstrain);
-//      break;
-//    }
-//
-//    default:
-//      dserror("Illegal type of material for element solid3 hex8");
-//      break;
-//  }
-//
-//  /*--------------------------------------------------------------------*/
-//  return;
-//}  // of soh8_mat_sel
-
-/*----------------------------------------------------------------------***
- |  init the element (public)                                mwgee 12/06|
- *----------------------------------------------------------------------*/
 int DRT::Elements::Sotet10Register::Initialize(DRT::Discretization& dis)
 {
   return 0;
 }
 
+void cut_volf(&Epetra_SerialDenseMatrix in_matrix, int A_row,int A_col,int B_row,int B_col,&Epetra_SerialDenseMatrix out_matrix)
+{
+	out_matrix.Reshape(B_row-A_row,B_col-A_col);
+	
+	for (int i_row=0;i_row < out_matrix.M();i_row++)
+	for (int i_col; i_col < out_matrix.N();i_col++)
+	{
+		out_matrix(i_row,i_col)= in_matrix(i_row+A_row,i_col+A_col);			
+	}	
+}
+
+
+double det_volf(&Epetra_SerialDenseMatrix in_matrix)
+{
+	Epetra_SerialDenseMatrix temp_matrix(in_matrix.N()-1;in_matrix.N()-1);
+	
+	if (in_matrix.N()==1)
+	{
+		return in_matrix(0,0);	
+	}	
+	else if (in_matrix.N()==2)
+	{
+		return 	((in_matrix(0,0)*in_matrix(1,1))-(in_matrix(0,1)*in_matrix(1,0)));
+	}
+	else if (in_matrix.N()>2)
+	{
+		double out_det=0;
+		for (int i_col=0;i_col < in_natrix.N();i_col++)
+		{
+			for (c_col=0;c_col < i_col;i_col++)
+			{
+				for(row=1;row<in_natrix.N();row++)
+				temp_matrix(row,c_col)=in_matrix(row,c_col);							
+			}
+		
+			for (c_col=i_col+1;c_col <  in_natrix.N();i_col++)
+			{
+			for(row=1;row<in_natrix.N();row++)
+			temp_matrix(row,c_col-1)=in_matrix(row,c_col);	
+			}
+		out_det+=det(in_matrix);
+		}
+		return out_det;
+	}	
+}
+
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOH8
+#endif  // #ifdef D_SOTET10

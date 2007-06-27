@@ -14,7 +14,6 @@ Maintainer: Moritz Frenzel
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
-//#include "so_hex8.H"
 #include "so_tet10.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"

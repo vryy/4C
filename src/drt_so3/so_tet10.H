@@ -30,13 +30,13 @@ using namespace Teuchos;
 ////#define NUMGPT_SOH8 8      // total gauss points per element
 ////#define NUMDIM_SOH8 3      // number of dimensions
 
-#define NUMNOD_SOTET10 10      // number of nodes
-#define NODDOF_SOTET10 3      // number of dofs per node
-#define NUMDOF_SOTET10 30     // total dofs per element
-/**/ #define NUMSTR_SOTET10 6      // number of strains/stresses
-/**/ #define NUMGPT_SOTET10 8      // total gauss points per element
-/**/ #define NUMDIM_SOTET10 3      // number of dimensions
-
+#define NUMNOD_SOTET10      10      // number of nodes
+#define NODDOF_SOTET10       3      // number of dofs per node
+#define NUMDOF_SOTET10      30      // total dofs per element
+#define NUMSTR_SOTET10       6      // number of strains/stresses 	/****/
+#define NUMGPT_SOTET10       4      // total gauss points per element	/****/
+#define NUMDIM_SOTET10       3      // number of dimensions 			/****/ 
+#define NUMCOORD_SOTET10	 4 		// number of shape function cooordinates (ksi1-ksi4) 
 
 // forward declarations
 struct _MATERIAL;
@@ -307,7 +307,6 @@ protected:
     calc_struct_update_istep
   };
 
-  // //! kinematic types of so_hex8
   //! kinematic types of so_tet10
   enum KinematicType
   {
@@ -318,7 +317,7 @@ protected:
     //soh8_updlag,
     sot10_updlag,
   };
-  enum StressType
+  enum StressType//###################
   {
     //soh8_stress_none,
     sot8_stress_none,

@@ -238,7 +238,7 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
     }
     break;
 #endif
-#ifdef D_SOSH8
+#ifdef D_SOH8
     case ParObject_So_sh8:
     {
       DRT::Elements::So_sh8* object = new DRT::Elements::So_sh8(-1,-1);
