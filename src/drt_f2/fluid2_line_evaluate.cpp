@@ -21,6 +21,7 @@ Maintainer: Peter Gmanitzer
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
 
+using namespace DRT::Utils;
 
 
 /*----------------------------------------------------------------------*
@@ -58,50 +59,19 @@ int DRT::Elements::Fluid2Line::EvaluateNeumann(
   const vector<double>* val   = condition.Get<vector<double> >("val"  );
   
 
-  // set the number of gausspoints
-  int nir   = 0;
-
-  // set number of nodes
-  int iel   = this->NumNode();
+    // set number of nodes
+  const int iel   = this->NumNode();
     
-  switch(this->Shape())
-  {
-    case line2:
-      nir = 2;
-      break;
-    case line3:
-      nir = 3;
-      break;
-    default: 
-      dserror("line element type unknown!\n");
-  }
-
-  vector<double>            gaussweight(nir);
-  vector<double>            gausscoord(nir);
-  switch(this->Shape())
-  {
-    case line2:
-      gaussweight[0]=1.0;
-      gaussweight[1]=1.0;
-      gausscoord[0]=-0.57735026919;
-      gausscoord[1]=0.57735026919;
-      break;
-    case line3:
-      gaussweight[0]=0.555555555556;
-      gaussweight[2]=0.888888888889;
-      gaussweight[1]=0.555555555556;
-      gausscoord[0]=-0.774596669241;
-      gausscoord[2]=0;
-      gausscoord[1]=0.774596669241;
-      break;
-  default:
-     dserror("line element type unknown!\n");
-  }
+  const DiscretizationType distype = this->Shape();
+  
+  // gaussian points
+  const GaussRule1D gaussrule = getOptimalGaussrule(distype);
+  const IntegrationPoints1D  intpoints = getIntegrationPoints1D(gaussrule);
+  
  
   // allocate vector for shape functions and for derivatives
-  vector<double>   funct(iel);
-  vector<double>   deriv2(iel);  
-  Epetra_SerialDenseVector    deriv(iel);
+  Epetra_SerialDenseVector   funct(iel);
+  Epetra_SerialDenseMatrix    deriv(iel,1);
 
   // node coordinates
   Epetra_SerialDenseMatrix xye(2,iel);
@@ -118,13 +88,15 @@ int DRT::Elements::Fluid2Line::EvaluateNeumann(
   
   
   // loop over integration points
-  for (int gpid=0;gpid<nir;gpid++)
+  for (int gpid=0;gpid<intpoints.nquad;gpid++)
   {
+    const double e1 = intpoints.qxg[gpid];
     // get shape functions and derivatives in the line
-    f2_shapefunction_for_line(funct,deriv,iel,gausscoord[gpid]);
+    shape_function_1D(funct,e1,distype);
+    shape_function_1D_deriv1(deriv,e1,distype);
 
     // compute infintesimal line element dr for integration along the line
-    f2_substitution(xye,deriv,dr);
+    f2_substitution(xye,deriv,dr,iel);
   
     // values are multiplied by the product from inf. area element,
     // the gauss weight, the timecurve factor and the constant
@@ -132,7 +104,7 @@ int DRT::Elements::Fluid2Line::EvaluateNeumann(
     // one step theta, 2/3 for bdf with dt const.)
     
     double fac;
-    fac = gaussweight[gpid]*dr* curvefac * thsl;
+    fac =intpoints.qwgt[gpid] *dr* curvefac * thsl;
      for (int node=0;node<iel;++node)
     {
       for(int dim=0;dim<3;dim++)
@@ -147,50 +119,32 @@ int DRT::Elements::Fluid2Line::EvaluateNeumann(
   return 0;
 }
 
-
-void DRT::Elements::Fluid2Line::f2_shapefunction_for_line(
-  vector<double>&           funct ,
-  Epetra_SerialDenseVector&         deriv ,
-  const int                 iel   ,
-  const double              r
-  )
+GaussRule1D DRT::Elements::Fluid2Line::getOptimalGaussrule(const DiscretizationType& distype)
 {
-  switch (iel)
-  {
-    case 2:
+  GaussRule1D rule;
+  switch (distype)
     {
-      funct[0] = (ONE-r)*0.5;
-      funct[1] = (ONE+r)*0.5;
-      
-      deriv[0] = -0.5;
-      deriv[1] = 0.5;
+    case line2:
+      rule = intrule_line_2point;
       break;
-    }
-    case 3:
-    {
-      funct[0] = 0.5*r*(r-ONE);
-      funct[1] = 0.5*r*(r+ONE);
-      funct[2] = (ONE-r)*(ONE+r);
-
-      deriv[0] = r-0.5;
-      deriv[1] = r+0.5;
-      deriv[2] = -TWO*r;
+    case line3:
+      rule = intrule_line_3point;
       break;
+    default: 
+    dserror("unknown number of nodes for gaussrule initialization");
     }
-    default:
-	dserror("distyp unknown\n");
-  }
-  return;
+  return rule;
 }
 
 
 void  DRT::Elements::Fluid2Line::f2_substitution(
   const Epetra_SerialDenseMatrix  xye,
-  const Epetra_SerialDenseVector  deriv,
-  double&               dr)
+  const Epetra_SerialDenseMatrix  deriv,
+  double&               dr,
+  const int iel)
 {
   // compute derivative of parametrization
-  Epetra_SerialDenseVector der_par (deriv.Length());
+  Epetra_SerialDenseVector der_par (iel);
   der_par.Multiply('N','N',1.0,xye,deriv,0.0);
   dr=der_par.Norm2();
   return;

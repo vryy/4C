@@ -667,21 +667,17 @@ private:
   //! The local line number of this line w.r.t to the parent_ element
   int                    lline_;
 
-    // evaluate shapefunctions for lines
-    void f2_shapefunction_for_line(
-		      vector<double>&           funct ,
-		      Epetra_SerialDenseVector &           deriv ,
-		      const int                 iel   ,
-		      const double              r
-		      );
+    
 
   // compute infintesimal line element dr for integration along the line
   void  f2_substitution(
 		      const Epetra_SerialDenseMatrix  xyze,
-		      const Epetra_SerialDenseVector  deriv,
-		      double&               dr);
+		      const Epetra_SerialDenseMatrix  deriv,
+		      double&               dr,
+		      const int iel);
 
-
+  // Get Rule for Gaussintegration according to DRT::UTIL
+  DRT::Utils::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
 }; // class Fluid2Line
 
 
