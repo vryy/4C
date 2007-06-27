@@ -95,7 +95,7 @@ int DRT::Elements::So_tet10::Evaluate(ParameterList& params,
       for (int i=0; i<(int)mydisp.size(); ++i) mydisp[i] = 0.0;
       vector<double> myres(lm.size());
       for (int i=0; i<(int)myres.size(); ++i) myres[i] = 0.0;
-      sotet10_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,actmat);//*
+      //sotet10_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,actmat);//*
     }
     break;
 
@@ -109,7 +109,7 @@ int DRT::Elements::So_tet10::Evaluate(ParameterList& params,
       DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::Utils::ExtractMyValues(*res,myres,lm);
-      sotet10_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,actmat);//*
+      //sotet10_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,actmat);//*
     }
     break;
 
@@ -133,7 +133,7 @@ int DRT::Elements::So_tet10::Evaluate(ParameterList& params,
       DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::Utils::ExtractMyValues(*res,myres,lm);
-      sotet10_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,actmat);//*
+      //sotet10_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,actmat);//*
     }
     break;
 
@@ -144,7 +144,7 @@ int DRT::Elements::So_tet10::Evaluate(ParameterList& params,
       vector<double> mydisp(lm.size());
       DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
       Epetra_SerialDenseMatrix stresses(NUMGPT_SOTET10,NUMSTR_SOTET10);//*
-      sotet10_stress(actmat,mydisp,&stresses); //*
+      //sotet10_stress(actmat,mydisp,&stresses); //*
     }
     break;
 
@@ -291,7 +291,7 @@ void DRT::Elements::So_tet10::sot10_nlnstiffmass(
       struct _MATERIAL*          material)       // element material data
 {
   DSTraceHelper dst("So_tet10::sotet10_nlnstiffmass");
-
+#ifdef TET_NO_IMPLEMENT
 /* =============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_10 with 4 GAUSS POINTS*
 ** =============================================================================*/
@@ -544,10 +544,10 @@ void DRT::Elements::So_tet10::sot10_nlnstiffmass(
     }
   } // -------------------------------------------------------------------- EAS
   
-    #endif //TET_NO_IMPLEMENT //not yet implemented
+/**/    #endif //TET_NO_IMPLEMENT //not yet implemented
   dserror("DRT::Elements::So_tet10::sot10_nlnstiffmass not implemented yet ");
   
-  
+#endif  
   return;
 } // DRT::Elements::So_tet10::sot10_nlnstiffmass
 
@@ -678,52 +678,51 @@ int DRT::Elements::Sotet10Register::Initialize(DRT::Discretization& dis)
   return 0;
 }
 
-void cut_volf(&Epetra_SerialDenseMatrix in_matrix, int A_row,int A_col,int B_row,int B_col,&Epetra_SerialDenseMatrix out_matrix)
-{
-	out_matrix.Reshape(B_row-A_row,B_col-A_col);
-	
-	for (int i_row=0;i_row < out_matrix.M();i_row++)
-	for (int i_col; i_col < out_matrix.N();i_col++)
-	{
-		out_matrix(i_row,i_col)= in_matrix(i_row+A_row,i_col+A_col);			
-	}	
-}
+//void cut_volf(&Epetra_SerialDenseMatrix in_matrix, int A_row,int A_col,int B_row,int B_col,&Epetra_SerialDenseMatrix out_matrix)
+//{
+//	out_matrix.Reshape(B_row-A_row,B_col-A_col);
+//	
+//	for (int i_row=0;i_row < out_matrix.M();i_row++)
+//	for (int i_col; i_col < out_matrix.N();i_col++)
+//	{
+//		out_matrix(i_row,i_col)= in_matrix(i_row+A_row,i_col+A_col);			
+//	}	
+//}
 
 
-double det_volf(&Epetra_SerialDenseMatrix in_matrix)
-{
-	Epetra_SerialDenseMatrix temp_matrix(in_matrix.N()-1;in_matrix.N()-1);
-	
-	if (in_matrix.N()==1)
-	{
-		return in_matrix(0,0);	
-	}	
-	else if (in_matrix.N()==2)
-	{
-		return 	((in_matrix(0,0)*in_matrix(1,1))-(in_matrix(0,1)*in_matrix(1,0)));
-	}
-	else if (in_matrix.N()>2)
-	{
-		double out_det=0;
-		for (int i_col=0;i_col < in_natrix.N();i_col++)
-		{
-			for (c_col=0;c_col < i_col;i_col++)
-			{
-				for(row=1;row<in_natrix.N();row++)
-				temp_matrix(row,c_col)=in_matrix(row,c_col);							
-			}
-		
-			for (c_col=i_col+1;c_col <  in_natrix.N();i_col++)
-			{
-			for(row=1;row<in_natrix.N();row++)
-			temp_matrix(row,c_col-1)=in_matrix(row,c_col);	
-			}
-		out_det+=det(in_matrix);
-		}
-		return out_det;
-	}	
-}
-
+//double det_volf(&Epetra_SerialDenseMatrix in_matrix)
+//{
+//	Epetra_SerialDenseMatrix temp_matrix(in_matrix.N()-1;in_matrix.N()-1);
+//	
+//	if (in_matrix.N()==1)
+//	{
+//		return in_matrix(0,0);	
+//	}	
+//	else if (in_matrix.N()==2)
+//	{
+//		return 	((in_matrix(0,0)*in_matrix(1,1))-(in_matrix(0,1)*in_matrix(1,0)));
+//	}
+//	else if (in_matrix.N()>2)
+//	{
+//		double out_det=0;
+//		for (int i_col=0;i_col < in_natrix.N();i_col++)
+//		{
+//			for (c_col=0;c_col < i_col;i_col++)
+//			{
+//				for(row=1;row<in_natrix.N();row++)
+//				temp_matrix(row,c_col)=in_matrix(row,c_col);							
+//			}
+//		
+//			for (c_col=i_col+1;c_col <  in_natrix.N();i_col++)
+//			{
+//			for(row=1;row<in_natrix.N();row++)
+//			temp_matrix(row,c_col-1)=in_matrix(row,c_col);	
+//			}
+//		out_det+=det(in_matrix);
+//		}
+//		return out_det;
+//	}	
+//}
 
  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

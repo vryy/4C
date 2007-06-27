@@ -46,6 +46,7 @@ extern "C"
 #include "../drt_w1/wall1.H"
 #include "../drt_so3/so_hex8.H"
 #include "../drt_so3/so_sh8.H"
+#include "../drt_so3/so_tet10.H"
 #include "drt_dserror.H"
 
 
@@ -287,7 +288,8 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
     ale2,
     ale3,
     so_hex8,
-    so_sh8
+    so_sh8,
+    so_tet10
   };
 
   TypeofElement type = none;
@@ -302,6 +304,7 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
   else if (eletype=="ALE3") type = ale3;
   else if (eletype=="SOLIDH8") type = so_hex8;
   else if (eletype=="SOLIDSH8") type = so_sh8;
+  else if (eletype=="SOLIDTET10") type = so_tet10;
   // continue to add elements here....
   else dserror("Unknown type of finite element");
 
@@ -377,11 +380,15 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
       return ele;
     }
     break;
-#endif
-#ifdef D_SOH8
     case so_sh8:
     {
       RefCountPtr<DRT::Element> ele = rcp(new DRT::Elements::So_sh8(id,owner));
+      return ele;
+    }
+    break;
+    case so_tet10:
+    {
+      RefCountPtr<DRT::Element> ele = rcp(new DRT::Elements::So_tet10(id,owner));
       return ele;
     }
     break;
