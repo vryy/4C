@@ -21,7 +21,8 @@ END { print defs }
 #define CREATOR "`whoami`@`hostname`"
 #define CREATION_DATE "`date`"
 #define CONFIGURATION "$configfile"
-
+#define CHANGEDREVISION "`(cd $SRC && svn info 2>&1) | grep 'Last Changed Rev'|sed -e 's/Last Changed Rev: //'`"
+#define CHANGEDDATE "`(cd $SRC && svn info 2>&1) | grep 'Last Changed Date'|sed -e 's/Last Changed Date: //'`"
 #endif
 
 EOF

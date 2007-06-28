@@ -72,6 +72,7 @@ All io is done using chunks.
 extern "C" {
 
 #include "../headers/standardtypes.h"
+#include "../headers/compile_settings.h"
 
 #include "../shell8/shell8.h"
 #include "../shell9/shell9.h"
@@ -129,7 +130,7 @@ extern "C" {
   \date 11/04
 */
 /*----------------------------------------------------------------------*/
-#define BINIO_VERSION "0.2"
+#define BINIO_VERSION "0.3"
 
 
 /*----------------------------------------------------------------------*
@@ -353,7 +354,7 @@ void init_bin_out_main(CHAR* outputname)
     time_value = time(NULL);
     fprintf(bin_out_main.control_file, "# ccarat output control file\n"
             "# created by %s on %s at %s"
-            "# using io version: $Id$ \n\n"
+            "# using code revision " CHANGEDREVISION " from " CHANGEDDATE " \n\n"
             "version = \"" BINIO_VERSION "\"\n"
             "input_file = \"%s\"\n"
             "problem_type = \"%s\"\n"
