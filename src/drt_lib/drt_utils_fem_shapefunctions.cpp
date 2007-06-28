@@ -1296,9 +1296,11 @@ void DRT::Utils::shape_function_2D_deriv1(
     return;
 }
 
-//
-// shape functions and natural deriv1atives
-//
+///
+/// shape functions and natural deriv1atives
+///
+/// The second index indicates the node number
+/// the first index indicates the derivative direction
 void DRT::Utils::shape_function_2D_deriv2(
                      Epetra_SerialDenseMatrix&                  deriv2,
                      const double&                              r,
@@ -1308,21 +1310,29 @@ void DRT::Utils::shape_function_2D_deriv2(
     const double Q12=0.50;
     const double Q14=0.25;
     
+    const int DXDX = 0;
+    const int DYDY = 1;
+    const int DXDY = 2;
+    
     switch (distype)
     {
     case DRT::Element::quad4:
     {    
-        deriv2(0,0)= Q14;
-        deriv2(1,0)= Q14;
-        
-        deriv2(0,1)=-Q14;
-        deriv2(1,1)=-Q14;
-             
-        deriv2(0,2)= Q14;
-        deriv2(1,2)= Q14;
+        deriv2(DXDX,0) =  0.0;
+        deriv2(DYDY,0) =  0.0;
+        deriv2(DXDY,0) =  Q14;
     
-        deriv2(0,3)=-Q14;
-        deriv2(1,3)=-Q14;
+        deriv2(DXDX,1) =  0.0;
+        deriv2(DYDY,1) =  0.0;
+        deriv2(DXDY,1) = -Q14;
+          
+        deriv2(DXDX,2) =  0.0;
+        deriv2(DYDY,2) =  0.0;
+        deriv2(DXDY,2) =  Q14;
+    
+        deriv2(DXDX,3) =  0.0;
+        deriv2(DYDY,3) =  0.0;
+        deriv2(DXDY,3) = -Q14;
         break;
     }
     case DRT::Element::quad9:
@@ -1335,33 +1345,46 @@ void DRT::Utils::shape_function_2D_deriv2(
         const double s2=1.0-s*s;
         const double rh=Q12*r;
         const double sh=Q12*s;
-    
-        deriv2(0,0)=-sh*sm;
-        deriv2(1,0)=-rh*rm;
+        const double rhp=r+Q12;
+        const double rhm=r-Q12;
+        const double shp=s+Q12;
+        const double shm=s-Q12;
         
-        deriv2(0,1)=-sh*sm;
-        deriv2(1,1)= rh*rp;
+        deriv2(DXDX,0) =-sh*sm;
+        deriv2(DYDY,0) =-rh*rm;
+        deriv2(DXDY,0) = shm*rhm;
+
+        deriv2(DXDX,1) =-sh*sm;
+        deriv2(DYDY,1) = rh*rp;
+        deriv2(DXDY,1) = shm*rhp;
         
-        deriv2(0,2)= sh*sp;
-        deriv2(1,2)= rh*rp;
-        
-        deriv2(0,3)= sh*sp;
-        deriv2(1,3)=-rh*rm;
-        
-        deriv2(0,4)= s*sm;
-        deriv2(1,4)= r2;
-        
-        deriv2(0,5)= s2;
-        deriv2(1,5)=-r*rp;   
-        
-        deriv2(0,6)=-s*sp;
-        deriv2(1,6)= r2;
-        
-        deriv2(0,7)= s2;
-        deriv2(1,7)= r*rm;
-        
-        deriv2(0,8)=-2.0*s2;
-        deriv2(1,8)=-2.0*r2;
+        deriv2(DXDX,2) = sh*sp;
+        deriv2(DYDY,2) = rh*rp;
+        deriv2(DXDY,2) = shp*rhp;
+
+        deriv2(DXDX,3) = sh*sp;
+        deriv2(DYDY,3) =-rh*rm;
+        deriv2(DXDY,3) = shp*rhm;
+
+        deriv2(DXDX,4) = 2.0*sh*sm;
+        deriv2(DYDY,4) = r2;
+        deriv2(DXDY,4) =-2.0*r*shm;
+
+        deriv2(DXDX,5) = s2;
+        deriv2(DYDY,5) =-2.0*rh*rp;
+        deriv2(DXDY,5) =-2.0*s*rhp;
+
+        deriv2(DXDX,6) =-2.0*sh*sp;
+        deriv2(DYDY,6) = r2;
+        deriv2(DXDY,6) =-2.0*r*shp;
+
+        deriv2(DXDX,7) = s2;
+        deriv2(DYDY,7) = 2.0*rh*rm;
+        deriv2(DXDY,7) =-2.0*s*rhm;
+
+        deriv2(DXDX,8) =-2.0*s2;
+        deriv2(DYDY,8) =-2.0*r2;
+        deriv2(DXDY,8) = 2.0*s*2.0*r;
         break;
     }
     case DRT::Element::tri3:
