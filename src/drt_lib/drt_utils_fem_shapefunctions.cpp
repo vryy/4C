@@ -30,8 +30,6 @@ void DRT::Utils::shape_function_3D(
                      const double&                              t,
                      const DRT::Element::DiscretizationType&    distype)
 {
-    const double Q12 = 1.0/2.0;
-    const double Q14 = 1.0/4.0;
     const double Q18 = 1.0/8.0;
 
     switch (distype)
@@ -77,31 +75,31 @@ void DRT::Utils::shape_function_3D(
         funct[5] =Q18*rp*sp*tp*(rp+sp+tp-5.0);
         funct[6] =Q18*rm*sp*tp*(rm+sp+tp-5.0);
         funct[7] =Q18*rm*sm*tp*(rm+sm+tp-5.0);
-        funct[8] =Q14*rp*ssm*tm;
-        funct[9] =Q14*rrm*sp*tm;
-        funct[10]=Q14*rm*ssm*tm;
-        funct[11]=Q14*rrm*sm*tm;
-        funct[12]=Q14*rp*ssm*tp;
-        funct[13]=Q14*rrm*sp*tp;
-        funct[14]=Q14*rm*ssm*tp;
-        funct[15]=Q14*rrm*sm*tp;
-        funct[16]=Q14*rp*sm*ttm;
-        funct[17]=Q14*rp*sp*ttm;
-        funct[18]=Q14*rm*sp*ttm;
-        funct[19]=Q14*rm*sm*ttm;  /* analytisch gecheckt und fuer OK erklaert!!! */
+        funct[8] =0.25*rp*ssm*tm;
+        funct[9] =0.25*rrm*sp*tm;
+        funct[10]=0.25*rm*ssm*tm;
+        funct[11]=0.25*rrm*sm*tm;
+        funct[12]=0.25*rp*ssm*tp;
+        funct[13]=0.25*rrm*sp*tp;
+        funct[14]=0.25*rm*ssm*tp;
+        funct[15]=0.25*rrm*sm*tp;
+        funct[16]=0.25*rp*sm*ttm;
+        funct[17]=0.25*rp*sp*ttm;
+        funct[18]=0.25*rm*sp*ttm;
+        funct[19]=0.25*rm*sm*ttm;  /* analytisch gecheckt und fuer OK erklaert!!! */
         break;
     }
     case DRT::Element::hex27:
     {
-        const double rm1=Q12*r*(r - 1.0);
+        const double rm1=0.5*r*(r - 1.0);
         const double r00=(1.0 - r*r);
-        const double rp1=Q12*r*(r + 1.0);
-        const double sm1=Q12*s*(s - 1.0);
+        const double rp1=0.5*r*(r + 1.0);
+        const double sm1=0.5*s*(s - 1.0);
         const double s00=(1.0 - s*s);
-        const double sp1=Q12*s*(s + 1.0);
-        const double tm1=Q12*t*(t - 1.0);
+        const double sp1=0.5*s*(s + 1.0);
+        const double tm1=0.5*t*(t - 1.0);
         const double t00=(1.0 - t*t);
-        const double tp1=Q12*t*(t + 1.0);
+        const double tp1=0.5*t*(t + 1.0);
         
         funct[0] = rp1*sp1*tp1;
         funct[1] = sm1*rp1*tp1;
@@ -185,7 +183,6 @@ void DRT::Utils::shape_function_3D_deriv1(
                      const double&                              t,
                      const DRT::Element::DiscretizationType&    distype)
 {
-    const double Q12 = 1.0/2.0;
     const double Q18 = 1.0/8.0;
 
     switch (distype)
@@ -276,76 +273,76 @@ void DRT::Utils::shape_function_3D_deriv1(
 //      deriv1(1,7) =-Q18*tp*rm*(2.0*sm+tp+rm-5.0);
 //      deriv1(2,7) = Q18*rm*sm*(2.0*tp+rm+sm-5.0);
 //
-//      deriv1(0,8) = Q14*ssm*tm;
-//      deriv1(1,8) =-Q12*s*tm*rp;
-//      deriv1(2,8) =-Q14*ssm*rp;
+//      deriv1(0,8) = 0.25*ssm*tm;
+//      deriv1(1,8) =-0.5*s*tm*rp;
+//      deriv1(2,8) =-0.25*ssm*rp;
 //
-//      deriv1(0,9) =-Q12*r*sp*tm;
-//      deriv1(1,9) = Q14*rrm*tm;
-//      deriv1(2,9) =-Q14*rrm*sp;
+//      deriv1(0,9) =-0.5*r*sp*tm;
+//      deriv1(1,9) = 0.25*rrm*tm;
+//      deriv1(2,9) =-0.25*rrm*sp;
 //
 //      deriv1(0,10)=-deriv1(0,8);
-//      deriv1(1,10)=-Q12*s*tm*rm;
-//      deriv1(2,10)=-Q14*ssm*rm;
+//      deriv1(1,10)=-0.5*s*tm*rm;
+//      deriv1(2,10)=-0.25*ssm*rm;
 //
-//      deriv1(0,11)=-Q12*r*sm*tm;
+//      deriv1(0,11)=-0.5*r*sm*tm;
 //      deriv1(1,11)=-deriv1(1,9);
-//      deriv1(2,11)=-Q14*rrm*sm;
+//      deriv1(2,11)=-0.25*rrm*sm;
 //
-//      deriv1(0,12)= Q14*ssm*tp;
-//      deriv1(1,12)=-Q12*s*tp*rp;
+//      deriv1(0,12)= 0.25*ssm*tp;
+//      deriv1(1,12)=-0.5*s*tp*rp;
 //      deriv1(2,12)=-deriv1(2,8);
 //
-//      deriv1(0,13)=-Q12*r*sp*tp;
-//      deriv1(1,13)= Q14*rrm*tp;
+//      deriv1(0,13)=-0.5*r*sp*tp;
+//      deriv1(1,13)= 0.25*rrm*tp;
 //      deriv1(2,13)=-deriv1(2,8);
 //
 //      deriv1(0,14)=-deriv1(0,12);
-//      deriv1(1,14)=-Q12*s*tp*rm;
+//      deriv1(1,14)=-0.5*s*tp*rm;
 //      deriv1(2,14)=-deriv1(2,10);
 //
-//      deriv1(0,15)=-Q12*r*sm*tp;
+//      deriv1(0,15)=-0.5*r*sm*tp;
 //      deriv1(1,15)=-deriv1(1,13);
 //      deriv1(2,15)=-deriv1(2,11);
 //
-//      deriv1(0,16)= Q14*sm*ttm;
-//      deriv1(1,16)=-Q14*ttm*rp;
-//      deriv1(2,16)=-Q12*t*rp*sm;
+//      deriv1(0,16)= 0.25*sm*ttm;
+//      deriv1(1,16)=-0.25*ttm*rp;
+//      deriv1(2,16)=-0.5*t*rp*sm;
 //
-//      deriv1(0,17)= Q14*sp*ttm;
+//      deriv1(0,17)= 0.25*sp*ttm;
 //      deriv1(1,17)=-deriv1(1,16);
-//      deriv1(2,17)=-Q12*t*rp*sp;
+//      deriv1(2,17)=-0.5*t*rp*sp;
 //
 //      deriv1(0,18)=-deriv1(0,17);
-//      deriv1(1,18)= Q14*ttm*rm;
-//      deriv1(2,18)=-Q12*t*rm*sp;
+//      deriv1(1,18)= 0.25*ttm*rm;
+//      deriv1(2,18)=-0.5*t*rm*sp;
 //
 //      deriv1(0,19)=-deriv1(0,16);
 //      deriv1(1,19)=-deriv1(1,18);
-//      deriv1(2,19)=-Q12*t*rm*sm;
+//      deriv1(2,19)=-0.5*t*rm*sm;
         break;
     }
     case DRT::Element::hex27:
     {
-        const double rm1=Q12*r*(r - 1.0);
+        const double rm1=0.5*r*(r - 1.0);
         const double r00=(1.0 - r*r);
-        const double rp1=Q12*r*(r + 1.0);
-        const double sm1=Q12*s*(s - 1.0);
+        const double rp1=0.5*r*(r + 1.0);
+        const double sm1=0.5*s*(s - 1.0);
         const double s00=(1.0 - s*s);
-        const double sp1=Q12*s*(s + 1.0);
-        const double tm1=Q12*t*(t - 1.0);
+        const double sp1=0.5*s*(s + 1.0);
+        const double tm1=0.5*t*(t - 1.0);
         const double t00=(1.0 - t*t);
-        const double tp1=Q12*t*(t + 1.0);
+        const double tp1=0.5*t*(t + 1.0);
     
-        const double drm1 = r - Q12;
+        const double drm1 = r - 0.5;
         const double dr00 = -2.0 * r;
-        const double drp1 = r + Q12;
-        const double dsm1 = s - Q12;
+        const double drp1 = r + 0.5;
+        const double dsm1 = s - 0.5;
         const double ds00 = -2.0 * s;
-        const double dsp1 = s + Q12;
-        const double dtm1 = t - Q12;
+        const double dsp1 = s + 0.5;
+        const double dtm1 = t - 0.5;
         const double dt00 = -2.0 * t;
-        const double dtp1 = t + Q12;
+        const double dtp1 = t + 0.5;
 
         deriv1(0,0) = sp1*tp1*drp1;
         deriv1(0,1) = sm1*tp1*drp1;
@@ -521,7 +518,6 @@ void DRT::Utils::shape_function_3D_deriv2(
                      const double&                              t,
                      const DRT::Element::DiscretizationType&    distype)
 {
-    const double Q12 = 1.0/2.0;
     const double Q18 = 1.0/8.0;
 
     switch (distype)
@@ -608,42 +604,42 @@ void DRT::Utils::shape_function_3D_deriv2(
 //   ssm=1.0-s*s;
 //   ttm=1.0-t*t;
 
-//      deriv2(0,0) = Q14*sm*tm;
-//      deriv2(1,0) = Q14*tm*rp;
-//      deriv2(2,0) = Q14*rp*sm;
+//      deriv2(0,0) = 0.25*sm*tm;
+//      deriv2(1,0) = 0.25*tm*rp;
+//      deriv2(2,0) = 0.25*rp*sm;
 //      deriv2(3,0) =-Q18*(tm*(2*rp+sm+tm-5.0+sm*tm));
 //      deriv2(4,0) =-Q18*(sm*(2*rp+sm+tm-5.0+sm*tm));
 //      deriv2(5,0) = Q18*(rp*(2*sm+tm+rp-5.0+tm*rp));
 //
-//      deriv2(0,1) = Q14*sp*tm;
+//      deriv2(0,1) = 0.25*sp*tm;
 //      deriv2(1,1) = deriv2(2,1);
-//      deriv2(2,1) = Q14*rp*sp;
+//      deriv2(2,1) = 0.25*rp*sp;
 //      deriv2(3,1) =-Q18*(tm*(2*rp+sp+tm-5.0+sp*tm));
 //      deriv2(4,1) =-Q18*(sp*(2*rp+sp+tm-5.0+sp*tm));
 //      deriv2(5,1) =-Q18*(rp*(2*sp+tm+rp-5.0+tm*rp));
 //
 //      deriv2(0,2) =-deriv2(1,2);
-//      deriv2(1,2) = Q14*tm*rm;
-//      deriv2(2,2) = Q14*rm*sp;
+//      deriv2(1,2) = 0.25*tm*rm;
+//      deriv2(2,2) = 0.25*rm*sp;
 //      deriv2(3,2) =-Q18*(tm*(2*rm+sp+tm-5.0+sp*tm));
 //      deriv2(4,2) = Q18*(sp*(2*rm+sp+tm-5.0+sp*tm));
 //      deriv2(5,2) =-Q18*(rm*(2*sp+tm+rm-5.0+tm*rm));
 //
 //      deriv2(0,3) =-deriv2(1,1);
 //      deriv2(1,3) = deriv2(2,3);
-//      deriv2(2,3) = Q14*rm*sm;
+//      deriv2(2,3) = 0.25*rm*sm;
 //      deriv2(3,3) =-Q18*(tm*(2*rm+sm+tm-5.0+sm*tm));
 //      deriv2(4,3) = Q18*(sm*(2*rm+sm+tm-5.0+sm*tm));
 //      deriv2(5,3) = Q18*(rm*(2*sm+tm+rm-5.0+tm*rm));
 //
-//      deriv2(0,4) = Q14*sm*tp;
-//      deriv2(1,4) = Q14*tp*rp;
+//      deriv2(0,4) = 0.25*sm*tp;
+//      deriv2(1,4) = 0.25*tp*rp;
 //      deriv2(2,4) = deriv2(3,1);
 //      deriv2(3,4) =-Q18*(tp*(2*rp+sm+tp-5.0+sm*tp));
 //      deriv2(4,4) = Q18*(sm*(2*rp+sm+tp-5.0+sm*tp));
 //      deriv2(5,4) =-Q18*(rp*(2*sm+tp+rp-5.0+tp*rp));
 //
-//      deriv2(0,5) = Q14*sp*tp;
+//      deriv2(0,5) = 0.25*sp*tp;
 //      deriv2(1,5) = deriv2(2,5);
 //      deriv2(2,5) = deriv2(3,2);
 //      deriv2(3,5) =-Q18*(tp*(2*rp+sp+tp-5.0+sp*tp));
@@ -651,7 +647,7 @@ void DRT::Utils::shape_function_3D_deriv2(
 //      deriv2(5,5) = Q18*(rp*(2*sp+tp+rp-5.0+tp*rp));
 //
 //      deriv2(0,6) =-deriv2(1,6);
-//      deriv2(1,6) = Q14*tp*rm;
+//      deriv2(1,6) = 0.25*tp*rm;
 //      deriv2(2,6) = deriv2(3,3);
 //      deriv2(3,6) =-Q18*(tp*(2*rm+sp+tp-5.0+sp*tp));
 //      deriv2(4,6) =-Q18*(sp*(2*rm+sp+tp-5.0+sp*tp));
@@ -665,112 +661,112 @@ void DRT::Utils::shape_function_3D_deriv2(
 //      deriv2(5,7) =-Q18*(rm*(2*sm+tp+rm-5.0+tp*rm));
 //
 //      deriv2(0,8) = 0.0;
-//      deriv2(1,8) = -Q12*tm*rp;
+//      deriv2(1,8) = -0.5*tm*rp;
 //      deriv2(2,8) = 0.0;
-//      deriv2(3,8) =-Q12*s*tm;
-//      deriv2(4,8) =-Q14*ssm;
-//      deriv2(5,8) = Q12*s*rp;
+//      deriv2(3,8) =-0.5*s*tm;
+//      deriv2(4,8) =-0.25*ssm;
+//      deriv2(5,8) = 0.5*s*rp;
 //
-//      deriv2(0,9)=-Q12*sp*tm;
+//      deriv2(0,9)=-0.5*sp*tm;
 //      deriv2(1,9)= 0.0;
 //      deriv2(2,9)= 0.0;
-//      deriv2(3,9)=-Q12*r*tm;
-//      deriv2(4,9)= Q12*r*sp;
-//      deriv2(5,9)=-Q14*rrm ;
+//      deriv2(3,9)=-0.5*r*tm;
+//      deriv2(4,9)= 0.5*r*sp;
+//      deriv2(5,9)=-0.25*rrm ;
 //
 //      deriv2(0,10)= 0.0;
-//      deriv2(1,10)= -Q12*tm*rm;
+//      deriv2(1,10)= -0.5*tm*rm;
 //      deriv2(2,10)= 0.0;
-//      deriv2(3,10)= Q12*s*tm;
+//      deriv2(3,10)= 0.5*s*tm;
 //      deriv2(4,10)=-deriv2(4,8);
-//      deriv2(5,10)= Q12*s*rm;
+//      deriv2(5,10)= 0.5*s*rm;
 //
-//      deriv2(0,11)=-Q12*sm*tm;
+//      deriv2(0,11)=-0.5*sm*tm;
 //      deriv2(1,11)= 0.0;
 //      deriv2(2,11)= 0.0;
-//      deriv2(3,11)= Q12*r*tm;
-//      deriv2(4,11)= Q12*r*sm;
+//      deriv2(3,11)= 0.5*r*tm;
+//      deriv2(4,11)= 0.5*r*sm;
 //      deriv2(5,11)=-deriv2(5,9);
 //
 //      deriv2(0,12)= 0.0;
-//      deriv2(1,12)= -Q12*tp*rp;
+//      deriv2(1,12)= -0.5*tp*rp;
 //      deriv2(2,12)= 0.0;
-//      deriv2(3,12)=-Q12*s*tp;
+//      deriv2(3,12)=-0.5*s*tp;
 //      deriv2(4,12)=-deriv2(4,8);
 //      deriv2(5,12)=-deriv2(5,8);
 //
-//      deriv2(0,13)=-Q12*sp*tp;
+//      deriv2(0,13)=-0.5*sp*tp;
 //      deriv2(1,13)= 0.0;
 //      deriv2(2,13)= 0.0;
-//      deriv2(3,13)=-Q12*r*tp;
+//      deriv2(3,13)=-0.5*r*tp;
 //      deriv2(4,13)=-deriv2(4,9);
 //      deriv2(5,13)=-deriv2(5,9);
 //
 //      deriv2(0,14)= 0.0;
-//      deriv2(1,14)= -Q12*tp*rm;
+//      deriv2(1,14)= -0.5*tp*rm;
 //      deriv2(2,14)= 0.0;
-//      deriv2(3,14)= Q12*s*tp;
+//      deriv2(3,14)= 0.5*s*tp;
 //      deriv2(4,14)= deriv2(4,8);
 //      deriv2(5,14)=-deriv2(5,10);
 //
-//      deriv2(0,15)=-Q12*sm*tp;
+//      deriv2(0,15)=-0.5*sm*tp;
 //      deriv2(1,15)= 0.0;
 //      deriv2(2,15)= 0.0;
-//      deriv2(3,15)= Q12*r*tp;
+//      deriv2(3,15)= 0.5*r*tp;
 //      deriv2(4,15)=-deriv2(4,11);
 //      deriv2(5,15)= deriv2(5,9);
 //
 //      deriv2(0,16)= 0.0;
 //      deriv2(1,16)= 0.0;
 //      deriv2(2,16)= 0.0;
-//      deriv2(3,16)=-Q14*ttm;
-//      deriv2(4,16)=-Q12*t*sm;
-//      deriv2(5,16)= Q12*t*rp;
+//      deriv2(3,16)=-0.25*ttm;
+//      deriv2(4,16)=-0.5*t*sm;
+//      deriv2(5,16)= 0.5*t*rp;
 //
 //      deriv2(0,17)= 0.0;
 //      deriv2(1,17)= 0.0;
 //      deriv2(2,17)= 0.0;
-//      deriv2(3,17)= Q14*ttm;
-//      deriv2(4,17)=-Q12*t*sp;
+//      deriv2(3,17)= 0.25*ttm;
+//      deriv2(4,17)=-0.5*t*sp;
 //      deriv2(5,17)=-deriv2(5,16);
 //
 //      deriv2(0,18)= 0.0;
 //      deriv2(1,18)= 0.0;
 //      deriv2(2,18)= 0.0;
 //      deriv2(3,18)= deriv2(3,16);
-//      deriv2(4,18)= Q12*t*sp;
-//      deriv2(5,18)= Q12*t*rm;
+//      deriv2(4,18)= 0.5*t*sp;
+//      deriv2(5,18)= 0.5*t*rm;
 //
 //      deriv2(0,19)= 0.0;
 //      deriv2(1,19)= 0.0;
 //      deriv2(2,19)= 0.0;
 //      deriv2(3,19)= deriv2(3,17);
-//      deriv2(4,19)= Q12*t*sm;
+//      deriv2(4,19)= 0.5*t*sm;
 //      deriv2(5,19)=-deriv2(5,18);
 
         break;
     }
     case DRT::Element::hex27:
     {
-        const double rm1=Q12*r*(r - 1.0);
+        const double rm1=0.5*r*(r - 1.0);
         const double r00=(1.0 - r*r);
-        const double rp1=Q12*r*(r + 1.0);
-        const double sm1=Q12*s*(s - 1.0);
+        const double rp1=0.5*r*(r + 1.0);
+        const double sm1=0.5*s*(s - 1.0);
         const double s00=(1.0 - s*s);
-        const double sp1=Q12*s*(s + 1.0);
-        const double tm1=Q12*t*(t - 1.0);
+        const double sp1=0.5*s*(s + 1.0);
+        const double tm1=0.5*t*(t - 1.0);
         const double t00=(1.0 - t*t);
-        const double tp1=Q12*t*(t + 1.0);
+        const double tp1=0.5*t*(t + 1.0);
 
-        const double drm1 = r - Q12;
+        const double drm1 = r - 0.5;
         const double dr00 = -2.0 * r;
-        const double drp1 = r + Q12;
-        const double dsm1 = s - Q12;
+        const double drp1 = r + 0.5;
+        const double dsm1 = s - 0.5;
         const double ds00 = -2.0 * s;
-        const double dsp1 = s + Q12;
-        const double dtm1 = t - Q12;
+        const double dsp1 = s + 0.5;
+        const double dtm1 = t - 0.5;
         const double dt00 = -2.0 * t;
-        const double dtp1 = t + Q12;
+        const double dtp1 = t + 0.5;
 
 
         deriv2(0,0) = sp1*tp1;
@@ -1045,9 +1041,6 @@ void DRT::Utils::shape_function_2D(
                      const double&                              s,
                      const DRT::Element::DiscretizationType&    distype)
 {
-    const double Q12=0.50;
-    const double Q14=0.25;
-  
     switch (distype)
     {
     case DRT::Element::quad4:
@@ -1057,10 +1050,10 @@ void DRT::Utils::shape_function_2D(
         const double sp=1.0+s;
         const double sm=1.0-s;
 
-        funct[0]=Q14*rm*sm;
-        funct[1]=Q14*rp*sm;     
-        funct[2]=Q14*rp*sp;
-        funct[3]=Q14*rm*sp;
+        funct[0]=0.25*rm*sm;
+        funct[1]=0.25*rp*sm;     
+        funct[2]=0.25*rp*sp;
+        funct[3]=0.25*rm*sp;
         break;
     }
     case DRT::Element::quad8:
@@ -1073,14 +1066,14 @@ void DRT::Utils::shape_function_2D(
         const double r2=1.0-r*r;
         const double s2=1.0-s*s;
 
-        funct[0]=Q14*rp*sp-Q12*(funct[4]+funct[7]);
-        funct[1]=Q14*rm*sp-Q12*(funct[4]+funct[5]);
-        funct[2]=Q14*rm*sm-Q12*(funct[5]+funct[6]);
-        funct[3]=Q14*rp*sm-Q12*(funct[6]+funct[7]);
-        funct[4]=Q12*r2*sp;
-        funct[5]=Q12*rm*s2;
-        funct[6]=Q12*r2*sm;
-        funct[7]=Q12*rp*s2;
+        funct[0]=0.25*rp*sp-0.5*(funct[4]+funct[7]);
+        funct[1]=0.25*rm*sp-0.5*(funct[4]+funct[5]);
+        funct[2]=0.25*rm*sm-0.5*(funct[5]+funct[6]);
+        funct[3]=0.25*rp*sm-0.5*(funct[6]+funct[7]);
+        funct[4]=0.5*r2*sp;
+        funct[5]=0.5*rm*s2;
+        funct[6]=0.5*r2*sm;
+        funct[7]=0.5*rp*s2;
         break;
     }
     case DRT::Element::quad9:
@@ -1091,8 +1084,8 @@ void DRT::Utils::shape_function_2D(
         const double sm=1.0-s;
         const double r2=1.0-r*r;
         const double s2=1.0-s*s;
-        const double rh=Q12*r;
-        const double sh=Q12*s;
+        const double rh=0.5*r;
+        const double sh=0.5*s;
         const double rs=rh*sh;
         
         
@@ -1109,23 +1102,26 @@ void DRT::Utils::shape_function_2D(
     }
     case DRT::Element::tri3:
     {
-        funct[0]=1.0-r-s;
-        funct[1]=r;
-        funct[2]=s;
+        const double t1 = 1.0 - r - s;
+        const double t2 = r;
+        const double t3 = s;
+        funct[0] = t1;
+        funct[1] = t2;
+        funct[2] = t3;
         break;
     }
     case DRT::Element::tri6:
     {
-        const double rr=r*r;
-        const double ss=s*s;
-        const double rs=r*s;
+        const double t1 = 1.0-r-s;
+        const double t2 = r;
+        const double t3 = s;
 
-        funct[0]=(1.0-2.0*r-2.0*s)*(1.0-r-s);
-        funct[1]=2.0*rr-r;
-        funct[2]=2.0*ss-s;
-        funct[3]=4.0*(r-rr-rs);
-        funct[4]=4.0*rs;
-        funct[5]=4.0*(s-rs-ss);
+        funct[0] = t1*(2.0*t1 - 1.0);
+        funct[1] = t2*(2.0*t2 - 1.0);
+        funct[2] = t3*(2.0*t3 - 1.0);
+        funct[3] = 4.0*t2*t1;
+        funct[4] = 4.0*t2*t3;
+        funct[5] = 4.0*t3*t1;
         break;
     }
     default:
@@ -1144,9 +1140,6 @@ void DRT::Utils::shape_function_2D_deriv1(
                      const double&                              s,
                      const DRT::Element::DiscretizationType&    distype)
 {
-    const double Q12=0.50;
-    const double Q14=0.25;
-  
     switch (distype)
     {
     case DRT::Element::quad4:
@@ -1156,17 +1149,17 @@ void DRT::Utils::shape_function_2D_deriv1(
         const double sp=1.0+s;
         const double sm=1.0-s;
 
-        deriv1(0,0)=-Q14*sm;
-        deriv1(1,0)=-Q14*rm;
+        deriv1(0,0)=-0.25*sm;
+        deriv1(1,0)=-0.25*rm;
         
-        deriv1(0,1)= Q14*sm;
-        deriv1(1,1)=-Q14*rp;
+        deriv1(0,1)= 0.25*sm;
+        deriv1(1,1)=-0.25*rp;
              
-        deriv1(0,2)= Q14*sp;
-        deriv1(1,2)= Q14*rp;
+        deriv1(0,2)= 0.25*sp;
+        deriv1(1,2)= 0.25*rp;
     
-        deriv1(0,3)=-Q14*sp;
-        deriv1(1,3)= Q14*rm;
+        deriv1(0,3)=-0.25*sp;
+        deriv1(1,3)= 0.25*rm;
         break;
     }
     case DRT::Element::quad8:
@@ -1179,38 +1172,38 @@ void DRT::Utils::shape_function_2D_deriv1(
         const double r2=1.0-r*r;
         const double s2=1.0-s*s;
     
-        deriv1(0,0)= Q14*sp;
-        deriv1(1,0)= Q14*rp;
+        deriv1(0,0)= 0.25*sp;
+        deriv1(1,0)= 0.25*rp;
         
-        deriv1(0,1)=-Q14*sp;
-        deriv1(1,1)= Q14*rm;
+        deriv1(0,1)=-0.25*sp;
+        deriv1(1,1)= 0.25*rm;
         
-        deriv1(0,2)=-Q14*sm;
-        deriv1(1,2)=-Q14*rm;
+        deriv1(0,2)=-0.25*sm;
+        deriv1(1,2)=-0.25*rm;
     
-        deriv1(0,3)= Q14*sm;
-        deriv1(1,3)=-Q14*rp;
+        deriv1(0,3)= 0.25*sm;
+        deriv1(1,3)=-0.25*rp;
     
         deriv1(0,4)=-1.0*r*sp;
-        deriv1(1,4)= Q12*r2;
+        deriv1(1,4)= 0.5*r2;
         
-        deriv1(0,5)=-Q12*  s2;
+        deriv1(0,5)=-0.5*  s2;
         deriv1(1,5)=-1.0*rm*s;
         
         deriv1(0,6)=-1.0*r*sm;
-        deriv1(1,6)=-Q12*r2;
+        deriv1(1,6)=-0.5*r2;
         
-        deriv1(0,7)= Q12*s2;
+        deriv1(0,7)= 0.5*s2;
         deriv1(1,7)=-1.0*rp*s;
         
-        deriv1(0,0)-= Q12*(deriv1(0,4)+deriv1(0,7));
-        deriv1(1,0)-= Q12*(deriv1(1,4)+deriv1(1,7));
+        deriv1(0,0)-= 0.5*(deriv1(0,4)+deriv1(0,7));
+        deriv1(1,0)-= 0.5*(deriv1(1,4)+deriv1(1,7));
 
         for(int i=1;i<4;i++)
         {
             const int ii=i+3;
-            deriv1(0,i) -= Q12*(deriv1(0,ii)+deriv1(0,ii+1));
-            deriv1(1,i) -= Q12*(deriv1(1,ii)+deriv1(1,ii+1));
+            deriv1(0,i) -= 0.5*(deriv1(0,ii)+deriv1(0,ii+1));
+            deriv1(1,i) -= 0.5*(deriv1(1,ii)+deriv1(1,ii+1));
         }
         break;
     }
@@ -1222,12 +1215,12 @@ void DRT::Utils::shape_function_2D_deriv1(
         const double sm=1.0-s;
         const double r2=1.0-r*r;
         const double s2=1.0-s*s;
-        const double rh=Q12*r;
-        const double sh=Q12*s;
-        const double rhp=r+Q12;
-        const double rhm=r-Q12;
-        const double shp=s+Q12;
-        const double shm=s-Q12;
+        const double rh=0.5*r;
+        const double sh=0.5*s;
+        const double rhp=r+0.5;
+        const double rhm=r-0.5;
+        const double shp=s+0.5;
+        const double shm=s-0.5;
 
         deriv1(0,0)=-rhm*sh*sm;
         deriv1(1,0)=-shm*rh*rm;
@@ -1271,23 +1264,23 @@ void DRT::Utils::shape_function_2D_deriv1(
     }
     case DRT::Element::tri6:
     {
-        deriv1(0,0)=-3.0+4.0*(r+s);
-        deriv1(1,0)= deriv1(0,0);
+        deriv1(0,0)= -3.0 + 4.0*(r + s);
+        deriv1(1,0)= -3.0 + 4.0*(r + s);
         
-        deriv1(0,1)= 4.0*r-1.0;
+        deriv1(0,1)= 4.0*r - 1.0;
         deriv1(1,1)= 0.0;
         
         deriv1(0,2)= 0.0;
-        deriv1(1,2)= 4.0*s-1.0;
+        deriv1(1,2)= 4.0*s - 1.0;
         
-        deriv1(0,3)= 4.0*(1.0-2.0*r-s);
+        deriv1(0,3)= 4.0*(1.0 - 2.0*r - s);
         deriv1(1,3)=-4.0*r;
         
         deriv1(0,4)= 4.0*s;
         deriv1(1,4)= 4.0*r;
         
         deriv1(0,5)=-4.0*s;
-        deriv1(1,5)= 4.0*(1.0-r-2.0*s);
+        deriv1(1,5)= 4.0*(1.0 - r - 2.0*s);
         break;
     }
     default:
@@ -1307,32 +1300,29 @@ void DRT::Utils::shape_function_2D_deriv2(
                      const double&                              s,
                      const DRT::Element::DiscretizationType&    distype)
 { 
-    const double Q12=0.50;
-    const double Q14=0.25;
-    
-    const int DXDX = 0;
-    const int DYDY = 1;
-    const int DXDY = 2;
+    const int drdr = 0;
+    const int dsds = 1;
+    const int drds = 2;
     
     switch (distype)
     {
     case DRT::Element::quad4:
     {    
-        deriv2(DXDX,0) =  0.0;
-        deriv2(DYDY,0) =  0.0;
-        deriv2(DXDY,0) =  Q14;
+        deriv2(drdr,0) =  0.0;
+        deriv2(dsds,0) =  0.0;
+        deriv2(drds,0) =  0.25;
     
-        deriv2(DXDX,1) =  0.0;
-        deriv2(DYDY,1) =  0.0;
-        deriv2(DXDY,1) = -Q14;
+        deriv2(drdr,1) =  0.0;
+        deriv2(dsds,1) =  0.0;
+        deriv2(drds,1) = -0.25;
           
-        deriv2(DXDX,2) =  0.0;
-        deriv2(DYDY,2) =  0.0;
-        deriv2(DXDY,2) =  Q14;
+        deriv2(drdr,2) =  0.0;
+        deriv2(dsds,2) =  0.0;
+        deriv2(drds,2) =  0.25;
     
-        deriv2(DXDX,3) =  0.0;
-        deriv2(DYDY,3) =  0.0;
-        deriv2(DXDY,3) = -Q14;
+        deriv2(drdr,3) =  0.0;
+        deriv2(dsds,3) =  0.0;
+        deriv2(drds,3) = -0.25;
         break;
     }
     case DRT::Element::quad9:
@@ -1343,81 +1333,75 @@ void DRT::Utils::shape_function_2D_deriv2(
         const double sm=1.0-s;
         const double r2=1.0-r*r;
         const double s2=1.0-s*s;
-        const double rh=Q12*r;
-        const double sh=Q12*s;
-        const double rhp=r+Q12;
-        const double rhm=r-Q12;
-        const double shp=s+Q12;
-        const double shm=s-Q12;
+        const double rh=0.5*r;
+        const double sh=0.5*s;
+        const double rhp=r+0.5;
+        const double rhm=r-0.5;
+        const double shp=s+0.5;
+        const double shm=s-0.5;
         
-        deriv2(DXDX,0) =-sh*sm;
-        deriv2(DYDY,0) =-rh*rm;
-        deriv2(DXDY,0) = shm*rhm;
+        deriv2(drdr,0) =-sh*sm;
+        deriv2(dsds,0) =-rh*rm;
+        deriv2(drds,0) = shm*rhm;
 
-        deriv2(DXDX,1) =-sh*sm;
-        deriv2(DYDY,1) = rh*rp;
-        deriv2(DXDY,1) = shm*rhp;
+        deriv2(drdr,1) =-sh*sm;
+        deriv2(dsds,1) = rh*rp;
+        deriv2(drds,1) = shm*rhp;
         
-        deriv2(DXDX,2) = sh*sp;
-        deriv2(DYDY,2) = rh*rp;
-        deriv2(DXDY,2) = shp*rhp;
+        deriv2(drdr,2) = sh*sp;
+        deriv2(dsds,2) = rh*rp;
+        deriv2(drds,2) = shp*rhp;
 
-        deriv2(DXDX,3) = sh*sp;
-        deriv2(DYDY,3) =-rh*rm;
-        deriv2(DXDY,3) = shp*rhm;
+        deriv2(drdr,3) = sh*sp;
+        deriv2(dsds,3) =-rh*rm;
+        deriv2(drds,3) = shp*rhm;
 
-        deriv2(DXDX,4) = 2.0*sh*sm;
-        deriv2(DYDY,4) = r2;
-        deriv2(DXDY,4) =-2.0*r*shm;
+        deriv2(drdr,4) = 2.0*sh*sm;
+        deriv2(dsds,4) = r2;
+        deriv2(drds,4) =-2.0*r*shm;
 
-        deriv2(DXDX,5) = s2;
-        deriv2(DYDY,5) =-2.0*rh*rp;
-        deriv2(DXDY,5) =-2.0*s*rhp;
+        deriv2(drdr,5) = s2;
+        deriv2(dsds,5) =-2.0*rh*rp;
+        deriv2(drds,5) =-2.0*s*rhp;
 
-        deriv2(DXDX,6) =-2.0*sh*sp;
-        deriv2(DYDY,6) = r2;
-        deriv2(DXDY,6) =-2.0*r*shp;
+        deriv2(drdr,6) =-2.0*sh*sp;
+        deriv2(dsds,6) = r2;
+        deriv2(drds,6) =-2.0*r*shp;
 
-        deriv2(DXDX,7) = s2;
-        deriv2(DYDY,7) = 2.0*rh*rm;
-        deriv2(DXDY,7) =-2.0*s*rhm;
+        deriv2(drdr,7) = s2;
+        deriv2(dsds,7) = 2.0*rh*rm;
+        deriv2(drds,7) =-2.0*s*rhm;
 
-        deriv2(DXDX,8) =-2.0*s2;
-        deriv2(DYDY,8) =-2.0*r2;
-        deriv2(DXDY,8) = 2.0*s*2.0*r;
-        break;
-    }
-    case DRT::Element::tri3:
-    {
-        deriv2(0,0)= 0.0;
-        deriv2(1,0)= 0.0;
-        
-        deriv2(0,1)= 0.0;
-        deriv2(1,1)= 0.0;
-        
-        deriv2(0,2)= 0.0;
-        deriv2(1,2)= 0.0;
+        deriv2(drdr,8) =-2.0*s2;
+        deriv2(dsds,8) =-2.0*r2;
+        deriv2(drds,8) = 2.0*s*2.0*r;
         break;
     }
     case DRT::Element::tri6:
     {
-        deriv2(0,0)= 4.0;
-        deriv2(1,0)= 4.0;
-        
-        deriv2(0,1)= 4.0;
-        deriv2(1,1)= 0.0;
-        
-        deriv2(0,2)= 0.0;
-        deriv2(1,2)= 4.0;
-        
-        deriv2(0,3)=-8.0;
-        deriv2(1,3)= 0.0;
-        
-        deriv2(0,4)= 0.0;
-        deriv2(1,4)= 0.0;
-        
-        deriv2(0,5)= 0.0;
-        deriv2(1,5)= -8.0;
+        deriv2(drdr,0) = 4.0;
+        deriv2(dsds,0) = 4.0;
+        deriv2(drds,0) = 4.0;
+
+        deriv2(drdr,1) = 4.0;
+        deriv2(dsds,1) = 0.0;
+        deriv2(drds,1) = 0.0;
+
+        deriv2(drdr,2) = 0.0;
+        deriv2(dsds,2) = 4.0;
+        deriv2(drds,2) = 0.0;
+
+        deriv2(drdr,3) =-8.0;
+        deriv2(dsds,3) = 0.0;
+        deriv2(drds,3) =-4.0;
+
+        deriv2(drdr,4) = 0.0;
+        deriv2(dsds,4) = 0.0;
+        deriv2(drds,4) = 4.0;
+
+        deriv2(drdr,5) = 0.0;
+        deriv2(dsds,5) =-8.0;
+        deriv2(drds,5) =-4.0;
         break;
     }
     default:
@@ -1435,36 +1419,26 @@ void DRT::Utils::shape_function_1D(
                      const double&                              r,
                      const DRT::Element::DiscretizationType&    distype)
 {
-
-    const double Q12=0.50;
-
     switch (distype)
     {
     case DRT::Element::line2:
     {    
-        const double rp=1.0 + r;
-        const double rm=1.0 - r;
-    
-        funct[0]=Q12*rm;
-        funct[1]=Q12*rp;            
+        funct[0] = 0.5*(1.0 - r);
+        funct[1] = 0.5*(1.0 + r);            
         break;
     }
     case DRT::Element::line3:
     {
-        const double rp= 1.0 + r;
-        const double rm= 1.0 - r;
-        const double r2= 1.0 - r*r;
-
-        funct[0]= -Q12*r*rm;
-        funct[1]= Q12*r*rp;
-        funct[2]= r2;
+        funct[0] = -0.5*r*(1.0 - r);
+        funct[1] =  0.5*r*(1.0 + r);
+        funct[2] =  1 - r*r;
         break;
     }
     default:
         dserror("distype unknown\n");
-  } /* end switch(distype) */
- 
-  return;
+    } /* end switch(distype) */
+     
+    return;
 
 }
 
@@ -1476,20 +1450,18 @@ void DRT::Utils::shape_function_1D_deriv1(
                      const double&                              r,
                      const DRT::Element::DiscretizationType&    distype)
 {
-    const double Q12=0.50;
-
     switch (distype)
     {
     case DRT::Element::line2:
     {      
-        deriv1(0,0)= -Q12;
-        deriv1(1,0)=  Q12;
+        deriv1(0,0)= -0.5;
+        deriv1(1,0)=  0.5;
         break;
     }
     case DRT::Element::line3:
     {
-        deriv1(0,0)= r - Q12;
-        deriv1(1,0)= r + Q12;
+        deriv1(0,0)= r - 0.5;
+        deriv1(1,0)= r + 0.5;
         deriv1(2,0)= -2.0*r;
         break;
     }
