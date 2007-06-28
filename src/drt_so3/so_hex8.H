@@ -352,8 +352,6 @@ protected:
   vector<RefCountPtr<DRT::Elements::Soh8Line> > lines_;
   //! vector of lines adjacent to this element
   vector<DRT::Elements::Soh8Line*>              lineptrs_;
-  //! vector of history variables for each Gauss point
-  vector<RefCountPtr<MAT::Material> >           mat_;
 
 
   // internal calculation methods

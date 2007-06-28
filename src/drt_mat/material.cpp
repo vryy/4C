@@ -3,6 +3,7 @@
 
 #include "material.H"
 #include "newtonianfluid.H"
+#include "stvenantkirchhoff.H"
 
 extern struct _MATERIAL *mat;
 
@@ -36,6 +37,7 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
 #endif
   }
   case m_stvenant:
+    return Teuchos::rcp(new StVenantKirchhoff(actmat));
   case m_pl_mises_3D:
   case m_pl_mises:
   case m_pl_hoff:

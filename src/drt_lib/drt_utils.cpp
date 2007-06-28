@@ -48,6 +48,7 @@ extern "C"
 #include "../drt_so3/so_sh8.H"
 #include "../drt_so3/so_tet10.H"
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_mat/micromaterial.H"
 #include "drt_dserror.H"
 
@@ -268,6 +269,12 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
       MAT::NewtonianFluid* fluid = new MAT::NewtonianFluid();
       fluid->Unpack(data);
       return fluid;
+    }
+    case ParObject_StVenantKirchhoff:
+    {
+      MAT::StVenantKirchhoff* stvenantk = new MAT::StVenantKirchhoff();
+      stvenantk->Unpack(data);
+      return stvenantk;
     }
     case ParObject_MicroMaterial:
     {

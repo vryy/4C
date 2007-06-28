@@ -40,13 +40,6 @@ using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
 
 /*----------------------------------------------------------------------*
- |                                                         maf 04/07    |
- | vector of material laws                                              |
- | defined in global_control.c
- *----------------------------------------------------------------------*/
-extern struct _MATERIAL  *mat;
-
-/*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/
 int DRT::Elements::So_hex8::Evaluate(ParameterList& params,

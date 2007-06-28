@@ -734,8 +734,9 @@ OBJS_MAT      = src/materials/mat_el_iso.o \
 		src/materials/mat_el_ogden.o
 #               materials for new discretization
 OBJS_DRT_MAT  = src/drt_mat/micromaterial.o \
-		src/drt_mat/newtonianfluid.o \
-		src/drt_mat/material.o	
+								src/drt_mat/newtonianfluid.o \
+								src/drt_mat/stvenantkirchhoff.o \
+								src/drt_mat/material.o	
 #               structure-structure interaction
 OBJS_SSI      = src/ssi_full/ssi_dyn.o \
                 src/ssi_full/ssi_coupling.o \
