@@ -291,6 +291,13 @@ private:
     calc_fluid_beltrami_error
   };
 
+  //!Constants
+  //! number of space dimensions
+  static const int                                NSD_ = 3;
+  //!number of degrees of freedom
+  static const int                                NDF_ = 4;
+  //! number of the material law
+  int                                             material_;
   //! flag for euler/ale net algorithm
   bool                                            is_ale_;
 
@@ -314,16 +321,16 @@ private:
   Fluid3& operator = (const Fluid3& old);
 
   // calculating system matrix
-  void f3_sys_mat(vector<int>&              lm,
-                  vector<double>&           evelnp,
-		  vector<double>&           eprenp,
-                  vector<double>&           ehist,
-                  vector<double>&           edispnp,
-                  vector<double>&           egridv,
+  void f3_sys_mat(const vector<int>&        lm,
+                  const vector<double>&     evelnp,
+                  const vector<double>&     eprenp,
+                  const vector<double>&     ehist,
+                  const vector<double>&     edispnp,
+                  const vector<double>&     egridv,
                   Epetra_SerialDenseMatrix* sys_mat,
                   Epetra_SerialDenseVector* residual,
                   struct _MATERIAL*         material,
-		  ParameterList&            params
+                  ParameterList&            params
 		  );
 
   // calculating system matrix for genalpha
@@ -356,27 +363,41 @@ private:
                        double                    visc,
                        ParameterList            &params,
                        int                       version);
+                       
+  vector<double> f3_caltau(
+    const Epetra_SerialDenseMatrix&    xyze,
+    const vector<double>&        evelnp,
+    const DRT::Element::DiscretizationType           distype,
+    const double                 visc,
+    const int                    numnode,
+    const double                 timefac,
+    const bool                   is_stationary
+    );
 
-  // calculate Jacobian matrix and it's determinant
-  void f3_jaco(const Epetra_SerialDenseMatrix& xyze,
-	       const Epetra_SerialDenseMatrix& deriv,
-               Epetra_SerialDenseMatrix& xjm,
-	       double* 		det,
-               const int 	iel
-	       );
+  /// crate array with element corner positions 
+  Epetra_SerialDenseMatrix f3_getPositionArray(
+          const vector<double>&   edispnp);
+
+  /// calculate Jacobian matrix
+  Epetra_SerialDenseMatrix getJacobiMatrix(
+    const Epetra_SerialDenseMatrix& xyze,
+    const Epetra_SerialDenseMatrix& deriv,
+    const int                       iel) const;
+
+  /// calculate determinant
+  double getDeterminante(const Epetra_SerialDenseMatrix&  xjm) const;
 
   // get the body force from the nodes condition
-  void f3_getbodyforce (Epetra_SerialDenseMatrix& edeadng,
-                        double                    time   ,
-                        const int                 iel    ,
-                        ParameterList&    	  params);
+  Epetra_SerialDenseMatrix f3_getbodyforce (
+                        const double              time   ,
+                        const ParameterList&    	  params);
 
   // calculate global derivatives w.r.t. x,y,z at point r,s,t are
     void f3_gder(Epetra_SerialDenseMatrix& derxy,
 		 const Epetra_SerialDenseMatrix& deriv,
-                 Epetra_SerialDenseMatrix& xjm,
-		 double& det,
-                 const int iel
+         const Epetra_SerialDenseMatrix& xjm,
+		 const double& det,
+         const int iel
 		 );
 
   // calculate second global derivatives w.r.t x/y/z at point r,s,t
@@ -396,46 +417,48 @@ private:
     );
 
   // evaluate fluid coefficient matrix (instationary case)
-    void f3_calmat( Epetra_SerialDenseMatrix& estif,
-                Epetra_SerialDenseVector&     eforce,
-                vector<double>&  	      velint,
-                vector<double>&   	      histvec,
-                vector<double>&   	      gridvint,
-                double&   		      press,
-                Epetra_SerialDenseMatrix&     vderxy,
-                Epetra_SerialDenseMatrix&     vderxy2,
-                vector<double>&   	      gradp,
-                const Epetra_SerialDenseVector&   	      funct,
-		vector<double>&   	      tau,
-                Epetra_SerialDenseMatrix&     derxy,
-                Epetra_SerialDenseMatrix&     derxy2,
-                vector<double>&               edeadng,
-                const double&               	      fac,
-                const double&   	      visc,
-                const int&      	      iel,
-		ParameterList& 		      params
+    void f3_calmat(
+       Epetra_SerialDenseMatrix& estif,
+       Epetra_SerialDenseVector&     eforce,
+       const vector<double>&  	      velint,
+       const vector<double>&   	      histvec,
+       const vector<double>&   	      gridvint,
+       const double&   		      press,
+       const Epetra_SerialDenseMatrix&  vderxy,
+       const Epetra_SerialDenseMatrix&  vderxy2,
+       const vector<double>&   	        gradp,
+       const Epetra_SerialDenseVector&  funct,
+       const vector<double>&   	        tau,
+       const Epetra_SerialDenseMatrix&  derxy,
+       const Epetra_SerialDenseMatrix&  derxy2,
+       const vector<double>&            edeadng,
+       const double&               	    fac,
+       const double&   	      visc,
+       const int&      	      iel,
+       ParameterList& 		      params
       		);
 
   // evaluate fluid coefficient matrix (stationary case)
-    void f3_calmat_stationary( Epetra_SerialDenseMatrix& estif,
-                Epetra_SerialDenseVector&     eforce,
-                vector<double>&  	      velint,
-                vector<double>&   	      histvec,
-                vector<double>&   	      gridvint,
-                double&   		      press,
-                Epetra_SerialDenseMatrix&     vderxy,
-                Epetra_SerialDenseMatrix&     vderxy2,
-                vector<double>&   	      gradp,
-                const Epetra_SerialDenseVector&   	      funct,
-		vector<double>&   	      tau,
-                Epetra_SerialDenseMatrix&     derxy,
-                Epetra_SerialDenseMatrix&     derxy2,
-                vector<double>&               edeadng,
-                const double&               	      fac,
-                const double&   	      visc,
-                const int&      	      iel,
-		ParameterList& 		      params
-      		);
+    void f3_calmat_stationary(
+       Epetra_SerialDenseMatrix&        estif,
+       Epetra_SerialDenseVector&        eforce,
+       const vector<double>&  	        velint,
+       const vector<double>&   	        histvec,
+       const vector<double>&   	        gridvint,
+       const double&   		            press,
+       const Epetra_SerialDenseMatrix&  vderxy,
+       const Epetra_SerialDenseMatrix&  vderxy2,
+       const vector<double>&   	        gradp,
+       const Epetra_SerialDenseVector&  funct,
+       const vector<double>&   	        tau,
+       const Epetra_SerialDenseMatrix&  derxy,
+       const Epetra_SerialDenseMatrix&  derxy2,
+       const vector<double>&            edeadng,
+       const double&               	    fac,
+       const double&   	                visc,
+       const int&      	                iel,
+       ParameterList& 		            params
+       );
 
   void CreateLinesTet(const int& nline,
                       const int& nnode);
