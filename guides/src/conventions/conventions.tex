@@ -3,41 +3,68 @@
 \chapter{Conventions}
 
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{2d}
 
 \begin{verbatim}
 
-                    ^ s
-                    |
-              3     |6    2
-              o-----o-----o
-              |           |
-              |           |5
-            7 o     o     o -----> r
-              |     8     |
-              |           |
-              o-----o-----o
-              0     4     1
 
 
-                    ^ s
-                    |
-              3     |L2    2
-              o-----o-----o
-              |           |
-              |           |L1
-           L3 o     o     o -----> r
-              |     8     |
-              |           |
-              o-----o-----o
-              0     L0     1
+                edge2
 
-L0 : 0, 1, 4
-L1 : 1, 2, 5
-L2 : 2, 3, 6
-L3 : 3, 0, 7
+                s ^
+                  |
+            3     6     2
+             X----o----X
+             |    |    |
+             |    |    |
+ edge3      7o    O----o5---> r    edge1
+             |    8    |
+             |         |
+             X----o----X
+            0     4     1
+
+                edge0
+               (line0)
+
+
+    X nodes for quad
+    o addotional nodes for quad8
+    O addotional nodes for full quadratic quad9
+
+L0 :  0,  1,  4
+L1 :  1,  2,  5
+L2 :  2,  3,  6
+L3 :  0,  3,  7
+
+\end{verbatim}
+
+
+
+\begin{verbatim}
+
+             s^
+              |
+             2|
+              X
+              |\
+              | \       line1
+ line2       5o  o4
+              |   \
+              |    \
+              X--o--X ---> r
+             0   3   1
+
+               line0
+
+
+    X nodes for tri3
+    o additional nodes for tri6
+
+
+L0 :  0,  1,  3
+L1 :  1,  2,  4
+L2 :  0,  2,  5
+
 \end{verbatim}
 
 
@@ -45,7 +72,7 @@ L3 : 3, 0, 7
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{2d}
+\section{3d}
 
 \begin{verbatim}
   27-node and 8-node hexhedra node topology
@@ -133,11 +160,13 @@ L11:  4,  7, 19
    -----------------------
    - this is the numbering used in GiD!!
 
-
+          t ^
+            |
+            |
             3-
-            |\ ---
-            |  \    --9
-            |    \       ---
+            |\ ---                  ^  s
+            |  \    --9            /
+            |    \       ---     /
             |      \         - 2
             |        \       /  \
             |          \   /     \
@@ -148,7 +177,7 @@ L11:  4,  7, 19
             |    /               \  \
             |  /                   \ \
             |/                       \\
-            0------------4-------------1
+            0------------4-------------1  -----> r
 
 S0 :  0,  1,  3,  4,  8,  7
 S1 :  1,  2,  3,  5,  9,  8
@@ -163,68 +192,8 @@ L4 :  1,  3,  8
 L5 :  2,  3,  9
 
 \end{verbatim}
+\newpage
 
-\begin{verbatim}
-
-
-
-                edge2
-           (line2)
-
-            3     6     2
-             X----o----X
-             |         |
-             |         |   
- edge3      7o    O    o5      edge1      
-(line3)      |    8    |      (line1)
-             |         |
-             X----o----X
-            0     4     1
-
-                edge0
-               (line0)
-
-
-    X nodes for quad
-    o addotional nodes for quad8
-    O addotional nodes for full quadratic quad9
-
-L0 :  0,  1,  4
-L1 :  1,  2,  5
-L2 :  2,  3,  6
-L3 :  0,  3,  7
-
-\end{verbatim}
-
-
-
-\begin{verbatim}
-
-
-
-             2
-              X
-              |\
-              | \       edge1
- edge2       5o  o4    (line1)
-(line2)       |   \
-              |    \
-              X--o--X
-             0   3   1
-
-               edge0
-              (line0)
-
-
-    X nodes for tri3
-    o addotional nodes for tri6
-
-
-L0 :  0,  1,  3
-L1 :  1,  2,  4
-L2 :  0,  2,  5
-
-\end{verbatim}
 
 
 
