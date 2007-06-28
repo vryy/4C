@@ -143,27 +143,20 @@ void DRT::Utils::shape_function_3D(
         funct[3]= t4;
         break;
     }
-    case DRT::Element::tet10: /*  QUADRATIC shape functions and their natural deriv1atives */
+    case DRT::Element::tet10:
     {
-        dserror("shape functions for tet10 not checked yet!\n");
-
-//            const double t1=r;
-//            const double t2=s;
-//            const double t3=t;
-//            const double t4=1.0-r-s-t;
-
-//        /*These are the shape functions used by Bathe (p. 439) using the corresponding numbering (p.438).*/
-//        /*If these shape functions go together with the numbering used for the elements, was not checked. -> could be wrong!*/
-//        funct[0] =1-r-s-t-2*r*(1-r-s-t)-2*s*(1-r-s-t)-2*t*(1-r-s-t);
-//        funct[1] =r-2*r*(1-r-s-t)-2*r*s-2*r*t;
-//        funct[2] =(s-2*r*s-2*s*(1-r-s-t)-2*s*t;
-//        funct[3] =t-2*r*t-2*s*t-2*t*(1-r-s-t);
-//        funct[4] =4*r*(1-r-s-t);
-//        funct[5] =4*r*s;
-//        funct[6] =4*s*(1-r-s-t);
-//        funct[7] =4*r*t;
-//        funct[8] =4*s*t;
-//        funct[9] =4*t*(1-r-s-t);
+        const double u=1.0-r-s-t;
+        
+        funct[0] =u*(2*u -1);
+        funct[1] =r*(2*r -1);
+        funct[2] =s*(2*s -1);
+        funct[3] =t*(2*t -1);
+        funct[4] =4*r*u;
+        funct[5] =4*r*s;
+        funct[6] =4*s*u;
+        funct[7] =4*t*u;
+        funct[8] =4*r*t;
+        funct[9] =4*s*t;
         break;
     }
     default:
@@ -447,60 +440,52 @@ void DRT::Utils::shape_function_3D_deriv1(
         deriv1(2,3)= 1.0;
         break;
     }
-    case DRT::Element::tet10: /*  QUADRATIC shape functions and their natural deriv1atives */
+    case DRT::Element::tet10: 
+    {
+        const double u=1.0-r-s-t;
+       
+        deriv1(0,0) = -4*u+1;
+        deriv1(1,0) = deriv1(0,0);
+        deriv1(2,0) = deriv1(0,0);
 
-        dserror("shape functions for tet10 not implemented yet!\n");
+        deriv1(0,1) = 4*r-1;
+        deriv1(1,1) = 0;
+        deriv1(2,1) = 0;
 
-        // form basic values
-//        t1=r;
-//        t2=s;
-//        t3=t;
-//        t4=1.0-r-s-t;
+        deriv1(0,2) = 0;
+        deriv1(1,2) = 4*s-1;
+        deriv1(2,2) = 0;
 
-//        /*These are the shape functions used by Bathe (p. 439) using the corresponding numbering (p.438).*/
-//        /*If these shape functions go together with the numbering used for the elements, was not checked. -> could be wrong!*/
+        deriv1(0,3) = 0;
+        deriv1(1,3) = 0;
+        deriv1(2,3) = 4*t-1;
 
-//            deriv1(0,0) = ;
-//            deriv1(1,0) = ;
-//            deriv1(2,0) = ;
-//
-//            deriv1(0,1) = ;
-//            deriv1(1,1) = ;
-//            deriv1(2,1) = ;
-//
-//            deriv1(0,2) = ;
-//            deriv1(1,2) = ;
-//            deriv1(2,2) = ;
-//
-//            deriv1(0,3) = ;
-//            deriv1(1,3) = ;
-//            deriv1(2,3) = ;
-//
-//            deriv1(0,4) = ;
-//            deriv1(1,4) = ;
-//            deriv1(2,4) = ;
-//
-//            deriv1(0,5) = ;
-//            deriv1(1,5) = ;
-//            deriv1(2,5) = ;
-//    
-//            deriv1(0,6) = ;
-//            deriv1(1,6) = ;
-//            deriv1(2,6) = ;
-//    
-//            deriv1(0,7) = ;
-//            deriv1(1,7) = ;
-//            deriv1(2,7) = ;
-//    
-//            deriv1(0,8) = ;
-//            deriv1(1,8) = ;
-//            deriv1(2,8) = ;
-//    
-//            deriv1(0,9) = ;
-//            deriv1(1,9) = ;
-//            deriv1(2,9) = ;
+        deriv1(0,4) = 4*(u-r);
+        deriv1(1,4) = -4*r;
+        deriv1(2,4) = -4*r;
 
+        deriv1(0,5) = 4*s;
+        deriv1(1,5) = 4*r;
+        deriv1(2,5) = 0;
+
+        deriv1(0,6) = -4*s;
+        deriv1(1,6) = 4*(u-s);
+        deriv1(2,6) = -4*s;
+
+        deriv1(0,7) = -4*t;
+        deriv1(1,7) = -4*t;
+        deriv1(2,7) = 4*(u-t);
+
+        deriv1(0,8) = 4*t;
+        deriv1(1,8) = 0;
+        deriv1(2,8) = 4*r;
+
+        deriv1(0,9) = 0;
+        deriv1(1,9) = 4*t;
+        deriv1(2,9) = 4*s;
+            
         break;
+    }
     default:
         dserror("distyp unknown\n");
     } /* end switch(distype) */
@@ -519,6 +504,13 @@ void DRT::Utils::shape_function_3D_deriv2(
                      const DRT::Element::DiscretizationType&    distype)
 {
     const double Q18 = 1.0/8.0;
+    
+    const int drdr = 0;
+    const int dsds = 1;
+    const int dtdt = 2;
+    const int drds = 3;
+    const int drdt = 4;
+    const int dsdt = 5;
 
     switch (distype)
     {
@@ -532,61 +524,61 @@ void DRT::Utils::shape_function_3D_deriv2(
         const double tp=1.0+t;
         const double tm=1.0-t;
 
-      deriv2(0,0) =  0.0;
-      deriv2(1,0) =  0.0;
-      deriv2(2,0) =  0.0;
-      deriv2(3,0) = -Q18*tm;
-      deriv2(4,0) = -Q18*sm;
-      deriv2(5,0) =  Q18*rp;
+      deriv2(drdr,0) =  0.0;
+      deriv2(dsds,0) =  0.0;
+      deriv2(dtdt,0) =  0.0;
+      deriv2(drds,0) = -Q18*tm;
+      deriv2(drdt,0) = -Q18*sm;
+      deriv2(dsdt,0) =  Q18*rp;
 
-      deriv2(0,1) =  0.0;
-      deriv2(1,1) =  0.0;
-      deriv2(2,1) =  0.0;
-      deriv2(3,1) = -deriv2(3,0);
-      deriv2(4,1) = -Q18*sp;
-      deriv2(5,1) = -deriv2(5,0);
+      deriv2(drdr,1) =  0.0;
+      deriv2(dsds,1) =  0.0;
+      deriv2(dtdt,1) =  0.0;
+      deriv2(drds,1) = -deriv2(drds,0);
+      deriv2(drdt,1) = -Q18*sp;
+      deriv2(dsdt,1) = -deriv2(dsdt,0);
 
-      deriv2(0,2) =  0.0;
-      deriv2(1,2) =  0.0;
-      deriv2(2,2) =  0.0;
-      deriv2(3,2) =  deriv2(3,0);
-      deriv2(4,2) = -deriv2(4,1);
-      deriv2(5,2) = -Q18*rm;
+      deriv2(drdr,2) =  0.0;
+      deriv2(dsds,2) =  0.0;
+      deriv2(dtdt,2) =  0.0;
+      deriv2(drds,2) =  deriv2(drds,0);
+      deriv2(drdt,2) = -deriv2(drdt,1);
+      deriv2(dsdt,2) = -Q18*rm;
 
-      deriv2(0,3) =  0.0;
-      deriv2(1,3) =  0.0;
-      deriv2(2,3) =  0.0;
-      deriv2(3,3) = -deriv2(3,0);
-      deriv2(4,3) = -deriv2(4,0);
-      deriv2(5,3) = -deriv2(5,2);
+      deriv2(drdr,3) =  0.0;
+      deriv2(dsds,3) =  0.0;
+      deriv2(dtdt,3) =  0.0;
+      deriv2(drds,3) = -deriv2(drds,0);
+      deriv2(drdt,3) = -deriv2(drdt,0);
+      deriv2(dsdt,3) = -deriv2(dsdt,2);
 
-      deriv2(0,4) =  0.0;
-      deriv2(1,4) =  0.0;
-      deriv2(2,4) =  0.0;
-      deriv2(3,4) = -Q18*tp;
-      deriv2(4,4) = -deriv2(4,0);
-      deriv2(5,4) = -deriv2(5,0);
+      deriv2(drdr,4) =  0.0;
+      deriv2(dsds,4) =  0.0;
+      deriv2(dtdt,4) =  0.0;
+      deriv2(drds,4) = -Q18*tp;
+      deriv2(drdt,4) = -deriv2(drdt,0);
+      deriv2(dsdt,4) = -deriv2(dsdt,0);
 
-      deriv2(0,5) =  0.0;
-      deriv2(1,5) =  0.0;
-      deriv2(2,5) =  0.0;
-      deriv2(3,5) = -deriv2(3,4);
-      deriv2(4,5) = -deriv2(4,1);
-      deriv2(5,5) =  deriv2(5,0);
+      deriv2(drdr,5) =  0.0;
+      deriv2(dsds,5) =  0.0;
+      deriv2(dtdt,5) =  0.0;
+      deriv2(drds,5) = -deriv2(drds,4);
+      deriv2(drdt,5) = -deriv2(drdt,1);
+      deriv2(dsdt,5) =  deriv2(dsdt,0);
 
-      deriv2(0,6) =  0.0;
-      deriv2(1,6) =  0.0;
-      deriv2(2,6) =  0.0;
-      deriv2(3,6) =  deriv2(3,4);
-      deriv2(4,6) =  deriv2(4,1);
-      deriv2(5,6) = -deriv2(5,2);
+      deriv2(drdr,6) =  0.0;
+      deriv2(dsds,6) =  0.0;
+      deriv2(dtdt,6) =  0.0;
+      deriv2(drds,6) =  deriv2(drds,4);
+      deriv2(drdt,6) =  deriv2(drdt,1);
+      deriv2(dsdt,6) = -deriv2(dsdt,2);
 
-      deriv2(0,7) =  0.0;
-      deriv2(1,7) =  0.0;
-      deriv2(2,7) =  0.0;
-      deriv2(3,7) = -deriv2(3,4);
-      deriv2(4,7) =  deriv2(4,0);
-      deriv2(5,7) =  deriv2(5,2);
+      deriv2(drdr,7) =  0.0;
+      deriv2(dsds,7) =  0.0;
+      deriv2(dtdt,7) =  0.0;
+      deriv2(drds,7) = -deriv2(drds,4);
+      deriv2(drdt,7) =  deriv2(drdt,0);
+      deriv2(dsdt,7) =  deriv2(dsdt,2);
 
     break;
     }
@@ -604,145 +596,145 @@ void DRT::Utils::shape_function_3D_deriv2(
 //   ssm=1.0-s*s;
 //   ttm=1.0-t*t;
 
-//      deriv2(0,0) = 0.25*sm*tm;
-//      deriv2(1,0) = 0.25*tm*rp;
-//      deriv2(2,0) = 0.25*rp*sm;
-//      deriv2(3,0) =-Q18*(tm*(2*rp+sm+tm-5.0+sm*tm));
-//      deriv2(4,0) =-Q18*(sm*(2*rp+sm+tm-5.0+sm*tm));
-//      deriv2(5,0) = Q18*(rp*(2*sm+tm+rp-5.0+tm*rp));
+//      deriv2(drdr,0) = 0.25*sm*tm;
+//      deriv2(dsds,0) = 0.25*tm*rp;
+//      deriv2(dtdt,0) = 0.25*rp*sm;
+//      deriv2(drds,0) =-Q18*(tm*(2*rp+sm+tm-5.0+sm*tm));
+//      deriv2(drdt,0) =-Q18*(sm*(2*rp+sm+tm-5.0+sm*tm));
+//      deriv2(dsdt,0) = Q18*(rp*(2*sm+tm+rp-5.0+tm*rp));
 //
-//      deriv2(0,1) = 0.25*sp*tm;
-//      deriv2(1,1) = deriv2(2,1);
-//      deriv2(2,1) = 0.25*rp*sp;
-//      deriv2(3,1) =-Q18*(tm*(2*rp+sp+tm-5.0+sp*tm));
-//      deriv2(4,1) =-Q18*(sp*(2*rp+sp+tm-5.0+sp*tm));
-//      deriv2(5,1) =-Q18*(rp*(2*sp+tm+rp-5.0+tm*rp));
+//      deriv2(drdr,1) = 0.25*sp*tm;
+//      deriv2(dsds,1) = deriv2(dtdt,1);
+//      deriv2(dtdt,1) = 0.25*rp*sp;
+//      deriv2(drds,1) =-Q18*(tm*(2*rp+sp+tm-5.0+sp*tm));
+//      deriv2(drdt,1) =-Q18*(sp*(2*rp+sp+tm-5.0+sp*tm));
+//      deriv2(dsdt,1) =-Q18*(rp*(2*sp+tm+rp-5.0+tm*rp));
 //
-//      deriv2(0,2) =-deriv2(1,2);
-//      deriv2(1,2) = 0.25*tm*rm;
-//      deriv2(2,2) = 0.25*rm*sp;
-//      deriv2(3,2) =-Q18*(tm*(2*rm+sp+tm-5.0+sp*tm));
-//      deriv2(4,2) = Q18*(sp*(2*rm+sp+tm-5.0+sp*tm));
-//      deriv2(5,2) =-Q18*(rm*(2*sp+tm+rm-5.0+tm*rm));
+//      deriv2(drdr,2) =-deriv2(dsds,2);
+//      deriv2(dsds,2) = 0.25*tm*rm;
+//      deriv2(dtdt,2) = 0.25*rm*sp;
+//      deriv2(drds,2) =-Q18*(tm*(2*rm+sp+tm-5.0+sp*tm));
+//      deriv2(drdt,2) = Q18*(sp*(2*rm+sp+tm-5.0+sp*tm));
+//      deriv2(dsdt,2) =-Q18*(rm*(2*sp+tm+rm-5.0+tm*rm));
 //
-//      deriv2(0,3) =-deriv2(1,1);
-//      deriv2(1,3) = deriv2(2,3);
-//      deriv2(2,3) = 0.25*rm*sm;
-//      deriv2(3,3) =-Q18*(tm*(2*rm+sm+tm-5.0+sm*tm));
-//      deriv2(4,3) = Q18*(sm*(2*rm+sm+tm-5.0+sm*tm));
-//      deriv2(5,3) = Q18*(rm*(2*sm+tm+rm-5.0+tm*rm));
+//      deriv2(drdr,3) =-deriv2(dsds,1);
+//      deriv2(dsds,3) = deriv2(dtdt,3);
+//      deriv2(dtdt,3) = 0.25*rm*sm;
+//      deriv2(drds,3) =-Q18*(tm*(2*rm+sm+tm-5.0+sm*tm));
+//      deriv2(drdt,3) = Q18*(sm*(2*rm+sm+tm-5.0+sm*tm));
+//      deriv2(dsdt,3) = Q18*(rm*(2*sm+tm+rm-5.0+tm*rm));
 //
-//      deriv2(0,4) = 0.25*sm*tp;
-//      deriv2(1,4) = 0.25*tp*rp;
-//      deriv2(2,4) = deriv2(3,1);
-//      deriv2(3,4) =-Q18*(tp*(2*rp+sm+tp-5.0+sm*tp));
-//      deriv2(4,4) = Q18*(sm*(2*rp+sm+tp-5.0+sm*tp));
-//      deriv2(5,4) =-Q18*(rp*(2*sm+tp+rp-5.0+tp*rp));
+//      deriv2(drdr,4) = 0.25*sm*tp;
+//      deriv2(dsds,4) = 0.25*tp*rp;
+//      deriv2(dtdt,4) = deriv2(drds,1);
+//      deriv2(drds,4) =-Q18*(tp*(2*rp+sm+tp-5.0+sm*tp));
+//      deriv2(drdt,4) = Q18*(sm*(2*rp+sm+tp-5.0+sm*tp));
+//      deriv2(dsdt,4) =-Q18*(rp*(2*sm+tp+rp-5.0+tp*rp));
 //
-//      deriv2(0,5) = 0.25*sp*tp;
-//      deriv2(1,5) = deriv2(2,5);
-//      deriv2(2,5) = deriv2(3,2);
-//      deriv2(3,5) =-Q18*(tp*(2*rp+sp+tp-5.0+sp*tp));
-//      deriv2(4,5) = Q18*(sp*(2*rp+sp+tp-5.0+sp*tp));
-//      deriv2(5,5) = Q18*(rp*(2*sp+tp+rp-5.0+tp*rp));
+//      deriv2(drdr,5) = 0.25*sp*tp;
+//      deriv2(dsds,5) = deriv2(dtdt,5);
+//      deriv2(dtdt,5) = deriv2(drds,2);
+//      deriv2(drds,5) =-Q18*(tp*(2*rp+sp+tp-5.0+sp*tp));
+//      deriv2(drdt,5) = Q18*(sp*(2*rp+sp+tp-5.0+sp*tp));
+//      deriv2(dsdt,5) = Q18*(rp*(2*sp+tp+rp-5.0+tp*rp));
 //
-//      deriv2(0,6) =-deriv2(1,6);
-//      deriv2(1,6) = 0.25*tp*rm;
-//      deriv2(2,6) = deriv2(3,3);
-//      deriv2(3,6) =-Q18*(tp*(2*rm+sp+tp-5.0+sp*tp));
-//      deriv2(4,6) =-Q18*(sp*(2*rm+sp+tp-5.0+sp*tp));
-//      deriv2(5,6) = Q18*(rm*(2*sp+tp+rm-5.0+tp*rm));
+//      deriv2(drdr,6) =-deriv2(dsds,6);
+//      deriv2(dsds,6) = 0.25*tp*rm;
+//      deriv2(dtdt,6) = deriv2(drds,3);
+//      deriv2(drds,6) =-Q18*(tp*(2*rm+sp+tp-5.0+sp*tp));
+//      deriv2(drdt,6) =-Q18*(sp*(2*rm+sp+tp-5.0+sp*tp));
+//      deriv2(dsdt,6) = Q18*(rm*(2*sp+tp+rm-5.0+tp*rm));
 //
-//      deriv2(0,7) =-deriv2(1,5);
-//      deriv2(1,7) = deriv2(2,7);
-//      deriv2(2,7) = deriv2(3,4);
-//      deriv2(3,7) =-Q18*(tp*(2*rm+sm+tp-5.0+sm*tp));
-//      deriv2(4,7) =-Q18*(sm*(2*rm+sm+tp-5.0+sm*tp));
-//      deriv2(5,7) =-Q18*(rm*(2*sm+tp+rm-5.0+tp*rm));
+//      deriv2(drdr,7) =-deriv2(dsds,5);
+//      deriv2(dsds,7) = deriv2(dtdt,7);
+//      deriv2(dtdt,7) = deriv2(drds,4);
+//      deriv2(drds,7) =-Q18*(tp*(2*rm+sm+tp-5.0+sm*tp));
+//      deriv2(drdt,7) =-Q18*(sm*(2*rm+sm+tp-5.0+sm*tp));
+//      deriv2(dsdt,7) =-Q18*(rm*(2*sm+tp+rm-5.0+tp*rm));
 //
-//      deriv2(0,8) = 0.0;
-//      deriv2(1,8) = -0.5*tm*rp;
-//      deriv2(2,8) = 0.0;
-//      deriv2(3,8) =-0.5*s*tm;
-//      deriv2(4,8) =-0.25*ssm;
-//      deriv2(5,8) = 0.5*s*rp;
+//      deriv2(drdr,8) = 0.0;
+//      deriv2(dsds,8) = -0.5*tm*rp;
+//      deriv2(dtdt,8) = 0.0;
+//      deriv2(drds,8) =-0.5*s*tm;
+//      deriv2(drdt,8) =-0.25*ssm;
+//      deriv2(dsdt,8) = 0.5*s*rp;
 //
-//      deriv2(0,9)=-0.5*sp*tm;
-//      deriv2(1,9)= 0.0;
-//      deriv2(2,9)= 0.0;
-//      deriv2(3,9)=-0.5*r*tm;
-//      deriv2(4,9)= 0.5*r*sp;
-//      deriv2(5,9)=-0.25*rrm ;
+//      deriv2(drdr,9)=-0.5*sp*tm;
+//      deriv2(dsds,9)= 0.0;
+//      deriv2(dtdt,9)= 0.0;
+//      deriv2(drds,9)=-0.5*r*tm;
+//      deriv2(drdt,9)= 0.5*r*sp;
+//      deriv2(dsdt,9)=-0.25*rrm ;
 //
-//      deriv2(0,10)= 0.0;
-//      deriv2(1,10)= -0.5*tm*rm;
-//      deriv2(2,10)= 0.0;
-//      deriv2(3,10)= 0.5*s*tm;
-//      deriv2(4,10)=-deriv2(4,8);
-//      deriv2(5,10)= 0.5*s*rm;
+//      deriv2(drdr,10)= 0.0;
+//      deriv2(dsds,10)= -0.5*tm*rm;
+//      deriv2(dtdt,10)= 0.0;
+//      deriv2(drds,10)= 0.5*s*tm;
+//      deriv2(drdt,10)=-deriv2(drdt,8);
+//      deriv2(dsdt,10)= 0.5*s*rm;
 //
-//      deriv2(0,11)=-0.5*sm*tm;
-//      deriv2(1,11)= 0.0;
-//      deriv2(2,11)= 0.0;
-//      deriv2(3,11)= 0.5*r*tm;
-//      deriv2(4,11)= 0.5*r*sm;
-//      deriv2(5,11)=-deriv2(5,9);
+//      deriv2(drdr,11)=-0.5*sm*tm;
+//      deriv2(dsds,11)= 0.0;
+//      deriv2(dtdt,11)= 0.0;
+//      deriv2(drds,11)= 0.5*r*tm;
+//      deriv2(drdt,11)= 0.5*r*sm;
+//      deriv2(dsdt,11)=-deriv2(dsdt,9);
 //
-//      deriv2(0,12)= 0.0;
-//      deriv2(1,12)= -0.5*tp*rp;
-//      deriv2(2,12)= 0.0;
-//      deriv2(3,12)=-0.5*s*tp;
-//      deriv2(4,12)=-deriv2(4,8);
-//      deriv2(5,12)=-deriv2(5,8);
+//      deriv2(drdr,12)= 0.0;
+//      deriv2(dsds,12)= -0.5*tp*rp;
+//      deriv2(dtdt,12)= 0.0;
+//      deriv2(drds,12)=-0.5*s*tp;
+//      deriv2(drdt,12)=-deriv2(drdt,8);
+//      deriv2(dsdt,12)=-deriv2(dsdt,8);
 //
-//      deriv2(0,13)=-0.5*sp*tp;
-//      deriv2(1,13)= 0.0;
-//      deriv2(2,13)= 0.0;
-//      deriv2(3,13)=-0.5*r*tp;
-//      deriv2(4,13)=-deriv2(4,9);
-//      deriv2(5,13)=-deriv2(5,9);
+//      deriv2(drdr,13)=-0.5*sp*tp;
+//      deriv2(dsds,13)= 0.0;
+//      deriv2(dtdt,13)= 0.0;
+//      deriv2(drds,13)=-0.5*r*tp;
+//      deriv2(drdt,13)=-deriv2(drdt,9);
+//      deriv2(dsdt,13)=-deriv2(dsdt,9);
 //
-//      deriv2(0,14)= 0.0;
-//      deriv2(1,14)= -0.5*tp*rm;
-//      deriv2(2,14)= 0.0;
-//      deriv2(3,14)= 0.5*s*tp;
-//      deriv2(4,14)= deriv2(4,8);
-//      deriv2(5,14)=-deriv2(5,10);
+//      deriv2(drdr,14)= 0.0;
+//      deriv2(dsds,14)= -0.5*tp*rm;
+//      deriv2(dtdt,14)= 0.0;
+//      deriv2(drds,14)= 0.5*s*tp;
+//      deriv2(drdt,14)= deriv2(drdt,8);
+//      deriv2(dsdt,14)=-deriv2(dsdt,10);
 //
-//      deriv2(0,15)=-0.5*sm*tp;
-//      deriv2(1,15)= 0.0;
-//      deriv2(2,15)= 0.0;
-//      deriv2(3,15)= 0.5*r*tp;
-//      deriv2(4,15)=-deriv2(4,11);
-//      deriv2(5,15)= deriv2(5,9);
+//      deriv2(drdr,15)=-0.5*sm*tp;
+//      deriv2(dsds,15)= 0.0;
+//      deriv2(dtdt,15)= 0.0;
+//      deriv2(drds,15)= 0.5*r*tp;
+//      deriv2(drdt,15)=-deriv2(drdt,11);
+//      deriv2(dsdt,15)= deriv2(dsdt,9);
 //
-//      deriv2(0,16)= 0.0;
-//      deriv2(1,16)= 0.0;
-//      deriv2(2,16)= 0.0;
-//      deriv2(3,16)=-0.25*ttm;
-//      deriv2(4,16)=-0.5*t*sm;
-//      deriv2(5,16)= 0.5*t*rp;
+//      deriv2(drdr,16)= 0.0;
+//      deriv2(dsds,16)= 0.0;
+//      deriv2(dtdt,16)= 0.0;
+//      deriv2(drds,16)=-0.25*ttm;
+//      deriv2(drdt,16)=-0.5*t*sm;
+//      deriv2(dsdt,16)= 0.5*t*rp;
 //
-//      deriv2(0,17)= 0.0;
-//      deriv2(1,17)= 0.0;
-//      deriv2(2,17)= 0.0;
-//      deriv2(3,17)= 0.25*ttm;
-//      deriv2(4,17)=-0.5*t*sp;
-//      deriv2(5,17)=-deriv2(5,16);
+//      deriv2(drdr,17)= 0.0;
+//      deriv2(dsds,17)= 0.0;
+//      deriv2(dtdt,17)= 0.0;
+//      deriv2(drds,17)= 0.25*ttm;
+//      deriv2(drdt,17)=-0.5*t*sp;
+//      deriv2(dsdt,17)=-deriv2(dsdt,16);
 //
-//      deriv2(0,18)= 0.0;
-//      deriv2(1,18)= 0.0;
-//      deriv2(2,18)= 0.0;
-//      deriv2(3,18)= deriv2(3,16);
-//      deriv2(4,18)= 0.5*t*sp;
-//      deriv2(5,18)= 0.5*t*rm;
+//      deriv2(drdr,18)= 0.0;
+//      deriv2(dsds,18)= 0.0;
+//      deriv2(dtdt,18)= 0.0;
+//      deriv2(drds,18)= deriv2(drds,16);
+//      deriv2(drdt,18)= 0.5*t*sp;
+//      deriv2(dsdt,18)= 0.5*t*rm;
 //
-//      deriv2(0,19)= 0.0;
-//      deriv2(1,19)= 0.0;
-//      deriv2(2,19)= 0.0;
-//      deriv2(3,19)= deriv2(3,17);
-//      deriv2(4,19)= 0.5*t*sm;
-//      deriv2(5,19)=-deriv2(5,18);
+//      deriv2(drdr,19)= 0.0;
+//      deriv2(dsds,19)= 0.0;
+//      deriv2(dtdt,19)= 0.0;
+//      deriv2(drds,19)= deriv2(drds,17);
+//      deriv2(drdt,19)= 0.5*t*sm;
+//      deriv2(dsdt,19)=-deriv2(dsdt,18);
 
         break;
     }
@@ -769,262 +761,249 @@ void DRT::Utils::shape_function_3D_deriv2(
         const double dtp1 = t + 0.5;
 
 
-        deriv2(0,0) = sp1*tp1;
-        deriv2(0,1) = sm1*tp1;
-        deriv2(0,2) = sm1*tp1;
-        deriv2(0,3) = sp1*tp1;
-        deriv2(0,4) = tm1*sp1;
-        deriv2(0,5) = sm1*tm1;
-        deriv2(0,6) = sm1*tm1;
-        deriv2(0,7) = tm1*sp1;
-        deriv2(0,8) = s00*tp1;
-        deriv2(0,9) = -2*sm1*tp1;
-        deriv2(0,10) = s00*tp1;
-        deriv2(0,11) = -2*sp1*tp1;
-        deriv2(0,12) = t00*sp1;
-        deriv2(0,13) = t00*sm1;
-        deriv2(0,14) = t00*sm1;
-        deriv2(0,15) = t00*sp1;
-        deriv2(0,16) = s00*tm1;
-        deriv2(0,17) = -2*sm1*tm1;
-        deriv2(0,18) = s00*tm1;
-        deriv2(0,19) = -2*tm1*sp1;
-        deriv2(0,20) = -2*s00*tp1;
-        deriv2(0,21) = s00*t00;
-        deriv2(0,22) = -2*t00*sm1;
-        deriv2(0,23) = s00*t00;
-        deriv2(0,24) = -2*t00*sp1;
-        deriv2(0,25) = -2*s00*tm1;
-        deriv2(0,26) = -2*s00*t00;
+        deriv2(drdr,0) = sp1*tp1;
+        deriv2(drdr,1) = sm1*tp1;
+        deriv2(drdr,2) = sm1*tp1;
+        deriv2(drdr,3) = sp1*tp1;
+        deriv2(drdr,4) = tm1*sp1;
+        deriv2(drdr,5) = sm1*tm1;
+        deriv2(drdr,6) = sm1*tm1;
+        deriv2(drdr,7) = tm1*sp1;
+        deriv2(drdr,8) = s00*tp1;
+        deriv2(drdr,9) = -2*sm1*tp1;
+        deriv2(drdr,10) = s00*tp1;
+        deriv2(drdr,11) = -2*sp1*tp1;
+        deriv2(drdr,12) = t00*sp1;
+        deriv2(drdr,13) = t00*sm1;
+        deriv2(drdr,14) = t00*sm1;
+        deriv2(drdr,15) = t00*sp1;
+        deriv2(drdr,16) = s00*tm1;
+        deriv2(drdr,17) = -2*sm1*tm1;
+        deriv2(drdr,18) = s00*tm1;
+        deriv2(drdr,19) = -2*tm1*sp1;
+        deriv2(drdr,20) = -2*s00*tp1;
+        deriv2(drdr,21) = s00*t00;
+        deriv2(drdr,22) = -2*t00*sm1;
+        deriv2(drdr,23) = s00*t00;
+        deriv2(drdr,24) = -2*t00*sp1;
+        deriv2(drdr,25) = -2*s00*tm1;
+        deriv2(drdr,26) = -2*s00*t00;
         
-        deriv2(1,0) = rp1*tp1;
-        deriv2(1,1) = rp1*tp1;
-        deriv2(1,2) = rm1*tp1;
-        deriv2(1,3) = rm1*tp1;
-        deriv2(1,4) = tm1*rp1;
-        deriv2(1,5) = tm1*rp1;
-        deriv2(1,6) = rm1*tm1;
-        deriv2(1,7) = rm1*tm1;
-        deriv2(1,8) = -2*rp1*tp1;
-        deriv2(1,9) = r00*tp1;
-        deriv2(1,10) = -2*rm1*tp1;
-        deriv2(1,11) = r00*tp1;
-        deriv2(1,12) = t00*rp1;
-        deriv2(1,13) = t00*rp1;
-        deriv2(1,14) = t00*rm1;
-        deriv2(1,15) = t00*rm1;
-        deriv2(1,16) = -2*tm1*rp1;
-        deriv2(1,17) = r00*tm1;
-        deriv2(1,18) = -2*rm1*tm1;
-        deriv2(1,19) = r00*tm1;
-        deriv2(1,20) = -2*r00*tp1;
-        deriv2(1,21) = -2*t00*rp1;
-        deriv2(1,22) = r00*t00;
-        deriv2(1,23) = -2*t00*rm1;
-        deriv2(1,24) = r00*t00;
-        deriv2(1,25) = -2*r00*tm1;
-        deriv2(1,26) = -2*r00*t00;
+        deriv2(dsds,0) = rp1*tp1;
+        deriv2(dsds,1) = rp1*tp1;
+        deriv2(dsds,2) = rm1*tp1;
+        deriv2(dsds,3) = rm1*tp1;
+        deriv2(dsds,4) = tm1*rp1;
+        deriv2(dsds,5) = tm1*rp1;
+        deriv2(dsds,6) = rm1*tm1;
+        deriv2(dsds,7) = rm1*tm1;
+        deriv2(dsds,8) = -2*rp1*tp1;
+        deriv2(dsds,9) = r00*tp1;
+        deriv2(dsds,10) = -2*rm1*tp1;
+        deriv2(dsds,11) = r00*tp1;
+        deriv2(dsds,12) = t00*rp1;
+        deriv2(dsds,13) = t00*rp1;
+        deriv2(dsds,14) = t00*rm1;
+        deriv2(dsds,15) = t00*rm1;
+        deriv2(dsds,16) = -2*tm1*rp1;
+        deriv2(dsds,17) = r00*tm1;
+        deriv2(dsds,18) = -2*rm1*tm1;
+        deriv2(dsds,19) = r00*tm1;
+        deriv2(dsds,20) = -2*r00*tp1;
+        deriv2(dsds,21) = -2*t00*rp1;
+        deriv2(dsds,22) = r00*t00;
+        deriv2(dsds,23) = -2*t00*rm1;
+        deriv2(dsds,24) = r00*t00;
+        deriv2(dsds,25) = -2*r00*tm1;
+        deriv2(dsds,26) = -2*r00*t00;
         
-        deriv2(2,0) = rp1*sp1;
-        deriv2(2,1) = sm1*rp1;
-        deriv2(2,2) = rm1*sm1;
-        deriv2(2,3) = rm1*sp1;
-        deriv2(2,4) = rp1*sp1;
-        deriv2(2,5) = sm1*rp1;
-        deriv2(2,6) = rm1*sm1;
-        deriv2(2,7) = rm1*sp1;
-        deriv2(2,8) = s00*rp1;
-        deriv2(2,9) = r00*sm1;
-        deriv2(2,10) = s00*rm1;
-        deriv2(2,11) = r00*sp1;
-        deriv2(2,12) = -2*rp1*sp1;
-        deriv2(2,13) = -2*sm1*rp1;
-        deriv2(2,14) = -2*rm1*sm1;
-        deriv2(2,15) = -2*rm1*sp1;
-        deriv2(2,16) = s00*rp1;
-        deriv2(2,17) = r00*sm1;
-        deriv2(2,18) = s00*rm1;
-        deriv2(2,19) = r00*sp1;
-        deriv2(2,20) = r00*s00;
-        deriv2(2,21) = -2*s00*rp1;
-        deriv2(2,22) = -2*r00*sm1;
-        deriv2(2,23) = -2*s00*rm1;
-        deriv2(2,24) = -2*r00*sp1;
-        deriv2(2,25) = r00*s00;
-        deriv2(2,26) = -2*r00*s00;
+        deriv2(dtdt,0) = rp1*sp1;
+        deriv2(dtdt,1) = sm1*rp1;
+        deriv2(dtdt,2) = rm1*sm1;
+        deriv2(dtdt,3) = rm1*sp1;
+        deriv2(dtdt,4) = rp1*sp1;
+        deriv2(dtdt,5) = sm1*rp1;
+        deriv2(dtdt,6) = rm1*sm1;
+        deriv2(dtdt,7) = rm1*sp1;
+        deriv2(dtdt,8) = s00*rp1;
+        deriv2(dtdt,9) = r00*sm1;
+        deriv2(dtdt,10) = s00*rm1;
+        deriv2(dtdt,11) = r00*sp1;
+        deriv2(dtdt,12) = -2*rp1*sp1;
+        deriv2(dtdt,13) = -2*sm1*rp1;
+        deriv2(dtdt,14) = -2*rm1*sm1;
+        deriv2(dtdt,15) = -2*rm1*sp1;
+        deriv2(dtdt,16) = s00*rp1;
+        deriv2(dtdt,17) = r00*sm1;
+        deriv2(dtdt,18) = s00*rm1;
+        deriv2(dtdt,19) = r00*sp1;
+        deriv2(dtdt,20) = r00*s00;
+        deriv2(dtdt,21) = -2*s00*rp1;
+        deriv2(dtdt,22) = -2*r00*sm1;
+        deriv2(dtdt,23) = -2*s00*rm1;
+        deriv2(dtdt,24) = -2*r00*sp1;
+        deriv2(dtdt,25) = r00*s00;
+        deriv2(dtdt,26) = -2*r00*s00;
         
-        deriv2(3,0) = tp1*drp1*dsp1;
-        deriv2(3,1) = tp1*dsm1*drp1;
-        deriv2(3,2) = tp1*drm1*dsm1;
-        deriv2(3,3) = tp1*drm1*dsp1;
-        deriv2(3,4) = tm1*drp1*dsp1;
-        deriv2(3,5) = tm1*dsm1*drp1;
-        deriv2(3,6) = tm1*drm1*dsm1;
-        deriv2(3,7) = tm1*drm1*dsp1;
-        deriv2(3,8) = tp1*ds00*drp1;
-        deriv2(3,9) = tp1*dr00*dsm1;
-        deriv2(3,10) = tp1*ds00*drm1;
-        deriv2(3,11) = tp1*dr00*dsp1;
-        deriv2(3,12) = t00*drp1*dsp1;
-        deriv2(3,13) = t00*dsm1*drp1;
-        deriv2(3,14) = t00*drm1*dsm1;
-        deriv2(3,15) = t00*drm1*dsp1;
-        deriv2(3,16) = tm1*ds00*drp1;
-        deriv2(3,17) = tm1*dr00*dsm1;
-        deriv2(3,18) = tm1*ds00*drm1;
-        deriv2(3,19) = tm1*dr00*dsp1;
-        deriv2(3,20) = 4*r*s*tp1;
-        deriv2(3,21) = t00*ds00*drp1;
-        deriv2(3,22) = t00*dr00*dsm1;
-        deriv2(3,23) = t00*ds00*drm1;
-        deriv2(3,24) = t00*dr00*dsp1;
-        deriv2(3,25) = 4*r*s*tm1;
-        deriv2(3,26) = 4*r*s*t00;
+        deriv2(drds,0) = tp1*drp1*dsp1;
+        deriv2(drds,1) = tp1*dsm1*drp1;
+        deriv2(drds,2) = tp1*drm1*dsm1;
+        deriv2(drds,3) = tp1*drm1*dsp1;
+        deriv2(drds,4) = tm1*drp1*dsp1;
+        deriv2(drds,5) = tm1*dsm1*drp1;
+        deriv2(drds,6) = tm1*drm1*dsm1;
+        deriv2(drds,7) = tm1*drm1*dsp1;
+        deriv2(drds,8) = tp1*ds00*drp1;
+        deriv2(drds,9) = tp1*dr00*dsm1;
+        deriv2(drds,10) = tp1*ds00*drm1;
+        deriv2(drds,11) = tp1*dr00*dsp1;
+        deriv2(drds,12) = t00*drp1*dsp1;
+        deriv2(drds,13) = t00*dsm1*drp1;
+        deriv2(drds,14) = t00*drm1*dsm1;
+        deriv2(drds,15) = t00*drm1*dsp1;
+        deriv2(drds,16) = tm1*ds00*drp1;
+        deriv2(drds,17) = tm1*dr00*dsm1;
+        deriv2(drds,18) = tm1*ds00*drm1;
+        deriv2(drds,19) = tm1*dr00*dsp1;
+        deriv2(drds,20) = 4*r*s*tp1;
+        deriv2(drds,21) = t00*ds00*drp1;
+        deriv2(drds,22) = t00*dr00*dsm1;
+        deriv2(drds,23) = t00*ds00*drm1;
+        deriv2(drds,24) = t00*dr00*dsp1;
+        deriv2(drds,25) = 4*r*s*tm1;
+        deriv2(drds,26) = 4*r*s*t00;
         
-        deriv2(4,0) = sp1*drp1*dtp1;
-        deriv2(4,1) = sm1*drp1*dtp1;
-        deriv2(4,2) = sm1*drm1*dtp1;
-        deriv2(4,3) = sp1*drm1*dtp1;
-        deriv2(4,4) = sp1*dtm1*drp1;
-        deriv2(4,5) = sm1*dtm1*drp1;
-        deriv2(4,6) = sm1*drm1*dtm1;
-        deriv2(4,7) = sp1*drm1*dtm1;
-        deriv2(4,8) = s00*drp1*dtp1;
-        deriv2(4,9) = sm1*dr00*dtp1;
-        deriv2(4,10) = s00*drm1*dtp1;
-        deriv2(4,11) = sp1*dr00*dtp1;
-        deriv2(4,12) = sp1*dt00*drp1;
-        deriv2(4,13) = sm1*dt00*drp1;
-        deriv2(4,14) = sm1*dt00*drm1;
-        deriv2(4,15) = sp1*dt00*drm1;
-        deriv2(4,16) = s00*dtm1*drp1;
-        deriv2(4,17) = sm1*dr00*dtm1;
-        deriv2(4,18) = s00*drm1*dtm1;
-        deriv2(4,19) = sp1*dr00*dtm1;
-        deriv2(4,20) = s00*dr00*dtp1;
-        deriv2(4,21) = s00*dt00*drp1;
-        deriv2(4,22) = 4*r*t*sm1;
-        deriv2(4,23) = s00*dt00*drm1;
-        deriv2(4,24) = 4*r*t*sp1;
-        deriv2(4,25) = s00*dr00*dtm1;
-        deriv2(4,26) = 4*r*t*s00;
+        deriv2(drdt,0) = sp1*drp1*dtp1;
+        deriv2(drdt,1) = sm1*drp1*dtp1;
+        deriv2(drdt,2) = sm1*drm1*dtp1;
+        deriv2(drdt,3) = sp1*drm1*dtp1;
+        deriv2(drdt,4) = sp1*dtm1*drp1;
+        deriv2(drdt,5) = sm1*dtm1*drp1;
+        deriv2(drdt,6) = sm1*drm1*dtm1;
+        deriv2(drdt,7) = sp1*drm1*dtm1;
+        deriv2(drdt,8) = s00*drp1*dtp1;
+        deriv2(drdt,9) = sm1*dr00*dtp1;
+        deriv2(drdt,10) = s00*drm1*dtp1;
+        deriv2(drdt,11) = sp1*dr00*dtp1;
+        deriv2(drdt,12) = sp1*dt00*drp1;
+        deriv2(drdt,13) = sm1*dt00*drp1;
+        deriv2(drdt,14) = sm1*dt00*drm1;
+        deriv2(drdt,15) = sp1*dt00*drm1;
+        deriv2(drdt,16) = s00*dtm1*drp1;
+        deriv2(drdt,17) = sm1*dr00*dtm1;
+        deriv2(drdt,18) = s00*drm1*dtm1;
+        deriv2(drdt,19) = sp1*dr00*dtm1;
+        deriv2(drdt,20) = s00*dr00*dtp1;
+        deriv2(drdt,21) = s00*dt00*drp1;
+        deriv2(drdt,22) = 4*r*t*sm1;
+        deriv2(drdt,23) = s00*dt00*drm1;
+        deriv2(drdt,24) = 4*r*t*sp1;
+        deriv2(drdt,25) = s00*dr00*dtm1;
+        deriv2(drdt,26) = 4*r*t*s00;
         
-        deriv2(5,0) = rp1*dsp1*dtp1;
-        deriv2(5,1) = rp1*dsm1*dtp1;
-        deriv2(5,2) = rm1*dsm1*dtp1;
-        deriv2(5,3) = rm1*dsp1*dtp1;
-        deriv2(5,4) = rp1*dtm1*dsp1;
-        deriv2(5,5) = rp1*dsm1*dtm1;
-        deriv2(5,6) = rm1*dsm1*dtm1;
-        deriv2(5,7) = rm1*dtm1*dsp1;
-        deriv2(5,8) = rp1*ds00*dtp1;
-        deriv2(5,9) = r00*dsm1*dtp1;
-        deriv2(5,10) = rm1*ds00*dtp1;
-        deriv2(5,11) = r00*dsp1*dtp1;
-        deriv2(5,12) = rp1*dt00*dsp1;
-        deriv2(5,13) = rp1*dt00*dsm1;
-        deriv2(5,14) = rm1*dt00*dsm1;
-        deriv2(5,15) = rm1*dt00*dsp1;
-        deriv2(5,16) = rp1*ds00*dtm1;
-        deriv2(5,17) = r00*dsm1*dtm1;
-        deriv2(5,18) = rm1*ds00*dtm1;
-        deriv2(5,19) = r00*dtm1*dsp1;
-        deriv2(5,20) = r00*ds00*dtp1;
-        deriv2(5,21) = 4*s*t*rp1;
-        deriv2(5,22) = r00*dt00*dsm1;
-        deriv2(5,23) = 4*s*t*rm1;
-        deriv2(5,24) = r00*dt00*dsp1;
-        deriv2(5,25) = r00*ds00*dtm1;
-        deriv2(5,26) = 4*s*t*r00;
+        deriv2(dsdt,0) = rp1*dsp1*dtp1;
+        deriv2(dsdt,1) = rp1*dsm1*dtp1;
+        deriv2(dsdt,2) = rm1*dsm1*dtp1;
+        deriv2(dsdt,3) = rm1*dsp1*dtp1;
+        deriv2(dsdt,4) = rp1*dtm1*dsp1;
+        deriv2(dsdt,5) = rp1*dsm1*dtm1;
+        deriv2(dsdt,6) = rm1*dsm1*dtm1;
+        deriv2(dsdt,7) = rm1*dtm1*dsp1;
+        deriv2(dsdt,8) = rp1*ds00*dtp1;
+        deriv2(dsdt,9) = r00*dsm1*dtp1;
+        deriv2(dsdt,10) = rm1*ds00*dtp1;
+        deriv2(dsdt,11) = r00*dsp1*dtp1;
+        deriv2(dsdt,12) = rp1*dt00*dsp1;
+        deriv2(dsdt,13) = rp1*dt00*dsm1;
+        deriv2(dsdt,14) = rm1*dt00*dsm1;
+        deriv2(dsdt,15) = rm1*dt00*dsp1;
+        deriv2(dsdt,16) = rp1*ds00*dtm1;
+        deriv2(dsdt,17) = r00*dsm1*dtm1;
+        deriv2(dsdt,18) = rm1*ds00*dtm1;
+        deriv2(dsdt,19) = r00*dtm1*dsp1;
+        deriv2(dsdt,20) = r00*ds00*dtp1;
+        deriv2(dsdt,21) = 4*s*t*rp1;
+        deriv2(dsdt,22) = r00*dt00*dsm1;
+        deriv2(dsdt,23) = 4*s*t*rm1;
+        deriv2(dsdt,24) = r00*dt00*dsp1;
+        deriv2(dsdt,25) = r00*ds00*dtm1;
+        deriv2(dsdt,26) = 4*s*t*r00;
         break;
     }
-    case DRT::Element::tet4:
+    case DRT::Element::tet10: 
     {
-        dserror("no second deriv1atives for tet4 elements");
+        deriv2(drdr,0) =  4.0;
+        deriv2(dsds,0) =  4.0;
+        deriv2(dtdt,0) =  4.0;
+        deriv2(drds,0) =  4.0;
+        deriv2(drdt,0) =  4.0;
+        deriv2(dsdt,0) =  4.0;
+
+        deriv2(drdr,1) =  4.0;
+        deriv2(dsds,1) =  0.0;
+        deriv2(dtdt,1) =  0.0;
+        deriv2(drds,1) =  0.0;
+        deriv2(drdt,1) =  0.0;
+        deriv2(dsdt,1) =  0.0;
+
+        deriv2(drdr,2) =  0.0;
+        deriv2(dsds,2) =  4.0;
+        deriv2(dtdt,2) =  0.0;
+        deriv2(drds,2) =  0.0;
+        deriv2(drdt,2) =  0.0;
+        deriv2(dsdt,2) =  0.0;
+
+        deriv2(drdr,3) =  0.0;
+        deriv2(dsds,3) =  0.0;
+        deriv2(dtdt,3) =  4.0;
+        deriv2(drds,3) =  0.0;
+        deriv2(drdt,3) =  0.0;
+        deriv2(dsdt,3) =  0.0;
+
+        deriv2(drdr,4) = -8.0;
+        deriv2(dsds,4) =  0.0;
+        deriv2(dtdt,4) =  0.0;
+        deriv2(drds,4) = -4.0;
+        deriv2(drdt,4) = -4.0;
+        deriv2(dsdt,4) =  0.0;
+               
+        deriv2(drdr,5) =  0.0;
+        deriv2(dsds,5) =  0.0;
+        deriv2(dtdt,5) =  0.0;
+        deriv2(drds,5) =  4.0;
+        deriv2(drdt,5) =  0.0;
+        deriv2(dsdt,5) =  0.0;
+
+        deriv2(drdr,6) =  0.0;
+        deriv2(dsds,6) = -8.0;
+        deriv2(dtdt,6) =  0.0;
+        deriv2(drds,6) = -4.0;
+        deriv2(drdt,6) =  0.0;
+        deriv2(dsdt,6) = -4.0;
+        
+        deriv2(drdr,7) =  0.0;
+        deriv2(dsds,7) =  0.0;
+        deriv2(dtdt,7) = -8.0;
+        deriv2(drds,7) =  0.0;
+        deriv2(drdt,7) = -4.0;
+        deriv2(dsdt,7) = -4.0;
+
+        deriv2(drdr,8) =  0.0;
+        deriv2(dsds,8) =  0.0;
+        deriv2(dtdt,8) =  0.0;
+        deriv2(drds,8) =  0.0;
+        deriv2(drdt,8) =  4.0;
+        deriv2(dsdt,8) =  0.0;
+        
+        deriv2(drdr,9) =  0.0;
+        deriv2(dsds,9) =  0.0;
+        deriv2(dtdt,9) =  0.0;
+        deriv2(drds,9) =  0.0;
+        deriv2(drdt,9) =  0.0;
+        deriv2(dsdt,9) =  4.0;
+            
         break;
     }
-    case DRT::Element::tet10:
-        dserror("shape functions for tet10 not implemented yet!\n");
-
-//        t1=r;
-//        t2=s;
-//        t3=t;
-//        t4=1.0-r-s-t;
-
-//        /*These are the shape functions used by Bathe (p. 439) using the corresponding numbering (p.438).*/
-//        /*If these shape functions go together with the numbering used for the elements, was not checked. -> could be wrong!*/
-
-//            deriv2(0,0) =  ;
-//            deriv2(1,0) =  ;
-//            deriv2(2,0) =  ;
-//            deriv2(3,0) = ;
-//            deriv2(4,0) = ;
-//            deriv2(5,0) = ;
-//
-//          deriv2(0,1) =  ;
-//          deriv2(1,1) =  ;
-//          deriv2(2,1) =  ;
-//          deriv2(3,1) = ;
-//          deriv2(4,1) = ;
-//          deriv2(5,1) = ;
-//
-//          deriv2(0,2) =  ;
-//          deriv2(1,2) = ;
-//          deriv2(2,2) =  ;
-//          deriv2(3,2) = ;
-//          deriv2(4,2) = ;
-//          deriv2(5,2) = ;
-//    
-//          deriv2(0,3) = ;
-//          deriv2(1,3) =  ;
-//          deriv2(2,3) =  ;
-//          deriv2(3,3) = ;
-//          deriv2(4,3) = ;
-//          deriv2(5,3) = ;
-//    
-//          deriv2(0,4) =  ;
-//          deriv2(1,4) =  ;
-//          deriv2(2,4) =  ;
-//          deriv2(3,4) = ;
-//          deriv2(4,4) = ;
-//          deriv2(5,4) = ;
-//    
-//          deriv2(0,5) =  ;
-//          deriv2(1,5) =  ;
-//          deriv2(2,5) =  ;
-//          deriv2(3,5) = ;
-//          deriv2(4,5) = ;
-//          deriv2(5,5) = ;
-//
-//          deriv2(0,6) = ;
-//          deriv2(1,6) =  ;
-//          deriv2(2,6) =  ;
-//          deriv2(3,6) = ;
-//          deriv2(4,6) = ;
-//          deriv2(5,6) = ;
-//    
-//          deriv2(0,7) = ;
-//          deriv2(1,7) = ;
-//          deriv2(2,7) = ;
-//          deriv2(3,7) = ;
-//          deriv2(4,7) = ;
-//          deriv2(5,7) = ;
-//
-//          deriv2(0,8) =  ;
-//          deriv2(1,8) =  ;
-//          deriv2(2,8) =  ;
-//          deriv2(3,8) = ;
-//          deriv2(4,8) = ;
-//          deriv2(5,8) =  ;
-//
-//            deriv2(0,9)= ;
-//            deriv2(1,9)=  ;
-//            deriv2(2,9)=  ;
-//            deriv2(3,9)= ;
-//            deriv2(4,9)= ;
-//            deriv2(5,9)=  ;
-
-        break;
     default:
         dserror("distyp unknown\n");
     } /* end switch(distype) */
@@ -1474,7 +1453,7 @@ void DRT::Utils::shape_function_1D_deriv1(
 }
 
 //
-// shape functions and natural deriv1atives
+// shape functions and natural derivatives
 //
 void DRT::Utils::shape_function_1D_deriv2( 
                      Epetra_SerialDenseMatrix&                  deriv2,
