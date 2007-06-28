@@ -44,7 +44,6 @@ using namespace LINALG; // our linear algebra
  | material laws for So_hex8                                   maf 04/07|
  *----------------------------------------------------------------------*/
 void DRT::Elements::So_hex8::soh8_mat_sel(
-      struct _MATERIAL* material,
       Epetra_SerialDenseVector* stress,
       Epetra_SerialDenseMatrix* cmat,
       double* density,
@@ -54,8 +53,10 @@ void DRT::Elements::So_hex8::soh8_mat_sel(
 {
   DSTraceHelper dst("So_hex8::soh8_mat_sel");
 
-  switch (material->mattyp)
+  RefCountPtr<MAT::Material> mat = Material();
+  switch (mat->MaterialType())
   {
+#if 0
     case m_stvenant: /*------------------ st.venant-kirchhoff-material */
     {
       // get material parameters
@@ -93,7 +94,9 @@ void DRT::Elements::So_hex8::soh8_mat_sel(
       (*cmat).Multiply('N',(*glstrain),(*stress));   // sigma = C . epsilon
       break;
     }
+#endif
 
+#if 0
     case m_struct_multiscale: /*------------------- multiscale approach */
     {
       // Here macro-micro transition (localization) will take place
@@ -115,9 +118,10 @@ void DRT::Elements::So_hex8::soh8_mat_sel(
       micromat->CalcStressStiffDens(stress, cmat, density, glstrain);
       break;
     }
+#endif
 
     default:
-      dserror("Illegal type of material for element solid3 hex8");
+      dserror("Illegal type %d of material for element solid3 hex8", mat->MaterialType());
       break;
   }
 

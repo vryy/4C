@@ -27,18 +27,14 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/linalg_utils.H"
 #include "Epetra_SerialDenseSolver.h"
 
+#include "../drt_mat/newtonianfluid.H"
+
 extern "C"
 {
 #include "../headers/standardtypes.h"
 }
 
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | vector of material laws                                              |
- | defined in global_control.c
- *----------------------------------------------------------------------*/
-extern struct _MATERIAL  *mat;
 
 using namespace DRT::Utils;
 
@@ -64,7 +60,11 @@ int DRT::Elements::Fluid2::Evaluate(ParameterList& params,
   else dserror("Unknown type of action for Fluid2");
 
   // get the material
-  MATERIAL* actmat = &(mat[material_-1]);
+  RefCountPtr<MAT::Material> mat = Material();
+  if (mat->MaterialType()!=m_fluid)
+    dserror("newtonian fluid material expected but got type %d", mat->MaterialType());
+
+  MATERIAL* actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
 
   switch(act)
   {
@@ -271,19 +271,19 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
   case tri3: case tri6:
       integrationrule_stabili = intrule_tri_1point;
       break;
-  default: 
+  default:
       dserror("invalid discretization type");
   }
   // gaussian points
   const IntegrationPoints2D  intpoints_tau = getIntegrationPoints2D(integrationrule_stabili);
-  
+
   // shape functions and derivs at element center
   const double e1    = intpoints_tau.qxg[0][0];
   const double e2    = intpoints_tau.qxg[0][1];
   // shape functions and their derivatives
   DRT::Utils::shape_function_2D(funct,e1,e2,distype);
   DRT::Utils::shape_function_2D_deriv1(deriv,e1,e2,distype);
-  
+
 /*------------------------------- get element type constant for tau ---*/
   switch(iel)
   {

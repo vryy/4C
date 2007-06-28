@@ -12,7 +12,6 @@
 using namespace std;
 using namespace Teuchos;
 
-
 /// construct an instance of MicroMaterial for a given Gauss point and
 /// microscale discretization
 

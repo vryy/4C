@@ -77,9 +77,6 @@ int DRT::Elements::So_hex8::Evaluate(ParameterList& params,
   else if (action=="calc_struct_update_istep")  act = So_hex8::calc_struct_update_istep;
   else dserror("Unknown type of action for So_hex8");
 
-  // get the material law
-  MATERIAL* actmat = &(mat[material_-1]);
-
   // what should the element do
   switch(act) {
     // linear stiffness
@@ -89,7 +86,7 @@ int DRT::Elements::So_hex8::Evaluate(ParameterList& params,
       for (int i=0; i<(int)mydisp.size(); ++i) mydisp[i] = 0.0;
       vector<double> myres(lm.size());
       for (int i=0; i<(int)myres.size(); ++i) myres[i] = 0.0;
-      soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,actmat);
+      soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1);
     }
     break;
 
@@ -103,7 +100,7 @@ int DRT::Elements::So_hex8::Evaluate(ParameterList& params,
       DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::Utils::ExtractMyValues(*res,myres,lm);
-      soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,actmat);
+      soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1);
     }
     break;
 
@@ -127,7 +124,7 @@ int DRT::Elements::So_hex8::Evaluate(ParameterList& params,
       DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::Utils::ExtractMyValues(*res,myres,lm);
-      soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,actmat);
+      soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1);
     }
     break;
 
@@ -138,7 +135,7 @@ int DRT::Elements::So_hex8::Evaluate(ParameterList& params,
       vector<double> mydisp(lm.size());
       DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
       Epetra_SerialDenseMatrix stresses(NUMGPT_SOH8,NUMSTR_SOH8);
-      soh8_stress(actmat,mydisp,&stresses);
+      soh8_stress(mydisp,&stresses);
     }
     break;
 
@@ -264,8 +261,7 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
       vector<double>&           residual,       // current residuum
       Epetra_SerialDenseMatrix* stiffmatrix,    // element stiffness matrix
       Epetra_SerialDenseMatrix* massmatrix,     // element mass matrix
-      Epetra_SerialDenseVector* force,          // element internal force vector
-      struct _MATERIAL*          material)       // element material data
+      Epetra_SerialDenseVector* force)          // element internal force vector
 {
   DSTraceHelper dst("So_hex8::soh8_nlnstiffmass");
 
@@ -493,7 +489,7 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     Epetra_SerialDenseMatrix cmat(NUMSTR_SOH8,NUMSTR_SOH8);
     Epetra_SerialDenseVector stress(NUMSTR_SOH8);
     double density;
-    soh8_mat_sel(material,&stress,&cmat,&density,&glstrain, &defgrd, gp);
+    soh8_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, gp);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)

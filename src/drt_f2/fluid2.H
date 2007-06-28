@@ -284,8 +284,6 @@ private:
 
   bool is_higher_order_element(const DRT::Element::DiscretizationType  distype) const;
 
-  //! number of the material law
-  int                                             material_;
   //! flag for euler/ale net algorithm
   bool                                            is_ale_;
 
@@ -386,10 +384,10 @@ private:
 
   // set number of gauss points to element shape default
   DRT::Utils::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype);
-  
+
   void CreateLinesTri(const int& nline,
                       const int& nnode);
-  
+
   void CreateLinesQuad(const int& nline,
                        const int& nnode);
 
@@ -667,7 +665,7 @@ private:
   //! The local line number of this line w.r.t to the parent_ element
   int                    lline_;
 
-    
+
 
   // compute infintesimal line element dr for integration along the line
   void  f2_substitution(

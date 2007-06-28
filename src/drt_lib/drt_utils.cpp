@@ -47,6 +47,8 @@ extern "C"
 #include "../drt_so3/so_hex8.H"
 #include "../drt_so3/so_sh8.H"
 #include "../drt_so3/so_tet10.H"
+#include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/micromaterial.H"
 #include "drt_dserror.H"
 
 
@@ -261,6 +263,21 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
       dserror("DRT::ElementRegister is pure virtual, cannot create instance");
     }
     break;
+    case ParObject_NewtonianFluid:
+    {
+      MAT::NewtonianFluid* fluid = new MAT::NewtonianFluid();
+      fluid->Unpack(data);
+      return fluid;
+    }
+    case ParObject_MicroMaterial:
+    {
+#if 0
+      MAT::MicroMaterial* micro = new MAT::MicroMaterial();
+      micro->Unpack(data);
+      return micro;
+#endif
+      dserror("MicroMaterial cannot be packed right now");
+    }
     default:
       dserror("Unknown type of ParObject instance: %d",type);
     break;
@@ -427,11 +444,6 @@ int DRT::Utils::FindMyPos(int nummyelements, const Epetra_Comm& comm)
 /*----------------------------------------------------------------------*/
 void DRT::Utils::AllreduceEMap(vector<int>& rredundant, const Epetra_Map& emap)
 {
-  const int myrank  = emap.Comm().MyPID();
-  const int numproc = emap.Comm().NumProc();
-
-  rredundant.resize(emap.NumGlobalElements());
-
   int mynodepos = FindMyPos(emap.NumMyElements(), emap.Comm());
 
   vector<int> sredundant(emap.NumGlobalElements());
@@ -440,6 +452,7 @@ void DRT::Utils::AllreduceEMap(vector<int>& rredundant, const Epetra_Map& emap)
   int* gids = emap.MyGlobalElements();
   copy(gids, gids+emap.NumMyElements(), &sredundant[mynodepos]);
 
+  rredundant.resize(emap.NumGlobalElements());
   emap.Comm().SumAll(&sredundant[0], &rredundant[0], emap.NumGlobalElements());
 }
 

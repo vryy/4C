@@ -78,9 +78,6 @@ int DRT::Elements::So_sh8::Evaluate(ParameterList& params,
   else if (action=="calc_struct_update_istep")  act = So_hex8::calc_struct_update_istep;
   else dserror("Unknown type of action for So_hex8");
 
-  // get the material law
-  MATERIAL* actmat = &(mat[material_-1]);
-
   // what should the element do
   switch(act) {
     // linear stiffness
@@ -90,7 +87,7 @@ int DRT::Elements::So_sh8::Evaluate(ParameterList& params,
       for (int i=0; i<(int)mydisp.size(); ++i) mydisp[i] = 0.0;
       vector<double> myres(lm.size());
       for (int i=0; i<(int)myres.size(); ++i) myres[i] = 0.0;
-      sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,actmat);
+      sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1);
     }
     break;
 
@@ -104,7 +101,7 @@ int DRT::Elements::So_sh8::Evaluate(ParameterList& params,
       DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::Utils::ExtractMyValues(*res,myres,lm);
-      sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,actmat);
+      sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1);
     }
     break;
 
@@ -128,7 +125,7 @@ int DRT::Elements::So_sh8::Evaluate(ParameterList& params,
       DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::Utils::ExtractMyValues(*res,myres,lm);
-      sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,actmat);
+      sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1);
     }
     break;
 
@@ -174,8 +171,7 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
       vector<double>&           residual,       // current residuum
       Epetra_SerialDenseMatrix* stiffmatrix,    // element stiffness matrix
       Epetra_SerialDenseMatrix* massmatrix,     // element mass matrix
-      Epetra_SerialDenseVector* force,          // element internal force vector
-      MATERIAL*                 material)       // element material data
+      Epetra_SerialDenseVector* force)          // element internal force vector
 {
   DSTraceHelper dst("So_sh8::sosh8_nlnstiffmass");
 
@@ -218,7 +214,7 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
   Epetra_SerialDenseMatrix Kda;     // EAS matrix Kda
   double detJ0;                     // detJ(origin)
   Epetra_SerialDenseMatrix T0invT;  // trafo matrix
-  Epetra_SerialDenseMatrix* oldfeas;   // EAS history 
+  Epetra_SerialDenseMatrix* oldfeas;   // EAS history
   Epetra_SerialDenseMatrix* oldKaainv; // EAS history
   Epetra_SerialDenseMatrix* oldKda;    // EAS history
   if (eastype_ == soh8_eassosh8) {
@@ -241,11 +237,11 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
     oldKaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
     oldKda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
     if (!alpha || !oldKaainv || !oldKda || !oldfeas) dserror("Missing EAS history-data");
-  
+
     // we need the displacement at the previous step
     Epetra_SerialDenseVector old_d(NUMDOF_SOH8);
     for (int i=0; i<NUMDOF_SOH8; ++i) old_d(i) = disp[i] - residual[i];
-  
+
     // add Kda . old_d to feas
     (*oldfeas).Multiply('N','N',1.0,(*oldKda),old_d,1.0);
     // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
@@ -273,7 +269,7 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
     */
     soh8_eassetup(&M_GP,detJ0,T0invT,xrefe);
   } else dserror("Solid-Shell8 only with eas_sosh8");// ------------------- EAS
-  
+
   /*
   ** ANS Element technology to remedy
   *  - transverse-shear locking E_rt and E_st
@@ -337,7 +333,7 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
     */
     Epetra_SerialDenseMatrix jac_cur(NUMDIM_SOH8,NUMDIM_SOH8);
     jac_cur.Multiply('N','N',1.0,deriv_gp,xcurr,1.0);
-    
+
     // set up B-Operator in local(parameter) element space including ANS
     Epetra_SerialDenseMatrix bop_loc(NUMSTR_SOH8,NUMDOF_SOH8);
     for (int inode = 0; inode < NUMNOD_SOH8; ++inode) {
@@ -352,7 +348,7 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
         bop_loc(2,inode*3+dim) = 0.25*(1-r[gp])*(1-s[gp]) * B_ans_loc(0+4*num_ans,inode*3+dim)
                                 +0.25*(1+r[gp])*(1-s[gp]) * B_ans_loc(0+5*num_ans,inode*3+dim)
                                 +0.25*(1+r[gp])*(1+s[gp]) * B_ans_loc(0+6*num_ans,inode*3+dim)
-                                +0.25*(1-r[gp])*(1+s[gp]) * B_ans_loc(0+7*num_ans,inode*3+dim); 
+                                +0.25*(1-r[gp])*(1+s[gp]) * B_ans_loc(0+7*num_ans,inode*3+dim);
         // B_loc_rs = N_r.X_s + N_s.X_r
         bop_loc(3,inode*3+dim) = deriv_gp(0,inode) * jac_cur(1,dim)
                                 +deriv_gp(1,inode) * jac_cur(0,dim);
@@ -366,31 +362,31 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
                                 +0.5*(1.0+s[gp]) * B_ans_loc(2+2*num_ans,inode*3+dim);
       }
     }
-    
+
     // transformation from local (parameter) element space to global(material) space
     // with famous 'T'-matrix already used for EAS but now evaluated at each gp
     Epetra_SerialDenseMatrix TinvT(NUMSTR_SOH8,NUMSTR_SOH8);
     sosh8_evaluateT(jac,TinvT);
     Epetra_SerialDenseMatrix bop(NUMSTR_SOH8,NUMDOF_SOH8);
     bop.Multiply('N','N',1.0,TinvT,bop_loc,1.0);
-    
+
     // local GL strain vector lstrain={E11,E22,E33,2*E12,2*E23,2*E31}
     // but with modified ANS strains E33, E23 and E13
     Epetra_SerialDenseVector lstrain(NUMSTR_SOH8);
     // evaluate glstrains in local(parameter) coords
-    // Err = 0.5 * (dx/dr * dx/dr^T - dX/dr * dX/dr^T) 
-    lstrain(0)= 0.5 * ( 
+    // Err = 0.5 * (dx/dr * dx/dr^T - dX/dr * dX/dr^T)
+    lstrain(0)= 0.5 * (
        +(jac_cur(0,0)*jac_cur(0,0) + jac_cur(0,1)*jac_cur(1,0) + jac_cur(0,2)*jac_cur(2,0))
        -(jac(0,0)*jac(0,0)         + jac(0,1)*jac(1,0)         + jac(0,2)*jac(2,0)));
-    // Ess = 0.5 * (dy/ds * dy/ds^T - dY/ds * dY/ds^T) 
-    lstrain(1)= 0.5 * ( 
+    // Ess = 0.5 * (dy/ds * dy/ds^T - dY/ds * dY/ds^T)
+    lstrain(1)= 0.5 * (
        +(jac_cur(1,0)*jac_cur(0,1) + jac_cur(1,1)*jac_cur(1,1) + jac_cur(1,2)*jac_cur(2,1))
        -(jac(1,0)*jac(0,1)         + jac(1,1)*jac(1,1)         + jac(1,2)*jac(2,1)));
-    // Ers = (dx/ds * dy/dr^T - dX/ds * dY/dr^T) 
-    lstrain(3)= ( 
+    // Ers = (dx/ds * dy/dr^T - dX/ds * dY/dr^T)
+    lstrain(3)= (
        +(jac_cur(0,0)*jac_cur(0,1) + jac_cur(0,1)*jac_cur(1,1) + jac_cur(0,2)*jac_cur(2,1))
        -(jac(0,0)*jac(0,1)         + jac(0,1)*jac(1,1)         + jac(0,2)*jac(2,1)));
-    
+
     // ANS modification of strains ************************************** ANS
     double dydt_A = 0.0; double dYdt_A = 0.0;
     double dxdt_B = 0.0; double dXdt_B = 0.0;
@@ -400,7 +396,7 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
     double dzdt_F = 0.0; double dZdt_F = 0.0;
     double dzdt_G = 0.0; double dZdt_G = 0.0;
     double dzdt_H = 0.0; double dZdt_H = 0.0;
-    
+
     // vector product of rows of jacobians at corresponding sampling point
     for (int dim = 0; dim < NUMDIM_SOH8; ++dim) {
       dydt_A += jac_cur_sps(1+0*NUMDIM_SOH8,dim) * jac_cur_sps(dim+0*NUMDIM_SOH8,2);
@@ -411,7 +407,7 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
       dYdt_C += jac_sps(1+2*NUMDIM_SOH8,dim)     * jac_sps(dim+2*NUMDIM_SOH8,2);
       dxdt_D += jac_cur_sps(0+3*NUMDIM_SOH8,dim) * jac_cur_sps(dim+3*NUMDIM_SOH8,2);
       dXdt_D += jac_sps(0+3*NUMDIM_SOH8,dim)     * jac_sps(dim+3*NUMDIM_SOH8,2);
-      
+
       dzdt_E += jac_cur_sps(2+4*NUMDIM_SOH8,dim) * jac_cur_sps(dim+4*NUMDIM_SOH8,2);
       dZdt_E += jac_sps(2+4*NUMDIM_SOH8,dim)     * jac_sps(dim+4*NUMDIM_SOH8,2);
       dzdt_F += jac_cur_sps(2+5*NUMDIM_SOH8,dim) * jac_cur_sps(dim+5*NUMDIM_SOH8,2);
@@ -421,7 +417,7 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
       dzdt_H += jac_cur_sps(2+7*NUMDIM_SOH8,dim) * jac_cur_sps(dim+7*NUMDIM_SOH8,2);
       dZdt_H += jac_sps(2+7*NUMDIM_SOH8,dim)     * jac_sps(dim+7*NUMDIM_SOH8,2);
     }
-    // E33: remedy of curvature thickness locking 
+    // E33: remedy of curvature thickness locking
     // Ett = 0.5* ( (1-r)(1-s)/4 * Ett(SP E) + ... + (1-r)(1+s)/4 * Ett(SP H) )
     lstrain(2) = 0.5 * (
        0.25*(1-r[gp])*(1-s[gp]) * (dzdt_E - dZdt_E)
@@ -435,10 +431,10 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
     // Ert = (1-s)/2 * Est(SP A) + (1+s)/2 * Est(SP C)
     lstrain(5) = 0.5*(1-s[gp]) * (dydt_A - dYdt_A) + 0.5*(1+s[gp]) * (dydt_C - dYdt_C);
     // ANS modification of strains ************************************** ANS
-    
+
     // transformation of local glstrains 'back' to global(material) space
     Epetra_SerialDenseVector glstrain(NUMSTR_SOH8);
-    glstrain.Multiply('N','N',1.0,TinvT,lstrain,1.0); 
+    glstrain.Multiply('N','N',1.0,TinvT,lstrain,1.0);
 
     // EAS technology: "enhance the strains"  ----------------------------- EAS
     if (eastype_ != soh8_easnone) {
@@ -470,7 +466,7 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
     // Caution!! the defgrd can not be modified with ANS to remedy locking
     // therefore it is empty and passed only for compatibility reasons
     Epetra_SerialDenseMatrix defgrd; // Caution!! empty!!
-    soh8_mat_sel(material,&stress,&cmat,&density,&glstrain, &defgrd, gp);
+    soh8_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, gp);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
@@ -510,11 +506,11 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
                                    +(*deriv_sp)(2+2*NUMDIM_SOH8,inod) * (*deriv_sp)(0+2*NUMDIM_SOH8,jnod)));
         // transformation of local(parameter) space 'back' to global(material) space
         G_ij.Multiply('N','N',1.0,TinvT,G_ij,1.0);
-        
+
         // Scalar Gij results from product of G_ij with stress, scaled with detJ*weights
         Epetra_SerialDenseVector Gij(1); // this is a scalar
         Gij.Multiply('T','N',detJ * (*weights)(gp),stress,G_ij,1.0);
-        
+
         // add "geometric part" Gij times detJ*weights to stiffness matrix
         (*stiffmatrix)(NUMDIM_SOH8*inod+0,NUMDIM_SOH8*jnod+0) += Gij(0);
         (*stiffmatrix)(NUMDIM_SOH8*inod+1,NUMDIM_SOH8*jnod+1) += Gij(0);
@@ -578,13 +574,13 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
       (*oldfeas)(i,0) = feas(i);
     }
   } // -------------------------------------------------------------------- EAS
-  
+
 //  Epetra_SerialDenseMatrix K(*stiffmatrix);
 //  Epetra_SerialDenseVector L(NUMDOF_SOH8);
 //  SymmetricEigen(K,L,NUMDOF_SOH8,'N');
-//  
+//
 //  cout << "eigenvalues: " << L;
-  
+
   return;
 } // DRT::Elements::Shell8::s8_nlnstiffmass
 
@@ -600,7 +596,7 @@ void DRT::Elements::So_sh8::sosh8_anssetup(
           Epetra_SerialDenseMatrix** deriv_sp,   // derivs eval. at all sampling points
           Epetra_SerialDenseMatrix& jac_sps,     // jac at all sampling points
           Epetra_SerialDenseMatrix& jac_cur_sps, // current jac at all sampling points
-          Epetra_SerialDenseMatrix& B_ans_loc) // modified B 
+          Epetra_SerialDenseMatrix& B_ans_loc) // modified B
 {
   // static matrix object of derivs at sampling points, kept in memory
   static Epetra_SerialDenseMatrix df_sp(NUMDIM_SOH8*numsp,NUMNOD_SOH8);
@@ -619,7 +615,7 @@ void DRT::Elements::So_sh8::sosh8_anssetup(
    *          // |        |              //||
    *        //   |        |            //  ||
    *      //     |        |   D      //    ||
-   *     5=======E=================6       H 
+   *     5=======E=================6       H
    *    ||       |        |        ||      ||
    *    ||   A   |        o--------||-- C -------s
    *    ||       |       /         ||      ||
@@ -673,13 +669,13 @@ void DRT::Elements::So_sh8::sosh8_anssetup(
     *deriv_sp = &df_sp;         // return adress of static object to target of pointer
     dfsp_eval = 1;               // now all arrays are filled statically
   }
-  
+
   // compute Jacobian matrix at all sampling points
   jac_sps.Multiply('N','N',1.0,df_sp,xrefe,1.0);
-  
+
   // compute CURRENT Jacobian matrix at all sampling points
   jac_cur_sps.Multiply('N','N',1.0,df_sp,xcurr,1.0);
-  
+
   /*
   ** Compute modified B-operator in local(parametric) space,
   ** evaluated at all sampling points
@@ -701,13 +697,13 @@ void DRT::Elements::So_sh8::sosh8_anssetup(
     */
     Epetra_SerialDenseMatrix jac_cur(NUMDIM_SOH8,NUMDIM_SOH8);
     jac_cur.Multiply('N','N',1.0,deriv_asp,xcurr,1.0);
-    
+
     // fill up B-operator
     for (int inode = 0; inode < NUMNOD_SOH8; ++inode) {
       for (int dim = 0; dim < NUMDIM_SOH8; ++dim) {
         // modify B_loc_tt = N_t.X_t
         B_ans_loc(sp*numans+0,inode*3+dim) = deriv_asp(2,inode)*jac_cur(2,dim);
-        // modify B_loc_st = N_s.X_t + N_t.X_s                                          
+        // modify B_loc_st = N_s.X_t + N_t.X_s
         B_ans_loc(sp*numans+1,inode*3+dim) = deriv_asp(1,inode)*jac_cur(2,dim)
                                             +deriv_asp(2,inode)*jac_cur(1,dim);
         // modify B_loc_rt = N_r.X_t + N_t.X_r
@@ -715,9 +711,9 @@ void DRT::Elements::So_sh8::sosh8_anssetup(
                                             +deriv_asp(2,inode)*jac_cur(0,dim);
       }
     }
-  }    
-    
-  
+  }
+
+
   return;
 }
 
@@ -727,7 +723,7 @@ void DRT::Elements::So_sh8::sosh8_anssetup(
 void DRT::Elements::So_sh8::sosh8_evaluateT(const Epetra_SerialDenseMatrix jac,
                                             Epetra_SerialDenseMatrix& TinvT)
 {
-  // build T^T transformation matrix which maps 
+  // build T^T transformation matrix which maps
   // between global (r,s,t)-coordinates and local (x,y,z)-coords
   // later, invert the transposed to map from local to global
   // see literature for details (e.g. Andelfinger)
@@ -738,7 +734,7 @@ void DRT::Elements::So_sh8::sosh8_evaluateT(const Epetra_SerialDenseMatrix jac,
   TinvT(3,0) = 2 * jac(0,0) * jac(1,0);
   TinvT(4,0) = 2 * jac(0,0) * jac(2,0);
   TinvT(5,0) = 2 * jac(1,0) * jac(2,0);
-  
+
   TinvT(0,1) = jac(0,1) * jac(0,1);
   TinvT(1,1) = jac(1,1) * jac(1,1);
   TinvT(2,1) = jac(2,1) * jac(2,1);
@@ -752,7 +748,7 @@ void DRT::Elements::So_sh8::sosh8_evaluateT(const Epetra_SerialDenseMatrix jac,
   TinvT(3,2) = 2 * jac(0,2) * jac(1,2);
   TinvT(4,2) = 2 * jac(0,2) * jac(2,2);
   TinvT(5,2) = 2 * jac(1,2) * jac(2,2);
-  
+
   TinvT(0,3) = jac(0,0) * jac(0,1);
   TinvT(1,3) = jac(1,0) * jac(1,1);
   TinvT(2,3) = jac(2,0) * jac(2,1);
@@ -773,12 +769,12 @@ void DRT::Elements::So_sh8::sosh8_evaluateT(const Epetra_SerialDenseMatrix jac,
   TinvT(3,5) = jac(0,1) * jac(1,2) + jac(1,1) * jac(0,2);
   TinvT(4,5) = jac(0,1) * jac(2,2) + jac(2,1) * jac(0,2);
   TinvT(5,5) = jac(1,1) * jac(2,2) + jac(2,1) * jac(1,2);
-                                              
+
   // now evaluate T^{-T} with solver
   Epetra_SerialDenseSolver solve_for_inverseT;
   solve_for_inverseT.SetMatrix(TinvT);
   solve_for_inverseT.Invert();
-  
+
   return;
 }
 

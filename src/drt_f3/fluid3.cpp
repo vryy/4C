@@ -28,7 +28,6 @@ using namespace DRT::Utils;
  *----------------------------------------------------------------------*/
 DRT::Elements::Fluid3::Fluid3(int id, int owner) :
 DRT::Element(id,element_fluid3,owner),
-material_(0),
 is_ale_(false),
 data_()
 {
@@ -43,7 +42,6 @@ data_()
  *----------------------------------------------------------------------*/
 DRT::Elements::Fluid3::Fluid3(const DRT::Elements::Fluid3& old) :
 DRT::Element(old),
-material_(old.material_),
 is_ale_(old.is_ale_),
 data_(old.data_),
 surfaces_(old.surfaces_),
@@ -96,8 +94,6 @@ void DRT::Elements::Fluid3::Pack(vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
-  // material_
-  AddtoPack(data,material_);
   // is_ale_
   AddtoPack(data,is_ale_);
   // data_
@@ -124,8 +120,6 @@ void DRT::Elements::Fluid3::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  // material_
-  ExtractfromPack(position,data,material_);
   // is_ale_
   ExtractfromPack(position,data,is_ale_);
   // data_
@@ -173,11 +167,11 @@ RefCountPtr<DRT::ElementRegister> DRT::Elements::Fluid3::ElementRegister() const
  *----------------------------------------------------------------------*/
 DRT::Element** DRT::Elements::Fluid3::Surfaces()
 {
-    const DiscretizationType distype = Shape(); 
+    const DiscretizationType distype = Shape();
     const int nsurf = NumSurface();
     surfaces_.resize(nsurf);
     surfaceptrs_.resize(nsurf);
-    
+
     switch (distype)
     {
     case tet4:
@@ -195,7 +189,7 @@ DRT::Element** DRT::Elements::Fluid3::Surfaces()
     case hex27:
         CreateSurfacesHex(nsurf, 9);
         break;
-    default: 
+    default:
         dserror("distype not supported");
     }
     return (DRT::Element**)(&(surfaceptrs_[0]));
@@ -211,7 +205,7 @@ void DRT::Elements::Fluid3::CreateSurfacesTet(const int& nsurf,
     {
         int nodeids[nnode];
         DRT::Node* nodes[nnode];
-        
+
         for (int inode=0;inode<nnode;inode++)
         {
              nodeids[inode] = NodeIds()[eleNodeNumbering_tet10_surfaces[isurf][inode]];
@@ -220,7 +214,7 @@ void DRT::Elements::Fluid3::CreateSurfacesTet(const int& nsurf,
         surfaces_[isurf] = rcp(new DRT::Elements::Fluid3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
         surfaceptrs_[isurf] = surfaces_[isurf].get();
     }
-}        
+}
 
 
 // support for above
@@ -231,7 +225,7 @@ void DRT::Elements::Fluid3::CreateSurfacesHex(const int& nsurf,
     {
         int nodeids[nnode];
         DRT::Node* nodes[nnode];
-        
+
         for (int inode=0;inode<nnode;inode++)
         {
              nodeids[inode] = NodeIds()[eleNodeNumbering_hex27_surfaces[isurf][inode]];
@@ -240,7 +234,7 @@ void DRT::Elements::Fluid3::CreateSurfacesHex(const int& nsurf,
         surfaces_[isurf] = rcp(new DRT::Elements::Fluid3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
         surfaceptrs_[isurf] = surfaces_[isurf].get();
     }
-}   
+}
 
 /*----------------------------------------------------------------------*
  |  get vector of volumes (length 1) (public)                g.bau 03/07|

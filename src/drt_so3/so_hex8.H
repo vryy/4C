@@ -338,8 +338,6 @@ protected:
   int                                             neas_;
   //! no. gaussian points in each spatial dimension
   int                                             ngp_[3];
-  //! number of the material law
-  int                                             material_;
   //! container containing so_hex3 eas stuff
   DRT::Container                                  easdata_;
   //! container containing all kind of solid3 thisandthat
@@ -368,19 +366,16 @@ protected:
                                  vector<double>&           residual,
                                  Epetra_SerialDenseMatrix* stiffmatrix,
                                  Epetra_SerialDenseMatrix* massmatrix,
-                                 Epetra_SerialDenseVector* force,
-                                 struct _MATERIAL*         material);
+                                 Epetra_SerialDenseVector* force);
 
-  void soh8_stress(struct _MATERIAL* material,
-                   vector<double>& mydisp,
+  void soh8_stress(vector<double>& mydisp,
                    Epetra_SerialDenseMatrix* stresses);
 
   void soh8_shapederiv(Epetra_SerialDenseMatrix** shapefct,
                        Epetra_SerialDenseMatrix** deriv,
                        Epetra_SerialDenseVector** weights);
 
-  void soh8_mat_sel(struct _MATERIAL* material,
-                    Epetra_SerialDenseVector* stress,
+  void soh8_mat_sel(Epetra_SerialDenseVector* stress,
                     Epetra_SerialDenseMatrix* cmat,
                     double* density,
                     const Epetra_SerialDenseVector* glstrain,

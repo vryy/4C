@@ -11,7 +11,7 @@ The Solid-Shell element technology is based on the work of
 (2) Klinkel, Gruttmann, Wagner: "A robust non-linear solid shell element
                                  based on a mixed variational fromulation"
 
-Refer also to the Semesterarbeit of Alexander Popp, 2006                                                    
+Refer also to the Semesterarbeit of Alexander Popp, 2006
 
 <pre>
 Maintainer: Moritz Frenzel
@@ -202,8 +202,7 @@ private:
                          vector<double>&           residual,
                          Epetra_SerialDenseMatrix* stiffmatrix,
                          Epetra_SerialDenseMatrix* massmatrix,
-                         Epetra_SerialDenseVector* force,
-                         struct _MATERIAL*         material);
+                         Epetra_SerialDenseVector* force);
 
   void sosh8_anssetup(const int numsp,              // number of sampling points
           const int numans,             // number of ans strains
@@ -213,7 +212,7 @@ private:
           Epetra_SerialDenseMatrix& jac_sps,     // jac at all sampling points
           Epetra_SerialDenseMatrix& jac_cur_sps, // current jac at all sampling points
           Epetra_SerialDenseMatrix&  B_ans_loc); // modified B
-                      
+
   void sosh8_evaluateT(const Epetra_SerialDenseMatrix jac,  // actual jacobian
                        Epetra_SerialDenseMatrix& TinvT);    // corr. T^{-T}
 

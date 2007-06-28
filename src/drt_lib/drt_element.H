@@ -33,6 +33,11 @@ using namespace Teuchos;
 #include "drt_parobject.H"
 #include "drt_condition.H"
 
+// forward declarations
+namespace MAT
+{
+  class Material;
+}
 
 /*!
 \brief DRT: namespace of the ccarat discretization module
@@ -355,6 +360,9 @@ public:
   */
   virtual void Print(ostream& os) const;
 
+  /// return the material of this element
+  RefCountPtr<MAT::Material> Material() const { return mat_; }
+
   //@}
 
   //! @name Construction
@@ -419,6 +427,22 @@ public:
 
   */
   void SetNodeIds(const int nnode, const int* nodes);
+
+  /// Set element material
+  /*!
+    Material numbers are read from the input file. The element stores
+    a corresponding material object. These material objects can be
+    anything from very simple (just a little calculation) to highly
+    sophisticated with history data. The material is packed and
+    unpacked along with its element.
+
+    \param matnum : material number from input file
+   */
+  void SetMaterial(int matnum);
+
+  //@}
+
+  //! @name Conditions
 
   /*!
   \brief Set a condition with a certain name
@@ -643,6 +667,9 @@ private:
 
   //! \brief Some conditions e.g. BCs
   multimap<string,RefCountPtr<Condition> > condition_;
+
+  //! material object of element
+  RefCountPtr<MAT::Material> mat_;
 
 }; // class Element
 } // namespace DRT

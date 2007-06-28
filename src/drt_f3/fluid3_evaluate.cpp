@@ -27,6 +27,8 @@ Maintainer: Georg Bauer
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 
+#include "../drt_mat/newtonianfluid.H"
+
 using namespace DRT::Utils;
 
 /*----------------------------------------------------------------------*
@@ -64,7 +66,11 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
   else dserror("Unknown type of action for Fluid3");
 
   // get the material
-  MATERIAL* actmat = &(mat[material_-1]);
+  RefCountPtr<MAT::Material> mat = Material();
+  if (mat->MaterialType()!=m_fluid)
+    dserror("newtonian fluid material expected but got type %d", mat->MaterialType());
+
+  MATERIAL* actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
 
   switch(act)
   {
@@ -459,12 +465,12 @@ void DRT::Elements::Fluid3::f3_sys_mat(vector<int>&              lm,
     case tet4: case tet10:
         integrationrule_stabili = intrule_tet_1point;
         break;
-    default: 
+    default:
         dserror("invalid discretization type for fluid3");
     }
     // gaussian points
     const IntegrationPoints3D  intpoints_tau = getIntegrationPoints3D(integrationrule_stabili);
-    
+
     const double timefac=params.get<double>("time constant for integration",0.0);
 
     // get control parameter
@@ -475,7 +481,7 @@ void DRT::Elements::Fluid3::f3_sys_mat(vector<int>&              lm,
     const double e1    = intpoints_tau.qxg[0][0];
     const double e2    = intpoints_tau.qxg[0][1];
     const double e3    = intpoints_tau.qxg[0][2];
-    
+
     DRT::Utils::shape_function_3D(funct,e1,e2,e3,distype);
     DRT::Utils::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
     if (distype != tet4)
@@ -667,7 +673,7 @@ void DRT::Elements::Fluid3::f3_sys_mat(vector<int>&              lm,
           DRT::Utils::shape_function_3D(funct,e1,e2,e3,distype);
           DRT::Utils::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
           if (higher_order_ele)
-          {  
+          {
               shape_function_3D_deriv2(deriv2,e1,e2,e3,distype);
           }
           /*----------------------------------------- compute Jacobian matrix */
@@ -1164,7 +1170,7 @@ void DRT::Elements::Fluid3::f3_genalpha_rhs(
           shape_function_3D(funct,e1,e2,e3,distype);
           shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
           if (higher_order_ele)
-          {  
+          {
               shape_function_3D_deriv2(deriv2,e1,e2,e3,distype);
           }
 
@@ -1390,11 +1396,11 @@ void DRT::Elements::Fluid3::f3_calc_stabpar(
         case tet4: case tet10:
             integrationrule_stabili = intrule_tet_1point;
             break;
-        default: 
+        default:
             dserror("invalid discretization type for fluid3");
         }
         const double timefac = params.get<double>("dt",0.0) * params.get<double>("gamma",0.0);
-        
+
         // gaussian points
         const IntegrationPoints3D  intpoints = getIntegrationPoints3D(integrationrule_stabili);
 
@@ -3671,7 +3677,7 @@ GaussRule3D DRT::Elements::Fluid3::getOptimalGaussrule(const DiscretizationType&
     case tet10:
         rule = intrule_tet_10point;
         break;
-    default: 
+    default:
         dserror("unknown number of nodes for gaussrule initialization");
   }
   return rule;
@@ -3695,7 +3701,7 @@ void DRT::Elements::Fluid3::f3_int_beltrami_err(
 
   /*------------------------------------------------- set element data */
   const int iel = NumNode();
-  const DiscretizationType distype = this->Shape(); 
+  const DiscretizationType distype = this->Shape();
 
   Epetra_SerialDenseVector  funct(iel);
   Epetra_SerialDenseMatrix 	xjm(3,3);

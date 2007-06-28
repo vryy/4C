@@ -96,10 +96,11 @@ bool DRT::Elements::Fluid3::ReadElement()
   SetNodeIds(nnode,nodes);
 
   // read number of material model
-  material_ = 0;
-  frint("MAT",&material_,&ierr);
-  if (ierr!=1) dserror("Reading of FLUID3 element failed\n");
-  if (material_==0) dserror("No material defined for FLUID3 element\n");
+  int material = 0;
+  frint("MAT",&material,&ierr);
+  if (ierr!=1) dserror("Reading Material for FLUID3 element failed");
+  if (material==0) dserror("No material defined for FLUID3 element");
+  SetMaterial(material);
 
   // read gaussian points
 

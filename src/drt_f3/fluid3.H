@@ -291,8 +291,6 @@ private:
     calc_fluid_beltrami_error
   };
 
-  //! number of the material law
-  int                                             material_;
   //! flag for euler/ale net algorithm
   bool                                            is_ale_;
 
@@ -441,13 +439,13 @@ private:
 
   void CreateLinesTet(const int& nline,
                       const int& nnode);
-  
+
   void CreateLinesHex(const int& nline,
                       const int& nnode);
-                       
+
   void CreateSurfacesTet(const int& nline,
                          const int& nnode);
-  
+
   void CreateSurfacesHex(const int& nline,
                          const int& nnode);
 

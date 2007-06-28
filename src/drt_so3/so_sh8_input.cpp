@@ -64,9 +64,10 @@ bool DRT::Elements::So_sh8::ReadElement()
   SetNodeIds(nnode,nodes);
 
   // read number of material model
-  material_ = 0;
-  frint("MAT",&material_,&ierr);
+  int material = 0;
+  frint("MAT",&material,&ierr);
   if (ierr!=1) dserror("Reading of SO_SH8 element material failed");
+  SetMaterial(material);
 
   // read gaussian points
   frint_n("GP",ngp_,3,&ierr);
@@ -90,7 +91,7 @@ bool DRT::Elements::So_sh8::ReadElement()
    }
    else dserror("Reading of SO_SH8 element failed");
   }
-  
+
   // read EAS technology flag
   eastype_ = soh8_eassosh8;     // default: EAS for Solid-Shell8
   frchar("EAS",buffer,&ierr);
@@ -104,7 +105,7 @@ bool DRT::Elements::So_sh8::ReadElement()
     // no EAS technology
     else if (strncmp(buffer,"none",4)==0) eastype_ = soh8_easnone;
     else dserror("Reading of SO_SH8 EAS technology failed");
-  } 
+  }
 
   // read stress evaluation/output type
   frchar("STRESS",buffer,&ierr);

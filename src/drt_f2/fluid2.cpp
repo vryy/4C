@@ -29,7 +29,6 @@ using namespace DRT::Utils;
  *----------------------------------------------------------------------*/
 DRT::Elements::Fluid2::Fluid2(int id, int owner) :
 DRT::Element(id,element_fluid2,owner),
-material_(0),
 is_ale_(false),
 data_()
 {
@@ -44,7 +43,6 @@ data_()
  *----------------------------------------------------------------------*/
 DRT::Elements::Fluid2::Fluid2(const DRT::Elements::Fluid2& old) :
 DRT::Element(old),
-material_(old.material_),
 is_ale_(old.is_ale_),
 data_(old.data_),
 lines_(old.lines_),
@@ -97,8 +95,6 @@ void DRT::Elements::Fluid2::Pack(vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
-  // material_
-  AddtoPack(data,material_);
   // is_ale_
   AddtoPack(data,is_ale_);
   // data_
@@ -125,8 +121,6 @@ void DRT::Elements::Fluid2::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  // material_
-  ExtractfromPack(position,data,material_);
   // is_ale_
   ExtractfromPack(position,data,is_ale_);
   // data_
@@ -210,7 +204,7 @@ void DRT::Elements::Fluid2::CreateLinesTri(const int& nline,
     {
         int nodeids[nnode];
         DRT::Node* nodes[nnode];
-        
+
         for (int inode=0;inode<nnode;inode++)
         {
              nodeids[inode] = NodeIds()[eleNodeNumbering_tri6_lines[iline][inode]];
@@ -219,7 +213,7 @@ void DRT::Elements::Fluid2::CreateLinesTri(const int& nline,
         lines_[iline] = rcp(new DRT::Elements::Fluid2Line(iline,Owner(),nnode,nodeids,nodes,this,iline));
         lineptrs_[iline] = lines_[iline].get();
     }
-}        
+}
 
 void DRT::Elements::Fluid2::CreateLinesQuad(const int& nline,
                                             const int& nnode)
@@ -228,7 +222,7 @@ void DRT::Elements::Fluid2::CreateLinesQuad(const int& nline,
     {
         int nodeids[nnode];
         DRT::Node* nodes[nnode];
-        
+
         for (int inode=0;inode<nnode;inode++)
         {
              nodeids[inode] = NodeIds()[eleNodeNumbering_quad9_lines[iline][inode]];
@@ -237,7 +231,7 @@ void DRT::Elements::Fluid2::CreateLinesQuad(const int& nline,
         lines_[iline] = rcp(new DRT::Elements::Fluid2Line(iline,Owner(),nnode,nodeids,nodes,this,iline));
         lineptrs_[iline] = lines_[iline].get();
     }
-}  
+}
 
 
 /*----------------------------------------------------------------------*
@@ -268,7 +262,7 @@ GaussRule2D DRT::Elements::Fluid2::getOptimalGaussrule(const DiscretizationType&
     case tri6:
         rule = intrule_tri_6point;
         break;
-    default: 
+    default:
         dserror("unknown number of nodes for gaussrule initialization");
   }
   return rule;

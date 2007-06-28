@@ -28,7 +28,6 @@ Maintainer: Moritz Frenzel
  *----------------------------------------------------------------------*/
 DRT::Elements::So_hex8::So_hex8(int id, int owner) :
 DRT::Element(id,element_so_hex8,owner),
-material_(0),
 data_()
 {
   ngp_[0] = ngp_[1] = ngp_[2] = 0;
@@ -45,7 +44,6 @@ data_()
  *----------------------------------------------------------------------*/
 DRT::Elements::So_hex8::So_hex8(const DRT::Elements::So_hex8& old) :
 DRT::Element(old),
-material_(old.material_),
 data_(old.data_),
 surfaces_(old.surfaces_),
 surfaceptrs_(old.surfaceptrs_),
@@ -92,8 +90,6 @@ void DRT::Elements::So_hex8::Pack(vector<char>& data) const
   AddtoPack(data,basedata);
   // ngp_
   //AddtoPack(data,ngp_,3*sizeof(int));
-  // material_
-  AddtoPack(data,material_);
   // stresstype_
   AddtoPack(data,stresstype_);
   // kintype_
@@ -128,8 +124,6 @@ void DRT::Elements::So_hex8::Unpack(const vector<char>& data)
   Element::Unpack(basedata);
   // ngp_
   //ExtractfromPack(position,data,ngp_,3*sizeof(int));
-  // material_
-  ExtractfromPack(position,data,material_);
   // stresstype_
   ExtractfromPack(position,data,stresstype_);
   // kintype_

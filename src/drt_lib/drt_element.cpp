@@ -17,7 +17,9 @@ Maintainer: Michael Gee
 #include "drt_node.H"
 #include "drt_discret.H"
 #include "drt_dserror.H"
+#include "drt_utils.H"
 
+#include "../drt_mat/material.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
@@ -128,6 +130,15 @@ void DRT::Element::SetNodeIds(const int nnode, const int* nodes)
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::Element::SetMaterial(int matnum)
+{
+  mat_ = MAT::Material::Factory(matnum);
+}
+
+
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
@@ -150,6 +161,13 @@ void DRT::Element::Pack(vector<char>& data) const
   AddtoPack(data,etype);
   // add vector nodeid_
   AddtoPack(data,nodeid_);
+  // add material
+  vector<char> tmp;
+  if (mat_!=Teuchos::null)
+  {
+    mat_->Pack(tmp);
+  }
+  AddtoPack(data,tmp);
 
   return;
 }
@@ -174,6 +192,21 @@ void DRT::Element::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,etype_);
   // nodeid_
   ExtractfromPack(position,data,nodeid_);
+  // mat_
+  vector<char> tmp;
+  ExtractfromPack(position,data,tmp);
+  if (tmp.size()>0)
+  {
+    DRT::ParObject* o = DRT::Utils::Factory(tmp);
+    MAT::Material* mat = dynamic_cast<MAT::Material*>(o);
+    if (mat==NULL)
+      dserror("failed to unpack material");
+    mat_ = rcp(mat);
+  }
+  else
+  {
+    mat_ = Teuchos::null;
+  }
 
   // node_ is NOT communicated
   node_.resize(0);
