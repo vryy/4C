@@ -74,7 +74,7 @@ int DRT::Elements::XFluid3::Evaluate(ParameterList&           params,
         ElementEnrichment ele_enr = ElementEnrichment(0, enrichment_type_standard);
         enrichments.push_back(ele_enr);
         
-        map<drtIdx, int> dofmap;
+        //map<drtIdx, int> dofmap;
         
         vector<DRT::Node*> nodes;
         for (int inode=0;inode<numnode;++inode)

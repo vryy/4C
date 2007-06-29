@@ -19,7 +19,7 @@ Maintainer: Axel Gerstenberger
 #ifndef DRT_FLUID3_XFEM_H
 #define DRT_FLUID3_XFEM_H
 
-#include "tr1/tuple"
+//#include "tr1/tuple"
 
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_Vector.h"
@@ -299,7 +299,7 @@ private:
 
   // this tuple used together with a map or set 
   //  can be used to address the residual/element matrizes
-  typedef std::tr1::tuple <int, int, int>  drtIdx;
+  //typedef std::tr1::tuple <int, int, int>  drtIdx;
 
 //  enum EnrichmentType
 //  {
