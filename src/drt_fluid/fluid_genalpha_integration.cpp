@@ -43,7 +43,9 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   time_(0.0),
   step_(0),
   restartstep_(0),
-  uprestart_(params.get("write restart every", -1))
+  uprestart_(params.get("write restart every", -1)),
+  writestep_(0),
+  upres_(params.get("write solution every", -1))
 {
 
   numdim_ = params_.get<int>("number of velocity degrees of freedom");
@@ -56,7 +58,7 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled()) discret_->FillComplete();
-
+  
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
@@ -74,15 +76,11 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // elements at the moment!
   // -------------------------------------------------------------------
   {
-    // Allocate integer vectors which will hold the dof number of the
-    // velocity or pressure dofs
-//    vector<int> velmapdata;
-//    vector<int> premapdata;
+    // Define sets which will hold the dof number of the velocity or
+    // pressure dofs
+
     set<int> veldofset;
     set<int> predofset;
-    
-//    veldofset.reserve(discret_->NumMyRowNodes()*numdim_);
-//    predofset.reserve(discret_->NumMyRowNodes());
 
     for (int i=0; i<discret_->NumMyRowNodes(); ++i)
     {
@@ -94,13 +92,11 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
       {
         for (int j=0; j<numdofs-1; ++j)
         {
-	  // add this velocity dof to the velmapdata vector
-//	  velmapdata.push_back(dof[j]);
+	  // add this velocity dof to the velocity set
  	  veldofset.insert(dof[j]);
         }
 
-        // add this pressure dof to the premapdata vector
-//        premapdata.push_back(dof[numdofs-1]);
+        // add this pressure dof to the pressure set
         predofset.insert(dof[numdofs-1]);
       }
       else
@@ -175,7 +171,11 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // The residual vector --- more or less the rhs for the incremental
   // formulation!!!
   residual_     = LINALG::CreateVector(*dofrowmap,true);
-
+  
+  // The force vector (a copy of residual_ without Dirichlet
+  // conditions applied)
+  force_        = LINALG::CreateVector(*dofrowmap,true);
+  
   // Nonlinear iteration increment vector
   increment_    = LINALG::CreateVector(*dofrowmap,true);
 
@@ -191,6 +191,17 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   timeapplydirich_= TimeMonitor::getNewTimer("      + apply dirich cond.");
   timesolver_     = TimeMonitor::getNewTimer("      + solver calls"      );
 
+
+
+  // -------------------------------------------------------------------
+  // initialise turbulence statistics evaluation
+  // -------------------------------------------------------------------
+  evalstatistics_ = params_.get<bool>("evaluate turbulence statistic");
+  if (evalstatistics_)
+  {
+    turbulencestatistics_=rcp(new TurbulenceStatistics(discret_,params_));
+  }
+  
   return;
 
 } // FluidGenAlphaIntegration::FluidGenAlphaIntegration
@@ -290,6 +301,15 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
     // evaluate error for test flows with analytical solutions
     // -------------------------------------------------------------------
     this->EvaluateErrorComparedToAnalyticalSol();
+
+    
+    // -------------------------------------------------------------------
+    // add calculated velocity to mean value calculation
+    // -------------------------------------------------------------------
+    if(evalstatistics_)
+    {
+      turbulencestatistics_->EvaluateMeanValuesInPlanes(*velnp_,*force_);
+    }
     
     // -------------------------------------------------------------------
     //                         output of solution
@@ -581,21 +601,34 @@ void FluidGenAlphaIntegration::GenAlphaTimeUpdate()
 void FluidGenAlphaIntegration::GenAlphaOutput()
 {
   //-------------------------------------------- output of solution
-  output_.NewStep    (step_,time_);
-  output_.WriteVector("velnp"   , velnp_);
-  output_.WriteVector("residual", residual_);
-  
-  // do restart if we have to
-  restartstep_ += 1;
-  if (restartstep_ == uprestart_)
+  writestep_ += 1;
+
+  if (writestep_ == upres_)  //write solution
   {
-    restartstep_ = 0;
+    writestep_= 0;
+    output_.NewStep    (step_,time_);
+    
+    output_.WriteVector("velnp"   , velnp_);
+    //output_.WriteVector("residual", residual_);
+  
+    // do restart if we have to
+    restartstep_ += 1;
+    if (restartstep_ == uprestart_)
+    {
+      restartstep_ = 0;
+      
+      output_.WriteVector("veln ", veln_ );
+      output_.WriteVector("accnp", accnp_);
+      output_.WriteVector("accn ", accn_ );
+    }
 
-    output_.WriteVector("veln ", veln_ );
-    output_.WriteVector("accnp", accnp_);
-    output_.WriteVector("accn ", accn_ );
+
+    if(evalstatistics_)
+    {
+      turbulencestatistics_->TimeAverageMeansAndOutputOfStatistics(step_);
+      turbulencestatistics_->ClearStatistics();
+    }
   }
-
   return;
 } // FluidGenAlphaIntegration::GenAlphaOutput
 
@@ -650,6 +683,8 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidual()
     discret_->ClearState();
   }
 
+  *force_=Epetra_Vector(*residual_);
+  
   // -------------------------------------------------------------------
   // apply the Dirichlet boundary conditions to the residual
   // -------------------------------------------------------------------  

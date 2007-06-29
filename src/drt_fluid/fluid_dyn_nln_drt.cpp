@@ -266,9 +266,23 @@ void dyn_fluid_drt()
 
     // ----------------------------------------------- restart and output
     fluidtimeparams.set                  ("write restart every"       ,fdyn->uprestart);
+    // solution output
+    fluidtimeparams.set                  ("write solution every"      ,fdyn->upres);
 
     //------------evaluate error for test flows with analytical solutions
     fluidtimeparams.set                  ("eval err for analyt sol"   ,fdyn->init);
+
+    //------------compute statistical data for turbulent channel LES
+    if(fdyn->turbu==4)
+    {
+      fluidtimeparams.set("normal to hom. planes in channel",fdyn->planenormal);
+      fluidtimeparams.set("evaluate turbulence statistic",true);
+      fluidtimeparams.set("statistics outfile",allfiles.outputfile_kenner);
+    }
+    else
+    {
+      fluidtimeparams.set("evaluate turbulence statistic",false);
+    }
 
     //--------------------------------------------------
     // create all vectors and variables associated with the time

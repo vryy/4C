@@ -52,6 +52,7 @@ Maintainer: Peter Gamnitzer
 
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "../drt_lib/drt_periodicbc.H"
+#include "turbulence_statistics.H"
 
 #ifdef PARALLEL
 #include "Epetra_MpiComm.h"
@@ -339,13 +340,23 @@ private:
   // the counter used for this purpose
   int                              restartstep_;
   int                              uprestart_;
+  int                              writestep_;
+  int                              upres_;
 
+  // turbulence statistics
+  RefCountPtr<TurbulenceStatistics> turbulencestatistics_;
+  bool                              evalstatistics_;
+  
   // system matrix --- stiffness and mass are assembled in one matrix!
   RefCountPtr<Epetra_CrsMatrix>    sysmat_;
 
   // The residual vector --- more or less the rhs for the incremental
   // formulation!!!
   RefCountPtr<Epetra_Vector>       residual_;
+
+  // the force vector is a copy of the residual without dirichlet
+  // forces applied
+  RefCountPtr<Epetra_Vector>       force_;
 
   // Nonlinear iteration increment vector contains accleeration
   // and pressure increment

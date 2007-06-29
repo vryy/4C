@@ -137,6 +137,7 @@ OBJS_DRT_FLUID= src/drt_fluid/fluid_dyn_nln_drt.o \
 		src/drt_fluid/fluidimplicitintegration.o \
 		src/drt_fluid/fluid_genalpha_integration.o \
                 src/drt_fluid/condifimplicitintegration.o \
+		src/drt_fluid/turbulence_statistics.o \
 		src/drt_fluid/fluidresulttest.o
 # ----------------------------- drt version of fluid structure interaction
 OBJS_DRT_FSI  = src/drt_fsi/ale_dyn.o \

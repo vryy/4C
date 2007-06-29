@@ -1154,6 +1154,7 @@ fdyn->stresspro=0;      /* default: do no stress projection step */
 
 /* turbulence flags */
 fdyn->turbu=0;
+fdyn->planenormal=-1;
 fdyn->dis_capt=0;
 fdyn->itemax_ke=100;
 fdyn->stepke=0;
@@ -1336,9 +1337,25 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          fdyn->turbu=2;
       else if (frwordcmp(buffer,"kappa-omega")==0)
          fdyn->turbu=3;
+      else if (frwordcmp(buffer,"VMM-LES")==0)
+         fdyn->turbu=4;
       else
          dserror("TURBULENCE unknown!");
    }
+
+   frchar("HOMDIRECT"  ,buffer    ,&ierr);
+   if (ierr==1)
+   {
+     if (frwordcmp(buffer,"xy")==0)
+         fdyn->planenormal=2;
+      else if (frwordcmp(buffer,"yz")==0)
+         fdyn->planenormal=0;
+      else if (frwordcmp(buffer,"xz")==0)
+         fdyn->planenormal=1;
+      else
+         dserror("homogeneous directions needed to evaluate in plane statistics for turbulent channel!");
+   }
+     
    frreadyes("DISC_CAPT",&(fdyn->dis_capt));
    frreadyes("ADAPT_TIME",&(fdyn->adaptive));
    frchar("CD_VELOCITY"  ,buffer    ,&ierr);

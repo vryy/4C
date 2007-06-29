@@ -205,13 +205,15 @@ INT    pro_gra_opt; /*!< a flag that switches for grad. calculation  */
 INT    pro_profile; /*!< a flag that switches for velocity profile   */
 INT    pro_caldirich;
 /* turbulence flags */
+INT  turbu;        /*!< the type of turbulence-model */
+INT  planenormal;  /*!< normal direction to homogeneous planes for
+                    * evaluation of turbulent channel flow statistics   */
 INT  niturbu_pro;  /*!< EVALUATION OF "TIME - RHS" for turbulence-model */
 INT  niturbu_n;    /*!< EVALUATION OF "TIME - RHS" for turbulence-model */
 INT  kapeps_flag;  /*!< kappa or epsilon equation                       */
 INT  kapomega_flag;/*!< kappa or omega equation                         */
 INT  kappan;       /*!< kappan for production-term                      */
 INT  ncols;        /*!< number of columns in solution history */
-INT  turbu;        /*!< the type of turbulence-model */
 INT  dis_capt;     /*!< flag for DISCONTINUITY CAPTURING for turbulence model */
 INT  itemax_ke;    /*!< number of nonlin. iterations for kappa-eps    */
 INT  stepke;       /*!< the actual step for kappa-epsilon             */
