@@ -160,7 +160,19 @@ void DRT::Utils::shape_function_3D(
         funct[9] =4*s*t;
         break;
     }
- case DRT::Element::weg15:
+    case DRT::Element::weg6:
+    {
+      const double t3=1.0-r-s;
+
+      funct[0]=Q12*r*(1-t);
+      funct[1]=Q12*s*(1-t);
+      funct[2]=Q12*t3*(1-t);
+      funct[3]=Q12*r*(1+t);
+      funct[4]=Q12*s*(1+t);
+      funct[5]=Q12*t3*(1+t);
+      break;
+    }
+    case DRT::Element::weg15:
     {
       dserror("shape functions for weg15 have not been checked\n");
 
@@ -516,6 +528,35 @@ void DRT::Utils::shape_function_3D_deriv1(
         deriv1(2,9) = 4*s;
 
         break;
+    }
+    case DRT::Element::weg6:
+    {
+      const double p1=Q12*(1-t);
+      const double p2=Q12*(1+t);
+      const double t3=1.0-r-s;
+
+      deriv1(0,0)=p1;
+      deriv1(0,1)=0;
+      deriv1(0,2)=-p1;
+      deriv1(0,3)=p2;
+      deriv1(0,4)=0;
+      deriv1(0,5)=-p2;
+
+      deriv1(1,0)=0;
+      deriv1(1,1)=p1;
+      deriv1(1,2)=-p1;
+      deriv1(1,3)=0;
+      deriv1(1,4)=p2;
+      deriv1(1,5)=-p1;
+
+      deriv1(2,0)=-Q12*r;
+      deriv1(2,1)=-Q12*s;
+      deriv1(2,2)=-Q12*t3;
+      deriv1(2,3)=Q12*r;
+      deriv1(2,4)=Q12*s;
+      deriv1(2,5)=Q12*t3;
+
+      break;
     }
      case DRT::Element::weg15:
     {
