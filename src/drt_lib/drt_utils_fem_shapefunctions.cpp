@@ -23,7 +23,7 @@ Maintainer: Axel Gerstenberger
 //
 // shape functions
 //
-void DRT::Utils::shape_function_3D( 
+void DRT::Utils::shape_function_3D(
                      Epetra_SerialDenseVector&                  funct,
                      const double&                              r,
                      const double&                              s,
@@ -31,6 +31,7 @@ void DRT::Utils::shape_function_3D(
                      const DRT::Element::DiscretizationType&    distype)
 {
     const double Q18 = 1.0/8.0;
+    const double Q12 = 1.0/2.0;
 
     switch (distype)
     {
@@ -42,7 +43,7 @@ void DRT::Utils::shape_function_3D(
        const double sm=1.0-s;
        const double tp=1.0+t;
        const double tm=1.0-t;
-    
+
        funct[0]=Q18*rp*sm*tm;
        funct[1]=Q18*rp*sp*tm;
        funct[2]=Q18*rm*sp*tm;
@@ -66,7 +67,7 @@ void DRT::Utils::shape_function_3D(
         const double rrm=1.0-r*r;
         const double ssm=1.0-s*s;
         const double ttm=1.0-t*t;
-    
+
         funct[0] =Q18*rp*sm*tm*(rp+sm+tm-5.0);
         funct[1] =Q18*rp*sp*tm*(rp+sp+tm-5.0);
         funct[2] =Q18*rm*sp*tm*(rm+sp+tm-5.0);
@@ -100,7 +101,7 @@ void DRT::Utils::shape_function_3D(
         const double tm1=0.5*t*(t - 1.0);
         const double t00=(1.0 - t*t);
         const double tp1=0.5*t*(t + 1.0);
-        
+
         funct[0] = rp1*sp1*tp1;
         funct[1] = sm1*rp1*tp1;
         funct[2] = rm1*sm1*tp1;
@@ -146,7 +147,7 @@ void DRT::Utils::shape_function_3D(
     case DRT::Element::tet10:
     {
         const double u=1.0-r-s-t;
-        
+
         funct[0] =u*(2*u -1);
         funct[1] =r*(2*r -1);
         funct[2] =s*(2*s -1);
@@ -159,6 +160,35 @@ void DRT::Utils::shape_function_3D(
         funct[9] =4*s*t;
         break;
     }
+ case DRT::Element::weg15:
+    {
+      dserror("shape functions for weg15 have not been checked\n");
+
+      const double t1=r;
+      const double t2=s;
+      const double t3=1.0-r-s;
+      const double p1=Q12*t*(t-1);
+      const double p2=1.0-t*t;
+      const double p3=Q12*t*(t+1);
+
+      funct[0]=t1*(2*t1-1)*p1;
+      funct[1]=t2*(2*t2-1)*p1;
+      funct[2]=t3*(2*t3-1)*p1;
+      funct[3]=t1*(2*t1-1)*p3;
+      funct[4]=t2*(2*t2-1)*p3;
+      funct[5]=t3*(2*t3-1)*p3;
+      funct[6]=4*t1*t2*p1;
+      funct[7]=4*t2*t3*p1;
+      funct[8]=4*t1*t3*p1;
+      funct[9]=4*t1*t2*p3;
+      funct[10]=4*t2*t3*p3;
+      funct[11]=4*t1*t3*p3;
+      funct[12]=t1*(2*t1-1)*p2;
+      funct[13]=t2*(2*t2-1)*p2;
+      funct[14]=t3*(2*t3-1)*p2;
+      break;
+    }
+
     default:
         dserror("distyp unknown\n");
     } /* end switch(distype) */
@@ -177,6 +207,7 @@ void DRT::Utils::shape_function_3D_deriv1(
                      const DRT::Element::DiscretizationType&    distype)
 {
     const double Q18 = 1.0/8.0;
+    const double Q12 = 1.0/2.0;
 
     switch (distype)
     {
@@ -326,7 +357,7 @@ void DRT::Utils::shape_function_3D_deriv1(
         const double tm1=0.5*t*(t - 1.0);
         const double t00=(1.0 - t*t);
         const double tp1=0.5*t*(t + 1.0);
-    
+
         const double drm1 = r - 0.5;
         const double dr00 = -2.0 * r;
         const double drp1 = r + 0.5;
@@ -364,7 +395,7 @@ void DRT::Utils::shape_function_3D_deriv1(
         deriv1(0,24) = t00*sp1*dr00;
         deriv1(0,25) = s00*tm1*dr00;
         deriv1(0,26) = s00*t00*dr00;
-    
+
         deriv1(1,0) = rp1*tp1*dsp1;
         deriv1(1,1) = rp1*tp1*dsm1;
         deriv1(1,2) = rm1*tp1*dsm1;
@@ -392,7 +423,7 @@ void DRT::Utils::shape_function_3D_deriv1(
         deriv1(1,24) = r00*t00*dsp1;
         deriv1(1,25) = r00*tm1*ds00;
         deriv1(1,26) = r00*t00*ds00;
-    
+
         deriv1(2,0) = rp1*sp1*dtp1;
         deriv1(2,1) = sm1*rp1*dtp1;
         deriv1(2,2) = rm1*sm1*dtp1;
@@ -440,10 +471,10 @@ void DRT::Utils::shape_function_3D_deriv1(
         deriv1(2,3)= 1.0;
         break;
     }
-    case DRT::Element::tet10: 
+    case DRT::Element::tet10:
     {
         const double u=1.0-r-s-t;
-       
+
         deriv1(0,0) = -4*u+1;
         deriv1(1,0) = deriv1(0,0);
         deriv1(2,0) = deriv1(0,0);
@@ -483,8 +514,71 @@ void DRT::Utils::shape_function_3D_deriv1(
         deriv1(0,9) = 0;
         deriv1(1,9) = 4*t;
         deriv1(2,9) = 4*s;
-            
+
         break;
+    }
+     case DRT::Element::weg15:
+    {
+      const double t1=r;
+      const double t2=s;
+      const double t3=1.0-r-s;
+      const double p1=Q12*t*(t-1);
+      const double p2=1.0-t*t;
+      const double p3=Q12*t*(t+1);
+      const double pd1=t-1.0;
+      const double pd2=-2.0*t;
+      const double pd3=t+1.0;
+
+      deriv1(0,0)=(4.0*t1-1)*p1;
+      deriv1(0,1)=0;
+      deriv1(0,2)=(4.0*t1+4.0*t2-3.0)*p1;
+      deriv1(0,3)=(4.0*t1-1)*p3;
+      deriv1(0,4)=0;
+      deriv1(0,5)=(4.0*t1+4.0*t2-3.0)*p3;
+      deriv1(0,6)=4.0*t2*p1;
+      deriv1(0,7)=-4.0*t2*p1;
+      deriv1(0,8)=(4.0-8.0*t1-4.0*t2)*p1;
+      deriv1(0,9)=4.0*t2*p3;
+      deriv1(0,10)=-4.0*t2*p3;
+      deriv1(0,11)=(4.0-8.0*t1-4.0*t2)*p2;
+      deriv1(0,12)=(4.0*t1-1)*p2;
+      deriv1(0,13)=0;
+      deriv1(0,14)=(4.0*t1+4.0*t2-3.0)*p2;
+
+
+      deriv1(1,0)=0;
+      deriv1(1,1)=(4.0*t2-1)*p1;
+      deriv1(1,2)=(4.0*t1+4.0*t2-3.0)*p1;
+      deriv1(1,3)=0;
+      deriv1(1,4)=(4.0*t2-1)*p3;
+      deriv1(1,5)=(4.0*t1+4.0*t2-3.0)*p3;
+      deriv1(1,6)=4.0*t1*p1;
+      deriv1(1,7)=(4.0-4.0*t1-8.0*t2)*p1;
+      deriv1(1,8)=-4.0*t1*p1;
+      deriv1(1,9)=4.0*t1*p3;
+      deriv1(1,10)=(4.0-4.0*t1-8.0*t2)*p3;
+      deriv1(1,11)=-4.0*t1*p3;
+      deriv1(1,12)=0;
+      deriv1(1,13)=(4.0*t2-1)*p2;
+      deriv1(1,14)=(4.0*t1+4.0*t2-3)*p2;
+
+
+      deriv1(2,0)=t1*(2*t1-1)*pd1;
+      deriv1(2,1)=t2*(2*t2-1)*pd1;
+      deriv1(2,2)=t3*(2*t3-1)*pd1;
+      deriv1(2,3)=t1*(2*t1-1)*pd3;
+      deriv1(2,4)=t2*(2*t2-1)*pd3;
+      deriv1(2,5)=t3*(2*t3-1)*pd3;
+      deriv1(2,6)=4*t1*t2*pd1;
+      deriv1(2,7)=4*t2*t3*pd1;
+      deriv1(2,8)=4*t1*t3*pd1;
+      deriv1(2,9)=4*t1*t2*pd3;
+      deriv1(2,10)=4*t2*t3*pd3;
+      deriv1(2,11)=4*t1*t3*pd3;
+      deriv1(2,12)=t1*(2*t1-1)*pd2;
+      deriv1(2,13)=t2*(2*t2-1)*pd2;
+      deriv1(2,14)=t3*(2*t3-1)*pd2;
+
     }
     default:
         dserror("distyp unknown\n");
@@ -504,7 +598,8 @@ void DRT::Utils::shape_function_3D_deriv2(
                      const DRT::Element::DiscretizationType&    distype)
 {
     const double Q18 = 1.0/8.0;
-    
+    const double Q12 = 1.0/2.0;
+
     const int drdr = 0;
     const int dsds = 1;
     const int dtdt = 2;
@@ -788,7 +883,7 @@ void DRT::Utils::shape_function_3D_deriv2(
         deriv2(drdr,24) = -2*t00*sp1;
         deriv2(drdr,25) = -2*s00*tm1;
         deriv2(drdr,26) = -2*s00*t00;
-        
+
         deriv2(dsds,0) = rp1*tp1;
         deriv2(dsds,1) = rp1*tp1;
         deriv2(dsds,2) = rm1*tp1;
@@ -816,7 +911,7 @@ void DRT::Utils::shape_function_3D_deriv2(
         deriv2(dsds,24) = r00*t00;
         deriv2(dsds,25) = -2*r00*tm1;
         deriv2(dsds,26) = -2*r00*t00;
-        
+
         deriv2(dtdt,0) = rp1*sp1;
         deriv2(dtdt,1) = sm1*rp1;
         deriv2(dtdt,2) = rm1*sm1;
@@ -844,7 +939,7 @@ void DRT::Utils::shape_function_3D_deriv2(
         deriv2(dtdt,24) = -2*r00*sp1;
         deriv2(dtdt,25) = r00*s00;
         deriv2(dtdt,26) = -2*r00*s00;
-        
+
         deriv2(drds,0) = tp1*drp1*dsp1;
         deriv2(drds,1) = tp1*dsm1*drp1;
         deriv2(drds,2) = tp1*drm1*dsm1;
@@ -872,7 +967,7 @@ void DRT::Utils::shape_function_3D_deriv2(
         deriv2(drds,24) = t00*dr00*dsp1;
         deriv2(drds,25) = 4*r*s*tm1;
         deriv2(drds,26) = 4*r*s*t00;
-        
+
         deriv2(drdt,0) = sp1*drp1*dtp1;
         deriv2(drdt,1) = sm1*drp1*dtp1;
         deriv2(drdt,2) = sm1*drm1*dtp1;
@@ -900,7 +995,7 @@ void DRT::Utils::shape_function_3D_deriv2(
         deriv2(drdt,24) = 4*r*t*sp1;
         deriv2(drdt,25) = s00*dr00*dtm1;
         deriv2(drdt,26) = 4*r*t*s00;
-        
+
         deriv2(dsdt,0) = rp1*dsp1*dtp1;
         deriv2(dsdt,1) = rp1*dsm1*dtp1;
         deriv2(dsdt,2) = rm1*dsm1*dtp1;
@@ -930,7 +1025,7 @@ void DRT::Utils::shape_function_3D_deriv2(
         deriv2(dsdt,26) = 4*s*t*r00;
         break;
     }
-    case DRT::Element::tet10: 
+    case DRT::Element::tet10:
     {
         deriv2(drdr,0) =  4.0;
         deriv2(dsds,0) =  4.0;
@@ -966,7 +1061,7 @@ void DRT::Utils::shape_function_3D_deriv2(
         deriv2(drds,4) = -4.0;
         deriv2(drdt,4) = -4.0;
         deriv2(dsdt,4) =  0.0;
-               
+
         deriv2(drdr,5) =  0.0;
         deriv2(dsds,5) =  0.0;
         deriv2(dtdt,5) =  0.0;
@@ -980,7 +1075,7 @@ void DRT::Utils::shape_function_3D_deriv2(
         deriv2(drds,6) = -4.0;
         deriv2(drdt,6) =  0.0;
         deriv2(dsdt,6) = -4.0;
-        
+
         deriv2(drdr,7) =  0.0;
         deriv2(dsds,7) =  0.0;
         deriv2(dtdt,7) = -8.0;
@@ -994,15 +1089,129 @@ void DRT::Utils::shape_function_3D_deriv2(
         deriv2(drds,8) =  0.0;
         deriv2(drdt,8) =  4.0;
         deriv2(dsdt,8) =  0.0;
-        
+
         deriv2(drdr,9) =  0.0;
         deriv2(dsds,9) =  0.0;
         deriv2(dtdt,9) =  0.0;
         deriv2(drds,9) =  0.0;
         deriv2(drdt,9) =  0.0;
         deriv2(dsdt,9) =  4.0;
-            
+
         break;
+    }
+    case DRT::Element::weg15:
+    {
+
+      const double t1=r;
+      const double t2=s;
+      const double t3=1.0-r-s;
+      const double p1=Q12*t*(t-1);
+      const double p2=1.0-t*t;
+      const double p3=Q12*t*(t+1);
+      const double pd1=2.0*t-1;
+      const double pd2=-2.0*t;
+      const double pd3=2.0*t+1;
+      const double pdd1=2.0;
+      const double pdd2=-2.0;
+      const double pdd3=2.0;
+
+      deriv2(0,0)=4.0*p1;
+      deriv2(0,1)=0;
+      deriv2(0,2)=4.0*p1;
+      deriv2(0,3)=4.0*p3;
+      deriv2(0,4)=0;
+      deriv2(0,5)=4.0*p3;
+      deriv2(0,6)=0;
+      deriv2(0,7)=0;
+      deriv2(0,8)=-8.0*p1;
+      deriv2(0,9)=0;
+      deriv2(0,10)=0;
+      deriv2(0,11)=-8.0*p1;
+      deriv2(0,12)=4.0*p2;
+      deriv2(0,13)=0;
+      deriv2(0,14)=4.0*p2;
+
+      deriv2(1,0)=0;
+      deriv2(1,1)=4.0*p1;
+      deriv2(1,2)=4.0*p1;
+      deriv2(1,3)=0;
+      deriv2(1,4)=4.0*p3;
+      deriv2(1,5)=4.0*p3;
+      deriv2(1,6)=0;
+      deriv2(1,7)=-8.0*p1;
+      deriv2(1,8)=0;
+      deriv2(1,9)=0;
+      deriv2(1,10)=-8.0*p3;
+      deriv2(1,11)=0;
+      deriv2(1,12)=0;
+      deriv2(1,13)=4.0*p2;
+      deriv2(1,14)=4.0*p2;
+
+      deriv2(2,0)=t1*(2*t1-1)*pdd1;
+      deriv2(2,1)=t2*(2*t2-1)*pdd1;
+      deriv2(2,2)=t3*(2*t3-1)*pdd1;
+      deriv2(2,3)=t1*(2*t1-1)*pdd3;
+      deriv2(2,4)=t2*(2*t2-1)*pdd3;
+      deriv2(2,5)=t3*(2*t3-1)*pdd3;
+      deriv2(2,6)=4*t1*t2*pdd1;
+      deriv2(2,7)=4*t2*t3*pdd1;
+      deriv2(2,8)=4*t1*t3*pdd1;
+      deriv2(2,9)=4*t1*t2*pdd3;
+      deriv2(2,10)=4*t2*t3*pdd3;
+      deriv2(2,11)=4*t1*t3*pdd3;
+      deriv2(2,12)=t1*(2*t1-1)*pdd2;
+      deriv2(2,13)=t2*(2*t2-1)*pdd2;
+      deriv2(2,14)=t3*(2*t3-1)*pdd2;
+
+      deriv2(3,0)=0;
+      deriv2(3,1)=0;
+      deriv2(3,2)=4.0*p1;
+      deriv2(3,3)=0;
+      deriv2(3,4)=0;
+      deriv2(3,5)=4.0*p3;
+      deriv2(3,6)=4.0*p1;
+      deriv2(3,7)=-4.0*p1;
+      deriv2(3,8)=-4.0*p1;
+      deriv2(3,9)=4.0*p3;
+      deriv2(3,10)=-4.0*p3;
+      deriv2(3,11)=-4.0*p3;
+      deriv2(3,12)=0;
+      deriv2(3,13)=0;
+      deriv2(3,14)=4.0*p2;
+
+      deriv2(4,0)=0;
+      deriv2(4,1)=(4.0*t2-1)*pd1;
+      deriv2(4,2)=(4.0*t1+4.0*t2-3.0)*pd1;
+      deriv2(4,3)=0;
+      deriv2(4,4)=(4.0*t2-1)*pd3;
+      deriv2(4,5)=(4.0*t1+4.0*t2-3.0)*pd3;
+      deriv2(4,6)=4.0*t1*pd1;
+      deriv2(4,7)=(4.0-4.0*t1-8.0*t2)*pd1;
+      deriv2(4,8)=-4.0*t1*pd1;
+      deriv2(4,9)=4.0*t1*pd3;
+      deriv2(4,10)=(4.0-4.0*t1-8.0*t2)*pd3;
+      deriv2(4,11)=-4.0*t1*pd3;
+      deriv2(4,12)=0;
+      deriv2(4,13)=(4.0*t2-1)*pd2;
+      deriv2(4,14)=(4.0*t1+4.0*t2-3)*pd2;
+
+      deriv2(5,0)=(4.0*t1-1)*pd1;
+      deriv2(5,1)=0;
+      deriv2(5,2)=(4.0*t1+4.0*t2-3.0)*pd1;
+      deriv2(5,3)=(4.0*t1-1)*pd3;
+      deriv2(5,4)=0;
+      deriv2(5,5)=(4.0*t1+4.0*t2-3.0)*pd3;
+      deriv2(5,6)=4.0*t2*pd1;
+      deriv2(5,7)=-4.0*t2*pd1;
+      deriv2(5,8)=(4.0-8.0*t1-4.0*t2)*pd1;
+      deriv2(5,9)=4.0*t2*pd3;
+      deriv2(5,10)=-4.0*t2*pd3;
+      deriv2(5,11)=(4.0-8.0*t1-4.0*t2)*pd2;
+      deriv2(5,12)=(4.0*t1-1)*pd2;
+      deriv2(5,13)=0;
+      deriv2(5,14)=(4.0*t1+4.0*t2-3.0)*pd2;
+
+    break;
     }
     default:
         dserror("distyp unknown\n");
@@ -1023,14 +1232,14 @@ void DRT::Utils::shape_function_2D(
     switch (distype)
     {
     case DRT::Element::quad4:
-    {    
+    {
         const double rp=1.0+r;
         const double rm=1.0-r;
         const double sp=1.0+s;
         const double sm=1.0-s;
 
         funct[0]=0.25*rm*sm;
-        funct[1]=0.25*rp*sm;     
+        funct[1]=0.25*rp*sm;
         funct[2]=0.25*rp*sp;
         funct[3]=0.25*rm*sp;
         break;
@@ -1066,8 +1275,8 @@ void DRT::Utils::shape_function_2D(
         const double rh=0.5*r;
         const double sh=0.5*s;
         const double rs=rh*sh;
-        
-        
+
+
         funct[0]= rs*rm*sm;
         funct[1]=-rs*rp*sm;
         funct[2]= rs*rp*sp;
@@ -1106,7 +1315,7 @@ void DRT::Utils::shape_function_2D(
     default:
         dserror("distype unknown\n");
     } /* end switch(distype) */
- 
+
     return;
 }
 
@@ -1122,7 +1331,7 @@ void DRT::Utils::shape_function_2D_deriv1(
     switch (distype)
     {
     case DRT::Element::quad4:
-    {    
+    {
         const double rp=1.0+r;
         const double rm=1.0-r;
         const double sp=1.0+s;
@@ -1130,13 +1339,13 @@ void DRT::Utils::shape_function_2D_deriv1(
 
         deriv1(0,0)=-0.25*sm;
         deriv1(1,0)=-0.25*rm;
-        
+
         deriv1(0,1)= 0.25*sm;
         deriv1(1,1)=-0.25*rp;
-             
+
         deriv1(0,2)= 0.25*sp;
         deriv1(1,2)= 0.25*rp;
-    
+
         deriv1(0,3)=-0.25*sp;
         deriv1(1,3)= 0.25*rm;
         break;
@@ -1150,31 +1359,31 @@ void DRT::Utils::shape_function_2D_deriv1(
         const double sm=1.0-s;
         const double r2=1.0-r*r;
         const double s2=1.0-s*s;
-    
+
         deriv1(0,0)= 0.25*sp;
         deriv1(1,0)= 0.25*rp;
-        
+
         deriv1(0,1)=-0.25*sp;
         deriv1(1,1)= 0.25*rm;
-        
+
         deriv1(0,2)=-0.25*sm;
         deriv1(1,2)=-0.25*rm;
-    
+
         deriv1(0,3)= 0.25*sm;
         deriv1(1,3)=-0.25*rp;
-    
+
         deriv1(0,4)=-1.0*r*sp;
         deriv1(1,4)= 0.5*r2;
-        
+
         deriv1(0,5)=-0.5*  s2;
         deriv1(1,5)=-1.0*rm*s;
-        
+
         deriv1(0,6)=-1.0*r*sm;
         deriv1(1,6)=-0.5*r2;
-        
+
         deriv1(0,7)= 0.5*s2;
         deriv1(1,7)=-1.0*rp*s;
-        
+
         deriv1(0,0)-= 0.5*(deriv1(0,4)+deriv1(0,7));
         deriv1(1,0)-= 0.5*(deriv1(1,4)+deriv1(1,7));
 
@@ -1203,28 +1412,28 @@ void DRT::Utils::shape_function_2D_deriv1(
 
         deriv1(0,0)=-rhm*sh*sm;
         deriv1(1,0)=-shm*rh*rm;
-        
+
         deriv1(0,1)=-rhp*sh*sm;
         deriv1(1,1)= shm*rh*rp;
-        
+
         deriv1(0,2)= rhp*sh*sp;
         deriv1(1,2)= shp*rh*rp;
-        
+
         deriv1(0,3)= rhm*sh*sp;
         deriv1(1,3)=-shp*rh*rm;
-        
+
         deriv1(0,4)= 2.0*r*sh*sm;
         deriv1(1,4)= shm*r2;
-        
+
         deriv1(0,5)= rhp*s2;
-        deriv1(1,5)=-2.0*s*rh*rp;   
-        
+        deriv1(1,5)=-2.0*s*rh*rp;
+
         deriv1(0,6)=-2.0*r*sh*sp;
         deriv1(1,6)= shp*r2;
-        
+
         deriv1(0,7)= rhm*s2;
         deriv1(1,7)= 2.0*s*rh*rm;
-        
+
         deriv1(0,8)=-2.0*r*s2;
         deriv1(1,8)=-2.0*s*r2;
         break;
@@ -1233,10 +1442,10 @@ void DRT::Utils::shape_function_2D_deriv1(
     {
         deriv1(0,0)=-1.0;
         deriv1(1,0)=-1.0;
-        
+
         deriv1(0,1)= 1.0;
         deriv1(1,1)= 0.0;
-        
+
         deriv1(0,2)= 0.0;
         deriv1(1,2)= 1.0;
         break;
@@ -1245,19 +1454,19 @@ void DRT::Utils::shape_function_2D_deriv1(
     {
         deriv1(0,0)= -3.0 + 4.0*(r + s);
         deriv1(1,0)= -3.0 + 4.0*(r + s);
-        
+
         deriv1(0,1)= 4.0*r - 1.0;
         deriv1(1,1)= 0.0;
-        
+
         deriv1(0,2)= 0.0;
         deriv1(1,2)= 4.0*s - 1.0;
-        
+
         deriv1(0,3)= 4.0*(1.0 - 2.0*r - s);
         deriv1(1,3)=-4.0*r;
-        
+
         deriv1(0,4)= 4.0*s;
         deriv1(1,4)= 4.0*r;
-        
+
         deriv1(0,5)=-4.0*s;
         deriv1(1,5)= 4.0*(1.0 - r - 2.0*s);
         break;
@@ -1278,27 +1487,27 @@ void DRT::Utils::shape_function_2D_deriv2(
                      const double&                              r,
                      const double&                              s,
                      const DRT::Element::DiscretizationType&    distype)
-{ 
+{
     const int drdr = 0;
     const int dsds = 1;
     const int drds = 2;
-    
+
     switch (distype)
     {
     case DRT::Element::quad4:
-    {    
+    {
         deriv2(drdr,0) =  0.0;
         deriv2(dsds,0) =  0.0;
         deriv2(drds,0) =  0.25;
-    
+
         deriv2(drdr,1) =  0.0;
         deriv2(dsds,1) =  0.0;
         deriv2(drds,1) = -0.25;
-          
+
         deriv2(drdr,2) =  0.0;
         deriv2(dsds,2) =  0.0;
         deriv2(drds,2) =  0.25;
-    
+
         deriv2(drdr,3) =  0.0;
         deriv2(dsds,3) =  0.0;
         deriv2(drds,3) = -0.25;
@@ -1318,7 +1527,7 @@ void DRT::Utils::shape_function_2D_deriv2(
         const double rhm=r-0.5;
         const double shp=s+0.5;
         const double shm=s-0.5;
-        
+
         deriv2(drdr,0) =-sh*sm;
         deriv2(dsds,0) =-rh*rm;
         deriv2(drds,0) = shm*rhm;
@@ -1326,7 +1535,7 @@ void DRT::Utils::shape_function_2D_deriv2(
         deriv2(drdr,1) =-sh*sm;
         deriv2(dsds,1) = rh*rp;
         deriv2(drds,1) = shm*rhp;
-        
+
         deriv2(drdr,2) = sh*sp;
         deriv2(dsds,2) = rh*rp;
         deriv2(drds,2) = shp*rhp;
@@ -1386,7 +1595,7 @@ void DRT::Utils::shape_function_2D_deriv2(
     default:
         dserror("distype unknown\n");
     } /* end switch(distype) */
- 
+
     return;
 }
 
@@ -1401,9 +1610,9 @@ void DRT::Utils::shape_function_1D(
     switch (distype)
     {
     case DRT::Element::line2:
-    {    
+    {
         funct[0] = 0.5*(1.0 - r);
-        funct[1] = 0.5*(1.0 + r);            
+        funct[1] = 0.5*(1.0 + r);
         break;
     }
     case DRT::Element::line3:
@@ -1416,7 +1625,7 @@ void DRT::Utils::shape_function_1D(
     default:
         dserror("distype unknown\n");
     } /* end switch(distype) */
-     
+
     return;
 
 }
@@ -1432,7 +1641,7 @@ void DRT::Utils::shape_function_1D_deriv1(
     switch (distype)
     {
     case DRT::Element::line2:
-    {      
+    {
         deriv1(0,0)= -0.5;
         deriv1(1,0)=  0.5;
         break;
@@ -1447,7 +1656,7 @@ void DRT::Utils::shape_function_1D_deriv1(
     default:
         dserror("distype unknown\n");
   } /* end switch(distype) */
- 
+
   return;
 
 }
@@ -1455,7 +1664,7 @@ void DRT::Utils::shape_function_1D_deriv1(
 //
 // shape functions and natural derivatives
 //
-void DRT::Utils::shape_function_1D_deriv2( 
+void DRT::Utils::shape_function_1D_deriv2(
                      Epetra_SerialDenseMatrix&                  deriv2,
                      const double&                              r,
                      const DRT::Element::DiscretizationType&    distype)
@@ -1463,22 +1672,22 @@ void DRT::Utils::shape_function_1D_deriv2(
     switch (distype)
     {
     case DRT::Element::line2:
-    {    
+    {
         deriv2(0,0)= 0.0;
-        deriv2(1,0)= 0.0;           
+        deriv2(1,0)= 0.0;
         break;
     }
-    case DRT::Element::line3: 
+    case DRT::Element::line3:
     {
-        deriv2(0,0)=  1.0;     
-        deriv2(1,0)=  1.0;  
-        deriv2(2,0)= -2.0;         
+        deriv2(0,0)=  1.0;
+        deriv2(1,0)=  1.0;
+        deriv2(2,0)= -2.0;
         break;
     }
     default:
         dserror("distype unknown\n");
   } /* end switch(distype) */
- 
+
   return;
 
 }

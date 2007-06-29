@@ -35,7 +35,7 @@ namespace DRT
 {
 namespace Utils
 {
-  
+
   /*!
   \brief Nodal mappings describing the relation between volume, surface and line node numbering
 
@@ -83,6 +83,26 @@ namespace Utils
                                                       {0,  3,  7},
                                                       {1,  3,  8},
                                                       {2,  3,  9}};
+
+   //Triangular surfaces of weg15 with 7 nodes per surface
+  const int     eleNodeNumbering_weg15_trisurfaces[2][6]={{0, 1 ,2, 6, 7, 8},
+                                                          {3, 4, 5, 12, 13, 14}};
+
+  //Rectangular surfaces of weg15 with 8 nodes per surface
+  const int     eleNodeNumbering_weg15_quadsurfaces[3][8]={{0, 1, 4, 3, 6, 10, 12, 9},
+                                                           {1, 2, 5, 4, 7, 11, 13, 10},
+                                                           {0, 3, 5, 2, 9, 14, 11, 8}};
+
+  //9 lines of a Weg15 element with 3 nodes per line
+  const int     eleNodeNumbering_weg15_lines[9][3]={{0, 1, 6},
+                                                    {1, 2, 7},
+                                                    {2, 0, 8},
+                                                    {3, 4, 12},
+                                                    {4, 5, 13},
+                                                    {5, 3, 14},
+                                                    {1, 4, 10},
+                                                    {2, 5, 11},
+                                                    {0, 3, 9}};
 
   // 4 Lines of a Quad9 element with 3 nodes per line
   const int     eleNodeNumbering_quad9_lines[4][3] = {{0,  1,  4},
