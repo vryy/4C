@@ -209,6 +209,52 @@ DRT::Utils::IntegrationPoints3D DRT::Utils::getIntegrationPoints3D(const GaussRu
       intpoints.qwgt[4]   =     Q9120;
       break;
     }
+    case intrule_weg_9point:
+    {
+     // GAUSS INTEGRATION         9 SAMPLING POINTS
+     const double xi3 = 0.77459666924;
+    const double Q23 = 2.0/3.0;
+    const double Q5913 = 5.0/9.0*1.0/3.0;
+
+    intpoints.qxg[0][0] = Q23;
+    intpoints.qxg[1][0] = Q16;
+    intpoints.qxg[2][0] = Q16;
+    intpoints.qxg[3][0] = Q23;
+    intpoints.qxg[4][0] = Q16;
+    intpoints.qxg[5][0] = Q16;
+    intpoints.qxg[6][0] = Q23;
+    intpoints.qxg[7][0] = Q16;
+    intpoints.qxg[8][0] = Q16;
+    intpoints.qxg[0][1] = Q16;
+    intpoints.qxg[1][1] = Q23;
+    intpoints.qxg[2][1] = Q16;
+    intpoints.qxg[3][1] = Q16;
+    intpoints.qxg[4][1] = Q23;
+    intpoints.qxg[5][1] = Q16;
+    intpoints.qxg[6][1] = Q16;
+    intpoints.qxg[7][1] = Q23;
+    intpoints.qxg[8][1] = Q16;
+    intpoints.qxg[0][2] = xi3;
+    intpoints.qxg[1][2] = xi3;
+    intpoints.qxg[2][2] = xi3;
+    intpoints.qxg[3][2] = 0;
+    intpoints.qxg[4][2] = 0;
+    intpoints.qxg[5][2] = 0;
+    intpoints.qxg[6][2] = -xi3;
+    intpoints.qxg[7][2] = -xi3;
+    intpoints.qxg[8][2] = -xi3;
+
+    intpoints.qwgt[0] = Q5913;
+    intpoints.qwgt[1] = Q5913;
+    intpoints.qwgt[2] = Q5913;
+    intpoints.qwgt[3] = 0;
+    intpoints.qwgt[4] = 0;
+    intpoints.qwgt[5] = 0;
+    intpoints.qwgt[6] = -Q5913;
+    intpoints.qwgt[7] = -Q5913;
+    intpoints.qwgt[8] = -Q5913;
+    break;
+  }
     default:
       dserror("unknown 3D integration rule");
   }
@@ -224,9 +270,9 @@ DRT::Utils::IntegrationPoints3D DRT::Utils::getIntegrationPoints3D(const GaussRu
 //
 DRT::Utils::IntegrationPoints2D DRT::Utils::getIntegrationPoints2D(const  GaussRule2D gaussrule)
 {
-    
+
     IntegrationPoints2D  intpoints;
-    
+
     switch(gaussrule)
     {
     case intrule_quad_1point :
@@ -244,7 +290,7 @@ DRT::Utils::IntegrationPoints2D DRT::Utils::getIntegrationPoints2D(const  GaussR
         intpoints.qwgt[1]  =  1.0;
         intpoints.qwgt[2]  =  1.0;
         intpoints.qwgt[3]  =  1.0;
-        
+
         intpoints.qxg[0][0] = -0.5773502691896;
         intpoints.qxg[0][1] = -0.5773502691896;
         intpoints.qxg[1][0] =  0.5773502691896;
@@ -257,7 +303,7 @@ DRT::Utils::IntegrationPoints2D DRT::Utils::getIntegrationPoints2D(const  GaussR
     }
     case intrule_quad_9point:
     {
-        intpoints.nquad = 9; 
+        intpoints.nquad = 9;
         intpoints.qwgt[0]  =  0.5555555555556*0.5555555555556;
         intpoints.qwgt[1]  =  0.8888888888889*0.5555555555556;
         intpoints.qwgt[2]  =  0.5555555555556*0.5555555555556;
@@ -267,7 +313,7 @@ DRT::Utils::IntegrationPoints2D DRT::Utils::getIntegrationPoints2D(const  GaussR
         intpoints.qwgt[6]  =  0.5555555555556*0.5555555555556;
         intpoints.qwgt[7]  =  0.8888888888889*0.5555555555556;
         intpoints.qwgt[8]  =  0.5555555555556*0.5555555555556;
-        
+
         intpoints.qxg[0][0] = -0.7745966692415;
         intpoints.qxg[0][1] = -0.7745966692415;
         intpoints.qxg[1][0] =  0.0;
@@ -275,22 +321,22 @@ DRT::Utils::IntegrationPoints2D DRT::Utils::getIntegrationPoints2D(const  GaussR
         intpoints.qxg[2][0] =  0.7745966692415;
         intpoints.qxg[2][1] = -0.7745966692415;
         intpoints.qxg[3][0] = -0.7745966692415;
-        intpoints.qxg[3][1] =  0.0; 
-        intpoints.qxg[4][0] =  0.0; 
+        intpoints.qxg[3][1] =  0.0;
+        intpoints.qxg[4][0] =  0.0;
         intpoints.qxg[4][1] =  0.0;
-        intpoints.qxg[5][0] =  0.7745966692415; 
+        intpoints.qxg[5][0] =  0.7745966692415;
         intpoints.qxg[5][1] =  0.0;
-        intpoints.qxg[6][0] = -0.7745966692415; 
-        intpoints.qxg[6][1] =  0.7745966692415; 
-        intpoints.qxg[7][0] =  0.0;  
-        intpoints.qxg[7][1] =  0.7745966692415; 
+        intpoints.qxg[6][0] = -0.7745966692415;
+        intpoints.qxg[6][1] =  0.7745966692415;
+        intpoints.qxg[7][0] =  0.0;
+        intpoints.qxg[7][1] =  0.7745966692415;
         intpoints.qxg[8][0] =  0.7745966692415;
-        intpoints.qxg[8][1] =  0.7745966692415; 
+        intpoints.qxg[8][1] =  0.7745966692415;
         break;
     }
     case intrule_tri_3point:
     {
-        intpoints.nquad = 3;                
+        intpoints.nquad = 3;
         intpoints.qwgt[0]  = 1.0/6.0 ;
         intpoints.qwgt[1]  = 1.0/6.0 ;
         intpoints.qwgt[2]  = 1.0/6.0 ;
@@ -306,7 +352,7 @@ DRT::Utils::IntegrationPoints2D DRT::Utils::getIntegrationPoints2D(const  GaussR
     case intrule_tri_3point_on_corners:
     {
         dserror("to be filled");
-        intpoints.nquad = 3;                
+        intpoints.nquad = 3;
         intpoints.qwgt[0]  = 1.0/6.0 ;
         intpoints.qwgt[1]  = 1.0/6.0 ;
         intpoints.qwgt[2]  = 1.0/6.0 ;
@@ -339,8 +385,8 @@ DRT::Utils::IntegrationPoints2D DRT::Utils::getIntegrationPoints2D(const  GaussR
         intpoints.qxg[3][1] = 0.1081030181681;
         intpoints.qxg[4][0] = 0.4459484909160;
         intpoints.qxg[4][1] = 0.4459484909160;
-        intpoints.qxg[5][0] = 0.1081030181681; 
-        intpoints.qxg[5][1] = 0.4459484909160; 
+        intpoints.qxg[5][0] = 0.1081030181681;
+        intpoints.qxg[5][1] = 0.4459484909160;
         break;
     }
     default:
@@ -358,9 +404,9 @@ DRT::Utils::IntegrationPoints2D DRT::Utils::getIntegrationPoints2D(const  GaussR
 //
 DRT::Utils::IntegrationPoints1D DRT::Utils::getIntegrationPoints1D(const  GaussRule1D gaussrule)
 {
-    
+
     IntegrationPoints1D  intpoints;
-    
+
     switch(gaussrule)
     {
     case intrule_line_1point :
@@ -381,7 +427,7 @@ DRT::Utils::IntegrationPoints1D DRT::Utils::getIntegrationPoints1D(const  GaussR
     }
     case intrule_line_3point:
     {
-        intpoints.nquad = 3; 
+        intpoints.nquad = 3;
         intpoints.qwgt[0]  =  0.5555555555556;
         intpoints.qwgt[1]  =  0.8888888888889;
         intpoints.qwgt[2]  =  0.5555555555556;

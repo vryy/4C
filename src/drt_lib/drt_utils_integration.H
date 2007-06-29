@@ -32,7 +32,7 @@ namespace Utils
 {
 
 //! GaussRules
-enum GaussRule3D  
+enum GaussRule3D
 {
     intrule_hex_1point,
     intrule_hex_8point,
@@ -40,12 +40,13 @@ enum GaussRule3D
     intrule_tet_1point,
     intrule_tet_4point,
     intrule_tet_4point_alternative,
-    intrule_tet_10point
+    intrule_tet_10point,
+    intrule_weg_9point
 };
 
 
 //! GaussRules
-enum GaussRule2D  
+enum GaussRule2D
 {
     intrule_quad_1point,
     intrule_quad_4point,
@@ -57,7 +58,7 @@ enum GaussRule2D
 };
 
 //! GaussRules
-enum GaussRule1D  
+enum GaussRule1D
 {
     intrule_line_1point,
     intrule_line_2point,
@@ -120,7 +121,7 @@ typedef struct
 
 /*!
 \brief return object with 3D integration points and weights
-         
+
 \param GaussRule3D      (in): gaussrule enum
 
 */
@@ -128,7 +129,7 @@ IntegrationPoints3D getIntegrationPoints3D(const  GaussRule3D gaussrule);
 
 /*!
 \brief return object with 2D integration points and weights
-         
+
 \param GaussRule2D      (in): gaussrule enum
 
 */
@@ -136,7 +137,7 @@ IntegrationPoints2D getIntegrationPoints2D(const  GaussRule2D gaussrule);
 
 /*!
 \brief return object with 1D integration points and weights
-         
+
 \param GaussRule1D      (in): gaussrule enum
 
 */
