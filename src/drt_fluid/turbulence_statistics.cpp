@@ -359,32 +359,37 @@ void TurbulenceStatistics::EvaluateMeanValuesInPlanes(
       }
     }
 
+    int countnodesinplaneonallprocs;
+      
+    discret_->Comm().SumAll(&countnodesinplane,&countnodesinplaneonallprocs,1);
+    
+    
     //----------------------------------------------------------------------
     // compute scalar products from velnp and toggle vec to sum up
     // values in this plane
     //----------------------------------------------------------------------
     double inc;
     velnp.Dot(*toggleu_,&inc);
-    (*sumu_)[planenum]+=inc/countnodesinplane;
+    (*sumu_)[planenum]+=inc/countnodesinplaneonallprocs;
     velnp.Dot(*togglev_,&inc);
-    (*sumv_)[planenum]+=inc/countnodesinplane;
+    (*sumv_)[planenum]+=inc/countnodesinplaneonallprocs;
     velnp.Dot(*togglew_,&inc);
-    (*sumw_)[planenum]+=inc/countnodesinplane;
+    (*sumw_)[planenum]+=inc/countnodesinplaneonallprocs;
     velnp.Dot(*togglep_,&inc);
-    (*sump_)[planenum]+=inc/countnodesinplane;
+    (*sump_)[planenum]+=inc/countnodesinplaneonallprocs;
 
     //----------------------------------------------------------------------
     // compute scalar products from squaredvelnp and toggle vec to
     // sum up values for second order moments in this plane
     //----------------------------------------------------------------------
     squaredvelnp_->Dot(*toggleu_,&inc);
-    (*sumsqu_)[planenum]+=inc/countnodesinplane;
+    (*sumsqu_)[planenum]+=inc/countnodesinplaneonallprocs;
     squaredvelnp_->Dot(*togglev_,&inc);
-    (*sumsqv_)[planenum]+=inc/countnodesinplane;
+    (*sumsqv_)[planenum]+=inc/countnodesinplaneonallprocs;
     squaredvelnp_->Dot(*togglew_,&inc);
-    (*sumsqw_)[planenum]+=inc/countnodesinplane;
+    (*sumsqw_)[planenum]+=inc/countnodesinplaneonallprocs;
     squaredvelnp_->Dot(*togglep_,&inc);
-    (*sumsqp_)[planenum]+=inc/countnodesinplane;
+    (*sumsqp_)[planenum]+=inc/countnodesinplaneonallprocs;
 
     //----------------------------------------------------------------------
     // compute forces on top and bottom plate
