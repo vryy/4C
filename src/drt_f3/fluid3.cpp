@@ -42,6 +42,7 @@ data_()
  *----------------------------------------------------------------------*/
 DRT::Elements::Fluid3::Fluid3(const DRT::Elements::Fluid3& old) :
 DRT::Element(old),
+gaussrule_(old.gaussrule_),
 is_ale_(old.is_ale_),
 data_(old.data_),
 surfaces_(old.surfaces_),
