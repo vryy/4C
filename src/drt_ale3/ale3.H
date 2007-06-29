@@ -282,6 +282,9 @@ private:
   //! number of the material law
   int                                             material_;
 
+  //! Gaussrule
+  DRT::Utils::GaussRule3D                         gaussrule_;
+
   //! container containing all kind of ale3 thisandthat
   DRT::Container                                  data_;
 

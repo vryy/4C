@@ -35,146 +35,149 @@ extern "C"
 extern struct _FILES  allfiles;
 }
 #include "fluid3.H"
+#include "../drt_lib/drt_utils.H"
+
+using namespace DRT::Utils;
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                              g.bau 03/07|
  *----------------------------------------------------------------------*/
 bool DRT::Elements::Fluid3::ReadElement()
 {
-  // read element's nodes
-  int   ierr = 0;
-  int   nnode = 0;
-  int   nodes[27];
-  char  buffer[50];
-  int ngp_[3];
+    typedef map<string, DiscretizationType> Gid2DisType;
+    Gid2DisType gid2distype;
+    gid2distype["HEX8"]  = hex8;
+    gid2distype["HEX20"] = hex20;
+    gid2distype["HEX27"] = hex27;
+    gid2distype["TET4"]  = tet4;
+    gid2distype["TET10"] = tet10;
 
-  frchk("HEX8",&ierr);
-  if (ierr==1)
-  {
-    nnode=8;
-    frint_n("HEX8",nodes,nnode,&ierr);
-    if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
-  }
+    typedef map<DiscretizationType, int> DisType2NumNodes;
+    DisType2NumNodes distype2NumNodes;
+    distype2NumNodes[hex8]  = 8;
+    distype2NumNodes[hex20] = 20;
+    distype2NumNodes[hex27] = 27;
+    distype2NumNodes[tet4]  = 4;
+    distype2NumNodes[tet10] = 10;
+    
+    // read element's nodes
+    int   ierr = 0;
+    int   nnode = 0;
+    int   nodes[27];
+    DiscretizationType distype;
 
-  frchk("HEX20",&ierr);
-  if (ierr==1)
-  {
-    nnode=20;
-    frint_n("HEX20",nodes,nnode,&ierr);
-    if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
-  }
-
-  frchk("HEX27",&ierr);
-  if (ierr==1)
-  {
-    nnode=27;
-    frint_n("HEX27",nodes,nnode,&ierr);
-    if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
-  }
-
-  frchk("TET4",&ierr);
-  if (ierr==1)
-  {
-    nnode=4;
-    frint_n("TET4",nodes,nnode,&ierr);
-    if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
-  }
-
-  frchk("TET10",&ierr); /* rearrangement??????? */
-  if (ierr==1)
-  {
-    dserror("TET10 element not yet tested!!!\n");
-    nnode=10;
-    frint_n("TET10",nodes,nnode,&ierr);
-    if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
-  }
-
-
-  // reduce node numbers by one
-  for (int i=0; i<nnode; ++i) nodes[i]--;
-
-  SetNodeIds(nnode,nodes);
-
-  // read number of material model
-  int material = 0;
-  frint("MAT",&material,&ierr);
-  if (ierr!=1) dserror("Reading Material for FLUID3 element failed");
-  if (material==0) dserror("No material defined for FLUID3 element");
-  SetMaterial(material);
-
-  // read gaussian points
-
-   if (nnode==8 || nnode==20 || nnode==27)
-  {
-    frint_n("GP",ngp_,3,&ierr);
-    if (ierr!=1) dserror("Reading of FLUID3 element failed: GP\n");
-  }
-
-  // read number of gaussian points for tetrahedral elements */
-  if (nnode==4 || nnode==10)
-  {
-    frint("GP_TET",&ngp_[0],&ierr);
-    if (ierr!=1) dserror("Reading of FLUID3 element failed: GP_TET\n");
-
-    frchar("GP_ALT",buffer,&ierr);
-    if (ierr!=1) dserror("Reading of FLUID3 element failed: GP_ALT\n");
-    /*
-     * integration for TET-elements is distinguished into different cases. This is
-     * necessary to get the right integration parameters from FLUID_DATA.
-     * The flag for the integration case is saved in nGP[1]. For detailed informations
-     * see /fluid3/f3_intg.c.
-     */
-
-    switch(ngp_[0])
+    Gid2DisType::iterator iter;
+    for( iter = gid2distype.begin(); iter != gid2distype.end(); iter++ ) 
     {
-      case 1:
-        if (strncmp(buffer,"standard",8)==0)
-          ngp_[1]=0;
-        else
-          dserror("Reading of FLUID3 element failed: GP_ALT: gauss-radau not possible!\n");
+        const string eletext = iter->first;
+        frchk(eletext.c_str(), &ierr);
+        if (ierr == 1)
+        {
+            distype = gid2distype[eletext];
+            nnode = distype2NumNodes[distype];
+            frint_n(eletext.c_str(), nodes, nnode, &ierr);
+            dsassert(ierr==1, "Reading of ELEMENT Topology failed\n");
+            break;
+        }
+    }
+
+    // reduce node numbers by one
+    for (int i=0; i<nnode; ++i) nodes[i]--;
+
+    SetNodeIds(nnode,nodes);
+
+    // read number of material model
+    int material = 0;
+    frint("MAT",&material,&ierr);
+    dsassert(ierr==1, "Reading of material for FLUID3 element failed\n");
+    dsassert(material!=0, "No material defined for FLUID3 element\n");
+    SetMaterial(material);
+
+
+    // read gaussian points and set gaussrule
+    char  buffer[50];
+    int ngp[3];
+    switch (distype)
+    {
+    case hex8: case hex20: case hex27:
+    {
+        frint_n("GP",ngp,3,&ierr);
+        dsassert(ierr==1, "Reading of FLUID3 element failed: GP\n");
+        switch (ngp[0])
+        {
+        case 1:  
+            gaussrule_ = intrule_hex_1point; 
+            break; 
+        case 2:  
+            gaussrule_ = intrule_hex_8point; 
+            break;
+        case 3:  
+            gaussrule_ = intrule_hex_27point; 
+            break;
+        default:
+            dserror("Reading of FLUID3 element failed: Gaussrule for hexaeder not supported!\n");
+        }
         break;
-      case 4:
-        if (strncmp(buffer,"standard",8)==0)
-          ngp_[1]=1;
-        else if (strncmp(buffer,"gaussrad",8)==0)
-          ngp_[1]=2;
-        else
-          dserror("Reading of FLUID3 element failed: GP_ALT\n");
+    }
+    case tet4: case tet10:
+    {
+        frint("GP_TET",&ngp[0],&ierr);
+        dsassert(ierr==1, "Reading of FLUID3 element failed: GP_TET\n");
+
+        frchar("GP_ALT",buffer,&ierr);
+        dsassert(ierr==1, "Reading of FLUID3 element failed: GP_ALT\n");
+
+        switch(ngp[0])
+        {
+        case 1:
+            if (strncmp(buffer,"standard",8)==0)
+                gaussrule_ = intrule_tet_1point;
+            else
+                dserror("Reading of FLUID3 element failed: GP_ALT: gauss-radau not possible!\n");
+            break;
+        case 4:
+            if (strncmp(buffer,"standard",8)==0)
+                gaussrule_ = intrule_tet_4point;
+            else if (strncmp(buffer,"gaussrad",8)==0)
+                gaussrule_ = intrule_tet_4point_alternative;
+            else
+                dserror("Reading of FLUID3 element failed: GP_ALT\n");
+            break;
+        case 10:
+            if (strncmp(buffer,"standard",8)==0)
+                gaussrule_ = intrule_tet_10point;
+            else
+                dserror("Reading of FLUID3 element failed: GP_ALT: gauss-radau not possible!\n");
+            break;
+        default:
+            dserror("Reading of FLUID3 element failed: Gaussrule for tetraeder not supported!\n");
+        }
         break;
-      case 5:
-        if (strncmp(buffer,"standard",8)==0)
-          ngp_[1]=3;
-        else
-          dserror("Reading of FLUID3 element failed: GP_ALT: gauss-radau not possible!\n");
-        break;
-      default:
+    } // end reading gaussian points for tetrahedral elements
+    default:
         dserror("Reading of FLUID3 element failed: integration points\n");
-    }
-  } // end reading gaussian points for tetrahedral elements
+    } // end switch distype
 
 
-  // read net algo
-  frchar("NA",buffer,&ierr);
-  if (ierr==1)
-  {
-    if (strncmp(buffer,"ale",3)==0 ||
-        strncmp(buffer,"ALE",3)==0 ||
-        strncmp(buffer,"Ale",3)==0 )
+    // read net algo
+    frchar("NA",buffer,&ierr);
+    if (ierr==1)
     {
-      is_ale_=true;
+        if (strncmp(buffer,"ale",3)==0 ||
+            strncmp(buffer,"ALE",3)==0 ||
+            strncmp(buffer,"Ale",3)==0 )
+        {
+            is_ale_ = true;
+        }
+        else if (strncmp(buffer,"euler",5)==0 ||
+                 strncmp(buffer,"EULER",5)==0 ||
+                 strncmp(buffer,"Euler",5)==0 )
+            is_ale_ = false;
+        else
+            dserror("Reading of FLUID3 element failed: Euler/Ale\n");
     }
-
-    else if (strncmp(buffer,"euler",5)==0 ||
-             strncmp(buffer,"EULER",5)==0 ||
-             strncmp(buffer,"Euler",5)==0 )
-      is_ale_=false;
     else
-      dserror("Reading of FLUID3 element failed: Euler/Ale\n");
-  }
-  else
-    dserror("Reading of FLUID3 element net algorithm failed: NA\n");
-
-
+        dserror("Reading of FLUID3 element net algorithm failed: NA\n");
 
 
   // input of ale and free surface related stuff is not supported

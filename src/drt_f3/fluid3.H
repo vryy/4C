@@ -296,6 +296,8 @@ private:
   static const int                                NSD_ = 3;
   //!number of degrees of freedom
   static const int                                NDF_ = 4;
+  //! Gaussrule
+  DRT::Utils::GaussRule3D                         gaussrule_;                         
   //! number of the material law
   int                                             material_;
   //! flag for euler/ale net algorithm

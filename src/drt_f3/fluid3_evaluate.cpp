@@ -443,8 +443,9 @@ void DRT::Elements::Fluid3::f3_sys_mat(const vector<int>&        lm,
     const bool higher_order_ele = is_higher_order_element(distype);
 
     // gaussian points
-    const GaussRule3D gaussrule = getOptimalGaussrule(distype);
-    const IntegrationPoints3D  intpoints = getIntegrationPoints3D(gaussrule);
+//    const GaussRule3D gaussrule = getOptimalGaussrule(distype);
+//    const IntegrationPoints3D  intpoints = getIntegrationPoints3D(gaussrule);
+    const IntegrationPoints3D  intpoints = getIntegrationPoints3D(gaussrule_);
 
     // integration loops
     for (int iquad=0;iquad<intpoints.nquad;iquad++)

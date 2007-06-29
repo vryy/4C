@@ -65,6 +65,8 @@ void DRT::Elements::Ale3::Pack(vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
+  // Gaussrule
+  AddtoPack(data,gaussrule_);
   // material_
   AddtoPack(data,material_);
   // data_
@@ -85,6 +87,8 @@ void DRT::Elements::Ale3::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
+  // Gaussrule
+  ExtractfromPack(position,data,gaussrule_);
   // material_
   ExtractfromPack(position,data,material_);
   // data_

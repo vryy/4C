@@ -120,8 +120,8 @@ void DRT::Elements::Ale3::static_ke(vector<int>&              lm,
   double                        vol=0.;
 
   // gaussian points
-  const GaussRule3D gaussrule = getOptimalGaussrule(distype);
-  const IntegrationPoints3D  intpoints = getIntegrationPoints3D(gaussrule);
+  //const GaussRule3D gaussrule = getOptimalGaussrule(distype);
+  const IntegrationPoints3D  intpoints = getIntegrationPoints3D(gaussrule_);
 
   // integration loops
   for (int iquad=0;iquad<intpoints.nquad;iquad++)

@@ -94,6 +94,8 @@ void DRT::Elements::Fluid3::Pack(vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
+  // Gaussrule
+  AddtoPack(data,gaussrule_);
   // is_ale_
   AddtoPack(data,is_ale_);
   // data_
@@ -120,6 +122,8 @@ void DRT::Elements::Fluid3::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
+  // Gaussrule
+  ExtractfromPack(position,data,gaussrule_);
   // is_ale_
   ExtractfromPack(position,data,is_ale_);
   // data_
