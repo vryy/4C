@@ -107,7 +107,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
 
         // split "my_vel_pre_np" into velocity part "myvelnp" and pressure part "myprenp"
         // Additionally only the velocity components of myhist are important!
-        int numnode = NumNode();
+        const int numnode = NumNode();
         vector<double> myprenp(numnode);
         vector<double> myvelnp(3*numnode);
         vector<double> myvhist(3*numnode);
@@ -199,7 +199,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
           DRT::Utils::ExtractMyValues(*vel_pre_np,my_vel_pre_np,lm);
 
           // split "my_vel_pre_np" into velocity part "myvelnp" and pressure part "myprenp"
-          int numnode = NumNode();
+          const int numnode = NumNode();
           vector<double> myprenp(numnode);
           vector<double> myvelnp(3*numnode);
 
@@ -410,7 +410,7 @@ void DRT::Elements::Fluid3::f3_sys_mat(const vector<int>&        lm,
     /*---------------------------------------------- get viscosity ---*/
     // check here, if we really have a fluid !!
     if(material->mattyp != m_fluid) dserror("Material law is not of type m_fluid.");
-    const double  visc = material->m.fluid->viscosity;
+    const double visc = material->m.fluid->viscosity;
 
     /*--------------------------------------------- stab-parameter ---*/
     // USFEM stabilization is default. No switch here at the moment.
@@ -421,15 +421,14 @@ void DRT::Elements::Fluid3::f3_sys_mat(const vector<int>&        lm,
     Epetra_SerialDenseMatrix 	deriv2(6,iel);
     Epetra_SerialDenseMatrix 	xjm(3,3);
     Epetra_SerialDenseMatrix 	vderxy(3,3);
-    vector<double> 		pderxy(3);
+    vector<double>              pderxy(3);
     Epetra_SerialDenseMatrix 	vderxy2(3,6);
     Epetra_SerialDenseMatrix 	derxy(3,iel);
     Epetra_SerialDenseMatrix 	derxy2(6,iel);
     vector<double>              edeadng(3);
-    Epetra_SerialDenseMatrix 	wa1(100,100);  // working matrix used as dummy
-    vector<double>    		histvec(3); /* history data at integration point              */
-    vector<double>         	velino(3); /* normed velocity at element centre */
-    vector<double>     		velint(3);
+    vector<double>              histvec(3); /* history data at integration point              */
+    vector<double>         	    velino(3); /* normed velocity at element centre */
+    vector<double>     	        velint(3);
 
     const double timefac=params.get<double>("time constant for integration",0.0);
 
@@ -450,147 +449,142 @@ void DRT::Elements::Fluid3::f3_sys_mat(const vector<int>&        lm,
     // integration loops
     for (int iquad=0;iquad<intpoints.nquad;iquad++)
     {
-          const double e1 = intpoints.qxg[iquad][0];
-          const double e2 = intpoints.qxg[iquad][1];
-          const double e3 = intpoints.qxg[iquad][2];
-          // shape functions and their derivatives
-          DRT::Utils::shape_function_3D(funct,e1,e2,e3,distype);
-          DRT::Utils::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
-          if (higher_order_ele)
-          {
-              shape_function_3D_deriv2(deriv2,e1,e2,e3,distype);
-          }
+        const double e1 = intpoints.qxg[iquad][0];
+        const double e2 = intpoints.qxg[iquad][1];
+        const double e3 = intpoints.qxg[iquad][2];
+        // shape functions and their derivatives
+        Epetra_SerialDenseVector    funct(iel);
+        Epetra_SerialDenseMatrix    deriv(3,iel);
+        shape_function_3D(funct,e1,e2,e3,distype);
+        shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
           
-          // get Jacobian matrix and determinant
-          const Epetra_SerialDenseMatrix xjm = getJacobiMatrix(xyze,deriv,iel);
-          const double det = getDeterminante(xjm);
-          const double fac = intpoints.qwgt[iquad]*det;
+        // get Jacobian matrix and determinant
+        const Epetra_SerialDenseMatrix xjm = getJacobiMatrix(xyze,deriv,iel);
+        const double det = getDeterminante(xjm);
+        const double fac = intpoints.qwgt[iquad]*det;
 
-          /*---------------------------------------- compute global derivates */
-          f3_gder(derxy,deriv,xjm,det,iel);
+        /*---------------------------------------- compute global derivates */
+        f3_gder(derxy,deriv,xjm,det,iel);
 
-          /*--------------------------------- compute second global derivative */
-          if (higher_order_ele)
-          {
-            DRT::Utils::shape_function_3D_deriv2(deriv2,e1,e2,e3,distype);
+        /*--------------------------------- compute second global derivative */
+        if (higher_order_ele)
+        {
+            shape_function_3D_deriv2(deriv2,e1,e2,e3,distype);
             f3_gder2(xyze,xjm,derxy,derxy2,deriv2,iel);
 
             /*------calculate 2nd velocity derivatives at integration point */
             // former f3_vder2(vderxy2,derxy2,evelnp,iel);
             for (int i=0;i<6;i++)
             {
-              vderxy2(0,i)=0.0;
-              vderxy2(1,i)=0.0;
-              vderxy2(2,i)=0.0;
-              for (int j=0;j<iel;j++)
-              {
-                vderxy2(0,i) += derxy2(i,j)*evelnp[0+(3*j)];
-                vderxy2(1,i) += derxy2(i,j)*evelnp[1+(3*j)];
-                vderxy2(2,i) += derxy2(i,j)*evelnp[2+(3*j)];
-              } /* end of loop over j */
-            } /* end of loop over i */
-          }
+                vderxy2(0,i)=0.0;
+                vderxy2(1,i)=0.0;
+                vderxy2(2,i)=0.0;
+                for (int j=0;j<iel;j++)
+                {
+                    vderxy2(0,i) += derxy2(i,j)*evelnp[0+(3*j)];
+                    vderxy2(1,i) += derxy2(i,j)*evelnp[1+(3*j)];
+                    vderxy2(2,i) += derxy2(i,j)*evelnp[2+(3*j)];
+                }
+            }
+        }
 
-          /*---------------------- get velocities (n+g,i) at integration point */
-          // expression for f3_veci(velint,funct,evelnp,iel);
-          for (int i=0;i<3;i++)
-          {
+        /*---------------------- get velocities (n+g,i) at integration point */
+        // expression for f3_veci(velint,funct,evelnp,iel);
+        for (int i=0;i<3;i++)
+        {
             velint[i]=0.0;
             for (int j=0;j<iel;j++)
             {
-              velint[i] += funct[j]*evelnp[i+(3*j)];
+                velint[i] += funct[j]*evelnp[i+(3*j)];
             }
-          } //end loop over i
+        }
 
-          /*---------------- get history data (n,i) at integration point ---*/
-          //expression for f3_veci(histvec,funct,evhist,iel);
-          for (int i=0;i<3;i++)
-          {
+        /*---------------- get history data (n,i) at integration point ---*/
+        //expression for f3_veci(histvec,funct,evhist,iel);
+        for (int i=0;i<3;i++)
+        {
             histvec[i]=0.0;
             for (int j=0;j<iel;j++)
             {
-              histvec[i] += funct[j]*evhist[i+(3*j)];
-            } /* end of loop over j */
-          } /* end of loop over i */
+                histvec[i] += funct[j]*evhist[i+(3*j)];
+            }
+        } 
 
-          /*----------- get velocity (np,i) derivatives at integration point */
-          // expression for f3_vder(vderxy,derxy,evelnp,iel);
-          for (int i=0;i<3;i++)
-          {
+        /*----------- get velocity (np,i) derivatives at integration point */
+        // expression for f3_vder(vderxy,derxy,evelnp,iel);
+        for (int i=0;i<3;i++)
+        {
             vderxy(0,i)=0.0;
             vderxy(1,i)=0.0;
             vderxy(2,i)=0.0;
             for (int j=0;j<iel;j++)
             {
-              vderxy(0,i) += derxy(i,j)*evelnp[0+(3*j)];
-              vderxy(1,i) += derxy(i,j)*evelnp[1+(3*j)];
-              vderxy(2,i) += derxy(i,j)*evelnp[2+(3*j)];
-            } /* end of loop over j */
-          } /* end of loop over i */
+                vderxy(0,i) += derxy(i,j)*evelnp[0+(3*j)];
+                vderxy(1,i) += derxy(i,j)*evelnp[1+(3*j)];
+                vderxy(2,i) += derxy(i,j)*evelnp[2+(3*j)];
+            }
+        }
 
-          /*--------------------- get grid velocity at integration point ---*/
-          vector<double>    gridvelint(3);
-          if (is_ale_)
-          {
+        /*--------------------- get grid velocity at integration point ---*/
+        vector<double>    gridvelint(3);
+        if (is_ale_)
+        {
             for (int i=0; i<3; i++)
             {
-              gridvelint[i] = 0.;
-              for (int j=0; j<iel; j++)
-              {
-                gridvelint[i] += derxy(i,j)*egridv[i+(4*j)];
-              }
+                gridvelint[i] = 0.;
+                for (int j=0; j<iel; j++)
+                {
+                    gridvelint[i] += derxy(i,j)*egridv[i+(4*j)];
+                }
             }
-          }
-          else
-          {
+        }
+        else
+        {
             gridvelint[0] = 0.0;
             gridvelint[1] = 0.0;
             gridvelint[2] = 0.0;
-          }
+        }
 
-          /*------------------------------------- get pressure gradients ---*/
-          vector<double>    gradp(NSD_);
-          gradp[0] = gradp[1] = gradp[2] = 0.0;
+        /*------------------------------------- get pressure gradients ---*/
+        vector<double>    gradp(NSD_);
+        gradp[0] = gradp[1] = gradp[2] = 0.0;
 
-          for (int i=0; i<iel; i++)
-          {
+        for (int i=0; i<iel; i++)
+        {
             gradp[0] += derxy(0,i) * eprenp[i];
             gradp[1] += derxy(1,i) * eprenp[i];
             gradp[2] += derxy(2,i) * eprenp[i];
-          }
+        }
 
-          double press = 0;
-          for (int i=0;i<iel;i++)
-          {
+        double press = 0;
+        for (int i=0;i<iel;i++)
+        {
             press += funct[i]*eprenp[i];
-          }
+        }
 
-          /*--------------------------------- get bodyforce in gausspoint---*/
-          for (int dim=0;dim<3;dim++)
-          {
+        /*--------------------------------- get bodyforce in gausspoint---*/
+        for (int dim=0;dim<3;dim++)
+        {
             edeadng[dim] = 0;
-
             for (int i=0;i<iel;i++)
             {
-              edeadng[dim]+= bodyforce(dim,i)*funct[i];
+                edeadng[dim]+= bodyforce(dim,i)*funct[i];
             }
-          }
+        }
 
-          /*-------------- perform integration for entire matrix and rhs ---*/
-          if(is_stationary==false)
+        /*-------------- perform integration for entire matrix and rhs ---*/
+        if(is_stationary==false)
             f3_calmat(*sys_mat,*residual,velint,histvec,gridvelint,
                     press,vderxy,vderxy2,gradp,funct,tau,
                     derxy,derxy2,edeadng,fac,visc,iel,params);
-	  else
-	    f3_calmat_stationary(*sys_mat,*residual,velint,histvec,gridvelint,
+        else
+            f3_calmat_stationary(*sys_mat,*residual,velint,histvec,gridvelint,
                     press,vderxy,vderxy2,gradp,funct,tau,
                     derxy,derxy2,edeadng,fac,visc,iel,params);
 
-
-
     } // end of loop over integration points
 
-  return;
+    return;
 } // DRT::Elements::Fluid3::f3_sys_mat
 
 
@@ -1772,14 +1766,13 @@ return;
 
 
 void DRT::Elements::Fluid3::f3_gder2(const Epetra_SerialDenseMatrix& xyze,
-				    const Epetra_SerialDenseMatrix& xjm,
-                                    const Epetra_SerialDenseMatrix& derxy,
-				    Epetra_SerialDenseMatrix& derxy2,
-				    const Epetra_SerialDenseMatrix& deriv2,
-                                    const int iel
+                                     const Epetra_SerialDenseMatrix& xjm,
+                                     const Epetra_SerialDenseMatrix& derxy,
+                                     Epetra_SerialDenseMatrix& derxy2,
+                                     const Epetra_SerialDenseMatrix& deriv2,
+                                     const int iel
 				    )
 {
-double r0,r1,r2,r3,r4,r5;
 //--------------------------------------------initialize and zero out everything
 Epetra_SerialDenseMatrix bm(6,6);
 Epetra_SerialDenseMatrix xder2(6,3);
@@ -1889,17 +1882,17 @@ for (int i=0;i<iel;i++)
 /*--------------------------------- calculate second global derivatives */
 for (int i=0;i<iel;i++)
 {
-   r0 = deriv2(0,i) - xder2(0,0)*derxy(0,i) - xder2(0,1)*derxy(1,i) \
+   const double r0 = deriv2(0,i) - xder2(0,0)*derxy(0,i) - xder2(0,1)*derxy(1,i) \
                      - xder2(0,2)*derxy(2,i);
-   r1 = deriv2(1,i) - xder2(1,0)*derxy(0,i) - xder2(1,1)*derxy(1,i) \
+   const double r1 = deriv2(1,i) - xder2(1,0)*derxy(0,i) - xder2(1,1)*derxy(1,i) \
                      - xder2(1,2)*derxy(2,i);
-   r2 = deriv2(2,i) - xder2(2,0)*derxy(0,i) - xder2(2,1)*derxy(1,i) \
+   const double r2 = deriv2(2,i) - xder2(2,0)*derxy(0,i) - xder2(2,1)*derxy(1,i) \
                      - xder2(2,2)*derxy(2,i);
-   r3 = deriv2(3,i) - xder2(3,0)*derxy(0,i) - xder2(3,1)*derxy(1,i) \
+   const double r3 = deriv2(3,i) - xder2(3,0)*derxy(0,i) - xder2(3,1)*derxy(1,i) \
                      - xder2(3,2)*derxy(2,i);
-   r4 = deriv2(4,i) - xder2(4,0)*derxy(0,i) - xder2(4,1)*derxy(1,i) \
+   const double r4 = deriv2(4,i) - xder2(4,0)*derxy(0,i) - xder2(4,1)*derxy(1,i) \
                      - xder2(4,2)*derxy(2,i);
-   r5 = deriv2(5,i) - xder2(5,0)*derxy(0,i) - xder2(5,1)*derxy(1,i) \
+   const double r5 = deriv2(5,i) - xder2(5,0)*derxy(0,i) - xder2(5,1)*derxy(1,i) \
                      - xder2(5,2)*derxy(2,i);
 
    derxy2(0,i) += bm(0,0)*r0 + bm(0,1)*r1 + bm(0,2)*r2 \
@@ -2055,16 +2048,16 @@ vector<double>  conv_g(iel);       	/* linearisation of convect, grid part */
 Epetra_SerialDenseMatrix  conv_r(3,3*iel);	/* linearisation of convect, reactive part */
 vector<double>  div(3*iel);          	/* divergence of u or v              */
 Epetra_SerialDenseMatrix  ugradv(iel,3*iel);	/* linearisation of u * grad v   */
-vector<double>  conv_old(3); 		/* convective term evalaluated with old velocities */
-vector<double>  conv_g_old(3);
-vector<double>  visc_old(3); 		/* viscous term evaluated with old velocities      */
-vector<double>  rhsint(3);   		/* total right hand side terms at int.-point       */
+
+
+
+
 Epetra_SerialDenseMatrix  vconv_r(3,iel);
 
 /*========================== initialisation ============================*/
 // One-step-Theta: timefac = theta*dt
 // BDF2:           timefac = 2/3 * dt
-double timefac = params.get<double>("time constant for integration",-1.0);
+const double timefac = params.get<double>("time constant for integration",-1.0);
   if (timefac < 0.0) dserror("No time constant for integration supplied");
 
 // time step size
@@ -2072,27 +2065,29 @@ double timefac = params.get<double>("time constant for integration",-1.0);
 //  if (dt == -1.0) dserror("No dta supplied");
 
 // stabilisation parameter
-double tau_M  = tau[0]*fac;
-double tau_Mp = tau[1]*fac;
-double tau_C  = tau[2]*fac;
+const double tau_M  = tau[0]*fac;
+const double tau_Mp = tau[1]*fac;
+const double tau_C  = tau[2]*fac;
 
 // integration factors and coefficients of single terms
 // double time2nue   = timefac * 2.0 * visc;
-double timetauM   = timefac * tau_M;
-double timetauMp  = timefac * tau_Mp;
+const double timetauM   = timefac * tau_M;
+const double timetauMp  = timefac * tau_Mp;
 
-double ttimetauM  = timefac * timetauM;
-double ttimetauMp = timefac * timetauMp;
-double timefacfac = timefac * fac;
+const double ttimetauM  = timefac * timetauM;
+const double ttimetauMp = timefac * timetauMp;
+const double timefacfac = timefac * fac;
 
 /*------------------------- evaluate rhs vector at integration point ---*/
 // no switch here at the moment w.r.t. is_ale
-    rhsint[0] = histvec[0] + edeadng[0]*timefac;
-    rhsint[1] = histvec[1] + edeadng[1]*timefac;
-    rhsint[2] = histvec[2] + edeadng[2]*timefac;
+vector<double>  rhsint(3);          /* total right hand side terms at int.-point       */
+rhsint[0] = histvec[0] + edeadng[0]*timefac;
+rhsint[1] = histvec[1] + edeadng[1]*timefac;
+rhsint[2] = histvec[2] + edeadng[2]*timefac;
 /*----------------- get numerical representation of single operators ---*/
 
 /* Convective term  u_old * grad u_old: */
+vector<double>  conv_old(3);
 conv_old[0] = vderxy(0,0) * velint[0] + vderxy(0,1) * velint[1]
             + vderxy(0,2) * velint[2];
 conv_old[1] = vderxy(1,0) * velint[0] + vderxy(1,1) * velint[1]
@@ -2102,6 +2097,7 @@ conv_old[2] = vderxy(2,0) * velint[0] + vderxy(2,1) * velint[1]
 
 /* new for incremental formulation: */
 /* Convective term  u_G_old * grad u_old: */
+vector<double>  conv_g_old(3);
 conv_g_old[0] = (vderxy(0,0) * gridvint[0] +
 		 vderxy(0,1) * gridvint[1] +
 		 vderxy(0,2) * gridvint[2]);
@@ -2113,6 +2109,7 @@ conv_g_old[2] = (vderxy(2,0) * gridvint[0] +
 		 vderxy(2,2) * gridvint[2]);
 
 /* Viscous term  div epsilon(u_old) */
+vector<double>  visc_old(3);
 visc_old[0] = vderxy2(0,0) + 0.5 * ( vderxy2(0,1) + vderxy2(1,3)
                                     + vderxy2(0,2) + vderxy2(2,4));
 visc_old[1] = vderxy2(1,1) + 0.5 * ( vderxy2(1,0) + vderxy2(0,3)

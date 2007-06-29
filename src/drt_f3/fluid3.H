@@ -298,11 +298,8 @@ private:
   static const int                                NDF_ = 4;
   //! Gaussrule
   DRT::Utils::GaussRule3D                         gaussrule_;                         
-  //! number of the material law
-  int                                             material_;
   //! flag for euler/ale net algorithm
   bool                                            is_ale_;
-
   //! container containing all kind of fluid3 thisandthat
   DRT::Container                                  data_;
 
