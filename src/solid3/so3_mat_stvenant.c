@@ -100,15 +100,14 @@ void so3_mat_stvenant_sel(CONTAINER* container,
     DOUBLE mfac = Emod/((1.0+nu)*(1.0-2.0*nu));  /* factor */
     /* constitutive matrix */
     /* set the whole thing to zero */
-    memset(cmat, 0, NUMSTR_SOLID3*NUMSTR_SOLID3*sizeof(DOUBLE));
-/*     INT istr, jstr; */
-/*     for (istr=0; istr<NUMSTR_SOLID3; istr++) */
-/*     { */
-/*       for (jstr=0; jstr<NUMSTR_SOLID3; jstr++) */
-/*       { */
-/*         cmat[istr][jstr] = 0.0; */
-/*       } */
-/*     } */
+    INT istr, jstr;
+    for (istr=0; istr<NUMSTR_SOLID3; istr++)
+    {
+      for (jstr=0; jstr<NUMSTR_SOLID3; jstr++)
+      {
+        cmat[istr][jstr] = 0.0;
+      }
+    }
     /* write non-zero components */
     cmat[0][0] = mfac*(1.0-nu);
     cmat[0][1] = mfac*nu;

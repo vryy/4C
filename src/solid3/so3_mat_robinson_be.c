@@ -629,7 +629,7 @@ void so3_mat_robinson_be_rbcksts(ELEMENT* ele,
   {
     const DOUBLE pus = 1.0e-4;  /* pressure unit scale : cN/cm^2 = 10^-4 MPa */
     so3_mat_robinson_prmbytmpr(mat_robin->rcvry, tmpr, &(rr0));
-    rr0 *= pow(6.896,1.0+beta+mm) * pow(3.0*kk0sq*pus*pus,mm-beta);
+    rr0 *= pow(6.896,1.0+beta+mm) * pow(3.0*kk0sq*pus*pus,mm-beta);  /* '*' of '/' ? */
   }
   else
   {

@@ -107,8 +107,8 @@ return;
  |  get factor at a certain time T                           m.gee 02/02|
  *----------------------------------------------------------------------*/
 void dyn_facfromcurve(INT actcurve,
-                   DOUBLE T,
-                   DOUBLE *fac)
+                      DOUBLE T,
+                      DOUBLE *fac)
 {
 INT      i;
 INT      numtstep;

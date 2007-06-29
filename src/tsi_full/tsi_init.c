@@ -248,7 +248,7 @@ void tsi_init_alldyn(INT numsf,  /* index of structure field */
   *tsidyn = alldyn[itsidyn].tsidyn;  /* TSI */
 
   /* adjust/initialise dynamic controls */
-  (*tsidyn)->time = 0.0;
+  (*tsidyn)->time = 0.0;  /* debug: change this back to 0.0 */
   (*sdyn)->time = (*tsidyn)->time;
   (*tdyn)->time = (*tsidyn)->time;
   (*tsidyn)->step = 0;

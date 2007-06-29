@@ -573,7 +573,7 @@ void tsi_coupling(FIELD *structfield,
     actId = adjele[nen-1][0];
     if (actId == -1)
     {
-      dserror("Conforming thermal element was not found!");
+      dserror("Structure Element %d : Conforming thermal element was not found!", actsele->Id+1);
     }
     else
     {
@@ -619,7 +619,7 @@ void tsi_coupling(FIELD *structfield,
           break;
 #endif
         default:
-          dserror("eltyp unknown\n");
+          dserror("Element type unknown\n");
     }  /* end of switch */
     
     /* deallocate array of adjacent element IDs */

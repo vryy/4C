@@ -125,7 +125,7 @@ void so3_load_surf_int(ELEMENT* ele,
               gpintc[idimsid] = ele->e.so3->gpintc[idim];
               idimsid++;
             }
-          }  /* end for */
+          }
           /*------------------------------------------------------------*/
           /* integration loops */
           for (igp[0]=0; igp[0]<gpnum[0]; igp[0]++)
@@ -143,20 +143,19 @@ void so3_load_surf_int(ELEMENT* ele,
                 for (idimsid=0; idimsid<DIMSID_SOLID3; idimsid++)
                 {
                   /* add coordinate components */
-                  gpcidim = gpcidim 
-                    + data->redsidh[igsurf][idimsid][idim] 
-                      * data->ghlc[gpintc[idimsid]][igp[idimsid]];
-                }  /* end for */
+                  gpcidim += data->redsidh[igsurf][idimsid][idim] 
+                    * data->ghlc[gpintc[idimsid]][igp[idimsid]];
+                }
                 /* final set of idim-component */
                 gpc[idim] = gpcidim;
-              }  /* end for */
+              }
               /*--------------------------------------------------------*/
               /* Gauss weight */
               fac = cfac;  /* initialise integration factor */
               for (idimsid=0; idimsid<DIMSID_SOLID3; idimsid++)
               {
                 /* multiply weight */
-                fac = fac * data->ghlw[gpintc[idimsid]][igp[idimsid]];
+                fac *= data->ghlw[gpintc[idimsid]][igp[idimsid]];
               }
               /*--------------------------------------------------------*/
               /* Shape functions at Gauss point */

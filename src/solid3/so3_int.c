@@ -84,8 +84,7 @@ void so3_int_fintstifmass(CONTAINER *container,
   SO3_GEODEFSTR gds;  /* isoparametric Jacobian, deformation grad, etc at
                        * Gauss point */
   DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3];  /* constitutive matrix */
-  /* DOUBLE stress[NUMSTR_SOLID3];  /\* stress vector *\/ */
-  DOUBLE* stress = calloc(NUMSTR_SOLID3, sizeof(DOUBLE));
+  DOUBLE stress[NUMSTR_SOLID3];  /* stress vector */
 
   /* convenience */
   DOUBLE **estif;  /* element stiffness matrix */
@@ -200,7 +199,7 @@ void so3_int_fintstifmass(CONTAINER *container,
       dserror("Cannot digest chosen type of spatial kinematic\n");
     }
 #if 0
-    /* debug: purposes */
+    /* debug purposes */
     {
       INT xxx;
       for (xxx=0; xxx<6; xxx++)
@@ -224,7 +223,7 @@ void so3_int_fintstifmass(CONTAINER *container,
     /* call material law */
     so3_mat_sel(container, ele, mat, gpshade, igp, &gds, stress, cmat);
 #if 0
-    /* debug: purposes */
+    /* debug purposes */
     {
       INT xxx;
       for (xxx=0; xxx<6; xxx++)
@@ -281,10 +280,6 @@ void so3_int_fintstifmass(CONTAINER *container,
       so3_int_mass(mat, nelenod, gpshade->gpshape[igp], fac, emass);
     }
   }
-
-  /*--------------------------------------------------------------------*/
-  /* deallocate */
-  free(stress);
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
