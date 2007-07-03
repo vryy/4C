@@ -970,7 +970,8 @@ OBJS_POST_ENSIGHT = src/post_ensight/post_ensight.o \
 OBJS_POST_CMP = src/post_cmp/post_cmp.o
 
 #				test_intersection
-OBJS_INTERSECTION = src/drt_xfem/intersection.o 
+OBJS_INTERSECTION = src/drt_xfem/integrationcell.o \
+                    src/drt_xfem/intersection.o 
 			
 				
 			
