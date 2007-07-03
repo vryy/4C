@@ -16,7 +16,7 @@ Maintainer: Ursula Mayer
 #define INTERSECTION_H
 
 
-#include "../drt_xfem/integrationcell.h"  // remove
+#include "../drt_xfem/integrationcell.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_utils_fem_shapefunctions.H"

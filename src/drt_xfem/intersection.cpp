@@ -1174,7 +1174,7 @@ void Intersection::computeCDT(  DRT::Element*               element,
     int nsegments = 0; 
     tetgenio in;
     tetgenio out;
-    char switches[] = "po2Q";
+    char switches[] = "po2";
     tetgenio::facet *f;
     tetgenio::polygon *p;
         
@@ -1266,15 +1266,15 @@ void Intersection::computeCDT(  DRT::Element*               element,
     for(int i = 0; i < in.numberoffacets; i ++)
         in.facetmarkerlist[i] = 0;   
 
-    //in.save_nodes("tetgen");
-    //in.save_poly("tetgen");
+    in.save_nodes("tetgen");
+    in.save_poly("tetgen");
     
     //  Tetrahedralize the PLC. Switches are chosen to read a PLC (p),
     //  do quality mesh generation (q) with a specified quality bound
     //  (1.414), and apply a maximum volume constraint (a0.1)
     tetrahedralize(switches, &in, &out, NULL, NULL); 
     
-    //out.save_elements("tetgenout");
+    out.save_elements("tetgenout");
     
     vector<double> tetnodes(3);
     vector< vector<double> > tetrahedronCoord;
