@@ -118,15 +118,15 @@ void DRT::Elements::Fluid3::Unpack(const vector<char>& data)
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  dsassert(type == UniqueParObjectId(), "wrong instance type data");
   // extract base class Element
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
   // Gaussrule
   int gausrule_integer;
-  ExtractfromPack(position,data,gaussrule_);
-  gaussrule_ = GaussRule3D(gausrule_integer); //explicit conversion from interger to enum
+  ExtractfromPack(position,data,gausrule_integer);
+  gaussrule_ = GaussRule3D(gausrule_integer); //explicit conversion from integer to enum
   // is_ale_
   ExtractfromPack(position,data,is_ale_);
   // data_
