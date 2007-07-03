@@ -116,6 +116,20 @@ namespace Utils
                                                      {2,  0,  5}};
 
 
+  // for each of the 12 lines, tell me the 2 neighbouring faces
+  const int	eleNodeNumbering_hex27_lines_surfaces[12][2] = { {0,  1},
+	                                                      	 {0,  2},
+	                                                         {0,  3},
+	                                                         {0,  4},
+	                                                         {1,  4},
+	                                                         {1,  2},
+	                                                         {2,  3},
+	                                                         {3,  4},
+	                                                         {1,  5},
+	                                                         {2,  5},
+	                                                         {3,  5},
+	                                                         {4,  5}};
+
   /*!
   \brief Fill a Epetra_SerialDenseVector with with 3D shape function
 
