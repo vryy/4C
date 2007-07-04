@@ -63,6 +63,7 @@ public:
   //! @name Friends
   friend class Fluid3Register;
   friend class Fluid3Surface;
+  friend class Fluid3Line;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -666,6 +667,8 @@ private:
 class Fluid3Surface : public DRT::Element
 {
 public:
+
+  friend class Fluid3Line;
 
   //! @name Constructors and destructors and related methods
 
