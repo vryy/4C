@@ -399,14 +399,23 @@ private:
   Epetra_SerialDenseMatrix f3_getPositionArray(
           const vector<double>&   edispnp);
 
-  /// calculate Jacobian matrix
+  /*!
+    \brief calculate Jacobian matrix
+   */
   Epetra_SerialDenseMatrix getJacobiMatrix(
-    const Epetra_SerialDenseMatrix& xyze,
-    const Epetra_SerialDenseMatrix& deriv,
-    const int                       iel) const;
-
-  /// calculate determinant
-  double getDeterminante(const Epetra_SerialDenseMatrix&  xjm) const;
+    const Epetra_SerialDenseMatrix& xyze,   ///< positions of element nodes as array
+    const Epetra_SerialDenseMatrix& deriv,  ///< shape function derivatives with respect to element coordinates
+    const int                       iel     ///< number of nodes in element
+    ) const;
+  
+  /*!
+  \brief calculate determinant of a given Jacobimatrix
+  
+  Returns the determinante of a 3x3 matrix
+   */
+  double getDeterminante(
+    const Epetra_SerialDenseMatrix&  xjm  ///< a 3x3 matrix
+    ) const;
 
   // get the body force from the nodes condition
   Epetra_SerialDenseMatrix f3_getbodyforce (

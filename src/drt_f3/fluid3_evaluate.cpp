@@ -1604,10 +1604,9 @@ vector<double> DRT::Elements::Fluid3::f3_caltau(
     return tau;
 }
 
-
-/*----------------------------------------------------------------------*
- |  calculate Jacobian matrix                                           |
- *----------------------------------------------------------------------*/
+//
+// calculate Jacobian matrix
+//
 Epetra_SerialDenseMatrix DRT::Elements::Fluid3::getJacobiMatrix(
                       const Epetra_SerialDenseMatrix& xyze,
                       const Epetra_SerialDenseMatrix& deriv,
@@ -1634,9 +1633,6 @@ Epetra_SerialDenseMatrix DRT::Elements::Fluid3::getJacobiMatrix(
 }
 
 
-/*----------------------------------------------------------------------*
- |  calculate determinant                                               |
- *----------------------------------------------------------------------*/
 double DRT::Elements::Fluid3::getDeterminante(const Epetra_SerialDenseMatrix&  xjm) const
 {
     // determinant of jacobian matrix

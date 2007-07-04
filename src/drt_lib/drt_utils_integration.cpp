@@ -1,6 +1,5 @@
 /*!----------------------------------------------------------------------
 \file drt_utils_integration.cpp
-\brief
 
 <pre>
 Maintainer: Axel Gerstenberger
@@ -400,7 +399,7 @@ DRT::Utils::IntegrationPoints2D DRT::Utils::getIntegrationPoints2D(const  GaussR
 
 
 //
-// evaluate the element integration points                             |
+// evaluate the element integration points
 //
 DRT::Utils::IntegrationPoints1D DRT::Utils::getIntegrationPoints1D(const  GaussRule1D gaussrule)
 {

@@ -1,4 +1,4 @@
-/*!----------------------------------------------------------------------
+/*!
 \file drt_utils_fem_shapefunctions.cpp
 \brief
 
@@ -9,7 +9,7 @@ Maintainer: Axel Gerstenberger
             089 - 289-15236
 </pre>
 
-*----------------------------------------------------------------------*/
+*/
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
@@ -24,11 +24,11 @@ Maintainer: Axel Gerstenberger
 // shape functions
 //
 void DRT::Utils::shape_function_3D(
-                     Epetra_SerialDenseVector&                  funct,
-                     const double&                              r,
-                     const double&                              s,
-                     const double&                              t,
-                     const DRT::Element::DiscretizationType&    distype)
+  Epetra_SerialDenseVector&                  funct,
+  const double&                              r,
+  const double&                              s,
+  const double&                              t,
+  const DRT::Element::DiscretizationType&    distype)
 {
     const double Q18 = 1.0/8.0;
     const double Q12 = 1.0/2.0;
