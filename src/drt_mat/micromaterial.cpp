@@ -1,4 +1,3 @@
-#ifdef D_SOH8
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
@@ -116,6 +115,5 @@ void MAT::MicroMaterial::Unpack(const vector<char>& data)
 
 
 
-#endif
 #endif
 #endif
