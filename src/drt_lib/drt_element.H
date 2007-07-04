@@ -87,6 +87,7 @@ public:
     element_condif2line,
     element_fluid3,
     element_fluid3surface,
+    element_fluid3line,
     element_xfluid3,
     element_xfluid3surface,
     element_xfluid3line,

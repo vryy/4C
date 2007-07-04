@@ -170,6 +170,7 @@ using namespace std;
 #define ParObject_NewtonianFluid        (int)43
 #define ParObject_MicroMaterial         (int)44
 #define ParObject_StVenantKirchhoff     (int)45
+#define ParObject_Fluid3Line            (int)46
 
 /*!
 \brief DRT: namespace of the ccarat discretization module
