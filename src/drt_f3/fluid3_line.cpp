@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file fluid3_xfem_line.cpp
+\file fluid3_line.cpp
 \brief
 
 <pre>
