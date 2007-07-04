@@ -39,10 +39,8 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
   }
   case m_stvenant:
     return Teuchos::rcp(new StVenantKirchhoff(actmat));
-#ifdef D_SOH8
   case m_struct_multiscale:
     return Teuchos::rcp(new MicroMaterial(actmat));
-#endif
   case m_pl_mises_3D:
   case m_pl_mises:
   case m_pl_hoff:

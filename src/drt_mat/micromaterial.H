@@ -16,7 +16,6 @@ Maintainer: Lena Wiechert
 #ifndef MICROMATERIAL_H
 #define MICROMATERIAL_H
 
-#ifdef D_SOH8
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
@@ -120,4 +119,4 @@ private:
 #endif
 #endif
 #endif
-#endif
+
