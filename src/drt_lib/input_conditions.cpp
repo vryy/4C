@@ -1839,7 +1839,6 @@ void input_surf_xfem_coupling(multimap<int,RefCountPtr<DRT::Condition> >& sxfemc
                                                                    DRT::Condition::XFEMCoupling,
                                                                    true,
                                                                    DRT::Condition::Surface));
-    cout << *condition << endl;
     //--------------------------------- put condition in map of conditions
     sxfemcoupmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dsurfaceid,condition));
 
