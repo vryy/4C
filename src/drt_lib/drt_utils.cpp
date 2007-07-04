@@ -258,6 +258,12 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
       return object;
     }
     break;
+    case ParObject_MicroMaterial:
+    {
+      MAT::MicroMaterial* micro = new MAT::MicroMaterial();
+      micro->Unpack(data);
+      return micro;
+    }
 #endif
     case ParObject_ElementRegister:
     {
@@ -275,12 +281,6 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
       MAT::StVenantKirchhoff* stvenantk = new MAT::StVenantKirchhoff();
       stvenantk->Unpack(data);
       return stvenantk;
-    }
-    case ParObject_MicroMaterial:
-    {
-      MAT::MicroMaterial* micro = new MAT::MicroMaterial();
-      micro->Unpack(data);
-      return micro;
     }
     default:
       dserror("Unknown type of ParObject instance: %d",type);
