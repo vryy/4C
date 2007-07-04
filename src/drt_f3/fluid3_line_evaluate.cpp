@@ -10,7 +10,7 @@ Maintainer: Axel Gerstenberger
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_FLUID3_XFEM
+#ifdef D_FLUID3
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
