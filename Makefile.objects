@@ -743,8 +743,7 @@ OBJS_DRT_MAT_LIB = src/drt_mat/micromaterial.o \
 OBJS_DRT_MAT  = src/drt_mat/micromaterialgp.o \
                 src/drt_mat/micromaterial_evaluate.o
 #               structural multiscale in new discretization
-OBJS_DRT_STRU_MULTI = src/drt_stru_multi/stru_micro.o \
-                      src/drt_stru_multi/microstrugenalpha.o
+OBJS_DRT_STRU_MULTI = src/drt_stru_multi/microstrugenalpha.o
 #               structure-structure interaction
 OBJS_SSI      = src/ssi_full/ssi_dyn.o \
                 src/ssi_full/ssi_coupling.o \
