@@ -46,7 +46,7 @@ Input/f3_beltrami_fastass2.dat                          x        x        x     
 Input/f3_beltrami_fastass2_sd.dat                       x        x        x        x        x        x
 Input/f3_beltrami_fastass2_sd2.dat                      x        x        x        x        x        x
 Input/f3_beltrami_umfpack_fastass.dat                   -        -        -        -        x        x
-Input/f3_drt_genalpha_initialfield_volforce_pbc.dat     x        x        x        x        -        -
+Input/f3_drt_genalpha_initialfield_volforce_pbc.dat     x        x        -        -        -        -
 Input/f3_beltrami_tet4_drt.dat                          x        x        -        -        -        -  
 Input/f3_ew_Q1_27x.dat                                  x        x        x        x        x        x
 Input/f3f_beltrami.dat                                  x        x        x        x        x        x
