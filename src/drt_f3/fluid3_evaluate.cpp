@@ -38,6 +38,36 @@ using namespace DRT::Utils;
  *----------------------------------------------------------------------*/
 extern struct _MATERIAL  *mat;
 
+
+// converts a string into an Action for this element
+DRT::Elements::Fluid3::ActionType DRT::Elements::Fluid3::convertStringToActionType(
+              const string& action) const
+{
+    
+    dsassert(action != "none", "No action supplied");
+    
+    DRT::Elements::Fluid3::ActionType act = Fluid3::none;
+    // get the action required
+    
+    if (action == "calc_fluid_systemmat_and_residual")      
+        act = Fluid3::calc_fluid_systemmat_and_residual;
+    else if (action == "calc_fluid_genalpha_sysmat")
+        act = Fluid3::calc_fluid_genalpha_sysmat;
+    else if (action == "calc_fluid_genalpha_residual")
+        act = Fluid3::calc_fluid_genalpha_residual;
+    else if (action == "calc_fluid_beltrami_error")      
+        act = Fluid3::calc_fluid_beltrami_error;
+    else if (action == "calc_Shapefunction")
+        act = Fluid3::calc_Shapefunction;
+    else if (action == "calc_ShapeDeriv1")
+        act = Fluid3::calc_ShapeDeriv1;
+    else if (action == "calc_ShapeDeriv2")
+        act = Fluid3::calc_ShapeDeriv2;
+    else 
+        dserror("Unknown type of action for Fluid3");
+    return act;
+}
+
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            g.bau 03/07|
  *----------------------------------------------------------------------*/
@@ -50,20 +80,20 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
                                     Epetra_SerialDenseVector& elevec2,
                                     Epetra_SerialDenseVector& elevec3)
 {
-  DRT::Elements::Fluid3::ActionType act = Fluid3::none;
-
   // get the action required
-  string action = params.get<string>("action","none");
-  if (action == "none") dserror("No action supplied");
-  else if (action == "calc_fluid_systemmat_and_residual")
-  	act = Fluid3::calc_fluid_systemmat_and_residual;
-  else if (action == "calc_fluid_genalpha_sysmat")
-  	act = Fluid3::calc_fluid_genalpha_sysmat;
-  else if (action == "calc_fluid_genalpha_residual")
-  	act = Fluid3::calc_fluid_genalpha_residual;
-  else if (action == "calc_fluid_beltrami_error")
-  	act = Fluid3::calc_fluid_beltrami_error;
-  else dserror("Unknown type of action for Fluid3");
+  const string action = params.get<string>("action","none");
+  const DRT::Elements::Fluid3::ActionType act = convertStringToActionType(action);
+  
+//  if (action == "none") dserror("No action supplied");
+//  else if (action == "calc_fluid_systemmat_and_residual")
+//  	act = Fluid3::calc_fluid_systemmat_and_residual;
+//  else if (action == "calc_fluid_genalpha_sysmat")
+//  	act = Fluid3::calc_fluid_genalpha_sysmat;
+//  else if (action == "calc_fluid_genalpha_residual")
+//  	act = Fluid3::calc_fluid_genalpha_residual;
+//  else if (action == "calc_fluid_beltrami_error")
+//  	act = Fluid3::calc_fluid_beltrami_error;
+//  else dserror("Unknown type of action for Fluid3");
 
   // get the material
   RefCountPtr<MAT::Material> mat = Material();
@@ -356,6 +386,15 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
 
       }
       break;
+      case calc_Shapefunction:
+        shape_function_3D(elevec1,elevec2[0],elevec2[1],elevec2[2],this->Shape());
+        break;
+      case calc_ShapeDeriv1:
+        shape_function_3D_deriv1(elemat1,elevec2[0],elevec2[1],elevec2[2],this->Shape());
+        break;
+      case calc_ShapeDeriv2:
+        shape_function_3D_deriv2(elemat2,elevec2[0],elevec2[1],elevec2[2],this->Shape());
+        break;
       default:
         dserror("Unknown type of action for Fluid3");
   } // end of switch(act)

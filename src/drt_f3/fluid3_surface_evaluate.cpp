@@ -27,6 +27,54 @@ Maintainer: Peter Gamnitzer
 using namespace DRT::Utils;
 
 /*----------------------------------------------------------------------*
+ |  evaluate the element (public)                            g.bau 03/07|
+ *----------------------------------------------------------------------*/
+int DRT::Elements::Fluid3Surface::Evaluate(     ParameterList& params,
+                                                DRT::Discretization&      discretization,
+                                                vector<int>&              lm,
+                                                Epetra_SerialDenseMatrix& elemat1,
+                                                Epetra_SerialDenseMatrix& elemat2,
+                                                Epetra_SerialDenseVector& elevec1,
+                                                Epetra_SerialDenseVector& elevec2,
+                                                Epetra_SerialDenseVector& elevec3)
+{
+    DRT::Elements::Fluid3Surface::ActionType act = Fluid3Surface::none;
+    string action = params.get<string>("action","none");
+    if (action == "none") dserror("No action supplied");
+    else if (action == "calc_Shapefunction")
+        act = Fluid3Surface::calc_Shapefunction;
+    else if (action == "calc_ShapeDeriv1")
+        act = Fluid3Surface::calc_ShapeDeriv1;
+    else if (action == "calc_ShapeDeriv2")
+        act = Fluid3Surface::calc_ShapeDeriv2;
+    else dserror("Unknown type of action for Fluid3_Surface");
+    
+    const DiscretizationType distype = this->Shape();
+    switch(act)
+    {
+    case calc_Shapefunction:
+    {
+        shape_function_2D(elevec1,elevec2[0],elevec2[1],distype);
+        break;
+    }
+    case calc_ShapeDeriv1:
+    {
+        shape_function_2D_deriv1(elemat1,elevec2[0],elevec2[1],distype);
+        break;
+    }
+    case calc_ShapeDeriv2:
+    {
+        shape_function_2D_deriv2(elemat2,elevec2[0],elevec2[1],distype);
+        break;
+    }
+    default:
+        dserror("Unknown type of action for Fluid3_Surface");
+    } // end of switch(act)
+
+    return 0;
+}
+
+/*----------------------------------------------------------------------*
  |  Integrate a Surface Neumann boundary condition (public)  gammi 04/07|
  *----------------------------------------------------------------------*/
 int DRT::Elements::Fluid3Surface::EvaluateNeumann(

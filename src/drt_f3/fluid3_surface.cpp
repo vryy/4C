@@ -20,7 +20,7 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 
-
+using namespace DRT::Utils;
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 01/07|
@@ -121,7 +121,77 @@ void DRT::Elements::Fluid3Surface::Print(ostream& os) const
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  get vector of lines (public)                             gammi 04/07|
+ *----------------------------------------------------------------------*/
+DRT::Element** DRT::Elements::Fluid3Surface::Lines()
+{
+    const DiscretizationType distype = Shape();
+    const int nline   = NumLine();
+    lines_.resize(nline);
+    lineptrs_.resize(nline);
 
+    switch (distype)
+    {
+    case tri3:
+        CreateLinesTri(3, 2);
+        break;
+    case tri6:
+        CreateLinesTri(3, 3);
+        break;
+    case quad4:
+        CreateLinesQuad(4, 2);
+        break;
+    case quad8:
+        CreateLinesQuad(4, 3);
+        break;
+    case quad9:
+        CreateLinesQuad(4, 3);
+        break;
+    default:
+        dserror("distype not supported");
+    }
+
+    return (DRT::Element**)(&(lineptrs_[0]));
+}
+
+
+
+void DRT::Elements::Fluid3Surface::CreateLinesTri(const int& nline,
+                                                  const int& nnode)
+{
+    for(int iline=0;iline<nline;iline++)
+    {
+        int nodeids[nnode];
+        DRT::Node* nodes[nnode];
+        
+        for (int inode=0;inode<nnode;inode++)
+        {
+             nodeids[inode] = NodeIds()[eleNodeNumbering_tri6_lines[iline][inode]];
+             nodes[inode]   = Nodes()[  eleNodeNumbering_tri6_lines[iline][inode]];
+        }
+        lines_[iline] = rcp(new DRT::Elements::Fluid3Line(iline,Owner(),nnode,nodeids,nodes,this,NULL,iline));
+        lineptrs_[iline] = lines_[iline].get();
+    }
+}        
+
+void DRT::Elements::Fluid3Surface::CreateLinesQuad(const int& nline,
+                                                   const int& nnode)
+{
+    for(int iline=0;iline<nline;iline++)
+    {
+        int nodeids[nnode];
+        DRT::Node* nodes[nnode];
+        
+        for (int inode=0;inode<nnode;inode++)
+        {
+             nodeids[inode] = NodeIds()[eleNodeNumbering_quad9_lines[iline][inode]];
+             nodes[inode]   = Nodes()[  eleNodeNumbering_quad9_lines[iline][inode]];
+        }
+        lines_[iline] = rcp(new DRT::Elements::Fluid3Line(iline,Owner(),nnode,nodeids,nodes,this,NULL,iline));
+        lineptrs_[iline] = lines_[iline].get();
+    }
+}    
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

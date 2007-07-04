@@ -47,6 +47,7 @@ namespace Elements
 {
 // forward declarations
 class Fluid3Surface;
+class Fluid3Line;
 
 /*!
 \class Fluid3
@@ -98,7 +99,14 @@ public:
   /*!
   \brief Return number of lines of this element
   */
-  virtual int NumLine() const {return 0;}
+  virtual int NumLine() const 
+  {if (NumNode()==8 || NumNode()==20 || NumNode()==27) return 12;
+   else if (NumNode()==4 || NumNode()==10) return 6;
+   else {
+    dserror("Could not determine number of lines");
+    return -1;
+    }
+  }  
 
   /*!
   \brief Return number of surfaces of this element
@@ -116,6 +124,12 @@ public:
   \brief Return number of volumes of this element (always 1)
   */
   virtual int NumVolume() const {return 1;}
+
+  /*!
+  \brief Get vector of ptrs to the lines of this element
+
+  */
+  virtual DRT::Element** Lines();
 
   /*!
   \brief Get vector of ptrs to the surfaces of this element
@@ -288,7 +302,10 @@ private:
     calc_fluid_systemmat_and_residual,
     calc_fluid_genalpha_sysmat       ,
     calc_fluid_genalpha_residual     ,
-    calc_fluid_beltrami_error
+    calc_fluid_beltrami_error,
+    calc_Shapefunction,
+    calc_ShapeDeriv1,
+    calc_ShapeDeriv2
   };
 
   //!Constants
@@ -310,6 +327,10 @@ private:
   vector<RefCountPtr<DRT::Elements::Fluid3Surface> > surfaces_;
   //! vector of surfaces adjacent to this element (fluid3: 4 or 6 surfaces)
   vector<DRT::Elements::Fluid3Surface*>              surfaceptrs_;
+  //! vector of lines adjacent to this element
+  vector<RefCountPtr<DRT::Elements::Fluid3Line> > lines_;
+  //! vector of lines adjacent to this element
+  vector<DRT::Elements::Fluid3Line*>              lineptrs_;
 
 
 
@@ -518,7 +539,8 @@ private:
     ParameterList& 	       params);
 
     bool is_higher_order_element(const DRT::Element::DiscretizationType  distype) const;
-
+    
+    ActionType convertStringToActionType(const string& action) const;
 }; // class Fluid3
 
 
@@ -684,6 +706,25 @@ public:
   virtual DiscretizationType Shape() const;
 
   /*!
+  \brief Return number of lines of this element
+  */
+  virtual int NumLine() const
+  {if (NumNode()==4 || NumNode()==8 || NumNode()==9) return 4;
+    else if (NumNode()==3 || NumNode()==6) return 3;
+    else 
+    {
+            dserror("Could not determine number of surfaces");
+        return -1;
+        }
+  }    
+  
+  /*!
+  \brief Get vector of ptrs to the lines of this element
+
+  */
+  virtual DRT::Element** Lines();
+
+  /*!
   \brief Return unique ParObject id
 
   every class implementing ParObject needs a unique id defined at the
@@ -759,6 +800,43 @@ public:
 
   //@}
 
+  //! @name Evaluation
+
+  /*!
+  \brief Evaluate an element
+
+  Evaluate fluid3 element stiffness, mass, internal forces etc
+
+  \param params (in/out): ParameterList for communication between control routine
+                          and elements
+  \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
+                          the controling method does not epxect the element to fill
+                          this matrix.
+  \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
+                          the controling method does not epxect the element to fill
+                          this matrix.
+  \param elevec1 (out)  : vector to be filled by element. If NULL on input,
+                          the controlling method does not epxect the element
+                          to fill this vector
+  \param elevec2 (out)  : vector to be filled by element. If NULL on input,
+                          the controlling method does not epxect the element
+                          to fill this vector
+  \param elevec3 (out)  : vector to be filled by element. If NULL on input,
+                          the controlling method does not epxect the element
+                          to fill this vector
+  \return 0 if successful, negative otherwise
+  */
+  int Evaluate(ParameterList& params,
+               DRT::Discretization&      discretization,
+               vector<int>&              lm,
+               Epetra_SerialDenseMatrix& elemat1,
+               Epetra_SerialDenseMatrix& elemat2,
+               Epetra_SerialDenseVector& elevec1,
+               Epetra_SerialDenseVector& elevec2,
+               Epetra_SerialDenseVector& elevec3);
+
+  //@}
+
   //! @name Evaluate methods
 
   /*!
@@ -785,6 +863,15 @@ public:
 
 private:
 
+  //! action parameters recognized by Fluid3Surface
+  enum ActionType
+  {
+    none,
+    calc_Shapefunction,
+    calc_ShapeDeriv1,
+    calc_ShapeDeriv2
+  };
+
   // don't want = operator
   Fluid3Surface& operator = (const Fluid3Surface& old);
 
@@ -792,6 +879,10 @@ private:
   DRT::Elements::Fluid3* parent_;
   //! The local surface number of this surface w.r.t to the parent_ element
   int                    lsurface_;
+  //! vector of lines adjacent to this element
+  vector<RefCountPtr<DRT::Elements::Fluid3Line> > lines_;
+  //! vector of lines adjacent to this element
+  vector<DRT::Elements::Fluid3Line*>              lineptrs_;
 
   //  compute kovariant metric tensor G for fluid surface element
   //                                                  gammi 04/07
@@ -802,9 +893,227 @@ private:
     Epetra_SerialDenseMatrix&       metrictensor,
     double                         *drs);
 
+  void CreateLinesTri(const int& nline,
+                      const int& nnode);
+  
+  void CreateLinesQuad(const int& nline,
+                       const int& nnode);
+
 }; // class Fluid3Surface
 
+class Fluid3Line : public DRT::Element
+{
+public:
 
+  //! @name Constructors and destructors and related methods
+
+  /*!
+  \brief Standard Constructor
+
+  \param id : A unique global id
+  \param owner: Processor owning this line
+  \param nnode: Number of nodes attached to this element
+  \param nodeids: global ids of nodes attached to this element
+  \param nodes: the discretizations map of nodes to build ptrs to nodes from
+  \param parent: The parent fluid element of this line
+  \param lline: the local line number of this line w.r.t. the parent element
+  */
+  
+  Fluid3Line(   int id, 
+                int owner, 
+                int nnode, 
+                const int* nodeids,
+                DRT::Node** nodes, 
+                DRT::Elements::Fluid3Surface* surfaceParent,
+                DRT::Elements::Fluid3* parent,  
+                const int lline);   
+
+  /*!
+  \brief Copy Constructor
+
+  Makes a deep copy of a Element
+
+  */
+  Fluid3Line(const Fluid3Line& old);
+
+  /*!
+  \brief Deep copy this instance of an element and return pointer to the copy
+
+  The Clone() method is used from the virtual base class Element in cases
+  where the type of the derived class is unknown and a copy-ctor is needed
+
+  */
+  DRT::Element* Clone() const;
+
+  /*!
+  \brief Return unique ParObject id
+
+  every class implementing ParObject needs a unique id defined at the
+  top of the drt_parobject.H file.
+  */
+  virtual int UniqueParObjectId() const { return ParObject_Fluid3Line;}
+
+  /*!
+  \brief Pack this class so it can be communicated
+
+  \ref Pack and \ref Unpack are used to communicate this element
+
+  */
+  virtual void Pack(vector<char>& data) const;
+
+  /*!
+  \brief Unpack data from a char vector into this class
+
+  \ref Pack and \ref Unpack are used to communicate this element
+
+  */
+  virtual void Unpack(const vector<char>& data);
+
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~Fluid3Line();
+
+  //@}
+
+  //! @name Acess methods
+
+  /*!
+  \brief Get shape type of element
+  */
+  virtual DiscretizationType Shape() const;
+
+  /*!
+  \brief Get number of degrees of freedom of a certain node
+         (implements pure virtual DRT::Element)
+
+  The element decides how many degrees of freedom its nodes must have.
+  As this may vary along a simulation, the element can redecide the
+  number of degrees of freedom per node along the way for each of it's nodes
+  separately.
+  */
+  virtual int NumDofPerNode(const DRT::Node& node) const
+  {return 4;}
+
+  /*!
+  \brief Get number of degrees of freedom per element
+         (implements pure virtual DRT::Element)
+
+  The element decides how many element degrees of freedom it has.
+  It can redecide along the way of a simulation.
+
+  \note Element degrees of freedom mentioned here are dofs that are visible
+        at the level of the total system of equations. Purely internal
+        element dofs that are condensed internally should NOT be considered.
+  */
+  virtual int NumDofPerElement() const { return 0; }
+
+  /*!
+  \brief Print this element
+  */
+  void Print(ostream& os) const;
+
+  /*!
+  \brief Allocate and return a ElementRegister class
+
+  Every implementation of DRT::Element must also implement
+  an DRT::ElementRegister. This method allocates and returns
+  an instance of a matching DRT::ElementRegister.
+  */
+  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const { return null; }
+
+  //! @name Evaluation
+
+  /*!
+  \brief Evaluate an element
+
+  Evaluate fluid3 element stiffness, mass, internal forces etc
+
+  \param params (in/out): ParameterList for communication between control routine
+                          and elements
+  \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
+                          the controling method does not epxect the element to fill
+                          this matrix.
+  \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
+                          the controling method does not epxect the element to fill
+                          this matrix.
+  \param elevec1 (out)  : vector to be filled by element. If NULL on input,
+                          the controlling method does not epxect the element
+                          to fill this vector
+  \param elevec2 (out)  : vector to be filled by element. If NULL on input,
+                          the controlling method does not epxect the element
+                          to fill this vector
+  \param elevec3 (out)  : vector to be filled by element. If NULL on input,
+                          the controlling method does not epxect the element
+                          to fill this vector
+  \return 0 if successful, negative otherwise
+  */
+  virtual int Evaluate(ParameterList& params,
+               DRT::Discretization&      discretization,
+               vector<int>&              lm,
+               Epetra_SerialDenseMatrix& elemat1,
+               Epetra_SerialDenseMatrix& elemat2,
+               Epetra_SerialDenseVector& elevec1,
+               Epetra_SerialDenseVector& elevec2,
+               Epetra_SerialDenseVector& elevec3);
+               
+               
+  //@}
+
+  //! @name Evaluate methods
+
+  /*!
+  \brief Evaluate a Neumann boundary condition
+
+  this method evaluates a line Neumann condition on the shell element
+
+  \param params (in/out)    : ParameterList for communication between control routine
+                              and elements
+  \param discretization (in): A reference to the underlying discretization
+  \param condition (in)     : The condition to be evaluated
+  \param lm (in)            : location vector of this element
+  \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+
+  \return 0 if successful, negative otherwise
+  */
+  virtual int EvaluateNeumann(ParameterList& params,
+                              DRT::Discretization&      discretization,
+                              DRT::Condition&           condition,
+                              vector<int>&              lm,
+                              Epetra_SerialDenseVector& elevec1);
+     
+
+  //@}
+
+private:
+
+  //! action parameters recognized by Fluid3Line
+  enum ActionType
+  {
+     none,      
+     calc_Shapefunction,
+     calc_ShapeDeriv1,
+     calc_ShapeDeriv2
+  };
+  
+  // don't want = operator
+  Fluid3Line& operator = (const Fluid3Line& old);
+
+  //! The surface parent element of this line
+  DRT::Elements::Fluid3Surface* surfaceParent_;
+
+  //! The volume parent element of this line
+  DRT::Elements::Fluid3* parent_;                  // problem !!! wth initialization
+  
+
+  
+  
+  //! The local line number of this line w.r.t to the parent_ element
+  int                    lline_;
+
+
+}; // class Fluid3Line
 
 
 } // namespace Elements

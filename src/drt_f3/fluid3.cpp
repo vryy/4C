@@ -169,6 +169,76 @@ RefCountPtr<DRT::ElementRegister> DRT::Elements::Fluid3::ElementRegister() const
   return rcp(new DRT::Elements::Fluid3Register(Type()));
 }
 
+
+/*----------------------------------------------------------------------*
+ |  get vector of lines (length 1) (public)                g.bau 03/07|
+ *----------------------------------------------------------------------*/ 
+DRT::Element** DRT::Elements::Fluid3::Lines()
+{
+    const DiscretizationType distype = Shape();
+    const int nline = NumLine();
+    lines_.resize(nline);
+    lineptrs_.resize(nline);
+    
+    switch (distype)
+    {
+    case tet4:
+        CreateLinesTet(6, 2);
+        break;
+    case tet10:
+        CreateLinesTet(6, 3);
+        break;
+    case hex8:
+        CreateLinesHex(12, 2);
+        break;
+    case hex20: case hex27:
+        CreateLinesHex(12, 3);
+        break;
+    default:
+        dserror("distype not supported");
+    }
+    return (DRT::Element**)(&(lineptrs_[0]));
+}
+
+// support for above
+void DRT::Elements::Fluid3::CreateLinesTet(const int& nline,
+                                           const int& nnode)
+{
+    for(int iline=0;iline<nline;iline++)
+    {
+        int nodeids[nnode];
+        DRT::Node* nodes[nnode];
+        
+        for (int inode=0;inode<nnode;inode++)
+        {
+             nodeids[inode] = NodeIds()[eleNodeNumbering_tet10_lines[iline][inode]];
+             nodes[inode]   = Nodes()[eleNodeNumbering_tet10_lines[iline][inode]];
+        }
+        lines_[iline] = rcp(new DRT::Elements::Fluid3Line(iline,Owner(),nnode,nodeids,nodes,NULL,this,iline));
+        lineptrs_[iline] = lines_[iline].get();
+    }
+}        
+
+
+// support for above
+void DRT::Elements::Fluid3::CreateLinesHex(const int& nline,
+                                           const int& nnode)
+{
+    for(int iline=0;iline<nline;iline++)
+    {
+        int nodeids[nnode];
+        DRT::Node* nodes[nnode];
+        
+        for (int inode=0;inode<nnode;inode++)
+        {
+             nodeids[inode] = NodeIds()[eleNodeNumbering_hex27_lines[iline][inode]];
+             nodes[inode]   = Nodes()[eleNodeNumbering_hex27_lines[iline][inode]];
+        }
+        lines_[iline] = rcp(new DRT::Elements::Fluid3Line(iline,Owner(),nnode,nodeids,nodes,NULL,this,iline));
+        lineptrs_[iline] = lines_[iline].get();
+    }
+}  
+
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          g.bau 03/07|
  *----------------------------------------------------------------------*/
@@ -206,7 +276,7 @@ DRT::Element** DRT::Elements::Fluid3::Surfaces()
 
 // support for above
 void DRT::Elements::Fluid3::CreateSurfacesTet(const int& nsurf,
-                                               const int& nnode)
+                                              const int& nnode)
 {
     for(int isurf=0;isurf<nsurf;isurf++)
     {
