@@ -1,9 +1,7 @@
 /*!----------------------------------------------------------------------
-\file fluid3_xfem.H
+\file xfem_enrichment.H
 
-\class DRT::Elements::XFluid3
-
-\brief A XFEM enabled copy of the fluid3 element
+\brief contains information about enrichments at nodes and elements
 
 <pre>
 Maintainer: Axel Gerstenberger
@@ -23,7 +21,7 @@ Maintainer: Axel Gerstenberger
 using namespace std;
 using namespace Teuchos;
 
-// namespaec for all enrichment related stuff
+// namespace for all enrichment related stuff
 namespace Enrichments
 {
 

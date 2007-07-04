@@ -1,6 +1,7 @@
-/*!----------------------------------------------------------------------
-\file fluid3_xfem_enrichment.cpp
-\brief
+/*!
+\file xfem_enrichment.cpp
+
+\brief contains information about enrichments at nodes and elements
 
 <pre>
 Maintainer: Axel Gerstenberger
@@ -8,13 +9,12 @@ Maintainer: Axel Gerstenberger
             http://www.lnm.mw.tum.de
             089 - 289-15236
 </pre>
-
-*----------------------------------------------------------------------*/
+*/
 #ifdef D_FLUID3_XFEM
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
-#include "fluid3_xfem_enrichment.H"
+#include "xfem_enrichment.H"
 #include "../drt_lib/drt_dserror.H"
 
 using namespace Enrichments;
