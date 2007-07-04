@@ -126,8 +126,6 @@ output_(output)
     p.set("total time",time);
     p.set("delta time",dt);
 
-    cout << "Macroscale total time in StruGenAlpha constructor: " << time << endl;
-
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("displacement",dis_);
@@ -223,8 +221,6 @@ void StruGenAlpha::ConstantPredictor()
   istep++;
   params_.set<double>("total time",timen);
   params_.set<int>   ("step"      ,istep);
-
-  cout << "Macroscale total time: " << timen << endl;
 
   //--------------------------------------------------- predicting state
   // constant predictor : displacement in domain
