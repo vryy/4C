@@ -276,12 +276,14 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
       stvenantk->Unpack(data);
       return stvenantk;
     }
+#ifdef D_SOH8
     case ParObject_MicroMaterial:
     {
       MAT::MicroMaterial* micro = new MAT::MicroMaterial();
       micro->Unpack(data);
       return micro;
     }
+#endif    
     default:
       dserror("Unknown type of ParObject instance: %d",type);
     break;
