@@ -320,7 +320,7 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
     //                    stop criterium for timeloop
     // -------------------------------------------------------------------
     
-    if(step_==endstep||time_>=endtime)
+    if(step_>=endstep||time_>=endtime)
     {
 	stop_timeloop=true;
     }
@@ -601,6 +601,7 @@ void FluidGenAlphaIntegration::GenAlphaTimeUpdate()
 void FluidGenAlphaIntegration::GenAlphaOutput()
 {
   //-------------------------------------------- output of solution
+  restartstep_ += 1;
   writestep_ += 1;
 
   if (writestep_ == upres_)  //write solution
