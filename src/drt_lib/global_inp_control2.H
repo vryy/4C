@@ -93,6 +93,7 @@ extern "C"
 void ntainp_ccadiscret();
 void distribute_drt_grids();
 void dyn_nlnstructural_drt();
+void drt_problem_done();
 
 #ifdef __cplusplus
 }

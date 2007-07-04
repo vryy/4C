@@ -214,6 +214,7 @@ if (par.myrank==0 && ioflags.output_gid)
 
 switch (genprob.probtyp) {
 case prb_structure:
+case prb_struct_multi:
 
   switch (genprob.timetyp) {
   case time_static:
@@ -293,25 +294,14 @@ case prb_tsi:
   break;
 #endif
 
-case prb_struct_multi:
-
-  switch (genprob.timetyp) {
-  case time_static:
-    calsta();
-    break;
-  case time_dynamic:
-    caldyn();
-    break;
-  default:
-    dserror("Unspecified time handling");
-  }
-
-  break;
-
 default:
   dserror("solution of unknown problemtyp requested");
 break;
 }
+
+#ifdef CCADISCRET
+drt_problem_done();
+#endif
 
 /*------------------------------------------------------- check results */
 #ifndef CCADISCRET

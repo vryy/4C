@@ -52,7 +52,8 @@ extern struct _MATERIAL  *mat;
  |  Do stress calculation (private)                            maf 04/07|
  *----------------------------------------------------------------------*/
 void DRT::Elements::So_hex8::soh8_stress(vector<double>& disp,
-                                         Epetra_SerialDenseMatrix* stresses)
+                                         Epetra_SerialDenseMatrix* stresses,
+                                         const double time)
 {
   DSTraceHelper dst("So_hex8::soh8_stress");
 
@@ -196,7 +197,8 @@ void DRT::Elements::So_hex8::soh8_stress(vector<double>& disp,
     Epetra_SerialDenseMatrix cmat(NUMSTR_SOH8,NUMSTR_SOH8);
     Epetra_SerialDenseVector stress(NUMSTR_SOH8);
     double density;
-    soh8_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, gp);
+    const int ele_ID = Id();
+    soh8_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, gp, ele_ID, time);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // safe gausspoint stresses

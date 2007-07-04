@@ -125,6 +125,9 @@ output_(output)
     // other parameters needed by the elements
     p.set("total time",time);
     p.set("delta time",dt);
+
+    cout << "Macroscale total time in StruGenAlpha constructor: " << time << endl;
+
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("displacement",dis_);
@@ -220,6 +223,8 @@ void StruGenAlpha::ConstantPredictor()
   istep++;
   params_.set<double>("total time",timen);
   params_.set<int>   ("step"      ,istep);
+
+  cout << "Macroscale total time: " << timen << endl;
 
   //--------------------------------------------------- predicting state
   // constant predictor : displacement in domain
@@ -325,9 +330,9 @@ void StruGenAlpha::ConstantPredictor()
 
   //------------------------------------------------ build residual norm
   fresm_->Norm2(&norm_);
-  if (!myrank_ && printscreen) 
+  if (!myrank_ && printscreen)
   {
-    cout << "Predictor residual forces " << norm_ << endl; 
+    cout << "Predictor residual forces " << norm_ << endl;
     fflush(stdout);
   }
 
@@ -478,9 +483,9 @@ void StruGenAlpha::ConsistentPredictor()
 
   //------------------------------------------------ build residual norm
   fresm_->Norm2(&norm_);
-  if (!myrank_ && printscreen) 
+  if (!myrank_ && printscreen)
   {
-    cout << "Predictor residual forces " << norm_ << endl; 
+    cout << "Predictor residual forces " << norm_ << endl;
     fflush(stdout);
   }
 
@@ -641,6 +646,7 @@ void StruGenAlpha::FullNewton()
 
     //--------------------------------- increment equilibrium loop index
     ++numiter;
+
   } // while (norm_>toldisp && numiter<=maxiter)
   //============================================= end equilibrium loop
 

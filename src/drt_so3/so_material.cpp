@@ -49,7 +49,9 @@ void DRT::Elements::So_hex8::soh8_mat_sel(
       double* density,
       const Epetra_SerialDenseVector* glstrain,
       const Epetra_SerialDenseMatrix* defgrd,
-      int gp)
+      const int gp,
+      const int ele_ID,
+      const double time)
 {
   RefCountPtr<MAT::Material> mat = Material();
   switch (mat->MaterialType())
@@ -57,37 +59,31 @@ void DRT::Elements::So_hex8::soh8_mat_sel(
     case m_stvenant: /*------------------ st.venant-kirchhoff-material */
     {
       MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
-      
+
       stvk->Evaluate(glstrain,cmat,stress);
-      
+
       *density = stvk->Density();
-      
+
       break;
     }
 
-#if 0
     case m_struct_multiscale: /*------------------- multiscale approach */
     {
       // Here macro-micro transition (localization) will take place
 
-      int microdis_num = material->m.struct_multiscale->microdis;
+      MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
 
-      if (gp > static_cast<int>(mat_.size())-1)
-      {
-        mat_.resize(gp+1);
-        mat_[gp] = rcp(new MAT::MicroMaterial(gp, microdis_num));
-      }
+      micro->Evaluate(defgrd, cmat, stress, density, gp, ele_ID, time);
 
-      MAT::MicroMaterial* micromat =
-        dynamic_cast<MAT::MicroMaterial*>(mat_[gp].get());
+      // test case
+      //micromat->CalcStressStiffDens(stress, cmat, density, glstrain);
 
-      if (micromat == NULL)
-        dserror("Wrong type of derived material class");
+      // perform microscale simulation
+      //micromat->PerformMicroSimulation();
 
-      micromat->CalcStressStiffDens(stress, cmat, density, glstrain);
+
       break;
     }
-#endif
 
     default:
       dserror("Illegal type %d of material for element solid3 hex8", mat->MaterialType());

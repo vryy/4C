@@ -466,7 +466,13 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
     // Caution!! the defgrd can not be modified with ANS to remedy locking
     // therefore it is empty and passed only for compatibility reasons
     Epetra_SerialDenseMatrix defgrd; // Caution!! empty!!
-    soh8_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, gp);
+    const int ele_ID = Id();
+    double time = 0.;                // set to 0. because time is
+                                     // not needed currently in solid shell
+                                     // but in solid for time-dependent
+                                     // complex material behavior
+
+    soh8_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, gp, ele_ID, time);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)

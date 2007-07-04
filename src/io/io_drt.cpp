@@ -83,7 +83,7 @@ extern CHAR* fieldnames[];
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-static void FindPosition(RefCountPtr<DRT::Discretization> dis, int& field_pos, int& disnum)
+static void FindPosition(RefCountPtr<DRT::Discretization> dis, int& field_pos, int& disnum, int probnum=0)
 {
 #ifdef BINIO
 
@@ -91,7 +91,7 @@ static void FindPosition(RefCountPtr<DRT::Discretization> dis, int& field_pos, i
   {
     for (disnum=0; disnum<field[field_pos].ndis; ++disnum)
     {
-      if (DRT::Problem::Instance()->Dis(field_pos,disnum).get() == dis.get())
+      if (DRT::Problem::Instance(probnum)->Dis(field_pos,disnum).get() == dis.get())
       {
         return;
       }
@@ -408,7 +408,7 @@ void IO::DiscretizationReader::OpenMeshFiles(MAP* result_step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-IO::DiscretizationWriter::DiscretizationWriter(RefCountPtr<DRT::Discretization> dis):
+IO::DiscretizationWriter::DiscretizationWriter(RefCountPtr<DRT::Discretization> dis, int probnum):
   dis_(dis),
   disnum_(0),
   field_pos_(0),
@@ -424,8 +424,15 @@ IO::DiscretizationWriter::DiscretizationWriter(RefCountPtr<DRT::Discretization> 
 #endif
   resultfile_changed_(-1),
   meshfile_changed_(-1)
+
 {
-  FindPosition(dis_, field_pos_, disnum_);
+#ifdef BINIO
+  cfname_ = bin_out_main.name;
+  cf_ = bin_out_main.control_file;
+  steps_per_file_ = bin_out_main.steps_per_file;
+#endif
+
+  FindPosition(dis_, field_pos_, disnum_, probnum);
 #ifndef BINIO
   cerr << "compiled without BINIO: no output will be written\n";
 #endif
@@ -466,7 +473,7 @@ void IO::DiscretizationWriter::CreateMeshFile(int step)
 
   ostringstream meshname;
 
-  meshname << bin_out_main.name
+  meshname << cfname_
            << ".mesh."
            << fieldnames[field[field_pos_].fieldtyp]
            << ".f" << field_pos_
@@ -504,7 +511,7 @@ void IO::DiscretizationWriter::CreateResultFile(int step)
 #ifdef BINIO
 
   ostringstream resultname;
-  resultname << bin_out_main.name
+  resultname << cfname_
              << ".result."
              << fieldnames[field[field_pos_].fieldtyp]
              << ".f" << field_pos_
@@ -560,7 +567,7 @@ void IO::DiscretizationWriter::NewStep(int step, double time)
     }
   }
 
-  if (step_ - resultfile_changed_ >= bin_out_main.steps_per_file
+  if (step_ - resultfile_changed_ >= steps_per_file_
       || resultfile_changed_ == -1)
   {
     CreateResultFile(step_);
@@ -573,7 +580,7 @@ void IO::DiscretizationWriter::NewStep(int step, double time)
 
   if (dis_->Comm().MyPID() == 0)
   {
-    fprintf(bin_out_main.control_file,
+    fprintf(cf_,
             "result:\n"
             "    field = \"%s\"\n"
             "    field_pos = %i\n"
@@ -590,7 +597,7 @@ void IO::DiscretizationWriter::NewStep(int step, double time)
     {
       if (dis_->Comm().NumProc() > 1)
       {
-        fprintf(bin_out_main.control_file,
+        fprintf(cf_,
                 "    num_output_proc = %d\n",
                 dis_->Comm().NumProc());
       }
@@ -600,12 +607,12 @@ void IO::DiscretizationWriter::NewStep(int step, double time)
         filename = resultfilename_;
       else
         filename = resultfilename_.substr(pos+1);
-      fprintf(bin_out_main.control_file,
+      fprintf(cf_,
               "    result_file = \"%s\"\n\n",
               filename.c_str()
         );
     }
-    fflush(bin_out_main.control_file);
+    fflush(cf_);
   }
   status = H5Fflush(resultgroup_,H5F_SCOPE_LOCAL);
   if (status < 0)
@@ -670,7 +677,7 @@ void IO::DiscretizationWriter::WriteVector(string name, RefCountPtr<Epetra_Vecto
 
   if (dis_->Comm().MyPID() == 0)
   {
-    fprintf(bin_out_main.control_file,
+    fprintf(cf_,
             "    %s:\n"
             "        values = \"%s\"\n"
             "        ids = \"%s\"\n\n",  // different names + other informations?
@@ -678,7 +685,7 @@ void IO::DiscretizationWriter::WriteVector(string name, RefCountPtr<Epetra_Vecto
             valuename.c_str(),
             idname.c_str()
       );
-    fflush(bin_out_main.control_file);
+    fflush(cf_);
   }
   status = H5Fflush(resultgroup_,H5F_SCOPE_LOCAL);
   if (status < 0)
@@ -698,7 +705,7 @@ void IO::DiscretizationWriter::WriteMesh(int step, double time)
   herr_t status;
   bool write_file = false;
 
-  if (step - meshfile_changed_ >= bin_out_main.steps_per_file
+  if (step - meshfile_changed_ >= steps_per_file_
     || meshfile_changed_ == -1)
   {
     CreateMeshFile(step);
@@ -774,7 +781,7 @@ void IO::DiscretizationWriter::WriteMesh(int step, double time)
       }
     }
 #endif
-    fprintf(bin_out_main.control_file,
+    fprintf(cf_,
             "field:\n"
             "    field = \"%s\"\n"
             "    field_pos = %i\n"
@@ -800,7 +807,7 @@ void IO::DiscretizationWriter::WriteMesh(int step, double time)
     {
       if (dis_->Comm().NumProc() > 1)
       {
-        fprintf(bin_out_main.control_file,
+        fprintf(cf_,
                 "    num_output_proc = %d\n",
                 dis_->Comm().NumProc());
       }
@@ -810,11 +817,11 @@ void IO::DiscretizationWriter::WriteMesh(int step, double time)
         filename = meshfilename_;
       else
         filename = meshfilename_.substr(pos+1);
-      fprintf(bin_out_main.control_file,
+      fprintf(cf_,
               "    mesh_file = \"%s\"\n\n",
               filename.c_str());
     }
-    fflush(bin_out_main.control_file);
+    fflush(cf_);
   }
   status = H5Fflush(meshgroup_,H5F_SCOPE_LOCAL);
   if (status < 0)

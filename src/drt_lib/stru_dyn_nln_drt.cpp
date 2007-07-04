@@ -146,7 +146,7 @@ void dyn_nlnstructural_drt()
   // takes values "full newton" , "modified newton" , "nonlinear cg"
   genalphaparams.set<string>("equilibrium iteration","full newton");
 
-  // takes values "constant" "consistent"  
+  // takes values "constant" "consistent"
   genalphaparams.set<string>("predictor","constant");
 
   // create the time integrator
@@ -156,7 +156,7 @@ void dyn_nlnstructural_drt()
   // note that this changes time and step in genalphaparams
   if (genprob.restart)
     timeintegrator.ReadRestart(genprob.restart);
-  
+
   // write mesh always at beginning of calc or restart
   {
     int    step = genalphaparams.get<int>("step",0);

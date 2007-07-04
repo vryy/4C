@@ -348,7 +348,8 @@ void stru_static_drt()
 
       //--------------------------------- increment equilibrium loop index
       ++numiter;
-    } //============================================= end equilibrium loop
+    } //
+      //============================================= end equilibrium loop
 
     //-------------------------------- test whether max iterations was hit
     if (statvar->maxiter == 1 && statvar->nstep == 1)

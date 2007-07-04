@@ -554,6 +554,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
                                                    * microscale discretization
                                                    * is used in all Gauss
                                                    * points */
+      char buffer[500];
+      frchar("MICROFILE", buffer, &ierr);
+      if (ierr!=1) dserror("No inputfile for microstructure given!\n");
+      int length = strlen(buffer);
+
+      localmat.m.struct_multiscale->micro_inputfile_name =
+        (char*)CCACALLOC(length+1, sizeof(char));
+      strcpy(localmat.m.struct_multiscale->micro_inputfile_name, &buffer[0]);
    }
    i++;
 

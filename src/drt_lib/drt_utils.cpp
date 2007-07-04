@@ -278,12 +278,9 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
     }
     case ParObject_MicroMaterial:
     {
-#if 0
       MAT::MicroMaterial* micro = new MAT::MicroMaterial();
       micro->Unpack(data);
       return micro;
-#endif
-      dserror("MicroMaterial cannot be packed right now");
     }
     default:
       dserror("Unknown type of ParObject instance: %d",type);

@@ -31,44 +31,88 @@ Maintainer: Lena Wiechert
 #include <Epetra_Comm.h>
 #include <Teuchos_RefCountPtr.hpp>
 
+#include "../io/io_drt.H"
+#include "../io/io_drt_micro.H"
+
 #include "../drt_lib/drt_discret.H"
 #include "material.H"
 
+#include "../drt_stru_multi/microstrugenalpha.H"
+
 using namespace std;
 using namespace Teuchos;
+using namespace IO;
+
 
 namespace MAT {
+
+  // forward
+  class MicroMaterialGP;
 
 class MicroMaterial : public Material
 {
 public:
 
-  /// construct an instance of MicroMaterial for a given Gauss point
-  /// and microscale discretization
-  MicroMaterial(int gp, int microdis_num);
+    /// construct empty material object
+    MicroMaterial();
 
-  /// destructor
-  ~MicroMaterial();
+    /// construct the material object given material parameters
+    explicit MicroMaterial(MATERIAL* matdata);
 
+    //! @name Packing and Unpacking
 
-  /// test routine for calculating stresses, constitutive matrix and density in
-  /// case of St Venant Kirchhoff material
-  void CalcStressStiffDens (Epetra_SerialDenseVector* stress,
-                            Epetra_SerialDenseMatrix* cmat,
-                            double* density,
-                            const Epetra_SerialDenseVector* glstrain);
+    /*!
+      \brief Return unique ParObject id
+
+      every class implementing ParObject needs a unique id defined at the
+      top of drt_parobject.H (this file) and should return it in this method.
+    */
+    virtual int UniqueParObjectId() const { return ParObject_MicroMaterial; }
+
+    /*!
+      \brief Pack this class so it can be communicated
+
+      Resizes the vector data and stores all information of a class in it.
+      The first information to be stored in data has to be the
+      unique parobject id delivered by UniqueParObjectId() which will then
+      identify the exact class on the receiving processor.
+
+      \param data (in/out): char vector to store class information
+    */
+    virtual void Pack(vector<char>& data) const;
+
+    /*!
+      \brief Unpack data from a char vector into this class
+
+      The vector data contains all information to rebuild the
+      exact copy of an instance of a class on a different processor.
+      The first entry in data has to be an integer which is the unique
+      parobject id defined at the top of this file and delivered by
+      UniqueParObjectId().
+
+      \param data (in) : vector storing all data to be unpacked into this
+      instance.
+    */
+    virtual void Unpack(const vector<char>& data);
+
+    //@}
+
+    /// material type
+    virtual MATERIAL_TYP MaterialType() const { return m_struct_multiscale; }
+
+    void Evaluate(const Epetra_SerialDenseMatrix* defgrd,
+                  Epetra_SerialDenseMatrix* cmat,
+                  Epetra_SerialDenseVector* stress,
+                  double* density,
+                  const int gp,
+                  const int ele_ID,
+                  const double time);
 
 private:
 
-  /// my Gauss point
-  int gp_;
-
-  /// my micro discretization
-  RefCountPtr<DRT::Discretization> microdis_;
-
-  /// my vector of displacements
-  RefCountPtr<Epetra_Vector> disp_;
-
+  vector<RefCountPtr<MicroMaterialGP> > matgp_;
+  /// my material parameters
+  MATERIAL* matdata_;
 };
 
 }

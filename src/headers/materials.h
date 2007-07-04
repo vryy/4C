@@ -625,8 +625,9 @@ typedef struct _VP_ROBINSON
  *-------------------------------------------------------------------*/
 typedef struct _STRUCT_MULTISCALE
 {
-  INT            microdis;     /* Number of corresponding microscale
-                                * discretization -> for the time being
-                                * only one microstructure is used in all
-                                * the Gauss points */
+  INT            microdis;      /* Number of corresponding microscale
+                                 * discretization -> for the time being
+                                 * only one microstructure is used in all
+                                 * the Gauss points */
+  char   *micro_inputfile_name; /* inputfile name for microstructure */
 } STRUCT_MULTISCALE;

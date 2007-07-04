@@ -364,10 +364,12 @@ protected:
                                  vector<double>&           residual,
                                  Epetra_SerialDenseMatrix* stiffmatrix,
                                  Epetra_SerialDenseMatrix* massmatrix,
-                                 Epetra_SerialDenseVector* force);
+                                 Epetra_SerialDenseVector* force,
+                                 const double              time);
 
   void soh8_stress(vector<double>& mydisp,
-                   Epetra_SerialDenseMatrix* stresses);
+                   Epetra_SerialDenseMatrix* stresses,
+                   const double time);
 
   void soh8_shapederiv(Epetra_SerialDenseMatrix** shapefct,
                        Epetra_SerialDenseMatrix** deriv,
@@ -378,7 +380,9 @@ protected:
                     double* density,
                     const Epetra_SerialDenseVector* glstrain,
                     const Epetra_SerialDenseMatrix* defgrd,
-                    int gp);
+                    const int gp,
+                    const int ele_ID,
+                    const double time);
 
   // EAS technology section
   void soh8_easinit();

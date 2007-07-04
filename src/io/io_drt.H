@@ -116,7 +116,7 @@ class DiscretizationWriter
 public:
 
   /// Writer constructor always needs a discretization
-  explicit DiscretizationWriter(RefCountPtr<DRT::Discretization> dis);
+  explicit DiscretizationWriter(RefCountPtr<DRT::Discretization> dis, int probnum=0);
 
   /// cleanup, close hdf5 files
   ~DiscretizationWriter();
@@ -148,6 +148,11 @@ public:
   void WriteMesh(int step, double time);
 
   //@}
+
+protected:
+  string cfname_;
+  FILE* cf_;
+  int steps_per_file_;
 
 private:
 

@@ -9,58 +9,112 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/linalg_utils.H"
 
+#include "../drt_stru_multi/microstrugenalpha.H"
+#include "../io/io_drt_micro.H"
+
 using namespace std;
 using namespace Teuchos;
+using namespace IO;
 
-/// construct an instance of MicroMaterial for a given Gauss point and
-/// microscale discretization
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | vector of numfld FIELDs, defined in global_control.c                 |
+ *----------------------------------------------------------------------*/
+extern struct _FIELD      *field;
 
-MAT::MicroMaterial::MicroMaterial(int gp, int microdis_num)
-  : gp_(gp)
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+/*----------------------------------------------------------------------*
+ | global variable *solv, vector of lenght numfld of structures SOLVAR  |
+ | defined in solver_control.c                                          |
+ |                                                                      |
+ |                                                       m.gee 11/00    |
+ *----------------------------------------------------------------------*/
+extern struct _SOLVAR  *solv;
+
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | pointer to allocate dynamic variables if needed                      |
+ | defined in global_control.c                                          |
+ | ALLDYNA               *alldyn;                                       |
+ *----------------------------------------------------------------------*/
+extern ALLDYNA  *alldyn;
+
+/*!----------------------------------------------------------------------
+\brief file pointers
+
+<pre>                                                         m.gee 8/00
+This structure struct _FILES allfiles is defined in input_control_global.c
+and the type is in standardtypes.h
+It holds all file pointers and some variables needed for the FRSYSTEM
+</pre>
+*----------------------------------------------------------------------*/
+extern struct _FILES  allfiles;
+
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | structure of flags to control output                                 |
+ | defined in out_global.c                                              |
+ *----------------------------------------------------------------------*/
+//extern struct _IO_FLAGS     ioflags;
+
+extern struct _MATERIAL    *mat;
+
+
+
+// Be careful when adding new member functions of MicroMaterial that
+// relate to MicroMaterialGP (which is NOT in the filter). See also
+// comments in micromaterial_evaluate.cpp which is separated from
+// this file for the very reason.
+
+
+MAT::MicroMaterial::MicroMaterial()
+  : matdata_(NULL)
 {
-  RefCountPtr<DRT::Problem> microproblem = DRT::Problem::Instance(microdis_num);
-  microdis_ = microproblem->Dis(0, 0);
-  disp_ = LINALG::CreateVector(*microdis_->DofRowMap(),true);
-  return;
 }
 
-/// destructor
 
-MAT::MicroMaterial::~MicroMaterial()
-{ }
-
-
-/// test routine for calculating stresses, constitutive matrix and density in
-/// case of St Venant Kirchhoff material
-
-void MAT::MicroMaterial::CalcStressStiffDens (Epetra_SerialDenseVector* stress,
-                          Epetra_SerialDenseMatrix* cmat,
-                          double* density,
-                          const Epetra_SerialDenseVector* glstrain)
+MAT::MicroMaterial::MicroMaterial(MATERIAL* matdata)
+  : matdata_(matdata)
 {
-  double Emod = 1.0;    // Young's modulus (modulus of elasticity)
-  double nu = 0.0;      // Poisson's ratio (Querdehnzahl)
-  (*density) = 0.0;     //
-                                            // density, returned to evaluate mass matrix
-  double mfac = Emod/((1.0+nu)*(1.0-2.0*nu));  /* factor */
-  /* write non-zero components */
-  (*cmat)(0,0) = mfac*(1.0-nu);
-  (*cmat)(0,1) = mfac*nu;
-  (*cmat)(0,2) = mfac*nu;
-  (*cmat)(1,0) = mfac*nu;
-  (*cmat)(1,1) = mfac*(1.0-nu);
-  (*cmat)(1,2) = mfac*nu;
-  (*cmat)(2,0) = mfac*nu;
-  (*cmat)(2,1) = mfac*nu;
-  (*cmat)(2,2) = mfac*(1.0-nu);
-  /* ~~~ */
-  (*cmat)(3,3) = mfac*0.5*(1.0-2.0*nu);
-  (*cmat)(4,4) = mfac*0.5*(1.0-2.0*nu);
-  (*cmat)(5,5) = mfac*0.5*(1.0-2.0*nu);
-
-  // evaluate stresses
-  (*cmat).Multiply('N',(*glstrain),(*stress));   // sigma = C . epsilon
 }
+
+void MAT::MicroMaterial::Pack(vector<char>& data) const
+{
+  data.resize(0);
+
+  // pack type of this instance of ParObject
+  int type = UniqueParObjectId();
+  AddtoPack(data,type);
+  // matdata
+  int matdata = matdata_ - mat;   // pointer difference to reach 0-entry
+  AddtoPack(data,matdata);
+}
+
+
+void MAT::MicroMaterial::Unpack(const vector<char>& data)
+{
+  int position = 0;
+  // extract type
+  int type = 0;
+  ExtractfromPack(position,data,type);
+  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  // matdata
+  int matdata;
+  ExtractfromPack(position,data,matdata);
+  matdata_ = &mat[matdata];     // unpack pointer to my specific matdata_
+
+  if (position != (int)data.size())
+    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+}
+
+
 
 #endif
 #endif

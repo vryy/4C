@@ -99,6 +99,13 @@ public:
   /// return number of problem instances
   static unsigned NumInstances() { return instances_.size(); }
 
+  /// calculation done, clean up
+  /*!
+    There can be a variety of objects to a problem. Some of them might
+    require proper cleanup. Make sure we always do it.
+   */
+  static void Done();
+
   //@}
 
   /// @name Discretizations

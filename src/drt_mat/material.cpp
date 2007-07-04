@@ -4,6 +4,7 @@
 #include "material.H"
 #include "newtonianfluid.H"
 #include "stvenantkirchhoff.H"
+#include "micromaterial.H"
 
 extern struct _MATERIAL *mat;
 
@@ -38,6 +39,8 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
   }
   case m_stvenant:
     return Teuchos::rcp(new StVenantKirchhoff(actmat));
+  case m_struct_multiscale:
+    return Teuchos::rcp(new MicroMaterial(actmat));
   case m_pl_mises_3D:
   case m_pl_mises:
   case m_pl_hoff:
@@ -67,7 +70,6 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
   case m_th_fourier_iso:
   case m_th_fourier_gen:
   case m_vp_robinson:
-  case m_struct_multiscale:
   default:
     dserror("unknown material type %d", actmat->mattyp);
   }

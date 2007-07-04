@@ -27,6 +27,16 @@ Maintainer: Ulrich Kuettler
 extern struct _MATERIAL *mat;
 
 /*----------------------------------------------------------------------*/
+// Lena said: do it the easy way.
+/*----------------------------------------------------------------------*/
+extern "C"
+void drt_problem_done()
+{
+  DRT::Problem::Done();
+}
+
+
+/*----------------------------------------------------------------------*/
 // the instances
 /*----------------------------------------------------------------------*/
 vector<RefCountPtr<DRT::Problem> > DRT::Problem::instances_;
@@ -42,6 +52,14 @@ RefCountPtr<DRT::Problem> DRT::Problem::Instance(int num)
     instances_[num] = rcp(new Problem());
   }
   return instances_[num];
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::Problem::Done()
+{
+  instances_.clear();
 }
 
 

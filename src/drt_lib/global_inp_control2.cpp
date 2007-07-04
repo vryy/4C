@@ -97,6 +97,9 @@ and the type is in partition.h
  extern struct _PAR   par;
 
 
+ extern struct _MATERIAL *mat;
+
+
 
 /*----------------------------------------------------------------------*
   | input of control, element and load information         m.gee 10/06  |
@@ -303,23 +306,31 @@ void inpfield_ccadiscret(DRT::Problem& problem, DRT::DatFileReader& reader)
     RefCountPtr<DRT::Problem> micro_problem = DRT::Problem::Instance(1);
     RefCountPtr<Epetra_SerialComm> serialcomm = rcp(new Epetra_SerialComm());
 
-    string micro_inputfile_name = inp_micro_filename(structdis_macro->Comm().MyPID());
+    char *micro_inputfile_name = mat->m.struct_multiscale->micro_inputfile_name;
 
-    DRT::DatFileReader micro_reader(micro_inputfile_name, serialcomm, 1);
+    if (!structdis_macro->Comm().MyPID())
+        cout << "input for microscale is read from        " << micro_inputfile_name << "\n";
+
+        DRT::DatFileReader micro_reader(micro_inputfile_name, serialcomm, 1);
     micro_reader.Activate();
 
     structdis_micro = rcp(new DRT::Discretization("Micro Structure", micro_reader.Comm()));
     micro_problem->AddDis(genprob.numsf, structdis_micro);
 
-    DRT::NodeReader micronodereader(micro_reader, "--NODE COORDS");
-    micronodereader.AddElementReader(rcp(new DRT::ElementReader(structdis_micro, micro_reader, "--STRUCTURE ELEMENTS")));
-    micronodereader.Read();
-
-
     // read materials of microscale
+    // CAUTION: materials for microscale can not be read until
+    // micro_reader is activated, since else materials will again be
+    // read from macroscale inputfile. Besides, materials MUST be read
+    // before elements are read since elements establish a connection
+    // to the corresponding material! Thus do not change position of
+    // function calls!
 
     input_material_ccadiscret(*micro_problem);
 
+
+    DRT::NodeReader micronodereader(micro_reader, "--NODE COORDS");
+    micronodereader.AddElementReader(rcp(new DRT::ElementReader(structdis_micro, micro_reader, "--STRUCTURE ELEMENTS")));
+    micronodereader.Read();
 
     // read conditions of microscale -> note that no time curves and
     // spatial functions can be read!
@@ -358,36 +369,6 @@ void inpfield_ccadiscret(DRT::Problem& problem, DRT::DatFileReader& reader)
 
   return;
 } // void inpfield_ccadiscret()
-
-
-string inp_micro_filename(int mypid)
-{
-  string microfile = "MICROFILE";
-  string tmp;
-  string micro_inputfile_name;
-  ifstream file(allfiles.inputfile_name);
-  int filecount=0;
-  int found=0;
-
-  for (; file; ++filecount)
-  {
-    file >> tmp;
-
-    if (tmp == microfile)
-    {
-      file >> micro_inputfile_name;
-      found = 1;
-    }
-  }
-
-  if (found == 0)
-    dserror("No inputfile for microstructure given!\n");
-
-  if (!mypid)
-    cout << "input for microscale is read from        " << micro_inputfile_name << "\n";
-
-  return micro_inputfile_name;
-}
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
