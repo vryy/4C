@@ -31,9 +31,12 @@ DRT::Element(id,element_fluid3,owner),
 is_ale_(false),
 data_()
 {
-  surfaces_.resize(0);
-  surfaceptrs_.resize(0);
-  return;
+    gaussrule_ = intrule_hex_27point;
+    surfaces_.resize(0);
+    surfaceptrs_.resize(0);
+    lines_.resize(0);
+    lineptrs_.resize(0);
+    return;
 }
 
 /*----------------------------------------------------------------------*
@@ -46,9 +49,12 @@ gaussrule_(old.gaussrule_),
 is_ale_(old.is_ale_),
 data_(old.data_),
 surfaces_(old.surfaces_),
-surfaceptrs_(old.surfaceptrs_)
+surfaceptrs_(old.surfaceptrs_),
+lines_(old.lines_),
+lineptrs_(old.lineptrs_)
 {
-  return;
+    gaussrule_ = old.gaussrule_;
+    return;
 }
 
 /*----------------------------------------------------------------------*
@@ -183,16 +189,16 @@ DRT::Element** DRT::Elements::Fluid3::Lines()
     switch (distype)
     {
     case tet4:
-        CreateLinesTet(6, 2);
+        CreateLinesTet(nline, 2);
         break;
     case tet10:
-        CreateLinesTet(6, 3);
+        CreateLinesTet(nline, 3);
         break;
     case hex8:
-        CreateLinesHex(12, 2);
+        CreateLinesHex(nline, 2);
         break;
     case hex20: case hex27:
-        CreateLinesHex(12, 3);
+        CreateLinesHex(nline, 3);
         break;
     default:
         dserror("distype not supported");

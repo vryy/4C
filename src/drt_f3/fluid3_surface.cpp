@@ -3,10 +3,10 @@
 \brief
 
 <pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
+Maintainer: Axel Gerstenberger
+            gerstenberger@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15236
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -35,6 +35,8 @@ DRT::Element(id,element_fluid3surface,owner),
 parent_(parent),
 lsurface_(lsurface)
 {
+  lines_.resize(0);
+  lineptrs_.resize(0);	
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
   return;
@@ -46,7 +48,9 @@ lsurface_(lsurface)
 DRT::Elements::Fluid3Surface::Fluid3Surface(const DRT::Elements::Fluid3Surface& old) :
 DRT::Element(old),
 parent_(old.parent_),
-lsurface_(old.lsurface_)
+lsurface_(old.lsurface_),
+lines_(old.lines_),
+lineptrs_(old.lineptrs_)
 {
   return;
 }
