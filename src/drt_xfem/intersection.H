@@ -8,7 +8,7 @@ Maintainer: Ursula Mayer
 </pre>
 */
 
-#ifdef D_XFEM
+#ifdef XFEM
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 #ifndef INTERSECTION_H
@@ -478,5 +478,5 @@ class Intersection
 #endif  // #ifndef INTERSECTION_H
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_XFEM
+#endif  // #ifdef XFEM
 

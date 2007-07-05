@@ -8,7 +8,7 @@ Maintainer: Ursula Mayer
 </pre>
 */
 
-#ifdef D_XFEM
+#ifdef XFEM
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
@@ -1645,6 +1645,6 @@ void Intersection::debugIntegrationcells(vector < vector <Integrationcell> >& in
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_XFEM
+#endif  // #ifdef XFEM
 
 

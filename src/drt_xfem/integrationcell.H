@@ -9,7 +9,7 @@ Maintainer:
 */
 
 
-#ifdef D_XFEM
+#ifdef XFEM
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 #ifndef INTEGRATIONCELL_H
@@ -62,7 +62,7 @@ class Integrationcell
 #endif  // #ifndef INTEGRATIONCELL_H
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_XFEM
+#endif  // #ifdef XFEM
 
 
 

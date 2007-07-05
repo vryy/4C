@@ -10,7 +10,7 @@ Maintainer: Axel Gerstenberger
             089 - 289-15236
 </pre>
 */
-#ifdef D_XFEM
+#ifdef XFEM
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
@@ -110,4 +110,4 @@ void NodeEnrichment::Print(ostream& os) const
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_XFEM
+#endif  // #ifdef XFEM
