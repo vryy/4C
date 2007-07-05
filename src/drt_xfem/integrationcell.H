@@ -4,7 +4,7 @@
 \brief integration cell
 
 <pre>
-Maintainer: 
+Maintainer: Ursula Mayer
 </pre>
 */
 
@@ -17,6 +17,7 @@ Maintainer:
 
 #include <vector>
 
+// to be documented
 class Integrationcell
 {
         
