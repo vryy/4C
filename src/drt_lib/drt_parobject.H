@@ -153,7 +153,6 @@ using namespace std;
 #define ParObject_Condif2               (int)31
 #define ParObject_Condif2Register       (int)32
 #define ParObject_Condif2Line           (int)33
-#define ParObject_So_sh8                (int)33
 #define ParObject_Sosh8Register         (int)34
 #define ParObject_Ale2                  (int)35
 #define ParObject_Ale2Register          (int)36
@@ -166,7 +165,8 @@ using namespace std;
 #define ParObject_NewtonianFluid        (int)43
 #define ParObject_MicroMaterial         (int)44
 #define ParObject_StVenantKirchhoff     (int)45
-#define ParObject_Fluid3Line            (int)46
+#define ParObject_So_sh8                (int)46
+#define ParObject_Fluid3Line            (int)47
 
 /*!
 \brief DRT: namespace of the ccarat discretization module
