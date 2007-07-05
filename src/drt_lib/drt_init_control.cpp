@@ -50,25 +50,6 @@ void ntaini_ccadiscret(int argc, char** argv)
   /*---------------------------------------------- initialise warnings ---*/
   dswarning(0,0);
 
-  if (argc <= 1)
-  {
-    printf("You forgot to give the input and output file names!\n");
-    printf("Try again!\n");
-#ifdef PARALLEL
-    MPI_Finalize();
-#endif
-    exit(1);
-  }
-  else if (argc <= 2)
-  {
-    printf("You forgot to give the output file name!\n");
-    printf("Try again!\n");
-#ifdef PARALLEL
-    MPI_Finalize();
-#endif
-    exit(1);
-  }
-
   int myrank = 0;
 
 #ifdef PARALLEL
@@ -76,6 +57,31 @@ void ntaini_ccadiscret(int argc, char** argv)
   MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
   MPI_Comm_size(MPI_COMM_WORLD, &nproc);
 #endif
+
+  if (argc <= 1)
+  {
+    if (myrank==0)
+    {
+      printf("You forgot to give the input and output file names!\n");
+      printf("Try again!\n");
+    }
+#ifdef PARALLEL
+    MPI_Finalize();
+#endif
+    exit(1);
+  }
+  else if (argc <= 2)
+  {
+    if (myrank==0)
+    {
+      printf("You forgot to give the output file name!\n");
+      printf("Try again!\n");
+    }
+#ifdef PARALLEL
+    MPI_Finalize();
+#endif
+    exit(1);
+  }
 
   allfiles.outlenght = strlen(argv[2]);
   allfiles.outputfile_kenner = argv[2];
