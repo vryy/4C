@@ -1,4 +1,4 @@
-/*!----------------------------------------------------------------------
+/*!
 \file integrationcell.H
 
 \brief integration cell
@@ -6,11 +6,10 @@
 <pre>
 Maintainer: 
 </pre>
+*/
 
-*----------------------------------------------------------------------*/
 
-
-#ifdef D_FLUID3_XFEM
+#ifdef D_XFEM
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 #ifndef INTEGRATIONCELL_H
@@ -63,7 +62,7 @@ class Integrationcell
 #endif  // #ifndef INTEGRATIONCELL_H
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_FLUID3_XFEM
+#endif  // #ifdef D_XFEM
 
 
 

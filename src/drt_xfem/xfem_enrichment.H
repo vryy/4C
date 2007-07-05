@@ -1,4 +1,4 @@
-/*!----------------------------------------------------------------------
+/*!
 \file xfem_enrichment.H
 
 \brief contains information about enrichments at nodes and elements
@@ -9,9 +9,8 @@ Maintainer: Axel Gerstenberger
             http://www.lnm.mw.tum.de
             089 - 289-15236
 </pre>
-
-*----------------------------------------------------------------------*/
-#ifdef D_FLUID3_XFEM
+*/
+#ifdef D_XFEM
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 #ifndef DRT_FLUID3_XFEM_ENRICHMENT_H
@@ -87,4 +86,4 @@ private:
 #endif  // #ifndef FLUID3_XFEM_H
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_FLUID3_XFEM
+#endif  // #ifdef D_XFEM

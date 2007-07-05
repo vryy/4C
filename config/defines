@@ -19,7 +19,6 @@
 # D_FLUID3           # fluid3
 # D_FLUID3_F         # fluid3_fast
 # D_FLUID3_PRO       # fluid3 with projection method
-# D_FLUID3_XFEM      # fluid3 with xfem support
 # FLUID3_ML          # fluid3 with multilevel
 # D_SHELL8           # shell8
 # D_SHELL9           # shell9
@@ -68,6 +67,7 @@
 # FSI_NEWTONCOUPLING # fsi coupling with evaluation of tangent operator
 # LOCALSYSTEMS_ST    # locally oriented Dirichlet BCs for structures
 # CCADISCRET         # use new ccarat discretization subsystem DRT
+# XFEM               # provides intersection routines, enrichments, searches,...
 
 #   tools
 #  =======

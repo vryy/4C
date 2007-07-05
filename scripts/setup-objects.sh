@@ -109,11 +109,6 @@ if grep '^[[:blank:]]*FLUID3_ML' "$definefile" 2>&1 > /dev/null ; then
     fi
 fi
 
-# FLUID3_XFEM
-if grep '^[[:blank:]]*D_FLUID3_XFEM' "$definefile" 2>&1 > /dev/null ; then
-    OBJECTS="$OBJECTS \$(OBJS_INTERSECTION) \$(OBJS_DRT_XF3_LIB) \$(OBJS_DRT_XF3)"
-fi
-
 # FLUID2_PRO
 if grep '^[[:blank:]]*D_FLUID2_PRO' "$definefile" 2>&1 > /dev/null ; then
     if [ "x$OBJ_FLUID" = "x0" ] ; then

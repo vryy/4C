@@ -1,4 +1,4 @@
-/*!----------------------------------------------------------------------
+/*!
 \file intersection.cpp
 
 \brief collection of intersection tool 
@@ -6,10 +6,9 @@
 <pre>
 Maintainer: Ursula Mayer
 </pre>
+*/
 
-*----------------------------------------------------------------------*/
-
-#ifdef D_FLUID3_XFEM
+#ifdef D_XFEM
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
@@ -1646,6 +1645,6 @@ void Intersection::debugIntegrationcells(vector < vector <Integrationcell> >& in
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_FLUID3_XFEM
+#endif  // #ifdef D_XFEM
 
 

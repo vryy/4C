@@ -1,4 +1,4 @@
-/*!----------------------------------------------------------------------
+/*!
 \file drt_intersection.H
 
 \brief collection of intersection tools
@@ -6,10 +6,9 @@
 <pre>
 Maintainer: Ursula Mayer
 </pre>
+*/
 
-*----------------------------------------------------------------------*/
-
-#ifdef D_FLUID3_XFEM
+#ifdef D_XFEM
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 #ifndef INTERSECTION_H
@@ -479,5 +478,5 @@ class Intersection
 #endif  // #ifndef INTERSECTION_H
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_FLUID3_XFEM
+#endif  // #ifdef D_XFEM
 

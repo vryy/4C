@@ -150,10 +150,6 @@ using namespace std;
 #define ParObject_Ale3                  (int)24
 #define ParObject_Ale3Register          (int)25
 #define ParObject_Ale3Surface           (int)26
-#define ParObject_XFluid3               (int)27
-#define ParObject_XFluid3Register       (int)28
-#define ParObject_XFluid3Surface        (int)29
-#define ParObject_XFluid3Line           (int)30
 #define ParObject_Condif2               (int)31
 #define ParObject_Condif2Register       (int)32
 #define ParObject_Condif2Line           (int)33

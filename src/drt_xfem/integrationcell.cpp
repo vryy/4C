@@ -1,4 +1,4 @@
-/*!----------------------------------------------------------------------
+/*!
 \file integrationcell.cpp
 
 \brief integration cell
@@ -6,11 +6,9 @@
 <pre>
 Maintainer: 
 </pre>
+*/
 
-*----------------------------------------------------------------------*/
-
-
-#ifdef D_FLUID3_XFEM
+#ifdef D_XFEM
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
@@ -56,6 +54,6 @@ std::vector< std::vector<double> >  Integrationcell::GetCoord()
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_FLUID3_XFEM
+#endif  // #ifdef D_XFEM
 
 
