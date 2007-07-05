@@ -1,4 +1,4 @@
-/*!----------------------------------------------------------------------
+/*!
 \file fluid3_evaluate.cpp
 \brief
 
@@ -8,8 +8,7 @@ Maintainer: Georg Bauer
             http://www.lnm.mw.tum.de
             089 - 289-15252
 </pre>
-
-*----------------------------------------------------------------------*/
+*/
 #ifdef D_FLUID3
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
@@ -19,6 +18,7 @@ Maintainer: Georg Bauer
 #ifdef PARALLEL
 #include "mpi.h"
 #endif
+
 #include "fluid3.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
@@ -26,7 +26,6 @@ Maintainer: Georg Bauer
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
-
 #include "../drt_mat/newtonianfluid.H"
 
 using namespace DRT::Utils;
@@ -43,29 +42,26 @@ extern struct _MATERIAL  *mat;
 DRT::Elements::Fluid3::ActionType DRT::Elements::Fluid3::convertStringToActionType(
               const string& action) const
 {
-    
-    dsassert(action != "none", "No action supplied");
-    
-    DRT::Elements::Fluid3::ActionType act = Fluid3::none;
-    // get the action required
-    
-    if (action == "calc_fluid_systemmat_and_residual")      
-        act = Fluid3::calc_fluid_systemmat_and_residual;
-    else if (action == "calc_fluid_genalpha_sysmat")
-        act = Fluid3::calc_fluid_genalpha_sysmat;
-    else if (action == "calc_fluid_genalpha_residual")
-        act = Fluid3::calc_fluid_genalpha_residual;
-    else if (action == "calc_fluid_beltrami_error")      
-        act = Fluid3::calc_fluid_beltrami_error;
-    else if (action == "calc_Shapefunction")
-        act = Fluid3::calc_Shapefunction;
-    else if (action == "calc_ShapeDeriv1")
-        act = Fluid3::calc_ShapeDeriv1;
-    else if (action == "calc_ShapeDeriv2")
-        act = Fluid3::calc_ShapeDeriv2;
-    else 
-        dserror("Unknown type of action for Fluid3");
-    return act;
+  dsassert(action != "none", "No action supplied");
+  
+  DRT::Elements::Fluid3::ActionType act = Fluid3::none;
+  if (action == "calc_fluid_systemmat_and_residual")      
+    act = Fluid3::calc_fluid_systemmat_and_residual;
+  else if (action == "calc_fluid_genalpha_sysmat")
+    act = Fluid3::calc_fluid_genalpha_sysmat;
+  else if (action == "calc_fluid_genalpha_residual")
+    act = Fluid3::calc_fluid_genalpha_residual;
+  else if (action == "calc_fluid_beltrami_error")      
+    act = Fluid3::calc_fluid_beltrami_error;
+  else if (action == "calc_Shapefunction")
+    act = Fluid3::calc_Shapefunction;
+  else if (action == "calc_ShapeDeriv1")
+    act = Fluid3::calc_ShapeDeriv1;
+  else if (action == "calc_ShapeDeriv2")
+    act = Fluid3::calc_ShapeDeriv2;
+  else 
+    dserror("Unknown type of action for Fluid3");
+  return act;
 }
 
 /*----------------------------------------------------------------------*
@@ -83,17 +79,6 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
   // get the action required
   const string action = params.get<string>("action","none");
   const DRT::Elements::Fluid3::ActionType act = convertStringToActionType(action);
-  
-//  if (action == "none") dserror("No action supplied");
-//  else if (action == "calc_fluid_systemmat_and_residual")
-//  	act = Fluid3::calc_fluid_systemmat_and_residual;
-//  else if (action == "calc_fluid_genalpha_sysmat")
-//  	act = Fluid3::calc_fluid_genalpha_sysmat;
-//  else if (action == "calc_fluid_genalpha_residual")
-//  	act = Fluid3::calc_fluid_genalpha_residual;
-//  else if (action == "calc_fluid_beltrami_error")
-//  	act = Fluid3::calc_fluid_beltrami_error;
-//  else dserror("Unknown type of action for Fluid3");
 
   // get the material
   RefCountPtr<MAT::Material> mat = Material();
@@ -435,195 +420,192 @@ void DRT::Elements::Fluid3::f3_sys_mat(const vector<int>&        lm,
                                        ParameterList&            params
   )
 {
-    /*---------------------------------------------------- set element data */
-    const int iel = NumNode();
-    const DiscretizationType distype = this->Shape();
+  // set element data
+  const int iel = NumNode();
+  const DiscretizationType distype = this->Shape();
 
-    // get node coordinates
-    const Epetra_SerialDenseMatrix xyze = f3_getPositionArray(edispnp);
-    
-    // dead load in element nodes
-    const double time = params.get("total time",-1.0);
-    const Epetra_SerialDenseMatrix bodyforce = f3_getbodyforce(time,params);
+  // get node coordinates
+  const Epetra_SerialDenseMatrix xyze = f3_getPositionArray(edispnp);
+  
+  // dead load in element nodes
+  const double time = params.get("total time",-1.0);
+  const Epetra_SerialDenseMatrix bodyforce = f3_getbodyforce(time,params);
 
-    /*---------------------------------------------- get viscosity ---*/
-    // check here, if we really have a fluid !!
-    if(material->mattyp != m_fluid) dserror("Material law is not of type m_fluid.");
-    const double visc = material->m.fluid->viscosity;
+  // get viscosity
+  // check here, if we really have a fluid !!
+  dsassert(material->mattyp == m_fluid, "Material law is not of type m_fluid.");
+  const double visc = material->m.fluid->viscosity;
 
-    /*--------------------------------------------- stab-parameter ---*/
-    // USFEM stabilization is default. No switch here at the moment.
+  // declaration of variables
+  Epetra_SerialDenseVector  funct(iel);
+  Epetra_SerialDenseMatrix 	deriv(3,iel);
+  Epetra_SerialDenseMatrix 	deriv2(6,iel);
+  Epetra_SerialDenseMatrix 	xjm(3,3);
+  Epetra_SerialDenseMatrix 	vderxy(3,3);
+  vector<double>            pderxy(3);
+  Epetra_SerialDenseMatrix 	vderxy2(3,6);
+  Epetra_SerialDenseMatrix 	derxy(3,iel);
+  Epetra_SerialDenseMatrix 	derxy2(6,iel);
+  vector<double>            edeadng(3);
+  vector<double>            histvec(3);   ///< history data at integration point
+  vector<double>         	  velino(3);    ///< normed velocity at element centre
+  vector<double>     	      velint(3);
 
-    /*----------------------------------------- declaration of variables ---*/
+  const double timefac=params.get<double>("time constant for integration",0.0);
+
+  // get control parameter to switch between stationary and instationary problem
+  const bool is_stationary = params.get<bool>("using stationary formulation",false);
+
+  // stabilization parameter
+  const vector<double> tau = f3_caltau(xyze,evelnp,distype,visc,iel,timefac,is_stationary);
+
+  // flag for higher order elements
+  const bool higher_order_ele = is_higher_order_element(distype);
+
+  // gaussian points
+//  const GaussRule3D gaussrule = getOptimalGaussrule(distype);
+//  const IntegrationPoints3D  intpoints = getIntegrationPoints3D(gaussrule);
+  const IntegrationPoints3D  intpoints = getIntegrationPoints3D(gaussrule_);
+
+  // integration loop
+  for (int iquad=0;iquad<intpoints.nquad;iquad++)
+  {
+    // coordiantes of the current integration point
+    const double e1 = intpoints.qxg[iquad][0];
+    const double e2 = intpoints.qxg[iquad][1];
+    const double e3 = intpoints.qxg[iquad][2];
+    // shape functions and their derivatives
     Epetra_SerialDenseVector    funct(iel);
-    Epetra_SerialDenseMatrix 	deriv(3,iel);
-    Epetra_SerialDenseMatrix 	deriv2(6,iel);
-    Epetra_SerialDenseMatrix 	xjm(3,3);
-    Epetra_SerialDenseMatrix 	vderxy(3,3);
-    vector<double>              pderxy(3);
-    Epetra_SerialDenseMatrix 	vderxy2(3,6);
-    Epetra_SerialDenseMatrix 	derxy(3,iel);
-    Epetra_SerialDenseMatrix 	derxy2(6,iel);
-    vector<double>              edeadng(3);
-    vector<double>              histvec(3); /* history data at integration point              */
-    vector<double>         	    velino(3); /* normed velocity at element centre */
-    vector<double>     	        velint(3);
-
-    const double timefac=params.get<double>("time constant for integration",0.0);
-
-    // get control parameter
-    const bool is_stationary = params.get<bool>("using stationary formulation",false);
-
-    // stabilization parameter
-    const vector<double> tau = f3_caltau(xyze,evelnp,distype,visc,iel,timefac,is_stationary);
-
-    // flag for higher order elements
-    const bool higher_order_ele = is_higher_order_element(distype);
-
-    // gaussian points
-//    const GaussRule3D gaussrule = getOptimalGaussrule(distype);
-//    const IntegrationPoints3D  intpoints = getIntegrationPoints3D(gaussrule);
-    const IntegrationPoints3D  intpoints = getIntegrationPoints3D(gaussrule_);
-
-    // integration loops
-    for (int iquad=0;iquad<intpoints.nquad;iquad++)
-    {
-        const double e1 = intpoints.qxg[iquad][0];
-        const double e2 = intpoints.qxg[iquad][1];
-        const double e3 = intpoints.qxg[iquad][2];
-        // shape functions and their derivatives
-        Epetra_SerialDenseVector    funct(iel);
-        Epetra_SerialDenseMatrix    deriv(3,iel);
-        shape_function_3D(funct,e1,e2,e3,distype);
-        shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
+    Epetra_SerialDenseMatrix    deriv(3,iel);
+    shape_function_3D(funct,e1,e2,e3,distype);
+    shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
           
-        // get Jacobian matrix and determinant
-        const Epetra_SerialDenseMatrix xjm = getJacobiMatrix(xyze,deriv,iel);
-        const double det = getDeterminante(xjm);
-        const double fac = intpoints.qwgt[iquad]*det;
+    // get Jacobian matrix and determinant
+    const Epetra_SerialDenseMatrix xjm = getJacobiMatrix(xyze,deriv,iel);
+    const double det = getDeterminante(xjm);
+    const double fac = intpoints.qwgt[iquad]*det;
 
-        /*---------------------------------------- compute global derivates */
-        f3_gder(derxy,deriv,xjm,det,iel);
+    // compute global derivates
+    f3_gder(derxy,deriv,xjm,det,iel);
 
-        /*--------------------------------- compute second global derivative */
-        if (higher_order_ele)
+    // compute second global derivative
+    if (higher_order_ele)
+    {
+      shape_function_3D_deriv2(deriv2,e1,e2,e3,distype);
+      f3_gder2(xyze,xjm,derxy,derxy2,deriv2,iel);
+
+      // calculate 2nd velocity derivatives at integration point
+      // former f3_vder2(vderxy2,derxy2,evelnp,iel);
+      for (int i=0;i<6;i++)
+      {
+        vderxy2(0,i)=0.0;
+        vderxy2(1,i)=0.0;
+        vderxy2(2,i)=0.0;
+        for (int inode=0;inode<iel;inode++)
         {
-            shape_function_3D_deriv2(deriv2,e1,e2,e3,distype);
-            f3_gder2(xyze,xjm,derxy,derxy2,deriv2,iel);
-
-            /*------calculate 2nd velocity derivatives at integration point */
-            // former f3_vder2(vderxy2,derxy2,evelnp,iel);
-            for (int i=0;i<6;i++)
-            {
-                vderxy2(0,i)=0.0;
-                vderxy2(1,i)=0.0;
-                vderxy2(2,i)=0.0;
-                for (int j=0;j<iel;j++)
-                {
-                    vderxy2(0,i) += derxy2(i,j)*evelnp[0+(3*j)];
-                    vderxy2(1,i) += derxy2(i,j)*evelnp[1+(3*j)];
-                    vderxy2(2,i) += derxy2(i,j)*evelnp[2+(3*j)];
-                }
-            }
+          vderxy2(0,i) += derxy2(i,inode)*evelnp[0+(3*inode)];
+          vderxy2(1,i) += derxy2(i,inode)*evelnp[1+(3*inode)];
+          vderxy2(2,i) += derxy2(i,inode)*evelnp[2+(3*inode)];
         }
+      }
+    }
 
-        /*---------------------- get velocities (n+g,i) at integration point */
-        // expression for f3_veci(velint,funct,evelnp,iel);
-        for (int i=0;i<3;i++)
+    // get velocities (n+g,i) at integration point
+    // expression for f3_veci(velint,funct,evelnp,iel);
+    for (int isd=0;isd<NSD_;isd++)
+    {
+      velint[isd]=0.0;
+      for (int inode=0;inode<iel;inode++)
+      {
+        velint[isd] += funct[inode]*evelnp[isd+(3*inode)];
+      }
+    }
+
+    // get history data (n,i) at integration point
+    //expression for f3_veci(histvec,funct,evhist,iel);
+    for (int isd=0;isd<NSD_;isd++)
+    {
+      histvec[isd]=0.0;
+      for (int inode=0;inode<iel;inode++)
+      {
+        histvec[isd] += funct[inode]*evhist[isd+(3*inode)];
+      }
+    } 
+
+    // get velocity (np,i) derivatives at integration point
+    // expression for f3_vder(vderxy,derxy,evelnp,iel);
+    for (int isd=0;isd<NSD_;isd++)
+    {
+      vderxy(0,isd)=0.0;
+      vderxy(1,isd)=0.0;
+      vderxy(2,isd)=0.0;
+      for (int inode=0;inode<iel;inode++)
+      {
+        vderxy(0,isd) += derxy(isd,inode)*evelnp[0+(3*inode)];
+        vderxy(1,isd) += derxy(isd,inode)*evelnp[1+(3*inode)];
+        vderxy(2,isd) += derxy(isd,inode)*evelnp[2+(3*inode)];
+      }
+    }
+
+    // get grid velocity at integration point
+    vector<double>    gridvelint(NSD_);
+    if (is_ale_)
+    {
+      for (int isd=0; isd<NSD_; isd++)
+      {
+        gridvelint[isd] = 0.;
+        for (int inode=0; inode<iel; inode++)
         {
-            velint[i]=0.0;
-            for (int j=0;j<iel;j++)
-            {
-                velint[i] += funct[j]*evelnp[i+(3*j)];
-            }
+          gridvelint[isd] += derxy(isd,inode)*egridv[isd+(4*inode)];
         }
+      }
+    }
+    else
+    {
+      gridvelint[0] = 0.0;
+      gridvelint[1] = 0.0;
+      gridvelint[2] = 0.0;
+    }
 
-        /*---------------- get history data (n,i) at integration point ---*/
-        //expression for f3_veci(histvec,funct,evhist,iel);
-        for (int i=0;i<3;i++)
-        {
-            histvec[i]=0.0;
-            for (int j=0;j<iel;j++)
-            {
-                histvec[i] += funct[j]*evhist[i+(3*j)];
-            }
-        } 
+    // get pressure gradients
+    vector<double>    gradp(NSD_);
+    gradp[0] = gradp[1] = gradp[2] = 0.0;
+    for (int inode=0; inode<iel; inode++)
+    {
+      gradp[0] += derxy(0,inode) * eprenp[inode];
+      gradp[1] += derxy(1,inode) * eprenp[inode];
+      gradp[2] += derxy(2,inode) * eprenp[inode];
+    }
 
-        /*----------- get velocity (np,i) derivatives at integration point */
-        // expression for f3_vder(vderxy,derxy,evelnp,iel);
-        for (int i=0;i<3;i++)
-        {
-            vderxy(0,i)=0.0;
-            vderxy(1,i)=0.0;
-            vderxy(2,i)=0.0;
-            for (int j=0;j<iel;j++)
-            {
-                vderxy(0,i) += derxy(i,j)*evelnp[0+(3*j)];
-                vderxy(1,i) += derxy(i,j)*evelnp[1+(3*j)];
-                vderxy(2,i) += derxy(i,j)*evelnp[2+(3*j)];
-            }
-        }
+    double press = 0.0;
+    for (int inode=0;inode<iel;inode++)
+    {
+      press += funct[inode]*eprenp[inode];
+    }
 
-        /*--------------------- get grid velocity at integration point ---*/
-        vector<double>    gridvelint(3);
-        if (is_ale_)
-        {
-            for (int i=0; i<3; i++)
-            {
-                gridvelint[i] = 0.;
-                for (int j=0; j<iel; j++)
-                {
-                    gridvelint[i] += derxy(i,j)*egridv[i+(4*j)];
-                }
-            }
-        }
-        else
-        {
-            gridvelint[0] = 0.0;
-            gridvelint[1] = 0.0;
-            gridvelint[2] = 0.0;
-        }
+    // get bodyforce in gausspoint
+    for (int isd=0;isd<NSD_;isd++)
+    {
+      edeadng[isd] = 0.0;
+      for (int inode=0;inode<iel;inode++)
+      {
+        edeadng[isd]+= bodyforce(isd,inode)*funct[inode];
+      }
+    }
 
-        /*------------------------------------- get pressure gradients ---*/
-        vector<double>    gradp(NSD_);
-        gradp[0] = gradp[1] = gradp[2] = 0.0;
+    // perform integration for entire matrix and rhs
+    if(is_stationary==false)
+        f3_calmat(*sys_mat,*residual,velint,histvec,gridvelint,
+                press,vderxy,vderxy2,gradp,funct,tau,
+                derxy,derxy2,edeadng,fac,visc,iel,params);
+    else
+        f3_calmat_stationary(*sys_mat,*residual,velint,histvec,gridvelint,
+                press,vderxy,vderxy2,gradp,funct,tau,
+                derxy,derxy2,edeadng,fac,visc,iel,params);
 
-        for (int i=0; i<iel; i++)
-        {
-            gradp[0] += derxy(0,i) * eprenp[i];
-            gradp[1] += derxy(1,i) * eprenp[i];
-            gradp[2] += derxy(2,i) * eprenp[i];
-        }
+  } // end of loop over integration points
 
-        double press = 0;
-        for (int i=0;i<iel;i++)
-        {
-            press += funct[i]*eprenp[i];
-        }
-
-        /*--------------------------------- get bodyforce in gausspoint---*/
-        for (int dim=0;dim<3;dim++)
-        {
-            edeadng[dim] = 0;
-            for (int i=0;i<iel;i++)
-            {
-                edeadng[dim]+= bodyforce(dim,i)*funct[i];
-            }
-        }
-
-        /*-------------- perform integration for entire matrix and rhs ---*/
-        if(is_stationary==false)
-            f3_calmat(*sys_mat,*residual,velint,histvec,gridvelint,
-                    press,vderxy,vderxy2,gradp,funct,tau,
-                    derxy,derxy2,edeadng,fac,visc,iel,params);
-        else
-            f3_calmat_stationary(*sys_mat,*residual,velint,histvec,gridvelint,
-                    press,vderxy,vderxy2,gradp,funct,tau,
-                    derxy,derxy2,edeadng,fac,visc,iel,params);
-
-    } // end of loop over integration points
-
-    return;
+  return;
 } // DRT::Elements::Fluid3::f3_sys_mat
 
 
@@ -726,10 +708,11 @@ void DRT::Elements::Fluid3::f3_genalpha_sys_mat(
     // start loop over integration points
     for (int iquad=0;iquad<intpoints.nquad;iquad++)
     {
-          /*------------------- declaration of gauss point variables ---*/
+          // gauss point coordinates
           const double e1 = intpoints.qxg[iquad][0];
           const double e2 = intpoints.qxg[iquad][1];
           const double e3 = intpoints.qxg[iquad][2];
+          
           // shape functions and derivatives
           Epetra_SerialDenseVector  funct (iel);
           Epetra_SerialDenseMatrix 	deriv (3,iel);
@@ -738,17 +721,17 @@ void DRT::Elements::Fluid3::f3_genalpha_sys_mat(
           Epetra_SerialDenseMatrix 	derxy2(6,iel);
 
           // intermediate accelerations (n+alpha_M)
-          vector<double>     		accintam (3);
+          vector<double>     		    accintam (3);
           // intermediate velocities    (n+alpha_F) and its derivatives
-          vector<double>     		velintaf (3);
+          vector<double>     		    velintaf (3);
           Epetra_SerialDenseMatrix 	vderxyaf (3,3);
           Epetra_SerialDenseMatrix 	vderxyaf2(3,6);
           // new velocities for continuity equation and its derivatives
-          vector<double>     		velintnp (3);
+          vector<double>            velintnp (3);
           Epetra_SerialDenseMatrix 	vderxynp (3,3);
           // new pressure and its derivatives
-          double                        prenp;
-          vector<double> 		pderxynp(3);
+          double                    prenp;
+          vector<double>            pderxynp(3);
 
           // dead load
           vector<double>                edeadaf(3);
@@ -767,18 +750,17 @@ void DRT::Elements::Fluid3::f3_genalpha_sys_mat(
           // set total integration factor
           const double fac = intpoints.qwgt[iquad]*det;
 
-          /*---------------------------------- compute global derivates */
+          // compute global derivates
           f3_gder(derxy,deriv,xjm,det,iel);
 
-          /*-------------------------- compute second global derivative */
+          // compute second global derivative
           if (higher_order_ele)
           {
             f3_gder2(xyze,xjm,derxy,derxy2,deriv2,iel);
           }
 
 
-          /*-- get intermediate accelerations (n+1,i)  at integration
-                                                                  point */
+          // get intermediate accelerations (n+1,i)  at integration point
           for (int i=0;i<3;i++)
           {
             accintam[i]=0.0;
@@ -786,44 +768,44 @@ void DRT::Elements::Fluid3::f3_genalpha_sys_mat(
             {
               accintam[i] += funct[j]*myaccam[i+(3*j)];
             }
-          } //end loop over i
+          }
 
 
-          /*-------------- get velocities (n+1,i)  at integration point */
-          for (int i=0;i<3;i++)
+          //get velocities (n+1,i)  at integration point
+          for (int isd=0;isd<NSD_;isd++)
           {
-            velintnp[i]=0.0;
-            for (int j=0;j<iel;j++)
+            velintnp[isd]=0.0;
+            for (int inode=0;inode<iel;inode++)
             {
-              velintnp[i] += funct[j]*myvelnp[i+(3*j)];
+              velintnp[isd] += funct[inode]*myvelnp[isd+(3*inode)];
             }
-          } //end loop over i
+          }
 
 
-          /*--------- get velocities (n+alpha_F,i) at integration point */
-          for (int i=0;i<3;i++)
+          // get velocities (n+alpha_F,i) at integration point
+          for (int isd=0;isd<3;isd++)
           {
-            velintaf[i]=0.0;
-            for (int j=0;j<iel;j++)
+            velintaf[isd]=0.0;
+            for (int inode=0;inode<iel;inode++)
             {
-              velintaf[i] += funct[j]*myvelaf[i+(3*j)];
+              velintaf[isd] += funct[inode]*myvelaf[isd+(3*inode)];
             }
-          } //end loop over i
+          }
 
 
           /*----- get velocity (n+1,i) derivatives at integration point */
-          for (int i=0;i<3;i++)
+          for (int isd=0;isd<3;isd++)
           {
-            vderxynp(0,i)=0.0;
-            vderxynp(1,i)=0.0;
-            vderxynp(2,i)=0.0;
-            for (int j=0;j<iel;j++)
+            vderxynp(0,isd) = 0.0;
+            vderxynp(1,isd) = 0.0;
+            vderxynp(2,isd) = 0.0;
+            for (int inode=0;inode<iel;inode++)
             {
-              vderxynp(0,i) += derxy(i,j)*myvelnp[0+(3*j)];
-              vderxynp(1,i) += derxy(i,j)*myvelnp[1+(3*j)];
-              vderxynp(2,i) += derxy(i,j)*myvelnp[2+(3*j)];
-            } /* end of loop over j */
-          } /* end of loop over i */
+              vderxynp(0,isd) += derxy(isd,inode)*myvelnp[0+(3*inode)];
+              vderxynp(1,isd) += derxy(isd,inode)*myvelnp[1+(3*inode)];
+              vderxynp(2,isd) += derxy(isd,inode)*myvelnp[2+(3*inode)];
+            }
+          }
 
 
           /*----------- get velocity (n+alpha_F,i) derivatives at
@@ -1402,7 +1384,9 @@ void DRT::Elements::Fluid3::f3_calc_stabpar(
   return;
 } // end of DRT:Elements:Fluid3:f3_calc_stabpar
 
-
+//
+// calculate stabilization parameter
+//
 vector<double> DRT::Elements::Fluid3::f3_caltau(
     const Epetra_SerialDenseMatrix&         xyze,
     const vector<double>&                   evelnp,
@@ -1612,24 +1596,23 @@ Epetra_SerialDenseMatrix DRT::Elements::Fluid3::getJacobiMatrix(
                       const Epetra_SerialDenseMatrix& deriv,
                       const int                       iel) const
 {
+  Epetra_SerialDenseMatrix    xjm(NSD_,NSD_);
     
-    Epetra_SerialDenseMatrix    xjm(NSD_,NSD_);
-    
-    // determine jacobian matrix at point r,s,t
-    for (int isd=0; isd<NSD_; isd++)
-    {
-        for (int jsd=0; jsd<NSD_; jsd++)
-        {
-            double dum = 0.0;
-            for (int inode=0; inode<iel; inode++)
-            {
-                dum += deriv(isd,inode)*xyze(jsd,inode);
-            }
-            xjm(isd,jsd) = dum;
-        }
+  // determine jacobian matrix at point r,s,t
+  for (int isd=0; isd<NSD_; isd++)
+  {
+    for (int jsd=0; jsd<NSD_; jsd++)
+      {
+      double dum = 0.0;
+      for (int inode=0; inode<iel; inode++)
+      {
+        dum += deriv(isd,inode)*xyze(jsd,inode);
+      }
+      xjm(isd,jsd) = dum;
     }
+  }
 
-    return xjm;
+  return xjm;
 }
 
 
@@ -1672,10 +1655,10 @@ Epetra_SerialDenseMatrix DRT::Elements::Fluid3::f3_getbodyforce(
   vector<DRT::Condition*> myneumcond;
 
   // check whether all nodes have a unique VolumeNeumann condition
-  int count=0;
-  for(int nn=0;nn<iel;nn++)
+  int nodecount = 0;
+  for(int inode=0;inode<iel;inode++)
   {
-    Nodes()[nn]->GetCondition("VolumeNeumann",myneumcond);
+    Nodes()[inode]->GetCondition("VolumeNeumann",myneumcond);
 
     if (myneumcond.size()>1)
     {
@@ -1683,11 +1666,11 @@ Epetra_SerialDenseMatrix DRT::Elements::Fluid3::f3_getbodyforce(
     }
     if (myneumcond.size()==1)
     {
-      count++;
+      nodecount++;
     }
   }
 
-  if (count == iel)
+  if (nodecount == iel)
   {
 
     // find out whether we will use a time curve
@@ -1699,7 +1682,7 @@ Epetra_SerialDenseMatrix DRT::Elements::Fluid3::f3_getbodyforce(
     // initialisation
     double curvefac    = 0.0;
 
-    if (curvenum>=0) // yes, we have a timecurve
+    if (curvenum >= 0) // yes, we have a timecurve
     {
       // time factor for the intermediate step
       if(time >= 0)
@@ -1717,28 +1700,28 @@ Epetra_SerialDenseMatrix DRT::Elements::Fluid3::f3_getbodyforce(
     }
 
     // set this condition to the edeadng array
-    for(int nn=0;nn<iel;nn++)
+    for(int jnode=0;jnode<iel;jnode++)
     {
-      Nodes()[nn]->GetCondition("VolumeNeumann",myneumcond);
+      Nodes()[jnode]->GetCondition("VolumeNeumann",myneumcond);
 
       // get values and switches from the condition
       const vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
       const vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
 
-      for(int dim=0;dim<3;dim++)
+      for(int isd=0;isd<NSD_;isd++)
       {
-        edeadng(dim,nn)=(*onoff)[dim]*(*val)[dim]*curvefac;
+        edeadng(isd,jnode)=(*onoff)[isd]*(*val)[isd]*curvefac;
       }
     }
   }
   else
   {
     // we have no dead load
-    for(int nn=0;nn<iel;nn++)
+    for(int inode=0;inode<iel;inode++)
     {
-      for(int dim=0;dim<3;dim++)
+      for(int isd=0;isd<3;isd++)
       {
-        edeadng(dim,nn)=0.0;
+        edeadng(isd,inode)=0.0;
       }
     }
   }
@@ -1746,207 +1729,208 @@ Epetra_SerialDenseMatrix DRT::Elements::Fluid3::f3_getbodyforce(
   return edeadng;
 }
 
-/*----------------------------------------------------------------------*
- |  calculate global derivatives w.r.t. x,y,z at point r,s,t (private)genk05/02
- *----------------------------------------------------------------------*/
-void DRT::Elements::Fluid3::f3_gder(Epetra_SerialDenseMatrix& derxy,
-				    const Epetra_SerialDenseMatrix& deriv,
-                    const Epetra_SerialDenseMatrix& xjm,
-				    const double& det,
-                    const int iel
-				    )
+//
+//  calculate global derivatives w.r.t. x,y,z at point r,s,t
+//
+void DRT::Elements::Fluid3::f3_gder(
+  Epetra_SerialDenseMatrix& derxy,
+	const Epetra_SerialDenseMatrix& deriv,
+  const Epetra_SerialDenseMatrix& xjm,
+	const double& det,
+  const int iel
+	)
 {
-  Epetra_SerialDenseMatrix 	xji(3,3);   // inverse of jacobian matrix
+  Epetra_SerialDenseMatrix 	xji(3,3);  // inverse of jacobian matrix
 
+  // initialistion
+  for(int k=0;k<iel;k++)
+  {
+    derxy(0,k) = 0.0;
+    derxy(1,k) = 0.0;
+    derxy(2,k) = 0.0;
+  }
 
- /*----------calculate global derivatives w.r.t. x,y,z at point r,s,t ---*/
+	// inverse of jacobian
+  xji(0,0) = (  xjm(1,1)*xjm(2,2) - xjm(2,1)*xjm(1,2))/det;
+  xji(1,0) = (- xjm(1,0)*xjm(2,2) + xjm(2,0)*xjm(1,2))/det;
+  xji(2,0) = (  xjm(1,0)*xjm(2,1) - xjm(2,0)*xjm(1,1))/det;
+  xji(0,1) = (- xjm(0,1)*xjm(2,2) + xjm(2,1)*xjm(0,2))/det;
+  xji(1,1) = (  xjm(0,0)*xjm(2,2) - xjm(2,0)*xjm(0,2))/det;
+  xji(2,1) = (- xjm(0,0)*xjm(2,1) + xjm(2,0)*xjm(0,1))/det;
+  xji(0,2) = (  xjm(0,1)*xjm(1,2) - xjm(1,1)*xjm(0,2))/det;
+  xji(1,2) = (- xjm(0,0)*xjm(1,2) + xjm(1,0)*xjm(0,2))/det;
+  xji(2,2) = (  xjm(0,0)*xjm(1,1) - xjm(1,0)*xjm(0,1))/det;
 
-	/*------------------------------------------------------- initialistion */
-for(int k=0;k<iel;k++)
-{
-   derxy(0,k)=0.0;
-   derxy(1,k)=0.0;
-   derxy(2,k)=0.0;
-} /* end of loop over k */
-
-	/*------------------------------------------------- inverse of jacobian */
-xji(0,0) = (  xjm(1,1)*xjm(2,2) - xjm(2,1)*xjm(1,2))/det;
-xji(1,0) = (- xjm(1,0)*xjm(2,2) + xjm(2,0)*xjm(1,2))/det;
-xji(2,0) = (  xjm(1,0)*xjm(2,1) - xjm(2,0)*xjm(1,1))/det;
-xji(0,1) = (- xjm(0,1)*xjm(2,2) + xjm(2,1)*xjm(0,2))/det;
-xji(1,1) = (  xjm(0,0)*xjm(2,2) - xjm(2,0)*xjm(0,2))/det;
-xji(2,1) = (- xjm(0,0)*xjm(2,1) + xjm(2,0)*xjm(0,1))/det;
-xji(0,2) = (  xjm(0,1)*xjm(1,2) - xjm(1,1)*xjm(0,2))/det;
-xji(1,2) = (- xjm(0,0)*xjm(1,2) + xjm(1,0)*xjm(0,2))/det;
-xji(2,2) = (  xjm(0,0)*xjm(1,1) - xjm(1,0)*xjm(0,1))/det;
-
-	/*---------------------------------------- calculate global derivatives */
-for (int k=0;k<iel;k++)
-{
-   derxy(0,k) +=   xji(0,0) * deriv(0,k) \
-                  + xji(0,1) * deriv(1,k) \
-                  + xji(0,2) * deriv(2,k) ;
-   derxy(1,k) +=   xji(1,0) * deriv(0,k) \
-                  + xji(1,1) * deriv(1,k) \
-                  + xji(1,2) * deriv(2,k) ;
-   derxy(2,k) +=   xji(2,0) * deriv(0,k) \
-                  + xji(2,1) * deriv(1,k) \
-                  + xji(2,2) * deriv(2,k) ;
-} /* end of loop over k */
-
-	/*----------------------------------------------------------------------*/
-
-return;
+	// calculate global derivatives
+  for (int inode=0;inode<iel;inode++)
+  {
+    derxy(0,inode) +=   xji(0,0) * deriv(0,inode)
+                      + xji(0,1) * deriv(1,inode)
+                      + xji(0,2) * deriv(2,inode) ;
+    derxy(1,inode) +=   xji(1,0) * deriv(0,inode)
+                      + xji(1,1) * deriv(1,inode)
+                      + xji(1,2) * deriv(2,inode) ;
+    derxy(2,inode) +=   xji(2,0) * deriv(0,inode)
+                      + xji(2,1) * deriv(1,inode)
+                      + xji(2,2) * deriv(2,inode) ;
+  }
+  return;
 } // end of DRT:Elements:Fluid3:f3_gder
 
 
-void DRT::Elements::Fluid3::f3_gder2(const Epetra_SerialDenseMatrix& xyze,
-                                     const Epetra_SerialDenseMatrix& xjm,
-                                     const Epetra_SerialDenseMatrix& derxy,
-                                     Epetra_SerialDenseMatrix& derxy2,
-                                     const Epetra_SerialDenseMatrix& deriv2,
-                                     const int iel
-				    )
+void DRT::Elements::Fluid3::f3_gder2(
+  const Epetra_SerialDenseMatrix& xyze,
+  const Epetra_SerialDenseMatrix& xjm,
+  const Epetra_SerialDenseMatrix& derxy,
+  Epetra_SerialDenseMatrix& derxy2,
+  const Epetra_SerialDenseMatrix& deriv2,
+  const int iel
+	)
 {
-//--------------------------------------------initialize and zero out everything
-Epetra_SerialDenseMatrix bm(6,6);
-Epetra_SerialDenseMatrix xder2(6,3);
+  // initialize and zero out everything
+  Epetra_SerialDenseMatrix bm(6,6);
+  Epetra_SerialDenseMatrix xder2(6,3);
 
-/*--------------------------- calculate elements of jacobian_bar matrix */
-bm(0,0) = xjm(0,0)*xjm(0,0);
-bm(1,0) = xjm(1,0)*xjm(1,0);
-bm(2,0) = xjm(2,0)*xjm(2,0);
-bm(3,0) = xjm(0,0)*xjm(1,0);
-bm(4,0) = xjm(0,0)*xjm(2,0);
-bm(5,0) = xjm(1,0)*xjm(2,0);
+  // calculate elements of jacobian_bar matrix
+  bm(0,0) = xjm(0,0)*xjm(0,0);
+  bm(1,0) = xjm(1,0)*xjm(1,0);
+  bm(2,0) = xjm(2,0)*xjm(2,0);
+  bm(3,0) = xjm(0,0)*xjm(1,0);
+  bm(4,0) = xjm(0,0)*xjm(2,0);
+  bm(5,0) = xjm(1,0)*xjm(2,0);
+  
+  bm(0,1) = xjm(0,1)*xjm(0,1);
+  bm(1,1) = xjm(1,1)*xjm(1,1);
+  bm(2,1) = xjm(2,1)*xjm(2,1);
+  bm(3,1) = xjm(0,1)*xjm(1,1);
+  bm(4,1) = xjm(0,1)*xjm(2,1);
+  bm(5,1) = xjm(1,1)*xjm(2,1);
 
-bm(0,1) = xjm(0,1)*xjm(0,1);
-bm(1,1) = xjm(1,1)*xjm(1,1);
-bm(2,1) = xjm(2,1)*xjm(2,1);
-bm(3,1) = xjm(0,1)*xjm(1,1);
-bm(4,1) = xjm(0,1)*xjm(2,1);
-bm(5,1) = xjm(1,1)*xjm(2,1);
+  bm(0,2) = xjm(0,2)*xjm(0,2);
+  bm(1,2) = xjm(1,2)*xjm(1,2);
+  bm(2,2) = xjm(2,2)*xjm(2,2);
+  bm(3,2) = xjm(0,2)*xjm(1,2);
+  bm(4,2) = xjm(0,2)*xjm(2,2);
+  bm(5,2) = xjm(1,2)*xjm(2,2);
+  
+  bm(0,3) = TWO*xjm(0,0)*xjm(0,1);
+  bm(1,3) = TWO*xjm(1,0)*xjm(1,1);
+  bm(2,3) = TWO*xjm(2,0)*xjm(2,1);
+  bm(3,3) = xjm(0,0)*xjm(1,1)+xjm(1,0)*xjm(0,1);
+  bm(4,3) = xjm(0,0)*xjm(2,1)+xjm(2,0)*xjm(0,1);
+  bm(5,3) = xjm(1,0)*xjm(2,1)+xjm(2,0)*xjm(1,1);
 
-bm(0,2) = xjm(0,2)*xjm(0,2);
-bm(1,2) = xjm(1,2)*xjm(1,2);
-bm(2,2) = xjm(2,2)*xjm(2,2);
-bm(3,2) = xjm(0,2)*xjm(1,2);
-bm(4,2) = xjm(0,2)*xjm(2,2);
-bm(5,2) = xjm(1,2)*xjm(2,2);
+  bm(0,4) = TWO*xjm(0,0)*xjm(0,2);
+  bm(1,4) = TWO*xjm(1,0)*xjm(1,2);
+  bm(2,4) = TWO*xjm(2,0)*xjm(2,2);
+  bm(3,4) = xjm(0,0)*xjm(1,2)+xjm(1,0)*xjm(0,2);
+  bm(4,4) = xjm(0,0)*xjm(2,2)+xjm(2,0)*xjm(0,2);
+  bm(5,4) = xjm(1,0)*xjm(2,2)+xjm(2,0)*xjm(1,2);
+  
+  bm(0,5) = TWO*xjm(0,1)*xjm(0,2);
+  bm(1,5) = TWO*xjm(1,1)*xjm(1,2);
+  bm(2,5) = TWO*xjm(2,1)*xjm(2,2);
+  bm(3,5) = xjm(0,1)*xjm(1,2)+xjm(1,1)*xjm(0,2);
+  bm(4,5) = xjm(0,1)*xjm(2,2)+xjm(2,1)*xjm(0,2);
+  bm(5,5) = xjm(1,1)*xjm(2,2)+xjm(2,1)*xjm(1,2);
 
-bm(0,3) = TWO*xjm(0,0)*xjm(0,1);
-bm(1,3) = TWO*xjm(1,0)*xjm(1,1);
-bm(2,3) = TWO*xjm(2,0)*xjm(2,1);
-bm(3,3) = xjm(0,0)*xjm(1,1)+xjm(1,0)*xjm(0,1);
-bm(4,3) = xjm(0,0)*xjm(2,1)+xjm(2,0)*xjm(0,1);
-bm(5,3) = xjm(1,0)*xjm(2,1)+xjm(2,0)*xjm(1,1);
+  // inverse of jacobian_bar matrix
 
-bm(0,4) = TWO*xjm(0,0)*xjm(0,2);
-bm(1,4) = TWO*xjm(1,0)*xjm(1,2);
-bm(2,4) = TWO*xjm(2,0)*xjm(2,2);
-bm(3,4) = xjm(0,0)*xjm(1,2)+xjm(1,0)*xjm(0,2);
-bm(4,4) = xjm(0,0)*xjm(2,2)+xjm(2,0)*xjm(0,2);
-bm(5,4) = xjm(1,0)*xjm(2,2)+xjm(2,0)*xjm(1,2);
+  LINALG::NonSymmetricInverse(bm,6);
 
-bm(0,5) = TWO*xjm(0,1)*xjm(0,2);
-bm(1,5) = TWO*xjm(1,1)*xjm(1,2);
-bm(2,5) = TWO*xjm(2,1)*xjm(2,2);
-bm(3,5) = xjm(0,1)*xjm(1,2)+xjm(1,1)*xjm(0,2);
-bm(4,5) = xjm(0,1)*xjm(2,2)+xjm(2,1)*xjm(0,2);
-bm(5,5) = xjm(1,1)*xjm(2,2)+xjm(2,1)*xjm(1,2);
-
-/*-------------------------------------- inverse of jacobian_bar matrix */
-
-LINALG::NonSymmetricInverse(bm,6);
-
-// output for debug
-// (for more details see the comments in definition of NonSymmetricInverse()
+  // output for debug
+  // (for more details see the comments in definition of NonSymmetricInverse()
 #if 0
-for (int i = 0 ; i < 6; ++i)
-{
-for (int j = 0 ; j < 6; ++j)
-{
-       if (bm(i,j)!=0.0)
-       printf("bm[%d][%d] %22.16e ",i,j,bm(i,j));
-       else
+  for (int i = 0 ; i < 6; ++i)
+  {
+    for (int j = 0 ; j < 6; ++j)
+    {
+      if (bm(i,j)!=0.0)
+        printf("bm[%d][%d] %22.16e ",i,j,bm(i,j));
+      else
         printf("bm[%d][%d] 0.000 ",i,j);
-       printf("\n");
-}
-printf("\n");
-}
+      printf("\n");
+    }
+    printf("\n");
+  }
 #endif
 
-/*----------------------------------------------------------- initialise*/
-/*   already initialized by constructor of EpetraSerialDenseMeatrix
-for (int i=0;i<3;i++)
-{
-   for (int j=0;j<6;j++) xder2(j,i)=0.0;
-}
-*/
+  // initialise
+  /*   already initialized by constructor of EpetraSerialDenseMeatrix
+  for (int i=0;i<3;i++)
+  {
+    for (int j=0;j<6;j++) 
+      xder2(j,i)=0.0;
+  }
+  */
 
-for (int i=0;i<iel;i++)
-{
-   for (int j=0;j<6;j++) derxy2(j,i)=0.0;
-}
+  for (int i=0;i<iel;i++)
+  {
+    for (int j=0;j<6;j++) derxy2(j,i)=0.0;
+  }
 
-/*----------------------- determine 2nd derivatives of coord.-functions */
-for (int i=0;i<iel;i++)
-{
-   xder2(0,0) += deriv2(0,i) * xyze(0,i);
-   xder2(1,0) += deriv2(1,i) * xyze(0,i);
-   xder2(2,0) += deriv2(2,i) * xyze(0,i);
-   xder2(3,0) += deriv2(3,i) * xyze(0,i);
-   xder2(4,0) += deriv2(4,i) * xyze(0,i);
-   xder2(5,0) += deriv2(5,i) * xyze(0,i);
+  // determine 2nd derivatives of coord.-functions
+  for (int i=0;i<iel;i++)
+  {
+    xder2(0,0) += deriv2(0,i) * xyze(0,i);
+    xder2(1,0) += deriv2(1,i) * xyze(0,i);
+    xder2(2,0) += deriv2(2,i) * xyze(0,i);
+    xder2(3,0) += deriv2(3,i) * xyze(0,i);
+    xder2(4,0) += deriv2(4,i) * xyze(0,i);
+    xder2(5,0) += deriv2(5,i) * xyze(0,i);
 
-   xder2(0,1) += deriv2(0,i) * xyze(1,i);
-   xder2(1,1) += deriv2(1,i) * xyze(1,i);
-   xder2(2,1) += deriv2(2,i) * xyze(1,i);
-   xder2(3,1) += deriv2(3,i) * xyze(1,i);
-   xder2(4,1) += deriv2(4,i) * xyze(1,i);
-   xder2(5,1) += deriv2(5,i) * xyze(1,i);
+    xder2(0,1) += deriv2(0,i) * xyze(1,i);
+    xder2(1,1) += deriv2(1,i) * xyze(1,i);
+    xder2(2,1) += deriv2(2,i) * xyze(1,i);
+    xder2(3,1) += deriv2(3,i) * xyze(1,i);
+    xder2(4,1) += deriv2(4,i) * xyze(1,i);
+    xder2(5,1) += deriv2(5,i) * xyze(1,i);
 
-   xder2(0,2) += deriv2(0,i) * xyze(2,i);
-   xder2(1,2) += deriv2(1,i) * xyze(2,i);
-   xder2(2,2) += deriv2(2,i) * xyze(2,i);
-   xder2(3,2) += deriv2(3,i) * xyze(2,i);
-   xder2(4,2) += deriv2(4,i) * xyze(2,i);
-   xder2(5,2) += deriv2(5,i) * xyze(2,i);
-} /* end of loop over i */
+    xder2(0,2) += deriv2(0,i) * xyze(2,i);
+    xder2(1,2) += deriv2(1,i) * xyze(2,i);
+    xder2(2,2) += deriv2(2,i) * xyze(2,i);
+    xder2(3,2) += deriv2(3,i) * xyze(2,i);
+    xder2(4,2) += deriv2(4,i) * xyze(2,i);
+    xder2(5,2) += deriv2(5,i) * xyze(2,i);
+  }
 
-/*--------------------------------- calculate second global derivatives */
-for (int i=0;i<iel;i++)
-{
-   const double r0 = deriv2(0,i) - xder2(0,0)*derxy(0,i) - xder2(0,1)*derxy(1,i) \
-                     - xder2(0,2)*derxy(2,i);
-   const double r1 = deriv2(1,i) - xder2(1,0)*derxy(0,i) - xder2(1,1)*derxy(1,i) \
-                     - xder2(1,2)*derxy(2,i);
-   const double r2 = deriv2(2,i) - xder2(2,0)*derxy(0,i) - xder2(2,1)*derxy(1,i) \
-                     - xder2(2,2)*derxy(2,i);
-   const double r3 = deriv2(3,i) - xder2(3,0)*derxy(0,i) - xder2(3,1)*derxy(1,i) \
-                     - xder2(3,2)*derxy(2,i);
-   const double r4 = deriv2(4,i) - xder2(4,0)*derxy(0,i) - xder2(4,1)*derxy(1,i) \
-                     - xder2(4,2)*derxy(2,i);
-   const double r5 = deriv2(5,i) - xder2(5,0)*derxy(0,i) - xder2(5,1)*derxy(1,i) \
-                     - xder2(5,2)*derxy(2,i);
+  // calculate second global derivatives
+  for (int inode=0;inode<iel;inode++)
+  {
+    const double r0 = deriv2(0,inode) - xder2(0,0)*derxy(0,inode) 
+                                      - xder2(0,1)*derxy(1,inode)
+                                      - xder2(0,2)*derxy(2,inode);
+    const double r1 = deriv2(1,inode) - xder2(1,0)*derxy(0,inode) 
+                                      - xder2(1,1)*derxy(1,inode)
+                                      - xder2(1,2)*derxy(2,inode);
+    const double r2 = deriv2(2,inode) - xder2(2,0)*derxy(0,inode) 
+                                      - xder2(2,1)*derxy(1,inode)
+                                      - xder2(2,2)*derxy(2,inode);
+    const double r3 = deriv2(3,inode) - xder2(3,0)*derxy(0,inode)
+                                      - xder2(3,1)*derxy(1,inode)
+                                      - xder2(3,2)*derxy(2,inode);
+    const double r4 = deriv2(4,inode) - xder2(4,0)*derxy(0,inode)
+                                      - xder2(4,1)*derxy(1,inode)
+                                      - xder2(4,2)*derxy(2,inode);
+    const double r5 = deriv2(5,inode) - xder2(5,0)*derxy(0,inode)
+                                      - xder2(5,1)*derxy(1,inode)
+                                      - xder2(5,2)*derxy(2,inode);
 
-   derxy2(0,i) += bm(0,0)*r0 + bm(0,1)*r1 + bm(0,2)*r2 \
-                +  bm(0,3)*r3 + bm(0,4)*r4 + bm(0,5)*r5;
-   derxy2(1,i) += bm(1,0)*r0 + bm(1,1)*r1 + bm(1,2)*r2 \
-                +  bm(1,3)*r3 + bm(1,4)*r4 + bm(1,5)*r5;
-   derxy2(2,i) += bm(2,0)*r0 + bm(2,1)*r1 + bm(2,2)*r2 \
-                +  bm(2,3)*r3 + bm(2,4)*r4 + bm(2,5)*r5;
-   derxy2(3,i) += bm(3,0)*r0 + bm(3,1)*r1 + bm(3,2)*r2 \
-                +  bm(3,3)*r3 + bm(3,4)*r4 + bm(3,5)*r5;
-   derxy2(4,i) += bm(4,0)*r0 + bm(4,1)*r1 + bm(4,2)*r2 \
-                +  bm(4,3)*r3 + bm(4,4)*r4 + bm(4,5)*r5;
-   derxy2(5,i) += bm(5,0)*r0 + bm(5,1)*r1 + bm(5,2)*r2 \
-                +  bm(5,3)*r3 + bm(5,4)*r4 + bm(5,5)*r5;
-} /* end of loop over i */
+    derxy2(0,inode) += bm(0,0)*r0 + bm(0,1)*r1 + bm(0,2)*r2
+                    +  bm(0,3)*r3 + bm(0,4)*r4 + bm(0,5)*r5;
+    derxy2(1,inode) += bm(1,0)*r0 + bm(1,1)*r1 + bm(1,2)*r2
+                    +  bm(1,3)*r3 + bm(1,4)*r4 + bm(1,5)*r5;
+    derxy2(2,inode) += bm(2,0)*r0 + bm(2,1)*r1 + bm(2,2)*r2
+                    +  bm(2,3)*r3 + bm(2,4)*r4 + bm(2,5)*r5;
+    derxy2(3,inode) += bm(3,0)*r0 + bm(3,1)*r1 + bm(3,2)*r2
+                    +  bm(3,3)*r3 + bm(3,4)*r4 + bm(3,5)*r5;
+    derxy2(4,inode) += bm(4,0)*r0 + bm(4,1)*r1 + bm(4,2)*r2
+                    +  bm(4,3)*r3 + bm(4,4)*r4 + bm(4,5)*r5;
+    derxy2(5,inode) += bm(5,0)*r0 + bm(5,1)*r1 + bm(5,2)*r2
+                    +  bm(5,3)*r3 + bm(5,4)*r4 + bm(5,5)*r5;
+  }
 
-/*----------------------------------------------------------------------*/
-
-return;
+  return;
 } // end of DRT:Elements:Fluid3:f3_gder2
 
 

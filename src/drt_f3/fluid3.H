@@ -1,4 +1,4 @@
-/*!----------------------------------------------------------------------
+/*!
 \file fluid3.H
 
 \class DRT::Elements::Fluid3
@@ -11,8 +11,7 @@ Maintainer: Georg Bauer
             http://www.lnm.mw.tum.de
             089 - 289-15252
 </pre>
-
-*----------------------------------------------------------------------*/
+*/
 #ifdef D_FLUID3
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
@@ -33,10 +32,7 @@ using namespace Teuchos;
 
 // forward declarations
 struct _MATERIAL;
-/*!
-\brief DRT: namespace of the ccarat discretization module
 
-*/
 namespace DRT
 {
 // forward declarations
@@ -70,10 +66,11 @@ public:
 
   /*!
   \brief Standard Constructor
-
-  \param id : A unique global id
   */
-  Fluid3(int id, int owner);
+  Fluid3(
+    int id,    ///< A unique global id
+    int owner  ///< ???
+    );
 
   /*!
   \brief Copy Constructor
@@ -100,14 +97,14 @@ public:
   /*!
   \brief Return number of lines of this element
   */
-  virtual int NumLine() const 
+  virtual int NumLine() const
   {if (NumNode()==8 || NumNode()==20 || NumNode()==27) return 12;
    else if (NumNode()==4 || NumNode()==10) return 6;
    else {
     dserror("Could not determine number of lines");
     return -1;
     }
-  }  
+  }
 
   /*!
   \brief Return number of surfaces of this element
@@ -128,19 +125,16 @@ public:
 
   /*!
   \brief Get vector of ptrs to the lines of this element
-
   */
   virtual DRT::Element** Lines();
 
   /*!
   \brief Get vector of ptrs to the surfaces of this element
-
   */
   virtual DRT::Element** Surfaces();
 
   /*!
   \brief Get vector of ptrs to the volume of this element
-
   */
   virtual DRT::Element** Volumes();
 
@@ -164,7 +158,6 @@ public:
   \brief Unpack data from a char vector into this class
 
   \ref Pack and \ref Unpack are used to communicate this element
-
   */
   virtual void Unpack(const vector<char>& data);
 
@@ -309,20 +302,19 @@ private:
     calc_ShapeDeriv2
   };
 
-  //!Constants
   //! number of space dimensions
   static const int                                NSD_ = 3;
   //!number of degrees of freedom
   static const int                                NDF_ = 4;
   //! Gaussrule
-  DRT::Utils::GaussRule3D                         gaussrule_;                         
+  DRT::Utils::GaussRule3D                         gaussrule_;
   //! flag for euler/ale net algorithm
   bool                                            is_ale_;
   //! container containing all kind of fluid3 thisandthat
   DRT::Container                                  data_;
 
   //! vector of volumes of this element (length 1)
-  vector<DRT::Element*>                   volume_;
+  vector<DRT::Element*>                           volume_;
 
   //! vector of surfaces adjacent to this element (fluid3: 4 or 6 surfaces)
   vector<RefCountPtr<DRT::Elements::Fluid3Surface> > surfaces_;
@@ -332,8 +324,6 @@ private:
   vector<RefCountPtr<DRT::Elements::Fluid3Line> > lines_;
   //! vector of lines adjacent to this element
   vector<DRT::Elements::Fluid3Line*>              lineptrs_;
-
-
 
 
   // internal calculation methods
@@ -352,7 +342,7 @@ private:
                   Epetra_SerialDenseVector* residual,
                   struct _MATERIAL*         material,
                   ParameterList&            params
-		  );
+                  );
 
   // calculating system matrix for genalpha
   void f3_genalpha_sys_mat(vector<int>&              lm,
@@ -375,7 +365,6 @@ private:
                        struct _MATERIAL*         material,
                        ParameterList& 	         params);
 
-
   // calculate the stabilisation parameter
   void f3_calc_stabpar(vector<double>           &tau,
                        int                       iel,
@@ -384,61 +373,79 @@ private:
                        double                    visc,
                        ParameterList            &params,
                        int                       version);
-                       
+
+  /*!
+  \brief calculate stabilization parameter
+  \return vector with 3 stabilization parameters
+   */
   vector<double> f3_caltau(
-    const Epetra_SerialDenseMatrix&    xyze,
-    const vector<double>&        evelnp,
-    const DRT::Element::DiscretizationType           distype,
-    const double                 visc,
-    const int                    numnode,
-    const double                 timefac,
-    const bool                   is_stationary
+    const Epetra_SerialDenseMatrix&         xyze,
+    const vector<double>&                   evelnp,
+    const DRT::Element::DiscretizationType  distype,
+    const double                            visc,
+    const int                               numnode,
+    const double                            timefac,
+    const bool                              is_stationary
     );
 
-  /// crate array with element corner positions 
+  /// create array with element corner positions
   Epetra_SerialDenseMatrix f3_getPositionArray(
           const vector<double>&   edispnp);
 
   /*!
     \brief calculate Jacobian matrix
+    \return 3x3 Jacobi matrix
    */
   Epetra_SerialDenseMatrix getJacobiMatrix(
     const Epetra_SerialDenseMatrix& xyze,   ///< positions of element nodes as array
     const Epetra_SerialDenseMatrix& deriv,  ///< shape function derivatives with respect to element coordinates
     const int                       iel     ///< number of nodes in element
     ) const;
-  
+
   /*!
-  \brief calculate determinant of a given Jacobimatrix
-  
-  Returns the determinante of a 3x3 matrix
+   \brief calculate determinant of a given Jacobimatrix
+
+   \return determinante of a 3x3 matrix
    */
   double getDeterminante(
     const Epetra_SerialDenseMatrix&  xjm  ///< a 3x3 matrix
     ) const;
 
-  // get the body force from the nodes condition
+  /*!
+   * \brief get the body force from the nodes condition
+   * \return ???
+   */
   Epetra_SerialDenseMatrix f3_getbodyforce (
-                        const double              time   ,
-                        const ParameterList&    	  params);
+    const double          time,   ///< ???
+    const ParameterList&  params  ///< ???
+    );
 
-  // calculate global derivatives w.r.t. x,y,z at point r,s,t are
-    void f3_gder(Epetra_SerialDenseMatrix& derxy,
-		 const Epetra_SerialDenseMatrix& deriv,
-         const Epetra_SerialDenseMatrix& xjm,
-		 const double& det,
-         const int iel
-		 );
+  /*!
+   * \brief calculate global derivatives w.r.t. x,y,z at point r,s,t are
+   */
+  void f3_gder(
+    Epetra_SerialDenseMatrix&        derxy,  ///< first derivative with respect to global coordinates x,y,z
+    const Epetra_SerialDenseMatrix&  deriv,  ///< first derivative with respect to local coordinates r,s,t
+    const Epetra_SerialDenseMatrix&  xjm,    ///< 3x3 Jacobi matrix dx/dxi
+    const double&                    det,    ///< determinante of Jacobi matrix
+    const int                        iel     ///< number of nodes for this element
+    );
 
-  // calculate second global derivatives w.r.t x/y/z at point r,s,t
-    void f3_gder2(const Epetra_SerialDenseMatrix& xyze,
-				    const Epetra_SerialDenseMatrix& xjm,
-                                    const Epetra_SerialDenseMatrix& derxy,
-				    Epetra_SerialDenseMatrix& derxy2,
-				    const Epetra_SerialDenseMatrix& deriv2,
-                                    const int iel
-				    );
-  // evaluate error for beltrami test problem
+  /*!
+   * \brief calculate second global derivatives w.r.t x/y/z at point r,s,t
+   */
+  void f3_gder2(
+    const Epetra_SerialDenseMatrix&  xyze,    ///< nodal position array
+    const Epetra_SerialDenseMatrix&  xjm,     ///< 3x3 Jacobi matrix dx/dxi
+    const Epetra_SerialDenseMatrix&  derxy,   ///< first derivative with respect to global coordinates x,y,z
+    Epetra_SerialDenseMatrix&        derxy2,  ///< second derivative with respect to global coordinates x,y,z
+    const Epetra_SerialDenseMatrix&  deriv2,  ///< secand derivative with respect to element coordinates r,s,t
+    const int                        iel      ///< number of nodes for this element
+    );
+
+  /*!
+   * \brief evaluate error for beltrami test problem
+   */
   void f3_int_beltrami_err(
     vector<double>&       myvelnp,
     vector<double>&       myprenp,
@@ -446,49 +453,53 @@ private:
     ParameterList&    	  params
     );
 
-  // evaluate fluid coefficient matrix (instationary case)
-    void f3_calmat(
-       Epetra_SerialDenseMatrix& estif,
-       Epetra_SerialDenseVector&     eforce,
-       const vector<double>&  	      velint,
-       const vector<double>&   	      histvec,
-       const vector<double>&   	      gridvint,
-       const double&   		      press,
-       const Epetra_SerialDenseMatrix&  vderxy,
-       const Epetra_SerialDenseMatrix&  vderxy2,
-       const vector<double>&   	        gradp,
-       const Epetra_SerialDenseVector&  funct,
-       const vector<double>&   	        tau,
-       const Epetra_SerialDenseMatrix&  derxy,
-       const Epetra_SerialDenseMatrix&  derxy2,
-       const vector<double>&            edeadng,
-       const double&               	    fac,
-       const double&   	      visc,
-       const int&      	      iel,
-       ParameterList& 		      params
-      		);
+  /*!
+   * \brief evaluate fluid coefficient matrix (instationary case)
+   */
+  void f3_calmat(
+    Epetra_SerialDenseMatrix&        estif,
+    Epetra_SerialDenseVector&        eforce,
+    const vector<double>&            velint,
+    const vector<double>&            histvec,
+    const vector<double>&            gridvint,
+    const double&                    press,
+    const Epetra_SerialDenseMatrix&  vderxy,
+    const Epetra_SerialDenseMatrix&  vderxy2,
+    const vector<double>&            gradp,
+    const Epetra_SerialDenseVector&  funct,
+    const vector<double>&            tau,
+    const Epetra_SerialDenseMatrix&  derxy,
+    const Epetra_SerialDenseMatrix&  derxy2,
+    const vector<double>&            edeadng,
+    const double&                    fac,
+    const double&                    visc,
+    const int&                       iel,
+    ParameterList&                   params
+    );
 
-  // evaluate fluid coefficient matrix (stationary case)
-    void f3_calmat_stationary(
-       Epetra_SerialDenseMatrix&        estif,
-       Epetra_SerialDenseVector&        eforce,
-       const vector<double>&  	        velint,
-       const vector<double>&   	        histvec,
-       const vector<double>&   	        gridvint,
-       const double&   		            press,
-       const Epetra_SerialDenseMatrix&  vderxy,
-       const Epetra_SerialDenseMatrix&  vderxy2,
-       const vector<double>&   	        gradp,
-       const Epetra_SerialDenseVector&  funct,
-       const vector<double>&   	        tau,
-       const Epetra_SerialDenseMatrix&  derxy,
-       const Epetra_SerialDenseMatrix&  derxy2,
-       const vector<double>&            edeadng,
-       const double&               	    fac,
-       const double&   	                visc,
-       const int&      	                iel,
-       ParameterList& 		            params
-       );
+  /*!
+   * \brief evaluate fluid coefficient matrix (stationary case)
+   */
+  void f3_calmat_stationary(
+    Epetra_SerialDenseMatrix&        estif,
+    Epetra_SerialDenseVector&        eforce,
+    const vector<double>&            velint,
+    const vector<double>&            histvec,
+    const vector<double>&            gridvint,
+    const double&                    press,
+    const Epetra_SerialDenseMatrix&  vderxy,
+    const Epetra_SerialDenseMatrix&  vderxy2,
+    const vector<double>&            gradp,
+    const Epetra_SerialDenseVector&  funct,
+    const vector<double>&            tau,
+    const Epetra_SerialDenseMatrix&  derxy,
+    const Epetra_SerialDenseMatrix&  derxy2,
+    const vector<double>&            edeadng,
+    const double&                    fac,
+    const double&                    visc,
+    const int&                       iel,
+    ParameterList&                   params
+    );
 
   void CreateLinesTet(const int& nline,
                       const int& nnode);
@@ -502,30 +513,35 @@ private:
   void CreateSurfacesHex(const int& nline,
                          const int& nnode);
 
-  // get optimal gaussrule for given discretization type
-  DRT::Utils::GaussRule3D getOptimalGaussrule(const DiscretizationType& distype);
+  /*!
+   \brief get optimal gaussrule for given discretization type
+   \return enum with optimal gausrule for this element
+   */
+  DRT::Utils::GaussRule3D getOptimalGaussrule(
+    const DiscretizationType&  distype  ///< switch gausrule based on this discretization type
+    );
 
   // evaluate fluid coefficient matrix for a generalised
   // alpha problem
   void f3_genalpha_calmat(
     Epetra_SerialDenseMatrix&  elemat,
-    vector<double>&  	       accintam,
-    vector<double>&  	       velintaf,
+    vector<double>&            accintam,
+    vector<double>&            velintaf,
     Epetra_SerialDenseMatrix&  vderxyaf,
     Epetra_SerialDenseMatrix&  vderxyaf2,
-    vector<double>&  	       velintnp,
+    vector<double>&            velintnp,
     Epetra_SerialDenseMatrix&  vderxynp,
     double&                    prenp,
-    vector<double>&  	       pderxynp,
-    vector<double>&  	       edeadaf,
+    vector<double>&            pderxynp,
+    vector<double>&            edeadaf,
     Epetra_SerialDenseVector&  funct,
     Epetra_SerialDenseMatrix&  derxy,
     Epetra_SerialDenseMatrix&  derxy2,
-    vector<double>&  	       tau,
+    vector<double>&            tau,
     const double&              fac,
     const double&              visc,
     const int&                 iel,
-    ParameterList& 	       params);
+    ParameterList&             params);
 
   // evaluate fluid residual for a generalised alpha problem
   void f3_genalpha_calrhs(
@@ -548,9 +564,10 @@ private:
     const int&                 iel,
     ParameterList& 	       params);
 
-    bool is_higher_order_element(const DRT::Element::DiscretizationType  distype) const;
-    
-    ActionType convertStringToActionType(const string& action) const;
+  bool is_higher_order_element(const DRT::Element::DiscretizationType  distype) const;
+
+  ActionType convertStringToActionType(const string& action) const;
+
 }; // class Fluid3
 
 
@@ -723,13 +740,13 @@ public:
   virtual int NumLine() const
   {if (NumNode()==4 || NumNode()==8 || NumNode()==9) return 4;
     else if (NumNode()==3 || NumNode()==6) return 3;
-    else 
+    else
     {
             dserror("Could not determine number of surfaces");
         return -1;
         }
-  }    
-  
+  }
+
   /*!
   \brief Get vector of ptrs to the lines of this element
 
@@ -907,7 +924,7 @@ private:
 
   void CreateLinesTri(const int& nline,
                       const int& nnode);
-  
+
   void CreateLinesQuad(const int& nline,
                        const int& nnode);
 
@@ -930,15 +947,15 @@ public:
   \param parent: The parent fluid element of this line
   \param lline: the local line number of this line w.r.t. the parent element
   */
-  
-  Fluid3Line(   int id, 
-                int owner, 
-                int nnode, 
+
+  Fluid3Line(   int id,
+                int owner,
+                int nnode,
                 const int* nodeids,
-                DRT::Node** nodes, 
+                DRT::Node** nodes,
                 DRT::Elements::Fluid3Surface* surfaceParent,
-                DRT::Elements::Fluid3* parent,  
-                const int lline);   
+                DRT::Elements::Fluid3* parent,
+                const int lline);
 
   /*!
   \brief Copy Constructor
@@ -1069,8 +1086,8 @@ public:
                Epetra_SerialDenseVector& elevec1,
                Epetra_SerialDenseVector& elevec2,
                Epetra_SerialDenseVector& elevec3);
-               
-               
+
+
   //@}
 
   //! @name Evaluate methods
@@ -1094,7 +1111,7 @@ public:
                               DRT::Condition&           condition,
                               vector<int>&              lm,
                               Epetra_SerialDenseVector& elevec1);
-     
+
 
   //@}
 
@@ -1103,12 +1120,12 @@ private:
   //! action parameters recognized by Fluid3Line
   enum ActionType
   {
-     none,      
+     none,
      calc_Shapefunction,
      calc_ShapeDeriv1,
      calc_ShapeDeriv2
   };
-  
+
   // don't want = operator
   Fluid3Line& operator = (const Fluid3Line& old);
 
@@ -1117,10 +1134,10 @@ private:
 
   //! The volume parent element of this line
   DRT::Elements::Fluid3* parent_;                  // problem !!! wth initialization
-  
 
-  
-  
+
+
+
   //! The local line number of this line w.r.t to the parent_ element
   int                    lline_;
 
