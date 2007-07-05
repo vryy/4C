@@ -896,6 +896,11 @@ public:
 
   //@}
 
+#ifdef XFEM
+  // to be removed soon and without warning!!! a.gerstenberger
+  DRT::Elements::Fluid3* GetParent(){return parent_;}
+#endif
+
 private:
 
   //! action parameters recognized by Fluid3Surface
