@@ -21,7 +21,7 @@ Maintainer: Ursula Mayer
 #include "../drt_lib/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_f3/fluid3.H"
-#include "/home/axelchen/include/tetgen.h"
+#include "tetgen.h"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Teuchos_RefCountPtr.hpp"
