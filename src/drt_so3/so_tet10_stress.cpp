@@ -51,14 +51,13 @@ extern struct _MATERIAL  *mat;
 /*----------------------------------------------------------------------**####
  |  Do stress calculation (private)                            maf 04/07|
  *----------------------------------------------------------------------*/
-//void DRT::Elements::So_hex8::soh8_stress(struct _MATERIAL* material,
-void DRT::Elements::So_tet10::sot10_stress(struct _MATERIAL* material,
+void DRT::Elements::So_tet10::so_tet10_stress(struct _MATERIAL* material,
                                          vector<double>& disp,
                                          Epetra_SerialDenseMatrix* stresses)
 {
   DSTraceHelper dst("So_tet10::sotet10_stress");
 
-  #ifdef TET_NO_IMPLEMENT //not yet implemented
+  #if 0 //not yet implemented
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
 ** ============================================================================*/
@@ -210,8 +209,8 @@ void DRT::Elements::So_tet10::sot10_stress(struct _MATERIAL* material,
 
   data_.Add("Stresses",stresses);
   #endif //TET_NO_IMPLEMENT //not yet implemented
-  dserror("So_tet10::sotet10_stress(..) not implemented yet ");
-} //So_tet10::sotet10_stress(..)
+  dserror("So_tet10::so_tet10_stress(..) not implemented yet ");
+} //So_tet10::sotet10_stress
 
 
 #endif  // #ifdef TRILINOS_PACKAGE

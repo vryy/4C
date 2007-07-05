@@ -7,6 +7,8 @@ Maintainer: Moritz Frenzel
             frenzel@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15240
+writen by : Alexander Volf
+			alexander.volf@mytum.de  
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -32,12 +34,7 @@ Maintainer: Moritz Frenzel
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-/*DRT::Elements::Soh8Surface::Soh8Surface(int id, int owner,
-                              int nnode, const int* nodeids,
-                              DRT::Node** nodes,
-                              DRT::Elements::So_hex8* parent,
-                              const int lsurface) :
-DRT::Element(id,element_soh8surface,owner),*/
+
 DRT::Elements::Sotet10Surface::Sotet10Surface(int id, int owner,
                               int nnode, const int* nodeids,
                               DRT::Node** nodes,
@@ -47,7 +44,7 @@ DRT::Element(id,element_sotet10surface,owner),
 parent_(parent),
 lsurface_(lsurface)
 {
-  //DSTraceHelper dst("Soh8Surface::Soh8Surface");
+  //DSTraceHelper dst("Sotet10Surface::Sotet10Surface");
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
   return;
@@ -56,13 +53,12 @@ lsurface_(lsurface)
 /*----------------------------------------------------------------------***
  |  copy-ctor (public)                                         maf 01/07|
  *----------------------------------------------------------------------*/
-//DRT::Elements::Soh8Surface::Soh8Surface(const DRT::Elements::Soh8Surface& old) :
 DRT::Elements::Sotet10Surface::Sotet10Surface(const DRT::Elements::Sotet10Surface& old) :
 DRT::Element(old),
 parent_(old.parent_),
 lsurface_(old.lsurface_)
 {
-  //DSTraceHelper dst("Soh8Surface::Soh8Surface");
+  //DSTraceHelper dst("Sotet10Surface::Sotet10Surface");
   return;
 }
 
@@ -70,33 +66,30 @@ lsurface_(old.lsurface_)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            maf 01/07 |
  *----------------------------------------------------------------------*/
-//DRT::Element* DRT::Elements::Soh8Surface::Clone() const
 DRT::Element* DRT::Elements::Sotet10Surface::Clone() const
 {
-  //DSTraceHelper dst("Soh8Surface::Clone");
+  //DSTraceHelper dst("Sotet10Surface::Clone");
   DRT::Elements::Sotet10Surface* newelement = new DRT::Elements::Sotet10Surface(*this);
   return newelement;
 }
 
-/*----------------------------------------------------------------------***#
+/*----------------------------------------------------------------------*
  |                                                             (public) |
  |                                                          u.kue 03/07 |
  *----------------------------------------------------------------------*/
-//DRT::Element::DiscretizationType DRT::Elements::Soh8Surface::Shape() const
 DRT::Element::DiscretizationType DRT::Elements::Sotet10Surface::Shape() const
 {
-  //return quad4;
-  return tri3;																//?????????????????????????????
+
+  return tri6;
 }
 
 /*----------------------------------------------------------------------***
  |  Pack data                                                  (public) |
  |                                                            maf 02/07 |
  *----------------------------------------------------------------------*/
-//void DRT::Elements::Soh8Surface::Pack(vector<char>& data) const
 void DRT::Elements::Sotet10Surface::Pack(vector<char>& data) const
 {
-  //DSTraceHelper dst("Soh8Surface::Pack");
+  //DSTraceHelper dst("Sotet10Surface::Pack");
   data.resize(0);
   dserror("this Sote10Surface element does not support communication");
 
@@ -107,10 +100,9 @@ void DRT::Elements::Sotet10Surface::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            maf 02/07 |
  *----------------------------------------------------------------------*/
-//void DRT::Elements::Soh8Surface::Unpack(const vector<char>& data)
 void DRT::Elements::Sotet10Surface::Unpack(const vector<char>& data)
 {
-  //DSTraceHelper dst("Soh8Surface::Unpack");
+  //DSTraceHelper dst("Sotet10Surface::Unpack");
  
   dserror("this Sotet10Surface element does not support communication");
   return;
@@ -119,10 +111,9 @@ void DRT::Elements::Sotet10Surface::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------***
  |  dtor (public)                                              maf 01/07|
  *----------------------------------------------------------------------*/
-//DRT::Elements::Soh8Surface::~Soh8Surface()
 DRT::Elements::Sotet10Surface::~Sotet10Surface()
 {
-  //DSTraceHelper dst("Soh8Surface::~Soh8Surface");
+  //DSTraceHelper dst("Sotet10Surface::~Sotet10Surface");
   return;
 }
 
@@ -130,17 +121,13 @@ DRT::Elements::Sotet10Surface::~Sotet10Surface()
 /*----------------------------------------------------------------------*
  |  print this element (public)                                maf 01/07|
  *----------------------------------------------------------------------*/
-//void DRT::Elements::Soh8Surface::Print(ostream& os) const
 void DRT::Elements::Sotet10Surface::Print(ostream& os) const
 {
-  //DSTraceHelper dst("Soh8Surface::Print");
-  //os << "Soh8Surface ";
+  //DSTraceHelper dst("Sotet10Surface::Print");
   os << "Sotet10Surface ";
   Element::Print(os);
   return;
 }
-
-
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

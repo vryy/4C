@@ -239,6 +239,23 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
     }
     break;
 #endif
+#ifdef D_SOTET10
+    case ParObject_So_tet10:
+    {
+      DRT::Elements::So_tet10* object = new DRT::Elements::So_tet10(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_Sotet10Register:
+    {
+      DRT::Elements::Sotet10Register* object =
+                new DRT::Elements::Sotet10Register(DRT::Element::element_so_tet10);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+#endif
     case ParObject_ElementRegister:
     {
       dserror("DRT::ElementRegister is pure virtual, cannot create instance");
@@ -377,7 +394,7 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
       return ele;
     }
     break;
-#if 0
+#ifdef D_SOTET10 
     case so_tet10:
     {
       RefCountPtr<DRT::Element> ele = rcp(new DRT::Elements::So_tet10(id,owner));

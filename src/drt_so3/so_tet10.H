@@ -35,8 +35,10 @@ using namespace Teuchos;
 #define NUMDOF_SOTET10      30      // total dofs per element
 #define NUMSTR_SOTET10       6      // number of strains/stresses 	/****/
 #define NUMGPT_SOTET10       4      // total gauss points per element	/****/
-#define NUMDIM_SOTET10       3      // number of dimensions 			/****/ 
+#define NUMDIM_SOTET10       3      // number of dimensions 			/****/
 #define NUMCOORD_SOTET10	 4 		// number of shape function cooordinates (ksi1-ksi4) 
+#define NUMNOD_SOTET10_FACE  6		// number of nodes on a TET10 face (which is a TRI6) 
+#define NUMGPT_SOTET10_FACE	 3		// number of GP    on a TET10 face (which is a TRI6) 
 
 // forward declarations
 struct _MATERIAL;
@@ -66,17 +68,13 @@ class Sotet10Register;
 \author volf (alexander.volf@mytum.de)
 */
 
-//class So_hex8 : public DRT::Element
 class So_tet10 : public DRT::Element
 {
 public:
 
   //! @name Friends
-  //friend class Soh8Register;
   friend class Tet10Register;
-  //friend class Soh8Surface;
   friend class Tet10Surface;
-  //friend class Soh83Line;
   friend class Tet103Line;
 
   //@}
@@ -87,7 +85,6 @@ public:
 
   \param id : A unique global id
   */
-  //So_hex8(int id, int owner);
   So_tet10(int id, int owner);
   
   /*!
@@ -96,7 +93,6 @@ public:
   Makes a deep copy of a Element
 
   */
-  //So_hex8(const So_hex8& old);
   So_tet10(const So_tet10& old);
   
   /*!
@@ -174,7 +170,6 @@ public:
   \brief Destructor
 
   */
-  //virtual ~So_hex8();
   virtual ~So_tet10();
   //@}
 
@@ -310,29 +305,19 @@ protected:
   //! kinematic types of so_tet10
   enum KinematicType
   {
-    //soh8_geolin,
-    sot10_geolin,
-    //soh8_totlag,
-    sot10_totlag,
-    //soh8_updlag,
-    sot10_updlag,
+    so_tet10_geolin,
+    so_tet10_totlag,
+    so_tet10_updlag,
   };
   enum StressType//###################
   {
-    //soh8_stress_none,
-    sot8_stress_none,
-    //soh8_stress_gpxyz,
-    sot8_stress_gpxyz,
-    //soh8_stress_gprst,
-    sot8_stress_gprst,
-    //soh8_stress_gp123,
-    sot8_stress_gp123,
-    //soh8_stress_ndxyz,
-    sot8_stress_ndxyz,
-    //soh8_stress_ndrst,
-    sot8_stress_ndrst,
-    //soh8_stress_nd123,
-    sot8_stress_nd123,
+    so_tet10_stress_none,
+    so_tet10_stress_gpxyz,
+    so_tet10_stress_gprst,
+    so_tet10_stress_gp123,
+    so_tet10_stress_ndxyz,
+    so_tet10_stress_ndrst,
+    so_tet10_stress_nd123,
   };
 
   //! kinematic type
@@ -343,24 +328,17 @@ protected:
   int                                             ngp_[3];
   //! number of the material law
   int                                             material_;
-  //! container containing so_hex3 eas stuff//ommited
-  //DRT::Container                                  easdata_;
-  //! container containing all kind of solid3 thisandthat
+
   DRT::Container                                  data_;
   //! vector of volume (length 1) of this element
-  //vector<RefCountPtr<DRT::Elements::Soh8Volume> > volume_;
   vector<RefCountPtr<DRT::Elements::Sotet10Volume> > volume_;
   //! vector of surfaces of this element
-  //vector<RefCountPtr<DRT::Elements::Soh8Surface> > surfaces_;
-  vector<RefCountPtr<DRT::Elements::Sotet10Surface> > surfaces_;
+    vector<RefCountPtr<DRT::Elements::Sotet10Surface> > surfaces_;
   //! vector of surfaces of this element
-  //vector<DRT::Elements::Soh8Surface*>           surfaceptrs_;
   vector<DRT::Elements::Sotet10Surface*>           surfaceptrs_;
   //! vector of lines adjacent to this element
-  //vector<RefCountPtr<DRT::Elements::Soh8Line> > lines_;
   vector<RefCountPtr<DRT::Elements::Sotet10Line> > lines_;
   //! vector of lines adjacent to this element
-  //vector<DRT::Elements::Soh8Line*>              lineptrs_;
   vector<DRT::Elements::Sotet10Line*>              lineptrs_;
   //! vector of history variables for each Gauss point
   vector<RefCountPtr<MAT::Material> >                mat_;
@@ -369,10 +347,8 @@ protected:
   // internal calculation methods
 
   // don't want = operator
-  //So_hex8& operator = (const So_hex8& old);
   So_tet10& operator = (const So_tet10& old);
-  //virtual void soh8_nlnstiffmass(vector<int>&              lm,
-  virtual void sot10_nlnstiffmass(vector<int>&              lm,
+  virtual void so_tet10_nlnstiffmass(vector<int>&              lm,
                                  vector<double>&           disp,
                                  vector<double>&           residual,
                                  Epetra_SerialDenseMatrix* stiffmatrix,
@@ -380,25 +356,21 @@ protected:
                                  Epetra_SerialDenseVector* force,
                                  struct _MATERIAL*         material);
 
-  //void soh8_stress(struct _MATERIAL* material,
-  void sot10_stress(struct _MATERIAL* material,
+  void so_tet10_stress(struct _MATERIAL* material,
                    vector<double>& mydisp,
                    Epetra_SerialDenseMatrix* stresses);
 
-  //void soh8_shapederiv(Epetra_SerialDenseMatrix** shapefct,
-  void sot10_shapederiv(Epetra_SerialDenseMatrix** shapefct,
+  void so_tet10_shapederiv(Epetra_SerialDenseMatrix** shapefct,
                        Epetra_SerialDenseMatrix** deriv,
                        Epetra_SerialDenseVector** weights);
 
-  //void soh8_mat_sel(Epetra_SerialDenseVector* stress,
   // #### hier deklariert, in implementierung soll einfach soh8_mat_sel gerufen werden
-  void sot10_mat_sel(Epetra_SerialDenseVector* stress,
+  void so_tet10_mat_sel(Epetra_SerialDenseVector* stress,
                     Epetra_SerialDenseMatrix* cmat,
                     double* density,
                     const Epetra_SerialDenseVector* glstrain,
                     const Epetra_SerialDenseMatrix* defgrd,
-                    struct _MATERIAL* material,
-                    int gp);
+                    int gp);       
 
 }; // class So_tet10
 
@@ -421,7 +393,6 @@ public:
   \brief Standard Constructor
 
   */
-  //Soh8Register(DRT::Element::ElementType etype);
   Sotet10Register(DRT::Element::ElementType etype);
 
   /*!
@@ -430,7 +401,6 @@ public:
   Makes a deep copy of an Soh8Register
 
   */
-  //Soh8Register(const DRT::Elements::Soh8Register& old);
   Sotet10Register(const DRT::Elements::Sotet10Register& old);
 
   /*!
@@ -440,7 +410,6 @@ public:
   where the type of the derived class is unknown and a copy-ctor is needed
 
   */
-  //DRT::Elements::Soh8Register* Clone() const;
   DRT::Elements::Sotet10Register* Clone() const;
 
   /*!
@@ -449,7 +418,6 @@ public:
   every class imploementing ParObject needs a unique id defined at the
   top of this file.
   */
- // virtual int UniqueParObjectId() const { return ParObject_Soh8Register;}
   virtual int UniqueParObjectId() const { return ParObject_Sotet10Register;}
 
   /*!
@@ -472,7 +440,6 @@ public:
   \brief Destructor
 
   */
-  //virtual ~Soh8Register();
   virtual ~Sotet10Register();
 
   //@}
@@ -523,7 +490,6 @@ private:
 \author maf (frenzel@lnm.mw.tum.de)
 */
 
-//class Soh8Surface : public DRT::Element
 class Sotet10Surface : public DRT::Element
 {
 public:
@@ -541,8 +507,6 @@ public:
   \param parent: The parent fluid element of this surface
   \param lsurface: the local surface number of this surface w.r.t. the parent element
   */
-//  Soh8Surface(int id, int owner, int nnode, const int* nodeids,
-  //           DRT::Node** nodes, DRT::Elements::So_hex8* parent, const int lsurface);
   Sotet10Surface(int id, int owner, int nnode, const int* nodeids,
              DRT::Node** nodes, DRT::Elements::So_tet10* parent, const int lsurface);
 
@@ -553,7 +517,6 @@ public:
   Makes a deep copy of a Element
 
   */
- // Soh8Surface(const Soh8Surface& old);
   Sotet10Surface(const Sotet10Surface& old);
   
   /*!
@@ -576,7 +539,6 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of the drt_parobject.H file.
   */
-  //virtual int UniqueParObjectId() const { return ParObject_Soh8Surface;}
   virtual int UniqueParObjectId() const { return ParObject_Sotet10Surface;}
 
   /*!
@@ -599,7 +561,6 @@ public:
   \brief Destructor
 
   */
-  //virtual ~Soh8Surface();
   virtual ~Sotet10Surface();
 
   //@}
@@ -675,22 +636,23 @@ public:
 private:
 
   // don't want = operator
-  //Soh8Surface& operator = (const Soh8Surface& old);
   Sotet10Surface& operator = (const Sotet10Surface& old);
 
   //! The parent element of this surface
-  //DRT::Elements::So_hex8* parent_;
   DRT::Elements::So_tet10* parent_;
   //! The local surface number of this surface w.r.t to the parent_ element
   int                    lsurface_;
 
-  //void soh8_surface_integ(
-  void sotet10_surface_integ(
+  void sotet10_surface_shapefunc(
+      Epetra_SerialDenseMatrix* shapefct,  // pointer to pointer of shapefct
+      Epetra_SerialDenseVector* weights);
+  
+  /*void sotet10_surface_integ(	//became obsolete !!!!!!!!!!!!!!!!
       vector<double>* funct,                 // (o) shape functions
       double* sqrtdetg,                      // (o) pointer to sqrt of det(g)
       const Epetra_SerialDenseMatrix* xsrefe,// (i) material element coords
       const double r,                        // (i) coord in r-direction
-      const double s);                       // (i) coord in s-direction
+      const double s);                       // (i) coord in s-direction*/
 }; // class Sotet10Surface
 
 /*!
@@ -723,8 +685,6 @@ public:
   \param parent: The parent shell element of this line
   \param lline: the local line number of this line w.r.t. the parent element
   */
-  //Soh8Line(int id, int owner, int nnode, const int* nodeids,
-    //         DRT::Node** nodes, DRT::Elements::So_hex8* parent, const int lline);
   Sotet10Line(int id, int owner, int nnode, const int* nodeids,
                DRT::Node** nodes, DRT::Elements::So_tet10* parent, const int lline);
 
@@ -734,7 +694,6 @@ public:
   Makes a deep copy of a Element
 
   */
-  //Soh8Line(const So8Line& old);
   Sotet10Line(const Sotet10Line& old);
 
   /*!
@@ -752,7 +711,6 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of the drt_parobject.H file.
   */
-  // virtual int UniqueParObjectId() const { return ParObject_Soh8Line;}
   virtual int UniqueParObjectId() const { return ParObject_Sotet10Line;}
   /*!
   \brief Pack this class so it can be communicated
@@ -774,7 +732,6 @@ public:
   \brief Destructor
 
   */
-  //virtual ~Soh8Line();
   virtual ~Sotet10Line();
 
   //@}
@@ -854,11 +811,8 @@ public:
 private:
 
   // don't want = operator
-  //Soh8Line& operator = (const Soh8Line& old);
-
   Sotet10Line& operator = (const Sotet10Line& old);
   //! The parent element of this line
-  //DRT::Elements::So_hex8* parent_;
   DRT::Elements::So_tet10* parent_;
   //! The local line number of this line w.r.t to the parent_ element
   int                    lline_;
