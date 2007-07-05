@@ -460,7 +460,7 @@ void DRT::Elements::Fluid3::f3_sys_mat(const vector<int>&        lm,
   const vector<double> tau = f3_caltau(xyze,evelnp,distype,visc,iel,timefac,is_stationary);
 
   // flag for higher order elements
-  const bool higher_order_ele = is_higher_order_element(distype);
+  const bool higher_order_ele = isHigherOrderElement(distype);
 
   // gaussian points
 //  const GaussRule3D gaussrule = getOptimalGaussrule(distype);
@@ -700,7 +700,7 @@ void DRT::Elements::Fluid3::f3_genalpha_sys_mat(
       f3_calc_stabpar(tau,iel,xyze,myvelaf,visc,params,version);
     }
 
-    const bool higher_order_ele = is_higher_order_element(distype);
+    const bool higher_order_ele = isHigherOrderElement(distype);
     // gaussian points
     const GaussRule3D gaussrule = getOptimalGaussrule(distype);
     const IntegrationPoints3D  intpoints = getIntegrationPoints3D(gaussrule);
@@ -951,7 +951,7 @@ void DRT::Elements::Fluid3::f3_genalpha_rhs(
       f3_calc_stabpar(tau,iel,xyze,myvelaf,visc,params,version);
     }
 
-    const bool higher_order_ele = is_higher_order_element(distype);
+    const bool higher_order_ele = isHigherOrderElement(distype);
     // gaussian points
     const GaussRule3D gaussrule = getOptimalGaussrule(distype);
     const IntegrationPoints3D  intpoints = getIntegrationPoints3D(gaussrule);
@@ -3720,7 +3720,7 @@ GaussRule3D DRT::Elements::Fluid3::getOptimalGaussrule(const DiscretizationType&
 
 
 /*---------------------------------------------------------------------*
- |  calculate error for beltrami test problem (private)     gammi 04/07|
+ |  calculate error for beltrami test problem               gammi 04/07|
  *---------------------------------------------------------------------*/
 void DRT::Elements::Fluid3::f3_int_beltrami_err(
   vector<double>&           evelnp,
@@ -3730,11 +3730,11 @@ void DRT::Elements::Fluid3::f3_int_beltrami_err(
   )
 {
 
-  /*-------------------------- add element error to "integrated" error */
+  // add element error to "integrated" error
   double velerr = params.get<double>("L2 integrated velocity error");
   double preerr = params.get<double>("L2 integrated pressure error");
 
-  /*------------------------------------------------- set element data */
+  // set element data
   const int iel = NumNode();
   const DiscretizationType distype = this->Shape();
 
@@ -3744,31 +3744,27 @@ void DRT::Elements::Fluid3::f3_int_beltrami_err(
 
   // get node coordinates of element
   Epetra_SerialDenseMatrix xyze(3,iel);
-  for(int i=0;i<iel;i++)
+  for(int inode=0;inode<iel;inode++)
   {
-    xyze(0,i)=Nodes()[i]->X()[0];
-    xyze(1,i)=Nodes()[i]->X()[1];
-    xyze(2,i)=Nodes()[i]->X()[2];
+    xyze(0,inode)=Nodes()[inode]->X()[0];
+    xyze(1,inode)=Nodes()[inode]->X()[1];
+    xyze(2,inode)=Nodes()[inode]->X()[2];
   }
 
-  //------------------------------ set constants for analytical solution
+  // set constants for analytical solution
   const double t = params.get("total time",-1.0);
-  if (t<0)
-  {
-    dserror("beltrami: no total time for error calculation");
-  }
+  dsassert (t >= 0.0, "beltrami: no total time for error calculation");
 
   const double a      = PI/4.0;
   const double d      = PI/2.0;
 
-  /* get viscosity ---*/
+  // get viscosity
   const double  visc = material->m.fluid->viscosity;
 
   double         preint;
   vector<double> velint  (3);
   vector<double> xint    (3);
 
-  double         p;
   vector<double> u       (3);
 
   double         deltap;
@@ -3781,78 +3777,77 @@ void DRT::Elements::Fluid3::f3_int_beltrami_err(
   // start loop over integration points
   for (int iquad=0;iquad<intpoints.nquad;iquad++)
   {
-          /*------------------- declaration of gauss point variables ---*/
-        const double e1 = intpoints.qxg[iquad][0];
-        const double e2 = intpoints.qxg[iquad][1];
-        const double e3 = intpoints.qxg[iquad][2];
-        shape_function_3D(funct,e1,e2,e3,distype);
-        shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
+    // declaration of gauss point variables
+    const double e1 = intpoints.qxg[iquad][0];
+    const double e2 = intpoints.qxg[iquad][1];
+    const double e3 = intpoints.qxg[iquad][2];
+    shape_function_3D(funct,e1,e2,e3,distype);
+    shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
 
-        // get Jacobian matrix and determinant
-        const Epetra_SerialDenseMatrix xjm = getJacobiMatrix(xyze,deriv,iel);
-        const double det = getDeterminante(xjm);
-        const double fac = intpoints.qwgt[iquad]*det;
+    // get Jacobian matrix and determinant
+    const Epetra_SerialDenseMatrix xjm = getJacobiMatrix(xyze,deriv,iel);
+    const double det = getDeterminante(xjm);
+    const double fac = intpoints.qwgt[iquad]*det;
 
-        /*---------------------- get velocity sol at integration point */
-        for (int i=0;i<3;i++)
-        {
-          velint[i]=0.0;
-          for (int j=0;j<iel;j++)
-          {
-            velint[i] += funct[j]*evelnp[i+(3*j)];
-          }
-        } //end loop over i
+    // get velocity sol at integration point
+    for (int i=0;i<3;i++)
+    {
+      velint[i]=0.0;
+      for (int j=0;j<iel;j++)
+      {
+        velint[i] += funct[j]*evelnp[i+(3*j)];
+      }
+    }
 
-          /*---------------------- get pressure sol at integration point */
-        preint = 0;
-        for (int i=0;i<iel;i++)
-        {
-          preint += funct[i]*eprenp[i];
-        }
+    // get pressure sol at integration point
+    preint = 0;
+    for (int inode=0;inode<iel;inode++)
+    {
+      preint += funct[inode]*eprenp[inode];
+    }
 
-        /*---------------------- get velocity sol at integration point */
-        for (int i=0;i<3;i++)
-        {
-          xint[i]=0.0;
-          for (int j=0;j<iel;j++)
-          {
-            xint[i] += funct[j]*xyze(i,j);
-          }
-        } //end loop over i
+    // get velocity sol at integration point
+    for (int isd=0;isd<3;isd++)
+    {
+      xint[isd]=0.0;
+      for (int inode=0;inode<iel;inode++)
+      {
+        xint[isd] += funct[inode]*xyze(isd,inode);
+      }
+    }
 
+    // compute analytical pressure
+    const double p = -a*a/2.0 *
+        ( exp(2.0*a*xint[0])
+        + exp(2.0*a*xint[1])
+        + exp(2.0*a*xint[2])
+        + 2.0 * sin(a*xint[0] + d*xint[1]) * cos(a*xint[2] + d*xint[0]) * exp(a*(xint[1]+xint[2]))
+        + 2.0 * sin(a*xint[1] + d*xint[2]) * cos(a*xint[0] + d*xint[1]) * exp(a*(xint[2]+xint[0]))
+        + 2.0 * sin(a*xint[2] + d*xint[0]) * cos(a*xint[1] + d*xint[2]) * exp(a*(xint[0]+xint[1]))
+        )* exp(-2.0*visc*d*d*t);
 
-          // compute analytical pressure
-        p = -a*a/2.0 *
-          ( exp(2.0*a*xint[0])
-            + exp(2.0*a*xint[1])
-            + exp(2.0*a*xint[2])
-            + 2.0 * sin(a*xint[0] + d*xint[1]) * cos(a*xint[2] + d*xint[0]) * exp(a*(xint[1]+xint[2]))
-            + 2.0 * sin(a*xint[1] + d*xint[2]) * cos(a*xint[0] + d*xint[1]) * exp(a*(xint[2]+xint[0]))
-            + 2.0 * sin(a*xint[2] + d*xint[0]) * cos(a*xint[1] + d*xint[2]) * exp(a*(xint[0]+xint[1]))
-            )* exp(-2.0*visc*d*d*t);
+    // compute analytical velocities
+    u[0] = -a * ( exp(a*xint[0]) * sin(a*xint[1] + d*xint[2]) +
+                  exp(a*xint[2]) * cos(a*xint[0] + d*xint[1]) ) * exp(-visc*d*d*t);
+    u[1] = -a * ( exp(a*xint[1]) * sin(a*xint[2] + d*xint[0]) +
+                  exp(a*xint[0]) * cos(a*xint[1] + d*xint[2]) ) * exp(-visc*d*d*t);
+    u[2] = -a * ( exp(a*xint[2]) * sin(a*xint[0] + d*xint[1]) +
+                  exp(a*xint[1]) * cos(a*xint[2] + d*xint[0]) ) * exp(-visc*d*d*t);
 
-        // compute analytical velocities
-        u[0] = -a * ( exp(a*xint[0]) * sin(a*xint[1] + d*xint[2]) +
-                      exp(a*xint[2]) * cos(a*xint[0] + d*xint[1]) ) * exp(-visc*d*d*t);
-        u[1] = -a * ( exp(a*xint[1]) * sin(a*xint[2] + d*xint[0]) +
-                      exp(a*xint[0]) * cos(a*xint[1] + d*xint[2]) ) * exp(-visc*d*d*t);
-        u[2] = -a * ( exp(a*xint[2]) * sin(a*xint[0] + d*xint[1]) +
-                      exp(a*xint[1]) * cos(a*xint[2] + d*xint[0]) ) * exp(-visc*d*d*t);
+    // compute difference between analytical solution and numerical solution
+    deltap = preint - p;
 
-        // compute difference between analytical solution and numerical solution
-        deltap = preint - p;
+    for (int isd=0;isd<NSD_;isd++)
+    {
+      deltavel[isd] = velint[isd]-u[isd];
+    }
 
-        for (int dim=0;dim<3;dim++)
-        {
-          deltavel[dim]=velint[dim]-u[dim];
-        }
-
-        // add square to L2 error
-        for (int dim=0;dim<3;dim++)
-        {
-          velerr += deltavel[dim]*deltavel[dim]*fac;
-        }
-        preerr += deltap*deltap*fac;
+    // add square to L2 error
+    for (int isd=0;isd<NSD_;isd++)
+    {
+      velerr += deltavel[isd]*deltavel[isd]*fac;
+    }
+    preerr += deltap*deltap*fac;
 
   } // end of loop over integration points
 
@@ -3866,24 +3861,25 @@ void DRT::Elements::Fluid3::f3_int_beltrami_err(
   return;
 }
 
-
-// check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
-bool DRT::Elements::Fluid3::is_higher_order_element(
-              const DRT::Element::DiscretizationType  distype) const
+//
+// check for higher order derivatives for shape functions
+//
+bool DRT::Elements::Fluid3::isHigherOrderElement(
+  const DRT::Element::DiscretizationType  distype) const
 {
-    bool hoel = true;
-    switch (distype)
-    {
-    case hex8: case hex20: case hex27: case tet10:
-        hoel = true;
-        break;
-    case tet4:
-        hoel = false;
-        break;
-    default:
-        dserror("distype unknown!");
-    }
-    return hoel;
+  bool hoel = true;
+  switch (distype)
+  {
+  case hex8: case hex20: case hex27: case tet10:
+    hoel = true;
+    break;
+  case tet4:
+    hoel = false;
+    break;
+  default:
+    dserror("distype unknown!");
+  }
+  return hoel;
 }
 
 //=======================================================================

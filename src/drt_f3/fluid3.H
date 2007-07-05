@@ -564,7 +564,13 @@ private:
     const int&                 iel,
     ParameterList& 	       params);
 
-  bool is_higher_order_element(const DRT::Element::DiscretizationType  distype) const;
+  /*!
+   * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
+   * \return boolean indicating higher order status
+   */
+  bool isHigherOrderElement(
+    const DRT::Element::DiscretizationType  distype  ///< discretization type
+    ) const;
 
   ActionType convertStringToActionType(const string& action) const;
 
