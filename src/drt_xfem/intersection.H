@@ -19,6 +19,8 @@ Maintainer: Ursula Mayer
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_utils_fem_shapefunctions.H"
+#include "../drt_lib/drt_element.H"
+#include "../drt_f3/fluid3.H"
 #include "/home/axelchen/include/tetgen.h"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
@@ -62,7 +64,7 @@ class Intersection
         \param integrationcellList  (out)   : list of integrationcells for each intersected element
         */            
         void computeIntersection(   RefCountPtr<DRT::Discretization>        actdis, 
-                                    vector< vector <Integrationcell> >&     integrationcellList);
+                                    map< int, vector <Integrationcell> >&	integrationcellList);
 		
         
         
@@ -71,7 +73,8 @@ class Intersection
     
         \param integrationcellList                (out)       : list of integration cells
         */                                  
-       	void debugIntegrationcells(vector < vector <Integrationcell> >& integrationcellList);  
+       	void debugIntegrationcells(	map< int, vector <Integrationcell> >&	integrationcellList,
+									int id);  
         
         private:
         
@@ -175,7 +178,7 @@ class Intersection
         
         
         /*!
-        \brief checks if a node in current coordinates lies within a certain element           
+        \brief collects points belonging to an interface lying inside xfem elements         
                The nonlinear system of equation is solved with help of the Newton-method.
     
         \param element              (in)        : element (surface)
@@ -185,14 +188,23 @@ class Intersection
         \param numInterfacePoints   (in/out)    : number of interface points
         return true if the node lies within the element, false otherwise
         */                                      
-        bool checkNodeWithinElement(    DRT::Element*                   element,
-                                        DRT::Node*                      node,
-                                        std::vector<InterfacePoint>&    interfacePoints,
-                                        int                             elemId,
-                                        int                             nodeId,
-                                        int&                            numInterfacePoints);
+		bool collectInternalPoints(	DRT::Element*                   element,
+                                  	DRT::Node*                      node,
+                                	std::vector<InterfacePoint>&    interfacePoints,
+                                	int                             elemId,
+                                 	int                             nodeId,
+                                   	int&                            numInterfacePoints);
 			
-            
+		/*!
+        \brief checks if a node in current coordinates lies within a certain element           
+               The nonlinear system of equation is solved with help of the Newton-method.
+    
+        \param element              (in)        : element (surface)
+        \param node                 (in)        : node in current coordinates
+        */	
+		bool checkNodeWithinElement(	DRT::Element* element,
+ 										DRT::Node*  node);	
+        
 		/*!
 	  	\brief updates the systemmatrix at the corresponding reference coordinates 
                for the computation of curve surface intersections
@@ -231,15 +243,15 @@ class Intersection
 	  	\param surfaceElement   (in) 		: surface element
 	  	\param lineElement      (in) 		: line element
 	  	\param xsi              (in/out)	: starting value/vector of reference coordinates
-        \param E1               (in)        : lower search interval boundary
-        \param E2               (int)       : upper search interval boundary	  	
+        \param upLimit          (in)        : upper search interval boundary
+        \param loLimit          (int)       : lower search interval boundary	  	
 	  	return true if an intersection point was found, otherwise false	
 	  	*/
         bool computeCurveSurfaceIntersection(   DRT::Element*               surfaceElement,
                                                 DRT::Element*               lineElement,
                                                 Epetra_SerialDenseVector&   xsi,
-                                                Epetra_SerialDenseVector&   E1,
-                                                Epetra_SerialDenseVector&   E2);
+                                                Epetra_SerialDenseVector&   upLimit,
+                                                Epetra_SerialDenseVector&   loLimit);
         
                 
         /*!
@@ -252,15 +264,14 @@ class Intersection
         \param surfaceId                (in)        : surface element id
         \param lineId                   (in)        : line element id
         \param lines                    (in)        : if lines = true
-	  	\return number of interface points 
 	  	*/     				 									
-        void collectInterfacePoints(    DRT::Element*                   surfaceElement,
-                                        DRT::Element*                   lineElement,
-                                        std::vector< InterfacePoint >&  interfacePointList,
-                                        int&                            numInterfacePoints,
-                                        int                             numSurface,
-                                        int                             numLine,
-                                        bool                            lines);
+        void collectIntersectionPoints(	DRT::Element*                   surfaceElement,
+        								DRT::Element*                   lineElement,
+        								std::vector<InterfacePoint>&    interfacePoints,
+        								int&                            numInterfacePoints,
+        								int                             surfaceId,
+        								int                             lineId,
+        								bool                            lines);
 		
         	      
         /*!
@@ -269,18 +280,49 @@ class Intersection
 	
 	  	\param surfaceElement           (in)    : surface element
 	  	\param lineElement              (in)    : line element
-	  	\param E1                       (in)	: lower search interval boundary
-	  	\param E2                       (in)	: upper search interval boundary
+	  	\param surfaceId                (in)   	: surface element id
+        \param lineId                   (in)   	: line element id
+	  	\param upLimit                  (in)	: upper limit of the search interval 
+	  	\param loLimit                  (in)	: lower limit of the search interval
 	  	\param interfacePointList       (out)   : vector of interface points
+	  	\param lines                    (in)	: if lines = true
 	  	\return number of interface points
 	  	*/     				 	            												
-        int computeNewStartingPoint(    DRT::Element*                   surfaceElement,
-                                        DRT::Element*                   lineElement,
-                                        Epetra_SerialDenseVector        E1,
-                                        Epetra_SerialDenseVector        E2,
-                                        std::vector< InterfacePoint >&  interfacePointList);
+        int computeNewStartingPoint(	DRT::Element*                surfaceElement,
+										DRT::Element*                lineElement,
+                                      	int                          surfaceId,
+    									int                          lineId,
+										Epetra_SerialDenseVector&    upLimit,
+ 										Epetra_SerialDenseVector&    loLimit,
+ 										std::vector<InterfacePoint>& interfacePoints,
+                                        bool                         lines);
   
   
+  		/*!
+	  	\brief adds an intersection point to the list of interface points
+	
+		\param surfaceElement           (in)    : surface element
+	  	\param lineElement              (in)    : line element
+	  	\param xsi           			(in)    : surface element
+	  	\param upLimit                  (in)	: upper limit of the search interval 
+	  	\param loLimit                  (in)	: lower limit of the search interval 
+	  	\param interfacePointList       (out)   : vector of interface points
+	  	\param surfaceId                (in)   	: surface element id
+        \param lineId                   (in)   	: line element id
+		\param lines                    (in)  	: if lines = true        
+	  	\return number of interface points
+	  	*/     	
+  		int addIntersectionPoint(	DRT::Element*                	surfaceElement,
+									DRT::Element*                	lineElement,
+  									Epetra_SerialDenseVector&		xsi,
+									Epetra_SerialDenseVector&     	upLimit,
+									Epetra_SerialDenseVector&     	loLimit,
+									std::vector<InterfacePoint>& 	interfacePoints,
+									int                      		surfaceId,
+		        					int                       		lineId,							
+									bool 							lines);
+									
+									
         /*!
         \brief computes a new starting points for the Newton method recursively
                in order to find all intersection points
@@ -295,23 +337,34 @@ class Intersection
         /*!
         \brief compares two points (overloaded method)
     
-        \param node1       (in)    : first point   (vector<double>)
-        \param node2       (in)    : second point  (double*)
+        \param point1       (in)    : first point   (vector<double>)
+        \param point2       (in)    : second point  (double*)
         \return true if both points equal each other, false otherwise
         */
-        bool compareNodes( vector<double>&     node1,
-                            double*             node2);
+        bool comparePoints( 	vector<double>&     point1,
+        						double*             point2);
           
                             
         /*!
         \brief compares two points (overloaded method)
     
-        \param node1       (in)    : first point   (vector<double>)
-        \param node2       (in)    : second point  (vector<double>)
+        \param point1       (in)    : first point   (vector<double>)
+        \param point2       (in)    : second point  (vector<double>)
         \return true if both points equal each other, false otherwise
         */                    
-        bool compareNodes( vector<double>&     node1,
-                            vector<double>&     node2);
+        bool comparePoints(	vector<double>&     point1,
+                            vector<double>&     point2);
+                            
+           
+      	/*!
+        \brief compares two points (overloaded method)
+    
+        \param point1       (in)    : first point   (Epetra_SerialDenseVector)
+        \param point2       (in)    : second point  (Epetra_SerialDenseVector)
+        \return true if both points equal each other, false otherwise
+        */                      
+        bool comparePoints(	Epetra_SerialDenseVector&     point1,
+        					Epetra_SerialDenseVector&     point2);
         
         
   		/*!
@@ -363,8 +416,8 @@ class Intersection
         void storeTriangles(    vector<InterfacePoint>&     pointList, 
                                 vector<int>                 positions, 
                                 vector< vector<int> >&      triangleList);
-          
-          
+         
+                   
         /*!
         \brief  computes the midpoint of a collection of points
     
@@ -374,6 +427,19 @@ class Intersection
         InterfacePoint computeMidpoint( vector<InterfacePoint>&     interfacePoints);          					      
         
        
+       	/*!
+        \brief  computes unique coordinates for a certain region in the 
+        		xfem element. It is copied into the data structure of Tetgen
+        		   
+        \param xfemElement           (in)        : xfem element
+        \param cutterElement         (in)        : cutter element
+        \param regioncoordinates	 (out)		 : coordinates of the region points
+        */    
+		void computeRegionCoordinates(	DRT::Element*  xfemElement,
+ 										DRT::Element*  cutterElement,
+ 										double* regionCoordinates);
+ 										
+ 										       
         /*!
         \brief  computes the convex hull of a set of points
     
@@ -394,15 +460,17 @@ class Intersection
         \brief  computes the convex hull of a set of points
     
         \param element                  (in)        : element
+        \param cutterElement            (in)        : cutter element
         \param pointList                (out)       : list of points
         \param segmentList              (out)       : list of segments
         \param triangleList             (out)       : list of triangle facets
         */       
         void computeCDT(    DRT::Element*               element,
+        					DRT::Element*  				cutterElement,
                             vector< InterfacePoint >&   pointList,
                             vector< vector<int> >&      segmentList,
                             vector< vector<int> >&      triangleList,
-                            vector < vector <Integrationcell> >& integrationcellList);
+                            map< int, vector <Integrationcell> >&	integrationcellList);
     
           
         /*!

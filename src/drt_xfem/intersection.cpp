@@ -1,4 +1,4 @@
-/*!
+/*!----------------------------------------------------------------------
 \file intersection.cpp
 
 \brief collection of intersection tool 
@@ -6,7 +6,8 @@
 <pre>
 Maintainer: Ursula Mayer
 </pre>
-*/
+
+*----------------------------------------------------------------------*/
 
 #ifdef XFEM
 #ifdef CCADISCRET
@@ -16,6 +17,8 @@ Maintainer: Ursula Mayer
 #include "../drt_xfem/integrationcell.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils_fem_shapefunctions.H"
+#include "../drt_lib/drt_element.H"
+#include "../drt_f3/fluid3.H"
 
 #include "../headers/definitions.h"     //remove
 
@@ -404,17 +407,15 @@ void Intersection::updateRHSForNWE( Epetra_SerialDenseVector&   b,
 
 
 
+
 /*----------------------------------------------------------------------*
  |  checks if a node is in a given element                   u.may 06/07|
  *----------------------------------------------------------------------*/
-bool Intersection::checkNodeWithinElement(  DRT::Element*                   element,
-                                            DRT::Node*                      node,
-                                            std::vector< InterfacePoint >&  interfacePoints,
-                                            int                             elemId,
-                                            int                             nodeId,
-                                            int&                            numInterfacePoints)
+bool Intersection::checkNodeWithinElement(	DRT::Element* element,
+ 											DRT::Node*  node)
 {
-    bool nodeWithinElement = true;
+
+	bool nodeWithinElement = true;
     int iter = 0;
     const int maxiter = 500;
     double residual = 1.0;
@@ -460,7 +461,24 @@ bool Intersection::checkNodeWithinElement(  DRT::Element*                   elem
         residual = b.Norm2();
         iter++;
     }
-    
+    return nodeWithinElement;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  collects points that belong to the interface and lie 	 u.may 06/07|
+ |	within an xfem element             									|
+ *----------------------------------------------------------------------*/
+bool Intersection::collectInternalPoints(  DRT::Element*                   	element,
+                                            DRT::Node*                      node,
+                                            std::vector< InterfacePoint >&  interfacePoints,
+                                            int                             elemId,
+                                            int                             nodeId,
+                                            int&                            numInterfacePoints)
+{
+    bool nodeWithinElement = checkNodeWithinElement(element, node);
+	
     if(nodeWithinElement)
     {
         numInterfacePoints++; 
@@ -617,8 +635,8 @@ void Intersection::updateRHSForCSI( Epetra_SerialDenseVector&   b,
 bool Intersection::computeCurveSurfaceIntersection( DRT::Element*               surfaceElement,
                                                     DRT::Element*               lineElement,
                                                     Epetra_SerialDenseVector&   xsi,
-                                                    Epetra_SerialDenseVector&   E1,
-                                                    Epetra_SerialDenseVector&   E2)
+                                                    Epetra_SerialDenseVector&   upLimit,
+                                                    Epetra_SerialDenseVector&   loLimit)
 {
     int iter = 0;
 	int maxiter = 500;
@@ -645,7 +663,8 @@ bool Intersection::computeCurveSurfaceIntersection( DRT::Element*               
         } 
      	xsi = addTwoVectors(xsi,dx);
       
-    	if( (fabs(xsi[0]) > E1[0]) || (fabs(xsi[1]) > E1[1]) || (fabs(xsi[2]) > E1[2])) 
+    	if( (xsi[0] > upLimit[0]) || (xsi[1] > upLimit[1]) || (xsi[2] > upLimit[2])  || 
+    		(xsi[0] < loLimit[0]) || (xsi[1] < loLimit[1]) || (xsi[2] < loLimit[2])) 
     	{
       		intersection = false;
       		break;
@@ -670,121 +689,154 @@ bool Intersection::computeCurveSurfaceIntersection( DRT::Element*               
  |  collects all intersection points of a line and           u.may 06/07|
  |  a surface                                                           |
  *----------------------------------------------------------------------*/  
-void Intersection::collectInterfacePoints(  DRT::Element*                   surfaceElement,
-				 							DRT::Element*                   lineElement,
-				 							std::vector<InterfacePoint>&    interfacePoints,
-                                            int&                            numInterfacePoints,
-                                            int                             numSurface,
-                                            int                             numLine,
-                                            bool                            lines)
+void Intersection::collectIntersectionPoints( 	DRT::Element*                   surfaceElement,
+					 							DRT::Element*                   lineElement,
+					 							std::vector<InterfacePoint>&    interfacePoints,
+	                                            int&                            numInterfacePoints,
+	                                           	int                             surfaceId,
+	        									int                             lineId,
+	                                            bool                            lines)
 {
-
 	bool intersected = false;
-    const double TOL = EPS8;
 	Epetra_SerialDenseVector xsi(3);
-	Epetra_SerialDenseVector E1(3);
-   	Epetra_SerialDenseVector E2(3);
-    InterfacePoint ip;
-	
-	xsi[0] = 0.0; xsi[1] = 0.0; xsi[2] = 0.0;
-	E1[0] = 1.0 + TOL;  E1[1] = 1.0 + TOL ;  E1[2] = 1.0 + TOL;
-	E2[0] = -1.0 - TOL; E2[1] = -1.0 - TOL;  E2[2] = -1.0 - TOL;
-
-	intersected = computeCurveSurfaceIntersection( surfaceElement, lineElement, xsi, E1, E2);
+	Epetra_SerialDenseVector upLimit(3);
+   	Epetra_SerialDenseVector loLimit(3);
+  
+    for(int i = 0; i < 3; i++)
+    {
+	   xsi[i] =  0.0; 
+	   upLimit[i]  =  1.0;  
+	   loLimit[i]  = -1.0;
+    }
+    
+	intersected = computeCurveSurfaceIntersection(surfaceElement, lineElement, xsi, upLimit, loLimit);
              							 	
-	if(intersected)		
-   	{	    
-   		// include that intersectionpoint lies on a node or surface
-        if(lines)
-        {   
-            ip.nsurf = 1;
-            ip.surfaces[0] = numSurface;
-             
-            // change minus sign if you change the line numbering   
-            switch(numLine)
-            {
-                case 0:
-                {
-                    ip.coord[0] = xsi[2]; 
-                    ip.coord[1] = -1.0;
-                    break;
-                }
-                case 1:
-                {
-                    ip.coord[0] =  1.0; 
-                    ip.coord[1] = xsi[2];
-                    break;
-                }
-                case 2:
-                {
-                    ip.coord[0] =  -xsi[2];    // changed
-                    ip.coord[1] =  1.0;
-                    break;
-                }
-                case 3:
-                {
-                    ip.coord[0] = -1.0; 
-                    ip.coord[1] =  xsi[2];
-                    break;
-                }
-                default:
-                    dserror("node number not correct");    // changed
-            }           
-        }
-        else
-        {
-            ip.nsurf = 2;
-            // change for all distypes
-            ip.surfaces[0] = eleNodeNumbering_hex27_lines_surfaces[numLine][0];
-            ip.surfaces[1] = eleNodeNumbering_hex27_lines_surfaces[numLine][1];
-            ip.coord[0] = xsi[0]; 
-            ip.coord[1] = xsi[1]; 
-        }
-        
-        ip.coord[2] = 0.0; 
-        interfacePoints.push_back(ip);  
-   		numInterfacePoints++; //+
-  // 		computeNewStartingPoint(surfaceElement, lineElement, E1, xsi, interfacePoints) +
-  // 		computeNewStartingPoint(surfaceElement, lineElement, xsi, E2, interfacePoints);
-   	}      							 	
+	if(intersected)			    
+        numInterfacePoints = numInterfacePoints + 
+        					 addIntersectionPoint(	surfaceElement, lineElement,xsi, upLimit, loLimit, 
+        											interfacePoints, surfaceId, lineId, lines);
+   	   							 	
 }
 
 
 
 /*----------------------------------------------------------------------*
- |  computes a new statring point for the Newton-method      u.may 06/07|
+ |  computes a new starting point for the Newton-method      u.may 06/07|
  |  in order to find all intersection points                            |
  |  of a curve-surface intersection                                     |
  *----------------------------------------------------------------------*/  
 int Intersection::computeNewStartingPoint(	DRT::Element*                surfaceElement,
 											DRT::Element*                lineElement,
-											Epetra_SerialDenseVector     E1,
-     										Epetra_SerialDenseVector     E2,
-     										std::vector<InterfacePoint>& interfacePoints)
+                                          	int                          surfaceId,
+        									int                          lineId,
+											Epetra_SerialDenseVector&    upLimit,
+     										Epetra_SerialDenseVector&    loLimit,
+     										std::vector<InterfacePoint>& interfacePoints,
+                                            bool                         lines)
 {	
-    // to be tested
 	bool intersected = false;
+    bool interval = true;
 	int numInterfacePoints = 0;
 	Epetra_SerialDenseVector xsi(3);
+    double abs_xsi = 0.0;
 	
-	for(int i = 0; i<3; i++)
-		xsi[i] = (double) (( E1[i] + E2[i] )/2.0);
-		
-	// intersected = computeCurveSurfaceIntersection(surfaceElement, lineElement, xsi, E1, E2);
-             							 	
-	if(intersected)		
-   	{
-   		printf("hello2.0\n");
-        //Intersection
-   		//interfacePoints.push_back(xsi);        
-   		//numInterfacePoints = 1 +
-   		//computeNewStartingPoint(surfaceElement, lineElement, E1, xsi, interfacePoints) +
-   		//computeNewStartingPoint(surfaceElement, lineElement, xsi, E2, interfacePoints);
-   		printf("hello2.1\n");
-   	}      
+    if(comparePoints(upLimit, loLimit))
+        interval = false;
+        
+	for(int i = 0; i < 3; i++)
+		xsi[i] = (double) (( upLimit[i] + loLimit[i] )/2.0);
+       
+ 
+	intersected = computeCurveSurfaceIntersection(surfaceElement, lineElement, xsi, upLimit, loLimit);
    
-   	printf("number of intersection points = %d\n", numInterfacePoints );
+    abs_xsi = fabs(xsi[0]) + fabs(xsi[1]) + fabs(xsi[2]);
+    if(comparePoints(xsi,upLimit) && fabs(abs_xsi-3) > EPS8)     intersected = false;
+    if(comparePoints(xsi,loLimit) && fabs(abs_xsi-3) > EPS8)     intersected = false;
+             							 	
+	if(intersected && interval)		
+   		numInterfacePoints = addIntersectionPoint(	surfaceElement, lineElement,xsi, upLimit, loLimit, 
+   													interfacePoints, surfaceId, lineId, lines);
+   	
+   	//printf("number of intersection points = %d\n", numInterfacePoints );
    	return numInterfacePoints;    						
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  adds an intersection point to the 					     u.may 07/07|
+ |  list of interface points                       						|
+ *----------------------------------------------------------------------*/  
+int Intersection::addIntersectionPoint(	DRT::Element*                	surfaceElement,
+										DRT::Element*                	lineElement,
+										Epetra_SerialDenseVector&		xsi,
+										Epetra_SerialDenseVector&     	upLimit,
+										Epetra_SerialDenseVector&     	loLimit,
+										std::vector<InterfacePoint>& 	interfacePoints,
+										int                      		surfaceId,
+			        					int                       		lineId,							
+										bool 							lines)
+{
+
+	int numInterfacePoints = 0;
+	
+	// include that intersectionpoint lies on a node or surface
+ 	InterfacePoint ip;
+    if(lines)
+    {   
+        ip.nsurf = 1;
+        ip.surfaces[0] = surfaceId;
+         
+        // change minus sign if you change the line numbering   
+        switch(lineId)
+        {
+            case 0:
+            {
+                ip.coord[0] = xsi[2]; 
+                ip.coord[1] = -1.0;
+                break;
+            }
+            case 1:
+            {
+                ip.coord[0] =  1.0; 
+                ip.coord[1] = xsi[2];
+                break;
+            }
+            case 2:
+            {
+                ip.coord[0] =  -xsi[2];    // changed
+                ip.coord[1] =  1.0;
+                break;
+            }
+            case 3:
+            {
+                ip.coord[0] = -1.0; 
+                ip.coord[1] =  xsi[2];
+                break;
+            }
+            default:
+                dserror("node number not correct");    
+        }           
+    }
+    else
+    {
+        ip.nsurf = 2;
+        // change for all distypes
+        ip.surfaces[0] = eleNodeNumbering_hex27_lines_surfaces[lineId][0];
+        ip.surfaces[1] = eleNodeNumbering_hex27_lines_surfaces[lineId][1];
+        ip.coord[0] = xsi[0]; 
+        ip.coord[1] = xsi[1]; 
+    }
+    
+    ip.coord[2] = 0.0; 
+    interfacePoints.push_back(ip);  
+    numInterfacePoints = 1 +
+      computeNewStartingPoint(	surfaceElement, lineElement, surfaceId, lineId, 
+      							upLimit, xsi, interfacePoints, lines) +
+      computeNewStartingPoint(	surfaceElement, lineElement, surfaceId, lineId, 
+      							xsi, loLimit, interfacePoints, lines);
+
+	return numInterfacePoints;
 }
 
 
@@ -821,16 +873,16 @@ void Intersection::referenceToCurrentCoordinates(   DRT::Element* element,
  |  compares two nodes                                       u.may 06/07|
  |  overloaded method:  vector<double>  and double*                     |
  *----------------------------------------------------------------------*/  
-bool Intersection::compareNodes(    vector<double>&     node1,
-                                    double*             node2)
+bool Intersection::comparePoints(    vector<double>&     point1,
+                                    double*             point2)
 {   
     bool equal = true;
     
-    if(node2 == NULL)
+    if(point2 == NULL)
         dserror("array is NULL");
         
-    for(unsigned int i = 0; i < node1.size() ; i++)
-        if(fabs(node1[i] - node2[i]) > EPS8)
+    for(unsigned int i = 0; i < point1.size() ; i++)
+        if(fabs(point1[i] - point2[i]) > EPS8)
         {
             equal = false;
             break;
@@ -845,16 +897,41 @@ bool Intersection::compareNodes(    vector<double>&     node1,
  |  compares two nodes                                       u.may 06/07|
  |  overloaded method:  vector<double>  and  vector<double>             |
  *----------------------------------------------------------------------*/  
-bool Intersection::compareNodes(    vector<double>& node1,
-                                    vector<double>& node2)
+bool Intersection::comparePoints(    vector<double>& point1,
+                                    vector<double>& point2)
 {   
     bool equal = true;
     
-    if(node1.size() != node2.size())
+    if(point1.size() != point2.size())
         dserror("arrays of nodes need to have the same length");
              
-    for(unsigned int i = 0; i < node1.size() ; i++)
-        if(fabs(node1[i] - node2[i]) > EPS8)
+    for(unsigned int i = 0; i < point1.size() ; i++)
+        if(fabs(point1[i] - point2[i]) > EPS8)
+        {
+            equal = false;
+            break;
+        }
+  
+    return equal;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  compares two nodes                                       u.may 06/07|
+ |  overloaded method:                                                  |
+ |  Epetra_SerialDenseVector  and  Epetra_SerialDenseVector             |
+ *----------------------------------------------------------------------*/  
+bool Intersection::comparePoints(    Epetra_SerialDenseVector&     point1,
+                                    Epetra_SerialDenseVector&     point2)
+{   
+    bool equal = true;
+    
+    if(point1.Length() != point2.Length())
+        dserror("arrays of nodes need to have the same length");
+             
+    for(int i = 0; i < point1.Length() ; i++)
+        if(fabs(point1[i] - point2[i]) > EPS8)
         {
             equal = false;
             break;
@@ -880,7 +957,7 @@ void Intersection::findNextFacet(   vector< vector<double> >&   vertices,
     
     for(it = vertices.begin(); it != vertices.end(); it=it+2 )
     {      
-        if(compareNodes(searchPoint, *it))
+        if(comparePoints(searchPoint, *it))
         {
             pointfound = true;
             searchPoint = *(it+1);              
@@ -889,7 +966,7 @@ void Intersection::findNextFacet(   vector< vector<double> >&   vertices,
             break; 
         }
                
-        if(compareNodes(searchPoint, *(it+1)))
+        if(comparePoints(searchPoint, *(it+1)))
         {
             pointfound = true;
             searchPoint = *(it);                
@@ -919,13 +996,13 @@ void Intersection::storePoint(  vector<double>&             point,
     vector<InterfacePoint>::iterator it2;
         
     for(unsigned int i = 0; i < interfacePoints.size(); i++ )
-        if(compareNodes(point, interfacePoints[i].coord))
+        if(comparePoints(point, interfacePoints[i].coord))
         {         
             alreadyInList = false;
             count = 0;
             for(it2 = pointList.begin(); it2 != pointList.end(); it2++ )  
             {
-                if(compareNodes(point, it2->coord))   
+                if(comparePoints(point, it2->coord))   
                 {   
                     alreadyInList = true;
                     break;
@@ -1044,6 +1121,72 @@ InterfacePoint Intersection::computeMidpoint(vector<InterfacePoint>& interfacePo
 }
 
 
+/*----------------------------------------------------------------------*
+ |  computes the coordinates of a point within a region for  u.may 07/07|
+ |  the Tetgen data structure		(only for debugging)				|
+ *----------------------------------------------------------------------*/  
+void Intersection::computeRegionCoordinates(	DRT::Element*  xfemElement,
+ 												DRT::Element*  cutterElement,
+ 												double* regionCoordinates)
+{
+
+	bool inStored = false;
+	bool outStored = false;
+	bool nodeWithin = false;
+	int fill = 0;
+	int numCornerPoints = 8;
+	DRT::Element*  cutterVolume;
+	
+	
+	const DRT::Element::ElementType etype = cutterElement->Type();
+  
+    switch(etype)
+    {
+		case DRT::Element::element_fluid3surface:
+		{		
+			DRT::Elements::Fluid3Surface* fluid3surface = (DRT::Elements::Fluid3Surface *) (cutterElement);
+			
+			if(fluid3surface == NULL) 
+				dserror("fluid3surface is NULL");
+				
+			cutterVolume = fluid3surface->GetParent();
+			
+			if(cutterVolume == NULL) 
+				dserror("cuttervolume is NULL");
+			break;
+		}
+		default:
+			dserror("elementtype not yet handled");
+	}
+
+	for(int i = 0; i < numCornerPoints; i++)
+	{
+		nodeWithin = checkNodeWithinElement(cutterVolume, xfemElement->Nodes()[i]);
+                                
+        if(nodeWithin && !inStored)
+        {
+        	for(int j = 0; j < 3; j++)
+        		regionCoordinates[fill++] = xfemElement->Nodes()[i]->X()[j];
+        	
+        	inStored = true;
+        }
+        
+        if(!nodeWithin && !outStored)
+        {
+        	for(int j = 0; j < 3; j++)
+        		regionCoordinates[fill++] = xfemElement->Nodes()[i]->X()[j];
+    
+        	outStored = true;
+        }
+        
+        if(inStored && outStored)
+        {
+        	break;
+        }
+	}
+}
+
+
 
 /*----------------------------------------------------------------------*
  |  computes the convex hull of a set of interface points    u.may 06/07|
@@ -1117,10 +1260,7 @@ void Intersection::computeConvexHull(   DRT::Element*           surfaceElement,
             {
                 vertex[m] = curCoord[m];
                 //printf("vertex2 = %f   ", vertex[m]); 
-            }    
-               
-            
-           
+            }             
             vertices.push_back(vertex);
         }
         facet = facet->next;
@@ -1162,21 +1302,22 @@ void Intersection::computeConvexHull(   DRT::Element*           surfaceElement,
  |  in 3D with help of Tetgen library for an intersected                |
  |  xfem element                                                        |
  *----------------------------------------------------------------------*/  
-void Intersection::computeCDT(  DRT::Element*               element,
-                                vector< InterfacePoint >&   pointList,
-                                vector< vector<int> >&      segmentList,
-                                vector< vector<int> >&      triangleList,
-                                vector < vector <Integrationcell> >& integrationcellList)
+void Intersection::computeCDT(  DRT::Element*               			element,
+								DRT::Element*               			cutterElement,
+                                vector< InterfacePoint >&   			pointList,
+                                vector< vector<int> >&      			segmentList,
+                                vector< vector<int> >&      			triangleList,
+                                map< int, vector <Integrationcell> >&	integrationcellList)
 {
     int dim = 3;
     int cornerpoints = 8;
     int nsegments = 0; 
     tetgenio in;
     tetgenio out;
-    char switches[] = "po2";
+    char switches[] = "po2AQ";
     tetgenio::facet *f;
     tetgenio::polygon *p;
-        
+    double regionCoordinates[6];
     
     // set points
     in.numberofpoints = cornerpoints + pointList.size();
@@ -1259,14 +1400,39 @@ void Intersection::computeCDT(  DRT::Element*               element,
         }
         //printf("\n");
     }
-        
+  
         
     // set facetmarkers
     for(int i = 0; i < in.numberoffacets; i ++)
         in.facetmarkerlist[i] = 0;   
 
+
+	// specify regions
+	bool regions = true;	
+	if(regions)
+	{
+		computeRegionCoordinates(element,cutterElement,regionCoordinates);
+	    fill = 0;
+	    int read = 0;
+	    in.numberofregions = 2;
+	    in.regionlist = new REAL[in.numberofregions*5];
+	  	for(int i = 0; i < in.numberofregions; i++)
+	    {
+	    	// store coordinates 
+	    	for(int j = 0; j < 3; j++)
+	    		in.regionlist[fill++] = regionCoordinates[read++];
+	    		
+	    	// store regional attribute (switch A)   i=0 cutter i=1 fluid
+	    	in.regionlist[fill++] = i;
+	    	
+	    	// store volume constraint (switch a)   
+	    	in.regionlist[fill++] = 0.0;
+		}
+	}
+	
     in.save_nodes("tetgen");
     in.save_poly("tetgen");
+    
     
     //  Tetrahedralize the PLC. Switches are chosen to read a PLC (p),
     //  do quality mesh generation (q) with a specified quality bound
@@ -1274,6 +1440,9 @@ void Intersection::computeCDT(  DRT::Element*               element,
     tetrahedralize(switches, &in, &out, NULL, NULL); 
     
     out.save_elements("tetgenout");
+    out.save_nodes("tetgenout");
+    out.save_faces("tetgenout");
+    
     
     vector<double> tetnodes(3);
     vector< vector<double> > tetrahedronCoord;
@@ -1291,7 +1460,7 @@ void Intersection::computeCDT(  DRT::Element*               element,
         Integrationcell cell(i, tetrahedronCoord);
         listperElement.push_back(cell);                 
     }
-    integrationcellList.push_back(listperElement);
+    integrationcellList.insert(make_pair(element->Id(),listperElement));
     
     
     // clear vectors
@@ -1310,7 +1479,7 @@ void Intersection::computeCDT(  DRT::Element*               element,
  |  and their integrations cell                                         |
  *----------------------------------------------------------------------*/  
 void Intersection::computeIntersection( RefCountPtr<DRT::Discretization> actdis, 
-                                        vector < vector <Integrationcell> >& integrationcellList)
+                                        map< int, vector <Integrationcell> >&	integrationcellList)
 {
     bool intersected =                      false;
     int numInterfacePoints =                0;
@@ -1365,16 +1534,16 @@ void Intersection::computeIntersection( RefCountPtr<DRT::Discretization> actdis,
                 {
                     for(int m=0; m<cutterElement->NumLine() ; m++)
                     {                    
-                        checkNodeWithinElement( xfemElement, cutterElement->Nodes()[m],
+                        collectInternalPoints( xfemElement, cutterElement->Nodes()[m],
                                                 interfacePoints, k, m, numInterfacePoints);
                                                                 
                         for(int p=0; p<xfemElement->NumSurface() ; p++)       
-                            collectInterfacePoints( xfemElement->Surfaces()[p], cutterElement->Lines()[m],
+                            collectIntersectionPoints( xfemElement->Surfaces()[p], cutterElement->Lines()[m],
                                                     interfacePoints, numInterfacePoints, p, m, true);  
                     }
                                       
                     for(int m=0; m<xfemElement->NumLine() ; m++) 
-                        collectInterfacePoints( cutterElement, xfemElement->Lines()[m],
+                        collectIntersectionPoints( cutterElement, xfemElement->Lines()[m],
                                                 interfacePoints, numInterfacePoints, 0, m, false);                                         
                                        
                     if(numInterfacePoints!= 0)
@@ -1384,8 +1553,14 @@ void Intersection::computeIntersection( RefCountPtr<DRT::Discretization> actdis,
             }// for-loop over all geometryMap.size()
         }// for-loop over all xfemConditions.size() 
         //debugTetgenDataStructure(pointList, segmentList, triangleList);
-        computeCDT(xfemElement, pointList, segmentList, triangleList, integrationcellList);
+        computeCDT(xfemElement, cutterElement, pointList, segmentList, triangleList, integrationcellList);
     }// for-loop over all  actdis->NumMyRowElements()
+    
+    
+    //debugIntegrationcells(integrationcellList,3);
+    printf("\n");
+	printf("Intersection computed sucessfully\n");
+	printf("\n");
 }
 
 
@@ -1585,9 +1760,6 @@ void Intersection::debugTetgenDataStructure(    vector< InterfacePoint >&   poin
     cout << endl;
     cout << endl;
   
-  
-  
-  
     cout << "===============================================================" << endl;
     cout << "Debug Tetgen Data Structure" << endl;
     cout << "===============================================================" << endl;
@@ -1601,7 +1773,8 @@ void Intersection::debugTetgenDataStructure(    vector< InterfacePoint >&   poin
 /*----------------------------------------------------------------------*
  |  Debug only                                               u.may 06/07|
  *----------------------------------------------------------------------*/  
-void Intersection::debugIntegrationcells(vector < vector <Integrationcell> >& integrationcellList)
+void Intersection::debugIntegrationcells(	map< int, vector <Integrationcell> >&	integrationcellList,
+											int id)
 {    
     cout << endl;
     cout << "===============================================================" << endl;
@@ -1609,27 +1782,33 @@ void Intersection::debugIntegrationcells(vector < vector <Integrationcell> >& in
     cout << "===============================================================" << endl;
     cout << endl;
     
-    for(unsigned int i = 0; i < integrationcellList.size(); i++ )
-	{
-		cout << "XFEM ELEMENT " << i << " :" << endl;	
+    map<int,vector <Integrationcell> >::iterator iter;
+  	for( iter = integrationcellList.begin(); iter != integrationcellList.end(); ++iter ) 
+    {
+		cout << "XFEM ELEMENT " << iter->first << " :" << endl;	
 		cout << endl;
-		cout << "NUMBER OF INTEGRATIONCELLS : " << integrationcellList[i].size() << endl;	
-		cout << endl;
-		for(unsigned int j = 0; j < integrationcellList[i].size(); j++ )
+		
+		if(iter->first == id)
 		{
-			cout << "IC " << j << ":  " << endl;
-			cout << endl;	
-			for(unsigned int k = 0; k < integrationcellList[i][j].GetCoord().size(); k++)
+			cout << "NUMBER OF INTEGRATIONCELLS : " << iter->second.size() << endl;	
+			cout << endl;
+			for(unsigned int j = 0; j < iter->second.size(); j++ )
 			{
-				for(unsigned int m = 0; m < integrationcellList[i][j].GetCoord()[k].size(); m++)
+				cout << "IC " << j << ":  " << endl;
+				cout << endl;	
+				for(unsigned int k = 0; k < iter->second[j].GetCoord().size(); k++)
 				{
-					cout << integrationcellList[i][j].GetCoord()[k][m] << "   ";	
+					cout << k << "\t";
+					for(unsigned int m = 0; m < iter->second[j].GetCoord()[k].size(); m++)
+					{
+						cout << iter->second[j].GetCoord()[k][m] << "\t";	
+					}
+					cout << "\t";	
 				}
 				cout << endl;	
 			}
-			cout << endl;	
-		}
-		cout << endl;	cout << endl;	
+			cout << endl;	cout << endl;
+		}	
 	}		
        
     cout << endl;
@@ -1645,6 +1824,6 @@ void Intersection::debugIntegrationcells(vector < vector <Integrationcell> >& in
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef XFEM
+#endif  // #ifdef D_FLUID3_XFEM
 
 
