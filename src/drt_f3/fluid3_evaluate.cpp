@@ -168,10 +168,9 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
           //printf("Element %5d\n",Id());
 #if 0
 
-          for (int i=0;i<elevec1.size();++i)
-          {
-	    printf("eforce[%d]: %26.16e\n",i,elevec1[i]);
-	    ;
+          for (int i=0;i<elevec1.Length();++i)
+          {	    
+	    printf("eforce[%d]: %26.16e\n",i,elevec1[i]);	    
           }
           printf("\n");
 #endif
@@ -183,7 +182,6 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
 	    {
               printf("%26.16e\n",elemat1(i,j));
 //		printf("%3d res %26.19e\n",Id(),elevec1[i]);
-
 	    }
 	    printf("\n");
           }
