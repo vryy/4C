@@ -945,6 +945,8 @@ OBJS_POST_DRT_GID = src/post_gid/post_drt_gid.o
 
 OBJS_POST_DRT_ENSIGHT = src/post_ensight/post_drt_ensight.o
 
+OBJS_POST_DRT_ENSIGHT_XFEM = src/post_ensight/post_drt_ensight_xfem.o
+
 #                 post_out
 OBJS_POST_OUT = src/post_out/post_out.o
 
