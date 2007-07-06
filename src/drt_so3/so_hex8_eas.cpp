@@ -110,44 +110,45 @@ void DRT::Elements::So_hex8::soh8_eassetup(
   T0invT(1,0) = jac0(1,0) * jac0(1,0);
   T0invT(2,0) = jac0(2,0) * jac0(2,0);
   T0invT(3,0) = 2 * jac0(0,0) * jac0(1,0);
-  T0invT(4,0) = 2 * jac0(0,0) * jac0(2,0);
-  T0invT(5,0) = 2 * jac0(1,0) * jac0(2,0);
+  T0invT(4,0) = 2 * jac0(1,0) * jac0(2,0);
+  T0invT(5,0) = 2 * jac0(0,0) * jac0(2,0);
   
   T0invT(0,1) = jac0(0,1) * jac0(0,1);
   T0invT(1,1) = jac0(1,1) * jac0(1,1);
   T0invT(2,1) = jac0(2,1) * jac0(2,1);
   T0invT(3,1) = 2 * jac0(0,1) * jac0(1,1);
-  T0invT(4,1) = 2 * jac0(0,1) * jac0(2,1);
-  T0invT(5,1) = 2 * jac0(1,1) * jac0(2,1);
+  T0invT(4,1) = 2 * jac0(1,1) * jac0(2,1);
+  T0invT(5,1) = 2 * jac0(0,1) * jac0(2,1);
 
   T0invT(0,2) = jac0(0,2) * jac0(0,2);
   T0invT(1,2) = jac0(1,2) * jac0(1,2);
   T0invT(2,2) = jac0(2,2) * jac0(2,2);
   T0invT(3,2) = 2 * jac0(0,2) * jac0(1,2);
-  T0invT(4,2) = 2 * jac0(0,2) * jac0(2,2);
-  T0invT(5,2) = 2 * jac0(1,2) * jac0(2,2);
+  T0invT(4,2) = 2 * jac0(1,2) * jac0(2,2);
+  T0invT(5,2) = 2 * jac0(0,2) * jac0(2,2);
   
   T0invT(0,3) = jac0(0,0) * jac0(0,1);
   T0invT(1,3) = jac0(1,0) * jac0(1,1);
   T0invT(2,3) = jac0(2,0) * jac0(2,1);
   T0invT(3,3) = jac0(0,0) * jac0(1,1) + jac0(1,0) * jac0(0,1);
-  T0invT(4,3) = jac0(0,0) * jac0(2,1) + jac0(2,0) * jac0(0,1);
-  T0invT(5,3) = jac0(1,0) * jac0(2,1) + jac0(2,0) * jac0(1,1);
+  T0invT(4,3) = jac0(1,0) * jac0(2,1) + jac0(2,0) * jac0(1,1);
+  T0invT(5,3) = jac0(0,0) * jac0(2,1) + jac0(2,0) * jac0(0,1);
 
-  T0invT(0,4) = jac0(0,0) * jac0(0,2);
-  T0invT(1,4) = jac0(1,0) * jac0(1,2);
-  T0invT(2,4) = jac0(2,0) * jac0(2,2);
-  T0invT(3,4) = jac0(0,0) * jac0(1,2) + jac0(1,0) * jac0(0,2);
-  T0invT(4,4) = jac0(0,0) * jac0(2,2) + jac0(2,0) * jac0(0,2);
-  T0invT(5,4) = jac0(1,0) * jac0(2,2) + jac0(2,0) * jac0(1,2);
 
-  T0invT(0,5) = jac0(0,1) * jac0(0,2);
-  T0invT(1,5) = jac0(1,1) * jac0(1,2);
-  T0invT(2,5) = jac0(2,1) * jac0(2,2);
-  T0invT(3,5) = jac0(0,1) * jac0(1,2) + jac0(1,1) * jac0(0,2);
-  T0invT(4,5) = jac0(0,1) * jac0(2,2) + jac0(2,1) * jac0(0,2);
-  T0invT(5,5) = jac0(1,1) * jac0(2,2) + jac0(2,1) * jac0(1,2);
+  T0invT(0,4) = jac0(0,1) * jac0(0,2);
+  T0invT(1,4) = jac0(1,1) * jac0(1,2);
+  T0invT(2,4) = jac0(2,1) * jac0(2,2);
+  T0invT(3,4) = jac0(0,1) * jac0(1,2) + jac0(1,1) * jac0(0,2);
+  T0invT(4,4) = jac0(1,1) * jac0(2,2) + jac0(2,1) * jac0(1,2);
+  T0invT(5,4) = jac0(0,1) * jac0(2,2) + jac0(2,1) * jac0(0,2);
   
+  T0invT(0,5) = jac0(0,0) * jac0(0,2);
+  T0invT(1,5) = jac0(1,0) * jac0(1,2);
+  T0invT(2,5) = jac0(2,0) * jac0(2,2);
+  T0invT(3,5) = jac0(0,0) * jac0(1,2) + jac0(1,0) * jac0(0,2);
+  T0invT(4,5) = jac0(1,0) * jac0(2,2) + jac0(2,0) * jac0(1,2);
+  T0invT(5,5) = jac0(0,0) * jac0(2,2) + jac0(2,0) * jac0(0,2);
+
   // now evaluate T0^{-T} with solver
   Epetra_SerialDenseSolver solve_for_inverseT0;
   solve_for_inverseT0.SetMatrix(T0invT);

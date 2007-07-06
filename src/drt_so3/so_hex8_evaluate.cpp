@@ -311,14 +311,7 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     ** This corresponds to the (innermost) element update loop
     ** in the nonlinear FE-Skript page 120 (load-control alg. with EAS)
     */
-    //(*alpha).Shape(neas_,1);
     alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");   // get old alpha
-//    // evaluate current (updated) EAS alphas (from history variables)
-//    soh8_easupdate(alpha,disp,residual);
-    // get stored EAS history
-    //(*oldfeas).Shape(neas_,1);
-    //(*oldKaainv).Shape(neas_,neas_);
-    //(*oldKda).Shape(neas_,NUMDOF_SOH8);
     oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
     oldKaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
     oldKda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
@@ -498,7 +491,7 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     cb.Multiply('N','N',1.0,cmat,bop,1.0);          // temporary C . B
     (*stiffmatrix).Multiply('T','N',detJ * (*weights)(gp),bop,cb,1.0);
 
-    // intergrate `geometric' stiffness matrix and add to keu *****************
+    // integrate `geometric' stiffness matrix and add to keu *****************
     Epetra_SerialDenseVector sfac(stress); // auxiliary integrated stress
     sfac.Scale(detJ * (*weights)(gp));     // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
     vector<double> SmB_L(NUMDIM_SOH8);     // intermediate Sm.B_L
@@ -514,7 +507,7 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
         (*stiffmatrix)(NUMDIM_SOH8*inod+1,NUMDIM_SOH8*jnod+1) += bopstrbop;
         (*stiffmatrix)(NUMDIM_SOH8*inod+2,NUMDIM_SOH8*jnod+2) += bopstrbop;
       }
-    } // end of intergrate `geometric' stiffness ******************************
+    } // end of integrate `geometric' stiffness ******************************
 
     // EAS technology: integrate matrices --------------------------------- EAS
     if (eastype_ != soh8_easnone) {
@@ -556,7 +549,7 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     solve_for_inverseKaa.Invert();
 
     Epetra_SerialDenseMatrix KdaKaa(NUMDOF_SOH8,neas_); // temporary Kda.Kaa^{-1}
-    KdaKaa.Multiply('T','N',1.0,Kda,Kaa,0.0);
+    KdaKaa.Multiply('T','N',1.0,Kda,Kaa,1.0);
 
     // EAS-stiffness matrix is: Kdd - Kda^T . Kaa^-1 . Kda
     (*stiffmatrix).Multiply('N','N',-1.0,KdaKaa,Kda,1.0);

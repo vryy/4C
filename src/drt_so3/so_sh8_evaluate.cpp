@@ -580,13 +580,6 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
       (*oldfeas)(i,0) = feas(i);
     }
   } // -------------------------------------------------------------------- EAS
-
-//  Epetra_SerialDenseMatrix K(*stiffmatrix);
-//  Epetra_SerialDenseVector L(NUMDOF_SOH8);
-//  SymmetricEigen(K,L,NUMDOF_SOH8,'N');
-//
-//  cout << "eigenvalues: " << L;
-
   return;
 } // DRT::Elements::Shell8::s8_nlnstiffmass
 

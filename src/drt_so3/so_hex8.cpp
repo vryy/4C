@@ -220,7 +220,7 @@ DRT::Element** DRT::Elements::So_hex8::Volumes()
  *----------------------------------------------------------------------*/
 DRT::Element** DRT::Elements::So_hex8::Surfaces()
 {
-
+  
   const int nsurf = NumSurface();
   surfaces_.resize(nsurf);
   surfaceptrs_.resize(nsurf);
