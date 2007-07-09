@@ -210,7 +210,7 @@ public:
   void GenAlphaComputeIntermediateSol();
 
   /*!
-  \brief Assemble systemmatrix.
+  \brief Assemble systemmatrix and right hand side (residual).
 
   o Zeros out systemmatrix
 
@@ -220,23 +220,18 @@ public:
 
   o Applies Dirichlet conditions to incremental linear system
 
-  */
-  void GenAlphaAssembleMatrix();
-
-  /*!
-  \brief Assemble residual.
-
   o Zeros out residual
 
   o Adds Neumann loads to the residual
 
   o Dirichlet conditions applied in here to be able to use the
     residual for the convergence check
+
+  o the true residual is store in vector force_ 
   
   */
-    void GenAlphaAssembleResidual();
-
-  
+  void GenAlphaAssembleResidualAndMatrix();
+ 
   /*!
   \brief Solve linear problem.
 

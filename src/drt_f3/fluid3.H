@@ -294,8 +294,7 @@ private:
   {
     none,
     calc_fluid_systemmat_and_residual,
-    calc_fluid_genalpha_sysmat       ,
-    calc_fluid_genalpha_residual     ,
+    calc_fluid_genalpha_sysmat_and_residual,
     calc_fluid_beltrami_error,
     calc_Shapefunction,
     calc_ShapeDeriv1,
@@ -351,6 +350,7 @@ private:
                            vector<double>&           evelaf,
                            vector<double>&           eaccam,
                            Epetra_SerialDenseMatrix* sys_mat,
+                           Epetra_SerialDenseVector* elevec,
                            struct _MATERIAL*         material,
                            ParameterList&            params
                            );
@@ -521,10 +521,11 @@ private:
     const DiscretizationType&  distype  ///< switch gausrule based on this discretization type
     );
 
-  // evaluate fluid coefficient matrix for a generalised
+  // evaluate fluid coefficient matrix and rhs for a generalised
   // alpha problem
   void f3_genalpha_calmat(
     Epetra_SerialDenseMatrix&  elemat,
+    Epetra_SerialDenseVector&  elevec,
     vector<double>&            accintam,
     vector<double>&            velintaf,
     Epetra_SerialDenseMatrix&  vderxyaf,
@@ -542,27 +543,6 @@ private:
     const double&              visc,
     const int&                 iel,
     ParameterList&             params);
-
-  // evaluate fluid residual for a generalised alpha problem
-  void f3_genalpha_calrhs(
-    Epetra_SerialDenseVector&  elevec,
-    vector<double>&  	       accintam,
-    vector<double>&  	       velintaf,
-    Epetra_SerialDenseMatrix&  vderxyaf,
-    Epetra_SerialDenseMatrix&  vderxyaf2,
-    vector<double>&  	       velintnp,
-    Epetra_SerialDenseMatrix&  vderxynp,
-    double&                    prenp,
-    vector<double>&  	       pderxynp,
-    vector<double>&  	       edeadaf,
-    Epetra_SerialDenseVector&  funct,
-    Epetra_SerialDenseMatrix&  derxy,
-    Epetra_SerialDenseMatrix&  derxy2,
-    vector<double>&  	       tau,
-    const double&                    fac,
-    const double&              visc,
-    const int&                 iel,
-    ParameterList& 	       params);
 
   /*!
    * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary

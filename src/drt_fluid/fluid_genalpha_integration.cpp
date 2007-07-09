@@ -366,21 +366,14 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
   
     
   // -------------------------------------------------------------------
-  // call elements to calculate residual for first iteration
+  // call elements to calculate residual and matrix for first iteration
   // -------------------------------------------------------------------
-  this->GenAlphaAssembleResidual();
+  this->GenAlphaAssembleResidualAndMatrix();
 
   bool              stopnonliniter = false;
   while (stopnonliniter==false)
   {
     itnum++;
-
-    // -------------------------------------------------------------------
-    // call elements to calculate systemmatrix. Dirichlet conditions are
-    // applied here to the system. 
-    // -------------------------------------------------------------------
-    this->GenAlphaAssembleMatrix();
-    
   
     // -------------------------------------------------------------------
     // solve for increments
@@ -404,11 +397,10 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
 
     
     // -------------------------------------------------------------------
-    // call elements to calculate residual for convergence check and next
-    // step
+    // call elements to calculate residual for convergence check and
+    // matrix for the next step
     // -------------------------------------------------------------------
-    this->GenAlphaAssembleResidual();
-
+    this->GenAlphaAssembleResidualAndMatrix();
     
     // -------------------------------------------------------------------
     // do convergence check
@@ -634,21 +626,27 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
 } // FluidGenAlphaIntegration::GenAlphaOutput
 
 
-
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- | Assemble residual. Dirichlet conditions applied in here.  gammi 06/07|
+ | Assemble residual and system matrix. Dirichlet conditions applied in |
+ | here, the true residual is stored in force_.                         |
+ |                                                           gammi 07/07|
  -----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidGenAlphaIntegration::GenAlphaAssembleResidual()
+void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
 {
+  const Epetra_Map* dofrowmap       = discret_->DofRowMap();
+
   // -------------------------------------------------------------------
-  // call elements to calculate residual
+  // call elements to calculate residual and matrix
   // -------------------------------------------------------------------
+  // zero out the stiffness matrix
+  sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+
   // zero out residual
   residual_->PutScalar(0.0);
 
@@ -659,9 +657,9 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidual()
   ParameterList eleparams;
   
   // action for elements
-  eleparams.set("action","calc_fluid_genalpha_residual");
+  eleparams.set("action","calc_fluid_genalpha_sysmat_and_residual");
   // choose what to assemble
-  eleparams.set("assemble matrix 1",false);
+  eleparams.set("assemble matrix 1",true);
   eleparams.set("assemble matrix 2",false);
   eleparams.set("assemble vector 1",true);
   eleparams.set("assemble vector 2",false);
@@ -680,91 +678,28 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidual()
 
   // call loop over elements
   {
-    discret_->Evaluate(eleparams,null,null,residual_,null,null);
+    discret_->Evaluate(eleparams,sysmat_,null,residual_,null,null);
     discret_->ClearState();
   }
 
+  // remember force vector for stress computation
   *force_=Epetra_Vector(*residual_);
-  
-  // -------------------------------------------------------------------
-  // apply the Dirichlet boundary conditions to the residual
-  // -------------------------------------------------------------------  
-  LINALG::ApplyDirichlettoSystem(increment_,residual_,
-                                 zeros_,dirichtoggle_);
-  
-  return;
-} // FluidGenAlphaIntegration::GenAlphaAssembleResidual
-
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | Assemble systemmatrix                                     gammi 06/07|
- -----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void  FluidGenAlphaIntegration::GenAlphaAssembleMatrix()
-{
-  const Epetra_Map* dofrowmap       = discret_->DofRowMap();
-
-  
-  // -------------------------------------------------------------------
-  // call elements to calculate system matrix
-  // -------------------------------------------------------------------
-  // zero out the stiffness matrix
-  sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
-
-  // create the parameters for the discretization
-  ParameterList eleparams;
-
-  // action for elements
-  eleparams.set("action","calc_fluid_genalpha_sysmat");
-  // choose what to assemble
-  eleparams.set("assemble matrix 1",true);
-  eleparams.set("assemble matrix 2",false);
-  eleparams.set("assemble vector 1",false);
-  eleparams.set("assemble vector 2",false);
-  eleparams.set("assemble vector 3",false);
-  // other parameters that might be needed by the elements
-  eleparams.set("alpha_M",alphaM_);
-  eleparams.set("alpha_F",alphaF_);
-  eleparams.set("gamma"  ,gamma_ );
-  eleparams.set("time"   ,time_  );
-  eleparams.set("dt"     ,dt_    );
-  // set vector values needed by elements
-  discret_->ClearState();
-  discret_->SetState("u and p (n+1      ,trial)",velnp_);
-  discret_->SetState("u and p (n+alpha_F,trial)",velaf_);
-  discret_->SetState("acc     (n+alpha_M,trial)",accam_);
-
-  // call loop over elements
-  {
-    discret_->Evaluate(eleparams,sysmat_,null,null,null,null);
-    discret_->ClearState();
-  }
-
+    
   // finalize the system matrix
   LINALG::Complete(*sysmat_);
   maxentriesperrow_ = sysmat_->MaxNumEntries();
 
-  
   // -------------------------------------------------------------------
   // Apply dirichlet boundary conditions to system of equations residual
   // discplacements are supposed to be zero at boundary conditions
   // -------------------------------------------------------------------
-  increment_->PutScalar(0.0);
   zeros_->PutScalar(0.0);
   {
     LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,
                                    zeros_,dirichtoggle_);
   }
-return;
-}//FluidGenAlphaIntegration::GenAlphaAssembleMatrix
-
-
-
+  return;
+} // FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -787,6 +722,7 @@ void FluidGenAlphaIntegration::GenAlphaCalcIncrement(
   {
     initsolver = true;
   }
+  increment_->PutScalar(0.0);
   solver_.Solve(sysmat_,increment_,residual_,true,initsolver);
 
   return;
@@ -976,7 +912,7 @@ bool FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(
 
   // this is the convergence check
   if((incvelnorm_L2/velnorm_L2 <= ittol && incprenorm_L2/prenorm_L2 <= ittol)
-     ||
+     &&
      (velresnorm_L2 <= ittol && preresnorm_L2 <= ittol))
   {
     stopnonliniter=true;
@@ -988,7 +924,7 @@ bool FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(
 
   // warn if itemax is reached without convergence, but proceed to
   // next timestep...
-  if (itnum == itemax)
+  if (itnum == itemax && stopnonliniter!=true)
   {
     stopnonliniter=true;
     if(myrank_ == 0)
