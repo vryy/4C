@@ -334,9 +334,6 @@ void TurbulenceStatistics::EvaluateMeanValuesInPlanes(
     togglew_->PutScalar(0.0);
     togglep_->PutScalar(0.0);
 
-    // count the number of nodes in plane (required to calc. in plane mean)
-    int countnodesinplane=0;
-
     //----------------------------------------------------------------------
     // activate toggles for in plane dofs
     //----------------------------------------------------------------------
@@ -355,14 +352,17 @@ void TurbulenceStatistics::EvaluateMeanValuesInPlanes(
         togglew_->ReplaceGlobalValues(1,&one,&(dof[2]));
         togglep_->ReplaceGlobalValues(1,&one,&(dof[3]));
 
-        countnodesinplane++;
       }
     }
 
+    // count the number of nodes in plane (required to calc. in plane mean)
     int countnodesinplaneonallprocs;
-      
-    discret_->Comm().SumAll(&countnodesinplane,&countnodesinplaneonallprocs,1);
-    
+    {
+      double temp;
+      toggleu_->Dot(*toggleu_,&temp);
+      countnodesinplaneonallprocs = int(temp);
+    }
+
     
     //----------------------------------------------------------------------
     // compute scalar products from velnp and toggle vec to sum up
