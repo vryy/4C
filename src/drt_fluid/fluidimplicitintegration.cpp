@@ -683,12 +683,6 @@ void FluidImplicitTimeInt::NonlinearSolve(
       onlypre.Norm2(&presnorm);
     }
 
-    if (myrank_ == 0)
-    {
-      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |",
-             itnum,itemax,ittol,vresnorm,presnorm);
-      printf(" (te=%10.3E,ts=%10.3E)\n",dtele,dtsolve);
-    }
 
     // this is the convergence check
     if (vresnorm <= ittol and presnorm <= ittol)
@@ -696,6 +690,9 @@ void FluidImplicitTimeInt::NonlinearSolve(
       stopnonliniter=true;
       if (myrank_ == 0)
       {
+        printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |",
+             itnum,itemax,ittol,vresnorm,presnorm);
+        printf(" (te=%10.3E)\n",dtele);
         printf("+------------+-------------------+--------------+--------------+\n");
       }
       break;
@@ -743,6 +740,15 @@ void FluidImplicitTimeInt::NonlinearSolve(
       tm5_ref_=null;
       dtsolve=ds_cputime()-tcpu;
     }
+
+    //-------------------------------------------------- output to screen
+    if (myrank_ == 0)
+    {
+      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |",
+             itnum,itemax,ittol,vresnorm,presnorm);
+      printf(" (te=%10.3E,ts=%10.3E)\n",dtele,dtsolve);
+    }
+
     //------------------------------------------------ update (u,p) trial
     velnp_->Update(1.0,*incvel_,1.0);
 
