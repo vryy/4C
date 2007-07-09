@@ -268,6 +268,8 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
     ** -> T0^{-T}
     */
     soh8_eassetup(&M_GP,detJ0,T0invT,xrefe);
+  } else if (eastype_ == soh8_easnone){
+    cout << "Warning: Solid-Shell8 without EAS" << endl;
   } else dserror("Solid-Shell8 only with eas_sosh8");// ------------------- EAS
 
   /*
@@ -485,10 +487,10 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
     (*stiffmatrix).Multiply('T','N',detJ * (*weights)(gp),bop,cb,1.0);
 
     // intergrate `geometric' stiffness matrix and add to keu *****************
-    Epetra_SerialDenseVector sfac(stress); // auxiliary integrated stress
-    sfac.Scale(detJ * (*weights)(gp));     // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
-    vector<double> SmB_L(NUMDIM_SOH8);     // intermediate Sm.B_L
-    // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
+//    Epetra_SerialDenseVector sfac(stress); // auxiliary integrated stress
+//    sfac.Scale(detJ * (*weights)(gp));     // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
+//    vector<double> SmB_L(NUMDIM_SOH8);     // intermediate Sm.B_L
+//    // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
     for (int inod=0; inod<NUMNOD_SOH8; ++inod){
       for (int jnod=0; jnod<NUMNOD_SOH8; ++jnod){
         Epetra_SerialDenseVector G_ij(NUMSTR_SOH8);
@@ -511,11 +513,12 @@ void DRT::Elements::So_sh8::sosh8_nlnstiffmass(
                       +(1+s[gp]) * ((*deriv_sp)(0+2*NUMDIM_SOH8,inod) * (*deriv_sp)(2+2*NUMDIM_SOH8,jnod)
                                    +(*deriv_sp)(2+2*NUMDIM_SOH8,inod) * (*deriv_sp)(0+2*NUMDIM_SOH8,jnod)));
         // transformation of local(parameter) space 'back' to global(material) space
-        G_ij.Multiply('N','N',1.0,TinvT,G_ij,1.0);
+        Epetra_SerialDenseVector G_ij_glob(NUMSTR_SOH8);
+        G_ij_glob.Multiply('N','N',1.0,TinvT,G_ij,0.0);
 
         // Scalar Gij results from product of G_ij with stress, scaled with detJ*weights
         Epetra_SerialDenseVector Gij(1); // this is a scalar
-        Gij.Multiply('T','N',detJ * (*weights)(gp),stress,G_ij,1.0);
+        Gij.Multiply('T','N',detJ * (*weights)(gp),stress,G_ij_glob,0.0);
 
         // add "geometric part" Gij times detJ*weights to stiffness matrix
         (*stiffmatrix)(NUMDIM_SOH8*inod+0,NUMDIM_SOH8*jnod+0) += Gij(0);
@@ -731,43 +734,44 @@ void DRT::Elements::So_sh8::sosh8_evaluateT(const Epetra_SerialDenseMatrix jac,
   TinvT(1,0) = jac(1,0) * jac(1,0);
   TinvT(2,0) = jac(2,0) * jac(2,0);
   TinvT(3,0) = 2 * jac(0,0) * jac(1,0);
-  TinvT(4,0) = 2 * jac(0,0) * jac(2,0);
-  TinvT(5,0) = 2 * jac(1,0) * jac(2,0);
-
+  TinvT(4,0) = 2 * jac(1,0) * jac(2,0);
+  TinvT(5,0) = 2 * jac(0,0) * jac(2,0);
+  
   TinvT(0,1) = jac(0,1) * jac(0,1);
   TinvT(1,1) = jac(1,1) * jac(1,1);
   TinvT(2,1) = jac(2,1) * jac(2,1);
   TinvT(3,1) = 2 * jac(0,1) * jac(1,1);
-  TinvT(4,1) = 2 * jac(0,1) * jac(2,1);
-  TinvT(5,1) = 2 * jac(1,1) * jac(2,1);
+  TinvT(4,1) = 2 * jac(1,1) * jac(2,1);
+  TinvT(5,1) = 2 * jac(0,1) * jac(2,1);
 
   TinvT(0,2) = jac(0,2) * jac(0,2);
   TinvT(1,2) = jac(1,2) * jac(1,2);
   TinvT(2,2) = jac(2,2) * jac(2,2);
   TinvT(3,2) = 2 * jac(0,2) * jac(1,2);
-  TinvT(4,2) = 2 * jac(0,2) * jac(2,2);
-  TinvT(5,2) = 2 * jac(1,2) * jac(2,2);
-
+  TinvT(4,2) = 2 * jac(1,2) * jac(2,2);
+  TinvT(5,2) = 2 * jac(0,2) * jac(2,2);
+  
   TinvT(0,3) = jac(0,0) * jac(0,1);
   TinvT(1,3) = jac(1,0) * jac(1,1);
   TinvT(2,3) = jac(2,0) * jac(2,1);
   TinvT(3,3) = jac(0,0) * jac(1,1) + jac(1,0) * jac(0,1);
-  TinvT(4,3) = jac(0,0) * jac(2,1) + jac(2,0) * jac(0,1);
-  TinvT(5,3) = jac(1,0) * jac(2,1) + jac(2,0) * jac(1,1);
+  TinvT(4,3) = jac(1,0) * jac(2,1) + jac(2,0) * jac(1,1);
+  TinvT(5,3) = jac(0,0) * jac(2,1) + jac(2,0) * jac(0,1);
 
-  TinvT(0,4) = jac(0,0) * jac(0,2);
-  TinvT(1,4) = jac(1,0) * jac(1,2);
-  TinvT(2,4) = jac(2,0) * jac(2,2);
-  TinvT(3,4) = jac(0,0) * jac(1,2) + jac(1,0) * jac(0,2);
-  TinvT(4,4) = jac(0,0) * jac(2,2) + jac(2,0) * jac(0,2);
-  TinvT(5,4) = jac(1,0) * jac(2,2) + jac(2,0) * jac(1,2);
 
-  TinvT(0,5) = jac(0,1) * jac(0,2);
-  TinvT(1,5) = jac(1,1) * jac(1,2);
-  TinvT(2,5) = jac(2,1) * jac(2,2);
-  TinvT(3,5) = jac(0,1) * jac(1,2) + jac(1,1) * jac(0,2);
-  TinvT(4,5) = jac(0,1) * jac(2,2) + jac(2,1) * jac(0,2);
-  TinvT(5,5) = jac(1,1) * jac(2,2) + jac(2,1) * jac(1,2);
+  TinvT(0,4) = jac(0,1) * jac(0,2);
+  TinvT(1,4) = jac(1,1) * jac(1,2);
+  TinvT(2,4) = jac(2,1) * jac(2,2);
+  TinvT(3,4) = jac(0,1) * jac(1,2) + jac(1,1) * jac(0,2);
+  TinvT(4,4) = jac(1,1) * jac(2,2) + jac(2,1) * jac(1,2);
+  TinvT(5,4) = jac(0,1) * jac(2,2) + jac(2,1) * jac(0,2);
+  
+  TinvT(0,5) = jac(0,0) * jac(0,2);
+  TinvT(1,5) = jac(1,0) * jac(1,2);
+  TinvT(2,5) = jac(2,0) * jac(2,2);
+  TinvT(3,5) = jac(0,0) * jac(1,2) + jac(1,0) * jac(0,2);
+  TinvT(4,5) = jac(1,0) * jac(2,2) + jac(2,0) * jac(1,2);
+  TinvT(5,5) = jac(0,0) * jac(2,2) + jac(2,0) * jac(0,2);
 
   // now evaluate T^{-T} with solver
   Epetra_SerialDenseSolver solve_for_inverseT;
