@@ -351,6 +351,7 @@ void DRT::Elements::Fluid3::f3_sys_mat(const vector<int>&        lm,
   // set element data
   const int iel = NumNode();
   const DiscretizationType distype = this->Shape();
+  const int NSD = 3;
 
   // get node coordinates
   const Epetra_SerialDenseMatrix xyze = f3_getPositionArray(edispnp);
@@ -440,7 +441,7 @@ void DRT::Elements::Fluid3::f3_sys_mat(const vector<int>&        lm,
 
     // get velocities (n+g,i) at integration point
     // expression for f3_veci(velint,funct,evelnp,iel);
-    for (int isd=0;isd<NSD_;isd++)
+    for (int isd=0;isd<NSD;isd++)
     {
       velint[isd]=0.0;
       for (int inode=0;inode<iel;inode++)
@@ -451,7 +452,7 @@ void DRT::Elements::Fluid3::f3_sys_mat(const vector<int>&        lm,
 
     // get history data (n,i) at integration point
     //expression for f3_veci(histvec,funct,evhist,iel);
-    for (int isd=0;isd<NSD_;isd++)
+    for (int isd=0;isd<NSD;isd++)
     {
       histvec[isd]=0.0;
       for (int inode=0;inode<iel;inode++)
@@ -462,7 +463,7 @@ void DRT::Elements::Fluid3::f3_sys_mat(const vector<int>&        lm,
 
     // get velocity (np,i) derivatives at integration point
     // expression for f3_vder(vderxy,derxy,evelnp,iel);
-    for (int isd=0;isd<NSD_;isd++)
+    for (int isd=0;isd<NSD;isd++)
     {
       vderxy(0,isd)=0.0;
       vderxy(1,isd)=0.0;
@@ -476,10 +477,10 @@ void DRT::Elements::Fluid3::f3_sys_mat(const vector<int>&        lm,
     }
 
     // get grid velocity at integration point
-    vector<double>    gridvelint(NSD_);
+    vector<double>    gridvelint(NSD);
     if (is_ale_)
     {
-      for (int isd=0; isd<NSD_; isd++)
+      for (int isd=0; isd<NSD; isd++)
       {
         gridvelint[isd] = 0.;
         for (int inode=0; inode<iel; inode++)
@@ -496,7 +497,7 @@ void DRT::Elements::Fluid3::f3_sys_mat(const vector<int>&        lm,
     }
 
     // get pressure gradients
-    vector<double>    gradp(NSD_);
+    vector<double>    gradp(NSD);
     gradp[0] = gradp[1] = gradp[2] = 0.0;
     for (int inode=0; inode<iel; inode++)
     {
@@ -512,7 +513,7 @@ void DRT::Elements::Fluid3::f3_sys_mat(const vector<int>&        lm,
     }
 
     // get bodyforce in gausspoint
-    for (int isd=0;isd<NSD_;isd++)
+    for (int isd=0;isd<NSD;isd++)
     {
       edeadng[isd] = 0.0;
       for (int inode=0;inode<iel;inode++)
@@ -542,9 +543,9 @@ void DRT::Elements::Fluid3::f3_sys_mat(const vector<int>&        lm,
 Epetra_SerialDenseMatrix DRT::Elements::Fluid3::f3_getPositionArray(
           const vector<double>&   edispnp)
 {
-    
+    const int NSD = 3;
     const int iel = NumNode();
-    Epetra_SerialDenseMatrix xyze(NSD_,iel);
+    Epetra_SerialDenseMatrix xyze(NSD,iel);
 
     // get initial position
     for (int inode=0;inode<iel;inode++)
@@ -586,6 +587,7 @@ void DRT::Elements::Fluid3::f3_genalpha_sys_mat(
   ParameterList& 	    params)
 {
   const DiscretizationType distype = this->Shape();
+  const int NSD = 3;
   if(!is_ale_)
   {
     /*---------------------------------------------------- set element data */
@@ -701,7 +703,7 @@ void DRT::Elements::Fluid3::f3_genalpha_sys_mat(
 
 
           //get velocities (n+1,i)  at integration point
-          for (int isd=0;isd<NSD_;isd++)
+          for (int isd=0;isd<NSD;isd++)
           {
             velintnp[isd]=0.0;
             for (int inode=0;inode<iel;inode++)
@@ -1072,6 +1074,7 @@ vector<double> DRT::Elements::Fluid3::f3_caltau(
     const bool                              is_stationary
     )
 {
+    const int NSD = 3;
     // use one point gauss rule to calculate tau at element center
     GaussRule3D integrationrule_stabili;
     switch(distype)
@@ -1096,7 +1099,7 @@ vector<double> DRT::Elements::Fluid3::f3_caltau(
     const double wquad = intpoints.qwgt[0];
     
     Epetra_SerialDenseVector    funct(numnode);
-    Epetra_SerialDenseMatrix    deriv(NSD_, numnode);
+    Epetra_SerialDenseMatrix    deriv(NSD, numnode);
     shape_function_3D(funct,e1,e2,e3,distype);
     shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
     
@@ -1115,13 +1118,13 @@ vector<double> DRT::Elements::Fluid3::f3_caltau(
     }
     
     // get velocities at element center
-    vector<double>  velint(NSD_);
-    for (int isd=0;isd<NSD_;isd++)
+    vector<double>  velint(NSD);
+    for (int isd=0;isd<NSD;isd++)
     {
         velint[isd]=0.0;
         for (int inode=0;inode<numnode;inode++)
         {
-            velint[isd] += funct[inode]*evelnp[isd+(NSD_*inode)];
+            velint[isd] += funct[inode]*evelnp[isd+(NSD*inode)];
         }
     }
 
@@ -1134,7 +1137,7 @@ vector<double> DRT::Elements::Fluid3::f3_caltau(
     const double hk = pow((SIX*vol/PI),(1.0/3.0))/sqrt(3.0);
 
     // get derivatives
-    Epetra_SerialDenseMatrix    derxy(NSD_, numnode);
+    Epetra_SerialDenseMatrix    derxy(NSD, numnode);
     f3_gder(derxy,deriv,xjm,det,numnode);
 
     // get velocity norm
@@ -1143,7 +1146,7 @@ vector<double> DRT::Elements::Fluid3::f3_caltau(
                               + velint[2]*velint[2]);
     
     // normed velocity at element centre
-    vector<double>  velino(NSD_);     
+    vector<double>  velino(NSD);     
     if(vel_norm>=EPS6)
     {
         velino[0] = velint[0]/vel_norm;
@@ -1287,12 +1290,13 @@ Epetra_SerialDenseMatrix DRT::Elements::Fluid3::getJacobiMatrix(
                       const Epetra_SerialDenseMatrix& deriv,
                       const int                       iel) const
 {
-  Epetra_SerialDenseMatrix    xjm(NSD_,NSD_);
+  const int NSD = 3;
+  Epetra_SerialDenseMatrix    xjm(NSD,NSD);
     
   // determine jacobian matrix at point r,s,t
-  for (int isd=0; isd<NSD_; isd++)
+  for (int isd=0; isd<NSD; isd++)
   {
-    for (int jsd=0; jsd<NSD_; jsd++)
+    for (int jsd=0; jsd<NSD; jsd++)
       {
       double dum = 0.0;
       for (int inode=0; inode<iel; inode++)
@@ -1340,8 +1344,9 @@ Epetra_SerialDenseMatrix DRT::Elements::Fluid3::f3_getbodyforce(
         const ParameterList&  params
 )
 {
+  const int NSD = 3;
   const int iel = NumNode();
-  Epetra_SerialDenseMatrix edeadng(NSD_,iel);
+  Epetra_SerialDenseMatrix edeadng(NSD,iel);
     
   vector<DRT::Condition*> myneumcond;
 
@@ -1399,7 +1404,7 @@ Epetra_SerialDenseMatrix DRT::Elements::Fluid3::f3_getbodyforce(
       const vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
       const vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
 
-      for(int isd=0;isd<NSD_;isd++)
+      for(int isd=0;isd<NSD;isd++)
       {
         edeadng(isd,jnode)=(*onoff)[isd]*(*val)[isd]*curvefac;
       }
@@ -3532,7 +3537,8 @@ void DRT::Elements::Fluid3::f3_int_beltrami_err(
   ParameterList& 	    params
   )
 {
-
+  const int NSD = 3;
+  
   // add element error to "integrated" error
   double velerr = params.get<double>("L2 integrated velocity error");
   double preerr = params.get<double>("L2 integrated pressure error");
@@ -3640,13 +3646,13 @@ void DRT::Elements::Fluid3::f3_int_beltrami_err(
     // compute difference between analytical solution and numerical solution
     deltap = preint - p;
 
-    for (int isd=0;isd<NSD_;isd++)
+    for (int isd=0;isd<NSD;isd++)
     {
       deltavel[isd] = velint[isd]-u[isd];
     }
 
     // add square to L2 error
-    for (int isd=0;isd<NSD_;isd++)
+    for (int isd=0;isd<NSD;isd++)
     {
       velerr += deltavel[isd]*deltavel[isd]*fac;
     }
