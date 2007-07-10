@@ -132,8 +132,6 @@ private:
   
   map<string, vector<ofstream::pos_type> > resultfilepos_;
   vector<vector<int> > filesets_;
-
-  static const unsigned FILE_SIZE_LIMIT = 0x7fffffff; // 2GB
   
   //! maps a distype to the corresponding Ensight cell type
   map<DRT::Element::DiscretizationType, string> distype2ensightstring_;
@@ -214,7 +212,7 @@ void EnsightWriter::WriteFiles()
 
   // loop all results to get number of result timesteps
   PostResult result = PostResult(field_);
-  vector<double> soltime_;  ///< timesteps when the solution is written
+  vector<double> soltime_;  // timesteps when the solution is written
   if (result.next_result())
     soltime_.push_back(result.time());
   else
@@ -255,7 +253,7 @@ void EnsightWriter::WriteFiles()
 
   // write time steps for geometry file (time set 2)
   // at the moment, we can only print out the first step -> to be changed
-  vector<double> geotime_;  ///< timesteps when the geometry is written
+  vector<double> geotime_;  // timesteps when the geometry is written
   geotime_.push_back(soltime_[0]);
   casefile_ << "\n\ntime set:\t\t2\n"
             << "number of steps:\t" << geotime_.size() << "\n"
@@ -415,6 +413,9 @@ void EnsightWriter::WriteResultsAllSteps(
   const int numdf,
   const int from)
 {
+  // maximum file size
+  const unsigned FILE_SIZE_LIMIT = 0x7fffffff; // 2GB
+  
   PostResult result = PostResult(field_);
   result.next_result();
   if (!map_has_map(result.group(), const_cast<char*>(groupname.c_str())))
@@ -661,6 +662,7 @@ protected:
 /*----------------------------------------------------------------------*/
 void FluidEnsightWriter::WriteResults(PostField* field)
 {
+  
   EnsightWriter::WriteResultsAllSteps("velnp","velocity",field->problem()->num_dim());
   EnsightWriter::WriteResultsAllSteps("velnp","pressure",1,field->problem()->num_dim());
   EnsightWriter::WriteResultsAllSteps("residual","residual",field->problem()->num_dim());
