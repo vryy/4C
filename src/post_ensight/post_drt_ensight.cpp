@@ -38,6 +38,7 @@ const int subquadmap[4][4] = {{ 0, 4, 8, 7},
                               { 7, 8, 6, 3}};
 
 //! defines how 8 hex8 elements are constructed from a hex27
+//  ;-) its symetric for some reason
 const int subhexmap[8][8] = {{  0,  8, 20, 11, 12, 21, 26, 24},
                              {  8,  1,  9, 20, 21, 13, 22, 26},
                              { 20,  9,  2, 10, 26, 22, 14, 23},
@@ -397,10 +398,9 @@ void EnsightWriter::WriteCells(ofstream& geofile)
         // special cases
         case DRT::Element::hex27:
         {
-          cout << "write " << 8 << " subelements" << endl;
           for (int isubele=0; isubele<8; ++isubele)
             for (int isubnode=0; isubnode<8; ++isubnode)
-              Write(geofile,nodemap->LID(nodes[subhexmap[isubnode][isubele]]->Id())+1);
+              Write(geofile,nodemap->LID(nodes[subhexmap[isubele][isubnode]]->Id())+1);
           break;
         }
         case DRT::Element::quad9:
