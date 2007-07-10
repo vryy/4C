@@ -333,6 +333,15 @@ DRT::Utils::IntegrationPoints2D DRT::Utils::getIntegrationPoints2D(const  GaussR
         intpoints.qxg[8][1] =  0.7745966692415;
         break;
     }
+    case intrule_tri_1point:
+    {
+        intpoints.nquad = 1;
+        intpoints.qwgt[0]  = 0.5;
+
+        intpoints.qxg[0][0] = 1.0/3.0;
+        intpoints.qxg[0][1] = 1.0/3.0;
+        break;
+    }
     case intrule_tri_3point:
     {
         intpoints.nquad = 3;
