@@ -64,37 +64,9 @@ void DRT::Utils::shape_function_3D(
        * [Zienkiewicz, Methode der Finiten Elemente, Hanser, 1975]
        * However, here the slightly different notation is used
        * N^k = 1/8 (1 + r^k r) (1 + s^k s) (1 + t^k k) 
-       *           ( (1 + r^k r) + (1 + s^k s) + (1 + t^k t) - 2 - 3) */
+       *           ( (1 + r^k r) + (1 + s^k s) + (1 + t^k t) - 2 - 3) 
+       */
 
-      // Node numbering (see reference guide):
-      //                          
-      //                          ^ t             
-      //                          |            
-      //                          |           
-      //                   4      |   19         7
-      //                    o-----|---o---------o
-      //                   /|     |            /|
-      //                  / |     |           / |
-      //                 /  |     |          /  |
-      //              16o   |     |       18o   |
-      //               /  12o     |        /    o15
-      //              /     |     |       /     |
-      //           5 /      | 17  |    6 /      |
-      //            o---------o---------o       |
-      //            |       |     *-----|---------------->
-      //            |       o----/----o-|-------o         s
-      //            |      / 0  /     11|      / 3 
-      //            |     /    /        |     /
-      //          13o    /    /         o14  /
-      //            |   o 8  /          |   o 10 
-      //            |  /    /           |  /
-      //            | /    /            | /
-      //            |/    /             |/
-      //            o---------o---------o
-      //           1    /     9          2
-      //               / r
-
-      
       const double rp=1.0+r;
       const double rm=1.0-r;
       const double sp=1.0+s;
@@ -323,34 +295,6 @@ void DRT::Utils::shape_function_3D_deriv1(
       const double rrm=1.0-r*r;
       const double ssm=1.0-s*s;
       const double ttm=1.0-t*t;
-
-
-      //                          
-      //                          ^ t             
-      //                          |            
-      //                          |           
-      //                   4      |   19         7
-      //                    o-----|---o---------o
-      //                   /|     |            /|
-      //                  / |     |           / |
-      //                 /  |     |          /  |
-      //              16o   |     |       18o   |
-      //               /  12o     |        /    o15
-      //              /     |     |       /     |
-      //           5 /      | 17  |    6 /      |
-      //            o---------o---------o       |
-      //            |       |     *-----|---------------->
-      //            |       o----/----o-|-------o         s
-      //            |      / 0  /     11|      / 3 
-      //            |     /    /        |     /
-      //          13o    /    /         o14  /
-      //            |   o 8  /          |   o 10 
-      //            |  /    /           |  /
-      //            | /    /            | /
-      //            |/    /             |/
-      //            o---------o---------o
-      //           1    /     9          2
-      //               / r
 
       // corner nodes      
       deriv1(0,0) =-Q18*sm*tm*(2.0*rm+sm+tm-5.0);
@@ -808,34 +752,6 @@ void DRT::Utils::shape_function_3D_deriv2(
       const double sm=1.0-s;
       const double tp=1.0+t;
       const double tm=1.0-t;
-
-
-      //                          
-      //                          ^ t             
-      //                          |            
-      //                          |           
-      //                   4      |   19         7
-      //                    o-----|---o---------o
-      //                   /|     |            /|
-      //                  / |     |           / |
-      //                 /  |     |          /  |
-      //              16o   |     |       18o   |
-      //               /  12o     |        /    o15
-      //              /     |     |       /     |
-      //           5 /      | 17  |    6 /      |
-      //            o---------o---------o       |
-      //            |       |     *-----|---------------->
-      //            |       o----/----o-|-------o         s
-      //            |      / 0  /     11|      / 3 
-      //            |     /    /        |     /
-      //          13o    /    /         o14  /
-      //            |   o 8  /          |   o 10 
-      //            |  /    /           |  /
-      //            | /    /            | /
-      //            |/    /             |/
-      //            o---------o---------o
-      //           1    /     9          2
-      //               / r
 
       // corner nodes
       deriv2(drdr,0) = 0.25*sm*tm;
@@ -1396,21 +1312,6 @@ void DRT::Utils::shape_function_2D(
     }
     case DRT::Element::quad8:
     {
-      /*
-                            s^
-                             |
-                       3     6      2
-                        o----o----o
-                        |    |    |
-                        |    |    |
-                       7o    +----o5---> r 
-                        |         |
-                        |         |
-                        o----o----o
-                       0     4     1
-                            
-      */
-      
         const double rp=1.0+r;
         const double rm=1.0-r;
         const double sp=1.0+s;
@@ -1552,21 +1453,6 @@ void DRT::Utils::shape_function_2D_deriv1(
       const double rm=1.0-r;
       const double sp=1.0+s;
       const double sm=1.0-s;
-
-      /*
-                            s^
-                             |
-                       3     6      2
-                        o----o----o
-                        |    |    |
-                        |    |    |
-                       7o    +----o5---> r 
-                        |         |
-                        |         |
-                        o----o----o
-                       0     4     1
-                            
-      */
 
       //          (-1/4) (s - 1.0) (2.0 r + s)
       deriv1(0,0)= 0.25*sm*(2*r+s);
@@ -1761,21 +1647,6 @@ void DRT::Utils::shape_function_2D_deriv2(
       const double rm=1.0-r;
       const double sp=1.0+s;
       const double sm=1.0-s;
-      
-      /*
-                            s^
-                             |
-                       3     6      2
-                        o----o----o
-                        |    |    |
-                        |    |    |
-                       7o    +----o5---> r 
-                        |         |
-                        |         |
-                        o----o----o
-                       0     4     1
-                            
-      */
 
       //              (-1/2) (s - 1.0)
       deriv2(drdr,0) = 0.5*sm;
