@@ -258,7 +258,7 @@ void EnsightWriter::WriteFiles()
   vector<double> geotime_;  ///< timesteps when the geometry is written
   geotime_.push_back(soltime_[0]);
   casefile_ << "\n\ntime set:\t\t2\n"
-            << "number of steps:\t1\n"
+            << "number of steps:\t" << geotime_.size() << "\n"
             << "time values: ";
   for (unsigned i=0; i<geotime_.size(); ++i)
   {
@@ -373,6 +373,8 @@ void EnsightWriter::WriteCells(ofstream& geofile)
     case DRT::Element::tet4:
     case DRT::Element::tet10:
     case DRT::Element::tri3:
+    case DRT::Element::wedge6:
+    case DRT::Element::wedge15:
     {
       const int numnp = actele->NumNode();
       for (int inode=0; inode<numnp; ++inode)

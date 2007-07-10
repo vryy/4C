@@ -205,7 +205,7 @@ void DRT::Utils::shape_function_3D(
         funct[9] =4*s*t;
         break;
     }
-    case DRT::Element::weg6:
+    case DRT::Element::wedge6:
     {
       const double t3=1.0-r-s;
 
@@ -217,9 +217,9 @@ void DRT::Utils::shape_function_3D(
       funct[5]=Q12*t3*(1+t);
       break;
     }
-    case DRT::Element::weg15:
+    case DRT::Element::wedge15:
     {
-      dserror("shape functions for weg15 have not been checked\n");
+      dserror("shape functions for wedge15 have not been checked\n");
 
       const double t1=r;
       const double t2=s;
@@ -609,7 +609,7 @@ void DRT::Utils::shape_function_3D_deriv1(
 
         break;
     }
-    case DRT::Element::weg6:
+    case DRT::Element::wedge6:
     {
       const double p1=Q12*(1-t);
       const double p2=Q12*(1+t);
@@ -638,7 +638,7 @@ void DRT::Utils::shape_function_3D_deriv1(
 
       break;
     }
-     case DRT::Element::weg15:
+     case DRT::Element::wedge15:
     {
       const double t1=r;
       const double t2=s;
@@ -1249,7 +1249,7 @@ void DRT::Utils::shape_function_3D_deriv2(
 
         break;
     }
-    case DRT::Element::weg15:
+    case DRT::Element::wedge15:
     {
 
       const double t1=r;

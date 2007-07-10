@@ -73,17 +73,17 @@ namespace Utils
                                                       {1,  3,  8},
                                                       {2,  3,  9}};
 
-  //! Triangular surfaces of weg15 with 7 nodes per surface
-  const int     eleNodeNumbering_weg15_trisurfaces[2][6]={{0, 1 ,2, 6, 7, 8},
+  //! Triangular surfaces of wedge15 with 7 nodes per surface
+  const int     eleNodeNumbering_wedge15_trisurfaces[2][6]={{0, 1 ,2, 6, 7, 8},
                                                           {3, 4, 5, 12, 13, 14}};
 
-  //! Rectangular surfaces of weg15 with 8 nodes per surface
-  const int     eleNodeNumbering_weg15_quadsurfaces[3][8]={{0, 1, 4, 3, 6, 10, 12, 9},
+  //! Rectangular surfaces of wedge15 with 8 nodes per surface
+  const int     eleNodeNumbering_wedge15_quadsurfaces[3][8]={{0, 1, 4, 3, 6, 10, 12, 9},
                                                            {1, 2, 5, 4, 7, 11, 13, 10},
                                                            {0, 3, 5, 2, 9, 14, 11, 8}};
 
   //! 9 lines of a Weg15 element with 3 nodes per line
-  const int     eleNodeNumbering_weg15_lines[9][3]={{0, 1, 6},
+  const int     eleNodeNumbering_wedge15_lines[9][3]={{0, 1, 6},
                                                     {1, 2, 7},
                                                     {2, 0, 8},
                                                     {3, 4, 12},

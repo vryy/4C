@@ -119,8 +119,8 @@ public:
     hex27,                      // 27 noded hexahedra
     tet4,                       // 4 noded tetrahedra
     tet10,                      // 4 noded tetrahedra
-    weg6,                       // 6 noded wedge
-    weg15,                      // 15 noded wedge
+    wedge6,                     // 6 noded wedge
+    wedge15,                    // 15 noded wedge
     line2,                      // 2 noded line
     line3,                      // 3 noded line
     max_distype                 //  end marker. must be the last entry
