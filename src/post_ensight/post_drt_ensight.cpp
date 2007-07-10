@@ -26,6 +26,7 @@ Maintainer: Ulrich Kuettler
 #include "../post_drt_common/post_drt_common.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_node.H"
+#include "../drt_lib/drt_element.H"
 
 using namespace std;
 
@@ -45,6 +46,8 @@ const int subhexmap[8][8] = {{  0,  8, 20, 11, 12, 21, 26, 24},
                              { 21, 13, 22, 26, 16,  5, 17, 25},
                              { 26, 22, 14, 23, 25, 17,  6, 18},
                              { 24, 26, 23, 15, 19, 25, 18,  7}};
+
+typedef map<DRT::Element::DiscretizationType, int> NumElePerDisType;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -116,6 +119,15 @@ private:
     const unsigned int fileset,
     const string name,
     const string filename);
+    
+  NumElePerDisType GetNumElePerDisType(
+    const RefCountPtr<DRT::Discretization> dis
+  ) const;
+    
+  string GetEnsightString(
+    const DRT::Element::DiscretizationType distype
+  );
+    
   /*!
    * \brief if files become to big, this routine switches to a new file
    */
@@ -125,6 +137,11 @@ private:
     const int stepsize,
     const string name,
     const string filename);
+  
+  int GetNumEleOutput(
+    const DRT::Element::DiscretizationType distype,
+    const int                              numele
+  ) const;
 
   PostField* field_;
   string filename_;
@@ -332,76 +349,135 @@ void EnsightWriter::WriteCells(ofstream& geofile)
   const Epetra_Map* elementmap = dis->ElementRowMap();
   dsassert(elementmap->NumMyElements() == elementmap->NumGlobalElements(), "filter cannot be run in parallel");
 
-  const int numele = elementmap->NumMyElements();
-
-  // ==================================================================
-  // We expect all elements in a mesh to be of the same type (shape
-  // and everything)
+  // get the number of elements for each distype
+  const NumElePerDisType numElePerDisType = GetNumElePerDisType(dis);
   
-  const DRT::Element* firstele = dis->gElement(elementmap->GID(0));
-  const DRT::Element::DiscretizationType distype = firstele->Shape();
+  // for each found distype write block of the same typed elements
+  NumElePerDisType::const_iterator iter;
+  for (iter=numElePerDisType.begin(); iter != numElePerDisType.end(); ++iter)
+  {
+    const DRT::Element::DiscretizationType distypeiter = iter->first;
+    const int ne = GetNumEleOutput(distypeiter, iter->second);
+    const string ensightString = GetEnsightString(distypeiter);
+    
+    cout << "writing "<< iter->second << " " 
+         << distype2ensightstring_[distypeiter] << " elements"
+         << " (" << ne << " cells) per distype."
+         << " ensight output celltype: " << ensightString
+         << endl;
+    
+    Write(geofile,ensightString);                                         
+    Write(geofile,ne);
+
+    // loop all available elements
+    for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
+    {
+      DRT::Element* actele = dis->gElement(elementmap->GID(iele));
+      DRT::Node** nodes = actele->Nodes();
+      if (actele->Shape() == distypeiter)
+      {
+        switch (actele->Shape())
+        {
+        // standard case with direct support
+        case DRT::Element::hex20:
+        case DRT::Element::hex8:
+        case DRT::Element::quad4:
+        case DRT::Element::quad8:
+        case DRT::Element::tet4:
+        case DRT::Element::tet10:
+        case DRT::Element::tri3:
+        case DRT::Element::wedge6:
+        case DRT::Element::wedge15:
+        {
+          const int numnp = actele->NumNode();
+          for (int inode=0; inode<numnp; ++inode)
+            Write(geofile,nodemap->LID(nodes[inode]->Id())+1);
+          break;
+        }
+        // special cases
+        case DRT::Element::hex27:
+        {
+          cout << "write " << 8 << " subelements" << endl;
+          for (int isubele=0; isubele<8; ++isubele)
+            for (int isubnode=0; isubnode<8; ++isubnode)
+              Write(geofile,nodemap->LID(nodes[subhexmap[isubnode][isubele]]->Id())+1);
+          break;
+        }
+        case DRT::Element::quad9:
+        {
+          // write subelements
+          for (int isubele=0; isubele<4; ++isubele)
+            for (int isubnode=0; isubnode<4; ++isubnode)
+              Write(geofile,nodemap->LID(nodes[subquadmap[isubele][isubnode]]->Id())+1);
+          break;
+        }
+        default:
+          dserror("don't know, how to write this element type as a Cell");
+        };
+      };
+    };
+  };
+}
+
+
+/*!
+ * \brief parse all elements and get the number of elements for each distype
+ */
+NumElePerDisType EnsightWriter::GetNumElePerDisType(
+  const RefCountPtr<DRT::Discretization> dis
+  ) const
+{
+  const Epetra_Map* elementmap = dis->ElementRowMap();
+  
+  NumElePerDisType numElePerDisType;
+  for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
+  {
+    DRT::Element* actele = dis->gElement(elementmap->GID(iele));
+    const DRT::Element::DiscretizationType distype = actele->Shape();
+    // update counter, if element has been identified
+    numElePerDisType[distype]++;
+  }
+  return numElePerDisType;
+}
+
+int EnsightWriter::GetNumEleOutput(
+  const DRT::Element::DiscretizationType distype,
+  const int                              numele
+  ) const
+{
   
   int numeleout = 0;
-  switch (firstele->Shape())
+  switch (distype)
   {
   case DRT::Element::hex27:
     numeleout = 8*numele;
+    break;
   case DRT::Element::quad9:
     numeleout = 4*numele;
+    break;
   default:
     numeleout = numele;
   }
-  
-  Write(geofile,distype2ensightstring_[distype]);                                         
-  Write(geofile,numeleout);
+  return numeleout;
+}
 
-  // ==================================================================
-  for (int iele=0; iele<numele; ++iele)
+string EnsightWriter::GetEnsightString(
+  const DRT::Element::DiscretizationType distype
+  )
+{
+  string str;
+  switch (distype)
   {
-    DRT::Element* actele = dis->gElement(elementmap->GID(iele));
-    DRT::Node** nodes = actele->Nodes();
-    
-    switch (actele->Shape())
-    {
-    // standard case with direct support
-    case DRT::Element::hex20:
-    case DRT::Element::hex8:
-    case DRT::Element::quad4:
-    case DRT::Element::quad8:
-    case DRT::Element::tet4:
-    case DRT::Element::tet10:
-    case DRT::Element::tri3:
-    case DRT::Element::wedge6:
-    case DRT::Element::wedge15:
-    {
-      const int numnp = actele->NumNode();
-      for (int inode=0; inode<numnp; ++inode)
-      {
-        Write(geofile,nodemap->LID(nodes[inode]->Id())+1);
-      }
-      break;
-    }
-    // special cases
-    case DRT::Element::hex27:
-    {
-      // write subelements
-      for (int isubele=0; isubele<8; ++isubele)
-        for (int isubnode=0; isubnode<8; ++isubnode)
-          Write(geofile,nodemap->LID(nodes[subhexmap[isubele][isubnode]]->Id())+1);
-      break;
-    }
-    case DRT::Element::quad9:
-    {
-      // write subelements
-      for (int isubele=0; isubele<4; ++isubele)
-        for (int isubnode=0; isubnode<4; ++isubnode)
-          Write(geofile,nodemap->LID(nodes[subquadmap[isubele][isubnode]]->Id())+1);
-      break;
-    }
-    default:
-      dserror("don't know, how to write this element type as a Cell");
-    };
-  };
+  case DRT::Element::hex27:
+    str = distype2ensightstring_[DRT::Element::hex8];
+    break;
+  case DRT::Element::quad9:
+    str = distype2ensightstring_[DRT::Element::quad4];
+    break;
+  default:
+    str = distype2ensightstring_[distype];
+  }
+  return str;
 }
 
 
