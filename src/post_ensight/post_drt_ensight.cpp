@@ -30,6 +30,22 @@ Maintainer: Ulrich Kuettler
 using namespace std;
 
 
+//! defines how 4 quad4 elements are constructed from a quad9
+const int subquadmap[4][4] = {{ 0, 4, 8, 7},
+                              { 4, 1, 5, 8},
+                              { 8, 5, 2, 6},
+                              { 7, 8, 6, 3}};
+
+//! defines how 8 hex8 elements are constructed from a hex27
+const int subhexmap[8][8] = {{  0,  8, 20, 11, 12, 21, 26, 24},
+                             {  8,  1,  9, 20, 21, 13, 22, 26},
+                             { 20,  9,  2, 10, 26, 22, 14, 23},
+                             { 11, 20, 10,  3, 24, 26, 23, 15},
+                             { 12, 21, 26, 24,  4, 16, 25, 19},
+                             { 21, 13, 22, 26, 16,  5, 17, 25},
+                             { 26, 22, 14, 23, 25, 17,  6, 18},
+                             { 24, 26, 23, 15, 19, 25, 18,  7}};
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 class EnsightWriter
@@ -57,15 +73,15 @@ protected:
     pressure) and we want to write just one part of it. So we have to
     specify which part.
 
-    \param groupname  (in): name of the result group in the control file
-    \param name       (in): name of the result to be written
-    \param numdf      (in): number of dofs per node to this result
-    \param from       (in): start position of values in nodes
-
     \author u.kue
     \date 03/07
   */
-  void WriteResultsAllSteps(const string groupname, const string name, const int numdf, const int from=0);
+  void WriteResultsAllSteps(
+    const string groupname,  ///< name of the result group in the control file
+    const string name,       ///< name of the result to be written
+    const int numdf,         ///< number of dofs per node to this result
+    const int from=0         ///< start position of values in nodes
+    );
 
 private:
 
@@ -91,8 +107,12 @@ private:
   void WriteIndexTable(
     ofstream& file,
     const vector<ofstream::pos_type>& filepos);
+  /*!
+   * \brief create string for the VARIABLE section 
+   *        that corresponds to the current field
+   */
   string GetVariableEntryForCaseFile(
-    const int numdf,
+    const int numdf,             ///< degrees of freedom per node for this field
     const unsigned int fileset,
     const string name,
     const string filename);
@@ -125,7 +145,7 @@ private:
 EnsightWriter::EnsightWriter(PostField* field, const string filename)
   : field_(field), filename_(filename)
 {
-  // file the map once and for all
+  // map between distype in BACI and Ensight string
   distype2ensightstring_.clear();
   distype2ensightstring_[DRT::Element::hex8]  = "hexa8";
   distype2ensightstring_[DRT::Element::hex20] = "hexa20";
@@ -150,45 +170,47 @@ void EnsightWriter::WriteFiles()
   
   // open file
   string geofilename = filename_ + "_" + field_->name() + ".geo";
-  ofstream geofile_;
-  geofile_.open(geofilename.c_str());
-  if (!geofile_)  dserror("failed to open file: %s", geofilename.c_str());
+  ofstream geofile;
+  geofile.open(geofilename.c_str());
+  if (!geofile)  dserror("failed to open file: %s", geofilename.c_str());
   
   // header
-  Write(geofile_,"C Binary");
+  Write(geofile,"C Binary");
   
   // print out one timestep
   // if more are needed, this has to go into a loop
-  Write(geofile_,"BEGIN TIME STEP");
   vector<ofstream::pos_type> fileposition_;
-  fileposition_.push_back(geofile_.tellp());
-  Write(geofile_,field_->name() + " geometry");
-  Write(geofile_,"Comment");
-  //Write(geofile_,"node id given");
-  Write(geofile_,"node id assign");
-  Write(geofile_,"element id off");
-
-  // part + partnumber + comment
-  // careful! field_->field_pos() returns the position of the ccarat
-  // field, ignoring the discretizations. So if there are many
-  // discretizations in one field, we have to do something different...
-  Write(geofile_,"part");
-  Write(geofile_,field_->field_pos()+1);
-  Write(geofile_,field_->name() + " field");
-
-  Write(geofile_,"coordinates");
-  Write(geofile_,field_->num_nodes());
-
-  // write the grid information
-  WriteCoordinates(geofile_, field_->discretization());
-  WriteCells(geofile_);
-
-  Write(geofile_,"END TIME STEP");
+  {
+    Write(geofile,"BEGIN TIME STEP");
+    fileposition_.push_back(geofile.tellp());
+    Write(geofile,field_->name() + " geometry");
+    Write(geofile,"Comment");
+    //Write(geofile_,"node id given");
+    Write(geofile,"node id assign");
+    Write(geofile,"element id off");
+  
+    // part + partnumber + comment
+    // careful! field_->field_pos() returns the position of the ccarat
+    // field, ignoring the discretizations. So if there are many
+    // discretizations in one field, we have to do something different...
+    Write(geofile,"part");
+    Write(geofile,field_->field_pos()+1);
+    Write(geofile,field_->name() + " field");
+  
+    Write(geofile,"coordinates");
+    Write(geofile,field_->num_nodes());
+  
+    // write the grid information
+    WriteCoordinates(geofile, field_->discretization());
+    WriteCells(geofile);
+  
+    Write(geofile,"END TIME STEP");
+  }
   
   // append index table
-  WriteIndexTable(geofile_,fileposition_);
+  WriteIndexTable(geofile,fileposition_);
   
-  geofile_.close();
+  geofile.close();
 
   // loop all results to get number of result timesteps
   PostResult result = PostResult(field_);
@@ -362,34 +384,18 @@ void EnsightWriter::WriteCells(ofstream& geofile)
     // special cases
     case DRT::Element::hex27:
     {
-      // defines how 8 hex8 elements are constructed from a hex27
-      const int subhexmapper[8][8] = {{  0,  8, 20, 11, 12, 21, 26, 24},
-                                      {  8,  1,  9, 20, 21, 13, 22, 26},
-                                      { 20,  9,  2, 10, 26, 22, 14, 23},
-                                      { 11, 20, 10,  3, 24, 26, 23, 15},
-                                      { 12, 21, 26, 24,  4, 16, 25, 19},
-                                      { 21, 13, 22, 26, 16,  5, 17, 25},
-                                      { 26, 22, 14, 23, 25, 17,  6, 18},
-                                      { 24, 26, 23, 15, 19, 25, 18,  7}};
-
       // write subelements
       for (int isubele=0; isubele<8; ++isubele)
         for (int isubnode=0; isubnode<8; ++isubnode)
-          Write(geofile,nodemap->LID(nodes[subhexmapper[isubele][isubnode]]->Id())+1);
+          Write(geofile,nodemap->LID(nodes[subhexmap[isubele][isubnode]]->Id())+1);
       break;
     }
     case DRT::Element::quad9:
     {
-      // defines how 8 hex8 elements are constructed from a hex27
-      const int subquadmapper[4][4] = {{ 0, 4, 8, 7},
-                                       { 4, 1, 5, 8},
-                                       { 8, 5, 2, 6},
-                                       { 7, 8, 6, 3}};
-
       // write subelements
       for (int isubele=0; isubele<4; ++isubele)
         for (int isubnode=0; isubnode<4; ++isubnode)
-          Write(geofile,nodemap->LID(nodes[subquadmapper[isubele][isubnode]]->Id())+1);
+          Write(geofile,nodemap->LID(nodes[subquadmap[isubele][isubnode]]->Id())+1);
       break;
     }
     default:
