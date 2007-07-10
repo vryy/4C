@@ -923,17 +923,17 @@ void MicroStruGenAlpha::Homogenization()
   // Now we have all forces in the material description acting on the
   // boundary nodes together in one vector
   // -> for calculating the stresses, we need to choose the
-  // right three components corresponding to a single node, multiply
-  // with the deformation gradient (-> conversion to first
-  // Piola-Kirchhoff) and take the inner product with the material
-  // coordinates of this node. The sum over all boundary nodes
-  // delivers the first Piola-Kirchhoff macroscopic stress which has
-  // to be transformed into the second Piola-Kirchhoff counterpart.
+  // right three components corresponding to a single node and
+  // take the inner product with the material coordinates of this
+  // node. The sum over all boundary nodes delivers the first
+  // Piola-Kirchhoff macroscopic stress which has to be transformed
+  // into the second Piola-Kirchhoff counterpart.
   // All these complicated conversions are necessary since only for
   // the energy-conjugated pair of first Piola-Kirchhoff and
   // deformation gradient the averaging integrals can be transformed
-  // into integrals over the boundaries only which simplifies matters
-  // significantly.
+  // into integrals over the boundaries only (which simplifies matters
+  // significantly) whereas the calling macroscopic material routine
+  // demands a second Piola-Kirchhoff stress tensor.
 
 
   //cout << "fp: " << fp << endl;
