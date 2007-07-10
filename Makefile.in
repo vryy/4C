@@ -10,9 +10,6 @@ post_drt_gid: $(OBJS_POST_DRT_GID) $(OBJS_POST_GID_TXT) $(FILTER_OBJECTS)
 post_drt_ensight: $(OBJS_POST_DRT_ENSIGHT) $(FILTER_OBJECTS)
 	$(LD) $(LDFLAGS) $(OBJS_POST_DRT_ENSIGHT) $(FILTER_OBJECTS) $(FILTER_LIBS) -o post_drt_ensight
 
-post_drt_ensight_xfem: $(OBJS_POST_DRT_ENSIGHT_XFEM) $(FILTER_OBJECTS)
-	$(LD) $(LDFLAGS) $(OBJS_POST_DRT_ENSIGHT_XFEM) $(FILTER_OBJECTS) $(FILTER_LIBS) -o post_drt_ensight_xfem
-
 post_out: $(OBJS_POST_OUT) $(OBJS_POST_COMMON)
 	$(PLAIN_LD) $(LDFLAGS) $(PLAIN_LIBS) $(OBJS_POST_OUT) $(OBJS_POST_COMMON) -o post_out
 
@@ -376,11 +373,6 @@ $(OBJS_POST_DRT_GID):
 	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
 
 $(OBJS_POST_DRT_ENSIGHT):
-	@mkdir -p ${DEST}/${@D}
-	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
-	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
-
-$(OBJS_POST_DRT_ENSIGHT_XFEM):
 	@mkdir -p ${DEST}/${@D}
 	@echo "$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@"
 	@$(CP) $(CPFLAGS) -I${DEST}/${@D} $(INCLUDES) -c ${SRC}/${@D}/`basename $@ .o`.cpp -o ${DEST}/$@ > /dev/stderr
