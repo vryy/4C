@@ -68,6 +68,7 @@ int DRT::Elements::So_hex8::Evaluate(ParameterList& params,
   else if (action=="calc_struct_eleload")       act = So_hex8::calc_struct_eleload;
   else if (action=="calc_struct_fsiload")       act = So_hex8::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")  act = So_hex8::calc_struct_update_istep;
+  else if (action=="calc_init_vol")             act = So_hex8::calc_init_vol;
   else dserror("Unknown type of action for So_hex8");
 
   const double time = params.get("total time",-1.0);
@@ -145,6 +146,11 @@ int DRT::Elements::So_hex8::Evaluate(ParameterList& params,
     case calc_struct_update_istep: {
       ;// there is nothing to do here at the moment
     }
+    break;
+
+  case calc_init_vol: {
+    soh8_initvol(params);
+  }
     break;
 
     default:
@@ -663,6 +669,67 @@ void DRT::Elements::So_hex8::soh8_shapederiv(
 int DRT::Elements::Soh8Register::Initialize(DRT::Discretization& dis)
 {
   return 0;
+}
+
+/*----------------------------------------------------------------------*
+ |  calculate initial element volume (public)                   lw 07/07|
+ *----------------------------------------------------------------------*/
+void DRT::Elements::So_hex8::soh8_initvol(ParameterList& params)
+{
+
+  double V0 = 0.;
+
+/* ============================================================================*
+** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
+** ============================================================================*/
+/* pointer to (static) shape function array
+ * for each node, evaluated at each gp*/
+  Epetra_SerialDenseMatrix* shapefct; //[NUMNOD_SOH8][NUMGPT_SOH8]
+/* pointer to (static) shape function derivatives array
+ * for each node wrt to each direction, evaluated at each gp*/
+  Epetra_SerialDenseMatrix* deriv;    //[NUMGPT_SOH8*NUMDIM][NUMNOD_SOH8]
+/* pointer to (static) weight factors at each gp */
+  Epetra_SerialDenseVector* weights;  //[NUMGPT_SOH8]
+  soh8_shapederiv(&shapefct,&deriv,&weights);   // call to evaluate
+/* ============================================================================*/
+
+
+  for (int gp=0; gp<NUMGPT_SOH8; ++gp) {
+
+    // get submatrix of deriv at actual gp
+    Epetra_SerialDenseMatrix deriv_gp(NUMDIM_SOH8,NUMGPT_SOH8);
+    for (int m=0; m<NUMDIM_SOH8; ++m) {
+      for (int n=0; n<NUMGPT_SOH8; ++n) {
+        deriv_gp(m,n)=(*deriv)(NUMDIM_SOH8*gp+m,n);
+      }
+    }
+
+    Epetra_SerialDenseMatrix xrefe(NUMNOD_SOH8,NUMDIM_SOH8);  // material coord. of element
+    for (int i=0; i<NUMNOD_SOH8; ++i){
+      xrefe(i,0) = Nodes()[i]->X()[0];
+      xrefe(i,1) = Nodes()[i]->X()[1];
+      xrefe(i,2) = Nodes()[i]->X()[2];
+    }
+
+
+    Epetra_SerialDenseMatrix jac(NUMDIM_SOH8, NUMDIM_SOH8);
+    jac.Multiply('N','N',1.0,deriv_gp,xrefe,1.0);
+
+    // compute determinant of Jacobian by Sarrus' rule
+    double detJ= jac(0,0) * jac(1,1) * jac(2,2)
+               + jac(0,1) * jac(1,2) * jac(2,0)
+               + jac(0,2) * jac(1,0) * jac(2,1)
+               - jac(0,0) * jac(1,2) * jac(2,1)
+               - jac(0,1) * jac(1,0) * jac(2,2)
+               - jac(0,2) * jac(1,1) * jac(2,0);
+    if (detJ == 0.0) dserror("ZERO JACOBIAN DETERMINANT");
+    else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
+
+    V0 += (*weights)(gp)*detJ;
+  }
+  params.set("V0", V0);
+
+  return;
 }
 
 

@@ -299,7 +299,8 @@ protected:
     calc_struct_stress,
     calc_struct_eleload,
     calc_struct_fsiload,
-    calc_struct_update_istep
+    calc_struct_update_istep,
+    calc_init_vol
   };
 
   //! kinematic types of so_hex8
@@ -392,6 +393,8 @@ protected:
           double& detJ0,                      // det of Jacobian at origin
           Epetra_SerialDenseMatrix& T0invT,   // maps M(origin) local to global
           const Epetra_SerialDenseMatrix& xrefe);     // material element coords
+
+  void soh8_initvol(ParameterList& params);
 
 
 }; // class So_hex8

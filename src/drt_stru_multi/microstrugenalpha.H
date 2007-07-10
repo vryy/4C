@@ -136,6 +136,10 @@ public:
 
   void ClearState();
 
+  void SetUpHomogenization();
+
+  void Homogenization();
+
 
 protected:
 
@@ -172,7 +176,17 @@ protected:
   RefCountPtr<Epetra_Vector>    fextm_;
   RefCountPtr<Epetra_Vector>    fextn_;
   RefCountPtr<Epetra_Vector>    fresm_;
+  RefCountPtr<Epetra_Vector>    fresm_dirich_;
 
+  double                         V0_;  // initial volume of RVE
+
+  int                          ndof_;  // number of dofs overall
+  int                            np_;  // number of boundary dofs
+  RefCountPtr<Epetra_Vector>     Xp_;  // vector containing material
+                                       // coordinates of boundary nodes
+  RefCountPtr<Epetra_Map>      pdof_;  // prescribed dofs
+  RefCountPtr<Epetra_Map>      fdof_;  // free dofs
+  RefCountPtr<Epetra_Export> export_;
 };
 
 #endif

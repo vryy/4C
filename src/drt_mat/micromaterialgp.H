@@ -59,13 +59,6 @@ public:
                       const Epetra_SerialDenseMatrix* defgrd);
 
 
-  /// test routine for calculating stresses, constitutive matrix and density in
-  /// case of St Venant Kirchhoff material
-  void CalcStressStiffDens (Epetra_SerialDenseVector* stress,
-                            Epetra_SerialDenseMatrix* cmat,
-                            double* density,
-                            const Epetra_SerialDenseVector* glstrain);
-
 private:
 
   /// my Gauss point

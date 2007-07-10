@@ -195,9 +195,18 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
   // check if we have to update absolute time and step number
   if (time != timen_)
   {
-    if (timen_ != 0.)              // we don't want to write results
-                                   // after just having constructed
-                                   // the StruGenAlpha class
+    // Microscale data should be output when macroscale is entering a
+    // new timestep, not in every macroscopic iteration! Therefore
+    // output is written in the beginning of a microscopic step if
+    // necessary at all. Problem: we don't get any output for the very
+    // last time step since the macro-program finishes and the
+    // micro-program is not called again to write output.
+
+    // We don't want to write results after just having constructed
+    // the StruGenAlpha class which corresponds to a total time of 0.
+    // (in the calculation phase, total time is instantly set to the first
+    // time step)
+    if (timen_ != 0.)
       microgenalpha_->Output(micro_output_, timen_, istep_);
     timen_ = time;
     istep_++;
@@ -230,6 +239,9 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
 
 /// determine macroscopic parameters via averaging (homogenization) of
 /// microscopic features
+/// this was implemented against the background of serial usage
+/// -> if a parallel version of microscale simulations is EVER wanted,
+/// carefully check if/what/where things have to change
 
 void MAT::MicroMaterialGP::Homogenization(Epetra_SerialDenseVector* stress,
                                           Epetra_SerialDenseMatrix* cmat,
@@ -277,39 +289,6 @@ void MAT::MicroMaterialGP::Homogenization(Epetra_SerialDenseVector* stress,
 
   //cout << "stresses: \n" << *stress << "\n";
 }
-
-
-#if 0
-/// test routine for calculating stresses, constitutive matrix and density in
-/// case of St Venant Kirchhoff material
-
-void MAT::MicroMaterialGP::CalcStressStiffDens (Epetra_SerialDenseVector* stress,
-                                                Epetra_SerialDenseMatrix* cmat,
-                                                double* density)
-{
-  double Emod = 1.0;    // Young's modulus (modulus of elasticity)
-  double nu = 0.0;      // Poisson's ratio (Querdehnzahl)
-  (*density) = 0.0;     // density, returned to evaluate mass matrix
-  double mfac = Emod/((1.0+nu)*(1.0-2.0*nu));  /* factor */
-  /* write non-zero components */
-  (*cmat)(0,0) = mfac*(1.0-nu);
-  (*cmat)(0,1) = mfac*nu;
-  (*cmat)(0,2) = mfac*nu;
-  (*cmat)(1,0) = mfac*nu;
-  (*cmat)(1,1) = mfac*(1.0-nu);
-  (*cmat)(1,2) = mfac*nu;
-  (*cmat)(2,0) = mfac*nu;
-  (*cmat)(2,1) = mfac*nu;
-  (*cmat)(2,2) = mfac*(1.0-nu);
-  /* ~~~ */
-  (*cmat)(3,3) = mfac*0.5*(1.0-2.0*nu);
-  (*cmat)(4,4) = mfac*0.5*(1.0-2.0*nu);
-  (*cmat)(5,5) = mfac*0.5*(1.0-2.0*nu);
-
-  // evaluate stresses
-  (*cmat).Multiply('N',(*glstrain),(*stress));   // sigma = C . epsilon
-}
-#endif
 
 #endif
 #endif

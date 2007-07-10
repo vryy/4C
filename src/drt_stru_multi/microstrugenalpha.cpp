@@ -15,6 +15,9 @@ Maintainer: Lena Wiechert
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
+#include <Epetra_LinearProblem.h>
+#include <Amesos_Klu.h>
+
 #include "microstrugenalpha.H"
 
 #include <vector>
@@ -121,6 +124,11 @@ solver_(solver)
   // also known at out-of-balance-force
   fresm_ = LINALG::CreateVector(*dofrowmap,false);
 
+  // dynamic force residual at mid-time R_{n+1-alpha}
+  // holding also boundary forces due to Dirichlet/Microboundary
+  // conditions
+  fresm_dirich_ = LINALG::CreateVector(*dofrowmap,false);
+
   //-------------------------------------------- calculate external forces
   {
     ParameterList p;
@@ -210,6 +218,37 @@ solver_(solver)
   // therefore not taken into account in the Constructor of StruGenAlpha
 
   MicroStruGenAlpha::DetermineToggle();
+  MicroStruGenAlpha::SetUpHomogenization();
+
+  //cout << Xp_ << endl;
+
+  // -------------------------- Calculate initial volume of microstructure
+  double V0 = 0.;
+  ParameterList p;
+  // action for elements
+  p.set("action","calc_init_vol");
+  Epetra_SerialDenseMatrix elematrix1;
+  Epetra_SerialDenseMatrix elematrix2;
+  Epetra_SerialDenseVector elevector1;
+  Epetra_SerialDenseVector elevector2;
+  Epetra_SerialDenseVector elevector3;
+
+
+  const int numcolele = discret_->NumMyColElements();
+  for (int i=0; i<numcolele; ++i)
+  {
+    DRT::Element* actele = discret_->lColElement(i);
+    vector<int> lm;
+    vector<int> lmowner;
+    actele->LocationVector(*discret_, lm, lmowner);
+
+    actele->Evaluate(p, *discret_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
+    V0 += p.get<double>("V0", -1.0);
+  } // for (int i=0; i<numcolele; ++i)
+
+  V0_=V0;
+
+  //cout << "initial volume: " << V0_ << endl;
 
   return;
 } // MicroStruGenAlpha::MicroStruGenAlpha
@@ -232,7 +271,7 @@ void MicroStruGenAlpha::ConstantPredictor()
   double alphaf      = params_->get<double>("alpha f"        ,0.459);
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-  cout << "total time: " << time << " step: " << istep << endl;
+  //cout << "total time: " << time << " step: " << istep << endl;
 
   // increment time and step
   double timen = time += dt;
@@ -472,9 +511,13 @@ void MicroStruGenAlpha::FullNewton()
     }
     // add static mid-balance
     fresm_->Update(1.0,*fint_,-1.0,*fextm_,1.0);
-    // blank residual DOFs with are on Dirichlet BC
+    // blank residual DOFs which are on Dirichlet BC
     {
       Epetra_Vector fresmcopy(*fresm_);
+
+      // save this vector for homogenization
+      *fresm_dirich_ = fresmcopy;
+
       fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
     }
 
@@ -496,7 +539,7 @@ void MicroStruGenAlpha::FullNewton()
   params_->set<int>("num iterations",numiter);
 
   //-------------------------------------- don't need this at the moment
-  stiff_ = null;
+  //stiff_ = null;   -> microscale needs this for homogenization purposes
 
   return;
 } // MicroStruGenAlpha::FullNewton()
@@ -573,7 +616,7 @@ void MicroStruGenAlpha::Output(RefCountPtr<MicroDiscretizationWriter> output,
   //----------------------------------------------------- output results
   if (iodisp && updevrydisp && istep%updevrydisp==0)
   {
-    cout << "Output for step: " << istep << " at time: " << time << endl;
+    //cout << "Output for step: " << istep << " at time: " << time << endl;
 
     output->NewStep(istep, time);
     output->WriteVector("displacement",dis_);
@@ -633,6 +676,10 @@ void MicroStruGenAlpha::DetermineToggle()
 {
   //cout << "DetermineToggle\n";
 
+  int np = 0;   // number of prescribed (=boundary) dofs needed for the
+                // creation of vectors and matrices for homogenization
+                // procedure
+
   RefCountPtr<DRT::Discretization> dis =
     DRT::Problem::Instance(1)->Dis(genprob.numsf,0);
 
@@ -659,6 +706,12 @@ void MicroStruGenAlpha::DetermineToggle()
 
         const int lid = disn_->Map().LID(gid);
         if (lid<0) dserror("Global id %d not on this proc in system vector",gid);
+
+        if ((*dirichtoggle_)[lid] != 1.0)  // be careful not to count dofs more
+                                           // than once since nodes belong to
+                                           // several surfaces simultaneously
+          ++np;
+
         (*dirichtoggle_)[lid] = 1.0;
 
         //if (lid == 4)
@@ -667,6 +720,7 @@ void MicroStruGenAlpha::DetermineToggle()
     }
   }
 
+  np_ = np;
   //cout << "dirichtoggle: " << *dirichtoggle_ << "\n";
 }
 
@@ -762,6 +816,222 @@ void MicroStruGenAlpha::ClearState()
   vel_ = null;
   acc_ = null;
 }
+
+void MicroStruGenAlpha::SetUpHomogenization()
+{
+  std::vector <int>   pdof(np_);
+  std::vector <int>   fdof(np_);
+
+  int indp = 0;
+  int indf = 0;
+
+  RefCountPtr<DRT::Discretization> dis =
+    DRT::Problem::Instance(1)->Dis(genprob.numsf,0);
+
+  int toggle_len = dis->NodeRowMap()->NumMyElements();
+  toggle_len*=3; // three dofs per node
+
+  ndof_ = toggle_len;
+
+  //cout << "toggle_len: " << toggle_len << endl;
+
+  for (int it=0; it<toggle_len; ++it)
+  {
+    if ((*dirichtoggle_)[it] == 1.0)
+    {
+      pdof[indp]=it;
+      ++indp;
+    }
+    else
+    {
+      fdof[indf]=it;
+      ++indf;
+    }
+  }
+
+  // create map based on the determined dofs of prescribed and free nodes
+  pdof_ = rcp(new Epetra_Map(-1, np_, &pdof[0], 0, dis->Comm()));
+  fdof_ = rcp(new Epetra_Map(-1, ndof_-np_, &fdof[0], 0, dis->Comm()));
+
+  // create an exporter
+  export_ = rcp(new Epetra_Export(*(dis->DofRowMap()), *pdof_));
+
+  // create vector containing material coordinates of prescribed nodes
+  Epetra_Vector Xp_temp(*pdof_);
+
+  vector<DRT::Condition*> conds;
+  dis->GetCondition("MicroBoundary", conds);
+  for (unsigned i=0; i<conds.size(); ++i)
+  {
+    const vector<int>* nodeids = conds[i]->Get<vector<int> >("Node Ids");
+    if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
+    const int nnode = (*nodeids).size();
+
+    for (int i=0; i<nnode; ++i)
+    {
+      // do only nodes in my row map
+      if (!dis->NodeRowMap()->MyGID((*nodeids)[i])) continue;
+      DRT::Node* actnode = dis->gNode((*nodeids)[i]);
+      if (!actnode) dserror("Cannot find global node %d",(*nodeids)[i]);
+
+      // nodal coordinates
+      const double* x = actnode->X();
+
+      vector<int> dofs = dis->Dof(actnode);
+
+      for (int k=0; k<3; ++k)
+      {
+        const int gid = dofs[k];
+
+        const int lid = disn_->Map().LID(gid);
+        if (lid<0) dserror("Global id %d not on this proc in system vector",gid);
+
+        for (int l=0;l<np_;++l)
+        {
+          if (pdof[l]==gid)
+            Xp_temp[l]=x[k];
+        }
+      }
+    }
+  }
+
+  Xp_ = LINALG::CreateVector(*pdof_,true);
+  *Xp_ = Xp_temp;
+
+  //cout << "XP " << Xp_ << endl;
+  //cout << "pdof " << pdofID_ << endl;
+}
+
+void MicroStruGenAlpha::Homogenization()
+{
+  // split microscale stiffness and residual forces into parts
+  // corresponding to prescribed and free dofs -> see thesis
+  // of Kouznetsova (Computational homogenization for the multi-scale
+  // analysis of multi-phase materials, Eindhoven, 2002)
+
+  // split residual forces -> we want to extract fp
+
+  RefCountPtr<DRT::Discretization> dis =
+    DRT::Problem::Instance(1)->Dis(genprob.numsf,0);
+
+  Epetra_Vector fp(*pdof_);
+
+  int err = fp.Export(*fresm_dirich_, *export_, Insert);
+  if (err)
+    dserror("Exporting external forces of prescribed dofs using exporter returned err=%d",err);
+
+  // Now we have all forces in the material description acting on the
+  // boundary nodes together in one vector
+  // -> for calculating the stresses, we need to choose the
+  // right three components corresponding to a single node, multiply
+  // with the deformation gradient (-> conversion to first
+  // Piola-Kirchhoff) and take the inner product with the material
+  // coordinates of this node. The sum over all boundary nodes
+  // delivers the first Piola-Kirchhoff macroscopic stress which has
+  // to be transformed into the second Piola-Kirchhoff counterpart.
+  // All these complicated conversions are necessary since only for
+  // the energy-conjugated pair of first Piola-Kirchhoff and
+  // deformation gradient the averaging integrals can be transformed
+  // into integrals over the boundaries only which simplifies matters
+  // significantly.
+
+
+  //cout << "fp: " << fp << endl;
+
+  // split effective dynamic stiffness -> we want Kpp, Kpf, Kfp and Kff
+  // Kpp and Kff are sparse matrices, whereas Kpf and Kfp are MultiVectors
+  // (we need that for the solution of Kpf*inv(Kff)*Kfp)
+
+  int *IndexOffset;
+  int *Indices;
+  double *Values;
+
+  Epetra_MultiVector Kpp(*pdof_, np_);
+  Epetra_CrsMatrix   Kff(Copy, *fdof_, 81);
+  Epetra_MultiVector Kpf(*pdof_, ndof_-np_);
+  Epetra_MultiVector Kfp(*fdof_, np_);
+  Epetra_MultiVector x(*fdof_, np_);
+
+  err = stiff_->ExtractCrsDataPointers (IndexOffset, Indices, Values);
+  if (err)
+    dserror("Extraction of internal data pointers associated with Crs matrix failed");
+
+  const Epetra_Map* dofrowmap = dis->DofRowMap();
+
+  for (int row=0; row<dofrowmap->NumMyElements(); ++row)
+  {
+    int rowgid = dofrowmap->GID(row);
+
+    if (pdof_->MyGID(rowgid))              // this means we are dealing with
+                                           // either Kpp or Kpf
+    {
+      for (int col=IndexOffset[row]; col<IndexOffset[row+1]; ++col)
+      {
+        int colgid = Indices[col];
+
+        if (pdof_->MyGID(colgid))          // -> Kpp
+        {
+          Kpp.ReplaceMyValue(rowgid, colgid, Values[colgid]);
+        }
+        // we don't need to compute Kpf here since in the SYMMETRIC case
+        // Kpf is the transpose pf Kfp
+        //else                               // -> Kpf
+        //{
+        //  Kpf.ReplaceMyValue(rowgid, colgid, Values[colgid]);
+        //}
+      }
+    }
+    else if (fdof_->MyGID(rowgid))         // this means we are dealing with
+                                           // either Kff or Kfp
+    {
+      for (int col=IndexOffset[row]; col<IndexOffset[row+1]; ++col)
+      {
+        int colgid = Indices[col];
+
+        if (fdof_->MyGID(colgid))          // -> Kff
+        {
+          err = Kff.InsertMyValues(rowgid, 1, &(Values[colgid]), &colgid);
+          if (err)
+            dserror("Insertion of values into Kff failed");
+        }
+        else
+        {
+          Kfp.ReplaceMyValue(rowgid, colgid, Values[colgid]);
+        }
+      }
+    }
+    else
+      dserror("GID neither in DofMap for prescribed nor for free dofs");
+  }
+
+  // define an Epetra_LinearProblem object for solving Kff*x=Kfp (thus
+  // circumventing the explicit inversion of Kff for the static condensation)
+
+  Epetra_LinearProblem linprob(&Kff, &x, &Kfp);
+
+
+  // Solve for x
+
+  Amesos_Klu solver(linprob);
+  solver.Solve();
+
+  // now static condensation of free (not prescribed) dofs can be done
+  // KM = Kpp+Kpf*x = Kpp+Ktemp
+  // result will be saved in Kpp to avoid copying
+
+  Epetra_MultiVector Ktemp(*pdof_, ndof_-np_);
+  Ktemp.Multiply('T', 'N', 1., Kfp, x, 0.);
+
+  Kpp.Update(-1., Ktemp, 1.);    // Kpp now holds KM=Kpp-Kpf*inv(Kff)*Kfp
+
+
+
+
+  // after having all homogenization stuff done, we now really don't need stiff_ anymore
+
+  stiff_ = null;
+}
+
 
 #endif
 #endif
