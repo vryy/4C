@@ -1478,7 +1478,7 @@ void Intersection::computeCDT(  DRT::Element*               			element,
  |  discretizations and returns a list of intersected xfem elements     |
  |  and their integrations cell                                         |
  *----------------------------------------------------------------------*/  
-void Intersection::computeIntersection( RefCountPtr<DRT::Discretization> actdis, 
+void Intersection::computeIntersection( const RefCountPtr<DRT::Discretization> actdis, 
                                         map< int, vector <Integrationcell> >&	integrationcellList)
 {
     bool intersected =                      false;

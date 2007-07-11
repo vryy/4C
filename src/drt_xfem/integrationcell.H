@@ -1,13 +1,13 @@
 /*!
-\file integrationcell.H
+ \file integrationcell.H
 
-\brief integration cell
+ \brief integration cell
 
-<pre>
-Maintainer: Ursula Mayer
-</pre>
-*/
-
+ \author Axel Gerstenberger,
+ gerstenberger@lnm.mw.tum.de,
+ http://www.lnm.mw.tum.de,
+ 089 - 289-15236
+ */
 
 #ifdef XFEM
 #ifdef CCADISCRET
@@ -17,53 +17,49 @@ Maintainer: Ursula Mayer
 
 #include <vector>
 
-// to be documented
+/*
+ * \brief An integrationcell is used for specialized element integration routines 
+ */
 class Integrationcell
 {
-        
-    public:  
-    
+
+public:
+
     /*!
-    \brief Standard Constructor
+     \brief Standard Constructor
 
-    \param id               : A unique global id
-    \param coordinates      : coordinates of the integrationcell
-    */
-    Integrationcell(int id, std::vector< std::vector<double> > coordinates);
-    
-    
+     \param id               : A unique global id
+     \param coordinates      : coordinates of the integrationcell
+     */
+    Integrationcell(
+        const int id,
+        const std::vector< std::vector<double> > coordinates);
+
     /*!
-    \brief Copy Constructor
+     \brief Copy Constructor
 
-    Makes a deep copy of a Element
-
-    */
+     Makes a deep copy of a Element
+     */
     Integrationcell(const Integrationcell& old);
 
-    
     /*!
-    \brief returns the coordinates of the integration cell
+     \brief returns the coordinates of the integration cell
 
-    \return returns the coordinates 
-
-    */
+     \return cells nodal coordinates  
+     */
     std::vector< std::vector<double> > GetCoord();
-    
-     
-    private:
-    
+
+private:
+
     //! The global integration cell id
-    int                                             id_;
-    
-     //! coordinates of the nodes
-    std::vector< std::vector<double> >                       coordinates_;
-        
+    int id_;
+
+    //! coordinates of the nodes
+    std::vector< std::vector<double> > coordinates_;
+
 };
 
 #endif  // #ifndef INTEGRATIONCELL_H
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef XFEM
-
-
-
