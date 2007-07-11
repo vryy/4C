@@ -25,8 +25,8 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/drt_timecurve.H"
 #include "Epetra_SerialDenseSolver.h"
-
 #include "../drt_mat/newtonianfluid.H"
 
 extern "C"
@@ -130,7 +130,7 @@ int DRT::Elements::Fluid2::Evaluate(ParameterList& params,
       }
 
       // calculate element coefficient matrix and rhs
-      f2_sys_mat(lm,myvelnp,myprenp,myvhist,mydispnp,mygridv,&elemat1,&elevec1,actmat,timefac,is_stationary);
+      f2_sys_mat(lm,myvelnp,myprenp,myvhist,mydispnp,mygridv,&elemat1,&elevec1,actmat,params);
 
       // This is a very poor way to transport the density to the
       // outside world. Is there a better one?
@@ -177,9 +177,12 @@ int DRT::Elements::Fluid2::Evaluate(ParameterList& params,
 } // end of DRT::Elements::Fluid2::Evaluate
 
 
-
 /*----------------------------------------------------------------------*
- |  Integrate a Volume Neumann boundary condition (public)   gammi 03/07|
+ |  do nothing (public)                                      g.bau 07/07|
+ |                                                                      |
+ |  The function is just a dummy. For the fluid2 elements, the          |
+ |  integration of the surface neumann loads takes place in the element.|
+ |  We need it there for the stabilisation terms!                       |
  *----------------------------------------------------------------------*/
 int DRT::Elements::Fluid2::EvaluateNeumann(ParameterList& params,
                                            DRT::Discretization&      discretization,
@@ -187,7 +190,6 @@ int DRT::Elements::Fluid2::EvaluateNeumann(ParameterList& params,
                                            vector<int>&              lm,
                                            Epetra_SerialDenseVector& elevec1)
 {
-  dserror("Volume Neumann conditions not yet implemented for Fluid2");
   return 0;
 }
 
@@ -204,8 +206,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
                                        Epetra_SerialDenseMatrix* sys_mat,
                                        Epetra_SerialDenseVector* residual,
                                        struct _MATERIAL*         material,
-                                       double                    timefac,
-                                       bool                      is_stationary
+                                       ParameterList&            params
   )
 {
 
@@ -229,36 +230,46 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
       xyze(1,i) += edispnp[3*i+1];
     }
   }
-
+  
+  // dead load in element nodes
+  const double time = params.get("total time",-1.0);
+  const Epetra_SerialDenseMatrix bodyforce = f2_getbodyforce(time,params);
+  
   /*---------------------------------------------- get viscosity ---*/
   // check here, if we really have a fluid !!
   if(material->mattyp != m_fluid) dserror("Material law is not of type m_fluid.");
   const double  visc = material->m.fluid->viscosity;
+  
+  const double timefac=params.get<double>("time constant for integration",0.0);
+  
+  // get control parameter to switch between stationary and instationary problem
+  const bool is_stationary = params.get<bool>("using stationary formulation",false);
 
   /*--------------------------------------------- stab-parameter ---*/
   // USFEM stabilization is default. No switch here at the moment.
 
   /*----------------------------------------- declaration of variables ---*/
-  Epetra_SerialDenseVector  funct(iel);
+  Epetra_SerialDenseVector      funct(iel);
   Epetra_SerialDenseMatrix 	deriv(2,iel);
   Epetra_SerialDenseMatrix 	deriv2(3,iel);
   static Epetra_SerialDenseMatrix 	xjm(2,2);
   static Epetra_SerialDenseMatrix 	vderxy(2,2);
-  static vector<double> 		pderxy(2);
+  static vector<double> 	pderxy(2);
   static Epetra_SerialDenseMatrix 	vderxy2(2,3);
   Epetra_SerialDenseMatrix 	derxy(2,iel);
   Epetra_SerialDenseMatrix 	derxy2(3,iel);
+  vector<double>                edeadng(3);
   vector<double> 		ephin(iel);
   vector<double> 		ephing(iel);
   vector<double> 		iedgnod(iel);
   //Epetra_SerialDenseMatrix 	wa1(100,100);  // working matrix used as dummy
-  static vector<double>    		histvec(2); /* history data at integration point      */
+  static vector<double>    	histvec(2); /* history data at integration point      */
   double         		hk;         /* element length for calculation of tau  */
   double         		vel_norm, pe, re, xi1, xi2, xi;
   vector<double>         	velino(2); /* normed velocity at element centre */
   double         		mk=0.0;
-  static vector<double>     		velint(2);
-  static vector<double>               tau(3); // stab parameters
+  static vector<double>         velint(2);
+  static vector<double>         tau(3); // stab parameters
 
   /*------------------------------------------------------- initialise ---*/
     // use one point gauss rule to calculate tau at element center
@@ -522,13 +533,23 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
         press += funct[i]*eprenp[i];
       }
 
-      /*-------------- perform integration for entire matrix and rhs ---*/
+     // get bodyforce in gausspoint
+     for (int isd=0;isd<3;isd++)
+     {
+       edeadng[isd] = 0.0;
+       for (int inode=0;inode<iel;inode++)
+       {
+         edeadng[isd]+= bodyforce(isd,inode)*funct[inode];
+       }
+     }
+
+      // perform integration for entire matrix and rhs 
       if(is_stationary==false)
         f2_calmat(*sys_mat,*residual,
                   velint,histvec,gridvelint,press,
                   vderxy,vderxy2,gradp,
                   funct,tau,
-                  derxy,derxy2,
+                  derxy,derxy2,edeadng,
                   fac,visc,iel,
                   timefac);
       else
@@ -536,7 +557,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
                              velint,histvec,gridvelint,press,
                              vderxy,vderxy2,gradp,
                              funct,tau,
-                             derxy,derxy2,
+                             derxy,derxy2,edeadng,
                              fac,visc,iel);
 
 
@@ -564,7 +585,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
  *----------------------------------------------------------------------*/
 void DRT::Elements::Fluid2::f2_jaco(const Epetra_SerialDenseMatrix& xyze,
 				    const Epetra_SerialDenseMatrix& deriv,
-                                    Epetra_SerialDenseMatrix& xjm,
+                            	    Epetra_SerialDenseMatrix& xjm,
 				    double* det,
                                     const int iel
 				    )
@@ -599,7 +620,98 @@ void DRT::Elements::Fluid2::f2_jaco(const Epetra_SerialDenseMatrix& xyze,
 } //end of DRT::Elements::Fluid2::f2_jaco
 
 
+/*----------------------------------------------------------------------*
+ |  get the body force in the nodes of the element (private) g.bau 07/07|
+ |  the Neumann condition associated with the nodes is stored in the    |
+ |  array edeadng only if all nodes have a surface Neumann condition   |
+ *----------------------------------------------------------------------*/
+Epetra_SerialDenseMatrix DRT::Elements::Fluid2::f2_getbodyforce(
+        const double          time,
+        const ParameterList&  params
+)
+{
+  const int iel = NumNode();
+  const int nsd = 2; // number of space dimensions
+  Epetra_SerialDenseMatrix edeadng(nsd,iel);
 
+  vector<DRT::Condition*> myneumcond;
+
+  // check whether all nodes have a unique surface Neumann condition
+  int nodecount = 0;
+  for(int inode=0;inode<iel;inode++)
+  {
+    Nodes()[inode]->GetCondition("SurfaceNeumann",myneumcond);
+
+    if (myneumcond.size()>1)
+    {
+      dserror("more than one SurfaceNeumann cond on one node");
+    }
+    if (myneumcond.size()==1)
+    {
+      nodecount++;
+    }
+  }
+
+  if (nodecount == iel)
+  {
+
+    // find out whether we will use a time curve
+    const vector<int>* curve  = myneumcond[0]->Get<vector<int> >("curve");
+    int curvenum = -1;
+
+    if (curve) curvenum = (*curve)[0];
+    // initialisation
+    double curvefac    = 0.0;
+
+    if (curvenum >= 0) // yes, we have a timecurve
+    {
+      // time factor for the intermediate step
+      if(time >= 0.0)
+      {
+        curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
+      }
+      else
+      {
+	// do not compute an "alternative" curvefac here since a negative time value 
+	// indicates an error.
+         dserror("Negative time value in body force calculation: time = %f",time);
+	// curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(0.0);
+      }
+    }
+    else // we do not have a timecurve --- timefactors are constant equal 1
+    {
+      curvefac = 1.0;
+    }
+
+    // set this condition to the edeadng array
+    for(int jnode=0;jnode<iel;jnode++)
+    {
+      Nodes()[jnode]->GetCondition("SurfaceNeumann",myneumcond);
+
+      // get values and switches from the condition
+      const vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
+      const vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
+
+      for(int isd=0;isd<nsd;isd++)
+      {
+        edeadng(isd,jnode)=(*onoff)[isd]*(*val)[isd]*curvefac;
+      }
+    }
+  }
+  else
+  {
+    // we have no dead load
+    for(int inode=0;inode<iel;inode++)
+    {
+      for(int isd=0;isd<nsd;isd++)
+      {
+        edeadng(isd,inode)=0.0;
+      }
+    }
+  }
+
+  return edeadng;
+} // end of DRT:Elements:Fluid2:f2_getbodyforce
 
 
 /*----------------------------------------------------------------------*
@@ -982,7 +1094,8 @@ void DRT::Elements::Fluid2::f2_calmat(
     vector<double>&           tau,
     Epetra_SerialDenseMatrix& derxy,
     Epetra_SerialDenseMatrix& derxy2,
-    const double&                   fac,
+    const vector<double>&     edeadng,
+    const double&             fac,
     const double&             visc,
     const int&                iel,
     double                    timefac
@@ -1017,8 +1130,8 @@ void DRT::Elements::Fluid2::f2_calmat(
 
 /*------------------------- evaluate rhs vector at integration point ---*/
 // no switch here at the moment w.r.t. is_ale
-  rhsint[0] = histvec[0];
-  rhsint[1] = histvec[1];
+  rhsint[0] = histvec[0]+ edeadng[0]*timefac;;
+  rhsint[1] = histvec[1]+ edeadng[1]*timefac;;
 
 /*----------------- get numerical representation of single operators ---*/
 /* Convective term  u_old * grad u_old: */
@@ -1175,7 +1288,8 @@ void DRT::Elements::Fluid2::f2_calmat_stationary(
     vector<double>&           tau,
     Epetra_SerialDenseMatrix& derxy,
     Epetra_SerialDenseMatrix& derxy2,
-    const double&                   fac,
+    const vector<double>&     edeadng,
+    const double&             fac,
     const double&             visc,
     const int&                iel
     )
@@ -1202,8 +1316,10 @@ double tau_C  = tau[2]*fac;
 
 /*------------------------- evaluate rhs vector at integration point ---*/
 // no switch here at the moment w.r.t. is_ale
-rhsint[0] = histvec[0];
-rhsint[1] = histvec[1];
+double timefac = 1.0;
+
+rhsint[0] = histvec[0] + edeadng[0]*timefac;
+rhsint[1] = histvec[1] + edeadng[1]*timefac;
 
 /*----------------- get numerical representation of single operators ---*/
 /* Convective term  u_old * grad u_old: */

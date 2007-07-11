@@ -625,6 +625,7 @@ void FluidImplicitTimeInt::NonlinearSolve(
       eleparams.set("action","calc_fluid_systemmat_and_residual");
 
       // other parameters that might be needed by the elements
+      eleparams.set("total time",time_);
       eleparams.set("time constant for integration",theta_*dta_);
       eleparams.set("using stationary formulation",is_stat);
 
@@ -657,7 +658,7 @@ void FluidImplicitTimeInt::NonlinearSolve(
     // How to extract the density from the fluid material?
     trueresidual_->Update(density/dta_/theta_,*residual_,0.0);
 
-    // blank residual DOFs with are on Dirichlet BC
+    // blank residual DOFs which are on Dirichlet BC
     // We can do this because the values at the dirichlet positions
     // are not used anyway.
     // We could avoid this though, if velrowmap_ and prerowmap_ would

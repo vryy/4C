@@ -1381,13 +1381,16 @@ Epetra_SerialDenseMatrix DRT::Elements::Fluid3::f3_getbodyforce(
     if (curvenum >= 0) // yes, we have a timecurve
     {
       // time factor for the intermediate step
-      if(time >= 0)
+      if(time >= 0.0)
       {
         curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
       }
       else
       {
-        curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(0.0);
+	// do not compute an "alternative" curvefac here since a negative time value
+	// indicates an error.
+         dserror("Negative time value in body force calculation: time = %f",time);
+        //curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(0.0);
       }
     }
     else // we do not have a timecurve --- timefactors are constant equal 1

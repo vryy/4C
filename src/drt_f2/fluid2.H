@@ -313,9 +313,8 @@ private:
                   vector<double>&           egridv,
                   Epetra_SerialDenseMatrix* sys_mat,
                   Epetra_SerialDenseVector* residual,
-                  struct _MATERIAL*         material,
-		  double                    timefac,
-                  bool                      is_stationary
+                  struct _MATERIAL*         material, 
+                  ParameterList&            params
 		  );
 
   // calculate Jacobian matrix and it's determinant
@@ -325,6 +324,15 @@ private:
 	       double* 		det,
                const int 	iel
 	       );
+	       
+  /*!
+   * \brief get the body force from the nodes condition
+   * \return ???
+   */	
+  Epetra_SerialDenseMatrix f2_getbodyforce(
+        const double          time,		///< ???
+        const ParameterList&  params	///< ???
+		 );       
 
   // calculate global derivatives w.r.t. x,y,z at point r,s,t are
     void f2_gder(Epetra_SerialDenseMatrix& derxy,
@@ -352,12 +360,13 @@ private:
                 double&   		press,
                 Epetra_SerialDenseMatrix& vderxy,
                 Epetra_SerialDenseMatrix& vderxy2,
-                vector<double>&   	gradp,
+                vector<double>&   	  gradp,
                 Epetra_SerialDenseVector& funct,
-		vector<double>&   	tau,
+		        vector<double>&   tau,
                 Epetra_SerialDenseMatrix& derxy,
                 Epetra_SerialDenseMatrix& derxy2,
-                const double&   		fac,
+                const vector<double>&     edeadng,
+                const double&   	fac,
                 const double&   	visc,
                 const int&      	iel,
 		double                  timefac
@@ -377,7 +386,8 @@ private:
 		vector<double>&   	tau,
                 Epetra_SerialDenseMatrix& derxy,
                 Epetra_SerialDenseMatrix& derxy2,
-                const double&   		fac,
+                const vector<double>&     edeadng,
+                const double&   	fac,
                 const double&   	visc,
                 const int&      	iel
 			       );
