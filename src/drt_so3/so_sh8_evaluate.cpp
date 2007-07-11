@@ -776,8 +776,9 @@ void DRT::Elements::So_sh8::sosh8_evaluateT(const Epetra_SerialDenseMatrix jac,
   // now evaluate T^{-T} with solver
   Epetra_SerialDenseSolver solve_for_inverseT;
   solve_for_inverseT.SetMatrix(TinvT);
-  solve_for_inverseT.Invert();
-
+  int err2 = solve_for_inverseT.Factor();        
+  int err = solve_for_inverseT.Invert();
+  if ((err != 0) && (err2!=0)) dserror("Inversion of Tinv (Jacobian) failed");
   return;
 }
 

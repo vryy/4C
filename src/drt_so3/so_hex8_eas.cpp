@@ -152,7 +152,9 @@ void DRT::Elements::So_hex8::soh8_eassetup(
   // now evaluate T0^{-T} with solver
   Epetra_SerialDenseSolver solve_for_inverseT0;
   solve_for_inverseT0.SetMatrix(T0invT);
-  solve_for_inverseT0.Invert();
+  int err2 = solve_for_inverseT0.Factor();        
+  int err = solve_for_inverseT0.Invert();
+  if ((err != 0) && (err2!=0)) dserror("Inversion of T0inv (Jacobian0) failed");
   
   // build EAS interpolation matrix M, evaluated at the 8 GPs of so_hex8
   static Epetra_SerialDenseMatrix M(NUMSTR_SOH8*NUMGPT_SOH8,neas_);

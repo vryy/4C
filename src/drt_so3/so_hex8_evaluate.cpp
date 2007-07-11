@@ -394,8 +394,10 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     Epetra_SerialDenseSolver solve_for_inverseJac;  // solve A.X=B
     solve_for_inverseJac.SetMatrix(jac);            // set A=jac
     solve_for_inverseJac.SetVectors(N_XYZ,deriv_gp);// set X=N_XYZ, B=deriv_gp
+    solve_for_inverseJac.FactorWithEquilibration(true);
+    int err2 = solve_for_inverseJac.Factor();        
     int err = solve_for_inverseJac.Solve();         // N_XYZ = J^-1.N_rst
-    if (err != 0) dserror("Inversion of Jacobian failed");
+    if ((err != 0) && (err2!=0)) dserror("Inversion of Jacobian failed");
 
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
     Epetra_SerialDenseMatrix defgrd(NUMDIM_SOH8,NUMDIM_SOH8);

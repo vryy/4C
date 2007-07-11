@@ -38,6 +38,24 @@ int DRT::Elements::Soh8Surface::EvaluateNeumann(ParameterList&           params,
 {
   DSTraceHelper dst("Soh8Surface::EvaluateNeumann");
 
+  // get type of condition
+  enum LoadType
+  {
+    neum_none,
+    neum_live,
+    neum_orthopressure,
+    neum_consthydro_z,
+    neum_increhydro_z,
+    neum_live_FSI,
+    neum_opres_FSI
+  };
+  LoadType ltype;
+  const string* type = condition.Get<string>("type");
+  if      (*type == "neum_live")          ltype = neum_live;
+  //else if (*type == "neum_live_FSI")      ltype = neum_live_FSI;
+  else if (*type == "neum_orthopressure") ltype = neum_orthopressure;
+  else dserror("Unknown type of SurfaceNeumann condition");
+
   // get values and switches from the condition
   const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
   const vector<double>* val   = condition.Get<vector<double> >("val"  );
@@ -59,13 +77,22 @@ int DRT::Elements::Soh8Surface::EvaluateNeumann(ParameterList&           params,
     curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
   // **
 
-  // element geometry
+  // element geometry update
+  RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+  if (disp==null) dserror("Cannot get state vector 'displacement'");
+  vector<double> mydisp(lm.size());
+  DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
   const int numnod = 4;
   Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_SOH8);  // material coord. of element
+  Epetra_SerialDenseMatrix xscurr(numnod,NUMDIM_SOH8);  // material coord. of element
   for (int i=0; i<numnod; ++i){
     xsrefe(i,0) = Nodes()[i]->X()[0];
     xsrefe(i,1) = Nodes()[i]->X()[1];
     xsrefe(i,2) = Nodes()[i]->X()[2];
+    
+    xscurr(i,0) = xsrefe(i,0);// + mydisp[i*NODDOF_SOH8+0];
+    xscurr(i,1) = xsrefe(i,1);// + mydisp[i*NODDOF_SOH8+0];
+    xscurr(i,2) = xsrefe(i,2);// + mydisp[i*NODDOF_SOH8+0];
   }
 
   /*
@@ -90,18 +117,38 @@ int DRT::Elements::Soh8Surface::EvaluateNeumann(ParameterList&           params,
     // get shape functions and derivatives of element surface
     vector<double> funct(ngp);                // 4 shape function values
     double drs;                               // surface area factor
-    soh8_surface_integ(&funct,&drs,&xsrefe,gpcoord(gpid,0),gpcoord(gpid,1));
-    double fac = gpweight * drs * curvefac;   // integration factor
-
-    // distribute over element load vector
-    for (int nodid=0; nodid < 4; ++nodid) {
-      for(int dim=0; dim < NUMDIM_SOH8; ++dim) {
-//        int on_off=(*onoff)[dim];
-//        double value=(*val)[dim];
-//        cout << "id: " << nodid*NUMDOF_SOH8 + dim << "onoff: " << on_off << " value: " << value << endl;
-        elevec1[nodid*NUMDIM_SOH8 + dim] += funct[nodid] * (*onoff)[dim] * (*val)[dim] * fac;
+    switch(ltype){
+      case neum_live:{            // uniform load on reference configuration
+        soh8_surface_integ(&funct,&drs,NULL,&xsrefe,gpcoord(gpid,0),gpcoord(gpid,1));
+        double fac = gpweight * drs * curvefac;   // integration factor
+        // distribute over element load vector
+        for (int nodid=0; nodid < 4; ++nodid) {
+          for(int dim=0; dim < NUMDIM_SOH8; ++dim) {
+            elevec1[nodid*NUMDIM_SOH8 + dim] += funct[nodid] * (*onoff)[dim] * (*val)[dim] * fac;
+          }
+        }
       }
+      break;
+      case neum_orthopressure:{   // orthogonal pressure on deformed config.
+        if ((*onoff)[1] != 0) dserror("orthopressure on 1st dof only!");
+        double ortho_value = (*val)[0];
+        vector<double> unrm(NUMDIM_SOH8);
+        soh8_surface_integ(&funct,&drs,&unrm,&xscurr,gpcoord(gpid,0),gpcoord(gpid,1));
+        double fac = gpweight * drs * curvefac;   // integration factor
+        // distribute over element load vector
+        for (int nodid=0; nodid < 4; ++nodid) {
+          for(int dim=0; dim < NUMDIM_SOH8; ++dim) {
+            elevec1[nodid*NUMDIM_SOH8 + dim] += 
+                                funct[nodid] * ortho_value * unrm[dim] * fac;
+          }
+        }
+      }
+      break;
+    default:
+      dserror("Unknown type of SurfaceNeumann load");
+    break;
     }
+
   }
 //    cout << elevec1 << endl;
   return 0;
@@ -113,7 +160,8 @@ int DRT::Elements::Soh8Surface::EvaluateNeumann(ParameterList&           params,
 void DRT::Elements::Soh8Surface::soh8_surface_integ(
       vector<double>* funct,                 // (o) shape functions
       double* sqrtdetg,                      // (o) pointer to sqrt of det(g)
-      const Epetra_SerialDenseMatrix* xsrefe,// (i) material element coords
+      vector<double>* unrm,                  // (o) unit normal
+      const Epetra_SerialDenseMatrix* xs,    // (i) element coords
       const double r,                        // (i) coord in r-direction
       const double s)                        // (i) coord in s-direction
 {
@@ -137,7 +185,7 @@ void DRT::Elements::Soh8Surface::soh8_surface_integ(
 
   // compute dXYZ / drs
   Epetra_SerialDenseMatrix dxyzdrs(2,3);
-  dxyzdrs.Multiply('T','N',1.0,deriv,(*xsrefe),1.0);
+  dxyzdrs.Multiply('T','N',1.0,deriv,(*xs),1.0);
 
   /* compute covariant metric tensor G for surface element
   **                        | g11   g12 |
@@ -153,6 +201,12 @@ void DRT::Elements::Soh8Surface::soh8_surface_integ(
   metrictensor.Multiply('N','T',1.0,dxyzdrs,dxyzdrs,1.0);
   (*sqrtdetg) = sqrt( metrictensor(0,0)*metrictensor(1,1)
                      -metrictensor(0,1)*metrictensor(1,0));
+  if (unrm != NULL){
+    (*unrm)[0] = dxyzdrs(0,1) * dxyzdrs(1,2) - dxyzdrs(0,2) * dxyzdrs(1,1);
+    (*unrm)[1] = dxyzdrs(0,2) * dxyzdrs(1,0) - dxyzdrs(0,0) * dxyzdrs(1,2);
+    (*unrm)[2] = dxyzdrs(0,0) * dxyzdrs(1,1) - dxyzdrs(0,1) * dxyzdrs(1,0);
+  }                   
+                       
   return;
 }
 

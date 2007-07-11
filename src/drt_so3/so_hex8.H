@@ -675,7 +675,8 @@ private:
   void soh8_surface_integ(
       vector<double>* funct,                 // (o) shape functions
       double* sqrtdetg,                      // (o) pointer to sqrt of det(g)
-      const Epetra_SerialDenseMatrix* xsrefe,// (i) material element coords
+      vector<double>* unrm,                  // (o) unit normal
+      const Epetra_SerialDenseMatrix* xs,    // (i) material element coords
       const double r,                        // (i) coord in r-direction
       const double s);                       // (i) coord in s-direction
 }; // class Soh8Surface
