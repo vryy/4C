@@ -73,6 +73,7 @@ TurbulenceStatistics::TurbulenceStatistics(
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   squaredvelnp_ = LINALG::CreateVector(*dofrowmap,true);
+  meanvelnp_    = LINALG::CreateVector(*dofrowmap,true);
 
   toggleu_      = LINALG::CreateVector(*dofrowmap,true);
   togglev_      = LINALG::CreateVector(*dofrowmap,true);
@@ -297,14 +298,12 @@ TurbulenceStatistics::~TurbulenceStatistics()
   return;
 }// TurbulenceStatistics::~TurbulenceStatistics()
 
-/*----------------------------------------------------------------------*
- *
- *----------------------------------------------------------------------*/
-void TurbulenceStatistics::EvaluateMeanValuesInPlanes(
-  Epetra_Vector & velnp,
+void TurbulenceStatistics::DoTimeSample(
+  Teuchos::RefCountPtr<Epetra_Vector> velnp,
   Epetra_Vector & force
   )
 {
+
   //----------------------------------------------------------------------
   // we have an additional sample
   //----------------------------------------------------------------------
@@ -313,10 +312,11 @@ void TurbulenceStatistics::EvaluateMeanValuesInPlanes(
   //----------------------------------------------------------------------
   // pointwise multiplication to get squared values
   //----------------------------------------------------------------------
-  squaredvelnp_->Multiply(1.0,velnp,velnp,0.0);
-
-  int planenum=0;
-
+  meanvelnp_->Update(1.0,*velnp,1.0);
+  //----------------------------------------------------------------------
+  // pointwise multiplication to get squared values
+  //----------------------------------------------------------------------
+  squaredvelnp_->Multiply(1.0,*velnp,*velnp,1.0);
 
   //----------------------------------------------------------------------
   // loop planes and calculate means in each plane
@@ -326,71 +326,6 @@ void TurbulenceStatistics::EvaluateMeanValuesInPlanes(
       plane!=planecoordinates_->end();
       ++plane)
   {
-
-    // toggle vectors are one in the position of a dof in this plane,
-    // else 0
-    toggleu_->PutScalar(0.0);
-    togglev_->PutScalar(0.0);
-    togglew_->PutScalar(0.0);
-    togglep_->PutScalar(0.0);
-
-    //----------------------------------------------------------------------
-    // activate toggles for in plane dofs
-    //----------------------------------------------------------------------
-    for (int nn=0; nn<discret_->NumMyRowNodes(); ++nn)
-    {
-      DRT::Node* node = discret_->lRowNode(nn);
-
-      // this node belongs to the plane under consideration
-      if (node->X()[dim_]<*plane+2e-9 && node->X()[dim_]>*plane-2e-9)
-      {
-        vector<int> dof = discret_->Dof(node);
-        double      one = 1.0;
-
-        toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
-        togglev_->ReplaceGlobalValues(1,&one,&(dof[1]));
-        togglew_->ReplaceGlobalValues(1,&one,&(dof[2]));
-        togglep_->ReplaceGlobalValues(1,&one,&(dof[3]));
-
-      }
-    }
-
-    // count the number of nodes in plane (required to calc. in plane mean)
-    int countnodesinplaneonallprocs;
-    {
-      double temp;
-      toggleu_->Dot(*toggleu_,&temp);
-      countnodesinplaneonallprocs = int(temp);
-    }
-
-    
-    //----------------------------------------------------------------------
-    // compute scalar products from velnp and toggle vec to sum up
-    // values in this plane
-    //----------------------------------------------------------------------
-    double inc;
-    velnp.Dot(*toggleu_,&inc);
-    (*sumu_)[planenum]+=inc/countnodesinplaneonallprocs;
-    velnp.Dot(*togglev_,&inc);
-    (*sumv_)[planenum]+=inc/countnodesinplaneonallprocs;
-    velnp.Dot(*togglew_,&inc);
-    (*sumw_)[planenum]+=inc/countnodesinplaneonallprocs;
-    velnp.Dot(*togglep_,&inc);
-    (*sump_)[planenum]+=inc/countnodesinplaneonallprocs;
-
-    //----------------------------------------------------------------------
-    // compute scalar products from squaredvelnp and toggle vec to
-    // sum up values for second order moments in this plane
-    //----------------------------------------------------------------------
-    squaredvelnp_->Dot(*toggleu_,&inc);
-    (*sumsqu_)[planenum]+=inc/countnodesinplaneonallprocs;
-    squaredvelnp_->Dot(*togglev_,&inc);
-    (*sumsqv_)[planenum]+=inc/countnodesinplaneonallprocs;
-    squaredvelnp_->Dot(*togglew_,&inc);
-    (*sumsqw_)[planenum]+=inc/countnodesinplaneonallprocs;
-    squaredvelnp_->Dot(*togglep_,&inc);
-    (*sumsqp_)[planenum]+=inc/countnodesinplaneonallprocs;
-
     //----------------------------------------------------------------------
     // compute forces on top and bottom plate
     //----------------------------------------------------------------------
@@ -403,19 +338,183 @@ void TurbulenceStatistics::EvaluateMeanValuesInPlanes(
          *plane+2e-9 > (*planecoordinates_)[planecoordinates_->size()-1])
       )
     {
-      force.Dot(*toggleu_,&inc);
+      // toggle vectors are one in the position of a dof in this plane,
+      // else 0
+      toggleu_->PutScalar(0.0);
+      togglev_->PutScalar(0.0);
+      togglew_->PutScalar(0.0);
 
+      //----------------------------------------------------------------------
+      // activate toggles for in plane dofs
+      //----------------------------------------------------------------------
+      for (int nn=0; nn<discret_->NumMyRowNodes(); ++nn)
+      {
+        DRT::Node* node = discret_->lRowNode(nn);
+
+        // this node belongs to the plane under consideration
+        if (node->X()[dim_]<*plane+2e-9 && node->X()[dim_]>*plane-2e-9)
+        {
+          vector<int> dof = discret_->Dof(node);
+          double      one = 1.0;
+
+          toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
+          togglev_->ReplaceGlobalValues(1,&one,&(dof[1]));
+          togglew_->ReplaceGlobalValues(1,&one,&(dof[2]));
+        }
+      }
+
+      double inc;
+      force.Dot(*toggleu_,&inc);
       sumforceu_+=inc;
       force.Dot(*togglev_,&inc);
       sumforcev_+=inc;
       force.Dot(*togglew_,&inc);
       sumforcew_+=inc;
-      
     }
-
-    
-    planenum++;
   }
+
+  
+  return;
+}// TurbulenceStatistics::DoTimeSample
+
+/*----------------------------------------------------------------------*
+ *
+ *----------------------------------------------------------------------*/
+void TurbulenceStatistics::EvaluateMeanValuesInPlanes()
+{
+
+  //----------------------------------------------------------------------
+  // reinitialise vectors
+  //----------------------------------------------------------------------
+  for(unsigned i=0; i<planecoordinates_->size(); ++i)
+  {
+    (*sumu_)[i]  =0;
+    (*sumv_)[i]  =0;
+    (*sumw_)[i]  =0;
+    (*sump_)[i]  =0;
+
+
+    (*sumsqu_)[i]=0;
+    (*sumsqv_)[i]=0;
+    (*sumsqw_)[i]=0;
+    (*sumsqp_)[i]=0;
+  }
+  
+  //----------------------------------------------------------------------
+  // loop elements and perform integration over homogeneous plane
+  //----------------------------------------------------------------------
+  // create the parameters for the discretization
+  ParameterList eleparams;
+  
+  // action for elements
+  eleparams.set("action","calc_turbulence_statistics");
+
+  // choose what to assemble
+  eleparams.set("assemble matrix 1",false);
+  eleparams.set("assemble matrix 2",false);
+  eleparams.set("assemble vector 1",false);
+  eleparams.set("assemble vector 2",false);
+  eleparams.set("assemble vector 3",false);
+
+  // set parameter list
+  eleparams.set("normal direction to homogeneous plane",dim_);
+  eleparams.set("coordinate vector for hom. planes",planecoordinates_);
+
+  // set size of vectors
+  int size = sumu_->size();
+  
+  // generate processor local result vectors
+  RefCountPtr<vector<double> > locsumu =  rcp(new vector<double> );
+  locsumu->resize(size,0.0);
+    
+  RefCountPtr<vector<double> > locsumv =  rcp(new vector<double> );
+  locsumv->resize(size,0.0);
+
+  RefCountPtr<vector<double> > locsumw =  rcp(new vector<double> );
+  locsumw->resize(size,0.0);
+
+  RefCountPtr<vector<double> > locsump =  rcp(new vector<double> );
+  locsump->resize(size,0.0);
+
+  RefCountPtr<vector<double> > locsumsqu =  rcp(new vector<double> );
+  locsumsqu->resize(size,0.0);
+    
+  RefCountPtr<vector<double> > locsumsqv =  rcp(new vector<double> );
+  locsumsqv->resize(size,0.0);
+
+  RefCountPtr<vector<double> > locsumsqw =  rcp(new vector<double> );
+  locsumsqw->resize(size,0.0);
+
+  RefCountPtr<vector<double> > locsumsqp =  rcp(new vector<double> );
+  locsumsqp->resize(size,0.0);
+
+  
+  // communicate pointers to the result vectors to the element
+  eleparams.set("mean velocities x direction"     ,locsumu);
+  eleparams.set("mean velocities y direction"     ,locsumv);
+  eleparams.set("mean velocities z direction"     ,locsumw);
+  eleparams.set("mean pressure"                   ,locsump);
+
+  eleparams.set("variance velocities x direction",locsumsqu);
+  eleparams.set("variance velocities y direction",locsumsqv);
+  eleparams.set("variance velocities z direction",locsumsqw);
+  eleparams.set("variance pressure"              ,locsumsqp);
+
+  // counts the number of elements in the lowest homogeneous plane
+  // (the number is the same for all planes, since we use a structured
+  //  cartesian mesh)
+  int locprocessedeles=0;
+  
+  eleparams.set("count processed elements",&locprocessedeles);
+
+  
+  // set vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("u and p (n+1,converged)"    ,meanvelnp_);
+  discret_->SetState("u^2 and p^2 (n+1,converged)",squaredvelnp_);
+
+  // call loop over elements
+  discret_->Evaluate(eleparams,null,null,null,null,null);
+  discret_->ClearState();
+
+
+  //----------------------------------------------------------------------
+  // add contributions from all processors
+  //----------------------------------------------------------------------
+
+  discret_->Comm().SumAll(&((*locsumu)[0]),&((*sumu_)[0]),size);
+  discret_->Comm().SumAll(&((*locsumv)[0]),&((*sumv_)[0]),size);
+  discret_->Comm().SumAll(&((*locsumw)[0]),&((*sumw_)[0]),size);
+  discret_->Comm().SumAll(&((*locsump)[0]),&((*sump_)[0]),size);
+
+  discret_->Comm().SumAll(&((*locsumsqu)[0]),&((*sumsqu_)[0]),size);
+  discret_->Comm().SumAll(&((*locsumsqv)[0]),&((*sumsqv_)[0]),size);
+  discret_->Comm().SumAll(&((*locsumsqw)[0]),&((*sumsqw_)[0]),size);
+  discret_->Comm().SumAll(&((*locsumsqp)[0]),&((*sumsqp_)[0]),size);
+
+
+  //----------------------------------------------------------------------
+  // the sums are divided by the number of elements to get the area
+  // average
+  //----------------------------------------------------------------------
+
+  int numele=0;
+  discret_->Comm().SumAll(&locprocessedeles,&numele,1);
+
+  for(unsigned i=0; i<planecoordinates_->size(); ++i)
+  {
+    (*sumu_)[i]  /=numele;
+    (*sumv_)[i]  /=numele;
+    (*sumw_)[i]  /=numele;
+    (*sump_)[i]  /=numele;
+
+    (*sumsqu_)[i]/=numele;
+    (*sumsqv_)[i]/=numele;
+    (*sumsqw_)[i]/=numele;
+    (*sumsqp_)[i]/=numele;
+  }
+
+  return;
   
 }// TurbulenceStatistics::EvaluateMeanValuesInPlanes()
 
@@ -545,6 +644,10 @@ void TurbulenceStatistics::ClearStatistics()
 {
   numsamp_ =0;
 
+  sumforceu_=0;
+  sumforcev_=0;
+  sumforcew_=0;
+
   for(unsigned i=0; i<planecoordinates_->size(); ++i)
   {
     (*sumu_)[i]  =0;
@@ -559,10 +662,8 @@ void TurbulenceStatistics::ClearStatistics()
     (*sumsqp_)[i]=0;
   }
   
-  sumforceu_=0;
-  sumforcev_=0;
-  sumforcew_=0;
-  
+  meanvelnp_->PutScalar(0.0);
+  squaredvelnp_->PutScalar(0.0);
 
   return;  
 }// TurbulenceStatistics::ClearStatistics

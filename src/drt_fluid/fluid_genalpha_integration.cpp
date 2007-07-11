@@ -308,7 +308,7 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
     // -------------------------------------------------------------------
     if(evalstatistics_)
     {
-      turbulencestatistics_->EvaluateMeanValuesInPlanes(*velnp_,*force_);
+      turbulencestatistics_->DoTimeSample(velnp_,*force_);
     }
     
     // -------------------------------------------------------------------
@@ -618,7 +618,10 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
 
     if(evalstatistics_)
     {
+      turbulencestatistics_->EvaluateMeanValuesInPlanes();
+      
       turbulencestatistics_->TimeAverageMeansAndOutputOfStatistics(step_);
+      
       turbulencestatistics_->ClearStatistics();
     }
   }

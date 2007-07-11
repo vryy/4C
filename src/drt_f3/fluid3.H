@@ -296,6 +296,7 @@ private:
     calc_fluid_systemmat_and_residual,
     calc_fluid_genalpha_sysmat_and_residual,
     calc_fluid_beltrami_error,
+    calc_turbulence_statistics,
     calc_Shapefunction,
     calc_ShapeDeriv1,
     calc_ShapeDeriv2
@@ -449,6 +450,107 @@ private:
     ParameterList&    	  params
     );
 
+  /*!
+    \brief calculate spatial mean values for channel flow
+    (requires cartesian mesh)
+   
+                                                             gammi 07/07
+
+    <pre>
+                                                             
+    this method assumes that each 2 dimensional integration element
+    in the homogeneous plane has the same size!!!
+
+    The necessary element integration is performed in here. The element
+    is cut into two (HEX8) or three (quadratic elements) planes, the
+    spatial functions (velocity, pressure etc.) are integrated over this
+    plane and this element contribution is added to a processor local
+    vector (see formulas below for a exact description of the output).
+    The method assumes, that all elements are of the same rectangular
+    shape in the "inplanedirection".
+ 
+ 
+                       ^ normdirect       integration plane       
+                       |                /         
+                       |               /          
+                       |                          
+                 +-----|-------------+            
+                /|     |            /|            
+               / |     |           / |            
+              /  |     |          /  |            
+             /   |     |         /   |            
+            /    +-----|--------/----+ ---- additional integration
+           /    /|     |       /    /|      plane for quadratic elements
+          /    / |     |      /    / |            
+         +-------------------+    /  |            
+         |   /   |     *-----|---+------------>   
+         |  /    +----/------|--/----+         inplanedirect[1]
+         | /    /    /       | /    /            
+         |/    /    /        |/    /   \         
+         +---------+---------+    /     \        
+         |   /    /          |   /       integration plane
+         |  /    /           |  /                 
+         | /    /            | /                  
+         |/    /             |/                   
+         +----/--------------+                    
+             /                                    
+            /   inplanedirect[0]                                
+               
+               
+    Example for a mean value evaluation:
+               
+                            1.0       /                   
+                     _               |                    
+                     u = -------- *  | u(x,y,z) dx dy dz =
+                         +---        |                    
+                          \         / A                   
+                          / area                          
+                         +---                             
+                                                                  
+                                                               
+                           1.0      /                             
+                                   |            area           
+                     =  -------- * | u(r,s,t) * ---- dr ds dt  
+                        +---       |              4            
+                         \        /  [-1:1]^2                  
+                         / area                                                                          
+                        +---                                                                             
+                                
+                   
+                                                               
+                            1.0      /                         
+                                    |            1             
+                     =   -------- * | u(r,s,t) * - dr ds dt    
+                                    |            4             
+                          numele   /  [-1:1]^2                 
+                   
+                                   |                        |
+                                   +------------------------+
+                                this is the integral we compute!
+ 
+    The factor 1/4 is necessary since we use a reference element of
+    size 2x2
+ 
+    The method computes:
+                       _             _             _             _
+              numele * u  , numele * v  , numele * w  , numele * p
+                       ___           ___           ___           ___
+                        ^2            ^2            ^2            ^2
+    and       numele * u  , numele * v  , numele * w  , numele * p
+ 
+    as well as numele.
+    All results are communicated vi the parameter list!
+    
+    </pre>
+ 
+   */
+
+  void f3_calc_means(
+    vector<double>&           vel  ,
+    vector<double>&           velsq,
+    ParameterList& 	      params
+    );
+    
   /*!
    * \brief evaluate fluid coefficient matrix (instationary case)
    */

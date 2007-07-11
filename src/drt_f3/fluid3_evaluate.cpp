@@ -30,7 +30,6 @@ Maintainer: Georg Bauer
 #include "Epetra_SerialDenseSolver.h"
 
 using namespace DRT::Utils;
-
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of material laws                                              |
@@ -52,6 +51,8 @@ DRT::Elements::Fluid3::ActionType DRT::Elements::Fluid3::convertStringToActionTy
     act = Fluid3::calc_fluid_genalpha_sysmat_and_residual;
   else if (action == "calc_fluid_beltrami_error")      
     act = Fluid3::calc_fluid_beltrami_error;
+  else if (action == "calc_turbulence_statistics")      
+    act = Fluid3::calc_turbulence_statistics;  
   else if (action == "calc_Shapefunction")
     act = Fluid3::calc_Shapefunction;
   else if (action == "calc_ShapeDeriv1")
@@ -146,54 +147,6 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
         // outside world. Is there a better one?
         params.set("density", actmat->m.fluid->density);
 
-        /* the following has to be checked again !!! */
-        // use local variables instead of directly write into elemat1, elevec1.
-        // this speeds up computations by 3%-5%
-        //Epetra_SerialDenseVector  eforce(4*numnode);      	// rhs vector
-        //Epetra_SerialDenseMatrix 	estif(4*numnode,4*numnode); 	// element coefficient matrix
-
-        // calculate element coefficient matrix and rhs
-        //f3_sys_mat(lm,myvelnp,myprenp,myvhist,&estif,&eforce,actmat,params);
-
-        // copy values
-        //elemat1 = estif;
-        //elevec1 = eforce;
-
-
-// outputs for debugging
-
-// if (Id()==10 || Id()==21)
-        {
-          //printf("Element %5d\n",Id());
-#if 0
-
-          for (int i=0;i<elevec1.Length();++i)
-          {	    
-	    printf("eforce[%d]: %26.16e\n",i,elevec1[i]);	    
-          }
-          printf("\n");
-#endif
-#if 0
-          //if (Id()==0)
-          for (int i=0;i<elemat1.ColDim();++i)
-          {
-	    for (int j=0;j<elemat1.RowDim();++j)
-	    {
-              printf("%26.16e\n",elemat1(i,j));
-//		printf("%3d res %26.19e\n",Id(),elevec1[i]);
-	    }
-	    printf("\n");
-          }
-#endif
-
-#if 0
-          for (unsigned int i=0;i<myvelnp.size();++i){
-	    printf("vel %26.16e ",myvelnp[i]);
-	    printf("\n");
-          }
-#endif
-        } // end of debug part
-
       }
       break;
       case calc_fluid_beltrami_error:
@@ -226,6 +179,40 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
 
           // integrate beltrami error
           f3_int_beltrami_err(myvelnp,myprenp,actmat,params);
+        }
+      }
+      break;
+      case calc_turbulence_statistics:
+      {
+        // do nothing if you do not own this element
+        if(this->Owner() == discretization.Comm().MyPID())
+        {
+          // --------------------------------------------------
+          // extract velocities and pressure from the global distributed vectors
+          
+          // velocity and pressure values (n+1)
+          RefCountPtr<const Epetra_Vector> velnp
+            = discretization.GetState("u and p (n+1,converged)");
+          
+          // velocity^2 and pressure^2 values (n+1)
+          RefCountPtr<const Epetra_Vector> squaredvelnp
+            = discretization.GetState("u^2 and p^2 (n+1,converged)");
+
+          if (velnp==null || squaredvelnp==null)
+          {
+            dserror("Cannot get state vectors 'velnp' and/or 'squaredvelnp'");
+          }
+
+          // extract local values from the global vectors
+          vector<double> mysol  (lm.size());
+          DRT::Utils::ExtractMyValues(*velnp,mysol,lm);
+
+          vector<double> mysolsq(lm.size());
+          DRT::Utils::ExtractMyValues(*squaredvelnp,mysolsq,lm);
+
+          // integrate mean values 
+          f3_calc_means(mysol,mysolsq,params);
+
         }
       }
       break;
@@ -2499,11 +2486,11 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
   const bool pstab=true;
   const bool cstab=true;
 
-  const double fac_alphaM = fac*alphaM;
-  const double fac_afgdt  = fac*afgdt;
+  const double fac_alphaM                = fac*alphaM;
+  const double fac_afgdt                 = fac*afgdt;
 
-  const double fac_gamma_dt  = fac*gamma*dt;
-  const double visc_afgdt_fac= visc*afgdt*fac;
+  const double fac_gamma_dt              = fac*gamma*dt;
+  const double visc_afgdt_fac            = visc*afgdt*fac;
   
   const double fac_tauM                  = fac*tauM;
   const double fac_tauMp                 = fac*tauMp;
@@ -2518,7 +2505,7 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
   const double two_visc_fac_tauMp        = 2.0*visc*fac_tauMp;
   const double two_visc_fac_afgdt_tauMp  = 2.0*visc*fac_afgdt_tauMp;
 
-  const double fac_prenp         = fac*prenp;
+  const double fac_prenp                 = fac*prenp;
 
   
   for (int i=0; i<iel; i++) /* loop over nodes of element */
@@ -2592,9 +2579,9 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
   
     /* Viscous term  div epsilon(u_old)
 
-    n+alpha_F
+                  n+alpha_F
     with u_old = u
-    (i)
+                  (i)
 
     */
   viscaf_old[0] = vderxyaf2(0,0) + 0.5 * ( vderxyaf2(0,1) + vderxyaf2(1,3)
@@ -3670,6 +3657,354 @@ void DRT::Elements::Fluid3::f3_int_beltrami_err(
   params.set<double>("L2 integrated velocity error",velerr);
   params.set<double>("L2 integrated pressure error",preerr);
 
+  return;
+}
+
+/*---------------------------------------------------------------------*
+ | Calculate spatial mean values for channel flow (cartesian mesh)
+ |                                                           gammi 07/07
+ |
+ | The necessary element integration is performed in here. The element
+ | is cut into two (HEX8) or three (quadratic elements) planes, the
+ | spatial functions (velocity, pressure etc.) are integrated over this
+ | plane and this element contribution is added to a processor local
+ | vector (see formulas below for a exact description of the output).
+ | The method assumes, that all elements are of the same rectangular
+ | shape in the "inplanedirection".
+ |
+ |
+ |                      ^ normdirect       integration plane       
+ |                      |                /         
+ |                      |               /          
+ |                      |                          
+ |                +-----|-------------+            
+ |               /|     |            /|            
+ |              / |     |           / |            
+ |             /  |     |          /  |            
+ |            /   |     |         /   |            
+ |           /    +-----|--------/----+ ---- additional integration
+ |          /    /|     |       /    /|      plane for quadratic elements
+ |         /    / |     |      /    / |            
+ |        +-------------------+    /  |            
+ |        |   /   |     *-----|---+------------>   
+ |        |  /    +----/------|--/----+         inplanedirect[1]
+ |        | /    /    /       | /    /            
+ |        |/    /    /        |/    /   \         
+ |        +---------+---------+    /     \        
+ |        |   /    /          |   /       integration plane
+ |        |  /    /           |  /                 
+ |        | /    /            | /                  
+ |        |/    /             |/                   
+ |        +----/--------------+                    
+ |            /                                    
+ |           /   inplanedirect[0]                                
+ |              
+ |              
+ |  Example for a mean value evaluation:
+ |              
+ |         1.0       /                   
+ |  _               |                    
+ |  u = -------- *  | u(x,y,z) dx dy dz =
+ |      +---        |                    
+ |       \         / A                   
+ |       / area                          
+ |      +---                             
+ |                                               
+ |                                            
+ |        1.0      /                             
+ |                |            area           
+ |  =  -------- * | u(r,s,t) * ---- dr ds dt  
+ |     +---       |              4            
+ |      \        /  [-1:1]^2                  
+ |      / area                                                                          
+ |     +---                                                                             
+ |             
+ |
+ |                                            
+ |         1.0      /                         
+ |                 |            1             
+ |  =   -------- * | u(r,s,t) * - dr ds dt    
+ |                 |            4             
+ |       numele   /  [-1:1]^2                 
+ |
+ |                |                        |
+ |                +------------------------+
+ |             this is the integral we compute!
+ |
+ | The factor 1/4 is necessary since we use a reference element of
+ | size 2x2
+ |
+ | The method computes:
+ |                      _             _             _             _
+ |             numele * u  , numele * v  , numele * w  , numele * p
+ |                      ___           ___           ___           ___
+ |                       ^2            ^2            ^2            ^2
+ | and         numele * u  , numele * v  , numele * w  , numele * p
+ |
+ | as well as numele.
+ | All results are communicated vi the parameter list!
+ | 
+ *---------------------------------------------------------------------*/
+void DRT::Elements::Fluid3::f3_calc_means(
+  vector<double>&           sol  ,
+  vector<double>&           solsq,
+  ParameterList& 	    params
+  )
+{
+
+  // set element data
+  const int iel = NumNode();
+  const DiscretizationType distype = this->Shape();
+
+
+  // the plane normal tells you in which plane the integration takes place
+  const int normdirect = params.get<int>("normal direction to homogeneous plane");
+
+
+  // the vector planes contains the coordinates of the homogeneous planes (in
+  // wall normal direction)
+  RefCountPtr<vector<double> > planes = params.get<RefCountPtr<vector<double> > >("coordinate vector for hom. planes");  
+  
+  // get the pointers to the solution vectors
+  RefCountPtr<vector<double> > sumu   = params.get<RefCountPtr<vector<double> > >("mean velocities x direction");  
+  RefCountPtr<vector<double> > sumv   = params.get<RefCountPtr<vector<double> > >("mean velocities y direction");  
+  RefCountPtr<vector<double> > sumw   = params.get<RefCountPtr<vector<double> > >("mean velocities z direction");  
+  RefCountPtr<vector<double> > sump   = params.get<RefCountPtr<vector<double> > >("mean pressure");  
+
+  RefCountPtr<vector<double> > sumsqu = params.get<RefCountPtr<vector<double> > >("variance velocities x direction");  
+  RefCountPtr<vector<double> > sumsqv = params.get<RefCountPtr<vector<double> > >("variance velocities y direction");  
+  RefCountPtr<vector<double> > sumsqw = params.get<RefCountPtr<vector<double> > >("variance velocities z direction");  
+  RefCountPtr<vector<double> > sumsqp = params.get<RefCountPtr<vector<double> > >("variance pressure");  
+    
+
+  // get node coordinates of element
+  Epetra_SerialDenseMatrix xyze(3,iel);
+  for(int inode=0;inode<iel;inode++)
+  {
+    xyze(0,inode)=Nodes()[inode]->X()[0];
+    xyze(1,inode)=Nodes()[inode]->X()[1];
+    xyze(2,inode)=Nodes()[inode]->X()[2];
+  }
+
+
+  // determine the ids of the homogeneous planes intersecting this element
+  set<int> planesinele;
+  for(unsigned nplane=0;nplane<planes->size();++nplane)
+  {
+    // get all available wall normal coordinates
+    for(int nn=0;nn<iel;++nn)
+    {
+      if (xyze(normdirect,nn)-2e-9 < (*planes)[nplane] && xyze(normdirect,nn)+2e-9 > (*planes)[nplane])
+      {
+        planesinele.insert(nplane);
+      }
+    }
+  }
+
+  // remove lowest layer from planesinele to avoid double calculations. This is not done
+  // for the first level (index 0) --- if delete, shift the first integration point in
+  // wall normal direction
+  double shift=0;
+
+  if(*planesinele.begin() != 0)
+  {
+    // this is not an element of the lowest element layer
+    planesinele.erase(planesinele.begin());
+
+    if(distype==hex20 || distype==hex27)
+    {
+      shift=1;
+    }
+    else if (distype==hex8)
+    {
+      shift=2;
+    }
+    else
+    {
+      dserror("only HEX allowed here");
+    }
+  }
+  else
+  {
+    // this is an element of the lowest element layer. Increase the counter
+    // in order to compute the total number of elements in one layer
+    int* count = params.get<int*>("count processed elements");
+
+    (*count)++;
+  }
+
+  // determine the orientation of the rst system compared to the xyz system
+  int elenormdirect;
+  bool upsidedown =false;
+  // the only thing of interest is how normdirect is oriented in the
+  // element coordinate system
+  if(xyze(normdirect,4)-xyze(normdirect,0)>2e-9)
+  {
+    // t aligned
+    elenormdirect =2;
+  }
+  else if (xyze(normdirect,3)-xyze(normdirect,0)>2e-9)
+  {
+    // s aligned    
+    elenormdirect =1;
+  }
+  else if (xyze(normdirect,1)-xyze(normdirect,0)>2e-9)
+  {
+    // r aligned
+    elenormdirect =0;
+  }
+  else if(xyze(normdirect,4)-xyze(normdirect,0)<2e-9)
+  {
+    // -t aligned
+    elenormdirect =2;
+    upsidedown =true;
+  }
+  else if (xyze(normdirect,3)-xyze(normdirect,0)<2e-9)
+  {
+    // -s aligned
+    elenormdirect =1;
+    upsidedown =true;
+  }
+  else if (xyze(normdirect,1)-xyze(normdirect,0)<2e-9)
+  {
+    // -r aligned
+    elenormdirect =0;
+    upsidedown =true;
+  }
+  else
+  {
+    dserror("cannot determine orientation of plane normal in local coordinate system of element");
+  }
+  
+  vector<int> inplanedirect;
+  {
+    set <int> inplanedirectset;
+    for(int i=0;i<3;++i)
+    {
+      inplanedirectset.insert(i);
+    }
+    inplanedirectset.erase(elenormdirect);
+    
+    for(set<int>::iterator id = inplanedirectset.begin();id!=inplanedirectset.end() ;++id)
+    {
+      inplanedirect.push_back(*id);
+    }    
+  }
+
+  // allocate vector for shapefunctions
+  Epetra_SerialDenseVector  funct(iel);
+
+  // get the quad9 gaussrule for the in plane integration
+  const IntegrationPoints2D  intpoints = getIntegrationPoints2D(intrule_quad_9point);
+
+  // a hex8 element has two levels, the hex20 and hex27 element have three layers to sample
+  // 
+  double layershift=0;
+ 
+  // loop all levels in element
+  for(set<int>::iterator id = planesinele.begin();id!=planesinele.end() ;++id)
+  {
+    // reset temporary values
+    double ubar=0;
+    double vbar=0;
+    double wbar=0;
+    double pbar=0;
+
+    double usqbar=0;
+    double vsqbar=0;
+    double wsqbar=0;
+    double psqbar=0;
+    
+    // get the intgration point in wall normal direction
+    double e[3];
+
+    e[elenormdirect]=-1.0+shift+layershift;
+    if(upsidedown)
+    {
+      e[elenormdirect]*=-1;
+    }
+    
+    // start loop over integration points in layer
+    for (int iquad=0;iquad<intpoints.nquad;iquad++)
+    {
+      // get the other gauss point coordinates
+      for(int i=0;i<2;++i)
+      {
+        e[inplanedirect[i]]=intpoints.qxg[iquad][i];
+      }
+
+      // compute the shape function values
+      shape_function_3D(funct,e[0],e[1],e[2],distype);
+
+      // check whether this gausspoint is really inside the desired plane
+      {
+        double x[3];
+        x[0]=0;
+        x[1]=0;
+        x[2]=0;
+        for(int inode=0;inode<iel;inode++)
+        {
+          x[0]+=funct[inode]*xyze(0,inode);
+          x[1]+=funct[inode]*xyze(1,inode);
+          x[2]+=funct[inode]*xyze(2,inode);
+        }
+        
+        if(abs(x[normdirect]-(*planes)[*id])>2e-9)
+        {
+          dserror("Mixing up element cut planes during integration");
+        }
+      }
+      
+      // we assume that every 2d element we are integrating here is of
+      // rectangular shape and every element is of the same size.
+      // 1/4 is necessary since we use a reference element of size 2x2
+      // the factor fac is omitting the element area up to now
+      double fac=0.25*intpoints.qwgt[iquad];
+      
+      for(int inode=0;inode<iel;inode++)
+      {
+        ubar   += funct[inode]*sol  [inode*4  ]*fac;
+        vbar   += funct[inode]*sol  [inode*4+1]*fac;
+        wbar   += funct[inode]*sol  [inode*4+2]*fac;
+        pbar   += funct[inode]*sol  [inode*4+3]*fac;
+
+        usqbar += funct[inode]*solsq[inode*4  ]*fac;
+        vsqbar += funct[inode]*solsq[inode*4+1]*fac;
+        wsqbar += funct[inode]*solsq[inode*4+2]*fac;
+        psqbar += funct[inode]*solsq[inode*4+3]*fac;
+        
+      }
+
+    } // end loop integration points
+
+    // add increments from this layer to processor local vectors
+    (*sumu  )[*id] += ubar;
+    (*sumv  )[*id] += vbar;
+    (*sumw  )[*id] += wbar;
+    (*sump  )[*id] += pbar;
+                                       
+    (*sumsqu)[*id] += usqbar;
+    (*sumsqv)[*id] += vsqbar;
+    (*sumsqw)[*id] += wsqbar;
+    (*sumsqp)[*id] += psqbar;
+
+    // jump to the next layer in the element.
+    // in case of an hex8 element, the two coordinates are -1 and 1(+2)
+    // for quadratic elements, we have -1,0(+1),1(+2)
+    if(distype==hex20 || distype==hex27)
+    {
+      layershift++;
+    }
+    else if (distype==hex8)
+    {
+      layershift+=2;
+    }
+    else
+    {
+      dserror("only HEX allowed here");
+    }
+  }
+  
   return;
 }
 

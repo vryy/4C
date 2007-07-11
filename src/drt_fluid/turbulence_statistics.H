@@ -102,8 +102,19 @@ public:
   //! @name functions for averaging
 
   /*!
-  \brief Compute in plane sums of u,u^2 etc. and divide by the number
-  of in plane samples.
+  \brief The values of velocity and its squared velues are added to
+  global vectors. This method allows to do the time average of the
+  nodal values after a certain amount of timesteps.
+  
+  */
+  void DoTimeSample(
+    Teuchos::RefCountPtr<Epetra_Vector> velnp,
+    Epetra_Vector & force
+    );
+
+  
+  /*!
+  \brief Compute in plane means of u,u^2 etc. (nodal quantities)
 
   The calculated value is added to the sum**,sumsq** variables in the
   component corresponding to the plane.
@@ -111,10 +122,7 @@ public:
   velnp is the solution vector provided by the time integration
   algorithm 
   */
-  void EvaluateMeanValuesInPlanes(
-    Epetra_Vector & velnp,
-    Epetra_Vector & force
-    );
+  void EvaluateMeanValuesInPlanes();
 
   /*!
   \brief 
@@ -187,7 +195,7 @@ private:
   ParameterList&                   params_;
 
    //! pointer to vel/pres field
-  RefCountPtr<Epetra_Vector>       velnp_;
+  RefCountPtr<Epetra_Vector>       meanvelnp_;
 
    //! pointer to vel/pres^2 field (space allocated in constructor)
   RefCountPtr<Epetra_Vector>       squaredvelnp_;
@@ -199,7 +207,7 @@ private:
   RefCountPtr<Epetra_Vector>       togglew_;
   RefCountPtr<Epetra_Vector>       togglep_;
 
-  //! the dim_-coordinates of the momogeneous planes
+  //! the dim_-coordinates of the homogeneous planes
   RefCountPtr<vector<double> >     planecoordinates_;
 
   //! a bounding box for the channel
