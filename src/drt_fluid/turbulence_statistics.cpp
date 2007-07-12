@@ -72,7 +72,6 @@ TurbulenceStatistics::TurbulenceStatistics(
   // allocate some (toggle) vectors
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-  squaredvelnp_ = LINALG::CreateVector(*dofrowmap,true);
   meanvelnp_    = LINALG::CreateVector(*dofrowmap,true);
 
   toggleu_      = LINALG::CreateVector(*dofrowmap,true);
@@ -312,16 +311,13 @@ void TurbulenceStatistics::DoTimeSample(
   //----------------------------------------------------------------------
   // pointwise multiplication to get squared values
   //----------------------------------------------------------------------
-  meanvelnp_->Update(1.0,*velnp,1.0);
-  //----------------------------------------------------------------------
-  // pointwise multiplication to get squared values
-  //----------------------------------------------------------------------
-  squaredvelnp_->Multiply(1.0,*velnp,*velnp,1.0);
+  meanvelnp_->Update(1.0,*velnp,0.0);
 
   //----------------------------------------------------------------------
   // loop planes and calculate means in each plane
   //----------------------------------------------------------------------
-
+  this->EvaluateMeanValuesInPlanes();
+      
   for(vector<double>::iterator plane=planecoordinates_->begin();
       plane!=planecoordinates_->end();
       ++plane)
@@ -386,6 +382,7 @@ void TurbulenceStatistics::EvaluateMeanValuesInPlanes()
   //----------------------------------------------------------------------
   // reinitialise vectors
   //----------------------------------------------------------------------
+#if 0  
   for(unsigned i=0; i<planecoordinates_->size(); ++i)
   {
     (*sumu_)[i]  =0;
@@ -399,7 +396,7 @@ void TurbulenceStatistics::EvaluateMeanValuesInPlanes()
     (*sumsqw_)[i]=0;
     (*sumsqp_)[i]=0;
   }
-  
+#endif
   //----------------------------------------------------------------------
   // loop elements and perform integration over homogeneous plane
   //----------------------------------------------------------------------
@@ -448,6 +445,29 @@ void TurbulenceStatistics::EvaluateMeanValuesInPlanes()
   RefCountPtr<vector<double> > locsumsqp =  rcp(new vector<double> );
   locsumsqp->resize(size,0.0);
 
+  RefCountPtr<vector<double> > globsumu =  rcp(new vector<double> );
+  globsumu->resize(size,0.0);
+    
+  RefCountPtr<vector<double> > globsumv =  rcp(new vector<double> );
+  globsumv->resize(size,0.0);
+
+  RefCountPtr<vector<double> > globsumw =  rcp(new vector<double> );
+  globsumw->resize(size,0.0);
+
+  RefCountPtr<vector<double> > globsump =  rcp(new vector<double> );
+  globsump->resize(size,0.0);
+
+  RefCountPtr<vector<double> > globsumsqu =  rcp(new vector<double> );
+  globsumsqu->resize(size,0.0);
+    
+  RefCountPtr<vector<double> > globsumsqv =  rcp(new vector<double> );
+  globsumsqv->resize(size,0.0);
+
+  RefCountPtr<vector<double> > globsumsqw =  rcp(new vector<double> );
+  globsumsqw->resize(size,0.0);
+
+  RefCountPtr<vector<double> > globsumsqp =  rcp(new vector<double> );
+  globsumsqp->resize(size,0.0);
   
   // communicate pointers to the result vectors to the element
   eleparams.set("mean velocities x direction"     ,locsumu);
@@ -471,7 +491,6 @@ void TurbulenceStatistics::EvaluateMeanValuesInPlanes()
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("u and p (n+1,converged)"    ,meanvelnp_);
-  discret_->SetState("u^2 and p^2 (n+1,converged)",squaredvelnp_);
 
   // call loop over elements
   discret_->Evaluate(eleparams,null,null,null,null,null);
@@ -482,36 +501,36 @@ void TurbulenceStatistics::EvaluateMeanValuesInPlanes()
   // add contributions from all processors
   //----------------------------------------------------------------------
 
-  discret_->Comm().SumAll(&((*locsumu)[0]),&((*sumu_)[0]),size);
-  discret_->Comm().SumAll(&((*locsumv)[0]),&((*sumv_)[0]),size);
-  discret_->Comm().SumAll(&((*locsumw)[0]),&((*sumw_)[0]),size);
-  discret_->Comm().SumAll(&((*locsump)[0]),&((*sump_)[0]),size);
+  discret_->Comm().SumAll(&((*locsumu)[0]),&((*globsumu)[0]),size);
+  discret_->Comm().SumAll(&((*locsumv)[0]),&((*globsumv)[0]),size);
+  discret_->Comm().SumAll(&((*locsumw)[0]),&((*globsumw)[0]),size);
+  discret_->Comm().SumAll(&((*locsump)[0]),&((*globsump)[0]),size);
 
-  discret_->Comm().SumAll(&((*locsumsqu)[0]),&((*sumsqu_)[0]),size);
-  discret_->Comm().SumAll(&((*locsumsqv)[0]),&((*sumsqv_)[0]),size);
-  discret_->Comm().SumAll(&((*locsumsqw)[0]),&((*sumsqw_)[0]),size);
-  discret_->Comm().SumAll(&((*locsumsqp)[0]),&((*sumsqp_)[0]),size);
+  discret_->Comm().SumAll(&((*locsumsqu)[0]),&((*globsumsqu)[0]),size);
+  discret_->Comm().SumAll(&((*locsumsqv)[0]),&((*globsumsqv)[0]),size);
+  discret_->Comm().SumAll(&((*locsumsqw)[0]),&((*globsumsqw)[0]),size);
+  discret_->Comm().SumAll(&((*locsumsqp)[0]),&((*globsumsqp)[0]),size);
 
 
   //----------------------------------------------------------------------
   // the sums are divided by the number of elements to get the area
   // average
   //----------------------------------------------------------------------
+ 
+  discret_->Comm().SumAll(&locprocessedeles,&numele_,1);
 
-  int numele=0;
-  discret_->Comm().SumAll(&locprocessedeles,&numele,1);
-
+  
   for(unsigned i=0; i<planecoordinates_->size(); ++i)
   {
-    (*sumu_)[i]  /=numele;
-    (*sumv_)[i]  /=numele;
-    (*sumw_)[i]  /=numele;
-    (*sump_)[i]  /=numele;
+    (*sumu_)[i]  +=(*globsumu)[i];
+    (*sumv_)[i]  +=(*globsumv)[i];
+    (*sumw_)[i]  +=(*globsumw)[i];
+    (*sump_)[i]  +=(*globsump)[i];
 
-    (*sumsqu_)[i]/=numele;
-    (*sumsqv_)[i]/=numele;
-    (*sumsqw_)[i]/=numele;
-    (*sumsqp_)[i]/=numele;
+    (*sumsqu_)[i]+=(*globsumsqu)[i];
+    (*sumsqv_)[i]+=(*globsumsqv)[i];
+    (*sumsqw_)[i]+=(*globsumsqw)[i];
+    (*sumsqp_)[i]+=(*globsumsqp)[i];
   }
 
   return;
@@ -528,20 +547,24 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
     dserror("No samples to do time average");
   }
 
+
+  
   //----------------------------------------------------------------------
   // the sums are divided by the number of samples to get the time average
+  int aux = numele_*numsamp_;
   for(unsigned i=0; i<planecoordinates_->size(); ++i)
   {
-    (*sumu_)[i]  /=numsamp_;
-    (*sumv_)[i]  /=numsamp_;
-    (*sumw_)[i]  /=numsamp_;
-    (*sump_)[i]  /=numsamp_;
+    
+    (*sumu_)[i]  /=aux;
+    (*sumv_)[i]  /=aux;
+    (*sumw_)[i]  /=aux;
+    (*sump_)[i]  /=aux;
 
 
-    (*sumsqu_)[i]/=numsamp_;
-    (*sumsqv_)[i]/=numsamp_;
-    (*sumsqw_)[i]/=numsamp_;
-    (*sumsqp_)[i]/=numsamp_;
+    (*sumsqu_)[i]/=aux;
+    (*sumsqv_)[i]/=aux;
+    (*sumsqw_)[i]/=aux;
+    (*sumsqp_)[i]/=aux;
   }
 
   sumforceu_/=numsamp_;
@@ -663,7 +686,6 @@ void TurbulenceStatistics::ClearStatistics()
   }
   
   meanvelnp_->PutScalar(0.0);
-  squaredvelnp_->PutScalar(0.0);
 
   return;  
 }// TurbulenceStatistics::ClearStatistics

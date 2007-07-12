@@ -618,8 +618,6 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
 
     if(evalstatistics_)
     {
-      turbulencestatistics_->EvaluateMeanValuesInPlanes();
-      
       turbulencestatistics_->TimeAverageMeansAndOutputOfStatistics(step_);
       
       turbulencestatistics_->ClearStatistics();

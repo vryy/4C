@@ -182,6 +182,9 @@ private:
   //! direction normal to homogenous plane
   int                              dim_;
   
+  //! number of elements in sample plane
+  int                              numele_;
+
   //! number of samples taken
   int                              numsamp_;
   

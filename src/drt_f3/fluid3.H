@@ -547,7 +547,6 @@ private:
 
   void f3_calc_means(
     vector<double>&           vel  ,
-    vector<double>&           velsq,
     ParameterList& 	      params
     );
     

@@ -194,24 +194,18 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
           RefCountPtr<const Epetra_Vector> velnp
             = discretization.GetState("u and p (n+1,converged)");
           
-          // velocity^2 and pressure^2 values (n+1)
-          RefCountPtr<const Epetra_Vector> squaredvelnp
-            = discretization.GetState("u^2 and p^2 (n+1,converged)");
 
-          if (velnp==null || squaredvelnp==null)
+          if (velnp==null)
           {
-            dserror("Cannot get state vectors 'velnp' and/or 'squaredvelnp'");
+            dserror("Cannot get state vectors 'velnp'");
           }
 
           // extract local values from the global vectors
           vector<double> mysol  (lm.size());
           DRT::Utils::ExtractMyValues(*velnp,mysol,lm);
 
-          vector<double> mysolsq(lm.size());
-          DRT::Utils::ExtractMyValues(*squaredvelnp,mysolsq,lm);
-
           // integrate mean values 
-          f3_calc_means(mysol,mysolsq,params);
+          f3_calc_means(mysol,params);
 
         }
       }
@@ -3747,7 +3741,6 @@ void DRT::Elements::Fluid3::f3_int_beltrami_err(
  *---------------------------------------------------------------------*/
 void DRT::Elements::Fluid3::f3_calc_means(
   vector<double>&           sol  ,
-  vector<double>&           solsq,
   ParameterList& 	    params
   )
 {
@@ -3923,7 +3916,7 @@ void DRT::Elements::Fluid3::f3_calc_means(
     {
       e[elenormdirect]*=-1;
     }
-    
+
     // start loop over integration points in layer
     for (int iquad=0;iquad<intpoints.nquad;iquad++)
     {
@@ -3954,6 +3947,12 @@ void DRT::Elements::Fluid3::f3_calc_means(
           dserror("Mixing up element cut planes during integration");
         }
       }
+
+      //interpolated values at gausspoints
+      double ugp=0;
+      double vgp=0;
+      double wgp=0;
+      double pgp=0;
       
       // we assume that every 2d element we are integrating here is of
       // rectangular shape and every element is of the same size.
@@ -3963,18 +3962,22 @@ void DRT::Elements::Fluid3::f3_calc_means(
       
       for(int inode=0;inode<iel;inode++)
       {
-        ubar   += funct[inode]*sol  [inode*4  ]*fac;
-        vbar   += funct[inode]*sol  [inode*4+1]*fac;
-        wbar   += funct[inode]*sol  [inode*4+2]*fac;
-        pbar   += funct[inode]*sol  [inode*4+3]*fac;
-
-        usqbar += funct[inode]*solsq[inode*4  ]*fac;
-        vsqbar += funct[inode]*solsq[inode*4+1]*fac;
-        wsqbar += funct[inode]*solsq[inode*4+2]*fac;
-        psqbar += funct[inode]*solsq[inode*4+3]*fac;
-        
+        ugp += funct[inode]*sol[inode*4  ];
+        vgp += funct[inode]*sol[inode*4+1];
+        wgp += funct[inode]*sol[inode*4+2];
+        pgp += funct[inode]*sol[inode*4+3];
       }
 
+      // add contribution to integral        
+      ubar   += ugp*fac;
+      vbar   += vgp*fac;
+      wbar   += wgp*fac;
+      pbar   += pgp*fac;
+
+      usqbar += ugp*ugp*fac;
+      vsqbar += vgp*vgp*fac;
+      wsqbar += wgp*wgp*fac;
+      psqbar += pgp*pgp*fac;
     } // end loop integration points
 
     // add increments from this layer to processor local vectors
@@ -4004,6 +4007,7 @@ void DRT::Elements::Fluid3::f3_calc_means(
       dserror("only HEX allowed here");
     }
   }
+
   
   return;
 }
