@@ -17,13 +17,11 @@
  in the Baci guide in the Convention chapter.
  !!!!
 
-
- <pre>
- Maintainer: Axel Gerstenberger
+ \author Axel Gerstenberger
  gerstenberger@lnm.mw.tum.de
  http://www.lnm.mw.tum.de
  089 - 289-15236
- </pre>
+
  */
 
 #ifdef CCADISCRET
@@ -121,17 +119,64 @@ namespace Utils
   //! for each of the 12 lines, tell me the 2 neighbouring faces
   const int	eleNodeNumbering_hex27_lines_surfaces[12][2] = { 
           {0,  1},
-	      {0,  2},
-	      {0,  3},
-	      {0,  4},
-	      {1,  4},
-	      {1,  2},
-	      {2,  3},
-	      {3,  4},
-	      {1,  5},
-	      {2,  5},
-	      {3,  5},
-	      {4,  5}};
+          {0,  2},
+          {0,  3},
+          {0,  4},
+          {1,  4},
+          {1,  2},
+          {2,  3},
+          {3,  4},
+          {1,  5},
+          {2,  5},
+          {3,  5},
+          {4,  5}};
+                                                             
+                                                             
+  //! for each of the 8 corner nodes, tell me the 3 neighbouring faces
+  const int eleNodeNumbering_hex27_nodes_surfaces[8][3] =  { {0,  1,  4},
+                                                             {0,  1,  2},
+                                                             {0,  2,  3},
+                                                             {0,  3,  4},
+                                                             {1,  4,  5},
+                                                             {1,  2,  5},
+                                                             {2,  3,  5},
+                                                             {3,  4,  5}};
+                                                             
+                                                             
+   //! for each node the reference coordinates are stored
+  const double eleNodeNumbering_hex27_nodes_reference[27][3] = {{-1.0,  -1.0,  -1.0},
+                                                                { 1.0,  -1.0,  -1.0},
+                                                                { 1.0,   1.0,  -1.0},
+                                                                {-1.0,   1.0,  -1.0},
+                                                                
+                                                                {-1.0,  -1.0,   1.0},
+                                                                { 1.0,  -1.0,   1.0},
+                                                                { 1.0,   1.0,   1.0},
+                                                                {-1.0,   1.0,   1.0},
+                                                                
+                                                                { 0.0,  -1.0,  -1.0},
+                                                                { 1.0,   0.0,  -1.0},
+                                                                { 0.0,   1.0,  -1.0},
+                                                                {-1.0,   0.0,  -1.0},
+                                                                
+                                                                {-1.0,  -1.0,   0.0},
+                                                                { 1.0,  -1.0,   0.0},
+                                                                { 1.0,   1.0,   0.0},
+                                                                {-1.0,   1.0,   0.0},
+                                                                
+                                                                { 0.0,  -1.0,   1.0},
+                                                                { 1.0,   0.0,   1.0},
+                                                                { 0.0,   1.0,   1.0},
+                                                                {-1.0,   0.0,   1.0},
+                                                                
+                                                                { 0.0,   0.0,  -1.0},
+                                                                { 0.0,  -1.0,   0.0},
+                                                                { 1.0,   0.0,   0.0},
+                                                                { 0.0,   1.0,   0.0},
+                                                                
+                                                                {-1.0,   0.0,   0.0},
+                                                                { 0.0,   0.0,   1.0},
+                                                                { 0.0,   0.0,   0.0}};
 
   /*!
   \brief Fill a Epetra_SerialDenseVector with with 3D shape function
