@@ -90,9 +90,9 @@ int DRT::Elements::Soh8Surface::EvaluateNeumann(ParameterList&           params,
     xsrefe(i,1) = Nodes()[i]->X()[1];
     xsrefe(i,2) = Nodes()[i]->X()[2];
     
-    xscurr(i,0) = xsrefe(i,0);// + mydisp[i*NODDOF_SOH8+0];
-    xscurr(i,1) = xsrefe(i,1);// + mydisp[i*NODDOF_SOH8+0];
-    xscurr(i,2) = xsrefe(i,2);// + mydisp[i*NODDOF_SOH8+0];
+    xscurr(i,0) = xsrefe(i,0) + mydisp[i*NODDOF_SOH8+0];
+    xscurr(i,1) = xsrefe(i,1) + mydisp[i*NODDOF_SOH8+1];
+    xscurr(i,2) = xsrefe(i,2) + mydisp[i*NODDOF_SOH8+2];
   }
 
   /*
@@ -134,7 +134,7 @@ int DRT::Elements::Soh8Surface::EvaluateNeumann(ParameterList&           params,
         double ortho_value = (*val)[0];
         vector<double> unrm(NUMDIM_SOH8);
         soh8_surface_integ(&funct,&drs,&unrm,&xscurr,gpcoord(gpid,0),gpcoord(gpid,1));
-        double fac = gpweight * drs * curvefac;   // integration factor
+        double fac = (-1.0) * gpweight * curvefac;   // integration factor
         // distribute over element load vector
         for (int nodid=0; nodid < 4; ++nodid) {
           for(int dim=0; dim < NUMDIM_SOH8; ++dim) {
