@@ -234,6 +234,7 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
   microgenalpha_->ClearState();
 
   MAT::MicroMaterialGP::Homogenization(stress, cmat, density, defgrd);
+  microgenalpha_->Homogenization(stress, cmat, density, defgrd);
 }
 
 
@@ -287,7 +288,24 @@ void MAT::MicroMaterialGP::Homogenization(Epetra_SerialDenseVector* stress,
   // evaluate stresses
   (*cmat).Multiply('N',glstrain,(*stress));
 
-  //cout << "stresses: \n" << *stress << "\n";
+  //cout << "Stresses St Venant: \n" << *stress << endl;
+
+  // conversion to first Piola Kirchhoff for comparison
+  Epetra_SerialDenseMatrix P(3,3);
+
+  P(0,0) = (*defgrd)(0,0)*(*stress)(0)+(*defgrd)(0,1)*(*stress)(3)+(*defgrd)(0,2)*(*stress)(5);
+  P(1,0) = (*defgrd)(1,0)*(*stress)(0)+(*defgrd)(1,1)*(*stress)(3)+(*defgrd)(1,2)*(*stress)(5);
+  P(2,0) = (*defgrd)(2,0)*(*stress)(0)+(*defgrd)(2,1)*(*stress)(3)+(*defgrd)(2,2)*(*stress)(5);
+
+  P(0,1) = (*defgrd)(0,0)*(*stress)(3)+(*defgrd)(0,1)*(*stress)(1)+(*defgrd)(0,2)*(*stress)(4);
+  P(1,1) = (*defgrd)(1,0)*(*stress)(3)+(*defgrd)(1,1)*(*stress)(1)+(*defgrd)(1,2)*(*stress)(4);
+  P(2,1) = (*defgrd)(2,0)*(*stress)(3)+(*defgrd)(2,1)*(*stress)(1)+(*defgrd)(2,2)*(*stress)(4);
+
+  P(0,2) = (*defgrd)(0,0)*(*stress)(5)+(*defgrd)(0,1)*(*stress)(4)+(*defgrd)(0,2)*(*stress)(2);
+  P(1,2) = (*defgrd)(1,0)*(*stress)(5)+(*defgrd)(1,1)*(*stress)(4)+(*defgrd)(1,2)*(*stress)(2);
+  P(2,2) = (*defgrd)(2,0)*(*stress)(5)+(*defgrd)(2,1)*(*stress)(4)+(*defgrd)(2,2)*(*stress)(2);
+
+  cout << "FPK St. Venant: \n" << P << endl;
 }
 
 #endif

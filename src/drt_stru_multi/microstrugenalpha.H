@@ -138,7 +138,10 @@ public:
 
   void SetUpHomogenization();
 
-  void Homogenization();
+  void Homogenization(Epetra_SerialDenseVector* stress,
+                      Epetra_SerialDenseMatrix* cmat,
+                      double *density,
+                      const Epetra_SerialDenseMatrix* defgrd);
 
 
 protected:

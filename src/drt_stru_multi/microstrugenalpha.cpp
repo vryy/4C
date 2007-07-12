@@ -517,6 +517,7 @@ void MicroStruGenAlpha::FullNewton()
 
       // save this vector for homogenization
       *fresm_dirich_ = fresmcopy;
+      cout << "dism, fresmcopy " << *dism_ << fresmcopy << endl;
 
       fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
     }
@@ -531,6 +532,7 @@ void MicroStruGenAlpha::FullNewton()
 
     //--------------------------------- increment equilibrium loop index
     ++numiter;
+
   } // while (norm_>toldisp && numiter<=maxiter)
   //============================================= end equilibrium loop
 
@@ -833,8 +835,6 @@ void MicroStruGenAlpha::SetUpHomogenization()
 
   ndof_ = toggle_len;
 
-  //cout << "toggle_len: " << toggle_len << endl;
-
   for (int it=0; it<toggle_len; ++it)
   {
     if ((*dirichtoggle_)[it] == 1.0)
@@ -902,7 +902,10 @@ void MicroStruGenAlpha::SetUpHomogenization()
   //cout << "pdof " << pdofID_ << endl;
 }
 
-void MicroStruGenAlpha::Homogenization()
+void MicroStruGenAlpha::Homogenization(Epetra_SerialDenseVector* stress,
+                                       Epetra_SerialDenseMatrix* cmat,
+                                       double *density,
+                                       const Epetra_SerialDenseMatrix* defgrd)
 {
   // split microscale stiffness and residual forces into parts
   // corresponding to prescribed and free dofs -> see thesis
@@ -935,8 +938,64 @@ void MicroStruGenAlpha::Homogenization()
   // significantly) whereas the calling macroscopic material routine
   // demands a second Piola-Kirchhoff stress tensor.
 
+  // assembly of stresses (cf Solid3 Hex8): S11,S22,S33,S12,S23,S13
 
-  //cout << "fp: " << fp << endl;
+  Epetra_SerialDenseMatrix P(3,3);
+
+   for (int i=0; i<3; ++i)
+  {
+    for (int j=0; j<3; ++j)
+    {
+      for (int n=0; n<np_/3; ++n)
+      {
+        P(i,j) += fp[n*3+i]*(*Xp_)[n*3+j];
+      }
+      P(i,j) /= V0_;
+    }
+  }
+
+  // determine inverse of deformation gradient
+
+  Epetra_SerialDenseMatrix F_inv(3,3);
+
+  double detF= (*defgrd)(0,0) * (*defgrd)(1,1) * (*defgrd)(2,2)
+             + (*defgrd)(0,1) * (*defgrd)(1,2) * (*defgrd)(2,0)
+             + (*defgrd)(0,2) * (*defgrd)(1,0) * (*defgrd)(2,1)
+             - (*defgrd)(0,0) * (*defgrd)(1,2) * (*defgrd)(2,1)
+             - (*defgrd)(0,1) * (*defgrd)(1,0) * (*defgrd)(2,2)
+             - (*defgrd)(0,2) * (*defgrd)(1,1) * (*defgrd)(2,0);
+
+  F_inv(0,0) = ((*defgrd)(1,1)*(*defgrd)(2,2)-(*defgrd)(1,2)*(*defgrd)(2,1))/detF;
+  F_inv(0,1) = ((*defgrd)(0,2)*(*defgrd)(2,1)-(*defgrd)(2,2)*(*defgrd)(0,1))/detF;
+  F_inv(0,2) = ((*defgrd)(0,1)*(*defgrd)(1,2)-(*defgrd)(1,1)*(*defgrd)(0,2))/detF;
+  F_inv(1,0) = ((*defgrd)(1,2)*(*defgrd)(2,0)-(*defgrd)(2,2)*(*defgrd)(1,0))/detF;
+  F_inv(1,1) = ((*defgrd)(0,0)*(*defgrd)(2,2)-(*defgrd)(2,0)*(*defgrd)(0,2))/detF;
+  F_inv(1,2) = ((*defgrd)(0,2)*(*defgrd)(1,0)-(*defgrd)(1,2)*(*defgrd)(0,0))/detF;
+  F_inv(2,0) = ((*defgrd)(1,0)*(*defgrd)(2,1)-(*defgrd)(2,0)*(*defgrd)(1,1))/detF;
+  F_inv(2,1) = ((*defgrd)(0,1)*(*defgrd)(2,0)-(*defgrd)(2,1)*(*defgrd)(0,0))/detF;
+  F_inv(2,2) = ((*defgrd)(0,0)*(*defgrd)(1,1)-(*defgrd)(1,0)*(*defgrd)(0,1))/detF;
+
+  // convert to second Piola-Kirchhoff stresses and store them in
+  // vector format
+
+  Epetra_SerialDenseVector S(6);
+
+  for (int i=0; i<3; ++i)
+  {
+    S[0] += F_inv(0, i)*P(i,0);                     // S11
+    S[1] += F_inv(1, i)*P(i,1);                     // S22
+    S[2] += F_inv(2, i)*P(i,2);                     // S33
+    S[3] += F_inv(0, i)*P(i,1);                     // S12
+    S[4] += F_inv(1, i)*P(i,2);                     // S23
+    S[5] += F_inv(0, i)*P(i,2);                     // S13
+  }
+
+  //cout << "pdof: " << *pdof_ << endl;
+  cout << "fp: " << fp << endl;
+  //cout << "Xp: " << *Xp_ << endl;
+  cout << "FPK homogenization:\n" << P << endl;
+  //cout << "Stresses derived from homogenization:\n" << S << endl;
+
 
   // split effective dynamic stiffness -> we want Kpp, Kpf, Kfp and Kff
   // Kpp and Kff are sparse matrices, whereas Kpf and Kfp are MultiVectors
@@ -948,11 +1007,14 @@ void MicroStruGenAlpha::Homogenization()
 
   Epetra_MultiVector Kpp(*pdof_, np_);
   Epetra_CrsMatrix   Kff(Copy, *fdof_, 81);
-  Epetra_MultiVector Kpf(*pdof_, ndof_-np_);
+  Epetra_MultiVector Kpf(*pdof_,  ndof_-np_);
   Epetra_MultiVector Kfp(*fdof_, np_);
   Epetra_MultiVector x(*fdof_, np_);
 
-  err = stiff_->ExtractCrsDataPointers (IndexOffset, Indices, Values);
+  stiff_->FillComplete();
+  stiff_->OptimizeStorage();
+
+  err = stiff_->ExtractCrsDataPointers(IndexOffset, Indices, Values);
   if (err)
     dserror("Extraction of internal data pointers associated with Crs matrix failed");
 
@@ -971,7 +1033,7 @@ void MicroStruGenAlpha::Homogenization()
 
         if (pdof_->MyGID(colgid))          // -> Kpp
         {
-          Kpp.ReplaceMyValue(rowgid, colgid, Values[colgid]);
+          Kpp.ReplaceMyValue(pdof_->LID(rowgid), pdof_->LID(colgid), Values[col]);
         }
         // we don't need to compute Kpf here since in the SYMMETRIC case
         // Kpf is the transpose pf Kfp
@@ -981,6 +1043,7 @@ void MicroStruGenAlpha::Homogenization()
         //}
       }
     }
+
     else if (fdof_->MyGID(rowgid))         // this means we are dealing with
                                            // either Kff or Kfp
     {
@@ -990,13 +1053,16 @@ void MicroStruGenAlpha::Homogenization()
 
         if (fdof_->MyGID(colgid))          // -> Kff
         {
-          err = Kff.InsertMyValues(rowgid, 1, &(Values[colgid]), &colgid);
+          //int collid = fdof_->LID(colgid);
+          //err = Kff.InsertMyValues(fdof_->LID(rowgid), 1,
+          //&(Values[col]), &collid);
+          err = Kff.InsertGlobalValues(rowgid, 1, &(Values[col]), &colgid);
           if (err)
             dserror("Insertion of values into Kff failed");
         }
         else
         {
-          Kfp.ReplaceMyValue(rowgid, colgid, Values[colgid]);
+          Kfp.ReplaceMyValue(fdof_->LID(rowgid), pdof_->LID(colgid), Values[col]);
         }
       }
     }
@@ -1007,31 +1073,38 @@ void MicroStruGenAlpha::Homogenization()
   // define an Epetra_LinearProblem object for solving Kff*x=Kfp (thus
   // circumventing the explicit inversion of Kff for the static condensation)
 
-  Epetra_LinearProblem linprob(&Kff, &x, &Kfp);
+  err = Kff.FillComplete();
+  if (err!=0)
+    dserror("FillComplete failed with err=%d", err);
 
+  Epetra_LinearProblem linprob(&Kff, &x, &Kfp);
+  int error=linprob.CheckInput();
+  if (error)
+    dserror("Input for linear problem inconsistent");
 
   // Solve for x
 
   Amesos_Klu solver(linprob);
-  solver.Solve();
+  err = solver.Solve();
+  if (err!=0)
+    dserror("Solve");
 
   // now static condensation of free (not prescribed) dofs can be done
   // KM = Kpp+Kpf*x = Kpp+Ktemp
   // result will be saved in Kpp to avoid copying
 
-  Epetra_MultiVector Ktemp(*pdof_, ndof_-np_);
-  Ktemp.Multiply('T', 'N', 1., Kfp, x, 0.);
+  Epetra_MultiVector Ktemp(*pdof_, np_);
+  err = Ktemp.Multiply('T', 'N', 1., Kfp, x, 0.);
+  if (err!=0)
+    dserror("Multiply");
 
   Kpp.Update(-1., Ktemp, 1.);    // Kpp now holds KM=Kpp-Kpf*inv(Kff)*Kfp
-
-
 
 
   // after having all homogenization stuff done, we now really don't need stiff_ anymore
 
   stiff_ = null;
 }
-
 
 #endif
 #endif
