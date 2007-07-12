@@ -187,7 +187,7 @@ void DRT::Utils::shape_function_3D(
         funct[9] =4*s*t;
         break;
     }
-    case DRT::Element::weg6:
+    case DRT::Element::wedge6:
     {
         const double t3=1.0-r-s;
 
