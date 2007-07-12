@@ -605,7 +605,7 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
     //output_.WriteVector("residual", residual_);
   
     // do restart if we have to
-    restartstep_ += 1;
+//    restartstep_ += 1;
     if (restartstep_ == uprestart_)
     {
       restartstep_ = 0;
