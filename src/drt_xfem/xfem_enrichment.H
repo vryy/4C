@@ -13,8 +13,8 @@ Maintainer: Axel Gerstenberger
 #ifdef XFEM
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
-#ifndef DRT_FLUID3_XFEM_ENRICHMENT_H
-#define DRT_FLUID3_XFEM_ENRICHMENT_H
+#ifndef DRT_XFEM_ENRICHMENT_H
+#define DRT_XFEM_ENRICHMENT_H
 
 #include "Teuchos_RefCountPtr.hpp"
 using namespace std;
@@ -83,7 +83,7 @@ private:
 
 }; // namespace Enrichments
 
-#endif  // #ifndef FLUID3_XFEM_H
+#endif  // #ifndef DRT_XFEM_ENRICHMENT_H
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef XFEM

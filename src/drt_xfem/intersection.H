@@ -68,14 +68,6 @@ class Intersection
 		
         
         
-        /*!
-        \brief Debugging integration cells (DEBUG ONLY)
-    
-        \param integrationcellList                (out)       : list of integration cells
-        */                                  
-       	void debugIntegrationcells(	map< int, vector <Integrationcell> >&	integrationcellList,
-									int id);  
-        
         private:
         
         
@@ -146,7 +138,8 @@ class Intersection
                                 Epetra_SerialDenseVector&   b,
                                 Epetra_SerialDenseVector&   x,
                                 bool                        do_piv,
-                                const int                   dim);
+                                const int                   dim,
+                                const int 					order);
 			
             							
         /*!
@@ -185,15 +178,17 @@ class Intersection
         \param node                 (in)        : node in current coordinates
         \param interfacePoints      (in/out)    : vector of interface points
         \param nodeId               (in)        : node id
-        \param numInterfacePoints   (in/out)    : number of interface points
-        return true if the node lies within the element, false otherwise
+        \param numInternalPoints   	(in/out)    : number of interface points
+        \param numSurfacePoints     (in/out)    : number points lying on a surface or node of an xfem-element
+        \return true if the node lies within the element, false otherwise
         */                                      
 		bool collectInternalPoints(	DRT::Element*                   element,
                                   	DRT::Node*                      node,
                                 	std::vector<InterfacePoint>&    interfacePoints,
                                 	int                             elemId,
                                  	int                             nodeId,
-                                   	int&                            numInterfacePoints);
+                                   	int&                            numInternalPoints,
+                                    int&                            numSurfacePoints);
 			
 		/*!
         \brief checks if a node in current coordinates lies within a certain element           
@@ -201,10 +196,31 @@ class Intersection
     
         \param element              (in)        : element (surface)
         \param node                 (in)        : node in current coordinates
+        \param xsi                  (in)        : node in reference coordinates
         */	
 		bool checkNodeWithinElement(	DRT::Element* element,
- 										DRT::Node*  node);	
+ 										Epetra_SerialDenseVector& x,
+                                        Epetra_SerialDenseVector& xsi);	
         
+        
+        /*!
+        \brief checks if a node in current coordinates lies within a certain element           
+               The nonlinear system of equation is solved with help of the Newton-method.
+    
+        \param element              (in)        : element (surface)
+        \param node                 (in)        : node in current coordinates
+        \param xsi                  (in)        : node in reference coordinates
+        \param ip                   (in)        : interface point
+        \param numSurfacePoints     (in)        : number of points lying on a surface and a node
+        \return true if the node is lying on a surface or a node, false otherwise
+        */  
+        bool checkIfOnSurfaceAndNode(   DRT::Element*                   element,
+                                        DRT::Node*                      node,
+                                        Epetra_SerialDenseVector&       xsi, 
+                                        InterfacePoint&                 ip,
+                                        int&                            numSurfacePoints);
+           
+                                            
 		/*!
 	  	\brief updates the systemmatrix at the corresponding reference coordinates 
                for the computation of curve surface intersections
@@ -260,7 +276,8 @@ class Intersection
 	  	\param surfaceElement           (in)        : surface element
 	  	\param lineElement              (in)        : line element
 	  	\param interfacePointList       (out)       : vector of interface points
-        \param numInterfacePoints       (in/out)    : number of interface points
+        \param numInternalPoints        (in)        : number of internal points
+        \param numSurfacePoints         (in)        : number of surface points
         \param surfaceId                (in)        : surface element id
         \param lineId                   (in)        : line element id
         \param lines                    (in)        : if lines = true
@@ -268,10 +285,12 @@ class Intersection
         void collectIntersectionPoints(	DRT::Element*                   surfaceElement,
         								DRT::Element*                   lineElement,
         								std::vector<InterfacePoint>&    interfacePoints,
-        								int&                            numInterfacePoints,
+        								int                             numInternalPoints,
+                                        int                             numSurfacePoints,
         								int                             surfaceId,
         								int                             lineId,
-        								bool                            lines);
+        								bool                            lines,
+                                        bool&                           xfemIntersection);
 		
         	      
         /*!
@@ -324,16 +343,28 @@ class Intersection
 									
 									
         /*!
-        \brief computes a new starting points for the Newton method recursively
-               in order to find all intersection points
+        \brief transforms a point in reference coordinates to a point
+               in current coordinates with respect to a given element
     
-        \param element          (in)    : surface element
-        \param xsi              (in)    : vector of reference coordinates
+        \param element          (in)        : element
+        \param xsi              (in/out)    : vector of reference coordinates/
+                                              vector of current coordinates
         */
         void referenceToCurrentCoordinates( DRT::Element*               element, 
                                             Epetra_SerialDenseVector&   xsi);
-  
-  
+ 
+ 
+        /*!
+        \brief transforms a point in current coordinates to a point
+               in reference coordinates with respect to a given element
+    
+        \param element          (in)        : element
+        \param xsi              (in/out)    : vector of current coordinates/
+                                              vector of reference coordinates
+        */
+        void currentToReferenceCoordinates( DRT::Element*               element, 
+                     
+                                            Epetra_SerialDenseVector&   xsi);
         /*!
         \brief compares two points (overloaded method)
     
@@ -343,6 +374,19 @@ class Intersection
         */
         bool comparePoints( 	vector<double>&     point1,
         						double*             point2);
+         
+        
+        /*!
+        \brief compares two points (overloaded method)
+    
+        \param point1       (in)    : first point   (double*)
+        \param point2       (in)    : second point  (double*)
+        \param lenght       (in)    : length of arrays
+        \return true if both points equal each other, false otherwise
+        */
+        bool comparePoints( const double*     point1,
+                            const double*     point2,
+                            const int         length); 
           
                             
         /*!
@@ -367,6 +411,42 @@ class Intersection
         					Epetra_SerialDenseVector&     point2);
         
         
+        /*!
+        \brief checks if element is a volume element
+    
+        \param element       (in)    : element
+        \return true if it is a volume element, false otherwise
+        */      
+        bool checkIfVolumeElement(DRT::Element* element);
+        
+        
+        /*!
+        \brief checks if element is a surface element
+    
+        \param element       (in)    : element
+        \return true if it is a surface element, false otherwise
+        */     
+        bool checkIfSurfaceElement(DRT::Element* element);
+        
+        
+        /*!
+        \brief checks if element is a line element
+    
+        \param element       (in)    : element
+        \return true if it is a line element, false otherwise
+        */     
+        bool checkIfLineElement(DRT::Element* element);
+           
+           
+   		/*!
+        \brief returns the order of the element
+    
+        \param element       (in)    : element
+        \return the order of the element
+        */    
+   		int computeOrder(DRT::Element* element);     
+   		
+   		
   		/*!
         \brief finds the next facet of a convex hull in clockwise order
     
@@ -417,7 +497,14 @@ class Intersection
                                 vector<int>                 positions, 
                                 vector< vector<int> >&      triangleList);
          
-                   
+         
+         
+        void storePolygons( vector<InterfacePoint>&     pointList, 
+                            vector<int>                 positions, 
+                            int                         surface,
+                            vector< vector<int> >&      polygonSurfaceList);
+
+                  
         /*!
         \brief  computes the midpoint of a collection of points
     
@@ -427,6 +514,15 @@ class Intersection
         InterfacePoint computeMidpoint( vector<InterfacePoint>&     interfacePoints);          					      
         
        
+        int  determineSurfaceId(  InterfacePoint& midpoint);
+        /*!
+        \brief  adds the corner nodes of an xfem element to the pointlist
+    
+        \param pointList            (in/out)        : list of interface points
+        */          
+        void startPointList(vector< InterfacePoint >&  pointList);
+        
+        
        	/*!
         \brief  computes unique coordinates for a certain region in the 
         		xfem element. It is copied into the data structure of Tetgen
@@ -449,11 +545,14 @@ class Intersection
         \param segmentList              (out)       : list of segments
         \param triangleList             (out)       : list of triangle facets
         */           
-        void computeConvexHull( DRT::Element*               surfaceElement,
+        void computeConvexHull( DRT::Element*               xfemElement,
+                                DRT::Element*               surfaceElement,
                                 vector<InterfacePoint>&     interfacePoints, 
                                 vector< InterfacePoint >&   pointList,
                                 vector< vector<int> >&      segmentList,
-                                vector< vector<int> >&      triangleList );
+                                vector< vector<int> >&      triangleList,
+                                int                         numInternalPoints,
+                                int                         numSurfacePoints );
     
     
         /*!
@@ -534,9 +633,37 @@ class Intersection
         \param segmentList              (out)       : list of segments
         \param triangleList             (out)       : list of triangle facets
         */                             
-        void debugTetgenDataStructure(  vector< InterfacePoint >&   pointList,
+        void debugTetgenDataStructure(  DRT::Element*               element,
+                                        vector< InterfacePoint >&   pointList,
                                         vector< vector<int> >&      segmentList,
                                         vector< vector<int> >&      triangleList);  
+                                        
+          
+        /*!
+        \brief 	Debugging tetgen data output (DEBUG ONLY)
+        		This method prints out the piecewise linear complex (PLC)
+        		and the mesh of tetrahedrons for the list of specified
+        		xfem elements. Output-files can be viewed with tetview
+        		
+    
+        \param in			(in)       : input tetgen data structure
+        \param out        	(in)       : output tetgen data structure
+        \param element     	(in)       : xfem-element
+        \param elementIds  	(in)       : vector of element-ids
+        */                                   
+       	void debugTetgenOutput(	tetgenio& in,
+								tetgenio& out, 
+								DRT::Element* element,
+								vector<int>& elementIds);
+														
+						
+		/*!
+        \brief Debugging integration cells (DEBUG ONLY)
+    
+        \param integrationcellList                (out)       : list of integration cells
+        */                                  
+       	void debugIntegrationcells(	map< int, vector <Integrationcell> >&	integrationcellList,
+									int id);  
                                                                                                                             
 };
 
