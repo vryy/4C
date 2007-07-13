@@ -1011,7 +1011,7 @@ void FluidGenAlphaIntegration::SetInitialFlowField(
         
         int err =0;
 
-        // 
+        // random noise is perc percent of the initial profile
         double perc = 0.1;
         
         // loop all nodes on the processor
@@ -1025,6 +1025,10 @@ void FluidGenAlphaIntegration::SetInitialFlowField(
           // the noise is proportional to the maximum component of the
           // undisturbed initial field in this point
           double initialval=0;
+
+          // direction with max. profile
+          int flowdirection = 0;
+          
           for(int index=0;index<numdim_;++index)
           {
             int gid = nodedofset[index];
@@ -1034,6 +1038,9 @@ void FluidGenAlphaIntegration::SetInitialFlowField(
             if (initialval*initialval < thisval*thisval)
             {
               initialval=thisval;
+
+              // remember the direction of maximum flow
+              flowdirection = index;
             }
           }
 
@@ -1042,9 +1049,16 @@ void FluidGenAlphaIntegration::SetInitialFlowField(
           {
             int gid = nodedofset[index];
         
-            double randomnumber = ((double)rand())/((double) RAND_MAX);
+            double randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
 
             double noise = initialval * randomnumber * perc;
+
+            // full noise only in main flow direction
+              // one third noise orthogonal to flow direction
+            if (index != flowdirection)
+            {
+              noise *= 1./3.;
+            }
             
             err += velnp_->SumIntoGlobalValues(1,&noise,&gid);
             err += veln_ ->SumIntoGlobalValues(1,&noise,&gid);
