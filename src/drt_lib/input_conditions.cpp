@@ -472,25 +472,12 @@ void input_point_neum(multimap<int,RefCountPtr<DRT::Condition> >& pnmap)
       else
         strtod(colptr,&colptr);
     
-    // read function numbers
-    // move column pointer	
-    colptr = strstr(allfiles.actplace,"FUNCT");
-    if(colptr==NULL)
-      ;
-      // FUNCT is an optional argument
-      // dserror("Cannot find keyword FUNCT in Neumann condition");
-    else
-     {
-      colptr+= 5;	
-      // read function numbers after keyword FUNCT
-      for (int i=0; i<numread; ++i)
-        {
-	if (i < MAXDOFPERNODE)
-	  neum_funct[i] = strtol(colptr,&colptr,10);
-        else
-          strtol(colptr,&colptr,10); 
-        }		
-      }	
+     // read function numbers 
+     for (int i=0; i<numread; ++i)     
+      if (i < MAXDOFPERNODE)	  
+	neum_funct[i] = strtol(colptr,&colptr,10);  
+      else
+        strtol(colptr,&colptr,10); 
   
     // create boundary condition
     RefCountPtr<DRT::Condition> condition =
@@ -610,26 +597,13 @@ void input_line_neum(multimap<int,RefCountPtr<DRT::Condition> >& lnmap)
       else
         strtod(colptr,&colptr);
 	
-    // read function numbers
-    // move column pointer	
-    colptr = strstr(allfiles.actplace,"FUNCT");
-    if(colptr==NULL)
-      ;
-      // FUNCT is an optional argument
-      // dserror("Cannot find keyword FUNCT in Neumann condition");
-    else
-     {
-      colptr+= 5;	
-      // read function numbers after keyword FUNCT
-      for (int i=0; i<numread; ++i)
-        {
-	if (i < MAXDOFPERNODE)
-	  neum_funct[i] = strtol(colptr,&colptr,10);
-        else
-          strtol(colptr,&colptr,10); 
-        }		
-      }	
-      
+    // read function numbers 
+     for (int i=0; i<numread; ++i)     
+      if (i < MAXDOFPERNODE)	  
+	neum_funct[i] = strtol(colptr,&colptr,10);  
+      else
+        strtol(colptr,&colptr,10); 
+        		
     // create boundary condition
     RefCountPtr<DRT::Condition> condition =
               rcp(new DRT::Condition(dlineid,DRT::Condition::LineNeumann,true,
@@ -766,26 +740,13 @@ void input_surf_neum(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
         neum_val[i] = strtod(colptr,&colptr);
       else
         strtod(colptr,&colptr);
-
-    // read function numbers
-    // move column pointer	
-    colptr = strstr(allfiles.actplace,"FUNCT");
-    if(colptr==NULL)
-      ;
-      // FUNCT is an optional argument
-      // dserror("Cannot find keyword FUNCT in Neumann condition");
-    else
-     {
-      colptr+= 5;	
-      // read function numbers after keyword FUNCT
-      for (int i=0; i<numread; ++i)
-        {
-	if (i < MAXDOFPERNODE)
-	  neum_funct[i] = strtol(colptr,&colptr,10);
-        else
-          strtol(colptr,&colptr,10); 
-        }		
-      }	
+      
+     // read function numbers 
+     for (int i=0; i<numread; ++i)     
+      if (i < MAXDOFPERNODE)	  
+	neum_funct[i] = strtol(colptr,&colptr,10);  
+      else
+        strtol(colptr,&colptr,10);      
   
     // create boundary condition
     RefCountPtr<DRT::Condition> condition =
@@ -926,25 +887,12 @@ void input_vol_neum(multimap<int,RefCountPtr<DRT::Condition> >& vnmap)
       else
         strtod(colptr,&colptr);
 	
-    // read function numbers
-    // move column pointer	
-    colptr = strstr(allfiles.actplace,"FUNCT");
-    if(colptr==NULL)
-      ;
-      // FUNCT is an optional argument
-      // dserror("Cannot find keyword FUNCT in Neumann condition");
-    else
-     {
-      colptr+= 5;	
-      // read function numbers after keyword FUNCT
-      for (int i=0; i<numread; ++i)
-        {
-	if (i < MAXDOFPERNODE)
-	  neum_funct[i] = strtol(colptr,&colptr,10);
-        else
-          strtol(colptr,&colptr,10); 
-        }		
-      }	
+     // read function numbers 
+     for (int i=0; i<numread; ++i)     
+      if (i < MAXDOFPERNODE)	  
+	neum_funct[i] = strtol(colptr,&colptr,10);  
+      else
+        strtol(colptr,&colptr,10);
   
     // create boundary condition
     RefCountPtr<DRT::Condition> condition =
