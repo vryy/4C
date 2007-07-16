@@ -423,10 +423,12 @@ void input_point_neum(multimap<int,RefCountPtr<DRT::Condition> >& pnmap)
     //------------------------------- define some temporary reading vectors
     vector<int>    neum_onoff(MAXDOFPERNODE);
     vector<double> neum_val(MAXDOFPERNODE);
+    vector<int>    neum_funct(MAXDOFPERNODE);
     for (int i=0; i<MAXDOFPERNODE; ++i)
     {
       neum_onoff[i] = 0;
       neum_val[i]   = 0.0;
+      neum_funct[i] = 0;
     }
 
     //---------------------------------- read the curve number of "none"
@@ -469,7 +471,27 @@ void input_point_neum(multimap<int,RefCountPtr<DRT::Condition> >& pnmap)
         neum_val[i] = strtod(colptr,&colptr);
       else
         strtod(colptr,&colptr);
-
+    
+    // read function numbers
+    // move column pointer	
+    colptr = strstr(allfiles.actplace,"FUNCT");
+    if(colptr==NULL)
+      ;
+      // FUNCT is an optional argument
+      // dserror("Cannot find keyword FUNCT in Neumann condition");
+    else
+     {
+      colptr+= 5;	
+      // read function numbers after keyword FUNCT
+      for (int i=0; i<numread; ++i)
+        {
+	if (i < MAXDOFPERNODE)
+	  neum_funct[i] = strtol(colptr,&colptr,10);
+        else
+          strtol(colptr,&colptr,10); 
+        }		
+      }	
+  
     // create boundary condition
     RefCountPtr<DRT::Condition> condition =
              rcp(new DRT::Condition(dnodeid,DRT::Condition::PointNeumann,false,
@@ -487,6 +509,7 @@ void input_point_neum(multimap<int,RefCountPtr<DRT::Condition> >& pnmap)
     condition->Add("onoff",neum_onoff);
     condition->Add("val",neum_val);
     condition->Add("curve",&curve,1);
+    condition->Add("funct",neum_funct);
 
     //------------------------------- put condition in map of conditions
     pnmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dnodeid,condition));
@@ -537,10 +560,13 @@ void input_line_neum(multimap<int,RefCountPtr<DRT::Condition> >& lnmap)
     //------------------------------- define some temporary reading vectors
     vector<int>    neum_onoff(MAXDOFPERNODE);
     vector<double> neum_val(MAXDOFPERNODE);
+    vector<int>    neum_funct(MAXDOFPERNODE);
+       
     for (int i=0; i<MAXDOFPERNODE; ++i)
     {
       neum_onoff[i] = 0;
       neum_val[i]   = 0.0;
+      neum_funct[i] = 0;
     }
 
     //---------------------------------- read the curve number of "none"
@@ -583,7 +609,27 @@ void input_line_neum(multimap<int,RefCountPtr<DRT::Condition> >& lnmap)
         neum_val[i] = strtod(colptr,&colptr);
       else
         strtod(colptr,&colptr);
-
+	
+    // read function numbers
+    // move column pointer	
+    colptr = strstr(allfiles.actplace,"FUNCT");
+    if(colptr==NULL)
+      ;
+      // FUNCT is an optional argument
+      // dserror("Cannot find keyword FUNCT in Neumann condition");
+    else
+     {
+      colptr+= 5;	
+      // read function numbers after keyword FUNCT
+      for (int i=0; i<numread; ++i)
+        {
+	if (i < MAXDOFPERNODE)
+	  neum_funct[i] = strtol(colptr,&colptr,10);
+        else
+          strtol(colptr,&colptr,10); 
+        }		
+      }	
+      
     // create boundary condition
     RefCountPtr<DRT::Condition> condition =
               rcp(new DRT::Condition(dlineid,DRT::Condition::LineNeumann,true,
@@ -612,11 +658,12 @@ void input_line_neum(multimap<int,RefCountPtr<DRT::Condition> >& lnmap)
     if (ierr) condition->Add("surface","top");
     frchk("Bot",&ierr);
     if (ierr) condition->Add("surface","bot");
-
+    
     // add stuff to boundary condition
     condition->Add("onoff",neum_onoff);
     condition->Add("val",neum_val);
     condition->Add("curve",&curve,1);
+    condition->Add("funct",neum_funct);  
 
     //------------------------------- put condition in map of conditions
     lnmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dlineid,condition));
@@ -671,10 +718,12 @@ void input_surf_neum(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
     //------------------------------- define some temporary reading vectors
     vector<int>    neum_onoff(MAXDOFPERNODE);
     vector<double> neum_val(MAXDOFPERNODE);
+    vector<int>    neum_funct(MAXDOFPERNODE);
     for (int i=0; i<MAXDOFPERNODE; ++i)
     {
       neum_onoff[i] = 0;
       neum_val[i]   = 0.0;
+      neum_funct[i] = 0;
     }
 
     //---------------------------------- read the curve number of "none"
@@ -718,6 +767,26 @@ void input_surf_neum(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
       else
         strtod(colptr,&colptr);
 
+    // read function numbers
+    // move column pointer	
+    colptr = strstr(allfiles.actplace,"FUNCT");
+    if(colptr==NULL)
+      ;
+      // FUNCT is an optional argument
+      // dserror("Cannot find keyword FUNCT in Neumann condition");
+    else
+     {
+      colptr+= 5;	
+      // read function numbers after keyword FUNCT
+      for (int i=0; i<numread; ++i)
+        {
+	if (i < MAXDOFPERNODE)
+	  neum_funct[i] = strtol(colptr,&colptr,10);
+        else
+          strtol(colptr,&colptr,10); 
+        }		
+      }	
+  
     // create boundary condition
     RefCountPtr<DRT::Condition> condition =
            rcp(new DRT::Condition(dsurfid,DRT::Condition::SurfaceNeumann,true,
@@ -753,6 +822,7 @@ void input_surf_neum(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
     condition->Add("onoff",neum_onoff);
     condition->Add("val",neum_val);
     condition->Add("curve",&curve,1);
+    condition->Add("funct",neum_funct);
 
     //------------------------------- put condition in map of conditions
     snmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dsurfid,condition));
@@ -807,10 +877,12 @@ void input_vol_neum(multimap<int,RefCountPtr<DRT::Condition> >& vnmap)
     //------------------------------- define some temporary reading vectors
     vector<int>    neum_onoff(MAXDOFPERNODE);
     vector<double> neum_val(MAXDOFPERNODE);
+    vector<int>    neum_funct(MAXDOFPERNODE);
     for (int i=0; i<MAXDOFPERNODE; ++i)
     {
       neum_onoff[i] = 0;
       neum_val[i]   = 0.0;
+      neum_funct[i] = 0;
     }
 
     //---------------------------------- read the curve number of "none"
@@ -853,7 +925,27 @@ void input_vol_neum(multimap<int,RefCountPtr<DRT::Condition> >& vnmap)
         neum_val[i] = strtod(colptr,&colptr);
       else
         strtod(colptr,&colptr);
-
+	
+    // read function numbers
+    // move column pointer	
+    colptr = strstr(allfiles.actplace,"FUNCT");
+    if(colptr==NULL)
+      ;
+      // FUNCT is an optional argument
+      // dserror("Cannot find keyword FUNCT in Neumann condition");
+    else
+     {
+      colptr+= 5;	
+      // read function numbers after keyword FUNCT
+      for (int i=0; i<numread; ++i)
+        {
+	if (i < MAXDOFPERNODE)
+	  neum_funct[i] = strtol(colptr,&colptr,10);
+        else
+          strtol(colptr,&colptr,10); 
+        }		
+      }	
+  
     // create boundary condition
     RefCountPtr<DRT::Condition> condition =
             rcp(new DRT::Condition(dvolid,DRT::Condition::VolumeNeumann,true,
@@ -870,7 +962,8 @@ void input_vol_neum(multimap<int,RefCountPtr<DRT::Condition> >& vnmap)
     condition->Add("onoff",neum_onoff);
     condition->Add("val",neum_val);
     condition->Add("curve",&curve,1);
-
+    condition->Add("funct",neum_funct);
+    
     //------------------------------- put condition in map of conditions
     vnmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dvolid,condition));
 
