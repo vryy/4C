@@ -52,6 +52,10 @@ const int subhexmap[8][8] =
         { 26, 22, 14, 23, 25, 17, 6, 18 },
         { 24, 26, 23, 15, 19, 25, 18, 7 } };
 
+//! defines that a qudratic tet10 is temporarily written just as a tet4.
+const int subtet10map[1][4] =
+    {{0,1,2,3}};
+
 typedef map<DRT::Element::DiscretizationType, int> NumElePerDisType;
 
 /*----------------------------------------------------------------------*/
@@ -414,7 +418,6 @@ void EnsightWriter::WriteCells(
                 case DRT::Element::quad4:
                 case DRT::Element::quad8:
                 case DRT::Element::tet4:
-                case DRT::Element::tet10:
                 case DRT::Element::tri3:
                 case DRT::Element::wedge6:
                 case DRT::Element::wedge15:
@@ -443,6 +446,13 @@ void EnsightWriter::WriteCells(
                                     +1);
                     break;
                 }
+                case DRT::Element::tet10:
+                {
+                    // write just the corner nodes of the tet10
+                  for (int isubnode=0; isubnode<4; ++isubnode)
+                      Write(geofile, nodemap->LID(nodes[subtet10map[0][isubnode]]->Id())
+                              +1);
+               }
                 default:
                     dserror("don't know, how to write this element type as a Cell");
                 };
