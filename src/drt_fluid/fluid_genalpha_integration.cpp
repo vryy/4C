@@ -628,7 +628,7 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
 
     output_.NewStep    (step_,time_);
 
-    output_.WriteVector("velnp"  velnp_);
+    output_.WriteVector("velnp", velnp_);
     output_.WriteVector("veln ", veln_ );
     output_.WriteVector("accnp", accnp_);
     output_.WriteVector("accn ", accn_ );  
