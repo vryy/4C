@@ -602,10 +602,8 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
     output_.NewStep    (step_,time_);
     
     output_.WriteVector("velnp"   , velnp_);
-    //output_.WriteVector("residual", residual_);
   
     // do restart if we have to
-//    restartstep_ += 1;
     if (restartstep_ == uprestart_)
     {
       restartstep_ = 0;
@@ -623,6 +621,19 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
       turbulencestatistics_->ClearStatistics();
     }
   }
+  // write restart also when uprestart_ is not a integer multiple of upres_
+  if ((restartstep_ == uprestart_) && (writestep_ > 0))
+  {
+    restartstep_ = 0;
+
+    output_.NewStep    (step_,time_);
+
+    output_.WriteVector("velnp"  velnp_);
+    output_.WriteVector("veln ", veln_ );
+    output_.WriteVector("accnp", accnp_);
+    output_.WriteVector("accn ", accn_ );  
+  }
+
   return;
 } // FluidGenAlphaIntegration::GenAlphaOutput
 
