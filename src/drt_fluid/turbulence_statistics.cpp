@@ -233,13 +233,34 @@ TurbulenceStatistics::TurbulenceStatistics(
   //----------------------------------------------------------------------
   // push coordinates of planes in a vector
   //----------------------------------------------------------------------
-  for(set<double,PlaneSortCriterion>::iterator coord=availablecoords.begin();
-      coord!=availablecoords.end();
-      ++coord)
   {
-    planecoordinates_->push_back(*coord);
-  }
+    vector <double> nodeplane;
+    
+    for(set<double,PlaneSortCriterion>::iterator coord=availablecoords.begin();
+        coord!=availablecoords.end();
+        ++coord)
+    {
+      nodeplane.push_back(*coord);
+    }
+    
+    //----------------------------------------------------------------------
+    // insert additional sampling planes (to show influence of quadratic
+    // shape functions)
+    //----------------------------------------------------------------------
+    const int numsubdivisions=5;
+    
+    for(unsigned rr =0; rr < nodeplane.size()-1; ++rr)
+    {
+      double delta = (nodeplane[rr+1]-nodeplane[rr])/((double) numsubdivisions);
 
+      for (int mm =0; mm < numsubdivisions; ++mm)
+      {
+        
+        planecoordinates_->push_back(nodeplane[rr]+delta*mm);
+      }
+    }
+    planecoordinates_->push_back(nodeplane[nodeplane.size()-1]);
+  }
   //----------------------------------------------------------------------
   // allocate arrays for sums of in plane mean values
   //----------------------------------------------------------------------
@@ -369,7 +390,6 @@ void TurbulenceStatistics::DoTimeSample(
     }
   }
 
-  
   return;
 }// TurbulenceStatistics::DoTimeSample
 
@@ -379,24 +399,6 @@ void TurbulenceStatistics::DoTimeSample(
 void TurbulenceStatistics::EvaluateMeanValuesInPlanes()
 {
 
-  //----------------------------------------------------------------------
-  // reinitialise vectors
-  //----------------------------------------------------------------------
-#if 0  
-  for(unsigned i=0; i<planecoordinates_->size(); ++i)
-  {
-    (*sumu_)[i]  =0;
-    (*sumv_)[i]  =0;
-    (*sumw_)[i]  =0;
-    (*sump_)[i]  =0;
-
-
-    (*sumsqu_)[i]=0;
-    (*sumsqv_)[i]=0;
-    (*sumsqw_)[i]=0;
-    (*sumsqp_)[i]=0;
-  }
-#endif
   //----------------------------------------------------------------------
   // loop elements and perform integration over homogeneous plane
   //----------------------------------------------------------------------
@@ -546,8 +548,6 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
   {
     dserror("No samples to do time average");
   }
-
-
   
   //----------------------------------------------------------------------
   // the sums are divided by the number of samples to get the time average

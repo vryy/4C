@@ -462,12 +462,15 @@ private:
     in the homogeneous plane has the same size!!!
 
     The necessary element integration is performed in here. The element
-    is cut into two (HEX8) or three (quadratic elements) planes, the
-    spatial functions (velocity, pressure etc.) are integrated over this
-    plane and this element contribution is added to a processor local
-    vector (see formulas below for a exact description of the output).
+    is cut into two (HEX8) or three (quadratic elements) planes (plus
+    additional planes for visualisation purposes, defined by planes
+    vector), the spatial functions (velocity, pressure etc.) are
+    integrated over this plane and this element contribution is added
+    to a processor local vector (see formulas below for a exact
+    description of the output).
     The method assumes, that all elements are of the same rectangular
-    shape in the "inplanedirection".
+    shape in the "inplanedirection". In addition, it is assumed that
+    the sampling planes are distributed equidistant in the element.
  
  
                        ^ normdirect       integration plane       
@@ -480,7 +483,7 @@ private:
               /  |     |          /  |            
              /   |     |         /   |            
             /    +-----|--------/----+ ---- additional integration
-           /    /|     |       /    /|      plane for quadratic elements
+           /    /|     |       /    /|      plane (for quadratic elements)
           /    / |     |      /    / |            
          +-------------------+    /  |            
          |   /   |     *-----|---+------------>   

@@ -3664,7 +3664,8 @@ void DRT::Elements::Fluid3::f3_int_beltrami_err(
  | plane and this element contribution is added to a processor local
  | vector (see formulas below for a exact description of the output).
  | The method assumes, that all elements are of the same rectangular
- | shape in the "inplanedirection".
+ | shape in the "inplanedirection". In addition, it is assumed that
+ | the sampling planes are distributed equidistant in the element.
  |
  |
  |                      ^ normdirect       integration plane       
@@ -3677,7 +3678,7 @@ void DRT::Elements::Fluid3::f3_int_beltrami_err(
  |             /  |     |          /  |            
  |            /   |     |         /   |            
  |           /    +-----|--------/----+ ---- additional integration
- |          /    /|     |       /    /|      plane for quadratic elements
+ |          /    /|     |       /    /|      plane (for quadratic elements)
  |         /    / |     |      /    / |            
  |        +-------------------+    /  |            
  |        |   /   |     *-----|---+------------>   
@@ -3779,7 +3780,22 @@ void DRT::Elements::Fluid3::f3_calc_means(
     xyze(2,inode)=Nodes()[inode]->X()[2];
   }
 
-
+  double min = xyze(normdirect,0);
+  double max = xyze(normdirect,0);
+  
+  // set maximum and minimum value in wall normal direction
+  for(int inode=0;inode<iel;inode++)
+  {
+    if(min > xyze(normdirect,inode))
+    {
+      min=xyze(normdirect,inode);
+    }
+    if(max < xyze(normdirect,inode))
+    {
+      max=xyze(normdirect,inode);
+    }    
+  }
+    
   // determine the ids of the homogeneous planes intersecting this element
   set<int> planesinele;
   for(unsigned nplane=0;nplane<planes->size();++nplane)
@@ -3787,7 +3803,7 @@ void DRT::Elements::Fluid3::f3_calc_means(
     // get all available wall normal coordinates
     for(int nn=0;nn<iel;++nn)
     {
-      if (xyze(normdirect,nn)-2e-9 < (*planes)[nplane] && xyze(normdirect,nn)+2e-9 > (*planes)[nplane])
+      if (min-2e-9 < (*planes)[nplane] && max+2e-9 > (*planes)[nplane])
       {
         planesinele.insert(nplane);
       }
@@ -3795,27 +3811,20 @@ void DRT::Elements::Fluid3::f3_calc_means(
   }
 
   // remove lowest layer from planesinele to avoid double calculations. This is not done
-  // for the first level (index 0) --- if delete, shift the first integration point in
+  // for the first level (index 0) --- if deleted, shift the first integration point in
   // wall normal direction
+  // the shift depends on the number of sampling planes in the element
   double shift=0;
+
+  // set the number of planes which cut the element
+  const int numplanesinele = planesinele.size();
 
   if(*planesinele.begin() != 0)
   {
     // this is not an element of the lowest element layer
     planesinele.erase(planesinele.begin());
 
-    if(distype==hex20 || distype==hex27)
-    {
-      shift=1;
-    }
-    else if (distype==hex8)
-    {
-      shift=2;
-    }
-    else
-    {
-      dserror("only HEX allowed here");
-    }
+    shift=2.0/((double) numplanesinele - 1.0);
   }
   else
   {
@@ -3891,7 +3900,7 @@ void DRT::Elements::Fluid3::f3_calc_means(
   const IntegrationPoints2D  intpoints = getIntegrationPoints2D(intrule_quad_9point);
 
   // a hex8 element has two levels, the hex20 and hex27 element have three layers to sample
-  // 
+  // (now we allow even more)
   double layershift=0;
  
   // loop all levels in element
@@ -3993,19 +4002,9 @@ void DRT::Elements::Fluid3::f3_calc_means(
 
     // jump to the next layer in the element.
     // in case of an hex8 element, the two coordinates are -1 and 1(+2)
-    // for quadratic elements, we have -1,0(+1),1(+2)
-    if(distype==hex20 || distype==hex27)
-    {
-      layershift++;
-    }
-    else if (distype==hex8)
-    {
-      layershift+=2;
-    }
-    else
-    {
-      dserror("only HEX allowed here");
-    }
+    // for quadratic elements with three sample planes, we have -1,0(+1),1(+2)
+    
+    layershift+=2.0/((double) numplanesinele - 1.0);
   }
 
   
