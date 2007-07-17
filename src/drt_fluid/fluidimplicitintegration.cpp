@@ -730,7 +730,7 @@ void FluidImplicitTimeInt::NonlinearSolve(
 
     //-------solve for residual displacements to correct incremental displacements
     {
-      // start time measurement for element call
+      // start time measurement for solver call
       tm5_ref_ = rcp(new TimeMonitor(*timesolver_));
       // get cpu time
       tcpu=ds_cputime();

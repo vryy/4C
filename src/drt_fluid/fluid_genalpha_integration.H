@@ -399,8 +399,11 @@ private:
   RefCountPtr<Time> timedynloop_    ;
   RefCountPtr<Time> timenlnloop_    ;
   RefCountPtr<Time> timeeleloop_    ;
+  RefCountPtr<Time> timeevaldirich_ ;
   RefCountPtr<Time> timeapplydirich_;
   RefCountPtr<Time> timesolver_     ;
+  RefCountPtr<Time> timeout_        ;
+  RefCountPtr<Time> timenonlinup_   ;
 
   RefCountPtr<TimeMonitor> tm0_ref_ ;
   RefCountPtr<TimeMonitor> tm1_ref_ ;
@@ -409,6 +412,9 @@ private:
   RefCountPtr<TimeMonitor> tm4_ref_ ;
   RefCountPtr<TimeMonitor> tm5_ref_ ;
   RefCountPtr<TimeMonitor> tm6_ref_ ;
+  RefCountPtr<TimeMonitor> tm7_ref_ ;
+  RefCountPtr<TimeMonitor> tm8_ref_ ;
+  RefCountPtr<TimeMonitor> tm9_ref_ ;
 };
 
 

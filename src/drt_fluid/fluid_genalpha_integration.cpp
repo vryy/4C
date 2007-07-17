@@ -48,6 +48,26 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   upres_(params.get("write solution every", -1))
 {
 
+  // -------------------------------------------------------------------
+  // create timers and time monitor
+  // -------------------------------------------------------------------
+  timedyntot_     = TimeMonitor::getNewTimer("dynamic routine total"        );
+  timedyninit_    = TimeMonitor::getNewTimer(" + initial phase"             );
+  timedynloop_    = TimeMonitor::getNewTimer(" + time loop"                 );
+  timenlnloop_    = TimeMonitor::getNewTimer("   + nonlinear iteration"     );
+  timeeleloop_    = TimeMonitor::getNewTimer("      + element calls"        );
+  timenonlinup_   = TimeMonitor::getNewTimer("      + update and calc. of intermediate sols");
+  timeapplydirich_= TimeMonitor::getNewTimer("      + apply dirich cond."   );
+  timeevaldirich_ = TimeMonitor::getNewTimer("      + evaluate dirich cond.");
+  timesolver_     = TimeMonitor::getNewTimer("      + solver calls"         );
+  timeout_        = TimeMonitor::getNewTimer("      + output and statistics");
+
+  // time measurement --- start TimeMonitor tm0
+  tm0_ref_        = rcp(new TimeMonitor(*timedyntot_ ));
+
+  // time measurement --- start TimeMonitor tm7
+  tm7_ref_        = rcp(new TimeMonitor(*timedyninit_ ));
+
   numdim_ = params_.get<int>("number of velocity degrees of freedom");
 
   // -------------------------------------------------------------------
@@ -180,16 +200,6 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   increment_    = LINALG::CreateVector(*dofrowmap,true);
 
 
-  // -------------------------------------------------------------------
-  // create timers and time monitor
-  // -------------------------------------------------------------------
-  timedyntot_     = TimeMonitor::getNewTimer("dynamic routine total"     );
-  timedyninit_    = TimeMonitor::getNewTimer(" + initial phase"          );
-  timedynloop_    = TimeMonitor::getNewTimer(" + time loop"              );
-  timenlnloop_    = TimeMonitor::getNewTimer("   + nonlinear iteration"  );
-  timeeleloop_    = TimeMonitor::getNewTimer("      + element calls"     );
-  timeapplydirich_= TimeMonitor::getNewTimer("      + apply dirich cond.");
-  timesolver_     = TimeMonitor::getNewTimer("      + solver calls"      );
 
 
 
@@ -201,6 +211,9 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   {
     turbulencestatistics_=rcp(new TurbulenceStatistics(discret_,params_));
   }
+
+  // end time measurement for timeloop
+  tm7_ref_ = null;
   
   return;
 
@@ -233,7 +246,7 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
   double             endtime
   )
 {
-
+  
   bool stop_timeloop=false;
 
   dt_     = params_.get<double>("time step size");
@@ -252,6 +265,9 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
     cout << "                             alpha_M = " << alphaM_ << &endl;
     cout << "                             gamma   = " << gamma_  << &endl <<&endl;
   }
+
+  // start time measurement for timeloop
+  tm2_ref_ = rcp(new TimeMonitor(*timedynloop_));
   
   while (stop_timeloop==false)
   {
@@ -279,8 +295,14 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
     // -------------------------------------------------------------------
     //         evaluate dirichlet and neumann boundary conditions
     // -------------------------------------------------------------------
+    // start time measurement for application of dirichlet conditions
+    tm1_ref_ = rcp(new TimeMonitor(*timeevaldirich_));
+    
     this->GenAlphaApplyDirichletAndNeumann();
 
+    // end time measurement for application of dirichlet conditions
+    tm1_ref_=null;
+    
     // -------------------------------------------------------------------
     //      calculate initial acceleration according to predicted
     //                  velocities and boundary values
@@ -302,6 +324,9 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
     // -------------------------------------------------------------------
     this->EvaluateErrorComparedToAnalyticalSol();
 
+
+    // time measurement --- start TimeMonitor tm8
+    tm8_ref_        = rcp(new TimeMonitor(*timeout_ ));
     
     // -------------------------------------------------------------------
     // add calculated velocity to mean value calculation
@@ -316,6 +341,9 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
     // -------------------------------------------------------------------
     this->GenAlphaOutput();
 
+    // time measurement --- stop TimeMonitor tm8
+    tm8_ref_        = null;
+    
     // -------------------------------------------------------------------
     //                    stop criterium for timeloop
     // -------------------------------------------------------------------
@@ -326,6 +354,18 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
     }
 
   }
+
+  // end time measurement for timeloop
+  tm2_ref_ = null;
+
+  tm0_ref_ = null; // end total time measurement
+  if(discret_->Comm().MyPID()==0)
+  {
+    cout<<endl<<endl;
+  }
+  TimeMonitor::summarize();
+
+  
   return;
 }// FluidGenAlphaIntegration::GenAlphaIntegrateFromTo
 
@@ -355,21 +395,35 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
     printf("|- step/max -|- tol      [norm] -|- vel-error --|- pre-error --|- vres-norm --|- pres-norm --| \n");
   }
 
-
+  // start time measurement for nonlinear iteration
+  tm6_ref_ = rcp(new TimeMonitor(*timenlnloop_));
+  
   // -------------------------------------------------------------------
   //  Evaluate acceleration and velocity at the intermediate time level
   //                     n+alpha_M and n+alpha_F
   //
   //                             -> (0)
   // -------------------------------------------------------------------
-  this->GenAlphaComputeIntermediateSol();
+  // start time measurement for nonlinear update
+  tm9_ref_ = rcp(new TimeMonitor(*timenonlinup_));
   
+  this->GenAlphaComputeIntermediateSol();
+
+  // time measurement --- stop TimeMonitor tm9
+  tm9_ref_        = null;
     
   // -------------------------------------------------------------------
   // call elements to calculate residual and matrix for first iteration
   // -------------------------------------------------------------------
+  // start time measurement for element call
+  tm3_ref_ = rcp(new TimeMonitor(*timeeleloop_));
+  
   this->GenAlphaAssembleResidualAndMatrix();
 
+  // end time measurement for element call
+  tm3_ref_=null;
+
+  
   bool              stopnonliniter = false;
   while (stopnonliniter==false)
   {
@@ -378,9 +432,17 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
     // -------------------------------------------------------------------
     // solve for increments
     // -------------------------------------------------------------------
+    // start time measurement for solver call
+    tm5_ref_ = rcp(new TimeMonitor(*timesolver_));
+    
     this->GenAlphaCalcIncrement(itnum);
 
+    // end time measurement for application of dirichlet conditions
+    tm5_ref_=null;
 
+    // start time measurement for nonlinear update
+    tm9_ref_ = rcp(new TimeMonitor(*timenonlinup_));
+    
     // -------------------------------------------------------------------
     // update estimates by incremental solution
     // -------------------------------------------------------------------
@@ -394,19 +456,31 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
     //                          (i)->(i+1)
     // -------------------------------------------------------------------
     this->GenAlphaComputeIntermediateSol();
-
+    
+    // time measurement --- stop TimeMonitor tm9
+    tm9_ref_        = null;
     
     // -------------------------------------------------------------------
     // call elements to calculate residual for convergence check and
     // matrix for the next step
     // -------------------------------------------------------------------
-    this->GenAlphaAssembleResidualAndMatrix();
+    // start time measurement for element call
+    tm3_ref_ = rcp(new TimeMonitor(*timeeleloop_));
     
+    this->GenAlphaAssembleResidualAndMatrix();
+
+    // end time measurement for element call
+    tm3_ref_=null;
+
     // -------------------------------------------------------------------
     // do convergence check
     // -------------------------------------------------------------------
     stopnonliniter=this->GenAlphaNonlinearConvergenceCheck(itnum);
   }
+
+  // end time measurement for nonlinear iteration
+  tm6_ref_ = null;
+ 
   return;
 }// FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration
 
@@ -705,11 +779,18 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   // Apply dirichlet boundary conditions to system of equations residual
   // discplacements are supposed to be zero at boundary conditions
   // -------------------------------------------------------------------
+  // start time measurement for application of dirichlet conditions
+  tm4_ref_ = rcp(new TimeMonitor(*timeapplydirich_));
+  
   zeros_->PutScalar(0.0);
   {
     LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,
                                    zeros_,dirichtoggle_);
   }
+
+  // end time measurement for application of dirichlet conditions
+  tm4_ref_=null;
+
   return;
 } // FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix
 
