@@ -470,8 +470,10 @@ INPUT                  = index.doc \
                          ../drt_so3 \
                          ../io \
                          ../drt_fsi \
+                         ../drt_ale2 \
                          ../drt_ale3 \
                          ../drt_mat \
+                         ../drt_stru_multi \
                          ../post_drt_common \ 
                          ../post_ensight \
                          ../post_gid
@@ -1035,6 +1037,7 @@ PREDEFINED             = CCADISCRET \
                          TRILINOS_PACKAGE \
                          XFEM \
                          D_SHELL8 \
+                         D_ALE \
                          D_FLUID2 \
                          D_FLUID3 \
                          D_WALL1 \
