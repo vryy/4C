@@ -20,6 +20,7 @@ Maintainer: Peter Gmanitzer
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
+#include "../drt_lib/drt_function.H"
 
 using namespace DRT::Utils;
 
@@ -57,8 +58,8 @@ int DRT::Elements::Fluid2Line::EvaluateNeumann(
   // (assumed to be constant on element boundary)
   const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
   const vector<double>* val   = condition.Get<vector<double> >("val"  );
-  
-
+  const vector<int>*    functions = condition.Get<vector<int> >("funct");
+    
     // set number of nodes
   const int iel   = this->NumNode();
     
@@ -95,7 +96,7 @@ int DRT::Elements::Fluid2Line::EvaluateNeumann(
     shape_function_1D(funct,e1,distype);
     shape_function_1D_deriv1(deriv,e1,distype);
 
-    // compute infintesimal line element dr for integration along the line
+    // compute infinitesimal line element dr for integration along the line
     f2_substitution(xye,deriv,dr,iel);
   
     // values are multiplied by the product from inf. area element,
@@ -105,15 +106,42 @@ int DRT::Elements::Fluid2Line::EvaluateNeumann(
     
     double fac;
     fac =intpoints.qwgt[gpid] *dr* curvefac * thsl;
-     for (int node=0;node<iel;++node)
-    {
-      for(int dim=0;dim<3;dim++)
+    
+    // factor given by spatial function
+    double functionfac = 1.0;
+    // determine coordinates of current Gauss point 
+    double coordgp[2];
+    coordgp[0]=0.0;
+    coordgp[0]=0.0;
+    for (int i = 0; i< iel; i++)
       {
-        elevec1[node*numdf+dim]+=
-          funct[node] * (*onoff)[dim] * (*val)[dim] * fac;
+       coordgp[0]+=xye(0,i)*funct[i];
+       coordgp[1]+=xye(1,i)*funct[i];
+      }	
+
+    int functnum = -1;
+    const double* coordgpref = &coordgp[0]; // needed for function evaluation
+
+    for (int node=0;node<iel;++node)
+      { 
+       for(int dim=0;dim<3;dim++)
+        {
+         // factor given by spatial function	 
+	 if (functions) functnum = (*functions)[dim];
+       	   {
+            if (functnum>0)
+              // evaluate function at current gauss point	
+              functionfac = DRT::Utils::FunctionManager::Instance().Funct(functnum-1).Evaluate(dim,coordgpref);		
+            else 
+              functionfac = 1.0;
+       	   }        
+
+          elevec1[node*numdf+dim]+=
+          funct[node] * (*onoff)[dim] * (*val)[dim] * fac * functionfac;
+        }
       }
-    }
-  }//end of loop over integrationen points
+  } //end of loop over integrationen points  
+  
 
   //dserror("Line Neumann condition not yet implemented for Fluid2");
   return 0;
