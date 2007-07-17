@@ -565,6 +565,9 @@ string EnsightWriter::GetEnsightString(
     case DRT::Element::quad9:
         str = distype2ensightstring_[DRT::Element::quad4];
         break;
+    case DRT::Element::tet10:
+        str = distype2ensightstring_[DRT::Element::tet4];
+        break;        
     default:
         str = distype2ensightstring_[distype];
     }
