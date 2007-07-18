@@ -400,7 +400,8 @@ private:
 
   void CreateLinesQuad(const int& nline,
                        const int& nnode);
-
+		     		     
+  
 }; // class Fluid2
 
 
@@ -640,7 +641,42 @@ public:
   virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const { return null; }
 
   //@}
+  
+    //! @name Evaluation
 
+  /*!
+  \brief Evaluate an element
+
+  Evaluate fluid2 line element stiffness, mass, internal forces etc
+
+  \param params (in/out): ParameterList for communication between control routine
+                          and elements
+  \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
+                          the controling method does not epxect the element to fill
+                          this matrix.
+  \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
+                          the controling method does not epxect the element to fill
+                          this matrix.
+  \param elevec1 (out)  : vector to be filled by element. If NULL on input,
+                          the controlling method does not epxect the element
+                          to fill this vector
+  \param elevec2 (out)  : vector to be filled by element. If NULL on input,
+                          the controlling method does not epxect the element
+                          to fill this vector
+  \param elevec3 (out)  : vector to be filled by element. If NULL on input,
+                          the controlling method does not epxect the element
+                          to fill this vector
+  \return 0 if successful, negative otherwise
+  */
+  virtual int Evaluate(ParameterList& params,
+               DRT::Discretization&      discretization,
+               vector<int>&              lm,
+               Epetra_SerialDenseMatrix& elemat1,
+               Epetra_SerialDenseMatrix& elemat2,
+               Epetra_SerialDenseVector& elevec1,
+               Epetra_SerialDenseVector& elevec2,
+               Epetra_SerialDenseVector& elevec3);
+  
   //! @name Evaluate methods
 
   /*!
@@ -667,6 +703,13 @@ public:
 
 private:
 
+  //! action parameters recognized by Fluid2Line
+  enum ActionType
+  {
+     none,
+     integrate_Shapefunction
+  };
+  
   // don't want = operator
   Fluid2Line& operator = (const Fluid2Line& old);
 
@@ -686,6 +729,14 @@ private:
 
   // Get Rule for Gaussintegration according to DRT::UTIL
   DRT::Utils::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
+
+  // integrate shape functions over a line
+  void IntegrateShapeFunction(ParameterList& params,
+                  DRT::Discretization&       discretization,
+                  vector<int>&               lm,
+                  Epetra_SerialDenseVector&  elevec1);
+
+
 }; // class Fluid2Line
 
 

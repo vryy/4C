@@ -989,7 +989,8 @@ private:
     none,
     calc_Shapefunction,
     calc_ShapeDeriv1,
-    calc_ShapeDeriv2
+    calc_ShapeDeriv2,
+    integrate_Shapefunction
   };
 
   // don't want = operator
@@ -1018,6 +1019,22 @@ private:
 
   void CreateLinesQuad(const int& nline,
                        const int& nnode);
+		       
+  /*!
+  \brief integrate shapefunction over surface element
+
+  \param params (in/out)    : ParameterList for communication between control routine
+                              and elements
+  \param discretization (in): A reference to the underlying discretization
+  \param lm (in)            : location vector of this element
+  \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+  */
+
+  virtual void IntegrateShapeFunction(ParameterList& 		 params,
+                          	      DRT::Discretization&       discretization,
+                          	      vector<int>&               lm,
+                          	      Epetra_SerialDenseVector&  elevec1);
+			  		       
 
 }; // class Fluid3Surface
 
@@ -1202,7 +1219,6 @@ public:
                               DRT::Condition&           condition,
                               vector<int>&              lm,
                               Epetra_SerialDenseVector& elevec1);
-
 
   //@}
 

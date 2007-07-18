@@ -29,7 +29,7 @@ using namespace DRT::Utils;
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            g.bau 03/07|
  *----------------------------------------------------------------------*/
-int DRT::Elements::Fluid3Surface::Evaluate(     ParameterList& params,
+int DRT::Elements::Fluid3Surface::Evaluate(     ParameterList&            params,
                                                 DRT::Discretization&      discretization,
                                                 vector<int>&              lm,
                                                 Epetra_SerialDenseMatrix& elemat1,
@@ -47,6 +47,8 @@ int DRT::Elements::Fluid3Surface::Evaluate(     ParameterList& params,
         act = Fluid3Surface::calc_ShapeDeriv1;
     else if (action == "calc_ShapeDeriv2")
         act = Fluid3Surface::calc_ShapeDeriv2;
+    else if (action == "integrate_Shapefunction")
+        act = Fluid3Surface::integrate_Shapefunction;	
     else dserror("Unknown type of action for Fluid3_Surface");
     
     const DiscretizationType distype = this->Shape();
@@ -65,6 +67,11 @@ int DRT::Elements::Fluid3Surface::Evaluate(     ParameterList& params,
     case calc_ShapeDeriv2:
     {
         shape_function_2D_deriv2(elemat2,elevec2[0],elevec2[1],distype);
+        break;
+    }
+    case integrate_Shapefunction:
+    {
+        IntegrateShapeFunction(params,discretization,lm,elevec1);	
         break;
     }
     default:
@@ -287,6 +294,122 @@ void  DRT::Elements::Fluid3Surface::f3_metric_tensor_for_surface(
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ |  Integrate shapefunctions over surface (private)          g.bau 07/07|
+ *----------------------------------------------------------------------*/
+void DRT::Elements::Fluid3Surface::IntegrateShapeFunction(ParameterList& params,
+                  DRT::Discretization&       discretization,
+                  vector<int>&               lm,
+                  Epetra_SerialDenseVector&  elevec1)
+{    
+  // there are 3 velocities and 1 pressure
+  const int numdf = 4;
+
+  const double thsl = params.get("time constant for integration",1.0);
+  
+  const DiscretizationType distype = this->Shape();
+
+  // find out whether we will use a time curve
+  bool usetime = true;
+  const double time = params.get("total time",-1.0);
+  if (time<0.0) usetime = false;
+
+/*
+  // find out whether we will use a time curve and get the factor
+  const vector<int>* curve  = condition.Get<vector<int> >("curve");
+  int curvenum = -1;
+  if (curve) curvenum = (*curve)[0];
+  double curvefac = 1.0;
+  if (curvenum>=0 && usetime)
+    curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
+*/
+  // set number of nodes
+  const int iel   = this->NumNode();
+
+  GaussRule2D  gaussrule;
+  switch(distype)
+  {
+  case quad4:
+      gaussrule = intrule_quad_4point;
+      break;
+  case quad8: case quad9:
+      gaussrule = intrule_quad_9point;
+      break;
+  case tri3 :
+      gaussrule = intrule_tri_3point;
+      break;
+  case tri6:
+      gaussrule = intrule_tri_6point; 
+      break;
+  default: 
+      dserror("shape type unknown!\n");
+  }
+  
+    // allocate vector for shape functions and matrix for derivatives
+  Epetra_SerialDenseVector      funct       (iel);
+  Epetra_SerialDenseMatrix 	deriv       (2,iel);
+
+  // node coordinates
+  Epetra_SerialDenseMatrix      xyze        (3,iel);
+
+  // the metric tensor and the area of an infintesimal surface element
+  Epetra_SerialDenseMatrix 	metrictensor(2,2);
+  double                        drs;
+
+  // get node coordinates
+  for(int i=0;i<iel;i++)
+  {
+    xyze(0,i)=this->Nodes()[i]->X()[0];
+    xyze(1,i)=this->Nodes()[i]->X()[1];
+    xyze(2,i)=this->Nodes()[i]->X()[2];
+  }
+
+  /*----------------------------------------------------------------------*
+  |               start loop over integration points                     |
+  *----------------------------------------------------------------------*/
+  const IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
+  cout<<"GP "<<intpoints.nquad<<endl;
+  for (int gpid=0; gpid<intpoints.nquad; gpid++)
+  {
+    const double e0 = intpoints.qxg[gpid][0];
+    const double e1 = intpoints.qxg[gpid][1];
+
+    // get shape functions and derivatives in the plane of the element
+    shape_function_2D(funct, e0, e1, distype);
+    shape_function_2D_deriv1(deriv, e0, e1, distype);
+
+    // compute measure tensor for surface element and the infinitesimal
+    // area element drs for the integration
+    
+    f3_metric_tensor_for_surface(xyze,deriv,metrictensor,&drs);	
+    
+    // values are multiplied by the product from inf. area element,
+    // the gauss weight, the timecurve factor and the constant
+    // belonging to the time integration algorithm (theta*dt for
+    // one step theta, 2/3 for bdf with dt const.)
+    
+    //    const double fac = intpoints.qwgt[gpid] * drs * curvefac * thsl;
+ 
+    const double fac = intpoints.qwgt[gpid] * drs * thsl;
+    
+    for (int node=0;node<iel;++node)
+    {
+      for(int dim=0;dim<3;dim++)
+      {
+        elevec1[node*numdf+dim]+=
+          funct[node] * fac;
+	  cout<<elevec1[node*numdf+dim]<<endl;
+	  //cout<<funct[node]<<endl;
+      }
+    }
+	
+  } /* end of loop over integration points gpid */
+    
+    
+     
+return;
+} // DRT::Elements::Fluid3Surface::IntegrateShapeFunction				   
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
