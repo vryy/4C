@@ -174,7 +174,16 @@ public:
   */
   void EvaluateErrorComparedToAnalyticalSol();
 
+  /*!
+  \brief calculate stresses
 
+  */
+  RefCountPtr<Epetra_Vector> CalcStresses();
+  
+  /*!
+  \brief read restart data
+
+  */
   void ReadRestart(int step);
 
 protected:

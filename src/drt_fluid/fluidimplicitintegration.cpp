@@ -312,7 +312,11 @@ void FluidImplicitTimeInt::TimeLoop()
     // -------------------------------------------------------------------
     this->NonlinearSolve();
 
-
+    // -------------------------------------------------------------------
+    //                     calculate (wall) stresses
+    // -------------------------------------------------------------------
+    this->CalcStresses();
+    
     // -------------------------------------------------------------------
     //                         update solution
     //        current solution becomes old solution of next timestep
@@ -438,7 +442,6 @@ void FluidImplicitTimeInt::ExplicitPredictor()
 
   return;
 } // FluidImplicitTimeInt::ExplicitPredictor
-
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -963,6 +966,9 @@ void FluidImplicitTimeInt::Output()
   //increase counters
     restartstep_ += 1;
     writestep_ += 1;
+    
+  //perform stress calculation
+  RefCountPtr<Epetra_Vector> traction = CalcStresses(); 
 
   if (writestep_ == upres_)  //write solution
     {
@@ -971,6 +977,7 @@ void FluidImplicitTimeInt::Output()
       output_.NewStep    (step_,time_);
       output_.WriteVector("velnp", velnp_);
       //output_.WriteVector("residual", trueresidual_);
+      //output_.WriteVector("traction",traction);
       if (alefluid_)
         output_.WriteVector("dispnp", dispnp_);
 
@@ -992,6 +999,7 @@ void FluidImplicitTimeInt::Output()
     output_.NewStep    (step_,time_);
     output_.WriteVector("velnp", velnp_);
     //output_.WriteVector("residual", trueresidual_);
+    //output_.WriteVector("traction",traction);
     if (alefluid_)
       output_.WriteVector("dispnp", dispnp_);
     output_.WriteVector("accn", accn_);
@@ -1471,6 +1479,67 @@ void FluidImplicitTimeInt::SolveStationaryProblem()
 
   return;
 } // FluidImplicitTimeInt::SolveStationaryProblem
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  calculate (wall) stresses (public)                       g.bau 07/07|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+RefCountPtr<Epetra_Vector> FluidImplicitTimeInt::CalcStresses()
+{
+     ParameterList eleparams;
+     // set action for elements
+     eleparams.set("action","calc_stresses");
+  
+     // get a vector layout from the discretization to construct matching
+     // vectors and matrices
+     //                 local <-> global dof numbering    
+     const Epetra_Map* dofrowmap = discret_->DofRowMap();
+     
+     // create vector (+ initialization with zeros)
+     RefCountPtr<Epetra_Vector> integratedshapefunc = LINALG::CreateVector(*dofrowmap,true);
+      
+     // call loop over elements
+     discret_->ClearState();
+     const string condstring("integrate_Shapefunction"); 
+     discret_->EvaluateCondition(eleparams,*integratedshapefunc,condstring);
+     discret_->ClearState();
+
+     // compute traction values at specified nodes; otherwise do not touch the zero values          
+     for (int i=0;i<integratedshapefunc->MyLength();i++)
+	  {
+	      if ((*integratedshapefunc)[i] != 0.0)
+	      {
+	         // overwerite integratedshapefunc values with the calculated traction coefficients
+	        (*integratedshapefunc)[i] = (*trueresidual_)[i]/(*integratedshapefunc)[i];
+	      }
+	  }
+          
+     // compute traction values at nodes   ---not used any more-----
+     // component-wise calculation:  traction := 0.0*traction + 1.0*(trueresidual_ / integratedshapefunc_)
+     // int err = traction->ReciprocalMultiply(1.0,*integratedshapefunc,*trueresidual_,0.0);
+     // if (err > 0) dserror("error in traction->ReciprocalMultiply");	   
+
+     #if 0  // DEBUG IO  --- integratedshapefunc
+     {
+	  int rr;
+	  double* data = integratedshapefunc->Values();
+	  for(rr=0;rr<integratedshapefunc->MyLength();rr++)
+	  {
+	      printf("global %22.15e\n",data[rr]);
+	  }
+     }
+     #endif
+
+  // return RefCountPtr<Epetra_Vector>	
+  return integratedshapefunc;
+  
+} // FluidImplicitTimeInt::CalcStresses()
 
 
 /*----------------------------------------------------------------------*
