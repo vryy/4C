@@ -129,6 +129,11 @@ static void input_surf_stress(multimap<int,RefCountPtr<DRT::Condition> >& ssmap)
  *----------------------------------------------------------------------*/
 static void input_micro_bc(multimap<int,RefCountPtr<DRT::Condition> >& mbcmap);
 
+/*----------------------------------------------------------------------*
+ | surface stress calculation for fluid                   g.bau 07/07   |
+ *----------------------------------------------------------------------*/
+static void input_line_stress_calc(multimap<int,RefCountPtr<DRT::Condition> >& lnmap);
+static void input_surf_stress_calc(multimap<int,RefCountPtr<DRT::Condition> >& snmap);
 
 /*----------------------------------------------------------------------*
  | input of conditions                                    m.gee 11/06   |
@@ -282,8 +287,17 @@ void input_conditions(const DRT::Problem& problem)
   multimap<int,RefCountPtr<DRT::Condition> > microbc;
   input_micro_bc(microbc);
   setup_condition(microbc, dsurf_fenode);
-
-
+  
+  //--------------------- read line conditions for fluid stress calculation
+  multimap<int,RefCountPtr<DRT::Condition> > linefluidstresscalc;
+  input_line_stress_calc(linefluidstresscalc);
+  setup_condition(linefluidstresscalc, dline_fenode);    
+  //------------------ read surface conditions for fluid stress calculation
+  multimap<int,RefCountPtr<DRT::Condition> > surffluidstresscalc;
+  input_surf_stress_calc(surffluidstresscalc);
+  setup_condition(surffluidstresscalc, dsurf_fenode);
+    
+  
   // Iterate through all discretizations and sort the appropiate condition into
   // the correct discretization it applies to
   for (unsigned i=0; i<problem.NumFields(); ++i)
@@ -322,6 +336,9 @@ void input_conditions(const DRT::Problem& problem)
       register_condition("LineIsothermalNoslip", "Isothermal no-slip wall", lineisothermnoslip, actdis, noderowmap);
       register_condition("LineSubsonicInflow", "Subsonic inflow", linesubsonicinflow, actdis, noderowmap);
       register_condition("LineSubsonicOutflow", "Subsonic outflow", linesubsonicoutflow, actdis, noderowmap);
+      
+      register_condition("FluidStressCalc", "Line Fluid Stress Calculation", linefluidstresscalc, actdis, noderowmap);
+      register_condition("FluidStressCalc", "Surf Fluid Stress Calculation", surffluidstresscalc, actdis, noderowmap);      
     }
   }
 } /* end of input_conditions */
@@ -2218,6 +2235,93 @@ void input_micro_bc(multimap<int,RefCountPtr<DRT::Condition> >& mbcmap)
   } // while(strncmp(allfiles.actplace,"------",6)!=0)
   return;
 } // input_micro_bc
+
+
+/*----------------------------------------------------------------------------*
+ | input of design line fluid stress calculation conditions       g.bau 07/07 |
+ *----------------------------------------------------------------------------*/
+void input_line_stress_calc(multimap<int,RefCountPtr<DRT::Condition> >& lnmap)
+{
+  DSTraceHelper dst("input_line_stress_calc");
+
+  /*----------- find the beginning of line stress calculation conditions */
+  if (frfind("---DESIGN LINE STRESS CALC CONDITIONS")==0) return;
+  frread();
+
+  /*------------------------ read number of design lines with conditions */
+  int ierr=0;
+  int ndline=0;
+  frint("DLINE",&ndline,&ierr);
+  if(ierr!=1)
+    dserror("Cannot read design-line stress calculation conditions");
+  frread();
+
+  /*------------------------------------- start reading the design surfs */
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    /*------------------------------------------ read the design line Id */
+    int dlineid = -1;
+    frint("E",&dlineid,&ierr);
+    if(ierr!=1)
+      dserror("Cannot read design-line stress calculation conditions");
+    dlineid--;
+
+    // create boundary condition
+    RefCountPtr<DRT::Condition> condition =
+           rcp(new DRT::Condition(dlineid,DRT::Condition::FluidStressCalc,true,
+                                  DRT::Condition::Line));
+
+    //------------------------------- put condition in map of conditions
+    lnmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dlineid,condition));
+
+    //-------------------------------------------------- read the next line
+    frread();
+  } // while(strncmp(allfiles.actplace,"------",6)!=0)
+  return;
+};
+
+
+/*----------------------------------------------------------------------------*
+ | input of design surface fluid stress calculation conditions    g.bau 07/07 |
+ *----------------------------------------------------------------------------*/
+void input_surf_stress_calc(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
+{
+  DSTraceHelper dst("input_surf_stress_calc");
+
+  /*-------- find the beginning of surface stress calculation conditions */
+  if (frfind("---DESIGN SURF STRESS CALC CONDITIONS")==0) return;
+  frread();
+  /*--------------------- read number of design surfaces with conditions */
+  int ierr=0;
+  int ndsurf=0;
+  frint("DSURF",&ndsurf,&ierr);
+  if(ierr!=1)
+    dserror("Cannot read design-surface stress calculation conditions");
+  frread();
+
+  /*------------------------------------- start reading the design surfs */
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    /*------------------------------------------ read the design surf Id */
+    int dsurfid = -1;
+    frint("E",&dsurfid,&ierr);
+    if(ierr!=1)
+      dserror("Cannot read design-surface stress calculation conditions");
+    dsurfid--;
+
+    // create boundary condition
+    RefCountPtr<DRT::Condition> condition =
+           rcp(new DRT::Condition(dsurfid,DRT::Condition::FluidStressCalc,true,
+                                  DRT::Condition::Surface));
+
+    //------------------------------- put condition in map of conditions
+    snmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dsurfid,condition));
+
+    //-------------------------------------------------- read the next line
+    frread();
+  } // while(strncmp(allfiles.actplace,"------",6)!=0)
+  return;
+};
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

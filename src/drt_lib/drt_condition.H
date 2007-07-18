@@ -103,7 +103,8 @@ public:
     FSICoupling,
     SurfaceStress,
     MicroBoundary,
-    XFEMCoupling
+    XFEMCoupling,
+    FluidStressCalc
   };
 
   /*!
