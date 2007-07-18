@@ -2,13 +2,30 @@
 #ifdef TRILINOS_PACKAGE
 
 #include "fsi_nox_aitken.H"
+#include "fsi_utils.H"
 
-#include "NOX_Common.H"
-#include "NOX_Abstract_Vector.H"
-#include "NOX_Abstract_Group.H"
-#include "NOX_Solver_Generic.H"
-#include "Teuchos_ParameterList.hpp"
-#include "NOX_GlobalData.H"
+#include <NOX_Common.H>
+#include <NOX_Abstract_Vector.H>
+#include <NOX_Abstract_Group.H>
+#include <NOX_Solver_Generic.H>
+#include <Teuchos_ParameterList.hpp>
+#include <NOX_GlobalData.H>
+
+// debug output
+#if 0
+
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
+
+extern "C" /* stuff which is c and is accessed from c++ */
+{
+#include "../headers/standardtypes.h"
+}
+
+extern struct _FILES  allfiles;
+#endif
+
 
 using namespace NOX;
 using namespace NOX::LineSearch;
@@ -60,6 +77,19 @@ bool NOX::FSI::AitkenRelaxation::compute(Abstract::Group& grp, double& step,
                   << "-- Aitken Line Search -- \n";
   }
 
+  // debug output
+#if 0
+  {
+    static int step;
+    ostringstream filename;
+    filename << allfiles.outputfile_kenner << "_" << step << ".aitken.QR";
+    step += 1;
+
+    ofstream out(filename.str().c_str());
+    ::FSI::Utils::MGS(s.getPreviousSolutionGroup(), dir, 10, out);
+  }
+#endif
+
   const Abstract::Group& oldGrp = s.getPreviousSolutionGroup();
   const NOX::Abstract::Vector& F = oldGrp.getF();
 
@@ -81,30 +111,34 @@ bool NOX::FSI::AitkenRelaxation::compute(Abstract::Group& grp, double& step,
 
   grp.computeX(oldGrp, dir, step);
 
-#if 1
-  // Why calculate F anew here? This is the second time in this
-  // loop.
-  // Do we need this in order to have an unrelaxed solution at the
-  // time step end?
+  // Calculate F anew here. This results in another FSI loop. However
+  // the group will store the result, so it will be reused until the
+  // group's x is changed again. We do not waste anything.
   grp.computeF();
 
   // is this reasonable at this point?
   double checkOrthogonality = fabs( grp.getF().innerProduct(dir) );
 
-  if (utils_->isPrintType(Utils::InnerIteration)) {
+  if (utils_->isPrintType(Utils::InnerIteration))
+  {
     utils_->out() << setw(3) << "1" << ":";
     utils_->out() << " step = " << utils_->sciformat(step);
     utils_->out() << " orth = " << utils_->sciformat(checkOrthogonality);
     utils_->out() << "\n" << NOX::Utils::fill(72) << "\n" << endl;
   }
-#else
 
-  if (utils_->isPrintType(Utils::InnerIteration)) {
-    utils_->out() << setw(3) << "1" << ":";
-    utils_->out() << " step (omega) = " << utils_->sciformat(step);
-    utils_->out() << "\n" << NOX::Utils::fill(72) << "\n" << endl;
+  // debug output
+#if 0
+  {
+    static int step;
+    ostringstream filename;
+    filename << allfiles.outputfile_kenner << "_" << step << ".aitken.X";
+    step += 1;
+
+    ofstream out(filename.str().c_str());
+    oldGrp.getX().print(out);
+    grp.getX().print(out);
   }
-
 #endif
 
   return true;

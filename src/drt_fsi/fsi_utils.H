@@ -8,6 +8,12 @@
 #include <set>
 #include <string>
 #include <functional>
+#include <iostream>
+
+#include <NOX_Epetra_Interface_Required.H>
+#include <NOX_Abstract_Vector.H>
+#include <NOX_Abstract_Group.H>
+#include <Teuchos_RefCountPtr.hpp>
 
 #include "../drt_lib/drt_discret.H"
 
@@ -62,6 +68,30 @@ namespace FSI
           return emap_->MyGID(gid);
         }
     };
+
+    /// write interface jacobian to file
+    void DumpJacobian(NOX::Epetra::Interface::Required& interface,
+                      double alpha,
+                      double beta,
+                      Teuchos::RefCountPtr<Epetra_Vector> soln,
+                      std::string filename);
+
+    /// Arnoldi's algorithm (modified Gram-Schmidt)
+    void MGS(NOX::Epetra::Interface::Required& interface,
+             Teuchos::RefCountPtr<Epetra_Vector> soln,
+             int m);
+
+    /// Arnoldi's algorithm (modified Gram-Schmidt)
+    void MGS(const NOX::Abstract::Group& grp,
+             const NOX::Abstract::Vector& dir,
+             int m,
+             std::ostream &stream);
+
+    /// finite difference matrix vector product
+    Teuchos::RefCountPtr<NOX::Abstract::Vector>
+    computeDirectionalDerivative(const NOX::Abstract::Vector& dir,
+                                 const NOX::Abstract::Group& grp);
+
  }
 }
 

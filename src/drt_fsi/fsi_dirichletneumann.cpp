@@ -15,8 +15,6 @@
 #include "fsi_nox_jacobian.H"
 #include "fsi_nox_sd.H"
 
-#include <EpetraExt_RowMatrixOut.h>
-
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -347,18 +345,19 @@ void FSI::DirichletNeumannCoupling::SetupAle()
 
 void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Interface::Required>& interface)
 {
+  bool secondsolver = false;
+
   // Get the top level parameter list
   Teuchos::ParameterList& nlParams = *globalparameterlist;
 
   // sublists
 
-  //Teuchos::ParameterList& searchParams = nlParams.sublist("Line Search");
-  Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
-
   Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
   Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Newton"));
   Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
 
+  //Teuchos::ParameterList& searchParams = nlParams.sublist("Line Search");
+  Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
   printParams.set("MyPID", comm_.MyPID());
 
   // Create printing utilities
@@ -374,6 +373,14 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
     // We change the method here.
     linesearch.set("Method","User Defined");
     linesearch.set("User Defined Line Search",aitken);
+
+    Teuchos::ParameterList& aitkenList = linesearch.sublist("Aitken");
+    if (aitkenList.get("start steps only", false))
+    {
+      // we start with aitken and switch to a different solver
+      // afterwards
+      secondsolver = true;
+    }
   }
 
   // Set user defined steepest descent line search object.
@@ -411,7 +418,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
     s.append(".iteration");
     log = Teuchos::rcp(new std::ofstream(s.c_str()));
     (*log) << "# num procs      = " << comm_.NumProc() << "\n"
-           << "# Method         = " << dirParams.get("Method","Newton") << "\n"
+           << "# Method         = " << nlParams.sublist("Direction").get("Method","Newton") << "\n"
            << "# Jacobian       = " << nlParams.get("Jacobian", "Matrix Free") << "\n"
            << "# Preconditioner = " << nlParams.get("Preconditioner","None") << "\n"
            << "# Line Search    = " << nlParams.sublist("Line Search").get("Method","Full Step") << "\n"
@@ -442,447 +449,77 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
 
     // Begin Nonlinear Solver ************************************
 
+    // Get initial guess. Here some predictor could be useful.
     Teuchos::RefCountPtr<Epetra_Vector> soln = displacementcoupling_ ?
                                                InterfaceDisp() : InterfaceForce();
     NOX::Epetra::Vector noxSoln(soln, NOX::Epetra::Vector::CreateView);
 
     // Create the linear system
-    Teuchos::RefCountPtr<NOX::Epetra::Interface::Required> iReq = interface;
-
-    // Ok. The variables.
-
-    Teuchos::RefCountPtr<NOX::FSI::FSIMatrixFree> FSIMF;
-    Teuchos::RefCountPtr<NOX::Epetra::MatrixFree> MF;
-    Teuchos::RefCountPtr<NOX::Epetra::FiniteDifference> FD;
-    Teuchos::RefCountPtr<NOX::Epetra::FiniteDifferenceColoring> FDC;
-    Teuchos::RefCountPtr<NOX::Epetra::FiniteDifferenceColoring> FDC1;
-    Teuchos::RefCountPtr<NOX::Epetra::BroydenOperator> B;
-
-    Teuchos::RefCountPtr<NOX::Epetra::Interface::Jacobian> iJac;
-    Teuchos::RefCountPtr<NOX::Epetra::Interface::Preconditioner> iPrec;
-
-    Teuchos::RefCountPtr<Epetra_Operator> J;
-    Teuchos::RefCountPtr<Epetra_Operator> M;
-
-    Teuchos::RefCountPtr<NOX::Epetra::LinearSystemAztecOO> linSys;
-
-    // ==================================================================
-    // decide on Jacobian and preconditioner
-    // We migh want to use no preconditioner at all. Some kind of
-    // Jacobian has to be provided, otherwise the linear system uses
-    // plain finite differences.
-
-    std::string jacobian = nlParams.get("Jacobian", "None");
-    std::string preconditioner = nlParams.get("Preconditioner", "None");
-
-    // Special FSI based matrix free method
-    if (jacobian=="FSI Matrix Free")
-    {
-      //Teuchos::ParameterList& mfParams = nlParams.sublist("FSI Matrix Free");
-
-      // MatrixFree seems to be the most interessting choice. This
-      // version builds on our steepest descent relaxation
-      // implementation to approximate the Jacobian times x.
-
-      // This is the default method.
-
-      FSIMF = Teuchos::rcp(new NOX::FSI::FSIMatrixFree(printParams, interface, noxSoln));
-      iJac = FSIMF;
-      J = FSIMF;
-    }
-
-    // Matrix Free Newton Krylov. This is supposed to be the most
-    // appropiate choice.
-    else if (jacobian=="Matrix Free")
-    {
-      Teuchos::ParameterList& mfParams = nlParams.sublist("Matrix Free");
-      double lambda = mfParams.get("lambda", 1.0e-6);
-      //mfresitemax_ = mfParams.get("itemax", -1);
-
-      // MatrixFree seems to be the most interessting choice. But you
-      // must set a rather low tolerance for the linear solver.
-
-      MF = Teuchos::rcp(new NOX::Epetra::MatrixFree(printParams, interface, noxSoln));
-      MF->setLambda(lambda);
-      iJac = MF;
-      J = MF;
-    }
-
-    // No Jacobian at all. Do a fix point iteration. This is a user
-    // extension, so we have to modify the parameter list here.
-    else if (jacobian=="None")
-    {
-      Teuchos::RefCountPtr<NOX::Direction::Generic> fixpoint = Teuchos::rcp(new NOX::FSI::FixPoint(utils,nlParams));
-      dirParams.set("Method","User Defined");
-      dirParams.set("User Defined Direction",fixpoint);
-      lsParams.set("Preconditioner","None");
-      preconditioner="None";
-    }
-
-    // the strange coupling proposed by Michler
-    else if (jacobian=="Michler")
-    {
-      Teuchos::RefCountPtr<NOX::Direction::Generic> michler = Teuchos::rcp(new NOX::FSI::Michler(utils,nlParams));
-      dirParams.set("Method","User Defined");
-      dirParams.set("User Defined Direction",michler);
-      lsParams.set("Preconditioner","None");
-      preconditioner="None";
-    }
-
-    else if (jacobian=="Dumb Finite Difference")
-    {
-      Teuchos::ParameterList& fdParams = nlParams.sublist("Finite Difference");
-      //fdresitemax_ = fdParams.get("itemax", -1);
-      double alpha = fdParams.get("alpha", 1.0e-4);
-      double beta  = fdParams.get("beta",  1.0e-6);
-      std::string dt = fdParams.get("Difference Type","Forward");
-      NOX::Epetra::FiniteDifference::DifferenceType dtype = NOX::Epetra::FiniteDifference::Forward;
-      if (dt=="Forward")
-        dtype = NOX::Epetra::FiniteDifference::Forward;
-      else if (dt=="Backward")
-        dtype = NOX::Epetra::FiniteDifference::Backward;
-      else if (dt=="Centered")
-        dtype = NOX::Epetra::FiniteDifference::Centered;
-      else
-        dserror("unsupported difference type '%s'",dt.c_str());
-
-      FD = Teuchos::rcp(new NOX::Epetra::FiniteDifference(printParams, interface, noxSoln, rawGraph_, beta, alpha));
-      FD->setDifferenceMethod(dtype);
-
-      iJac = FD;
-      J = FD;
-    }
-
-#if 0
-    // Finite Difference with coloring. Build a Jacobian as good as it
-    // gets. This is the closest we get to the true Jacobian.
-    else if (jacobian=="Finite Difference")
-    {
-      Teuchos::ParameterList& fdParams = nlParams.sublist("Finite Difference");
-      //fdresitemax_ = fdParams.get("itemax", -1);
-      double alpha = fdParams.get("alpha", 1.0e-4);
-      double beta  = fdParams.get("beta",  1.0e-6);
-      std::string dt = fdParams.get("Difference Type","Forward");
-      NOX::Epetra::FiniteDifferenceColoring::DifferenceType dtype = NOX::Epetra::FiniteDifferenceColoring::Forward;
-      if (dt=="Forward")
-        dtype = NOX::Epetra::FiniteDifferenceColoring::Forward;
-      else if (dt=="Backward")
-        dtype = NOX::Epetra::FiniteDifferenceColoring::Backward;
-      else if (dt=="Centered")
-        dtype = NOX::Epetra::FiniteDifferenceColoring::Centered;
-      else
-        dserror("unsupported difference type '%s'",dt.c_str());
-
-      FDC = Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, colorMap, columns, true, false, beta, alpha));
-      FDC->setDifferenceMethod(dtype);
-
-      iJac = FDC;
-      J = FDC;
-    }
-#endif
-
-#if 0
-    // Finite Difference with distance 1 coloring. Build just a
-    // diagonal Jacobian.
-    else if (jacobian=="Finite Difference 1")
-    {
-      Teuchos::ParameterList& fdParams = nlParams.sublist("Finite Difference");
-      double alpha = fdParams.get("alpha", 1.0e-4);
-      double beta  = fdParams.get("beta",  1.0e-6);
-      std::string dt = fdParams.get("Difference Type","Forward");
-      NOX::Epetra::FiniteDifferenceColoring::DifferenceType dtype = NOX::Epetra::FiniteDifferenceColoring::Forward;
-      if (dt=="Forward")
-        dtype = NOX::Epetra::FiniteDifferenceColoring::Forward;
-      else if (dt=="Backward")
-        dtype = NOX::Epetra::FiniteDifferenceColoring::Backward;
-      else if (dt=="Centered")
-        dtype = NOX::Epetra::FiniteDifferenceColoring::Centered;
-      else
-        dserror("unsupported difference type '%s'",dt.c_str());
-
-      FDC1 = Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, distance1ColorMap, distance1Columns, true, true, beta, alpha));
-      FDC1->setDifferenceMethod(dtype);
-
-      iJac = FDC1;
-      J = FDC1;
-    }
-#endif
-
-    // Broyden. A strange idea that starts with a real Jacobian and
-    // does modify it along the steps of the nonlinear solve.
-    else if (jacobian=="Broyden")
-    {
-#if 0
-      // we need a Jacobian to start with.
-      if (is_null(FDC))
-      {
-        FDC = Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, colorMap, columns, true));
-      }
-      FDC->computeJacobian(*soln());
-
-      Teuchos::RefCountPtr<Epetra_CrsMatrix> mat = Teuchos::rcp(new Epetra_CrsMatrix(FDC->getUnderlyingMatrix()));
-      //B = Teuchos::rcp(new NOX::Epetra::BroydenOperator(nlParams, *soln(), mat));
-      B = Teuchos::rcp(new NOX::Epetra::BroydenOperator(nlParams, utils, *soln(), mat));
-
-      iJac = B;
-      J = B;
-#else
-      dserror("Broyden Operator still unfinished");
-#endif
-    }
-    else
-    {
-      dserror("unsupported Jacobian '%s'",jacobian.c_str());
-    }
-
-    // ==================================================================
-
-    // No preconditioning at all. This might work. But on large
-    // systems it probably won't.
-    if (preconditioner=="None")
-    {
-      if (lsParams.get("Preconditioner", "None")!="None")
-      {
-        if (comm_.MyPID()==0)
-          utils->out() << RED "Warning: Preconditioner turned on in linear solver settings.\n"
-                       << "Jacobian operator will be used for preconditioning as well." END_COLOR "\n";
-      }
-
-      if (Teuchos::is_null(iJac))
-      {
-        // if no Jacobian has been set this better be the fix point
-        // method.
-        if (dirParams.get("Method","Newton")!="User Defined")
-        {
-          if (comm_.MyPID()==0)
-            utils->out() << RED "Warning: No Jacobian for solver " << dirParams.get("Method","Newton") << END_COLOR "\n";
-        }
-        linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams, iReq, noxSoln));
-      }
-      else
-      {
-        linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams, iReq, iJac, J, noxSoln));
-      }
-    }
-
-#if 0
-    // Finite Difference with coloring. The best (and most expensive)
-    // Jacobian we can get. It might do good on really hard problems.
-    else if (preconditioner=="Finite Difference")
-    {
-      if (lsParams.get("Preconditioner", "None")=="None")
-      {
-        if (comm_.MyPID()==0)
-          utils->out() << RED "Warning: Preconditioner turned off in linear solver settings." END_COLOR "\n";
-      }
-
-      // A real (approximated) matrix for preconditioning
-#if 0
-      if (is_null(FDC))
-      {
-        // FiniteDifferenceColoring might be a good preconditioner for
-        // really hard problems. But you should construct it only once
-        // a time step. Probably.
-        FDC = Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, colorMap, columns, true));
-      }
-      iPrec = FDC;
-      M = FDC;
-#else
-      Teuchos::RefCountPtr<NOX::Epetra::FiniteDifferenceColoring> precFDC =
-        Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, colorMap, columns, true));
-      iPrec = precFDC;
-      M = precFDC;
-#endif
-
-      linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams, iJac, J, iPrec, M, noxSoln));
-    }
-#endif
-
-    else if (preconditioner=="Dump Finite Difference")
-    {
-      if (lsParams.get("Preconditioner", "None")=="None")
-      {
-        if (comm_.MyPID()==0)
-          utils->out() << RED "Warning: Preconditioner turned off in linear solver settings." END_COLOR "\n";
-      }
-
-      Teuchos::ParameterList& fdParams = nlParams.sublist("Finite Difference");
-      //fdresitemax_ = fdParams.get("itemax", -1);
-      double alpha = fdParams.get("alpha", 1.0e-4);
-      double beta  = fdParams.get("beta",  1.0e-6);
-
-      Teuchos::RefCountPtr<NOX::Epetra::FiniteDifference> precFD =
-        Teuchos::rcp(new NOX::Epetra::FiniteDifference(printParams, interface, noxSoln, rawGraph_, beta, alpha));
-      iPrec = precFD;
-      M = precFD;
-
-      linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams, iJac, J, iPrec, M, noxSoln));
-    }
-
-#if 0
-    // Finite Difference with distance 1 coloring. Supposed to be a
-    // suitable (and cheap) preconditioner
-    else if (preconditioner=="Finite Difference 1")
-    {
-      if (lsParams.get("Preconditioner", "None")=="None")
-      {
-        if (comm_.MyPID()==0)
-          utils->out() << RED "Warning: Preconditioner truned off in linear solver settings." END_COLOR "\n";
-      }
-#if 0
-      if (is_null(FDC1))
-      {
-        FDC1 = Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, distance1ColorMap, distance1Columns, true, true));
-      }
-      iPrec = FDC1;
-      M = FDC1;
-#else
-      Teuchos::RefCountPtr<NOX::Epetra::FiniteDifferenceColoring> precFDC =
-        Teuchos::rcp(new NOX::Epetra::FiniteDifferenceColoring(printParams, interface, noxSoln, rawGraph_, distance1ColorMap, distance1Columns, true, true));
-      iPrec = precFDC;
-      M = precFDC;
-#endif
-
-      linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams, iJac, J, iPrec, M, noxSoln));
-    }
-#endif
-
-    else
-    {
-      dserror("unsupported preconditioner '%s'",preconditioner.c_str());
-    }
-
-    // ==================================================================
-    // Convergence Tests
+    Teuchos::RefCountPtr<NOX::Epetra::LinearSystemAztecOO> linSys =
+      CreateLinearSystem(nlParams, interface, noxSoln, utils);
 
     // Create the Group
-    Teuchos::RefCountPtr<NOX::Epetra::Group> grp = Teuchos::rcp(new NOX::Epetra::Group(printParams, iReq, noxSoln, linSys));
+    Teuchos::RefCountPtr<NOX::Epetra::Group> grp =
+      Teuchos::rcp(new NOX::Epetra::Group(printParams, interface, noxSoln, linSys));
+
+    // Convergence Tests
+    Teuchos::RefCountPtr<NOX::StatusTest::Combo> combo = CreateStatusTest(nlParams, grp);
+
+    // Create the solver
+    Teuchos::RefCountPtr<NOX::Solver::Manager> solver = Teuchos::rcp(new NOX::Solver::Manager(grp, combo, RefCountPtr<ParameterList>(&nlParams,false)));
 
 #if 0
     if ((step_ % 10) == 0)
     {
-      // debug FD Jacobian
       Teuchos::ParameterList& fdParams = nlParams.sublist("Finite Difference");
       double alpha = fdParams.get("alpha", 1.0e-4);
       double beta  = fdParams.get("beta",  1.0e-6);
-      //FD = Teuchos::rcp(new NOX::Epetra::FiniteDifference(printParams, interface, noxSoln, rawGraph_, beta, alpha));
-      //if (not FD->computeJacobian(noxSoln->getEpetraVector()))
-      //dserror("failed to calculate Jacobian");
-
-      RefCountPtr<Epetra_CrsMatrix> jacobian = rcp(new Epetra_CrsMatrix(Copy, *rawGraph_));
-      jacobian->FillComplete();
-      jacobian->PutScalar(0.0);
-
-      const Epetra_BlockMap& map = soln->Map();
-      int nummyelements = map.NumMyElements();
-      int mypos = DRT::Utils::FindMyPos(nummyelements, map.Comm());
-      double eta = 0.0;
-
-      Epetra_Vector fo(*soln);
-      Epetra_Vector fp(*soln);
-      Epetra_Vector Jc(*soln);
-
-      // Compute the RHS at the initial solution
-      computeF(*soln, fo, NOX::Epetra::Interface::Required::FD_Res);
-
-      Epetra_Vector x_perturb = *soln;
-
-      for (int i=0; i<map.NumGlobalElements(); ++i)
-      {
-        if (map.Comm().MyPID()==0)
-          cout << "calculate column " << i << "\n";
-
-        int proc = 0;
-        int idx = 0;
-        if (i>=mypos and i<mypos+nummyelements)
-        {
-          eta = alpha*(*soln)[i-mypos] + beta;
-          x_perturb[i-mypos] += eta;
-          idx = map.GID(i-mypos);
-          proc = map.Comm().MyPID();
-        }
-
-        // Find what proc eta is on
-        int broadcastProc = 0;
-        map.Comm().SumAll(&proc, &broadcastProc, 1);
-
-        // Send the perturbation variable, eta, to all processors
-        map.Comm().Broadcast(&eta, 1, broadcastProc);
-
-        map.Comm().Broadcast(&idx, 1, broadcastProc);
-
-        // Compute the perturbed RHS
-        computeF(x_perturb, fp, NOX::Epetra::Interface::Required::FD_Res);
-
-        // Compute the column k of the Jacobian
-        Jc.Update(1.0, fp, -1.0, fo, 0.0);
-        Jc.Scale( 1.0/eta );
-
-        // Insert nonzero column entries into the jacobian
-        for (int j = 0; j < map.NumMyElements(); ++j)
-        {
-          int gid = map.GID(j);
-          if (Jc[j] != 0.0)
-          {
-            int err = jacobian->ReplaceGlobalValues(gid,1,&Jc[j],&idx);
-            if (err != 0)
-              dserror("ReplaceGlobalValues failed");
-          }
-        }
-
-        // Unperturb the solution vector
-        x_perturb = *soln;
-      }
-
-      jacobian->FillComplete();
 
       ostringstream filename;
       filename << allfiles.outputfile_kenner << "_" << step_ << ".dump";
-      EpetraExt::RowMatrixToMatlabFile(filename.str().c_str(),*jacobian);
+      FSI::Utils::DumpJacobian(*this, alpha, beta, soln, filename.str());
     }
 #endif
 
-    // Create the convergence tests
-    Teuchos::RefCountPtr<NOX::StatusTest::Combo> combo       = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
-    Teuchos::RefCountPtr<NOX::StatusTest::Combo> converged   = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::AND));
+    // solve the whole thing
+    NOX::StatusTest::StatusType status = solver->solve();
 
-    Teuchos::RefCountPtr<NOX::StatusTest::MaxIters> maxiters = Teuchos::rcp(new NOX::StatusTest::MaxIters(nlParams.get("Max Iterations", 20)));
-    Teuchos::RefCountPtr<NOX::StatusTest::FiniteValue> fv    = Teuchos::rcp(new NOX::StatusTest::FiniteValue);
-
-    combo->addStatusTest(fv);
-    combo->addStatusTest(converged);
-    combo->addStatusTest(maxiters);
-
-    Teuchos::RefCountPtr<NOX::StatusTest::NormF> absresid = Teuchos::rcp(new NOX::StatusTest::NormF(nlParams.get("Norm abs F", 1.0e-6)));
-    converged->addStatusTest(absresid);
-
-    if (nlParams.isParameter("Norm Update"))
+    // sometimes we might want to do it again
+    if (status != NOX::StatusTest::Converged and secondsolver)
     {
-      Teuchos::RefCountPtr<NOX::StatusTest::NormUpdate> update = Teuchos::rcp(new NOX::StatusTest::NormUpdate(nlParams.get("Norm Update", 1.0e-5)));
-      converged->addStatusTest(update);
+      if (comm_.MyPID()==0)
+        utils->out() << YELLOW "second solver" END_COLOR << endl;
+
+      // Get the Epetra_Vector with the final solution from the solver
+      const NOX::Epetra::Group& finalGroup = dynamic_cast<const NOX::Epetra::Group&>(solver->getSolutionGroup());
+      const Epetra_Vector& finalSolution = (dynamic_cast<const NOX::Epetra::Vector&>(finalGroup.getX())).getEpetraVector();
+
+      // Start the second solver from the final solution of the first
+      // one. Remember that noxSoln is just a view to soln.
+      *soln = finalSolution;
+
+      // Create the linear system
+      linSys = CreateLinearSystem(nlParams.sublist("Second"), interface, noxSoln, utils);
+
+      // Create the Group
+      grp = Teuchos::rcp(new NOX::Epetra::Group(printParams, interface, noxSoln, linSys));
+
+      // Convergence Tests
+      combo = CreateStatusTest(nlParams.sublist("Second"), grp);
+
+      // Create the solver
+      solver = Teuchos::rcp(new NOX::Solver::Manager(grp, combo, RefCountPtr<ParameterList>(&nlParams.sublist("Second"),false)));
+
+      // solve the whole thing again
+      status = solver->solve();
     }
-
-    if (nlParams.isParameter("Norm rel F"))
-    {
-      Teuchos::RefCountPtr<NOX::StatusTest::NormF> relresid = Teuchos::rcp(new NOX::StatusTest::NormF(*grp.get(), nlParams.get("Norm rel F", 1.0e-2)));
-      converged->addStatusTest(relresid);
-    }
-
-    //Teuchos::RefCountPtr<NOX::StatusTest::NormWRMS> wrms     = Teuchos::rcp(new NOX::StatusTest::NormWRMS(1.0e-2, 1.0e-8));
-    //converged->addStatusTest(wrms);
-
-    //////////////////////////////////////////////////////////////////
-
-    // Create the method
-    solver_ = Teuchos::rcp(new NOX::Solver::Manager(grp, combo, globalparameterlist));
-    NOX::StatusTest::StatusType status = solver_->solve();
 
     if (status != NOX::StatusTest::Converged)
       if (comm_.MyPID()==0)
-        utils->out() << "Nonlinear solver failed to converge!" << endl;
+        utils->out() << RED "Nonlinear solver failed to converge!" END_COLOR << endl;
 
     // Get the Epetra_Vector with the final solution from the solver
-    const NOX::Epetra::Group& finalGroup = dynamic_cast<const NOX::Epetra::Group&>(solver_->getSolutionGroup());
+    const NOX::Epetra::Group& finalGroup = dynamic_cast<const NOX::Epetra::Group&>(solver->getSolutionGroup());
     const Epetra_Vector& finalSolution = (dynamic_cast<const NOX::Epetra::Vector&>(finalGroup.getX())).getEpetraVector();
     //const Epetra_Vector& finalF        = (dynamic_cast<const NOX::Epetra::Vector&>(finalGroup.getF())).getEpetraVector();
 
@@ -900,7 +537,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
         utils->out() << endl
                      << "Final Parameters" << endl
                      << "****************" << endl;
-        solver_->getList().print(utils->out());
+        solver->getList().print(utils->out());
         utils->out() << endl;
       }
 
@@ -932,6 +569,227 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
     /* write current solution */
     Output();
   }
+}
+
+
+Teuchos::RefCountPtr<NOX::Epetra::LinearSystemAztecOO>
+FSI::DirichletNeumannCoupling::CreateLinearSystem(ParameterList& nlParams,
+                                                  const Teuchos::RefCountPtr<NOX::Epetra::Interface::Required>& interface,
+                                                  NOX::Epetra::Vector& noxSoln,
+                                                  Teuchos::RefCountPtr<NOX::Utils> utils)
+{
+  Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
+
+  Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
+  Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Newton"));
+  Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
+
+  Teuchos::RefCountPtr<NOX::FSI::FSIMatrixFree> FSIMF;
+  Teuchos::RefCountPtr<NOX::Epetra::MatrixFree> MF;
+  Teuchos::RefCountPtr<NOX::Epetra::FiniteDifference> FD;
+  Teuchos::RefCountPtr<NOX::Epetra::FiniteDifferenceColoring> FDC;
+  Teuchos::RefCountPtr<NOX::Epetra::FiniteDifferenceColoring> FDC1;
+  Teuchos::RefCountPtr<NOX::Epetra::BroydenOperator> B;
+
+  Teuchos::RefCountPtr<NOX::Epetra::Interface::Jacobian> iJac;
+  Teuchos::RefCountPtr<NOX::Epetra::Interface::Preconditioner> iPrec;
+
+  Teuchos::RefCountPtr<Epetra_Operator> J;
+  Teuchos::RefCountPtr<Epetra_Operator> M;
+
+  Teuchos::RefCountPtr<NOX::Epetra::LinearSystemAztecOO> linSys;
+
+  // ==================================================================
+  // decide on Jacobian and preconditioner
+  // We migh want to use no preconditioner at all. Some kind of
+  // Jacobian has to be provided, otherwise the linear system uses
+  // plain finite differences.
+
+  std::string jacobian = nlParams.get("Jacobian", "None");
+  std::string preconditioner = nlParams.get("Preconditioner", "None");
+
+  // Special FSI based matrix free method
+  if (jacobian=="FSI Matrix Free")
+  {
+    //Teuchos::ParameterList& mfParams = nlParams.sublist("FSI Matrix Free");
+
+    // MatrixFree seems to be the most interessting choice. This
+    // version builds on our steepest descent relaxation
+    // implementation to approximate the Jacobian times x.
+
+    // This is the default method.
+
+    FSIMF = Teuchos::rcp(new NOX::FSI::FSIMatrixFree(printParams, interface, noxSoln));
+    iJac = FSIMF;
+    J = FSIMF;
+  }
+
+  // Matrix Free Newton Krylov. This is supposed to be the most
+  // appropiate choice.
+  else if (jacobian=="Matrix Free")
+  {
+    Teuchos::ParameterList& mfParams = nlParams.sublist("Matrix Free");
+    double lambda = mfParams.get("lambda", 1.0e-6);
+    //mfresitemax_ = mfParams.get("itemax", -1);
+
+    bool kelleyPerturbation = mfParams.get("Kelley Perturbation", true);
+
+    // MatrixFree seems to be the most interessting choice. But you
+    // must set a rather low tolerance for the linear solver.
+
+    MF = Teuchos::rcp(new NOX::Epetra::MatrixFree(printParams, interface, noxSoln, kelleyPerturbation));
+    MF->setLambda(lambda);
+    iJac = MF;
+    J = MF;
+  }
+
+  // No Jacobian at all. Do a fix point iteration. This is a user
+  // extension, so we have to modify the parameter list here.
+  else if (jacobian=="None")
+  {
+    Teuchos::RefCountPtr<NOX::Direction::Generic> fixpoint = Teuchos::rcp(new NOX::FSI::FixPoint(utils,nlParams));
+    dirParams.set("Method","User Defined");
+    dirParams.set("User Defined Direction",fixpoint);
+    lsParams.set("Preconditioner","None");
+    preconditioner="None";
+  }
+
+  // the strange coupling proposed by Michler
+  else if (jacobian=="Michler")
+  {
+    Teuchos::RefCountPtr<NOX::Direction::Generic> michler = Teuchos::rcp(new NOX::FSI::Michler(utils,nlParams));
+    dirParams.set("Method","User Defined");
+    dirParams.set("User Defined Direction",michler);
+    lsParams.set("Preconditioner","None");
+    preconditioner="None";
+  }
+
+  else if (jacobian=="Dumb Finite Difference")
+  {
+    Teuchos::ParameterList& fdParams = nlParams.sublist("Finite Difference");
+    //fdresitemax_ = fdParams.get("itemax", -1);
+    double alpha = fdParams.get("alpha", 1.0e-4);
+    double beta  = fdParams.get("beta",  1.0e-6);
+    std::string dt = fdParams.get("Difference Type","Forward");
+    NOX::Epetra::FiniteDifference::DifferenceType dtype = NOX::Epetra::FiniteDifference::Forward;
+    if (dt=="Forward")
+      dtype = NOX::Epetra::FiniteDifference::Forward;
+    else if (dt=="Backward")
+      dtype = NOX::Epetra::FiniteDifference::Backward;
+    else if (dt=="Centered")
+      dtype = NOX::Epetra::FiniteDifference::Centered;
+    else
+      dserror("unsupported difference type '%s'",dt.c_str());
+
+    FD = Teuchos::rcp(new NOX::Epetra::FiniteDifference(printParams, interface, noxSoln, rawGraph_, beta, alpha));
+    FD->setDifferenceMethod(dtype);
+
+    iJac = FD;
+    J = FD;
+  }
+
+  else
+  {
+    dserror("unsupported Jacobian '%s'",jacobian.c_str());
+  }
+
+  // ==================================================================
+
+  // No preconditioning at all. This might work. But on large
+  // systems it probably won't.
+  if (preconditioner=="None")
+  {
+    if (lsParams.get("Preconditioner", "None")!="None")
+    {
+      if (comm_.MyPID()==0)
+        utils->out() << RED "Warning: Preconditioner turned on in linear solver settings.\n"
+                     << "Jacobian operator will be used for preconditioning as well." END_COLOR "\n";
+    }
+
+    if (Teuchos::is_null(iJac))
+    {
+      // if no Jacobian has been set this better be the fix point
+      // method.
+      if (dirParams.get("Method","Newton")!="User Defined")
+      {
+        if (comm_.MyPID()==0)
+          utils->out() << RED "Warning: No Jacobian for solver " << dirParams.get("Method","Newton") << END_COLOR "\n";
+      }
+      linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams, interface, noxSoln));
+    }
+    else
+    {
+      linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams, interface, iJac, J, noxSoln));
+    }
+  }
+
+  else if (preconditioner=="Dump Finite Difference")
+  {
+    if (lsParams.get("Preconditioner", "None")=="None")
+    {
+      if (comm_.MyPID()==0)
+        utils->out() << RED "Warning: Preconditioner turned off in linear solver settings." END_COLOR "\n";
+    }
+
+    Teuchos::ParameterList& fdParams = nlParams.sublist("Finite Difference");
+    //fdresitemax_ = fdParams.get("itemax", -1);
+    double alpha = fdParams.get("alpha", 1.0e-4);
+    double beta  = fdParams.get("beta",  1.0e-6);
+
+    Teuchos::RefCountPtr<NOX::Epetra::FiniteDifference> precFD =
+      Teuchos::rcp(new NOX::Epetra::FiniteDifference(printParams, interface, noxSoln, rawGraph_, beta, alpha));
+    iPrec = precFD;
+    M = precFD;
+
+    linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams, iJac, J, iPrec, M, noxSoln));
+  }
+
+  else
+  {
+    dserror("unsupported preconditioner '%s'",preconditioner.c_str());
+  }
+
+  return linSys;
+}
+
+
+Teuchos::RefCountPtr<NOX::StatusTest::Combo>
+FSI::DirichletNeumannCoupling::CreateStatusTest(ParameterList& nlParams,
+                                                Teuchos::RefCountPtr<NOX::Epetra::Group> grp)
+{
+  // Create the convergence tests
+  Teuchos::RefCountPtr<NOX::StatusTest::Combo> combo       = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
+  Teuchos::RefCountPtr<NOX::StatusTest::Combo> converged   = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::AND));
+
+  Teuchos::RefCountPtr<NOX::StatusTest::MaxIters> maxiters = Teuchos::rcp(new NOX::StatusTest::MaxIters(nlParams.get("Max Iterations", 20)));
+  Teuchos::RefCountPtr<NOX::StatusTest::FiniteValue> fv    = Teuchos::rcp(new NOX::StatusTest::FiniteValue);
+
+  combo->addStatusTest(fv);
+  combo->addStatusTest(converged);
+  combo->addStatusTest(maxiters);
+
+  Teuchos::RefCountPtr<NOX::StatusTest::NormF> absresid =
+    Teuchos::rcp(new NOX::StatusTest::NormF(nlParams.get("Norm abs F", 1.0e-6)));
+  converged->addStatusTest(absresid);
+
+  if (nlParams.isParameter("Norm Update"))
+  {
+    Teuchos::RefCountPtr<NOX::StatusTest::NormUpdate> update =
+      Teuchos::rcp(new NOX::StatusTest::NormUpdate(nlParams.get("Norm Update", 1.0e-5)));
+    converged->addStatusTest(update);
+  }
+
+  if (nlParams.isParameter("Norm rel F"))
+  {
+    Teuchos::RefCountPtr<NOX::StatusTest::NormF> relresid =
+      Teuchos::rcp(new NOX::StatusTest::NormF(*grp.get(), nlParams.get("Norm rel F", 1.0e-2)));
+    converged->addStatusTest(relresid);
+  }
+
+  //Teuchos::RefCountPtr<NOX::StatusTest::NormWRMS> wrms     = Teuchos::rcp(new NOX::StatusTest::NormWRMS(1.0e-2, 1.0e-8));
+  //converged->addStatusTest(wrms);
+
+  return combo;
 }
 
 
@@ -969,6 +827,40 @@ bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vect
 
     Teuchos::RefCountPtr<Epetra_Vector> iforce = FluidOp(idispn, fillFlag);
     Teuchos::RefCountPtr<Epetra_Vector> idispnp = StructOp(iforce, fillFlag);
+
+#if 0
+    Teuchos::RefCountPtr<Epetra_Vector> iforce2 = FluidOp(idispn, fillFlag);
+    Teuchos::RefCountPtr<Epetra_Vector> idispnp2 = StructOp(iforce, fillFlag);
+
+    double norm;
+    iforce2->Update(-1., *iforce, 1.);
+    iforce2->Norm2(&norm);
+    if (norm > 1e-10)
+      dserror("fluid force norm %e > 1e-10", norm);
+
+    idispnp2->Update(-1., *idispnp, 1.);
+    idispnp2->Norm2(&norm);
+    if (norm > 1e-10)
+      dserror("structure disp norm %e > 1e-10", norm);
+#endif
+
+#if 0
+    if ((fillFlag==MF_Jac) or (fillFlag==MF_Res))
+    {
+      static int step;
+      ostringstream filename;
+      filename << allfiles.outputfile_kenner << "_" << step << ".force";
+      step += 1;
+
+      F.Update(1.0, *idispnp, -1.0, *idispn, 0.0);
+
+      ofstream out(filename.str().c_str());
+      iforce->Print(out);
+      //idispn->Print(out);
+      //idispnp->Print(out);
+      F.Print(out);
+    }
+#endif
 
     F.Update(1.0, *idispnp, -1.0, *idispn, 0.0);
   }

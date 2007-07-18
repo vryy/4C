@@ -127,6 +127,17 @@ public:
 
 private:
 
+  ///
+  Teuchos::RefCountPtr<NOX::Epetra::LinearSystemAztecOO>
+  CreateLinearSystem(ParameterList& nlParams,
+                     const Teuchos::RefCountPtr<NOX::Epetra::Interface::Required>& interface,
+                     NOX::Epetra::Vector& noxSoln,
+                     Teuchos::RefCountPtr<NOX::Utils> utils);
+
+  ///
+  Teuchos::RefCountPtr<NOX::StatusTest::Combo> CreateStatusTest(ParameterList& nlParams,
+                                                                Teuchos::RefCountPtr<NOX::Epetra::Group> grp);
+
   /// interface fluid operator
   Teuchos::RefCountPtr<Epetra_Vector> FluidOp(Teuchos::RefCountPtr<Epetra_Vector> idisp,
                                               const FillType fillFlag);
@@ -187,9 +198,6 @@ private:
 
   /// coupling of fluid and ale
   Coupling               coupfa_;
-
-  /// main nonlinear solver object that contains everything else
-  Teuchos::RefCountPtr<NOX::Solver::Manager> solver_;
 
   /// interface displacement from time step begin
   Teuchos::RefCountPtr<Epetra_Vector> idispn_;

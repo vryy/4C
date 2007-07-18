@@ -684,17 +684,22 @@ void FluidImplicitTimeInt::NonlinearSolve(
 
 
     // this is the convergence check
-    if (vresnorm <= ittol and presnorm <= ittol)
+    // We always require at least one solve. Otherwise the
+    // perturbation at the FSI interface might get by unnoticed.
+    if (itnum > 1)
     {
-      stopnonliniter=true;
-      if (myrank_ == 0)
+      if (vresnorm <= ittol and presnorm <= ittol)
       {
-        printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |",
-             itnum,itemax,ittol,vresnorm,presnorm);
-        printf(" (te=%10.3E)\n",dtele);
-        printf("+------------+-------------------+--------------+--------------+\n");
+        stopnonliniter=true;
+        if (myrank_ == 0)
+        {
+          printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |",
+                 itnum,itemax,ittol,vresnorm,presnorm);
+          printf(" (te=%10.3E)\n",dtele);
+          printf("+------------+-------------------+--------------+--------------+\n");
+        }
+        break;
       }
-      break;
     }
 
     // warn if itemax is reached without convergence, but proceed to
@@ -1216,7 +1221,7 @@ void FluidImplicitTimeInt::SetInitialFlowField(
   {
     int numdim = params_.get<int>("number of velocity degrees of freedom");
 
-    
+
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
     {
@@ -1228,7 +1233,7 @@ void FluidImplicitTimeInt::SetInitialFlowField(
       for(int index=0;index<numdim+1;++index)
       {
         int gid = nodedofset[index];
-        
+
         double initialval=DRT::Utils::FunctionManager::Instance().Funct(startfuncno-1).Evaluate(index,lnode->X());
 
         velnp_->ReplaceGlobalValues(1,&initialval,&gid);
