@@ -874,6 +874,22 @@ public:
                                  Epetra_Vector& toggle);
 
   /*!
+  \brief Evaluate a specified condition
+
+  Loop all conditions attached to the discretization and evaluate them.
+  This method considers all conditions in condition_ with the names
+  matching the user-provided string condstring.
+  Currently no time curves or spatial functions are used.
+ 
+  \param params (in):        List of parameters for use at element level
+  \param systemvector (out): Vector to assemble BCs to.
+                             The vector is NOT initialized to zero by this method.
+  */								 
+  virtual void EvaluateCondition(ParameterList& params, 
+  				 Epetra_Vector& systemvector, 
+				 const string& condstring);				 
+
+  /*!
   \brief Compute the nullspace of the discretization
 
   This method looks in the solver parameters whether algebraic multigrid (AMG)

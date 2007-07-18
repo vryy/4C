@@ -220,7 +220,7 @@ static double EvaluateFunction(DRT::Node*        node,
  |  evaluate Dirichlet conditions (public)                   mwgee 01/07|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::EvaluateDirichlet(ParameterList& params,
-                                            Epetra_Vector& systemvector,
+                                            Epetra_Vector& systemvector,					    
                                             Epetra_Vector& toggle)
 {
   if (!Filled()) dserror("FillComplete() was not called");
@@ -356,6 +356,62 @@ void DoDirichletCondition(DRT::Condition&      cond,
   }
   return;
 }
+
+
+/*----------------------------------------------------------------------*
+ |  evaluate a condition (public)                            g.bau 07/07|
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::EvaluateCondition(ParameterList& params,                                             
+					    Epetra_Vector& systemvector,					     
+					    const string& condstring)
+{
+  if (!Filled()) dserror("FillComplete() was not called");
+  if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+
+  multimap<string,RefCountPtr<Condition> >::iterator fool;
+ 
+  //-----------------------------------------------------------------------
+  // loop through conditions and evaluate them iff they match the criterion
+  //-----------------------------------------------------------------------
+  for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
+   {
+
+    if (fool->first == condstring)
+    {
+      DRT::Condition& cond = *(fool->second);
+      map<int,RefCountPtr<DRT::Element> >& geom = cond.Geometry();
+      if (geom.empty()) 
+        dserror("evaluation of condition with empty geometry");
+      map<int,RefCountPtr<DRT::Element> >::iterator curr;
+
+      // define element matrices and vectors
+      Epetra_SerialDenseMatrix elematrix1;
+      Epetra_SerialDenseMatrix elematrix2;
+      Epetra_SerialDenseVector elevector1;
+      Epetra_SerialDenseVector elevector2;
+      Epetra_SerialDenseVector elevector3;
+	
+      for (curr=geom.begin(); curr!=geom.end(); ++curr)
+      {
+        // get element location vector, dirichlet flags and ownerships
+        vector<int> lm;
+        vector<int> lmowner;
+        curr->second->LocationVector(*this,lm,lmowner);
+        elevector1.Size((int)lm.size());
+	
+        // call the element specific evaluate method
+	int err = curr->second->Evaluate(params,*this,lm,elematrix1,elematrix2,
+                               elevector1,elevector2,elevector3);
+	if (err) dserror("error while evaluating elements");
+	
+	// assembly
+        LINALG::Assemble(systemvector,elevector1,lm,lmowner);
+      }
+    }
+   } //for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
+   
+  return;
+} // end of DRT::Discretization::EvaluateCondition
 
 
 /*----------------------------------------------------------------------*
