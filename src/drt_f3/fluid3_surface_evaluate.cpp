@@ -306,24 +306,16 @@ void DRT::Elements::Fluid3Surface::IntegrateShapeFunction(ParameterList& params,
   // there are 3 velocities and 1 pressure
   const int numdf = 4;
 
-  const double thsl = params.get("time constant for integration",1.0);
+//  const double thsl = params.get("time constant for integration",1.0);
   
   const DiscretizationType distype = this->Shape();
 
-  // find out whether we will use a time curve
+/*  // find out whether we will use a time curve
   bool usetime = true;
   const double time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
-
-/*
-  // find out whether we will use a time curve and get the factor
-  const vector<int>* curve  = condition.Get<vector<int> >("curve");
-  int curvenum = -1;
-  if (curve) curvenum = (*curve)[0];
-  double curvefac = 1.0;
-  if (curvenum>=0 && usetime)
-    curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
 */
+
   // set number of nodes
   const int iel   = this->NumNode();
 
@@ -369,7 +361,7 @@ void DRT::Elements::Fluid3Surface::IntegrateShapeFunction(ParameterList& params,
   |               start loop over integration points                     |
   *----------------------------------------------------------------------*/
   const IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
-  cout<<"GP "<<intpoints.nquad<<endl;
+
   for (int gpid=0; gpid<intpoints.nquad; gpid++)
   {
     const double e0 = intpoints.qxg[gpid][0];
@@ -385,13 +377,12 @@ void DRT::Elements::Fluid3Surface::IntegrateShapeFunction(ParameterList& params,
     f3_metric_tensor_for_surface(xyze,deriv,metrictensor,&drs);	
     
     // values are multiplied by the product from inf. area element,
-    // the gauss weight, the timecurve factor and the constant
+    // the gauss weight and the constant
     // belonging to the time integration algorithm (theta*dt for
     // one step theta, 2/3 for bdf with dt const.)
     
-    //    const double fac = intpoints.qwgt[gpid] * drs * curvefac * thsl;
- 
-    const double fac = intpoints.qwgt[gpid] * drs * thsl;
+    //const double fac = intpoints.qwgt[gpid] * drs * thsl;
+    const double fac = intpoints.qwgt[gpid] * drs;
     
     for (int node=0;node<iel;++node)
     {
@@ -399,15 +390,12 @@ void DRT::Elements::Fluid3Surface::IntegrateShapeFunction(ParameterList& params,
       {
         elevec1[node*numdf+dim]+=
           funct[node] * fac;
-	  cout<<elevec1[node*numdf+dim]<<endl;
-	  //cout<<funct[node]<<endl;
       }
     }
 	
   } /* end of loop over integration points gpid */
     
-    
-     
+        
 return;
 } // DRT::Elements::Fluid3Surface::IntegrateShapeFunction				   
 

@@ -311,11 +311,6 @@ void FluidImplicitTimeInt::TimeLoop()
     //                     solve nonlinear equation
     // -------------------------------------------------------------------
     this->NonlinearSolve();
-
-    // -------------------------------------------------------------------
-    //                     calculate (wall) stresses
-    // -------------------------------------------------------------------
-    this->CalcStresses();
     
     // -------------------------------------------------------------------
     //                         update solution
@@ -1084,6 +1079,17 @@ void FluidImplicitTimeInt::Output()
       }
 #endif
 
+     #if 0  // DEBUG IO  --- integratedshapefunc
+     {
+	  int rr;
+	  double* data = traction->Values();
+	  for(rr=0;rr<traction->MyLength();rr++)
+	  {
+	      printf("traction %22.15e\n",data[rr]);
+	  }
+     }
+     #endif
+
   return;
 } // FluidImplicitTimeInt::Output
 
@@ -1494,7 +1500,7 @@ RefCountPtr<Epetra_Vector> FluidImplicitTimeInt::CalcStresses()
 {
      ParameterList eleparams;
      // set action for elements
-     eleparams.set("action","calc_stresses");
+     eleparams.set("action","integrate_Shapefunction");
   
      // get a vector layout from the discretization to construct matching
      // vectors and matrices
@@ -1506,7 +1512,7 @@ RefCountPtr<Epetra_Vector> FluidImplicitTimeInt::CalcStresses()
       
      // call loop over elements
      discret_->ClearState();
-     const string condstring("integrate_Shapefunction"); 
+     const string condstring("FluidStressCalc"); 
      discret_->EvaluateCondition(eleparams,*integratedshapefunc,condstring);
      discret_->ClearState();
 
@@ -1525,19 +1531,8 @@ RefCountPtr<Epetra_Vector> FluidImplicitTimeInt::CalcStresses()
      // int err = traction->ReciprocalMultiply(1.0,*integratedshapefunc,*trueresidual_,0.0);
      // if (err > 0) dserror("error in traction->ReciprocalMultiply");	   
 
-     #if 0  // DEBUG IO  --- integratedshapefunc
-     {
-	  int rr;
-	  double* data = integratedshapefunc->Values();
-	  for(rr=0;rr<integratedshapefunc->MyLength();rr++)
-	  {
-	      printf("global %22.15e\n",data[rr]);
-	  }
-     }
-     #endif
-
-  // return RefCountPtr<Epetra_Vector>	
-  return integratedshapefunc;
+	
+     return integratedshapefunc;
   
 } // FluidImplicitTimeInt::CalcStresses()
 

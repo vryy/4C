@@ -226,22 +226,13 @@ void DRT::Elements::Fluid2Line::IntegrateShapeFunction(ParameterList& params,
   // there are 2 velocities and 1 pressure
   const int numdf = 3;
 
-  const double thsl = params.get("time constant for integration",1.0);
+//  const double thsl = params.get("time constant for integration",1.0);
 
+/*
   // find out whether we will use a time curve
   bool usetime = true;
   const double time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
-
-/*
-  // find out whether we will use a time curve and get the factor
-  const vector<int>* curve  = condition.Get<vector<int> >("curve");
-  int curvenum = -1;
-  if (curve) curvenum = (*curve)[0];
-  */
-  double curvefac = 1.0;
-/*  if (curvenum>=0 && usetime)
-    curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
 */
 
   // set number of nodes
@@ -285,11 +276,9 @@ void DRT::Elements::Fluid2Line::IntegrateShapeFunction(ParameterList& params,
     // belonging to the time integration algorithm (theta*dt for
     // one step theta, 2/3 for bdf with dt const.)
     
-    double fac;
-    fac =intpoints.qwgt[gpid] *dr* curvefac * thsl;
-    
-    // factor given by spatial function
-    double functionfac = 1.0;
+    //double fac = intpoints.qwgt[gpid] *dr * thsl;
+    double fac = intpoints.qwgt[gpid] *dr; 
+      
     // determine coordinates of current Gauss point 
     double coordgp[2];
     coordgp[0]=0.0;
@@ -300,28 +289,11 @@ void DRT::Elements::Fluid2Line::IntegrateShapeFunction(ParameterList& params,
        coordgp[1]+=xye(1,i)*funct[i];
       }	
 
-
-    int functnum = -1;
-    const double* coordgpref = &coordgp[0]; // needed for function evaluation
-
     for (int node=0;node<iel;++node)
       { 
        for(int dim=0;dim<3;dim++)
-        {
-         /*
-	 // factor given by spatial function	 
-	 if (functions) functnum = (*functions)[dim];
-       	   {
-            if (functnum>0)
-              // evaluate function at current gauss point	
-              functionfac = DRT::Utils::FunctionManager::Instance().Funct(functnum-1).Evaluate(dim,coordgpref);		
-            else 
-              functionfac = 1.0;
-       	   } 
-	   */       
-
-          elevec1[node*numdf+dim]+=
-          funct[node] * fac * functionfac;	  
+        {     
+          elevec1[node*numdf+dim]+=funct[node] * fac;	
         }
       }
   } //end of loop over integrationen points  
