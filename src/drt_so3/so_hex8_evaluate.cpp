@@ -666,14 +666,6 @@ void DRT::Elements::So_hex8::soh8_shapederiv(
 
 
 /*----------------------------------------------------------------------*
- |  init the element (public)                                mwgee 12/06|
- *----------------------------------------------------------------------*/
-int DRT::Elements::Soh8Register::Initialize(DRT::Discretization& dis)
-{
-  return 0;
-}
-
-/*----------------------------------------------------------------------*
  |  calculate initial element volume (public)                   lw 07/07|
  *----------------------------------------------------------------------*/
 void DRT::Elements::So_hex8::soh8_initvol(ParameterList& params)

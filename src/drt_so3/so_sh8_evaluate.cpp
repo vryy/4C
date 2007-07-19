@@ -782,6 +782,152 @@ void DRT::Elements::So_sh8::sosh8_evaluateT(const Epetra_SerialDenseMatrix jac,
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  find shell-thickness direction via Jacobian                maf 07/07|
+ *----------------------------------------------------------------------*/
+DRT::Elements::So_sh8::ThicknessDirection DRT::Elements::So_sh8::sosh8_findthickdir() 
+{
+  // update element geometry
+  Epetra_SerialDenseMatrix xrefe(NUMNOD_SOH8,NUMDIM_SOH8); // material coord. of element
+  for (int i=0; i<NUMNOD_SOH8; ++i) {
+    xrefe(i, 0) = this->Nodes()[i]->X()[0];
+    xrefe(i, 1) = this->Nodes()[i]->X()[1];
+    xrefe(i, 2) = this->Nodes()[i]->X()[2];
+  }
+
+  // vector of df(origin)
+  double df0_vector[NUMDOF_SOH8*NUMNOD_SOH8] =
+               {-0.125,-0.125,-0.125,
+                +0.125,-0.125,-0.125,
+                +0.125,+0.125,-0.125,
+                -0.125,+0.125,-0.125,
+                -0.125,-0.125,+0.125,
+                +0.125,-0.125,+0.125,
+                +0.125,+0.125,+0.125,
+                -0.125,+0.125,+0.125};
+  // shape function derivatives, evaluated at origin (r=s=t=0.0)
+  Epetra_DataAccess CV = Copy;
+  Epetra_SerialDenseMatrix df0(CV, df0_vector, NUMDIM_SOH8, NUMDIM_SOH8, 
+  NUMNOD_SOH8);
+
+  // compute Jacobian, evaluated at element origin (r=s=t=0.0)
+  Epetra_SerialDenseMatrix jac0(NUMDIM_SOH8,NUMDIM_SOH8);
+  jac0.Multiply('N', 'N', 1.0, df0, xrefe, 0.0);
+
+  // compute norm of dX_i/dr and dX_i/ds and dX_i/dt
+  double dX_dr = 0.0;
+  double dX_ds = 0.0;
+  double dX_dt = 0.0;
+  for (int col = 0; col < NUMDIM_SOH8; ++col) {
+    dX_dr += jac0(0, col) * jac0(0, col);
+    dX_ds += jac0(1, col) * jac0(1, col);
+    dX_dt += jac0(2, col) * jac0(2, col);
+  }
+  double min_ar = min(dX_dt, min(dX_dr, dX_ds)); // minimum aspect ratio
+  
+  ThicknessDirection thickdir; // of actual element
+  
+  if (min_ar == dX_dr) {
+    if ((min_ar / dX_ds >= 0.5) || (min_ar / dX_dt >=0.5)) {
+      dserror("Solid-Shell element geometry has not a shell aspect ratio");
+    }
+    thickdir = autox;
+  }
+  else if (min_ar == dX_ds) {
+    if ((min_ar / dX_dr >= 0.5) || (min_ar / dX_dt >=0.5)) {
+      dserror("Solid-Shell element geometry has not a shell aspect ratio");
+    }
+    thickdir = autoy;
+  }
+  else if (min_ar == dX_dt) {
+    if ((min_ar / dX_dr >= 0.5) || (min_ar / dX_ds >=0.5)) {
+      dserror("Solid-Shell element geometry has not a shell aspect ratio");
+    }
+    thickdir = autoz;
+  }
+  return thickdir;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  init the element (public)                                  maf 07/07|
+ *----------------------------------------------------------------------*/
+//int DRT::Elements::Sosh8Register::Initialize(DRT::Discretization& dis)
+int DRT::Elements::So_sh8::Initialize_numbers(DRT::Discretization& dis)
+{
+  //-------------------- loop all my column elements and define thickness direction
+  for (int i=0; i<dis.NumMyColElements(); ++i)
+  {
+    // get the actual element
+    if (dis.lColElement(i)->Type() != DRT::Element::element_sosh8) continue;
+    DRT::Elements::So_sh8* actele = dynamic_cast<DRT::Elements::So_sh8*>(dis.lColElement(i));
+    if (!actele) dserror("cast to So_sh8* failed");
+    
+    // check for automatic definition of thickness direction
+    if (actele->thickdir_ == DRT::Elements::So_sh8::autoj) {
+      actele->thickdir_ = actele->sosh8_findthickdir();
+    }
+    
+    //int orig_nodeids[NUMNOD_SOH8];
+    int new_nodeids[NUMNOD_SOH8];
+
+    switch (actele->thickdir_) {
+      case DRT::Elements::So_sh8::autox:
+      case DRT::Elements::So_sh8::globx:{
+        cout << endl << "thickness direction is X" << endl;
+//        for (int node = 0; node < NUMNOD_SOH8; ++node) {
+//          orig_nodeids[node] = actele->NodeIds()[node];
+//          cout << node << ": " << orig_nodeids[node] << " inputID: " << actele->inp_nodeIds_[node]<< endl;
+//        }
+        // resorting of nodes to arrive at local t-dir for global x-dir
+        new_nodeids[0] = actele->inp_nodeIds_[7];
+        new_nodeids[1] = actele->inp_nodeIds_[4];
+        new_nodeids[2] = actele->inp_nodeIds_[0];
+        new_nodeids[3] = actele->inp_nodeIds_[3];
+        new_nodeids[4] = actele->inp_nodeIds_[6];
+        new_nodeids[5] = actele->inp_nodeIds_[5];
+        new_nodeids[6] = actele->inp_nodeIds_[1];
+        new_nodeids[7] = actele->inp_nodeIds_[2];
+        break;
+      }
+      case DRT::Elements::So_sh8::autoy:
+      case DRT::Elements::So_sh8::globy:{
+        cout << endl << "thickness direction is Y" << endl;
+//        for (int node = 0; node < NUMNOD_SOH8; ++node) {
+//          orig_nodeids[node] = actele->NodeIds()[node];
+//          cout << node << ": " << orig_nodeids[node] << " inputID: " << actele->inp_nodeIds_[node]<< endl;
+//        }
+        // resorting of nodes to arrive at local t-dir for global y-dir
+        new_nodeids[0] = actele->inp_nodeIds_[4];
+        new_nodeids[1] = actele->inp_nodeIds_[5];
+        new_nodeids[2] = actele->inp_nodeIds_[1];
+        new_nodeids[3] = actele->inp_nodeIds_[0];
+        new_nodeids[4] = actele->inp_nodeIds_[7];
+        new_nodeids[5] = actele->inp_nodeIds_[6];
+        new_nodeids[6] = actele->inp_nodeIds_[2];
+        new_nodeids[7] = actele->inp_nodeIds_[3];
+        break;
+      }
+      case DRT::Elements::So_sh8::autoz:
+      case DRT::Elements::So_sh8::globz:{ 
+        cout << endl << "thickness direction is Z" << endl;
+        // no resorting necessary
+        for (int node = 0; node < 8; ++node) {
+          new_nodeids[node] = actele->inp_nodeIds_[node];
+//          orig_nodeids[node] = actele->NodeIds()[node];
+//          cout << node << ": " << orig_nodeids[node] << " inputID: " << actele->inp_nodeIds_[node]<< endl;
+        }
+        break;
+      }
+      default:
+      dserror("no thickness direction for So_sh8");
+    }
+    actele->SetNodeIds(NUMNOD_SOH8,new_nodeids);
+  }
+  
+  
+  return 0;
+}
 
 
 #endif  // #ifdef TRILINOS_PACKAGE

@@ -59,9 +59,13 @@ bool DRT::Elements::So_sh8::ReadElement()
     dserror ("Reading of SOLIDSH8 failed");
   }
   // reduce node numbers by one
-  for (int i=0; i<nnode; ++i) nodes[i]--;
+  for (int i=0; i<nnode; ++i){
+    nodes[i]--;
+    inp_nodeIds_[i] = nodes[i];
+  }
 
   SetNodeIds(nnode,nodes);
+  
 
   // read number of material model
   int material = 0;
@@ -105,6 +109,22 @@ bool DRT::Elements::So_sh8::ReadElement()
     // no EAS technology
     else if (strncmp(buffer,"none",4)==0) eastype_ = soh8_easnone;
     else dserror("Reading of SO_SH8 EAS technology failed");
+  }
+
+  // read global coordinate of shell-thickness direction
+  thickdir_ = autoj;           // default: auto by Jacobian
+  frchar("THICKDIR",buffer,&ierr);
+  if (ierr)
+  {
+   // global X
+   if      (strncmp(buffer,"XDIR",4)==0)    thickdir_ = globx;
+   // global Y
+   else if (strncmp(buffer,"YDIR",4)==0)    thickdir_ = globy;
+   // global Z
+   else if (strncmp(buffer,"ZDIR",4)==0)    thickdir_ = globz;
+   // find automatically through Jacobian of Xrefe
+   else if (strncmp(buffer,"AUTO",4)==0)    thickdir_ = autoj;
+   else dserror("Reading of SO_SH8 thickness direction failed");
   }
 
   // read stress evaluation/output type

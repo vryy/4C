@@ -38,13 +38,6 @@ using namespace Teuchos;
 #include "../drt_lib/drt_node.H"
 #include "so_hex8.H"
 
-// Several parameters which are fixed for Solid-Shell8
-#define NUMNOD_SOH8 8      // number of nodes
-#define NODDOF_SOH8 3      // number of dofs per node
-#define NUMDOF_SOH8 24     // total dofs per element
-#define NUMSTR_SOH8 6      // number of strains/stresses
-#define NUMGPT_SOH8 8      // total gauss points per element
-#define NUMDIM_SOH8 3      // number of dimensions
 
 // forward declarations
 struct _MATERIAL;
@@ -135,6 +128,15 @@ public:
   \brief Print this element
   */
   void Print(ostream& os) const;
+  
+  /*!
+  \brief Allocate and return a DesignElementRegister class
+
+  Every implementation of DRT::Element must also implement
+  an DRT::ElementRegister. This method allocates and returns
+  an instance of a matching DRT::ElementRegister.
+  */
+  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const;
 
   //@}
 
@@ -190,12 +192,30 @@ public:
                Epetra_SerialDenseVector& elevec2,
                Epetra_SerialDenseVector& elevec3);
 
+  //! definition of shell-thickness direction
+  enum ThicknessDirection
+  {
+    globx,    // global x
+    globy,    // global y    
+    globz,    // global z
+    autoj,    // find automatically by Jacobian
+    autox,    // automatically set to x
+    autoy,    // automatically set to y
+    autoz,    // automatically set to z
+  };
 
+  int Initialize_numbers(DRT::Discretization& dis);
 
 private:
 
   // don't want = operator
   So_sh8& operator = (const So_sh8& old);
+
+  //! shell-thickness direction
+  ThicknessDirection                             thickdir_;
+  
+  //! original (input) NodeIds, stored for eventual change to define thickness dir.
+  int inp_nodeIds_[NUMNOD_SOH8];
 
   void sosh8_nlnstiffmass(vector<int>&              lm,
                          vector<double>&           disp,
@@ -215,6 +235,8 @@ private:
 
   void sosh8_evaluateT(const Epetra_SerialDenseMatrix jac,  // actual jacobian
                        Epetra_SerialDenseMatrix& TinvT);    // corr. T^{-T}
+  
+  ThicknessDirection sosh8_findthickdir() ;
 
 }; // class So_sh8
 
@@ -299,6 +321,16 @@ public:
   \brief Print this element
   */
   void Print(ostream& os) const;
+
+  /*!
+  \brief Call Element init routines
+
+  The method performs all steps needed to init the solid-shell8 elements,
+  e.g. defines shell-thickness direction
+  */
+  //int Initialize(DRT::Discretization& dis);
+
+  //@}
 
 private:
 
