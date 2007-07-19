@@ -51,7 +51,8 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   restartstep_(0),
   uprestart_(params.get("write restart every", -1)),
   writestep_(0),
-  upres_(params.get("write solution every", -1))
+  upres_(params.get("write solution every", -1)),
+  writestresses_(params.get<int>("write stresses", 0))  
 {
 
   int numdim = params_.get<int>("number of velocity degrees of freedom");
@@ -965,10 +966,7 @@ void FluidImplicitTimeInt::Output()
 
   //increase counters
     restartstep_ += 1;
-    writestep_ += 1;
-    
-  //perform stress calculation
-  RefCountPtr<Epetra_Vector> traction = CalcStresses(); 
+    writestep_ += 1; 
 
   if (writestep_ == upres_)  //write solution
     {
@@ -977,9 +975,15 @@ void FluidImplicitTimeInt::Output()
       output_.NewStep    (step_,time_);
       output_.WriteVector("velnp", velnp_);
       //output_.WriteVector("residual", trueresidual_);
-      //output_.WriteVector("traction",traction);
       if (alefluid_)
         output_.WriteVector("dispnp", dispnp_);
+      
+      //only perform stress calculation when output is needed
+      if (writestresses_)  
+      {
+       RefCountPtr<Epetra_Vector> traction = CalcStresses();
+       output_.WriteVector("traction",traction); 
+      }     
 
       if (restartstep_ == uprestart_) //add restart data
       {
@@ -999,9 +1003,16 @@ void FluidImplicitTimeInt::Output()
     output_.NewStep    (step_,time_);
     output_.WriteVector("velnp", velnp_);
     //output_.WriteVector("residual", trueresidual_);
-    //output_.WriteVector("traction",traction);
     if (alefluid_)
       output_.WriteVector("dispnp", dispnp_);
+
+    //only perform stress calculation when output is needed
+    if (writestresses_)  
+    {
+     RefCountPtr<Epetra_Vector> traction = CalcStresses();
+     output_.WriteVector("traction",traction); 
+    }
+                 
     output_.WriteVector("accn", accn_);
     output_.WriteVector("veln", veln_);
     output_.WriteVector("velnm", velnm_);
@@ -1084,7 +1095,7 @@ void FluidImplicitTimeInt::Output()
       }
 #endif
 
-     #if 0  // DEBUG IO  --- integratedshapefunc
+     #if 0  // DEBUG IO  --- traction
      {
 	  int rr;
 	  double* data = traction->Values();

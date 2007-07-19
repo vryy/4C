@@ -211,6 +211,7 @@ protected:
   int uprestart_;
   int writestep_;
   int upres_;
+  int writestresses_;
 
   double dta_;
   double dtp_;

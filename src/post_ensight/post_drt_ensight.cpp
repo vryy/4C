@@ -846,6 +846,7 @@ string FluidEnsightWriter::WriteAllResults(
     str << EnsightWriter::WriteResult("velnp", "pressure", 1, field->problem()->num_dim());
     str << EnsightWriter::WriteResult("residual", "residual", field->problem()->num_dim());
     str << EnsightWriter::WriteResult("dispnp", "displacement", field->problem()->num_dim());
+    str << EnsightWriter::WriteResult("traction", "traction", field->problem()->num_dim());
     return str.str();
 }
 
