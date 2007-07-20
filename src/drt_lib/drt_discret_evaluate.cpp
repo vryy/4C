@@ -380,8 +380,10 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
     {
       DRT::Condition& cond = *(fool->second);
       map<int,RefCountPtr<DRT::Element> >& geom = cond.Geometry();
-      if (geom.empty()) 
-        dserror("evaluation of condition with empty geometry");
+      // if (geom.empty()) dserror("evaluation of condition with empty geometry");
+      // no check for empty geometry here since in parallel computations
+      // can exist processors which do not own a portion of the elements belonging 
+      // to the condition geometry	
       map<int,RefCountPtr<DRT::Element> >::iterator curr;
 
       // define element matrices and vectors

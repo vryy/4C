@@ -24,7 +24,7 @@ ELEMENTS           9
 NODES            152
 DIM                3
 MATERIALS          1
-NUMDF        6
+NUMDF              6
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Fluid
 NUMFIELD     1
@@ -47,7 +47,7 @@ STRUCT_STRESS_SMO No
 STRUCT_SM_DISP    No
 STRUCT_SM_STRESS  No
 FLUID_SOL         Yes
-FLUID_STRESS      No
+FLUID_STRESS      Yes
 FLUID_VIS         No
 ALE_DISP          No
 THERM_TEMPERATURE No
@@ -875,15 +875,21 @@ DSURF 0
 ------------------------------DESIGN XFEM COUPLING LINE CONDITIONS
 // DOBJECT COUPLING BCFLUID
 DLINE 0
-------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
-// DOBJECT COUPLING BCFLUID
-DSURF 6
-E 7 -   1
-E 8 -   1
-E 9 -   1
-E 10 -    1
-E 11 -    1
-E 12 -    1
+--------------------------------DESIGN SURF STRESS CALC CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE
+DSURF 12
+E 1
+E 2
+E 3
+E 4
+E 5
+E 6
+E 7
+E 8
+E 9
+E 10
+E 11
+E 12
 ------------------------DESIGN FLUID FREE SURFACE POINT CONDITIONS
 // DOBJECT
 DPOINT 0
