@@ -557,11 +557,11 @@ Epetra_SerialDenseMatrix DRT::Elements::Fluid3::f3_getPositionArray(
   |                            (private)                     gammi 06/07|
   *----------------------------------------------------------------------*/
 void DRT::Elements::Fluid3::f3_genalpha_sys_mat(
-  vector<int>&              lm,
-  vector<double>&           myvelnp,
-  vector<double>&           myprenp,
-  vector<double>&           myvelaf,
-  vector<double>&           myaccam,
+  const vector<int>&        lm,
+  const vector<double>&     myvelnp,
+  const vector<double>&     myprenp,
+  const vector<double>&     myvelaf,
+  const vector<double>&     myaccam,
   Epetra_SerialDenseMatrix* elemat,
   Epetra_SerialDenseVector* elevec,
   struct _MATERIAL*         material,
@@ -782,13 +782,13 @@ void DRT::Elements::Fluid3::f3_genalpha_sys_mat(
  |                               (private)                   gammi 06/07|
  *----------------------------------------------------------------------*/
 void DRT::Elements::Fluid3::f3_calc_stabpar(
-  vector<double>           &tau,
-  int                       iel,
-  Epetra_SerialDenseMatrix &xyze,
-  vector<double>           &myvelnp,
-  double                    visc,
-  ParameterList            &params,
-  int                       version
+  vector<double>                 &tau,
+  const int                       iel,
+  const Epetra_SerialDenseMatrix &xyze,
+  const vector<double>           &myvelnp,
+  const double                    visc,
+  ParameterList                  &params,
+  const int                       version
 )
 {
   const DiscretizationType distype = this->Shape();
@@ -2402,25 +2402,25 @@ return;
  *----------------------------------------------------------------------*/
 
 void DRT::Elements::Fluid3::f3_genalpha_calmat(
-    Epetra_SerialDenseMatrix&  elemat,
-    Epetra_SerialDenseVector&  elevec,
-    vector<double>&  	       accintam,
-    vector<double>&  	       velintaf,
-    Epetra_SerialDenseMatrix&  vderxyaf,
-    Epetra_SerialDenseMatrix&  vderxyaf2,
-    vector<double>&  	       velintnp,
-    Epetra_SerialDenseMatrix&  vderxynp,
-    double&                    prenp,
-    vector<double>&  	       pderxynp,
-    vector<double>&  	       edeadaf,
-    Epetra_SerialDenseVector&  funct,
-    Epetra_SerialDenseMatrix&  derxy,
-    Epetra_SerialDenseMatrix&  derxy2,
-    vector<double>&  	       tau,
+    Epetra_SerialDenseMatrix&        elemat,
+    Epetra_SerialDenseVector&        elevec,
+    const vector<double>&  	     accintam,
+    const vector<double>&  	     velintaf,
+    const Epetra_SerialDenseMatrix&  vderxyaf,
+    const Epetra_SerialDenseMatrix&  vderxyaf2,
+    const vector<double>&  	     velintnp,
+    const Epetra_SerialDenseMatrix&  vderxynp,
+    const double&                    prenp,
+    const vector<double>&  	     pderxynp,
+    const vector<double>&  	     edeadaf,
+    const Epetra_SerialDenseVector&  funct,
+    const Epetra_SerialDenseMatrix&  derxy,
+    const Epetra_SerialDenseMatrix&  derxy2,
+    const vector<double>&  	     tau,
     const double&                    fac,
-    const double&              visc,
-    const int&                 iel,
-    ParameterList& 	       params)
+    const double&                    visc,
+    const int&                       iel,
+    ParameterList& 	             params)
 {
 
   // set parameters
@@ -4118,7 +4118,7 @@ void DRT::Elements::Fluid3::f3_calc_means(
   }
 
   // determine the orientation of the rst system compared to the xyz system
-  int elenormdirect;
+  int elenormdirect=-1;
   bool upsidedown =false;
   // the only thing of interest is how normdirect is oriented in the
   // element coordinate system
@@ -4126,6 +4126,7 @@ void DRT::Elements::Fluid3::f3_calc_means(
   {
     // t aligned
     elenormdirect =2;
+    cout << "upsidedown false" <<&endl;
   }
   else if (xyze(normdirect,3)-xyze(normdirect,0)>2e-9)
   {
@@ -4137,19 +4138,21 @@ void DRT::Elements::Fluid3::f3_calc_means(
     // r aligned
     elenormdirect =0;
   }
-  else if(xyze(normdirect,4)-xyze(normdirect,0)<2e-9)
+  else if(xyze(normdirect,4)-xyze(normdirect,0)<-2e-9)
   {
+    cout << xyze(normdirect,4)-xyze(normdirect,0) << &endl;
     // -t aligned
     elenormdirect =2;
     upsidedown =true;
+    cout << "upsidedown true" <<&endl;
   }
-  else if (xyze(normdirect,3)-xyze(normdirect,0)<2e-9)
+  else if (xyze(normdirect,3)-xyze(normdirect,0)<-2e-9)
   {
     // -s aligned
     elenormdirect =1;
     upsidedown =true;
   }
-  else if (xyze(normdirect,1)-xyze(normdirect,0)<2e-9)
+  else if (xyze(normdirect,1)-xyze(normdirect,0)<-2e-9)
   {
     // -r aligned
     elenormdirect =0;
@@ -4159,7 +4162,6 @@ void DRT::Elements::Fluid3::f3_calc_means(
   {
     dserror("cannot determine orientation of plane normal in local coordinate system of element");
   }
-  
   vector<int> inplanedirect;
   {
     set <int> inplanedirectset;

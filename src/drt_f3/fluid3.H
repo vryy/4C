@@ -341,11 +341,11 @@ private:
                   );
 
   // calculating system matrix for genalpha
-  void f3_genalpha_sys_mat(vector<int>&              lm,
-                           vector<double>&           evelnp,
-                           vector<double>&           eprenp,
-                           vector<double>&           evelaf,
-                           vector<double>&           eaccam,
+  void f3_genalpha_sys_mat(const vector<int>&        lm,
+                           const vector<double>&     evelnp,
+                           const vector<double>&     eprenp,
+                           const vector<double>&     evelaf,
+                           const vector<double>&     eaccam,
                            Epetra_SerialDenseMatrix* sys_mat,
                            Epetra_SerialDenseVector* elevec,
                            struct _MATERIAL*         material,
@@ -363,13 +363,13 @@ private:
                        ParameterList& 	         params);
 
   // calculate the stabilisation parameter
-  void f3_calc_stabpar(vector<double>           &tau,
-                       int                       iel,
-                       Epetra_SerialDenseMatrix &xyze,
-                       vector<double>           &myvelnp,
-                       double                    visc,
-                       ParameterList            &params,
-                       int                       version);
+  void f3_calc_stabpar(vector<double>                 &tau,
+                       const int                       iel,
+                       const Epetra_SerialDenseMatrix &xyze,
+                       const vector<double>           &myvelnp,
+                       const double                    visc,
+                       ParameterList                  &params,
+                       const int                       version);
 
   /*!
   \brief calculate stabilization parameter
@@ -626,19 +626,19 @@ private:
   void f3_genalpha_calmat(
     Epetra_SerialDenseMatrix&  elemat,
     Epetra_SerialDenseVector&  elevec,
-    vector<double>&            accintam,
-    vector<double>&            velintaf,
-    Epetra_SerialDenseMatrix&  vderxyaf,
-    Epetra_SerialDenseMatrix&  vderxyaf2,
-    vector<double>&            velintnp,
-    Epetra_SerialDenseMatrix&  vderxynp,
-    double&                    prenp,
-    vector<double>&            pderxynp,
-    vector<double>&            edeadaf,
-    Epetra_SerialDenseVector&  funct,
-    Epetra_SerialDenseMatrix&  derxy,
-    Epetra_SerialDenseMatrix&  derxy2,
-    vector<double>&            tau,
+    const vector<double>&            accintam,
+    const vector<double>&            velintaf,
+    const Epetra_SerialDenseMatrix&  vderxyaf,
+    const Epetra_SerialDenseMatrix&  vderxyaf2,
+    const vector<double>&            velintnp,
+    const Epetra_SerialDenseMatrix&  vderxynp,
+    const double&                    prenp,
+    const vector<double>&            pderxynp,
+    const vector<double>&            edeadaf,
+    const Epetra_SerialDenseVector&  funct,
+    const Epetra_SerialDenseMatrix&  derxy,
+    const Epetra_SerialDenseMatrix&  derxy2,
+    const vector<double>&            tau,
     const double&              fac,
     const double&              visc,
     const int&                 iel,
