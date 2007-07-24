@@ -621,11 +621,16 @@ private:
     const DiscretizationType&  distype  ///< switch gausrule based on this discretization type
     );
 
-  // evaluate fluid coefficient matrix and rhs for a generalised
-  // alpha problem
+  
+  /*!
+    \brief evaluate fluid coefficient matrix and rhs for a generalised alpha problem
+
+    
+   */
+  
   void f3_genalpha_calmat(
-    Epetra_SerialDenseMatrix&  elemat,
-    Epetra_SerialDenseVector&  elevec,
+    Epetra_SerialDenseMatrix&        elemat,
+    Epetra_SerialDenseVector&        elevec,
     const vector<double>&            accintam,
     const vector<double>&            velintaf,
     const Epetra_SerialDenseMatrix&  vderxyaf,
@@ -639,10 +644,10 @@ private:
     const Epetra_SerialDenseMatrix&  derxy,
     const Epetra_SerialDenseMatrix&  derxy2,
     const vector<double>&            tau,
-    const double&              fac,
-    const double&              visc,
-    const int&                 iel,
-    ParameterList&             params);
+    const double&                    fac,
+    const double&                    visc,
+    const int&                       iel,
+    ParameterList&                   params);
 
   /*!
    * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
