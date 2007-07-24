@@ -5,6 +5,7 @@
 #include "newtonianfluid.H"
 #include "stvenantkirchhoff.H"
 #include "micromaterial.H"
+#include "hyperpolyconvex.H"
 
 extern struct _MATERIAL *mat;
 
@@ -67,6 +68,7 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
   case m_dam_mp:
   case m_damage_ge:
   case m_hyper_polyconvex:
+    return Teuchos::rcp(new HyperPolyconvex(actmat));
   case m_th_fourier_iso:
   case m_th_fourier_gen:
   case m_vp_robinson:

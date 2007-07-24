@@ -505,6 +505,7 @@ void EnsightWriter::WriteCells(
                   for (int isubnode=0; isubnode<4; ++isubnode)
                       Write(geofile, nodemap->LID(nodes[subtet10map[0][isubnode]]->Id())
                               +1);
+                  break;
                }
                 default:
                     dserror("don't know, how to write this element type as a Cell");

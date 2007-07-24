@@ -167,6 +167,7 @@ using namespace std;
 #define ParObject_StVenantKirchhoff     (int)45
 #define ParObject_So_sh8                (int)46
 #define ParObject_Fluid3Line            (int)47
+#define ParObject_HyperPolyconvex       (int)48
 
 /*!
 \brief DRT: namespace of the ccarat discretization module

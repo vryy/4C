@@ -31,6 +31,7 @@ Maintainer: Moritz Frenzel
 
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mat/stvenantkirchhoff.H"
+#include "../drt_mat/hyperpolyconvex.H"
 
 
 //extern "C"
@@ -66,7 +67,15 @@ void DRT::Elements::So_hex8::soh8_mat_sel(
 
       break;
     }
-
+    case m_hyper_polyconvex:{
+      MAT::HyperPolyconvex* hypo = static_cast <MAT::HyperPolyconvex*>(mat.get());
+      
+      hypo->Evaluate(glstrain,cmat,stress);
+      
+      *density = hypo->Density();
+      
+      break;
+    }
     case m_struct_multiscale: /*------------------- multiscale approach */
     {
       // Here macro-micro transition (localization) will take place
