@@ -62,6 +62,22 @@ int DRT::Elements::Wall1Line::EvaluateNeumann(ParameterList& params,
   W1_DATA w1data;
   parent_->w1_integration_points(w1data);
 
+  /*------- get integraton data ---------------------------------------- */
+
+  // total number of gaussian points
+  int totngp;
+  
+  const int iel = numnode;
+
+  // coordinates of gaussian points
+  double* gpcr;
+  double* gpcs;
+  double* gpw;
+
+  /*---------get the coordinates and weights of the gaussian points----*/  
+  w1_gpdom(totngp, &gpcr, &gpcs, &gpw);
+
+
   // number of parent element nodes
   const int iel = parent_->NumNode();
 
@@ -186,6 +202,7 @@ int DRT::Elements::Wall1Line::EvaluateNeumann(ParameterList& params,
     for (int i=0; i<2; ++i)
       {
       ar[i] = facr * ds * (*onoff)[i]*(*val)[i] * curvefac;
+
       }
 
     // add load components
@@ -196,7 +213,6 @@ int DRT::Elements::Wall1Line::EvaluateNeumann(ParameterList& params,
       }
 
   } // for (int gp=0; gp<ngp; ++gp)
-
 
 return 0;
 }

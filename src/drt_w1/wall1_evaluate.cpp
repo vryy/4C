@@ -138,23 +138,35 @@ int DRT::Elements::Wall1::EvaluateNeumann(ParameterList& params,
   if (curvenum>=0 && usetime)
     curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
 
-  // no. of nodes on this surface
-  const int iel = NumNode();
-
  // general arrays
   int       ngauss  = 0;
   Epetra_SerialDenseMatrix xjm;
   xjm.Shape(2,2);
   double det;
+
   // init gaussian points
   W1_DATA w1data;
   w1_integration_points(w1data);
 
-  const int nir = ngp_[0];
-  const int nis = ngp_[1];
+  // no. of nodes on this surface
+  const int iel = NumNode();
+
   const int numdf = 2;
-//  vector<double>* thick = data_.Get<vector<double> >("thick");
-//  if (!thick) dserror("Cannot find vector of nodal thickness");
+
+  // total number of gaussian points
+  int totngp;
+
+  // coordinates of gaussian points
+  double* gpcr;
+  double* gpcs;
+  double* gpw;
+
+  /*---------get the coordinates and weights of the gaussian points----*/  
+  w1_gpdom(totngp, &gpcr, &gpcs, &gpw);
+
+
+  //  vector<double>* thick = data_.Get<vector<double> >("thick");
+  //  if (!thick) dserror("Cannot find vector of nodal thickness");
 
   vector<double> funct(iel);
   Epetra_SerialDenseMatrix deriv(2,iel);
@@ -162,6 +174,7 @@ int DRT::Elements::Wall1::EvaluateNeumann(ParameterList& params,
   double xrefe[2][MAXNOD_WALL1];
   double xcure[2][MAXNOD_WALL1];
 
+ 
   /*----------------------------------------------------- geometry update */
   for (int k=0; k<iel; ++k)
   {
@@ -171,39 +184,36 @@ int DRT::Elements::Wall1::EvaluateNeumann(ParameterList& params,
 
     xcure[0][k] = xrefe[0][k] + mydisp[k*numdf+0];
     xcure[1][k] = xrefe[1][k] + mydisp[k*numdf+1];
-
   }
 
 
   // get values and switches from the condition
   const vector<int>*    onoff = condition.Get<vector<int> >("onoff");
   const vector<double>* val   = condition.Get<vector<double> >("val");
+
   /*=================================================== integration loops */
-  for (int lr=0; lr<nir; ++lr)
+  for (int ip=0; ip<totngp; ++ip)
   {
     /*================================== gaussian point and weight at it */
-    const double e1   = w1data.xgrr[lr];
-    double facr = w1data.wgtr[lr];
-      for (int ls=0; ls<nis; ++ls)
-    {
-      const double e2   = w1data.xgss[ls];
-      double facs = w1data.wgts[ls];
-      /*-------------------- shape functions at gp e1,e2 on mid surface */
-      w1_shapefunctions(funct,deriv,e1,e2,iel,1);
-      /*--------------------------------------- compute jacobian Matrix */
-      w1_jacobianmatrix(xrefe,deriv,xjm,&det,iel);
-      /*------------------------------------ integration factor  -------*/
-     double fac=0;
-     fac = facr * facs * det;
+    const double e1 = gpcr[ip];
+    const double e2 = gpcs[ip];
+    const double wgt = gpw[ip];
+
+    /*-------------------- shape functions at gp e1,e2 on mid surface */
+    w1_shapefunctions(funct,deriv,e1,e2,iel,1);
+    /*--------------------------------------- compute jacobian Matrix */
+    w1_jacobianmatrix(xrefe,deriv,xjm,&det,iel);
+    /*------------------------------------ integration factor  -------*/
+    double fac=0;
+    fac = wgt * det;
 
     // load vector ar
     double ar[2];
     // loop the dofs of a node
     // ar[i] = ar[i] * facr * ds * onoff[i] * val[i]
     for (int i=0; i<2; ++i)
-   {
+    {
       ar[i] = fac * (*onoff)[i]*(*val)[i]*curvefac;
-
     }
 
     // add load components
@@ -212,11 +222,9 @@ int DRT::Elements::Wall1::EvaluateNeumann(ParameterList& params,
          elevec1[node*2+dof] += funct[node] *ar[dof];
 
       ngauss++;
-    } // for (int ls=0; ls<nis; ++ls)
-  } // for (int lr=0; lr<nir; ++lr)
+  } // for (int ip=0; ip<totngp; ++ip)
 
 
-cout << elevec1;
 return 0;
 }
 
@@ -261,10 +269,6 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
   Epetra_SerialDenseMatrix C;
   C.Shape(4,4);
 
-  // gaussian points
-  W1_DATA w1data;
-  w1_integration_points(w1data);
-
   // ------------------------------------ check calculation of mass matrix
   int imass=0;
   double density=0.0;
@@ -298,9 +302,20 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
     }
   }
 
-  const int nir = ngp_[0];
-  const int nis = ngp_[1];
+  /*------- get integraton data ---------------------------------------- */
+
+  // total number of gaussian points
+  int totngp;
+  
   const int iel = numnode;
+
+  // coordinates of gaussian points
+  double* gpcr;
+  double* gpcs;
+  double* gpw;
+
+  /*---------get the coordinates and weights of the gaussian points----*/  
+  w1_gpdom(totngp, &gpcr, &gpcs, &gpw);
 
   /*----------------------------------------------------- geometry update */
   for (int k=0; k<iel; ++k)
@@ -315,56 +330,54 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
   }
 
   /*=================================================== integration loops */
-  for (int lr=0; lr<nir; ++lr)
+  for (int ip=0; ip<totngp; ++ip)
   {
     /*================================== gaussian point and weight at it */
-    const double e1   = w1data.xgrr[lr];
-    double facr = w1data.wgtr[lr];
-      for (int ls=0; ls<nis; ++ls)
+    const double e1 = gpcr[ip];
+    const double e2 = gpcs[ip];
+    const double wgt = gpw[ip];
+      
+    /*-------------------- shape functions at gp e1,e2 on mid surface */
+    w1_shapefunctions(funct,deriv,e1,e2,iel,1);
+    /*--------------------------------------- compute jacobian Matrix */
+    w1_jacobianmatrix(xrefe,deriv,xjm,&det,iel);
+    /*------------------------------------ integration factor  -------*/
+   double fac = wgt * det * thickness_;
+
+    /*------------------------------compute mass matrix if imass-----*/
+    if (imass)
     {
-      const double e2   = w1data.xgss[ls];
-      double facs = w1data.wgts[ls];
-      /*-------------------- shape functions at gp e1,e2 on mid surface */
-      w1_shapefunctions(funct,deriv,e1,e2,iel,1);
-      /*--------------------------------------- compute jacobian Matrix */
-      w1_jacobianmatrix(xrefe,deriv,xjm,&det,iel);
-      /*------------------------------------ integration factor  -------*/
-     double fac=0;
-     fac = facr * facs * det * thickness_;
-
-      /*------------------------------compute mass matrix if imass-----*/
-      if (imass)
+     double facm = fac * density;
+     for (int a=0; a<iel; a++)
+     {
+      for (int b=0; b<iel; b++)
       {
-       double facm = fac * density;
-       for (int a=0; a<iel; a++)
-       {
-        for (int b=0; b<iel; b++)
-        {
-         (*massmatrix)(2*a,2*b)     += facm * funct[a] * funct[b]; /* a,b even */
-         (*massmatrix)(2*a+1,2*b+1) += facm * funct[a] * funct[b]; /* a,b odd  */
-        }
-       }
+       (*massmatrix)(2*a,2*b)     += facm * funct[a] * funct[b]; /* a,b even */
+       (*massmatrix)(2*a+1,2*b+1) += facm * funct[a] * funct[b]; /* a,b odd  */
       }
-     /*----------------------------------- calculate operator Blin  ---*/
-     w1_boplin(boplin,deriv,xjm,det,iel);
-
-     /*----------------- calculate defgrad F, Green-Lagrange-strain ---*/
-     w1_defgrad(F,strain,xrefe,xcure,boplin,iel);
-
-     /*-calculate defgrad F in matrix notation and Blin in curent conf.*/
-     w1_boplin_cure(b_cure,boplin,F,numeps,nd);
-     /*------------------------------------------ call material law ---*/
-     w1_call_matgeononl(strain,stress,C,numeps,material);
-     /*---------------------- geometric part of stiffness matrix kg ---*/
-     w1_kg(*stiffmatrix,boplin,stress,fac,nd,numeps);
-     /*------------------ elastic+displacement stiffness matrix keu ---*/
-     w1_keu(*stiffmatrix,b_cure,C,fac,nd,numeps);
-     /*--------------- nodal forces fi from integration of stresses ---*/
-       if (force) w1_fint(stress,b_cure,*force,fac,nd);
+     }
+    }
+   /*----------------------------------- calculate operator Blin  ---*/
+   w1_boplin(boplin,deriv,xjm,det,iel);
+    /*----------------- calculate defgrad F, Green-Lagrange-strain ---*/
+   w1_defgrad(F,strain,xrefe,xcure,boplin,iel);
+   /*-calculate defgrad F in matrix notation and Blin in curent conf.*/
+   w1_boplin_cure(b_cure,boplin,F,numeps,nd);
+   /*------------------------------------------ call material law ---*/
+   w1_call_matgeononl(strain,stress,C,numeps,material);
+   /*---------------------- geometric part of stiffness matrix kg ---*/
+   w1_kg(*stiffmatrix,boplin,stress,fac,nd,numeps);
+   /*------------------ elastic+displacement stiffness matrix keu ---*/
+   w1_keu(*stiffmatrix,b_cure,C,fac,nd,numeps);
+   /*--------------- nodal forces fi from integration of stresses ---*/
+     if (force) w1_fint(stress,b_cure,*force,fac,nd);
 
       ngauss++;
-    } // for (int ls=0; ls<nis; ++ls)
-  } // for (int lr=0; lr<nir; ++lr)
+  } // for (int ip=0; ip<totngp; ++ip)
+
+//cout << "Massenmatrix =" << (*massmatrix);
+//cout << "Steifigkeitsmatrix =" << (*stiffmatrix);
+//cout << "interner Lastvektor=" << (*force);
 
   return;
 }
@@ -454,7 +467,7 @@ void DRT::Elements::Wall1::w1_integration_points(struct _W1_DATA& data)
 
 //  else if (numnode==3 || numnode==6) // triangle elements
 //  {
-//    switch(ngptri_)
+//    switch(ngp_[0])
 //    {
 //      case 1:
 //      {
@@ -495,6 +508,168 @@ void DRT::Elements::Wall1::w1_integration_points(struct _W1_DATA& data)
 //      break;
 //    }
 //  } // else if (numnode==3 || numnode==6)
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  get the coordinates of gaussian points (private)        mgit 06/07|
+ *----------------------------------------------------------------------*/
+void DRT::Elements::Wall1::w1_gpdom(int& totngp,
+                                    double** gpcr, double** gpcs,
+                                    double** gpwr)
+{
+  DSTraceHelper dst("Wall1::w1_gpdom");
+
+  static double gpcl[6][6] = {
+    {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+    {-1.0/sqrt(3.0),1.0/sqrt(3.0),0.0,0.0,0.0,0.0},
+    {-sqrt(3.0/5.0),0.0,sqrt(3.0/5.0),0.0,0.0,0.0},
+    {-sqrt((15.0+sqrt(120.0))/35.0), 
+     -sqrt((15.0-sqrt(120.0))/35.0),
+      sqrt((15.0-sqrt(120.0))/35.0),
+     +sqrt((15.0+sqrt(120.0))/35.0)},
+    {-0.9061798459387,-0.5384693101057,0.0,
+     +0.5384693101057,0.9061798459387},
+    {-0.9324695142032,-0.6612093864663,
+     -0.2386191860832,0.2386191860832,
+     0.6612093864663,0.9324695142032}
+                             };
+
+  static double gpwl[6][6]={
+    {2.0,0.0,0.0,0.0,0.0,0.0},
+    {1.0,1.0,0.0,0.0,0.0,0.0},
+    {5.0/9.0,8.0/9.0,5.0/9.0,0.0,0.0,0.0},
+    {(18.0-sqrt(30.0))/36.0,(18.0+sqrt(30.0))/36.0,
+     (18.0+sqrt(30.0))/36.0,(18.0-sqrt(30.0))/36.0,0.0,0.0},
+    {0.2369268850562,0.4786286704994,0.5688888888889,0.4786286704994,
+     0.2369268850562,0},
+    {0.1713244923792,0.3607615730481,0.4679139345727,
+     0.4679139345727,0.3607615730481,0.1713244923792}
+                            };
+
+  static double gprq1[1] = {0.0};
+  static double gpsq1[1] = {0.0};
+  static double gpwq1[1] = {4.0};
+
+  static double gprq4[4] = {-1.0/sqrt(3.0),-1.0/sqrt(3.0),
+                            +1.0/sqrt(3.0),+1.0/sqrt(3.0)};
+  static double gpsq4[4] = {-1.0/sqrt(3.0),+1.0/sqrt(3.0),
+                            -1.0/sqrt(3.0),+1.0/sqrt(3.0)};
+  static double gpwq4[4] = {1.0, 1.0,
+                            1.0, 1.0};
+
+  static double gprq9[9] = {-sqrt(3.0/5.0),-sqrt(3.0/5.0),-sqrt(3.0/5.0),
+                            0.0,0.0,0.0,
+                            sqrt(3.0/5.0),sqrt(3.0/5.0),sqrt(3.0/5.0)};
+  static double gpsq9[9] = {-sqrt(3.0/5.0),0.0,sqrt(3.0/5.0),
+                            -sqrt(3.0/5.0),0.0,sqrt(3.0/5.0),
+                            -sqrt(3.0/5.0),0.0,sqrt(3.0/5.0)};
+  static double gpwq9[9] = {0.308641975308642,0.493827160493827,0.308641975308642,
+                            0.493827160493827,0.790123456790123,0.493827160493827,
+                            0.308641975308642,0.493827160493827,0.308641975308642};
+
+  static double gprq[36];
+  static double gpsq[36];
+  static double gpwq[36];
+
+  static double gprt1[1] = {1/3};
+  static double gpst1[1] = {1/3};
+  static double gpwt1[1] = {1/2};
+
+  static double gprt3_1[3] = {1.0/2.0,1.0/2.0, 0.0};
+  static double gpst3_1[3] = {0.0, 1.0/2.0, 1.0/2.0};
+  static double gpwt3_1[3] = {1.0/6.0, 1.0/6.0, 1.0/6.0};
+
+  static double gprt3_2[3] = {1.0/6.0, 2.0/3.0, 1.0/6.0};
+  static double gpst3_2[3] = {1.0/6.0, 1.0/6.0, 2.0/3.0};
+  static double gpwt3_2[3] = {1.0/6.0, 1.0/6.0, 1.0/6.0};
+
+  switch (NumNode())
+  {
+    case 4: case 8: case 9:        /* --> quad - element */
+    {
+       totngp=ngp_[0]*ngp_[1];
+       if ( (ngp_[0]==1) && (ngp_[1]==1) )
+       {
+          *gpcr = gprq1;
+          *gpcs = gpsq1;
+          *gpwr = gpwq1;
+       }
+       else if ( (ngp_[0]==2) && (ngp_[1]==2) )
+       {
+          *gpcr = gprq4;
+          *gpcs = gpsq4;
+          *gpwr = gpwq4;
+       }
+       else if ( (ngp_[0]==3) && (ngp_[1]==3) )
+       {
+          *gpcr = gprq9;
+          *gpcs = gpsq9;
+          *gpwr = gpwq9;
+       }
+       else
+       {
+         int ip = 0;
+         for (int ir=0; ir<ngp_[0]; ++ir)
+         {
+           for (int is=0; is<ngp_[1]; ++is)
+           {
+             gprq[ip] = gpcl[ngp_[0]-1][ir];
+             gpsq[ip] = gpcl[ngp_[1]-1][is];
+             gpwq[ip] = gpwl[ngp_[0]-1][ir] * gpwl[ngp_[1]-1][is];
+             ++ip;
+           }
+         }
+         *gpcr = gprq;
+         *gpcs = gpsq;
+         *gpwr = gpwq;
+       }
+    }
+  break; 
+  case 3: case 6:                 /* --> triangle - element */
+  {
+     totngp=ngp_[0];
+
+      switch (ngp_[0])
+      {
+        case 1:                   /* constant */
+          *gpcr = gprt1;
+          *gpcs = gpst1;
+          *gpwr = gpwt1;
+          break;
+
+        //  GAUSS INTEGRATION 3 SAMPLING POINTS, DEG.OF PRECISION 2
+        case 3:  /* quadratic - type 1 and 2*/
+        { 
+          if (ngp_[1]-1 == 0)  // integration 1
+          {
+            *gpcr = gprt3_1;
+            *gpcs = gpst3_1;
+            *gpwr = gpwt3_1;
+          }
+          else if (ngp_[1]-1 == 1)  // integration 2
+          {
+            *gpcr = gprt3_2;
+            *gpcs = gpst3_2;
+            *gpwr = gpwt3_2;
+          }
+          else
+          {
+            dserror("Integration case %g is not available\n", ngp_[1]);
+          }
+     
+          break;
+        }
+        default:
+          dserror("Unknown number of Gauss points");  
+
+    }
+    break;
+    default:
+       dserror("Unknown number of Gauss points");
+      }
+   } 
 
   return;
 }
@@ -635,57 +810,59 @@ void DRT::Elements::Wall1::w1_shapefunctions(
       return;
    }
    break;
-//   case 3:
-//   {
-//     funct[0]=1-r-s;
-//     funct[1]=r;
-//     funct[2]=s;
-//     if (doderiv==1)
-//     {
-//       deriv(0,0)=  -1.0;
-//       deriv(0,1)=  1.0;
-//       deriv(0,2)=  0.0;
-//       deriv(1,0)=  -1.0;
-//       deriv(1,1)=  0.0;
-//       deriv(1,2)=  1.0;
-//     }
-//   }
-//   break;
-//    case 6:
-//     funct[0]=(1-2*r-2*s)*(1-r-s);
-//     funct[1]=2*r*r-r;
-//     funct[2]=2*s*s-s;
-//     funct[3]=4*(r-r*r-r*s);
-//     funct[4]=4*r*s;
-//     funct[5]=4*(s-s*s-s*r);
-//     if (doderiv==1)
-//     {
-//       deriv(0,0)= -3.0+4.0*r+4.0*s;
-//       deriv(0,1)= 4.0*r-1.0;
-//       deriv(0,2)= 0.0;
-//       deriv(0,3)= 4.0*(1-2.0*r-s);
-//       deriv(0,4)= 4.0*s;
-//       deriv(0,5)= -4.0*s;
-//       deriv(1,0)= -3.0+4.0*r+4.0*s;
-//       deriv(1,1)= 0.0;
-//       deriv(1,2)= 4.0*s-1.0;
-//       deriv(1,3)= -4.0*r;
-//       deriv(1,4)= 4.0*r;
-//       deriv(1,5)= 4.0*(1.0-2.0*s-r);
-//     }
-//   break;
+   // 3-node linear triangle  
+   case 3:
+   {
+     funct[0]=1-r-s;
+     funct[1]=r;
+     funct[2]=s;
+     if (doderiv==1)
+     {
+       deriv(0,0)=  -1.0;
+       deriv(0,1)=  1.0;
+       deriv(0,2)=  0.0;
+       deriv(1,0)=  -1.0;
+       deriv(1,1)=  0.0;
+       deriv(1,2)=  1.0;
+     }
+    }
+   break;
+   // 6-node quadratic triangle  
+  case 6:
+     funct[0]=(1-2*r-2*s)*(1-r-s);
+     funct[1]=2*r*r-r;
+     funct[2]=2*s*s-s;
+     funct[3]=4*(r-r*r-r*s);
+     funct[4]=4*r*s;
+     funct[5]=4*(s-s*s-s*r);
+     if (doderiv==1)
+     {
+       deriv(0,0)= -3.0+4.0*r+4.0*s;
+       deriv(0,1)= 4.0*r-1.0;
+       deriv(0,2)= 0.0;
+       deriv(0,3)= 4.0*(1-2.0*r-s);
+       deriv(0,4)= 4.0*s;
+       deriv(0,5)= -4.0*s;
+       deriv(1,0)= -3.0+4.0*r+4.0*s;
+       deriv(1,1)= 0.0;
+       deriv(1,2)= 4.0*s-1.0;
+       deriv(1,3)= -4.0*r;
+       deriv(1,4)= 4.0*r;
+       deriv(1,5)= 4.0*(1.0-2.0*s-r);
+     }
+   break;
 
 ///*------------------------------------------------- triangular elements */
 //case tri3: /* LINEAR shape functions and their natural derivatives -----*/
 ///*----------------------------------------------------------------------*/
-//   funct(0)=ONE-r-s;
+//   funct(0)=1.0-r-s;
 //   funct[1]=r;
 //   funct[2]=s;
 //
 //   if(option==1) /* --> first derivative evaluation */
 //   {
-//      deriv[0][0]=-ONE;
-//      deriv[1][0]=-ONE;
+//      deriv[0][0]=-1.0;
+//      deriv[1][0]=-1.0;
 //      deriv[0][1]= ONE;
 //      deriv[1][1]=ZERO;
 //      deriv[0][2]=ZERO;

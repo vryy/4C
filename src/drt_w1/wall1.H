@@ -342,7 +342,11 @@ private:
                        Epetra_SerialDenseVector* force,
                        struct _MATERIAL*         material);
 
-  void w1_integration_points(struct _W1_DATA& data);
+  void w1_integration_points(struct _W1_DATA& data); 
+
+  void w1_gpdom(int& totngp, 
+                double** gpcr, double** gpcs,
+                double** gpwr);
  
   void w1_shapefunctions(vector<double>& funct, Epetra_SerialDenseMatrix& deriv,
                                const double r, const double s, const int numnode, 
