@@ -45,7 +45,6 @@ Maintainer: Peter Gamnitzer
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
-#ifdef D_FLUID
 
 #ifndef TURBULENCE_STATISTICS_H
 #define TURBULENCE_STATISTICS_H
@@ -249,6 +248,5 @@ private:
 
 #endif  // not TURBULENCE_STATISTICS_H
 
-#endif /* D_FLUID          */
 #endif /* TRILINOS_PACKAGE */
 #endif /* CCADISCRET       */
