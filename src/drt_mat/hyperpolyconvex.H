@@ -68,6 +68,10 @@ namespace MAT
                   
     double Density();                  
 
+    Epetra_SerialDenseMatrix tensorproduct(const Epetra_SerialDenseMatrix A,
+                                           const Epetra_SerialDenseMatrix B,
+                                           const double scalarA,
+                                           const double scalarB);
 
   private:
 
