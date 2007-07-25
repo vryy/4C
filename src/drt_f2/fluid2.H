@@ -721,10 +721,9 @@ private:
 
 
   // compute infintesimal line element dr for integration along the line
-  void  f2_substitution(
+  double  f2_substitution(
 		      const Epetra_SerialDenseMatrix  xyze,
 		      const Epetra_SerialDenseMatrix  deriv,
-		      double&               dr,
 		      const int iel);
 
   // Get Rule for Gaussintegration according to DRT::UTIL

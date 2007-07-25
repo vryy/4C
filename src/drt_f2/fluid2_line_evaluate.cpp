@@ -112,10 +112,7 @@ int DRT::Elements::Fluid2Line::EvaluateNeumann(
 
   // node coordinates
   Epetra_SerialDenseMatrix xye(2,iel);
-
-  // the length of an infintesimal line element
-  double dr=0;
-
+  
   // get node coordinates
   for(int i=0;i<iel;++i)
   {
@@ -133,15 +130,14 @@ int DRT::Elements::Fluid2Line::EvaluateNeumann(
     shape_function_1D_deriv1(deriv,e1,distype);
 
     // compute infinitesimal line element dr for integration along the line
-    f2_substitution(xye,deriv,dr,iel);
+    const double dr = f2_substitution(xye,deriv,iel);
   
     // values are multiplied by the product from inf. area element,
     // the gauss weight, the timecurve factor and the constant
     // belonging to the time integration algorithm (theta*dt for
     // one step theta, 2/3 for bdf with dt const.)
     
-    double fac;
-    fac =intpoints.qwgt[gpid] *dr* curvefac * thsl;
+    const double fac = intpoints.qwgt[gpid] *dr* curvefac * thsl;
     
     // factor given by spatial function
     double functionfac = 1.0;
@@ -201,18 +197,17 @@ GaussRule1D DRT::Elements::Fluid2Line::getOptimalGaussrule(const DiscretizationT
 }
 
 
-void  DRT::Elements::Fluid2Line::f2_substitution(
+double  DRT::Elements::Fluid2Line::f2_substitution(
   const Epetra_SerialDenseMatrix  xye,
   const Epetra_SerialDenseMatrix  deriv,
-  double&               dr,
   const int iel)
 {
   // compute derivative of parametrization
+  double dr = 0.0;
   Epetra_SerialDenseVector der_par (iel);
   der_par.Multiply('N','N',1.0,xye,deriv,0.0);
   dr=der_par.Norm2();
-  return;
-
+  return dr;
 }
 
 /*----------------------------------------------------------------------*
@@ -250,9 +245,6 @@ void DRT::Elements::Fluid2Line::IntegrateShapeFunction(ParameterList& params,
   // node coordinates
   Epetra_SerialDenseMatrix 	xye(2,iel);
 
-  // the length of an infintesimal line element
-  double dr=0;
-
   // get node coordinates
   for(int i=0;i<iel;++i)
   {
@@ -269,7 +261,7 @@ void DRT::Elements::Fluid2Line::IntegrateShapeFunction(ParameterList& params,
     shape_function_1D_deriv1(deriv,e1,distype);
 
     // compute infinitesimal line element dr for integration along the line
-    f2_substitution(xye,deriv,dr,iel);
+    const double dr = f2_substitution(xye,deriv,iel);
   
     // values are multiplied by the product from inf. area element,
     // the gauss weight, the timecurve factor and the constant
@@ -277,7 +269,7 @@ void DRT::Elements::Fluid2Line::IntegrateShapeFunction(ParameterList& params,
     // one step theta, 2/3 for bdf with dt const.)
     
     //double fac = intpoints.qwgt[gpid] *dr * thsl;
-    double fac = intpoints.qwgt[gpid] *dr; 
+    const double fac = intpoints.qwgt[gpid] *dr;
       
     // determine coordinates of current Gauss point 
     double coordgp[2];
