@@ -104,6 +104,7 @@ void DRT::Elements::So_hex8::soh8_mat_sel(
   return;
 }  // of soh8_mat_sel
 
+#ifdef D_SOTET10
 /*----------------------------------------------------------------------* !!!!
  | material laws for So_tet10                                  vlf 04/07|
  | added as a fast solution by cloning soh8_mat_sel (which is inside a  |
@@ -140,6 +141,8 @@ void DRT::Elements::So_tet10::so_tet10_mat_sel(
   /*--------------------------------------------------------------------*/
   return;
 }  // of so_tet10_mat_sel
+
+#endif //SO_TET10
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
