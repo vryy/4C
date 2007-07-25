@@ -20,8 +20,6 @@ writen by : Alexander Volf
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_mat/material.H"
-#include "../drt_mat/stvenantkirchhoff.H"
 
 
 
@@ -217,6 +215,7 @@ DRT::Element** DRT::Elements::So_tet10::Volumes()
  *----------------------------------------------------------------------*/
 DRT::Element** DRT::Elements::So_tet10::Surfaces()
 {
+  
   const int nsurf = NumSurface();
   surfaces_.resize(nsurf);
   surfaceptrs_.resize(nsurf);
@@ -463,46 +462,6 @@ void DRT::Elements::Sotet10Register::Print(ostream& os) const
   ElementRegister::Print(os);
   return;
 }
-
-
-/*----------------------------------------------------------------------* !!!!
- | material laws for So_tet10                                  vlf 04/07|
- | added as a fast solution by cloning soh8_mat_sel (which is inside a  |
- | different class, and therefore cannot be used in So_tet10)           |
- | one should think about other solutions for this like making this a   |
- | member of a upper class the will be inherited by all so3 classes     |
- *----------------------------------------------------------------------*/
-void DRT::Elements::So_tet10::so_tet10_mat_sel(
-      Epetra_SerialDenseVector* stress,
-      Epetra_SerialDenseMatrix* cmat,
-      double* density,
-      const Epetra_SerialDenseVector* glstrain,
-      const Epetra_SerialDenseMatrix* defgrd,
-      int gp)
-{
-  RefCountPtr<MAT::Material> mat = Material();
-  switch (mat->MaterialType())
-  {
-    case m_stvenant: /*------------------ st.venant-kirchhoff-material */
-    {
-      MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
-      
-      stvk->Evaluate(glstrain,cmat,stress);
-      
-      *density = stvk->Density();
-      
-      break;
-    }
-    default:
-      dserror("Illegal type %d of material for element solid3 tet10", mat->MaterialType());
-      break;
-  }
-
-  /*--------------------------------------------------------------------*/
-  return;
-}  // of so_tet10_mat_sel
-
-
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

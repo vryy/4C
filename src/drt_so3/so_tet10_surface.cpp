@@ -44,7 +44,7 @@ DRT::Element(id,element_sotet10surface,owner),
 parent_(parent),
 lsurface_(lsurface)
 {
-  //DSTraceHelper dst("Sotet10Surface::Sotet10Surface");
+
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
   return;

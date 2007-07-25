@@ -73,9 +73,9 @@ class So_tet10 : public DRT::Element
 public:
 
   //! @name Friends
-  friend class Tet10Register;
-  friend class Tet10Surface;
-  friend class Tet103Line;
+  friend class Sotet10Register;
+  friend class Sotet10Surface;
+  friend class Sotet10Line;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -360,9 +360,10 @@ protected:
                    vector<double>& mydisp,
                    Epetra_SerialDenseMatrix* stresses);
 
-  void so_tet10_shapederiv(Epetra_SerialDenseMatrix** shapefct,
-                       Epetra_SerialDenseMatrix** deriv,
-                       Epetra_SerialDenseVector** weights);
+  void so_tet10_shapederiv(
+  	  Epetra_SerialDenseVector** shapefct_ptr,  
+      Epetra_SerialDenseMatrix** deriv_gp_ptr,  
+      Epetra_SerialDenseVector** weights);       
 
   // #### hier deklariert, in implementierung soll einfach soh8_mat_sel gerufen werden
   void so_tet10_mat_sel(Epetra_SerialDenseVector* stress,
@@ -382,7 +383,6 @@ protected:
 \author gee (gee@lnm.mw.tum.de)
 */
 
-//class Soh8Register : public DRT::ElementRegister
 class Sotet10Register : public DRT::ElementRegister
 {
 public:
@@ -644,8 +644,8 @@ private:
   int                    lsurface_;
 
   void sotet10_surface_shapefunc(
-      Epetra_SerialDenseMatrix* shapefct,  // pointer to pointer of shapefct
-      Epetra_SerialDenseVector* weights);
+      Epetra_SerialDenseMatrix** shapefct,  // pointer to pointer of shapefct
+      Epetra_SerialDenseVector** weights);
   
   /*void sotet10_surface_integ(	//became obsolete !!!!!!!!!!!!!!!!
       vector<double>* funct,                 // (o) shape functions
