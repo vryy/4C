@@ -203,10 +203,37 @@ namespace FSI {
 
   protected:
 
-    /// solver loop
+    /// generalized conjugate residual solver
+    /*!
+      Implemented following GMRESR without inner GMRES.
+
+      H. A. Van der Vorst and C. Vuik, GMRESR: A family of nested
+      GMRES methods, Num. Lin. Alg. Appl., 1 (1994),
+      pp. 369--386. http://citeseer.ist.psu.edu/vandervorst91gmresr.html
+     */
     int SolveGCR(const NOX::Epetra::Vector &input,
                  NOX::Epetra::Vector &result,
-                 int maxit, double tol);
+                 int& maxit, double& tol);
+
+    /// GMRES solver
+    /*!
+      Implementation taken from netlib.
+
+      Barrett, R. and Berry, M. and Chan, T. and Demmel, J. and
+      Donato, J. and Dongarra J. and Eijkhout, V. and Pozo, R. and
+      Romine Ch. and van der Vorst, H.: Templates for the Solution of
+      Linear Systems: Building Blocks for Iterative Methods, SIAM
+      (1993)
+    */
+    int SolveGMRES(const NOX::Epetra::Vector &b,
+                   NOX::Epetra::Vector &x,
+                   int& maxit, double& tol, int m);
+
+    /// helper for GMRES
+    void ApplyPlaneRotation(double &dx, double &dy, double &cs, double &sn);
+
+    /// helper for GMRES
+    void GeneratePlaneRotation(double &dx, double &dy, double &cs, double &sn);
 
     virtual void throwError(const string& functionName,
                             const string& errorMsg) const;

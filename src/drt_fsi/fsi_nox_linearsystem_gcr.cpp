@@ -2,14 +2,19 @@
 
 #include <vector>
 
-#include <Epetra_Vector.h>
-#include <Epetra_Operator.h>
-#include <Epetra_RowMatrix.h>
-#include <Epetra_VbrMatrix.h>
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_LinearProblem.h>
+#include <Epetra_Operator.h>
+#include <Epetra_RowMatrix.h>
+#include <Epetra_SerialDenseMatrix.h>
+#include <Epetra_SerialDenseVector.h>
+#include <Epetra_VbrMatrix.h>
+#include <Epetra_Vector.h>
+
+#include <blitz/array.h>
 
 #include "fsi_nox_linearsystem_gcr.H"
+
 
 NOX::FSI::LinearSystemGCR::LinearSystemGCR(
   Teuchos::ParameterList& printParams,
@@ -114,7 +119,19 @@ bool NOX::FSI::LinearSystemGCR::applyJacobianInverse(Teuchos::ParameterList &p,
   int status = -1;
 
   // solve using GCR
-  status = SolveGCR(input, result, maxit, tol);
+  string linearSolver = p.get("Solver", "GMRES");
+  if (linearSolver == "GMRES")
+    status = SolveGMRES(input, result, maxit, tol,
+                        p.get("Size of Krylov Subspace", 300));
+  else if (linearSolver == "GCR")
+    status = SolveGCR(input, result, maxit, tol);
+  else
+  {
+    utils.out() << "ERROR: NOX::FSI::LinearSystemGCR::applyJacobianInverse" << endl
+                << "\"Solver\" parameter \"" << linearSolver
+                <<  "\" is invalid!" << endl;
+    throw "NOX Error";
+  }
 
   // Unscale the linear system
   if ( !Teuchos::is_null(scaling) )
@@ -126,10 +143,8 @@ bool NOX::FSI::LinearSystemGCR::applyJacobianInverse(Teuchos::ParameterList &p,
     Teuchos::ParameterList& outputList = p.sublist("Output");
     int prevLinIters =
       outputList.get("Total Number of Linear Iterations", 0);
-    int curLinIters = 0;
-    double achievedTol = -1.0;
-    //curLinIters = aztecSolverPtr->NumIters();
-    //achievedTol = aztecSolverPtr->ScaledResidual();
+    int curLinIters = maxit;
+    double achievedTol = tol;
 
     outputList.set("Number of Linear Iterations", curLinIters);
     outputList.set("Total Number of Linear Iterations", (prevLinIters + curLinIters));
@@ -148,7 +163,7 @@ bool NOX::FSI::LinearSystemGCR::applyJacobianInverse(Teuchos::ParameterList &p,
 
 int NOX::FSI::LinearSystemGCR::SolveGCR(const NOX::Epetra::Vector &b,
                                         NOX::Epetra::Vector &x,
-                                        int maxit, double tol)
+                                        int& maxit, double& tol)
 {
   NOX::Epetra::Vector r(x, NOX::ShapeCopy);
   NOX::Epetra::Vector tmp(x, NOX::ShapeCopy);
@@ -164,18 +179,14 @@ int NOX::FSI::LinearSystemGCR::SolveGCR(const NOX::Epetra::Vector &b,
     r = b;
   }
 
-  double error = r.norm();
-  if (error < tol)
-  {
-    utils.out() << "initial error=" << error << " tol=" << tol << endl;
-    return 0;
-  }
+  double error0 = r.norm();
 
   std::vector<Teuchos::RefCountPtr< NOX::Epetra::Vector > > u;
   std::vector<Teuchos::RefCountPtr< NOX::Epetra::Vector > > c;
   int k=0;
 
-  while (error>=tol)
+  double error = 1.;
+  while (error>=tol*error0)
   {
     // this is GCR, not GMRESR
     u.push_back(Teuchos::rcp(new NOX::Epetra::Vector(r)));
@@ -202,12 +213,163 @@ int NOX::FSI::LinearSystemGCR::SolveGCR(const NOX::Epetra::Vector &b,
 
     k += 1;
 
-    utils.out() << "gmresr |r|=" << error
+    utils.out() << "gcr |r|=" << error
+                << " |r0|=" << error0
                 << " |dx|=" << u.back()->norm()*alpha
                 << " tol=" << tol << endl;
   }
 
+  maxit = k;
+  tol = error;
+
   return 0;
+}
+
+
+int NOX::FSI::LinearSystemGCR::SolveGMRES(const NOX::Epetra::Vector &b,
+                                          NOX::Epetra::Vector &x,
+                                          int& max_iter, double& tol, int m)
+{
+  double resid = 0;
+  blitz::Array<double,1> s(m+1), cs(m+1), sn(m+1);
+  blitz::Array<double,2> H(m+1,m);
+
+  NOX::Epetra::Vector r(x, NOX::ShapeCopy);
+  NOX::Epetra::Vector w(x, NOX::ShapeCopy);
+  if (not zeroInitialGuess)
+  {
+    // calculate initial residual
+    if (not applyJacobian(x, r))
+      throwError("SolveGMRES", "applyJacobian failed");
+    r.update(1., b, -1.);
+  }
+  else
+  {
+    r = b;
+  }
+
+  double normb = b.norm();
+  double beta = r.norm();
+
+  if (normb == 0.0)
+    normb = 1;
+
+  if ((resid = beta / normb) <= tol)
+  {
+    tol = resid;
+    max_iter = 0;
+    return 0;
+  }
+
+  std::vector<Teuchos::RefCountPtr<NOX::Epetra::Vector> > v;
+  v.reserve(m+1);
+
+  int j = 1;
+  while (j <= max_iter)
+  {
+    v.clear();
+    v.push_back(Teuchos::rcp(new NOX::Epetra::Vector(r, NOX::ShapeCopy)));
+    v[0]->update(1./beta, r, 0.);
+    s = 0.0;
+    s(0) = beta;
+
+    for (int i = 0; i < m and j <= max_iter; i++, j++)
+    {
+      //w = M.solve(A * v[i]);
+      if (not applyJacobian(*v[i], w))
+        throwError("SolveGMRES", "applyJacobian failed");
+      for (int k = 0; k <= i; k++)
+      {
+        H(k, i) = w.innerProduct(*v[k]);
+        w.update(H(k, i), *v[k], -1.);
+      }
+      H(i+1, i) = w.norm();
+      v.push_back(Teuchos::rcp(new NOX::Epetra::Vector(w)));
+      v.back()->scale(1.0 / H(i+1, i));
+
+      for (int k = 0; k < i; k++)
+        ApplyPlaneRotation(H(k,i), H(k+1,i), cs(k), sn(k));
+
+      GeneratePlaneRotation(H(i,i), H(i+1,i), cs(i), sn(i));
+      ApplyPlaneRotation(H(i,i), H(i+1,i), cs(i), sn(i));
+      ApplyPlaneRotation(s(i), s(i+1), cs(i), sn(i));
+
+      if ((resid = fabs(s(i+1)) / normb) < tol)
+      {
+        //Update(x, i, H, s, v);
+        blitz::Array<double,1> y(s);
+
+        // Backsolve:
+        for (int l = i; l >= 0; l--)
+        {
+          y(l) /= H(l,l);
+          for (int k = l - 1; k >= 0; k--)
+            y(k) -= H(k,l) * y(l);
+        }
+
+        for (int k = 0; k <= i; k++)
+          x.update(y(k), *v[k], 1.);
+
+        tol = resid;
+        max_iter = j;
+        return 0;
+      }
+    }
+
+    //Update(x, m - 1, H, s, v);
+    blitz::Array<double,1> y(s);
+
+    // Backsolve:
+    for (int i = m - 1; i >= 0; i--)
+    {
+      y(i) /= H(i,i);
+      for (int k = i - 1; k >= 0; k--)
+        y(k) -= H(k,i) * y(i);
+    }
+
+    for (int k = 0; k <= m - 1; k++)
+      x.update(y(k), *v[k], 1.);
+
+    // Isn't there a cheaper way to calculate that?
+    if (not applyJacobian(x, r))
+      throwError("SolveGMRES", "applyJacobian failed");
+    r.update(1., b, -1.);
+    beta = r.norm();
+    if ((resid = beta / normb) < tol)
+    {
+      tol = resid;
+      max_iter = j;
+      return 0;
+    }
+  }
+
+  tol = resid;
+  return 1;
+}
+
+
+void NOX::FSI::LinearSystemGCR::GeneratePlaneRotation(double &dx, double &dy, double &cs, double &sn)
+{
+  if (dy == 0.0) {
+    cs = 1.0;
+    sn = 0.0;
+  } else if (fabs(dy) > fabs(dx)) {
+    double temp = dx / dy;
+    sn = 1.0 / sqrt( 1.0 + temp*temp );
+    cs = temp * sn;
+  } else {
+    double temp = dy / dx;
+    cs = 1.0 / sqrt( 1.0 + temp*temp );
+    sn = temp * cs;
+  }
+}
+
+
+void NOX::FSI::LinearSystemGCR::ApplyPlaneRotation(double &dx, double &dy, double &cs, double &sn)
+{
+  double temp  =  cs * dx + sn * dy;
+  dy = -sn * dx + cs * dy;
+  dx = temp;
 }
 
 
