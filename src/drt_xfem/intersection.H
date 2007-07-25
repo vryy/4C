@@ -41,12 +41,14 @@ using namespace DRT;
 using namespace DRT::Utils;
 using namespace Teuchos;
 
+enum pointType {internalP, surfaceP, intersectionP};
 
 typedef struct
 {
   int           nsurf;
   int           surfaces[3];    /*!< surfaces*/
   double        coord[3];       /*!< coordinates */
+  pointType     pType;
 } InterfacePoint;
 
 
@@ -473,6 +475,19 @@ class Intersection
   
    
         /*!
+        \brief  stores an interface point in a point list for the 
+                Constrained Delaunay Tetrahedralization (CDT) with Tetgen
+    
+        \param pointList        (in)        :   coordinates of the point to be stored 
+        \param interfacePoints  (in)        :   vector of interface points
+        \param surfacePointList (in/out)    :   point list, data structure for CDT with Tetgen
+        */       
+        void storeSurfacePoints(    vector<InterfacePoint>&     pointList, 
+                                    vector<InterfacePoint>&     interfacePoints,
+                                    vector< vector<int> >&      surfacePointList);
+                                    
+                                    
+        /*!
         \brief  stores a segment in a segment list for the 
                 Constrained Delaunay Tetrahedralization (CDT) with Tetgen
     
@@ -481,7 +496,7 @@ class Intersection
         \param segmentList          (in/out)    :   segment list, data structure for CDT with Tetgen
         */            
         void storeSegments( vector<InterfacePoint>&     pointList, 
-                            vector<int>                 positions, 
+                            vector<int>&                positions, 
                             vector< vector<int> >&      segmentList);
           
                             
@@ -549,6 +564,7 @@ class Intersection
                                 DRT::Element*               surfaceElement,
                                 vector<InterfacePoint>&     interfacePoints, 
                                 vector< InterfacePoint >&   pointList,
+                                vector< vector<int> >&      surfacePointList,
                                 vector< vector<int> >&      segmentList,
                                 vector< vector<int> >&      triangleList,
                                 int                         numInternalPoints,
@@ -567,6 +583,7 @@ class Intersection
         void computeCDT(    DRT::Element*               element,
         					DRT::Element*  				cutterElement,
                             vector< InterfacePoint >&   pointList,
+                            vector< vector<int> >&      surfacePointList,
                             vector< vector<int> >&      segmentList,
                             vector< vector<int> >&      triangleList,
                             map< int, vector <Integrationcell> >&	integrationcellList);
@@ -635,6 +652,7 @@ class Intersection
         */                             
         void debugTetgenDataStructure(  DRT::Element*               element,
                                         vector< InterfacePoint >&   pointList,
+                                        vector< vector<int> >&      surfacePointList,
                                         vector< vector<int> >&      segmentList,
                                         vector< vector<int> >&      triangleList);  
                                         

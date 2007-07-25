@@ -2482,7 +2482,7 @@ void tetgenio::save_nodes(char* filename)
   int i, j;
 
   sprintf(outnodefilename, "%s.node", filename);
-  printf("Saving nodes to %s\n", outnodefilename);
+  //printf("Saving nodes to %s\n", outnodefilename);
   fout = fopen(outnodefilename, "w");
   fprintf(fout, "%d  %d  %d  %d\n", numberofpoints, mesh_dim,
           numberofpointattributes, pointmarkerlist != NULL ? 1 : 0);
@@ -2536,7 +2536,7 @@ void tetgenio::save_elements(char* filename)
   int i, j;
 
   sprintf(outelefilename, "%s.ele", filename);
-  printf("Saving elements to %s\n", outelefilename);
+  //printf("Saving elements to %s\n", outelefilename);
   fout = fopen(outelefilename, "w");
   fprintf(fout, "%d  %d  %d\n", numberoftetrahedra, numberofcorners,
           numberoftetrahedronattributes);
@@ -2570,7 +2570,7 @@ void tetgenio::save_faces(char* filename)
   int i;
 
   sprintf(outfacefilename, "%s.face", filename);
-  printf("Saving faces to %s\n", outfacefilename);
+  //printf("Saving faces to %s\n", outfacefilename);
   fout = fopen(outfacefilename, "w");
   fprintf(fout, "%d  %d\n", numberoftrifaces, 
           trifacemarkerlist != NULL ? 1 : 0);
@@ -2601,7 +2601,7 @@ void tetgenio::save_edges(char* filename)
   int i;
 
   sprintf(outedgefilename, "%s.edge", filename);
-  printf("Saving edges to %s\n", outedgefilename);
+  //printf("Saving edges to %s\n", outedgefilename);
   fout = fopen(outedgefilename, "w");
   fprintf(fout, "%d  %d\n", numberofedges, edgemarkerlist != NULL ? 1 : 0);
   for (i = 0; i < numberofedges; i++) {
@@ -2631,7 +2631,7 @@ void tetgenio::save_neighbors(char* filename)
   int i;
 
   sprintf(outneighborfilename, "%s.neigh", filename);
-  printf("Saving neighbors to %s\n", outneighborfilename);
+  //printf("Saving neighbors to %s\n", outneighborfilename);
   fout = fopen(outneighborfilename, "w");
   fprintf(fout, "%d  %d\n", numberoftetrahedra, mesh_dim + 1);
   for (i = 0; i < numberoftetrahedra; i++) {
@@ -2668,7 +2668,7 @@ void tetgenio::save_poly(char* filename)
   int i, j, k;
 
   sprintf(outpolyfilename, "%s.poly", filename);
-  printf("Saving poly to %s\n", outpolyfilename);
+  //printf("Saving poly to %s\n", outpolyfilename);
   fout = fopen(outpolyfilename, "w");
 
   // The zero indicates that the vertices are in a separate .node file.
@@ -16490,8 +16490,10 @@ void tetgenmesh::incrflipdelaunay(triface* oldtet, point* insertarray,
   REAL det, n[3];
   REAL attrib, volume;
   int i, j;
+#ifdef SELF_CHECK
   clock_t loc_start, loc_end;
-
+#endif
+  
   if (b->verbose > 0) {
     printf("  Creating initial tetrahedralization.\n");
   }

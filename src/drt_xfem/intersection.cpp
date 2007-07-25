@@ -492,6 +492,7 @@ bool Intersection::checkIfOnSurfaceAndNode( DRT::Element*                   elem
         onSurface = true;
         numSurfacePoints++;
         ip.nsurf = 1;
+        ip.pType = surfaceP;
         
        
         // only for hex
@@ -509,6 +510,7 @@ bool Intersection::checkIfOnSurfaceAndNode( DRT::Element*                   elem
         onSurface = true;
         numSurfacePoints++;
         ip.nsurf = 2;
+        ip.pType = surfaceP;
         int countSurf = 0;
         
         // only hex
@@ -525,6 +527,8 @@ bool Intersection::checkIfOnSurfaceAndNode( DRT::Element*                   elem
     {
         onSurface = true;
         numSurfacePoints++;
+        ip.pType = surfaceP;
+        
         for(int i = 0; i < element->NumNode(); i++)
             if(comparePoints(node->X(), element->Nodes()[i]->X(), 3))
             {
@@ -539,6 +543,7 @@ bool Intersection::checkIfOnSurfaceAndNode( DRT::Element*                   elem
     {
         onSurface = false;
         ip.nsurf = 0;
+        ip.pType = internalP;
     }  
     
     return onSurface;
@@ -565,6 +570,7 @@ bool Intersection::collectInternalPoints(  	DRT::Element*                   elem
     x[2] = node->X()[2];
     
     bool nodeWithinElement = checkNodeWithinElement(element, x, xsi);
+    //debugNodeWithinElement(element,node,xsi,elemId ,nodeId, nodeWithinElement);  
     
     if(nodeWithinElement)
     {   
@@ -576,8 +582,7 @@ bool Intersection::collectInternalPoints(  	DRT::Element*                   elem
         // check if set neighbouring surfaces
         checkIfOnSurfaceAndNode(element, node, xsi, ip, numSurfacePoints);
         
-        // adds node only if node is coincident with an xfem-element node
-        // or doesn t lie on the surface of the xfem-element     
+        
         switch(nodeId)
         {
             case 0:
@@ -744,7 +749,7 @@ bool Intersection::computeCurveSurfaceIntersection( DRT::Element*               
     
 	updateRHSForCSI( b, xsi, surfaceElement, lineElement);
              					
-	while(residual > TOL)
+	while(residual > 1e-14)
    	{   
    		updateAForCSI( A, xsi, surfaceElement, lineElement);
   		if(!gaussElimination(A, b, dx, true, 3, 1))
@@ -938,7 +943,7 @@ int Intersection::addIntersectionPoint(	DRT::Element*                	surfaceEle
     }
     
     ip.coord[2] = 0.0; 
-    
+    ip.pType = intersectionP;
     
     vector<InterfacePoint>::iterator it;
     bool alreadyInList = false;
@@ -990,7 +995,7 @@ void Intersection::referenceToCurrentCoordinates(   DRT::Element* element,
         
     for(int dim=0; dim<3; dim++)
     {
-        xsi[dim] = 0.0;
+        xsi(dim) = 0.0;
         for(int i=0; i<numNodes; i++)
             xsi(dim) += element->Nodes()[i]->X()[dim] * funct(i);
     }
@@ -1007,6 +1012,7 @@ void Intersection::currentToReferenceCoordinates(   DRT::Element* element,
                                                     Epetra_SerialDenseVector& xsi)
 {
     bool nodeWithinElement;
+    double TOL = EPS8;
     Epetra_SerialDenseVector x(3);
     
     for(int i = 0; i < 3; i++)
@@ -1019,6 +1025,14 @@ void Intersection::currentToReferenceCoordinates(   DRT::Element* element,
     
     if(!nodeWithinElement)
         dserror("node not within element");
+        
+        
+    // rounding 1 and -1 to be exact for the CDT
+    for(int j = 0; j < 3; j++)
+    {
+        if( fabs((fabs(xsi[j])-1.0)) < TOL &&  xsi[j] < 0)    xsi[j] = -1.0;
+        if( fabs((fabs(xsi[j])-1.0)) < TOL &&  xsi[j] > 0)    xsi[j] =  1.0;      
+    }  
 }     
 
 
@@ -1271,7 +1285,7 @@ void Intersection::storePoint(  vector<double>&             point,
         
 
     for(unsigned int i = 0; i < interfacePoints.size(); i++ )
-    {
+    {   
         if(comparePoints(point, interfacePoints[i].coord))
         {         
             alreadyInList = false;
@@ -1303,12 +1317,44 @@ void Intersection::storePoint(  vector<double>&             point,
 
 
 /*----------------------------------------------------------------------*
+ |  stores a point lying on a surface of an                  u.may 06/07|
+ |  xfem element                                                        |
+ *----------------------------------------------------------------------*/  
+void Intersection::storeSurfacePoints(  vector<InterfacePoint>&     pointList, 
+                                        vector<InterfacePoint>&     interfacePoints,
+                                        vector< vector<int> >&      surfacePointList)
+{   
+    int count = -1;
+    vector<InterfacePoint>::iterator it1;
+    
+    for(unsigned int i = 0; i < interfacePoints.size(); i++)
+    {
+        if(interfacePoints[i].pType == surfaceP)
+        {  
+            count = -1;
+            for(it1 = pointList.begin(); it1 != pointList.end(); it1++ )  
+            {
+                count++;
+                if(comparePoints(interfacePoints[i].coord, it1->coord, 3)) 
+                {
+                    surfacePointList[interfacePoints[i].surfaces[0]].push_back(count);          
+                    break;
+                }
+            }
+            break;
+        }
+    } 
+}
+
+
+
+/*----------------------------------------------------------------------*
  |  stores a segment within a list of segments               u.may 06/07|
- |  which is to be copied to the tetgen data structure                    |
+ |  which is to be copied to the tetgen data structure                  |
  |  for the computation of the Constrained Delauney Triangulation       |
  *----------------------------------------------------------------------*/  
 void Intersection::storeSegments(   vector<InterfacePoint>&     pointList, 
-                                    vector<int>                 positions, 
+                                    vector<int>&                positions, 
                                     vector< vector<int> >&      segmentList)
 {
     int pos1 = 0;
@@ -1569,6 +1615,7 @@ void Intersection::computeConvexHull(   DRT::Element*           xfemElement,
                                         DRT::Element*           surfaceElement,
                                         vector<InterfacePoint>& interfacePoints,
                                         vector<InterfacePoint>& pointList,
+                                        vector< vector<int> >&  surfacePointList,
                                         vector< vector<int> >&  segmentList,
                                         vector< vector<int> >&  triangleList,
                                         int                     numInternalPoints,
@@ -1586,22 +1633,19 @@ void Intersection::computeConvexHull(   DRT::Element*           xfemElement,
     if(!checkIfSurfaceElement(surfaceElement))
    		dserror("surface element has to be a surface element\n");
        
-       
-     
+           
     if(interfacePoints.size() != 0)
-    {
-     
+    {    
         if(interfacePoints.size() > 2)  
         {
-            // compute midpoint in reference coordinates
+           
             midpoint = computeMidpoint(interfacePoints);
             // transform it into current coordinates
             for(int j = 0; j < 2; j++)      curCoord[j]  = midpoint.coord[j];            
-            referenceToCurrentCoordinates(surfaceElement, curCoord);
-            currentToReferenceCoordinates(xfemElement, curCoord);              
+            referenceToCurrentCoordinates(surfaceElement, curCoord);    
+            currentToReferenceCoordinates(xfemElement, curCoord);    
             for(int j = 0; j < 3; j++)      midpoint.coord[j] = curCoord[j]; 
-            
-        
+         
             // store coordinates in 
             // points has numInterfacePoints*dim-dimensional components
             // points[0] is the first coordinate of the first point
@@ -1618,7 +1662,7 @@ void Intersection::computeConvexHull(   DRT::Element*           xfemElement,
                 for(int j = 0; j < 2; j++)      
                     curCoord[j]  = interfacePoints[i].coord[j];   
                               
-                referenceToCurrentCoordinates(surfaceElement, curCoord);  
+                referenceToCurrentCoordinates(surfaceElement, curCoord);                
                 currentToReferenceCoordinates(xfemElement, curCoord);
                          
                 for(int j = 0; j < 3; j++)         
@@ -1626,7 +1670,6 @@ void Intersection::computeConvexHull(   DRT::Element*           xfemElement,
                     
             }       
           
-            
             // compute convex hull - exitcode = 0 no error
             if (qh_new_qhull(2, interfacePoints.size(), coordinates, false, "qhull ", NULL, stderr)!=0) 
                 dserror(" error in the computation of the convex hull (qhull error)"); 
@@ -1709,22 +1752,24 @@ void Intersection::computeConvexHull(   DRT::Element*           xfemElement,
         } 
         vertices.clear();
        
-        
-        
-        // cutter element lies within a xfem element
+
+        // only one point on a plane
+        if(numSurfacePoints  == 1)
+            storeSurfacePoints(pointList, interfacePoints, surfacePointList);
+            
+            
+        // cutter element lies on the surface of an xfem element
         if(numInternalPoints == numSurfacePoints && numInternalPoints != 0)
         {
-            if(numInternalPoints > 1)
-            {               
+            if(numSurfacePoints > 1)              
                 storeSegments(pointList, positions, segmentList);           
-            }
+           
         }
         else
         {
             if(interfacePoints.size() > 1)
-            {
                 storeSegments(pointList, positions, segmentList);
-            }
+           
             if(interfacePoints.size() > 2)
             {
                 pointList.push_back(midpoint);
@@ -1770,15 +1815,17 @@ void Intersection::startPointList(vector< InterfacePoint >&  pointList)
 void Intersection::computeCDT(  DRT::Element*               			element,
 								DRT::Element*               			cutterElement,
                                 vector< InterfacePoint >&   			pointList,
+                                vector< vector<int> >&                  surfacePointList,
                                 vector< vector<int> >&      			segmentList,
                                 vector< vector<int> >&      			triangleList,
                                 map< int, vector <Integrationcell> >&	integrationcellList)
 {
     int dim = 3;
     int nsegments = 0; 
+    int nsurfPoints = 0;
     tetgenio in;
     tetgenio out;
-    char switches[] = "Q"; //po2V";   //A for regions Q quiet
+    char switches[] = "po2QY";    //YA for regions Q quiet
     tetgenio::facet *f;
     tetgenio::polygon *p;
     double regionCoordinates[6];
@@ -1808,7 +1855,9 @@ void Intersection::computeCDT(  DRT::Element*               			element,
         f = &in.facetlist[i];
         if(segmentList[i].size() > 0)           nsegments = (int) (segmentList[i].size()/2);
         else                                    nsegments = 0;
-        f->numberofpolygons = 1 + nsegments; 
+        if(surfacePointList[i].size() > 0)      nsurfPoints = surfacePointList[i].size();
+        else                                    nsurfPoints = 0;
+        f->numberofpolygons = 1 + nsegments + nsurfPoints; 
         f->polygonlist = new tetgenio::polygon[f->numberofpolygons];
         f->numberofholes = 0;
         f->holelist = NULL;
@@ -1832,7 +1881,20 @@ void Intersection::computeCDT(  DRT::Element*               			element,
                    p->vertexlist[k] = segmentList[i][count++];
                  
             }
-        }  
+        } 
+        
+        count = 0;
+        for(int j = 1 + nsegments; j < f->numberofpolygons; j++)
+        {
+            if(surfacePointList[i].size() > 0)
+            {             
+                p = &f->polygonlist[j];
+                p->numberofvertices = 1;
+                p->vertexlist = new int[p->numberofvertices];
+            
+                p->vertexlist[0] = surfacePointList[i][count++];   
+            }
+        }    
     }
     
     // store triangles
@@ -1883,8 +1945,6 @@ void Intersection::computeCDT(  DRT::Element*               			element,
     //  Tetrahedralize the PLC. Switches are chosen to read a PLC (p),
     //  do quality mesh generation (q) with a specified quality bound
     //  (1.414), and apply a maximum volume constraint (a0.1)
-    in.save_nodes("tetin");
-    in.save_poly("tetin");
     tetrahedralize(switches, &in, &out); 
   
     //Debug
@@ -1941,6 +2001,7 @@ void Intersection::computeIntersection( RefCountPtr<DRT::Discretization> actdis,
     Epetra_SerialDenseMatrix                xfemAABB;
     vector< InterfacePoint >                pointList;
     vector< vector<int> >                   segmentList(6);                 // adjust for all element types
+    vector< vector<int> >                   surfacePointList(6);                 // adjust for all element types
     vector< vector<int> >                   triangleList;
     
     
@@ -2003,10 +2064,10 @@ void Intersection::computeIntersection( RefCountPtr<DRT::Discretization> actdis,
                                                         interfacePoints, numInternalPoints, numSurfacePoints, 
                                                         p, m, true, xfemIntersection);  
                     
-                                         
+                                   
                     if(interfacePoints.size()!=0)
                         computeConvexHull(  xfemElement, cutterElement, interfacePoints,  
-                                            pointList, segmentList, triangleList,
+                                            pointList, surfacePointList, segmentList, triangleList,
                                             numInternalPoints, numSurfacePoints);    
                         
                     interfacePoints.clear();     
@@ -2016,8 +2077,8 @@ void Intersection::computeIntersection( RefCountPtr<DRT::Discretization> actdis,
         
         if(xfemIntersection)
         {                                                                          
-            //debugTetgenDataStructure(xfemElement, pointList, segmentList, triangleList);
-            computeCDT(xfemElement, cutterElement, pointList, segmentList, triangleList, integrationcellList);
+            //debugTetgenDataStructure(xfemElement, pointList, surfacePointList, segmentList, triangleList);
+            computeCDT(xfemElement, cutterElement, pointList, surfacePointList, segmentList, triangleList, integrationcellList);
         }
         
         interfacePointCollection.clear();  
@@ -2025,6 +2086,7 @@ void Intersection::computeIntersection( RefCountPtr<DRT::Discretization> actdis,
         for(unsigned int i  = 0; i < 6; i++)
         {
             segmentList[i].clear();
+            surfacePointList[i].clear();
         }
         triangleList.clear(); 
     }// for-loop over all  actdis->NumMyRowElements()
@@ -2179,6 +2241,7 @@ void Intersection::debugNodeWithinElement(  DRT::Element* element,
  *----------------------------------------------------------------------*/  
 void Intersection::debugTetgenDataStructure(    DRT::Element*               element,
                                                 vector< InterfacePoint >&   pointList,
+                                                vector< vector<int> >&      surfacePointList,
                                                 vector< vector<int> >&      segmentList,
                                                 vector< vector<int> >&      triangleList)
 {    
@@ -2201,7 +2264,8 @@ void Intersection::debugTetgenDataStructure(    DRT::Element*               elem
         cout << i << ".th point:   ";
         for(int j = 0; j< 3; j++)
         {
-            cout << setprecision(10) << pointList[i].coord[j] << "\t"; 
+            //cout << setprecision(10) << pointList[i].coord[j] << "\t"; 
+             printf("%20.16f\t", pointList[i].coord[j] );
         }
         cout << endl;
         cout << endl;
@@ -2226,6 +2290,10 @@ void Intersection::debugTetgenDataStructure(    DRT::Element*               elem
         for(unsigned int j = 0; j < segmentList[i].size(); j++)
                 cout << segmentList[i][count++] << "\t";
         
+        count = 0;
+        for(unsigned int j = 0; j < surfacePointList[i].size(); j++)
+                cout << surfacePointList[i][count++] << "\t";
+                
         cout << endl;
         cout << endl;
     }
