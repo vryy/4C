@@ -57,7 +57,7 @@ VISUAL3_LIB="-L/usr/X11R6/lib -lVisual3 -lg2c -lGLU -lGL -lX11 -lXext -ldl -lpth
 HDF5_LIB="-lhdf5_hl -lhdf5 -lpthread -lz"
 
 #LIBS="-lc -lg2c -llapack -lgoto_p4_512-r0.6 -lxerbla -lmetis"
-LIBS="-lc -lg2c -lmetis -llapack -lblas"
+LIBS="-lc -lg2c -lmetis -lblitz -llapack -lblas"
 
 CFLAGS_OPT="-O3"
 CPFLAGS_OPT="-O3"
