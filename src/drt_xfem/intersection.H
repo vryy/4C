@@ -364,8 +364,7 @@ class Intersection
         \param xsi              (in/out)    : vector of current coordinates/
                                               vector of reference coordinates
         */
-        void currentToReferenceCoordinates( DRT::Element*               element, 
-                     
+        void currentToReferenceCoordinates( DRT::Element*               element,                     
                                             Epetra_SerialDenseVector&   xsi);
         /*!
         \brief compares two points (overloaded method)
@@ -374,8 +373,8 @@ class Intersection
         \param point2       (in)    : second point  (double*)
         \return true if both points equal each other, false otherwise
         */
-        bool comparePoints( 	vector<double>&     point1,
-        						double*             point2);
+        bool comparePoints(	const vector<double>&     point1,
+        					const double*             point2);
          
         
         /*!
@@ -398,8 +397,8 @@ class Intersection
         \param point2       (in)    : second point  (vector<double>)
         \return true if both points equal each other, false otherwise
         */                    
-        bool comparePoints(	vector<double>&     point1,
-                            vector<double>&     point2);
+        bool comparePoints(	const vector<double>&     point1,
+                            const vector<double>&     point2);
                             
            
       	/*!
@@ -409,8 +408,8 @@ class Intersection
         \param point2       (in)    : second point  (Epetra_SerialDenseVector)
         \return true if both points equal each other, false otherwise
         */                      
-        bool comparePoints(	Epetra_SerialDenseVector&     point1,
-        					Epetra_SerialDenseVector&     point2);
+        bool comparePoints(	const Epetra_SerialDenseVector&     point1,
+        					const Epetra_SerialDenseVector&     point2);
         
         
         /*!

@@ -447,12 +447,6 @@ bool Intersection::checkNodeWithinElement(	DRT::Element* element,
             break;
         }   
         xsi = addTwoVectors(xsi,dx);
-      
-        if( (fabs(xsi[0])-1.0) > TOL  || (fabs(xsi[1])-1.0) > TOL  || (fabs(xsi[2])-1.0) > TOL )   
-        {
-            nodeWithinElement = false;
-            break;
-        }
         
         if(iter >= maxiter)
         {   
@@ -463,6 +457,10 @@ bool Intersection::checkNodeWithinElement(	DRT::Element* element,
         residual = b.Norm2();
         iter++;
     }
+    
+    if( (fabs(xsi[0])-1.0) > TOL  || (fabs(xsi[1])-1.0) > TOL  || (fabs(xsi[2])-1.0) > TOL )   
+        nodeWithinElement = false;
+    
     return nodeWithinElement;
 }
 
@@ -758,14 +756,6 @@ bool Intersection::computeCurveSurfaceIntersection( DRT::Element*               
             break;  
         } 
      	xsi = addTwoVectors(xsi,dx);
-
-
-        if( (xsi[0] > upLimit[0]+TOL) || (xsi[1] > upLimit[1]+TOL) || (xsi[2] > upLimit[2]+TOL)  || 
-            (xsi[0] < loLimit[0]-TOL) || (xsi[1] < loLimit[1]-TOL) || (xsi[2] < loLimit[2]-TOL)) 
-    	{
-      		intersection = false;
-      		break;
-		}
         
         if(iter >= maxiter)
         {   
@@ -777,7 +767,12 @@ bool Intersection::computeCurveSurfaceIntersection( DRT::Element*               
      	residual = b.Norm2(); 
      	iter++;
     } 
-    return intersection;
+    
+    if( (xsi[0] > upLimit[0]+TOL) || (xsi[1] > upLimit[1]+TOL) || (xsi[2] > upLimit[2]+TOL)  || 
+        (xsi[0] < loLimit[0]-TOL) || (xsi[1] < loLimit[1]-TOL) || (xsi[2] < loLimit[2]-TOL)) 
+    	intersection = false;
+      	
+	return intersection;
 }
 
 
@@ -1064,8 +1059,8 @@ bool Intersection::comparePoints(    const double*     point1,
  |  compares two nodes                                       u.may 06/07|
  |  overloaded method:  vector<double>  and double*                     |
  *----------------------------------------------------------------------*/  
-bool Intersection::comparePoints(   vector<double>&     point1,
-                                    double*             point2)
+bool Intersection::comparePoints(   const vector<double>&     point1,
+                                    const double*             point2)
 {   
     bool equal = true;
     
@@ -1088,8 +1083,8 @@ bool Intersection::comparePoints(   vector<double>&     point1,
  |  compares two nodes                                       u.may 06/07|
  |  overloaded method:  vector<double>  and  vector<double>             |
  *----------------------------------------------------------------------*/  
-bool Intersection::comparePoints(    vector<double>& point1,
-                                    vector<double>& point2)
+bool Intersection::comparePoints(	const vector<double>& point1,
+                                    const vector<double>& point2)
 {   
     bool equal = true;
     
@@ -1113,8 +1108,8 @@ bool Intersection::comparePoints(    vector<double>& point1,
  |  overloaded method:                                                  |
  |  Epetra_SerialDenseVector  and  Epetra_SerialDenseVector             |
  *----------------------------------------------------------------------*/  
-bool Intersection::comparePoints(    Epetra_SerialDenseVector&     point1,
-                                     Epetra_SerialDenseVector&     point2)
+bool Intersection::comparePoints(    const Epetra_SerialDenseVector&     point1,
+                                     const Epetra_SerialDenseVector&     point2)
 {   
     bool equal = true;
     
