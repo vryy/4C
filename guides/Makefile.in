@@ -14,6 +14,7 @@ src/src_fsi/src_fsi.tex
 src/src_free_surface_flow/src_free_surface_flow.tex
 src/struct_dynamics/struct_dynamics.tex
 src/struct_statics/struct_statics.tex
+src/xfem/xfem.tex
 src/brick1/brick1.tex
 src/wall1/wall1.tex
 src/wallge/wallge.tex
