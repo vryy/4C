@@ -394,7 +394,7 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
       return ele;
     }
     break;
-#ifdef D_SOTET10 
+#ifdef D_SOTET10
     case so_tet10:
     {
       RefCountPtr<DRT::Element> ele = rcp(new DRT::Elements::So_tet10(id,owner));
@@ -405,7 +405,7 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
 #endif
     // continue to add types of elements here....
     default:
-      dserror("Unknown type of finite element");
+      dserror("Unknown type '%s' of finite element", eletype.c_str());
     break;
   }
 

@@ -313,8 +313,10 @@ private:
                   vector<double>&           egridv,
                   Epetra_SerialDenseMatrix* sys_mat,
                   Epetra_SerialDenseVector* residual,
-                  struct _MATERIAL*         material, 
-                  ParameterList&            params
+                  struct _MATERIAL*         material,
+                  double                    time,
+                  double                    timefac,
+                  bool                      is_stationary
 		  );
 
   // calculate Jacobian matrix and it's determinant
@@ -324,15 +326,14 @@ private:
 	       double* 		det,
                const int 	iel
 	       );
-	       
+
   /*!
    * \brief get the body force from the nodes condition
    * \return ???
-   */	
+   */
   Epetra_SerialDenseMatrix f2_getbodyforce(
-        const double          time,		///< ???
-        const ParameterList&  params	///< ???
-		 );       
+        const double          time		///< ???
+    );
 
   // calculate global derivatives w.r.t. x,y,z at point r,s,t are
     void f2_gder(Epetra_SerialDenseMatrix& derxy,
@@ -390,7 +391,7 @@ private:
                 const double&   	fac,
                 const double&   	visc,
                 const int&      	iel
-			       );
+      );
 
   // set number of gauss points to element shape default
   DRT::Utils::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype);
@@ -400,8 +401,8 @@ private:
 
   void CreateLinesQuad(const int& nline,
                        const int& nnode);
-		     		     
-  
+
+
 }; // class Fluid2
 
 
@@ -641,7 +642,7 @@ public:
   virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const { return null; }
 
   //@}
-  
+
     //! @name Evaluation
 
   /*!
@@ -676,7 +677,7 @@ public:
                Epetra_SerialDenseVector& elevec1,
                Epetra_SerialDenseVector& elevec2,
                Epetra_SerialDenseVector& elevec3);
-  
+
   //! @name Evaluate methods
 
   /*!
@@ -709,7 +710,7 @@ private:
      none,
      integrate_Shapefunction
   };
-  
+
   // don't want = operator
   Fluid2Line& operator = (const Fluid2Line& old);
 

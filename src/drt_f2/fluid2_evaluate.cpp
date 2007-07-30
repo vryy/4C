@@ -118,7 +118,8 @@ int DRT::Elements::Fluid2::Evaluate(ParameterList& params,
        }
 
       // get control parameter
-      bool is_stationary = params.get<bool>("using stationary formulation",false);
+      const bool is_stationary = params.get<bool>("using stationary formulation",false);
+      const double time = params.get<double>("total time",-1.0);
 
       // One-step-Theta: timefac = theta*dt
       // BDF2:           timefac = 2/3 * dt
@@ -130,7 +131,8 @@ int DRT::Elements::Fluid2::Evaluate(ParameterList& params,
       }
 
       // calculate element coefficient matrix and rhs
-      f2_sys_mat(lm,myvelnp,myprenp,myvhist,mydispnp,mygridv,&elemat1,&elevec1,actmat,params);
+      f2_sys_mat(lm,myvelnp,myprenp,myvhist,mydispnp,mygridv,&elemat1,&elevec1,actmat,
+                 time,timefac,is_stationary);
 
       // This is a very poor way to transport the density to the
       // outside world. Is there a better one?
@@ -206,7 +208,9 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
                                        Epetra_SerialDenseMatrix* sys_mat,
                                        Epetra_SerialDenseVector* residual,
                                        struct _MATERIAL*         material,
-                                       ParameterList&            params
+                                       double                    time,
+                                       double                    timefac,
+                                       bool                      is_stationary
   )
 {
 
@@ -230,20 +234,14 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
       xyze(1,i) += edispnp[3*i+1];
     }
   }
-  
+
   // dead load in element nodes
-  const double time = params.get("total time",-1.0);
-  const Epetra_SerialDenseMatrix bodyforce = f2_getbodyforce(time,params);
-  
+  const Epetra_SerialDenseMatrix bodyforce = f2_getbodyforce(time);
+
   /*---------------------------------------------- get viscosity ---*/
   // check here, if we really have a fluid !!
   if(material->mattyp != m_fluid) dserror("Material law is not of type m_fluid.");
   const double  visc = material->m.fluid->viscosity;
-  
-  const double timefac=params.get<double>("time constant for integration",0.0);
-  
-  // get control parameter to switch between stationary and instationary problem
-  const bool is_stationary = params.get<bool>("using stationary formulation",false);
 
   /*--------------------------------------------- stab-parameter ---*/
   // USFEM stabilization is default. No switch here at the moment.
@@ -543,7 +541,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
        }
      }
 
-      // perform integration for entire matrix and rhs 
+      // perform integration for entire matrix and rhs
       if(is_stationary==false)
         f2_calmat(*sys_mat,*residual,
                   velint,histvec,gridvelint,press,
@@ -626,8 +624,7 @@ void DRT::Elements::Fluid2::f2_jaco(const Epetra_SerialDenseMatrix& xyze,
  |  array edeadng only if all nodes have a surface Neumann condition   |
  *----------------------------------------------------------------------*/
 Epetra_SerialDenseMatrix DRT::Elements::Fluid2::f2_getbodyforce(
-        const double          time,
-        const ParameterList&  params
+        const double          time
 )
 {
   const int iel = NumNode();
@@ -672,7 +669,7 @@ Epetra_SerialDenseMatrix DRT::Elements::Fluid2::f2_getbodyforce(
       }
       else
       {
-	// do not compute an "alternative" curvefac here since a negative time value 
+	// do not compute an "alternative" curvefac here since a negative time value
 	// indicates an error.
          dserror("Negative time value in body force calculation: time = %f",time);
 	// curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(0.0);
