@@ -653,6 +653,24 @@ void FluidGenAlphaIntegration::GenAlphaTimeUpdate()
   veln_->Update(1.0,*velnp_ ,0.0);
   // for the accelerations
   accn_->Update(1.0,*accnp_ ,0.0);
+
+#ifdef TDS
+  {
+    // create the parameters for the discretization
+    ParameterList eleparams;
+    // action for elements
+    eleparams.set("action","time update for subscales");
+    // choose what to assemble --- nothing
+    eleparams.set("assemble matrix 1",false);
+    eleparams.set("assemble matrix 2",false);
+    eleparams.set("assemble vector 1",false);
+    eleparams.set("assemble vector 2",false);
+    eleparams.set("assemble vector 3",false);
+
+    // call loop over elements
+    discret_->Evaluate(eleparams,null,null,null,null,null);
+  }
+#endif
   
   return;
 } // FluidGenAlphaIntegration::GenAlphaTimeUpdate

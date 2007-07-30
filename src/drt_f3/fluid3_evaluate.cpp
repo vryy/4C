@@ -49,6 +49,10 @@ DRT::Elements::Fluid3::ActionType DRT::Elements::Fluid3::convertStringToActionTy
     act = Fluid3::calc_fluid_systemmat_and_residual;
   else if (action == "calc_fluid_genalpha_sysmat_and_residual")
     act = Fluid3::calc_fluid_genalpha_sysmat_and_residual;
+#ifdef TDS
+  else if (action == "time update for subscales")
+    act = Fluid3::calc_fluid_genalpha_update_for_subscales;
+#endif
   else if (action == "calc_fluid_beltrami_error")      
     act = Fluid3::calc_fluid_beltrami_error;
   else if (action == "calc_turbulence_statistics")      
@@ -280,6 +284,13 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
                             params);
       }
       break;
+#ifdef TDS      
+      case calc_fluid_genalpha_update_for_subscales:
+        // most recent subscale pressure becomes the old subscale pressure
+        // for the next timestep
+        sub_pre_old_=sub_pre_;
+      break;
+#endif      
       case calc_Shapefunction:
         shape_function_3D(elevec1,elevec2[0],elevec2[1],elevec2[2],this->Shape());
         break;
@@ -605,17 +616,41 @@ void DRT::Elements::Fluid3::f3_genalpha_sys_mat(
     /*--------------------------------------------- stab-parameter ---*/
     vector<double>   tau(3); // stab parameters
     {
+#ifdef TDS
+      int version =3; // evaluate stabilisation parameter for genalpha
+                      // time integration, time dependent subscales
+#else
       int version =2; // evaluate stabilisation parameter for genalpha
                       // time integration
-
+#endif
       f3_calc_stabpar(tau,iel,xyze,myvelaf,visc,params,version);
     }
 
     const bool higher_order_ele = isHigherOrderElement(distype);
     // gaussian points
-    const GaussRule3D gaussrule = getOptimalGaussrule(distype);
+    const GaussRule3D          gaussrule = getOptimalGaussrule(distype);
     const IntegrationPoints3D  intpoints = getIntegrationPoints3D(gaussrule);
 
+#ifdef TDS
+    // if not available, the arrays for the subscale quantities have to
+    // be resized and initialised to zero
+    if(sub_acc_.N() != 3 || sub_acc_.M() != intpoints.nquad)
+    {
+      sub_acc_    .Shape(3,intpoints.nquad);
+      sub_acc_old_.Shape(3,intpoints.nquad);
+    }
+    if(sub_vel_.N() != 3 || sub_vel_.M() != intpoints.nquad)
+    {
+      sub_vel_    .Shape(3,intpoints.nquad);
+      sub_vel_old_.Shape(3,intpoints.nquad);
+    }
+    if(sub_pre_.Length() != intpoints.nquad)
+    {
+      sub_pre_    .Size(intpoints.nquad);
+      sub_pre_old_.Size(intpoints.nquad);
+    }
+#endif
+    
     // shape functions and derivatives
     Epetra_SerialDenseVector    funct (iel);
     Epetra_SerialDenseMatrix 	deriv (3,iel);
@@ -747,9 +782,6 @@ void DRT::Elements::Fluid3::f3_genalpha_sys_mat(
             pderxynp[2] += derxy(2,sdi) * myprenp[sdi];
           }
 
-
-
-
           /*--- assemble all contributions into to the element matrix --*/
           f3_genalpha_calmat(*elemat,
                              *elevec,
@@ -769,6 +801,7 @@ void DRT::Elements::Fluid3::f3_genalpha_sys_mat(
                              fac,
                              visc,
                              iel,
+                             iquad,
                              params);
 
     } // end of loop over integration points
@@ -969,6 +1002,201 @@ void DRT::Elements::Fluid3::f3_calc_stabpar(
 
 
             tau[1] = timefac * DSQR(hk) / (DSQR(hk) * xi1 + ( 4.0 * timefac * visc/mk) * xi2);
+
+            /*------------------------------------------------------ compute tau_C ---*/
+            /*-- stability parameter definition according to Codina (2002), CMAME 191
+             *
+             * Analysis of a stabilized finite element approximation of the transient
+             * convection-diffusion-reaction equation using orthogonal subscales.
+             * Ramon Codina, Jordi Blasco; Comput. Visual. Sci., 4 (3): 167-174, 2002.
+             *
+             * */
+            //tau[2] = sqrt(DSQR(visc)+DSQR(0.5*vel_norm*hk));
+
+            // Wall Diss. 99
+            /*
+              xi2 ^
+                  |
+                1 |   +-----------
+                  |  /
+                  | /
+                  |/
+                  +--------------> Re2
+                      1
+            */
+            xi2 = DMIN(re2,1.0);
+
+            tau[2] = vel_norm * hk * 0.5 * xi2;
+          }
+
+        }
+
+      }
+      break;
+      case 3:
+      {
+        // INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA, TIME DEPENDENT SUBSCALES
+        // 
+        // tau_M: modification of 
+        //
+        //    Franca, L.P. and Valentin, F.: On an Improved Unusual Stabilized
+        //    Finite Element Method for the Advective-Reactive-Diffusive
+        //    Equation. Computer Methods in Applied Mechanics and Enginnering,
+        //    Vol. 190, pp. 1785-1800, 2000.
+        //    http://www.lncc.br/~valentin/publication.htm                   */
+        //
+        // tau_Mp: modification of Barrenechea, G.R. and Valentin, F.
+        //
+        //    Barrenechea, G.R. and Valentin, F.: An unusual stabilized finite
+        //    element method for a generalized Stokes problem. Numerische
+        //    Mathematik, Vol. 92, pp. 652-677, 2002.
+        //    http://www.lncc.br/~valentin/publication.htm
+        //
+        // 
+        // tau_C: kept Wall definition
+        //
+        // for the modifications see Codina, Principe, Guasch, Badia
+        //    "Time dependent subscales in the stabilized finite  element
+        //     approximation of incompressible flow problems"
+        //
+        // 
+        // see also: Codina, R. and Soto, O.: Approximation of the incompressible
+        //    Navier-Stokes equations using orthogonal subscale stabilisation
+        //    and pressure segregation on anisotropic finite element meshes.
+        //    Computer methods in Applied Mechanics and Engineering,
+        //    Vol 193, pp. 1403-1419, 2004.
+
+        /*----------------------------- declaration of variables ---*/
+        Epetra_SerialDenseVector    funct(iel);
+        Epetra_SerialDenseMatrix    deriv(3,iel);
+        Epetra_SerialDenseMatrix    xjm(3,3);
+        Epetra_SerialDenseMatrix    derxy(3,iel);
+        double                      hk;
+        double                      val, strle;
+        vector<double>              velino(3); /* normed velocity at element centre */
+        double                      mk=0.0;
+        vector<double>              velint(3);
+
+        /*------------------------------------------------- initialise ---*/
+        // gaussian points
+        // use one point gauss rule to calculate tau at element center
+        GaussRule3D integrationrule_stabili;
+        switch(distype)
+        {
+        case hex8: case hex20: case hex27:
+            integrationrule_stabili = intrule_hex_1point;
+            break;
+        case tet4: case tet10:
+            integrationrule_stabili = intrule_tet_1point;
+            break;
+        default:
+            dserror("invalid discretization type for fluid3");
+        }
+        const double timefac = params.get<double>("dt",0.0) * params.get<double>("gamma",0.0);
+
+        // gaussian points
+        const IntegrationPoints3D  intpoints = getIntegrationPoints3D(integrationrule_stabili);
+
+        const double e1    = intpoints.qxg[0][0];
+        const double e2    = intpoints.qxg[0][1];
+        const double e3    = intpoints.qxg[0][2];
+        const double wquad = intpoints.qwgt[0];
+        DRT::Utils::shape_function_3D(funct,e1,e2,e3,distype);
+        DRT::Utils::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
+
+        /*------------------------------- get element type constant for tau ---*/
+        switch(iel)
+        {
+            case 4:
+            case 8:
+              mk = 0.333333333333333333333;
+              break;
+            case 20:
+            case 27:
+            case 10:
+              mk = 0.083333333333333333333;
+              break;
+            default: dserror("type unknown!\n");
+        }
+        /*--------------------------------- get velocities at element center ---*/
+        for (int i=0;i<3;i++)
+        {
+          velint[i]=0.0;
+          for (int j=0;j<iel;j++)
+          {
+            velint[i] += funct[j]*myvelnp[i+(3*j)];
+          }
+        } //end loop over i
+
+        {
+          double vel_norm, re1, re2, xi1, xi2;
+
+          // get Jacobian matrix and determinant
+          const Epetra_SerialDenseMatrix xjm = getJacobiMatrix(xyze,deriv,iel);
+          const double det = getDeterminante(xjm);
+          const double vol=wquad*det;
+
+          /* get element length for tau_Mp/tau_C: volume-equival. diameter/sqrt(3)*/
+          hk = pow((SIX*vol/PI),(ONE/THREE))/sqrt(THREE);
+
+          /*------------------------------------------------- get streamlength ---*/
+          f3_gder(derxy,deriv,xjm,det,iel);
+          val = 0.0;
+
+
+          /* get velocity norm */
+          vel_norm=sqrt( velint[0]*velint[0]
+                         + velint[1]*velint[1]
+                         + velint[2]*velint[2]);
+          if(vel_norm>=EPS6)
+          {
+            velino[0] = velint[0]/vel_norm;
+            velino[1] = velint[1]/vel_norm;
+            velino[2] = velint[2]/vel_norm;
+          }
+          else
+          {
+            velino[0] = ONE;
+            velino[1] = 0.0;
+            velino[2] = 0.0;
+          }
+          for (int i=0;i<iel;i++) /* loop element nodes */
+          {
+            val += FABS(velino[0]*derxy(0,i)    \
+                        +velino[1]*derxy(1,i)   \
+                        +velino[2]*derxy(2,i));
+          } /* end of loop over elements */
+          strle=TWO/val;
+
+          {
+            /*----------------------------------------------------- compute tau_Mu ---*/
+            re2 = mk * vel_norm * strle / (2.0 * visc);      /* convective : viscous forces */
+
+            xi2 = DMAX(re2,1.0);
+
+            tau[0] = DSQR(strle) / (4.0 * visc / mk+(4.0 *visc/mk)*xi2);
+
+            /*------------------------------------------------------compute tau_Mp ---*/
+            /* stability parameter definition according to Franca and Valentin (2000)
+             *                                    and Barrenechea and Valentin (2002) */
+            re2 = mk * vel_norm * hk / (2.0 * visc);      /* convective : viscous forces  */
+
+            xi2 = DMAX(re2,1.0);
+
+            /*
+              xi1,xi2 ^
+                      |      /
+                      |     /
+                      |    /
+                    1 +---+
+                      |
+                      |
+                      |
+                      +--------------> re1,re2
+                            1
+            */
+
+            tau[1] = DSQR(hk) / (4.0 * visc / mk + ( 4.0 * visc/mk) * xi2);
 
             /*------------------------------------------------------ compute tau_C ---*/
             /*-- stability parameter definition according to Codina (2002), CMAME 191
@@ -2420,6 +2648,7 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
     const double&                    fac,
     const double&                    visc,
     const int&                       iel,
+    const int&                       iquad,
     ParameterList& 	             params)
 {
 
@@ -2613,6 +2842,30 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
   const double divunp          = (vderxynp(0,0)+vderxynp(1,1)+vderxynp(2,2));
   const double fac_tauC_divunp = fac_tauC * divunp;
 
+  
+
+#ifdef TDS
+  // update estimates for the subscale quantities
+  
+  const double factauC=tauC/(tauC+dt);
+  
+  /*-------------------------------------------------------------------*
+   *                                                                   *
+   *                  update of SUBSCALE PRESSURE                      *
+   *                                                                   *
+   *-------------------------------------------------------------------*/
+
+  /*
+        ~n+1      tauC     ~n   tauC * dt            n+1
+        p    = --------- * p  - --------- * nabla o u
+         (i)   tauC + dt        tauC + dt            (i)
+  */
+  
+  sub_pre_[iquad]=(sub_pre_old_[iquad]-dt*divunp)*factauC;
+  
+          
+#endif
+  
   
 #define conv_r_(i,j,k) conv_r(i,3*(k)+j)
 #define viscs2_(i,j,k) viscs2(i,3*(k)+j)
@@ -3392,7 +3645,27 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
       //---------------------------------------------------------------
       if(cstab)
       {
-   
+#ifdef TDS
+        /*                       tauC * dt
+            factor: +gamma* dt * ---------
+                                 tauC + dt
+                    /                          \
+                   |                            |
+                   | nabla o Dacc  , nabla o v  |
+                   |                            |
+                    \                          /
+        */
+
+        elemat(vi*4    , ui*4    ) += fac*gamma*dt*dt*factauC*derxy(0,ui)*derxy(0,vi) ;
+        elemat(vi*4    , ui*4 + 1) += fac*gamma*dt*dt*factauC*derxy(1,ui)*derxy(0,vi) ;
+        elemat(vi*4    , ui*4 + 2) += fac*gamma*dt*dt*factauC*derxy(2,ui)*derxy(0,vi) ;
+        elemat(vi*4 + 1, ui*4    ) += fac*gamma*dt*dt*factauC*derxy(0,ui)*derxy(1,vi) ;
+        elemat(vi*4 + 1, ui*4 + 1) += fac*gamma*dt*dt*factauC*derxy(1,ui)*derxy(1,vi) ;
+        elemat(vi*4 + 1, ui*4 + 2) += fac*gamma*dt*dt*factauC*derxy(2,ui)*derxy(1,vi) ;
+        elemat(vi*4 + 2, ui*4    ) += fac*gamma*dt*dt*factauC*derxy(0,ui)*derxy(2,vi) ;
+        elemat(vi*4 + 2, ui*4 + 1) += fac*gamma*dt*dt*factauC*derxy(1,ui)*derxy(2,vi) ;
+        elemat(vi*4 + 2, ui*4 + 2) += fac*gamma*dt*dt*factauC*derxy(2,ui)*derxy(2,vi) ;
+#else
         /*  factor: +gamma*dt*tauC
    
                     /                          \
@@ -3401,6 +3674,7 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
                    |                            |
                     \                          /
         */
+        
         elemat(vi*4    , ui*4    ) += fac_gamma_dt_tauC_derxy_0_ui*derxy(0,vi) ;
         elemat(vi*4    , ui*4 + 1) += fac_gamma_dt_tauC_derxy_1_ui*derxy(0,vi) ;
         elemat(vi*4    , ui*4 + 2) += fac_gamma_dt_tauC_derxy_2_ui*derxy(0,vi) ;
@@ -3410,6 +3684,7 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
         elemat(vi*4 + 2, ui*4    ) += fac_gamma_dt_tauC_derxy_0_ui*derxy(2,vi) ;
         elemat(vi*4 + 2, ui*4 + 1) += fac_gamma_dt_tauC_derxy_1_ui*derxy(2,vi) ;
         elemat(vi*4 + 2, ui*4 + 2) += fac_gamma_dt_tauC_derxy_2_ui*derxy(2,vi) ;
+#endif
       }
     } // end loop vi
 
@@ -3759,6 +4034,21 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
 
     if(cstab)
     {
+      
+#if TDS
+      /* factor: -1
+   
+                       /                  \
+                      |  ~n+1              |
+                      |  p    , nabla o v  |
+                      |   (i)              |
+                       \                  /
+      */
+      
+      elevec[ui*4    ] += fac*sub_pre_[iquad]*derxy(0,ui) ;
+      elevec[ui*4 + 1] += fac*sub_pre_[iquad]*derxy(1,ui) ;
+      elevec[ui*4 + 2] += fac*sub_pre_[iquad]*derxy(2,ui) ;
+#else
       /* factor: +tauC
    
                   /                          \
@@ -3771,6 +4061,9 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
       elevec[ui*4    ] -= fac_tauC_divunp*derxy(0,ui) ;
       elevec[ui*4 + 1] -= fac_tauC_divunp*derxy(1,ui) ;
       elevec[ui*4 + 2] -= fac_tauC_divunp*derxy(2,ui) ;
+#endif
+
+      
     }
 
     //---------------------------------------------------------------
@@ -3997,9 +4290,9 @@ void DRT::Elements::Fluid3::f3_int_beltrami_err(
  |                                                           gammi 07/07
  |
  | The necessary element integration is performed in here. The element
- | is cut into two (HEX8) or three (quadratic elements) planes, the
- | spatial functions (velocity, pressure etc.) are integrated over this
- | plane and this element contribution is added to a processor local
+ | is cut into at least two (HEX8) or three (quadratic elements) planes,
+ | the spatial functions (velocity, pressure etc.) are integrated over
+ | this plane and this element contribution is added to a processor local
  | vector (see formulas below for a exact description of the output).
  | The method assumes, that all elements are of the same rectangular
  | shape in the "inplanedirection". In addition, it is assumed that

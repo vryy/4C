@@ -15,7 +15,7 @@
 # D_FLUID2           # fluid2
 # D_FLUID2_PRO       # fluid2 with projection method
 # FLUID2_ML          # fluid2 with multilevel
-# D_FLUID2_TDS       # fluid2 with time dependent subscales 
+# D_FLUID2_TDS       # fluid2 (old element) with time dependent subscales 
 # D_FLUID3           # fluid3
 # D_FLUID3_F         # fluid3_fast
 # D_FLUID3_PRO       # fluid3 with projection method
@@ -68,6 +68,7 @@
 # LOCALSYSTEMS_ST    # locally oriented Dirichlet BCs for structures
 # CCADISCRET         # use new ccarat discretization subsystem DRT
 # XFEM               # provides intersection routines, enrichments, searches,...
+# TDS                # Fluid stabilization using time dependent subscales
 
 #   tools
 #  =======

@@ -295,6 +295,9 @@ private:
     none,
     calc_fluid_systemmat_and_residual,
     calc_fluid_genalpha_sysmat_and_residual,
+#ifdef TDS
+    calc_fluid_genalpha_update_for_subscales,
+#endif
     calc_fluid_beltrami_error,
     calc_turbulence_statistics,
     calc_Shapefunction,
@@ -321,7 +324,20 @@ private:
   //! vector of lines adjacent to this element
   vector<DRT::Elements::Fluid3Line*>              lineptrs_;
 
+#ifdef TDS
+  //! matrix of subscale acceleration values in gausspoints of this element
+  Epetra_SerialDenseMatrix                        sub_acc_;
+  Epetra_SerialDenseMatrix                        sub_acc_old_;
 
+  //! matrix of subscale velocity values in gausspoints of this element
+  Epetra_SerialDenseMatrix                        sub_vel_;
+  Epetra_SerialDenseMatrix                        sub_vel_old_;
+    
+  //! vector of subscale pressures values in gausspoints of this element
+  Epetra_SerialDenseVector                        sub_pre_;
+  Epetra_SerialDenseVector                        sub_pre_old_;
+#endif
+  
   // internal calculation methods
 
   // don't want = operator
@@ -542,7 +558,7 @@ private:
     and       numele * u  , numele * v  , numele * w  , numele * p
  
     as well as numele.
-    All results are communicated vi the parameter list!
+    All results are communicated via the parameter list!
     
     </pre>
  
@@ -647,6 +663,7 @@ private:
     const double&                    fac,
     const double&                    visc,
     const int&                       iel,
+    const int&                       iquad,
     ParameterList&                   params);
 
   /*!
