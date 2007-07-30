@@ -464,13 +464,16 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
     // call elements to calculate residual for convergence check and
     // matrix for the next step
     // -------------------------------------------------------------------
-    // start time measurement for element call
-    tm3_ref_ = rcp(new TimeMonitor(*timeeleloop_));
-    
-    this->GenAlphaAssembleResidualAndMatrix();
 
-    // end time measurement for element call
-    tm3_ref_=null;
+    if(itnum<params_.get<int>("max nonlin iter steps"))
+    {
+      // start time measurement for element call
+      tm3_ref_ = rcp(new TimeMonitor(*timeeleloop_));
+      this->GenAlphaAssembleResidualAndMatrix();
+      // end time measurement for element call
+      tm3_ref_=null;
+    }
+
 
     // -------------------------------------------------------------------
     // do convergence check
@@ -1023,7 +1026,7 @@ bool FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(
     if(myrank_ == 0)
     {
       printf("+---------------------------------------------------------------------------------------------+\n");
-      printf("|            >>>>>> not converged in itemax steps!                                            |\n");
+      printf("| >>>>>> not converged in itemax steps! residual of last step not recomputed (invalid)        |\n");
       printf("+---------------------------------------------------------------------------------------------+\n");
     }
   }
@@ -1104,7 +1107,7 @@ void FluidGenAlphaIntegration::SetInitialFlowField(
         int err =0;
 
         // random noise is perc percent of the initial profile
-        double perc = 0.1;
+        double perc = 0.3;
         
         // loop all nodes on the processor
         for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();++lnodeid)
