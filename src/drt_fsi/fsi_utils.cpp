@@ -101,9 +101,13 @@ void FSI::Utils::DumpJacobian(NOX::Epetra::Interface::Required& interface,
       int gid = map.GID(j);
       if (Jc[j] != 0.0)
       {
-        int err = jacobian->ReplaceGlobalValues(gid,1,&Jc[j],&idx);
+        int err = jacobian->SumIntoGlobalValues(gid,1,&Jc[j],&idx);
+        if (err>0)
+        {
+          err = jacobian->InsertGlobalValues(gid,1,&Jc[j],&idx);
+        }
         if (err != 0)
-          dserror("ReplaceGlobalValues failed");
+          dserror("Assembly failed");
       }
     }
 
