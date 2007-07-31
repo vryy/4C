@@ -64,12 +64,13 @@ enum GaussRule1D
 
 In this structure the coordinates and weights used by gauss integration are stored.
 */
-typedef struct
+struct IntegrationPoints3D
 {
+  IntegrationPoints3D(const GaussRule3D gaussrule);
   int           nquad;               ///< number of gausspoints
   double        qxg[MAXGAUSS][3];    ///< coordinates
   double        qwgt[MAXGAUSS];      ///< weights
-} IntegrationPoints3D;
+};
 
 /*!
 \brief integration parameters
@@ -77,12 +78,13 @@ typedef struct
 
 In this structure the coordinates and weights used by gauss integration are stored.
 */
-typedef struct
+struct IntegrationPoints2D
 {
+  IntegrationPoints2D(const GaussRule2D gaussrule);
   int           nquad;               ///< number of gausspoints
   double        qxg[MAXGAUSS][2];    ///< coordinates
   double        qwgt[MAXGAUSS];      ///< weights
-} IntegrationPoints2D;
+};
 
 /*!
 \brief integration parameters
@@ -94,33 +96,43 @@ are stored.
 
 </pre>
 */
-typedef struct
+struct IntegrationPoints1D
 {
+  IntegrationPoints1D(const GaussRule1D gaussrule);
   int           nquad;               ///< number of gausspoints
   double        qxg[MAXGAUSS];       ///< coordinates */
   double        qwgt[MAXGAUSS];      ///< weights */
-} IntegrationPoints1D;
+};
 
 /*!
 \brief return object with 3D integration points and weights
 */
-IntegrationPoints3D getIntegrationPoints3D(
+inline IntegrationPoints3D getIntegrationPoints3D(
   const  GaussRule3D gaussrule   ///< used to switch between the implemented gaussrules
-  );
+  )
+{
+  return IntegrationPoints3D(gaussrule);
+}
 
 /*!
 \brief return object with 2D integration points and weights
 */
-IntegrationPoints2D getIntegrationPoints2D(
+inline IntegrationPoints2D getIntegrationPoints2D(
   const  GaussRule2D gaussrule   ///< used to switch between the implemented gaussrules
-  );
+  )
+{
+  return IntegrationPoints2D(gaussrule);
+}
 
 /*!
 \brief return object with 1D integration points and weights
 */
-IntegrationPoints1D getIntegrationPoints1D(
+inline IntegrationPoints1D getIntegrationPoints1D(
   const  GaussRule1D gaussrule   ///< used to switch between the implemented gaussrules
-  );
+  )
+{
+  return IntegrationPoints1D(gaussrule);
+}
 
 } // namespace Utils
 } // namespace DRT
