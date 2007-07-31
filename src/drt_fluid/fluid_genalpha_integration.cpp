@@ -258,7 +258,6 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
   // order accuracy
   gamma_  = 0.5 + alphaM_ - alphaF_;
 
-  
   if (myrank_==0)
   {
     cout << "Generalized Alpha parameter: alpha_F = " << alphaF_ << &endl;
@@ -660,6 +659,11 @@ void FluidGenAlphaIntegration::GenAlphaTimeUpdate()
     ParameterList eleparams;
     // action for elements
     eleparams.set("action","time update for subscales");
+
+    // update time paramters
+    eleparams.set("gamma"  ,gamma_ );
+    eleparams.set("dt"     ,dt_    );
+
     // choose what to assemble --- nothing
     eleparams.set("assemble matrix 1",false);
     eleparams.set("assemble matrix 2",false);
