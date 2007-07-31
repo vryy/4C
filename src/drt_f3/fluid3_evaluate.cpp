@@ -20,6 +20,8 @@ Maintainer: Georg Bauer
 #endif
 
 #include "fluid3.H"
+#include "fluid3_impl.H"
+
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_exporter.H"
@@ -27,7 +29,9 @@ Maintainer: Georg Bauer
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_mat/newtonianfluid.H"
-#include "Epetra_SerialDenseSolver.h"
+
+#include <blitz/array.h>
+#include <Epetra_SerialDenseSolver.h>
 
 using namespace DRT::Utils;
 /*----------------------------------------------------------------------*
@@ -38,14 +42,60 @@ using namespace DRT::Utils;
 extern struct _MATERIAL  *mat;
 
 
+DRT::Elements::Fluid3Impl* DRT::Elements::Fluid3::Impl()
+{
+  switch (NumNode())
+  {
+  case 8:
+  {
+    static Fluid3Impl* f;
+    if (f==NULL)
+      f = new Fluid3Impl(8);
+    return f;
+  }
+  case 20:
+  {
+    static Fluid3Impl* f;
+    if (f==NULL)
+      f = new Fluid3Impl(20);
+    return f;
+  }
+  case 27:
+  {
+    static Fluid3Impl* f;
+    if (f==NULL)
+      f = new Fluid3Impl(27);
+    return f;
+  }
+  case 4:
+  {
+    static Fluid3Impl* f;
+    if (f==NULL)
+      f = new Fluid3Impl(4);
+    return f;
+  }
+  case 10:
+  {
+    static Fluid3Impl* f;
+    if (f==NULL)
+      f = new Fluid3Impl(10);
+    return f;
+  }
+  default:
+    dserror("node number %d not supported", NumNode());
+  }
+  return NULL;
+}
+
+
 // converts a string into an Action for this element
 DRT::Elements::Fluid3::ActionType DRT::Elements::Fluid3::convertStringToActionType(
               const string& action) const
 {
   dsassert(action != "none", "No action supplied");
-  
+
   DRT::Elements::Fluid3::ActionType act = Fluid3::none;
-  if (action == "calc_fluid_systemmat_and_residual")      
+  if (action == "calc_fluid_systemmat_and_residual")
     act = Fluid3::calc_fluid_systemmat_and_residual;
   else if (action == "calc_fluid_genalpha_sysmat_and_residual")
     act = Fluid3::calc_fluid_genalpha_sysmat_and_residual;
@@ -53,17 +103,17 @@ DRT::Elements::Fluid3::ActionType DRT::Elements::Fluid3::convertStringToActionTy
   else if (action == "time update for subscales")
     act = Fluid3::calc_fluid_genalpha_update_for_subscales;
 #endif
-  else if (action == "calc_fluid_beltrami_error")      
+  else if (action == "calc_fluid_beltrami_error")
     act = Fluid3::calc_fluid_beltrami_error;
-  else if (action == "calc_turbulence_statistics")      
-    act = Fluid3::calc_turbulence_statistics;  
+  else if (action == "calc_turbulence_statistics")
+    act = Fluid3::calc_turbulence_statistics;
   else if (action == "calc_Shapefunction")
     act = Fluid3::calc_Shapefunction;
   else if (action == "calc_ShapeDeriv1")
     act = Fluid3::calc_ShapeDeriv1;
   else if (action == "calc_ShapeDeriv2")
     act = Fluid3::calc_ShapeDeriv2;
-  else 
+  else
     dserror("Unknown type of action for Fluid3");
   return act;
 }
@@ -96,13 +146,14 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
       case calc_fluid_systemmat_and_residual:
       {
         // need current velocity and history vector
-        RefCountPtr<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (trial)");
+        RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("u and p at time n+1 (trial)");
         RefCountPtr<const Epetra_Vector> hist  = discretization.GetState("old solution data for rhs");
-        if (vel_pre_np==null || hist==null) dserror("Cannot get state vectors 'velnp' and/or 'hist'");
+        if (velnp==null || hist==null)
+          dserror("Cannot get state vectors 'velnp' and/or 'hist'");
 
         // extract local values from the global vectors
-        vector<double> my_vel_pre_np(lm.size());
-        DRT::Utils::ExtractMyValues(*vel_pre_np,my_vel_pre_np,lm);
+        vector<double> myvelnp(lm.size());
+        DRT::Utils::ExtractMyValues(*velnp,myvelnp,lm);
         vector<double> myhist(lm.size());
         DRT::Utils::ExtractMyValues(*hist,myhist,lm);
 
@@ -124,28 +175,69 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
           DRT::Utils::ExtractMyValues(*gridv,mygridv,lm);
         }
 
-        // split "my_vel_pre_np" into velocity part "myvelnp" and pressure part "myprenp"
-        // Additionally only the velocity components of myhist are important!
+        // split velocity and pressure
+        // create blitz objects
+
         const int numnode = NumNode();
-        vector<double> myprenp(numnode);
-        vector<double> myvelnp(3*numnode);
-        vector<double> myvhist(3*numnode);
+        blitz::Array<double, 1> eprenp(numnode);
+        blitz::Array<double, 2> evelnp(3,numnode,blitz::ColumnMajorArray<2>());
+        blitz::Array<double, 2> evhist(3,numnode,blitz::ColumnMajorArray<2>());
+        blitz::Array<double, 2> edispnp(3,numnode,blitz::ColumnMajorArray<2>());
+        blitz::Array<double, 2> egridv(3,numnode,blitz::ColumnMajorArray<2>());
 
         for (int i=0;i<numnode;++i)
         {
-          myvelnp[0+(i*3)]=my_vel_pre_np[0+(i*4)];
-          myvelnp[1+(i*3)]=my_vel_pre_np[1+(i*4)];
-          myvelnp[2+(i*3)]=my_vel_pre_np[2+(i*4)];
+          evelnp(0,i) = myvelnp[0+(i*4)];
+          evelnp(1,i) = myvelnp[1+(i*4)];
+          evelnp(2,i) = myvelnp[2+(i*4)];
 
-          myprenp[i]=my_vel_pre_np[3+(i*4)];
+          eprenp(i) = myvelnp[3+(i*4)];
 
-          myvhist[0+(i*3)]=myhist[0+(i*4)];
-          myvhist[1+(i*3)]=myhist[1+(i*4)];
-          myvhist[2+(i*3)]=myhist[2+(i*4)];
+          evhist(0,i) = myhist[0+(i*4)];
+          evhist(1,i) = myhist[1+(i*4)];
+          evhist(2,i) = myhist[2+(i*4)];
         }
 
+        if (is_ale_)
+        {
+          for (int i=0;i<numnode;++i)
+          {
+            edispnp(0,i) = mydispnp[0+(i*4)];
+            edispnp(1,i) = mydispnp[1+(i*4)];
+            edispnp(2,i) = mydispnp[2+(i*4)];
+
+            egridv(0,i) = mygridv[0+(i*4)];
+            egridv(1,i) = mygridv[1+(i*4)];
+            egridv(2,i) = mygridv[2+(i*4)];
+          }
+        }
+
+        // get control parameter
+        const bool is_stationary = params.get<bool>("using stationary formulation",false);
+        const double time = params.get<double>("total time",-1.0);
+
+        // One-step-Theta: timefac = theta*dt
+        // BDF2:           timefac = 2/3 * dt
+        double timefac = 0;
+        if (not is_stationary)
+        {
+          timefac = params.get<double>("time constant for integration",-1.0);
+          if (timefac < 0.0) dserror("No time constant for integration supplied");
+        }
+
+        // wrap epetra serial dense objects in blitz objects
+        blitz::Array<double, 2> estif(elemat1.A(),
+                                      blitz::shape(elemat1.M(),elemat1.N()),
+                                      blitz::neverDeleteData,
+                                      blitz::ColumnMajorArray<2>());
+        blitz::Array<double, 1> eforce(elevec1.Values(),
+                                       blitz::shape(elevec1.Length()),
+                                       blitz::neverDeleteData);
+
         // calculate element coefficient matrix and rhs
-        f3_sys_mat(lm,myvelnp,myprenp,myvhist,mydispnp,mygridv,&elemat1,&elevec1,actmat,params);
+        Impl()->Sysmat(this,evelnp,eprenp,evhist,edispnp,egridv,
+                       estif,eforce,actmat,
+                       time,timefac,is_stationary);
 
         // This is a very poor way to transport the density to the
         // outside world. Is there a better one?
@@ -193,11 +285,11 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
         {
           // --------------------------------------------------
           // extract velocities and pressure from the global distributed vectors
-          
+
           // velocity and pressure values (n+1)
           RefCountPtr<const Epetra_Vector> velnp
             = discretization.GetState("u and p (n+1,converged)");
-          
+
 
           if (velnp==null)
           {
@@ -208,7 +300,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
           vector<double> mysol  (lm.size());
           DRT::Utils::ExtractMyValues(*velnp,mysol,lm);
 
-          // integrate mean values 
+          // integrate mean values
           f3_calc_means(mysol,params);
 
         }
@@ -284,7 +376,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
                             params);
       }
       break;
-#ifdef TDS      
+#ifdef TDS
       case calc_fluid_genalpha_update_for_subscales:
         // most recent subscale pressure becomes the old subscale pressure
         // for the next timestep
@@ -310,7 +402,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
           vel_old.Scale(-1.0);
           vel_old+=sub_vel_;
           vel_old.Scale(1.0/(gamma*dt));
-          
+
           sub_acc_old_.Scale((gamma-1.0)/gamma);
           sub_acc_old_+=vel_old;
         }
@@ -323,7 +415,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
         //
         sub_vel_old_=sub_vel_;
       break;
-#endif      
+#endif
       case calc_Shapefunction:
         shape_function_3D(elevec1,elevec2[0],elevec2[1],elevec2[2],this->Shape());
         break;
@@ -380,7 +472,7 @@ void DRT::Elements::Fluid3::f3_sys_mat(const vector<int>&        lm,
 
   // get node coordinates
   const Epetra_SerialDenseMatrix xyze = f3_getPositionArray(edispnp);
-  
+
   // dead load in element nodes
   const double time = params.get("total time",-1.0);
   const Epetra_SerialDenseMatrix bodyforce = f3_getbodyforce(time,params);
@@ -433,7 +525,7 @@ void DRT::Elements::Fluid3::f3_sys_mat(const vector<int>&        lm,
     Epetra_SerialDenseMatrix    deriv(3,iel);
     shape_function_3D(funct,e1,e2,e3,distype);
     shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
-          
+
     // get Jacobian matrix and determinant
     const Epetra_SerialDenseMatrix xjm = getJacobiMatrix(xyze,deriv,iel);
     const double det = getDeterminante(xjm);
@@ -484,7 +576,7 @@ void DRT::Elements::Fluid3::f3_sys_mat(const vector<int>&        lm,
       {
         histvec[isd] += funct[inode]*evhist[isd+(3*inode)];
       }
-    } 
+    }
 
     // get velocity (np,i) derivatives at integration point
     // expression for f3_vder(vderxy,derxy,evelnp,iel);
@@ -590,9 +682,9 @@ Epetra_SerialDenseMatrix DRT::Elements::Fluid3::f3_getPositionArray(
         xyze(2,inode) += edispnp[4*inode+2];
       }
     }
-    
+
     return xyze;
-}    
+}
 
 
 
@@ -683,14 +775,14 @@ void DRT::Elements::Fluid3::f3_genalpha_sys_mat(
       sub_pre_old_.Size(intpoints.nquad);
     }
 #endif
-    
+
     // shape functions and derivatives
     Epetra_SerialDenseVector    funct (iel);
     Epetra_SerialDenseMatrix 	deriv (3,iel);
     Epetra_SerialDenseMatrix 	deriv2(6,iel);
     Epetra_SerialDenseMatrix 	derxy (3,iel);
     Epetra_SerialDenseMatrix 	derxy2(6,iel);
-    
+
     // intermediate accelerations (n+alpha_M)
     vector<double>     	        accintam (3);
     // intermediate velocities    (n+alpha_F) and its derivatives
@@ -703,10 +795,10 @@ void DRT::Elements::Fluid3::f3_genalpha_sys_mat(
     // new pressure and its derivatives
     double                      prenp;
     vector<double>              pderxynp(3);
-    
+
     // dead load
     vector<double>              edeadaf(3);
-    
+
     // start loop over integration points
     for (int iquad=0;iquad<intpoints.nquad;iquad++)
     {
@@ -714,7 +806,7 @@ void DRT::Elements::Fluid3::f3_genalpha_sys_mat(
           const double e1 = intpoints.qxg[iquad][0];
           const double e2 = intpoints.qxg[iquad][1];
           const double e3 = intpoints.qxg[iquad][2];
-          
+
           shape_function_3D(funct,e1,e2,e3,distype);
           shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
           if (higher_order_ele)
@@ -742,14 +834,14 @@ void DRT::Elements::Fluid3::f3_genalpha_sys_mat(
           // get intermediate accelerations (n+1,i)  at integration point
           // get velocities (n+1,i)  at integration point
           // get velocities (n+alpha_F,i) at integration point
-          // get bodyforce in gausspoint, time (n+alpha_F)    
+          // get bodyforce in gausspoint, time (n+alpha_F)
           // get velocity (n+1,i) derivatives at integration point
           for (int isd=0;isd<3;isd++)
           {
             accintam[isd]=0.0;
             velintnp[isd]=0.0;
             velintaf[isd]=0.0;
-            
+
             vderxynp(0,isd) = 0.0;
             vderxynp(1,isd) = 0.0;
             vderxynp(2,isd) = 0.0;
@@ -763,14 +855,14 @@ void DRT::Elements::Fluid3::f3_genalpha_sys_mat(
             for (int inode=0;inode<iel;++inode)
             {
               const int nn     = 3*inode;
-              
+
               accintam[isd]   += funct[inode]*myaccam[isd+nn];
               velintaf[isd]   += funct[inode]*myvelaf[isd+nn];
 
               vderxyaf(0,isd) += derxy(isd,inode)*myvelaf[0+nn];
               vderxyaf(1,isd) += derxy(isd,inode)*myvelaf[1+nn];
               vderxyaf(2,isd) += derxy(isd,inode)*myvelaf[2+nn];
-              
+
               velintnp[isd]   += funct[inode]*myvelnp[isd+nn];
 
               vderxynp(0,isd) += derxy(isd,inode)*myvelnp[0+nn];
@@ -1069,8 +1161,8 @@ void DRT::Elements::Fluid3::f3_calc_stabpar(
       case 3:
       {
         // INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA, TIME DEPENDENT SUBSCALES
-        // 
-        // tau_M: modification of 
+        //
+        // tau_M: modification of
         //
         //    Franca, L.P. and Valentin, F.: On an Improved Unusual Stabilized
         //    Finite Element Method for the Advective-Reactive-Diffusive
@@ -1085,14 +1177,14 @@ void DRT::Elements::Fluid3::f3_calc_stabpar(
         //    Mathematik, Vol. 92, pp. 652-677, 2002.
         //    http://www.lncc.br/~valentin/publication.htm
         //
-        // 
+        //
         // tau_C: kept Wall definition
         //
         // for the modifications see Codina, Principe, Guasch, Badia
         //    "Time dependent subscales in the stabilized finite  element
         //     approximation of incompressible flow problems"
         //
-        // 
+        //
         // see also: Codina, R. and Soto, O.: Approximation of the incompressible
         //    Navier-Stokes equations using orthogonal subscale stabilisation
         //    and pressure segregation on anisotropic finite element meshes.
@@ -1293,7 +1385,7 @@ vector<double> DRT::Elements::Fluid3::f3_caltau(
     case tet4: case tet10:
         integrationrule_stabili = intrule_tet_1point;
         break;
-    default: 
+    default:
         dserror("invalid discretization type for fluid3");
     }
 
@@ -1305,12 +1397,12 @@ vector<double> DRT::Elements::Fluid3::f3_caltau(
     const double e2    = intpoints.qxg[0][1];
     const double e3    = intpoints.qxg[0][2];
     const double wquad = intpoints.qwgt[0];
-    
+
     Epetra_SerialDenseVector    funct(numnode);
     Epetra_SerialDenseMatrix    deriv(NSD, numnode);
     shape_function_3D(funct,e1,e2,e3,distype);
     shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
-    
+
     // get element type constant for tau
     double mk=0.0;
     switch(distype)
@@ -1321,10 +1413,10 @@ vector<double> DRT::Elements::Fluid3::f3_caltau(
     case hex20: case hex27: case tet10:
         mk = 0.083333333333333333333;
         break;
-    default: 
+    default:
         dserror("type unknown!\n");
     }
-    
+
     // get velocities at element center
     vector<double>  velint(NSD);
     for (int isd=0;isd<NSD;isd++)
@@ -1352,9 +1444,9 @@ vector<double> DRT::Elements::Fluid3::f3_caltau(
     const double vel_norm=sqrt( velint[0]*velint[0]
                               + velint[1]*velint[1]
                               + velint[2]*velint[2]);
-    
+
     // normed velocity at element centre
-    vector<double>  velino(NSD);     
+    vector<double>  velino(NSD);
     if(vel_norm>=EPS6)
     {
         velino[0] = velint[0]/vel_norm;
@@ -1367,13 +1459,13 @@ vector<double> DRT::Elements::Fluid3::f3_caltau(
         velino[1] = 0.0;
         velino[2] = 0.0;
     }
-    
+
     // get streamlength
     double val = 0.0;
     for (int inode=0;inode<numnode;inode++)
     {
-        val += abs(velino[0]*derxy(0,inode) 
-                  +velino[1]*derxy(1,inode) 
+        val += abs(velino[0]*derxy(0,inode)
+                  +velino[1]*derxy(1,inode)
                   +velino[2]*derxy(2,inode));
     }
     const double strle = 2.0/val;
@@ -1428,7 +1520,7 @@ vector<double> DRT::Elements::Fluid3::f3_caltau(
                               1
         */
         tau[1] = DSQR(hk) / (DSQR(hk) * xi_viscous + (/* 2.0*/ 4.0 * timefac * visc/mk) * xi_convect);
-    
+
         /*------------------------------------------------------ compute tau_C ---*/
         /*-- stability parameter definition according to Codina (2002), CMAME 191
          *
@@ -1438,13 +1530,13 @@ vector<double> DRT::Elements::Fluid3::f3_caltau(
          *
          * */
         //tau[2] = sqrt(DSQR(visc)+DSQR(0.5*vel_norm*hk));
-    
+
         // Wall Diss. 99
         /*
                       xi2 ^
-                          |   
+                          |
                         1 |   +-----------
-                          |  / 
+                          |  /
                           | /
                           |/
                           +--------------> Re2
@@ -1452,20 +1544,20 @@ vector<double> DRT::Elements::Fluid3::f3_caltau(
         */
         const double xi_tau_c = DMIN(re2,1.0);
         tau[2] = vel_norm * hk * 0.5 * xi_tau_c /timefac;
-      
+
     }
     else
     {// stabilization parameters for stationary case
-    
-        // compute tau_Mu    
+
+        // compute tau_Mu
         const double re_tau_mu = mk * vel_norm * strle / (2.0 * visc);   /* convective : viscous forces */
         const double xi_tau_mu = DMAX(re_tau_mu, 1.0);
         tau[0] = (DSQR(strle)*mk)/(4.0*visc*xi_tau_mu);
- 
+
         // compute tau_Mp
         const double re_tau_mp = mk * vel_norm * hk / (2.0 * visc);      /* convective : viscous forces */
         const double xi_tau_mp = DMAX(re_tau_mp,1.0);
-        tau[1] = (DSQR(hk)*mk)/(4.0*visc*xi_tau_mp);    
+        tau[1] = (DSQR(hk)*mk)/(4.0*visc*xi_tau_mp);
 
         // compute tau_C
         const double xi_tau_c = DMIN(re_tau_mp, 1.0);
@@ -1500,7 +1592,7 @@ Epetra_SerialDenseMatrix DRT::Elements::Fluid3::getJacobiMatrix(
 {
   const int NSD = 3;
   Epetra_SerialDenseMatrix    xjm(NSD,NSD);
-    
+
   // determine jacobian matrix at point r,s,t
   for (int isd=0; isd<NSD; isd++)
   {
@@ -1555,7 +1647,7 @@ Epetra_SerialDenseMatrix DRT::Elements::Fluid3::f3_getbodyforce(
   const int NSD = 3;
   const int iel = NumNode();
   Epetra_SerialDenseMatrix edeadng(NSD,iel);
-    
+
   vector<DRT::Condition*> myneumcond;
 
   // check whether all nodes have a unique VolumeNeumann condition
@@ -1696,38 +1788,38 @@ void DRT::Elements::Fluid3::f3_gder(
  |  ----   = -- | --*-- + --*-- + --*-- |
  |  dr^2     dr | dr dx   dr dy   dr dz |
  |              +-                     -+
- |                                                     
+ |
  |              +-                     -+
  |  d^2N     d  | dx dN   dy dN   dz dN |
  |  ------ = -- | --*-- + --*-- + --*-- |
  |  ds^2     ds | ds dx   ds dy   ds dz |
  |              +-                     -+
- |                                                     
+ |
  |              +-                     -+
  |  d^2N     d  | dx dN   dy dN   dz dN |
  |  ----   = -- | --*-- + --*-- + --*-- |
  |  dt^2     dt | dt dx   dt dy   dt dz |
  |              +-                     -+
- |                                                     
+ |
  |              +-                     -+
  |  d^2N     d  | dx dN   dy dN   dz dN |
  | -----   = -- | --*-- + --*-- + --*-- |
  | ds dr     ds | dr dx   dr dy   dr dz |
  |              +-                     -+
- |                                                     
+ |
  |              +-                     -+
  |  d^2N     d  | dx dN   dy dN   dz dN |
  | -----   = -- | --*-- + --*-- + --*-- |
  | dt dr     dt | dr dx   dr dy   dr dz |
  |              +-                     -+
- |                                                     
+ |
  |              +-                     -+
  |  d^2N     d  | dx dN   dy dN   dz dN |
  | -----   = -- | --*-- + --*-- + --*-- |
  | ds dt     ds | dt dx   dt dy   dt dz |
  |              +-                     -+
  |
- | the matrix (jacobian-bar matrix) system 
+ | the matrix (jacobian-bar matrix) system
  |
  | +-                                                                                         -+   +-    -+
  | |   /dx\^2        /dy\^2         /dz\^2           dy dx           dz dx           dy dz     |   | d^2N |
@@ -1752,7 +1844,7 @@ void DRT::Elements::Fluid3::f3_gder(
  | |                                                                                           |   |      |
  | |   dx dx         dy dy          dz dz        dx dy   dx dy   dx dz   dx dz  dy dz   dy dz  |   | d^2N |
  | |   --*--         --*--          --*--        --*-- + --*--   --*-- + --*--  --*-- + --*--  |   | ---- |
- | |   dt ds         dt ds          dt ds        dt ds   ds dt   dt ds   ds dt  dt ds   ds dt  |   | dydz | 
+ | |   dt ds         dt ds          dt ds        dt ds   ds dt   dt ds   ds dt  dt ds   ds dt  |   | dydz |
  | +-                                                                                         -+   +-    -+
  |
  |                  +-    -+     +-                           -+
@@ -1815,7 +1907,7 @@ void DRT::Elements::Fluid3::f3_gder2(
   bm(3,0) = xjm(0,0)*xjm(1,0);
   bm(4,0) = xjm(0,0)*xjm(2,0);
   bm(5,0) = xjm(2,0)*xjm(1,0);
-  
+
   bm(0,1) = xjm(0,1)*xjm(0,1);
   bm(1,1) = xjm(1,1)*xjm(1,1);
   bm(2,1) = xjm(2,1)*xjm(2,1);
@@ -1843,7 +1935,7 @@ void DRT::Elements::Fluid3::f3_gder2(
   bm(3,4) = xjm(0,0)*xjm(1,2)+xjm(1,0)*xjm(0,2);
   bm(4,4) = xjm(0,0)*xjm(2,2)+xjm(2,0)*xjm(0,2);
   bm(5,4) = xjm(1,0)*xjm(2,2)+xjm(2,0)*xjm(1,2);
-  
+
   bm(0,5) = TWO*xjm(0,1)*xjm(0,2);
   bm(1,5) = TWO*xjm(1,1)*xjm(1,2);
   bm(2,5) = TWO*xjm(2,1)*xjm(2,2);
@@ -1858,9 +1950,9 @@ void DRT::Elements::Fluid3::f3_gder2(
   /*------------------ determine 2nd derivatives of coord.-functions */
 
   /*
-  |                                             
-  |         0 1 2              0...iel-1      
-  |        +-+-+-+             +-+-+-+-+        0 1 2 
+  |
+  |         0 1 2              0...iel-1
+  |        +-+-+-+             +-+-+-+-+        0 1 2
   |        | | | | 0           | | | | | 0     +-+-+-+
   |        +-+-+-+             +-+-+-+-+       | | | | 0
   |        | | | | 1           | | | | | 1   * +-+-+-+ .
@@ -1909,44 +2001,44 @@ void DRT::Elements::Fluid3::f3_gder2(
   xder2.Multiply('N','T',1.0,deriv2,xyze,0.0);
 
   /*
-  |        0...iel-1             0 1 2 
-  |        +-+-+-+-+            +-+-+-+            
-  |        | | | | | 0          | | | | 0         
+  |        0...iel-1             0 1 2
+  |        +-+-+-+-+            +-+-+-+
+  |        | | | | | 0          | | | | 0
   |        +-+-+-+-+            +-+-+-+            0...iel-1
-  |        | | | | | 1          | | | | 1         +-+-+-+-+  
+  |        | | | | | 1          | | | | 1         +-+-+-+-+
   |        +-+-+-+-+            +-+-+-+           | | | | | 0
   |        | | | | | 2          | | | | 2         +-+-+-+-+
   |        +-+-+-+-+       =    +-+-+-+       *   | | | | | 1 * (-1)
   |        | | | | | 3          | | | | 3         +-+-+-+-+
   |        +-+-+-+-+            +-+-+-+           | | | | | 2
   |        | | | | | 4          | | | | 4         +-+-+-+-+
-  |        +-+-+-+-+            +-+-+-+             
+  |        +-+-+-+-+            +-+-+-+
   |        | | | | | 5          | | | | 5          derxy
   |        +-+-+-+-+            +-+-+-+
   |
-  |       chainrulerhs          xder2              
+  |       chainrulerhs          xder2
   */
 
   xder2.Multiply(false,derxy,chainrulerhs);
   chainrulerhs.Scale(-1.0);
 
   /*
-  |        0...iel-1            0...iel-1         0...iel-1         
-  |        +-+-+-+-+            +-+-+-+-+         +-+-+-+-+   
-  |        | | | | | 0          | | | | | 0       | | | | | 0 
-  |        +-+-+-+-+            +-+-+-+-+         +-+-+-+-+   
-  |        | | | | | 1          | | | | | 1       | | | | | 1 
-  |        +-+-+-+-+            +-+-+-+-+         +-+-+-+-+   
-  |        | | | | | 2          | | | | | 2       | | | | | 2 
-  |        +-+-+-+-+       =    +-+-+-+-+    +    +-+-+-+-+   
-  |        | | | | | 3          | | | | | 3       | | | | | 3 
-  |        +-+-+-+-+            +-+-+-+-+         +-+-+-+-+   
-  |        | | | | | 4          | | | | | 4       | | | | | 4 
-  |        +-+-+-+-+            +-+-+-+-+         +-+-+-+-+   
-  |        | | | | | 5          | | | | | 5       | | | | | 5 
-  |        +-+-+-+-+            +-+-+-+-+         +-+-+-+-+   
-  |                                                                    
-  |       chainrulerhs         chainrulerhs        deriv2    
+  |        0...iel-1            0...iel-1         0...iel-1
+  |        +-+-+-+-+            +-+-+-+-+         +-+-+-+-+
+  |        | | | | | 0          | | | | | 0       | | | | | 0
+  |        +-+-+-+-+            +-+-+-+-+         +-+-+-+-+
+  |        | | | | | 1          | | | | | 1       | | | | | 1
+  |        +-+-+-+-+            +-+-+-+-+         +-+-+-+-+
+  |        | | | | | 2          | | | | | 2       | | | | | 2
+  |        +-+-+-+-+       =    +-+-+-+-+    +    +-+-+-+-+
+  |        | | | | | 3          | | | | | 3       | | | | | 3
+  |        +-+-+-+-+            +-+-+-+-+         +-+-+-+-+
+  |        | | | | | 4          | | | | | 4       | | | | | 4
+  |        +-+-+-+-+            +-+-+-+-+         +-+-+-+-+
+  |        | | | | | 5          | | | | | 5       | | | | | 5
+  |        +-+-+-+-+            +-+-+-+-+         +-+-+-+-+
+  |
+  |       chainrulerhs         chainrulerhs        deriv2
   */
 
   chainrulerhs+=deriv2;
@@ -1962,36 +2054,36 @@ void DRT::Elements::Fluid3::f3_gder2(
   | 	   +--+--+--+--+--+--+       +-+      +-+
   | 	   |  |  |  |  |  |  | 2     | | 2    | | 2
   | 	   +--+--+--+--+--+--+    *  +-+   =  +-+      for i=0...iel-1
-  |        |  |  |  |  |  |  | 3     | | 3    | | 3   
-  |        +--+--+--+--+--+--+       +-+      +-+     
-  |        |  |  |  |  |  |  | 4     | | 4    | | 4   
-  |        +--+--+--+--+--+--+       +-+      +-+     
-  |        |  |  |  |  |  |  | 5     | | 5    | | 5   
+  |        |  |  |  |  |  |  | 3     | | 3    | | 3
   |        +--+--+--+--+--+--+       +-+      +-+
-  |                                   |        |         
-  |                                   |        |         
-  |                                   derxy2[i]|         
-  |		                               |         
+  |        |  |  |  |  |  |  | 4     | | 4    | | 4
+  |        +--+--+--+--+--+--+       +-+      +-+
+  |        |  |  |  |  |  |  | 5     | | 5    | | 5
+  |        +--+--+--+--+--+--+       +-+      +-+
+  |                                   |        |
+  |                                   |        |
+  |                                   derxy2[i]|
+  |		                               |
   |		                               chainrulerhs[i]
-  |		                 
-  |	  yields 
   |
-  |                      0...iel-1  
-  |                      +-+-+-+-+  
+  |	  yields
+  |
+  |                      0...iel-1
+  |                      +-+-+-+-+
   |                      | | | | | 0 = drdr
-  |                      +-+-+-+-+  
+  |                      +-+-+-+-+
   |                      | | | | | 1 = dsds
-  |                      +-+-+-+-+  
+  |                      +-+-+-+-+
   |                      | | | | | 2 = dtdt
-  |            derxy2 =  +-+-+-+-+  
+  |            derxy2 =  +-+-+-+-+
   |                      | | | | | 3 = drds
-  |                      +-+-+-+-+  
+  |                      +-+-+-+-+
   |                      | | | | | 4 = drdt
-  |                      +-+-+-+-+  
+  |                      +-+-+-+-+
   |                      | | | | | 5 = dsdt
-  |    	          	 +-+-+-+-+                     
+  |    	          	 +-+-+-+-+
   */
-  
+
   Epetra_SerialDenseSolver solver;
   solver.SetMatrix (bm);
   solver.SetVectors(derxy2,chainrulerhs);
@@ -2717,13 +2809,13 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
   // flags controlling the nonlinear iteration
   const bool newton  =true;
 
-  
+
   const double fac_alphaM                     = fac*alphaM;
   const double fac_afgdt                      = fac*afgdt;
 
   const double fac_gamma_dt                   = fac*gamma*dt;
   const double visc_afgdt_fac                 = visc*afgdt*fac;
-  
+
   const double fac_tauM                       = fac*tauM;
   const double fac_tauM_tauM                  = fac_tauM*tauM;
   const double fac_tauMp                      = fac*tauMp;
@@ -2744,8 +2836,8 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
   const double fac_afgdt_tauM_edeadaf_0       = fac*afgdt*tauM*edeadaf[0];
   const double fac_afgdt_tauM_edeadaf_1       = fac*afgdt*tauM*edeadaf[1];
   const double fac_afgdt_tauM_edeadaf_2       = fac*afgdt*tauM*edeadaf[2];
-  
-  
+
+
   for (int i=0; i<iel; i++) /* loop over nodes of element */
   {
     /* Reactive term  u:  funct */
@@ -2814,7 +2906,7 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
 
   } // end of loop over nodes of element
 
-  
+
     /* Viscous term  div epsilon(u_old)
 
                   n+alpha_F
@@ -2839,16 +2931,16 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
 
   /* current residual of the momentum equation */
   /*
-                 
-                 n+am    /  n+af        \   n+af 
-    resM    = acc     + | u      o nabla | u     -
-        (i)      (i)     \ (i)          /   (i)  
 
-        
+                 n+am    /  n+af        \   n+af
+    resM    = acc     + | u      o nabla | u     -
+        (i)      (i)     \ (i)          /   (i)
+
+
                                           / n+af \           n+1    n+af
               - 2 * nu * nabla o epsilon | u      | + nabla p    - f
                                           \ (i)  /           (i)
-   
+
   */
   for (int rr=0;rr<3;++rr)
   {
@@ -2862,26 +2954,26 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
                   \    (i)        /
 
    required for the cross and reynolds stress calculation
-    
+
   */
-  
+
   for (int i=0; i<iel; ++i) /* loop over nodes of element */
   {
     conv_resM[i] = resM[0]*derxy(0,i)+resM[1]*derxy(1,i)+resM[2]*derxy(2,i);
   }
 
 
-  
+
   const double divunp          = (vderxynp(0,0)+vderxynp(1,1)+vderxynp(2,2));
   const double fac_tauC_divunp = fac_tauC * divunp;
 
-  
+
 
 #ifdef TDS
   // update estimates for the subscale quantities
-  
+
   const double factauC=tauC/(tauC+dt);
-  
+
   /*-------------------------------------------------------------------*
    *                                                                   *
    *                  update of SUBSCALE PRESSURE                      *
@@ -2893,32 +2985,32 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
         p    = --------- * p  - --------- * nabla o u
          (i)   tauC + dt        tauC + dt            (i)
   */
-  
+
   sub_pre_[iquad]=(sub_pre_old_[iquad]-dt*divunp)*factauC;
-  
+
   /*-------------------------------------------------------------------*
    *                                                                   *
    *                  update of SUBSCALE VELOCITY                      *
    *                                                                   *
    *-------------------------------------------------------------------*/
 
-  /*                                           
-        ~n+1                1.0                
-        u    = ----------------------------- * 
-         (i)   alpha_M*tauM+alpha_F*gamma*dt   
-                                               
-                +-                                      
+  /*
+        ~n+1                1.0
+        u    = ----------------------------- *
+         (i)   alpha_M*tauM+alpha_F*gamma*dt
+
+                +-
                 | +-                                  -+   ~n
                *| |alpha_M*tauM +gamma*dt*(alpha_F-1.0)| * u +
                 | +-                                  -+
-                +-                                      
+                +-
 
-                
+
                     +-                      -+    ~ n
                   + | dt*tauM*(alphaM-gamma) | * acc -
                     +-                      -+
 
-                                           -+    
+                                           -+
                                        n+1  |
                   - gamma*dt*tauM * res     |
                                        (i)  |
@@ -2927,18 +3019,18 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
 
   for (int rr=0;rr<3;++rr)
   {
-    
+
     sub_vel_(rr,iquad)   = (alphaM*tauMp+gamma*dt*(alphaF-1.0))*sub_vel_old_(rr,iquad)
                            +
                            (dt*tauMp*(alphaM-gamma))           *sub_acc_old_(rr,iquad)
                            -
                            gamma*dt*tauMp*resM[rr];
-    
+
     sub_vel_(rr,iquad)  /=alphaM*tauMp+afgdt;
   }
 #endif
-  
-  
+
+
 #define conv_r_(i,j,k) conv_r(i,3*(k)+j)
 #define viscs2_(i,j,k) viscs2(i,3*(k)+j)
 
@@ -2972,12 +3064,12 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
 
     const double fac_afgdt_tauM_funct_ui_accintam_0=fac_afgdt_tauM_funct_ui*accintam[0];
     const double fac_afgdt_tauM_funct_ui_accintam_1=fac_afgdt_tauM_funct_ui*accintam[1];
-    const double fac_afgdt_tauM_funct_ui_accintam_2=fac_afgdt_tauM_funct_ui*accintam[2];  
+    const double fac_afgdt_tauM_funct_ui_accintam_2=fac_afgdt_tauM_funct_ui*accintam[2];
 
     const double fac_afgdt_tauM_edeadaf_0_funct_ui = fac_afgdt_tauM_edeadaf_0*funct[ui];
     const double fac_afgdt_tauM_edeadaf_1_funct_ui = fac_afgdt_tauM_edeadaf_1*funct[ui];
     const double fac_afgdt_tauM_edeadaf_2_funct_ui = fac_afgdt_tauM_edeadaf_2*funct[ui];
-    
+
     for (int vi=0; vi<iel; ++vi)  // loop rows (test functions)
     {
       //--------------------------------------------------------------
@@ -3008,7 +3100,7 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
       */
 
       const double fac_alphaM_funct_ui_funct_vi = fac_alphaM_funct_ui*funct[vi];
-      
+
       elemat(vi*4    , ui*4    ) += fac_alphaM_funct_ui_funct_vi ;
       elemat(vi*4 + 1, ui*4 + 1) += fac_alphaM_funct_ui_funct_vi ;
       elemat(vi*4 + 2, ui*4 + 2) += fac_alphaM_funct_ui_funct_vi ;
@@ -3022,17 +3114,17 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
                          | | u    o nabla | Dacc , v  |
                          |  \            /            |
                           \                          /
-                
-                
+
+
                          /                            \
                         |  /            \   n+af       |
                         | | Dacc o nabla | u      , v  |
                         |  \            /              |
                          \                            /
-                 
+
       */
       const double fac_afgdt_funct_vi = fac_afgdt*funct[vi];
-      
+
       elemat(vi*4    , ui*4    ) += fac_afgdt_funct_vi*conv_c[ui] ;
       elemat(vi*4 + 1, ui*4 + 1) += fac_afgdt_funct_vi*conv_c[ui] ;
       elemat(vi*4 + 2, ui*4 + 2) += fac_afgdt_funct_vi*conv_c[ui] ;
@@ -3049,7 +3141,7 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
         elemat(vi*4 + 2, ui*4 + 1) += fac_afgdt_funct_vi*conv_r_(2, 1, ui) ;
         elemat(vi*4 + 2, ui*4 + 2) += fac_afgdt_funct_vi*conv_r_(2, 2, ui) ;
       }
-      
+
       /* pressure (implicit) */
 
       /*  factor: -1
@@ -3125,12 +3217,12 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
       {
 #ifdef TDS
          /* pressure stabilisation --- inertia    */
-   
+
          /*                  gamma*dt*tau_M
             factor:  ------------------------------ * alpha_M
                      alpha_M*tau_M+alpha_F*gamma*dt
 
-   
+
                                 /                \
                                |                  |
                                |  Dacc , nabla q  |
@@ -3139,38 +3231,38 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
          */
          {
            const double aux=alphaM*((gamma*dt*tauMp)/(alphaM*tauMp+afgdt));
-        
+
            elemat(vi*4 + 3, ui*4    ) += fac*aux*funct[ui]*derxy(0,vi) ;
            elemat(vi*4 + 3, ui*4 + 1) += fac*aux*funct[ui]*derxy(1,vi) ;
            elemat(vi*4 + 3, ui*4 + 2) += fac*aux*funct[ui]*derxy(2,vi) ;
-   
+
          }
 
-   
+
          /* pressure stabilisation --- convection */
-   
+
          /*                  gamma*dt*tau_M
             factor:  ------------------------------ * alpha_F*gamma*dt
                      alpha_M*tau_M+alpha_F*gamma*dt
 
-   
+
                         /                                \
                        |  / n+af       \                  |
                        | | u    o nabla | Dacc , nabla q  |
                        |  \            /                  |
                         \                                /
-              
-              
+
+
                        /                                  \
                       |  /            \   n+af             |
                       | | Dacc o nabla | u      , nabla q  |
                       |  \            /                    |
                        \                                  /
-                       
+
          */
          {
            const double aux=afgdt*((gamma*dt*tauMp)/(alphaM*tauMp+afgdt));
-        
+
            elemat(vi*4 + 3, ui*4    ) += fac*aux*conv_c[ui]*derxy(0,vi) ;
            elemat(vi*4 + 3, ui*4 + 1) += fac*aux*conv_c[ui]*derxy(1,vi) ;
            elemat(vi*4 + 3, ui*4 + 2) += fac*aux*conv_c[ui]*derxy(2,vi) ;
@@ -3199,13 +3291,13 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
          }
 
          /* pressure stabilisation --- diffusion  */
-   
-    
+
+
          /*                  gamma*dt*tau_M
             factor:  ------------------------------ * alpha_F*gamma*dt * 2 * nu
                      alpha_M*tau_M+alpha_F*gamma*dt
 
-   
+
                     /                                \
                    |               /    \             |
                    |  nabla o eps | Dacc | , nabla q  |
@@ -3215,7 +3307,7 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
 
          {
            const double aux = 2.0*visc*afgdt*((gamma*dt*tauMp)/(alphaM*tauMp+afgdt));
-           
+
            elemat(vi*4 + 3, ui*4    ) -= fac*aux*
                                          (derxy(0,vi)*viscs2_(0,0,ui)
                                           +
@@ -3234,27 +3326,27 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
                                           derxy(1,vi)*viscs2_(1,2,ui)
                                           +
                                           derxy(2,vi)*viscs2_(2,2,ui)) ;
-   
+
          }
 
          /* pressure stabilisation --- pressure   */
-   
+
          /*                  gamma*dt*tau_M
             factor:  ------------------------------
                      alpha_M*tau_M+alpha_F*gamma*dt
 
-   
-   
+
+
                     /                    \
                    |                      |
                    |  nabla Dp , nabla q  |
                    |                      |
                     \                    /
          */
-   
+
          {
            const double aux = ((gamma*dt*tauMp)/(alphaM*tauMp+afgdt));
-           
+
            elemat(vi*4 + 3, ui*4 + 3) += fac*aux*
                                          (derxy(0,ui)*derxy(0,vi)
                                           +
@@ -3262,42 +3354,42 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
                                           +
                                           derxy(2,ui)*derxy(2,vi)) ;
          }
-#else                                           
+#else
          /* pressure stabilisation --- inertia    */
-   
+
          /* factor: +alphaM*tauMp
-   
+
                                 /                \
                                |                  |
                                |  Dacc , nabla q  |
                                |                  |
                                 \                /
          */
-   
+
          elemat(vi*4 + 3, ui*4    ) += fac_alphaM_tauMp_funct_ui*derxy(0,vi) ;
          elemat(vi*4 + 3, ui*4 + 1) += fac_alphaM_tauMp_funct_ui*derxy(1,vi) ;
          elemat(vi*4 + 3, ui*4 + 2) += fac_alphaM_tauMp_funct_ui*derxy(2,vi) ;
-   
+
          /* pressure stabilisation --- convection */
-   
-   
+
+
          /*  factor: +alphaF*gamma*dt*tauMp
-   
+
                         /                                \
                        |  / n+af       \                  |
                        | | u    o nabla | Dacc , nabla q  |
                        |  \            /                  |
                         \                                /
-              
-              
+
+
                        /                                  \
                       |  /            \   n+af             |
                       | | Dacc o nabla | u      , nabla q  |
                       |  \            /                    |
                        \                                  /
-                       
+
          */
-   
+
          elemat(vi*4 + 3, ui*4    ) += fac_afgdt_tauMp*conv_c[ui]*derxy(0,vi) ;
          elemat(vi*4 + 3, ui*4 + 1) += fac_afgdt_tauMp*conv_c[ui]*derxy(1,vi) ;
          elemat(vi*4 + 3, ui*4 + 2) += fac_afgdt_tauMp*conv_c[ui]*derxy(2,vi) ;
@@ -3324,17 +3416,17 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
                                           derxy(2,vi)*conv_r_(2,2,ui)) ;
          }
          /* pressure stabilisation --- diffusion  */
-   
-   
+
+
          /* factor: -2*nu*alphaF*gamma*dt*tauMp
-   
+
                     /                                \
                    |               /    \             |
                    |  nabla o eps | Dacc | , nabla q  |
                    |               \    /             |
                     \                                /
          */
-   
+
          elemat(vi*4 + 3, ui*4    ) -= two_visc_fac_afgdt_tauMp*
                                        (derxy(0,vi)*viscs2_(0,0,ui)
                                         +
@@ -3353,18 +3445,18 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
                                         derxy(1,vi)*viscs2_(1,2,ui)
                                         +
                                         derxy(2,vi)*viscs2_(2,2,ui)) ;
-   
+
          /* pressure stabilisation --- pressure   */
-   
+
          /* factor: +tauMp
-   
+
                     /                    \
                    |                      |
                    |  nabla Dp , nabla q  |
                    |                      |
                     \                    /
          */
-   
+
          elemat(vi*4 + 3, ui*4 + 3) += fac_tauMp*
                                        (derxy(0,ui)*derxy(0,vi)
                                         +
@@ -3382,9 +3474,9 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
       if(supg)
       {
          /* SUPG stabilisation --- inertia     */
-   
+
          /* factor: +alphaM*tauM
-   
+
                     /                           \
                    |          / n+af       \     |
                    |  Dacc , | u    o nabla | v  |
@@ -3393,13 +3485,13 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
          */
 
          const double fac_alphaM_tauM_funct_ui_conv_c_vi = fac_alphaM_tauM_funct_ui*conv_c[vi];
-         
+
          elemat(vi*4    , ui*4    ) += fac_alphaM_tauM_funct_ui_conv_c_vi ;
          elemat(vi*4 + 1, ui*4 + 1) += fac_alphaM_tauM_funct_ui_conv_c_vi ;
          elemat(vi*4 + 2, ui*4 + 2) += fac_alphaM_tauM_funct_ui_conv_c_vi ;
 
          /* factor: +alphaF*gamma*dt*tauM
-   
+
                     /                               \
                    |     n+am     /            \     |
                    |  acc      , | Dacc o nabla | v  |
@@ -3418,12 +3510,12 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
            elemat(vi*4 + 2, ui*4 + 1) += fac_afgdt_tauM_funct_ui_accintam_2*derxy(1,vi) ;
            elemat(vi*4 + 2, ui*4 + 2) += fac_afgdt_tauM_funct_ui_accintam_2*derxy(2,vi) ;
          }
-         
+
          /* SUPG stabilisation --- convection  */
-   
+
          /* factor: +alphaF*gamma*dt*tauM
-   
-   
+
+
                     /                                               \
                    |    / n+af        \          / n+af        \     |
                    |   | u     o nabla | Dacc , | u     o nabla | v  |
@@ -3522,12 +3614,12 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
                                           +
                                           velintaf[2]*derxy(2, vi)*conv_r_(2, 2, ui)) ;
          }
-         
+
          /* SUPG stabilisation --- diffusion   */
-   
+
          /* factor: -2*nu*alphaF*gamma*dt*tauM
-   
-   
+
+
                     /                                            \
                    |               /     \    / n+af        \     |
                    |  nabla o eps | Dacc  |, | u     o nabla | v  |
@@ -3539,10 +3631,10 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
                    |  nabla o eps | u      |, | Dacc o nabla | v  |
                    |               \      /    \            /     |
                     \                                            /
-   
+
 
          */
-   
+
          elemat(vi*4, ui*4)         -= two_visc_fac_afgdt_tauM*conv_c[vi]*viscs2_(0, 0, ui) ;
          elemat(vi*4, ui*4 + 1)     -= two_visc_fac_afgdt_tauM*conv_c[vi]*viscs2_(0, 1, ui) ;
          elemat(vi*4, ui*4 + 2)     -= two_visc_fac_afgdt_tauM*conv_c[vi]*viscs2_(0, 2, ui) ;
@@ -3554,7 +3646,7 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
          elemat(vi*4 + 2, ui*4 + 2) -= two_visc_fac_afgdt_tauM*conv_c[vi]*viscs2_(2, 2, ui) ;
 
          if(newton)
-         {   
+         {
            elemat(vi*4, ui*4)         -= two_visc_fac_afgdt_tauM*funct_ui_viscaf_old_0*derxy(0, vi) ;
            elemat(vi*4, ui*4 + 1)     -= two_visc_fac_afgdt_tauM*funct_ui_viscaf_old_0*derxy(1, vi) ;
            elemat(vi*4, ui*4 + 2)     -= two_visc_fac_afgdt_tauM*funct_ui_viscaf_old_0*derxy(2, vi) ;
@@ -3565,24 +3657,24 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
            elemat(vi*4 + 2, ui*4 + 1) -= two_visc_fac_afgdt_tauM*funct_ui_viscaf_old_2*derxy(1, vi) ;
            elemat(vi*4 + 2, ui*4 + 2) -= two_visc_fac_afgdt_tauM*funct_ui_viscaf_old_2*derxy(2, vi) ;
          }
-         
+
          /* SUPG stabilisation --- pressure    */
-   
+
          /* factor: +tauM
-   
+
                     /                               \
                    |              / n+af       \     |
                    |  nabla Dp , | u    o nabla | v  |
                    |              \            /     |
                     \                               /
          */
-         
+
          elemat(vi*4    , ui*4 + 3) += fac_tauM_derxy_0_ui*conv_c[vi] ;
          elemat(vi*4 + 1, ui*4 + 3) += fac_tauM_derxy_1_ui*conv_c[vi] ;
          elemat(vi*4 + 2, ui*4 + 3) += fac_tauM_derxy_2_ui*conv_c[vi] ;
 
          /* factor: +alphaF*gamma*dt*tauM
-   
+
                     /                                 \
                    |         n+1    /            \     |
                    |  nabla p    , | Dacc o nabla | v  |
@@ -3591,7 +3683,7 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
          */
 
          if(newton)
-         {   
+         {
            elemat(vi*4    , ui*4    ) += fac_afgdt_tauM_funct_ui_pderxynp_0*derxy(0,vi) ;
            elemat(vi*4    , ui*4 + 1) += fac_afgdt_tauM_funct_ui_pderxynp_0*derxy(1,vi) ;
            elemat(vi*4    , ui*4 + 2) += fac_afgdt_tauM_funct_ui_pderxynp_0*derxy(2,vi) ;
@@ -3605,16 +3697,16 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
 
          /* SUPG stabilisation --- body force, nonlinear part from testfunction */
 
-         /*  factor: -tauM*alphaF*gamma*dt  
+         /*  factor: -tauM*alphaF*gamma*dt
                     /                            \
                    |   n+af    /            \     |
                    |  f     , | Dacc o nabla | v  |
                    |           \            /     |
                     \                            /
-                    
+
          */
          if(newton)
-         {   
+         {
            elemat(vi*4    , ui*4)     -= fac_afgdt_tauM_edeadaf_0_funct_ui*derxy(0,vi) ;
            elemat(vi*4    , ui*4 + 1) -= fac_afgdt_tauM_edeadaf_0_funct_ui*derxy(1,vi) ;
            elemat(vi*4    , ui*4 + 2) -= fac_afgdt_tauM_edeadaf_0_funct_ui*derxy(2,vi) ;
@@ -3638,9 +3730,9 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
       if(agls)
       {
         /* viscous stabilisation --- inertia     */
-        
+
         /* factor: -alphaM*tauMp*2*nu
-           
+
                     /                    \
                    |                      |
                    |  Dacc , div eps (v)  |
@@ -3666,25 +3758,25 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
         elemat(vi*4 + 2, ui*4 + 2) -= two_visc_fac_alphaM_tauMp_funct_ui *
                                       viscs2_(2,2,vi);
 
-        
+
         /* viscous stabilisation --- convection */
-   
+
         /*  factor: -2*nu*alphaF*gamma*dt*tauMp
-   
+
                        /                                  \
                       |  / n+af       \                    |
                       | | u    o nabla | Dacc, div eps (v) |
                       |  \            /                    |
                        \                                  /
-                  
-                  
+
+
                      /                                     \
                     |   /            \   n+af               |
                     |  | Dacc o nabla | u     , div eps (v) |
                     |   \            /                      |
                      \                                     /
 
-                        
+
         */
         elemat(vi*4     , ui*4    )-= two_visc_fac_afgdt_tauMp*conv_c[ui]*viscs2_(0, 0, vi) ;
         elemat(vi*4     , ui*4 + 1)-= two_visc_fac_afgdt_tauMp*conv_c[ui]*viscs2_(0, 1, vi) ;
@@ -3697,7 +3789,7 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
         elemat(vi*4 + 2, ui*4 + 2) -= two_visc_fac_afgdt_tauMp*conv_c[ui]*viscs2_(2, 2, vi) ;
 
         if(newton)
-        {   
+        {
           elemat(vi*4     , ui*4    )-= two_visc_fac_afgdt_tauMp*
                                         (viscs2_(0, 0, vi)*conv_r_(0, 0, ui)
                                          +
@@ -3754,9 +3846,9 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
                                          viscs2_(2, 2, vi)*conv_r_(2, 2, ui)) ;
         }
         /* viscous stabilisation --- diffusion  */
-   
+
         /* factor: +4*nu*nu*alphaF*gamma*dt*tauMp
-   
+
                     /                                   \
                    |               /    \                |
                    |  nabla o eps | Dacc | , div eps (v) |
@@ -3818,12 +3910,12 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
                                        viscs2_(1, 2, ui)*viscs2_(1, 2, vi)
                                        +
                                        viscs2_(2, 2, ui)*viscs2_(2, 2, vi)) ;
-        
+
 
         /* viscous stabilisation --- pressure   */
-   
+
         /* factor: -tauMp*2*nu
-   
+
                     /                        \
                    |                          |
                    |  nabla Dp , div eps (v)  |
@@ -3880,14 +3972,14 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
         elemat(vi*4 + 2, ui*4 + 2) += fac*gamma*dt*dt*factauC*derxy(2,ui)*derxy(2,vi) ;
 #else
         /*  factor: +gamma*dt*tauC
-   
+
                     /                          \
                    |                            |
                    | nabla o Dacc  , nabla o v  |
                    |                            |
                     \                          /
         */
-        
+
         elemat(vi*4    , ui*4    ) += fac_gamma_dt_tauC_derxy_0_ui*derxy(0,vi) ;
         elemat(vi*4    , ui*4 + 1) += fac_gamma_dt_tauC_derxy_1_ui*derxy(0,vi) ;
         elemat(vi*4    , ui*4 + 2) += fac_gamma_dt_tauC_derxy_2_ui*derxy(0,vi) ;
@@ -4056,14 +4148,14 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
     {
 #ifdef TDS
       /* factor: -1
-   
+
                        /                 \
                       |  ~n+1             |
                       |  u    , nabla  q  |
                       |   (i)             |
                        \                 /
       */
-        
+
        elevec[ui*4 + 3] += fac*(derxy(0,ui)*sub_vel_(0,iquad)
                                 +
                                 derxy(1,ui)*sub_vel_(1,iquad)
@@ -4072,19 +4164,19 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
 #else
       /*
        factor: +tauMp
-       
+
        pressure stabilisation --- inertia
-   
-   
+
+
                   /                  \
                  |     n+am           |
                  |  acc    , nabla q  |
                  |                    |
                   \                  /
-       
+
       pressure stabilisation --- convection
-   
-   
+
+
                   /                                   \
                  |  / n+af       \    n+af             |
                  | | u    o nabla |  u      , nabla q  |
@@ -4092,22 +4184,22 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
                   \                                   /
 
 
-      pressure stabilisation --- diffusion 
-   
+      pressure stabilisation --- diffusion
+
                   /                                  \
                  |               / n+af \             |
                  |  nabla o eps | u      | , nabla q  |
                  |               \      /             |
                   \                                  /
-   
+
       pressure stabilisation --- pressure
-   
+
                   /                      \
                  |         n+1            |
                  |  nabla p    , nabla q  |
                  |                        |
                   \                      /
-       
+
 
        pressure stabilisation --- bodyforce
                   /                 \
@@ -4133,10 +4225,10 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
     if(supg)
     {
       /*
-      factor: +tauM 
-        
+      factor: +tauM
+
       SUPG stabilisation --- inertia
-   
+
                   /                              \
                  |     n+am   / n+af        \     |
                  |  acc    , | u     o nabla | v  |
@@ -4144,41 +4236,41 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
                   \                              /
 
       SUPG stabilisation --- convection
-   
-          
+
+
                   /                                                \
                  |    / n+af        \   n+af    / n+af        \     |
                  |   | u     o nabla | u     , | u     o nabla | v  |
                  |    \             /           \             /     |
                   \                                                /
-      
 
-      SUPG stabilisation --- diffusion   
-         
+
+      SUPG stabilisation --- diffusion
+
                   /                                               \
                  |               / n+af \      / n+af        \     |
                  |  nabla o eps | u      |  , | u     o nabla | v  |
                  |               \      /      \             /     |
                   \                                               /
-      
-      SUPG stabilisation --- pressure 
-   
+
+      SUPG stabilisation --- pressure
+
                   /                                  \
                  |         n+1    / n+af        \     |
                  |  nabla p    , | u     o nabla | v  |
                  |                \             /     |
                   \                                  /
-         
-      SUPG stabilisation --- bodyforce 
-   
-   
+
+      SUPG stabilisation --- bodyforce
+
+
                   /                             \
                  |   n+af    / n+af        \     |
                  |  f     , | u     o nabla | v  |
                  |           \             /     |
                   \                             /
       */
-      
+
       elevec[ui*4    ] -= fac_tauM_conv_c_ui*resM[0] ;
       elevec[ui*4 + 1] -= fac_tauM_conv_c_ui*resM[1] ;
       elevec[ui*4 + 2] -= fac_tauM_conv_c_ui*resM[2] ;
@@ -4192,7 +4284,7 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
     if(agls)
     {
 
-      /* viscous stabilisation --- inertia     
+      /* viscous stabilisation --- inertia
 
        factor: -tauMp*2*nu
 
@@ -4201,33 +4293,33 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
                 |  Dacc      , div eps (v)  |
                 |                           |
                  \                         /
-      
-      viscous stabilisation --- convection 
+
+      viscous stabilisation --- convection
 
             /                                     \
            |  / n+af       \    n+af               |
            | | u    o nabla |  u     , div eps (v) |
            |  \            /                       |
             \                                     /
-      
-      viscous stabilisation --- diffusion  
+
+      viscous stabilisation --- diffusion
 
                /                                      \
               |               /  n+af \                |
               |  nabla o eps |  u      | , div eps (v) |
               |               \       /                |
                \                                      /
-      
-      viscous stabilisation --- pressure   
+
+      viscous stabilisation --- pressure
 
                  /                           \
                 |                             |
                 |  nabla p , nabla o eps (v)  |
                 |                             |
                  \                           /
-      
-      viscous stabilisation --- bodyforce   
-      
+
+      viscous stabilisation --- bodyforce
+
                   /                         \
                  |    n+af                   |
                  |  f     ,  nabla o eps (v) |
@@ -4265,45 +4357,45 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
     {
 #if TDS
       /* factor: -1
-   
+
                        /                  \
                       |  ~n+1              |
                       |  p    , nabla o v  |
                       |   (i)              |
                        \                  /
       */
-      
+
       elevec[ui*4    ] += fac*sub_pre_[iquad]*derxy(0,ui) ;
       elevec[ui*4 + 1] += fac*sub_pre_[iquad]*derxy(1,ui) ;
       elevec[ui*4 + 2] += fac*sub_pre_[iquad]*derxy(2,ui) ;
 #else
       /* factor: +tauC
-   
+
                   /                          \
                  |           n+1              |
                  |  nabla o u    , nabla o v  |
                  |                            |
                   \                          /
       */
-      
+
       elevec[ui*4    ] -= fac_tauC_divunp*derxy(0,ui) ;
       elevec[ui*4 + 1] -= fac_tauC_divunp*derxy(1,ui) ;
       elevec[ui*4 + 2] -= fac_tauC_divunp*derxy(2,ui) ;
 #endif
 
-      
+
     }
 
     //---------------------------------------------------------------
     //
     //                     STABILISATION PART
-    //       RESIDUAL BASED VMM STABILISATION --- CROSS STRESS 
+    //       RESIDUAL BASED VMM STABILISATION --- CROSS STRESS
     //
     //---------------------------------------------------------------
     if(cross)
     {
       /* factor: +tauM
-   
+
                   /                           \
                  |   n+af                      |
                  |  u    , ( resM o nabla ) v  |
@@ -4319,13 +4411,13 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
     //---------------------------------------------------------------
     //
     //                     STABILISATION PART
-    //     RESIDUAL BASED VMM STABILISATION --- REYNOLDS STRESS 
+    //     RESIDUAL BASED VMM STABILISATION --- REYNOLDS STRESS
     //
     //---------------------------------------------------------------
     if(reynolds)
     {
       /* factor: -tauM*tauM
-   
+
                   /                             \
                  |                               |
                  |  resM   , ( resM o nabla ) v  |
@@ -4336,7 +4428,7 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
       elevec[ui*4 + 1] += fac_tauM_tauM*conv_resM[ui]*resM[1];
       elevec[ui*4 + 2] += fac_tauM_tauM*conv_resM[ui]*resM[2];
     }
-    
+
   } // end loop ui
 
 #undef conv_r_
@@ -4381,7 +4473,7 @@ void DRT::Elements::Fluid3::f3_int_beltrami_err(
   )
 {
   const int NSD = 3;
-  
+
   // add element error to "integrated" error
   double velerr = params.get<double>("L2 integrated velocity error");
   double preerr = params.get<double>("L2 integrated pressure error");
@@ -4527,59 +4619,59 @@ void DRT::Elements::Fluid3::f3_int_beltrami_err(
  | the sampling planes are distributed equidistant in the element.
  |
  |
- |                      ^ normdirect       integration plane       
- |                      |                /         
- |                      |               /          
- |                      |                          
- |                +-----|-------------+            
- |               /|     |            /|            
- |              / |     |           / |            
- |             /  |     |          /  |            
- |            /   |     |         /   |            
+ |                      ^ normdirect       integration plane
+ |                      |                /
+ |                      |               /
+ |                      |
+ |                +-----|-------------+
+ |               /|     |            /|
+ |              / |     |           / |
+ |             /  |     |          /  |
+ |            /   |     |         /   |
  |           /    +-----|--------/----+ ---- additional integration
  |          /    /|     |       /    /|      plane (for quadratic elements)
- |         /    / |     |      /    / |            
- |        +-------------------+    /  |            
- |        |   /   |     *-----|---+------------>   
+ |         /    / |     |      /    / |
+ |        +-------------------+    /  |
+ |        |   /   |     *-----|---+------------>
  |        |  /    +----/------|--/----+         inplanedirect[1]
- |        | /    /    /       | /    /            
- |        |/    /    /        |/    /   \         
- |        +---------+---------+    /     \        
+ |        | /    /    /       | /    /
+ |        |/    /    /        |/    /   \
+ |        +---------+---------+    /     \
  |        |   /    /          |   /       integration plane
- |        |  /    /           |  /                 
- |        | /    /            | /                  
- |        |/    /             |/                   
- |        +----/--------------+                    
- |            /                                    
- |           /   inplanedirect[0]                                
- |              
- |              
- |  Example for a mean value evaluation:
- |              
- |         1.0       /                   
- |  _               |                    
- |  u = -------- *  | u(x,y,z) dx dy dz =
- |      +---        |                    
- |       \         / A                   
- |       / area                          
- |      +---                             
- |                                               
- |                                            
- |        1.0      /                             
- |                |            area           
- |  =  -------- * | u(r,s,t) * ---- dr ds dt  
- |     +---       |              4            
- |      \        /  [-1:1]^2                  
- |      / area                                                                          
- |     +---                                                                             
- |             
+ |        |  /    /           |  /
+ |        | /    /            | /
+ |        |/    /             |/
+ |        +----/--------------+
+ |            /
+ |           /   inplanedirect[0]
  |
- |                                            
- |         1.0      /                         
- |                 |            1             
- |  =   -------- * | u(r,s,t) * - dr ds dt    
- |                 |            4             
- |       numele   /  [-1:1]^2                 
+ |
+ |  Example for a mean value evaluation:
+ |
+ |         1.0       /
+ |  _               |
+ |  u = -------- *  | u(x,y,z) dx dy dz =
+ |      +---        |
+ |       \         / A
+ |       / area
+ |      +---
+ |
+ |
+ |        1.0      /
+ |                |            area
+ |  =  -------- * | u(r,s,t) * ---- dr ds dt
+ |     +---       |              4
+ |      \        /  [-1:1]^2
+ |      / area
+ |     +---
+ |
+ |
+ |
+ |         1.0      /
+ |                 |            1
+ |  =   -------- * | u(r,s,t) * - dr ds dt
+ |                 |            4
+ |       numele   /  [-1:1]^2
  |
  |                |                        |
  |                +------------------------+
@@ -4597,7 +4689,7 @@ void DRT::Elements::Fluid3::f3_int_beltrami_err(
  |
  | as well as numele.
  | All results are communicated vi the parameter list!
- | 
+ |
  *---------------------------------------------------------------------*/
 void DRT::Elements::Fluid3::f3_calc_means(
   vector<double>&           sol  ,
@@ -4616,19 +4708,19 @@ void DRT::Elements::Fluid3::f3_calc_means(
 
   // the vector planes contains the coordinates of the homogeneous planes (in
   // wall normal direction)
-  RefCountPtr<vector<double> > planes = params.get<RefCountPtr<vector<double> > >("coordinate vector for hom. planes");  
-  
-  // get the pointers to the solution vectors
-  RefCountPtr<vector<double> > sumu   = params.get<RefCountPtr<vector<double> > >("mean velocities x direction");  
-  RefCountPtr<vector<double> > sumv   = params.get<RefCountPtr<vector<double> > >("mean velocities y direction");  
-  RefCountPtr<vector<double> > sumw   = params.get<RefCountPtr<vector<double> > >("mean velocities z direction");  
-  RefCountPtr<vector<double> > sump   = params.get<RefCountPtr<vector<double> > >("mean pressure");  
+  RefCountPtr<vector<double> > planes = params.get<RefCountPtr<vector<double> > >("coordinate vector for hom. planes");
 
-  RefCountPtr<vector<double> > sumsqu = params.get<RefCountPtr<vector<double> > >("variance velocities x direction");  
-  RefCountPtr<vector<double> > sumsqv = params.get<RefCountPtr<vector<double> > >("variance velocities y direction");  
-  RefCountPtr<vector<double> > sumsqw = params.get<RefCountPtr<vector<double> > >("variance velocities z direction");  
-  RefCountPtr<vector<double> > sumsqp = params.get<RefCountPtr<vector<double> > >("variance pressure");  
-    
+  // get the pointers to the solution vectors
+  RefCountPtr<vector<double> > sumu   = params.get<RefCountPtr<vector<double> > >("mean velocities x direction");
+  RefCountPtr<vector<double> > sumv   = params.get<RefCountPtr<vector<double> > >("mean velocities y direction");
+  RefCountPtr<vector<double> > sumw   = params.get<RefCountPtr<vector<double> > >("mean velocities z direction");
+  RefCountPtr<vector<double> > sump   = params.get<RefCountPtr<vector<double> > >("mean pressure");
+
+  RefCountPtr<vector<double> > sumsqu = params.get<RefCountPtr<vector<double> > >("variance velocities x direction");
+  RefCountPtr<vector<double> > sumsqv = params.get<RefCountPtr<vector<double> > >("variance velocities y direction");
+  RefCountPtr<vector<double> > sumsqw = params.get<RefCountPtr<vector<double> > >("variance velocities z direction");
+  RefCountPtr<vector<double> > sumsqp = params.get<RefCountPtr<vector<double> > >("variance pressure");
+
 
   // get node coordinates of element
   Epetra_SerialDenseMatrix xyze(3,iel);
@@ -4641,7 +4733,7 @@ void DRT::Elements::Fluid3::f3_calc_means(
 
   double min = xyze(normdirect,0);
   double max = xyze(normdirect,0);
-  
+
   // set maximum and minimum value in wall normal direction
   for(int inode=0;inode<iel;inode++)
   {
@@ -4652,9 +4744,9 @@ void DRT::Elements::Fluid3::f3_calc_means(
     if(max < xyze(normdirect,inode))
     {
       max=xyze(normdirect,inode);
-    }    
+    }
   }
-    
+
   // determine the ids of the homogeneous planes intersecting this element
   set<int> planesinele;
   for(unsigned nplane=0;nplane<planes->size();++nplane)
@@ -4707,7 +4799,7 @@ void DRT::Elements::Fluid3::f3_calc_means(
   }
   else if (xyze(normdirect,3)-xyze(normdirect,0)>2e-9)
   {
-    // s aligned    
+    // s aligned
     elenormdirect =1;
   }
   else if (xyze(normdirect,1)-xyze(normdirect,0)>2e-9)
@@ -4747,11 +4839,11 @@ void DRT::Elements::Fluid3::f3_calc_means(
       inplanedirectset.insert(i);
     }
     inplanedirectset.erase(elenormdirect);
-    
+
     for(set<int>::iterator id = inplanedirectset.begin();id!=inplanedirectset.end() ;++id)
     {
       inplanedirect.push_back(*id);
-    }    
+    }
   }
 
   // allocate vector for shapefunctions
@@ -4763,7 +4855,7 @@ void DRT::Elements::Fluid3::f3_calc_means(
   // a hex8 element has two levels, the hex20 and hex27 element have three layers to sample
   // (now we allow even more)
   double layershift=0;
- 
+
   // loop all levels in element
   for(set<int>::iterator id = planesinele.begin();id!=planesinele.end() ;++id)
   {
@@ -4777,7 +4869,7 @@ void DRT::Elements::Fluid3::f3_calc_means(
     double vsqbar=0;
     double wsqbar=0;
     double psqbar=0;
-    
+
     // get the intgration point in wall normal direction
     double e[3];
 
@@ -4811,7 +4903,7 @@ void DRT::Elements::Fluid3::f3_calc_means(
           x[1]+=funct[inode]*xyze(1,inode);
           x[2]+=funct[inode]*xyze(2,inode);
         }
-        
+
         if(abs(x[normdirect]-(*planes)[*id])>2e-9)
         {
           dserror("Mixing up element cut planes during integration");
@@ -4823,13 +4915,13 @@ void DRT::Elements::Fluid3::f3_calc_means(
       double vgp=0;
       double wgp=0;
       double pgp=0;
-      
+
       // we assume that every 2d element we are integrating here is of
       // rectangular shape and every element is of the same size.
       // 1/4 is necessary since we use a reference element of size 2x2
       // the factor fac is omitting the element area up to now
       double fac=0.25*intpoints.qwgt[iquad];
-      
+
       for(int inode=0;inode<iel;inode++)
       {
         ugp += funct[inode]*sol[inode*4  ];
@@ -4838,7 +4930,7 @@ void DRT::Elements::Fluid3::f3_calc_means(
         pgp += funct[inode]*sol[inode*4+3];
       }
 
-      // add contribution to integral        
+      // add contribution to integral
       ubar   += ugp*fac;
       vbar   += vgp*fac;
       wbar   += wgp*fac;
@@ -4855,7 +4947,7 @@ void DRT::Elements::Fluid3::f3_calc_means(
     (*sumv  )[*id] += vbar;
     (*sumw  )[*id] += wbar;
     (*sump  )[*id] += pbar;
-                                       
+
     (*sumsqu)[*id] += usqbar;
     (*sumsqv)[*id] += vsqbar;
     (*sumsqw)[*id] += wsqbar;
@@ -4864,11 +4956,11 @@ void DRT::Elements::Fluid3::f3_calc_means(
     // jump to the next layer in the element.
     // in case of an hex8 element, the two coordinates are -1 and 1(+2)
     // for quadratic elements with three sample planes, we have -1,0(+1),1(+2)
-    
+
     layershift+=2.0/((double) numplanesinele - 1.0);
   }
 
-  
+
   return;
 }
 

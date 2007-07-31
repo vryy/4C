@@ -44,6 +44,7 @@ namespace Elements
 // forward declarations
 class Fluid3Surface;
 class Fluid3Line;
+class Fluid3Impl;
 
 /*!
 \class Fluid3
@@ -60,6 +61,7 @@ public:
   friend class Fluid3Register;
   friend class Fluid3Surface;
   friend class Fluid3Line;
+  friend class Fluid3Impl;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -332,12 +334,12 @@ private:
   //! matrix of subscale velocity values in gausspoints of this element
   Epetra_SerialDenseMatrix                        sub_vel_;
   Epetra_SerialDenseMatrix                        sub_vel_old_;
-    
+
   //! vector of subscale pressures values in gausspoints of this element
   Epetra_SerialDenseVector                        sub_pre_;
   Epetra_SerialDenseVector                        sub_pre_old_;
 #endif
-  
+
   // internal calculation methods
 
   // don't want = operator
@@ -469,11 +471,11 @@ private:
   /*!
     \brief calculate spatial mean values for channel flow
     (requires cartesian mesh)
-   
+
                                                              gammi 07/07
 
     <pre>
-                                                             
+
     this method assumes that each 2 dimensional integration element
     in the homogeneous plane has the same size!!!
 
@@ -487,88 +489,88 @@ private:
     The method assumes, that all elements are of the same rectangular
     shape in the "inplanedirection". In addition, it is assumed that
     the sampling planes are distributed equidistant in the element.
- 
- 
-                       ^ normdirect       integration plane       
-                       |                /         
-                       |               /          
-                       |                          
-                 +-----|-------------+            
-                /|     |            /|            
-               / |     |           / |            
-              /  |     |          /  |            
-             /   |     |         /   |            
+
+
+                       ^ normdirect       integration plane
+                       |                /
+                       |               /
+                       |
+                 +-----|-------------+
+                /|     |            /|
+               / |     |           / |
+              /  |     |          /  |
+             /   |     |         /   |
             /    +-----|--------/----+ ---- additional integration
            /    /|     |       /    /|      plane (for quadratic elements)
-          /    / |     |      /    / |            
-         +-------------------+    /  |            
-         |   /   |     *-----|---+------------>   
+          /    / |     |      /    / |
+         +-------------------+    /  |
+         |   /   |     *-----|---+------------>
          |  /    +----/------|--/----+         inplanedirect[1]
-         | /    /    /       | /    /            
-         |/    /    /        |/    /   \         
-         +---------+---------+    /     \        
+         | /    /    /       | /    /
+         |/    /    /        |/    /   \
+         +---------+---------+    /     \
          |   /    /          |   /       integration plane
-         |  /    /           |  /                 
-         | /    /            | /                  
-         |/    /             |/                   
-         +----/--------------+                    
-             /                                    
-            /   inplanedirect[0]                                
-               
-               
+         |  /    /           |  /
+         | /    /            | /
+         |/    /             |/
+         +----/--------------+
+             /
+            /   inplanedirect[0]
+
+
     Example for a mean value evaluation:
-               
-                            1.0       /                   
-                     _               |                    
+
+                            1.0       /
+                     _               |
                      u = -------- *  | u(x,y,z) dx dy dz =
-                         +---        |                    
-                          \         / A                   
-                          / area                          
-                         +---                             
-                                                                  
-                                                               
-                           1.0      /                             
-                                   |            area           
-                     =  -------- * | u(r,s,t) * ---- dr ds dt  
-                        +---       |              4            
-                         \        /  [-1:1]^2                  
-                         / area                                                                          
-                        +---                                                                             
-                                
-                   
-                                                               
-                            1.0      /                         
-                                    |            1             
-                     =   -------- * | u(r,s,t) * - dr ds dt    
-                                    |            4             
-                          numele   /  [-1:1]^2                 
-                   
+                         +---        |
+                          \         / A
+                          / area
+                         +---
+
+
+                           1.0      /
+                                   |            area
+                     =  -------- * | u(r,s,t) * ---- dr ds dt
+                        +---       |              4
+                         \        /  [-1:1]^2
+                         / area
+                        +---
+
+
+
+                            1.0      /
+                                    |            1
+                     =   -------- * | u(r,s,t) * - dr ds dt
+                                    |            4
+                          numele   /  [-1:1]^2
+
                                    |                        |
                                    +------------------------+
                                 this is the integral we compute!
- 
+
     The factor 1/4 is necessary since we use a reference element of
     size 2x2
- 
+
     The method computes:
                        _             _             _             _
               numele * u  , numele * v  , numele * w  , numele * p
                        ___           ___           ___           ___
                         ^2            ^2            ^2            ^2
     and       numele * u  , numele * v  , numele * w  , numele * p
- 
+
     as well as numele.
     All results are communicated via the parameter list!
-    
+
     </pre>
- 
+
    */
 
   void f3_calc_means(
     vector<double>&           vel  ,
     ParameterList& 	      params
     );
-    
+
   /*!
    * \brief evaluate fluid coefficient matrix (instationary case)
    */
@@ -637,13 +639,13 @@ private:
     const DiscretizationType&  distype  ///< switch gausrule based on this discretization type
     );
 
-  
+
   /*!
     \brief evaluate fluid coefficient matrix and rhs for a generalised alpha problem
 
-    
+
    */
-  
+
   void f3_genalpha_calmat(
     Epetra_SerialDenseMatrix&        elemat,
     Epetra_SerialDenseVector&        elevec,
@@ -675,6 +677,9 @@ private:
     ) const;
 
   ActionType convertStringToActionType(const string& action) const;
+
+  /// Internal implementation class for specific fluid element
+  Fluid3Impl* Impl();
 
 }; // class Fluid3
 
@@ -1041,7 +1046,7 @@ private:
 
   void CreateLinesQuad(const int& nline,
                        const int& nnode);
-		       
+
   /*!
   \brief integrate shapefunction over surface element
 
@@ -1056,7 +1061,7 @@ private:
                           	      DRT::Discretization&       discretization,
                           	      vector<int>&               lm,
                           	      Epetra_SerialDenseVector&  elevec1);
-			  		       
+
 
 }; // class Fluid3Surface
 
