@@ -506,7 +506,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
           gridvelint[i] = 0.;
           for (int j=0; j<iel; j++)
           {
-            gridvelint[i] += derxy(i,j)*egridv[i+(3*j)];
+            gridvelint[i] += funct(j)*egridv[i+(3*j)];
           }
         }
       }
