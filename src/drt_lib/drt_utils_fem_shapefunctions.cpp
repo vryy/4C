@@ -1992,7 +1992,7 @@ void DRT::Utils::shape_function_3D_deriv2(
                             blitz::shape(deriv2.M(),deriv2.N()),
                             blitz::neverDeleteData,
                             blitz::ColumnMajorArray<2>());
-  shape_function_3D_deriv1(d,r,s,t,distype);
+  shape_function_3D_deriv2(d,r,s,t,distype);
 }
 
 //
