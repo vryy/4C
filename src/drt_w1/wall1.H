@@ -28,6 +28,7 @@ using namespace Teuchos;
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
+#include "../drt_lib/drt_utils.H"
 
 
 // forward declarations
@@ -101,7 +102,7 @@ public:
   \brief Return number of lines of this element
   */
   virtual int NumLine() const 
-  {if (NumNode()==4 || NumNode()==9) return 4; else return 3;}
+  {if (NumNode()==4 || NumNode()==8 || NumNode()==9) return 4; else return 3;}
 
   /*!
   \brief Return number of surfaces of this element
@@ -342,15 +343,15 @@ private:
                        Epetra_SerialDenseVector* force,
                        struct _MATERIAL*         material);
 
-  void w1_integration_points(struct _W1_DATA& data); 
+ // void w1_integration_points(struct _W1_DATA& data); 
 
-  void w1_gpdom(int& totngp, 
-                double** gpcr, double** gpcs,
-                double** gpwr);
+ // void w1_gpdom(int& totngp, 
+ //               double** gpcr, double** gpcs,
+ //               double** gpwr);
  
-  void w1_shapefunctions(vector<double>& funct, Epetra_SerialDenseMatrix& deriv,
-                               const double r, const double s, const int numnode, 
-                               const int doderiv) const;
+//  void w1_shapefunctions(vector<double>& funct, Epetra_SerialDenseMatrix& deriv,
+//                               const double r, const double s, const int numnode, 
+//                               const int doderiv) const;
 
   void w1_jacobianmatrix(double xrefe[2][MAXNOD_WALL1], const Epetra_SerialDenseMatrix& deriv,
                          Epetra_SerialDenseMatrix& xjm,
@@ -404,6 +405,16 @@ private:
 
   // don't want = operator
   Wall1& operator = (const Wall1& old);
+  
+  
+  void CreateLinesTri(const int& nline,
+                      const int& nnode);
+  
+  void CreateLinesQuad(const int& nline,
+                       const int& nnode);
+  
+  // set number of gauss points to element shape default
+   DRT::Utils::GaussRule2D getGaussrule();
   
 
 }; // class Wall1
@@ -673,7 +684,7 @@ public:
   //@}
 
 private:
-
+	
   // don't want = operator
   Wall1Line& operator = (const Wall1Line& old);
   
@@ -681,6 +692,14 @@ private:
   DRT::Elements::Wall1* parent_;  
   //! The local line number of this line w.r.t to the parent_ element
   int                    lline_;   
+  
+  // compute infintesimal line element dr for integration along the line
+  double  w1_substitution(const Epetra_SerialDenseMatrix& xyze,
+		                  const Epetra_SerialDenseMatrix& deriv,
+		                  const int iel);
+  
+  // set number of gauss points to element shape default
+   DRT::Utils::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
 
 }; // class Wall1Line
 
@@ -690,16 +709,6 @@ private:
 
 } // namespace Elements
 } // namespace DRT
-
-
-
-
-
-
-
-
-
-
 
 #endif  // #ifndef WALL1_H
 #endif  // #ifdef TRILINOS_PACKAGE

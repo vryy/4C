@@ -172,162 +172,78 @@ RefCountPtr<DRT::ElementRegister> DRT::Elements::Wall1::ElementRegister() const
   return rcp(new DRT::Elements::Wall1Register(Type()));
 }
 
+
+
 /*----------------------------------------------------------------------*
- |  get vector of lines (public)                             mgit 03/07|
+ |  get vector of lines (public)                             mgit 07/07|
  *----------------------------------------------------------------------*/
 DRT::Element** DRT::Elements::Wall1::Lines()
 {
-  const int nline = NumLine();
-  const int numnode = NumNode();
-  lines_.resize(nline);
-  lineptrs_.resize(nline);
-  int nodeids[100];
-  DRT::Node* nodes[100];
-  if (nline==4)
-  {
-    if (numnode==4)
+    const DiscretizationType distype = Shape();
+    const int nline   = NumLine();
+    lines_.resize(nline);
+    lineptrs_.resize(nline);
+
+    switch (distype)
     {
-      nodeids[0] = NodeIds()[0];
-      nodeids[1] = NodeIds()[1];
-      nodes[0] = Nodes()[0];
-      nodes[1] = Nodes()[1];
-      lines_[0] = 
-        rcp(new DRT::Elements::Wall1Line(0,Owner(),2,nodeids,nodes,this,0));
-      lineptrs_[0] = lines_[0].get();
-
-      nodeids[0] = NodeIds()[1];
-      nodeids[1] = NodeIds()[2];
-      nodes[0] = Nodes()[1];
-      nodes[1] = Nodes()[2];
-      lines_[1] = 
-        rcp(new DRT::Elements::Wall1Line(1,Owner(),2,nodeids,nodes,this,1));
-      lineptrs_[1] = lines_[1].get();
-
-      nodeids[0] = NodeIds()[2];
-      nodeids[1] = NodeIds()[3];
-      nodes[0] = Nodes()[2];
-      nodes[1] = Nodes()[3];
-      lines_[2] = 
-        rcp(new DRT::Elements::Wall1Line(2,Owner(),2,nodeids,nodes,this,2));
-      lineptrs_[2] = lines_[2].get();
-
-      nodeids[0] = NodeIds()[3];
-      nodeids[1] = NodeIds()[0];
-      nodes[0] = Nodes()[3];
-      nodes[1] = Nodes()[0];
-      lines_[3] = 
-        rcp(new DRT::Elements::Wall1Line(3,Owner(),2,nodeids,nodes,this,3));
-      lineptrs_[3] = lines_[3].get();
+    case tri3:
+        CreateLinesTri(nline, 2);
+        break;
+    case tri6:
+        CreateLinesTri(nline, 3);
+        break;
+    case quad4:
+        CreateLinesQuad(nline, 2);
+        break;
+    case quad8:
+        CreateLinesQuad(nline, 3);
+        break;
+    case quad9:
+        CreateLinesQuad(nline, 3);
+        break;
+    default:
+        dserror("distype not supported");
     }
-    else if (numnode==9)
-    {
-      nodeids[0] = NodeIds()[0];
-      nodeids[1] = NodeIds()[1];
-      nodeids[2] = NodeIds()[4];
-      nodes[0] = Nodes()[0];
-      nodes[1] = Nodes()[1];
-      nodes[2] = Nodes()[4];
-      lines_[0] = 
-        rcp(new DRT::Elements::Wall1Line(0,Owner(),3,nodeids,nodes,this,0));
-      lineptrs_[0] = lines_[0].get();
 
-      nodeids[0] = NodeIds()[1];
-      nodeids[1] = NodeIds()[2];
-      nodeids[2] = NodeIds()[5];
-      nodes[0] = Nodes()[1];
-      nodes[1] = Nodes()[2];
-      nodes[2] = Nodes()[5];
-      lines_[1] = 
-        rcp(new DRT::Elements::Wall1Line(1,Owner(),3,nodeids,nodes,this,1));
-      lineptrs_[1] = lines_[1].get();
-
-      nodeids[0] = NodeIds()[2];
-      nodeids[1] = NodeIds()[3];
-      nodeids[2] = NodeIds()[6];
-      nodes[0] = Nodes()[2];
-      nodes[1] = Nodes()[3];
-      nodes[2] = Nodes()[6];
-      lines_[2] = 
-        rcp(new DRT::Elements::Wall1Line(2,Owner(),3,nodeids,nodes,this,2));
-      lineptrs_[2] = lines_[2].get();
-
-      nodeids[0] = NodeIds()[3];
-      nodeids[1] = NodeIds()[0];
-      nodeids[2] = NodeIds()[7];
-      nodes[0] = Nodes()[3];
-      nodes[1] = Nodes()[0];
-      nodes[2] = Nodes()[7];
-      lines_[3] = 
-        rcp(new DRT::Elements::Wall1Line(3,Owner(),3,nodeids,nodes,this,3));
-      lineptrs_[3] = lines_[3].get();
-    }
-    else dserror("Number of nodes not supported");
-  }
-  else if (nline==3)
-  {
-    if (numnode==3)
-    {
-      nodeids[0] = NodeIds()[0];
-      nodeids[1] = NodeIds()[1];
-      nodes[0] = Nodes()[0];
-      nodes[1] = Nodes()[1];
-      lines_[0] = 
-        rcp(new DRT::Elements::Wall1Line(0,Owner(),2,nodeids,nodes,this,0));
-      lineptrs_[0] = lines_[0].get();
-
-      nodeids[0] = NodeIds()[1];
-      nodeids[1] = NodeIds()[2];
-      nodes[0] = Nodes()[1];
-      nodes[1] = Nodes()[2];
-      lines_[1] = 
-        rcp(new DRT::Elements::Wall1Line(1,Owner(),2,nodeids,nodes,this,1));
-      lineptrs_[1] = lines_[1].get();
-
-      nodeids[0] = NodeIds()[2];
-      nodeids[1] = NodeIds()[0];
-      nodes[0] = Nodes()[1];
-      nodes[1] = Nodes()[2];
-      lines_[2] = 
-        rcp(new DRT::Elements::Wall1Line(2,Owner(),2,nodeids,nodes,this,2));
-      lineptrs_[2] = lines_[2].get();
-    }
-    else if (numnode==6)
-    {
-      nodeids[0] = NodeIds()[0];
-      nodeids[1] = NodeIds()[1];
-      nodeids[2] = NodeIds()[3];
-      nodes[0] = Nodes()[0];
-      nodes[1] = Nodes()[1];
-      nodes[2] = Nodes()[3];
-      lines_[0] = 
-        rcp(new DRT::Elements::Wall1Line(0,Owner(),3,nodeids,nodes,this,0));
-      lineptrs_[0] = lines_[0].get();
-
-      nodeids[0] = NodeIds()[1];
-      nodeids[1] = NodeIds()[2];
-      nodeids[2] = NodeIds()[4];
-      nodes[0] = Nodes()[1];
-      nodes[1] = Nodes()[2];
-      nodes[2] = Nodes()[4];
-      lines_[1] = 
-        rcp(new DRT::Elements::Wall1Line(1,Owner(),3,nodeids,nodes,this,1));
-      lineptrs_[1] = lines_[1].get();
-
-      nodeids[0] = NodeIds()[2];
-      nodeids[1] = NodeIds()[0];
-      nodeids[2] = NodeIds()[5];
-      nodes[0] = Nodes()[2];
-      nodes[1] = Nodes()[0];
-      nodes[2] = Nodes()[5];
-      lines_[2] = 
-        rcp(new DRT::Elements::Wall1Line(2,Owner(),3,nodeids,nodes,this,2));
-      lineptrs_[2] = lines_[2].get();
-    }
-    else dserror("Number of nodes not supported");
-  }
-  else dserror("Number of lines not supported");
-  return (DRT::Element**)(&(lineptrs_[0]));
+    return (DRT::Element**)(&(lineptrs_[0]));
 }
+
+void DRT::Elements::Wall1::CreateLinesTri(const int& nline,
+                                         const int& nnode)
+{
+    for(int iline=0;iline<nline;iline++)
+    {
+        int nodeids[nnode];
+        DRT::Node* nodes[nnode];
+        
+        for (int inode=0;inode<nnode;inode++)
+        {
+             nodeids[inode] = NodeIds()[DRT::Utils::eleNodeNumbering_tri6_lines[iline][inode]];
+             nodes[inode]   = Nodes()[DRT::Utils::eleNodeNumbering_tri6_lines[iline][inode]];
+        }
+        lines_[iline] = rcp(new DRT::Elements::Wall1Line(iline,Owner(),nnode,nodeids,nodes,this,iline));
+        lineptrs_[iline] = lines_[iline].get();
+    }
+}        
+
+void DRT::Elements::Wall1::CreateLinesQuad(const int& nline,
+                                          const int& nnode)
+{
+    for(int iline=0;iline<nline;iline++)
+    {
+        int nodeids[nnode];
+        DRT::Node* nodes[nnode];	
+        
+        for (int inode=0;inode<nnode;inode++)
+        {
+             nodeids[inode] = NodeIds()[DRT::Utils::eleNodeNumbering_quad9_lines[iline][inode]];
+             nodes[inode]   = Nodes()[DRT::Utils::eleNodeNumbering_quad9_lines[iline][inode]];
+        }
+        lines_[iline] = rcp(new DRT::Elements::Wall1Line(iline,Owner(),nnode,nodeids,nodes,this,iline));
+        lineptrs_[iline] = lines_[iline].get();
+    }
+}    
+
 
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          mgit 03/07|

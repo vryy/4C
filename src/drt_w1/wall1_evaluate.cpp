@@ -54,7 +54,6 @@ int DRT::Elements::Wall1::Evaluate(ParameterList& params,
                                     Epetra_SerialDenseVector& elevec2,
                                     Epetra_SerialDenseVector& elevec3)
 {
-  DSTraceHelper dst("Wall1::Evaluate");
   DRT::Elements::Wall1::ActionType act = Wall1::calc_none;
   // get the action required
   string action = params.get<string>("action","calc_none");
@@ -144,31 +143,21 @@ int DRT::Elements::Wall1::EvaluateNeumann(ParameterList& params,
   xjm.Shape(2,2);
   double det;
 
-  // init gaussian points
-  W1_DATA w1data;
-  w1_integration_points(w1data);
-
   // no. of nodes on this surface
   const int iel = NumNode();
+  
+  const DiscretizationType distype = this->Shape();
 
   const int numdf = 2;
 
-  // total number of gaussian points
-  int totngp;
-
-  // coordinates of gaussian points
-  double* gpcr;
-  double* gpcs;
-  double* gpw;
-
-  /*---------get the coordinates and weights of the gaussian points----*/  
-  w1_gpdom(totngp, &gpcr, &gpcs, &gpw);
-
-
+  // gaussian points 
+  const DRT::Utils::GaussRule2D gaussrule = getGaussrule(); 
+  const DRT::Utils::IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
+  
   //  vector<double>* thick = data_.Get<vector<double> >("thick");
   //  if (!thick) dserror("Cannot find vector of nodal thickness");
 
-  vector<double> funct(iel);
+  Epetra_SerialDenseVector      funct(iel);
   Epetra_SerialDenseMatrix deriv(2,iel);
 
   double xrefe[2][MAXNOD_WALL1];
@@ -192,15 +181,20 @@ int DRT::Elements::Wall1::EvaluateNeumann(ParameterList& params,
   const vector<double>* val   = condition.Get<vector<double> >("val");
 
   /*=================================================== integration loops */
-  for (int ip=0; ip<totngp; ++ip)
+  for (int ip=0; ip<intpoints.nquad; ++ip)
   {
     /*================================== gaussian point and weight at it */
-    const double e1 = gpcr[ip];
-    const double e2 = gpcs[ip];
-    const double wgt = gpw[ip];
 
+	  
+	const double e1 = intpoints.qxg[ip][0];
+	const double e2 = intpoints.qxg[ip][1];
+	const double wgt = intpoints.qwgt[ip];	  
+	  
     /*-------------------- shape functions at gp e1,e2 on mid surface */
-    w1_shapefunctions(funct,deriv,e1,e2,iel,1);
+    //w1_shapefunctions(funct,deriv,e1,e2,iel,1);
+    
+    DRT::Utils::shape_function_2D(funct,e1,e2,distype);
+    DRT::Utils::shape_function_2D_deriv1(deriv,e1,e2,distype);
     /*--------------------------------------- compute jacobian Matrix */
     w1_jacobianmatrix(xrefe,deriv,xjm,&det,iel);
     /*------------------------------------ integration factor  -------*/
@@ -247,7 +241,7 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
 
 
    // general arrays
-  vector<double>           funct(numnode);
+  Epetra_SerialDenseVector      funct(numnode);
   Epetra_SerialDenseMatrix deriv;
   deriv.Shape(2,numnode);
   Epetra_SerialDenseMatrix xjm;
@@ -268,7 +262,7 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
   stress.Shape(4,4);
   Epetra_SerialDenseMatrix C;
   C.Shape(4,4);
-
+  
   // ------------------------------------ check calculation of mass matrix
   int imass=0;
   double density=0.0;
@@ -304,19 +298,14 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
 
   /*------- get integraton data ---------------------------------------- */
 
-  // total number of gaussian points
-  int totngp;
-  
   const int iel = numnode;
-
-  // coordinates of gaussian points
-  double* gpcr;
-  double* gpcs;
-  double* gpw;
-
-  /*---------get the coordinates and weights of the gaussian points----*/  
-  w1_gpdom(totngp, &gpcr, &gpcs, &gpw);
-
+  
+  const DiscretizationType distype = this->Shape();
+  
+  // gaussian points 
+  const DRT::Utils::GaussRule2D gaussrule = getGaussrule(); 
+  const DRT::Utils::IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
+  
   /*----------------------------------------------------- geometry update */
   for (int k=0; k<iel; ++k)
   {
@@ -330,15 +319,18 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
   }
 
   /*=================================================== integration loops */
-  for (int ip=0; ip<totngp; ++ip)
+  for (int ip=0; ip<intpoints.nquad; ++ip)
   {
     /*================================== gaussian point and weight at it */
-    const double e1 = gpcr[ip];
-    const double e2 = gpcs[ip];
-    const double wgt = gpw[ip];
-      
-    /*-------------------- shape functions at gp e1,e2 on mid surface */
-    w1_shapefunctions(funct,deriv,e1,e2,iel,1);
+	  
+	const double e1 = intpoints.qxg[ip][0];
+	const double e2 = intpoints.qxg[ip][1];
+	const double wgt = intpoints.qwgt[ip];
+	    
+    // shape functions and their derivatives
+    DRT::Utils::shape_function_2D(funct,e1,e2,distype);
+    DRT::Utils::shape_function_2D_deriv1(deriv,e1,e2,distype);
+ 
     /*--------------------------------------- compute jacobian Matrix */
     w1_jacobianmatrix(xrefe,deriv,xjm,&det,iel);
     /*------------------------------------ integration factor  -------*/
@@ -352,8 +344,8 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
      {
       for (int b=0; b<iel; b++)
       {
-       (*massmatrix)(2*a,2*b)     += facm * funct[a] * funct[b]; /* a,b even */
-       (*massmatrix)(2*a+1,2*b+1) += facm * funct[a] * funct[b]; /* a,b odd  */
+       (*massmatrix)(2*a,2*b)     += facm * funct(a) * funct(b); /* a,b even */
+       (*massmatrix)(2*a+1,2*b+1) += facm * funct(a) * funct(b); /* a,b odd  */
       }
      }
     }
@@ -375,147 +367,14 @@ void DRT::Elements::Wall1::w1_nlnstiffmass(vector<int>&               lm,
       ngauss++;
   } // for (int ip=0; ip<totngp; ++ip)
 
-//cout << "Massenmatrix =" << (*massmatrix);
-//cout << "Steifigkeitsmatrix =" << (*stiffmatrix);
-//cout << "interner Lastvektor=" << (*force);
-
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- |  evaluate the element integration points (private)        mgit 03/07|
- *----------------------------------------------------------------------*/
-void DRT::Elements::Wall1::w1_integration_points(struct _W1_DATA& data)
-{
-  DSTraceHelper dst("Wall1::w1_integration_points");
-
-  const int numnode = NumNode();
-
-  const double invsqrtthree = 1./sqrt(3.);
-  const double sqrtthreeinvfive = sqrt(3./5.);
-  const double wgt  = 5.0/9.0;
-  const double wgt0 = 8.0/9.0;
-
-
-  // quad elements
-  if (numnode==4 || numnode==8 || numnode==9)
-  {
-    switch(ngp_[0]) // r direction
-    {
-      case 1:
-        data.xgrr[0] = 0.0;
-        data.xgrr[1] = 0.0;
-        data.xgrr[2] = 0.0;
-        data.wgtr[0] = 2.0;
-        data.wgtr[1] = 0.0;
-        data.wgtr[2] = 0.0;
-      break;
-      case 2:
-        data.xgrr[0] = -invsqrtthree;
-        data.xgrr[1] =  invsqrtthree;
-        data.xgrr[2] =  0.0;
-        data.wgtr[0] =  1.0;
-        data.wgtr[1] =  1.0;
-        data.wgtr[2] =  0.0;
-      break;
-      case 3:
-        data.xgrr[0] = -sqrtthreeinvfive;
-        data.xgrr[1] =  0.0;
-        data.xgrr[2] =  sqrtthreeinvfive;
-        data.wgtr[0] =  wgt;
-        data.wgtr[1] =  wgt0;
-        data.wgtr[2] =  wgt;
-      break;
-      default:
-        dserror("Unknown no. of gaussian points in r-direction");
-      break;
-    } // switch(ngp_[0]) // r direction
-
-    switch(ngp_[1]) // s direction
-    {
-      case 1:
-        data.xgss[0] = 0.0;
-        data.xgss[1] = 0.0;
-        data.xgss[2] = 0.0;
-        data.wgts[0] = 2.0;
-        data.wgts[1] = 0.0;
-        data.wgts[2] = 0.0;
-      break;
-      case 2:
-        data.xgss[0] = -invsqrtthree;
-        data.xgss[1] =  invsqrtthree;
-        data.xgss[2] =  0.0;
-        data.wgts[0] =  1.0;
-        data.wgts[1] =  1.0;
-        data.wgts[2] =  0.0;
-      break;
-      case 3:
-        data.xgss[0] = -sqrtthreeinvfive;
-        data.xgss[1] =  0.0;
-        data.xgss[2] =  sqrtthreeinvfive;
-        data.wgts[0] =  wgt;
-        data.wgts[1] =  wgt0;
-        data.wgts[2] =  wgt;
-      break;
-      default:
-        dserror("Unknown no. of gaussian points in s-direction");
-      break;
-    } // switch(ngp_[0]) // s direction
-
-  } // if (numnode==4 || numnode==8 || numnode==9)
-
-//  else if (numnode==3 || numnode==6) // triangle elements
-//  {
-//    switch(ngp_[0])
-//    {
-//      case 1:
-//      {
-//        const double third = 1.0/3.0;
-//        data.xgrr[0] =  third;
-//        data.xgrr[1] =  0.0;
-//        data.xgrr[2] =  0.0;
-//        data.xgss[0] =  third;
-//        data.xgss[1] =  0.0;
-//        data.xgss[2] =  0.0;
-//        data.wgtr[0] =  0.5;
-//        data.wgtr[1] =  0.0;
-//        data.wgtr[2] =  0.0;
-//        data.wgts[0] =  0.5;
-//        data.wgts[1] =  0.0;
-//        data.wgts[2] =  0.0;
-//      }
-//      break;
-//      case 3:
-//      {
-//        const double wgt = 1.0/6.0;
-//        data.xgrr[0] =  0.5;
-//        data.xgrr[1] =  0.5;
-//        data.xgrr[2] =  0.0;
-//        data.xgss[0] =  0.0;
-//        data.xgss[1] =  0.5;
-//        data.xgss[2] =  0.5;
-//        data.wgtr[0] =  wgt;
-//        data.wgtr[1] =  wgt;
-//        data.wgtr[2] =  wgt;
-//        data.wgts[0] =  wgt;
-//        data.wgts[1] =  wgt;
-//        data.wgts[2] =  wgt;
-//      }
-//      break;
-//      default:
-//        dserror("Unknown no. of gaussian points for triangle");
-//      break;
-//    }
-//  } // else if (numnode==3 || numnode==6)
-
-  return;
-}
 
 /*----------------------------------------------------------------------*
  |  get the coordinates of gaussian points (private)        mgit 06/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Wall1::w1_gpdom(int& totngp,
+/*void DRT::Elements::Wall1::w1_gpdom(int& totngp,
                                     double** gpcr, double** gpcs,
                                     double** gpwr)
 {
@@ -587,8 +446,8 @@ void DRT::Elements::Wall1::w1_gpdom(int& totngp,
 
   switch (NumNode())
   {
-    case 4: case 8: case 9:        /* --> quad - element */
-    {
+    case 4: case 8: case 9:        *//* --> quad - element */
+ /*   {
        totngp=ngp_[0]*ngp_[1];
        if ( (ngp_[0]==1) && (ngp_[1]==1) )
        {
@@ -627,21 +486,21 @@ void DRT::Elements::Wall1::w1_gpdom(int& totngp,
        }
     }
   break; 
-  case 3: case 6:                 /* --> triangle - element */
-  {
+  case 3: case 6:                 *//* --> triangle - element */
+/*  {
      totngp=ngp_[0];
 
       switch (ngp_[0])
       {
-        case 1:                   /* constant */
-          *gpcr = gprt1;
+        case 1:                   *//* constant */
+/*          *gpcr = gprt1;
           *gpcs = gpst1;
           *gpwr = gpwt1;
           break;
 
         //  GAUSS INTEGRATION 3 SAMPLING POINTS, DEG.OF PRECISION 2
-        case 3:  /* quadratic - type 1 and 2*/
-        { 
+        case 3:  *//* quadratic - type 1 and 2*/
+/*        { 
           if (ngp_[1]-1 == 0)  // integration 1
           {
             *gpcr = gprt3_1;
@@ -673,241 +532,7 @@ void DRT::Elements::Wall1::w1_gpdom(int& totngp,
 
   return;
 }
-
-/*----------------------------------------------------------------------*
- |  shape functions and derivatives (private)                mgit 12/06|
- *----------------------------------------------------------------------*/
-void DRT::Elements::Wall1::w1_shapefunctions(
-                             vector<double>& funct,
-                             Epetra_SerialDenseMatrix& deriv,
-                             const double r, const double s, const int numnode,
-                             const int doderiv) const
-{
-  DSTraceHelper dst("Wall1::w1_shapefunctions");
-
-  const double q12 = 0.5;
-  const double q14 = 0.25;
-  const double rr = r*r;
-  const double ss = s*s;
-  const double rp = 1.0+r;
-  const double rm = 1.0-r;
-  const double sp = 1.0+s;
-  const double sm = 1.0-s;
-  const double r2 = 1.0-rr;
-  const double s2 = 1.0-ss;
-  int i;
-  int ii;
-
-  //const double t;
-
-  switch(numnode)
-  {
-    case 4:
-    {
-      funct[0] = q14*rp*sp;
-      funct[1] = q14*rm*sp;
-      funct[2] = q14*rm*sm;
-      funct[3] = q14*rp*sm;
-      if (doderiv)
-      {
-        deriv(0,0)= q14*sp;
-        deriv(0,1)=-q14*sp;
-        deriv(0,2)=-q14*sm;
-        deriv(0,3)= q14*sm;
-        deriv(1,0)= q14*rp;
-        deriv(1,1)= q14*rm;
-        deriv(1,2)=-q14*rm;
-        deriv(1,3)=-q14*rp;
-      }
-      return;
-    }
-    break;
-    case 8:
-    {
-      funct[0] = q14*rp*sp;
-      funct[1] = q14*rm*sp;
-      funct[2] = q14*rm*sm;
-      funct[3] = q14*rp*sm;
-      funct[4] = q12*r2*sp;
-      funct[5] = q12*rm*s2;
-      funct[6] = q12*r2*sm;
-      funct[7] = q12*rp*s2;
-      funct[0] = funct[0] - q12*(funct[4] + funct[7]);
-      if (doderiv)
-      {
-         deriv(0,0)= q14*sp;
-         deriv(0,1)=-q14*sp;
-         deriv(0,2)=-q14*sm;
-         deriv(0,3)= q14*sm;
-         deriv(1,0)= q14*rp;
-         deriv(1,1)= q14*rm;
-         deriv(1,2)=-q14*rm;
-         deriv(1,3)=-q14*rp;
-         deriv(0,4)=-1*r*sp;
-         deriv(0,5)=-q12*  s2;
-         deriv(0,6)=-1*r*sm;
-         deriv(0,7)= q12*  s2;
-         deriv(1,4)= q12*r2  ;
-         deriv(1,5)=-1*rm*s;
-         deriv(1,6)=-q12*r2  ;
-         deriv(1,7)=-1*rp*s;
-
-         deriv[0][0]=deriv[0][0] - q12*(deriv[0][4] + deriv[0][7]);
-         deriv[1][0]=deriv[1][0] - q12*(deriv[1][4] + deriv[1][7]);
-      }
-      for (i=1; i<=3; i++)
-      {
-         ii=i + 3;
-         funct[i]=funct[i] - q12*(funct[ii] + funct[ii+1]);
-         if (doderiv)              /*--- check for derivative evaluation ---*/
-         {
-             deriv(0,i)=deriv(0,i) - q12*(deriv(0,ii) + deriv(0,ii+1));
-             deriv(1,i)=deriv(1,i) - q12*(deriv(1,ii) + deriv(1,ii+1));
-         }
-      }
-      return;
-    }
-    break;
-    case 9:
-    {
-      const double rh  = q12*r;
-      const double sh  = q12*s;
-      const double rs  = rh*sh;
-      const double rhp = r+q12;
-      const double rhm = r-q12;
-      const double shp = s+q12;
-      const double shm = s-q12;
-      funct[0] = rs*rp*sp;
-      funct[1] =-rs*rm*sp;
-      funct[2] = rs*rm*sm;
-      funct[3] =-rs*rp*sm;
-      funct[4] = sh*sp*r2;
-      funct[5] =-rh*rm*s2;
-      funct[6] =-sh*sm*r2;
-      funct[7] = rh*rp*s2;
-      funct[8] = r2*s2;
-      if (doderiv==1)
-      {
-         deriv(0,0)= rhp*sh*sp;
-         deriv(0,1)= rhm*sh*sp;
-         deriv(0,2)=-rhm*sh*sm;
-         deriv(0,3)=-rhp*sh*sm;
-         deriv(0,4)=-2.0*r*sh*sp;
-         deriv(0,5)= rhm*s2;
-         deriv(0,6)= 2.0*r*sh*sm;
-         deriv(0,7)= rhp*s2;
-         deriv(0,8)=-2.0*r*s2;
-         deriv(1,0)= shp*rh*rp;
-         deriv(1,1)=-shp*rh*rm;
-         deriv(1,2)=-shm*rh*rm;
-         deriv(1,3)= shm*rh*rp;
-         deriv(1,4)= shp*r2;
-         deriv(1,5)= 2.0*s*rh*rm;
-         deriv(1,6)= shm*r2;
-         deriv(1,7)=-2.0*s*rh*rp;
-         deriv(1,8)=-2.0*s*r2;
-      }
-      return;
-   }
-   break;
-   // 3-node linear triangle  
-   case 3:
-   {
-     funct[0]=1-r-s;
-     funct[1]=r;
-     funct[2]=s;
-     if (doderiv==1)
-     {
-       deriv(0,0)=  -1.0;
-       deriv(0,1)=  1.0;
-       deriv(0,2)=  0.0;
-       deriv(1,0)=  -1.0;
-       deriv(1,1)=  0.0;
-       deriv(1,2)=  1.0;
-     }
-    }
-   break;
-   // 6-node quadratic triangle  
-  case 6:
-     funct[0]=(1-2*r-2*s)*(1-r-s);
-     funct[1]=2*r*r-r;
-     funct[2]=2*s*s-s;
-     funct[3]=4*(r-r*r-r*s);
-     funct[4]=4*r*s;
-     funct[5]=4*(s-s*s-s*r);
-     if (doderiv==1)
-     {
-       deriv(0,0)= -3.0+4.0*r+4.0*s;
-       deriv(0,1)= 4.0*r-1.0;
-       deriv(0,2)= 0.0;
-       deriv(0,3)= 4.0*(1-2.0*r-s);
-       deriv(0,4)= 4.0*s;
-       deriv(0,5)= -4.0*s;
-       deriv(1,0)= -3.0+4.0*r+4.0*s;
-       deriv(1,1)= 0.0;
-       deriv(1,2)= 4.0*s-1.0;
-       deriv(1,3)= -4.0*r;
-       deriv(1,4)= 4.0*r;
-       deriv(1,5)= 4.0*(1.0-2.0*s-r);
-     }
-   break;
-
-///*------------------------------------------------- triangular elements */
-//case tri3: /* LINEAR shape functions and their natural derivatives -----*/
-///*----------------------------------------------------------------------*/
-//   funct(0)=1.0-r-s;
-//   funct[1]=r;
-//   funct[2]=s;
-//
-//   if(option==1) /* --> first derivative evaluation */
-//   {
-//      deriv[0][0]=-1.0;
-//      deriv[1][0]=-1.0;
-//      deriv[0][1]= ONE;
-//      deriv[1][1]=ZERO;
-//      deriv[0][2]=ZERO;
-//      deriv[1][2]= ONE;
-//   } /* endif (option==1) */
-//break;
-///*-------------------------------------------------------------------------*/
-//case tri6: /* Quadratic shape functions and their natural derivatives -----*/
-//    t = ONE-r-s;
-//
-//   funct[0] = t*(TWO*t-ONE);
-//    funct[1] = r*(TWO*r-ONE);
-//    funct[2] = s*(TWO*s-ONE);
-//    funct[3] = FOUR*r*t;
-//    funct[4] = FOUR*r*s;
-//    funct[5] = FOUR*s*t;
-//
-//    if (option == 1) /* --> first derivative evaluation */
-//    {
-//        /* first natural derivative of funct[0] with respect to r */
-//        deriv[0][0] = -FOUR*t + ONE;
-//        /* first natural derivative of funct[0] with respect to s */
-//        deriv[1][0] = -FOUR*t + ONE;
-//        deriv[0][1] = FOUR*r - ONE;
-//        deriv[1][1] = ZERO;
-//        deriv[0][2] = ZERO;
-//        deriv[1][2] = FOUR*s - ONE;
-//        deriv[0][3] = FOUR*t - FOUR*r;
-//        deriv[1][3] = -FOUR*r;
-//        deriv[0][4] = FOUR*s;
-//        deriv[1][4] = FOUR*r;
-//        deriv[0][5] = -FOUR*s;
-//        deriv[1][5] = FOUR*t - FOUR*s;
-//    } /* end if (option==1) */
-//break;
-default:
-   dserror("Unknown no. of nodes %d to wall1 element",numnode);
-break;
-} /* end of switch typ */
-/*----------------------------------------------------------------------*/
-
-  return;
-
-} /* DRT::Elements::Wall1::w1_shapefunctions */
-
+*/
 /*----------------------------------------------------------------------*
  |  jacobian matrix (private)                                  mgit 04/07|
  *----------------------------------------------------------------------*/
@@ -915,7 +540,7 @@ break;
 void DRT::Elements::Wall1::w1_jacobianmatrix(double xrefe[2][MAXNOD_WALL1],
                           const Epetra_SerialDenseMatrix& deriv,
                           Epetra_SerialDenseMatrix& xjm,
-			  double* det,
+			              double* det,
                           const int iel)
 {
 
@@ -1269,8 +894,73 @@ void DRT::Elements::Wall1::w1_fint(Epetra_SerialDenseMatrix& stress,
 /* DRT::Elements::Wall1::w1_fint */
 
 
+//Get gaussrule on dependance of gausspoints 
 
+DRT::Utils::GaussRule2D DRT::Elements::Wall1::getGaussrule()
+{
+  DRT::Utils::GaussRule2D rule;
 
+  switch (NumNode())
+  {
+    case 4: case 8: case 9:        /* --> quad - element */
+    {
+       if ( (ngp_[0]==1) && (ngp_[1]==1) )
+       {
+    	 rule = DRT::Utils::intrule_quad_1point;
+       }
+       else if ( (ngp_[0]==2) && (ngp_[1]==2) )
+       {
+    	 rule = DRT::Utils::intrule_quad_4point;
+       }
+       else if ( (ngp_[0]==3) && (ngp_[1]==3) )
+       {
+    	 rule = DRT::Utils::intrule_quad_9point;
+       }
+       else
+    	   dserror("Unknown number of Gauss points");    
+    }
+    break; 
+    case 3: case 6:                 /* --> triangle - element */
+    {
+       switch (ngp_[0])
+       {
+         case 1:                   /* constant */
+         {
+      	   rule = DRT::Utils::intrule_tri_1point; 
+         }
+         break;
+        //  GAUSS INTEGRATION 3 SAMPLING POINTS, DEG.OF PRECISION 2
+         case 3:  /* quadratic - type 1 and 2*/
+         { 
+           if (ngp_[1]-1 == 0)  // integration 1
+          {
+         	 rule = DRT::Utils::intrule_tri_3point; 
+          }
+          else if (ngp_[1]-1 == 1)  // integration 2
+          {
+         	 rule = DRT::Utils::intrule_tri_3point_on_corners; 
+          }
+          else
+          {
+            dserror("Integration case %g is not available\n", ngp_[1]);
+          }
+     
+          break;
+         }
+         case 6: 
+         {
+        	 rule = DRT::Utils::intrule_tri_6point;       
+         }
+         default:
+           dserror("Unknown number of Gauss points");  
+    }
+    break;
+    default:
+       dserror("Unknown number of nodes");
+      }
+   } 
+  return rule;
+}
 
 
 #endif  // #ifdef TRILINOS_PACKAGE

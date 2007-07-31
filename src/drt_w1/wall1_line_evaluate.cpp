@@ -39,7 +39,6 @@ int DRT::Elements::Wall1Line::EvaluateNeumann(ParameterList& params,
                               vector<int>&              lm,
                               Epetra_SerialDenseVector& elevec1)
 {
-  DSTraceHelper dst("Wall1Line::EvaluateNeumann");
   RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==null) dserror("Cannot get state vector 'displacement'");
   vector<double> mydisp(lm.size());
@@ -58,148 +57,120 @@ int DRT::Elements::Wall1Line::EvaluateNeumann(ParameterList& params,
   if (curvenum>=0 && usetime)
     curvefac = DRT::Utils::TimeCurveManager::Instance().Curve(curvenum).f(time);
 
-  // init gaussian points of parent element
-  W1_DATA w1data;
-  parent_->w1_integration_points(w1data);
-
-  /*---------get the coordinates and weights of the gaussian points----*/  
-  // number of parent element nodes
-  const int iel = parent_->NumNode();
-
-  const int nir = parent_->ngp_[0];
-  const int nis = parent_->ngp_[1];
-  const int numdf = 2;
-
-  vector<double> funct(iel);
-  Epetra_SerialDenseMatrix deriv(2,iel);
-
-  double xrefe[2][MAXNOD_WALL1];
-  double xjm[2][2];
-
-  // get geometry
-  for (int k=0; k<iel; ++k)
-  {
-    xrefe[0][k] = parent_->Nodes()[k]->X()[0];
-    xrefe[1][k] = parent_->Nodes()[k]->X()[1];
-  }
-
-  // check which line this is to the parent and get no. of gaussian points
-  const int line = lline_;
-  int ngp = 0;
-  if (line==0 || line==2) ngp = nir;
-  else                    ngp = nis;
-
-  double xgp[3];   // coord of integration point in line direction
-  double wgp[3];   // weigth of this point
-  int    dir;      // direction of integration, either 0 or 1
-  double xgp_n[3]; // coord of intgration point orthogonal to line direction
-  int lnode[3];    // local node numbers of this line w.r.t to parent element
-
-  switch (line)
-  {
-  case 0:
-    for (int i=0; i<ngp; ++i)
-    {
-      xgp[i]   = w1data.xgrr[i];
-      wgp[i]   = w1data.wgtr[i];
-      xgp_n[i] = 1.0;
-    }
-    dir = 0; // direction of integration is r
-    lnode[0] = 0;
-    lnode[1] = 1;
-    lnode[2] = 4;
-  break;
-  case 2:
-    for (int i=0; i<ngp; ++i)
-    {
-      xgp[i]   = w1data.xgrr[i];
-      wgp[i]   = w1data.wgtr[i];
-      xgp_n[i] = -1.0;
-    }
-    dir = 0; // direction of integration is r
-    lnode[0] = 2;
-    lnode[1] = 3;
-    lnode[2] = 6;
-  break;
-  case 1:
-    for (int i=0; i<ngp; ++i)
-    {
-      xgp[i]   = w1data.xgss[i];
-      wgp[i]   = w1data.wgts[i];
-      xgp_n[i] = -1.0;
-    }
-    dir = 1; // direction of integration is s
-    lnode[0] = 1;
-    lnode[1] = 2;
-    lnode[2] = 5;
-  break;
-  case 3:
-    for (int i=0; i<ngp; ++i)
-    {
-      xgp[i]   = w1data.xgss[i];
-      wgp[i]   = w1data.wgts[i];
-      xgp_n[i] = 1.0;
-    }
-    dir = 1; // direction of integration is s
-    lnode[0] = 3;
-    lnode[1] = 0;
-    lnode[2] = 7;
-  break;
-  default:
-    dserror("Unknown local line number %d",line);
-  break;
-  }
-
+   // set number of nodes
+  const int iel   = this->NumNode();
+  
+  const DiscretizationType distype = this->Shape();
+  
+  // gaussian points 
+  const DRT::Utils::GaussRule1D gaussrule = getOptimalGaussrule(distype); 
+  const DRT::Utils::IntegrationPoints1D  intpoints = getIntegrationPoints1D(gaussrule);
+  
   // get values and switches from the condition
   const vector<int>*    onoff = condition.Get<vector<int> >("onoff");
   const vector<double>* val   = condition.Get<vector<double> >("val");
-
-  // do integration
-  for (int gp=0; gp<ngp; ++gp)
+   
+  // allocate vector for shape functions and for derivatives
+  Epetra_SerialDenseVector    funct(iel);
+  Epetra_SerialDenseMatrix    deriv(iel,1);
+  
+  // node coordinates
+  Epetra_SerialDenseMatrix xye(2,iel);
+    
+  // get node coordinates
+  for(int i=0;i<iel;++i)
   {
-    // gaussian point and weight
-    double e1   = xgp[gp];
-    double e2   = xgp_n[gp];
-    double facr = wgp[gp];
+    xye(0,i)=this->Nodes()[i]->X()[0]; 
+    xye(1,i)=this->Nodes()[i]->X()[1];
+  }
+   
+  // loop over integration points //new
+  for (int gpid=0;gpid<intpoints.nquad;gpid++)
+  {  
+     const double e1 = intpoints.qxg[gpid];
+     
+  // get shape functions and derivatives in the line
+     DRT::Utils::shape_function_1D(funct,e1,distype);
+     DRT::Utils::shape_function_1D_deriv1(deriv,e1,distype);
+  
+  // compute infinitesimal line element dr for integration along the line
+     const double dr = w1_substitution(xye,deriv,iel);
+    
+  // load vector ar
+     double ar[2];
+  // loop the dofs of a node
+  // ar[i] = ar[i] * facr * ds * onoff[i] * val[i]*curvefac
+     for (int i=0; i<2; ++i)
+     {
+        ar[i] = intpoints.qwgt[gpid] * dr * (*onoff)[i]*(*val)[i] * curvefac;
+     }
 
-    // shape function and derivatives at this point
-    if (dir==0) // integration in r
-      parent_->w1_shapefunctions(funct,deriv,e1,e2,parent_->NumNode(),1);
-    else
-      parent_->w1_shapefunctions(funct,deriv,e2,e1,parent_->NumNode(),1);
-    // metrics
-    // g1,g2 stored in xjm
-    // Jacobian matrix J = (g1,g2)
-    for (int i=0; i<2; ++i){
-      for (int j=0; j<2; ++j)
-      {
-        xjm[i][j] = 0.0;
-        for (int k=0; k<iel; ++k)
-          xjm[i][j] += deriv(i,k)*xrefe[j][k];
-      }
+   // add load components
+     for (int node=0; node<iel; ++node)
+     {	 
+       for (int j=0; j<2; ++j)
+       {
+          elevec1[node*2+j] += funct[node]*ar[j];
+       }
+     }
+  } 
+  return 0;
+}
+
+
+DRT::Utils::GaussRule1D DRT::Elements::Wall1Line::getOptimalGaussrule(const DiscretizationType& distype)
+{
+  DRT::Utils::GaussRule1D rule;
+  switch (distype)
+    {
+    case line2:
+      rule = DRT::Utils::intrule_line_2point;
+      break;
+    case line3:
+      rule = DRT::Utils::intrule_line_3point;
+      break;
+    default: 
+    dserror("unknown number of nodes for gaussrule initialization");
     }
-     // ds = |g1| in dir=0 and ds = |g2| in dir=1
-    double ds = sqrt(xjm[dir][0]*xjm[dir][0]+xjm[dir][1]*xjm[dir][1]);
-    // load vector ar
-    double ar[2];
-    // loop the dofs of a node
-    // ar[i] = ar[i] * facr * ds * onoff[i] * val[i]*curvefac
-    for (int i=0; i<2; ++i)
-      {
-      ar[i] = facr * ds * (*onoff)[i]*(*val)[i] * curvefac;
+  return rule;
+}
 
-      }
+// determinant of jacobian matrix
 
-    // add load components
-    for (int node=0; node<NumNode(); ++node)
-      for (int j=0; j<2; ++j)
-      {
-         elevec1[node*numdf+j] += funct[lnode[node]] *ar[j];
-      }
-
-  } // for (int gp=0; gp<ngp; ++gp)
-
-return 0;
+double  DRT::Elements::Wall1Line::w1_substitution(const Epetra_SerialDenseMatrix& xye,
+                                                  const Epetra_SerialDenseMatrix& deriv,
+                                                  const int iel)
+{
+	  /*
+	  |                                            0 1 
+	  |                                           +-+-+
+	  |       0 1              0...iel-1          | | | 0
+	  |      +-+-+             +-+-+-+-+          +-+-+
+	  |      | | | 1     =     | | | | | 0        | | | .
+	  |      +-+-+             +-+-+-+-+       *  +-+-+ .
+	  |                                           | | | .
+	  |                                           +-+-+
+	  |                                           | | | iel-1
+	  |		           	     	                  +-+-+
+	  |
+	  |       dxyzdrs             deriv^T          xye^T
+	  |
+	  |
+	  |                         +-        -+
+	  |  	   	    	    	| dx   dy  |
+	  |  	  yields   dxydr =	| --   --  |
+	  | 	                    | dr   dr  |
+	  |                         +-        -+
+	  |
+	  */
+// compute derivative of parametrization
+double dr = 0.0;
+Epetra_SerialDenseMatrix der_par (1,2);
+int err = der_par.Multiply('T','T',1.0,deriv,xye,0.0);
+if (err!=0)
+	dserror("Multiply failed");
+dr=sqrt(der_par(0,0)*der_par(0,0)+der_par(0,1)*der_par(0,1));
+return dr;
 }
 
 
