@@ -212,6 +212,38 @@ void write_mesh(PostProblem* problem, int disnum)
     GiD_EndElements();
     GiD_EndMesh();
     break;
+  case DRT::Element::quad8:
+    // Let's assume there are only shell8_4_22 elements
+    GiD_BeginGaussPoint("quad8", GiD_Quadrilateral, "quad8", 9, 0, 1);
+    GiD_EndGaussPoint();
+
+    GiD_BeginMesh("quad8",GiD_3D,GiD_Quadrilateral,8);
+    // We have ony one mesh, so it's the first
+    GiD_BeginCoordinates();
+    for (int i = 0; i < field->discretization()->NumGlobalNodes(); ++i)
+    {
+      for (int j = 0; j < field->problem()->num_dim(); ++j)
+      {
+        x[j] = field->discretization()->gNode(i)->X()[j];
+      }
+      int id = field->discretization()->gNode(i)->Id();
+      GiD_WriteCoordinates(id+1, x[0], x[1], x[2]);
+    }
+    GiD_EndCoordinates();
+
+    GiD_BeginElements();
+    for (int i=0; i<field->discretization()->NumGlobalElements(); ++i)
+    {
+      int mesh_entry[MAXNOD];
+      for (int j = 0; j < field->discretization()->gElement(i)->NumNode(); ++j)
+      {
+        mesh_entry[j] = field->discretization()->gElement(i)->NodeIds()[j]+1;
+      }
+      GiD_WriteElement(field->discretization()->gElement(i)->Id()+1,mesh_entry);
+    }
+    GiD_EndElements();
+    GiD_EndMesh();
+    break;
   case DRT::Element::quad9:
     // Let's assume there are only shell8_4_22 elements
     GiD_BeginGaussPoint("quad9", GiD_Quadrilateral, "quad9", 9, 0, 1);
