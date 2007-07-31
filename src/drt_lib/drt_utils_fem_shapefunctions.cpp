@@ -54,14 +54,14 @@ void DRT::Utils::shape_function_3D(
         const double tp=1.0+t;
         const double tm=1.0-t;
 
-        funct[0]=Q18*rm*sm*tm;
-        funct[1]=Q18*rp*sm*tm;
-        funct[2]=Q18*rp*sp*tm;
-        funct[3]=Q18*rm*sp*tm;
-        funct[4]=Q18*rm*sm*tp;
-        funct[5]=Q18*rp*sm*tp;
-        funct[6]=Q18*rp*sp*tp;
-        funct[7]=Q18*rm*sp*tp;
+        funct(0)=Q18*rm*sm*tm;
+        funct(1)=Q18*rp*sm*tm;
+        funct(2)=Q18*rp*sp*tm;
+        funct(3)=Q18*rm*sp*tm;
+        funct(4)=Q18*rm*sm*tp;
+        funct(5)=Q18*rp*sm*tp;
+        funct(6)=Q18*rp*sp*tp;
+        funct(7)=Q18*rm*sp*tp;
 
         break;
     }
@@ -88,32 +88,32 @@ void DRT::Utils::shape_function_3D(
         const double ttm=1.0-t*t;
 
         // corner nodes
-        funct[0] =Q18*rm*sm*tm*(rm+sm+tm-5.0);
-        funct[1] =Q18*rp*sm*tm*(rp+sm+tm-5.0);
-        funct[2] =Q18*rp*sp*tm*(rp+sp+tm-5.0);
-        funct[3] =Q18*rm*sp*tm*(rm+sp+tm-5.0);
-        funct[4] =Q18*rm*sm*tp*(rm+sm+tp-5.0);
-        funct[5] =Q18*rp*sm*tp*(rp+sm+tp-5.0);
-        funct[6] =Q18*rp*sp*tp*(rp+sp+tp-5.0);
-        funct[7] =Q18*rm*sp*tp*(rm+sp+tp-5.0);
+        funct(0) =Q18*rm*sm*tm*(rm+sm+tm-5.0);
+        funct(1) =Q18*rp*sm*tm*(rp+sm+tm-5.0);
+        funct(2) =Q18*rp*sp*tm*(rp+sp+tm-5.0);
+        funct(3) =Q18*rm*sp*tm*(rm+sp+tm-5.0);
+        funct(4) =Q18*rm*sm*tp*(rm+sm+tp-5.0);
+        funct(5) =Q18*rp*sm*tp*(rp+sm+tp-5.0);
+        funct(6) =Q18*rp*sp*tp*(rp+sp+tp-5.0);
+        funct(7) =Q18*rm*sp*tp*(rm+sp+tp-5.0);
 
         // centernodes, bottom surface
-        funct[ 8]=0.25*rrm*sm*tm;
-        funct[ 9]=0.25*rp*ssm*tm;
-        funct[10]=0.25*rrm*sp*tm;
-        funct[11]=0.25*rm*ssm*tm;
+        funct( 8)=0.25*rrm*sm*tm;
+        funct( 9)=0.25*rp*ssm*tm;
+        funct(10)=0.25*rrm*sp*tm;
+        funct(11)=0.25*rm*ssm*tm;
 
         // centernodes, rs-plane
-        funct[12]=0.25*rm*sm*ttm;
-        funct[13]=0.25*rp*sm*ttm;
-        funct[14]=0.25*rp*sp*ttm;
-        funct[15]=0.25*rm*sp*ttm;
+        funct(12)=0.25*rm*sm*ttm;
+        funct(13)=0.25*rp*sm*ttm;
+        funct(14)=0.25*rp*sp*ttm;
+        funct(15)=0.25*rm*sp*ttm;
 
         // centernodes, top surface
-        funct[16]=0.25*rrm*sm*tp;
-        funct[17]=0.25*rp*ssm*tp;
-        funct[18]=0.25*rrm*sp*tp;
-        funct[19]=0.25*rm*ssm*tp;
+        funct(16)=0.25*rrm*sm*tp;
+        funct(17)=0.25*rp*ssm*tp;
+        funct(18)=0.25*rrm*sp*tp;
+        funct(19)=0.25*rm*ssm*tp;
 
         break;
     }
@@ -129,33 +129,33 @@ void DRT::Utils::shape_function_3D(
         const double t00=(1.0 - t*t);
         const double tp1=0.5*t*(t + 1.0);
 
-        funct[ 0] = rm1*sm1*tm1;
-        funct[ 1] = rp1*sm1*tm1;
-        funct[ 2] = rp1*sp1*tm1;
-        funct[ 3] = rm1*sp1*tm1;
-        funct[ 4] = rm1*sm1*tp1;
-        funct[ 5] = rp1*sm1*tp1;
-        funct[ 6] = rp1*sp1*tp1;
-        funct[ 7] = rm1*sp1*tp1;
-        funct[ 8] = r00*sm1*tm1;
-        funct[ 9] = s00*tm1*rp1;
-        funct[10] = r00*tm1*sp1;
-        funct[11] = s00*rm1*tm1;
-        funct[12] = t00*rm1*sm1;
-        funct[13] = t00*sm1*rp1;
-        funct[14] = t00*rp1*sp1;
-        funct[15] = t00*rm1*sp1;
-        funct[16] = r00*sm1*tp1;
-        funct[17] = s00*rp1*tp1;
-        funct[18] = r00*sp1*tp1;
-        funct[19] = s00*rm1*tp1;
-        funct[20] = r00*s00*tm1;
-        funct[21] = r00*t00*sm1;
-        funct[22] = s00*t00*rp1;
-        funct[23] = r00*t00*sp1;
-        funct[24] = s00*t00*rm1;
-        funct[25] = r00*s00*tp1;
-        funct[26] = r00*s00*t00;
+        funct( 0) = rm1*sm1*tm1;
+        funct( 1) = rp1*sm1*tm1;
+        funct( 2) = rp1*sp1*tm1;
+        funct( 3) = rm1*sp1*tm1;
+        funct( 4) = rm1*sm1*tp1;
+        funct( 5) = rp1*sm1*tp1;
+        funct( 6) = rp1*sp1*tp1;
+        funct( 7) = rm1*sp1*tp1;
+        funct( 8) = r00*sm1*tm1;
+        funct( 9) = s00*tm1*rp1;
+        funct(10) = r00*tm1*sp1;
+        funct(11) = s00*rm1*tm1;
+        funct(12) = t00*rm1*sm1;
+        funct(13) = t00*sm1*rp1;
+        funct(14) = t00*rp1*sp1;
+        funct(15) = t00*rm1*sp1;
+        funct(16) = r00*sm1*tp1;
+        funct(17) = s00*rp1*tp1;
+        funct(18) = r00*sp1*tp1;
+        funct(19) = s00*rm1*tp1;
+        funct(20) = r00*s00*tm1;
+        funct(21) = r00*t00*sm1;
+        funct(22) = s00*t00*rp1;
+        funct(23) = r00*t00*sp1;
+        funct(24) = s00*t00*rm1;
+        funct(25) = r00*s00*tp1;
+        funct(26) = r00*s00*t00;
         break;
     }
     case DRT::Element::tet4:
@@ -165,38 +165,38 @@ void DRT::Utils::shape_function_3D(
         const double t3=s;
         const double t4=t;
 
-        funct[0]= t1;
-        funct[1]= t2;
-        funct[2]= t3;
-        funct[3]= t4;
+        funct(0)= t1;
+        funct(1)= t2;
+        funct(2)= t3;
+        funct(3)= t4;
         break;
     }
     case DRT::Element::tet10:
     {
         const double u=1.0-r-s-t;
 
-        funct[0] =u*(2*u -1);
-        funct[1] =r*(2*r -1);
-        funct[2] =s*(2*s -1);
-        funct[3] =t*(2*t -1);
-        funct[4] =4*r*u;
-        funct[5] =4*r*s;
-        funct[6] =4*s*u;
-        funct[7] =4*t*u;
-        funct[8] =4*r*t;
-        funct[9] =4*s*t;
+        funct(0) =u*(2*u -1);
+        funct(1) =r*(2*r -1);
+        funct(2) =s*(2*s -1);
+        funct(3) =t*(2*t -1);
+        funct(4) =4*r*u;
+        funct(5) =4*r*s;
+        funct(6) =4*s*u;
+        funct(7) =4*t*u;
+        funct(8) =4*r*t;
+        funct(9) =4*s*t;
         break;
     }
     case DRT::Element::wedge6:
     {
         const double t3=1.0-r-s;
 
-        funct[0]=Q12*r*(1-t);
-        funct[1]=Q12*s*(1-t);
-        funct[2]=Q12*t3*(1-t);
-        funct[3]=Q12*r*(1+t);
-        funct[4]=Q12*s*(1+t);
-        funct[5]=Q12*t3*(1+t);
+        funct(0)=Q12*r*(1-t);
+        funct(1)=Q12*s*(1-t);
+        funct(2)=Q12*t3*(1-t);
+        funct(3)=Q12*r*(1+t);
+        funct(4)=Q12*s*(1+t);
+        funct(5)=Q12*t3*(1+t);
         break;
     }
     case DRT::Element::wedge15:
@@ -210,21 +210,21 @@ void DRT::Utils::shape_function_3D(
         const double p2=1.0-t*t;
         const double p3=Q12*t*(t+1);
 
-        funct[0]=t1*(2*t1-1)*p1;
-        funct[1]=t2*(2*t2-1)*p1;
-        funct[2]=t3*(2*t3-1)*p1;
-        funct[3]=t1*(2*t1-1)*p3;
-        funct[4]=t2*(2*t2-1)*p3;
-        funct[5]=t3*(2*t3-1)*p3;
-        funct[6]=4*t1*t2*p1;
-        funct[7]=4*t2*t3*p1;
-        funct[8]=4*t1*t3*p1;
-        funct[9]=4*t1*t2*p3;
-        funct[10]=4*t2*t3*p3;
-        funct[11]=4*t1*t3*p3;
-        funct[12]=t1*(2*t1-1)*p2;
-        funct[13]=t2*(2*t2-1)*p2;
-        funct[14]=t3*(2*t3-1)*p2;
+        funct(0)=t1*(2*t1-1)*p1;
+        funct(1)=t2*(2*t2-1)*p1;
+        funct(2)=t3*(2*t3-1)*p1;
+        funct(3)=t1*(2*t1-1)*p3;
+        funct(4)=t2*(2*t2-1)*p3;
+        funct(5)=t3*(2*t3-1)*p3;
+        funct(6)=4*t1*t2*p1;
+        funct(7)=4*t2*t3*p1;
+        funct(8)=4*t1*t3*p1;
+        funct(9)=4*t1*t2*p3;
+        funct(10)=4*t2*t3*p3;
+        funct(11)=4*t1*t3*p3;
+        funct(12)=t1*(2*t1-1)*p2;
+        funct(13)=t2*(2*t2-1)*p2;
+        funct(14)=t3*(2*t3-1)*p2;
         break;
     }
 
@@ -1309,10 +1309,10 @@ void DRT::Utils::shape_function_2D(
         const double sp=1.0+s;
         const double sm=1.0-s;
 
-        funct[0]=0.25*rm*sm;
-        funct[1]=0.25*rp*sm;
-        funct[2]=0.25*rp*sp;
-        funct[3]=0.25*rm*sp;
+        funct(0)=0.25*rm*sm;
+        funct(1)=0.25*rp*sm;
+        funct(2)=0.25*rp*sp;
+        funct(3)=0.25*rm*sp;
         break;
     }
     case DRT::Element::quad8:
@@ -1336,28 +1336,28 @@ void DRT::Utils::shape_function_2D(
         //
 
         //(r,s)->0.25*((1-r)*(1-s)-((1-r*r)*(1-s)+(1-s*s)*(1-r)))
-        funct[0]=0.25*(rm*sm-(r2*sm+s2*rm));
+        funct(0)=0.25*(rm*sm-(r2*sm+s2*rm));
         //(r,s)->0.25*((1+r)*(1-s)-((1-r*r)*(1-s)+(1-s*s)*(1+r)))
-        funct[1]=0.25*(rp*sm-(r2*sm+s2*rp));
+        funct(1)=0.25*(rp*sm-(r2*sm+s2*rp));
         //(r,s)->0.25*((1+r)*(1+s)-((1-r*r)*(1+s)+(1-s*s)*(1+r)))
-        funct[2]=0.25*(rp*sp-(s2*rp+r2*sp));
+        funct(2)=0.25*(rp*sp-(s2*rp+r2*sp));
         //(r,s)->0.25*((1-r)*(1+s)-((1-r*r)*(1+s)+(1-s*s)*(1-r)))
-        funct[3]=0.25*(rm*sp-(r2*sp+s2*rm));
+        funct(3)=0.25*(rm*sp-(r2*sp+s2*rm));
         //(r, s) -> 0.5*(1-r*r)*(1-s)
-        funct[4]=0.5*r2*sm;
+        funct(4)=0.5*r2*sm;
         //(r, s) -> 0.5*(1-s*s)*(1+r)
-        funct[5]=0.5*s2*rp;
+        funct(5)=0.5*s2*rp;
         //(r, s) -> 0.5*(1-r*r)*(1+s)
-        funct[6]=0.5*r2*sp;
+        funct(6)=0.5*r2*sp;
         //(r, s) -> 0.5*(1-s*s)*(1-r)
-        funct[7]=0.5*s2*rm;
+        funct(7)=0.5*s2*rm;
 
 #if 0
         {
             double ver=0;
             for(int i=0;i<20;++i)
             {
-                ver+=funct[i];
+              ver+=funct(i);
             }
             cout << "sum funct " << ver << &endl;
         }
@@ -1377,15 +1377,15 @@ void DRT::Utils::shape_function_2D(
         const double sh=0.5*s;
         const double rs=rh*sh;
 
-        funct[0]= rs*rm*sm;
-        funct[1]=-rs*rp*sm;
-        funct[2]= rs*rp*sp;
-        funct[3]=-rs*rm*sp;
-        funct[4]=-sh*sm*r2;
-        funct[5]= rh*rp*s2;
-        funct[6]= sh*sp*r2;
-        funct[7]=-rh*rm*s2;
-        funct[8]= r2*s2;
+        funct(0)= rs*rm*sm;
+        funct(1)=-rs*rp*sm;
+        funct(2)= rs*rp*sp;
+        funct(3)=-rs*rm*sp;
+        funct(4)=-sh*sm*r2;
+        funct(5)= rh*rp*s2;
+        funct(6)= sh*sp*r2;
+        funct(7)=-rh*rm*s2;
+        funct(8)= r2*s2;
         break;
     }
     case DRT::Element::tri3:
@@ -1393,9 +1393,9 @@ void DRT::Utils::shape_function_2D(
         const double t1 = 1.0 - r - s;
         const double t2 = r;
         const double t3 = s;
-        funct[0] = t1;
-        funct[1] = t2;
-        funct[2] = t3;
+        funct(0) = t1;
+        funct(1) = t2;
+        funct(2) = t3;
         break;
     }
     case DRT::Element::tri6:
@@ -1404,12 +1404,12 @@ void DRT::Utils::shape_function_2D(
         const double t2 = r;
         const double t3 = s;
 
-        funct[0] = t1*(2.0*t1 - 1.0);
-        funct[1] = t2*(2.0*t2 - 1.0);
-        funct[2] = t3*(2.0*t3 - 1.0);
-        funct[3] = 4.0*t2*t1;
-        funct[4] = 4.0*t2*t3;
-        funct[5] = 4.0*t3*t1;
+        funct(0) = t1*(2.0*t1 - 1.0);
+        funct(1) = t2*(2.0*t2 - 1.0);
+        funct(2) = t3*(2.0*t3 - 1.0);
+        funct(3) = 4.0*t2*t1;
+        funct(4) = 4.0*t2*t3;
+        funct(5) = 4.0*t3*t1;
         break;
     }
     default:
@@ -1857,15 +1857,15 @@ void DRT::Utils::shape_function_1D(
     {
     case DRT::Element::line2:
     {
-        funct[0] = 0.5*(1.0 - r);
-        funct[1] = 0.5*(1.0 + r);
+        funct(0) = 0.5*(1.0 - r);
+        funct(1) = 0.5*(1.0 + r);
         break;
     }
     case DRT::Element::line3:
     {
-        funct[0] = -0.5*r*(1.0 - r);
-        funct[1] = 0.5*r*(1.0 + r);
-        funct[2] = 1 - r*r;
+        funct(0) = -0.5*r*(1.0 - r);
+        funct(1) = 0.5*r*(1.0 + r);
+        funct(2) = 1 - r*r;
         break;
     }
     default:
