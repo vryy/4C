@@ -13,7 +13,7 @@
  e.g. the hex8 volume element uses only the first 8 nodes of the hex27 mapping
 
  !!!!
- The corresponding graphics and a detailed description can be found 
+ The corresponding graphics and a detailed description can be found
  in the Baci guide in the Convention chapter.
  !!!!
 
@@ -34,7 +34,7 @@
 // shape functions
 //
 void DRT::Utils::shape_function_3D(
-        Epetra_SerialDenseVector& funct,
+        blitz::Array<double, 1>& funct,
         const double& r,
         const double& s,
         const double& t,
@@ -68,13 +68,13 @@ void DRT::Utils::shape_function_3D(
     case DRT::Element::hex20:
     {
         /* shape functions associated to vertex nodes k=1,...,8
-         * N^k = 1/8 (1 + r^k r) (1 + s^k s) (1 + t^k k) 
+         * N^k = 1/8 (1 + r^k r) (1 + s^k s) (1 + t^k k)
          *           (r^k r + s^k s + t^k t - 2)
          * with r^k,s^k,t^k = -1,+1
          * [Zienkiewicz, Methode der Finiten Elemente, Hanser, 1975]
          * However, here the slightly different notation is used
-         * N^k = 1/8 (1 + r^k r) (1 + s^k s) (1 + t^k k) 
-         *           ( (1 + r^k r) + (1 + s^k s) + (1 + t^k t) - 2 - 3) 
+         * N^k = 1/8 (1 + r^k r) (1 + s^k s) (1 + t^k k)
+         *           ( (1 + r^k r) + (1 + s^k s) + (1 + t^k t) - 2 - 3)
          */
 
         const double rp=1.0+r;
@@ -239,7 +239,7 @@ void DRT::Utils::shape_function_3D(
 // first natural derivative of shape functions
 //
 void DRT::Utils::shape_function_3D_deriv1(
-        Epetra_SerialDenseMatrix& deriv1,
+        blitz::Array<double, 2>& deriv1,
         const double& r,
         const double& s,
         const double& t,
@@ -305,7 +305,7 @@ void DRT::Utils::shape_function_3D_deriv1(
         const double ssm=1.0-s*s;
         const double ttm=1.0-t*t;
 
-        // corner nodes      
+        // corner nodes
         deriv1(0, 0) =-Q18*sm*tm*(2.0*rm+sm+tm-5.0);
         deriv1(1, 0) =-Q18*tm*rm*(2.0*sm+tm+rm-5.0);
         deriv1(2, 0) =-Q18*rm*sm*(2.0*tm+rm+sm-5.0);
@@ -663,7 +663,7 @@ void DRT::Utils::shape_function_3D_deriv1(
 // Second natural derivative of shape functions
 //
 void DRT::Utils::shape_function_3D_deriv2(
-        Epetra_SerialDenseMatrix& deriv2,
+        blitz::Array<double, 2>& deriv2,
         const double& r,
         const double& s,
         const double& t,
@@ -1295,7 +1295,7 @@ void DRT::Utils::shape_function_3D_deriv2(
 // shape functions 2D
 //
 void DRT::Utils::shape_function_2D(
-        Epetra_SerialDenseVector& funct,
+        blitz::Array<double, 1>& funct,
         const double& r,
         const double& s,
         const DRT::Element::DiscretizationType& distype)
@@ -1328,10 +1328,10 @@ void DRT::Utils::shape_function_2D(
         //            0.5*(1-xi*xi)*(1-eta) (0 for xi=+/-1 and eta=+/-1/0
         //                                   0 for xi=0    and eta= 1
         //                                   1 for xi=0    and eta=-1    )
-        // use shape functions on centernodes to zero out the corner node 
+        // use shape functions on centernodes to zero out the corner node
         // shape functions on the centernodes
         // (0.5 is the value of the linear shape function in the centernode)
-        // 
+        //
         //  0.25*(1-xi)*(1-eta)-0.5*funct[neighbour1]-0.5*funct[neighbour2]
         //
 
@@ -1423,7 +1423,7 @@ void DRT::Utils::shape_function_2D(
 // shape functions and natural derivatives
 //
 void DRT::Utils::shape_function_2D_deriv1(
-        Epetra_SerialDenseMatrix& deriv1,
+        blitz::Array<double, 2>& deriv1,
         const double& r,
         const double& s,
         const DRT::Element::DiscretizationType& distype)
@@ -1614,7 +1614,7 @@ void DRT::Utils::shape_function_2D_deriv1(
 /// The second index indicates the node number
 /// the first index indicates the derivative direction
 void DRT::Utils::shape_function_2D_deriv2(
-        Epetra_SerialDenseMatrix& deriv2,
+        blitz::Array<double, 2>& deriv2,
         const double& r,
         const double& s,
         const DRT::Element::DiscretizationType& distype)
@@ -1849,7 +1849,7 @@ void DRT::Utils::shape_function_2D_deriv2(
 // shape functions and natural deriv1atives
 //
 void DRT::Utils::shape_function_1D(
-        Epetra_SerialDenseVector& funct,
+        blitz::Array<double, 1>& funct,
         const double& r,
         const DRT::Element::DiscretizationType& distype)
 {
@@ -1880,7 +1880,7 @@ void DRT::Utils::shape_function_1D(
 // shape functions and natural deriv1atives
 //
 void DRT::Utils::shape_function_1D_deriv1(
-        Epetra_SerialDenseMatrix& deriv1,
+        blitz::Array<double, 2>& deriv1,
         const double& r,
         const DRT::Element::DiscretizationType& distype)
 {
@@ -1911,7 +1911,7 @@ void DRT::Utils::shape_function_1D_deriv1(
 // shape functions and natural derivatives
 //
 void DRT::Utils::shape_function_1D_deriv2(
-        Epetra_SerialDenseMatrix& deriv2,
+        blitz::Array<double, 2>& deriv2,
         const double& r,
         const DRT::Element::DiscretizationType& distype)
 {
@@ -1936,6 +1936,156 @@ void DRT::Utils::shape_function_1D_deriv2(
 
     return;
 
+}
+
+
+
+///////////////////////////////////////////////////////////////////
+// epetra versions
+// Those just create a blitz wrapper and call the functions above.
+
+
+//
+// shape functions
+//
+void DRT::Utils::shape_function_3D(
+        Epetra_SerialDenseVector& funct,
+        const double& r,
+        const double& s,
+        const double& t,
+        const DRT::Element::DiscretizationType& distype)
+{
+  blitz::Array<double, 1> f(funct.Values(),
+                            blitz::shape(funct.Length()),
+                            blitz::neverDeleteData);
+  shape_function_3D(f,r,s,t,distype);
+}
+
+//
+// first natural derivative of shape functions
+//
+void DRT::Utils::shape_function_3D_deriv1(
+        Epetra_SerialDenseMatrix& deriv1,
+        const double& r,
+        const double& s,
+        const double& t,
+        const DRT::Element::DiscretizationType& distype)
+{
+  blitz::Array<double, 2> d(deriv1.A(),
+                            blitz::shape(deriv1.M(),deriv1.N()),
+                            blitz::neverDeleteData,
+                            blitz::ColumnMajorArray<2>());
+  shape_function_3D_deriv1(d,r,s,t,distype);
+}
+
+//
+// Second natural derivative of shape functions
+//
+void DRT::Utils::shape_function_3D_deriv2(
+        Epetra_SerialDenseMatrix& deriv2,
+        const double& r,
+        const double& s,
+        const double& t,
+        const DRT::Element::DiscretizationType& distype)
+{
+  blitz::Array<double, 2> d(deriv2.A(),
+                            blitz::shape(deriv2.M(),deriv2.N()),
+                            blitz::neverDeleteData,
+                            blitz::ColumnMajorArray<2>());
+  shape_function_3D_deriv1(d,r,s,t,distype);
+}
+
+//
+// shape functions 2D
+//
+void DRT::Utils::shape_function_2D(
+        Epetra_SerialDenseVector& funct,
+        const double& r,
+        const double& s,
+        const DRT::Element::DiscretizationType& distype)
+{
+  blitz::Array<double, 1> f(funct.Values(),
+                            blitz::shape(funct.Length()),
+                            blitz::neverDeleteData);
+  shape_function_2D(f,r,s,distype);
+}
+
+//
+// shape functions and natural derivatives
+//
+void DRT::Utils::shape_function_2D_deriv1(
+        Epetra_SerialDenseMatrix& deriv1,
+        const double& r,
+        const double& s,
+        const DRT::Element::DiscretizationType& distype)
+{
+  blitz::Array<double, 2> d(deriv1.A(),
+                            blitz::shape(deriv1.M(),deriv1.N()),
+                            blitz::neverDeleteData,
+                            blitz::ColumnMajorArray<2>());
+  shape_function_2D_deriv1(d,r,s,distype);
+}
+
+///
+/// shape functions and natural deriv1atives
+///
+/// The second index indicates the node number
+/// the first index indicates the derivative direction
+void DRT::Utils::shape_function_2D_deriv2(
+        Epetra_SerialDenseMatrix& deriv2,
+        const double& r,
+        const double& s,
+        const DRT::Element::DiscretizationType& distype)
+{
+  blitz::Array<double, 2> d(deriv2.A(),
+                            blitz::shape(deriv2.M(),deriv2.N()),
+                            blitz::neverDeleteData,
+                            blitz::ColumnMajorArray<2>());
+  shape_function_2D_deriv2(d,r,s,distype);
+}
+
+//
+// shape functions and natural deriv1atives
+//
+void DRT::Utils::shape_function_1D(
+        Epetra_SerialDenseVector& funct,
+        const double& r,
+        const DRT::Element::DiscretizationType& distype)
+{
+  blitz::Array<double, 1> f(funct.Values(),
+                            blitz::shape(funct.Length()),
+                            blitz::neverDeleteData);
+  shape_function_1D(f,r,distype);
+}
+
+//
+// shape functions and natural deriv1atives
+//
+void DRT::Utils::shape_function_1D_deriv1(
+        Epetra_SerialDenseMatrix& deriv1,
+        const double& r,
+        const DRT::Element::DiscretizationType& distype)
+{
+  blitz::Array<double, 2> d(deriv1.A(),
+                            blitz::shape(deriv1.M(),deriv1.N()),
+                            blitz::neverDeleteData,
+                            blitz::ColumnMajorArray<2>());
+  shape_function_1D_deriv1(d,r,distype);
+}
+
+//
+// shape functions and natural derivatives
+//
+void DRT::Utils::shape_function_1D_deriv2(
+        Epetra_SerialDenseMatrix& deriv2,
+        const double& r,
+        const DRT::Element::DiscretizationType& distype)
+{
+  blitz::Array<double, 2> d(deriv2.A(),
+                            blitz::shape(deriv2.M(),deriv2.N()),
+                            blitz::neverDeleteData,
+                            blitz::ColumnMajorArray<2>());
+  shape_function_1D_deriv2(d,r,distype);
 }
 
 #endif  // #ifdef TRILINOS_PACKAGE

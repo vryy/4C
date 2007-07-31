@@ -13,7 +13,7 @@
  e.g. the hex8 volume element uses only the first 8 nodes of the hex27 mapping
 
  !!!!
- The corresponding graphics and a detailed description can be found 
+ The corresponding graphics and a detailed description can be found
  in the Baci guide in the Convention chapter.
  !!!!
 
@@ -29,8 +29,11 @@
 #ifndef DRT_UTILS_FEM_SHAPEFUNCTION
 #define DRT_UTILS_FEM_SHAPEFUNCTION
 
+#include <blitz/array.h>
+
 #include "drt_element.H"
 #include "Epetra_Vector.h"
+
 using namespace std;
 using namespace Teuchos;
 
@@ -117,7 +120,7 @@ namespace Utils
 
 
   //! for each of the 12 lines, tell me the 2 neighbouring faces
-  const int	eleNodeNumbering_hex27_lines_surfaces[12][2] = { 
+  const int	eleNodeNumbering_hex27_lines_surfaces[12][2] = {
           {0,  1},
           {0,  2},
           {0,  3},
@@ -130,8 +133,8 @@ namespace Utils
           {2,  5},
           {3,  5},
           {4,  5}};
-                                                             
-                                                             
+
+
   //! for each of the 8 corner nodes, tell me the 3 neighbouring faces
   const int eleNodeNumbering_hex27_nodes_surfaces[8][3] =  { {0,  1,  4},
                                                              {0,  1,  2},
@@ -141,42 +144,134 @@ namespace Utils
                                                              {1,  2,  5},
                                                              {2,  3,  5},
                                                              {3,  4,  5}};
-                                                             
-                                                             
+
+
    //! for each node the reference coordinates are stored
   const double eleNodeNumbering_hex27_nodes_reference[27][3] = {{-1.0,  -1.0,  -1.0},
                                                                 { 1.0,  -1.0,  -1.0},
                                                                 { 1.0,   1.0,  -1.0},
                                                                 {-1.0,   1.0,  -1.0},
-                                                                
+
                                                                 {-1.0,  -1.0,   1.0},
                                                                 { 1.0,  -1.0,   1.0},
                                                                 { 1.0,   1.0,   1.0},
                                                                 {-1.0,   1.0,   1.0},
-                                                                
+
                                                                 { 0.0,  -1.0,  -1.0},
                                                                 { 1.0,   0.0,  -1.0},
                                                                 { 0.0,   1.0,  -1.0},
                                                                 {-1.0,   0.0,  -1.0},
-                                                                
+
                                                                 {-1.0,  -1.0,   0.0},
                                                                 { 1.0,  -1.0,   0.0},
                                                                 { 1.0,   1.0,   0.0},
                                                                 {-1.0,   1.0,   0.0},
-                                                                
+
                                                                 { 0.0,  -1.0,   1.0},
                                                                 { 1.0,   0.0,   1.0},
                                                                 { 0.0,   1.0,   1.0},
                                                                 {-1.0,   0.0,   1.0},
-                                                                
+
                                                                 { 0.0,   0.0,  -1.0},
                                                                 { 0.0,  -1.0,   0.0},
                                                                 { 1.0,   0.0,   0.0},
                                                                 { 0.0,   1.0,   0.0},
-                                                                
+
                                                                 {-1.0,   0.0,   0.0},
                                                                 { 0.0,   0.0,   1.0},
                                                                 { 0.0,   0.0,   0.0}};
+
+  /*!
+  \brief Fill a Epetra_SerialDenseVector with with 3D shape function
+  */
+  void shape_function_3D(
+    blitz::Array<double, 1>&                 funct,   ///< to be filled with shape function values
+    const double&                            r,       ///< r coordinate
+    const double&                            s,       ///< s coordinate
+    const double&                            t,       ///< t coordinate
+    const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
+    );
+
+  /*!
+  \brief Fill a Epetra_SerialDenseMatrix with with 3D first shape function derivatives
+  */
+  void shape_function_3D_deriv1(
+    blitz::Array<double, 2>&                 deriv1,  ///< to be filled with shape function derivative values
+    const double&                            r,       ///< r coordinate
+    const double&                            s,       ///< s coordinate
+    const double&                            t,       ///< t coordinate
+    const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
+    );
+
+  /*!
+  \brief Fill a Epetra_SerialDenseMatrix with with 3D second shape function derivatives
+  */
+  void shape_function_3D_deriv2(
+    blitz::Array<double, 2>&                 deriv2,  ///< to be filled with shape function 2-nd derivative values
+    const double&                            r,       ///< r coordinate
+    const double&                            s,       ///< s coordinate
+    const double&                            t,       ///< t coordinate
+    const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
+    );
+
+  /*!
+  \brief Fill a Epetra_SerialDenseVector with 2D shape function
+  */
+  void shape_function_2D(
+    blitz::Array<double, 1>&                 funct,   ///< to be filled with shape function values
+    const double&                            r,       ///< r coordinate
+    const double&                            s,       ///< s coordinate
+    const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
+    );
+
+  /*!
+  \brief Fill a Epetra_SerialDenseVector with first 2D shape function derivative
+  */
+  void shape_function_2D_deriv1(
+    blitz::Array<double, 2>&                 deriv1,  ///< to be filled with shape function derivative values
+    const double&                            r,       ///< r coordinate
+    const double&                            s,       ///< s coordinate
+    const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
+    );
+
+  /*!
+  \brief Fill a Epetra_SerialDenseVector with second 2D shape function derivative
+  */
+  void shape_function_2D_deriv2(
+    blitz::Array<double, 2>&                 deriv2,  ///< to be filled with shape function 2-nd derivative values
+    const double&                            r,       ///< r coordinate
+    const double&                            s,       ///< s coordinate
+    const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
+    );
+
+  /*!
+  \brief Fill a Epetra_SerialDenseVector with 1D shape function
+  */
+  void shape_function_1D(
+    blitz::Array<double, 1>&                 funct,   ///< to be filled with shape function values
+    const double&                            r,       ///< r coordinate
+    const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
+    );
+
+  /*!
+  \brief Fill a Epetra_SerialDenseVector with first 1D shape function derivative
+  */
+  void shape_function_1D_deriv1(
+    blitz::Array<double, 2>&                 deriv1,  ///< to be filled with shape function derivative values
+    const double&                            r,       ///< r coordinate
+    const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
+    );
+
+  /*!
+  \brief Fill a Epetra_SerialDenseVector with second 1D shape function derivative
+  */
+  void shape_function_1D_deriv2(
+    blitz::Array<double, 2>&                 deriv2,  ///< to be filled with shape function 2-nd derivative values
+    const double&                            r,       ///< r coordinate
+    const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
+    );
+
+
 
   /*!
   \brief Fill a Epetra_SerialDenseVector with with 3D shape function
