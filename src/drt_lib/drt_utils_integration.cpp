@@ -346,18 +346,17 @@ DRT::Utils::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
   }
   case intrule_tri_3point_on_corners:
   {
-    dserror("to be filled");
     nquad = 3;
     qwgt[0]  = 1.0/6.0 ;
     qwgt[1]  = 1.0/6.0 ;
     qwgt[2]  = 1.0/6.0 ;
 
-    qxg[0][0] = 0.5;
-    qxg[0][1] = 0.0;
-    qxg[1][0] = 0.5;
-    qxg[1][1] = 0.5;
-    qxg[2][0] = 0.0;
-    qxg[2][1] = 0.5;
+    qxg[0][0] = 1.0/6.0;
+    qxg[0][1] = 1.0/6.0;
+    qxg[1][0] = 2.0/3.0;
+    qxg[1][1] = 1.0/6.0;
+    qxg[2][0] = 1.0/6.0;
+    qxg[2][1] = 2.0/3.0;
     break;
   }
   case intrule_tri_6point:
