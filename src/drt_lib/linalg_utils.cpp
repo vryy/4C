@@ -89,39 +89,73 @@ void LINALG::Export(const Epetra_Vector& source, Epetra_Vector& target)
 void LINALG::Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix& Aele,
                       const vector<int>& lm, const vector<int>& lmowner)
 {
-  if (A.Filled()) dserror("sparse matrix A already filled, cannot assemble");
   const int ldim = (int)lm.size();
   if (ldim!=(int)lmowner.size() || ldim!=Aele.M() || ldim!=Aele.N())
     dserror("Mismatch in dimensions");
 
   const int myrank = A.Comm().MyPID();
+  const Epetra_Map& rowmap = A.RowMap();
+  const Epetra_Map& colmap = A.ColMap();
 
-  // loop rows of local matrix
-  for (int lrow=0; lrow<ldim; ++lrow)
+  if (A.Filled())
   {
-    // check ownership of row
-    if (lmowner[lrow] != myrank) continue;
-
-    // check whether I have that global row
-    int rgid = lm[lrow];
-    if (!(A.RowMap().MyGID(rgid))) dserror("Sparse matrix A does not have global row %d",rgid);
-
-    for (int lcol=0; lcol<ldim; ++lcol)
+    // loop rows of local matrix
+    for (int lrow=0; lrow<ldim; ++lrow)
     {
-      double val = Aele(lrow,lcol);
-      //if (abs(val)<1.0e-10) continue; // do not assemble zeros
-      if (abs(val)==0) continue; // do not assemble zeros
-      int    cgid = lm[lcol];
-      int errone = A.SumIntoGlobalValues(rgid,1,&val,&cgid);
-      if (errone>0)
+      // check ownership of row
+      if (lmowner[lrow] != myrank) continue;
+
+      // check whether I have that global row
+      int rgid = lm[lrow];
+      int rlid = rowmap.LID(rgid);
+#ifdef DEBUG
+      if (rlid<0) dserror("Sparse matrix A does not have global row %d",rgid);
+#endif
+
+      for (int lcol=0; lcol<ldim; ++lcol)
       {
-        int errtwo = A.InsertGlobalValues(rgid,1,&val,&cgid);
-        if (errtwo<0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned error code %d",errtwo);
-      }
-      else if (errone)
-        dserror("Epetra_CrsMatrix::SumIntoGlobalValues returned error code %d",errone);
-    } // for (int lcol=0; lcol<ldim; ++lcol)
-  } // for (int lrow=0; lrow<ldim; ++lrow)
+        double val = Aele(lrow,lcol);
+        int cgid = lm[lcol];
+        int clid = colmap.LID(cgid);
+#ifdef DEBUG
+        if (clid<0) dserror("Sparse matrix A does not have global column %d",cgid);
+#endif
+        int errone = A.SumIntoMyValues(rlid,1,&val,&clid);
+        if (errone)
+          dserror("Epetra_CrsMatrix::SumIntoMyValues returned error code %d",errone);
+      } // for (int lcol=0; lcol<ldim; ++lcol)
+    } // for (int lrow=0; lrow<ldim; ++lrow)
+  }
+  else
+  {
+    // loop rows of local matrix
+    for (int lrow=0; lrow<ldim; ++lrow)
+    {
+      // check ownership of row
+      if (lmowner[lrow] != myrank) continue;
+
+      // check whether I have that global row
+      int rgid = lm[lrow];
+      if (!(rowmap.MyGID(rgid))) dserror("Sparse matrix A does not have global row %d",rgid);
+
+      for (int lcol=0; lcol<ldim; ++lcol)
+      {
+        double val = Aele(lrow,lcol);
+        // Now that we do not rebuild the sparse mask in each step, we
+        // are bound to assemble the whole thing. Zeros included.
+        //if (abs(val)==0) continue; // do not assemble zeros
+        int    cgid = lm[lcol];
+        int errone = A.SumIntoGlobalValues(rgid,1,&val,&cgid);
+        if (errone>0)
+        {
+          int errtwo = A.InsertGlobalValues(rgid,1,&val,&cgid);
+          if (errtwo<0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned error code %d",errtwo);
+        }
+        else if (errone)
+          dserror("Epetra_CrsMatrix::SumIntoGlobalValues returned error code %d",errone);
+      } // for (int lcol=0; lcol<ldim; ++lcol)
+    } // for (int lrow=0; lrow<ldim; ++lrow)
+  }
   return;
 }
 
@@ -280,7 +314,7 @@ void LINALG::SymmetricEigen(Epetra_SerialDenseMatrix& A,
   if (A.M() != A.N()) dserror("Matrix is not square");
   if (A.M() != dim) dserror("Dimension supplied does not match matrix");
   if (L.Length() != dim) dserror("Dimension of eigenvalues does not match");
-  
+
   double* a = A.A();
   double* w = L.A();
   const char uplo = {'U'};
@@ -292,17 +326,16 @@ void LINALG::SymmetricEigen(Epetra_SerialDenseMatrix& A,
   const int lwork = 2*dim^2 + 7*dim;
   vector<double> work(lwork);
   int info=0;
-  
+
   Epetra_LAPACK lapack;
-  
+
   lapack.SYEVD(jobz,uplo,dim,a,lda,w,&(work[0]),lwork,&(iwork[0]),liwork,&info);
 
-
   //SYEVD (const char JOBZ, const char UPLO, const int N, double *A, const int LDA, double *W, double *WORK, const int LWORK, int *IWORK, const int LIWORK, int *INFO) const
-  
+
   if (info > 0) dserror("Lapack algorithm dsyevd failed");
   if (info < 0) dserror("Illegal value in Lapack dsyevd call");
-  
+
   return;
 }
 
@@ -311,86 +344,21 @@ void LINALG::SymmetricEigen(Epetra_SerialDenseMatrix& A,
 *----------------------------------------------------------------------*/
 #include <Epetra_SerialDenseSolver.h>
 
+
 void LINALG::NonSymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim)
 {
   if (A.M() != A.N()) dserror("Matrix is not square");
   if (A.M() != dim) dserror("Dimension supplied does not match matrix");
 
+  Epetra_SerialDenseSolver solver;
+  solver.SetMatrix(A);
+  int err = solver.Invert();
+  if (err!=0)
+    dserror("Inversion of nonsymmetric matrix failed.");
 
-  //------------------------------------------------------------------------------
-// this routine has to be reviewed and beautified !!!!!!!!!!!!!!!
-// in the current version exactly the same results as in the old
-// discretization are obtained.
-// => necessary for debugging of fluid3 element.
-//------------------------------------------------------------------------------
-//  Take care of:   A^{-1} =  A^T^{-1}^T
-//  But in numerics there will be differences, of course.
-
-
-
- // more elegant solution to the ordering problem mentioned below
- // could be:
-/*
- Epetra_SerialDenseSolver solver;
- solver.SetMatrix(A);
-int err = solver.Invert();
- if (err!=0)
-  dserror("Inversion of nonsymmetric matrix failed.");
-*/
-
-  // within Epetra_SerialDenseMatrix entries are stored columnwise. Therefore
-  // it is necessary to transpose before and after the LAPACK routines
-  // to have the same order (rowwise!!) as in the old C code (see src/math/math1.c)
-
-  #if 1
-  double mywork=0.0;
-  for (int i=0; i<dim; ++i)
-    {
-    for (int j=0; j<i; ++j)
-    {mywork = A(i,j);
-      A(i,j)=A(j,i);
-      A(j,i)=mywork;
-     }
-    }
-   #endif
-
-  double* a = A.A();
-  char uplo[5]; strncpy(uplo,"L ",2);
-  vector<int> ipiv(dim);
-  int lwork = 6;
-  //int lwork = 10*dim;
-  vector<double> work(lwork);
-  int info=0;
-  int n = dim;
-  int m = dim;
-
-
-  #if 0
-  for (int i=0;i<36;++i)
-  printf("a[%d] %22.16e\n",i,a[i]);
-   #endif
-
-  dgetrf(&m,&n,a,&m,&(ipiv[0]),&info);
-  if (info) dserror("dgetrf returned info=%d",info);
-
-  dgetri(&n,a,&n,&(ipiv[0]),&(work[0]),&lwork,&info);
-  if (info) dserror("dgetri returned info=%d",info);
-
-  // undo transpose of A
-   #if 1
-  mywork=0.0;
-  for (int i=0; i<dim; ++i)
-    {
-    for (int j=0; j<i; ++j)
-    {mywork = A(i,j);
-      A(i,j)=A(j,i);
-      A(j,i)=mywork;
-     }
-    }
-   #endif
-
-  return;
+ return;
 }
+
 
 /*----------------------------------------------------------------------*
  |  Apply dirichlet conditions  (public)                     mwgee 02/07|
@@ -402,6 +370,10 @@ void LINALG::ApplyDirichlettoSystem(RefCountPtr<Epetra_CrsMatrix>&   A,
   ApplyDirichlettoSystem(A,dummy,dummy,dummy,dbctoggle);
   return;
 }
+
+#if 0
+
+// The old version that modifies the sparse mask.
 
 /*----------------------------------------------------------------------*
  |  Apply dirichlet conditions  (public)                     mwgee 02/07|
@@ -475,6 +447,80 @@ void LINALG::ApplyDirichlettoSystem(RefCountPtr<Epetra_CrsMatrix>&   A,
 
   return;
 }
+
+#else
+
+/*----------------------------------------------------------------------*
+ |  Apply dirichlet conditions  (public)                     mwgee 02/07|
+ *----------------------------------------------------------------------*/
+void LINALG::ApplyDirichlettoSystem(RefCountPtr<Epetra_CrsMatrix>&   A,
+                                    RefCountPtr<Epetra_Vector>&      x,
+                                    RefCountPtr<Epetra_Vector>&      b,
+                                    const RefCountPtr<Epetra_Vector> dbcval,
+                                    const RefCountPtr<Epetra_Vector> dbctoggle)
+{
+#ifdef DEBUG
+  const Epetra_Map& rowmap = A->RowMap();
+  if (x != null)
+    if (!rowmap.SameAs(x->Map())) dserror("x does not match A");
+  if (b != null)
+    if (!rowmap.SameAs(b->Map())) dserror("b does not match A");
+  if (dbcval != null)
+    if (!rowmap.SameAs(dbcval->Map())) dserror("dbcval does not match A");
+  if (!rowmap.SameAs(dbctoggle->Map())) dserror("dbctoggle does not match A");
+  if (A->Filled()!=true) dserror("FillComplete was not called on A");
+#endif
+
+  const Epetra_Vector& dbct = *dbctoggle;
+  if (x != null && b != null)
+  {
+    Epetra_Vector&       X    = *x;
+    Epetra_Vector&       B    = *b;
+    const Epetra_Vector& dbcv = *dbcval;
+    // set the prescribed value in x and b
+    const int mylength = dbcv.MyLength();
+    for (int i=0; i<mylength; ++i)
+      if (dbct[i]==1.0)
+      {
+        X[i] = dbcv[i];
+        B[i] = dbcv[i];
+      }
+  }
+
+  // allocate a new matrix and copy all rows that are not dirichlet
+  const int nummyrows     = A->NumMyRows();
+  for (int i=0; i<nummyrows; ++i)
+  {
+    //int row = A->GRID(i);
+    if (dbct[i]!=1.0)
+    {
+      // nothing to do
+    }
+    else
+    {
+      int *indexOffset;
+      int *indices;
+      double *values;
+      int err = A->ExtractCrsDataPointers(indexOffset, indices, values);
+#ifdef DEBUG
+      if (err) dserror("Epetra_CrsMatrix::ExtractCrsDataPointers returned err=%d",err);
+#endif
+      // zero row
+      memset(&values[indexOffset[i]], 0,
+             (indexOffset[i+1]-indexOffset[i])*sizeof(double));
+
+      double one = 1.0;
+      err = A->SumIntoMyValues(i,1,&one,&i);
+#ifdef DEBUG
+      if (err<0) dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d",err);
+#endif
+    }
+  }
+
+  return;
+}
+
+#endif
 
 
 /*----------------------------------------------------------------------*

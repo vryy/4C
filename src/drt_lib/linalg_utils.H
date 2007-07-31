@@ -101,11 +101,22 @@ namespace LINALG
   /*!
   \brief Assemble a Epetra_SerialDenseMatrix into a Epetra_CrsMatrix
 
-  This is an individual call. Matrix A is not completed upon return.
+  This is an individual call.
   Will only assemble locally and will never do any commmunication.
   All values that can not be assembled locally will be ignored.
   Will use the communicator and rowmap from matrix A to determine ownerships.
   Local matrix Aele has to be square.
+
+  If matrix A is Filled(), it stays so and you can only assemble to
+  places already masked. An attempt to assemble into a non-existing
+  place is a grave mistake.
+
+  If matrix A is not Filled(), the matrix is enlarged as required.
+
+  \note Assembling to a non-Filled() matrix is much more expensive
+        than to a Filled() matrix. If the sparse mask
+        does not change it pays to keep the matrix around and assemble
+        into the Filled() matrix.
 
   \param A (out)   : Sparse matrix to be assembled on
   \param Aele (in) : dense matrix to be assembled
@@ -185,6 +196,10 @@ namespace LINALG
         Dirichlet BCs. This should be easy, as the values at the Dirichlet BCs
         are known.
 
+  \note The mask of matrix \f$A\f$ is not modified. That is the
+        entries in \f$A_{Df}\f$ and \f$A_{DD}\f$ are set to zero, not
+        removed. This way the matrix can be reused in the next step.
+
   \param A         (in/out) : Matrix of Ax=b
   \param x         (in/out) : initial guess vector x of Ax=b
   \param b         (in/out) : rhs vector b of Ax=b
@@ -259,7 +274,7 @@ namespace LINALG
   {
     const int myrank  = comm.MyPID();
     const int numproc = comm.NumProc();
-    if (numproc==1) 
+    if (numproc==1)
     {
       rdata = sdata;
       return; // nothing to do in serial
