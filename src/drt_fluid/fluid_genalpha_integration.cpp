@@ -756,8 +756,13 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   // call elements to calculate residual and matrix
   // -------------------------------------------------------------------
   // zero out the stiffness matrix
-  sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
-
+  // we keep the sparsity pattern throughout the calculation for
+  // performance reasons
+  if (sysmat_==null)
+    sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+  else
+    sysmat_->PutScalar(0.0);
+  
   // zero out residual
   residual_->PutScalar(0.0);
 
