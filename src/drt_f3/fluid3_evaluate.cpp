@@ -2802,6 +2802,7 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
   vector<double>            conv_resM(iel);  /* convection by residual of momentum equation   */
 
   // switches controlling the stabilisation terms
+  const bool subaccs =true;
   const bool agls    =true;
   const bool supg    =true;
   const bool pstab   =true;
@@ -3031,6 +3032,39 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
 
     sub_vel_(rr,iquad)  /=alphaM*tauM+afgdt;
   }
+  /*-------------------------------------------------------------------*
+   *                                                                   *
+   *               update of intermediate quantities                   *
+   *                                                                   *
+   *-------------------------------------------------------------------*/
+  
+  /* compute the intermediate value of subscale velocity
+
+               n+af            ~n+1                   ~n
+              u     = alphaF * u     + (1.0-alphaF) * u
+               (i)              (i)                    
+
+  */
+  vector<double> sub_vel_af(3);
+  for (int rr=0;rr<3;++rr)
+  {  
+    sub_vel_af[rr]=alphaF*sub_vel_(rr,iquad)+(1.0-alphaF)*sub_vel_old_(rr,iquad);
+  }
+
+  /* compute the intermediate value of subscale acceleration
+
+               n+am    alphaM     / ~n+1   ~n \    gamma - 1.0    ~ n
+            acc     = -------- * |  u    - u   | + ----------- * acc
+               (i)    gamma*dt    \  (i)      /       gamma
+
+  */
+  vector<double> sub_acc_am(3);
+  for (int rr=0;rr<3;++rr)
+  {  
+    sub_acc_am[rr]=alphaM/(gamma*dt)*(sub_vel_(rr,iquad)-sub_vel_old_(rr,iquad))
+      +(gamma-1)/gamma*sub_acc_old_(rr,iquad);
+  }
+  
 #endif
 
 
@@ -3084,6 +3118,62 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
       //--------------------------------------------------------------
 
 
+#ifdef TDS
+
+      //---------------------------------------------------------------
+      //
+      //   GALERKIN PART AND SUBSCALE ACCELERATION STABILISATION
+      //
+      //---------------------------------------------------------------
+      if(subaccs)
+      {
+        /*
+          inertia term (intermediate)
+          
+          factor:
+
+                               alphaF*gamma*dt
+                 alphaM*---------------------------
+                        alphaM*tauM+alphaF*gamma*dt
+
+        */
+        const double aux = alphaM*afgdt/(alphaM*tauM+afgdt);
+
+        /*
+                            /          \
+                           |            |
+                           |  Dacc , v  |
+                           |            |
+                            \          /
+        */
+        elemat(vi*4    , ui*4    ) += fac*aux*funct[ui]*funct[vi] ;
+        elemat(vi*4 + 1, ui*4 + 1) += fac*aux*funct[ui]*funct[vi] ;
+        elemat(vi*4 + 2, ui*4 + 2) += fac*aux*funct[ui]*funct[vi] ;        
+      }
+      else
+      {
+        /*
+          inertia term (intermediate)
+          
+          factor: +alphaM
+          
+        */ 
+        const double aux = alphaM;
+      
+        /*
+                            /          \
+                           |            |
+                           |  Dacc , v  |
+                           |            |
+                            \          /
+        */
+        elemat(vi*4    , ui*4    ) += fac*aux*funct[ui]*funct[vi] ;
+        elemat(vi*4 + 1, ui*4 + 1) += fac*aux*funct[ui]*funct[vi] ;
+        elemat(vi*4 + 2, ui*4 + 2) += fac*aux*funct[ui]*funct[vi] ;
+      }
+      
+#else
+
       //---------------------------------------------------------------
       //
       //                       GALERKIN PART
@@ -3107,7 +3197,94 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
       elemat(vi*4    , ui*4    ) += fac_alphaM_funct_ui_funct_vi ;
       elemat(vi*4 + 1, ui*4 + 1) += fac_alphaM_funct_ui_funct_vi ;
       elemat(vi*4 + 2, ui*4 + 2) += fac_alphaM_funct_ui_funct_vi ;
+#endif
+      
+#ifdef TDS
+      /* convection (intermediate) */
 
+      if (subaccs)
+      {
+        /*  factor:
+                                     alphaF*gamma*dt 
+               +alphaF*gamma*dt*---------------------------
+                                alphaM*tauM+alphaF*gamma*dt
+        */
+
+        const double aux = afgdt*afgdt/(alphaM*tauM+afgdt);
+
+        /*
+                          /                          \
+                         |  / n+af       \            |
+                         | | u    o nabla | Dacc , v  |
+                         |  \            /            |
+                          \                          /
+        */
+        elemat(vi*4    , ui*4    ) += fac*aux*funct[vi]*conv_c[ui] ;
+        elemat(vi*4 + 1, ui*4 + 1) += fac*aux*funct[vi]*conv_c[ui] ;
+        elemat(vi*4 + 2, ui*4 + 2) += fac*aux*funct[vi]*conv_c[ui] ;
+
+        if(newton)
+        {
+          /*
+                         /                            \
+                        |  /            \   n+af       |
+                        | | Dacc o nabla | u      , v  |
+                        |  \            /              |
+                         \                            /
+          */
+          elemat(vi*4    , ui*4    ) += fac*aux*funct[vi]*conv_r_(0, 0, ui) ;
+          elemat(vi*4    , ui*4 + 1) += fac*aux*funct[vi]*conv_r_(0, 1, ui) ;
+          elemat(vi*4    , ui*4 + 2) += fac*aux*funct[vi]*conv_r_(0, 2, ui) ;
+          elemat(vi*4 + 1, ui*4    ) += fac*aux*funct[vi]*conv_r_(1, 0, ui) ;
+          elemat(vi*4 + 1, ui*4 + 1) += fac*aux*funct[vi]*conv_r_(1, 1, ui) ;
+          elemat(vi*4 + 1, ui*4 + 2) += fac*aux*funct[vi]*conv_r_(1, 2, ui) ;
+          elemat(vi*4 + 2, ui*4    ) += fac*aux*funct[vi]*conv_r_(2, 0, ui) ;
+          elemat(vi*4 + 2, ui*4 + 1) += fac*aux*funct[vi]*conv_r_(2, 1, ui) ;
+          elemat(vi*4 + 2, ui*4 + 2) += fac*aux*funct[vi]*conv_r_(2, 2, ui) ;
+        }
+      }
+      else
+      {
+        /*  factor:
+              
+               +alphaF*gamma*dt
+               
+        */
+        const double aux = afgdt;
+
+        /*
+                          /                          \
+                         |  / n+af       \            |
+                         | | u    o nabla | Dacc , v  |
+                         |  \            /            |
+                          \                          /
+        */
+        elemat(vi*4    , ui*4    ) += fac*aux*funct[vi]*conv_c[ui] ;
+        elemat(vi*4 + 1, ui*4 + 1) += fac*aux*funct[vi]*conv_c[ui] ;
+        elemat(vi*4 + 2, ui*4 + 2) += fac*aux*funct[vi]*conv_c[ui] ;
+
+        if(newton)
+        {
+          /*
+                         /                            \
+                        |  /            \   n+af       |
+                        | | Dacc o nabla | u      , v  |
+                        |  \            /              |
+                         \                            /
+          */
+          elemat(vi*4    , ui*4    ) += fac*aux*funct[vi]*conv_r_(0, 0, ui) ;
+          elemat(vi*4    , ui*4 + 1) += fac*aux*funct[vi]*conv_r_(0, 1, ui) ;
+          elemat(vi*4    , ui*4 + 2) += fac*aux*funct[vi]*conv_r_(0, 2, ui) ;
+          elemat(vi*4 + 1, ui*4    ) += fac*aux*funct[vi]*conv_r_(1, 0, ui) ;
+          elemat(vi*4 + 1, ui*4 + 1) += fac*aux*funct[vi]*conv_r_(1, 1, ui) ;
+          elemat(vi*4 + 1, ui*4 + 2) += fac*aux*funct[vi]*conv_r_(1, 2, ui) ;
+          elemat(vi*4 + 2, ui*4    ) += fac*aux*funct[vi]*conv_r_(2, 0, ui) ;
+          elemat(vi*4 + 2, ui*4 + 1) += fac*aux*funct[vi]*conv_r_(2, 1, ui) ;
+          elemat(vi*4 + 2, ui*4 + 2) += fac*aux*funct[vi]*conv_r_(2, 2, ui) ;
+        }
+      }
+      
+#else
       /* convection (intermediate) */
 
       /*  factor: +alphaF*gamma*dt
@@ -3144,7 +3321,8 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
         elemat(vi*4 + 2, ui*4 + 1) += fac_afgdt_funct_vi*conv_r_(2, 1, ui) ;
         elemat(vi*4 + 2, ui*4 + 2) += fac_afgdt_funct_vi*conv_r_(2, 2, ui) ;
       }
-
+#endif
+      
       /* pressure (implicit) */
 
       /*  factor: -1
@@ -3159,6 +3337,32 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
       elemat(vi*4    , ui*4 + 3) -= fac_funct_ui*derxy(0, vi) ;
       elemat(vi*4 + 1, ui*4 + 3) -= fac_funct_ui*derxy(1, vi) ;
       elemat(vi*4 + 2, ui*4 + 3) -= fac_funct_ui*derxy(2, vi) ;
+      
+#ifdef TDS
+      if (subaccs)
+      {
+        /* pressure (implicit) */
+
+        /*  factor:
+                             alphaM*tauM 
+                    ---------------------------
+                    alphaM*tauM+alphaF*gamma*dt
+
+                 /               \
+                |                 |
+                |  nabla Dp ,  v  |
+                |                 |
+                 \               /
+        */
+        {
+          const double aux = (alphaM*tauM)/(alphaM*tauM+afgdt);
+          
+          elemat(vi*4    , ui*4 + 3) -= fac*aux*derxy(0,ui)*funct[vi];
+          elemat(vi*4 + 1, ui*4 + 3) -= fac*aux*derxy(1,ui)*funct[vi] ;
+          elemat(vi*4 + 2, ui*4 + 3) -= fac*aux*derxy(2,ui)*funct[vi] ;
+        }
+      }
+#endif
 
       /* viscous term (intermediate) */
 
@@ -3192,7 +3396,40 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
                                                     derxy(1,ui)*derxy(1,vi)
                                                     +
                                                     2.0*derxy(2,ui)*derxy(2,vi)) ;
+      
+#ifdef TDS
+      if (subaccs)
+      {
+        /* viscous term (intermediate) */
+        /*  factor:
+                                       alphaM*tauM
+           2*nu*alphaF*gamma*dt*---------------------------
+                                alphaM*tauM+alphaF*gamma*dt
 
+                                
+                  /                         \
+                 |               /    \      |
+                 |  nabla o eps | Dacc | , v |
+                 |               \    /      |
+                  \                         /
+                                       
+        */
+        {
+          const double aux =  2.0*visc*afgdt*((alphaM*tauM)/(alphaM*tauM+afgdt));
+          
+          elemat(vi*4    , ui*4    ) += fac*aux*funct[vi]*viscs2_(0,0,ui);
+          elemat(vi*4    , ui*4 + 1) += fac*aux*funct[vi]*viscs2_(0,1,ui);
+          elemat(vi*4    , ui*4 + 2) += fac*aux*funct[vi]*viscs2_(0,2,ui);
+          elemat(vi*4 + 1, ui*4    ) += fac*aux*funct[vi]*viscs2_(0,1,ui);
+          elemat(vi*4 + 1, ui*4 + 1) += fac*aux*funct[vi]*viscs2_(1,1,ui);
+          elemat(vi*4 + 1, ui*4 + 2) += fac*aux*funct[vi]*viscs2_(1,2,ui);
+          elemat(vi*4 + 2, ui*4    ) += fac*aux*funct[vi]*viscs2_(0,2,ui);
+          elemat(vi*4 + 2, ui*4 + 1) += fac*aux*funct[vi]*viscs2_(1,2,ui);
+          elemat(vi*4 + 2, ui*4 + 2) += fac*aux*funct[vi]*viscs2_(2,2,ui);
+        }
+      }    
+#endif
+      
       /* continuity equation (implicit) */
 
       /*  factor: +gamma*dt
@@ -3620,15 +3857,15 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
          
          if(newton)
          {
-           elemat(vi*4    , ui*4)     -= fac*afgdt*(alphaF*sub_vel_(0,iquad)+(1.0-alphaF)*sub_vel_old_(0,iquad))*funct[ui]*derxy(0,vi) ;
-           elemat(vi*4    , ui*4 + 1) -= fac*afgdt*(alphaF*sub_vel_(0,iquad)+(1.0-alphaF)*sub_vel_old_(0,iquad))*funct[ui]*derxy(1,vi) ;
-           elemat(vi*4    , ui*4 + 2) -= fac*afgdt*(alphaF*sub_vel_(0,iquad)+(1.0-alphaF)*sub_vel_old_(0,iquad))*funct[ui]*derxy(2,vi) ;
-           elemat(vi*4 + 1, ui*4)     -= fac*afgdt*(alphaF*sub_vel_(1,iquad)+(1.0-alphaF)*sub_vel_old_(1,iquad))*funct[ui]*derxy(0,vi) ;
-           elemat(vi*4 + 1, ui*4 + 1) -= fac*afgdt*(alphaF*sub_vel_(1,iquad)+(1.0-alphaF)*sub_vel_old_(1,iquad))*funct[ui]*derxy(1,vi) ;
-           elemat(vi*4 + 1, ui*4 + 2) -= fac*afgdt*(alphaF*sub_vel_(1,iquad)+(1.0-alphaF)*sub_vel_old_(1,iquad))*funct[ui]*derxy(2,vi) ;
-           elemat(vi*4 + 2, ui*4)     -= fac*afgdt*(alphaF*sub_vel_(2,iquad)+(1.0-alphaF)*sub_vel_old_(2,iquad))*funct[ui]*derxy(0,vi) ;
-           elemat(vi*4 + 2, ui*4 + 1) -= fac*afgdt*(alphaF*sub_vel_(2,iquad)+(1.0-alphaF)*sub_vel_old_(2,iquad))*funct[ui]*derxy(1,vi) ;
-           elemat(vi*4 + 2, ui*4 + 2) -= fac*afgdt*(alphaF*sub_vel_(2,iquad)+(1.0-alphaF)*sub_vel_old_(2,iquad))*funct[ui]*derxy(2,vi) ;
+           elemat(vi*4    , ui*4)     -= fac*afgdt*sub_vel_af[0]*funct[ui]*derxy(0,vi) ;
+           elemat(vi*4    , ui*4 + 1) -= fac*afgdt*sub_vel_af[0]*funct[ui]*derxy(1,vi) ;
+           elemat(vi*4    , ui*4 + 2) -= fac*afgdt*sub_vel_af[0]*funct[ui]*derxy(2,vi) ;
+           elemat(vi*4 + 1, ui*4)     -= fac*afgdt*sub_vel_af[1]*funct[ui]*derxy(0,vi) ;
+           elemat(vi*4 + 1, ui*4 + 1) -= fac*afgdt*sub_vel_af[1]*funct[ui]*derxy(1,vi) ;
+           elemat(vi*4 + 1, ui*4 + 2) -= fac*afgdt*sub_vel_af[1]*funct[ui]*derxy(2,vi) ;
+           elemat(vi*4 + 2, ui*4)     -= fac*afgdt*sub_vel_af[2]*funct[ui]*derxy(0,vi) ;
+           elemat(vi*4 + 2, ui*4 + 1) -= fac*afgdt*sub_vel_af[2]*funct[ui]*derxy(1,vi) ;
+           elemat(vi*4 + 2, ui*4 + 2) -= fac*afgdt*sub_vel_af[2]*funct[ui]*derxy(2,vi) ;
          }
 #else
          /* SUPG stabilisation --- inertia     */
@@ -4411,6 +4648,24 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
     //
     //---------------------------------------------------------------
 
+#ifdef TDS
+    if (subaccs)
+    {
+      /*  factor: +1
+
+               /             \
+              |   ~ n+am      |
+              |  acc     , v  |
+              |     (i)       |
+               \             /
+      */
+
+      elevec[ui*4    ] -= fac*funct[ui]*sub_acc_am[0] ;
+      elevec[ui*4 + 1] -= fac*funct[ui]*sub_acc_am[1] ;
+      elevec[ui*4 + 2] -= fac*funct[ui]*sub_acc_am[2] ;
+    }
+#endif
+    
     /* inertia terms */
 
     /*  factor: +1
@@ -4625,9 +4880,19 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
     if(supg)
     {
 #ifdef TDS
-      elevec[ui*4    ] += fac*conv_c[ui]*(alphaF*sub_vel_(0,iquad)+(1.0-alphaF)*sub_vel_old_(0,iquad));
-      elevec[ui*4 + 1] += fac*conv_c[ui]*(alphaF*sub_vel_(1,iquad)+(1.0-alphaF)*sub_vel_old_(1,iquad));
-      elevec[ui*4 + 2] += fac*conv_c[ui]*(alphaF*sub_vel_(2,iquad)+(1.0-alphaF)*sub_vel_old_(2,iquad));
+      /*
+                  /                             \
+                 |  ~n+af    / n+af        \     |
+                 |  u     , | u     o nabla | v  |
+                 |           \             /     |
+                  \                             /
+
+      */
+
+      
+      elevec[ui*4    ] += fac*conv_c[ui]*sub_vel_af[0];
+      elevec[ui*4 + 1] += fac*conv_c[ui]*sub_vel_af[1];
+      elevec[ui*4 + 2] += fac*conv_c[ui]*sub_vel_af[2];
 #else      
       /*
       factor: +tauM
@@ -4699,23 +4964,23 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
 
       */
       elevec[ui*4    ] += fac*2.0*visc*
-                          ((alphaF*sub_vel_(0,iquad)+(1.0-alphaF)*sub_vel_old_(0,iquad))*viscs2_(0, 0, ui)
+                          (sub_vel_af[0]*viscs2_(0, 0, ui)
                            +
-                           (alphaF*sub_vel_(1,iquad)+(1.0-alphaF)*sub_vel_old_(1,iquad))*viscs2_(0, 1, ui)
+                           sub_vel_af[1]*viscs2_(0, 1, ui)
                            +
-                           (alphaF*sub_vel_(2,iquad)+(1.0-alphaF)*sub_vel_old_(2,iquad))*viscs2_(0, 2, ui)) ;
+                           sub_vel_af[2]*viscs2_(0, 2, ui)) ;
       elevec[ui*4 + 1] += fac*2.0*visc*
-                          ((alphaF*sub_vel_(0,iquad)+(1.0-alphaF)*sub_vel_old_(0,iquad))*viscs2_(0, 1, ui)
+                          (sub_vel_af[0]*viscs2_(0, 1, ui)
                            +
-                           (alphaF*sub_vel_(1,iquad)+(1.0-alphaF)*sub_vel_old_(1,iquad))*viscs2_(1, 1, ui)
+                           sub_vel_af[1]*viscs2_(1, 1, ui)
                            +
-                           (alphaF*sub_vel_(2,iquad)+(1.0-alphaF)*sub_vel_old_(2,iquad))*viscs2_(1, 2, ui)) ;
+                           sub_vel_af[2]*viscs2_(1, 2, ui)) ;
       elevec[ui*4 + 2] += fac*2.0*visc*
-                          ((alphaF*sub_vel_(0,iquad)+(1.0-alphaF)*sub_vel_old_(0,iquad))*viscs2_(0, 2, ui)
+                          (sub_vel_af[0]*viscs2_(0, 2, ui)
                            +
-                           (alphaF*sub_vel_(1,iquad)+(1.0-alphaF)*sub_vel_old_(1,iquad))*viscs2_(1, 2, ui)
+                           sub_vel_af[1]*viscs2_(1, 2, ui)
                            +
-                           (alphaF*sub_vel_(2,iquad)+(1.0-alphaF)*sub_vel_old_(2,iquad))*viscs2_(2, 2, ui)) ;
+                           sub_vel_af[2]*viscs2_(2, 2, ui)) ;
 #else
        /* viscous stabilisation --- inertia     
 
@@ -4840,23 +5105,23 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
                   \                           /
       */
       elevec[ui*4    ] += fac*
-        ((alphaF*sub_vel_(0,iquad)+(1.0-alphaF)*sub_vel_old_(0,iquad))*derxy(0,ui)
+        (sub_vel_af[0]*derxy(0,ui)
          +
-         (alphaF*sub_vel_(1,iquad)+(1.0-alphaF)*sub_vel_old_(1,iquad))*derxy(1,ui)
+         sub_vel_af[1]*derxy(1,ui)
          +
-         (alphaF*sub_vel_(2,iquad)+(1.0-alphaF)*sub_vel_old_(2,iquad))*derxy(2,ui))*velintaf[0];
+         sub_vel_af[2]*derxy(2,ui))*velintaf[0];
       elevec[ui*4 + 1] += fac*
-        ((alphaF*sub_vel_(0,iquad)+(1.0-alphaF)*sub_vel_old_(0,iquad))*derxy(0,ui)
+        (sub_vel_af[0]*derxy(0,ui)
          +
-         (alphaF*sub_vel_(1,iquad)+(1.0-alphaF)*sub_vel_old_(1,iquad))*derxy(1,ui)
+         sub_vel_af[1]*derxy(1,ui)
          +
-         (alphaF*sub_vel_(2,iquad)+(1.0-alphaF)*sub_vel_old_(2,iquad))*derxy(2,ui))*velintaf[1];
+         sub_vel_af[2]*derxy(2,ui))*velintaf[1];
       elevec[ui*4 + 2] += fac*
-        ((alphaF*sub_vel_(0,iquad)+(1.0-alphaF)*sub_vel_old_(0,iquad))*derxy(0,ui)
+        (sub_vel_af[0]*derxy(0,ui)
          +
-         (alphaF*sub_vel_(1,iquad)+(1.0-alphaF)*sub_vel_old_(1,iquad))*derxy(1,ui)
+         sub_vel_af[1]*derxy(1,ui)
          +
-         (alphaF*sub_vel_(2,iquad)+(1.0-alphaF)*sub_vel_old_(2,iquad))*derxy(2,ui))*velintaf[2];
+         sub_vel_af[2]*derxy(2,ui))*velintaf[2];
 #else
       /* factor: +tauM
 
@@ -4889,28 +5154,24 @@ void DRT::Elements::Fluid3::f3_genalpha_calmat(
                  |                               |
                   \                             /
       */
-      elevec[ui*4    ] += fac*
-        ((alphaF*sub_vel_(0,iquad)+(1.0-alphaF)*sub_vel_old_(0,iquad))*derxy(0,ui)
-         +
-         (alphaF*sub_vel_(1,iquad)+(1.0-alphaF)*sub_vel_old_(1,iquad))*derxy(1,ui)
-         +
-         (alphaF*sub_vel_(2,iquad)+(1.0-alphaF)*sub_vel_old_(2,iquad))*derxy(2,ui))
-        *
-        (alphaF*sub_vel_(0,iquad)+(1.0-alphaF)*sub_vel_old_(0,iquad));
-      elevec[ui*4 + 1] += fac*
-        ((alphaF*sub_vel_(0,iquad)+(1.0-alphaF)*sub_vel_old_(0,iquad))*derxy(0,ui)
-         +
-         (alphaF*sub_vel_(1,iquad)+(1.0-alphaF)*sub_vel_old_(1,iquad))*derxy(1,ui)
-         +
-         (alphaF*sub_vel_(2,iquad)+(1.0-alphaF)*sub_vel_old_(2,iquad))*derxy(2,ui))
-        *(alphaF*sub_vel_(1,iquad)+(1.0-alphaF)*sub_vel_old_(1,iquad));
-      elevec[ui*4 + 2] += fac*
-        ((alphaF*sub_vel_(0,iquad)+(1.0-alphaF)*sub_vel_old_(0,iquad))*derxy(0,ui)
-         +
-         (alphaF*sub_vel_(1,iquad)+(1.0-alphaF)*sub_vel_old_(1,iquad))*derxy(1,ui)
-         +
-         (alphaF*sub_vel_(2,iquad)+(1.0-alphaF)*sub_vel_old_(2,iquad))*derxy(2,ui))
-        *(alphaF*sub_vel_(2,iquad)+(1.0-alphaF)*sub_vel_old_(2,iquad));
+      elevec[ui*4    ] += fac*(sub_vel_af[0]*derxy(0,ui)
+                               +
+                               sub_vel_af[1]*derxy(1,ui)
+                               +
+                               sub_vel_af[2]*derxy(2,ui))
+                             *sub_vel_af[0];
+      elevec[ui*4 + 1] += fac*(sub_vel_af[0]*derxy(0,ui)
+                               +
+                               sub_vel_af[1]*derxy(1,ui)
+                               +
+                               sub_vel_af[2]*derxy(2,ui))
+                             *sub_vel_af[1];
+      elevec[ui*4 + 2] += fac*(sub_vel_af[0]*derxy(0,ui)
+                               +
+                               sub_vel_af[1]*derxy(1,ui)
+                               +
+                               sub_vel_af[2]*derxy(2,ui))
+                             *sub_vel_af[2];
 
 #else
       /* factor: -tauM*tauM
