@@ -33,6 +33,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_mat/hyperpolyconvex.H"
+#include "../drt_mat/neohooke.H"
 
 
 //extern "C"
@@ -68,7 +69,8 @@ void DRT::Elements::So_hex8::soh8_mat_sel(
 
       break;
     }
-    case m_hyper_polyconvex:{
+    case m_hyper_polyconvex:
+    {
       MAT::HyperPolyconvex* hypo = static_cast <MAT::HyperPolyconvex*>(mat.get());
       
       hypo->Evaluate(glstrain,cmat,stress);
@@ -94,7 +96,14 @@ void DRT::Elements::So_hex8::soh8_mat_sel(
 
       break;
     }
+    case m_neohooke: /*----------------- NeoHookean Material */
+    {
+	MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());
+	neo->Evaluate(glstrain,cmat,stress);
+	*density = neo->Density();
 
+	break;
+    }
     default:
       dserror("Illegal type %d of material for element solid3 hex8", mat->MaterialType());
       break;

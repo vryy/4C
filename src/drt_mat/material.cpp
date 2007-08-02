@@ -6,6 +6,7 @@
 #include "stvenantkirchhoff.H"
 #include "micromaterial.H"
 #include "hyperpolyconvex.H"
+#include "neohooke.H"
 
 extern struct _MATERIAL *mat;
 
@@ -42,6 +43,10 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     return Teuchos::rcp(new StVenantKirchhoff(actmat));
   case m_struct_multiscale:
     return Teuchos::rcp(new MicroMaterial(actmat));
+  case m_hyper_polyconvex:
+    return Teuchos::rcp(new HyperPolyconvex(actmat));
+  case m_neohooke:
+    return Teuchos::rcp(new NeoHooke(actmat));
   case m_pl_mises_3D:
   case m_pl_mises:
   case m_pl_hoff:
@@ -53,7 +58,6 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
   case m_pl_epc3D:
   case m_stvenpor:
   case m_pl_por_mises:
-  case m_neohooke:
   case m_compogden:
   case m_viscohyper:
   case m_condif:
@@ -67,8 +71,6 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
   case m_interf_therm:
   case m_dam_mp:
   case m_damage_ge:
-  case m_hyper_polyconvex:
-    return Teuchos::rcp(new HyperPolyconvex(actmat));
   case m_th_fourier_iso:
   case m_th_fourier_gen:
   case m_vp_robinson:

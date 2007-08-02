@@ -55,11 +55,12 @@ VISUAL3_LIB=""
 LIBS="-llapack  -lblas"
 
 # FAST
-PROGRAMNAME=ccarat_win.exe
+PROGRAMNAME=ccarat.exe
 CFLAGS_OPT="-O"
 FFLAGS_OPT="-O"
-CFLAGS="-c -ansi -Wall"
+#CFLAGS="-c -ansi -Wall"
+CFLAGS="-c -ansi -Wall -mno-cygwin"
 FFLAGS="-Wall"
-LDFLAGS=""
+LDFLAGS="-Wall -mno-cygwin"
 
 LOOPL="-DLOOPL=15"

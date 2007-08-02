@@ -385,7 +385,7 @@ void c1_mat_hyper_polyconvex (	DOUBLE c,
 		for (l=0; l<9; l+=3) {
 			for (i=0; i<3; i++) {
 				for (j=0; j<3; j++) {
-					CinvoCinv[i+k][j+l]= 0.5*+(Cinv[k/3][i]*Cinv[l/3][j]+Cinv[k/3][j]*Cinv[l/3][i]);}}}}
+					CinvoCinv[i+k][j+l]= 0.5*(Cinv[k/3][i]*Cinv[l/3][j]+Cinv[k/3][j]*Cinv[l/3][i]);}}}}
 
 	for (k=0; k<9; k+=3) {
 		for (l=0; l<9; l+=3) {

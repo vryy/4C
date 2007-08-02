@@ -733,6 +733,7 @@ OBJS_DRT_MAT_LIB = src/drt_mat/micromaterial.o \
 		src/drt_mat/newtonianfluid.o \
 		src/drt_mat/stvenantkirchhoff.o \
 		src/drt_mat/hyperpolyconvex.o \
+		src/drt_mat/neohooke.o \
 		src/drt_mat/material.o
 #
 OBJS_DRT_MAT  = src/drt_mat/micromaterialgp.o \
