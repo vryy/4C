@@ -90,8 +90,8 @@ protected:
      other times, however, there is more than one result (velocity,
      pressure) and we want to write just one part of it. So we have to
      specify which part.
-     
-     Finally, after writing to the result file, a string is returned that 
+
+     Finally, after writing to the result file, a string is returned that
      describes the result for the case file VARIABLE section
 
      \return string with entry for VARIABLE section in case file
@@ -152,7 +152,7 @@ private:
             ofstream& file,
             const vector<ofstream::pos_type>& filepos) const;
     /*!
-     * \brief create string for the VARIABLE section 
+     * \brief create string for the VARIABLE section
      *        that corresponds to the current field
      */
     string GetVariableEntryForCaseFile(
@@ -227,7 +227,7 @@ void EnsightWriter::WriteFiles()
     if (result.next_result())
         soltime_.push_back(result.time());
     else
-        dserror("is this even possible to get an error here???");
+      dserror("no solution found in field '%s'", field_->name().c_str());
 
     while (result.next_result())
         soltime_.push_back(result.time());
@@ -568,7 +568,7 @@ string EnsightWriter::GetEnsightString(
         break;
     case DRT::Element::tet10:
         str = distype2ensightstring_[DRT::Element::tet4];
-        break;        
+        break;
     default:
         str = distype2ensightstring_[distype];
     }
@@ -692,7 +692,7 @@ string EnsightWriter::GetVariableEntryForCaseFile(
 
 /*!
  \brief Write nodal values for one timestep
- 
+
  Each node has to have the same number of dofs.
  */
 void EnsightWriter::WriteResultStep(
