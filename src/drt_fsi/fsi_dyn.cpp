@@ -161,19 +161,25 @@ void CreateAleDiscretization()
 
   // now do the elements
 
-  // add a new material to use with the ale elements
-  _MATERIAL localmat;
-  localmat.mattyp = m_stvenant;
-  localmat.m.stvenant = new _STVENANT();
-  localmat.m.stvenant->youngs = 1.;
-  localmat.m.stvenant->possionratio = 0.;
-  localmat.m.stvenant->density = 0.;
-  localmat.m.stvenant->thermexpans = 0.;
-  DRT::Problem::Instance()->AddMaterial(localmat);
-
-  // Material numbers are stored in fortran style, so we take the
-  // number of materials after we added our new one.
-  int matnr = DRT::Problem::Instance()->NumMaterials();
+  // We must not add a new material type here because that might move
+  // the internal material vector. And each element material might
+  // have a pointer to that vector. Too bad.
+  // So we search for a StVenantKirchhoff material and take the first
+  // one we find.
+  int nummat = DRT::Problem::Instance()->NumMaterials();
+  int matnr = -1;
+  for (int i=0; i<nummat; ++i)
+  {
+    if (DRT::Problem::Instance()->Material(i).mattyp==m_stvenant)
+    {
+      // For historical reasons material numbers are given in FORTRAN
+      // style.
+      matnr = i+1;
+      break;
+    }
+  }
+  if (matnr==-1)
+    dserror("No StVenantKirchhoff material defined. Cannot generate ale mesh.");
 
   // construct ale elements
   // The order of the ale elements might be different from that of the
