@@ -279,8 +279,13 @@ void FSI::DirichletNeumannCoupling::SetupFluid()
   // stop nonlinear iteration when both incr-norms are below this bound
   fluidtimeparams->set<double>          ("tolerance for nonlin iter" ,fdyn->ittol);
 
+  // ----------------------------------------------- restart and output
   // restart
-  fluidtimeparams->set                  ("write restart every"       ,fdyn->uprestart);
+  fluidtimeparams->set                 ("write restart every"       ,fdyn->uprestart);
+  // solution output
+  fluidtimeparams->set                 ("write solution every"      ,fdyn->upres);
+  // flag for writing stresses
+  fluidtimeparams->set                 ("write stresses"            ,ioflags.fluid_stress);
 
   //--------------------------------------------------
   // evaluate error for test flows with analytical solutions
