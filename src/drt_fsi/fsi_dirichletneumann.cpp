@@ -14,6 +14,7 @@
 #include "fsi_nox_fixpoint.H"
 #include "fsi_nox_jacobian.H"
 #include "fsi_nox_sd.H"
+#include "fsi_nox_linearsystem_gcr.H"
 
 
 /*----------------------------------------------------------------------*
@@ -455,7 +456,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
     NOX::Epetra::Vector noxSoln(soln, NOX::Epetra::Vector::CreateView);
 
     // Create the linear system
-    Teuchos::RefCountPtr<NOX::Epetra::LinearSystemAztecOO> linSys =
+    Teuchos::RefCountPtr<NOX::Epetra::LinearSystem> linSys =
       CreateLinearSystem(nlParams, interface, noxSoln, utils);
 
     // Create the Group
@@ -472,11 +473,11 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
     if ((step_ % 10) == 0)
     {
       Teuchos::ParameterList& fdParams = nlParams.sublist("Finite Difference");
-      double alpha = fdParams.get("alpha", 1.0e-4);
-      double beta  = fdParams.get("beta",  1.0e-6);
+      double alpha = fdParams.get("alpha", 1.0e-6);
+      double beta  = fdParams.get("beta",  1.0e-4);
 
       ostringstream filename;
-      filename << allfiles.outputfile_kenner << "_" << step_ << ".dump";
+      filename << allfiles.outputfile_kenner << "_1_" << step_ << ".dump";
       FSI::Utils::DumpJacobian(*this, alpha, beta, soln, filename.str());
     }
 #endif
@@ -522,6 +523,20 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
     const NOX::Epetra::Group& finalGroup = dynamic_cast<const NOX::Epetra::Group&>(solver->getSolutionGroup());
     const Epetra_Vector& finalSolution = (dynamic_cast<const NOX::Epetra::Vector&>(finalGroup.getX())).getEpetraVector();
     //const Epetra_Vector& finalF        = (dynamic_cast<const NOX::Epetra::Vector&>(finalGroup.getF())).getEpetraVector();
+
+#if 0
+    if ((step_ % 10) == 0)
+    {
+      Teuchos::ParameterList& fdParams = nlParams.sublist("Finite Difference");
+      double alpha = fdParams.get("alpha", 1.0e-6);
+      double beta  = fdParams.get("beta",  1.0e-4);
+
+      ostringstream filename;
+      filename << allfiles.outputfile_kenner << "_2_" << step_ << ".dump";
+      *soln = finalSolution;
+      FSI::Utils::DumpJacobian(*this, alpha, beta, soln, filename.str());
+    }
+#endif
 
     if (displacementcoupling_)
       idispn_->Update(1.0, finalSolution, 0.0);
@@ -572,7 +587,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
 }
 
 
-Teuchos::RefCountPtr<NOX::Epetra::LinearSystemAztecOO>
+Teuchos::RefCountPtr<NOX::Epetra::LinearSystem>
 FSI::DirichletNeumannCoupling::CreateLinearSystem(ParameterList& nlParams,
                                                   const Teuchos::RefCountPtr<NOX::Epetra::Interface::Required>& interface,
                                                   NOX::Epetra::Vector& noxSoln,
@@ -597,7 +612,7 @@ FSI::DirichletNeumannCoupling::CreateLinearSystem(ParameterList& nlParams,
   Teuchos::RefCountPtr<Epetra_Operator> J;
   Teuchos::RefCountPtr<Epetra_Operator> M;
 
-  Teuchos::RefCountPtr<NOX::Epetra::LinearSystemAztecOO> linSys;
+  Teuchos::RefCountPtr<NOX::Epetra::LinearSystem> linSys;
 
   // ==================================================================
   // decide on Jacobian and preconditioner
@@ -719,7 +734,12 @@ FSI::DirichletNeumannCoupling::CreateLinearSystem(ParameterList& nlParams,
     }
     else
     {
+      // there are different linear solvers available
+#if 1
       linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams, interface, iJac, J, noxSoln));
+#else
+      linSys = Teuchos::rcp(new NOX::FSI::LinearSystemGCR(printParams, lsParams, interface, iJac, J, noxSoln));
+#endif
     }
   }
 
@@ -845,18 +865,20 @@ bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vect
 #endif
 
 #if 0
-    if ((fillFlag==MF_Jac) or (fillFlag==MF_Res))
+    //if ((fillFlag==MF_Jac) or (fillFlag==MF_Res))
+    if (fillFlag==Residual)
     {
       static int step;
       ostringstream filename;
-      filename << allfiles.outputfile_kenner << "_" << step << ".force";
+      filename << allfiles.outputfile_kenner << "_" << step << ".res";
+      cout << YELLOW_LIGHT << filename.str() << END_COLOR << "\n";
       step += 1;
 
       F.Update(1.0, *idispnp, -1.0, *idispn, 0.0);
 
       ofstream out(filename.str().c_str());
-      iforce->Print(out);
-      //idispn->Print(out);
+      //iforce->Print(out);
+      idispn->Print(out);
       //idispnp->Print(out);
       F.Print(out);
     }

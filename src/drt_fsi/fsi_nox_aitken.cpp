@@ -12,7 +12,9 @@
 #include <NOX_GlobalData.H>
 
 // debug output
-#if 0
+#if 1
+
+#include <NOX_Epetra_Vector.H>
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -93,6 +95,8 @@ bool NOX::FSI::AitkenRelaxation::compute(Abstract::Group& grp, double& step,
   const Abstract::Group& oldGrp = s.getPreviousSolutionGroup();
   const NOX::Abstract::Vector& F = oldGrp.getF();
 
+  // turn off switch
+#if 1
   if (is_null(del_))
   {
     del_  = F.clone(ShapeCopy);
@@ -108,6 +112,9 @@ bool NOX::FSI::AitkenRelaxation::compute(Abstract::Group& grp, double& step,
 
   nu_ = nu_ + (nu_ - 1.)*top/den;
   step = 1. - nu_;
+#else
+  step = 1.;
+#endif
 
   grp.computeX(oldGrp, dir, step);
 
@@ -127,6 +134,27 @@ bool NOX::FSI::AitkenRelaxation::compute(Abstract::Group& grp, double& step,
     utils_->out() << "\n" << NOX::Utils::fill(72) << "\n" << endl;
   }
 
+  // write omega
+#if 1
+  if (dynamic_cast<const NOX::Epetra::Vector&>(F).getEpetraVector().Comm().MyPID()==0)
+  {
+    static int count;
+    static std::ofstream* out;
+    if (out==NULL)
+    {
+      std::string s = allfiles.outputfile_kenner;
+      s.append(".omega");
+      out = new std::ofstream(s.c_str());
+    }
+    (*out) << count << " "
+           << step << " "
+           << grp.getF().norm()
+           << "\n";
+    count += 1;
+    out->flush();
+  }
+#endif
+
   // debug output
 #if 0
   {
@@ -136,8 +164,9 @@ bool NOX::FSI::AitkenRelaxation::compute(Abstract::Group& grp, double& step,
     step += 1;
 
     ofstream out(filename.str().c_str());
-    oldGrp.getX().print(out);
-    grp.getX().print(out);
+    dir.print(out);
+    //oldGrp.getX().print(out);
+    //grp.getX().print(out);
   }
 #endif
 

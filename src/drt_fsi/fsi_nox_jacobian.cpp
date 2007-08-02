@@ -16,6 +16,21 @@
 #include <NOX_Utils.H>
 
 
+// debug output
+#if 0
+
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
+
+extern "C" /* stuff which is c and is accessed from c++ */
+{
+#include "../headers/standardtypes.h"
+}
+
+extern struct _FILES  allfiles;
+#endif
+
 NOX::FSI::FSIMatrixFree::FSIMatrixFree(Teuchos::ParameterList& printParams,
                                        const Teuchos::RefCountPtr<NOX::Epetra::Interface::Required>& i,
                                        const NOX::Epetra::Vector& x) :
@@ -69,7 +84,7 @@ int NOX::FSI::FSIMatrixFree::Apply(const Epetra_MultiVector& X, Epetra_MultiVect
 {
   // Calculate the matrix-vector product:
   //
-  // y = R' x = x - S'(F(d)) F'(d) x
+  // y = R' x = S'(F(d)) F'(d) x - x
   //
   // that comes down to a FSI residuum call with linear field solvers.
   //
@@ -119,6 +134,21 @@ int NOX::FSI::FSIMatrixFree::Apply(const Epetra_MultiVector& X, Epetra_MultiVect
   // scale back
   //nevY.update(xscale, perturbY, 0.0);
   nevY.update(1., perturbY, 0.0);
+
+  // debug output
+#if 0
+  {
+    static int step;
+    ostringstream filename;
+    filename << allfiles.outputfile_kenner << "_" << step << ".fsi";
+    cout << YELLOW_LIGHT << filename.str() << END_COLOR << "\n";
+    step += 1;
+
+    ofstream out(filename.str().c_str());
+    perturbX.print(out);
+    perturbY.print(out);
+  }
+#endif
 
   return 0;
 }

@@ -128,7 +128,7 @@ public:
 private:
 
   ///
-  Teuchos::RefCountPtr<NOX::Epetra::LinearSystemAztecOO>
+  Teuchos::RefCountPtr<NOX::Epetra::LinearSystem>
   CreateLinearSystem(ParameterList& nlParams,
                      const Teuchos::RefCountPtr<NOX::Epetra::Interface::Required>& interface,
                      NOX::Epetra::Vector& noxSoln,
