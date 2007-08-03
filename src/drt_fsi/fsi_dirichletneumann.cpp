@@ -402,7 +402,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
   }
 
   // the very special experimental extrapolation
-  else if (nlParams.sublist("Line Search").get("Method","Full Step")=="Extrapolate")
+  else if (nlParams.sublist("Line Search").get("Method","Aitken")=="Extrapolate")
   {
     // insert user defined extrapolate relaxation
     Teuchos::ParameterList& linesearch = nlParams.sublist("Line Search");
@@ -425,9 +425,9 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
     log = Teuchos::rcp(new std::ofstream(s.c_str()));
     (*log) << "# num procs      = " << comm_.NumProc() << "\n"
            << "# Method         = " << nlParams.sublist("Direction").get("Method","Newton") << "\n"
-           << "# Jacobian       = " << nlParams.get("Jacobian", "Matrix Free") << "\n"
+           << "# Jacobian       = " << nlParams.get("Jacobian", "None") << "\n"
            << "# Preconditioner = " << nlParams.get("Preconditioner","None") << "\n"
-           << "# Line Search    = " << nlParams.sublist("Line Search").get("Method","Full Step") << "\n"
+           << "# Line Search    = " << nlParams.sublist("Line Search").get("Method","Aitken") << "\n"
            << "#\n"
            << "# step  time/step  #nliter  #liter  Residual  Jac  Prec  FD_Res  MF_Res  MF_Jac  User\n"
       ;
@@ -601,7 +601,7 @@ FSI::DirichletNeumannCoupling::CreateLinearSystem(ParameterList& nlParams,
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
 
   Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
-  Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Newton"));
+  Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Aitken"));
   Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
 
   Teuchos::RefCountPtr<NOX::FSI::FSIMatrixFree> FSIMF;
