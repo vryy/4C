@@ -14,6 +14,7 @@
 // debug output
 #if 1
 
+#include <Epetra_Vector.h>
 #include <NOX_Epetra_Vector.H>
 
 #ifdef PARALLEL
