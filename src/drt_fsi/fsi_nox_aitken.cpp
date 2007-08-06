@@ -15,6 +15,7 @@
 #if 1
 
 #include <Epetra_Vector.h>
+#include <Epetra_Comm.h>
 #include <NOX_Epetra_Vector.H>
 
 #ifdef PARALLEL
