@@ -652,7 +652,7 @@ FSI::DirichletNeumannCoupling::CreateLinearSystem(ParameterList& nlParams,
     double lambda = mfParams.get("lambda", 1.0e-6);
     //mfresitemax_ = mfParams.get("itemax", -1);
 
-    bool kelleyPerturbation = mfParams.get("Kelley Perturbation", true);
+    bool kelleyPerturbation = mfParams.get("Kelley Perturbation", false);
 
     // MatrixFree seems to be the most interessting choice. But you
     // must set a rather low tolerance for the linear solver.
