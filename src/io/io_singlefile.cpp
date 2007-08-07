@@ -72,7 +72,7 @@ All io is done using chunks.
 extern "C" {
 
 #include "../headers/standardtypes.h"
-#include "../headers/compile_settings.h"
+#include "compile_settings.h"
 
 #include "../shell8/shell8.h"
 #include "../shell9/shell9.h"

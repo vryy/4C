@@ -80,6 +80,9 @@ if [ x$IS_TRILINOS = "x1" ] ; then
   DEFINES="$DEFINES $TRILINOS_DEFINES"
 fi
 
+# always look into headers directory of destination
+CFLAGS="-I$DEST/src/headers $CFLAGS"
+CPFLAGS="-I$DEST/src/headers $CPFLAGS"
 
 # the debug version needs special treatment
 if [ x$IS_DEBUG = "x1" ] ; then
