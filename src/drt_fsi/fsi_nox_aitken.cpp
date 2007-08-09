@@ -138,6 +138,7 @@ bool NOX::FSI::AitkenRelaxation::compute(Abstract::Group& grp, double& step,
 
   // write omega
 #if 1
+  double fnorm = grp.getF().norm();
   if (dynamic_cast<const NOX::Epetra::Vector&>(F).getEpetraVector().Comm().MyPID()==0)
   {
     static int count;
@@ -150,7 +151,7 @@ bool NOX::FSI::AitkenRelaxation::compute(Abstract::Group& grp, double& step,
     }
     (*out) << count << " "
            << step << " "
-           << grp.getF().norm()
+           << fnorm
            << "\n";
     count += 1;
     out->flush();
