@@ -793,8 +793,8 @@ NODE            8     COORD 1.000000000000000e+00     1.000000000000000e+00     
 ------------------------------------------------------ALE ELEMENTS
 --------------------------------------------------THERMAL ELEMENTS
 ---------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_NeoHooke  YOUNG 100.0 NUE 0.3 DENS 1.0
-//MAT 1 MAT_Struct_StVenantKirchhoff  YOUNG 210 NUE 0.0 DENS 1 THEXPANS 0.0
+//MAT 1 MAT_Struct_NeoHooke  YOUNG 100.0 NUE 0.3 DENS 1.0
+MAT 1 MAT_Struct_StVenantKirchhoff  YOUNG 210 NUE 0.3 DENS 1 THEXPANS 0.0
 ----------------------------------------------MULTILAYER MATERIALS
 ------------------------------------------------------CONTROL NODE
 -------------------------------------------------------LOAD CURVES

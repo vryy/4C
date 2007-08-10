@@ -140,61 +140,61 @@ void MAT::NeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
   for (k=0; k<3; k++)
   for (l=0; l<3; l++)
   {
-		ET[k][l]	= delta6 * (Cinv(0,0) * Cinv(k,l)) + 
+		ET(k,l)	= delta6 * (Cinv(0,0) * Cinv(k,l)) + 
 					  delta7 * 0.5 *(Cinv(0,k) * Cinv(0,l) + Cinv(0,l) * Cinv(0,k));
-		ET[k+3][l]	= delta6 * (Cinv(1,0) * Cinv(k,l)) + 
+		ET(k+3,l)	= delta6 * (Cinv(1,0) * Cinv(k,l)) + 
 					  delta7 * 0.5 *(Cinv(1,k) * Cinv(0,l) + Cinv(1,l) * Cinv(0,k));
-		ET[k+3][l+3]= delta6 * (Cinv(1,1) * Cinv(k,l)) +
+		ET(k+3,l+3)= delta6 * (Cinv(1,1) * Cinv(k,l)) +
 				      delta7 * 0.5 *(Cinv(1,k) * Cinv(1,l) + Cinv(1,l) * Cinv(1,k));
-		ET[k+6][l]	= delta6 * (Cinv(2,0) * Cinv(k,l)) +
+		ET(k+6,l)	= delta6 * (Cinv(2,0) * Cinv(k,l)) +
 					  delta7 * 0.5 *(Cinv(2,k) * Cinv(0,l) + Cinv(2,l) * Cinv(0,k));
-		ET[k+6][l+3]= delta6 * (Cinv(2,1) * Cinv(k,l)) +
+		ET(k+6,l+3)= delta6 * (Cinv(2,1) * Cinv(k,l)) +
 					  delta7 * 0.5 *(Cinv(2,k) * Cinv(1,l) + Cinv(2,l) * Cinv(1,k));
-		ET[k+6][l+6]= delta6 * (Cinv(2,2) * Cinv(k,l)) +
+		ET(k+6,l+6)= delta6 * (Cinv(2,2) * Cinv(k,l)) +
 					  delta7 * 0.5 *(Cinv(2,k) * Cinv(2,l) + Cinv(2,l) * Cinv(2,k));
   }
 
-  (*cmat)(0,0)=ET[0][0];
-  (*cmat)(0,1)=ET[1][1];
-  (*cmat)(0,2)=ET[2][2];
-  (*cmat)(0,3)=ET[1][0];
-  (*cmat)(0,4)=ET[2][1];
-  (*cmat)(0,5)=ET[2][0];
+  (*cmat)(0,0)=ET(0,0);
+  (*cmat)(0,1)=ET(1,1);
+  (*cmat)(0,2)=ET(2,2);
+  (*cmat)(0,3)=ET(1,0);
+  (*cmat)(0,4)=ET(2,1);
+  (*cmat)(0,5)=ET(2,0);
   
-  (*cmat)(1,0)=ET[3][3];
-  (*cmat)(1,1)=ET[4][4];
-  (*cmat)(1,2)=ET[5][5];
-  (*cmat)(1,3)=ET[4][3];
-  (*cmat)(1,4)=ET[5][4];
-  (*cmat)(1,5)=ET[5][3];
+  (*cmat)(1,0)=ET(3,3);
+  (*cmat)(1,1)=ET(4,4);
+  (*cmat)(1,2)=ET(5,5);
+  (*cmat)(1,3)=ET(4,3);
+  (*cmat)(1,4)=ET(5,4);
+  (*cmat)(1,5)=ET(5,3);
   
-  (*cmat)(2,0)=ET[6][6];
-  (*cmat)(2,1)=ET[7][7];
-  (*cmat)(2,2)=ET[8][8];
-  (*cmat)(2,3)=ET[7][6];
-  (*cmat)(2,4)=ET[8][7];
-  (*cmat)(2,5)=ET[8][6];
+  (*cmat)(2,0)=ET(6,6);
+  (*cmat)(2,1)=ET(7,7);
+  (*cmat)(2,2)=ET(8,8);
+  (*cmat)(2,3)=ET(7,6);
+  (*cmat)(2,4)=ET(8,7);
+  (*cmat)(2,5)=ET(8,6);
   
-  (*cmat)(3,0)=ET[3][0];
-  (*cmat)(3,1)=ET[4][1];
-  (*cmat)(3,2)=ET[5][2];
-  (*cmat)(3,3)=ET[4][0];
-  (*cmat)(3,4)=ET[5][1];
-  (*cmat)(3,5)=ET[5][0];
+  (*cmat)(3,0)=ET(3,0);
+  (*cmat)(3,1)=ET(4,1);
+  (*cmat)(3,2)=ET(5,2);
+  (*cmat)(3,3)=ET(4,0);
+  (*cmat)(3,4)=ET(5,1);
+  (*cmat)(3,5)=ET(5,0);
   
-  (*cmat)(4,0)=ET[6][3];
-  (*cmat)(4,1)=ET[7][4];
-  (*cmat)(4,2)=ET[8][5];
-  (*cmat)(4,3)=ET[7][3];
-  (*cmat)(4,4)=ET[8][4];
-  (*cmat)(4,5)=ET[8][3];
+  (*cmat)(4,0)=ET(6,3);
+  (*cmat)(4,1)=ET(7,4);
+  (*cmat)(4,2)=ET(8,5);
+  (*cmat)(4,3)=ET(7,3);
+  (*cmat)(4,4)=ET(8,4);
+  (*cmat)(4,5)=ET(8,3);
   
-  (*cmat)(5,0)=ET[6][0];
-  (*cmat)(5,1)=ET[7][1];
-  (*cmat)(5,2)=ET[8][2];
-  (*cmat)(5,3)=ET[7][0];
-  (*cmat)(5,4)=ET[8][1];
-  (*cmat)(5,5)=ET[8][0];
+  (*cmat)(5,0)=ET(6,0);
+  (*cmat)(5,1)=ET(7,1);
+  (*cmat)(5,2)=ET(8,2);
+  (*cmat)(5,3)=ET(7,0);
+  (*cmat)(5,4)=ET(8,1);
+  (*cmat)(5,5)=ET(8,0);
  
   return;
 } // end of neohooke evaluate
