@@ -12,7 +12,6 @@ using namespace DRT::Utils;
 
 DRT::Elements::Ale2::Ale2(int id, int owner)
   : DRT::Element(id,element_ale2,owner),
-    material_(0),
     data_()
 {
   lines_.resize(0);
@@ -22,7 +21,6 @@ DRT::Elements::Ale2::Ale2(int id, int owner)
 
 DRT::Elements::Ale2::Ale2(const DRT::Elements::Ale2& old)
   : DRT::Element(old),
-    material_(old.material_),
     data_(old.data_),
     lines_(old.lines_),
     lineptrs_(old.lineptrs_)
@@ -65,8 +63,6 @@ void DRT::Elements::Ale2::Pack(vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
-  // material_
-  AddtoPack(data,material_);
   // data_
   vector<char> tmp(0);
   data_.Pack(tmp);
@@ -85,8 +81,6 @@ void DRT::Elements::Ale2::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  // material_
-  ExtractfromPack(position,data,material_);
   // data_
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);

@@ -255,12 +255,6 @@ public:
 
   //! @name Other
 
-  /// get material number
-  int Material() const { return material_; }
-
-  /// set material number
-  void SetMaterial(int material) { material_ = material; }
-
   /// set number of gauss points to element shape default
   DRT::Utils::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype);
 
@@ -272,7 +266,7 @@ private:
   void static_ke(vector<int>&              lm,
                  Epetra_SerialDenseMatrix* sys_mat,
                  Epetra_SerialDenseVector* residual,
-                 struct _MATERIAL*         material,
+		 RefCountPtr<MAT::Material> material,
                  ParameterList& 	   params);
 
   //! action parameters recognized by ale2
@@ -281,9 +275,6 @@ private:
     none,
     calc_ale_lin_stiff
   };
-
-  //! number of the material law
-  int                                             material_;
 
   //! container containing all kind of ale2 thisandthat
   DRT::Container                                  data_;

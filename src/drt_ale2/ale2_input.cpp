@@ -77,10 +77,11 @@ bool DRT::Elements::Ale2::ReadElement()
   SetNodeIds(nnode,nodes);
 
   // read number of material model
-  material_ = 0;
-  frint("MAT",&material_,&ierr);
+  int material = 0;
+  frint("MAT",&material,&ierr);
   if (ierr!=1) dserror("Reading of ALE2 element failed\n");
-  if (material_==0) dserror("No material defined for ALE2 element\n");
+  if (material==0) dserror("No material defined for ALE2 element\n");
+  SetMaterial(material);
 
   return true;
 }

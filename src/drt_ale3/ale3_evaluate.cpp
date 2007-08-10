@@ -12,6 +12,7 @@
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_mat/stvenantkirchhoff.H"
 
 using namespace DRT::Utils;
 
@@ -51,7 +52,7 @@ int DRT::Elements::Ale3::Evaluate(ParameterList& params,
     dserror("Unknown type of action for Ale3");
 
   // get the material
-  MATERIAL* actmat = &(mat[material_-1]);
+  RefCountPtr<MAT::Material> mat = Material();
 
   switch(act)
   {
@@ -61,7 +62,7 @@ int DRT::Elements::Ale3::Evaluate(ParameterList& params,
     //vector<double> my_dispnp(lm.size());
     //DRT::Utils::ExtractMyValues(*dispnp,my_dispnp,lm);
 
-    static_ke(lm,&elemat1,&elevec1,actmat,params);
+    static_ke(lm,&elemat1,&elevec1,mat,params);
 
     break;
   }
@@ -93,12 +94,18 @@ int DRT::Elements::Ale3::EvaluateNeumann(ParameterList& params,
 void DRT::Elements::Ale3::static_ke(vector<int>&              lm,
                                     Epetra_SerialDenseMatrix* sys_mat,
                                     Epetra_SerialDenseVector* residual,
-                                    struct _MATERIAL*         material,
+				    RefCountPtr<MAT::Material> material,
                                     ParameterList&            params)
 {
   const int iel = NumNode();
   const int nd  = 3 * iel;
   const DiscretizationType distype = this->Shape();
+
+
+  //  get material using class StVenantKirchhoff
+  if (material->MaterialType()!=m_stvenant)
+    dserror("stvenant material expected but got type %d", material->MaterialType());
+  MAT::StVenantKirchhoff* actmat = static_cast<MAT::StVenantKirchhoff*>(material.get());
 
   Epetra_SerialDenseMatrix xyze(3,iel);
 
@@ -120,8 +127,8 @@ void DRT::Elements::Ale3::static_ke(vector<int>&              lm,
   double                        vol=0.;
 
   // gaussian points
-  //const GaussRule3D gaussrule = getOptimalGaussrule(distype);
-  const IntegrationPoints3D  intpoints = getIntegrationPoints3D(gaussrule_);
+  const GaussRule3D gaussrule = getOptimalGaussrule(distype);
+  const IntegrationPoints3D  intpoints = getIntegrationPoints3D(gaussrule);
 
   // integration loops
   for (int iquad=0;iquad<intpoints.nquad;iquad++)
@@ -221,57 +228,7 @@ void DRT::Elements::Ale3::static_ke(vector<int>&              lm,
         }
 
         // call material law
-
-        const double ym  = material->m.stvenant->youngs;
-        const double pv  = material->m.stvenant->possionratio;
-
-        // evaluate basic material values
-        const double d1=ym*(1.0 - pv)/((1.0 + pv)*(1.0 - 2.0*pv));
-        const double d2=ym*pv/((1.0 + pv)*(1.0 - 2.0*pv));
-        const double d3=ym/((1.0 + pv)*2.0);
-
-        // set values in material-matrix
-        D(0,0)=d1;
-        D(0,1)=d2;
-        D(0,2)=d2;
-        D(0,3)=0.0;
-        D(0,4)=0.0;
-        D(0,5)=0.0;
-
-        D(1,0)=d2;
-        D(1,1)=d1;
-        D(1,2)=d2;
-        D(1,3)=0.0;
-        D(1,4)=0.0;
-        D(1,5)=0.0;
-
-        D(2,0)=d2;
-        D(2,1)=d2;
-        D(2,2)=d1;
-        D(2,3)=0.0;
-        D(2,4)=0.0;
-        D(2,5)=0.0;
-
-        D(3,0)=0.0;
-        D(3,1)=0.0;
-        D(3,2)=0.0;
-        D(3,3)=d3;
-        D(3,4)=0.0;
-        D(3,5)=0.0;
-
-        D(4,0)=0.0;
-        D(4,1)=0.0;
-        D(4,2)=0.0;
-        D(4,3)=0.0;
-        D(4,4)=d3;
-        D(4,5)=0.0;
-
-        D(5,0)=0.0;
-        D(5,1)=0.0;
-        D(5,2)=0.0;
-        D(5,3)=0.0;
-        D(5,4)=0.0;
-        D(5,5)=d3;
+	actmat->SetupCmat(&D);
 
         // elastic stiffness matrix ke
         //ale3_keku(estif,bop,D,fac,nd);
@@ -309,6 +266,10 @@ void DRT::Elements::Ale3::static_ke(vector<int>&              lm,
               hourglass control
               Int. J. Num. Meth. Ing.: Vol. 17 (1981) p. 679-706.
          */
+
+	//Integration rule for hour-glass-stabilization. Not used in the moment. If needed, 
+	//it should be implemented within the getOptimalGaussrule-method  
+#if 0
         if (distype==hex8 && intpoints.nquad == 1)
         {
           const double ee = material->m.stvenant->youngs;
@@ -543,6 +504,7 @@ void DRT::Elements::Ale3::static_ke(vector<int>&              lm,
             }
           }
         }
+#endif
   }
 
 }

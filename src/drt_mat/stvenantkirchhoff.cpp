@@ -49,9 +49,41 @@ void MAT::StVenantKirchhoff::Unpack(const vector<char>& data)
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
 }
 
-void MAT::StVenantKirchhoff::Evaluate(const Epetra_SerialDenseVector* glstrain,
-                                      Epetra_SerialDenseMatrix* cmat,
-                                      Epetra_SerialDenseVector* stress)
+// computes isotropic eplane strain, rotational symmetry
+// plane strain, rotational symmetry
+void MAT::StVenantKirchhoff::SetupCmat2d(Epetra_SerialDenseMatrix* cmat)
+{
+  const double ym  = matdata_->m.stvenant->youngs;
+  const double pv  = matdata_->m.stvenant->possionratio;
+
+  // plane strain, rotational symmetry
+  const double c1=ym/(1.0+pv);
+  const double b1=c1*pv/(1.0-2.0*pv);
+  const double a1=b1+c1;
+
+  (*cmat)(0,0)=a1;
+  (*cmat)(0,1)=b1;
+  (*cmat)(0,2)=0.;
+  (*cmat)(0,3)=b1;
+  
+  (*cmat)(1,0)=b1;
+  (*cmat)(1,1)=a1;
+  (*cmat)(1,2)=0.;
+  (*cmat)(1,3)=b1;
+  
+  (*cmat)(2,0)=0.;
+  (*cmat)(2,1)=0.;
+  (*cmat)(2,2)=c1/2.;
+  (*cmat)(2,3)=0.;
+  
+  (*cmat)(3,0)=b1;
+  (*cmat)(3,1)=b1;
+  (*cmat)(3,2)=0.;
+  (*cmat)(3,3)=a1;
+}
+
+// computes isotropic elasticity tensor in matrix notion for 3d
+void MAT::StVenantKirchhoff::SetupCmat(Epetra_SerialDenseMatrix* cmat)
 {
   // get material parameters
   double Emod = matdata_->m.stvenant->youngs;    // Young's modulus (modulus of elasticity)
@@ -82,11 +114,19 @@ void MAT::StVenantKirchhoff::Evaluate(const Epetra_SerialDenseVector* glstrain,
   (*cmat)(3,3) = mfac*0.5*(1.0-2.0*nu);
   (*cmat)(4,4) = mfac*0.5*(1.0-2.0*nu);
   (*cmat)(5,5) = mfac*0.5*(1.0-2.0*nu);
+}
 
+
+//calculates stresses using one of the above method to evaluate the elasticity tensor
+void MAT::StVenantKirchhoff::Evaluate(const Epetra_SerialDenseVector* glstrain,
+                                      Epetra_SerialDenseMatrix* cmat,
+                                      Epetra_SerialDenseVector* stress)
+{
+  SetupCmat(cmat);
   // evaluate stresses
   (*cmat).Multiply('N',(*glstrain),(*stress));   // sigma = C . epsilon
-  
 }
+
 
 double MAT::StVenantKirchhoff::Density()
 {

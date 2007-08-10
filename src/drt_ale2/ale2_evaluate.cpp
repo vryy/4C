@@ -12,6 +12,7 @@
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_mat/stvenantkirchhoff.H"
 
 using namespace DRT::Utils;
 
@@ -51,7 +52,7 @@ int DRT::Elements::Ale2::Evaluate(ParameterList& params,
     dserror("Unknown type of action for Ale2");
 
   // get the material
-  MATERIAL* actmat = &(mat[material_-1]);
+  RefCountPtr<MAT::Material> mat = Material();
 
   switch (act)
   {
@@ -61,7 +62,7 @@ int DRT::Elements::Ale2::Evaluate(ParameterList& params,
     //vector<double> my_dispnp(lm.size());
     //DRT::Utils::ExtractMyValues(*dispnp,my_dispnp,lm);
 
-    static_ke(lm,&elemat1,&elevec1,actmat,params);
+    static_ke(lm,&elemat1,&elevec1,mat,params);
 
     break;
   }
@@ -93,12 +94,18 @@ int DRT::Elements::Ale2::EvaluateNeumann(ParameterList& params,
 void DRT::Elements::Ale2::static_ke(vector<int>&              lm,
                                     Epetra_SerialDenseMatrix* sys_mat,
                                     Epetra_SerialDenseVector* residual,
-                                    struct _MATERIAL*         material,
-                                    ParameterList&            params)
+				    RefCountPtr<MAT::Material> material,
+				    ParameterList&            params)
 {
   const int iel = NumNode();
   const int nd  = 2 * iel;
   const DiscretizationType distype = this->Shape();
+
+  
+  // get material using class StVenantKirchhoff
+  if (material->MaterialType()!=m_stvenant)
+    dserror("stvenant material expected but got type %d", material->MaterialType());
+  MAT::StVenantKirchhoff* actmat = static_cast<MAT::StVenantKirchhoff*>(material.get());
 
   Epetra_SerialDenseMatrix xyze(2,iel);
 
@@ -180,34 +187,7 @@ void DRT::Elements::Ale2::static_ke(vector<int>&              lm,
       }
 
       // call material law
-
-      const double ym  = material->m.stvenant->youngs;
-      const double pv  = material->m.stvenant->possionratio;
-
-      // plane strain, rotational symmetry
-      const double c1=ym/(1.0+pv);
-      const double b1=c1*pv/(1.0-2.0*pv);
-      const double a1=b1+c1;
-
-      d(0,0)=a1;
-      d(0,1)=b1;
-      d(0,2)=0.;
-      d(0,3)=b1;
-
-      d(1,0)=b1;
-      d(1,1)=a1;
-      d(1,2)=0.;
-      d(1,3)=b1;
-
-      d(2,0)=0.;
-      d(2,1)=0.;
-      d(2,2)=c1/2.;
-      d(2,3)=0.;
-
-      d(3,0)=b1;
-      d(3,1)=b1;
-      d(3,2)=0.;
-      d(3,3)=a1;
+      actmat->SetupCmat2d(&d);
 
       for (int j=0; j<nd; j++)
       {

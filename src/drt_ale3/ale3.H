@@ -255,12 +255,6 @@ public:
 
   //! @name Other
 
-  /// get material number
-  int Material() const { return material_; }
-
-  /// set material number
-  void SetMaterial(int material) { material_ = material; }
-
   //@}
 
 
@@ -269,7 +263,7 @@ private:
   void static_ke(vector<int>&              lm,
                  Epetra_SerialDenseMatrix* sys_mat,
                  Epetra_SerialDenseVector* residual,
-                 struct _MATERIAL*         material,
+                 RefCountPtr<MAT::Material> material,
                  ParameterList& 	   params);
 
   //! action parameters recognized by ale3
@@ -279,11 +273,8 @@ private:
     calc_ale_lin_stiff
   };
 
-  //! number of the material law
-  int                                             material_;
-
   //! Gaussrule
-  DRT::Utils::GaussRule3D                         gaussrule_;
+  //DRT::Utils::GaussRule3D                         gaussrule_;
 
   //! container containing all kind of ale3 thisandthat
   DRT::Container                                  data_;

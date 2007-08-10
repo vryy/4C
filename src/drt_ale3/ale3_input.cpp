@@ -29,6 +29,7 @@ using namespace DRT::Utils;
 
 bool DRT::Elements::Ale3::ReadElement()
 {
+  cout << "input" <<endl;
   typedef map<string, DiscretizationType> Gid2DisType;
   Gid2DisType gid2distype;
   gid2distype["HEX8"]  = hex8;
@@ -72,12 +73,15 @@ bool DRT::Elements::Ale3::ReadElement()
   SetNodeIds(nnode,nodes);
 
   // read number of material model
-  material_ = 0;
-  frint("MAT",&material_,&ierr);
+  int material = 0;
+  frint("MAT",&material,&ierr);
   if (ierr!=1) dserror("Reading of ALE3 element failed\n");
-  if (material_==0) dserror("No material defined for ALE3 element\n");
+  if (material==0) dserror("No material defined for ALE3 element\n");
+  SetMaterial(material);
 
-    // read gaussian points and set gaussrule
+    // read gaussian points and set gaussrule (not used in the moment). Instead method GetOptimalGaussrule is used during 
+    // the evaluation
+#if 0
     char  buffer[50];
     int ngp[3];
     switch (distype)
@@ -92,9 +96,9 @@ bool DRT::Elements::Ale3::ReadElement()
             gaussrule_ = intrule_hex_1point; 
             break; 
         case 2:  
-            gaussrule_ = intrule_hex_8point; 
+	    gaussrule_ = intrule_hex_8point; 
             break;
-        case 3:  
+        case 3:
             gaussrule_ = intrule_hex_27point; 
             break;
         default:
@@ -140,6 +144,7 @@ bool DRT::Elements::Ale3::ReadElement()
     default:
         dserror("Reading of FLUID3 element failed: integration points\n");
     } // end switch distype
+#endif
 
   return true;
 }

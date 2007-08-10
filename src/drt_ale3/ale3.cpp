@@ -12,7 +12,6 @@ using namespace DRT::Utils;
 
 DRT::Elements::Ale3::Ale3(int id, int owner)
   : DRT::Element(id,element_ale3,owner),
-    material_(0),
     data_()
 {
   surfaces_.resize(0);
@@ -22,7 +21,6 @@ DRT::Elements::Ale3::Ale3(int id, int owner)
 
 DRT::Elements::Ale3::Ale3(const DRT::Elements::Ale3& old)
   : DRT::Element(old),
-    material_(old.material_),
     data_(old.data_),
     surfaces_(old.surfaces_),
     surfaceptrs_(old.surfaceptrs_)
@@ -57,7 +55,6 @@ DRT::Element::DiscretizationType DRT::Elements::Ale3::Shape() const
 void DRT::Elements::Ale3::Pack(vector<char>& data) const
 {
   data.resize(0);
-
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
@@ -66,9 +63,7 @@ void DRT::Elements::Ale3::Pack(vector<char>& data) const
   Element::Pack(basedata);
   AddtoPack(data,basedata);
   // Gaussrule
-  AddtoPack(data,gaussrule_);
-  // material_
-  AddtoPack(data,material_);
+  //AddtoPack(data,gaussrule_);
   // data_
   vector<char> tmp(0);
   data_.Pack(tmp);
@@ -88,9 +83,7 @@ void DRT::Elements::Ale3::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
   // Gaussrule
-  ExtractfromPack(position,data,gaussrule_);
-  // material_
-  ExtractfromPack(position,data,material_);
+  //ExtractfromPack(position,data,gaussrule_);
   // data_
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
