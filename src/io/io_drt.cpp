@@ -718,6 +718,8 @@ void IO::DiscretizationWriter::WriteMesh(int step, double time)
     dserror("Failed to write group in HDF-meshfile");
 
   RefCountPtr<vector<char> > elementdata = dis_->PackMyElements();
+  if (elementdata->size()==0)
+    dserror("no element data no proc %d. Too few elements?", dis_->Comm().MyPID());
   hsize_t dim[] = {static_cast<hsize_t>(elementdata->size())};
   status = H5LTmake_dataset_char(meshgroup_,"elements",1,dim,&((*elementdata)[0]));
   if (status < 0)
