@@ -532,7 +532,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
       }
 
      // get bodyforce in gausspoint
-     for (int isd=0;isd<3;isd++)
+     for (int isd=0;isd<2;isd++)
      {
        edeadng[isd] = 0.0;
        for (int inode=0;inode<iel;inode++)
@@ -540,6 +540,7 @@ void DRT::Elements::Fluid2::f2_sys_mat(vector<int>&              lm,
          edeadng[isd]+= bodyforce(isd,inode)*funct[inode];
        }
      }
+     edeadng[2] = 0.0;
 
       // perform integration for entire matrix and rhs
       if(is_stationary==false)
