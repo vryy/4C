@@ -80,7 +80,7 @@ bool NOX::FSI::MinimalPolynomial::compute(NOX::Abstract::Vector& dir,
   r = 0.;
 
   int k;
-  for (k=0; k<=kmax_; ++k)
+  for (k=0; k<kmax_; ++k)
   {
     NOX::Abstract::Group::ReturnType status;
 
