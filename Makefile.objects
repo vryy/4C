@@ -153,6 +153,7 @@ OBJS_DRT_FSI  = src/drt_fsi/ale_dyn.o \
 		src/drt_fsi/fsi_nox_michler.o \
 		src/drt_fsi/fsi_nox_sd.o \
 		src/drt_fsi/fsi_nox_linearsystem_gcr.o \
+		src/drt_fsi/fsi_nox_mpe.o \
                 src/drt_fsi/fsi_coupling.o \
                 src/drt_fsi/fsi_utils.o \
                 src/drt_fsi/fsi_ale_resulttest.o

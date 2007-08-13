@@ -15,6 +15,7 @@
 #include "fsi_nox_jacobian.H"
 #include "fsi_nox_sd.H"
 #include "fsi_nox_linearsystem_gcr.H"
+#include "fsi_nox_mpe.H"
 
 
 /*----------------------------------------------------------------------*
@@ -670,6 +671,16 @@ FSI::DirichletNeumannCoupling::CreateLinearSystem(ParameterList& nlParams,
     Teuchos::RefCountPtr<NOX::Direction::Generic> fixpoint = Teuchos::rcp(new NOX::FSI::FixPoint(utils,nlParams));
     dirParams.set("Method","User Defined");
     dirParams.set("User Defined Direction",fixpoint);
+    lsParams.set("Preconditioner","None");
+    preconditioner="None";
+  }
+
+  // Minimal Polynomial vector extrapolation
+  else if (jacobian=="MPE")
+  {
+    Teuchos::RefCountPtr<NOX::Direction::Generic> mpe = Teuchos::rcp(new NOX::FSI::MinimalPolynomial(utils,nlParams));
+    dirParams.set("Method","User Defined");
+    dirParams.set("User Defined Direction",mpe);
     lsParams.set("Preconditioner","None");
     preconditioner="None";
   }
