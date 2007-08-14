@@ -386,13 +386,11 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
 {
 
   int               itnum         = 0;
-
+  double            tcpu   ;
   
-  if(myrank_ == 0)
-  {
-    printf("+------------+-------------------+--------------+--------------+--------------+--------------+ \n");
-    printf("|- step/max -|- tol      [norm] -|- vel-error --|- pre-error --|- vres-norm --|- pres-norm --| \n");
-  }
+  dtsolve_ = 0;
+  dtele_   = 0;
+
 
   // start time measurement for nonlinear iteration
   tm6_ref_ = rcp(new TimeMonitor(*timenlnloop_));
@@ -416,12 +414,21 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
   // -------------------------------------------------------------------
   // start time measurement for element call
   tm3_ref_ = rcp(new TimeMonitor(*timeeleloop_));
+
+  // get cpu time
+  tcpu=ds_cputime();
   
   this->GenAlphaAssembleResidualAndMatrix();
 
   // end time measurement for element call
   tm3_ref_=null;
+  dtele_=ds_cputime()-tcpu;
 
+  if(myrank_ == 0)
+  {
+    printf("+------------+-------------------+--------------+--------------+--------------+--------------+ \n");
+    printf("|- step/max -|- tol      [norm] -|- vel-error --|- pre-error --|- vres-norm --|- pres-norm --|                 (te=%10.3E)\n",dtele_);
+  }
   
   bool              stopnonliniter = false;
   while (stopnonliniter==false)
@@ -433,11 +440,15 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
     // -------------------------------------------------------------------
     // start time measurement for solver call
     tm5_ref_ = rcp(new TimeMonitor(*timesolver_));
-    
+
+    // get cpu time
+    tcpu=ds_cputime();
+     
     this->GenAlphaCalcIncrement(itnum);
 
     // end time measurement for application of dirichlet conditions
     tm5_ref_=null;
+    dtsolve_=ds_cputime()-tcpu;
 
     // start time measurement for nonlinear update
     tm9_ref_ = rcp(new TimeMonitor(*timenonlinup_));
@@ -464,14 +475,20 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
     // matrix for the next step
     // -------------------------------------------------------------------
 
-    if(itnum<params_.get<int>("max nonlin iter steps"))
+    // start time measurement for element call
+    tm3_ref_ = rcp(new TimeMonitor(*timeeleloop_));
+
+    // get cpu time
+    tcpu=ds_cputime();
+    
+//    if(itnum<params_.get<int>("max nonlin iter steps"))
     {
-      // start time measurement for element call
-      tm3_ref_ = rcp(new TimeMonitor(*timeeleloop_));
       this->GenAlphaAssembleResidualAndMatrix();
-      // end time measurement for element call
-      tm3_ref_=null;
     }
+    // end time measurement for element call
+    tm3_ref_=null;
+    
+    dtele_=ds_cputime()-tcpu;
 
 
     // -------------------------------------------------------------------
@@ -653,7 +670,7 @@ void FluidGenAlphaIntegration::GenAlphaTimeUpdate()
   // for the accelerations
   accn_->Update(1.0,*accnp_ ,0.0);
 
-#ifdef TDS
+  
   {
     // create the parameters for the discretization
     ParameterList eleparams;
@@ -674,7 +691,6 @@ void FluidGenAlphaIntegration::GenAlphaTimeUpdate()
     // call loop over elements
     discret_->Evaluate(eleparams,null,null,null,null,null);
   }
-#endif
   
   return;
 } // FluidGenAlphaIntegration::GenAlphaTimeUpdate
@@ -797,6 +813,69 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
     discret_->Evaluate(eleparams,sysmat_,null,residual_,null,null);
     discret_->ClearState();
   }
+#if 0  // DEBUG IO --- the whole systemmatrix
+      {
+	  int rr;
+	  int mm;
+	  for(rr=0;rr<residual_->MyLength();rr++)
+	  {
+	      int NumEntries;
+
+	      vector<double> Values(maxentriesperrow_);
+	      vector<int> Indices(maxentriesperrow_);
+
+	      sysmat_->ExtractGlobalRowCopy(rr,
+					    maxentriesperrow_,
+					    NumEntries,
+					    &Values[0],&Indices[0]);
+	      printf("Row %4d\n",rr);
+
+	      for(mm=0;mm<NumEntries;mm++)
+	      {
+		  printf("mat [%4d] [%4d] %26.19e\n",rr,Indices[mm],Values[mm]);
+	      }
+	  }
+      }
+#endif
+
+#if 0  // DEBUG IO  --- rhs of linear system
+  {
+    const Epetra_Map* dofrowmap       = discret_->DofRowMap();
+
+    int rr;
+
+    
+    double* data = velnp_->Values();
+    for(rr=0;rr<residual_->MyLength();rr++)
+    {
+      int  gid = dofrowmap->GID(rr);
+
+      if(gid%4==0)
+      printf("%4d vel %22.15e\n",gid,data[rr]);
+    }
+  }
+
+#endif
+
+      
+#if 0  // DEBUG IO  --- rhs of linear system
+  {
+    const Epetra_Map* dofrowmap       = discret_->DofRowMap();
+
+    int rr;
+
+    
+    double* data = residual_->Values();
+    for(rr=0;rr<residual_->MyLength();rr++)
+    {
+      int  gid = dofrowmap->GID(rr);
+
+      if(gid%4==0)
+      printf("%4d rhs %22.15e\n",gid,data[rr]);
+    }
+  }
+
+#endif
 
   // remember force vector for stress computation
   *force_=Epetra_Vector(*residual_);
@@ -941,7 +1020,7 @@ void FluidGenAlphaIntegration::GenAlphaNonlinearUpdate()
     int rr;
 
     
-    double* data = velnp_->Values();
+    double* data = residual_->Values();
     for(rr=0;rr<residual_->MyLength();rr++)
     {
       int  gid = dofrowmap->GID(rr);
@@ -1028,9 +1107,9 @@ bool FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(
   // out to screen
   if(myrank_ == 0)
   {
-    printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |\n",
+    printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |  (ts=%10.3E)(te=%10.3E)\n",
            itnum,itemax,ittol,incvelnorm_L2/velnorm_L2,
-           incprenorm_L2/prenorm_L2, velresnorm_L2,preresnorm_L2);
+           incprenorm_L2/prenorm_L2, velresnorm_L2,preresnorm_L2,dtsolve_,dtele_);
   }
 
   // this is the convergence check

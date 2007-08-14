@@ -45,6 +45,7 @@ namespace Elements
 class Fluid3Surface;
 class Fluid3Line;
 class Fluid3Impl;
+class Fluid3GenalphaResVMM;
 
 /*!
 \class Fluid3
@@ -62,6 +63,7 @@ public:
   friend class Fluid3Surface;
   friend class Fluid3Line;
   friend class Fluid3Impl;
+  friend class Fluid3GenalphaResVMM;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -297,9 +299,7 @@ private:
     none,
     calc_fluid_systemmat_and_residual,
     calc_fluid_genalpha_sysmat_and_residual,
-#ifdef TDS
     calc_fluid_genalpha_update_for_subscales,
-#endif
     calc_fluid_beltrami_error,
     calc_turbulence_statistics,
     calc_Shapefunction,
@@ -326,19 +326,14 @@ private:
   //! vector of lines adjacent to this element
   vector<DRT::Elements::Fluid3Line*>              lineptrs_;
 
-#ifdef TDS
-  //! matrix of subscale acceleration values in gausspoints of this element
-  Epetra_SerialDenseMatrix                        sub_acc_;
-  Epetra_SerialDenseMatrix                        sub_acc_old_;
+  //! matrices of subscale acceleration values in gausspoints of this element
+  blitz::Array<double,2>                        sub_acc_old_;
 
-  //! matrix of subscale velocity values in gausspoints of this element
-  Epetra_SerialDenseMatrix                        sub_vel_;
-  Epetra_SerialDenseMatrix                        sub_vel_old_;
+  blitz::Array<double,2>                        sub_vel_;
+  blitz::Array<double,2>                        sub_vel_old_;
 
-  //! vector of subscale pressures values in gausspoints of this element
-  Epetra_SerialDenseVector                        sub_pre_;
-  Epetra_SerialDenseVector                        sub_pre_old_;
-#endif
+  blitz::Array<double,1>                        sub_pre_;
+  blitz::Array<double,1>                        sub_pre_old_;
 
   // internal calculation methods
 
@@ -358,36 +353,6 @@ private:
                   ParameterList&            params
                   );
 
-  // calculating system matrix for genalpha
-  void f3_genalpha_sys_mat(const vector<int>&        lm,
-                           const vector<double>&     evelnp,
-                           const vector<double>&     eprenp,
-                           const vector<double>&     evelaf,
-                           const vector<double>&     eaccam,
-                           Epetra_SerialDenseMatrix* sys_mat,
-                           Epetra_SerialDenseVector* elevec,
-                           struct _MATERIAL*         material,
-                           ParameterList&            params
-                           );
-
-  // calculating system rhs for genalpha
-  void f3_genalpha_rhs(vector<int>&              lm,
-                       vector<double>&           myvelnp,
-                       vector<double>&           myprenp,
-                       vector<double>&           myvelaf,
-                       vector<double>&           myaccam,
-                       Epetra_SerialDenseVector& elevec,
-                       struct _MATERIAL*         material,
-                       ParameterList& 	         params);
-
-  // calculate the stabilisation parameter
-  void f3_calc_stabpar(vector<double>                 &tau,
-                       const int                       iel,
-                       const Epetra_SerialDenseMatrix &xyze,
-                       const vector<double>           &myvelnp,
-                       const double                    visc,
-                       ParameterList                  &params,
-                       const int                       version);
 
   /*!
   \brief calculate stabilization parameter
@@ -639,35 +604,6 @@ private:
     const DiscretizationType&  distype  ///< switch gausrule based on this discretization type
     );
 
-
-  /*!
-    \brief evaluate fluid coefficient matrix and rhs for a generalised alpha problem
-
-
-   */
-
-  void f3_genalpha_calmat(
-    Epetra_SerialDenseMatrix&        elemat,
-    Epetra_SerialDenseVector&        elevec,
-    const vector<double>&            accintam,
-    const vector<double>&            velintaf,
-    const Epetra_SerialDenseMatrix&  vderxyaf,
-    const Epetra_SerialDenseMatrix&  vderxyaf2,
-    const vector<double>&            velintnp,
-    const Epetra_SerialDenseMatrix&  vderxynp,
-    const double&                    prenp,
-    const vector<double>&            pderxynp,
-    const vector<double>&            edeadaf,
-    const Epetra_SerialDenseVector&  funct,
-    const Epetra_SerialDenseMatrix&  derxy,
-    const Epetra_SerialDenseMatrix&  derxy2,
-    const vector<double>&            tau,
-    const double&                    fac,
-    const double&                    visc,
-    const int&                       iel,
-    const int&                       iquad,
-    ParameterList&                   params);
-
   /*!
    * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
    * \return boolean indicating higher order status
@@ -681,6 +617,9 @@ private:
   /// Internal implementation class for specific fluid element
   Fluid3Impl* Impl();
 
+  /// Residual based genalpha implementation class for fluid element
+  Fluid3GenalphaResVMM* GenalphaResVMM();
+  
 }; // class Fluid3
 
 

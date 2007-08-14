@@ -415,6 +415,9 @@ private:
   RefCountPtr<TimeMonitor> tm7_ref_ ;
   RefCountPtr<TimeMonitor> tm8_ref_ ;
   RefCountPtr<TimeMonitor> tm9_ref_ ;
+
+  double                   dtele_;
+  double                   dtsolve_;
 };
 
 
