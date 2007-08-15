@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief Control routine for convection-diffusion time integration.
+\brief Control routine for convection-diffusion time integration. 
        Associated with condifimplicitintegration.cpp
 
 
@@ -68,9 +68,9 @@ public:
 
   */
   CondifImplicitTimeInt(RefCountPtr<DRT::Discretization> dis,
-                        LINALG::Solver&       solver,
-                        ParameterList&        params,
-                        IO::DiscretizationWriter& output);
+                        LINALG::Solver&                  solver,
+                        ParameterList&                   params,
+                        IO::DiscretizationWriter&        output);
 
 
   /*!
@@ -89,51 +89,52 @@ public:
   static void SetDefaults(ParameterList& params);
 
   /*!
+  \brief Set the part of the righthandside belonging to the last
+         timestep.
+  */
+  void SetOldPartOfRighthandside();
+
+
+  /*!
   \brief start time loop for startingalgo, normal problems and restarts
 
   */
   void Integrate();
 
-
   /*!
   \brief Do time integration (time loop)
 
   */
-  void TimeIntegrateFromTo(
-    int&               step,
-    double&            time,
-    double&            dta,
-    double&            dtp,
-    int                cdvel,
-    int                endstep,
-    double             endtime,
-    FLUID_TIMEINTTYPE  timealgo,
-    double             theta
-    );
+  void TimeLoop();
 
   /*!
   \brief Solve stationary problem
 
   */
-  void SolveStationaryProblem(int cdvel);
+  void SolveStationaryProblem();
 
-  void Solve(
-             double dta,
-             double theta,
-             int cdvel,
-             bool is_stat
-             );
+  /// setup the variables to do a new time step
+  void PrepareTimeStep();
+
+  void Solve(bool is_stat=false);
+
+  /*!
+  \brief Update the solution after convergence of the nonlinear
+         iteration. Current solution becomes old solution of next
+         timestep.
+  */
+  void TimeUpdate();
 
   /*!
   \brief update configuration and output to file/screen
 
   */
-  void Output(
-    int    step,
-    double time
-    );
+  void Output();
 
+  /*!
+  \brief read restart data
 
+  */
   void ReadRestart(int step);
 
 protected:
@@ -145,31 +146,52 @@ protected:
   RefCountPtr<DRT::Discretization> discret_;
   LINALG::Solver&               solver_;
   ParameterList&                params_;
-  IO::DiscretizationWriter&         output_;
+  IO::DiscretizationWriter&     output_;
   int                           myrank_;
   int                           maxentriesperrow_;
 
   double time_;
   int step_;
+  int stepmax_;
+  double maxtime_;
+
+  FLUID_TIMEINTTYPE timealgo_;
+
   int restartstep_;
   int uprestart_;
+  int writestep_;
+  int upres_;
 
-  // system matrix --- stiffness and mass are assembled in one matrix!
+  double dta_;
+  double dtp_;
+  double theta_;
+
+  int cdvel_;
+
+  /// system matrix --- stiffness and mass are assembled in one matrix!
   RefCountPtr<Epetra_CrsMatrix> sysmat_;
 
-  // toggle vector indicating which dofs have Dirichlet BCs
+  /// toggle vector indicating which dofs have Dirichlet BCs
   RefCountPtr<Epetra_Vector>    dirichtoggle_;
 
-  // the vector containing body and surface forces
+  RefCountPtr<Epetra_Vector>    invtoggle_;
+
+  /// the vector containing body and surface forces
   RefCountPtr<Epetra_Vector>    neumann_loads_;
 
-  // The residual vector
+  /// The residual vector
   RefCountPtr<Epetra_Vector>    residual_;
 
-  // phi at time n+1, n and n-1
+  /// time derivatives of phi at time n and n-1
+  RefCountPtr<Epetra_Vector>    phidtn_;
+  RefCountPtr<Epetra_Vector>    phidtnm_;
+  /// phi at time n+1, n and n-1
   RefCountPtr<Epetra_Vector>    phinp_;
   RefCountPtr<Epetra_Vector>    phin_;
   RefCountPtr<Epetra_Vector>    phinm_;
+  // histvector --- a linear combination of phinm, phin (BDF)
+  //                or phin, phidtn (One-Step-Theta)
+  RefCountPtr<Epetra_Vector>    hist_;
 
 
   // time measurement

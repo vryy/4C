@@ -46,6 +46,7 @@ bool DRT::Elements::Condif2::ReadElement()
   int   nnode = 0;
   int   nodes[27];
   char  buffer[50];
+  int   ngp_[2];
 
   frchk("QUAD4",&ierr);
   if (ierr==1)
@@ -94,14 +95,15 @@ bool DRT::Elements::Condif2::ReadElement()
   SetNodeIds(nnode,nodes);
 
   // read number of material model
-  material_ = 0;
-  frint("MAT",&material_,&ierr);
-  if (ierr!=1) dserror("Reading Material for CONDIF2 element failed\n");
-  if (material_==0) dserror("No material defined for CONDIF2 element\n");
+  int material = 0;
+  frint("MAT",&material,&ierr);
+  if (ierr!=1) dserror("Reading Material for CONDIF2 element failed");
+  if (material==0) dserror("No material defined for CONDIF2 element");
+  SetMaterial(material);
 
   // read gaussian points
 
-   if (nnode==4 || nnode==8 || nnode==9)
+  if (nnode==4 || nnode==8 || nnode==9)
   {
     frint_n("GP",ngp_,2,&ierr);
     if (ierr!=1) dserror("Reading of CONDIF2 element failed: GP\n");

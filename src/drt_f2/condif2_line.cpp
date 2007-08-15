@@ -22,7 +22,6 @@ Maintainer: Volker Gravemeier
 
 
 
-
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               vg 05/07|
  |  id             (in)  this element's global id                       |

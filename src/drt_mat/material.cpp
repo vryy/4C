@@ -7,6 +7,7 @@
 #include "micromaterial.H"
 #include "hyperpolyconvex.H"
 #include "neohooke.H"
+#include "convecdiffus.H"
 
 extern struct _MATERIAL *mat;
 
@@ -47,6 +48,8 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     return Teuchos::rcp(new HyperPolyconvex(actmat));
   case m_neohooke:
     return Teuchos::rcp(new NeoHooke(actmat));
+  case m_condif:
+    return Teuchos::rcp(new ConvecDiffus(actmat));
   case m_pl_mises_3D:
   case m_pl_mises:
   case m_pl_hoff:
@@ -60,7 +63,6 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
   case m_pl_por_mises:
   case m_compogden:
   case m_viscohyper:
-  case m_condif:
   case m_pl_hash:
   case m_el_orth:
   case m_mfoc:

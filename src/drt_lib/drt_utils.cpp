@@ -50,6 +50,7 @@ extern "C"
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mat/neohooke.H"
+#include "../drt_mat/convecdiffus.H"
 #include "drt_dserror.H"
 
 
@@ -285,6 +286,12 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
 	MAT::NeoHooke* neo = new MAT::NeoHooke();
 	neo->Unpack(data);
 	return neo;
+    }
+    case ParObject_ConvecDiffus:
+    {
+      MAT::ConvecDiffus* condif = new MAT::ConvecDiffus();
+      condif->Unpack(data);
+      return condif;
     }
     default:
       dserror("Unknown type of ParObject instance: %d",type);

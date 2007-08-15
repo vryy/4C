@@ -19,7 +19,7 @@ Maintainer: Volker Gravemeier
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
 
-
+using namespace DRT::Utils;
 
 
 /*----------------------------------------------------------------------*
@@ -28,10 +28,8 @@ Maintainer: Volker Gravemeier
  *----------------------------------------------------------------------*/
 DRT::Elements::Condif2::Condif2(int id, int owner) :
 DRT::Element(id,element_condif2,owner),
-material_(0),
 data_()
 {
-  ngp_[0] = ngp_[1] = 0;
   lines_.resize(0);
   lineptrs_.resize(0);
   return;
@@ -43,13 +41,10 @@ data_()
  *----------------------------------------------------------------------*/
 DRT::Elements::Condif2::Condif2(const DRT::Elements::Condif2& old) :
 DRT::Element(old),
-material_(old.material_),
 data_(old.data_),
 lines_(old.lines_),
 lineptrs_(old.lineptrs_)
 {
-  for (int i=0; i<2; ++i) ngp_[i] = old.ngp_[i];
-
   return;
 }
 
@@ -97,10 +92,6 @@ void DRT::Elements::Condif2::Pack(vector<char>& data) const
   vector<char> basedata(0);
   Element::Pack(basedata);
   AddtoPack(data,basedata);
-  // ngp_
-  AddtoPack(data,ngp_,2*sizeof(int));
-  // material_
-  AddtoPack(data,material_);
   // data_
   vector<char> tmp(0);
   data_.Pack(tmp);
@@ -125,10 +116,6 @@ void DRT::Elements::Condif2::Unpack(const vector<char>& data)
   vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  // ngp_
-  ExtractfromPack(position,data,ngp_,2*sizeof(int));
-  // material_
-  ExtractfromPack(position,data,material_);
   // data_
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
@@ -169,178 +156,74 @@ RefCountPtr<DRT::ElementRegister> DRT::Elements::Condif2::ElementRegister() cons
   return rcp(new DRT::Elements::Condif2Register(Type()));
 }
 
-/*----------------------------------------------------------------------*
- |  get vector of lines (public)                                vg 05/07|
- *----------------------------------------------------------------------*/
+//
+// get vector of lines
+//
 DRT::Element** DRT::Elements::Condif2::Lines()
 {
-
+  const DiscretizationType distype = Shape();
   const int nline   = NumLine();
-  const int numnode = NumNode();
   lines_.resize(nline);
   lineptrs_.resize(nline);
-  int nodeids[100];
-  DRT::Node* nodes[100];
 
-  /* triangle elements */
-  if (nline==3)
-  {
-    /* mind: The displayed element is not the reference element!
-     *
-     *               2
-     *                X
-     *                |\
-     *                | \       edge1
-     *   edge2       5o  o4    (line1)
-     *  (line2)       |   \
-     *                |    \
-     *                X--o--X
-     *               0   3   1
-     *
-     *             edge0
-     *            (line0)
-     *
-     *
-     *      X nodes for tri3
-     *      o addotional nodes for tri6
-     *                                                                       */
-    /* linear triangles*/
-    if (numnode==3)
+    switch (distype)
     {
-      /* first edge */
-      // set node id's
-      nodeids[0] = NodeIds()[0];
-      nodeids[1] = NodeIds()[1];
-      // get nodes
-      nodes[0] = Nodes()[0];
-      nodes[1] = Nodes()[1];
-      // create the line and get the line pointer
-      lines_[0] =
-        rcp(new DRT::Elements::Condif2Line(0,Owner(),2,nodeids,nodes,this,0));
-      lineptrs_[0] = lines_[0].get();
-
-      /* second edge */
-      // set node id's
-      nodeids[0] = NodeIds()[1];
-      nodeids[1] = NodeIds()[2];
-      // get nodes
-      nodes[0] = Nodes()[1];
-      nodes[1] = Nodes()[2];
-      // create the line and get the line pointer
-      lines_[1] =
-        rcp(new DRT::Elements::Condif2Line(1,Owner(),2,nodeids,nodes,this,1));
-      lineptrs_[1] = lines_[1].get();
-
-      /* third edge */
-      // set node id's
-      nodeids[0] = NodeIds()[2];
-      nodeids[1] = NodeIds()[0];
-      // get nodes
-      nodes[0] = Nodes()[2];
-      nodes[1] = Nodes()[0];
-      // create the line and get the line pointer
-      lines_[2] =
-        rcp(new DRT::Elements::Condif2Line(2,Owner(),2,nodeids,nodes,this,2));
-      lineptrs_[2] = lines_[2].get();
+    case tri3:
+        CreateLinesTri(nline, 2);
+        break;
+    case tri6:
+        CreateLinesTri(nline, 3);
+        break;
+    case quad4:
+        CreateLinesQuad(nline, 2);
+        break;
+    case quad8:
+        CreateLinesQuad(nline, 3);
+        break;
+    case quad9:
+        CreateLinesQuad(nline, 3);
+        break;
+    default:
+        dserror("distype not supported");
     }
-    /* quadratic triangles*/
-    else if (numnode==6)
+
+    return (DRT::Element**)(&(lineptrs_[0]));
+}
+
+void DRT::Elements::Condif2::CreateLinesTri(const int& nline,
+                                           const int& nnode)
+{
+    for(int iline=0;iline<nline;iline++)
     {
-      dserror("TRI6 lines not implemented.");
+        int nodeids[nnode];
+        DRT::Node* nodes[nnode];
+
+        for (int inode=0;inode<nnode;inode++)
+        {
+             nodeids[inode] = NodeIds()[eleNodeNumbering_tri6_lines[iline][inode]];
+             nodes[inode]   = Nodes()[  eleNodeNumbering_tri6_lines[iline][inode]];
+        }
+        lines_[iline] = rcp(new DRT::Elements::Condif2Line(iline,Owner(),nnode,nodeids,nodes,this,iline));
+        lineptrs_[iline] = lines_[iline].get();
     }
-  }
-  /* quad elements*/
-  else if (nline==4)
-  {
-    /* mind: The displayed element is not the reference element!
-     *
-     *                  
-     *                  edge2	  
-     *		       (line2)
-     *           
-     *              3     6     2
-     *               X----o----X
-     *               |         |
-     *               |         |   
-     *   edge3      7o    O    o5      edge1	  
-     *  (line3)      |    8    |      (line1)
-     *               |         |
-     *               X----o----X
-     *              0     4     1
-     *
-     *                  edge0
-     *                 (line0)
-     *
-     *
-     *      X nodes for quad
-     *      o addotional nodes for quad8
-     *      O addotional nodes for full quadratic quad9
-     *      
-     *                                                                 */
-    if (numnode==4)
+}
+
+void DRT::Elements::Condif2::CreateLinesQuad(const int& nline,
+                                            const int& nnode)
+{
+    for(int iline=0;iline<nline;iline++)
     {
-      /* first edge */
-      // set node id's
-      nodeids[0] = NodeIds()[0];
-      nodeids[1] = NodeIds()[1];
-      // get nodes
-      nodes[0] = Nodes()[0];
-      nodes[1] = Nodes()[1];
-      // create the line and get the line pointer
-      lines_[0] =
-        rcp(new DRT::Elements::Condif2Line(0,Owner(),2,nodeids,nodes,this,0));
-      lineptrs_[0] = lines_[0].get();
+        int nodeids[nnode];
+        DRT::Node* nodes[nnode];
 
-      /* second edge */
-      // set node id's
-      nodeids[0] = NodeIds()[1];
-      nodeids[1] = NodeIds()[2];
-      // get nodes
-      nodes[0] = Nodes()[1];
-      nodes[1] = Nodes()[2];
-      // create the line and get the line pointer
-      lines_[1] =
-        rcp(new DRT::Elements::Condif2Line(1,Owner(),2,nodeids,nodes,this,1));
-      lineptrs_[1] = lines_[1].get();
-
-      /* third edge */
-      // set node id's
-      nodeids[0] = NodeIds()[2];
-      nodeids[1] = NodeIds()[3];
-      // get nodes
-      nodes[0] = Nodes()[2];
-      nodes[1] = Nodes()[3];
-      // create the line and get the line pointer
-      lines_[2] =
-        rcp(new DRT::Elements::Condif2Line(2,Owner(),2,nodeids,nodes,this,2));
-      lineptrs_[2] = lines_[2].get();
-
-      /* fourth edge */
-      // set node id's
-      nodeids[0] = NodeIds()[3];
-      nodeids[1] = NodeIds()[0];
-      // get nodes
-      nodes[0] = Nodes()[3];
-      nodes[1] = Nodes()[0];
-      // create the line and get the line pointer
-      lines_[3] =
-        rcp(new DRT::Elements::Condif2Line(3,Owner(),2,nodeids,nodes,this,3));
-      lineptrs_[3] = lines_[3].get();
-
+        for (int inode=0;inode<nnode;inode++)
+        {
+             nodeids[inode] = NodeIds()[eleNodeNumbering_quad9_lines[iline][inode]];
+             nodes[inode]   = Nodes()[  eleNodeNumbering_quad9_lines[iline][inode]];
+        }
+        lines_[iline] = rcp(new DRT::Elements::Condif2Line(iline,Owner(),nnode,nodeids,nodes,this,iline));
+        lineptrs_[iline] = lines_[iline].get();
     }
-    else if (numnode==8)
-    {
-      dserror("quad8 lines not implemented.");
-    }
-    else if (numnode==9)
-    {
-      dserror("quad9 lines not implemented.");
-    }
-    else dserror("Number of nodes not supported");
-  }
-  else dserror("Number of lines not supported");
-
-  return (DRT::Element**)(&(lineptrs_[0]));
 }
 
 
@@ -354,6 +237,29 @@ DRT::Element** DRT::Elements::Condif2::Surfaces()
   return &surface_[0];
 }
 
+
+GaussRule2D DRT::Elements::Condif2::getOptimalGaussrule(const DiscretizationType& distype)
+{
+    GaussRule2D rule;
+    switch (distype)
+    {
+    case quad4:
+        rule = intrule_quad_4point;
+        break;
+    case quad8: case quad9:
+        rule = intrule_quad_9point;
+        break;
+    case tri3:
+        rule = intrule_tri_3point;
+        break;
+    case tri6:
+        rule = intrule_tri_6point;
+        break;
+    default:
+        dserror("unknown number of nodes for gaussrule initialization");
+  }
+  return rule;
+}
 
 //=======================================================================
 //=======================================================================

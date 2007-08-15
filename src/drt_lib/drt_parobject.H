@@ -169,6 +169,7 @@ using namespace std;
 #define ParObject_Fluid3Line            (int)47
 #define ParObject_HyperPolyconvex       (int)48
 #define ParObject_NeoHooke              (int)49
+#define ParObject_ConvecDiffus          (int)50
 
 /*!
 \brief DRT: namespace of the ccarat discretization module

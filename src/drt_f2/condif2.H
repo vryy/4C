@@ -28,6 +28,7 @@ using namespace Teuchos;
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
+#include "../drt_lib/drt_utils.H"
 
 
 // forward declarations
@@ -98,7 +99,7 @@ public:
   /*!
   \brief Return number of lines of this element
   */
-  virtual int NumLine()
+  virtual int NumLine() const
   {if (NumNode()==9 || NumNode()==8 || NumNode()==4) return 4;
       else if (NumNode()==3 || NumNode()==6) return 3;
       else {
@@ -280,10 +281,7 @@ private:
     calc_condif_systemmat_and_residual
   };
 
-  //! no. gaussian points in each spatial dimension
-  int                                             ngp_[2];
-  //! number of the material law
-  int                                             material_;
+  bool is_higher_order_element(const DRT::Element::DiscretizationType  distype) const;
 
   //! container containing all kind of condif2 thisandthat
   DRT::Container                                  data_;
@@ -308,11 +306,11 @@ private:
                    Epetra_SerialDenseMatrix* sys_mat,
                    Epetra_SerialDenseVector* residual,
                    struct _MATERIAL*         material,
-                   ParameterList&            params
-		  );
-
-  // evaluate element integration points (and storing them in data)
-  void condif2_integration_points(struct _FLUID_DATA& data);
+                   double                    time,
+                   double                    timefac,
+                   int                       vel_field,
+                   bool                      is_stationary
+		   );
 
   // calculate Jacobian matrix and it's determinant
   void condif2_jaco(const Epetra_SerialDenseMatrix& xyze,
@@ -322,18 +320,14 @@ private:
                const int 	iel
 	       );
 
-  // shape functions and natural derivatives for hexaeder
-  void condif2_shape_function(vector<double>& funct,
-               		Epetra_SerialDenseMatrix& deriv,
-               		Epetra_SerialDenseMatrix& deriv2,
-               		const double&      r,
-               		const double&      s,
-               		const int&         iel,
-               		const int          icode
-          		);
+  /*!
+   * \brief get the body force from the nodes condition
+   * \return ???
+   */
+  Epetra_SerialDenseVector condif2_getbodyforce();
 
   // calculate global derivatives w.r.t. x,y,z at point r,s,t are
-    void condif2_gder(Epetra_SerialDenseMatrix& derxy,
+  void condif2_gder(Epetra_SerialDenseMatrix& derxy,
 		 const Epetra_SerialDenseMatrix& deriv,
                  Epetra_SerialDenseMatrix& xjm,
 		 double& det,
@@ -341,7 +335,7 @@ private:
 		 );
 
   // calculate second global derivatives w.r.t x/y/z at point r,s,t
-    void condif2_gder2(const Epetra_SerialDenseMatrix& xyze,
+  void condif2_gder2(const Epetra_SerialDenseMatrix& xyze,
 				    const Epetra_SerialDenseMatrix& xjm,
                                     const Epetra_SerialDenseMatrix& derxy,
 				    Epetra_SerialDenseMatrix& derxy2,
@@ -350,33 +344,42 @@ private:
 				    );
 
   // evaluate convection-diffusion coefficient matrix
-    void condif2_calmat(Epetra_SerialDenseMatrix& estif,
+  void condif2_calmat(Epetra_SerialDenseMatrix& estif,
                     Epetra_SerialDenseVector& eforce,
                     vector<double>&           velint,
-                    const double&             phin,
-                    vector<double>&           phidern,
-                    vector<double>&           phider2n,
-                    vector<double>&           funct,
+                    const double&             hist,
+                    Epetra_SerialDenseVector& funct,
                     Epetra_SerialDenseMatrix& derxy,
                     Epetra_SerialDenseMatrix& derxy2,
+                    const double&             edeadng,
                     const double&             tau,
-                    double&                   fac,
+                    const double&             fac,
                     const double&             diffus,
                     const int&                iel,
-                    ParameterList&            params);
+                    double                    timefac);
 		
   // evaluate convection-diffusion coefficient matrix for stationary problems
-    void condif2_calmat_stat(Epetra_SerialDenseMatrix& estif,
+  void condif2_calmat_stat(Epetra_SerialDenseMatrix& estif,
                          Epetra_SerialDenseVector& eforce,
                          vector<double>&           velint,
-                         vector<double>&           funct,
+                         const double&             hist,
+                         Epetra_SerialDenseVector& funct,
                          Epetra_SerialDenseMatrix& derxy,
                          Epetra_SerialDenseMatrix& derxy2,
+                         const double&             edeadng,
                          const double&             tau,
-                         double&                   fac,
+                         const double&             fac,
                          const double&             diffus,
-                         const int&                iel,
-                         ParameterList&            params);
+                         const int&                iel);
+
+  // set number of gauss points to element shape default
+  DRT::Utils::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype);
+
+  void CreateLinesTri(const int& nline,
+                      const int& nnode);
+
+  void CreateLinesQuad(const int& nline,
+                       const int& nnode);
 
 }; // class Condif2
 
@@ -618,6 +621,39 @@ public:
 
   //@}
 
+  /*!
+  \brief Evaluate an element
+
+  Evaluate condif2 line element stiffness, mass, internal forces etc
+
+  \param params (in/out): ParameterList for communication between control routine
+                          and elements
+  \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
+                          the controling method does not epxect the element to fill
+                          this matrix.
+  \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
+                          the controling method does not epxect the element to fill
+                          this matrix.
+  \param elevec1 (out)  : vector to be filled by element. If NULL on input,
+                          the controlling method does not epxect the element
+                          to fill this vector
+  \param elevec2 (out)  : vector to be filled by element. If NULL on input,
+                          the controlling method does not epxect the element
+                          to fill this vector
+  \param elevec3 (out)  : vector to be filled by element. If NULL on input,
+                          the controlling method does not epxect the element
+                          to fill this vector
+  \return 0 if successful, negative otherwise
+  */
+  virtual int Evaluate(ParameterList& params,
+               DRT::Discretization&      discretization,
+               vector<int>&              lm,
+               Epetra_SerialDenseMatrix& elemat1,
+               Epetra_SerialDenseMatrix& elemat2,
+               Epetra_SerialDenseVector& elevec1,
+               Epetra_SerialDenseVector& elevec2,
+               Epetra_SerialDenseVector& elevec3);
+
   //! @name Evaluate methods
 
   /*!
@@ -644,6 +680,13 @@ public:
 
 private:
 
+  //! action parameters recognized by Condif2Line
+  enum ActionType
+  {
+     none,
+     integrate_Shapefunction
+  };
+
   // don't want = operator
   Condif2Line& operator = (const Condif2Line& old);
 
@@ -651,6 +694,21 @@ private:
   DRT::Elements::Condif2* parent_;
   //! The local line number of this line w.r.t to the parent_ element
   int                    lline_;
+
+  // compute infintesimal line element dr for integration along the line
+  double  condif2_substitution(const Epetra_SerialDenseMatrix  xyze,
+		               const Epetra_SerialDenseMatrix  deriv,
+		               const int iel);
+
+  // Get Rule for Gaussintegration according to DRT::UTIL
+  DRT::Utils::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
+
+  // integrate shape functions over a line
+  void IntegrateShapeFunction(ParameterList& params,
+                  DRT::Discretization&       discretization,
+                  vector<int>&               lm,
+                  Epetra_SerialDenseVector&  elevec1);
+
 
 }; // class Condif2Line
 
