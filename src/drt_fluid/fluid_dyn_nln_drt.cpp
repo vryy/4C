@@ -183,6 +183,15 @@ void dyn_fluid_drt()
 
 
     // ---------------------------------------------- nonlinear iteration
+    // set linearisation scheme
+    if(fdyn->ite==2)
+    {
+      fluidtimeparams.set<bool>("Use reaction terms for linearisation",true);
+    }
+    else
+    {
+      fluidtimeparams.set<bool>("Use reaction terms for linearisation",false);
+    }
     // maximum number of nonlinear iteration steps
     fluidtimeparams.set<int>             ("max nonlin iter steps"     ,fdyn->itemax);
     // stop nonlinear iteration when both incr-norms are below this bound
@@ -262,6 +271,15 @@ void dyn_fluid_drt()
     fluidtimeparams.set<int>              ("max number timesteps"     ,fdyn->nstep);
 
     // ---------------------------------------------- nonlinear iteration
+    //     // set linearisation scheme
+    if(fdyn->ite==2)
+    {
+      fluidtimeparams.set<bool>("Use reaction terms for linearisation",true);
+    }
+    else
+    {
+      fluidtimeparams.set<bool>("Use reaction terms for linearisation",false);
+    }
     // maximum number of nonlinear iteration steps
     fluidtimeparams.set<int>             ("max nonlin iter steps"     ,fdyn->itemax);
     // stop nonlinear iteration when both incr-norms are below this bound
