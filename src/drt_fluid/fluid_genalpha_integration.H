@@ -230,7 +230,7 @@ public:
   o the true residual is store in vector force_ 
   
   */
-  void GenAlphaAssembleResidualAndMatrix();
+  void GenAlphaAssembleResidualAndMatrix(int          itnum);
  
   /*!
   \brief Solve linear problem.
@@ -302,7 +302,6 @@ public:
 protected:
 
 private:
-
   // input arguments
   RefCountPtr<DRT::Discretization> discret_;
   LINALG::Solver&                  solver_;
@@ -330,6 +329,8 @@ private:
   double                           alphaM_;
   double                           alphaF_;
 
+  // parameter for linearisation 
+  bool                             newton_;
 
   // write restart every uprestart_ steps --- restartstep_ is
   // the counter used for this purpose

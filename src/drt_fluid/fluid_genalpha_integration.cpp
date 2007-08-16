@@ -258,6 +258,9 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
   // order accuracy
   gamma_  = 0.5 + alphaM_ - alphaF_;
 
+  // parameter for linearisation scheme (fixed point like or newton like)
+  newton_ = params_.get<bool>("Use reaction terms for linearisation",false);
+  
   if (myrank_==0)
   {
     cout << "Generalized Alpha parameter: alpha_F = " << alphaF_ << &endl;
@@ -418,7 +421,7 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
   // get cpu time
   tcpu=ds_cputime();
   
-  this->GenAlphaAssembleResidualAndMatrix();
+  this->GenAlphaAssembleResidualAndMatrix(itnum);
 
   // end time measurement for element call
   tm3_ref_=null;
@@ -483,7 +486,7 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
     
 //    if(itnum<params_.get<int>("max nonlin iter steps"))
     {
-      this->GenAlphaAssembleResidualAndMatrix();
+      this->GenAlphaAssembleResidualAndMatrix(itnum);
     }
     // end time measurement for element call
     tm3_ref_=null;
@@ -764,9 +767,15 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
+void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
+  int          itnum
+  )
 {
   const Epetra_Map* dofrowmap       = discret_->DofRowMap();
+
+  // maximum number of nonlinear iteration steps --- don't compute
+  //                       matrix anymore if itemax is reached (speedup)
+  int     itemax    =params_.get<int>   ("max nonlin iter steps");
 
   // -------------------------------------------------------------------
   // call elements to calculate residual and matrix
@@ -791,17 +800,59 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   // action for elements
   eleparams.set("action","calc_fluid_genalpha_sysmat_and_residual");
   // choose what to assemble
-  eleparams.set("assemble matrix 1",true);
+  if (itnum == itemax)
+  {
+    eleparams.set("assemble matrix 1",false);
+  }
+  else
+  {
+    eleparams.set("assemble matrix 1",true);
+  }    
   eleparams.set("assemble matrix 2",false);
   eleparams.set("assemble vector 1",true);
   eleparams.set("assemble vector 2",false);
   eleparams.set("assemble vector 3",false);
+
   // other parameters that might be needed by the elements
-  eleparams.set("alpha_M",alphaM_);
-  eleparams.set("alpha_F",alphaF_);
-  eleparams.set("gamma"  ,gamma_ );
-  eleparams.set("time"   ,time_  );
-  eleparams.set("dt"     ,dt_    );
+  {
+    ParameterList& timelist = eleparams.sublist("time integration parameters");
+
+    timelist.set("alpha_M",alphaM_);
+    timelist.set("alpha_F",alphaF_);
+    timelist.set("gamma"  ,gamma_ );
+    timelist.set("time"   ,time_  );
+    timelist.set("dt"     ,dt_    );
+  }
+  
+  // do not compute the elemetn matrix if itmax is reached
+  // in this case, only the residual is required for the convergence check
+  if (itnum<itemax)
+  {
+    eleparams.set("compute element matrix",true);
+  }
+  else
+  {
+    eleparams.set("compute element matrix",false);
+  }
+  
+  // parameters for nonlinear treatment (linearisation)
+  eleparams.set("include reactive terms for linearisation"    ,newton_);
+                     
+
+  // parameters for stabilisation
+  {
+    ParameterList& stablist = eleparams.sublist("stabilisation");
+    
+    stablist.set("time tracking of subscales"                 ,"subscales time dependent");
+  
+    stablist.set("use subscale acceleration term in weak form","keep inertia stabilisation");
+    stablist.set("stabilisation (saddle point problem)"       ,"use pspg stabilisation");
+    stablist.set("convective stabilisation"                   ,"supg convective stabilisation");
+    stablist.set("viscous stabilisation"                      ,"viscous stabilisation of agls type");
+    stablist.set("continuity stabilisation"                   ,"use continuity stabilisation");
+    stablist.set("cross stress stabilisation"                 ,"cross stress stabilisation (on rhs)");
+    stablist.set("reynolds stress stabilisation"              ,"reynolds stress stabilisation (on rhs)");
+  }
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("u and p (n+1      ,trial)",velnp_);
@@ -1131,9 +1182,9 @@ bool FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(
     stopnonliniter=true;
     if(myrank_ == 0)
     {
-      printf("+---------------------------------------------------------------------------------------------+\n");
-      printf("| >>>>>> not converged in itemax steps! residual of last step not recomputed (invalid)        |\n");
-      printf("+---------------------------------------------------------------------------------------------+\n");
+      printf("+--------------------------------------------------------------------------------------------+\n");
+      printf("| >>>>>> not converged in itemax steps! matrix of last step not recomputed (invalid)         |\n");
+      printf("+--------------------------------------------------------------------------------------------+\n");
     }
   }
   
