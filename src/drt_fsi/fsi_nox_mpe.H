@@ -52,7 +52,7 @@ namespace FSI {
 
 Avram Sidi: Efficient implementation of minimal polynomial and reduced
 rank extrapolation methods. Journal of Computational and Applied
-Mathematics 36(3) 305-337. 1991.
+Mathematics 36(3): 305-337, 1991.
 doi:10.1016/0377-0427(91)90013-A
 */
 class MinimalPolynomial : public NOX::Direction::Generic
@@ -91,6 +91,7 @@ private:
   int kmax_;
   double omega_;
   double eps_;
+  bool mpe_;
 };
 
 }

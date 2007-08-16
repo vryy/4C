@@ -44,6 +44,7 @@ NOX::FSI::MinimalPolynomial::MinimalPolynomial(const Teuchos::RefCountPtr<NOX::U
   kmax_ = mpeparams.get("kmax", 10);
   omega_ = mpeparams.get("omega", 0.1);
   eps_ = mpeparams.get("Tolerance", 1e-8);
+  mpe_ = mpeparams.get("MPE", true);
 }
 
 
@@ -77,6 +78,7 @@ bool NOX::FSI::MinimalPolynomial::compute(NOX::Abstract::Vector& dir,
 
   // Set the whole thing to zero so we can simple sum the whole thing.
   c = 0.;
+  gamma = 0.;
   r = 0.;
 
   int k;
@@ -117,40 +119,79 @@ bool NOX::FSI::MinimalPolynomial::compute(NOX::Abstract::Vector& dir,
       break;
     }
 
-    // MPE gamma calculation
-    // This is special to MPE. RRE looks different here.
-    for (int i=k-1; i>=0; --i)
+    double res = 0;
+
+    if (mpe_)
     {
-      double ci = -r(i,k);
-      for (int j=i+1; j<k; ++j)
+      // MPE gamma calculation
+      for (int i=k-1; i>=0; --i)
       {
-        ci -= r(i,j)*c(j);
+        double ci = -r(i,k);
+        for (int j=i+1; j<k; ++j)
+        {
+          ci -= r(i,j)*c(j);
+        }
+        c(i) = ci/r(i,i);
       }
-      c(i) = ci/r(i,i);
+      c(k) = 1.;
+
+      double sc = blitz::sum(c);
+      if (fabs(sc) < 1e-16)
+      {
+        throwError("compute", "sum(c) equals zero");
+      }
+
+      gamma = c / sc;
+      res = r(k,k)*fabs(gamma(k));
+
+      if (utils_->isPrintType(NOX::Utils::InnerIteration))
+      {
+        utils_->out() << "MPE:  k=" << k
+                      << "  res=" << res
+                      << "  eps*r(0,0)=" << eps_*r(0,0)
+                      << "  r(k,k)=" << r(k,k)
+                      << endl;
+      }
     }
-    c(k) = 1.;
-
-    double sc = blitz::sum(c);
-    if (fabs(sc) < 1e-16)
+    else
     {
-      throwError("compute", "sum(c) equals zero");
-    }
+      // RRE gamma calculation
+      for (int i=0; i<=k; ++i)
+      {
+        double ci = 1.;
+        for (int j=0; j<i; ++j)
+        {
+          ci -= r(j,i)*c(j);
+        }
+        c(i) = ci/r(i,i);
+      }
+      for (int i=k; i>=0; --i)
+      {
+        double ci = c(i);
+        for (int j=i+1; j<=k; ++j)
+        {
+          ci -= r(i,j)*gamma(j);
+        }
+        gamma(i) = ci/r(i,i);
+      }
+      double sc = blitz::sum(gamma);
+      gamma /= sc;
+      res = 1./sqrt(fabs(sc));
 
-    gamma = c / sc;
-    double res = r(k,k)*fabs(gamma(k));
-
-    if (utils_->isPrintType(NOX::Utils::InnerIteration))
-    {
-      utils_->out() << "MPE:  k=" << k
-                    << "  res=" << res
-                    << "  eps*r(0,0)=" << eps_*r(0,0)
-                    << "  r(k,k)=" << r(k,k)
-                    << endl;
+      if (utils_->isPrintType(NOX::Utils::InnerIteration))
+      {
+        utils_->out() << "RRE:  k=" << k
+                      << "  res=" << res
+                      << "  eps*r(0,0)=" << eps_*r(0,0)
+                      << "  r(k,k)=" << r(k,k)
+                      << endl;
+      }
     }
 
     // leave if we are close enough to the solution
     if (res<=eps_*r(0,0) or r(k,k)<=1e-32*r(0,0))
     {
+      k += 1;
       break;
     }
 
