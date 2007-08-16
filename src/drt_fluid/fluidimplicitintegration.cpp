@@ -248,6 +248,9 @@ void FluidImplicitTimeInt::Integrate()
   // which kind of time-integration
   timealgo_                  =params_.get<FLUID_TIMEINTTYPE>("time int algo");
 
+  // parameter for linearisation scheme (fixed point like or newton like)
+  newton_ = params_.get<bool>("Use reaction terms for linearisation",false);
+
   // parameter for start algorithm
   //double starttheta          =params_.get<double>("start theta");
   //FLUID_TIMEINTTYPE startalgo=timeint_one_step_theta;
@@ -632,7 +635,8 @@ void FluidImplicitTimeInt::NonlinearSolve(
       eleparams.set("total time",time_);
       eleparams.set("time constant for integration",theta_*dta_);
       eleparams.set("using stationary formulation",is_stat);
-
+      eleparams.set("include reactive terms for linearisation",newton_);
+      
       // set vector values needed by elements
       discret_->ClearState();
       discret_->SetState("u and p at time n+1 (trial)",velnp_);

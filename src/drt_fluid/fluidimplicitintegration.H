@@ -207,6 +207,9 @@ protected:
 
   FLUID_TIMEINTTYPE timealgo_;
 
+  //! use (or not) linearisation of reactive terms on the element
+  bool newton_;
+
   int restartstep_;
   int uprestart_;
   int writestep_;
