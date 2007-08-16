@@ -21,6 +21,10 @@ Maintainer: Georg Bauer
 
 using namespace DRT::Utils;
 
+/*----------------------------------------------------------------------*/
+// map to convert strings tao actions (stabilisation)
+/*----------------------------------------------------------------------*/
+map<string,DRT::Elements::Fluid3::StabilisationAction> DRT::Elements::Fluid3::stabstrtoact_;
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
@@ -36,6 +40,13 @@ data_()
     surfaceptrs_.resize(0);
     lines_.resize(0);
     lineptrs_.resize(0);
+
+    sub_acc_old_.resize(0,0);
+    sub_vel_.resize(0,0);
+    sub_vel_old_.resize(0,0);
+    sub_pre_.resize(0);
+    sub_pre_old_.resize(0);
+
     return;
 }
 

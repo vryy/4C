@@ -162,6 +162,31 @@ DRT::Elements::Fluid3::ActionType DRT::Elements::Fluid3::convertStringToActionTy
 }
 
 /*----------------------------------------------------------------------*
+ // converts a string into an stabilisation action for this element
+ //                                                          gammi 08/07
+ *----------------------------------------------------------------------*/
+DRT::Elements::Fluid3::StabilisationAction DRT::Elements::Fluid3::ConvertStringToStabAction(
+  const string& action) const
+{
+  DRT::Elements::Fluid3::StabilisationAction act = stabaction_unspecified;
+  
+  map<string,StabilisationAction>::iterator iter=stabstrtoact_.find(action);
+
+  if (iter != stabstrtoact_.end())
+  {
+    act = (*iter).second;
+  }
+  else
+  {
+    char errorout[200];
+    sprintf(errorout,"looking for stab action (%s) not contained in map",action.c_str());
+    dserror(errorout);
+  }
+  return act;
+}
+
+
+ /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            g.bau 03/07|
  *----------------------------------------------------------------------*/
 int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
@@ -183,7 +208,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
     dserror("newtonian fluid material expected but got type %d", mat->MaterialType());
 
   MATERIAL* actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
-
+  
   switch(act)
   {
       case calc_fluid_systemmat_and_residual:
@@ -259,6 +284,12 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
         const bool is_stationary = params.get<bool>("using stationary formulation",false);
         const double time = params.get<double>("total time",-1.0);
 
+        bool newton              = params.get<bool>("include reactive terms for linearisation",false);
+        bool pstab  =true;
+        bool supg   =true;
+        bool vstab  =true;
+        bool cstab  =true;
+        
         // One-step-Theta: timefac = theta*dt
         // BDF2:           timefac = 2/3 * dt
         double timefac = 0;
@@ -278,9 +309,23 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
                                        blitz::neverDeleteData);
 
         // calculate element coefficient matrix and rhs
-        Impl()->Sysmat(this,evelnp,eprenp,evhist,edispnp,egridv,
-                       estif,eforce,actmat,
-                       time,timefac,is_stationary);
+        Impl()->Sysmat(this,
+                       evelnp,
+                       eprenp,
+                       evhist,
+                       edispnp,
+                       egridv,
+                       estif,
+                       eforce,
+                       actmat,
+                       time,
+                       timefac,
+                       newton ,
+                       pstab  ,
+                       supg   ,
+                       vstab  ,
+                       cstab  ,
+                       is_stationary);
 
         // This is a very poor way to transport the density to the
         // outside world. Is there a better one?
@@ -408,22 +453,63 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
           eaccam(2,i) = myaccam[2+(i*4)];
         }
 
-        // set parameters
-        const double alphaM = params.get<double>("alpha_M");
-        const double alphaF = params.get<double>("alpha_F");
-        const double gamma  = params.get<double>("gamma");
-        const double dt     = params.get<double>("dt");
-        const double time   = params.get<double>("time");
+        // --------------------------------------------------
+        // set parameters for time integration
+        ParameterList& timelist = params.sublist("time integration parameters");
         
-        const bool newton   = false;
-        const bool tds      = true;
-        const bool inertia  = false;
-        const bool pspg     = true;
-        const bool supg     = true;
-        const bool agls     = true;
-        const bool cstab    = true;
-        const bool cross    = false;
-        const bool reynolds = false;   
+        const double alphaM = timelist.get<double>("alpha_M");
+        const double alphaF = timelist.get<double>("alpha_F");
+        const double gamma  = timelist.get<double>("gamma");
+        const double dt     = timelist.get<double>("dt");
+        const double time   = timelist.get<double>("time");
+
+        // --------------------------------------------------
+        // set parameters for nonlinear treatment
+
+        const bool newton = params.get<bool>("include reactive terms for linearisation");
+   
+        // --------------------------------------------------
+        // set parameters for stabilisation
+        ParameterList& stablist = params.sublist("stabilisation");
+
+        // if not available, define map from string to action
+        if(stabstrtoact_.empty())
+        {
+          stabstrtoact_["subscales quasistatic"                        ]=subscales_quasistatic;
+          stabstrtoact_["subscales time dependent"                     ]=subscales_time_dependent;
+          stabstrtoact_["drop inertia stabilisation"                   ]=inertia_stab_drop;
+          stabstrtoact_["keep inertia stabilisation"                   ]=inertia_stab_keep;
+          stabstrtoact_["assume inf-sup stable"                        ]=pstab_assume_inf_sup_stable;
+          stabstrtoact_["use pspg stabilisation"                       ]=pstab_use_pspg;
+          stabstrtoact_["no convective stabilisation"                  ]=convective_stab_none;
+          stabstrtoact_["supg convective stabilisation"                ]=convective_stab_supg;
+          stabstrtoact_["no viscous stabilisation"                     ]=viscous_stab_none;
+          stabstrtoact_["viscous stabilisation of gls type"            ]=viscous_stab_gls;
+          stabstrtoact_["viscous stabilisation of gls type (only rhs)" ]=viscous_stab_gls_only_rhs;
+          stabstrtoact_["viscous stabilisation of agls type"           ]=viscous_stab_agls;
+          stabstrtoact_["viscous stabilisation of agls type (only rhs)"]=viscous_stab_agls_only_rhs;
+          stabstrtoact_["use continuity stabilisation"                 ]=continuity_stab_yes;
+          stabstrtoact_["no continuity stabilisation"                  ]=continuity_stab_none;
+          stabstrtoact_["cross stress stabilisation (on rhs)"          ]=cross_stress_stab_only_rhs;
+          stabstrtoact_["no cross stress stabilisation"                ]=cross_stress_stab_none;
+          stabstrtoact_["reynolds stress stabilisation (on rhs)"       ]=reynolds_stress_stab_only_rhs;
+          stabstrtoact_["no reynolds stress stabilisation"             ]=reynolds_stress_stab_none;
+        }
+        
+        StabilisationAction tds      = ConvertStringToStabAction(stablist.get<string>("time tracking of subscales"));
+        StabilisationAction inertia  = ConvertStringToStabAction(stablist.get<string>("use subscale acceleration term in weak form"));
+        StabilisationAction pspg     = ConvertStringToStabAction(stablist.get<string>("stabilisation (saddle point problem)"));
+        StabilisationAction supg     = ConvertStringToStabAction(stablist.get<string>("convective stabilisation"));
+        StabilisationAction agls     = ConvertStringToStabAction(stablist.get<string>("viscous stabilisation"));
+        StabilisationAction cstab    = ConvertStringToStabAction(stablist.get<string>("continuity stabilisation"));
+        StabilisationAction cross    = ConvertStringToStabAction(stablist.get<string>("cross stress stabilisation"));
+        StabilisationAction reynolds = ConvertStringToStabAction(stablist.get<string>("reynolds stress stabilisation"));
+
+        // --------------------------------------------------
+        // specify what to compute
+        const bool compute_elemat = params.get<bool>("compute element matrix");
+        
+        
         // --------------------------------------------------
         // calculate element coefficient matrix
         GenalphaResVMM()->Sysmat(this,
@@ -447,7 +533,9 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
                                  agls,   
                                  cstab,   
                                  cross,  
-                                 reynolds);
+                                 reynolds,
+                                 compute_elemat
+          );
       }
       break;
       case calc_fluid_genalpha_update_for_subscales:

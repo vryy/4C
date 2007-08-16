@@ -101,6 +101,11 @@ namespace Elements
                 struct _MATERIAL*       material,
                 double                  time,
                 double                  timefac,
+                bool                    newton ,
+                bool                    pstab  ,
+                bool                    supg   ,
+                bool                    vstab  ,
+                bool                    cstab  ,
                 bool                    is_stationary);
 
   private:
@@ -154,6 +159,7 @@ namespace Elements
     blitz::Array<double,1> rhsint_; /* total right hand side terms at int.-point */
     blitz::Array<double,1> conv_old_;
     blitz::Array<double,1> visc_old_;
+    blitz::Array<double,1> res_old_;
     blitz::Array<double,2> xder2_;
   };
 

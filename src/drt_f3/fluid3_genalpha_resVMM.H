@@ -129,7 +129,7 @@ namespace DRT
         \param gamma        (i) one step theta based parameter
         \param dt           (i) time step size
         \param time         (i) current simulation time
-        \param newton       (i) flag for use of full linearisation of reactive terms
+        \param linearisation(i) flag for use of full linearisation of reactive terms
         \param tds          (i) flag for use of time dependent subscale stabilisation
         \param inertia      (i) flag for use of subscale accelerations for stabilisation (only for tds==true)
         \param pspg         (i) flag for use of nabla q testfunctions 
@@ -140,27 +140,28 @@ namespace DRT
         
       */
       void Sysmat(Fluid3* ele,
-                  Epetra_SerialDenseMatrix&         elemat,
-                  Epetra_SerialDenseVector&         elevec,
-                  const blitz::Array<double,2>&     evelnp,
-                  const blitz::Array<double,1>&     eprenp,
-                  const blitz::Array<double,2>&     eaccam,
-                  const blitz::Array<double,2>&     evelaf,
-                  const struct _MATERIAL*           material,
-                  const double                      alphaM,
-                  const double                      alphaF,
-                  const double                      gamma,
-                  const double                      dt,
-                  const double                      time,
-                  const bool                        newton,
-                  const bool                        tds,
-                  const bool                        inertia,
-                  const bool                        pspg,
-                  const bool                        supg,
-                  const bool                        agls,
-                  const bool                        cstab,
-                  const bool                        cross,
-                  const bool                        reynolds);
+                  Epetra_SerialDenseMatrix&                             elemat,
+                  Epetra_SerialDenseVector&                             elevec,
+                  const blitz::Array<double,2>&                         evelnp,
+                  const blitz::Array<double,1>&                         eprenp,
+                  const blitz::Array<double,2>&                         eaccam,
+                  const blitz::Array<double,2>&                         evelaf,
+                  const struct _MATERIAL*                               material,
+                  const double                                          alphaM,
+                  const double                                          alphaF,
+                  const double                                          gamma,
+                  const double                                          dt,
+                  const double                                          time,
+                  const bool                                            newton,
+                  const enum Fluid3::StabilisationAction                tds,
+                  const enum Fluid3::StabilisationAction                inertia,
+                  const enum Fluid3::StabilisationAction                pspg,
+                  const enum Fluid3::StabilisationAction                supg,
+                  const enum Fluid3::StabilisationAction                agls,
+                  const enum Fluid3::StabilisationAction                cstab,
+                  const enum Fluid3::StabilisationAction                cross,
+                  const enum Fluid3::StabilisationAction                reynolds,
+                  const bool                                            compute_elemat);
     private:
       /*! Get the nodal values of the bodyforce. The values are stored in edeadnf
 

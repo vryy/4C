@@ -307,6 +307,34 @@ private:
     calc_ShapeDeriv2
   };
 
+  //! stabilisation actions recognized by fluid3
+  enum StabilisationAction
+  {
+    stabaction_unspecified,
+    subscales_quasistatic,
+    subscales_time_dependent,
+    inertia_stab_drop,
+    inertia_stab_keep,
+    pstab_assume_inf_sup_stable,
+    pstab_use_pspg,
+    convective_stab_none,
+    convective_stab_supg,
+    viscous_stab_none,
+    viscous_stab_gls,
+    viscous_stab_gls_only_rhs,
+    viscous_stab_agls,
+    viscous_stab_agls_only_rhs,
+    continuity_stab_none,
+    continuity_stab_yes,
+    cross_stress_stab_none,
+    cross_stress_stab_only_rhs,
+    reynolds_stress_stab_none,
+    reynolds_stress_stab_only_rhs
+  };
+
+  //! map that converts strings to actions (stabilisation)
+  static map<string,StabilisationAction>          stabstrtoact_;
+
   //! Gaussrule
   DRT::Utils::GaussRule3D                         gaussrule_;
   //! flag for euler/ale net algorithm
@@ -614,6 +642,9 @@ private:
 
   ActionType convertStringToActionType(const string& action) const;
 
+  //! convert string to stabilisation action
+  StabilisationAction ConvertStringToStabAction (const string& action) const;
+    
   /// Internal implementation class for specific fluid element
   Fluid3Impl* Impl();
 
