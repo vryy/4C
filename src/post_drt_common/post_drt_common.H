@@ -104,11 +104,14 @@ public:
 
   // @{ \name Access methods
 
-  //! returns the basename of the output files
+  //! returns the basename of the control file
   string basename() const { return basename_; }
 
-  //! sets the basename of the output files to name
+  //! sets the basename of the control file to name
   void set_basename(string name) { basename_ = name; }
+
+  //! returns the basename of the output files
+  string outname() const { return outname_; }
 
   //! returns the number of result groups that are stored in the control file
   int num_results() { return static_cast<int>(result_group_.size()); }
@@ -151,7 +154,7 @@ private:
   //! initializes all the data a filter needs.
   //
   // This function is called by the Constructor.
-  void setup_filter(const char* output_name);
+  void setup_filter(string control_file_name, string output_name);
 
   //! reads the mesh files
   //
@@ -171,8 +174,11 @@ private:
   //! number of dimensions
   int ndim_;
 
-  //! output file base name (possibly including directory)
+  //! control file base name (possibly including directory)
   string basename_;
+
+  //! output file base name (possibly including directory)
+  string outname_;
 
   //! memory version of control file
   /*! If a restarted run is post processed this is a merged control

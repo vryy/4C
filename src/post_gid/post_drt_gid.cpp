@@ -356,7 +356,7 @@ int main(int argc, char** argv)
 
   PostProblem problem = PostProblem(My_CLP,argc,argv);
 
-  string filename = problem.basename() + ".flavia.res";
+  string filename = problem.outname() + ".flavia.res";
   if (GiD_OpenPostResultFile(const_cast<char*>(filename.c_str()))!=0)
     dserror("failed to open gid output file '%s'", filename.c_str());
 

@@ -76,13 +76,15 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
   dsinit();
 #endif
 
-  string file;
+  string file = "xxx";
+  string output;
 
   CLP.throwExceptions(false);
   CLP.setOption("start",&start_,"first time step to read");
   CLP.setOption("end",&end_,"last time step to read");
   CLP.setOption("step",&step_,"number of time steps to jump");
   CLP.setOption("file",&file,"control file to open");
+  CLP.setOption("output",&output,"output file name [defaults to control file name]");
 
   CommandLineProcessor::EParseCommandLineReturn
     parseReturn = CLP.parse(argc,argv);
@@ -102,8 +104,18 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
     exit(1);
   }
 
+  if (file.length()<=8 or file.substr(file.length()-8,8)!=".control")
+  {
+    file += ".control";
+  }
+
+  if (output=="")
+  {
+    output = file.substr(0,file.length()-8);
+  }
+
   result_group_ = vector<MAP*>();
-  setup_filter(file.c_str());
+  setup_filter(file, output);
 
   ndim_ = map_read_int(&control_table_, "ndim");
   dsassert((ndim_ == 2) || (ndim_ == 3), "illegal dimension");
@@ -183,10 +195,9 @@ RefCountPtr<Epetra_Comm> PostProblem::comm()
  * initializes all the data a filter needs. This function is called by
  * the Constructor.  (private)
  *----------------------------------------------------------------------*/
-void PostProblem::setup_filter(const char* output_name)
+void PostProblem::setup_filter(string control_file_name, string output_name)
 {
   int length;
-  string control_file_name;
   MAP* table;
   MAP temp_table;
 
@@ -206,21 +217,11 @@ void PostProblem::setup_filter(const char* output_name)
 
   /* We need to open the error output file. The other ones are not
    * important. */
-  length = strlen(output_name);
-  if ((length > 8) && (strcmp(output_name+length-8, ".control")==0))
-  {
-    control_file_name = output_name;
-    basename_ = control_file_name.substr(0,length-8);
-    strcpy(allfiles.outputfile_name, output_name);
-    strcpy(allfiles.outputfile_name+length-8, ".post.log");
-  }
-  else
-  {
-    basename_ = output_name;
-    control_file_name = basename_ + ".control";
-    strcpy(allfiles.outputfile_name, output_name);
-    strcpy(allfiles.outputfile_name+length, ".post.log");
-  }
+  basename_ = control_file_name.substr(0,control_file_name.length()-8);
+  outname_ = output_name;
+  length = output_name.length();
+  strcpy(allfiles.outputfile_name, outname_.c_str());
+  strcpy(allfiles.outputfile_name+length-8, ".post.log");
   allfiles.out_err = fopen(allfiles.outputfile_name, "w");
 
   parse_control_file(&control_table_, (char*)control_file_name.c_str());
@@ -238,20 +239,14 @@ void PostProblem::setup_filter(const char* output_name)
 
   table = &control_table_;
 
-  INT pos;
-  CHAR* separator;
-
   /* copy directory information */
-  separator = rindex(output_name, '/');
-  if (separator != NULL)
+  string::size_type separator = basename_.rfind('/', string::npos);
+  if (separator != string::npos)
   {
-    pos = separator-output_name+1;
-    input_dir_ = output_name;
-    input_dir_ = input_dir_.substr(0,pos);
+    input_dir_ = basename_.substr(0,separator+1);
   }
   else
   {
-    pos = 0;
     input_dir_ = "";
   }
 

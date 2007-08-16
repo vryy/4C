@@ -906,7 +906,7 @@ int main(
     for (int i = 0; i<problem.num_discr(); ++i)
     {
         PostField* field = problem.get_discretization(i);
-        StructureEnsightWriter writer(field, problem.basename());
+        StructureEnsightWriter writer(field, problem.outname());
         writer.WriteFiles();
     }
 #endif
@@ -916,7 +916,7 @@ int main(
     {
     case prb_fsi:
     {
-        string basename = problem.basename();
+        string basename = problem.outname();
         //     PostField* structfield = problem.get_discretization(0);
         //     StructureEnsightWriter structwriter(structfield, basename);
         //     structwriter.WriteFiles();
@@ -929,21 +929,21 @@ int main(
     case prb_structure:
     {
         PostField* field = problem.get_discretization(0);
-        StructureEnsightWriter writer(field, problem.basename());
+        StructureEnsightWriter writer(field, problem.outname());
         writer.WriteFiles();
         break;
     }
     case prb_fluid:
     {
         PostField* field = problem.get_discretization(0);
-        FluidEnsightWriter writer(field, problem.basename());
+        FluidEnsightWriter writer(field, problem.outname());
         writer.WriteFiles();
         break;
     }
     case prb_ale:
     {
         PostField* field = problem.get_discretization(0);
-        AleEnsightWriter writer(field, problem.basename());
+        AleEnsightWriter writer(field, problem.outname());
         writer.WriteFiles();
         break;
     }
