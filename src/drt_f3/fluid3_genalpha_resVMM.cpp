@@ -261,7 +261,7 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
     //                 node j
     //
     
-    velintaf_ = blitz::sum(funct_(j)*evelnp(i,j),j);
+    velintaf_ = blitz::sum(funct_(j)*evelaf(i,j),j);
 
     // get velocity norm
     const double vel_norm = sqrt(blitz::sum(velintaf_*velintaf_));
@@ -439,7 +439,7 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
     //                 +-----        
     //                 node j
     //
-    velintaf_ = blitz::sum(funct_(j)*evelnp(i,j),j);
+    velintaf_ = blitz::sum(funct_(j)*evelaf(i,j),j);
 
     // get velocity norm
     const double vel_norm = sqrt(blitz::sum(velintaf_*velintaf_));
@@ -483,7 +483,7 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
     const double xi1 = DMAX(re1,1.0);
     const double xi2 = DMAX(re2,1.0);
 
-    tau_(0) = DSQR(strle) / (DSQR(strle)*xi1+( 4.0 * timefac*visc/mk)*xi2);
+    tau_(0) = timefac * DSQR(strle) / (DSQR(strle)*xi1+( 4.0 * timefac*visc/mk)*xi2);
 
     // compute tau_Mp
     //    stability parameter definition according to Franca and Valentin (2000)
@@ -506,7 +506,7 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
                           +--------------> re1,re2
                               1
     */
-    tau_(1) = DSQR(hk) / (DSQR(hk) * xi_viscous + ( 4.0 * timefac * visc/mk) * xi_convect);
+    tau_(1) = timefac * DSQR(hk) / (DSQR(hk) * xi_viscous + ( 4.0 * timefac * visc/mk) * xi_convect);
 
     /*------------------------------------------------------ compute tau_C ---*/
     /*-- stability parameter definition according to Codina (2002), CMAME 191
@@ -530,7 +530,7 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
                               1
     */
     const double xi_tau_c = DMIN(re2,1.0);
-    tau_(2) = vel_norm * hk * 0.5 * xi_tau_c /timefac;
+    tau_(2) = vel_norm * hk * 0.5 * xi_tau_c;
   }
   
 
@@ -1186,9 +1186,7 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
     viscs2_(2,2,_) = 0.5 * (derxy2_(0,_) + derxy2_(1,_) + 2.0 * derxy2_(2,_));
 
     /* divergence new time step n+1 */
-
     const double divunp          = (vderxynp_(0,0)+vderxynp_(1,1)+vderxynp_(2,2));
-
 
     /* Convective term  u_old * grad u_old: */
     convaf_old_ = blitz::sum(vderxyaf_(i, j)*velintaf_(j), j);
@@ -2585,6 +2583,7 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
 
         } // end loop rows (solution for matrix, test function for vector)
       }
+      
       if(agls == Fluid3::viscous_stab_agls || agls == Fluid3::viscous_stab_agls_only_rhs)
       {
 
@@ -2626,7 +2625,6 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
                               fac_two_visc_svelaf_z*viscs2_(2, 2, ui) ;
         } // end loop rows (solution for matrix, test function for vector)
       }
-
 
       if(cstab == Fluid3::continuity_stab_yes)
       {
@@ -3053,9 +3051,9 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
 
         if(supg == Fluid3::convective_stab_supg)
         {
-          const double fac_alphaM_tauM         = fac*alphaM*tauM;
-          const double fac_afgdt_tauM          = fac*afgdt*tauM;
-          const double fac_two_visc_afgdt_tauM = fac*2.0*visc*afgdt*tauM;
+          const double fac_alphaM_tauM         = fac*tauM*alphaM;
+          const double fac_afgdt_tauM          = fac*tauM*afgdt;
+          const double fac_two_visc_afgdt_tauM = fac*tauM*afgdt*2.0*visc;
           const double fac_tauM                = fac*tauM;
           
           for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
@@ -3470,7 +3468,7 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
                                              derxy_(2,ui)*viscs2_(2,2,vi)) ;
               
             } // end loop rows (test functions for matrix)
-          } // end loop rows (solution for matrix, test function for vector)
+          } // end loop columns (solution for matrix, test function for vector)
           if (newton)
           {
             for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
@@ -3545,7 +3543,7 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
                                                +
                                                viscs2_(2, 2, vi)*conv_r_af_(2, 2, ui)) ;
               } // end loop rows (test functions for matrix)
-            } // end loop rows (solution for matrix, test function for vector)
+            } // end loop columns (solution for matrix, test function for vector)
           }
         }
         
@@ -3575,9 +3573,9 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
               elemat(vi*4 + 2, ui*4    ) += fac_gamma_dt_tauC*derxy_(0,ui)*derxy_(2,vi) ;
               elemat(vi*4 + 2, ui*4 + 1) += fac_gamma_dt_tauC*derxy_(1,ui)*derxy_(2,vi) ;
               elemat(vi*4 + 2, ui*4 + 2) += fac_gamma_dt_tauC*derxy_(2,ui)*derxy_(2,vi) ;
-            } // end loop rows (test functions for matrix)
-          } // end loop rows (solution for matrix, test function for vector)
-        }
+            } // end loop rows vi (test functions for matrix)
+          } // end loop columns ui (solution for matrix, test function for vector)
+        } // end cstab 
       } // end if compute_elemat
       
       //---------------------------------------------------------------
@@ -3909,8 +3907,8 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
                                resM_(1)*viscs2_(1, 2, ui)
                                +
                                resM_(2)*viscs2_(2, 2, ui)) ;
-        } // end loop rows 
-      }
+        } // end loop rows ui
+      } // end agls
       
       if(cstab == Fluid3::continuity_stab_yes)
       {
@@ -3930,7 +3928,7 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
           elevec[ui*4 + 1] -= fac_tauC*divunp*derxy_(1,ui) ;
           elevec[ui*4 + 2] -= fac_tauC*divunp*derxy_(2,ui) ; 
         } // end loop rows 
-      }
+      } // end cstab
       
       if(cross == Fluid3::cross_stress_stab_only_rhs)
       {

@@ -844,14 +844,21 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
     ParameterList& stablist = eleparams.sublist("stabilisation");
     
     stablist.set("time tracking of subscales"                 ,"subscales time dependent");
-  
+//    stablist.set("time tracking of subscales"                 ,"subscales quasistatic");
+
     stablist.set("use subscale acceleration term in weak form","keep inertia stabilisation");
+//    stablist.set("use subscale acceleration term in weak form","drop inertia stabilisation");
     stablist.set("stabilisation (saddle point problem)"       ,"use pspg stabilisation");
     stablist.set("convective stabilisation"                   ,"supg convective stabilisation");
+//    stablist.set("convective stabilisation"                   ,"no convective stabilisation");
     stablist.set("viscous stabilisation"                      ,"viscous stabilisation of agls type");
+//    stablist.set("viscous stabilisation"                      ,"no viscous stabilisation");
     stablist.set("continuity stabilisation"                   ,"use continuity stabilisation");
-    stablist.set("cross stress stabilisation"                 ,"cross stress stabilisation (on rhs)");
-    stablist.set("reynolds stress stabilisation"              ,"reynolds stress stabilisation (on rhs)");
+//      stablist.set("continuity stabilisation"                   ,"no continuity stabilisation");
+    stablist.set("cross stress stabilisation"                 ,"no cross stress stabilisation");
+//    stablist.set("cross stress stabilisation"                 ,"cross stress stabilisation (on rhs)");
+    stablist.set("reynolds stress stabilisation"              ,"no reynolds stress stabilisation");
+//    stablist.set("reynolds stress stabilisation"              ,"reynolds stress stabilisation (on rhs)");
   }
   // set vector values needed by elements
   discret_->ClearState();
