@@ -175,6 +175,8 @@ void dyn_condif_drt()
   //--------------------------------------------------
   // velocity field
   condiftimeparams.set<int>              ("condif velocity field"     ,fdyn->cdvel);
+  // discontinuity capturing?
+  condiftimeparams.set<int>              ("discontinuity capturing"   ,fdyn->dis_capt);
 
   //--------------------------------------------------
   // evaluate error for test flows with analytical solutions

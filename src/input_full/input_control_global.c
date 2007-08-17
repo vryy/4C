@@ -1159,6 +1159,10 @@ fdyn->dis_capt=0;
 fdyn->itemax_ke=100;
 fdyn->stepke=0;
 
+/* former turbulence flag (and still may be), */
+/* now used for convection-diffusion to potentially add dc */ 
+fdyn->dis_capt=0;
+
 /* convection-diffusion velocity field */
 fdyn->cdvel=0;
 
@@ -1363,10 +1367,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
       if (frwordcmp(buffer,"Navier_Stokes")==0)
          fdyn->cdvel=0;
-      else if (frwordcmp(buffer,"30_degree")==0)
+      else if (frwordcmp(buffer,"straight")==0)
          fdyn->cdvel=1;
-      else if (frwordcmp(buffer,"60_degree")==0)
+      else if (frwordcmp(buffer,"30_degree")==0)
          fdyn->cdvel=2;
+      else if (frwordcmp(buffer,"60_degree")==0)
+         fdyn->cdvel=3;
+      else if (frwordcmp(buffer,"min60_degree")==0)
+         fdyn->cdvel=4;
       else
          dserror("CD_VELOCITY unknown!");
    }

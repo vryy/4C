@@ -112,7 +112,10 @@ CondifImplicitTimeInt::CondifImplicitTimeInt(RefCountPtr<DRT::Discretization> ac
   // a 'good' estimate
   maxentriesperrow_ = 27;
 
+  // initialize standard (stabilized) system matrix
   sysmat_ = null;
+  // initialize standard (stabilized) + discontinuity-capturing system matrix
+  sysmat_dc_ = null;
 
   // -------------------------------------------------------------------
   // create empty vectors
@@ -203,6 +206,9 @@ void CondifImplicitTimeInt::Integrate()
 
   // velocity field
   cdvel_  =params_.get<int>("condif velocity field");
+
+  // discontinuity capturing?
+  discap_  =params_.get<int>("discontinuity capturing");
 
   // time measurement --- this causes the TimeMonitor tm1 to stop here
   //                                                (call of destructor)
@@ -492,13 +498,16 @@ void CondifImplicitTimeInt::Solve(
     // get cpu time
     tcpu=ds_cputime();
 
-    // zero out the stiffness matrix
-    // We reuse the sparse mask and assemble into a filled matrix
-    // after the first step. This is way faster.
+    // Although it is faster to reuse the sparse mask and assemble into a 
+    // filled matrix after the first step, for LINALG::Add, it is necessary
+    // to have at least sysmat_dc unfilled at the time of the call.
     if (sysmat_==null)
       sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
     else
       sysmat_->PutScalar(0.0);
+    sysmat_dc_ = null;
+    sysmat_dc_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_); 
+
     // zero out residual
     residual_->PutScalar(0.0);
     residual_->Update(1.0,*neumann_loads_,0.0);
@@ -513,6 +522,7 @@ void CondifImplicitTimeInt::Solve(
     eleparams.set("total time",time_);
     eleparams.set("time constant for integration",theta_*dta_);
     eleparams.set("condif velocity field",cdvel_);
+    eleparams.set("discontinuity capturing",discap_);
     eleparams.set("using stationary formulation",is_stat);
 
     // set vector values needed by elements
@@ -521,25 +531,37 @@ void CondifImplicitTimeInt::Solve(
     discret_->SetState("old solution data for rhs"  ,hist_ );
 
     // call loop over elements
-    discret_->Evaluate(eleparams,sysmat_,residual_);
+    discret_->Evaluate(eleparams,sysmat_,sysmat_dc_,residual_);
 
     discret_->ClearState();
 
-    // finalize the system matrix
+    // finalize the standard (stabilized) matrix
     LINALG::Complete(*sysmat_);
-    maxentriesperrow_ = sysmat_->MaxNumEntries();
+
+    // add the discontinuity-capturing (artificial diffusivity) matrix to 
+    // the standard (stabilized) matrix; sum is stored as sysmat_dc
+    LINALG::Add(*sysmat_,false,1.0,*sysmat_dc_,1.0);
+
+    // finalize the complete system matrix, that is,
+    // standard (stabilized) matrix + discontinuity-capturing matrix
+    LINALG::Complete(*sysmat_dc_);
+    maxentriesperrow_ = sysmat_dc_->MaxNumEntries();
 
     // end time measurement for element call
     tm3_ref_=null;
     dtele=ds_cputime()-tcpu;
   }
 
-  //--------- Apply dirichlet boundary conditions to system of equations
+  // Apply dirichlet boundary conditions to standard (stabilized) and complete 
+  // system matrix
   {
     // start time measurement for application of dirichlet conditions
     tm4_ref_ = rcp(new TimeMonitor(*timeapplydirich_));
 
     LINALG::ApplyDirichlettoSystem(sysmat_,phinp_,residual_,
+				     phinp_,dirichtoggle_);
+
+    LINALG::ApplyDirichlettoSystem(sysmat_dc_,phinp_,residual_,
 				     phinp_,dirichtoggle_);
 
     // end time measurement for application of dirichlet conditions
@@ -553,7 +575,7 @@ void CondifImplicitTimeInt::Solve(
     // get cpu time
     tcpu=ds_cputime();
 
-    solver_.Solve(sysmat_,phinp_,residual_,true,1);
+    solver_.Solve(sysmat_dc_,phinp_,residual_,true,1);
 
     // end time measurement for solver call
     tm5_ref_=null;
@@ -854,6 +876,7 @@ void CondifImplicitTimeInt::SolveStationaryProblem()
      eleparams.set("assemble vector 3",false);
      // other parameter needed by the elements
      eleparams.set("condif velocity field",cdvel_);
+     eleparams.set("discontinuity capturing",discap_);
      eleparams.set("using stationary formulation",true);
 
      // set vector values needed by elements

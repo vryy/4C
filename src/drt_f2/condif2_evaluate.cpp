@@ -91,8 +91,12 @@ int DRT::Elements::Condif2::Evaluate(ParameterList& params,
       // get type of velocity field
       const int vel_field = params.get<int>("condif velocity field",0);
 
+      // get flag for discontinuity capturing (1=yes, 0=no)
+      const int discap = params.get<int>("discontinuity capturing",0);
+
       // calculate element coefficient matrix and rhs
-      condif2_sys_mat(lm,myhist,&elemat1,&elevec1,actmat,time,timefac,vel_field,is_stationary);
+      condif2_sys_mat(lm,myhist,&elemat1,&elemat2,&elevec1,actmat,time,timefac,vel_field,discap,
+                      is_stationary);
 
     }
     break;
@@ -128,11 +132,13 @@ int DRT::Elements::Condif2::EvaluateNeumann(ParameterList& params,
 void DRT::Elements::Condif2::condif2_sys_mat(vector<int>&              lm,
                                          vector<double>&           ehist,
                                          Epetra_SerialDenseMatrix* sys_mat,
+                                         Epetra_SerialDenseMatrix* sys_mat_dc,
                                          Epetra_SerialDenseVector* residual,
                                          struct _MATERIAL*         material,
                                          double                    time,
                                          double                    timefac,
                                          int                       vel_field,
+                                         int                       discap,
                                          bool                      is_stationary)
 {
 
@@ -169,6 +175,7 @@ void DRT::Elements::Condif2::condif2_sys_mat(vector<int>&              lm,
   double         		vel_norm, epe1, epe2, xi1, xi2;
   double         		mk=0.0;
   double                        tau; // stabilization parameter
+  double                        kart; // artificial diffusivity
 
   /*----------------------------------------------------------------------*/
   // calculation of stabilization parameter
@@ -215,15 +222,23 @@ void DRT::Elements::Condif2::condif2_sys_mat(vector<int>&              lm,
 /*--------------------------------- get velocities at element center ---*/
   switch(vel_field)
   {
-    case 1:
-      velint[0]=0.5*sqrt(3.0);
-      velint[1]=0.5;
+  case 1:
+    velint[0]=1.0;
+    velint[1]=0.0;
     break;
-    case 2:
-      velint[0]=0.5;
-      velint[1]=0.5*sqrt(3.0);
+  case 2:
+    velint[0]=0.5*sqrt(3.0);
+    velint[1]=0.5;
     break;
-    default: dserror("condif velocity field unknown!\n");
+  case 3:
+    velint[0]=0.5;
+    velint[1]=0.5*sqrt(3.0);
+    break;
+  case 4:
+    velint[0]=0.5;
+    velint[1]=-0.5*sqrt(3.0);
+    break;
+  default: dserror("condif velocity field unknown!\n");
   }
 
 /*------------------------------ get Jacobian matrix and determinant ---*/
@@ -279,11 +294,10 @@ void DRT::Elements::Condif2::condif2_sys_mat(vector<int>&              lm,
   if (is_stationary == false)
   {// stabilization parameters for instationary case (default)
 
-    /* parameter relating viscous : reactive forces */
+    /* parameter relating diffusive : reactive forces */
     epe1 = 2.0 * timefac * diffus / (mk * DSQR(hk));
-    /* parameter relating advective : viscous forces */
+    /* parameter relating convective : diffusive forces */
     epe2 = mk * vel_norm * hk / diffus;
-
     xi1 = DMAX(epe1,1.0);
     xi2 = DMAX(epe2,1.0);
 
@@ -296,12 +310,19 @@ void DRT::Elements::Condif2::condif2_sys_mat(vector<int>&              lm,
 
     /*------------------------------------------------------ compute tau ---*/
     /* stability parameter definition according to Franca and Valentin (2000) */
-    epe1 = mk * vel_norm * hk / diffus;       /* convective : viscous forces */
-
+    epe1 = mk * vel_norm * hk / diffus;      /* convective : diffusive forces */
     xi1 = DMAX(epe1,1.0);
 
     tau = (DSQR(hk)*mk)/(2.0*diffus*xi1);
 
+  }
+  if (discap == 1)
+  {
+    /*-------------------------- compute artificial diffusivity kappa_art ---*/
+    epe1 = mk * vel_norm * hk / diffus;     /* convective : diffusive forces */
+    xi1 = DMAX(epe1,1.0);
+
+    kart = (DSQR(hk)*mk*DSQR(vel_norm))/(2.0*diffus*xi1);
   }
 
   /*----------------------------------------------------------------------*/
@@ -341,15 +362,23 @@ void DRT::Elements::Condif2::condif2_sys_mat(vector<int>&              lm,
       /*---------------------- get velocity at integration point */
       switch(vel_field)
       {
-        case 1:
-          velint[0]=0.5*sqrt(3.0);
-          velint[1]=0.5;
+      case 1:
+        velint[0]=1.0;
+        velint[1]=0.0;
         break;
-        case 2:
-          velint[0]=0.5;
-          velint[1]=0.5*sqrt(3.0);
+      case 2:
+        velint[0]=0.5*sqrt(3.0);
+        velint[1]=0.5;
         break;
-        default: dserror("condif velocity field unknown!\n");
+      case 3:
+        velint[0]=0.5;
+        velint[1]=0.5*sqrt(3.0);
+        break;
+      case 4:
+        velint[0]=0.5;
+        velint[1]=-0.5*sqrt(3.0);
+        break;
+      default: dserror("condif velocity field unknown!\n");
       }
 
       /*---------------- get history data (n,i) at integration point */
@@ -368,11 +397,11 @@ void DRT::Elements::Condif2::condif2_sys_mat(vector<int>&              lm,
 
       /*-------------- perform integration for entire matrix and rhs ---*/
       if(is_stationary==false)
-        condif2_calmat(*sys_mat,*residual,velint,hist,funct,derxy,derxy2,
-                       edeadng,tau,fac,diffus,iel,timefac);
+        condif2_calmat(*sys_mat,*sys_mat_dc,*residual,velint,hist,funct,derxy,derxy2,
+                       edeadng,tau,kart,fac,diffus,iel,discap,timefac);
       else
-        condif2_calmat_stat(*sys_mat,*residual,velint,hist,funct,derxy,
-                            derxy2,edeadng,tau,fac,diffus,iel);
+        condif2_calmat_stat(*sys_mat,*sys_mat_dc,*residual,velint,hist,funct,derxy,
+                            derxy2,edeadng,tau,kart,fac,diffus,iel,discap);
 
   } // end of loop over integration points
 
@@ -445,7 +474,7 @@ Epetra_SerialDenseVector DRT::Elements::Condif2::condif2_getbodyforce()
   // we have only a constant dead load so far
   for(int inode=0;inode<iel;inode++)
   {
-    edeadng(inode)=0.0;
+    edeadng(inode)=1.0;
   }
 
   return edeadng;
@@ -779,6 +808,7 @@ for further comments see comment lines within code.
 
 void DRT::Elements::Condif2::condif2_calmat(
     Epetra_SerialDenseMatrix& estif,
+    Epetra_SerialDenseMatrix& edc,
     Epetra_SerialDenseVector& eforce,
     vector<double>&           velint,
     const double&             hist,
@@ -787,9 +817,11 @@ void DRT::Elements::Condif2::condif2_calmat(
     Epetra_SerialDenseMatrix& derxy2,
     const double&             edeadng,
     const double&             tau,
+    const double&             kart,
     const double&             fac,
     const double&             diffus,
     const int&                iel,
+    const int&                discap,
     double                    timefac
     )
 {
@@ -846,6 +878,20 @@ for (int i=0; i<iel; i++) /* loop over nodes of element */
 #undef rhsint_
 #undef diffus_
 
+if (discap == 1)
+{
+  // parameter for artificial diffusivity
+  const double kartfac = kart*fac;
+
+  #define edc_(i,j)    edc(i,j)
+  #define derxy_(i,j)  derxy(i,j)
+
+  #include "condif2_kart.cpp"
+
+  #undef edc_
+  #undef derxy_
+}
+
 return;
 } // end of DRT:Elements:Condif2:condif2_calmat
 
@@ -900,6 +946,7 @@ for further comments see comment lines within code.
 
 void DRT::Elements::Condif2::condif2_calmat_stat(
     Epetra_SerialDenseMatrix& estif,
+    Epetra_SerialDenseMatrix& edc,
     Epetra_SerialDenseVector& eforce,
     vector<double>&           velint,
     const double&             hist,
@@ -908,9 +955,11 @@ void DRT::Elements::Condif2::condif2_calmat_stat(
     Epetra_SerialDenseMatrix& derxy2,
     const double&             edeadng,
     const double&             tau,
+    const double&             kart,
     const double&             fac,
     const double&             diffus,
-    const int&                iel
+    const int&                iel,
+    const int&                discap
     )
 {
 /*========================= further variables =========================*/
@@ -961,6 +1010,20 @@ for (int i=0; i<iel; i++) /* loop over nodes of element */
 #undef diff_
 #undef rhsint_
 #undef diffus_
+
+if (discap == 1)
+{
+  // parameter for artificial diffusivity
+  const double kartfac = kart*fac;
+
+  #define edc_(i,j)    edc(i,j)
+  #define derxy_(i,j)  derxy(i,j)
+
+  #include "condif2_kart.cpp"
+
+  #undef edc_
+  #undef derxy_
+}
 
 return;
 } // end of DRT:Elements:Condif2:condif2_calmat_stat

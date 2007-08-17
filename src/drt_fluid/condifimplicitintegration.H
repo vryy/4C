@@ -167,9 +167,12 @@ protected:
   double theta_;
 
   int cdvel_;
+  int discap_;
 
-  /// system matrix --- stiffness and mass are assembled in one matrix!
+  /// system matrices: standard (stabilized) matrix and complete system matrix
+  /// including discontinuity-capturing (artificial diffusivity) matrix
   RefCountPtr<Epetra_CrsMatrix> sysmat_;
+  RefCountPtr<Epetra_CrsMatrix> sysmat_dc_;
 
   /// toggle vector indicating which dofs have Dirichlet BCs
   RefCountPtr<Epetra_Vector>    dirichtoggle_;
