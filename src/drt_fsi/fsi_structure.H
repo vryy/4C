@@ -32,6 +32,8 @@ public:
   void SetInterfaceMap(Teuchos::RefCountPtr<Epetra_Map> im);
 
   Teuchos::RefCountPtr<Epetra_Vector> ExtractInterfaceDisplacement();
+  Teuchos::RefCountPtr<Epetra_Vector> ExtractInterfaceVel();
+  Teuchos::RefCountPtr<Epetra_Vector> ExtractInterfaceAcc();
 
   void ApplyInterfaceForces(Teuchos::RefCountPtr<Epetra_Vector> iforce);
 

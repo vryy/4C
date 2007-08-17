@@ -456,9 +456,30 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
 
     // Begin Nonlinear Solver ************************************
 
-    // Get initial guess. Here some predictor could be useful.
-    Teuchos::RefCountPtr<Epetra_Vector> soln = displacementcoupling_ ?
-                                               InterfaceDisp() : InterfaceForce();
+    // Get initial guess.
+    Teuchos::RefCountPtr<Epetra_Vector> soln;
+    if (displacementcoupling_)
+    {
+      // d(n)
+      soln = InterfaceDisp();
+
+      // Here some predictor could be useful.
+      // There are different choices available, but we probably do not
+      // need to make it configurable?
+      //
+      // d(n)+dt*(1.5*v(n)-0.5*v(n-1))
+      // d(n)+dt*v(n)
+
+      // d(n)+dt*v(n)+0.5*dt^2*a(n)
+      Teuchos::RefCountPtr<Epetra_Vector> veln = structure_->ExtractInterfaceVel();
+      Teuchos::RefCountPtr<Epetra_Vector> accn = structure_->ExtractInterfaceAcc();
+      soln->Update(dt_,*veln,0.5*dt_*dt_,*accn,1.);
+    }
+    else
+    {
+      InterfaceForce();
+    }
+
     NOX::Epetra::Vector noxSoln(soln, NOX::Epetra::Vector::CreateView);
 
     // Create the linear system

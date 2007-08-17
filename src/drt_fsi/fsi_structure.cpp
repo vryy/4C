@@ -76,6 +76,46 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Structure::ExtractInterfaceDisplacement
 }
 
 
+Teuchos::RefCountPtr<Epetra_Vector> FSI::Structure::ExtractInterfaceVel()
+{
+  Teuchos::RefCountPtr<Epetra_Vector> ivelm = rcp(new Epetra_Vector(*idispmap_));
+  Teuchos::RefCountPtr<Epetra_Vector> ivel  = rcp(new Epetra_Vector(*idispmap_));
+
+  int err = ivel->Export(*vel_,*extractor_,Insert);
+  if (err)
+    dserror("Export using exporter returned err=%d",err);
+
+  err = ivelm->Export(*velm_,*extractor_,Insert);
+  if (err)
+    dserror("Export using exporter returned err=%d",err);
+
+  double alphaf = params_->get<double>("alpha f", 0.459);
+  ivel->Update(1./(1.-alphaf),*ivelm,-alphaf/(1.-alphaf));
+
+  return ivel;
+}
+
+
+Teuchos::RefCountPtr<Epetra_Vector> FSI::Structure::ExtractInterfaceAcc()
+{
+  Teuchos::RefCountPtr<Epetra_Vector> iaccm = rcp(new Epetra_Vector(*idispmap_));
+  Teuchos::RefCountPtr<Epetra_Vector> iacc  = rcp(new Epetra_Vector(*idispmap_));
+
+  int err = iacc->Export(*acc_,*extractor_,Insert);
+  if (err)
+    dserror("Export using exporter returned err=%d",err);
+
+  err = iaccm->Export(*accm_,*extractor_,Insert);
+  if (err)
+    dserror("Export using exporter returned err=%d",err);
+
+  double alpham = params_->get<double>("alpha m", 0.378);
+  iacc->Update(1./(1.-alpham),*iaccm,-alpham/(1.-alpham));
+
+  return iacc;
+}
+
+
 void FSI::Structure::ApplyInterfaceForces(Teuchos::RefCountPtr<Epetra_Vector> iforce)
 {
   // Play it save. In the first iteration everything is already set up
