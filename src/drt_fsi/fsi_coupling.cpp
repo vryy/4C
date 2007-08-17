@@ -111,7 +111,8 @@ void FSI::Coupling::MatchNodes(const DRT::Discretization& masterdis,
   tree.FindMatch(slavedis, slavenodes, coupling);
 
   if (masternodes.size() != coupling.size())
-    dserror("did not get 1:1 correspondence");
+    dserror("Did not get 1:1 correspondence. masternodes.size()=%d, coupling.size()=%d",
+            masternodes.size(), coupling.size());
 
   // extract permutation
 
@@ -129,8 +130,8 @@ void FSI::Coupling::MatchNodes(const DRT::Discretization& masterdis,
     if (coupling.find(gid) != coupling.end())
     {
       pair<int,double>& coupled = coupling[gid];
-      if (coupled.second > 1e-8)
-        dserror("coupled nodes (%d,%d) do not match", gid, coupled.first);
+      if (coupled.second > 1e-7)
+        dserror("Coupled nodes (%d,%d) do not match. difference=%e", gid, coupled.first, coupled.second);
       patchedmasternodes.push_back(gid);
       permslavenodes.push_back(coupled.first);
     }
