@@ -954,7 +954,7 @@ FSI::DirichletNeumannCoupling::FluidOp(Teuchos::RefCountPtr<Epetra_Vector> idisp
 
     int itemax = fluid_->Itemax();
     if (fillFlag==MF_Res and mfresitemax_ > 0)
-      fluid_->SetItemax(mfresitemax_);
+      fluid_->SetItemax(mfresitemax_ + 1);
 
     fluid_->NonlinearSolve();
     fluid_->SetItemax(itemax);
