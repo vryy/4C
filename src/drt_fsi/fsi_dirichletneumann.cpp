@@ -651,7 +651,7 @@ FSI::DirichletNeumannCoupling::CreateLinearSystem(ParameterList& nlParams,
   {
     Teuchos::ParameterList& mfParams = nlParams.sublist("Matrix Free");
     double lambda = mfParams.get("lambda", 1.0e-6);
-    //mfresitemax_ = mfParams.get("itemax", -1);
+    mfresitemax_ = mfParams.get("itemax", -1);
 
     bool kelleyPerturbation = mfParams.get("Kelley Perturbation", false);
 
@@ -951,7 +951,14 @@ FSI::DirichletNeumannCoupling::FluidOp(Teuchos::RefCountPtr<Epetra_Vector> idisp
 
     fluid_->ApplyInterfaceVelocities(StructToFluid(ivel));
     fluid_->ApplyMeshDisplacement(fluiddisp);
+
+    int itemax = fluid_->Itemax();
+    if (fillFlag==MF_Res and mfresitemax_ > 0)
+      fluid_->SetItemax(mfresitemax_);
+
     fluid_->NonlinearSolve();
+    fluid_->SetItemax(itemax);
+
     return FluidToStruct(fluid_->ExtractInterfaceForces());
   }
 }

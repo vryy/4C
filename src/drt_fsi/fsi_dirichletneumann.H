@@ -225,6 +225,7 @@ private:
   double time_;
   double maxtime_;
   double dt_;
+  int mfresitemax_;
 };
 
 }

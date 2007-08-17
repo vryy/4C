@@ -33,6 +33,18 @@ FSI::Fluid::Fluid(RefCountPtr<DRT::Discretization> dis,
 }
 
 
+int FSI::Fluid::Itemax() const
+{
+  return params_->get<int>("max nonlin iter steps");
+}
+
+
+void FSI::Fluid::SetItemax(int itemax)
+{
+  params_->set<int>("max nonlin iter steps", itemax);
+}
+
+
 void FSI::Fluid::SetInterfaceMap(Teuchos::RefCountPtr<Epetra_Map> im)
 {
   ivelmap_ = im;
