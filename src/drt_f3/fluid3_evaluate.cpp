@@ -475,35 +475,35 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
         // if not available, define map from string to action
         if(stabstrtoact_.empty())
         {
-          stabstrtoact_["subscales quasistatic"                        ]=subscales_quasistatic;
-          stabstrtoact_["subscales time dependent"                     ]=subscales_time_dependent;
+          stabstrtoact_["quasistatic subscales"                        ]=subscales_quasistatic;
+          stabstrtoact_["time dependent subscales"                     ]=subscales_time_dependent;
           stabstrtoact_["drop inertia stabilisation"                   ]=inertia_stab_drop;
           stabstrtoact_["keep inertia stabilisation"                   ]=inertia_stab_keep;
-          stabstrtoact_["assume inf-sup stable"                        ]=pstab_assume_inf_sup_stable;
-          stabstrtoact_["use pspg stabilisation"                       ]=pstab_use_pspg;
-          stabstrtoact_["no convective stabilisation"                  ]=convective_stab_none;
-          stabstrtoact_["supg convective stabilisation"                ]=convective_stab_supg;
-          stabstrtoact_["no viscous stabilisation"                     ]=viscous_stab_none;
-          stabstrtoact_["viscous stabilisation of gls type"            ]=viscous_stab_gls;
-          stabstrtoact_["viscous stabilisation of gls type (only rhs)" ]=viscous_stab_gls_only_rhs;
-          stabstrtoact_["viscous stabilisation of agls type"           ]=viscous_stab_agls;
-          stabstrtoact_["viscous stabilisation of agls type (only rhs)"]=viscous_stab_agls_only_rhs;
-          stabstrtoact_["use continuity stabilisation"                 ]=continuity_stab_yes;
-          stabstrtoact_["no continuity stabilisation"                  ]=continuity_stab_none;
-          stabstrtoact_["cross stress stabilisation (on rhs)"          ]=cross_stress_stab_only_rhs;
-          stabstrtoact_["no cross stress stabilisation"                ]=cross_stress_stab_none;
-          stabstrtoact_["reynolds stress stabilisation (on rhs)"       ]=reynolds_stress_stab_only_rhs;
-          stabstrtoact_["no reynolds stress stabilisation"             ]=reynolds_stress_stab_none;
+          stabstrtoact_["inf-sup-stable (off)"                         ]=pstab_assume_inf_sup_stable;
+          stabstrtoact_["(svel,nabla q)"                               ]=pstab_use_pspg;
+          stabstrtoact_["off"                                          ]=convective_stab_none;
+          stabstrtoact_["(svel,(u o nabla)v)"                          ]=convective_stab_supg;
+          stabstrtoact_["off"                                          ]=viscous_stab_none;
+          stabstrtoact_["gls :(svel,+2 visc eps(v))"                   ]=viscous_stab_gls;
+          stabstrtoact_["gls :(svel,+2 visc eps(v)) [RHS]"             ]=viscous_stab_gls_only_rhs;
+          stabstrtoact_["agls:(svel,-2 visc eps(v))"                   ]=viscous_stab_agls;
+          stabstrtoact_["agls:(svel,-2 visc eps(v)) [RHS]"             ]=viscous_stab_agls_only_rhs;
+          stabstrtoact_["(spres,nabla o v)"                            ]=continuity_stab_yes;
+          stabstrtoact_["off"                                          ]=continuity_stab_none;
+          stabstrtoact_["cross: (u,(svel o nabla)v) [RHS]"             ]=cross_stress_stab_only_rhs;
+          stabstrtoact_["off"                                          ]=cross_stress_stab_none;
+          stabstrtoact_["reynolds: (svel,(svel o nabla)v) [RHS]"       ]=reynolds_stress_stab_only_rhs;
+          stabstrtoact_["off"                                          ]=reynolds_stress_stab_none;
         }
         
-        StabilisationAction tds      = ConvertStringToStabAction(stablist.get<string>("time tracking of subscales"));
-        StabilisationAction inertia  = ConvertStringToStabAction(stablist.get<string>("use subscale acceleration term in weak form"));
-        StabilisationAction pspg     = ConvertStringToStabAction(stablist.get<string>("stabilisation (saddle point problem)"));
-        StabilisationAction supg     = ConvertStringToStabAction(stablist.get<string>("convective stabilisation"));
-        StabilisationAction agls     = ConvertStringToStabAction(stablist.get<string>("viscous stabilisation"));
-        StabilisationAction cstab    = ConvertStringToStabAction(stablist.get<string>("continuity stabilisation"));
-        StabilisationAction cross    = ConvertStringToStabAction(stablist.get<string>("cross stress stabilisation"));
-        StabilisationAction reynolds = ConvertStringToStabAction(stablist.get<string>("reynolds stress stabilisation"));
+        StabilisationAction tds      = ConvertStringToStabAction(stablist.get<string>("TDS"));
+        StabilisationAction inertia  = ConvertStringToStabAction(stablist.get<string>("INERTIA"));
+        StabilisationAction pspg     = ConvertStringToStabAction(stablist.get<string>("PSPG"));
+        StabilisationAction supg     = ConvertStringToStabAction(stablist.get<string>("SUPG"));
+        StabilisationAction vstab    = ConvertStringToStabAction(stablist.get<string>("VSTAB"));
+        StabilisationAction cstab    = ConvertStringToStabAction(stablist.get<string>("CSTAB"));
+        StabilisationAction cross    = ConvertStringToStabAction(stablist.get<string>("CROSS-STRESS"));
+        StabilisationAction reynolds = ConvertStringToStabAction(stablist.get<string>("REYNOLDS-STRESS"));
 
         // --------------------------------------------------
         // specify what to compute
@@ -530,7 +530,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
                                  inertia,
                                  pspg,   
                                  supg,   
-                                 agls,   
+                                 vstab,   
                                  cstab,   
                                  cross,  
                                  reynolds,
@@ -551,7 +551,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
         // on the fly, not stored on the element
         /*
                      ~n+1   ~n
-             ~ n     u    - u     ~ n   / gamma-1.0 \
+             ~ n     u    - u     ~ n   / 1.0-gamma \
             acc  <-  --------- - acc * |  ---------  |
                      gamma*dt           \   gamma   /
         */
@@ -561,7 +561,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
 
           sub_acc_old_ = (sub_vel_-sub_vel_old_)/(gamma*dt)
                          -
-                         sub_acc_old_*(gamma-1.0)/gamma;
+                         sub_acc_old_*(1.0-gamma)/gamma;
         }
         // most recent subscale velocity becomes the old subscale velocity
         // for the next timestep
