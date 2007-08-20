@@ -20,6 +20,8 @@ Maintainer: Peter Gamnitzer
 
 #include "fluid_genalpha_integration.H"
 
+extern Teuchos::RefCountPtr<Teuchos::ParameterList> globalparameterlist;
+
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -266,6 +268,30 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
     cout << "Generalized Alpha parameter: alpha_F = " << alphaF_ << &endl;
     cout << "                             alpha_M = " << alphaM_ << &endl;
     cout << "                             gamma   = " << gamma_  << &endl <<&endl;
+
+    if(newton_ == true)
+    {
+      cout << "Linearisation              : " << "Including reactive terms (Newton-like)" <<&endl;
+    }
+    else
+    {
+      cout << "Linearisation              : " << "Without reactive terms (fixed-point-like)" <<&endl;
+    }
+    cout << &endl;
+
+    cout << "Stabilisation type         : " << ((*globalparameterlist).sublist("FluidStabilisation")).get<string>("STABTYPE") << &endl;
+    cout << "                             " << ((*globalparameterlist).sublist("FluidStabilisation")).get<string>("TDS")<< &endl;
+    cout << &endl;
+
+    cout <<  "                             " << "INERTIA         = " << ((*globalparameterlist).sublist("FluidStabilisation")).get<string>("INERTIA")        <<&endl;
+    cout <<  "                             " << "SUPG            = " << ((*globalparameterlist).sublist("FluidStabilisation")).get<string>("SUPG")           <<&endl;
+    cout <<  "                             " << "PSPG            = " << ((*globalparameterlist).sublist("FluidStabilisation")).get<string>("PSPG")           <<&endl;
+    cout <<  "                             " << "CSTAB           = " << ((*globalparameterlist).sublist("FluidStabilisation")).get<string>("CSTAB")          <<&endl;
+    cout <<  "                             " << "VSTAB           = " << ((*globalparameterlist).sublist("FluidStabilisation")).get<string>("VSTAB")          <<&endl;
+    cout <<  "                             " << "CROSS-STRESS    = " << ((*globalparameterlist).sublist("FluidStabilisation")).get<string>("CROSS-STRESS")   <<&endl;
+    cout <<  "                             " << "REYNOLDS-STRESS = " << ((*globalparameterlist).sublist("FluidStabilisation")).get<string>("REYNOLDS-STRESS")<<&endl;
+    cout << &endl;
+
   }
 
   // start time measurement for timeloop
@@ -841,25 +867,9 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
 
   // parameters for stabilisation
   {
-    ParameterList& stablist = eleparams.sublist("stabilisation");
-    
-    stablist.set("time tracking of subscales"                 ,"subscales time dependent");
-//    stablist.set("time tracking of subscales"                 ,"subscales quasistatic");
-
-    stablist.set("use subscale acceleration term in weak form","keep inertia stabilisation");
-//    stablist.set("use subscale acceleration term in weak form","drop inertia stabilisation");
-    stablist.set("stabilisation (saddle point problem)"       ,"use pspg stabilisation");
-    stablist.set("convective stabilisation"                   ,"supg convective stabilisation");
-//    stablist.set("convective stabilisation"                   ,"no convective stabilisation");
-    stablist.set("viscous stabilisation"                      ,"viscous stabilisation of agls type");
-//    stablist.set("viscous stabilisation"                      ,"no viscous stabilisation");
-    stablist.set("continuity stabilisation"                   ,"use continuity stabilisation");
-//      stablist.set("continuity stabilisation"                   ,"no continuity stabilisation");
-    stablist.set("cross stress stabilisation"                 ,"no cross stress stabilisation");
-//    stablist.set("cross stress stabilisation"                 ,"cross stress stabilisation (on rhs)");
-    stablist.set("reynolds stress stabilisation"              ,"no reynolds stress stabilisation");
-//    stablist.set("reynolds stress stabilisation"              ,"reynolds stress stabilisation (on rhs)");
+    eleparams.sublist("stabilisation") = (*globalparameterlist).sublist("FluidStabilisation");
   }
+  
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("u and p (n+1      ,trial)",velnp_);
@@ -1421,6 +1431,7 @@ void FluidGenAlphaIntegration::SetInitialFlowField(
   {
     dserror("no other initial fields than zero, function and beltrami are available up to now");
   }
+
   return;
 } // end FluidGenAlphaIntegration::SetInitialFlowField
 
@@ -1502,6 +1513,7 @@ void FluidGenAlphaIntegration::EvaluateErrorComparedToAnalyticalSol()
   default:
     dserror("Cannot calculate error. Unknown type of analytical test problem");
   }
+
   return;
 } // end EvaluateErrorComparedToAnalyticalSol
 
