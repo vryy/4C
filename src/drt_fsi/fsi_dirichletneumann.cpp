@@ -470,10 +470,12 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
       // d(n)+dt*(1.5*v(n)-0.5*v(n-1))
       // d(n)+dt*v(n)
 
+#if 0
       // d(n)+dt*v(n)+0.5*dt^2*a(n)
       Teuchos::RefCountPtr<Epetra_Vector> veln = structure_->ExtractInterfaceVel();
       Teuchos::RefCountPtr<Epetra_Vector> accn = structure_->ExtractInterfaceAcc();
       soln->Update(dt_,*veln,0.5*dt_*dt_,*accn,1.);
+#endif
     }
     else
     {
