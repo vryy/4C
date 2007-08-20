@@ -79,7 +79,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
                                        bool                    is_stationary
   )
 {
-  
+
   // set element data
   const DRT::Element::DiscretizationType distype = ele->Shape();
 
@@ -611,26 +611,25 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
 #endif
     {
       // evaluate residual once for all stabilisation right hand sides
-      res_old_=velint_-rhsint_+timefac*(conv_old_+gradp_-2*visc*visc_old_);
+      res_old_ = velint_-rhsint_+timefac*(conv_old_+gradp_-2*visc*visc_old_);
 
-      if(ele->is_ale_)
+      if (ele->is_ale_)
       {
         // correct convection with grid velocity
-        res_old_-=blitz::sum(vderxy_(i, j)*gridvelint_(j), j);
-
+        res_old_ -= timefac*blitz::sum(vderxy_(i, j)*gridvelint_(j), j);
       }
-      
+
       //----------------------------------------------------------------------
       //                            GALERKIN PART
-      
-      for (int ui=0; ui<iel_; ++ui)  
+
+      for (int ui=0; ui<iel_; ++ui)
       {
         for (int vi=0; vi<iel_; ++vi)
         {
 
           /* inertia (contribution to mass matrix) */
           /*
-                    
+
                                /        \
                               |          |
                               |  Du , v  |
@@ -643,13 +642,13 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
 
           /* convection, convective part */
           /*
-                      
+
                        /                       \
                       |  / n+1       \          |
                       | | u   o nabla | Du , v  |
                       |  \ (i)       /          |
                        \                       /
-          
+
           */
           estif(vi*4, ui*4)         += timefacfac*funct_(vi)*conv_c_(ui) ;
           estif(vi*4 + 1, ui*4 + 1) += timefacfac*funct_(vi)*conv_c_(ui) ;
@@ -724,13 +723,13 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
 
             /*  reduced convection through grid motion
 
-                             
+
                        /                      \
                       |  /          \          |
                     - | | u  o nabla | Du , v  |
                       |  \ G        /          |
                        \                      /
-          
+
             */
             estif(vi*4, ui*4)         += timefacfac*funct_(vi)*conv_g_(ui) ;
             estif(vi*4 + 1, ui*4 + 1) += timefacfac*funct_(vi)*conv_g_(ui) ;
@@ -739,15 +738,15 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
 
         }
       } // end if is_ale
-          
+
       if (newton)
       {
-        for (int ui=0; ui<iel_; ++ui)    
+        for (int ui=0; ui<iel_; ++ui)
         {
           for (int vi=0; vi<iel_; ++vi)
           {
-            
-            /*  convection, reactive part 
+
+            /*  convection, reactive part
 
                    /                         \
                   |  /          \   n+1       |
@@ -774,7 +773,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
         eforce(vi*4)     += -(fac*funct_(vi)*velint_(0)) ;
         eforce(vi*4 + 1) += -(fac*funct_(vi)*velint_(1)) ;
         eforce(vi*4 + 2) += -(fac*funct_(vi)*velint_(2)) ;
-        
+
         /* convection */
         eforce(vi*4)     += -(timefacfac*(velint_(0)*conv_r_(0, 0, vi)
                                           +
@@ -796,7 +795,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
         eforce(vi*4)     += press*timefacfac*derxy_(0, vi) ;
         eforce(vi*4 + 1) += press*timefacfac*derxy_(1, vi) ;
         eforce(vi*4 + 2) += press*timefacfac*derxy_(2, vi) ;
-        
+
         /* viscosity */
         eforce(vi*4)     += -(visc*timefacfac*(2.0*derxy_(0, vi)*vderxy_(0, 0)
                                                +
@@ -860,17 +859,17 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
                                           gridvelint_(2)*conv_r_(2, 2, vi)) ;
         } // vi
       }
-      
+
       //----------------------------------------------------------------------
       //                 PRESSURE STABILISATION PART
 
       if(pstab)
       {
-        for (int ui=0; ui<iel_; ++ui)  
+        for (int ui=0; ui<iel_; ++ui)
         {
           for (int vi=0; vi<iel_; ++vi)
           {
-          
+
             /* pressure stabilisation: inertia */
             /*
                         /              \
@@ -883,7 +882,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
             estif(vi*4 + 3, ui*4)     += timetauMp*funct_(ui)*derxy_(0, vi) ;
             estif(vi*4 + 3, ui*4 + 1) += timetauMp*funct_(ui)*derxy_(1, vi) ;
             estif(vi*4 + 3, ui*4 + 2) += timetauMp*funct_(ui)*derxy_(2, vi) ;
-            
+
             /* pressure stabilisation: convection, convective part */
             /*
 
@@ -892,13 +891,13 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
                      | | u   o nabla | Du , nabla q |
                      |  \ (i)       /               |
                       \                            /
-                  
+
             */
             estif(vi*4 + 3, ui*4)     += ttimetauMp*conv_c_(ui)*derxy_(0, vi) ;
             estif(vi*4 + 3, ui*4 + 1) += ttimetauMp*conv_c_(ui)*derxy_(1, vi) ;
             estif(vi*4 + 3, ui*4 + 2) += ttimetauMp*conv_c_(ui)*derxy_(2, vi) ;
 
-            
+
             /* pressure stabilisation: viscosity (-L_visc_u) */
             /*
                      /                              \
@@ -937,48 +936,47 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
                                                      +
                                                      derxy_(2, ui)*derxy_(2, vi)) ;
 
-            
+
           } // vi
         } // ui
 
-      if (ele->is_ale_)
-      {
-        for (int vi=0; vi<iel_; ++vi)
+        if (ele->is_ale_)
         {
-          for (int ui=0; ui<iel_; ++ui)
+          for (int vi=0; vi<iel_; ++vi)
           {
+            for (int ui=0; ui<iel_; ++ui)
+            {
+              /*  reduced convection through grid motion
 
-            /*  reduced convection through grid motion
 
-                             
                        /                          \
                       |  /          \              |
                     - | | u  o nabla | Du , grad q |
                       |  \ G        /              |
                        \                          /
-          
-            */
-            estif(vi*4 + 3, ui*4)     += ttimetauMp*conv_g_(ui)*derxy_(0, vi) ;
-            estif(vi*4 + 3, ui*4 + 1) += ttimetauMp*conv_g_(ui)*derxy_(1, vi) ;
-            estif(vi*4 + 3, ui*4 + 2) += ttimetauMp*conv_g_(ui)*derxy_(2, vi) ;
-          }// ui
-        }//vi 
-      } // end if is_ale
-        
+
+              */
+              estif(vi*4 + 3, ui*4)     += ttimetauMp*conv_g_(ui)*derxy_(0, vi) ;
+              estif(vi*4 + 3, ui*4 + 1) += ttimetauMp*conv_g_(ui)*derxy_(1, vi) ;
+              estif(vi*4 + 3, ui*4 + 2) += ttimetauMp*conv_g_(ui)*derxy_(2, vi) ;
+            }// ui
+          }//vi
+        } // end if is_ale
+
         if (newton)
         {
-          for (int ui=0; ui<iel_; ++ui) 
+          for (int ui=0; ui<iel_; ++ui)
           {
             for (int vi=0; vi<iel_; ++vi)
             {
-              /*  pressure stabilisation: convection, reactive part 
+              /*  pressure stabilisation: convection, reactive part
 
                   /                             \
                  |  /          \   n+1           |
                  | | Du o nabla | u     , grad q |
                  |  \          /   (i)           |
                   \                             /
-                        
+
               */
               estif(vi*4 + 3, ui*4)     += ttimetauMp*(derxy_(0, vi)*conv_r_(0, 0, ui)
                                                        +
@@ -995,12 +993,12 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
                                                        derxy_(1, vi)*conv_r_(1, 2, ui)
                                                        +
                                                        derxy_(2, vi)*conv_r_(2, 2, ui)) ;
-              
+
             } // vi
           } // ui
         } // if newton
 
-        
+
         for (int vi=0; vi<iel_; ++vi)
         {
           // pressure stabilisation
@@ -1011,13 +1009,13 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
                                          res_old_(2)*derxy_(2, vi)) ;
         }
       }
-   
+
       //----------------------------------------------------------------------
       //                     SUPG STABILISATION PART
-   
+
       if(supg)
       {
-        for (int ui=0; ui<iel_; ++ui)  
+        for (int ui=0; ui<iel_; ++ui)
         {
           for (int vi=0; vi<iel_; ++vi)
           {
@@ -1042,7 +1040,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
                 |   | u    o nabla | Du , | u    o nabla | v  |
                 |    \ (i)        /        \ (i)        /     |
                  \                                           /
-             
+
             */
 
             estif(vi*4, ui*4)         += ttimetauM*conv_c_(ui)*conv_c_(vi) ;
@@ -1059,7 +1057,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
             */
             estif(vi*4, ui*4 + 3)     += ttimetauM*conv_c_(vi)*derxy_(0, ui) ;
             estif(vi*4 + 1, ui*4 + 3) += ttimetauM*conv_c_(vi)*derxy_(1, ui) ;
-            estif(vi*4 + 2, ui*4 + 3) += ttimetauM*conv_c_(vi)*derxy_(2, ui) ;    
+            estif(vi*4 + 2, ui*4 + 3) += ttimetauM*conv_c_(vi)*derxy_(2, ui) ;
 
             /* supg stabilisation: viscous part  (-L_visc_u) */
             /*
@@ -1082,7 +1080,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
 
           } // vi
         } // ui
-        
+
         if (ele->is_ale_)
         {
           for (int vi=0; vi<iel_; ++vi)
@@ -1103,7 +1101,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
                      |        \ G        /     |
                       \                       /
               */
-              
+
               estif(vi*4, ui*4)         += timetauM*funct_(ui)*conv_g_(vi) ;
               estif(vi*4 + 1, ui*4 + 1) += timetauM*funct_(ui)*conv_g_(vi) ;
               estif(vi*4 + 2, ui*4 + 2) += timetauM*funct_(ui)*conv_g_(vi) ;
@@ -1115,8 +1113,8 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
                 |   | u    o nabla | Du , | u  o nabla | v  |
                 |    \ (i)        /        \ G        /     |
                  \                                         /
-             
-              */   
+
+              */
               estif(vi*4, ui*4)         += ttimetauM*conv_c_(ui)*conv_g_(vi) ;
               estif(vi*4 + 1, ui*4 + 1) += ttimetauM*conv_c_(ui)*conv_g_(vi) ;
               estif(vi*4 + 2, ui*4 + 2) += ttimetauM*conv_c_(ui)*conv_g_(vi) ;
@@ -1156,8 +1154,8 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
                 |   | u  o nabla | Du , | u  o nabla | v  |
                 |    \ G        /        \ G        /     |
                  \                                       /
-             
-              */   
+
+              */
               estif(vi*4, ui*4)         += ttimetauM*conv_g_(ui)*conv_g_(vi) ;
               estif(vi*4 + 1, ui*4 + 1) += ttimetauM*conv_g_(ui)*conv_g_(vi) ;
               estif(vi*4 + 2, ui*4 + 2) += ttimetauM*conv_g_(ui)*conv_g_(vi) ;
@@ -1206,7 +1204,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
                 estif(vi*4 + 2, ui*4 + 2) += ttimetauM*( - gridvelint_(0)*derxy_(2, vi)*conv_r_(2, 0, ui)
                                                          - gridvelint_(1)*derxy_(2, vi)*conv_r_(2, 1, ui)
                                                          - gridvelint_(2)*derxy_(2, vi)*conv_r_(2, 2, ui)) ;
-              
+
                 /*
                        /                                         \
                       |    /          \   n+1    /          \     |
@@ -1229,11 +1227,11 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
         } // end if is_ale
 
 
-        
+
 
         if (newton)
         {
-          for (int ui=0; ui<iel_; ++ui)  
+          for (int ui=0; ui<iel_; ++ui)
           {
             for (int vi=0; vi<iel_; ++vi)
             {
@@ -1256,7 +1254,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
               estif(vi*4 + 2, ui*4 + 1) += timetauM*funct_(ui)*velint_(2)*derxy_(1, vi) ;
               estif(vi*4 + 2, ui*4 + 2) += timetauM*funct_(ui)*velint_(2)*derxy_(2, vi) ;
 
-              
+
               /* supg stabilisation: reactive part of convection and linearisation of testfunction ( L_conv_u) */
               /*
                        /                                           \
@@ -1264,7 +1262,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
                       |   | u    o nabla | u    , | Du o nabla | v  |
                       |    \ (i)        /   (i)    \          /     |
                        \                                           /
-            
+
                        /                                           \
                       |    /          \   n+1    / n+1        \     |
                       |   | Du o nabla | u    , | u    o nabla | v  |
@@ -1354,7 +1352,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
               estif(vi*4 + 2, ui*4 + 1) += ttimetauM*funct_(ui)*gradp_(2)*derxy_(1, vi) ;
               estif(vi*4 + 2, ui*4 + 2) += ttimetauM*funct_(ui)*gradp_(2)*derxy_(2, vi) ;
 
-              
+
               /* supg stabilisation: viscous part, linearisation of test function  (-L_visc_u) */
               /*
                       /                                         \
@@ -1375,7 +1373,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
 
 
               /* supg stabilisation: bodyforce part, linearisation of test function */
-              
+
               /*
                           /                             \
                          |              /          \     |
@@ -1392,8 +1390,8 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
               estif(vi*4 + 1, ui*4 + 2) += -(timetauM*funct_(ui)*derxy_(2, vi)*rhsint_(1)) ;
               estif(vi*4 + 2, ui*4)     += -(timetauM*funct_(ui)*derxy_(0, vi)*rhsint_(2)) ;
               estif(vi*4 + 2, ui*4 + 1) += -(timetauM*funct_(ui)*derxy_(1, vi)*rhsint_(2)) ;
-              estif(vi*4 + 2, ui*4 + 2) += -(timetauM*funct_(ui)*derxy_(2, vi)*rhsint_(2)) ;  
-              
+              estif(vi*4 + 2, ui*4 + 2) += -(timetauM*funct_(ui)*derxy_(2, vi)*rhsint_(2)) ;
+
             } // vi
           } // ui
         } // if newton
@@ -1412,7 +1410,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
       //                       STABILISATION, VISCOUS PART
       if(vstab)
       {
-        for (int ui=0; ui<iel_; ++ui)   
+        for (int ui=0; ui<iel_; ++ui)
         {
           for (int vi=0; vi<iel_; ++vi)
           {
@@ -1542,13 +1540,13 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
 
               /*  reduced convection through grid motion
 
-                             
+
                        /                                   \
                       |  /          \                       |
                       | | u  o nabla | Du ,  nabla o eps (v)|
                       |  \ G        /                       |
                        \                                   /
-          
+
               */
 
               estif(vi*4, ui*4)         += 2.0*visc*ttimetauMp*conv_g_(ui)*viscs2_(0, 0, vi) ;
@@ -1561,13 +1559,13 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
               estif(vi*4 + 2, ui*4 + 1) += 2.0*visc*ttimetauMp*conv_g_(ui)*viscs2_(1, 2, vi) ;
               estif(vi*4 + 2, ui*4 + 2) += 2.0*visc*ttimetauMp*conv_g_(ui)*viscs2_(2, 2, vi) ;
             }// ui
-          }//vi 
+          }//vi
         } // end if is_ale
 
-        
+
         if (newton)
         {
-          for (int ui=0; ui<iel_; ++ui) 
+          for (int ui=0; ui<iel_; ++ui)
           {
             for (int vi=0; vi<iel_; ++vi)
             {
@@ -1652,16 +1650,16 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
 
       //----------------------------------------------------------------------
       //                     STABILISATION, CONTINUITY PART
-      
+
       if(cstab)
       {
         const double timefac_timefac_tau_C=timefac*timefac*tau_C;
         const double timefac_timefac_tau_C_divunp=timefac_timefac_tau_C*(vderxy_(0, 0)+vderxy_(1, 1)+vderxy_(2, 2));
 
-        for (int ui=0; ui<iel_; ++ui) 
+        for (int ui=0; ui<iel_; ++ui)
         {
           for (int vi=0; vi<iel_; ++vi)
-          {          
+          {
             /* continuity stabilisation */
             /*
                        /                        \
@@ -1689,7 +1687,7 @@ void DRT::Elements::Fluid3Impl::Sysmat(Fluid3* ele,
           eforce(vi*4 + 1) += -timefac_timefac_tau_C_divunp*derxy_(1, vi) ;
           eforce(vi*4 + 2) += -timefac_timefac_tau_C_divunp*derxy_(2, vi) ;
         }
-        
+
       }
     }
   }
