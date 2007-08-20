@@ -174,9 +174,10 @@ void stru_static_drt()
   ** time   = redundant, equals istep*dt
   */
   //------------------------------------------ time integration parameters
-  const double dt     = statvar->stepsize;
+  const double dt = statvar->stepsize;
   int istep = 0;
-  double          time = 0.0;  // we should add an input parameter
+  double time = 0.0;  // we should add an input parameter
+  double timen;
 
   //-------------------------------- calculate external force distribution
   //---- which is scaled by the load factor lambda (itself stays constant)
@@ -190,6 +191,11 @@ void stru_static_drt()
     params.set("assemble vector 1",true);
     params.set("assemble vector 2",false);
     params.set("assemble vector 3",false);
+     
+    //other parameters needed by the elements
+    params.set("total time",time);
+    params.set("delta time",dt);
+    
     // set vector values needed by elements
     actdis->ClearState();
     actdis->SetState("displacement",dis);
@@ -214,13 +220,17 @@ void stru_static_drt()
   //========================================== start of time/loadstep loop
   while ( istep < statvar->nstep)
   {
+    //------------------------------------------------------- current time
+    // we are at t_{n} == time; the new time is t_{n+1} == time+dt
+    timen = time + dt;
+
     //--------------------------------------------------- predicting state
     // constant predictor : displacement in domain
     disn->Update(1.0, *dis, 0.0);
 
     // evaluate/update current load vector for current istep
     // F_ext(istep) += dlambda * F_ext = dt * F_ext
-    fextn->Update(dt, *fext, 1.0);
+    //fextn->Update(dt, *fext, 1.0); // disabled "quick'n'dirty" MAF hack
 
     // eval fint and stiffness matrix at current istep
     // and apply new displacements at DBCs
@@ -237,6 +247,9 @@ void stru_static_drt()
       params.set("assemble vector 1",true);
       params.set("assemble vector 2",false);
       params.set("assemble vector 3",false);
+      // other parameters needed by the elements
+      params.set("total time",timen);  // load factor (pseudo time)
+      params.set("delta time",dt);  // load factor increment (pseudo time increment)
       // set vector values needed by elements
       actdis->ClearState();
       actdis->SetState("residual displacement",disi);
@@ -246,6 +259,9 @@ void stru_static_drt()
       actdis->SetState("displacement",disn);
       fint->PutScalar(0.0);  // initialise internal force vector
       actdis->Evaluate(params,stiff_mat,null,fint,null,null);
+      // predicted rhs
+      fextn->PutScalar(0.0);  // initialize external force vector (load vect)
+      actdis->EvaluateNeumann(params,*fextn); // *fext holds external force vector at current step
       actdis->ClearState();
     }
     // complete stiffness matrix
@@ -257,7 +273,7 @@ void stru_static_drt()
 
     // evaluate residual at current istep
     // R{istep,numiter=0} = F_int{istep,numiter=0} - F_ext{istep}
-   fresm->Update(1.0,*fint,-1.0,*fextn,0.0);
+    fresm->Update(1.0,*fint,-1.0,*fextn,0.0);
 
     // blank residual at DOFs on Dirichlet BC
     {
@@ -268,7 +284,7 @@ void stru_static_drt()
     //------------------------------------------------ build residual norm
     double norm;
     fresm->Norm2(&norm);
-    if (!myrank) cout << "load factor="<< dt << " Predictor residual forces " << norm << endl; fflush(stdout);
+    if (!myrank) cout << " Predictor residual forces " << norm << endl; fflush(stdout);
 
     //=================================================== equilibrium loop
     int numiter=0;
@@ -309,6 +325,9 @@ void stru_static_drt()
         params.set("assemble vector 1",true);
         params.set("assemble vector 2",false);
         params.set("assemble vector 3",false);
+	// other parameters needed by the elements
+	params.set("total time",timen);  // load factor (pseudo time)
+	params.set("delta time",dt);  // load factor increment (pseudo time increment)
         // set vector values needed by elements
         actdis->ClearState();
         actdis->SetState("residual displacement",disi);
@@ -374,13 +393,16 @@ void stru_static_drt()
       params.set("assemble vector 1",false);
       params.set("assemble vector 2",false);
       params.set("assemble vector 3",false);
+      // other parameters that might be needed by the elements
+      params.set("total time",timen);
+      params.set("delta time",dt);
       actdis->Evaluate(params,null,null,null,null,null);
     }
 
     //------------------------------------------ increment time/load step
-    ++istep;      // step n := n + 1
-    time += dt;   // time t_n := t_{n+1} = t_n + Delta t
-
+    ++istep;      // load step n := n + 1
+    time += dt;   // load factor / pseudo time  t_n := t_{n+1} = t_n + Delta t
+    
     //----------------------------------------------------- output results
     int mod_disp   = istep % statvar->resevry_disp;
     if (!mod_disp && ioflags.struct_disp==1)
@@ -403,6 +425,9 @@ void stru_static_drt()
       params.set("assemble vector 1",false);
       params.set("assemble vector 2",false);
       params.set("assemble vector 3",false);
+      // other parameters that might be needed by the elements
+      params.set("total time",timen);
+      params.set("delta time",dt);
       // set vector values needed by elements
       actdis->ClearState();
       actdis->SetState("residual displacement",zeros);
@@ -415,9 +440,9 @@ void stru_static_drt()
     if (!myrank)
     {
       printf("step %6d | nstep %6d | time %-14.8E | dt %-14.8E | numiter %3d\n",
-             istep,statvar->nstep,time,dt,numiter);
+             istep,statvar->nstep,timen,dt,numiter);
       fprintf(errfile,"step %6d | nstep %6d | time %-14.8E | dt %-14.8E | numiter %3d\n",
-              istep,statvar->nstep,time,dt,numiter);
+              istep,statvar->nstep,timen,dt,numiter);
       printf("----------------------------------------------------------------------------------\n");
       fprintf(errfile,"----------------------------------------------------------------------------------\n");
       fflush(stdout);
