@@ -68,14 +68,14 @@ PSPG            = (svel,nabla q)                         // (svel,nabla q)
                                                          // off                        // inf-sup-stable elements
 CSTAB           = (spres,nabla o v)                      // (spres,nabla o v)
                                                          // off
-VSTAB           = agls:(svel,-2 visc eps(v))             // agls:(svel,-2 visc eps(v))
-                                                         // gls :(svel,+2 visc eps(v))
-                                                         // RHS: (svel,+2 visc eps(v))
-                                                         // RHS: (svel,-2 visc eps(v))
+VSTAB           = (svel,-2 visc nabla o eps(v))          // (svel,-2 visc nabla o eps(v))        // agls
+                                                         // (svel,-2 visc nabla o eps(v)) [RHS]
+                                                         // (svel,+2 visc nabla o eps(v))        // gls
+                                                         // (svel,+2 visc nabla o eps(v)) [RHS]
                                                          // off
-CROSS-STRESS    = cross: (u,(svel o nabla)v) [RHS]       // cross: (u,(svel o nabla)v) [RHS]
+CROSS-STRESS    = (u,(svel o nabla)v) [RHS]              // (u,(svel o nabla)v) [RHS]
                                                          // off
-REYNOLDS-STRESS = reynolds: (svel,(svel o nabla)v) [RHS] // reynolds: (svel,(svel o nabla)v) [RHS] 
+REYNOLDS-STRESS = (svel,(svel o nabla)v) [RHS]           // (svel,(svel o nabla)v) [RHS] 
                                                          // off
 ------------------------------------------------------FLUID SOLVER
 //SOLVER         Aztec_MSR          // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

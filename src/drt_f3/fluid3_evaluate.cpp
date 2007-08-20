@@ -484,15 +484,15 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
           stabstrtoact_["off"                                          ]=convective_stab_none;
           stabstrtoact_["(svel,(u o nabla)v)"                          ]=convective_stab_supg;
           stabstrtoact_["off"                                          ]=viscous_stab_none;
-          stabstrtoact_["gls :(svel,+2 visc eps(v))"                   ]=viscous_stab_gls;
-          stabstrtoact_["gls :(svel,+2 visc eps(v)) [RHS]"             ]=viscous_stab_gls_only_rhs;
-          stabstrtoact_["agls:(svel,-2 visc eps(v))"                   ]=viscous_stab_agls;
-          stabstrtoact_["agls:(svel,-2 visc eps(v)) [RHS]"             ]=viscous_stab_agls_only_rhs;
+          stabstrtoact_["(svel,+2 visc nabla o eps(v))"                ]=viscous_stab_gls;
+          stabstrtoact_["(svel,+2 visc nabla o eps(v)) [RHS]"          ]=viscous_stab_gls_only_rhs;
+          stabstrtoact_["(svel,-2 visc nabla o eps(v))"                ]=viscous_stab_agls;
+          stabstrtoact_["(svel,-2 visc nabla o eps(v)) [RHS]"          ]=viscous_stab_agls_only_rhs;
           stabstrtoact_["(spres,nabla o v)"                            ]=continuity_stab_yes;
           stabstrtoact_["off"                                          ]=continuity_stab_none;
-          stabstrtoact_["cross: (u,(svel o nabla)v) [RHS]"             ]=cross_stress_stab_only_rhs;
+          stabstrtoact_["(u,(svel o nabla)v) [RHS]"                    ]=cross_stress_stab_only_rhs;
           stabstrtoact_["off"                                          ]=cross_stress_stab_none;
-          stabstrtoact_["reynolds: (svel,(svel o nabla)v) [RHS]"       ]=reynolds_stress_stab_only_rhs;
+          stabstrtoact_["(svel,(svel o nabla)v) [RHS]"                 ]=reynolds_stress_stab_only_rhs;
           stabstrtoact_["off"                                          ]=reynolds_stress_stab_none;
         }
         
