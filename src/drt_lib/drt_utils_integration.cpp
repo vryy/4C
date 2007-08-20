@@ -252,8 +252,6 @@ DRT::Utils::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
   default:
     dserror("unknown 3D integration rule");
   }
-
-  dsassert(nquad <= MAXGAUSS, "define a higher MAXGAUSS value in the config file");
 }
 
 
@@ -386,8 +384,6 @@ DRT::Utils::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
   default:
     dserror("unknown 2D integration rule");
   }
-
-  dsassert(nquad <= MAXGAUSS, "define a higher MAXGAUSS value in the config file");
 }
 
 
@@ -426,8 +422,6 @@ DRT::Utils::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
   default:
     dserror("unknown 1D integration rule");
   }
-
-  dsassert(nquad <= MAXGAUSS, "define a higher MAXGAUSS value in the config file");
 }
 
 
