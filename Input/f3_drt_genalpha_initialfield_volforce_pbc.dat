@@ -56,6 +56,27 @@ MAXTIME      1000.0
 TIMESTEP     0.1
 ALPHA_M      0.833333333333330
 ALPHA_F      0.666666666666660
+-------------------------------------------List/FluidStabilisation
+STABTYPE        = residual based VMM
+TDS             = time dependent subscales               // time dependent subscales
+                                                         // quasistatic subscales
+INERTIA         = drop inertia stabilisation             // drop inertia stabilisation
+                                                         // keep inertia stabilisation  // only for time dependent subscales
+SUPG            = (svel,(u o nabla)v)                    // (svel,(u o nabla)v)
+                                                         // off
+PSPG            = (svel,nabla q)                         // (svel,nabla q)
+                                                         // off                        // inf-sup-stable elements
+CSTAB           = (spres,nabla o v)                      // (spres,nabla o v)
+                                                         // off
+VSTAB           = agls:(svel,-2 visc eps(v))             // agls:(svel,-2 visc eps(v))
+                                                         // gls :(svel,+2 visc eps(v))
+                                                         // RHS: (svel,+2 visc eps(v))
+                                                         // RHS: (svel,-2 visc eps(v))
+                                                         // off
+CROSS-STRESS    = cross: (u,(svel o nabla)v) [RHS]       // cross: (u,(svel o nabla)v) [RHS]
+                                                         // off
+REYNOLDS-STRESS = reynolds: (svel,(svel o nabla)v) [RHS] // reynolds: (svel,(svel o nabla)v) [RHS] 
+                                                         // off
 ------------------------------------------------------FLUID SOLVER
 //SOLVER         Aztec_MSR          // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 SOLVER         Aztec_MSR
