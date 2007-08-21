@@ -66,10 +66,6 @@ bool NOX::FSI::AitkenRelaxation::reset(const Teuchos::RefCountPtr<NOX::GlobalDat
   if (maxstep > 0 && maxstep < 1-nu_)
     nu_ = 1-maxstep;
 
-  if (!is_null(del_))
-  {
-    del_->init(1e20);
-  }
   utils_ = gd->getUtils();
   return true;
 }
@@ -121,6 +117,14 @@ bool NOX::FSI::AitkenRelaxation::compute(Abstract::Group& grp, double& step,
 #else
   step = 1.;
 #endif
+
+  // preliminary output
+  if (utils_->isPrintType(Utils::InnerIteration))
+  {
+    utils_->out() << "aitken step size = " << utils_->sciformat(step)
+                  << "\n"
+                  << endl;
+  }
 
   grp.computeX(oldGrp, dir, step);
 
