@@ -73,7 +73,7 @@ VSTAB           = (svel,-2 visc nabla o eps(v))          // (svel,-2 visc nabla 
                                                          // (svel,+2 visc nabla o eps(v))        // gls
                                                          // (svel,+2 visc nabla o eps(v)) [RHS]
                                                          // off
-CROSS-STRESS    = (u,(svel o nabla)v) [RHS]              // (u,(svel o nabla)v) [RHS]
+CROSS-STRESS    = ((svel o nabla)u,v) [RHS]              // ((svel o nabla)u,v) [RHS]
                                                          // off
 REYNOLDS-STRESS = (svel,(svel o nabla)v) [RHS]           // (svel,(svel o nabla)v) [RHS] 
                                                          // off

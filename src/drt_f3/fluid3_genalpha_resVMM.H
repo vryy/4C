@@ -212,7 +212,6 @@ namespace DRT
       // element data
       blitz::Array<double,1> tau_;         //! the stabilisation parameters tauM,tauMp and tauC
 
-      blitz::Array<double,1> saccam_;      //! matrix of subscale acceleration values in gausspoints of this element, time n+alphaM
       blitz::Array<double,1> svelaf_;      //! matrix of subscale velocities in gausspoints of this element, time n+alphaF
       blitz::Array<double,1> convaf_old_;  //! Convective term, most recent iteration value
                                            /*            

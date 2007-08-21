@@ -64,9 +64,6 @@ DRT::Elements::Fluid3GenalphaResVMM::Fluid3GenalphaResVMM(int iel)
 // element data    
 //-----------------------------------------------------------------------
     tau_        (3),
-#if 0
-    saccam_     (3),
-#endif    
     svelaf_     (3),
     convaf_old_ (3),
     viscaf_old_ (3),
@@ -1421,7 +1418,6 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
               elemat(vi*4 + 2, ui*4    ) += fac_two_visc_afgdt_alphaM_tauM_facMtau*funct_(vi)*viscs2_(0,2,ui);
               elemat(vi*4 + 2, ui*4 + 1) += fac_two_visc_afgdt_alphaM_tauM_facMtau*funct_(vi)*viscs2_(1,2,ui);
               elemat(vi*4 + 2, ui*4 + 2) += fac_two_visc_afgdt_alphaM_tauM_facMtau*funct_(vi)*viscs2_(2,2,ui);
-
             } // end loop rows (test functions for matrix)
           } // end loop rows (solution for matrix, test function for vector)
           
@@ -1539,9 +1535,8 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
 
 
         const double fac_afgdt_visc           = fac*visc*afgdt;
-        
         const double fac_gamma_dt             = fac*gamma*dt;
-        
+
         for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
         {
           const double fac_funct_ui=fac*funct_(ui);
@@ -1553,7 +1548,6 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
             //   GALERKIN PART 2 (REMAINING EXPRESSIONS)
             //
             //---------------------------------------------------------------
-
             /* pressure (implicit) */
             
             /*  factor: -1
@@ -2391,9 +2385,10 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
       //---------------------------------------------------------------
       if(inertia == Fluid3::inertia_stab_keep)
       {
-        const double fac_resM_not_partially_integrated_x =-fac*(svelaf_(0)/tauM+pderxynp_(0)-2*visc*viscaf_old_(0)) ;
-        const double fac_resM_not_partially_integrated_y =-fac*(svelaf_(1)/tauM+pderxynp_(1)-2*visc*viscaf_old_(1)) ;
-        const double fac_resM_not_partially_integrated_z =-fac*(svelaf_(2)/tauM+pderxynp_(2)-2*visc*viscaf_old_(2)) ;
+
+        const double fac_sacc_plus_resM_not_partially_integrated_x =fac*(-svelaf_(0)/tauM-pderxynp_(0)+2*visc*viscaf_old_(0)) ;
+        const double fac_sacc_plus_resM_not_partially_integrated_y =fac*(-svelaf_(1)/tauM-pderxynp_(1)+2*visc*viscaf_old_(1)) ;
+        const double fac_sacc_plus_resM_not_partially_integrated_z =fac*(-svelaf_(2)/tauM-pderxynp_(2)+2*visc*viscaf_old_(2)) ;
         
         for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
         {
@@ -2438,9 +2433,9 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
                                     
           */
 
-          elevec[ui*4    ] -= fac_resM_not_partially_integrated_x*funct_(ui) ;
-          elevec[ui*4 + 1] -= fac_resM_not_partially_integrated_y*funct_(ui) ;
-          elevec[ui*4 + 2] -= fac_resM_not_partially_integrated_z*funct_(ui) ;
+          elevec[ui*4    ] -= fac_sacc_plus_resM_not_partially_integrated_x*funct_(ui) ;
+          elevec[ui*4 + 1] -= fac_sacc_plus_resM_not_partially_integrated_y*funct_(ui) ;
+          elevec[ui*4 + 2] -= fac_sacc_plus_resM_not_partially_integrated_z*funct_(ui) ;
         }
 
         //---------------------------------------------------------------
@@ -2450,9 +2445,10 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
         //---------------------------------------------------------------
         {
           
-          const double fac_prenp_ = fac*prenp_ ;
           const double fac_divunp = fac*divunp;
           const double fac_visc   = fac*visc;
+          const double fac_prenp_ = fac*prenp_ ;
+
           for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
           {
             /* pressure */
@@ -2808,27 +2804,26 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
           /* factor: 
 
                   /                           \
-                 |   n+af    ~n+af             |
-                 |  u    , ( u    o nabla ) v  |
-                 |   (i)      (i)              |
+                 |   ~n+af           n+af      |
+                 | ( u    o nabla ) u     , v  |
+                 |    (i)            (i)       |
                   \                           /
           */
-          elevec[ui*4    ] += fac*(svelaf_(0)*derxy_(0,ui)
+          elevec[ui*4    ] -= fac*(svelaf_(0)*vderxyaf_(0,0)
                                    +
-                                   svelaf_(1)*derxy_(1,ui)
+                                   svelaf_(1)*vderxyaf_(0,1)
                                    +
-                                   svelaf_(2)*derxy_(2,ui))*velintaf_(0);
-          elevec[ui*4 + 1] += fac*(svelaf_(0)*derxy_(0,ui)
+                                   svelaf_(2)*vderxyaf_(0,2))*funct_(ui);
+          elevec[ui*4 + 1] -= fac*(svelaf_(0)*vderxyaf_(1,0)
                                    +
-                                   svelaf_(1)*derxy_(1,ui)
+                                   svelaf_(1)*vderxyaf_(1,1)
                                    +
-                                   svelaf_(2)*derxy_(2,ui))*velintaf_(1);
-          elevec[ui*4 + 2] += fac*(svelaf_(0)*derxy_(0,ui)
+                                   svelaf_(2)*vderxyaf_(1,2))*funct_(ui);
+          elevec[ui*4 + 2] -= fac*(svelaf_(0)*vderxyaf_(2,0)
                                    +
-                                   svelaf_(1)*derxy_(1,ui)
+                                   svelaf_(1)*vderxyaf_(2,1)
                                    +
-                                   svelaf_(2)*derxy_(2,ui))*velintaf_(2);
-          
+                                   svelaf_(2)*vderxyaf_(2,2))*funct_(ui);
         }
       }
 
@@ -4078,15 +4073,29 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
         {
           /* factor: +tauM
 
-                  /                           \
-                 |   n+af                      |
-                 |  u    , ( resM o nabla ) v  |
-                 |   (i)                       |
-                  \                           /
+                  /                            \
+                 |                    n+af      |
+                 |  ( resM o nabla ) u    ,  v  |
+                 |                    (i)       |
+                  \                            / 
           */
-          elevec[ui*4    ] -= fac_tauM*conv_resM_(ui)*velintaf_(0);
-          elevec[ui*4 + 1] -= fac_tauM*conv_resM_(ui)*velintaf_(1);
-          elevec[ui*4 + 2] -= fac_tauM*conv_resM_(ui)*velintaf_(2);
+
+          elevec[ui*4    ] += fac_tauM*(resM_(0)*vderxyaf_(0,0)
+                                        +
+                                        resM_(1)*vderxyaf_(0,1)
+                                        +
+                                        resM_(2)*vderxyaf_(0,2))*funct_(ui);
+          elevec[ui*4 + 1] += fac_tauM*(resM_(0)*vderxyaf_(1,0)
+                                        +
+                                        resM_(1)*vderxyaf_(1,1)
+                                        +
+                                        resM_(2)*vderxyaf_(1,2))*funct_(ui);
+          elevec[ui*4 + 2] += fac_tauM*(resM_(0)*vderxyaf_(2,0)
+                                        +
+                                        resM_(1)*vderxyaf_(2,1)
+                                        +
+                                        resM_(2)*vderxyaf_(2,2))*funct_(ui);
+
         } // end loop rows 
       }
       
