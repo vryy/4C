@@ -479,7 +479,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
     }
     else
     {
-      InterfaceForce();
+      soln = InterfaceForce();
     }
 
     NOX::Epetra::Vector noxSoln(soln, NOX::Epetra::Vector::CreateView);
