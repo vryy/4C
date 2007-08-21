@@ -40,6 +40,10 @@ NOX::FSI::AitkenRelaxation::AitkenRelaxation(const Teuchos::RefCountPtr<NOX::Uti
 {
   Teuchos::ParameterList& p = params.sublist("Aitken");
   nu_ = p.get("Start nu", 0.0);
+
+  double maxstep = p.get("max step size", 0.0);
+  if (maxstep > 0)
+    nu_ = 1-maxstep;
 }
 
 
