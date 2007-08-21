@@ -432,7 +432,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
            << "# Preconditioner = " << nlParams.get("Preconditioner","None") << "\n"
            << "# Line Search    = " << nlParams.sublist("Line Search").get("Method","Aitken") << "\n"
            << "#\n"
-           << "# step  time/step  #nliter  #liter  Residual  Jac  Prec  FD_Res  MF_Res  MF_Jac  User\n"
+           << "# step  time/step  #nliter  |R|  #liter  Residual  Jac  Prec  FD_Res  MF_Res  MF_Jac  User\n"
       ;
   }
 
@@ -444,6 +444,8 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
 
   while (step_ < nstep_ and time_ <= maxtime_)
   {
+    // Increment all field counters and predict field values whenever
+    // appropriate.
     PrepareTimeStep();
 
     // reset all counters
@@ -462,18 +464,22 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
     Teuchos::RefCountPtr<Epetra_Vector> soln;
     if (displacementcoupling_)
     {
+      // Here some predictor could be useful.
+      // On the other hand, the structural algorithm has its own
+      // predictor and it has been run. We extract the predicted
+      // interface displacements. Is there any sense in trying to
+      // predict another time?
+
       // d(n)
       soln = InterfaceDisp();
 
-      // Here some predictor could be useful.
-      // There are different choices available, but we probably do not
-      // need to make it configurable?
-      //
+      // These predictors are available within the old code.
+
       // d(n)+dt*(1.5*v(n)-0.5*v(n-1))
       // d(n)+dt*v(n)
+      // d(n)+dt*v(n)+0.5*dt^2*a(n)
 
 #if 0
-      // d(n)+dt*v(n)+0.5*dt^2*a(n)
       Teuchos::RefCountPtr<Epetra_Vector> veln = structure_->ExtractInterfaceVel();
       Teuchos::RefCountPtr<Epetra_Vector> accn = structure_->ExtractInterfaceAcc();
       soln->Update(dt_,*veln,0.5*dt_*dt_,*accn,1.);
