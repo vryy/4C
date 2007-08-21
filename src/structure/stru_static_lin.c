@@ -81,7 +81,12 @@ if (statvar->linear==1 && statvar->nonlinear==1)
 
 if (statvar->linear==1)
 {
+#ifndef CCADISCRET
    stalin();
+#else
+   dserror("Linear static analysis is not implemented in new discretization. \n"
+	   "(You may want to use the non-linear static analysis.)");
+#endif
 }
 if (statvar->nonlinear==1)
 {
