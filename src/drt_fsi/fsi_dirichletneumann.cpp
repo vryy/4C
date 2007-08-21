@@ -122,6 +122,7 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
 
   fluid_->SetMeshMap(coupfa_.MasterDofMap());
 
+#if 0
   // create connection graph of interface elements
   Teuchos::RefCountPtr<Epetra_Map> imap = structure_->InterfaceMap();
 
@@ -136,6 +137,7 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
       dserror("Epetra_CrsGraph::InsertGlobalIndices returned %d", err);
   }
   rawGraph_->FillComplete();
+#endif
 }
 
 
