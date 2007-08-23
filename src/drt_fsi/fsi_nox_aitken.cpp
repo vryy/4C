@@ -66,6 +66,10 @@ bool NOX::FSI::AitkenRelaxation::reset(const Teuchos::RefCountPtr<NOX::GlobalDat
   if (maxstep > 0 && maxstep < 1-nu_)
     nu_ = 1-maxstep;
 
+  if (!is_null(del_))
+  {
+    del_->init(1e20);
+  }
   utils_ = gd->getUtils();
   return true;
 }
