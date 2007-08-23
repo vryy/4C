@@ -917,9 +917,9 @@ int main(
     case prb_fsi:
     {
         string basename = problem.outname();
-        //     PostField* structfield = problem.get_discretization(0);
-        //     StructureEnsightWriter structwriter(structfield, basename);
-        //     structwriter.WriteFiles();
+        PostField* structfield = problem.get_discretization(0);
+        StructureEnsightWriter structwriter(structfield, basename);
+        structwriter.WriteFiles();
 
         PostField* fluidfield = problem.get_discretization(1);
         FluidEnsightWriter fluidwriter(fluidfield, basename);
