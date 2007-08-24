@@ -55,6 +55,10 @@ void NOX::FSI::LinearSystemGCR::reset(Teuchos::ParameterList& linearSolverParams
   // "Linear Solver" parameter list
   outputSolveDetails =
     linearSolverParams.get("Output Solver Details", true);
+
+  // so we have a new time step and start anew
+  u_.clear();
+  c_.clear();
 }
 
 
@@ -179,14 +183,31 @@ int NOX::FSI::LinearSystemGCR::SolveGCR(const NOX::Epetra::Vector &b,
     r = b;
   }
 
-  double error0 = r.norm();
+  double normb = b.norm();
+  double error0 = r.norm() / normb;
 
-  std::vector<Teuchos::RefCountPtr< NOX::Epetra::Vector > > u;
-  std::vector<Teuchos::RefCountPtr< NOX::Epetra::Vector > > c;
-  int k=0;
+  std::vector<Teuchos::RefCountPtr< NOX::Epetra::Vector > >& u = u_;
+  std::vector<Teuchos::RefCountPtr< NOX::Epetra::Vector > >& c = c_;
 
-  double error = 1.;
-  while (error>=tol*error0)
+#if 1
+  // reset krylov space
+  u.clear();
+  c.clear();
+#endif
+
+  int k = static_cast<int>(u.size());
+
+  // use the available vectors
+  for (int i=0; i<k; ++i)
+  {
+    double alpha = c[i]->innerProduct(r);
+    x.update( alpha, *u[i], 1.);
+    r.update(-alpha, *c[i], 1.);
+  }
+
+  double error = 1.*normb;
+  //while (error>=tol*error0)
+  while (error / normb >= tol)
   {
     // this is GCR, not GMRESR
     u.push_back(Teuchos::rcp(new NOX::Epetra::Vector(r)));
@@ -216,6 +237,7 @@ int NOX::FSI::LinearSystemGCR::SolveGCR(const NOX::Epetra::Vector &b,
     utils.out() << "gcr |r|=" << error
                 << " |r0|=" << error0
                 << " |dx|=" << u.back()->norm()*alpha
+                << " |b|=" << normb
                 << " tol=" << tol << endl;
   }
 
@@ -293,6 +315,10 @@ int NOX::FSI::LinearSystemGCR::SolveGMRES(const NOX::Epetra::Vector &b,
       GeneratePlaneRotation(H(i,i), H(i+1,i), cs(i), sn(i));
       ApplyPlaneRotation(H(i,i), H(i+1,i), cs(i), sn(i));
       ApplyPlaneRotation(s(i), s(i+1), cs(i), sn(i));
+
+      utils.out() << "gmres |r|=" << fabs(s(i+1))
+                  << " |b|=" << normb
+                  << " tol=" << tol << endl;
 
       if ((resid = fabs(s(i+1)) / normb) < tol)
       {

@@ -3,18 +3,22 @@
 #ifndef FSI_NOX_LINEARSYSTEM_GCR_H
 #define FSI_NOX_LINEARSYSTEM_GCR_H
 
+#include <vector>
+
+#include <Epetra_Time.h>
+
+#include <NOX_Common.H>
+#include <NOX_Epetra_Interface_Jacobian.H>
+#include <NOX_Epetra_Interface_Required.H>
 #include <NOX_Epetra_LinearSystem.H>
+#include <NOX_Epetra_Scaling.H>
 #include <NOX_Epetra_Vector.H>
 #include <NOX_Utils.H>
-#include <NOX_Common.H>
-#include <Teuchos_ParameterList.hpp>
-#include <Epetra_Time.h>
-#include <Teuchos_RefCountPtr.hpp>
-#include <Teuchos_ParameterList.hpp>
-#include <NOX_Epetra_Interface_Required.H>
-#include <NOX_Epetra_Interface_Jacobian.H>
-#include <NOX_Epetra_Scaling.H>
 #include <NOX_Utils.H>
+
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RefCountPtr.hpp>
 
 
 namespace NOX {
@@ -274,6 +278,10 @@ namespace FSI {
 
     //! Total time spent in applyJacobianInverse (sec.).
     mutable double timeApplyJacbianInverse;
+
+    std::vector<Teuchos::RefCountPtr< NOX::Epetra::Vector > > u_;
+
+    std::vector<Teuchos::RefCountPtr< NOX::Epetra::Vector > > c_;
   };
 
 }
