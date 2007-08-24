@@ -17,6 +17,8 @@
 #include "fsi_nox_linearsystem_gcr.H"
 #include "fsi_nox_mpe.H"
 
+#include <Epetra_Time.h>
+
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -878,6 +880,9 @@ bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vect
 {
   char* flags[] = { "Residual", "Jac", "Prec", "FD_Res", "MF_Res", "MF_Jac", "User", NULL };
 
+  Epetra_Time timer(x.Comm());
+  double startTime = timer.WallTime();
+
   if (comm_.MyPID()==0)
     cout << "\n==================================================================================================\n"
          << "FSI::DirichletNeumannCoupling::computeF: fillFlag = " RED << flags[fillFlag] << END_COLOR "\n\n";
@@ -943,6 +948,8 @@ bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vect
     F.Update(1.0, *iforcenp, -1.0, *iforcen, 0.0);
   }
 
+  double endTime = timer.WallTime();
+  cout << "Time for residual calculation: " << endTime-startTime << "\n";
   return true;
 }
 

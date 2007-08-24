@@ -217,7 +217,7 @@ namespace FSI {
      */
     int SolveGCR(const NOX::Epetra::Vector &input,
                  NOX::Epetra::Vector &result,
-                 int& maxit, double& tol);
+                 int& maxit, double& tol, unsigned keep);
 
     /// GMRES solver
     /*!
