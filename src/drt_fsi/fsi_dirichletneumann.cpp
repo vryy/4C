@@ -16,6 +16,7 @@
 #include "fsi_nox_sd.H"
 #include "fsi_nox_linearsystem_gcr.H"
 #include "fsi_nox_mpe.H"
+#include "fsi_nox_epsilon.H"
 
 #include <Epetra_Time.h>
 
@@ -712,6 +713,16 @@ FSI::DirichletNeumannCoupling::CreateLinearSystem(ParameterList& nlParams,
   else if (jacobian=="MPE")
   {
     Teuchos::RefCountPtr<NOX::Direction::Generic> mpe = Teuchos::rcp(new NOX::FSI::MinimalPolynomial(utils,nlParams));
+    dirParams.set("Method","User Defined");
+    dirParams.set("User Defined Direction",mpe);
+    lsParams.set("Preconditioner","None");
+    preconditioner="None";
+  }
+
+  // epsilon vector extrapolation
+  else if (jacobian=="Epsilon")
+  {
+    Teuchos::RefCountPtr<NOX::Direction::Generic> mpe = Teuchos::rcp(new NOX::FSI::EpsilonExtrapolation(utils,nlParams));
     dirParams.set("Method","User Defined");
     dirParams.set("User Defined Direction",mpe);
     lsParams.set("Preconditioner","None");

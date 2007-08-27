@@ -1,0 +1,57 @@
+#ifndef FSI_NOX_EPSILON_H
+#define FSI_NOX_EPSILON_H
+
+#ifdef TRILINOS_PACKAGE
+
+#include <NOX_Direction_Generic.H> // base class
+#include <NOX_Utils.H>
+
+namespace NOX {
+namespace FSI {
+
+//! %Calculates vector extrapolation via epsilon algorithm.
+class EpsilonExtrapolation : public NOX::Direction::Generic
+{
+public:
+
+  //! Constructor
+  EpsilonExtrapolation(const Teuchos::RefCountPtr<NOX::Utils>& utils,
+                       Teuchos::ParameterList& params);
+
+  //! Destructor
+  ~EpsilonExtrapolation();
+
+  // derived
+  bool reset(const Teuchos::RefCountPtr<NOX::GlobalData>& gd,
+	     Teuchos::ParameterList& params);
+
+  // derived
+  bool compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp,
+	       const NOX::Solver::Generic& solver);
+
+  // derived
+  virtual bool compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp,
+		       const NOX::Solver::LineSearchBased& solver);
+
+private:
+
+  //! Print error message and throw error
+  void throwError(const string& functionName, const string& errorMsg);
+
+private:
+
+  //! Printing Utils
+  Teuchos::RefCountPtr<NOX::Utils> utils_;
+
+  int kmax_;
+  double omega_;
+  //double eps_;
+  int maxcol_;
+};
+
+
+}
+}
+
+#endif
+#endif
