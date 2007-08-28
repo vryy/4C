@@ -22,11 +22,11 @@ NOX::FSI::EpsilonExtrapolation::EpsilonExtrapolation(const Teuchos::RefCountPtr<
                                                Teuchos::ParameterList& params)
   : utils_(utils)
 {
-  Teuchos::ParameterList& mpeparams = params.sublist("MPE");
+  Teuchos::ParameterList& mpeparams = params.sublist("Epsilon");
   kmax_ = mpeparams.get("kmax", 10);
   omega_ = mpeparams.get("omega", 0.1);
   //eps_ = mpeparams.get("Tolerance", 1e-8);
-  maxcol_ = mpeparams.get("Max col", 15);
+  maxcol_ = mpeparams.get("max col", 10);
 }
 
 
@@ -51,7 +51,16 @@ bool NOX::FSI::EpsilonExtrapolation::compute(NOX::Abstract::Vector& dir,
   // current state.
   NOX::Epetra::Group grp(dynamic_cast<NOX::Epetra::Group&>(soln));
 
-  const NOX::Abstract::Vector& x = soln.getX();
+  // Compute F at current solution
+  NOX::Abstract::Group::ReturnType status = grp.computeF();
+  if (status != NOX::Abstract::Group::Ok)
+    throwError("compute", "Unable to compute F");
+
+  // get f = d(k+1) - d(k)
+  const NOX::Epetra::Vector& f = dynamic_cast<const NOX::Epetra::Vector&>(grp.getF());
+  grp.computeX(grp, f, omega_);
+
+  const NOX::Abstract::Vector& x = grp.getX();
 
   std::vector<Teuchos::RefCountPtr<NOX::Epetra::Vector> > epslist(maxcol_+1);
   epslist[0] = rcp(new NOX::Epetra::Vector(dynamic_cast<const NOX::Epetra::Vector&>(x)));
@@ -61,11 +70,9 @@ bool NOX::FSI::EpsilonExtrapolation::compute(NOX::Abstract::Vector& dir,
   Teuchos::RefCountPtr<NOX::Epetra::Vector> wg3;
   //Teuchos::RefCountPtr<NOX::Epetra::Vector> wg4;
 
-  int indm;
+  int indm = 1;
   for (int k=0; k<kmax_; ++k)
   {
-    NOX::Abstract::Group::ReturnType status;
-
     // Compute F at current solution
     status = grp.computeF();
     if (status != NOX::Abstract::Group::Ok)
@@ -78,7 +85,7 @@ bool NOX::FSI::EpsilonExtrapolation::compute(NOX::Abstract::Vector& dir,
     RefCountPtr<NOX::Epetra::Vector> y = rcp(new NOX::Epetra::Vector(f));
     y->scale(omega_);
 
-    indm = k;
+    indm = k+1;
     if (indm > maxcol_)
       indm = maxcol_;
 
