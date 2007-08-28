@@ -113,7 +113,7 @@ public:
   /// outer level FSI time loop
   void Timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Interface::Required>& interface);
 
-  /// compute FSI interface residuum d - S^-1(F(d))
+  /// compute FSI interface residuum S^{-1}(F(d)) - d
   bool computeF(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag);
 
   /// structural field solver
