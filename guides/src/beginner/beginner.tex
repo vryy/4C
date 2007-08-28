@@ -134,17 +134,14 @@ versions are supported.
 uncomment those which are needed; mandatory/recommended are: 
 
 \begin{itemize}
-\item select the elements and algorithmic flags you need
-\item set appropriate sizes for \texttt{MAXNOD}, \texttt{MAXELE}, \texttt{MAXGAUSS},
-\texttt{MAXDOFPERNODE}. There are also special versions of \texttt{MAXNOD}
-for each element, in case a particular element needs LESS nodes than
-needed in general.
-\item tools: uncomment \texttt{PERF} to get better time measurements.
-\item possible solver packages: include \texttt{TRILINOS\_PACKAGE} (the
-great huge libraries) and make sure to also include \texttt{AZTEC\_PACKAGE}
-(iterative solver) and both \texttt{SOLVE\_DIRICH} and \texttt{SOLVE\_DIRICH2}.
-For smaller problems (serial) you might want to have \texttt{UMFPACK}
-(direct solver for single CPU) as well.
+\item insert the flag \texttt{CCADISCRET} to get the shiny new
+implementation
+\item select the element flags you need (this requires a slight amount
+of FE knowledge)
+\item include \texttt{TRILINOS\_PACKAGE} (the
+great huge libraries) and make sure to also include
+\texttt{AZTEC\_PACKAGE} (iterative solvers) and \texttt{UMFPACK}
+(direct solver).
 \end{itemize}
 \item save defines in a separate file, e.g. \texttt{config/defines.my} 
 
@@ -208,7 +205,7 @@ Both visual2 and visual3 are optional and are only supported on 32bit
 Linux with g77. 
 
 \item [{\texttt{trilinos}}] a installed version of the trilinos libraries,
-that is the directories \texttt{/lnm/lib/\$PLATFORM/\$VERSION/trilinos/include}
+that is the directories \path{/lnm/lib/\$PLATFORM/\$VERSION/trilinos/include}
 and \texttt{/lnm/lib/\$PLATFORM/\$VERSION/trilinos/lib} with appropiate
 content are required. The packages from trilinos that are needed include
 \texttt{amesos}, \texttt{aztecoo}, \texttt{epetra}, \texttt{epetraext},
@@ -217,7 +214,7 @@ content are required. The packages from trilinos that are needed include
 
 
 The trilinos sources reside in \texttt{/lnm/lib/Trilinos}. It is currently
-a developer version close to release 7.
+a developer version close to release~7.
 
 \item [{\texttt{trilinos\_dbg}}] a version of the trilinos libraries with
 debug symbols enabled.
@@ -225,7 +222,7 @@ debug symbols enabled.
 
 \subsubsection{Have a local copy of the \ccarat{} libraries}
 
-Caution: This a advanced stuff. You can savely skip it.
+Caution: This advanced stuff. You can savely skip it.
 
 The \ccarat{} library organization is meant to allow you to compile
 \ccarat{} on your local machine without access to the network directory
@@ -244,7 +241,7 @@ maintainer first.
 
 \subsection{Running examples}\label{beginner:sec:running-examples}
 
-In \texttt{Input} there are test examples; all necessary \char`\"{}packages\char`\"{}
+In \texttt{Input} there are test examples; all necessary ``packages''
 must have been activated in the defines-file that was used to configure
 the \ccarat{} at hand. For example, 
 
@@ -255,7 +252,7 @@ beginning with \texttt{xxx}. If the run is interrupted with an error
 '\texttt{MAXNOD} is too small' then the values given in a table above
 this error message have to be inserted in '\texttt{config/defines.my}';
 e.g. \texttt{MAXNOD=20} in second line, \texttt{MAXELE=4} in third
-line, ...; then recompile and rerun to run a parallel version you
+line, \ldots; then recompile and rerun to run a parallel version you
 need to use the mpirun command like this: 
 
 \begin{lyxcode}
@@ -416,7 +413,9 @@ MPIDIR=/cluster/openmpi-1.1.4
 
 
 
-\$MPIDIR/bin/mpirun~-np~\$PROCS~-hostfile~\$PBS\_NODEFILE~\$EXE~\$INPUT~\$PREFIX~\$RESTART~|~tee~\$srcdir/\$PREFIX.log~
+\$MPIDIR/bin/mpirun~-np~\$PROCS~-hostfile~\$PBS\_NODEFILE~\$EXE~\textbackslash
+
+~~~~\$INPUT~\$PREFIX~\$RESTART~|~tee~\$srcdir/\$PREFIX.log
 
 
 \end{lyxcode}
@@ -970,6 +969,10 @@ A file comparator allows to show neatly the differences of two files. These
 are handy to compare two (or more) text files such as input files, output
 files or source code. 
 
+\subsubsection{kompare}
+
+The standard KDE tool for the job.
+
 \subsubsection{Eclipse}
 
 built in
@@ -1174,11 +1177,15 @@ this:
 
 srcdir=\$PBS\_O\_WORKDIR~cd~\$srcdir
 
-VAPILIB=/usr/local/ibgd/driver/infinihost/lib64~export~LD\_LIBRARY\_PATH=\$LD\_LIBRARY\_PATH:\$VAPILIB
+VAPILIB=/usr/local/ibgd/driver/infinihost/lib64
+
+export~LD\_LIBRARY\_PATH=\$LD\_LIBRARY\_PATH:\$VAPILIB
 
 MPIDIR=/cluster/openmpi-1.1.4
 
-\$MPIDIR/bin/mpirun~-hostfile~\$PBS\_NODEFILE~-np~NUM\_PROCS\_TAG~/cluster/allinea/ddt/bin/ddt-debugger~PROGRAM\_ARGUMENTS\_TAG~|~tee~debug\_output
+\$MPIDIR/bin/mpirun~-hostfile~\$PBS\_NODEFILE~-np~NUM\_PROCS\_TAG~\textbackslash
+
+~~~~/cluster/allinea/ddt/bin/ddt-debugger~PROGRAM\_ARGUMENTS\_TAG~|~tee~debug\_output
 \end{lyxcode}
 \end{itemize}
 Once you have the configuration in place you can call \texttt{ddt}
