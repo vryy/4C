@@ -1,7 +1,7 @@
 /*!
-\file xfem_enrichment.cpp
+\file enrichment.cpp
 
-\brief contains information about enrichments at nodes and elements
+\brief describes the enrichment types and classes
 
 <pre>
 Maintainer: Axel Gerstenberger
@@ -14,9 +14,9 @@ Maintainer: Axel Gerstenberger
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
-#include "xfem_enrichment.H"
+#include "enrichment.H"
 
-using namespace Enrichments;
+using namespace Xfem;
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
@@ -58,6 +58,7 @@ void Enrichment::Print(
     cout << "enr_id: "<< enr_id_ << "enr_type: "<< enr_type_ << endl;
     return;
 }
+
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

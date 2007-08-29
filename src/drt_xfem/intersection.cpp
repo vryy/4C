@@ -22,6 +22,7 @@ Maintainer: Ursula Mayer
 
 #include "../headers/definitions.h"     //remove
 
+using namespace Xfem;
 
 
 /*----------------------------------------------------------------------*

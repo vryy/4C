@@ -1,60 +1,53 @@
 /*!
-\file integrationcell.cpp
+\file dof_management.cpp
 
-\brief integration cell
+\brief provides a class that represents an enriched physical scalar field
 
 <pre>
-Maintainer: 
+Maintainer: Axel Gerstenberger
+            gerstenberger@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15236
 </pre>
 */
-
 #ifdef XFEM
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
-#include "integrationcell.H"
+#include "dof_management.H"
 
 using namespace Xfem;
 
-
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
- |  id             (in)  this integrationcell's global id               |
  *----------------------------------------------------------------------*/
-Integrationcell::Integrationcell(	int id, 
-									std::vector< std::vector<double> > coordinates)
+EnrPhysVar::EnrPhysVar(
+        const PhysVar var,
+        const Enrichment enr) :
+    var_(var), enr_(enr)
 {
-	id_ = id;
-    coordinates_ = coordinates;
     return;
 }
 
-
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 11/06|
- |  id             (in)  this integrationcell's global id               |
  *----------------------------------------------------------------------*/
-Integrationcell::Integrationcell(const Integrationcell& old) 
+EnrPhysVar::EnrPhysVar(
+        const EnrPhysVar& other) :
+    var_(other.var_), enr_(other.enr_)
 {
-    id_ = old.id_;
-    coordinates_ = old.coordinates_;
-    return;   
+    assert(&other != this);
+    return;
 }
 
-
-     
 /*----------------------------------------------------------------------*
- |  get coordinates			                                 mwgee 11/06|  
+ |  dtor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-std::vector< std::vector<double> >  Integrationcell::GetCoord() 
+EnrPhysVar::~EnrPhysVar()
 {
-    return coordinates_;   
+    return;
 }
-
-
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef XFEM
-
-

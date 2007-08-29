@@ -41,6 +41,9 @@ using namespace DRT;
 using namespace DRT::Utils;
 using namespace Teuchos;
 
+namespace Xfem
+{
+
 enum pointType {internalP, surfaceP, intersectionP};
 
 typedef struct
@@ -684,6 +687,7 @@ class Intersection
                                                                                                                             
 };
 
+};
 
 
 

@@ -17,6 +17,9 @@
 
 #include <vector>
 
+namespace Xfem
+{
+
 /*
  * \brief An integrationcell is used for specialized element integration routines 
  */
@@ -57,6 +60,7 @@ private:
     //! coordinates of the nodes
     std::vector< std::vector<double> > coordinates_;
 
+};
 };
 
 #endif  // #ifndef INTEGRATIONCELL_H

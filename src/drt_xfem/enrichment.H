@@ -1,5 +1,5 @@
 /*!
-\file xfem_enrichment.H
+\file enrichment.H
 
 \brief describes the enrichment types and classes
 
@@ -13,12 +13,15 @@ Maintainer: Axel Gerstenberger
 #ifdef XFEM
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
-#ifndef DRT_XFEM_ENRICHMENT_H
-#define DRT_XFEM_ENRICHMENT_H
+#ifndef ENRICHMENT_H
+#define ENRICHMENT_H
+
+#include "Teuchos_RefCountPtr.hpp"
+using namespace std;
+using namespace Teuchos;
 
 
-// namespace for all enrichment related stuff
-namespace Enrichments
+namespace Xfem
 {
 
 // Various kinds of enrichments, which differ in ther way,
@@ -45,13 +48,13 @@ class Enrichment
 public:
 
     Enrichment(
-            const int enr_id,
+            const EnrId enr_id,
             const EnrType enr_type);
     Enrichment(
             const Enrichment& other);
     ~Enrichment();
     void Print(
-            std::ostream& os) const;
+            ostream& os) const;
 
     inline EnrId getId() const
     {
@@ -70,9 +73,10 @@ private:
     EnrType enr_type_;
 }; // class Enrichment
 
-}; // namespace Enrichments
+};
 
-#endif  // #ifndef DRT_XFEM_ENRICHMENT_H
+
+#endif  // #ifndef ENRICHMENT_H
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef XFEM
