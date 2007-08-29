@@ -1,7 +1,7 @@
 /*!
 \file xfem_enrichment.H
 
-\brief contains information about enrichments at nodes and elements
+\brief describes the enrichment types and classes
 
 <pre>
 Maintainer: Axel Gerstenberger
@@ -16,70 +16,59 @@ Maintainer: Axel Gerstenberger
 #ifndef DRT_XFEM_ENRICHMENT_H
 #define DRT_XFEM_ENRICHMENT_H
 
-#include "Teuchos_RefCountPtr.hpp"
-using namespace std;
-using namespace Teuchos;
 
 // namespace for all enrichment related stuff
 namespace Enrichments
 {
 
-enum EnrichmentType
+// Various kinds of enrichments, which differ in ther way,
+// how the enrichment function is evaluated
+enum EnrType
 {
-    enrichment_type_standard = 0,
-    enrichment_type_jump     = 1
+    enrtypeStandard,
+    enrtypeJump,
+    enrtypeVoid
 };
 
+// Special Id that groups degrees of freedom by cause, 
+// e.g. a jump resulting from interface 2 -> EnrId 5
+typedef int EnrId;
 
 /*!
-\class ElementEnrichment
+ \class Enrichment
 
-\brief Corresponds to a specific set of nodal enrichments with unique id and type
+ \brief Corresponds to a specific enrichment with unique id and type
 
-*/
-class ElementEnrichment
+ */
+class Enrichment
 {
 public:
 
-    ElementEnrichment(const int enr_id, const EnrichmentType enr_type);
-    ElementEnrichment(const ElementEnrichment& old);
-    ~ElementEnrichment();
-    void Print(ostream& os) const;
-   
-    inline int getId() const {return enr_id_;};
-    inline int getType() const {return enr_type_;};
+    Enrichment(
+            const int enr_id,
+            const EnrType enr_type);
+    Enrichment(
+            const Enrichment& other);
+    ~Enrichment();
+    void Print(
+            std::ostream& os) const;
+
+    inline EnrId getId() const
+    {
+        return enr_id_;
+    };
+    
+    inline EnrType getType() const
+    {
+        return enr_type_;
+    };
 
 private:
     // a global id used to distuinguish several surfaces within one element
-    int             enr_id_; 
+    EnrId enr_id_;
     // the specific type of enrichment
-    EnrichmentType  enr_type_;
-}; // class ElementEnrichment
-
-/*!
-\class NodeEnrichment
-
-\brief Corresponds to a specific nodal enrichment with unique id and type
-
-*/
-class NodeEnrichment
-{
-public:
-
-    NodeEnrichment(const int enr_id, const EnrichmentType enr_type);
-    NodeEnrichment(const NodeEnrichment& other);
-    ~NodeEnrichment();
-    void Print(ostream& os) const;
-   
-    inline int getId() const {return enr_id_;};
-    inline int getType() const {return enr_type_;};
-
-private:
-    // a global id used to distuinguish several surfaces within one element
-    int             enr_id_; 
-    // the specific type of enrichment
-    EnrichmentType  enr_type_;
-}; // class NodeEnrichment
+    EnrType enr_type_;
+}; // class Enrichment
 
 }; // namespace Enrichments
 
