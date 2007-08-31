@@ -981,7 +981,9 @@ OBJS_INTERSECTION = src/drt_xfem/predicates.o \
                     src/drt_xfem/enrichment.o \
                     src/drt_xfem/dof_management.o \
                     src/drt_xfem/integrationcell.o \
-                    src/drt_xfem/intersection.o 
+                    src/drt_xfem/intersection.o \
+                    src/drt_xfem/drt_xelement.o \
+                    src/drt_xfem/drt_xdofset.o
 			
 				
 			

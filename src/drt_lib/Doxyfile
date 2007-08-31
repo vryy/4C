@@ -1035,7 +1035,7 @@ INCLUDE_FILE_PATTERNS  =
 
 PREDEFINED             = CCADISCRET \
                          TRILINOS_PACKAGE \
-                         XFEM \
+                         D_XFEM \
                          D_SHELL8 \
                          D_ALE \
                          D_FLUID2 \

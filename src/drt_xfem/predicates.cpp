@@ -1,4 +1,4 @@
-#ifdef XFEM
+#ifdef D_XFEM
 /*****************************************************************************/
 /*                                                                           */
 /*  Routines for Arbitrary Precision Floating-point Arithmetic               */

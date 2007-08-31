@@ -8,13 +8,13 @@ Maintainer:
 </pre>
 */
 
-#ifdef XFEM
+#ifdef D_XFEM
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
 #include "integrationcell.H"
 
-using namespace Xfem;
+using namespace XFEM;
 
 
 /*----------------------------------------------------------------------*
@@ -55,6 +55,6 @@ std::vector< std::vector<double> >  Integrationcell::GetCoord()
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef XFEM
+#endif  // #ifdef D_XFEM
 
 

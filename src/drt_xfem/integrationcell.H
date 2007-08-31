@@ -9,7 +9,7 @@
  089 - 289-15236
  */
 
-#ifdef XFEM
+#ifdef D_XFEM
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 #ifndef INTEGRATIONCELL_H
@@ -17,7 +17,7 @@
 
 #include <vector>
 
-namespace Xfem
+namespace XFEM
 {
 
 /*
@@ -66,4 +66,4 @@ private:
 #endif  // #ifndef INTEGRATIONCELL_H
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef XFEM
+#endif  // #ifdef D_XFEM

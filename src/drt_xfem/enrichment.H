@@ -10,7 +10,7 @@ Maintainer: Axel Gerstenberger
             089 - 289-15236
 </pre>
 */
-#ifdef XFEM
+#ifdef D_XFEM
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 #ifndef ENRICHMENT_H
@@ -21,7 +21,7 @@ using namespace std;
 using namespace Teuchos;
 
 
-namespace Xfem
+namespace XFEM
 {
 
 // Various kinds of enrichments, which differ in ther way,
@@ -68,6 +68,7 @@ public:
 
 private:
     // a global id used to distuinguish several surfaces within one element
+    // might become or contain reference to a certain condition
     EnrId enr_id_;
     // the specific type of enrichment
     EnrType enr_type_;
@@ -79,4 +80,4 @@ private:
 #endif  // #ifndef ENRICHMENT_H
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef XFEM
+#endif  // #ifdef D_XFEM

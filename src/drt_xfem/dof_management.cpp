@@ -10,18 +10,17 @@ Maintainer: Axel Gerstenberger
             089 - 289-15236
 </pre>
 */
-#ifdef XFEM
+#ifdef D_XFEM
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
 #include "dof_management.H"
 
-using namespace Xfem;
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                            mwgee 11/06|
- *----------------------------------------------------------------------*/
-EnrPhysVar::EnrPhysVar(
+//
+// ctor 
+// ag 08/07
+//
+XFEM::EnrPhysVar::EnrPhysVar(
         const PhysVar var,
         const Enrichment enr) :
     var_(var), enr_(enr)
@@ -29,25 +28,28 @@ EnrPhysVar::EnrPhysVar(
     return;
 }
 
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       mwgee 11/06|
- *----------------------------------------------------------------------*/
-EnrPhysVar::EnrPhysVar(
+//
+// copy-ctor
+// ag 08/07
+//
+XFEM::EnrPhysVar::EnrPhysVar(
         const EnrPhysVar& other) :
-    var_(other.var_), enr_(other.enr_)
+var_(other.var_), 
+enr_(other.enr_)
 {
     assert(&other != this);
     return;
 }
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            mwgee 11/06|
- *----------------------------------------------------------------------*/
-EnrPhysVar::~EnrPhysVar()
+//
+// dtor
+// ag 08/07
+//
+XFEM::EnrPhysVar::~EnrPhysVar()
 {
     return;
 }
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef XFEM
+#endif  // #ifdef D_XFEM

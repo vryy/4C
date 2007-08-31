@@ -9,7 +9,7 @@ Maintainer: Ursula Mayer
 
 *----------------------------------------------------------------------*/
 
-#ifdef XFEM
+#ifdef D_XFEM
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
@@ -22,7 +22,7 @@ Maintainer: Ursula Mayer
 
 #include "../headers/definitions.h"     //remove
 
-using namespace Xfem;
+using namespace XFEM;
 
 
 /*----------------------------------------------------------------------*
@@ -2411,6 +2411,6 @@ void Intersection::debugIntegrationcells(	map< int, vector <Integrationcell> >&	
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef XFEM
+#endif  // #ifdef D_XFEM
 
 

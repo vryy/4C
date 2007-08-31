@@ -8,7 +8,7 @@ Maintainer: Ursula Mayer
 </pre>
 */
 
-#ifdef XFEM
+#ifdef D_XFEM
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 #ifndef INTERSECTION_H
@@ -41,7 +41,7 @@ using namespace DRT;
 using namespace DRT::Utils;
 using namespace Teuchos;
 
-namespace Xfem
+namespace XFEM
 {
 
 enum pointType {internalP, surfaceP, intersectionP};
@@ -694,5 +694,5 @@ class Intersection
 #endif  // #ifndef INTERSECTION_H
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef XFEM
+#endif  // #ifdef D_XFEM
 

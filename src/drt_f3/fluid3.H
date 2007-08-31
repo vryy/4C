@@ -973,7 +973,7 @@ public:
 
   //@}
 
-#ifdef XFEM
+#ifdef D_XFEM
   // to be removed soon and without warning!!! a.gerstenberger
   DRT::Elements::Fluid3* GetParent(){return parent_;}
 #endif

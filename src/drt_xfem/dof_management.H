@@ -10,7 +10,7 @@ Maintainer: Axel Gerstenberger
             089 - 289-15236
 </pre>
 */
-#ifdef XFEM
+#ifdef D_XFEM
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 #ifndef DOF_MANAGEMENT_H
@@ -22,7 +22,7 @@ Maintainer: Axel Gerstenberger
 using namespace Physics;
 
 // namespace for all xfem related stuff
-namespace Xfem
+namespace XFEM
 {
 
 
@@ -60,11 +60,12 @@ private:
     PhysVar var_;
     // specific enrichment for this physical field
     Enrichment enr_;
-}; // class Enrichment
+    
+}; // class EnrPhysVar
 
-}; // namespace Xfem
+}; // namespace XFEM
 
 #endif  // #ifndef DOF_MANAGEMENT_H
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef XFEM
+#endif  // #ifdef D_XFEM

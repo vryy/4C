@@ -343,7 +343,7 @@ void EnsightWriter::WriteGeoFile(
         WriteCells(geofile, field_->discretization());
 
 #if 0
-#ifdef XFEM
+#ifdef D_XFEM
         Write(geofile, "part");
         Write(geofile, field_->field_pos()+2);
         Write(geofile, "enriched " + field_->name() + " field");

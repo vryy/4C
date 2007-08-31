@@ -10,13 +10,13 @@ Maintainer: Axel Gerstenberger
             089 - 289-15236
 </pre>
 */
-#ifdef XFEM
+#ifdef D_XFEM
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
 #include "enrichment.H"
 
-using namespace Xfem;
+using namespace XFEM;
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
@@ -62,4 +62,4 @@ void Enrichment::Print(
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef XFEM
+#endif  // #ifdef D_XFEM
