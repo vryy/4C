@@ -67,7 +67,7 @@
 # FSI_NEWTONCOUPLING # fsi coupling with evaluation of tangent operator
 # LOCALSYSTEMS_ST    # locally oriented Dirichlet BCs for structures
 # CCADISCRET         # use new ccarat discretization subsystem DRT
-# XFEM               # provides intersection routines, enrichments, searches,...
+# D_XFEM               # provides intersection routines, enrichments, searches,...
 # TDS                # Fluid stabilization using time dependent subscales
 
 #   tools
