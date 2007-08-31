@@ -19,8 +19,8 @@ FILTER_OBJECTS="\$(OBJS_POST_DRT_COMMON) \
 \$(OBJS_DRT_F2_LIB) \$(OBJS_DRT_F3_LIB)  \$(OBJS_DRT_S8_LIB) \
 \$(OBJS_SOH8_LIB) \$(OBJS_DRT_W1_LIB) \$(OBJS_DRT_ALE_LIB)"
 
-# XFEM
-if grep '^[[:blank:]]*XFEM' "$definefile" 2>&1 > /dev/null ; then
+# D_XFEM
+if grep '^[[:blank:]]*D_XFEM' "$definefile" 2>&1 > /dev/null ; then
     OBJECTS="$OBJECTS \$(OBJS_INTERSECTION)"
 fi
 
