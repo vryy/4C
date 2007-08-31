@@ -101,6 +101,10 @@ public:
     element_sotet10surface,
     element_sotet10line,
     element_sotet10volume,
+    element_so_weg6,
+    element_sow6volume,
+    element_sow6surface,
+    element_sow6line,
   };
 
   /*!

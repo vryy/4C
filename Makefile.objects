@@ -340,7 +340,7 @@ OBJS_DRT_ALE   =
 OBJS_PAR      = src/parallel/par_initmetis.o \
                 src/parallel/par_make_comm.o \
                 src/parallel/par_assignmesh.o
-#------------------------------------------------ drt solid hex 8
+#------------------------------------------------ drt solid 
 OBJS_SOH8     = 
 OBJS_SOH8_LIB = src/drt_so3/so_hex8_surface.o \
                 src/drt_so3/so_hex8_line.o \
@@ -360,7 +360,12 @@ OBJS_SOH8_LIB = src/drt_so3/so_hex8_surface.o \
                 src/drt_so3/so_tet10_stress.o \
                 src/drt_so3/so_tet10_surface.o \
                 src/drt_so3/so_tet10_surface_evaluate.o \
-                src/drt_so3/so_tet10_line.o
+                src/drt_so3/so_tet10_line.o \
+                src/drt_so3/so_weg6.o \
+                src/drt_so3/so_weg6_evaluate.o \
+                src/drt_so3/so_weg6_input.o \
+                src/drt_so3/so_weg6_surface.o \
+                src/drt_so3/so_weg6_surface_evaluate.o \
 #--------------------------------------------------------- brick1
 OBJS_BRICK1   = src/brick1/c1_out.o \
                 src/brick1/c1_gid.o \

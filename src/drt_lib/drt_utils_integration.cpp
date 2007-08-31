@@ -158,6 +158,7 @@ DRT::Utils::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
   case intrule_tet_4point_alternative:
   {
     // ALT.GAUSS INTEGRATION    4 SAMPLING POINTS, DEG.OF PRECISION 1
+    nquad = 4;
     qxg[0][0] = 0.0;
     qxg[1][0] = 1.0;
     qxg[2][0] = 0.0;
@@ -179,6 +180,7 @@ DRT::Utils::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
   case intrule_tet_10point:
   {
     // GAUSS INTEGRATION        5 SAMPLING POINTS, DEG.OF PRECISION 3
+    nquad = 10;
     qxg[0][0] =     Q14  ;
     qxg[1][0] =     Q12  ;
     qxg[2][0] =     Q16  ;
@@ -203,6 +205,41 @@ DRT::Utils::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
     qwgt[4]   =     Q9120;
     break;
   }
+  case intrule_wedge_6point:
+  {
+    // GAUSS INTEGRATION         6 SAMPLING POINTS
+    const double xi3 = 1.0/sqrt(3.0);
+    const double Q23 = 2.0/3.0;
+    const double Q16 = 1.0/6.0;
+
+    nquad = 6;
+    qxg[0][0] = Q23;
+    qxg[1][0] = Q16;
+    qxg[2][0] = Q16;
+    qxg[3][0] = Q23;
+    qxg[4][0] = Q16;
+    qxg[5][0] = Q16;
+    qxg[0][1] = Q16;
+    qxg[1][1] = Q23;
+    qxg[2][1] = Q16;
+    qxg[3][1] = Q16;
+    qxg[4][1] = Q23;
+    qxg[5][1] = Q16;
+    qxg[0][2] = xi3;
+    qxg[1][2] = xi3;
+    qxg[2][2] = xi3;
+    qxg[3][2] = -xi3;
+    qxg[4][2] = -xi3;
+    qxg[5][2] = -xi3;
+
+    qwgt[0] = Q16;
+    qwgt[1] = Q16;
+    qwgt[2] = Q16;
+    qwgt[3] = Q16;
+    qwgt[4] = Q16;
+    qwgt[5] = Q16;
+    break;
+  }
   case intrule_weg_9point:
   {
     // GAUSS INTEGRATION         9 SAMPLING POINTS
@@ -210,6 +247,7 @@ DRT::Utils::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
     const double Q23 = 2.0/3.0;
     const double Q5913 = 5.0/9.0*1.0/3.0;
 
+    nquad = 9;
     qxg[0][0] = Q23;
     qxg[1][0] = Q16;
     qxg[2][0] = Q16;
@@ -329,6 +367,7 @@ DRT::Utils::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
   }
   case intrule_tri_3point:
   {
+    // gp on triangular lines/edges
     nquad = 3;
     qwgt[0]  = 1.0/6.0 ;
     qwgt[1]  = 1.0/6.0 ;

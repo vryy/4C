@@ -170,6 +170,11 @@ using namespace std;
 #define ParObject_HyperPolyconvex       (int)48
 #define ParObject_NeoHooke              (int)49
 #define ParObject_ConvecDiffus          (int)50
+#define ParObject_So_weg6               (int)51
+#define ParObject_Sow6Register          (int)52
+#define ParObject_Sow6Volume            (int)53
+#define ParObject_Sow6Surface           (int)54
+#define ParObject_Sow6Line              (int)55
 
 /*!
 \brief DRT: namespace of the ccarat discretization module
