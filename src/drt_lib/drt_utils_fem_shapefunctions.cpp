@@ -580,7 +580,7 @@ void DRT::Utils::shape_function_3D_deriv1(
         deriv1(1, 2)=-p1;
         deriv1(1, 3)=0;
         deriv1(1, 4)=p2;
-        deriv1(1, 5)=-p1;
+        deriv1(1, 5)=-p2;
 
         deriv1(2, 0)=-Q12*r;
         deriv1(2, 1)=-Q12*s;

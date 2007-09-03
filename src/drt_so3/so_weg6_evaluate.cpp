@@ -203,11 +203,6 @@ void DRT::Elements::So_weg6::sow6_nlnstiffmass(
     xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_WEG6+2];
   }
 
-  
-  
-  cout << xrefe << endl;
-  
-
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
@@ -236,7 +231,7 @@ void DRT::Elements::So_weg6::sow6_nlnstiffmass(
                - jac(0,0) * jac(1,2) * jac(2,1)
                - jac(0,1) * jac(1,0) * jac(2,2)
                - jac(0,2) * jac(1,1) * jac(2,0);
-    if (detJ == 0.0) dserror("ZERO JACOBIAN DETERMINANT");
+    if (abs(detJ) < 1E-16) dserror("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
 
     /* compute derivatives N_XYZ at gp w.r.t. material coordinates
@@ -412,9 +407,9 @@ void DRT::Elements::So_weg6::sow6_shapederiv(
       DRT::Utils::shape_function_3D_deriv1(deriv, r, s, t, wedge6);
       for (int inode = 0; inode < NUMNOD_WEG6; ++inode) {
         f(inode, igp) = funct(inode);
-        df(igp+0, inode) = deriv(0, inode);
-        df(igp+1, inode) = deriv(1, inode);
-        df(igp+2, inode) = deriv(2, inode);
+        df(igp*NUMDIM_WEG6+0, inode) = deriv(0, inode);
+        df(igp*NUMDIM_WEG6+1, inode) = deriv(1, inode);
+        df(igp*NUMDIM_WEG6+2, inode) = deriv(2, inode);
         weightfactors[igp] = intpoints.qwgt[igp];
       }
     }
