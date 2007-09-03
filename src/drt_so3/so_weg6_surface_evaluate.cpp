@@ -78,16 +78,17 @@ int DRT::Elements::Sow6Surface::EvaluateNeumann(ParameterList&           params,
 
   // element geometry update
   const DiscretizationType distype = this->Shape();
-  const int numnod = this->NumNode();
+  const int numnode = this->NumNode();
+  const int numdf=3;
   
   RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==null) dserror("Cannot get state vector 'displacement'");
   vector<double> mydisp(lm.size());
   DRT::Utils::ExtractMyValues(*disp,mydisp,lm);
   
-  Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_WEG6);  // material coord. of element
-  Epetra_SerialDenseMatrix xscurr(numnod,NUMDIM_WEG6);  // material coord. of element
-  for (int i=0; i<numnod; ++i){
+  Epetra_SerialDenseMatrix xsrefe(numnode,NUMDIM_WEG6);  // material coord. of element
+  Epetra_SerialDenseMatrix xscurr(numnode,NUMDIM_WEG6);  // material coord. of element
+  for (int i=0; i<numnode; ++i){
     xsrefe(i,0) = Nodes()[i]->X()[0];
     xsrefe(i,1) = Nodes()[i]->X()[1];
     xsrefe(i,2) = Nodes()[i]->X()[2];
@@ -97,6 +98,7 @@ int DRT::Elements::Sow6Surface::EvaluateNeumann(ParameterList&           params,
     xscurr(i,2) = xsrefe(i,2) + mydisp[i*NODDOF_WEG6+2];
   }
 
+  DRT::Utils::GaussRule2D gaussrule;
   switch(distype){
   case quad4:
     gaussrule = intrule_quad_4point;
@@ -119,7 +121,7 @@ int DRT::Elements::Sow6Surface::EvaluateNeumann(ParameterList&           params,
   /*----------------------------------------------------------------------*
   |               start loop over integration points                     |
   *----------------------------------------------------------------------*/
-  const IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
+  const DRT::Utils::IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
   for (int gpid=0; gpid<intpoints.nquad; gpid++)
   {
     const double e0 = intpoints.qxg[gpid][0];
@@ -131,13 +133,13 @@ int DRT::Elements::Sow6Surface::EvaluateNeumann(ParameterList&           params,
 
     // compute measure tensor for surface element and the infinitesimal
     // area element drs for the integration
-    sow6_surface_integ(&drs,xsrefe,deriv);
+    sow6_surface_integ(&drs,&xsrefe,deriv);
 
     // values are multiplied by the product from inf. area element,
     // the gauss weight, the timecurve factor
     const double fac = intpoints.qwgt[gpid] * drs * curvefac;
 
-    for (int node=0; node < numnod; ++node)
+    for (int node=0; node < numnode; ++node)
     {
       for(int dim=0 ; dim<NUMDIM_WEG6; dim++)
       {

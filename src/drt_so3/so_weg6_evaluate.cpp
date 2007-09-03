@@ -203,6 +203,10 @@ void DRT::Elements::So_weg6::sow6_nlnstiffmass(
     xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_WEG6+2];
   }
 
+  
+  
+  cout << xrefe << endl;
+  
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */

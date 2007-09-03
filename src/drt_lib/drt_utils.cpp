@@ -46,6 +46,7 @@ extern "C"
 #include "../drt_so3/so_hex8.H"
 #include "../drt_so3/so_sh8.H"
 #include "../drt_so3/so_tet10.H"
+#include "../drt_so3/so_weg6.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_mat/micromaterial.H"
@@ -240,6 +241,20 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
       return object;
     }
     break;
+    case ParObject_So_weg6:
+    {
+      DRT::Elements::So_weg6* object = 
+                new DRT::Elements::So_weg6(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    case ParObject_Sow6Register:
+    {
+      DRT::Elements::Sow6Register* object = 
+                new DRT::Elements::Sow6Register(DRT::Element::element_so_weg6);
+      object->Unpack(data);
+      return object;
+    }
 #endif
 #ifdef D_SOTET10
     case ParObject_So_tet10:
@@ -320,7 +335,8 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
     ale3,
     so_hex8,
     so_sh8,
-    so_tet10
+    so_tet10,
+    so_weg6,
   };
 
   TypeofElement type = none;
@@ -335,6 +351,7 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
   else if (eletype=="SOLIDH8") type = so_hex8;
   else if (eletype=="SOLIDSH8") type = so_sh8;
   else if (eletype=="SOLIDTET10") type = so_tet10;
+  else if (eletype=="SOLIDW6") type = so_weg6;
   // continue to add elements here....
   else dserror("Unknown type of finite element");
 
@@ -405,6 +422,12 @@ RefCountPtr<DRT::Element> DRT::Utils::Factory(const string eletype,
     case so_sh8:
     {
       RefCountPtr<DRT::Element> ele = rcp(new DRT::Elements::So_sh8(id,owner));
+      return ele;
+    }
+    break;
+    case so_weg6:
+    {
+      RefCountPtr<DRT::Element> ele = rcp(new DRT::Elements::So_weg6(id,owner));
       return ele;
     }
     break;

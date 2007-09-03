@@ -25,6 +25,10 @@ Maintainer: Moritz Frenzel
 #include "../io/io_drt.H"
 #include "drt_globalproblem.H"
 
+
+// NUMBERING
+#include "../drt_so3/so_sh8.H"
+
 /*----------------------------------------------------------------------*
  |                                                         maf 05/07    |
  | vector of numfld FIELDs, defined in global_control.c                 |
@@ -86,6 +90,11 @@ void stru_static_drt()
 
   // set degrees of freedom in the discretization
   if (!actdis->Filled()) actdis->FillComplete();
+
+//  // RENUMBERING
+//  DRT::Elements::So_sh8* actele = dynamic_cast<DRT::Elements::So_sh8*>(actdis->lColElement(0));
+//  actele->Initialize_numbers((*actdis));
+//  actdis->FillComplete();
 
   // -------------------------------------------------------------------
   // context for output and restart
