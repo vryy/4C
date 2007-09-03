@@ -336,6 +336,12 @@ protected:
                                  Epetra_SerialDenseVector* force,
                                  const double              time);
 
+  void sow6_mat_sel(Epetra_SerialDenseVector* stress,
+                    Epetra_SerialDenseMatrix* cmat,
+                    double* density,
+                    const Epetra_SerialDenseVector* glstrain,
+                    const double time);
+
   void sow6_shapederiv(Epetra_SerialDenseMatrix** shapefct,
                        Epetra_SerialDenseMatrix** deriv,
                        Epetra_SerialDenseVector** weights);
@@ -606,12 +612,9 @@ private:
   int                    lsurface_;
 
   void sow6_surface_integ(
-      vector<double>* funct,                 // (o) shape functions
-      double* sqrtdetg,                      // (o) pointer to sqrt of det(g)
-      vector<double>* unrm,                  // (o) unit normal
-      const Epetra_SerialDenseMatrix* xs,    // (i) material element coords
-      const double r,                        // (i) coord in r-direction
-      const double s);                       // (i) coord in s-direction
+        double* sqrtdetg,                      // (o) pointer to sqrt of det(g)
+        const Epetra_SerialDenseMatrix* xs,    // (i) element coords
+        const Epetra_SerialDenseMatrix deriv); // (i) shape funct derivs
 }; // class Sow6Surface
 
 /*!

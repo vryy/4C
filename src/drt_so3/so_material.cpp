@@ -21,6 +21,7 @@ Maintainer: Moritz Frenzel
 #endif
 #include "so_hex8.H"
 #include "so_tet10.H"
+#include "so_weg6.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_exporter.H"
@@ -112,6 +113,56 @@ void DRT::Elements::So_hex8::soh8_mat_sel(
   /*--------------------------------------------------------------------*/
   return;
 }  // of soh8_mat_sel
+
+/*----------------------------------------------------------------------*
+ | material laws for So_weg6                                   maf 08/07|
+ *----------------------------------------------------------------------*/
+void DRT::Elements::So_weg6::sow6_mat_sel(
+      Epetra_SerialDenseVector* stress,
+      Epetra_SerialDenseMatrix* cmat,
+      double* density,
+      const Epetra_SerialDenseVector* glstrain,
+      const double time)
+{
+  RefCountPtr<MAT::Material> mat = Material();
+  switch (mat->MaterialType())
+  {
+    case m_stvenant: /*------------------ st.venant-kirchhoff-material */
+    {
+      MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
+
+      stvk->Evaluate(glstrain,cmat,stress);
+
+      *density = stvk->Density();
+
+      break;
+    }
+    case m_hyper_polyconvex:
+    {
+      MAT::HyperPolyconvex* hypo = static_cast <MAT::HyperPolyconvex*>(mat.get());
+      
+      hypo->Evaluate(glstrain,cmat,stress);
+      
+      *density = hypo->Density();
+      
+      break;
+    }
+    case m_neohooke: /*----------------- NeoHookean Material */
+    {
+      MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());
+      neo->Evaluate(glstrain, cmat, stress);
+      *density = neo->Density();
+
+    break;
+    }
+    default:
+      dserror("Illegal type %d of material for element solid3 weg 6", mat->MaterialType());
+      break;
+  }
+
+  /*--------------------------------------------------------------------*/
+  return;
+}  // of sow6_mat_sel
 
 #ifdef D_SOTET10
 /*----------------------------------------------------------------------* !!!!
