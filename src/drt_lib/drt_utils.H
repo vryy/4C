@@ -27,6 +27,7 @@ Maintainer: Michael Gee
 #include "drt_element.H"
 #include "drt_utils_fem_shapefunctions.H"
 #include "drt_utils_integration.H"
+#include "drt_utils_local_connectivity_matrices.H"
 
 using namespace std;
 using namespace Teuchos;
