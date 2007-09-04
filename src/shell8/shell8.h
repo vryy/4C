@@ -21,6 +21,7 @@ struct _ARRAY    a3ref;
 struct _ARRAY    thick_node;
 DOUBLE           thick;
 DOUBLE           sdc;
+INT              volc;          /* volume constraint toggle */
 INT              nGP[3];
 INT              nGP_tri;
 /*---------------------------------------------- array of forces at GPs */

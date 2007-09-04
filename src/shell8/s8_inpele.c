@@ -202,6 +202,8 @@ if (strncmp(buffer,"TQ",4)==0)    ele->e.s8->ans=3;
 /*------------------------------------------------------------ read sdc */
 frdouble("SDC",&(ele->e.s8->sdc),&ierr);
 if (ierr!=1) dserror("Reading of shell8 sdc failed");
+/*---------------------------------------------- read volume constraint */
+frint("VOLC",&(ele->e.s8->volc),&ierr);
 
 #ifdef DEBUG
 dstrc_exit();
