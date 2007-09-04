@@ -101,7 +101,7 @@ public:
   /*!
   \brief Return number of surfaces of this element
   */
-  virtual int NumSurface() const {return 6;}
+  virtual int NumSurface() const {return 5;}
 
   /*!
   \brief Return number of lines of this element

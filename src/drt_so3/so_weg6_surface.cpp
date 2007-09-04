@@ -72,8 +72,15 @@ DRT::Element* DRT::Elements::Sow6Surface::Clone() const
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::Elements::Sow6Surface::Shape() const
 {
-  dserror("wedges have tris and quads as surface shapes");
+  const int numnode = this->NumNode();
+  switch (numnode){
+  case 3: return tri3;
+  break;
+  case 4: return quad4;
+  break;
+  default:  dserror("Can not assign surface shape of wedge element");
   return quad4;
+  }
 }
 
 /*----------------------------------------------------------------------*

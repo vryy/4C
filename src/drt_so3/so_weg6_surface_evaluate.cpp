@@ -164,7 +164,7 @@ void DRT::Elements::Sow6Surface::sow6_surface_integ(
 
   // compute dXYZ / drs
   Epetra_SerialDenseMatrix dxyzdrs(2,3);
-  dxyzdrs.Multiply('T','N',1.0,deriv,(*xs),1.0);
+  dxyzdrs.Multiply('N','N',1.0,deriv,(*xs),0.0);
 
   /* compute covariant metric tensor G for surface element
   **                        | g11   g12 |
