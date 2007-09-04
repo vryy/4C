@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file drt_xelement.H
 
-\class DRT::XElement
+\class DRT::Elements::XElement
 
 \brief A pure virtual XFEM element class
 
@@ -64,7 +64,7 @@ with the discretization management module has to implement this class.
 It implements various basic element methods and
 stores basic information such as element to node connectivity.
 
-\author gee (gee@lnm.mw.tum.de)
+\author gerstenberger (gerstenberger@lnm.mw.tum.de)
 */
 class XElement : public Element
 {
