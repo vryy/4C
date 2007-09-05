@@ -135,19 +135,6 @@ dstrc_enter("inpctr");
 
       break;
    }
-   case prb_fsi_xfem:
-   {
-      dsassert(genprob.numfld==2, "numfld != 2 for FSI XFEM");
-
-      solv = (SOLVAR*)CCACALLOC(genprob.numfld,sizeof(SOLVAR));
-
-      solv[genprob.numsf].fieldtyp = structure;
-      inpctrsol(&(solv[genprob.numsf]));
-
-      solv[genprob.numff].fieldtyp = fluid;
-      inpctrsol(&(solv[genprob.numff]));
-      break;
-   }
    /* for SSI */
    case prb_ssi:
    {
@@ -362,6 +349,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
     if (frwordcmp("Structure"                  ,buffer)==0) genprob.probtyp = prb_structure;
     else if (frwordcmp("Fluid"                      ,buffer)==0) genprob.probtyp = prb_fluid;
     else if (frwordcmp("Fluid_Projection"           ,buffer)==0) genprob.probtyp = prb_fluid_pm;
+    else if (frwordcmp("Fluid_XFEM"                 ,buffer)==0) genprob.probtyp = prb_fluid_xfem;
     else if (frwordcmp("Convection_Diffusion"       ,buffer)==0) genprob.probtyp = prb_condif;
     else if (frwordcmp("Fluid_Structure_Interaction",buffer)==0) genprob.probtyp = prb_fsi;
     else if (frwordcmp("Fluid_Structure_Interaction_XFEM",buffer)==0) genprob.probtyp = prb_fsi_xfem;
