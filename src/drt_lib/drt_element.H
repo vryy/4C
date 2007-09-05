@@ -105,6 +105,10 @@ public:
     element_sow6volume,
     element_sow6surface,
     element_sow6line,
+    element_sodisp,
+    element_sodispvolume,
+    element_sodispsurface,
+    element_sodispline,
   };
 
   /*!

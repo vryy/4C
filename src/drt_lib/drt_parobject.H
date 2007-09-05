@@ -175,6 +175,11 @@ using namespace std;
 #define ParObject_Sow6Volume            (int)53
 #define ParObject_Sow6Surface           (int)54
 #define ParObject_Sow6Line              (int)55
+#define ParObject_SoDisp                (int)56
+#define ParObject_SoDispRegister        (int)57
+#define ParObject_SoDispVolume          (int)58
+#define ParObject_SoDispSurface         (int)59
+#define ParObject_SoDispLine            (int)60
 
 /*!
 \brief DRT: namespace of the ccarat discretization module

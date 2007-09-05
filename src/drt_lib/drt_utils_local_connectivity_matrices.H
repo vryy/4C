@@ -220,7 +220,22 @@ namespace Utils
     int&                                        numCornerNodes, 
     const DRT::Element::DiscretizationType&     distype
     );
-    
+
+  /*!
+ \brief Returns the number of lines
+        for each discretization type
+ */ 
+  int getNumberOfElementLines( 
+      const DRT::Element::DiscretizationType&     distype);
+
+  /*!
+ \brief Returns the number of surfaces
+        for each discretization type
+ */ 
+  int getNumberOfElementSurfaces( 
+      const DRT::Element::DiscretizationType&     distype);
+  
+  
   /*!
   \brief Fills a vector< vector<int> > with all nodes for every surface
          for each discretization type

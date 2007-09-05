@@ -65,6 +65,63 @@ void DRT::Utils::getNumberOfElementCornerNodes(
 
 
 /*----------------------------------------------------------------------*
+ |  returns the number of lines                              a.ger 08/07|
+ |  for each discretization type                                        |
+ *----------------------------------------------------------------------*/    
+int DRT::Utils::getNumberOfElementLines( 
+    const DRT::Element::DiscretizationType&     distype)
+{
+    int numLines = 0;
+    switch(distype)
+    {
+        case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27:
+            numLines = 12;
+            break;
+        case DRT::Element::wedge6: case DRT::Element::wedge15:
+            numLines = 9;
+            break;
+        case DRT::Element::tet4: case DRT::Element::tet10:
+            numLines = 6;
+            break;
+        case DRT::Element::quad4: case DRT::Element::quad8: case DRT::Element::quad9:
+            numLines = 4;
+            break;
+        case DRT::Element::tri3: case DRT::Element::tri6:
+            numLines = 3;
+            break;
+        default:
+            dserror("discretization type not yet implemented");     
+    }
+    return numLines;
+}  
+
+
+/*----------------------------------------------------------------------*
+ |  returns the number of lines                              a.ger 08/07|
+ |  for each discretization type                                        |
+ *----------------------------------------------------------------------*/    
+int DRT::Utils::getNumberOfElementSurfaces( 
+    const DRT::Element::DiscretizationType&     distype)
+{
+    int numSurf = 0;
+    switch(distype)
+    {
+        case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27:
+            numSurf = 6;
+            break;
+        case DRT::Element::wedge6: case DRT::Element::wedge15:
+            numSurf = 5;
+            break;
+        case DRT::Element::tet4: case DRT::Element::tet10:
+            numSurf = 4;
+            break;
+        default:
+            dserror("discretization type not yet implemented");     
+    }
+    return numSurf;
+}  
+
+/*----------------------------------------------------------------------*
  |  Fills a vector< vector<int> > with all nodes for         u.may 08/07|
  |  every surface for each discretization type                          |
  *----------------------------------------------------------------------*/    
