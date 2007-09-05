@@ -180,11 +180,13 @@ void dstrc_enter(
     char        string[])
 {
 
+#ifndef CCADISCRET
 #ifdef DEBUG
   trace.actroutine = trace.actroutine->next;
   trace.actroutine->name = string;
   trace.actroutine->dsroutcontrol=dsin;
   trace.deepness++;
+#endif
 #endif
 
   return;
@@ -207,11 +209,13 @@ see dsinit()
 void dstrc_exit()
 {
 
+#ifndef CCADISCRET
 #ifdef DEBUG
   trace.actroutine->dsroutcontrol=dsout;
   trace.actroutine = trace.actroutine->prev;
   trace.deepness--;
   dsassert(trace.deepness >= 0, "trace stack underflow");
+#endif
 #endif
 
   return;
@@ -228,6 +232,7 @@ void dstrc_exit()
 void dstrc_whereami()
 {
 
+#ifndef CCADISCRET
 #ifdef DEBUG
   INT i;
   TRACEROUT *routhis = trace.actroutine;
@@ -237,6 +242,7 @@ void dstrc_whereami()
     fprintf(allfiles.out_err,"%s\n",routhis->name);
     printf("%s\n",routhis->name);
   }
+#endif
 #endif
 
 }
@@ -259,6 +265,7 @@ see dsinit()
 ------------------------------------------------------------------------*/
 void dsreportarray(void *array, INT typ)
 {
+#ifndef CCADISCRET
 #ifdef DEBUG
 /*--------------------- count total number of active ARRAYs or ARRAY4Ds */
 trace.num_arrays++;
@@ -288,6 +295,7 @@ trace.endarraychain->next->prev = trace.endarraychain;
 /*------------------------------------- set endarraychain to new piece */
 trace.endarraychain = trace.endarraychain->next;
 #endif
+#endif
 return;
 } /* end of dstracereport */
 
@@ -310,6 +318,7 @@ see dsinit()
 ------------------------------------------------------------------------*/
 void dsdeletearray(void *array, INT typ)
 {
+#ifndef CCADISCRET
 #ifdef DEBUG
 TRACEARRAY *acttracearray;
 /*------------------------------ decrease number of ARRAYs and ARRAY4Ds */
@@ -355,6 +364,7 @@ else
 CCAFREE(acttracearray);
 /*-----------------------------------------------------------------------*/
 #endif
+#endif
 return;
 } /* end of dsdeletearray */
 
@@ -378,6 +388,7 @@ see dsinit()
 void dstrace_to_err()
 {
 
+#ifndef CCADISCRET
 #ifdef DEBUG
 
   INT         i=0;
@@ -512,6 +523,7 @@ void dstrace_to_err()
   fprintf(allfiles.out_err,"bugtracing only in DEBUG - noreport\n");
 
 #endif
+#endif
 
   return;
 } /* end of dstrace_to_err */
@@ -536,6 +548,7 @@ see dsinit()
 void dsmemreport()
 {
 
+#ifndef CCADISCRET
 #ifdef DEBUG
 
 
@@ -561,6 +574,7 @@ void dsmemreport()
   printf (                 "%s",message);
   fflush(allfiles.out_err);
 
+#endif
 #endif
 
   return;
