@@ -414,12 +414,6 @@ case prb_pfsi:
   genprob.numaf=2;
   break;
 }
-case prb_fsi_xfem:
-{
-  genprob.numsf=0;
-  genprob.numff=1;
-  break;
-}
 case prb_fluid:
 {
   genprob.numff=0;
