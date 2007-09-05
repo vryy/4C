@@ -27,7 +27,6 @@ Maintainer: Ursula Mayer
 #include "../drt_lib/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_utils_local_connectivity_matrices.H"
 #include "../drt_lib/drt_element.H"
-#include "../drt_f3/fluid3.H"
 
 
 using namespace XFEM;
