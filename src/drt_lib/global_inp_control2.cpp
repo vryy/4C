@@ -258,6 +258,30 @@ void inpfield_ccadiscret(DRT::Problem& problem, DRT::DatFileReader& reader)
     nodereader.AddElementReader(rcp(new DRT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
     nodereader.Read();
   }
+  
+  if (genprob.probtyp == prb_fluid_xfem)
+  {
+    // allocate and input general old stuff....
+    dsassert(genprob.numfld==2, "numfld != 2 for fluid problem with XFEM interfaces");
+    field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
+    field[genprob.numsf].fieldtyp = structure;
+    inpdis(&(field[genprob.numsf]));
+    field[genprob.numff].fieldtyp = fluid;
+    inpdis(&(field[genprob.numff]));
+
+    structdis = rcp(new DRT::Discretization("Structure",reader.Comm()));
+    fluiddis = rcp(new DRT::Discretization("Fluid",reader.Comm()));
+
+    problem.AddDis(genprob.numsf, structdis);
+    problem.AddDis(genprob.numff, fluiddis);
+
+    DRT::NodeReader nodereader(reader, "--NODE COORDS");
+
+    nodereader.AddElementReader(rcp(new DRT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+    nodereader.AddElementReader(rcp(new DRT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+
+    nodereader.Read();
+  }
 
   else if (genprob.probtyp==prb_fluid_pm)
     dserror("prb_fluid_pm not yet impl.");

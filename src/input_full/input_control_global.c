@@ -186,6 +186,20 @@ dstrc_enter("inpctr");
       }
       break;
    }
+   case prb_fluid_xfem:
+   {
+      dsassert(genprob.numfld == 2, "numfld != 2 for Fluid XFEM problem");
+
+      solv = (SOLVAR*)CCACALLOC(genprob.numfld,sizeof(SOLVAR));
+
+      solv[genprob.numsf].fieldtyp = structure;
+      inpctrsol(&(solv[genprob.numsf]));
+
+      solv[genprob.numff].fieldtyp = fluid;
+      inpctrsol(&(solv[genprob.numff]));
+
+      break;
+   }
    /* for fluid with projection method */
    case prb_fluid_pm:
    {
@@ -258,7 +272,7 @@ dstrc_enter("inpctr");
    }
 
    default:
-     dserror("problem type %d unknown",genprob.probtyp);
+     dserror("problem type %d unknown in inpctr()",genprob.probtyp);
    }
 
 /*----------------------------------------------------------------------*/
@@ -420,6 +434,13 @@ case prb_fluid:
   if (genprob.numfld==2) genprob.numaf=1;
   break;
 }
+case prb_fluid_xfem:
+{
+  genprob.numsf=0;
+  genprob.numff=1;
+  if (genprob.numfld==3) genprob.numaf=2;
+  break;
+}
 case prb_fluid_pm:
   genprob.numff=0;
   break;
@@ -455,7 +476,7 @@ case prb_tsi:
 case prb_opt:
 break;
 default:
-  dserror("problem type %d unknown",genprob.probtyp);
+  dserror("problem type %d unknown in inpctrprob()",genprob.probtyp);
 }
 
 /*----------------------------------------------------------------------*/
