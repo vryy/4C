@@ -29,6 +29,52 @@ extern "C"
 
 using namespace DRT::Utils;
 
+
+int DRT::Elements::SoDispSurface::Evaluate(     ParameterList&            params,
+                                                DRT::Discretization&      discretization,
+                                                vector<int>&              lm,
+                                                Epetra_SerialDenseMatrix& elemat1,
+                                                Epetra_SerialDenseMatrix& elemat2,
+                                                Epetra_SerialDenseVector& elevec1,
+                                                Epetra_SerialDenseVector& elevec2,
+                                                Epetra_SerialDenseVector& elevec3)
+{
+    DRT::Elements::SoDispSurface::ActionType act = SoDispSurface::none;
+    string action = params.get<string>("action","none");
+    if (action == "none") dserror("No action supplied");
+    else if (action == "calc_Shapefunction")
+        act = SoDispSurface::calc_Shapefunction;
+    else if (action == "calc_ShapeDeriv1")
+        act = SoDispSurface::calc_ShapeDeriv1;
+    else if (action == "calc_ShapeDeriv2")
+        act = SoDispSurface::calc_ShapeDeriv2;
+    else dserror("Unknown type of action for SoDispSurface");
+    
+    const DiscretizationType distype = this->Shape();
+    switch(act)
+    {
+    case calc_Shapefunction:
+    {
+        shape_function_2D(elevec1,elevec2[0],elevec2[1],distype);
+        break;
+    }
+    case calc_ShapeDeriv1:
+    {
+        shape_function_2D_deriv1(elemat1,elevec2[0],elevec2[1],distype);
+        break;
+    }
+    case calc_ShapeDeriv2:
+    {
+        shape_function_2D_deriv2(elemat2,elevec2[0],elevec2[1],distype);
+        break;
+    }
+    default:
+        dserror("Unknown type of action for SoDispSurface");
+    } // end of switch(act)
+
+    return 0;
+}
+
 /*----------------------------------------------------------------------*
  * Integrate a Surface Neumann boundary condition (public)     maf 04/07*
  * ---------------------------------------------------------------------*/

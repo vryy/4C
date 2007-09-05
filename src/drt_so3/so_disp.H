@@ -281,7 +281,10 @@ protected:
     calc_struct_eleload,
     calc_struct_fsiload,
     calc_struct_update_istep,
-    calc_init_vol
+    calc_init_vol,
+    calc_Shapefunction,
+    calc_ShapeDeriv1,
+    calc_ShapeDeriv2
   };
 
   //! kinematic types of so_disp
@@ -595,6 +598,43 @@ public:
 
   //@}
 
+  //! @name Evaluation
+
+  /*!
+  \brief Evaluate an element
+
+  Evaluate sodisp element stiffness, mass, internal forces etc
+
+  \param params (in/out): ParameterList for communication between control routine
+                          and elements
+  \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
+                          the controling method does not epxect the element to fill
+                          this matrix.
+  \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
+                          the controling method does not epxect the element to fill
+                          this matrix.
+  \param elevec1 (out)  : vector to be filled by element. If NULL on input,
+                          the controlling method does not epxect the element
+                          to fill this vector
+  \param elevec2 (out)  : vector to be filled by element. If NULL on input,
+                          the controlling method does not epxect the element
+                          to fill this vector
+  \param elevec3 (out)  : vector to be filled by element. If NULL on input,
+                          the controlling method does not epxect the element
+                          to fill this vector
+  \return 0 if successful, negative otherwise
+  */
+  int Evaluate(ParameterList& params,
+               DRT::Discretization&      discretization,
+               vector<int>&              lm,
+               Epetra_SerialDenseMatrix& elemat1,
+               Epetra_SerialDenseMatrix& elemat2,
+               Epetra_SerialDenseVector& elevec1,
+               Epetra_SerialDenseVector& elevec2,
+               Epetra_SerialDenseVector& elevec3);
+
+  //@}
+  
   //! @name Evaluate methods
 
   /*!
@@ -624,6 +664,15 @@ private:
   // don't want = operator
   SoDispSurface& operator = (const SoDispSurface& old);
 
+  //! action parameters recognized by SoDispSurface
+  enum ActionType
+  {
+    none,
+    calc_Shapefunction,
+    calc_ShapeDeriv1,
+    calc_ShapeDeriv2,
+  };
+  
   //! The parent element of this surface
   DRT::Elements::SoDisp* parent_;
   //! The local surface number of this surface w.r.t to the parent_ element
@@ -661,11 +710,18 @@ public:
   \param nnode: Number of nodes attached to this element
   \param nodeids: global ids of nodes attached to this element
   \param nodes: the discretizations map of nodes to build ptrs to nodes from
-  \param parent: The parent shell element of this line
+  \param parent: The parent fluid element of this line
   \param lline: the local line number of this line w.r.t. the parent element
   */
-  SoDispLine(int id, int owner, int nnode, const int* nodeids,
-             DRT::Node** nodes, DRT::Elements::SoDisp* parent, const int lline);
+
+  SoDispLine(   int id,
+                int owner,
+                int nnode,
+                const int* nodeids,
+                DRT::Node** nodes,
+                DRT::Elements::SoDispSurface* surfaceParent,
+                DRT::Elements::SoDisp* parent,
+                const int lline);
 
   /*!
   \brief Copy Constructor
@@ -733,7 +789,7 @@ public:
   separately.
   */
   virtual int NumDofPerNode(const DRT::Node& node) const
-  {return 3;}
+  {return 4;}
 
   /*!
   \brief Get number of degrees of freedom per element
@@ -761,6 +817,42 @@ public:
   an instance of a matching DRT::ElementRegister.
   */
   virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const { return null; }
+
+  //! @name Evaluation
+
+  /*!
+  \brief Evaluate an element
+
+  Evaluate fluid3 element stiffness, mass, internal forces etc
+
+  \param params (in/out): ParameterList for communication between control routine
+                          and elements
+  \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
+                          the controling method does not epxect the element to fill
+                          this matrix.
+  \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
+                          the controling method does not epxect the element to fill
+                          this matrix.
+  \param elevec1 (out)  : vector to be filled by element. If NULL on input,
+                          the controlling method does not epxect the element
+                          to fill this vector
+  \param elevec2 (out)  : vector to be filled by element. If NULL on input,
+                          the controlling method does not epxect the element
+                          to fill this vector
+  \param elevec3 (out)  : vector to be filled by element. If NULL on input,
+                          the controlling method does not epxect the element
+                          to fill this vector
+  \return 0 if successful, negative otherwise
+  */
+  virtual int Evaluate(ParameterList& params,
+               DRT::Discretization&      discretization,
+               vector<int>&              lm,
+               Epetra_SerialDenseMatrix& elemat1,
+               Epetra_SerialDenseMatrix& elemat2,
+               Epetra_SerialDenseVector& elevec1,
+               Epetra_SerialDenseVector& elevec2,
+               Epetra_SerialDenseVector& elevec3);
+
 
   //@}
 
@@ -790,15 +882,30 @@ public:
 
 private:
 
+  //! action parameters recognized by SoDispLine
+  enum ActionType
+  {
+     none,
+     calc_Shapefunction,
+     calc_ShapeDeriv1,
+     calc_ShapeDeriv2
+  };
+
   // don't want = operator
   SoDispLine& operator = (const SoDispLine& old);
 
-  //! The parent element of this line
-  DRT::Elements::SoDisp* parent_;
+  //! The surface parent element of this line
+  DRT::Elements::SoDispSurface* surfaceParent_;
+
+  //! The volume parent element of this line
+  DRT::Elements::SoDisp* parent_;                  // problem !!! wth initialization
+
   //! The local line number of this line w.r.t to the parent_ element
   int                    lline_;
 
+
 }; // class SoDispLine
+
 
 
 
