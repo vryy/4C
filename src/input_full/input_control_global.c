@@ -352,7 +352,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
     else if (frwordcmp("Fluid_XFEM"                 ,buffer)==0) genprob.probtyp = prb_fluid_xfem;
     else if (frwordcmp("Convection_Diffusion"       ,buffer)==0) genprob.probtyp = prb_condif;
     else if (frwordcmp("Fluid_Structure_Interaction",buffer)==0) genprob.probtyp = prb_fsi;
-    else if (frwordcmp("Fluid_Structure_Interaction_XFEM",buffer)==0) genprob.probtyp = prb_fsi_xfem;
     else if (frwordcmp("Projection_Fluid_Structure_Interaction",buffer)==0) genprob.probtyp = prb_pfsi;
     else if (frwordcmp("Structure_Structure_Interaction",buffer)==0) genprob.probtyp = prb_ssi;
     else if (frwordcmp("Optimisation"               ,buffer)==0) genprob.probtyp = prb_opt;

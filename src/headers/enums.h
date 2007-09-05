@@ -16,16 +16,16 @@ Maintainer: Malte Neumann
 typedef enum _PROBLEM_TYP
 {
                        prb_fsi,          /*  fluid structure interaction problem */
-		       prb_ssi,          /*  structure structure interaction problem */
-                       prb_structure,    /*  structural  problem */
-                       prb_fluid,        /*  fluid  problem */
+                       prb_ssi,          /*  structure structure interaction problem */
+                       prb_structure,    /*  structural problem */
+                       prb_fluid,        /*  fluid problem */
+                       prb_fluid_xfem,   /*  fluid problem including XFEM interfaces */
                        prb_opt,          /*  structural optimization  problem */
-		       prb_ale,          /*  pure ale problem */
+                       prb_ale,          /*  pure ale problem */
                        prb_tsi,          /*  thermal structure interaction */
-		       prb_fluid_pm,     /*  fluid with (any) projection method */
-		       prb_condif,       /*  convection-diffusion problem */
+                       prb_fluid_pm,     /*  fluid with (any) projection method */
+                       prb_condif,       /*  convection-diffusion problem */
                        prb_pfsi,         /*  projection fsi */
-                       prb_fsi_xfem,     /*  fluid structure interaction problem */
                        prb_struct_multi  /*  multi-scale problem (structure) */
 } PROBLEM_TYP;
 /* Mapping from problem type numbers to printable names. To be used to
