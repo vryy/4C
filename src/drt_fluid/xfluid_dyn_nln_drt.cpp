@@ -113,48 +113,61 @@ void xdyn_fluid_drt()
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  RefCountPtr<DRT::Discretization> actdis = null;
-  actdis = DRT::Problem::Instance()->Dis(genprob.numff,0);
-
+  RefCountPtr<DRT::Discretization> fluiddis = null;
+  fluiddis = DRT::Problem::Instance()->Dis(genprob.numff,0);
+  RefCountPtr<DRT::Discretization> soliddis = null;
+  soliddis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
+  
+  cout << *soliddis;
+  
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
   // -------------------------------------------------------------------
-  if (!actdis->Filled()) actdis->FillComplete();
+  if (!fluiddis->Filled()) fluiddis->FillComplete();
+  if (!soliddis->Filled()) soliddis->FillComplete();
 
 
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  IO::DiscretizationWriter output(actdis);
+  IO::DiscretizationWriter output(fluiddis);
   output.WriteMesh(0,0.0);
 
 // Intersection
   XFEM::Intersection is;
-  map<int, vector <XFEM::Integrationcell> > integrationcellList;
-  is.computeIntersection(actdis,actdis,integrationcellList);
+  map<int, vector <XFEM::Integrationcell> > intCellMap;
+  is.computeIntersection(fluiddis,soliddis,intCellMap);
 
-//	  stringstream s;
-//	  MFOREACH(XFEM::IntCellMap, pair, intCellMap)
-//	  //for( XFEM::IntCellMap::iterator pair = intCellMap.begin(); pair != intCellMap.end(); pair++ ) 
-//	  {
-//	      s << "ElementId:" << pair->first << "\n";
-//	      XFEM::IntCells const cells = pair->second;
-//	      MCONST_FOREACH(XFEM::IntCells, cell, cells)
-//	      //for( IntCells::iterator cell = cells.begin(); cell != cells.end(); ++cell)
-//	      {
-//	          s << " " << cell->Print();
-//	      };
-//	  };
-//	  cout << s.str();
+  stringstream s;
+  for( map< int, vector <XFEM::Integrationcell> >::iterator pair = intCellMap.begin(); pair != intCellMap.end(); ++pair ) 
+  {
+      s << "ElementId:" << pair->first << "\n";
+      XFEM::IntCells const cells = pair->second;
+      for( XFEM::IntCells::const_iterator cell = cells.begin(); cell != cells.end(); ++cell)
+      {
+          s << " " << cell->Print();
+      };
+  };
+  cout << s.str() << endl;
 
   // -------------------------------------------------------------------
   // set some pointers and variables
   // -------------------------------------------------------------------
-  SOLVAR        *actsolv  = &solv[0];
+  SOLVAR        *fluidsolv  = &solv[genprob.numff];
+  SOLVAR        *solidsolv  = &solv[genprob.numsf];
 
-  FLUID_DYNAMIC *fdyn     = alldyn[0].fdyn;
+  cout << "\n solvar done\n";
+  
+  FLUID_DYNAMIC *fdyn     = alldyn[genprob.numff].fdyn;
+  //STRUCT_DYNAMIC* sdyn    = alldyn[genprob.numsf].sdyn;
+  
+  cout << "\n fdyn gemacht\n";
+  
   fdyn->step              =   0;
   fdyn->acttime           = 0.0;
+  
+  cout << "\n setup complete\n";
+  
 
   // -------------------------------------------------------------------
   // init all applied time curves
@@ -169,9 +182,9 @@ void xdyn_fluid_drt()
   // create a solver
   // -------------------------------------------------------------------
   RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
-  LINALG::Solver solver(solveparams,actdis->Comm(),allfiles.out_err);
-  solver.TranslateSolverParameters(*solveparams,actsolv);
-  actdis->ComputeNullSpaceIfNecessary(*solveparams);
+  LINALG::Solver solver(solveparams,fluiddis->Comm(),allfiles.out_err);
+  solver.TranslateSolverParameters(*solveparams,fluidsolv);
+  fluiddis->ComputeNullSpaceIfNecessary(*solveparams);
 
   if(fdyn->iop == timeint_stationary
      ||
@@ -186,21 +199,13 @@ void xdyn_fluid_drt()
     ParameterList fluidtimeparams;
     FluidImplicitTimeInt::SetDefaults(fluidtimeparams);
 
-    // number of degrees of freedom
     fluidtimeparams.set<int>              ("number of velocity degrees of freedom" ,genprob.ndim);
-    // the default time step size
     fluidtimeparams.set<double>           ("time step size"           ,fdyn->dt);
-    // max. sim. time
     fluidtimeparams.set<double>           ("total time"               ,fdyn->maxtime);
-    // parameter for time-integration
     fluidtimeparams.set<double>           ("theta"                    ,fdyn->theta);
-    // which kind of time-integration
     fluidtimeparams.set<FLUID_TIMEINTTYPE>("time int algo"            ,fdyn->iop);
-    // bound for the number of timesteps
     fluidtimeparams.set<int>              ("max number timesteps"     ,fdyn->nstep);
-    // number of steps with start algorithm
     fluidtimeparams.set<int>              ("number of start steps"    ,fdyn->nums);
-    // parameter for start algo
     fluidtimeparams.set<double>           ("start theta"              ,fdyn->thetas);
 
 
@@ -214,21 +219,16 @@ void xdyn_fluid_drt()
     {
       fluidtimeparams.set<bool>("Use reaction terms for linearisation",false);
     }
-    // maximum number of nonlinear iteration steps
     fluidtimeparams.set<int>             ("max nonlin iter steps"     ,fdyn->itemax);
     // stop nonlinear iteration when both incr-norms are below this bound
     fluidtimeparams.set<double>          ("tolerance for nonlin iter" ,fdyn->ittol);
 
     // ----------------------------------------------- restart and output
-    // restart
     fluidtimeparams.set                  ("write restart every"       ,fdyn->uprestart);
-    // solution output
     fluidtimeparams.set                  ("write solution every"      ,fdyn->upres);
-    // flag for writing stresses
     fluidtimeparams.set                  ("write stresses"            ,ioflags.fluid_stress);
 
     //--------------------------------------------------
-    // evaluate error for test flows with analytical solutions
     fluidtimeparams.set                  ("eval err for analyt sol"   ,fdyn->init);
 
 
@@ -237,7 +237,7 @@ void xdyn_fluid_drt()
     // integration (call the constructor)
     // the only parameter from the list required here is the number of
     // velocity degrees of freedom
-    FluidImplicitTimeInt fluidimplicit(actdis,
+    FluidImplicitTimeInt fluidimplicit(fluiddis,
                                        solver,
                                        fluidtimeparams,
                                        output);
@@ -279,17 +279,11 @@ void xdyn_fluid_drt()
     // ------------------ set the parameter list
     ParameterList fluidtimeparams;
 
-    // number of degrees of freedom
     fluidtimeparams.set<int>              ("number of velocity degrees of freedom" ,genprob.ndim);
-    // the default time step size
     fluidtimeparams.set<double>           ("time step size"           ,fdyn->dt);
-    // max. sim. time
     fluidtimeparams.set<double>           ("total time"               ,fdyn->maxtime);
-    // parameters for time-integration
     fluidtimeparams.set<double>           ("alpha_M"                  ,fdyn->alpha_m);
-    // parameters for time-integration
     fluidtimeparams.set<double>           ("alpha_F"                  ,fdyn->alpha_f);
-    // bound for the number of timesteps
     fluidtimeparams.set<int>              ("max number timesteps"     ,fdyn->nstep);
 
     // ---------------------------------------------- nonlinear iteration
@@ -302,16 +296,13 @@ void xdyn_fluid_drt()
     {
       fluidtimeparams.set<bool>("Use reaction terms for linearisation",false);
     }
-    // maximum number of nonlinear iteration steps
     fluidtimeparams.set<int>             ("max nonlin iter steps"     ,fdyn->itemax);
     // stop nonlinear iteration when both incr-norms are below this bound
     fluidtimeparams.set<double>          ("tolerance for nonlin iter" ,fdyn->ittol);
 
     // ----------------------------------------------- restart and output
     fluidtimeparams.set                  ("write restart every"       ,fdyn->uprestart);
-    // solution output
     fluidtimeparams.set                  ("write solution every"      ,fdyn->upres);
-    // flag for writing stresses
     fluidtimeparams.set                  ("write stresses"            ,ioflags.fluid_stress);    
 
     //------------evaluate error for test flows with analytical solutions
@@ -334,7 +325,7 @@ void xdyn_fluid_drt()
     // integration (call the constructor)
     // the only parameter from the list required here is the number of
     // velocity degrees of freedom
-    FluidGenAlphaIntegration genalphaint(actdis,
+    FluidGenAlphaIntegration genalphaint(fluiddis,
                                          solver,
                                          fluidtimeparams,
                                          output);
