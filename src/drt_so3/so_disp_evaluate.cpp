@@ -191,9 +191,9 @@ void DRT::Elements::SoDisp::sodisp_nlnstiffmass(
 /* ============================================================================*/
 
   // update element geometry
-  Epetra_SerialDenseMatrix xrefe(NUMNOD_DISP_,NUMDIM_DISP);  // material coord. of element
-  Epetra_SerialDenseMatrix xcurr(NUMNOD_DISP_,NUMDIM_DISP);  // current  coord. of element
-  for (int i=0; i<NUMNOD_DISP_; ++i){
+  Epetra_SerialDenseMatrix xrefe(numnod_disp_,NUMDIM_DISP);  // material coord. of element
+  Epetra_SerialDenseMatrix xcurr(numnod_disp_,NUMDIM_DISP);  // current  coord. of element
+  for (int i=0; i<numnod_disp_; ++i){
     xrefe(i,0) = Nodes()[i]->X()[0];
     xrefe(i,1) = Nodes()[i]->X()[1];
     xrefe(i,2) = Nodes()[i]->X()[2];
@@ -206,12 +206,12 @@ void DRT::Elements::SoDisp::sodisp_nlnstiffmass(
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
-  for (int gp=0; gp<NUMGPT_DISP_; ++gp) {
+  for (int gp=0; gp<numgpt_disp_; ++gp) {
 
     // get submatrix of deriv at actual gp
-    Epetra_SerialDenseMatrix deriv_gp(NUMDIM_DISP,NUMGPT_DISP_);
+    Epetra_SerialDenseMatrix deriv_gp(NUMDIM_DISP,numgpt_disp_);
     for (int m=0; m<NUMDIM_DISP; ++m) {
-      for (int n=0; n<NUMGPT_DISP_; ++n) {
+      for (int n=0; n<numgpt_disp_; ++n) {
         deriv_gp(m,n)=(*deriv)(NUMDIM_DISP*gp+m,n);
       }
     }
@@ -238,7 +238,7 @@ void DRT::Elements::SoDisp::sodisp_nlnstiffmass(
     ** by solving   Jac . N_XYZ = N_rst   for N_XYZ
     ** Inverse of Jacobian is therefore not explicitly computed
     */
-    Epetra_SerialDenseMatrix N_XYZ(NUMDIM_DISP,NUMNOD_DISP_);
+    Epetra_SerialDenseMatrix N_XYZ(NUMDIM_DISP,numnod_disp_);
     Epetra_SerialDenseSolver solve_for_inverseJac;  // solve A.X=B
     solve_for_inverseJac.SetMatrix(jac);            // set A=jac
     solve_for_inverseJac.SetVectors(N_XYZ,deriv_gp);// set X=N_XYZ, B=deriv_gp
@@ -286,8 +286,8 @@ void DRT::Elements::SoDisp::sodisp_nlnstiffmass(
     **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
     **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
     */
-    Epetra_SerialDenseMatrix bop(NUMSTR_DISP,NUMDOF_DISP_);
-    for (int i=0; i<NUMNOD_DISP_; ++i) {
+    Epetra_SerialDenseMatrix bop(NUMSTR_DISP,numdof_disp_);
+    for (int i=0; i<numnod_disp_; ++i) {
       bop(0,NODDOF_DISP*i+0) = defgrd(0,0)*N_XYZ(0,i);
       bop(0,NODDOF_DISP*i+1) = defgrd(1,0)*N_XYZ(0,i);
       bop(0,NODDOF_DISP*i+2) = defgrd(2,0)*N_XYZ(0,i);
@@ -325,7 +325,7 @@ void DRT::Elements::SoDisp::sodisp_nlnstiffmass(
 
     // integrate `elastic' and `initial-displacement' stiffness matrix
     // keu = keu + (B^T . C . B) * detJ * w(gp)
-    Epetra_SerialDenseMatrix cb(NUMSTR_DISP,NUMDOF_DISP_);
+    Epetra_SerialDenseMatrix cb(NUMSTR_DISP,numdof_disp_);
     cb.Multiply('N','N',1.0,cmat,bop,1.0);          // temporary C . B
     (*stiffmatrix).Multiply('T','N',detJ * (*weights)(gp),bop,cb,1.0);
 
@@ -334,11 +334,11 @@ void DRT::Elements::SoDisp::sodisp_nlnstiffmass(
     sfac.Scale(detJ * (*weights)(gp));     // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
     vector<double> SmB_L(NUMDIM_DISP);     // intermediate Sm.B_L
     // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
-    for (int inod=0; inod<NUMNOD_DISP_; ++inod){
+    for (int inod=0; inod<numnod_disp_; ++inod){
       SmB_L[0] = sfac(0) * N_XYZ(0,inod) + sfac(3) * N_XYZ(1,inod) + sfac(5) * N_XYZ(2,inod);
       SmB_L[1] = sfac(3) * N_XYZ(0,inod) + sfac(1) * N_XYZ(1,inod) + sfac(4) * N_XYZ(2,inod);
       SmB_L[2] = sfac(5) * N_XYZ(0,inod) + sfac(4) * N_XYZ(1,inod) + sfac(2) * N_XYZ(2,inod);
-      for (int jnod=0; jnod<NUMNOD_DISP_; ++jnod){
+      for (int jnod=0; jnod<numnod_disp_; ++jnod){
         double bopstrbop = 0.0;            // intermediate value
         for (int idim=0; idim<NUMDIM_DISP; ++idim) bopstrbop += N_XYZ(idim,jnod) * SmB_L[idim];
         (*stiffmatrix)(NUMDIM_DISP*inod+0,NUMDIM_DISP*jnod+0) += bopstrbop;
@@ -350,8 +350,8 @@ void DRT::Elements::SoDisp::sodisp_nlnstiffmass(
 
     if (massmatrix != NULL){ // evaluate mass matrix +++++++++++++++++++++++++
       // integrate concistent mass matrix
-      for (int inod=0; inod<NUMNOD_DISP_; ++inod) {
-        for (int jnod=0; jnod<NUMNOD_DISP_; ++jnod) {
+      for (int inod=0; inod<numnod_disp_; ++inod) {
+        for (int jnod=0; jnod<numnod_disp_; ++jnod) {
           double massfactor = (*shapefct)(inod,gp) * density * (*shapefct)(jnod,gp)
                             * detJ * (*weights)(gp);     // intermediate factor
           (*massmatrix)(NUMDIM_DISP*inod+0,NUMDIM_DISP*jnod+0) += massfactor;
@@ -378,9 +378,9 @@ void DRT::Elements::SoDisp::sodisp_shapederiv(
       Epetra_SerialDenseVector** weights)   // pointer to pointer of weights
 {
   // static matrix objects, kept in memory
-  static Epetra_SerialDenseMatrix  f(NUMNOD_DISP_,NUMGPT_DISP_);  // shape functions
-  static Epetra_SerialDenseMatrix df(NUMDOF_DISP_,NUMNOD_DISP_);  // derivatives
-  static Epetra_SerialDenseVector weightfactors(NUMGPT_DISP_);   // weights for each gp
+  static Epetra_SerialDenseMatrix  f(numnod_disp_,numgpt_disp_);  // shape functions
+  static Epetra_SerialDenseMatrix df(numdof_disp_,numnod_disp_);  // derivatives
+  static Epetra_SerialDenseVector weightfactors(numgpt_disp_);   // weights for each gp
   static bool fdf_eval;                      // flag for re-evaluate everything
   const DRT::Element::DiscretizationType distype = Shape();
 
@@ -401,11 +401,11 @@ void DRT::Elements::SoDisp::sodisp_shapederiv(
       const double s = intpoints.qxg[igp][1];
       const double t = intpoints.qxg[igp][2];
 
-      Epetra_SerialDenseVector funct(NUMNOD_DISP_);
-      Epetra_SerialDenseMatrix deriv(NUMDIM_DISP, NUMNOD_DISP_);
+      Epetra_SerialDenseVector funct(numnod_disp_);
+      Epetra_SerialDenseMatrix deriv(NUMDIM_DISP, numnod_disp_);
       DRT::Utils::shape_function_3D(funct, r, s, t, distype);
       DRT::Utils::shape_function_3D_deriv1(deriv, r, s, t, distype);
-      for (int inode = 0; inode < NUMNOD_DISP_; ++inode) {
+      for (int inode = 0; inode < numnod_disp_; ++inode) {
         f(inode, igp) = funct(inode);
         df(igp*NUMDIM_DISP+0, inode) = deriv(0, inode);
         df(igp*NUMDIM_DISP+1, inode) = deriv(1, inode);

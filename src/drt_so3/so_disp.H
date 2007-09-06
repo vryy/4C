@@ -336,10 +336,9 @@ protected:
   //! Gaussrule
   DRT::Utils::GaussRule3D                         gaussrule_;
   
-  //TODO: mach richtig
-  int NUMNOD_DISP_;      // number of nodes
-  int NUMDOF_DISP_;     // total dofs per element
-  int NUMGPT_DISP_;      // total gauss points per element
+  int numnod_disp_;      // number of nodes
+  int numdof_disp_;     // total dofs per element
+  int numgpt_disp_;      // total gauss points per element
 
 
   // internal calculation methods

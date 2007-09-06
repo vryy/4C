@@ -190,10 +190,10 @@ bool DRT::Elements::SoDisp::ReadElement()
     // set default: no stresses
     else stresstype_= sodisp_stress_none;
 
-    NUMNOD_DISP_ = NumNode();      // number of nodes
-    NUMDOF_DISP_ = NumNode() * NODDOF_DISP;     // total dofs per element
+    numnod_disp_ = NumNode();      // number of nodes
+    numdof_disp_ = NumNode() * NODDOF_DISP;     // total dofs per element
     const DRT::Utils::IntegrationPoints3D  intpoints = DRT::Utils::getIntegrationPoints3D(gaussrule_);
-    NUMGPT_DISP_ = intpoints.nquad;      // total gauss points per element
+    numgpt_disp_ = intpoints.nquad;      // total gauss points per element
 
 
   return true;
