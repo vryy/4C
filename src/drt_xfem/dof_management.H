@@ -30,6 +30,8 @@ namespace XFEM
  \class EnrPhysVar
 
  \brief Corresponds to a specific enriched physical field variable
+ 
+ type EnrPhysVar = (PhysVar, Enrichment)
 
  */
 class EnrPhysVar
@@ -56,7 +58,7 @@ public:
     };
 
 private:
-    // physical field to be enriched
+    // physical field variable to be enriched
     PhysVar var_;
     // specific enrichment for this physical field
     Enrichment enr_;

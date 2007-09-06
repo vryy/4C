@@ -24,19 +24,6 @@ using namespace Teuchos;
 namespace XFEM
 {
 
-// Various kinds of enrichments, which differ in ther way,
-// how the enrichment function is evaluated
-enum EnrType
-{
-    enrtypeStandard,
-    enrtypeJump,
-    enrtypeVoid
-};
-
-// Special Id that groups degrees of freedom by cause, 
-// e.g. a jump resulting from interface 2 -> EnrId 5
-typedef int EnrId;
-
 /*!
  \class Enrichment
 
@@ -47,31 +34,40 @@ class Enrichment
 {
 public:
 
+    // Various kinds of enrichments, which differ in ther way,
+    // how the enrichment function is evaluated
+    enum Type
+    {
+        typeStandard,
+        typeJump,
+        typeVoid
+    };
+    
     Enrichment(
-            const EnrId enr_id,
-            const EnrType enr_type);
+            const int id,
+            const Type type);
     Enrichment(
             const Enrichment& other);
     ~Enrichment();
     void Print(
             ostream& os) const;
 
-    inline EnrId getId() const
+    inline int getId() const
     {
-        return enr_id_;
+        return id_;
     };
     
-    inline EnrType getType() const
+    inline Type getType() const
     {
-        return enr_type_;
+        return type_;
     };
 
 private:
     // a global id used to distuinguish several surfaces within one element
     // might become or contain reference to a certain condition
-    EnrId enr_id_;
+    int id_;
     // the specific type of enrichment
-    EnrType enr_type_;
+    Type type_;
 }; // class Enrichment
 
 };

@@ -5,12 +5,6 @@
 
 \brief A pure virtual XFEM element class
 
-This is the pure virtual base class for all finite elements to be used with
-the DRT::Discretization. Every element (and boundary condition) to be used
-with the discretization management module has to implement this class.
-It implements various basic element methods and
-stores basic information such as element to node connectivity.
-
 <pre>
 Maintainer: Axel Gerstenberger
             gerstenberger@lnm.mw.tum.de

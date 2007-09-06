@@ -22,9 +22,9 @@ using namespace XFEM;
  |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
 Enrichment::Enrichment(
-        const EnrId enr_id,
-        const EnrType enr_type) :
-    enr_id_(enr_id), enr_type_(enr_type)
+        const int id,
+        const Type type) :
+    id_(id), type_(type)
 {
     return;
 }
@@ -34,7 +34,7 @@ Enrichment::Enrichment(
  *----------------------------------------------------------------------*/
 Enrichment::Enrichment(
         const Enrichment& other) :
-    enr_id_(other.enr_id_), enr_type_(other.enr_type_)
+    id_(other.id_), type_(other.type_)
 {
     assert(&other != this);
     return;
@@ -55,7 +55,7 @@ void Enrichment::Print(
         ostream& os) const
 {
     os << "Enrichment ";
-    cout << "enr_id: "<< enr_id_ << "enr_type: "<< enr_type_ << endl;
+    cout << "id: "<< this->id_ << "type: "<< this->type_ << endl;
     return;
 }
 

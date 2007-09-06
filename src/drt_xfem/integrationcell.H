@@ -3,10 +3,12 @@
 
  \brief integration cell
 
- \author Axel Gerstenberger,
- gerstenberger@lnm.mw.tum.de,
- http://www.lnm.mw.tum.de,
- 089 - 289-15236
+<pre>
+Maintainer: Axel Gerstenberger
+            gerstenberger@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15236
+</pre>
  */
 
 #ifdef D_XFEM
@@ -16,6 +18,7 @@
 #define INTEGRATIONCELL_H
 
 #include <vector>
+#include <string>
 
 namespace XFEM
 {
@@ -50,7 +53,9 @@ public:
 
      \return cells nodal coordinates  
      */
-    std::vector< std::vector<double> > GetCoord();
+    std::vector< std::vector<double> > GetCoord() const;
+    
+    std::string Print() const;
 
 private:
 
@@ -61,6 +66,11 @@ private:
     std::vector< std::vector<double> > coordinates_;
 
 };
+
+typedef std::vector<XFEM::Integrationcell > IntCells;
+
+typedef std::map<int, IntCells > IntCellMap;
+
 };
 
 #endif  // #ifndef INTEGRATIONCELL_H
