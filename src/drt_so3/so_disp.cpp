@@ -211,12 +211,10 @@ DRT::Element** DRT::Elements::SoDisp::Surfaces()
         CreateSurfacesHex(nsurf, 9);
         break;
     case wedge6:
-        dserror("implemented, but doesn't compile. check!");
-        //CreateSurfacesWedge6(nsurf);
+        CreateSurfacesWegde6(nsurf);
         break;
     case wedge15:
-        dserror("implemented, but doesn't compile. check!");
-        //CreateSurfacesWedge15(nsurf);
+        CreateSurfacesWegde15(nsurf);
         break;
     default:
         dserror("distype not supported");
@@ -270,13 +268,14 @@ void DRT::Elements::SoDisp::CreateSurfacesWegde6(const int& nsurf)
     for (int qisurf = 0; qisurf < 3; ++qisurf) 
     {
           const int nnode_surf = 4;
+          const int surfid = qisurf;
           int nodeids[nnode_surf];
           DRT::Node* nodes[nnode_surf];
           for (int qinode = 0; qinode < nnode_surf; ++qinode) {
-            nodeids[qinode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[qisurf][qinode]];
-            nodes[qinode] = Nodes()[eleNodeNumbering_wedge15_quadsurfaces[qisurf][qinode]];
+            nodeids[qinode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[surfid][qinode]];
+            nodes[qinode] = Nodes()[eleNodeNumbering_wedge15_quadsurfaces[surfid][qinode]];
           }
-          surfaces_[qisurf] = rcp(new DRT::Elements::SoDispSurface(qisurf,Owner(),nnode_surf,nodeids,nodes,this,qisurf));
+          surfaces_[qisurf] = rcp(new DRT::Elements::SoDispSurface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
           surfaceptrs_[qisurf] = surfaces_[qisurf].get();
     };
     // then the tri's...
@@ -287,8 +286,8 @@ void DRT::Elements::SoDisp::CreateSurfacesWegde6(const int& nsurf)
         int nodeids[nnode_surf];
         DRT::Node* nodes[nnode_surf];
         for (int tinode = 0; tinode < nnode_surf; ++tinode) {
-          nodeids[tinode] = NodeIds()[eleNodeNumbering_wedge15_trisurfaces[tisurf][tinode]];
-          nodes[tinode] = Nodes()[eleNodeNumbering_wedge15_trisurfaces[tisurf][tinode]];
+          nodeids[tinode] = NodeIds()[eleNodeNumbering_wedge15_trisurfaces[surfid][tinode]];
+          nodes[tinode] = Nodes()[eleNodeNumbering_wedge15_trisurfaces[surfid][tinode]];
         }
         surfaces_[surfid] = rcp(new DRT::Elements::SoDispSurface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
         surfaceptrs_[surfid] = surfaces_[surfid].get();

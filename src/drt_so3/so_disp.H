@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file so_disp.H
-\brief
+\brief pure displacement based element for higher order shape functions (quadratic)
 
 <pre>
 Maintainer: Moritz Frenzel
