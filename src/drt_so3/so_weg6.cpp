@@ -175,39 +175,37 @@ DRT::Element** DRT::Elements::So_weg6::Volumes()
  *----------------------------------------------------------------------*/
 DRT::Element** DRT::Elements::So_weg6::Surfaces()
 {
-  
-  const int nnode = 6;  // number of nodes for wedge 6
   const int nsurf = NumSurface();
   surfaces_.resize(nsurf);
   surfaceptrs_.resize(nsurf);
-  
-  int nodeids[nnode];
-  DRT::Node* nodes[nnode];
-  
   // first the 3 quad surfaces (#0..2)
-  for (int qisurf = 0; qisurf < 3; ++qisurf) {
-    for (int qinode = 0; qinode < 4; ++qinode) {
-      nodeids[qinode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[qisurf][qinode]];
-      nodes[qinode] = Nodes()[eleNodeNumbering_wedge15_quadsurfaces[qisurf][qinode]];
-    }
-    surfaces_[qisurf] = rcp(new DRT::Elements::Sow6Surface(qisurf,Owner(),4,nodeids,nodes,this,qisurf));
-    surfaceptrs_[qisurf] = surfaces_[qisurf].get();
-  }
-  // then the bottom (#3)...
-  for (int tinode = 0; tinode < 3; ++tinode) {
-    nodeids[tinode] = NodeIds()[eleNodeNumbering_wedge15_trisurfaces[0][tinode]];
-    nodes[tinode] = Nodes()[eleNodeNumbering_wedge15_trisurfaces[0][tinode]];
-  }
-  surfaces_[3] = rcp(new DRT::Elements::Sow6Surface(3,Owner(),3,nodeids,nodes,this,3));
-  surfaceptrs_[3] = surfaces_[3].get();
-  // and top surface (#4)
-  for (int tinode = 0; tinode < 3; ++tinode) {
-    nodeids[tinode] = NodeIds()[eleNodeNumbering_wedge15_trisurfaces[1][tinode]];
-    nodes[tinode] = Nodes()[eleNodeNumbering_wedge15_trisurfaces[1][tinode]];
-  }
-  surfaces_[4] = rcp(new DRT::Elements::Sow6Surface(4,Owner(),3,nodeids,nodes,this,4));
-  surfaceptrs_[4] = surfaces_[4].get();
-
+  for (int qisurf = 0; qisurf < 3; ++qisurf) 
+  {
+        const int nnode_surf = 4;
+        const int surfid = qisurf;
+        int nodeids[nnode_surf];
+        DRT::Node* nodes[nnode_surf];
+        for (int qinode = 0; qinode < nnode_surf; ++qinode) {
+          nodeids[qinode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[surfid][qinode]];
+          nodes[qinode] = Nodes()[eleNodeNumbering_wedge15_quadsurfaces[surfid][qinode]];
+        }
+        surfaces_[qisurf] = rcp(new DRT::Elements::Sow6Surface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
+        surfaceptrs_[qisurf] = surfaces_[qisurf].get();
+  };
+  // then the tri's...
+  for (int tisurf = 0; tisurf < 2; ++tisurf) 
+  {
+      const int nnode_surf = 3;
+      const int surfid = tisurf + 3;
+      int nodeids[nnode_surf];
+      DRT::Node* nodes[nnode_surf];
+      for (int tinode = 0; tinode < nnode_surf; ++tinode) {
+        nodeids[tinode] = NodeIds()[eleNodeNumbering_wedge15_trisurfaces[surfid][tinode]];
+        nodes[tinode] = Nodes()[eleNodeNumbering_wedge15_trisurfaces[surfid][tinode]];
+      }
+      surfaces_[surfid] = rcp(new DRT::Elements::Sow6Surface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
+      surfaceptrs_[surfid] = surfaces_[surfid].get();
+  };
   return (DRT::Element**)(&(surfaceptrs_[0]));
 }
 
