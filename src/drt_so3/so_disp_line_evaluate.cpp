@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file fluid3_line_evaluate.cpp
+\file so_disp_line_evaluate.cpp
 \brief
 
 <pre>
@@ -10,7 +10,7 @@ Maintainer: Axel Gerstenberger
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_FLUID3
+#ifdef D_SOH8
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
@@ -72,7 +72,7 @@ int DRT::Elements::SoDispLine::Evaluate(	ParameterList& params,
 
 
 /*----------------------------------------------------------------------*
- |  Integrate a Surface Neumann boundary condition (public)  gammi 04/07|
+ |  Integrate a Surface Neumann boundary condition           gammi 04/07|
  *----------------------------------------------------------------------*/
 int DRT::Elements::SoDispLine::EvaluateNeumann(	ParameterList& params,
                                            		DRT::Discretization&      discretization,
@@ -89,4 +89,4 @@ int DRT::Elements::SoDispLine::EvaluateNeumann(	ParameterList& params,
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif // #ifdef D_FLUID3
+#endif // #ifdef

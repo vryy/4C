@@ -1,9 +1,9 @@
 /*!----------------------------------------------------------------------
-\file fluid3_line.cpp
+\file so_disp_line.cpp
 \brief
 
 <pre>
-Maintainer: Axel Gerstenberger (Ursula)
+Maintainer: Axel Gerstenberger
             gerstenberger@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236

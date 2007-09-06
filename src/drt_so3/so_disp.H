@@ -1,3 +1,15 @@
+/*!----------------------------------------------------------------------
+\file so_disp.H
+\brief
+
+<pre>
+Maintainer: Moritz Frenzel
+            frenzel@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15240
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifdef D_SOH8
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
@@ -844,7 +856,7 @@ public:
                           to fill this vector
   \return 0 if successful, negative otherwise
   */
-  virtual int Evaluate(ParameterList& params,
+  int Evaluate(ParameterList& params,
                DRT::Discretization&      discretization,
                vector<int>&              lm,
                Epetra_SerialDenseMatrix& elemat1,
