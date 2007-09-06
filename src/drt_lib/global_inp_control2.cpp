@@ -198,7 +198,8 @@ void inpfield_ccadiscret(DRT::Problem& problem, DRT::DatFileReader& reader)
   RefCountPtr<DRT::Discretization> structdis_micro = null;
 
 
-  if (genprob.probtyp == prb_fsi)
+  switch (genprob.probtyp){
+  case prb_fsi:
   {
     // allocate and input general old stuff....
     if (genprob.numfld!=3) dserror("numfld != 3 for fsi problem");
@@ -225,9 +226,9 @@ void inpfield_ccadiscret(DRT::Problem& problem, DRT::DatFileReader& reader)
     nodereader.AddElementReader(rcp(new DRT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
     nodereader.Read();
+    break;
   }
-
-  else if (genprob.probtyp==prb_ale)
+  case prb_ale:
   {
     // allocate and input general old stuff....
     if (genprob.numfld!=1) dserror("numfld != 1 for ale problem");
@@ -241,9 +242,9 @@ void inpfield_ccadiscret(DRT::Problem& problem, DRT::DatFileReader& reader)
     DRT::NodeReader nodereader(reader, "--NODE COORDS");
     nodereader.AddElementReader(rcp(new DRT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
     nodereader.Read();
+    break;
   }
-
-  else if (genprob.probtyp==prb_fluid  || genprob.probtyp==prb_condif)
+  case prb_fluid: case prb_condif:
   {
     // allocate and input general old stuff....
     if (genprob.numfld!=1) dserror("numfld != 1 for fluid problem");
@@ -257,9 +258,9 @@ void inpfield_ccadiscret(DRT::Problem& problem, DRT::DatFileReader& reader)
     DRT::NodeReader nodereader(reader, "--NODE COORDS");
     nodereader.AddElementReader(rcp(new DRT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
     nodereader.Read();
+    break;
   }
-  
-  if (genprob.probtyp == prb_fluid_xfem)
+  case prb_fluid_xfem:
   {
     // allocate and input general old stuff....
     dsassert(genprob.numfld==2, "numfld != 2 for fluid problem with XFEM interfaces");
@@ -281,15 +282,19 @@ void inpfield_ccadiscret(DRT::Problem& problem, DRT::DatFileReader& reader)
     nodereader.AddElementReader(rcp(new DRT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
 
     nodereader.Read();
+    break;
   }
-
-  else if (genprob.probtyp==prb_fluid_pm)
+  case prb_fluid_pm:
+  {
     dserror("prb_fluid_pm not yet impl.");
-
-  else if (genprob.probtyp == prb_tsi)
+    break;
+  }
+  case prb_tsi:
+  {
     dserror("prb_tsi not yet impl.");
-
-  else if (genprob.probtyp==prb_structure)
+    break;
+  }
+  case prb_structure:
   {
     // allocate and input general old stuff....
     if (genprob.numfld!=1) dserror("numfld != 1 for structural problem");
@@ -303,9 +308,9 @@ void inpfield_ccadiscret(DRT::Problem& problem, DRT::DatFileReader& reader)
     DRT::NodeReader nodereader(reader, "--NODE COORDS");
     nodereader.AddElementReader(rcp(new DRT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
     nodereader.Read();
+    break;
   } // end of else if (genprob.probtyp==prb_structure)
-
-  else if (genprob.probtyp==prb_struct_multi)
+  case prb_struct_multi:
   {
     // allocate and input general old stuff....
 
@@ -387,9 +392,11 @@ void inpfield_ccadiscret(DRT::Problem& problem, DRT::DatFileReader& reader)
     cout << "\n";
     }
     //exit(0);
+    break;
   } // end of else if (genprob.probtyp==prb_struct_multi)
-
-  else dserror("Type of problem unknown");
+  default:
+    dserror("Type of problem unknown");
+  }
 
   return;
 } // void inpfield_ccadiscret()
