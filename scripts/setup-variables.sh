@@ -72,12 +72,15 @@ fi
 DEFINES=`sed -e 's/#.*//' -e 's/^DEBUG//' "$definefile" | awk 'BEGIN { defs = "" }
 END { print defs } { if ( $NF ) { if ( $1 != "" ) { defs = defs" -D"$1 } } }'`
 
-#echo ">>>" $DEFINES "<<<"
-#exit
-
 # if we use trilinos, we have to add some more trilinos defines
 if [ x$IS_TRILINOS = "x1" ] ; then
   DEFINES="$DEFINES $TRILINOS_DEFINES"
+else
+  # CCADISCRET always includes trilinos
+  if grep '^[[:blank:]]*CCADISCRET' "$definefile" 2>&1 > /dev/null ; then
+    IS_TRILINOS=1
+    DEFINES="-DTRILINOS_PACKAGE $DEFINES $TRILINOS_DEFINES"
+  fi
 fi
 
 # always look into headers directory of destination

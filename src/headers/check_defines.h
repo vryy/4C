@@ -11,6 +11,8 @@ Maintainer: Malte Neumann
 
 ---------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
+
 /*--------------------------------------- check plausibility of defines */
 /* spooles only in parallel */
 #if defined(SPOOLES_PACKAGE) && !defined(PARALLEL)
@@ -183,3 +185,15 @@ Maintainer: Malte Neumann
 
 
 /*----------------------------------------------------------------------*/
+
+#else  /* CCADISCRET */
+
+/* Anachronisms. These flags have to go away eventually. */
+
+#ifdef D_SHELL8
+#ifndef MAXNOD_SHELL8
+#define MAXNOD_SHELL8 9
+#endif
+#endif
+
+#endif

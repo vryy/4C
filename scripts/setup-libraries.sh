@@ -2,7 +2,7 @@
 # check the different solvers
 
 # trilinos
-if grep '^[ \t]*TRILINOS_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
+if grep '^[ \t]*TRILINOS_PACKAGE' "$definefile" 2>&1 > /dev/null || grep '^[ \t]*CCADISCRET' "$definefile" 2>&1 > /dev/null ; then
     if [ "x$TRILINOS_LIB" = "x" ] ; then
         echo $0: Warning: Variable TRILINOS_LIB undefined but TRILINOS_PACKAGE requested.
     fi
@@ -34,11 +34,12 @@ if grep '^[ \t]*SPOOLES_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
 fi
 
 # umfpack
-if grep '^[ \t]*UMFPACK' "$definefile" 2>&1 > /dev/null ; then
+# with CCADISCRET we need umfpack in any case
+if grep '^[ \t]*UMFPACK' "$definefile" 2>&1 > /dev/null || grep '^[ \t]*CCADISCRET' "$definefile" 2>&1 > /dev/null ; then
     if [ "x$UMFPACK_LIB" = "x" ] ; then
         echo $0: Warning: Variable UMFPACK_LIB undefined but UMFPACK_PACKAGE requested.
     fi
-    LIBS="$UMFPACK_LIB $LIBS"
+    LIBS="$LIBS $UMFPACK_LIB"
     INCLUDEDIRS="$INCLUDEDIRS $UMFPACK_INC"
 fi
 

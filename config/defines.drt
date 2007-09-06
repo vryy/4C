@@ -1,0 +1,57 @@
+# List of all possible defines 
+#     NEW discretization
+# ============================
+#
+
+# Uncomment all flags you want to include in your baci build. But please do
+# not edit this file directly. Make a copy and edit the copy instead. See the
+# baci beginners guide on how to setup baci.
+
+# Always include the flag that turns on the new discretization!
+CCADISCRET           # use new baci discretization subsystem DRT
+
+#   even though we never make mistakes debugging is an option
+# DEBUG
+
+#   all possible elements
+#  =======================
+# D_ALE              # ale element (2D+3D)
+# D_FLUID2           # fluid2
+# D_FLUID3           # fluid3
+# D_SHELL8           # shell8
+# D_WALL1            # wall1
+# D_THERM2           # planar thermal elment
+# D_THERM3           # spatial thermal element
+# D_SOLID3           # spatial solid element
+# D_SOH8             # spatial 8-node hex element for new discretization
+
+
+#   problem types
+#  ===============
+# D_TSI              # thermal structure interaction problem
+
+
+#   additional features
+#  =====================
+# BINIO              # binary io
+# D_XFEM             # provides intersection routines, enrichments, searches,...
+# TDS                # Fluid stabilization using time dependent subscales
+
+#   tools
+#  =======
+# RESULTTEST         # result testing
+
+
+#   fancy stuff
+#  =============
+# COLOROUTPUT        # use colored output to the terminal
+# DSERROR_DUMP       # dserror creates a core file
+# TRAP_FE            # crash ccarat if a nan of inf occurs
+
+
+#  Anachronisms 
+#  ============
+# These flags have to go away eventually.
+
+# MAXNOD_SHELL8=9
+# MAXNOD_WALL1=9
