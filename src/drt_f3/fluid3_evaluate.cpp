@@ -82,6 +82,20 @@ DRT::Elements::Fluid3Impl* DRT::Elements::Fluid3::Impl()
       f = new Fluid3Impl(10);
     return f;
   }
+  case 6:
+  {
+    static Fluid3Impl* f;
+    if (f==NULL)
+      f = new Fluid3Impl(6);
+    return f;
+  }
+  case 15:
+  {
+    static Fluid3Impl* f;
+    if (f==NULL)
+      f = new Fluid3Impl(15);
+    return f;
+  }
   default:
     dserror("node number %d not supported", NumNode());
   }
@@ -127,6 +141,20 @@ DRT::Elements::Fluid3GenalphaResVMM* DRT::Elements::Fluid3::GenalphaResVMM()
       f = new Fluid3GenalphaResVMM(10);
     return f;
   }
+  case 6:
+  {
+    static Fluid3GenalphaResVMM* f;
+    if (f==NULL)
+      f = new Fluid3GenalphaResVMM(6);
+    return f;
+  }
+  case 15:
+  {
+    static Fluid3GenalphaResVMM* f;
+    if (f==NULL)
+      f = new Fluid3GenalphaResVMM(15);
+    return f;
+  }
   default:
     dserror("node number %d not supported", NumNode());
   }
@@ -169,7 +197,7 @@ DRT::Elements::Fluid3::StabilisationAction DRT::Elements::Fluid3::ConvertStringT
   const string& action) const
 {
   DRT::Elements::Fluid3::StabilisationAction act = stabaction_unspecified;
-  
+
   map<string,StabilisationAction>::iterator iter=stabstrtoact_.find(action);
 
   if (iter != stabstrtoact_.end())
@@ -208,7 +236,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
     dserror("newtonian fluid material expected but got type %d", mat->MaterialType());
 
   MATERIAL* actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
-  
+
   switch(act)
   {
       case calc_fluid_systemmat_and_residual:
@@ -289,7 +317,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
         bool supg   =true;
         bool vstab  =true;
         bool cstab  =true;
-        
+
         // One-step-Theta: timefac = theta*dt
         // BDF2:           timefac = 2/3 * dt
         double timefac = 0;
@@ -432,7 +460,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
         blitz::Array<double, 2> evelaf (3,numnode,blitz::ColumnMajorArray<2>());
         blitz::Array<double, 2> eaccam (3,numnode,blitz::ColumnMajorArray<2>());
 
-        
+
         // split "my_velnp" into velocity part "myvelnp" and pressure part "myprenp"
         // Additionally only the 'velocity' components of my_velaf
         // and my_accam are important!
@@ -456,7 +484,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
         // --------------------------------------------------
         // set parameters for time integration
         ParameterList& timelist = params.sublist("time integration parameters");
-        
+
         const double alphaM = timelist.get<double>("alpha_M");
         const double alphaF = timelist.get<double>("alpha_F");
         const double gamma  = timelist.get<double>("gamma");
@@ -467,7 +495,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
         // set parameters for nonlinear treatment
 
         const bool newton = params.get<bool>("include reactive terms for linearisation");
-   
+
         // --------------------------------------------------
         // set parameters for stabilisation
         ParameterList& stablist = params.sublist("stabilisation");
@@ -495,7 +523,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
           stabstrtoact_["(svel,(svel o nabla)v) [RHS]"                 ]=reynolds_stress_stab_only_rhs;
           stabstrtoact_["off"                                          ]=reynolds_stress_stab_none;
         }
-        
+
         StabilisationAction tds      = ConvertStringToStabAction(stablist.get<string>("TDS"));
         StabilisationAction inertia  = ConvertStringToStabAction(stablist.get<string>("INERTIA"));
         StabilisationAction pspg     = ConvertStringToStabAction(stablist.get<string>("PSPG"));
@@ -508,31 +536,31 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
         // --------------------------------------------------
         // specify what to compute
         const bool compute_elemat = params.get<bool>("compute element matrix");
-        
-        
+
+
         // --------------------------------------------------
         // calculate element coefficient matrix
         GenalphaResVMM()->Sysmat(this,
                                  elemat1,
                                  elevec1,
-                                 evelnp, 
-                                 eprenp, 
-                                 eaccam, 
-                                 evelaf, 
+                                 evelnp,
+                                 eprenp,
+                                 eaccam,
+                                 evelaf,
                                  actmat,
-                                 alphaM, 
-                                 alphaF, 
-                                 gamma,  
-                                 dt,     
-                                 time,   
-                                 newton, 
-                                 tds,    
+                                 alphaM,
+                                 alphaF,
+                                 gamma,
+                                 dt,
+                                 time,
+                                 newton,
+                                 tds,
                                  inertia,
-                                 pspg,   
-                                 supg,   
-                                 vstab,   
-                                 cstab,   
-                                 cross,  
+                                 pspg,
+                                 supg,
+                                 vstab,
+                                 cstab,
+                                 cross,
                                  reynolds,
                                  compute_elemat
           );
@@ -546,7 +574,7 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
         //  p <- p
         //
         sub_pre_old_ = sub_pre_;
-        
+
         // the old subscale acceleration for the next timestep is calculated
         // on the fly, not stored on the element
         /*
@@ -865,6 +893,9 @@ vector<double> DRT::Elements::Fluid3::f3_caltau(
     case tet4: case tet10:
         integrationrule_stabili = intrule_tet_1point;
         break;
+    case wedge6: case wedge15:
+        integrationrule_stabili = intrule_wedge_1point;
+        break;
     default:
         dserror("invalid discretization type for fluid3");
     }
@@ -890,7 +921,7 @@ vector<double> DRT::Elements::Fluid3::f3_caltau(
     case tet4: case hex8:
         mk = 0.333333333333333333333;
         break;
-    case hex20: case hex27: case tet10:
+    case hex20: case hex27: case tet10: case wedge6: case wedge15:
         mk = 0.083333333333333333333;
         break;
     default:
@@ -2764,10 +2795,10 @@ bool DRT::Elements::Fluid3::isHigherOrderElement(
   bool hoel = true;
   switch (distype)
   {
-  case hex8: case hex20: case hex27: case tet10:
+  case hex8: case hex20: case hex27: case tet10: case wedge15:
     hoel = true;
     break;
-  case tet4:
+  case tet4: case wedge6:
     hoel = false;
     break;
   default:

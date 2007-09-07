@@ -205,6 +205,18 @@ DRT::Utils::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
     qwgt[4]   =     Q9120;
     break;
   }
+
+  case intrule_wedge_1point:
+    {
+      const double Q13 = 1.0/3.0;
+      nquad = 1;
+      qxg[0][0] = Q13;
+      qxg[0][1] = Q13;
+      qxg[0][2] = 0.0;
+      qwgt[0] = 1;
+      break;
+    }
+
   case intrule_wedge_6point:
   {
     // GAUSS INTEGRATION         6 SAMPLING POINTS
@@ -240,10 +252,11 @@ DRT::Utils::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
     qwgt[5] = Q16;
     break;
   }
-  case intrule_weg_9point:
-  {
-    // GAUSS INTEGRATION         9 SAMPLING POINTS
-    const double xi3 = 0.77459666924;
+
+   case intrule_wedge_9point:
+    {
+     // GAUSS INTEGRATION         9 SAMPLING POINTS
+     const double xi3 = 0.77459666924;
     const double Q23 = 2.0/3.0;
     const double Q5913 = 5.0/9.0*1.0/3.0;
 
@@ -285,7 +298,7 @@ DRT::Utils::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
     qwgt[6] = -Q5913;
     qwgt[7] = -Q5913;
     qwgt[8] = -Q5913;
-    break;
+   break;
   }
   default:
     dserror("unknown 3D integration rule");

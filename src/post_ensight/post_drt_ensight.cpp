@@ -216,6 +216,7 @@ EnsightWriter::EnsightWriter(
     distype2ensightstring_[DRT::Element::tri3] = "tria3";
     distype2ensightstring_[DRT::Element::tri6] = "tria6";
     distype2ensightstring_[DRT::Element::wedge6] = "penta6";
+    distype2ensightstring_[DRT::Element::wedge15]= "penta15";
 }
 
 /*----------------------------------------------------------------------*/

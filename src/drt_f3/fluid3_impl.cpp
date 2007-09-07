@@ -1715,11 +1715,16 @@ void DRT::Elements::Fluid3Impl::Caltau(
   DRT::Utils::GaussRule3D integrationrule_stabili=DRT::Utils::intrule_hex_1point;
   switch (distype)
   {
-  case hex8: case hex20: case hex27:
+  case DRT::Element::hex8:
+  case DRT::Element::hex20:
+  case DRT::Element::hex27:
     integrationrule_stabili = DRT::Utils::intrule_hex_1point;
     break;
   case tet4: case tet10:
     integrationrule_stabili = DRT::Utils::intrule_tet_1point;
+    break;
+  case DRT::Element::wedge6: case DRT::Element::wedge15:
+    integrationrule_stabili = DRT::Utils::intrule_wedge_1point;
     break;
   default:
     dserror("invalid discretization type for fluid3");
@@ -1744,7 +1749,7 @@ void DRT::Elements::Fluid3Impl::Caltau(
   case tet4: case hex8:
     mk = 0.333333333333333333333;
     break;
-  case hex20: case hex27: case tet10:
+  case hex20: case hex27: case tet10: case DRT::Element::wedge6: case DRT::Element::wedge15:
     mk = 0.083333333333333333333;
     break;
   default:

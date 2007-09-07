@@ -51,6 +51,8 @@ bool DRT::Elements::Fluid3::ReadElement()
     gid2distype["HEX27"] = hex27;
     gid2distype["TET4"]  = tet4;
     gid2distype["TET10"] = tet10;
+    gid2distype["WEDGE6"] = wedge6;
+    gid2distype["WEDGE15"] = wedge15;
 
     typedef map<DiscretizationType, int> DisType2NumNodes;
     DisType2NumNodes distype2NumNodes;
@@ -59,7 +61,9 @@ bool DRT::Elements::Fluid3::ReadElement()
     distype2NumNodes[hex27] = 27;
     distype2NumNodes[tet4]  = 4;
     distype2NumNodes[tet10] = 10;
-    
+    distype2NumNodes[wedge6] = 6;
+    distype2NumNodes[wedge15] = 15;
+
     // read element's nodes
     int   ierr = 0;
     int   nnode = 0;
@@ -67,7 +71,7 @@ bool DRT::Elements::Fluid3::ReadElement()
     DiscretizationType distype;
 
     Gid2DisType::iterator iter;
-    for( iter = gid2distype.begin(); iter != gid2distype.end(); iter++ ) 
+    for( iter = gid2distype.begin(); iter != gid2distype.end(); iter++ )
     {
         const string eletext = iter->first;
         frchk(eletext.c_str(), &ierr);
@@ -105,14 +109,14 @@ bool DRT::Elements::Fluid3::ReadElement()
         dsassert(ierr==1, "Reading of FLUID3 element failed: GP\n");
         switch (ngp[0])
         {
-        case 1:  
-            gaussrule_ = intrule_hex_1point; 
-            break; 
-        case 2:  
-            gaussrule_ = intrule_hex_8point; 
+        case 1:
+            gaussrule_ = intrule_hex_1point;
             break;
-        case 3:  
-            gaussrule_ = intrule_hex_27point; 
+        case 2:
+            gaussrule_ = intrule_hex_8point;
+            break;
+        case 3:
+            gaussrule_ = intrule_hex_27point;
             break;
         default:
             dserror("Reading of FLUID3 element failed: Gaussrule for hexaeder not supported!\n");
@@ -154,6 +158,26 @@ bool DRT::Elements::Fluid3::ReadElement()
         }
         break;
     } // end reading gaussian points for tetrahedral elements
+    case wedge6: case wedge15:
+    {
+      frint("GP_WEDGE",&ngp[0],&ierr);
+        dsassert(ierr==1, "Reading of FLUID3 element failed: GP_WEDGE\n");
+      switch (ngp[0])
+        {
+        case 1:
+            gaussrule_ = intrule_wedge_1point;
+            break;
+        case 6:
+            gaussrule_ = intrule_wedge_6point;
+            break;
+        case 9:
+            gaussrule_ = intrule_wedge_9point;
+            break;
+        default:
+            dserror("Reading of FLUID3 element failed: Gaussrule for wedge  not supported!\n");
+        }
+        break;
+    }
     default:
         dserror("Reading of FLUID3 element failed: integration points\n");
     } // end switch distype

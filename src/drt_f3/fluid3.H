@@ -116,6 +116,7 @@ public:
   virtual int NumSurface() const
   {if (NumNode()==8 || NumNode()==20 || NumNode()==27) return 6;
    else if (NumNode()==4 || NumNode()==10) return 4;
+   else if (NumNode()==6 || NumNode()==15) return 5;
    else {
    	dserror("Could not determine number of surfaces");
    	return -1;
@@ -624,6 +625,9 @@ private:
   void CreateSurfacesHex(const int& nline,
                          const int& nnode);
 
+  void CreateSurfaceWedge(const int& nsurf,
+                          const int& wedgetype);
+
   /*!
    \brief get optimal gaussrule for given discretization type
    \return enum with optimal gausrule for this element
@@ -644,13 +648,13 @@ private:
 
   //! convert string to stabilisation action
   StabilisationAction ConvertStringToStabAction (const string& action) const;
-    
+
   /// Internal implementation class for specific fluid element
   Fluid3Impl* Impl();
 
   /// Residual based genalpha implementation class for fluid element
   Fluid3GenalphaResVMM* GenalphaResVMM();
-  
+
 }; // class Fluid3
 
 
