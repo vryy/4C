@@ -8,31 +8,30 @@
 \section{Introduction}
 
 This tutorial will explain how the solving of finite element problems
--- especially fluid structure inteaction examples -- with the LNM
+-- especially fluid structure interaction examples -- with the LNM
 code is done.
 
 In order to keep it as simple as possible, we will mainly focus on
 a step by step example here. If you wish to get more detailed explanations,
 after each major step there are sections with some more background
-information. The idea is that you can follow the example without any
+information. The idea is that you can follow the example without 
 reading any background information in a first attempt and come back
 later for more details.
 
 As our example, we will use a very basic scenario here, the so called
 driven cavity. Imagine a two dimensional, rectangular chamber, as
-sketched in \ref{tut_fsi:1.1}.
+sketched in Fig. \ref{tut_fsi:1.1}.
 
-%
+
 \begin{figure}[h]
 \hfil\includegraphics[scale=0.2]{Bilder/Angabeskizze}
-
 
 \caption{\label{tut_fsi:1.1} The driven cavity example}
 \end{figure}
 
 
 On the top of this chamber, fluid with a certain oscillating velocity
-(with triangular distribution) is driven through the chamber. All
+(with triangular spatial distribution) is driven through the chamber. All
 of the walls -- except of the bottom -- are assumed to be rigid. Due
 to the oscillating motion at the top, the bottom will deform dynamically.
 
@@ -67,7 +66,7 @@ The preprocess software writes, after a successful input, a \emph{{*}.dat}
 file containing all the information of the example (nodes, elements,
 boundary conditions,..), which is then given to BACI for solving.
 In order to use BACI for your special purposes (here: FSI), you have
-to do kind of a setup first. This is done by changing the \emph{defines.dat}
+to do kind of a setup first. This is done by changing the \emph{defines.drt}
 file in the \emph{ccarat/config/} directory. Open it and select the
 packages you need by uncommenting the according line. For all we do
 here (and also for the third dimension) you will need the following,
@@ -77,17 +76,16 @@ so
 \item uncomment:
 
 \begin{itemize}
-\item Elements: D\_ALE, D\_BRICK1, D\_FLUID2, D\_FLUID3, D\_SHELL8, D\_WALL1;
-\item Additional features: BINIO, SOLVE\_DIRICH, SOLVE\_DIRICH2, CCADISCRET;
-\item Tools: RESULTTEST, PERF;
+\item Elements: D\_ALE, D\_FLUID2, D\_FLUID3, D\_SHELL8, D\_WALL1, D\_SOH8;
+\item Additional features: BINIO;
+\item Tools: RESULTTEST;
 \item Fancy stuff: COLOROUTPUT, DSERROR\_DUMP;
-\item Possible solver packages: AZTEC\_PACKAGE, UMFPACK, TRILINOS\_PACKAGE;
-\item Constants: MAXNOD=9, MAXELE=9, MAXDOFPERNODE=6, MAXGAUSS=9;
+\item Anachronisms: MAXNOD_WALL1=9
 \end{itemize}
-\item Save the changed \emph{defines} file in the same directory as e.g.
-\emph{defines.my.dat}. 
+\item Save the changed \emph{defines.drt} file in the same directory as e.g.
+\emph{defines.drt.my}. 
 \item Next in the console the call (in the ccarat directory) \emph{./configure
-config/muench.fc6.ser config/defines.my} creates the makefile needed
+config/muench.fc6.ser config/defines.drt.my} creates the makefile needed
 in the following steps. 
 \item Use \emph{make clean} before recompiling. 
 \item Next simply run \emph{make}.
@@ -101,7 +99,8 @@ problem.
 As already mentioned in the introduction, we will simulate the bottom
 of the driven cavity loaded with the stationary fluid weight here.
 
-To start the preprocess, open GID and make yourself familiar with
+To start the preprocess, open GID (\emph{/lnm/gid/gid} starts the evaluation 
+mode, more information in LNM beginners guide) and make yourself familiar with
 the very sophisticated desktop. Try to get comfortable with the zoom
 and pan tools in the left bar, as they won't be explained any further
 in this tutorial (refer to the GID handbook if necessary).
@@ -123,8 +122,8 @@ define boundary conditions, elements etc.
 to check the tabs: make sure that 
 
 \begin{itemize}
-\item \emph{Problem Typ} is set to \emph{Structure}, 
-\item \emph{Number of Fields} is set to \emph{one, }
+\item \emph{Problem Type} is set to \emph{Structure}, 
+\item \emph{Number of Fields} is set to \emph{1}, 
 \item \emph{Max NumDOF} is set to \emph{2} (two displacements in 2D) and
 in 
 \item \emph{IO}, \emph{OUTPUT GID} is on.
@@ -134,7 +133,7 @@ It is necessary to set the number of fields, as you will see, because
 e.g. in the FSI example we have more than one (a structure, a fluid
 and an ALE, but more of that later).
 
-\emph{Max NumDOF} is the maximum nuber of freedomes. You have to adjust
+\emph{Max NumDOF} is the maximum number of degrees of freedome. You have to adjust
 this number depending on your example (2D, 3D, fluid, structure,..).
 
 OUTPUT GID is kind of a filter, that writes the necessary data for
@@ -164,7 +163,7 @@ that we have a material here.
 \item pick the four lines and hit \emph{esc} to confirm. 
 \end{itemize}
 The surface should now be displayed as a light red rectangle. Your
-screen should now look somehow like in \ref{tut_fsi:3.1}.
+screen should now look somehow like in Fig. \ref{tut_fsi:3.1}.
 
 \end{itemize}
 %
@@ -176,9 +175,7 @@ screen should now look somehow like in \ref{tut_fsi:3.1}.
 \end{figure}
 
 
-For a structural problem you only need one layer, so don't worry about
-it and simply draw the geometry you need as we did here. To tell GID
-that you have your material between this closed bunch of lines, you
+To tell GID that you have your material between a closed bunch of lines, you
 have to specify a surface or volume (in 3D, displayed light green)
 in between (which then can be linked to a material). Surfaces can
 only be generated between lines or splines and Volumes only between
@@ -198,22 +195,26 @@ is selected. Change the
 \item \emph{Poisson's ratio} to \emph{0.3, }
 \item \emph{density} to \emph{500} and 
 \item \emph{Assign} the surface (click on \emph{Assign$\to$Surfaces} and
-pick one of the light red edges) you created previously. 
+pick one of the light red edges) you created previously and confirm with \emph{finish} or by hitting \emph{esc}. 
 \item Check this step in the materials menu via \emph{Draw$\to$This Structure}.
 As you see, the assigned components are then highlighted in some color.
 Go to \emph{finish} to leave and
 \item \emph{Close} to return.
 \end{itemize}
 \end{itemize}
-\emph{StVernantKirc} describes linear elastic material behaviour.
+
+\emph{StVernantKirc} describes linear elastic material behaviour suitable for large deformations.
 Here you can also, among others, choose e.g. plastic behaviour.
 
 In more dimensional problems you have to deal with volumes, where
 you then need the \emph{Assign-Volumes} button.
 
+A selection you want to assign a specific property to is always completed with \emph{finish} or \emph{esc}, whatever you prefer. So this will not be repeated any time for the further steps. 
+
+
 The \emph{Draw$\to$This Structure} button is very helpful if you
 had troubles during the design and deleted some things. Here you can
-check, if still everything is selected.
+check, if everything is still selected.
 
 \begin{itemize}
 \item As we want to choose the necessary finite element type next, we have
@@ -231,9 +232,6 @@ On the top of this menu you can choose between \emph{points}, \emph{lines},
 In SingleLayer, in the element menu, you have the possibility to adjust
 parameters of the element, like number of Gauss points, etc.
 
-If you are dealing with a 3D problem, you have to click on the volumes
-button and \emph{Assign} e.g. the \emph{Brick1} element.
-
 
 \subsection{Numbering and boundary conditions}
 
@@ -249,12 +247,12 @@ All the next steps are done in \emph{SingleLayer}.
 \item \emph{Point} and 
 \item \emph{Design Node Number} from the pull down menu. 
 \item \emph{Assign} all four points of our geometry.
-\item Confirm with finish. 
+\item Confirm with \emph{finish}. 
 \item Check with \emph{Draw$\to$Colors}. 
 \end{itemize}
 \item The same has to be done for all lines (choose \emph{Design Line Number})
 and 
-\item surfaces (\emph{Desingn Surface Number}).
+\item surfaces (\emph{Design Surface Number}).
 \end{itemize}
 The numbering is quite often a source of problems if you changed something
 during the design. In order to avoid a complete renumbering, you can
@@ -267,7 +265,7 @@ displacements of the left and right vertical lines, as they connect
 the flexible bottom with the rigid walls. 
 
 \begin{itemize}
-\item In SingleLaver click the \emph{}
+\item In SingleLayer click the 
 
 \begin{itemize}
 \item \emph{line} button and choose 
@@ -297,14 +295,14 @@ can choose between \emph{P-}, \emph{L-}, \emph{S-} or \emph{V Dirich}
 (for points, lines, surfaces, and - yes - volumes). Values \emph{1},\emph{2}
 and \emph{3} represent the displacements in x-, y- and z-direction.
 
-In combination with a Neumann boundary condition, it is possible to
+In combination with a boundary condition, it is possible to
 create a time and/or location dependent load. In \emph{SingleLayer}
 you can specify a certain \emph{Load Funct} (function dependent on
 a physical coordinate) or a \emph{Load Curve} (dependent on time)
 for dynamic problems. All the ticked functions, curves and the value
 are multiplied to a resultant loading. The functions or curves can
 be specified via \emph{Data$\to$Problem Data$\to$Functions} or to
-\emph{Data$\to$Interval Data}.
+\emph{Data$\to$Interval Data}. We will use this functionality in the fluid section. 
 
 
 \subsection{Meshing}
@@ -329,7 +327,7 @@ and hit
 \item \emph{esc}.
 \item Now we have to repeat this step for the horizontal line. Type in \emph{64}
 and click 
-\item ok. Then 
+\item \emph{ok}. Then 
 \item select one of the horizontal lines and hit 
 \item \emph{esc} twice. 
 \end{itemize}
@@ -361,12 +359,12 @@ the geometry or in \emph{SingleLayer}, even if you did the renumbering.
 \subsection{Solving}
 
 \begin{itemize}
-\item If you didn't save your example yet, do so to give GID a directory
-for the next step. 
+\item If you have not saved your example yet, do so to give GID a directory
+for the next step. Otherwise it will not be able to create an input file.
 \item To write the text input file for BACI, simply click \emph{Calculate$\to$Calculate}.
 This will write the \emph{{*}.dat} file in the directory of your example.
-\item To start the solver use the call \emph{./cca\_fc6\_ser.fast ../your\_example.dat
-../resultdirectory/result\_prefix} (in the CCARAT directory). The
+\item To start the solver use the call \emph{./cca\_fc6\_ser.fast [inputdirectory]/your\_example.dat
+[resultdirectory]/result\_prefix} (in the CCARAT directory). The
 results (\emph{{*}.flavia.res} and some others) are then written to
 the result directory with the prefix you chose.
 \end{itemize}
@@ -374,6 +372,8 @@ the result directory with the prefix you chose.
 \subsection{Postprocess}
 
 \begin{itemize}
+\item Before you can open our results, you have to generate a filter. Starting from the ccarat directory go to \emph{./src/post\_gid}. Call \emph{make post\_drt\_gid}.
+\item The filter should now be available in your ccarat directory. You do not have to rebuild it any time. Filter your results with the call (inside the ccarat directory): \emph{post\_drt\_gid -\,-file=outputdirectory/result\_prefix}.
 \item To do the postprocessing shift GID via \emph{Files$\to$Postprocess}.
 Then 
 \item open the \emph{{*}.flavia.res} of your example and 
@@ -406,19 +406,19 @@ but everything else as we want to have it in the final FSI example.
 
 \begin{itemize}
 \item \emph{Problem Typ} is set to \emph{Fluid}, 
-\item \emph{Number of Fields} is set to \emph{one,} 
-\item \emph{Max NumDOF} is set to \emph{four} and 
+\item \emph{Number of Fields} is set to \emph{1}, 
+\item \emph{Max NumDOF} is set to \emph{4} and 
 \item \emph{Static/Dynamic} is set to \emph{Dynamic.}
 \end{itemize}
 \end{itemize}
-We choose four degrees of freedom, although we have a two dimensiona
+We choose four degrees of freedom, although we have a two dimensional
 problem and three would be sufficient (two velocities and the pressure).
 Well, you can type in three, but basically it doesn't matter. 
 
 Here \emph{Dynamic} has to be selected, as we have a time dependent
 velocity. But even in a stationary fluid problem you have to set it
 to \emph{Dynamic} as in fluid simulations you always have to start
-the velocities from zero with a time-dependent curve. to get good
+the velocities from zero with a time-dependent curve to get good
 solutions.
 
 
@@ -431,11 +431,11 @@ a u-profile for the lower one, so you don't have two lines laying
 on each other where they meet).
 
 \begin{itemize}
-\item Use the corners \emph{0,0} and \emph{1,1} for the lower and \emph{0,1}
-and \emph{1,1.1} for the upper rectangle.
+\item First draw the u-profile using the points \emph{0,1}, \emph{0,0} and \emph{1,1}.
+\item For the upper rectangle use the corners \emph{0,1} (\emph{Join}), \emph{1,1} (\emph{Join}), \emph{1,1.1}, \emph{0,1.1} and finally \emph{0,1} (\emph{Join}) 
 \item Generate two surfaces in between the lines. 
 \end{itemize}
-What you have now should look like \ref{tut_fsi:4.1}.
+What you have now should look like Fig. \ref{tut_fsi:4.1}.
 
 %
 \begin{figure}[h]
@@ -479,7 +479,7 @@ In the \emph{Fluid2} menu make sure that \emph{Net Algo} is set to
 \emph{Euler}, the default algorithm. We are going to use the \emph{ALE}
 algorithm later in the FSI section.
 
-The stabilisation has to be made seperately here, which is a little
+The stabilisation has to be made separately here, which is a little
 clumsy but necessary for science. Just don't forget about it.
 
 
@@ -494,7 +494,7 @@ Again, the tricky part are the boundary conditions. \emph{SingleLayer}
 is the one and only menu we need for the following:
 
 \begin{itemize}
-\item First we want to set the b.c.'s at the walls, so click the
+\item First we want to set the boundary conditions at the walls, so click the
 
 \begin{itemize}
 \item line button. Activate 
@@ -528,26 +528,26 @@ of the y-coordinate, we have to switch
 \item \emph{curve 1}. Switch it to 
 \item \emph{on} and choose 
 \item \emph{EXPR} from the pulldown menu. We type in 
-\item \emph{1-cos(2{*}t{*}pi/5)}. Go to 
+\item \emph{1-cos(2{*}t{*}pi/5)}. 
+\item Set \emph{Cu1 Time End} to \emph{5}. Go to 
 \item \emph{Accept data} and 
 \item \emph{Close}. Quite the same has to be done for the load function,
 so we go to 
 \item \emph{Data$\to$Problem Data$\to$Functions}. Switch 
 \item \emph{Funct 1} to 
 \item \emph{on} and activate 
-\item \emph{EXPR}. As BACI uses absolute coordinates for functions, we have
-to use 
+\item \emph{EXPR}. 
 \item \emph{10{*}(y-1)} to give it the triangular shape as our line is between
 0,1 and 0,1.1. 
 \end{itemize}
 \end{itemize}
 The velocity field now results from a multiplication of curve 1, function
-1 and the maximum value (here: 1).
+1 and the maximum value (here: 1). The coordinates of a spatial function are defined relatively to a user-defined origin. It can be set by changing \emph{F1 x}, \emph{F1 y} and  \emph{F1 z}. We used in our example the default value \emph{0,0,0}, so we are dealing with absolute coordinates.
 
 So far for the intake.
 
 \begin{itemize}
-\item Use the uppermost horizontal line for b.c. 
+\item Use the uppermost horizontal line for boundary condition 
 
 \begin{itemize}
 \item x-velocity = \emph{1} and, as it has the same time dependency like
@@ -570,6 +570,7 @@ with
 \item 64x64 elements, respectively. This should be a good compromise for
 the result we need.
 \end{itemize}
+\item Before generating the input file make sure you have saved your file.
 \item Go to \emph{Calculate$\to$Calculate} to write the input file.
 \end{itemize}
 
@@ -582,11 +583,12 @@ structural example.
 
 \subsection{Postprocess}
 
-For the postprocess you have to use another softare called \emph{paraview}. 
+For the postprocess we want to use another software called \emph{paraview}. You can use GID as in the structural case as well.
 
 \begin{itemize}
-\item Before you can open our results there, you have to filter them with
-the call (inside the ccarat directory): \emph{post\_drt\_ensight --file=result\_prefix}
+\item Before you can open our results, you have to generate a filter again. Starting from the ccarat directory go to \emph{./src/post\_ensight}. Call \emph{make post\_drt\_ensight}.
+\item The filter should now be available in your ccarat directory. Filter your results with
+the call (inside the ccarat directory): \emph{post\_drt\_ensight -\,-file=outputdirectory/result\_prefix}
 \item After this open \emph{paraview}, go to 
 
 \begin{itemize}
@@ -603,7 +605,7 @@ you want to display.
 section}. 
 \end{itemize}
 \end{itemize}
-See also \ref{tut_fsi:4.2} for comparison.
+See also Fig. \ref{tut_fsi:4.2} for comparison.
 
 %
 \begin{figure}[h]
@@ -631,12 +633,12 @@ See also \ref{tut_fsi:4.2} for comparison.
 \item Problem Typ is Fluid Structure Interaction now.
 \end{itemize}
 \end{itemize}
-The FSI problem, in comparison to the previous ones, needs some certain
+The FSI problem, in comparison to the previous ones, needs some 
 definitions due to the coupling between structure mesh and fluid mesh.
 
 \begin{enumerate}
 \item An ALE mesh, which is automatically generated in the fluid, and needs
-some certain boundary conditions. The ALE is responsible for the movement
+certain boundary conditions. The ALE is responsible for the movement
 of the fluid mesh, so that the coupling elements of the fluid move
 like the deformed structure.
 \item Two different layers where structure and the fluid are specified.
@@ -660,7 +662,7 @@ should be displayed. The next thing we do here is to rename \emph{Layer0}.
 \item \emph{Rename}.
 \end{itemize}
 \end{itemize}
-The layers menu should look like in \ref{tut_fsi:5.1} now.
+The layers menu should look like in Fig \ref{tut_fsi:5.1} now.
 
 %
 \begin{figure}[h]
@@ -690,7 +692,7 @@ have an {}``empty'' workspace again.
 \item Create the two rectangular surfaces like in 4.2.
 \end{itemize}
 \item Now activate the \emph{structure} layer again and check if you have
-the geometry like in \ref{tut_fsi:5.2}.
+the geometry like in Fig. \ref{tut_fsi:5.2}.
 \end{itemize}
 %
 \begin{figure}[h]
@@ -723,8 +725,7 @@ structure (\emph{Wall} element with default settings).
 
 \begin{itemize}
 \item \emph{Data$\to$Materials-Fluid}, set 
-\item \emph{density} and 
-\item \emph{viscosity} as in 4.3 and 
+\item \emph{density} and \emph{viscosity} as in 4.3 (\emph{1} and \emph{0.01} respectively) and 
 \item \emph{Assign} the two rectangles. Move on to 
 \item \emph{SingleLayer}. The according finite element for us is the 
 \item \emph{Fluid2} element. Use it for the two surfaces, but make sure
@@ -750,7 +751,7 @@ which you confirm with \emph{}
 \end{itemize}
 The \emph{Create ALE} button (when you define the fluid element) is
 necessary, because the ALE is another mesh, which has to be generated
-seperately. It also needs special boundary conditions, as we will
+separately. It also needs special boundary conditions, as we will
 see later on.
 
 This should also explain, why we have to set the \emph{NetAlgo} to
@@ -765,14 +766,14 @@ thing worth mentioning here is that it is easier to do this process
 layer by layer. So switch on the \emph{structure} layer only, number
 its elements and then do the same for the \emph{fluid} layer.
 \end{itemize}
-Generally here you have to specify all b.c.'s for structure and fluid
+Generally here you have to specify all boundary conditions for structure and fluid
 and some additional ones for the ALE.
 
 \begin{itemize}
 \item Activate the structure layer only. 
 
 \begin{itemize}
-\item Use the left and right vertical lines for Dirichlet b.c. with displacement
+\item Use the left and right vertical lines for Dirichlet boundary condition with displacement
 set to 
 \item \emph{0} and \emph{0}. 
 \item Use all four points and set their displacement also to \emph{0} and
@@ -789,7 +790,7 @@ So far for the bottom.
 
 \begin{itemize}
 \item Use the four lower points and 
-\item the two lower vertical lines for Dirichlet b.c. with 
+\item the two lower vertical lines for Dirichlet boundary condition with 
 \item \emph{0} and \emph{0} velocity.
 \item The upper left vertical line (the inlet) again has the triangle shaped
 velocity distribution. To specify it, use the same procedure as in
@@ -811,8 +812,8 @@ in \emph{SingleLayer}), respectively with displacement \emph{0} and
 \emph{0}. 
 \end{itemize}
 \end{itemize}
-Make sure to only use geometry of the fluid layer for fluid b.c.'s
-and only geometry from the structure layer for structure b.c.'s. The
+Make sure to only use geometry of the fluid layer for fluid boundary conditions
+and only geometry from the structure layer for structure boundary conditions. The
 easiest way to accomplish this is by switching the one not needed
 to \emph{Off} during the selection, as we did right from the beginning. 
 
@@ -821,15 +822,15 @@ and the structure deteriorate in the same way. They serve two purposes:
 
 \begin{enumerate}
 \item They ensure, that fluid and structure deform equally there and
-\item that the fluid has also the same tangential velovity as the structure
+\item that the fluid has also the same tangential velocity as the structure
 (no slip at the surface). 
 \end{enumerate}
 
 \subsection{Meshing}
 
 \begin{itemize}
-\item Meshing is the same procedure like in 3.5 and 4.5, except of it, that
-you should mesh structure and fluid seperately, with the according
+\item Meshing is the same procedure like in 3.5 and 4.5, except that
+you should mesh structure and fluid separately, with the according
 layer activated only. This makes picking of the lines easier and produces
 less problems. Mesh the surfaces of our example with 
 
@@ -849,8 +850,8 @@ at the coupling elements.
 \item Go to Calculate\emph{$\to$}Calculate to write the \emph{{*}.dat}
 file. 
 \item Again, use the call \emph{./cca\_fc6\_ser.fast ../file\_directory/example.dat
-../file\_direc-tory/result\_prefix} to start the solver and
-\item \emph{./post\_drt\_ensight --file=result} to filter the results for
+../file\_directory/result\_prefix} to start the solver and
+\item \emph{./post\_drt\_ensight -\,-file=result} to filter the results for
 postprocess.
 \end{itemize}
 If you get convergence problems during the run, it might help to shift
