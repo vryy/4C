@@ -146,6 +146,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
          mlvar = solv->mlvar;
 #endif
       }
+      /*---------------------------------------------------- VM3 solver */
+      if (strncmp("vm3",buffer,3)==0)
+      {
+        solv->solvertyp = vm3;
+        solv->azvar = (AZVAR*)CCACALLOC(1,sizeof(AZVAR));
+        azvar = solv->azvar;
+        azvar->azconv = AZ_noscaled;
+      }
       /*-------------------------------------------------- Aztec solver */
       if (strncmp("Aztec_MSR",buffer,9)==0)
       {
@@ -305,6 +313,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    break;
 #endif
 #ifdef AZTEC_PACKAGE
+   case vm3:/*----------------------------------------- read solver vm3 */
    case aztec_msr:/*--------------------------------- read solver aztec */
       frchar("AZSOLVE"   ,buffer,&ierr);
       if (ierr==1)

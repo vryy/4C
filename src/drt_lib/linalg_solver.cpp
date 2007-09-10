@@ -99,6 +99,7 @@ LINALG::Solver::~Solver()
 void LINALG::Solver::Reset()
 {
   A_        = null;
+  Aplus_    = null;
   P_        = null;
   Pmatrix_  = null;
   x_        = null;
@@ -206,6 +207,69 @@ void LINALG::Solver::Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
     dserror("Unknown type of solver");
   
   factored_ = true;
+  ncall_++;
+  
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  solve vm3 (public)                                       mwgee 02/07|
+ *----------------------------------------------------------------------*/
+void LINALG::Solver::Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
+                           RefCountPtr<Epetra_CrsMatrix> matrix2,
+                           RefCountPtr<Epetra_Vector>    x,
+                           RefCountPtr<Epetra_Vector>    b,
+                           bool refactor,
+                           bool reset)
+{
+  // reset data flags
+  if (reset) 
+  {
+    Reset();
+    refactor = true;
+  }
+
+  
+  // set the data passed to the method
+  if (refactor)
+  {
+    Aplus_ = matrix;
+    A_     = matrix2;
+  }
+  x_ = x;
+  b_ = b;
+  
+  // set flag indicating that problem should be refactorized
+  if (refactor) factored_ = false;
+  
+  // fill the linear problem
+  lp_->SetRHS(b_.get());
+  lp_->SetLHS(x_.get());
+  lp_->SetOperator(Aplus_.get());
+  lp_->SetOperator(A_.get());
+  
+  // decide what solver to use
+  string solvertype = Params().get("solver","none");
+  // if vm3 was not selected, return to usual solver
+  if ("vm3"   !=solvertype)
+  {
+    LINALG::Solver::Solve(matrix,x,b,refactor,reset);
+    return;
+  }
+
+  // extract the ML parameters and initialize the solver
+  ParameterList&  mllist = Params().sublist("ML Parameters");
+  // cout << "Parameter list:\n" << mllist;
+  vm3_solver_ = rcp(new VM3_Solver::VM3_Solver(Aplus_, A_, mllist,true) );
+
+  // Apply the solver. Convergence check and iteration have to be
+  // performed from outside, since Solve is a nonlinear FAS scheme
+  B_ = b_.get();
+  X_ = x_.get();
+  int err = vm3_solver_->VM3_Solver::Solve(*B_,*X_);
+  if (err) dserror("VM3_Solver::Solve returned an err");
+
   ncall_++;
   
   return;
@@ -431,7 +495,9 @@ void LINALG::Solver::Solve_superlu(const bool reset)
   if (err) dserror("Amesos::Solve returned an err");
 #else
   dserror("Distributed SuperLU only in parallel");
-#endif  
+#endif    //! system of equations
+  RefCountPtr<Epetra_CrsMatrix>     A_;       
+
   return;
 }
 
@@ -548,6 +614,138 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
   case lapack_nonsym://=============================================== Lapack
     params.set("solver","lapack");
     params.set("symmetric",false);
+  break;
+  case vm3://=========================================================== VM3
+  {
+    params.set("solver","vm3");
+    ParameterList& mllist = params.sublist("ML Parameters");
+    ML_Epetra::SetDefaults("SA",mllist);
+    AZVAR* azvar = actsolv->azvar;
+    mllist.set("output"                          ,azvar->mlprint);
+    if (azvar->mlprint==10)
+      mllist.set("print unused"                  ,1);
+    else
+    mllist.set("print unused"                  ,-2);
+    mllist.set("increasing or decreasing"        ,"increasing");
+    mllist.set("coarse: max size"                ,azvar->mlcsize);
+    mllist.set("max levels"                      ,azvar->mlmaxlevel);
+    mllist.set("smoother: pre or post"           ,"both");
+    mllist.set("aggregation: use tentative restriction",true);
+    mllist.set("aggregation: threshold"          ,azvar->ml_threshold);
+    mllist.set("aggregation: damping factor"     ,azvar->mldamp_prolong);
+    mllist.set("aggregation: nodes per aggregate",azvar->mlaggsize);
+    switch (azvar->mlcoarsentype)
+    {
+      case 0:  mllist.set("aggregation: type","Uncoupled");  break;
+      case 1:  mllist.set("aggregation: type","METIS");      break;
+      case 2:  mllist.set("aggregation: type","VBMETIS");    break;
+      case 3:  mllist.set("aggregation: type","MIS");        break;
+      default: dserror("Unknown type of coarsening for ML"); break;
+    }
+    // set ml smoothers -> write ml list
+    for (int i=0; i<azvar->mlmaxlevel-1; ++i)
+    {
+      char levelstr[11];
+      sprintf(levelstr,"(level %d)",i);
+      int type;
+      double damp;
+      if (i==0)
+      {
+        type = azvar->mlsmotype_fine;
+        damp = azvar->mldamp_fine;
+      }
+      else if (i < azvar->mlmaxlevel-1)
+      {
+        type = azvar->mlsmotype_med;
+        damp = azvar->mldamp_med;
+      }
+      else
+      {
+        type = azvar->mlsmotype_coarse;
+        damp = azvar->mldamp_coarse;
+      }
+      switch (type)
+      {
+      case 0:
+        mllist.set("smoother: type"                   ,"symmetric Gauss-Seidel");
+        mllist.set("smoother: sweeps"                 ,azvar->mlsmotimes[i]);
+        mllist.set("smoother: damping factor"         ,damp);
+      break;
+      case 1:
+        mllist.set("smoother: type"                    ,"Jacobi");
+        mllist.set("smoother: sweeps"                  ,azvar->mlsmotimes[i]);
+        mllist.set("smoother: damping factor"          ,damp);
+      break;
+      case 2:
+        mllist.set("smoother: type "+(string)levelstr                    ,"MLS");
+        mllist.set("smoother: MLS polynomial order "+(string)levelstr    ,azvar->mlsmotimes[i]);
+      break;
+      case 3:
+        mllist.set("smoother: type (level 0)"                            ,"MLS");
+        mllist.set("smoother: MLS polynomial order "+(string)levelstr    ,-azvar->mlsmotimes[i]);
+      break;
+      case 4:
+        mllist.set("smoother: type "+(string)levelstr                    ,"IFPACK");
+        mllist.set("smoother: ifpack type "+(string)levelstr             ,"ILU");
+        mllist.set("smoother: ifpack overlap "+(string)levelstr          ,0);
+        mllist.sublist("smoother: ifpack list").set("fact: level-of-fill",azvar->mlsmotimes[i]);
+        mllist.sublist("smoother: ifpack list").set("schwarz: reordering type","rcm");
+      break;
+      case 5:
+        mllist.set("smoother: type "+(string)levelstr,"Amesos-KLU");
+      break;
+#ifdef PARALLEL
+      case 6:
+        mllist.set("smoother: type "+(string)levelstr,"Amesos-Superludist");
+      break;
+#endif
+      default: dserror("Unknown type of smoother for ML"); break;
+      } // switch (type)
+    } // for (int i=0; i<azvar->mlmaxlevel-1; ++i)
+    // set coarse grid solver
+    const int coarse = azvar->mlmaxlevel-1;
+    switch (azvar->mlsmotype_coarse)
+    {
+      case 0:
+        mllist.set("coarse: type"          ,"symmetric Gauss-Seidel");
+        mllist.set("coarse: sweeps"        , azvar->mlsmotimes[coarse]);
+        mllist.set("coarse: damping factor",azvar->mldamp_coarse);
+      break;
+      case 1:
+        mllist.set("coarse: type"          ,"Jacobi");
+        mllist.set("coarse: sweeps"        , azvar->mlsmotimes[coarse]);
+        mllist.set("coarse: damping factor",azvar->mldamp_coarse);
+      break;
+      case 2:
+        mllist.set("coarse: type"                ,"MLS");
+        mllist.set("coarse: MLS polynomial order",azvar->mlsmotimes[coarse]);
+      break;
+      case 3:
+        mllist.set("coarse: type"                ,"MLS");
+        mllist.set("coarse: MLS polynomial order",-azvar->mlsmotimes[coarse]);
+      break;
+      case 4:
+        mllist.set("coarse: type"          ,"IFPACK");
+        mllist.set("coarse: ifpack type"   ,"ILU");
+        mllist.set("coarse: ifpack overlap",0);
+        mllist.sublist("coarse: ifpack list").set("fact: level-of-fill",azvar->mlsmotimes[coarse]);
+        mllist.sublist("coarse: ifpack list").set("schwarz: reordering type","rcm");
+      break;
+      case 5:
+        mllist.set("coarse: type","Amesos-KLU");
+      break;
+      case 6:
+        mllist.set("coarse: type","Amesos-Superludist");
+      break;
+      default: dserror("Unknown type of coarse solver for ML"); break;
+    } // switch (azvar->mlsmotype_coarse)
+    // default values for nullspace
+    mllist.set("PDE equations",1);
+    mllist.set("null space: dimension",1);
+    mllist.set("null space: type","pre-computed");
+    mllist.set("null space: add default vectors",false);
+    mllist.set<double*>("null space: vectors",NULL);
+  }
   break;
   case aztec_msr://================================================= AztecOO
   {

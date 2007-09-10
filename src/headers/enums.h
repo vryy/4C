@@ -412,7 +412,8 @@ typedef enum _SOLVER_TYP
                        mlpcg,            /* internal solver package mlpcg */
                        amesos_klu_sym,   /* Trilinos' solver interface Amesos using KLU */
                        amesos_klu_nonsym,/* Trilinos' solver interface Amesos using KLU */
-                       superlu           /* Trilinos' solver interface Amesos using SuperLU_Dist */
+                       superlu,          /* Trilinos' solver interface Amesos using SuperLU_Dist */
+                       vm3               /* VM3 solver */
 } SOLVER_TYP;
 /*!----------------------------------------------------------------------
 \brief enum of possible matrix types

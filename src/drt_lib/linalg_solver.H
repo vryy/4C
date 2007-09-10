@@ -52,6 +52,8 @@ Maintainer: Michael Gee
 #include "Amesos_Umfpack.h"
 #include "Amesos_Lapack.h"
 
+#include "../drt_fluid/vm3_solver.H"
+
 // Trilinos is configured with SuperLUDIST only in the parallel version
 #ifdef PARALLEL
 #include "Amesos_Superludist.h"
@@ -135,6 +137,24 @@ public:
                            be recalculated including preconditioners
   */
   void Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
+             RefCountPtr<Epetra_Vector>    x,
+             RefCountPtr<Epetra_Vector>    b,
+             bool refactor,
+             bool reset = false);
+
+  /*!
+  \brief Solve system of equations using VM3 solver (overloaded)
+
+  \param matrix (in/out): system of equations
+  \param x      (in/out): initial guess on input, solution on output
+  \param b      (in)    : right hand side vector
+  \param refactor (in)  : flag indicating whether system should be refactorized
+  \param reset  (in)    : flag indicating whether all data from previous solves should
+                           be recalculated including preconditioners
+  \param matrix2 (in/out): mod. system of equations on finest grid level
+  */
+  void Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
+             RefCountPtr<Epetra_CrsMatrix> matrix2,
              RefCountPtr<Epetra_Vector>    x,
              RefCountPtr<Epetra_Vector>    b,
              bool refactor,
@@ -245,6 +265,8 @@ private:
   FILE*                             outfile_; 
   //! system of equations
   RefCountPtr<Epetra_CrsMatrix>     A_;       
+  //! modified system of equations
+  RefCountPtr<Epetra_CrsMatrix>     Aplus_;       
   //! Preconditioner (currently an ML or Ifpack operator)
   RefCountPtr<Epetra_Operator>      P_;       
   //! system of equations used for preconditioning used by P_ only
@@ -253,8 +275,14 @@ private:
   RefCountPtr<Epetra_Vector>        x_;       
   //! right hand side vector
   RefCountPtr<Epetra_Vector>        b_;       
+  //int x_LDA_;
+  //int b_LDA_;
   //! a linear problem wrapper class used by Trilinos and for scaling of the system
   RefCountPtr<Epetra_LinearProblem> lp_;      
+  //! Epetra multivector: initial guess and solution
+  Epetra_MultiVector *              X_;
+  //! Epetra multivector: right hand side
+  Epetra_MultiVector *              B_;
   //! flag indicating whether matrix was factored before
   bool                              factored_;
   //! counting how many times matrix was solved between resets
@@ -262,7 +290,9 @@ private:
   //! an abstract amesos solver that can be any of the amesos concrete immplementations
   RefCountPtr<Amesos_BaseSolver>    amesos_;  
   //! an aztec solver
-  RefCountPtr<AztecOO>              aztec_;   
+  RefCountPtr<AztecOO>              aztec_;  
+  //! a vm3 solver
+  RefCountPtr<VM3_Solver>           vm3_solver_; 
 
 #ifdef PARALLEL
 #ifdef SPOOLES_PACKAGE

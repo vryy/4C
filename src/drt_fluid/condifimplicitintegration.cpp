@@ -575,7 +575,7 @@ void CondifImplicitTimeInt::Solve(
     // get cpu time
     tcpu=ds_cputime();
 
-    solver_.Solve(sysmat_dc_,phinp_,residual_,true,1);
+    solver_.Solve(sysmat_dc_,sysmat_,phinp_,residual_,true,1);
 
     // end time measurement for solver call
     tm5_ref_=null;
@@ -773,6 +773,7 @@ void CondifImplicitTimeInt::Output()
 
 
 #if 0  //DEBUG IO --- incremental solution
+#endif
       if (myrank_==0)
       {
         int rr;
@@ -782,7 +783,6 @@ void CondifImplicitTimeInt::Output()
           printf("sol[%4d] %26.19e\n",rr,data[rr]);
         }
       }
-#endif
 
 
   return;

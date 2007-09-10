@@ -881,7 +881,7 @@ for (int i=0; i<iel; i++) /* loop over nodes of element */
 if (discap == 1)
 {
   // parameter for artificial diffusivity
-  const double kartfac = kart*fac;
+  const double kartfac = kart*timefacfac;
 
   #define edc_(i,j)    edc(i,j)
   #define derxy_(i,j)  derxy(i,j)
