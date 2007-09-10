@@ -87,49 +87,6 @@ myrank=0;
   return;
 } /* end of dserror_func */
 
-// Experiment by Heiner to have an ellipse (...) in dsassert
-int cpp_dsassert2_func( bool test, char* string, ... )
-{
-    if ( !test )
-    {
-        // Code from cpp_dserror_func
-        va_list ap;
-        char line[] = "=========================================================================\n";
-        va_start(ap, string);
 
-        int myrank;
-#ifdef PARALLEL
-        MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-#else
-        myrank=0;
-#endif
-
-        printf("\n");
-        printf("\n");
-        printf(line);
-        printf("PROC %d ERROR in %s, line %i:\n",myrank,latest_file,latest_line);
-        vprintf(string,ap);
-        printf("\n");
-        printf(line);
-        printf("\n");
-        printf("\n");
-
-        va_end(ap);
-
-        fflush(stdout);
-
-#ifdef DSERROR_DUMP
-        *((int*)0x0)=0;
-#endif
-
-#ifdef PARALLEL
-        MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);
-#else
-        exit(0);
-#endif
-        return 0;
-    }
-    return 0;
-} /* end of dsassert2_func */
 
 #endif  // #ifdef CCADISCRET
