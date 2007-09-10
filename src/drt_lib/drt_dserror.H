@@ -28,6 +28,17 @@ void cpp_dslatest(char* file, int line);
 #define dsassert(test, string) cpp_dsassert_func(__FILE__, __LINE__, test, string)
 #define dserror cpp_dslatest(__FILE__, __LINE__), cpp_dserror_func
 
+// Experiment by Heiner to have an ellipse (...) in dsassert
+#ifdef DEBUG
+#define DEBUGBOOL 1
+#else
+#define DEBUGBOOL 0
+#endif
+
+int cpp_dsassert2_func( bool test, char* string, ... );
+#define dsassert2 DEBUGBOOL && ((int)cpp_dslatest(__FILE__, __LINE__)), \
+                  DEBUGBOOL && ((int)cpp_dsassert2_func )
+
 #endif // #ifdef __cplusplus
 
 
