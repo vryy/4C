@@ -977,10 +977,9 @@ public:
 
   //@}
 
-#ifdef D_XFEM
-  // to be removed soon and without warning!!! a.gerstenberger
+  // to be removed soon or moved to the DRT::Element class
+  // please ask me before using it! a.gerstenberger
   DRT::Elements::Fluid3* GetParent(){return parent_;}
-#endif
 
 private:
 
