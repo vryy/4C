@@ -10,6 +10,7 @@ Maintainer: Malte Neumann
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 
 #include "../headers/standardtypes.h"
 #include "gid.h"
@@ -2545,3 +2546,4 @@ return;
 
 #endif /*D_MLSTRUCT*/
 
+#endif

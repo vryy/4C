@@ -10,6 +10,7 @@ Maintainer: Ulrich Küttler
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_FLUID3_IS
 #include "../headers/standardtypes.h"
 #include "fluid3_is.h"
@@ -1365,4 +1366,5 @@ void f3is_calresvec(
 }
 
 
+#endif
 #endif

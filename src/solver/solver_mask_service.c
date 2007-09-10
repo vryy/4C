@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 
 *----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
@@ -97,7 +98,7 @@ void mask_numeq(
     no_coupling = 0;
     amredef(&(actpart->pdis[disnum].coupledofs),counter,1,"IV");
   }
-  
+
   /* delete the doubles in coupledofs */
   if (!no_coupling)
   {
@@ -424,4 +425,4 @@ nodefound1:
   return;
 } /* end of dof_find_centernode */
 
-
+#endif

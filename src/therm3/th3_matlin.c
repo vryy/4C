@@ -6,6 +6,7 @@
 \author bborn
 \date 03/06
 */
+#ifndef CCADISCRET
 #ifdef D_THERM2
 
 /*----------------------------------------------------------------------*/
@@ -60,7 +61,7 @@ void th3_matlin_iso(CONTAINER *cont,
   INT itmgr; /* temperature gradient counter */
   INT ihflux;  /* heat flux component counter */
   DOUBLE hfluxsum;   /* dummy heat flux sum */
-  
+
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -180,3 +181,4 @@ void th3_matlin_gen(DOUBLE **con,
 /*======================================================================*/
 #endif  /* end of #ifdef D_THERM3 */
 /*! @} (documentation module close) */
+#endif

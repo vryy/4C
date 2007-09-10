@@ -10,6 +10,7 @@ Maintainer: Frank Huber
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_BEAM3
 
 /*!
@@ -128,3 +129,4 @@ This routine reads all datas of the actual beam element from input file
 void b3inp(ELEMENT *ele);
 #endif
 /*! @} (documentation module close)*/
+#endif

@@ -9,8 +9,8 @@ Core algorithm:
 (3)    F_{Ext;n+1} = F_Ext(t_{n+1})
 (4)    V_{n+1} = V_n + dt/2*(A_{n+1} + A_{n})   (TR)
 (5)    M.A_{n+1} + C.V_{n+1} + F_{Int;n+1} = F_{Ext;n+1}
-       ==> (M + dt/2*C).A_{n+1} = F_{Ext;n+1} 
-                                - F_{Int;n+1} 
+       ==> (M + dt/2*C).A_{n+1} = F_{Ext;n+1}
+                                - F_{Int;n+1}
                                 - C.(V_n+dt/2*A_n)
        ==> A_{n+1} = (M + dt/2*C)^{-1} . (...)
 
@@ -29,6 +29,7 @@ Maintainer: Burkhard Bornemann
 \date 02/07
 */
 
+#ifndef CCADISCRET
 /*----------------------------------------------------------------------*/
 /* header files */
 #include "../headers/standardtypes.h"
@@ -54,7 +55,7 @@ extern FILES allfiles;
 /*!
 \brief General problem data
 
-struct _GENPROB       genprob; defined in global_control.c 
+struct _GENPROB       genprob; defined in global_control.c
 
 \author bborn
 \date 03/06
@@ -215,24 +216,24 @@ void tsi_st_cendif(INT disnum_s,
   DIST_VECTOR *vel;  /* total velocities */
   DIST_VECTOR *acc;  /* total accelerations */
   DIST_VECTOR *fie;  /* internal forces and working array */
-  DIST_VECTOR *dispi;   /* distributed vector to hold incremental 
+  DIST_VECTOR *dispi;   /* distributed vector to hold incremental
                          * displacments */
   DIST_VECTOR *work;  /* working vectors */
 
   ARRAY intforce_a;  /* redundant vector of full length for internal forces */
   DOUBLE *intforce;
-  ARRAY dirich_a;  /* redundant vector of full length for dirichlet-part 
+  ARRAY dirich_a;  /* redundant vector of full length for dirichlet-part
                     * of rhs */
   DOUBLE *dirich;
 
-  STRUCT_DYN_CALC dynvar;  /* variables to perform dynamic structural 
+  STRUCT_DYN_CALC dynvar;  /* variables to perform dynamic structural
                             * simulation */
 
   ARRAY_POSITION *ipos;   /* named positions of NODE sol etc. arrays */
   ARRAY_POSITION_SOL *isol;  /* named positions (indices) of NODE sol array */
-  ARRAY_POSITION_SOLINC *isolinc;  /* named positions (indices) of 
+  ARRAY_POSITION_SOLINC *isolinc;  /* named positions (indices) of
                                     * NODE sol_increment array */
-  ARRAY_POSITION_SOLRES *isolres;  /* named positions (indices) of 
+  ARRAY_POSITION_SOLRES *isolres;  /* named positions (indices) of
                                     * NODE sol_residual array */
 
 #ifdef BINIO
@@ -250,7 +251,7 @@ void tsi_st_cendif(INT disnum_s,
 #ifdef DEBUG
   dstrc_enter("tsi_st_cendif");
 #endif
-  
+
   /*--------------------------------------------------------------------*/
   /* set up */
   restart = genprob.restart;
@@ -282,7 +283,7 @@ void tsi_st_cendif(INT disnum_s,
 #ifdef PARALLEL
   actintra = &(par.intra[0]);  /* ???? => numsf ??? */
 #else
-  /* if we are not parallel, we have to allocate an alibi 
+  /* if we are not parallel, we have to allocate an alibi
    * intra-communicator structure */
   actintra = (INTRA*) CCACALLOC(1, sizeof(INTRA));
   if (!actintra)
@@ -294,9 +295,9 @@ void tsi_st_cendif(INT disnum_s,
   actintra->intra_nprocs = 1;
 #endif
   /* there are only procs allowed in here, that belong to the structural
-   * intracommunicator (in case of nonlinear struct. dyn., this should 
+   * intracommunicator (in case of nonlinear struct. dyn., this should
    * be all) */
-  if (actintra->intra_fieldtyp != structure) 
+  if (actintra->intra_fieldtyp != structure)
   {
     goto end;
   }
@@ -334,7 +335,7 @@ void tsi_st_cendif(INT disnum_s,
   /* stiff_array already exists, so copy the mask of it to */
   /* mass_array (and damp_array if needed) */
   /* reallocate the vector of sparse matrices and the vector of there types */
-  /* formerly lenght 1, now lenght 2 or 3 dependent on presence of 
+  /* formerly lenght 1, now lenght 2 or 3 dependent on presence of
    * damp_array */
   actsolv->sysarray_typ
     = (SPARSE_TYP*) CCAREALLOC(actsolv->sysarray_typ,
@@ -384,14 +385,14 @@ void tsi_st_cendif(INT disnum_s,
 
   /*--------------------------------------------------------------------*/
   /* allocate 4 dist. vectors for RHS */
-  /* these hold original load vector, 
+  /* these hold original load vector,
    *            load vector at time t,
    *            load vector at t-dt and
    *            interpolated load vector */
   actsolv->nrhs = 4;
-  solserv_create_vec(&(actsolv->rhs), 
+  solserv_create_vec(&(actsolv->rhs),
                      actsolv->nrhs, numeq_total, numeq, "DV");
-  for (i=0; i<actsolv->nrhs; i++) 
+  for (i=0; i<actsolv->nrhs; i++)
   {
     solserv_zero_vec(&(actsolv->rhs[i]));
   }
@@ -400,7 +401,7 @@ void tsi_st_cendif(INT disnum_s,
   /* there are 2 solution vectors to hold total displ.
    * one at time t_{n+1} and one at time t_{n} */
   actsolv->nsol = 2;
-  solserv_create_vec(&(actsolv->sol), 
+  solserv_create_vec(&(actsolv->sol),
                      actsolv->nsol, numeq_total, numeq, "DV");
   for (i=0; i<actsolv->nsol; i++)
   {
@@ -410,7 +411,7 @@ void tsi_st_cendif(INT disnum_s,
   /*--------------------------------------------------------------------*/
   /* there is one vector to hold incremental displacements */
   solserv_create_vec(&dispi, 1, numeq_total, numeq, "DV");
-  for (i=0; i<1; i++) 
+  for (i=0; i<1; i++)
   {
     solserv_zero_vec(&(dispi[i]));
   }
@@ -426,14 +427,14 @@ void tsi_st_cendif(INT disnum_s,
   /*--------------------------------------------------------------------*/
   /* allocate one vector acc */
   solserv_create_vec(&acc, 1, numeq_total, numeq, "DV");
-  for (i=0; i<1; i++) 
+  for (i=0; i<1; i++)
   {
     solserv_zero_vec(&(acc[i]));
   }
 
   /*--------------------------------------------------------------------*/
   /* allocate one redundant vector intforce of full lenght
-   * this is used by the element routines to assemble the 
+   * this is used by the element routines to assemble the
    * internal forces*/
   intforce = amdef("intforce", &intforce_a, numeq_total, 1, "DV");
   /* allocate 3 DIST_VECTOR fie
@@ -453,7 +454,7 @@ void tsi_st_cendif(INT disnum_s,
   /* By optimizing this routine one could live with one or two working
    * vectors, I needed three to make things straight-forward and easy */
   solserv_create_vec(&work, 3, numeq_total, numeq, "DV");
-  for (i=0; i<3; i++) 
+  for (i=0; i<3; i++)
   {
     solserv_zero_vec(&(work[i]));
   }
@@ -463,7 +464,7 @@ void tsi_st_cendif(INT disnum_s,
   /* NOTE: solver init phase has to be called with each matrix one wants to
    *       solve with. Solver init phase has to be called with all matrices
    *       one wants to do matrix-vector products and matrix scalar products.
-   *       This is not needed by all solver libraries, but the solver-init 
+   *       This is not needed by all solver libraries, but the solver-init
    *       phase is cheap in computation (can be costly in memory)
    *   There will be no solver call on mass or damping array. */
   /* initialize solver */
@@ -516,7 +517,7 @@ void tsi_st_cendif(INT disnum_s,
   container.global_numeq = 0;
   container.dirichfacs = NULL;
   container.kstep = 0;
-  calelm(actfield, actsolv, actpart, actintra, 
+  calelm(actfield, actsolv, actpart, actintra,
          stiff_array, mass_array, &container,action);
 
 
@@ -565,7 +566,7 @@ void tsi_st_cendif(INT disnum_s,
    * It's important to do this only after all the node arrays are set
    * up because their sizes are used to allocate internal memory. */
   init_bin_out_field(&out_context,
-                     &(actsolv->sysarray_typ[stiff_array]), 
+                     &(actsolv->sysarray_typ[stiff_array]),
                      &(actsolv->sysarray[stiff_array]),
                      actfield, actpart, actintra, disnum);
 #endif
@@ -586,7 +587,7 @@ void tsi_st_cendif(INT disnum_s,
            "===========\n");
     printf("TSI structural time integration with central differences\n");
     printf("-------------------------------------------------------------"
-           "-----------\n"); 
+           "-----------\n");
   }
 
   /*--------------------------------------------------------------------*/
@@ -620,7 +621,7 @@ void tsi_st_cendif(INT disnum_s,
   /* add damping contribution  dt/2*C */
   if (damp_array > 0)
   {
-    solserv_add_mat(actintra, 
+    solserv_add_mat(actintra,
                     &(actsolv->sysarray_typ[stiff_array]),
                     &(actsolv->sysarray[stiff_array]),
                     &(actsolv->sysarray_typ[damp_array]),
@@ -649,14 +650,14 @@ void tsi_st_cendif(INT disnum_s,
 
   /*--------------------------------------------------------------------*/
   /* return total displacements to the nodes */
-  solserv_result_total(actfield, disnum, actintra, 
+  solserv_result_total(actfield, disnum, actintra,
                        &(dispi[0]), isol->disn,
                        &(actsolv->sysarray[stiff_array]),
                        &(actsolv->sysarray_typ[stiff_array]));
 
   /*--------------------------------------------------------------------*/
   /* return incremental displacements to the nodes */
-  solserv_result_incre(actfield, disnum, actintra, 
+  solserv_result_incre(actfield, disnum, actintra,
                        &(dispi[0]), isolinc->disinc,
                        &(actsolv->sysarray[stiff_array]),
                        &(actsolv->sysarray_typ[stiff_array]));
@@ -745,7 +746,7 @@ void tsi_st_cendif(INT disnum_s,
   /* initialise wall clock time */
   t0 = ds_cputime();
   /* write memory report */
-  if (par.myrank == 0) 
+  if (par.myrank == 0)
   {
     dsmemreport();
   }
@@ -801,7 +802,7 @@ void tsi_st_cendif(INT disnum_s,
                                 3            , work        ,
                                 &intforce_a,
                                 &dirich_a,
-                                &container); /* contains variables defined 
+                                &container); /* contains variables defined
                                               in container.h */
 #endif
       /* put the dt to the structure */
@@ -830,7 +831,7 @@ void tsi_st_cendif(INT disnum_s,
     solserv_add_vec(&(vel[0]), &(actsolv->sol[1]), dynvar.constants[4]);
     solserv_add_vec(&(acc[0]), &(actsolv->sol[1]), dynvar.constants[2]);
     /* put the displacements to the nodes */
-    solserv_result_total(actfield, disnum, actintra, &(actsolv->sol[1]), 
+    solserv_result_total(actfield, disnum, actintra, &(actsolv->sol[1]),
                          isol->disn,
                          &(actsolv->sysarray[stiff_array]),
                          &(actsolv->sysarray_typ[stiff_array]));
@@ -840,7 +841,7 @@ void tsi_st_cendif(INT disnum_s,
     /* QUESTION: Our global displacement vector actsolv->sol[1]...
      *    ...does not carry at all DBC data?
      *    ...does have current prescribed DBC data? */
-    solserv_putdirich_to_dof(actfield, disnum, node_array_sol, 
+    solserv_putdirich_to_dof(actfield, disnum, node_array_sol,
                              isol->disn, sdyn->time+sdyn->dt);
     /*------------------------------------------------------------------*/
     /* copy RHS in rhs[1] at time t to rhs[2] at time t-dt */
@@ -876,15 +877,15 @@ void tsi_st_cendif(INT disnum_s,
                  &(actsolv->sysarray[stiff_array]), &(fie[2]), intforce, 1.0);
     /*------------------------------------------------------------------*/
     /* new inertial force (actsolv->rhs[0])
-     *    F_{Inertial;n+1} = (M + dt/2*C) . A_{n+1} 
-     *                     = F_{Ext;n+1} - F_{Int;n+1} 
+     *    F_{Inertial;n+1} = (M + dt/2*C) . A_{n+1}
+     *                     = F_{Ext;n+1} - F_{Int;n+1}
      *                     - C . (V_n+dt/2*A_{n}) */
     /* make rhs[0] = rhs[1] - fie[2]
      * rhs = load - internal force   */
     solserv_copy_vec(&(actsolv->rhs[1]), &(actsolv->rhs[0]));
     solserv_add_vec(&(fie[2]), &(actsolv->rhs[0]), -1.0);
     /* make effective load vector */
-    /* pefnln_struct(&dynvar, sdyn, actfield, actsolv, actintra, 
+    /* pefnln_struct(&dynvar, sdyn, actfield, actsolv, actintra,
                   dispi, vel, acc, work,
                   mass_array, damp_array); */
     /* subtract global viscous forces C . (V_{n}+dt/2*A_n) */
@@ -922,7 +923,7 @@ void tsi_st_cendif(INT disnum_s,
     /* update displacements D_{n} := D_{n+1}
      * sol[1] -> sol[0] */
     solserv_copy_vec(&(actsolv->sol[1]), &(actsolv->sol[0]));
-    /* update velocities V_{n} := V_{n+1} 
+    /* update velocities V_{n} := V_{n+1}
      *                          = V_{n} + dt/2 * (A_{n} + A_{n+1})
      * vel[0] += dt/2 * (acc[0] + work[0])
      * with dynvar.constants[5]==dt/2 */
@@ -939,17 +940,17 @@ void tsi_st_cendif(INT disnum_s,
     /*------------------------------------------------------------------*/
     /* put new quantities to nodes */
     /* put new displacements sol[0] to nodes */
-    solserv_result_total(actfield, disnum, actintra, 
+    solserv_result_total(actfield, disnum, actintra,
                          &(actsolv->sol[0]), isol->disn,
                          &(actsolv->sysarray[stiff_array]),
                          &(actsolv->sysarray_typ[stiff_array]));
     /* return velocities to the nodes */
-    solserv_result_total(actfield,disnum,actintra, 
+    solserv_result_total(actfield,disnum,actintra,
                          &vel[0], isol->veln,
                          &(actsolv->sysarray[stiff_array]),
                          &(actsolv->sysarray_typ[stiff_array]));
     /* return accel. to the nodes */
-    solserv_result_total(actfield,disnum,actintra, 
+    solserv_result_total(actfield,disnum,actintra,
                          &acc[0], isol->accn,
                          &(actsolv->sysarray[stiff_array]),
                          &(actsolv->sysarray_typ[stiff_array]));
@@ -999,7 +1000,7 @@ void tsi_st_cendif(INT disnum_s,
     if ( (mod_stress == 0) || (mod_disp == 0) )
     {
       if ( (ioflags.struct_stress == 1)
-           && (ioflags.struct_disp == 1) 
+           && (ioflags.struct_disp == 1)
            && (ioflags.output_out == 1) )
       {
         out_sol(actfield, actpart, disnum, actintra, sdyn->step, 0);
@@ -1013,13 +1014,13 @@ void tsi_st_cendif(INT disnum_s,
     {
       if (mod_disp == 0)
       {
-        if (ioflags.struct_disp == 1) 
+        if (ioflags.struct_disp == 1)
         {
-          out_results(&out_context, sdyn->time, sdyn->step, 0, 
+          out_results(&out_context, sdyn->time, sdyn->step, 0,
                       OUTPUT_DISPLACEMENT);
-          out_results(&out_context, sdyn->time, sdyn->step, 1, 
+          out_results(&out_context, sdyn->time, sdyn->step, 1,
                       OUTPUT_VELOCITY);
-          out_results(&out_context, sdyn->time, sdyn->step, 2, 
+          out_results(&out_context, sdyn->time, sdyn->step, 2,
                       OUTPUT_ACCELERATION);
         }
       }
@@ -1027,7 +1028,7 @@ void tsi_st_cendif(INT disnum_s,
       {
         if (ioflags.struct_stress == 1)
         {
-          out_results(&out_context, sdyn->time, sdyn->step, 0, 
+          out_results(&out_context, sdyn->time, sdyn->step, 0,
                       OUTPUT_STRESS);
         }
       }
@@ -1040,9 +1041,9 @@ void tsi_st_cendif(INT disnum_s,
       {
         if (ioflags.struct_disp == 1)
         {
-          out_gid_sol("displacement", actfield, disnum, actintra, 
+          out_gid_sol("displacement", actfield, disnum, actintra,
                       sdyn->step, 0, ZERO);
-          out_gid_sol("velocities", actfield, disnum, actintra, 
+          out_gid_sol("velocities", actfield, disnum, actintra,
                       sdyn->step, 1, ZERO);
           out_gid_sol("accelerations", actfield, disnum, actintra,
                       sdyn->step, 2, ZERO);
@@ -1052,7 +1053,7 @@ void tsi_st_cendif(INT disnum_s,
       {
         if (ioflags.struct_stress == 1)
         {
-          out_gid_sol("stress", actfield, disnum, actintra, 
+          out_gid_sol("stress", actfield, disnum, actintra,
                       sdyn->step, 0, ZERO);
         }
       }
@@ -1085,13 +1086,13 @@ void tsi_st_cendif(INT disnum_s,
                                  3            , work        ,
                                  &intforce_a,
                                  &dirich_a,
-                                 &container);   /* contains variables 
+                                 &container);   /* contains variables
                                                  * defined in container.h */
 #endif
     }
     /*------------------------------------------------------------------*/
     /* print time step */
-    if (par.myrank == 0) 
+    if (par.myrank == 0)
     {
       /* dyn_nlnstruct_outstep(&dynvar, sdyn, 0, sdyn->dt); */
       /* to STDOUT */
@@ -1102,7 +1103,7 @@ void tsi_st_cendif(INT disnum_s,
       fprintf(allfiles.out_err,
               "STEP=%6d | NSTEP=%6d | TIME=%-14.8E | DT=%-14.8E | "
               "ETOT=%-14.8E | EPOT=%-14.8E | EKIN=%-14.8E | EOUT=%-14.8E\n",
-              sdyn->step, sdyn->nstep, sdyn->time, sdyn->dt, 
+              sdyn->step, sdyn->nstep, sdyn->time, sdyn->dt,
               dynvar.etot, dynvar.epot, dynvar.ekin, dynvar.eout);
       fflush(allfiles.out_err);
     }
@@ -1111,7 +1112,7 @@ void tsi_st_cendif(INT disnum_s,
   /*--------------------------------------------------------------------*/
   /* measure time for this step */
   t1 = ds_cputime();
-  fprintf(allfiles.out_err, "TIME for step %d is %f sec\n", 
+  fprintf(allfiles.out_err, "TIME for step %d is %f sec\n",
           sdyn->step, t1-t0);
 
   /*--------------------------------------------------------------------*/
@@ -1135,7 +1136,7 @@ void tsi_st_cendif(INT disnum_s,
   {
     /* a word to the user */
     printf("-------------------------------------------------------------"
-           "-----------\n"); 
+           "-----------\n");
     printf("End: TSI structural time integration with central differences\n");
     printf("============================================================="
            "===========\n");
@@ -1154,3 +1155,4 @@ void tsi_st_cendif(INT disnum_s,
 #endif
   return;
 } /* end of dyn_nln_stru_expl */
+#endif

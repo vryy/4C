@@ -15,6 +15,7 @@ Maintainer: Malte Neumann
 /*-----------------------------------------------------------------------*/
 
 
+#ifndef CCADISCRET
 #ifdef D_AXISHELL
 
 #include "../headers/standardtypes.h"
@@ -905,3 +906,4 @@ void saxi_keku(
 #endif /*D_AXISHELL*/
 
 
+#endif

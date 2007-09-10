@@ -11,6 +11,7 @@ Maintainer: Michael Gee
 </pre>
 
 ---------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef WALLCONTACT
 /*!----------------------------------------------------------------------
 \brief the header of everything
@@ -98,4 +99,5 @@ return;
 
 
 /*! @} (documentation module close)*/
+#endif
 #endif

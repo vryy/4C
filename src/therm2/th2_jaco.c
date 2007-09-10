@@ -14,6 +14,7 @@ Maintainer: Burkhard Bornemann
 \author bborn
 \date 03/06
 */
+#ifndef CCADISCRET
 #ifdef D_THERM2
 
 /*----------------------------------------------------------------------*/
@@ -31,7 +32,7 @@ Maintainer: Burkhard Bornemann
 
 \param   **deriv     DOUBLE   (o)   natural derivatives of shape functions
                                     point r,s
-\param   **xjm       DOUBLE   (o)   Jacobi matrix at r,s 
+\param   **xjm       DOUBLE   (o)   Jacobi matrix at r,s
                                     (isoparametric concept)
 \param   *det        DOUBLE   (o)   Jacobi determinant at r,s
 \param   *ele        ELEMENT  (i)   pointer to current element
@@ -42,7 +43,7 @@ Maintainer: Burkhard Bornemann
 \date 03/06
 */
 void th2_jaco(DOUBLE **deriv,
-              DOUBLE **xjm, 
+              DOUBLE **xjm,
               DOUBLE *det,
               ELEMENT *ele,
               INT iel)
@@ -54,7 +55,7 @@ void th2_jaco(DOUBLE **deriv,
 #ifdef DEBUG
   dstrc_enter("th2_jaco");
 #endif
-  
+
   /*--------------------------------------------------------------------*/
   /* initialize Jacobian */
   xjm[0][0] = 0.0 ;
@@ -91,3 +92,4 @@ void th2_jaco(DOUBLE **deriv,
 /*======================================================================*/
 #endif /*end of #ifdef D_THERM2 */
 /*! @} (documentation module close)*/
+#endif

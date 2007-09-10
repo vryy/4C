@@ -10,6 +10,7 @@ Maintainer: Ulrich Kuettler
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID3_PRO
 *//*! @{ (documentation module open)*/
@@ -271,3 +272,4 @@ void f3pro_dis(ELEMENT* vele, ELEMENT* pele, INT numele, INT nodeshift)
 
 #endif
 /*! @} (documentation module close)*/
+#endif

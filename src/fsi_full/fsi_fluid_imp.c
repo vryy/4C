@@ -11,6 +11,7 @@ Maintainer: Steffen Genkinger
 
 ------------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 
 /*!
 \addtogroup FSI
@@ -1758,3 +1759,4 @@ void fsi_fluid_imp_cleanup(
 
 
 
+#endif

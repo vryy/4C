@@ -10,6 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID2
 *//*! @{ (documentation module open)*/
@@ -93,3 +94,4 @@ return;
 } /* end of f2_calsurftenfv */
 #endif
 /*! @} (documentation module close)*/
+#endif

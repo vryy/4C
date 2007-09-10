@@ -10,6 +10,7 @@ Maintainer: Christiane Foerster
 </pre>
 
 ---------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID
 *//*! @{ (documentation module open)*/
@@ -292,3 +293,4 @@ void fluid_liftdrag(
 
 
 
+#endif

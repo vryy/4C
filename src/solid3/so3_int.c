@@ -1,7 +1,7 @@
 /*======================================================================*/
 /*!
 \file
-\brief (tangent) stiffness matrix, 
+\brief (tangent) stiffness matrix,
        mass matrix,
        internal forces of SOLID3 element
 
@@ -15,6 +15,7 @@ Maintainer: Moritz Frenzel
 
 
 /*----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_SOLID3
 
 /*----------------------------------------------------------------------*/
@@ -47,9 +48,9 @@ for the linear, 3dim elasticity
 
 \param   *container     CONTAINER        (i)  see container.h
 \param   *ele           ELEMENT          (i)  pointer to current element
-\param   *gpshade       SO3_GPSHAPEDERIV (i)  Gauss point coords 
+\param   *gpshade       SO3_GPSHAPEDERIV (i)  Gauss point coords
 \param   *mat           MATERIAL         (i)
-\param   *eforc_global  ARRAY            (o)  global vector for internal 
+\param   *eforc_global  ARRAY            (o)  global vector for internal
                                               forces (initialized!)
 \param   *estif_global  ARRAY            (o)  element stiffness matrix
 \param   *emass_global  ARRAY            (o)  element mass matrix
@@ -175,14 +176,14 @@ void so3_int_fintstifmass(CONTAINER *container,
     fac = gpshade->gpwg[igp];  /* weight */
     /*------------------------------------------------------------------*/
     /* compute Jacobian matrix, its determinant and inverse */
-    so3_metr_jaco(ele, nelenod, ex, gpshade->gpderiv[igp], 1, 
+    so3_metr_jaco(ele, nelenod, ex, gpshade->gpderiv[igp], 1,
                   gds.xjm, &(gds.xjdet), gds.xji);
     /*------------------------------------------------------------------*/
     /* integration (quadrature) factor */
     fac *= gds.xjdet;
     /*------------------------------------------------------------------*/
     /* deformation tensor and displacement gradient */
-    so3_def_grad(nelenod, edis, gpshade->gpderiv[igp], gds.xji, 
+    so3_def_grad(nelenod, edis, gpshade->gpderiv[igp], gds.xji,
                  gds.disgrdv, gds.defgrd);
     /*------------------------------------------------------------------*/
     /* Linear/Green-Lagrange strain vector */
@@ -207,7 +208,7 @@ void so3_int_fintstifmass(CONTAINER *container,
         if (isnan(stress[xxx]))
         {
           printf("Element %d, GP %d \n", ele->Id_loc, igp);
-          printf("Prior Stress %d : (% 5.2f,% 5.2f,% 5.2f) : %f\n", 
+          printf("Prior Stress %d : (% 5.2f,% 5.2f,% 5.2f) : %f\n",
                  xxx, gds.gpc[0], gds.gpc[1], gds.gpc[2], stress[xxx]);
           /* abort(); */
         }
@@ -217,7 +218,7 @@ void so3_int_fintstifmass(CONTAINER *container,
     /*------------------------------------------------------------------*/
     /* calculate B-operator
      * bop differs depending on geometrically linearity/non-linearity */
-    so3_bop(ele, nelenod, gpshade->gpderiv[igp], gds.xji, 
+    so3_bop(ele, nelenod, gpshade->gpderiv[igp], gds.xji,
             gds.defgrd, gds.bopn, gds.bop);
     /*------------------------------------------------------------------*/
     /* call material law */
@@ -231,7 +232,7 @@ void so3_int_fintstifmass(CONTAINER *container,
         if (isnan(stress[xxx]))
         {
           printf("Element %d, GP %d \n", ele->Id_loc, igp);
-          printf("Stress %d : (% 5.2f,% 5.2f,% 5.2f) : %g\n", 
+          printf("Stress %d : (% 5.2f,% 5.2f,% 5.2f) : %g\n",
                  xxx, gds.gpc[0], gds.gpc[1], gds.gpc[2], stress[xxx]);
           INT i, j;
           for (i=0; i<NUMSTR_SOLID3; i++)
@@ -259,7 +260,7 @@ void so3_int_fintstifmass(CONTAINER *container,
         /* `elastic' stiffness */
         so3_int_stiffeu(neledof, gds.bop, cmat, fac, estif);
       }
-      /* geometrically non-linear kinematics (in space) */ 
+      /* geometrically non-linear kinematics (in space) */
       else if (ele->e.so3->kintype == so3_total_lagr)
       {
         /* `elastic' and `initial-displacement' stiffness */
@@ -414,7 +415,7 @@ void so3_int_stiffeu(INT neledof,
 \brief Add so-called geometric stiffness matrix at Gauss point
        to element stiffness matrix
 
-\param   enod       INT         (i)   number of element nodes 
+\param   enod       INT         (i)   number of element nodes
 \param   bopn[][]   DOUBLE      (i)   B-operator
 \param   stress[]   DOUBLE      (i)   stress vector
 \param   fac        DOUBLE      (i)   Gaussian integration factor
@@ -505,7 +506,7 @@ WHAT ABOUT _CONSISTENT_ AND _LUMPED_ MASS MATRICES?
 \param   nnod       INT     (i)  number of element nodes
 \param   density    DOUBLE  (i)  density (indeed)
 \param   shape[]    DOUBLE  (i)  shape functions at Gauss point
-\param   fac        DOUBLE  (i)  Gaussian integration factor 
+\param   fac        DOUBLE  (i)  Gaussian integration factor
 \param   emass[][]  DOUBLE  (io) element mass matrix
 \return  void
 
@@ -523,8 +524,8 @@ void so3_int_mass(MATERIAL *mat,
   INT inod, jnod;  /* node indices */
   INT idim;  /* dimension indices */
   DOUBLE shapeinod;  /* temporary (inod)th shape function */
-  DOUBLE mascom[MAXNOD_SOLID3][MAXNOD_SOLID3];  /* compact mass matrix 
-                                                 * containing only 
+  DOUBLE mascom[MAXNOD_SOLID3][MAXNOD_SOLID3];  /* compact mass matrix
+                                                 * containing only
                                                  * discretised mass
                                                  * in one direction */
 
@@ -583,3 +584,4 @@ void so3_int_mass(MATERIAL *mat,
 /*======================================================================*/
 #endif /* end of #ifdef D_SOLID3 */
 /*! @} (documentation module close)*/
+#endif

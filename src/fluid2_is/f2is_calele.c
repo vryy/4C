@@ -10,6 +10,7 @@ Maintainer: Ulrich Küttler
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID2
 *//*! @{ (documentation module open)*/
@@ -521,3 +522,4 @@ void f2is_caleleres_relax(ELEMENT        *ele,
 #endif
 /*! @} (documentation module close)*/
 
+#endif

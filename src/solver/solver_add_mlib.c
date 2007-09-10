@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 
 *----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 #ifdef MLIB_PACKAGE
 
 
@@ -106,3 +107,4 @@ return(0);
 
 #endif /* ifdef MLIB_PACKAGE */
 
+#endif

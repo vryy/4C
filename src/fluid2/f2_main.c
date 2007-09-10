@@ -10,6 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID2
 *//*! @{ (documentation module open)*/
@@ -255,3 +256,4 @@ dstrc_exit();
 return;
 } /* end of fluid2 */
 /*! @} (documentation module close)*/
+#endif

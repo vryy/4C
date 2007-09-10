@@ -15,6 +15,7 @@ Maintainer:     Robert Metzke
                 089 - 289 15244
 </pre>
 *---------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_MAT
 #include "../headers/standardtypes.h"
 #include "mat_prototypes.h"
@@ -55,7 +56,7 @@ void mat_el_ogden_decoupled (
 	const   DOUBLE      mthird = -0.3333333333333333333333333333;
 	const   DOUBLE      third  =  0.3333333333333333333333333333;
 	const   DOUBLE      ninth  =  0.1111111111111111111111111111;
-		
+
 	DOUBLE  mu;
 	DOUBLE  E;
 	DOUBLE  kappa;
@@ -66,7 +67,7 @@ void mat_el_ogden_decoupled (
 	DOUBLE  *alfap;
 	DOUBLE  J;
 	DOUBLE  scal;
-	
+
 	static DOUBLE **Neigen;
 	static ARRAY Neigen_a;
 	static DOUBLE *Ncross;
@@ -94,7 +95,7 @@ void mat_el_ogden_decoupled (
 		lam2 = amdef("lam2",&lam2_a,3,1,"DV");
 		lamdev = amdef("lamdev",&lamdev_a,3,1,"DV");
 		lamdevpowalfap = amdef("lamdevpowalfap",&lamdevpowalfap_a,3,3,"DA");
-		
+
 		PK2dev= amdef("PK2dev",&PK2dev_a,3,1,"DV");
 		PK2vol = amdef("PK2vol",&PK2vol_a,3,1,"DV");
 		PK2 = amdef("PK2",&PK2_a,3,1,"DV");
@@ -106,7 +107,7 @@ void mat_el_ogden_decoupled (
 	amzero(&lam2_a);
 	amzero(&lamdev_a);
 	amzero(&lamdevpowalfap_a);
-	
+
 	amzero(&PK2dev_a);
 	amzero(&PK2vol_a);
 	amzero(&PK2_a);
@@ -121,7 +122,7 @@ void mat_el_ogden_decoupled (
 	DOUBLE      Cdev0101=0.0;
 	DOUBLE      Cdev0202=0.0;
 	DOUBLE      Cdev1212=0.0;
-	
+
 	DOUBLE      Cvol0000=0.0;
 	DOUBLE      Cvol0011=0.0;
 	DOUBLE      Cvol0022=0.0;
@@ -131,7 +132,7 @@ void mat_el_ogden_decoupled (
 	DOUBLE      Cvol0101=0.0;
 	DOUBLE      Cvol0202=0.0;
 	DOUBLE      Cvol1212=0.0;
-	
+
 	DOUBLE      Ceigen[3][3][3][3];
 	DOUBLE      Ccart[3][3][3][3];
 
@@ -344,7 +345,7 @@ printf("PK2        [0] %14.8f PK2        [1] %14.8f PK2        [2] %14.8f\n\n",P
 	{
 	C[i][j][k][l] = Ccart[i][j][k][l];
 	}
-	
+
 #ifdef DEBUG
 	dstrc_exit();
 #endif
@@ -401,7 +402,7 @@ void mat_ogden_cartPK2(DOUBLE **PK2, DOUBLE *PK2main, DOUBLE **N)
 	PK2[2][0] += PK2main[2] * dyad2[2][0];
 	PK2[2][1] += PK2main[2] * dyad2[2][1];
 	PK2[2][2] += PK2main[2] * dyad2[2][2];
-	
+
 #ifdef DEBUG
 	dstrc_exit();
 #endif
@@ -465,3 +466,4 @@ void mat_ogden_Ccart(DOUBLE C[3][3][3][3], DOUBLE C_cart[3][3][3][3], DOUBLE **N
 
 #endif /*D_MAT*/
 /*! @} (documentation module close)*/
+#endif

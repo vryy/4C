@@ -10,6 +10,7 @@ Maintainer: Andrea Hund
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_WALL1
 
 /*!
@@ -727,7 +728,7 @@ void w1static_keug(ELEMENT  *ele,           /* actual element           */
                    ARRAY     *emass_global, /* element mass matrix      */
                    DOUBLE    *force,/* global vector for internal forces*/
                    INT        init,         /* initialize this function */
-                   CONTAINER *container);   /* container data           */    
+                   CONTAINER *container);   /* container data           */
 /*-----------------------------------------------------------------------*
 |  w1_static_ke.c                                            al 9/01     |
 |  evaluates element forces                                              |
@@ -1263,3 +1264,4 @@ void w1_locsys_checkoff(PARTITION* actpart);
 #endif /*D_WALL1*/
 /*! @} (documentation module close)*/
 
+#endif

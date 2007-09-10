@@ -135,15 +135,6 @@ void dyn_fluid_drt()
   fdyn->acttime           = 0.0;
 
   // -------------------------------------------------------------------
-  // init all applied time curves
-  // -------------------------------------------------------------------
-  for (int actcurve=0; actcurve<numcurve; actcurve++)
-  {
-   /* the last three parameters are obsolete!!! */
-   dyn_init_curve(actcurve,fdyn->step,fdyn->dt,fdyn->maxtime);
-  }
-
-  // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
   RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
@@ -290,7 +281,7 @@ void dyn_fluid_drt()
     // solution output
     fluidtimeparams.set                  ("write solution every"      ,fdyn->upres);
     // flag for writing stresses
-    fluidtimeparams.set                  ("write stresses"            ,ioflags.fluid_stress);    
+    fluidtimeparams.set                  ("write stresses"            ,ioflags.fluid_stress);
 
     //------------evaluate error for test flows with analytical solutions
     fluidtimeparams.set                  ("eval err for analyt sol"   ,fdyn->init);

@@ -10,7 +10,7 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-
+#ifndef CCADISCRET
 
 #ifdef D_SHELL8
 
@@ -144,3 +144,4 @@ void s8init(
 } /* end of s8init */
 #endif
 
+#endif

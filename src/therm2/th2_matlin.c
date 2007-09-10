@@ -6,6 +6,7 @@
 \author bborn
 \date 03/06
 */
+#ifndef CCADISCRET
 #ifdef D_THERM2
 
 /*----------------------------------------------------------------------*/
@@ -42,7 +43,7 @@ void th2_matlin_iso(DOUBLE con,
   INT inode;  /* element node counter */
   INT ihflux;  /* heat flux component counter */
   DOUBLE hfluxsum;   /* dummy heat flux sum */
-  
+
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -79,7 +80,7 @@ void th2_matlin_iso(DOUBLE con,
         }
         heatflux[ihflux] = hfluxsum;
       }
-      /* compute heat flux perpendicular to xy-plane, which is zero for 
+      /* compute heat flux perpendicular to xy-plane, which is zero for
        * both plane states
        * plane temper. grad. : zero due to diagonal constitutive matrix
        * planar heat flux : zero per definition
@@ -130,7 +131,7 @@ void th2_matlin_gen(DOUBLE **con,
   plst = ele->e.th2->planestate;
   switch (plst)
   {
-    case th2_plane_tempgrad: 
+    case th2_plane_tempgrad:
       cmat[0][0] = heatminus * con[0][0];
       cmat[0][1] = heatminus * con[0][1];
       cmat[1][0] = heatminus * con[1][0];
@@ -155,3 +156,4 @@ void th2_matlin_gen(DOUBLE **con,
 /*======================================================================*/
 #endif  /* end of #ifdef D_THERM2 */
 
+#endif

@@ -14,6 +14,7 @@ Maintainer: Burkhard Bornemann
 \author bborn
 \date 03/06
 */
+#ifndef CCADISCRET
 #ifdef D_TSI
 
 
@@ -46,7 +47,7 @@ FILES allfiles;
 \brief general problem data
 
 global variable general problem type
-global variable GENPROB genprob is defined in global_control.c 
+global variable GENPROB genprob is defined in global_control.c
 
 \auther bborn
 \date 03/06
@@ -146,7 +147,7 @@ void tsi_init_chkfld(INT *numfld, /*!< total number of fields */
   }
   else
   {
-    dserror("field[%d] is not allocated! Structure field expected.", 
+    dserror("field[%d] is not allocated! Structure field expected.",
             *numsf);
   }
 
@@ -163,7 +164,7 @@ void tsi_init_chkfld(INT *numfld, /*!< total number of fields */
   }
   else
   {
-    dserror("field[%d] is not allocated! Thermal field expected.", 
+    dserror("field[%d] is not allocated! Thermal field expected.",
             *numtf);
   }
 
@@ -235,13 +236,13 @@ void tsi_init_alldyn(INT numsf,  /* index of structure field */
 #ifdef DEBUG
   dstrc_enter("tsi_init_alldyn");
 #endif
-  
+
   /* set pointers to dynamic controls */
   *sdyn = alldyn[numsf].sdyn;  /* structure */
   *tdyn = alldyn[numtf].tdyn;  /* thermal */
 
   /* We have 2 fields, the first (0) is the structure, the second (1) is
-   * the thermal, ie genprob.numfld==2. Each field has a dynamic control 
+   * the thermal, ie genprob.numfld==2. Each field has a dynamic control
    * unit stored as alldyn[0] and alldyn[1], respectively. The dynamic
    * control of the TSI coupling is kept at alldyn[2]. */
   itsidyn = genprob.numfld;
@@ -273,7 +274,7 @@ void tsi_init_alldyn(INT numsf,  /* index of structure field */
 */
 void tsi_init_nodsol(FIELD *structfield,
                      INT disnum_s,
-                     FIELD *thermfield, 
+                     FIELD *thermfield,
                      INT disnum_t)
 {
   ARRAY_POSITION *ipos_s;
@@ -332,7 +333,7 @@ void tsi_init_nodsol(FIELD *structfield,
   isol_t->temdn = 4; /* temperature th_{n+1} of prescribed DOFs */
   isol_t->temdi = 5;  /* tempr. increment th_{n+1} - th_n of presc. DOFs */
   isol_t->tem = 6;  /* temperature at t_{n} */
-  
+
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -376,3 +377,4 @@ void tsi_init_curve(TSI_DYNAMIC* tsidyn)
 
 /*======================================================================*/
 #endif  /* end of #ifdef D_TSI */
+#endif

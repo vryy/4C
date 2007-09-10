@@ -10,6 +10,7 @@ Maintainer: Moritz Frenzel
             089-289-15240
 </pre>
 */
+#ifndef CCADISCRET
 #ifdef D_SOLID3
 
 /*----------------------------------------------------------------------*/
@@ -26,7 +27,7 @@ Maintainer: Moritz Frenzel
 /*!
 \brief Input of solid3 element
 
-This routines reads the solid3 element description in input file. 
+This routines reads the solid3 element description in input file.
 It is called by inpfield() (in input_mesh.c)
 
 \param   ele     *ELEMENT   (o)   pointer to element
@@ -89,7 +90,7 @@ void so3_inp(ELEMENT *ele)
       dserror("Reading of ELEMENT Topology failed");
     }
   }
-  
+
   frchk("HEX27", &ierr);  /* 27-node hexahedron */
   if (ierr==1)
   {
@@ -101,7 +102,7 @@ void so3_inp(ELEMENT *ele)
       dserror("Allocation of lm in ELEMENT failed");
     }
     frint_n("HEX27", &(ele->lm[0]), ele->numnp, &ierr);
-    if (ierr != 1) 
+    if (ierr != 1)
     {
       dserror("Reading of ELEMENT Topology failed");
     }
@@ -155,7 +156,7 @@ void so3_inp(ELEMENT *ele)
   {
     dserror("Reading of MAT for SOLID3 element failed");
   }
-  
+
   /*--------------------------------------------------------------------*/
   /* read the gaussian points */
   frint_n("GP", &(ele->e.so3->gpnum[0]), NDIM_SOLID3, &ierr);
@@ -194,7 +195,7 @@ void so3_inp(ELEMENT *ele)
   else
   {
     /* default */
-    ele->e.so3->kintype = so3_total_lagr; 
+    ele->e.so3->kintype = so3_total_lagr;
   }
 
   /*--------------------------------------------------------------------*/
@@ -282,3 +283,4 @@ void so3_inp(ELEMENT *ele)
 #endif  /* end of #ifdef D_SOLID3 */
 /*! @} (documentation module close)*/
 
+#endif

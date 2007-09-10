@@ -20,6 +20,7 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 
 
+#ifndef CCADISCRET
 #ifdef D_TSI
 
 
@@ -75,8 +76,8 @@ extern ALLDYNA *alldyn;
 /*!
 \brief Pointer to design entities
 
-Design entities, such as DNODE, DLINE, DSURF, DVOL; 
-defined in global_control.c 
+Design entities, such as DNODE, DLINE, DSURF, DVOL;
+defined in global_control.c
 
 \author bborn
 \date 03/06
@@ -181,7 +182,7 @@ void tsi_coupling(FIELD *structfield,
 
   /*--------------------------------------------------------------------*/
   /* allocate space for multifield solutions
-   * 
+   *
    * requests:
    * (1) structure needs temperature
    * (2) thermal needs structural displacements
@@ -189,7 +190,7 @@ void tsi_coupling(FIELD *structfield,
    * offers:
    * (1) structure offers displacements
    * (2) thermal offers temperature
-   */ 
+   */
 
   /*--------------------------------------------------------------------*/
   /* structure */
@@ -200,7 +201,7 @@ void tsi_coupling(FIELD *structfield,
    * actsnode->sol_mf.a.da[2][i]: displacements of old time step
    * actsnode->sol_mf.a.da[3][i]: dispi
    * actsnode->sol_mf.a.da[4][i]: couplingforces at the end of time step
-   * actsnode->sol_mf.a.da[5][i]: coupling forces at the beginning of 
+   * actsnode->sol_mf.a.da[5][i]: coupling forces at the beginning of
    *                              time step */
   numc = 6;
 
@@ -213,8 +214,8 @@ void tsi_coupling(FIELD *structfield,
 
     /* Allocate space for multifield solution, i.e. the global
      * displacement solution can be copied/disassembled to
-     * each structural node. 
-     * The thermal field element can access the structure 
+     * each structural node.
+     * The thermal field element can access the structure
      * displacements by getting hold of the displacements of the
      * conforming element and its nodes */
     /* at node, actsnode->sol_mf is not a pointer */
@@ -227,7 +228,7 @@ void tsi_coupling(FIELD *structfield,
     {
       dserror("Allocation of coupling node pointers failed");
     }
-    for (j=0; j<numfld; j++) 
+    for (j=0; j<numfld; j++)
     {
       actsgnode->mfcpnode[j] = NULL;
     }
@@ -243,7 +244,7 @@ void tsi_coupling(FIELD *structfield,
    * acttnode->sol_mf.a.da[1][i]: temperature of old iteration step
    * acttnode->sol_mf.a.da[2][i]: temperature of old time step */
   numc = 3;
-  
+
   /* loop thermal nodes */
   for (i=0; i<numtnp; i++)
   {
@@ -297,7 +298,7 @@ void tsi_coupling(FIELD *structfield,
     actsgnode = actsnode->gnode;
 
     /* debug: */
-    /* printf("SNode %d: (x,y,z)=(%f,%f,%f)\n", 
+    /* printf("SNode %d: (x,y,z)=(%f,%f,%f)\n",
            actsnode->Id,
            actsnode->x[0],
            actsnode->x[1],
@@ -317,7 +318,7 @@ void tsi_coupling(FIELD *structfield,
       {
 #ifdef D_WALL1
         case el_wall1:
-          if (actele->e.w1->tsi_couptyp == tsi_coup_thermconf) 
+          if (actele->e.w1->tsi_couptyp == tsi_coup_thermconf)
           {
             partner++;
           }
@@ -383,14 +384,14 @@ void tsi_coupling(FIELD *structfield,
           acttnode = &(thermfield->dis[disnum_t].node[j]);
 
           /* debug: */
-          /* printf("TNode %d: (x,y,z)=(%f,%f,%f)\n", 
+          /* printf("TNode %d: (x,y,z)=(%f,%f,%f)\n",
                  acttnode->Id,
                  acttnode->x[0],
                  acttnode->x[1],
                  acttnode->x[2]); */
 
           /* check distance of coords */
-          cheque_distance(&(actsnode->x[0]), &(acttnode->x[0]), 
+          cheque_distance(&(actsnode->x[0]), &(acttnode->x[0]),
                           tol, &ierr);
           /* strike! actsnode and acttnode have identical coords */
           if (ierr == 1)
@@ -428,7 +429,7 @@ void tsi_coupling(FIELD *structfield,
     }
     else
     {
-      printf("(x,y,z)=(%f,%f,%f)\n", 
+      printf("(x,y,z)=(%f,%f,%f)\n",
              actsnode->x[0],
              actsnode->x[1],
              actsnode->x[2]);
@@ -482,7 +483,7 @@ void tsi_coupling(FIELD *structfield,
 #ifndef LOCALSYSTEMS_ST
     if (actsnode->locsysId != 0)
     {
-      dserror("Illegal locsys at TSI structural coupling node: %d", 
+      dserror("Illegal locsys at TSI structural coupling node: %d",
               actsnode->Id);
     }
 #endif
@@ -490,7 +491,7 @@ void tsi_coupling(FIELD *structfield,
     /* check that no locsys are applied in thermal field */
     if (acttnode->locsysId != 0)
     {
-      dserror("Illegal locsys at TSI thermal coupling node: %d", 
+      dserror("Illegal locsys at TSI thermal coupling node: %d",
               acttnode->Id);
     }
 
@@ -508,7 +509,7 @@ void tsi_coupling(FIELD *structfield,
 
   /* number of structure elements */
   numsel = structfield->dis[disnum_s].numele;
-  
+
   /* loop all structure elements */
   for (e=0; e<numsel; e++)
   {
@@ -534,7 +535,7 @@ void tsi_coupling(FIELD *structfield,
     adjele = amdef("adjele", &(adjele_a), nen, maxadjele, "IA");
     j = -1;
     aminit(&adjele_a, &(j));  /* initialise with -1 */
-      
+
     /* grab thermal element IDs of first conforming thermal node */
     actsnode = actsele->node[0];
     actsgnode = actsnode->gnode;
@@ -621,16 +622,16 @@ void tsi_coupling(FIELD *structfield,
         default:
           dserror("Element type unknown\n");
     }  /* end of switch */
-    
+
     /* deallocate array of adjacent element IDs */
     amdel(&adjele_a);
-    
+
   }  /* end of for */
 
 
 
   /*--------------------------------------------------------------------*/
-  /* print out coupling */  
+  /* print out coupling */
   if (genprob.visual == 0)
   {
     out_tsi(structfield);
@@ -655,3 +656,4 @@ void tsi_coupling(FIELD *structfield,
 
 /*! @} (documentation module close)*/
 
+#endif

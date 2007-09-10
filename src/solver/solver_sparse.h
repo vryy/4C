@@ -16,6 +16,7 @@ fields or other variables.
 
 */
 
+#ifndef CCADISCRET
 #ifndef SOLVER_SPARSE_H
 #define SOLVER_SPARSE_H
 
@@ -185,4 +186,5 @@ void parallel_sparse_copy_trilinos(PARALLEL_SPARSE* ps, SOLVAR* solvar);
 }
 #endif
 
+#endif
 #endif

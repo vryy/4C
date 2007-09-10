@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 
 *----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 
 #ifdef MUMPS_PACKAGE
 
@@ -1226,3 +1227,4 @@ void exchange_coup_rc_ptr(
 #endif /* ifdef MUMPS_PACKAGE */
 
 
+#endif

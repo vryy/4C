@@ -17,6 +17,7 @@ Maintainer: Andrea Hund
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
@@ -452,7 +453,7 @@ dstrc_enter("w1rsn");
     }
 /*----------------------------- set r/s coordinates for nodal points ---*/
 
-/* although bitwise left-shift <<, ie node << 1, appears pretty cool, it 
+/* although bitwise left-shift <<, ie node << 1, appears pretty cool, it
    translates simply to 2*node, yours bb 8/05 */
 L1:
     ret_val = xr489[irs + (node << 1) - 3];
@@ -715,3 +716,4 @@ dstrc_exit();
 /*----------------------------------------------------------------------*/
 #endif /*D_WALL1*/
 /*! @} (documentation module close)*/
+#endif

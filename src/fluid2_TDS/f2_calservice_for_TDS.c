@@ -3,14 +3,15 @@
 \brief service routines for fluid2_TDS element
 
 <pre>
-Maintainer: 
-            
-            
-            
+Maintainer:
+
+
+
 </pre>
 
 ------------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 
 /*!
 \addtogroup FLUID2
@@ -18,7 +19,7 @@ Maintainer:
 #ifdef D_FLUID2
 #ifdef D_FLUID2_TDS
 #include "../headers/standardtypes.h"
-#include "fluid2_TDS_prototypes.h" 
+#include "fluid2_TDS_prototypes.h"
 
 #include "../fluid2/fluid2.h"
 #include "../fluid2/fluid2_prototypes.h"
@@ -111,11 +112,11 @@ for(i=0;i<ele->numnp;i++) /* loop nodes of element */
    /*------------------------------------------ set element coordinates */
    xyze[0][i]  =actnode->x[0];
    xyze[1][i]  =actnode->x[1];
-   
+
    /*---------------------------- set element accelerations (n+alpha_M) */
    eaccng[0][i]=actnode->sol_increment.a.da[accnm][0];
    eaccng[1][i]=actnode->sol_increment.a.da[accnm][1];
-   
+
    /*------------------------------- set element velocities (n+alpha_F) */
    evelng[0][i]=actnode->sol_increment.a.da[velnm][0];
    evelng[1][i]=actnode->sol_increment.a.da[velnm][1];
@@ -150,7 +151,7 @@ if (actgsurf->neum!=NULL)
          edeadng[i] = ZERO;
       }
 
-      
+
 
       if (actgsurf->neum->neum_type==neum_dead  &&
           actgsurf->neum->neum_onoff.a.iv[i]!=0)
@@ -166,7 +167,7 @@ else
    for (i=0;i<2;i++)
    {
        edeadng[i] = ZERO;
-   } 
+   }
 }
 
 /*---------------------------------------------------------------------*/
@@ -335,14 +336,14 @@ case fncc_L2: /* L_2 norm */
 
 	    vnorm  += DSQR(theta*dt*result[dof]+actnode->sol_increment.a.da[velnp][j]);
             dvnorm += DSQR(theta*dt*result[dof]);
-	    	    
+
             /*
 	      o Add incremental accelerations in DIST_VECTOR to the node
 	        accleration (time n+1)
 	    */
 
             actnode->sol_increment.a.da[accnp][j] += result[dof];
-	    
+
             /*
 	      o Update acceleration  at time n+alpha_M
 	    */
@@ -354,11 +355,11 @@ case fncc_L2: /* L_2 norm */
 		(actnode->sol_increment.a.da[accnp][j]
 		 -
 		 actnode->sol_increment.a.da[accn ][j]);
-	    	    
+
             /*
 	      o Update velocity at time time n+1
 	    */
-	    
+
 	    actnode->sol_increment.a.da[velnp][j]+=
 		theta*dt* result[dof];
 		/*actnode->sol_increment.a.da[veln][j]
@@ -371,7 +372,7 @@ case fncc_L2: /* L_2 norm */
             /*
 	      o Update velocity at time time n+alpha_F
 	    */
-	    
+
 	    actnode->sol_increment.a.da[velnm][j]=
 		actnode->sol_increment.a.da[veln ][j]
 		+
@@ -380,7 +381,7 @@ case fncc_L2: /* L_2 norm */
 		 -
 		 actnode->sol_increment.a.da[veln ][j]);
 
-	    
+
          } /* endif acceleration and vel - dof */
       } /* end of loop over dofs */
    } /* end of loop over nodes */
@@ -447,7 +448,7 @@ Assuming constant velocity and pressure, we have the new trial values
               |                | = |        |
               | uy^{n+1}_{(0)} |   | uy^{n} |
               +-              -+   +-      -+
-              
+
                  p^{n+1}_{(0)}=p^{n}
 
 
@@ -459,14 +460,14 @@ and according to this we have for the accelerations
               |                | = -------  |        |
               | ay^{n+1}_{(0)} |    gamma   | ay^{n} |
               +-              -+            +-      -+
-                 
+
 
 </pre>
 \param  *actpart       PARTITION        (i)
 \param  *actintra      INTRA            (i)
 \param  *actfield      FIELD            (i)
 \param  *ipos          ARRAY_POSITION   (i)
-\param   disnum_calc   INT              (i)                
+\param   disnum_calc   INT              (i)
 \return void
 
 ------------------------------------------------------------------------*/
@@ -496,7 +497,7 @@ double  fact;
 NODE    *actnode;      /* actual node                                  */
 
 /* positions of values in sol_increment */
-int      veln ,accn ; 
+int      veln ,accn ;
 int      velnm,accnm;
 int      velnp,accnp;
 
@@ -562,7 +563,7 @@ for (nn=0;nn<actfield->dis[disnum_calc].numnp;nn++)
           alpha_F*actnode->sol_increment.a.da[velnp][j];
 
 
-	
+
 	/* estimate new accelerations  */
 	actnode->sol_increment.a.da[accnp][j]
           =(actnode->sol_increment.a.da[velnp][j]
@@ -570,13 +571,13 @@ for (nn=0;nn<actfield->dis[disnum_calc].numnp;nn++)
             actnode->sol_increment.a.da[veln][j])/(theta*dt)
           +fact*actnode->sol_increment.a.da[accn][j];
 
-	
+
 	/* calculate the estimated intermediate accelerations */
 	actnode->sol_increment.a.da[accnm][j]=
           (1-alpha_M)*actnode->sol_increment.a.da[accn ][j]
           +
           (alpha_M  )*actnode->sol_increment.a.da[accnp][j];
-	
+
     }
 
     /*----------------------------------------- estimate new pressure */
@@ -621,7 +622,7 @@ if(fdyn->step == 1)
       {
         /* set subscale data at gausspoints*/
 
-        for(i=0;i<2;i++) 
+        for(i=0;i<2;i++)
         {
           actele->e.f2->sub_vel_trial.a.da[i][lr*nis+ls]=0;
           actele->e.f2->sub_vel_acc_trial.a.da[i][lr*nis+ls]=0;
@@ -634,7 +635,7 @@ if(fdyn->step == 1)
         actele->e.f2->sub_pres.a.dv[lr*nis+ls]=0;
       }
     }
-    
+
   }
 }
 #ifdef DEBUG
@@ -648,3 +649,4 @@ return;
 #endif /* D_FLUID2_TDS */
 #endif /* D_FLUID2     */
 /*! @} (documentation module close)*/
+#endif

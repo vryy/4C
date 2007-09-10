@@ -1,3 +1,4 @@
+#ifndef CCADISCRET
 
 /*#include <nurbs/barray2d.h>
 #include <nurbs/barray.h>
@@ -386,3 +387,4 @@ extern "C" {
 }
 #endif
 
+#endif

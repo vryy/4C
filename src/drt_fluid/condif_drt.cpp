@@ -133,15 +133,6 @@ void dyn_condif_drt()
   fdyn->acttime           = 0.0;
 
   // -------------------------------------------------------------------
-  // init all applied time curves
-  // -------------------------------------------------------------------
-  for (int actcurve=0; actcurve<numcurve; actcurve++)
-  {
-   /* the last three parameters are obsolete!!! */
-   dyn_init_curve(actcurve,fdyn->step,fdyn->dt,fdyn->maxtime);
-  }
-
-  // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
   RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());

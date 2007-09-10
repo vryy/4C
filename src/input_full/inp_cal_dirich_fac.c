@@ -12,6 +12,7 @@ Maintainer: Malte Neumann
 
 *----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 
 
 #include "../headers/standardtypes.h"
@@ -312,6 +313,6 @@ void cal_dirich_fac(
 
 /*! @} (documentation module close)*/
 
-
+#endif
 
 

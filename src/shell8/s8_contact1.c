@@ -10,6 +10,7 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef S8CONTACT
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
@@ -115,7 +116,7 @@ MPI_Status       status;                           /* parallel stuff */
 dstrc_enter("s8_contact_detection");
 #endif
 /*----------------------------------------------------------------------*/
-/* 
+/*
   this routine can not handle defined(SOLVE_DIRICH) || defined(SOLVE_DIRICH2)
   because it uses numeq_total to check for dirichlet BCs
   (which is not very easy to change in this case
@@ -1185,4 +1186,5 @@ return;
 
 /*! @} (documentation module close)*/
 
+#endif
 #endif

@@ -10,6 +10,7 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_SHELL8
 #include "../headers/standardtypes.h"
 #include "shell8.h"
@@ -745,7 +746,7 @@ for (i=0; i<nd; ++i)
   printf("\n");
 }
 printf("internal forces\n");
-for (i=0; i<nd; ++i) 
+for (i=0; i<nd; ++i)
   printf("%15.10e\n",force[i]);
 fflush(stdout);
 exit(0);
@@ -759,4 +760,5 @@ dstrc_exit();
 #endif
 return;
 } /* end of s8static_keug */
+#endif
 #endif

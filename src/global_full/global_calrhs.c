@@ -10,6 +10,8 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
+
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 
@@ -80,16 +82,16 @@ for (i=0; i<actfield->ndis; i++) inherit_design_dis_neum(&(actfield->dis[i]));
 if (container->point_neum>0) rhs_point_neum(rhs,rhs1->numeq_total,actpart);
 /*-------------------------------- assemble rhs for ssi coupling forces */
 #ifdef D_SSI
-if (*action == calc_struct_ssiload) 
-{  
+if (*action == calc_struct_ssiload)
+{
   ssiserv_rhs_point_neum(rhs,rhs1->numeq_total,actpart);
   *action = calc_struct_eleload;
 }
 #endif
 #ifdef D_MORTAR
 #ifdef D_FSI
-if (*action == calc_struct_fsiload_mtr) 
-{  
+if (*action == calc_struct_fsiload_mtr)
+{
   fsiserv_rhs_point_neum(rhs,rhs1->numeq_total,actpart);
   *action = calc_struct_eleload;
 }
@@ -219,3 +221,4 @@ dstrc_exit();
 #endif
 return;
 } /* end of rhs_point_neum */
+#endif

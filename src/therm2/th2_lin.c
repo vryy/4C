@@ -13,6 +13,7 @@ Maintainer: Burkhard Bornemann
 
 
 /*----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_THERM2
 
 /*----------------------------------------------------------------------*/
@@ -144,10 +145,10 @@ The element stiffness matrix, ie the tangent operator, is determined
 for the linear planar heat conduction problem.
 
 \param   *ele           ELEMENT     (i)   pointer to current element
-\param   *data          TH2_DATA    (i)   
-\param   *estif_global  ARRAY       (o)   
+\param   *data          TH2_DATA    (i)
+\param   *estif_global  ARRAY       (o)
 \param   *emass_global  ARRAY       (o)  global vector for mass
-\param   *force         DOUBLE      (o)  global vector for internal 
+\param   *force         DOUBLE      (o)  global vector for internal
                                            forces (initialized!)
 \return void
 
@@ -192,13 +193,13 @@ void th2_lin_stiff(ELEMENT *ele,
   dstrc_enter("th2_stiff_lin");
 #endif
 
- 
+
   /*====================================================================*/
   /* initialise data */
   /*--------------------------------------------------------------------*/
   /* check calculation of `mass' matrix */
   /* to be done */
-  
+
   /*--------------------------------------------------------------------*/
   /* some of the fields have to be reinitialized to zero */
   amzero(estif_global);
@@ -209,7 +210,7 @@ void th2_lin_stiff(ELEMENT *ele,
   neledof = NUMDOF_THERM2 * nelenod;
   /*--------------------------------------------------------------------*/
   thick = ele->e.th2->thick;
-  
+
   /*====================================================================*/
   /* compute stiffness matrix */
   /*--------------------------------------------------------------------*/
@@ -287,12 +288,12 @@ void th2_lin_stiff(ELEMENT *ele,
       }
     }  /* end of for (lr=0; lr<nir; lr++) */
   }  /* end of for (ls=0; ls<nis; ls++) */
-  
+
   /*====================================================================*/
   /* local coordinate system */
   dsassert(ele->locsys == locsys_no,
            "locsys not implemented for this element!\n");
-  
+
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_exit();
@@ -312,7 +313,7 @@ void th2_lin_stiff(ELEMENT *ele,
 \param   fac        DOUBLE  (i)    integration factor of current GP
 \param   neledof    INT     (i)    number of element DOFs
 \param   ntmgr      INT     (i)    number of temperature gradients
-                                     identically number of heat flux 
+                                     identically number of heat flux
                                      components
 \return void
 
@@ -402,7 +403,7 @@ void th2_lin_fint(DOUBLE  *hflux,
   /*--------------------------------------------------------------------*/
   hfluxfac0 = hflux[0] * fac;
   hfluxfac1 = hflux[1] * fac;
-  
+
   /*--------------------------------------------------------------------*/
   /* geometrically linear */
   for (i=1; i<neledof; i++)
@@ -421,3 +422,4 @@ void th2_lin_fint(DOUBLE  *hflux,
 /*======================================================================*/
 #endif /* end of #ifdef D_THERM2 */
 /*! @} (documentation module close)*/
+#endif

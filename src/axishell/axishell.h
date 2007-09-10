@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_AXISHELL
 
 /*!
@@ -92,3 +93,4 @@ void saxi_inp(
 
 #endif /*D_AXISHELL*/
 /*! @} (documentation module close)*/
+#endif

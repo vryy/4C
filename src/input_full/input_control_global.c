@@ -1162,7 +1162,7 @@ fdyn->itemax_ke=100;
 fdyn->stepke=0;
 
 /* former turbulence flag (and still may be), */
-/* now used for convection-diffusion to potentially add dc */ 
+/* now used for convection-diffusion to potentially add dc */
 fdyn->dis_capt=0;
 
 /* convection-diffusion velocity field */
@@ -1361,7 +1361,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       else
          dserror("homogeneous directions needed to evaluate in plane statistics for turbulent channel!");
    }
-     
+
    frreadyes("DISC_CAPT",&(fdyn->dis_capt));
    frreadyes("ADAPT_TIME",&(fdyn->adaptive));
    frchar("CD_VELOCITY"  ,buffer    ,&ierr);

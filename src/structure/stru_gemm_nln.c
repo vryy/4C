@@ -10,6 +10,7 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef GEMM
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
@@ -1281,3 +1282,4 @@ return;
 } /* end of dyn_nln_structural */
 #endif /*GEMM*/
 /*! @} (documentation module close)*/
+#endif

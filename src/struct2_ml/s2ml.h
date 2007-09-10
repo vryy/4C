@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief headerfile for 
+\brief headerfile for
 
 <pre>
 Maintainer: Andrea Hund
@@ -10,9 +10,10 @@ Maintainer: Andrea Hund
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_MLSTRUCT
 
-/*! 
+/*!
 \addtogroup MLSTRUCT
 *//*! @{ (documentation module open)*/
 
@@ -21,7 +22,7 @@ Maintainer: Andrea Hund
 \brief gradient enhanced wall element
 
 <pre>                                                            ah 08/03
-This structure contains the working array at the Gaussian points for the 
+This structure contains the working array at the Gaussian points for the
 gradient enhanced wall element
 </pre>
 
@@ -69,3 +70,4 @@ typedef struct _SM_GP_DATA
 /*! @} (documentation module close)*/
 
 #endif /* D_MLSTRUCT */
+#endif

@@ -12,6 +12,7 @@ Maintainer: Malte Neumann
   </pre>
 
  *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_FLUID3
 
 #include "../headers/standardtypes.h"
@@ -130,3 +131,4 @@ void f3_out_gid_sol_str(
 /*----------------------------------------------------------------------*/
 #endif /*D_FLUID3*/
 /*! @} (documentation module close)*/
+#endif

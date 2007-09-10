@@ -10,6 +10,7 @@ Maintainer: Andreas Lipka
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_BRICK1
 #include "brick1_doxygen.h"
 #include "../output/gid.h"
@@ -241,3 +242,4 @@ void c1_gid_stress(char resstring[],
 
 #endif
 /*! @} (documentation module close)*/
+#endif

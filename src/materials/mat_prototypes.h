@@ -12,6 +12,7 @@ Maintainer: Stefan Hartmann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_MAT
 
 /*!
@@ -415,3 +416,4 @@ void c1ab (DOUBLE *A,DOUBLE *B,DOUBLE *R,INT *NZA,INT *NSA,INT *NSB,
 /*----------------------------------------------------------------------*/
 #endif /*D_MAT*/
 /*! @} (documentation module close)*/
+#endif

@@ -10,6 +10,7 @@ Maintainer: Andrea Hund
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_WALL1
 
 /*!
@@ -213,3 +214,4 @@ void w1inp(ELEMENT *ele);
 /*----------------------------------------------------------------------*/
 #endif /*D_WALL1*/
 /*! @} (documentation module close)*/
+#endif

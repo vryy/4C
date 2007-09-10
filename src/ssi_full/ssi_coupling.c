@@ -10,7 +10,8 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
+#ifndef CCADISCRET
+/*!
 \addtogroup SSI
 *//*! @{ (documentation module open)*/
 #ifdef D_SSI
@@ -46,10 +47,10 @@ evaluated and transformed into Neumann/Dirichlet conditions
 
 ssi_couptyp=ssi_master -> Neumann condition
 ssi_couptyp=ssi_slave  -> Dirichlet condition
-			     
-</pre>   
 
-\return void 
+</pre>
+
+\return void
 
 ------------------------------------------------------------------------*/
 void ssi_createssicoup()
@@ -61,7 +62,7 @@ DNODE    *actdnode;
 
 SSI_COUPTYP ssi_line_couptyp;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ssi_createssicoup");
 #endif
 
@@ -82,7 +83,7 @@ for (i=0; i<design->ndline; i++)
       if(actdnode->ssicouple == NULL)
       {
         actdnode->ssicouple = (SSI_COUPLE_CONDITION*)CCACALLOC(1,sizeof(SSI_COUPLE_CONDITION));
-        if (!actdnode->ssicouple) dserror("Allocation of memory failed");  
+        if (!actdnode->ssicouple) dserror("Allocation of memory failed");
       }
       /*----- inherit the dirichlet condition from actdline to actdnode */
       actdnode->ssicouple->ssi_couptyp = actdline->ssicouple->ssi_couptyp;
@@ -104,7 +105,7 @@ for (i=0; i<design->ndline; i++)
    if (actdline->dirich!=NULL) hasdirich++;
    if (actdline->couple!=NULL) hascouple++;
 /*   if (actdline->ssicouple->ssi_couptyp!=ssi_none) hasssi++; */
-   if (actdline->ssicouple!=NULL) hasssi++; 
+   if (actdline->ssicouple!=NULL) hasssi++;
    if (actdline->neum!=NULL) hasneum++;
    if (hasssi==0) continue;
    ssi_line_couptyp=actdline->ssicouple->ssi_couptyp;
@@ -113,7 +114,7 @@ for (i=0; i<design->ndline; i++)
    case ssi_master:
       dsassert(hasneum==0,"neumann- and ssi-coupling condition defined on same DLINE\n");
       dsassert(hasdirich==0,"dirich- and ssi-coupling condition defined on same DLINE\n");
-      dsassert(hascouple==0,"coupling- and ssi-coupling condition defined on same DLINE\n");      
+      dsassert(hascouple==0,"coupling- and ssi-coupling condition defined on same DLINE\n");
       actdline->neum = (NEUM_CONDITION*)CCACALLOC(1,sizeof(NEUM_CONDITION));
       if (!actdline->neum) dserror("Allocation of memory failed");
       actdline->neum->neum_type = neum_SSI;
@@ -124,20 +125,20 @@ for (i=0; i<design->ndline; i++)
       dsassert(hasneum==0,"neumann- and ssi-coupling condition defined on same DLINE\n");
       /*----------- allocate space for a dirichlet condition in this dline */
       actdline->dirich = (DIRICH_CONDITION*)CCACALLOC(1,sizeof(DIRICH_CONDITION));
-      if (!actdline->dirich) dserror("Allocation of memory failed");  
+      if (!actdline->dirich) dserror("Allocation of memory failed");
       amdef("onoff",&(actdline->dirich->dirich_onoff),MAXDOFPERNODE,1,"IV");
       amzero(&(actdline->dirich->dirich_onoff));
       amdef("val",&(actdline->dirich->dirich_val),MAXDOFPERNODE,1,"DV");
-      amdef("curve",&(actdline->dirich->curve),MAXDOFPERNODE,1,"IV"); 
+      amdef("curve",&(actdline->dirich->curve),MAXDOFPERNODE,1,"IV");
       amdef("function",&(actdline->dirich->funct),MAXDOFPERNODE,1,"IV");
       amzero(&(actdline->dirich->dirich_val));
       amzero(&(actdline->dirich->curve));
       amzero(&(actdline->dirich->funct));
       /*----------------------------------- initialise for ssi-coupling */
-      actdline->dirich->dirich_onoff.a.iv[0] = 1;   
-      actdline->dirich->dirich_onoff.a.iv[1] = 1;       
+      actdline->dirich->dirich_onoff.a.iv[0] = 1;
+      actdline->dirich->dirich_onoff.a.iv[1] = 1;
       actdline->dirich->dirich_type=dirich_SSI;
-   break;   
+   break;
    default:
       dserror("ssi_couptyp unknown!\n");
    } /* end switch(fieldtyp) */
@@ -145,7 +146,7 @@ for (i=0; i<design->ndline; i++)
 
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -153,41 +154,41 @@ return;
 } /* end of ssi_createssicoup */
 
 
-/*!--------------------------------------------------------------------- 
+/*!---------------------------------------------------------------------
 \brief initialise fsi coupling conditions
 
 <pre>                                                         genk 09/02
 
  create mulitfield solution history and set pointers to the corresponding
  nodes of the other fields
-			     
-</pre>   
 
-\param *structfield   FIELD         (i)      structure field 
-\param *fluidfield    FIELD         (i)      fluid field     
+</pre>
 
-\return void 
+\param *structfield   FIELD         (i)      structure field
+\param *fluidfield    FIELD         (i)      fluid field
+
+\return void
 
 ------------------------------------------------------------------------*/
-void ssi_initcoupling( 
+void ssi_initcoupling(
                           FIELD       *masterfield,
-                          FIELD       *slavefield, 
+                          FIELD       *slavefield,
                           INTERFACES  *int_faces
 		      )
 {
-INT     nummnp, numsnp;             /* number of nodes                  */  
+INT     nummnp, numsnp;             /* number of nodes                  */
 INT     numdf;                      /* number of dofs                   */
 INT     numsf,nummf;
 INT     i,j,a;                      /* simply some counters             */
 INT     ierr;                       /* flag                             */
-INT     sfound;                     /* flag                             */          
+INT     sfound;                     /* flag                             */
 DOUBLE  tol=EPS8;                   /* tolerance for node dist          */
 NODE   *actmnode, *actsnode=NULL;   /* actual nodes                     */
 GNODE  *actmgnode,*actsgnode=NULL;  /* actual gnodes                    */
 GLINE  *actgline;                   /* actual glines                    */
 ARRAY   int_ids;                    /* a vector with the interface Ids  */
 DOUBLE  *int_ids_a;
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ssi_initcoupling");
 #endif
 
@@ -206,7 +207,7 @@ numsf   = 1;
 /*---------------------------------------------------- loop master nodes */
 /* multifield solution history of master nodes:
    actfnode->sol_mf.a.da[0][i]: displacements transfered to slave
-  ----------------------------------------------------------------------*/   
+  ----------------------------------------------------------------------*/
 for (i=0;i<nummnp;i++)
 {
    actmnode  = &(masterfield->dis[0].node[i]);
@@ -225,7 +226,7 @@ for (i=0;i<nummnp;i++)
 /* multifield solution history of slave nodes:
    actsnode->sol_mf.a.da[0][i]: couplingforces at the end of time step
    actsnode->sol_mf.a.da[1][i]: coupling forces at the beginning of time step
- -----------------------------------------------------------------------*/   
+ -----------------------------------------------------------------------*/
 for (i=0;i<numsnp;i++)
 {
    actsnode  = &(slavefield->dis[0].node[i]);
@@ -240,9 +241,9 @@ for (i=0;i<numsnp;i++)
    actsgnode->mfcpnode[numsf]=NULL;
 } /* end of loop over struct nodes */
 
-/* find ssi coupled nodes and set ptrs to the corresponding nodes of 
+/* find ssi coupled nodes and set ptrs to the corresponding nodes of
    the other fields --------------------------------------------------*/
-/*------------------------------------------------- loop master nodes  */    
+/*------------------------------------------------- loop master nodes  */
 for (i=0;i<nummnp;i++)
 {
    actmnode  = &(masterfield->dis[0].node[i]);
@@ -256,12 +257,12 @@ for (i=0;i<nummnp;i++)
       if(ierr==0) continue;
       sfound++;
       actsgnode = actsnode->gnode;
-      break;      
-   } /* end of loop over structnodes */  
+      break;
+   } /* end of loop over structnodes */
 
    /*--------------------------- set pointers to corresponding nodes */
    if(sfound>0)   actmgnode->mfcpnode[numsf]=actsnode;
-   if(sfound>0)   actsgnode->mfcpnode[nummf]=actmnode;   
+   if(sfound>0)   actsgnode->mfcpnode[nummf]=actmnode;
 }/* end of loop over fluidnodes */
 
 /*------------------------------------------------ print out coupling */
@@ -304,7 +305,7 @@ for(i=0; i<int_ids.fdim; i++)
       a = int_ids.a.iv[j];
       int_ids.a.iv[j] = int_ids.a.iv[j+1];
       int_ids.a.iv[j+1] = a;
-    }  
+    }
   }
 }
 /* detect the number of interfaces */
@@ -337,7 +338,7 @@ for(i=0; i<int_ids.fdim-1; i++)
 }
 
 /*--------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -350,28 +351,28 @@ return;
 <pre>                                                         genk 01/03
 
  create array sid (structural interface dofs)
-			     
-</pre>   
 
-\param *structfield   FIELD         (i)      structure field 
-\param *ssidyn        SSI_DYNAMIC   (i)               
-\return void 
+</pre>
+
+\param *structfield   FIELD         (i)      structure field
+\param *ssidyn        SSI_DYNAMIC   (i)
+\return void
 
 ------------------------------------------------------------------------*/
 void ssi_master_intdofs(
-                          FIELD       *masterfield, 
+                          FIELD       *masterfield,
 			  SSI_DYNAMIC *ssidyn
 		       )
 {
 INT    i,j;                    /* some counters                         */
-INT    numnp_total;            /* total number of structure dofs        */             
+INT    numnp_total;            /* total number of structure dofs        */
 INT    dof;                    /* actual dof                            */
-INT    counter=0;              
+INT    counter=0;
 INT   *sid;                    /* structural interface dofs             */
 NODE  *actmnode;               /* actual nodes                          */
 GNODE *actmgnode;              /* actual gnodes                         */
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ssi_master_intdofs");
 #endif
 
@@ -387,18 +388,18 @@ for (i=0;i<numnp_total;i++)
    actmnode  = &(masterfield->dis[0].node[i]);
    actmgnode = actmnode->gnode;
    if (actmgnode->ssicouple == NULL) continue;
-   if (actmgnode->ssicouple->ssi_couptyp==ssi_none) continue; 
+   if (actmgnode->ssicouple->ssi_couptyp==ssi_none) continue;
    for (j=0;j<actmnode->numdf;j++)
    {
-      dof = actmnode->dof[j];      
+      dof = actmnode->dof[j];
       sid[dof]=1;
       counter++;
-   }      
+   }
 } /* end of loop over nodes */
 
 ssidyn->numsid=counter;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
@@ -406,3 +407,4 @@ return;
 } /* end of ssi_master_intdofs*/
 #endif
 /*! @} (documentation module close)*/
+#endif

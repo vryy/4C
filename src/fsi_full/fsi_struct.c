@@ -11,6 +11,7 @@ Maintainer: Steffen Genkinger
 
 ------------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 
 /*!
 \addtogroup FSI
@@ -2062,3 +2063,4 @@ void fsi_struct(
 
 
 /*! @} (documentation module close)*/
+#endif

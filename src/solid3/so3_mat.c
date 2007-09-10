@@ -13,6 +13,7 @@ Maintainer: Moritz Frenzel
 \author mf
 \date 10/06
 */
+#ifndef CCADISCRET
 #ifdef D_SOLID3
 
 
@@ -201,7 +202,7 @@ void so3_mat_sel(CONTAINER *container,
   /*====================================================================*/
   /* ===> central material routines
    *
-   *      These materials are supposed to be connected to the 
+   *      These materials are supposed to be connected to the
    *      existant (or new?) central material routines.
    *      Right now, only the simple St.Venant-Kirchhoff material
    *      is included to test the element.
@@ -269,7 +270,7 @@ void so3_mat_stress(CONTAINER *container,
   /*====================================================================*/
   /* ===> central material routines
    *
-   *      These materials are supposed to be connected to the 
+   *      These materials are supposed to be connected to the
    *      existant (or new?) central material routines.
    *      Right now, only the simple St.Venant-Kirchhoff material
    *      is included to test the element.
@@ -290,7 +291,7 @@ void so3_mat_stress(CONTAINER *container,
     /* Robinson's visco-plastic temperature-dependent material */
 #ifdef D_TSI
     case m_vp_robinson:
-      so3_mat_robinson_stress(container, ele, mat->m.vp_robinson, ip, gds, 
+      so3_mat_robinson_stress(container, ele, mat->m.vp_robinson, ip, gds,
                               stress, cmat);
       break;
 #endif
@@ -317,7 +318,7 @@ void so3_mat_stress(CONTAINER *container,
 \author bborn
 \date 01/07
 */
-void so3_mat_density(MATERIAL *mat, 
+void so3_mat_density(MATERIAL *mat,
                      DOUBLE *density)
 {
 
@@ -394,7 +395,7 @@ void so3_mat_mivupdreq(ELEMENT* ele,
     default:
       dserror("Type of material law is not applicable");
       break;
-  }  /* end of switch (mat->mattyp) */  
+  }  /* end of switch (mat->mattyp) */
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -405,7 +406,7 @@ void so3_mat_mivupdreq(ELEMENT* ele,
 
 /*======================================================================*/
 /*!
-\brief Iterative update material internal variables 
+\brief Iterative update material internal variables
 
 \param  container CONTAINER*      (i)   container
 \param  ele       ELEMENT*        (io)  pointer to current element
@@ -461,7 +462,7 @@ void so3_mat_mivupditer(const CONTAINER* container,
 
 /*======================================================================*/
 /*!
-\brief Update material internal variables 
+\brief Update material internal variables
 
 \param *container CONTAINER      (i)   container
 \param *ele       ELEMENT        (i)   pointer to current element
@@ -515,3 +516,4 @@ void so3_mat_mivupdincr(const CONTAINER* container,
 /*======================================================================*/
 #endif  /* end of #ifdef D_SOLID3 */
 /*! @} (documentation module close) */
+#endif

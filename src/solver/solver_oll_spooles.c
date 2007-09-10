@@ -10,6 +10,7 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
@@ -653,3 +654,4 @@ void solver_spo_oll(
 
 
 /*! @} (documentation module close)*/
+#endif

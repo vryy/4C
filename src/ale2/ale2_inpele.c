@@ -10,6 +10,7 @@ Maintainer: Christiane Foerster
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_ALE
 #include "../headers/standardtypes.h"
 #include "../fluid3/fluid3.h"
@@ -118,3 +119,4 @@ return;
 } /* end of ale2inp */
 #endif
 /*! @} (documentation module close)*/
+#endif

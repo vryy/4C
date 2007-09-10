@@ -10,6 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID
 *//*! @{ (documentation module open)*/
@@ -829,7 +830,7 @@ if(actfield->dis[disnum_calc].element[0].e.f2->stab_type == stab_tds)
 	actfield,
 	ipos,
 	disnum_calc);
-    
+
     f2_update_subscale_vel(
 	actpart,
 	actintra,
@@ -1129,3 +1130,4 @@ return;
 
 #endif
 /*! @} (documentation module close)*/
+#endif

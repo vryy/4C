@@ -11,6 +11,7 @@ Maintainer: Burkhard Bornemann
             089-289-15237
 </pre>
 */
+#ifndef CCADISCRET
 #ifdef D_SOLID3
 
 /*----------------------------------------------------------------------*/
@@ -31,7 +32,7 @@ extern GENPROB genprob;
 
 /*======================================================================*/
 /*!
-\brief Spatial integration of 
+\brief Spatial integration of
        body force in element domain (volume) [force/volume]
 \param  ele        ELEMENT*           (i)   pointer to current element
 \param  gpshade    SO3_GPSHAPEDERIV*  (i)   Gauss point coords etc
@@ -178,3 +179,4 @@ void so3_load_vol_val(ELEMENT *ele,
 
 /*======================================================================*/
 #endif  /*end of #ifdef D_SOLID3 */
+#endif

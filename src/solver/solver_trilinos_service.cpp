@@ -10,6 +10,7 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
 #include <ctime>
@@ -1215,3 +1216,4 @@ void extractGlobalRow(FILE* out,TRILINOSMATRIX* mat,INT row)
 #endif
 
 #endif // TRILINOS_PACKAGE
+#endif

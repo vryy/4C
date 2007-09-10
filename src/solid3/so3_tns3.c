@@ -13,6 +13,7 @@ Maintainer: Burkhard Bornemann
 \author bborn
 \date 01/07
 */
+#ifndef CCADISCRET
 #ifdef D_SOLID3
 
 
@@ -282,7 +283,7 @@ void so3_tns3_dotprod(DOUBLE at[NDIM_SOLID3][NDIM_SOLID3],
 
 /*======================================================================*/
 /*!
-\brief Dot product of two 2-tensors in 3 dimensions, 
+\brief Dot product of two 2-tensors in 3 dimensions,
        left input tensor is transposed
 
 We talk about the trivial
@@ -330,7 +331,7 @@ void so3_tns3_dotprod_tl(DOUBLE at[NDIM_SOLID3][NDIM_SOLID3],
 
 /*======================================================================*/
 /*!
-\brief Dot product of two 2-tensors in 3 dimensions, 
+\brief Dot product of two 2-tensors in 3 dimensions,
        right input tensor is transposed
 
 We talk about the trivial
@@ -394,13 +395,13 @@ case of a deformation tensor.
 
 References:
 [1] A. Hoger & D.E. Carlson, "Determination of the stretch and
-        rotation in the polar decomposition of the deformation 
+        rotation in the polar decomposition of the deformation
         gradient", Quart. Appl. Math., 42(2):113-117, 1984.
 [2] G.A. Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
         esp. Section 2.6
 [3] I.N. Bronstein & K.A. Semendjajew, "Taschenbuch der
         Mathematik", Teubner, 25.ed, 1991.
-       
+
 
 \param *ele       ELEMENT        (i)   pointer to current element
 \param *mat       MATERIAL       (i)   pointer to current material
@@ -463,16 +464,16 @@ void so3_tns3_plrdcmp(DOUBLE ft[NDIM_SOLID3][NDIM_SOLID3],  /* input tensor */
 
 
   /*--------------------------------------------------------------------*/
-  /* determination of I_U acc. to [1], 
+  /* determination of I_U acc. to [1],
    * ==> BUT FAILS ==> next block working alternative */
 #if 0
   /* auxiliar variables to get trace of material stretch tensor U */
   xi = 32.0*(2.0*ci*ci*ci - 9.0*ci*cii + 27.0*ciii)/27.0;
-  eta = 1024.0*(4.0*cii*cii*cii - ci*ci*cii*cii + 4.0*ci*ci*ci*ciii 
+  eta = 1024.0*(4.0*cii*cii*cii - ci*ci*cii*cii + 4.0*ci*ci*ci*ciii
                 - 18.0*ci*cii*ciii + 27.0*ciii*ciii)/27.0;
-  zeta = -2.0*ci/3.0 + pow(xi+sqrt(eta), 1.0/3.0) 
+  zeta = -2.0*ci/3.0 + pow(xi+sqrt(eta), 1.0/3.0)
     + pow(xi-sqrt(eta), 1.0/3.0);
-  
+
   /* invariants of material stretch tensor U */
   /* 1st invariant: I_U = tr(U) */
   if (zeta == -2.0*ci)
@@ -481,7 +482,7 @@ void so3_tns3_plrdcmp(DOUBLE ft[NDIM_SOLID3][NDIM_SOLID3],  /* input tensor */
   }
   else
   {
-    ui = 0.5*(sqrt(2.0*ci+zeta) 
+    ui = 0.5*(sqrt(2.0*ci+zeta)
               + sqrt(2.0*ci-zeta+16.0*sqrt(ciii)/sqrt(2.0*ci+zeta)));
   }
 #endif
@@ -490,7 +491,7 @@ void so3_tns3_plrdcmp(DOUBLE ft[NDIM_SOLID3][NDIM_SOLID3],  /* input tensor */
   /*--------------------------------------------------------------------*/
   /* 1st invariant of the material stretch tensor U */
   /* Summary:
-   *     The 1st invariant I_U depends non-linearly 
+   *     The 1st invariant I_U depends non-linearly
    *     on I_C, II_C and III_C.
    */
   /* Derivation:
@@ -504,9 +505,9 @@ void so3_tns3_plrdcmp(DOUBLE ft[NDIM_SOLID3][NDIM_SOLID3],  /* input tensor */
    * Equivalently with tr(U^2)=tr(C)=I_C, tr(U) = I_U it is obtained
    *     tr(U^3) - I_U*I_C + II_U*I_U - 3*III_U = 0                  (2)
    * The problem is the unknown tr(U^3). II_U and III_U can be referred
-   * back to I_U and the invariants if C. 
+   * back to I_U and the invariants if C.
    *     II_U = 1/2*(tr(U)^2 - tr(U^2)) = 1/2*(I_U^2 - I_C)          (3)
-   *     III_U = det(U) = sqrt(det(U)*det(U)) 
+   *     III_U = det(U) = sqrt(det(U)*det(U))
    *           = sqrt(det(U . U)) = sqrt(det(C)) = sqrt(III_C)       (4)
    *
    * We can resolve the problem by
@@ -514,21 +515,21 @@ void so3_tns3_plrdcmp(DOUBLE ft[NDIM_SOLID3][NDIM_SOLID3],  /* input tensor */
    *     U^4 - I_U*U^3 + II_U*U^2 - III_U*U = 0
    * The trace of this matrix equation reveals
    *     tr(U^4) - I_U*tr(U^3) + II_U*tr(U^2) - III_U*tr(U) = 0
-   * or with tr(U^4)=tr(C^2)=I_C^2 - 2*II_C, 
+   * or with tr(U^4)=tr(C^2)=I_C^2 - 2*II_C,
    *     I_C^2 - 2*II_C - I_U*tr(U^3) + II_U*I_C - III_U*I_U = 0     (5)
    *
    * Eqs (2) and (5) can be used to eliminate tr(U^3), and we end up at
-   *     I_U^4 - 2*I_C*I_U^2 - 8*sqrt(III_C)*I_U 
+   *     I_U^4 - 2*I_C*I_U^2 - 8*sqrt(III_C)*I_U
    *                                        + I_C^2 - 4*II_C = 0     (6)
    * in which advantage is taken of Eqs (3) and (4).
    * This quartic polynomial of I_U needs to be solved.
    * It is not done by the formulas presented in [1], because they seem
    * the fail even for the simple test case in which the deformation
-   * gradient is a diagonal matrix with >1 entries on the diagonal. 
+   * gradient is a diagonal matrix with >1 entries on the diagonal.
    * The solution found in [3] is applied.
    */
 
-  /* solution of quartic polynomial of y = I_U = tr(U) 
+  /* solution of quartic polynomial of y = I_U = tr(U)
    *     y^4 + p*y^2 + q*y + r = 0
    * with */
   p = -2.0*ci;  /* p = -2*I_C */
@@ -568,7 +569,7 @@ void so3_tns3_plrdcmp(DOUBLE ft[NDIM_SOLID3][NDIM_SOLID3],  /* input tensor */
     else
     {
       /* should always be the case, but you never know ... */
-      if (pp < 0.0)  
+      if (pp < 0.0)
       {
         /* roots of normal form of cubic resolvent */
         if (qq > 0.0)
@@ -603,7 +604,7 @@ void so3_tns3_plrdcmp(DOUBLE ft[NDIM_SOLID3][NDIM_SOLID3],  /* input tensor */
     }
   }
   /* discriminant<0  ==>  3 real roots in x  */
-  else if (disc < 0.0) 
+  else if (disc < 0.0)
   {
     rho = sqrt(-pp*pp*pp/27.0);
     phi = acos(-qq/2.0/rho);
@@ -648,7 +649,7 @@ void so3_tns3_plrdcmp(DOUBLE ft[NDIM_SOLID3][NDIM_SOLID3],  /* input tensor */
   /*--------------------------------------------------------------------*/
   /* inverse of material stretch tensor U^{-1} */
   /* Hoger & Carlson [1] identified
-   *     U^{-1} = [ III_U^2*(III_U+I_U*I_C) 
+   *     U^{-1} = [ III_U^2*(III_U+I_U*I_C)
    *                + I_U^2*(I_U*III_C + III_U*II_C) ]^{-1}
    *            * [ I_U*(I_U*II_U - III_U)*C^2
    *                - (I_U*II_U - III_U)*(III_U +I_U*I_C)*C
@@ -737,7 +738,7 @@ void so3_tns3_plrdcmp(DOUBLE ft[NDIM_SOLID3][NDIM_SOLID3],  /* input tensor */
 /*!
 \brief Reshape symmetric tensor to equivalent vector
 
-The tensor 
+The tensor
          [ A_11  A_12  A_31 ]
      A = [ A_12  A_22  A_23 ]
          [ A_31  A_23  A_33 ]
@@ -785,7 +786,7 @@ is stored as tensor
      A = [ A_12  A_22  A_23 ]
          [ A_31  A_23  A_33 ]
 
-\param  av     DOUBLE[]      (i)  vector Av 
+\param  av     DOUBLE[]      (i)  vector Av
 \param  at     DOUBLE[][]    (o)  tensor A
 \return void
 
@@ -818,7 +819,7 @@ void so3_tns3_v2tsym(DOUBLE av[NUMSTR_SOLID3],
 /*!
 \brief Spectral decomposition directlt calculated using Cardan's formulas
 
-The tensor 
+The tensor
          [ A_11  A_12  A_13 ]
      A = [ A_21  A_22  A_23 ]
          [ A_31  A_32  A_33 ]
@@ -833,7 +834,7 @@ The tensor
 */
 void so3_tns3_spcdcmp(DOUBLE at[NDIM_SOLID3][NDIM_SOLID3],  /* input tensor */
                       DOUBLE ew[NDIM_SOLID3],  /* eigen values */
-                      INT *err) 
+                      INT *err)
 {
   DOUBLE ai, aii, aiii;  /* invariants of A */
   DOUBLE p, q, disc, rho, phi, rhort;
@@ -884,7 +885,7 @@ void so3_tns3_spcdcmp(DOUBLE at[NDIM_SOLID3][NDIM_SOLID3],  /* input tensor */
     {
       duplicity = 2;
       /* should always be the case, but you never know ... */
-      if (p < 0.0)  
+      if (p < 0.0)
       {
         /* roots of normal form of cubic resolvent */
         y1 = -2.0*sqrt(-p/3.0);  /* single root */
@@ -1023,17 +1024,17 @@ void so3_tns3_symspcdcmp_jit(DOUBLE at[NDIM_SOLID3][NDIM_SOLID3],
         /*--------------------------------------------------------------*/
         /* rotation angle th
          * 2*th = atan(2*evt[idim][jdim]/(ewt[idim,idim]-ewt[jdim,jdim]) */
-        DOUBLE th 
+        DOUBLE th
           = 0.5*atan2(2.0*ewt[idim][jdim],ewt[idim][idim]-ewt[jdim][jdim]);
         DOUBLE sith = sin(th);  /* sine of rotation angle */
         DOUBLE coth = cos(th);  /* cosine of rotation angle */
         /* this defines the rotation matrix,
          * e.g.
-         * 
+         *
          *             [ T_{idim,idim}  0  T_{idim,jdim} ]
          *   T^<i+1> = [             0  1              0 ]
          *             [ T_{jdim,idim}  0  T_{jdim,jdim} ]
-         *       
+         *
          *       [ cos(th)  0  -sin(th) ]
          *     = [       0  1         0 ]
          *       [ sin(th)  0   cos(th) ]
@@ -1244,7 +1245,7 @@ void so3_tns3_unrm(const DOUBLE av[NDIM_SOLID3],
 
   /*--------------------------------------------------------------------*/
   /* cross product */
-  if (swp) 
+  if (swp)
   {
     so3_tns3_crsprd(bv, av, cv);
   }
@@ -1267,3 +1268,4 @@ void so3_tns3_unrm(const DOUBLE av[NDIM_SOLID3],
 /*======================================================================*/
 #endif  /* end of #ifdef D_SOLID3 */
 /*! @} (documentation module close) */
+#endif

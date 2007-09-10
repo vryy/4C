@@ -10,6 +10,7 @@ Maintainer: Andrea Hund
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "wall1.h"
 #include "wall1_prototypes.h"
@@ -175,8 +176,8 @@ case calc_struct_internalforce:
      w1static_keug(ele,&actdata,actmat,estif_global,NULL,intforce,0,
                    container);
    }
-   else 
-   { 
+   else
+   {
      if(ele->e.w1->kintype==geo_lin)
      {
        w1static_ke(ele,&actdata,actmat,estif_global,NULL,intforce,0);
@@ -430,3 +431,4 @@ return;
 } /* end of wall1 */
 /*----------------------------------------------------------------------*/
 /*! @} (documentation module close)*/
+#endif

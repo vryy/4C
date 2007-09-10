@@ -14,6 +14,7 @@ Maintainer: Steffen Genkinger
    1.) THE FILENAMES ARE IN ALPHABETICAL ORDER !!!
    2.) FUNCTIONS ARE IN THE SAME ORDER LIKE IN THE FILE!!!
 */
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID2
 *//*! @{ (documentation module open)*/
@@ -1815,3 +1816,4 @@ void f2_read_restart( ELEMENT *actele, INT nhandle, long int *handles);
 
 
 /*! @} (documentation module close)*/
+#endif

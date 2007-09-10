@@ -14,6 +14,7 @@ Maintainer: Malte Neumann
  */
 /*-----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 #ifdef D_ALE
 #include "../headers/standardtypes.h"
 #include "ale3.h"
@@ -1356,5 +1357,5 @@ void ale3_hourglass(
 
 
 #endif /* ifdef D_ALE */
-
+#endif
 

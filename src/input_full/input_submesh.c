@@ -11,6 +11,7 @@ Maintainer: Andrea Hund
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "../wall1/wall1.h"
 #include "../struct2_ml/s2ml.h"
@@ -514,3 +515,4 @@ return;
 
 
 
+#endif

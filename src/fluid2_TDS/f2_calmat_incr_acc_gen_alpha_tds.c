@@ -11,6 +11,7 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID2
 *//*! @{ (documentation module open)*/
@@ -83,7 +84,7 @@ void f2_calgalmat_gen_alpha_tds(
  int       i;        /* default counter                             */
  int       ri,ci;    /* counters for row and column index           */
 
-    
+
  double    alpha_M;  /* generalised alpha parameter                 */
                      /* accelerations -> intermediate accelerations */
  double    alpha_F;  /* generalised alpha parameter                 */
@@ -98,9 +99,9 @@ void f2_calgalmat_gen_alpha_tds(
 
  /* viscous term partially integrated */
  DOUBLE  viscous[2][2][2*MAXNOD];
- 
+
  double    aux;
- 
+
 #ifdef DEBUG
  dstrc_enter("f2_calgalmat_gen_alpha_tds");
 #endif
@@ -116,7 +117,7 @@ void f2_calgalmat_gen_alpha_tds(
  alpha_F = fdyn->alpha_f;
 
  aftdt   = alpha_F*theta*dt;
- 
+
 
 
  for (i=0; i<iel; i++) /* loop over nodes of element */
@@ -135,8 +136,8 @@ void f2_calgalmat_gen_alpha_tds(
      viscous[1][0][2*i+1] = 0.5 * derxy[0][i];  /* 3rd index:             */
      viscous[1][1][2*i+1] = derxy[1][i];        /*   elemental vel dof    */
      viscous[1][1][2*i]   = 0.0;
- }    
- 
+ }
+
  for (ri=0; ri<iel; ri++)       /* row index    */
  {
   for (ci=0; ci<iel; ci++)   /* column index */
@@ -147,20 +148,20 @@ void f2_calgalmat_gen_alpha_tds(
 
    /* 'mass matrix' alpha_M * (Dacc,v) */
    aux = alpha_M * fac ;
- 
+
    estif[ri*3  ][ci*3  ] += funct[ri] * funct[ci] * aux;
    estif[ri*3+1][ci*3+1] += funct[ri] * funct[ci] * aux;
-	 
+
    /*------------------------------------------------------------------*/
    /*                         GALERKIN KVV                             */
    /*------------------------------------------------------------------*/
 
    /*  alpha_F * theta * dt * (2 * nu * epsilon(Dacc), epsilon(v)) */
    aux = 2 * visc * aftdt * fac;
-   
-   estif[ri*3  ][ci*3  ] += (viscous[0][0][ri*2  ]*viscous[0][0][ci*2  ] 
-			    +viscous[0][1][ri*2  ]*viscous[1][0][ci*2  ] 
-			    +viscous[1][0][ri*2  ]*viscous[0][1][ci*2  ] 
+
+   estif[ri*3  ][ci*3  ] += (viscous[0][0][ri*2  ]*viscous[0][0][ci*2  ]
+			    +viscous[0][1][ri*2  ]*viscous[1][0][ci*2  ]
+			    +viscous[1][0][ri*2  ]*viscous[0][1][ci*2  ]
 			    +viscous[1][1][ri*2  ]*viscous[1][1][ci*2  ]
                             ) * aux;
    estif[ri*3  ][ci*3+1] += (viscous[0][0][ri*2  ]*viscous[0][0][ci*2+1]
@@ -181,29 +182,29 @@ void f2_calgalmat_gen_alpha_tds(
 
    /*-------------------------------------------------------------------*/
    /*                         GALERKIN KPV                              */
-   /*-------------------------------------------------------------------*/ 
+   /*-------------------------------------------------------------------*/
 
    /*  alpha_F * theta * dt * (div Dacc, q) */
    aux = aftdt * fac;
-   
-   
+
+
    estif[ri*3+2][ci*3  ] += funct[ri] * derxy[0][ci] * aux;
    estif[ri*3+2][ci*3+1] += funct[ri] * derxy[1][ci] * aux;
 
- 
+
    /*-------------------------------------------------------------------*/
    /*                         GALERKIN KVP                              */
    /*-------------------------------------------------------------------*/
 
    /* - ( Dp , div v ) */
    aux = fac;
-   
+
    estif[ri*3  ][ci*3+2] -= derxy[0][ri] * funct[ci] * aux;
    estif[ri*3+1][ci*3+2] -= derxy[1][ri] * funct[ci] * aux;
   } /* end loop over column index ci */
  } /* end loop over row index ri */
- 
- 
+
+
  /*----------------------------------------------------------------------*/
 #ifdef DEBUG
  dstrc_exit();
@@ -261,7 +262,7 @@ void f2_calstabmat_gen_alpha_tds(
  int       i;        /* default counter                             */
  int       ri,ci;    /* counters for row and column index           */
 
-    
+
  double    alpha_M;  /* generalised alpha parameter                 */
                      /* accelerations -> intermediate accelerations */
  double    alpha_F;  /* generalised alpha parameter                 */
@@ -275,16 +276,16 @@ void f2_calstabmat_gen_alpha_tds(
 
  double    tau_C;    /* stabilisation parameter --- continuity      */
  double    tau_M;    /* stabilisation parameter --- momentum        */
- 
+
  DOUBLE  viscs2 [2][2*MAXNOD]; /* viscous term incluiding 2nd derivatives */
  DOUBLE  div[2*MAXNOD];             /* divergence of u or v              */
 
  FLUID_DYNAMIC   *fdyn;
- 
+
  double    aux;
 
 
- 
+
 
 #ifdef DEBUG
  dstrc_enter("f2_calstabmat_gen_alpha_tds");
@@ -301,7 +302,7 @@ void f2_calstabmat_gen_alpha_tds(
  alpha_F = fdyn->alpha_f;
 
  aftdt   = alpha_F*theta*dt;
- 
+
  tau_M   = fdyn->tau[0];
  tau_C   = fdyn->tau[2];
 
@@ -321,8 +322,8 @@ void f2_calstabmat_gen_alpha_tds(
    /*--- divergence u term ---------------------------------------------*/
    div[2*i]   = derxy[0][i];
    div[2*i+1] = derxy[1][i];
- }    
- 
+ }
+
  for (ri=0; ri<iel; ri++)       /* row index    */
  {
   for (ci=0; ci<iel; ci++)   /* column index */
@@ -333,7 +334,7 @@ void f2_calstabmat_gen_alpha_tds(
 
 
       /* term  : (u_old * grad u, grad q) */
-      
+
 
 
       /* factor: tau_M /(alpha_M * tau_M + dt * alpha_F * theta)
@@ -347,13 +348,13 @@ void f2_calstabmat_gen_alpha_tds(
       /* (div epsilon(Dacc), grad q) */
       /* viscs already contains - sign!!                                   */
       aux = 2 * visc * tau_M/(alpha_M * tau_M + aftdt) * aftdt * aftdt *fac;
-      
+
       estif[ri*3+2][ci*3]   += (derxy[0][ri] * viscs2[0][2*ci]
                                +derxy[1][ri] * viscs2[1][2*ci]) * aux;
       estif[ri*3+2][ci*3+1] += (derxy[0][ri] * viscs2[0][2*ci+1]
                                +derxy[1][ri] * viscs2[1][2*ci+1]) * aux;
 
-      
+
       /* factor: tau_M /(alpha_M * tau_M + dt * alpha_F * theta)
          term  : (grad Dp, grad q)                                   */
       aux = tau_M/(alpha_M * tau_M + aftdt) * aftdt * fac;
@@ -375,7 +376,7 @@ void f2_calstabmat_gen_alpha_tds(
       /* term  : (grad Dp, div eps(v))                                  */
       /* viscs already contains - sign!!                              */
       aux = tau_M/(alpha_M * tau_M + aftdt) * 2 * visc *fac * aftdt;
-      
+
       estif[ri*3  ][ci*3+2] -= (viscs2[0][2*ri  ] * derxy[0][ci]
                                +viscs2[1][2*ri  ] * derxy[1][ci]) * aux;
       estif[ri*3+1][ci*3+2] -= (viscs2[0][2*ri+1] * derxy[0][ci]
@@ -400,7 +401,7 @@ void f2_calstabmat_gen_alpha_tds(
       /* viscs already contains - sign!!                             */
       aux = tau_M/(alpha_M * tau_M + aftdt) *
 	  4 * visc * visc * aftdt * aftdt * fac;
-      
+
       estif[ri*3  ][ci*3  ] -= (viscs2[0][2*ri  ] * viscs2[0][2*ci  ]
                                +viscs2[1][2*ri  ] * viscs2[1][2*ci  ]) * aux;
       estif[ri*3+1][ci*3  ] -= (viscs2[0][2*ri+1] * viscs2[0][2*ci  ]
@@ -414,16 +415,16 @@ void f2_calstabmat_gen_alpha_tds(
       /* factor:                                                    */
       /* term  : (grad Dp, v)                                       */
       aux = alpha_M * tau_M/(alpha_M * tau_M + aftdt) * fac;
-      
+
       estif[ri*3  ][ci*3+2] -= funct[ri] * derxy[0][ci] * aux;
       estif[ri*3+1][ci*3+2] -= funct[ri] * derxy[1][ci] * aux;
-      
+
 
 
       /* factor:                                                    */
       /* term (Dacc,v) */
       aux = alpha_M * alpha_M * tau_M/(alpha_M * tau_M + aftdt) * fac;
-      
+
       estif[ri*3  ][ci*3  ] -= funct[ri] * funct[ci] * aux;
       estif[ri*3+1][ci*3+1] -= funct[ri] * funct[ci] * aux;
 
@@ -432,15 +433,15 @@ void f2_calstabmat_gen_alpha_tds(
       /* term  : (div eps(Dacc), v)                                  */
       /* viscs already contains - sign!!                             */
       aux = 2 * visc * aftdt * alpha_M * tau_M/(alpha_M * tau_M + aftdt) * fac;
-      
+
       estif[ri*3  ][ci*3  ]   -= funct[ri] * viscs2[0][2*ci  ] * aux;
       estif[ri*3  ][ci*3+1]   -= funct[ri] * viscs2[1][2*ci  ] * aux;
       estif[ri*3+1][ci*3  ]   -= funct[ri] * viscs2[0][2*ci+1] * aux;
       estif[ri*3+1][ci*3+1]   -= funct[ri] * viscs2[1][2*ci+1] * aux;
   } /* end loop over column index ci */
  } /* end loop over row index ri */
- 
- 
+
+
  /*-----------------------------------------------------------------*/
 #ifdef DEBUG
  dstrc_exit();
@@ -456,3 +457,4 @@ void f2_calstabmat_gen_alpha_tds(
 #endif /*D_FLUID2_TDS*/
 #endif /*D_FLUID2*/
 /*! @} (documentation module close)*/
+#endif

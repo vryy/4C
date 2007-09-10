@@ -12,6 +12,7 @@ Maintainer:												|
 													|
 */
 /*-----------------------------------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_BRICK1
 
 #include "../headers/standardtypes.h"
@@ -65,7 +66,7 @@ void c1_mat_hyper_polyconvex (	DOUBLE c,
 	DOUBLE drittel;/*-----------------------------------------------------------------------Auxiliary Variable*/
 	DOUBLE kappa;/*----------------------------------------------------------------------Dispersions Parameter*/
 	DOUBLE phi,theta,K;/*-------------------------------Angles and Invariant for Anisotropic Fiber Orientation*/
-	
+
 	static DOUBLE *Inv;
 	static ARRAY Inv_a;
 	static DOUBLE *deltags;
@@ -78,8 +79,8 @@ void c1_mat_hyper_polyconvex (	DOUBLE c,
 	static ARRAY sum_a;
 	static DOUBLE *ad;
 	static ARRAY ad_a;
-	
-	
+
+
 	static DOUBLE **FT;
 	static ARRAY FT_a;
 	static DOUBLE **C;
@@ -142,8 +143,8 @@ void c1_mat_hyper_polyconvex (	DOUBLE c,
 	static ARRAY M_a;
 	static DOUBLE **H;
 	static ARRAY H_a;
-	
-	
+
+
 	if (FT==NULL)
 	{
 		Inv = amdef("Inv",&Inv_a,3,1,"DV");
@@ -152,7 +153,7 @@ void c1_mat_hyper_polyconvex (	DOUBLE c,
 		deltafib = amdef("deltafib",&deltafib_a,8,1,"DV");
 		sum = amdef("sum",&sum_a,8,1,"DV");
 		ad = amdef("ad",&ad_a,3,1,"DV");
-				
+
 		FT = amdef("FT",&FT_a,3,3,"DA");
 		C = amdef("C",&C_a,3,3,"DA");
 		Cinv = amdef("Cinv",&Cinv_a,3,3,"DA");
@@ -185,14 +186,14 @@ void c1_mat_hyper_polyconvex (	DOUBLE c,
 		M = amdef("M",&M_a,3,3,"DA");
 		H = amdef("H",&H_a,3,3,"DA");
 	}
-                
+
     amzero(&Inv_a);
     amzero(&deltags_a);
     amzero(&deltapen_a);
     amzero(&deltafib_a);
     amzero(&sum_a);
     amzero(&ad_a);
-    
+
     amzero(&FT_a);
     amzero(&C_a);
     amzero(&Cinv_a);
@@ -249,14 +250,14 @@ void c1_mat_hyper_polyconvex (	DOUBLE c,
 			if (i==j) {
 				I[i][j]=1;}
 			else {
-				I[i][j]=0;} } }	
+				I[i][j]=0;} } }
 	/*----------------------------------------------------------------------Structural Tensor*/
 	for (i=0; i<3; i++) {
 		for (j=0; j<3; j++) {
 			/*H [i][j] = kappa*I[i][j] + (1-(3*kappa))*M[i][j]; } }	*/
 			H [i][j] = kappa*I[i][j]; } }
 	/*--------------------------------------------------------Deformation Gradient, transposed*/
-	
+
 	FT[0][0]=disd[0]+1.0;
 	FT[1][1]=disd[1]+1.0;
 	FT[2][2]=disd[2]+1.0;
@@ -266,20 +267,20 @@ void c1_mat_hyper_polyconvex (	DOUBLE c,
 	FT[2][1]=disd[6];/*---------------------disd[5];*/
 	FT[0][2]=disd[7];/*---------------------disd[8];*/
 	FT[2][0]=disd[8];/*---------------------disd[7];*/
-	
+
 	/*---------------------------------------------------------------------Jacobian Determinant*/
 	J=(FT[0][0]*FT[1][1]*FT[2][2]) + (FT[0][1]*FT[1][2]*FT[2][0]) + (FT[0][2]*FT[1][0]*FT[2][1]) - (FT[2][0]*FT[1][1]*FT[0][2]) - (FT[2][1]*FT[1][2]*FT[0][0]) - (FT[2][2]*FT[1][0]*FT[0][1]);
-	
+
 	/*---------------------------------------------------------------Right Cauchy Green Tensor*/
 	for (k=0; k<3; k++) {
-		for (i=0; i<3; i++) {	
+		for (i=0; i<3; i++) {
 			for (j=0; j<3; j++) {
-				C[i][k]+=(FT[i][j]*FT[k][j]); } } }	
+				C[i][k]+=(FT[i][j]*FT[k][j]); } } }
 	/*---------------------------------------------------------------------------Invariants of C*/
 	c1_calc_invariants(C, Inv);
 	/*---------------------------------------------------------Inverse Right Cauchy Green Tensor*/
 	c1_calc_inverse (C,Cinv,Inv);
-	/*----------------------------------------------------------------------------------------HC*/	
+	/*----------------------------------------------------------------------------------------HC*/
 	for (i=0; i<3; i++) {
 		for (j=0; j<3; j++) {
 			for (k=0; k<3; k++) {
@@ -289,17 +290,17 @@ void c1_mat_hyper_polyconvex (	DOUBLE c,
 	/*---------------------------------------------------------------------Strain-Energy Function*/
 	/*-----------------------------------------------------------------------Ground Substance SEF*/
 	/*W1=c*(Inv[0]-3.0);}*/
-	W1=(c*((Inv[0]/pow(Inv[2],drittel))-3.0));	
+	W1=(c*((Inv[0]/pow(Inv[2],drittel))-3.0));
 	/*----------------------------------------------------------------------------------Fiber SEF*/
 	if (K<1)
 		W2=0.0;
-	else if (K>=1) 
+	else if (K>=1)
 		W2=(k1/(2.0*k2))*(exp(k2*pow((K-1.0),2)-1.0));
 	else { exit(1); }
 	/*----------------------------------------------------------------------------Penalty Function*/
 	W3 = (epsilon*(pow(Inv[2],gamma)+pow(Inv[2],(-gamma))-2));
 	/*-----------------------------------------------------------------------------------------SEF*/
-	W= W1 + W2 + W3;	
+	W= W1 + W2 + W3;
 	/*-------------------------------------------------------------------------------2nd PK Stress*/
 	for (i=0; i<3; i++)	{
 		for (j=0; j<3; j++)	{
@@ -308,7 +309,7 @@ void c1_mat_hyper_polyconvex (	DOUBLE c,
 	/*---------------------------------------------------------------------------------------Fiber*/
 			if (K<1)
 				S2[i][j]=0.0;
-			else if (K>=1) 
+			else if (K>=1)
 				S2[i][j] = 2.0*k1*exp(k2*pow((K-1.0),2))*(K-1.0)*H[i][j];
 			else {exit(1);}
 	/*-------------------------------------------------------------------------------------Penalty*/
@@ -328,12 +329,12 @@ void c1_mat_hyper_polyconvex (	DOUBLE c,
 		for (k=0; k<3; k++)	{
 			for (j=0; j<3; j++)	{
 				Sigma1[i][k]+=S[i][j]*FT[j][k]; } } }
-					
+
 	for (i=0; i<3; i++)	{
 		for (k=0; k<3; k++)	{
 			for (j=0; j<3; j++)	{
 				Sigma2[i][k]+=FT[j][i]*Sigma1[j][k]; } } }
-		
+
 	for (i=0; i<3; i++)	{
 		for (j=0; j<3; j++)	{
 			Sigma[i][j]=(1/J)*Sigma2[i][j];} }
@@ -347,10 +348,10 @@ void c1_mat_hyper_polyconvex (	DOUBLE c,
 	deltags[5] = ((4.0/9.0)*c*Inv[0]*pow(Inv[2],-drittel));
 	deltags[6] = (4.0*drittel*c*Inv[0]*pow(Inv[2],-drittel));
 	deltags[7] = 0.0;
-	
+
 	if (K<1)
-		for (i=0;i<8;i++) { 
-			deltafib[i]=0.0;	}		
+		for (i=0;i<8;i++) {
+			deltafib[i]=0.0;	}
 	else if (K>=1) {
 			deltafib[0] = 4.0*k1*exp(k2*pow((K-1.0),2))*((2.0*k2*pow((K-1.0),2))+1.0);
 			deltafib[1] = 0.0;
@@ -361,7 +362,7 @@ void c1_mat_hyper_polyconvex (	DOUBLE c,
 			deltafib[6] = 0.0;
 			deltafib[7] = 0.0; }
 	else {exit(1);}
-	
+
 	deltapen[0]=0.0;
 	deltapen[1]=0.0;
 	deltapen[2]=0.0;
@@ -380,7 +381,7 @@ void c1_mat_hyper_polyconvex (	DOUBLE c,
 	c1_calc_tensorproduct(C,Cinv,CCinv);
 	c1_calc_tensorproduct(Cinv,C,CinvC);
 	c1_calc_tensorproduct(Cinv,Cinv,CinvCinv);
-	
+
 	for (k=0; k<9; k+=3) {
 		for (l=0; l<9; l+=3) {
 			for (i=0; i<3; i++) {
@@ -400,8 +401,8 @@ void c1_mat_hyper_polyconvex (	DOUBLE c,
 	c1_calc_tensorproduct(H,C,H_C);
 	c1_calc_tensorproduct(C,H,C_H);
 	c1_calc_tensorproduct(H,Cinv,H_Cinv);
-	c1_calc_tensorproduct(Cinv,H,Cinv_H);	
-	
+	c1_calc_tensorproduct(Cinv,H,Cinv_H);
+
 	for (k=0; k<9; k+=3) {
 	  for (l=0; l<9; l+=3) {
 		for (i=0; i<3; i++) {
@@ -415,7 +416,7 @@ void c1_mat_hyper_polyconvex (	DOUBLE c,
 			sum[6]=(deltags[6]+deltapen[6]+deltafib[6])*CinvoCinv[i+k][j+l];
 			sum[7]=(deltags[7]+deltapen[7]+deltafib[7]);
 			Celast[i+k][j+l] = sum[0]+sum[1]+sum[2]+sum[3]+sum[4]+sum[5]+sum[6]+sum[7];
-			} } } }	
+			} } } }
 	/*--------------------------------------------------------------------------------Constitutive Matrix*/
 			d[0][0]=Celast[0][0];
 			d[0][1]=Celast[1][1];
@@ -423,35 +424,35 @@ void c1_mat_hyper_polyconvex (	DOUBLE c,
 			d[0][3]=Celast[1][0];
 			d[0][4]=Celast[2][1];
 			d[0][5]=Celast[2][0];
-			
+
 			d[1][0]=Celast[3][3];
 			d[1][1]=Celast[4][4];
 			d[1][2]=Celast[5][5];
 			d[1][3]=Celast[4][3];
 			d[1][4]=Celast[5][4];
 			d[1][5]=Celast[5][3];
-			
+
 			d[2][0]=Celast[6][6];
 			d[2][1]=Celast[7][7];
 			d[2][2]=Celast[8][8];
 			d[2][3]=Celast[7][6];
 			d[2][4]=Celast[8][7];
 			d[2][5]=Celast[8][6];
-		
+
 			d[3][0]=Celast[3][0];
 			d[3][1]=Celast[4][1];
 			d[3][2]=Celast[5][2];
 			d[3][3]=Celast[4][0];
 			d[3][4]=Celast[5][1];
 			d[3][5]=Celast[5][0];
-			
+
 			d[4][0]=Celast[6][3];
 			d[4][1]=Celast[7][4];
 			d[4][2]=Celast[8][5];
 			d[4][3]=Celast[7][3];
 			d[4][4]=Celast[8][4];
 			d[4][5]=Celast[8][3];
-			
+
 			d[5][0]=Celast[6][0];
 			d[5][1]=Celast[7][1];
 			d[5][2]=Celast[8][2];
@@ -479,7 +480,7 @@ void c1_calc_invariants (DOUBLE **M, DOUBLE *Inv)
 {
 	INT i,j;
 	DOUBLE m1, m2;
-	
+
 	#ifdef DEBUG
 	dstrc_enter("c1_calc_invariants");
 	#endif
@@ -490,12 +491,12 @@ void c1_calc_invariants (DOUBLE **M, DOUBLE *Inv)
 	for (i=0; i<3; i++) {
 		for (j=0; j<3; j++) {
 			m1+=(M[i][i] * M[j][j]);}}
-	m2=0.0;		
+	m2=0.0;
 	for (i=0; i<3; i++) {
 		for (j=0; j<3; j++) {
 			 	m2+=M[j][i]*M[i][j]; }}
-			
-	Inv[1]=0.5*(m1-m2);	
+
+	Inv[1]=0.5*(m1-m2);
 	/*------------------------------------------------------------------------------------------------Inv3*/
 	Inv[2]=(M[0][0]*M[1][1]*M[2][2]) + (M[0][1]*M[1][2]*M[2][0]) + (M[0][2]*M[1][0]*M[2][1]) - (M[2][0]*M[1][1]*M[0][2]) - (M[2][1]*M[1][2]*M[0][0]) - (M[2][2]*M[1][0]*M[0][1]);
 #ifdef DEBUG
@@ -518,7 +519,7 @@ void c1_calc_inverse (DOUBLE **M, DOUBLE **Minv, DOUBLE *Inv)
 	#ifdef DEBUG
 	dstrc_enter("c1_calc_inverse");
 	#endif
-	
+
 	if (Inv[2]==0) {
 		printf("Matrix nicht invertierbar!\n");
 	}
@@ -554,7 +555,7 @@ void c1_calc_tensorproduct (DOUBLE **A, DOUBLE **B, DOUBLE **AB)
 	dstrc_enter("c1_calc_tensorproduct");
 	#endif
 	INT i,j,k,l;
-	
+
 	for (k=0; k<9; k+=3) {
 		for (l=0; l<9; l+=3) {
 			for (i=0; i<3; i++) {
@@ -566,4 +567,5 @@ dstrc_exit();
 return;
 } /*end of: c1_calc_tensorproduct*/
 
+#endif
 #endif

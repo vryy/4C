@@ -10,21 +10,22 @@ Maintainer: Andrea Hund
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_MLSTRUCT
 
-/*! 
+/*!
 \addtogroup ML_struct
 *//*! @{ (documentation module open)*/
 
 /*-----------------------------------------------------------------------*
 |  s2ml_static_ke.c                                           ah 03/04  |
 *-----------------------------------------------------------------------*/
-void s2ml_static_ke(ELEMENT       *actmaele, 
-                    W1_DATA       *data, 
+void s2ml_static_ke(ELEMENT       *actmaele,
+                    W1_DATA       *data,
                     MATERIAL      *mat,
                     ARRAY         *estif_global,
                     ARRAY         *emass_global,
-                    DOUBLE        *force,  
+                    DOUBLE        *force,
                     INT            init);
 /*-----------------------------------------------------------------------*
 |  s2ml_cal_smelm.c                                           ah 03/04  |
@@ -38,7 +39,7 @@ void s2ml_init(ELEMENT  *actmaele,       /*  actual macro element       */
 void s2ml_bopstraintonode(FIELD       *actsmfield,/*  submesh field     */
                           ELEMENT     *ele, /* actual makroelement      */
                           DOUBLE       nue, /* poisson rat.of macro mat.*/
-                          INT          init); 
+                          INT          init);
 /*-----------------------------------------------------------------------*
 |  s2ml_cal_smelm.c                                           ah 03/04  |
 *-----------------------------------------------------------------------*/
@@ -70,8 +71,8 @@ void s2ml_stiff_wall(MATERIAL  *actsmmat,    /* actual submesh material*/
 |  s2ml_strain.c                                               ah 03/04  |
 *-----------------------------------------------------------------------*/
 void s2ml_aequistrain(ELEMENT     *actmaele, /* actual Macro-element   */
-                      WALL_TYPE    wtype,    /* plane stress/strain... */         
-                      DOUBLE     **bopma,    /* Macro-B-operator       */  
+                      WALL_TYPE    wtype,    /* plane stress/strain... */
+                      DOUBLE     **bopma,    /* Macro-B-operator       */
                       DOUBLE       nue,      /* poisson-ratio          */
                       DOUBLE      *eps_equiv);/* equivalent strain      */
 /*-----------------------------------------------------------------------*
@@ -141,3 +142,4 @@ void s2ml_stiff_interf(MATERIAL  *actsmmat,    /* actual submesh material*/
 /*! @} (documentation module close)*/
 
 #endif /* D_MLSTRUCT */
+#endif

@@ -11,6 +11,7 @@ Maintainer: Andrea Hund
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
@@ -179,7 +180,7 @@ case tri6: /* Quadratic shape functions and their natural derivatives -----*/
     funct[3] = FOUR*r*t;
     funct[4] = FOUR*r*s;
     funct[5] = FOUR*s*t;
-    
+
     if (option == 1) /* --> first derivative evaluation */
     {
         /* first natural derivative of funct[0] with respect to r */
@@ -271,3 +272,4 @@ return;
 
 
 
+#endif

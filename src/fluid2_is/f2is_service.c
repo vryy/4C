@@ -11,6 +11,7 @@ Maintainer: Ulrich Küttler
 
 ------------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 #ifdef D_FLUID2_IS
 
 #include "../headers/standardtypes.h"
@@ -430,3 +431,4 @@ void f2is_calseta(
 
 #endif
 
+#endif

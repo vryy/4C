@@ -10,12 +10,13 @@ Maintainer: Andrea Hund
             0711 - 685-6122
 </pre>
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_INTERF
 #include "../headers/standardtypes.h"
 #include "interf.h"
-#include "interf_prototypes.h" 
+#include "interf_prototypes.h"
 
-/*! 
+/*!
 \addtogroup INTERF
 */
 /*! @{ (documentation module open)*/
@@ -23,7 +24,7 @@ Maintainer: Andrea Hund
 /*!----------------------------------------------------------------------
 \brief  calculates ansatzfunctions,
         its derivatives with respect to xi and the jacobi-determinant
-<pre>                                                              ah 05/03 
+<pre>                                                              ah 05/03
 This routine calculates ansatzfunctions,
              its derivatives with respect to xi and the jacobi-determinant
 
@@ -32,13 +33,13 @@ This routine calculates ansatzfunctions,
 \param   typ       DIS_TYP (I)   quad4 or quad8
 \param  *x_mid     DOUBLE  (I)   x-coordinates of fictive nodes on midline of element
 \param  *y_mid     DOUBLE  (I)   y-coordinates of fictive nodes on midline of element
-\param   b_parabel DOUBLE  (I)   y = a + b*x + c*x^2 
-\param   c_parabel DOUBLE  (I)   y = a + b*x + c*x^2 
-\param  *funct     DOUBLE  (O)   shape functions for [u] 
+\param   b_parabel DOUBLE  (I)   y = a + b*x + c*x^2
+\param   c_parabel DOUBLE  (I)   y = a + b*x + c*x^2
+\param  *funct     DOUBLE  (O)   shape functions for [u]
 \param   co        DOUBLE  (O)   cosinus of angle bet x-dir and orient. of IF-ele
 \param   si        DOUBLE  (O)   sinus of angle bet x-dir and orient. of IF-ele
-\param  *det       DOUBLE  (O)   determinants of jacobian matrix  
-\return void                                               
+\param  *det       DOUBLE  (O)   determinants of jacobian matrix
+\return void
 
 *----------------------------------------------------------------------*/
 void if_funcderiv(DOUBLE  e1,
@@ -60,7 +61,7 @@ DOUBLE deriv[3];
 DOUBLE beta;
 DOUBLE alpha=0.0;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("if_funcderiv");
 #endif
 /*----------------------------------------------------------------------*/
@@ -82,7 +83,7 @@ case quad4:
    else if (deltax <0)                   alpha = beta + PI;
    else if (deltay < 0 && deltax ==0)    alpha =  (3*PI)/TWO;
    else if (deltay < 0 && deltax >0)     alpha =  beta + TWO*PI;
-   
+
 break;
 /*-----------------------------------------------------------------------*/
 case quad8:
@@ -109,8 +110,8 @@ case quad8:
    else if (dx_dxi <0)                  alpha = beta + PI;
    else if (dy_dx < 0 && dx_dxi ==0)    alpha =  (3*PI)/TWO;
    else if (dy_dx < 0 && dx_dxi >0)     alpha =  beta + TWO*PI;
-   
-  
+
+
 break;
 default:
    dserror("discretisation unknown for Interface");
@@ -121,7 +122,7 @@ break;
 *si = sin(alpha);
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -131,3 +132,4 @@ return;
 
 #endif /*D_INTERF*/
 /*! @} (documentation module close)*/
+#endif

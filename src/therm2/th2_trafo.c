@@ -13,6 +13,7 @@ Maintainer: Burkhard Bornemann
 \author bborn
 \date 03/06
 */
+#ifndef CCADISCRET
 #ifdef D_THERM2
 
 /*----------------------------------------------------------------------*/
@@ -20,7 +21,7 @@ Maintainer: Burkhard Bornemann
 #include "../headers/standardtypes.h"
 #include "therm2.h"
 
-/*! 
+/*!
 \addtogroup WALL1
 *//*! @{ (documentation module open)*/
 
@@ -192,7 +193,7 @@ void th2_trafo_sett(DOUBLE    **A,
 	}
 }
 
-  /*--------------------------------------------------------------------*/ 
+  /*--------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_exit();
 #endif
@@ -208,8 +209,8 @@ void th2_trafo_sett(DOUBLE    **A,
 \brief Calculate Transformation Matrices G and G(Inv)
 
 \param  **xjm       DOUBLE   (i)    Jacobi matrix
-\param  **G         DOUBLE   (o)    transformation matrix 
-\param  **GI        DOUBLE   (o)    transformation matrix 
+\param  **G         DOUBLE   (o)    transformation matrix
+\param  **GI        DOUBLE   (o)    transformation matrix
 \param  **dum       DOUBLE   (io)   working array
                                       (reasing behind this is totally
                                       unclear)
@@ -247,7 +248,7 @@ void th2_trafo_tram(DOUBLE   **xjm,
   |  GI  --- Inverse of G          S(Local)  = G * S(Global)        |
   *----------------------------------------------------------------*/
 
- 
+
   /*----------------------------------------------------------------*
   |  Calculate local coordinate axes                                |
   *----------------------------------------------------------------*/
@@ -291,3 +292,4 @@ return;
 /*======================================================================*/
 #endif /* end of #ifdef D_THERM2 */
 /*! @} (documentation module close)*/
+#endif

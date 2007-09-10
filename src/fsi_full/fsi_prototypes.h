@@ -10,6 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FSI
 *//*! @{ (documentation module open)*/
@@ -1003,3 +1004,4 @@ void fsi_struct_cleanup(
   );
 
 /*! @} (documentation module close)*/
+#endif

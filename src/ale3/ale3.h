@@ -10,6 +10,7 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_ALE
 /*!
 \addtogroup Ale
@@ -250,7 +251,4 @@ void ale3_static_ke_red(
 
 #endif
 #endif
-
-
-
-
+#endif

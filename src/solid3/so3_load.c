@@ -11,6 +11,7 @@ Maintainer: Burkhard Bornemann
             089-289-15237
 </pre>
 */
+#ifndef CCADISCRET
 #ifdef D_SOLID3
 
 /*----------------------------------------------------------------------*/
@@ -62,7 +63,7 @@ extern ALLDYNA* alldyn;
 
 /*======================================================================*/
 /*!
-\brief Spatial integration of 
+\brief Spatial integration of
        (i)    body force in element domain (volume) [force/volume]
        (ii)   traction on element sides (faces) [force/area]
        (iii)  traction on element edges (lines) [force/length]
@@ -121,7 +122,7 @@ void so3_load(ELEMENT *ele,  /* actual element */
   /* result */
   DOUBLE *loadvec;  /* external force vector */
   DOUBLE eload[MAXNOD_SOLID3][NUMDOF_SOLID3];  /* element load */
-  
+
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -206,7 +207,7 @@ void so3_load(ELEMENT *ele,  /* actual element */
           foundglineneum = 1;
           break;
 #ifdef TANGLINELOAD_SOLID3
-        /* quick hack to apply tangential 'line load' on a cylindrical 
+        /* quick hack to apply tangential 'line load' on a cylindrical
          * cantilever beam (length 120) subjected to a torsional torque
          * at its tip. (bborn/mgit 04/07)
          * ==> so3_load_line.c */
@@ -221,11 +222,11 @@ void so3_load(ELEMENT *ele,  /* actual element */
     }
   }
 
-  
+
   /*--------------------------------------------------------------------*/
   /* element data etc required in case of integration */
-  if ( (foundgvolneum > 0) 
-       || (foundgsurfneum > 0) 
+  if ( (foundgvolneum > 0)
+       || (foundgsurfneum > 0)
        || (foundglineneum > 0) )
   {
     /* material coordinates of element nodes */
@@ -285,8 +286,8 @@ void so3_load(ELEMENT *ele,  /* actual element */
 
   /*====================================================================*/
   /* add eload to global load vector */
-  if ( (foundgvolneum > 0) 
-       || (foundgsurfneum > 0) 
+  if ( (foundgvolneum > 0)
+       || (foundgsurfneum > 0)
        || (foundglineneum > 0) )
   {
     for (inod=0; inod<nelenod; inod++)
@@ -314,3 +315,4 @@ void so3_load(ELEMENT *ele,  /* actual element */
 /*======================================================================*/
 #endif  /*end of #ifdef D_SOLID3 */
 /*! @} (documentation module close)*/
+#endif

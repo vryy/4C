@@ -10,17 +10,18 @@ Maintainer: Andrea Hund
 </pre>
 
 *-----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_INTERF
 #include "../headers/standardtypes.h"
 #include "interf.h"
 #include "interf_prototypes.h"
 
-/*! 
+/*!
 \addtogroup INTERF
 *//*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief calculates usual stiffness matrix  
+\brief calculates usual stiffness matrix
 
 <pre>                                                              ah 05/03
 This routine calculates usual stiffness matrix for small strains
@@ -36,7 +37,7 @@ formulation.
 \param    init         INT           (I)   flag
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 
 *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
@@ -46,7 +47,7 @@ extern struct _GENPROB     genprob;
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -57,11 +58,11 @@ extern struct _FILES  allfiles;
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*---------------------------------------------------------------------*/
 
-void ifstatic_ke(ELEMENT       *ele, 
-                 INTERF_DATA   *data, 
+void ifstatic_ke(ELEMENT       *ele,
+                 INTERF_DATA   *data,
                  MATERIAL      *mat,
                  ARRAY         *estif_global,
                  ARRAY         *emass_global,
@@ -90,22 +91,22 @@ INT             istore = 0;  /* controls storing of new stresses to       */
 INT             newval = 0;  /* controls evaluation of new stresses       */
 INT             imass  = 0;  /* imass=0 -> static, imass=1 -> dynamic     */
 
-DOUBLE          x_GP;        /* for rot.symmetry: x-COORD of GP */  
-     
-static ARRAY    xrefe_a;     /* coordinates of element nodes */     
-static DOUBLE **xrefe;         
-static ARRAY    D_a;         /* material tensor */     
-static DOUBLE **D;         
+DOUBLE          x_GP;        /* for rot.symmetry: x-COORD of GP */
 
-static ARRAY    functd_a;     /* shape functions for [u]*/    
-static DOUBLE  *functd;     
-static ARRAY    bopd_a;       /* lets call it B-operator for nt-direction*/   
-static DOUBLE **bopd;     
+static ARRAY    xrefe_a;     /* coordinates of element nodes */
+static DOUBLE **xrefe;
+static ARRAY    D_a;         /* material tensor */
+static DOUBLE **D;
 
-    
-static ARRAY    Kdd_a;       /* element stiffness-Zwischenspeicher */   
-static DOUBLE **Kdd;     
-       
+static ARRAY    functd_a;     /* shape functions for [u]*/
+static DOUBLE  *functd;
+static ARRAY    bopd_a;       /* lets call it B-operator for nt-direction*/
+static DOUBLE **bopd;
+
+
+static ARRAY    Kdd_a;       /* element stiffness-Zwischenspeicher */
+static DOUBLE **Kdd;
+
 static DOUBLE **estif;       /* element stiffness matrix ke */
 
 DOUBLE T[2];                 /* stress */
@@ -114,7 +115,7 @@ DOUBLE x_mid[3];             /* x-coordinates on xi-axis */
 DOUBLE y_mid[3];             /* y-coordinates on xi-axis */
 DOUBLE fintd[16];            /* internal force Zwischenspeicher */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("ifstatic_ke");
 #endif
 /*------------------------------------------------- some working arrays */
@@ -122,12 +123,12 @@ if (init==1)
 {
 xrefe     = amdef("xrefe"  ,&xrefe_a,  2,8, "DA");
 
-functd    = amdef("functd" ,&functd_a ,3,1, "DV");       
-bopd      = amdef("bopd"   ,&bopd_a   ,2,16,"DA");           
+functd    = amdef("functd" ,&functd_a ,3,1, "DV");
+bopd      = amdef("bopd"   ,&bopd_a   ,2,16,"DA");
 
-D         = amdef("D"      ,&D_a      ,2,2, "DA");           
+D         = amdef("D"      ,&D_a      ,2,2, "DA");
 
-Kdd       = amdef("Kdd"    ,&Kdd_a    ,(2*MAXNOD_WALL1),(2*MAXNOD_WALL1),"DA");           
+Kdd       = amdef("Kdd"    ,&Kdd_a    ,(2*MAXNOD_WALL1),(2*MAXNOD_WALL1),"DA");
 goto end;
 }
 /*----------------------------------------------------------------------*/
@@ -135,12 +136,12 @@ goto end;
 /*----------------------------------------------------------------------*/
 else if (init==-1)
 {
-   amdel(&xrefe_a);   
+   amdel(&xrefe_a);
    amdel(&functd_a);
    amdel(&D_a);
    amdel(&bopd_a);
    amdel(&Kdd_a);
-   goto end;  
+   goto end;
 }
 else if(init==2)
 {
@@ -154,7 +155,7 @@ iele     = 4;
 for (k=0; k<ield; k++)
 {
  xrefe[0][k] = ele->node[k]->x[0];       /* coordinates in x-direction */
- xrefe[1][k] = ele->node[k]->x[1];       /* coordinates in y-direction */              
+ xrefe[1][k] = ele->node[k]->x[1];       /* coordinates in y-direction */
 }
 L[0] = sqrt( (xrefe[0][1] - xrefe[0][0]) * (xrefe[0][1] - xrefe[0][0])
      +       (xrefe[1][1] - xrefe[1][0]) * (xrefe[1][1] - xrefe[1][0]));
@@ -186,7 +187,7 @@ case quad4:
       flag = 2;
       width=L[0];
      }
-     
+
 break;
 /*-----------------------------------------------------------------------*/
 case quad8:
@@ -219,7 +220,7 @@ case quad8:
                   (x_mid[0]*x_mid[0]-x_mid[2]*x_mid[2])*help);
      b_parabel = (y_mid[0]-y_mid[1]-c_parabel*(x_mid[0]*x_mid[0]-x_mid[1]*x_mid[1]))/
                  (x_mid[0]-x_mid[1]);
-     
+
 break;
 default:
    dserror("discretisation unknown for Interface");
@@ -233,18 +234,18 @@ amzero(estif_global);
 estif     = estif_global->a.da;
 for (i=0; i<18; i++) force[i] = 0.0; /*- for dynamic load-displ-curve ---*/
 /*------------------------------------------------ If Dynamic, Mass=0 ---*/
-if (emass_global) 
+if (emass_global)
 {
    imass = 1;
    amzero(emass_global);
-} 
+}
 /*=======================================================================*/
 if(genprob.graderw<=0)
 {
  ip = -1;
 /*================================================= integration loop ===*/
  for (lr=0; lr<nir; lr++)
- {   
+ {
    ip++;
    /*================================ gaussian point and weight at it ===*/
    e1   = data->xgr[lr];
@@ -252,13 +253,13 @@ if(genprob.graderw<=0)
    /*------------------------------------------------ ansatzfunctions ---*/
    if_funcderiv(e1,ele->distyp,x_mid,y_mid,b_parabel,c_parabel,functd,&cod,&sid,&detd);
    /*----------- integration factor for plane strain and plane stress ---*/
-   facd  = facr * detd * Thick; 
+   facd  = facr * detd * Thick;
    /*--------------------- integration factor for rotational symmetry ---*/
    if(ele->e.interf->iftype == rotat_sym)
    {
      x_GP = (x_mid[0] + x_mid[1])/2;     /* Abstand von Rotationsachse   */
      /* der Faktor  2 x PI tritt bei Fint und Fext auf, ->kuerzt sich    */
-     facd  = facr * detd * x_GP; 
+     facd  = facr * detd * x_GP;
    }
    /*------------------------------------------- calculate operator B ---*/
    amzero(&bopd_a);
@@ -266,13 +267,13 @@ if(genprob.graderw<=0)
    /*---------------------------------------------- call material law ---*/
    switch(mat->mattyp)
    {
-   case m_ifmat: 
-       if (imass == 1) 
+   case m_ifmat:
+       if (imass == 1)
          if_mat_dyn(ele,mat,bopd,D,T,ip,istore,newval);
-       else 
+       else
          if_mat(ele,mat,bopd,D,T,ip,istore,newval,0,NULL,NULL,NULL);
    break;
-   case m_interf_therm: 
+   case m_interf_therm:
        if_mat_thermodyn(ele,mat,bopd,D,T,ip,istore,newval,0,NULL,NULL,NULL);
    break;
    default:
@@ -284,12 +285,12 @@ if(genprob.graderw<=0)
    {
      /*--------------------------------- element stiffness matrix ke ---*/
       if_ke(ield,flag,estif,bopd,D,facd);
-     /*--------------------------------------- internal nodal forces ---*/        
+     /*--------------------------------------- internal nodal forces ---*/
       if (force)
-      { 
+      {
         if_fint(ield,T,facd,bopd,force);
-      }                    
-    } 
+      }
+    }
  }/*================================================ end of loop over lr */
 }
 /*=======================================================================*/
@@ -300,7 +301,7 @@ if(genprob.graderw>0)
  ip = -1;
 /*============================ integration loop for balance equation ===*/
  for (lr=0; lr<nir; lr++)
- {   
+ {
    ip++;
    /*=============================== gaussian point and weight at it ===*/
    e1   = data->xgr[lr];
@@ -308,20 +309,20 @@ if(genprob.graderw>0)
    /*----------------------------------------------- ansatzfunctions ---*/
    if_funcderiv(e1,ele->distyp,x_mid,y_mid,b_parabel,c_parabel,functd,&cod,&sid,&detd);
    /*-------------------------------------------- integration factor ---*/
-   facd  = facr * detd * Thick; 
+   facd  = facr * detd * Thick;
     /*----------------------------------------- calculate operator B ---*/
    amzero(&bopd_a);
    if_bop(ele->distyp,bopd,functd,cod,sid,flag);
    /*--------------------------------------------- call material law ---*/
    switch(mat->mattyp)
    {
-   case m_ifmat: 
-       if (imass == 1) 
+   case m_ifmat:
+       if (imass == 1)
          if_mat_dyn(ele,mat,bopd,D,T,ip,istore,newval);
-       else 
+       else
          if_mat(ele,mat,bopd,D,T,ip,istore,newval,0,NULL,NULL,NULL);
    break;
-   case m_interf_therm: 
+   case m_interf_therm:
        if_mat_thermodyn(ele,mat,bopd,D,T,ip,istore,newval,0,NULL,NULL,NULL);
    break;
    default:
@@ -334,12 +335,12 @@ if(genprob.graderw>0)
    {
      /*--------------------------------- element stiffness matrix ke ---*/
       if_ke(ield,flag,Kdd,bopd,D,facd);
-     /*--------------------------------------- internal nodal forces ---*/        
+     /*--------------------------------------- internal nodal forces ---*/
       if (force)
-      { 
+      {
         if_fint(ield,T,facd,bopd,fintd);
-      }                    
-    } 
+      }
+    }
  }/*================================================ end of loop over lr */
  if(istore==0)
  {
@@ -353,13 +354,14 @@ if(genprob.graderw>0)
 /*=======================================================================*/
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of ifstatic_ke */
 
 
 /*----------------------------------------------------------------------*/
 #endif /*D_INTERF*/
 /*! @} (documentation module close)*/
+#endif

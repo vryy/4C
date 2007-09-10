@@ -17,6 +17,7 @@ Maintainer: Burkhard Bornemann
 \date 05/07
 */
 
+#ifndef CCADISCRET
 
 /*----------------------------------------------------------------------*/
 /* header files */
@@ -30,7 +31,7 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 /*!
 \brief File pointers
-       This structure struct _FILES allfiles is defined in 
+       This structure struct _FILES allfiles is defined in
        input_control_global.c and the type is in standardtypes.h
        It holds all file pointers and some variables needed for the FRSYSTEM
 \author bborn
@@ -43,7 +44,7 @@ extern FILES allfiles;
 /*----------------------------------------------------------------------*/
 /*!
 \brief General problem data
-       defined in global_control.c 
+       defined in global_control.c
 \author bborn
 \date 03/06
 */
@@ -159,7 +160,7 @@ void tsi_th_ost_st_genalp(INT disnum_s,
   INT numtf = genprob.numtf;  /* number (index) of thermal field */
   FIELD* field_s = &(field[numsf]);  /* active structural field */
   FIELD* field_t = &(field[numtf]);  /* active thermal field */
-  
+
   /* partition */
   PARTITION* part_s = &(partition[numsf]);  /* structure partition */
   PARTITION* part_t = &(partition[numtf]);  /* thermal partition */
@@ -207,10 +208,10 @@ void tsi_th_ost_st_genalp(INT disnum_s,
   SOLVAR* solv_t = &(solv[numtf]);  /* pointer to field SOLVAR */
   INT numeq_t;  /* number of equations on this proc */
   INT numeq_total_t;  /* total number of equations on all procs */
-  INT stiff_array_t;  /* active sparse system matrix in 
+  INT stiff_array_t;  /* active sparse system matrix in
                        * actsolv->sysarray[] */
   INT mass_array_t;  /* index of the active system sparse matrix */
-  
+
   /* dynamic control */
   STRUCT_DYNAMIC* sdyn = alldyn[numsf].sdyn;  /* structural dynamics ctrl */
   THERM_DYNAMIC* tdyn = alldyn[numtf].tdyn;  /* thermal dynamic control */
@@ -225,7 +226,7 @@ void tsi_th_ost_st_genalp(INT disnum_s,
   BIN_OUT_FIELD out_context_s;
   BIN_OUT_FIELD out_context_t;
 #endif
-  
+
   /* container */
   CONTAINER container_s;  /* transfers variables given
                          * in (this) solution technique
@@ -238,7 +239,7 @@ void tsi_th_ost_st_genalp(INT disnum_s,
 
   /* timing */
   DOUBLE t0, t1;  /* wall clock times for measuring */
-  
+
   /* global vectors of structural field */
   const INT vel_num = 1;  /* number of veloc. vectors */
   DIST_VECTOR* vel;  /* total velocities */
@@ -262,7 +263,7 @@ void tsi_th_ost_st_genalp(INT disnum_s,
   ARRAY dirheat_a;   /* redund. full length vect. for Dirichlet-part of RHS */
 
   /* INT i; */
-  
+
   /*====================================================================*/
   /* begin body */
 
@@ -273,7 +274,7 @@ void tsi_th_ost_st_genalp(INT disnum_s,
   /*====================================================================*/
   /* a word to the user */
   if (par.myrank == 0)
-  { 
+  {
     printf("============================================================="
            "=============\n");
     printf("Thermo-structure interaction: staggered, semi-coupled\n");
@@ -448,8 +449,8 @@ void tsi_th_ost_st_genalp(INT disnum_s,
    *    =   ...   evaluation in this step
    *    +=  ...   evaluation in this step
    *
-   */    
-  while ( (tsidyn->step < tsidyn->nstep-1) 
+   */
+  while ( (tsidyn->step < tsidyn->nstep-1)
           && (tsidyn->time <= tsidyn->maxtime) )
   {
     /*------------------------------------------------------------------*/
@@ -470,7 +471,7 @@ void tsi_th_ost_st_genalp(INT disnum_s,
 
     /*------------------------------------------------------------------*/
     /* output to STDOUT */
-    mod_stdout = tsidyn->step % tsidyn->out_std_ev;  
+    mod_stdout = tsidyn->step % tsidyn->out_std_ev;
 
     /*==================================================================*/
     /* THERMAL FIELD  :  SOLUTION */
@@ -684,14 +685,14 @@ void tsi_th_ost_st_genalp(INT disnum_s,
     /*------------------------------------------------------------------*/
     /*  measure wall clock time for this step */
     t1 = ds_cputime();
-    fprintf(allfiles.out_err, "TIME for step %d is %f sec\n", 
+    fprintf(allfiles.out_err, "TIME for step %d is %f sec\n",
             tsidyn->step, t1-t0);
 
   }  /* end of time loop */
   /*====================================================================*/
   /* END OF TIME STEP LOOP */
   /*====================================================================*/
-  
+
   /*--------------------------------------------------------------------*/
   /* the end, my friend */
   end:
@@ -746,3 +747,4 @@ void tsi_th_ost_st_genalp(INT disnum_s,
 
   return;
 }  /* end of tsi_st_genalp */
+#endif

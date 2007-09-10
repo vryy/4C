@@ -10,6 +10,7 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_SHELL8
 #include "../headers/standardtypes.h"
 #include "shell8.h"
@@ -528,4 +529,5 @@ dstrc_exit();
 #endif
 return;
 } /* end of s8static_ke */
+#endif
 #endif

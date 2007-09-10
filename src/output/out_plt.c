@@ -10,6 +10,7 @@ Maintainer: Christiane Foerster
 </pre>
 
 ---------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup OUTPUT
 *//*! @{ (documentation module open)*/
@@ -257,3 +258,4 @@ return;
 #endif /* ALE */
 
 /*! @} (documentation module close)*/
+#endif

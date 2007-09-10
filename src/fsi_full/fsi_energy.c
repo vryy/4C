@@ -10,6 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FSI
 *//*! @{ (documentation module open)*/
@@ -227,3 +228,4 @@ void fsi_energycheck(void)
 
 
 
+#endif

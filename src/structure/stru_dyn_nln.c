@@ -10,6 +10,7 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 #include "../io/io.h"
@@ -404,7 +405,7 @@ if (damp_array>0)
                    &(actsolv->sysarray_typ[mass_array]),
                    &(actsolv->sysarray[mass_array]),
                    sdyn->m_damp);
-   
+
    solserv_close_mat(actintra,&(actsolv->sysarray_typ[damp_array]),&(actsolv->sysarray[damp_array]));
 }
 
@@ -987,7 +988,7 @@ solserv_result_resid(actfield,disnum,actintra,&work[0],0,&(actsolv->sysarray[sti
 /* post return residual displacements to nodes
  * This operation will not only rotate the free DOFs of relevant
  * Dirichlet nodes, but all (i.e. prescribed & free) its DOFs.
- * This should not matter, 'coz the residual displacements are zero 
+ * This should not matter, 'coz the residual displacements are zero
  * at prescribed nodes */
 #ifdef LOCALSYSTEMS_ST
 locsys_trans_sol_dirich(actfield, disnum, node_array_sol_residual, 0, 1);
@@ -1012,8 +1013,8 @@ solserv_result_total(actfield,disnum,actintra, &(actsolv->sol[1]),0,
 /* In case of rotated DBCs we have to reevaluate these, because we can
  * only rotate the complete nodal displacement vector (BRICK1 & SOLID3: triplet,
  * WALL1: duple, SHELL*: NOT IMPLEMENTED) at once. However, the nodal
- * displacement vector can be partly free and partly supported. 
- * Here, we have to assure all displacements components of a DBC-node are 
+ * displacement vector can be partly free and partly supported.
+ * Here, we have to assure all displacements components of a DBC-node are
  * in the _local_ co-ordinate system (`system in sync'). This is due to:
  * The free components of a DBC-node are stored in local directions on the
  * assembled quantities (stiffness & mass matrix, internal and external
@@ -1024,7 +1025,7 @@ solserv_putdirich_to_dof(actfield,disnum,node_array_sol,0,sdyn->time);
 
 /*--------------- rotate Dirichlet displacement back into global system */
 /* post return total free and presc. DBC displacements to nodes,
- * displacements of DBC-less nodes are in global system, but 
+ * displacements of DBC-less nodes are in global system, but
  * displacements of DBC-ish nodes are in local system (this holds for
  * free and prescribed/supported DOFs of the node) and have to be
  * rotated into the global system */
@@ -1409,3 +1410,4 @@ dstrc_exit();
 #endif
 return;
 } /* end of dyn_nln_structural */
+#endif

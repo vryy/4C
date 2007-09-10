@@ -12,6 +12,7 @@ Maintainer: Burkhard Bornemann
 \author bborn
 \date 12/06
 */
+#ifndef CCADISCRET
 #ifdef D_BRICK1
 
 /*----------------------------------------------------------------------*/
@@ -42,7 +43,7 @@ void c1_locsys_checkoff(PARTITION* actpart)
 #ifdef DEBUG
   dstrc_enter("c1_locsys_checkoff");
 #endif
-  
+
   /*--------------------------------------------------------------------*/
   /* Check if an BRICK1 element has an local system */
   /* loop over all discretisations of partition structural field */
@@ -73,4 +74,5 @@ void c1_locsys_checkoff(PARTITION* actpart)
 #endif
 
 
+#endif
 #endif

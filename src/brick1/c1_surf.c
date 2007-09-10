@@ -11,6 +11,7 @@ Maintainer: Lena Wiechert
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 
 #include "../headers/standardtypes.h"
 #include "brick1.h"
@@ -771,3 +772,4 @@ static void getnodesgp(
 
 /*---------------------------------------------------------------------*/
 /*! @} (documentation module close)*/
+#endif

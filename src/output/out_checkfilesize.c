@@ -10,6 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 
 #include "../headers/standardtypes.h"
 /*!----------------------------------------------------------------------
@@ -165,3 +166,4 @@ dstrc_exit();
 #endif
 return;
 } /* end of out_checkfilesize */
+#endif

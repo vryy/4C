@@ -9,6 +9,7 @@ Maintainer: Andrea Hund
             0711 - 685-6122
 </pre>
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_MLSTRUCT
 
 #include "../headers/standardtypes.h"
@@ -17,8 +18,8 @@ Maintainer: Andrea Hund
 #include "s2ml.h"
 #include "s2ml_prototypes.h"
 
-/*! 
-\addtogroup MLSTRUCT 
+/*!
+\addtogroup MLSTRUCT
 *//*! @{ (documentation module open)*/
 
 
@@ -32,13 +33,13 @@ at the nodes of the submesh
 \param  nue              DOUBLE     (I)    poisson ratio of macro material
 \param  init             INT        (I)    init
 
-\return void                                               
+\return void
 
 *----------------------------------------------------------------------*/
 void s2ml_bopstraintonode(FIELD       *actsmfield, /*  submesh field           */
                           ELEMENT     *ele,        /* actual makroelement           */
                           DOUBLE       nue,       /* poisson ratio of macro material           */
-                          INT          init) 
+                          INT          init)
 {
 INT       cornernode;              /* Elementnodenumber of left-down Makroelement-node */
 INT       i,node;                  /* some loopers */
@@ -53,28 +54,28 @@ DOUBLE    strainma[4];             /* Macro-strain */
 DOUBLE    detma;                   /* Macro-jacobi-determinante */
 const DOUBLE    tol = 1E-05;
 
-static ARRAY    bopma_a;           /*  Makro-B-operator */   
-static DOUBLE **bopma;       
-static ARRAY    derivma_a;         /* Derivatives of Macroansatzfunctions */  
-static DOUBLE **derivma;       
-static ARRAY    xjmma_a;           /* Jacobian Matrix (Macro) */  
-static DOUBLE **xjmma;       
+static ARRAY    bopma_a;           /*  Makro-B-operator */
+static DOUBLE **bopma;
+static ARRAY    derivma_a;         /* Derivatives of Macroansatzfunctions */
+static DOUBLE **derivma;
+static ARRAY    xjmma_a;           /* Jacobian Matrix (Macro) */
+static DOUBLE **xjmma;
 
 DOUBLE    A_1[2],A_2[2],A_3[2];    /* some interim values */
 
 struct _NODE       *actsmnode;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s2ml_bopstraintonode");
 #endif
 
 /*----------------------------------------------------------------------*/
 if (init==1)
 {
-  bopma   = amdef("bopma"    ,&bopma_a   ,3,(2*MAXNOD_WALL1),"DA");           
-  derivma = amdef("derivma"  ,&derivma_a ,2,MAXNOD_WALL1 ,"DA");       
-  xjmma   = amdef("xjmma"    ,&xjmma_a   ,2,2    ,"DA");           
+  bopma   = amdef("bopma"    ,&bopma_a   ,3,(2*MAXNOD_WALL1),"DA");
+  derivma = amdef("derivma"  ,&derivma_a ,2,MAXNOD_WALL1 ,"DA");
+  xjmma   = amdef("xjmma"    ,&xjmma_a   ,2,2    ,"DA");
   goto end;
 }
 
@@ -125,48 +126,48 @@ for (node=0; node<actsmfield->dis[0].numnp; node++)
   }
   /*-------------------  Makro shape functions and their derivatives ---*/
   w1_funct_deriv(functma,derivma,xi_macro,eta_macro,ele->distyp,1);
-  /*---------------------------------- compute Makro-jacobian matrix ---*/       
-  w1_jaco (derivma,xjmma,&detma,ele,ielma);                         
+  /*---------------------------------- compute Makro-jacobian matrix ---*/
+  w1_jaco (derivma,xjmma,&detma,ele,ielma);
   /*------------------------------------- calculate Makro-operator B ---*/
   amzero(&bopma_a);
   w1_bop(bopma,derivma,xjmma,detma,ielma);
   /*----------------------------------------- calculate Makro-strain ---*/
-  w1_disd(ele,bopma,NULL,NULL,ele->e.w1->wtype,disdma);                  
+  w1_disd(ele,bopma,NULL,NULL,ele->e.w1->wtype,disdma);
   strainma[0] = disdma[0];
   strainma[1] = disdma[1];
   strainma[2] = disdma[2] + disdma[3];
   strainma[3] = 0.0;
-  if (ele->e.w1->wtype == plane_stress) 
+  if (ele->e.w1->wtype == plane_stress)
   {
    strainma[3] = - (nue*(strainma[0]+strainma[1]))/(1.0 - nue);
   }
   /*------------------------------------------- save to submesh-node ---*/
   for (i=0; i<4; i++)
-    actsmnode->sm_macroinfo->strain_ma[i]     = strainma[i]; 
+    actsmnode->sm_macroinfo->strain_ma[i]     = strainma[i];
   for (i=0; i<ielma; i++)
   {
-    actsmnode->sm_macroinfo->funct_ma[i]      = functma[i]; 
-    actsmnode->sm_macroinfo->derivxy_ma[0][i] = bopma[0][2*i]; 
-    actsmnode->sm_macroinfo->derivxy_ma[1][i] = bopma[1][2*i+1]; 
+    actsmnode->sm_macroinfo->funct_ma[i]      = functma[i];
+    actsmnode->sm_macroinfo->derivxy_ma[0][i] = bopma[0][2*i];
+    actsmnode->sm_macroinfo->derivxy_ma[1][i] = bopma[1][2*i+1];
   }
 }
 
 /*----------------------------------------------------------------------*/
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of s2ml_bopstraintonode */
 
 
 /*!----------------------------------------------------------------------
-\brief  routine for calling the material law from a submeshelement 
+\brief  routine for calling the material law from a submeshelement
 
 <pre>                                                           ah 07/04
-This routine 
+This routine
 
 </pre>
 \param  *actmaele        ELEMENT     (I)    actual macro element
@@ -178,7 +179,7 @@ This routine
 \param **D               DOUBLE      (O)    material tangent at GP
 \param   istore          INT         (I)    is it update step?
 
-\return void                                               
+\return void
 
 *----------------------------------------------------------------------*/
 void s2ml_callmat(ELEMENT     *actmaele,   /*  actual macro element   */
@@ -193,7 +194,7 @@ void s2ml_callmat(ELEMENT     *actmaele,   /*  actual macro element   */
 INT smallscale = 1;
 INT newval = 0;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s2ml_callmat");
 #endif
 /*----------------------------------------------------------------------*/
@@ -231,21 +232,21 @@ switch(actsmmat->mattyp)
   break;
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of s2ml_callmat */
 
 /*!----------------------------------------------------------------------
 \brief  routine for integration of element stiffness(has not to be quadratic!)
 
 <pre>                                                            ah 06/04
-This routine 
+This routine
 
 </pre>
-\param **stiffmatrix    DOUBLE       (O)   element stiffnes matrix 
+\param **stiffmatrix    DOUBLE       (O)   element stiffnes matrix
 \param **left_bop       DOUBLE       (I)   left B-operator (to be transp)
 \param **right_bop      DOUBLE       (I)   right B-operator
 \param **D              DOUBLE       (I)   material tangent
@@ -254,7 +255,7 @@ This routine
 \param   right_nd       INT          (I)   number ele-dof right vec
 \param   numeps         INT          (I)   number of strains-compon
 
-\return void                                               
+\return void
 
 *----------------------------------------------------------------------*/
 void s2ml_cal_stiff(DOUBLE   **stiffmatrix, /* element stiffnes matrix */
@@ -270,7 +271,7 @@ INT            i, j, k, l, m;
 DOUBLE         dum;
 DOUBLE         DB_right[4];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s2ml_cal_stiff");
 #endif
 /*----------------------------------------------------------------------*/
@@ -282,7 +283,7 @@ for (j=0; j<right_nd; j++)
     for(l=0; l<numeps; l++)
     {
       DB_right[k] = DB_right[k] + D[k][l] * right_bop[l][j] * fac;
-    }  
+    }
   }
   for(i=0; i<left_nd; i++)
   {
@@ -296,11 +297,11 @@ for (j=0; j<right_nd; j++)
 }/* end loop over dof right (j) */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of s2ml_cal_stiff */
 /*----------------------------------------------------------------------*/
 
@@ -308,3 +309,4 @@ return;
 /*! @} (documentation module close)*/
 
 #endif /* D_MLSTRUCT */
+#endif

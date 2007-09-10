@@ -13,6 +13,7 @@ Maintainer: Malte Neumann
  */
 /*-----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 
 /*!
 \addtogroup Ale
@@ -155,4 +156,4 @@ void ale3inp(
 /*! @} (documentation module close)*/
 
 #endif
-
+#endif

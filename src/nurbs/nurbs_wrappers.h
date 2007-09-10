@@ -1,3 +1,4 @@
+#ifndef CCADISCRET
 #ifdef NURBS
 
 
@@ -172,3 +173,4 @@ extern "C" {
 
 
 #endif  /* #ifdef NURBS */
+#endif

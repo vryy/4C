@@ -14,6 +14,7 @@ Maintainer: Burkhard Bornemann
 \author bborn
 \date 03/07
 */
+#ifndef CCADISCRET
 #ifdef D_SOLID3
 #ifdef D_TSI
 
@@ -77,7 +78,7 @@ void so3_mat_robinson_be_init(SOLID3* actso3)
   if (actso3->miv_rob == NULL)
   {
     /* allocation of MIVar */
-    actso3->miv_rob 
+    actso3->miv_rob
       = (SO3_MIV_ROBINSON*) CCACALLOC(1, sizeof(SO3_MIV_ROBINSON));
     /* allocation of arrays in MIV */
     amdef("miv_rob_vscstns", &(actso3->miv_rob->vscstns),
@@ -193,7 +194,7 @@ void so3_mat_robinson_be_sel(const CONTAINER* container,
   DOUBLE stnela[NUMSTR_SOLID3];  /* elastic strain */
   DOUBLE stnthr[NUMSTR_SOLID3];  /* thermal strain */
   DOUBLE stnvscn[NUMSTR_SOLID3];  /* viscous strain */
-  
+
   DOUBLE devstsn[NUMSTR_SOLID3];  /* stress deviator */
   DOUBLE stsovrn[NUMSTR_SOLID3];  /* over stress */
 
@@ -220,7 +221,7 @@ void so3_mat_robinson_be_sel(const CONTAINER* container,
   {
     /* linear (engineering) strain vector */
     so3_mv6_v_ass(gds->stnengv, stntotn);
-  } 
+  }
   else if (actso3->kintype == so3_total_lagr)
   {
     /* Green-Lagrange strain vector */
@@ -236,11 +237,11 @@ void so3_mat_robinson_be_sel(const CONTAINER* container,
   {
     /* current temperature at Gauss point */
     so3_tsi_temper0(container, ele,
-                    gds->gpc[0], gds->gpc[1], gds->gpc[2], 
+                    gds->gpc[0], gds->gpc[1], gds->gpc[2],
                     &tempr0);
     /* current temperature at Gauss point */
     so3_tsi_temper(container, ele,
-                   gds->gpc[0], gds->gpc[1], gds->gpc[2], 
+                   gds->gpc[0], gds->gpc[1], gds->gpc[2],
                    &tempr);
     /* coefficient of linear thermal expansion */
     DOUBLE thermexpans = mat_robin->thermexpans;
@@ -732,11 +733,11 @@ void so3_mat_robinson_be_rbcksts(ELEMENT* ele,
   /*--------------------------------------------------------------------*/
   /* derivative of back stress residual with respect to total strains
    *    kae = pd(res^al)/pd(eps) */
-  if ( (*bckstss == so3_mat_robinson_state_elastic) 
-       || (*bckstss == so3_mat_robinson_state_inelastic) ) 
+  if ( (*bckstss == so3_mat_robinson_state_elastic)
+       || (*bckstss == so3_mat_robinson_state_inelastic) )
   {
     so3_mv6_m_zero(kae);
-  } 
+  }
 
   /*--------------------------------------------------------------------*/
   /* derivative of back stress residual with respect to viscous strains
@@ -751,7 +752,7 @@ void so3_mat_robinson_be_rbcksts(ELEMENT* ele,
     DOUBLE fctv = -hh / (pow(gg, beta) * dt);
     so3_mv6_m05_idscl(fctv, kav);
   }
-  
+
 
   /*--------------------------------------------------------------------*/
   /* derivative of back stress residual with respect to back stress
@@ -845,9 +846,9 @@ and
 \author bborn
 \date 04/07
 */
-void so3_mat_robinson_be_red(DOUBLE stress[NUMSTR_SOLID3], 
+void so3_mat_robinson_be_red(DOUBLE stress[NUMSTR_SOLID3],
                              DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3],
-                             DOUBLE kev[NUMSTR_SOLID3][NUMSTR_SOLID3], 
+                             DOUBLE kev[NUMSTR_SOLID3][NUMSTR_SOLID3],
                              DOUBLE kea[NUMSTR_SOLID3][NUMSTR_SOLID3],
                              const DOUBLE vscstnr[NUMSTR_SOLID3],
                              DOUBLE kve[NUMSTR_SOLID3][NUMSTR_SOLID3],
@@ -855,7 +856,7 @@ void so3_mat_robinson_be_red(DOUBLE stress[NUMSTR_SOLID3],
                              DOUBLE kva[NUMSTR_SOLID3][NUMSTR_SOLID3],
                              const DOUBLE bckstsr[NUMSTR_SOLID3],
                              DOUBLE kae[NUMSTR_SOLID3][NUMSTR_SOLID3],
-                             DOUBLE kav[NUMSTR_SOLID3][NUMSTR_SOLID3], 
+                             DOUBLE kav[NUMSTR_SOLID3][NUMSTR_SOLID3],
                              DOUBLE kaa[NUMSTR_SOLID3][NUMSTR_SOLID3],
                              DOUBLE* kvarva,
                              DOUBLE* kvakvae)
@@ -1003,7 +1004,7 @@ void so3_mat_robinson_be_red(DOUBLE stress[NUMSTR_SOLID3],
       stress[i] -= rcsum;
     }
   }
-  
+
   /*--------------------------------------------------------------------*/
   /* reduce tangent */
   {
@@ -1137,7 +1138,7 @@ void so3_mat_robinson_be_mivupditer(const CONTAINER* container,
 
 /*======================================================================*/
 /*!
-\brief Incremental update Robinson's internal material variables 
+\brief Incremental update Robinson's internal material variables
 \param   ele          ELEMENT*        (io)   curr. elem.
 \parm    mat_robin    VP_ROBINSON*    (i)    elem. mater.
 \author bborn
@@ -1208,7 +1209,7 @@ void so3_mat_robinson_be_stress(const CONTAINER* container,
   DOUBLE elastn[NUMSTR_SOLID3];  /* elastic strain */
   DOUBLE thrstn[NUMSTR_SOLID3];  /* thermal strain */
   DOUBLE vscstn[NUMSTR_SOLID3];  /* viscous strain */
-  
+
   DOUBLE tem;  /* temperature */
 
   /*--------------------------------------------------------------------*/
@@ -1222,7 +1223,7 @@ void so3_mat_robinson_be_stress(const CONTAINER* container,
   {
     /* linear (engineering) strain vector */
     so3_mv6_v_ass(gds->stnengv, totstn);
-  } 
+  }
   else if (actso3->kintype == so3_total_lagr)
   {
     /* Green-Lagrange strain vector */
@@ -1238,7 +1239,7 @@ void so3_mat_robinson_be_stress(const CONTAINER* container,
   {
     /* temperature at Gauss point */
     so3_tsi_temper(container, ele,
-                   gds->gpc[0], gds->gpc[1], gds->gpc[2], 
+                   gds->gpc[0], gds->gpc[1], gds->gpc[2],
                    &tem);
     /* coefficient of linear thermal expansion */
     DOUBLE thermexpans = mat_robin->thermexpans;
@@ -1312,7 +1313,7 @@ void so3_mat_robinson_be_stress(const CONTAINER* container,
         DOUBLE stsovr[NUMSTR_SOLID3];
         so3_mv6_v_sub(stsdev, actso3->miv_rob->bacsts.a.da[ip], stsovr);
         FILE* oo = allfiles.gnu;
-        fprintf(oo, "# Time step %d   element %d   Gauss point %d\n", 
+        fprintf(oo, "# Time step %d   element %d   Gauss point %d\n",
                 kstep, ele->Id, ip);
         fprintf(oo, "# step strain-tot strain-ela strain-vis strain-thr"
                 "  stress-tot stress-dev stress-back stress-over\n");
@@ -1320,12 +1321,12 @@ void so3_mat_robinson_be_stress(const CONTAINER* container,
         for (i=0; i<NUMSTR_SOLID3; i++)
         {
           fprintf(oo, "%d %12.4e %12.4e %12.4e %12.4e"
-                  "  %12.4e %12.4e %12.4e %12.4e\n", 
+                  "  %12.4e %12.4e %12.4e %12.4e\n",
                   kstep,
                   totstn[i], elastn[i], vscstn[i], thrstn[i],
-                  stress[i], 
-                  stsdev[i], 
-                  actso3->miv_rob->bacsts.a.da[ip][i], 
+                  stress[i],
+                  stsdev[i],
+                  actso3->miv_rob->bacsts.a.da[ip][i],
                   stsovr[i]);
         }
         /* fprintf(oo, "\n"); */
@@ -1339,7 +1340,7 @@ void so3_mat_robinson_be_stress(const CONTAINER* container,
         DOUBLE stsovr[NUMSTR_SOLID3];
         so3_mv6_v_sub(stsdev, actso3->miv_rob->bacsts.a.da[ip], stsovr);
         FILE* oo = allfiles.gnu;
-        fprintf(oo, "# Time step %d   element %d   Gauss point %d\n", 
+        fprintf(oo, "# Time step %d   element %d   Gauss point %d\n",
                 kstep, ele->Id, ip);
         fprintf(oo, "# step strain-tot strain-ela strain-vis strain-thr"
                 "  stress-tot stress-dev stress-back stress-over\n");
@@ -1347,10 +1348,10 @@ void so3_mat_robinson_be_stress(const CONTAINER* container,
         for (i=0; i<NUMSTR_SOLID3; i++)
         {
           fprintf(oo, "%d %12.4e %12.4e %12.4e %12.4e"
-                  "  %12.4e %12.4e %12.4e %12.4e\n", 
+                  "  %12.4e %12.4e %12.4e %12.4e\n",
                   kstep,
                   totstn[i], elastn[i], vscstn[i], thrstn[i],
-                  stress[i], stsdev[i], 
+                  stress[i], stsdev[i],
                   actso3->miv_rob->bacsts.a.da[ip][i], stsovr[i]);
         }
         /* fprintf(oo, "\n"); */
@@ -1368,3 +1369,4 @@ void so3_mat_robinson_be_stress(const CONTAINER* container,
 
 #endif  /* end D_TSI */
 #endif  /* end D_SOLID3 */
+#endif

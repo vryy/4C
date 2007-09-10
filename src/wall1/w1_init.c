@@ -10,6 +10,7 @@ Maintainer: Andrea Hund
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
@@ -66,7 +67,7 @@ for (i=0; i<actpart->pdis[0].numele; i++)
   am4zero(&(actele->e.w1->b_bar_history));
   am4zero(&(actele->e.w1->PK_history));
 #endif
-/*---------------------------------------- init info for multiscale ---*/  
+/*---------------------------------------- init info for multiscale ---*/
 #ifdef D_MLSTRUCT
     actele->e.w1->isinomegaprime = 0;
     actele->e.w1->firstinomegaprime = 1;
@@ -303,3 +304,4 @@ return;
 /*----------------------------------------------------------------------*/
 #endif /*D_WALL1*/
 /*! @} (documentation module close)*/
+#endif

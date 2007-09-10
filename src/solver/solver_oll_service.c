@@ -10,6 +10,7 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 INT cmp_int(const void *a, const void *b );
@@ -1136,3 +1137,4 @@ end:
 
 
 /*! @} (documentation module close)*/
+#endif

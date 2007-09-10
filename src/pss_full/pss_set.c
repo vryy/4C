@@ -15,6 +15,7 @@ elaborated we can easily change this code.
 
 */
 
+#ifndef CCADISCRET
 #include "pss_set.h"
 
 void intset_init(INTSET* s, INT size)
@@ -89,3 +90,5 @@ INT intset_get(INTSET* s, INT i)
 
   return s->value[i];
 }
+
+#endif

@@ -10,6 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID2
 *//*! @{ (documentation module open)*/
@@ -230,7 +231,7 @@ if (init==1) /* allocate working arrays and set pointers */
    emass   = emass_global->a.da;
    eforce  = eforce_global->a.dv;
    edforce = edforce_global->a.dv;
-   
+
    fdyn = alldyn[genprob.numff].fdyn;
    goto end;
 } /* endif (init==1) */
@@ -331,7 +332,7 @@ case 0:
 	  f2_get_time_dependent_sub_tau(ele,xyze,funct,deriv,
 					evelng,NULL,visc);
 
-	  
+
 	  /*---------------------------- start loop over gausspoints ---*/
 	  f2_int_gen_alpha_tds(ele,
 			       hasext,
@@ -1521,4 +1522,4 @@ void f2_calerr(
 
 #endif
 /*! @} (documentation module close)*/
-
+#endif

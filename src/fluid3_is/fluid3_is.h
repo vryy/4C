@@ -12,6 +12,7 @@ Maintainer: Ulrich Küttler
 </pre>
  */
 
+#ifndef CCADISCRET
 #ifdef D_FLUID3_IS
 
 #ifndef FLUID3_IS_H
@@ -193,5 +194,6 @@ void f3is_calresvec(
   INT      is_ale
   );
 
+#endif
 #endif
 #endif

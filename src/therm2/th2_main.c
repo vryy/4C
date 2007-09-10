@@ -16,6 +16,7 @@ Maintainer: Burkhard Bornemann
 /*======================================================================*/
 
 
+#ifndef CCADISCRET
 /*----------------------------------------------------------------------*/
 /* only for THERM2 */
 #ifdef D_THERM2
@@ -89,7 +90,7 @@ void therm2(PARTITION *actpart,
 	    ARRAY *emass_global,
 	    ARRAY *intforce_global,
 	    CALC_ACTION *action,
-	    CONTAINER *container)   /* contains variables defined 
+	    CONTAINER *container)   /* contains variables defined
 				     * in container.h */
 {
 
@@ -166,3 +167,4 @@ void therm2(PARTITION *actpart,
 
 /*----------------------------------------------------------------------*/
 #endif  /* end of #ifdef D_THERM2 */
+#endif

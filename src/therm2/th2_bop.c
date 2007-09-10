@@ -10,6 +10,7 @@ Maintainer: Burkhard Bornemann
             089-289-15237
 </pre>
 */
+#ifndef CCADISCRET
 #ifdef D_THERM2
 
 
@@ -66,10 +67,10 @@ void th2_bop(DOUBLE    **bop,
   /* loop over element nodes */
   for (inode=0; inode<iel; inode++)
   {
-    bop[0][inode] 
+    bop[0][inode]
       += xji[0][0] * deriv[0][inode]
       +  xji[0][1] * deriv[1][inode];
-    bop[1][inode] 
+    bop[1][inode]
       += xji[1][0] * deriv[0][inode]
       +  xji[1][1] * deriv[1][inode];
   }
@@ -85,3 +86,4 @@ void th2_bop(DOUBLE    **bop,
 /*======================================================================*/
 #endif /* end of #ifdef D_THERM2 */
 /*! @} (documentation module close)*/
+#endif

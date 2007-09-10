@@ -10,6 +10,7 @@ Maintainer: Thomas Hettich
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_FLUID
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
@@ -250,4 +251,5 @@ dstrc_exit();
 return;
 } /* end of fluid_caldirich_tu_1*/
 
+#endif
 #endif

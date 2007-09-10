@@ -10,6 +10,7 @@ Maintainer: Volker Gravemeier
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup ML_FLUID3
 *//*! @{ (documentation module open)*/
@@ -580,3 +581,4 @@ return;
 
 #endif
 /*! @} (documentation module close)*/
+#endif

@@ -11,6 +11,7 @@ Maintainer: Burkhard Bornemann
             089-289-15237
 </pre>
 */
+#ifndef CCADISCRET
 #ifdef D_THERM2
 
 
@@ -29,7 +30,7 @@ Maintainer: Burkhard Bornemann
 /*!
 \brief Input of therm2 element
 
-This routines reads the therm2 elements. It is called by inpfield() 
+This routines reads the therm2 elements. It is called by inpfield()
 (in input_mesh.c)
 
 \param   ele     *ELEMENT   (o)   pointer to element
@@ -104,7 +105,7 @@ void th2_inp(ELEMENT *ele)
       dserror("Allocation of lm in ELEMENT failed");
     }
     frint_n("QUAD9", &(ele->lm[0]), ele->numnp, &ierr);
-    if (ierr != 1) 
+    if (ierr != 1)
     {
       dserror("Reading of ELEMENT Topology failed");
     }
@@ -146,7 +147,7 @@ void th2_inp(ELEMENT *ele)
 
   /*--------------------------------------------------------------------*/
   /* reduce node numbers by one */
-  for (i=0; i<ele->numnp; i++) 
+  for (i=0; i<ele->numnp; i++)
   {
     (ele->lm[i])--;
   }
@@ -184,12 +185,12 @@ void th2_inp(ELEMENT *ele)
   ele->e.th2->planestate = th2_plane_heatflux;
   frchk("PLANE_HEATFLUX", &ierr);
   if (ierr == 1)
-  { 
+  {
     ele->e.th2->planestate = th2_plane_heatflux;
   }
   frchk("PLANE_TEMPGRAD", &ierr);
   if (ierr == 1)
-  { 
+  {
     ele->e.th2->planestate = th2_plane_tempgrad;
   }
   /*--------------------------------------------------------------------*/
@@ -260,3 +261,4 @@ return;}
 /*======================================================================*/
 #endif /* end of #ifdef D_THERM2 */
 /*! @} (documentation module close)*/
+#endif

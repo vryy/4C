@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 
 *----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
@@ -1009,4 +1010,4 @@ void redundant_skyline(
   return;
 } /* end of redundant_skyline */
 
-
+#endif

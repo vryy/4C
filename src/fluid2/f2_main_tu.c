@@ -10,6 +10,7 @@ Maintainer: Thomas Hettich
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_FLUID2
 /*----------------------------------------------------------------------*/
 #include "../headers/standardtypes.h"
@@ -179,4 +180,5 @@ return;
 } /* end of fluid2 */
 
 
+#endif
 #endif

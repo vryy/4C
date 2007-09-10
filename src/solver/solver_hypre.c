@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 
 *----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 #ifdef HYPRE_PACKAGE
 
 
@@ -1040,3 +1041,4 @@ return;
 
 #endif /* end of ifdef HYPRE_PACKAGE */
 
+#endif

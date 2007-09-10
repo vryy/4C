@@ -10,6 +10,7 @@ Maintainer: Christiane Foerster
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID2
 *//*! @{ (documentation module open)*/
@@ -138,4 +139,5 @@ dstrc_exit();
 return;
 } /* end of f2_caltau */
 
+#endif
 #endif

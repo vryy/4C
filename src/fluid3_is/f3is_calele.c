@@ -10,6 +10,7 @@ Maintainer: Ulrich Küttler
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_FLUID3_IS
 #include "../headers/standardtypes.h"
 #include "fluid3_is.h"
@@ -481,4 +482,5 @@ void f3is_caleleres_relax(ELEMENT        *ele,
 #endif
 }
 
+#endif
 #endif

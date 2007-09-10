@@ -1,3 +1,4 @@
+#ifndef CCADISCRET
 for (vi=0; vi<iel; ++vi)
 {
     /* Konvektionsterm (u*grad(u),v) */
@@ -61,3 +62,4 @@ for (vi=0; vi<iel; ++vi)
     eforce_(vi*3 + 2) += tau_Mp*time2nue*(rhsint_(0)*viscs2_(0, 2, vi) + rhsint_(1)*viscs2_(1, 2, vi) + rhsint_(2)*viscs2_(2, 2, vi)) ;
 
 }
+#endif

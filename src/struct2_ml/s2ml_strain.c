@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 
+\brief contains the routine
 
 <pre>
 Maintainer: Andrea Hund
@@ -9,6 +9,7 @@ Maintainer: Andrea Hund
             0711 - 685-6122
 </pre>
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_MLSTRUCT
 
 #include "../headers/standardtypes.h"
@@ -17,8 +18,8 @@ Maintainer: Andrea Hund
 #include "s2ml_prototypes.h"
 #include "s2ml.h"
 
-/*! 
-\addtogroup MLSTRUCT 
+/*!
+\addtogroup MLSTRUCT
 *//*! @{ (documentation module open)*/
 
 
@@ -28,16 +29,16 @@ Maintainer: Andrea Hund
 
 \param  *actmaele         ELEMENT     (I)   actual Macro-element
 \param   wtype            WALL_TYPE   (I)   plane stress/strain...
-\param **bopma            DOUBLE      (I)   Macro-B-operator 
+\param **bopma            DOUBLE      (I)   Macro-B-operator
 \param   nue              DOUBLE      (I)   poisson-ratio
 \param  *eps_equiv        DOUBLE      (O)   equivalent strain
 
-\return void                                               
+\return void
 
 *----------------------------------------------------------------------*/
 void s2ml_aequistrain(ELEMENT     *actmaele,  /* actual Macro-element   */
-                      WALL_TYPE    wtype,    /* plane stress/strain... */         
-                      DOUBLE     **bopma,    /* Macro-B-operator       */  
+                      WALL_TYPE    wtype,    /* plane stress/strain... */
+                      DOUBLE     **bopma,    /* Macro-B-operator       */
                       DOUBLE       nue,      /* poisson-ratio          */
                       DOUBLE      *eps_equiv)/* equivalent strain      */
 {
@@ -47,7 +48,7 @@ DOUBLE disd[5];
 DOUBLE strain[4];
 DOUBLE epsilon[3][3];
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s2ml_aequistrain");
 #endif
 /*------------------------------- calculate displacement derivatives ---*/
@@ -70,7 +71,7 @@ if(wtype==plane_strain)
 {
   strain[3] = 0.;
 }
-else if (wtype == plane_stress) 
+else if (wtype == plane_stress)
 {
  strain[3] = - (nue*(strain[0]+strain[1]))/(1.0 - nue);
 }
@@ -85,15 +86,15 @@ for (i=0; i<3; i++)
  {
   scalar += epsilon[i][j]*epsilon[i][j];
  }
-} 
+}
 J2 = (I1 * I1)/6.0 - scalar/2.0;
 *eps_equiv = sqrt(- J2);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of s2ml_aequistrain */
 
 /*!----------------------------------------------------------------------
@@ -101,7 +102,7 @@ return;
 GP's and of macro-strains at submesh-element GP's
 
 <pre>                                                             ah 06/04
-This routine 
+This routine
 
 </pre>
 \param **bopma            DOUBLE      (O)   Macro-B-operator at submesh GP
@@ -109,7 +110,7 @@ This routine
 \param  *functmi          DOUBLE      (I)   micro quad4-Ansatzfunc at submesh GP
 \param  *actsmele         ELEMENT     (I)   actual submesh element
 
-\return void                                               
+\return void
 
 *----------------------------------------------------------------------*/
 
@@ -121,7 +122,7 @@ void s2ml_bopstrainma(DOUBLE     **bopma,     /* macro B-operator at GP       */
 INT      nodema,nodemi,j,node_start;       /* loopers */
 DOUBLE   derivma_xy[2][4];      /* derivatives of macro-Ansatzfunctions */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s2ml_bopstrainma");
 #endif
 /*--------------------------------------------------- Initialisation ---*/
@@ -134,7 +135,7 @@ for (j=0; j<2; j++)
 {
   for (nodema=0; nodema<4; nodema++)
   {
-      derivma_xy[j][nodema] = 0.0; 
+      derivma_xy[j][nodema] = 0.0;
   }
 }
 for (j=0; j<4; j++)
@@ -172,11 +173,11 @@ for (j=0; j<4; j++)
 }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of s2ml_bopstrainma */
 /*----------------------------------------------------------------------*/
 
@@ -186,16 +187,16 @@ return;
 GP's and of macro-strains at submesh-element GP's
 
 <pre>                                                             ah 06/04
-This routine 
+This routine
 
 </pre>
 \param **bopmi            DOUBLE      (O)   micro-B-operator at submesh GP
 \param  *strainmi         DOUBLE      (O)   micro strain at submesh GP
 \param  *actsmele         ELEMENT     (I)   actual submesh element
 \param  *actmaele         ELEMENT     (I)   actual macro element
-\param   nue              DOUBLE      (I)   poisson ratio 
+\param   nue              DOUBLE      (I)   poisson ratio
 
-\return void                                               
+\return void
 
 *----------------------------------------------------------------------*/
 void s2ml_strainmi(DOUBLE     **bopmi,     /* micro B-operator at GP    */
@@ -209,13 +210,13 @@ INT      Id;                  /* Id of submesh nodes */
 DOUBLE   disd_mi[4];          /* micro-displacement derivatives */
 DOUBLE   d_mi[9][2];          /* micro-displacements at submesh-nodes */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s2ml_strainmi");
 #endif
 
 /*--- get by use of submesh-element-node-Id its micro-displ.solution ---*/
 for (smnode=0; smnode<actsmele->numnp; smnode++)
-{ 
+{
   Id = actsmele->node[smnode]->Id;
   d_mi[smnode][0] = actmaele->e.w1->sm_nodaldata[Id].displ_mi[0];
   d_mi[smnode][1] = actmaele->e.w1->sm_nodaldata[Id].displ_mi[1];
@@ -240,11 +241,11 @@ if(actsmele->e.w1->wtype == plane_strain)  strainmi[3] = 0.0;
 if(actsmele->e.w1->wtype == plane_stress)  strainmi[3] = -(nue*(strainmi[0]+strainmi[1]))/(1.0-nue);
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of s2ml_strainmi */
 /*----------------------------------------------------------------------*/
 
@@ -253,7 +254,7 @@ return;
 due to macro and micro displacements at a submesh-interface-elements GP
 
 <pre>                                                             ah 06/04
-This routine 
+This routine
 
 </pre>
 \param  *actsmele         ELEMENT     (I)   actual submesh element
@@ -265,7 +266,7 @@ This routine
 \param  *jumpumi          DOUBLE      (O)   displacement jump (micro) at submesh GP
 \param  *DELTAjumpumi     DOUBLE      (O)   incre displacement jump (micro) at submesh GP
 
-\return void                                               
+\return void
 
 *----------------------------------------------------------------------*/
 void s2ml_ifbopmajumpu(ELEMENT  *actsmele,    /* actual submesh element    */
@@ -283,15 +284,15 @@ DOUBLE  dis[16];               /* displacement, (used for macro and micro) */
 DOUBLE  DELTAdis[16];          /* incremental displacement (used for macro and micro) */
 /*DOUBLE  functma[4][8];*/   /* macroansatzfunctions of macronode i, evaluated at smnode j */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s2ml_ifbopmajumpu");
 #endif
 /*---------------------------------------------------- anschaulicher ---*/
 # if 0
   for (manode=0; manode<4; manode++)
-  { 
+  {
     for (smnode=0; smnode<actsmele->numnp; smnode++)
-    { 
+    {
        functma[manode][smnode] = actsmele->node[smnode]->sm_macroinfo->funct_ma[manode];
     }
   }
@@ -305,7 +306,7 @@ dstrc_enter("s2ml_ifbopmajumpu");
         bopma[i][2*manode+1] += bopmi[i][2*smnode+1] * functma[manode][smnode];
       }
     }
-  } 
+  }
 # endif
 /*--------------------------------- calculate B-operator (schneller) ---*/
 for(i=0; i<2; i++)
@@ -359,15 +360,16 @@ for (i=0; i<2; i++)
     DELTAjumpumi[i] += bopmi[i][j] * DELTAdis[j];
   }
 }
- 
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of s2ml_ifbopmajumpu */
 /*----------------------------------------------------------------------*/
 /*! @} (documentation module close)*/
 
 #endif /* D_MLSTRUCT */
+#endif

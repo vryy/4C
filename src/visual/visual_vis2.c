@@ -10,6 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "../fluid_full/fluid_prototypes.h"
 #include "../fsi_full/fsi_prototypes.h"
@@ -1682,4 +1683,9 @@ void v2_init__(
 dserror("VISUAL2 PACKAGE not compiled into programm\n");
 return;
 }
+#endif
+#else
+void v2_init() {}
+void v2_init_() {}
+void v2_init__() {}
 #endif

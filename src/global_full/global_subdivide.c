@@ -15,6 +15,7 @@ Maintainer: Malte Neumann
  */
 /*-----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 /*!
 \addtogroup Global
 *//*! @{ (documentation module open)*/
@@ -4689,3 +4690,4 @@ void global_subdivide_tri(
 /*! @} (documentation module close)*/
 
 
+#endif

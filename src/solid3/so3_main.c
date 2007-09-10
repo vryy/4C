@@ -13,6 +13,7 @@ Maintainer: Moritz Frenzel
 \author mf
 \date 10/06
 */
+#ifndef CCADISCRET
 #ifdef D_SOLID3
 
 
@@ -64,9 +65,9 @@ static SO3_DATA so3_data;
 
 /*----------------------------------------------------------------------*/
 /*!
-\brief All Gauss point coordinates and weights, shape functions and their 
+\brief All Gauss point coordinates and weights, shape functions and their
        parametric derivates readily evaluated at Gauss point.
-       
+
 These data will only change if a different discretisation/Gauss point
 combination occurs of the element.
 
@@ -92,7 +93,7 @@ The ACTION keywords are defined in headers/enum.h.
 \param eforc_global    ARRAY*       (i)   global force vector
                                           (internal/external)
 \param action          CALC_ACTION* (i)   option passed to element
-\param container       CONTAINER*   (i)   contains variables defined 
+\param container       CONTAINER*   (i)   contains variables defined
                                           in container.h
 \return void
 
@@ -145,7 +146,7 @@ void solid3(PARTITION *actpart,
     case calc_struct_linstiff:
       actmat = &(mat[ele->mat-1]);
       so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
-      so3_int_fintstifmass(container, ele, &(so3_gpshade), actmat, 
+      so3_int_fintstifmass(container, ele, &(so3_gpshade), actmat,
                            NULL, estif_global, NULL);
       /* rotate components at Dirichlet nodes into local system */
 #ifdef LOCALSYSTEMS_ST
@@ -160,13 +161,13 @@ void solid3(PARTITION *actpart,
     case calc_struct_nlnstiff:
       actmat = &(mat[ele->mat-1]);
       so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
-      so3_int_fintstifmass(container, ele, &(so3_gpshade), actmat, 
+      so3_int_fintstifmass(container, ele, &(so3_gpshade), actmat,
                            eforc_global, estif_global, NULL);
       /* rotate components at Dirichlet nodes into local system */
 #ifdef LOCALSYSTEMS_ST
       if (ele->locsys == locsys_yes)
       {
-        locsys_trans_equant_dirich(ele, estif_global, NULL, 
+        locsys_trans_equant_dirich(ele, estif_global, NULL,
                                    eforc_global, NULL);
       }
 #endif
@@ -176,12 +177,12 @@ void solid3(PARTITION *actpart,
     case calc_struct_linstiffmass:
       actmat = &(mat[ele->mat-1]);
       so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
-      so3_int_fintstifmass(container, ele, &(so3_gpshade), actmat, 
+      so3_int_fintstifmass(container, ele, &(so3_gpshade), actmat,
                            eforc_global, estif_global, emass_global);
 #ifdef LOCALSYSTEMS_ST
       if (ele->locsys == locsys_yes)
       {
-        locsys_trans_equant_dirich(ele, estif_global, emass_global, 
+        locsys_trans_equant_dirich(ele, estif_global, emass_global,
                                    eforc_global, NULL);
       }
 #endif
@@ -192,12 +193,12 @@ void solid3(PARTITION *actpart,
       dserror("Lumped mass matrix is not implemented");
       actmat = &(mat[ele->mat-1]);
       so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
-      so3_int_fintstifmass(container, ele, &(so3_gpshade), actmat, 
+      so3_int_fintstifmass(container, ele, &(so3_gpshade), actmat,
                            eforc_global, estif_global, emass_global);
 #ifdef LOCALSYSTEMS_ST
       if (ele->locsys == locsys_yes)
       {
-        locsys_trans_equant_dirich(ele, estif_global, emass_global, 
+        locsys_trans_equant_dirich(ele, estif_global, emass_global,
                                    eforc_global, NULL);
       }
 #endif
@@ -207,12 +208,12 @@ void solid3(PARTITION *actpart,
     case calc_struct_nlnstiffmass:
       actmat = &(mat[ele->mat-1]);
       so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
-      so3_int_fintstifmass(container, ele, &(so3_gpshade), actmat, 
+      so3_int_fintstifmass(container, ele, &(so3_gpshade), actmat,
                            eforc_global, estif_global, emass_global);
 #ifdef LOCALSYSTEMS_ST
       if (ele->locsys == locsys_yes)
       {
-        locsys_trans_equant_dirich(ele, estif_global, emass_global, 
+        locsys_trans_equant_dirich(ele, estif_global, emass_global,
                                    eforc_global, NULL);
       }
 #endif
@@ -222,7 +223,7 @@ void solid3(PARTITION *actpart,
     case calc_struct_internalforce:
       actmat = &(mat[ele->mat-1]);
       so3_shape_gpshade(ele, &(so3_data), &(so3_gpshade));
-      so3_int_fintstifmass(container, ele, &(so3_gpshade), actmat, 
+      so3_int_fintstifmass(container, ele, &(so3_gpshade), actmat,
                            eforc_global, NULL, NULL);
 #ifdef LOCALSYSTEMS_ST
       if (ele->locsys == locsys_yes)
@@ -298,3 +299,4 @@ void solid3(PARTITION *actpart,
 /*======================================================================*/
 #endif  /* end of #ifdef D_SOLID3 */
 /*! @} (documentation module close)*/
+#endif

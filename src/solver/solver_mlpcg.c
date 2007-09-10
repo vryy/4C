@@ -12,6 +12,7 @@ Maintainer: Michael Gee
 </pre>
 
 ---------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 
@@ -139,3 +140,4 @@ return;
 /*! @} (documentation module close)*/
 #endif
 
+#endif

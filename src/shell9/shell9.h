@@ -12,6 +12,7 @@ Maintainer: Stefan Hartmann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_SHELL9
 
 /*!
@@ -688,3 +689,4 @@ DOUBLE s9ksi(INT       numlay,
 /*----------------------------------------------------------------------*/
 #endif /*D_SHELL9*/
 /*! @} (documentation module close)*/
+#endif

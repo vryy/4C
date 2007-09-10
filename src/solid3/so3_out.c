@@ -1,7 +1,7 @@
 /*======================================================================*/
 /*!
 \file
-\brief Output of SOLID3 to classic output *.out file 
+\brief Output of SOLID3 to classic output *.out file
 
 <pre>
 Maintainer: Burkhard Bornemann
@@ -15,6 +15,7 @@ Maintainer: Burkhard Bornemann
 */
 
 /*----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_SOLID3
 
 /*----------------------------------------------------------------------*/
@@ -277,3 +278,4 @@ void so3_out_stress(ELEMENT *actele,
 
 #endif /* D_SOLID3 */
 /*! @} (documentation module close)*/
+#endif

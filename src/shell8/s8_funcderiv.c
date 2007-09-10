@@ -10,6 +10,7 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_SHELL8
 #include "../headers/standardtypes.h"
 #include "shell8.h"
@@ -205,3 +206,4 @@ void s8_funct_deriv(
 
 
 
+#endif

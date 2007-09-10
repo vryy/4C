@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_ALE
 #include "../headers/standardtypes.h"
 #include "ale3.h"
@@ -443,3 +444,4 @@ end:
 
 #endif
 /*! @} (documentation module close)*/
+#endif

@@ -43,7 +43,11 @@ void caldyn()
   {
     /* central differences time integration */
     case centr_diff:
+#ifndef CCADISCRET
       dyn_nln_stru_expl();
+#else
+      dserror("no central differences in DRT");
+#endif
       break;
     /* generalized alfa time integration */
     case gen_alfa:

@@ -11,6 +11,7 @@ Maintainer: Steffen Genkinger
 
 ------------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 
 #ifdef D_FSI
 
@@ -1062,3 +1063,4 @@ cleaningup:
 
 
 /*! @} (documentation module close)*/
+#endif

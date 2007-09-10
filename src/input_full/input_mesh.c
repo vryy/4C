@@ -11,6 +11,7 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 
 #include "../headers/standardtypes.h"
 #include "../shell8/shell8.h"
@@ -1919,3 +1920,4 @@ end:
 
   return;
 } /* end of inp_therm_field */
+#endif

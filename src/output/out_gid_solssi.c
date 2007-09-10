@@ -10,6 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
   \addtogroup SSI
   *//*! @{ (documentation module open)*/
@@ -299,3 +300,4 @@ return;
 #endif
 
 /*! @} (documentation module close)*/
+#endif

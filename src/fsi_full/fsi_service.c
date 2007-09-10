@@ -12,6 +12,7 @@ Maintainer: Steffen Genkinger
 ------------------------------------------------------------------------*/
 
 
+#ifndef CCADISCRET
 /*!
 \addtogroup FSI
 *//*! @{ (documentation module open)*/
@@ -1356,3 +1357,4 @@ void fluid_init_pos_ale(
 
 
 
+#endif

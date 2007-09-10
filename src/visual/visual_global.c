@@ -10,6 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 -----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "../fluid_full/fluid_prototypes.h"
 /*----------------------------------------------------------------------*
@@ -237,3 +238,4 @@ dstrc_exit();
 
 return;
 } /* end of ntavisual */
+#endif

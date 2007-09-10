@@ -18,6 +18,7 @@ understand. Feel free to add your own.
 
 */
 
+#ifndef CCADISCRET
 #ifdef BINIO
 
 /*!
@@ -1209,4 +1210,5 @@ void restart_read_bin_fsidyn(FSI_DYNAMIC *fsidyn, INT step)
 }
 
 /*! @} (documentation module close)*/
+#endif
 #endif

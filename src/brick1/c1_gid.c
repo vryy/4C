@@ -15,6 +15,7 @@ Maintainer: Burkhard Bornemann
 */
 
 /*----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_BRICK1
 
 /*----------------------------------------------------------------------*/
@@ -49,7 +50,7 @@ extern FIELD *field;
 \brief Set required Gauss point sets for Gid output file
 
 \param   *actele        ELEMENT     (i)   pointer to current element
-\param   *actgid        GIDSET      (o)   Gid data (incl. Gauss point 
+\param   *actgid        GIDSET      (o)   Gid data (incl. Gauss point
                                           sets
 
 \return void
@@ -60,7 +61,7 @@ extern FIELD *field;
 void c1_gid_init(ELEMENT *actele,
                  GIDSET *actgid)
 {
-  
+
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_enter("c1_gid_init");
@@ -111,7 +112,7 @@ void c1_gid_msh(FIELD *actfield,
 #ifdef DEBUG
   dstrc_enter("c1_gid_msh");
 #endif
-  
+
   /*----------------------------------------------------------------------*/
   /* hexahedron element with 8 nodes and 2x2x2 Gauss points */
   if (actgid->is_brick1_222)
@@ -466,7 +467,7 @@ void c1_gid_stress(char resstring[],
                 componentnames[3], componentnames[4], componentnames[5]);
         fprintf(out,"VALUES\n");
         /*extrapolated to nodal points!*/
-        c1_out_gid_sol_str(out,actfield,disnum,place,0); 
+        c1_out_gid_sol_str(out,actfield,disnum,place,0);
         fprintf(out,"END VALUES\n");
         break;
       /* xyz-oriented stresses at Gauss points */
@@ -704,3 +705,4 @@ void c1_gid_stress(char resstring[],
 
 #endif /* end of #ifdef D_BRICK1 */
 /*! @} (documentation module close)*/
+#endif

@@ -10,6 +10,7 @@ Maintainer: Andrea Hund
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "wallge.h"
 #include "wallge_prototypes.h"
@@ -76,3 +77,4 @@ return;
 } /* end of wge_setdof */
 /*----------------------------------------------------------------------*/
 /*! @} (documentation module close)*/
+#endif

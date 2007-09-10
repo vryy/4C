@@ -12,6 +12,7 @@ Maintainer: Christiane Foerster
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_ALE
 #include "../headers/standardtypes.h"
 #include "ale2.h"
@@ -84,7 +85,7 @@ for the smallest. The Jacobian of linear triangles is constant and hence
 minimal everywhere. The search for the minimal Jacobian determinant of
 and higher order elements are not implemented.
 
-Routine is also used for evaluating the minimal Jacobian of higher order 
+Routine is also used for evaluating the minimal Jacobian of higher order
 elements assuming that the sides remain stright and the side nodes are
 placed in equal distances.
 
@@ -153,3 +154,4 @@ return;
 
 #endif
 /*! @} (documentation module close)*/
+#endif

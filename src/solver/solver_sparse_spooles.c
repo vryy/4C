@@ -12,6 +12,7 @@ Maintainer: Malte Neumann
 *----------------------------------------------------------------------*/
 
 
+#ifndef CCADISCRET
 #ifdef SPOOLES_PACKAGE
 
 
@@ -2009,3 +2010,4 @@ void exchange_coup_spo(
 
 
 
+#endif

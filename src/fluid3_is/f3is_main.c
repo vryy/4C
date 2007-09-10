@@ -10,6 +10,7 @@ Maintainer: Ulrich Küttler
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "fluid3_is.h"
 #include "../fluid3/fluid3_prototypes.h"
 
@@ -118,3 +119,4 @@ void fluid3_is(PARTITION   *actpart,
   return;
 } /* end of fluid3 */
 
+#endif

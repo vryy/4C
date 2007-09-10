@@ -10,6 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_FLUID3
 #include "../headers/standardtypes.h"
 #include "fluid3_prototypes.h"
@@ -1690,7 +1691,7 @@ void f3_edgejaco( DOUBLE    **xyze,
     node = iedgnod[k];
     for (i=0;i<3;i++)
     {
-    
+
       dxyzdrs[0][i]+=deriv[0][k]*xyze[i][node];
       dxyzdrs[1][i]+=deriv[1][k]*xyze[i][node];
     }
@@ -2115,4 +2116,5 @@ dstrc_exit();
 return;
 } /* end of f3_gder2 */
 
+#endif
 #endif

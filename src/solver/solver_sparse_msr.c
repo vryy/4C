@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 
 *----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 
 #ifdef AZTEC_PACKAGE
 
@@ -1682,3 +1683,4 @@ void exchange_coup_msr(
 #endif /* ifdef AZTEC_PACKAGE */
 
 
+#endif

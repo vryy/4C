@@ -11,6 +11,7 @@ Maintainer: Andreas Lipka
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_BRICK1
 
 #include "../headers/standardtypes.h"
@@ -710,3 +711,4 @@ return;
 } /* end of c1_dmat_nhmfcc */
 #endif
 /*! @} (documentation module close)*/
+#endif

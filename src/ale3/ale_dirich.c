@@ -12,6 +12,7 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_ALE
 #include "../headers/standardtypes.h"
 #include "ale3.h"
@@ -925,3 +926,4 @@ return hasdirich;
 
 #endif
 /*! @} (documentation module close)*/
+#endif

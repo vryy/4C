@@ -1,3 +1,4 @@
+#ifndef CCADISCRET
 #ifdef MLPCG
 
 /*!---------------------------------------------------------------------
@@ -303,3 +304,4 @@ void mlpcg_precond_oneP_vanekQR(AGG     *actagg,
 #endif
 
 #endif /* MLPCG */
+#endif

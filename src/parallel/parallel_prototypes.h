@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 
 ---------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 
 #ifndef PARALLEL_PROTOTYPES_H
 #define PARALLEL_PROTOTYPES_H
@@ -31,3 +32,4 @@ void create_communicators(void);
 
 #endif
 
+#endif

@@ -11,6 +11,7 @@ Maintainer: Christiane Foerster
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup Ale
 *//*! @{ (documentation module open)*/
@@ -376,4 +377,5 @@ return;
 } /* end of write_element_quality */
 
 /*! @} (documentation module close)*/
+#endif
 #endif

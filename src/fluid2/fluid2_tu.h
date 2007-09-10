@@ -11,6 +11,7 @@ Maintainer: Thomas Hettich
 
 ------------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 /*!---------------------------------------------------------------------
 \brief fluid2
 
@@ -35,3 +36,4 @@ DOUBLE             strom_dc; /*!< streamlenghtfor DISC. CAPT.             */
 
 } FLUID2_TU;
 
+#endif

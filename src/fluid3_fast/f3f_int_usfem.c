@@ -10,8 +10,9 @@ Maintainer: Christiane Foerster
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
-\addtogroup FLUID2 
+#ifndef CCADISCRET
+/*!
+\addtogroup FLUID2
 *//*! @{ (documentation module open)*/
 #ifdef D_FLUID3_F
 
@@ -45,9 +46,9 @@ extern struct _MATERIAL  *mat;
 
 <pre>                                                         chfoe 04/04
 
-In this routine the element 'stiffness' matrix and RHS for one 
+In this routine the element 'stiffness' matrix and RHS for one
 fluid2 element is calculated
-      
+
 </pre>
 \param  *ele	   ELEMENT	   (i)    actual element
 \param  *hasext    INT             (i)    element flag
@@ -67,7 +68,7 @@ fluid2 element is calculated
 \param **evhist    DOUBLE	   (i)    lin. combination of recent vel and acc
 \param **egridv    DOUBLE	   (i)    grid velocity of element
 \param  *epren     DOUBLE	   (-)    ele pres. at time n
-\param  *edeadn    DOUBLE	   (-)    ele dead load (selfweight) at n 
+\param  *edeadn    DOUBLE	   (-)    ele dead load (selfweight) at n
 \param  *edeadng   DOUBLE	   (-)    ele dead load (selfweight) at n+1
 \param  *velint    DOUBLE	   (-)    vel at integration point
 \param  *vel2int   DOUBLE	   (-)    vel at integration point
@@ -77,7 +78,7 @@ fluid2 element is calculated
 \param **vderxy2   DOUBLE	   (-)    2nd global vel. deriv.
 \param **wa1	   DOUBLE	   (-)    working array
 \param **wa2	   DOUBLE	   (-)    working array
-\return void                                                   
+\return void
 
 ------------------------------------------------------------------------*/
 void f3fint_usfem(
@@ -108,7 +109,7 @@ void f3fint_usfem(
 	              DOUBLE          *wa2,
                       INT              sizevec[6]
 	             )
-{ 
+{
 INT       l;          /* a couter                                       */
 INT       intc;       /* "integration case" for tri for further infos
                           see f2_inpele.c and f2_intg.c                 */
@@ -133,7 +134,7 @@ INT      inttyp;
 DOUBLE   det[LOOPL];
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3fint_usfem");
 #endif
 
@@ -190,7 +191,7 @@ default:
  |               start loop over integration points                     |
  *----------------------------------------------------------------------*/
 for (lr=0;lr<nir;lr++)
-{    
+{
 for (ls=0;ls<nis;ls++)
 {
 for (lt=0;lt<nit;lt++)
@@ -229,7 +230,7 @@ for (lt=0;lt<nit;lt++)
       else if(typ==tet10)
          inttyp=10;
 
-      f3ftet(funct, deriv, deriv2, &e1, &e2, &e3, &inttyp, 
+      f3ftet(funct, deriv, deriv2, &e1, &e2, &e3, &inttyp,
              &icode, sizevec);
 
    break;
@@ -254,7 +255,7 @@ for (lt=0;lt<nit;lt++)
 
    /*----------------------- get velocities (n+g,i) at integraton point */
    f3fveli(velint, funct, evelng, sizevec);
-   
+
    /*------------------- get history data (n,i) at integration point ---*/
    f3fveli(histint, funct, evhist, sizevec);
 
@@ -263,7 +264,7 @@ for (lt=0;lt<nit;lt++)
 
    /*--------------------- get grid velocity at integration point ---*/
    if(flagvec[1]!=0) f3fveli(gridvelint, funct, egridv, sizevec);
-   
+
    /*------------------------------------- get pressure gradients ---*/
    f3fpder(pderxy, derxy, epren, sizevec);
 
@@ -274,23 +275,23 @@ for (lt=0;lt<nit;lt++)
 } /* end of loop over integration points lt*/
 } /* end of loop over integration points ls */
 } /* end of loop over integration points lr */
- 
+
 /*----------------------------------------------- to ensure assembly ---*/
 for(l=0;l<sizevec[4];l++)
    hasext[l] = 1;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f3fint_usfem_ale */
 
 
 
 /*!---------------------------------------------------------------------
-\brief integration loop for one fluid2 element residual vector 
+\brief integration loop for one fluid2 element residual vector
        basing on USFEM
 
 <pre>                                                         chfoe 11/04
@@ -299,7 +300,7 @@ This routine calculates the elemental residual vector for one converged
 fluid element. The field velint contains the converged Gauss point value
 of the velocity. The elemental residual vector is used to obtain fluid
 lift and drag forces and FSI coupling forces.
-      
+
 </pre>
 \param  *ele	   ELEMENT	   (i)    actual element
 \param  *hasext    INT             (i)    element flag
@@ -323,7 +324,7 @@ lift and drag forces and FSI coupling forces.
 \param   visc      DOUBLE          (i)    viscosity
 \param **wa1	   DOUBLE	   (-)    working array
 \param **wa2	   DOUBLE	   (-)    working array
-\return void                                                   
+\return void
 
 ------------------------------------------------------------------------*/
 void f3fint_res(
@@ -353,7 +354,7 @@ void f3fint_res(
 	        DOUBLE          *wa2,
                 INT              sizevec[6]
 	       )
-{ 
+{
 INT       l;          /* a couter                                       */
 INT       intc;       /* "integration case" for tri for further infos
                           see f2_inpele.c and f2_intg.c                 */
@@ -378,7 +379,7 @@ DOUBLE   paravec[4];
 INT      inttyp;
 DOUBLE   det[LOOPL];
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3fint_res");
 #endif
 
@@ -431,7 +432,7 @@ default:
  |               start loop over integration points                     |
  *----------------------------------------------------------------------*/
 for (lr=0;lr<nir;lr++)
-{    
+{
 for (ls=0;ls<nis;ls++)
 {
 for (lt=0;lt<nit;lt++)
@@ -470,7 +471,7 @@ for (lt=0;lt<nit;lt++)
       else if(typ==tet10)
          inttyp=10;
 
-      f3ftet(funct, deriv, deriv2, &e1, &e2, &e3, &inttyp, 
+      f3ftet(funct, deriv, deriv2, &e1, &e2, &e3, &inttyp,
              &icode, sizevec);
    break;
    default:
@@ -494,7 +495,7 @@ for (lt=0;lt<nit;lt++)
 
    /*----------------------- get velocities (n+g,i) at integraton point */
    f3fveli(velint, funct, evelng, sizevec);
-   
+
    /*------------------- get history data (n,i) at integration point ---*/
    f3fveli(histint, funct, evhist, sizevec);
 
@@ -503,13 +504,13 @@ for (lt=0;lt<nit;lt++)
 
    /*--------------------- get grid velocity at integration point ---*/
    if(flagvec[1]!=0) f3fveli(aleconvint, funct, ealecovng, sizevec);
-   
+
    /*------------------------------------- get pressure gradients ---*/
    f3fpder(pderxy, derxy, epren, sizevec);
 
    /*----------------------------- get pressure at integration point ---*/
    f3fprei(presint,funct,epren,sizevec);
-      
+
    /*----------------- perform integration for entire matrix and rhs ---*/
    f3fcalresvec(force,velint,histint,vderxy,vderxy2,funct,derxy,derxy2,
                 edeadng,aleconvint,presint,pderxy,fac,hasext,tau,
@@ -517,15 +518,16 @@ for (lt=0;lt<nit;lt++)
 } /* end of loop over integration points lt*/
 } /* end of loop over integration points ls*/
 } /* end of loop over integration points lr */
- 
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of f3fint_res*/
 
 
 #endif
 /*! @} (documentation module close)*/
+#endif

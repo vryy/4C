@@ -1,6 +1,6 @@
 /*!-----------------------------------------------------------------------
 \file
-\brief contains the routine 'if_bop' which calculates the linear operator 
+\brief contains the routine 'if_bop' which calculates the linear operator
 matrix for a interface element at gaussian points
 <pre>
 Maintainer: Andrea Hund
@@ -10,20 +10,21 @@ Maintainer: Andrea Hund
 </pre>
 
 *-----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_INTERF
 #include "../headers/standardtypes.h"
 #include "interf.h"
 #include "interf_prototypes.h"
 
-/*! 
+/*!
 \addtogroup INTERF
 */
 /*! @{ (documentation module open)*/
 
 /*!----------------------------------------------------------------------
-\brief calculate operator matrix at gaussian point                                           
+\brief calculate operator matrix at gaussian point
 
-<pre>                                                             ah 05/03 
+<pre>                                                             ah 05/03
 This routine calcuates the operator matrix B at the given gaussian point
 for an interface element.
 </pre>
@@ -36,7 +37,7 @@ for an interface element.
 \param   flag          INT     (I)   flag for case differentiation
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 
 *----------------------------------------------------------------------*/
 void if_bop(DIS_TYP    typ,
@@ -47,7 +48,7 @@ void if_bop(DIS_TYP    typ,
             INT        flag)
 {
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("if_bop");
 #endif
 
@@ -174,7 +175,7 @@ break;
 }
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -184,3 +185,4 @@ return;
 /*! @} (documentation module close)*/
 
 #endif /*D_INTERF*/
+#endif

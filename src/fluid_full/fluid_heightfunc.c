@@ -3,6 +3,7 @@
 \brief setting free surface conditions for fluid and ale
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID
 *//*! @{ (documentation module open)*/
@@ -480,3 +481,4 @@ return;
 
 #endif
 /*! @} (documentation module close)*/
+#endif

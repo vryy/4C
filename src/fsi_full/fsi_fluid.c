@@ -14,6 +14,7 @@ Maintainer: Ulrich Kuettler
 
 */
 
+#ifndef CCADISCRET
 #ifdef D_FSI
 
 #include "../headers/standardtypes.h"
@@ -352,4 +353,5 @@ void fsi_fluid_cleanup(
 }
 
 
+#endif
 #endif

@@ -15,6 +15,7 @@ Maintainer: Malte Neumann
  */
 /*-----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 /*!
 \addtogroup Fluid3_fast
 *//*! @{ (documentation module open)*/
@@ -216,3 +217,4 @@ void f3fcalstabpar(
 /*! @} (documentation module close)*/
 
 
+#endif

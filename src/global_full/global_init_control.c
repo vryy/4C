@@ -10,6 +10,7 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 /*!----------------------------------------------------------------------
 \brief the tracing variable
@@ -53,3 +54,4 @@ trace.deepness--;
 #endif
 return;
 } /* end of ntaini */
+#endif

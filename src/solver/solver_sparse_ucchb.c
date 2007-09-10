@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 
 *----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 #ifdef PARSUPERLU_PACKAGE
 
 
@@ -1265,3 +1266,4 @@ void redundant_ucchb(
 
 
 
+#endif

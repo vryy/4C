@@ -11,6 +11,7 @@ Maintainer: Andreas Lipka
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_BRICK1
 
 #include "../headers/standardtypes.h"
@@ -82,7 +83,7 @@ dstrc_enter("c1_out_gid_sol_str");
   {
     if (tmpnodval == NULL)
       tmpnodval     = amdef("tmpnodval"  ,&tmpnodval_a,numnp,8 ,"DA");
-    goto end;      
+    goto end;
   }
 /*----------------------------------------------------------------------*/
   if (init==2)
@@ -209,7 +210,7 @@ return;
 \brief Write the stress in element to Ccarat output file
 
 \param   *actele        ELEMENT     (i)   pointer to current element
-\param    place         INT         (i)   first index in ARRAY4D stress 
+\param    place         INT         (i)   first index in ARRAY4D stress
 \param   *out           FILE        (i/o) pointer to output file
 
 \return void
@@ -236,7 +237,7 @@ void c1_out_stress(ELEMENT *actele,
   fprintf(out,"\n");
   /*--------------------------------------------------------------------*/
   /* total number of Gauss points */
-  if ( (actele->distyp == hex8) 
+  if ( (actele->distyp == hex8)
        || (actele->distyp == hex20)
        || (actele->distyp == hex27) )
   {
@@ -380,3 +381,4 @@ void c1_out_stress(ELEMENT *actele,
 /*======================================================================*/
 #endif /*D_BRICK1*/
 /*! @} (documentation module close)*/
+#endif

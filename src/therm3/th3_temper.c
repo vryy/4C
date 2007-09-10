@@ -17,6 +17,7 @@ Maintainer: Burkhard Bornemann
 */
 
 /*----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_THERM3
 
 /*----------------------------------------------------------------------*/
@@ -149,7 +150,7 @@ void th3_temper_cal0(const CONTAINER *container,
                      const DOUBLE t,
                      DOUBLE *tem)
 {
-  const ARRAY_POSITION_SOL* isol 
+  const ARRAY_POSITION_SOL* isol
     = &(field[genprob.numtf].dis[container->disnum_t].ipos.isol);
   const INT item0 = isol->tem0;  /* temperature index */
   const INT tdof = 0;  /* temperature degree-of-freedom (it's only one) */
@@ -247,7 +248,7 @@ void th3_temper_caln(const CONTAINER *container,
                      const DOUBLE t,
                      DOUBLE *tem)
 {
-  const ARRAY_POSITION_SOL* isol 
+  const ARRAY_POSITION_SOL* isol
     = &(field[genprob.numtf].dis[container->disnum_t].ipos.isol);
   const INT itemn = isol->temn;  /* temperature index */
   const INT tdof = 0;  /* temperature degree-of-freedom (it's only one) */
@@ -339,7 +340,7 @@ void th3_temper_sh(const CONTAINER *container,
                    DOUBLE *tem)
 {
   const INT tdof = 0;  /* the only DOF */
-  const ARRAY_POSITION_SOL* isol 
+  const ARRAY_POSITION_SOL* isol
     = &(field[genprob.numtf].dis[container->disnum_t].ipos.isol);
   const INT item = isol->tem;  /* temperature index of last converged */
   const INT nelenod = ele->numnp;
@@ -374,3 +375,4 @@ void th3_temper_sh(const CONTAINER *container,
 
 #endif /* end of #ifdef D_THERM3 */
 /*! @} (documentation module close)*/
+#endif

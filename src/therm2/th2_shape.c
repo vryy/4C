@@ -14,6 +14,7 @@ Maintainer: Burkhard Bornemann
 \author bborn
 \date 03/06
 */
+#ifndef CCADISCRET
 #ifdef D_THERM2
 
 /*----------------------------------------------------------------------*/
@@ -123,7 +124,7 @@ void th2_shape_deriv(DOUBLE     *shape,
         deriv[1][5]=-1.0*rm*s;
         deriv[1][6]=-0.5*r2  ;
         deriv[1][7]=-1.0*rp*s;
-        
+
         deriv[0][0]=deriv[0][0] - 0.5*(deriv[0][4] + deriv[0][7]);
         deriv[1][0]=deriv[1][0] - 0.5*(deriv[1][4] + deriv[1][7]);
       }
@@ -245,3 +246,4 @@ void th2_shape_deriv(DOUBLE     *shape,
 
 
 
+#endif

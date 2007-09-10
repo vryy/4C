@@ -1,3 +1,4 @@
+#ifndef CCADISCRET
 #ifdef WALLCONTACT
 /*!------------------------------------------------------------------------
 \file
@@ -97,4 +98,5 @@ DOUBLE           mid_tangent[3];     /*!< Tangential vector at the closest point
 } HISTORY;
 
 /*! @} (documentation module close)*/
+#endif
 #endif

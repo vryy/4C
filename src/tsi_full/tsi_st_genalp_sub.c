@@ -14,6 +14,7 @@ Maintainer: Burkhard Bornemann
 \date 03/06
 */
 
+#ifndef CCADISCRET
 
 /*----------------------------------------------------------------------*/
 /* header files */
@@ -28,7 +29,7 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 /*!
 \brief File pointers
-       This structure struct _FILES allfiles is defined in 
+       This structure struct _FILES allfiles is defined in
        input_control_global.c and the type is in standardtypes.h
        It holds all file pointers and some variables needed for the FRSYSTEM
 \author bborn
@@ -41,7 +42,7 @@ extern FILES allfiles;
 /*----------------------------------------------------------------------*/
 /*!
 \brief General problem data
-       defined in global_control.c 
+       defined in global_control.c
 \author bborn
 \date 03/06
 */
@@ -263,20 +264,20 @@ void tsi_st_genalp_init(PARTITION* actpart,
   /*--------------------------------------------------------------------*/
   /*--------------------------------------------------------------------*/
   /* allocate sparse mass (and damping) matrix */
-  /* reallocate the vector of sparse matrices and the vector of 
-   * their types : formerly lenght 1, now lenght 2 or 3 dependent on 
+  /* reallocate the vector of sparse matrices and the vector of
+   * their types : formerly lenght 1, now lenght 2 or 3 dependent on
    * presence of damp_array */
-  actsolv->sysarray_typ 
+  actsolv->sysarray_typ
     = (SPARSE_TYP*) CCAREALLOC(actsolv->sysarray_typ,
                                actsolv->nsysarray*sizeof(SPARSE_TYP));
-  if (!actsolv->sysarray_typ) 
+  if (!actsolv->sysarray_typ)
   {
     dserror("Allocation of memory failed");
   }
   actsolv->sysarray
     = (SPARSE_ARRAY*) CCAREALLOC(actsolv->sysarray,
                                actsolv->nsysarray*sizeof(SPARSE_ARRAY));
-  if (!actsolv->sysarray) 
+  if (!actsolv->sysarray)
   {
     dserror("Allocation of memory failed");
   }
@@ -286,7 +287,7 @@ void tsi_st_genalp_init(PARTITION* actpart,
                               &(actsolv->sysarray[*stiff_array]),
                               &(actsolv->sysarray_typ[*mass_array]),
                               &(actsolv->sysarray[*mass_array]));
-  
+
   if (*damp_array > 0)
   {
     solserv_alloc_cp_sparsemask(actintra,
@@ -313,12 +314,12 @@ void tsi_st_genalp_init(PARTITION* actpart,
 
   /*--------------------------------------------------------------------*/
   /* allocate 4 distributed vectors for RHS */
-  /* these hold original load vector, 
-   *            load vector at time t 
-   *            load vctor at time at t-dt 
+  /* these hold original load vector,
+   *            load vector at time t
+   *            load vctor at time at t-dt
    *            and interpolated load vector */
   actsolv->nrhs = 4;
-  solserv_create_vec(&(actsolv->rhs), 
+  solserv_create_vec(&(actsolv->rhs),
                      actsolv->nrhs, *numeq_total, *numeq, "DV");
   for (i=0; i<actsolv->nrhs; i++)
   {
@@ -332,7 +333,7 @@ void tsi_st_genalp_init(PARTITION* actpart,
   actsolv->nsol = 2;
   solserv_create_vec(&(actsolv->sol),
                      actsolv->nsol, *numeq_total, *numeq, "DV");
-  for (i=0; i<actsolv->nsol; i++) 
+  for (i=0; i<actsolv->nsol; i++)
   {
     solserv_zero_vec(&(actsolv->sol[i]));
   }
@@ -398,21 +399,21 @@ void tsi_st_genalp_init(PARTITION* actpart,
   for (i=0; i<work_num; i++)
   {
     solserv_zero_vec(&(distemp1[i]));
-  }  
+  }
 
   /*--------------------------------------------------------------------*/
   /* initialize solver on all matrices */
   /* NOTE: solver init phase has to be called with each matrix one wants to
    *       solve with. Solver init phase has to be called with all matrices
    *       one wants to do matrix-vector products and matrix scalar products.
-   *       This is not needed by all solver libraries, but the solver-init 
+   *       This is not needed by all solver libraries, but the solver-init
    *       phase is cheap in computation (can be costly in memory)
    *       There will be no solver call on mass or damping array. */
 
   /*--------------------------------------------------------------------*/
   /* initialize solver */
   init = 1;
-  solver_control(actfield, disnum, actsolv, actintra, 
+  solver_control(actfield, disnum, actsolv, actintra,
 		 &(actsolv->sysarray_typ[*stiff_array]),
                  &(actsolv->sysarray[*stiff_array]),
                  dispi[0], &(actsolv->rhs[0]), init);
@@ -423,7 +424,7 @@ void tsi_st_genalp_init(PARTITION* actpart,
                  work[0], work[1], init);
   if (*damp_array > 0)
   {
-    solver_control(actfield, disnum, actsolv, actintra, 
+    solver_control(actfield, disnum, actsolv, actintra,
 		   &(actsolv->sysarray_typ[*damp_array]),
                    &(actsolv->sysarray[*damp_array]),
                    work[0], work[1], init);
@@ -435,7 +436,7 @@ void tsi_st_genalp_init(PARTITION* actpart,
                  &(distemp1[0]), &(distemp1[1]), init);
   if (*damp_array > 0)
   {
-    solver_control(actfield, disnum, actsolv, actintra, 
+    solver_control(actfield, disnum, actsolv, actintra,
 		   &(actsolv->sysarray_typ[*damp_array]),
                    &(actsolv->sysarray[*damp_array]),
                    &(distemp1[0]), &(distemp1[1]), init);
@@ -452,7 +453,7 @@ void tsi_st_genalp_init(PARTITION* actpart,
   /* init the element calculating routines */
   *action = calc_struct_init;
   calinit(actfield, actpart, action, container);
-  
+
   /*--------------------------------------------------------------------*/
   /* call elements to calculate stiffness and mass */
   if (*damp_array > 0)
@@ -494,7 +495,7 @@ void tsi_st_genalp_init(PARTITION* actpart,
 
 
   /*--------------------------------------------------------------------*/
-  /* put a zero to the place ipos->num=12 in node->sol to init the 
+  /* put a zero to the place ipos->num=12 in node->sol to init the
    * velocities and accels of prescribed displacements */
   /* HINT: This actually redefines/reallocates/enlarges the sol
    *       array of each structure node to dimension 12x2 (or 12x3)
@@ -508,10 +509,10 @@ void tsi_st_genalp_init(PARTITION* actpart,
    *       array at each structure node to dimension 2x2 (or 2x3)
    *       from originally 1x2 (or 1x3) */
   /* initialise internal forces f_{int;n} to zero */
-  solserv_sol_zero(actfield, disnum, node_array_sol_increment, 
+  solserv_sol_zero(actfield, disnum, node_array_sol_increment,
                    isolinc->fint);
   /* initialise internal forces f_{int;n+1} to zero */
-  solserv_sol_zero(actfield, disnum, node_array_sol_increment, 
+  solserv_sol_zero(actfield, disnum, node_array_sol_increment,
                    isolinc->fintn);
 
 
@@ -522,7 +523,7 @@ void tsi_st_genalp_init(PARTITION* actpart,
    * It's important to do this only after all the node arrays are set
    * up because their sizes are used to allocate internal memory. */
   init_bin_out_field(out_context,
-                     &(actsolv->sysarray_typ[*stiff_array]), 
+                     &(actsolv->sysarray_typ[*stiff_array]),
                      &(actsolv->sysarray[*stiff_array]),
                      actfield, actpart, actintra, disnum);
 #endif
@@ -605,10 +606,10 @@ void tsi_st_genalp_pred(PARTITION* actpart,
   /*--------------------------------------------------------------------*/
   /* set incremental displacements dispi[0] to zero */
   solserv_zero_vec(&(dispi[0]));
-  
+
   /*--------------------------------------------------------------------*/
   /* set residual/iterative displacements in nodes to zero */
-  solserv_result_resid(actfield, disnum, actintra, &dispi[0], 
+  solserv_result_resid(actfield, disnum, actintra, &dispi[0],
                        isolres->disres,
                        &(actsolv->sysarray[stiff_array]),
                        &(actsolv->sysarray_typ[stiff_array]));
@@ -635,10 +636,10 @@ void tsi_st_genalp_pred(PARTITION* actpart,
     }
   }
 #endif
-    
+
   /*--------------------------------------------------------------------*/
   /* multiply rhs[1] by load factor based on factor rldfac of curve 0 */
-  /* WARNING: This control routine at the moment always uses curve 0 
+  /* WARNING: This control routine at the moment always uses curve 0
    *          for the complete RHS */
   /* Get factor at new time t_{n+1} */
   /* dyn_facfromcurve(actcurve, actdyn->time, &(dynvar->rldfac)); */
@@ -647,7 +648,7 @@ void tsi_st_genalp_pred(PARTITION* actpart,
 
   /*--------------------------------------------------------------------*/
   /* rotate Dirichlet displacement into local system
-   * prior to calculation/assignment of locally oriented 
+   * prior to calculation/assignment of locally oriented
    * prescribed DBC values */
 #ifdef LOCALSYSTEMS_ST
   solserv_zerodirich(actfield, disnum, node_array_sol, isol->disdn);
@@ -659,7 +660,7 @@ void tsi_st_genalp_pred(PARTITION* actpart,
    * These are used to calculate the RHS due to the Dirichlet conditions */
   /* In the case of locally oriented DBCs, these prescribed DOFs are
    * given in the local system. */
-  solserv_putdirich_to_dof(actfield, disnum, node_array_sol, 
+  solserv_putdirich_to_dof(actfield, disnum, node_array_sol,
                            isol->disdn, actdyn->time);
 
   /*--------------------------------------------------------------------*/
@@ -668,25 +669,25 @@ void tsi_st_genalp_pred(PARTITION* actpart,
    * This operation will not only rotate the prescribed DOFs of the relevant
    * Dirichlet node, but all (i.e. prescribed & free) its DOFs. */
 #ifdef LOCALSYSTEMS_ST
-  locsys_trans_sol_dirich(actfield, disnum, node_array_sol, isol->disdn, 
+  locsys_trans_sol_dirich(actfield, disnum, node_array_sol, isol->disdn,
                           locsys_trf_xyz_to_XYZ);
 #endif
 
   /*--------------------------------------------------------------------*/
   /* put presdisplacements(t_{n+1}) - presdisplacements(t_n) in place 5 */
-  solserv_adddirich(actfield, disnum, node_array_sol, 
+  solserv_adddirich(actfield, disnum, node_array_sol,
                     isol->disd, isol->disdn, isol->disdi, -1.0, 1.0);
 
   /*--------------------------------------------------------------------*/
   /* rotate Dirichlet displacement increments into local system
-   * these are needed to determine the so-called Dirichlet forces 
+   * these are needed to determine the so-called Dirichlet forces
    * (in calelm) */
 #ifdef LOCALSYSTEMS_ST
-  locsys_trans_sol_dirich(actfield, disnum, node_array_sol, isol->disdi, 
+  locsys_trans_sol_dirich(actfield, disnum, node_array_sol, isol->disdi,
                           locsys_trf_XYZ_to_xyz);
-  locsys_trans_sol_dirich(actfield, disnum, node_array_sol, isol->veldn, 
+  locsys_trans_sol_dirich(actfield, disnum, node_array_sol, isol->veldn,
                           locsys_trf_XYZ_to_xyz);
-  locsys_trans_sol_dirich(actfield, disnum, node_array_sol, isol->accdn, 
+  locsys_trans_sol_dirich(actfield, disnum, node_array_sol, isol->accdn,
                           locsys_trf_XYZ_to_xyz);
 #endif
 
@@ -702,9 +703,9 @@ void tsi_st_genalp_pred(PARTITION* actpart,
    * dirichfacs[7] =  raleigh damping factor for mass
    * dirichfacs[8] =  raleigh damping factor for stiffness
    * dirichfacs[9] =  dt
-   * see PhD theses Mok page 165: Generalized-alpha time integration 
+   * see PhD theses Mok page 165: Generalized-alpha time integration
    *                              with prescribed displ. */
-  dirichfacs[0] = -dynvar->constants[0];  
+  dirichfacs[0] = -dynvar->constants[0];
   dirichfacs[1] = +dynvar->constants[1];
   dirichfacs[2] = +dynvar->constants[2];
   dirichfacs[3] = -dynvar->constants[3];
@@ -716,20 +717,20 @@ void tsi_st_genalp_pred(PARTITION* actpart,
     dirichfacs[7] = actdyn->m_damp;
     dirichfacs[8] = actdyn->k_damp;
   }
-  else 
+  else
   {
     dirichfacs[7] = 0.0;
     dirichfacs[8] = 0.0;
   }
   dirichfacs[9] = actdyn->dt;
-  
+
   /*--------------------------------------------------------------------*/
-  /* calculate tangential stiffness/mass 
+  /* calculate tangential stiffness/mass
    * and internal forces at time t_{n} */
-  solserv_zero_mat(actintra, 
+  solserv_zero_mat(actintra,
                    &(actsolv->sysarray[stiff_array]),
                    &(actsolv->sysarray_typ[stiff_array]));
-  solserv_zero_mat(actintra, 
+  solserv_zero_mat(actintra,
                    &(actsolv->sysarray[mass_array]),
                    &(actsolv->sysarray_typ[mass_array]));
   amzero(dirich_a);
@@ -744,7 +745,7 @@ void tsi_st_genalp_pred(PARTITION* actpart,
   container->global_numeq = numeq_total;
   container->dirichfacs = dirichfacs;
   container->kstep = 0;
-  calelm(actfield, actsolv, actpart, actintra, 
+  calelm(actfield, actsolv, actpart, actintra,
          stiff_array, mass_array, container, action);
 #if 0
   {
@@ -767,21 +768,21 @@ void tsi_st_genalp_pred(PARTITION* actpart,
 
   /*--------------------------------------------------------------------*/
   /* rotate Dirichlet displacement increments back into global system */
-  /* these were needed to determine the so-called Dirichlet forces 
+  /* these were needed to determine the so-called Dirichlet forces
    * (in calelm) */
 #ifdef LOCALSYSTEMS_ST
-  locsys_trans_sol_dirich(actfield, disnum, node_array_sol, isol->disdi, 
+  locsys_trans_sol_dirich(actfield, disnum, node_array_sol, isol->disdi,
                           locsys_trf_xyz_to_XYZ);
-  locsys_trans_sol_dirich(actfield, disnum, node_array_sol,isol->veldn, 
+  locsys_trans_sol_dirich(actfield, disnum, node_array_sol,isol->veldn,
                           locsys_trf_xyz_to_XYZ);
-  locsys_trans_sol_dirich(actfield, disnum, node_array_sol, isol->accdn, 
+  locsys_trans_sol_dirich(actfield, disnum, node_array_sol, isol->accdn,
                           locsys_trf_xyz_to_XYZ);
 #endif
 
   /*--------------------------------------------------------------------*/
   /* store positive internal forces on fie[1] */
   solserv_zero_vec(&(fie[1]));
-  assemble_vec(actintra, 
+  assemble_vec(actintra,
                &(actsolv->sysarray_typ[stiff_array]),
                &(actsolv->sysarray[stiff_array]),
                &(fie[1]), intforce, 1.0);
@@ -791,7 +792,7 @@ void tsi_st_genalp_pred(PARTITION* actpart,
   /* forces rhs[0] = (1-alphaf)*rhs[1] + alphaf*rhs[2] */
   solserv_copy_vec(&(actsolv->rhs[2]), &(actsolv->rhs[0]));
   solserv_scalarprod_vec(&(actsolv->rhs[0]), actdyn->alpha_f);
-  solserv_add_vec(&(actsolv->rhs[1]), &(actsolv->rhs[0]), 
+  solserv_add_vec(&(actsolv->rhs[1]), &(actsolv->rhs[0]),
                   (1.0-actdyn->alpha_f));
 
   /*--------------------------------------------------------------------*/
@@ -810,17 +811,17 @@ void tsi_st_genalp_pred(PARTITION* actpart,
    *   + M*(-a1*dispi[0]+a2*vel[0]+a3*acc[0])
    *   + D*(-a4*dispi[0]+a5*vel[0]+a6*acc[0]) (if present)
    *
-   *   a1 = dynvar.constants[0] 
+   *   a1 = dynvar.constants[0]
    *      =  (1.0-alpham) * (1.0/beta)/(DSQR(dt))
-   *   a2 =                        
+   *   a2 =
    *      = ((1.0-alpham) * (1.0/beta)/(DSQR(dt)))*dt
-   *   a3 = dynvar.constants[2] 
+   *   a3 = dynvar.constants[2]
    *      =  (1.0-alpham) / (2.0*beta) - 1.0
-   *   a4 = dynvar.constants[3] 
+   *   a4 = dynvar.constants[3]
    *      =  (1.0-alphaf) * ((gamma/beta)/dt)
-   *   a5 = dynvar.constants[4] 
+   *   a5 = dynvar.constants[4]
    *      =  ((1.0-alphaf) * ((gamma/beta)/dt))*dt - 1.0
-   *   a6 =                        
+   *   a6 =
    *      = (gamma/beta)/2.0 - 1.0) * dt * (1.0-alphaf) */
   pefnln_struct(dynvar, actdyn, actfield, actsolv, actintra,
                 dispi, vel, acc, work, mass_array, damp_array);
@@ -843,18 +844,18 @@ void tsi_st_genalp_pred(PARTITION* actpart,
                  &(dispi[0]), &(actsolv->rhs[0]), init);
 
   /*--------------------------------------------------------------------*/
-  /* blank prior to calculation/assignment of locally oriented 
+  /* blank prior to calculation/assignment of locally oriented
    * residual DBC displacements */
 #ifdef LOCALSYSTEMS_ST
-  solserv_zerodirich(actfield, disnum, node_array_sol_residual, 
+  solserv_zerodirich(actfield, disnum, node_array_sol_residual,
                      isolres->disres);
 #endif
 
   /*--------------------------------------------------------------------*/
-  /* return residual/iterative displacements \iinc D_{n+1}^<i+1> 
+  /* return residual/iterative displacements \iinc D_{n+1}^<i+1>
    * to the nodes
    * These are needed for updating internal element variables. */
-  solserv_result_resid(actfield, disnum, actintra, 
+  solserv_result_resid(actfield, disnum, actintra,
                        &(dispi[0]),
                        isolres->disres,
                        &(actsolv->sysarray[stiff_array]),
@@ -865,10 +866,10 @@ void tsi_st_genalp_pred(PARTITION* actpart,
   /* post return residual displacements to nodes
    * This operation will not only rotate the free DOFs of relevant
    * Dirichlet nodes, but all (i.e. prescribed & free) its DOFs.
-   * This should not matter, 'coz the residual displacements are zero 
+   * This should not matter, 'coz the residual displacements are zero
    * at prescribed nodes */
 #ifdef LOCALSYSTEMS_ST
-  locsys_trans_sol_dirich(actfield, disnum, node_array_sol_residual, 
+  locsys_trans_sol_dirich(actfield, disnum, node_array_sol_residual,
                           isolres->disres, locsys_trf_xyz_to_XYZ);
 #endif
 
@@ -891,7 +892,7 @@ void tsi_st_genalp_pred(PARTITION* actpart,
   solserv_add_vec(&(dispi[0]), &(actsolv->sol[1]), 1.0);
 
   /*--------------------------------------------------------------------*/
-  /* blank prior to calculation/assignment of locally oriented 
+  /* blank prior to calculation/assignment of locally oriented
    * prescribed DBC values */
 #ifdef LOCALSYSTEMS_ST
   solserv_zerodirich(actfield, disnum, node_array_sol, isol->disn);
@@ -903,14 +904,14 @@ void tsi_st_genalp_pred(PARTITION* actpart,
    * these are used to calculate the stiffness matrix */
   /* In the case of locally oriented DBCs, these prescribed DOFs are
    * given in the local system. */
-  solserv_putdirich_to_dof(actfield, disnum, 
+  solserv_putdirich_to_dof(actfield, disnum,
                            node_array_sol, isol->disn, actdyn->time);
 
   /*--------------------------------------------------------------------*/
   /* return total displacements to the nodes */
   solserv_result_total(actfield, disnum, actintra,
                        &(actsolv->sol[1]),
-                       isol->disn, 
+                       isol->disn,
                        &(actsolv->sysarray[stiff_array]),
                        &(actsolv->sysarray_typ[stiff_array]));
 
@@ -920,15 +921,15 @@ void tsi_st_genalp_pred(PARTITION* actpart,
    * This operation will not only rotate the prescribed DOFs of the relevant
    * Dirichlet node, but all (i.e. prescribed & free) its DOFs. */
 #ifdef LOCALSYSTEMS_ST
-  locsys_trans_sol_dirich(actfield, disnum, node_array_sol, isol->disn, 
+  locsys_trans_sol_dirich(actfield, disnum, node_array_sol, isol->disn,
                           locsys_trf_xyz_to_XYZ);
 #endif
 
   /*--------------------------------------------------------------------*/
-  /* blank prior to calculation/assignment of locally oriented 
+  /* blank prior to calculation/assignment of locally oriented
    * increments of DBC displacements */
 #ifdef LOCALSYSTEMS_ST
-  solserv_zerodirich(actfield, disnum, node_array_sol_increment, 
+  solserv_zerodirich(actfield, disnum, node_array_sol_increment,
                      isolinc->disinc);
 #endif
 
@@ -947,7 +948,7 @@ void tsi_st_genalp_pred(PARTITION* actpart,
    * Dirichlet nodes, but all (i.e. prescribed & free) its DOFs.
    * This should not matter, 'coz the increments are zero at prescribed nodes */
 #ifdef LOCALSYSTEMS_ST
-  locsys_trans_sol_dirich(actfield, disnum, node_array_sol_increment, 
+  locsys_trans_sol_dirich(actfield, disnum, node_array_sol_increment,
                           isolinc->disinc, locsys_trf_xyz_to_XYZ);
 #endif
 
@@ -1020,7 +1021,7 @@ void tsi_st_genalp_equi(PARTITION* actpart,
 #ifdef DEBUG
   dstrc_enter("tsi_st_genalp_equi");
 #endif
-  
+
   /*--------------------------------------------------------------------*/
   /* set factors needed for prescribed displacement terms on eff RHS */
   dirichfacs[0] = -dynvar->constants[0];
@@ -1030,22 +1031,22 @@ void tsi_st_genalp_equi(PARTITION* actpart,
   dirichfacs[4] =  dynvar->constants[4];
   dirichfacs[5] =  dynvar->constants[5];
   dirichfacs[6] =  0.0;
-  if (damp_array > 0) 
+  if (damp_array > 0)
   {
     dirichfacs[7] = actdyn->m_damp;
     dirichfacs[8] = actdyn->k_damp;
-  } 
-  else 
+  }
+  else
   {
     dirichfacs[7] = 0.0;
     dirichfacs[8] = 0.0;
   }
   dirichfacs[9] = actdyn->dt;
-  
+
   /*--------------------------------------------------------------------*/
   /* zero the stiffness matrix
    * and vector for internal forces and Dirichlet forces */
-  solserv_zero_mat(actintra, 
+  solserv_zero_mat(actintra,
                    &(actsolv->sysarray[stiff_array]),
                    &(actsolv->sysarray_typ[stiff_array]));
   solserv_zero_mat(actintra,
@@ -1056,19 +1057,19 @@ void tsi_st_genalp_equi(PARTITION* actpart,
 
   /*--------------------------------------------------------------------*/
   /* rotate Dirichlet displacement increments into local system
-   * these are needed to determine the so-called Dirichlet forces 
+   * these are needed to determine the so-called Dirichlet forces
    * (in calelm) */
 #ifdef LOCALSYSTEMS_ST
-  locsys_trans_sol_dirich(actfield, disnum, node_array_sol, isol->disdi, 
+  locsys_trans_sol_dirich(actfield, disnum, node_array_sol, isol->disdi,
                           locsys_trf_XYZ_to_xyz);
-  locsys_trans_sol_dirich(actfield, disnum, node_array_sol, isol->veldn, 
+  locsys_trans_sol_dirich(actfield, disnum, node_array_sol, isol->veldn,
                           locsys_trf_XYZ_to_xyz);
-  locsys_trans_sol_dirich(actfield, disnum, node_array_sol, isol->accdn, 
+  locsys_trans_sol_dirich(actfield, disnum, node_array_sol, isol->accdn,
                           locsys_trf_XYZ_to_xyz);
 #endif
-      
+
   /*--------------------------------------------------------------------*/
-  /* call element routines for calculation of 
+  /* call element routines for calculation of
    * tangential stiffness and intforce */
   *action = calc_struct_nlnstiffmass;
   solserv_sol_zero(actfield, disnum, node_array_sol_increment,
@@ -1078,15 +1079,15 @@ void tsi_st_genalp_equi(PARTITION* actpart,
   container->global_numeq = numeq_total;
   container->dirichfacs = dirichfacs;
   container->kstep = 0;
-  calelm(actfield, actsolv, actpart, actintra, 
+  calelm(actfield, actsolv, actpart, actintra,
          stiff_array, mass_array, container, action);
 
   /*--------------------------------------------------------------------*/
   /* rotate Dirichlet displacement increments back into global system */
-  /* these were needed to determine the so-called Dirichlet forces 
+  /* these were needed to determine the so-called Dirichlet forces
    * (in calelm) */
 #ifdef LOCALSYSTEMS_ST
-  locsys_trans_sol_dirich(actfield, disnum, node_array_sol, isol->disdi, 
+  locsys_trans_sol_dirich(actfield, disnum, node_array_sol, isol->disdi,
                           locsys_trf_xyz_to_XYZ);
   locsys_trans_sol_dirich(actfield, disnum, node_array_sol, isol->veldn,
                           locsys_trf_xyz_to_XYZ);
@@ -1152,16 +1153,16 @@ void tsi_st_genalp_equi(PARTITION* actpart,
                  &(actsolv->rhs[0]), init);
 
   /*--------------------------------------------------------------------*/
-  /* blank prior to calculation/assignment of locally oriented 
+  /* blank prior to calculation/assignment of locally oriented
    * residual displacements of DBC values */
 #ifdef LOCALSYSTEMS_ST
-  solserv_zerodirich(actfield, disnum, node_array_sol_residual, 
+  solserv_zerodirich(actfield, disnum, node_array_sol_residual,
                      isolres->disres);
-#endif  
+#endif
 
   /*--------------------------------------------------------------------*/
   /* return residual displacements iinc D_{n+1}^<i+1> to the nodes */
-  solserv_result_resid(actfield, disnum, actintra, 
+  solserv_result_resid(actfield, disnum, actintra,
                        &(work[0]),
                        isolres->disres,
                        &(actsolv->sysarray[stiff_array]),
@@ -1172,10 +1173,10 @@ void tsi_st_genalp_equi(PARTITION* actpart,
   /* post return residual displacements to nodes
    * This operation will not only rotate the free DOFs of relevant
    * Dirichlet nodes, but all (i.e. prescribed & free) its DOFs.
-   * This should not matter, 'coz the residual displacements are zero 
+   * This should not matter, 'coz the residual displacements are zero
    * at prescribed nodes */
 #ifdef LOCALSYSTEMS_ST
-  locsys_trans_sol_dirich(actfield, disnum, node_array_sol_residual, 
+  locsys_trans_sol_dirich(actfield, disnum, node_array_sol_residual,
                           isolres->disres, locsys_trf_xyz_to_XYZ);
 #endif
 
@@ -1193,7 +1194,7 @@ void tsi_st_genalp_equi(PARTITION* actpart,
          stiff_array, -1, container, action);
 
   /*--------------------------------------------------------------------*/
-  /* update the incremental displacements by the residual/iterative 
+  /* update the incremental displacements by the residual/iterative
    * displacements
    *    \inc\D_{n+1}^<i+1> := \inc\D_{n+1}^<i> + \iinc\D_{n+1}^<i+1> */
   solserv_add_vec(&(work[0]), &(dispi[0]), 1.0);
@@ -1217,24 +1218,24 @@ void tsi_st_genalp_equi(PARTITION* actpart,
    * in field sol at place 0 together with free displacements */
   /* these are used to calculate the stiffness matrix */
   /* In case of rotated DBCs we have to reevaluate these, because we can
-   * only rotate the complete nodal displacement vector 
-   * (BRICK1 & SOLID3: triplet, WALL1: duple, SHELL*: NOT IMPLEMENTED) at once. 
-   * However, the nodal displacement vector can be partly free and partly 
-   * supported. Here, we have to assure all displacements components of 
-   * a DBC-node are in the _local_ co-ordinate system (`system in sync'). 
-   * This is due to: The free components of a DBC-node are stored in local 
-   * directions on the assembled quantities (stiffness & mass matrix, 
-   * internal and external force vectors, displacement vector (actsolv->sol), 
+   * only rotate the complete nodal displacement vector
+   * (BRICK1 & SOLID3: triplet, WALL1: duple, SHELL*: NOT IMPLEMENTED) at once.
+   * However, the nodal displacement vector can be partly free and partly
+   * supported. Here, we have to assure all displacements components of
+   * a DBC-node are in the _local_ co-ordinate system (`system in sync').
+   * This is due to: The free components of a DBC-node are stored in local
+   * directions on the assembled quantities (stiffness & mass matrix,
+   * internal and external force vectors, displacement vector (actsolv->sol),
    * etc.) */
 #ifdef LOCALSYSTEMS_ST
-  solserv_putdirich_to_dof(actfield, disnum, node_array_sol, 
+  solserv_putdirich_to_dof(actfield, disnum, node_array_sol,
                            isol->disn, actdyn->time);
 #endif
 
   /*--------------------------------------------------------------------*/
   /* rotate Dirichlet displacement back into global system */
   /* post return total free and presc. DBC displacements to nodes,
-   * displacements of DBC-less nodes are in global system, but 
+   * displacements of DBC-less nodes are in global system, but
    * displacements of DBC-ish nodes are in local system (this holds for
    * free and prescribed/supported DOFs of the node) and have to be
    * rotated into the global system */
@@ -1244,10 +1245,10 @@ void tsi_st_genalp_equi(PARTITION* actpart,
 #endif
 
   /*--------------------------------------------------------------------*/
-  /* blank prior to calculation/assignment of locally oriented 
+  /* blank prior to calculation/assignment of locally oriented
    * prescribed DBC values */
 #ifdef LOCALSYSTEMS_ST
-  solserv_zerodirich(actfield, disnum, node_array_sol_increment, 
+  solserv_zerodirich(actfield, disnum, node_array_sol_increment,
                      isolinc->disinc);
 #endif
 
@@ -1266,7 +1267,7 @@ void tsi_st_genalp_equi(PARTITION* actpart,
    * Dirichlet nodes, but all (i.e. prescribed & free) its DOFs.
    * This should not matter, 'coz the increments are zero at prescribed nodes */
 #ifdef LOCALSYSTEMS_ST
-  locsys_trans_sol_dirich(actfield, disnum, node_array_sol_increment, 
+  locsys_trans_sol_dirich(actfield, disnum, node_array_sol_increment,
                           isolinc->disinc, locsys_trf_xyz_to_XYZ);
 #endif
 
@@ -1398,22 +1399,22 @@ void tsi_st_genalp_updincr(PARTITION* actpart,
 
   /*--------------------------------------------------------------------*/
   /*  copy disp from sol place 0 to place 10 */
-  solserv_sol_copy(actfield, disnum, 
-                   node_array_sol, node_array_sol, 
+  solserv_sol_copy(actfield, disnum,
+                   node_array_sol, node_array_sol,
                    isol->disn, isol->dis);
 
   /*--------------------------------------------------------------------*/
   /* copy vels from sol place 1 to place 11 */
   solserv_sol_copy(actfield, disnum,
-                   node_array_sol, node_array_sol, 
+                   node_array_sol, node_array_sol,
                    isol->veln, isol->vel);
 
   /*--------------------------------------------------------------------*/
   /* copy accs from sol place 2 to place 12 */
   solserv_sol_copy(actfield, disnum,
-                   node_array_sol, node_array_sol, 
+                   node_array_sol, node_array_sol,
                    isol->accn, isol->acc);
-    
+
   /*--------------------------------------------------------------------*/
   /* update displacements, velocities and accelerations */
   dyn_nlnstructupd(actfield,
@@ -1432,11 +1433,11 @@ void tsi_st_genalp_updincr(PARTITION* actpart,
   /*--------------------------------------------------------------------*/
   solserv_adddirich(actfield, disnum, node_array_sol,
                     isol->veldn, isol->disn, isol->veln, 1.0, 0.0);
-    
+
   /*--------------------------------------------------------------------*/
   /* return velocities to the nodes */
-  solserv_result_total(actfield, disnum, actintra, 
-                       &(vel[0]), isol->veln, 
+  solserv_result_total(actfield, disnum, actintra,
+                       &(vel[0]), isol->veln,
                        &(actsolv->sysarray[stiff_array]),
                        &(actsolv->sysarray_typ[stiff_array]));
 
@@ -1446,30 +1447,30 @@ void tsi_st_genalp_updincr(PARTITION* actpart,
    * This operation will not only rotate the prescribed DOFs of the relevant
    * Dirichlet node, but all (i.e. prescribed & free) its DOFs. */
 #ifdef LOCALSYSTEMS_ST
-  locsys_trans_sol_dirich(actfield, disnum, node_array_sol, isol->veln, 
+  locsys_trans_sol_dirich(actfield, disnum, node_array_sol, isol->veln,
                           locsys_trf_xyz_to_XYZ);
 #endif
 
   /*------------------------------------------------------------------*/
   /* accel. for prescribed dofs */
-  solserv_adddirich(actfield, disnum, 
-                    node_array_sol, isol->accdn, isol->disn, isol->accn, 
+  solserv_adddirich(actfield, disnum,
+                    node_array_sol, isol->accdn, isol->disn, isol->accn,
                     1.0, 0.0);
 
   /*--------------------------------------------------------------------*/
   /* return accelerations to the nodes */
-  solserv_result_total(actfield, disnum, actintra, 
-                       &(acc[0]), isol->accn, 
+  solserv_result_total(actfield, disnum, actintra,
+                       &(acc[0]), isol->accn,
                        &(actsolv->sysarray[stiff_array]),
                        &(actsolv->sysarray_typ[stiff_array]));
-    
+
   /*--------------------------------------------------------------------*/
   /* rotate Dirichlet accelerations back into global system */
   /* post return accelerations to nodes
    * This operation will not only rotate the prescribed DOFs of the relevant
    * Dirichlet node, but all (i.e. prescribed & free) its DOFs. */
 #ifdef LOCALSYSTEMS_ST
-  locsys_trans_sol_dirich(actfield, disnum, node_array_sol, isol->accn, 
+  locsys_trans_sol_dirich(actfield, disnum, node_array_sol, isol->accn,
                           locsys_trf_xyz_to_XYZ);
 #endif
 
@@ -1486,7 +1487,7 @@ void tsi_st_genalp_updincr(PARTITION* actpart,
   /*--------------------------------------------------------------------*/
   /* It is a bit messed up, but anyway:
    * in the nodes the results are stored the following way:
-   * 
+   *
    * in ARRAY sol.a.da[place][0..numdf-1]:
    * place 0  holds total displacements  time t      (free/prescr)
    * place 1  holds velocities           time t      (free/prescr)
@@ -1501,17 +1502,17 @@ void tsi_st_genalp_updincr(PARTITION* actpart,
    * place 10 holds total displacements  time t-dt   (free/prescr)
    * place 11 holds velocities           time t-dt   (free/prescr)
    * place 12 holds accels               time t-dt   (free/prescr)
-   * 
+   *
    * in ARRAY sol_increment.a.da[place][0..numdf-1]
-   * place 0 holds converged incremental displacements 
+   * place 0 holds converged incremental displacements
    *         (without prescribed dofs)
    * place 1 holds converged internal forces at time t-dt
    * place 2 holds converged internal forces at time t
-   * 
+   *
    * in ARRAY sol_residual
-   * place 0 holds residual displacements during iteration 
+   * place 0 holds residual displacements during iteration
    *         (without prescribed dofs) */
-  
+
   /*--------------------------------------------------------------------*/
   /* make incremental potential energy at the nodes */
   dyn_epot(actfield, disnum, actintra, dynvar, &deltaepot);
@@ -1525,8 +1526,8 @@ void tsi_st_genalp_updincr(PARTITION* actpart,
 
   /*--------------------------------------------------------------------*/
   /* make external energy */
-  dyn_eout(dynvar, actdyn, actintra, actsolv, 
-           &(dispi[0]), &(actsolv->rhs[1]), 
+  dyn_eout(dynvar, actdyn, actintra, actsolv,
+           &(dispi[0]), &(actsolv->rhs[1]),
            &(actsolv->rhs[0]), &(work[0]));
 
   /*--------------------------------------------------------------------*/
@@ -1616,7 +1617,7 @@ void tsi_st_genalp_out(PARTITION* actpart,
 #ifdef DEBUG
   dstrc_enter("tsi_st_genalp_out");
 #endif
-  
+
   /*--------------------------------------------------------------------*/
   /* check whether to write results or not */
   mod_disp = actdyn->step % actdyn->updevry_disp;
@@ -1681,7 +1682,7 @@ void tsi_st_genalp_out(PARTITION* actpart,
   {
     if ( (mod_disp == 0) && (ioflags.struct_disp == 1) )
     {
-      out_gid_soldyn("displacement", actfield, disnum, actintra, 
+      out_gid_soldyn("displacement", actfield, disnum, actintra,
                      actdyn->step, 0, actdyn->time);
       /*out_gid_soldyn("velocity",actfield,disnum,actintra,actdyn->step,1,actdyn->time);*/
       /*out_gid_soldyn("accelerations",actfield,disnum,actintra,actdyn->step,2,actdyn->time);*/
@@ -1689,9 +1690,9 @@ void tsi_st_genalp_out(PARTITION* actpart,
     if ( (mod_stress == 0) && (ioflags.struct_stress == 1) )
     {
       /* change hard-coded 0==place ??? */
-      out_gid_soldyn("stress", actfield, disnum, actintra, 
+      out_gid_soldyn("stress", actfield, disnum, actintra,
                      actdyn->step, 0, actdyn->time);
-      out_gid_soldyn("strain", actfield, disnum, actintra, 
+      out_gid_soldyn("strain", actfield, disnum, actintra,
                      actdyn->step, 0, actdyn->time);
     }
   }
@@ -1711,7 +1712,7 @@ void tsi_st_genalp_out(PARTITION* actpart,
                                    fie_num, fie,
                                    work_num, work);
 #else
-    restart_write_nlnstructdyn(actdyn, dynvar, 
+    restart_write_nlnstructdyn(actdyn, dynvar,
                                actfield, actpart,
                                actintra, action,
                                actsolv->nrhs, actsolv->rhs,
@@ -1770,7 +1771,7 @@ void tsi_st_genalp_final(SOLVAR* actsolv,
 			 const INT work_num,
 			 DIST_VECTOR** work,
 			 ARRAY* intforce_a,
-			 ARRAY* dirich_a) 
+			 ARRAY* dirich_a)
 {
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -1813,7 +1814,7 @@ void tsi_st_genalp_sub(INT disnum_s,
                        INT disnum_t)
 {
   INT numsf = genprob.numsf;  /* number (index) of structure field */
-  
+
   PARTITION* actpart = &(partition[numsf]);  /* structure partition */
   INTRA* actintra;  /* active intra-communicator */
 
@@ -1845,7 +1846,7 @@ void tsi_st_genalp_sub(INT disnum_s,
   INT stiff_array;  /* index of the active system sparse matrix */
   INT mass_array;  /* index of the active system sparse matrix */
   INT damp_array;  /* index of the active system sparse matrix */
-  
+
   /* dynamic control */
   STRUCT_DYNAMIC* actdyn = alldyn[numsf].sdyn;  /* structural dynamics */
   TSI_DYNAMIC* tsidyn = alldyn[genprob.numfld].tsidyn;  /* TSI dynamics */
@@ -1858,7 +1859,7 @@ void tsi_st_genalp_sub(INT disnum_s,
 #ifdef BINIO
   BIN_OUT_FIELD out_context;
 #endif
-  
+
   /* container */
   CONTAINER container;  /* transfers variables given
                          * in (this) solution technique
@@ -1870,9 +1871,9 @@ void tsi_st_genalp_sub(INT disnum_s,
 
   /* timing */
   DOUBLE t0, t1;  /* wall clock times for measuring */
-  
+
 /*   CALC_ACTION* action = &(calc_action[numsf]);  /\* action *\/ */
-  
+
   const INT vel_num = 1;  /* number of veloc. vectors */
   DIST_VECTOR* vel;  /* total velocities */
   const INT acc_num = 1;  /* number of accel. vectors */
@@ -1883,10 +1884,10 @@ void tsi_st_genalp_sub(INT disnum_s,
   DIST_VECTOR* dispi;  /* distributed vector to hold increm. displacments */
   const INT work_num = 3;  /* number of work vectors */
   DIST_VECTOR* work;  /* working vectors */
-  
+
   ARRAY intforce_a;  /* redundant vect. of full length for internal forces */
   ARRAY dirich_a;  /* redund. vect. of full length for Dirichlet-part of RHS */
-  
+
   /*====================================================================*/
   /* begin body */
 
@@ -1897,7 +1898,7 @@ void tsi_st_genalp_sub(INT disnum_s,
   /*--------------------------------------------------------------------*/
   /* a word to the user */
   if (par.myrank == 0)
-  { 
+  {
     printf("============================================================="
            "=============\n");
     printf("TSI structural time integration with generalised-alpha\n");
@@ -1980,7 +1981,7 @@ void tsi_st_genalp_sub(INT disnum_s,
 
   /*--------------------------------------------------------------------*/
   /* printout head */
-  if (par.myrank == 0) 
+  if (par.myrank == 0)
   {
     dyn_nlnstruct_outhead(&(dynvar), actdyn);
   }
@@ -2022,8 +2023,8 @@ void tsi_st_genalp_sub(INT disnum_s,
    *    =   ...   evaluation in this step
    *    +=  ...   evaluation in this step
    *
-   */    
-  while ( (actdyn->step < actdyn->nstep-1) 
+   */
+  while ( (actdyn->step < actdyn->nstep-1)
           && (actdyn->time <= actdyn->maxtime) )
   {
     /*------------------------------------------------------------------*/
@@ -2185,14 +2186,14 @@ void tsi_st_genalp_sub(INT disnum_s,
   /*--------------------------------------------------------------------*/
   /*  measure wall clock time for this step */
   t1 = ds_cputime();
-  fprintf(allfiles.out_err, "TIME for step %d is %f sec\n", 
+  fprintf(allfiles.out_err, "TIME for step %d is %f sec\n",
           actdyn->step, t1-t0);
 
   }  /* end of time loop */
   /*====================================================================*/
   /* END OF TIME STEP LOOP */
   /*====================================================================*/
-  
+
   /*--------------------------------------------------------------------*/
   end:
 
@@ -2233,3 +2234,4 @@ void tsi_st_genalp_sub(INT disnum_s,
 
   return;
 }  /* end of tsi_st_genalp */
+#endif

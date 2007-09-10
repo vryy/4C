@@ -19,6 +19,7 @@ Maintainer: Andrea Hund
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
@@ -247,3 +248,4 @@ void w1pres (DOUBLE *sigma ,    /*  elastic predictor projected         */
 /*----------------------------------------------------------------------*/
 #endif /*D_WALL1*/
 /*! @} (documentation module close)*/
+#endif

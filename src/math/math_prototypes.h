@@ -15,6 +15,8 @@ Maintainer: Malte Neumann
 #ifndef MATH_PROTOTYPES_H
 #define MATH_PROTOTYPES_H
 
+#ifndef CCADISCRET
+
 /*----------------------------------------------------------------------*
  |  math1.c                                               m.gee 11/01   |
  *----------------------------------------------------------------------*/
@@ -72,7 +74,7 @@ void math_addab(DOUBLE **a, DOUBLE **b, INT dim1, INT dim2, DOUBLE fact);
  |  geometry.c                                           chfoe 09/04    |
  *----------------------------------------------------------------------*/
 DOUBLE area_lin_2d(ELEMENT *ele, DOUBLE xyz[2][MAXNOD]);
- 
+
 /*!---------------------------------------------------------------------
 \brief extract digits from integer number
 
@@ -106,4 +108,4 @@ INT find_index(INT key, INT list[], INT length);
 
 
 #endif
-
+#endif

@@ -10,6 +10,7 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "ale3.h"
 /*----------------------------------------------------------------------*
@@ -100,3 +101,4 @@ void ale3(
 
 
 /*! @} (documentation module close)*/
+#endif

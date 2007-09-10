@@ -1,7 +1,7 @@
 /*======================================================================*/
 /*!
 \file
-\brief Evaluate the element heat fluxes 
+\brief Evaluate the element heat fluxes
 
 The element heat flux is evaluated at certain points in the element:
        (1) at the Gauss points
@@ -21,6 +21,7 @@ Maintainer: Burkhard Bornemann
 \author bborn
 \date 10/06
 */
+#ifndef CCADISCRET
 #ifdef D_THERM3
 
 /*----------------------------------------------------------------------*/
@@ -29,7 +30,7 @@ Maintainer: Burkhard Bornemann
 #include "therm3.h"
 
 /*----------------------------------------------------------------------*/
-/*! 
+/*!
 \addtogroup THERM3
 @{ (documentation module open)
 */
@@ -39,7 +40,7 @@ Maintainer: Burkhard Bornemann
 /*!
 \brief General problem data
 
-global variable GENPROB genprob is defined in global_control.c 
+global variable GENPROB genprob is defined in global_control.c
 
 \author bborn
 \date 03/06
@@ -87,7 +88,7 @@ void th3_hflux_init(PARTITION *actpart)
 #ifdef DEBUG
   dstrc_enter("th3_hflux_init");
 #endif
-  
+
   /*--------------------------------------------------------------------*/
   /* allocate heat flux arrays stored at each element */
   tpart = actpart;  /*&(actpart[genprob.numtf]);*/
@@ -103,17 +104,17 @@ void th3_hflux_init(PARTITION *actpart)
       if (actele->eltyp == el_therm3)
       {
         /* allocate heat flux arrays per element */
-        am4def("hflux_gp_xyz", &(actele->e.th3->hflux_gp_xyz), 
+        am4def("hflux_gp_xyz", &(actele->e.th3->hflux_gp_xyz),
                1, MAXGAUSS, NUMHFLX_THERM3, 0, "D3");
-        am4def("hflux_gp_rst", &(actele->e.th3->hflux_gp_rst), 
+        am4def("hflux_gp_rst", &(actele->e.th3->hflux_gp_rst),
                1, MAXGAUSS, NUMHFLX_THERM3, 0, "D3");
-        am4def("hflux_gp_123", &(actele->e.th3->hflux_gp_123), 
+        am4def("hflux_gp_123", &(actele->e.th3->hflux_gp_123),
                1, MAXGAUSS, 1+NUMHFLX_THERM3, 0, "D3");
-        am4def("hflux_nd_xyz", &(actele->e.th3->hflux_nd_xyz), 
+        am4def("hflux_nd_xyz", &(actele->e.th3->hflux_nd_xyz),
                1, MAXNOD_THERM3, NUMHFLX_THERM3, 0, "D3");
-        am4def("hflux_nd_rst", &(actele->e.th3->hflux_nd_rst), 
+        am4def("hflux_nd_rst", &(actele->e.th3->hflux_nd_rst),
                1, MAXNOD_THERM3, NUMHFLX_THERM3, 0, "D3");
-        am4def("hflux_nd_123", &(actele->e.th3->hflux_nd_123), 
+        am4def("hflux_nd_123", &(actele->e.th3->hflux_nd_123),
                1, MAXNOD_THERM3, 1+NUMHFLX_THERM3, 0, "D3");
       }  /* end if */
     }  /* end for */
@@ -212,7 +213,7 @@ void th3_hflux_cal(CONTAINER *cont,
 {
   /* locator */
 #ifdef D_TSI
-  const ARRAY_POSITION_SOL* isol 
+  const ARRAY_POSITION_SOL* isol
     = &(field[genprob.numtf].dis[cont->disnum_t].ipos.isol);
   const INT itemn = isol->temn;  /* curr. temperature index */
 #else
@@ -226,7 +227,7 @@ void th3_hflux_cal(CONTAINER *cont,
   const INT tdof = 0;
   DOUBLE ex[MAXNOD_THERM3][NDIM_THERM3];  /* material coord. of element */
   DOUBLE etem[MAXDOF_THERM3];  /* curr. element temperature vector */
-  
+
   INT gpnumr = 0;  /* Gauss points in r-direction */
   INT gpnums = 0;  /* Gauss points in s-direction */
   INT gpnumt = 0;  /* Gauss points in t-direction */
@@ -260,7 +261,7 @@ void th3_hflux_cal(CONTAINER *cont,
 
   /*--------------------------------------------------------------------*/
   /* start */
-  /* Working arrays (locally globals) MUST be initialised! */ 
+  /* Working arrays (locally globals) MUST be initialised! */
 #ifdef DEBUG
   dstrc_enter("th3_hflux_cal");
 #endif
@@ -389,7 +390,7 @@ void th3_hflux_cal(CONTAINER *cont,
     /*------------------------------------------------------------------*/
     /* extrapolate values now */
     /* heat flux in x-direction : q_1 */
-    th3_hflux_extrpol(ele, data, gpnum, 
+    th3_hflux_extrpol(ele, data, gpnum,
                       ele->e.th3->hflux_gp_xyz.a.d3[place], rst,
                       hflux);
     for (ihflx=0; ihflx<NUMHFLX_THERM3; ihflx++)
@@ -651,12 +652,12 @@ void th3_hflux_extrpol(ELEMENT *ele,
              *                           * l_{igpr}^{gpintcr}(r)
              *                           * l_{igps}^{gpintcs}(s)
              *                           * l_{igps}^{gpintct}(t)
-             * with 
-             * l_{igpr}^{gpintcr}(r) 
+             * with
+             * l_{igpr}^{gpintcr}(r)
              *      = \prod_{i=0,i!=igpr}^{gpintcr} (r - r_i)/(r_igpr - r_i)
-             * l_{igps}^{gpintcs}(s) 
+             * l_{igps}^{gpintcs}(s)
              *      = \prod_{i=0,i!=igps}^{gpintcs} (s - s_i)/(s_igps - s_i)
-             * l_{igpt}^{gpintct}(t) 
+             * l_{igpt}^{gpintct}(t)
              *      = \prod_{i=0,i!=igpt}^{gpintct} (t - t_i)/(t_igpt - t_i)
              */
             /* in r-direction : l_{igpr}^{gpintcr}(r) */
@@ -667,7 +668,7 @@ void th3_hflux_extrpol(ELEMENT *ele,
                 gri = data->ghlc[gpintcr][i];
                 for (ihflx=0; ihflx<NUMHFLX_THERM3; ihflx++)
                 {
-                  funinc[ihflx] = funinc[ihflx] 
+                  funinc[ihflx] = funinc[ihflx]
                     * (rst[0] - gri)/(gpcr - gri);
                 }  /* end for */
               }  /* end if */
@@ -680,7 +681,7 @@ void th3_hflux_extrpol(ELEMENT *ele,
                 gsj = data->ghlc[gpintcs][j];
                 for (ihflx=0; ihflx<NUMHFLX_THERM3; ihflx++)
                 {
-                  funinc[ihflx] = funinc[ihflx] 
+                  funinc[ihflx] = funinc[ihflx]
                     * (rst[1] - gsj)/(gpcs - gsj);
                 }  /* end for */
               }  /* end if */
@@ -693,7 +694,7 @@ void th3_hflux_extrpol(ELEMENT *ele,
                 gtk = data->ghlc[gpintct][k];
                 for (ihflx=0; ihflx<NUMHFLX_THERM3; ihflx++)
                 {
-                  funinc[ihflx] = funinc[ihflx] 
+                  funinc[ihflx] = funinc[ihflx]
                     * (rst[2] - gtk)/(gpct - gtk);
                 }  /* end for */
               }  /* end if */
@@ -731,3 +732,4 @@ void th3_hflux_extrpol(ELEMENT *ele,
 /*======================================================================*/
 #endif  /* end of #ifdef D_THERM3 */
 /*! @} (documentation module close)*/
+#endif

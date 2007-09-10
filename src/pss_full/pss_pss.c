@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 
 ---------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 /*!----------------------------------------------------------------------
 \brief file pointers
@@ -1238,3 +1239,4 @@ return;
 
 
 
+#endif

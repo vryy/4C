@@ -10,6 +10,7 @@ Maintainer: Christiane Foerster
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID2
 *//*! @{ (documentation module open)*/
@@ -741,3 +742,4 @@ void f3_int_beltrami_err(
 
 #endif
 /*! @} (documentation module close)*/
+#endif

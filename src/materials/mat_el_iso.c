@@ -14,6 +14,7 @@ Maintainer: Stefan Hartmann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_MAT
 #include "../headers/standardtypes.h"
 #include "mat_prototypes.h"
@@ -199,3 +200,4 @@ return;
 /*----------------------------------------------------------------------*/
 #endif /*D_MAT*/
 /*! @} (documentation module close)*/
+#endif

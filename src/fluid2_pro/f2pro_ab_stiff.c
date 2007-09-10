@@ -1,3 +1,4 @@
+#ifndef CCADISCRET
 for (vi=0; vi<iel; ++vi)
 {
   for (ui=0; ui<iel; ++ui)
@@ -21,3 +22,4 @@ for (vi=0; vi<iel; ++vi)
     estif_(vi*2 + 1, ui*2 + 1) += fac*funct_(ui)*funct_(vi) ;
   }
 }
+#endif

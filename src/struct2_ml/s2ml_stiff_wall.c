@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 
+\brief contains the routine
 
 <pre>
 Maintainer: Andrea Hund
@@ -9,6 +9,7 @@ Maintainer: Andrea Hund
             0711 - 685-6122
 </pre>
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_MLSTRUCT
 
 #include "../headers/standardtypes.h"
@@ -19,8 +20,8 @@ Maintainer: Andrea Hund
 #include "s2ml.h"
 #include "s2ml_prototypes.h"
 
-/*! 
-\addtogroup MLSTRUCT 
+/*!
+\addtogroup MLSTRUCT
 *//*! @{ (documentation module open)*/
 
 
@@ -37,9 +38,9 @@ of a wall-submesh element
 \param  *intforce_ma      ARRAY      (O)    submesh-element internal force macro
 \param  *intforce_i       ARRAY      (O)    submesh-element internal force micro
 \param   istore           INT        (I)    update?
-\param   init             INT        (I)    allocate arrays? 
+\param   init             INT        (I)    allocate arrays?
 
-\return void                                               
+\return void
 
 *----------------------------------------------------------------------*/
 void s2ml_stiff_wall(MATERIAL  *actsmmat,    /* actual submesh material*/
@@ -68,20 +69,20 @@ DOUBLE      detmi;            /* det Jacobian of submesh  */
 DOUBLE      facmi;            /* submesh integration factor */
 DOUBLE      nue;              /* poisson ratio of actual sm-element */
 
-static ARRAY    functmi_a;     /* submesh shape functions (f prime) */    
-static DOUBLE  *functmi;     
-static ARRAY    derivmi_a;     /* deriv. of sm-shape functions with respt r,s */   
-static DOUBLE **derivmi;     
-static ARRAY    functq4_a;     /* submesh quad4 shape functions (f prime) */    
-static DOUBLE  *functq4;     
-static ARRAY    xjmmi_a;       /* submesh jacobian matrix */     
-static DOUBLE **xjmmi;         
-static ARRAY    bopmi_a;       /* submesh B-operator */     
-static DOUBLE **bopmi;         
-static ARRAY    bopma_a;       /* macroelement B-operator */     
-static DOUBLE **bopma;         
-static ARRAY    D_a;           /* material tensor */     
-static DOUBLE **D;         
+static ARRAY    functmi_a;     /* submesh shape functions (f prime) */
+static DOUBLE  *functmi;
+static ARRAY    derivmi_a;     /* deriv. of sm-shape functions with respt r,s */
+static DOUBLE **derivmi;
+static ARRAY    functq4_a;     /* submesh quad4 shape functions (f prime) */
+static DOUBLE  *functq4;
+static ARRAY    xjmmi_a;       /* submesh jacobian matrix */
+static DOUBLE **xjmmi;
+static ARRAY    bopmi_a;       /* submesh B-operator */
+static DOUBLE **bopmi;
+static ARRAY    bopma_a;       /* macroelement B-operator */
+static DOUBLE **bopma;
+static ARRAY    D_a;           /* material tensor */
+static DOUBLE **D;
 
 static DOUBLE **stiff_ma_ma;      /* element stiffness macro-macro  */
 static DOUBLE **stiff_ma_mi;      /* element stiffness macro-micro  */
@@ -97,19 +98,19 @@ DOUBLE       strain_tot[4];     /* total strain = macrostrain + small scale stra
 DOUBLE       stress[4];         /* stress = stress(total strain) */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s2ml_stiff_wall");
 #endif
 /*----------------------------------------------------------------------*/
 if (init==1)
 {
-functmi     = amdef("functmi"  ,&functmi_a ,MAXNOD_WALL1,1 ,"DV");       
-derivmi     = amdef("derivmi"  ,&derivmi_a ,2,MAXNOD_WALL1 ,"DA");       
-functq4     = amdef("functq4"  ,&functq4_a ,4,1 ,"DV");       
-xjmmi       = amdef("xjmmi"    ,&xjmmi_a   ,numdf,numdf    ,"DA");           
-bopmi       = amdef("bopmi"    ,&bopmi_a   ,numeps,(numdf*MAXNOD_WALL1),"DA");           
-bopma       = amdef("bopma"    ,&bopma_a   ,numeps,(numdf*MAXNOD_WALL1),"DA");           
-D           = amdef("D"        ,&D_a       ,4,4            ,"DA");           
+functmi     = amdef("functmi"  ,&functmi_a ,MAXNOD_WALL1,1 ,"DV");
+derivmi     = amdef("derivmi"  ,&derivmi_a ,2,MAXNOD_WALL1 ,"DA");
+functq4     = amdef("functq4"  ,&functq4_a ,4,1 ,"DV");
+xjmmi       = amdef("xjmmi"    ,&xjmmi_a   ,numdf,numdf    ,"DA");
+bopmi       = amdef("bopmi"    ,&bopmi_a   ,numeps,(numdf*MAXNOD_WALL1),"DA");
+bopma       = amdef("bopma"    ,&bopma_a   ,numeps,(numdf*MAXNOD_WALL1),"DA");
+D           = amdef("D"        ,&D_a       ,4,4            ,"DA");
 
 goto end;
 }
@@ -154,9 +155,9 @@ for (lr=0; lr<nir; lr++)
       w1_funct_deriv(functmi,derivmi,e1,e2,actsmele->distyp,1);
       /*--- submesh quad4 shape functions for interpolation of bopma ---*/
       w1_funct_deriv(functq4,NULL,e1,e2,quad4,0);
-      /*------------------------------------ submesh jacobian matrix ---*/       
-      w1_jaco(derivmi,xjmmi,&detmi,actsmele,ielmi);                         
-      /*--------------------------------- submesh integration factor ---*/ 
+      /*------------------------------------ submesh jacobian matrix ---*/
+      w1_jaco(derivmi,xjmmi,&detmi,actsmele,ielmi);
+      /*--------------------------------- submesh integration factor ---*/
       facmi = facr * facs * detmi * actsmele->e.w1->thick;
       /*----------------------------------------- submesh B-operator ---*/
       amzero(&bopmi_a);
@@ -185,20 +186,21 @@ for (lr=0; lr<nir; lr++)
       wge_fintd(stress,facmi,bopma,ndma,numeps,fint_ma);
       /*------------------------------ element internal forces micro ---*/
       wge_fintd(stress,facmi,bopmi,ndmi,numeps,fint_mi);
-   }/*============================================= end of loop over ls */ 
+   }/*============================================= end of loop over ls */
 }/*================================================ end of loop over lr */
 /*----------------------------------------------------------------------*/
 end:
 /*----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of s2ml_stiff_wall */
 /*----------------------------------------------------------------------*/
 /*! @} (documentation module close)*/
 
 #endif /* D_MLSTRUCT */
+#endif

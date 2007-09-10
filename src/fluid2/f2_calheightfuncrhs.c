@@ -3,6 +3,7 @@
 \brief time RHS for fluid2 element
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID2
 *//*! @{ (documentation module open)*/
@@ -420,3 +421,4 @@ return;
 #endif
 /*! @} (documentation module close)*/
 
+#endif

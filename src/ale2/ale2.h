@@ -10,6 +10,7 @@ Maintainer: Christiane Foerster
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_ALE
 
 /*!
@@ -153,11 +154,11 @@ void ale2_deriv_xy(DOUBLE    **deriv_xy,
                    DOUBLE    **xjm,
                    DOUBLE      det,
                    INT         iel);
-void crosspoint(DOUBLE 	a, 
-		DOUBLE 	b, 
-		DOUBLE 	c, 
-		DOUBLE 	d, 
-		DOUBLE 	e, 
+void crosspoint(DOUBLE 	a,
+		DOUBLE 	b,
+		DOUBLE 	c,
+		DOUBLE 	d,
+		DOUBLE 	e,
 		DOUBLE 	f,
 		DOUBLE 	g,
 		DOUBLE 	h,
@@ -180,3 +181,4 @@ void ale_quality(FIELD *field,INT step,
 #endif
 /*! @} (documentation module close)*/
 
+#endif

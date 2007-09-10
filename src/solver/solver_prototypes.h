@@ -14,6 +14,7 @@ Maintainer: Malte Neumann
 #ifndef SOLVER_PROTOTYPES_H
 #define SOLVER_PROTOTYPES_H
 
+#ifndef CCADISCRET
 
 /*----------------------------------------------------------------------*
  | cal_nlnstatic_control.c                               m.gee 11/01    |
@@ -1968,4 +1969,4 @@ void fastsd2(
     INT         *ele);
 
 #endif
-
+#endif

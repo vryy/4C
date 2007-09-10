@@ -4,7 +4,7 @@
 \brief Update of internal variables
 
 <pre>
-Maintainer: Burkhard Bornemann 
+Maintainer: Burkhard Bornemann
             bornemann@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/Members/bornemann
             089-289-15237
@@ -13,6 +13,7 @@ Maintainer: Burkhard Bornemann
 
 
 /*----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_SOLID3
 
 /*----------------------------------------------------------------------*/
@@ -91,9 +92,9 @@ for the linear, 3dim elasticity
 
 \param   *container     CONTAINER        (i)  see container.h
 \param   *ele           ELEMENT          (i)  pointer to current element
-\param   *gpshade       SO3_GPSHAPEDERIV (i)  Gauss point coords 
+\param   *gpshade       SO3_GPSHAPEDERIV (i)  Gauss point coords
 \param   *mat           MATERIAL         (i)
-\param   *eforc_global  ARRAY            (o)  global vector for internal 
+\param   *eforc_global  ARRAY            (o)  global vector for internal
                                               forces (initialized!)
 \param   *estif_global  ARRAY            (o)  element stiffness matrix
 \param   *emass_global  ARRAY            (o)  element mass matrix
@@ -171,11 +172,11 @@ void so3_iv_upditer(CONTAINER* container,
       /* displacement at current step \inc\D_{n+1}^<i> */
       edis[inod][jdim] = actnode->sol.a.da[idisn][jdim];
       /* build iterative/residual displacements \iinc\D_{n+1}^<i> */
-      edisii[inod*NDIM_SOLID3+jdim] 
+      edisii[inod*NDIM_SOLID3+jdim]
         = actnode->sol_residual.a.da[idisres][jdim];
     }
   }
-  
+
 
   /*--------------------------------------------------------------------*/
   /* integration loop */
@@ -190,14 +191,14 @@ void so3_iv_upditer(CONTAINER* container,
     fac = gpshade->gpwg[igp];  /* weight */
     /*------------------------------------------------------------------*/
     /* compute Jacobian matrix, its determinant and inverse */
-    so3_metr_jaco(ele, nelenod, ex, gpshade->gpderiv[igp], 1, 
+    so3_metr_jaco(ele, nelenod, ex, gpshade->gpderiv[igp], 1,
                   gds.xjm, &(gds.xjdet), gds.xji);
     /*------------------------------------------------------------------*/
     /* integration (quadrature) factor */
     fac = fac * gds.xjdet;
     /*------------------------------------------------------------------*/
     /* deformation tensor and displacement gradient */
-    so3_def_grad(nelenod, edis, gpshade->gpderiv[igp], gds.xji, 
+    so3_def_grad(nelenod, edis, gpshade->gpderiv[igp], gds.xji,
                  gds.disgrdv, gds.defgrd);
     /*------------------------------------------------------------------*/
     /* Linear/Green-Lagrange strain vector */
@@ -216,7 +217,7 @@ void so3_iv_upditer(CONTAINER* container,
     /*------------------------------------------------------------------*/
     /* calculate B-operator
      * bop differs depending on geometrically linearity/non-linearity */
-    so3_bop(ele, nelenod, gpshade->gpderiv[igp], gds.xji, 
+    so3_bop(ele, nelenod, gpshade->gpderiv[igp], gds.xji,
             gds.defgrd, gds.bopn, gds.bop);
     /*------------------------------------------------------------------*/
     /* iterative strains */
@@ -288,3 +289,4 @@ void so3_iv_updincr(const CONTAINER* container,
 
 
 
+#endif

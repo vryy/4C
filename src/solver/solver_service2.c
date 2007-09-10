@@ -10,6 +10,7 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 /*----------------------------------------------------------------------*
@@ -1272,9 +1273,4 @@ void solserv_result_mf(
 
 } /* end of solserv_result_mf */
 
-
-
-
-
-
-
+#endif

@@ -12,6 +12,7 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_AXISHELL
 
 #include "../headers/standardtypes.h"
@@ -322,3 +323,4 @@ void saxi_statcond(
 
 /*! @} (documentation module close)*/
 #endif /*D_AXISHELL*/
+#endif

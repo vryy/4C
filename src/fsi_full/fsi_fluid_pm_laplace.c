@@ -11,6 +11,7 @@ Maintainer: Steffen Genkinger
 
 ------------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 
 /*!
 \addtogroup FSI
@@ -2078,3 +2079,4 @@ void fsi_fluid_pm_laplace_cleanup(
 
 
 /*! @} (documentation module close)*/
+#endif

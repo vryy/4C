@@ -18,6 +18,7 @@ Maintainer: Burkhard Bornemann
 \date 03/07
 */
 
+#ifndef CCADISCRET
 /*----------------------------------------------------------------------*/
 /* define constants */
 #define TSI_FEHLBG4_STG (5)  /* number of stages */
@@ -45,3 +46,4 @@ typedef struct _TSI_FEHLBG4
 void tsi_fehlbg4_setpara(TSI_FEHLBG4* para);
 
 INT tsi_fehlbg4_stages();
+#endif

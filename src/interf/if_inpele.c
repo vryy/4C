@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 'interf_inp' which reads the 
+\brief contains the routine 'interf_inp' which reads the
        1D interface element
 
 <pre>
@@ -11,12 +11,13 @@ Maintainer: Andrea Hund
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_INTERF
 #include "../headers/standardtypes.h"
 #include "interf.h"
-#include "interf_prototypes.h" 
+#include "interf_prototypes.h"
 
-/*! 
+/*!
 \addtogroup INTERF
 */
 /*! @{ (documentation module open)*/
@@ -24,28 +25,28 @@ Maintainer: Andrea Hund
 /*!----------------------------------------------------------------------
 \brief reads an 1D interface element from the input file
 
-<pre>                                                              ah 05/03 
+<pre>                                                              ah 05/03
 This routine reads an 1D interface element from the input file
 
 </pre>
 \param *ele  ELEMENT  (I)   the element
 
-\return void                                               
+\return void
 *----------------------------------------------------------------------*/
 void interf_inp(ELEMENT *ele)
 {
 INT  i;
 INT  ierr=0;
 char buffer[50];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("interf_inp");
 #endif
-/*------------------------------------------------ allocate the element */      
+/*------------------------------------------------ allocate the element */
 ele->e.interf = (INTERF*)CCACALLOC(1,sizeof(INTERF));
 if (ele->e.interf==NULL) dserror("Allocation of element failed");
 /*---------------------------------------------- read elements topology */
 frchk("QUAD4",&ierr);
-if (ierr==1) 
+if (ierr==1)
 {
    ele->distyp = quad4;
    ele->numnp=4;
@@ -56,7 +57,7 @@ if (ierr==1)
    if (ierr!=1) dserror("Reading of ELEMENT Topology failed");
 }
 frchk("QUAD8",&ierr);
-if (ierr==1) 
+if (ierr==1)
 {
    ele->distyp = quad8;
    ele->numnp=8;
@@ -94,7 +95,7 @@ if (ierr)
 }
 if (ierr!=1) ele->e.interf->stresstyp = if_xy;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -102,3 +103,4 @@ return;
 /*----------------------------------------------------------------------*/
 #endif /*D_INTERF*/
 /*! @} (documentation module close)*/
+#endif

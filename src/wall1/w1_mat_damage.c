@@ -1,3 +1,4 @@
+#ifndef CCADISCRET
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
@@ -13,11 +14,11 @@ void w1_mat_damage(DOUBLE    ym,         /* young's modulus                   */
                    INT       Damtyp,     /* flag for Damage-Typ               */
                    DOUBLE    Kappa_0,    /* initial damage equivalent strain  */
                    DOUBLE    Kappa_m,    /* factor for damage-law             */
-                   DOUBLE    Alpha,      /* factor for expon. damage-function */       
+                   DOUBLE    Alpha,      /* factor for expon. damage-function */
                    DOUBLE    Beta,       /* factor for expon. damage-function */
-                   DOUBLE    k_fac,      /* factor for de Vree                */       
+                   DOUBLE    k_fac,      /* factor for de Vree                */
                    ELEMENT  *ele,        /* actual (macro-)element            */
-                   WALL_TYPE wtype,      /* plane stress/strain...            */         
+                   WALL_TYPE wtype,      /* plane stress/strain...            */
                    DOUBLE  **bop,        /* derivative operator               */
                    DOUBLE   *gop,
                    DOUBLE   *alpha,
@@ -28,7 +29,7 @@ void w1_mat_damage(DOUBLE    ym,         /* young's modulus                   */
                    INT       newval,     /* controls eval. of stresses        */
                    ELEMENT  *actsmele,   /* act.smelement if small scale mat. */
                    INT       smallscale, /* is it mat. law for small scale?   */
-                   DOUBLE    *strain_tot)/* total strain if small scale mat.  */ 
+                   DOUBLE    *strain_tot)/* total strain if small scale mat.  */
 {
 /*----------------------------------------------------------------------*/
 INT i,j,k,l;
@@ -58,14 +59,14 @@ DOUBLE delta_d[4][4];
 DOUBLE delta[3][3];
 DOUBLE tol = -1.0E-10;
 DOUBLE d_con[4][4];
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("w1_mat_damage");
 #endif
 
 /*---------------------------------- for stresses ----------------------*/
 if(newval==1)
 {
-  for (i=0; i<4; i++)  
+  for (i=0; i<4; i++)
   {
    sig[i]    = ele->e.w1->elewa[0].ipwa[ip].sig[i];
    stress[i] = sig[i];
@@ -78,41 +79,41 @@ if(newval==1)
 /*----------------------------------------------------------------------*/
 if(smallscale == 0)
 {
-  /*------------------------------- compute displacement derivatives ---*/        
-  w1_disd (ele,bop,gop,alpha,wtype,disd) ;                  
+  /*------------------------------- compute displacement derivatives ---*/
+  w1_disd (ele,bop,gop,alpha,wtype,disd) ;
   /*--------------- get actual strains -> strain -----------------------*/
   /*------------------- (for rot-symmetry:strain[3]=eps_theta_theta) ---*/
   w1_eps (disd,wtype,strain);
   /*----------------------------- plain stress-ellen -------------------*/
 # if 0
-   if (wtype == plane_stress) 
+   if (wtype == plane_stress)
    {
-    for (i=0; i<4; i++)  
+    for (i=0; i<4; i++)
     {
      eps_esz[i] = ele->e.w1->elewa[0].ipwa[ip].eps_esz[i];
      sig_esz[i] = ele->e.w1->elewa[0].ipwa[ip].sig_esz[i];
      d4_esz[i]  = ele->e.w1->elewa[0].ipwa[ip].d4_esz[i];
     }
-  
+
     d_mal_eps = 0.0;
-    for (i=0; i<3; i++)  
+    for (i=0; i<3; i++)
     {
      d_mal_eps = d_mal_eps + d4_esz[i]*(strain[i]-eps_esz[i]);
     }
-    
+
     if(d4_esz[3] != 0.0)
     {
-     strain[3] = eps_esz[3] - (d_mal_eps+sig_esz[3])/d4_esz[3]; 
+     strain[3] = eps_esz[3] - (d_mal_eps+sig_esz[3])/d4_esz[3];
     }
-  
+
     if(d4_esz[3] == 0.0)
     {
-     strain[3] = eps_esz[3]; 
+     strain[3] = eps_esz[3];
    }
    }
-# endif 
+# endif
   /*----------------------------- plain stress-andrea -------------------*/
-  if (wtype == plane_stress) 
+  if (wtype == plane_stress)
   {
     strain[3] = - (pv*(strain[0]+strain[1]))/(1.0 - pv);
   }
@@ -123,7 +124,7 @@ if(smallscale == 0)
 else
 {
   for (i=0; i<4; i++)
-  {  
+  {
      strain[i] = strain_tot[i];
   }
 }
@@ -162,13 +163,13 @@ if (eta <= Kappa_0 && kappa <= Kappa_0)
  for(j=0; j<3; j++)
  for(k=0; k<3; k++)
  for(l=0; l<3; l++)
- delta_c[i][j][k][l] = 0.0; 
+ delta_c[i][j][k][l] = 0.0;
 # if 0
  printf("Element=%d",ele->Id);
  printf(" GP=%d",ip);
  printf(" Elastisch, D=%le",damage);
  printf(" kappa=%le\n",kappa);
-# endif 
+# endif
 }
 
 /*-------- DAMAGED ----------------------------------------------------*/
@@ -177,7 +178,7 @@ else
 # if 0
  printf("Element=%d",ele->Id);
  printf(" GP=%d",ip);
-# endif 
+# endif
 /*-------- loading ----------------------------------------------------*/
 if (eta-kappa >= tol)
 {
@@ -185,7 +186,7 @@ if (eta-kappa >= tol)
  yip   = 1.0;
 # if 0
  printf(" schaedigung: kappa=%le",kappa);
-# endif 
+# endif
 }
 /*-------- unloading --------------------------------------------------*/
 else
@@ -194,25 +195,25 @@ else
  yip   = 0.0;
 # if 0
   printf(" Entlastung: kappa=%le",kappa);
-# endif 
+# endif
 }
 
 /*----- get actual damage-variable and derivative -> damage,dam_deriv -*/
   w1_dam_typ(&damage,&dam_deriv,kappa,Kappa_0,Kappa_m,Alpha,Beta,Damtyp);
 # if 0
  printf(" D=%le\n",damage);
-# endif 
+# endif
 
 /*----------------------------- get delta_c for c_tan -----------------*/
  for(i=0; i<3; i++)
  for(j=0; j<3; j++)
  for(k=0; k<3; k++)
  for(l=0; l<3; l++)
- delta_c[i][j][k][l] = -dam_deriv*yip*eta_der[k][l]*sigma_el[i][j]; 
+ delta_c[i][j][k][l] = -dam_deriv*yip*eta_der[k][l]*sigma_el[i][j];
 }
 
 /*----------------- Calculate Elastizitaetstensor ----------------------*/
-  w1_mat_ela(ym,pv,delta,c_el); 
+  w1_mat_ela(ym,pv,delta,c_el);
 
 /*---------------------------- get Secantentensor ---------------------*/
   w1_sec(damage,c_el,c_sec);
@@ -221,13 +222,13 @@ else
   w1_stress(c_sec,epsilon,sigma);
 
 /*----------------- Calculate Stresstensor to Stressvector ------------*/
-  w1_9to4(sigma,sig); 
-  
+  w1_9to4(sigma,sig);
+
 /*----- Calculate 4-stufiger Sekantentensor to 2-stufigem Tensor ------*/
-  w1_81to16(c_sec,d); 
+  w1_81to16(c_sec,d);
 
 /*----- Calculate 4-stufiger Tensor delta_c to 2-stufigem Tensor ------*/
-  w1_81to16_1(delta_c,delta_d); 
+  w1_81to16_1(delta_c,delta_d);
 
 /*-----------------------------calculate c_tan ------------------------*/
  for(i=0; i<4; i++)
@@ -239,7 +240,7 @@ else
  }
 
 /*----------------------------- plain strain -------------------------*/
- if (wtype == plane_strain) 
+ if (wtype == plane_strain)
  {
   for (i=0; i<4; i++)
   {
@@ -250,9 +251,9 @@ else
 
 /*----------------------------- plain stress-ellen  ------------------*/
 # if 0
- if (wtype == plane_stress) 
+ if (wtype == plane_stress)
  {
-   for (i=0; i<4; i++)  
+   for (i=0; i<4; i++)
    {
     ele->e.w1->elewa[0].ipwa[ip].eps_esz[i] = strain[i];
     ele->e.w1->elewa[0].ipwa[ip].sig_esz[i] = sig[i];
@@ -260,10 +261,10 @@ else
    }
   w1_cond(sig,d);
  }
-# endif 
+# endif
 /*----------------------------- plain stress-andrea  ------------------*/
  if (wtype == plane_stress)
- { 
+ {
   if(d[3][3] != 0.0)
   {
     for(i=0; i<3; i++)
@@ -271,14 +272,14 @@ else
      for (j=0; j<3; j++)
      {
       d_con[i][j]=d[i][j]-d[i][3]*d[3][j]/d[3][3];
-     }  
-    }  
+     }
+    }
     for(i=0; i<3; i++)
     {
      for (j=0; j<3; j++)
      {
       d[i][j]=d_con[i][j];
-     }  
+     }
     }
     for(i=0; i<4; i++)
     {
@@ -288,10 +289,10 @@ else
   }
  }
 /*----- rotational symmetry-andrea: do not change d[3][3] -------------*/
-/*----------------------------- put sig to stress ---------------------*/  
+/*----------------------------- put sig to stress ---------------------*/
   for (i=0; i<4; i++) stress[i] = sig[i];
-  
-/*---------------------------------------------------------------------*/  
+
+/*---------------------------------------------------------------------*/
 end:
 /*---------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -324,9 +325,10 @@ if(istore==1)
 
 /*---------------------------------------------------------------------*/
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of w1_mat_damage */
+#endif
 #endif

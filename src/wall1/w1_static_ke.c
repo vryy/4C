@@ -12,6 +12,7 @@ Maintainer: Andrea Hund
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
@@ -368,3 +369,4 @@ return;
 /*! @} (documentation module close)*/
 
 #endif /*D_WALL1*/
+#endif

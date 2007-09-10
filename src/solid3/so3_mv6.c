@@ -22,6 +22,7 @@ Maintainer: Burkhard Bornemann
 \author bborn
 \date 04/07
 */
+#ifndef CCADISCRET
 #ifdef D_SOLID3
 
 
@@ -96,7 +97,7 @@ void so3_mv6_v_id(DOUBLE iv[NUMSTR_SOLID3])
   {
     iv[i] = 0.0;
   }
-  
+
 
 #ifdef DEBUG
   dstrc_exit();
@@ -253,7 +254,7 @@ void so3_mv6_v_det(const DOUBLE av[NUMSTR_SOLID3],
 
 /*======================================================================*/
 /*!
-\brief Deviator of vector 
+\brief Deviator of vector
 
 Explicitly
        dev(av) = av - 1/3 tr(av) iv
@@ -297,7 +298,7 @@ void so3_mv6_v_dev(const DOUBLE av[NUMSTR_SOLID3],
 
 /*======================================================================*/
 /*!
-\brief Subtract 2 vectors 
+\brief Subtract 2 vectors
 
 Explicitly
             [ a_11 ]     [ b_11 ]
@@ -338,7 +339,7 @@ void so3_mv6_v_sub(const DOUBLE av[NUMSTR_SOLID3],
 
 /*======================================================================*/
 /*!
-\brief Double contraction of 2 vectors 
+\brief Double contraction of 2 vectors
 
 Explicitly
        av : bv = a_11*b_11 + a_22*b_22 + a_33*b_33
@@ -584,7 +585,7 @@ void so3_mv6_m_id(DOUBLE im[NUMSTR_SOLID3][NUMSTR_SOLID3])
   {
     im[i][i] = 1.0;
   }
-  
+
 
 #ifdef DEBUG
   dstrc_exit();
@@ -624,7 +625,7 @@ void so3_mv6_m_idscl(const DOUBLE scale,
   {
     im[i][i] = scale;
   }
-  
+
 
 #ifdef DEBUG
   dstrc_exit();
@@ -668,7 +669,7 @@ void so3_mv6_m_one(DOUBLE om[NUMSTR_SOLID3][NUMSTR_SOLID3])
       om[i][j] = 1.0;
     }
   }
-  
+
 
 #ifdef DEBUG
   dstrc_exit();
@@ -711,7 +712,7 @@ void so3_mv6_m_updonescl(const DOUBLE scl,
       am[i][j] += scl;
     }
   }
-  
+
 
 #ifdef DEBUG
   dstrc_exit();
@@ -823,7 +824,7 @@ void so3_mv6_m_updscl(const DOUBLE scl,
 
 /*======================================================================*/
 /*!
-\brief Subtract 2 matrices 
+\brief Subtract 2 matrices
 \return void
 \author bborn
 \date 04/07
@@ -1140,7 +1141,7 @@ void so3_mv6_m2_idscl(const DOUBLE scale,
   {
     im[i][i] = scale * 2.0;
   }
-  
+
 
 #ifdef DEBUG
   dstrc_exit();
@@ -1154,7 +1155,7 @@ void so3_mv6_m2_idscl(const DOUBLE scale,
 \author bborn
 \date 05/07
 */
-void so3_mv6_m2_updmtom2(DOUBLE am[NUMSTR_SOLID3][NUMSTR_SOLID3]) 
+void so3_mv6_m2_updmtom2(DOUBLE am[NUMSTR_SOLID3][NUMSTR_SOLID3])
 {
   INT i, j;
 
@@ -1212,7 +1213,7 @@ void so3_mv6_m05_idscl(const DOUBLE scale,
   {
     im[i][i] = scale * 0.5;
   }
-  
+
 
 #ifdef DEBUG
   dstrc_exit();
@@ -1223,3 +1224,4 @@ void so3_mv6_m05_idscl(const DOUBLE scale,
 /*======================================================================*/
 #endif  /* end of #ifdef D_SOLID3 */
 /*! @} (documentation module close) */
+#endif

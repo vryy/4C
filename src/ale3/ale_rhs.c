@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_ALE
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
@@ -320,3 +321,4 @@ return;
 } /* end of ale_rhs */
 #endif
 /*! @} (documentation module close)*/
+#endif

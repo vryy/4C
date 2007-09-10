@@ -10,6 +10,7 @@ Maintainer: Andreas Lipka
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_BRICK1
 
 /*!
@@ -805,3 +806,4 @@ void c1_locsys_checkoff(PARTITION* actpart);
 
 #endif
 /*! @} (documentation module close)*/
+#endif

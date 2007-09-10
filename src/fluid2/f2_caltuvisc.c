@@ -10,6 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_FLUID2
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
@@ -73,4 +74,5 @@ dstrc_exit();
 return ((DOUBLE)(visc));
 } /*end of f2_calvisc */
 
+#endif
 #endif

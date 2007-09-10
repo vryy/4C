@@ -11,6 +11,7 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 
 #include "../headers/standardtypes.h"
 #include "../fluid_full/fluid_prototypes.h"
@@ -451,3 +452,4 @@ void ntainp()
 #endif
   return;
 } /* end of ntainp */
+#endif

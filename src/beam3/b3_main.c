@@ -11,6 +11,7 @@ Maintainer: Frank Huber
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "beam3.h"
 #include "beam3_prototypes.h"
@@ -147,3 +148,4 @@ dstrc_exit();
 return;
 } /* end of beam3 */
 /*! @} (documentation module close)*/
+#endif

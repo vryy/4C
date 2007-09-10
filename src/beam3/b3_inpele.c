@@ -11,6 +11,7 @@ Maintainer: Frank Huber
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_BEAM3
 #include "../headers/standardtypes.h"
 #include "beam3.h"
@@ -107,3 +108,4 @@ return;
 } /* end of b3inp */
 #endif
 /*! @} (documentation module close)*/
+#endif

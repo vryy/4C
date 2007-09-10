@@ -11,6 +11,7 @@ Maintainer: Steffen Genkinger
 
 *----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 /*!
 \addtogroup FSI
 *//*! @{ (documentation module open)*/
@@ -372,3 +373,4 @@ void fsi_aitken_force(
 
 /*! @} (documentation module close)*/
 
+#endif

@@ -13,6 +13,7 @@ Maintainer: Andrea Hund
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
@@ -65,7 +66,7 @@ static ARRAY xjm_a;   static DOUBLE **xjm;    /* jacobian matrix            */
  | in here, line and surface loads are integrated                       |
  *----------------------------------------------------------------------*/
  /*----------------------------------------------------------------------*
- |                  s                                   s                | 
+ |                  s                                   s                |
  |                 |                                   /                 |
  |                 2                                  2                  |
  |                ||                                 /|                  |
@@ -413,11 +414,11 @@ for (line=0; line<ngline; line++)
        * With "degenerated" shape functions one-dimenional (line-like)
        * shape functions are meant in contrast to two-dimensional (area-like)
        * occuring anyway for the triangle wall element.
-       * These "degenerated" shape functions are the common linear 
+       * These "degenerated" shape functions are the common linear
        * (quadratic) functions for each tri3 (tri6) element edge
        * as found eg in planar beams ('w1_degrectri').
        * They always stretch on (-1,+1) and a specific functional vector
-       * and its norm (dubbed "edge Jacobian determinant") is accordingly 
+       * and its norm (dubbed "edge Jacobian determinant") is accordingly
        * calculated ('w1_edgejaco').
        * The common Gauss points are used for numerical quadrature as stored
        * in 'qxg', 'qwgt'.
@@ -464,15 +465,15 @@ for (line=0; line<ngline; line++)
     case tri6:
         /*---------------------------------------------------------------*/
         /* Integration is performed along the edge 'line' of the element.
-         * The integration is established along the line==0: r-axis, 
+         * The integration is established along the line==0: r-axis,
          * line==1: diagonal xi, line==2: s-axis. The _common_ triangular shape
          * functions, their derivatives and functional matrix 'xfm'
-         * are used for the integration along the edges as defined in 
+         * are used for the integration along the edges as defined in
          * 'w1_funct_deri' and 'w1_jaco'. The integration of
          * the edges line==0 and line==2 is straightfowardly carried out with
          * a Gauss quadrature where the common Gauss points in the range
-         * (-1,+1) are mapped to the interval (0,+1) (cf. triangular 
-         * parameter space) in 'w1_gint'. The diagonal requires a "special" 
+         * (-1,+1) are mapped to the interval (0,+1) (cf. triangular
+         * parameter space) in 'w1_gint'. The diagonal requires a "special"
          * treatment regarding its absolute of the functional matrix:
          * al = || [ dx/dxi, dy/dxi ] ||
          * The diagonal line==1 are the set of points {(r,s) | 0<=s<=1,r=1-s}.
@@ -482,19 +483,19 @@ for (line=0; line<ngline; line++)
          * The coordinate mappings are used to express the line integral along
          * xi, 0<=xi<=sqrt(2) dependent on s, 0<=s<=1:
          * using isoparametry x=sum(N^k*xx^k,k), y=sum(N^k*yy^k,k)
-         * (xx^k x-coord vertices, yy^k y-coord vertices)                        
+         * (xx^k x-coord vertices, yy^k y-coord vertices)
          * al = || [ dx/dr dr/dxi + dx/ds ds/dxi, dy/dr dr/dxi + dy/ds ds/dxi ] ||
          *      = ds/dxi || [ -dx/dr + dx/ds, -dy/dr + dy/ds ] ||
-         * as ds/dxi = 1/sqrt(2) = -dr/dxi, dx/dr=jac00, dx/ds=jac10, etc of 
+         * as ds/dxi = 1/sqrt(2) = -dr/dxi, dx/dr=jac00, dx/ds=jac10, etc of
          * the Jacobian determinant.
-         * The actual quadrature is carried out along s and, therefore, 
+         * The actual quadrature is carried out along s and, therefore,
          * the functional matrix al above is multiplied by dxi/ds which leads to
          * 'ds' = || [ -jac00+jac10, -jac01+jac11 ] ||
          */
         /*------------------- number of Gauss points for edge quadrature */
         /* Consider the distribution of Gauss points
          *     +---+
-         *     | x | *   *   * 
+         *     | x | *   *   *
          *     |   +---+
          *     | x   x | *   *
          *     |       +---+
@@ -556,7 +557,7 @@ for (line=0; line<ngline; line++)
               ds = sqrt(ds);
               break;
             case 1:
-              ds = (-xjm[0][0]+xjm[1][0])*(-xjm[0][0]+xjm[1][0]) 
+              ds = (-xjm[0][0]+xjm[1][0])*(-xjm[0][0]+xjm[1][0])
                   + (-xjm[0][1]+xjm[1][1])*(-xjm[0][1]+xjm[1][1]);
               ds = sqrt(ds);
               break;
@@ -582,7 +583,7 @@ for (line=0; line<ngline; line++)
               dserror("'w1_eleload' : no orthonormal pressure for triangles yet");
               break;
             default:
-              /* uniform prescribed load for each spatial 
+              /* uniform prescribed load for each spatial
                * direction (x,y)*/
               for (i=0; i<numdf; i++)
               {
@@ -968,4 +969,5 @@ return;
 } /* end of w1iedg */
 
 
+#endif
 #endif

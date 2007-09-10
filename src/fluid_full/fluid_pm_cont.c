@@ -19,6 +19,7 @@ pp. 587-659, (1990).
 Here we have a continous pressure discretication.
 
 */
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID_PM
 *//*! @{ (documentation module open)*/
@@ -1364,3 +1365,4 @@ end:
 
 #endif
 /*! @} (documentation module close)*/
+#endif

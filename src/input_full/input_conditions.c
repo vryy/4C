@@ -10,6 +10,7 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup INPUT
 *//*! @{ (documentation module open)*/
@@ -3007,7 +3008,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
 #ifdef D_FLUID2_TDS
   case stab_tds:
   break;
-#endif  
+#endif
   case stab_usfem:
 /*    do nothing since there's so far no information to read here
 */
@@ -3920,3 +3921,4 @@ return;
 #endif
 
 /*! @} (documentation module close)*/
+#endif

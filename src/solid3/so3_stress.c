@@ -21,6 +21,7 @@ Maintainer: Burkhard Bornemann
 \author bborn
 \date 12/06
 */
+#ifndef CCADISCRET
 #ifdef D_SOLID3
 
 /*----------------------------------------------------------------------*/
@@ -29,7 +30,7 @@ Maintainer: Burkhard Bornemann
 #include "solid3.h"
 
 /*----------------------------------------------------------------------*/
-/*! 
+/*!
 \addtogroup SOLID3
 @{ (documentation module open)
 */
@@ -39,7 +40,7 @@ Maintainer: Burkhard Bornemann
 /*!
 \brief General problem data
 
-global variable GENPROB genprob is defined in global_control.c 
+global variable GENPROB genprob is defined in global_control.c
 
 \author bborn
 \date 03/06
@@ -79,7 +80,7 @@ void so3_str_init(PARTITION *actpart)
 #ifdef DEBUG
   dstrc_enter("so3_str_init");
 #endif
-  
+
   /*--------------------------------------------------------------------*/
   /* allocate stress arrays stored at each element */
   /* loop over all discretisations of partition structural field */
@@ -96,30 +97,30 @@ void so3_str_init(PARTITION *actpart)
         /* set pointer to SOLID3 */
         actso3 = actele->e.so3;
         /* allocate stress arrays per element */
-        amdef("stress_gpxyz", &(actso3->stress_gpxyz), 
+        amdef("stress_gpxyz", &(actso3->stress_gpxyz),
               actso3->gptot, NUMSTR_SOLID3, "DA");
         amzero(&(actso3->stress_gpxyz));
-        amdef("stress_gprst", &(actso3->stress_gprst), 
+        amdef("stress_gprst", &(actso3->stress_gprst),
               actso3->gptot, NUMSTR_SOLID3, "DA");
         amzero(&(actso3->stress_gprst));
-        amdef("stress_gp123", &(actso3->stress_gp123), 
+        amdef("stress_gp123", &(actso3->stress_gp123),
               actso3->gptot, 4*NDIM_SOLID3, "DA");
         amzero(&(actso3->stress_gp123));
-        amdef("stress_ndxyz", &(actso3->stress_ndxyz), 
+        amdef("stress_ndxyz", &(actso3->stress_ndxyz),
               actele->numnp, NUMSTR_SOLID3, "DA");
         amzero(&(actso3->stress_ndxyz));
-        amdef("stress_ndrst", &(actso3->stress_ndrst), 
+        amdef("stress_ndrst", &(actso3->stress_ndrst),
               actele->numnp, NUMSTR_SOLID3, "DA");
         amzero(&(actso3->stress_ndrst));
-        amdef("stress_nd123", &(actso3->stress_nd123), 
+        amdef("stress_nd123", &(actso3->stress_nd123),
               actele->numnp, 4*NDIM_SOLID3, "DA");
         amzero(&(actso3->stress_nd123));
         /* allocate Gauss point coordinates */
-        amdef("gpco_xyz", &(actso3->gpco_xyz), 
+        amdef("gpco_xyz", &(actso3->gpco_xyz),
               actso3->gptot, NDIM_SOLID3, "DA");
         amzero(&(actso3->gpco_xyz));
         /* allocate strain arrays */
-        amdef("strain_gpxyz", &(actso3->strain_gpxyz), 
+        amdef("strain_gpxyz", &(actso3->strain_gpxyz),
               actso3->gptot, NUMSTR_SOLID3, "DA");
         amzero(&(actso3->strain_gpxyz));
       }  /* end if */
@@ -220,7 +221,7 @@ void so3_str_final(PARTITION *actpart)
 \param  gpshade   SO3_GPSHAPEDERIV*  (i)    Gauss point coords
                                             and shape functions
 
-\param  mat       MATERIAL*          (i)    
+\param  mat       MATERIAL*          (i)
 \return void
 
 \author bborn
@@ -262,7 +263,7 @@ void so3_str(CONTAINER *cont,
 
   /*--------------------------------------------------------------------*/
   /* start */
-  /* Working arrays (locally globals) MUST be initialised! */ 
+  /* Working arrays (locally globals) MUST be initialised! */
 #ifdef DEBUG
   dstrc_enter("so3_str");
 #endif
@@ -305,7 +306,7 @@ void so3_str(CONTAINER *cont,
     fac = gpshade->gpwg[igp];  /* weight */
     /*------------------------------------------------------------------*/
     /* Gauss point coordinate in material XYZ-frame */
-    /* These coordinates (X,Y,Z) of a Gauss point (r,s,t) 
+    /* These coordinates (X,Y,Z) of a Gauss point (r,s,t)
      * are calculated with the isoparametric concept.
      *                                                         [  :  ]
      *                                                         [ X^k ]
@@ -318,7 +319,7 @@ void so3_str(CONTAINER *cont,
      * Here the shape function matrix N is stored redundance-free */
     for (idim=0; idim<NDIM_SOLID3; idim++)
     {
-      gpcxyz = 0.0;  
+      gpcxyz = 0.0;
       for (inod=0; inod<nelenod; inod++)
       {
         gpcxyz += gpshade->gpshape[igp][inod] * ex[inod][idim];
@@ -327,14 +328,14 @@ void so3_str(CONTAINER *cont,
     }
     /*------------------------------------------------------------------*/
     /* compute Jacobian matrix, its determinant and inverse */
-    so3_metr_jaco(ele, nelenod, ex, gpshade->gpderiv[igp], 1, 
+    so3_metr_jaco(ele, nelenod, ex, gpshade->gpderiv[igp], 1,
                   gds.xjm, &(gds.xjdet), gds.xji);
     /*------------------------------------------------------------------*/
     /* integration (quadrature) factor */
     fac = fac * gds.xjdet;
     /*------------------------------------------------------------------*/
     /* deformation tensor and displacement gradient */
-    so3_def_grad(nelenod, edis, gpshade->gpderiv[igp], gds.xji, 
+    so3_def_grad(nelenod, edis, gpshade->gpderiv[igp], gds.xji,
                  gds.disgrdv, gds.defgrd);
     /*------------------------------------------------------------------*/
     /* Linear/Green-Lagrange strain vector */
@@ -388,7 +389,7 @@ void so3_str(CONTAINER *cont,
       }
     }
 #else
-    so3_stress_rst(gds.xrvi, stress, 
+    so3_stress_rst(gds.xrvi, stress,
                    actso3->stress_gprst.a.da[igp]);
 #endif
     /*------------------------------------------------------------------*/
@@ -406,7 +407,7 @@ void so3_str(CONTAINER *cont,
     so3_cfg_noderst(ele, data, inod, rst);
     /*------------------------------------------------------------------*/
     /* extrapolate values now */
-    so3_stress_extrpol(ele, data, gpnum, 
+    so3_stress_extrpol(ele, data, gpnum,
                        actso3->stress_gpxyz.a.da, rst,
                        stress);
     for (istr=0; istr<NUMSTR_SOLID3; istr++)
@@ -655,10 +656,10 @@ void so3_stress_extrpol(ELEMENT *ele,
             /* determine func increment due to extrapolation function
              * at Gauss point */
             /* initialise increment/contribution of current Gauss point */
-            /* IMPORTANT: The calling sequence of the gpnumr*gpnums*gpnumt 
+            /* IMPORTANT: The calling sequence of the gpnumr*gpnums*gpnumt
              *            Gauss points
              *            must be indentically as in the superroutine
-             *            so3_stress & so3_shape_gpshade, 
+             *            so3_stress & so3_shape_gpshade,
              *            as the stresses are stored
              *            in a vector
              */
@@ -671,12 +672,12 @@ void so3_stress_extrpol(ELEMENT *ele,
              *                           * l_{igpr}^{gpintcr}(r)
              *                           * l_{igps}^{gpintcs}(s)
              *                           * l_{igps}^{gpintct}(t)
-             * with 
-             * l_{igpr}^{gpintcr}(r) 
+             * with
+             * l_{igpr}^{gpintcr}(r)
              *      = \prod_{i=0,i!=igpr}^{gpintcr} (r - r_i)/(r_igpr - r_i)
-             * l_{igps}^{gpintcs}(s) 
+             * l_{igps}^{gpintcs}(s)
              *      = \prod_{i=0,i!=igps}^{gpintcs} (s - s_i)/(s_igps - s_i)
-             * l_{igpt}^{gpintct}(t) 
+             * l_{igpt}^{gpintct}(t)
              *      = \prod_{i=0,i!=igpt}^{gpintct} (t - t_i)/(t_igpt - t_i)
              */
             /* in r-direction : l_{igpr}^{gpintcr}(r) */
@@ -748,3 +749,4 @@ void so3_stress_extrpol(ELEMENT *ele,
 /*======================================================================*/
 #endif  /* end of #ifdef D_SOLID3 */
 /*! @} (documentation module close)*/
+#endif

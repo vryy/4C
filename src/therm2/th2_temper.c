@@ -15,6 +15,7 @@ Maintainer: Burkhard Bornemann
 \date 08/06
 */
 
+#ifndef CCADISCRET
 /*----------------------------------------------------------------------*/
 #ifdef D_THERM2
 
@@ -154,8 +155,8 @@ void th2_temper_cal(CONTAINER *container,
                     DOUBLE s,
                     DOUBLE *tem)
 {
-  ARRAY_POSITION_SOL *isol 
-    = &(field[genprob.numtf].dis[container->disnum_t].ipos.isol); 
+  ARRAY_POSITION_SOL *isol
+    = &(field[genprob.numtf].dis[container->disnum_t].ipos.isol);
   INT nelenod;
   INT neledof;
   INT k;  /* loop index */
@@ -204,3 +205,4 @@ void th2_temper_cal(CONTAINER *container,
 
 #endif /* end of #ifdef D_THERM2 */
 /*! @} (documentation module close)*/
+#endif

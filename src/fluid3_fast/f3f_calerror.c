@@ -13,6 +13,7 @@ Maintainer: Malte Neumann
  */
 /*-----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 
 /*!
 \addtogroup FLUID3
@@ -269,3 +270,4 @@ void f3f_int_error(
 
 
 
+#endif

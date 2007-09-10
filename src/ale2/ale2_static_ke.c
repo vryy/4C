@@ -11,6 +11,7 @@ Maintainer: Christiane Foerster
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_ALE
 #include "../headers/standardtypes.h"
 #include "../ale3/ale3.h"
@@ -161,7 +162,7 @@ for (lr=0; lr<nir; lr++)
      /*------------------------------------------- call material law ---*/
      ale2_mat_linel(mat->m.stvenant,D);
      /*--------------------------------- elastic stiffness matrix ke ---*/
-     ale2_keku(estif,bop,D,fac,nd,numeps); 
+     ale2_keku(estif,bop,D,fac,nd,numeps);
      /*---------------- hourglass stabalization  stiffness matrix ke ---*/
      if(ele->distyp==quad4 && nir == 1 && nis == 1)
        ale2_hourglass(ele,estif);
@@ -1216,4 +1217,5 @@ return;
 
 
 /*! @} (documentation module close)*/
+#endif
 #endif

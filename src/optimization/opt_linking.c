@@ -10,6 +10,7 @@ Maintainer: Andreas Lipka
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 
 /*----------------------------------------------------------------------*/
 #ifdef D_OPTIM                   /* include optimization code to ccarat */
@@ -137,3 +138,4 @@ CONTAINER     container;        /* contains variables defined in container.h */
                     link material 3 with 2
 		    link material 4 with 3 and so on */
 
+#endif

@@ -10,6 +10,7 @@ Maintainer: Volker Gravemeier
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #if defined(FLUID2_ML) || defined(FLUID3_ML)
 #include "../headers/standardtypes.h"
 #include "fluid_prototypes.h"
@@ -918,3 +919,4 @@ return;
 
 
 
+#endif

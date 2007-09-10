@@ -13,6 +13,7 @@ Maintainer: Burkhard Bornemann
 \author bborn
 \date 09/06
 */
+#ifndef CCADISCRET
 #ifdef D_THERM3
 
 /*----------------------------------------------------------------------*/
@@ -69,7 +70,7 @@ void th3_cfg_chkdef()
             "   must be at least 6 for a TET10\n"
             "   must be at least 8 for a HEX20\n"
             "   must be at least 9 for a HEX27\n");
-  }  
+  }
   if (MAXNE_THERM3 < 2)
   {
     dserror("MAXNE_THERM3 : maximal number of nodes on an edge\n"
@@ -91,7 +92,7 @@ void th3_cfg_chkdef()
        the TH3_DATA data variable.
 
 General hint: The ordering of nodes, sides and lines follows (in a sense)
-              the orderung used by the Ccarat `geometry elements' 
+              the orderung used by the Ccarat `geometry elements'
               (input_topology.c)
 
 \param   data   TH3_DATA*   (o)   element topology etc.
@@ -111,37 +112,37 @@ void th3_cfg_init(TH3_DATA *data)
   /*====================================================================*/
   /* hexhedra */
   /*--------------------------------------------------------------------*/
-  /* parameter coordinates (r,s,t) of nodes 
-   * of biunit cube [-1,1]x[-1,1]x[-1,1] 
-   *  8-node hexahedron: node 0,1,...,7 
+  /* parameter coordinates (r,s,t) of nodes
+   * of biunit cube [-1,1]x[-1,1]x[-1,1]
+   *  8-node hexahedron: node 0,1,...,7
    * 20-node hexahedron: node 0,1,...,19
-   * 27-node hexahedron: node 0,1,....26 
+   * 27-node hexahedron: node 0,1,....26
    */
-  /*                                                                    
-   *                      t                                             
-   *                      |                                             
-   *             4========|==19============7                           
-   *           //|        |               /||                           
-   *          // |        |              //||                            
-   *         //  |        |             // ||                           
-   *        16   |       25           18   ||                           
-   *       //    |        |           //   ||                           
-   *      //    12        |  24      //    15                         
-   *     //      |        |         //     ||                           
-   *     5===========17============6       ||                           
-   *    ||       |        |        ||      ||                           
-   *    ||  21   |       26--------||-23---------s                      
-   *    ||       |       /         ||      ||                           
-   *    ||       0------/----11----||------3                            
-   *    ||      /      /           ||     //                            
-   *    13     /     22            14    //                             
-   *    ||    /      /             ||   //                              
-   *    ||   8      /    20        || 10                                
-   *    ||  /      /               || //                                
-   *    || /      r                ||//                                 
-   *    ||/                        ||/                                  
-   *     1============9============2                                    
-   *                                                                    
+  /*
+   *                      t
+   *                      |
+   *             4========|==19============7
+   *           //|        |               /||
+   *          // |        |              //||
+   *         //  |        |             // ||
+   *        16   |       25           18   ||
+   *       //    |        |           //   ||
+   *      //    12        |  24      //    15
+   *     //      |        |         //     ||
+   *     5===========17============6       ||
+   *    ||       |        |        ||      ||
+   *    ||  21   |       26--------||-23---------s
+   *    ||       |       /         ||      ||
+   *    ||       0------/----11----||------3
+   *    ||      /      /           ||     //
+   *    13     /     22            14    //
+   *    ||    /      /             ||   //
+   *    ||   8      /    20        || 10
+   *    ||  /      /               || //
+   *    || /      r                ||//
+   *    ||/                        ||/
+   *     1============9============2
+   *
    */
   /* 8-node hexahedron */
   if (MAXNOD_THERM3 >= 8)
@@ -269,12 +270,12 @@ void th3_cfg_init(TH3_DATA *data)
    *   ancsidh : anchor point of side
    *             intersection point of side with its normal coordinate
    *             axis.
-   *             For instance si3 has is normal to the s-axis, thus its 
+   *             For instance si3 has is normal to the s-axis, thus its
    *             anchor is (r,s,t)=(0,1,0)
    *   redsidh : dimension reduction matrix
    *
-   *             ancsidt and redsidt (actually its transpose) are used 
-   *             to transfer Gauss point coordinates (xi,eta) 
+   *             ancsidt and redsidt (actually its transpose) are used
+   *             to transfer Gauss point coordinates (xi,eta)
    *             to the respective side isid, e.g.
    *                [ r ]|       [ redsidh_00  redsidh_10 ]|
    *                [ s ]|     = [ redsidh_01  redsidh_11 ]|      [ xi  ]
@@ -292,31 +293,31 @@ void th3_cfg_init(TH3_DATA *data)
    *             isoparametric means) to the metric of the side, which
    *             respect to the (xi,eta) space.
    */
-  /*                                                                    
-   *                      t                                             
-   *                      |                                             
-   *             4--------|--19------------7                           
-   *            /|        |               /|                            
-   *           / |        |              / |                             
-   *          /  |        |             /  |                            
-   *        16   |      si5           18   |                            
-   *        /    |        |           /    |                            
-   *       /    12        | si4      /    15                            
-   *      /      |        |         /      |                            
-   *     5-----------17------------6       |                            
-   *     |       |        |        |       |                            
-   *     | si1   |       27--------|-si3---------s                      
-   *     |       |       /         |       |                            
-   *     |       0------/----11----|-------3                            
-   *     |      /      /           |      /                             
-   *    13     /    si2           14     /                              
-   *     |    /      /             |    /                               
-   *     |   8      /   si0        |  10                                
-   *     |  /      /               |  /                                 
-   *     | /      r                | /                                  
-   *     |/                        |/                                   
-   *     1------------9------------2                                    
-   *                                                                    
+  /*
+   *                      t
+   *                      |
+   *             4--------|--19------------7
+   *            /|        |               /|
+   *           / |        |              / |
+   *          /  |        |             /  |
+   *        16   |      si5           18   |
+   *        /    |        |           /    |
+   *       /    12        | si4      /    15
+   *      /      |        |         /      |
+   *     5-----------17------------6       |
+   *     |       |        |        |       |
+   *     | si1   |       27--------|-si3---------s
+   *     |       |       /         |       |
+   *     |       0------/----11----|-------3
+   *     |      /      /           |      /
+   *    13     /    si2           14     /
+   *     |    /      /             |    /
+   *     |   8      /   si0        |  10
+   *     |  /      /               |  /
+   *     | /      r                | /
+   *     |/                        |/
+   *     1------------9------------2
+   *
    */
   /* 8-node hexahedron */
   if ( (MAXSID_THERM3 >= 6) && (MAXNS_THERM3 >= 4) )
@@ -466,7 +467,7 @@ void th3_cfg_init(TH3_DATA *data)
     data->redsidh[4][1][1] = 0.0;
     data->redsidh[4][1][2] = 1.0;
   }
-    
+
 
   /*--------------------------------------------------------------------*/
   /* edges (or lines)
@@ -482,8 +483,8 @@ void th3_cfg_init(TH3_DATA *data)
    *             is (r,s,t)=(-1,1,0)
    *   rededgh : dimension reduction matrix
    *
-   *             ancedghl and rededgh (actually its transpose) are used 
-   *             to transfer Gauss point coordinates (xi) 
+   *             ancedghl and rededgh (actually its transpose) are used
+   *             to transfer Gauss point coordinates (xi)
    *             to the respective side isid, e.g.
    *                [ r ]|       [ rededgh_0 ]|
    *                [ s ]|     = [ rededgh_1 ]|      [ xi ]
@@ -502,31 +503,31 @@ void th3_cfg_init(TH3_DATA *data)
    *             isoparametric means) to the metric of the edge, which
    *             respect to the (xi) space.
    */
-  /*                                                                    
-   *                      t                                             
-   *                      |                                             
-   *             4--------|11de------------7                           
-   *            /|        |               /|                            
-   *           / |        |              / |                             
-   *          e  |        |            10  |                            
-   *         d   4       21            d   |                            
-   *        8    d        |           e    7                            
-   *       /     e        |  24      /     d                            
-   *      /      |        |         /      e                            
-   *     5----------ed9------------6       |                            
-   *     |       |        |        |       |                            
-   *     |  21   |       26--------|--23---------s                      
-   *     |       |       /         |       |                            
-   *     |       0------/---3de----|-------3                            
-   *     5      /      /           6      /                             
-   *     d     /     22            d     /                              
-   *     e    e      /             e    2                               
-   *     |   d      /    20        |   d                                
-   *     |  0      /               |  e                                 
-   *     | /      r                | /                                  
-   *     |/                        |/                                   
-   *     1-----------ed1-----------2                                    
-   *                                                                    
+  /*
+   *                      t
+   *                      |
+   *             4--------|11de------------7
+   *            /|        |               /|
+   *           / |        |              / |
+   *          e  |        |            10  |
+   *         d   4       21            d   |
+   *        8    d        |           e    7
+   *       /     e        |  24      /     d
+   *      /      |        |         /      e
+   *     5----------ed9------------6       |
+   *     |       |        |        |       |
+   *     |  21   |       26--------|--23---------s
+   *     |       |       /         |       |
+   *     |       0------/---3de----|-------3
+   *     5      /      /           6      /
+   *     d     /     22            d     /
+   *     e    e      /             e    2
+   *     |   d      /    20        |   d
+   *     |  0      /               |  e
+   *     | /      r                | /
+   *     |/                        |/
+   *     1-----------ed1-----------2
+   *
    */
   /* 8-node hexahedron */
   if ( (MAXEDG_THERM3 >= 12) && (MAXNE_THERM3 >= 2) )
@@ -708,44 +709,44 @@ void th3_cfg_init(TH3_DATA *data)
     data->rededgh[7][1] = 0.0;
     data->rededgh[7][2] = 1.0;
   }
-  
+
 
   /*====================================================================*/
   /* tetrahedra */
   /*--------------------------------------------------------------------*/
-  /* parameter coordinates (r,s,t) of nodes 
+  /* parameter coordinates (r,s,t) of nodes
    * of tetrahedron { (r,s,t) | 0<=r<=1, 0<=s<=1-r, 0<=t<=1-r-s }
-   *  4-node hexahedron: node 0,1,...,3 
-   * 10-node hexahedron: node 0,1,...,9 
+   *  4-node hexahedron: node 0,1,...,3
+   * 10-node hexahedron: node 0,1,...,9
    */
-  /*                                                                    
-   *                 t                                                  
-   *                 |                                                  
-   *                 2_                                                 
-   *                || \_                                               
-   *                /|   \_                                              
-   *               | |     \_                                           
-   *               | |       \_                                         
-   *               / |         \_                                       
-   *              |  9           5_                                     
-   *              |  |             \_                                   
-   *              /  |               \_                                 
-   *             |   |                 \_                               
-   *             |   |                   \_                             
-   *             6   |                     \_                           
-   *            |    3-----------8-----------1------s                   
-   *            |   /                     ___/                          
-   *           /   /                  ___/                              
-   *          |   /               ___/                                  
-   *          |  7            _4_/                                      
-   *         /  /         ___/                                          
-   *        |  /      ___/                                              
-   *        | /   ___/                                                  
-   *        //___/                                                      
-   *        0/                                                          
-   *       /                                                            
-   *      r                                                             
-   *                                                                    
+  /*
+   *                 t
+   *                 |
+   *                 2_
+   *                || \_
+   *                /|   \_
+   *               | |     \_
+   *               | |       \_
+   *               / |         \_
+   *              |  9           5_
+   *              |  |             \_
+   *              /  |               \_
+   *             |   |                 \_
+   *             |   |                   \_
+   *             6   |                     \_
+   *            |    3-----------8-----------1------s
+   *            |   /                     ___/
+   *           /   /                  ___/
+   *          |   /               ___/
+   *          |  7            _4_/
+   *         /  /         ___/
+   *        |  /      ___/
+   *        | /   ___/
+   *        //___/
+   *        0/
+   *       /
+   *      r
+   *
    */
   /* 4-node tetrahedron */
   if (MAXNOD_THERM3 >= 4)
@@ -801,8 +802,8 @@ void th3_cfg_init(TH3_DATA *data)
    *   ancsidt : anchor point of side
    *   redsidt : dimension reduction matrix
    *
-   *             ancsidt and redsidt (actually its transpose) are used 
-   *             to transfer Gauss point coordinates (xi,eta) 
+   *             ancsidt and redsidt (actually its transpose) are used
+   *             to transfer Gauss point coordinates (xi,eta)
    *             to the respective side isid, e.g.
    *                [ r ]|       [ redsidt_00  redsidt_10 ]|
    *                [ s ]|     = [ redsidt_01  redsidt_11 ]|      [ xi  ]
@@ -817,42 +818,42 @@ void th3_cfg_init(TH3_DATA *data)
    *                si3  :  (xi,eta) = (s,t)
    *             The inclinded side has
    *                si0  : (xi,eta) = (r,s)
-   *             Thus si0 is integrated on its projection to rs-plane, 
+   *             Thus si0 is integrated on its projection to rs-plane,
    *             i.e. {(r,s) | 0<=r<=1, 0<=s<=1-r }
    *
    *             The dimension reduction matrix redsidt is also used
    *             to push the common Jacobi matrix (obtained by
    *             isoparametric means) to the metric of the side, which
    *             respect to the (xi,eta) space.
-   */             
-  /*                                                                    
-   *                 t                                                  
-   *                 |                                                  
-   *                 2_                                                 
-   *                || \_                                                
-   *                /|   \_                                              
-   *               | |     \_                                           
-   *               | |       \_                           si0 :  0,1,2  
-   *               / |         \_                                       
-   *              |  9           5_                       si1 :  0,1,3  
-   *              |  |             \_                                   
-   *              /  |               \_                   si2 :  0,3,2  
-   *             |   |     si3         \_                               
-   *             |   |                   \_               si3 :  1,2,3  
-   *             6   |                     \_                           
-   *            |si2 3-- si0 ----8-----------1------s                   
-   *            |   /                     ___/                          
-   *           /   /                  ___/                              
-   *          |   /      si1      ___/                                  
-   *          |  7            _4_/                                      
-   *         /  /         ___/                                          
-   *        |  /      ___/                                              
-   *        | /   ___/                                                  
-   *        //___/                                                      
-   *        0/                                                          
-   *       /                                                            
-   *      r                                                             
-   *                                                                    
+   */
+  /*
+   *                 t
+   *                 |
+   *                 2_
+   *                || \_
+   *                /|   \_
+   *               | |     \_
+   *               | |       \_                           si0 :  0,1,2
+   *               / |         \_
+   *              |  9           5_                       si1 :  0,1,3
+   *              |  |             \_
+   *              /  |               \_                   si2 :  0,3,2
+   *             |   |     si3         \_
+   *             |   |                   \_               si3 :  1,2,3
+   *             6   |                     \_
+   *            |si2 3-- si0 ----8-----------1------s
+   *            |   /                     ___/
+   *           /   /                  ___/
+   *          |   /      si1      ___/
+   *          |  7            _4_/
+   *         /  /         ___/
+   *        |  /      ___/
+   *        | /   ___/
+   *        //___/
+   *        0/
+   *       /
+   *      r
+   *
    */
   /* 4-node tetrahedron */
   if ( (MAXSID_THERM3 >= 4) && (MAXNS_THERM3 >= 3) )
@@ -949,8 +950,8 @@ void th3_cfg_init(TH3_DATA *data)
    *   ancedgt : anchor of edge
    *   rededgt : dimension reduction vector
    *
-   *             ancedgt and rededgt (actually its transpose) are used 
-   *             to transfer Gauss point coordinates (xi) 
+   *             ancedgt and rededgt (actually its transpose) are used
+   *             to transfer Gauss point coordinates (xi)
    *             to the respective side isid, e.g.
    *                [ r ]|       [ rededgt_0 ]|
    *                [ s ]|     = [ rededgt_1 ]|      [ xi ]
@@ -974,36 +975,36 @@ void th3_cfg_init(TH3_DATA *data)
    *             The dimension reduction vector rededgt is also used
    *             to push the common Jacobi matrix (obtained by
    *             isoparametric means) to the metric of the edge, which
-   *             respect to the (xi) space.   
+   *             respect to the (xi) space.
    */
-  /*                                                                    
-   *                 t                                                  
-   *                 |                                                  
-   *                 2_                                                 
-   *                || \_                                               
-   *                /|   \_                                              
-   *               | |     \_                                           
-   *               | |       \_                                         
-   *               / e         \_                                       
-   *              |  d          1de                                     
-   *              |  5             \_                                   
-   *              /  |               \_                                 
-   *             e   |                 \_                               
-   *             d   |                   \_                             
-   *             2   |                     \_                           
-   *            |    3----------4de----------1------s                   
-   *            |   /                     ___/                          
-   *           /   /                  ___/                              
-   *          |   3               ___/                                  
-   *          |  d            ed0/                                      
-   *         /  e         ___/                                          
-   *        |  /      ___/                                              
-   *        | /   ___/                                                  
-   *        //___/                                                      
-   *        0/                                                          
-   *       /                                                            
-   *      r                                                             
-   *                                                                    
+  /*
+   *                 t
+   *                 |
+   *                 2_
+   *                || \_
+   *                /|   \_
+   *               | |     \_
+   *               | |       \_
+   *               / e         \_
+   *              |  d          1de
+   *              |  5             \_
+   *              /  |               \_
+   *             e   |                 \_
+   *             d   |                   \_
+   *             2   |                     \_
+   *            |    3----------4de----------1------s
+   *            |   /                     ___/
+   *           /   /                  ___/
+   *          |   3               ___/
+   *          |  d            ed0/
+   *         /  e         ___/
+   *        |  /      ___/
+   *        | /   ___/
+   *        //___/
+   *        0/
+   *       /
+   *      r
+   *
    */
   /* 4-node tetrahedron */
   if ( (MAXEDG_THERM3 >= 6) && (MAXNE_THERM3 >= 2) )
@@ -1113,7 +1114,7 @@ void th3_cfg_init(TH3_DATA *data)
 /*!
 \brief Parameter coordinates of element nodes
 
-Obtain the (r,s,t)-coordinates (ie natural coords, or the coordinates in 
+Obtain the (r,s,t)-coordinates (ie natural coords, or the coordinates in
 parameter space)  of the element nodes (ie hexs with 8,20,27, or tets
 with 4,10)
 
@@ -1163,7 +1164,7 @@ void th3_cfg_noderst(ELEMENT *ele,
 \author bborn
 \date 10/06
 */
-#ifdef TEST_THERM3 
+#ifdef TEST_THERM3
 
 void th3_cfg_test(TH3_DATA *data)
 {
@@ -1191,7 +1192,7 @@ void th3_cfg_test(TH3_DATA *data)
     {
       fprintf(filetest, " %e", data->nodhrst[inod][idim]);
     }
-    fprintf(filetest, "\n");    
+    fprintf(filetest, "\n");
   }
   fprintf(filetest, "\n\n");
 
@@ -1248,7 +1249,7 @@ void th3_cfg_test(TH3_DATA *data)
     fprintf(filetest, "\n\n");
   }
   fprintf(filetest, "\n\n");
-  
+
   /*--------------------------------------------------------------------*/
   fclose(filetest);
 
@@ -1263,3 +1264,4 @@ void th3_cfg_test(TH3_DATA *data)
 
 /*======================================================================*/
 #endif  /* end of #ifdef D_THERM3 */
+#endif

@@ -10,6 +10,7 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "../pss_full/pss_parser.h"
 /*!----------------------------------------------------------------------
@@ -277,3 +278,4 @@ dstrc_exit();
 #endif
 return;
 } /* end of inp_read_curve */
+#endif

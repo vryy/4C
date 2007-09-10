@@ -10,6 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FSI
 *//*! @{ (documentation module open)*/
@@ -1622,3 +1623,4 @@ dstrc_exit();
 #endif
 
 /*! @} (documentation module close)*/
+#endif

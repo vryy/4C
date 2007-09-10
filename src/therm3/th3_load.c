@@ -11,6 +11,7 @@ Maintainer: Burkhard Bornemann
             089-289-15237
 </pre>
 */
+#ifndef CCADISCRET
 #ifdef D_THERM3
 
 /*----------------------------------------------------------------------*/
@@ -45,7 +46,7 @@ extern ALLDYNA* alldyn;
 
 /*======================================================================*/
 /*!
-\brief Spatial integration of 
+\brief Spatial integration of
        (i)    heat source in element domain (volume)
        (ii)   heat flux on element sides (surfaces)
        (iii)  heat flux on element edges (lines)
@@ -121,7 +122,7 @@ void th3_load_heat(CONTAINER* container,
 
   /* result */
   DOUBLE eload[NUMDOF_THERM3][MAXNOD_THERM3];  /* element load */
-  
+
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -225,7 +226,7 @@ void th3_load_heat(CONTAINER* container,
       gpintc[1] = 1;
       gpnum[2] = ele->e.th3->gpnum[0];
       gpintc[2] = ele->e.th3->gpintc[0];
-    }  
+    }
     else
     {
       dserror("ele->distyp unknown!");
@@ -287,7 +288,7 @@ void th3_load_heat(CONTAINER* container,
           }  /* end of switch */
           /*------------------------------------------------------------*/
           /* shape functions */
-          th3_shape_deriv(ele->distyp, gpc[0], gpc[1], gpc[2], 1, 
+          th3_shape_deriv(ele->distyp, gpc[0], gpc[1], gpc[2], 1,
                           shape, deriv);
           /*------------------------------------------------------------*/
           /* compute Jacobian matrix, its determinant
@@ -358,7 +359,7 @@ void th3_load_heat(CONTAINER* container,
             {
               for (idim=0; idim<NDIM_THERM3; idim++)
               {
-                sidredm[idimsid][idim] 
+                sidredm[idimsid][idim]
                   = data->redsidh[igsurf][idimsid][idim];
               }
             }
@@ -392,7 +393,7 @@ void th3_load_heat(CONTAINER* container,
                   for (idimsid=0; idimsid<DIMSID_THERM3; idimsid++)
                   {
                     /* add coordinate components */
-                    gpcidim += sidredm[idimsid][idim] 
+                    gpcidim += sidredm[idimsid][idim]
                         * data->ghlc[gpintc[idimsid]][igp[idimsid]];
                   }  /* end for */
                   /* final set of idim-component */
@@ -408,7 +409,7 @@ void th3_load_heat(CONTAINER* container,
                 }
                 /*------------------------------------------------------*/
                 /* Shape functions at Gauss point */
-                th3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1, 
+                th3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1,
                                 shape, deriv);
                 /*------------------------------------------------------*/
                 /* Jacobi matrix and determinant */
@@ -418,7 +419,7 @@ void th3_load_heat(CONTAINER* container,
                 fac *= metr;
                 /*------------------------------------------------------*/
                 /* add surface load contribution ==> eload modified */
-                th3_load_surf(container, ele, nelenod, gsurf[igsurf], 
+                th3_load_surf(container, ele, nelenod, gsurf[igsurf],
                               shape, fac, cfac, eload);
               }  /* end for */
             }  /* end for */
@@ -470,7 +471,7 @@ void th3_load_heat(CONTAINER* container,
             {
               for (idim=0; idim<NDIM_THERM3; idim++)
               {
-                sidredm[idimsid][idim] 
+                sidredm[idimsid][idim]
                   = data->redsidt[igsurf][idimsid][idim];
               }
             }
@@ -498,7 +499,7 @@ void th3_load_heat(CONTAINER* container,
               fac = data->ghlw[gpintc[0]][igp[0]];
               /*--------------------------------------------------------*/
               /* Shape functions at Gauss point */
-              th3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1, 
+              th3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1,
                               shape, deriv);
               /*--------------------------------------------------------*/
               /* Jacobi matrix and determinant */
@@ -508,7 +509,7 @@ void th3_load_heat(CONTAINER* container,
               fac *= metr;
               /*--------------------------------------------------------*/
               /* add surface load contribution ==> eload modified */
-              th3_load_surf(container, ele, nelenod, gsurf[igsurf], shape, 
+              th3_load_surf(container, ele, nelenod, gsurf[igsurf], shape,
                             fac, cfac, eload);
             }  /* end for */
           }  /* end for */
@@ -587,7 +588,7 @@ void th3_load_heat(CONTAINER* container,
               }
             }  /* end for */
             /*----------------------------------------------------------*/
-            /* integration loops 
+            /* integration loops
              * For each side one of the following loops is not repeated,
              * but as all sides are generally integrated here. */
             for (igp[0]=0; igp[0]<gpnum[0]; igp[0]++)
@@ -597,7 +598,7 @@ void th3_load_heat(CONTAINER* container,
               for (idim=0; idim<NDIM_THERM3; idim++)
               {
                 /* set anchor point in current side
-                 * This is the intersection of edge with its normal 
+                 * This is the intersection of edge with its normal
                  * parameter coordinate plane */
                 gpcidim = data->ancedgh[igline][idim];
                 /* add coordinate components */
@@ -610,7 +611,7 @@ void th3_load_heat(CONTAINER* container,
               fac = data->ghlw[gpintc[0]][igp[0]];
               /*--------------------------------------------------------*/
               /* Shape functions at Gauss point */
-              th3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1, 
+              th3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1,
                               shape, deriv);
               /*--------------------------------------------------------*/
               /* Jacobi matrix and determinant */
@@ -672,7 +673,7 @@ void th3_load_heat(CONTAINER* container,
               linredv[idim] = data->rededgt[igline][idim];
             }
             /*----------------------------------------------------------*/
-            /* integration loops 
+            /* integration loops
              * For each side one of the following loops is not repeated,
              * but as all sides are generally integrated here. */
             for (igp[0]=0; igp[0]<gpnum[0]; igp[0]++)
@@ -682,7 +683,7 @@ void th3_load_heat(CONTAINER* container,
               for (idim=0; idim<NDIM_THERM3; idim++)
               {
                 /* set anchor point in current side
-                 * This is the intersection of edge with its normal 
+                 * This is the intersection of edge with its normal
                  * parameter coordinate plane */
                 gpcidim = data->ancedgt[igline][idim];
                 /* add coordinate components */
@@ -695,7 +696,7 @@ void th3_load_heat(CONTAINER* container,
               fac = data->gtlw[gpintc[0]][igp[0]];
               /*--------------------------------------------------------*/
               /* shape functions at Gauss point */
-              th3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1, 
+              th3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1,
                               shape, deriv);
               /*--------------------------------------------------------*/
               /* Jacobi matrix and determinant */
@@ -722,8 +723,8 @@ void th3_load_heat(CONTAINER* container,
 
   /*====================================================================*/
   /* add eload to global load vector */
-  if ( (foundgvolneum > 0) 
-       || (foundgsurfneum > 0) 
+  if ( (foundgvolneum > 0)
+       || (foundgsurfneum > 0)
        || (foundglineneum > 0) )
   {
     for (inode=0; inode<nelenod; inode++)
@@ -833,7 +834,7 @@ void th3_load_vol(ELEMENT *ele,
 \param   gsurf      GSURF*      (i)    current geometry surface
 \param   shape      DOUBLE[]    (i)    shape function at Gauss point
 \param   fac        DOUBLE      (i)    integration factor at Gauss point
-\param   cfac       DOUBLE      (i)    load curve scale  
+\param   cfac       DOUBLE      (i)    load curve scale
 \param   eload      DOUBLE[][]  (io)   element load vector contribution
 \return void
 
@@ -900,7 +901,7 @@ void th3_load_surf(CONTAINER* container,
       INT have_val2 = gsurf->neum->neum_onoff.a.iv[2];
       INT have_val3 = gsurf->neum->neum_onoff.a.iv[3];
       INT have_val4 = gsurf->neum->neum_onoff.a.iv[4];
-      if ( (have_val0) 
+      if ( (have_val0)
            && (have_val1) && (have_val2)
            && (have_val3) && (have_val4) )
       {
@@ -1090,3 +1091,4 @@ void th3_load_line(ELEMENT *ele,
 /*======================================================================*/
 #endif  /*end of #ifdef D_THERM3 */
 /*! @} (documentation module close)*/
+#endif

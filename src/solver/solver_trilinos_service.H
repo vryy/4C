@@ -1,3 +1,4 @@
+#ifndef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 #ifndef SOLVER_TRILINOS_SERVICE_H
 #define SOLVER_TRILINOS_SERVICE_H
@@ -75,3 +76,4 @@ void extractGlobalRow(FILE* out,TRILINOSMATRIX* mat,INT row);
 
 #endif /* SOLVER_TRILINOS_SERVICE_H */
 #endif /* TRILINOS_PACKAGE */
+#endif

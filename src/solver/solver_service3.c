@@ -10,6 +10,7 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 /*!----------------------------------------------------------------------*
@@ -948,4 +949,4 @@ dstrc_exit();
 return;
 } /* end of solserv_zerodirich */
 
-
+#endif

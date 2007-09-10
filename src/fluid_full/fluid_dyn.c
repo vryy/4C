@@ -10,6 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID
 *//*! @{ (documentation module open)*/
@@ -130,9 +131,9 @@ case dyntyp_nln_time_int:
 			                               time integration */
       fluid_incr_acc_gen_alpha();
    break;
-#endif /* D_FLUID2_TDS */   
+#endif /* D_FLUID2_TDS */
 
-   
+
    default:
       dserror("Unknown time integration scheme");
    }		/* end switch						*/
@@ -175,3 +176,4 @@ return;
 /*! @} (documentation module close)*/
 
 
+#endif

@@ -10,6 +10,7 @@ Maintainer: Christiane Foerster
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_ALE
 #include "../headers/standardtypes.h"
 #include "ale2.h"
@@ -72,7 +73,7 @@ This routine evaluates the length and direction (sin and cos) of a line
 between two points i and j.
 
 </pre>
-\param   xyz[2][MAXNOD] DOUBLE    (i)   elemental coordinates 
+\param   xyz[2][MAXNOD] DOUBLE    (i)   elemental coordinates
                                             1st index: x or y
                                             2dn index: node
 \param   i              INT       (i)   node i
@@ -129,7 +130,7 @@ degrees of freedom u and v of the nodes.
 \param   i              INT       (i)   node i
 \param   j              INT       (i)   node j
 \param   k              INT       (i)   node k
-\param   xyz[2][MAXNOD] DOUBLE    (i)   elemental coordinates 
+\param   xyz[2][MAXNOD] DOUBLE    (i)   elemental coordinates
                                             1st index: x or y
                                             2dn index: node
 \param **k_torsion      DOUBLE    (o)   torsional stiffness matrix (6x6)
@@ -256,7 +257,7 @@ stiffness matrix.
 
 </pre>
 \param **estif          DOUBLE    (o)   element stiffness matrix
-\param   xyz[2][MAXNOD] DOUBLE    (i)   elemental coordinates 
+\param   xyz[2][MAXNOD] DOUBLE    (i)   elemental coordinates
                                             1st index: x or y
                                             2dn index: node
 \param   init           INT       (i)   initialisation flag
@@ -348,7 +349,7 @@ linear triangle ale element
 </pre>
 
 \param **estif          DOUBLE    (o)   element stiffness matrix
-\param   xyz[2][MAXNOD] DOUBLE    (i)   elemental coordinates 
+\param   xyz[2][MAXNOD] DOUBLE    (i)   elemental coordinates
                                             1st index: x or y
                                             2dn index: node
 \param   init           INT       (i)   initialisation flag
@@ -452,37 +453,37 @@ return;
 \brief calculates the cross point of two lines
 
 <pre>                                                        chfoe 09/03
-This routine calculates the cross point of two lines. It gets the 
+This routine calculates the cross point of two lines. It gets the
 coordinates a - h of the vector description of the problem
 
   _  _        _  _     _  _        _  _
  | a |       | b |    | e |       | f |
- | c | + x_1 | d | =  | g | + x_2 | h | 
- -  -        -  -     -  -        -  - 
+ | c | + x_1 | d | =  | g | + x_2 | h |
+ -  -        -  -     -  -        -  -
                                        _    _
                                       | x_1 |
 and returns the solution vector sol = | x_2 |.
-                                      -    - 
-</pre> 
-\param 	a	DOUBLE	(i) 
-\param 	b	DOUBLE	(i) 
-\param 	c	DOUBLE	(i) 
-\param 	d	DOUBLE	(i) 
+                                      -    -
+</pre>
+\param 	a	DOUBLE	(i)
+\param 	b	DOUBLE	(i)
+\param 	c	DOUBLE	(i)
+\param 	d	DOUBLE	(i)
 \param 	e	DOUBLE	(i)
 \param 	f	DOUBLE	(i)
 \param *sol	DOUBLE 	(o)
 \param  init	INT	(i)	initialisation flag
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: ale2_static_ke_mode()
 
 *----------------------------------------------------------------------*/
-void crosspoint(DOUBLE 	a, 
-		DOUBLE 	b, 
-		DOUBLE 	c, 
-		DOUBLE 	d, 
-		DOUBLE 	e, 
+void crosspoint(DOUBLE 	a,
+		DOUBLE 	b,
+		DOUBLE 	c,
+		DOUBLE 	d,
+		DOUBLE 	e,
 		DOUBLE 	f,
 		DOUBLE 	g,
 		DOUBLE 	h,
@@ -490,11 +491,11 @@ void crosspoint(DOUBLE 	a,
 		INT	init)
 {
 static ARRAY    matrix_a; /*  */
-static DOUBLE **matrix;  
+static DOUBLE **matrix;
 static ARRAY    rhs_a;
 static DOUBLE  *rhs;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("crosspoint");
 #endif
 /*--------------------------------------------------- initialisation ---*/
@@ -521,11 +522,12 @@ math_matvecdense(sol, matrix, rhs, 2, 2, 0, 1.0);
 /*----------------------------------------------------------------------*/
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
 } /* end of crosspoint */
 
 /*! @} (documentation module close)*/
+#endif
 #endif

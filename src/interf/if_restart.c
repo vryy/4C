@@ -1,6 +1,6 @@
 /*!-----------------------------------------------------------------------
 \file
-\brief contains the routines 
+\brief contains the routines
  - if_write_restart:  writes all the element data that is needed for a restart
  - if_read_restart:   reads all the element data that is needed for a restart
 <pre>
@@ -11,12 +11,13 @@ Maintainer: Andrea Hund
 </pre>
 
 *-----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_INTERF
 #include "../headers/standardtypes.h"
 #include "interf.h"
 #include "interf_prototypes.h"
 
-/*! 
+/*!
 \addtogroup INTERF
 */
 /*! @{ (documentation module open)*/
@@ -26,7 +27,7 @@ Maintainer: Andrea Hund
 
 <pre>                                                         m.gee 8/00
 This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h                                                  
+and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
@@ -36,32 +37,32 @@ extern struct _FILES  allfiles;
 
 <pre>                                                         m.gee 8/00
 -the partition of one proc (all discretizations)
--the type is in partition.h                                                  
+-the type is in partition.h
 </pre>
 
 *----------------------------------------------------------------------*/
 extern struct _PARTITION  *partition;
 /*!----------------------------------------------------------------------
-\brief write the data needed to restart this element                                       
+\brief write the data needed to restart this element
 
 <pre>                                                           ah 06/04
-This routine writes the data needed to restart the shell9 element. 
+This routine writes the data needed to restart the shell9 element.
 </pre>
 \param  ELEMENT  *actele   (i) actual element
 \param  INT       nhandle  (i) size of handles
-\param  long int *handles  ( ) unique handle returned by the pss-system 
+\param  long int *handles  ( ) unique handle returned by the pss-system
 \param  INT       init    (i) flag for initializing arrays
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: interf()   [if_main.c]
 
 *----------------------------------------------------------------------*/
 
-void if_write_restart(ELEMENT   *actele, 
+void if_write_restart(ELEMENT   *actele,
                       MATERIAL  *mat,
-                      INT        nhandle, 
-                      long int  *handles, 
+                      INT        nhandle,
+                      long int  *handles,
                       INT        init)
 {
 INT n,k,ierr;
@@ -69,16 +70,16 @@ INT size_j;
 static ARRAY   elewares_a;  static DOUBLE **elewares;     /* array for elewa */
 FILE *out;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("if_write_restart");
 #endif
 /*--------------------------------------------------------------------- */
 /*---------------------------------------------------------- init phase */
 if (init==1)
 {
-   /*array for elewares_a  
+   /*array for elewares_a
      fdim = 1
-     sdim = sum of all possible entries in ipwa per GP (10 at the moment) 
+     sdim = sum of all possible entries in ipwa per GP (10 at the moment)
             * max number of GP (3 at the moment) */
 
     /*  DOUBLE    Tt;          tangential stresses                      */
@@ -91,14 +92,14 @@ if (init==1)
     /*      ( == 10 )                                                       */
 
 
-   elewares     = amdef("elewares"  ,&elewares_a,1,10*3,"DA");    
+   elewares     = amdef("elewares"  ,&elewares_a,1,10*3,"DA");
 
    goto end;
 }
 /*-------------------------------------------------------- uninit phase */
 else if (init==-1)
 {
-   amdel(&elewares_a);   
+   amdel(&elewares_a);
 
    goto end;
 }
@@ -117,7 +118,7 @@ handles[0]=0;
 if (!actele->e.interf->elewa) goto end; /*no elewa to this element*/
 
 /*if there is a working array, write all the data into the elewares_a */
-/*number of gausspoints to this element*/     
+/*number of gausspoints to this element*/
 size_j = actele->e.interf->nGP;
 
 n = 0;
@@ -154,33 +155,33 @@ if (ierr != 1) dserror("Error writing restart data");
 /*----------------------------------------------------------------------*/
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of if_write_restart */
 
 
 
 /*!----------------------------------------------------------------------
-\brief read the data needed to restart this element                                       
+\brief read the data needed to restart this element
 
 <pre>                                                            ah 06/04
-This routine reads the data needed to restart the wall1 element. 
+This routine reads the data needed to restart the wall1 element.
 </pre>
 \param  ELEMENT  *actele   (i) actual element
 \param  INT       nhandle  (i) size of handles
-\param  long int *handles  ( ) unique handle returned by the pss-system 
+\param  long int *handles  ( ) unique handle returned by the pss-system
 \param  INT       init    (i) flag for initializing arrays
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 \sa calling: ---; called by: wall1()   [w1_main.c]
 
 *----------------------------------------------------------------------*/
-void if_read_restart(ELEMENT  *actele, 
-                     MATERIAL *mat, 
-                     long int *handles, 
+void if_read_restart(ELEMENT  *actele,
+                     MATERIAL *mat,
+                     long int *handles,
                      INT       init)
 {
 INT n,k,ierr;
@@ -189,22 +190,22 @@ static ARRAY   elewares_a;  static DOUBLE **elewares;     /* array for elewa */
 INT dims[3];
 FILE *in;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("if_read_restart");
 #endif
 /*---------------------------------------------------------- init phase */
 if (init==1)
 {
    /*for dimensions see w1_write_restart */
-               
-   elewares     = amdef("elewares"  ,&elewares_a,1,10*3,"DA");    
+
+   elewares     = amdef("elewares"  ,&elewares_a,1,10*3,"DA");
 
    goto end;
 }
 /*-------------------------------------------------------- uninit phase */
 else if (init==-1)
 {
-   amdel(&elewares_a);   
+   amdel(&elewares_a);
 
    goto end;
 }
@@ -229,12 +230,12 @@ if (elewares_a.fdim != dims[0] ||
     dserror("Mismatch in reading element restart data");
 /*-------------------------------------------------------- read elewares_a */
 pss_read_array_name_handle(elewares_a.name,&elewares_a,&handles[1],in,&ierr);
-if (ierr != 1) dserror("Cannot read restart data");  
+if (ierr != 1) dserror("Cannot read restart data");
 
 
 /*----- now write the restart data back to elewa -------------------------*/
 
-/*number of gausspoints to this element*/     
+/*number of gausspoints to this element*/
 size_j = actele->e.interf->nGP;
 n = 0;
 for (k=0; k<size_j; k++)/*read for every gausspoint*/
@@ -265,7 +266,7 @@ for (k=0; k<size_j; k++)/*read for every gausspoint*/
 /*----------------------------------------------------------------------*/
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 return;
@@ -275,3 +276,4 @@ return;
 #endif /*D_INTERF*/
 /*! @} (documentation module close)*/
 
+#endif

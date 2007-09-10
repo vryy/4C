@@ -10,6 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 /*----------------------------------------------------------------------*
  | prototypes of functions callable only in this file                   |
@@ -314,7 +315,7 @@ for (i=0;i<3;i++) zloc[i] /=norm;
 /* vectors have to be orthogonal: check scalar products */
 if (FABS(xloc[0]*yloc[0]+xloc[1]*yloc[1]+xloc[2]*yloc[2])>EPS8)
 {
-   dserror("locsys base vectors are not orthogonal: xloc . yloc = %g\n", 
+   dserror("locsys base vectors are not orthogonal: xloc . yloc = %g\n",
            xloc[0]*yloc[0]+xloc[1]*yloc[1]+xloc[2]*yloc[2]);
 }
 if (FABS(xloc[0]*zloc[0]+xloc[1]*zloc[1]+xloc[2]*zloc[2])>EPS8)
@@ -627,3 +628,4 @@ dstrc_exit();
 #endif
 return;
 } /* end of inpdesign_vol_locsys */
+#endif

@@ -11,6 +11,7 @@ Maintainer: Peter Gamnitzer
 
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID2
 */
@@ -68,7 +69,7 @@ void f2_int_gen_alpha_tds(
 	              DOUBLE         **derxy2,
 		      DOUBLE	     **eaccng,
 	              DOUBLE         **evelng,
-		      DOUBLE          *epreng, 
+		      DOUBLE          *epreng,
 	              DOUBLE          *edeadng,
 		      DOUBLE         **vderxy,
                       DOUBLE         **vderxy2,
@@ -183,14 +184,14 @@ void f2_time_update_subscales_for_incr_gen_alpha (
     );
 
 void f2_up_tds_at_gp_genalpha (
-  double  *sp_trial       , 
-  double  *sp_acc_trial   , 
-  double  *su_trial       , 
-  double  *su_acc_mod     , 
-  double   sp_old         , 
-  double   sp_acc_old     , 
-  double   su_old      [2], 
-  double   su_acc_old  [2], 
+  double  *sp_trial       ,
+  double  *sp_acc_trial   ,
+  double  *su_trial       ,
+  double  *su_acc_mod     ,
+  double   sp_old         ,
+  double   sp_acc_old     ,
+  double   su_old      [2],
+  double   su_acc_old  [2],
   int      ihoel        ,
   double   alpha_M      ,
   double   alpha_F      ,
@@ -204,7 +205,7 @@ void f2_up_tds_at_gp_genalpha (
   double   gradp  [2]   ,
   double **vderxy       ,
   double **vderxy2      ,
-  double  *edeadng       
+  double  *edeadng
   );
 
 
@@ -275,7 +276,7 @@ void f2_calgalrhs_gen_alpha_tds(
                 DOUBLE **vderxy2,
 		DOUBLE   fac,
 		DOUBLE   visc,
-		int      iel     
+		int      iel
               )
     ;
 
@@ -297,8 +298,9 @@ void f2_calstabrhs_gen_alpha_tds(
 		DOUBLE   spres,
 		DOUBLE   fac,
 		DOUBLE   visc,
-		int      iel     
+		int      iel
               )
     ;
 
 /*! @} (documentation module close)*/
+#endif

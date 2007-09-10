@@ -10,6 +10,7 @@ Maintainer: Andrea Hund
             0711 - 685-6122
 </pre>
 *-----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_MLSTRUCT
 
 #include "../headers/standardtypes.h"
@@ -624,3 +625,4 @@ return;
 /*! @} (documentation module close)*/
 
 #endif /* D_MLSTRUCT */
+#endif

@@ -11,6 +11,7 @@ Maintainer: Steffen Genkinger
 
 
  *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_FLUID3
 #include "../headers/standardtypes.h"
 #include "fluid3_prototypes.h"
@@ -1484,4 +1485,5 @@ void f3_iedg(
 
 
 
+#endif
 #endif

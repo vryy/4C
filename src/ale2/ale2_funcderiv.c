@@ -11,6 +11,7 @@ Maintainer: Christiane Foerster
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_ALE
 #include "../headers/standardtypes.h"
 #include "ale2.h"
@@ -225,3 +226,4 @@ return;
 } /* end of ale2_funct_deriv */
 #endif
 /*! @} (documentation module close)*/
+#endif

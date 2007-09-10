@@ -11,6 +11,7 @@ Maintainer: Steffen Genkinger
 
 *----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 /*!
 \addtogroup FSI
 *//*! @{ (documentation module open)*/
@@ -211,3 +212,4 @@ void fsi_relax_intdisp_force(
 #endif  /* ifdef D_FSI */
 
 /*! @} (documentation module close)*/
+#endif

@@ -1,3 +1,4 @@
+#ifndef CCADISCRET
 
 #ifndef FSI_DYN_NOX_H
 #define FSI_DYN_NOX_H
@@ -243,6 +244,7 @@ private:
 };
 
 
+#endif
 #endif
 #endif
 #endif

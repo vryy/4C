@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 
+\brief contains the routine
 
 <pre>
 Maintainer: Andrea Hund
@@ -9,6 +9,7 @@ Maintainer: Andrea Hund
             0711 - 685-6122
 </pre>
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_MLSTRUCT
 
 #include "../headers/standardtypes.h"
@@ -19,19 +20,19 @@ Maintainer: Andrea Hund
 #include "s2ml_prototypes.h"
 
 
-/*! 
-\addtogroup MLSTRUCT 
+/*!
+\addtogroup MLSTRUCT
 *//*! @{ (documentation module open)*/
 
 
 /*!----------------------------------------------------------------------
-\brief  routine for calculation of 
+\brief  routine for calculation of
 
 \param *actpart         PARTITION   (i)   my partition
 \param *container       CONTAINER   (i/o) contains variables defined in container.h
 
-\return void                                               
-\sa calling:   ifinit, ifstatic_ke, if_cal_stress, if_eleload; 
+\return void
+\sa calling:   ifinit, ifstatic_ke, if_cal_stress, if_eleload;
     called by: global_calelm();
 
 *----------------------------------------------------------------------*/
@@ -69,16 +70,16 @@ DOUBLE    fac;       /* integration factor    */
 DOUBLE    co,si;     /* local orientation */
 DOUBLE    det;       /* determinants of jacobian matrix  */
 
-static ARRAY    xrefe_a;     /* coordinates of element nodes */     
-static DOUBLE **xrefe;         
-static ARRAY    functmi_a;     /* shape functions for [u]*/    
-static DOUBLE  *functmi;     
-static ARRAY    bopmi_a;     /* Micro-"B-operator"=A N'L for nt-direction*/    
-static DOUBLE **bopmi;     
-static ARRAY    bopma_a;     /* Macro-"B-operator"=A N'L V for nt-direction*/    
-static DOUBLE **bopma;     
-static ARRAY    D_a;         /* material tangente */     
-static DOUBLE **D;         
+static ARRAY    xrefe_a;     /* coordinates of element nodes */
+static DOUBLE **xrefe;
+static ARRAY    functmi_a;     /* shape functions for [u]*/
+static DOUBLE  *functmi;
+static ARRAY    bopmi_a;     /* Micro-"B-operator"=A N'L for nt-direction*/
+static DOUBLE **bopmi;
+static ARRAY    bopma_a;     /* Macro-"B-operator"=A N'L V for nt-direction*/
+static DOUBLE **bopma;
+static ARRAY    D_a;         /* material tangente */
+static DOUBLE **D;
 
 static DOUBLE **stiff_ma_ma;          /* element stiffness macro-macro */
 static DOUBLE **stiff_ma_mi;          /* element stiffness macro-micro */
@@ -99,17 +100,17 @@ DOUBLE DELTAjumpu_tot[2];    /* total incremental displacement jumps (tn)  */
 DOUBLE T[2];                 /* stress */
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s2ml_stiff_interf");
 #endif
 /*----------------------------------------------------------------------*/
 if (init==1)
 {
 xrefe     = amdef("xrefe"  ,&xrefe_a,  2,8, "DA");
-functmi   = amdef("functmi",&functmi_a,3,1, "DV");       
-bopmi     = amdef("bopmi"  ,&bopmi_a  ,2,16,"DA");           
-bopma     = amdef("bopma"  ,&bopma_a  ,2,8, "DA");           
-D         = amdef("D"      ,&D_a      ,2,2, "DA");           
+functmi   = amdef("functmi",&functmi_a,3,1, "DV");
+bopmi     = amdef("bopmi"  ,&bopmi_a  ,2,16,"DA");
+bopma     = amdef("bopma"  ,&bopma_a  ,2,8, "DA");
+D         = amdef("D"      ,&D_a      ,2,2, "DA");
 
 goto end;
 }
@@ -119,7 +120,7 @@ numdfmi   = 2* ielmi;
 for (k=0; k<ielmi; k++)
 {
  xrefe[0][k] = actsmele->node[k]->x[0];   /* coordinates in x-direction */
- xrefe[1][k] = actsmele->node[k]->x[1];   /* coordinates in y-direction */              
+ xrefe[1][k] = actsmele->node[k]->x[1];   /* coordinates in y-direction */
 }
 L[0] = sqrt( (xrefe[0][1] - xrefe[0][0]) * (xrefe[0][1] - xrefe[0][0])
      +       (xrefe[1][1] - xrefe[1][0]) * (xrefe[1][1] - xrefe[1][0]));
@@ -152,7 +153,7 @@ case quad4:
       flag = 2;
       width=L[0];
      }
-     
+
 break;
 /*-----------------------------------------------------------------------*/
 case quad8:
@@ -185,7 +186,7 @@ case quad8:
                   (x_mid[0]*x_mid[0]-x_mid[2]*x_mid[2])*help);
      b_parabel = (y_mid[0]-y_mid[1]-c_parabel*(x_mid[0]*x_mid[0]-x_mid[1]*x_mid[1]))/
                  (x_mid[0]-x_mid[1]);
-     
+
 break;
    default:
      dserror("unkonwn discretisation for interface");
@@ -211,7 +212,7 @@ fint_mi         = intforce_mi->a.dv;
 ip = -1;
 /*================================================== integration loop ===*/
 for (lr=0; lr<nir; lr++)
-{   
+{
   ip++;
    /*======================== submesh gaussian point and weight at it ===*/
    e1   = actsmdata.xgr[lr];
@@ -219,7 +220,7 @@ for (lr=0; lr<nir; lr++)
    /*----------------------- submesh shape functions, angle and detJ ---*/
    if_funcderiv(e1,actsmele->distyp,x_mid,y_mid,b_parabel,c_parabel,functmi,&co,&si,&det);
    /*------------------------------------ submesh integration factor ---*/
-   fac  = facr * det * Thick; 
+   fac  = facr * det * Thick;
    /*--------------------- calculate submesh micro-operator B'=A N'L ---*/
    amzero(&bopmi_a);
    if_bop(actsmele->distyp,bopmi,functmi,co,si,flag);
@@ -231,14 +232,14 @@ for (lr=0; lr<nir; lr++)
    {
      jumpu_tot[i]      = jumpuma[i] + jumpumi[i];
      DELTAjumpu_tot[i] = DELTAjumpuma[i] + DELTAjumpumi[i];
-   }   
+   }
   /*------------------------ call material law -> stress and tangent ---*/
    switch(actsmmat->mattyp)
    {
-   case m_ifmat: 
+   case m_ifmat:
          if_mat(actmaele,actsmmat,NULL,D,T,ip,istore,0,smallscale,actsmele,jumpu_tot,DELTAjumpu_tot);
    break;
-   case m_interf_therm: 
+   case m_interf_therm:
        if_mat_thermodyn(actmaele,actsmmat,NULL,D,T,ip,istore,0,smallscale,actsmele,jumpu_tot,DELTAjumpu_tot);
    break;
    default:
@@ -263,13 +264,14 @@ for (lr=0; lr<nir; lr++)
 /*----------------------------------------------------------------------*/
 end:
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of s2ml_stiff_interf */
 /*----------------------------------------------------------------------*/
 /*! @} (documentation module close)*/
 
 #endif /* D_MLSTRUCT */
+#endif

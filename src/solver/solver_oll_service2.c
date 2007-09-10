@@ -10,6 +10,7 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 /* #include "../headers/prototypes_sol.h" */
@@ -1401,3 +1402,4 @@ return;
 } /* end of oll_copy */
 
 /*! @} (documentation module close)*/
+#endif

@@ -10,6 +10,7 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 
@@ -1433,7 +1434,7 @@ return;
  |  global vector fullvec                                                    |
  *---------------------------------------------------------------------------*/
 #ifdef D_TSI
-void assemble_dirich_therm(ELEMENT *actele, 
+void assemble_dirich_therm(ELEMENT *actele,
                            ARRAY *estif_global,
                            ARRAY *emass_global,
                            CONTAINER *container)
@@ -1524,9 +1525,9 @@ else
     {
       /*---------------------------- do nothing for unsupported columns */
       if (dirich_onoff[j]==0) continue;
-      dforces[i] += ( gamma * estif[i][j] 
+      dforces[i] += ( gamma * estif[i][j]
                       + dtinv * emass[i][j] ) * dirich[j];
-        
+
     }/* loop j over columns */
   }/* loop i over rows */
 }
@@ -1557,3 +1558,4 @@ dstrc_exit();
 return;
 } /* end of assemble_dirich */
 #endif  /* end #ifdef D_TSI */
+#endif

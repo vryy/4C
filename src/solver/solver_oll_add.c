@@ -10,6 +10,7 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 
@@ -415,3 +416,4 @@ void exchange_coup_oll(
 } /* end of exchange_coup_oll */
 
 /*! @} (documentation module close)*/
+#endif

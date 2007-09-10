@@ -13,6 +13,7 @@ Maintainer: Burkhard Bornemann
 \author bborn
 \date 03/06
 */
+#ifndef CCADISCRET
 #ifdef D_THERM2
 
 
@@ -79,3 +80,4 @@ void th2_mat_sel(ELEMENT   *ele,
 
 /*======================================================================*/
 #endif  /* end of #ifdef D_THERM2 */
+#endif

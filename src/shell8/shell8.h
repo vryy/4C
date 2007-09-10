@@ -69,6 +69,7 @@ DOUBLE        wgtt[3];
 
 
 
+#ifndef CCADISCRET
 
 
 /*----------------------------------------------------------------------*
@@ -559,4 +560,93 @@ void s8_mat_ogden_viscous(
     INT                 gp
     );
 
+#else
+
+/* The DRT shell8 element uses some functions of the old shell8 element. A
+ * hack! */
+
+/*----------------------------------------------------------------------*
+ |  s8_jaco.c                                            m.gee 11/01    |
+ *----------------------------------------------------------------------*/
+void s8jaco(DOUBLE    *funct,
+               DOUBLE   **deriv,
+               DOUBLE   **x,
+               DOUBLE   **xjm,
+               DOUBLE    *hte,
+               DOUBLE   **a3ref,
+               DOUBLE     e3,
+               INT        iel,
+               DOUBLE    *det,
+               DOUBLE    *deta,
+               INT        init);
+void s8_getdensity(MATERIAL   *mat, DOUBLE *density);
+/*----------------------------------------------------------------------*
+ |  s8_mat_linel.c                                       m.gee 11/01    |
+ *----------------------------------------------------------------------*/
+void s8_mat_linel(STVENANT *mat, DOUBLE **g, DOUBLE **CC);
+void s8_mat_stress1(DOUBLE *stress, DOUBLE *strain, DOUBLE **C);
+/*----------------------------------------------------------------------*
+ |  s8_mtr.c                                             m.gee 11/01    |
+ *----------------------------------------------------------------------*/
+void s8mtr(DOUBLE   **x,
+              DOUBLE   **a3,
+              DOUBLE     e3,
+              DOUBLE   **gkov,
+              DOUBLE   **gkon,
+              DOUBLE   **gmkov,
+              DOUBLE   **gmkon,
+              DOUBLE    *det,
+              DOUBLE    *funct,
+              DOUBLE   **deriv,
+              DOUBLE    *hte,
+              INT        iel,
+              DOUBLE     condfac,
+              char       string[]);
+/*----------------------------------------------------------------------*
+ |  s8_mat_linel.c                                     m.gee 06/03    |
+ *----------------------------------------------------------------------*/
+void s8_mat_neohooke(NEO_HOOKE *mat,
+                     DOUBLE    *stress,
+                     DOUBLE   **CC,
+                     DOUBLE   **gmkonr,
+                     DOUBLE   **gmkonc,
+                     DOUBLE     detr,
+                     DOUBLE     detc);
+/*----------------------------------------------------------------------*
+ |  s8_mat_ogden.c                                       m.gee 06/03    |
+ *----------------------------------------------------------------------*/
+void s8_mat_ogden_coupled(
+    COMPOGDEN          *mat,
+    DOUBLE             *stress_cart,
+    DOUBLE              C_cart[3][3][3][3],
+    DOUBLE            **gkonr,
+    DOUBLE            **gmkovc
+    );
+void s8_ogden_Ccart(DOUBLE C[3][3][3][3], DOUBLE C_cart[3][3][3][3], DOUBLE N[3][3]);
+void s8_ogden_cartPK2(DOUBLE PK2[3][3], DOUBLE PK2main[3], DOUBLE N[3][3]);
+void s8_ogden_principal_CG(DOUBLE CG[3][3], DOUBLE lambda[3], DOUBLE N[3][3]);
+void s8_kov_CGcuca(DOUBLE T[3][3], DOUBLE **gkon);
+/*----------------------------------------------------------------------*
+ |  s8_mat_ogden2.c                                      m.gee 06/03    |
+ *----------------------------------------------------------------------*/
+void s8_mat_ogden_uncoupled(COMPOGDEN *mat, DOUBLE *stress_cart, DOUBLE *strain, DOUBLE C_cart[3][3][3][3],
+                            DOUBLE **gkovr, DOUBLE **gkonr, DOUBLE **gkovc, DOUBLE **gkonc,
+                            DOUBLE **gmkovr,DOUBLE **gmkonr, DOUBLE **gmkovc, DOUBLE **gmkonc);
+/*----------------------------------------------------------------------*
+ |  s8_mat_ogden3.c                                      m.gee 06/03    |
+ *----------------------------------------------------------------------*/
+void s8_mat_ogden_uncoupled2(COMPOGDEN *mat, DOUBLE *stress_cart, DOUBLE C_cart[3][3][3][3],
+                            DOUBLE **gkonr, DOUBLE **gmkovc);
+
+/*----------------------------------------------------------------------*
+ |  s8_mattransform.c                                    m.gee 06/03    |
+ *----------------------------------------------------------------------*/
+void s8_kov_cuca(DOUBLE *t, const DOUBLE **gkon);
+void s8_kon_cacu(DOUBLE *t, DOUBLE **gkon);
+void s8_kov_cacu(DOUBLE *t, const DOUBLE **gkov);
+void s8_4kon_cacu(DOUBLE Ccart[][3][3][3], DOUBLE **gkon);
+void s8_c4_to_C2(DOUBLE C[][3][3][3],DOUBLE **CC);
+void s8_mat_linel_cart(STVENANT *mat,DOUBLE C[][3][3][3],DOUBLE **CC,DOUBLE *strain);
+
+#endif
 #endif

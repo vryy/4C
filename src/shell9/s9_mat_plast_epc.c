@@ -5,6 +5,7 @@
                      elastoplastic concrete material model described
                      in Dis. Menrath and Haufe
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_SHELL9
 #include "../headers/standardtypes.h"
 #include "../materials/mat_prototypes.h"
@@ -146,3 +147,4 @@ return;
 /*----------------------------------------------------------------------*/
 #endif /*D_SHELL9*/
 /*! @} (documentation module close)*/
+#endif

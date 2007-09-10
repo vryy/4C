@@ -11,6 +11,7 @@ Maintainer: Ulrich Kuettler
 
 ------------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 #ifdef D_FLUID3_PRO
 
 /*!---------------------------------------------------------------------
@@ -51,4 +52,5 @@ typedef struct _FLUID3_PRO
 #endif
 } FLUID3_PRO;
 
+#endif
 #endif

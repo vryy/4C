@@ -10,6 +10,7 @@ Maintainer: Andrea Hund
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_WALLGE
 
 /*!
@@ -235,3 +236,4 @@ void wge_eleload(ELEMENT     *ele,       /* actual element              */
 /*----------------------------------------------------------------------*/
 #endif /*D_WALLGE*/
 /*! @} (documentation module close)*/
+#endif

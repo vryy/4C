@@ -16,6 +16,7 @@ Everybody who wants to output results calls the function defined here.
 
 */
 
+#ifndef CCADISCRET
 #ifdef BINIO
 
 /*!
@@ -273,4 +274,5 @@ void out_results(struct _BIN_OUT_FIELD* context,
 }
 
 /*! @} (documentation module close)*/
+#endif
 #endif

@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 
 ------------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
@@ -398,5 +399,5 @@ void visual_readpss(
 } /* end of visaul_readpss */
 
 
-
+#endif
 

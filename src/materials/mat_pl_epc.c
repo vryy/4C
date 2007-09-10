@@ -22,6 +22,7 @@
                         in compression and tension
 - mat_pl_epc_preval:    claculates needed prevalues
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_MAT
 #include "../headers/standardtypes.h"
 #include "mat_prototypes.h"
@@ -2044,3 +2045,4 @@ return;
 #endif /*D_MAT*/
 /*! @} (documentation module close)*/
 
+#endif

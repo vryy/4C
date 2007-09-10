@@ -13,6 +13,7 @@ Maintainer: Burkhard Bornemann
 \author bborn
 \date 08/06
 */
+#ifndef CCADISCRET
 #ifdef D_SOLID3
 #ifdef D_TSI
 
@@ -41,7 +42,7 @@ Maintainer: Burkhard Bornemann
 */
 void so3_tsi_temper0(const CONTAINER *container,
                      const ELEMENT *ele,
-                     const DOUBLE r, 
+                     const DOUBLE r,
                      const DOUBLE s,
                      const DOUBLE t,
                      DOUBLE *temper)
@@ -92,7 +93,7 @@ void so3_tsi_temper0(const CONTAINER *container,
 */
 void so3_tsi_temper(const CONTAINER *container,
                     const ELEMENT *ele,
-                    const DOUBLE r, 
+                    const DOUBLE r,
                     const DOUBLE s,
                     const DOUBLE t,
                     DOUBLE *temper)
@@ -128,3 +129,4 @@ void so3_tsi_temper(const CONTAINER *container,
 /*======================================================================*/
 #endif  /* end of #ifdef D_TSI */
 #endif  /* end of #ifdef D_SOLID3 */
+#endif

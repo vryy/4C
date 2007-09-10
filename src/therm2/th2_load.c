@@ -11,6 +11,7 @@ Maintainer: Burkhard Bornemann
             089-289-15237
 </pre>
 */
+#ifndef CCADISCRET
 #ifdef D_THERM2
 
 /*----------------------------------------------------------------------*/
@@ -40,7 +41,7 @@ extern struct _GENPROB genprob;
 \brief Static variables: Element load vector, form functions,
 derivatives of form functions, Jacobian matrix
 
-Due to the storage class "static", these variables are accessible to all 
+Due to the storage class "static", these variables are accessible to all
 functions defined in this file.
 
 \author bborn
@@ -136,27 +137,27 @@ The integration results in the external element heat load vector.
 
 The parameter space axes are called r and s, respectively.
 
-Quadrilateral elements can have either 4, 8 or 9 nodes, which are 
+Quadrilateral elements can have either 4, 8 or 9 nodes, which are
 ordered as follows
           s                     s                          s
-          ^                     ^                          ^                 
-          |                     |                          |                
- (-1,+1)--+--(+1,+1)    1-------4--------0        1------line 0-----0       
-    |     |     |       |       |        |        |        |        |       
-    | parameter |       |       |        |        |        |        |       
-    | space     |       |quad8/9|        |        l quad4  |        l       
-    |     |     |       |       |        |        i        |        i       
-    +---(0,0)---+-->  --5------(8)-------7-->   --n--------+--------n-->    
-    |     |     |  r    |       |        |  r     e        |        e  r    
-    |     |     |       |       |        |        1        |        3       
-    |     |     |       |       |        |        |        |        |       
-    |     |     |       |       |        |        |        |        |       
- (-1,-1)--+--(+1,-1)    2-------6--------3        2------line 2-----3       
-                                |                          |                
-                                                                            
+          ^                     ^                          ^
+          |                     |                          |
+ (-1,+1)--+--(+1,+1)    1-------4--------0        1------line 0-----0
+    |     |     |       |       |        |        |        |        |
+    | parameter |       |       |        |        |        |        |
+    | space     |       |quad8/9|        |        l quad4  |        l
+    |     |     |       |       |        |        i        |        i
+    +---(0,0)---+-->  --5------(8)-------7-->   --n--------+--------n-->
+    |     |     |  r    |       |        |  r     e        |        e  r
+    |     |     |       |       |        |        1        |        3
+    |     |     |       |       |        |        |        |        |
+    |     |     |       |       |        |        |        |        |
+ (-1,-1)--+--(+1,-1)    2-------6--------3        2------line 2-----3
+                                |                          |
+
 
 Triangular elements can have either 3 or 6 elements, which are ordered
-as follows 
+as follows
     s                    s                  s
     ^                    ^                  ^
     |                    |                  |
@@ -177,13 +178,13 @@ as follows
 Extra nautical service : compass
 Useful for compass-based identification of element edges
 
-            north 
+            north
     northwest | northeast
              \|/
         west--o--east
              /|\
     southwest | southeast
-            south 
+            south
 
 
 \author bborn
@@ -280,7 +281,7 @@ void th2_load_heat(ELEMENT *ele,  /* actual element */
   if ((foundsurface > 0) && (imyrank == ele->proc))
   {
     /*------------------------------------------------------------------*/
-    /* get integraton data */ 
+    /* get integraton data */
     switch (ele->distyp)
     {
       /* quadrilaterals */
@@ -514,7 +515,7 @@ void th2_load_heat(ELEMENT *ele,  /* actual element */
             /* quadrilaterals */
             case quad4: case quad8: case quad9:
               switch (line)
-              { 
+              {
                 /* south and north edges */
                 case 0: case 2:
                   ds = DSQR(xjm[0][0])+DSQR(xjm[0][1]);
@@ -538,7 +539,7 @@ void th2_load_heat(ELEMENT *ele,  /* actual element */
                   break;
                 /* northeast edge */
                 case 1:
-                  ds = (-xjm[0][0]+xjm[1][0])*(-xjm[0][0]+xjm[1][0]) 
+                  ds = (-xjm[0][0]+xjm[1][0])*(-xjm[0][0]+xjm[1][0])
                     + (-xjm[0][1]+xjm[1][1])*(-xjm[0][1]+xjm[1][1]);
                   ds = sqrt(ds);
                   break;
@@ -601,7 +602,7 @@ void th2_load_heat(ELEMENT *ele,  /* actual element */
   }  /* end of if (foundline > 0) */
 
   /*--------------------------------------------------------------------*/
-  /*--------------------------------------------------------------------*/  
+  /*--------------------------------------------------------------------*/
   /* add static array eload to global external element load vector */
   if (foundsurface+foundline != 0)
   {
@@ -703,3 +704,4 @@ void th2_load_heatsurf(ELEMENT *ele,
 /*======================================================================*/
 #endif  /*end of #ifdef D_THERM2 */
 /*! @} (documentation module close)*/
+#endif

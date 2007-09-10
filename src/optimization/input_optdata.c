@@ -11,6 +11,7 @@ Maintainer: Andreas Lipka
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup OPTIMIZATION
 *//*! @{ (documentation module open)*/
@@ -354,3 +355,4 @@ return;
 /*----------------------------------------------------------------------*/
 
 /*! @} (documentation module close)*/
+#endif

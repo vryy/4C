@@ -12,6 +12,7 @@ Maintainer: Burkhard Bornemann
 \author bborn
 \date 12/06
 */
+#ifndef CCADISCRET
 #ifdef D_SOLID3
 
 /*----------------------------------------------------------------------*/
@@ -41,7 +42,7 @@ void so3_locsys_checkoff(PARTITION* actpart)
 #ifdef DEBUG
   dstrc_enter("so3_locsys_checkoff");
 #endif
-  
+
   /*--------------------------------------------------------------------*/
   /* Check if an SOLID3 element has an local system */
   /* loop over all discretisations of partition structural field */
@@ -72,3 +73,4 @@ void so3_locsys_checkoff(PARTITION* actpart)
 
 /*======================================================================*/
 #endif  /* end #ifdef D_SOLID3 */
+#endif

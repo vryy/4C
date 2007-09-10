@@ -1,7 +1,7 @@
 /*======================================================================*/
 /*!
 \file
-\brief Tangent (stiffness) matrix, 
+\brief Tangent (stiffness) matrix,
        capacity (mass) matrix,
        nodal heat fluxes (internal forces) of THERM3 element
 
@@ -13,6 +13,7 @@ Maintainer: Burkhard Bornemann
 </pre>
 */
 
+#ifndef CCADISCRET
 
 /*----------------------------------------------------------------------*/
 #ifdef D_THERM3
@@ -57,7 +58,7 @@ for the linear, 3dim heat conduction
 \param   *data          TH3_DATA    (i)  common element data
 \param   *estif_global  ARRAY       (o)  element tangent matrix
 \param   *emass_global  ARRAY       (o)  element mass matrix
-\param   *force         DOUBLE      (o)  global vector for internal 
+\param   *force         DOUBLE      (o)  global vector for internal
                                            forces (initialized!)
 \return void
 
@@ -74,7 +75,7 @@ void th3_lin_tang(CONTAINER* container,
 {
   /* locator */
 #ifdef D_TSI
-  const ARRAY_POSITION_SOL* isol 
+  const ARRAY_POSITION_SOL* isol
     = &(field[genprob.numtf].dis[container->disnum_t].ipos.isol);
   const INT itemn = isol->temn;  /* curr. temperature index */
 #else
@@ -295,8 +296,8 @@ void th3_lin_tang(CONTAINER* container,
 \date 05/07
 */
 void th3_lin_temgrad(ELEMENT* ele,
-                     DOUBLE bop[NDIM_THERM3][MAXDOF_THERM3], 
-                     DOUBLE etem[NUMDOF_THERM3*MAXNOD_THERM3], 
+                     DOUBLE bop[NDIM_THERM3][MAXDOF_THERM3],
+                     DOUBLE etem[NUMDOF_THERM3*MAXNOD_THERM3],
                      DOUBLE tmgr[NUMTMGR_THERM3])
 {
   const INT numdof = ele->numnp * NUMDOF_THERM3;
@@ -496,3 +497,4 @@ void th3_lin_mass(MATERIAL* mat,
 /*======================================================================*/
 #endif /* end of #ifdef D_THERM3 */
 /*! @} (documentation module close) */
+#endif

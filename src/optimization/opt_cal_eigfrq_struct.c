@@ -12,6 +12,7 @@ Maintainer: Andreas Lipka
 
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 
 /*----------------------------------------------------------------------*/
 #ifdef D_OPTIM                   /* include optimization code to ccarat */
@@ -604,3 +605,4 @@ return;
 
 
 
+#endif

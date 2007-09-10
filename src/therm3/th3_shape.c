@@ -14,6 +14,7 @@ Maintainer: Burkhard Bornemann
 \author bborn
 \date 09/06
 */
+#ifndef CCADISCRET
 #ifdef D_THERM3
 
 /*----------------------------------------------------------------------*/
@@ -135,14 +136,14 @@ void th3_shape_deriv(DIS_TYP     typ,
       ssm = 1.0 - s*s;
       ttm = 1.0 - t*t;
       /* shape functions associated to vertex nodes k=1,...,8
-       * N^k = 1/8 (1 + r^k r) (1 + s^k s) (1 + t^k k) 
+       * N^k = 1/8 (1 + r^k r) (1 + s^k s) (1 + t^k k)
        *           (r^k r + s^k s + t^k t - 2)
        * with r^k,s^k,t^k = -1,+1
        * [Zienkiewicz, Methode der Finiten Elemente, Hanser, 1975]
        * However, here the slightly different notation is used
-       * N^k = 1/8 (1 + r^k r) (1 + s^k s) (1 + t^k k) 
+       * N^k = 1/8 (1 + r^k r) (1 + s^k s) (1 + t^k k)
        *           ( (1 + r^k r) + (1 + s^k s) + (1 + t^k t) - 2 - 3) */
-      shape[0] = 0.125*rm*sm*tm*(rm+sm+tm-5.0);  
+      shape[0] = 0.125*rm*sm*tm*(rm+sm+tm-5.0);
       shape[1] = 0.125*rp*sm*tm*(rp+sm+tm-5.0);
       shape[2] = 0.125*rp*sp*tm*(rp+sp+tm-5.0);
       shape[3] = 0.125*rm*sp*tm*(rm+sp+tm-5.0);
@@ -153,7 +154,7 @@ void th3_shape_deriv(DIS_TYP     typ,
       /* shape functions associated to middle nodes on edges k=8,...,19
        * N^k = 1/4 (1 - r r) (1 + s^k s) (1 + t^k t)
        * with r^k=0, s^k,t^k = -1,+1
-       * analogously for s^k,t^k=0 
+       * analogously for s^k,t^k=0
        * [Zienkiewicz, Methode der Finiten Elemente, Hanser, 1975] */
       shape[8] = 0.25*rrm*sm*tm;
       shape[9] = 0.25*rp*ssm*tm;
@@ -171,11 +172,11 @@ void th3_shape_deriv(DIS_TYP     typ,
       if (option == 1)
       {
         /* corners */
-        deriv[0][0] = -0.125*sm*tm*(2.0*rm+sm+tm-5.0); 
-        deriv[0][1] = -0.125*rm*tm*(rm+2.0*sm+tm-5.0); 
+        deriv[0][0] = -0.125*sm*tm*(2.0*rm+sm+tm-5.0);
+        deriv[0][1] = -0.125*rm*tm*(rm+2.0*sm+tm-5.0);
         deriv[0][2] = -0.125*rm*sm*(rm+sm+2.0*tm-5.0);
         deriv[1][0] = 0.125*sm*tm*(2.0*rp+sm+tm-5.0);
-        deriv[1][1] = -0.125*rp*tm*(rp+2.0*sm+tm-5.0); 
+        deriv[1][1] = -0.125*rp*tm*(rp+2.0*sm+tm-5.0);
         deriv[1][2] = -0.125*rp*sm*(rp+sm+2.0*tm-5.0);
         deriv[2][0] = 0.125*sp*tm*(2.0*rp+sp+tm-5.0);
         deriv[2][1] = 0.125*rp*tm*(rp+2.0*sp+tm-5.0);
@@ -259,7 +260,7 @@ void th3_shape_deriv(DIS_TYP     typ,
       shape[4] = 0.125 * r*rm * s*sm * t*tp;
       shape[5] = -0.125 * r*rp * s*sm * t*tp;
       shape[6] = 0.125 * r*rp * s*sp * t*tp;
-      shape[7] = -0.125 * r*rm * s*sp * t*tp; 
+      shape[7] = -0.125 * r*rm * s*sp * t*tp;
       /* edge centre nodes */
       shape[8] = 0.25 * rm*rp * s*sm * t*tm;
       shape[9] = -0.25 * r*rp * sm*sp * t*tm;
@@ -506,3 +507,4 @@ void th3_shape_deriv(DIS_TYP     typ,
 
 
 
+#endif

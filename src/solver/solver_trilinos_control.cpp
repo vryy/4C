@@ -10,6 +10,7 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
 #include <ctime>
@@ -1252,3 +1253,4 @@ void solve_amesos_lapack(TRILINOSMATRIX* tri,
 } /* end of solve_amesos_lapack */
 
 #endif // TRILINOS_PACKAGE
+#endif

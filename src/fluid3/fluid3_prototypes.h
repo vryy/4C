@@ -12,6 +12,7 @@ Maintainer: Steffen Genkinger
 #include "../fluid2/fluid2.h"
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /* RULE HOW TO ADD NEW FILES AND FUNCTIONS:
    1.) THE FILENAMES ARE IN ALPHABETICAL ORDER !!!
    2.) FUNCTIONS ARE IN THE SAME ORDER LIKE IN THE FILE!!!
@@ -861,3 +862,4 @@ void f3_calneumann(ELEMENT         *ele,
                    DOUBLE         **deriv,
                    DOUBLE         **xjm,
                    DOUBLE          *edeadng);
+#endif

@@ -10,6 +10,7 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "../fluid3/fluid3.h"  /* what's this stuff to do here? mgee */
 
@@ -734,7 +735,7 @@ after_part:
 /*! @} (documentation module close)*/
 
 
-
+#endif
 
 
 

@@ -1,7 +1,7 @@
 /*======================================================================*/
 /*!
 \file
-\brief headerfile for 3dim thermal element (SOLID3), containing 
+\brief headerfile for 3dim thermal element (SOLID3), containing
 structures and prototypes
 
 <pre>
@@ -14,6 +14,8 @@ Maintainer: Moritz Frenzel
 /*======================================================================*/
 
 #ifdef D_SOLID3
+
+#ifndef CCADISCRET
 
 /*!
 \addtogroup SOLID3
@@ -107,10 +109,10 @@ Maintainer: Moritz Frenzel
                                  * off as soon as possible */
 
 /* quick hack */
-/*#define TANGLINELOAD_SOLID3*/ /* quick hack to apply tangential 
-                                 * 'line load' on a cylindrical 
-                                 * cantilever beam (length 120) subjected 
-                                 * to a torsional torque at its tip. 
+/*#define TANGLINELOAD_SOLID3*/ /* quick hack to apply tangential
+                                 * 'line load' on a cylindrical
+                                 * cantilever beam (length 120) subjected
+                                 * to a torsional torque at its tip.
                                  * (bborn/mgit 04/07) */
 
 /*======================================================================*/
@@ -134,11 +136,11 @@ typedef struct _SO3_DATA
   DOUBLE ghlc[GLINTC_SOLID3][GLMAXP_SOLID3];  /* coordinates */
   DOUBLE ghlw[GLINTC_SOLID3][GLMAXP_SOLID3];  /* weights */
   /* tetrahedron domain [T.J.R. Hughes, "The FEM", Dover 2000] */
-  DOUBLE gtdc[GTINTC_SOLID3][GTMAXP_SOLID3][NDIM_SOLID3];  /* coordinates 
+  DOUBLE gtdc[GTINTC_SOLID3][GTMAXP_SOLID3][NDIM_SOLID3];  /* coordinates
                                                             * in r,s,t */
   DOUBLE gtdw[GTINTC_SOLID3][GTMAXP_SOLID3];  /* weights */
   /* tetrahedron sides */
-  DOUBLE gtsc[GSINTC_SOLID3][GSMAXP_SOLID3][DIMSID_SOLID3];  /* coordinates 
+  DOUBLE gtsc[GSINTC_SOLID3][GSMAXP_SOLID3][DIMSID_SOLID3];  /* coordinates
                                                               * in side */
   DOUBLE gtsw[GSINTC_SOLID3][GSMAXP_SOLID3];  /* weights */
   /* triangle edges --> line [0,+1] */
@@ -153,19 +155,19 @@ typedef struct _SO3_DATA
   INT nodsidh[MAXSID_SOLID3][MAXNS_SOLID3];  /* hexahedra */
   INT nodsidt[MAXSID_SOLID3][MAXNS_SOLID3];  /* tetrahedra */
   /* nodes on edges */
-  INT nodedghl[MAXEDG_SOLID3][MAXNE_SOLID3];  /* linear hex8 */       
+  INT nodedghl[MAXEDG_SOLID3][MAXNE_SOLID3];  /* linear hex8 */
   INT nodedghq[MAXEDG_SOLID3][MAXNE_SOLID3];  /* quadratic hex20,27 */
-  INT nodedgtl[MAXEDG_SOLID3][MAXNE_SOLID3];  /* linear tet4 */       
+  INT nodedgtl[MAXEDG_SOLID3][MAXNE_SOLID3];  /* linear tet4 */
   INT nodedgtq[MAXEDG_SOLID3][MAXNE_SOLID3];  /* quadratic tet10 */
   /*--------------------------------------------------------------------*/
   /* anchor and span vectors for sides and edges in param. space */
   /* sides hex */
   DOUBLE ancsidh[MAXSID_SOLID3][NDIM_SOLID3];  /* anchors hex */
-  DOUBLE redsidh[MAXSID_SOLID3][DIMSID_SOLID3][NDIM_SOLID3];  /* dim red 
+  DOUBLE redsidh[MAXSID_SOLID3][DIMSID_SOLID3][NDIM_SOLID3];  /* dim red
                                                                * matrix */
   /* sides tet */
   DOUBLE ancsidt[MAXSID_SOLID3][NDIM_SOLID3];  /* anchors tet */
-  DOUBLE redsidt[MAXSID_SOLID3][DIMSID_SOLID3][NDIM_SOLID3];  /* dim red 
+  DOUBLE redsidt[MAXSID_SOLID3][DIMSID_SOLID3][NDIM_SOLID3];  /* dim red
                                                                * matrix */
   /* edges hex */
   DOUBLE ancedgh[MAXEDG_SOLID3][NDIM_SOLID3];  /* anchors hex */
@@ -178,7 +180,7 @@ typedef struct _SO3_DATA
                                                 * matrix multiplied
                                                 * on Jacobi matrix */
   /*--------------------------------------------------------------------*/
-  /* base vectors of surface plus outward normal are common 
+  /* base vectors of surface plus outward normal are common
    * coordinate system (Rechtssystem) if ==0 else ==1 not */
   INT nrmsidh[MAXEDG_SOLID3];  /* hex */
   INT nrmsidt[MAXEDG_SOLID3];  /* tet */
@@ -188,7 +190,7 @@ typedef struct _SO3_DATA
 
 /*----------------------------------------------------------------------*/
 /*!
-\brief All Gauss point coordinates, shape functions and their 
+\brief All Gauss point coordinates, shape functions and their
        parametric derivates evaluated
 \author bborn
 \date 12/06
@@ -210,7 +212,7 @@ typedef struct _SO3_GPSHAPEDERIV
 \brief The (mostly tensorial) variables of this datum type describe
        the geometric transformations between the 3 frames:
        parameter (r,s,t), material (X,Y,Z) and spatial (x,y,z).
-       Moreover a few (mostly tensorial) variables defined in 
+       Moreover a few (mostly tensorial) variables defined in
        these frames are contained.
        These data are handed down to the material routines.
 \author bborn
@@ -220,7 +222,7 @@ typedef struct _SO3_GEODEFSTR
 {
   /*--------------------------------------------------------------------*/
   /* geometry:
-   *     These variables refer to the transformation between 
+   *     These variables refer to the transformation between
    *     parameter frame (r,s,t coordinates) and material frame
    *     (X,Y,Z coordinates)
    */
@@ -247,21 +249,21 @@ typedef struct _SO3_GEODEFSTR
   /* HINT: This matrix adheres to the ordering of xjm */
   DOUBLE xrm[NDIM_SOLID3][NDIM_SOLID3];
   /* rotational component of J prepared such that a symmetric 2-tensor
-   * A living in (rst) denoted vectorially Av can be computed 
+   * A living in (rst) denoted vectorially Av can be computed
    * by matrix-vector product
    *     (A)_{XYZ} = (xrm) . (A)_{rst} . (xrm^T)
    * becomes
    *     (Av)_{XYZ} = xrvm . (Av)_{rst} */
   DOUBLE xrvm[NUMSTR_SOLID3][NUMSTR_SOLID3];
   /* rotational component of J^{-1} prepared such that a symmetric 2-tensor
-   * A living in (XYZ) denoted vectorially Av can be computed 
-   * by matrix-vector product 
+   * A living in (XYZ) denoted vectorially Av can be computed
+   * by matrix-vector product
    *     (A)_{rst} = (xrm^T) . (A)_{XYZ} . (xrm)
    * becomes
    *     (Av)_{rst} = xrvi . (Av)_{XYZ} */
   DOUBLE xrvi[NUMSTR_SOLID3][NUMSTR_SOLID3];
   /*--------------------------------------------------------------------*/
-  /* deformation: 
+  /* deformation:
    *     These variables refer to the transformation between
    *     material frame (X,Y,Z coordinates) and spatial frame
    *     (x,y,z coordinates)
@@ -418,12 +420,12 @@ typedef struct _SO3_MIV_ROBINSON
   /* back stress vector Av^<g> at t_{n+1} for every Gauss point g
    *    Av^<g>T = [ A_11  A_22  A_33  A_12  A_23  A_31 ]^<g> */
   ARRAY bacstsn;
-  /* visco-plastic strain rate vector dEv^<g><i> 
+  /* visco-plastic strain rate vector dEv^<g><i>
    * for every intermediate time stages t_{n+c_i} (with i=1,...,s)
    * and every Gauss point g
    *    dEv^<g><i>T = [ dE_11  dE_22  dE_33  2*dE_12  2*dE_23  2*dE_31 ] */
   ARRAY4D dvicstn;
-  /* back stress rate vector dAv^<g><i> 
+  /* back stress rate vector dAv^<g><i>
    * for every intermediate time stages t_{n+c_i} (with i=1,...,s)
    * and every Gauss point g
    *    dAv^<g><i>T = [ dA_11  dA_22  dA_33  dA_12  dA_23  dA_31 ] */
@@ -808,7 +810,7 @@ void so3_mat_stress(CONTAINER *container,
                     SO3_GEODEFSTR *gds,
                     DOUBLE stress[NUMSTR_SOLID3],
                     DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3]);
-void so3_mat_density(MATERIAL *mat, 
+void so3_mat_density(MATERIAL *mat,
                      DOUBLE *density);
 void so3_mat_mivupdreq(ELEMENT* ele,
                        MATERIAL* mat,
@@ -902,9 +904,9 @@ void so3_mat_robinson_be_rbcksts(ELEMENT* ele,
                                  DOUBLE kae[NUMSTR_SOLID3][NUMSTR_SOLID3],
                                  DOUBLE kav[NUMSTR_SOLID3][NUMSTR_SOLID3],
                                  DOUBLE kaa[NUMSTR_SOLID3][NUMSTR_SOLID3]);
-void so3_mat_robinson_be_red(DOUBLE stress[NUMSTR_SOLID3], 
+void so3_mat_robinson_be_red(DOUBLE stress[NUMSTR_SOLID3],
                              DOUBLE cmat[NUMSTR_SOLID3][NUMSTR_SOLID3],
-                             DOUBLE kev[NUMSTR_SOLID3][NUMSTR_SOLID3], 
+                             DOUBLE kev[NUMSTR_SOLID3][NUMSTR_SOLID3],
                              DOUBLE kea[NUMSTR_SOLID3][NUMSTR_SOLID3],
                              const DOUBLE vscstnr[NUMSTR_SOLID3],
                              DOUBLE kve[NUMSTR_SOLID3][NUMSTR_SOLID3],
@@ -912,7 +914,7 @@ void so3_mat_robinson_be_red(DOUBLE stress[NUMSTR_SOLID3],
                              DOUBLE kva[NUMSTR_SOLID3][NUMSTR_SOLID3],
                              const DOUBLE bckstsr[NUMSTR_SOLID3],
                              DOUBLE kae[NUMSTR_SOLID3][NUMSTR_SOLID3],
-                             DOUBLE kav[NUMSTR_SOLID3][NUMSTR_SOLID3], 
+                             DOUBLE kav[NUMSTR_SOLID3][NUMSTR_SOLID3],
                              DOUBLE kaa[NUMSTR_SOLID3][NUMSTR_SOLID3],
                              DOUBLE* kvarva,
                              DOUBLE* kvakvae);
@@ -989,17 +991,17 @@ void so3_metr_jaco(ELEMENT *ele,
                    DOUBLE xjm[NDIM_SOLID3][NDIM_SOLID3],
                    DOUBLE *det,
                    DOUBLE xji[NDIM_SOLID3][NDIM_SOLID3]);
-void so3_metr_surf(ELEMENT *ele, 
-                   INT nelenod, 
+void so3_metr_surf(ELEMENT *ele,
+                   INT nelenod,
                    DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3],
                    DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3],
                    DOUBLE sidredm[DIMSID_SOLID3][NDIM_SOLID3],
                    DOUBLE gamtt[DIMSID_SOLID3][NDIM_SOLID3],
                    DOUBLE *metr);
-void so3_metr_line(ELEMENT *ele, 
-                   INT nelenod, 
+void so3_metr_line(ELEMENT *ele,
+                   INT nelenod,
                    DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3],
-                   DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3], 
+                   DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3],
                    DOUBLE linredv[NDIM_SOLID3],
                    DOUBLE gamtt[NDIM_SOLID3],
                    DOUBLE *metr);
@@ -1032,14 +1034,14 @@ void so3_shape_test(SO3_DATA *data);
 #ifdef TEST_SOLID3
 void so3_shape_test_shp(SO3_DATA *data,
                         DIS_TYP dis,
-                        CHAR *text, 
+                        CHAR *text,
                         INT nelenod,
                         FILE *filetest);
 #endif
 #ifdef TEST_SOLID3
 void so3_shape_test_drv(SO3_DATA *data,
                         DIS_TYP dis,
-                        CHAR *text, 
+                        CHAR *text,
                         INT nelenod,
                         FILE *filetest);
 #endif
@@ -1129,13 +1131,13 @@ void so3_tns3_unrm(const DOUBLE av[NDIM_SOLID3],
 #ifdef D_TSI
 void so3_tsi_temper0(const CONTAINER *container,
                      const ELEMENT *ele,
-                     const DOUBLE r, 
+                     const DOUBLE r,
                      const DOUBLE s,
                      const DOUBLE t,
                      DOUBLE *temper);
 void so3_tsi_temper(const CONTAINER *container,
                     const ELEMENT *ele,
-                    const DOUBLE r, 
+                    const DOUBLE r,
                     const DOUBLE s,
                     const DOUBLE t,
                     DOUBLE *temper);
@@ -1221,5 +1223,6 @@ void so3_mv6_m05_idscl(const DOUBLE scale,
                        DOUBLE im[NUMSTR_SOLID3][NUMSTR_SOLID3]);
 
 /*----------------------------------------------------------------------*/
+#endif
 #endif /*end of #ifdef D_SOLID3 */
 /*! @} (documentation module close) */

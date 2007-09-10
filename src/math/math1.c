@@ -13,6 +13,44 @@ Maintainer: Malte Neumann
 #include "../headers/standardtypes.h"
 
 /*----------------------------------------------------------------------*
+ |  r(I) = A(I,K)*b(K)*factor -----  r = A*b*factor          m.gee 6/01 |
+ |  or                                                                  |
+ |  r(I) += A(I,K)*b(K)*factor                                          |
+ *----------------------------------------------------------------------*/
+void math_matvecdense(DOUBLE  *r,
+                         DOUBLE **A,
+                         DOUBLE  *b,
+                         INT      ni,
+                         INT      nk,
+                         INT      init,
+                         DOUBLE   factor)
+{
+INT i,k;
+DOUBLE sum;
+#ifdef DEBUG
+dstrc_enter("math_matvecdense");
+#endif
+/*----------------------------------------------------------------------*/
+if (init==0)
+{
+   for (i=0; i<ni; i++) r[i]=0.0;
+}
+for (i=0; i<ni; i++)
+{
+   sum=0.0;
+   for (k=0; k<nk; k++) sum += A[i][k]*b[k];
+   r[i] += sum*factor;
+}
+/*----------------------------------------------------------------------*/
+#ifdef DEBUG
+dstrc_exit();
+#endif
+return;
+} /* end of math_matvecdense */
+
+#ifndef CCADISCRET
+
+/*----------------------------------------------------------------------*
  |  copies a matrix of identical size                     m.gee 6/01    |
  *----------------------------------------------------------------------*/
 void math_array_copy(DOUBLE **from, INT n, INT m, DOUBLE **to)
@@ -155,41 +193,6 @@ void math_unvc(
 
 
 
-/*----------------------------------------------------------------------*
- |  r(I) = A(I,K)*b(K)*factor -----  r = A*b*factor          m.gee 6/01 |
- |  or                                                                  |
- |  r(I) += A(I,K)*b(K)*factor                                          |
- *----------------------------------------------------------------------*/
-void math_matvecdense(DOUBLE  *r,
-                         DOUBLE **A,
-                         DOUBLE  *b,
-                         INT      ni,
-                         INT      nk,
-                         INT      init,
-                         DOUBLE   factor)
-{
-INT i,k;
-DOUBLE sum;
-#ifdef DEBUG
-dstrc_enter("math_matvecdense");
-#endif
-/*----------------------------------------------------------------------*/
-if (init==0)
-{
-   for (i=0; i<ni; i++) r[i]=0.0;
-}
-for (i=0; i<ni; i++)
-{
-   sum=0.0;
-   for (k=0; k<nk; k++) sum += A[i][k]*b[k];
-   r[i] += sum*factor;
-}
-/*----------------------------------------------------------------------*/
-#ifdef DEBUG
-dstrc_exit();
-#endif
-return;
-} /* end of math_matvecdense */
 /*----------------------------------------------------------------------*
  |  r(I) = A(K,I)*b(K) -----  r = A*b                        m.gee 6/01 |
  |  or                                                                  |
@@ -680,3 +683,4 @@ dstrc_exit();
 return;
 } /* end of intextract*/
 
+#endif

@@ -53,7 +53,9 @@ INT                ngpr;
 INT                ngps;
 INT                ngpt;
 INT                ntyp;
+#ifndef CCADISCRET
 enum _DIS_TYP      typ;            /* my actual discretization type */
+#endif
 
 struct _ARRAY      xyzpd;	   /* coordinates on parent domain */
 struct _ARRAY      id;  	   /* id-array */
@@ -62,6 +64,7 @@ struct _ARRAY      mat; 	   /* matrix */
 struct _ARRAY      rhs; 	   /* rhs */
 struct _ARRAY      ipiv;	   /* pivot-array for solver lapack */
 } FLUID_ML_SMESH;
+
 
 /*!----------------------------------------------------------------------
 \brief multi-level calculation parameter

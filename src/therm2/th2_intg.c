@@ -14,6 +14,7 @@ Maintainer: Burkhard Bornemann
 \date 03/06
 */
 /*======================================================================*/
+#ifndef CCADISCRET
 /*!
 \addtogroup THERM2
 *//*! @{ (documentation module open)*/
@@ -69,13 +70,13 @@ extern ALLDYNA      *alldyn;
 \brief Set type, total amount of Gauss points, etc of element
 
 \param ELEMENT    *ele      (i)   pointer to element
-\parem INT         ierr     (o)   error flag: 1 ==> success 
+\parem INT         ierr     (o)   error flag: 1 ==> success
 
 \author bborn
 \date 03/06
 */
 /*----------------------------------------------------------------------*/
-void th2_intg_eleinp(ELEMENT *actele, 
+void th2_intg_eleinp(ELEMENT *actele,
                      INT *ierr)
 {
 
@@ -211,7 +212,7 @@ this routine is a try to organise the integration parameters
 different. ALL paramters are stored in FLUID_DATA, so that this
 routine has to be (hopefully) called only once!!!
 
-\param  *data   TH2_DATA     (o)  prepare quadrature data 
+\param  *data   TH2_DATA     (o)  prepare quadrature data
 \return void
 
 \author bborn
@@ -234,7 +235,7 @@ void th2_intg_init(TH2_DATA *data)
   DOUBLE q23 = two/three;
 
   /* HINT: GLMAXP_THERM2==6, GLINTC_THERM2==6 */
-  DOUBLE  xg[GLMAXP_THERM2][GLINTC_THERM2];  /* coord. of Gauss points 
+  DOUBLE  xg[GLMAXP_THERM2][GLINTC_THERM2];  /* coord. of Gauss points
                                               * on [-1,+1] */
   DOUBLE  wgt[GLMAXP_THERM2][GLINTC_THERM2];  /* integr. weights of
                                               * Gauss points on [-1,+1] */
@@ -656,3 +657,4 @@ void th2_intg_init(TH2_DATA *data)
 #endif  /* end of #ifdef D_THERM2 */
 
 /*! @} (documentation module close)*/
+#endif

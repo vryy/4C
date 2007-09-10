@@ -10,6 +10,7 @@ Maintainer: Christiane Foerster
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "ale2.h"
 /*----------------------------------------------------------------------*
@@ -144,3 +145,4 @@ dstrc_exit();
 return;
 } /* end of ale3 */
 /*! @} (documentation module close)*/
+#endif

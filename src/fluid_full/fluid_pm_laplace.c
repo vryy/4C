@@ -13,6 +13,7 @@ Here we have a continous pressure discretication with laplace
 approximation.
 
 */
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID_PM
 *//*! @{ (documentation module open)*/
@@ -1321,3 +1322,4 @@ end:
 
 #endif
 /*! @} (documentation module close)*/
+#endif

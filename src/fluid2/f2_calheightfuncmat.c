@@ -3,6 +3,7 @@
 \brief stiffness matrix for free surface via height function
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID2
 *//*! @{ (documentation module open)*/
@@ -421,3 +422,4 @@ return;
 
 #endif
 /*! @} (documentation module close)*/
+#endif

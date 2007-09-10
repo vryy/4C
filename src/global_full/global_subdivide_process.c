@@ -14,6 +14,7 @@ Maintainer: Malte Neumann
  */
 /*-----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 /*!
 \addtogroup Global
 *//*! @{ (documentation module open)*/
@@ -1215,3 +1216,4 @@ void process_gsurf_tri(
 /*! @} (documentation module close)*/
 
 
+#endif

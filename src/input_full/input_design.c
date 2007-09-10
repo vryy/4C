@@ -10,6 +10,7 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 /*!----------------------------------------------------------------------
 \brief file pointers
@@ -966,3 +967,4 @@ dstrc_exit();
 #endif
 return;
 } /* end of read_1_dvol */
+#endif

@@ -11,6 +11,7 @@ Maintainer: Andrea Hund
 </pre>
 
 *---------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef GEMM
 #include "../headers/standardtypes.h"
 #include "wall1.h"
@@ -197,3 +198,4 @@ return;
 #endif /*GEMM*/
 /*! @} (documentation module close)*/
 
+#endif

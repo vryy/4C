@@ -18,6 +18,7 @@ Maintainer: Burkhard Bornemann
 \date 02/07
 */
 
+#ifndef CCADISCRET
 /*----------------------------------------------------------------------*/
 /* header files */
 #include "../headers/standardtypes.h"
@@ -46,7 +47,7 @@ extern FILES allfiles;
 /*!
 \brief General problem data
 
-struct _GENPROB       genprob; defined in global_control.c 
+struct _GENPROB       genprob; defined in global_control.c
 
 \author bborn
 \date 03/06
@@ -220,33 +221,33 @@ void tsi_st_fehlbg(INT disnum_s,
 
   DIST_VECTOR *vel;  /* total velocities: V_n and V_{n+1} */
   DIST_VECTOR *acc;  /* total accelerations: A_n and A_{n+1} */
-  DIST_VECTOR *fint;  /* internal force: 
+  DIST_VECTOR *fint;  /* internal force:
                        * F_{Int;n}, F_{Int;n+1} and F_{Int;n+c_i} */
   DIST_VECTOR *fvsc;  /* viscous force vector */
   DIST_VECTOR *fext;  /* external force vector */
-  DIST_VECTOR *dispi;   /* distributed vector to hold incremental 
+  DIST_VECTOR *dispi;   /* distributed vector to hold incremental
                          * displacments */
   DIST_VECTOR *work;  /* working vectors */
 
-  DIST_VECTOR *accn;  /* acceleration at stages 
+  DIST_VECTOR *accn;  /* acceleration at stages
                        * (in RK terms, these are generally called 'k') */
   DIST_VECTOR *veln;  /* velocity stages */
   DIST_VECTOR *disn;  /* displacement stages */
 
   ARRAY intforce_a;  /* redundant vector of full length for internal forces */
   DOUBLE *intforce;
-  ARRAY dirich_a;  /* redundant vector of full length for dirichlet-part 
+  ARRAY dirich_a;  /* redundant vector of full length for dirichlet-part
                     * of rhs */
   DOUBLE *dirich;
 
-  STRUCT_DYN_CALC dynvar;  /* variables to perform dynamic structural 
+  STRUCT_DYN_CALC dynvar;  /* variables to perform dynamic structural
                             * simulation */
 
   ARRAY_POSITION *ipos;   /* named positions of NODE sol etc. arrays */
   ARRAY_POSITION_SOL *isol;  /* named positions (indices) of NODE sol array */
-  ARRAY_POSITION_SOLINC *isolinc;  /* named positions (indices) of 
+  ARRAY_POSITION_SOLINC *isolinc;  /* named positions (indices) of
                                     * NODE sol_increment array */
-  ARRAY_POSITION_SOLRES *isolres;  /* named positions (indices) of 
+  ARRAY_POSITION_SOLRES *isolres;  /* named positions (indices) of
                                     * NODE sol_residual array */
 
 #ifdef BINIO
@@ -268,7 +269,7 @@ void tsi_st_fehlbg(INT disnum_s,
 #ifdef DEBUG
   dstrc_enter("tsi_st_fehlbg");
 #endif
-  
+
   /*--------------------------------------------------------------------*/
   /* set up */
   restart = genprob.restart;
@@ -302,7 +303,7 @@ void tsi_st_fehlbg(INT disnum_s,
 #ifdef PARALLEL
   actintra = &(par.intra[numsf]);
 #else
-  /* if we are not parallel, we have to allocate an alibi 
+  /* if we are not parallel, we have to allocate an alibi
    * intra-communicator structure */
   actintra = (INTRA*) CCACALLOC(1, sizeof(INTRA));
   if (!actintra)
@@ -314,9 +315,9 @@ void tsi_st_fehlbg(INT disnum_s,
   actintra->intra_nprocs = 1;
 #endif
   /* there are only procs allowed in here, that belong to the structural
-   * intracommunicator (in case of nonlinear struct. dyn., this should 
+   * intracommunicator (in case of nonlinear struct. dyn., this should
    * be all) */
-  if (actintra->intra_fieldtyp != structure) 
+  if (actintra->intra_fieldtyp != structure)
   {
     goto end;
   }
@@ -352,7 +353,7 @@ void tsi_st_fehlbg(INT disnum_s,
   /* stiff_array already exists, so copy the mask of it to */
   /* mass_array (and damp_array if needed) */
   /* reallocate the vector of sparse matrices and the vector of there types */
-  /* formerly lenght 1, now lenght 2 or 3 dependent on presence of 
+  /* formerly lenght 1, now lenght 2 or 3 dependent on presence of
    * damp_array */
   actsolv->sysarray_typ
     = (SPARSE_TYP*) CCAREALLOC(actsolv->sysarray_typ,
@@ -402,14 +403,14 @@ void tsi_st_fehlbg(INT disnum_s,
 
   /*--------------------------------------------------------------------*/
   /* allocate 4 dist. vectors for RHS */
-  /* these hold original load vector, 
+  /* these hold original load vector,
    *            load vector at time t,
    *            load vector at t-dt and
    *            interpolated load vector */
   actsolv->nrhs = 4;
-  solserv_create_vec(&(actsolv->rhs), 
+  solserv_create_vec(&(actsolv->rhs),
                      actsolv->nrhs, numeq_total, numeq, "DV");
-  for (i=0; i<actsolv->nrhs; i++) 
+  for (i=0; i<actsolv->nrhs; i++)
   {
     solserv_zero_vec(&(actsolv->rhs[i]));
   }
@@ -418,7 +419,7 @@ void tsi_st_fehlbg(INT disnum_s,
   /* there are 2 solution vectors to hold total displ.
    * one at time t_{n+1} and one at time t_{n} */
   actsolv->nsol = 2;
-  solserv_create_vec(&(actsolv->sol), 
+  solserv_create_vec(&(actsolv->sol),
                      actsolv->nsol, numeq_total, numeq, "DV");
   for (i=0; i<actsolv->nsol; i++)
   {
@@ -428,7 +429,7 @@ void tsi_st_fehlbg(INT disnum_s,
   /*--------------------------------------------------------------------*/
   /* there is one vector to hold incremental displacements */
   solserv_create_vec(&dispi, 1, numeq_total, numeq, "DV");
-  for (i=0; i<1; i++) 
+  for (i=0; i<1; i++)
   {
     solserv_zero_vec(&(dispi[i]));
   }
@@ -471,7 +472,7 @@ void tsi_st_fehlbg(INT disnum_s,
 
   /*--------------------------------------------------------------------*/
   /* allocate one redundant vector intforce of full lenght
-   * this is used by the element routines to assemble the 
+   * this is used by the element routines to assemble the
    * internal forces*/
   intforce = amdef("intforce", &intforce_a, numeq_total, 1, "DV");
   /* allocate 3 DIST_VECTOR fie
@@ -491,7 +492,7 @@ void tsi_st_fehlbg(INT disnum_s,
   /* By optimizing this routine one could live with one or two working
    * vectors, I needed three to make things straight-forward and easy */
   solserv_create_vec(&work, 3, numeq_total, numeq, "DV");
-  for (i=0; i<3; i++) 
+  for (i=0; i<3; i++)
   {
     solserv_zero_vec(&(work[i]));
   }
@@ -501,7 +502,7 @@ void tsi_st_fehlbg(INT disnum_s,
   /* NOTE: solver init phase has to be called with each matrix one wants to
    *       solve with. Solver init phase has to be called with all matrices
    *       one wants to do matrix-vector products and matrix scalar products.
-   *       This is not needed by all solver libraries, but the solver-init 
+   *       This is not needed by all solver libraries, but the solver-init
    *       phase is cheap in computation (can be costly in memory)
    *   There will be no solver call on mass or damping array. */
   /* initialize solver */
@@ -549,7 +550,7 @@ void tsi_st_fehlbg(INT disnum_s,
 
   /*--------------------------------------------------------------------*/
   /* call elements to calculate stiffness and mass */
-  /* REMARK: stiffness array may be unusable: not all materials 
+  /* REMARK: stiffness array may be unusable: not all materials
    *         are linearised. In this case Rayleigh's damping matrix
    *         will be screwed up. */
   *action = calc_struct_nlnstiffmass;
@@ -558,7 +559,7 @@ void tsi_st_fehlbg(INT disnum_s,
   container.global_numeq = 0;
   container.dirichfacs = NULL;
   container.kstep = 0;
-  calelm(actfield, actsolv, actpart, actintra, 
+  calelm(actfield, actsolv, actpart, actintra,
          stiff_array, mass_array, &container, action);
 
   /*--------------------------------------------------------------------*/
@@ -604,7 +605,7 @@ void tsi_st_fehlbg(INT disnum_s,
    * It's important to do this only after all the node arrays are set
    * up because their sizes are used to allocate internal memory. */
   init_bin_out_field(&out_context,
-                     &(actsolv->sysarray_typ[stiff_array]), 
+                     &(actsolv->sysarray_typ[stiff_array]),
                      &(actsolv->sysarray[stiff_array]),
                      actfield, actpart, actintra, disnum);
 #endif
@@ -625,7 +626,7 @@ void tsi_st_fehlbg(INT disnum_s,
            "===========\n");
     printf("TSI structural time integration with Fehlberg4\n");
     printf("-------------------------------------------------------------"
-           "-----------\n"); 
+           "-----------\n");
   }
 
   /*--------------------------------------------------------------------*/
@@ -635,7 +636,7 @@ void tsi_st_fehlbg(INT disnum_s,
 
   /*--------------------------------------------------------------------*/
   /* form effective left hand side */
-  /*    K_eff = M 
+  /*    K_eff = M
    * The effective tangent is constant in time */
   solserv_zero_mat(actintra,
                    &(actsolv->sysarray[stiff_array]),
@@ -682,14 +683,14 @@ void tsi_st_fehlbg(INT disnum_s,
 
   /*--------------------------------------------------------------------*/
   /* return total displacements to the nodes */
-  solserv_result_total(actfield, disnum, actintra, 
+  solserv_result_total(actfield, disnum, actintra,
                        &(dispi[0]), isol->disn,
                        &(actsolv->sysarray[stiff_array]),
                        &(actsolv->sysarray_typ[stiff_array]));
 
   /*--------------------------------------------------------------------*/
   /* return incremental displacements to the nodes */
-  solserv_result_incre(actfield, disnum, actintra, 
+  solserv_result_incre(actfield, disnum, actintra,
                        &(dispi[0]), isolinc->disinc,
                        &(actsolv->sysarray[stiff_array]),
                        &(actsolv->sysarray_typ[stiff_array]));
@@ -778,7 +779,7 @@ void tsi_st_fehlbg(INT disnum_s,
   /* initialise wall clock time */
   t0 = ds_cputime();
   /* write memory report */
-  if (par.myrank == 0) 
+  if (par.myrank == 0)
   {
     dsmemreport();
   }
@@ -835,7 +836,7 @@ void tsi_st_fehlbg(INT disnum_s,
                                 3            , work        ,
                                 &intforce_a,
                                 &dirich_a,
-                                &container); /* contains variables defined 
+                                &container); /* contains variables defined
                                               in container.h */
 #endif
       /* put the dt to the structure */
@@ -867,7 +868,7 @@ void tsi_st_fehlbg(INT disnum_s,
     for (istg=0; istg<nstg; istg++)
     {
       /*----------------------------------------------------------------*/
-      /* time stage 
+      /* time stage
        *    t_{n+1} = t_n + dt*c_i */
       tim[istg] = acttime + dt*tsi_fehlbg4.c[istg];
       /*----------------------------------------------------------------*/
@@ -876,29 +877,29 @@ void tsi_st_fehlbg(INT disnum_s,
       solserv_copy_vec(&(vel[0]), &(veln[istg]));
       for (jstg=0; jstg<istg; jstg++)
       {
-        solserv_add_vec(&(accn[jstg]), &(veln[istg]), 
+        solserv_add_vec(&(accn[jstg]), &(veln[istg]),
                         dt*tsi_fehlbg4.a[istg][jstg]);
       }
       /*----------------------------------------------------------------*/
       /* displacement at stage
-       *    D_{n+c_i} += c_i * dt * V_n 
+       *    D_{n+c_i} += c_i * dt * V_n
        *               + dt_n^2 * \sum{j=1}{i-1} ( aa_{ij} * k_j )*/
       solserv_copy_vec(&(actsolv->sol[0]), &(disn[istg]));
       solserv_add_vec(&(vel[0]), &(disn[istg]), dt*tsi_fehlbg4.c[istg]);
       for (jstg=0; jstg<istg-1; jstg++)
       {
-        solserv_add_vec(&(accn[jstg]), &(disn[istg]), 
+        solserv_add_vec(&(accn[jstg]), &(disn[istg]),
                         dt*dt*tsi_fehlbg4.aa[istg][jstg]);
       }
       /* put the displacements to the nodes */
-      solserv_result_total(actfield, disnum, actintra, &(disn[istg]), 
+      solserv_result_total(actfield, disnum, actintra, &(disn[istg]),
                            isol->disn,
                            &(actsolv->sysarray[stiff_array]),
                            &(actsolv->sysarray_typ[stiff_array]));
       /* put the prescribed scaled displacements to the nodes
        * in field sol==node_array_sol at 0==isol->disn
        * this overwrites the calculated displacements on the Dirichlet BC */
-      solserv_putdirich_to_dof(actfield, disnum, node_array_sol, 
+      solserv_putdirich_to_dof(actfield, disnum, node_array_sol,
                                isol->disn, tim[istg]);
       /*----------------------------------------------------------------*/
       /* right-hand-side at stage */
@@ -919,7 +920,7 @@ void tsi_st_fehlbg(INT disnum_s,
       /* internal force at t_{n+c_i} */
       /* new global internal force vector (fint[2])
        *    F_{Int;n+c_i} = F_{Int}(D_{n+c_i})
-       * This is actually at t_{n+c_i} due to putting the stage 
+       * This is actually at t_{n+c_i} due to putting the stage
        * displacemens to the nodes (see above) */
       amzero(&intforce_a);
       *action = calc_struct_internalforce;
@@ -934,7 +935,7 @@ void tsi_st_fehlbg(INT disnum_s,
       /* store positive internal forces on fint[2] */
       solserv_zero_vec(&fint[2]);
       assemble_vec(actintra, &(actsolv->sysarray_typ[stiff_array]),
-                   &(actsolv->sysarray[stiff_array]), 
+                   &(actsolv->sysarray[stiff_array]),
                    &(fint[2]), intforce, 1.0);
       /*----------------------------------------------------------------*/
       /* viscous force at t_{n+c_i} */
@@ -949,8 +950,8 @@ void tsi_st_fehlbg(INT disnum_s,
       }
       /*----------------------------------------------------------------*/
       /* inertial force at stage (actsolv->rhs[0])
-       *    F_{Inertial;n+c_i} = M . A_{n+c_i} 
-       *                       = F_{Ext;n+c_i} - F_{Int;n+c_i} 
+       *    F_{Inertial;n+c_i} = M . A_{n+c_i}
+       *                       = F_{Ext;n+c_i} - F_{Int;n+c_i}
        *                         - C . V_{n+c_i} */
       solserv_copy_vec(&(fext[0]), &(actsolv->rhs[0]));
       solserv_add_vec(&(fint[2]), &(actsolv->rhs[0]), -1.0);
@@ -970,7 +971,7 @@ void tsi_st_fehlbg(INT disnum_s,
       solserv_copy_vec(&(work[0]), &(accn[istg]));
       /*----------------------------------------------------------------*/
       /* add contribution of current stage to new displacement */
-      solserv_add_vec(&(accn[istg]), &(actsolv->sol[1]), 
+      solserv_add_vec(&(accn[istg]), &(actsolv->sol[1]),
                       dt*dt*tsi_fehlbg4.bb[istg]);
       /* add contribution of current stage to new velocity */
       solserv_add_vec(&(accn[istg]), &(vel[1]), dt*tsi_fehlbg4.b[istg]);
@@ -982,7 +983,7 @@ void tsi_st_fehlbg(INT disnum_s,
 
     /*------------------------------------------------------------------*/
     /* make all types of energies */
-    dynnle(&dynvar, sdyn, actintra, actsolv, 
+    dynnle(&dynvar, sdyn, actintra, actsolv,
            &dispi[0], &fint[1], &fint[2],
            &(fext[1]), &(fext[2]), &work[0]);
     dyne(&dynvar, actintra, actsolv, mass_array, &vel[1], &work[0]);
@@ -1006,17 +1007,17 @@ void tsi_st_fehlbg(INT disnum_s,
     /*------------------------------------------------------------------*/
     /* put new quantities to nodes */
     /* put new displacements sol[0] to nodes */
-    solserv_result_total(actfield, disnum, actintra, 
+    solserv_result_total(actfield, disnum, actintra,
                          &(actsolv->sol[0]), isol->disn,
                          &(actsolv->sysarray[stiff_array]),
                          &(actsolv->sysarray_typ[stiff_array]));
     /* return velocities to the nodes */
-    solserv_result_total(actfield,disnum,actintra, 
+    solserv_result_total(actfield,disnum,actintra,
                          &vel[0], isol->veln,
                          &(actsolv->sysarray[stiff_array]),
                          &(actsolv->sysarray_typ[stiff_array]));
     /* return accel. to the nodes */
-    solserv_result_total(actfield,disnum,actintra, 
+    solserv_result_total(actfield,disnum,actintra,
                          &acc[0], isol->accn,
                          &(actsolv->sysarray[stiff_array]),
                          &(actsolv->sysarray_typ[stiff_array]));
@@ -1078,7 +1079,7 @@ void tsi_st_fehlbg(INT disnum_s,
     if ( (mod_stress == 0) || (mod_disp == 0) )
     {
       if ( (ioflags.struct_stress == 1)
-           && (ioflags.struct_disp == 1) 
+           && (ioflags.struct_disp == 1)
            && (ioflags.output_out == 1) )
       {
         out_sol(actfield, actpart, disnum, actintra, sdyn->step, 0);
@@ -1092,13 +1093,13 @@ void tsi_st_fehlbg(INT disnum_s,
     {
       if (mod_disp == 0)
       {
-        if (ioflags.struct_disp == 1) 
+        if (ioflags.struct_disp == 1)
         {
-          out_results(&out_context, sdyn->time, sdyn->step, 0, 
+          out_results(&out_context, sdyn->time, sdyn->step, 0,
                       OUTPUT_DISPLACEMENT);
-          out_results(&out_context, sdyn->time, sdyn->step, 1, 
+          out_results(&out_context, sdyn->time, sdyn->step, 1,
                       OUTPUT_VELOCITY);
-          out_results(&out_context, sdyn->time, sdyn->step, 2, 
+          out_results(&out_context, sdyn->time, sdyn->step, 2,
                       OUTPUT_ACCELERATION);
         }
       }
@@ -1106,7 +1107,7 @@ void tsi_st_fehlbg(INT disnum_s,
       {
         if (ioflags.struct_stress == 1)
         {
-          out_results(&out_context, sdyn->time, sdyn->step, 0, 
+          out_results(&out_context, sdyn->time, sdyn->step, 0,
                       OUTPUT_STRESS);
         }
       }
@@ -1119,9 +1120,9 @@ void tsi_st_fehlbg(INT disnum_s,
       {
         if (ioflags.struct_disp == 1)
         {
-          out_gid_sol("displacement", actfield, disnum, actintra, 
+          out_gid_sol("displacement", actfield, disnum, actintra,
                       sdyn->step, 0, ZERO);
-          out_gid_sol("velocities", actfield, disnum, actintra, 
+          out_gid_sol("velocities", actfield, disnum, actintra,
                       sdyn->step, 1, ZERO);
           out_gid_sol("accelerations", actfield, disnum, actintra,
                       sdyn->step, 2, ZERO);
@@ -1131,7 +1132,7 @@ void tsi_st_fehlbg(INT disnum_s,
       {
         if (ioflags.struct_stress == 1)
         {
-          out_gid_sol("stress", actfield, disnum, actintra, 
+          out_gid_sol("stress", actfield, disnum, actintra,
                       sdyn->step, 0, ZERO);
         }
       }
@@ -1165,7 +1166,7 @@ void tsi_st_fehlbg(INT disnum_s,
                                  3            , work        ,
                                  &intforce_a,
                                  &dirich_a,
-                                 &container);   /* contains variables 
+                                 &container);   /* contains variables
                                                  * defined in container.h */
 #endif
     }
@@ -1182,7 +1183,7 @@ void tsi_st_fehlbg(INT disnum_s,
       fprintf(allfiles.out_err,
               "STEP=%6d | NSTEP=%6d | TIME=%-14.8E | DT=%-14.8E | "
               "ETOT=%-14.8E | EPOT=%-14.8E | EKIN=%-14.8E | EOUT=%-14.8E\n",
-              sdyn->step, sdyn->nstep, sdyn->time, sdyn->dt, 
+              sdyn->step, sdyn->nstep, sdyn->time, sdyn->dt,
               dynvar.etot, dynvar.epot, dynvar.ekin, dynvar.eout);
       fflush(allfiles.out_err);
     }
@@ -1191,7 +1192,7 @@ void tsi_st_fehlbg(INT disnum_s,
   /*--------------------------------------------------------------------*/
   /* measure time for this step */
   t1 = ds_cputime();
-  fprintf(allfiles.out_err, "TIME for step %d is %f sec\n", 
+  fprintf(allfiles.out_err, "TIME for step %d is %f sec\n",
           sdyn->step, t1-t0);
 
   /*--------------------------------------------------------------------*/
@@ -1222,7 +1223,7 @@ void tsi_st_fehlbg(INT disnum_s,
   {
     /* a word to the user */
     printf("-------------------------------------------------------------"
-           "-----------\n"); 
+           "-----------\n");
     printf("End: TSI structural time integration with Fehlberg4\n");
     printf("============================================================="
            "===========\n");
@@ -1241,3 +1242,4 @@ void tsi_st_fehlbg(INT disnum_s,
 #endif
   return;
 } /* end of dyn_nln_stru_expl */
+#endif

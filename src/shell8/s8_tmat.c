@@ -13,6 +13,7 @@ Maintainer: Michael Gee
 #ifdef D_SHELL8
 #include "../headers/standardtypes.h"
 #include "shell8.h"
+#ifndef CCADISCRET
 /*----------------------------------------------------------------------*
  | call material laws                                     m.gee 6/01    |
  *----------------------------------------------------------------------*/
@@ -101,7 +102,7 @@ dstrc_exit();
 return;
 } /* end of s8_tmat */
 
-
+#endif
 
 /*----------------------------------------------------------------------*
  | get density out of material law                        m.gee 2/02    |

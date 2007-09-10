@@ -9,9 +9,10 @@ Maintainer: Andrea Hund
             0711 - 685-6122
 </pre>
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_INTERF
 
-/*! 
+/*!
 \addtogroup INTERF
 *//*! @{ (documentation module open)*/
 
@@ -27,8 +28,8 @@ void ifintg(ELEMENT       *ele,
 /*----------------------------------------------------------------------*
 | if_static_ke.c                                               ah 05/03  |
 *-----------------------------------------------------------------------*/
-void ifstatic_ke(ELEMENT       *ele, 
-                 INTERF_DATA   *data, 
+void ifstatic_ke(ELEMENT       *ele,
+                 INTERF_DATA   *data,
                  MATERIAL      *mat,
                  ARRAY         *estif_global,
                  ARRAY         *emass_global,
@@ -47,7 +48,7 @@ void if_bop(DIS_TYP    typ,
 | if_mat.c                                                    ah 05/03  |
 *-----------------------------------------------------------------------*/
 void if_mat(ELEMENT   *ele,        /* actual element (macro)               */
-            MATERIAL  *mat,        /* actual material                      */ 
+            MATERIAL  *mat,        /* actual material                      */
             DOUBLE   **bop,        /* B-operator                           */
             DOUBLE   **D,          /* material tangent                     */
             DOUBLE    *T,          /* stresses                             */
@@ -61,17 +62,17 @@ void if_mat(ELEMENT   *ele,        /* actual element (macro)               */
 /*----------------------------------------------------------------------*
 | if_cal_deltau.c                                             ah 05/03  |
 *-----------------------------------------------------------------------*/
-void if_jumpu(ELEMENT  *ele, 
+void if_jumpu(ELEMENT  *ele,
               DOUBLE  **bop,
               DOUBLE   *disjump,
-              DOUBLE   *deltadisjump); 
+              DOUBLE   *deltadisjump);
 /*----------------------------------------------------------------------*
 | if_stiff_fint.c                                             ah 05/03  |
 *-----------------------------------------------------------------------*/
 void if_ke(INT       iel,
            INT       flag,
-           DOUBLE  **stiff, 
-           DOUBLE  **bop, 
+           DOUBLE  **stiff,
+           DOUBLE  **bop,
            DOUBLE  **Q,
            DOUBLE    fac);
 /*----------------------------------------------------------------------*
@@ -85,21 +86,21 @@ void if_fint(INT      iel,
 /*----------------------------------------------------------------------*
 | if_stress.c                                                 ah 05/03  |
 *-----------------------------------------------------------------------*/
-void if_stress(ELEMENT       *ele, 
-               INTERF_DATA   *data, 
+void if_stress(ELEMENT       *ele,
+               INTERF_DATA   *data,
                MATERIAL      *mat,
                INT            init);
 /*----------------------------------------------------------------------*
 | if_mat_dyn.c                                                 ah 05/03  |
 *-----------------------------------------------------------------------*/
 void if_mat_dyn(ELEMENT   *ele,
-                MATERIAL  *mat, 
+                MATERIAL  *mat,
                 DOUBLE   **bop,
                 DOUBLE   **D,
                 DOUBLE    *T,
                 INT        ip,
                 DOUBLE     istore,
-                DOUBLE     newval); 
+                DOUBLE     newval);
 /*----------------------------------------------------------------------*
 | if_service.c                                                 ah 05/03  |
 *-----------------------------------------------------------------------*/
@@ -123,34 +124,34 @@ void if_funcderiv(DOUBLE  e1,
 void if_permstiff(DOUBLE **estif,
                   DOUBLE **Kdd,
                   INT      iele,
-                  INT      ield);        
+                  INT      ield);
 /*----------------------------------------------------------------------*
 | if_service.c                                                 ah 05/03  |
 *-----------------------------------------------------------------------*/
 void if_permforce(DOUBLE    *force,   /* "mixed" element int. force   */
                   DOUBLE    *fintd,    /* 2.part int. force           */
                    INT       iele,    /* num.of equiv.strain nodes   */
-                   INT       ield);   /* num of displacement nodes  */      
+                   INT       ield);   /* num of displacement nodes  */
 /*----------------------------------------------------------------------*
 | if_restart.c                                                 ah 06/04  |
 *-----------------------------------------------------------------------*/
-void if_write_restart(ELEMENT   *actele, 
+void if_write_restart(ELEMENT   *actele,
                       MATERIAL  *mat,
-                      INT        nhandle, 
-                      long int  *handles, 
+                      INT        nhandle,
+                      long int  *handles,
                       INT        init);
 /*----------------------------------------------------------------------*
 | if_restart.c                                                 ah 06/04  |
 *-----------------------------------------------------------------------*/
-void if_read_restart(ELEMENT  *actele, 
-                     MATERIAL *mat, 
-                     long int *handles, 
+void if_read_restart(ELEMENT  *actele,
+                     MATERIAL *mat,
+                     long int *handles,
                      INT       init);
 /*----------------------------------------------------------------------*
 | if_mat.c                                                    ah 09/04  |
 *-----------------------------------------------------------------------*/
 void if_mat_thermodyn(ELEMENT   *ele,        /* actual element (macro)               */
-            MATERIAL  *mat,        /* actual material                      */ 
+            MATERIAL  *mat,        /* actual material                      */
             DOUBLE   **bop,        /* B-operator                           */
             DOUBLE   **D,          /* material tangent                     */
             DOUBLE    *T,          /* stresses                             */
@@ -165,3 +166,4 @@ void if_mat_thermodyn(ELEMENT   *ele,        /* actual element (macro)          
 /*! @} (documentation module close)*/
 
 #endif /*D_INTERF*/
+#endif

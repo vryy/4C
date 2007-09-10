@@ -10,6 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 /*!----------------------------------------------------------------------
 \brief file pointers
@@ -421,3 +422,4 @@ dstrc_exit();
 #endif
 return;
 } /* end of inp_monitor */
+#endif

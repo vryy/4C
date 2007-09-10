@@ -2,7 +2,7 @@
 /*!
 \file
 \brief Metrics of THERM3 element, i.e. metric conversion between physical
-       and parameter space. 
+       and parameter space.
 
 <pre>
 Maintainer: Burkhard Bornemann
@@ -14,6 +14,7 @@ Maintainer: Burkhard Bornemann
 \author bborn
 \date 09/06
 */
+#ifndef CCADISCRET
 #ifdef D_THERM3
 
 /*----------------------------------------------------------------------*/
@@ -59,7 +60,7 @@ void th3_metr_jaco(ELEMENT *ele,
 #ifdef DEBUG
   dstrc_enter("th3_metr_jaco");
 #endif
-  
+
   /*--------------------------------------------------------------------*/
   /* initialise Jacobian to zero */
   for (i=0; i<NDIM_THERM3; i++)
@@ -149,7 +150,7 @@ void th3_metr_jaco(ELEMENT *ele,
 /*======================================================================*/
 /*!
 \brief Determine metric at Gauss point by reducing the Jacobian
-       matrix 
+       matrix
 
 \param ele     ELEMENT*     (i)  pointer to current element
 \param nelelod INT          (i)  number of element nodes
@@ -161,9 +162,9 @@ void th3_metr_jaco(ELEMENT *ele,
 \author bborn
 \date 09/06
 */
-void th3_metr_surf(ELEMENT *ele, 
-                   INT nelenod, 
-                   DOUBLE deriv[MAXNOD_THERM3][NDIM_THERM3], 
+void th3_metr_surf(ELEMENT *ele,
+                   INT nelenod,
+                   DOUBLE deriv[MAXNOD_THERM3][NDIM_THERM3],
                    DOUBLE sidredm[DIMSID_THERM3][NDIM_THERM3],
                    DOUBLE *metr)
 {
@@ -199,7 +200,7 @@ void th3_metr_surf(ELEMENT *ele,
    *             [ x_,r  x_,s ]|
    *     gamma = [ y_,r  y_,s ]|
    *             [ z_,r  z_,s ]|(r,s)
-   * The  gamma  tensor transforms locally (at (r,s)) parameter 
+   * The  gamma  tensor transforms locally (at (r,s)) parameter
    * to physical coordinates.
    * Here the transposed of  gamma  is determined:
    *                               [ x_,r  y_,r  z_,r ]|
@@ -208,7 +209,7 @@ void th3_metr_surf(ELEMENT *ele,
    *                  =   sidredm            J
    * with  sidredm  the side reduction matrix and  J  the Jacobian
    * matrix (xjm) defined in FE-fashion (see th3_metr_jaco).
-   * sidredm  depends on the surface parameter space (r,s). 
+   * sidredm  depends on the surface parameter space (r,s).
    */
   /* set to zero */
   memset(gamt, 0, sizeof(gamt));
@@ -231,7 +232,7 @@ void th3_metr_surf(ELEMENT *ele,
    *      = [ x_,r^2 + y_,r^2 + z_,r^2   x_,r*x_,s + y_,r*y_,s + y_,r*y_,s ]
    *        [          sym               (x_,s)^2 + (y_,s)^2 + (z_,s)^2    ]
    */
-  /* Tensor  g  might be swapped, but swapping does not affect its 
+  /* Tensor  g  might be swapped, but swapping does not affect its
    * determinant,
    * instead of [ m_00  m_01 ] swapped means [ m_11 m_10 ]
    *            [ m_10  m_11 ]               [ m_01 m_00 ]
@@ -284,9 +285,9 @@ void th3_metr_surf(ELEMENT *ele,
 \author bborn
 \date 09/06
 */
-void th3_metr_line(ELEMENT *ele, 
-                   INT nelenod, 
-                   DOUBLE deriv[MAXNOD_THERM3][NDIM_THERM3], 
+void th3_metr_line(ELEMENT *ele,
+                   INT nelenod,
+                   DOUBLE deriv[MAXNOD_THERM3][NDIM_THERM3],
                    DOUBLE linredv[NDIM_THERM3],
                    DOUBLE *metr)
 {
@@ -342,3 +343,4 @@ void th3_metr_line(ELEMENT *ele,
 #endif  /* end of #ifdef D_THERM3 */
 /*! @} (documentation module close)*/
 
+#endif

@@ -10,6 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FSI
 *//*! @{ (documentation module open)*/
@@ -500,3 +501,4 @@ static void fsi_omega_sg_force( FIELD *structfield, INT struct_disnum,
 #endif
 
 /*! @} (documentation module close)*/
+#endif

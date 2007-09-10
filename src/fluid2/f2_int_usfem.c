@@ -10,6 +10,7 @@ Maintainer: Christiane Foerster
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID2
 *//*! @{ (documentation module open)*/
@@ -908,7 +909,7 @@ case 3: /* tau for time dependent subscales --- a combination
         /* which_hk has no meaning here! */
 
    /* be careful with this definition --- it's just a try......  */
-    
+
    /*--- get proper constant mk ---*/
    switch(typ)
    {
@@ -929,7 +930,7 @@ case 3: /* tau for time dependent subscales --- a combination
    break;
    default: dserror("element type not implemented!");
    }
-   
+
    /* square root of area for element length calculation */
    /*--------------------- rewrite array of elemental coordinates ---*/
    for(i=0; i<iel; i++)
@@ -955,7 +956,7 @@ case 3: /* tau for time dependent subscales --- a combination
    break;
    default: dserror("element type not implemented!");
    }
-   
+
    /*---------------------------------------------------- get p-norm ---*/
    norm_p = sqrt(DSQR(velint[0]) + DSQR(velint[1]));
 
@@ -965,7 +966,7 @@ case 3: /* tau for time dependent subscales --- a combination
 
    fdyn->tau_old[0] = DSQR(hk) / (2 * visc/mk + (4.0 * visc/mk) * xi2);
    fdyn->tau_old[2] = norm_p * hk * 0.5 * xi2;
-   
+
    fdyn->tau[0] = DSQR(hk) / (2 * visc/mk + (4.0 * visc/mk) * xi2);
    fdyn->tau[2] = norm_p * hk * 0.5 * xi2;
 break;
@@ -1041,7 +1042,7 @@ void f2_int_kim_moin_err(
   FLUID_DYNAMIC   *fdyn;
   FLUID_DATA      *data;
   NODE     *actnode;
-  
+
 
 #ifdef DEBUG
   dstrc_enter("f2_int_kim_moin_err");
@@ -1205,3 +1206,4 @@ void f2_int_kim_moin_err(
 /*! @} (documentation module close)*/
 
 
+#endif

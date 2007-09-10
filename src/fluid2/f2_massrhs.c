@@ -10,6 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID2
 *//*! @{ (documentation module open)*/
@@ -38,8 +39,8 @@ extern struct _GENPROB     genprob;
 <pre>                                                        chfoe 09/03
                                     free surface included    chfoe 02/05
 
-This routine performs the multiplication emass*(hist+deadload) and writes 
-its result on the elemental iteration force vector. This replaces the 
+This routine performs the multiplication emass*(hist+deadload) and writes
+its result on the elemental iteration force vector. This replaces the
 time right hand side of WAW.
 
 </pre>
@@ -57,10 +58,10 @@ time right hand side of WAW.
              called by: f2_calele()
 
 ------------------------------------------------------------------------*/
-void f2_massrhs(ELEMENT *ele, 
-                DOUBLE **emass, 
-                DOUBLE **hist,  
-                DOUBLE  *edeadng, 
+void f2_massrhs(ELEMENT *ele,
+                DOUBLE **emass,
+                DOUBLE **hist,
+                DOUBLE  *edeadng,
                 DOUBLE  *eiforce,
                 INT     *hasext)
 {
@@ -145,3 +146,4 @@ return;
 
 #endif
 /*! @} (documentation module close)*/
+#endif

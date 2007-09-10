@@ -7,6 +7,7 @@ Maintainer: Ulrich Küttler
 </pre>
 */
 
+#ifndef CCADISCRET
 for (vi=0; vi<8; ++vi)
 {
 #ifdef FLUID3_IS_TERM1
@@ -247,3 +248,4 @@ for (vi=8; vi<iel; ++vi)
 #endif
 
 }
+#endif

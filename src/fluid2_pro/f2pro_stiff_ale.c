@@ -1,3 +1,4 @@
+#ifndef CCADISCRET
 for (vi=0; vi<iel; ++vi)
 {
   for (ui=0; ui<iel; ++ui)
@@ -80,3 +81,4 @@ for (vi=0; vi<iel; ++vi)
 
   }
 }
+#endif

@@ -15,6 +15,7 @@ Maintainer: Malte Neumann
  */
 /*-----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 /*!
 \addtogroup Fluid3_fast
 *//*! @{ (documentation module open)*/
@@ -542,7 +543,7 @@ void f3fstress(
 <pre>                                                        chfoe 05/05
 
 This routine controls the integration of the elemental residual for fast
-elements which is required to compute consistent nodal forces. 
+elements which is required to compute consistent nodal forces.
 These are used to be FSI coupling forces
 
 </pre>
@@ -763,3 +764,4 @@ void f3f_calerror(
 
 /*! @} (documentation module close)*/
 
+#endif

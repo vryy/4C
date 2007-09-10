@@ -10,6 +10,7 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 /*----------------------------------------------------------------------*
  |  routine to find the node and dof to control in field  m.gee 11/01   |
@@ -140,3 +141,4 @@ dstrc_exit();
 #endif
 return;
 } /* get_stepsize */
+#endif

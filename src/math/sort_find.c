@@ -10,6 +10,7 @@ Maintainer: Malte Neumann
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 
 /*----------------------------------------------------------------------*
@@ -478,3 +479,4 @@ INT find_index(INT key, INT list[], INT length)
   return -1;
 
 } /* end of find_index */
+#endif

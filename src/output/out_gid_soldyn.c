@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 
 ------------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "gid.h"
 #include "../shell8/shell8.h"
@@ -798,5 +799,5 @@ return;
 #endif /* NO_TEXT_OUTPUT */
 } /* end of out_gid_soldyn */
 
-
+#endif
 

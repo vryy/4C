@@ -10,6 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #ifdef VISUAL3_PACKAGE
 /*----------------------------------------------------------------------*
@@ -1326,4 +1327,9 @@ dserror("VISUAL3 PACKAGE not compiled into programm\n");
 return;
 }
 
+#endif
+#else
+void v3_init() {}
+void v3_init_() {}
+void v3_init__() {}
 #endif

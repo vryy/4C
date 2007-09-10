@@ -10,6 +10,7 @@ Maintainer: Malte Neumann
 </pre>
 
 ---------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -154,7 +155,7 @@ for (i=0; i<par.numfld; i++)
        MPI_Attr_put(par.intra[i].MPI_INTRA_COMM, MPI_TAG_UB, (void *) iptr);
      }
    }
-#endif   
+#endif
 /*-----------------------------------------------------------------------*/
 }/* end of loop over fields */
 /*--------------------------- free the MPI_WORLD_GROUP, no longer needed */
@@ -173,3 +174,4 @@ return;
 } /* end of create_communicators */
 
 /*! @} (documentation module close)*/
+#endif

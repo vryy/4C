@@ -11,6 +11,7 @@ Maintainer: Andrea Hund
 </pre>
 
 *-----------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef GEMM
 #include "../headers/standardtypes.h"
 #include "wall1.h"
@@ -148,3 +149,4 @@ return;
 }/* end of w1_kinetic_energy */
 #endif
 /*! @} (documentation module close)*/
+#endif

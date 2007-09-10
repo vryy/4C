@@ -15,6 +15,7 @@ Maintainer: Burkhard Bornemann
 */
 
 /*----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_SOLID3
 
 /*----------------------------------------------------------------------*/
@@ -49,7 +50,7 @@ extern FIELD *field;
 \brief Set required Gauss point sets for Gid output file
 
 \param   *actele        ELEMENT     (i)   pointer to current element
-\param   *actgid        GIDSET      (o)   Gid data (incl. Gauss point 
+\param   *actgid        GIDSET      (o)   Gid data (incl. Gauss point
                                           sets
 
 \return void
@@ -60,7 +61,7 @@ extern FIELD *field;
 void so3_gid_init(ELEMENT *actele,
                   GIDSET *actgid)
 {
-  
+
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_enter("so3_gid_init");
@@ -270,7 +271,7 @@ void so3_gid_gpset(INT jdis,
   /* hexahedron element with 8 nodes and 2x2x2 Gauss points */
   if (actgid->is_solid3_h8_222)
   {
-    so3_gid_gpset_int(actgid, jdis, "2x2x2", 
+    so3_gid_gpset_int(actgid, jdis, "2x2x2",
                       actgid->solid3_h8_222_name,
                       "Hexahedra", 8, out);
   }
@@ -278,7 +279,7 @@ void so3_gid_gpset(INT jdis,
   /* hexahedron element with 20 nodes and 3x3x3 Gauss points */
   if (actgid->is_solid3_h20_333)
   {
-    so3_gid_gpset_int(actgid, jdis, "3x3x3", 
+    so3_gid_gpset_int(actgid, jdis, "3x3x3",
                       actgid->solid3_h20_333_name,
                       "Hexahedra", 27, out);
   }
@@ -286,7 +287,7 @@ void so3_gid_gpset(INT jdis,
   /* hexahedron element with 27 nodes and 3x3x3 Gauss points */
   if (actgid->is_solid3_h27_333)
   {
-    so3_gid_gpset_int(actgid, jdis, "3x3x3", 
+    so3_gid_gpset_int(actgid, jdis, "3x3x3",
                       actgid->solid3_h27_333_name,
                       "Hexahedra", 27, out);
   }
@@ -306,7 +307,7 @@ void so3_gid_gpset(INT jdis,
 \param   *actgid        GIDSET      (i)   Gid data (incl. GP sets)
 \param    jdis          INT         (i)   discretisation index
 \param   *gpname        CHAR        (i)   string like "2x2x2" for GP
-\param   *gidname       CHAR        (i)   
+\param   *gidname       CHAR        (i)
 \param   *volname       CHAR        (i)   "Hexahedra"/"Tetrahedra"
 \param    ngauss        INT         (i)   number of Gauss points in domain
 \param   *out           FILE        (o)   Gid output file
@@ -659,13 +660,13 @@ void so3_gid_stress(CHAR resstring[],
         gperm             = &(gperm_h_222[0]);
         ngauss            = 8;
 #ifdef GIDOUTSTRAIN_SOLID3
-        so3_gid_stress_gp(actfield, disnum, actele, actgid, 
+        so3_gid_stress_gp(actfield, disnum, actele, actgid,
                           so3_stress_gprst, resultname, step,
                           resulttype, resultplace, gpset,
                           ncomponent, componentnames,
                           nelenod, gperm, ngauss, out);
 #else
-        so3_gid_stress_gp(actfield, disnum, actele, actgid, 
+        so3_gid_stress_gp(actfield, disnum, actele, actgid,
                           so3_stress_gpxyz, resultname, step,
                           resulttype, resultplace, gpset,
                           ncomponent, componentnames,
@@ -796,7 +797,7 @@ void so3_gid_stress(CHAR resstring[],
         gperm             = &(gperm_h_333[0]);
         ngauss            = 27;
         /* print */
-        so3_gid_stress_gp(actfield, disnum, actele, actgid, 
+        so3_gid_stress_gp(actfield, disnum, actele, actgid,
                           so3_stress_gpxyz, resultname, step,
                           resulttype, resultplace, gpset,
                           ncomponent, componentnames,
@@ -846,7 +847,7 @@ void so3_gid_stress(CHAR resstring[],
         gperm             = &(gperm_h_333[0]);
         ngauss            = 27;
         /* print */
-        so3_gid_stress_gp(actfield, disnum, actele, actgid, 
+        so3_gid_stress_gp(actfield, disnum, actele, actgid,
                           so3_stress_gpxyz, resultname, step,
                           resulttype, resultplace, gpset,
                           ncomponent, componentnames,
@@ -875,7 +876,7 @@ void so3_gid_stress(CHAR resstring[],
 \param   disnum        INT            (i)   discretisation index
 \param   actgid        GIDSET*        (i)   Gid data
 \param   stresstype    SO3_STRESSOUT* (i)   stress type
-\param   resultname    CHAR*          (i)   
+\param   resultname    CHAR*          (i)
 \param   step          INT            (i)   curr. load/time step
 \param   resulttype    CHAR*          (i)
 \param   resultplace   CHAR*          (i)
@@ -912,7 +913,7 @@ void so3_gid_stress_gp(FIELD *actfield,
   INT iele;
   INT igp, jgp;
   DOUBLE **stress;
-  
+
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -1078,7 +1079,7 @@ void so3_gid_strain(CHAR resstring[],
         nelenod           = 8;
         gperm             = &(gperm_h_222[0]);
         ngauss            = 8;
-        so3_gid_strain_gp(actfield, disnum, actele, actgid, 
+        so3_gid_strain_gp(actfield, disnum, actele, actgid,
                           so3_strain_gpxyz, resultname, step,
                           resulttype, resultplace, gpset,
                           ncomponent, componentnames,
@@ -1116,7 +1117,7 @@ void so3_gid_strain(CHAR resstring[],
         gperm             = &(gperm_h_333[0]);
         ngauss            = 27;
         /* print */
-        so3_gid_strain_gp(actfield, disnum, actele, actgid, 
+        so3_gid_strain_gp(actfield, disnum, actele, actgid,
                           so3_strain_gpxyz, resultname, step,
                           resulttype, resultplace, gpset,
                           ncomponent, componentnames,
@@ -1154,7 +1155,7 @@ void so3_gid_strain(CHAR resstring[],
         gperm             = &(gperm_h_333[0]);
         ngauss            = 27;
         /* print */
-        so3_gid_strain_gp(actfield, disnum, actele, actgid, 
+        so3_gid_strain_gp(actfield, disnum, actele, actgid,
                           so3_strain_gpxyz, resultname, step,
                           resulttype, resultplace, gpset,
                           ncomponent, componentnames,
@@ -1183,7 +1184,7 @@ void so3_gid_strain(CHAR resstring[],
 \param   disnum        INT            (i)   discretisation index
 \param   actgid        GIDSET*        (i)   Gid data
 \param   straintype    SO3_STRAINOUT* (i)   strain type
-\param   resultname    CHAR*          (i)   
+\param   resultname    CHAR*          (i)
 \param   step          INT            (i)   curr. load/time step
 \param   resulttype    CHAR*          (i)
 \param   resultplace   CHAR*          (i)
@@ -1220,7 +1221,7 @@ void so3_gid_strain_gp(FIELD* actfield,
   INT iele;
   INT igp, jgp;
   DOUBLE** strain;
-  
+
 
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -1301,3 +1302,4 @@ void so3_gid_strain_gp(FIELD* actfield,
 
 #endif /* end of #ifdef D_SOLID3 */
 /*! @} (documentation module close)*/
+#endif

@@ -101,6 +101,78 @@ and the type is in partition.h
 
 
 
+/*-----------------------------------------------------------------------*/
+/*!
+  \brief read discretization data
+
+  Read how many discretization the current field will have.
+
+  This used to be in the C part. But we do not include that anymore.
+
+  \param actfield    *FIELD  (i) the currenct field
+
+  \author mn
+  \date   08/04
+ */
+/*-----------------------------------------------------------------------*/
+void inpdis(FIELD *actfield)
+{
+  INT  ierr=0;
+
+  /* set default values */
+  actfield->ndis      = 1;
+  actfield->subdivide = 0;
+
+  /* read discretisation */
+  if (frfind("--DISCRETISATION")!=0)
+  {
+    frread();
+    switch(actfield->fieldtyp)
+    {
+    case fluid:
+      while(strncmp(allfiles.actplace,"------",6)!=0)
+      {
+        frint("NUMFLUIDDIS", &(actfield->ndis),&ierr);
+        frread();
+      }
+      break;
+    case structure:
+      while(strncmp(allfiles.actplace,"------",6)!=0)
+      {
+        frint("NUMSTRUCDIS", &(actfield->ndis),&ierr);
+        frread();
+      }
+      break;
+    case ale:
+      while(strncmp(allfiles.actplace,"------",6)!=0)
+      {
+        frint("NUMALEDIS", &(actfield->ndis),&ierr);
+        frread();
+      }
+      break;
+#ifdef D_TSI
+    case thermal:
+      while (strncmp(allfiles.actplace, "------", 6) != 0)
+      {
+        frint("NUMTHERMDIS", &(actfield->ndis), &ierr);
+        frread();
+      }
+      break;
+#endif
+    default:
+      dserror("Unknown fieldtype");
+      break;
+    }
+
+    frrewind();
+    if (actfield->ndis > MAXDIS)
+      dserror("Too many discretizations: Increase the value of MAXDIS");
+  }
+
+  return;
+}
+
+
 /*----------------------------------------------------------------------*
   | input of control, element and load information         m.gee 10/06  |
   | This version of the routine uses the new discretization subsystem   |

@@ -10,6 +10,7 @@ Maintainer: Frank Huber
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_BEAM3
 #include "../headers/standardtypes.h"
 #include "beam3.h"
@@ -542,3 +543,4 @@ return;
 /*----------------------------------------------------------------------*/
 #endif
 /*! @} (documentation module close)*/
+#endif

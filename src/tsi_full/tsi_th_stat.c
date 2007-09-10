@@ -15,6 +15,7 @@ Maintainer: Burkhard Bornemann
 */
 /*----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 
 /*----------------------------------------------------------------------*/
 #ifdef D_TSI
@@ -47,7 +48,7 @@ extern FILES allfiles;
 /*!
 \brief General problem data
 
-struct _GENPROB       genprob; defined in global_control.c 
+struct _GENPROB       genprob; defined in global_control.c
 
 \author bborn
 \date 03/06
@@ -185,7 +186,7 @@ DOUBLE acttime;
 
 /*----------------------------------------------------------------------*/
 /*!
-\brief 
+\brief
 
 \author bborn
 \date 03/06
@@ -202,7 +203,7 @@ void tsi_th_stat(INT disnum_s,
   INT numeq;  /* number of equations on this proc */
   INT numeq_total;  /* total number of equations on all procs */
   INT init;  /* init flag for solver */
-  INT actsysarray;  /* active sparse system matrix in 
+  INT actsysarray;  /* active sparse system matrix in
                      * actsolv->sysarray[] */
   INT disnum;  /* index (number) of discretisation */
   INT iplace;
@@ -212,13 +213,13 @@ void tsi_th_stat(INT disnum_s,
   ARRAY dirich_a;
   DOUBLE* dirich;
 
-  THERM_DYNAMIC* actdyn = alldyn[numtf].tdyn;  /* pointer to dynamic control 
+  THERM_DYNAMIC* actdyn = alldyn[numtf].tdyn;  /* pointer to dynamic control
                                                        * --- allright, static control */
   TSI_DYNAMIC* tsidyn = alldyn[genprob.numfld].tsidyn;
 
   SOLVAR* actsolv = &(solv[numtf]);  /* pointer to field SOLVAR */
-  
-  
+
+
   INTRA* actintra;  /* pointer to the fields intra-communicator structure */
   CALC_ACTION *action = &(calc_action[numtf]);  /* pointer to the structures cal_action enum */
 
@@ -312,9 +313,9 @@ void tsi_th_stat(INT disnum_s,
   /* number of rhs and solution vectors */
   actsolv->nrhs = 2;  /* WHY 2? */
   actsolv->nsol = 2;  /* WHY 2? */
-  solserv_create_vec(&(actsolv->rhs), actsolv->nrhs, 
+  solserv_create_vec(&(actsolv->rhs), actsolv->nrhs,
                      numeq_total, numeq, "DV");
-  solserv_create_vec(&(actsolv->sol), actsolv->nsol, 
+  solserv_create_vec(&(actsolv->sol), actsolv->nsol,
                      numeq_total, numeq, "DV");
   dirich = amdef("dirich", &dirich_a, numeq_total, 1, "DV");
   amzero(&dirich_a);
@@ -385,7 +386,7 @@ void tsi_th_stat(INT disnum_s,
   /*   } */
 
   /*--------------------------------------------------------------------*/
-  /* put a zero to the place ipos->num=12 in node->sol to init the 
+  /* put a zero to the place ipos->num=12 in node->sol to init the
    * velocities and accels of prescribed displacements */
   /* HINT: This actually redefines/reallocates/enlarges the sol
    *       array of each structure node to dimension 12x2 (or 12x3)
@@ -415,10 +416,10 @@ void tsi_th_stat(INT disnum_s,
 
   /*--------------------------------------------------------------------*/
   /* put the scaled prescribed temperatures to the nodes
-   * in field sol (1st 0) at place 0 (2nd 0) together with 
+   * in field sol (1st 0) at place 0 (2nd 0) together with
    * free temperatures */
   /* HINT: time curve is called indirectly */
-  solserv_putdirich_to_dof(actfield, disnum, 
+  solserv_putdirich_to_dof(actfield, disnum,
                            node_array_sol, isol->temdn, timcur);
 
   /*--------------------------------------------------------------------*/
@@ -445,7 +446,7 @@ void tsi_th_stat(INT disnum_s,
   assemble_vec(actintra, &(actsolv->sysarray_typ[actsysarray]),
                &(actsolv->sysarray[actsysarray]),
                &(actsolv->rhs[actsysarray]), dirich, rhsfact);
-  
+
   /*--------------------------------------------------------------------*/
   /* call solver */
   init = 0;
@@ -458,10 +459,10 @@ void tsi_th_stat(INT disnum_s,
 
   /*--------------------------------------------------------------------*/
   /* put the scaled prescribed temperatures to the nodes
-   * in field sol (node_array_sol==0) at place isol->tem==0 together with 
+   * in field sol (node_array_sol==0) at place isol->tem==0 together with
    * free temperatures */
   /* HINT: time curve is called indirectly */
-  solserv_putdirich_to_dof(actfield, disnum, 
+  solserv_putdirich_to_dof(actfield, disnum,
                            node_array_sol, isol->temn, timcur);
 
   /*--------------------------------------------------------------------*/
@@ -502,7 +503,7 @@ void tsi_th_stat(INT disnum_s,
                   * allocated like hflux_gp[1][3*NUMHFLX][MAXGAUSS]
                   * and iplace==0 is used to access the first (left-most)
                   * index */
-    /* ATTENTION : iplace is also used for 
+    /* ATTENTION : iplace is also used for
      *             actnode->sol.a.da[iplace][nodeindex]
      *             while printing the temperature */
     out_sol(actfield, actpart, disnum, actintra, timstp, isol->temn);
@@ -520,11 +521,11 @@ void tsi_th_stat(INT disnum_s,
   /*--------------------------------------------------------------------*/
   /* printout results to Gid */
   if ( (ioflags.output_gid == 1)
-       && (ioflags.therm_temper == 1) 
+       && (ioflags.therm_temper == 1)
        && (par.myrank == 0) )
   {
     iplace = 0;
-    out_gid_sol("temperature", actfield, disnum, actintra, 
+    out_gid_sol("temperature", actfield, disnum, actintra,
                 timstp, iplace, timcur);
     /* out_gid_domains(actfield, disnum); */
   }
@@ -536,7 +537,7 @@ void tsi_th_stat(INT disnum_s,
        && (par.myrank == 0) )
   {
     iplace = 0;
-    out_gid_sol("heatflux", actfield, disnum, actintra, 
+    out_gid_sol("heatflux", actfield, disnum, actintra,
                 timstp, iplace, timcur);
   }
 
@@ -572,3 +573,4 @@ void tsi_th_stat(INT disnum_s,
 
 /*----------------------------------------------------------------------*/
 #endif  /* end of #ifdef D_TSI */
+#endif

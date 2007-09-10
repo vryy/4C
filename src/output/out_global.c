@@ -49,6 +49,7 @@ Maintainer: Malte Neumann
  | defined in out_global.c                                              |
  *----------------------------------------------------------------------*/
 struct _IO_FLAGS        ioflags;
+#ifndef CCADISCRET
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | pointer to allocate dynamic variables if needed                      |
@@ -1663,3 +1664,4 @@ dstrc_exit();
 return;
 #endif /* NO_TEXT_OUTPUT */
 } /* end of out_fluidmtu */
+#endif

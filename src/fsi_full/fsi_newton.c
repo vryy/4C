@@ -8,6 +8,7 @@ Maintainer: Markus Schmidberger
 <\pre>
 --------------------------------------------------*/
 
+#ifndef CCADISCRET
 
 #ifdef D_FSI
 #ifdef FSI_NEWTONCOUPLING
@@ -392,5 +393,6 @@ void fsi_newton_final(
 }
 
 
+#endif
 #endif
 #endif

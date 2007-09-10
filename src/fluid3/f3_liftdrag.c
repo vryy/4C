@@ -10,6 +10,7 @@ Maintainer: Malte Neumann
   </pre>
 
 ---------------------------------------------------------------------*/
+#ifndef CCADISCRET
 
 /*!
   \addtogroup FLUID3
@@ -797,3 +798,4 @@ void f3_jaco2(
 #endif
 /*! @} (documentation module close)*/
 
+#endif

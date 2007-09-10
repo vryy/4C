@@ -10,6 +10,7 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 #include "../io/io.h"
@@ -401,7 +402,7 @@ sdyn->time = 0.0;
  * It's important to do this only after all the node arrays are set
  * up because their sizes are used to allocate internal memory. */
 init_bin_out_field(&out_context,
-                   &(actsolv->sysarray_typ[stiff_array]), 
+                   &(actsolv->sysarray_typ[stiff_array]),
                    &(actsolv->sysarray[stiff_array]),
                    actfield, actpart, actintra, 0);
 #endif
@@ -495,7 +496,7 @@ if (restart)
                              3            , work        ,
                              &intforce_a,
                              &dirich_a,
-                             &container /* contains variables defined 
+                             &container /* contains variables defined
                                            in container.h */
                              );
 #endif
@@ -761,3 +762,4 @@ dstrc_exit();
 #endif
 return;
 } /* end of dyn_nln_stru_expl */
+#endif

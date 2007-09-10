@@ -19,6 +19,7 @@ Maintainer: Burkhard Bornemann
 \date 03/07
 */
 
+#ifndef CCADISCRET
 /*----------------------------------------------------------------------*/
 /* header files */
 #include "../headers/standardtypes.h"
@@ -155,3 +156,4 @@ INT tsi_fehlbg4_stages()
 }
 
 
+#endif

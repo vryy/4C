@@ -10,6 +10,7 @@ Maintainer: Frank Huber
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_BEAM3
 
 /*!
@@ -1163,3 +1164,4 @@ void b3_read_restart(ELEMENT *actele, INT nhandle, long int *handles);
 #endif
 /*! @} (documentation module close)*/
 
+#endif

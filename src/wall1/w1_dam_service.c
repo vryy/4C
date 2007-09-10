@@ -1,3 +1,4 @@
+#ifndef CCADISCRET
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
@@ -558,4 +559,5 @@ dstrc_exit();
 #endif
 return;
 } /* end of w1_cond */
+#endif
 #endif

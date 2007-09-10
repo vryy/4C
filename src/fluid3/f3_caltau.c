@@ -10,10 +10,11 @@ Maintainer: Christiane Foerster
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
-\addtogroup FLUID3 
+#ifndef CCADISCRET
+/*!
+\addtogroup FLUID3
 *//*! @{ (documentation module open)*/
-#ifdef D_FLUID3 
+#ifdef D_FLUID3
 #include "../headers/standardtypes.h"
 #include "fluid3_prototypes.h"
 #include "fluid3.h"
@@ -23,7 +24,7 @@ Maintainer: Christiane Foerster
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -41,9 +42,9 @@ extern struct _MATERIAL  *mat;
 \brief routine to calculate element size and stabilisation parameter
 
 <pre>                                                        chfoe 10/04
-This routine evaluates the stabilisation parameter for USFEM stabilised 
-fluid elements in 3D. Different ways of calculating the tau are 
-implemented. 
+This routine evaluates the stabilisation parameter for USFEM stabilised
+fluid elements in 3D. Different ways of calculating the tau are
+implemented.
 Here everything is done once at the element center (center of its local
 coordinates) and used for the entire element.
 </pre>
@@ -54,19 +55,19 @@ coordinates) and used for the entire element.
 \param **deriv2  DOUBLE 	       (-)   2nd deriv. of sh. funcs
 \param **xjm     DOUBLE 	       (-)   jacobian matrix
 \param  *visc     DOUBLE 	       (-)   viscosity
-\return void             
+\return void
 
 ------------------------------------------------------------------------*/
-void f3_caltau(			     
-	       ELEMENT         *ele, 
+void f3_caltau(
+	       ELEMENT         *ele,
 	       DOUBLE         **xyze,
-	       DOUBLE          *funct,  
-	       DOUBLE         **deriv,  
-	       DOUBLE         **derxy,              
-	       DOUBLE         **xjm,  
+	       DOUBLE          *funct,
+	       DOUBLE         **deriv,
+	       DOUBLE         **derxy,
+	       DOUBLE         **xjm,
 	       DOUBLE         **evelng,
                DOUBLE         **wa1,
-               DOUBLE           visc  
+               DOUBLE           visc
               )
 {
 
@@ -85,9 +86,9 @@ FLUID_DYNAMIC *fdyn;
 DIS_TYP        typ;
 FLUID_DATA    *data;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3_caltau");
-#endif		
+#endif
 
 /*------------------------------------------------------- initialise ---*/
 fdyn    = alldyn[genprob.numff].fdyn;
@@ -199,11 +200,12 @@ fdyn->tau[1] = DSQR(hk) / (DSQR(hk) * xi1 + (4.0*timefac * visc/mk) * xi2);
 fdyn->tau[2] = norm_p * hk * 0.5 * xi2;
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of f3_caltau */
 
+#endif
 #endif

@@ -11,6 +11,7 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID2
 *//*! @{ (documentation module open)*/
@@ -36,7 +37,7 @@ extern struct _GENPROB     genprob;
 
 
 /*!---------------------------------------------------------------------
-\brief evaluate right hand side for fluid 
+\brief evaluate right hand side for fluid
 
 <pre>                                                        gammi 11/06
 
@@ -55,15 +56,15 @@ for further comments see comment lines within code.
 
 
 </pre>
-\param  DOUBLE        (o)  
-\param  DOUBLE        (i)  
-\param  DOUBLE        (i)  
-\param  DOUBLE        (i)  
-\param  DOUBLE        (i)  
-\param  DOUBLE        (i)  
-\param  DOUBLE        (i)  
-\param  INT           (i)  
-                            
+\param  DOUBLE        (o)
+\param  DOUBLE        (i)
+\param  DOUBLE        (i)
+\param  DOUBLE        (i)
+\param  DOUBLE        (i)
+\param  DOUBLE        (i)
+\param  DOUBLE        (i)
+\param  INT           (i)
+
 
 
 \return void
@@ -83,7 +84,7 @@ void f2_calgalrhs_gen_alpha_tds(
                 DOUBLE **vderxy2,
 		DOUBLE   fac,
 		DOUBLE   visc,
-		int      iel     
+		int      iel
               )
 {
  int       ri;       /* counter for row index                       */
@@ -91,34 +92,34 @@ void f2_calgalrhs_gen_alpha_tds(
 #ifdef DEBUG
  dstrc_enter("f2_calgalrhs_gen_alpha_tds");
 #endif
- 
+
  for (ri=0; ri<iel; ri++)       /* row index    */
  {
 
      /* (accint,v) */
      eforce[ri*3]   -= funct[ri] * accint[0] * fac;
      eforce[ri*3+1] -= funct[ri] * accint[1] * fac;
-     
+
      /* - ( p_old , div v ) */
      eforce[ri*3  ] += derxy[0][ri] * presint * fac;
      eforce[ri*3+1] += derxy[1][ri] * presint * fac;
-     
+
      /* (2 * nu * epsilon(u_old), epsilon(v)) */
-     eforce[ri*3  ] -= visc * fac 
+     eforce[ri*3  ] -= visc * fac
 	 * ( (2*vderxy[0][0]) * derxy[0][ri]+
 	     (vderxy[0][1]+vderxy[1][0]) * derxy[1][ri]);
-     
-     eforce[ri*3+1] -= visc * fac 
+
+     eforce[ri*3+1] -= visc * fac
 	 * ( (vderxy[0][1]+vderxy[1][0]) * derxy[0][ri]+
 	     (2*vderxy[1][1]) * derxy[1][ri]);
 
      /* - (f, v) */
 /* This expression is already contained in the modified subscale
  * acceleration!!!                                                  */
-     
+
      /* (div u_old, q) */
      eforce[ri*3+2] -=  (vderxy[0][0] + vderxy[1][1]) * funct[ri] * fac;
-     
+
  } /* end loop over row index */
  /*-----------------------------------------------------------------*/
 
@@ -130,7 +131,7 @@ void f2_calgalrhs_gen_alpha_tds(
 }
 
 /*!---------------------------------------------------------------------
-\brief evaluate stabilisation part of right hand side for fluid 
+\brief evaluate stabilisation part of right hand side for fluid
 
 <pre>                                                        gammi 11/06
 
@@ -149,15 +150,15 @@ for further comments see comment lines within code.
 
 
 </pre>
-\param  DOUBLE        (o)  
-\param  DOUBLE        (i)  
-\param  DOUBLE        (i)  
-\param  DOUBLE        (i)  
-\param  DOUBLE        (i)  
-\param  DOUBLE        (i)  
-\param  DOUBLE        (i)  
-\param  INT           (i)  
-                            
+\param  DOUBLE        (o)
+\param  DOUBLE        (i)
+\param  DOUBLE        (i)
+\param  DOUBLE        (i)
+\param  DOUBLE        (i)
+\param  DOUBLE        (i)
+\param  DOUBLE        (i)
+\param  INT           (i)
+
 
 
 \return void
@@ -181,7 +182,7 @@ void f2_calstabrhs_gen_alpha_tds(
 		DOUBLE   spres,
 		DOUBLE   fac,
 		DOUBLE   visc,
-		int      iel     
+		int      iel
               )
 {
  int       ri;       /* counter for row index                       */
@@ -192,10 +193,10 @@ void f2_calstabrhs_gen_alpha_tds(
 
 /* time integration */
  FLUID_DYNAMIC   *fdyn;
- 
+
  double  alpha_M;
 
- 
+
 #ifdef DEBUG
  dstrc_enter("f2_calstabrhs_gen_alpha_tds");
 #endif
@@ -204,7 +205,7 @@ void f2_calstabrhs_gen_alpha_tds(
 fdyn = alldyn[genprob.numff].fdyn;
 alpha_M     = fdyn->alpha_m;
 
- 
+
  /* Viscous test term  div epsilon(v) */
  for(i=0;i<iel;i++)
  {
@@ -221,7 +222,7 @@ alpha_M     = fdyn->alpha_m;
 
  }
 
- 
+
  for (ri=0; ri<iel; ri++)       /* row index    */
  {
      /* -2 * nu * (u_sub , div epsilon(v)) */
@@ -247,7 +248,7 @@ alpha_M     = fdyn->alpha_m;
      /* (sacc^{n+alpha_M},v) */
      eforce[ri*3  ] -= sacc[0] * funct[ri] * fac;
      eforce[ri*3+1] -= sacc[1] * funct[ri] * fac;
-     
+
  } /* end loop over row index */
 
  /*-----------------------------------------------------------------*/
@@ -261,3 +262,4 @@ alpha_M     = fdyn->alpha_m;
 #endif /*D_FLUID2_TDS*/
 #endif /*D_FLUID2*/
 /*! @} (documentation module close)*/
+#endif

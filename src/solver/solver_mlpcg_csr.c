@@ -1,3 +1,4 @@
+#ifndef CCADISCRET
 #ifdef MLPCG
 
 /*!---------------------------------------------------------------------
@@ -2275,4 +2276,5 @@ return;
 
 
 /*! @} (documentation module close)*/
+#endif
 #endif

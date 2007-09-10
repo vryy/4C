@@ -1,9 +1,10 @@
+#ifndef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 #ifndef SOLVER_TRILINOS_SPOOLES_H
 #define SOLVER_TRILINOS_SPOOLES_H
 
 #ifdef __cplusplus
-extern "C" 
+extern "C"
 {
 #endif
 
@@ -28,3 +29,4 @@ void solver_trilinos_spooles(
 
 #endif /* SOLVER_TRILINOS_SPOOLES_H */
 #endif /* TRILINOS_PACKAGE */
+#endif

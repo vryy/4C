@@ -14,6 +14,7 @@ Maintainer: Burkhard Bornemann
 \date 10/06
 */
 
+#ifndef CCADISCRET
 /*----------------------------------------------------------------------*/
 #ifdef D_THERM2
 
@@ -60,7 +61,7 @@ void th2_out_hflux(ELEMENT *actele,
 {
   const INT place = 0;
   INT i;
-  
+
   /*====================================================================*/
 #ifdef DEBUG
   dstrc_enter("th2_out_hflux");
@@ -82,8 +83,8 @@ void th2_out_hflux(ELEMENT *actele,
     case th2_hflux_none:
       break;
     /* at Gauss points */
-    case th2_hflux_gpxy: 
-    case th2_hflux_gp12: 
+    case th2_hflux_gpxy:
+    case th2_hflux_gp12:
     case th2_hflux_gpxy12:
       fprintf(out, "Gaussian   "
                    "  heatflux-x   heatflux-y   heatflux-z"
@@ -138,3 +139,4 @@ void th2_out_hflux(ELEMENT *actele,
 
 #endif /* end of #ifdef D_THERM2 */
 /*! @} (documentation module close)*/
+#endif

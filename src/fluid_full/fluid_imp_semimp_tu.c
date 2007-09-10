@@ -10,6 +10,7 @@ Maintainer: Thomas Hettich
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_FLUID2TU
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
@@ -986,4 +987,5 @@ dstrc_exit();
 return;
 } /* end of fluid_isi_tu */
 
+#endif
 #endif

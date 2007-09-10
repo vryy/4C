@@ -11,6 +11,7 @@ Maintainer: Ulrich Küttler
 
 
  *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_FLUID3_IS
 #include "../headers/standardtypes.h"
 #include "../fluid3/fluid3_prototypes.h"
@@ -320,4 +321,5 @@ void f3is_calseta(
   return;
 }
 
+#endif
 #endif

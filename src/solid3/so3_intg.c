@@ -14,6 +14,7 @@ Maintainer: Moritz Frenzel
 \date 10/06
 */
 /*======================================================================*/
+#ifndef CCADISCRET
 /*!
 \addtogroup SOLID3
 *//*! @{ (documentation module open)*/
@@ -61,13 +62,13 @@ extern ALLDYNA *alldyn;
 \brief Set type, total amount of Gauss points, etc of element
 
 \param ELEMENT    *ele      (i)   pointer to element
-\parem INT         ierr     (o)   error flag: 1 ==> success 
+\parem INT         ierr     (o)   error flag: 1 ==> success
 
 \author mf
 \date 10/06
 */
 /*----------------------------------------------------------------------*/
-void so3_intg_eleinp(ELEMENT *actele, 
+void so3_intg_eleinp(ELEMENT *actele,
                      INT *ierr)
 {
 
@@ -100,7 +101,7 @@ void so3_intg_eleinp(ELEMENT *actele,
       /* check if first Gauss point number is set larger than 0 */
       if ( (actGP[0] < 1) || (actGP[0] > GLINTC_SOLID3) )
       {
-        dserror("First GP must be 1, 2, 3, 4, 5 or 6 (hexahedra)"); 
+        dserror("First GP must be 1, 2, 3, 4, 5 or 6 (hexahedra)");
       }
       /* set Gauss point numbers in s- and t-direction if not set */
       for (i=1; i<NDIM_SOLID3; i++)
@@ -126,12 +127,12 @@ void so3_intg_eleinp(ELEMENT *actele,
       /* check if first Gauss point number (for domain) is permissible */
       if ( !( (actGP[0] == 1) || (actGP[0] == 4) || (actGP[0] == 5) ) )
       {
-        dserror("First GP must be 1, 4, or 5 (total GP of tetrahedra domain)"); 
+        dserror("First GP must be 1, 4, or 5 (total GP of tetrahedra domain)");
       }
       /* set total number of GP in domain */
       actso3->gptot = actGP[0];
       /* set 2nd Gauss point number (for sides) */
-      if ( !( (actGP[1] == 1) || (actGP[1] == 3) 
+      if ( !( (actGP[1] == 1) || (actGP[1] == 3)
               || (actGP[1] == 4) ||  (actGP[1] == 6) ) )
       {
         if (actGP[0] == 1)
@@ -168,7 +169,7 @@ void so3_intg_eleinp(ELEMENT *actele,
       /* Domain Gauss point numbers to index of corresponding GP set */
       switch (actGP[0])
       {
-          case 1: 
+          case 1:
             intc[0] = 0;
             break;
           case 4:
@@ -228,7 +229,7 @@ this routine is a try to organise the integration parameters
 different. ALL paramters are stored in FLUID_DATA, so that this
 routine has to be (hopefully) called only once!!!
 
-\param  *data   SO3_DATA  (o)  prepare quadrature data 
+\param  *data   SO3_DATA  (o)  prepare quadrature data
 \return void
 
 \author mf
@@ -412,7 +413,7 @@ void so3_intg_init(SO3_DATA *data)
     DOUBLE wma = 0.03480868143412;  /* next to mid-nodes on axes */
     DOUBLE wmd = 0.01114827431181;  /* next to mis-nodes on diagonals */
     DOUBLE wcs = 0.01114827431181;  /* next to centre of inclined face */
-    
+
     data->gtdc[3][0][0] = a;
     data->gtdc[3][0][1] = a;
     data->gtdc[3][0][2] = a;
@@ -470,7 +471,7 @@ void so3_intg_init(SO3_DATA *data)
     data->gtsc[1][0][1] = 1.0/6.0;
     data->gtsw[1][0] = 1.0/6.0;
     data->gtsc[1][1][0] = 2.0/3.0;
-    data->gtsc[1][1][1] = 1.0/6.0; 
+    data->gtsc[1][1][1] = 1.0/6.0;
     data->gtsw[1][1] = 1.0/6.0;
     data->gtsc[1][2][0] = 1.0/6.0;
     data->gtsc[1][2][1] = 2.0/3.0;
@@ -556,3 +557,4 @@ void so3_intg_init(SO3_DATA *data)
 #endif  /* end of #ifdef D_SOLID3 */
 
 /*! @} (documentation module close)*/
+#endif

@@ -13,6 +13,7 @@ Maintainer: Burkhard Bornemann
 \author bborn
 \date 03/07
 */
+#ifndef CCADISCRET
 #ifdef D_SOLID3
 #ifdef D_TSI
 
@@ -69,7 +70,7 @@ void so3_mat_robinson_fb4_init(SOLID3* actso3)
   if (actso3->miv_rob == NULL)
   {
     /* allocation of MIVar */
-    actso3->miv_rob 
+    actso3->miv_rob
       = (SO3_MIV_ROBINSON*) CCACALLOC(1, sizeof(SO3_MIV_ROBINSON));
     /* allocation of arrays in MIV */
     amdef("miv_rob_vicstn", &(actso3->miv_rob->vicstn),
@@ -160,7 +161,7 @@ void so3_mat_robinson_fb4_sel(const CONTAINER* container,
   DOUBLE stnela[NUMSTR_SOLID3];  /* elastic strain */
   DOUBLE stnthr[NUMSTR_SOLID3];  /* thermal strain */
   DOUBLE stnvsc[NUMSTR_SOLID3];  /* viscous strain */
-  
+
   DOUBLE stsbac[NUMSTR_SOLID3];  /* back stress */
   DOUBLE stsdev[NUMSTR_SOLID3];  /* stress deviator */
   DOUBLE stsovr[NUMSTR_SOLID3];  /* overstress */
@@ -188,7 +189,7 @@ void so3_mat_robinson_fb4_sel(const CONTAINER* container,
     {
       stntot[istrn] = gds->stnengv[istrn];
     }
-  } 
+  }
   else if (actso3->kintype == so3_total_lagr)
   {
     /* Green-Lagrange strain vector */
@@ -209,7 +210,7 @@ void so3_mat_robinson_fb4_sel(const CONTAINER* container,
   {
     /* temperature at Gauss point */
     so3_tsi_temper(container, ele,
-                   gds->gpc[0], gds->gpc[1], gds->gpc[2], 
+                   gds->gpc[0], gds->gpc[1], gds->gpc[2],
                    &tem);
     /* coefficient of linear thermal expansion */
     DOUBLE thermexpans = mat_robin->thermexpans;
@@ -597,7 +598,7 @@ void so3_mat_robinson_fb4_stsbckrat(const VP_ROBINSON* mat_robin,
 
 /*======================================================================*/
 /*!
-\brief (Incremental) Update Robinson's internal material variables 
+\brief (Incremental) Update Robinson's internal material variables
 \param   ele          ELEMENT*        (io)   curr. elem.
 \parm    mat_robin    VP_ROBINSON*    (i)    elem. mater.
 \param   ip           INT             (i)    curr. Gauss point index
@@ -633,7 +634,7 @@ void so3_mat_robinson_fb4_mivupdincr(ELEMENT* ele,
     for (istg=0; istg<tsi_fehlbg4.stg; istg++)
     {
       DOUBLE fct = dt * tsi_fehlbg4.b[istg];
-      so3_mv6_v_updscl(fct, actso3->miv_rob->dvicstn.a.d3[ip][istg], 
+      so3_mv6_v_updscl(fct, actso3->miv_rob->dvicstn.a.d3[ip][istg],
                       stnvscn);
     }
     so3_mv6_v_ass(stnvscn, actso3->miv_rob->vicstn.a.da[ip]);
@@ -649,7 +650,7 @@ void so3_mat_robinson_fb4_mivupdincr(ELEMENT* ele,
     for (istg=0; istg<tsi_fehlbg4.stg; istg++)
     {
       DOUBLE fct = dt * tsi_fehlbg4.b[istg];
-      so3_mv6_v_updscl(fct, actso3->miv_rob->dbacsts.a.d3[ip][istg], 
+      so3_mv6_v_updscl(fct, actso3->miv_rob->dbacsts.a.d3[ip][istg],
                       stsbckn);
     }
     so3_mv6_v_ass(stsbckn, actso3->miv_rob->bacsts.a.da[ip]);
@@ -689,7 +690,7 @@ void so3_mat_robinson_fb4_stress(const CONTAINER* container,
   DOUBLE stnela[NUMSTR_SOLID3];  /* elastic strain */
   DOUBLE stnthr[NUMSTR_SOLID3];  /* thermal strain */
   DOUBLE stnvsc[NUMSTR_SOLID3];  /* viscous strain */
-  
+
   DOUBLE tem;  /* temperature */
 
 /*   INT itsidyn = genprob.numfld;  /\* index of TSI dynamics data *\/ */
@@ -710,7 +711,7 @@ void so3_mat_robinson_fb4_stress(const CONTAINER* container,
     {
       stntot[istrn] = gds->stnengv[istrn];
     }
-  } 
+  }
   else if (actso3->kintype == so3_total_lagr)
   {
     /* Green-Lagrange strain vector */
@@ -731,7 +732,7 @@ void so3_mat_robinson_fb4_stress(const CONTAINER* container,
   {
     /* temperature at Gauss point */
     so3_tsi_temper(container, ele,
-                   gds->gpc[0], gds->gpc[1], gds->gpc[2], 
+                   gds->gpc[0], gds->gpc[1], gds->gpc[2],
                    &tem);
     /* coefficient of linear thermal expansion */
     DOUBLE thermexpans = mat_robin->thermexpans;
@@ -831,12 +832,12 @@ void so3_mat_robinson_fb4_stress(const CONTAINER* container,
     INT i;
     for (i=0; i<NUMSTR_SOLID3; i++)
     {
-      fprintf(oo, "%d %f %f %f %f  %f %f %f %f\n", 
+      fprintf(oo, "%d %f %f %f %f  %f %f %f %f\n",
               container->kstep,
               stntot[i], stnela[i], stnvsc[i], stnthr[i],
-              stress[i], 
-              stsdev[i], 
-              actso3->miv_rob->bacsts.a.da[ip][i], 
+              stress[i],
+              stsdev[i],
+              actso3->miv_rob->bacsts.a.da[ip][i],
               stsovr[i]);
     }
     /* fprintf(oo, "\n"); */
@@ -857,10 +858,10 @@ void so3_mat_robinson_fb4_stress(const CONTAINER* container,
     INT i;
     for (i=0; i<NUMSTR_SOLID3; i++)
     {
-      fprintf(oo, "%d %f %f %f %f  %f %f %f %f\n", 
+      fprintf(oo, "%d %f %f %f %f  %f %f %f %f\n",
               container->kstep,
               stntot[i], stnela[i], stnvsc[i], stnthr[i],
-              stress[i], stsdev[i], 
+              stress[i], stsdev[i],
               actso3->miv_rob->bacsts.a.da[ip][i], stsovr[i]);
     }
     /* fprintf(oo, "\n"); */
@@ -876,3 +877,4 @@ void so3_mat_robinson_fb4_stress(const CONTAINER* container,
 
 #endif  /* end D_TSI */
 #endif  /* end D_SOLID3 */
+#endif

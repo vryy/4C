@@ -10,6 +10,7 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "../fluid2_pro/fluid2pro.h"
 #include "../fluid2_pro/fluid2pro_prototypes.h"
@@ -448,6 +449,4 @@ void assign_dof_ndis(
 
 } /* end of assign_dof */
 
-
-
-
+#endif

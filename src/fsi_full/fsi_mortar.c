@@ -10,6 +10,7 @@ Maintainer: Christiane Foerster
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FSI
 *//*! @{ (documentation module open)*/
@@ -2333,3 +2334,4 @@ return;
 #endif /* end ifdef D_FSI */
 #endif /* end ifdef D_MORTAR */
 /*! @} (documentation module close)*/
+#endif

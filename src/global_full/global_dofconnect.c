@@ -10,6 +10,7 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 /*!----------------------------------------------------------------------
@@ -309,20 +310,4 @@ void mds_make_colstr_rowind(SOLVAR       *actsolv,
   return;
 } /* end of mds_make_colstr_rowind */
 /*----------------------------------------------------------------------*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#endif

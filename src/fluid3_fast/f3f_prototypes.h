@@ -14,6 +14,7 @@ Maintainer: Malte Neumann
  */
 /*-----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 #ifdef D_FLUID3_F
 
 
@@ -229,7 +230,7 @@ void f3fcalstabm(
     INT     *flagvec,
     INT     *sizevec
     );
-      
+
 void f3fcalmat(
      DOUBLE  *estif,
      DOUBLE  *eforce,
@@ -247,7 +248,7 @@ void f3fcalmat(
      DOUBLE  *tau,
      INT     *hasext,
      DOUBLE  *paravec,
-     INT     *flagvec, 
+     INT     *flagvec,
      INT     *sizevec
      );
 
@@ -731,3 +732,4 @@ void f3falecord(
 #endif /* ifdef D_FLUID3_F */
 
 
+#endif

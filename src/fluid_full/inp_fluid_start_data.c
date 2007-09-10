@@ -10,6 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_FLUID
 #include "../headers/standardtypes.h"
 /*---------------------------------------------------------- prototypes */
@@ -331,4 +332,5 @@ dstrc_exit();
 #endif
 return;
 } /* end of inp_fluid_frfind */
+#endif
 #endif

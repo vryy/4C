@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 
 *----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 #ifdef HYPRE_PACKAGE
 
 #include "../headers/standardtypes.h"
@@ -1200,3 +1201,4 @@ void exchange_coup_parcsr(
 
 #endif /* ifdef HYPRE_PACKAGE */
 
+#endif

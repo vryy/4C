@@ -10,6 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 
 #include "../headers/standardtypes.h"
 #if defined VISUAL2_PACKAGE || defined VISUAL3_PACKAGE
@@ -726,4 +727,5 @@ dstrc_exit();
 return;
 } /* end of vis_frfind */
 
+#endif
 #endif

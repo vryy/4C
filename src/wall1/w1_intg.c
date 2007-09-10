@@ -11,6 +11,7 @@ Maintainer: Andrea Hund
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
@@ -435,13 +436,13 @@ else
         case 4:
           k = 2;
           break;
-        case 6: 
+        case 6:
           k = 3;
           break;
-        case 7: 
+        case 7:
           k = 4;
           break;
-        case 9: 
+        case 9:
           k = 5;
           break;
         case 12:
@@ -504,3 +505,4 @@ return;
 /*----------------------------------------------------------------------*/
 #endif /*D_WALL1*/
 /*! @} (documentation module close)*/
+#endif

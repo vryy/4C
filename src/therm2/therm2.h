@@ -1,7 +1,7 @@
 /*======================================================================*/
 /*!
 \file
-\brief headerfile for planar thermal element (therm2), containing 
+\brief headerfile for planar thermal element (therm2), containing
 structures and prototypes
 
 <pre>
@@ -13,6 +13,7 @@ Maintainer: Burkhard Bornemann
 */
 /*======================================================================*/
 
+#ifndef CCADISCRET
 #ifdef D_THERM2
 
 /*!
@@ -46,7 +47,7 @@ Maintainer: Burkhard Bornemann
 #define NUMDOF_THERM2    (1)    /* number of thermal DOFs at each node :
                                  * temperature */
 
-#define NUMPLST_THERM2   (2)    /* number of plane states : 
+#define NUMPLST_THERM2   (2)    /* number of plane states :
                                  * plane temperature gradient,
                                  * plane heat flux */
 
@@ -105,7 +106,7 @@ typedef struct _TH2_DATA
 \brief Type of plane states, ie planar heat flux or planar temperature
 gradient
 
-IMPORTANT: The magnitudes of types is globally defined in 
+IMPORTANT: The magnitudes of types is globally defined in
 define_sizes.h  :  #define NUMPLST_THERM2   (2)
 If types are added here, then this number MUST be updated accordingly!
 
@@ -170,7 +171,7 @@ typedef struct _THERM2
 
   INT nGP[2];  /* number of Gauss points as obtained during read-in
                 * quads:
-                *       nGP[0] : in r-direction 
+                *       nGP[0] : in r-direction
                 *       nGP[1] : in s-direction
                 * tris:
                 *       nGP[0] : total number of GPs: 1,3,4,6,7,9,12,13
@@ -179,7 +180,7 @@ typedef struct _THERM2
   INT gptotal;  /* total number of GPs */
   INT gpintc;  /* GP integration case; important to triangles */
   INT gpned;  /* amount of GPs on line/edge, important for triangles */
-    
+
   DOUBLE thick;  /* thickness */
 
   ARRAY4D hflux_gp;
@@ -195,7 +196,7 @@ typedef struct _THERM2
 
 /*======================================================================*/
 /* Declarations of functions in therm2 directory
- * Order: Firstly, alphabetically list file names, 
+ * Order: Firstly, alphabetically list file names,
  *        secondly, list functions in file according to appearance */
 
 
@@ -210,8 +211,8 @@ void th2_bop(DOUBLE    **bop,
 /*---------------------------------------------------------------------*/
 /* file th2_cfg.c */
 void th2_cfg_init();
-void th2_cfg_iedg(INT *iegnod, 
-                  ELEMENT *ele, 
+void th2_cfg_iedg(INT *iegnod,
+                  ELEMENT *ele,
                   INT line);
 void th2_cfg_noders(ELEMENT *ele,
                     INT inode,
@@ -265,14 +266,14 @@ void th2_inp(ELEMENT *ele);
 
 /*----------------------------------------------------------------------*/
 /* file th2_intg.c */
-void th2_intg_eleinp(ELEMENT *actele, 
+void th2_intg_eleinp(ELEMENT *actele,
                      INT *ierr);
 void th2_intg_init(TH2_DATA *data);
 
 /*----------------------------------------------------------------------*/
 /* file th2_jaco.c */
 void th2_jaco(DOUBLE **deriv,
-              DOUBLE **xjm, 
+              DOUBLE **xjm,
               DOUBLE *det,
               ELEMENT *ele,
               INT iel);
@@ -322,7 +323,7 @@ void therm2(PARTITION *actpart,
 	    ARRAY *emass_global,
 	    ARRAY *intforce_global,
 	    CALC_ACTION *action,
-	    CONTAINER *container);   /* contains variables defined 
+	    CONTAINER *container);   /* contains variables defined
 				      * in container.h */
 
 /*----------------------------------------------------------------------*/
@@ -374,3 +375,4 @@ void th2_temper_cal(CONTAINER *container,
 /*----------------------------------------------------------------------*/
 #endif /*end of #ifdef D_THERM2 */
 /*! @} (documentation module close) */
+#endif

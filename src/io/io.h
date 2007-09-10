@@ -271,6 +271,7 @@ typedef struct _BIN_IN_FIELD {
 
 
 
+
 /*----------------------------------------------------------------------*/
 /*!
   \brief Init the main (static) data structure that is needed for
@@ -299,6 +300,8 @@ void init_bin_out_main(CHAR* outputname);
 /*----------------------------------------------------------------------*/
 void init_bin_in_main(CHAR* inputname);
 
+
+#ifndef CCADISCRET
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -585,6 +588,7 @@ void restart_write_bin_fsidyn(FSI_DYNAMIC *fsidyn);
 /*----------------------------------------------------------------------*/
 void restart_read_bin_fsidyn(FSI_DYNAMIC *fsidyn, INT step);
 
+#endif
 
 /*----------------------------------------------------------------------*/
 /*!

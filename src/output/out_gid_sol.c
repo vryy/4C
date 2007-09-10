@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 
 ------------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "gid.h"
 #include "../shell8/shell8.h"
@@ -6167,3 +6168,4 @@ return;
 } /* end of out_gid_smstress */
 
 #endif /* D_MLSTRUCT */
+#endif

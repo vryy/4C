@@ -13,6 +13,7 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID
 *//*! @{ (documentation module open)*/
@@ -513,7 +514,7 @@ if (disnum_io != disnum_calc)
       actfield, actpart, actintra, disnum_calc);
 
 #endif
-  
+
 /*-------------------------------------- print out initial data to .out */
 if (ioflags.output_out==1 && ioflags.fluid_sol==1 && par.myrank==0)
   out_sol(actfield,actpart,disnum_io,actintra,fdyn->step,actpos);
@@ -573,7 +574,7 @@ dsmemreport();
  *  ipos->accn  ... acceleration at time (n)                            *
  *                                                                      *
  *  ipos->velnp ... pressure at time (n+1,i)                            *
- *  ipos->veln  ... pressure at time (n)                                * 
+ *  ipos->veln  ... pressure at time (n)                                *
  *======================================================================*/
 
 while (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime && steady==0)
@@ -582,18 +583,18 @@ while (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime && steady==0)
 
  fdyn->step++;
  iststep++;
- 
+
  if (par.myrank==0)
      fprintf(out,"%5d | %10.3E |",fdyn->step,fdyn->acttime);
- 
+
 /*------------------------------------------ check (starting) algorithm */
  if (fdyn->step<=(fdyn->nums+1)) fluid_startproc(&nfrastep,0);
- 
+
 /*------------------------------ calculate constants for time algorithm */
  fluid_tcons();
-  
+
  fdyn->acttime += fdyn->dta;
- 
+
 
 /*--------- reset counter and convergence criterion for nonlin. iter. */
  itnum    =1;
@@ -601,7 +602,7 @@ while (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime && steady==0)
 
 /*------------------------------------------------ output to the screen */
  if (par.myrank==0) fluid_algoout();
- 
+
 /*------------------------------------- start time step on the screen---*/
  if (fdyn->itnorm!=fncc_no && par.myrank==0)
  {
@@ -612,7 +613,7 @@ while (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime && steady==0)
 /*-------- set dirichlet boundary conditions to sol_increment[velnp] ---*/
  fluid_setdirich(actfield, disnum_calc,ipos,ipos->velnp);
 
- 
+
 /*-------------------------- estimate new acceleration (and pressure)
                              --- I assume constant velo's and pressure */
 
@@ -631,7 +632,7 @@ while (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime && steady==0)
  {
    /* dummy assembly of global matrix to update the subscale velocities
     * to the last iteration step                                        */
-   
+
    *action = calc_fluid_time_update;
    t1=ds_cputime();
    container.dvec         = NULL;
@@ -690,7 +691,7 @@ while (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime && steady==0)
        &container,action);
      te=ds_cputime()-t1;
      tes+=te;
-     
+
 #ifdef PERF
      perf_end(81);
 #endif
@@ -704,14 +705,14 @@ while (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime && steady==0)
 		  1.0
 	 );
 
-     
-#if 0						
+
+#if 0
     for(i=0;i<actsolv->rhs[0].numeq_total;i++)
      {
 	 printf("rhs[%3d] %12.5e\n",i,actsolv->rhs[0].vec.a.dv[i]);
      }
 #endif
-     
+
     /*---------------------------------------------------- solve system */
 #ifdef PERF
      perf_begin(80);
@@ -739,7 +740,7 @@ while (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime && steady==0)
      /*-- set flags for stability parameter evaluation and convergence
                                                                  check */
      fdyn->ishape=0;
-     
+
      /*-- return solution to the nodes and calculate the convergence
                                                                 ratios */
      fluid_result_incre_for_genalpha(
@@ -764,7 +765,7 @@ while (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime && steady==0)
  {
    /* dummy assembly of global matrix to update the subscale velocities
     * to the last iteration step                                        */
-   
+
    *action = calc_fluid_time_update;
    t1=ds_cputime();
    container.dvec         = NULL;
@@ -795,23 +796,23 @@ while (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime && steady==0)
      if (par.myrank==0)
 	 fprintf(out,"            |            |");
  }
- 
- 
+
+
 /* error calculation for beltrami and kim-moin */
  if (fdyn->init==8 || fdyn->init==9)
  {
      container.vel_error  = 0.0;
      container.pre_error  = 0.0;
      container.error_norm = 2;
-     
+
      *action = calc_fluid_error;
      calelm(actfield,actsolv,actpart,actintra,actsysarray,-1,
 	    &container,action);
-     
-     
+
+
      container.vel_error = sqrt(container.vel_error);
      container.pre_error = sqrt(container.pre_error);
-     
+
      printf("\n  L2_err  :  velocity %f  pressure %f \n\n",
 	    container.vel_error,container.pre_error);
  }
@@ -839,8 +840,8 @@ while (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime && steady==0)
  pssstep++;
  resstep++;
  restartstep++;
- 
- 
+
+
 /* write restart to pss file */
  if (restartstep==fdyn->uprestart)
  {
@@ -854,12 +855,12 @@ while (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime && steady==0)
      restart_write_fluiddyn(fdyn,actfield,actpart,actintra,action,&container);
 #endif
  }
- 
- 
+
+
 /*--------------------------------------- write solution to .flavia.res */
  if (resstep==fdyn->upres && par.myrank==0 && ioflags.output_gid==1)
  {
-     
+
      if(ioflags.fluid_sol==1)
      {
 	 out_gid_sol("velocity",actfield,disnum_io,actintra,fdyn->step,actpos,fdyn->acttime);
@@ -871,7 +872,7 @@ while (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime && steady==0)
 #ifdef BINIO
  if (resstep==fdyn->upres && ioflags.output_bin==1)
  {
-     
+
      if (ioflags.fluid_sol==1)
      {
 	 out_results(&out_context, fdyn->acttime, fdyn->step, actpos, OUTPUT_VELOCITY | OUTPUT_PRESSURE);
@@ -889,18 +890,18 @@ while (fdyn->step < fdyn->nstep && fdyn->acttime <= fdyn->maxtime && steady==0)
     outstep=0;
     out_sol(actfield,actpart, disnum_io, actintra,fdyn->step,actpos);
  }
- 
+
 /*---------------------------------------------------------- monitoring */
  if (ioflags.monitor==1)
      monitoring(actfield, disnum_io, genprob.numff,actpos,fdyn->acttime);
- 
+
  tt=ds_cputime()-t2;
  tts+=tt;
- 
+
  if (par.myrank==0)
  {
      printf("total time for this time step: %10.3e \n",tt);
-     
+
      fprintf(out,"            |            |");
      fprintf(out," %10.3E |\n",tt);
      fflush(out);
@@ -945,3 +946,4 @@ return;
 
 #endif /*D_FLUID*/
 /*! @} (documentation module close)*/
+#endif

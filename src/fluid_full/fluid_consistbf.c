@@ -10,6 +10,7 @@ Maintainer: Christiane Foerster
 </pre>
 
 ---------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID
 *//*! @{ (documentation module open)*/
@@ -258,7 +259,7 @@ case 2: /* problem is two-dimensional */
       default:
         dserror("element type!");
       }
-      
+
       for(j=0; j<MAXNOD; j++)
         force_on_node[j] = -1;
       hasldline = 0;
@@ -311,9 +312,9 @@ case 2: /* problem is two-dimensional */
       if (hasldline)
       {
         INT dof;
-        
+
          /*--- get force vector ---*/
-         
+
          switch (actele->eltyp)
          {
          case el_fluid2:
@@ -377,4 +378,5 @@ dstrc_exit();
 return;
 }
 
+#endif
 #endif

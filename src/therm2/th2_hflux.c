@@ -20,6 +20,7 @@ Maintainer: Burkhard Bornemann
 \author bborn
 \date 03/06
 */
+#ifndef CCADISCRET
 #ifdef D_THERM2
 
 /*----------------------------------------------------------------------*/
@@ -35,7 +36,7 @@ Maintainer: Burkhard Bornemann
 /*!
 \brief General problem data
 
-global variable GENPROB genprob is defined in global_control.c 
+global variable GENPROB genprob is defined in global_control.c
 
 \author bborn
 \date 03/06
@@ -89,7 +90,7 @@ void th2_hflux_init(PARTITION *actpart)
 #ifdef DEBUG
   dstrc_enter("th2_hflux_init");
 #endif
-  
+
   /*--------------------------------------------------------------------*/
   /* allocate heat flux arrays stored at each element */
   tpart = actpart;  /*&(actpart[genprob.numtf]);*/
@@ -105,9 +106,9 @@ void th2_hflux_init(PARTITION *actpart)
       if (actele->eltyp == el_therm2)
       {
         /* allocate heat flux arrays per element */
-        am4def("hflux_gp", &(actele->e.th2->hflux_gp), 
+        am4def("hflux_gp", &(actele->e.th2->hflux_gp),
                1, 3*NUMHFLX_THERM2, MAXGAUSS, 0, "D3");
-        am4def("flux_nd",&(actele->e.th2->hflux_nd), 
+        am4def("flux_nd",&(actele->e.th2->hflux_nd),
                1, 3*NUMHFLX_THERM2, MAXNOD, 0, "D3");
       }  /* end of if (actele->eltyp == el_therm2) */
     }  /* end of for (i=0; i<actpart->pdis[j].numele; i++) */
@@ -124,7 +125,7 @@ void th2_hflux_init(PARTITION *actpart)
     xjm0 = amdef("xjm0", &xjm0_a, NDIM_THERM2, NDIM_THERM2, "DA");
     xji = amdef("xji", &xji_a, NDIM_THERM2, NDIM_THERM2, "DA");
     hflux = amdef("hflux", &hflux_a, NUMHFLX_THERM2, 1,"DV");
-    bop = amdef("bop", &bop_a, 
+    bop = amdef("bop", &bop_a,
                 NUMTMGR_THERM2, NUMDOF_THERM2*MAXNOD_THERM2, "DA");
     /* locally allocatable arrays/vectors have been allocated */
     allocated = 1;
@@ -229,7 +230,7 @@ void th2_hflux_cal(ELEMENT *ele,
   INT ip;  /* total index Gauss point */
   INT intc = 0;  /* "integration case" for tri-element */
   INT newval = 1;  /* controls evaluation of new stresses    */
-  
+
   DOUBLE fac;  /* a factor */
   DOUBLE e1 = 0.0;  /* GP r-coord */
   DOUBLE e2 = 0.0;  /* GP s-coord */
@@ -243,7 +244,7 @@ void th2_hflux_cal(ELEMENT *ele,
 
   /*--------------------------------------------------------------------*/
   /* start */
-  /* Working arrays (locally globals) MUST be initialised! */ 
+  /* Working arrays (locally globals) MUST be initialised! */
 #ifdef DEBUG
   dstrc_enter("th2_hflux_cal");
 #endif
@@ -295,7 +296,7 @@ void th2_hflux_cal(ELEMENT *ele,
       default:
          dserror("ele->distyp unknown!");
       } /* end switch(ele->distyp) */
-      
+
       /*----------------------------------------------------------------*/
       /* shape functions and their derivatives (flagged by last 1) */
       th2_shape_deriv(shape, deriv, e1, e2, ele->distyp, 1);
@@ -334,7 +335,7 @@ void th2_hflux_cal(ELEMENT *ele,
       }
       /*----------------------------------------------------------------*/
       /* absolute heat flux plus orientation angle */
-      th2_hflux_steep(hflux, 
+      th2_hflux_steep(hflux,
                       &(ele->e.th2->hflux_gp.a.d3[kstep][3][ip]),
                       &(ele->e.th2->hflux_gp.a.d3[kstep][4][ip]),
                       &(ele->e.th2->hflux_gp.a.d3[kstep][5][ip]));
@@ -356,17 +357,17 @@ void th2_hflux_cal(ELEMENT *ele,
     /*------------------------------------------------------------------*/
     /* extrapolate values now */
     /* heat flux in x-direction : q_1 */
-    th2_hflux_extrpol(ele, data, npoint, 
+    th2_hflux_extrpol(ele, data, npoint,
                       &(ele->e.th2->hflux_gp.a.d3[kstep][0][0]), rs,
                       &(hfluxnd));
     ele->e.th2->hflux_nd.a.d3[kstep][0][inode] = hfluxnd;
     /* heat flux in y-direction : q_2 */
-    th2_hflux_extrpol(ele, data, npoint, 
+    th2_hflux_extrpol(ele, data, npoint,
                       &(ele->e.th2->hflux_gp.a.d3[kstep][1][0]), rs,
                       &(hfluxnd));
     ele->e.th2->hflux_nd.a.d3[kstep][1][inode] = hfluxnd;
     /* heat flux in z-direction : q_3 */
-    th2_hflux_extrpol(ele, data, npoint, 
+    th2_hflux_extrpol(ele, data, npoint,
                       &(ele->e.th2->hflux_gp.a.d3[kstep][2][0]), rs,
                       &(hfluxnd));
     ele->e.th2->hflux_nd.a.d3[kstep][2][inode] = hfluxnd;
@@ -375,7 +376,7 @@ void th2_hflux_cal(ELEMENT *ele,
     hflux[0] = ele->e.th2->hflux_nd.a.d3[kstep][0][inode];
     hflux[1] = ele->e.th2->hflux_nd.a.d3[kstep][1][inode];
     hflux[2] = ele->e.th2->hflux_nd.a.d3[kstep][2][inode];
-    th2_hflux_steep(hflux, 
+    th2_hflux_steep(hflux,
                     &(ele->e.th2->hflux_nd.a.d3[kstep][3][inode]),
                     &(ele->e.th2->hflux_nd.a.d3[kstep][4][inode]),
                     &(ele->e.th2->hflux_nd.a.d3[kstep][5][inode]));
@@ -395,7 +396,7 @@ void th2_hflux_cal(ELEMENT *ele,
 
 \param *hflux       DOUBLE   (i)   heat flux (at GP)
 \param *hfluxmod    DOUBLE   (o)   modulus of heat flux
-\param *hfluxang    DOUBLE   (o)   angle of direction of steepest 
+\param *hfluxang    DOUBLE   (o)   angle of direction of steepest
                                      increase/decrease
                                      angle in [-pi/2,pi/2] with respect
                                      to x-axis
@@ -452,7 +453,7 @@ void th2_hflux_steep(DOUBLE *hflux,
     if (hflux[1] > 0.0)
     {
       *hfluxang = PI/2.0;
-    } 
+    }
     else if (hflux[1] < 0.0)
     {
       *hfluxang = -PI/2.0;
@@ -575,9 +576,9 @@ void th2_hflux_extrpol(ELEMENT *ele,
           /* l_{lr,ls}(r,s) = sig_{lr,ls}
            *                * l_{lr}^{nir-1}(r)
            *                * l_{ls}^{nis-1}(s)
-           * with l_{lr}^{nir-1}(r) = \prod_{i=0,i!=lr}^{nir-1} 
+           * with l_{lr}^{nir-1}(r) = \prod_{i=0,i!=lr}^{nir-1}
            *                            (r - r_i)/(r_lr - r_i)
-           * and  l_{ls}^{nis-1}(s) = \prod_{j=0,j!=ls}^{nis-1} 
+           * and  l_{ls}^{nis-1}(s) = \prod_{j=0,j!=ls}^{nis-1}
            *                            (s - s_i)/(s_lr - s_i)
            */
           /* in r-direction : l_{lr}^{nir-1}(r) */
@@ -627,3 +628,4 @@ void th2_hflux_extrpol(ELEMENT *ele,
 /*======================================================================*/
 #endif  /* end of #ifdef D_THERM2 */
 /*! @} (documentation module close)*/
+#endif

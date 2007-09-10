@@ -1,3 +1,4 @@
+#ifndef CCADISCRET
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
@@ -121,9 +122,9 @@ for (k=0; k<iel; k++) /* loop all nodes of the line (edge) */
       * the element line (edge) geometry.
       * The line geometry is obtained (as usually)
       * with the isoparametric concept, ie using
-      * the (here "degenerated") shape functions 
+      * the (here "degenerated") shape functions
       * on the line and the adjacent nodal coordinates
-      */ 
+      */
      xjm[0][0] += deriv[0][k] * ele->node[node]->x[0];
      xjm[0][1] += deriv[0][k] * ele->node[node]->x[1];
 } /* end loop over iel */
@@ -142,4 +143,5 @@ dstrc_exit();
 return;
 } /* end of w1_edgejaco */
 
+#endif
 #endif

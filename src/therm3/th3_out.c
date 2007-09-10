@@ -15,6 +15,7 @@ Maintainer: Burkhard Bornemann
 */
 
 /*----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_THERM3
 
 /*----------------------------------------------------------------------*/
@@ -63,7 +64,7 @@ void th3_out_hflux(ELEMENT *actele,
   INT nelenod;  /* number of element nodes */
   INT igp;  /* Gauss point counter */
   INT inod;  /* node counter */
-  
+
   /*====================================================================*/
 #ifdef DEBUG
   dstrc_enter("th3_out_hflux");
@@ -79,7 +80,7 @@ void th3_out_hflux(ELEMENT *actele,
 
   /*--------------------------------------------------------------------*/
   /* get total number of Gauss points */
-  if ( (actele->distyp == hex8) 
+  if ( (actele->distyp == hex8)
        || (actele->distyp == hex20)
        || (actele->distyp == hex27) )
   {
@@ -87,7 +88,7 @@ void th3_out_hflux(ELEMENT *actele,
       * actele->e.th3->gpnum[1]
       * actele->e.th3->gpnum[2];
   }
-  else if ( (actele->distyp == tet4) 
+  else if ( (actele->distyp == tet4)
             || (actele->distyp == tet10) )
   {
     gptotal = actele->e.th3->gpnum[0];
@@ -261,3 +262,4 @@ void th3_out_hflux(ELEMENT *actele,
 
 #endif /* end of #ifdef D_THERM3 */
 /*! @} (documentation module close)*/
+#endif

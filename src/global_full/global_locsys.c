@@ -54,6 +54,7 @@ Final Remarks:
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "../fluid2/fluid2.h"
 #include "../fluid3/fluid3.h"
@@ -166,7 +167,7 @@ for (i=0; i<genprob.numfld; i++)
             * a nice idea to avoid assignments of local systems to design
             * entities. On the other hand, the inheritance is not transparent
             * to the user such that a inherently applied local system affects
-            * 
+            */
            /* inherit of design lines */
            if (locsysId == 0)
            {
@@ -592,7 +593,7 @@ return;
        Different local systems with a single element can be treated.
 
 <pre>
-The XYZ-oriented element stiffness matrix of the current element 
+The XYZ-oriented element stiffness matrix of the current element
 is transformed to the local x'y'z' system.
 This names are a bit confusing, since the "local" co-ordinate system is
 the one we are solving in, so we better introduce new names:
@@ -619,8 +620,8 @@ trans  = transformation matrix containing the direction cosines between
 \date 06/07
 */
 #ifdef LOCALSYSTEMS_ST
-void locsys_trans_equant_dirich(ELEMENT* ele, 
-                                ARRAY* estif_global, 
+void locsys_trans_equant_dirich(ELEMENT* ele,
+                                ARRAY* estif_global,
                                 ARRAY* emass_global,
                                 ARRAY* eforce_global,
                                 DOUBLE* eforce)
@@ -754,7 +755,7 @@ void locsys_trans_equant_dirich(ELEMENT* ele,
     break;
   }
 #endif
-  default: 
+  default:
     dserror("no transformation implemented for this kind of element!\n");
   } /* end switch (ele->eltyp */
 
@@ -1214,3 +1215,4 @@ dstrc_exit();
 #endif
 return;
 } /* end of locsys_trans_nodval */
+#endif

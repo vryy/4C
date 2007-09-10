@@ -38,6 +38,7 @@ implicit. Work has to be done in this area to obtain a very fast
 algorithm.
 
 */
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID_PM
 *//*! @{ (documentation module open)*/
@@ -1346,3 +1347,4 @@ end:
 
 #endif
 /*! @} (documentation module close)*/
+#endif

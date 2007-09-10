@@ -10,6 +10,7 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_AXISHELL
 
 /*!
@@ -109,3 +110,4 @@ void saxi_eleload(
 
 /*! @} (documentation module close)*/
 #endif /*D_AXISHELL*/
+#endif

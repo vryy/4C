@@ -10,6 +10,7 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #ifdef PARALLEL
 
@@ -207,3 +208,4 @@ dstrc_exit();
 
 return;
 } /* end of find_assign_coupset */
+#endif

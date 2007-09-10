@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 
 ---------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 
 #ifndef OUTPUT_PROTOTYPES_H
 #define OUTPUT_PROTOTYPES_H
@@ -76,12 +77,12 @@ void out_gid_domains_ssi(
 /*----------------------------------------------------------------------*
  |  out_gid_soldyn.c                                     m.gee 5/03     |
  *----------------------------------------------------------------------*/
-void out_gid_soldyn(char string[], 
-                    FIELD *actfield, 
+void out_gid_soldyn(char string[],
+                    FIELD *actfield,
                     INT disnum,
-                    INTRA *actintra, 
+                    INTRA *actintra,
                     INT step,
-                    INT place, 
+                    INT place,
                     DOUBLE totaltime);
 /*----------------------------------------------------------------------*
  |  out_gid_solssi.c                                    chfoe 07/04     |
@@ -141,3 +142,4 @@ void out_gid_sol_fsi(
 
 #endif
 
+#endif

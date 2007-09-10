@@ -12,6 +12,7 @@ Maintainer: Ulrich Küttler
 </pre>
  */
 
+#ifndef CCADISCRET
 #ifdef D_FLUID2_IS
 
 #ifndef FLUID2_IS_H
@@ -214,5 +215,6 @@ void f2is_calresvec(
   );
 
 
+#endif
 #endif
 #endif

@@ -13,6 +13,7 @@ Maintainer: Ulrich Kuettler
 /*!
 \addtogroup FLUID2_PRO
 *//*! @{ (documentation module open)*/
+#ifndef CCADISCRET
 #ifdef D_FLUID2_PRO
 #include "../headers/standardtypes.h"
 #include "../fluid2/fluid2_prototypes.h"
@@ -1625,3 +1626,4 @@ void f2pro_debugoutpressure(ELEMENT* ele, FILE* f)
 
 #endif
 /*! @} (documentation module close)*/
+#endif

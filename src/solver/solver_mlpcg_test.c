@@ -1,3 +1,4 @@
+#ifndef CCADISCRET
 #ifdef MLPCG
 
 /*!---------------------------------------------------------------------
@@ -336,5 +337,6 @@ dstrc_exit();
 #endif
 return;
 } /* end of mlpcg_precond_oneP_vanek */
+#endif
 #endif
 #endif

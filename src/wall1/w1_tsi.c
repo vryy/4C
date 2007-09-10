@@ -13,6 +13,7 @@ Maintainer: Burkhard Bornemann
 \author bborn
 \date 08/06
 */
+#ifndef CCADISCRET
 #ifdef D_WALL1
 #ifdef D_TSI
 
@@ -41,8 +42,8 @@ Maintainer: Burkhard Bornemann
 */
 void w1_tsi_thstrain(CONTAINER *container,
                      ELEMENT *ele,
-                     MATERIAL *mat, 
-                     DOUBLE r, 
+                     MATERIAL *mat,
+                     DOUBLE r,
                      DOUBLE s,
                      INT numstr,
                      DOUBLE *strain)
@@ -105,3 +106,4 @@ void w1_tsi_thstrain(CONTAINER *container,
 /*======================================================================*/
 #endif  /* end of #ifdef D_TSI */
 #endif  /* end of #ifdef D_WALL1 */
+#endif

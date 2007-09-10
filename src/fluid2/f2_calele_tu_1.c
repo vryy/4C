@@ -10,6 +10,7 @@ Maintainer: Thomas Hettich
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_FLUID2TU
 #include "../headers/standardtypes.h"
 #include "../fluid_full/fluid_prototypes.h"
@@ -198,4 +199,5 @@ return;
 } /* end of f2_calele */
 
 
+#endif
 #endif

@@ -11,6 +11,7 @@ Maintainer: Andreas Lipka
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_BRICK1
 
 #include "../headers/standardtypes.h"
@@ -789,3 +790,4 @@ return;
 } /* end of c1_mat_elorth */
 #endif
 /*! @} (documentation module close)*/
+#endif

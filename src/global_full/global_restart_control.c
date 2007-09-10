@@ -10,6 +10,7 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 #include "../headers/restart.h"
@@ -2173,3 +2174,4 @@ dstrc_exit();
 return;
 #endif /* NO_TEXT_OUTPUT */
 } /* end of restart_read_fsidyn */
+#endif

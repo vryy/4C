@@ -11,6 +11,7 @@ Maintainer: Ulrich Kuettler
 
 ------------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 #ifdef D_FLUID2_PRO
 
 /************************************************************************
@@ -324,4 +325,5 @@ void f2pro_debugoutpressure(ELEMENT* ele, FILE* f);
 
 #endif
 
+#endif
 #endif

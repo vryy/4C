@@ -10,6 +10,7 @@ Maintainer: Volker Gravemeier
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef FLUID3_ML
 #include "../headers/standardtypes.h"
 #include "../fluid_full/fluid_prototypes.h"
@@ -975,4 +976,5 @@ dstrc_exit();
 return;
 } /* end of f3_ssintele */
 
+#endif
 #endif

@@ -49,6 +49,7 @@ ALE 3 - 1 1 0 0 0 0
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 /*!----------------------------------------------------------------------
 \brief file pointers
@@ -157,3 +158,4 @@ dstrc_exit();
 return;
 #endif /* NO_TEXT_OUTPUT */
 } /* end of monitoring */
+#endif

@@ -11,6 +11,7 @@ Maintainer: Andrea Hund
 </pre>
 
 *-----------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef GEMM
 #include "../headers/standardtypes.h"
 #include "wall1.h"
@@ -66,3 +67,4 @@ return;
 }/* end of w1_strain_energy */
 #endif /*GEMM*/
 /*! @} (documentation module close)*/
+#endif

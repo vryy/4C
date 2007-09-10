@@ -10,6 +10,7 @@ Maintainer: Ulrich Kuettler
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID3_PRO
 *//*! @{ (documentation module open)*/
@@ -131,3 +132,4 @@ void fluid3_pro(     PARTITION     *actpart,
   return;
 } /* end of fluid3_pro */
 /*! @} (documentation module close)*/
+#endif

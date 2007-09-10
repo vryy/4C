@@ -10,6 +10,7 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
 #include <ctime>
@@ -90,7 +91,7 @@ void create_ml_parameterlist(struct _SOLVAR         *actsolv,
     case azprec_MLfluid2: // full Pretrov-Galerkin unsymmetric smoothed
       mllist.set("energy minimization: enable",true);
       mllist.set("energy minimization: type",3); // 1,2,3 cheap -> expensive
-      mllist.set("aggregation: block scaling",false); 
+      mllist.set("aggregation: block scaling",false);
     break;
     default: dserror("Unknown type of preconditioner");
   }
@@ -575,3 +576,4 @@ void ml_compute_nullspace(DISCRET*          actdis,
 
 
 #endif // TRILINOS_PACKAGE
+#endif

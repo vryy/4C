@@ -6,6 +6,7 @@ Maintainer: Ulrich Küttler
             089 - 289-15238
 </pre>
  */
+#ifndef CCADISCRET
 #ifdef D_FLUID3_IS
 
 #include "fluid3_is.h"
@@ -199,4 +200,5 @@ void f3is_inp(ELEMENT* ele)
   return;
 }
 
+#endif
 #endif

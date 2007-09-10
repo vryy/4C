@@ -14,6 +14,7 @@ Maintainer: Burkhard Bornemann
 \date 03/06
 */
 
+#ifndef CCADISCRET
 
 /*----------------------------------------------------------------------*/
 #ifdef D_TSI
@@ -42,7 +43,7 @@ extern FILES allfiles;
 /*----------------------------------------------------------------------*/
 /*!
 \brief General problem data
-       struct _GENPROB       genprob; defined in global_control.c 
+       struct _GENPROB       genprob; defined in global_control.c
 \author bborn
 \date 03/06
 */
@@ -195,7 +196,7 @@ void tsi_th_ost_init(PARTITION* actpart,
 #endif
 
   /*--------------------------------------------------------------------*/
-  /* put a zero to the place ipos->num=12 in node->sol to init the 
+  /* put a zero to the place ipos->num=12 in node->sol to init the
    * velocities and accels of prescribed displacements */
   /* HINT: This actually redefines/reallocates/enlarges the sol
    *       array of each structure node to dimension 12x2 (or 12x3)
@@ -215,17 +216,17 @@ void tsi_th_ost_init(PARTITION* actpart,
     dserror("More than 1 system arrays (actsolv->nsysarray)!");
   }
   /* allocate mass matrix */
-  actsolv->sysarray_typ 
+  actsolv->sysarray_typ
     = (SPARSE_TYP*) CCAREALLOC(actsolv->sysarray_typ,
                                actsolv->nsysarray*sizeof(SPARSE_TYP));
-  if (!actsolv->sysarray_typ) 
+  if (!actsolv->sysarray_typ)
   {
     dserror("Allocation of memory failed");
   }
   actsolv->sysarray
     = (SPARSE_ARRAY*) CCAREALLOC(actsolv->sysarray,
                                  actsolv->nsysarray*sizeof(SPARSE_ARRAY));
-  if (!actsolv->sysarray) 
+  if (!actsolv->sysarray)
   {
     dserror("Allocation of memory failed");
   }
@@ -263,14 +264,14 @@ void tsi_th_ost_init(PARTITION* actpart,
   /*--------------------------------------------------------------------*/
   /* number of rhs and solution vectors */
   actsolv->nsol = 2;  /* WHY 2? */
-  solserv_create_vec(&(actsolv->sol), actsolv->nsol, 
+  solserv_create_vec(&(actsolv->sol), actsolv->nsol,
                      *numeq_total, *numeq, "DV");
   /* init the created dist. vectors to zero */
   for (i=0; i<actsolv->nsol; i++)
   {
     solserv_zero_vec(&(actsolv->sol[i]));
   }
-  
+
   /*--------------------------------------------------------------------*/
   /* create 1 vector of full length for Dirichlet part of RHS */
   dirich = amdef("dirich_t", dirich_a, *numeq_total, 1, "DV");
@@ -316,7 +317,7 @@ void tsi_th_ost_init(PARTITION* actpart,
   /* NOTE: solver init phase has to be called with each matrix one wants to
    *       solve with. Solver init phase has to be called with all matrices
    *       one wants to do matrix-vector products and matrix scalar products.
-   *       This is not needed by all solver libraries, but the solver-init 
+   *       This is not needed by all solver libraries, but the solver-init
    *       phase is cheap in computation (can be costly in memory)
    *       There will be no solver call on mass or damping array. */
   init = 1;
@@ -421,18 +422,18 @@ void tsi_th_ost_equi(PARTITION* actpart,
 
   /*--------------------------------------------------------------------*/
   /* put the scaled prescribed temperatures to the nodes
-   * in field sol (1st 0) at place 0 (2nd 0) together with 
+   * in field sol (1st 0) at place 0 (2nd 0) together with
    * free temperatures */
   /* HINT: time curve is called indirectly */
-  solserv_putdirich_to_dof(actfield, disnum, 
+  solserv_putdirich_to_dof(actfield, disnum,
                            node_array_sol, isol->temdn, timcur);
 
   /*------------------------------------------------------------------*/
   /* initialise tangent and Dirichlet-RHS loads */
-  solserv_zero_mat(actintra, 
+  solserv_zero_mat(actintra,
                    &(actsolv->sysarray[stiff_array]),
                    &(actsolv->sysarray_typ[stiff_array]));
-  solserv_zero_mat(actintra, 
+  solserv_zero_mat(actintra,
                    &(actsolv->sysarray[mass_array]),
                    &(actsolv->sysarray_typ[mass_array]));
   amzero(dirich_a);
@@ -458,7 +459,7 @@ void tsi_th_ost_equi(PARTITION* actpart,
    * this is the load at t_{n} 'coz temperature has not been updated
    * at the very first call it is zero */
   solserv_zero_vec(&(fint[0]));
-  assemble_vec(actintra, 
+  assemble_vec(actintra,
                &(actsolv->sysarray_typ[stiff_array]),
                &(actsolv->sysarray[stiff_array]),
                &(fint[0]), intforce, 1.0);
@@ -475,7 +476,7 @@ void tsi_th_ost_equi(PARTITION* actpart,
                   &(actsolv->sysarray_typ[mass_array]),
                   &(actsolv->sysarray[mass_array]),
                   1.0/dt);
-  
+
   /*--------------------------------------------------------------------*/
   /* call RHS-routines to assemble RHS */
   solserv_zero_vec(&(fextn[0]));
@@ -485,13 +486,13 @@ void tsi_th_ost_equi(PARTITION* actpart,
   container->point_neum = 1;  /* ? */
   calrhs(actfield, actsolv, actpart, actintra, stiff_array,
          &(fextn[0]), action, container);
-  
+
   /*--------------------------------------------------------------------*/
   /* build effective RHS
    *    Feff = 1/dt * M . Th_n
    *         - (1-gamma) * Fint_n
    *         + gamma * Fext_{n+1}
-   *         + (1-gamma) * Fext_n 
+   *         + (1-gamma) * Fext_n
    *         - Fdirichlet */
   solserv_zero_vec(&(actsolv->rhs[stiff_array]));
 #if 0
@@ -542,7 +543,7 @@ void tsi_th_ost_equi(PARTITION* actpart,
          actsolv->rhs[stiff_array].vec.a.dv[0],
          actsolv->rhs[stiff_array].vec.a.dv[1]);
 #endif
-  
+
   /*--------------------------------------------------------------------*/
   /* call solver */
   init = 0;
@@ -560,10 +561,10 @@ void tsi_th_ost_equi(PARTITION* actpart,
 
   /*--------------------------------------------------------------------*/
   /* put the scaled prescribed temperatures to the nodes
-   * in field sol (1st 0) at place 0 (2nd 0) together with 
+   * in field sol (1st 0) at place 0 (2nd 0) together with
    * free temperatures */
   /* HINT: time curve is called indirectly */
-  solserv_putdirich_to_dof(actfield, disnum, 
+  solserv_putdirich_to_dof(actfield, disnum,
                            node_array_sol, isol->temn, timcur);
 
   /*--------------------------------------------------------------------*/
@@ -657,7 +658,7 @@ void tsi_th_ost_out(PARTITION* actpart,
                   * allocated like hflux_gp[1][3*NUMHFLX][MAXGAUSS]
                   * and iplace==0 is used to access the first (left-most)
                   * index */
-    /* ATTENTION : iplace is also used for 
+    /* ATTENTION : iplace is also used for
      *             actnode->sol.a.da[iplace][nodeindex]
      *             while printing the temperature */
     out_sol(actfield, actpart, disnum, actintra, timstp, isol->temn);
@@ -675,11 +676,11 @@ void tsi_th_ost_out(PARTITION* actpart,
   /*--------------------------------------------------------------------*/
   /* printout results to Gid */
   if ( (ioflags.output_gid == 1)
-       && (ioflags.therm_temper == 1) 
+       && (ioflags.therm_temper == 1)
        && (par.myrank == 0) )
   {
     iplace = 0;
-    out_gid_sol("temperature", actfield, disnum, actintra, 
+    out_gid_sol("temperature", actfield, disnum, actintra,
                 timstp, iplace, timcur);
     /* out_gid_domains(actfield, disnum); */
   }
@@ -691,7 +692,7 @@ void tsi_th_ost_out(PARTITION* actpart,
        && (par.myrank == 0) )
   {
     iplace = 0;
-    out_gid_sol("heatflux", actfield, disnum, actintra, 
+    out_gid_sol("heatflux", actfield, disnum, actintra,
                 timstp, iplace, timcur);
   }
 
@@ -792,11 +793,11 @@ void tsi_th_ost_sub(INT disnum_s,
   SOLVAR* actsolv = &(solv[numtf]);  /* pointer to field SOLVAR */
   INT numeq;  /* number of equations on this proc */
   INT numeq_total;  /* total number of equations on all procs */
-  INT stiff_array;  /* index of stiffness sparse system matrix in 
+  INT stiff_array;  /* index of stiffness sparse system matrix in
                      * actsolv->sysarray[] */
-  INT mass_array;  /* index of mass matrix in sparse system matrix 
+  INT mass_array;  /* index of mass matrix in sparse system matrix
                     * actsolv->sysarray[] */
-  
+
   /* dynamic control (allright, static sontrol) */
   THERM_DYNAMIC* actdyn = alldyn[numtf].tdyn;  /* thermal dynamic control */
 
@@ -807,7 +808,7 @@ void tsi_th_ost_sub(INT disnum_s,
 
   /* container */
   CONTAINER container;  /* contains variables defined in container.h */
-  
+
   /* variables */
   DOUBLE timcur;  /* current time */
   DOUBLE timstp;  /* current time step */
@@ -971,3 +972,4 @@ void tsi_th_ost_sub(INT disnum_s,
 
 /*----------------------------------------------------------------------*/
 #endif  /* end of #ifdef D_TSI */
+#endif

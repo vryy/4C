@@ -18,6 +18,7 @@
  * </pre>
  *
  *-------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_BRICK1
 #include "../headers/standardtypes.h"
 #include "brick1.h"
@@ -64,7 +65,7 @@ void c1_mat_ogden_decoupled(
     static ARRAY lam2_a;
     static DOUBLE **PK2;
     static ARRAY PK2_a;
-    
+
     if (FT==NULL) {
         FT = amdef("FT", &FT_a, 3, 3, "DA");
         CG = amdef("CG", &CG_a, 3, 3, "DA");
@@ -73,16 +74,16 @@ void c1_mat_ogden_decoupled(
         lam2 = amdef("lam2", &lam2_a, 3, 1, "DV");
         PK2 = amdef("PK2", &PK2_a, 3, 3, "DA");
     }
-    
+
     amzero(&FT_a);
     amzero(&CG_a);
     amzero(&N_a);
     amzero(&lam_a);
     amzero(&lam2_a);
     amzero(&PK2_a);
-    
+
     DOUBLE  C[3][3][3][3];
-    
+
 #ifdef DEBUG
 dstrc_enter("c1_mat_ogden_uncoupled");
 #endif
@@ -289,3 +290,4 @@ return;
 
 #endif /*D_BRICK1 */
 /*! @} (documentation module close)*/
+#endif

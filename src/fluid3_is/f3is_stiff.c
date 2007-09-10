@@ -7,6 +7,7 @@ Maintainer: Ulrich Küttler
 </pre>
 */
 
+#ifndef CCADISCRET
 for (vi=0; vi<8; ++vi)
 {
   for (ui=0; ui<8; ++ui)
@@ -738,3 +739,4 @@ for (vi=8; vi<iel; ++vi)
 
   }
 }
+#endif

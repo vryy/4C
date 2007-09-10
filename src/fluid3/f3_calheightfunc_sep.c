@@ -3,6 +3,7 @@
 \brief element integration for heightfunction
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID3
 *//*! @{ (documentation module open)*/
@@ -811,4 +812,5 @@ dstrc_exit();
 return;
 } /* end of f3_caltimerhs_vhf_sep */
 
+#endif
 #endif

@@ -10,6 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
   ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
   \addtogroup FSI
   *//*! @{ (documentation module open)*/
@@ -600,3 +601,4 @@ void out_gid_sol_fsi(
 #endif
 
 /*! @} (documentation module close)*/
+#endif

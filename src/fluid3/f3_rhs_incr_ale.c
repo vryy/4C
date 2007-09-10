@@ -1,3 +1,4 @@
+#ifndef CCADISCRET
 for (vi=0; vi<iel; ++vi)
 {
   /* Konvektionsterm */
@@ -99,3 +100,4 @@ for (vi=0; vi<iel; ++vi)
   eforce_(vi*4 + 3) += timetauMp*(rhsint_(0)*derxyz_(0, vi) + rhsint_(1)*derxyz_(1, vi) + rhsint_(2)*derxyz_(2, vi)) ;
 
 }
+#endif

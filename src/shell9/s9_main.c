@@ -12,6 +12,7 @@ Maintainer: Stefan Hartmann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "shell9.h"
 /*!
@@ -212,3 +213,4 @@ dstrc_exit();
 return;
 } /* end of shell9 */
 /*! @} (documentation module close)*/
+#endif

@@ -1,3 +1,4 @@
+#ifndef CCADISCRET
 
 #ifdef TRILINOS_PACKAGE
 #ifdef D_FSI
@@ -1944,5 +1945,6 @@ void dyn_fsi_nox(FSI_STRUCT_WORK* struct_work,
   interface->timeloop(interface);
 }
 
+#endif
 #endif
 #endif

@@ -11,6 +11,7 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID2
 *//*! @{ (documentation module open)*/
@@ -152,7 +153,7 @@ switch(typ)
 	break;
     default: dserror("element type not implemented!");
 }
-   
+
 /* square root of area for element length calculation */
 /*--------------------- rewrite array of elemental coordinates ---*/
 for(i=0; i<iel; i++)
@@ -188,31 +189,31 @@ if (fdyn->iop==4)                 /* old and new tau for one step theta */
     f2_veci(velint_old,funct,eveln ,iel);
 
     /*-------------------- calculate the new tau -----------------------*/
-    
+
     /*--------------------------------------------------- get p-norm ---*/
     norm_p = sqrt(DSQR(velint[0]) + DSQR(velint[1]));
-    
+
     re = mk * norm_p * hk / (2.0 * visc); /* advective : viscous forces */
-    
+
     xi2 = DMAX(re,1.0);
-    
+
     fdyn->tau[0] = DSQR(hk) / (2 * visc/mk + (4.0 * visc/mk) * xi2);
-    
+
     fdyn->tau[2]=  DSQR(hk) /(fdyn->tau[0]*2./mk);
 
     /*-------------------- calculate the old tau -----------------------*/
-    
+
     /*--------------------------------------------------- get p-norm ---*/
     norm_p = sqrt(DSQR(velint_old[0]) + DSQR(velint_old[1]));
-    
+
     re = mk * norm_p * hk / (2.0 * visc); /* advective : viscous forces */
-    
+
     xi2 = DMAX(re,1.0);
-    
+
     fdyn->tau_old[0] = DSQR(hk) / (2 * visc/mk + (4.0 * visc/mk) * xi2);
-    
+
     fdyn->tau_old[2]=  DSQR(hk) /(fdyn->tau_old[0]*2./mk);
-    
+
 }
 else if (fdyn->iop==8)               /* intermediate tau for gena alpha */
 {
@@ -221,14 +222,14 @@ else if (fdyn->iop==8)               /* intermediate tau for gena alpha */
 
     /*--------------------------------------------------- get p-norm ---*/
     norm_p =  sqrt(DSQR(velint[0]) + DSQR(velint[1]));
-    
+
     re = mk * norm_p * hk / (2.0 * visc); /* advective : viscous forces */
 
     xi2 = DMAX(re,1.0);
 
-    
+
     fdyn->tau[0] = DSQR(hk) / (2 * visc/mk + (4.0 * visc/mk) * xi2);
-    
+
     fdyn->tau[2]=  DSQR(hk) /(fdyn->tau[0]*2./mk);
 
 }
@@ -236,7 +237,7 @@ else
 {
     dserror("This time integration isn't available for tds");
 }
-    
+
 
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
@@ -246,3 +247,4 @@ dstrc_exit();
 #endif /*D_FLUID2_TDS*/
 #endif /*D_FLUID2*/
 /*! @} (documentation module close)*/
+#endif

@@ -184,11 +184,16 @@ void ntam(
 #endif
 
 
+#ifndef CCADISCRET
   /*-------------------------------------- check for visualisation mode */
   if (genprob.visual!=0) goto visualisation;
+#endif
+
   /*------------------------------- set up field-specific communicators */
+#ifndef CCADISCRET
 #ifdef PARALLEL
   create_communicators();
+#endif
 #endif
 
 #ifdef BINIO
@@ -237,6 +242,7 @@ void ntam(
 #endif
 
 
+#ifndef CCADISCRET
   goto endcal;
   /*----------------------------------------------------------------------*/
 visualisation:
@@ -244,6 +250,7 @@ visualisation:
     ntavisual();
   /*----------------------------------------------------------------------*/
 endcal:
+#endif
 #ifdef DEBUG
   dstrc_exit();
 #endif

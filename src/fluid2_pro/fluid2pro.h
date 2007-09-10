@@ -11,6 +11,7 @@ Maintainer: Ulrich Kuettler
 
 ------------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 #ifdef D_FLUID2_PRO
 
 /*!---------------------------------------------------------------------
@@ -45,4 +46,5 @@ typedef struct _FLUID2_PRO
   ELEMENT* other;
 } FLUID2_PRO;
 
+#endif
 #endif

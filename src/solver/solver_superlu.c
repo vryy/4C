@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 
 *----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 #ifdef PARSUPERLU_PACKAGE
 
 
@@ -252,3 +253,4 @@ return;
 
 #endif /* ifdef PARSUPERLU_PACKAGE */
 
+#endif

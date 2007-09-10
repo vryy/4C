@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file
-\brief contains the routine 
+\brief contains the routine
 
 <pre>
 Maintainer: Andrea Hund
@@ -9,6 +9,7 @@ Maintainer: Andrea Hund
             0711 - 685-6122
 </pre>
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_MLSTRUCT
 
 #include "../headers/standardtypes.h"
@@ -17,8 +18,8 @@ Maintainer: Andrea Hund
 #include "s2ml.h"
 #include "s2ml_prototypes.h"
 
-/*! 
-\addtogroup MLSTRUCT 
+/*!
+\addtogroup MLSTRUCT
 *//*! @{ (documentation module open)*/
 
 
@@ -27,7 +28,7 @@ Maintainer: Andrea Hund
 stiffnesses and internal forces; these are then assembled
 
 \param  *actmaele        ELEMENT     (I)    actual macro element
-\param  *actsmfield      FIELD       (I)    submesh field 
+\param  *actsmfield      FIELD       (I)    submesh field
 \param  *actsmsolv       SOLVAR      (I/O)  submesh SOLVAR->sm assembled stif mi_mi
 \param  *actsmintra      INTRA       (I)    the sm pseudo intra-communicator
 \param  *smintforcemi    DOUBLE      (O)    submesh SOLVAR->sm assembled stif mi_mi
@@ -37,7 +38,7 @@ stiffnesses and internal forces; these are then assembled
 \param **smstiffmama     DOUBLE      (O)    sm "assembled" stiffness macro-macro
 \param   istore          INT         (I)    is it update step?
 
-\return void                                               
+\return void
 
 *----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
@@ -57,8 +58,8 @@ struct _ARRAY estif_ma_ma;    /* element stiffness matrix (macro-macro) */
 struct _ARRAY estif_ma_mi;    /* element stiffness matrix (macro-micro) */
 struct _ARRAY estif_mi_ma;    /* element stiffness matrix (micro-macro) */
 struct _ARRAY estif_mi_mi;    /* element stiffness matrix (micro-micro) */
-struct _ARRAY intforce_ma;    /* element internal force   (micro)       */  
-struct _ARRAY intforce_mi;    /* element internal force   (macro)       */  
+struct _ARRAY intforce_ma;    /* element internal force   (micro)       */
+struct _ARRAY intforce_mi;    /* element internal force   (macro)       */
 /*----------------------------------------------------------------------*/
 void s2ml_cal_smelm(ELEMENT     *actmaele,   /*  actual macro element    */
                     FIELD       *actsmfield, /*  submesh field           */
@@ -76,7 +77,7 @@ ELEMENT         *actsmele;
 MATERIAL        *actsmmat;
 PARTITION       *actsmpart;       /* my partition of the active submeshfield */
 ASSEMBLE_ACTION  assemble_action;
-INT              actsysarray = 0; 
+INT              actsysarray = 0;
 
 INT              nnz_guess;       /* number of nonzero guess for opening CSR-matrix */
 INT              numeq_sm;        /* number of submesh DOF's (without the dirichlet ones) */
@@ -84,16 +85,16 @@ INT              firstdof=0;      /* first dofnumber on this processor    */
 INT              lastdof;         /* last dofnumber on this proc          */
 INT              lm[18];          /* location matrix of submesh          */
 DOUBLE           val;             /* value i.e. elemententity to assemble          */
-INT              rowindex;        /* row number in global matrix, to place elemententity   */  
+INT              rowindex;        /* row number in global matrix, to place elemententity   */
 INT              columindex;      /* column index in global matrix, to place elemententity*/
 INT              counter;         /* */
 NODE            *actsmnode;       /* actual node                            */
 INT              numdof_maele;    /* */
 INT              numdof_smele;    /* */
 INT              dof;             /* global number of DOF */
-  
+
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s2ml_cal_smelm");
 #endif
 /*----------------------------------------------------------------------*/
@@ -131,7 +132,7 @@ for (i=0; i<actsmfield->dis[0].numele; i++)
    case el_wall1:
       s2ml_stiff_wall(actsmmat,actmaele,actsmele,
                       &estif_ma_ma,&estif_ma_mi,&estif_mi_ma,&estif_mi_mi,
-                      &intforce_ma,&intforce_mi,istore,0); 
+                      &intforce_ma,&intforce_mi,istore,0);
    break;
    case el_interf:
       s2ml_stiff_interf(actsmmat,actmaele,actsmele,
@@ -189,7 +190,7 @@ for (i=0; i<actsmfield->dis[0].numele; i++)
       /*- Dir-bound Macro-DOF:(not global assemb)but assemble here in SM*/
          columindex = b;
          val = estif_mi_ma.a.da[a][b];
-         mlpcg_csr_addentry(smstiffmima_csr, val, rowindex, columindex, actsmintra);   
+         mlpcg_csr_addentry(smstiffmima_csr, val, rowindex, columindex, actsmintra);
       }
    }
 /*----------------------------------------------------------------------*/
@@ -206,7 +207,7 @@ for (i=0; i<actsmfield->dis[0].numele; i++)
          columindex = lm[b];
          if (columindex >= numeq_sm) continue;
          val = estif_ma_mi.a.da[a][b];
-         mlpcg_csr_addentry(smstiffmami_csr, val, rowindex, columindex, actsmintra);   
+         mlpcg_csr_addentry(smstiffmami_csr, val, rowindex, columindex, actsmintra);
       }
    }
 /*----------------------------------------------------------------------*/
@@ -223,7 +224,7 @@ for (i=0; i<actsmfield->dis[0].numele; i++)
          smintforcemi[dof] += intforce_mi.a.dv[counter];
       }
    }
-   
+
 /*----------------------------------------------------------------------*/
 /*          add stiffness macro-macro and internal force macro          */
 /*----------------------------------------------------------------------*/
@@ -235,18 +236,18 @@ for (i=0; i<actsmfield->dis[0].numele; i++)
        smstiffmama[a][b] += estif_ma_ma.a.da[a][b];
      }
    }
-   
+
 }/* end of loop over elements */
-   
+
 /*------------------------- close assebled stiffness_mi_ma and ma_mi ---*/
 mlpcg_csr_close(smstiffmima_csr);
 mlpcg_csr_close(smstiffmami_csr);
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of w1ml_cal_smelm */
 /*----------------------------------------------------------------------*/
 
@@ -256,15 +257,15 @@ return;
 \brief  routine for initialisation of structural multiscale if it
 is the first time for an macroelement to do multiscale
 
-<pre>                                                           ah 07/04 
-This routine 
+<pre>                                                           ah 07/04
+This routine
 
 </pre>
 \param  *actmaele        ELEMENT     (I)    actual macro element
 \param   numsmnodes      INT         (I)    number of submeshnodes
 \param   numsmele        INT         (I)    number of submeshelements
 
-\return void                                               
+\return void
 
 *----------------------------------------------------------------------*/
 void s2ml_init(ELEMENT  *actmaele,       /*  actual macro element       */
@@ -273,7 +274,7 @@ void s2ml_init(ELEMENT  *actmaele,       /*  actual macro element       */
 {
 INT    i,j;
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("s2ml_init");
 #endif
 /*----------------------------------------------------------------------*/
@@ -286,7 +287,7 @@ if (estif_ma_ma.Typ != cca_DA)/*-> nur einmalige allocierung von Speicher, nicht
   amdef("intf_ma",&intforce_ma,(MAXNOD*3),1,"DV");
   amdef("intf_mi",&intforce_mi,(MAXNOD*3),1,"DV");
 }
-/*----------------- allocate and initialise macro info at submesh nodes */      
+/*----------------- allocate and initialise macro info at submesh nodes */
 actmaele->e.w1->sm_nodaldata = (SM_NODAL_DATA*)CCACALLOC(numsmnodes,sizeof(SM_NODAL_DATA));
 for (i=0; i<numsmnodes; i++)
 {
@@ -298,7 +299,7 @@ for (i=0; i<numsmnodes; i++)
    actmaele->e.w1->sm_nodaldata[i].store_displ_mi[1] = 0.0;
 }
 /*----------------------------------------------------------------------*/
-/*---- allocate and initialise history variables at submesh elementGP's */      
+/*---- allocate and initialise history variables at submesh elementGP's */
 actmaele->e.w1->sm_eledata = (SM_ELEMENT_DATA*)CCACALLOC(numsmele,sizeof(SM_ELEMENT_DATA));
 for(i=0; i<numsmele; i++)
 {
@@ -318,22 +319,23 @@ for(i=0; i<numsmele; i++)
     actmaele->e.w1->sm_eledata[i].sm_GPdata[j].yip      = -1;
     actmaele->e.w1->sm_eledata[i].sm_GPdata[j].kappa_n  = 0.0;
     actmaele->e.w1->sm_eledata[i].sm_GPdata[j].kappa_t  = 0.0;
-    
+
   }
 }
-/*---- allocate stifness matrices which have to be stored at macroelement */      
+/*---- allocate stifness matrices which have to be stored at macroelement */
 actmaele->e.w1->stiff_mi_ma_csr = (DBCSR*)CCACALLOC(1,sizeof(DBCSR));
 actmaele->e.w1->stiff_mi_mi_ccf = (SPARSE_ARRAY*)CCACALLOC(1,sizeof(SPARSE_ARRAY));
 actmaele->e.w1->stiff_mi_mi_ccf[0].ccf = (CCF*)CCACALLOC(1,sizeof(CCF));
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
-return; 
+return;
 } /* end of w1ml_init */
 /*----------------------------------------------------------------------*/
 
 /*! @} (documentation module close)*/
 
 #endif /* D_MLSTRUCT */
+#endif

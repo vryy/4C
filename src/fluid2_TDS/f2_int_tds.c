@@ -11,6 +11,7 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID2
 *//*! @{ (documentation module open)*/
@@ -47,7 +48,7 @@ Stabilisation is performed using time dependent subscales, see
 Codina, Principe, Guasch, Badia:
 "Time dependent subscales in the stabilized finite element approximation
  of incompressible flow problems"
- 
+
 
 </pre>
 \param  *ele	      ELEMENT	   (i)    actual element
@@ -249,20 +250,20 @@ for (lr=0;lr<nir;lr++)
 
       /*---------------- get velocities (n) at integration point ---*/
       f2_veci(velint_old,funct,eveln,iel);
-      
+
       /*--------------------------- calculate the velocity increment ---*/
       for(dim=0;dim<2;dim++)
       {
 	  time_der[dim]=velint[dim]-velint_old[dim];
       }
-      
+
       /*---------------- get history data (n,i) at integration point ---*/
       f2_veci(histvec,funct,evhist,iel);
 
       /*----------------- get accelerations (n) at integration point ---*/
       f2_veci(acc_old,funct,eacc,iel);
 
-      
+
       /*--------------------- get grid velocity at integration point ---*/
       if (is_ale)
       {
@@ -321,7 +322,7 @@ for (lr=0;lr<nir;lr++)
       {
 	  sub_vel    [dim]=ele->e.f2->sub_vel.a.da[dim][lr*nis+ls];
       }
-	      
+
       if(ihoel!=0)
       {
 	  hot_old[0]=0.5 * (2.0*vderxy2_old[0][0]
@@ -337,8 +338,8 @@ for (lr=0;lr<nir;lr++)
 	  hot[1]=0.5 * (2.0*vderxy2[1][1]
 			    +
 			    (vderxy2[1][0] + vderxy2[0][2]));
-	  
-      }	
+
+      }
       else
       {
 	  hot_old[0]=0;
@@ -347,7 +348,7 @@ for (lr=0;lr<nir;lr++)
 	  hot    [0]=0;
 	  hot    [1]=0;
       }
-	    
+
       /* calculate old and new residual without time derivative       */
       for(dim=0;dim<2;dim++)
       {
@@ -355,22 +356,22 @@ for (lr=0;lr<nir;lr++)
 	  res_old[dim]+=(velint_old[0]*vderxy_old[dim][0]
 			 +
 			 velint_old[1]*vderxy_old[dim][1]);
-  
+
 	  res_old[dim]-=2*visc*hot_old[dim];
-	  
+
 	  res_old[dim]+=gradp_old[dim];
-	  
+
 	  res_old[dim]-=edeadn [dim];
 
 	  res    [dim] =0;
 	  res    [dim]+=(velint[0]*vderxy[dim][0]
 			 +
 			 velint[1]*vderxy[dim][1]);
-  
+
 	  res    [dim]-=2*visc*hot[dim];
-	  
+
 	  res    [dim]+=gradp    [dim];
-	  
+
 	  res    [dim]-=edeadng[dim];
 
       }
@@ -418,11 +419,11 @@ Stabilisation is performed using time dependent subscales, see
 Codina, Principe, Guasch, Badia:
 "Time dependent subscales in the stabilized finite element approximation
  of incompressible flow problems"
- 
+
 Time integration is done a la Jansen, Whiting, Hulbert:
 "A generalized-\alpha method for integrating the filtered Navier-Stokes
  equations with a stabilized finite element method"
- 
+
 </pre>
 \param  *ele	      ELEMENT	   (i)    actual element
 \param  *hasext       INT          (i)    element flag
@@ -469,7 +470,7 @@ void f2_int_gen_alpha_tds(
 	              DOUBLE         **derxy2,
 		      DOUBLE	     **eaccng,
 	              DOUBLE         **evelng,
-		      DOUBLE          *epreng, 
+		      DOUBLE          *epreng,
 	              DOUBLE          *edeadng,
 		      DOUBLE         **vderxy,
                       DOUBLE         **vderxy2,
@@ -479,7 +480,7 @@ void f2_int_gen_alpha_tds(
 	             )
 {
 INT       dim;        /* a counter for xyz                              */
-    
+
 INT       iel;        /* number of nodes                                */
 INT       intc=0;     /* "integration case" for tri for further infos
                           see f2_inpele.c and f2_intg.c                 */
@@ -521,12 +522,12 @@ DOUBLE    dt;
 DOUBLE    tau_M,tau_C;
 
 FLUID_DYNAMIC   *fdyn;
-FLUID_DATA      *data; 
+FLUID_DATA      *data;
 
 #ifdef DEBUG
     dstrc_enter("f2_int_gen_alpha_tds");
 #endif
-    
+
 /*--------------------------------------------------- initialisation ---*/
 iel    = ele->numnp;
 typ    = ele->distyp;
@@ -580,7 +581,7 @@ default:
 /*----------------------------------------------------------------------*
  |               start loop over integration points                     |
  *----------------------------------------------------------------------*/
-for (lr=0;lr<nir;lr++) 
+for (lr=0;lr<nir;lr++)
 {
    for (ls=0;ls<nis;ls++)
    {
@@ -612,7 +613,7 @@ for (lr=0;lr<nir;lr++)
       /*----------------------------------- compute global derivates ---*/
       f2_gder(derxy,deriv,xjm,det,iel);
 
-      
+
       /*------- get accelerations (n+alpha_M,i) at integration point ---*/
       f2_veci(accint,funct,eaccng,iel);
 
@@ -663,7 +664,7 @@ for (lr=0;lr<nir;lr++)
       printf("su_acc_old   %22.15e %22.15e\n",su_acc_old[0],su_acc_old[1]);
       printf("edeadng      %22.15e %22.15e\n",edeadng[0],edeadng[1]);
 #endif
-      
+
       f2_up_tds_at_gp_genalpha (
         &sp_trial      ,
         &sp_acc_trial  ,
@@ -686,12 +687,12 @@ for (lr=0;lr<nir;lr++)
         gradpint       ,
         vderxy         ,
         vderxy2        ,
-        edeadng 
+        edeadng
         );
 
       /* we store the calculated subscale quantities on the element.
        * This is not really necessary, but convenient for easy coding...*/
-      
+
       ele->e.f2->sub_pres_trial.a.dv[lr*nis+ls]    =sp_trial;
       ele->e.f2->sub_pres_acc_trial.a.dv[lr*nis+ls]=sp_acc_trial;
 
@@ -700,7 +701,7 @@ for (lr=0;lr<nir;lr++)
         ele->e.f2->sub_vel_trial    .a.da[dim][lr*nis+ls] =su_trial  [dim];
         ele->e.f2->sub_vel_acc_trial.a.da[dim][lr*nis+ls] =su_acc_mod[dim];
       }
-      
+
       if(0)
       {
         printf("sp_trial %22.15e\n",sp_trial);
@@ -728,7 +729,7 @@ for (lr=0;lr<nir;lr++)
           +
           alpha_F*ele->e.f2->sub_vel_trial.a.da[dim][lr*nis+ls];
       }
-      
+
       /*------------ perform integration for galerkin part of matrix ---*/
       f2_calgalmat_gen_alpha_tds(estif,
 				 velint,
@@ -799,3 +800,4 @@ CCAFREE(su_acc_mod);
 
 
 /*! @} (documentation module close)*/
+#endif

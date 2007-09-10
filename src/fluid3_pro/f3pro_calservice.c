@@ -10,6 +10,7 @@ Maintainer: Ulrich Kuettler
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID3_PRO
 *//*! @{ (documentation module open)*/
@@ -468,3 +469,4 @@ void f3pro_phex(DOUBLE* pfunct, DOUBLE** pderiv, DOUBLE r, DOUBLE s, DOUBLE t, D
 
 #endif
 /*! @} (documentation module close)*/
+#endif

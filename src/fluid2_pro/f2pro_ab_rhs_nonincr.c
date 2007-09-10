@@ -1,3 +1,4 @@
+#ifndef CCADISCRET
 for (vi=0; vi<iel; ++vi)
 {
 #if 0
@@ -43,3 +44,4 @@ for (vi=0; vi<iel; ++vi)
     eforce_(vi*2)     +=  1./2.*fdyn->dta*fac*funct_(vi)*conv_old_nm_(0) ;
     eforce_(vi*2 + 1) +=  1./2.*fdyn->dta*fac*funct_(vi)*conv_old_nm_(1) ;
 }
+#endif

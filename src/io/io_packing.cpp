@@ -28,6 +28,7 @@ function calls.
 
 */
 
+#ifndef CCADISCRET
 #ifdef BINIO
 
 /*!
@@ -6089,4 +6090,5 @@ void out_main_group_head(struct _BIN_OUT_FIELD  *context, CHAR* name)
 
 
 /*! @} (documentation module close)*/
+#endif
 #endif

@@ -10,6 +10,7 @@ Maintainer: Lena Wiechert
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "../brick1/brick1.h"
 
@@ -106,3 +107,4 @@ void input_surface_energy()
   #endif
   return;
 } /* end of input_surface_energy */
+#endif

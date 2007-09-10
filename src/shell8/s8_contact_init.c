@@ -10,6 +10,7 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef S8CONTACT
 #include "../headers/standardtypes.h"
 #include "s8contact.h"
@@ -141,4 +142,5 @@ return;
 
 /*! @} (documentation module close)*/
 
+#endif
 #endif

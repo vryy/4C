@@ -11,6 +11,7 @@ Maintainer: Ulrich Küttler
 
 ------------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 #ifdef D_FLUID2_IS
 
 #include "fluid2_is.h"
@@ -228,4 +229,5 @@ void f2is_inp(ELEMENT* ele)
   return;
 }
 
+#endif
 #endif

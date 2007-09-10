@@ -1,3 +1,4 @@
+#ifndef CCADISCRET
 #ifdef MLPCG
 
 /*!---------------------------------------------------------------------
@@ -1354,3 +1355,4 @@ return;
 } /* end of mlpcg_smoothP */
 #endif
 /*! @} (documentation module close)*/
+#endif

@@ -10,6 +10,7 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 #ifdef GEMM
@@ -707,7 +708,7 @@ void dyn_nlnstructupd(
   /* (2)  sol[6] += a4 * sol[4] + -a4 * sol[3] */
   solserv_assdirich_fac(actfield,disnum,node_array_sol,4,3,6,a4,-a4);
   /* (3)  sol[6] += a6 * sol[8] (=sol[7]_old)  */
-  solserv_assdirich_fac(actfield,disnum,node_array_sol,8,0,6,a6,0.0); 
+  solserv_assdirich_fac(actfield,disnum,node_array_sol,8,0,6,a6,0.0);
 
 
 
@@ -1541,3 +1542,4 @@ dstrc_exit();
 return;
 }/* end of total_energy */
 #endif/*GEMM*/
+#endif

@@ -14,6 +14,7 @@ Maintainer: Burkhard Bornemann
 \date 10/06
 */
 
+#ifndef CCADISCRET
 /*----------------------------------------------------------------------*/
 #ifdef D_THERM3
 
@@ -49,7 +50,7 @@ extern FIELD *field;
 \brief Set required Gauss point sets for Gid output file
 
 \param   *actele        ELEMENT     (i)   pointer to current element
-\param   *actgid        GIDSET      (o)   Gid data (incl. Gauss point 
+\param   *actgid        GIDSET      (o)   Gid data (incl. Gauss point
                                           sets
 
 \return void
@@ -60,7 +61,7 @@ extern FIELD *field;
 void th3_gid_init(ELEMENT *actele,
                   GIDSET *actgid)
 {
-  
+
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_enter("th3_gid_init");
@@ -148,7 +149,7 @@ void th3_gid_msh(FIELD *actfield,
 #ifdef DEBUG
   dstrc_enter("th3_gid_msh");
 #endif
-  
+
   /*----------------------------------------------------------------*/
   /* hexahedron element with 8 nodes and 2x2x2 Gauss points */
   if (actgid->is_therm3_h8_222)
@@ -316,7 +317,7 @@ void th3_gid_gpset(INT jdis,
                    GIDSET *actgid,
                    FILE *out)
 {
-  
+
   /*--------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_enter("th3_gid_gpset");
@@ -538,7 +539,7 @@ void th3_gid_dom(FIELD *actfield,
       actele = &(actfield->dis[disnum].element[i]);
       if ( (actele->eltyp == el_therm3) && (actele->distyp == tet4) )
       {
-        fprintf(out, "    %6d  %18.5E\n", 
+        fprintf(out, "    %6d  %18.5E\n",
                 actele->Id+1, (DOUBLE)actele->proc);
       }
     }
@@ -561,7 +562,7 @@ void th3_gid_dom(FIELD *actfield,
       actele = &(actfield->dis[disnum].element[i]);
       if ( (actele->eltyp == el_therm3) && (actele->distyp == tet10) )
       {
-        fprintf(out, "    %6d  %18.5E\n", 
+        fprintf(out, "    %6d  %18.5E\n",
                 actele->Id+1, (DOUBLE)actele->proc);
         for (j=1; j<ngauss; j++)  /* loop number of GPs */
         {
@@ -920,3 +921,4 @@ void th3_gid_hflux(char resstring[],
 
 #endif /* end of #ifdef D_THERM3 */
 /*! @} (documentation module close)*/
+#endif

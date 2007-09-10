@@ -106,6 +106,7 @@ return;
 
 
 
+#ifndef CCADISCRET
 
 /*----------------------------------------------------------------------*
  |  routine to control linear static structural analysis    m.gee 6/01  |
@@ -345,3 +346,4 @@ dstrc_exit();
 #endif
 return;
 } /* end of stalin */
+#endif

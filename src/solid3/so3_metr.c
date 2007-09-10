@@ -2,7 +2,7 @@
 /*!
 \file
 \brief Metrics of SOLID3 element, i.e. metric conversion between physical
-       and parameter space. 
+       and parameter space.
 
 <pre>
 Maintainer: Moritz Frenzel
@@ -14,6 +14,7 @@ Maintainer: Moritz Frenzel
 \author mf
 \date 10/06
 */
+#ifndef CCADISCRET
 #ifdef D_SOLID3
 
 /*----------------------------------------------------------------------*/
@@ -59,7 +60,7 @@ void so3_metr_jaco(ELEMENT *ele,
 #ifdef DEBUG
   dstrc_enter("so3_metr_jaco");
 #endif
-  
+
   /*--------------------------------------------------------------------*/
   /* initialise Jacobian to zero */
   for (i=0; i<NDIM_SOLID3; i++)
@@ -103,7 +104,7 @@ void so3_metr_jaco(ELEMENT *ele,
 
   /*--------------------------------------------------------------------*/
   /* determinat */
-  /* determinat is calculated by Sarrus' rule 
+  /* determinat is calculated by Sarrus' rule
    * [Bronstein, Taschenbuch der Mathematik */
   *det = xjm[0][0] * xjm[1][1] * xjm[2][2]
        + xjm[0][1] * xjm[1][2] * xjm[2][0]
@@ -154,8 +155,8 @@ void so3_metr_jaco(ELEMENT *ele,
 /*======================================================================*/
 /*!
 \brief Determine metric at Gauss point by reducing the Jacobian
-       matrix 
-       Determine physical orientation of parametric base vectors 
+       matrix
+       Determine physical orientation of parametric base vectors
        of surface at Gauss point
        This can be either the material/initial/reference configuration
        or the spatial/deformed/current configuration depending on
@@ -174,8 +175,8 @@ void so3_metr_jaco(ELEMENT *ele,
 \author mf
 \date 10/06
 */
-void so3_metr_surf(ELEMENT *ele, 
-                   INT nelenod, 
+void so3_metr_surf(ELEMENT *ele,
+                   INT nelenod,
                    DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3],
                    DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3],
                    DOUBLE sidredm[DIMSID_SOLID3][NDIM_SOLID3],
@@ -213,7 +214,7 @@ void so3_metr_surf(ELEMENT *ele,
    *             [ x_,r  x_,s ]|
    *     gamma = [ y_,r  y_,s ]|
    *             [ z_,r  z_,s ]|(r,s)
-   * The  gamma  tensor transforms locally (at (r,s)) parameter 
+   * The  gamma  tensor transforms locally (at (r,s)) parameter
    * to physical coordinates.
    * Here the transposed of  gamma  is determined:
    *                               [ x_,r  y_,r  z_,r ]|
@@ -222,7 +223,7 @@ void so3_metr_surf(ELEMENT *ele,
    *                  =   sidredm            J
    * with  sidredm  the side reduction matrix and  J  the Jacobian
    * matrix (xjm) defined in FE-fashion (see so3_metr_jaco).
-   * sidredm  depends on the surface parameter space (r,s). 
+   * sidredm  depends on the surface parameter space (r,s).
    */
   /* set to zero */
   memset(gamt, 0, sizeof(gamt));
@@ -256,7 +257,7 @@ void so3_metr_surf(ELEMENT *ele,
    *      = [ x_,r^2 + y_,r^2 + z_,r^2   x_,r*x_,s + y_,r*y_,s + y_,r*y_,s ]
    *        [          sym               (x_,s)^2 + (y_,s)^2 + (z_,s)^2    ]
    */
-  /* Tensor  g  might be swapped, but swapping does not affect its 
+  /* Tensor  g  might be swapped, but swapping does not affect its
    * determinant,
    * instead of [ m_00  m_01 ] swapped means [ m_11 m_10 ]
    *            [ m_10  m_11 ]               [ m_01 m_00 ]
@@ -312,10 +313,10 @@ void so3_metr_surf(ELEMENT *ele,
 \author mf
 \date 10/06
 */
-void so3_metr_line(ELEMENT *ele, 
-                   INT nelenod, 
+void so3_metr_line(ELEMENT *ele,
+                   INT nelenod,
                    DOUBLE ex[MAXNOD_SOLID3][NDIM_SOLID3],
-                   DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3], 
+                   DOUBLE deriv[MAXNOD_SOLID3][NDIM_SOLID3],
                    DOUBLE linredv[NDIM_SOLID3],
                    DOUBLE gamtt[NDIM_SOLID3],
                    DOUBLE *metr)
@@ -412,7 +413,7 @@ void so3_metr_rot(DOUBLE xjm[NDIM_SOLID3][NDIM_SOLID3],
 
   /*--------------------------------------------------------------------*/
   /* get rotational `content' R in isoparametric Jacobian
-   * WARNING: Jacobian is stored in classical FE-fashion, 
+   * WARNING: Jacobian is stored in classical FE-fashion,
    *          i.e. it is transposed if viewed as `deformation gradient'
    *          describing the metric mapping of parameter to  material
    *          frame.
@@ -427,7 +428,7 @@ void so3_metr_rot(DOUBLE xjm[NDIM_SOLID3][NDIM_SOLID3],
   r02 = xrm[2][0];  r12 = xrm[2][1];  r22 = xrm[2][2];
 
   /*--------------------------------------------------------------------*/
-  /* Rotational component of J is prepared such that 
+  /* Rotational component of J is prepared such that
    * a symmetric 2-tensor A referring to the parameter space (r,s,t)
    *         [ A_11  A_12  A_31 ]
    *     A = [ A_12  A_22  A_23 ]
@@ -494,11 +495,11 @@ void so3_metr_rot(DOUBLE xjm[NDIM_SOLID3][NDIM_SOLID3],
   r20 = xrm[2][0];  r21 = xrm[2][1];  r22 = xrm[2][2];
 
   /*--------------------------------------------------------------------*/
-  /* Rotational component R^{-1} of J^{-1} is prepared such that 
-   * the mapping 
+  /* Rotational component R^{-1} of J^{-1} is prepared such that
+   * the mapping
    *     (B)_{rst} = R^{-T} . (B)_{XYZ} . R^{-1}
-   * of a symmetric 2-tensor B referring to the material 
-   * frame (X,Y,Z), 
+   * of a symmetric 2-tensor B referring to the material
+   * frame (X,Y,Z),
    *         [ B_11  B_12  B_31 ]
    *     B = [ B_12  B_22  B_23 ]
    *         [ B_31  B_23  B_33 ]
@@ -555,3 +556,4 @@ void so3_metr_rot(DOUBLE xjm[NDIM_SOLID3][NDIM_SOLID3],
 #endif  /* end of #ifdef D_SOLID3 */
 /*! @} (documentation module close)*/
 
+#endif

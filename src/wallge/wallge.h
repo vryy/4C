@@ -11,6 +11,7 @@ Maintainer: Andrea Hund
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_WALLGE
 
 /*!
@@ -136,3 +137,4 @@ void wge_inp(ELEMENT *ele);
 /*! @} (documentation module close)*/
 
 
+#endif

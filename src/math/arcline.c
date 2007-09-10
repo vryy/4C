@@ -1,3 +1,4 @@
+#ifndef CCADISCRET
 #ifdef D_AXISHELL
 
 /*!-----------------------------------------------------------------------
@@ -404,3 +405,4 @@ void interpolate_axishell_conds(
 #endif
 
 
+#endif

@@ -1,7 +1,7 @@
 /*======================================================================*/
 /*!
 \file
-\brief headerfile for 3dim thermal element (THERM3), containing 
+\brief headerfile for 3dim thermal element (THERM3), containing
 structures and prototypes
 
 <pre>
@@ -13,6 +13,7 @@ Maintainer: Burkhard Bornemann
 */
 /*======================================================================*/
 
+#ifndef CCADISCRET
 #ifdef D_THERM3
 
 /*!
@@ -71,7 +72,7 @@ Maintainer: Burkhard Bornemann
 #define GLMAXP_THERM3    (6)    /* line domain max. number of Gauss points */
 #endif
 
-#ifndef GTINTC_THERM3 
+#ifndef GTINTC_THERM3
 #define GTINTC_THERM3    (3)    /* triangle domain Gauss integration cases */
 #endif
 
@@ -113,11 +114,11 @@ typedef struct _TH3_DATA
   DOUBLE ghlc[GLINTC_THERM3][GLMAXP_THERM3];  /* coordinates */
   DOUBLE ghlw[GLINTC_THERM3][GLMAXP_THERM3];  /* weights */
   /* tetrahedron domain [T.J.R. Hughes, "The FEM", Dover 2000] */
-  DOUBLE gtdc[GTINTC_THERM3][GTMAXP_THERM3][NDIM_THERM3];  /* coordinates 
+  DOUBLE gtdc[GTINTC_THERM3][GTMAXP_THERM3][NDIM_THERM3];  /* coordinates
                                                             * in r,s,t */
   DOUBLE gtdw[GTINTC_THERM3][GTMAXP_THERM3];  /* weights */
   /* tetrahedron sides */
-  DOUBLE gtsc[GSINTC_THERM3][GSMAXP_THERM3][DIMSID_THERM3];  /* coordinates 
+  DOUBLE gtsc[GSINTC_THERM3][GSMAXP_THERM3][DIMSID_THERM3];  /* coordinates
                                                                 in side */
   DOUBLE gtsw[GSINTC_THERM3][GSMAXP_THERM3];  /* weights */
   /* triangle edges --> line [0,+1] */
@@ -132,19 +133,19 @@ typedef struct _TH3_DATA
   INT nodsidh[MAXSID_THERM3][MAXNS_THERM3];  /* hexahedra */
   INT nodsidt[MAXSID_THERM3][MAXNS_THERM3];  /* tetrahedra */
   /* nodes on edges */
-  INT nodedghl[MAXEDG_THERM3][MAXNE_THERM3];  /* linear hex8 */       
+  INT nodedghl[MAXEDG_THERM3][MAXNE_THERM3];  /* linear hex8 */
   INT nodedghq[MAXEDG_THERM3][MAXNE_THERM3];  /* quadratic hex20,27 */
-  INT nodedgtl[MAXEDG_THERM3][MAXNE_THERM3];  /* linear tet4 */       
+  INT nodedgtl[MAXEDG_THERM3][MAXNE_THERM3];  /* linear tet4 */
   INT nodedgtq[MAXEDG_THERM3][MAXNE_THERM3];  /* quadratic tet10 */
   /*--------------------------------------------------------------------*/
   /* anchor and span vectors for sides and edges in param. space */
   /* sides hex */
   DOUBLE ancsidh[MAXSID_THERM3][NDIM_THERM3];  /* anchors hex */
-  DOUBLE redsidh[MAXSID_THERM3][DIMSID_THERM3][NDIM_THERM3];  /* dim red 
+  DOUBLE redsidh[MAXSID_THERM3][DIMSID_THERM3][NDIM_THERM3];  /* dim red
                                                                * matrix */
   /* sides tet */
   DOUBLE ancsidt[MAXSID_THERM3][NDIM_THERM3];  /* anchors tet */
-  DOUBLE redsidt[MAXSID_THERM3][DIMSID_THERM3][NDIM_THERM3];  /* dim red 
+  DOUBLE redsidt[MAXSID_THERM3][DIMSID_THERM3][NDIM_THERM3];  /* dim red
                                                                * matrix */
   /* edges hex */
   DOUBLE ancedgh[MAXEDG_THERM3][NDIM_THERM3];  /* anchors hex */
@@ -333,14 +334,14 @@ void th3_metr_jaco(ELEMENT *ele,
                    DOUBLE   xjm[NDIM_THERM3][NDIM_THERM3],
                    DOUBLE  *det,
                    DOUBLE   xji[NDIM_THERM3][NDIM_THERM3]);
-void th3_metr_surf(ELEMENT *ele, 
-                   INT      nelenod, 
-                   DOUBLE   deriv[MAXNOD_THERM3][NDIM_THERM3], 
+void th3_metr_surf(ELEMENT *ele,
+                   INT      nelenod,
+                   DOUBLE   deriv[MAXNOD_THERM3][NDIM_THERM3],
                    DOUBLE   sidredm[DIMSID_THERM3][NDIM_THERM3],
                    DOUBLE  *metr);
-void th3_metr_line(ELEMENT *ele, 
-                   INT      nelenod, 
-                   DOUBLE   deriv[MAXNOD_THERM3][NDIM_THERM3], 
+void th3_metr_line(ELEMENT *ele,
+                   INT      nelenod,
+                   DOUBLE   deriv[MAXNOD_THERM3][NDIM_THERM3],
                    DOUBLE   linredv[NDIM_THERM3],
                    DOUBLE  *metr);
 
@@ -354,8 +355,8 @@ void th3_lin_tang(CONTAINER* cont,
                   ARRAY* emass_global,
                   ARRAY* eforc_global);
 void th3_lin_temgrad(ELEMENT* ele,
-                     DOUBLE bop[NDIM_THERM3][MAXDOF_THERM3], 
-                     DOUBLE etem[NUMDOF_THERM3*MAXNOD_THERM3], 
+                     DOUBLE bop[NDIM_THERM3][MAXDOF_THERM3],
+                     DOUBLE etem[NUMDOF_THERM3*MAXNOD_THERM3],
                      DOUBLE tmgr[NUMTMGR_THERM3]);
 void th3_lin_bcb(INT neledof,
                  DOUBLE bop[NDIM_THERM3][NUMDOF_THERM3*MAXNOD_THERM3],
@@ -413,7 +414,7 @@ void therm3(PARTITION *actpart,
             ARRAY *emass_global,
             ARRAY *intforce_global,
             CALC_ACTION *action,
-            CONTAINER *container);   /* contains variables defined 
+            CONTAINER *container);   /* contains variables defined
                                       * in container.h */
 
 /*----------------------------------------------------------------------*/
@@ -481,3 +482,4 @@ void th3_temper_sh(const CONTAINER *container,
 /*----------------------------------------------------------------------*/
 #endif /*end of #ifdef D_THERM3 */
 /*! @} (documentation module close) */
+#endif

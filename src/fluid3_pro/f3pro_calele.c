@@ -10,6 +10,7 @@ Maintainer: Ulrich Kuettler
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID3_PRO
 *//*! @{ (documentation module open)*/
@@ -1647,3 +1648,4 @@ void f3pro_calpress(ELEMENT* ele,
 
 #endif
 /*! @} (documentation module close)*/
+#endif

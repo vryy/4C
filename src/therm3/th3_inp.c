@@ -10,6 +10,7 @@ Maintainer: Burkhard Bornemann
             089-289-15237
 </pre>
 */
+#ifndef CCADISCRET
 #ifdef D_THERM3
 
 /*----------------------------------------------------------------------*/
@@ -26,7 +27,7 @@ Maintainer: Burkhard Bornemann
 /*!
 \brief Input of therm3 element
 
-This routines reads the therm3 element description in input file. 
+This routines reads the therm3 element description in input file.
 It is called by inpfield() (in input_mesh.c)
 
 \param   ele     *ELEMENT   (o)   pointer to element
@@ -89,7 +90,7 @@ void th3_inp(ELEMENT *ele)
       dserror("Reading of THERM3 HEX20 element topology failed");
     }
   }
-  
+
   frchk("HEX27", &ierr);  /* 27-node hexahedron */
   if (ierr==1)
   {
@@ -101,7 +102,7 @@ void th3_inp(ELEMENT *ele)
       dserror("Allocation of lm in ELEMENT failed");
     }
     frint_n("HEX27", &(ele->lm[0]), ele->numnp, &ierr);
-    if (ierr != 1) 
+    if (ierr != 1)
     {
       dserror("Reading of THERM3 HEX27 element topology failed");
     }
@@ -155,7 +156,7 @@ void th3_inp(ELEMENT *ele)
   {
     dserror("Reading of THERM3 element failed");
   }
-  
+
   /*--------------------------------------------------------------------*/
   /* read the gaussian points */
   frint_n("GP", &(ele->e.th3->gpnum[0]), NDIM_THERM3, &ierr);
@@ -250,3 +251,4 @@ void th3_inp(ELEMENT *ele)
 #endif  /* end of #ifdef D_THERM3 */
 /*! @} (documentation module close)*/
 
+#endif

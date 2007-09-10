@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 
 *----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 #ifdef TRILINOS_PACKAGE
@@ -676,3 +677,4 @@ return;
 }
 #endif /* D_MLSTRUCT */
 
+#endif

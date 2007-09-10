@@ -15,6 +15,7 @@ Maintainer: Burkhard Bornemann
 \author bborn
 \date 04/07
 */
+#ifndef CCADISCRET
 #ifdef D_SOLID3
 
 /*----------------------------------------------------------------------*/
@@ -134,7 +135,7 @@ void so3_mat_stvenant_sel(CONTAINER* container,
     {
       strain[istrn] = gds->stnengv[istrn];
     }
-  } 
+  }
   else if (ele->e.so3->kintype == so3_total_lagr)
   {
     /* Green-Lagrange strain vector */
@@ -156,7 +157,7 @@ void so3_mat_stvenant_sel(CONTAINER* container,
     DOUBLE tem;  /* temperature */
     /* temperature at Gauss point */
     so3_tsi_temper(container, ele,
-                   gds->gpc[0], gds->gpc[1], gds->gpc[2], 
+                   gds->gpc[0], gds->gpc[1], gds->gpc[2],
                    &tem);
     /* coefficient of linear thermal expansion */
     DOUBLE thermexpans = mat->m.stvenant->thermexpans;
@@ -189,4 +190,5 @@ void so3_mat_stvenant_sel(CONTAINER* container,
   return;
 }
 
+#endif
 #endif

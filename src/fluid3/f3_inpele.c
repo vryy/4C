@@ -13,6 +13,7 @@ Maintainer: Steffen Genkinger
  */
 /*-----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 
 /*!
 \addtogroup FLUID3
@@ -387,3 +388,4 @@ void f3_createale(
 
 
 
+#endif

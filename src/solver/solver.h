@@ -11,7 +11,6 @@ Maintainer: Malte Neumann
 
 ---------------------------------------------------------------------*/
 
-
 #ifndef SOLVER_H
 #define SOLVER_H
 
@@ -972,4 +971,3 @@ typedef struct _DBCSR
 
 
 #endif /* #ifndef SOLVER_H */
-

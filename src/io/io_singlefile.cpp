@@ -233,6 +233,7 @@ BIN_IN_MAIN bin_in_main;
 CHAR* fieldnames[] = FIELDNAMES;
 
 
+#ifndef CCADISCRET
 /*----------------------------------------------------------------------*/
 /*!
   \brief All node arrays names.
@@ -242,7 +243,7 @@ CHAR* fieldnames[] = FIELDNAMES;
 */
 /*----------------------------------------------------------------------*/
 static CHAR* nodearraynames[] = NODEARRAYNAMES;
-
+#endif
 
 /*======================================================================*/
 /* So the journey begins. I've put in some frames like this one that
@@ -460,6 +461,7 @@ void init_bin_in_main(CHAR* inputname)
 #endif
 }
 
+#ifndef CCADISCRET
 
 /*======================================================================*/
 /* Now here are utility functions that are concerned with the proper
@@ -4264,6 +4266,14 @@ MAP *in_find_restart_group(BIN_IN_FIELD* context, INT disnum, INT step)
 #endif
   return result_info;
 }
+
+#else
+
+void io_emergency_close_files()
+{
+}
+
+#endif
 
 /*! @} (documentation module close)*/
 

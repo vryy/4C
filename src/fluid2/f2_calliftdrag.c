@@ -10,6 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ---------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*----------------------------------------------------------------------*/
 
 /*!
@@ -205,7 +206,7 @@ for (line=0; line<ngline; line++)
       container->liftdrag[(ld_id-1)*6+0] -= forceline[0] * facr;
       container->liftdrag[(ld_id-1)*6+1] -= forceline[1] * facr;
       /*----------------------------------------------- add momentum ---*/
-      container->liftdrag[(ld_id-1)*6+5] += ( forceline[0]*xy[1] 
+      container->liftdrag[(ld_id-1)*6+5] += ( forceline[0]*xy[1]
                                 - forceline[1]*xy[0] ) * facr;
    }/*==================================== end integration loop over lr */
 }/* end loop line over lines to this element */
@@ -225,3 +226,4 @@ return;
 
 #endif
 /*! @} (documentation module close)*/
+#endif

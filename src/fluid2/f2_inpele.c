@@ -10,6 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID2
 *//*! @{ (documentation module open)*/
@@ -240,7 +241,7 @@ dsassert(ele->e.f2->turbu==0,"Turbulence needed but not compiled in!\n");
   /* read type of ale elements, created or read */
   if (!frreadyes("CA",&create_ale))
     create_ale = 0;
-    
+
   if (create_ale == 1 && ele->e.f2->is_ale == 1)
   {
     genprob.create_ale    = 1;
@@ -395,3 +396,4 @@ void f2_createale(
 
 #endif
 /*! @} (documentation module close)*/
+#endif

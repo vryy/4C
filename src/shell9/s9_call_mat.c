@@ -14,6 +14,7 @@ Maintainer: Stefan Hartmann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_SHELL9
 #include "../headers/standardtypes.h"
 #include "../materials/mat_prototypes.h"
@@ -346,3 +347,4 @@ return;
 /*----------------------------------------------------------------------*/
 #endif /*D_SHELL9*/
 /*! @} (documentation module close)*/
+#endif

@@ -15,6 +15,8 @@ Maintainer: Malte Neumann
 #ifndef STRUCTURE_PROTOTYPES_H
 #define STRUCTURE_PROTOTYPES_H
 
+#ifndef CCADISCRET
+
 /*----------------------------------------------------------------------*
   | stru_static_lin.c                                     m.gee 11/01    |
  *----------------------------------------------------------------------*/
@@ -296,7 +298,8 @@ void total_energy(
     STRUCT_DYN_CALC *dynvar);
 
 void dyn_nlngemm_outhead(
-    STRUCT_DYN_CALC *dynvar, 
+    STRUCT_DYN_CALC *dynvar,
     STRUCT_DYNAMIC  *sdyn);
 
+#endif
 #endif

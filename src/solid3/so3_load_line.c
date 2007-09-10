@@ -11,6 +11,7 @@ Maintainer: Burkhard Bornemann
             089-289-15237
 </pre>
 */
+#ifndef CCADISCRET
 #ifdef D_SOLID3
 
 /*----------------------------------------------------------------------*/
@@ -28,7 +29,7 @@ extern GENPROB genprob;
 
 /*======================================================================*/
 /*!
-\brief Spatial integration of 
+\brief Spatial integration of
        traction on element edges (lines) [force/length]
 
 \param  ele       ELEMENT*      (i)  current element
@@ -127,7 +128,7 @@ void so3_load_line_int(ELEMENT* ele,
             }
           }  /* end for */
           /*------------------------------------------------------------*/
-          /* integration loops 
+          /* integration loops
            * For each side one of the following loops is not repeated,
            * but as all sides are generally integrated here. */
           for (igp[0]=0; igp[0]<gpnum[0]; igp[0]++)
@@ -137,7 +138,7 @@ void so3_load_line_int(ELEMENT* ele,
             for (idim=0; idim<NDIM_SOLID3; idim++)
             {
               /* set anchor point in current side
-               * This is the intersection of edge with its normal 
+               * This is the intersection of edge with its normal
                * parameter coordinate plane */
               gpcidim = data->ancedgh[igline][idim];
               /* add coordinate components */
@@ -151,12 +152,12 @@ void so3_load_line_int(ELEMENT* ele,
             fac = cfac * data->ghlw[gpintc[0]][igp[0]];
             /*----------------------------------------------------------*/
             /* Shape functions at Gauss point */
-            so3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1, 
+            so3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1,
                             shape, deriv);
             /*----------------------------------------------------------*/
             /* add surface load contribution ==> eload modified */
-            so3_load_line_valh(ele, data, igline, gline[igline], 
-                               ex, exs, gpc, shape, deriv, fac, 
+            so3_load_line_valh(ele, data, igline, gline[igline],
+                               ex, exs, gpc, shape, deriv, fac,
                                eload);
           }  /* end for */
           /*------------------------------------------------------------*/
@@ -202,7 +203,7 @@ void so3_load_line_int(ELEMENT* ele,
             }
           }
           /*------------------------------------------------------------*/
-          /* integration loops 
+          /* integration loops
            * For each side one of the following loops is not repeated,
            * but as all sides are generally integrated here. */
           for (igp[0]=0; igp[0]<gpnum[0]; igp[0]++)
@@ -212,7 +213,7 @@ void so3_load_line_int(ELEMENT* ele,
             for (idim=0; idim<NDIM_SOLID3; idim++)
             {
               /* set anchor point in current side
-               * This is the intersection of edge with its normal 
+               * This is the intersection of edge with its normal
                * parameter coordinate plane */
               gpcidim = data->ancedgt[igline][idim];
               /* add coordinate components */
@@ -226,12 +227,12 @@ void so3_load_line_int(ELEMENT* ele,
             fac = cfac * data->gtlw[gpintc[0]][igp[0]];
             /*----------------------------------------------------------*/
             /* shape functions at Gauss point */
-            so3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1, 
+            so3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1,
                             shape, deriv);
             /*----------------------------------------------------------*/
             /* add surface load contribution ==> eload modified */
-            so3_load_line_valt(ele, data, igline, gline[igline], 
-                               ex, exs, gpc, shape, deriv, fac, 
+            so3_load_line_valt(ele, data, igline, gline[igline],
+                               ex, exs, gpc, shape, deriv, fac,
                                eload);
           }  /* end for */
           /*------------------------------------------------------------*/
@@ -308,7 +309,7 @@ void so3_load_line_valh(ELEMENT* ele,
     /* uniform prescribed surface load */
     case neum_dead:
       /* metric at Gauss point */
-      so3_metr_line(ele, nelenod, ex, deriv, data->rededgh[igline], 
+      so3_metr_line(ele, nelenod, ex, deriv, data->rededgh[igline],
                     NULL, &metr);
       for (idof=0; idof<NUMDOF_SOLID3; idof++)
       {
@@ -331,7 +332,7 @@ void so3_load_line_valh(ELEMENT* ele,
     /*------------------------------------------------------------------*/
     /* uniform tangential line load */
 #ifdef TANGLINELOAD_SOLID3
-    /* quick hack to apply tangential 'line load' on a cylindrical 
+    /* quick hack to apply tangential 'line load' on a cylindrical
      * cantilever beam (length 120) subjected to a torsional torque
      * at its tip. (bborn/mgit 04/07) */
     case neum_orthopressure:
@@ -342,7 +343,7 @@ void so3_load_line_valh(ELEMENT* ele,
         /* traction value */
         traction[idof] = gline->neum->neum_val.a.dv[idof];
         /* metric at Gauss point */
-        so3_metr_line(ele, nelenod, ex, deriv, data->rededgh[igline], 
+        so3_metr_line(ele, nelenod, ex, deriv, data->rededgh[igline],
                       gamt, &metr);
         /* make unit base vector */
         so3_tns3_unitvct(gamt);
@@ -376,7 +377,7 @@ void so3_load_line_valh(ELEMENT* ele,
         {
           for (jdof=0; jdof<NUMDOF_SOLID3; jdof++)
           {
-            eload[inode][jdof] += shape[inode] * traction[idof] 
+            eload[inode][jdof] += shape[inode] * traction[idof]
               * dir * gamt[jdof] * fac * metr;
           }
         }
@@ -446,7 +447,7 @@ void so3_load_line_valt(ELEMENT* ele,
     /* uniform prescribed surface load */
     case neum_dead:
       /* metric at Gauss point */
-      so3_metr_line(ele, nelenod, ex, deriv, data->rededgt[igline], 
+      so3_metr_line(ele, nelenod, ex, deriv, data->rededgt[igline],
                     NULL, &metr);
       for (idof=0; idof<NUMDOF_SOLID3; idof++)
       {
@@ -481,3 +482,4 @@ void so3_load_line_valt(ELEMENT* ele,
 
 /*======================================================================*/
 #endif  /*end of #ifdef D_SOLID3 */
+#endif

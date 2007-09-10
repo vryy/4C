@@ -11,6 +11,7 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 #ifdef SPOOLES_PACKAGE
 
@@ -50,7 +51,7 @@ int        i;
 int        imyrank;
 int        inprocs;
 int        nnz,numeq,numeq_total;
-int        seed = 10101; 
+int        seed = 10101;
 int        nedges;
 int       *irn,*jcn;
 int       *update;
@@ -172,7 +173,7 @@ if (spo->is_factored==0)
 {
    spo->mtxA = InpMtx_new();
    InpMtx_init(spo->mtxA,INPMTX_BY_ROWS,1,nnz,0);
-   
+
    Epetra_CrsMatrix* matrix = (Epetra_CrsMatrix*)tri->matrix;
    for (int i=0; i<matrix->NumMyRows(); ++i)
    {
@@ -674,3 +675,4 @@ return;
 #endif /* end of ifdef SPOOLES_PACKAGE */
 #endif /* end of ifdef TRILINOS_PACKAGE */
 
+#endif

@@ -10,6 +10,7 @@ Maintainer: Moritz Frenzel
             089-289-15240
 </pre>
 */
+#ifndef CCADISCRET
 #ifdef D_SOLID3
 
 
@@ -163,3 +164,4 @@ void so3_def_grad(INT enod,
 /*======================================================================*/
 #endif /* end of #ifdef D_SOLID3 */
 /*! @} (documentation module close)*/
+#endif

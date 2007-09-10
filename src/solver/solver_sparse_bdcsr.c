@@ -11,6 +11,7 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 #ifdef MLPCG
 
 #include "../headers/standardtypes.h"
@@ -1248,3 +1249,4 @@ void  add_bdcsr(
 #endif
 
 
+#endif

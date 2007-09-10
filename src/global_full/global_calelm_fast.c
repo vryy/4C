@@ -13,6 +13,7 @@ Maintainer: Malte Neumann
 
  */
 /*-----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 
 /*!
 \addtogroup GLOBAL
@@ -192,3 +193,4 @@ dstrc_enter("calelm_fast");
 /*! @} (documentation module close)*/
 
 
+#endif

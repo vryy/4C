@@ -11,6 +11,7 @@ Maintainer: Ulrich Kuettler
 
 ------------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 #ifdef D_FLUID3_PRO
 
 /************************************************************************
@@ -314,4 +315,5 @@ void f3pro_calpress(ELEMENT* ele,
 		    ARRAY_POSITION* ipos);
 
 
+#endif
 #endif

@@ -11,6 +11,7 @@ Maintainer: Michael Gee
 </pre>
 
 ----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef WALLCONTACT
 /*!----------------------------------------------------------------------
 \brief the header of everything
@@ -944,4 +945,5 @@ return;
 }
 /* end of wall_contact_detection.c*/
 /*! @} (documentation module close)*/
+#endif
 #endif

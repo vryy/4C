@@ -10,6 +10,7 @@
 </pre>
 
  *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 #include "../axishell/axishell.h"
@@ -1295,7 +1296,7 @@ void calreduce(
   INT is_therm3=0;
 #endif
   INT is_solid3=0;
-  
+
   ELEMENT *actele;
 
 
@@ -1450,7 +1451,4 @@ void calreduce(
 
 } /* end of calreduce */
 
-
-
-
-
+#endif

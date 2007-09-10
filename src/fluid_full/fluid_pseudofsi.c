@@ -10,6 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ---------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID
 *//*! @{ (documentation module open)*/
@@ -210,4 +211,5 @@ dstrc_exit();
 
 return;
 } /* end of fsi_creatcoup*/
+#endif
 #endif

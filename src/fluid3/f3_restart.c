@@ -10,6 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID3
 *//*! @{ (documentation module open)*/
@@ -80,7 +81,7 @@ dstrc_enter("f3_write_restart");
 /*
    fluid3 element has to write the curvature data at the free surface
    and the stab parameter of the last time step.
-   
+
 */
 /*----------------------------------------------------------------------*/
 fdyn= alldyn[genprob.numff].fdyn;
@@ -140,7 +141,7 @@ dstrc_enter("f3_read_restart");
 /*
    fluid3 element has to read the curvature data at the free surface
    and the stab parameter of the last time step.
-   
+
 */
 /*----------------------------------------------------------------------*/
 fdyn= alldyn[genprob.numff].fdyn;
@@ -184,4 +185,5 @@ dstrc_exit();
 return;
 } /* end of f3_read_restart */
 
+#endif
 #endif

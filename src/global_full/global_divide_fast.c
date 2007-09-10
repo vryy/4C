@@ -15,6 +15,7 @@ Maintainer: Malte Neumann
  */
 /*-----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 /*!
 \addtogroup GLOBAL
 *//*! @{ (documentation module open)*/
@@ -542,3 +543,4 @@ for(i=0; i<genprob.numfld; i++)  /* loop all fields */
 
 /*! @} (documentation module close)*/
 
+#endif

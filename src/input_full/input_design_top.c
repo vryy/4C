@@ -10,6 +10,7 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -1095,4 +1096,4 @@ dstrc_exit();
 return;
 } /* end of inpdesign_dvol_fevol */
 
-
+#endif

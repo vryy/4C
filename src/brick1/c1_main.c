@@ -11,6 +11,7 @@ Maintainer: Andreas Lipka
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "brick1.h"
 #include "brick1_prototypes.h"
@@ -95,7 +96,7 @@ case calc_struct_linstiff:
    /* rotate components at Dirichlet nodes into local system */
 #ifdef LOCALSYSTEMS_ST
    if (ele->locsys == locsys_yes)
-   {    
+   {
      locsys_trans_equant_dirich(ele, estif_global, NULL, NULL, NULL);
    }
 #endif
@@ -107,7 +108,7 @@ case calc_struct_nlnstiff:
    /* rotate components at Dirichlet nodes into local system */
 #ifdef LOCALSYSTEMS_ST
    if (ele->locsys == locsys_yes)
-   {    
+   {
      locsys_trans_equant_dirich(ele, estif_global, NULL, NULL, intforce);
    }
 #endif
@@ -120,7 +121,7 @@ case calc_struct_linstiffmass:
    /* rotate components at Dirichlet nodes into local system */
 #ifdef LOCALSYSTEMS_ST
    if (ele->locsys == locsys_yes)
-   {    
+   {
      locsys_trans_equant_dirich(ele, estif_global, emass_global, NULL, intforce);
    }
 #endif
@@ -132,7 +133,7 @@ case calc_struct_linstifflmass:
    /* rotate components at Dirichlet nodes into local system */
 #ifdef LOCALSYSTEMS_ST
    if (ele->locsys == locsys_yes)
-   {    
+   {
      locsys_trans_equant_dirich(ele, estif_global, NULL, NULL, intforce);
    }
 #endif
@@ -144,7 +145,7 @@ case calc_struct_nlnstiffmass:
            container);
 #ifdef LOCALSYSTEMS_ST
    if (ele->locsys == locsys_yes)
-   {    
+   {
      locsys_trans_equant_dirich(ele, estif_global, emass_global, NULL, intforce);
    }
 #endif
@@ -155,7 +156,7 @@ case calc_struct_internalforce:
            container);
 #ifdef LOCALSYSTEMS_ST
    if (ele->locsys == locsys_yes)
-   {    
+   {
      locsys_trans_equant_dirich(ele, NULL, NULL, NULL, intforce);
    }
 #endif
@@ -171,7 +172,7 @@ case calc_struct_eleload:
    c1_eleload(ele,&actdata,intforce,0);
 #ifdef LOCALSYSTEMS_ST
    if (ele->locsys == locsys_yes)
-   {    
+   {
      locsys_trans_equant_dirich(ele, NULL, NULL, NULL, intforce);
    }
 #endif
@@ -317,3 +318,4 @@ dstrc_exit();
 return;
 } /* end of brick1 */
 /*! @} (documentation module close)*/
+#endif

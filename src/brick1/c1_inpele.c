@@ -10,6 +10,7 @@ Maintainer: Andreas Lipka
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_BRICK1
 
 #include "../headers/standardtypes.h"
@@ -151,3 +152,4 @@ return;
 #endif
 /*! @} (documentation module close)*/
 
+#endif

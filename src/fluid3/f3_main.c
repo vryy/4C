@@ -10,6 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "fluid3_prototypes.h"
 #include "../fluid3ml/fluid3ml_prototypes.h"
@@ -237,3 +238,4 @@ dstrc_exit();
 return;
 } /* end of fluid3 */
 
+#endif

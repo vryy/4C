@@ -13,6 +13,7 @@ Maintainer: Burkhard Bornemann
 \author bborn
 \date 09/06
 */
+#ifndef CCADISCRET
 #ifdef D_THERM3
 
 
@@ -115,3 +116,4 @@ void th3_mat_capacity(MATERIAL* mat,
 /*======================================================================*/
 #endif  /* end of #ifdef D_THERM3 */
 /*! @} (documentation module close) */
+#endif

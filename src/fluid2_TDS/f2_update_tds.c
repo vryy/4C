@@ -10,6 +10,7 @@ Maintainer: Peter Gamnitzer
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID2
 *//*! @{ (documentation module open)*/
@@ -60,11 +61,11 @@ one step theta timestepping scheme.
 Here, res_C(u)=div(u) is the residual of the continuity equation.
 
 </pre>
-\param  *actpart       PARTITION        (i)   
-\param  *actintra      INTRA            (i)   
-\param  *actfield      FIELD            (i)   
+\param  *actpart       PARTITION        (i)
+\param  *actintra      INTRA            (i)
+\param  *actfield      FIELD            (i)
 \param  *ipos          ARRAY_POSITION   (i)
-\param   disnum_calc   INT              (i)   
+\param   disnum_calc   INT              (i)
 \return void
 
 ------------------------------------------------------------------------*/
@@ -156,7 +157,7 @@ evelng    = amdef("evelng"   ,&evelng_a   ,NUM_F2_VELDOF,MAXNOD_F2,"DA");
 vderxy    = amdef("vderxy"   ,&vderxy_a   ,2,2,"DA");
 derxy     = amdef("derxy"    ,&derxy_a    ,2,MAXNOD_F2,"DA");
 deriv2     = amdef("deriv2"   ,&deriv2_a   ,3,MAXNOD_F2,"DA");
-  
+
 
 
 for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
@@ -176,7 +177,7 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 	    icode   = 3; /* flag for higher order elements                 */
 	    ihoel   = 1; /* flag for eveluation of shape functions         */
 	    nir  = ele->e.f2->nGP[0];
-	    nis  = 1;	    
+	    nis  = 1;
 	    break;
 	case tri3:
 	    ihoel  =0;  /* flag for higher order elements                 */
@@ -188,7 +189,7 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 	    dserror("typ unknown!");
     } /* end switch(typ) */
 
-  
+
     /*------------------------------------------ set element coordinates -*/
     for(i=0;i<ele->numnp;i++)
     {
@@ -208,10 +209,10 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 
     } /* end of loop over nodes of element */
 
-    
+
     /*---------------------------------------------- get viscosity ---*/
     visc = mat[ele->mat-1].m.fluid->viscosity;
-    
+
     /*--------------------------------------------- stab-parameter ---*/
     f2_get_time_dependent_sub_tau(ele,xyze,funct,deriv,evelng,eveln,visc);
 
@@ -220,8 +221,8 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 
     old_facC   = 1./(fdyn->tau_old[2]+theta*dt);
     old_facCtau= fdyn->tau_old[2]*facC;
-    
-    
+
+
 /*----------------------------------------------------------------------*
  |               start loop over integration points                     |
  *----------------------------------------------------------------------*/
@@ -246,10 +247,10 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 		    dserror("typ unknown!");
 	    } /* end switch(typ) */
 
-	    
+
 	    /*------------------ compute Jacobian matrix at time n+1 ---*/
 	    f2_jaco(xyze,deriv,xjm,&det,ele->numnp,ele);
-	    
+
 	    /*----------------------------- compute global derivates ---*/
 	    f2_gder(derxy,deriv,xjm,det,ele->numnp);
 
@@ -264,7 +265,7 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 	    divu_old = vderxy[0][0] + vderxy[1][1];
 
 	    sp_old=ele->e.f2->sub_pres.a.dv[lr*nis+ls];
-	    
+
 	    CRHS=sp_old
 		-
 		(1.-theta)*dt*(sp_old/fdyn->tau_old[2]+divu_old);
@@ -314,13 +315,13 @@ one step theta time integration scheme of the equation
 Here, res_M(u) is the residual of the momentum equation and contains a
 time derivative, a convective term, a diffusion term, the pressure
 gradient and the volume force.
-                    
+
 </pre>
-\param  *actpart       PARTITION        (i)   
-\param  *actintra      INTRA            (i)   
-\param  *actfield      FIELD            (i)   
+\param  *actpart       PARTITION        (i)
+\param  *actintra      INTRA            (i)
+\param  *actfield      FIELD            (i)
 \param  *ipos          ARRAY_POSITION   (i)
-\param   disnum_calc   INT              (i)   
+\param   disnum_calc   INT              (i)
 \return void
 
 ------------------------------------------------------------------------*/
@@ -333,7 +334,7 @@ void f2_update_subscale_vel(
     ARRAY_POSITION *ipos,
     INT             disnum_calc)
 {
-/* multi purpose counter */    
+/* multi purpose counter */
 int      i;
 
 /* counter for dimensions (x,y) */
@@ -456,7 +457,7 @@ edeadn     = amdef("edeadn"    ,&edeadn_a    ,2,1,"DV");
 edeadng    = amdef("edeadng"   ,&edeadng_a   ,2,1,"DV");
 wa1        = amdef("wa1"      ,&w1_a       ,MAXDOFPERELE,MAXDOFPERELE,"DA");
 wa2        = amdef("wa2"      ,&w2_a       ,MAXDOFPERELE,MAXDOFPERELE,"DA");
- 
+
 
 
 for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
@@ -491,7 +492,7 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 	    dserror("typ unknown!");
     } /* end switch(typ) */
 
-  
+
     /*------------------------------------------ set element coordinates -*/
     for(i=0;i<ele->numnp;i++)
     {
@@ -508,7 +509,7 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 	evelng[1][i]=actnode->sol_increment.a.da[ipos->velnp][1];
 	eveln [0][i]=actnode->sol_increment.a.da[ipos->veln ][0];
 	eveln [1][i]=actnode->sol_increment.a.da[ipos->veln ][1];
-	
+
         /*--------------------------------------------- and pressures */
 	epreng   [i]=actnode->sol_increment.a.da[ipos->velnp][2];
 	epren    [i]=actnode->sol_increment.a.da[ipos->veln ][2];
@@ -532,7 +533,7 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 			     fdyn->acttime-fdyn->dta,
 			     &acttimefacn) ;
 	}
-	
+
 	for (i=0;i<2;i++)
 	{
 	    if (ele->g.gsurf->neum->neum_onoff.a.iv[i]==0)
@@ -556,21 +557,21 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 	    edeadng[i] = 0.0;
 	}
     }
-    
+
     /*---------------------------------------------- get viscosity ---*/
     visc = mat[ele->mat-1].m.fluid->viscosity;
-    
+
     /*--------------------------------------------- stab-parameter ---*/
     f2_get_time_dependent_sub_tau(ele,xyze,funct,deriv,evelng,eveln,visc);
 
     facM   =         1.0/(fdyn->tau[0]+theta*dt);
     facMtau=fdyn->tau[0]/(fdyn->tau[0]+theta*dt);
 
-    
+
     old_facM   = 1./(fdyn->tau_old[0]+theta*dt);
     old_facMtau= fdyn->tau_old[0]*old_facM;
 
-    
+
 /*----------------------------------------------------------------------*
  |               start loop over integration points                     |
  *----------------------------------------------------------------------*/
@@ -611,13 +612,13 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 		/*------------------------------- get pressure (n+1) ---*/
 		press     +=funct[i]*epreng[i];
 	    }
-	    	    
+
 	    /*------------------ compute Jacobian matrix at time n+1 ---*/
 	    f2_jaco(xyze,deriv,xjm,&det,ele->numnp,ele);
-	    
+
 	    /*----------------------------- compute global derivates ---*/
 	    f2_gder(derxy,deriv,xjm,det,ele->numnp);
-   
+
 	    /*--- get velocity (n+1,i) derivatives at integration point */
 	    f2_vder(vderxy,derxy,evelng,ele->numnp);
 
@@ -637,7 +638,7 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 
 	    /*------------------------------- get pressure gradients ---*/
 	    gradp[0] = gradp[1] = 0.0;
-	    
+
 	    for (i=0; i<ele->numnp; i++)
 	    {
 		gradp[0] += derxy[0][i] * epreng[i];
@@ -660,14 +661,14 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 		hot    [1]=0.5 * (2.0*vderxy2[1][1]
 				  +
 				  (vderxy2[1][0] + vderxy2[0][2]));
-		
+
 		hot_old[0]=0.5 * (2.0*vderxy2_old[0][0]
 			   	  +
 			   	  (vderxy2_old[0][1] + vderxy2_old[1][2]));
 		hot_old[1]=0.5 * (2.0*vderxy2_old[1][1]
 			   	  +
 			   	  (vderxy2_old[1][0] + vderxy2_old[0][2]));
-	    }	
+	    }
 	    else
 	    {
 		hot    [0]=0;
@@ -698,7 +699,7 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 		res_old[dim]+=(velint_old[0]*vderxy_old[dim][0]
 			       +
 			       velint_old[1]*vderxy_old[dim][1]);
-		
+
 		res_old[dim]-=2*visc*hot_old[dim];
 		res_old[dim]+=gradp_old[dim];
 		res_old[dim]-=edeadn[dim];
@@ -766,12 +767,12 @@ generalzed alpha timestepping scheme.
 Here, res_C(u)=div(u) is the residual of the continuity equation.
 The time discrete expression is
 
-              
-              
-     p_sub^{n+1} = 
-                 							    
-               /dp_sub\ ^{n}					    
-      = C1 *  |------ |     + C2 * p_sub^{n} - C3 * div(u^{n+alpha_F}) 
+
+
+     p_sub^{n+1} =
+
+               /dp_sub\ ^{n}
+      = C1 *  |------ |     + C2 * p_sub^{n} - C3 * div(u^{n+alpha_F})
        	       \  dt  /
 
 
@@ -780,30 +781,30 @@ where Ci are constants from the time integration algorithm
    	               (alpha_M-theta)*(dt*tau_C)
    	       C1 =  ------------------------------
    	             alpha_M*tau_C+alpha_F*dt*theta
-	             
-            
-      
-   	             (alpha_F-1)*dt*theta-alpha_M*tau_C   
+
+
+
+   	             (alpha_F-1)*dt*theta-alpha_M*tau_C
    	       C2 =  ----------------------------------
    	               alpha_M*tau_C+alpha_F*dt*theta
-	       
-                    
+
+
    	                   theta*dt*tau_C
    	       C3 =  ------------------------------
    	             alpha_M*tau_C+alpha_F*dt*theta
-	       
-                   	       
+
+
 The acceleration of the subscale pressure is updated by use of the value
 p_sub^{n+1} according to the linear relation between accelerations and
 function values in the generalised alpha scheme.
-       	       
+
 
 </pre>
 \param  *actpart       PARTITION        (i)
 \param  *actintra      INTRA            (i)
 \param  *actfield      FIELD            (i)
 \param  *ipos          ARRAY_POSITION   (i)
-\param   disnum_calc   INT              (i)                
+\param   disnum_calc   INT              (i)
 \return void
 
 ------------------------------------------------------------------------*/
@@ -917,7 +918,7 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 	xyze[0][i]=ele->node[i]->x[0];
 	xyze[1][i]=ele->node[i]->x[1];
     }
-    
+
     /*---------------------------------------------- get viscosity ---*/
     visc = mat[ele->mat-1].m.fluid->viscosity;
 
@@ -948,7 +949,7 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 	default:
 	    dserror("typ unknown!");
     } /* end switch(typ) */
-    
+
     /* -> implicit time integration method ---------*/
     for(i=0;i<ele->numnp;i++) /* loop nodes of element */
     {
@@ -962,11 +963,11 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 
     /*--------------------------------------------- stab-parameter ---*/
     f2_get_time_dependent_sub_tau(ele,xyze,funct,deriv,evelng,NULL,visc);
-    
+
     tau_C  = fdyn->tau[2];
 
     C1 = (alpha_M-theta)*dt*(tau_C/(alpha_M*tau_C+aftdt));
-    C2 = ((alpha_F-1.0)*dt*theta+alpha_M*tau_C)/(alpha_M*tau_C+aftdt);   
+    C2 = ((alpha_F-1.0)*dt*theta+alpha_M*tau_C)/(alpha_M*tau_C+aftdt);
     C3 = (tau_C/(alpha_M*tau_C+aftdt))*theta*dt;
 
 /*----------------------------------------------------------------------*
@@ -998,7 +999,7 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 		default:
 		    dserror("typ unknown!");
 	    } /* end switch(typ) */
-	    
+
 	    /*------------------ compute Jacobian matrix at time n+1 ---*/
 	    f2_jaco(xyze,deriv,xjm,&det,ele->numnp,ele);
 
@@ -1012,9 +1013,9 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 	    divu     = vderxy[0][0] + vderxy[1][1];
 
 	    sp_old    =ele->e.f2->sub_pres.a.dv[lr*nis+ls];
-	    
+
 	    sp_acc_old=ele->e.f2->sub_pres_acc.a.dv[lr*nis+ls];
-	    
+
 	    ele->e.f2->sub_pres_trial.a.dv[lr*nis+ls]=
 		C1*sp_acc_old +	C2*sp_old - C3*divu;
 
@@ -1045,7 +1046,7 @@ dstrc_exit();
 #endif
 
 return;
-    
+
 }
 
 
@@ -1065,20 +1066,20 @@ generalzed alpha timestepping scheme.
 Here, res_M(u,p) is the residual of the momentum equation.
 The time discrete expression is
 
-              
-       
-                   	       
+
+
+
 The subscale velocities are updated by use of the value of the subscale
 acceleration according to the linear relation between accelerations and
 function values in the generalised alpha scheme.
-       	       
+
 
 </pre>
 \param  *actpart       PARTITION        (i)
 \param  *actintra      INTRA            (i)
 \param  *actfield      FIELD            (i)
 \param  *ipos          ARRAY_POSITION   (i)
-\param   disnum_calc   INT              (i)                
+\param   disnum_calc   INT              (i)
 \return void
 
 ------------------------------------------------------------------------*/
@@ -1128,7 +1129,7 @@ double   res_mod[2]; /* the residual of the momentum equation without f */
 /* higher order terms */
 DOUBLE  hot   [2];
 
-/* pressure gradient */ 
+/* pressure gradient */
 DOUBLE  gradp [2];
 
 
@@ -1273,13 +1274,13 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 
     /*--------------------------------------------- stab-parameter ---*/
     f2_get_time_dependent_sub_tau(ele,xyze,funct,deriv,evelng,NULL,visc);
-    
+
     tau_M  = fdyn->tau[0];
 
     amtau_M= alpha_M*tau_M;
     facM   = 1./(amtau_M+aftdt);
 
-    
+
 /*----------------------------------------------------------------------*
  |               start loop over integration points                     |
  *----------------------------------------------------------------------*/
@@ -1309,7 +1310,7 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 		default:
 		    dserror("typ unknown!");
 	    } /* end switch(typ) */
-   
+
 	    /*------------------ compute Jacobian matrix at time n+1 ---*/
 	    f2_jaco(xyze,deriv,xjm,&det,ele->numnp,ele);
 
@@ -1321,7 +1322,7 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 
 	    /*--- get accelerations (n+alpha_M) at integration point ---*/
 	    f2_veci(accint,funct,eaccng,ele->numnp);
-	    
+
 	    /*--- get velocity (n+alpha_F,i) derivatives at integration
 	                                                          point */
 	    f2_vder(vderxy,derxy,evelng,ele->numnp);
@@ -1331,8 +1332,8 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 		f2_gder2(xyze,xjm,wa1,wa2,derxy,derxy2,deriv2,ele->numnp);
 		f2_vder2(vderxy2,derxy2,evelng,ele->numnp);
 	    }
-	    
-	    for(i=0;i<2;i++) 
+
+	    for(i=0;i<2;i++)
 	    {
 		sv_old    [i]=ele->e.f2->sub_vel.a.da    [i][lr*nis+ls];
 
@@ -1349,7 +1350,7 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 		hot    [1]=0.5 * (2.0*vderxy2[1][1]
 				  +
 				  (vderxy2[1][0] + vderxy2[0][2]));
-	    }	
+	    }
 	    else
 	    {
 		hot    [0]=0;
@@ -1358,20 +1359,20 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 
 	    /*------------------------------- get pressure gradients ---*/
 	    gradp[0] = gradp[1] = 0.0;
-	    
+
 	    for (i=0; i<ele->numnp; i++)
 	    {
 		gradp[0] += derxy[0][i] * epreng[i];
 		gradp[1] += derxy[1][i] * epreng[i];
 	    }
- 
-	    for(i=0;i<2;i++) 
+
+	    for(i=0;i<2;i++)
 	    {
 		/* residual without body force */
 		res_mod[i] = accint[i] + 0 - 2*visc*hot[i]
 		    + gradp[i];
 
-		
+
 		sv_acc_mod_new[i] = - facM * sv_old[i]
 		    - facM * (tau_M+alpha_F*dt-amtau_M-aftdt)*sv_acc_old[i]
 		    - facM * (tau_M*res_mod[i]+aftdt/alpha_M*edeadng[i]);
@@ -1384,7 +1385,7 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 
 		sv_new[i] = sv_old[i] + dt*sv_acc_old[i]
 		    + dt*theta *(sv_acc_new[i]-sv_acc_old[i]);
-		
+
 		ele->e.f2->sub_vel_trial.a.da[i][lr*nis+ls]=sv_new [i];
 
 	    }
@@ -1417,7 +1418,7 @@ dstrc_exit();
 #endif
 
 return;
-    
+
 }
 
 
@@ -1433,7 +1434,7 @@ subscale values
 \param  *actintra      INTRA            (i)
 \param  *actfield      FIELD            (i)
 \param  *ipos          ARRAY_POSITION   (i)
-\param   disnum_calc   INT              (i)                
+\param   disnum_calc   INT              (i)
 \return void
 
 ------------------------------------------------------------------------*/
@@ -1451,22 +1452,22 @@ void f2_time_update_subscales_for_incr_gen_alpha (
 
 /* counter for elements */
   int      nele;
-  
+
 /* element related data */
   ELEMENT *ele;
   int      ls,lr;
   int      nis=0,nir=0;
-  
+
 
 #ifdef DEBUG
 dstrc_enter("f2_time_update_subscales_for_incr_gen_alpha");
 #endif
 
-    
+
 for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 {
     ele=actpart->pdis[disnum_calc].element[nele];
-    
+
 /*----------------------------------------------------------------------*
   |               start loop over integration points                     |
   *----------------------------------------------------------------------*/
@@ -1477,11 +1478,11 @@ for(nele=0;nele<actpart->pdis[disnum_calc].numele;nele++)
 
         ele->e.f2->sub_pres.a.dv[lr*nis+ls]
           =ele->e.f2->sub_pres_trial.a.dv[lr*nis+ls];
-      
+
         ele->e.f2->sub_pres_acc.a.dv[lr*nis+ls]
           =ele->e.f2->sub_pres_acc_trial.a.dv[lr*nis+ls];
 
-        for(dim=0;dim<2;dim++) 
+        for(dim=0;dim<2;dim++)
         {
           ele->e.f2->sub_vel.a.da[dim][lr*nis+ls]
             =ele->e.f2->sub_vel_trial.a.da[dim][lr*nis+ls];
@@ -1499,7 +1500,7 @@ dstrc_exit();
 #endif
 
 return;
-    
+
 }
 
 /*!---------------------------------------------------------------------
@@ -1538,28 +1539,28 @@ gradient and the volume force.
 
 
 </pre>
-\param  sp_trial              *double             (o) 
-\param  sp_acc_trial          *double             (o) 
-\param  sub_u_trial           *double             (o) 
-\param  sub_u_acc_trial       *double             (o) 
-\param  sp_old                 double[2]          (i)            
-\param  sp_acc_old             double[2]          (i) 
-\param  sub_u                  double[2]          (i) 
-\param  sub_u_acc              double[2]          (i) 
-\param  ihoel                  int                (i) 
-\param  alpha_M                double             (i)       
-\param  alpha_F                double             (i) 
-\param  theta                  double             (i) 
-\param  dt                     double             (i) 
-\param  tau_M                  double             (i) 
-\param  tau_C                  double             (i)       
-\param  visc                   double             (i) 
-\param  velint                 double[2]          (i) 
-\param  accint                 double[2]          (i) 
-\param  gradp                  double[2]          (i) 
-\param  vderxy                 double**           (i)    
-\param  vderxy2                double**           (i) 
-\param  edeadng                double*            (i) 
+\param  sp_trial              *double             (o)
+\param  sp_acc_trial          *double             (o)
+\param  sub_u_trial           *double             (o)
+\param  sub_u_acc_trial       *double             (o)
+\param  sp_old                 double[2]          (i)
+\param  sp_acc_old             double[2]          (i)
+\param  sub_u                  double[2]          (i)
+\param  sub_u_acc              double[2]          (i)
+\param  ihoel                  int                (i)
+\param  alpha_M                double             (i)
+\param  alpha_F                double             (i)
+\param  theta                  double             (i)
+\param  dt                     double             (i)
+\param  tau_M                  double             (i)
+\param  tau_C                  double             (i)
+\param  visc                   double             (i)
+\param  velint                 double[2]          (i)
+\param  accint                 double[2]          (i)
+\param  gradp                  double[2]          (i)
+\param  vderxy                 double**           (i)
+\param  vderxy2                double**           (i)
+\param  edeadng                double*            (i)
 
 \return void
 
@@ -1591,14 +1592,14 @@ void f2_up_tds_at_gp_genalpha (
 {
 
   int       dim;         /* counter for dimensions (x,y) */
-  
+
   double    aftdt;
   double    amtauC;
 
   double    facM;
   double    amtauM;
 
-  
+
   double    C1,C2,C3;
 
   double    hot         [2]; /* higher order terms                     */
@@ -1610,7 +1611,7 @@ void f2_up_tds_at_gp_genalpha (
 
   aftdt   = alpha_F*dt*theta;
 
-  
+
   /*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*
    *                                                                   *
    *                  update of SUBSCALE PRESSURE                      *
@@ -1618,15 +1619,15 @@ void f2_up_tds_at_gp_genalpha (
    *%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
   amtauC  = alpha_M*tau_C;
-  
+
   C1 = (alpha_M-theta)*dt*(tau_C/(amtauC+aftdt));
-  C2 = (dt*theta)/(amtauC+aftdt);   
+  C2 = (dt*theta)/(amtauC+aftdt);
   C3 = dt*tau_C*theta/(amtauC+aftdt);
 
-  
+
 /*  printf("C1 %22.15e C2 %22.15e  C3  %22.15e\n",C1,C2,C3);*/
-  
-  
+
+
   sp_trial[0]  = C1*sp_acc_old                   ;
   sp_trial[0] -= C2*sp_old                       ;
   sp_trial[0] -= C3*(vderxy[0][0] + vderxy[1][1]);
@@ -1653,14 +1654,14 @@ void f2_up_tds_at_gp_genalpha (
     hot    [1]=0.5 * (2.0*vderxy2[1][1]
                       +
                       (vderxy2[1][0] + vderxy2[0][2]));
-  }	
+  }
   else
   {
     hot    [0]=0;
     hot    [1]=0;
   }
 
-  for(dim=0;dim<2;dim++) 
+  for(dim=0;dim<2;dim++)
   {
     /* residual without body force */
     res_mod[dim] =
@@ -1698,14 +1699,14 @@ void f2_up_tds_at_gp_genalpha (
     }
     else
 #endif
-    { 
+    {
     su_trial[dim] = su_old[dim]
       + dt*(1.-theta)*(su_acc_old[dim])
       + dt*    theta *(su_acc_mod[dim])
       + dt*(edeadng[dim]/alpha_M);
     }
   }
-  
+
 /*----------------------------------------------------------------------*/
 #ifdef DEBUG
   dstrc_exit();
@@ -1716,3 +1717,4 @@ void f2_up_tds_at_gp_genalpha (
 #endif /*D_FLUID2_TDS*/
 #endif /*D_FLUID2*/
 /*! @} (documentation module close)*/
+#endif

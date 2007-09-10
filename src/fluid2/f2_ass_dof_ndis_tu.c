@@ -10,6 +10,7 @@ Maintainer: Thomas Hettich
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_FLUID2TU
 #include "../headers/standardtypes.h"
 
@@ -74,4 +75,5 @@ dstrc_exit();
 return;
 } /* end of f2tu_ass_dof */
 
+#endif
 #endif

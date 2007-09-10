@@ -10,6 +10,7 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "shell8.h"
 
@@ -199,3 +200,4 @@ dstrc_exit();
 #endif
 return;
 } /* end of shell8 */
+#endif

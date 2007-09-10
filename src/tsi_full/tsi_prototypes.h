@@ -12,6 +12,7 @@ Maintainer: Burkhard Bornemann
 </pre>
 */
 
+#ifndef CCADISCRET
 
 /*----------------------------------------------------------------------*/
 /* header files */
@@ -46,7 +47,7 @@ void tsi_init_chkfld(INT *numfld, /* total number of fields */
                      INT *numtf,  /* number (index) of thermal field */
                      FIELD **structfield,  /* structure field */
                      FIELD **thermfield);  /* thermal field */
-void tsi_init_chkdis(FIELD *actfield, 
+void tsi_init_chkdis(FIELD *actfield,
                      INT *disnum);
 void tsi_init_alldyn(INT numsf,
                      INT numtf,
@@ -55,7 +56,7 @@ void tsi_init_alldyn(INT numsf,
                      TSI_DYNAMIC **tsidyn);
 void tsi_init_nodsol(FIELD *structfield,
                      INT disnum_s,
-                     FIELD *thermfield, 
+                     FIELD *thermfield,
                      INT disnum_t);
 void tsi_init_curve(TSI_DYNAMIC *tsidyn);
 
@@ -335,3 +336,4 @@ void tsi_th_stat_final(SOLVAR* actsolv,
                        ARRAY* dirich_a);
 void tsi_th_stat_sub(INT disnum_s,
                      INT disnum_t);
+#endif

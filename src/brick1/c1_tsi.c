@@ -13,6 +13,7 @@ Maintainer: Burkhard Bornemann
 \author bborn
 \date 08/06
 */
+#ifndef CCADISCRET
 #ifdef D_TSI
 #ifdef D_THERM3
 
@@ -42,8 +43,8 @@ Maintainer: Burkhard Bornemann
 */
 void c1_tsi_thstrain(CONTAINER *container,
                      ELEMENT *ele,
-                     MATERIAL *mat, 
-                     DOUBLE r, 
+                     MATERIAL *mat,
+                     DOUBLE r,
                      DOUBLE s,
                      DOUBLE t,
                      INT numstr,
@@ -109,3 +110,4 @@ void c1_tsi_thstrain(CONTAINER *container,
 /*======================================================================*/
 #endif  /* end of #ifdef D_THERM3 */
 #endif  /* end of #ifdef D_TSI */
+#endif

@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 
 *----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 #ifdef SPOOLES_PACKAGE
 
 
@@ -645,3 +646,4 @@ return;
 
 #endif /* end of ifdef SPOOLES_PACKAGE */
 
+#endif

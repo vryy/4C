@@ -10,6 +10,7 @@ Maintainer: Ulrich Küttler
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_FLUID2_IS
 
 #include "../headers/standardtypes.h"
@@ -1218,4 +1219,5 @@ void f2is_calresvec(
 #endif
 }
 
+#endif
 #endif

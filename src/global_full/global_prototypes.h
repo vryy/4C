@@ -76,7 +76,7 @@ void ntaini(
  *----------------------------------------------------------------------*/
 void ntainp(void);
 
-
+#ifndef CCADISCRET
 /*----------------------------------------------------------------------*
   | global_locsys.c                                       genk 01/03    |
  *----------------------------------------------------------------------*/
@@ -84,8 +84,8 @@ void locsys_inherit_to_node(void);
 void locsys_trans(ELEMENT *ele, DOUBLE **estif1, DOUBLE **estif2,
                                 DOUBLE *vec1,    DOUBLE *vec2);
 #ifdef LOCALSYSTEMS_ST
-void locsys_trans_equant_dirich(ELEMENT* ele, 
-                                ARRAY* estif_global, 
+void locsys_trans_equant_dirich(ELEMENT* ele,
+                                ARRAY* estif_global,
                                 ARRAY* emass_global,
                                 ARRAY* eforce_global,
                                 DOUBLE* eforce);
@@ -240,7 +240,7 @@ void global_subdivide(
     FIELD              *actfield
     );
 
-
+#endif
 
 
 #endif

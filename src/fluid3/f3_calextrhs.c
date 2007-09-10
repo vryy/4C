@@ -10,6 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_FLUID3
 #include "../headers/standardtypes.h"
 #include "fluid3_prototypes.h"
@@ -538,7 +539,7 @@ void f3_calneumann(ELEMENT         *ele,
 /*      f2_degrectri(funct,deriv,e1,typ,1); -> only for rectangles
  */
 	/*------------------------------- compute jacobian determinant */
-        f3_edgejaco(xyze,deriv,xjm,&det,iedgnod,ngnode,ele); 
+        f3_edgejaco(xyze,deriv,xjm,&det,iedgnod,ngnode,ele);
 	fac = det*facr*facs;
 
 	actcurve = surfneum[surf]->curve-1;
@@ -709,4 +710,5 @@ end:
 }
 
 
+#endif
 #endif

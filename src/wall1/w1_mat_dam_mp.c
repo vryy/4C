@@ -3,6 +3,7 @@
 \brief contains the routine 'w1_mat_dam_mp' which is a isotropic damage
  model (mazars/pijadier-cabot -> PDH-Peerlings) in vector-matrix-format
 *-----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
@@ -298,3 +299,4 @@ return;
 /*----------------------------------------------------------------------*/
 #endif /*D_WALL1*/
 /*! @} (documentation module close)*/
+#endif

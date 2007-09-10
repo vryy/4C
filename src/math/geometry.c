@@ -10,6 +10,7 @@ Maintainer: Christiane Foerster
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 
 
@@ -19,15 +20,15 @@ Maintainer: Christiane Foerster
 
 <pre>                                                              ck 01/03
 This routine evaluates the area of 2D linear elements (quad4 and tri3)
-The area of higher order elements is calculated ignoring the mid-side nodes, 
-i.e. assuming stright sides. 
+The area of higher order elements is calculated ignoring the mid-side nodes,
+i.e. assuming stright sides.
 
 </pre>
 \param  *ele        ELEMENT   (i)   element pointer
 \param   xyz[2][9]  DOUBLE    (i)   elemental coordinates 1st index: x or y
                                                           2dn index: node
 
-\warning This routine gives an exact result for quad4 elements only. For 
+\warning This routine gives an exact result for quad4 elements only. For
          higher order quads it offers an estimation.
 \return DOUBLE element area
 \sa calling:
@@ -92,3 +93,4 @@ DOUBLE area_lin_2d(
 
   return el_area;
 }
+#endif

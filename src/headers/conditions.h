@@ -10,6 +10,9 @@ Maintainer: Malte Neumann
 </pre>
 
 ---------------------------------------------------------------------*/
+
+#ifndef CCADISCRET
+
 /*----------------------------------------------------------------------*
  | neumann condition                                      m.gee 3/02    |
  |                                                                      |
@@ -255,3 +258,4 @@ typedef struct _FLUID_LIFTDRAG_CONDITION
   INT                       aledline;
 } FLUID_LIFTDRAG_CONDITION;
 
+#endif

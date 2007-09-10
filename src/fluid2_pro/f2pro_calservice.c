@@ -10,6 +10,7 @@ Maintainer: Ulrich Kuettler
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID2_PRO
 *//*! @{ (documentation module open)*/
@@ -390,3 +391,4 @@ void f2pro_prec(DOUBLE* pfunct, DOUBLE** pderiv, DOUBLE r, DOUBLE s, DISMODE dm,
 
 #endif
 /*! @} (documentation module close)*/
+#endif

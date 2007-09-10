@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 
 *----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 
 #ifdef UMFPACK
 
@@ -1377,3 +1378,4 @@ void redundant_ccf(PARTITION *actpart,
 #endif /* ifdef UMFPACK */
 
 
+#endif

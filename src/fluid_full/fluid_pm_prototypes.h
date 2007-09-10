@@ -9,6 +9,7 @@ Maintainer: Ulrich Kuettler
             089 - 289-15238
 </pre>
 */
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID
 *//*! @{ (documentation module open)*/
@@ -151,3 +152,4 @@ void pm_out_screen_header(INT numeq,
                           FLUID_DYNAMIC *fdyn);
 
 /*! @} (documentation module close)*/
+#endif

@@ -10,6 +10,7 @@ Maintainer: Burkhard Bornemann
             089-289-15237
 </pre>
 */
+#ifndef CCADISCRET
 #ifdef D_SOLID3
 
 /*----------------------------------------------------------------------*/
@@ -143,7 +144,7 @@ void so3_load_surf_int(ELEMENT* ele,
                 for (idimsid=0; idimsid<DIMSID_SOLID3; idimsid++)
                 {
                   /* add coordinate components */
-                  gpcidim += data->redsidh[igsurf][idimsid][idim] 
+                  gpcidim += data->redsidh[igsurf][idimsid][idim]
                     * data->ghlc[gpintc[idimsid]][igp[idimsid]];
                 }
                 /* final set of idim-component */
@@ -159,11 +160,11 @@ void so3_load_surf_int(ELEMENT* ele,
               }
               /*--------------------------------------------------------*/
               /* Shape functions at Gauss point */
-              so3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1, 
+              so3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1,
                               shape, deriv);
               /*--------------------------------------------------------*/
               /* add surface load contribution ==> eload modified */
-              so3_load_surf_valh(ele, data, igsurf, gsurf[igsurf], 
+              so3_load_surf_valh(ele, data, igsurf, gsurf[igsurf],
                                 ex, exs, gpc, shape, deriv,
                                 fac, eload);
             }  /* end for */
@@ -235,12 +236,12 @@ void so3_load_surf_int(ELEMENT* ele,
             fac = cfac * data->gtsw[gpintc[0]][igp[0]];
             /*----------------------------------------------------------*/
             /* Shape functions at Gauss point */
-            so3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1, 
+            so3_shape_deriv(distyp, gpc[0], gpc[1], gpc[2], 1,
                             shape, deriv);
             /*----------------------------------------------------------*/
             /* add surface load contribution ==> eload modified */
-            so3_load_surf_valt(ele, data, igsurf, gsurf[igsurf], 
-                              ex, exs, gpc, shape, deriv, 
+            so3_load_surf_valt(ele, data, igsurf, gsurf[igsurf],
+                              ex, exs, gpc, shape, deriv,
                               fac, eload);
           }  /* end for */
         }  /* end for */
@@ -319,7 +320,7 @@ void so3_load_surf_valh(ELEMENT* ele,
     /* uniform traction applied in undeformed configuration */
     case neum_dead:
       /* metric at Gauss point */
-      so3_metr_surf(ele, nelenod, ex, deriv, data->redsidh[igsurf], 
+      so3_metr_surf(ele, nelenod, ex, deriv, data->redsidh[igsurf],
                     NULL, &metr);
       /* copy switch and values */
       for (idof=0; idof<NUMDOF_SOLID3; idof++)
@@ -350,7 +351,7 @@ void so3_load_surf_valh(ELEMENT* ele,
         /* pressure value */
         traction[idof] = pressureminus * gsurf->neum->neum_val.a.dv[idof];
         /* physically oriented parametric base vectors */
-        so3_metr_surf(ele, nelenod, exs, deriv, 
+        so3_metr_surf(ele, nelenod, exs, deriv,
                       data->redsidh[igsurf], gamt, &metr);
         /* unit normal in deformed space */
         so3_tns3_unrm(gamt[0], gamt[1], data->nrmsidh[igsurf], unrm);
@@ -359,7 +360,7 @@ void so3_load_surf_valh(ELEMENT* ele,
         {
           for (jdof=0; jdof<NUMDOF_SOLID3; jdof++)
           {
-            eload[inode][jdof] += shape[inode] * traction[idof] 
+            eload[inode][jdof] += shape[inode] * traction[idof]
               * unrm[jdof] * fac * metr;
           }
         }
@@ -433,7 +434,7 @@ void so3_load_surf_valt(ELEMENT* ele,
     /* uniform traction applied in undeformed configuration */
     case neum_dead:
       /* metric at Gauss point */
-      so3_metr_surf(ele, nelenod, ex, deriv, data->redsidt[igsurf], 
+      so3_metr_surf(ele, nelenod, ex, deriv, data->redsidt[igsurf],
                     NULL, &metr);
       /* copy switch and values */
       for (idof=0; idof<NUMDOF_SOLID3; idof++)
@@ -464,7 +465,7 @@ void so3_load_surf_valt(ELEMENT* ele,
         /* pressure value */
         traction[idof] = pressureminus * gsurf->neum->neum_val.a.dv[idof];
         /* physically oriented parametric base vectors */
-        so3_metr_surf(ele, nelenod, exs, deriv, 
+        so3_metr_surf(ele, nelenod, exs, deriv,
                       data->redsidt[igsurf], gamt, &metr);
         /* unit normal in deformed space */
         so3_tns3_unrm(gamt[0], gamt[1], data->nrmsidt[igsurf], unrm);
@@ -473,7 +474,7 @@ void so3_load_surf_valt(ELEMENT* ele,
         {
           for (jdof=0; jdof<NUMDOF_SOLID3; jdof++)
           {
-            eload[inode][jdof] += shape[inode] * traction[idof] 
+            eload[inode][jdof] += shape[inode] * traction[idof]
               * unrm[jdof] * fac * metr;
           }
         }
@@ -494,3 +495,4 @@ void so3_load_surf_valt(ELEMENT* ele,
 
 /*======================================================================*/
 #endif  /*end of #ifdef D_SOLID3 */
+#endif

@@ -1,3 +1,4 @@
+#ifndef CCADISCRET
 #ifndef FSI_NOX_INTERFACE_HELPER_H
 #define FSI_NOX_INTERFACE_HELPER_H
 
@@ -216,4 +217,5 @@ public:
              << actsnode->sol_mf.a.da[dispnp_][1]-actsnode->sol_mf.a.da[dispn_][1] << "\n"; }
 };
 
+#endif
 #endif

@@ -10,6 +10,7 @@ Maintainer: Volker Gravemeier
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /* RULE HOW TO ADD NEW FILES AND FUNCTIONS:
    1.) THE FILENAMES ARE IN ALPHABETICAL ORDER !!!
    2.) FUNCTIONS ARE IN THE SAME ORDER LIKE IN THE FILE!!!
@@ -712,3 +713,4 @@ void f2_calbfp(DOUBLE          *eforce,
 	       DOUBLE         **smfderxy,
 	       DOUBLE           fac,
 	       INT              iel);
+#endif

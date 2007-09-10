@@ -19,6 +19,7 @@ Maintainer: Stefan Hartmann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_WALL1
 #ifdef D_MAT
 
@@ -220,3 +221,4 @@ return;
 #endif /*D_WALL1*/
 /*! @} (documentation module close)*/
 
+#endif

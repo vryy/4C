@@ -10,6 +10,7 @@ Maintainer: Christiane Foerster
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID3
 *//*! @{ (documentation module open)*/
@@ -1340,3 +1341,4 @@ dstrc_exit();
 
 #endif
 /*! @} (documentation module close)*/
+#endif

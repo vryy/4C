@@ -10,8 +10,9 @@ Maintainer: Christiane Foerster
 </pre>
 
 ------------------------------------------------------------------------*/
-/*! 
-\addtogroup FLUID3 
+#ifndef CCADISCRET
+/*!
+\addtogroup FLUID3
 *//*! @{ (documentation module open)*/
 #ifdef D_FLUID3_F
 #include "../headers/standardtypes.h"
@@ -23,7 +24,7 @@ Maintainer: Christiane Foerster
  | dedfined in global_control.c                                         |
  | ALLDYNA               *alldyn;                                       |
  *----------------------------------------------------------------------*/
-extern ALLDYNA      *alldyn;   
+extern ALLDYNA      *alldyn;
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -41,9 +42,9 @@ extern struct _MATERIAL  *mat;
 \brief routine to calculate element size and stabilisation parameter
 
 <pre>                                                        chfoe 10/04
-This routine evaluates the stabilisation parameter for USFEM stabilised 
-fluid elements in 3D. Different ways of calculating the tau are 
-implemented. 
+This routine evaluates the stabilisation parameter for USFEM stabilised
+fluid elements in 3D. Different ways of calculating the tau are
+implemented.
 Here everything is done once at the element center (center of its local
 coordinates) and used for the entire element.
 </pre>
@@ -54,17 +55,17 @@ coordinates) and used for the entire element.
 \param **deriv2  DOUBLE 	       (-)   2nd deriv. of sh. funcs
 \param **xjm     DOUBLE 	       (-)   jacobian matrix
 \param  *visc     DOUBLE 	       (-)   viscosity
-\return void             
+\return void
 
 ------------------------------------------------------------------------*/
-void f3fcaltau(			     
-	       ELEMENT         *ele[LOOPL], 
+void f3fcaltau(
+	       ELEMENT         *ele[LOOPL],
 	       DOUBLE          *elecord,
-	       DOUBLE          *funct,  
-	       DOUBLE          *deriv,  
-	       DOUBLE          *derxy, 
+	       DOUBLE          *funct,
+	       DOUBLE          *deriv,
+	       DOUBLE          *derxy,
                DOUBLE          *velint,
-	       DOUBLE          *xjm,  
+	       DOUBLE          *xjm,
 	       DOUBLE          *evelng,
                DOUBLE          *tau,
                DOUBLE          *wa1,
@@ -99,9 +100,9 @@ FLUID_DATA    *data;
 INT typint;
 INT icode;
 
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("f3fcaltau");
-#endif		
+#endif
 
 /*------------------------------------------------------- initialise ---*/
 fdyn    = alldyn[genprob.numff].fdyn;
@@ -221,13 +222,13 @@ for(l=0;l<sizevec[4];l++) /* loop elements of this set */
    /* viscous : reactive forces */
    pe[l] = 4.0 * timefac * visc / (mk * DSQR(strle[l]));
    /* advective : viscous forces */
-   re[l] = mk * norm_p[l] * strle[l] / (2.0 * visc);       
+   re[l] = mk * norm_p[l] * strle[l] / (2.0 * visc);
 
    xi1[l] = DMAX(pe[l],1.0);
    xi2[l] = DMAX(re[l],1.0);
 
    /* stab parameter for convective stabilisation */
-   tau[l] = DSQR(strle[l]) / 
+   tau[l] = DSQR(strle[l]) /
            (DSQR(strle[l])*xi1[l]+(4.0*timefac*visc/mk)*xi2[l]);
 
    /*------------------------------------------------------ get tau_Mp ---*/
@@ -240,7 +241,7 @@ for(l=0;l<sizevec[4];l++) /* loop elements of this set */
    xi2[l] = DMAX(re[l],1.0);
 
    /* stab parameter for non-convective stabilisation terms */
-   tau[sizevec[3]+l] = DSQR(hk[l]) 
+   tau[sizevec[3]+l] = DSQR(hk[l])
                   / (DSQR(hk[l])*xi1[l]+(4.0*timefac*visc/mk)*xi2[l]);
 
    /*------------------------------------------------------- get tau_C ---*/
@@ -248,11 +249,12 @@ for(l=0;l<sizevec[4];l++) /* loop elements of this set */
 
 } /* loop */
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
 
 return;
 } /* end of f3fcaltau */
 
+#endif
 #endif

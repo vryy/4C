@@ -10,6 +10,7 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 
 #ifdef D_ALE
@@ -452,3 +453,4 @@ printf("\n");
 
 /*! @} (documentation module close)*/
 
+#endif

@@ -10,6 +10,7 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "../pss_full/pss_parser.h"
 /*----------------------------------------------------------------------*
@@ -419,3 +420,4 @@ dstrc_exit();
 
 return((DOUBLE)(fac));;
 }   /* end of dyn_facexplcurve */
+#endif

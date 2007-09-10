@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 
 *----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 #ifdef UMFPACK
 
 
@@ -181,7 +182,7 @@ case 0:
 #endif
           /* numeric-> (with respect to the values of matrix A) factorization */
           status =  umfpack_di_numeric (Ap, Ai, Ax, symbolic, &numeric, control, info);
-#ifdef DEBUG 
+#ifdef DEBUG
           if (status < 0)
           {
              umfpack_di_report_info (control, info) ;
@@ -192,7 +193,7 @@ case 0:
           umfpack_di_free_symbolic (&symbolic);
           /* solve Ax=b */
           status = umfpack_di_solve (UMFPACK_A, Ap, Ai, Ax, x, b, numeric, control, info);
-#ifdef DEBUG 
+#ifdef DEBUG
           if (status < 0)
           {
              umfpack_di_report_info (control, info) ;
@@ -211,7 +212,7 @@ case 0:
        {
           /* solve Ax=b */
           status = umfpack_di_solve (UMFPACK_A, Ap, Ai, Ax, x, b, numeric, control, info);
-#ifdef DEBUG 
+#ifdef DEBUG
           if (status < 0)
           {
              umfpack_di_report_info (control, info) ;
@@ -270,3 +271,4 @@ return;
 
 #endif /* ifdef UMFPACK */
 
+#endif

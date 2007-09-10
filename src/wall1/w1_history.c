@@ -11,6 +11,7 @@ Maintainer: Andrea Hund
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef GEMM
 #include "../headers/standardtypes.h"
 #include "wall1.h"
@@ -84,3 +85,4 @@ return;
 } /* end of w1_history */
 #endif /*GEMM*/
 /*! @} (documentation module close)*/
+#endif

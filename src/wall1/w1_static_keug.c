@@ -11,6 +11,7 @@ Maintainer: Andrea Hund
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
@@ -21,7 +22,7 @@ Maintainer: Andrea Hund
 /*!
 \brief General problem data
 
-struct _GENPROB       genprob; defined in global_control.c 
+struct _GENPROB       genprob; defined in global_control.c
 
 \author bborn
 \date 03/06
@@ -203,9 +204,9 @@ for (k=0; k<iel; k++)
  xcure[1][k]= xrefe[1][k] + ele->node[k]->sol.a.da[0][1]; /* y-direction */
 #if 0
  /* debug: */
- printf("Ele %d, node %d, xdis %f, ydis %f\n", 
-        ele->Id, k, 
-        ele->node[k]->sol.a.da[0][0], ele->node[k]->sol.a.da[0][1]); 
+ printf("Ele %d, node %d, xdis %f, ydis %f\n",
+        ele->Id, k,
+        ele->node[k]->sol.a.da[0][0], ele->node[k]->sol.a.da[0][1]);
 #endif
 }
 if(ele->e.w1->kintype==updated_lagr)
@@ -325,3 +326,4 @@ return;
 /*----------------------------------------------------------------------*/
 #endif /*D_WALL1*/
 /*! @} (documentation module close)*/
+#endif

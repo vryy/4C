@@ -12,6 +12,7 @@ Maintainer: Malte Neumann
 *----------------------------------------------------------------------*/
 
 
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 
 
@@ -440,3 +441,4 @@ dstrc_exit();
 #endif
 return;
 } /* end of inherit_design_dis_neum */
+#endif

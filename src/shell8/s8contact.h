@@ -10,6 +10,7 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef S8CONTACT
 
 /*!
@@ -307,4 +308,5 @@ void s8_contact_updlagr(FIELD *actfield, PARTITION *actpart, INTRA *actintra);
 void s8_contact_historyback(INTRA *actintra);
 
 /*! @} (documentation module close)*/
+#endif
 #endif

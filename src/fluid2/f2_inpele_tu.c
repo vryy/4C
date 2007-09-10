@@ -10,6 +10,7 @@ Maintainer: Thomas Hettich
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_FLUID2TU
 #include "../headers/standardtypes.h"
 #include "fluid2_prototypes.h"
@@ -64,4 +65,5 @@ void f2tu_dis(
   return;
 } /* end of f2tu_dis */
 
+#endif
 #endif

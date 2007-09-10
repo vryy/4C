@@ -10,6 +10,7 @@ Maintainer: Burkhard Bornemann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_WALL1
 #include "../headers/standardtypes.h"
 #include "wall1.h"
@@ -57,7 +58,7 @@ void w1_final(PARTITION *actpart,
       am4del(&(actele->e.w1->PK_history));
 #endif
       /*----------------------------------------------------------------*/
-      /* init info for multiscale */  
+      /* init info for multiscale */
 #ifdef D_MLSTRUCT
       /* nothing to be done */
 #endif
@@ -193,3 +194,4 @@ void w1_final(PARTITION *actpart,
 
 #endif /*D_WALL1*/
 /*! @} (documentation module close)*/
+#endif

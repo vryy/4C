@@ -15,6 +15,7 @@ Maintainer: Andrea Hund
             0711 - 685-6122
 </pre>
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "wallge.h"
 #include "wallge_prototypes.h"
@@ -396,3 +397,4 @@ return;
 
 /*----------------------------------------------------------------------*/
 /*! @} (documentation module close)*/
+#endif

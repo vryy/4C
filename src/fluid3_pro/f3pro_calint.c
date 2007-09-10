@@ -10,6 +10,7 @@ Maintainer: Ulrich Kuettler
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID3_PRO
 *//*! @{ (documentation module open)*/
@@ -1444,3 +1445,4 @@ for (vi=0; vi<iel; ++vi)
 
 #endif
 /*! @} (documentation module close)*/
+#endif

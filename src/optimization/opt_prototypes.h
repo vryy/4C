@@ -8,6 +8,7 @@ Maintainer: Andreas Lipka
 
  |  routine to control linear static structural analysis       al 6/01  |
  *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 void opt_stalin(CALSTA_EXEC stalact);
 /*----------------------------------------------------------------------*
  |  routine to control nonlinear static execution          al 11/01     |
@@ -127,3 +128,4 @@ void fsdoc  (DOUBLE *var,DOUBLE *df,DOUBLE *dg,DOUBLE *etai,DOUBLE *etha,
              DOUBLE *xdgo,DOUBLE *resu,DOUBLE *resl,DOUBLE *varup,
              DOUBLE *varlo,INT *numvar,DOUBLE *beta,DOUBLE *accit,
              DOUBLE *delta,INT *iprint );
+#endif

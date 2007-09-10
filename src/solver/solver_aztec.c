@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 
 *----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 #ifdef AZTEC_PACKAGE
 
 
@@ -452,3 +453,4 @@ return;
 
 #endif /* end of ifdef AZTEC_PACKAGE */
 
+#endif

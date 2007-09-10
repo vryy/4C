@@ -11,6 +11,7 @@ Maintainer: Steffen Genkinger
 
 ------------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -281,3 +282,4 @@ dstrc_exit();
 return;
 #endif /* NO_TEXT_OUTPUT */
 } /* end of out_monitor */
+#endif

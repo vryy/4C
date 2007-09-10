@@ -14,6 +14,7 @@ Maintainer: Burkhard Bornemann
 \date 03/06
 */
 
+#ifndef CCADISCRET
 
 /*----------------------------------------------------------------------*/
 /* header files */
@@ -42,7 +43,7 @@ extern FILES allfiles;
 /*!
 \brief General problem data
 
-struct _GENPROB       genprob; defined in global_control.c 
+struct _GENPROB       genprob; defined in global_control.c
 
 \author bborn
 \date 03/06
@@ -200,12 +201,12 @@ void tsi_st_genalp(INT disnum_s,
   DOUBLE dmax;  /* infinity norm of residual displacements */
 
   DOUBLE t0, t1;  /* wall clock times for measuring */
-  
+
   INT stiff_array;  /* indice of the active system sparse matrix */
   INT mass_array;  /* indice of the active system sparse matrix */
   INT damp_array;  /* indice of the active system sparse matrix */
   INT actcurve;  /* indice of active time curve */
-  
+
   SOLVAR* actsolv;  /* pointer to active solution structure */
   PARTITION* actpart;  /* pointer to active partition */
   INT numsf;  /* number (index) of structure field */
@@ -215,7 +216,7 @@ void tsi_st_genalp(INT disnum_s,
   STRUCT_DYNAMIC* actdyn;  /* pointer to structural dynamic input data */
   INT actsysarray;  /* index of actual system array */
   TSI_DYNAMIC* tsidyn;  /* pointer to TSI dynamics data */
-  
+
   const INT vel_num = 1;  /* number of veloc. vectors */
   DIST_VECTOR* vel;  /* total velocities */
   const INT acc_num = 1;  /* number of accel. vectors */
@@ -226,20 +227,20 @@ void tsi_st_genalp(INT disnum_s,
   DIST_VECTOR* dispi;  /* distributed vector to hold increm. displacments */
   const INT work_num = 3;  /* number of work vectors */
   DIST_VECTOR* work;  /* working vectors */
-  
+
   ARRAY intforce_a;  /* redundant vect. of full length for internal forces */
   DOUBLE* intforce;
   ARRAY dirich_a;  /* redund. vect. of full length for dirichlet-part of rhs */
   DOUBLE* dirich;
   DOUBLE dirichfacs[10];  /* factors needed for dirichlet-part of rhs */
-  
+
   STRUCT_DYN_CALC dynvar;  /* variables to perform dynamic structural simulation */
 
   ARRAY_POSITION* ipos;   /* named positions of NODE sol etc. arrays */
   ARRAY_POSITION_SOL* isol;  /* named positions (indices) of NODE sol array */
-  ARRAY_POSITION_SOLINC* isolinc;  /* named positions (indices) of 
+  ARRAY_POSITION_SOLINC* isolinc;  /* named positions (indices) of
                                     * NODE sol_increment array */
-  ARRAY_POSITION_SOLRES* isolres;  /* named positions (indices) of 
+  ARRAY_POSITION_SOLRES* isolres;  /* named positions (indices) of
                                     * NODE sol_residual array */
 
 #ifdef BINIO
@@ -260,7 +261,7 @@ void tsi_st_genalp(INT disnum_s,
   /*--------------------------------------------------------------------*/
   /* a word to the user */
   if (par.myrank == 0)
-  { 
+  {
     printf("============================================================="
            "=============\n");
     printf("TSI structural time integration with generalised-alpha\n");
@@ -349,20 +350,20 @@ void tsi_st_genalp(INT disnum_s,
 
   /*--------------------------------------------------------------------*/
   /* allocate sparse mass (and damping) matrix */
-  /* reallocate the vector of sparse matrices and the vector of 
-   * their types : formerly lenght 1, now lenght 2 or 3 dependent on 
+  /* reallocate the vector of sparse matrices and the vector of
+   * their types : formerly lenght 1, now lenght 2 or 3 dependent on
    * presence of damp_array */
-  actsolv->sysarray_typ 
+  actsolv->sysarray_typ
     = (SPARSE_TYP*) CCAREALLOC(actsolv->sysarray_typ,
                                actsolv->nsysarray*sizeof(SPARSE_TYP));
-  if (!actsolv->sysarray_typ) 
+  if (!actsolv->sysarray_typ)
   {
     dserror("Allocation of memory failed");
   }
   actsolv->sysarray
     = (SPARSE_ARRAY*) CCAREALLOC(actsolv->sysarray,
                                actsolv->nsysarray*sizeof(SPARSE_ARRAY));
-  if (!actsolv->sysarray) 
+  if (!actsolv->sysarray)
   {
     dserror("Allocation of memory failed");
   }
@@ -372,7 +373,7 @@ void tsi_st_genalp(INT disnum_s,
                               &(actsolv->sysarray[stiff_array]),
                               &(actsolv->sysarray_typ[mass_array]),
                               &(actsolv->sysarray[mass_array]));
-  
+
   if (damp_array > 0)
   {
     solserv_alloc_cp_sparsemask(actintra,
@@ -399,12 +400,12 @@ void tsi_st_genalp(INT disnum_s,
 
   /*--------------------------------------------------------------------*/
   /* allocate 4 distributed vectors for RHS */
-  /* these hold original load vector, 
-   *            load vector at time t 
-   *            load vctor at time at t-dt 
+  /* these hold original load vector,
+   *            load vector at time t
+   *            load vctor at time at t-dt
    *            and interpolated load vector */
   actsolv->nrhs = 4;
-  solserv_create_vec(&(actsolv->rhs), 
+  solserv_create_vec(&(actsolv->rhs),
                      actsolv->nrhs, numeq_total, numeq, "DV");
   for (i=0; i<actsolv->nrhs; i++)
   {
@@ -418,7 +419,7 @@ void tsi_st_genalp(INT disnum_s,
   actsolv->nsol = 2;
   solserv_create_vec(&(actsolv->sol),
                      actsolv->nsol, numeq_total, numeq, "DV");
-  for (i=0; i<actsolv->nsol; i++) 
+  for (i=0; i<actsolv->nsol; i++)
   {
     solserv_zero_vec(&(actsolv->sol[i]));
   }
@@ -479,26 +480,26 @@ void tsi_st_genalp(INT disnum_s,
   /* NOTE: solver init phase has to be called with each matrix one wants to
    *       solve with. Solver init phase has to be called with all matrices
    *       one wants to do matrix-vector products and matrix scalar products.
-   *       This is not needed by all solver libraries, but the solver-init 
+   *       This is not needed by all solver libraries, but the solver-init
    *       phase is cheap in computation (can be costly in memory)
    *       There will be no solver call on mass or damping array. */
 
   /*--------------------------------------------------------------------*/
   /* initialize solver */
   init = 1;
-  solver_control(actfield, disnum, actsolv, actintra, 
+  solver_control(actfield, disnum, actsolv, actintra,
 		 &(actsolv->sysarray_typ[stiff_array]),
                  &(actsolv->sysarray[stiff_array]),
                  &(dispi[0]), &(actsolv->rhs[0]), init);
 
-  solver_control(actfield, disnum, actsolv, actintra, 
+  solver_control(actfield, disnum, actsolv, actintra,
                  &(actsolv->sysarray_typ[mass_array]),
                  &(actsolv->sysarray[mass_array]),
                  &(work[0]), &(work[1]), init);
 
   if (damp_array > 0)
   {
-    solver_control(actfield, disnum, actsolv, actintra, 
+    solver_control(actfield, disnum, actsolv, actintra,
 		   &(actsolv->sysarray_typ[damp_array]),
                    &(actsolv->sysarray[damp_array]),
                    &(work[0]), &(work[1]), init);
@@ -514,7 +515,7 @@ void tsi_st_genalp(INT disnum_s,
   /* init the element calculating routines */
   *action = calc_struct_init;
   calinit(actfield, actpart, action, &container);
-  
+
   /*--------------------------------------------------------------------*/
   /* write output of mesh to gid */
   /* if ( (par.myrank == 0) && (ioflags.output_gid == 1) ) */
@@ -578,7 +579,7 @@ void tsi_st_genalp(INT disnum_s,
   isolres = &(ipos->isolres);
 
   /*--------------------------------------------------------------------*/
-  /* put a zero to the place ipos->num=12 in node->sol to init the 
+  /* put a zero to the place ipos->num=12 in node->sol to init the
    * velocities and accels of prescribed displacements */
   /* HINT: This actually redefines/reallocates/enlarges the sol
    *       array of each structure node to dimension 12x2 (or 12x3)
@@ -592,10 +593,10 @@ void tsi_st_genalp(INT disnum_s,
    *       array at each structure node to dimension 2x2 (or 2x3)
    *       from originally 1x2 (or 1x3) */
   /* initialise internal forces f_{int;n} to zero */
-  solserv_sol_zero(actfield, disnum, node_array_sol_increment, 
+  solserv_sol_zero(actfield, disnum, node_array_sol_increment,
                    isolinc->fint);
   /* initialise internal forces f_{int;n+1} to zero */
-  solserv_sol_zero(actfield, disnum, node_array_sol_increment, 
+  solserv_sol_zero(actfield, disnum, node_array_sol_increment,
                    isolinc->fintn);
 
 
@@ -606,7 +607,7 @@ void tsi_st_genalp(INT disnum_s,
    * It's important to do this only after all the node arrays are set
    * up because their sizes are used to allocate internal memory. */
   init_bin_out_field(&out_context,
-                     &(actsolv->sysarray_typ[stiff_array]), 
+                     &(actsolv->sysarray_typ[stiff_array]),
                      &(actsolv->sysarray[stiff_array]),
                      actfield, actpart, actintra, disnum);
 #endif
@@ -620,7 +621,7 @@ void tsi_st_genalp(INT disnum_s,
 
   /*--------------------------------------------------------------------*/
   /* printout head */
-  if (par.myrank == 0) 
+  if (par.myrank == 0)
   {
     dyn_nlnstruct_outhead(&dynvar, actdyn);
   }
@@ -661,8 +662,8 @@ void tsi_st_genalp(INT disnum_s,
    *    =   ...   evaluation in this step
    *    +=  ...   evaluation in this step
    *
-   */    
-  while ( (actdyn->step < actdyn->nstep-1) 
+   */
+  while ( (actdyn->step < actdyn->nstep-1)
           && (actdyn->time <= actdyn->maxtime) )
   {
     /*------------------------------------------------------------------*/
@@ -695,7 +696,7 @@ void tsi_st_genalp(INT disnum_s,
 
     /*------------------------------------------------------------------*/
     /* set residual/iterative displacements in nodes to zero */
-    solserv_result_resid(actfield, disnum, actintra, &dispi[0], 
+    solserv_result_resid(actfield, disnum, actintra, &dispi[0],
                          isolres->disres,
                          &(actsolv->sysarray[stiff_array]),
                          &(actsolv->sysarray_typ[stiff_array]));
@@ -704,7 +705,7 @@ void tsi_st_genalp(INT disnum_s,
     /*==================================================================*/
     /* PREDICTOR */
     /*==================================================================*/
-    
+
     /*------------------------------------------------------------------*/
     /*  this vector holds loads due to external forces */
     solserv_zero_vec(&(actsolv->rhs[1]));
@@ -714,10 +715,10 @@ void tsi_st_genalp(INT disnum_s,
     *action = calc_struct_eleload;
     calrhs(actfield, actsolv, actpart, actintra, stiff_array,
 	   &(actsolv->rhs[1]), action, &container);
-    
+
     /*------------------------------------------------------------------*/
     /* multiply rhs[1] by load factor based on factor rldfac of curve 0 */
-    /* WARNING: This control routine at the moment always uses curve 0 
+    /* WARNING: This control routine at the moment always uses curve 0
      *          for the RHS */
     actcurve = 0;
     /* Get factor at new time t_{n+1} */
@@ -729,12 +730,12 @@ void tsi_st_genalp(INT disnum_s,
     /* put the scaled prescribed displacements to the nodes in field sol
      * at place 4 separate of the free DOFs
      * These are used to calculate the RHS due to the Dirichlet conditions */
-    solserv_putdirich_to_dof(actfield, disnum, node_array_sol, 
+    solserv_putdirich_to_dof(actfield, disnum, node_array_sol,
                              isol->disdn, actdyn->time);
 
     /*------------------------------------------------------------------*/
     /* put presdisplacements(t) - presdisplacements(t-dt) in place 5 */
-    solserv_adddirich(actfield, disnum, node_array_sol, 
+    solserv_adddirich(actfield, disnum, node_array_sol,
                       isol->disd, isol->disdn, isol->disdi, -1.0, 1.0);
 
     /*------------------------------------------------------------------*/
@@ -749,7 +750,7 @@ void tsi_st_genalp(INT disnum_s,
      * dirichfacs[7] =  raleigh damping factor for mass
      * dirichfacs[8] =  raleigh damping factor for stiffness
      * dirichfacs[9] =  dt
-     * see PhD theses Mok page 165: Generalized-alpha time integration 
+     * see PhD theses Mok page 165: Generalized-alpha time integration
      *                              with prescribed displ. */
     dirichfacs[0] = -dynvar.constants[0];
     dirichfacs[1] = +dynvar.constants[1];
@@ -758,12 +759,12 @@ void tsi_st_genalp(INT disnum_s,
     dirichfacs[4] = +dynvar.constants[4];
     dirichfacs[5] = +dynvar.constants[5];
     dirichfacs[6] = -dynvar.constants[6];
-    if (damp_array > 0) 
+    if (damp_array > 0)
     {
       dirichfacs[7] = actdyn->m_damp;
       dirichfacs[8] = actdyn->k_damp;
     }
-    else 
+    else
     {
       dirichfacs[7] = 0.0;
       dirichfacs[8] = 0.0;
@@ -771,9 +772,9 @@ void tsi_st_genalp(INT disnum_s,
     dirichfacs[9] = actdyn->dt;
 
     /*------------------------------------------------------------------*/
-    /* calculate tangential stiffness/mass 
+    /* calculate tangential stiffness/mass
      * and internal forces at time t_{n} */
-    solserv_zero_mat(actintra, 
+    solserv_zero_mat(actintra,
                      &(actsolv->sysarray[stiff_array]),
                      &(actsolv->sysarray_typ[stiff_array]));
     solserv_zero_mat(actintra, &(actsolv->sysarray[mass_array]),
@@ -789,13 +790,13 @@ void tsi_st_genalp(INT disnum_s,
     container.global_numeq = numeq_total;
     container.dirichfacs = dirichfacs;
     container.kstep = 0;
-    calelm(actfield, actsolv, actpart, actintra, 
+    calelm(actfield, actsolv, actpart, actintra,
            stiff_array, mass_array, &container, action);
 
     /*------------------------------------------------------------------*/
     /* store positive internal forces on fie[1] */
     solserv_zero_vec(&fie[1]);
-    assemble_vec(actintra, 
+    assemble_vec(actintra,
                  &(actsolv->sysarray_typ[stiff_array]),
                  &(actsolv->sysarray[stiff_array]),
                  &(fie[1]), intforce, 1.0);
@@ -805,7 +806,7 @@ void tsi_st_genalp(INT disnum_s,
     /* forces rhs[0] = (1-alphaf)*rhs[1] + alphaf*rhs[2] */
     solserv_copy_vec(&(actsolv->rhs[2]), &(actsolv->rhs[0]));
     solserv_scalarprod_vec(&(actsolv->rhs[0]), actdyn->alpha_f);
-    solserv_add_vec(&(actsolv->rhs[1]), &(actsolv->rhs[0]), 
+    solserv_add_vec(&(actsolv->rhs[1]), &(actsolv->rhs[0]),
                     (1.0-actdyn->alpha_f));
 
     /*------------------------------------------------------------------*/
@@ -824,17 +825,17 @@ void tsi_st_genalp(INT disnum_s,
      *   + M*(-a1*dispi[0]+a2*vel[0]+a3*acc[0])
      *   + D*(-a4*dispi[0]+a5*vel[0]+a6*acc[0]) (if present)
      *
-     *   a1 = dynvar.constants[0] 
+     *   a1 = dynvar.constants[0]
      *      =  (1.0-alpham) * (1.0/beta)/(DSQR(dt))
-     *   a2 =                        
+     *   a2 =
      *      = ((1.0-alpham) * (1.0/beta)/(DSQR(dt)))*dt
-     *   a3 = dynvar.constants[2] 
+     *   a3 = dynvar.constants[2]
      *      =  (1.0-alpham) / (2.0*beta) - 1.0
-     *   a4 = dynvar.constants[3] 
+     *   a4 = dynvar.constants[3]
      *      =  (1.0-alphaf) * ((gamma/beta)/dt)
-     *   a5 = dynvar.constants[4] 
+     *   a5 = dynvar.constants[4]
      *      =  ((1.0-alphaf) * ((gamma/beta)/dt))*dt - 1.0
-     *   a6 =                        
+     *   a6 =
      *      = (gamma/beta)/2.0 - 1.0) * dt * (1.0-alphaf) */
     pefnln_struct(&dynvar, actdyn, actfield, actsolv, actintra,
                   dispi, vel, acc, work, mass_array, damp_array);
@@ -857,10 +858,10 @@ void tsi_st_genalp(INT disnum_s,
                    &(dispi[0]), &(actsolv->rhs[0]), init);
 
     /*------------------------------------------------------------------*/
-    /* return residual/iterative displacements \iinc D_{n+1}^<i+1> 
+    /* return residual/iterative displacements \iinc D_{n+1}^<i+1>
      * to the nodes
      * These are needed for updating internal element variables. */
-    solserv_result_resid(actfield, disnum, actintra, 
+    solserv_result_resid(actfield, disnum, actintra,
                          &(dispi[0]),
                          isolres->disres,
                          &(actsolv->sysarray[stiff_array]),
@@ -888,14 +889,14 @@ void tsi_st_genalp(INT disnum_s,
     /* put the scaled prescribed displacements to the nodes */
     /* in field sol (0) at place 0 together with free displacements
      * these are used to calculate the stiffness matrix */
-    solserv_putdirich_to_dof(actfield, disnum, 
+    solserv_putdirich_to_dof(actfield, disnum,
                              node_array_sol, isol->disn, actdyn->time);
 
     /*------------------------------------------------------------------*/
     /* return total displacements to the nodes */
     solserv_result_total(actfield, disnum, actintra,
                          &(actsolv->sol[1]),
-                         isol->disn, 
+                         isol->disn,
                          &(actsolv->sysarray[stiff_array]),
                          &(actsolv->sysarray_typ[stiff_array]));
 
@@ -950,12 +951,12 @@ void tsi_st_genalp(INT disnum_s,
       dirichfacs[4] =  dynvar.constants[4];
       dirichfacs[5] =  dynvar.constants[5];
       dirichfacs[6] =  0.0;
-      if (damp_array > 0) 
+      if (damp_array > 0)
       {
         dirichfacs[7] = actdyn->m_damp;
         dirichfacs[8] = actdyn->k_damp;
-      } 
-      else 
+      }
+      else
       {
         dirichfacs[7] = 0.0;
         dirichfacs[8] = 0.0;
@@ -963,9 +964,9 @@ void tsi_st_genalp(INT disnum_s,
       dirichfacs[9] = actdyn->dt;
 
       /*----------------------------------------------------------------*/
-      /* zero the stiffness matrix 
+      /* zero the stiffness matrix
        * and vector for internal forces and Dirichlet forces */
-      solserv_zero_mat(actintra, 
+      solserv_zero_mat(actintra,
                        &(actsolv->sysarray[stiff_array]),
                        &(actsolv->sysarray_typ[stiff_array]));
       solserv_zero_mat(actintra,
@@ -975,7 +976,7 @@ void tsi_st_genalp(INT disnum_s,
       amzero(&dirich_a);
 
       /*----------------------------------------------------------------*/
-      /* call element routines for calculation of 
+      /* call element routines for calculation of
        * tangential stiffness and intforce */
       *action = calc_struct_nlnstiffmass;
       solserv_sol_zero(actfield, disnum, node_array_sol_increment,
@@ -985,7 +986,7 @@ void tsi_st_genalp(INT disnum_s,
       container.global_numeq = numeq_total;
       container.dirichfacs = dirichfacs;
       container.kstep = 0;
-      calelm(actfield, actsolv, actpart, actintra, 
+      calelm(actfield, actsolv, actpart, actintra,
              stiff_array, mass_array, &container, action);
 
       /*----------------------------------------------------------------*/
@@ -1047,7 +1048,7 @@ void tsi_st_genalp(INT disnum_s,
 
       /*----------------------------------------------------------------*/
       /* return residual displacements iinc D_{n+1}^<i+1> to the nodes */
-      solserv_result_resid(actfield, disnum, actintra, 
+      solserv_result_resid(actfield, disnum, actintra,
                            &(work[0]),
                            isolres->disres,
                            &(actsolv->sysarray[stiff_array]),
@@ -1067,7 +1068,7 @@ void tsi_st_genalp(INT disnum_s,
              stiff_array, -1, &container, action);
 
       /*----------------------------------------------------------------*/
-      /* update the incremental displacements by the residual/iterative 
+      /* update the incremental displacements by the residual/iterative
        * displacements
        *    \inc\D_{n+1}^<i+1> := \inc\D_{n+1}^<i> + \iinc\D_{n+1}^<i+1> */
       solserv_add_vec(&(work[0]), &(dispi[0]), 1.0);
@@ -1080,7 +1081,7 @@ void tsi_st_genalp(INT disnum_s,
 
       /*----------------------------------------------------------------*/
       /* return total displacements to the nodes */
-      solserv_result_total(actfield, disnum, actintra, 
+      solserv_result_total(actfield, disnum, actintra,
                            &(actsolv->sol[1]),
                            isol->disn,
                            &(actsolv->sysarray[stiff_array]),
@@ -1139,22 +1140,22 @@ void tsi_st_genalp(INT disnum_s,
 
     /*------------------------------------------------------------------*/
     /*  copy disp from sol place 0 to place 10 */
-    solserv_sol_copy(actfield, disnum, 
-                     node_array_sol, node_array_sol, 
+    solserv_sol_copy(actfield, disnum,
+                     node_array_sol, node_array_sol,
                      isol->disn, isol->dis);
 
     /*------------------------------------------------------------------*/
     /* copy vels from sol place 1 to place 11 */
     solserv_sol_copy(actfield, disnum,
-                     node_array_sol, node_array_sol, 
+                     node_array_sol, node_array_sol,
                      isol->veln, isol->vel);
 
     /*------------------------------------------------------------------*/
     /* copy accs from sol place 2 to place 12 */
     solserv_sol_copy(actfield, disnum,
-                     node_array_sol, node_array_sol, 
+                     node_array_sol, node_array_sol,
                      isol->accn, isol->acc);
-    
+
     /*------------------------------------------------------------------*/
     /* update displacements, velocities and accelerations */
     dyn_nlnstructupd(actfield,
@@ -1169,31 +1170,31 @@ void tsi_st_genalp(INT disnum_s,
                      &(work[0]),  /* working vector */
                      &(work[1]),  /* working vector */
                      &(work[2]));  /* working vector */
-    
+
     /*------------------------------------------------------------------*/
     /* return velocities to the nodes */
-    solserv_result_total(actfield, disnum, actintra, 
-                         &(vel[0]), isol->veln, 
+    solserv_result_total(actfield, disnum, actintra,
+                         &(vel[0]), isol->veln,
                          &(actsolv->sysarray[stiff_array]),
                          &(actsolv->sysarray_typ[stiff_array]));
 
     /*------------------------------------------------------------------*/
     /* velocities for prescribed dofs to velocities */
-    solserv_adddirich(actfield, disnum, 
-                      node_array_sol, isol->veldn, isol->disn, isol->veln, 
+    solserv_adddirich(actfield, disnum,
+                      node_array_sol, isol->veldn, isol->disn, isol->veln,
                       1.0, 0.0);
 
     /*------------------------------------------------------------------*/
     /* return accel. to the nodes */
-    solserv_result_total(actfield, disnum, actintra, 
-                         &(acc[0]), isol->accn, 
+    solserv_result_total(actfield, disnum, actintra,
+                         &(acc[0]), isol->accn,
                          &(actsolv->sysarray[stiff_array]),
                          &(actsolv->sysarray_typ[stiff_array]));
-    
+
     /*------------------------------------------------------------------*/
     /* accel. for prescribed dofs */
-    solserv_adddirich(actfield, disnum, 
-                      node_array_sol, isol->accdn, isol->disn, isol->accn, 
+    solserv_adddirich(actfield, disnum,
+                      node_array_sol, isol->accdn, isol->disn, isol->accn,
                       1.0, 0.0);
 
     /*------------------------------------------------------------------*/
@@ -1209,7 +1210,7 @@ void tsi_st_genalp(INT disnum_s,
     /*------------------------------------------------------------------*/
     /* It is a bit messed up, but anyway:
      * in the nodes the results are stored the following way:
-     * 
+     *
      * in ARRAY sol.a.da[place][0..numdf-1]:
      * place 0  holds total displacements  time t      (free/prescr)
      * place 1  holds velocities           time t      (free/prescr)
@@ -1224,15 +1225,15 @@ void tsi_st_genalp(INT disnum_s,
      * place 10 holds total displacements  time t-dt   (free/prescr)
      * place 11 holds velocities           time t-dt   (free/prescr)
      * place 12 holds accels               time t-dt   (free/prescr)
-     * 
+     *
      * in ARRAY sol_increment.a.da[place][0..numdf-1]
-     * place 0 holds converged incremental displacements 
+     * place 0 holds converged incremental displacements
      *         (without prescribed dofs)
      * place 1 holds converged internal forces at time t-dt
      * place 2 holds converged internal forces at time t
-     * 
+     *
      * in ARRAY sol_residual
-     * place 0 holds residual displacements during iteration 
+     * place 0 holds residual displacements during iteration
      *         (without prescribed dofs) */
 
     /*------------------------------------------------------------------*/
@@ -1248,8 +1249,8 @@ void tsi_st_genalp(INT disnum_s,
 
     /*------------------------------------------------------------------*/
     /* make external energy */
-    dyn_eout(&dynvar, actdyn, actintra, actsolv, 
-             &(dispi[0]), &(actsolv->rhs[1]), 
+    dyn_eout(&dynvar, actdyn, actintra, actsolv,
+             &(dispi[0]), &(actsolv->rhs[1]),
              &(actsolv->rhs[0]), &(work[0]));
 
     /*------------------------------------------------------------------*/
@@ -1324,14 +1325,14 @@ void tsi_st_genalp(INT disnum_s,
     {
       if ( (mod_disp == 0) && (ioflags.struct_disp == 1) )
       {
-        out_gid_soldyn("displacement", actfield, disnum_s, actintra, 
+        out_gid_soldyn("displacement", actfield, disnum_s, actintra,
                        actdyn->step, 0, actdyn->time);
         /*out_gid_soldyn("velocity",actfield,disnum_s,actintra,actdyn->step,1,actdyn->time);*/
         /*out_gid_soldyn("accelerations",actfield,disnum_s,actintra,actdyn->step,2,actdyn->time);*/
       }  /* end of if */
       if ( (mod_stress == 0) && (ioflags.struct_stress == 1) )
       {
-        out_gid_soldyn("stress", actfield, disnum_s, actintra, 
+        out_gid_soldyn("stress", actfield, disnum_s, actintra,
                        actdyn->step, 0, actdyn->time);
       }
     }
@@ -1376,14 +1377,14 @@ void tsi_st_genalp(INT disnum_s,
     /*------------------------------------------------------------------*/
     /*  measure wall clock time for this step */
     t1 = ds_cputime();
-    fprintf(allfiles.out_err, "TIME for step %d is %f sec\n", 
+    fprintf(allfiles.out_err, "TIME for step %d is %f sec\n",
             actdyn->step, t1-t0);
 
   }  /* end of time loop */
   /*====================================================================*/
   /* END OF TIME STEP LOOP */
   /*====================================================================*/
-  
+
   /*--------------------------------------------------------------------*/
   end:
 
@@ -1424,3 +1425,4 @@ void tsi_st_genalp(INT disnum_s,
 
   return;
 }  /* end of tsi_st_genalp */
+#endif

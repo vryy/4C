@@ -6,6 +6,7 @@
 \author bborn
 \date 03/06
 */
+#ifndef CCADISCRET
 #ifdef D_THERM2
 
 /*----------------------------------------------------------------------*/
@@ -88,7 +89,7 @@ void th2_cfg_init()
 
 /*======================================================================*/
 /*!
-\brief 
+\brief
 
 What the heck is this? Must be some sort of numbering of the nodes or
 DOFs of the element...
@@ -101,8 +102,8 @@ DOFs of the element...
 \author bborn
 \date 03/06
 */
-void th2_cfg_iedg(INT *iegnod, 
-                  ELEMENT *ele, 
+void th2_cfg_iedg(INT *iegnod,
+                  ELEMENT *ele,
                   INT line)
 {
 INT i;
@@ -145,7 +146,7 @@ return;
 /*!
 \brief Natural ccordinates of element nodes
 
-Obtain the rs-coordinates (ie natural coords, or the coordinates in 
+Obtain the rs-coordinates (ie natural coords, or the coordinates in
 parameter space)  of the element nodes (ie quads with 4,8,9, or tris
 with 3,6)
 
@@ -156,7 +157,7 @@ void th2_cfg_noders(ELEMENT *ele,
                     INT inode,
                     DOUBLE *rs)
 {
-  static DOUBLE qrs489[9][NDIM_THERM2] = { {1.0,1.0}, {-1.0,1.0}, 
+  static DOUBLE qrs489[9][NDIM_THERM2] = { {1.0,1.0}, {-1.0,1.0},
                                            {-1.0,-1.0}, {1.0,-1.0},
                                            {0.0,1.0}, {-1.0,0.0},
                                            {0.0,-1.0}, {1.0,0.0},
@@ -194,3 +195,4 @@ void th2_cfg_noders(ELEMENT *ele,
 
 /*======================================================================*/
 #endif  /* end of #ifdef D_THERM2 */
+#endif

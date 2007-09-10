@@ -10,6 +10,7 @@ Maintainer: Volker Gravemeier
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef FLUID2_ML
 #include "../headers/standardtypes.h"
 #include "../fluid_full/fluid_prototypes.h"
@@ -1610,4 +1611,5 @@ dstrc_exit();
 return;
 } /* end of f2_inbu */
 
+#endif
 #endif

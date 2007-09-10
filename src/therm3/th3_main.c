@@ -13,6 +13,7 @@ Maintainer: Burkhard Bornemann
 \author bborn
 \date 09/06
 */
+#ifndef CCADISCRET
 #ifdef D_THERM3
 
 
@@ -71,7 +72,7 @@ void therm3(PARTITION *actpart,
             ARRAY *emass_global,
             ARRAY *eforc_global,
             CALC_ACTION *action,
-            CONTAINER *container)   /* contains variables defined 
+            CONTAINER *container)   /* contains variables defined
                                      * in container.h */
 {
 
@@ -111,14 +112,14 @@ void therm3(PARTITION *actpart,
     /* stationary tangent */
     case calc_therm_tang_stat:
       actmat = &(mat[ele->mat-1]);
-      th3_lin_tang(container, ele, &(th3_data), actmat, 
+      th3_lin_tang(container, ele, &(th3_data), actmat,
                    estif_global, NULL, NULL);
       break;
     /*------------------------------------------------------------------*/
     /* in-stationary tangent */
     case calc_therm_tang_instat:
       actmat = &(mat[ele->mat-1]);
-      th3_lin_tang(container, ele, &(th3_data), actmat, 
+      th3_lin_tang(container, ele, &(th3_data), actmat,
                    estif_global, emass_global, eforc_global);
       break;
     /*------------------------------------------------------------------*/
@@ -160,3 +161,4 @@ void therm3(PARTITION *actpart,
 /*======================================================================*/
 #endif  /* end of #ifdef D_THERM3 */
 /*! @} (documentation module close)*/
+#endif

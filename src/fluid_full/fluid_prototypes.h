@@ -14,6 +14,9 @@ Maintainer: Steffen Genkinger
    1.) THE FILENAMES ARE IN ALPHABETICAL ORDER !!!
    2.) FUNCTIONS ARE IN THE SAME ORDER LIKE IN THE FILE!!!
 */
+
+#ifndef CCADISCRET
+
 /*!
 \addtogroup FLUID
 *//*! @{ (documentation module open)*/
@@ -675,3 +678,5 @@ void inp_fluid_start_data(
     );
 
 /*! @} (documentation module close)*/
+
+#endif

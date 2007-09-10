@@ -13,6 +13,7 @@ Maintainer: Burkhard Bornemann
 \author bborn
 \date 03/07
 */
+#ifndef CCADISCRET
 #ifdef D_SOLID3
 #ifdef D_TSI
 
@@ -100,7 +101,7 @@ void so3_mat_robinson_init(ELEMENT* ele)  /*!< current element */
 void so3_mat_robinson_final(ELEMENT* ele)  /*!< current element */
 {
   const INT itsidyn = genprob.numfld;  /* index of TSI dynamics data */
-  const TSI_DYNAMIC* tsidyn = alldyn[itsidyn].tsidyn;  /* TSI dynamics data */ 
+  const TSI_DYNAMIC* tsidyn = alldyn[itsidyn].tsidyn;  /* TSI dynamics data */
   SOLID3* actso3 = ele->e.so3;  /* point to SOLID3 element bits */
 
   /*--------------------------------------------------------------------*/
@@ -440,7 +441,7 @@ void so3_mat_robinson_mivupditer(const CONTAINER* container,
 
 /*======================================================================*/
 /*!
-\brief Inremental update Robinson's internal material variables 
+\brief Inremental update Robinson's internal material variables
 \param   ele          ELEMENT*        (io)   curr. elem.
 \param   mat_robin    VP_ROBINSON*    (i)    elem. mater.
 \param   ip           INT             (i)    curr. Gauss point index
@@ -553,3 +554,4 @@ void so3_mat_robinson_stress(const CONTAINER* container,
 
 #endif  /* end D_TSI */
 #endif  /* end D_SOLID3 */
+#endif

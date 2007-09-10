@@ -1,6 +1,6 @@
 /*!-----------------------------------------------------------------------
 \file
-\brief contains the routine 'if_mat' which is the material law 
+\brief contains the routine 'if_mat' which is the material law
  for the interface element
 
 <pre>
@@ -10,6 +10,7 @@ Maintainer: Andrea Hund
             0711 - 685-6122
 </pre>
 *-----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_INTERF
 #include "../headers/standardtypes.h"
 #include "interf.h"
@@ -17,7 +18,7 @@ Maintainer: Andrea Hund
 #include "../struct2_ml/s2ml.h"
 #include "../wall1/wall1.h"
 
-/*! 
+/*!
 \addtogroup INTERF
 */
 /*! @{ (documentation module open)*/
@@ -25,7 +26,7 @@ Maintainer: Andrea Hund
 /*!----------------------------------------------------------------------
 \brief  contains a material law for the interface element
 
-<pre>                                                              ah 05/03 
+<pre>                                                              ah 05/03
 This routine computes the constitutive  matrix of the interface element
 
 </pre>
@@ -33,7 +34,7 @@ This routine computes the constitutive  matrix of the interface element
 \param   *mat          MATERIAL  (I)   actual material
 \param  **bop          DOUBLE    (I)   B-operator
 \param  **D            DOUBLE    (O)   material tangent
-\param   *T            DOUBLE    (O)   stresses 
+\param   *T            DOUBLE    (O)   stresses
 \param    ip           INT       (I)   ID of actual GP
 \param    istore       INT       (I)   is it update?
 \param    newval       INT       (I)   is it stress calculation
@@ -43,13 +44,13 @@ This routine computes the constitutive  matrix of the interface element
 \param   *DELTAjumpu_tot DOUBLE  (I)   if multi: tot increm. displ.jump
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling:   ---; 
+\return void
+\sa calling:   ---;
     called by: if_static_ke();
 
 *----------------------------------------------------------------------*/
 void if_mat(ELEMENT   *ele,        /* actual element (macro)               */
-            MATERIAL  *mat,        /* actual material                      */ 
+            MATERIAL  *mat,        /* actual material                      */
             DOUBLE   **bop,        /* B-operator                           */
             DOUBLE   **D,          /* material tangent                     */
             DOUBLE    *T,          /* stresses                             */
@@ -75,13 +76,13 @@ DOUBLE disjump[2];
 DOUBLE Deltadisjump[2];
 
 /*------------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("if_mat");
 #endif
 /*---------------------------------------------- material parameters -----*/
 
-E       = mat->m.ifmat->emod;   /*- Normalzugsteifigkeit-*/   
-K       = mat->m.ifmat->kmod;   /*- Normaldrucksteifigkeit-*/ 
+E       = mat->m.ifmat->emod;   /*- Normalzugsteifigkeit-*/
+K       = mat->m.ifmat->kmod;   /*- Normaldrucksteifigkeit-*/
 G       = mat->m.ifmat->gmod;   /*- Schubsteifigkeit,die bei Dekohaesion abnimmt-*/
 thick   = mat->m.ifmat->dick;   /*- Pseudodicke des Interfaces -*/
 /*Q       = mat->m.ifmat->qmod;   - konstanter Anteil der Schubsteifigkeit-*/
@@ -98,7 +99,7 @@ if(smallscale == 0)
 else
 {
   ID  = actsmele->Id;
-  yip = ele->e.w1->sm_eledata[ID].sm_GPdata[ip].yip; 
+  yip = ele->e.w1->sm_eledata[ID].sm_GPdata[ip].yip;
 }
 #endif /* D_MLSTRUCT */
 /*------------------------------------------------------------------------*/
@@ -109,7 +110,7 @@ Ytmax  = (G * delta_t * delta_t) / (TWO * thick);
 
 if(smallscale == 0)
 {
-  /* calc.tang. and normal displ jumps [un],[ut],[DELTAun],[DELTAut] ---*/        
+  /* calc.tang. and normal displ jumps [un],[ut],[DELTAun],[DELTAut] ---*/
   if_jumpu(ele,bop,disjump,Deltadisjump);
   /*-------------------------------- Werte des letzten Lastschrittes ---*/
   dn = ele->e.interf->elewa[0].ipwa[ip].dn;
@@ -124,9 +125,9 @@ else  /*----------------- smallscale ==1, disjump already calculated ---*/
   Deltadisjump[0] = DELTAjumpu_tot[0];
   Deltadisjump[1] = DELTAjumpu_tot[1];
   /*-------------------------------- Werte des letzten Lastschrittes ---*/
-  dn =  ele->e.w1->sm_eledata[ID].sm_GPdata[ip].dn; 
+  dn =  ele->e.w1->sm_eledata[ID].sm_GPdata[ip].dn;
   dt =  ele->e.w1->sm_eledata[ID].sm_GPdata[ip].dt;
-  ut_pl = ele->e.w1->sm_eledata[ID].sm_GPdata[ip].utpl;      
+  ut_pl = ele->e.w1->sm_eledata[ID].sm_GPdata[ip].utpl;
 }
 #endif /* D_MLSTRUCT */
 /*---------------------- is the interface in tension or compression? ---*/
@@ -142,7 +143,7 @@ if (disjump[1]>0.0)
   if (disjump[1]*Deltadisjump[1]>=0.0)
   {
       /* printf("Normalzug - Normaldekohaesionsfortschritt\n"); */
-     Yn     = (E * disjump[1] * disjump[1])/ (TWO * thick); 
+     Yn     = (E * disjump[1] * disjump[1])/ (TWO * thick);
      dn_neu = 1.0 - (1.0 - sqrt(Yn/Ynmax)) * (1.0 - sqrt(Yn/Ynmax));
      if (dn_neu < dn)
      {
@@ -156,18 +157,18 @@ if (disjump[1]>0.0)
      D[1][0] = 0.0;
      if (dn_neu <1.0)
      {
-       D[1][1] = (E * (1.0 - dn_neu)) / thick 
-               - (E * E * disjump[1] *disjump[1]*(1.0/sqrt(Yn/Ynmax) -1.0)) 
+       D[1][1] = (E * (1.0 - dn_neu)) / thick
+               - (E * E * disjump[1] *disjump[1]*(1.0/sqrt(Yn/Ynmax) -1.0))
                   / (thick * thick * Ynmax);
      }
      else
-     { 
+     {
        D[1][1] = (E * 1.0E-8)/ thick;
 # if 0
        D[1][1] = 0.0;
-# endif         
+# endif
        }
-  } 
+  }
   /*----------------------------- Normaldekohaesionsstop (elastisch) ---*/
   else
   {
@@ -198,17 +199,17 @@ if (disjump[1]>0.0)
      if (dt_neu <1.0)
      {
 
-       D[0][0] = (G * (1.0 - dt_neu))/thick 
+       D[0][0] = (G * (1.0 - dt_neu))/thick
                - (G*G*(disjump[0]-ut_pl)*(disjump[0]-ut_pl)*(1.0/sqrt(Yt/Ytmax) -1.0))
                  /(thick * thick * Ytmax);
-     } 
+     }
      else
      {
        D[0][0] = (G * 1.0E-8)/ thick;
 # if 0
        D[0][0] = 0;
 # endif
-     } 
+     }
   }
   /*------------------------- Tangentialdekohaesionsstop (elastisch) ---*/
   else
@@ -220,7 +221,7 @@ if (disjump[1]>0.0)
      D[0][1] = 0.0;
      D[0][0] = (G * (1.0 - dt_neu))/thick;
   }
-  yip=1;  
+  yip=1;
 }/* end of: if (disjump[1]>1) */
 /*----------------------------------------------------------------------*/
 /*                           compression case                           */
@@ -254,7 +255,7 @@ else if (disjump[1]<0.0)
        T[0]    = ((G * (1.0 - dt_neu) - (mu * K * disjump[1])/(delta_t))* disjump[0])/ thick;
        D[1][0] = 0.0;
        D[0][1] = -(mu * K * disjump[0])/(delta_t * thick);
-       D[0][0] = (G * (1.0 - dt_neu) - (mu * K * disjump[1])/(delta_t)) / thick 
+       D[0][0] = (G * (1.0 - dt_neu) - (mu * K * disjump[1])/(delta_t)) / thick
                - (G * G * disjump[0] * disjump[0]*(1.0/sqrt(Yt_tr/Ytmax) -1))
                  /(thick * thick * Ytmax);
      }
@@ -283,16 +284,16 @@ else if (disjump[1]<0.0)
         /* printf("Normaldruck - Schubreibung\n"); */
        deltalambda = FABS(disjump[0] - ut_pl) - delta_t;
        ut_pl_neu   = ut_pl + deltalambda * FSIGN(Tt_tr);
-       T[0]        = Tt_tr + 
+       T[0]        = Tt_tr +
                     (mu* K* disjump[1]* deltalambda* FSIGN(Tt_tr))/(thick*delta_t);
        D[1][0] = 0.0;
-# if 0         
+# if 0
        D[0][0] = 0.0;
-# endif         
+# endif
    /*----------------- Achtung diese Steigung ist eigentlich Null!!! ---*/
        D[0][0] = (mu * K * 1.0E-4)/ thick;
    /*-------------------------------------------------------------------*/
-       D[0][1] = - (mu * K)/(thick * FSIGN(T[0])); 
+       D[0][1] = - (mu * K)/(thick * FSIGN(T[0]));
        yip = 2;
      }
    /*------------------------------------------------------- elastic ---*/
@@ -339,17 +340,17 @@ else if (disjump[1]==0.0)
      if (dt_neu <1.0)
      {
 
-       D[0][0] = (G * (1.0 - dt_neu))/thick 
+       D[0][0] = (G * (1.0 - dt_neu))/thick
                - (G*G*(disjump[0]-ut_pl)*(disjump[0]-ut_pl)*(1.0/sqrt(Yt/Ytmax) -1.0))
                  /(thick * thick * Ytmax);
-     } 
+     }
      else
      {
        D[0][0] = (G * 1.0E-8)/ thick;
 # if 0
        D[0][0] = 0.0;
 # endif
-     } 
+     }
   }
   /*------------------------- Tangentialdekohaesionsstop (elastisch) ---*/
   else
@@ -360,7 +361,7 @@ else if (disjump[1]==0.0)
      D[0][1] = 0.0;
      D[0][0] = (G * (1.0 - dt_neu))/thick;
   }
-  yip=1;  
+  yip=1;
 }/* end of: if (disjump[1]==0) */
 /*----------------------------------------------------------------------*/
 /*              update the converged results of a loadstep              */
@@ -386,7 +387,7 @@ if(istore==1)
 #ifdef D_MLSTRUCT
   else  /*smallscale ==1*/
   {
-    ele->e.w1->sm_eledata[ID].sm_GPdata[ip].dn = dn_neu; 
+    ele->e.w1->sm_eledata[ID].sm_GPdata[ip].dn = dn_neu;
     ele->e.w1->sm_eledata[ID].sm_GPdata[ip].dt = dt_neu;
     ele->e.w1->sm_eledata[ID].sm_GPdata[ip].utpl = ut_pl_neu;
     ele->e.w1->sm_eledata[ID].sm_GPdata[ip].T[0] = T[0];
@@ -401,14 +402,14 @@ if(istore==1)
     ele->e.w1->sm_eledata[ID].sm_GPdata[ip].yip = yip;
   }
 #endif /* D_MLSTRUCT */
-}/*end of: if (istore==1) */  
+}/*end of: if (istore==1) */
 
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of if_mat */
 
 
@@ -417,7 +418,7 @@ return;
 /*!----------------------------------------------------------------------
 \brief  contains a material law for the interface element
 
-<pre>                                                              ah 05/03 
+<pre>                                                              ah 05/03
 This routine computes the constitutive  matrix of the interface element
 
 </pre>
@@ -425,7 +426,7 @@ This routine computes the constitutive  matrix of the interface element
 \param   *mat          MATERIAL  (I)   actual material
 \param  **bop          DOUBLE    (I)   B-operator
 \param  **D            DOUBLE    (O)   material tangent
-\param   *T            DOUBLE    (O)   stresses 
+\param   *T            DOUBLE    (O)   stresses
 \param    ip           INT       (I)   ID of actual GP
 \param    istore       INT       (I)   is it update?
 \param    newval       INT       (I)   is it stress calculation
@@ -435,13 +436,13 @@ This routine computes the constitutive  matrix of the interface element
 \param   *DELTAjumpu_tot DOUBLE  (I)   if multi: tot increm. displ.jump
 
 \warning There is nothing special to this routine
-\return void                                               
-\sa calling:   ---; 
+\return void
+\sa calling:   ---;
     called by: if_static_ke();
 
 *----------------------------------------------------------------------*/
 void if_mat_thermodyn(ELEMENT   *ele,        /* actual element (macro)               */
-            MATERIAL  *mat,        /* actual material                      */ 
+            MATERIAL  *mat,        /* actual material                      */
             DOUBLE   **bop,        /* B-operator                           */
             DOUBLE   **D,          /* material tangent                     */
             DOUBLE    *T,          /* stresses [0]: tang. [1]:normal       */
@@ -474,12 +475,12 @@ DOUBLE tol = 1.0E-10;  /* Tolerance for Fallunterschiedung loading-unloading*/
 INT ID=0;        /* ID of actual submesh-element if it's multiscale */
 
 /*------------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("if_mat_thermodyn");
 #endif
 /*------------------------------------------------ material parameters ---*/
-E        = mat->m.interf_therm->emod;    /*- E-Modul-*/   
-nu       = mat->m.interf_therm->nu;      /*- Querdehnzahl-*/ 
+E        = mat->m.interf_therm->emod;    /*- E-Modul-*/
+nu       = mat->m.interf_therm->nu;      /*- Querdehnzahl-*/
 dick     = mat->m.interf_therm->dick;    /*- Pseudodicke des Interfaces-*/
 kappa0_n = mat->m.interf_therm->kappa0_n;/*- Schaedigungsschwellwert normal -*/
 alpha_n  = mat->m.interf_therm->alpha_n; /*- Schaedigungsgrenzwert -*/
@@ -508,7 +509,7 @@ else
 {
   ID  = actsmele->Id;
 /*---------------------------------------------- get history variables ---*/
-  kappa_n_last =  ele->e.w1->sm_eledata[ID].sm_GPdata[ip].kappa_n; 
+  kappa_n_last =  ele->e.w1->sm_eledata[ID].sm_GPdata[ip].kappa_n;
   kappa_t_last =  ele->e.w1->sm_eledata[ID].sm_GPdata[ip].kappa_t;
 
 /*---------------- get displacement jumps[un],[ut],[DELTAun],[DELTAut] ---*/
@@ -527,13 +528,13 @@ T_elast[1] = Q_n * disjump[1];
 /*------------------------------------------------------------------------*/
 switch(equival)
 {
-  case 1: 
+  case 1:
     epsv_t = Q_t * disjump[0] * disjump[0]/2.0;
     epsv_n = Q_n * disjump[1] * disjump[1]/2.0;
     epsv_t_deriv = T_elast[0];
     epsv_n_deriv = T_elast[1];
   break;
-  case 4: 
+  case 4:
     epsv_t = sqrt(disjump[0] * disjump[0]);
     epsv_n = sqrt(disjump[1] * disjump[1]);
     epsv_t_deriv = FSIGN(disjump[0]);
@@ -653,10 +654,10 @@ else if(istore==1 && smallscale ==1)
 }
 #endif /* D_MLSTRUCT */
 /*------------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of if_mat_thermodyn */
 
 
@@ -677,3 +678,4 @@ return;
 /*------------------------------------------------------------------------*/
 #endif /*D_INTERF*/
 /*! @} (documentation module close)*/
+#endif

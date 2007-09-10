@@ -10,6 +10,7 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 #include "../io/io.h"
@@ -412,8 +413,8 @@ for (kstep=0; kstep<nstep; kstep++)
        else  /* sophisticated load factor from load curve */
        {
          actcurve = 0;
-         dyn_facfromcurve(actcurve, 
-                          kstep*statvar->stepsize, 
+         dyn_facfromcurve(actcurve,
+                          kstep*statvar->stepsize,
                           &(nln_data.rlold));
        }  /* end if : numcurve == 0 */
        break;
@@ -558,7 +559,7 @@ for (kstep=0; kstep<nstep; kstep++)
      if (genprob.multisc_struct && ioflags.struct_sm_disp && mod_displ==0)
        out_gid_smdisp("displacement",kstep);
      if (genprob.multisc_struct && ioflags.struct_sm_stress && mod_stress==0)
-       out_gid_smstress("stress",kstep); 
+       out_gid_smstress("stress",kstep);
    }
 #endif
 
@@ -729,7 +730,7 @@ init=0;
 oll_print(actsolv->sysarray[actsysarray].oll,200);
 */
 solver_control(  actfield,                            /* field to be solved       */
-                 disnum,                              /* discretization number    */ 
+                 disnum,                              /* discretization number    */
                  actsolv,                             /* active solver typ        */
                  actintra,                            /* my intra-comunicators    */
                &(actsolv->sysarray_typ[actsysarray]), /* Systemmatrixtyp          */
@@ -1479,3 +1480,4 @@ dstrc_exit();
 #endif
 return;
 } /* end of conequ_printiter */
+#endif

@@ -11,6 +11,7 @@ Maintainer: Michael Gee
 </pre>
 
 ---------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef GEMM
 #ifdef WALLCONTACT
 /*!----------------------------------------------------------------------
@@ -538,5 +539,6 @@ return;
 /* end of wall_contact_mid*/
 
 /*! @} (documentation module close)*/
+#endif
 #endif
 #endif

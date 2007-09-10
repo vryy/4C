@@ -91,6 +91,7 @@ typedef enum _DISMODE
 } DISMODE;
 
 
+#ifndef CCADISCRET
 /*----------------------------------------------------------------------*
  | enum DIS_TYP                                           m.gee 6/01    |
  | type of discretization                                               |
@@ -116,6 +117,7 @@ typedef enum _DIS_TYP
 /* Mapping from dis type numbers to printable names. To be used to
  * initialize static variables. Keep in sync! */
 #define DISTYPENAMES { "dis_none", "quad4", "quad8", "quad9", "tri3", "tri6", "hex8", "hex20", "hex27", "tet4", "tet10", "line2", "line3", NULL }
+#endif
 
 /*----------------------------------------------------------------------*/
 /*!

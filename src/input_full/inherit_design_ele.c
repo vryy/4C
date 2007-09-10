@@ -10,6 +10,7 @@ Maintainer: Christiane Foerster
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup INPUT
 *//*! @{ (documentation module open)*/
@@ -82,7 +83,7 @@ for (i=0; i<actdis->numele; i++)
 #ifdef D_FLUID2_TDS
 	  case stab_tds:
         break;
-#endif	    
+#endif
         case stab_prespro:
          /* nothing needs to be done at the moment (no parameters!) */
         break;
@@ -124,7 +125,7 @@ for (i=0; i<actdis->numele; i++)
 #ifdef D_FLUID3_TDS
 	  case stab_tds:
         break;
-#endif		
+#endif
         default:
         dserror("Unknown stabilisation for fluid3!");
       }
@@ -153,7 +154,7 @@ for (i=0; i<actdis->numele; i++)
 #ifdef D_FLUID3_TDS
 	  case stab_tds:
         break;
-#endif		
+#endif
         default:
         dserror("Unknown stabilisation for fluid3f!");
       }
@@ -181,7 +182,7 @@ for (i=0; i<actdis->numele; i++)
 #ifdef D_FLUID2_TDS
 	  case stab_tds:
         break;
-#endif		
+#endif
     case stab_prespro:
       /* nothing needs to be done at the moment (no parameters!) */
       break;
@@ -213,7 +214,7 @@ for (i=0; i<actdis->numele; i++)
 #ifdef D_FLUID3_TDS
 	  case stab_tds:
         break;
-#endif		
+#endif
     case stab_prespro:
       /* nothing needs to be done at the moment (no parameters!) */
       break;
@@ -236,4 +237,4 @@ return;
 
 #endif
 /*! @} (documentation module close)*/
-
+#endif

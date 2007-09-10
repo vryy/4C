@@ -10,6 +10,7 @@ Maintainer: Malte Neumann
   </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 
 /*!
   \addtogroup FLUID3
@@ -600,3 +601,4 @@ void f3_sext(
 #endif
 /*! @} (documentation module close)*/
 
+#endif

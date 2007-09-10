@@ -4,7 +4,7 @@
 \brief Main chooser for different thermal structural interactive analyses
 
 According to the problem type and its KIND variable, different thermal
-structure interaction modes are selected. 
+structure interaction modes are selected.
 
 <pre>
 Maintainer: Burkhard Bornemann
@@ -18,6 +18,7 @@ Maintainer: Burkhard Bornemann
 */
 /*----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 
 /*----------------------------------------------------------------------*/
 /* header files */
@@ -49,7 +50,7 @@ FILES allfiles;
 \brief general problem data
 
 global variable general problem type
-global variable GENPROB genprob is defined in global_control.c 
+global variable GENPROB genprob is defined in global_control.c
 
 \auther bborn
 \date 03/06
@@ -120,7 +121,7 @@ void tsi_dyn()
   INT numtf;  /* number (index) of thermal field */
   FIELD *structfield;  /* pointer to structure field */
   FIELD *thermfield;  /* pointer to thermal field */
-  
+
   /* discretisations */
   INT disnum_s;
   INT disnum_t;
@@ -131,7 +132,7 @@ void tsi_dyn()
   TSI_DYNAMIC *tsidyn;
 
   /* files */
-  /*FILE *out = allfiles.out_out;*/  /* the OUT file */ 
+  /*FILE *out = allfiles.out_out;*/  /* the OUT file */
 
 #ifdef DEBUG
   dstrc_enter("tsi_dyn");
@@ -149,7 +150,7 @@ void tsi_dyn()
   /*--------------------------------------------------------------------*/
   /* associate dynamic control parameters */
   tsi_init_alldyn(numsf, numtf, &sdyn, &tdyn, &tsidyn);
-  
+
   /*--------------------------------------------------------------------*/
   /* create coupling of structural and thermal field */
   tsi_coupling(structfield, disnum_s,
@@ -173,7 +174,7 @@ void tsi_dyn()
       dserror("Sorry, predefined temperature field is not implemented!");
       break;
     /* semi TSI : static thermal and dynamic structure field */
-    case tsi_therm_stat_struct_genalp: 
+    case tsi_therm_stat_struct_genalp:
       tsi_th_stat(disnum_s, disnum_t);
 #if 1
       tsi_st_genalp_sub(disnum_s, disnum_t);  /* modularised version */
@@ -219,3 +220,4 @@ void tsi_dyn()
   return;
 
 } /* end of dyn_tsi */
+#endif

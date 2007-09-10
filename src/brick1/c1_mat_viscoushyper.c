@@ -1,6 +1,6 @@
-/*!-----------------------------------------------------------------------												
-\file											
-\brief 						
+/*!-----------------------------------------------------------------------
+\file
+\brief
 
 <pre>
 Maintainer:	Robert Metzke
@@ -10,6 +10,7 @@ Maintainer:	Robert Metzke
 </pre>
 ------------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 
 #include "../headers/standardtypes.h"
 #include "brick1.h"
@@ -51,29 +52,29 @@ const DOUBLE      ninth  =  0.1111111111111111111111111111;
       DOUBLE     *mup;
       DOUBLE     *alfap;
       DOUBLE      J;
-      
+
       DOUBLE	  FT[3][3];
       DOUBLE      lam2[3];
       DOUBLE      lam[3];
       DOUBLE      lamdev[3];
       DOUBLE      lamdevpowalfap[3][3];
-					  
+
       DOUBLE      PK2dev[3];
       DOUBLE      PK2vol[3];
       DOUBLE      PK2[3];
-      
+
       DOUBLE      scal;
-      
+
       static DOUBLE **CG;
       static ARRAY CG_a;
       static DOUBLE **N;
       static ARRAY N_a;
-      
+
       static DOUBLE **PK2cart;
       static ARRAY PK2cart_a;
       static DOUBLE **PK2devcart;
       static ARRAY PK2devcart_a;
-      
+
       if (CG==NULL)
       {
 	      CG = amdef("CG",&CG_a,3,3,"DA");
@@ -87,8 +88,8 @@ const DOUBLE      ninth  =  0.1111111111111111111111111111;
       amzero(&N_a);
       amzero(&PK2cart_a);
       amzero(&PK2devcart_a);
-      
-      
+
+
       DOUBLE      Cdev0000=0.0;
       DOUBLE      Cdev0011=0.0;
       DOUBLE      Cdev0022=0.0;
@@ -107,13 +108,13 @@ const DOUBLE      ninth  =  0.1111111111111111111111111111;
       DOUBLE      Cvol0101=0.0;
       DOUBLE      Cvol0202=0.0;
       DOUBLE      Cvol1212=0.0;
-      
+
       DOUBLE      Ceigen[3][3][3][3];
       DOUBLE      Ccart[3][3][3][3];
       DOUBLE      C[3][3][3][3];
-      
+
 /* variables for the viscous effects */
-      
+
       DOUBLE      nmaxw;
       DOUBLE     *tau;
       DOUBLE     *betas;
@@ -124,7 +125,7 @@ const DOUBLE      ninth  =  0.1111111111111111111111111111;
       DOUBLE      e2xi[4];
       DOUBLE      Qnew[4][3][3];
       DOUBLE      onepdelta;
-									
+
 #ifdef DEBUG
 	dstrc_enter("c1_mat_ogden_viscous");
 #endif
@@ -196,9 +197,9 @@ FT[2][0]=disd[8];/*---------------------disd[7];*/
 for (k=0; k<3; k++) {
 	for (i=0; i<3; i++) {
 		for (j=0; j<3; j++) {
-			CG[i][k]+=(FT[i][j]*FT[k][j]); 
-		} 
-	} 
+			CG[i][k]+=(FT[i][j]*FT[k][j]);
+		}
+	}
 }
 /*------------------------------------ make spectral decoposition of CG */
 /*c1_ogden_principal_CG(CG,lam2,N);*/
@@ -226,9 +227,9 @@ for (p=0; p<3; p++)
 psi1 = 0.0;
 for (p=0; p<3; p++)
 {
-	psi1 += (mup[p]/alfap[p]) * 
-		(lamdevpowalfap[0][p] + 
-		 lamdevpowalfap[1][p] + 
+	psi1 += (mup[p]/alfap[p]) *
+		(lamdevpowalfap[0][p] +
+		 lamdevpowalfap[1][p] +
 		 lamdevpowalfap[2][p] - 3.0);
 }
 psi2 = (kappa/(beta*beta)) *
@@ -254,7 +255,7 @@ mat_ogden_cartPK2(PK2cart,PK2,N);
 mat_ogden_cartPK2(PK2devcart,PK2dev,N);
 #else
 dserror("Please use D_MAT in your configure file, mate!");
-#endif 
+#endif
 /*-------------------- put the cartesian deviatoric stresses to storage */
 for (i=0; i<3; i++)
 for (j=0; j<3; j++)
@@ -264,8 +265,8 @@ for (i=0; i<nmaxw; i++)
 {
 	for (j=0; j<3; j++)
 	for (k=0; k<3; k++)
-	Qnew[i][j][k] = betas[i]*exi[i]*PK2devcart[j][k] + 
-		e2xi[i] * hisold[i+1][j][k] - 
+	Qnew[i][j][k] = betas[i]*exi[i]*PK2devcart[j][k] +
+		e2xi[i] * hisold[i+1][j][k] -
 		betas[i]*exi[i]*hisold[0][j][k];
 }
 /*-------------------------------------------- put new Qalfa to storage */
@@ -377,7 +378,7 @@ Ceigen[2][1][2][1] = Ceigen[1][2][1][2] = onepdelta*Cdev1212 + Cvol1212;
 mat_ogden_Ccart(Ceigen,Ccart,N);
 #else
 dserror("Please use D_MAT in your configure file, mate!");
-#endif 
+#endif
 
 for (i=0; i<3; i++)
 for (j=0; j<3; j++)
@@ -438,3 +439,4 @@ dstrc_exit();
 return;
 } /* end of c1_mat_ogden_viscous */
 
+#endif

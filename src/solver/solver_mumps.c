@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 
 *----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 #ifdef MUMPS_PACKAGE
 
 
@@ -249,3 +250,4 @@ return;
 
 #endif /* ifdef MUMPS_PACKAGE */
 
+#endif

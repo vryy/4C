@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 
 *----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 /*!
@@ -257,3 +258,4 @@ void solver_oll(
 
 
 /*! @} (documentation module close)*/
+#endif

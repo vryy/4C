@@ -10,6 +10,7 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 
 #ifdef D_SHELL9
@@ -504,3 +505,4 @@ dstrc_exit();
 
 return;
 } /* end of assign_dof */
+#endif

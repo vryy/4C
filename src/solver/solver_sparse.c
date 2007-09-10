@@ -10,6 +10,7 @@ Maintainer: Ulrich Kuettler
 </pre>
 */
 
+#ifndef CCADISCRET
 #include "solver_sparse.h"
 
 /*----------------------------------------------------------------------*
@@ -1593,4 +1594,5 @@ void parallel_sparse_copy_trilinos(PARALLEL_SPARSE* ps, SOLVAR* solvar)
 #endif
 #endif /* PM_TRILINOS */
 
+#endif
 #endif

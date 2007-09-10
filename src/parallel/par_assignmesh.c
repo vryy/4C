@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 
 ---------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
 
@@ -479,3 +480,4 @@ void part_assignfield()
 } /* end of part_assignfield */
 
 /*! @} (documentation module close)*/
+#endif

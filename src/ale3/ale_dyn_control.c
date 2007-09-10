@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 </pre>
 
 *----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #include "../headers/standardtypes.h"
 #include "ale3.h"
 #include "../ale2/ale2.h"
@@ -1665,3 +1666,4 @@ return;
 } /* end of dyn_ale_laplace */
 
 /*! @} (documentation module close)*/
+#endif

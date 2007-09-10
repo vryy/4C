@@ -12,6 +12,7 @@ Maintainer: Michael Gee
 </pre>
 
 ---------------------------------------------------------------------*/
+#ifndef CCADISCRET
 
 #ifndef SOLVER_MLPCG_H
 #define SOLVER_MLPCG_H
@@ -207,3 +208,4 @@ struct _ARRAY              q;           /*!< iterate vector of the cg-algorithm 
 #endif
 
 #endif /* MLPCG */
+#endif

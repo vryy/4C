@@ -10,6 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID
 *//*! @{ (documentation module open)*/
@@ -78,3 +79,4 @@ return;
 } /* end of fluid_curvature */
 #endif
 /*! @} (documentation module close)*/
+#endif

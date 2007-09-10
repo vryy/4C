@@ -10,6 +10,7 @@ Maintainer: Steffen Genkinger
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 /*!
 \addtogroup FLUID2
 *//*! @{ (documentation module open)*/
@@ -271,16 +272,16 @@ case quad9: /* QUADRATIC  shape functions and their natural derivatives
    {
       deriv[0][0]= rhp*sh*sp;
       deriv[1][0]= shp*rh*rp;
-      
+
       deriv[0][1]= rhm*sh*sp;
       deriv[1][1]=-shp*rh*rm;
-      
+
       deriv[0][2]=-rhm*sh*sm;
       deriv[1][2]=-shm*rh*rm;
-      
+
       deriv[0][3]=-rhp*sh*sm;
       deriv[1][3]= shm*rh*rp;
-      
+
       deriv[0][4]=-TWO*r*sh*sp;
       deriv[1][4]= shp*r2;
 
@@ -291,7 +292,7 @@ case quad9: /* QUADRATIC  shape functions and their natural derivatives
       deriv[1][6]= shm*r2;
 
       deriv[0][7]= rhp*s2;
-      deriv[1][7]=-TWO*s*rh*rp;      
+      deriv[1][7]=-TWO*s*rh*rp;
 
       deriv[0][8]=-TWO*r*s2;
       deriv[1][8]=-TWO*s*r2;
@@ -1318,3 +1319,4 @@ return;
 
 #endif
 /*! @} (documentation module close)*/
+#endif

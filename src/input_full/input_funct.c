@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 
 *----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 
 #include "../headers/standardtypes.h"
 #include "../pss_full/pss_parser.h"
@@ -319,3 +320,4 @@ end:
   return;
 
 } /* end of inp_read_funct */
+#endif

@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 
 ---------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 
 #ifndef VISUAL_PROTOTYPES_H
 #define VISUAL_PROTOTYPES_H
@@ -97,4 +98,5 @@ void visual_readflaviares(
 
 
 
+#endif
 #endif

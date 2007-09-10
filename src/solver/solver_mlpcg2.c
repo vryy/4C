@@ -1,3 +1,4 @@
+#ifndef CCADISCRET
 #ifdef MLPCG
 
 /*!---------------------------------------------------------------------
@@ -1472,4 +1473,5 @@ return;
 } /* end of mlpcg_precond_getdirs */
 
 /*! @} (documentation module close)*/
+#endif
 #endif

@@ -11,6 +11,7 @@ Maintainer: Malte Neumann
 
 *----------------------------------------------------------------------*/
 
+#ifndef CCADISCRET
 
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
@@ -750,4 +751,4 @@ void redundant_dense(
   return;
 } /* end of redundant_dense */
 
-
+#endif

@@ -10,6 +10,7 @@ Maintainer: Moritz Frenzel
             089-289-15240
 </pre>
 */
+#ifndef CCADISCRET
 #ifdef D_SOLID3
 
 
@@ -26,7 +27,7 @@ Maintainer: Moritz Frenzel
 
 /*======================================================================*/
 /*!
-\brief Calculate linear B-operator matrix at point (r,s,t) 
+\brief Calculate linear B-operator matrix at point (r,s,t)
        (e.g. Gauss point)
 
 \param   enod       INT     (i)  number of element nodes
@@ -109,7 +110,7 @@ void so3_bop_lin(INT enod,
 
 /*======================================================================*/
 /*!
-\brief Calculate non-linear B-operator matrix at point (r,s,t) 
+\brief Calculate non-linear B-operator matrix at point (r,s,t)
        (e.g. Gauss point)
 
 \param   ele        ELEMENT*   (i)  current element
@@ -148,7 +149,7 @@ void so3_bop(ELEMENT *ele,
   for (inod=0; inod<enod; inod++)
   {
     /*------------------------------------------------------------------*/
-    /* referential derivatives of shape functions 
+    /* referential derivatives of shape functions
      * by isoparametric concept */
     N_X = xji[0][0]*deriv[inod][0]
         + xji[0][1]*deriv[inod][1]
@@ -173,22 +174,22 @@ void so3_bop(ELEMENT *ele,
     idof_Y = idof_X + 1;
     idof_Z = idof_X + 2;
     /*------------------------------------------------------------------*/
-    /* construct material gradient of shape function matrix  B_L */ 
+    /* construct material gradient of shape function matrix  B_L */
     /*        [ d_X           ]   [ N^1           | ... | N^k           ]
      *        [      d_Y      ]   [      N^1      | ... |      N^k      ]
      *        [           d_Z ]   [           N^1 | ... |           N^k ]
      *        [ ~~~  ~~~  ~~~ ]
      *        [ d_Y           ]
      *        [      d_X      ]
-     *        [ ~~~  ~~~  ~~~ ] . 
+     *        [ ~~~  ~~~  ~~~ ] .
      *        [      d_Z      ]
      *        [           d_Y ]
      *        [ ~~~  ~~~  ~~~ ]
      *        [           d_X ]
      *        [ d_Z           ]
-     *        
+     *
      *  Bl   =         L         .                   N
-     *    
+     *
      */
 /*     bopl[0][idof_X] = N_X; */
 /*     bopl[0][idof_Y] = 0.0; */
@@ -228,7 +229,7 @@ void so3_bop(ELEMENT *ele,
     {
       /*----------------------------------------------------------------*/
       /* linear B-operator */
-      /* 
+      /*
        *     [ ... | N_{,X}^k                       | ... ]
        *     [ ... |            N_{,Y}^k            | ... ]
        *     [ ... |                       N_{,Z}^k | ... ]
@@ -255,7 +256,7 @@ void so3_bop(ELEMENT *ele,
       bop[4][idof_Z] = N_Y;
       bop[5][idof_X] = N_Z;
       bop[5][idof_Y] = 0.0;
-      bop[5][idof_Z] = N_X;   
+      bop[5][idof_Z] = N_X;
     }
     else if (ele->e.so3->kintype == so3_total_lagr)
     {
@@ -287,9 +288,9 @@ void so3_bop(ELEMENT *ele,
       bop[1][idof_X] = defgrd[0][1]*N_Y;
       bop[1][idof_Y] = defgrd[1][1]*N_Y;
       bop[1][idof_Z] = defgrd[2][1]*N_Y;
-      bop[2][idof_X] = defgrd[0][2]*N_Z; 
-      bop[2][idof_Y] = defgrd[1][2]*N_Z; 
-      bop[2][idof_Z] = defgrd[2][2]*N_Z; 
+      bop[2][idof_X] = defgrd[0][2]*N_Z;
+      bop[2][idof_Y] = defgrd[1][2]*N_Z;
+      bop[2][idof_Z] = defgrd[2][2]*N_Z;
       /* ~~~ */
       bop[3][idof_X] = defgrd[0][0]*N_Y + defgrd[0][1]*N_X;
       bop[3][idof_Y] = defgrd[1][0]*N_Y + defgrd[1][1]*N_X;
@@ -318,3 +319,4 @@ void so3_bop(ELEMENT *ele,
 /*======================================================================*/
 #endif /* end of #ifdef D_SOLID3 */
 /*! @} (documentation module close)*/
+#endif

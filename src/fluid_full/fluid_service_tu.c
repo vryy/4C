@@ -10,6 +10,7 @@ Maintainer: Thomas Hettich
 </pre>
 
 ------------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_FLUID
 #include "../headers/standardtypes.h"
 #include "../solver/solver.h"
@@ -1187,4 +1188,5 @@ ipos->terr  =-1;
 #endif
 } /* end of fluid_init_pos_euler_tu */
 
+#endif
 #endif

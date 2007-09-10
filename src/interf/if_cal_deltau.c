@@ -9,12 +9,13 @@ Maintainer: Andrea Hund
             0711 - 685-6122
 </pre>
 *-----------------------------------------------------------------------*/
+#ifndef CCADISCRET
 #ifdef D_INTERF
 #include "../headers/standardtypes.h"
 #include "interf.h"
 #include "interf_prototypes.h"
 
-/*! 
+/*!
 \addtogroup INTERF
 */
 /*! @{ (documentation module open)*/
@@ -22,7 +23,7 @@ Maintainer: Andrea Hund
 /*!----------------------------------------------------------------------
 \brief  contains the dispacement-jump calculation for the interface element
 
-<pre>                                                              ah 05/03 
+<pre>                                                              ah 05/03
 This routine computes the dispacement-jump of the interface element
 
 </pre>
@@ -32,20 +33,20 @@ This routine computes the dispacement-jump of the interface element
 \param  *Deltadisjump  DOUBLE  (O)     incremental displacement jump over element thickness
 
 \warning There is nothing special to this routine
-\return void                                               
+\return void
 
 *----------------------------------------------------------------------*/
-void if_jumpu(ELEMENT  *ele, 
+void if_jumpu(ELEMENT  *ele,
               DOUBLE  **bop,
               DOUBLE   *disjump,
-              DOUBLE   *Deltadisjump) 
+              DOUBLE   *Deltadisjump)
 {
 INT i,j,nodei,iel;
 DOUBLE d[16];
 DOUBLE Deltad[16];
 
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_enter("if_deltau");
 #endif
 /* get nodal displ. and nodal increm. displ (=Delta d + sum delta d) ---*/
@@ -71,12 +72,13 @@ for (i=0; i<2; i++)
   }
 }
 /*----------------------------------------------------------------------*/
-#ifdef DEBUG 
+#ifdef DEBUG
 dstrc_exit();
 #endif
-return; 
+return;
 } /* end of if_jumpu */
 
 /*----------------------------------------------------------------------*/
 #endif /*D_INTERF*/
 /*! @} (documentation module close)*/
+#endif
