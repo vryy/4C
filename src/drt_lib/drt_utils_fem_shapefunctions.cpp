@@ -42,6 +42,7 @@ void DRT::Utils::shape_function_3D(
 {
     const double Q18 = 1.0/8.0;
     const double Q12 = 1.0/2.0;
+    const double Q14 = 1.0/4.0;
 
     switch (distype)
     {
@@ -228,6 +229,19 @@ void DRT::Utils::shape_function_3D(
         break;
     }
 
+
+    case DRT::Element::pyramid5:
+    {
+      const double ration=(r*s*t)/(1-t);
+
+      funct(0)=Q14*((1+r)*(1+s)-t+ration);
+      funct(1)=Q14*((1-r)*(1+s)-t-ration);
+      funct(2)=Q14*((1-r)*(1-s)-t+ration);
+      funct(3)=Q14*((1+r)*(1-s)-t-ration);
+      funct(4)=t;
+      break;
+    }
+
     default:
         dserror("distyp unknown\n");
     } /* end switch(distype) */
@@ -247,6 +261,7 @@ void DRT::Utils::shape_function_3D_deriv1(
 {
     const double Q18 = 1.0/8.0;
     const double Q12 = 1.0/2.0;
+    const double Q14 = 1.0/4.0;
 
     switch (distype)
     {
@@ -651,6 +666,33 @@ void DRT::Utils::shape_function_3D_deriv1(
         deriv1(2, 13)=t2*(2*t2-1)*pd2;
         deriv1(2, 14)=t3*(2*t3-1)*pd2;
         break;
+    }
+
+    case DRT::Element::pyramid5:
+    {
+
+      const double rationdr=s*t/(1-t);
+      const double rationds=r*t/(1-t);
+      const double rationdt=r*s*(1-2.0*t)/((1-t)*(1-t));
+
+      deriv1(0,0)=Q14*(1+rationdr);
+      deriv1(0,1)=Q14*(-1-rationdr);
+      deriv1(0,2)=Q14*(-1+rationdr);
+      deriv1(0,3)=Q14*(1-rationdr);
+      deriv1(0,4)=0;
+
+      deriv1(1,0)=Q14*(1+rationds);
+      deriv1(1,1)=Q14*(1-rationds);
+      deriv1(1,2)=Q14*(-1+rationds);
+      deriv1(1,3)=Q14*(-1-rationds);
+      deriv1(1,4)=0;
+
+      deriv1(2,0)=Q14*(rationdt-1);
+      deriv1(2,1)=Q14*(-1*rationdt-1);
+      deriv1(2,2)=Q14*(rationdt-1);
+      deriv1(2,3)=Q14*(-1*rationdt-1);
+      deriv1(2,4)=1;
+      break;
     }
     default:
         dserror("distyp unknown\n");

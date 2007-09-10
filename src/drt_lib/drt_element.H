@@ -129,6 +129,7 @@ public:
     tet10,                      // 4 noded tetrahedra
     wedge6,                     // 6 noded wedge
     wedge15,                    // 15 noded wedge
+    pyramid5,                   // 5 noded pyramid
     line2,                      // 2 noded line
     line3,                      // 3 noded line
     max_distype                 //  end marker. must be the last entry
