@@ -3,18 +3,23 @@
 #ifdef TRILINOS_PACKAGE
 
 #include "fsi_coupling_mortar.H"
-#include "../drt_lib/drt_nodematchingoctree.H"
 
-#include "mrtr_manager.H"
+#include <mrtr_manager.H>
 
-#include "mrtr_segment.H"
-#include "mrtr_segment_linear1D.H"
-#include "mrtr_segment_bilineartri.H"
-#include "mrtr_segment_bilinearquad.H"
+#include <mrtr_segment.H>
+#include <mrtr_segment_linear1D.H>
+#include <mrtr_segment_bilineartri.H>
+#include <mrtr_segment_bilinearquad.H>
 
-#include "../drt_lib/linalg_utils.H"
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
 
-//#include "mrtr_segment_linear1D.H"
+extern "C"
+{
+#include "../headers/standardtypes.h"
+}
+
 
 class FSIMortarManager : public MOERTEL::Manager
 {
@@ -34,6 +39,7 @@ using namespace std;
 FSI::CouplingMortar::CouplingMortar()
 {
 }
+
 
 void FSI::CouplingMortar::Setup( const DRT::Discretization& masterdis,
                                  const DRT::Discretization& slavedis,

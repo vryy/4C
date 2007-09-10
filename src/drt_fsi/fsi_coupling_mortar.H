@@ -5,12 +5,7 @@
 #ifndef FSI_COUPLING_MORTAR_H
 #define FSI_COUPLING_MORTAR_H
 
-#include <string>
-#include <vector>
-#include <set>
-
 #include <Teuchos_RefCountPtr.hpp>
-#include <Epetra_Export.h>
 #include <Epetra_Map.h>
 
 #include "../drt_lib/drt_discret.H"

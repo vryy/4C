@@ -22,6 +22,10 @@ Maintainer: Peter Gamnitzer
 #include "drt_exporter.H"
 #include "Teuchos_RefCountPtr.hpp"
 
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
+
 extern "C"
 {
 #include "../headers/standardtypes.h"
