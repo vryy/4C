@@ -91,6 +91,11 @@ if grep '^[ \t]*CCADISCRET' "$definefile" 2>&1 > /dev/null ; then
     DEFINES="$DEFINES -DUMFPACK"
   fi
 
+  # our trilinos always requires aztec
+  if ! grep '^[ \t]*AZTEC_PACKAGE' "$definefile" 2>&1 > /dev/null ; then
+    DEFINES="$DEFINES -DAZTEC_PACKAGE"
+  fi
+
   # the old input still needs this
   if ! grep '^[ \t]*D_FSI' "$definefile" 2>&1 > /dev/null ; then
     DEFINES="$DEFINES -DD_FSI"
