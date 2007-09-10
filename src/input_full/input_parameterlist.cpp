@@ -27,6 +27,7 @@ Maintainer: Ulrich Kuettler
 #include <iostream>
 
 #include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RefCountPtr.hpp>
 
 #ifdef PARALLEL
 #include <mpi.h>

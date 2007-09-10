@@ -536,7 +536,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
     Teuchos::RefCountPtr<NOX::StatusTest::Combo> combo = CreateStatusTest(nlParams, grp);
 
     // Create the solver
-    Teuchos::RefCountPtr<NOX::Solver::Manager> solver = Teuchos::rcp(new NOX::Solver::Manager(grp, combo, RefCountPtr<ParameterList>(&nlParams,false)));
+    Teuchos::RefCountPtr<NOX::Solver::Generic> solver = NOX::Solver::buildSolver(grp,combo,RefCountPtr<ParameterList>(&nlParams,false));
 
 #if 0
     if ((step_ % 10) == 0)
@@ -578,7 +578,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
       combo = CreateStatusTest(nlParams.sublist("Second"), grp);
 
       // Create the solver
-      solver = Teuchos::rcp(new NOX::Solver::Manager(grp, combo, RefCountPtr<ParameterList>(&nlParams.sublist("Second"),false)));
+      solver = NOX::Solver::buildSolver(grp, combo, RefCountPtr<ParameterList>(&nlParams.sublist("Second"),false));
 
       // solve the whole thing again
       status = solver->solve();

@@ -327,7 +327,7 @@ static INT iminarg1,iminarg2;
  | max number of processors                                             |
  *----------------------------------------------------------------------*/
 #ifndef MAXPROC
-#define MAXPROC          (32)
+#define MAXPROC          (64)
 #endif
 
 /*----------------------------------------------------------------------*

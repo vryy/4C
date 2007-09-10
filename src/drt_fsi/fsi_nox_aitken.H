@@ -5,6 +5,7 @@
 
 #include <NOX_LineSearch_Generic.H> // base class
 #include <NOX_Utils.H>
+#include <Teuchos_RefCountPtr.hpp>
 
 namespace NOX {
   namespace FSI {

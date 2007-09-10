@@ -5,6 +5,7 @@
 
 #include <NOX_Direction_Generic.H> // base class
 #include <NOX_Utils.H>
+#include <Teuchos_RefCountPtr.hpp>
 
 /// NOX: the nonlinear object solver from trilinos with local extensions
 namespace NOX {

@@ -212,7 +212,7 @@ void DRT::Exporter::ReceiveAny(int& source, int&tag,
 #endif
 
 /*----------------------------------------------------------------------*
- |  the acrual exporter constructor (private)                mwgee 05/07|
+ |  the actual exporter constructor (private)                mwgee 05/07|
  *----------------------------------------------------------------------*/
 void DRT::Exporter::ConstructExporter()
 {

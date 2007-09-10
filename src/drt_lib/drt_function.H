@@ -68,12 +68,12 @@ namespace Utils {
 
   private:
 
-    vector<double> x_;
-    vector<double> y_;
-    vector<double> z_;
+    std::vector<double> x_;
+    std::vector<double> y_;
+    std::vector<double> z_;
 
     /// expression syntax tree
-    vector<_ST_NODE*> expr_;
+    std::vector<_ST_NODE*> expr_;
   };
 
 

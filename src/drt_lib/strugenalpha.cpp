@@ -947,14 +947,14 @@ void StruGenAlpha::NonlinearCG()
   mlparams.set("nlnML linear smoother type medium level",           "MLS");
   mlparams.set("nlnML linear smoother type coarsest level",         "AmesosKLU");
   mlparams.set("nlnML linear smoother sweeps fine level",           24);
-  mlparams.set("nlnML linear smoother sweeps medium level",         24);
+  mlparams.set("nlnML linear smoother sweeps medium level",         6);
   mlparams.set("nlnML linear smoother sweeps coarsest level",       1);
 
   mlparams.set("nlnML nonlinear presmoothing sweeps fine level",    0);
   mlparams.set("nlnML nonlinear presmoothing sweeps medium level",  0);
   mlparams.set("nlnML nonlinear smoothing sweeps coarse level",     15);
-  mlparams.set("nlnML nonlinear postsmoothing sweeps medium level", 5);
-  mlparams.set("nlnML nonlinear postsmoothing sweeps fine level",   5);
+  mlparams.set("nlnML nonlinear postsmoothing sweeps medium level", 3);
+  mlparams.set("nlnML nonlinear postsmoothing sweeps fine level",   10);
 
   // create the fine level interface if it does not exist
   if (fineinterface_==null)
@@ -969,7 +969,7 @@ void StruGenAlpha::NonlinearCG()
   // tell preconditioner to recompute from scratch
   prec_->setinit(false);
 
-#if 1 // use the nonlinear preconditioner as a solver without the outer nox loop
+#if 0 // use the nonlinear preconditioner as a solver without the outer nox loop
   {
     Epetra_Time timer(discret_.Comm());
     double t0 = timer.ElapsedTime();
@@ -1074,7 +1074,7 @@ void StruGenAlpha::NonlinearCG()
   }
 
   // create nox solver manager if it does not exist
-  RefCountPtr<NOX::Solver::Manager> noxsolver = rcp(new NOX::Solver::Manager(rcpgrp,combo_,rcpparams));
+  RCP<NOX::Solver::Generic> noxsolver = NOX::Solver::buildSolver(rcpgrp,combo_,rcpparams);
   prec_->SetNoxSolver(noxsolver);
 
   // solve nonlinear problem
