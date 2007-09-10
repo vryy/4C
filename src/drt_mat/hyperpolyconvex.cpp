@@ -227,7 +227,7 @@ void MAT::HyperPolyconvex::Evaluate(const Epetra_SerialDenseVector* glstrain,
   Epetra_SerialDenseMatrix HCinv  = tensorproduct(I,Cinv,kappa,1.0);
   Epetra_SerialDenseMatrix CinvH  = tensorproduct(Cinv,I,1.0,kappa);
   
-  Epetra_SerialDenseMatrix CinvoCinv(12,12);
+  Epetra_SerialDenseMatrix CinvoCinv(9,9);
   for (int k = 0; k < 3; ++k) {
     for (int l = 0; l < 3; ++l) {
       for (int i = 0; i < 3; ++i) {
@@ -247,7 +247,7 @@ void MAT::HyperPolyconvex::Evaluate(const Epetra_SerialDenseVector* glstrain,
   delta(5) += 4.0 * epsilon * pow(gamma,2.0) * (pow(Inv(2),gamma) + pow(Inv(2),-gamma));
   delta(6) += -4.0 * epsilon * gamma * (pow(Inv(2),gamma) - pow(Inv(2),-gamma));
   
-  Epetra_SerialDenseMatrix Celast(12,12);
+  Epetra_SerialDenseMatrix Celast(9,9);
   for (int k = 0; k < 3; ++k) {
     for (int l = 0; l < 3; ++l) {
       for (int i = 0; i < 3; ++i) {
@@ -318,7 +318,7 @@ Epetra_SerialDenseMatrix MAT::HyperPolyconvex::tensorproduct(
                                              const double scalarA,
                                              const double scalarB)
 {
-  Epetra_SerialDenseMatrix AB(12,12);
+  Epetra_SerialDenseMatrix AB(9,9);
   for (int k = 0; k < 3; ++k) {
     for (int l = 0; l < 3; ++l) {
       for (int i = 0; i < 3; ++i) {
