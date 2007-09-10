@@ -768,7 +768,7 @@ void DRT::Utils::AllToAllCommunication( const Epetra_Comm& comm,
     for ( vector<int>::const_iterator iter = recvcounts.begin();
           iter != recvcounts.end(); ++iter )
     {
-        displacement += *citer;
+        displacement += *iter;
         rdispls.push_back( displacement );
     }
 
