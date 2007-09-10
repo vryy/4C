@@ -138,17 +138,17 @@ void xdyn_fluid_drt()
   map<int, vector <XFEM::Integrationcell> > intCellMap;
   is.computeIntersection(fluiddis,soliddis,intCellMap);
 
-  stringstream s;
-  for( map< int, vector <XFEM::Integrationcell> >::iterator pair = intCellMap.begin(); pair != intCellMap.end(); ++pair ) 
-  {
-      s << "ElementId:" << pair->first << "\n";
-      XFEM::IntCells const cells = pair->second;
-      for( XFEM::IntCells::const_iterator cell = cells.begin(); cell != cells.end(); ++cell)
-      {
-          s << " " << cell->Print();
-      };
-  };
-  cout << s.str() << endl;
+//  stringstream s;
+//  for( map< int, vector <XFEM::Integrationcell> >::iterator pair = intCellMap.begin(); pair != intCellMap.end(); ++pair ) 
+//  {
+//      s << "ElementId:" << pair->first << "\n";
+//      XFEM::IntCells const cells = pair->second;
+//      for( XFEM::IntCells::const_iterator cell = cells.begin(); cell != cells.end(); ++cell)
+//      {
+//          s << " " << cell->Print();
+//      };
+//  };
+//  cout << s.str() << endl;
 
   // -------------------------------------------------------------------
   // set some pointers and variables
@@ -157,6 +157,7 @@ void xdyn_fluid_drt()
   SOLVAR        *solidsolv  = &solv[genprob.numsf];
 
   cout << "\n solvar done\n";
+  exit(0);
   
   FLUID_DYNAMIC *fdyn     = alldyn[genprob.numff].fdyn;
   //STRUCT_DYNAMIC* sdyn    = alldyn[genprob.numsf].sdyn;
@@ -168,16 +169,6 @@ void xdyn_fluid_drt()
   
   cout << "\n setup complete\n";
   
-
-  // -------------------------------------------------------------------
-  // init all applied time curves
-  // -------------------------------------------------------------------
-  for (int actcurve=0; actcurve<numcurve; actcurve++)
-  {
-   /* the last three parameters are obsolete!!! */
-   dyn_init_curve(actcurve,fdyn->step,fdyn->dt,fdyn->maxtime);
-  }
-
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
