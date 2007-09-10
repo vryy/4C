@@ -149,10 +149,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       /*---------------------------------------------------- VM3 solver */
       if (strncmp("vm3",buffer,3)==0)
       {
+#ifndef AZTEC_PACKAGE
+         dserror("Aztec package is not compiled in");
+#else
         solv->solvertyp = vm3;
         solv->azvar = (AZVAR*)CCACALLOC(1,sizeof(AZVAR));
         azvar = solv->azvar;
         azvar->azconv = AZ_noscaled;
+#endif
       }
       /*-------------------------------------------------- Aztec solver */
       if (strncmp("Aztec_MSR",buffer,9)==0)
