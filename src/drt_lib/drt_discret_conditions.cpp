@@ -359,7 +359,7 @@ void DRT::Discretization::BuildLinesinCondition( const string name,
                          nodes.begin(), mem_fun( &DRT::Node::Id ) );
               sort( nodes.begin(), nodes.end() );
 
-              if ( linemap.find( nodes ) != linemap.end() )
+              if ( linemap.find( nodes ) == linemap.end() )
               {
                   RefCountPtr<DRT::Element> line = rcp( actline->Clone() );
                   // Set owning process of line to node with smallest gid.
@@ -425,7 +425,7 @@ void DRT::Discretization::BuildLinesinCondition( const string name,
   map< int, RefCountPtr<DRT::Element> > finallines;
 
   // Add own lines to finallines (with right id).
-  for ( int i = 0; i < ownlines.size(); ++i )
+  for ( unsigned i = 0; i < ownlines.size(); ++i )
   {
       ownlines[i]->SetId( i + sum );
       finallines[i + sum] = ownlines[i];
@@ -457,7 +457,33 @@ void DRT::Discretization::BuildLinesinCondition( const string name,
   }
   requests.clear();
 
+#if 0 // Debug
+  cout << "This is process " << Comm().MyPID() << "." << endl;
+  for ( int proc = 0; proc < Comm().NumProc(); ++proc )
+  {
+      cout << "Send to process " << proc << ": ";
+      for ( unsigned i = 0; i < sendlineids[proc].size(); ++i )
+      {
+          cout << sendlineids[proc][i] << ", ";
+      }
+      cout << endl;
+  }
+#endif // Debug
+
   DRT::Utils::AllToAllCommunication( Comm(), sendlineids, requests );
+
+#if 0 // Debug
+  cout << "This is process " << Comm().MyPID() << "." << endl;
+  for ( int proc = 0; proc < Comm().NumProc(); ++proc )
+  {
+      cout << "Got from process " << proc << ": ";
+      for ( unsigned i = 0; i < requests[proc].size(); ++i )
+      {
+          cout << requests[proc][i];
+      }
+      cout << endl;
+  }
+#endif // Debug
 
   for ( int proc = 0; proc < Comm().NumProc(); ++proc )
   {
@@ -470,14 +496,12 @@ void DRT::Discretization::BuildLinesinCondition( const string name,
           if ( finallines.find( requests[proc][i] ) != finallines.end() )
               dserror( "Received already known id %i", requests[proc][i] );
 
-          ghostlines[proc][j]->SetId( requests[proc][j] );
-          finallines[ requests[proc][j] ] = ghostlines[proc][j];
+          ghostlines[proc][i]->SetId( requests[proc][i] );
+          finallines[ requests[proc][i] ] = ghostlines[proc][i];
       }
   }
 
   cond->AddGeometry( finallines );
-
-  return;
 } // DRT::Discretization::BuildLinesinCondition
 
 
