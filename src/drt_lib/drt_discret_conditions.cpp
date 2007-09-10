@@ -392,7 +392,7 @@ static void AssignGlobalIDs( const Epetra_Comm& comm,
       cout << "Got from process " << proc << ": ";
       for ( unsigned i = 0; i < requests[proc].size(); ++i )
       {
-          cout << requests[proc][i];
+          cout << requests[proc][i] << ", ";
       }
       cout << endl;
   }
