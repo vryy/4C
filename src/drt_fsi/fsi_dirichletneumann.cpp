@@ -18,6 +18,7 @@
 #include "fsi_nox_mpe.H"
 #include "fsi_nox_epsilon.H"
 
+#include <string>
 #include <Epetra_Time.h>
 
 
@@ -95,29 +96,54 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
   //cout << fluid_->Discretization();
   //cout << ale_->Discretization();
 
-  coupsfm_.Setup( structure_->Discretization(), fluid_->Discretization(),
-                  comm );
+  std::string method = globalparameterlist->get("Coupling Method", "Matching Nodes");
+  if (method=="Matching Nodes")
+  {
+    matchingnodes_ = true;
+    coupsf_.SetupConditionCoupling(structure_->Discretization(),
+                                   fluid_->Discretization(),
+                                   "FSICoupling");
 
-  coupsf_.SetupConditionCoupling(structure_->Discretization(),
-                                 fluid_->Discretization(),
-                                 "FSICoupling");
+    coupsa_.SetupConditionCoupling(structure_->Discretization(),
+                                   ale_->Discretization(),
+                                   "FSICoupling");
 
-  coupsa_.SetupConditionCoupling(structure_->Discretization(),
-                                 ale_->Discretization(),
-                                 "FSICoupling");
+    // In the following we assume that both couplings find the same dof
+    // map at the structural side. This enables us to use just one
+    // interface dof map for all fields and have just one transfer
+    // operator from the interface map to the full field map.
+    if (not coupsf_.MasterDofMap()->SameAs(*coupsa_.MasterDofMap()))
+      dserror("structure interface dof maps do not match");
 
-  // In the following we assume that both couplings find the same dof
-  // map at the structural side. This enables us to use just one
-  // interface dof map for all fields and have just one transfer
-  // operator from the interface map to the full field map.
-  if (not coupsf_.MasterDofMap()->SameAs(*coupsa_.MasterDofMap()))
-    dserror("structure interface dof maps do not match");
+    // init transfer from interface to field
+    structure_->SetInterfaceMap(coupsf_.MasterDofMap());
+    fluid_    ->SetInterfaceMap(coupsf_.SlaveDofMap());
+    ale_      ->SetInterfaceMap(coupsa_.SlaveDofMap());
+  }
+  else if (method=="Mortar")
+  {
+    matchingnodes_ = false;
+    coupsfm_.Setup( structure_->Discretization(),
+                    fluid_->Discretization(),
+                    comm );
 
-  // init transfer from interface to field
-  structure_->SetInterfaceMap(coupsf_.MasterDofMap());
-  fluid_    ->SetInterfaceMap(coupsf_.SlaveDofMap());
-  ale_      ->SetInterfaceMap(coupsa_.SlaveDofMap());
+    // This is cheating. We setup the coupling of interface dofs between fluid
+    // and ale. But we use the variable from the matching version.
+    coupsa_.SetupConditionCoupling(fluid_->Discretization(),
+                                   ale_->Discretization(),
+                                   "FSICoupling");
 
+    // init transfer from interface to field
+    structure_->SetInterfaceMap(coupsfm_.MasterDofMap());
+    fluid_    ->SetInterfaceMap(coupsfm_.SlaveDofMap());
+    ale_      ->SetInterfaceMap(coupsa_.SlaveDofMap());
+  }
+  else
+  {
+    dserror("unsupported coupling method '%s'",method.c_str());
+  }
+
+  // the fluid-ale coupling always matches
   const Epetra_Map* fluidnodemap = fluid_->Discretization().NodeRowMap();
   const Epetra_Map* alenodemap   = ale_->Discretization().NodeRowMap();
 
@@ -1045,60 +1071,49 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::InterfaceVelo
 
 Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::StructToAle(Teuchos::RefCountPtr<Epetra_Vector> iv)
 {
-  return coupsa_.MasterToSlave(iv);
+  if (matchingnodes_)
+  {
+    return coupsa_.MasterToSlave(iv);
+  }
+  else
+  {
+    // We cannot go from structure to ale directly. So go via the fluid field.
+    Teuchos::RefCountPtr<Epetra_Vector> fdisp = coupsfm_.MasterToSlave(iv);
+    return coupsa_.MasterToSlave(fdisp);
+  }
 }
 
 
 Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::StructToFluid(Teuchos::RefCountPtr<Epetra_Vector> iv)
 {
-#if 0
-  RefCountPtr<Epetra_Vector> mortarvec = coupsfm_.MasterToSlave(iv);
-  RefCountPtr<Epetra_Vector> vec = coupsf_.MasterToSlave(iv);
-  Epetra_Vector diff( vec->Map() );
-  diff.Update( 1.0, *mortarvec, -1.0, *vec, 0.0 );
-  double norm; diff.Norm1( &norm );
-  cout << "MtS: Norm1 of difference is " << norm << "\n";
-#endif
-
-  return coupsfm_.MasterToSlave(iv);
+  if (matchingnodes_)
+  {
+    return coupsf_.MasterToSlave(iv);
+  }
+  else
+  {
+    return coupsfm_.MasterToSlave(iv);
+  }
 }
 
 
 Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::FluidToStruct(Teuchos::RefCountPtr<Epetra_Vector> iv)
 {
-  RefCountPtr<Epetra_Vector> ishape = fluid_->IntegrateInterfaceShape();
-  RefCountPtr<Epetra_Vector> iforce = rcp(new Epetra_Vector(iv->Map()));
+  if (matchingnodes_)
+  {
+    return coupsf_.SlaveToMaster(iv);
+  }
+  else
+  {
+    // Translate consistent nodal forces to interface loads
+    RefCountPtr<Epetra_Vector> ishape = fluid_->IntegrateInterfaceShape();
+    RefCountPtr<Epetra_Vector> iforce = rcp(new Epetra_Vector(iv->Map()));
 
-  if ( iforce->ReciprocalMultiply( 1.0, *ishape, *iv, 0.0 ) )
+    if ( iforce->ReciprocalMultiply( 1.0, *ishape, *iv, 0.0 ) )
       dserror("ReciprocalMultiply failed");
 
-#if 0
-  RefCountPtr<Epetra_Vector> mortarvec = coupsfm_.SlaveToMaster(iforce);
-  RefCountPtr<Epetra_Vector> vec = coupsf_.SlaveToMaster(iv);
-  Epetra_Vector diff( vec->Map() );
-  diff.Update( 1.0, *mortarvec, -1.0, *vec, 0.0 );
-  double norm; diff.Norm1( &norm );
-  cout << "StM: Norm1 of difference is " << norm << "\n";
-#endif
-
-  // debug output
-#if 0
-  {
-    static int step;
-    ostringstream filename_plain;
-    ostringstream filename_mortar;
-    filename_plain << allfiles.outputfile_kenner << "_" << step << ".fluidtostruct-plain.X";
-    filename_mortar << allfiles.outputfile_kenner << "_" << step << ".fluidtostruct-mortar.X";
-    step += 1;
-
-    ofstream outp(filename_plain.str().c_str());
-    ofstream outm(filename_mortar.str().c_str());
-    vec->Print(outp);
-    mortarvec->Print(outm);
+    return coupsfm_.SlaveToMaster(iforce);
   }
-#endif
-
-  return coupsfm_.SlaveToMaster(iforce);
 }
 
 

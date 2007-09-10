@@ -230,6 +230,9 @@ private:
   double maxtime_;
   double dt_;
   int mfresitemax_;
+
+  /// nodes at the fluid-structure interface match
+  bool matchingnodes_;
 };
 
 }
