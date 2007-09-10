@@ -194,6 +194,7 @@ RefCountPtr<Epetra_Vector> FSI::Fluid::IntegrateInterfaceShape()
 
   // call loop over elements
   discret_->ClearState();
+  discret_->SetState("dispnp", dispnp_);
   discret_->EvaluateCondition(eleparams,*integratedshapefunc,"FSICoupling");
   discret_->ClearState();
 

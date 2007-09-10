@@ -734,7 +734,8 @@ private:
   void IntegrateShapeFunction(ParameterList& params,
                   DRT::Discretization&       discretization,
                   vector<int>&               lm,
-                  Epetra_SerialDenseVector&  elevec1);
+                  Epetra_SerialDenseVector&  elevec1,
+                  const std::vector<double>& edispnp);
 
 
 }; // class Fluid2Line
