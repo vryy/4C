@@ -245,28 +245,28 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
     break;
     case ParObject_So_weg6:
     {
-      DRT::Elements::So_weg6* object = 
+      DRT::Elements::So_weg6* object =
                 new DRT::Elements::So_weg6(-1,-1);
       object->Unpack(data);
       return object;
     }
     case ParObject_Sow6Register:
     {
-      DRT::Elements::Sow6Register* object = 
+      DRT::Elements::Sow6Register* object =
                 new DRT::Elements::Sow6Register(DRT::Element::element_so_weg6);
       object->Unpack(data);
       return object;
     }
     case ParObject_SoDisp:
     {
-      DRT::Elements::SoDisp* object = 
+      DRT::Elements::SoDisp* object =
                 new DRT::Elements::SoDisp(-1,-1);
       object->Unpack(data);
       return object;
     }
     case ParObject_SoDispRegister:
     {
-      DRT::Elements::SoDispRegister* object = 
+      DRT::Elements::SoDispRegister* object =
                 new DRT::Elements::SoDispRegister(DRT::Element::element_sodisp);
       object->Unpack(data);
       return object;
@@ -722,7 +722,6 @@ void DRT::Utils::ExtractMyValues(const Epetra_Vector& global,
   return;
 }
 
-#ifdef PARALLEL
 /*
  * Send and receive lists of ints.  (heiner 09/07)
  */
@@ -730,6 +729,15 @@ void DRT::Utils::AllToAllCommunication( const Epetra_Comm& comm,
                                         const vector< vector<int> >& send,
                                         vector< vector<int> >& recv )
 {
+#ifndef PARALLEL
+
+  dsassert(send.size()==1 and recv.size()==1,
+           "there has to be just one entry for sending and receiving");
+
+  // make a copy
+  recv[0] = send[0];
+
+#else
     const Epetra_MpiComm& mpicomm = dynamic_cast<const Epetra_MpiComm&>(comm);
 
     vector<int> sendbuf;
@@ -787,8 +795,8 @@ void DRT::Utils::AllToAllCommunication( const Epetra_Comm& comm,
     {
         recv.push_back( vector<int>( &recvbuf[rdispls[proc]], &recvbuf[rdispls[proc+1]] ) );
     }
-}
 #endif // PARALLEL
+}
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

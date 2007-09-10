@@ -166,7 +166,6 @@ namespace Utils
   */
   void ExtractMyValues(const Epetra_Vector& global, vector<double>& local, const vector<int> lm);
 
-#ifdef PARALLEL
   /// Communication between all pairs of processes, with distinct data for each.
   /*!
     Sends a different vector<int> to each processes. The size of each vector may
@@ -182,9 +181,8 @@ namespace Utils
     \author h.kue
     \date 09/07
    */
-void AllToAllCommunication( const Epetra_Comm& comm,
-                            const vector< vector<int> >& send, vector< vector<int> >& recv );
-#endif // PARALLEL
+  void AllToAllCommunication( const Epetra_Comm& comm,
+                              const vector< vector<int> >& send, vector< vector<int> >& recv );
 
 } // namespace Utils
 } // namespace DRT
