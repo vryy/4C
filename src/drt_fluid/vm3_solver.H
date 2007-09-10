@@ -1,5 +1,7 @@
-#ifndef HEADER_H
-#define HEADER_H
+#ifndef VM3_SOLVER_H
+#define VM3_SOLVER_H
+
+#ifdef CCADISCRET
 
 #include <ctime>
 #include <iostream>
@@ -48,34 +50,34 @@ using namespace MLAPI;
 /*!
 \class VM3_Solver
 
-\brief 
+\brief
 
 
 \author vg
 
 */
 
-class  VM3_Solver : public virtual Epetra_Operator 
+class  VM3_Solver : public virtual Epetra_Operator
 {
 public:
 
   // @{ \name Constructors and destructors
-  
+
 
   /*!
   \brief ctor
-  
+
   */
   explicit VM3_Solver( RefCountPtr<Epetra_CrsMatrix> Aplus,
                        RefCountPtr<Epetra_CrsMatrix> A,
                        ParameterList& mlparams,
                        bool compute);
-  
+
   /*!
   \brief Destroys an instance of this class
-  
+
   Destructor
-  
+
   */
   virtual ~VM3_Solver() {}
 
@@ -89,45 +91,45 @@ public:
 
   /*!
   \brief get Comm of this class
-  
-  Derived from Epetra_Operator, returns ref to the Epetra_Comm of this class 
-  
+
+  Derived from Epetra_Operator, returns ref to the Epetra_Comm of this class
+
   */
   const Epetra_Comm & Comm() const {return(A_->Comm());}
 
   /*!
   \brief Get fine level OperatorDomainMap
-  
+
   Derived from Epetra_Operator, get fine level OperatorDomainMap
-  
+
   */
   const Epetra_Map & OperatorDomainMap() const {return A_->OperatorDomainMap();}
 
   /*!
   \brief Get fine level OperatorRangeMap
-  
+
   Derived from Epetra_Operator, get fine level OperatorRangeMap
-  
+
   */
   const Epetra_Map & OperatorRangeMap() const {return A_->OperatorRangeMap();}
-  
+
   //@}
   // @{ \name Apply methods
 
 
   /*!
   \brief Compute the preconditioner
-  
+
    Compute the vm3 solver
   */
-  bool Compute();  
+  bool Compute();
 
   /*!
   \brief ApplyInverse the preconditioner
-  
-   ApplyInverse the preconditioner. Method is derived from Epetra_Operator. 
-   
-   
+
+   ApplyInverse the preconditioner. Method is derived from Epetra_Operator.
+
+
    \param X   (In) : Epetra_MultiVector matching the fine level map of this
                      preconditioner
    \param Y (Out)  : Epetra_MultiVector containing the result on output
@@ -136,10 +138,10 @@ public:
 
   /*!
   \brief Apply the VM3 solver
-  
-   Perform one sweep of the VM3 solver 
-   
-   
+
+   Perform one sweep of the VM3 solver
+
+
    \param X  (In)  : Epetra_MultiVector matching the fine level map of this
                      solver
    \param Y (Out)  : Epetra_MultiVector containing the result on output
@@ -152,10 +154,10 @@ public:
   /*!
   \brief not implemented
   */
-  int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const 
+  int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
   { cout << "VM3_Solver::Apply does not make sense for an ML-Multilevel Operator\n"
          << "Use ApplyInverse\n";throw -1;return(-1);}
-    
+
   /*!
   \brief not implemented
   */
@@ -193,7 +195,7 @@ private:
   int Restrict(const MultiVector& x_f, MultiVector& x_r, int level) const;
 
   // prolongation operation (from level to level 0)
-  int Prolong(const MultiVector& x_l, MultiVector& x_0, int level) const; 
+  int Prolong(const MultiVector& x_l, MultiVector& x_0, int level) const;
 
   // some helpers
   inline const Operator& P(const int i) const { return (mlapiPmod_[i]); }
@@ -213,16 +215,18 @@ private:
   RefCountPtr<Epetra_CrsMatrix>  Aplus_;  // input matrix including fine-scale term
   RefCountPtr<Epetra_CrsMatrix>  A_;      // input matrix without fine-scale term
 
-  vector<Operator>               mlapiRmod_;   // restriction                     
-  vector<Operator>               mlapiPmod_;   // prolongation                    
-  vector<Operator>               mlapiRP_;     // restriction * prolongatoin                    
-  vector<Operator>               mlapiPR_;     // prolongation * restriction                     
-  vector<Operator>               mlapiRA_;     // restriction * A                     
+  vector<Operator>               mlapiRmod_;   // restriction
+  vector<Operator>               mlapiPmod_;   // prolongation
+  vector<Operator>               mlapiRP_;     // restriction * prolongatoin
+  vector<Operator>               mlapiPR_;     // prolongation * restriction
+  vector<Operator>               mlapiRA_;     // restriction * A
   vector<Operator>               mlapiAplus_;  // operator Aplus on each grid (actually needed only on finest grid)
-  vector<Operator>               mlapiA_;      // operator A on each grid                       
+  vector<Operator>               mlapiA_;      // operator A on each grid
   vector<InverseOperator>        mlapiS_;      // smoother on each grid
 
 }; // VM3_Solver
 
 
-#endif 
+#endif
+
+#endif

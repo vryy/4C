@@ -1,3 +1,5 @@
+#ifdef CCADISCRET
+
 #include "vm3_solver.H"
 
 /*----------------------------------------------------------------------*
@@ -17,7 +19,7 @@ A_(A)
 
 
   if (compute) Compute();
-    
+
   return;
 }
 
@@ -30,7 +32,7 @@ int VM3_Solver::Solve(
     // do setup if not already done
   if (!iscomputed_)
   {
-    VM3_Solver& tmp = 
+    VM3_Solver& tmp =
                        const_cast<VM3_Solver&>(*this);
     tmp.Compute();
   }
@@ -40,7 +42,7 @@ int VM3_Solver::Solve(
   const Epetra_BlockMap& bmap = B.Map();
   Space space;
   space.Reshape(bmap.NumGlobalElements(),bmap.NumMyElements(),bmap.MyGlobalElements());
-  
+
   // create input/output mlapi multivectors
   MultiVector b_f(space,1,false);
   MultiVector x_f(space,1,false);
@@ -57,7 +59,7 @@ int VM3_Solver::Solve(
   // copy solution back
   for (int i=0; i<nele; ++i)
     X[0][i] = x_f(i);
-  
+
   return 0;
 
 }
@@ -69,11 +71,11 @@ int VM3_Solver::ApplyInverse(
                      const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
   // apply the preconditioner to X and return result in Y
-  
+
   // do setup if not already done
   if (!iscomputed_)
   {
-    VM3_Solver& tmp = 
+    VM3_Solver& tmp =
                        const_cast<VM3_Solver&>(*this);
     tmp.Compute();
   }
@@ -83,7 +85,7 @@ int VM3_Solver::ApplyInverse(
   const Epetra_BlockMap& bmap = X.Map();
   Space space;
   space.Reshape(bmap.NumGlobalElements(),bmap.NumMyElements(),bmap.MyGlobalElements());
-  
+
   // create input/output mlapi multivectors
   MultiVector b_f(space,1,false);
   MultiVector x_f(space,1,false);
@@ -100,7 +102,7 @@ int VM3_Solver::ApplyInverse(
   // copy solution back
   for (int i=0; i<nele; ++i)
     Y[0][i] = x_f(i);
-  
+
   return 0;
 }
 
@@ -366,10 +368,10 @@ bool VM3_Solver::Compute()
 {
   // setup phase of multigrid
   iscomputed_ = false;
-  
+
   // this is important to have!!!
   MLAPI::Init();
-  
+
   // get parameters
   int     maxlevels     = mlparams_.get("max levels",10);
   int     maxcoarsesize = mlparams_.get("coarse: max size",10);
@@ -391,7 +393,7 @@ bool VM3_Solver::Compute()
   // double  coarsedamp    = mlparams_.get("coarse: damping factor",1.33);
   // int     coarsesweeps  = mlparams_.get("coarse: sweeps",2);
 
-  // Currently, only one smoother type can be extracted anyway (in MLAPI::InverseOperator::Reshape), 
+  // Currently, only one smoother type can be extracted anyway (in MLAPI::InverseOperator::Reshape),
   // so it doesn't make sense to include different relaxations here. Similarly, only
   // one smoother type is included in the parameter list mlparams. See linalg_solver.cpp
   string  smoothertype  = mlparams_.get("smoother: type","symmetric Gauss-Seidel");
@@ -402,9 +404,9 @@ bool VM3_Solver::Compute()
   Operator mlapiAplus(space,space,Aplus_.get(),false);
 
 
-  mlapiRmod_.resize(maxlevels);                       
-  mlapiPmod_.resize(maxlevels);                       
-  //mlapiRP_.resize(maxlevels);                       
+  mlapiRmod_.resize(maxlevels);
+  mlapiPmod_.resize(maxlevels);
+  //mlapiRP_.resize(maxlevels);
   //mlapiPR_.resize(maxlevels);
   mlapiRA_.resize(maxlevels);
   mlapiA_.resize(maxlevels);
@@ -414,7 +416,7 @@ bool VM3_Solver::Compute()
   // build nullspace;
   MultiVector NS;
   MultiVector NextNS;
-  
+
   NS.Reshape(mlapiA.GetRangeSpace(),nsdim);
   if (nullspace)
   {
@@ -457,14 +459,14 @@ bool VM3_Solver::Compute()
   if (Comm().MyPID()==0)
   {
     ML_print_line("-", 78);
-    cout << "VM3 solver : creating smoother level " << level << endl; 
+    cout << "VM3 solver : creating smoother level " << level << endl;
     fflush(stdout);
   }
   S.Reshape(mlapiAplus,fsmoothertype,mlparams_);
-  
+
   if (level) mlparams_.set("PDE equations", NS.GetNumVectors());
-  
- 
+
+
   if (Comm().MyPID()==0)
   {
     ML_print_line("-", 80);
@@ -475,7 +477,7 @@ bool VM3_Solver::Compute()
   mlparams_.set("workspace: current level",level);
   GetPtent(mlapiA,mlparams_,NS,Ptent,NextNS);
   NS = NextNS;
-  
+
   if (damping)
   {
     if (eigenanalysis == "Anorm")
@@ -485,7 +487,7 @@ bool VM3_Solver::Compute()
     else if (eigenanalysis == "power-method")
       lambdamax = MaxEigPowerMethod(mlapiA,true);
     else ML_THROW("incorrect parameter (" + eigenanalysis + ")", -1);
-  
+
     IminusA = GetJacobiIterationOperator(mlapiA,damping/lambdamax);
     P = IminusA * Ptent;
   }
@@ -494,13 +496,13 @@ bool VM3_Solver::Compute()
     P = Ptent;
     lambdamax = -1.0;
   }
-  
+
   R = GetTranspose(P);
   if (damping)
     Rtent = GetTranspose(Ptent);
   else
     Rtent = R;
-    
+
   // variational coarse grid
   C = GetRAP(R,mlapiA,P);
 
@@ -517,12 +519,12 @@ bool VM3_Solver::Compute()
   Operator RA(mlapiA.GetDomainSpace(),R.GetRangeSpace(), RAmat,false);
 //  Operator RP(P.GetDomainSpace(),R.GetRangeSpace(), RPmat,false);
 //  Operator PR(R.GetDomainSpace(),P.GetRangeSpace(), PRmat,false);
-  
+
   // write the temporary values into the correct slot
   mlapiRA_[level]       = RA;
 //  mlapiRP_[level]       = RP;
 //  mlapiPR_[level]       = PR;
-  mlapiRmod_[level]     = R;  
+  mlapiRmod_[level]     = R;
   mlapiPmod_[level]     = P;
   mlapiA_[level+1]      = C;
   mlapiS_[level]        = S;
@@ -537,14 +539,14 @@ bool VM3_Solver::Compute()
     if (Comm().MyPID()==0)
     {
       ML_print_line("-", 78);
-      cout << "VM3 solver : creating smoother level " << level << endl; 
+      cout << "VM3 solver : creating smoother level " << level << endl;
       fflush(stdout);
     }
     S.Reshape(mlapiA,smoothertype,mlparams_);
-    
+
     if (level) mlparams_.set("PDE equations", NS.GetNumVectors());
-    
-  
+
+
     if (Comm().MyPID()==0)
     {
       ML_print_line("-", 80);
@@ -556,7 +558,7 @@ bool VM3_Solver::Compute()
     mlparams_.set("workspace: current level",level);
     GetPtent(mlapiA,mlparams_,NS,Ptent,NextNS);
     NS = NextNS;
-    
+
     if (damping)
     {
       if (eigenanalysis == "Anorm")
@@ -566,7 +568,7 @@ bool VM3_Solver::Compute()
       else if (eigenanalysis == "power-method")
         lambdamax = MaxEigPowerMethod(mlapiA,true);
       else ML_THROW("incorrect parameter (" + eigenanalysis + ")", -1);
-    
+
       IminusA = GetJacobiIterationOperator(mlapiA,damping/lambdamax);
       P = IminusA * Ptent;
     }
@@ -575,13 +577,13 @@ bool VM3_Solver::Compute()
       P = Ptent;
       lambdamax = -1.0;
     }
-    
+
     R = GetTranspose(P);
     if (damping)
       Rtent = GetTranspose(Ptent);
     else
       Rtent = R;
-      
+
     // variational coarse grid
     C = GetRAP(R,mlapiA,P);
 
@@ -600,7 +602,7 @@ bool VM3_Solver::Compute()
     mlapiRA_[level]       = RA;
 //    mlapiRP_[level]       = RP;
 //    mlapiPR_[level]       = PR;
-    mlapiRmod_[level]     = R;  
+    mlapiRmod_[level]     = R;
     mlapiPmod_[level]     = P;
     mlapiA_[level+1]      = C;
     mlapiS_[level]        = S;
@@ -611,20 +613,20 @@ bool VM3_Solver::Compute()
       ++level;
       break;
     }
-  
+
   } // for (level=1; level<maxlevels-1; ++level)
-  
+
   // set coarse solver
   if (Comm().MyPID()==0)
   {
     ML_print_line("-", 78);
-    cout << "VM3 solver : creating coarse solver level " << level << endl; 
+    cout << "VM3 solver : creating coarse solver level " << level << endl;
     fflush(stdout);
   }
   S.Reshape(mlapiA_[level],coarsetype,mlparams_);
 
   mlapiS_[level] = S;
-  
+
   // store number of levels
   maxlevels_ = level+1;
 
@@ -632,3 +634,4 @@ bool VM3_Solver::Compute()
   return true;
 }
 
+#endif
