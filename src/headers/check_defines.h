@@ -127,6 +127,7 @@ Maintainer: Malte Neumann
 #endif
 
 
+#ifndef CCADISCRET
 
 /* check the plausability of some defines */
 #ifdef D_AXISHELL
@@ -183,6 +184,7 @@ Maintainer: Malte Neumann
 #endif
 #endif
 
+#endif
 
 /*----------------------------------------------------------------------*/
 

@@ -287,17 +287,17 @@ void input_conditions(const DRT::Problem& problem)
   multimap<int,RefCountPtr<DRT::Condition> > microbc;
   input_micro_bc(microbc);
   setup_condition(microbc, dsurf_fenode);
-  
+
   //--------------------- read line conditions for fluid stress calculation
   multimap<int,RefCountPtr<DRT::Condition> > linefluidstresscalc;
   input_line_stress_calc(linefluidstresscalc);
-  setup_condition(linefluidstresscalc, dline_fenode);    
+  setup_condition(linefluidstresscalc, dline_fenode);
   //------------------ read surface conditions for fluid stress calculation
   multimap<int,RefCountPtr<DRT::Condition> > surffluidstresscalc;
   input_surf_stress_calc(surffluidstresscalc);
   setup_condition(surffluidstresscalc, dsurf_fenode);
-    
-  
+
+
   // Iterate through all discretizations and sort the appropiate condition into
   // the correct discretization it applies to
   for (unsigned i=0; i<problem.NumFields(); ++i)
@@ -336,9 +336,9 @@ void input_conditions(const DRT::Problem& problem)
       register_condition("LineIsothermalNoslip", "Isothermal no-slip wall", lineisothermnoslip, actdis, noderowmap);
       register_condition("LineSubsonicInflow", "Subsonic inflow", linesubsonicinflow, actdis, noderowmap);
       register_condition("LineSubsonicOutflow", "Subsonic outflow", linesubsonicoutflow, actdis, noderowmap);
-      
+
       register_condition("FluidStressCalc", "Line Fluid Stress Calculation", linefluidstresscalc, actdis, noderowmap);
-      register_condition("FluidStressCalc", "Surf Fluid Stress Calculation", surffluidstresscalc, actdis, noderowmap);      
+      register_condition("FluidStressCalc", "Surf Fluid Stress Calculation", surffluidstresscalc, actdis, noderowmap);
     }
   }
 } /* end of input_conditions */
@@ -488,14 +488,14 @@ void input_point_neum(multimap<int,RefCountPtr<DRT::Condition> >& pnmap)
         neum_val[i] = strtod(colptr,&colptr);
       else
         strtod(colptr,&colptr);
-    
-     // read function numbers 
-     for (int i=0; i<numread; ++i)     
-      if (i < MAXDOFPERNODE)	  
-	neum_funct[i] = strtol(colptr,&colptr,10);  
+
+     // read function numbers
+     for (int i=0; i<numread; ++i)
+      if (i < MAXDOFPERNODE)
+	neum_funct[i] = strtol(colptr,&colptr,10);
       else
-        strtol(colptr,&colptr,10); 
-  
+        strtol(colptr,&colptr,10);
+
     // create boundary condition
     RefCountPtr<DRT::Condition> condition =
              rcp(new DRT::Condition(dnodeid,DRT::Condition::PointNeumann,false,
@@ -565,7 +565,7 @@ void input_line_neum(multimap<int,RefCountPtr<DRT::Condition> >& lnmap)
     vector<int>    neum_onoff(MAXDOFPERNODE);
     vector<double> neum_val(MAXDOFPERNODE);
     vector<int>    neum_funct(MAXDOFPERNODE);
-       
+
     for (int i=0; i<MAXDOFPERNODE; ++i)
     {
       neum_onoff[i] = 0;
@@ -613,14 +613,14 @@ void input_line_neum(multimap<int,RefCountPtr<DRT::Condition> >& lnmap)
         neum_val[i] = strtod(colptr,&colptr);
       else
         strtod(colptr,&colptr);
-	
-    // read function numbers 
-     for (int i=0; i<numread; ++i)     
-      if (i < MAXDOFPERNODE)	  
-	neum_funct[i] = strtol(colptr,&colptr,10);  
+
+    // read function numbers
+     for (int i=0; i<numread; ++i)
+      if (i < MAXDOFPERNODE)
+	neum_funct[i] = strtol(colptr,&colptr,10);
       else
-        strtol(colptr,&colptr,10); 
-        		
+        strtol(colptr,&colptr,10);
+
     // create boundary condition
     RefCountPtr<DRT::Condition> condition =
               rcp(new DRT::Condition(dlineid,DRT::Condition::LineNeumann,true,
@@ -649,12 +649,12 @@ void input_line_neum(multimap<int,RefCountPtr<DRT::Condition> >& lnmap)
     if (ierr) condition->Add("surface","top");
     frchk("Bot",&ierr);
     if (ierr) condition->Add("surface","bot");
-    
+
     // add stuff to boundary condition
     condition->Add("onoff",neum_onoff);
     condition->Add("val",neum_val);
     condition->Add("curve",&curve,1);
-    condition->Add("funct",neum_funct);  
+    condition->Add("funct",neum_funct);
 
     //------------------------------- put condition in map of conditions
     lnmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dlineid,condition));
@@ -757,14 +757,14 @@ void input_surf_neum(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
         neum_val[i] = strtod(colptr,&colptr);
       else
         strtod(colptr,&colptr);
-      
-     // read function numbers 
-     for (int i=0; i<numread; ++i)     
-      if (i < MAXDOFPERNODE)	  
-	neum_funct[i] = strtol(colptr,&colptr,10);  
+
+     // read function numbers
+     for (int i=0; i<numread; ++i)
+      if (i < MAXDOFPERNODE)
+	neum_funct[i] = strtol(colptr,&colptr,10);
       else
-        strtol(colptr,&colptr,10);      
-  
+        strtol(colptr,&colptr,10);
+
     // create boundary condition
     RefCountPtr<DRT::Condition> condition =
            rcp(new DRT::Condition(dsurfid,DRT::Condition::SurfaceNeumann,true,
@@ -903,14 +903,14 @@ void input_vol_neum(multimap<int,RefCountPtr<DRT::Condition> >& vnmap)
         neum_val[i] = strtod(colptr,&colptr);
       else
         strtod(colptr,&colptr);
-	
-     // read function numbers 
-     for (int i=0; i<numread; ++i)     
-      if (i < MAXDOFPERNODE)	  
-	neum_funct[i] = strtol(colptr,&colptr,10);  
+
+     // read function numbers
+     for (int i=0; i<numread; ++i)
+      if (i < MAXDOFPERNODE)
+	neum_funct[i] = strtol(colptr,&colptr,10);
       else
         strtol(colptr,&colptr,10);
-  
+
     // create boundary condition
     RefCountPtr<DRT::Condition> condition =
             rcp(new DRT::Condition(dvolid,DRT::Condition::VolumeNeumann,true,
@@ -928,7 +928,7 @@ void input_vol_neum(multimap<int,RefCountPtr<DRT::Condition> >& vnmap)
     condition->Add("val",neum_val);
     condition->Add("curve",&curve,1);
     condition->Add("funct",neum_funct);
-    
+
     //------------------------------- put condition in map of conditions
     vnmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dvolid,condition));
 
@@ -1740,7 +1740,7 @@ void input_line_fsi_coupling(multimap<int,RefCountPtr<DRT::Condition> >& lfsicou
     // create periodic boundary condition
     RefCountPtr<DRT::Condition> condition = rcp(new DRT::Condition(dlineid,
                                                                    DRT::Condition::FSICoupling,
-                                                                   false,
+                                                                   true,
                                                                    DRT::Condition::Line));
     condition->Add("field", string(buffer));
 
@@ -1796,7 +1796,7 @@ void input_surf_fsi_coupling(multimap<int,RefCountPtr<DRT::Condition> >& sfsicou
     // create periodic boundary condition
     RefCountPtr<DRT::Condition> condition = rcp(new DRT::Condition(dsurfaceid,
                                                                    DRT::Condition::FSICoupling,
-                                                                   false,
+                                                                   true,
                                                                    DRT::Condition::Surface));
     condition->Add("field", string(buffer));
 
