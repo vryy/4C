@@ -731,11 +731,11 @@ void DRT::Utils::AllToAllCommunication( const Epetra_Comm& comm,
 {
 #ifndef PARALLEL
 
-  dsassert(send.size()==1 and recv.size()==1,
-           "there has to be just one entry for sending and receiving");
+  dsassert(send.size()==1, "there has to be just one entry for sending");
 
   // make a copy
-  recv[0] = send[0];
+  recv.clear();
+  recv.push_back(send[0]);
 
 #else
     const Epetra_MpiComm& mpicomm = dynamic_cast<const Epetra_MpiComm&>(comm);
