@@ -413,7 +413,7 @@ RefCountPtr<Epetra_Vector> FSI::CouplingMortar::MasterToSlave(
 }
 
 /*
- * Compute mv = M^{T}(sv)
+ * Compute mv = -M^{T}(sv)
  */
 RefCountPtr<Epetra_Vector> FSI::CouplingMortar::SlaveToMaster(
     RefCountPtr<Epetra_Vector> sv )
@@ -431,7 +431,7 @@ RefCountPtr<Epetra_Vector> FSI::CouplingMortar::SlaveToMaster(
     if ( M_->Multiply( true, tmp, *mv ) )
         dserror( "M^{T}*sv multiplication failed" );
 
-    //mv->Scale( -1.0 );
+    mv->Scale( -1.0 );
     return mv;
 }
 

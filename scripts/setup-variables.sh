@@ -83,6 +83,22 @@ else
   fi
 fi
 
+# CCADISCRET brings a lot of flags implicitly...
+if grep '^[ \t]*CCADISCRET' "$definefile" 2>&1 > /dev/null ; then
+
+  # our trilinos always requires umfpack
+  if ! grep '^[ \t]*UMFPACK' "$definefile" 2>&1 > /dev/null ; then
+    DEFINES="$DEFINES -DUMFPACK"
+  fi
+
+  # the old input still needs this
+  if ! grep '^[ \t]*D_FSI' "$definefile" 2>&1 > /dev/null ; then
+    DEFINES="$DEFINES -DD_FSI"
+  fi
+fi
+
+
+
 # always look into headers directory of destination
 CFLAGS="-I$DEST/src/headers $CFLAGS"
 CPFLAGS="-I$DEST/src/headers $CPFLAGS"

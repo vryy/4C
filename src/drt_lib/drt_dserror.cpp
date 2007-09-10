@@ -129,6 +129,7 @@ int cpp_dsassert2_func( bool test, char* string, ... )
 #endif
         return 0;
     }
+    return 0;
 } /* end of dsassert2_func */
 
 #endif  // #ifdef CCADISCRET

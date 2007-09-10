@@ -1051,12 +1051,14 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::StructToAle(T
 
 Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::StructToFluid(Teuchos::RefCountPtr<Epetra_Vector> iv)
 {
+#if 0
   RefCountPtr<Epetra_Vector> mortarvec = coupsfm_.MasterToSlave(iv);
   RefCountPtr<Epetra_Vector> vec = coupsf_.MasterToSlave(iv);
   Epetra_Vector diff( vec->Map() );
   diff.Update( 1.0, *mortarvec, -1.0, *vec, 0.0 );
   double norm; diff.Norm1( &norm );
   cout << "MtS: Norm1 of difference is " << norm << "\n";
+#endif
 
   return coupsfm_.MasterToSlave(iv);
 }
@@ -1067,18 +1069,20 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::FluidToStruct
   RefCountPtr<Epetra_Vector> ishape = fluid_->IntegrateInterfaceShape();
   RefCountPtr<Epetra_Vector> iforce = rcp(new Epetra_Vector(iv->Map()));
 
-  if ( iforce->ReciprocalMultiply( 1.0, *iv, *ishape, 0.0 ) )
+  if ( iforce->ReciprocalMultiply( 1.0, *ishape, *iv, 0.0 ) )
       dserror("ReciprocalMultiply failed");
 
+#if 0
   RefCountPtr<Epetra_Vector> mortarvec = coupsfm_.SlaveToMaster(iforce);
   RefCountPtr<Epetra_Vector> vec = coupsf_.SlaveToMaster(iv);
   Epetra_Vector diff( vec->Map() );
   diff.Update( 1.0, *mortarvec, -1.0, *vec, 0.0 );
   double norm; diff.Norm1( &norm );
   cout << "StM: Norm1 of difference is " << norm << "\n";
+#endif
 
   // debug output
-//#if 0
+#if 0
   {
     static int step;
     ostringstream filename_plain;
@@ -1092,10 +1096,9 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::FluidToStruct
     vec->Print(outp);
     mortarvec->Print(outm);
   }
-//#endif
+#endif
 
-
-  return coupsf_.SlaveToMaster(iv);
+  return coupsfm_.SlaveToMaster(iforce);
 }
 
 
