@@ -344,7 +344,7 @@ void FSI::CouplingMortar::Setup( const DRT::Discretization& masterdis,
               "Wrong domain map in MOERTEL's D matrix" );
     dsassert( D_->DomainMap().PointSameAs( D_->RangeMap() ),
               "D not square?" );
-    dsassert( M_->RangeMap().PointSameAs( slavedofmap_ ),
+    dsassert( M_->RangeMap().PointSameAs( *slavedofmap_ ),
               "Range map of M matrix not good" );
 
     dsassert( D_->RowMap().SameAs( M_->RowMap() ),
@@ -430,6 +430,8 @@ RefCountPtr<Epetra_Vector> FSI::CouplingMortar::SlaveToMaster(
     RefCountPtr<Epetra_Vector> mv = rcp( new Epetra_Vector( *masterdofmap_ ) );
     if ( M_->Multiply( true, tmp, *mv ) )
         dserror( "M^{T}*sv multiplication failed" );
+
+    //mv->Scale( -1.0 );
     return mv;
 }
 

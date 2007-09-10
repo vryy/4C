@@ -95,6 +95,9 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
   //cout << fluid_->Discretization();
   //cout << ale_->Discretization();
 
+  coupsfm_.Setup( structure_->Discretization(), fluid_->Discretization(),
+                  comm );
+
   coupsf_.SetupConditionCoupling(structure_->Discretization(),
                                  fluid_->Discretization(),
                                  "FSICoupling");
@@ -1048,12 +1051,50 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::StructToAle(T
 
 Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::StructToFluid(Teuchos::RefCountPtr<Epetra_Vector> iv)
 {
-  return coupsf_.MasterToSlave(iv);
+  RefCountPtr<Epetra_Vector> mortarvec = coupsfm_.MasterToSlave(iv);
+  RefCountPtr<Epetra_Vector> vec = coupsf_.MasterToSlave(iv);
+  Epetra_Vector diff( vec->Map() );
+  diff.Update( 1.0, *mortarvec, -1.0, *vec, 0.0 );
+  double norm; diff.Norm1( &norm );
+  cout << "MtS: Norm1 of difference is " << norm << "\n";
+
+  return coupsfm_.MasterToSlave(iv);
 }
 
 
 Teuchos::RefCountPtr<Epetra_Vector> FSI::DirichletNeumannCoupling::FluidToStruct(Teuchos::RefCountPtr<Epetra_Vector> iv)
 {
+  RefCountPtr<Epetra_Vector> ishape = fluid_->IntegrateInterfaceShape();
+  RefCountPtr<Epetra_Vector> iforce = rcp(new Epetra_Vector(iv->Map()));
+
+  if ( iforce->ReciprocalMultiply( 1.0, *iv, *ishape, 0.0 ) )
+      dserror("ReciprocalMultiply failed");
+
+  RefCountPtr<Epetra_Vector> mortarvec = coupsfm_.SlaveToMaster(iforce);
+  RefCountPtr<Epetra_Vector> vec = coupsf_.SlaveToMaster(iv);
+  Epetra_Vector diff( vec->Map() );
+  diff.Update( 1.0, *mortarvec, -1.0, *vec, 0.0 );
+  double norm; diff.Norm1( &norm );
+  cout << "StM: Norm1 of difference is " << norm << "\n";
+
+  // debug output
+//#if 0
+  {
+    static int step;
+    ostringstream filename_plain;
+    ostringstream filename_mortar;
+    filename_plain << allfiles.outputfile_kenner << "_" << step << ".fluidtostruct-plain.X";
+    filename_mortar << allfiles.outputfile_kenner << "_" << step << ".fluidtostruct-mortar.X";
+    step += 1;
+
+    ofstream outp(filename_plain.str().c_str());
+    ofstream outm(filename_mortar.str().c_str());
+    vec->Print(outp);
+    mortarvec->Print(outm);
+  }
+//#endif
+
+
   return coupsf_.SlaveToMaster(iv);
 }
 

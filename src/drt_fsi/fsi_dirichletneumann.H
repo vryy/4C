@@ -41,6 +41,7 @@ Maintainer: Ulrich Kuettler
 #include "fsi_fluid.H"
 #include "fsi_ale.H"
 #include "fsi_coupling.H"
+#include "fsi_coupling_mortar.H"
 
 
 /// FSI: Fluid Structure Interaction
@@ -198,6 +199,9 @@ private:
 
   /// coupling of fluid and ale
   Coupling               coupfa_;
+
+  /// coupling of structure and fluid at the interface, with mortar. Experimental!
+  CouplingMortar         coupsfm_;
 
   /// interface displacement from time step begin
   Teuchos::RefCountPtr<Epetra_Vector> idispn_;

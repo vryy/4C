@@ -178,5 +178,31 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Fluid::RelaxationSolve(Teuchos::RefCoun
 }
 
 
+RefCountPtr<Epetra_Vector> FSI::Fluid::IntegrateInterfaceShape()
+{
+  ParameterList eleparams;
+  // set action for elements
+  eleparams.set("action","integrate_Shapefunction");
+
+  // get a vector layout from the discretization to construct matching
+  // vectors and matrices
+  //                 local <-> global dof numbering
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+  // create vector (+ initialization with zeros)
+  RefCountPtr<Epetra_Vector> integratedshapefunc = LINALG::CreateVector(*dofrowmap,true);
+
+  // call loop over elements
+  discret_->ClearState();
+  discret_->EvaluateCondition(eleparams,*integratedshapefunc,"FSICoupling");
+  discret_->ClearState();
+
+  Teuchos::RefCountPtr<Epetra_Vector> ishape = rcp(new Epetra_Vector(*ivelmap_));
+  int err = ishape->Export(*integratedshapefunc,*extractor_,Insert);
+  if (err)
+    dserror("Export using exporter returned err=%d",err);
+  return ishape;
+}
+
 #endif
 #endif

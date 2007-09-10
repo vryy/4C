@@ -41,6 +41,8 @@ public:
   /// linear fluid solve with just a interface load
   Teuchos::RefCountPtr<Epetra_Vector> RelaxationSolve(Teuchos::RefCountPtr<Epetra_Vector> ivel);
 
+  Teuchos::RefCountPtr<Epetra_Vector> IntegrateInterfaceShape();
+
   int Itemax() const;
 
   void SetItemax(int itemax);
