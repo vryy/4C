@@ -166,6 +166,26 @@ namespace Utils
   */
   void ExtractMyValues(const Epetra_Vector& global, vector<double>& local, const vector<int> lm);
 
+#ifdef PARALLEL
+  /// Communication between all pairs of processes, with distinct data for each.
+  /*!
+    Sends a different vector<int> to each processes. The size of each vector may
+    be different, zero-length vectors are allowed.
+    Communication is implemented with the MPI function MPI_Alltoallv.
+
+    \param comm (i) communicator
+    \param send (i) vector of length comm.NumProc(), j-th element to be send to
+    j-th processor.
+    \param recv (o) vector of length comm.NumProc(), j-th element received from
+    j-th processor.
+
+    \author h.kue
+    \date 09/07
+   */
+void AllToAllCommunication( const Epetra_Comm& comm,
+                            const vector< vector<int> >& send, vector< vector<int> >& recv );
+#endif // PARALLEL
+
 } // namespace Utils
 } // namespace DRT
 

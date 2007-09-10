@@ -26,7 +26,8 @@ extern "C"
 			   idxtype *);
 }
 #endif
-#endif
+#include <mpi.h>
+#endif // PARALLEL
 
 #include <algorithm>
 #include <numeric>
@@ -721,6 +722,73 @@ void DRT::Utils::ExtractMyValues(const Epetra_Vector& global,
   return;
 }
 
+#ifdef PARALLEL
+/*
+ * Send and receive lists of ints.  (heiner 09/07)
+ */
+void DRT::Utils::AllToAllCommunication( const Epetra_Comm& comm,
+                                        const vector< vector<int> >& send,
+                                        vector< vector<int> >& recv )
+{
+    const Epetra_MpiComm& mpicomm = dynamic_cast<const Epetra_MpiComm&>(comm);
+
+    vector<int> sendbuf;
+    vector<int> sendcounts;
+    sendcounts.reserve( comm.NumProc() );
+    vector<int> sdispls;
+    sdispls.reserve( comm.NumProc() );
+
+    int displacement = 0;
+    sdispls.push_back( 0 );
+    for ( vector< vector<int> >::const_iterator iter = send.begin();
+          iter != send.end(); ++iter )
+    {
+        copy( iter->begin(), iter->end(), back_inserter( sendbuf ) );
+        sendcounts.push_back( iter->size() );
+        displacement += iter->size();
+        sdispls.push_back( displacement );
+    }
+
+    vector<int> recvcounts( comm.NumProc() );
+
+    // initial communication: Request. Send and receive the number of
+    // ints we communicate with each process.
+
+    int status = MPI_Alltoall( &sendcounts[0], 1, MPI_INT,
+                               &recvcounts[0], 1, MPI_INT, mpicomm.GetMpiComm() );
+
+    if ( status != MPI_SUCCESS )
+        dserror( "MPI_Alltoall returned status=%d", status );
+
+    vector<int> rdispls;
+    rdispls.reserve( comm.NumProc() );
+
+    displacement = 0;
+    rdispls.push_back( 0 );
+    for ( vector<int>::const_iterator iter = recvcounts.begin();
+          iter != recvcounts.end(); ++iter )
+    {
+        displacement += *citer;
+        rdispls.push_back( displacement );
+    }
+
+    vector<int> recvbuf( rdispls.back() );
+
+    // transmit communication: Send and get the data.
+
+    status = MPI_Alltoallv ( &sendbuf[0], &sendcounts[0], &sdispls[0], MPI_INT,
+                             &recvbuf[0], &recvcounts[0], &rdispls[0], MPI_INT,
+                             mpicomm.GetMpiComm() );
+    if ( status != MPI_SUCCESS )
+        dserror( "MPI_Alltoallv returned status=%d", status );
+
+    recv.clear();
+    for ( int proc = 0; proc < comm.NumProc(); ++proc )
+    {
+        recv.push_back( vector<int>( &recvbuf[rdispls[proc]], &recvbuf[rdispls[proc+1]] ) );
+    }
+}
+#endif // PARALLEL
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
