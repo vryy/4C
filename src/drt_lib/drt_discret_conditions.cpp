@@ -272,15 +272,157 @@ void DRT::Discretization::BuildLinesinCondition(
 } // DRT::Discretization::BuildLinesinCondition
 #endif // DEBUG
 
+/*
+ *  A helper function for BuildLinesinCondition and
+ *  BuildSurfacesinCondition, below.
+ *  Gets a map (vector_of_nodes)->Element that maps
+ *
+ *  (A map with globally unique ids.)
+ *
+ *  \param comm (i) communicator
+ *  \param elementmap (i) map (vector_of_nodes_ids)->(element) that maps
+ *  the nodes of an element to the element itself.
+ *
+ *  \param finalelements (o) map (global_id)->(element) that can be
+ *  added to a condition.
+ *
+ *  h.kue 09/07
+ */
+static void AssignGlobalIDs( const Epetra_Comm& comm,
+                             const map< vector<int>, RefCountPtr<DRT::Element> >& elementmap,
+                             map< int, RefCountPtr<DRT::Element> >& finalelements )
+{
+  // First, give own elements a local id and find out
+  // which ids we need to get from other processes.
+
+  vector< RefCountPtr<DRT::Element> > ownelements;
+
+  // ghostelementnodes, the vector we are going to communicate.
+  // Layout:
+  //  [
+  //    // nodes of elements to ask process 0, separated by -1:
+  //    [ node011,node012,node013, ... , -1, node021, ... , -1, ... ],
+  //    // nodes of elements to ask process 1, separated by -1:
+  //    [ node111,node112,node113, ... , -1, node121, ... , -1, ... ],
+  //    ... // etc.
+  //  ]
+  vector< vector<int> > ghostelementnodes( comm.NumProc() );
+  // corresponding elements objects
+  vector< vector< RefCountPtr<DRT::Element> > > ghostelements( comm.NumProc() );
+
+  map< vector<int>, RefCountPtr<DRT::Element> >::const_iterator elemsiter;
+  for( elemsiter = elementmap.begin(); elemsiter != elementmap.end(); ++elemsiter )
+  {
+      const RefCountPtr<DRT::Element> element = elemsiter->second;
+      if ( element->Owner() == comm.MyPID() )
+      {
+          ownelements.push_back( element );
+      }
+      else // This is not our element, but we know it. We'll ask its owner for the id, later.
+      {
+          copy( elemsiter->first.begin(), elemsiter->first.end(),
+                back_inserter( ghostelementnodes[element->Owner()] ) );
+          ghostelementnodes[element->Owner()].push_back( -1 );
+
+          ghostelements[element->Owner()].push_back( element );
+      }
+  }
+
+  // Find out which ids our own elements are supposed to get.
+  vector<int> snelements( comm.NumProc() );
+  vector<int> rnelements( comm.NumProc() );
+  fill( snelements.begin(), snelements.end(), 0 );
+  snelements[ comm.MyPID() ] = ownelements.size();
+  comm.SumAll( &snelements[0], &rnelements[0], comm.NumProc() );
+  int sum = accumulate( &rnelements[0], &rnelements[comm.MyPID()], 0 );
+
+  // Add own elements to finalelements (with right id).
+  for ( unsigned i = 0; i < ownelements.size(); ++i )
+  {
+      ownelements[i]->SetId( i + sum );
+      finalelements[i + sum] = ownelements[i];
+  }
+  ownelements.clear();
+
+  // Last step: Get missing ids.
+  vector< vector<int> > requests;
+  DRT::Utils::AllToAllCommunication( comm, ghostelementnodes, requests );
+
+  vector< vector<int> > sendids( comm.NumProc() );
+
+  vector<int>::iterator keybegin;
+  for ( int proc = 0; proc < comm.NumProc(); ++proc )
+  {
+      keybegin = requests[proc].begin();
+      for ( ;; ) {
+          vector<int>::iterator keyend = find( keybegin, requests[proc].end(), -1 );
+          if ( keyend == requests[proc].end() )
+              break;
+          vector<int> nodes = vector<int>( keybegin, keyend );
+          elemsiter = elementmap.find( nodes );
+          if ( elemsiter == elementmap.end() )
+              dserror( "Got request for unknown element" );
+          sendids[proc].push_back( elemsiter->second->Id() );
+
+          ++keyend;
+          keybegin = keyend;
+      }
+  }
+  requests.clear();
+
+#if 0 // Debug
+  cout << "This is process " << comm.MyPID() << "." << endl;
+  for ( int proc = 0; proc < comm.NumProc(); ++proc )
+  {
+      cout << "Send to process " << proc << ": ";
+      for ( unsigned i = 0; i < sendids[proc].size(); ++i )
+      {
+          cout << sendids[proc][i] << ", ";
+      }
+      cout << endl;
+  }
+#endif // Debug
+
+  DRT::Utils::AllToAllCommunication( comm, sendids, requests );
+
+#if 0 // Debug
+  cout << "This is process " << comm.MyPID() << "." << endl;
+  for ( int proc = 0; proc < comm.NumProc(); ++proc )
+  {
+      cout << "Got from process " << proc << ": ";
+      for ( unsigned i = 0; i < requests[proc].size(); ++i )
+      {
+          cout << requests[proc][i];
+      }
+      cout << endl;
+  }
+#endif // Debug
+
+  for ( int proc = 0; proc < comm.NumProc(); ++proc )
+  {
+      if ( requests[proc].size() != ghostelements[proc].size() )
+          dserror( "Wrong number of element ids from proc %i: expected %i, got %i",
+                   proc, ghostelements[proc].size(), requests[proc].size() );
+
+      for ( unsigned i = 0; i < ghostelements[proc].size(); ++i )
+      {
+          if ( finalelements.find( requests[proc][i] ) != finalelements.end() )
+              dserror( "Received already known id %i", requests[proc][i] );
+
+          ghostelements[proc][i]->SetId( requests[proc][i] );
+          finalelements[ requests[proc][i] ] = ghostelements[proc][i];
+      }
+  }
+} // AssignGlobalIDs
+
 /*----------------------------------------------------------------------*
  |  Build line geometry in a condition (public)              mwgee 01/07|
  *----------------------------------------------------------------------*/
-
-// Hopefully improved by Heiner
+/* Hopefully improved by Heiner (h.kue 09/07) */
 void DRT::Discretization::BuildLinesinCondition( const string name,
                                                  RefCountPtr<DRT::Condition> cond )
 {
-  /* First part: Create the line objects that belong to the condition. */
+  /* First: Create the line objects that belong to the condition. */
 
   // get ptrs to all node ids that have this condition
   const vector<int>* nodeids = cond->Get< vector<int> >("Node Ids");
@@ -374,133 +516,10 @@ void DRT::Discretization::BuildLinesinCondition( const string name,
   } // for (fool=nodes.begin(); fool != nodes.end(); ++fool)
 
 
-  /* Second part: Give each line a global id. */
-
-  // First, give own lines a local id and find out
-  // which ids we need to get from other processes.
-
-  vector< RefCountPtr<DRT::Element> > ownlines;
-
-  // ghostlinenodes, the vector we are going to communicate.
-  // Layout:
-  //  [
-  //    // nodes of lines to ask process 0, separated by -1:
-  //    [ node011,node012,node013, ... , -1, node021, ... , -1, ... ],
-  //    // nodes of lines to ask process 1, separated by -1:
-  //    [ node111,node112,node113, ... , -1, node121, ... , -1, ... ],
-  //    ... // etc.
-  //  ]
-  vector< vector<int> > ghostlinenodes( Comm().NumProc() );
-  // corresponding line elements
-  vector< vector< RefCountPtr<DRT::Element> > > ghostlines( Comm().NumProc() );
-
-  map< vector<int>, RefCountPtr<DRT::Element> >::const_iterator linesiter;
-  for( linesiter = linemap.begin(); linesiter != linemap.end(); ++linesiter )
-  {
-      const RefCountPtr<DRT::Element> line = linesiter->second;
-      if ( line->Owner() == Comm().MyPID() )
-      {
-          ownlines.push_back( line );
-      }
-      else // This is not our line, but we know it. We'll ask its owner for the id, later.
-      {
-          copy( linesiter->first.begin(), linesiter->first.end(),
-                back_inserter( ghostlinenodes[line->Owner()] ) );
-          ghostlinenodes[line->Owner()].push_back( -1 );
-
-          ghostlines[line->Owner()].push_back( line );
-      }
-
-  }
-
-  // Find out which ids our own elements are supposed to get.
-  vector<int> snelements( Comm().NumProc() );
-  vector<int> rnelements( Comm().NumProc() );
-  fill( snelements.begin(), snelements.end(), 0 );
-  snelements[ Comm().MyPID() ] = ownlines.size();
-  Comm().SumAll( &snelements[0], &rnelements[0], Comm().NumProc() );
-  int sum = accumulate( &rnelements[0], &rnelements[Comm().MyPID()], 0 );
-
-  // Lines to add to the condition: (lineid) -> (line).
+  // Lines be added to the condition: (line_id) -> (line).
   map< int, RefCountPtr<DRT::Element> > finallines;
 
-  // Add own lines to finallines (with right id).
-  for ( unsigned i = 0; i < ownlines.size(); ++i )
-  {
-      ownlines[i]->SetId( i + sum );
-      finallines[i + sum] = ownlines[i];
-  }
-  ownlines.clear();
-
-  // Last step: Get missing ids.
-  vector< vector<int> > requests;
-  DRT::Utils::AllToAllCommunication( Comm(), ghostlinenodes, requests );
-
-  vector< vector<int> > sendlineids( Comm().NumProc() );
-
-  vector<int>::iterator keybegin;
-  for ( int proc = 0; proc < Comm().NumProc(); ++proc )
-  {
-      keybegin = requests[proc].begin();
-      for ( ;; ) {
-          vector<int>::iterator keyend = find( keybegin, requests[proc].end(), -1 );
-          if ( keyend == requests[proc].end() )
-              break;
-          vector<int> nodes = vector<int>( keybegin, keyend );
-          if ( linemap.find( nodes ) == linemap.end() )
-              dserror( "Got request for unknown element" );
-          sendlineids[proc].push_back( linemap[nodes]->Id() );
-
-          ++keyend;
-          keybegin = keyend;
-      }
-  }
-  requests.clear();
-
-#if 0 // Debug
-  cout << "This is process " << Comm().MyPID() << "." << endl;
-  for ( int proc = 0; proc < Comm().NumProc(); ++proc )
-  {
-      cout << "Send to process " << proc << ": ";
-      for ( unsigned i = 0; i < sendlineids[proc].size(); ++i )
-      {
-          cout << sendlineids[proc][i] << ", ";
-      }
-      cout << endl;
-  }
-#endif // Debug
-
-  DRT::Utils::AllToAllCommunication( Comm(), sendlineids, requests );
-
-#if 0 // Debug
-  cout << "This is process " << Comm().MyPID() << "." << endl;
-  for ( int proc = 0; proc < Comm().NumProc(); ++proc )
-  {
-      cout << "Got from process " << proc << ": ";
-      for ( unsigned i = 0; i < requests[proc].size(); ++i )
-      {
-          cout << requests[proc][i];
-      }
-      cout << endl;
-  }
-#endif // Debug
-
-  for ( int proc = 0; proc < Comm().NumProc(); ++proc )
-  {
-      if ( requests[proc].size() != ghostlines[proc].size() )
-          dserror( "Wrong number of element ids from proc %i: expected %i, got %i",
-                   proc, ghostlines[proc].size(), requests[proc].size() );
-
-      for ( unsigned i = 0; i < ghostlines[proc].size(); ++i )
-      {
-          if ( finallines.find( requests[proc][i] ) != finallines.end() )
-              dserror( "Received already known id %i", requests[proc][i] );
-
-          ghostlines[proc][i]->SetId( requests[proc][i] );
-          finallines[ requests[proc][i] ] = ghostlines[proc][i];
-      }
-  }
-
+  AssignGlobalIDs( Comm(), linemap, finallines );
   cond->AddGeometry( finallines );
 } // DRT::Discretization::BuildLinesinCondition
 
@@ -508,10 +527,12 @@ void DRT::Discretization::BuildLinesinCondition( const string name,
 /*----------------------------------------------------------------------*
  |  Build surface geometry in a condition (public)           mwgee 01/07|
  *----------------------------------------------------------------------*/
+/* Hopefully improved by Heiner (h.kue 09/07) */
 void DRT::Discretization::BuildSurfacesinCondition(
                                         const string name,
                                         RefCountPtr<DRT::Condition> cond)
 {
+  /* First: Create the surface objects that belong to the condition. */
 
   // get ptrs to all node ids that have this condition
   const vector<int>* nodeids = cond->Get<vector<int> >("Node Ids");
@@ -539,8 +560,8 @@ void DRT::Discretization::BuildSurfacesinCondition(
     }
   }
 
-  // multimap of surfaces in this cloud
-  multimap<int,RefCountPtr<DRT::Element> > surfmap;
+  // map of surfaces in this cloud: (node_ids) -> (surface)
+  map< vector<int>, RefCountPtr<DRT::Element> > surfmap;
 
   // loop these row nodes and build all surfs attached to them
   map<int,DRT::Node*>::iterator fool;
@@ -582,8 +603,18 @@ void DRT::Discretization::BuildSurfacesinCondition(
             // if all nodes are in our cloud, add surface
             if (allin)
             {
-              RefCountPtr<DRT::Element> tmp = rcp(actsurf->Clone());
-              surfmap.insert(pair<int,RefCountPtr<DRT::Element> >(actnode->Id(),tmp));
+                vector<int> nodes( actsurf->NumNode() );
+                transform( actsurf->Nodes(), actsurf->Nodes() + actsurf->NumNode(),
+                           nodes.begin(), mem_fun( &DRT::Node::Id ) );
+                sort( nodes.begin(), nodes.end() );
+
+                if ( surfmap.find( nodes ) == surfmap.end() )
+                {
+                    RefCountPtr<DRT::Element> surf = rcp( actsurf->Clone() );
+                    // Set owning process of surface to node with smallest gid.
+                    surf->SetOwner( gNode( nodes[0] )->Owner() );
+                    surfmap[nodes] = surf;
+                }
             }
             break;
           }
@@ -591,103 +622,11 @@ void DRT::Discretization::BuildSurfacesinCondition(
     }
   }
 
-  // surfmap contains all surfaces in our cloud, but it also contains a lot
-  // of duplicates for now which need to be detected and deleted
-  multimap<int,RefCountPtr<DRT::Element> >::iterator surfcurr;
-  for (surfcurr=surfmap.begin(); surfcurr!=surfmap.end(); ++surfcurr)
-  {
-    // this surface was already deleted
-    if (surfcurr->second == null) continue;
+  // Surfaces be added to the condition: (line_id) -> (surface).
+  map< int, RefCountPtr<DRT::Element> > finalsurfs;
 
-    // get the surface
-    RefCountPtr<DRT::Element> actsurf = surfcurr->second;
-
-    // get all nodal ids on this surface
-    const int  nnode   = actsurf->NumNode();
-    const int* nodeids = actsurf->NodeIds();
-
-    // loop all surfaces associated with entries of nodeids
-
-    for(int nid=0;nid<nnode;nid++)
-    {
-      multimap<int,RefCountPtr<DRT::Element> >::iterator startit =
-        surfmap.lower_bound(nodeids[nid]);
-      multimap<int,RefCountPtr<DRT::Element> >::iterator endit   =
-        surfmap.upper_bound(nodeids[nid]);
-
-      multimap<int,RefCountPtr<DRT::Element> >::iterator curr;
-      for (curr=startit; curr!=endit; ++curr)
-      {
-        if(curr->second == null   ) continue;
-        if(curr         == surfcurr) continue;
-
-        const int nn    = curr->second->NumNode();
-        if (nn != nnode) continue;
-        const int* nids = curr->second->NodeIds();
-
-        // nids must contain same ids as nodeids,
-        // where ordering is arbitrary
-        bool ident = true;
-        for (int i=0; i<nnode; ++i)
-        {
-          bool foundit = false;
-          for (int j=0; j<nnode; ++j)
-            if (nodeids[i]==nids[j])
-            {
-              foundit = true;
-              break;
-            }
-          if (!foundit)
-          {
-            ident = false;
-            break;
-          }
-        }
-        if (ident)
-          curr->second = null;
-        else
-          continue;
-      }
-    }
-  }
-
-  // Build a clean map of the remaining now unique surfaces
-  // and add it to the condition
-  int count=0;
-  map<int,RefCountPtr<DRT::Element> > finalsurfs;
-  for (surfcurr=surfmap.begin(); surfcurr!=surfmap.end(); ++surfcurr)
-  {
-    if (surfcurr->second==null) continue;
-    surfcurr->second->SetId(count);
-    finalsurfs[count] = surfcurr->second;
-    ++count;
-  }
-
-  // Build a global numbering for these elements
-  // the elements are in a column map state but the numbering is unique anyway
-  // and does NOT reflect the overlap!
-  // This is somehow dirty but works for the moment
-  vector<int> snelements(Comm().NumProc());
-  vector<int> rnelements(Comm().NumProc());
-  for (int i=0; i<Comm().NumProc(); ++i) snelements[i] = 0;
-  snelements[Comm().MyPID()] = finalsurfs.size();
-  Comm().SumAll(&snelements[0],&rnelements[0],Comm().NumProc());
-  int sum=0;
-  for (int i=0; i<Comm().MyPID(); ++i) sum += rnelements[i];
-  map<int,RefCountPtr<DRT::Element> > finalfinalsurfs;
-  count=0;
-  for (surfcurr=finalsurfs.begin(); surfcurr!=finalsurfs.end(); ++surfcurr)
-  {
-    surfcurr->second->SetId(count+sum);
-    finalfinalsurfs[count+sum] = surfcurr->second;
-    ++count;
-  }
-  finalsurfs.clear();
-
-  cond->AddGeometry(finalfinalsurfs);
-
-
-  return;
+  AssignGlobalIDs( Comm(), surfmap, finalsurfs );
+  cond->AddGeometry( finalsurfs );
 } // DRT::Discretization::BuildSurfacesinCondition
 
 
