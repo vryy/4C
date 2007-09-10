@@ -12,7 +12,7 @@ writen by : Alexander Volf
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOTET10
+#ifdef D_SOCTET10
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 

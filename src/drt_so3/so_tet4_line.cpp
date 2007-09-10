@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------**
-\file so_tet10_line.cpp
+\file so_tet4_line.cpp
 \brief
 
 <pre>
@@ -10,11 +10,11 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOTET10
+#ifdef D_SOTET4
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
-#include "so_tet10.H"
+#include "so_tet4.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_discret.H"
@@ -32,16 +32,16 @@ extern "C"
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::Elements::Sotet10Line::Sotet10Line(int id, int owner,
+DRT::Elements::Sotet4Line::Sotet4Line(int id, int owner,
                               int nnode, const int* nodeids,
                               DRT::Node** nodes,
-                              DRT::Elements::So_tet10* parent,
+                              DRT::Elements::So_tet4* parent,
                               const int lline) :
-DRT::Element(id,element_sotet10line,owner),
+DRT::Element(id,element_sotet4line,owner),
 parent_(parent),
 lline_(lline)
 {
-  DSTraceHelper dst("Sotet10Line::Sotet10Line");
+  DSTraceHelper dst("Sotet4Line::Sotet4Line");
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
   return;
@@ -50,12 +50,12 @@ lline_(lline)
 /*----------------------------------------------------------------------***
  |  copy-ctor (public)                                         maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Sotet10Line::Sotet10Line(const DRT::Elements::Sotet10Line& old) :
+DRT::Elements::Sotet4Line::Sotet4Line(const DRT::Elements::Sotet4Line& old) :
 DRT::Element(old),
 parent_(old.parent_),
 lline_(old.lline_)
 {
-  DSTraceHelper dst("Sotet10Line::Sotet10Line");
+  DSTraceHelper dst("Sotet4Line::Sotet4Line");
   return;
 }
 
@@ -63,10 +63,10 @@ lline_(old.lline_)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::Elements::Sotet10Line::Clone() const
+DRT::Element* DRT::Elements::Sotet4Line::Clone() const
 {
-  DSTraceHelper dst("Sotet10Line::Clone");
-  DRT::Elements::Sotet10Line* newelement = new DRT::Elements::Sotet10Line(*this);
+  DSTraceHelper dst("Sotet4Line::Clone");
+  DRT::Elements::Sotet4Line* newelement = new DRT::Elements::Sotet4Line(*this);
   return newelement;
 }
 
@@ -74,7 +74,7 @@ DRT::Element* DRT::Elements::Sotet10Line::Clone() const
  |                                                             (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::Elements::Sotet10Line::Shape() const
+DRT::Element::DiscretizationType DRT::Elements::Sotet4Line::Shape() const
 {
   switch (NumNode())
   {
@@ -90,12 +90,12 @@ DRT::Element::DiscretizationType DRT::Elements::Sotet10Line::Shape() const
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Sotet10Line::Pack(vector<char>& data) const
+void DRT::Elements::Sotet4Line::Pack(vector<char>& data) const
 {
-  DSTraceHelper dst("Sotet10Line::Pack");
+  DSTraceHelper dst("Sotet4Line::Pack");
   data.resize(0);
 
-  dserror("this Sotet10Line element does not support communication");
+  dserror("this Sotet4Line element does not support communication");
 
   return;
 }
@@ -104,9 +104,9 @@ void DRT::Elements::Sotet10Line::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Sotet10Line::Unpack(const vector<char>& data)
+void DRT::Elements::Sotet4Line::Unpack(const vector<char>& data)
 {
-  DSTraceHelper dst("Sotet10Line::Unpack");
+  DSTraceHelper dst("Sotet4Line::Unpack");
   dserror("this line element does not support communication");
   return;
 }
@@ -114,9 +114,9 @@ void DRT::Elements::Sotet10Line::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------***
  |  dtor (public)                                              maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Sotet10Line::~Sotet10Line()
+DRT::Elements::Sotet4Line::~Sotet4Line()
 {
-  DSTraceHelper dst("Sotet10Line::~Sotet10Line");
+  DSTraceHelper dst("Sotet4Line::~Sotet4Line");
   return;
 }
 
@@ -124,9 +124,9 @@ DRT::Elements::Sotet10Line::~Sotet10Line()
 /*----------------------------------------------------------------------***
  |  print this element (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Sotet10Line::Print(ostream& os) const
+void DRT::Elements::Sotet4Line::Print(ostream& os) const
 {
-  DSTraceHelper dst("Sotet10Line::Print");
+  DSTraceHelper dst("Sotet4Line::Print");
   os << "Sote10Line ";
   Element::Print(os);
   return;
@@ -135,14 +135,13 @@ void DRT::Elements::Sotet10Line::Print(ostream& os) const
 /*-----------------------------------------------------------------------***
  * Integrate a Line Neumann boundary condition (public)         maf 04/07*
  * ----------------------------------------------------------------------*/
-int DRT::Elements::Sotet10Line::EvaluateNeumann(ParameterList&         params,
+int DRT::Elements::Sotet4Line::EvaluateNeumann(ParameterList&         params,
                                              DRT::Discretization&   discretization,
                                              DRT::Condition&        condition,
                                              vector<int>&           lm,
                                              Epetra_SerialDenseVector& elevec1)
 {
   dserror("Neumann condition on line not implemented");
-   
   return 0;
 }
 
@@ -150,4 +149,4 @@ int DRT::Elements::Sotet10Line::EvaluateNeumann(ParameterList&         params,
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif // #ifdef D_SOTET10
+#endif // #ifdef D_SOTET4

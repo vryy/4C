@@ -1,5 +1,5 @@
-/*!----------------------------------------------------------------------*
-\file so_tet10_stress.cpp
+/*!----------------------------------------------------------------------*##
+\file so_tet4_stress.cpp
 \brief Evaluate the element stresses
 
 The element stresses are evaluated at the Gauss points.
@@ -12,7 +12,7 @@ Maintainer: Moritz Frenzel
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOTET10
+#ifdef D_SOTET4
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
@@ -21,7 +21,7 @@ Maintainer: Moritz Frenzel
 #ifdef PARALLEL
 #include "mpi.h"
 #endif
-#include "so_tet10.H"
+#include "so_tet4.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_exporter.H"
@@ -49,37 +49,37 @@ using namespace LINALG; // our linear algebra
 extern struct _MATERIAL  *mat;
 
 /*----------------------------------------------------------------------**####
- |  Do stress calculation (private)                            maf 04/07|
+ |  Do stress calculation (private)                            vlf 08/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::So_tet10::so_tet10_stress(struct _MATERIAL* material,
+void DRT::Elements::So_tet4::so_tet4_stress(struct _MATERIAL* material,
                                          vector<double>& disp,
                                          Epetra_SerialDenseMatrix* stresses)
 {
-  DSTraceHelper dst("So_tet10::sotet10_stress");
+  DSTraceHelper dst("So_tet4::sotet4_stress");
 
 /* =============================================================================*
  * CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_10 with 4 GAUSS POINTS*
  * =============================================================================*/
-  const static Tet_integrator_4point tet10_dis;
+ const static Tet_integrator_4point tet10_dis;
 /* ============================================================================*/
 
   // update element geometry
-  Epetra_SerialDenseMatrix xrefe(NUMNOD_SOTET10,NUMDIM_SOTET10);  // material coord. of element
-  Epetra_SerialDenseMatrix xcurr(NUMNOD_SOTET10,NUMDIM_SOTET10);  // current  coord. of element
-  for (int i=0; i<NUMNOD_SOTET10; ++i){
+  Epetra_SerialDenseMatrix xrefe(NUMNOD_SOTET4,NUMDIM_SOTET4);  // material coord. of element
+  Epetra_SerialDenseMatrix xcurr(NUMNOD_SOTET4,NUMDIM_SOTET4);  // current  coord. of element
+  for (int i=0; i<NUMNOD_SOTET4; ++i){
     xrefe(i,0) = Nodes()[i]->X()[0];
     xrefe(i,1) = Nodes()[i]->X()[1];
     xrefe(i,2) = Nodes()[i]->X()[2];
 
-    xcurr(i,0) = xrefe(i,0) + disp[i*NUMDOF_SOTET10+0];
-    xcurr(i,1) = xrefe(i,1) + disp[i*NUMDOF_SOTET10+1];
-    xcurr(i,2) = xrefe(i,2) + disp[i*NUMDOF_SOTET10+2];
+    xcurr(i,0) = xrefe(i,0) + disp[i*NUMDOF_SOTET4+0];
+    xcurr(i,1) = xrefe(i,1) + disp[i*NUMDOF_SOTET4+1];
+    xcurr(i,2) = xrefe(i,2) + disp[i*NUMDOF_SOTET4+2];
   }
 
   /* =========================================================================*/
   /* ============================================== Loop over Gauss Points ===*/
   /* =========================================================================*/
-  for (int gp=0; gp<NUMGPT_SOTET10; gp++) {
+  for (int gp=0; gp<NUMGPT_SOTET4; gp++) {
     
     /* compute the Jacobian matrix which looks like this:
     **         [  1        1        1  	     1      ]
@@ -88,9 +88,9 @@ void DRT::Elements::So_tet10::so_tet10_stress(struct _MATERIAL* material,
     **		   [ Z_,xsi1  Z_,xsi2  Z_,xsi3  Z_,xsi4 ]
     */
     
-    Epetra_SerialDenseMatrix jac_temp(NUMCOORD_SOTET10-1,NUMCOORD_SOTET10);
-    Epetra_SerialDenseMatrix jac(NUMCOORD_SOTET10,NUMCOORD_SOTET10);
-    jac_temp.Multiply('T','N',1.0,xrefe,(tet10_dis.deriv_gp)[gp],0.0);
+    Epetra_SerialDenseMatrix jac_temp(NUMCOORD_SOTET4-1,NUMCOORD_SOTET4);
+    Epetra_SerialDenseMatrix jac(NUMCOORD_SOTET4,NUMCOORD_SOTET4);
+    jac_temp.Multiply('T','N',1.0,xrefe,tet10_dis.deriv[gp],0.0);
    
     for (int i=0; i<4; i++) jac(0,i)=1;
     for (int row=0;row<3;row++)
@@ -119,9 +119,9 @@ void DRT::Elements::So_tet10::so_tet10_stress(struct _MATERIAL* material,
     **             [    dX       dY       dZ    ]
     */   
     
-    Epetra_SerialDenseMatrix I_aug(NUMCOORD_SOTET10,NUMDIM_SOTET10);
-    Epetra_SerialDenseMatrix partials(NUMCOORD_SOTET10,NUMDIM_SOTET10);
-    Epetra_SerialDenseMatrix N_XYZ(NUMNOD_SOTET10,NUMDIM_SOTET10);
+    Epetra_SerialDenseMatrix I_aug(NUMCOORD_SOTET4,NUMDIM_SOTET4);
+    Epetra_SerialDenseMatrix partials(NUMCOORD_SOTET4,NUMDIM_SOTET4);
+    Epetra_SerialDenseMatrix N_XYZ(NUMNOD_SOTET4,NUMDIM_SOTET4);
     I_aug(1,0)=1;
 	I_aug(2,1)=1;
 	I_aug(3,2)=1;
@@ -146,7 +146,7 @@ void DRT::Elements::So_tet10::so_tet10_stress(struct _MATERIAL* material,
     cout << "deriv_gp\n" << deriv_gp;
     #endif //VERBOSE_OUTPUT
 
-    N_XYZ.Multiply('N','N',1.0,(tet10_dis.deriv_gp),partials,0.0); //N_XYZ = N_xsi_k*partials
+    N_XYZ.Multiply('N','N',1.0,tet10_dis.deriv[gp],partials,0.0); //N_XYZ = N_xsi_k*partials
       
     /* structure of N_XYZ:
     **             [   dN_1     dN_1     dN_1   ]
@@ -154,7 +154,7 @@ void DRT::Elements::So_tet10::so_tet10_stress(struct _MATERIAL* material,
     **             [    dX       dY       dZ    ]
     **    N_XYZ =  [     |        |        |    ]
     **             [                            ]
-    **             [   dN_10    dN_10    dN_10  ]
+    **             [   dN_4     dN_4     dN_4   ]
     **             [  -------  -------  ------- ]
     **             [    dX       dY       dZ    ]
     */
@@ -180,7 +180,7 @@ void DRT::Elements::So_tet10::so_tet10_stress(struct _MATERIAL* material,
     **             [    dZ       dZ       dZ    ]
     */
 
-    Epetra_SerialDenseMatrix defgrd(NUMDIM_SOTET10,NUMDIM_SOTET10);
+    Epetra_SerialDenseMatrix defgrd(NUMDIM_SOTET4,NUMDIM_SOTET4);
     defgrd.Multiply('T','N',1.0,xcurr,N_XYZ,0.0);
     
     #ifdef VERBOSE_OUTPUT
@@ -188,7 +188,7 @@ void DRT::Elements::So_tet10::so_tet10_stress(struct _MATERIAL* material,
 	#endif //VERBOSE_OUTPUT
 	
     // Right Cauchy-Green tensor = F^T * F 
-    Epetra_SerialDenseMatrix cauchygreen(NUMDIM_SOTET10,NUMDIM_SOTET10);
+    Epetra_SerialDenseMatrix cauchygreen(NUMDIM_SOTET4,NUMDIM_SOTET4);
    
     cauchygreen.Multiply('T','N',1.0,defgrd,defgrd,0.0);
     
@@ -199,7 +199,7 @@ void DRT::Elements::So_tet10::so_tet10_stress(struct _MATERIAL* material,
 	
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    Epetra_SerialDenseVector glstrain(NUMSTR_SOTET10);
+    Epetra_SerialDenseVector glstrain(NUMSTR_SOTET4);
     glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
     glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
     glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
@@ -237,33 +237,33 @@ void DRT::Elements::So_tet10::so_tet10_stress(struct _MATERIAL* material,
     **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
     */
     
-    Epetra_SerialDenseMatrix bop(NUMSTR_SOTET10,NUMDOF_SOTET10);
+    Epetra_SerialDenseMatrix bop(NUMSTR_SOTET4,NUMDOF_SOTET4);
     #ifdef VERBOSE_OUTPUT
     cout << bop;
     cout << defgrd;
     cout << N_XYZ;
     #endif //VERBOSE_OUTPUT
     
-    for (int i=0; i<NUMNOD_SOTET10; i++) {
-      bop(0,NODDOF_SOTET10*i+0) = defgrd(0,0)*N_XYZ(i,0);
-      bop(0,NODDOF_SOTET10*i+1) = defgrd(1,0)*N_XYZ(i,0);
-      bop(0,NODDOF_SOTET10*i+2) = defgrd(2,0)*N_XYZ(i,0);
-      bop(1,NODDOF_SOTET10*i+0) = defgrd(0,1)*N_XYZ(i,1);
-      bop(1,NODDOF_SOTET10*i+1) = defgrd(1,1)*N_XYZ(i,1);
-      bop(1,NODDOF_SOTET10*i+2) = defgrd(2,1)*N_XYZ(i,1);
-      bop(2,NODDOF_SOTET10*i+0) = defgrd(0,2)*N_XYZ(i,2);
-      bop(2,NODDOF_SOTET10*i+1) = defgrd(1,2)*N_XYZ(i,2);
-      bop(2,NODDOF_SOTET10*i+2) = defgrd(2,2)*N_XYZ(i,2);
+    for (int i=0; i<NUMNOD_SOTET4; i++) {
+      bop(0,NODDOF_SOTET4*i+0) = defgrd(0,0)*N_XYZ(i,0);
+      bop(0,NODDOF_SOTET4*i+1) = defgrd(1,0)*N_XYZ(i,0);
+      bop(0,NODDOF_SOTET4*i+2) = defgrd(2,0)*N_XYZ(i,0);
+      bop(1,NODDOF_SOTET4*i+0) = defgrd(0,1)*N_XYZ(i,1);
+      bop(1,NODDOF_SOTET4*i+1) = defgrd(1,1)*N_XYZ(i,1);
+      bop(1,NODDOF_SOTET4*i+2) = defgrd(2,1)*N_XYZ(i,1);
+      bop(2,NODDOF_SOTET4*i+0) = defgrd(0,2)*N_XYZ(i,2);
+      bop(2,NODDOF_SOTET4*i+1) = defgrd(1,2)*N_XYZ(i,2);
+      bop(2,NODDOF_SOTET4*i+2) = defgrd(2,2)*N_XYZ(i,2);
       /* ~~~ */
-      bop(3,NODDOF_SOTET10*i+0) = defgrd(0,0)*N_XYZ(i,1) + defgrd(0,1)*N_XYZ(i,0);
-      bop(3,NODDOF_SOTET10*i+1) = defgrd(1,0)*N_XYZ(i,1) + defgrd(1,1)*N_XYZ(i,0);
-      bop(3,NODDOF_SOTET10*i+2) = defgrd(2,0)*N_XYZ(i,1) + defgrd(2,1)*N_XYZ(i,0);
-      bop(4,NODDOF_SOTET10*i+0) = defgrd(0,1)*N_XYZ(i,2) + defgrd(0,2)*N_XYZ(i,1);
-      bop(4,NODDOF_SOTET10*i+1) = defgrd(1,1)*N_XYZ(i,2) + defgrd(1,2)*N_XYZ(i,1);
-      bop(4,NODDOF_SOTET10*i+2) = defgrd(2,1)*N_XYZ(i,2) + defgrd(2,2)*N_XYZ(i,1);
-      bop(5,NODDOF_SOTET10*i+0) = defgrd(0,2)*N_XYZ(i,0) + defgrd(0,0)*N_XYZ(i,2);
-      bop(5,NODDOF_SOTET10*i+1) = defgrd(1,2)*N_XYZ(i,0) + defgrd(1,0)*N_XYZ(i,2);
-      bop(5,NODDOF_SOTET10*i+2) = defgrd(2,2)*N_XYZ(i,0) + defgrd(2,0)*N_XYZ(i,2);
+      bop(3,NODDOF_SOTET4*i+0) = defgrd(0,0)*N_XYZ(i,1) + defgrd(0,1)*N_XYZ(i,0);
+      bop(3,NODDOF_SOTET4*i+1) = defgrd(1,0)*N_XYZ(i,1) + defgrd(1,1)*N_XYZ(i,0);
+      bop(3,NODDOF_SOTET4*i+2) = defgrd(2,0)*N_XYZ(i,1) + defgrd(2,1)*N_XYZ(i,0);
+      bop(4,NODDOF_SOTET4*i+0) = defgrd(0,1)*N_XYZ(i,2) + defgrd(0,2)*N_XYZ(i,1);
+      bop(4,NODDOF_SOTET4*i+1) = defgrd(1,1)*N_XYZ(i,2) + defgrd(1,2)*N_XYZ(i,1);
+      bop(4,NODDOF_SOTET4*i+2) = defgrd(2,1)*N_XYZ(i,2) + defgrd(2,2)*N_XYZ(i,1);
+      bop(5,NODDOF_SOTET4*i+0) = defgrd(0,2)*N_XYZ(i,0) + defgrd(0,0)*N_XYZ(i,2);
+      bop(5,NODDOF_SOTET4*i+1) = defgrd(1,2)*N_XYZ(i,0) + defgrd(1,0)*N_XYZ(i,2);
+      bop(5,NODDOF_SOTET4*i+2) = defgrd(2,2)*N_XYZ(i,0) + defgrd(2,0)*N_XYZ(i,2);
     }
     
 
@@ -272,22 +272,22 @@ void DRT::Elements::So_tet10::so_tet10_stress(struct _MATERIAL* material,
     ** the stress vector, a C-matrix, and a density must be retrieved,
     ** every necessary data must be passed.
     */
-    Epetra_SerialDenseMatrix cmat(NUMSTR_SOTET10,NUMSTR_SOTET10);
-    Epetra_SerialDenseVector stress(NUMSTR_SOTET10);
+    Epetra_SerialDenseMatrix cmat(NUMSTR_SOTET4,NUMSTR_SOTET4);
+    Epetra_SerialDenseVector stress(NUMSTR_SOTET4);
     double density;
-    so_tet10_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, gp);
+    so_tet4_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, gp);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // safe gausspoint stresses
-    for (int i=0; i<NUMSTR_SOTET10; ++i) (*stresses)(gp,i) = stress(i);
+    for (int i=0; i<NUMSTR_SOTET4; ++i) (*stresses)(gp,i) = stress(i);
    /* =========================================================================*/
   }/* ==================================================== end of Loop over GP */
    /* =========================================================================*/
 
   data_.Add("Stresses",stresses);
-} //So_tet10::sotet10_stress
+} //So_tet4::sotet4_stress
 
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOTET10
+#endif  // #ifdef D_SOTET4

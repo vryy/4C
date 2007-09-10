@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------**
-\file so_tet10_surface.cpp
+\file so_tet4_surface.cpp
 \brief
 
 <pre>
@@ -12,11 +12,11 @@ writen by : Alexander Volf
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOTET10
+#ifdef D_SOTET4
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
-#include "so_tet10.H"
+#include "so_tet4.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_discret.H"
@@ -35,12 +35,12 @@ writen by : Alexander Volf
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 
-DRT::Elements::Sotet10Surface::Sotet10Surface(int id, int owner,
+DRT::Elements::Sotet4Surface::Sotet4Surface(int id, int owner,
                               int nnode, const int* nodeids,
                               DRT::Node** nodes,
-                              DRT::Elements::So_tet10* parent,
+                              DRT::Elements::So_tet4* parent,
                               const int lsurface) :
-DRT::Element(id,element_sotet10surface,owner),
+DRT::Element(id,element_sotet4surface,owner),
 parent_(parent),
 lsurface_(lsurface)
 {
@@ -53,12 +53,12 @@ lsurface_(lsurface)
 /*----------------------------------------------------------------------***
  |  copy-ctor (public)                                         maf 01/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Sotet10Surface::Sotet10Surface(const DRT::Elements::Sotet10Surface& old) :
+DRT::Elements::Sotet4Surface::Sotet4Surface(const DRT::Elements::Sotet4Surface& old) :
 DRT::Element(old),
 parent_(old.parent_),
 lsurface_(old.lsurface_)
 {
-  //DSTraceHelper dst("Sotet10Surface::Sotet10Surface");
+  //DSTraceHelper dst("Sotet4Surface::Sotet4Surface");
   return;
 }
 
@@ -66,10 +66,10 @@ lsurface_(old.lsurface_)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            maf 01/07 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::Elements::Sotet10Surface::Clone() const
+DRT::Element* DRT::Elements::Sotet4Surface::Clone() const
 {
-  //DSTraceHelper dst("Sotet10Surface::Clone");
-  DRT::Elements::Sotet10Surface* newelement = new DRT::Elements::Sotet10Surface(*this);
+  //DSTraceHelper dst("Sotet4Surface::Clone");
+  DRT::Elements::Sotet4Surface* newelement = new DRT::Elements::Sotet4Surface(*this);
   return newelement;
 }
 
@@ -77,7 +77,7 @@ DRT::Element* DRT::Elements::Sotet10Surface::Clone() const
  |                                                             (public) |
  |                                                          u.kue 03/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::Elements::Sotet10Surface::Shape() const
+DRT::Element::DiscretizationType DRT::Elements::Sotet4Surface::Shape() const
 {
 
   return tri6;
@@ -87,9 +87,9 @@ DRT::Element::DiscretizationType DRT::Elements::Sotet10Surface::Shape() const
  |  Pack data                                                  (public) |
  |                                                            maf 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Sotet10Surface::Pack(vector<char>& data) const
+void DRT::Elements::Sotet4Surface::Pack(vector<char>& data) const
 {
-  //DSTraceHelper dst("Sotet10Surface::Pack");
+  //DSTraceHelper dst("Sotet4Surface::Pack");
   data.resize(0);
   dserror("this Sote10Surface element does not support communication");
 
@@ -100,20 +100,20 @@ void DRT::Elements::Sotet10Surface::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            maf 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Elements::Sotet10Surface::Unpack(const vector<char>& data)
+void DRT::Elements::Sotet4Surface::Unpack(const vector<char>& data)
 {
-  //DSTraceHelper dst("Sotet10Surface::Unpack");
+  //DSTraceHelper dst("Sotet4Surface::Unpack");
  
-  dserror("this Sotet10Surface element does not support communication");
+  dserror("this Sotet4Surface element does not support communication");
   return;
 }
 
 /*----------------------------------------------------------------------***
  |  dtor (public)                                              maf 01/07|
  *----------------------------------------------------------------------*/
-DRT::Elements::Sotet10Surface::~Sotet10Surface()
+DRT::Elements::Sotet4Surface::~Sotet4Surface()
 {
-  //DSTraceHelper dst("Sotet10Surface::~Sotet10Surface");
+  //DSTraceHelper dst("Sotet4Surface::~Sotet4Surface");
   return;
 }
 
@@ -121,14 +121,14 @@ DRT::Elements::Sotet10Surface::~Sotet10Surface()
 /*----------------------------------------------------------------------*
  |  print this element (public)                                maf 01/07|
  *----------------------------------------------------------------------*/
-void DRT::Elements::Sotet10Surface::Print(ostream& os) const
+void DRT::Elements::Sotet4Surface::Print(ostream& os) const
 {
-  //DSTraceHelper dst("Sotet10Surface::Print");
-  os << "Sotet10Surface ";
+  //DSTraceHelper dst("Sotet4Surface::Print");
+  os << "Sotet4Surface ";
   Element::Print(os);
   return;
 }
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif // #ifdef D_SOTET10
+#endif // #ifdef D_SOTET4

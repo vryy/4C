@@ -1,9 +1,9 @@
 /*!----------------------------------------------------------------------
 \file so_tet10.H
 
-\class DRT::Elements::So_tet10
+\class DRT::Elements::So_tet4
 
-\brief A C++ version of the 10-node tet solid element
+\brief A C++ version of the 4-node tet solid element
 
 <pre>
 Maintainer: Moritz Frenzel
@@ -11,17 +11,17 @@ Maintainer: Moritz Frenzel
             http://www.lnm.mw.tum.de
             089 - 289-15240
 written by: Alexander Volf
-			alexander.volf@mytum.de     
+			alexander.volf@mytum.de       
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SOTET10
+#ifdef D_SOTET4
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
-#ifndef SO_TET10_H_
-#define SO_TET10_H_
+#ifndef SO_TET4_H_
+#define SO_TET4_H_
 
-#endif /*SO_TET10_H_*/
+#endif /*SO_TET4_H_*/
 
 
 #include "Teuchos_RefCountPtr.hpp"
@@ -37,15 +37,15 @@ using namespace Teuchos;
 
 #include "../drt_mat/material.H"
 
-#define NUMNOD_SOTET10      10      // number of nodes
+#define NUMNOD_SOTET10       4      // number of nodes
 #define NODDOF_SOTET10       3      // number of dofs per node
-#define NUMDOF_SOTET10      30      // total dofs per element
+#define NUMDOF_SOTET10      12      // total dofs per element
 #define NUMSTR_SOTET10       6      // number of strains/stresses 	/****/
-#define NUMGPT_SOTET10       4      // total gauss points per element	/****/
+#define NUMGPT_SOTET10       1      // total gauss points per element	/****/
 #define NUMDIM_SOTET10       3      // number of dimensions 			/****/
 #define NUMCOORD_SOTET10	 4 		// number of shape function cooordinates (ksi1-ksi4) 
-#define NUMNOD_SOTET10_FACE  6		// number of nodes on a TET10 face (which is a TRI6) 
-#define NUMGPT_SOTET10_FACE	 3		// number of GP    on a TET10 face (which is a TRI6) 
+#define NUMNOD_SOTET10_FACE  4		// number of nodes on a TET10 face (which is a TRI6) 
+#define NUMGPT_SOTET10_FACE	 1		// number of GP    on a TET10 face (which is a TRI6) 
 
 // forward declarations
 struct _MATERIAL;
@@ -62,27 +62,27 @@ class Discretization;
 namespace Elements
 {
 // forward declarations
-class Sotet10Volume;
-class Sotet10Surface;
-class Sotet10Line;
-class Sotet10Register;
+class Sotet4Volume;
+class Sotet4Surface;
+class Sotet4Line;
+class Sotet4Register;
 
 /*!
-\class So_tet10
+\class So_tet4
 
-\brief A C++ version of the 10-node tet solid element
+\brief A C++ version of the 4-node tet solid element
 
 \author Alexander Volf (alexander.volf@mytum.de)
 */
 
-class So_tet10 : public DRT::Element
+class So_tet4 : public DRT::Element
 {
 public:
 
   //! @name Friends
-  friend class Sotet10Register;
-  friend class Sotet10Surface;
-  friend class Sotet10Line;
+  friend class Sotet4Register;
+  friend class Sotet4Surface;
+  friend class Sotet4Line;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -92,7 +92,7 @@ public:
 
   \param id : A unique global id
   */
-  So_tet10(int id, int owner);
+  So_tet4(int id, int owner);
   
   /*!
   \brief Copy Constructor
@@ -100,7 +100,7 @@ public:
   Makes a deep copy of a Element
 
   */
-  So_tet10(const So_tet10& old);
+  So_tet4(const So_tet4& old);
   
   /*!
   \brief Deep copy this instance of Solid3 and return pointer to the copy
@@ -155,7 +155,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_So_tet10;}
+  virtual int UniqueParObjectId() const { return ParObject_So_tet4;}
 
   /*!
   \brief Pack this class so it can be communicated
@@ -177,7 +177,7 @@ public:
   \brief Destructor
 
   */
-  virtual ~So_tet10();
+  virtual ~So_tet4();
   //@}
 
   //! @name Acess methods
@@ -237,7 +237,7 @@ public:
   /*!
   \brief Evaluate an element
 
-  Evaluate so_tet10 element stiffness, mass, internal forces, etc.
+  Evaluate so_tet4 element stiffness, mass, internal forces, etc.
 
   \param params (in/out): ParameterList for communication between control routine
                           and elements
@@ -337,15 +337,15 @@ protected:
 
   DRT::Container                                  data_;
   //! vector of volume (length 1) of this element
-  vector<RefCountPtr<DRT::Elements::Sotet10Volume> > volume_;
+  vector<RefCountPtr<DRT::Elements::Sotet4Volume> > volume_;
   //! vector of surfaces of this element
-    vector<RefCountPtr<DRT::Elements::Sotet10Surface> > surfaces_;
+    vector<RefCountPtr<DRT::Elements::Sotet4Surface> > surfaces_;
   //! vector of surfaces of this element
-  vector<DRT::Elements::Sotet10Surface*>           surfaceptrs_;
+  vector<DRT::Elements::Sotet4Surface*>           surfaceptrs_;
   //! vector of lines adjacent to this element
-  vector<RefCountPtr<DRT::Elements::Sotet10Line> > lines_;
+  vector<RefCountPtr<DRT::Elements::Sotet4Line> > lines_;
   //! vector of lines adjacent to this element
-  vector<DRT::Elements::Sotet10Line*>              lineptrs_;
+  vector<DRT::Elements::Sotet4Line*>              lineptrs_;
   //! vector of history variables for each Gauss point
   vector<RefCountPtr<MAT::Material> >                mat_;
 
@@ -353,7 +353,7 @@ protected:
   // internal calculation methods
 
   // don't want = operator
-  So_tet10& operator = (const So_tet10& old);
+  So_tet4& operator = (const So_tet4& old);
   virtual void so_tet10_nlnstiffmass(vector<int>&              lm,
                                  vector<double>&           disp,
                                  vector<double>&           residual,
@@ -367,7 +367,7 @@ protected:
                    Epetra_SerialDenseMatrix* stresses);
 
 
- /*---------------------------------------------------------------------------------*
+/*---------------------------------------------------------------------------------*
   | class Discrete_integrator											vlf 09/07   |
   |																					|
   | a general class agregating all necessery data for discrete integration			|
@@ -398,9 +398,9 @@ protected:
       	~Discrete_integrator();
   };
  /*---------------------------------------------------------------------------------*
-  | class Tet_integrator_4point											vlf 09/07   |
+  | class Tet_integrator_1point											vlf 09/07   |
   |																					|
-  | a special class for quadratic 10-node tetrahedra using a 4 point quadrature   	|
+  | a special class for quadratic 4-node tetrahedra using a 4 point quadrature   	|
   |	it is exaxt for linear and quadratic polynomials								|
   |																					|
   *---------------------------------------------------------------------------------*/
@@ -411,20 +411,19 @@ protected:
   };
  
   /*---------------------------------------------------------------------------------*
-  | class Tet_integrator_14point										vlf 09/07   |
+  | class Tet_integrator_4point										vlf 09/07   |
   |																					|
-  | a special class for quadratic 10-node tetrahedra using a 14 point quadrature   	|
+  | a special class for quadratic 4-node tetrahedra using a 14 point quadrature   	|
   |	it is exaxt for 0-4th order polynomials											|
   |																					|
   *---------------------------------------------------------------------------------*/
   
-  class Tet_integrator_14point : public Discrete_integrator
+  class Tet_integrator_4point : public Discrete_integrator
   {
   	public:
-  		Tet_integrator_14point(void);
+  		Tet_integrator_4point(void);
   };
   
-  // became obsolete
   void so_tet10_shapederiv(
   	  Epetra_SerialDenseVector** shapefct_ptr,  
       Epetra_SerialDenseMatrix** deriv_gp_ptr,  
@@ -438,17 +437,17 @@ protected:
                     const Epetra_SerialDenseMatrix* defgrd,
                     int gp);       
 
-}; // class So_tet10
+}; // class So_tet4
 
 /*!
-\class Sotet10Register
+\class Sotet4Register
 
-\brief A register for tet10 element
+\brief A register for tet4 element
 
 \author gee (gee@lnm.mw.tum.de)
 */
 
-class Sotet10Register : public DRT::ElementRegister
+class Sotet4Register : public DRT::ElementRegister
 {
 public:
 
@@ -458,24 +457,24 @@ public:
   \brief Standard Constructor
 
   */
-  Sotet10Register(DRT::Element::ElementType etype);
+  Sotet4Register(DRT::Element::ElementType etype);
 
   /*!
   \brief Copy Constructor
 
-  Makes a deep copy of an Sotet10Register
+  Makes a deep copy of an Soh8Register
 
   */
-  Sotet10Register(const DRT::Elements::Sotet10Register& old);
+  Sotet4Register(const DRT::Elements::Sotet4Register& old);
 
   /*!
-  \brief Deep copy this instance of Sotet10Register and return pointer to the copy
+  \brief Deep copy this instance of Soh8Register and return pointer to the copy
 
   The Clone() method is used from the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
 
   */
-  DRT::Elements::Sotet10Register* Clone() const;
+  DRT::Elements::Sotet4Register* Clone() const;
 
   /*!
   \brief Return unique ParObject id
@@ -483,7 +482,7 @@ public:
   every class imploementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Sotet10Register;}
+  virtual int UniqueParObjectId() const { return ParObject_Sotet4Register;}
 
   /*!
   \brief Pack this class so it can be communicated
@@ -505,7 +504,7 @@ public:
   \brief Destructor
 
   */
-  virtual ~Sotet10Register();
+  virtual ~Sotet4Register();
 
   //@}
 
@@ -543,9 +542,9 @@ private:
 
 
 /*!
-\class Sotet10Surface
+\class Sotet4Surface
 
-\brief An element representing a surface of a So_tet10 element
+\brief An element representing a surface of a So_tet4 element
 
 \note This is a pure Neumann boundary condition element. It's only
       purpose is to evaluate surface Neumann boundary conditions that might be
@@ -555,7 +554,7 @@ private:
 \author maf (frenzel@lnm.mw.tum.de)
 */
 
-class Sotet10Surface : public DRT::Element
+class Sotet4Surface : public DRT::Element
 {
 public:
 
@@ -572,8 +571,8 @@ public:
   \param parent: The parent fluid element of this surface
   \param lsurface: the local surface number of this surface w.r.t. the parent element
   */
-  Sotet10Surface(int id, int owner, int nnode, const int* nodeids,
-             DRT::Node** nodes, DRT::Elements::So_tet10* parent, const int lsurface);
+  Sotet4Surface(int id, int owner, int nnode, const int* nodeids,
+             DRT::Node** nodes, DRT::Elements::So_tet4* parent, const int lsurface);
 
 
   /*!
@@ -582,7 +581,7 @@ public:
   Makes a deep copy of a Element
 
   */
-  Sotet10Surface(const Sotet10Surface& old);
+  Sotet4Surface(const Sotet4Surface& old);
   
   /*!
   \brief Deep copy this instance of an element and return pointer to the copy
@@ -604,7 +603,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of the drt_parobject.H file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Sotet10Surface;}
+  virtual int UniqueParObjectId() const { return ParObject_Sotet4Surface;}
 
   /*!
   \brief Pack this class so it can be communicated
@@ -626,7 +625,7 @@ public:
   \brief Destructor
 
   */
-  virtual ~Sotet10Surface();
+  virtual ~Sotet4Surface();
 
   //@}
 
@@ -701,10 +700,10 @@ public:
 private:
 
   // don't want = operator
-  Sotet10Surface& operator = (const Sotet10Surface& old);
+  Sotet4Surface& operator = (const Sotet4Surface& old);
 
   //! The parent element of this surface
-  DRT::Elements::So_tet10* parent_;
+  DRT::Elements::So_tet4* parent_;
   //! The local surface number of this surface w.r.t to the parent_ element
   int                    lsurface_;
 
@@ -718,22 +717,22 @@ private:
       const Epetra_SerialDenseMatrix* xsrefe,// (i) material element coords
       const double r,                        // (i) coord in r-direction
       const double s);                       // (i) coord in s-direction*/
-}; // class Sotet10Surface
+}; // class Sotet4Surface
 
 /*!
-\class Sotet10Line
+\class Sotet4Line
 
-\brief An element representing a line edge of a So_tet10 element
+\brief An element representing a line edge of a So_tet4 element
 
 \note This is a pure Neumann boundary condition element. It's only
       purpose is to evaluate line Neumann boundary conditions that might be
-      adjacent to a parent So_tet10 element. It therefore does not implement
+      adjacent to a parent So_hex8 element. It therefore does not implement
       the DRT::Element::Evaluate method and does not have its own ElementRegister class.
 
 \author gee (gee@lnm.mw.tum.de)
 */
-
-class Sotet10Line : public DRT::Element
+//class Soh8Line : public DRT::Element
+class Sotet4Line : public DRT::Element
 {
 public:
 
@@ -750,8 +749,8 @@ public:
   \param parent: The parent shell element of this line
   \param lline: the local line number of this line w.r.t. the parent element
   */
-  Sotet10Line(int id, int owner, int nnode, const int* nodeids,
-               DRT::Node** nodes, DRT::Elements::So_tet10* parent, const int lline);
+  Sotet4Line(int id, int owner, int nnode, const int* nodeids,
+               DRT::Node** nodes, DRT::Elements::So_tet4* parent, const int lline);
 
   /*!
   \brief Copy Constructor
@@ -759,7 +758,7 @@ public:
   Makes a deep copy of a Element
 
   */
-  Sotet10Line(const Sotet10Line& old);
+  Sotet4Line(const Sotet4Line& old);
 
   /*!
   \brief Deep copy this instance of an element and return pointer to the copy
@@ -776,7 +775,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of the drt_parobject.H file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_Sotet10Line;}
+  virtual int UniqueParObjectId() const { return ParObject_Sotet4Line;}
   /*!
   \brief Pack this class so it can be communicated
 
@@ -797,7 +796,7 @@ public:
   \brief Destructor
 
   */
-  virtual ~Sotet10Line();
+  virtual ~Sotet4Line();
 
   //@}
 
@@ -876,13 +875,13 @@ public:
 private:
 
   // don't want = operator
-  Sotet10Line& operator = (const Sotet10Line& old);
+  Sotet4Line& operator = (const Sotet4Line& old);
   //! The parent element of this line
-  DRT::Elements::So_tet10* parent_;
+  DRT::Elements::So_tet4* parent_;
   //! The local line number of this line w.r.t to the parent_ element
   int                    lline_;
 
-}; // class Sotet10Line
+}; // class Sotet4Line
 
 
 
@@ -892,4 +891,4 @@ private:
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_SOTET10
+#endif  // #ifdef D_SOTET4
