@@ -743,7 +743,7 @@ void DRT::Utils::AllToAllCommunication( const Epetra_Comm& comm,
     for ( vector< vector<int> >::const_iterator iter = send.begin();
           iter != send.end(); ++iter )
     {
-        copy( iter->begin(), iter->end(), back_inserter( sendbuf ) );
+        sendbuf.insert( sendbuf.end(), iter->begin(), iter->end() );
         sendcounts.push_back( iter->size() );
         displacement += iter->size();
         sdispls.push_back( displacement );
