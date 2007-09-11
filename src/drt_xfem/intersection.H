@@ -8,7 +8,6 @@ Maintainer: Ursula Mayer
 </pre>
 */
 
-#ifdef D_XFEM
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 #ifndef INTERSECTION_H
@@ -31,8 +30,10 @@ Maintainer: Ursula Mayer
 extern "C"
 {
 #endif
+#ifdef QHULL
 #include <qhull/qhull.h>
 #include <qhull/qset.h>
+#endif
 #if defined(__cplusplus)
 }
 #endif
@@ -621,7 +622,7 @@ class Intersection
             );
 		
         				   							
-        
+#ifdef QHULL
         /*!
         \brief  computes the convex hull of a set of points
     
@@ -642,7 +643,7 @@ class Intersection
             const int                   numInternalPoints,
             const int                   numSurfacePoints 
             );
-            
+#endif            
             
   		/*!
         \brief finds the next segment of a convex hull in clockwise order
@@ -1083,5 +1084,3 @@ class Intersection
 #endif  // #ifndef INTERSECTION_H
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_XFEM
-

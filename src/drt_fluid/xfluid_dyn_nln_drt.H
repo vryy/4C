@@ -13,7 +13,6 @@ Maintainer: Axel Gerstenberger
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 #ifdef D_FLUID
-#ifdef D_XFEM
 
 #ifndef XFLUID_DYN_NLN_DRT_H
 #define XFLUID_DYN_NLN_DRT_H
@@ -76,7 +75,6 @@ void xdyn_fluid_drt();
 
 
 #endif  /* #ifndef XFLUID_DYN_NLN_DRT_H */
-#endif  /* #ifdef D_XFEM */
 #endif  /* #ifdef D_FLUID */
 #endif  /* #ifdef TRILINOS_PACKAGE */
 #endif  /* #ifdef CCADISCRET */

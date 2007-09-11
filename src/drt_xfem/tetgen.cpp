@@ -1,4 +1,3 @@
-#ifdef D_XFEM
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 // TetGen                                                                    //
@@ -34962,4 +34961,3 @@ void tetrahedralize(char *switches, tetgenio *in, tetgenio *out,
 
 #endif // not TETLIBRARY
 }
-#endif

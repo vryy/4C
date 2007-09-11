@@ -19,7 +19,6 @@ Maintainer: Axel Gerstenberger
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 #ifdef D_FLUID
-#ifdef D_XFEM
 
 #include <ctime>
 #include <cstdlib>
@@ -133,7 +132,7 @@ void xdyn_fluid_drt()
   IO::DiscretizationWriter output(fluiddis);
   output.WriteMesh(0,0.0);
 
-// Intersection
+  // Intersection
   XFEM::Intersection is;
   map<int, vector <XFEM::Integrationcell> > intCellMap;
   is.computeIntersection(fluiddis,soliddis,intCellMap);
@@ -363,7 +362,6 @@ void xdyn_fluid_drt()
 
 } // end of dyn_fluid_drt()
 
-#endif  // #ifdef D_XFEM
 #endif  // #ifdef D_FLUID
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

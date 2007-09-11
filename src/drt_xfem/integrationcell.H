@@ -11,7 +11,6 @@ Maintainer: Axel Gerstenberger
 </pre>
  */
 
-#ifdef D_XFEM
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 #ifndef INTEGRATIONCELL_H
@@ -69,11 +68,8 @@ private:
 
 typedef std::vector<XFEM::Integrationcell > IntCells;
 
-typedef std::map<int, IntCells > IntCellMap;
-
 };
 
 #endif  // #ifndef INTEGRATIONCELL_H
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_XFEM

@@ -37,6 +37,10 @@ SPOOLES_LIB="-lspooles"
 UMFPACK_INC=
 UMFPACK_LIB="-lumfpack -lamd"
 
+# qhull
+QHULL_INC=
+QHULL_LIB="-lqhull"
+
 # fast elements
 LOOPL="-DLOOPL=15"
 

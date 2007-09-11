@@ -251,14 +251,10 @@ case prb_condif:
 #endif
   break;
 case prb_fluid_xfem:
-#ifdef D_XFEM
 #ifdef CCADISCRET
   xdyn_fluid_drt();
 #else
   dserror("prb_fluid_xfem without DRT not implemented");
-#endif
-#else
-  dserror("prb_fluid_xfem without D_XFEM not implemented");
 #endif
 #endif
   break;

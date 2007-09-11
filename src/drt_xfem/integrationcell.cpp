@@ -11,7 +11,6 @@ Maintainer: Axel Gerstenberger
 </pre>
 */
 
-#ifdef D_XFEM
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
@@ -73,6 +72,3 @@ string Integrationcell::Print() const
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_XFEM
-
-

@@ -10,7 +10,6 @@ Maintainer: Axel Gerstenberger
             089 - 289-15236
 </pre>
 */
-#ifdef D_XFEM
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 #ifndef DOF_MANAGEMENT_H
@@ -70,4 +69,3 @@ private:
 #endif  // #ifndef DOF_MANAGEMENT_H
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_XFEM

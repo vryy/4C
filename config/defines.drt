@@ -34,7 +34,7 @@ CCADISCRET           # use new baci discretization subsystem DRT
 #   additional features
 #  =====================
 # BINIO              # binary io
-# D_XFEM             # provides intersection routines, enrichments, searches,...
+# QHULL              # needed for XFEM simulations
 # TDS                # Fluid stabilization using time dependent subscales
 
 #   tools

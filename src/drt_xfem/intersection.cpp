@@ -17,7 +17,6 @@ Maintainer: Ursula Mayer
 
 *----------------------------------------------------------------------*/
 
-#ifdef D_XFEM
 #ifdef CCADISCRET
 #ifdef TRILINOS_PACKAGE
 
@@ -149,10 +148,14 @@ void Intersection::computeIntersection( const RefCountPtr<DRT::Discretization>  
                        
                                 
                     if(interfacePoints.size()!=0)
+#ifdef QHULL
                         computeConvexHull(  xfemElement, cutterElement, interfacePoints,  
                                             pointList, surfacePointList, segmentList, triangleList,
                                             numInternalPoints, numSurfacePoints);    
-                        
+#else
+                    dserror("no computeConvexHull (uses qhull) without QHULL ;-)");
+#endif
+                    
                     interfacePoints.clear();     
                 }// if intersected
             }// for-loop over all geometryMap.size()
@@ -1430,7 +1433,7 @@ int Intersection::addIntersectionPoint(
 }
 
 
-
+#ifdef QHULL
 /*----------------------------------------------------------------------*
  |  ICS:    computes the convex hull of a set of             u.may 06/07|
  |          interface points and stores resulting points,               |
@@ -1606,7 +1609,7 @@ void Intersection::computeConvexHull(
         interfacePoints.clear();
     }
 }
-
+#endif
 
 
 /*----------------------------------------------------------------------*
@@ -1839,7 +1842,8 @@ void Intersection::computeCDT(
  
   
     // recover curved interface for higher order meshes
-    bool curvedInterface = true;
+    //TODO: switch on
+    bool curvedInterface = false;
     if(curvedInterface)
         recoverCurvedInterface(element, out);
  
@@ -2937,6 +2941,3 @@ void Intersection::computeRegionCoordinates(
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
-#endif  // #ifdef D_XFEM
-
-
