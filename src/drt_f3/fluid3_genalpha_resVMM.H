@@ -172,68 +172,90 @@ namespace DRT
       void GetNodalBodyForce(Fluid3*      ele,
                              const double time);
  
-      int iel_;                            //! number of nodes --- determines array sizes
+      int iel_;                             //! number of nodes --- determines array sizes
 
       // nodal arrays
-      blitz::Array<double,2> xyze_;        //! node coordinates
-      blitz::Array<double,2> edeadaf_;     //! value of body force in the nodes of the element
+      blitz::Array<double,2> xyze_;         //! node coordinates
+      blitz::Array<double,2> edeadaf_;      //! value of body force in the nodes of the element
 
       // shape functions and derivatives, mapping from reference element to actual geometry
-      blitz::Array<double,1> funct_;       //! vector of shape functions
-      blitz::Array<double,2> deriv_;       //! vector of shape function derivatives in reference coordinate system
-      blitz::Array<double,2> deriv2_;      //! vector of second shape function derivatives in reference coordinate system
-      blitz::Array<double,2> derxy_;       //! vector of shape function derivatives in global coordinate system
-      blitz::Array<double,2> derxy2_;      //! vector of second shape function derivatives in global coordinate system
-      blitz::Array<double,3> viscs2_;      //! derivatives needed for linearisation of viscous term including 2nd derivatives
-                                           /*  
+      blitz::Array<double,1> funct_;        //! vector of shape functions
+      blitz::Array<double,2> deriv_;        //! vector of shape function derivatives in reference coordinate system
+      blitz::Array<double,2> deriv2_;       //! vector of second shape function derivatives in reference coordinate system
+      blitz::Array<double,2> derxy_;        //! vector of shape function derivatives in global coordinate system
+      blitz::Array<double,2> derxy2_;       //! vector of second shape function derivatives in global coordinate system
+      blitz::Array<double,3> viscs2_;       //! derivatives needed for linearisation of viscous term including 2nd derivatives
+                                            /*  
                                                corresponds to the operator
                                              
                                                          - grad o epsilon 
                                                
                                                on the discret level
-                                           */  
-      blitz::Array<double,2> xjm_;         //! transpose of the jacobian matrix of the mapping (r,s,t)->(x,y,z)
-      blitz::Array<double,2> xji_;         //! its inverse
-      blitz::Array<double,2> xder2_;       //! second derivatives of the mapping (r,s,t)->(x,y,z)
+                                            */  
+      blitz::Array<double,2> xjm_;          //! transpose of the jacobian matrix of the mapping (r,s,t)->(x,y,z)
+      blitz::Array<double,2> xji_;          //! its inverse
+      blitz::Array<double,2> xder2_;        //! second derivatives of the mapping (r,s,t)->(x,y,z)
 
       // values of non geometrical quantities in gausspoints
-      double                 prenp_;       //! pressure in gausspoint, time n+1
-      blitz::Array<double,1> accintam_;    //! acceleration in gausspoint, time n+am
-      blitz::Array<double,1> velintnp_;    //! velocity in gausspoint, time n+1
-      blitz::Array<double,1> velintaf_;    //! velocity in gausspoint, time n+af
-      blitz::Array<double,1> pderxynp_;    //! pressure gradient in gausspoint, time n+1
-      blitz::Array<double,2> vderxynp_;    //! velocity derivatives in gausspoint, time n+1
-      blitz::Array<double,2> vderxyaf_;    //! velocity derivatives in gausspoint, time n+af
-      blitz::Array<double,2> vderxy2af_;   //! second derivatives of velocity in gausspoint, time n+af
-      blitz::Array<double,1> bodyforceaf_; //! value of body force interpolated to the gauss point, time n+af
-      blitz::Array<double,1> conv_c_af_;   //! linearisation of convection, convective part, time n+af
-      blitz::Array<double,3> conv_r_af_;   //! linearisation of convection, reactive part, time n+af
+      double                 prenp_;        //! pressure in gausspoint, time n+1
+      blitz::Array<double,1> accintam_;     //! acceleration in gausspoint, time n+am
+      blitz::Array<double,1> velintnp_;     //! velocity in gausspoint, time n+1
+      blitz::Array<double,1> velintaf_;     //! velocity in gausspoint, time n+af
+      blitz::Array<double,1> pderxynp_;     //! pressure gradient in gausspoint, time n+1
+      blitz::Array<double,2> vderxynp_;     //! velocity derivatives in gausspoint, time n+1
+      blitz::Array<double,2> vderxyaf_;     //! velocity derivatives in gausspoint, time n+af
+      blitz::Array<double,2> vderxy2af_;    //! second derivatives of velocity in gausspoint, time n+af
+      blitz::Array<double,1> bodyforceaf_;  //! value of body force interpolated to the gauss point, time n+af
+      blitz::Array<double,1> conv_c_af_;    //! linearisation of convection, convective part, time n+af
+      blitz::Array<double,3> conv_r_af_;    //! linearisation of convection, reactive part, time n+af
 
       // element data
-      blitz::Array<double,1> tau_;         //! the stabilisation parameters tauM,tauMp and tauC
-
-      blitz::Array<double,1> svelaf_;      //! matrix of subscale velocities in gausspoints of this element, time n+alphaF
-      blitz::Array<double,1> convaf_old_;  //! Convective term, most recent iteration value
-                                           /*            
+      blitz::Array<double,1> tau_;          //! the stabilisation parameters tauM,tauMp and tauC
+#if 0      
+      blitz::Array<double,1> invtauM_lin_;  //! the linearisation of the inverse of the stabilisation parameter tauM
+                                            /*
+                                                          d    /    1.0   \
+                                                        ----- |  --------  |
+                                                        du     \ tauM (u) /
+                                                          dim    
+                                            */
+#endif      
+      blitz::Array<double,1> svelaf_;       //! matrix of subscale velocities in gausspoints of this element, time n+alphaF
+      blitz::Array<double,1> convaf_old_;   //! Convective term, most recent iteration value
+                                            /*            
                                                          /  n+af        \   n+af
                                                          | u     o grad |  u
                                                          \  (i)         /   (i)
-                                           */
-      blitz::Array<double,1> viscaf_old_;  //! Viscous term, most recent iteration value
-                                           /*                          
+                                            */
+      blitz::Array<double,1> convsubaf_old_;//! Subgrid velocity convective term, most recent iteration value 
+                                            /* Most recent value for subgrid velocity convective term
+                   
+                                                         /~n+af         \   n+af
+                                                        | u      o nabla | u
+                                                         \   (i)        /   (i)
+      */
+      blitz::Array<double,1> viscaf_old_;   //! Viscous term, most recent iteration value
+                                            /*                          
                                                                          /  n+af \
                                                         nabla o  epsilon | u     |
                                                                          \  (i)  /
-                                           */
-      blitz::Array<double,1> resM_;        //! Current residual of the momentum equation
+                                            */
+      blitz::Array<double,1> resM_;         //! Current residual of the momentum equation
       
-      blitz::Array<double,1> conv_resM_;   //! This is the convection operator using resM_ as the convecting velocity
-                                           /*  
+      blitz::Array<double,1> conv_resM_;    //! This is the convection operator using resM_ as the convecting velocity
+                                            /*  
 
                                                          /               \
                                                         | resM    o nabla |
                                                          \    (i)        /
-                                           */
+                                            */
+      blitz::Array<double,1>  conv_subaf_;  //! This is the convection operator using the subscale velocity as the convecting velocity
+                                            /*  
+                                                        /~n+af         \
+                                                       | u      o nabla |
+                                                        \   (i)        /
+                                            */
+      
     };
 
   }

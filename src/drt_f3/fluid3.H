@@ -328,6 +328,7 @@ private:
     continuity_stab_none,
     continuity_stab_yes,
     cross_stress_stab_none,
+    cross_stress_stab,
     cross_stress_stab_only_rhs,
     reynolds_stress_stab_none,
     reynolds_stress_stab_only_rhs
