@@ -108,7 +108,7 @@ extern struct _CURVE *curve;
  *----------------------------------------------------------------------*/
 void xdyn_fluid_drt()
 {
-  cout << "Hallo, ich bin ein Fluid_XFEM problem...";
+  cout << "Hallo, ich bin ein Fluid-XFEM problem...";
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
@@ -256,7 +256,7 @@ void xdyn_fluid_drt()
     //--------------------------------------------------
     // do the result test
 #ifdef RESULTTEST
-    DRT::ResultTestManager testmanager(actdis->Comm());
+    DRT::ResultTestManager testmanager(fluiddis->Comm());
     testmanager.AddFieldTest(rcp(new FluidResultTest(fluidimplicit)));
     testmanager.TestAll();
 #endif
@@ -342,11 +342,9 @@ void xdyn_fluid_drt()
     //--------------------------------------------------
     // do the result test
 #ifdef RESULTTEST
-#if 1
-    DRT::ResultTestManager testmanager(actdis->Comm());
+    DRT::ResultTestManager testmanager(fluiddis->Comm());
     testmanager.AddFieldTest(rcp(new FluidResultTest(genalphaint)));
     testmanager.TestAll();
-#endif
 #endif
 
   }
@@ -355,11 +353,7 @@ void xdyn_fluid_drt()
     dserror("Unknown time type for drt fluid");
   }
 
-  //---------- this is the end. Beautiful friend. My only friend, The end.
-  // thanks to RefCountPtr<> we do not need to delete anything here!
-
   return;
-
 } // end of dyn_fluid_drt()
 
 #endif  // #ifdef D_FLUID
