@@ -31,6 +31,11 @@ Maintainer: Ulrich Kuettler
 #include "../drt_lib/drt_periodicbc.H"
 #endif
 
+extern "C" {
+
+  void create_communicators();
+
+}
 
 /*----------------------------------------------------------------------*
  * Some functions and global variables, most of them are only
