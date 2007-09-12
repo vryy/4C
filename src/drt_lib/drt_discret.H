@@ -437,6 +437,20 @@ public:
   - calls all element register initialize methods
   - build geometries of all Dirichlet and Neumann boundary conditions
 
+  \param assigndegreesoffreedom (in) : if true, resets existing dofsets and performs
+                                       assigning of degrees of freedoms to nodes and
+                                       elements.
+  \param initelements (in) : if true, build element register classes and call Initialize()
+                             on each type of finite element present
+  \param doboundaryconditions (in) : if true, build geometry of boundary conditions
+                                     present.                                                                    
+  
+  \note In order to receive a fully functional discretization, this method must be called
+        with all parameters set to true (the default). The parameters though can be
+        used to turn off specific tasks to allow for more flexibility in the
+        construction of a discretization, were it is known that this method will
+        be called more than once.
+
   \note Sets Filled()=true
   */
   virtual int FillComplete(bool assigndegreesoffreedom=true,
@@ -997,6 +1011,8 @@ private:
   \brief Reset all maps and set Filled()=false (Filled()==true NOT prerequisite)
 
   Resets all maps and sets flags filled_ and havedof_ to false.
+
+  \param killdofs (in): if true reset existing dofsets in discretization
 
   \note This is a collective call
   */
