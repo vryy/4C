@@ -132,6 +132,7 @@ void DRT::Element::SetNodeIds(const int nnode, const int* nodes)
 
 
 /*----------------------------------------------------------------------*
+ |  create material class (public)                                 05/07|
  *----------------------------------------------------------------------*/
 void DRT::Element::SetMaterial(int matnum)
 {
