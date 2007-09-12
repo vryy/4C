@@ -87,6 +87,7 @@ DRT::Element::DiscretizationType DRT::Elements::Fluid3::Shape() const
   switch (NumNode())
   {
   case  4: return tet4;
+  case  5: return pyramid5;
   case  6: return wedge6;
   case  8: return hex8;
   case 10: return tet10;
@@ -291,6 +292,9 @@ DRT::Element** DRT::Elements::Fluid3::Surfaces()
     case wedge15:
       CreateSurfaceWedge(nsurf, 15);
         break;
+    case pyramid5:
+      CreateSurfacesPyramid();
+      break;
     default:
         dserror("distype not supported");
     }
@@ -345,8 +349,7 @@ void DRT::Elements::Fluid3::CreateSurfaceWedge(const int& nsurf, const int& wedg
   switch (wedgetype){
   case 6:
     trisurfacenodes=3;
-    quadsurfacenodes=6;
-
+    quadsurfacenodes=4;
     for (int isurf=0; isurf<nsurf; isurf++)
     {
       int nodeids[nnode];
@@ -406,6 +409,38 @@ void DRT::Elements::Fluid3::CreateSurfaceWedge(const int& nsurf, const int& wedg
     break;
 
 }
+}
+
+void DRT::Elements::Fluid3::CreateSurfacesPyramid()
+{
+  // Quad surface
+
+        const int nnode_surf = 4;
+        const int surfid = 0;
+        int nodeids[nnode_surf];
+        DRT::Node* nodes[nnode_surf];
+        for (int qinode = 0; qinode < nnode_surf; qinode++) {
+          nodeids[qinode] = NodeIds()[eleNodeNumbering_hex27_surfaces[surfid][qinode]];
+          nodes[qinode] = Nodes()[eleNodeNumbering_hex27_surfaces[surfid][qinode]];
+        }
+        surfaces_[surfid] = rcp(new DRT::Elements::Fluid3Surface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
+        surfaceptrs_[surfid] = surfaces_[surfid].get();
+
+  // tri surfaces
+  for (int tisurf = 0; tisurf < 4; tisurf++)
+  {
+      const int nnode_surf = 3;
+      const int surfid = tisurf+1;
+      int nodeids[nnode_surf];
+      DRT::Node* nodes[nnode_surf];
+      for (int tinode = 0; tinode < nnode_surf; tinode++) {
+        nodeids[tinode] = NodeIds()[eleNodeNumbering_pyramid5_trisurfaces[tisurf][tinode]];
+        nodes[tinode] = Nodes()[eleNodeNumbering_pyramid5_trisurfaces[tisurf][tinode]];
+      }
+      surfaces_[surfid] = rcp(new DRT::Elements::Fluid3Surface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
+      surfaceptrs_[surfid] = surfaces_[surfid].get();
+
+  }
 }
 
 /*----------------------------------------------------------------------*

@@ -53,6 +53,7 @@ bool DRT::Elements::Fluid3::ReadElement()
     gid2distype["TET10"] = tet10;
     gid2distype["WEDGE6"] = wedge6;
     gid2distype["WEDGE15"] = wedge15;
+    gid2distype["PYRAMID5"] = pyramid5;
 
     typedef map<DiscretizationType, int> DisType2NumNodes;
     DisType2NumNodes distype2NumNodes;
@@ -63,6 +64,7 @@ bool DRT::Elements::Fluid3::ReadElement()
     distype2NumNodes[tet10] = 10;
     distype2NumNodes[wedge6] = 6;
     distype2NumNodes[wedge15] = 15;
+    distype2NumNodes[pyramid5] = 5;
 
     // read element's nodes
     int   ierr = 0;
@@ -175,6 +177,24 @@ bool DRT::Elements::Fluid3::ReadElement()
             break;
         default:
             dserror("Reading of FLUID3 element failed: Gaussrule for wedge  not supported!\n");
+        }
+        break;
+    }
+
+    case pyramid5:
+    {
+      frint("GP_PYRAMID",&ngp[0],&ierr);
+        dsassert(ierr==1, "Reading of FLUID3 element failed: GP_PYRAMID\n");
+      switch (ngp[0])
+        {
+        case 1:
+            gaussrule_ = intrule_pyramid_1point;
+            break;
+        case 8:
+            gaussrule_ = intrule_pyramid_8point;
+            break;
+        default:
+            dserror("Reading of FLUID3 element failed: Gaussrule for pyramid  not supported!\n");
         }
         break;
     }

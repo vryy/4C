@@ -217,6 +217,7 @@ EnsightWriter::EnsightWriter(
     distype2ensightstring_[DRT::Element::tri6] = "tria6";
     distype2ensightstring_[DRT::Element::wedge6] = "penta6";
     distype2ensightstring_[DRT::Element::wedge15]= "penta15";
+    distype2ensightstring_[DRT::Element::pyramid5]= "pyramid5";
 }
 
 /*----------------------------------------------------------------------*/
@@ -474,6 +475,7 @@ void EnsightWriter::WriteCells(
                 case DRT::Element::tri3:
                 case DRT::Element::wedge6:
                 case DRT::Element::wedge15:
+                case DRT::Element::pyramid5:
                 {
                     // standard case with direct support
                     const int numnp = actele->NumNode();

@@ -1728,6 +1728,9 @@ void DRT::Elements::Fluid3Impl::Caltau(
   case DRT::Element::wedge15:
     integrationrule_stabili = DRT::Utils::intrule_wedge_1point;
     break;
+  case DRT::Element::pyramid5:
+    integrationrule_stabili = DRT::Utils::intrule_pyramid_1point;
+    break;
   default:
     dserror("invalid discretization type for fluid3");
   }
@@ -1749,6 +1752,7 @@ void DRT::Elements::Fluid3Impl::Caltau(
   switch (distype)
   {
   case DRT::Element::tet4:
+  case DRT::Element::pyramid5:
   case DRT::Element::hex8:
     mk = 0.333333333333333333333;
     break;

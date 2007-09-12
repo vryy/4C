@@ -105,6 +105,14 @@ namespace Utils
           {2, 5, 11},
           {0, 3, 9}};
 
+  //! Triangular surfaces of pyrmid5
+
+  const int eleNodeNumbering_pyramid5_trisurfaces[4][3]={
+    {0,1,4},
+    {1,2,4},
+    {2,3,4},
+    {0,4,3}};
+
   //! 4 Lines of a Quad9 element with 3 nodes per line
   const int eleNodeNumbering_quad9_lines[4][3] = {
           {0,  1,  4},
@@ -133,9 +141,9 @@ namespace Utils
           {2,  5},
           {3,  5},
           {4,  5}};
-       
-          
-  //! for each of the 6 lines, tell me the 2 neighbouring faces      
+
+
+  //! for each of the 6 lines, tell me the 2 neighbouring faces
   const int eleNodeNumbering_tet10_lines_surfaces[6][2] = {
           {0,  3},
           {1,  3},
@@ -161,39 +169,39 @@ namespace Utils
                                                              {0,  1,  3},
                                                              {1,  2,  3},
                                                              {0,  1,  2}};
-                                                             
-                                                             
+
+
   //! for each node the reference coordinates are stored for hex27
   const double eleNodeNumbering_hex27_nodes_reference[27][3] = {    {-1.0,  -1.0,  -1.0},
                                                                     { 1.0,  -1.0,  -1.0},
                                                                     { 1.0,   1.0,  -1.0},
                                                                     {-1.0,   1.0,  -1.0},
-                                                                
+
                                                                     {-1.0,  -1.0,   1.0},
                                                                     { 1.0,  -1.0,   1.0},
                                                                     { 1.0,   1.0,   1.0},
                                                                     {-1.0,   1.0,   1.0},
-                                                                
+
                                                                     { 0.0,  -1.0,  -1.0},
                                                                     { 1.0,   0.0,  -1.0},
                                                                     { 0.0,   1.0,  -1.0},
                                                                     {-1.0,   0.0,  -1.0},
-                                                                
+
                                                                     {-1.0,  -1.0,   0.0},
                                                                     { 1.0,  -1.0,   0.0},
                                                                     { 1.0,   1.0,   0.0},
                                                                     {-1.0,   1.0,   0.0},
-                                                                
+
                                                                     { 0.0,  -1.0,   1.0},
                                                                     { 1.0,   0.0,   1.0},
                                                                     { 0.0,   1.0,   1.0},
                                                                     {-1.0,   0.0,   1.0},
-                                                                
+
                                                                     { 0.0,   0.0,  -1.0},
                                                                     { 0.0,  -1.0,   0.0},
                                                                     { 1.0,   0.0,   0.0},
                                                                     { 0.0,   1.0,   0.0},
-                                                                
+
                                                                     {-1.0,   0.0,   0.0},
                                                                     { 0.0,   0.0,   1.0},
                                                                     { 0.0,   0.0,   0.0}};
@@ -204,72 +212,72 @@ namespace Utils
                                                                     { 1.0,   0.0,   0.0},
                                                                     { 0.0,   1.0,   0.0},
                                                                     { 0.0,   0.0,   1.0},
-                                                                
+
                                                                     { 0.5,   0.0,   0.0},
                                                                     { 0.5,   0.5,   0.0},
                                                                     { 0.0,   0.5,   0.0},
-                                                                    { 0.0,   0.0,   0.5},                                                               
+                                                                    { 0.0,   0.0,   0.5},
                                                                     { 0.5,   0.0,   0.5},
                                                                     { 0.0,   0.5,   0.5}};
-    
+
    /*!
   \brief Returns the number of corner nodes
          for each discretization type
-  */ 
-  void getNumberOfElementCornerNodes( 
-    int&                                        numCornerNodes, 
+  */
+  void getNumberOfElementCornerNodes(
+    int&                                        numCornerNodes,
     const DRT::Element::DiscretizationType&     distype
     );
 
   /*!
  \brief Returns the number of lines
         for each discretization type
- */ 
-  int getNumberOfElementLines( 
+ */
+  int getNumberOfElementLines(
       const DRT::Element::DiscretizationType&     distype);
 
   /*!
  \brief Returns the number of surfaces
         for each discretization type
- */ 
-  int getNumberOfElementSurfaces( 
+ */
+  int getNumberOfElementSurfaces(
       const DRT::Element::DiscretizationType&     distype);
-  
-  
+
+
   /*!
   \brief Fills a vector< vector<int> > with all nodes for every surface
          for each discretization type
   */
-  void getEleNodeNumberingSurfaces( 
-    vector< vector<int> >&                      map,        ///< matrix surface - nodes 
+  void getEleNodeNumberingSurfaces(
+    vector< vector<int> >&                      map,        ///< matrix surface - nodes
     const DRT::Element::DiscretizationType&     distype     ///< discretization type
     );
-  
+
   /*!
   \brief Fills a vector< vector<int> > with all nodes for every line
          for each discretization type
   */
-  void getEleNodeNumberingLines(    
-    vector< vector<int> >&                      map,        ///< matrix surface - nodes 
+  void getEleNodeNumberingLines(
+    vector< vector<int> >&                      map,        ///< matrix surface - nodes
     const DRT::Element::DiscretizationType&     distype     ///< discretization type
     );
-                                    
-      
+
+
   /*!
   \brief Fills a vector< vector<int> > with all surfaces for every line
          for each discretization type
-  */                                                                    
-  void getEleNodeNumbering_lines_surfaces(  
+  */
+  void getEleNodeNumbering_lines_surfaces(
     vector< vector<int> >&                      map,        ///< matrix lines - surfaces
     const DRT::Element::DiscretizationType&     distype     ///< discretization type
     );
-             
+
   /*!
   \brief Fills a vector< vector<int> > with all surfaces for every node
          for each discretization type
-  */                                           
-  void getEleNodeNumbering_nodes_surfaces(  
-    vector< vector<int> >&                      map,        ///< matrix nodes - surfaces 
+  */
+  void getEleNodeNumbering_nodes_surfaces(
+    vector< vector<int> >&                      map,        ///< matrix nodes - surfaces
     const DRT::Element::DiscretizationType&     distype     ///< discretization type
     );
 
@@ -277,36 +285,36 @@ namespace Utils
   \brief Fills a vector< vector<int> > with reference coordinates for each node
          for each discretization type
   */
-  void getEleNodeNumbering_nodes_reference( 
+  void getEleNodeNumbering_nodes_reference(
     vector< vector< double > >&                 map,        ///< matrix nodes - reference coordinates
     const DRT::Element::DiscretizationType&     distype     ///< discretization type
     );
-                                              
+
   /*!
-  \brief Fills an array with the surface ID s a point in reference coordinates 
+  \brief Fills an array with the surface ID s a point in reference coordinates
   \      is lying on for each discretization type
-  */                                         
-  int getSurfaces(  
+  */
+  int getSurfaces(
     const Epetra_SerialDenseVector&             rst,        ///< point in reference coordinates
     int*                                        surfaces,   ///< surfaces the point is lying on
     const DRT::Element::DiscretizationType&     distype     ///< discretization type
     );
-           
+
   /*!
   \brief Fills an array with coordinates in reference system of the cutter element
   \      according to the node Id for each discretization type
-  */                     
-  void getNodeCoordinates(  
+  */
+  void getNodeCoordinates(
     int                                         nodeId,     ///< node ID
     double*                                     coord,      ///< coordinates
     const DRT::Element::DiscretizationType&     distype     ///< discretization type
     );
-            
+
   /*!
   \brief Fills an array with coordinates in reference system of the cutter element
   \      according to the line Id for each discretization type
-  */                            
-  void getLineCoordinates(  
+  */
+  void getLineCoordinates(
     int                                         lineId,     ///< line ID
     double                                      lineCoord,  ///< line coordinate
     double*                                     coord,      ///< coordinates

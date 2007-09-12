@@ -115,8 +115,8 @@ public:
   */
   virtual int NumSurface() const
   {if (NumNode()==8 || NumNode()==20 || NumNode()==27) return 6;
-   else if (NumNode()==4 || NumNode()==10) return 4;
-   else if (NumNode()==6 || NumNode()==15) return 5;
+    else if (NumNode()==4 || NumNode()==10) return 4;
+   else if (NumNode()==6 || NumNode()==15 || NumNode()==5) return 5;
    else {
    	dserror("Could not determine number of surfaces");
    	return -1;
@@ -628,6 +628,8 @@ private:
 
   void CreateSurfaceWedge(const int& nsurf,
                           const int& wedgetype);
+
+  void CreateSurfacesPyramid();
 
   /*!
    \brief get optimal gaussrule for given discretization type

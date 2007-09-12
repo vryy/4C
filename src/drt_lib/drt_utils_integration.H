@@ -36,7 +36,9 @@ enum GaussRule3D
     intrule_tet_10point,
     intrule_wedge_1point,
     intrule_wedge_6point,
-    intrule_wedge_9point
+    intrule_wedge_9point,
+    intrule_pyramid_1point,
+    intrule_pyramid_8point
 };
 
 

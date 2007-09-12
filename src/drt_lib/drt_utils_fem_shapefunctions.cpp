@@ -234,12 +234,12 @@ void DRT::Utils::shape_function_3D(
     {
       const double ration=(r*s*t)/(1-t);
 
-      funct(0)=Q14*((1+r)*(1+s)-t+ration);
-      funct(1)=Q14*((1-r)*(1+s)-t-ration);
-      funct(2)=Q14*((1-r)*(1-s)-t+ration);
-      funct(3)=Q14*((1+r)*(1-s)-t-ration);
-      funct(4)=t;
-      break;
+     funct(0)=Q14*((1-r)*(1-s)-t+ration);
+     funct(1)=Q14*((1+r)*(1-s)-t-ration);
+     funct(2)=Q14*((1+r)*(1+s)-t+ration);
+     funct(3)=Q14*((1-r)*(1+s)-t-ration);
+     funct(4)=t;
+     break;
     }
 
     default:
@@ -675,16 +675,16 @@ void DRT::Utils::shape_function_3D_deriv1(
       const double rationds=r*t/(1-t);
       const double rationdt=r*s*(1-2.0*t)/((1-t)*(1-t));
 
-      deriv1(0,0)=Q14*(1+rationdr);
-      deriv1(0,1)=Q14*(-1-rationdr);
-      deriv1(0,2)=Q14*(-1+rationdr);
-      deriv1(0,3)=Q14*(1-rationdr);
+      deriv1(0,0)=Q14*(-1+rationdr);
+      deriv1(0,1)=Q14*(1-rationdr);
+      deriv1(0,2)=Q14*(1+rationdr);
+      deriv1(0,3)=Q14*(-1-rationdr);
       deriv1(0,4)=0;
 
-      deriv1(1,0)=Q14*(1+rationds);
-      deriv1(1,1)=Q14*(1-rationds);
-      deriv1(1,2)=Q14*(-1+rationds);
-      deriv1(1,3)=Q14*(-1-rationds);
+      deriv1(1,0)=Q14*(-1+rationds);
+      deriv1(1,1)=Q14*(-1-rationds);
+      deriv1(1,2)=Q14*(1+rationds);
+      deriv1(1,3)=Q14*(1-rationds);
       deriv1(1,4)=0;
 
       deriv1(2,0)=Q14*(rationdt-1);

@@ -96,6 +96,14 @@ DRT::Elements::Fluid3Impl* DRT::Elements::Fluid3::Impl()
       f = new Fluid3Impl(15);
     return f;
   }
+  case 5:
+  {
+    static Fluid3Impl* f;
+    if (f==NULL)
+      f = new Fluid3Impl(5);
+    return f;
+  }
+
   default:
     dserror("node number %d not supported", NumNode());
   }
@@ -2799,7 +2807,7 @@ bool DRT::Elements::Fluid3::isHigherOrderElement(
   case hex8: case hex20: case hex27: case tet10: case wedge15:
     hoel = true;
     break;
-  case tet4: case wedge6:
+  case tet4: case wedge6: case pyramid5:
     hoel = false;
     break;
   default:
