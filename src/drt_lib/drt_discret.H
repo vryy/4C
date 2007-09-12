@@ -439,7 +439,9 @@ public:
 
   \note Sets Filled()=true
   */
-  virtual int FillComplete();
+  virtual int FillComplete(bool assigndegreesoffreedom=true,
+                           bool initelements = true,
+                           bool doboundaryconditions = true);
 
   //@}
 
@@ -998,7 +1000,7 @@ private:
 
   \note This is a collective call
   */
-  virtual void Reset();
+  virtual void Reset(bool killdofs = true);
 
   /*!
   \brief Build noderowmap_ (Filled()==true NOT prerequisite)

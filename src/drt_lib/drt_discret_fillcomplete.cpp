@@ -23,12 +23,15 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  Finalize construction (public)                           mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::Reset()
+void DRT::Discretization::Reset(bool killdofs)
 {
   filled_ = false;
-  havedof_= false;
-  for (unsigned i=0; i<dofsets_.size(); ++i)
-    dofsets_[i]->Reset();
+  if (killdofs)
+  {
+    havedof_= false;
+    for (unsigned i=0; i<dofsets_.size(); ++i)
+      dofsets_[i]->Reset();
+  }
   dofrowmap_ = null;
   dofcolmap_ = null;
   elerowmap_ = null;
@@ -46,10 +49,12 @@ void DRT::Discretization::Reset()
 /*----------------------------------------------------------------------*
  |  Finalize construction (public)                           mwgee 11/06|
  *----------------------------------------------------------------------*/
-int DRT::Discretization::FillComplete()
+int DRT::Discretization::FillComplete(bool assigndegreesoffreedom,
+                                      bool initelements,
+                                      bool doboundaryconditions)
 {
   // set all maps to null
-  Reset();
+  Reset(assigndegreesoffreedom);
 
   // (re)build map of nodes noderowmap_, nodecolmap_, noderowptr and nodecolptr
   BuildNodeRowMap();
@@ -71,16 +76,20 @@ int DRT::Discretization::FillComplete()
   filled_ = true;
 
   // Assign degrees of freedom to elements and nodes
-  AssignDegreesOfFreedom(0);
+  if (assigndegreesoffreedom)
+    AssignDegreesOfFreedom(0);
 
-  // build the register of elements
-  BuildElementRegister();
-
-  // call element routines to initialize
-  InitializeElements();
-
+  if (initelements)
+  {
+    // build the register of elements
+    BuildElementRegister();
+    // call element routines to initialize
+    InitializeElements();
+  }
+  
   // (Re)build the geometry of the boundary conditions
-  BoundaryConditionsGeometry();
+  if (doboundaryconditions)
+    BoundaryConditionsGeometry();
 
   return 0;
 }
