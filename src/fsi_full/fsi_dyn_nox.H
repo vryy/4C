@@ -191,7 +191,7 @@ private:
   Teuchos::RefCountPtr<Epetra_Import> importredundant_;
 
   //! main nonlinear solver object that contains everything else
-  Teuchos::RefCountPtr<NOX::Solver::Manager> solver_;
+  Teuchos::RefCountPtr<NOX::Solver::Generic> solver_;
 
   //! traditional structure variables
   FSI_STRUCT_WORK* struct_work_;

@@ -41,7 +41,6 @@
 #include <NOX_Epetra_BroydenOperator.H>
 #include <NOX_Epetra_FiniteDifferenceColoring.H>
 #include <NOX_Epetra_Vector.H>
-#include <NOX_Solver_Manager.H>
 
 #include <mrtr_utils.H>
 
@@ -1783,7 +1782,7 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     //////////////////////////////////////////////////////////////////
 
     // Create the method
-    solver_ = Teuchos::rcp(new NOX::Solver::Manager(grp, combo, globalparameterlist));
+    solver_ = NOX::Solver::buildSolver(grp,combo,globalparameterlist);
     NOX::StatusTest::StatusType status = solver_->solve();
 
     if (status != NOX::StatusTest::Converged)
