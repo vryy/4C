@@ -354,6 +354,11 @@ protected:
   //! vector of lines adjacent to this element
   vector<DRT::Elements::Soh8Line*>              lineptrs_;
 
+  //! some distypes need rewinding of NodeIds due to bad input from mesher
+  //! flag to rewind this element, must be availabale for friend class fluid3register
+  bool                                            rewind_;
+  //! flag whether process of rewinding is done
+  bool                                            donerewinding_;
 
   // internal calculation methods
 
@@ -395,6 +400,8 @@ protected:
           const Epetra_SerialDenseMatrix& xrefe);     // material element coords
 
   void soh8_initvol(ParameterList& params);
+
+  bool soh8_checkRewinding();
 
 
 }; // class So_hex8
@@ -484,6 +491,15 @@ public:
   //@}
 
   //! @name Construction
+  /*!
+  \brief Call Element init routines
+
+  The method performs all steps needed to init the wedge elements,
+  e.g. defines shell-thickness direction
+  */
+  int Initialize(DRT::Discretization& dis);
+
+  //@}
 
 
 private:

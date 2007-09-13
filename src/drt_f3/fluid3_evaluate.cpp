@@ -2918,8 +2918,10 @@ int DRT::Elements::Fluid3Register::Initialize(DRT::Discretization& dis)
     switch(distype)
     {
     case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27:
+        possiblytorewind = true;
         break;
     case DRT::Element::tet4: case DRT::Element::tet10:
+        possiblytorewind = true;
         break;
     case DRT::Element::wedge6: case DRT::Element::wedge15:
         possiblytorewind = true;
@@ -2935,7 +2937,35 @@ int DRT::Elements::Fluid3Register::Initialize(DRT::Discretization& dis)
       actele->rewind_ = actele->checkRewinding();
 
       if (actele->rewind_) {
-        if (distype==DRT::Element::wedge6){
+        if (distype==DRT::Element::tet4){
+          int iel = actele->NumNode();
+          int new_nodeids[iel];
+          const int* old_nodeids;
+          old_nodeids = actele->NodeIds();
+          // rewinding of nodes to arrive at mathematically positive element
+          new_nodeids[0] = old_nodeids[0];
+          new_nodeids[1] = old_nodeids[2];
+          new_nodeids[2] = old_nodeids[1];
+          new_nodeids[3] = old_nodeids[3];
+          actele->SetNodeIds(iel, new_nodeids);
+        }
+        else if (distype==DRT::Element::hex8){
+          int iel = actele->NumNode();
+          int new_nodeids[iel];
+          const int* old_nodeids;
+          old_nodeids = actele->NodeIds();
+          // rewinding of nodes to arrive at mathematically positive element
+          new_nodeids[0] = old_nodeids[4];
+          new_nodeids[1] = old_nodeids[5];
+          new_nodeids[2] = old_nodeids[6];
+          new_nodeids[3] = old_nodeids[7];
+          new_nodeids[4] = old_nodeids[0];
+          new_nodeids[5] = old_nodeids[1];
+          new_nodeids[6] = old_nodeids[2];
+          new_nodeids[7] = old_nodeids[3];
+          actele->SetNodeIds(iel, new_nodeids);
+        }
+        else if (distype==DRT::Element::wedge6){
           int iel = actele->NumNode();
           int new_nodeids[iel];
           const int* old_nodeids;

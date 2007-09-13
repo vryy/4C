@@ -422,7 +422,7 @@ void DRT::Elements::So_weg6::sow6_shapederiv(
   return;
 }  // of sow6_shapederiv
 
-bool DRT::Elements::So_weg6::soweg6_checkrewind()
+bool DRT::Elements::So_weg6::soweg6_checkRewinding()
 {
     const DRT::Utils::IntegrationPoints3D intpoints = getIntegrationPoints3D(DRT::Utils::intrule_wedge_1point);
     const double r = intpoints.qxg[0][0];
@@ -458,7 +458,7 @@ bool DRT::Elements::So_weg6::soweg6_checkrewind()
       if (abs(detJ) < 1E-16) dserror("ZERO JACOBIAN DETERMINANT");
       else if (detJ < 0.0) return true;
       else if (detJ > 0.0) return false;
-      dserror("rewinding failed!");
+      dserror("checkRewinding failed!");
       return false;
 }
 
@@ -476,22 +476,24 @@ int DRT::Elements::Sow6Register::Initialize(DRT::Discretization& dis)
     DRT::Elements::So_weg6* actele = dynamic_cast<DRT::Elements::So_weg6*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_weg6* failed");
     
-    if (!actele->nodes_rearranged_) {
-      actele->rewindflag_ = actele->soweg6_checkrewind();
+    if (!actele->donerewinding_) {
+      actele->rewind_ = actele->soweg6_checkRewinding();
 
-      if (actele->rewindflag_) {
+      if (actele->rewind_) {
         int new_nodeids[NUMNOD_WEG6];
+        const int* old_nodeids;
+        old_nodeids = actele->NodeIds();
         // rewinding of nodes to arrive at mathematically positive element
-        new_nodeids[0] = actele->inp_nodeIds_[3];
-        new_nodeids[1] = actele->inp_nodeIds_[4];
-        new_nodeids[2] = actele->inp_nodeIds_[5];
-        new_nodeids[3] = actele->inp_nodeIds_[0];
-        new_nodeids[4] = actele->inp_nodeIds_[1];
-        new_nodeids[5] = actele->inp_nodeIds_[2];
+        new_nodeids[0] = old_nodeids[3];
+        new_nodeids[1] = old_nodeids[4];
+        new_nodeids[2] = old_nodeids[5];
+        new_nodeids[3] = old_nodeids[0];
+        new_nodeids[4] = old_nodeids[1];
+        new_nodeids[5] = old_nodeids[2];
         actele->SetNodeIds(NUMNOD_WEG6, new_nodeids);
       }
       // process of rewinding done
-      actele->nodes_rearranged_ = true;
+      actele->donerewinding_ = true;
     }
   }
   // fill complete again to reconstruct element-node pointers,

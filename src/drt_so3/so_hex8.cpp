@@ -98,6 +98,9 @@ void DRT::Elements::So_hex8::Pack(vector<char>& data) const
   AddtoPack(data,eastype_);
   // neas_
   AddtoPack(data,neas_);
+  // rewind flags
+  AddtoPack(data,donerewinding_);
+  AddtoPack(data,rewind_);
   // data_
   vector<char> tmp(0);
   data_.Pack(tmp);
@@ -132,6 +135,9 @@ void DRT::Elements::So_hex8::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,eastype_);
   // neas_
   ExtractfromPack(position,data,neas_);
+  // rewinding flags
+  ExtractfromPack(position,data,donerewinding_);
+  ExtractfromPack(position,data,rewind_);
   // data_
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);

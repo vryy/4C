@@ -321,11 +321,12 @@ protected:
   vector<RefCountPtr<DRT::Elements::Sow6Line> > lines_;
   //! vector of lines adjacent to this element
   vector<DRT::Elements::Sow6Line*>              lineptrs_;
-  //! original (input) NodeIds, stored for eventual change to rewind
-  int inp_nodeIds_[NUMNOD_WEG6];
   
-  bool nodes_rearranged_;
-  bool rewindflag_;
+  //! some distypes need rewinding of NodeIds due to bad input from mesher
+  //! flag to rewind this element, must be availabale for friend class fluid3register
+  bool                                            rewind_;
+  //! flag whether process of rewinding is done
+  bool                                            donerewinding_;
 
 
   // internal calculation methods
@@ -351,7 +352,7 @@ protected:
                        Epetra_SerialDenseMatrix** deriv,
                        Epetra_SerialDenseVector** weights);
 
-  bool soweg6_checkrewind();
+  bool soweg6_checkRewinding();
 
 
 }; // class So_weg6

@@ -726,6 +726,88 @@ void DRT::Elements::So_hex8::soh8_initvol(ParameterList& params)
   return;
 }
 
+bool DRT::Elements::So_hex8::soh8_checkRewinding()
+{
+    const DRT::Utils::IntegrationPoints3D intpoints = getIntegrationPoints3D(DRT::Utils::intrule_hex_1point);
+    const double r = intpoints.qxg[0][0];
+    const double s = intpoints.qxg[0][1];
+    const double t = intpoints.qxg[0][2];
+
+    Epetra_SerialDenseMatrix deriv(NUMDIM_SOH8, NUMNOD_SOH8);
+    DRT::Utils::shape_function_3D_deriv1(deriv, r, s, t, hex8);
+
+    // update element geometry
+    Epetra_SerialDenseMatrix xrefe(NUMNOD_SOH8,NUMDIM_SOH8);  // material coord. of element
+    for (int i=0; i<NUMNOD_SOH8; ++i){
+      xrefe(i,0) = Nodes()[i]->X()[0];
+      xrefe(i,1) = Nodes()[i]->X()[1];
+      xrefe(i,2) = Nodes()[i]->X()[2];
+    }
+
+      /* compute the Jacobian matrix which looks like:
+      **         [ x_,r  y_,r  z_,r ]
+      **     J = [ x_,s  y_,s  z_,s ]
+      **         [ x_,t  y_,t  z_,t ]
+      */
+      Epetra_SerialDenseMatrix jac(NUMDIM_SOH8,NUMDIM_SOH8);
+      jac.Multiply('N','N',1.0,deriv,xrefe,1.0);
+
+      // compute determinant of Jacobian by Sarrus' rule
+      double detJ= jac(0,0) * jac(1,1) * jac(2,2)
+                 + jac(0,1) * jac(1,2) * jac(2,0)
+                 + jac(0,2) * jac(1,0) * jac(2,1)
+                 - jac(0,0) * jac(1,2) * jac(2,1)
+                 - jac(0,1) * jac(1,0) * jac(2,2)
+                 - jac(0,2) * jac(1,1) * jac(2,0);
+      if (abs(detJ) < 1E-16) dserror("ZERO JACOBIAN DETERMINANT");
+      else if (detJ < 0.0) return true;
+      else if (detJ > 0.0) return false;
+      dserror("chekRewinding failed!");
+      return false;
+}
+
+/*----------------------------------------------------------------------*
+ |  init the element (public)                                  maf 07/07|
+ *----------------------------------------------------------------------*/
+int DRT::Elements::Soh8Register::Initialize(DRT::Discretization& dis)
+{
+  //-------------------- loop all my column elements and check rewinding
+  for (int i=0; i<dis.NumMyColElements(); ++i)
+  {
+    // get the actual element
+    if (dis.lColElement(i)->Type() != DRT::Element::element_so_hex8) continue;
+    DRT::Elements::So_hex8* actele = dynamic_cast<DRT::Elements::So_hex8*>(dis.lColElement(i));
+    if (!actele) dserror("cast to So_hex8* failed");
+    
+    if (!actele->donerewinding_) {
+      actele->rewind_ = actele->soh8_checkRewinding();
+
+      if (actele->rewind_) {
+        int new_nodeids[NUMNOD_SOH8];
+        const int* old_nodeids;
+        old_nodeids = actele->NodeIds();
+        // rewinding of nodes to arrive at mathematically positive element
+        new_nodeids[0] = old_nodeids[4];
+        new_nodeids[1] = old_nodeids[5];
+        new_nodeids[2] = old_nodeids[6];
+        new_nodeids[3] = old_nodeids[7];
+        new_nodeids[4] = old_nodeids[0];
+        new_nodeids[5] = old_nodeids[1];
+        new_nodeids[6] = old_nodeids[2];
+        new_nodeids[7] = old_nodeids[3];
+        actele->SetNodeIds(NUMNOD_SOH8, new_nodeids);
+      }
+      // process of rewinding done
+      actele->donerewinding_ = true;
+    }
+  }
+  // fill complete again to reconstruct element-node pointers,
+  // but without element init, etc.
+  dis.FillComplete(false,false,false);
+  
+  return 0;
+}
+
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

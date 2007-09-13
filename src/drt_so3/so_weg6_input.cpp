@@ -59,7 +59,6 @@ bool DRT::Elements::So_weg6::ReadElement()
   // reduce node numbers by one
   for (int i=0; i<nnode; ++i){
     nodes[i]--;
-    inp_nodeIds_[i] = nodes[i];
   }
 
   SetNodeIds(nnode,nodes);
