@@ -2869,6 +2869,9 @@ void Intersection::debugIntegrationcells(	map< int, vector <Integrationcell> >&	
  |  computes the coordinates of a point within a region for  u.may 07/07|
  |  the Tetgen data structure       (only for visualization)            |
  *----------------------------------------------------------------------*/  
+// dependency on Fluid3Surface. This cannot be used for the standard fluid tests
+// so switch on, if needed, but don't commit
+#if 0
 void Intersection::computeRegionCoordinates(    
     DRT::Element*  xfemElement,
     DRT::Element*  cutterElement,
@@ -2935,6 +2938,7 @@ void Intersection::computeRegionCoordinates(
         }
     }
 }
+#endif
 
 
 

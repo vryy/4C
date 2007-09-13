@@ -1068,13 +1068,14 @@ class Intersection
         \param xfemElement           (in)        : xfem element
         \param cutterElement         (in)        : cutter element
         \param regioncoordinates     (out)       : coordinates of the region points
-        */    
+        */
+#if 0       	
         void computeRegionCoordinates(  
             DRT::Element*  xfemElement,
             DRT::Element*  cutterElement,
             double* regionCoordinates
             );     
-                                               
+#endif
 };
 
 
