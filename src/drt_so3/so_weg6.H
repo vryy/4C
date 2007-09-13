@@ -321,6 +321,11 @@ protected:
   vector<RefCountPtr<DRT::Elements::Sow6Line> > lines_;
   //! vector of lines adjacent to this element
   vector<DRT::Elements::Sow6Line*>              lineptrs_;
+  //! original (input) NodeIds, stored for eventual change to rewind
+  int inp_nodeIds_[NUMNOD_WEG6];
+  
+  bool nodes_rearranged_;
+  bool rewindflag_;
 
 
   // internal calculation methods
@@ -346,6 +351,7 @@ protected:
                        Epetra_SerialDenseMatrix** deriv,
                        Epetra_SerialDenseVector** weights);
 
+  bool soweg6_checkrewind();
 
 
 }; // class So_weg6
@@ -434,6 +440,15 @@ public:
   //@}
 
   //! @name Construction
+  /*!
+  \brief Call Element init routines
+
+  The method performs all steps needed to init the wedge elements,
+  e.g. defines shell-thickness direction
+  */
+  int Initialize(DRT::Discretization& dis);
+
+  //@}
 
 
 private:

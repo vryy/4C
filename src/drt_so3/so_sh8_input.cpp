@@ -113,6 +113,7 @@ bool DRT::Elements::So_sh8::ReadElement()
 
   // read global coordinate of shell-thickness direction
   thickdir_ = autoj;           // default: auto by Jacobian
+  nodes_rearranged_ = false;
   frchar("THICKDIR",buffer,&ierr);
   if (ierr)
   {
@@ -124,6 +125,11 @@ bool DRT::Elements::So_sh8::ReadElement()
    else if (strncmp(buffer,"ZDIR",4)==0)    thickdir_ = globz;
    // find automatically through Jacobian of Xrefe
    else if (strncmp(buffer,"AUTO",4)==0)    thickdir_ = autoj;
+   // no noderearrangement
+   else if (strncmp(buffer,"NONE",4)==0){
+     thickdir_ = none;
+     nodes_rearranged_ = true;
+   }
    else dserror("Reading of SO_SH8 thickness direction failed");
   }
 

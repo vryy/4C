@@ -91,6 +91,11 @@ void DRT::Elements::So_weg6::Pack(vector<char>& data) const
   AddtoPack(data,stresstype_);
   // kintype_
   AddtoPack(data,kintype_);
+  // rewind flag
+  AddtoPack(data,nodes_rearranged_);
+  AddtoPack(data,rewindflag_);
+  // original (input) nodeids
+  AddtoPack(data,inp_nodeIds_);
   // data_
   vector<char> tmp(0);
   data_.Pack(tmp);
@@ -119,6 +124,10 @@ void DRT::Elements::So_weg6::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,stresstype_);
   // kintype_
   ExtractfromPack(position,data,kintype_);
+  // rewinding stuff
+  ExtractfromPack(position,data,nodes_rearranged_);
+  ExtractfromPack(position,data,rewindflag_);
+  ExtractfromPack(position,data,inp_nodeIds_);
   // data_
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);

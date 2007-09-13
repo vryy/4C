@@ -57,7 +57,10 @@ bool DRT::Elements::So_weg6::ReadElement()
     dserror ("Reading of SOLIDW6 failed");
   }
   // reduce node numbers by one
-  for (int i=0; i<nnode; ++i) nodes[i]--;
+  for (int i=0; i<nnode; ++i){
+    nodes[i]--;
+    inp_nodeIds_[i] = nodes[i];
+  }
 
   SetNodeIds(nnode,nodes);
 

@@ -119,6 +119,9 @@ void DRT::Elements::Fluid3::Pack(vector<char>& data) const
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   // is_ale_
   AddtoPack(data,is_ale_);
+  // rewinding bools
+  AddtoPack(data,rewind_);
+  AddtoPack(data,donerewinding_);
   // data_
   vector<char> tmp(0);
   data_.Pack(tmp);
@@ -149,7 +152,9 @@ void DRT::Elements::Fluid3::Unpack(const vector<char>& data)
   gaussrule_ = GaussRule3D(gausrule_integer); //explicit conversion from integer to enum
   // is_ale_
   ExtractfromPack(position,data,is_ale_);
-  // data_
+  // rewinding bools
+  ExtractfromPack(position,data,rewind_); 
+  ExtractfromPack(position,data,donerewinding_);
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);

@@ -852,8 +852,8 @@ DRT::Elements::So_sh8::ThicknessDirection DRT::Elements::So_sh8::sosh8_findthick
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  maf 07/07|
  *----------------------------------------------------------------------*/
-//int DRT::Elements::Sosh8Register::Initialize(DRT::Discretization& dis)
-int DRT::Elements::So_sh8::Initialize_numbers(DRT::Discretization& dis)
+int DRT::Elements::Sosh8Register::Initialize(DRT::Discretization& dis)
+//int DRT::Elements::So_sh8::Initialize_numbers(DRT::Discretization& dis)
 {
   //-------------------- loop all my column elements and define thickness direction
   for (int i=0; i<dis.NumMyColElements(); ++i)
@@ -863,6 +863,7 @@ int DRT::Elements::So_sh8::Initialize_numbers(DRT::Discretization& dis)
     DRT::Elements::So_sh8* actele = dynamic_cast<DRT::Elements::So_sh8*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_sh8* failed");
     
+    if (!actele->nodes_rearranged_){
     // check for automatic definition of thickness direction
     if (actele->thickdir_ == DRT::Elements::So_sh8::autoj) {
       actele->thickdir_ = actele->sosh8_findthickdir();
@@ -874,7 +875,7 @@ int DRT::Elements::So_sh8::Initialize_numbers(DRT::Discretization& dis)
     switch (actele->thickdir_) {
       case DRT::Elements::So_sh8::autox:
       case DRT::Elements::So_sh8::globx:{
-        cout << endl << "thickness direction is X" << endl;
+//        cout << endl << "thickness direction is X" << endl;
 //        for (int node = 0; node < NUMNOD_SOH8; ++node) {
 //          orig_nodeids[node] = actele->NodeIds()[node];
 //          cout << node << ": " << orig_nodeids[node] << " inputID: " << actele->inp_nodeIds_[node]<< endl;
@@ -892,7 +893,6 @@ int DRT::Elements::So_sh8::Initialize_numbers(DRT::Discretization& dis)
       }
       case DRT::Elements::So_sh8::autoy:
       case DRT::Elements::So_sh8::globy:{
-        cout << endl << "thickness direction is Y" << endl;
 //        for (int node = 0; node < NUMNOD_SOH8; ++node) {
 //          orig_nodeids[node] = actele->NodeIds()[node];
 //          cout << node << ": " << orig_nodeids[node] << " inputID: " << actele->inp_nodeIds_[node]<< endl;
@@ -910,7 +910,6 @@ int DRT::Elements::So_sh8::Initialize_numbers(DRT::Discretization& dis)
       }
       case DRT::Elements::So_sh8::autoz:
       case DRT::Elements::So_sh8::globz:{ 
-        cout << endl << "thickness direction is Z" << endl;
         // no resorting necessary
         for (int node = 0; node < 8; ++node) {
           new_nodeids[node] = actele->inp_nodeIds_[node];
@@ -923,8 +922,12 @@ int DRT::Elements::So_sh8::Initialize_numbers(DRT::Discretization& dis)
       dserror("no thickness direction for So_sh8");
     }
     actele->SetNodeIds(NUMNOD_SOH8,new_nodeids);
+    actele->nodes_rearranged_ = true;
+    }
   }
-  
+  // fill complete again to reconstruct element-node pointers,
+  // but without element init, etc.
+  dis.FillComplete(false,false,false);
   
   return 0;
 }

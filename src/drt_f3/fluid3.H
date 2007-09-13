@@ -355,6 +355,12 @@ private:
   vector<RefCountPtr<DRT::Elements::Fluid3Line> > lines_;
   //! vector of lines adjacent to this element
   vector<DRT::Elements::Fluid3Line*>              lineptrs_;
+  
+  //! some distypes need rewinding of NodeIds due to bad input from mesher
+  //! flag to rewind this element
+  bool                                            rewind_;
+  //! flag whether process of rewinding is done
+  bool                                            donerewinding_;
 
   //! matrices of subscale acceleration values in gausspoints of this element
   blitz::Array<double,2>                        sub_acc_old_;
@@ -647,6 +653,13 @@ private:
     const DRT::Element::DiscretizationType  distype  ///< discretization type
     ) const;
 
+  /*!
+   * \brief check, whether NodeIds need rewinding due to wrong input from mesher,
+   * based on negative Jacobian determinant.
+   * \return boolean rewind or not rewind
+   */
+  bool checkRewinding();
+  
   ActionType convertStringToActionType(const string& action) const;
 
   //! convert string to stabilisation action

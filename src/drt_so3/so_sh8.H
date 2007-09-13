@@ -202,6 +202,7 @@ public:
     autox,    // automatically set to x
     autoy,    // automatically set to y
     autoz,    // automatically set to z
+    none,     // no rearrangement
   };
 
   int Initialize_numbers(DRT::Discretization& dis);
@@ -216,6 +217,8 @@ private:
   
   //! original (input) NodeIds, stored for eventual change to define thickness dir.
   int inp_nodeIds_[NUMNOD_SOH8];
+  
+  bool nodes_rearranged_;
 
   void sosh8_nlnstiffmass(vector<int>&              lm,
                          vector<double>&           disp,
@@ -254,7 +257,7 @@ private:
 
 \author frenzel (frenzel@lnm.mw.tum.de)
 */
-class Sosh8Register : public Soh8Register
+class Sosh8Register : public virtual Soh8Register
 {
 public:
 
@@ -328,7 +331,7 @@ public:
   The method performs all steps needed to init the solid-shell8 elements,
   e.g. defines shell-thickness direction
   */
-  //int Initialize(DRT::Discretization& dis);
+  int Initialize(DRT::Discretization& dis);
 
   //@}
 

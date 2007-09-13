@@ -2816,6 +2816,78 @@ bool DRT::Elements::Fluid3::isHigherOrderElement(
   return hoel;
 }
 
+//
+// check for element rewinding based on Jacobian determinant
+//
+bool DRT::Elements::Fluid3::checkRewinding()
+{
+  const DiscretizationType distype = this->Shape();
+  const int iel = NumNode();
+  // use one point gauss rule to calculate tau at element center
+  GaussRule3D integrationrule_1point = intrule_hex_1point;
+  switch(distype)
+  {
+  case hex8: case hex20: case hex27:
+      integrationrule_1point = intrule_hex_1point;
+      break;
+  case tet4: case tet10:
+      integrationrule_1point = intrule_tet_1point;
+      break;
+  case wedge6: case wedge15:
+      integrationrule_1point = intrule_wedge_1point;
+      break;
+  case pyramid5:
+      integrationrule_1point = intrule_pyramid_1point;
+      break;
+  default:
+      dserror("invalid discretization type for fluid3");
+  }
+  const IntegrationPoints3D  intpoints = getIntegrationPoints3D(integrationrule_1point);
+
+  // shape functions derivatives
+  const int NSD = 3;
+  Epetra_SerialDenseMatrix    deriv(NSD, iel);
+  Epetra_SerialDenseMatrix    xyze(NSD,iel);
+  DRT::Utils::shape_function_3D_deriv1(deriv,intpoints.qxg[0][0],intpoints.qxg[0][1],intpoints.qxg[0][2],distype);
+  // get node coordinates
+  DRT::Node** nodes = this->Nodes();
+  for (int inode=0; inode<iel; inode++)
+  {
+    const double* x = nodes[inode]->X();
+    xyze(0,inode) = x[0];
+    xyze(1,inode) = x[1];
+    xyze(2,inode) = x[2];
+  }
+
+  // get Jacobian matrix and determinant
+  // actually compute its transpose....
+  /*
+    +-            -+ T      +-            -+
+    | dx   dx   dx |        | dx   dy   dz |
+    | --   --   -- |        | --   --   -- |
+    | dr   ds   dt |        | dr   dr   dr |
+    |              |        |              |
+    | dy   dy   dy |        | dx   dy   dz |
+    | --   --   -- |   =    | --   --   -- |
+    | dr   ds   dt |        | ds   ds   ds |
+    |              |        |              |
+    | dz   dz   dz |        | dx   dy   dz |
+    | --   --   -- |        | --   --   -- |
+    | dr   ds   dt |        | dt   dt   dt |
+    +-            -+        +-            -+
+  */
+  Epetra_SerialDenseMatrix xjm(NSD,NSD);
+  xjm.Multiply('N','N',1.0,deriv,xyze,0.0);
+  const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
+                     xjm(0,1)*xjm(1,2)*xjm(2,0)+
+                     xjm(0,2)*xjm(1,0)*xjm(2,1)-
+                     xjm(0,2)*xjm(1,1)*xjm(2,0)-
+                     xjm(0,0)*xjm(1,2)*xjm(2,1)-
+                     xjm(0,1)*xjm(1,0)*xjm(2,2);
+  if (det < 0.0) return true;
+  return false;
+}
+
 //=======================================================================
 //=======================================================================
 //=======================================================================
@@ -2827,6 +2899,76 @@ bool DRT::Elements::Fluid3::isHigherOrderElement(
  *----------------------------------------------------------------------*/
 int DRT::Elements::Fluid3Register::Initialize(DRT::Discretization& dis)
 {
+  bool dofillcompleteagain = false;
+  //-------------------- loop all my column elements and check rewinding
+  for (int i=0; i<dis.NumMyColElements(); ++i)
+  {
+    // get the actual element
+    if (dis.lColElement(i)->Type() != DRT::Element::element_fluid3) continue;
+    DRT::Elements::Fluid3* actele = dynamic_cast<DRT::Elements::Fluid3*>(dis.lColElement(i));
+    if (!actele) dserror("cast to Fluid3* failed");
+    
+    const DRT::Element::DiscretizationType distype = actele->Shape();
+    bool possiblytorewind = false;
+    switch(distype)
+    {
+    case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27:
+        break;
+    case DRT::Element::tet4: case DRT::Element::tet10:
+        break;
+    case DRT::Element::wedge6: case DRT::Element::wedge15:
+        possiblytorewind = true;
+        break;
+    case DRT::Element::pyramid5:
+        possiblytorewind = true;
+        break;
+    default:
+        dserror("invalid discretization type for fluid3");
+    }
+    
+    if ( (!possiblytorewind) && (!actele->donerewinding_) ) {
+      actele->rewind_ = actele->checkRewinding();
+
+      if (actele->rewind_) {
+        if (distype==DRT::Element::wedge6){
+          int iel = actele->NumNode();
+          int new_nodeids[iel];
+          const int* old_nodeids;
+          old_nodeids = actele->NodeIds();
+          // rewinding of nodes to arrive at mathematically positive element
+          new_nodeids[0] = old_nodeids[3];
+          new_nodeids[1] = old_nodeids[4];
+          new_nodeids[2] = old_nodeids[5];
+          new_nodeids[3] = old_nodeids[0];
+          new_nodeids[4] = old_nodeids[1];
+          new_nodeids[5] = old_nodeids[2];
+          actele->SetNodeIds(iel, new_nodeids);
+        }
+        else if (distype == DRT::Element::pyramid5){
+          int iel = actele->NumNode();
+          int new_nodeids[iel];
+          const int* old_nodeids;
+          old_nodeids = actele->NodeIds();
+          // rewinding of nodes to arrive at mathematically positive element
+          new_nodeids[1] = old_nodeids[3];
+          new_nodeids[3] = old_nodeids[1];
+          // the other nodes can stay the same
+          new_nodeids[0] = old_nodeids[0];
+          new_nodeids[2] = old_nodeids[2];
+          new_nodeids[4] = old_nodeids[4];
+          actele->SetNodeIds(iel, new_nodeids);
+        }
+        else dserror("no rewinding scheme for this type of fluid3");
+      }
+      // process of rewinding done
+      actele->donerewinding_ = true;
+      dofillcompleteagain = true;
+    }
+  }
+  // fill complete again to reconstruct element-node pointers,
+  // but without element init, etc.
+  if(dofillcompleteagain) dis.FillComplete(false,false,false);
+  
   return 0;
 }
 
