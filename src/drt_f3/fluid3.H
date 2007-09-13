@@ -656,13 +656,6 @@ private:
     const DRT::Element::DiscretizationType  distype  ///< discretization type
     ) const;
 
-  /*!
-   * \brief check, whether NodeIds need rewinding due to wrong input from mesher,
-   * based on negative Jacobian determinant.
-   * \return boolean rewind or not rewind
-   */
-  bool checkRewinding();
-  
   ActionType convertStringToActionType(const string& action) const;
 
   //! convert string to stabilisation action
@@ -673,6 +666,14 @@ private:
 
   /// Residual based genalpha implementation class for fluid element
   Fluid3GenalphaResVMM* GenalphaResVMM();
+
+protected:
+  /*!
+   * \brief check, whether NodeIds need rewinding due to wrong input from mesher,
+   * based on negative Jacobian determinant.
+   * \return boolean rewind or not rewind
+   */
+  bool checkRewinding();
 
 }; // class Fluid3
 
