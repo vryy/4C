@@ -87,6 +87,7 @@ public:
   virtual int NumSurface() const
   {if (NumNode()==8 || NumNode()==20 || NumNode()==27) return 6;
    else if (NumNode()==4 || NumNode()==10) return 4;
+   else if (NumNode()==6 || NumNode()==15 || NumNode()==5) return 5;
    else {
    	dserror("Could not determine number of surfaces");
    	return -1;
@@ -292,12 +293,17 @@ private:
 
   // don't want = operator
   Ale3& operator = (const Ale3& old);
-  
+
   void CreateSurfacesTet(const int& nline,
                          const int& nnode);
-  
+
   void CreateSurfacesHex(const int& nline,
                          const int& nnode);
+
+  void CreateSurfaceWedge(const int& nsurf,
+                          const int& wedgetype);
+
+  void CreateSurfacesPyramid();
 
   // get optimal gaussrule for given discretization type
   DRT::Utils::GaussRule3D getOptimalGaussrule(const DiscretizationType& distype);
