@@ -1440,7 +1440,7 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
     /*   /                                                \
          |  2 N_x,xx + N_x,yy + N_y,xy + N_x,zz + N_z,xz  |
        1 |                                                |
-     - - |  N_y,xx + N_x,yx + 2 N_y,yy + N_z,yz + N_y,zz  |
+       - |  N_y,xx + N_x,yx + 2 N_y,yy + N_z,yz + N_y,zz  |
        2 |                                                |
          |  N_z,xx + N_x,zx + N_y,zy + N_z,yy + 2 N_z,zz  |
          \                                                /
@@ -2603,15 +2603,15 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
                     |                      |
                      \                    /
               */
-              elemat(vi*4    , ui*4    ) -= fac_alphaM_two_visc_afgdt_tauM_facMtau_funct_ui*viscs2_(0,0,vi);
-              elemat(vi*4    , ui*4 + 1) -= fac_alphaM_two_visc_afgdt_tauM_facMtau_funct_ui*viscs2_(0,1,vi);
-              elemat(vi*4    , ui*4 + 2) -= fac_alphaM_two_visc_afgdt_tauM_facMtau_funct_ui*viscs2_(0,2,vi);
-              elemat(vi*4 + 1, ui*4    ) -= fac_alphaM_two_visc_afgdt_tauM_facMtau_funct_ui*viscs2_(0,1,vi);
-              elemat(vi*4 + 1, ui*4 + 1) -= fac_alphaM_two_visc_afgdt_tauM_facMtau_funct_ui*viscs2_(1,1,vi);
-              elemat(vi*4 + 1, ui*4 + 2) -= fac_alphaM_two_visc_afgdt_tauM_facMtau_funct_ui*viscs2_(1,2,vi);
-              elemat(vi*4 + 2, ui*4    ) -= fac_alphaM_two_visc_afgdt_tauM_facMtau_funct_ui*viscs2_(0,2,vi);
-              elemat(vi*4 + 2, ui*4 + 1) -= fac_alphaM_two_visc_afgdt_tauM_facMtau_funct_ui*viscs2_(1,2,vi);
-              elemat(vi*4 + 2, ui*4 + 2) -= fac_alphaM_two_visc_afgdt_tauM_facMtau_funct_ui*viscs2_(2,2,vi);
+              elemat(vi*4    , ui*4    ) += fac_alphaM_two_visc_afgdt_tauM_facMtau_funct_ui*viscs2_(0,0,vi);
+              elemat(vi*4    , ui*4 + 1) += fac_alphaM_two_visc_afgdt_tauM_facMtau_funct_ui*viscs2_(0,1,vi);
+              elemat(vi*4    , ui*4 + 2) += fac_alphaM_two_visc_afgdt_tauM_facMtau_funct_ui*viscs2_(0,2,vi);
+              elemat(vi*4 + 1, ui*4    ) += fac_alphaM_two_visc_afgdt_tauM_facMtau_funct_ui*viscs2_(0,1,vi);
+              elemat(vi*4 + 1, ui*4 + 1) += fac_alphaM_two_visc_afgdt_tauM_facMtau_funct_ui*viscs2_(1,1,vi);
+              elemat(vi*4 + 1, ui*4 + 2) += fac_alphaM_two_visc_afgdt_tauM_facMtau_funct_ui*viscs2_(1,2,vi);
+              elemat(vi*4 + 2, ui*4    ) += fac_alphaM_two_visc_afgdt_tauM_facMtau_funct_ui*viscs2_(0,2,vi);
+              elemat(vi*4 + 2, ui*4 + 1) += fac_alphaM_two_visc_afgdt_tauM_facMtau_funct_ui*viscs2_(1,2,vi);
+              elemat(vi*4 + 2, ui*4 + 2) += fac_alphaM_two_visc_afgdt_tauM_facMtau_funct_ui*viscs2_(2,2,vi);
 
               /* viscous stabilisation --- convection */
               /*  factor:
@@ -2627,15 +2627,15 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
 
               */
 
-              elemat(vi*4    , ui*4    ) -= fac_afgdt_two_visc_afgdt_tauM_facMtau_conv_c_af_ui*viscs2_(0, 0, vi) ;
-              elemat(vi*4    , ui*4 + 1) -= fac_afgdt_two_visc_afgdt_tauM_facMtau_conv_c_af_ui*viscs2_(0, 1, vi) ;
-              elemat(vi*4    , ui*4 + 2) -= fac_afgdt_two_visc_afgdt_tauM_facMtau_conv_c_af_ui*viscs2_(0, 2, vi) ;
-              elemat(vi*4 + 1, ui*4    ) -= fac_afgdt_two_visc_afgdt_tauM_facMtau_conv_c_af_ui*viscs2_(0, 1, vi) ;
-              elemat(vi*4 + 1, ui*4 + 1) -= fac_afgdt_two_visc_afgdt_tauM_facMtau_conv_c_af_ui*viscs2_(1, 1, vi) ;
-              elemat(vi*4 + 1, ui*4 + 2) -= fac_afgdt_two_visc_afgdt_tauM_facMtau_conv_c_af_ui*viscs2_(1, 2, vi) ;
-              elemat(vi*4 + 2, ui*4    ) -= fac_afgdt_two_visc_afgdt_tauM_facMtau_conv_c_af_ui*viscs2_(0, 2, vi) ;
-              elemat(vi*4 + 2, ui*4 + 1) -= fac_afgdt_two_visc_afgdt_tauM_facMtau_conv_c_af_ui*viscs2_(1, 2, vi) ;
-              elemat(vi*4 + 2, ui*4 + 2) -= fac_afgdt_two_visc_afgdt_tauM_facMtau_conv_c_af_ui*viscs2_(2, 2, vi) ;
+              elemat(vi*4    , ui*4    ) += fac_afgdt_two_visc_afgdt_tauM_facMtau_conv_c_af_ui*viscs2_(0, 0, vi) ;
+              elemat(vi*4    , ui*4 + 1) += fac_afgdt_two_visc_afgdt_tauM_facMtau_conv_c_af_ui*viscs2_(0, 1, vi) ;
+              elemat(vi*4    , ui*4 + 2) += fac_afgdt_two_visc_afgdt_tauM_facMtau_conv_c_af_ui*viscs2_(0, 2, vi) ;
+              elemat(vi*4 + 1, ui*4    ) += fac_afgdt_two_visc_afgdt_tauM_facMtau_conv_c_af_ui*viscs2_(0, 1, vi) ;
+              elemat(vi*4 + 1, ui*4 + 1) += fac_afgdt_two_visc_afgdt_tauM_facMtau_conv_c_af_ui*viscs2_(1, 1, vi) ;
+              elemat(vi*4 + 1, ui*4 + 2) += fac_afgdt_two_visc_afgdt_tauM_facMtau_conv_c_af_ui*viscs2_(1, 2, vi) ;
+              elemat(vi*4 + 2, ui*4    ) += fac_afgdt_two_visc_afgdt_tauM_facMtau_conv_c_af_ui*viscs2_(0, 2, vi) ;
+              elemat(vi*4 + 2, ui*4 + 1) += fac_afgdt_two_visc_afgdt_tauM_facMtau_conv_c_af_ui*viscs2_(1, 2, vi) ;
+              elemat(vi*4 + 2, ui*4 + 2) += fac_afgdt_two_visc_afgdt_tauM_facMtau_conv_c_af_ui*viscs2_(2, 2, vi) ;
 
               /* viscous stabilisation --- diffusion  */
 
@@ -2651,55 +2651,55 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
                    |               \    /                |
                     \                                   /
               */
-              elemat(vi*4    , ui*4    ) += fac_afgdt_four_visc_visc_afgdt_tauM_facMtau*
+              elemat(vi*4    , ui*4    ) -= fac_afgdt_four_visc_visc_afgdt_tauM_facMtau*
                                             (viscs2_(0, 0, ui)*viscs2_(0, 0, vi)
                                              +
                                              viscs2_(0, 1, ui)*viscs2_(0, 1, vi)
                                              +
                                              viscs2_(0, 2, ui)*viscs2_(0, 2, vi)) ;
-              elemat(vi*4    , ui*4 + 1) += fac_afgdt_four_visc_visc_afgdt_tauM_facMtau*
+              elemat(vi*4    , ui*4 + 1) -= fac_afgdt_four_visc_visc_afgdt_tauM_facMtau*
                                             (viscs2_(0, 0, vi)*viscs2_(0, 1, ui)
                                              +
                                              viscs2_(0, 1, vi)*viscs2_(1, 1, ui)
                                              +
                                              viscs2_(0, 2, vi)*viscs2_(1, 2, ui)) ;
-              elemat(vi*4    , ui*4 + 2) += fac_afgdt_four_visc_visc_afgdt_tauM_facMtau*
+              elemat(vi*4    , ui*4 + 2) -= fac_afgdt_four_visc_visc_afgdt_tauM_facMtau*
                                             (viscs2_(0, 0, vi)*viscs2_(0, 2, ui)
                                              +
                                              viscs2_(0, 1, vi)*viscs2_(1, 2, ui)
                                              +
                                              viscs2_(0, 2, vi)*viscs2_(2, 2, ui)) ;
-              elemat(vi*4 + 1, ui*4    ) += fac_afgdt_four_visc_visc_afgdt_tauM_facMtau*
+              elemat(vi*4 + 1, ui*4    ) -= fac_afgdt_four_visc_visc_afgdt_tauM_facMtau*
                                             (viscs2_(0, 0, ui)*viscs2_(0, 1, vi)
                                              +
                                              viscs2_(0, 1, ui)*viscs2_(1, 1, vi)
                                              +
                                              viscs2_(0, 2, ui)*viscs2_(1, 2, vi)) ;
-              elemat(vi*4 + 1, ui*4 + 1) += fac_afgdt_four_visc_visc_afgdt_tauM_facMtau*
+              elemat(vi*4 + 1, ui*4 + 1) -= fac_afgdt_four_visc_visc_afgdt_tauM_facMtau*
                                             (viscs2_(0, 1, ui)*viscs2_(0, 1, vi)
                                              +
                                              viscs2_(1, 1, ui)*viscs2_(1, 1, vi)
                                              +
                                              viscs2_(1, 2, ui)*viscs2_(1, 2, vi)) ;
-              elemat(vi*4 + 1, ui*4 + 2) += fac_afgdt_four_visc_visc_afgdt_tauM_facMtau*
+              elemat(vi*4 + 1, ui*4 + 2) -= fac_afgdt_four_visc_visc_afgdt_tauM_facMtau*
                                             (viscs2_(0, 1, vi)*viscs2_(0, 2, ui)
                                              +
                                              viscs2_(1, 1, vi)*viscs2_(1, 2, ui)
                                              +
                                              viscs2_(1, 2, vi)*viscs2_(2, 2, ui)) ;
-              elemat(vi*4 + 2, ui*4    ) += fac_afgdt_four_visc_visc_afgdt_tauM_facMtau*
+              elemat(vi*4 + 2, ui*4    ) -= fac_afgdt_four_visc_visc_afgdt_tauM_facMtau*
                                             (viscs2_(0, 0, ui)*viscs2_(0, 2, vi)
                                              +
                                              viscs2_(0, 1, ui)*viscs2_(1, 2, vi)
                                              +
                                              viscs2_(0, 2, ui)*viscs2_(2, 2, vi)) ;
-              elemat(vi*4 + 2, ui*4 + 1) += fac_afgdt_four_visc_visc_afgdt_tauM_facMtau*
+              elemat(vi*4 + 2, ui*4 + 1) -= fac_afgdt_four_visc_visc_afgdt_tauM_facMtau*
                                             (viscs2_(0, 1, ui)*viscs2_(0, 2, vi)
                                              +
                                              viscs2_(1, 1, ui)*viscs2_(1, 2, vi)
                                              +
                                              viscs2_(1, 2, ui)*viscs2_(2, 2, vi)) ;
-              elemat(vi*4 + 2, ui*4 + 2) += fac_afgdt_four_visc_visc_afgdt_tauM_facMtau*
+              elemat(vi*4 + 2, ui*4 + 2) -= fac_afgdt_four_visc_visc_afgdt_tauM_facMtau*
                                             (viscs2_(0, 2, ui)*viscs2_(0, 2, vi)
                                              +
                                              viscs2_(1, 2, ui)*viscs2_(1, 2, vi)
@@ -2721,19 +2721,19 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
                    |                          |
                     \                        /
               */
-              elemat(vi*4    , ui*4 + 3) -= fac_two_visc_afgdt_tauM_facMtau*
+              elemat(vi*4    , ui*4 + 3) += fac_two_visc_afgdt_tauM_facMtau*
                                             (derxy_(0,ui)*viscs2_(0,0,vi)
                                              +
                                              derxy_(1,ui)*viscs2_(0,1,vi)
                                              +
                                              derxy_(2,ui)*viscs2_(0,2,vi)) ;
-              elemat(vi*4 + 1, ui*4 + 3) -= fac_two_visc_afgdt_tauM_facMtau*
+              elemat(vi*4 + 1, ui*4 + 3) += fac_two_visc_afgdt_tauM_facMtau*
                                             (derxy_(0,ui)*viscs2_(0,1,vi)
                                              +
                                              derxy_(1,ui)*viscs2_(1,1,vi)
                                              +
                                              derxy_(2,ui)*viscs2_(1,2,vi)) ;
-              elemat(vi*4 + 2, ui*4 + 3) -= fac_two_visc_afgdt_tauM_facMtau*
+              elemat(vi*4 + 2, ui*4 + 3) += fac_two_visc_afgdt_tauM_facMtau*
                                             (derxy_(0,ui)*viscs2_(0,2,vi)
                                              +
                                              derxy_(1,ui)*viscs2_(1,2,vi)
@@ -2765,55 +2765,55 @@ void DRT::Elements::Fluid3GenalphaResVMM::Sysmat(
                 */
 
 
-                elemat(vi*4     , ui*4    )-= fac_afgdt_two_visc_afgdt_tauM_facMtau*
+                elemat(vi*4     , ui*4    )+= fac_afgdt_two_visc_afgdt_tauM_facMtau*
                                               (viscs2_(0, 0, vi)*conv_r_af_(0, 0, ui)
                                                +
                                                viscs2_(0, 1, vi)*conv_r_af_(1, 0, ui)
                                                +
                                                viscs2_(0, 2, vi)*conv_r_af_(2, 0, ui)) ;
-                elemat(vi*4     , ui*4 + 1)-= fac_afgdt_two_visc_afgdt_tauM_facMtau*
+                elemat(vi*4     , ui*4 + 1)+= fac_afgdt_two_visc_afgdt_tauM_facMtau*
                                               (viscs2_(0, 0, vi)*conv_r_af_(0, 1, ui)
                                                +
                                                viscs2_(0, 1, vi)*conv_r_af_(1, 1, ui)
                                                +
                                                viscs2_(0, 2, vi)*conv_r_af_(2, 1, ui)) ;
-                elemat(vi*4     , ui*4 + 2)-= fac_afgdt_two_visc_afgdt_tauM_facMtau*
+                elemat(vi*4     , ui*4 + 2)+= fac_afgdt_two_visc_afgdt_tauM_facMtau*
                                               (viscs2_(0, 0, vi)*conv_r_af_(0, 2, ui)
                                                +
                                                viscs2_(0, 1, vi)*conv_r_af_(1, 2, ui)
                                                +
                                                viscs2_(0, 2, vi)*conv_r_af_(2, 2, ui)) ;
-                elemat(vi*4 + 1, ui*4     )-= fac_afgdt_two_visc_afgdt_tauM_facMtau*
+                elemat(vi*4 + 1, ui*4     )+= fac_afgdt_two_visc_afgdt_tauM_facMtau*
                                               (viscs2_(0, 1, vi)*conv_r_af_(0, 0, ui)
                                                +
                                                viscs2_(1, 1, vi)*conv_r_af_(1, 0, ui)
                                                +
                                                viscs2_(1, 2, vi)*conv_r_af_(2, 0, ui)) ;
-                elemat(vi*4 + 1, ui*4 + 1) -= fac_afgdt_two_visc_afgdt_tauM_facMtau*
+                elemat(vi*4 + 1, ui*4 + 1) += fac_afgdt_two_visc_afgdt_tauM_facMtau*
                                               (viscs2_(0, 1, vi)*conv_r_af_(0, 1, ui)
                                                +
                                                viscs2_(1, 1, vi)*conv_r_af_(1, 1, ui)
                                                +
                                                viscs2_(1, 2, vi)*conv_r_af_(2, 1, ui)) ;
-                elemat(vi*4 + 1, ui*4 + 2) -= fac_afgdt_two_visc_afgdt_tauM_facMtau*
+                elemat(vi*4 + 1, ui*4 + 2) += fac_afgdt_two_visc_afgdt_tauM_facMtau*
                                               (viscs2_(0, 1, vi)*conv_r_af_(0, 2, ui)
                                                +
                                                viscs2_(1, 1, vi)*conv_r_af_(1, 2, ui)
                                                +
                                                viscs2_(1, 2, vi)*conv_r_af_(2, 2, ui)) ;
-                elemat(vi*4 + 2, ui*4    ) -= fac_afgdt_two_visc_afgdt_tauM_facMtau*
+                elemat(vi*4 + 2, ui*4    ) += fac_afgdt_two_visc_afgdt_tauM_facMtau*
                                               (viscs2_(0, 2, vi)*conv_r_af_(0, 0, ui)
                                                +
                                                viscs2_(1, 2, vi)*conv_r_af_(1, 0, ui)
                                                +
                                                viscs2_(2, 2, vi)*conv_r_af_(2, 0, ui)) ;
-                elemat(vi*4 + 2, ui*4 + 1) -= fac_afgdt_two_visc_afgdt_tauM_facMtau*
+                elemat(vi*4 + 2, ui*4 + 1) += fac_afgdt_two_visc_afgdt_tauM_facMtau*
                                               (viscs2_(0, 2, vi)*conv_r_af_(0, 1, ui)
                                                +
                                                viscs2_(1, 2, vi)*conv_r_af_(1, 1, ui)
                                                +
                                                viscs2_(2, 2, vi)*conv_r_af_(2, 1, ui)) ;
-                elemat(vi*4 + 2, ui*4 + 2) -= fac_afgdt_two_visc_afgdt_tauM_facMtau*
+                elemat(vi*4 + 2, ui*4 + 2) += fac_afgdt_two_visc_afgdt_tauM_facMtau*
                                               (viscs2_(0, 2, vi)*conv_r_af_(0, 2, ui)
                                                +
                                                viscs2_(1, 2, vi)*conv_r_af_(1, 2, ui)
