@@ -4,7 +4,9 @@
 #ifdef TRILINOS_PACKAGE
 
 #include <NOX_LineSearch_Generic.H> // base class
+#include <NOX_LineSearch_UserDefinedFactory.H>
 #include <NOX_Utils.H>
+#include <NOX_GlobalData.H>
 #include <Teuchos_RefCountPtr.hpp>
 
 namespace NOX {
@@ -50,6 +52,19 @@ private:
 
   //! Printing utilities
   Teuchos::RefCountPtr<NOX::Utils> utils_;
+};
+
+
+/// simple factory that creates aitken relaxation class
+class AitkenFactory : public NOX::LineSearch::UserDefinedFactory
+{
+public:
+  Teuchos::RCP<NOX::LineSearch::Generic>
+  buildLineSearch(const Teuchos::RCP<NOX::GlobalData>& gd,
+		  Teuchos::ParameterList& params) const
+    {
+      return Teuchos::rcp(new AitkenRelaxation(gd->getUtils(),params));
+    }
 };
 
   }

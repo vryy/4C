@@ -5,7 +5,9 @@
 
 #include <NOX_Direction_Generic.H> // base class
 #include <NOX_Utils.H>
+#include <NOX_GlobalData.H>
 #include <Teuchos_RefCountPtr.hpp>
+#include <NOX_Direction_UserDefinedFactory.H>
 
 namespace NOX {
 namespace FSI {
@@ -94,6 +96,18 @@ private:
   double eps_;
   bool mpe_;
 };
+
+  /// simple factory that creates MPE direction object
+  class MinimalPolynomialFactory : public NOX::Direction::UserDefinedFactory
+  {
+  public:
+    virtual Teuchos::RCP<NOX::Direction::Generic>
+    buildDirection(const Teuchos::RCP<NOX::GlobalData>& gd,
+                   Teuchos::ParameterList& params) const
+      {
+        return Teuchos::rcp(new MinimalPolynomial(gd->getUtils(),params));
+      }
+  };
 
 }
 }

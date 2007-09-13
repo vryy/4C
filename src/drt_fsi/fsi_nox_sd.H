@@ -5,6 +5,10 @@
 
 #include <NOX_LineSearch_Generic.H>
 #include <Teuchos_RefCountPtr.hpp>
+#include <NOX_LineSearch_UserDefinedFactory.H>
+#include <NOX_Utils.H>
+#include <NOX_GlobalData.H>
+
 
 // Forward declarations
 namespace NOX {
@@ -131,6 +135,20 @@ private:
   Teuchos::RefCountPtr<NOX::Abstract::Vector> vecPtr_;
 
 };
+
+
+/// simple factory that creates SD relaxation class
+class SDFactory : public NOX::LineSearch::UserDefinedFactory
+{
+public:
+  Teuchos::RCP<NOX::LineSearch::Generic>
+  buildLineSearch(const Teuchos::RCP<NOX::GlobalData>& gd,
+		  Teuchos::ParameterList& params) const
+    {
+      return Teuchos::rcp(new SDRelaxation(gd->getUtils(),params));
+    }
+};
+
 
   }
 }

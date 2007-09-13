@@ -409,11 +409,12 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
   {
     // insert user defined aitken relaxation
     Teuchos::ParameterList& linesearch = nlParams.sublist("Line Search");
-    Teuchos::RefCountPtr<NOX::LineSearch::Generic> aitken = Teuchos::rcp(new NOX::FSI::AitkenRelaxation(utils,linesearch));
+    Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> aitkenfactory =
+      Teuchos::rcp(new NOX::FSI::AitkenFactory());
 
     // We change the method here.
     linesearch.set("Method","User Defined");
-    linesearch.set("User Defined Line Search",aitken);
+    linesearch.set("User Defined Line Search Factory", aitkenfactory);
 
     Teuchos::ParameterList& aitkenList = linesearch.sublist("Aitken");
     if (aitkenList.get("start steps only", false))
@@ -429,13 +430,15 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
   {
     // insert user defined aitken relaxation
     Teuchos::ParameterList& linesearch = nlParams.sublist("Line Search");
-    Teuchos::RefCountPtr<NOX::LineSearch::Generic> sd = Teuchos::rcp(new NOX::FSI::SDRelaxation(utils,linesearch));
+    Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> sdfactory =
+      Teuchos::rcp(new NOX::FSI::SDFactory());
 
     // We change the method here.
     linesearch.set("Method","User Defined");
-    linesearch.set("User Defined Line Search",sd);
+    linesearch.set("User Defined Line Search Factory", sdfactory);
   }
 
+#if 0
   // the very special experimental extrapolation
   else if (nlParams.sublist("Line Search").get("Method","Aitken")=="Extrapolate")
   {
@@ -447,6 +450,7 @@ void FSI::DirichletNeumannCoupling::Timeloop(const Teuchos::RefCountPtr<NOX::Epe
     linesearch.set("Method","User Defined");
     linesearch.set("User Defined Line Search",extrapolate);
   }
+#endif
 
   // ==================================================================
 
@@ -731,9 +735,10 @@ FSI::DirichletNeumannCoupling::CreateLinearSystem(ParameterList& nlParams,
   // extension, so we have to modify the parameter list here.
   else if (jacobian=="None")
   {
-    Teuchos::RefCountPtr<NOX::Direction::Generic> fixpoint = Teuchos::rcp(new NOX::FSI::FixPoint(utils,nlParams));
     dirParams.set("Method","User Defined");
-    dirParams.set("User Defined Direction",fixpoint);
+    Teuchos::RCP<NOX::Direction::UserDefinedFactory> fixpointfactory =
+      Teuchos::rcp(new NOX::FSI::FixPointFactory());
+    dirParams.set("User Defined Direction Factory",fixpointfactory);
     lsParams.set("Preconditioner","None");
     preconditioner="None";
   }
@@ -741,13 +746,15 @@ FSI::DirichletNeumannCoupling::CreateLinearSystem(ParameterList& nlParams,
   // Minimal Polynomial vector extrapolation
   else if (jacobian=="MPE")
   {
-    Teuchos::RefCountPtr<NOX::Direction::Generic> mpe = Teuchos::rcp(new NOX::FSI::MinimalPolynomial(utils,nlParams));
     dirParams.set("Method","User Defined");
-    dirParams.set("User Defined Direction",mpe);
+    Teuchos::RCP<NOX::Direction::UserDefinedFactory> mpefactory =
+      Teuchos::rcp(new NOX::FSI::MinimalPolynomialFactory());
+    dirParams.set("User Defined Direction Factory",mpefactory);
     lsParams.set("Preconditioner","None");
     preconditioner="None";
   }
 
+#if 0
   // epsilon vector extrapolation
   else if (jacobian=="Epsilon")
   {
@@ -767,6 +774,7 @@ FSI::DirichletNeumannCoupling::CreateLinearSystem(ParameterList& nlParams,
     lsParams.set("Preconditioner","None");
     preconditioner="None";
   }
+#endif
 
   else if (jacobian=="Dumb Finite Difference")
   {

@@ -5,7 +5,10 @@
 
 #include <NOX_Direction_Generic.H> // base class
 #include <NOX_Utils.H>
+#include <NOX_GlobalData.H>
 #include <Teuchos_RefCountPtr.hpp>
+#include <NOX_Direction_UserDefinedFactory.H>
+
 
 /// NOX: the nonlinear object solver from trilinos with local extensions
 namespace NOX {
@@ -69,6 +72,18 @@ private:
   //! Printing Utils
   Teuchos::RefCountPtr<NOX::Utils> utils_;
 };
+
+    /// simple factory that creates fix point direction object
+    class FixPointFactory : public NOX::Direction::UserDefinedFactory
+    {
+    public:
+      virtual Teuchos::RCP<NOX::Direction::Generic>
+      buildDirection(const Teuchos::RCP<NOX::GlobalData>& gd,
+                     Teuchos::ParameterList& params) const
+        {
+          return Teuchos::rcp(new FixPoint(gd->getUtils(),params));
+        }
+    };
 
   }
 }
