@@ -2877,7 +2877,11 @@ bool DRT::Elements::Fluid3::checkRewinding()
     +-            -+        +-            -+
   */
   Epetra_SerialDenseMatrix xjm(NSD,NSD);
-  xjm.Multiply('N','N',1.0,deriv,xyze,0.0);
+
+  xjm.Multiply('N','T',1.0,deriv,xyze,0.0);
+
+
+  
   const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
                      xjm(0,1)*xjm(1,2)*xjm(2,0)+
                      xjm(0,2)*xjm(1,0)*xjm(2,1)-
@@ -2885,6 +2889,7 @@ bool DRT::Elements::Fluid3::checkRewinding()
                      xjm(0,0)*xjm(1,2)*xjm(2,1)-
                      xjm(0,1)*xjm(1,0)*xjm(2,2);
   if (det < 0.0) return true;
+
   return false;
 }
 
