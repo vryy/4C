@@ -356,12 +356,15 @@ private:
   //! vector of lines adjacent to this element
   vector<DRT::Elements::Fluid3Line*>              lineptrs_;
   
+ 
   //! some distypes need rewinding of NodeIds due to bad input from mesher
-  //! flag to rewind this element
+  //! flag to rewind this element, must be availabale for friend class fluid3register
+protected:
   bool                                            rewind_;
   //! flag whether process of rewinding is done
   bool                                            donerewinding_;
 
+private:
   //! matrices of subscale acceleration values in gausspoints of this element
   blitz::Array<double,2>                        sub_acc_old_;
 
