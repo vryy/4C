@@ -37,7 +37,6 @@ namespace DRT
 {
 // forward declarations
 class Discretization;
-class Fluid3Register;
 
 namespace Elements
 {
@@ -46,6 +45,7 @@ class Fluid3Surface;
 class Fluid3Line;
 class Fluid3Impl;
 class Fluid3GenalphaResVMM;
+class Fluid3Register;
 
 /*!
 \class Fluid3
