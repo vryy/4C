@@ -91,11 +91,6 @@ void stru_static_drt()
   // set degrees of freedom in the discretization
   if (!actdis->Filled()) actdis->FillComplete();
 
-//  // RENUMBERING
-//  DRT::Elements::So_sh8* actele = dynamic_cast<DRT::Elements::So_sh8*>(actdis->lColElement(0));
-//  actele->Initialize_numbers((*actdis));
-//  actdis->FillComplete();
-
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
