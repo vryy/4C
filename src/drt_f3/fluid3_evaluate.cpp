@@ -2931,7 +2931,7 @@ int DRT::Elements::Fluid3Register::Initialize(DRT::Discretization& dis)
         dserror("invalid discretization type for fluid3");
     }
     
-    if ( (!possiblytorewind) && (!actele->donerewinding_) ) {
+    if ( (possiblytorewind) && (!actele->donerewinding_) ) {
       actele->rewind_ = actele->checkRewinding();
 
       if (actele->rewind_) {
