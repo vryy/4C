@@ -199,7 +199,27 @@ void DRT::Utils::TimeCurveManager::ReadInput()
           curve.AddSlice(rcp(new LungTimeSlice(frequ, ppeep, phase)));
           continue;
         }
+        frchk("PhysiologicalWavefrom",&ierr);
+        if (ierr==1)
+        {
+          double period;
+          double flowrate;
+          int points;
+          std::vector<double> ArrayLength(60);
 
+          frdouble("Period",&period,&ierr);
+          if (ierr!=1) dserror("cannot read CURVE%d",i);
+          frdouble("Flowrate",&flowrate,&ierr);
+          if (ierr!=1) dserror("cannot read CURVE%d",i);
+          frint("Samplingpoints",&points,&ierr);
+          if (ierr!=1) dserror("cannot read CURVE%d",i);
+          frdouble_n("Arrayread",&(ArrayLength[0]),points,&ierr);
+          if (ierr!=1) dserror("cannot read CURVE%d",i);
+
+
+          curve.AddSlice(rcp(new BloodTimeSlice(period, flowrate, points, ArrayLength)));
+          continue;
+        }
         dserror("unknown type of time curve in CURVE%d", i);
       }
     }
@@ -371,6 +391,64 @@ double DRT::Utils::LungTimeSlice::f(double t)
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+DRT::Utils::BloodTimeSlice::BloodTimeSlice(double period, double flowrate, int points,  std::vector<double>& ArrayLength )
+  : TimeSlice(0.,1e100),
+    period_(period),
+    flowrate_(flowrate),
+    points_(points),
+    ArrayLength_(ArrayLength)
+
+{
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double DRT::Utils::BloodTimeSlice::f(double t)
+{
+
+
+  const int DataLength=points_;
+ //  double EvenCoefficient[DataLength/2]={0};
+//   double OddCoefficient[DataLength/2]={0};
+//   double SampleNumber[DataLength]={0};
+   double EvenCoefficient[31]={0};
+  double OddCoefficient[31]={0};
+  double SampleNumber[60]={0};
+  double fac;
+  double C = (double)points_;
+
+  // printf("%d\n",DataLength);
+
+  for (int p=0;p<DataLength;p++){
+    SampleNumber[p]=ArrayLength_[p]*flowrate_;
+      }
+
+  for (int p=0; p<=DataLength/2; p++){
+   EvenCoefficient[p] = 0;
+   OddCoefficient[p] = 0;
+
+   for (int num=0; num<=DataLength-1; num++){
+     EvenCoefficient[p] = EvenCoefficient[p]+2/C*SampleNumber[num]*cos(2*PI*p*(num+1)/C);
+     OddCoefficient[p] = OddCoefficient[p]+2/C*SampleNumber[num]*sin(2*PI*p*(num+1)/C);
+   }
+   //  printf("%3d : % f  % f\n", p, EvenCoefficient[p], OddCoefficient[p]);
+ }
+
+EvenCoefficient[DataLength/2] = EvenCoefficient[DataLength/2]/2;
+OddCoefficient[DataLength/2] = 0;
+fac = EvenCoefficient[0]/2;
+
+  for (int h=1; h<=DataLength/2; h++){
+    fac = fac+EvenCoefficient[h]*cos(2*PI*h*t/period_)+OddCoefficient[h]*sin(2*PI*h*t/period_);
+  }
+
+  return fac;
+}
+
+
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -466,6 +544,16 @@ void DRT::Utils::LungTimeSlice::Print(std::ostream& out) const
   out << "    LungTimeSlice(frequ=" << frequ_
       << ", ppeep=" << ppeep_
       << ", phase=" << phase_
+      << ")\n";
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+
+void DRT::Utils::BloodTimeSlice::Print(std::ostream& out) const
+{
+  out << "   BloodTimeSlice(period=" << period_
+      << ",  flowrate=" << flowrate_
       << ")\n";
 }
 

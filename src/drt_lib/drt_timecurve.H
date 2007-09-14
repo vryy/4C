@@ -132,6 +132,26 @@ namespace Utils {
     double phase_;
   };
 
+   /// special respiration time slice
+  class BloodTimeSlice : public TimeSlice
+  {
+  public:
+    BloodTimeSlice(double period, double flowrate, int points,  std::vector<double>& ArrayLength );
+
+    /// evaluate time curve at given time
+    double f(double t);
+
+    /// debug output of this slice
+    virtual void Print(std::ostream& out) const;
+  private:
+    double period_;
+    double flowrate_;
+    int points_;
+    std::vector<double> ArrayLength_;
+  };
+
+
+
 
 
   /// time slice based on parsed expression with variable t
