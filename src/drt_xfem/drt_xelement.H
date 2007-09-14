@@ -23,8 +23,8 @@ Maintainer: Axel Gerstenberger
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 
-#include <physics.H>
-#include <dof_management.H>
+#include "physics.H"
+#include "dof_management.H"
 
 using namespace Teuchos;
 
@@ -64,9 +64,9 @@ class XElement : public Element
 public:
 
   typedef int EleId;    ///< unique elemend id
-  
-  typedef int ProcId;   ///< processor id 
-    
+
+  typedef int ProcId;   ///< processor id
+
   //! @name Constructors and destructors and related methods
 
   /*!

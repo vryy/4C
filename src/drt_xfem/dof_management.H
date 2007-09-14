@@ -15,8 +15,8 @@ Maintainer: Axel Gerstenberger
 #ifndef DOF_MANAGEMENT_H
 #define DOF_MANAGEMENT_H
 
-#include <physics.H>
-#include <enrichment.H>
+#include "physics.H"
+#include "enrichment.H"
 
 using namespace Physics;
 
@@ -29,7 +29,7 @@ namespace XFEM
  \class EnrPhysVar
 
  \brief Corresponds to a specific enriched physical field variable
- 
+
  type EnrPhysVar = (PhysVar, Enrichment)
 
  */
@@ -50,7 +50,7 @@ public:
     {
         return var_;
     };
-    
+
     inline Enrichment getEnrichment() const
     {
         return enr_;
@@ -61,7 +61,7 @@ private:
     PhysVar var_;
     // specific enrichment for this physical field
     Enrichment enr_;
-    
+
 }; // class EnrPhysVar
 
 }; // namespace XFEM
