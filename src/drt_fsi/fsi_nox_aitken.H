@@ -63,8 +63,14 @@ public:
   buildLineSearch(const Teuchos::RCP<NOX::GlobalData>& gd,
 		  Teuchos::ParameterList& params) const
     {
-      return Teuchos::rcp(new AitkenRelaxation(gd->getUtils(),params));
+      if (aitken_==Teuchos::null)
+        aitken_ = Teuchos::rcp(new AitkenRelaxation(gd->getUtils(),params));
+      else
+        aitken_->reset(gd,params);
+      return aitken_;
     }
+private:
+  mutable Teuchos::RCP<AitkenRelaxation> aitken_;
 };
 
   }
