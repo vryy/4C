@@ -233,7 +233,7 @@ void FSI::DirichletNeumannCoupling::SetupStructure()
   genalphaparams->set<bool>  ("io structural disp",ioflags.struct_disp);
   genalphaparams->set<int>   ("io disp every nstep",sdyn->updevry_disp);
   genalphaparams->set<bool>  ("io structural stress",ioflags.struct_stress);
-  genalphaparams->set<int>   ("io disp every nstep",sdyn->updevry_stress);
+  genalphaparams->set<int>   ("io stress every nstep",sdyn->updevry_stress);
   genalphaparams->set<bool>  ("print to screen",true);
   genalphaparams->set<bool>  ("print to err",true);
   genalphaparams->set<FILE*> ("err file",allfiles.out_err);
