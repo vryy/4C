@@ -115,6 +115,9 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
     if (not coupsf_.MasterDofMap()->SameAs(*coupsa_.MasterDofMap()))
       dserror("structure interface dof maps do not match");
 
+    if (coupsf_.MasterDofMap()->NumGlobalElements()==0)
+      dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
+
     // init transfer from interface to field
     structure_->SetInterfaceMap(coupsf_.MasterDofMap());
     fluid_    ->SetInterfaceMap(coupsf_.SlaveDofMap());
