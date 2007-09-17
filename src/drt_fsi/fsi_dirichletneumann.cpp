@@ -997,7 +997,8 @@ bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vect
   }
 
   double endTime = timer.WallTime();
-  cout << "Time for residual calculation: " << endTime-startTime << "\n";
+  if (comm_.MyPID()==0)
+    cout << "Time for residual calculation: " << endTime-startTime << "\n";
   return true;
 }
 
