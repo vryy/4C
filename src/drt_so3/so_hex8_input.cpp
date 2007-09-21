@@ -125,6 +125,10 @@ bool DRT::Elements::So_hex8::ReadElement()
   if (strncmp(buffer,"Nd123",5)==0) stresstype_= soh8_stress_nd123;
   // set default: no stresses
   else stresstype_= soh8_stress_none;
+  
+  // Initialize winding flags
+  rewind_ = false;
+  donerewinding_ = false;
 
   return true;
 } // So_hex8::ReadElement()
