@@ -517,7 +517,7 @@ void MicroStruGenAlpha::FullNewton()
 
       // save this vector for homogenization
       *fresm_dirich_ = fresmcopy;
-      cout << "dism, fresmcopy " << *dism_ << fresmcopy << endl;
+      //cout << "dism, fresmcopy " << *dism_ << fresmcopy << endl;
 
       fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
     }
@@ -942,7 +942,7 @@ void MicroStruGenAlpha::Homogenization(Epetra_SerialDenseVector* stress,
 
   Epetra_SerialDenseMatrix P(3,3);
 
-   for (int i=0; i<3; ++i)
+  for (int i=0; i<3; ++i)
   {
     for (int j=0; j<3; ++j)
     {
@@ -991,9 +991,9 @@ void MicroStruGenAlpha::Homogenization(Epetra_SerialDenseVector* stress,
   }
 
   //cout << "pdof: " << *pdof_ << endl;
-  cout << "fp: " << fp << endl;
+  //cout << "fp: " << fp << endl;
   //cout << "Xp: " << *Xp_ << endl;
-  cout << "FPK homogenization:\n" << P << endl;
+  //cout << "FPK homogenization:\n" << P << endl;
   //cout << "Stresses derived from homogenization:\n" << S << endl;
 
 
@@ -1011,8 +1011,8 @@ void MicroStruGenAlpha::Homogenization(Epetra_SerialDenseVector* stress,
   Epetra_MultiVector Kfp(*fdof_, np_);
   Epetra_MultiVector x(*fdof_, np_);
 
-  stiff_->FillComplete();
-  stiff_->OptimizeStorage();
+  stiff_->FillComplete();                   // needed for ExtractCrsDataPointers
+  stiff_->OptimizeStorage();                // needed for ExtractCrsDataPointers
 
   err = stiff_->ExtractCrsDataPointers(IndexOffset, Indices, Values);
   if (err)
@@ -1100,6 +1100,20 @@ void MicroStruGenAlpha::Homogenization(Epetra_SerialDenseVector* stress,
 
   Kpp.Update(-1., Ktemp, 1.);    // Kpp now holds KM=Kpp-Kpf*inv(Kff)*Kfp
 
+  // Now we have to calculate 1/V0 Xp_ Kpp Xp_ (inner product) to obtain
+  // the contitutive tensor relating the first Piola Kirchhoff stress
+  // tensor to the deformation gradient -> keep in mind the underlying
+  // assumption that inertial forces are negligible (actually this
+  // only works strictly in the static case, so we have to think about
+  // dynamic homogenization - what we are actually interested in - later on)
+  // With corresponding push forward operations the constitutive
+  // tensor relating second Piola Kirchhoff stresses to Green Lagrange
+  // strains has to be determined (this is what Solid3 Hex8 wants to
+  // be returned by the material routine)
+
+  MicroStruGenAlpha::calc_cmat(Kpp, F_inv, S, cmat);
+
+  cout << "Stiffness Matrix:\n " << *cmat << endl;
 
   // after having all homogenization stuff done, we now really don't need stiff_ anymore
 

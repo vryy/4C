@@ -395,7 +395,7 @@ void DRT::Elements::So_hex8::soh8_nlnstiffmass(
     solve_for_inverseJac.SetMatrix(jac);            // set A=jac
     solve_for_inverseJac.SetVectors(N_XYZ,deriv_gp);// set X=N_XYZ, B=deriv_gp
     solve_for_inverseJac.FactorWithEquilibration(true);
-    int err2 = solve_for_inverseJac.Factor();        
+    int err2 = solve_for_inverseJac.Factor();
     int err = solve_for_inverseJac.Solve();         // N_XYZ = J^-1.N_rst
     if ((err != 0) && (err2!=0)) dserror("Inversion of Jacobian failed");
 
@@ -778,7 +778,7 @@ int DRT::Elements::Soh8Register::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->Type() != DRT::Element::element_so_hex8) continue;
     DRT::Elements::So_hex8* actele = dynamic_cast<DRT::Elements::So_hex8*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex8* failed");
-    
+
     if (!actele->donerewinding_) {
       actele->rewind_ = actele->soh8_checkRewinding();
 
@@ -804,7 +804,7 @@ int DRT::Elements::Soh8Register::Initialize(DRT::Discretization& dis)
   // fill complete again to reconstruct element-node pointers,
   // but without element init, etc.
   dis.FillComplete(false,false,false);
-  
+
   return 0;
 }
 
