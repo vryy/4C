@@ -130,8 +130,12 @@ int DRT::Elements::Soh8Surface::EvaluateNeumann(ParameterList&           params,
       }
       break;
       case neum_orthopressure:{   // orthogonal pressure on deformed config.
-        if ((*onoff)[1] != 0) dserror("orthopressure on 1st dof only!");
+        if ((*onoff)[0] != 1) dserror("orthopressure on 1st dof only!");
+        for (int checkdof = 1; checkdof < 6; ++checkdof) {
+          if ((*onoff)[checkdof] != 0) dserror("orthopressure on 1st dof only!");
+        }
         double ortho_value = (*val)[0];
+        if (!ortho_value) dserror("no orthopressure value given!"); 
         vector<double> unrm(NUMDIM_SOH8);
         soh8_surface_integ(&funct,&drs,&unrm,&xscurr,gpcoord(gpid,0),gpcoord(gpid,1));
         double fac = (-1.0) * gpweight * curvefac;   // integration factor
