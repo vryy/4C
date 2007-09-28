@@ -53,6 +53,7 @@ extern "C"
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mat/neohooke.H"
+#include "../drt_mat/hyperpolyconvex.H"
 #include "../drt_mat/convecdiffus.H"
 #include "drt_dserror.H"
 
@@ -305,6 +306,12 @@ DRT::ParObject* DRT::Utils::Factory(const vector<char>& data)
       MAT::StVenantKirchhoff* stvenantk = new MAT::StVenantKirchhoff();
       stvenantk->Unpack(data);
       return stvenantk;
+    }
+    case ParObject_HyperPolyconvex:
+    {
+      MAT::HyperPolyconvex* hyperpoly = new MAT::HyperPolyconvex();
+      hyperpoly->Unpack(data);
+      return hyperpoly;
     }
     case ParObject_MicroMaterial:
     {
