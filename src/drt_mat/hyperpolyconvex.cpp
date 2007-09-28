@@ -161,7 +161,7 @@ void MAT::HyperPolyconvex::Evaluate(const Epetra_SerialDenseVector* glstrain,
   Inv(2) = lambda(0) * lambda(1) * lambda(2);
   
   // compute C^-1
-  Epetra_SerialDenseMatrix Cinv(3,3);
+  Epetra_SerialDenseMatrix Cinv(C);
   Epetra_SerialDenseSolver solve_for_inverseC;
   solve_for_inverseC.SetMatrix(Cinv);
   int err2 = solve_for_inverseC.Factor();        
