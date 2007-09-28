@@ -6,8 +6,11 @@
 void MicroStruGenAlpha::calc_cmat(const Epetra_MultiVector& K_M,
                                   const Epetra_SerialDenseMatrix& inv_defgrd,
                                   const Epetra_SerialDenseVector& S,
-                                  Epetra_SerialDenseMatrix* cmat)
+                                  Epetra_SerialDenseMatrix* cmat,
+                                  const Epetra_SerialDenseMatrix* F)
 {
+  DOUBLE cmat_pf_temp[3][3][3][3];
+  DOUBLE cmat_pf_temp2[3][3][3][3];
   DOUBLE cmat_pf[3][3][3][3];
 
   for (int i=0;i<3;++i)
@@ -18,20 +21,96 @@ void MicroStruGenAlpha::calc_cmat(const Epetra_MultiVector& K_M,
       {
         for (int l=0;l<3;++l)
         {
-          cmat_pf[i][j][k][l] = 0.;
+          cmat_pf_temp[i][j][k][l] = 0.;
 
           for (int m=0;m<np_/3;++m)
           {
             for (int n=0;n<np_/3;++n)
             {
-              cmat_pf[i][j][k][l] += (*Xp_)[3*m+i]*K_M[3*m+j][3*n+k]*(*Xp_)[3*n+l];
+              const Epetra_Vector* temp=K_M(3*n+k);  // this is a pointer to
+                                                     // the corresponding
+                                                     // vector (-> column!)
+
+              cmat_pf_temp[i][j][k][l]+=(*Xp_)[3*m+j]*(*temp)[3*m+i]*(*Xp_)[3*n+l];
             }
           }
-
         }
       }
     }
   }
+
+  // left conjugation of constitutive tensor (cf. Kouznetsova, thesis)
+  // (T^ijkl)LC = T^jikl (change in first two indices)
+
+  for (int i=0;i<3;++i)
+  {
+    for (int j=0;j<3;++j)
+    {
+      for (int k=0;k<3;++k)
+      {
+        for (int l=0;l<3;++l)
+        {
+          cmat_pf_temp2[i][j][k][l] = 1/V0_*cmat_pf_temp[j][i][k][l];
+        }
+      }
+    }
+  }
+
+  // note that deformation gradient for Kouznetsova's approach is
+  // conjugated, therefore the latter two indiced need to be changed,
+  // too (-> check out Miehe's approach)
+
+  for (int i=0;i<3;++i)
+  {
+    for (int j=0;j<3;++j)
+    {
+      for (int k=0;k<3;++k)
+      {
+        for (int l=0;l<3;++l)
+        {
+          cmat_pf[i][j][k][l] = cmat_pf_temp2[i][j][l][k];
+        }
+      }
+    }
+  }
+
+
+  // test if cmat_pf : F= F*stress ?!
+
+//   Epetra_SerialDenseMatrix P_cmat(3, 3);
+//   for (int i=0; i<3; ++i)
+//   {
+//     for (int j=0; j<3; ++j)
+//     {
+//       P_cmat(i, j) = 0.;
+
+//       for (int k=0; k<3; ++k)
+//       {
+//         for (int l=0; l<3; ++l)
+//         {
+//           P_cmat(i, j)+=cmat_pf[i][j][k][l]*(*F)[k][l];
+//           if (i==0 && j==0)
+//             printf("%d %d: cmat_pf: %lf, F: %lf\n", k, l, cmat_pf[i][j][k][l], (*F)[k][l]);
+//         }
+//       }
+//     }
+//   }
+//   Epetra_SerialDenseMatrix P_S(3, 3);
+//   P_S(0, 0) = (*F)(0, 0)*S[0] + (*F)(0, 1)*S[3] + (*F)(0, 2)*S[5];
+//   P_S(0, 1) = (*F)(0, 0)*S[3] + (*F)(0, 1)*S[1] + (*F)(0, 2)*S[4];
+//   P_S(0, 2) = (*F)(0, 0)*S[5] + (*F)(0, 1)*S[4] + (*F)(0, 2)*S[2];
+//   P_S(1, 0) = (*F)(1, 0)*S[0] + (*F)(1, 1)*S[3] + (*F)(1, 2)*S[5];
+//   P_S(1, 1) = (*F)(1, 0)*S[3] + (*F)(1, 1)*S[1] + (*F)(1, 2)*S[4];
+//   P_S(2, 0) = (*F)(1, 0)*S[5] + (*F)(1, 1)*S[4] + (*F)(1, 2)*S[2];
+//   P_S(2, 0) = (*F)(2, 0)*S[0] + (*F)(2, 1)*S[3] + (*F)(2, 2)*S[5];
+//   P_S(2, 1) = (*F)(2, 0)*S[3] + (*F)(2, 1)*S[1] + (*F)(2, 2)*S[4];
+//   P_S(2, 2) = (*F)(2, 0)*S[5] + (*F)(2, 1)*S[4] + (*F)(2, 2)*S[2];
+
+//   cout << "Zum Vergleich: P_cmat und P_S:\n";
+//   cout << "P_cmat:\n" << P_cmat << endl;
+//   cout << "P_S:\n" << P_S << endl;
+//   exit(0);
+
 
   // definition of Kronecker delta
 
@@ -110,6 +189,8 @@ void MicroStruGenAlpha::calc_cmat(const Epetra_MultiVector& K_M,
   (*cmat)(5,2) = (*cmat)(2,5);
   (*cmat)(5,3) = (*cmat)(3,5);
   (*cmat)(5,4) = (*cmat)(4,5);
+
+   cout << "cmat:\n" << *cmat << endl;
 
 }
 

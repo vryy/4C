@@ -146,7 +146,8 @@ public:
   void calc_cmat(const Epetra_MultiVector& K_M,
                  const Epetra_SerialDenseMatrix& inv_defgrd,
                  const Epetra_SerialDenseVector& S,
-                 Epetra_SerialDenseMatrix* cmat);
+                 Epetra_SerialDenseMatrix* cmat,
+                 const Epetra_SerialDenseMatrix* F);
 
 
 protected:

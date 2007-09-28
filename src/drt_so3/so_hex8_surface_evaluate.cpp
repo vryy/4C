@@ -89,7 +89,7 @@ int DRT::Elements::Soh8Surface::EvaluateNeumann(ParameterList&           params,
     xsrefe(i,0) = Nodes()[i]->X()[0];
     xsrefe(i,1) = Nodes()[i]->X()[1];
     xsrefe(i,2) = Nodes()[i]->X()[2];
-    
+
     xscurr(i,0) = xsrefe(i,0) + mydisp[i*NODDOF_SOH8+0];
     xscurr(i,1) = xsrefe(i,1) + mydisp[i*NODDOF_SOH8+1];
     xscurr(i,2) = xsrefe(i,2) + mydisp[i*NODDOF_SOH8+2];
@@ -131,18 +131,18 @@ int DRT::Elements::Soh8Surface::EvaluateNeumann(ParameterList&           params,
       break;
       case neum_orthopressure:{   // orthogonal pressure on deformed config.
         if ((*onoff)[0] != 1) dserror("orthopressure on 1st dof only!");
-        for (int checkdof = 1; checkdof < 6; ++checkdof) {
+        for (int checkdof = 1; checkdof < 3; ++checkdof) {
           if ((*onoff)[checkdof] != 0) dserror("orthopressure on 1st dof only!");
         }
         double ortho_value = (*val)[0];
-        if (!ortho_value) dserror("no orthopressure value given!"); 
+        if (!ortho_value) dserror("no orthopressure value given!");
         vector<double> unrm(NUMDIM_SOH8);
         soh8_surface_integ(&funct,&drs,&unrm,&xscurr,gpcoord(gpid,0),gpcoord(gpid,1));
         double fac = (-1.0) * gpweight * curvefac;   // integration factor
         // distribute over element load vector
         for (int nodid=0; nodid < 4; ++nodid) {
           for(int dim=0; dim < NUMDIM_SOH8; ++dim) {
-            elevec1[nodid*NUMDIM_SOH8 + dim] += 
+            elevec1[nodid*NUMDIM_SOH8 + dim] +=
                                 funct[nodid] * ortho_value * unrm[dim] * fac;
           }
         }
@@ -209,8 +209,8 @@ void DRT::Elements::Soh8Surface::soh8_surface_integ(
     (*unrm)[0] = dxyzdrs(0,1) * dxyzdrs(1,2) - dxyzdrs(0,2) * dxyzdrs(1,1);
     (*unrm)[1] = dxyzdrs(0,2) * dxyzdrs(1,0) - dxyzdrs(0,0) * dxyzdrs(1,2);
     (*unrm)[2] = dxyzdrs(0,0) * dxyzdrs(1,1) - dxyzdrs(0,1) * dxyzdrs(1,0);
-  }                   
-                       
+  }
+
   return;
 }
 

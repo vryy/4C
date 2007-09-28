@@ -233,7 +233,7 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
   // clear displacements in MicroStruGenAlpha for next usage
   microgenalpha_->ClearState();
 
-  MAT::MicroMaterialGP::Homogenization(stress, cmat, density, defgrd);
+  //MAT::MicroMaterialGP::Homogenization(stress, cmat, density, defgrd);
   microgenalpha_->Homogenization(stress, cmat, density, defgrd);
 }
 

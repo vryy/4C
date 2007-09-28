@@ -778,8 +778,8 @@ void MicroStruGenAlpha::EvaluateMicroBC(const Epetra_SerialDenseMatrix* defgrd)
 
         //if (lid == 4)
         //{
-          //cout << "deformation gradient: " << *defgrd << endl;
-          //cout << "prescribed dof " << lid << ": " << (*disn_)[lid] << endl;
+        //cout << "deformation gradient: " << *defgrd << endl;
+        //cout << "prescribed dof " << lid << ": " << (*disn_)[lid] << endl;
         //}
       }
     }
@@ -821,9 +821,6 @@ void MicroStruGenAlpha::ClearState()
 
 void MicroStruGenAlpha::SetUpHomogenization()
 {
-  std::vector <int>   pdof(np_);
-  std::vector <int>   fdof(np_);
-
   int indp = 0;
   int indf = 0;
 
@@ -834,6 +831,12 @@ void MicroStruGenAlpha::SetUpHomogenization()
   toggle_len*=3; // three dofs per node
 
   ndof_ = toggle_len;
+
+  std::vector <int>   pdof(np_);
+  std::vector <int>   fdof(ndof_-np_);        // changed this, previously this
+                                              // has been just fdof(np_),
+                                              // but how should that
+                                              // work for ndof_-np_>np_???
 
   for (int it=0; it<toggle_len; ++it)
   {
@@ -934,11 +937,14 @@ void MicroStruGenAlpha::Homogenization(Epetra_SerialDenseVector* stress,
   // All these complicated conversions are necessary since only for
   // the energy-conjugated pair of first Piola-Kirchhoff and
   // deformation gradient the averaging integrals can be transformed
-  // into integrals over the boundaries only (which simplifies matters
-  // significantly) whereas the calling macroscopic material routine
-  // demands a second Piola-Kirchhoff stress tensor.
+  // into integrals over the boundaries only in case of negligible
+  // inertial forces (which simplifies matters significantly) whereas
+  // the calling macroscopic material routine demands a second
+  // Piola-Kirchhoff stress tensor.
 
-  // assembly of stresses (cf Solid3 Hex8): S11,S22,S33,S12,S23,S13
+  // IMPORTANT: the RVE has to be centered around (0,0,0), otherwise
+  // this approach does not work. This was also confirmed by
+  // Kouznetsova in a discussion during USNCCM 9.
 
   Epetra_SerialDenseMatrix P(3,3);
 
@@ -977,6 +983,7 @@ void MicroStruGenAlpha::Homogenization(Epetra_SerialDenseVector* stress,
 
   // convert to second Piola-Kirchhoff stresses and store them in
   // vector format
+  // assembly of stresses (cf Solid3 Hex8): S11,S22,S33,S12,S23,S13
 
   Epetra_SerialDenseVector S(6);
 
@@ -990,11 +997,18 @@ void MicroStruGenAlpha::Homogenization(Epetra_SerialDenseVector* stress,
     S[5] += F_inv(0, i)*P(i,2);                     // S13
   }
 
-  //cout << "pdof: " << *pdof_ << endl;
-  //cout << "fp: " << fp << endl;
-  //cout << "Xp: " << *Xp_ << endl;
-  //cout << "FPK homogenization:\n" << P << endl;
-  //cout << "Stresses derived from homogenization:\n" << S << endl;
+  for (int i=0; i<6; ++i)
+  {
+    (*stress)[i]=S[i];
+  }
+
+  // cout << "deformation gradient:\n" << *defgrd << endl;
+  // cout << "fresm_dirich:\n" << *fresm_dirich_ << endl;
+  // cout << "pdof: " << *pdof_ << endl;
+  // cout << "fp: " << fp << endl;
+  // cout << "Xp: " << *Xp_ << endl;
+  // cout << "FPK homogenization:\n" << P << endl;
+  // cout << "Stresses derived from homogenization:\n" << S << endl;
 
 
   // split effective dynamic stiffness -> we want Kpp, Kpf, Kfp and Kff
@@ -1111,13 +1125,17 @@ void MicroStruGenAlpha::Homogenization(Epetra_SerialDenseVector* stress,
   // strains has to be determined (this is what Solid3 Hex8 wants to
   // be returned by the material routine)
 
-  MicroStruGenAlpha::calc_cmat(Kpp, F_inv, S, cmat);
+  MicroStruGenAlpha::calc_cmat(Kpp, F_inv, S, cmat, defgrd);
 
-  cout << "Stiffness Matrix:\n " << *cmat << endl;
+  // cout << "cmat homogenization:\n " << *cmat << endl;
 
   // after having all homogenization stuff done, we now really don't need stiff_ anymore
 
   stiff_ = null;
+
+  // the macroscopic density has to be computed -> we will do that
+  // later, for now we just set it to 1.
+  (*density)=1.;
 }
 
 #endif
