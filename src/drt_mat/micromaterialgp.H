@@ -52,12 +52,6 @@ public:
   /// Set up microscale generalized alpha
   void SetUpMicroGenAlpha();
 
-  /// Perform homogenization of microscale variables
-  void Homogenization(Epetra_SerialDenseVector* stress,
-                      Epetra_SerialDenseMatrix* cmat,
-                      double* density,
-                      const Epetra_SerialDenseMatrix* defgrd);
-
 
 private:
 

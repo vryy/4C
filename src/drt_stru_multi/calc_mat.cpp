@@ -190,7 +190,7 @@ void MicroStruGenAlpha::calc_cmat(const Epetra_MultiVector& K_M,
   (*cmat)(5,3) = (*cmat)(3,5);
   (*cmat)(5,4) = (*cmat)(4,5);
 
-   cout << "cmat:\n" << *cmat << endl;
+//   cout << "cmat:\n" << *cmat << endl;
 
 }
 

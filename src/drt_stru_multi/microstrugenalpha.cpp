@@ -910,6 +910,12 @@ void MicroStruGenAlpha::Homogenization(Epetra_SerialDenseVector* stress,
                                        double *density,
                                        const Epetra_SerialDenseMatrix* defgrd)
 {
+  // determine macroscopic parameters via averaging (homogenization) of
+  // microscopic features
+  // this was implemented against the background of serial usage
+  // -> if a parallel version of microscale simulations is EVER wanted,
+  // carefully check if/what/where things have to change
+
   // split microscale stiffness and residual forces into parts
   // corresponding to prescribed and free dofs -> see thesis
   // of Kouznetsova (Computational homogenization for the multi-scale
@@ -1008,7 +1014,7 @@ void MicroStruGenAlpha::Homogenization(Epetra_SerialDenseVector* stress,
   // cout << "fp: " << fp << endl;
   // cout << "Xp: " << *Xp_ << endl;
   // cout << "FPK homogenization:\n" << P << endl;
-  // cout << "Stresses derived from homogenization:\n" << S << endl;
+//   cout << "Stresses derived from homogenization:\n" << S << endl;
 
 
   // split effective dynamic stiffness -> we want Kpp, Kpf, Kfp and Kff
@@ -1127,7 +1133,7 @@ void MicroStruGenAlpha::Homogenization(Epetra_SerialDenseVector* stress,
 
   MicroStruGenAlpha::calc_cmat(Kpp, F_inv, S, cmat, defgrd);
 
-  // cout << "cmat homogenization:\n " << *cmat << endl;
+  cout << "cmat homogenization:\n " << *cmat << endl;
 
   // after having all homogenization stuff done, we now really don't need stiff_ anymore
 

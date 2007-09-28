@@ -233,79 +233,7 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
   // clear displacements in MicroStruGenAlpha for next usage
   microgenalpha_->ClearState();
 
-  //MAT::MicroMaterialGP::Homogenization(stress, cmat, density, defgrd);
   microgenalpha_->Homogenization(stress, cmat, density, defgrd);
-}
-
-
-/// determine macroscopic parameters via averaging (homogenization) of
-/// microscopic features
-/// this was implemented against the background of serial usage
-/// -> if a parallel version of microscale simulations is EVER wanted,
-/// carefully check if/what/where things have to change
-
-void MAT::MicroMaterialGP::Homogenization(Epetra_SerialDenseVector* stress,
-                                          Epetra_SerialDenseMatrix* cmat,
-                                          double *density,
-                                          const Epetra_SerialDenseMatrix* defgrd)
-{
-  // deformation gradient is only needed for test purposes and can be
-  // eliminated later on for real calculations
-  //cout << "In homogenization\n";
-
-  double Emod = 100.0;    // Young's modulus (modulus of elasticity)
-  double nu = 0.0;      // Poisson's ratio (Querdehnzahl)
-  (*density) = 1.0;     // density, returned to evaluate mass matrix
-  double mfac = Emod/((1.0+nu)*(1.0-2.0*nu));  /* factor */
-
-  Epetra_SerialDenseMatrix cauchygreen(3,3);
-  cauchygreen.Multiply('T','N',1.0,*defgrd,*defgrd,1.0);
-
-  Epetra_SerialDenseVector glstrain(6);
-  glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
-  glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
-  glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
-  glstrain(3) = cauchygreen(0,1);
-  glstrain(4) = cauchygreen(1,2);
-  glstrain(5) = cauchygreen(2,0);
-
-
-  /* write non-zero components */
-  (*cmat)(0,0) = mfac*(1.0-nu);
-  (*cmat)(0,1) = mfac*nu;
-  (*cmat)(0,2) = mfac*nu;
-  (*cmat)(1,0) = mfac*nu;
-  (*cmat)(1,1) = mfac*(1.0-nu);
-  (*cmat)(1,2) = mfac*nu;
-  (*cmat)(2,0) = mfac*nu;
-  (*cmat)(2,1) = mfac*nu;
-  (*cmat)(2,2) = mfac*(1.0-nu);
-  /* ~~~ */
-  (*cmat)(3,3) = mfac*0.5*(1.0-2.0*nu);
-  (*cmat)(4,4) = mfac*0.5*(1.0-2.0*nu);
-  (*cmat)(5,5) = mfac*0.5*(1.0-2.0*nu);
-
-  // evaluate stresses
-  (*cmat).Multiply('N',glstrain,(*stress));
-
-  //cout << "Stresses St Venant: \n" << *stress << endl;
-
-  // conversion to first Piola Kirchhoff for comparison
-  Epetra_SerialDenseMatrix P(3,3);
-
-  P(0,0) = (*defgrd)(0,0)*(*stress)(0)+(*defgrd)(0,1)*(*stress)(3)+(*defgrd)(0,2)*(*stress)(5);
-  P(1,0) = (*defgrd)(1,0)*(*stress)(0)+(*defgrd)(1,1)*(*stress)(3)+(*defgrd)(1,2)*(*stress)(5);
-  P(2,0) = (*defgrd)(2,0)*(*stress)(0)+(*defgrd)(2,1)*(*stress)(3)+(*defgrd)(2,2)*(*stress)(5);
-
-  P(0,1) = (*defgrd)(0,0)*(*stress)(3)+(*defgrd)(0,1)*(*stress)(1)+(*defgrd)(0,2)*(*stress)(4);
-  P(1,1) = (*defgrd)(1,0)*(*stress)(3)+(*defgrd)(1,1)*(*stress)(1)+(*defgrd)(1,2)*(*stress)(4);
-  P(2,1) = (*defgrd)(2,0)*(*stress)(3)+(*defgrd)(2,1)*(*stress)(1)+(*defgrd)(2,2)*(*stress)(4);
-
-  P(0,2) = (*defgrd)(0,0)*(*stress)(5)+(*defgrd)(0,1)*(*stress)(4)+(*defgrd)(0,2)*(*stress)(2);
-  P(1,2) = (*defgrd)(1,0)*(*stress)(5)+(*defgrd)(1,1)*(*stress)(4)+(*defgrd)(1,2)*(*stress)(2);
-  P(2,2) = (*defgrd)(2,0)*(*stress)(5)+(*defgrd)(2,1)*(*stress)(4)+(*defgrd)(2,2)*(*stress)(2);
-
-  cout << "FPK St. Venant: \n" << P << endl;
 }
 
 #endif
