@@ -128,7 +128,7 @@ public:
   \brief Print this element
   */
   void Print(ostream& os) const;
-  
+
   /*!
   \brief Allocate and return a DesignElementRegister class
 
@@ -196,7 +196,7 @@ public:
   enum ThicknessDirection
   {
     globx,    // global x
-    globy,    // global y    
+    globy,    // global y
     globz,    // global z
     autoj,    // find automatically by Jacobian
     autox,    // automatically set to x
@@ -214,10 +214,10 @@ private:
 
   //! shell-thickness direction
   ThicknessDirection                             thickdir_;
-  
+
   //! original (input) NodeIds, stored for eventual change to define thickness dir.
   int inp_nodeIds_[NUMNOD_SOH8];
-  
+
   bool nodes_rearranged_;
 
   void sosh8_nlnstiffmass(vector<int>&              lm,
@@ -238,7 +238,7 @@ private:
 
   void sosh8_evaluateT(const Epetra_SerialDenseMatrix jac,  // actual jacobian
                        Epetra_SerialDenseMatrix& TinvT);    // corr. T^{-T}
-  
+
   ThicknessDirection sosh8_findthickdir() ;
 
 }; // class So_sh8
@@ -257,7 +257,7 @@ private:
 
 \author frenzel (frenzel@lnm.mw.tum.de)
 */
-class Sosh8Register : public virtual Soh8Register
+class Sosh8Register : public Soh8Register
 {
 public:
 
