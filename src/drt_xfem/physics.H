@@ -15,6 +15,8 @@ Maintainer: Axel Gerstenberger
 #ifndef PHYSICS_H
 #define PHYSICS_H
 
+#include <string>
+#include <sstream>
 
 namespace Physics
 {
@@ -39,6 +41,8 @@ enum PhysVar
     LagrMultMuy,
     LagrMultMuz
 };
+
+std::string physVarToString(const PhysVar var);
 
 };
 

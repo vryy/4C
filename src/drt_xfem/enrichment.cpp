@@ -14,6 +14,9 @@ Maintainer: Axel Gerstenberger
 #ifdef TRILINOS_PACKAGE
 
 #include "enrichment.H"
+#include "../drt_lib/drt_dserror.H"
+#include <string>
+#include <sstream>
 
 using namespace XFEM;
 
@@ -22,7 +25,7 @@ using namespace XFEM;
  *----------------------------------------------------------------------*/
 Enrichment::Enrichment(
         const int id,
-        const Type type) :
+        const EnrType type) :
     id_(id), type_(type)
 {
     return;
@@ -48,16 +51,26 @@ Enrichment::~Enrichment()
 }
 
 /*----------------------------------------------------------------------*
- |  print this element (public)                              mwgee 11/06|
+ |  create string                                                       |
  *----------------------------------------------------------------------*/
-void Enrichment::Print(
-        ostream& os) const
+string Enrichment::toString() const
 {
-    os << "Enrichment ";
-    cout << "id: "<< this->id_ << "type: "<< this->type_ << endl;
-    return;
+    stringstream s;
+    s << "Enrichment id: " << this->id_ << ", type: " << enrTypeToString(this->type_);
+    return s.str();
 }
 
+string Enrichment::enrTypeToString(const EnrType type) const
+{
+    string typetext;
+    switch (type){
+        case typeStandard:  typetext = "Standard"; break;
+        case typeJump:      typetext = "Jump    "; break;
+        case typeVoid:      typetext = "Void    "; break;
+        default: dserror("no string defined for EnrType");
+    };
+    return typetext;
+}
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

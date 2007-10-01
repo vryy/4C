@@ -35,7 +35,7 @@ public:
 
     // Various kinds of enrichments, which differ in ther way,
     // how the enrichment function is evaluated
-    enum Type
+    enum EnrType
     {
         typeStandard,
         typeJump,
@@ -44,29 +44,54 @@ public:
     
     Enrichment(
             const int id,
-            const Type type);
+            const EnrType type);
     Enrichment(
             const Enrichment& other);
     ~Enrichment();
-    void Print(
-            ostream& os) const;
+    
+    string toString() const;
 
-    inline int getId() const
+    string enrTypeToString(const EnrType type) const;
+    
+    inline int Id() const
     {
         return id_;
     };
     
-    inline Type getType() const
+    inline EnrType Type() const
     {
         return type_;
     };
+
+    inline bool operator ==(const Enrichment& rhs) const
+    {
+        if (Id() == rhs.Id() and Type() == rhs.Type())
+            return true;
+        else
+            return false;
+    };
+    
+    inline bool operator <(const Enrichment& rhs) const
+    {
+        if (Id() < rhs.Id())
+            return true;
+        else if (Id() > rhs.Id())
+            return false;
+        else
+        {
+            if (Type() < rhs.Type())
+                return true;
+            else
+                return false;
+        }
+    } 
 
 private:
     // a global id used to distuinguish several surfaces within one element
     // might become or contain reference to a certain condition
     int id_;
     // the specific type of enrichment
-    Type type_;
+    EnrType type_;
 }; // class Enrichment
 
 };

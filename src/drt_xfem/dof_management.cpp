@@ -20,9 +20,9 @@ Maintainer: Axel Gerstenberger
 // ag 08/07
 //
 XFEM::EnrPhysVar::EnrPhysVar(
-        const PhysVar var,
+        const PhysVar physvar,
         const Enrichment enr) :
-    var_(var), enr_(enr)
+            physvar_(physvar), enr_(enr)
 {
     return;
 }
@@ -33,8 +33,8 @@ XFEM::EnrPhysVar::EnrPhysVar(
 //
 XFEM::EnrPhysVar::EnrPhysVar(
         const EnrPhysVar& other) :
-var_(other.var_), 
-enr_(other.enr_)
+            physvar_(other.physvar_), 
+            enr_(other.enr_)
 {
     assert(&other != this);
     return;
@@ -47,6 +47,13 @@ enr_(other.enr_)
 XFEM::EnrPhysVar::~EnrPhysVar()
 {
     return;
+}
+
+string XFEM::EnrPhysVar::toString() const
+{
+    stringstream s;
+    s << "Enriched PhysVar: " << Physics::physVarToString(this->physvar_) << ", Enrichment: " << enr_.toString();
+    return s.str();
 }
 
 #endif  // #ifdef TRILINOS_PACKAGE

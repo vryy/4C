@@ -38,27 +38,43 @@ class EnrPhysVar
 public:
 
     EnrPhysVar(
-            const PhysVar var,
+            const PhysVar physvar,
             const Enrichment enr);
     EnrPhysVar(
             const EnrPhysVar& other);
     ~EnrPhysVar();
-    void Print(
-            std::ostream& os) const;
+
+    string toString() const;
 
     inline PhysVar getPhysVar() const
     {
-        return var_;
+        return physvar_;
     };
 
     inline Enrichment getEnrichment() const
     {
         return enr_;
     };
+    
+    inline bool operator <(const EnrPhysVar& rhs) const
+    {
+        if (getPhysVar() < rhs.getPhysVar())
+            return true;
+        else if (getPhysVar() > rhs.getPhysVar())
+            return false;
+        else
+        {
+            if (getEnrichment() < rhs.getEnrichment())
+                return true;
+            else
+                return false;
+        }
+    } 
+    
 
 private:
     // physical field variable to be enriched
-    PhysVar var_;
+    PhysVar physvar_;
     // specific enrichment for this physical field
     Enrichment enr_;
 

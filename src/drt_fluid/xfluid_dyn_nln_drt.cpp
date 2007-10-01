@@ -23,6 +23,7 @@ Maintainer: Axel Gerstenberger
 #include <ctime>
 #include <cstdlib>
 #include <iostream>
+#include <set>
 #include <Teuchos_TimeMonitor.hpp>
 
 #ifdef PARALLEL
@@ -37,6 +38,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_xfem/intersection.H"
 #include "../drt_xfem/integrationcell.H"
+#include "../drt_xfem/dof_management.H"
 
 /*----------------------------------------------------------------------*
   |                                                       m.gee 06/01    |
@@ -108,7 +110,7 @@ extern struct _CURVE *curve;
  *----------------------------------------------------------------------*/
 void xdyn_fluid_drt()
 {
-  cout << "Hallo, ich bin ein Fluid-XFEM problem...";
+  cout << "Hallo, ich bin ein Fluid-XFEM Problem..." << endl;
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
@@ -117,7 +119,7 @@ void xdyn_fluid_drt()
   RefCountPtr<DRT::Discretization> soliddis = null;
   soliddis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
   
-  cout << *soliddis;
+  //cout << *soliddis;
   
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
@@ -134,8 +136,10 @@ void xdyn_fluid_drt()
 
   // Intersection
   XFEM::Intersection is;
-  map<int, vector <XFEM::Integrationcell> > intCellMap;
-  is.computeIntersection(fluiddis,soliddis,intCellMap);
+  map<int, vector <XFEM::Integrationcell> > elementIntCellMap;
+  is.computeIntersection(fluiddis,soliddis,elementIntCellMap);
+  
+  
 
 //  stringstream s;
 //  for( map< int, vector <XFEM::Integrationcell> >::iterator pair = intCellMap.begin(); pair != intCellMap.end(); ++pair ) 
@@ -149,6 +153,31 @@ void xdyn_fluid_drt()
 //  };
 //  cout << s.str() << endl;
 
+  map<int, set <XFEM::EnrPhysVar> > nodalDofMap;
+  
+  const XFEM::Enrichment enr_std(0, XFEM::Enrichment::typeStandard);
+  const XFEM::Enrichment enr_void1(1, XFEM::Enrichment::typeVoid);
+  const XFEM::Enrichment enr_void2(2, XFEM::Enrichment::typeVoid);
+    
+  nodalDofMap[0].insert(XFEM::EnrPhysVar(Physics::Velx, enr_std));
+  nodalDofMap[0].insert(XFEM::EnrPhysVar(Physics::Vely, enr_std));
+  nodalDofMap[0].insert(XFEM::EnrPhysVar(Physics::Velz, enr_std));
+  nodalDofMap[0].insert(XFEM::EnrPhysVar(Physics::Pres, enr_std));
+  nodalDofMap[0].insert(XFEM::EnrPhysVar(Physics::Velx, enr_void1));
+  nodalDofMap[0].insert(XFEM::EnrPhysVar(Physics::Vely, enr_void1));
+  nodalDofMap[0].insert(XFEM::EnrPhysVar(Physics::Velz, enr_void1));
+  nodalDofMap[0].insert(XFEM::EnrPhysVar(Physics::Pres, enr_void1));
+  nodalDofMap[0].insert(XFEM::EnrPhysVar(Physics::Pres, enr_void2));
+  
+  
+  
+  for ( set<XFEM::EnrPhysVar>::iterator element = nodalDofMap[0].begin(); element != nodalDofMap[0].end(); ++element )
+  {
+      cout << element->toString() << endl;
+  };
+  //XFEM::EnrPhysVar var = nodalDofMap[0].begin();
+
+  
   // -------------------------------------------------------------------
   // set some pointers and variables
   // -------------------------------------------------------------------
