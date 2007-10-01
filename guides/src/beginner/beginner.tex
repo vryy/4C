@@ -45,7 +45,7 @@ the central LNM file server. There are two ways to get the code.
 \begin{itemize}
 \item Students ask their custodian :) for a copy. Before that can happen
 the non-disclosure form needs to be filled.
-\item Coworkers get it via subversion: 
+\item Coworkers get it via subversion:
 
 \begin{lyxcode}
 svn~checkout~svn://gauss/trunk/ccarat
@@ -54,7 +54,7 @@ Ask your friendly LNM administrator for a subversion account.
 
 It is a very good idea to get to know subversion before you do this.
 There is the book {}``Version Control with Subversion \url{http://svnbook.red-bean.com}''
-online. 
+online.
 
 \end{itemize}
 
@@ -92,7 +92,7 @@ The \ccarat{} code comes with documentation, example input files
 and support scripts. The important subdirectories are the following:
 
 \begin{lyxlist}{00.00.0000}
-\item [{\texttt{src}}] contains the real \ccarat{} code in several subdirectories 
+\item [{\texttt{src}}] contains the real \ccarat{} code in several subdirectories
 \item [{\texttt{Input}}] contains various valid and running \texttt{{*}.dat}
 files, \ccarat{} input files that are used for (automatic) testing.
 \item [{\texttt{config}}] contains configuration files (platform specifications)
@@ -103,7 +103,7 @@ a \ccarat{} Makefile
 and the list of files that are to be run during tests
 \item [{\texttt{doc}}] contains all the documentation
 \item [{\texttt{.}}] there are only a few scripts and two Makefile fragments
-in the main directory of \ccarat{} 
+in the main directory of \ccarat{}
 \end{lyxlist}
 
 \section{Setup and Run}
@@ -123,7 +123,7 @@ will also want to choose your favorite text editor. (See section~\ref{sec:Text-e
 Before compiling a \texttt{Makefile} needs to be generated. There
 is a configuration script to do this. It needs two arguments: a platform
 specification and a parameter list. Both are available as files in
-the \texttt{config} subdirectory. 
+the \texttt{config} subdirectory.
 
 \begin{itemize}
 \item There is a platform specification file for each supported platform.
@@ -131,7 +131,7 @@ This includes different versions of Linux on desktop computers and
 the cluster configuration. On all platforms both serial and parallel
 versions are supported.
 \item in \texttt{config/defines} there is a list of all available parameters;
-uncomment those which are needed; mandatory/recommended are: 
+uncomment those which are needed; mandatory/recommended are:
 
 \begin{itemize}
 \item insert the flag \texttt{CCADISCRET} to get the shiny new
@@ -143,7 +143,7 @@ great huge libraries) and make sure to also include
 \texttt{AZTEC\_PACKAGE} (iterative solvers) and \texttt{UMFPACK}
 (direct solver).
 \end{itemize}
-\item save defines in a separate file, e.g. \texttt{config/defines.my} 
+\item save defines in a separate file, e.g. \texttt{config/defines.my}
 
 
 For example inside the \ccarat{} directory the call
@@ -152,7 +152,7 @@ For example inside the \ccarat{} directory the call
 ./configure~config/muench.fc6.ser~config/defines.my~
 \end{lyxcode}
 creates a \texttt{Makefile} by aid of \texttt{Makefile.in} for a serial
-executable; 
+executable;
 
 \item after reconfiguring use \texttt{make clean} before recompiling
 \end{itemize}
@@ -202,7 +202,7 @@ blas.
 
 
 Both visual2 and visual3 are optional and are only supported on 32bit
-Linux with g77. 
+Linux with g77.
 
 \item [{\texttt{trilinos}}] a installed version of the trilinos libraries,
 that is the directories \path{/lnm/lib/\$PLATFORM/\$VERSION/trilinos/include}
@@ -210,7 +210,7 @@ and \texttt{/lnm/lib/\$PLATFORM/\$VERSION/trilinos/lib} with appropiate
 content are required. The packages from trilinos that are needed include
 \texttt{amesos}, \texttt{aztecoo}, \texttt{epetra}, \texttt{epetraext},
 \texttt{ifpack}, \texttt{loca}, \texttt{ml}, \texttt{moertel}, \texttt{nox},
-\texttt{teuchos}. 
+\texttt{teuchos}.
 
 
 The trilinos sources reside in \texttt{/lnm/lib/Trilinos}. It is currently
@@ -243,7 +243,7 @@ maintainer first.
 
 In \texttt{Input} there are test examples; all necessary ``packages''
 must have been activated in the defines-file that was used to configure
-the \ccarat{} at hand. For example, 
+the \ccarat{} at hand. For example,
 
 \texttt{./cca\_fc6\_ser.fast Input/f2\_drivencavity20x20.dat xxx }
 
@@ -253,7 +253,7 @@ beginning with \texttt{xxx}. If the run is interrupted with an error
 this error message have to be inserted in '\texttt{config/defines.my}';
 e.g. \texttt{MAXNOD=20} in second line, \texttt{MAXELE=4} in third
 line, \ldots; then recompile and rerun to run a parallel version you
-need to use the mpirun command like this: 
+need to use the mpirun command like this:
 
 \begin{lyxcode}
 mpirun~-np~1~./cca\_fc6\_par.fast~Input/f2\_drivencavity20x20.dat~xxx
@@ -314,7 +314,7 @@ directly.
 \subsection{First Time Setup }
 
 Before the cluster can be used for parallel calculations, a few setup
-steps have to be performed 
+steps have to be performed
 
 
 \subsubsection{Get an account}
@@ -325,7 +325,7 @@ Ask your friendly LNM administrator. Ask politely.
 \subsubsection{generate ssh keys for password-less access to all nodes}
 
 \begin{itemize}
-\item Login to the cluster with \texttt{ssh username@hop.lnm.mw.tum.de} 
+\item Login to the cluster with \texttt{ssh username@hop.lnm.mw.tum.de}
 \item If you have not done it before, change the default password set by
 the Administrator with \texttt{passwd }
 \item Create new SSH key with \texttt{ssh-keygen -t rsa} and press enter
@@ -333,7 +333,7 @@ without entering a password
 \item in the folder \texttt{\textasciitilde{}/.ssh} append the generated key
 into the authorized key file with \texttt{cat < id\_rsa.pub >> authorized\_keys}.
 This allows to connect to all nodes on the cluster and is essential
-for running any kind of job 
+for running any kind of job
 \end{itemize}
 
 \subsubsection{optinally generate ssh keys for password-less access to the frontend }
@@ -356,7 +356,7 @@ and its input file. To do this you will have to write a short job
 file that tells the queue where to find and how to run your code.
 
 The following file prototype serves as the execution script for the
-cluster. Copy and modify it to your needs. 
+cluster. Copy and modify it to your needs.
 
 \begin{lyxcode}
 \#!/bin/sh
@@ -480,14 +480,14 @@ string.
 
 \section{Preprocessing}
 
-There are not so many means to create a valid input file. 
+There are not so many means to create a valid input file.
 
 
 \subsection{GiD}\label{beginner:sec:gid}
 
 GiD (http://gid.cimne.upc.es/) is a pre- and postprocessing tool. We have the specialized problem
 type \texttt{lnm\_general} available, that contains the necessary
-definitions to create a \ccarat{} input file. 
+definitions to create a \ccarat{} input file.
 
 \subsubsection{How to start Gid --- academic version}
 
@@ -559,7 +559,7 @@ svn~co~svn://gauss/trunk/viewer
 \end{lyxcode}
 
 \subsection{exofilter}
-This filter creates a \ccarat{} input file from an EXODUS-II file 
+This filter creates a \ccarat{} input file from an EXODUS-II file
 generated by one of the meshing tools CUBIT or ICEM-CFD.
 You can get exofilter with
 \begin{lyxcode}
@@ -568,8 +568,8 @@ svn~co~svn://gauss/trunk/exofilter
 This folder contains also a short documentation how to apply this filter
 as well as some example files.\\
 \\
-Note: Paraview can directly visualize EXODUS-II files and can be used 
-as a viewer to check your mesh and defined node sets before using exofilter. 
+Note: Paraview can directly visualize EXODUS-II files and can be used
+as a viewer to check your mesh and defined node sets before using exofilter.
 
 
 \section{Postprocessing}
@@ -698,7 +698,7 @@ generate ensight (paraview) input files:
 ./post\_ensight~control-file
 \end{lyxcode}
 supported problem types: 2d and 3d fluid and fsi another Michael Geppert
-filter. 
+filter.
 
 
 \subsubsection{post\_drt\_ensight}
@@ -738,12 +738,12 @@ are not necessarilly installed on your machine. But they can be using
 
 That is a matter of taste, really. Only those with taste choose the
 right one: \texttt{xemacs}. However, those of us with taste and style
-choose \texttt{emacs}. 
+choose \texttt{emacs}.
 
 
 \subsubsection{xemacs}
 
-The right one. 
+The right one.
 
 A text editor that has shortcuts for everything ever imagined. Very
 huge. Comes with extensive documentation. Contains the elisp programming
@@ -939,15 +939,6 @@ A close miss. Everything said in faviour of xemacs applies here as
 well, except ... it misses an \texttt{x}.
 
 
-\subsubsection{eclipse}
-
-A developement environment originally meant to replace xemacs. Comes
-with a more convinient user interface for most new users. Hundreds
-of plugins available. Does provide its own cross referencing support.
-Is based on java. Is both slow and memory consuming beyond measure.
-You have been warned.
-
-
 \subsubsection{kdevelop}
 
 The developement environment made by the KDE people. Is meant to be
@@ -967,7 +958,7 @@ Linux shell.
 
 A file comparator allows to show neatly the differences of two files. These
 are handy to compare two (or more) text files such as input files, output
-files or source code. 
+files or source code.
 
 \subsubsection{kompare}
 
@@ -1314,3 +1305,42 @@ ignore them. Decipher!
 
 There are two issues with \texttt{valgrind}: It is slow. And memory
 demanding. So you will want to use it on small examples.
+
+
+\subsection{Graphical Developement Environment Eclipse \& CDT}
+
+...includes most of the seperate tools from above.
+
+\subsubsection{Install}
+
+The newest version including preinstalled CDT (C/C++ Development Environment plugin) and Subclipse (Subversion Plugin) is installed at \verb|/lnm/programs/eclipse_cdt|.
+
+\subsubsection{Setup/First Run}
+Start Eclipse from the command line by \verb|/lnm/programs/eclipse_cdt/eclipse| (you can make a button for KDE yourself).
+You will be prompted to enter the workspace directory. Leave it as recommended and press OK.
+
+\subsubsection{Checkout BACI}
+
+
+\begin{itemize}
+\item \texttt{File -> New -> Project...}
+\item  \texttt{SVN -> Checkout Projects from SVN}
+\item  \texttt{Create a new repository location}
+\item  Url: \texttt{svn://username@gauss.lnm.mw.tum.de/trunk/}
+
+\item Select ccarat (to be renamed to BACI)
+
+\item Click Finish
+
+\item Select Wizard: \texttt{C++ -> C++ Project}
+
+\item Give Projectname: baci
+
+\item Click Finish and then OK
+
+\end{itemize}
+BACI is now checked out and ready to use.
+
+\subsubsection{Usage}
+
+Refer to the experienced and friendly Eclipse community at LNM or the help in Eclipse and the web.
