@@ -647,7 +647,7 @@ void StruGenAlpha::FullNewton()
   //============================================= end equilibrium loop
 
   //-------------------------------- test whether max iterations was hit
-  if (numiter==maxiter) dserror("Newton unconverged in %d iterations",numiter);
+  if (numiter>=maxiter) dserror("Newton unconverged in %d iterations",numiter);
   params_.set<int>("num iterations",numiter);
 
   //-------------------------------------- don't need this at the moment
@@ -811,7 +811,7 @@ void StruGenAlpha::ModifiedNewton()
   //============================================= end equilibrium loop
 
   //-------------------------------- test whether max iterations was hit
-  if (numiter==maxiter) dserror("Newton unconverged in %d iterations",numiter);
+  if (numiter>=maxiter) dserror("Newton unconverged in %d iterations",numiter);
   params_.set<int>("num iterations",numiter);
 
   //-------------------------------------- don't need this at the moment
