@@ -38,7 +38,7 @@ void MAT::MicroMaterial::Evaluate(const Epetra_SerialDenseMatrix* defgrd,
                                   const double time)
 {
   //cout << "I am Gauss point number " << gp << " in element number " << ele_ID << " at total time "
-  //    << time << endl;
+  //     << time << endl;
 
   // activate microscale material
 

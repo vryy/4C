@@ -57,7 +57,7 @@ void MicroStruGenAlpha::calc_cmat(const Epetra_MultiVector& K_M,
   }
 
   // note that deformation gradient for Kouznetsova's approach is
-  // conjugated, therefore the latter two indiced need to be changed,
+  // conjugated, therefore the latter two indices need to be changed,
   // too (-> check out Miehe's approach)
 
   for (int i=0;i<3;++i)
@@ -192,6 +192,21 @@ void MicroStruGenAlpha::calc_cmat(const Epetra_MultiVector& K_M,
 
 //   cout << "cmat:\n" << *cmat << endl;
 
+//   FILE* output_fileptr;
+//   output_fileptr=fopen("cmat_rho1000.0.txt","a");
+//   fprintf(output_fileptr, "stress:\n");
+//   for (int i=0;i<6;++i)
+//     fprintf(output_fileptr, "%lf\n", S[i]);
+//   fprintf(output_fileptr, "\n");
+//   fprintf(output_fileptr, "cmat:\n");
+//   for (int i=0;i<6;++i)
+//   {
+//     for (int j=0;j<6;++j)
+//       fprintf(output_fileptr, "%lf\t", (*cmat)(i, j));
+//     fprintf(output_fileptr, "\n");
+//   }
+//   fprintf(output_fileptr, "\n\n");
+//   fclose(output_fileptr);
 }
 
 #endif

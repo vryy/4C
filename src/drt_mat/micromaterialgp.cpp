@@ -81,6 +81,7 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID)
   disp_ = LINALG::CreateVector(*microdis->DofRowMap(),true);
   vel_ = LINALG::CreateVector(*microdis->DofRowMap(),true);
   acc_ = LINALG::CreateVector(*microdis->DofRowMap(),true);
+  disi_ = LINALG::CreateVector(*microdis->DofRowMap(),true);
 }
 
 /// destructor
@@ -190,7 +191,7 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
   }
 
   // set displacements, velocities and accelerations from last time step
-  microgenalpha_->SetOldState(disp_, vel_, acc_);
+  microgenalpha_->SetOldState(disp_, vel_, acc_, disi_);
 
   // check if we have to update absolute time and step number
   if (time != timen_)
@@ -212,14 +213,12 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
     istep_++;
   }
 
+  // cout << "GP: " << gp_ << endl;
+
   // set current absolute time and step number
   microgenalpha_->SetTime(timen_, istep_);
 
-  microgenalpha_->ConstantPredictor();
-
-  // set boundary conditions derived from macroscale
-  microgenalpha_->EvaluateMicroBC(defgrd);
-
+  microgenalpha_->ConstantPredictor(defgrd);
   microgenalpha_->FullNewton();
   microgenalpha_->Update();
 
@@ -227,8 +226,10 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
   disp_ = microgenalpha_->ReturnNewDisp();
   vel_  = microgenalpha_->ReturnNewVel();
   acc_  = microgenalpha_->ReturnNewAcc();
+  disi_ = microgenalpha_->ReturnNewResDisp();
 
-  //cout << "current displacements in microscale of gp " << gp_ << ":\n" << *disp_ << "\n";
+
+  // cout << "current displacements in microscale of gp " << gp_ << ":\n" << *disp_ << "\n";
 
   // clear displacements in MicroStruGenAlpha for next usage
   microgenalpha_->ClearState();

@@ -86,13 +86,13 @@ public:
   \brief do constant predictor step
 
   */
-  void ConstantPredictor();
+  void ConstantPredictor(const Epetra_SerialDenseMatrix* defgrd);
 
   /*!
   \brief do consistent constant predictor step
 
   */
-  void ConsistentPredictor();
+  // void ConsistentPredictor();
 
   /*!
   \brief do full Newton iteration
@@ -124,7 +124,8 @@ public:
 
   void SetOldState(RefCountPtr<Epetra_Vector> disp,
                    RefCountPtr<Epetra_Vector> vel,
-                   RefCountPtr<Epetra_Vector> acc);
+                   RefCountPtr<Epetra_Vector> acc,
+                   RefCountPtr<Epetra_Vector> disi);
 
   void SetTime(double timen, int istep);
 
@@ -133,6 +134,8 @@ public:
   RefCountPtr<Epetra_Vector> ReturnNewVel();
 
   RefCountPtr<Epetra_Vector> ReturnNewAcc();
+
+  RefCountPtr<Epetra_Vector> ReturnNewResDisp();
 
   void ClearState();
 

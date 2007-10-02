@@ -70,11 +70,14 @@ private:
   /// my vector of displacements
   RefCountPtr<Epetra_Vector> disp_;
 
-  /// my vector of displacements
+  /// my vector of velocities
   RefCountPtr<Epetra_Vector> vel_;
 
-  /// my vector of displacements
+  /// my vector of accelerations
   RefCountPtr<Epetra_Vector> acc_;
+
+  /// my vector of residual displacements
+  RefCountPtr<Epetra_Vector> disi_;
 
   /// current absolute time
   double timen_;

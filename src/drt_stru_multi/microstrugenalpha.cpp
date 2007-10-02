@@ -146,19 +146,8 @@ solver_(solver)
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("displacement",dis_);
-    // predicted dirichlet values
-    // dis then also holds prescribed new dirichlet displacements
-    discret_->EvaluateDirichlet(p,*dis_,*dirichtoggle_);
-    discret_->ClearState();
-    discret_->SetState("displacement",dis_);
-    // predicted rhs
-    discret_->EvaluateNeumann(p,*fext_);
-    discret_->ClearState();
+    fext_->PutScalar(0.);
   }
-
-  //----------------------- compute an inverse of the dirichtoggle vector
-  invtoggle_->PutScalar(1.0);
-  invtoggle_->Update(-1.0,*dirichtoggle_,1.0);
 
   // -------------------------------------------------------------------
   // call elements to calculate stiffness and mass
@@ -211,16 +200,18 @@ solver_(solver)
   istep = 0;
   params_->set<int>("step",istep);
 
-
-
   // Determine dirichtoggle_ and its inverse since boundary conditions for
-  // microscale simulations are due to the MicroBoundary condition and are
-  // therefore not taken into account in the Constructor of StruGenAlpha
+  // microscale simulations are due to the MicroBoundary condition
+  // (and not Dirichlet BC)
 
   MicroStruGenAlpha::DetermineToggle();
   MicroStruGenAlpha::SetUpHomogenization();
 
-  //cout << Xp_ << endl;
+  //----------------------- compute an inverse of the dirichtoggle vector
+  invtoggle_->PutScalar(1.0);
+  invtoggle_->Update(-1.0,*dirichtoggle_,1.0);
+
+  // cout << Xp_ << endl;
 
   // -------------------------- Calculate initial volume of microstructure
   double V0 = 0.;
@@ -257,7 +248,7 @@ solver_(solver)
 /*----------------------------------------------------------------------*
  |  do constant predictor step (public)                      mwgee 03/07|
  *----------------------------------------------------------------------*/
-void MicroStruGenAlpha::ConstantPredictor()
+void MicroStruGenAlpha::ConstantPredictor(const Epetra_SerialDenseMatrix* defgrd)
 {
   //cout << "ConstantPredictor\n";
 
@@ -284,31 +275,11 @@ void MicroStruGenAlpha::ConstantPredictor()
   disn_->Update(1.0,*dis_,0.0);
 
   // apply new displacements at DBCs
-  // and get new external force vector
   {
-    ParameterList p;
-    // action for elements
-    p.set("action","calc_struct_eleload");
-    // choose what to assemble
-    p.set("assemble matrix 1",false);
-    p.set("assemble matrix 2",false);
-    p.set("assemble vector 1",true);
-    p.set("assemble vector 2",false);
-    p.set("assemble vector 3",false);
-    // other parameters needed by the elements
-    p.set("total time",timen);
-    p.set("delta time",dt);
-    // set vector values needed by elements
-    discret_->ClearState();
-    discret_->SetState("displacement",disn_);
-    // predicted dirichlet values
     // disn then also holds prescribed new dirichlet displacements
-    discret_->EvaluateDirichlet(p,*disn_,*dirichtoggle_);
+    EvaluateMicroBC(defgrd);
     discret_->ClearState();
-    discret_->SetState("displacement",disn_);
     fextn_->PutScalar(0.0);  // initialize external force vector (load vect)
-    discret_->EvaluateNeumann(p,*fextn_);
-    discret_->ClearState();
   }
 
   // constant predictor
@@ -378,6 +349,10 @@ void MicroStruGenAlpha::ConstantPredictor()
   // blank residual at DOFs on Dirichlet BC
   {
     Epetra_Vector fresmcopy(*fresm_);
+
+    // save this vector for homogenization
+    *fresm_dirich_ = fresmcopy;
+
     fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
   }
 
@@ -514,11 +489,6 @@ void MicroStruGenAlpha::FullNewton()
     // blank residual DOFs which are on Dirichlet BC
     {
       Epetra_Vector fresmcopy(*fresm_);
-
-      // save this vector for homogenization
-      *fresm_dirich_ = fresmcopy;
-      //cout << "dism, fresmcopy " << *dism_ << fresmcopy << endl;
-
       fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
     }
 
@@ -534,10 +504,11 @@ void MicroStruGenAlpha::FullNewton()
     ++numiter;
 
   } // while (norm_>toldisp && numiter<=maxiter)
+
   //============================================= end equilibrium loop
 
   //-------------------------------- test whether max iterations was hit
-  if (numiter==maxiter) dserror("Newton unconverged in %d iterations",numiter);
+  if (numiter>=maxiter) dserror("Newton unconverged in %d iterations",numiter);
   params_->set<int>("num iterations",numiter);
 
   //-------------------------------------- don't need this at the moment
@@ -728,7 +699,7 @@ void MicroStruGenAlpha::DetermineToggle()
 
 void MicroStruGenAlpha::EvaluateMicroBC(const Epetra_SerialDenseMatrix* defgrd)
 {
-  //cout << "EvaluateMicroBC\n";
+  // cout << "EvaluateMicroBC\n";
 
   RefCountPtr<DRT::Discretization> dis =
     DRT::Problem::Instance(1)->Dis(genprob.numsf,0);
@@ -738,7 +709,7 @@ void MicroStruGenAlpha::EvaluateMicroBC(const Epetra_SerialDenseMatrix* defgrd)
   for (unsigned i=0; i<conds.size(); ++i)
   {
     const vector<int>* nodeids = conds[i]->Get<vector<int> >("Node Ids");
-    if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
+    if (!nodeids) dserror("MicroBoundary condition does not have nodal cloud");
     const int nnode = (*nodeids).size();
 
     for (int i=0; i<nnode; ++i)
@@ -789,13 +760,18 @@ void MicroStruGenAlpha::EvaluateMicroBC(const Epetra_SerialDenseMatrix* defgrd)
 
 void MicroStruGenAlpha::SetOldState(RefCountPtr<Epetra_Vector> disp,
                                     RefCountPtr<Epetra_Vector> vel,
-                                    RefCountPtr<Epetra_Vector> acc)
+                                    RefCountPtr<Epetra_Vector> acc,
+                                    RefCountPtr<Epetra_Vector> disi)
 {
   //cout << "SetOldState\n";
 
   dis_ = disp;
   vel_ = vel;
   acc_ = acc;
+  disi_ = disi;
+  fext_->PutScalar(0.);     // we do not have any external loads on
+                            // the microscale, so assign all components
+                            // to zero
 }
 
 void MicroStruGenAlpha::SetTime(double timen, int istep)
@@ -804,11 +780,13 @@ void MicroStruGenAlpha::SetTime(double timen, int istep)
   params_->set<int>   ("step", istep);
 }
 
-RefCountPtr<Epetra_Vector> MicroStruGenAlpha::ReturnNewDisp() { return rcp(new Epetra_Vector(*disn_)); }
+RefCountPtr<Epetra_Vector> MicroStruGenAlpha::ReturnNewDisp() { return rcp(new Epetra_Vector(*dis_)); }
 
-RefCountPtr<Epetra_Vector> MicroStruGenAlpha::ReturnNewVel() { return rcp(new Epetra_Vector(*veln_)); }
+RefCountPtr<Epetra_Vector> MicroStruGenAlpha::ReturnNewVel() { return rcp(new Epetra_Vector(*vel_)); }
 
-RefCountPtr<Epetra_Vector> MicroStruGenAlpha::ReturnNewAcc() { return rcp(new Epetra_Vector(*accn_)); }
+RefCountPtr<Epetra_Vector> MicroStruGenAlpha::ReturnNewAcc() { return rcp(new Epetra_Vector(*acc_)); }
+
+RefCountPtr<Epetra_Vector> MicroStruGenAlpha::ReturnNewResDisp() { return rcp(new Epetra_Vector(*disi_)); }
 
 void MicroStruGenAlpha::ClearState()
 {
@@ -817,6 +795,7 @@ void MicroStruGenAlpha::ClearState()
   dis_ = null;
   vel_ = null;
   acc_ = null;
+  disi_ = null;
 }
 
 void MicroStruGenAlpha::SetUpHomogenization()
@@ -867,7 +846,7 @@ void MicroStruGenAlpha::SetUpHomogenization()
   for (unsigned i=0; i<conds.size(); ++i)
   {
     const vector<int>* nodeids = conds[i]->Get<vector<int> >("Node Ids");
-    if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
+    if (!nodeids) dserror("MicroBoundary condition does not have nodal cloud");
     const int nnode = (*nodeids).size();
 
     for (int i=0; i<nnode; ++i)
@@ -932,6 +911,10 @@ void MicroStruGenAlpha::Homogenization(Epetra_SerialDenseVector* stress,
   if (err)
     dserror("Exporting external forces of prescribed dofs using exporter returned err=%d",err);
 
+//   cout << "fresm_dirich:\n" << *fresm_dirich_ << endl;
+//   cout << "pdof:\n" <<*pdof_ << endl;
+//   cout << "fp:\n" << fp << endl;
+
   // Now we have all forces in the material description acting on the
   // boundary nodes together in one vector
   // -> for calculating the stresses, we need to choose the
@@ -993,6 +976,9 @@ void MicroStruGenAlpha::Homogenization(Epetra_SerialDenseVector* stress,
 
   Epetra_SerialDenseVector S(6);
 
+//   for (int i=0;i<6;++i)
+//     S[i] = 0.;
+
   for (int i=0; i<3; ++i)
   {
     S[0] += F_inv(0, i)*P(i,0);                     // S11
@@ -1014,7 +1000,7 @@ void MicroStruGenAlpha::Homogenization(Epetra_SerialDenseVector* stress,
   // cout << "fp: " << fp << endl;
   // cout << "Xp: " << *Xp_ << endl;
   // cout << "FPK homogenization:\n" << P << endl;
-//   cout << "Stresses derived from homogenization:\n" << S << endl;
+  // cout << "Stresses derived from homogenization:\n" << S << endl;
 
 
   // split effective dynamic stiffness -> we want Kpp, Kpf, Kfp and Kff
@@ -1133,7 +1119,8 @@ void MicroStruGenAlpha::Homogenization(Epetra_SerialDenseVector* stress,
 
   MicroStruGenAlpha::calc_cmat(Kpp, F_inv, S, cmat, defgrd);
 
-  cout << "cmat homogenization:\n " << *cmat << endl;
+//   cout << "stress homogenization:\n" << *stress << endl;
+//   cout << "cmat homogenization:\n " << *cmat << endl;
 
   // after having all homogenization stuff done, we now really don't need stiff_ anymore
 
@@ -1141,7 +1128,7 @@ void MicroStruGenAlpha::Homogenization(Epetra_SerialDenseVector* stress,
 
   // the macroscopic density has to be computed -> we will do that
   // later, for now we just set it to 1.
-  (*density)=1.;
+  (*density)=1.0;
 }
 
 #endif

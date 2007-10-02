@@ -236,7 +236,7 @@ static double EvaluateFunction(DRT::Node*        node,
  |  evaluate Dirichlet conditions (public)                   mwgee 01/07|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::EvaluateDirichlet(ParameterList& params,
-                                            Epetra_Vector& systemvector,					    
+                                            Epetra_Vector& systemvector,
                                             Epetra_Vector& toggle)
 {
   if (!Filled()) dserror("FillComplete() was not called");
@@ -377,15 +377,15 @@ void DoDirichletCondition(DRT::Condition&      cond,
 /*----------------------------------------------------------------------*
  |  evaluate a condition (public)                            g.bau 07/07|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::EvaluateCondition(ParameterList& params,                                             
-					    Epetra_Vector& systemvector,					     
+void DRT::Discretization::EvaluateCondition(ParameterList& params,
+					    Epetra_Vector& systemvector,
 					    const string& condstring)
 {
   if (!Filled()) dserror("FillComplete() was not called");
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
 
   multimap<string,RefCountPtr<Condition> >::iterator fool;
- 
+
   //-----------------------------------------------------------------------
   // loop through conditions and evaluate them iff they match the criterion
   //-----------------------------------------------------------------------
@@ -398,8 +398,8 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
       map<int,RefCountPtr<DRT::Element> >& geom = cond.Geometry();
       // if (geom.empty()) dserror("evaluation of condition with empty geometry");
       // no check for empty geometry here since in parallel computations
-      // can exist processors which do not own a portion of the elements belonging 
-      // to the condition geometry	
+      // can exist processors which do not own a portion of the elements belonging
+      // to the condition geometry
       map<int,RefCountPtr<DRT::Element> >::iterator curr;
 
       // define element matrices and vectors
@@ -408,7 +408,7 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
       Epetra_SerialDenseVector elevector1;
       Epetra_SerialDenseVector elevector2;
       Epetra_SerialDenseVector elevector3;
-	
+
       for (curr=geom.begin(); curr!=geom.end(); ++curr)
       {
         // get element location vector, dirichlet flags and ownerships
@@ -416,18 +416,18 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
         vector<int> lmowner;
         curr->second->LocationVector(*this,lm,lmowner);
         elevector1.Size((int)lm.size());
-	
+
         // call the element specific evaluate method
 	int err = curr->second->Evaluate(params,*this,lm,elematrix1,elematrix2,
                                elevector1,elevector2,elevector3);
 	if (err) dserror("error while evaluating elements");
-	
+
 	// assembly
         LINALG::Assemble(systemvector,elevector1,lm,lmowner);
       }
     }
    } //for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
-   
+
   return;
 } // end of DRT::Discretization::EvaluateCondition
 
