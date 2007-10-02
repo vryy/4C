@@ -57,6 +57,7 @@ if grep '^[ \t]*QHULL' "$definefile" 2>&1 > /dev/null ; then
     if [ "x$QHULL_LIB" = "x" ] ; then
         echo $0: Warning: Variable QHULL_LIB undefined but QHULL_PACKAGE requested.
     fi
+    FILTER_LIBS="$QHULL_LIB $LIBS"
     LIBS="$QHULL_LIB $LIBS"
     INCLUDEDIRS="$INCLUDEDIRS $QHULL_INC"
 fi
