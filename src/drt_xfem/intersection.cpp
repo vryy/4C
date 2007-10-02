@@ -141,8 +141,14 @@ void Intersection::computeIntersection( const RefCountPtr<DRT::Discretization>  
                         
                     // order interface points          
                     if(interfacePoints.size()!=0)
-                        computeConvexHull( xfemElement, cutterElement, interfacePoints);    
-                       
+                    {
+#ifdef QHULL
+                        computeConvexHull( xfemElement, cutterElement, interfacePoints);
+#else
+                        dserror("Set QHULL flag to use XFEM intersections!!!");
+#endif
+                    }
+                    
                     interfacePoints.clear();     
                 }// if intersected
             }// for-loop over all geometryMap.size()
@@ -1364,7 +1370,8 @@ int Intersection::addIntersectionPoint(
  |  ICS:    computes the convex hull of a set of             u.may 06/07|
  |          interface points and stores resulting points,               |
  |          segments and triangles for the use with Tetgen (CDT)        |
- *----------------------------------------------------------------------*/  
+ *----------------------------------------------------------------------*/
+#ifdef QHULL
 void Intersection::computeConvexHull(   
     DRT::Element*           xfemElement,
     DRT::Element*           surfaceElement,
@@ -1529,6 +1536,7 @@ void Intersection::computeConvexHull(
         interfacePoints.clear();
     }
 }
+#endif //QHULL
  
 
 
