@@ -11,7 +11,6 @@ Maintainer: Axel Gerstenberger
 </pre>
 */
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "enrichment.H"
 #include "../drt_lib/drt_dserror.H"
@@ -72,5 +71,4 @@ string Enrichment::enrTypeToString(const EnrType type) const
     return typetext;
 }
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

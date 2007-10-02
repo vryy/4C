@@ -1,3 +1,4 @@
+#ifdef CCADISCRET
 /*****************************************************************************/
 /*                                                                           */
 /*  Routines for Arbitrary Precision Floating-point Arithmetic               */
@@ -4185,3 +4186,4 @@ REAL insphere(REAL *pa, REAL *pb, REAL *pc, REAL *pd, REAL *pe)
 
   return insphereadapt(pa, pb, pc, pd, pe, permanent);
 }
+#endif // #ifdef CCADISCRET

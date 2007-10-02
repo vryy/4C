@@ -11,7 +11,6 @@ Maintainer: Axel Gerstenberger
 </pre>
 */
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "dof_management.H"
 
@@ -56,5 +55,4 @@ string XFEM::EnrPhysVar::toString() const
     return s.str();
 }
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

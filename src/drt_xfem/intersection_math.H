@@ -10,7 +10,6 @@ Maintainer: Ursula Mayer
 */
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef INTERSECTION_MATH_H_
 #define INTERSECTION_MATH_H_
 
@@ -223,7 +222,6 @@ namespace XFEM
 
 
 #endif  //INTERSECTION_MATH_H_
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 
 

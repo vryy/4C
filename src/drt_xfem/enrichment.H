@@ -11,7 +11,6 @@ Maintainer: Axel Gerstenberger
 </pre>
 */
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef ENRICHMENT_H
 #define ENRICHMENT_H
 
@@ -98,5 +97,4 @@ private:
 
 
 #endif  // #ifndef ENRICHMENT_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

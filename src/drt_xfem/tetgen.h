@@ -1,3 +1,4 @@
+#ifdef CCADISCRET
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 // TetGen                                                                    //
@@ -1914,3 +1915,4 @@ void tetrahedralize(char *switches, tetgenio *in, tetgenio *out,
                     tetgenio *addin = NULL, tetgenio *bgmin = NULL);
 
 #endif // #ifndef tetgenH
+#endif // #ifdef CCADISCRET

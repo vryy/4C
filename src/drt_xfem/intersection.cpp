@@ -18,7 +18,6 @@ Maintainer: Ursula Mayer
 *----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "intersection.H"
 #include "../drt_xfem/intersection_math.H"
@@ -4330,5 +4329,4 @@ void Intersection::computeRegionCoordinates(
 
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

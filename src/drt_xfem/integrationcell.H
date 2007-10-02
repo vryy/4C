@@ -12,7 +12,6 @@ Maintainer: Axel Gerstenberger
  */
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef INTEGRATIONCELL_H
 #define INTEGRATIONCELL_H
 
@@ -71,5 +70,4 @@ typedef std::vector<XFEM::Integrationcell > IntCells;
 };
 
 #endif  // #ifndef INTEGRATIONCELL_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

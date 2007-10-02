@@ -12,7 +12,6 @@ Maintainer: Ursula Mayer
 *----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "intersection_math.H"
 #include "../drt_lib/drt_discret.H"
@@ -759,6 +758,5 @@ else
 
 
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
 

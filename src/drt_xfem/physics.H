@@ -11,7 +11,6 @@ Maintainer: Axel Gerstenberger
 </pre>
 */
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef PHYSICS_H
 #define PHYSICS_H
 
@@ -48,5 +47,4 @@ std::string physVarToString(const PhysVar var);
 
 
 #endif /*PHYSICS_H_*/
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

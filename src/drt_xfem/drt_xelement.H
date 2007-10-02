@@ -14,7 +14,6 @@ Maintainer: Axel Gerstenberger
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef XELEMENT_H
 #define XELEMENT_H
 
@@ -167,5 +166,4 @@ private:
 
 
 #endif  // #ifndef XELEMENT_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

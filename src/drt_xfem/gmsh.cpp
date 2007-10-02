@@ -11,6 +11,8 @@ Maintainer: Axel Gerstenberger
 </pre>
 */
 
+#ifdef CCADISCRET
+
 #include <string>
 #include <blitz/array.h>
 
@@ -105,4 +107,4 @@ string GMSH::intCellToGmshString(DRT::Element* ele, const Integrationcell cell)
     pos_array_string << "};";
     return pos_array_string.str();
 }
-
+#endif // #ifdef CCADISCRET

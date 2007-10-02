@@ -11,7 +11,6 @@ Maintainer: Axel Gerstenberger
 </pre>
 */
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "physics.H"
 #include "../drt_lib/drt_dserror.H"
@@ -38,5 +37,4 @@ std::string Physics::physVarToString(const Physics::PhysVar var)
     return text;
 };
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

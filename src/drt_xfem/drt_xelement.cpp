@@ -11,7 +11,6 @@ Maintainer: Axel Gerstenberger
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 //#include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_node.H"
@@ -74,8 +73,4 @@ int DRT::Elements::XElement::NumDofPerNode(const DRT::Node& node) const
     return 4;
 }
 
-
-
-
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

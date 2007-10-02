@@ -10,15 +10,17 @@ Maintainer: Axel Gerstenberger
             089 - 289-15236
 </pre>
 */
-#ifndef GMSH_H_
-#define GMSH_H_
+#ifndef GMSH_H
+#define GMSH_H
 #ifdef CCADISCRET
+
+#include <blitz/array.h>
+#include <string>
+#include <vector>
 
 #include "../drt_xfem/integrationcell.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_node.H"
-#include <string>
-#include <vector>
 
 using namespace XFEM;
 
@@ -31,5 +33,5 @@ std::string intCellToGmshString(DRT::Element* ele, const Integrationcell ele);
 
 };
 
-#endif
-#endif /*GMSH_H_*/
+#endif // #ifdef CCADISCRET
+#endif /*GMSH_H*/

@@ -11,7 +11,6 @@ Maintainer: Axel Gerstenberger
 </pre>
 */
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef DOF_MANAGEMENT_H
 #define DOF_MANAGEMENT_H
 
@@ -83,5 +82,4 @@ private:
 }; // namespace XFEM
 
 #endif  // #ifndef DOF_MANAGEMENT_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

@@ -9,7 +9,6 @@ Maintainer: Ursula Mayer
 */
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 #ifndef INTERSECTION_H
 #define INTERSECTION_H
 
@@ -1177,5 +1176,4 @@ class Intersection
 
 
 #endif  // #ifndef INTERSECTION_H
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

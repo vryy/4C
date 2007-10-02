@@ -12,7 +12,6 @@ Maintainer: Axel Gerstenberger
 */
 
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
 
 #include "integrationcell.H"
 #include <string>
@@ -70,5 +69,4 @@ string Integrationcell::Print() const
     return s.str();
 }
 
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
