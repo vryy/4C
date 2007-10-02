@@ -15,8 +15,12 @@ Maintainer: Axel Gerstenberger
 #include <blitz/array.h>
 
 #include "gmsh.H"
+#include "integrationcell.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_utils.H"
+
+using namespace std;
+using namespace XFEM;
 
 string GMSH::elementToGmshString(DRT::Element* ele)
 {
@@ -49,9 +53,9 @@ string GMSH::elementToGmshString(DRT::Element* ele)
     };
     pos_array_string << "};";
     return pos_array_string.str();
-};
+}
 
-string GMSH::intCellToGmshString(DRT::Element* ele, const XFEM::Integrationcell cell)
+string GMSH::intCellToGmshString(DRT::Element* ele, const Integrationcell cell)
 {
     stringstream pos_array_string;
     pos_array_string << "SS(";
@@ -100,5 +104,5 @@ string GMSH::intCellToGmshString(DRT::Element* ele, const XFEM::Integrationcell 
     };
     pos_array_string << "};";
     return pos_array_string.str();
-};
+}
 

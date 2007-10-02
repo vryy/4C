@@ -14,18 +14,20 @@ Maintainer: Axel Gerstenberger
 #define GMSH_H_
 #ifdef CCADISCRET
 
+#include "../drt_xfem/integrationcell.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_node.H"
-#include "integrationcell.H"
 #include <string>
 #include <vector>
+
+using namespace XFEM;
 
 namespace GMSH
 {
 
-string elementToGmshString(DRT::Element* ele);
+std::string elementToGmshString(DRT::Element* ele);
 
-string intCellToGmshString(DRT::Element* ele, const XFEM::Integrationcell ele);
+std::string intCellToGmshString(DRT::Element* ele, const Integrationcell ele);
 
 };
 
