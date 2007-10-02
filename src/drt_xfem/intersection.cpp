@@ -1858,7 +1858,7 @@ void Intersection::computeCDT(
         for(int j = 0; j < out.numberofcorners; j++)
         {
             for(int dim = 0; dim < 3; dim++)
-                tetnodes[dim] = out.pointlist[out.tetrahedronlist[i*out.numberofcorners+j]*dim+dim];
+                tetnodes[dim] = out.pointlist[out.tetrahedronlist[i*out.numberofcorners+j]*3+dim];
          
             tetrahedronCoord.push_back(tetnodes);    
         }
