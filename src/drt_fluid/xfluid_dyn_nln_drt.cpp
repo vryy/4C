@@ -139,22 +139,7 @@ void xdyn_fluid_drt()
   XFEM::Intersection is;
   map<int, vector <XFEM::Integrationcell> > elementIntCellMap;
   is.computeIntersection(fluiddis,soliddis,elementIntCellMap);
-  
-  
 
-//  stringstream s;
-//  for( map< int, vector <XFEM::Integrationcell> >::iterator pair = intCellMap.begin(); pair != intCellMap.end(); ++pair ) 
-//  {
-//      s << "ElementId:" << pair->first << "\n";
-//      XFEM::IntCells const cells = pair->second;
-//      for( XFEM::IntCells::const_iterator cell = cells.begin(); cell != cells.end(); ++cell)
-//      {
-//          s << " " << cell->Print();
-//      };
-//  };
-//  cout << s.str() << endl;
-
-//  vector<int> localnodenumdf(fluiddis->NumMyRowNodes());
 
   map<int, set <XFEM::EnrPhysVar> > nodalDofMap;
   
@@ -211,7 +196,7 @@ void xdyn_fluid_drt()
     const int gid = actnode->Id();
     for ( set<XFEM::EnrPhysVar>::iterator var = nodalDofMap[gid].begin(); var != nodalDofMap[gid].end(); ++var )
     {
-      cout << "Node: " << gid << ", " << var->toString() << endl;
+      //cout << "Node: " << gid << ", " << var->toString() << endl;
     };
   };
 
