@@ -39,6 +39,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/intersection.H"
 #include "../drt_xfem/integrationcell.H"
 #include "../drt_xfem/dof_management.H"
+#include "../drt_xfem/gmsh.H"
 
 /*----------------------------------------------------------------------*
   |                                                       m.gee 06/01    |
@@ -153,29 +154,66 @@ void xdyn_fluid_drt()
 //  };
 //  cout << s.str() << endl;
 
+//  vector<int> localnodenumdf(fluiddis->NumMyRowNodes());
+
   map<int, set <XFEM::EnrPhysVar> > nodalDofMap;
   
+  // loop my row nodes and add standard degrees of freedom
   const XFEM::Enrichment enr_std(0, XFEM::Enrichment::typeStandard);
-  const XFEM::Enrichment enr_void1(1, XFEM::Enrichment::typeVoid);
-  const XFEM::Enrichment enr_void2(2, XFEM::Enrichment::typeVoid);
-    
-  nodalDofMap[0].insert(XFEM::EnrPhysVar(Physics::Velx, enr_std));
-  nodalDofMap[0].insert(XFEM::EnrPhysVar(Physics::Vely, enr_std));
-  nodalDofMap[0].insert(XFEM::EnrPhysVar(Physics::Velz, enr_std));
-  nodalDofMap[0].insert(XFEM::EnrPhysVar(Physics::Pres, enr_std));
-  nodalDofMap[0].insert(XFEM::EnrPhysVar(Physics::Velx, enr_void1));
-  nodalDofMap[0].insert(XFEM::EnrPhysVar(Physics::Vely, enr_void1));
-  nodalDofMap[0].insert(XFEM::EnrPhysVar(Physics::Velz, enr_void1));
-  nodalDofMap[0].insert(XFEM::EnrPhysVar(Physics::Pres, enr_void1));
-  nodalDofMap[0].insert(XFEM::EnrPhysVar(Physics::Pres, enr_void2));
-  
-  
-  
-  for ( set<XFEM::EnrPhysVar>::iterator element = nodalDofMap[0].begin(); element != nodalDofMap[0].end(); ++element )
+  for (int i=0; i<fluiddis->NumMyRowNodes(); ++i)
   {
-      cout << element->toString() << endl;
+    const DRT::Node* actnode = fluiddis->lRowNode(i);
+    nodalDofMap[actnode->Id()].insert(XFEM::EnrPhysVar(Physics::Velx, enr_std));
+    nodalDofMap[actnode->Id()].insert(XFEM::EnrPhysVar(Physics::Vely, enr_std));
+    nodalDofMap[actnode->Id()].insert(XFEM::EnrPhysVar(Physics::Velz, enr_std));
+    nodalDofMap[actnode->Id()].insert(XFEM::EnrPhysVar(Physics::Pres, enr_std));
+  }
+  
+  // for surface 1, loop my col elements and add void enrichments to each elements member nodes
+  const XFEM::Enrichment enr_void1(1, XFEM::Enrichment::typeVoid);
+  
+  ofstream gmshfilecontent;
+  gmshfilecontent.open ("elements.pos");
+  gmshfilecontent << "View \" Elements and Integration Cells \" {" << endl;
+  for (int i=0; i<fluiddis->NumMyColElements(); ++i)
+  {
+    DRT::Element* actele = fluiddis->lColElement(i);
+    if (elementIntCellMap.count(actele->Id()) /*and not printed*/)
+    {
+        const int nen = actele->NumNode();
+        const int* nodeidptrs = actele->NodeIds();
+        for (int i = 0; i<nen; ++i)
+        {
+          const int node_gid = nodeidptrs[i];
+          nodalDofMap[node_gid].insert(XFEM::EnrPhysVar(Physics::Velx, enr_void1));
+          nodalDofMap[node_gid].insert(XFEM::EnrPhysVar(Physics::Vely, enr_void1));
+          nodalDofMap[node_gid].insert(XFEM::EnrPhysVar(Physics::Velz, enr_void1));
+          nodalDofMap[node_gid].insert(XFEM::EnrPhysVar(Physics::Pres, enr_void1));
+        };
+
+        vector <XFEM::Integrationcell>::const_iterator cell;
+        for(cell = elementIntCellMap[actele->Id()].begin(); cell != elementIntCellMap[actele->Id()].end(); ++cell )
+        {
+            gmshfilecontent << GMSH::intCellToGmshString(actele, *cell) << endl;
+        }
+    }
+    else
+    {
+        gmshfilecontent << GMSH::elementToGmshString(actele) << endl;
+    };
   };
-  //XFEM::EnrPhysVar var = nodalDofMap[0].begin();
+  gmshfilecontent << "};" << endl;
+  gmshfilecontent.close();
+  
+  for (int i=0; i<fluiddis->NumMyRowNodes(); ++i)
+  {
+    const DRT::Node* actnode = fluiddis->lRowNode(i);
+    const int gid = actnode->Id();
+    for ( set<XFEM::EnrPhysVar>::iterator var = nodalDofMap[gid].begin(); var != nodalDofMap[gid].end(); ++var )
+    {
+      cout << "Node: " << gid << ", " << var->toString() << endl;
+    };
+  };
 
   
   // -------------------------------------------------------------------
