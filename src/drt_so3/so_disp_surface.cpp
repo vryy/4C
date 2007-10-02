@@ -19,13 +19,6 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_discret.H"
 
-//extern "C"
-//{
-//#include "../headers/standardtypes.h"
-//}
-//#include "../drt_lib/dstrc.H"
- 
-
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 04/07|
@@ -115,6 +108,75 @@ DRT::Elements::SoDispSurface::~SoDispSurface()
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  get vector of lines (public)                             gammi 04/07|
+ *----------------------------------------------------------------------*/
+DRT::Element** DRT::Elements::SoDispSurface::Lines()
+{
+    const DiscretizationType distype = Shape();
+    const int nline   = NumLine();
+    lines_.resize(nline);
+    lineptrs_.resize(nline);
+
+    switch (distype)
+    {
+    case tri3:
+        CreateLinesTri(3, 2);
+        break;
+    case tri6:
+        CreateLinesTri(3, 3);
+        break;
+    case quad4:
+        CreateLinesQuad(4, 2);
+        break;
+    case quad8:
+        CreateLinesQuad(4, 3);
+        break;
+    case quad9:
+        CreateLinesQuad(4, 3);
+        break;
+    default:
+        dserror("distype not supported");
+    }
+
+    return (DRT::Element**)(&(lineptrs_[0]));
+}
+
+void DRT::Elements::SoDispSurface::CreateLinesTri(const int& nline,
+                                                  const int& nnode)
+{
+    for(int iline=0;iline<nline;iline++)
+    {
+        int nodeids[nnode];
+        DRT::Node* nodes[nnode];
+        
+        for (int inode=0;inode<nnode;inode++)
+        {
+             nodeids[inode] = NodeIds()[DRT::Utils::eleNodeNumbering_tri6_lines[iline][inode]];
+             nodes[inode]   = Nodes()[  DRT::Utils::eleNodeNumbering_tri6_lines[iline][inode]];
+        }
+        lines_[iline] = rcp(new DRT::Elements::SoDispLine(iline,Owner(),nnode,nodeids,nodes,this,NULL,iline));
+        lineptrs_[iline] = lines_[iline].get();
+    }
+}        
+
+void DRT::Elements::SoDispSurface::CreateLinesQuad(const int& nline,
+                                                   const int& nnode)
+{
+    for(int iline=0;iline<nline;iline++)
+    {
+        int nodeids[nnode];
+        DRT::Node* nodes[nnode];
+        
+        for (int inode=0;inode<nnode;inode++)
+        {
+             nodeids[inode] = NodeIds()[DRT::Utils::eleNodeNumbering_quad9_lines[iline][inode]];
+             nodes[inode]   = Nodes()[  DRT::Utils::eleNodeNumbering_quad9_lines[iline][inode]];
+        }
+        lines_[iline] = rcp(new DRT::Elements::SoDispLine(iline,Owner(),nnode,nodeids,nodes,this,NULL,iline));
+        lineptrs_[iline] = lines_[iline].get();
+    }
+}    
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                                maf 01/07|

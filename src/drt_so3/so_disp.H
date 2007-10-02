@@ -594,6 +594,17 @@ public:
   virtual int NumDofPerElement() const { return 0; }
 
   /*!
+  \brief Return number of lines of this element
+  */
+  virtual int NumLine() const {return DRT::Utils::getNumberOfElementLines(Shape());}
+  
+  /*!
+  \brief Get vector of ptrs to the lines of this element
+
+  */
+  virtual DRT::Element** Lines();
+  
+  /*!
   \brief Print this element
   */
   void Print(ostream& os) const;
@@ -670,6 +681,10 @@ public:
 
   //@}
 
+  // to be removed soon or moved to the DRT::Element class
+  // please ask me before using it! a.gerstenberger
+  DRT::Elements::SoDisp* GetParent(){return parent_;}
+  
 private:
 
   // don't want = operator
@@ -688,11 +703,23 @@ private:
   DRT::Elements::SoDisp* parent_;
   //! The local surface number of this surface w.r.t to the parent_ element
   int                    lsurface_;
+  
+  //! vector of lines adjacent to this element
+  vector<RefCountPtr<DRT::Elements::SoDispLine> > lines_;
+  //! vector of lines adjacent to this element
+  vector<DRT::Elements::SoDispLine*>              lineptrs_;
 
   void sodisp_surface_integ(
         double* sqrtdetg,                      // (o) pointer to sqrt of det(g)
         const Epetra_SerialDenseMatrix* xs,    // (i) element coords
         const Epetra_SerialDenseMatrix deriv); // (i) shape funct derivs
+  
+  void CreateLinesTri(const int& nline,
+                      const int& nnode);
+
+  void CreateLinesQuad(const int& nline,
+                       const int& nnode);
+  
 }; // class SoDispSurface
 
 /*!

@@ -105,8 +105,7 @@ namespace Utils
           {2, 5, 11},
           {0, 3, 9}};
 
-  //! Triangular surfaces of pyrmid5
-
+  //! Triangular surfaces of pyramid5
   const int eleNodeNumbering_pyramid5_trisurfaces[4][3]={
     {0,1,4},
     {1,2,4},
@@ -223,9 +222,10 @@ namespace Utils
    /*!
   \brief Returns the number of corner nodes
          for each discretization type
-  */
-  void getNumberOfElementCornerNodes(
-    int&                                        numCornerNodes,
+         
+  \return number of corner nodes of the discretization type
+  */ 
+  int getNumberOfElementCornerNodes( 
     const DRT::Element::DiscretizationType&     distype
     );
 
@@ -247,18 +247,20 @@ namespace Utils
   /*!
   \brief Fills a vector< vector<int> > with all nodes for every surface
          for each discretization type
+         
+  \return map with all nodes for each surface
   */
-  void getEleNodeNumberingSurfaces(
-    vector< vector<int> >&                      map,        ///< matrix surface - nodes
+  vector< vector<int> > getEleNodeNumberingSurfaces( 
     const DRT::Element::DiscretizationType&     distype     ///< discretization type
     );
 
   /*!
   \brief Fills a vector< vector<int> > with all nodes for every line
          for each discretization type
+  
+  \return map with all nodes for each line
   */
-  void getEleNodeNumberingLines(
-    vector< vector<int> >&                      map,        ///< matrix surface - nodes
+  vector< vector<int> > getEleNodeNumberingLines(    
     const DRT::Element::DiscretizationType&     distype     ///< discretization type
     );
 
@@ -266,27 +268,30 @@ namespace Utils
   /*!
   \brief Fills a vector< vector<int> > with all surfaces for every line
          for each discretization type
-  */
-  void getEleNodeNumbering_lines_surfaces(
-    vector< vector<int> >&                      map,        ///< matrix lines - surfaces
+         
+  \return map with surfaces adjacent to each line
+  */                                                                    
+  vector< vector<int> > getEleNodeNumbering_lines_surfaces(  
     const DRT::Element::DiscretizationType&     distype     ///< discretization type
     );
 
   /*!
   \brief Fills a vector< vector<int> > with all surfaces for every node
          for each discretization type
-  */
-  void getEleNodeNumbering_nodes_surfaces(
-    vector< vector<int> >&                      map,        ///< matrix nodes - surfaces
+         
+  \return map with all surfaces adjacent to each node
+  */                                           
+  vector< vector<int> > getEleNodeNumbering_nodes_surfaces(  
     const DRT::Element::DiscretizationType&     distype     ///< discretization type
     );
 
   /*!
   \brief Fills a vector< vector<int> > with reference coordinates for each node
          for each discretization type
+         
+  \return map of reference coordinates for all nodes
   */
-  void getEleNodeNumbering_nodes_reference(
-    vector< vector< double > >&                 map,        ///< matrix nodes - reference coordinates
+  vector< vector< double > > getEleNodeNumbering_nodes_reference( 
     const DRT::Element::DiscretizationType&     distype     ///< discretization type
     );
 
@@ -318,6 +323,18 @@ namespace Utils
     int                                         lineId,     ///< line ID
     double                                      lineCoord,  ///< line coordinate
     double*                                     coord,      ///< coordinates
+    const DRT::Element::DiscretizationType&     distype     ///< discretization type
+    );
+    
+  /*!
+  \brief    Returns the index of a  higher order node lying 
+            between two given corner nodes of an edge of an higher order element
+            for each discretization type
+            
+  */   
+  int getHigherOrderIndex(
+    const int                                   index1,     ///< index of corner node
+    const int                                   index2,     ///< index of corner node
     const DRT::Element::DiscretizationType&     distype     ///< discretization type
     );
 
