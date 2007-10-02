@@ -54,7 +54,7 @@ string GMSH::elementToGmshString(DRT::Element* ele)
 string GMSH::intCellToGmshString(DRT::Element* ele, const XFEM::Integrationcell cell)
 {
     stringstream pos_array_string;
-    pos_array_string << "SS2(";
+    pos_array_string << "SS(";
     
     const int nen = 4;
     const DRT::Element::DiscretizationType distype = ele->Shape();
