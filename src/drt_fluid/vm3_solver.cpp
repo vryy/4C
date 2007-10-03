@@ -24,7 +24,7 @@ A_(A)
 }
 
 /*----------------------------------------------------------------------*
- |  FAS multigrid solver for VM3                             m.gee 03/06|
+ |  multigrid solver for VM3                                 m.gee 03/06|
  *----------------------------------------------------------------------*/
 int VM3_Solver::Solve(
                      const Epetra_MultiVector& B, Epetra_MultiVector& X)
@@ -37,6 +37,15 @@ int VM3_Solver::Solve(
     tmp.Compute();
   }
 
+  // maximum number of V-cycles
+  int     vcmax    = 100;
+
+  // ------ stop V-cycles when norm is within this tolerance
+  double  vctol    = 0.000001;
+  double  norm     = 1.0;
+
+  int     vcnum      = 0;
+  bool   stopvcycles = false;
 
   // create a Space
   const Epetra_BlockMap& bmap = B.Map();
@@ -46,6 +55,7 @@ int VM3_Solver::Solve(
   // create input/output mlapi multivectors
   MultiVector b_f(space,1,false);
   MultiVector x_f(space,1,false);
+  MultiVector diffsol(space,1,false);
   const int nele = B.Map().NumMyElements();
   for (int i=0; i<nele; ++i)
   {
@@ -53,12 +63,59 @@ int VM3_Solver::Solve(
     b_f(i) = B[0][i];
   }
 
-  // call AMG
-  MultiLevelVCycle(b_f,x_f);
+  // ---------------------------------------------- V-cycle loop
+  while (stopvcycles==false)
+  {
+    vcnum++;
 
-  // copy solution back
-  for (int i=0; i<nele; ++i)
-    X[0][i] = x_f(i);
+    // call AMG
+    MultiLevelVCycle(b_f,x_f);
+
+    {
+      double quaderr=0.0; 
+      double quadsol=0.0;
+ 
+      for (int i=0; i<nele; ++i)
+      {
+        diffsol(i) = x_f(i) - X[0][i];
+        quaderr = quaderr + diffsol(i)*diffsol(i);
+        quadsol = quadsol + x_f(i)*x_f(i);
+      }
+
+      norm = sqrt(quaderr/quadsol);
+    }
+
+      //if (myrank_ == 0)
+     // {
+          printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   |",vcnum,vcmax,vctol,norm);
+          printf("\n");
+      //}
+
+    // convergence check
+    if (norm <= vctol)
+    {
+      stopvcycles=true;
+      break;
+    }
+
+    // warn if vcmax is reached without convergence
+    if (vcnum == vcmax and norm > vctol)
+    {
+      stopvcycles=true;
+      //if (myrank_ == 0)
+      //{
+        printf("+---------------------------------------------------------------+\n");
+        printf("|            >>>>>> not converged in vcmax steps!               |\n");
+        printf("+---------------------------------------------------------------+\n");
+      //}
+      break;
+    }
+
+    // copy solution back
+    for (int i=0; i<nele; ++i)
+      X[0][i] = x_f(i);
+
+  }
 
   return 0;
 
@@ -119,6 +176,7 @@ const
   {
       // multivector definitions
       MultiVector x_p0(P(0).GetRangeSpace(),1,false);
+      MultiVector b_f0(P(0).GetRangeSpace(),1,false);
 
       // step 1: scale separation
       // scale part on level 1 prolongated to level 0
@@ -129,17 +187,17 @@ const
 
       // step 2: RHS computation
       // compute additional RHS-term for scale part on level 1
-      b_f = b_f - A(0) * x_p0;
+      b_f0 = b_f - A(0) * x_p0;
 
       // step 3: pre-smoothing
-      S(0).Apply(b_f,x_f);
+      S(0).Apply(b_f0,x_f);
 
       // step 4: composition of complete solution
       x_f = x_p0 + x_f;
   }
 
   // smoothing on medium levels
-  for (level=1; level<maxlevels_-2; ++level)
+  for (level=1; level<maxlevels_-1; ++level)
   {
       levelm1=level-1;
 
@@ -168,18 +226,24 @@ const
       x_c = x_r - x_p;
 
       // (combined) scale parts on finer levels restricted to level-1
-      Restrict(x_f,x_rm,levelm1);
-      x_m = x_rm - P(levelm1) * R(levelm1) * x_rm;
       // and prolongated to finest level if necessary
       if (level > 1)
       {
+         Restrict(x_f,x_rm,levelm1);
+         x_m = x_rm - P(levelm1) * R(levelm1) * x_rm;
          Prolong(x_m,x_m0,levelm1);
+      }
+      else
+      {
+         x_m = x_f - P(0) * R(0) * x_f;
+         x_m0 = x_m;
       }
 
       // step 2: RHS computation
       // compute additional RHS-terms for scale parts on level+1 and finer levels
       Restrict(b_f,b_r,level);
-      b_c = b_r - A(level) * x_p - R(levelm1) * A(levelm1) * x_m;
+      b_c = b_r - A(level) * x_p;
+      b_c = b_c - R(levelm1) * A(levelm1) * x_m;
 
       // step 3: pre-smoothing
       S(level).Apply(b_c,x_c);
@@ -204,17 +268,22 @@ const
       MultiVector x_c0(P(0).GetRangeSpace(),1,false);
       MultiVector x_m0(P(0).GetRangeSpace(),1,false);
 
-      // pre-step: solution and RHS restricted to current level
+      // pre-step: solution restricted to current level
       Restrict(x_f,x_r,level);
 
       // step 1: scale separation
       // (combined) scale parts on finer levels restricted to level-1
-      Restrict(x_f,x_rm,levelm1);
-      x_m = x_rm - P(levelm1) * R(levelm1) * x_rm;
       // and prolongated to finest level if necessary
       if (level > 1)
       {
+         Restrict(x_f,x_rm,levelm1);
+         x_m = x_rm - P(levelm1) * R(levelm1) * x_rm;
          Prolong(x_m,x_m0,levelm1);
+      }
+      else
+      {
+         x_m = x_f - P(0) * R(0) * x_f;
+         x_m0 = x_m;
       }
 
       // step 2: RHS computation
@@ -223,7 +292,8 @@ const
       b_c = b_r - R(levelm1) * A(levelm1) * x_m;
 
       // step 3: solution
-      x_r = S(level) * b_c;
+      S(level).Apply(b_c,x_r);
+      //x_r = S(level) * b_c;
 
       // step 4: composition of complete solution
       // before: result for current scale part prolongated to finest level
@@ -231,7 +301,7 @@ const
       x_f = x_c0 + x_m0;
   }
 
-  // solution on medium levels
+  // smoothing on medium levels
   for (level=maxlevels_-2; level>0; --level)
   {
       levelm1=level-1;
@@ -248,7 +318,7 @@ const
       MultiVector x_c0(P(0).GetRangeSpace(),1,false);
       MultiVector x_m0(P(0).GetRangeSpace(),1,false);
 
-      // pre-step: solution and RHS restricted to current level
+      // pre-step: solution restricted to current level
       Restrict(x_f,x_r,level);
 
       // step 1: scale separation
@@ -261,18 +331,24 @@ const
       x_c = x_r - x_p;
 
       // (combined) scale parts on finer levels restricted to level-1
-      Restrict(x_f,x_rm,levelm1);
-      x_m = x_rm - P(levelm1) * R(levelm1) * x_rm;
       // and prolongated to finest level if necessary
-      if (level > 2)
+      if (level > 1)
       {
+         Restrict(x_f,x_rm,levelm1);
+         x_m = x_rm - P(levelm1) * R(levelm1) * x_rm;
          Prolong(x_m,x_m0,levelm1);
+      }
+      else
+      {
+         x_m = x_f - P(0) * R(0) * x_f;
+         x_m0 = x_m;
       }
 
       // step 2: RHS computation
       // compute additional RHS-terms for scales on level+1 and finer levels
       Restrict(b_f,b_r,level);
-      b_c = b_r - A(level) * x_p - R(levelm1) * A(levelm1) * x_m;
+      b_c = b_r - A(level) * x_p;
+      b_c = b_c - R(levelm1) * A(levelm1) * x_m;
 
       // step 3: pre-smoothing
       S(level).Apply(b_c,x_c);
@@ -287,6 +363,7 @@ const
   {
       // multivector definitions
       MultiVector x_p0(P(0).GetRangeSpace(),1,false);
+      MultiVector b_f0(P(0).GetRangeSpace(),1,false);
 
       // step 1: scale separation
       // scale part on level 1 prolongated to level 0
@@ -297,10 +374,10 @@ const
 
       // step 2: RHS computation
       // compute additional RHS-term for scale part on level 1
-      b_f = b_f - A(0) * x_p0;
+      b_f0 = b_f - A(0) * x_p0;
 
       // step 3: pre-smoothing
-      S(0).Apply(b_f,x_f);
+      S(0).Apply(b_f0,x_f);
 
       // step 4: composition of complete solution
       x_f = x_p0 + x_f;
@@ -317,20 +394,29 @@ int VM3_Solver::Restrict(const MultiVector& x_f,
                          int   level)
 const
 {
-  MultiVector x_rf(P(0).GetRangeSpace(),1,false);
-  MultiVector x_rc(P(level).GetRangeSpace(),1,false);
-
-  x_rf = x_f;
-
-  for (int i=0; i<level; ++i)
+  switch(level)
   {
-      MultiVector x_rf(P(level).GetRangeSpace(),1,false);
-      MultiVector x_rc(P(level).GetDomainSpace(),1,false);
-
-      x_rc = R(i) * x_rf;
-  }
-
-  x_r = x_rc;
+    case 1:
+       x_r = R(0) * x_f;
+       break;
+    case 2:
+       x_r = R(1) * R(0) * x_f;
+       break;
+    case 3:
+       x_r = R(2) * R(1) * R(0) * x_f;
+       break;
+    case 4:
+       x_r = R(3) * R(2) * R(1) * R(0) * x_f;
+       break;
+    case 5:
+       x_r = R(4) * R(3) * R(2) * R(1) * R(0) * x_f;
+       break;
+    case 6:
+       x_r = R(5) * R(4) * R(3) * R(2) * R(1) * R(0) * x_f;
+       break;
+    default:
+      x_r = R(0) * x_f;
+  } // end of switch(level)
 
   return 0;
 }
@@ -343,20 +429,29 @@ int VM3_Solver::Prolong(const MultiVector& x_l,
                         int   level)
 const
 {
-  MultiVector x_pc(P(level).GetRangeSpace(),1,false);
-  MultiVector x_pf(P(0).GetRangeSpace(),1,false);
-
-  x_pc = x_l;
-
-  for (int i=0; i<level; ++i)
+  switch(level)
   {
-      MultiVector x_pf(P(level-1-i).GetRangeSpace(),1,false);
-      MultiVector x_pc(P(level-1-i).GetDomainSpace(),1,false);
-
-      x_pf = P(level-1-i) * x_pc;
-  }
-
-  x_0 = x_pf;
+    case 1:
+       x_0 = P(0) * x_l;
+       break;
+    case 2:
+       x_0 = P(0) * P(1) * x_l;
+       break;
+    case 3:
+       x_0 = P(0) * P(1) * P(2) * x_l;
+       break;
+    case 4:
+       x_0 = P(0) * P(1) * P(2) * P(3) * x_l;
+       break;
+    case 5:
+       x_0 = P(0) * P(1) * P(2) * P(3) * P(4) * x_l;
+       break;
+    case 6:
+       x_0 = P(0) * P(1) * P(2) * P(3) * P(4) * P(5) * x_l;
+       break;
+    default:
+      x_0 = P(0) * x_l;
+  } // end of switch(level)
 
   return 0;
 }
@@ -408,7 +503,7 @@ bool VM3_Solver::Compute()
   mlapiPmod_.resize(maxlevels);
   //mlapiRP_.resize(maxlevels);
   //mlapiPR_.resize(maxlevels);
-  mlapiRA_.resize(maxlevels);
+  //mlapiRA_.resize(maxlevels);
   mlapiA_.resize(maxlevels);
   mlapiS_.resize(maxlevels);
   mlapiAplus_.resize(1);
@@ -507,21 +602,21 @@ bool VM3_Solver::Compute()
   C = GetRAP(R,mlapiA,P);
 
   // build the matrix-matrix products R*A, R*P and P*R
-  ML_Operator* Rmat = R.GetML_Operator();
-  ML_Operator* Amat = mlapiA.GetML_Operator();
-  ML_Operator* Pmat = P.GetML_Operator();
-  ML_Operator* RAmat;
+//  ML_Operator* Rmat = R.GetML_Operator();
+//  ML_Operator* Amat = mlapiA.GetML_Operator();
+//  ML_Operator* Pmat = P.GetML_Operator();
+//  ML_Operator* RAmat;
 //  ML_Operator* RPmat;
 //  ML_Operator* PRmat;
-  ML_matmat_mult(Rmat, Amat, &RAmat);
+//  ML_matmat_mult(Rmat, Amat, &RAmat);
 //  ML_matmat_mult(Rmat, Pmat, &RPmat);
 //  ML_matmat_mult(Pmat, Rmat, &PRmat);
-  Operator RA(mlapiA.GetDomainSpace(),R.GetRangeSpace(), RAmat,false);
+//  Operator RA(mlapiA.GetDomainSpace(),R.GetRangeSpace(), RAmat,false);
 //  Operator RP(P.GetDomainSpace(),R.GetRangeSpace(), RPmat,false);
 //  Operator PR(R.GetDomainSpace(),P.GetRangeSpace(), PRmat,false);
 
   // write the temporary values into the correct slot
-  mlapiRA_[level]       = RA;
+//  mlapiRA_[level]       = RA;
 //  mlapiRP_[level]       = RP;
 //  mlapiPR_[level]       = PR;
   mlapiRmod_[level]     = R;
@@ -588,18 +683,18 @@ bool VM3_Solver::Compute()
     C = GetRAP(R,mlapiA,P);
 
     // build the matrix-matrix products R*A, R*P and P*R
-    Rmat = R.GetML_Operator();
-    Amat = mlapiA.GetML_Operator();
-    Pmat = P.GetML_Operator();
-    ML_matmat_mult(Rmat, Amat, &RAmat);
+//    Rmat = R.GetML_Operator();
+//    Amat = mlapiA.GetML_Operator();
+//    Pmat = P.GetML_Operator();
+//    ML_matmat_mult(Rmat, Amat, &RAmat);
 //    ML_matmat_mult(Rmat, Pmat, &RPmat);
 //    ML_matmat_mult(Pmat, Rmat, &PRmat);
-    Operator RA(mlapiA.GetDomainSpace(),R.GetRangeSpace(), RAmat,false);
+//    Operator RA(mlapiA.GetDomainSpace(),R.GetRangeSpace(), RAmat,false);
 //    Operator RP(P.GetDomainSpace(),R.GetRangeSpace(), RPmat,false);
 //    Operator PR(R.GetDomainSpace(),P.GetRangeSpace(), PRmat,false);
 
     // write the temporary values into the correct slot
-    mlapiRA_[level]       = RA;
+//    mlapiRA_[level]       = RA;
 //    mlapiRP_[level]       = RP;
 //    mlapiPR_[level]       = PR;
     mlapiRmod_[level]     = R;

@@ -885,11 +885,13 @@ if (discap == 1)
 
   #define edc_(i,j)    edc(i,j)
   #define derxy_(i,j)  derxy(i,j)
+  #define conv_(j)       conv[j]
 
   #include "condif2_kart.cpp"
 
   #undef edc_
   #undef derxy_
+  #undef conv_
 }
 
 return;
@@ -1018,11 +1020,13 @@ if (discap == 1)
 
   #define edc_(i,j)    edc(i,j)
   #define derxy_(i,j)  derxy(i,j)
+  #define conv_(j)       conv[j]
 
   #include "condif2_kart.cpp"
 
   #undef edc_
   #undef derxy_
+  #undef conv_
 }
 
 return;

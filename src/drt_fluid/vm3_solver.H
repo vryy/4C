@@ -118,7 +118,7 @@ public:
 
 
   /*!
-  \brief Compute the preconditioner
+  \brief Compute the vm3 solver
 
    Compute the vm3 solver
   */
@@ -202,7 +202,7 @@ private:
   inline const Operator& R(const int i) const { return (mlapiRmod_[i]); }
 //  inline const Operator& RP(const int i) const { return (mlapiRP_[i]); }
 //  inline const Operator& PR(const int i) const { return (mlapiPR_[i]); }
-  inline const Operator& RA(const int i) const { return (mlapiRA_[i]); }
+//  inline const Operator& RA(const int i) const { return (mlapiRA_[i]); }
   inline const Operator& A(const int i) const { return (mlapiA_[i]); }
   inline const Operator& Aplus(const int i) const { return (mlapiAplus_[i]); }
   inline const InverseOperator& S(const int i) const { return (mlapiS_[i]); }
@@ -217,9 +217,9 @@ private:
 
   vector<Operator>               mlapiRmod_;   // restriction
   vector<Operator>               mlapiPmod_;   // prolongation
-  vector<Operator>               mlapiRP_;     // restriction * prolongatoin
-  vector<Operator>               mlapiPR_;     // prolongation * restriction
-  vector<Operator>               mlapiRA_;     // restriction * A
+//  vector<Operator>               mlapiRP_;     // restriction * prolongatoin
+//  vector<Operator>               mlapiPR_;     // prolongation * restriction
+//  vector<Operator>               mlapiRA_;     // restriction * A
   vector<Operator>               mlapiAplus_;  // operator Aplus on each grid (actually needed only on finest grid)
   vector<Operator>               mlapiA_;      // operator A on each grid
   vector<InverseOperator>        mlapiS_;      // smoother on each grid
