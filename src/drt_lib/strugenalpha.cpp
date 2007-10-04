@@ -316,7 +316,7 @@ void StruGenAlpha::ConstantPredictor()
   }
 
   // add static mid-balance
-  fresm_->Update(1.0,*fint_,-1.0,*fextm_,1.0);
+  fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
 
   // blank residual at DOFs on Dirichlet BC
   {
@@ -469,7 +469,7 @@ void StruGenAlpha::ConsistentPredictor()
   }
 
   // add static mid-balance
-  fresm_->Update(1.0,*fint_,-1.0,*fextm_,1.0);
+  fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
 
   // blank residual at DOFs on Dirichlet BC
   {
@@ -520,7 +520,10 @@ void StruGenAlpha::FullNewton()
 
   //=================================================== equilibrium loop
   int numiter=0;
-  while (norm_>toldisp && numiter<=maxiter)
+  double fresmnorm;
+  double disinorm;
+  fresm_->Norm2(&fresmnorm);
+  while (norm_>toldisp && fresmnorm>toldisp && numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
@@ -531,7 +534,6 @@ void StruGenAlpha::FullNewton()
     LINALG::Complete(*stiff_);
 
     //----------------------- apply dirichlet BCs to system of equations
-    fresm_->Scale(-1.0);   // delete this by building fresm with other sign
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
 
@@ -611,29 +613,28 @@ void StruGenAlpha::FullNewton()
       fresm_->Update(1.0,*fviscm,1.0);
     }
     // add static mid-balance
-    fresm_->Update(1.0,*fint_,-1.0,*fextm_,1.0);
-    // blank residual DOFs with are on Dirichlet BC
+    fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+    // blank residual DOFs that are on Dirichlet BC
     {
       Epetra_Vector fresmcopy(*fresm_);
       fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
     }
 
     //---------------------------------------------- build residual norm
-    double disinorm;
     disi_->Norm2(&disinorm);
 
-    fresm_->Norm2(&norm_);
+    fresm_->Norm2(&fresmnorm);
     // a short message
     if (!myrank_)
     {
       if (printscreen)
       {
-        printf("numiter %d res-norm %e dis-norm %e\n",numiter+1, norm_, disinorm);
+        printf("numiter %d res-norm %e dis-norm %e\n",numiter+1, fresmnorm, disinorm);
         fflush(stdout);
       }
       if (printerr)
       {
-        fprintf(errfile,"numiter %d res-norm %e dis-norm %e\n",numiter+1, norm_, disinorm);
+        fprintf(errfile,"numiter %d res-norm %e dis-norm %e\n",numiter+1, fresmnorm, disinorm);
         fflush(errfile);
       }
     }
@@ -643,8 +644,8 @@ void StruGenAlpha::FullNewton()
     //--------------------------------- increment equilibrium loop index
     ++numiter;
 
-  } // while (norm_>toldisp && numiter<=maxiter)
-  //============================================= end equilibrium loop
+  } // while (norm_>toldisp && fresmnorm>toldisp && numiter<=maxiter)
+  //=================================================================== end equilibrium loop
 
   //-------------------------------- test whether max iterations was hit
   if (numiter>=maxiter) dserror("Newton unconverged in %d iterations",numiter);
@@ -697,11 +698,12 @@ void StruGenAlpha::ModifiedNewton()
   LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
 
   //=================================================== equilibrium loop
-  while (norm_>toldisp && numiter<=maxiter)
+  double fresmnorm;
+  fresm_->Norm2(&fresmnorm);
+  while (norm_>toldisp && fresmnorm>toldisp  && numiter<=maxiter)
   {
     //------------------------------------------- effective rhs is fresm
     //----------------------- apply dirichlet BCs to system of equations
-    fresm_->Scale(-1.0);   // delete this by building fresm with other sign
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
 
     //--------------------------------------------------- solve for disi
@@ -776,7 +778,7 @@ void StruGenAlpha::ModifiedNewton()
       fresm_->Update(1.0,*fviscm,1.0);
     }
     // add static mid-balance
-    fresm_->Update(1.0,*fint_,-1.0,*fextm_,1.0);
+    fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
     // blank residual DOFs with are on Dirichlet BC
     {
       Epetra_Vector fresmcopy(*fresm_);
@@ -807,7 +809,7 @@ void StruGenAlpha::ModifiedNewton()
 
     //--------------------------------- increment equilibrium loop index
     ++numiter;
-  } // while (norm_>toldisp && numiter<=maxiter)
+  } // while (norm_>toldisp && fresmnorm>toldisp && numiter<=maxiter)
   //============================================= end equilibrium loop
 
   //-------------------------------- test whether max iterations was hit
@@ -915,7 +917,7 @@ void StruGenAlpha::NonlinearCG()
   mlparams.set("nlnML output",                                      outlevel   ); // ML-output-level (0-10)
   mlparams.set("nlnML max levels",                                  maxlevel   ); // max. # levels (minimum = 2 !)
   mlparams.set("nlnML coarse: max size",                            maxcsize   ); // the size ML stops generating coarser levels
-  mlparams.set("nlnML is linear preconditioner",                    false      );
+  mlparams.set("nlnML is linear preconditioner",                    true      );
   mlparams.set("nlnML is matrixfree",                               false      );
   mlparams.set("nlnML apply constraints",                           false      );
   mlparams.set("nlnML Jacobian fix diagonal",                       false      );
@@ -946,7 +948,7 @@ void StruGenAlpha::NonlinearCG()
   mlparams.set("nlnML linear smoother type fine level",             "MLS"); // MLS SGS BSGS Jacobi MLS Bcheby AmesosKLU
   mlparams.set("nlnML linear smoother type medium level",           "MLS");
   mlparams.set("nlnML linear smoother type coarsest level",         "AmesosKLU");
-  mlparams.set("nlnML linear smoother sweeps fine level",           24);
+  mlparams.set("nlnML linear smoother sweeps fine level",           6);
   mlparams.set("nlnML linear smoother sweeps medium level",         6);
   mlparams.set("nlnML linear smoother sweeps coarsest level",       1);
 
@@ -1126,6 +1128,234 @@ void StruGenAlpha::NonlinearCG()
   return;
 } // StruGenAlpha::NonlinearCG()
 
+
+
+/*----------------------------------------------------------------------*
+ |  do Newton iteration (public)                             mwgee 03/07|
+ *----------------------------------------------------------------------*/
+void StruGenAlpha::PTC()
+{
+  // -------------------------------------------------------------------
+  // get some parameters from parameter list
+  // -------------------------------------------------------------------
+  double time      = params_.get<double>("total time"             ,0.0);
+  double dt        = params_.get<double>("delta time"             ,0.01);
+  int    maxiter   = params_.get<int>   ("max iterations"         ,10);
+  bool   damping   = params_.get<bool>  ("damping"                ,false);
+  double beta      = params_.get<double>("beta"                   ,0.292);
+  double gamma     = params_.get<double>("gamma"                  ,0.581);
+  double alpham    = params_.get<double>("alpha m"                ,0.378);
+  double alphaf    = params_.get<double>("alpha f"                ,0.459);
+  double toldisp   = params_.get<double>("tolerance displacements",1.0e-07);
+  bool printscreen = params_.get<bool>  ("print to screen",true);
+  bool printerr    = params_.get<bool>  ("print to err",false);
+  FILE* errfile    = params_.get<FILE*> ("err file",NULL);
+  if (!errfile) printerr = false;
+  const Epetra_Map* dofrowmap = discret_.DofRowMap();
+
+  // check whether we have a stiffness matrix, that is not filled yet
+  // and mass and damping are present
+  if (stiff_->Filled()) dserror("stiffness matrix may not be filled here");
+  if (!mass_->Filled()) dserror("mass matrix must be filled here");
+  if (damping)
+    if (!damp_->Filled()) dserror("damping matrix must be filled here");
+
+
+  // hard wired ptc parameters
+  double ptcdt = 1.0e-02;
+  double nc;
+  fresm_->NormInf(&nc);
+  double dti = 1/ptcdt;
+  double dti0 = dti;
+  RCP<Epetra_Vector> x0 = rcp(new Epetra_Vector(*disi_));
+  double np = nc;
+
+  //=================================================== equilibrium loop
+  int numiter=0;
+  double fresmnorm;
+  fresm_->Norm2(&fresmnorm);
+  while (norm_>toldisp && fresmnorm>toldisp && numiter<=maxiter)
+  {
+    double dtim = dti0;
+    dti0 = dti;
+    RCP<Epetra_Vector> xm = rcp(new Epetra_Vector(*x0));
+    x0->Update(1.0,*disi_,0.0);
+    //------------------------------------------- effective rhs is fresm
+    //---------------------------------------------- build effective lhs
+    // (using matrix stiff_ as effective matrix)
+    LINALG::Add(*mass_,false,(1.-alpham)/(beta*dt*dt),*stiff_,1.-alphaf);
+    if (damping)
+      LINALG::Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),*stiff_,1.0);
+    LINALG::Complete(*stiff_);
+    
+    //------------------------------- do ptc modification to effective LHS
+    {
+      RCP<Epetra_Vector> tmp = LINALG::CreateVector(stiff_->RowMap(),false);
+      tmp->PutScalar(dti);
+      RCP<Epetra_Vector> diag = LINALG::CreateVector(stiff_->RowMap(),false);
+      stiff_->ExtractDiagonalCopy(*diag);
+      diag->Update(1.0,*tmp,1.0);
+      stiff_->ReplaceDiagonalValues(*diag);
+    }
+
+    //----------------------- apply dirichlet BCs to system of equations
+    disi_->PutScalar(0.0);  // Useful? depends on solver and more
+    LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
+
+    //--------------------------------------------------- solve for disi
+    // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
+    if (!numiter)
+      solver_.Solve(stiff_,disi_,fresm_,true,true);
+    else
+      solver_.Solve(stiff_,disi_,fresm_,true,false);
+    stiff_ = null;
+
+    //---------------------------------- update mid configuration values
+    // displacements
+    // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
+    dism_->Update(1.-alphaf,*disi_,1.0);
+    // velocities
+    // iterative
+    // V_{n+1-alpha_f} := V_{n+1-alpha_f}
+    //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
+    //velm_->Update((1.-alphaf)*gamma/(beta*dt),*disi_,1.0);
+    // incremental (required for constant predictor)
+    velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+    velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
+                  (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
+                  gamma/(beta*dt));
+    // accelerations
+    // iterative
+    // A_{n+1-alpha_m} := A_{n+1-alpha_m}
+    //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
+    //accm_->Update((1.-alpham)/(beta*dt*dt),*disi_,1.0);
+    // incremental (required for constant predictor)
+    accm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+    accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
+                  (2.*beta-1.+alpham)/(2.*beta),*acc_,
+                  (1.-alpham)/((1.-alphaf)*beta*dt*dt));
+
+    //---------------------------- compute internal forces and stiffness
+    {
+      // zero out stiffness
+      stiff_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+      // create the parameters for the discretization
+      ParameterList p;
+      // action for elements
+      p.set("action","calc_struct_nlnstiff");
+      // choose what to assemble
+      p.set("assemble matrix 1",true);
+      p.set("assemble matrix 2",false);
+      p.set("assemble vector 1",true);
+      p.set("assemble vector 2",false);
+      p.set("assemble vector 3",false);
+      // other parameters that might be needed by the elements
+      p.set("total time",time);
+      p.set("delta time",dt);
+      // set vector values needed by elements
+      discret_.ClearState();
+      discret_.SetState("residual displacement",disi_);
+      discret_.SetState("displacement",dism_);
+      //discret_.SetState("velocity",velm_); // not used at the moment
+      fint_->PutScalar(0.0);  // initialise internal force vector
+      discret_.Evaluate(p,stiff_,null,fint_,null,null);
+      discret_.ClearState();
+      // do NOT finalize the stiffness matrix to add masses to it later
+    }
+
+    //------------------------------------------ compute residual forces
+    // Res = M . A_{n+1-alpha_m}
+    //     + C . V_{n+1-alpha_f}
+    //     + F_int(D_{n+1-alpha_f})
+    //     - F_{ext;n+1-alpha_f}
+    // add inertia mid-forces
+    mass_->Multiply(false,*accm_,*fresm_);
+    // add viscous mid-forces
+    if (damping)
+    {
+      RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
+      damp_->Multiply(false,*velm_,*fviscm);
+      fresm_->Update(1.0,*fviscm,1.0);
+    }
+    // add static mid-balance
+    fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+    // blank residual DOFs that are on Dirichlet BC
+    {
+      Epetra_Vector fresmcopy(*fresm_);
+      fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
+    }
+
+    // compute inf norm of residual
+    double np;
+    fresm_->NormInf(&np);
+
+    //---------------------------------------------- build residual norm
+    double disinorm;
+    disi_->Norm2(&disinorm);
+
+    fresm_->Norm2(&fresmnorm);
+    // a short message
+    if (!myrank_)
+    {
+      if (printscreen)
+      {
+        printf("numiter %d res-norm %e dis-norm %e dti %e\n",numiter+1, fresmnorm, disinorm,dti);
+        fflush(stdout);
+      }
+      if (printerr)
+      {
+        fprintf(errfile,"numiter %d res-norm %e dis-norm %e dti %e\n",numiter+1, fresmnorm, disinorm,dti);
+        fflush(errfile);
+      }
+    }
+    // criteria to stop Newton iteration
+    norm_ = disinorm;
+
+    //--------------------------------- increment equilibrium loop index
+    ++numiter;
+
+    //------------------------------------ PTC update of artificial time 
+#if 1
+    // SER step size control
+    dti *= (np/nc);
+    dti = max(dti,0.0);
+    nc = np;
+#endif    
+
+#if 0
+    {
+      double ttau=0.75;	
+      RCP<Epetra_Vector> d1 = LINALG::CreateVector(stiff_->RowMap(),false);
+      d1->Update(1.0,*disi_,-1.0,*x0,0.0);
+      d1->Scale(dti0);
+      RCP<Epetra_Vector> d0 = LINALG::CreateVector(stiff_->RowMap(),false);
+      d0->Update(1.0,*x0,-1.0,*xm,0.0);
+      d0->Scale(dtim);
+      double dt0 = 1/dti0;
+      double dtm = 1/dtim;
+      RCP<Epetra_Vector> xpp = LINALG::CreateVector(stiff_->RowMap(),false);
+      xpp->Update(2.0/(dt0+dtm),*d1,-2.0/(dt0+dtm),*d0,0.0);
+      RCP<Epetra_Vector> xtt = LINALG::CreateVector(stiff_->RowMap(),false);
+      for (int i=0; i<xtt->MyLength(); ++i) (*xtt)[i] = abs((*xpp)[i])/(1.0+abs((*disi_)[i]));
+      double ett;
+      xtt->MaxValue(&ett);
+      ett = ett / (2.*ttau);
+      dti = sqrt(ett);
+      nc = np;
+    }
+#endif    
+  } // while (norm_>toldisp && fresmnorm>toldisp && numiter<=maxiter)
+  //============================================= end equilibrium loop
+
+  //-------------------------------- test whether max iterations was hit
+  if (numiter==maxiter) dserror("Ptc unconverged in %d iterations",numiter);
+  params_.set<int>("num iterations",numiter);
+
+  //-------------------------------------- don't need this at the moment
+  stiff_ = null;
+
+  return;
+} // StruGenAlpha::PTC()
 
 
 /*----------------------------------------------------------------------*
@@ -1320,6 +1550,16 @@ void StruGenAlpha::Integrate()
       if      (predictor==1) ConstantPredictor();
       else if (predictor==2) ConsistentPredictor();
       NonlinearCG();
+      UpdateandOutput();
+    }
+  }
+  else if (equil=="ptc")
+  {
+    for (int i=istep; i<nstep; ++i)
+    {
+      if      (predictor==1) ConstantPredictor();
+      else if (predictor==2) ConsistentPredictor();
+      PTC();
       UpdateandOutput();
     }
   }

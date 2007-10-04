@@ -143,7 +143,11 @@ void dyn_nlnstructural_drt()
   genalphaparams.set<bool>  ("print to err",true);
   genalphaparams.set<FILE*> ("err file",allfiles.out_err);
 
-  // takes values "full newton" , "modified newton" , "nonlinear cg"
+  // takes values "full newton" , "modified newton" , "nonlinear cg", "ptc"
+  // "full newton" is the usual newton scheme
+  // "modified newton" is newton without updating the effective stiffness
+  // "nonlinear cg" is nln cg with amg preocnditioning (experimental solver)
+  // "ptc" is pseudo transient continuation (experimental solver)
   genalphaparams.set<string>("equilibrium iteration","full newton");
 
   // takes values "constant" "consistent"
