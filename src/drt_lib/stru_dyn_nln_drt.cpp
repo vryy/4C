@@ -111,65 +111,98 @@ void dyn_nlnstructural_drt()
   // -------------------------------------------------------------------
   // create a generalized alpha time integrator
   // -------------------------------------------------------------------
-  ParameterList genalphaparams;
-  StruGenAlpha::SetDefaults(genalphaparams);
-
-  genalphaparams.set<bool>  ("damping",sdyn->damp);
-  genalphaparams.set<double>("damping factor K",sdyn->k_damp);
-  genalphaparams.set<double>("damping factor M",sdyn->m_damp);
-
-  genalphaparams.set<double>("beta",sdyn->beta);
-  genalphaparams.set<double>("gamma",sdyn->gamma);
-  genalphaparams.set<double>("alpha m",sdyn->alpha_m);
-  genalphaparams.set<double>("alpha f",sdyn->alpha_f);
-
-  genalphaparams.set<double>("total time",0.0);
-  genalphaparams.set<double>("delta time",sdyn->dt);
-  genalphaparams.set<int>   ("step",0);
-  genalphaparams.set<int>   ("nstep",sdyn->nstep);
-  genalphaparams.set<int>   ("max iterations",sdyn->maxiter);
-  genalphaparams.set<int>   ("num iterations",-1);
-  genalphaparams.set<double>("tolerance displacements",sdyn->toldisp);
-
-  genalphaparams.set<bool>  ("io structural disp",ioflags.struct_disp);
-  genalphaparams.set<int>   ("io disp every nstep",sdyn->updevry_disp);
-  genalphaparams.set<bool>  ("io structural stress",ioflags.struct_stress);
-  genalphaparams.set<int>   ("io stress every nstep",sdyn->updevry_stress);
-
-  genalphaparams.set<int>   ("restart",genprob.restart);
-  genalphaparams.set<int>   ("write restart every",sdyn->res_write_evry);
-
-  genalphaparams.set<bool>  ("print to screen",true);
-  genalphaparams.set<bool>  ("print to err",true);
-  genalphaparams.set<FILE*> ("err file",allfiles.out_err);
-
-  // takes values "full newton" , "modified newton" , "nonlinear cg", "ptc"
-  // "full newton" is the usual newton scheme
-  // "modified newton" is newton without updating the effective stiffness
-  // "nonlinear cg" is nln cg with amg preocnditioning (experimental solver)
-  // "ptc" is pseudo transient continuation (experimental solver)
-  genalphaparams.set<string>("equilibrium iteration","full newton");
-
-  // takes values "constant" "consistent"
-  genalphaparams.set<string>("predictor","constant");
-
-  // create the time integrator
-  StruGenAlpha timeintegrator(genalphaparams,*actdis,solver,output);
-
-  // do restart if demanded from input file
-  // note that this changes time and step in genalphaparams
-  if (genprob.restart)
-    timeintegrator.ReadRestart(genprob.restart);
-
-  // write mesh always at beginning of calc or restart
+  switch(sdyn->Typ)
   {
-    int    step = genalphaparams.get<int>("step",0);
-    double time = genalphaparams.get<double>("total time",0.0);
-    output.WriteMesh(step,time);
-  }
+    //==================================================================
+    // Generalized alpha time integration
+    //==================================================================
+    case STRUCT_DYNAMIC::gen_alfa :
+    {
+      ParameterList genalphaparams;
+      StruGenAlpha::SetDefaults(genalphaparams);
 
-  // integrate
-  timeintegrator.Integrate();
+      genalphaparams.set<bool>  ("damping",sdyn->damp);
+      genalphaparams.set<double>("damping factor K",sdyn->k_damp);
+      genalphaparams.set<double>("damping factor M",sdyn->m_damp);
+
+      genalphaparams.set<double>("beta",sdyn->beta);
+      genalphaparams.set<double>("gamma",sdyn->gamma);
+      genalphaparams.set<double>("alpha m",sdyn->alpha_m);
+      genalphaparams.set<double>("alpha f",sdyn->alpha_f);
+
+      genalphaparams.set<double>("total time",0.0);
+      genalphaparams.set<double>("delta time",sdyn->dt);
+      genalphaparams.set<int>   ("step",0);
+      genalphaparams.set<int>   ("nstep",sdyn->nstep);
+      genalphaparams.set<int>   ("max iterations",sdyn->maxiter);
+      genalphaparams.set<int>   ("num iterations",-1);
+      genalphaparams.set<double>("tolerance displacements",sdyn->toldisp);
+
+      genalphaparams.set<bool>  ("io structural disp",ioflags.struct_disp);
+      genalphaparams.set<int>   ("io disp every nstep",sdyn->updevry_disp);
+      genalphaparams.set<bool>  ("io structural stress",ioflags.struct_stress);
+      genalphaparams.set<int>   ("io stress every nstep",sdyn->updevry_stress);
+
+      genalphaparams.set<int>   ("restart",genprob.restart);
+      genalphaparams.set<int>   ("write restart every",sdyn->res_write_evry);
+
+      genalphaparams.set<bool>  ("print to screen",true);
+      genalphaparams.set<bool>  ("print to err",true);
+      genalphaparams.set<FILE*> ("err file",allfiles.out_err);
+
+      switch(sdyn->nlnSolvTyp)
+      {
+        case STRUCT_DYNAMIC::fullnewton:
+          genalphaparams.set<string>("equilibrium iteration","full newton");
+        break;
+        case STRUCT_DYNAMIC::modnewton:
+          genalphaparams.set<string>("equilibrium iteration","modified newton");
+        break;
+        case STRUCT_DYNAMIC::matfreenewton:
+          genalphaparams.set<string>("equilibrium iteration","matrixfree newton");
+        break;
+        case STRUCT_DYNAMIC::nlncg:
+          genalphaparams.set<string>("equilibrium iteration","nonlinear cg");
+        break;
+        case STRUCT_DYNAMIC::ptc:
+          genalphaparams.set<string>("equilibrium iteration","ptc");
+        break;
+        default:
+          genalphaparams.set<string>("equilibrium iteration","full newton");
+        break;
+      }
+
+      // takes values "constant" "consistent"
+      genalphaparams.set<string>("predictor","constant");
+
+      // create the time integrator
+      StruGenAlpha timeintegrator(genalphaparams,*actdis,solver,output);
+
+      // do restart if demanded from input file
+      // note that this changes time and step in genalphaparams
+      if (genprob.restart)
+        timeintegrator.ReadRestart(genprob.restart);
+
+      // write mesh always at beginning of calc or restart
+      {
+        int    step = genalphaparams.get<int>("step",0);
+        double time = genalphaparams.get<double>("total time",0.0);
+        output.WriteMesh(step,time);
+      }
+
+      // integrate in time and space
+      timeintegrator.Integrate();
+    }
+    break;
+    //==================================================================
+    // Generalized Energy Momentum Method 
+    //==================================================================
+    case STRUCT_DYNAMIC::Gen_EMM :
+    {
+      dserror("Not yet impl.");
+    }
+    break;
+  } // end of switch(sdyn->Typ)
 
   return;
 } // end of dyn_nlnstructural_drt()

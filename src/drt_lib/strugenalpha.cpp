@@ -1762,7 +1762,7 @@ void StruGenAlpha::Integrate()
   else dserror("Unknown type of equilibrium iteration");
 
   return;
-}
+} // void StruGenAlpha::Integrate()
 
 
 
@@ -1796,7 +1796,7 @@ void StruGenAlpha::SetDefaults(ParameterList& params)
   params.set<int>   ("write restart every"    ,0);
   // takes values "constant" consistent"
   params.set<string>("predictor"              ,"constant");
-  // takes values "full newton" , "modified newton" , "nonlinear cg"
+  // takes values "full newton" , "modified newton" , "nonlinear cg" "ptc"
   params.set<string>("equilibrium iteration"  ,"full newton");
   return;
 }
