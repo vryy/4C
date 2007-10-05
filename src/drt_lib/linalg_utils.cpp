@@ -371,7 +371,20 @@ void LINALG::ApplyDirichlettoSystem(RefCountPtr<Epetra_CrsMatrix>&   A,
   return;
 }
 
-#if 0
+/*----------------------------------------------------------------------*
+ |  Apply dirichlet conditions  (public)                     mwgee 02/07|
+ *----------------------------------------------------------------------*/
+void LINALG::ApplyDirichlettoSystem(RefCountPtr<Epetra_Vector>&      x,
+                                    RefCountPtr<Epetra_Vector>&      b,
+                                    const RefCountPtr<Epetra_Vector> dbcval,
+                                    const RefCountPtr<Epetra_Vector> dbctoggle)
+{
+  RefCountPtr<Epetra_CrsMatrix> dummy = null;
+  ApplyDirichlettoSystem(dummy,x,b,dbcval,dbctoggle);
+  return;
+}
+
+#if 1
 
 // The old version that modifies the sparse mask.
 
@@ -384,18 +397,6 @@ void LINALG::ApplyDirichlettoSystem(RefCountPtr<Epetra_CrsMatrix>&   A,
                                     const RefCountPtr<Epetra_Vector> dbcval,
                                     const RefCountPtr<Epetra_Vector> dbctoggle)
 {
-  const Epetra_Map& rowmap = A->RowMap();
-#ifdef DEBUG
-  if (x != null)
-    if (!rowmap.SameAs(x->Map())) dserror("x does not match A");
-  if (b != null)
-    if (!rowmap.SameAs(b->Map())) dserror("b does not match A");
-  if (dbcval != null)
-    if (!rowmap.SameAs(dbcval->Map())) dserror("dbcval does not match A");
-  if (!rowmap.SameAs(dbctoggle->Map())) dserror("dbctoggle does not match A");
-  if (A->Filled()!=true) dserror("FillComplete was not called on A");
-#endif
-
   const Epetra_Vector& dbct = *dbctoggle;
   if (x != null && b != null)
   {
@@ -412,38 +413,42 @@ void LINALG::ApplyDirichlettoSystem(RefCountPtr<Epetra_CrsMatrix>&   A,
       }
   }
 
-  // allocate a new matrix and copy all rows that are not dirichlet
-  const int nummyrows     = A->NumMyRows();
-  const int maxnumentries = A->MaxNumEntries();
-  RefCountPtr<Epetra_CrsMatrix> Anew = LINALG::CreateMatrix(rowmap,maxnumentries);
-  vector<int> indices(maxnumentries);
-  vector<double> values(maxnumentries);
-  for (int i=0; i<nummyrows; ++i)
+  if (A != null)
   {
-    int row = A->GRID(i);
-    if (dbct[i]!=1.0)
+    // allocate a new matrix and copy all rows that are not dirichlet
+    const Epetra_Map& rowmap = A->RowMap();
+    const int nummyrows     = A->NumMyRows();
+    const int maxnumentries = A->MaxNumEntries();
+    RefCountPtr<Epetra_CrsMatrix> Anew = LINALG::CreateMatrix(rowmap,maxnumentries);
+    vector<int> indices(maxnumentries);
+    vector<double> values(maxnumentries);
+    for (int i=0; i<nummyrows; ++i)
     {
-      int numentries;
-      int err = A->ExtractGlobalRowCopy(row,maxnumentries,numentries,&values[0],&indices[0]);
+      int row = A->GRID(i);
+      if (dbct[i]!=1.0)
+      {
+        int numentries;
+        int err = A->ExtractGlobalRowCopy(row,maxnumentries,numentries,&values[0],&indices[0]);
 #ifdef DEBUG
-      if (err) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d",err);
+        if (err) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d",err);
 #endif
-      err = Anew->InsertGlobalValues(row,numentries,&values[0],&indices[0]);
+        err = Anew->InsertGlobalValues(row,numentries,&values[0],&indices[0]);
 #ifdef DEBUG
-      if (err<0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d",err);
+        if (err<0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d",err);
 #endif
+      }
+      else
+      {
+        double one = 1.0;
+        int err = Anew->InsertGlobalValues(row,1,&one,&row);
+#ifdef DEBUG
+        if (err<0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d",err);
+#endif
+      }
     }
-    else
-    {
-      double one = 1.0;
-      int err = Anew->InsertGlobalValues(row,1,&one,&row);
-#ifdef DEBUG
-      if (err<0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d",err);
-#endif
-    }
+    LINALG::Complete(*Anew);
+    A = Anew;
   }
-  LINALG::Complete(*Anew);
-  A = Anew;
 
   return;
 }
@@ -451,7 +456,7 @@ void LINALG::ApplyDirichlettoSystem(RefCountPtr<Epetra_CrsMatrix>&   A,
 #else
 
 /*----------------------------------------------------------------------*
- |  Apply dirichlet conditions  (public)                     mwgee 02/07|
+ |  Apply dirichlet conditions  (public)                      ukue 02/07|
  *----------------------------------------------------------------------*/
 void LINALG::ApplyDirichlettoSystem(RefCountPtr<Epetra_CrsMatrix>&   A,
                                     RefCountPtr<Epetra_Vector>&      x,
@@ -459,17 +464,6 @@ void LINALG::ApplyDirichlettoSystem(RefCountPtr<Epetra_CrsMatrix>&   A,
                                     const RefCountPtr<Epetra_Vector> dbcval,
                                     const RefCountPtr<Epetra_Vector> dbctoggle)
 {
-#ifdef DEBUG
-  const Epetra_Map& rowmap = A->RowMap();
-  if (x != null)
-    if (!rowmap.SameAs(x->Map())) dserror("x does not match A");
-  if (b != null)
-    if (!rowmap.SameAs(b->Map())) dserror("b does not match A");
-  if (dbcval != null)
-    if (!rowmap.SameAs(dbcval->Map())) dserror("dbcval does not match A");
-  if (!rowmap.SameAs(dbctoggle->Map())) dserror("dbctoggle does not match A");
-  if (A->Filled()!=true) dserror("FillComplete was not called on A");
-#endif
 
   const Epetra_Vector& dbct = *dbctoggle;
   if (x != null && b != null)
@@ -487,67 +481,44 @@ void LINALG::ApplyDirichlettoSystem(RefCountPtr<Epetra_CrsMatrix>&   A,
       }
   }
 
-  // allocate a new matrix and copy all rows that are not dirichlet
-  const int nummyrows     = A->NumMyRows();
-  for (int i=0; i<nummyrows; ++i)
+  if (A != null)
   {
-    //int row = A->GRID(i);
-    if (dbct[i]!=1.0)
+    const int nummyrows     = A->NumMyRows();
+    for (int i=0; i<nummyrows; ++i)
     {
-      // nothing to do
-    }
-    else
-    {
-      int *indexOffset;
-      int *indices;
-      double *values;
-      int err = A->ExtractCrsDataPointers(indexOffset, indices, values);
-#ifdef DEBUG
-      if (err) dserror("Epetra_CrsMatrix::ExtractCrsDataPointers returned err=%d",err);
-#endif
-      // zero row
-      memset(&values[indexOffset[i]], 0,
-             (indexOffset[i+1]-indexOffset[i])*sizeof(double));
-
-      double one = 1.0;
-      err = A->SumIntoMyValues(i,1,&one,&i);
-#ifdef DEBUG
-      if (err<0) dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d",err);
-#endif
-    }
-  }
-
-  return;
-}
-
-#endif
-
-
-/*----------------------------------------------------------------------*
- |  Apply dirichlet conditions  (public)                     mwgee 02/07|
- *----------------------------------------------------------------------*/
-void LINALG::ApplyDirichlettoSystem(RefCountPtr<Epetra_Vector>&      x,
-                                    RefCountPtr<Epetra_Vector>&      b,
-                                    const RefCountPtr<Epetra_Vector> dbcval,
-                                    const RefCountPtr<Epetra_Vector> dbctoggle)
-{
-  const Epetra_Vector& dbct = *dbctoggle;
-  if (x != null && b != null)
-  {
-    Epetra_Vector&       X    = *x;
-    Epetra_Vector&       B    = *b;
-    const Epetra_Vector& dbcv = *dbcval;
-    // set the prescribed value in x and b
-    const int mylength = dbcv.MyLength();
-    for (int i=0; i<mylength; ++i)
-      if (dbct[i]==1.0)
+      //int row = A->GRID(i);
+      if (dbct[i]!=1.0)
       {
-        X[i] = dbcv[i];
-        B[i] = dbcv[i];
+        // nothing to do
       }
+      else
+      {
+        int *indexOffset;
+        int *indices;
+        double *values;
+        int err = A->ExtractCrsDataPointers(indexOffset, indices, values);
+#ifdef DEBUG
+        if (err) dserror("Epetra_CrsMatrix::ExtractCrsDataPointers returned err=%d",err);
+#endif
+        // zero row
+        memset(&values[indexOffset[i]], 0,
+               (indexOffset[i+1]-indexOffset[i])*sizeof(double));
+
+        double one = 1.0;
+        err = A->SumIntoMyValues(i,1,&one,&i);
+#ifdef DEBUG
+        if (err<0) dserror("Epetra_CrsMatrix::SumIntoMyValues returned err=%d",err);
+#endif
+      }
+    }
   }
+
   return;
 }
+
+#endif
+
+
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET

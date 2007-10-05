@@ -214,7 +214,7 @@ void LINALG::Solver::Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
 
 
 /*----------------------------------------------------------------------*
- |  solve vm3 (public)                                       mwgee 02/07|
+ |  solve vm3 (public)                                     vgravem 06/07|
  *----------------------------------------------------------------------*/
 void LINALG::Solver::Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
                            RefCountPtr<Epetra_CrsMatrix> matrix2,

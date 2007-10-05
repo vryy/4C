@@ -130,6 +130,13 @@ public:
   void PTC();
 
   /*!
+  \brief compute the residual to a given state x
+
+  */
+  virtual void computeF(const Epetra_Vector& x, Epetra_Vector& F);
+
+
+  /*!
   \brief update configuration and output to file/screen
 
   */
@@ -242,127 +249,8 @@ public:
     ncalls_computeF_++;
     Epetra_Time timer(integrator_.discret_.Comm());
     double t0 = timer.ElapsedTime();
-    //==================== compute residual for given displcaement increment x
-    double time    = integrator_.params_.get<double>("total time",0.0);
-    double dt      = integrator_.params_.get<double>("delta time",0.01);
-    double beta    = integrator_.params_.get<double>("beta"      ,0.292);
-    double gamma   = integrator_.params_.get<double>("gamma"     ,0.581);
-    double alpham  = integrator_.params_.get<double>("alpha m"   ,0.378);
-    double alphaf  = integrator_.params_.get<double>("alpha f"   ,0.459);
-    bool   damping = integrator_.params_.get<bool>  ("damping"   ,false);
-    const Epetra_Map* dofrowmap = integrator_.discret_.DofRowMap();
-
-    // cast away constness of x
-    integrator_.fresm_->PutScalar(0.0);
-    Epetra_Vector& dx = const_cast<Epetra_Vector&>(x);
-    RefCountPtr<Epetra_Vector> disi = rcp(&dx);
-    disi.release();
-
-    // blank increment on Dirichlet BC
-    {
-      Epetra_Vector disicopy(*disi);
-      disi->Multiply(1.0,*integrator_.invtoggle_,disicopy,0.0);
-    }
-
-    //---------------------------------- update mid configuration values
-    RefCountPtr<Epetra_Vector> dism = LINALG::CreateVector(*dofrowmap,false);
-    RefCountPtr<Epetra_Vector> velm = LINALG::CreateVector(*dofrowmap,false);
-    RefCountPtr<Epetra_Vector> accm = LINALG::CreateVector(*dofrowmap,false);
-    // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
-    //dism->Update(1.-alphaf,*disi,1.0,*integrator_.dism_,0.0);
-    dism->Update(1.-alphaf,*disi,1.0,*integrator_.dis_,0.0);
-
-
-    // V_{n+1-alpha_f} := V_{n+1-alpha_f}
-    //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
-    //velm->Update((1.-alphaf)*gamma/(beta*dt),*disi,1.0,*integrator_.velm_,0.0);
-
-    // velocities
-    // iterative
-    // V_{n+1-alpha_f} := V_{n+1-alpha_f}
-    //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
-    // incremental (required for constant predictor)
-    velm->Update(1.0,*dism,-1.0,*integrator_.dis_,0.0);
-    velm->Update((beta-(1.0-alphaf)*gamma)/beta,*integrator_.vel_,
-                  (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*integrator_.acc_,
-                  gamma/(beta*dt));
-
-
-    // A_{n+1-alpha_m} := A_{n+1-alpha_m}
-    //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
-    //accm->Update((1.-alpham)/(beta*dt*dt),*disi,1.0,*integrator_.accm_,0.0);
-
-    // accelerations
-    // iterative
-    // A_{n+1-alpha_m} := A_{n+1-alpha_m}
-    //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
-    // incremental (required for constant predictor)
-    accm->Update(1.0,*dism,-1.0,*integrator_.dis_,0.0);
-    accm->Update(-(1.-alpham)/(beta*dt),*integrator_.vel_,
-                  (2.*beta-1.+alpham)/(2.*beta),*integrator_.acc_,
-                  (1.-alpham)/((1.-alphaf)*beta*dt*dt));
-
-
-    // do we need to update these?
-    // Are done from scratch in predictor?
-    // are they used in update for new step? yes
-    //integrator_.dism_->Update(1.-alphaf,*disi,1.0);
-    //integrator_.velm_->Update((1.-alphaf)*gamma/(beta*dt),*disi,1.0);
-    //integrator_.accm_->Update((1.-alpham)/(beta*dt*dt),*disi,1.0);
-
-    //----------------------------------------- compute internal forces
-    {
-      // create the parameters for the discretization
-      ParameterList p;
-      // action for elements
-      p.set("action","calc_struct_nlnstiff");
-      // choose what to assemble
-      p.set("assemble matrix 1",false);
-      p.set("assemble matrix 2",false);
-      p.set("assemble vector 1",true);
-      p.set("assemble vector 2",false);
-      p.set("assemble vector 3",false);
-      // other parameters that might be needed by the elements
-      p.set("total time",time);
-      p.set("delta time",dt);
-      // set vector values needed by elements
-      integrator_.discret_.ClearState();
-      integrator_.discret_.SetState("residual displacement",disi);
-      integrator_.discret_.SetState("displacement",dism);
-      //discret_.SetState("velocity",velm_); // not used at the moment
-      integrator_.fint_->PutScalar(0.0);  // initialise internal force vector
-      integrator_.discret_.Evaluate(p,null,null,integrator_.fint_,null,null);
-      integrator_.discret_.ClearState();
-    }
-
-    //------------------------------------------ compute residual forces
-    // Res = M . A_{n+1-alpha_m}
-    //     + C . V_{n+1-alpha_f}
-    //     + F_int(D_{n+1-alpha_f})
-    //     - F_{ext;n+1-alpha_f}
-    // add inertia mid-forces
-    integrator_.mass_->Multiply(false,*accm,*integrator_.fresm_);
-    // add viscous mid-forces
-    if (damping)
-    {
-      RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
-      integrator_.damp_->Multiply(false,*velm,*fviscm);
-      integrator_.fresm_->Update(1.0,*fviscm,1.0);
-    }
-    // add static mid-balance
-    integrator_.fresm_->Update(1.0,*integrator_.fint_,-1.0,*integrator_.fextm_,1.0);
-    // blank residual DOFs with are on Dirichlet BC
-    {
-      Epetra_Vector fresmcopy(*integrator_.fresm_);
-      integrator_.fresm_->Multiply(1.0,*integrator_.invtoggle_,fresmcopy,0.0);
-    }
-
-    // make sign change for residual forces
-    integrator_.fresm_->Scale(-1.0);
-    // copy residual forces to nox vector
-    F.Update(1.0,*integrator_.fresm_,0.0);
-    // copy disi to time integrator
-    integrator_.disi_->Update(1.0,*disi,0.0);
+    //========================================================================
+    integrator_.computeF(x,F);
     //========================================================================
     double t1 = timer.ElapsedTime();
     t_ += (t1-t0);
