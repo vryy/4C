@@ -1005,10 +1005,6 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       {
         sdyn->Typ = centr_diff;
       }
-      else if (frwordcmp(buffer,"Gen_Alfa")==0)
-      {
-        sdyn->Typ = gen_alfa;
-      }
       else if (frwordcmp(buffer,"Gen_EMM")==0)
       {
         sdyn->Typ = Gen_EMM;
@@ -1017,7 +1013,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       {
         sdyn->Typ = gen_alfa;
         printf("DYNAMICTYP unknown (the time integration scheme) "
-          "using default: Generalised-alpha");
+          "using default: Generalized-alpha");
       }
    }
    frreadyes("DAMPING",&(sdyn->damp));
@@ -1031,6 +1027,20 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
           sdyn->iter=1;
       else
           sdyn->iter=0;
+   }
+   frchar("NLNSOL",buffer,&ierr);
+   if (ierr==1)
+   {
+      if (frwordcmp(buffer,"fullnewton")==0)
+        sdyn->nlnSolvTyp = fullnewton;
+      else if (frwordcmp(buffer,"modnewton")==0)
+        sdyn->nlnSolvTyp = modnewton;
+      else if (frwordcmp(buffer,"matfreenewton")==0)
+        sdyn->nlnSolvTyp = matfreenewton;
+      else if (frwordcmp(buffer,"nlncg")==0)
+        sdyn->nlnSolvTyp = nlncg;
+      else if (frwordcmp(buffer,"ptc")==0)
+        sdyn->nlnSolvTyp = ptc;
    }
 
 /*-----------------read INT */
