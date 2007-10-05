@@ -212,6 +212,50 @@ void LINALG::Solver::Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  solve (public)                                           mwgee 10/07|
+ *----------------------------------------------------------------------*/
+void LINALG::Solver::Solve(RefCountPtr<Epetra_Operator>  Operator,
+                           RefCountPtr<Epetra_Vector>    x,
+                           RefCountPtr<Epetra_Vector>    b,
+                           bool refactor,
+                           bool reset)
+{
+  // reset data flags
+  if (reset) 
+  {
+    Reset();
+    refactor = true;
+  }
+  
+  // set the data passed to the method
+  if (refactor) A_ = Operator;
+  x_ = x;
+  b_ = b;
+  
+  // set flag indicating that problem should be refactorized
+  if (refactor) factored_ = false;
+  
+  // fill the linear problem
+  lp_->SetRHS(b_.get());
+  lp_->SetLHS(x_.get());
+  lp_->SetOperator(A_.get());
+  
+  // decide what solver to use
+  string solvertype = Params().get("solver","none");
+  if      ("aztec" ==solvertype) 
+    Solve_aztec(reset);
+  else if ("none"   ==solvertype) 
+    dserror("Unknown type of solver");
+  else
+    dserror("Unsupported type of solver");
+  
+  
+  factored_ = true;
+  ncall_++;
+  
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |  solve vm3 (public)                                     vgravem 06/07|
@@ -223,6 +267,12 @@ void LINALG::Solver::Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
                            bool refactor,
                            bool reset)
 {
+  // see whether Operator is a Epetra_CrsMatrix
+  Epetra_CrsMatrix* tmp = dynamic_cast<Epetra_CrsMatrix*>(A_.get());
+  if (!tmp) dserror("vm3 only with Epetra_Operator being an Epetra_CrsMatrix!");
+  RCP<Epetra_CrsMatrix> A = rcp(tmp);
+  A.release();
+  
   // reset data flags
   if (reset) 
   {
@@ -261,7 +311,7 @@ void LINALG::Solver::Solve(RefCountPtr<Epetra_CrsMatrix> matrix,
   // extract the ML parameters and initialize the solver
   ParameterList&  mllist = Params().sublist("ML Parameters");
   // cout << "Parameter list:\n" << mllist;
-  vm3_solver_ = rcp(new VM3_Solver::VM3_Solver(Aplus_, A_, mllist,true) );
+  vm3_solver_ = rcp(new VM3_Solver::VM3_Solver(Aplus_, A, mllist,true) );
 
   // Apply the solver. Convergence check and iteration have to be
   // performed from outside, since Solve is a nonlinear FAS scheme
@@ -284,6 +334,9 @@ void LINALG::Solver::Solve_aztec(const bool reset)
   if (!Params().isSublist("Aztec Parameters")) 
     dserror("Do not have aztec parameter list");
   ParameterList& azlist = Params().sublist("Aztec Parameters");
+
+  // see whether Operator is a Epetra_CrsMatrix
+  Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>(A_.get());
 
   // decide whether we recreate preconditioners
   bool create = false;
@@ -319,15 +372,21 @@ void LINALG::Solver::Solve_aztec(const bool reset)
   }
   else dserror("Unknown type of scaling found in parameter list");	
 
+  if (!A)
+  {
+    scaling_infnorm = false;
+    scaling_symdiag = false;
+  }
+
   // do infnorm scaling
   RefCountPtr<Epetra_Vector> rowsum;
   RefCountPtr<Epetra_Vector> colsum;
   if (scaling_infnorm)
   {
-    rowsum = rcp(new Epetra_Vector(A_->RowMap(),false));
-    colsum = rcp(new Epetra_Vector(A_->RowMap(),false));
-    A_->InvRowSums(*rowsum);
-    A_->InvColSums(*colsum);
+    rowsum = rcp(new Epetra_Vector(A->RowMap(),false));
+    colsum = rcp(new Epetra_Vector(A->RowMap(),false));
+    A->InvRowSums(*rowsum);
+    A->InvColSums(*colsum);
     lp_->LeftScale(*rowsum);
     lp_->RightScale(*colsum);
   }
@@ -336,9 +395,9 @@ void LINALG::Solver::Solve_aztec(const bool reset)
   RefCountPtr<Epetra_Vector> diag;
   if (scaling_symdiag)
   {
-    Epetra_Vector invdiag(A_->RowMap(),false);
-    diag = rcp(new Epetra_Vector(A_->RowMap(),false));
-    A_->ExtractDiagonalCopy(*diag);
+    Epetra_Vector invdiag(A->RowMap(),false);
+    diag = rcp(new Epetra_Vector(A->RowMap(),false));
+    A->ExtractDiagonalCopy(*diag);
     invdiag.Reciprocal(*diag);
     lp_->LeftScale(invdiag);
     lp_->RightScale(invdiag);
@@ -351,6 +410,12 @@ void LINALG::Solver::Solve_aztec(const bool reset)
   // if we have an ml parameter list we do ml
   bool doifpack = Params().isSublist("IFPACK Parameters");
   bool doml     = Params().isSublist("ML Parameters");
+  if (!A)
+  {
+    doifpack = false;
+    doml     = false;
+  }
+
 
   // do ifpack if desired
   if (create && doifpack)
@@ -358,7 +423,7 @@ void LINALG::Solver::Solve_aztec(const bool reset)
     ParameterList&  ifpacklist = Params().sublist("IFPACK Parameters");
     // create a copy of the scaled matrix
     // so we can reuse the precondition
-    Pmatrix_ = rcp(new Epetra_CrsMatrix(*A_));
+    Pmatrix_ = rcp(new Epetra_CrsMatrix(*A));
     // get the type of ifpack preconditioner from aztec
     string prectype = azlist.get("preconditioner","ILU");
     int    overlap  = azlist.get("AZ_overlap",0);
@@ -376,7 +441,7 @@ void LINALG::Solver::Solve_aztec(const bool reset)
     ParameterList&  mllist = Params().sublist("ML Parameters");
     // create a copy of the scaled matrix
     // so we can reuse the precondition
-    Pmatrix_ = rcp(new Epetra_CrsMatrix(*A_));
+    Pmatrix_ = rcp(new Epetra_CrsMatrix(*A));
     P_ = rcp(new ML_Epetra::MultiLevelPreconditioner(*Pmatrix_,mllist,true));
   }
   
@@ -440,10 +505,10 @@ void LINALG::Solver::Solve_aztec(const bool reset)
   // undo scaling
   if (scaling_infnorm)
   {
-    Epetra_Vector invrowsum(A_->RowMap(),false);
+    Epetra_Vector invrowsum(A->RowMap(),false);
     invrowsum.Reciprocal(*rowsum);
     rowsum = null;
-    Epetra_Vector invcolsum(A_->RowMap(),false);
+    Epetra_Vector invcolsum(A->RowMap(),false);
     invcolsum.Reciprocal(*colsum);
     colsum = null;
     lp_->LeftScale(invrowsum);
@@ -462,7 +527,7 @@ void LINALG::Solver::Solve_aztec(const bool reset)
   if (Comm().MyPID()==0 && outfile_)
   {
     fprintf(outfile_,"AztecOO: unknowns/iterations/time %d  %d  %f\n",
-            A_->NumGlobalRows(),(int)status[AZ_its],status[AZ_solve_time]);
+            A_->OperatorRangeMap().NumGlobalElements(),(int)status[AZ_its],status[AZ_solve_time]);
     fflush(outfile_);
   }
 

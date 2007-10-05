@@ -143,6 +143,27 @@ public:
              bool reset = false);
 
   /*!
+  \brief Solve system of equations with an Operator
+  
+  Solve system of equations, where the matrix is not necessarily a true matrix
+  but some kind of directional derivative operator.
+  Note that this can only be used in combination with Aztec and without scaling.
+  All other solvers will throw an error.
+
+  \param matrix (in/out): system of equations
+  \param x      (in/out): initial guess on input, solution on output
+  \param b      (in)    : right hand side vector
+  \param refactor (in)  : flag indicating whether system should be refactorized
+  \param reset  (in)    : flag indicating whether all data from previous solves should
+                           be recalculated including preconditioners
+  */
+  void Solve(RefCountPtr<Epetra_Operator> Operator,
+             RefCountPtr<Epetra_Vector>    x,
+             RefCountPtr<Epetra_Vector>    b,
+             bool refactor,
+             bool reset = false);
+
+  /*!
   \brief Solve system of equations using VM3 solver (overloaded)
 
   \param matrix (in/out): system of equations
@@ -264,7 +285,7 @@ private:
   //! file to write output to (proc 0 only, can be NULL on input)
   FILE*                             outfile_; 
   //! system of equations
-  RefCountPtr<Epetra_CrsMatrix>     A_;       
+  RefCountPtr<Epetra_Operator>      A_;       
   //! modified system of equations
   RefCountPtr<Epetra_CrsMatrix>     Aplus_;       
   //! Preconditioner (currently an ML or Ifpack operator)
