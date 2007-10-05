@@ -130,12 +130,26 @@ public:
   void PTC();
 
   /*!
-  \brief compute the residual to a given state x
-
+  \brief Compute the residual to a given state x
+  
+  This method is used by the nox user interface class and by the linalg matrix free operator
+  
+  \param x (in/out) : Current solution state (dirichlet dofs will be blanked)
+  \param F (out): residual matching current solution state (dirichlet dofs will be blanked)
   */
   virtual void computeF(const Epetra_Vector& x, Epetra_Vector& F);
 
 
+  /*!
+  \brief Compute the Jacobian to a given state x
+
+  This method is used by the nox user interface
+  
+  \param x (in/out) : Current solution state (dirichlet dofs will be blanked)
+  */
+  virtual void computeJacobian(const Epetra_Vector& x);
+  
+  
   /*!
   \brief update configuration and output to file/screen
 
@@ -254,7 +268,6 @@ public:
     //========================================================================
     double t1 = timer.ElapsedTime();
     t_ += (t1-t0);
-
     return true;
   }
 
@@ -272,78 +285,11 @@ public:
     ncalls_computeF_++;
     Epetra_Time timer(integrator_.discret_.Comm());
     double t0 = timer.ElapsedTime();
-
     //========================================================================
-    double time    = integrator_.params_.get<double>("total time",0.0);
-    double dt      = integrator_.params_.get<double>("delta time",0.01);
-    double beta    = integrator_.params_.get<double>("beta"      ,0.292);
-    double gamma   = integrator_.params_.get<double>("gamma"     ,0.581);
-    double alpham  = integrator_.params_.get<double>("alpha m"   ,0.378);
-    double alphaf  = integrator_.params_.get<double>("alpha f"   ,0.459);
-    bool   damping = integrator_.params_.get<bool>  ("damping"   ,false);
-    const Epetra_Map* dofrowmap = integrator_.discret_.DofRowMap();
-
-    // cast away constness of x
-    Epetra_Vector& dx = const_cast<Epetra_Vector&>(x);
-    RefCountPtr<Epetra_Vector> disi = rcp(&dx);
-    disi.release();
-
-    //---------------------------------- update mid configuration values
-    RefCountPtr<Epetra_Vector> dism = LINALG::CreateVector(*dofrowmap,false);
-    RefCountPtr<Epetra_Vector> velm = LINALG::CreateVector(*dofrowmap,false);
-    RefCountPtr<Epetra_Vector> accm = LINALG::CreateVector(*dofrowmap,false);
-    // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
-    dism->Update(1.-alphaf,*disi,1.0,*integrator_.dism_,0.0);
-    // V_{n+1-alpha_f} := V_{n+1-alpha_f}
-    //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
-    velm->Update((1.-alphaf)*gamma/(beta*dt),*disi,1.0,*integrator_.velm_,0.0);
-    // A_{n+1-alpha_m} := A_{n+1-alpha_m}
-    //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
-    accm->Update((1.-alpham)/(beta*dt*dt),*disi,1.0,*integrator_.accm_,0.0);
-
-    //------------------------------------------------ compute stiffness
-    {
-      // zero out stiffness
-      integrator_.stiff_ = LINALG::CreateMatrix(*dofrowmap,integrator_.maxentriesperrow_);
-      // create the parameters for the discretization
-      ParameterList p;
-      // action for elements
-      p.set("action","calc_struct_nlnstiff");
-      // choose what to assemble
-      p.set("assemble matrix 1",true);
-      p.set("assemble matrix 2",false);
-      p.set("assemble vector 1",false);
-      p.set("assemble vector 2",false);
-      p.set("assemble vector 3",false);
-      // other parameters that might be needed by the elements
-      p.set("total time",time);
-      p.set("delta time",dt);
-      // set vector values needed by elements
-      integrator_.discret_.ClearState();
-      integrator_.discret_.SetState("residual displacement",disi);
-      integrator_.discret_.SetState("displacement",dism);
-      integrator_.fint_->PutScalar(0.0);  // initialise internal force vector
-      integrator_.discret_.Evaluate(p,integrator_.stiff_,null,null,null,null);
-      integrator_.discret_.ClearState();
-      // do NOT finalize the stiffness matrix to add masses to it later
-    }
-
-    //---------------------------------------------- build effective lhs
-    // (using matrix stiff_ as effective matrix)
-    LINALG::Add(*integrator_.mass_,false,(1.-alpham)/(beta*dt*dt),*integrator_.stiff_,1.-alphaf);
-    if (damping)
-      LINALG::Add(*integrator_.damp_,false,(1.-alphaf)*gamma/(beta*dt),*integrator_.stiff_,1.0);
-    LINALG::Complete(*integrator_.stiff_);
-    LINALG::ApplyDirichlettoSystem(integrator_.stiff_,
-                                   disi,
-                                   integrator_.fresm_,
-                                   integrator_.zeros_,
-                                   integrator_.dirichtoggle_);
-
+    integrator_.computeJacobian(x);
     //========================================================================
     double t1 = timer.ElapsedTime();
     t_ += (t1-t0);
-
     return true;
   }
 

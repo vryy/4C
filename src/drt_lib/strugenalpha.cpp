@@ -919,7 +919,7 @@ void StruGenAlpha::NonlinearCG()
   mlparams.set("nlnML output",                                      outlevel   ); // ML-output-level (0-10)
   mlparams.set("nlnML max levels",                                  maxlevel   ); // max. # levels (minimum = 2 !)
   mlparams.set("nlnML coarse: max size",                            maxcsize   ); // the size ML stops generating coarser levels
-  mlparams.set("nlnML is linear preconditioner",                    true      );
+  mlparams.set("nlnML is linear preconditioner",                    false      );
   mlparams.set("nlnML is matrixfree",                               false      );
   mlparams.set("nlnML apply constraints",                           false      );
   mlparams.set("nlnML Jacobian fix diagonal",                       false      );
@@ -997,7 +997,7 @@ void StruGenAlpha::NonlinearCG()
   //---------------------------------- update mid configuration values
   // displacements
   // incremental (disi is now D_{n+1}-D_{n})
-  dism_->Update((1.-alphaf),*disi_,1.0,*dis_,0.0);
+  dism_->Update((1.-alphaf),*disi_,1.0);
 
   // velocities
   // incremental (required for constant predictor)
@@ -1109,7 +1109,6 @@ void StruGenAlpha::NonlinearCG()
   // displacements
   // incremental (disi is now D_{n+1}-D_{n})
   dism_->Update((1.-alphaf),*disi_,1.0);
-  // add the correct dirichlet values
 
   // velocities
   // incremental (required for constant predictor)
@@ -1477,6 +1476,81 @@ void StruGenAlpha::computeF(const Epetra_Vector& x, Epetra_Vector& F)
     disi_->Update(1.0,*disi,0.0);
     //========================================================================
   
+  return;
+} // void StruGenAlpha::computeF(const Epetra_Vector& x, Epetra_Vector& F)
+
+
+
+/*----------------------------------------------------------------------*
+ |  compute Jacobian to given state x (public)               mwgee 10/07|
+ *----------------------------------------------------------------------*/
+void StruGenAlpha::computeJacobian(const Epetra_Vector& x)
+{
+    double time    = params_.get<double>("total time",0.0);
+    double dt      = params_.get<double>("delta time",0.01);
+    double beta    = params_.get<double>("beta"      ,0.292);
+    double gamma   = params_.get<double>("gamma"     ,0.581);
+    double alpham  = params_.get<double>("alpha m"   ,0.378);
+    double alphaf  = params_.get<double>("alpha f"   ,0.459);
+    bool   damping = params_.get<bool>  ("damping"   ,false);
+    const Epetra_Map* dofrowmap = discret_.DofRowMap();
+
+    // cast away constness of x
+    Epetra_Vector& dx = const_cast<Epetra_Vector&>(x);
+    RefCountPtr<Epetra_Vector> disi = rcp(&dx);
+    disi.release();
+
+    //---------------------------------- update mid configuration values
+    RefCountPtr<Epetra_Vector> dism = LINALG::CreateVector(*dofrowmap,false);
+    RefCountPtr<Epetra_Vector> velm = LINALG::CreateVector(*dofrowmap,false);
+    RefCountPtr<Epetra_Vector> accm = LINALG::CreateVector(*dofrowmap,false);
+    // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
+    dism->Update(1.-alphaf,*disi,1.0,*dism_,0.0);
+    // V_{n+1-alpha_f} := V_{n+1-alpha_f}
+    //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
+    velm->Update((1.-alphaf)*gamma/(beta*dt),*disi,1.0,*velm_,0.0);
+    // A_{n+1-alpha_m} := A_{n+1-alpha_m}
+    //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
+    accm->Update((1.-alpham)/(beta*dt*dt),*disi,1.0,*accm_,0.0);
+
+    //------------------------------------------------ compute stiffness
+    {
+      // zero out stiffness
+      stiff_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+      // create the parameters for the discretization
+      ParameterList p;
+      // action for elements
+      p.set("action","calc_struct_nlnstiff");
+      // choose what to assemble
+      p.set("assemble matrix 1",true);
+      p.set("assemble matrix 2",false);
+      p.set("assemble vector 1",false);
+      p.set("assemble vector 2",false);
+      p.set("assemble vector 3",false);
+      // other parameters that might be needed by the elements
+      p.set("total time",time);
+      p.set("delta time",dt);
+      // set vector values needed by elements
+      discret_.ClearState();
+      discret_.SetState("residual displacement",disi);
+      discret_.SetState("displacement",dism);
+      fint_->PutScalar(0.0);  // initialise internal force vector
+      discret_.Evaluate(p,stiff_,null,null,null,null);
+      discret_.ClearState();
+      // do NOT finalize the stiffness matrix to add masses to it later
+    }
+
+    //---------------------------------------------- build effective lhs
+    // (using matrix stiff_ as effective matrix)
+    LINALG::Add(*mass_,false,(1.-alpham)/(beta*dt*dt),*stiff_,1.-alphaf);
+    if (damping)
+      LINALG::Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),*stiff_,1.0);
+    LINALG::Complete(*stiff_);
+    LINALG::ApplyDirichlettoSystem(stiff_,
+                                   disi,
+                                   fresm_,
+                                   zeros_,
+                                   dirichtoggle_);
   return;
 }
 
