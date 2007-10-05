@@ -148,7 +148,7 @@ void dyn_nlnstructural_drt()
   // "modified newton" is newton without updating the effective stiffness
   // "nonlinear cg" is nln cg with amg preocnditioning (experimental solver)
   // "ptc" is pseudo transient continuation (experimental solver)
-  genalphaparams.set<string>("equilibrium iteration","nonlinear cg");
+  genalphaparams.set<string>("equilibrium iteration","full newton");
 
   // takes values "constant" "consistent"
   genalphaparams.set<string>("predictor","constant");
