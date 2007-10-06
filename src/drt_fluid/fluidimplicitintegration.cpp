@@ -614,6 +614,9 @@ void FluidImplicitTimeInt::NonlinearSolve(
       // get cpu time
       tcpu=ds_cputime();
 
+#if 1
+      sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+#else
       // zero out the stiffness matrix
       // We reuse the sparse mask and assemble into a filled matrix
       // after the first step. This is way faster.
@@ -621,6 +624,7 @@ void FluidImplicitTimeInt::NonlinearSolve(
         sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
       else
         sysmat_->PutScalar(0.0);
+#endif
       // zero out residual
       residual_->PutScalar(0.0);
       residual_->Update(1.0,*neumann_loads_,0.0);
@@ -636,7 +640,7 @@ void FluidImplicitTimeInt::NonlinearSolve(
       eleparams.set("time constant for integration",theta_*dta_);
       eleparams.set("using stationary formulation",is_stat);
       eleparams.set("include reactive terms for linearisation",newton_);
-      
+
       // set vector values needed by elements
       discret_->ClearState();
       discret_->SetState("u and p at time n+1 (trial)",velnp_);

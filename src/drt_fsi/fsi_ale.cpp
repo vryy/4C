@@ -125,11 +125,15 @@ void FSI::AleLinear::EvaluateElements()
 
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
+#if 1
+  sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+#else
   // zero out the stiffness matrix
   if (sysmat_==Teuchos::null)
     sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
   else
     sysmat_->PutScalar(0.);
+#endif
 
   // zero out residual
   residual_->PutScalar(0.0);
