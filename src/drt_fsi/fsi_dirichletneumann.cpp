@@ -967,6 +967,68 @@ bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vect
       dserror("structure disp norm %e > 1e-10", norm);
 #endif
 
+#if 1
+  if (comm_.NumProc()==1)
+  {
+    static int in_counter;
+    std::ostringstream filename;
+    filename << allfiles.outputfile_kenner
+             << ".x"
+             << "." << in_counter
+             << ".plot";
+
+    std::cout << "write '" YELLOW_LIGHT << filename.str() << END_COLOR "'\n";
+    std::ofstream out(filename.str().c_str());
+    for (int i=0; i<x.MyLength()-1; i+=2)
+    {
+      out << i << " " << x[i] << " " << x[i+1] << "\n";
+    }
+    in_counter += 1;
+  }
+#endif
+
+#if 1
+  if (comm_.NumProc()==1)
+  {
+    static int f_counter;
+    std::ostringstream filename;
+    filename << allfiles.outputfile_kenner
+             << ".i"
+             << "." << f_counter
+             << ".plot";
+
+    std::cout << "write '" YELLOW_LIGHT << filename.str() << END_COLOR "'\n";
+    std::ofstream out(filename.str().c_str());
+    for (int i=0; i<iforce->MyLength()-1; i+=2)
+    {
+      out << i << " " << (*iforce)[i] << " " << (*iforce)[i+1] << "\n";
+    }
+    f_counter += 1;
+  }
+#endif
+
+  F.Update(1.0, *idispnp, -1.0, *idispn, 0.0);
+
+#if 1
+  if (comm_.NumProc()==1)
+  {
+    static int out_counter;
+    std::ostringstream filename;
+    filename << allfiles.outputfile_kenner
+             << ".f"
+             << "." << out_counter
+             << ".plot";
+
+    std::cout << "write '" YELLOW_LIGHT << filename.str() << END_COLOR "'\n";
+    std::ofstream out(filename.str().c_str());
+    for (int i=0; i<F.MyLength()-1; i+=2)
+    {
+      out << i << " " << F[i] << " " << F[i+1] << "\n";
+    }
+    out_counter += 1;
+  }
+#endif
+
 #if 0
     //if ((fillFlag==MF_Jac) or (fillFlag==MF_Res))
     if (fillFlag==Residual)
@@ -986,8 +1048,6 @@ bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vect
       F.Print(out);
     }
 #endif
-
-    F.Update(1.0, *idispnp, -1.0, *idispn, 0.0);
   }
   else
   {

@@ -19,6 +19,7 @@
 #include "../drt_fsi/fsi_nox_michler.H"
 #include "../drt_fsi/fsi_nox_fixpoint.H"
 #include "../drt_fsi/fsi_nox_jacobian.H"
+#include "../drt_fsi/fsi_nox_mpe.H"
 
 #include <fstream>
 #include <iostream>
@@ -492,7 +493,7 @@ bool FSI_InterfaceProblem::ComputeDispF(const Epetra_Vector& x,
   // backup from the outside.
   INT itnum = 1;
 
-#if 0
+#if 1
   if (par.nprocs==1)
   {
     static int in_counter;
@@ -509,7 +510,7 @@ bool FSI_InterfaceProblem::ComputeDispF(const Epetra_Vector& x,
     std::ofstream out(filename.str().c_str());
     for (int i=0; i<x.MyLength()-1; i+=2)
     {
-      out << i << " " << x[i] << " " << x[i+1] << "\n";
+      out << i+2 << " " << x[i] << " " << x[i+1] << "\n";
     }
     in_counter += 1;
   }
@@ -620,6 +621,33 @@ bool FSI_InterfaceProblem::ComputeDispF(const Epetra_Vector& x,
     /*------------------------------------------------------ solve fluid ---*/
     fsi_fluid_sd(fluid_work_,fluidfield,f_disnum_calc,f_disnum_io);
 
+#if 1
+  if (par.nprocs==1)
+  {
+    static int f_counter;
+    std::ostringstream filename;
+    filename << allfiles.outputfile_kenner
+             << ".i"
+             << "." << Timestep()
+             << "." << NlIterCount()
+             << "." << LinCount()
+             << ".plot";
+
+    std::cout << "write '" YELLOW_LIGHT << filename.str() << END_COLOR "'\n";
+    std::ofstream out(filename.str().c_str());
+
+    Epetra_Vector iforce(x);
+    GatherForces gr(iforce,fluid_ipos->mf_forcenp);
+    loop_interface(structfield,gr,iforce);
+
+    for (int i=0; i<iforce.MyLength()-1; i+=2)
+    {
+      out << i+2 << " " << iforce[i] << " " << iforce[i+1] << "\n";
+    }
+    f_counter += 1;
+  }
+#endif
+
     /*-------------------------------------------------- solve structure ---*/
     fsi_struct_sd(struct_work_,structfield,s_disnum_calc,s_disnum_io,0,fluidfield,f_disnum_calc);
 
@@ -703,14 +731,31 @@ bool FSI_InterfaceProblem::ComputeDispF(const Epetra_Vector& x,
     debug_out_data(fluidfield, "fluid_vel", node_array_sol_increment, fluidfield->dis[0].ipos.velnp);
 #endif
 
-#if 0
-    // debug out fluid interface force
+#if 1
+  if (par.nprocs==1)
+  {
+    static int f_counter;
+    std::ostringstream filename;
+    filename << allfiles.outputfile_kenner
+             << ".i"
+             << "." << Timestep()
+             << "." << NlIterCount()
+             << "." << LinCount()
+             << ".plot";
+
+    std::cout << "write '" YELLOW_LIGHT << filename.str() << END_COLOR "'\n";
+    std::ofstream out(filename.str().c_str());
+
+    Epetra_Vector iforce(x);
+    GatherForces gr(iforce,fluid_ipos->mf_forcenp);
+    loop_interface(structfield,gr,iforce);
+
+    for (int i=0; i<iforce.MyLength()-1; i+=2)
     {
-      Epetra_Vector iforce(x);
-      GatherForces gr(iforce,fluid_ipos->mf_forcenp);
-      loop_interface(structfield,gr,iforce);
-      cout << "iforce\n" << iforce;
+      out << i+2 << " " << iforce[i] << " " << iforce[i+1] << "\n";
     }
+    f_counter += 1;
+  }
 #endif
 
     /*------------------------------- CSD -------------------------------*/
@@ -738,7 +783,7 @@ bool FSI_InterfaceProblem::ComputeDispF(const Epetra_Vector& x,
     oldf_ = Teuchos::rcp(new Epetra_Vector(F));
   }
 
-#if 0
+#if 1
   if (par.nprocs==1)
   {
     static int out_counter;
@@ -757,7 +802,7 @@ bool FSI_InterfaceProblem::ComputeDispF(const Epetra_Vector& x,
     //loop_interface(structfield,od,F);
     for (int i=0; i<F.MyLength()-1; i+=2)
     {
-      out << i << " " << F[i] << " " << F[i+1] << "\n";
+      out << i+2 << " " << F[i] << " " << F[i+1] << "\n";
     }
     out_counter += 1;
   }
@@ -1304,11 +1349,12 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
   {
     // insert user defined aitken relaxation
     Teuchos::ParameterList& linesearch = nlParams.sublist("Line Search");
-    Teuchos::RefCountPtr<NOX::LineSearch::Generic> aitken = Teuchos::rcp(new NOX::FSI::AitkenRelaxation(utils,linesearch));
+    Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> aitkenfactory =
+      Teuchos::rcp(new NOX::FSI::AitkenFactory());
 
     // We change the method here.
     linesearch.set("Method","User Defined");
-    linesearch.set("User Defined Line Search",aitken);
+    linesearch.set("User Defined Line Search Factory", aitkenfactory);
   }
 
   // Set user defined steepest descent line search object.
@@ -1316,11 +1362,12 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
   {
     // insert user defined aitken relaxation
     Teuchos::ParameterList& linesearch = nlParams.sublist("Line Search");
-    Teuchos::RefCountPtr<NOX::LineSearch::Generic> sd = Teuchos::rcp(new NOX::FSI::SDRelaxation(utils,linesearch));
+    Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> sdfactory =
+      Teuchos::rcp(new NOX::FSI::SDFactory());
 
     // We change the method here.
     linesearch.set("Method","User Defined");
-    linesearch.set("User Defined Line Search",sd);
+    linesearch.set("User Defined Line Search Factory", sdfactory);
   }
 
   // the very special experimental extrapolation
@@ -1524,9 +1571,21 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     // extension, so we have to modify the parameter list here.
     else if (jacobian=="None")
     {
-      Teuchos::RefCountPtr<NOX::Direction::Generic> fixpoint = Teuchos::rcp(new NOX::FSI::FixPoint(utils,nlParams));
+    dirParams.set("Method","User Defined");
+    Teuchos::RCP<NOX::Direction::UserDefinedFactory> fixpointfactory =
+      Teuchos::rcp(new NOX::FSI::FixPointFactory());
+    dirParams.set("User Defined Direction Factory",fixpointfactory);
+    lsParams.set("Preconditioner","None");
+    preconditioner="None";
+    }
+
+    // Minimal Polynomial vector extrapolation
+    else if (jacobian=="MPE")
+    {
       dirParams.set("Method","User Defined");
-      dirParams.set("User Defined Direction",fixpoint);
+      Teuchos::RCP<NOX::Direction::UserDefinedFactory> mpefactory =
+        Teuchos::rcp(new NOX::FSI::MinimalPolynomialFactory());
+      dirParams.set("User Defined Direction Factory",mpefactory);
       lsParams.set("Preconditioner","None");
       preconditioner="None";
     }
