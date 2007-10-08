@@ -1759,6 +1759,16 @@ void StruGenAlpha::Integrate()
       UpdateandOutput();
     }
   }
+  else if (equil=="matrixfree newton")
+  {
+    for (int i=istep; i<nstep; ++i)
+    {
+      dserror("Matfree Newton not yet impl.");
+      // ConstantMatfreePredictor();
+      // MatfreeFullNewton
+      UpdateandOutput();
+    }
+  }
   else dserror("Unknown type of equilibrium iteration");
 
   return;
