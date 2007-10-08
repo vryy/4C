@@ -1002,13 +1002,11 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    if (ierr==1)
    {
       if (frwordcmp(buffer,"Centr_Diff")==0)
-      {
         sdyn->Typ = centr_diff;
-      }
       else if (frwordcmp(buffer,"Gen_EMM")==0)
-      {
         sdyn->Typ = Gen_EMM;
-      }
+      else if (frwordcmp(buffer,"Gen_Alfa")==0)
+        sdyn->Typ = gen_alfa;
       else
       {
         sdyn->Typ = gen_alfa;
