@@ -60,6 +60,8 @@ bool NOX::FSI::SDRelaxation::compute(NOX::Abstract::Group& newgrp,
                        .innerProduct(dir);
 
   step = - numerator / denominator;
+  utils_->out() << "          RELAX = " << step << "\n";
+
   newgrp.computeX(oldgrp, dir, step);
   newgrp.computeF();
 
