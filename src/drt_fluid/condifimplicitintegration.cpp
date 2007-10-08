@@ -443,7 +443,7 @@ void CondifImplicitTimeInt::PrepareTimeStep()
     // other parameters needed by the elements
     eleparams.set("total time",time_);
     eleparams.set("delta time",dta_);
-    eleparams.set("time constant for integration",theta_*dta_);
+    eleparams.set("thsl",theta_*dta_);
     eleparams.set("condif velocity field",cdvel_);
 
     // set vector values needed by elements
@@ -457,7 +457,7 @@ void CondifImplicitTimeInt::PrepareTimeStep()
 
     // evaluate Neumann conditions
     eleparams.set("total time",time_);
-    eleparams.set("time constant for integration",theta_*dta_);
+    eleparams.set("thsl",theta_*dta_);
 
     neumann_loads_->PutScalar(0.0);
     discret_->EvaluateNeumann(eleparams,*neumann_loads_);
@@ -520,7 +520,7 @@ void CondifImplicitTimeInt::Solve(
 
     // other parameters that might be needed by the elements
     eleparams.set("total time",time_);
-    eleparams.set("time constant for integration",theta_*dta_);
+    eleparams.set("thsl",theta_*dta_);
     eleparams.set("condif velocity field",cdvel_);
     eleparams.set("discontinuity capturing",discap_);
     eleparams.set("using stationary formulation",is_stat);
@@ -528,7 +528,7 @@ void CondifImplicitTimeInt::Solve(
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("phi at time n+1 (trial)",phinp_);
-    discret_->SetState("old solution data for rhs"  ,hist_ );
+    discret_->SetState("hist"  ,hist_ );
 
     // call loop over elements
     discret_->Evaluate(eleparams,sysmat_,sysmat_dc_,residual_);

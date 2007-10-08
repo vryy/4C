@@ -71,8 +71,8 @@ int DRT::Elements::Fluid2::Evaluate(ParameterList& params,
     case calc_fluid_systemmat_and_residual:
     {
       // need current velocity and history vector
-      RefCountPtr<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (trial)");
-      RefCountPtr<const Epetra_Vector> hist = discretization.GetState("old solution data for rhs");
+      RefCountPtr<const Epetra_Vector> vel_pre_np = discretization.GetState("velnp");
+      RefCountPtr<const Epetra_Vector> hist = discretization.GetState("hist");
       if (vel_pre_np==null || hist==null) dserror("Cannot get state vectors 'velnp' and/or 'hist'");
 
       // extract local values from the global vectors
@@ -126,8 +126,8 @@ int DRT::Elements::Fluid2::Evaluate(ParameterList& params,
       double timefac = 0;
       if (not is_stationary)
       {
-        timefac = params.get<double>("time constant for integration",-1.0);
-        if (timefac < 0.0) dserror("No time constant for integration supplied");
+        timefac = params.get<double>("thsl",-1.0);
+        if (timefac < 0.0) dserror("No thsl supplied");
       }
 
       // calculate element coefficient matrix and rhs

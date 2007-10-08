@@ -601,7 +601,7 @@ void FluidGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann()
   eleparams.set("delta time",dt_  );
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("u and p at time n+1 (trial)",velnp_);
+  discret_->SetState("velnp",velnp_);
   // predicted dirichlet values
   // velnp then also holds prescribed new dirichlet values
   // dirichtoggle is 1 for dirichlet dofs, 0 elsewhere

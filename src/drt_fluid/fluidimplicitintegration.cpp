@@ -534,11 +534,11 @@ void FluidImplicitTimeInt::PrepareTimeStep()
     // other parameters needed by the elements
     eleparams.set("total time",time_);
     eleparams.set("delta time",dta_);
-    eleparams.set("time constant for integration",theta_*dta_);
+    eleparams.set("thsl",theta_*dta_);
 
     // set vector values needed by elements
     discret_->ClearState();
-    discret_->SetState("u and p at time n+1 (trial)",velnp_);
+    discret_->SetState("velnp",velnp_);
     // predicted dirichlet values
     // velnp then also holds prescribed new dirichlet values
     // dirichtoggle is 1 for dirichlet dofs, 0 elsewhere
@@ -547,7 +547,7 @@ void FluidImplicitTimeInt::PrepareTimeStep()
 
     // evaluate Neumann conditions
     eleparams.set("total time",time_);
-    eleparams.set("time constant for integration",theta_*dta_);
+    eleparams.set("thsl",theta_*dta_);
 
     neumann_loads_->PutScalar(0.0);
     discret_->EvaluateNeumann(eleparams,*neumann_loads_);
@@ -637,14 +637,14 @@ void FluidImplicitTimeInt::NonlinearSolve(
 
       // other parameters that might be needed by the elements
       eleparams.set("total time",time_);
-      eleparams.set("time constant for integration",theta_*dta_);
+      eleparams.set("thsl",theta_*dta_);
       eleparams.set("using stationary formulation",is_stat);
       eleparams.set("include reactive terms for linearisation",newton_);
 
       // set vector values needed by elements
       discret_->ClearState();
-      discret_->SetState("u and p at time n+1 (trial)",velnp_);
-      discret_->SetState("old solution data for rhs"  ,hist_ );
+      discret_->SetState("velnp",velnp_);
+      discret_->SetState("hist"  ,hist_ );
       if (alefluid_)
       {
         discret_->SetState("dispnp", dispnp_);
@@ -1454,12 +1454,12 @@ void FluidImplicitTimeInt::SolveStationaryProblem()
      // other parameters needed by the elements
      eleparams.set("total time",time_);
      eleparams.set("delta time",dta_);
-     eleparams.set("time constant for integration",theta_*dta_);
+     eleparams.set("thsl",theta_*dta_);
      eleparams.set("using stationary formulation",true);
 
      // set vector values needed by elements
      discret_->ClearState();
-     discret_->SetState("u and p at time n+1 (trial)",velnp_);
+     discret_->SetState("velnp",velnp_);
      // predicted dirichlet values
      // velnp then also holds prescribed new dirichlet values
      // dirichtoggle is 1 for dirichlet dofs, 0 elsewhere
@@ -1468,7 +1468,7 @@ void FluidImplicitTimeInt::SolveStationaryProblem()
 
      // evaluate Neumann conditions
      eleparams.set("total time",time_);
-     eleparams.set("time constant for integration",theta_*dta_);
+     eleparams.set("thsl",theta_*dta_);
 
      neumann_loads_->PutScalar(0.0);
      discret_->EvaluateNeumann(eleparams,*neumann_loads_);

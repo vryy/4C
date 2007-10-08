@@ -250,8 +250,8 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
       case calc_fluid_systemmat_and_residual:
       {
         // need current velocity and history vector
-        RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("u and p at time n+1 (trial)");
-        RefCountPtr<const Epetra_Vector> hist  = discretization.GetState("old solution data for rhs");
+        RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("velnp");
+        RefCountPtr<const Epetra_Vector> hist  = discretization.GetState("hist");
         if (velnp==null || hist==null)
           dserror("Cannot get state vectors 'velnp' and/or 'hist'");
 
@@ -331,8 +331,8 @@ int DRT::Elements::Fluid3::Evaluate(ParameterList& params,
         double timefac = 0;
         if (not is_stationary)
         {
-          timefac = params.get<double>("time constant for integration",-1.0);
-          if (timefac < 0.0) dserror("No time constant for integration supplied");
+          timefac = params.get<double>("thsl",-1.0);
+          if (timefac < 0.0) dserror("No thsl supplied");
         }
 
         // wrap epetra serial dense objects in blitz objects
@@ -689,7 +689,7 @@ void DRT::Elements::Fluid3::f3_sys_mat(const vector<int>&        lm,
   vector<double>         	  velino(3);    ///< normed velocity at element centre
   vector<double>     	      velint(3);
 
-  const double timefac=params.get<double>("time constant for integration",0.0);
+  const double timefac=params.get<double>("thsl",0.0);
 
   // get control parameter to switch between stationary and instationary problem
   const bool is_stationary = params.get<bool>("using stationary formulation",false);
@@ -1755,8 +1755,8 @@ Epetra_SerialDenseMatrix  vconv_r(3,iel);
 /*========================== initialisation ============================*/
 // One-step-Theta: timefac = theta*dt
 // BDF2:           timefac = 2/3 * dt
-const double timefac = params.get<double>("time constant for integration",-1.0);
-  if (timefac < 0.0) dserror("No time constant for integration supplied");
+const double timefac = params.get<double>("thsl",-1.0);
+  if (timefac < 0.0) dserror("No thsl supplied");
 
 // time step size
 //double dt = params.get<double>("delta time",-1.0);
@@ -2060,8 +2060,8 @@ Epetra_SerialDenseMatrix  vconv_r(3,iel);
 /*========================== initialisation ============================*/
 // One-step-Theta: timefac = theta*dt
 // BDF2:           timefac = 2/3 * dt
-  double timefac = params.get<double>("time constant for integration",-1.0);
-  if (timefac < 0.0) dserror("No time constant for integration supplied");
+  double timefac = params.get<double>("thsl",-1.0);
+  if (timefac < 0.0) dserror("No thsl supplied");
 
 // stabilisation parameter
 double tau_M  = tau[0]*fac;

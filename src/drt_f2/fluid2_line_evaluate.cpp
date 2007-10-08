@@ -84,7 +84,7 @@ int DRT::Elements::Fluid2Line::EvaluateNeumann(
   // there are 2 velocities and 1 pressure
   const int numdf = 3;
 
-  const double thsl = params.get("time constant for integration",0.0);
+  const double thsl = params.get("thsl",0.0);
 
   // find out whether we will use a time curve
   bool usetime = true;
@@ -231,7 +231,7 @@ void DRT::Elements::Fluid2Line::IntegrateShapeFunction(ParameterList& params,
   // there are 2 velocities and 1 pressure
   const int numdf = 3;
 
-//  const double thsl = params.get("time constant for integration",1.0);
+//  const double thsl = params.get("thsl",1.0);
 
 /*
   // find out whether we will use a time curve

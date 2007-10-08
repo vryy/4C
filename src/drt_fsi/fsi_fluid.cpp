@@ -122,13 +122,15 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Fluid::RelaxationSolve(Teuchos::RefCoun
 
   ParameterList eleparams;
   eleparams.set("action","calc_fluid_systemmat_and_residual");
-  eleparams.set("time constant for integration",theta_*dta_);
+  eleparams.set("total time",time_);
+  eleparams.set("thsl",theta_*dta_);
   eleparams.set("using stationary formulation",false);
+  eleparams.set("include reactive terms for linearisation",newton_);
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("u and p at time n+1 (trial)",velnp_);
-  discret_->SetState("old solution data for rhs"  ,zeros_);
+  discret_->SetState("velnp",velnp_);
+  discret_->SetState("hist"  ,zeros_);
   discret_->SetState("dispnp", zeros_);
   discret_->SetState("gridv", zeros_);
 
@@ -157,13 +159,14 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Fluid::RelaxationSolve(Teuchos::RefCoun
   residual_->PutScalar(0.0);
 
   eleparams.set("action","calc_fluid_systemmat_and_residual");
-  eleparams.set("time constant for integration",theta_*dta_);
+  eleparams.set("thsl",theta_*dta_);
   eleparams.set("using stationary formulation",false);
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("u and p at time n+1 (trial)",incvel_);
-  discret_->SetState("old solution data for rhs"  ,zeros_);
+  //discret_->SetState("velnp",incvel_);
+  discret_->SetState("velnp",velnp_);
+  discret_->SetState("hist"  ,zeros_);
   discret_->SetState("dispnp", zeros_);
   discret_->SetState("gridv", zeros_);
 
@@ -172,7 +175,18 @@ Teuchos::RefCountPtr<Epetra_Vector> FSI::Fluid::RelaxationSolve(Teuchos::RefCoun
   discret_->ClearState();
 
   double density = eleparams.get("density", 0.0);
+
+#if 0
   trueresidual_->Update(density/dta_/theta_,*residual_,0.0);
+#else
+
+  // finalize the system matrix
+  LINALG::Complete(*sysmat_);
+
+  if (sysmat_->Apply(*incvel_, *trueresidual_)!=0)
+    dserror("sysmat_->Apply() failed");
+  trueresidual_->Scale(-density/dta_/theta_);
+#endif
 
   return ExtractInterfaceForces();
 }

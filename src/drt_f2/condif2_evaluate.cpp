@@ -68,7 +68,7 @@ int DRT::Elements::Condif2::Evaluate(ParameterList& params,
     case calc_condif_systemmat_and_residual:
     {
       // need current velocity and history vector
-      RefCountPtr<const Epetra_Vector> hist = discretization.GetState("old solution data for rhs");
+      RefCountPtr<const Epetra_Vector> hist = discretization.GetState("hist");
       if (hist==null) dserror("Cannot get state vector 'hist'");
 
       // extract local values from the global vector
@@ -84,8 +84,8 @@ int DRT::Elements::Condif2::Evaluate(ParameterList& params,
       double timefac = 0;
       if (not is_stationary)
       {
-        timefac = params.get<double>("time constant for integration",-1.0);
-        if (timefac < 0.0) dserror("No time constant for integration supplied");
+        timefac = params.get<double>("thsl",-1.0);
+        if (timefac < 0.0) dserror("No thsl supplied");
       }
 
       // get type of velocity field

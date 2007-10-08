@@ -103,7 +103,7 @@ int DRT::Elements::Fluid3Surface::EvaluateNeumann(
   // there are 3 velocities and 1 pressure
   const int numdf = 4;
 
-  const double thsl = params.get("time constant for integration",0.0);
+  const double thsl = params.get("thsl",0.0);
 
   const DiscretizationType distype = this->Shape();
 
@@ -316,7 +316,7 @@ void DRT::Elements::Fluid3Surface::IntegrateShapeFunction(ParameterList& params,
   // there are 3 velocities and 1 pressure
   const int numdf = 4;
 
-//  const double thsl = params.get("time constant for integration",1.0);
+//  const double thsl = params.get("thsl",1.0);
 
   const DiscretizationType distype = this->Shape();
 
