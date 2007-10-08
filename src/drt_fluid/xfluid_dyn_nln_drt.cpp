@@ -17,8 +17,6 @@ Maintainer: Axel Gerstenberger
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifdef TRILINOS_PACKAGE
-#ifdef D_FLUID
 
 #include <ctime>
 #include <cstdlib>
@@ -408,6 +406,4 @@ void xdyn_fluid_drt()
   return;
 } // end of dyn_fluid_drt()
 
-#endif  // #ifdef D_FLUID
-#endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
