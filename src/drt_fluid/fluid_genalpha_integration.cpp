@@ -77,10 +77,10 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // -------------------------------------------------------------------
   PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(discret_);
   pbc.UpdateDofsForPeriodicBoundaryConditions();
-  
+
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled()) discret_->FillComplete();
-  
+
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
@@ -129,7 +129,7 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
 
     vector<int> velmapdata(veldofset.begin(),veldofset.end());
     vector<int> premapdata(predofset.begin(),predofset.end());
-    
+
     // the rowmaps are generated according to the pattern provided by
     // the data vectors
     velrowmap_ = rcp(new Epetra_Map(-1,
@@ -193,11 +193,11 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // The residual vector --- more or less the rhs for the incremental
   // formulation!!!
   residual_     = LINALG::CreateVector(*dofrowmap,true);
-  
+
   // The force vector (a copy of residual_ without Dirichlet
   // conditions applied)
   force_        = LINALG::CreateVector(*dofrowmap,true);
-  
+
   // Nonlinear iteration increment vector
   increment_    = LINALG::CreateVector(*dofrowmap,true);
 
@@ -216,7 +216,7 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
 
   // end time measurement for timeloop
   tm7_ref_ = null;
-  
+
   return;
 
 } // FluidGenAlphaIntegration::FluidGenAlphaIntegration
@@ -248,7 +248,7 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
   double             endtime
   )
 {
-  
+
   bool stop_timeloop=false;
 
   dt_     = params_.get<double>("time step size");
@@ -262,7 +262,7 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
 
   // parameter for linearisation scheme (fixed point like or newton like)
   newton_ = params_.get<bool>("Use reaction terms for linearisation",false);
-  
+
   if (myrank_==0)
   {
     cout << "Generalized Alpha parameter: alpha_F = " << alphaF_ << &endl;
@@ -296,7 +296,7 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
 
   // start time measurement for timeloop
   tm2_ref_ = rcp(new TimeMonitor(*timedynloop_));
-  
+
   while (stop_timeloop==false)
   {
     // -------------------------------------------------------------------
@@ -312,7 +312,7 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
     {
       printf("TIME: %11.4E/%11.4E  DT = %11.4E     GenAlpha     STEP = %4d/%4d \n",
              time_,endtime,dt_,step_,endstep);
- 
+
     }
 
     // -------------------------------------------------------------------
@@ -325,23 +325,23 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
     // -------------------------------------------------------------------
     // start time measurement for application of dirichlet conditions
     tm1_ref_ = rcp(new TimeMonitor(*timeevaldirich_));
-    
+
     this->GenAlphaApplyDirichletAndNeumann();
 
     // end time measurement for application of dirichlet conditions
     tm1_ref_=null;
-    
+
     // -------------------------------------------------------------------
     //      calculate initial acceleration according to predicted
     //                  velocities and boundary values
     // -------------------------------------------------------------------
     this->GenAlphaCalcInitialAccelerations();
-    
+
     // -------------------------------------------------------------------
     //                     solve nonlinear equation
     // -------------------------------------------------------------------
     this->DoGenAlphaPredictorCorrectorIteration();
-    
+
     // -------------------------------------------------------------------
     //                         update solution
     // -------------------------------------------------------------------
@@ -355,7 +355,7 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
 
     // time measurement --- start TimeMonitor tm8
     tm8_ref_        = rcp(new TimeMonitor(*timeout_ ));
-    
+
     // -------------------------------------------------------------------
     // add calculated velocity to mean value calculation
     // -------------------------------------------------------------------
@@ -363,7 +363,7 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
     {
       turbulencestatistics_->DoTimeSample(velnp_,*force_);
     }
-    
+
     // -------------------------------------------------------------------
     //                         output of solution
     // -------------------------------------------------------------------
@@ -371,11 +371,11 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
 
     // time measurement --- stop TimeMonitor tm8
     tm8_ref_        = null;
-    
+
     // -------------------------------------------------------------------
     //                    stop criterium for timeloop
     // -------------------------------------------------------------------
-    
+
     if(step_>=endstep||time_>=endtime)
     {
 	stop_timeloop=true;
@@ -393,7 +393,7 @@ void FluidGenAlphaIntegration::GenAlphaIntegrateTo(
   }
   TimeMonitor::summarize();
 
-  
+
   return;
 }// FluidGenAlphaIntegration::GenAlphaIntegrateFromTo
 
@@ -416,14 +416,14 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
 
   int               itnum         = 0;
   double            tcpu   ;
-  
+
   dtsolve_ = 0;
   dtele_   = 0;
 
 
   // start time measurement for nonlinear iteration
   tm6_ref_ = rcp(new TimeMonitor(*timenlnloop_));
-  
+
   // -------------------------------------------------------------------
   //  Evaluate acceleration and velocity at the intermediate time level
   //                     n+alpha_M and n+alpha_F
@@ -432,12 +432,12 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
   // -------------------------------------------------------------------
   // start time measurement for nonlinear update
   tm9_ref_ = rcp(new TimeMonitor(*timenonlinup_));
-  
+
   this->GenAlphaComputeIntermediateSol();
 
   // time measurement --- stop TimeMonitor tm9
   tm9_ref_        = null;
-    
+
   // -------------------------------------------------------------------
   // call elements to calculate residual and matrix for first iteration
   // -------------------------------------------------------------------
@@ -446,7 +446,7 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
 
   // get cpu time
   tcpu=ds_cputime();
-  
+
   this->GenAlphaAssembleResidualAndMatrix(itnum);
 
   // end time measurement for element call
@@ -458,12 +458,12 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
     printf("+------------+-------------------+--------------+--------------+--------------+--------------+ \n");
     printf("|- step/max -|- tol      [norm] -|- vel-error --|- pre-error --|- vres-norm --|- pres-norm --|                 (te=%10.3E)\n",dtele_);
   }
-  
+
   bool              stopnonliniter = false;
   while (stopnonliniter==false)
   {
     itnum++;
-  
+
     // -------------------------------------------------------------------
     // solve for increments
     // -------------------------------------------------------------------
@@ -472,7 +472,7 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
 
     // get cpu time
     tcpu=ds_cputime();
-     
+
     this->GenAlphaCalcIncrement(itnum);
 
     // end time measurement for application of dirichlet conditions
@@ -481,7 +481,7 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
 
     // start time measurement for nonlinear update
     tm9_ref_ = rcp(new TimeMonitor(*timenonlinup_));
-    
+
     // -------------------------------------------------------------------
     // update estimates by incremental solution
     // -------------------------------------------------------------------
@@ -491,14 +491,14 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
     // -------------------------------------------------------------------
     //  Evaluate acceleration and velocity at the intermediate time level
     //                     n+alpha_M and n+alpha_F
-    //                     
+    //
     //                          (i)->(i+1)
     // -------------------------------------------------------------------
     this->GenAlphaComputeIntermediateSol();
-    
+
     // time measurement --- stop TimeMonitor tm9
     tm9_ref_        = null;
-    
+
     // -------------------------------------------------------------------
     // call elements to calculate residual for convergence check and
     // matrix for the next step
@@ -509,14 +509,14 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
 
     // get cpu time
     tcpu=ds_cputime();
-    
+
 //    if(itnum<params_.get<int>("max nonlin iter steps"))
     {
       this->GenAlphaAssembleResidualAndMatrix(itnum);
     }
     // end time measurement for element call
     tm3_ref_=null;
-    
+
     dtele_=ds_cputime()-tcpu;
 
 
@@ -528,7 +528,7 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
 
   // end time measurement for nonlinear iteration
   tm6_ref_ = null;
- 
+
   return;
 }// FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration
 
@@ -555,17 +555,17 @@ void FluidGenAlphaIntegration::GenAlphaPredictNewSolutionValues()
 
   //       n+1    n
   //      u    = u
-  //       (0)    
+  //       (0)
   //
   //  and
   //
   //       n+1    n
   //      p    = p
-  //       (0)    
+  //       (0)
 
   velnp_->Update(1.0,*veln_ ,0.0);
 
-  
+
   return;
 } // FluidGenAlphaIntegration::GenAlphaPredictNewSolutionValues
 
@@ -586,7 +586,7 @@ void FluidGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann()
 {
   // --------------------------------------------------
   // apply Dirichlet conditions to velnp
-  
+
   ParameterList eleparams;
   // action for elements
   eleparams.set("action","calc_fluid_eleload");
@@ -609,12 +609,12 @@ void FluidGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann()
   discret_->ClearState();
 
 
-  
+
   // --------------------------------------------------
   // evaluate Neumann conditions
 
   // not implemented yet
-     
+
   return;
 } // FluidGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann
 
@@ -636,7 +636,7 @@ void FluidGenAlphaIntegration::GenAlphaCalcInitialAccelerations()
   // adjust accnp according to Dirichlet values of velnp
   //
   //                                  n+1     n
-  //                               vel   - vel 
+  //                               vel   - vel
   //       n+1      n  gamma-1.0      (0)
   //    acc    = acc * --------- + ------------
   //       (0)           gamma      gamma * dt
@@ -644,7 +644,7 @@ void FluidGenAlphaIntegration::GenAlphaCalcInitialAccelerations()
 
   accnp_->Update(1.0,*velnp_,-1.0,*veln_,0.0);
   accnp_->Update((gamma_-1.0)/gamma_,*accn_,1.0/(gamma_*dt_));
-  
+
   return;
 } // FluidGenAlphaIntegration::GenAlphaCalcInitialAccelerations
 
@@ -662,18 +662,18 @@ void FluidGenAlphaIntegration::GenAlphaCalcInitialAccelerations()
 void FluidGenAlphaIntegration::GenAlphaComputeIntermediateSol()
 {
   //       n+alphaM                n+1                      n
-  //    acc         = alpha_M * acc     + (1-alpha_M) *  acc   
+  //    acc         = alpha_M * acc     + (1-alpha_M) *  acc
   //       (i)                     (i)
-  
+
   accam_->Update((alphaM_),*accnp_,(1.0-alphaM_),*accn_,0.0);
 
   //       n+alphaF              n+1                   n
-  //      u         = alpha_F * u     + (1-alpha_F) * u      
+  //      u         = alpha_F * u     + (1-alpha_F) * u
   //       (i)                   (i)
 
   velaf_->Update((alphaF_),*velnp_,(1.0-alphaF_),*veln_,0.0);
 
-  
+
   return;
 } // FluidGenAlphaIntegration::GenAlphaComputeIntermediateSol
 
@@ -699,7 +699,7 @@ void FluidGenAlphaIntegration::GenAlphaTimeUpdate()
   // for the accelerations
   accn_->Update(1.0,*accnp_ ,0.0);
 
-  
+
   {
     // create the parameters for the discretization
     ParameterList eleparams;
@@ -720,7 +720,7 @@ void FluidGenAlphaIntegration::GenAlphaTimeUpdate()
     // call loop over elements
     discret_->Evaluate(eleparams,null,null,null,null,null);
   }
-  
+
   return;
 } // FluidGenAlphaIntegration::GenAlphaTimeUpdate
 
@@ -744,14 +744,14 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
   {
     writestep_= 0;
     output_.NewStep    (step_,time_);
-    
+
     output_.WriteVector("velnp"   , velnp_);
-  
+
     // do restart if we have to
     if (restartstep_ == uprestart_)
     {
       restartstep_ = 0;
-      
+
       output_.WriteVector("veln ", veln_ );
       output_.WriteVector("accnp", accnp_);
       output_.WriteVector("accn ", accn_ );
@@ -761,7 +761,7 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
     if(evalstatistics_)
     {
       turbulencestatistics_->TimeAverageMeansAndOutputOfStatistics(step_);
-      
+
       turbulencestatistics_->ClearStatistics();
     }
   }
@@ -775,7 +775,7 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
     output_.WriteVector("velnp", velnp_);
     output_.WriteVector("veln ", veln_ );
     output_.WriteVector("accnp", accnp_);
-    output_.WriteVector("accn ", accn_ );  
+    output_.WriteVector("accn ", accn_ );
   }
 
   return;
@@ -809,11 +809,11 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
   // zero out the stiffness matrix
   // we keep the sparsity pattern throughout the calculation for
   // performance reasons
-  if (sysmat_==null)
-    sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
-  else
-    sysmat_->PutScalar(0.0);
-  
+  //if (sysmat_==null)
+  sysmat_ = LINALG::CreateMatrix(*dofrowmap,maxentriesperrow_);
+  //else
+  //sysmat_->PutScalar(0.0);
+
   // zero out residual
   residual_->PutScalar(0.0);
 
@@ -822,7 +822,7 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
 
   // create the parameters for the discretization
   ParameterList eleparams;
-  
+
   // action for elements
   eleparams.set("action","calc_fluid_genalpha_sysmat_and_residual");
   // choose what to assemble
@@ -833,7 +833,7 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
   else
   {
     eleparams.set("assemble matrix 1",true);
-  }    
+  }
   eleparams.set("assemble matrix 2",false);
   eleparams.set("assemble vector 1",true);
   eleparams.set("assemble vector 2",false);
@@ -849,7 +849,7 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
     timelist.set("time"   ,time_  );
     timelist.set("dt"     ,dt_    );
   }
-  
+
   // do not compute the elemetn matrix if itmax is reached
   // in this case, only the residual is required for the convergence check
   if (itnum<itemax)
@@ -860,16 +860,16 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
   {
     eleparams.set("compute element matrix",false);
   }
-  
+
   // parameters for nonlinear treatment (linearisation)
   eleparams.set("include reactive terms for linearisation"    ,newton_);
-                     
+
 
   // parameters for stabilisation
   {
     eleparams.sublist("stabilisation") = (*globalparameterlist).sublist("FluidStabilisation");
   }
-  
+
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("u and p (n+1      ,trial)",velnp_);
@@ -912,7 +912,7 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
 
     int rr;
 
-    
+
     double* data = velnp_->Values();
     for(rr=0;rr<residual_->MyLength();rr++)
     {
@@ -925,14 +925,14 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
 
 #endif
 
-      
+
 #if 0  // DEBUG IO  --- rhs of linear system
   {
     const Epetra_Map* dofrowmap       = discret_->DofRowMap();
 
     int rr;
 
-    
+
     double* data = residual_->Values();
     for(rr=0;rr<residual_->MyLength();rr++)
     {
@@ -947,7 +947,7 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
 
   // remember force vector for stress computation
   *force_=Epetra_Vector(*residual_);
-    
+
   // finalize the system matrix
   LINALG::Complete(*sysmat_);
   maxentriesperrow_ = sysmat_->MaxNumEntries();
@@ -958,7 +958,7 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix(
   // -------------------------------------------------------------------
   // start time measurement for application of dirichlet conditions
   tm4_ref_ = rcp(new TimeMonitor(*timeapplydirich_));
-  
+
   zeros_->PutScalar(0.0);
   {
     LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,
@@ -984,7 +984,7 @@ void FluidGenAlphaIntegration::GenAlphaCalcIncrement(
   int itnum
   )
 {
- 
+
   //-------solve for residual displacements to correct incremental displacements
   bool initsolver = false;
 
@@ -1019,10 +1019,10 @@ void FluidGenAlphaIntegration::GenAlphaNonlinearUpdate()
   int numlocdofs = dofrowmap->NumMyElements();
 
   int*   dof = dofrowmap->MyGlobalElements ();
-  
+
 
   int predof = numdim_+1;
-  
+
   // loop all dofs on this proc
   for (int lid=0; lid<numlocdofs; ++lid)
   {
@@ -1039,12 +1039,12 @@ void FluidGenAlphaIntegration::GenAlphaNonlinearUpdate()
       //        (i+1)       (i)
       //
       double dacc = (*increment_)[lid];
-      
+
       accnp_->SumIntoGlobalValues(1,&dacc,&gid);
 
       // ------------------------------------------------------
       // use updated acceleration to update velocity. Since
-      //        
+      //
       //    n+1         n            n                 +-   n+1       n -+
       // vel      =  vel   + dt * acc   + gamma * dt * | acc     - acc   | =
       //    (i+1)                                      +-   (i+1)       -+
@@ -1052,15 +1052,15 @@ void FluidGenAlphaIntegration::GenAlphaNonlinearUpdate()
       //                n            n                 +-   n+1       n -+
       //          =  vel   + dt * acc   + gamma * dt * | acc     - acc   | +
       //                                               +-   (i)         -+
-      //      
-      //                                      n+1 
+      //
+      //                                      n+1
       //             + gamma * dt * dacc = vel     +  gamma * dt * dacc =
       //                                      (i)
-      //               n+1 
+      //               n+1
       //          = vel     +   dvel
       //               (i)
 
-      //        
+      //
       double dvel = gamma_*dt_*dacc;
 
       velnp_->SumIntoGlobalValues(1,&dvel,&gid);
@@ -1074,7 +1074,7 @@ void FluidGenAlphaIntegration::GenAlphaNonlinearUpdate()
       //     pres      =  pres    + dpres
       //         (i+1)        (i)
       //
-      
+
       double dpres = (*increment_)[lid];
       velnp_->SumIntoGlobalValues(1,&dpres,&gid);
 
@@ -1087,7 +1087,7 @@ void FluidGenAlphaIntegration::GenAlphaNonlinearUpdate()
 
     int rr;
 
-    
+
     double* data = residual_->Values();
     for(rr=0;rr<residual_->MyLength();rr++)
     {
@@ -1100,10 +1100,10 @@ void FluidGenAlphaIntegration::GenAlphaNonlinearUpdate()
 
 #endif
 
-  
+
   return;
 } // FluidGenAlphaIntegration::GenAlphaNonlinearUpdate
-  
+
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1116,7 +1116,7 @@ void FluidGenAlphaIntegration::GenAlphaNonlinearUpdate()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 bool FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(
-  int          itnum  
+  int          itnum
   )
 {
   bool stopnonliniter = false;
@@ -1165,13 +1165,13 @@ bool FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(
   // extract velocity and pressure residuals from rhs vector
   LINALG::Export(*residual_,*onlyvel_);
   LINALG::Export(*residual_,*onlypre_);
-  
+
   double preresnorm_L2;
   onlypre_->Norm2(&preresnorm_L2);
 
   double velresnorm_L2;
   onlyvel_->Norm2(&velresnorm_L2);
-  
+
   // out to screen
   if(myrank_ == 0)
   {
@@ -1204,7 +1204,7 @@ bool FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(
       printf("+--------------------------------------------------------------------------------------------+\n");
     }
   }
-  
+
   return stopnonliniter;
 } // FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck
 
@@ -1262,7 +1262,7 @@ void FluidGenAlphaIntegration::SetInitialFlowField(
       for(int index=0;index<numdim_+1;++index)
       {
         int gid = nodedofset[index];
-        
+
         double initialval=DRT::Utils::FunctionManager::Instance().Funct(startfuncno-1).Evaluate(index,lnode->X());
 
         velnp_->ReplaceGlobalValues(1,&initialval,&gid);
@@ -1270,19 +1270,19 @@ void FluidGenAlphaIntegration::SetInitialFlowField(
       }
     }
     //----------------------------------------------------------------------
-    // random perturbations for field 
+    // random perturbations for field
     //----------------------------------------------------------------------
     if (whichinitialfield==3)
     {
       //
       {
         const Epetra_Map* dofrowmap = discret_->DofRowMap();
-        
+
         int err =0;
 
         // random noise is perc percent of the initial profile
         double perc = 0.3;
-        
+
         // loop all nodes on the processor
         for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();++lnodeid)
         {
@@ -1297,12 +1297,12 @@ void FluidGenAlphaIntegration::SetInitialFlowField(
 
           // direction with max. profile
           int flowdirection = 0;
-          
+
           for(int index=0;index<numdim_;++index)
           {
             int gid = nodedofset[index];
             int lid = dofrowmap->LID(gid);
-        
+
             double thisval=(*velnp_)[lid];
             if (initialval*initialval < thisval*thisval)
             {
@@ -1317,7 +1317,7 @@ void FluidGenAlphaIntegration::SetInitialFlowField(
           for(int index=0;index<numdim_;++index)
           {
             int gid = nodedofset[index];
-        
+
             double randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
 
             double noise = initialval * randomnumber * perc;
@@ -1328,7 +1328,7 @@ void FluidGenAlphaIntegration::SetInitialFlowField(
             {
               noise *= 1./3.;
             }
-            
+
             err += velnp_->SumIntoGlobalValues(1,&noise,&gid);
             err += veln_ ->SumIntoGlobalValues(1,&noise,&gid);
 
@@ -1340,7 +1340,7 @@ void FluidGenAlphaIntegration::SetInitialFlowField(
           }
         }
       }
-    
+
     }
   }
   //----------------------------------------------------------------------
