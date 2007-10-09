@@ -1579,6 +1579,8 @@ FluidImplicitTimeInt::~FluidImplicitTimeInt()
 //#################################################
 void FluidImplicitTimeInt::LIFTDRAG_all()
 {
+    const int numprint = 6;
+    
 	vector<DRT::Condition*> LIFTDRAGConds;
 	discret_->GetCondition("LIFTDRAG", LIFTDRAGConds);
 
@@ -1603,26 +1605,24 @@ void FluidImplicitTimeInt::LIFTDRAG_all()
 			{
                 if (lineValuesMap.find(label) == lineValuesMap.end())
                 {
-                    lineValuesMap[label] = vector<double>(3);
-                    for (unsigned j=0;j<3;j++)
-                        lineValuesMap[label][i]=0.0;
+                    lineValuesMap[label] = vector<double>(numprint,0.0);
                 }
                 const vector<double> values = this->LIFTDRAG_one(*(LIFTDRAGConds[i]));
-                for (unsigned j=0;j<3;j++)
+                for (int j=0;j<numprint;j++){
                     lineValuesMap[label][j] += values[j];
+                }
 			}
 	  	
 		  	else if (LIFTDRAGConds[i]->GType()==DRT::Condition::Surface)
 		  	{
                 if (surfValuesMap.find(label) == surfValuesMap.end())
                 {
-                    surfValuesMap[label] = vector<double>(3);
-                    for (unsigned j=0;j<3;j++)
-                        surfValuesMap[label][i]=0.0;
+                    surfValuesMap[label] = vector<double>(numprint,0.0);
                 }
 				const vector<double> values = this->LIFTDRAG_one(*(LIFTDRAGConds[i]));
-                for (unsigned j=0;j<3;j++)
+                for (int j=0;j<numprint;j++){
                     surfValuesMap[label][j] += values[j];
+                }
 			}
 		  	
 		  	else dserror("unknown type of LIFTDRAG condition (need Line or Surface but got type %d)", LIFTDRAGConds[i]->GType());
@@ -1657,7 +1657,7 @@ void FluidImplicitTimeInt::LIFTDRAG_all()
 
 vector<double> FluidImplicitTimeInt::LIFTDRAG_one( const DRT::Condition cond)
 {
-    vector<double> values;
+    vector<double> values(6,0.0);
 	std::set<DRT::Node*> nodes;
   	const int myrank = discret_->Comm().MyPID();
   	const vector<int>* n = cond.Get<vector<int> >("Node Ids");
