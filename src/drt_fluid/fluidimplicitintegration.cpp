@@ -361,6 +361,8 @@ void FluidImplicitTimeInt::TimeLoop()
     //                         output of solution
     // -------------------------------------------------------------------
     this->Output();
+    
+    this->LIFTDRAG_all();
 
     // -------------------------------------------------------------------
     //                       update time step sizes
@@ -1574,6 +1576,109 @@ FluidImplicitTimeInt::~FluidImplicitTimeInt()
   return;
 }// FluidImplicitTimeInt::~FluidImplicitTimeInt::
 
+//#################################################
+void FluidImplicitTimeInt::LIFTDRAG_all()
+{
+	vector<DRT::Condition*> LIFTDRAGConds;
+	discret_->GetCondition("LIFTDRAG", LIFTDRAGConds);
+
+	map<int, vector<double> > lineValuesMap;
+	map<int, vector<double> > surfValuesMap;
+	//const vector<double>* centerCoord = cond->Get<vector<double> >   ("centerCoord");
+	    
+ 	if (LIFTDRAGConds.size() == 0)
+ 	{
+ 		cout << "No LIFT and DRAG calculation" << endl;
+ 	}
+ 	else
+ 	{
+ 		for (unsigned i=0; i<LIFTDRAGConds.size(); ++i)
+ 		{
+		    const vector<int>* LABEL=LIFTDRAGConds[i]->Get<vector<int> >  ("LABEL");
+		    const unsigned int label = (*LABEL)[0];
+
+			const DRT::Condition::GeometryType gType = LIFTDRAGConds[i]->GType();
+			
+			if (gType==DRT::Condition::Line)
+			{
+                if (lineValuesMap.find(label) == lineValuesMap.end())
+                {
+                    lineValuesMap[label] = vector<double>(3);
+                    for (unsigned j=0;j<3;j++)
+                        lineValuesMap[label][i]=0.0;
+                }
+                const vector<double> values = this->LIFTDRAG_one(*(LIFTDRAGConds[i]));
+                for (unsigned j=0;j<3;j++)
+                    lineValuesMap[label][j] += values[j];
+			}
+	  	
+		  	else if (LIFTDRAGConds[i]->GType()==DRT::Condition::Surface)
+		  	{
+                if (surfValuesMap.find(label) == surfValuesMap.end())
+                {
+                    surfValuesMap[label] = vector<double>(3);
+                    for (unsigned j=0;j<3;j++)
+                        surfValuesMap[label][i]=0.0;
+                }
+				const vector<double> values = this->LIFTDRAG_one(*(LIFTDRAGConds[i]));
+                for (unsigned j=0;j<3;j++)
+                    surfValuesMap[label][j] += values[j];
+			}
+		  	
+		  	else dserror("unknown type of LIFTDRAG condition (need Line or Surface but got type %d)", LIFTDRAGConds[i]->GType());
+ 		}
+ 		
+ 		
+ 		std::map<int, vector<double> >::const_iterator actval;
+ 		for (actval = lineValuesMap.begin(); actval!=lineValuesMap.end(); ++actval)
+ 		{
+ 		    const int label = actval->first;
+ 		    const vector<double> values = actval->second; 
+			cout << "Lift and drag calculation for line " << label << "  :"<< endl;
+			cout << "  F_x           F_y :" << endl;
+            cout << std::scientific << values[0] << "    ";
+            cout << std::scientific << values[1];
+			cout << endl;
+ 		}
+ 		for (actval = surfValuesMap.begin(); actval!=surfValuesMap.end(); ++actval)
+ 		{
+            const int label = actval->first;
+            const vector<double> values = actval->second; 
+			cout << endl<<"Lift and drag calculation for surface " << label << "  :"<< endl;
+			cout << "F_x     F_y     F_z :" << endl;
+			cout << std::scientific << values[0] << "    ";
+			cout << std::scientific << values[1] << "    ";
+			cout << std::scientific << values[2];
+			cout << endl;
+ 		}
+ 	}
+
+} //FluidImplicitTimeInt::LIFTDRAG_all()
+
+vector<double> FluidImplicitTimeInt::LIFTDRAG_one( const DRT::Condition cond)
+{
+    vector<double> values;
+	std::set<DRT::Node*> nodes;
+  	const int myrank = discret_->Comm().MyPID();
+  	const vector<int>* n = cond.Get<vector<int> >("Node Ids");
+  	
+  	// here are all nodes belonging to the LIFTDRAG line stored in 'nodes'
+  	for (unsigned j=0; j<n->size(); ++j)
+    {
+    	const int gid = (*n)[j];
+		if (discret_->HaveGlobalNode(gid) and discret_->gNode(gid)->Owner()==myrank)
+			nodes.insert(discret_->gNode(gid));
+	}
+	
+	std::set<DRT::Node*>::iterator actnode;
+	for (actnode = nodes.begin(); actnode!=nodes.end(); ++actnode)
+	{
+		values[0] += (*trueresidual_)[discret_->Dof(*actnode,0)];
+		values[1] += (*trueresidual_)[discret_->Dof(*actnode,1)];
+		values[2] += (*trueresidual_)[discret_->Dof(*actnode,2)];
+	}
+	return values;
+}
 
 #endif /* TRILINOS_PACKAGE */
 #endif /* CCADISCRET       */

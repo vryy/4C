@@ -185,6 +185,17 @@ public:
 
   */
   void ReadRestart(int step);
+  
+  /*!//###############################################
+  \brief  Evaluate and print the lift and drag forces for each line and
+ 		  surface defined in the design 
+  */
+  void LIFTDRAG_all();
+  
+  /*!//###############################################
+  \brief  calculate the lift and drag for one LIFTDRAG condition and return its values (x,y,z) 
+  */
+  vector<double> LIFTDRAG_one(const DRT::Condition cond);
 
 protected:
 
