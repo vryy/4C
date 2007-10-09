@@ -104,7 +104,9 @@ public:
     SurfaceStress,
     MicroBoundary,
     XFEMCoupling,
-    FluidStressCalc
+    FluidStressCalc,
+    LineLIFTDRAG,
+    SurfLIFTDRAG
   };
 
   /*!

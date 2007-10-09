@@ -136,6 +136,12 @@ static void input_line_stress_calc(multimap<int,RefCountPtr<DRT::Condition> >& l
 static void input_surf_stress_calc(multimap<int,RefCountPtr<DRT::Condition> >& snmap);
 
 /*----------------------------------------------------------------------*
+ | lift and drag calculation from fluid                  m.levy 09/07   |
+ *----------------------------------------------------------------------*/
+static void input_line_LIFTDRAG(multimap<int,RefCountPtr<DRT::Condition> >& lldmap);
+static void input_surf_LIFTDRAG(multimap<int,RefCountPtr<DRT::Condition> >& sldmap);
+
+/*----------------------------------------------------------------------*
  | input of conditions                                    m.gee 11/06   |
  *----------------------------------------------------------------------*/
 void input_conditions(const DRT::Problem& problem)
@@ -296,6 +302,15 @@ void input_conditions(const DRT::Problem& problem)
   multimap<int,RefCountPtr<DRT::Condition> > surffluidstresscalc;
   input_surf_stress_calc(surffluidstresscalc);
   setup_condition(surffluidstresscalc, dsurf_fenode);
+  
+  //-------------------------------- read line LIFTDRAG conditions
+  multimap<int,RefCountPtr<DRT::Condition> > lineLIFTDRAG;
+  input_line_LIFTDRAG(lineLIFTDRAG);
+  setup_condition(lineLIFTDRAG, dline_fenode);
+  //--------------------------------read surface LIFTDRAG conditions
+  multimap<int,RefCountPtr<DRT::Condition> > surfLIFTDRAG;
+  input_surf_LIFTDRAG(surfLIFTDRAG);
+  setup_condition(surfLIFTDRAG, dsurf_fenode);
 
 
   // Iterate through all discretizations and sort the appropiate condition into
@@ -339,6 +354,9 @@ void input_conditions(const DRT::Problem& problem)
 
       register_condition("FluidStressCalc", "Line Fluid Stress Calculation", linefluidstresscalc, actdis, noderowmap);
       register_condition("FluidStressCalc", "Surf Fluid Stress Calculation", surffluidstresscalc, actdis, noderowmap);
+      
+      register_condition("LIFTDRAG", "Line LIFTDRAG", lineLIFTDRAG, actdis, noderowmap);
+      register_condition("LIFTDRAG", "Surf LIFTDRAG", surfLIFTDRAG, actdis, noderowmap);    
     }
   }
 } /* end of input_conditions */
@@ -2322,6 +2340,122 @@ void input_surf_stress_calc(multimap<int,RefCountPtr<DRT::Condition> >& snmap)
   } // while(strncmp(allfiles.actplace,"------",6)!=0)
   return;
 };
+
+/*----------------------------------------------------------------------*
+ | input of design line LIFTDRAG conditions              m.levy 09/07   |
+ *----------------------------------------------------------------------*/
+void input_line_LIFTDRAG(multimap<int,RefCountPtr<DRT::Condition> >& lldmap)
+{
+  /*----------- find the beginning of line LIFTDRAG conditions */
+  if (frfind("---DESIGN FLUID LINE LIFT&DRAG")==0) return;
+  frread();
+
+  /*------------------------ read number of design lines with conditions */
+  int ierr=0;
+  int ndline=0;
+  frint("DLINE",&ndline,&ierr);
+  if(ierr!=1)
+    dserror("Cannot read design-line LIFTDRAG conditions");
+  frread();
+
+  /*------------------------------------- start reading the design surfs */
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    /*------------------------------------------ read the design line Id */
+    int dlineid = -1;
+    frint("E",&dlineid,&ierr);
+    if(ierr!=1)
+      dserror("Cannot read design-line LIFTDRAG conditions");
+    dlineid--;
+    
+    /*--------------------------------- move pointer behind the "-" sign */
+    char* colptr = strstr(allfiles.actplace,"-");
+    if(colptr==NULL)
+      dserror("Cannot read design-line LIFTDRAG conditions");
+    colptr++;
+    
+    //-------------------------------read values
+    int LABEL = strtol(colptr,&colptr,10);
+    double xCenter = strtod(colptr,&colptr);
+    double yCenter = strtod(colptr,&colptr);
+	//#####  I don't know what to do with 'ALE_LINE';
+	
+	if (LABEL <= 0)
+		dserror("LiftDrag Label must be greater than 0!");
+    
+	// create boundary condition
+    RefCountPtr<DRT::Condition> condition =
+           rcp(new DRT::Condition(dlineid,DRT::Condition::LineLIFTDRAG,false,
+                                  DRT::Condition::Line));
+    condition->Add("LABEL",&LABEL,1);
+    condition->Add("xCenter",&xCenter,1);
+    condition->Add("yCenter",&yCenter,1);
+
+    //---------------------- add the condition to the map of all conditions
+    lldmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dlineid,condition));
+    
+    //-------------------------------------------------- read the next line
+    frread();
+  } // while(strncmp(allfiles.actplace,"------",6)!=0)
+  return;
+};   //input_line_LIFTDRAG
+
+/*----------------------------------------------------------------------*
+ | input of design surf LIFTDRAG conditions              m.levy 09/07   |
+ *----------------------------------------------------------------------*/
+void input_surf_LIFTDRAG(multimap<int,RefCountPtr<DRT::Condition> >& sldmap)
+{
+  /*-------- find the beginning of surface stress calculation conditions */
+  if (frfind("---DESIGN FLUID SURF LIFT&DRAG")==0) return;
+  frread();
+  
+  /*--------------------- read number of design surfaces with conditions */
+  int ierr=0;
+  int ndsurf=0;
+  frint("DSURF",&ndsurf,&ierr);
+  if(ierr!=1)
+    dserror("Cannot read design-surface LIFTDRAG conditions");
+  frread();
+
+  /*------------------------------------- start reading the design surfs */
+  while(strncmp(allfiles.actplace,"------",6)!=0)
+  {
+    /*------------------------------------------ read the design surf Id */
+    int dsurfid = -1;
+    frint("E",&dsurfid,&ierr);
+    if(ierr!=1)
+      dserror("Cannot read design-surface LIFTDRAG conditions");
+    dsurfid--;
+
+    /*--------------------------------- move pointer behind the "-" sign */
+    char* colptr = strstr(allfiles.actplace,"-");
+    if(colptr==NULL)
+      dserror("Cannot read design-surface LIFTDRAG conditions");
+    colptr++;
+	
+    //-------------------------------read values
+    int LABEL = strtol(colptr,&colptr,10);
+    double xCenter = strtod(colptr,&colptr);
+    double yCenter = strtod(colptr,&colptr);
+    double zCenter = strtod(colptr,&colptr);
+	//#####  I don't know what to do with 'ALE_LINE';
+	
+	// create boundary condition
+    RefCountPtr<DRT::Condition> condition =
+           rcp(new DRT::Condition(dsurfid,DRT::Condition::SurfLIFTDRAG,false,
+                                  DRT::Condition::Surface));
+    condition->Add("LABEL",&LABEL,1);
+    condition->Add("xCenter",&xCenter,1);
+    condition->Add("yCenter",&yCenter,1);
+    condition->Add("zCenter",&zCenter,1);
+
+    //---------------------- add the condition to the map of all conditions
+    sldmap.insert(pair<int,RefCountPtr<DRT::Condition> >(dsurfid,condition));
+    //-------------------------------------------------- read the next line
+    frread();
+  } // while(strncmp(allfiles.actplace,"------",6)!=0)
+  return;
+};  //input_surf_LIFTDRAG
 
 #endif  // #ifdef TRILINOS_PACKAGE
 #endif  // #ifdef CCADISCRET
