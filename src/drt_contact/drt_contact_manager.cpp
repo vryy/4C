@@ -1,0 +1,224 @@
+/*!----------------------------------------------------------------------
+\file drt_contact_manager.cpp
+\brief Main class to control all contact
+
+<pre>
+Maintainer: Michael Gee
+            gee@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15239
+</pre>
+
+*----------------------------------------------------------------------*/
+#ifdef CCADISCRET
+#ifdef TRILINOS_PACKAGE
+
+#include "drt_contact_manager.H"
+#include "drt_cnode.H"
+#include "drt_celement.H"
+
+/*----------------------------------------------------------------------*
+ |  ctor (public)                                            mwgee 10/07|
+ *----------------------------------------------------------------------*/
+CONTACT::Manager::Manager(DRT::Discretization& discret) :
+discret_(discret)
+{
+  if (!Discret().Filled()) dserror("Discretization is not fillcomplete");
+  
+  // let's check for contact boundary conditions in discret
+  // and detect pairs of matching conditions
+  // for each pair, create a contact interface and store it
+  vector<DRT::Condition*> contactconditions(0);
+  Discret().GetCondition("Contact",contactconditions);
+  if ((int)contactconditions.size()<=1)  dserror("Not enough contact conditions in discretization");
+  if ((int)contactconditions.size() % 2) dserror("Odd number of contact conditions is impossible");
+  
+  // find all pairs of matching contact conditions
+  // there are num conditions / 2 pairs
+  vector<int> foundpairs(contactconditions.size()/2);
+  int numpairsfound = 0;
+  for (int i=0; i<(int)contactconditions.size(); ++i)
+  {
+    DRT::Condition* cond1 = contactconditions[i];
+    DRT::Condition* cond2 = NULL;
+    const vector<int>* pair1v = cond1->Get<vector<int> >("contact id");
+    if (!pair1v) dserror("Contact Conditions does not have value 'contact id'");
+    int pairid1 = (*pair1v)[0];
+    bool foundit = false;
+    const vector<int>* pair2v = NULL;
+    int pairid2 = -1;
+    for (int j=0; j<(int)contactconditions.size(); ++j)
+    {
+      if (j==i) continue; // do not detect contactconditions[i] again
+      cond2 = contactconditions[j];
+      pair2v = cond2->Get<vector<int> >("contact id");
+      if (!pair2v) dserror("Contact Conditions does not have value 'contact id'");
+      pairid2 = (*pair2v)[0];
+      if (pairid1 != pairid2) continue; // not a pair
+      foundit = true; // found a pair
+      break;
+    }
+    
+    // now we should have found a pair cond1/cond2
+    if (!foundit) dserror("Cannot find matching contact condition for id %d",pairid1);
+    
+    // see whether we found this pair before
+    bool foundbefore = false;
+    for (int j=0; j<numpairsfound; ++j)
+      if (pairid1 == foundpairs[j])
+      {
+        foundbefore = true;
+        break;
+      }
+    
+    // if we have processed this pair before, do nothing
+    if (foundbefore) continue;
+    
+    // we have not found this pair pairid1/pairid2 before, process it
+    foundpairs[numpairsfound] = pairid1;
+    ++numpairsfound;
+    
+    // create an empty interface and store it in this Manager
+    interface_.push_back(rcp(new CONTACT::Interface(pairid1,Comm())));
+    
+    // get it again
+    RCP<CONTACT::Interface> interface = interface_[(int)interface_.size()-1];
+    
+    // find out which side is Master and Slave
+    const string* side1 = cond1->Get<string>("Side");
+    const string* side2 = cond2->Get<string>("Side");
+    if (!side1 || !side2) dserror("Data for Master/Slave side missing in condition");
+    if (*side1 == *side2) dserror("2 Slave sides or 2 Master sides not allowed");      
+    bool is1slave = false;
+    if (*side1 == "Slave") is1slave = true;
+    
+    // note that the nodal ids are unique because they come from
+    // one global problem discretization conatining all nodes of the
+    // contact interface
+    // We rely on this fact, therefore it is not possible to
+    // do contact between two distinct discretizations here
+    //--------------------------------------------- process side 1 nodes
+    // get all nodes and add them
+    const vector<int>* nodeids1 = cond1->Get<vector<int> >("Node Ids");
+    if (!nodeids1) dserror("Condition does not have Node Ids");
+    for (int j=0; j<(int)(*nodeids1).size(); ++j)
+    {
+      int gid = (*nodeids1)[j];
+      // do only nodes that I have in my discretization
+      if (!Discret().NodeColMap()->MyGID(gid)) continue;
+      DRT::Node* node = Discret().gNode(gid);
+      if (!node) dserror("Cannot find node with gid %",gid);
+      RCP<CONTACT::CNode> cnode = rcp(new CONTACT::CNode(node->Id(),node->X(),
+                                                         node->Owner(),
+                                                         Discret().NumDof(node),
+                                                         Discret().Dof(node),is1slave));
+      interface->AddCNode(cnode);
+    } // for (int j=0; j<(int)(*nodeids1).size(); ++j)
+    
+    
+    //----------------------------------------------- process side 2 nodes
+    // get all nodes and add them
+    const vector<int>* nodeids2 = cond2->Get<vector<int> >("Node Ids");
+    if (!nodeids2) dserror("Condition does not have Node Ids");
+    for (int j=0; j<(int)(*nodeids2).size(); ++j)
+    {
+      int gid = (*nodeids2)[j];
+      if (!Discret().NodeColMap()->MyGID(gid)) continue;
+      DRT::Node* node = Discret().gNode(gid);
+      if (!node) dserror("Cannot find node with gid %",gid);
+      RCP<CONTACT::CNode> cnode = rcp(new CONTACT::CNode(node->Id(),node->X(),
+                                                         node->Owner(),
+                                                         Discret().NumDof(node),
+                                                         Discret().Dof(node),
+                                                         !is1slave));
+      interface->AddCNode(cnode);
+    } // for (int j=0; j<(int)(*nodeids2).size(); ++j)
+    
+    //-------------------------------------------- process elements
+    // get elements from condition cond1/cond2
+    map<int,RCP<DRT::Element> >& ele1 = cond1->Geometry();
+    map<int,RCP<DRT::Element> >& ele2 = cond2->Geometry();
+    // elements in a boundary condition have a unique id
+    // but ids are not unique among 2 distinct conditions
+    // due to the way elements in conditions are build.
+    // We therefore have to give the second set of elements different ids
+    // ids do not have to be continous, we just add a large enough number 
+    // gsize to all elements of cond2 so they are different from those in cond1.
+    // note that elements in ele1/ele2 already are in column (overlapping) map
+    int lsize = (int)ele1.size();
+    int gsize = 0;
+    Comm().SumAll(&lsize,&gsize,1);
+    
+    //---------------------------------------- process elements in ele1
+    map<int,RCP<DRT::Element> >::iterator fool;
+    for (fool=ele1.begin(); fool != ele1.end(); ++fool)
+    {
+      RCP<DRT::Element> ele = fool->second;
+      RCP<CONTACT::CElement> cele = rcp(new CONTACT::CElement(ele->Id(),
+                                                              DRT::Element::element_contact,
+                                                              ele->Owner(),
+                                                              ele->Shape(),
+                                                              ele->NumNode(),
+                                                              ele->NodeIds(),
+                                                              is1slave));
+      interface->AddCElement(cele);
+    } // for (fool=ele1.start(); fool != ele1.end(); ++fool)
+    
+    //----------------------------------------- process element in ele2
+    // note the change in the id of the elements
+    for (fool=ele2.begin(); fool != ele2.end(); ++fool)
+    {
+      RCP<DRT::Element> ele = fool->second;
+      RCP<CONTACT::CElement> cele = rcp(new CONTACT::CElement(ele->Id()+gsize,
+                                                              DRT::Element::element_contact,
+                                                              ele->Owner(),
+                                                              ele->Shape(),
+                                                              ele->NumNode(),
+                                                              ele->NodeIds(),
+                                                              !is1slave));
+      interface->AddCElement(cele);
+    } // for (fool=ele1.start(); fool != ele1.end(); ++fool)
+    
+    
+    //-------------------- finzalize the contact interface construction
+    interface->FillComplete();
+
+#if 1 // debugging
+    cout << *interface;
+#endif
+    
+  } // for (int i=0; i<(int)contactconditions.size(); ++i)
+    
+    
+  
+  exit(0);
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  << operator                                              mwgee 10/07|
+ *----------------------------------------------------------------------*/
+ostream& operator << (ostream& os, const CONTACT::Manager& manager)
+{
+  manager.Print(os);  
+  return os;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  print manager (public)                                   mwgee 10/07|
+ *----------------------------------------------------------------------*/
+void CONTACT::Manager::Print(ostream& os) const
+{
+
+  return;
+}
+
+
+
+
+
+
+#endif  // #ifdef TRILINOS_PACKAGE
+#endif  // #ifdef CCADISCRET
