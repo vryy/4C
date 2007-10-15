@@ -1,6 +1,7 @@
 /*!----------------------------------------------------------------------
 \file drt_discret.cpp
-\brief
+
+\brief a class to manage one discretization
 
 <pre>
 Maintainer: Michael Gee
@@ -377,49 +378,30 @@ void DRT::Discretization::Print(ostream& os) const
     }
     Comm().Barrier();
   }
-  // print conditions (not sure whether this should be proc 0 only)
-  if (Comm().MyPID()==0)
+  // print conditions
+  for (int proc=0; proc<Comm().NumProc(); ++proc)
   {
-    int numcond = condition_.size();
-    if (numcond)
+    if (proc==Comm().MyPID())
     {
-      os << endl << numcond << " Conditions:\n";
-      map<string,RefCountPtr<Condition> >::const_iterator curr;
-      for (curr=condition_.begin(); curr != condition_.end(); ++curr)
+      int numcond = condition_.size();
+      if (numcond) 
+        os << "-------------------------- Proc " << proc << " :\n";
+      if (numcond)
       {
-        os << curr->first << " ";
-        os << *(curr->second) << endl;
+        os << numcond << " Conditions:\n";
+        map<string,RefCountPtr<Condition> >::const_iterator curr;
+        for (curr=condition_.begin(); curr != condition_.end(); ++curr)
+        {
+          os << curr->first << " ";
+          os << *(curr->second) << endl;
+        }
       }
+      os << endl;
     }
+    Comm().Barrier();
   }
   return;
 }
-
-#if 0
-/*----------------------------------------------------------------------*
- |  node <-> design node topology (public)                   mwgee 11/06|
- *----------------------------------------------------------------------*/
-void DRT::Discretization::SetDesignEntityIds(Node::OnDesignEntity type,
-                                             const vector<int>& nfenode,
-                                             const vector<vector<int> >& fenode)
-{
-  const int ndentity = nfenode.size();
-  for (int i=0; i<ndentity; ++i)
-  {
-    const int dentityid  = i;
-    const int numfenodes = nfenode[i];
-    for (int j=0; j<numfenodes; ++j)
-    {
-      Node* node = gNode(fenode[dentityid][j]);
-      if (!node) dserror("Node with gid %d is not on this proc",fenode[dentityid][j]);
-      node->SetDesignEntity(type,dentityid);
-    }
-  }
-  return;
-}
-#endif
-
-
 
 /*----------------------------------------------------------------------*
  |  replace the dofset of the discretisation (public)        gammi 05/07|

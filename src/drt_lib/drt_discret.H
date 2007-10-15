@@ -160,7 +160,7 @@ public:
     { dsassert(havedof_,"no dofs assigned"); return dofsets_[currentdofset_]->Dof(element); }
 
   /*!
-  \brief Print this discretization to stdout (Filled()==true NOT prerequisite)
+  \brief Print this discretization to os (Filled()==true NOT prerequisite)
          (ostream << also supported)
 
   \note This is a collective call
